@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 #import <Cocoa/Cocoa.h>
 
 @interface Preferences : NSObject
@@ -7,6 +9,7 @@
     IBOutlet id fakeButton;
     IBOutlet id displayNumber;
     IBOutlet id startupHelpButton;
+    IBOutlet id systemBeepButton;
     IBOutlet id splashStartupHelpButton;
 
     BOOL isGettingKeyCode;
@@ -28,6 +31,7 @@
 + (void)setDisplay:(int)newDisplay;
 + (void)setFakeButtons:(BOOL)newFakeButtons;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
++ (void)setSystemBeep:(BOOL)newSystemBeep;
 
 + (NSString*)switchString;
 + (unsigned int)keyCode;
@@ -35,5 +39,6 @@
 + (int)display;
 + (BOOL)fakeButtons;
 + (BOOL)startupHelp;
++ (BOOL)systemBeep;
 
 @end

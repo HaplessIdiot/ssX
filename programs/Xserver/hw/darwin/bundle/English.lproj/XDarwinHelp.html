@@ -16,11 +16,9 @@
 <center>
 	<h2><a NAME="notice">Important Notice</a></h2>
 </center>
-<blockquote>This is a pre-release version of XFree86, and is not supported in any way. This software is
-	distributed under the terms of the <A HREF="#license">MIT X11 / X Consortium License</A> and is provided AS IS, with no warranty. Please
-	read the <A HREF="#license">License</A> before using. Bugs may be reported and patches may be submitted to the <A HREF="http://sourceforge.net/projects/xonx/">XonX project page</A> at SourceForge.  Before reporting bugs in pre-release versions, please check the latest version from <A HREF="http://sourceforge.net/projects/xonx/">XonX</A> or in the <A HREF="http://www.XFree86.Org/cvs">XFree86 CVS repository</A>.</blockquote>
+<blockquote>This is a pre-release version of XFree86, and is not supported in any way. This software is distributed under the terms of the <A HREF="#license">MIT X11 / X Consortium License</A> and is provided AS IS, with no warranty. Please read the <A HREF="#license">License</A> before using. Bugs may be reported and patches may be submitted to the <A HREF="http://sourceforge.net/projects/xonx/">XonX project page</A> at SourceForge.  Before reporting bugs in pre-release versions, please check the latest version from <A HREF="http://sourceforge.net/projects/xonx/">XonX</A> or in the <A HREF="http://www.XFree86.Org/cvs">XFree86 CVS repository</A>.</blockquote>
 <h2><a NAME="usage">Usage</a></h2>
-<p>XFree86 runs on Mac OS X in full screen mode. When the X window desktop is active, it takes over the entire screen. You can switch back to the Mac OS X desktop by holding down Command-Option-A. (This key combination can be changed in the user preferences.) From the Mac OS X desktop, just click on the Xmaster icon in the dock to switch back to the X window desktop.</p>
+<p>XFree86 runs on Mac OS X in full screen mode. When the X window desktop is active, it takes over the entire screen. You can switch back to the Mac OS X desktop by holding down Command-Option-A. (This key combination can be changed in the user preferences.) From the Mac OS X desktop, just click on the XDarwin icon in the dock to switch back to the X window desktop.</p>
 <h3>Multi-Button Mouse Emulation</h3>
 <p>Many X11 applications rely on the use of a 3-button mouse. To emulate a 3-button mouse with a single button, select "Enable emulation of multiple mouse buttons" in the Preferences. This will take effect the next time the X server is started. When emulating a 3-button mouse, holding down the left command key and clicking the mouse button will simulate clicking the second mouse button. Holding down the left option key and clicking will simulate the third button.</p>
 <p>Notes:</p>
@@ -29,8 +27,6 @@
 	<li>Even with command and/or option keys mapped to some other key with xmodmap, you still must use the original command and option keys for multibutton mouse emulation.
 	<li>The only way to simulate holding down the left command key and clicking the second mouse button is to map some other key to be the left command key. The same is true for simulating holding down the left option key and clicking the third mouse button.
 </ul>
-<h3>Note on .xserverrc</h3>
-<p>If a file named ".xserverrc" is present in your home directory, the options specified there will override the options passed by Xmaster to the X server. If you provide a ".xserverrc" file, make sure that you specify "-quartz" as one of the options passed to the X server.</p>
 <h2><a NAME="path">Setting Your Path</a></h2>
 <p>The X11 binaries are located in /usr/X11R6/bin, which you may need to add to your path. Your path is the list of directories to be searched for executable commands. The way to do this depends on the shell you are using. With tcsh, you can check your path by typing "printenv PATH". You should see /usr/X11R6/bin listed as one of the directories. If not, you should add it to your default path. To do so, you can add the following line to a file in your home directory called .cshrc: (Create this file if you don't have one yet.)</p>
 <blockquote>setenv PATH "${PATH}:/usr/X11R6/bin"</blockquote>

@@ -3,7 +3,7 @@
  * Startup code for the Quartz Darwin X Server
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.1 2001/03/24 23:08:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzStartup.c,v 1.2 2001/04/02 08:50:56 torrey Exp $ */
 
 #include <fcntl.h>
 #include "opaque.h"
@@ -18,7 +18,8 @@ char **envpGlobal;      // argcGlobal and argvGlobal
  *  This function is called first from main(). The first time
  *  it is called we start the Mac OS X front end. The front end
  *  will call main() again from another thread to run the X
- *  server. On the second call this function is a noop.
+ *  server. On the second call this function loads the user
+ *  preferences set by the Mac OS X front end.
  */
 void DarwinHandleGUI(
     int         argc,
@@ -29,14 +30,16 @@ void DarwinHandleGUI(
     int         main_exit, i;
     int         fd[2];
 
-    if (been_here)
+    if (been_here) {
+        QuartzReadPreferences();
         return;
+    }
     been_here = TRUE;
 
     // Make a pipe to pass events
     assert( pipe(fd) == 0 );
     darwinEventFD = fd[0];
-    gDarwinEventWriteFD = fd[1];
+    quartzEventWriteFD = fd[1];
     fcntl(darwinEventFD, F_SETFL, O_NONBLOCK);
 
     // Store command line arguments to pass back to main()

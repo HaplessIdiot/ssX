@@ -1,4 +1,27 @@
-{
-    IBDocumentLocation = "40 90 367 304 0 73 1280 929 "; 
-    IBMainMenuLocation = "34 480 220 44 0 4 1280 998 "; 
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist SYSTEM "file://localhost/System/Library/DTDs/PropertyList.dtd">
+<plist version="0.9">
+<dict>
+	<key>IBDocumentLocation</key>
+	<string>11 9 367 304 0 4 800 574 </string>
+	<key>IBMainMenuLocation</key>
+	<string>19 268 220 44 0 4 800 574 </string>
+	<key>IBUserGuides</key>
+	<dict>
+		<key>HelpPanel</key>
+		<dict>
+			<key>guideLocations</key>
+			<array/>
+			<key>guidesLocked</key>
+			<string>NO</string>
+		</dict>
+		<key>PrefPanel</key>
+		<dict>
+			<key>guideLocations</key>
+			<array/>
+			<key>guidesLocked</key>
+			<string>NO</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

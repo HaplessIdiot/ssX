@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.4 2001/03/24 23:08:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.6 2001/04/02 08:50:56 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -33,7 +33,7 @@ extern char **envpGlobal;
     serverVisible = NO;
     appQuitting = NO;
     mouseState = 0;
-    eventWriteFD = gDarwinEventWriteFD;
+    eventWriteFD = quartzEventWriteFD;
 
     return self;
 }

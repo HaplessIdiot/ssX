@@ -7,11 +7,21 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* XFree86: $ */
+/* $XFree86: $ */
 
 #include <Cocoa/Cocoa.h>
 
+#import "Preferences.h"
+#include "quartzShared.h"
+
 static NSArray *pasteboardTypes = nil;
+
+// Read the user preferences from the Cocoa front end
+void QuartzReadPreferences(void)
+{
+    darwinFakeButtons = [Preferences fakeButtons];
+    quartzUseSysBeep = [Preferences systemBeep];
+}
 
 // Write text to the Mac OS X pasteboard.
 void QuartzWriteCocoaPasteboard(char *text)

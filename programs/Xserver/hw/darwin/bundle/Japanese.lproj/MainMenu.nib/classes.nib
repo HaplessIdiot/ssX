@@ -16,6 +16,7 @@
                 keyField = id; 
                 splashStartupHelpButton = id; 
                 startupHelpButton = id; 
+                systemBeepButton = id; 
                 window = id; 
             }; 
             SUPERCLASS = NSObject; 

@@ -2,13 +2,20 @@
  * Shared definitions between the Darwin X Server
  * and the Cocoa front end. 
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.1 2001/03/24 23:08:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.2 2001/04/02 08:50:56 torrey Exp $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H
 
-extern int                  gDarwinEventWriteFD;
+// Data stored at startup for Cocoa front end
+extern int                  quartzEventWriteFD;
 extern int                  quartzStartClients;
+
+// User preferences used by X server
+extern int                  quartzUseSysBeep;
+extern int                  darwinFakeButtons;
+
+void QuartzReadPreferences(void);
 
 // NX_APPDEFINED event subtypes for special commands to the X server
 // update modifiers: update all modifier keys

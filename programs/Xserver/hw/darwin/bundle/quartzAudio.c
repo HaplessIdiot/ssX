@@ -10,7 +10,7 @@
 // Smoothing transitions between sounds
 //  http://www.wam.umd.edu/~mphoenix/dss/dss.html
 //
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzAudio.c,v 1.1 2001/04/01 07:12:14 torrey Exp $ */
 
 #include <CoreAudio/AudioHardware.h>
 #include <pthread.h>
@@ -19,6 +19,7 @@
 #include "extensions/XI.h"
 
 #include "quartzAudio.h"
+#include "quartzShared.h"
 
 typedef struct QuartzAudioRec {
     double frequency;
@@ -237,9 +238,8 @@ void QuartzBell(
         return;
     }
 
-    // FIXME: check for NSBeep preference
     // FIXME: how is NSBeep volume set?
-    if (FALSE) {
+    if (quartzUseSysBeep) {
         NSBeep();
         return;
     } else {
