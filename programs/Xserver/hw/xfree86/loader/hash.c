@@ -160,6 +160,7 @@ LOOKUP	*list ;
 		}
 		l++;
 	    }
+	    xf86loaderfree(exportname);
 	}
     }
 

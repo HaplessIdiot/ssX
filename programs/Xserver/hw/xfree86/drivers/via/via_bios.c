@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.4 2003/09/08 14:25:29 eich Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -8180,9 +8180,13 @@ Bool VIAFindModeUseBIOSTable(VIABIOSInfoPtr pBIOSInfo)
         return FALSE;
     }
 
-    if (pBIOSInfo->ActiveDevice & VIA_DEVICE_DFP && (pBIOSInfo->PanelSize == VIA_PANEL_INVALID)) {
+    if ((pBIOSInfo->ActiveDevice & VIA_DEVICE_DFP) && (pBIOSInfo->PanelSize == VIA_PANEL_INVALID)) {
         VIAGetPanelInfo(pBIOSInfo);
     }
+    
+    /* Default settings have not been loaded, they must be
+       obtained from the BIOS */
+    pBIOSInfo->pUTUSERSETTING->DefaultSetting = FALSE;
 
     if (!pBIOSInfo->ActiveDevice) {
         pBIOSInfo->ActiveDevice = VIAGetDeviceDetect(pBIOSInfo);

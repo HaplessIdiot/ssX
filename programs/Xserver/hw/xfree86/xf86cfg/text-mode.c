@@ -827,6 +827,10 @@ static char *hsync[] = {
     "31.5 - 64.3; Monitor that can do 1280x1024 @ 60 Hz",
     "31.5 - 79.0; Monitor that can do 1280x1024 @ 74 Hz",
     "31.5 - 82.0; Monitor that can do 1280x1024 @ 76 Hz",
+    "31.5 - 92.0; Monitor that can do 1280x1024 @ 85 Hz",
+    "31.5 - 108.0; Monitor that can do 1600x1200 @ 85 Hz",
+    "31.5 - 128.5; Monitor that can do 1920x1440 @ 85 Hz",
+    "31.5 - 137.0; Monitor that can do 2048x1536 @ 85 Hz"
 };
 
 static char *vrefresh[] = {
@@ -1380,6 +1384,9 @@ static char *depths[] = {
 };
 
 static char *modes[] = {
+    "2048x1536",
+    "1920x1440",
+    "1800x1400",
     "1600x1200",
     "1400x1050",
     "1280x1024",

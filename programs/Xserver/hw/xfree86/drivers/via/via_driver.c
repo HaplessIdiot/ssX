@@ -87,7 +87,6 @@ Bool VIADeviceDispatch(ScrnInfoPtr pScrn);
 
 #ifdef XF86DRI
 void VIAInitialize3DEngine(ScrnInfoPtr pScrn);
-static Bool b3DRegsInitialized = 0;
 #endif
 
 DriverRec VIA =
@@ -766,6 +765,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
             pVIAEnt->HasSecondary = TRUE;
             pVia1 = VIAPTR(pVIAEnt->pPrimaryScrn);
             pVia1->HasSecondary = TRUE;
+	    pVia->sharedData = pVia1->sharedData;
         }
         else
         {
@@ -775,6 +775,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
             xf86SetPrimInitDone(pScrn->entityList[0]);
             pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
                     gVIAEntityIndex);
+	    pVia->sharedData = xnfcalloc(sizeof(ViaSharedRec),1);
             pVIAEnt = pPriv->ptr;
             pVIAEnt->pPrimaryScrn = pScrn;
             pVIAEnt->IsDRIEnabled = FALSE;
@@ -783,6 +784,8 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
             pVIAEnt->RestorePrimary = FALSE;
             pVIAEnt->IsSecondaryRestored = FALSE;
         }
+    } else {
+	pVia->sharedData = xnfcalloc(sizeof(ViaSharedRec),1);
     }
 
     if (flags & PROBE_DETECT) {
@@ -1361,7 +1364,7 @@ static Bool VIAPreInit(ScrnInfoPtr pScrn, int flags)
             pScrn->videoRam = bMemSize << 6;
         }
         else {
-            VGAOUT8(0x3C4, 0x39);
+            VGAOUT8(0x3C4, 0x34);	/* Was 0x39 */
             bMemSize = VGAIN8(0x3c5);
             if (bMemSize > 16 && bMemSize <= 128) {
                 pScrn->videoRam = (bMemSize + 1) << 9;
@@ -3213,7 +3216,7 @@ VIAInitialize3DEngine(ScrnInfoPtr pScrn)
     VIAPtr  pVia = VIAPTR(pScrn);
     int i;
 
-    if (!b3DRegsInitialized)
+    if (!pVia->sharedData->b3DRegsInitialized)
  {
 
     VIASETREG(0x43C, 0x00010000);
@@ -3278,7 +3281,7 @@ VIAInitialize3DEngine(ScrnInfoPtr pScrn)
         VIASETREG(0x440,0x52000000);
         VIASETREG(0x440,0x53000000);
 
-        b3DRegsInitialized = 1;
+        pVia->sharedData->b3DRegsInitialized = 1;
         xf86DrvMsg(pScrn->scrnIndex, X_INFO,
             "3D Register has been initilized !\n");
     }

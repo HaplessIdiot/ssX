@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/regrec.c,v 1.3 2003/08/04 10:32:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_regrec.c,v 1.1 2003/08/25 18:44:37 eich Exp $ */
 /*#include <stdlib.h>
 #include <string.h>*/
 #include "xf86.h"
@@ -31,8 +31,6 @@
 #include "via_regrec.h"
 
 
-static VIDEOREGISTER VidReg[VIDEO_REG_NUM];
-static unsigned long gdwVidRegCounter;
 
 void viaWaitHQVIdle(VIAPtr pVia)
 {
@@ -89,10 +87,11 @@ void viaWaitHQVDone(VIAPtr pVia)
 void viaMacro_VidREGFlush(VIAPtr pVia)
 {
     unsigned long i;
+    VIDEOREGISTER *VidReg = (VIDEOREGISTER*) pVia->VidReg;
     
     viaWaitVideoCommandFire(pVia);
 
-    for (i=0; i< gdwVidRegCounter; i++ )
+    for (i=0; i< pVia->gdwVidRegCounter; i++ )
     {
         VIDOutD(VidReg[i].dwIndex, VidReg[i].dwData);
         /*DBG_DD("viaMacro_VidREGFlush:%08lx %08lx\n",VidReg[i].dwIndex+0x200,VidReg[i].dwData);*/
@@ -102,18 +101,22 @@ void viaMacro_VidREGFlush(VIAPtr pVia)
 
 void viaMacro_VidREGRec(VIAPtr pVia, unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)
 {
+    VIDEOREGISTER *VidReg;
 
   switch (dwAction)
   {
      case VIDREGREC_RESET_COUNTER :
-          gdwVidRegCounter = 0;
+	 if (!pVia->VidReg)
+	     pVia->VidReg = xnfcalloc(VIDEO_REG_NUM,sizeof(VIDEOREGISTER));
+	 pVia->gdwVidRegCounter = 0;
           break;
 
      case VIDREGREC_SAVE_REGISTER:
-          VidReg[gdwVidRegCounter].dwIndex = dwIndex;
-          VidReg[gdwVidRegCounter].dwData  = dwData;
-          gdwVidRegCounter++;
-          if ( gdwVidRegCounter > VIDEO_REG_NUM){
+	 VidReg = (VIDEOREGISTER*) pVia->VidReg;
+	 VidReg[pVia->gdwVidRegCounter].dwIndex = dwIndex;
+          VidReg[pVia->gdwVidRegCounter].dwData  = dwData;
+          pVia->gdwVidRegCounter++;
+          if ( pVia->gdwVidRegCounter > VIDEO_REG_NUM){
              /*DBG_DD("viaMacro_VidREGRec:Out of Video register space");*/
              DBG_DD(ErrorF("viaMacro_VidREGRec:Out of Video register space"));
           }
@@ -129,13 +132,14 @@ void viaMacro_VidREGRec(VIAPtr pVia, unsigned long dwAction, unsigned long dwInd
 
 void viaMacro_VidREGFlushVPE(VIAPtr pVia)
 {
+    VIDEOREGISTER *VidReg = (VIDEOREGISTER*) pVia->VidReg;
     unsigned long i;
     CARD32 volatile *pdwState = (CARD32 volatile *) pVia->VidMapBase;
     pdwState = (CARD32 volatile *) (pVia->VidMapBase+V_COMPOSE_MODE);
 
     while ((*pdwState & V1_COMMAND_FIRE)||(*pdwState & V3_COMMAND_FIRE));
 
-    for (i=0; i< gdwVidRegCounter; i++ )
+    for (i=0; i< pVia->gdwVidRegCounter; i++ )
     {
      	VIDOutD(VidReg[i].dwIndex, VidReg[i].dwData);
         /*DBG_DD("viaMacro_VidREGFlush V3:%08lx %08lx\n",VidReg[i].dwIndex+0x200,VidReg[i].dwData);*/
@@ -145,18 +149,22 @@ void viaMacro_VidREGFlushVPE(VIAPtr pVia)
 
 void viaMacro_VidREGRecVPE(VIAPtr pVia, unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)
 {
+    VIDEOREGISTER *VidReg;
 
   switch (dwAction)
   {
      case VIDREGREC_RESET_COUNTER :
-          gdwVidRegCounter = 0;
-          break;
+	 if (!pVia->VidReg)
+	     pVia->VidReg = xnfcalloc(VIDEO_REG_NUM,sizeof(VIDEOREGISTER));
+	 pVia->gdwVidRegCounter = 0;
+	 break;
 
      case VIDREGREC_SAVE_REGISTER:
-          VidReg[gdwVidRegCounter].dwIndex = dwIndex;
-          VidReg[gdwVidRegCounter].dwData  = dwData;
-          gdwVidRegCounter++;
-          if ( gdwVidRegCounter > VIDEO_REG_NUM){
+	  VidReg = (VIDEOREGISTER*) pVia->VidReg;
+	  VidReg[pVia->gdwVidRegCounter].dwIndex = dwIndex;
+          VidReg[pVia->gdwVidRegCounter].dwData  = dwData;
+          pVia->gdwVidRegCounter++;
+          if ( pVia->gdwVidRegCounter > VIDEO_REG_NUM){
              /*TOINT3;*/
           }
 
