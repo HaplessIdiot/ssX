@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.16 2002/05/31 18:46:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.17 2003/03/25 04:18:23 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -38,6 +38,7 @@
 #define INCL_DOSSEMAPHORES
 #define INCL_DOSMODULEMGR
 #define INCL_DOSFILEMGR
+#include <float.h>
 #include "X.h"
 #include "Xmd.h"
 #include "input.h"
@@ -57,6 +58,7 @@ void os2KbdBitBucketThread();
 HEV hevPopupPending;
 extern HEV hKbdSem;
 extern BOOL os2HRTimerFlag;
+static unsigned short cw;
 extern void os2_checkinstallation(); /* os2_diag.c */
 
 void xf86OpenConsole()
@@ -188,6 +190,19 @@ void xf86OpenConsole()
 /* Start up the Kbd bit-bucket thread. We don't want to leave the kbd events in the driver queue */
 	VioTid=_beginthread(os2KbdBitBucketThread,NULL,0x2000,(void *)NULL);
 	xf86Msg(X_INFO,"Started Kbd bit-bucket thread, Tid=%d\n",VioTid);
+	
+/* fg271103: set control word of FPU to default value to prevent SIGFPE in GLX (and elsewhere?) */
+
+#define DEFAULT_X86_FPU 0x037f
+	
+	cw = _control87(DEFAULT_X86_FPU, 0xFFFF);
+	xf86Msg(X_INFO,"Checking FPCW: %#x\n",cw);
+
+	if (cw != DEFAULT_X86_FPU) {
+		cw = _control87(0,0);
+		xf86Msg(X_INFO,"Set FPCW to %#x\n",cw);
+	}
+
     }
     return;
 }
