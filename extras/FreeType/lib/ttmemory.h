@@ -25,7 +25,7 @@
  *    'legacy' applications (all four test programs have been updated).
  *
  ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/ttmemory.h,v 1.2 1998/09/06 07:31:56 dawes Exp $ */
 
 #ifndef TTMEMORY_H
 #define TTMEMORY_H
@@ -60,11 +60,22 @@
 #define MEM_Alloc( _pointer_, _size_ ) \
   TT_Alloc( _size_, (void**)&(_pointer_) )
 
+#define MEM_Realloc( _pointer_, _size_ ) \
+  TT_Realloc( _size_, (void**)&(_pointer_) )
+
 #define ALLOC( _pointer_, _size_ ) \
-  ( (error = MEM_Alloc( _pointer_, _size_ )) != TT_Err_Ok )
+  ( ( error = MEM_Alloc( _pointer_, _size_ ) ) != TT_Err_Ok )
 
 #define ALLOC_ARRAY( _pointer_, _count_, _type_ ) \
-  ( (error = MEM_Alloc( _pointer_, (_count_)*sizeof(_type_))) != TT_Err_Ok )
+  ( ( error = MEM_Alloc( _pointer_, \
+                         (_count_) * sizeof ( _type_ ) ) ) != TT_Err_Ok )
+
+#define REALLOC( _pointer_, _size_ ) \
+  ( ( error = MEM_Realloc( _pointer_, _size_ ) ) != TT_Err_Ok )
+
+#define REALLOC_ARRAY( _pointer_, _count_, _type_ ) \
+  ( (error = MEM_Realloc( _pointer_, \
+                          (_count_) * sizeof ( _type_ ) ) ) != TT_Err_Ok )
 
 #define FREE( _pointer_ ) \
   TT_Free( (void**)&(_pointer_) )
@@ -77,6 +88,17 @@
   EXPORT_DEF
   TT_Error  TT_Alloc( Long  Size, void**  P );
 
+#ifdef TT_CONFIG_OPTION_EXTEND_ENGINE
+
+  /* Reallocates a block of memory pointed to by '*P' to 'Size'    */
+  /* bytes from the heap, possibly changing '*P'.  If 'Size' is 0, */
+  /* TT_Free() is called, if '*P' is NULL, TT_Alloc() is called.   */
+  /* '*P' is freed (if it's non-NULL) in case of error.            */
+
+  EXPORT_DEF
+  TT_Error  TT_Realloc( Long  Size, void**  P );
+
+#endif /* TT_CONFIG_OPTION_EXTEND_ENGINE */
 
   /* Releases a block that was previously allocated through Alloc. */
   /* Note that the function returns successfully when P or *P are  */

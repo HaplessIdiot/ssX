@@ -15,7 +15,7 @@
  *
  *
  ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/extend/ftxcmap.c,v 1.2 1998/09/06 05:05:30 dawes Exp $ */
 
 #include "ftxcmap.h"
 
@@ -25,6 +25,7 @@
 
 static Long    charmap_first4  ( PCMap4, UShort* );
 static Long    charmap_next4   ( PCMap4, UShort, UShort* );
+static Long    charmap_last4  ( PCMap4, UShort* );
 static UShort  charmap_find_id4( PCMap4, UShort, TCMap4Segment*, UShort );
 
 
@@ -253,12 +254,94 @@ charmap_find_id4( PCMap4          cmap4,
     index1 = seg4->idRangeOffset / 2 + charCode-seg4->startCount -
              ( cmap4->segCountX2 / 2 - i );
 
-    if ( cmap4->glyphIdArray[index1] == 0 )
+    if ( index1 >= cmap4->numGlyphId || cmap4->glyphIdArray[index1] == 0 )
       return 0;
     else
       return (cmap4->glyphIdArray[index1] + seg4->idDelta) & 0xFFFF;
   }
 }
 
+/*******************************************************************
+ *
+ *  Function    :  TT_CharMap_Last
+ *
+ *  Description :  Returns the last valid character code in a
+ *                 given character map.  Also returns the corresponding
+ *                 glyph index.
+ *
+ *  Input  :  charMap     handle to the target character map
+ *            id          address where the glyph index will be
+ *                        be returned in case of success
+ *
+ *  Output :  Last valid character code.  -1 in case of failure.
+ *
+ *  Notes  :
+ *
+ ******************************************************************/
+
+TT_Long  TT_CharMap_Last( TT_CharMap  charMap,
+                           TT_UShort*  id )
+{
+  PCMapTable  cmap;
+  UShort      i, c;
+
+
+  if ( !( cmap = HANDLE_CharMap( charMap ) ) )
+    return -1;
+
+  switch( cmap->format )
+  {
+  case 0:
+    if ( id )
+      *id = cmap->c.cmap0.glyphIdArray[255];
+    return 255;
+
+  case 4:
+    return charmap_last4( &cmap->c.cmap4, id );
+
+  case 6:
+    if ( cmap->c.cmap6.entryCount < 1 )
+      return -1;
+
+    if ( id )
+      *id = cmap->c.cmap6.glyphIdArray[cmap->c.cmap6.entryCount - 1];
+    return cmap->c.cmap6.firstCode + cmap->c.cmap6.entryCount - 1;
+
+  default:
+    i = 65535;
+    do
+    {
+      c = TT_Char_Index( charMap, i );
+      if ( c > 0 )
+      {
+        if ( id )
+          *id = c;
+        return i;
+      }
+      i--;
+    }
+    while (i != 0);
+
+    return -1;
+  }
+}
+
+
+static Long  charmap_last4( PCMap4   cmap4,
+                             UShort*  id )
+{
+  UShort lastCode;
+
+
+  if( cmap4->segCountX2 / 2 < 1 )
+    return -1;
+
+  lastCode = cmap4->segments[cmap4->segCountX2/2-1].endCount;
+
+  if ( id )
+    *id = charmap_find_id4( cmap4, lastCode, &(cmap4->segments[cmap4->segCountX2/2-1]), 0 );
+
+  return lastCode;
+}
 
 /* END */
