@@ -450,6 +450,7 @@ XAAPixmapBPP (ScreenPtr pScreen, int depth)
 {
     PixmapPtr	pPix;
     int		bpp;
+    DestroyPixmapProcPtr    destroyPixmap;
     
     XAA_SCREEN_PROLOGUE (pScreen, CreatePixmap);
     pPix = (*pScreen->CreatePixmap) (pScreen, 1, 1, depth);
@@ -457,9 +458,10 @@ XAAPixmapBPP (ScreenPtr pScreen, int depth)
     if (!pPix)
 	return 0;
     bpp = pPix->drawable.bitsPerPixel;
+    destroyPixmap = pScreen->DestroyPixmap;
     XAA_SCREEN_PROLOGUE (pScreen, DestroyPixmap);
     (*pScreen->DestroyPixmap) (pPix);
-    XAA_SCREEN_EPILOGUE (pScreen, DestroyPixmap, XAADestroyPixmap);
+    XAA_SCREEN_EPILOGUE (pScreen, DestroyPixmap, destroyPixmap);
     return bpp;
 }
 
