@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.28 2001/11/28 21:53:01 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.29 2001/12/08 16:01:52 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -78,7 +78,6 @@ Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
      * So, 16MB appears at offset 0, nothing between 16-32, then it re-appears
      * at offset 32.
      * This below is to detect the cases of memory combinations
-     * It may also need closer examination for boards other than 16 or 32MB
      */
 
     /* Test first 32MB */
@@ -95,7 +94,7 @@ Permedia3MemorySizeDetect(ScrnInfoPtr pScrn)
     }
 
     /* Ok, we're satisfied we've got 32MB, let's test the second lot */
-    if (size == i) {
+    if ((size + 1) == i) {
 	for(i=0;i<32;i++) {
 	    /* Clear first 32MB */
 	    MMIO_OUT32(pGlint->FbBase, i*1024*1024, 0);
