@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.44 2000/06/21 17:28:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.45 2000/08/11 05:04:08 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -101,7 +101,7 @@ static SymTabRec NVChipsets[] = {
     { NV_CHIP_QUADRO,     "Quadro" },
     { NV_CHIP_GEFORCE2GTS,  "GeForce2 GTS"},
     { NV_CHIP_GEFORCE2GTS_1,"GeForce2 GTS (rev 1)"},
-    { NV_CHIP_GEFORCE2GTS_2,"GeForce2 GTS (rev 2)"},
+    { NV_CHIP_GEFORCE2ULTRA,"GeForce2 ultra"},
     { NV_CHIP_QUADRO2PRO,   "Quadro 2 Pro"},
     { NV_CHIP_GEFORCE2MX,   "GeForce2 MX"},
     { NV_CHIP_GEFORCE2MXDDR, "GeForce2 MX DDR"},
@@ -122,7 +122,7 @@ static PciChipsets NVPciChipsets[] = {
     { NV_CHIP_QUADRO,           NV_CHIP_QUADRO,         RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2GTS,      NV_CHIP_GEFORCE2GTS,    RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2GTS_1,    NV_CHIP_GEFORCE2GTS_1,  RES_SHARED_VGA },
-    { NV_CHIP_GEFORCE2GTS_2,    NV_CHIP_GEFORCE2GTS_2,  RES_SHARED_VGA },
+    { NV_CHIP_GEFORCE2ULTRA,    NV_CHIP_GEFORCE2ULTRA,  RES_SHARED_VGA },
     { NV_CHIP_QUADRO2PRO,       NV_CHIP_QUADRO2PRO,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2MX,       NV_CHIP_GEFORCE2MX,     RES_SHARED_VGA },
     { NV_CHIP_GEFORCE2MXDDR,    NV_CHIP_GEFORCE2MXDDR,  RES_SHARED_VGA },
@@ -1072,7 +1072,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case NV_CHIP_QUADRO:
         case NV_CHIP_GEFORCE2GTS:
         case NV_CHIP_GEFORCE2GTS_1:
-        case NV_CHIP_GEFORCE2GTS_2:
+        case NV_CHIP_GEFORCE2ULTRA:
         case NV_CHIP_QUADRO2PRO:
         case NV_CHIP_GEFORCE2MX:
         case NV_CHIP_GEFORCE2MXDDR:
