@@ -1,4 +1,6 @@
 XFree86 4.0.99.4 (xx May 2001)
+ 537. Adds #XFree86LOADER define to wrap ModuleInfo related functions
+      (#4654, Harold Hunt).
  536. Add an option to the SiS driver to turn off Xvideo support
       (Ademar de Souza Reis Jr.)
  535. Fix FreeType bug, use MAXFONTNAMELEN (#4652, Janusz Gorycki, 
@@ -13266,4 +13268,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1776 2001/05/16 08:32:31 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1777 2001/05/16 13:43:15 alanh Exp $
