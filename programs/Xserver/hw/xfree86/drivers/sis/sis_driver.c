@@ -18,7 +18,7 @@
  * 4) The name of the author may not be used to endorse or promote products
  *    derived from this software without specific prior written permission.
  *
- * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESSED OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
@@ -10192,7 +10192,7 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -10230,7 +10230,7 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 
 	    if((val >= -32) && (val <= 32)) {
 		char p2_01, p2_02;
-		val /= 4;
+		val /= 2;  /* 4 */
 		p2_01 = pSiS->p2_01;
 		p2_02 = pSiS->p2_02;
 #ifdef SISDUALHEAD
@@ -10239,20 +10239,21 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 		   p2_02 = pSiSEnt->p2_02;
 		}
 #endif
-		p2_01 += (val * 2);
-		p2_02 += (val * 2);
+		p2_01 += val; /* val * 2 */
+		p2_02 += val; /* val * 2 */
 		while((p2_01 <= 0) || (p2_02 <= 0)) {
-		      p2_01 += 2;   
+		      p2_01 += 2;
 		      p2_02 += 2;
 		}
 		SISWaitRetraceCRT2(pScrn);
 		outSISIDXREG(SISPART2,0x01,p2_01);
 		outSISIDXREG(SISPART2,0x02,p2_02);
+		xf86DrvMsg(0, X_INFO, "Part2 1,2: %x %x\n", p2_01, p2_02);
 	     }
 	 }
-	 
+
       }
-      
+
    } else if(pSiS->Chipset == PCI_CHIP_SIS6326) {
 
       if(pSiS->SiS6326Flags & SIS6326_TVDETECTED) {

@@ -40,7 +40,7 @@
  * * 4) The name of the author may not be used to endorse or promote products
  * *    derived from this software without specific prior written permission.
  * *
- * * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+ * * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESSED OR
  * * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
  * * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  * * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
@@ -7217,15 +7217,22 @@ SiS_SetTVSpecial(SiS_Private *SiS_Pr, USHORT ModeNo)
 	if(!(SiS_Pr->SiS_VBInfo & SetCRT2ToYPbPr525750)) {
 	   if(SiS_Pr->SiS_TVMode & TVSetPALM) {
 	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x14);
+	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x1b);
 	   } else {
-	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x15);
+	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x14);  /* 15 */
+	      SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x1a);  /* 1b */
 	   }
-	   SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x1b);
 	}
      }
   } else {
-     SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x21);
-     SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x5a);
+     if((ModeNo == 0x38) || (ModeNo == 0x4a) || (ModeNo == 0x64) ||
+        (ModeNo == 0x52) || (ModeNo == 0x58) || (ModeNo == 0x5c)) {
+        SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x1b);  /* 21 */
+        SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x54);  /* 5a */
+     } else {
+        SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x1a);  /* 21 */
+        SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x53);  /* 5a */
+     }
   }
 }
 
@@ -7457,8 +7464,8 @@ SiS_SetGroup2(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,USHORT Refr
 
      if((SiS_Pr->SiS_VBInfo & SetCRT2ToTVNoHiVision) && (SiS_Pr->SiS_VGAHDE >= 1024)) {
         if(SiS_Pr->SiS_TVMode & TVSetPAL) {
-           SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x19);
-           SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x52);
+           SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x1b);  /* 19 */
+           SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x54);  /* 52 */
         } else {
            SiS_SetReg(SiS_Pr->SiS_Part2Port,0x01,0x17);
            SiS_SetReg(SiS_Pr->SiS_Part2Port,0x02,0x1d);
