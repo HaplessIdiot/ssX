@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/18 04:05:44 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.47 2001/12/16 18:19:50 keithp Exp $
+XCOMM $XFree86: xc/include/extensions/Imakefile,v 3.48 2002/03/05 04:25:30 mvojkovi Exp $
 
 #if BuildScreenSaverExt || BuildScreenSaveLibrary
 SCREENSAVERHEADERS = saver.h saverproto.h scrnsaver.h
@@ -60,18 +60,24 @@ EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86MISCHEADERS) $(XF86BIGFONTHEADERS) \
 
 
 
-HEADERS = Xext.h multibuf.h shape.h sync.h XShm.h MITMisc.h \
+HEADERS = Xext.h \
+	xcmiscstr.h \
+	MITMisc.h mitmiscstr.h \
+	bigreqstr.h \
+	extutil.h \
 	XI.h XInput.h XIproto.h \
-	XTest.h xtestext1.h \
+	XTest.h xtestext1.h xteststr.h \
 	XIE.h XIEproto.h XIEprotost.h \
 	XKB.h XKBgeom.h XKBproto.h XKBstr.h XKBsrv.h \
 	Xdbe.h Xdbeproto.h \
 	Xag.h Xagstr.h Xagsrv.h \
+	XShm.h shmstr.h \
 	$(EXTRAHEADERS) \
+	multibuf.h multibufst.h \
 	record.h recordstr.h \
-        lbxbuf.h lbxbufstr.h lbxdeltastr.h lbximage.h \
-        lbxopts.h lbxstr.h lbxzlib.h \
 	security.h securstr.h \
+	shape.h shapestr.h \
+	sync.h syncstr.h \
 	Print.h Printstr.h \
 	Xcup.h Xcupstr.h \
 	dpms.h dpmsstr.h \
