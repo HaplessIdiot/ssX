@@ -25,7 +25,7 @@ int
 int_handler(xf86Int10InfoPtr pInt)
 {
     int num = pInt->num;
-    
+
     switch (num) {
     case 0x10:
     case 0x42:
@@ -122,8 +122,8 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	return 0; /* oops */
 
 #ifdef PRINT_INT
-    ErrorF("int 0x1a: ax=0x%x bx=0x%x cx=0x%x dx=0x%x di=0x%x\n",
-	    X86_EAX,X86_EBX,X86_ECX,X86_EDX,X86_EDI);
+    ErrorF("int 0x1a: ax=0x%x bx=0x%x cx=0x%x dx=0x%x di=0x%x es=0x%x\n",
+	    X86_EAX,X86_EBX,X86_ECX,X86_EDX,X86_EDI,X86_ESI);
 #endif
     switch (X86_EAX & 0xFFFF) {
     case 0xb101:

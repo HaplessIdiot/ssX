@@ -10,6 +10,7 @@
 #include "xf86Resources.h"
 #define NEED_OS_RAC_PROTOS
 #include "xf86_OSlib.h"
+#include "lnx.h"
 
 #ifdef __alpha__
 resRange PciAvoid[] = {_PCI_AVOID_PC_STYLE, _END};
@@ -37,71 +38,75 @@ xf86PciBusAccWindowsFromOS(void)
      * On the Alpha the first 16MB of every 128 Mb segment in
      * sparse address space are an image of the ISA bus range
      */
-    RANGE(range,0,0x07ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x09000000,0x0fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x11000000,0x17ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x19000000,0x1fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x21000000,0x27ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x29000000,0x2fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x31000000,0x37ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x39000000,0x3fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x41000000,0x47ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x49000000,0x4fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x51000000,0x57ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x59000000,0x5fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x61000000,0x67ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x69000000,0x6fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x71000000,0x77ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x79000000,0x7fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x81000000,0x87ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x89000000,0x8fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x91000000,0x97ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0x99000000,0x9fffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xA1000000,0xa7ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xA9000000,0xafffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xB1000000,0xb7ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xB9000000,0xbfffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xC1000000,0xc7ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xC9000000,0xcfffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xD1000000,0xd7ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xD9000000,0xdfffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xE1000000,0xe7ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xE9000000,0xefffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xF1000000,0xf7ffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    RANGE(range,0xF9000000,0xffffffff,ResExcMemBlock);
-    ret = xf86AddResToList(ret, &range, -1);
-    
+    if (_bus_base_sparse()) {
+	RANGE(range,0,0x07ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x09000000,0x0fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x11000000,0x17ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x19000000,0x1fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x21000000,0x27ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x29000000,0x2fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x31000000,0x37ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x39000000,0x3fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x41000000,0x47ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x49000000,0x4fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x51000000,0x57ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x59000000,0x5fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x61000000,0x67ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x69000000,0x6fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x71000000,0x77ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x79000000,0x7fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x81000000,0x87ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x89000000,0x8fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x91000000,0x97ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0x99000000,0x9fffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xA1000000,0xa7ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xA9000000,0xafffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xB1000000,0xb7ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xB9000000,0xbfffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xC1000000,0xc7ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xC9000000,0xcfffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xD1000000,0xd7ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xD9000000,0xdfffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xE1000000,0xe7ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xE9000000,0xefffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xF1000000,0xf7ffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+	RANGE(range,0xF9000000,0xffffffff,ResExcMemBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+    } else {
+	RANGE(range,0,0xffffffff,ResExcIoBlock);
+	ret = xf86AddResToList(ret, &range, -1);
+    }
 
     RANGE(range,0,0xffffffff,ResExcIoBlock);
     ret = xf86AddResToList(ret, &range, -1);

@@ -81,6 +81,7 @@ static void
 x86emu_do_int(int num)
 {
     Int10Current->num = num;
+
     if (!int_handler(Int10Current)) {
 	xf86DrvMsg(Int10Current->scrnIndex,
 		X_ERROR,"\nUnknown vm86_int: %X\n\n",num);

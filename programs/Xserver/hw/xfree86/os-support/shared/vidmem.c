@@ -149,18 +149,7 @@ xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 	if (!vidMemInfo.initialised || !vidMemInfo.mapMem)
 		return NULL;
 
-	/*
-	 * non-32bit vidmem is always assumed to be SPARSE.
-	 * It doesn't affect systems where we don't have to
-	 * map sparsely.
-	 */
-	if ((Flags & VIDMEM_MMIO) && !(Flags & VIDMEM_MMIO_32BIT))
-	    Flags |= VIDMEM_SPARSE;
-
-	if ((Flags & VIDMEM_SPARSE) && vidMemInfo.mapMemSparse)
-		vbase = vidMemInfo.mapMemSparse(ScreenNum, Base, Size);
-	else
-		vbase = vidMemInfo.mapMem(ScreenNum, Base, Size);
+	vbase = vidMemInfo.mapMem(ScreenNum, Base, Size);
 
 	if (!vbase || vbase == (pointer)-1)
 		return NULL;
@@ -214,12 +203,7 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 	if (vp->mtrrEnabled && vidMemInfo.undoWC && mp)
 		vidMemInfo.undoWC(ScreenNum, mp->mtrrInfo);
 
-	if (((mp->flags & VIDMEM_SPARSE) ||
-	     ((mp->flags & VIDMEM_MMIO) && !(mp->flags & VIDMEM_MMIO_32BIT))) &&
-	    vidMemInfo.unmapMemSparse)
-		vidMemInfo.unmapMemSparse(ScreenNum, Base, Size);
-	else
-		vidMemInfo.unmapMem(ScreenNum, Base, Size);
+	vidMemInfo.unmapMem(ScreenNum, Base, Size);
 	removeMapping(vp, mp);
 }
 
