@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.44 2001/11/25 13:42:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.45 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -149,6 +149,8 @@ ATIMach64PreInit
 
     pATIHW->dac_cntl = inr(DAC_CNTL) &
         ~(DAC1_CLK_SEL | DAC_PALETTE_ACCESS_CNTL | DAC_8BIT_EN);
+    if (pATI->Chip >= ATI_CHIP_264CT)
+        pATIHW->dac_cntl &= ~DAC_FEA_CON_EN;
     if (pATI->rgbBits == 8)
         pATIHW->dac_cntl |= DAC_8BIT_EN;
 
@@ -204,6 +206,20 @@ ATIMach64PreInit
                     CTL_MEM_UPPER_APER_ENDIAN);
                 break;
         }
+
+        pATIHW->mpp_config = inr(MPP_CONFIG);
+        pATIHW->mpp_config &=
+            ~(MPP_PRESCALE | MPP_NSTATES | MPP_FORMAT | MPP_WAIT_STATE |
+              MPP_INSERT_WAIT | MPP_TRISTATE_ADDR | MPP_AUTO_INC_EN |
+              MPP_CHKREQ_EN | MPP_BUFFER_SIZE | MPP_BUFFER_MODE | MPP_BUSY);
+        pATIHW->mpp_config |=
+            (MPP_NSTATES_8 | MPP_FORMAT_DA8 | SetBits(4, MPP_WAIT_STATE) |
+             MPP_CHKRDY_EN | MPP_READ_EARLY | MPP_RW_MODE | MPP_EN);
+        pATIHW->mpp_strobe_seq = inr(MPP_STROBE_SEQ);
+        pATIHW->mpp_strobe_seq &= ~(MPP_STB0_SEQ | MPP_STB1_SEQ);
+        pATIHW->mpp_strobe_seq |=
+            SetBits(0x0087U, MPP_STB0_SEQ) | SetBits(0x0083U, MPP_STB1_SEQ);
+        pATIHW->tvo_cntl = 0;
     }
 
     /* Draw engine setup */
@@ -361,7 +377,12 @@ ATIMach64Save
     pATIHW->gen_test_cntl = inr(GEN_TEST_CNTL);
 
     if (pATI->Chip >= ATI_CHIP_264VTB)
+    {
         pATIHW->mem_cntl = inr(MEM_CNTL);
+        pATIHW->mpp_config = inr(MPP_CONFIG);
+        pATIHW->mpp_strobe_seq = inr(MPP_STROBE_SEQ);
+        pATIHW->tvo_cntl = inr(TVO_CNTL);
+    }
 
     /* Save draw engine state */
     if (pATI->OptionAccel && (pATIHW == &pATI->OldHW))
@@ -805,7 +826,12 @@ ATIMach64Set
     outr(BUS_CNTL, pATIHW->bus_cntl);
 
     if (pATI->Chip >= ATI_CHIP_264VTB)
+    {
         outr(MEM_CNTL, pATIHW->mem_cntl);
+        outr(MPP_CONFIG, pATIHW->mpp_config);
+        outr(MPP_STROBE_SEQ, pATIHW->mpp_strobe_seq);
+        outr(TVO_CNTL, pATIHW->tvo_cntl);
+    }
 }
 
 /*

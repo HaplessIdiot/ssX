@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.29 2001/11/25 13:42:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.30 2002/01/16 16:22:28 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,10 +28,10 @@
 #include "aticlock.h"
 #include "atiregs.h"
 
+#include "xaa.h"
 #include "xf86Cursor.h"
 #include "xf86Pci.h"
 #include "xf86Resources.h"
-#include "xaa.h"
 
 #define CacheSlotOf(____Register) ((____Register) / UnitOf(DWORD_SELECT))
 
@@ -91,7 +91,8 @@ typedef struct _ATIHWRec
            cur_clr0, cur_clr1, cur_offset,
            cur_horz_vert_posn, cur_horz_vert_off,
            clock_cntl, bus_cntl, mem_cntl, mem_vga_wp_sel, mem_vga_rp_sel,
-           dac_cntl, gen_test_cntl, config_cntl;
+           dac_cntl, gen_test_cntl, config_cntl, mpp_config, mpp_strobe_seq,
+           tvo_cntl;
 
     /* LCD registers */
     CARD32 lcd_index, config_panel, lcd_gen_ctrl,
@@ -101,7 +102,7 @@ typedef struct _ATIHWRec
     CARD32 shadow_h_total_disp, shadow_h_sync_strt_wid,
            shadow_v_total_disp, shadow_v_sync_strt_wid;
 
-    /* Mach64 MMIO Block 0 registers */
+    /* Mach64 MMIO Block 0 registers and related subfields */
     CARD32 dst_off_pitch;
     CARD16 dst_x, dst_y, dst_height;
     CARD32 dst_bres_err, dst_bres_inc, dst_bres_dec, dst_cntl;
@@ -347,12 +348,12 @@ typedef struct _ATIRec
     struct
     {
         /* Mach64 registers */
-        CARD32 bus_cntl, crtc_gen_cntl, mem_cntl, gen_test_cntl, crtc_int_cntl,
-               lcd_index;
+        CARD32 bus_cntl, crtc_gen_cntl, mem_cntl, dac_cntl, gen_test_cntl,
+               crtc_int_cntl, lcd_index, mpp_config, mpp_strobe_seq, tvo_cntl;
 
 #ifndef AVOID_CPIO
 
-        CARD32 config_cntl, dac_cntl;
+        CARD32 config_cntl;
 
         /* Mach8/Mach32 registers */
         CARD16 clock_sel, misc_options, mem_bndry, mem_cfg;

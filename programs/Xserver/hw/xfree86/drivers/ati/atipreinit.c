@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.56 2002/01/16 16:22:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.57 2002/01/18 16:56:16 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -385,13 +385,13 @@ ATIPreInit
 {
 #   define           BIOS_SIZE       0x00010000U     /* 64kB */
     CARD8            BIOS[BIOS_SIZE];
-#   define           BIOSByte(_n)    (BIOS[_n])
-#   define           BIOSWord(_n)    (BIOS[_n] |                \
-                                      (BIOS[(_n) + 1] << 8))
-#   define           BIOSLong(_n)    (BIOS[_n] |                \
-                                      (BIOS[(_n) + 1] << 8) |   \
-                                      (BIOS[(_n) + 2] << 16) |  \
-                                      (BIOS[(_n) + 3] << 24))
+#   define           BIOSByte(_n)    ((CARD8)(BIOS[_n]))
+#   define           BIOSWord(_n)    ((CARD16)(BIOS[_n] |                \
+                                               (BIOS[(_n) + 1] << 8)))
+#   define           BIOSLong(_n)    ((CARD32)(BIOS[_n] |                \
+                                               (BIOS[(_n) + 1] << 8) |   \
+                                               (BIOS[(_n) + 2] << 16) |  \
+                                               (BIOS[(_n) + 3] << 24)))
     unsigned int     BIOSSize = 0;
     unsigned int     ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
     unsigned int     LCDTable = 0, LCDPanelInfo = 0;
@@ -1317,7 +1317,7 @@ ATIPreInit
 
         {
             Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
-                ";  %s I/O base is 0x%04X",
+                ";  %s I/O base is 0x%04lX",
                 (pATI->CPIODecoding == SPARSE_IO) ? "sparse" : "block",
                 pATI->CPIOBase);
         }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.13 2001/01/06 20:58:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.14 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -72,6 +72,14 @@ ATIDSPPreInit
 
     pATI->XCLKPostDivider -= GetBits(IOValue, PLL_MFB_TIMES_4_2B);
     pATI->XCLKFeedbackDivider = ATIGetMach64PLLReg(PLL_MCLK_FB_DIV);
+
+    xf86DrvMsgVerb(iScreen, X_INFO, 2,
+        "Memory XCLK %.3f MHz;  Refresh rate code %d.\n",
+        ATIDivide(pATI->XCLKFeedbackDivider * pATI->ReferenceNumerator,
+                  pATI->XCLKReferenceDivider * pATI->ClockDescriptor.MaxM *
+                  pATI->ReferenceDenominator, 1 - pATI->XCLKPostDivider, 0) /
+        (double)1000.0,
+        GetBits(pATI->LockData.mem_cntl, CTL_MEM_REFRESH_RATE_B));
 
     /* Compute maximum RAS delay and friends */
     trp = GetBits(pATI->LockData.mem_cntl, CTL_MEM_TRP);

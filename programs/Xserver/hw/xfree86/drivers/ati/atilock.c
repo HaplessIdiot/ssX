@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.11 2001/06/13 02:33:31 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.12 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -143,13 +143,32 @@ ATIUnlock
             outr(MEM_CNTL, pATI->LockData.mem_cntl &
                 ~(CTL_MEM_BNDRY | CTL_MEM_BNDRY_EN));
 
+        /* Disable feature connector on integrated controllers */
+        tmp = pATI->LockData.dac_cntl = inr(DAC_CNTL);
+        if (pATI->Chip >= ATI_CHIP_264CT)
+            tmp &= ~DAC_FEA_CON_EN;
+
 #ifndef AVOID_CPIO
 
         /* Ensure VGA aperture is enabled */
         pATI->LockData.config_cntl = inr(CONFIG_CNTL);
-        pATI->LockData.dac_cntl = inr(DAC_CNTL);
-        outr(DAC_CNTL, pATI->LockData.dac_cntl | DAC_VGA_ADR_EN);
+        tmp |= DAC_VGA_ADR_EN;
         outr(CONFIG_CNTL, pATI->LockData.config_cntl & ~CFG_VGA_DIS);
+
+#endif /* AVOID_CPIO */
+
+        outr(DAC_CNTL, tmp);
+
+        /* Save Multimedia Peripheral Port and TVOut state */
+        if (pATI->Chip >= ATI_CHIP_264VTB)
+        {
+            pATI->LockData.mpp_config = inr(MPP_CONFIG);
+            pATI->LockData.mpp_strobe_seq = inr(MPP_STROBE_SEQ);
+            pATI->LockData.tvo_cntl = inr(TVO_CNTL);
+        }
+
+#ifndef AVOID_CPIO
+
     }
 
     if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
@@ -500,13 +519,19 @@ ATILock
 #ifndef AVOID_CPIO
 
         outr(CONFIG_CNTL, pATI->LockData.config_cntl);
-        outr(DAC_CNTL, pATI->LockData.dac_cntl);
 
 #endif /* AVOID_CPIO */
 
+        outr(DAC_CNTL, pATI->LockData.dac_cntl);
         if (pATI->Chip < ATI_CHIP_264CT)
             outr(MEM_CNTL, pATI->LockData.mem_cntl);
         if ((pATI->LCDPanelID >= 0) && (pATI->Chip != ATI_CHIP_264LT))
             outr(LCD_INDEX, pATI->LockData.lcd_index);
+        if (pATI->Chip >= ATI_CHIP_264VTB)
+        {
+            outr(MPP_CONFIG, pATI->LockData.mpp_config);
+            outr(MPP_STROBE_SEQ, pATI->LockData.mpp_strobe_seq);
+            outr(TVO_CNTL, pATI->LockData.tvo_cntl);
+        }
     }
 }
