@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.13 2001/08/23 13:01:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xvmain.c,v 1.14 2003/07/16 01:38:31 dawes Exp $ */
 
 /*
 ** File: 
@@ -594,6 +594,15 @@ XvdiSendPortNotify(
 
 }
 
+
+#define CHECK_SIZE(dw, dh, sw, sh) {                                  \
+  if(!dw || !dh || !sw || !sh)  return Success;                       \
+  /* The region code will break these if they are too large */        \
+  if((dw > 32767) || (dh > 32767) || (sw > 32767) || (sh > 32767))    \
+        return BadValue;                                              \
+}
+
+
 int
 XvdiPutVideo(   
    ClientPtr client,
@@ -608,8 +617,7 @@ XvdiPutVideo(
   int status;
   DrawablePtr pOldDraw;
 
-  if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return Success;
+  CHECK_SIZE(drw_w, drw_h, vid_w, vid_h);
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -662,8 +670,7 @@ XvdiPutStill(
 ){
   int status;
 
-  if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return Success; 
+  CHECK_SIZE(drw_w, drw_h, vid_w, vid_h);
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -703,8 +710,7 @@ XvdiPutImage(
    Bool sync,
    CARD16 width, CARD16 height
 ){
-  if(!drw_w || !drw_h || !src_w || !src_h)
-	return Success;
+  CHECK_SIZE(drw_w, drw_h, src_w, src_h);
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -742,8 +748,7 @@ XvdiGetVideo(
   int status;
   DrawablePtr pOldDraw;
 
-  if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return Success; 
+  CHECK_SIZE(drw_w, drw_h, vid_w, vid_h);
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
@@ -796,8 +801,7 @@ XvdiGetStill(
 ){
   int status;
 
-  if(!drw_w || !drw_h || !vid_w || !vid_h)
-	return Success;
+  CHECK_SIZE(drw_w, drw_h, vid_w, vid_h);
 
   /* UPDATE TIME VARIABLES FOR USE IN EVENTS */
 
