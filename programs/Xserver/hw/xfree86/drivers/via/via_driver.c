@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.22 2004/01/05 00:34:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.23 2004/01/15 01:43:50 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2349,8 +2349,33 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
     fbPictureInit(pScreen, 0, 0);
 #endif
 
-    if (!pVia->NoAccel)
+    if (!pVia->NoAccel) {
         VIAInitAccel(pScreen);
+    } 
+#ifdef XFREE_44
+    else {
+	/*
+	 * This is needed because xf86InitFBManagerLinear in VIAInitLinear
+	 * needs xf86InitFBManager to have been initialized, and 
+	 * xf86InitFBManager needs at least one line of free memory to
+	 * work. This is only for Xv in Noaccel part, and since Xv is in some
+	 * sense accelerated, it might be a better idea to disable it
+	 * altogether.
+	 */ 
+        BoxRec AvailFBArea;
+
+        AvailFBArea.x1 = 0;
+        AvailFBArea.y1 = 0;
+        AvailFBArea.x2 = pScrn->displayWidth;
+        AvailFBArea.y2 = pScrn->virtualY + 1;
+	/* 
+	 * Update FBFreeStart also for other memory managers, since 
+	 * we steal one line to make xf86InitFBManager work.
+	 */
+	pVia->FBFreeStart = (AvailFBArea.y2 + 1) * pVia->Bpl;
+	xf86InitFBManager(pScreen, &AvailFBArea);	
+    }
+#endif
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);

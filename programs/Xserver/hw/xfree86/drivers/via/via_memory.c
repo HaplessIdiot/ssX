@@ -20,7 +20,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_memory.c,v 1.3 2003/12/30 18:07:56 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -70,7 +70,8 @@ void VIAFreeLinear(VIAMemPtr mem)
 			if(drmCommandWrite(mem->drm_fd, DRM_VIA_FREEMEM,
 					&mem->drm, sizeof(drmViaMem)) < 0)
 				ErrorF("DRM module failed free.\n");
-			drmClose(mem->drm_fd);
+			/* Don't close the global drmFD on each memory free! */
+			/* drmClose(mem->drm_fd); */
 #endif
 			mem->pool = 0;
 			return;
@@ -116,7 +117,9 @@ unsigned long VIAAllocLinear(VIAMemPtr mem, ScrnInfoPtr pScrn, unsigned long siz
 #ifdef XFREE_44
 	{
 		int depth = (pScrn->bitsPerPixel + 7) >> 3;
-		mem->linear = xf86AllocateOffscreenLinear(pScrn->pScreen, size/depth,
+		/* Make sure we don't truncate requested size */
+		mem->linear = xf86AllocateOffscreenLinear(pScrn->pScreen, 
+			( size + depth - 1 ) / depth,
 			32, NULL, NULL, NULL);
 		if(mem->linear == NULL)
 		{

@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 771. Fix some remaining memory allocation related problems with the via
+      driver (Bugzilla #998, Thomas Hellström).
  770. Add a UseRpath build switch to allow the use of -rpath to be enabled
       or disabled from the host.def file.  Implemented for *BSD, Hurd, Linux.
       The default settings remains as before (David Dawes).
@@ -18581,7 +18583,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3113 2004/01/27 01:31:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3114 2004/01/27 01:37:39 dawes Exp $
 
 
 
