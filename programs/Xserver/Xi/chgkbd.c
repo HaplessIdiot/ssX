@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/chgkbd.c,v 3.3 1998/10/04 09:36:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/chgkbd.c,v 3.4 2001/01/17 22:13:24 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -57,7 +57,7 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 #include "XIstubs.h"
-
+#include "globals.h"
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
 
@@ -104,7 +104,6 @@ ProcXChangeKeyboardDevice (client)
     KeyClassPtr 		k;
     xChangeKeyboardDeviceReply	rep;
     changeDeviceNotify		ev;
-    extern Bool Must_have_memory;
 
     REQUEST(xChangeKeyboardDeviceReq);
     REQUEST_SIZE_MATCH(xChangeKeyboardDeviceReq);

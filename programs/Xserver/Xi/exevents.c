@@ -40,7 +40,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.7 1998/12/05 14:39:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.8 2001/01/17 22:13:24 dawes Exp $ */
 
 /********************************************************************
  *
@@ -118,7 +118,7 @@ ProcessOtherEvent (xE, other, count)
     register CARD16 	mask;
     GrabPtr         	grab = other->grab;
     Bool            	deactivateDeviceGrab = FALSE;
-    int             	key, bit, rootX, rootY;
+    int             	key = 0, bit = 0, rootX, rootY;
     ButtonClassPtr	b = other->button;
     KeyClassPtr		k = other->key;
     ValuatorClassPtr	v = other->valuator;
@@ -1023,7 +1023,7 @@ SetModifierMapping(client, dev, len, rlen, numKeyPerModifier, inputMap, k)
     KeyCode *inputMap;
     KeyClassPtr *k;
 {
-    KeyCode *map;
+    KeyCode *map = NULL;
     int inputMapLen;
     register int i;
     

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/Xi/getprop.c,v 3.3 1998/10/04 09:37:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getprop.c,v 3.4 2001/01/17 22:13:25 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -98,7 +98,7 @@ ProcXGetDeviceDontPropagateList (client)
     {
     CARD16				count = 0;
     int					i;
-    XEventClass				*buf, *tbuf;
+    XEventClass				*buf = NULL, *tbuf;
     WindowPtr 				pWin;
     xGetDeviceDontPropagateListReply	rep;
     OtherInputMasks			*others;
