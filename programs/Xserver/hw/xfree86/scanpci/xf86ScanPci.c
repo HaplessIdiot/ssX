@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.12 2002/07/15 20:46:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.13 2003/08/24 17:37:10 dawes Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
@@ -190,7 +190,8 @@ ScanPciFindPciNamesByDevice(unsigned short vendor, unsigned short device,
 			return 2;
 		    }
 		    for (k = 0; pciVendorInfoList[k].VendorName; k++) {
-			if (svendor == pciVendorInfoList[k].VendorID) {
+			if (svendor &&
+			    svendor == pciVendorInfoList[k].VendorID) {
 			    if (svname) {
 				*svname = pciVendorInfoList[k].VendorName;
 			    }
