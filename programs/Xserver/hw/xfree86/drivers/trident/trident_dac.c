@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.30 2000/11/26 10:08:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.31 2000/11/27 23:00:31 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -425,15 +425,15 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3C4[Protection] = 0x92;
 
     pReg->tridentRegs3x4[LinearAddReg] = 0;
-    if (pTrident->Linear)
+    if (pTrident->Linear) {
 	/* This is used for VLB, when we support it again in 4.0 */
-	if (pTrident->Chipset < TGUI9685)
+	if (pTrident->Chipset < PROVIDIA9685)
     	    pReg->tridentRegs3x4[LinearAddReg] |=
 					((pTrident->FbAddress >> 24) << 6)|
-					((pTrident->FbAddress >> 20) & 0x0F)|
+					((pTrident->FbAddress >> 20) & 0x0F);
 	/* Turn on linear mapping */
     	pReg->tridentRegs3x4[LinearAddReg] |= 0x20; 
-    else {
+    } else {
 	pReg->tridentRegs3CE[MiscExtFunc] |= 0x04;
     }
     
