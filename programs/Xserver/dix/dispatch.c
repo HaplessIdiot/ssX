@@ -64,7 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.18 2000/02/12 03:39:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.19 2000/05/05 17:53:46 keithp Exp $ */
 
 #ifdef PANORAMIX_DEBUG
 #include <stdio.h>
@@ -1992,6 +1992,51 @@ ProcPolyFillArc(client)
     return (client->noClientException);
 }
 
+#undef MATCH_CLIENT_ENDIAN
+
+#ifdef MATCH_CLIENT_ENDIAN
+
+int
+ServerOrder (void)
+{
+    int	    whichbyte = 1;
+
+    if (*((char *) &whichbyte))
+	return LSBFirst;
+    return MSBFirst;
+}
+
+#define ClientOrder(client) ((client)->swapped ? !ServerOrder() : ServerOrder())
+
+void
+ReformatImage (char *base, int nbytes, int bpp, int order)
+{
+    switch (bpp) {
+    case 1:	/* yuck */
+	if (BITMAP_BIT_ORDER != order)
+	    BitOrderInvert ((unsigned char *) base, nbytes);
+#if IMAGE_BYTE_ORDER != BITMAP_BIT_ORDER && BITMAP_SCANLINE_UNIT != 8
+	ReformatImage (base, nbytes, BITMAP_SCANLINE_UNIT, order);
+#endif
+	break;
+    case 4:
+	break;  /* yuck */
+    case 8:
+	break;
+    case 16:
+	if (IMAGE_BYTE_ORDER != order)
+	    TwoByteSwap ((unsigned char *) base, nbytes);
+	break;
+    case 32:
+	if (IMAGE_BYTE_ORDER != order)
+	    FourByteSwap ((unsigned char *) base, nbytes);
+	break;
+    }
+}
+#else
+#define ReformatImage(b,n,bpp,o)
+#endif
+
 /* 64-bit server notes: the protocol restricts padding of images to
  * 8-, 16-, or 32-bits. We would like to have 64-bits for the server
  * to use internally. Removes need for internal alignment checking.
@@ -2050,6 +2095,10 @@ ProcPutImage(client)
 	(sizeof(xPutImageReq) >> 2)) != client->req_len)
 	return BadLength;
 
+    ReformatImage (tmpImage, lengthProto * stuff->height, 
+		   stuff->format == ZPixmap ? BitsPerPixel (stuff->depth) : 1,
+		   ClientOrder(client));
+    
     (*pGC->ops->PutImage) (pDraw, pGC, stuff->depth, stuff->dstX, stuff->dstY,
 		  stuff->width, stuff->height, 
 		  stuff->leftPad, stuff->format, tmpImage);
@@ -2218,10 +2267,16 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 	    /* Note that this is NOT a call to WriteSwappedDataToClient,
                as we do NOT byte swap */
 	    if (!im_return)
+	    {
+		ReformatImage (pBuf, (int)(nlines * widthBytesLine),
+			       BitsPerPixel (pDraw->depth),
+			       ClientOrder(client));
+
 /* Don't split me, gcc pukes when you do */
 		(void)WriteToClient(client,
 				    (int)(nlines * widthBytesLine),
 				    pBuf);
+	    }
 	    linesDone += nlines;
         }
     }
@@ -2255,11 +2310,17 @@ DoGetImage(client, format, drawable, x, y, width, height, planemask, im_return)
 		       as we do NOT byte swap */
 		    if (im_return) {
 			pBuf += nlines * widthBytesLine;
-		    } else
+		    } else {
+			ReformatImage (pBuf, 
+				       (int)(nlines * widthBytesLine), 
+				       1,
+				       ClientOrder (client));
+
 /* Don't split me, gcc pukes when you do */
 			(void)WriteToClient(client,
 					(int)(nlines * widthBytesLine),
 					pBuf);
+		    }
 		    linesDone += nlines;
 		}
             }
@@ -3879,6 +3940,10 @@ SendConnSetup(client, reason)
 #endif
     ((xConnSetup *)lConnectionInfo)->ridBase = client->clientAsMask;
     ((xConnSetup *)lConnectionInfo)->ridMask = RESOURCE_ID_MASK;
+#ifdef MATCH_CLIENT_ENDIAN
+    ((xConnSetup *)lConnectionInfo)->imageByteOrder = ClientOrder (client);
+    ((xConnSetup *)lConnectionInfo)->bitmapBitOrder = ClientOrder (client);
+#endif
     /* fill in the "currentInputMask" */
     root = (xWindowRoot *)(lConnectionInfo + connBlockScreenStart);
 #ifdef PANORAMIX
