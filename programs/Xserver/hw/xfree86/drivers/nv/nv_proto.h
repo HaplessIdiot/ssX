@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_proto.h,v 1.6 2001/03/28 01:17:43 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_proto.h,v 1.7 2002/03/15 05:16:40 mvojkovi Exp $ */
 
 #ifndef __NV_PROTO_H__
 #define __NV_PROTO_H__
@@ -21,6 +21,7 @@ void    NVDACLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 
 /* in nv_video.c */
 void NVInitVideo(ScreenPtr);
+void NVResetVideo (ScrnInfoPtr pScrnInfo);
 
 /* in nv_setup.c */
 void    RivaEnterLeave(ScrnInfoPtr pScrn, Bool enter);

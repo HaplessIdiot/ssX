@@ -41,14 +41,11 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.25 2002/08/15 20:05:38 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.26 2002/10/14 18:22:46 mvojkovi Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
 #include "xaarop.h"
-
-#include "nvreg.h"
-#include "nvvga.h"
 
 #include "miline.h"
 

@@ -24,15 +24,9 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.91 2002/10/09 22:24:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.92 2002/10/14 18:22:45 mvojkovi Exp $ */
 
 #include "nv_include.h"
-
-/* Little hack to declare all the base pointers */
-#define extern
-#include "nvreg.h"
-#undef extern
-#include "nvvga.h"
 
 #include "xf86int10.h"
 
@@ -116,14 +110,18 @@ static SymTabRec NVChipsets[] = {
     {NV_CHIP_QUADRO4_200,        "Quadro4 200/400NVS"},
     {NV_CHIP_QUADRO4_550XGL,     "Quadro4 550XGL"},
     {NV_CHIP_QUADRO4_500_GOGL,   "Quadro4 GoGL"},
-    {NV_CHIP_0x0180,             "0x0180"},
-    {NV_CHIP_0x0181,             "0x0181"},
-    {NV_CHIP_0x0182,             "0x0182"},
-    {NV_CHIP_0x0188,             "0x0188"},
-    {NV_CHIP_0x018A,             "0x018A"},
-    {NV_CHIP_0x018B,             "0x018B"},
-    {NV_CHIP_IGEFORCE2,          "GeForce2 Integrated"},
-    {NV_CHIP_0x01F0,             "0x01F0"},
+    {NV_CHIP_0x0177,             "GeForce4 460 Go"},
+    {NV_CHIP_0x017D,             "GeForce4 410 Go"},
+    {NV_CHIP_0x0181,             "GeForce4 MX 440 with AGP8X"},
+    {NV_CHIP_0x0182,             "GeForce4 MX 440SE with AGP8X"},
+    {NV_CHIP_0x0183,             "GeForce4 MX 420 with AGP8X"},
+    {NV_CHIP_0x0186,             "0x0186"},
+    {NV_CHIP_0x0187,             "0x0187"},
+    {NV_CHIP_0x0188,             "Quadro4 580 XGL"},
+    {NV_CHIP_0x018A,             "Quadro4 280 NVS"},
+    {NV_CHIP_0x018B,             "Quadro4 380 XGL"},
+    {NV_CHIP_IGEFORCE2,          "GeForce2 Integrated GPU"},
+    {NV_CHIP_0x01F0,             "GeForce4 MX Integrated GPU"},
     {NV_CHIP_GEFORCE3,           "GeForce3"},
     {NV_CHIP_GEFORCE3_TI_200,    "GeForce3 Ti 200"},
     {NV_CHIP_GEFORCE3_TI_500,    "GeForce3 Ti 500"},
@@ -134,10 +132,19 @@ static SymTabRec NVChipsets[] = {
     {NV_CHIP_QUADRO4_900XGL,     "Quadro4 900 XGL"},
     {NV_CHIP_QUADRO4_750XGL,     "Quadro4 750 XGL"},
     {NV_CHIP_QUADRO4_700XGL,     "Quadro4 700 XGL"},
-    {NV_CHIP_0x0280,             "0x0280"},
-    {NV_CHIP_0x0281,             "0x0281"},
-    {NV_CHIP_0x0288,             "0x0288"},
-    {NV_CHIP_0x0289,             "0x0289"},
+    {NV_CHIP_0x025A,             "Quadro4 600 XGL"},
+    {NV_CHIP_0x0280,             "GeForce4 Ti 4800"},
+    {NV_CHIP_0x0281,             "GeForce4 Ti 4200 with AGP8X"},
+    {NV_CHIP_0x0282,             "GeForce4 Ti 4800 SE"},
+    {NV_CHIP_0x0286,             "GeForce4 4000 Go"},
+    {NV_CHIP_0x0288,             "Quadro4 980 XGL"},
+    {NV_CHIP_0x0289,             "Quadro4 780 XGL"},
+    {NV_CHIP_0x028C,             "Quadro4 700 GoGL"},
+    {NV_CHIP_0x0300,             "0x0300"},
+    {NV_CHIP_0x0301,             "0x0301"},
+    {NV_CHIP_0x0302,             "0x0302"},
+    {NV_CHIP_0x0308,             "0x0308"},
+    {NV_CHIP_0x0309,             "0x0309"},
     {-1,                        NULL }
 };
 
@@ -171,9 +178,13 @@ static PciChipsets NVPciChipsets[] = {
     {NV_CHIP_QUADRO4_200,        NV_CHIP_QUADRO4_200,        RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_550XGL,     NV_CHIP_QUADRO4_550XGL,     RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_500_GOGL,   NV_CHIP_QUADRO4_500_GOGL,   RES_SHARED_VGA},
-    {NV_CHIP_0x0180,             NV_CHIP_0x0180,             RES_SHARED_VGA},
+    {NV_CHIP_0x0177,             NV_CHIP_0x0177,             RES_SHARED_VGA},
+    {NV_CHIP_0x017D,             NV_CHIP_0x017D,             RES_SHARED_VGA},
     {NV_CHIP_0x0181,             NV_CHIP_0x0181,             RES_SHARED_VGA},
     {NV_CHIP_0x0182,             NV_CHIP_0x0182,             RES_SHARED_VGA},
+    {NV_CHIP_0x0183,             NV_CHIP_0x0183,             RES_SHARED_VGA},
+    {NV_CHIP_0x0186,             NV_CHIP_0x0186,             RES_SHARED_VGA},
+    {NV_CHIP_0x0187,             NV_CHIP_0x0187,             RES_SHARED_VGA},
     {NV_CHIP_0x0188,             NV_CHIP_0x0188,             RES_SHARED_VGA},
     {NV_CHIP_0x018A,             NV_CHIP_0x018A,             RES_SHARED_VGA},
     {NV_CHIP_0x018B,             NV_CHIP_0x018B,             RES_SHARED_VGA},
@@ -189,10 +200,19 @@ static PciChipsets NVPciChipsets[] = {
     {NV_CHIP_QUADRO4_900XGL,     NV_CHIP_QUADRO4_900XGL,     RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_750XGL,     NV_CHIP_QUADRO4_750XGL,     RES_SHARED_VGA},
     {NV_CHIP_QUADRO4_700XGL,     NV_CHIP_QUADRO4_700XGL,     RES_SHARED_VGA},
+    {NV_CHIP_0x025A,             NV_CHIP_0x025A,             RES_SHARED_VGA},
     {NV_CHIP_0x0280,             NV_CHIP_0x0280,             RES_SHARED_VGA},
     {NV_CHIP_0x0281,             NV_CHIP_0x0281,             RES_SHARED_VGA},
+    {NV_CHIP_0x0282,             NV_CHIP_0x0282,             RES_SHARED_VGA},
+    {NV_CHIP_0x0286,             NV_CHIP_0x0286,             RES_SHARED_VGA},
     {NV_CHIP_0x0288,             NV_CHIP_0x0288,             RES_SHARED_VGA},
     {NV_CHIP_0x0289,             NV_CHIP_0x0289,             RES_SHARED_VGA},
+    {NV_CHIP_0x028C,             NV_CHIP_0x028C,             RES_SHARED_VGA},
+    {NV_CHIP_0x0300,             NV_CHIP_0x0300,             RES_SHARED_VGA},
+    {NV_CHIP_0x0301,             NV_CHIP_0x0301,             RES_SHARED_VGA},
+    {NV_CHIP_0x0302,             NV_CHIP_0x0302,             RES_SHARED_VGA},
+    {NV_CHIP_0x0308,             NV_CHIP_0x0308,             RES_SHARED_VGA},
+    {NV_CHIP_0x0309,             NV_CHIP_0x0309,             RES_SHARED_VGA},
     { -1,                       -1,                          RES_UNDEFINED  }
 };
 
@@ -599,12 +619,16 @@ static Bool
 NVEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    NVPtr pNv = NVPTR(pScrn);
 
     DEBUG(xf86DrvMsg(scrnIndex, X_INFO, "NVEnterVT\n"));
 
     if (!NVModeInit(pScrn, pScrn->currentMode))
         return FALSE;
     NVAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+
+    if(pNv->overlayAdaptor)
+        NVResetVideo(pScrn);
     return TRUE;
 }
 
@@ -1263,6 +1287,8 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
         case 0x01F0:
             NV10Setup(pScrn);
 	    break;
+	case 0x0300:
+             pNv->NoAccel = TRUE;  /* for now */
 	case 0x0200:
 	case 0x0250:
 	case 0x0280:

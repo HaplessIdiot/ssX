@@ -24,12 +24,9 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.18 2002/08/05 20:47:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.19 2002/10/14 18:22:45 mvojkovi Exp $ */
 
 #include "nv_include.h"
-
-#include "nvreg.h"
-#include "nvvga.h"
 
 /*
  * Override VGA I/O routines.
@@ -217,6 +214,12 @@ NVIsSecond (ScrnInfoPtr pScrn)
        case NV_CHIP_GEFORCE4_420_GO:
        case NV_CHIP_GEFORCE4_420_GO_M32:
        case NV_CHIP_QUADRO4_500_GOGL:
+       case NV_CHIP_0x0177:
+       case NV_CHIP_0x017D:
+       case NV_CHIP_0x0186:
+       case NV_CHIP_0x0187:
+       case NV_CHIP_0x0286:
+       case NV_CHIP_0x028C:
            pNv->SecondCRTC = TRUE;
            break;
        default:
@@ -231,6 +234,7 @@ NVIsSecond (ScrnInfoPtr pScrn)
              pNv->SecondCRTC = FALSE;
        } else 
        if (NVIsConnected(pScrn, 1)) {
+          pNv->DDCBase = 0x36;
           if(pNv->riva.PRAMDAC0[0x0000252C/4] & 0x100)
              pNv->SecondCRTC = TRUE;
           else
@@ -348,6 +352,12 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        case NV_CHIP_GEFORCE4_420_GO_M32:
        case NV_CHIP_QUADRO4_500_GOGL:
        case NV_CHIP_GEFORCE2_GO:
+       case NV_CHIP_0x0177:
+       case NV_CHIP_0x017D:
+       case NV_CHIP_0x0186:
+       case NV_CHIP_0x0187:
+       case NV_CHIP_0x0286:
+       case NV_CHIP_0x028C:
            xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
                       "On a laptop.  Assuming Digital Flat Panel\n");
            pNv->FlatPanel = 1;
@@ -356,6 +366,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
            break;
        }
     }
+
+    pNv->DDCBase = 0x3e;
 
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0110:
@@ -372,6 +384,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     case 0x01F0:
     case 0x0250:
     case 0x0280:
+    case 0x0300:
         NVIsSecond(pScrn);
         break;
     default:
