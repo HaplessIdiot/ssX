@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 2.5 94/01/23 02:36:41 rob Exp $
+XCOMM $XFree86$
 /*
  * Merged X Server Master Makefile
  */
@@ -66,7 +67,7 @@ THREADS_LDFLAGS = ThreadsLoadFlags
         DBM_LIBRARY = DBMLibrary
 #endif
         SYSLIBS = $(MTSERVERLIBS) MathLibrary Krb5Libraries $(THREADS_LIBS) $(DBM_LIBRARY)
-           CBRT = mi/cbrt.o
+           CBRT = mi/libcbrt.a
         STDDIRS = dix os mi $(EXTDIRS) $(MTSERVERDIRS)
 
 XCOMM
