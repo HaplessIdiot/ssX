@@ -1,4 +1,7 @@
 XFree86 4.3.99.15 (xx October 2003)
+ 524. Export strl{cat,cpy} functions to the server modules and provide 
+      an implementation for the systems that don't have them. (Matthieu 
+      Herrb).
  523. Fixes and updates for XKB keyboard maps:
       - Update Serbian layouts (Bugzilla #92, Danilo Segan).
       - Add 'MS Windows like' US International variant for 'us' keymap (Ivan
@@ -18034,7 +18037,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2902 2003/10/25 01:05:56 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2903 2003/10/25 13:25:07 pascal Exp $
 
 
 

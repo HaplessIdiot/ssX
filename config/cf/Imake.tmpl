@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.148tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.149 2003/10/21 17:41:43 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -424,6 +424,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasSnprintf
 #define HasSnprintf		NO	/* assume not */
+#endif
+#ifndef HasStrlcat
+#define HasStrlcat		NO	/* assume not */
 #endif
 #ifndef HasDlopen
 #define HasDlopen		NO	/* assume not */
