@@ -44,6 +44,10 @@
 #define NEWCH701x
 #endif
 
+#if 0
+#define SET_EMI
+#endif
+
 #include "init301.h"
 
 #if 0
@@ -5137,9 +5141,13 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USH
 
               if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {			/* LV */
 
-	         if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
-	            SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
+#ifdef SET_EMI
+	         if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	            if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
+	               SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
+		    }
 		 }
+#endif
 		 
 		 if( (modenum <= 0x13) ||
 		     (!(SiS_IsDualEdge(SiS_Pr,HwDeviceExtension, BaseAddr))) ||
@@ -5741,7 +5749,11 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USH
 	       if((SiS_Pr->SiS_CustomT != CUT_COMPAQ1280) &&
 	          (SiS_Pr->SiS_CustomT != CUT_CLEVO1400)) {
 	          SiS_SetRegAND(SiS_Pr->SiS_Part4Port,0x1f,0xef);  /* 1.10.7u */
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);    /* 1.10.7u */
+#ifdef SET_EMI
+		  if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);    /* 1.10.7u */
+		  }
+#endif
 	       }
 
 	       if(!(IS_SIS740)) {
@@ -5888,42 +5900,58 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USH
 	    if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
 
 	       if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);	  /* All this from 1.10.7u */
+#ifdef SET_EMI
+	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);	  /* All this from 1.10.7u */
+		  }
+#endif
 	          SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x0c);
-	          SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x20);
+#ifdef SET_EMI
+		  if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	             SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x20);
+		  }
+#endif
 	       }
 
 	       if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
 
-		  SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x08);
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x10);
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x4d);
-		  if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0x0f) != 0x02) {
-		     SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x0d);
-	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x70);
-	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x6b);
+#ifdef SET_EMI
+	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+		     SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x08);
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x10);
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x4d);
+		     if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0x0f) != 0x02) {
+		        SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x0d);
+	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x70);
+	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x6b);
+		     }
+		     SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
 		  }
-		  SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+#endif
 
 	       } else if(SiS_Pr->SiS_CustomT != CUT_CLEVO1400) {
 
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x12);
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0xd0);
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x6b);
-	          if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0x0f) == 0x02) {  /* Acer */
-	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x0d);
-	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x70);
-	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x40);
-		     if(((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0xf0) != 0x30)) {  /* Acer */
-		        SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x05);
-	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x60);
-	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x33);  /* 00 */
-		     }
-	          }
-	          SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
-	          if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0x0f) != 0x03) {
-	             SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x40);
-	          }
+#ifdef SET_EMI
+	          if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x12);
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0xd0);
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x6b);
+	             if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0x0f) == 0x02) {  /* Acer */
+	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x0d);
+	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x70);
+	                SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x40);
+		        if(((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0xf0) != 0x30)) {  /* Acer */
+		           SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x31,0x05);
+	                   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x32,0x60);
+	                   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x33,0x33);  /* 00 */
+		        }
+	             }
+	             SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+	             if((SiS_GetReg1(SiS_Pr->SiS_P3d4,0x36) & 0x0f) != 0x03) {
+	                SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x40);
+	             }
+		  }
+#endif
 	       }
 
 	       if((SiS_Pr->SiS_CustomT != CUT_COMPAQ1280) &&
@@ -5941,7 +5969,11 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, USH
 		     SiS_SetPanelDelay(SiS_Pr,ROMAddr, HwDeviceExtension, 1);
 		     SiS_WaitVBRetrace(SiS_Pr,HwDeviceExtension);
 		     SiS_SetPanelDelay(SiS_Pr,ROMAddr, HwDeviceExtension, 3);
-	             SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x40);
+#ifdef SET_EMI
+		     if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	                SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x30,0x40);
+		     }
+#endif
 		     if(!(SiS_WeHaveBacklightCtrl(SiS_Pr,HwDeviceExtension, BaseAddr))) {
 		        SiS_SetRegANDOR(SiS_Pr->SiS_Part4Port,0x26,0xfe,0x01);
 	  	     }
@@ -8406,9 +8438,13 @@ SiS_SetGroup4(SiS_Private *SiS_Pr, USHORT  BaseAddr,UCHAR *ROMAddr,USHORT ModeNo
 	   if(SiS_IsDualLink(SiS_Pr, HwDeviceExtension, BaseAddr)) {
 	      SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x2c);
 	   }
-	   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
-	   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
-	   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+#ifdef SET_EMI
+	   if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	      SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
+	      SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
+	      SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+	   }
+#endif
 	}
    	return;
      }
@@ -8592,9 +8628,13 @@ SiS_SetGroup4(SiS_Private *SiS_Pr, USHORT  BaseAddr,UCHAR *ROMAddr,USHORT ModeNo
 		  SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x27,0x2c);
 	       }
 	    }
-	    SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
-	    SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
-	    SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+#ifdef SET_EMI
+	    if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	       SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
+	       SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
+	       SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+	    }
+#endif
 	 }
 
   }  /* 301B */
@@ -11948,9 +11988,13 @@ SiS_FinalizeLCD(SiS_Private *SiS_Pr, USHORT BaseAddr,UCHAR *ROMAddr,USHORT ModeN
 
   if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD | SetCRT2ToLCDA)) {
      if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
-        SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
-	SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
-	SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+#ifdef SET_EMI
+	if(SiS_Pr->SiS_VBType & VB_SIS302LV) {
+	   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x2a,0x00);
+	   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x30,0x00);
+	   SiS_SetReg1(SiS_Pr->SiS_Part4Port,0x34,0x10);
+	}
+#endif
      } else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) {   /* Maybe all panels? */
         if(SiS_Pr->LVDSHL == -1) {
            /* Maybe ACER only? */
