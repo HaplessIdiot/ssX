@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.10.2.4 1998/06/05 16:23:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.12 1998/07/25 16:57:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -39,6 +39,7 @@ static int xquePipe[2];
 #endif
 
 #ifdef XKB
+#include "inputstr.h"
 #include <X11/extensions/XKB.h>
 #include <X11/extensions/XKBstr.h>
 #include <X11/extensions/XKBsrv.h>
