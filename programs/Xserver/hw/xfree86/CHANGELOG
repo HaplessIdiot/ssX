@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 774. Via driver workaround to handle setting WC for the video memory when
+      initially only part of it has WC set (Bugzilla #1010 Thomas Hellström).
  773. Fix the XAA clipping flags for the via driver, which fixes a line
       drawing problem seen with OpenOffice Calc (Bugzilla #1026,
       Thomas Hellström).
@@ -18587,7 +18589,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3115 2004/01/27 02:25:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3116 2004/01/27 02:38:08 dawes Exp $
 
 
 
