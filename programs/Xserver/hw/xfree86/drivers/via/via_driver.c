@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.23 2004/01/15 01:43:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.24 2004/01/27 02:25:07 dawes Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -2209,6 +2209,24 @@ static Bool VIAMapFB(ScrnInfoPtr pScrn)
                pVia->FrameBufferBase, pVia->videoRambytes);
 
     if (pVia->videoRambytes) {
+
+	/*
+	 * FIXME: This is a hack to get rid of offending wrongly sized
+	 * MTRR regions set up by the VIA BIOS. Should be taken care of
+	 * in the OS support layer.
+	 */
+
+        unsigned char *tmp; 
+        tmp = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+			    pVia->PciTag, pVia->FrameBufferBase,
+			    pVia->videoRambytes);
+        xf86UnMapVidMem(pScrn->scrnIndex, (pointer)tmp,
+                        pVia->videoRambytes);
+
+	/*
+	 * End of hack.
+	 */
+
         pVia->FBBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
                                      pVia->PciTag, pVia->FrameBufferBase,
                                      pVia->videoRambytes);
