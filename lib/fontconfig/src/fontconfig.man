@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.5 2002/08/26 19:57:40 keithp Exp $
+.\" $XFree86: xc/lib/fontconfig/src/fontconfig.man,v 1.7 2002/10/02 07:11:30 keithp Exp $
 .\"
 .\" Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
 .\"
@@ -1453,6 +1453,12 @@ match the available fonts.  It is in xml format.
 
 .B fonts.dtd 
 is a DTD that describes the format of the configuration files.
+
+.B local.conf
+is sourced by the default system-wide fonts.conf file. 
+Note that the normal 'make install' procedure for XFree86 is to
+replace any existing fonts.conf file with the new version.  Place
+any local customizations in local.conf which this file references.
 
 .B ~/.fonts.conf
 is the conventional location for per-user font configuration, although the
