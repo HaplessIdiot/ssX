@@ -1,4 +1,36 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 551. Restore '--assembler-with-cpp' in AsCmd for Linux/mips, fixing the build
+      on that platform (#5499, Guido Guenther).
+ 550. An alternative update for alphabetic four level cz, sk XKB maps.
+      This is compatible with the way MS Windows behaves (#5498, Kamil Toman).
+ 549. Clarify the difference between characters and bytes in xev (#5497,
+      Markus Kuhn).
+ 548. Add an Irish (ie) XKB keyboard map (#5496, Seamus O Ciardhuain).
+ 547. Replace the UTF-8 compose map with one automatically generated from
+      the official Unicode documentation, with the addition of some
+      handwritten rules (#5495, David Monniaux).
+ 546. Document the "nomtrr" option in the XF86Config man page (#5494,
+      Mike Harris).
+ 545. Some fixes for the Icelandic xkb map (#5493, Olafur Osvaldsson).
+ 544. Add French Canadian keyboard description to xfree86.lst (#5492,
+      Mike Harris).
+ 543. Add a new file for descriptions of XkbModel, XkbLayout, XkbVariant
+      and XkbOption names, using an XML format.  Includes a DTD file
+      and perl script to convert from the new format to the old (.lst)
+      format (#5491, Ivan Pascal).
+ 542. Add missing "dvorak" single-group XKB layout (#5490, Ivan Pascal).
+ 541. Change the xkbfile library to allow some names to be grouped into
+      a named list, which allows the rules file to be simplified (#5490,
+      Ivan Pascal).
+ 540. Make the new single-group XKB symbols maps used by default (#5490,
+      Ivan Pascal).
+ 539. Fix a crash that can happen when some apps are run in CJK locales
+      (#5489, Havoc Pennington).
+ 538. Make xdm check the full password string (on Linux) for locked accounts
+      rather than just the first character (#5485, Mike Harris,
+      Nalin Dahyabhai).
+ 537. Fix a few cases where the transport endpoints would be removed
+      even if NOUNLINK is specified in the flags (#5484, J. Kean Johnston).
  536. Attempt to fix bitblt problems when doing offscreen pixmaps in
       i810 (Egbert Eich).
  535. Change Build rule so that x86 assembler code for MESA can be completely
@@ -15600,4 +15632,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2404 2002/11/25 14:04:54 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2405 2002/11/25 22:58:34 alanh Exp $
