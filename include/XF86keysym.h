@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/XF86keysym.h,v 1.6 2000/11/02 02:51:09 dawes Exp $ */
+/* $XFree86: xc/include/XF86keysym.h,v 1.7 2001/03/01 01:23:55 dawes Exp $ */
 
 /*
  * XFree86 vendor specific keysyms.
@@ -57,8 +57,8 @@
 #define XF86XK_Forward		0x1008FF27
 #define XF86XK_Stop		0x1008FF28
 #define XF86XK_Refresh		0x1008FF29
-#define XF86XK_PowerOff		0x1008FF1A
-#define XF86XK_WakeUp		0x1008FF1B
+#define XF86XK_PowerOff		0x1008FF2A
+#define XF86XK_WakeUp		0x1008FF2B
 #define XF86XK_Eject            0x1008FF2C
 #define XF86XK_ScreenSaver      0x1008FF2D
 #define XF86XK_WWW              0x1008FF2E
