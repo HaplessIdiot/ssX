@@ -26,7 +26,7 @@
    OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
    SUCH DAMAGE.
 
-   Major Release ID: X-TrueType Server Version 1.2 [Aoi MATSUBARA Release 2]
+   Major Release ID: X-TrueType Server Version 1.3 [Aoi MATSUBARA Release 3]
 
 Notice===
 
@@ -73,6 +73,7 @@ Notice===
 	a microsoft-symbol encoding table the glyphs will match.  -- srtxg
 
  */
+/* $XFree86$ */
 
 #include "xttversion.h"
 
@@ -180,11 +181,8 @@ CODE_CONV_ISO8859_TO_UCS2(cc_iso8859_6_8_to_ucs2, /* function name */
 			  tblIso8859_6_8ToUcs2, /* table name */
 			  ALTCHR /* alt char code (on UCS2) */
 			  )
-CODE_CONV_ONE_OCTET_TO_UCS2(cc_iso8859_6_16_to_ucs2, /* function name */
-                          tblIso8859_6_16ToUcs2, /* table name */
-                          0x00,0xff, /* begin and end of table */
-                          ALTCHR /* alt char code (on UCS2) */
-                          )
+CODE_CONV_ONE_OCTET_TO_UCS2_ALL(cc_iso8859_6_16_to_ucs2, /* function name */
+                                tblIso8859_6_16ToUcs2) /* table name */
 CODE_CONV_ISO8859_TO_UCS2(cc_asmo449_to_ucs2, /* function name */
                           tblAsmo449ToUcs2, /* table name */
                           ALTCHR /* alt char code (on UCS2) */

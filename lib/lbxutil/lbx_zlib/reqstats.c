@@ -23,6 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifdef LBXREQSTATS
 
@@ -487,5 +488,9 @@ do_decompress_with_stats (struct compress_private *priv)
     priv->cp_inputbuf = priv->stream.next_in;
     priv->cp_outputbuf = priv->stream.next_out;
 }
+
+#else
+
+static char ANSICCanBeSoBloatingAtTimes = 1;
 
 #endif /* LBXREQSTATS */
