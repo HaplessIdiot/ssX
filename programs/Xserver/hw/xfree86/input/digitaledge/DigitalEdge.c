@@ -30,7 +30,7 @@
  * Probably buggy as hell, no idea what the initialisation strings are,
  * no idea how to ack it. If the tablet stops responding power cycle it.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.4 2001/05/15 18:22:22 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/digitaledge/DigitalEdge.c,v 1.5 2001/10/28 03:33:57 tsi Exp $ */
 
 #include "xf86Version.h"
 
@@ -63,8 +63,6 @@
 #include "xf86Module.h"
 #endif
 
-#undef sleep
-#define sleep(t) xf86WaitForInput(-1, 1000 * (t))
 #define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
 #define tcflush(fd, n) xf86FlushInput((fd))
 #undef read
@@ -707,6 +705,7 @@ static void xf86SumControlProc(DeviceIntPtr device, PtrCtrl * ctrl)
     DBG(2, ErrorF("xf86SumControlProc\n"));
 }
 
+#if 0
 /*
 ** xf86SumWriteAndRead
 ** Write data, and get the response.
@@ -765,6 +764,7 @@ static char *xf86SumWriteAndRead(int fd, char *data, char *buffer, int len,
     buffer[numread] = 0;
     return buffer;
 }
+#endif
 
 /*
 ** xf86SumOpen
@@ -1151,7 +1151,7 @@ static int xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 ** xf86SumAllocate
 ** Allocates the device structures for the DigitalEdge.
 */
-static LocalDevicePtr xf86SumAllocate()
+static LocalDevicePtr xf86SumAllocate(void)
 {
 #ifdef XFREE86_V4
     LocalDevicePtr	local = xf86AllocateInput(dedgeDrv, 0);
