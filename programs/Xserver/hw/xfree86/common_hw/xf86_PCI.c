@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.18 1997/05/17 13:11:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_PCI.c,v 3.19 1997/05/18 12:12:09 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -550,7 +550,9 @@ pcibusSetup()
 	if (xf86Verbose > 2) {
 	    ErrorF("\tValue indicates possibly config type 1\n");
 	    ErrorF("\tWriting 32-bit value 0x%08x to MODE1_ADDR_REG\n", PCI_EN);
+#if 0
 	    ErrorF("\tWriting 8-bit value 0x00 to MODE1_ADDR_REG + 3\n");
+#endif
 	}
 #endif
 
@@ -558,7 +560,14 @@ pcibusSetup()
 	pciMaxDevice = PCI_CONFIG1_MAXDEV;
 
 	outl(PCI_MODE1_ADDRESS_REG, PCI_EN);
+
+#if 0
+	/*
+	 * This seems to cause some Neptune-based PCI machines to switch
+	 * from config type 1 to config type 2
+	 */
 	outb(PCI_MODE1_ADDRESS_REG + 3, 0);
+#endif
 	mode1Res1 = inl(PCI_MODE1_ADDRESS_REG);
 
 #ifdef DEBUGPCI

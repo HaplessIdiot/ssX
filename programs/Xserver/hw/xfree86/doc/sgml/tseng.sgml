@@ -329,7 +329,7 @@ First a WARNING: defining a bad MemBase may cause serious injury or death
 (to your operating system, of course). Especially defining the MemBase to be
 inside the range of system memory is a ticket to hell.
 
-Rule &num;: first, let the server find a memory base by itself, without
+Rule &num;1: first, let the server find a memory base by itself, without
 specifying it. Make sure you "sync" all files to disk and close all critical
 applications. Make sure nothing bad will happen to your filesystems if you
 have to jump for the power switch soon.
@@ -758,7 +758,7 @@ keep an eye on forthcoming beta releases at <it>www.xfree86.org</it>.
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.22 1997/05/17 12:02:33 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.23 1997/05/18 12:12:11 dawes Exp $ 
 
 
 

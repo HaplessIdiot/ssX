@@ -1,4 +1,7 @@
 XFree86 3.9c (xx May 1997)
+ 803. Fix a DGA addressing problem in the S3 server (#457, Mark Vojkovich).
+ 802. Remove the part of the PCI config-type detection that seems to switch
+      some Neptune-based machines from type 1 to type 2.
  801. xtest update for OpenBSD (#455, Matthieu Herrb).
  800. Only show Xinput initialisation messages once (#454, Matthieu Herrb).
  799. Add support for the IntelliMouse protocol to xf86config and XF86Setup.
@@ -4582,4 +4585,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.471 1997/05/18 12:12:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.472 1997/05/18 13:58:10 dawes Exp $

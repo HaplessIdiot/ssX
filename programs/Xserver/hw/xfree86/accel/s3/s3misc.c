@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.67 1997/01/19 12:49:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.68 1997/01/20 12:35:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -938,6 +938,7 @@ s3EnterLeaveVT(enter, screen_idx)
       if (s3InfoRec.directMode & XF86DGADirectGraphics) {
         /* make sure we are in linear mode */
 	s3EnableLinear();
+	s3Unlock();
       }
 #endif
 #ifdef PC98

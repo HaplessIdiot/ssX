@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.39 1997/03/27 08:31:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.40 1997/04/10 11:34:46 hohndel Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -711,9 +711,9 @@ struct pci_vendor_device {
         { 0x8086, "Intel", {
                             { 0x0482, "82375EB pci-eisa bridge", NF },
                             { 0x0483, "82424ZX cache dram controller", NF },
-                            { 0x0484, "82378IB pci-isa bridge", NF },
+                            { 0x0484, "82378IB/ZB pci-isa bridge", NF },
                             { 0x0486, "82430ZX Aries", NF },
-                            { 0x04A3, "82434LX pci cache mem controller", NF },
+                            { 0x04A3, "82434LX/NX pci cache mem controller", NF },
                             { 0x1230, "82371 bus-master IDE controller", NF },
                             { 0x1223, "SAA7116", NF },
                             { 0x122D, "82437 Triton", NF },
