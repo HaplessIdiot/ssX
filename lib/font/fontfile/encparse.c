@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.3 1999/01/31 14:34:54 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.4 1999/02/07 06:18:25 dawes Exp $ */
 
 /* Parser for encoding files */
 
@@ -645,7 +645,8 @@ loadEncodingFile(const char *charset, const char *fontFileName)
   struct font_encoding *encoding;
   char dir[MAXFONTNAMELEN], buf[MAXFONTNAMELEN],
     file_name[MAXFONTNAMELEN], encoding_name[MAXFONTNAMELEN],
-    *p, *q, *lastslash;
+    *q, *lastslash;
+  const char *p;
   int count, n;
 
   for(p=fontFileName, q=dir, lastslash=NULL; *p; p++, q++) {
