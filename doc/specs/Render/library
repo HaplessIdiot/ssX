@@ -203,8 +203,10 @@ numbers used by the extension (note that Render currently uses no events).
 
 XRenderQueryVersion returns zero if the Render extension is not present or
 some error occurred while attempting to discover the current Render version
-number.  Otherwise, XRenderQueryVersion returns 1 and stores the current
-Render version number in *major_versionp and *minor_versionp.
+number.  Otherwise, XRenderQueryVersion returns 1 and stores the version
+number returned by the server in *major_versionp and *minor_versionp, which
+will be less than or equal to the library version numbers RENDER_MAJOR and
+RENDER_MINOR.
 
 	Status XRenderQueryFormats (Display *dpy)
 
@@ -417,3 +419,182 @@ according to the depth of the PictFormat used in creating glyphset.
 Free some glyphs from glyphset.
 
 6 Glyph Drawing Routines
+
+Xrender provides two parallel APIs for glyph rendering, a simple API which
+accepts a single string similar to XDrawString and a more complex API which
+accepts an array of XGlyphElt{8,16,32} structures, each of which includes a
+glyphset, string and x/y offsets which parallel the XDrawText API.  Xrender
+also provides glyphs in three sizes, 8 16 and 32 bits.  The simple API is
+just a convenience for the user as both forms generate the same underlying
+Render protocol.
+
+6.1 Simple single-string glyph drawing functions
+
+These are identical except for the format of the glyph ids.
+
+	void
+	XRenderCompositeString8 (Display		    *dpy,
+				 int			    op,
+				 Picture		    src,
+				 Picture		    dst,
+				 _Xconst XRenderPictFormat  *maskFormat,
+				 GlyphSet		    glyphset,
+				 int			    xSrc,
+				 int			    ySrc,
+				 int			    xDst,
+				 int			    yDst,
+				 _Xconst char		    *string,
+				 int			    nchar)
+	
+	void
+	XRenderCompositeString16 (Display		    *dpy,
+				  int			    op,
+				  Picture		    src,
+				  Picture		    dst,
+				  _Xconst XRenderPictFormat *maskFormat,
+				  GlyphSet		    glyphset,
+				  int			    xSrc,
+				  int			    ySrc,
+				  int			    xDst,
+				  int			    yDst,
+				  _Xconst unsigned short    *string,
+				  int			    nchar)
+	
+	void
+	XRenderCompositeString32 (Display		    *dpy,
+				  int			    op,
+				  Picture		    src,
+				  Picture		    dst,
+				  _Xconst XRenderPictFormat *maskFormat,
+				  GlyphSet		    glyphset,
+				  int			    xSrc,
+				  int			    ySrc,
+				  int			    xDst,
+				  int			    yDst,
+				  _Xconst unsigned int	    *string,
+				  int			    nchar)
+	
+6.2 Complete glyph drawing functions 
+
+As with the simple functions above, these differ only in the type of the
+underlying glyph id storage type.
+
+	void
+	XRenderCompositeText8 (Display			    *dpy,
+			       int			    op,
+			       Picture			    src,
+			       Picture			    dst,
+			       _Xconst XRenderPictFormat    *maskFormat,
+			       int			    xSrc,
+			       int			    ySrc,
+			       int			    xDst,
+			       int			    yDst,
+			       _Xconst XGlyphElt8	    *elts,
+			       int			    nelt)
+	
+	void
+	XRenderCompositeText16 (Display			    *dpy,
+				int			    op,
+				Picture			    src,
+				Picture			    dst,
+				_Xconst XRenderPictFormat   *maskFormat,
+				int			    xSrc,
+				int			    ySrc,
+				int			    xDst,
+				int			    yDst,
+				_Xconst XGlyphElt16	    *elts,
+				int			    nelt)
+	
+	void
+	XRenderCompositeText32 (Display			    *dpy,
+				int			    op,
+				Picture			    src,
+				Picture			    dst,
+				_Xconst XRenderPictFormat   *maskFormat,
+				int			    xSrc,
+				int			    ySrc,
+				int			    xDst,
+				int			    yDst,
+				_Xconst XGlyphElt32	    *elts,
+				int			    nelt)
+	
+7 Basic Graphics Functions
+
+These are the simplest graphics functions upon which the other functions are
+conceptually built.
+
+7.1 Composite
+
+XRenderComposite exposes the RenderComposite protocol request directly.
+
+	void
+	XRenderComposite (Display   *dpy,
+			  int	    op,
+			  Picture   src,
+			  Picture   mask,
+			  Picture   dst,
+			  int	    src_x,
+			  int	    src_y,
+			  int	    mask_x,
+			  int	    mask_y,
+			  int	    dst_x,
+			  int	    dst_y,
+			  unsigned int	width,
+			  unsigned int	height)
+	
+
+7.2 Rectangles
+
+These functions composite rectangles of the specified color, they differ
+only in that XRenderFillRectangles draws more than one at a time.
+
+	void
+	XRenderFillRectangle (Display		    *dpy,
+			      int		    op,
+			      Picture		    dst,
+			      _Xconst XRenderColor  *color,
+			      int		    x,
+			      int		    y,
+			      unsigned int	    width,
+			      unsigned int	    height)
+	
+	void
+	XRenderFillRectangles (Display		    *dpy,
+			       int		    op,
+			       Picture		    dst,
+			       _Xconst XRenderColor *color,
+			       _Xconst XRectangle   *rectangles,
+			       int		    n_rects)
+	
+8 Geometric Objects
+
+All geometric drawing with Render is performed with sequences of trapezoids
+or triangles; the client is responsible for breaking more complex figures
+into these simple shapes.
+
+8.1 Trapezoids
+
+	void
+	XRenderCompositeTrapezoids (Display		*dpy,
+				    int			op,
+				    Picture		src,
+				    Picture		dst,
+				    _Xconst XRenderPictFormat	*maskFormat,
+				    int			xSrc,
+				    int			ySrc,
+				    _Xconst XTrapezoid	*traps,
+				    int			ntrap)
+
+XRenderCompositeTrapezoids builds RenderTrapezoids requests to composite the
+specified list of trapezoids to dst.  XRenderCompositeTrapezoids will split
+the list of trapezoids to build requests no larger than the maximum request
+size supported by the server.  This can create rendering artifacts as the
+precompositing done by RenderTrapezoids when a maskFormat is specified
+cannot span multiple requests.
+
+8.2 Triangles
+
+Render provides three different ways of encoding triangles on the wire,
+Xrender exposes those with three separate triangle drawing routines.  As
+with trapezoids above, Xrender will split the arguments to fit requests into
+the servers limits, but this may cause rendering artifacts.
