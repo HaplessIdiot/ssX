@@ -30,7 +30,7 @@
  *     DIX DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.7 1999/11/11 03:38:15 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/dbe.c,v 3.8 2001/01/17 22:36:41 dawes Exp $ */
 
 
 /* INCLUDES */
@@ -962,7 +962,7 @@ ProcDbeGetVisualInfo(client)
 
     rep.type           = X_Reply;
     rep.sequenceNumber = client->sequence;
-    rep.length         = length;
+    rep.length         = length >> 2;
     rep.m              = count;
 
     if (client->swapped)
