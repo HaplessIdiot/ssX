@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.71 2000/06/25 20:17:28 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.72 2000/08/01 20:28:37 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -273,12 +273,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.71 2000/06/25 20:17:28 dawes Exp $
 #endif
 #ifndef BuildXvLibrary
 #define BuildXvLibrary		BuildXvExt
-#endif
-#ifndef BuildXantiExt
-#define BuildXantiExt		NO
-#endif
-#ifndef BuildXantiLibrary
-#define BuildXantiLibrary	BuildXantiExt
 #endif
 #ifndef BuildGlxExt
 #define BuildGlxExt		NO
@@ -669,14 +663,6 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #endif
 
-#ifndef XantiExtensionDefines
-#if BuildXantiExt
-#define XantiExtensionDefines -DXANTI
-#else
-#define XantiExtensionDefines /**/
-#endif
-#endif
-
 #ifndef RECORDDefines
 #if BuildRECORD
 #define RECORDDefines -DXRECORD
@@ -753,7 +739,7 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 	XCMiscDefines RECORDDefines \
 	PexDefines ShmDefines XieDefines BigReqDefines VidModeExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
-	ScreenSaverExtensionDefines XvExtensionDefines XantiExtensionDefines \
+	ScreenSaverExtensionDefines XvExtensionDefines \
 	GlxDefines FontCacheExtensionDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
@@ -1422,21 +1408,6 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
-#if BuildXantiLibrary
-#ifndef SharedLibXanti
-#define SharedLibXanti		NO
-#endif
-#ifndef NormalLibXanti
-#define NormalLibXanti		YES
-#endif
-#ifndef DebugLibXanti
-#define DebugLibXanti		NO
-#endif
-#ifndef ProfileLibXanti
-#define ProfileLibXanti		NO
-#endif
-#endif
-
 #if BuildGLXLibrary
 #ifndef SharedLibGlx
 #define SharedLibGlx		HasSharedLibraries
@@ -1626,18 +1597,6 @@ ProjectUnsharedLibReferences(PSRES,psres,$(PSRESLIBSRC),XBuildLibDir)
 #endif
 #endif
 
-#if BuildXantiLibrary
-    XANTILIBSRC = $(LIBSRC)/Xanti
-#if SharedLibXanti
-#ifndef SharedXantiRev
-#define SharedXantiRev 1.0
-#endif
-SharedLibReferences(XANTI,Xanti,$(XANTILIBSRC),SOXANTIREV,SharedXantiRev)
-#else
-ProjectUnsharedLibReferences(XANTI,Xanti,$(XANTILIBSRC),XBuildLibDir)
-#endif
-#endif
-
 #if BuildGLXLibrary
     GLXLIBSRC = $(LIBSRC)/GL
 #if SharedLibGlx
@@ -1649,8 +1608,6 @@ SharedLibReferences(GLX,GL,$(GLXLIBSRC),SOGLREV,SharedGlxRev)
 ProjectUnsharedLibReferences(GLX,GL,$(GLXLIBSRC),XBuildLibDir)
 #endif
 #endif
-
-
 
 #if BuildFontCacheLib
 # ifndef SharedLibXfontcache
