@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_KbdBSD.c,v 1.1 94/03/28 21:23:59 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdBSD.c,v 3.3 1994/12/11 10:54:43 dawes Exp $ */
+/* $XConsortium: xf86KbdBSD.c,v 1.1 95/01/26 15:26:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdBSD.c,v 3.4 1995/01/10 10:23:50 dawes Exp $ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

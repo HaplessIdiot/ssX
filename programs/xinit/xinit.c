@@ -1,5 +1,5 @@
-/* $XConsortium: xinit.c,v 11.58 94/04/17 20:24:30 rws Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.3 1994/11/26 12:49:56 dawes Exp $ */
+/* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.4 1994/12/17 10:10:29 dawes Exp $ */
 
 /*
 
@@ -38,7 +38,6 @@ in this Software without prior written authorization from the X Consortium.
 #include <sys/wait.h>
 #endif
 #include <errno.h>
-extern int sys_nerr;
 #include <setjmp.h>
 
 #ifndef X_NOT_STDC_ENV
@@ -76,22 +75,16 @@ char **newenviron = NULL;
 
 char *bindir = BINDIR;
 char *server_names[] = {
-#ifdef vax				/* Digital */
-    "Xqvss       Digital monochrome display on Microvax or VAXstation",
-    "Xqdss       Digital color display on Microvax of VAXstation",
-#endif
 #if defined(ultrix) && defined(mips)
-    "Xmfbpmax    Digital monochrome display on DECstation 3100",
-    "Xcfbpmax    Digital color display on DECstation 3100",
+    "Xdec        Digital color display on DECstation",
 #endif
 #ifdef sun				/* Sun */
-    "Xsun        Sun monochrome and color displays on Sun 2, 3, or 4 series",
+    "Xsun        Sun BW2, CG2, CG3, CG4, or CG6 on Sun 2, 3, 4, or 386i",
+    "Xsunmono    Sun BW2 on Sun 2, 3, 4, or 386i ",
+    "Xsun24      Sun BW2, CG2, CG3, CG4, CG6, or CG8 on Sun 4",
 #endif
 #ifdef hpux				/* HP */
     "Xhp         HP monochrome and colors displays on 9000/300 series",
-#endif
-#ifdef apollo				/* Apollo */
-    "Xapollo     Apollo monochrome and color displays",
 #endif
 #ifdef ibm				/* IBM */
     "Xibm        IBM AED, APA, 8514a, megapel, VGA displays on PC/RT",
@@ -99,21 +92,18 @@ char *server_names[] = {
 #ifdef macII				/* MacII */
     "XmacII      Apple monochrome display on Macintosh II",
 #endif
-#ifdef M4310				/* Tektronix Pegasus */
-    "Xpeg        Tektronix Pegasus display on 431x series",
-#endif
 #ifdef XFREE86
-    "XF86_SVGA   SVGA colour display on i386 PC",
+    "XF86_SVGA   SVGA color display on i386 PC",
     "XF86_Mono   monochrome display on i386 PC",
-    "XF86_VGA16  16 colour VGA display on i386 PC",
-    "XF86_S3     S3 colour display on i386 PC",  
-    "XF86_8514   IBM 8514/A colour display on i386 PC",
-    "XF86_Mach8  ATI Mach8 colour display on i386 PC",
-    "XF86_Mach32 ATI Mach32 colour display on i386 PC",
-    "XF86_Mach64 ATI Mach64 colour display on i386 PC",
-    "XF86_P9000  Weitek P9000 colour display on i386 PC",
-    "XF86_AGX    IIT AGX colour display on i386 PC",
-    "XF86_W32    Tseng ET4000/W32 colour display on i386 PC",
+    "XF86_VGA16  16 color VGA display on i386 PC",
+    "XF86_S3     S3 color display on i386 PC",
+    "XF86_8514   IBM 8514/A color display on i386 PC",
+    "XF86_Mach8  ATI Mach8 color display on i386 PC",
+    "XF86_Mach32 ATI Mach32 color display on i386 PC",
+    "XF86_Mach64 ATI Mach64 color display on i386 PC",
+    "XF86_P9000  Weitek P9000 color display on i386 PC",
+    "XF86_AGX    IIT AGX color display on i386 PC",
+    "XF86_W32    Tseng ET4000/W32 color display on i386 PC",
 #endif
     NULL};
 

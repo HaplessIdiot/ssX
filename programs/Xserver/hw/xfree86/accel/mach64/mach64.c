@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.6 1995/01/21 07:15:01 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -52,6 +53,9 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "mach64.h"
+#ifdef PIXPRIV
+#include "mach64im.h"
+#endif
 
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
@@ -68,12 +72,23 @@ extern void SetTimeSinceLastInputEvent();
 unsigned int mach64MemorySize = 0;
 extern char *xf86VisualNames[];
 
+#ifdef PIXPRIV
+int mach64PixmapIndex;
+#endif
+
+static Bool mach64ValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+); 
+
 ScrnInfoRec mach64InfoRec = {
     FALSE,		/* Bool configured */
     -1,			/* int tmpIndex */
     -1,			/* int scrnIndex */
     mach64Probe,      	/* Bool (* Probe)() */
     mach64Initialize,	/* Bool (* Init)() */
+    mach64ValidMode,	/* Bool (* ValidMode)() */
     mach64EnterLeaveVT, /* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -116,6 +131,9 @@ ScrnInfoRec mach64InfoRec = {
     0,                  /* int COPbase */
     0,                  /* int POSbase */
     0,                  /* int instance */
+    0,                  /* int s3Madjust */
+    0,                  /* int s3Nadjust */
+    0,                  /* int s3MClk */
 };
 
 int mach64alu[16] = {
@@ -194,13 +212,21 @@ typedef struct ATIInformationBlock {
    int  Clocks[MACH64_NUM_CLOCKS];
    mach64FreqRec Freq_Table[MACH64_NUM_FREQS];
    mach64FreqRec Freq_Table2[MACH64_NUM_FREQS];
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+   int  MinFreq;
+   int  MaxFreq;
+   int  RefFreq;
+   int  RefDivider;
+   int  NAdj;
+   int  CXClk;
+#endif
 } ATIInformationBlock;
 
 int	mach64Ramdac;
 char	*mach64ramdac_names[] = {
 	"ATI-68830",
 	"IMS-G173/SC1148[368]",
-	"ATI68875/TLC34075/Bt885",
+	"ATI-68875/TLC34075/Bt885",
 	"Bt47[68]/INMOS17[68]",
 	"AT&T20C49[01]/Bt48[12]/IMS-G174/MU9C{1880,4910}/SC1502[56]",
 	"ATI-68860",
@@ -215,6 +241,14 @@ int	mach64ClockType;
 int	mach64Clocks[MACH64_NUM_CLOCKS];
 mach64FreqRec mach64FreqTable[MACH64_NUM_FREQS];
 mach64FreqRec mach64FreqTable2[MACH64_NUM_FREQS];
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+int	mach64MinFreq;
+int	mach64MaxFreq;
+int	mach64RefFreq;
+int	mach64RefDivider;
+int	mach64NAdj;
+int	mach64CXClk;
+#endif
 
 static ATIInformationBlock *GetATIInformationBlock()
 {
@@ -305,6 +339,15 @@ static ATIInformationBlock *GetATIInformationBlock()
    Freq_Table_Ptr = sbios_data[(ROM_Table_Offset >> 1) + 8];
    info.Clock_Type = bios_data[Freq_Table_Ptr];
 
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+   info.MinFreq = sbios_data[(Freq_Table_Ptr >> 1) + 1];
+   info.MaxFreq = sbios_data[(Freq_Table_Ptr >> 1) + 2];
+   info.RefFreq = sbios_data[(Freq_Table_Ptr >> 1) + 4];
+   info.RefDivider = sbios_data[(Freq_Table_Ptr >> 1) + 5];
+   info.NAdj = sbios_data[(Freq_Table_Ptr >> 1) + 6];
+   info.CXClk = bios_data[Freq_Table_Ptr + 6];
+#endif
+
    CDepth_Table_Ptr = sbios_data[(Freq_Table_Ptr >> 1) - 3];
    Freq_Table_Ptr = sbios_data[(Freq_Table_Ptr >> 1) - 1];
 
@@ -373,6 +416,12 @@ mach64Probe()
 	xf86weight.green == 0 ||
 	xf86weight.blue == 0) {
         xf86weight = mach64InfoRec.weight;
+    }
+
+    if (info->DAC_Type != DAC_ATI68860_ATI68880 && xf86bpp != 8) {
+	ErrorF("mach64Probe: Invalid bpp: %d\n", xf86bpp);
+	xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	return(FALSE);
     }
 
     switch (xf86bpp) {
@@ -474,6 +523,14 @@ mach64Probe()
     mach64MemType = info->Mem_Type;
     mach64Ramdac = info->DAC_Type;
     mach64RamdacSubType = info->DAC_SubType;
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+    mach64MinFreq = info->MinFreq;
+    mach64MaxFreq = info->MaxFreq;
+    mach64RefFreq = info->RefFreq;
+    mach64RefDivider = info->RefDivider;
+    mach64NAdj = info->NAdj;
+    mach64CXClk = info->CXClk;
+#endif
 
     mach64ClockType = info->Clock_Type;
     for (i = 0; i < MACH64_NUM_CLOCKS; i++)
@@ -585,6 +642,10 @@ mach64Probe()
 		    if(pEnd == (DisplayModePtr) NULL)
                         pEnd = pMode;
 		    pMode = pMode->next;
+		    mach64InfoRec.virtualX = max(mach64InfoRec.virtualX,
+						 pMode->HDisplay);
+		    mach64InfoRec.virtualY = max(mach64InfoRec.virtualY,
+						 pMode->VDisplay);
 		}
           }
     } while (pMode != pEnd);
@@ -712,6 +773,7 @@ mach64Probe()
     mach64DAC8Bit = (OFLG_ISSET(OPTION_DAC_8_BIT, &mach64InfoRec.options)
 			&& (info->DAC_Type == DAC_ATI68860_ATI68880)
 			&& (mach64InfoRec.bitsPerPixel == 8))
+		    || (mach64InfoRec.bitsPerPixel == 16)
 		    || (mach64InfoRec.bitsPerPixel == 32);
 
     if (xf86Verbose) {
@@ -825,6 +887,13 @@ mach64Initialize (scr_index, pScreen, argc, argv)
         xf86PointerScreenFuncs.WarpCursor = mach64WarpCursor;
         (void)mach64CursorInit(0, pScreen);
     }
+
+#ifdef PIXPRIV
+    mach64PixmapIndex = AllocatePixmapPrivateIndex();
+    if (!AllocatePixmapPrivate(pScreen, mach64PixmapIndex,
+			       sizeof(mach64PixPrivRec)))
+	return FALSE;
+#endif
 
     return (cfbCreateDefColormap(pScreen));
 }
@@ -1044,28 +1113,26 @@ mach64SaveScreen (pScreen, on)
      ScreenPtr     pScreen;
      Bool          on;
 {
-     int	   ext_ge_config;
-
     if (on)
 	SetTimeSinceLastInputEvent();
 
     if (xf86VTSema) {
 	if (on) {
-	    mach64RestoreColor0(pScreen);
-
-	    outb(ioDAC_REGS+2, 0xff);
 	    if (mach64HWCursorSave != -1) {
+		mach64SetRamdac(mach64CRTCRegs.color_depth >> 8, TRUE);
 		regwb(GEN_TEST_CNTL, mach64HWCursorSave);
 		mach64HWCursorSave = -1;
 	    }
+	    mach64RestoreColor0(pScreen);
+	    outb(ioDAC_REGS+2, 0xff);
 	} else {
 	    outb(ioDAC_REGS, 0);
 	    outb(ioDAC_REGS+1, 0);
 	    outb(ioDAC_REGS+1, 0);
 	    outb(ioDAC_REGS+1, 0);
-
 	    outb(ioDAC_REGS+2, 0x00);
 
+	    mach64SetRamdac(CRTC_PIX_WIDTH_8BPP >> 8, TRUE);
 	    mach64HWCursorSave = regrb(GEN_TEST_CNTL);
 	    regwb(GEN_TEST_CNTL, mach64HWCursorSave & ~HWCURSOR_ENABLE);
 	}
@@ -1104,3 +1171,15 @@ mach64SwitchMode(mode)
 
     return(TRUE);
 }
+
+/*
+ * mach64ValidMode --
+ *
+ */
+static Bool
+mach64ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

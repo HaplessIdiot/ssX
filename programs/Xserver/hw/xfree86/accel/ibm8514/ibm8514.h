@@ -1,6 +1,5 @@
-/* $XConsortium: ibm8514.h,v 1.1 94/03/28 21:03:01 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.3 1995/01/10 10:20:56 dawes Exp $ */
-/*
+/* $XConsortium: ibm8514.h,v 1.6 95/01/16 13:16:28 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.4 1995/01/15 10:30:33 dawes Exp $ */
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

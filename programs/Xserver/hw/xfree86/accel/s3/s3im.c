@@ -1,6 +1,5 @@
-/* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.11 1994/12/17 10:05:38 dawes Exp $ */
-/*
+/* $XConsortium: s3im.c,v 1.6 95/01/06 20:57:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.12 1995/01/02 04:52:11 dawes Exp $ */
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,5 +1,5 @@
-/* $XConsortium: SetLocale.c,v 1.39 94/04/17 20:20:59 rws Exp $ */
-/* $XFree86: xc/lib/X11/SetLocale.c,v 3.0 1994/10/20 06:03:10 dawes Exp $ */
+/* $XConsortium: SetLocale.c,v 1.40 94/11/21 18:23:20 kaleb Exp $ */
+/* $XFree86: xc/lib/X11/SetLocale.c,v 3.1 1994/11/26 12:35:43 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -139,7 +139,11 @@ _XlcMapOSLocaleName(osname, siname)
     char *osname;
     char *siname;
 {
+<<<<<<< SetLocale.c
 #if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__EMX__)
+=======
+#if defined(hpux) || defined(CSRG_BASED) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
+>>>>>>> 1.1.1.2
 #ifdef hpux
 #define SKIPCOUNT 2
 #define STARTCHAR ':'

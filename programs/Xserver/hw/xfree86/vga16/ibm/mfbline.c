@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbline.c,v 5.16 94/03/06 18:24:26 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: mfbline.c,v 1.1 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbline.c,v 3.0 1994/05/04 15:03:13 dawes Exp $ */
 #include "X.h"
 
 #include "gcstruct.h"

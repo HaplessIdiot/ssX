@@ -1,27 +1,32 @@
 /*
- * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
+ * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Wexelblat not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Wexelblat shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Wexelblat.
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/Tseng.c,v 2.8 1994/05/03 08:09:44 dawes Exp $ */
+/* $XConsortium: Tseng.c,v 1.2 94/11/21 21:29:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Tseng.c,v 3.2 1994/09/26 15:31:01 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -77,8 +82,20 @@ int *Chipset;
 				case 0x02:
 					*Chipset = CHIP_ET4KW32P_A;
 					break;
+				case 0x03:
+					*Chipset = CHIP_ET4KW32I_B;
+					break;
+				case 0x04:
+					*Chipset = CHIP_ET4KW32I_C;
+					break;
 				case 0x05:
-					*Chipset = CHIP_ET4KW32P_O;
+					*Chipset = CHIP_ET4KW32P_B;
+					break;
+				case 0x06:
+					*Chipset = CHIP_ET4KW32P_C;
+					break;
+				case 0x07:
+					*Chipset = CHIP_ET4KW32P_D;
 					break;
 				default:
 					Chip_data = ver >> 4;
@@ -145,7 +162,11 @@ int Chipset;
 	case CHIP_ET4000W32:
 	case CHIP_ET4000W32I:
 	case CHIP_ET4KW32P_A:
-	case CHIP_ET4KW32P_O:
+	case CHIP_ET4KW32I_B:
+	case CHIP_ET4KW32I_C:
+	case CHIP_ET4KW32P_B:
+	case CHIP_ET4KW32P_C:
+	case CHIP_ET4KW32P_D:
 		switch (rdinx(CRTC_IDX, 0x37) & 0x09)
 		{
 		case 0x00:
@@ -159,14 +180,11 @@ int Chipset;
 			break;
 		case 0x09:
 			Mem = 1024;
+			if ((Chipset != CHIP_ET4000W32) &&
+			   (rdinx(CRTC_IDX, 0x32) & 0x80))
+			    Mem = 2048;
 			break;
 		}
-		if ((Chipset != CHIP_ET4000W32) &&
-		    (rdinx(CRTC_IDX, 0x32) & 0x80))
-		{
-			Mem *= 2;
-		}
-		break;
 	}
 
 	/* 

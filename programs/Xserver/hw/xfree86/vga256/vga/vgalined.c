@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbline.c,v 1.23 94/04/17 20:28:53 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgalined.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgalined.c,v 3.0 1994/07/24 11:59:03 dawes Exp $ */
 
 #include "vga256.h"
 #include "miline.h"

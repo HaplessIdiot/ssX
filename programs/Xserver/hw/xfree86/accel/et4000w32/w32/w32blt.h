@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: w32blt.h,v 1.3 95/01/05 20:37:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32blt.h,v 3.2 1994/11/19 07:52:33 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -33,34 +34,32 @@ glenn@cs.utexas.edu)
 
 
 /* initizliae a bitblt operation */
-#define W32_INIT_BLT(OP, MASK, SRC_OFFSET, DST_OFFSET, XDIR, YDIR) \
+#define W32_INIT_WINWIN(OP, MASK, SRC_OFFSET, DST_OFFSET, XDIR, YDIR) \
 { \
     int i; \
 \
-    WAIT_QUEUE \
     *ACL_SOURCE_WRAP	= 0x77; \
     if (MASK == 0xffffffff) \
-    { \
 	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \
-    } \
     else \
-    { /* w32p only */ \
+    { \
 	*ACL_FOREGROUND_RASTER_OPERATION	= \
 	    (0xf0 & W32OpTable[OP]) | 0x0a; \
-	*ACL_PATTERN_WRAP			= 0x02; \
-	*ACL_PATTERN_Y_OFFSET			= 0x3; \
+	*ACL_PATTERN_ADDRESS			= W32Pattern; \
 	*MBP0 					= W32Pattern; \
 	*(LongP)W32Buffer 			= MASK; \
+	if (W32p) \
+	    *ACL_PATTERN_WRAP			= 0x02; \
+	else \
+	{ \
+	    *(LongP)(W32Buffer + 4)		= MASK; \
+	    *ACL_PATTERN_WRAP			= 0x12; \
+	    *ACL_PATTERN_Y_OFFSET		= 0x3; \
+	} \
     } \
     i = 0; \
-    if (XDIR == -1) \
-    { \
-	i |= 0x1; \
-    } \
-    if (YDIR == -1) \
-    { \
-	i |= 0x2; \
-    } \
+    if (XDIR == -1) i |= 0x1; \
+    if (YDIR == -1) i |= 0x2; \
     *ACL_XY_DIRECTION			= i; \
     *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
     *ACL_SOURCE_Y_OFFSET		= SRC_OFFSET; \
@@ -68,13 +67,49 @@ glenn@cs.utexas.edu)
 }
 
 
-#define W32_BLT(SRC, DST, X, Y) \
+#define W32_WINWIN(SRC, DST, X, Y) \
 if (((X) | (Y) != 0)) \
 { \
-    WAIT_QUEUE \
     SET_XY(X, Y) \
     *(ACL_SOURCE_ADDRESS) = SRC; \
     START_ACL(DST) \
+}
+
+
+#define W32_INIT_PIXWIN(OP, MASK, DST_OFFSET) \
+{ \
+    if (MASK == 0xffffffff) \
+	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \
+    else \
+    { \
+	*ACL_FOREGROUND_RASTER_OPERATION	= \
+	    (0xf0 & W32OpTable[OP]) | 0x0a; \
+	*ACL_PATTERN_ADDRESS			= W32Pattern; \
+	*MBP0 					= W32Pattern; \
+	*(LongP)W32Buffer 			= MASK; \
+	if (W32p) \
+	    *ACL_PATTERN_WRAP			= 0x02; \
+	else \
+	{ \
+	    *(LongP)(W32Buffer + 4)		= MASK; \
+	    *ACL_PATTERN_WRAP			= 0x12; \
+	    *ACL_PATTERN_Y_OFFSET		= 0x3; \
+	    *ACL_VIRTUAL_BUS_SIZE		= 0x2; \
+	} \
+    } \
+    *ACL_XY_DIRECTION			= 0; \
+    *ACL_DESTINATION_Y_OFFSET		= DST_OFFSET; \
+    *ACL_ROUTING_CONTROL 		= 0x1; \
+}
+
+
+#define W32_PIXWIN(SRC, DST, X, Y) \
+if (((X) | (Y) != 0)) \
+{ \
+    SET_XY(X, Y) \
+    W32InitPixWin(SRC, X); \
+    START_ACL(DST) \
+    W32PixWin(SRC, Y); \
 }
 
 

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: xf86RamDac.c,v 1.3 95/01/26 15:34:05 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.3 1995/01/26 02:16:52 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -43,8 +44,8 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 #include "xf86RamDac.h"
-#include "xf86Bt485.h"
-#include "xf86Bt481.h"
+#include "Bt485.h"
+#include "Bt481.h"
 #include "xf861502x.h"
 
 /* RamDac related globals */
@@ -54,6 +55,10 @@ int  xf86RamDacType = -1;
 int  xf86MaxCurs = 0;
 int  xf86FrameX0 = 0;
 int  xf86FrameY0 = 0;
+int  xf86MaxClock;
+int  xf86MaxClockDirect;
+int  xf86MinClockDoubled = -1;
+int  xf86MaxClockDoubled = -1;
 
 unsigned char xf86SwapBits[256] = {
 0x00,0x80,0x40,0xC0,0x20,0xA0,0x60,0xE0,0x10,0x90,0x50,0xD0,0x30,0xB0,0x70,0xF0,
@@ -214,8 +219,22 @@ xf86SetUpRamDac(
 {
    switch ( xf86RamDacType ) { 
  
-      case ATT20C505_DAC:
       case BT485_DAC:
+         xf86MaxClock = 135000;
+         xf86MaxClockDirect = 90000;
+         xf86MinClockDoubled = 33750;
+         xf86MaxClockDoubled = 67500;
+         xf86MaxCurs = 64;
+         xf86RamDacHWSave = xf86Bt485HWSave;
+         xf86RamDacHWRestore = xf86Bt485HWRestore;
+         xf86RamDacInit = xf86Bt485Init;
+         break;
+
+      case ATT20C505_DAC:
+         xf86MaxClock = 135000;
+         xf86MaxClockDirect = 110000;
+         xf86MinClockDoubled = 45000;
+         xf86MaxClockDoubled = 67500;
          xf86MaxCurs = 64;
          xf86RamDacHWSave = xf86Bt485HWSave;
          xf86RamDacHWRestore = xf86Bt485HWRestore;
@@ -223,7 +242,19 @@ xf86SetUpRamDac(
          break;
 
       case ATT20C504_DAC:
+         xf86MaxClock = 110000;
+         xf86MaxClockDirect = 90000;
+         xf86MinClockDoubled = 45000;
+         xf86MaxClockDoubled = 55000;
+         xf86MaxCurs = 32;
+         xf86RamDacHWSave = xf86Bt485HWSave;
+         xf86RamDacHWRestore = xf86Bt485HWRestore;
+         xf86RamDacInit = xf86Bt485Init;
+         break;
+
       case BT484_DAC:
+         xf86MaxClock = 85000;
+         xf86MaxClockDirect = 85000;
          xf86MaxCurs = 32;
          xf86RamDacHWSave = xf86Bt485HWSave;
          xf86RamDacHWRestore = xf86Bt485HWRestore;
@@ -231,6 +262,8 @@ xf86SetUpRamDac(
          break;
 
       case BT482_DAC:
+         xf86MaxClock = 86500;
+         xf86MaxClockDirect = 86500;
          xf86MaxCurs = 32;
          xf86RamDacHWSave = xf86Bt481HWSave;
          xf86RamDacHWRestore = xf86Bt481HWRestore;
@@ -238,23 +271,18 @@ xf86SetUpRamDac(
          break;
 
       case BT481_DAC:
+         xf86MaxClock = 86500;
+         xf86MaxClockDirect = 86500;
          xf86MaxCurs = 0;
          xf86RamDacHWSave = xf86Bt481HWSave;
          xf86RamDacHWRestore = xf86Bt481HWRestore;
          xf86RamDacInit = xf86Bt481Init;
          break;
 
-#if 0  /* not converted */
-      case TI3020_DAC:
-         xf86MaxCurs = 64;
-         xf86RamDacHWSave = xf86TiHWSave;
-         xf86RamDacHWRestore = xf86TiHWRestore;
-         xf86RamDacInit = xf86TiInit;
-         break;
-#endif
-
       case SC15025_DAC:
       case SC15021_DAC:
+         xf86MaxClock = 110000;  
+         xf86MaxClockDirect = 110000;
          xf86MaxCurs = 0;
          xf86RamDacHWSave = xf86Sc1502xHWSave;
          xf86RamDacHWRestore = xf86Sc1502xHWRestore;
@@ -283,7 +311,10 @@ Using IPF access method.\n",
                   ErrorF( "%s : Unable to access Sierra 1502x extended \
 registers, assuming normal RAMDAC.\n",
                     XCONFIG_PROBED );
-           
+          
+               xf86RamDacType = NORMAL_DAC; 
+               xf86MaxClock = 85000;
+               xf86MaxClockDirect = 85000;
                xf86MaxCurs = 0;
                xf86RamDacHWSave = xf86RamDacHWNoop;
                xf86RamDacHWRestore = xf86RamDacHWNoop;
@@ -292,7 +323,11 @@ registers, assuming normal RAMDAC.\n",
             }
          }
 
-         SC15021 = xf86InSc1502xIndReg( SC1502X_ID3 ) == SC1502X_ID3_15021;
+         if ( xf86InSc1502xIndReg( SC1502X_ID3 ) == SC1502X_ID3_15021 ) {
+            xf86RamDacType = SC15021_DAC; 
+            xf86MaxClock = 135000;
+            xf86MaxClockDirect = 135000;
+         }
 
          if (xf86Verbose)
             xf86Sc1502xPrintId();

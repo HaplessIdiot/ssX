@@ -18,7 +18,8 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86$
+# $XConsortium: Cards,v 1.3 95/01/23 15:35:21 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.6 1995/01/23 01:33:04 dawes Exp $
 
 # Cirrus Logic
 
@@ -128,6 +129,14 @@ NAME VI720
 CHIPSET CL-GD5434
 SEE Cirrus Logic GD543x
 
+NAME Cirrus Logic GD62xx (laptop)
+CHIPSET CL-GD6205/15/25/35
+SERVER SVGA
+
+NAME Cirrus Logic GD64xx (laptop)
+CHIPSET CL-GD6420/6440
+SERVER SVGA
+
 # S3 801/805
 
 NAME S3-801/805 (generic)
@@ -146,6 +155,13 @@ CHIPSET S3-801/805
 SERVER S3
 RAMDAC s3gendac
 CLOCKCHIP s3gendac
+
+NAME S3-801/805 with ATT20c490 RAMDAC and ICD2061A
+CHIPSET S3-801/805
+SERVER S3
+RAMDAC att20c490
+CLOCKCHIP icd2061a
+LINE     #Option "dac_8_bit"		# Not supported by some 20c490 clones
 
 #tested
 NAME Actix GE32+ 2MB
@@ -170,7 +186,7 @@ LINE     #Probable clocks:
 LINE     #Clocks 25.20 28.32 32.50 0.00 40.00 44.90 50.40 65.00
 LINE     #Clocks 78.00 56.70 63.10 75.10 80.00 89.90 100.90 31.50
 
-NAME Orchid Farenheit-1280+
+NAME Orchid Fahrenheit-1280+
 CHIPSET S3-801/805
 SERVER S3
 RAMDAC att20C490
@@ -179,6 +195,7 @@ LINE     Option     "dac_8_bit"
 LINE     #Probable clocks:
 LINE     #Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0 
 LINE     #Clocks     130.0 120.20 80.0 31.50 110.30 65.0 75.0 94.60
+
 NAME Diamond Stealth 24
 SEE S3-801/805 (generic)
 
@@ -192,7 +209,7 @@ NAME Dell S3-805
 SEE S3-801/805 (generic)
 
 NAME STB Powergraph X-24
-SEE S3-801/805 (generic)
+SEE S3-801/805 with ATT20c490 RAMDAC and ICD2061A
 
 # S3-864/Trio64
 
@@ -207,10 +224,21 @@ RAMDAC s3_sdac
 CLOCKCHIP s3_sdac
 NOCLOCKPROBE
 
-NAME S3-864 with S3-Trio64 chip
+NAME S3-864 with ATT 20C498 or 21C498
+CHIPSET S3-864
+SERVER S3
+RAMDAC att20c498
+LINE     Option "dac_8_bit"
+
+NAME S3-Trio64 (generic)
 CHIPSET S3-Trio64
-SERVER VGA16
-UNSUPPORTED
+SERVER S3
+NOCLOCKPROBE
+
+NAME S3-Trio32 (generic)
+CHIPSET S3-Trio32
+SERVER S3
+NOCLOCKPROBE
 
 NAME Genoa Phantom 64i with S3-SDAC
 DACSPEED 135
@@ -224,15 +252,15 @@ LINE     Chipset "mmio_928"
 LINE     Option "number_nine"
 LINE     Option "dac_8_bit"
 
-NAME Number Nine GXE64 with S3-Trio64 chip
-SEE S3-864 with S3-Trio64 chip
+NAME Number Nine GXE64 with S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME Diamond Stealth 64 DRAM with S3-SDAC
 DACSPEED 135
 SEE S3-864 with SDAC (86C716)
 
-NAME Diamond Stealth 64 DRAM with S3-Trio64 chip
-SEE S3-864 with S3-Trio64 chip
+NAME Diamond Stealth 64 DRAM with S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME Actix GE64
 SEE S3-864 (generic)
@@ -244,16 +272,32 @@ NAME Elsa Winner 1000 PRO with STG or AT&T RAMDAC
 CHIPSET S3-864
 SERVER S3
 CLOCKCHIP icd2061a
-LINES	  Option "dac_8_bit"
-LINES     Option "elsa_w1000pro"
-LINES	  Membase 0xf3000000
+LINE	  Option "dac_8_bit"
 
-NAME Miro Crystal 20SD
-DACSPEED 135
+NAME Elsa Winner 1000 ISA
+CHIPSET S3-805i
+SERVER S3
+CLOCKCHIP icd2061a
+LINE     Option "dac_8_bit"
+LINE     # the following settings should be detected and set automaticly by XF86_S3
+LINE     # if the serial number of the ELSA card is printed correctly:
+LINE     #ClockChip "icd2061a"
+
+NAME Miro Crystal 20SD with ICS2494 (BIOS 1.xx)
+SEE S3-864 with ATT 20C498 or 21C498
+
+NAME Miro Crystal 20SD with ICD2061A (BIOS 2.xx)
+CLOCKCHIP icd2061a
+SEE S3-864 with ATT 20C498 or 21C498
+
+NAME Miro Crystal 20SD with S3-SDAC (BIOS 3.xx)
 SEE S3-864 with SDAC (86C716)
 
 NAME SPEA/V7 Mirage P64
 SEE S3-864 (generic)
+
+NAME SPEA/V7 Mirage P64 with S3-Trio64
+SEE S3-Trio64 (generic)
 
 NAME VideoMagic PCI V864
 SEE S3-864 (generic)
@@ -289,7 +333,13 @@ SERVER S3
 CLOCKCHIP icd2061a
 LINE     Option "dac_8_bit"
 
-MAME Elsa Winner 2000 Pro 4Mb
+NAME Miro Crystal 40SV
+CHIPSET S3-964
+SERVER S3
+CLOCKCHIP ti3025
+LINE     Option "dac_8_bit"
+
+NAME Elsa Winner 2000 Pro 4Mb
 CHIPSET S3-964
 SERVER S3
 LINE     Option "elsa_w2000pro"
@@ -301,7 +351,11 @@ CHIPSET S3-928
 SERVER S3
 
 NAME Diamond Stealth Pro
-SEE S3-928 (generic)
+CHIPSET S3-928
+SERVER S3
+CLOCKCHIP icd2061a
+RAMDAC normal
+LINE     # 16/32bpp not supported? (SS2410 DAC?)
 
 NAME Elsa Winner 1000
 CHIPSET S3-928
@@ -309,19 +363,8 @@ SERVER S3
 LINE     Option "dac_8_bit"
 LINE     # the following settings should be detected and set automaticly by XF86_S3
 LINE     # if the serial number of the ELSA card is printed correctly:
-LINE     #Clockchip "icd2061a"
+LINE     #ClockChip "icd2061a"
 LINE     #Membase 0xf8000000
-
-NAME Elsa Winner 1000 Pro
-CHIPSET S3-928
-SERVER S3
-LINE     Option "dac_8_bit"
-LINE     # the following settings should be detected and set automaticly by XF86_S3
-LINE     # if the serial number of the ELSA card is printed correctly:
-LINE     #
-LINE     #    ClockChip "icd2061a"
-LINE     #    Option "elsa_w1000pro"
-LINE     #    Membase 0xf3000000
 
 NAME Elsa Winner 2000
 SEE S3-928 (generic)
@@ -338,6 +381,7 @@ SERVER S3
 RAMDAC bt485
 CLOCKCHIP icd2061a
 LINE     Chipset "mmio_928"
+LINE     Option "stb_pegasus"
 LINE     Option "bt485_curs"
 LINE     Option "dac_8_bit"
 LINE     Option "sync_on_green"
@@ -358,6 +402,13 @@ SERVER S3
 CLOCKCHIP icd2061a
 LINE     OPTION "dac_8_bit"
 LINE     OPTION "number_nine"
+
+NAME 928Movie
+CHIPSET S3-928
+SERVER S3
+CLOCKCHIP icd2595
+RAMDAC bt485
+LINE     # pixel multiplexing not supported
 
 # S3-911/924
 
@@ -506,8 +557,9 @@ LINE	 #Probable clocks:
 LINE     #Clocks 25.2  28.3  39.9  72.2  50.0  76.9  36.1  44.8
 LINE     #Clocks 89.0  119.8 79.9  31.5 110.0  64.9  74.9  94.9
 
-MAME Hercules Graphite HG210
+NAME Hercules Graphite HG210
 CHIPSET AGX-014
+SERVER AGX
 RAMDAC bt482
 DACSPEED 85
 LINE     Chipset "AGX-014"
@@ -545,6 +597,16 @@ SERVER SVGA
 NAME Diamond SpeedStar 24X
 CHIPSET WD90C31
 SERVER SVGA
+
+NAME WD 90C24 (laptop) (wd90c30 compatible)
+CHIPSET WD90C24
+SERVER SVGA
+LINE     Chipset "wd90c30"
+
+NAME WD 90C24A (laptop) (wd90c31 compatible)
+CHIPSET WD90C24A
+SERVER SVGA
+LINE     Chipset "wd90c31"
 
 # Avance Logic
 

@@ -1,27 +1,32 @@
 /*
- * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
+ * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Wexelblat not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Wexelblat shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Wexelblat.
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/Print.c,v 2.15 1994/04/15 05:09:44 dawes Exp $ */
+/* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.7 1995/01/07 05:44:00 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -32,9 +37,10 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Ahead V5000 Version A", "Ahead V5000 Version B" },
 /* ATI */	{ "ATI (chipset unknown)", 
 		  "ATI 18800", "ATI 18800-1",
-		  "ATI 28800-2", "ATI 28800-4", "ATI 28800-5", 
+		  "ATI 28800-2", "ATI 28800-4", "ATI 28800-5", "ATI 28800-6",
 		  "ATI 68800-3", "ATI 68800-6", 
-		  "ATI 68800-LX", "ATI 68800-AX" },
+		  "ATI 68800-LX", "ATI 68800-AX",
+		  "ATI 88800" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",
@@ -42,7 +48,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Chips & Tech 82c452", "Chips & Tech 82c453",
 		  "Chips & Tech 82c455", "Chips & Tech 82c456",
 		  "Chips & Tech 82c457", "Chips & Tech F65510",
-		  "Chips & Tech F65520", "Chips & Tech F65530" },
+		  "Chips & Tech F65520", "Chips & Tech F65530",
+		  "Chips & Tech F65540", "Chips & Tech F65545" },
 /* Cirrus */	{ "Cirrus (chipset unknown)",
 		  "Cirrus CL-GD 510/520", "Cirrus CL-GD 610/620",
 		  "Cirrus Video7 OEM",
@@ -52,7 +59,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD5422", "Cirrus CL-GD5424", 
 		  "Cirrus CL-GD5426", "Cirrus CL-GD5428",
 		  "Cirrus CL-GD5429",
-		  "Cirrus CL-GD543x",
+		  "Cirrus CL-GD5430", "Cirrus CL-GD5434",
 		  "Cirrus CL-GD6205", "Cirrus CL-GD6215",
 		  "Cirrus CL-GD6225", "Cirrus CL-GD6235",
 		  "Cirrus CL-GD5410",
@@ -89,7 +96,13 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "S3 86C928, A,B,C, or D-step", "S3 86C928, E-step",
 		  "S3 86C928PCI",
 		  "S3 Vision864",
-		  "S3 Vision964"  },
+		  "S3 Vision964",
+		  "S3 Vision866",
+		  "S3 Vision868",
+		  "S3 Vision968",
+		  "S3 Trio32",
+		  "S3 Trio64",
+	       },
 /* Trident */	{ "Trident (chipset unknown)",
 		  "Trident LX8200",
 		  "Trident 8800BR", "Trident 8800CS",
@@ -100,7 +113,13 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* Tseng */	{ "Tseng (chipset unknown)",
 		  "Tseng ET3000", "Tseng ET4000", 
 		  "Tseng ET4000/W32", "Tseng ET4000/W32i", 
-		  "Tseng ET4000/W32p Rev A", "Tseng ET4000/W32p (other)" },
+		  "Tseng ET4000/W32p Rev A",
+		  "Tseng ET4000/W32i Rev B",
+		  "Tseng ET4000/W32i Rev C",
+		  "Tseng ET4000/W32p Rev B",
+		  "Tseng ET4000/W32p Rev C",
+		  "Tseng ET4000/W32p Rev D",
+		},
 /* UMC */	{ "UMC 85c408" },
 /* Video7 */	{ "Video7 (chipset unknown)",
 		  "Video7 FastWrite/VRAM (HT208)", "Video7 1024i (HT208A)",
@@ -160,15 +179,24 @@ struct RamDac_Name RamDac_Names[] =
 	{ "20C505", "AT&T 20C505 24-bit TrueColor DAC w/cursor,pixel-mux" },
 	{ "TVP3020",
 	  "TI ViewPoint3020 24-bit TrueColor DAC w/cursor,pixel-mux" },
+	{ "TVP3025",
+	  "TI ViewPoint3025 24-bit TrueColor DAC w/cursor,pixel-mux,clock" },
 	{ "EDSUN", "EDSUN CEG DAC" },
-	{ "20C498", "AT&T 20C498 15/16/24-bit DAC w/pixel-mux" },
+	{ "20C498", "AT&T 20C498/21C498 15/16/24-bit DAC w/pixel-mux" },
+	{ "22C498", "AT&T 22C498 15/16/24-bit DAC w/pixel-mux" },
+	{ "STG1700", "STG1700 15/16/24-bit DAC w/pixel-mux" },
+	{ "S3_GENDAC", "S3 86C708 GENDAC 15/16/24-bit DAC w/clock-PLL" },
+	{ "S3_SDAC", "S3 86C716 SDAC 15/16/24-bit DAC w/pixel-mux w/clock-PLL" },
 };
 
 static CONST char *CoProc_Names[NUM_CP_TYPES][CHPS_PER_CPTYPE] = 
 {
 /* 8514 */	{ "8514/A (or true clone)",
-		  "ATI Mach-8", "ATI Mach-32",
+		  "ATI Mach8", "ATI Mach32",
 		  "Chips & Technologies 82C480 (8514/A clone)" },
+/* XGA */	{ "" },
+/* Mach64 */	{ "ATI Mach64" },
+/* Number9 */	{ "Number Nine Imagine I128" },
 };
 
 void Print_SVGA_Name(Chipset)
@@ -177,7 +205,7 @@ int Chipset;
 	int vendor = SVGA_VENDOR(Chipset);
 	int chip = SVGA_CHIP(Chipset);
 	printf("\tChipset: %s\n", SVGA_Names[vendor][chip]);
-	if ((!chip) && (Chip_data != 0xFF))
+	if ((!chip) && (~Chip_data))
 	{
 		printf("\t\tSignature data: %02x (please report)\n", 
 		       Chip_data);

@@ -75,8 +75,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbfillsp.c,v 5.24 94/04/17 20:28:48 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: cfbfillsp.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbfillsp.c,v 3.0 1994/09/11 00:41:31 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

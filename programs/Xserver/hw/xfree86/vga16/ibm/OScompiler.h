@@ -1,6 +1,5 @@
-/* $XConsortium: OScompiler.h,v 1.1 94/03/28 21:34:23 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: OScompiler.h,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.1 1994/07/24 12:23:35 dawes Exp $ */
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

@@ -1,6 +1,5 @@
-/* $XConsortium: xf86Procs.h,v 1.1 94/03/28 21:23:46 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: xf86Procs.h,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Procs.h,v 3.0 1994/06/19 11:05:34 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

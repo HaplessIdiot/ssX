@@ -12,23 +12,62 @@ Section "Device"
     Clocks	130.0 120.0  80.0  31.0 110.0  65.0  75.0  94.0
 EndSection
 
+#From: Hans Nasten <nasten@everyware.se>
+#Date: Tue, 27 Sep 1994 10:18:05 +0100 (MET)
+Section "Device"
+    Identifier "ATI GU"
+    VendorName "ATI"
+    BoardName "ATI Graphics Ultra"
+    Clocks 43 49 80 36 50 56 0 45 30 32 110 79 40 45 75 65
+    Clocks 22 25 46 18 25 28 0 22 15 16  55 40 20 22 38 32
+EndSection
+
 #From: Mark_Weaver@brown.edu (Mark_Weaver@brown.edu)
 #Date: Mon, 19 Sep 1994 14:59:09 -0400
 Section "Device"
     Identifier "ATI-GUP"
     VendorName "ATI"
-    BoardName "GUP"
+    BoardName "Graphics Ultra Pro"
     Clocks 100 126 92 36 51 57 0 44 135 32 110 80 39 
 	45 75 65 50 63 46 18 25 28 0 22 67 16 55 40 19 23 37 33
     Option "dac_8_bit"
 EndSection
  
+#From: Hans Nasten <nasten@everyware.se>
+#Date: Tue, 27 Sep 1994 10:18:05 +0100 (MET)
+Section "Device"
+    Identifier "ATI SVGA"
+    Chipset "vgawonder"
+    VendorName "ATI"
+    BoardName "ATI Graphics Ultra"
+    Clocks 30 32 11 80 42 48 92 36 40 45 75 65 50 56 0 0
+    Clocks 15 16 55 0  21 24 46 18 20 22 37 32 25 28 0 0
+EndSection
+
 #Date: Mon, 19 Sep 94 17:50:04 +0200
 #From: Didier Poirot <dp@chorus.fr>
 Section "Device"
     Identifier "Dell S3C805"
     VendorName "Dell"
     BoardName "Dell"
+EndSection
+
+#From: hedrick@klinzhai.rutgers.edu (Charles Hedrick)
+#Date: Sat, 26 Nov 1994 20:21:32 -0500
+Section "Device"
+    Identifier "Speedstar"
+    VendorName "Diamond"
+    BoardName "SpeedStar 64"
+# for 1MB version.  probably fast_dram would be appropriate for 2MB.
+    Option "slow_dram"
+# getting a stable high refresh rate with the 1 MB version took some
+# doing.  (Generally 2 MB would be recommended for high refresh.)  Critical
+# factors were using slow_dram (specifying this isn't really necessary, as the
+# BIOS defaults to this -- I mention it simply because I had
+# experimented with fast_dram), and using a slightly higher second
+# horizontal time, e.g.
+# "1024x768" 80 1024 1100 1100 1260 768 768 768 788
+# though 1100 is higher than needed.
 EndSection
 
 #From: peterc@a3.ph.man.ac.uk (Peter Chang)
@@ -52,7 +91,7 @@ Section "Device"
     VendorName "Diamond"
     BoardName "viper"
     Chipset "vipervlb"
-    Clocks 135 120 110 103 100 85 49
+    Clocks 135 120 110 103 100 85 49 # Choose clocks to suit your modes
     Videoram 2048
 EndSection
 
@@ -98,7 +137,7 @@ Section "Device"
  #   Membase 0xf8000000
 EndSection
 
-#From: J Wunsch <j@julia.tcd-dresden.de>
+#From: J Wunsch <joerg_wunsch@uriah.sax.de>
 #Date: Fri, 23 Sep 1994 09:28:58 +0200 (MET DST)
 Section "Device"
     Identifier "ELSA Winner 1000"
@@ -157,6 +196,16 @@ Section "Device"
     Chipset	"generic"
 EndSection
 
+#From: Artur Gomes <agomes@mozart.si.ualg.pt>
+#Date: Tue, 20 Dec 1994 16:55:09 +0000 (GMT)
+Section "Device"
+    Identifier	"Genoa Phantom 64"
+    VendordName	"Genoa"
+    BoardName	"Phantom 64 2MB PCI (864)"
+    ClockChip	"s3_sdac"
+    Ramdac	"s3_sdac"
+EndSection
+    
 #From: dlj0@chern.math.lehigh.edu (DAVID L. JOHNSON)
 #Date: Fri, 23 Sep 1994 23:23:18 -0400
 Section "Device"
@@ -197,6 +246,23 @@ Section "Device"
     Option "no_wait_state"
     Option "fast_dram"
     Videoram 1024
+EndSection
+
+#From: haw30@eng.amdahl.com (Henry A Worth )
+#Date: Tue, 27 Sep 94 22:10:01 PDT
+Section "Device"
+    Identifier "Hercules Graphite VL Pro HG720"
+    VendorName "Hercules"
+    BoardName  "Graphite VL Pro"
+    Chipset    "AGX-015"
+    Clocks 25.2  28.3  32.5  36.0  40.0  45.0  50.4  65.0
+           70.0  75.0  80.0  85.0  0.00  0.00  0.00  0.00
+           0.00  0.00  0.00  0.00  0.00  90.0  100   130
+           0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
+    Videoram   2048
+    RamDac     "herc_dual_dac"
+    Option     "dac_8_bit"
+    Option     "no_wait_state"
 EndSection
 
 #From: Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
@@ -309,10 +375,10 @@ EndSection
 #From: Bob Mende Pie <mende@piecomputer.rutgers.edu>
 #Date: Fri, 23 Sep 1994 22:51:51 -0400
 Section "Device"
-    Identifier "Number Nine GXE Pro VLB"
+    Identifier "Number Nine GXE64 Pro VLB"
     #Was: "GXEPRO"
     VendorName "#9"
-    BoardName "#9 GXE Pro VLB"
+    BoardName "#9 GXE64 Pro VLB"
     RamDac "ti3025"
     Option "dac_8_bit"
     Option "number_nine"
@@ -320,16 +386,6 @@ Section "Device"
     ClockChip "ti3025"
 EndSection
  
-#From: Bob Mende Pie <mende@piecomputer.rutgers.edu>
-#Date: Fri, 23 Sep 1994 22:51:51 -0400
-Section "Device"
-    Identifier "Number Nine GXE Pro VLB, SVGA"
-    # Was: "GXEPRO-SVGA"
-    VendorName "#9"
-    BoardName "#9 GXE Pro VLB"
-    Clocks      28
-EndSection
-
 #Date: Tue, 20 Sep 94 08:32:45 EDT
 #From: bremner@muff.cs.mcgill.ca (David BREMNER)
 Section "Device"
@@ -352,12 +408,23 @@ Section "Device"
   Videoram 2048
 EndSection
 
+#From: ciotti@nas.nasa.gov (Robert B. Ciotti)
+#Date: Fri, 30 Sep 1994 10:34:37 -0700
+Section "Device"
+    Identifier "Number9GXE64PCI"
+    VendorName "NumberNine"
+    BoardName "GXE64PCI"
+    Clockchip "icd2061a"
+    Option "number_nine"
+    Option "dac_8_bit"
+EndSection
+
 #From: Richard Coley <rcoley@pyra.co.uk>
 #Date: Thu, 15 Sep 1994 12:29:10 +0100 (BST)
 Section "Device"
     Identifier "Orchid Fahrenheit 1280"
     VendorName "Orchid"
-    BoardName "Farenheit 1280"
+    BoardName "Fahrenheit 1280"
     Clocks 25.20 28.32 32.50 0.00 40.00 44.90 50.40 65.00
     Clocks 78.00 56.70 63.10 75.10 80.00 89.90 100.90 31.50
 EndSection
@@ -390,6 +457,31 @@ Section "Device"
     Clocks 130.00 120.20 80.00 31.50 110.30 65.00 75.00 94.60
 EndSection
 
+#From: matthieu@laas.fr (Matthieu Herrb)
+#Date: Tue, 27 Sep 1994 10:05:24 +0100
+Section        "Device"
+    Identifier "Orchid Fahrenheit-1280+"
+    VendorName "Orchid"
+    BoardName  "Fahrenheit 1280+ VLB"
+    Ramdac     "att20C490"
+    Dacspeed   110
+    Clocks     25.20 28.32 40.0 0.0 50.10 77.0 36.10 45.0 
+    Clocks     130.0 120.20 80.0 31.50 110.30 65.0 75.0 94.60
+    Option     "dac_8_bit"
+EndSection
+
+#From: adrian@dragons.demon.co.uk (Adrian Joseph)
+#Date: Tue, 27 Sep 1994 23:43:35 +0200 (BST)
+Section "Device"
+    Identifier "Orchid P9000 VLB"
+    VendorName "Orchid"
+    BoardName "P9000 VLB"
+    Chipset "orchid_p9000"
+    Clocks 25.175 25.20 28.32 45 50 65 75 80
+    Videoram 2048
+    Membase 0xE0000000
+EndSection
+
 #Date: Sun, 18 Sep 1994 16:00:53 +1000
 #From: Stephen Hocking <sysseh@devetir.qld.gov.au>
 Section "Device"
@@ -414,6 +506,19 @@ Section "Device"
     Option "sync_on_green"
 EndSection
 
+#From: Jeff Stern <jstern@eclectic.ss.uci.edu>
+#Date: Fri, 30 Dec 1994 12:07:46 -0800 (PST)
+Section "Device"
+    Identifier	"STB X24 S3 ISA"
+    VendorName	"STB"
+    BoardName	"PowerGraph X.24"
+    Ramdac	"ATT20C490"
+    Dacspeed	110
+    Option	"dac_8_bit"
+    #VideoRam	1024
+    ClockChip	"icd2061a"
+EndSection
+
 #Date: Sun, 18 Sep 1994 22:55:32 -0700 (PDT)
 #From: Shyam Subramanyan <shyam@crl.com>
 Section "Device"
@@ -428,6 +533,21 @@ Section "Device"
     Option "no_wait_state"
     Option "fifo_moderate"
     Videoram 2048
+EndSection
+
+#From: haw30@eng.amdahl.com (Henry A Worth )
+#Date: Tue, 27 Sep 94 22:10:01 PDT
+Section "Device"
+    Identifier "Spider Black Widow Plus"
+    VendorName "Spider"
+    BoardName  "Black Widow Plus"
+    Chipset    "AGX-016"
+    Clocks 25.2  28.3  39.9  72.2  50.0  76.9  36.1  44.8
+           89.0  119.8 79.9  31.5 110.0  64.9  74.9  94.9
+    Videoram   2048
+    RamDac     "SC15025"
+    Option     "dac_8_bit"
+    Option     "no_wait_state"
 EndSection
 
 #From: Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
@@ -467,6 +587,17 @@ Section "Device"
                 50.00 56.65 64.93 72.04 80.03 89.70 62.99 75.04
 EndSection
 
+#From: hedrick@klinzhai.rutgers.edu (Charles Hedrick)
+#Date: Sat, 26 Nov 1994 20:21:32 -0500
+Section "Device"
+    Identifier "928Movie"
+    VendorName "VideoLogic"
+    BoardName "928Movie"
+    Ramdac "bt485"
+    DacSpeed 135
+    ClockChip "ics2595"
+EndSection
+
 #From: "william (w.f.) conn" <conn@bnr.ca>
 #Date:  Sun, 25 Sep 1994 19:51:00 -0500
 Section "Device"
@@ -476,5 +607,5 @@ Section "Device"
 EndSection
 
 
-
-$XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.7 1995/01/22 03:06:13 dawes Exp $
+$XConsortium: Devices,v 1.6 95/01/23 15:34:12 kaleb Exp $

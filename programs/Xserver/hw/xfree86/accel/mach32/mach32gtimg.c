@@ -1,6 +1,5 @@
-/* $XConsortium: mach32gtimg.c,v 1.1 94/03/28 21:08:16 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gtimg.c,v 3.1 1994/07/15 06:58:15 dawes Exp $ */
-/*
+/* $XConsortium: mach32gtimg.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32gtimg.c,v 3.2 1994/07/24 11:43:32 dawes Exp $ */
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

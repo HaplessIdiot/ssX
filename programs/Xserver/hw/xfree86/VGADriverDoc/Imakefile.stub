@@ -1,4 +1,5 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile.stub,v 1.2 94/11/21 21:39:05 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/Imakefile.stub,v 3.0 1994/05/30 08:23:03 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the stub driver.  
 XCOMM 

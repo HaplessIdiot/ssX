@@ -47,8 +47,8 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.71 94/05/05 16:03:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.5 1994/11/19 07:59:23 dawes Exp $ */
+/* $XConsortium: servermd.h,v 1.73 95/01/09 20:56:43 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.6 1994/12/17 10:09:09 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -236,7 +236,7 @@ SOFTWARE.
 
 #endif /* macII */
 
-#if defined(mips) && !defined(sgi)
+#if (defined(mips) || defined(__mips)) && !defined(sgi)
 
 #if defined(MIPSEL) || defined(__MIPSEL__)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
@@ -344,7 +344,6 @@ SOFTWARE.
 #define FAST_CONSTANT_OFFSET_MODE
 #define FAST_MEMCPY
 #define NO_ONE_RECT
-#define SINGLEDEPTH
 #endif
 
 #endif /* SVR4 / BSD / i386 */

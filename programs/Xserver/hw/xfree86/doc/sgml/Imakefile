@@ -1,4 +1,5 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.2 95/01/23 15:34:43 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.4 1995/01/19 05:22:47 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -45,13 +46,10 @@ LinuxDocReadmeTarget(SVR4)
 #endif
 
 /* Hardware docs */
-#if 0
+LinuxDocReadmeTarget(Oak)
 LinuxDocReadmeTarget(P9000)
-#endif
 LinuxDocReadmeTarget(Video7)
-#if 0
 LinuxDocReadmeTarget(S3)
-#endif
 LinuxDocReadmeTarget(W32)
 LinuxDocReadmeTarget(WstDig)
 LinuxDocReadmeTarget(agx)
@@ -65,8 +63,14 @@ LinuxDocTargetLong(CPYRIGHT.sgml,COPYRIGHT,COPYRIGHT)
 LinuxDocReadmeTarget(Config)
 LinuxDocTarget(INSTALL)
 LinuxDocTarget(README)
+LinuxDocTarget(DocIndex)
 
 /* Other docs */
+LinuxDocReadmeTarget(LinkKit)
 LinuxDocReadmeTarget(clkprog)
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
+LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
+
+InstallLinkKitNamedNonExec(README.LinkKit,README,$(LINKKITDIR))
+InstallLinkKitNonExecFile(VGADriver.Doc,$(LINKKITDIR)/VGADriverDoc)
 

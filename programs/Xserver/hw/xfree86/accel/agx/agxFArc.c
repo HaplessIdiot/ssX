@@ -27,8 +27,8 @@ Author:  Bob Scheifler, MIT X Consortium
 
 ********************************************************/
 
-/* $XConsortium: mifillarc.c,v 5.17 94/04/17 20:27:33 keith Exp $ */
-/* $XFree86$ */
+/* $XConsortium: agxFArc.c,v 1.2 95/01/12 19:38:51 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFArc.c,v 3.1 1994/11/22 02:37:19 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -42,15 +42,6 @@ Author:  Bob Scheifler, MIT X Consortium
 #include "mifillarc.h"
 #include "agx.h"
 #include "regagx.h"
-
-/* could use 64-bit integers */
-typedef struct _miFillArcD {
-    int xorg, yorg;
-    int y;
-    int dx, dy;
-    double e;
-    double ym, yk, xm, xk;
-} miFillArcDRec;
 
 #define AGXFILLSETUP() \
     GE_WAIT_IDLE(); \

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: Panner.c,v 1.49 94/04/17 20:12:31 kaleb Exp $
- * $XFree86: xc/lib/Xaw/Panner.c,v 3.0 1994/05/21 23:46:24 dawes Exp $
+ * $XConsortium: Panner.c,v 1.52 95/01/10 14:31:26 kaleb Exp $
+ * $XFree86: xc/lib/Xaw/Panner.c,v 3.1 1994/11/30 20:32:08 dawes Exp $
  *
 Copyright (c) 1989, 1994  X Consortium
 

@@ -1,6 +1,5 @@
-/* $XConsortium: ppcBStore.c,v 1.2 94/04/17 20:31:46 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.0 1994/05/04 15:03:17 dawes Exp $ */
-/*
+/* $XConsortium: ppcBStore.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcBStore.c,v 3.1 1994/06/18 16:26:35 dawes Exp $ */
 
 Copyright (c) 1987  X Consortium
 

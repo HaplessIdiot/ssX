@@ -3,7 +3,7 @@
 <article>
  
 <title> Information for Linux Users
-<author> The XFree86 Project, Inc.
+<author> Orest Zborowski
 <date> 13 November 1994
 <toc>
 
@@ -11,13 +11,13 @@
 XFree86 has been tested with Linux version 1.1.49. It should work
 with any version since 1.0 without change. The binaries and libraries are
 based on the 4.5.26 DLL C libraries, and the 1.4.4 dynamic linker
-<tt>ld.so</tt>.
+<tt>ld.so</tt> (libc-4.5.26 or newer is *REQUIRED* !).
 The DLL X libraries are produced with the 2.16 DLL-tools by Eric Youngdale.
 
 <sect> Backwards Compatibility <p>
 X11R6 is considered a major update from X11R5, so the shared
 libraries in XFree86 3.1 and later are not compatible with XFree86 2.1.1
-and older libraries. To continue to run X11R5 applictions, you must keep
+and older libraries. To continue to run X11R5 applications, you must keep
 the old libraries somewhere on your machine. They can be moved from
 <tt>/usr/X386/lib</tt> elsewhere, but <tt>/etc/ld.so.conf</tt> must be updated.
 All X11R5 applications should work with the X11R6 servers without problems.
@@ -42,7 +42,7 @@ and old X11R5 binaries can be removed. The shared libraries must be
 retained in order to run dynamically-linked X11R5 binaries.
 
 Each binary distribution of XFree86 3.X comes with a detailed
-installation document relevent to that release. The most up-to-date
+installation document relevant to that release. The most up-to-date
 information is kept there, while this document describes basic features
 of XFree86 3.X on Linux and how to compile the sources.
 
@@ -92,7 +92,7 @@ the same way it works under the XFree86 server.
 
 When the server is exited, it will return to the original VT it was
 started from, unless it dies unexpectedly, when the switch must be done
-manually. There still seem to be wierd combinations of graphic cards and
+manually. There still seem to be weird combinations of graphic cards and
 motherboards that have problems to restore the textfont when returning from
 XFree86 to the text mode. In these cases using the <tt>runx</tt> script from
 the <bf>svgalib</bf> distribution might help.
@@ -105,7 +105,7 @@ all keys are bound: kernel-specific, multiple keysym, and dead keys are not
 handled by the server. All others are translated to their X equivalents.
 Note that the XFree86 server only allows for four modifier maps: unshifted,
 shifted, modeswitch unshifted and modeswitch shifted.  Depending on what
-the modeswitch key is (it is settable in your <tt>XF86Config</tt> and defaults
+the modeswitch key is (it is configurable in your <tt>XF86Config</tt> and defaults
 to Alt),
 XFree86 will read those tables into its keymaps.  This means if you use
 certain keys, like left-Control, for Linux modeswitch, that will not be
@@ -175,7 +175,8 @@ about Linux support or the Linux distribution should be made to
 <it>orestz@eskimo.com.</it>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.2 1994/10/23 12:59:00 dawes Exp $
+$XConsortium: Linux.sgml,v 1.2 95/01/23 15:34:44 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.4 1995/01/23 01:30:03 dawes Exp $
 </verb>
 
 </article>

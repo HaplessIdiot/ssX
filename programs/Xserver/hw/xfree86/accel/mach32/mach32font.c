@@ -1,6 +1,5 @@
-/* $XConsortium: mach32font.c,v 1.1 94/03/28 21:07:44 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: mach32font.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32font.c,v 3.1 1994/08/31 06:19:43 dawes Exp $ */
  * Copyright 1992, 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

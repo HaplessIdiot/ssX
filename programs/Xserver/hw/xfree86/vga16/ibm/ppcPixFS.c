@@ -1,5 +1,5 @@
-/* $XConsortium: ppcPixmapFS.c,v 1.2 94/04/17 20:31:53 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: ppcPixFS.c,v 1.1 95/01/26 15:21:11 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcPixFS.c,v 3.0 1994/05/04 15:03:29 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *

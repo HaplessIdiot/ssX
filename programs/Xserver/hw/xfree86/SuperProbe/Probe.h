@@ -1,27 +1,32 @@
 /*
- * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
+ * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Wexelblat not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Wexelblat shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Wexelblat.
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/Probe.h,v 2.15 1994/04/15 05:09:46 dawes Exp $ */
+/* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.7 1995/01/07 05:44:02 dawes Exp $ */
 
 /*
  * Includes
@@ -116,8 +121,10 @@ void ShortSleep __STDCARGS((const int Delay));
 /* Utils.c */
 Byte inp __STDCARGS((Word));
 Word inpw __STDCARGS((Word));
+Long inpl __STDCARGS((Word));
 void outp __STDCARGS((Word, Byte));
 void outpw __STDCARGS((Word, Word));
+void outpl __STDCARGS((Word, Long));
 Byte rdinx __STDCARGS((Word, Byte));
 void wrinx __STDCARGS((Word, Byte, Byte));
 void wrinx2 __STDCARGS((Word, Byte, Word));
@@ -176,6 +183,7 @@ Bool Probe_Weitek __STDCARGS((int *));
 /* CoProc */
 Bool Probe_8514 __STDCARGS((int *));
 Bool Probe_ATIMach __STDCARGS((int *));
+Bool Probe_I128 __STDCARGS((int *));
 
 /*
  * Print functions
@@ -191,7 +199,7 @@ void Print_CoProc_Name __STDCARGS((int));
 extern char MyName[];
 extern Word vgaIOBase;
 extern Bool Verbose;
-extern Byte Chip_data;
+extern Long Chip_data;
 extern Byte *Bios_Base;
 extern Bool AssumeEGA;
 
@@ -223,6 +231,7 @@ extern Chip_Descriptor Yamaha_Descriptor;
 
 extern Chip_Descriptor IBM8514_Descriptor;
 extern Chip_Descriptor ATIMach_Descriptor;
+extern Chip_Descriptor I128_Descriptor;
 
 /*
  * Useful macros
@@ -255,6 +264,11 @@ extern Chip_Descriptor ATIMach_Descriptor;
 #define READ_SRC_X	0xDAEE
 #define GP_STAT		0x9AE8
 #define GPBUSY		0x0200
+/* Mach64 */
+#define SCRATCH_REG0	0x42EC
+#define MEM_INFO	0x52EC
+#define CONFIG_CHIP_ID	0x6EEC
+#define CONFIG_STATUS_0	0x72EC
 
 /*
  * RAMDAC Types
@@ -285,10 +299,15 @@ extern Chip_Descriptor ATIMach_Descriptor;
 #define DAC_ATT504	23	/* AT&T 20C504 (Bt484 clone, I think) */
 #define DAC_ATT505	24	/* AT&T 20C505 (Bt485 clone) */
 #define DAC_TVP3020	25	/* TI ViewPoint TVP3020 RAMDAC */
-#define DAC_EDSUN	26	/* EDSUN CEG DAC */
-#define DAC_ATT498	27	/* AT&T 20C498 15/16/24-bit DAC w/pixel-mux */
+#define DAC_TVP3025	26	/* TI ViewPoint TVP3025 RAMDAC */
+#define DAC_EDSUN	27	/* EDSUN CEG DAC */
+#define DAC_ATT498	28	/* AT&T 20C498/21C498 15/16/24-bit DAC w/pixel-mux */
+#define DAC_ATT22C498	29	/* AT&T 22C498 15/16/24-bit DAC w/pixel-mux */
+#define DAC_STG1700	30	/* STG 1700 15/16/24-bit DAC w/pixel-mux */
+#define DAC_S3_GENDAC	31	/* S3 86C708 GENDAC 15/16/24-bit DAC w/PLL  */
+#define DAC_S3_SDAC	32	/* S3 86C716 SDAC 15/16/24 w/pixel-mux w/PLL */
 
-#define DAC_MAX		DAC_ATT498	/* UPDATE THIS! */
+#define DAC_MAX		DAC_S3_SDAC	/* UPDATE THIS! */
 
 #define DAC_6_8_PROGRAM	0x40	/* RAMDAC programmable for 6/8-bit tables */
 #define DAC_8BIT	0x80	/* RAMDAC with 8-bit wide lookup tables */
@@ -352,7 +371,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_YAMAHA	21
 
 #define NUM_VENDORS	21
-#define CHPS_PER_VENDOR	25
+#define CHPS_PER_VENDOR	26
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -363,10 +382,12 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI28800_2	SVGA_TYPE(V_ATI,3)	/* ATI 28800-2 		*/
 #define CHIP_ATI28800_4	SVGA_TYPE(V_ATI,4)	/* ATI 28800-4		*/
 #define CHIP_ATI28800_5	SVGA_TYPE(V_ATI,5)	/* ATI 28800-5		*/
-#define CHIP_ATI68800_3	SVGA_TYPE(V_ATI,6)	/* ATI 68800-3		*/
-#define CHIP_ATI68800_6	SVGA_TYPE(V_ATI,7)	/* ATI 68800-6 		*/
-#define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,8)	/* ATI 68800-LX		*/
-#define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,9)	/* ATI 68800-AX		*/
+#define CHIP_ATI28800_6	SVGA_TYPE(V_ATI,6)	/* ATI 28800-6		*/
+#define CHIP_ATI68800_3	SVGA_TYPE(V_ATI,7)	/* ATI 68800-3		*/
+#define CHIP_ATI68800_6	SVGA_TYPE(V_ATI,8)	/* ATI 68800-6 		*/
+#define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,9)	/* ATI 68800-LX		*/
+#define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,10)	/* ATI 68800-AX		*/
+#define CHIP_ATI88800	SVGA_TYPE(V_ATI,11)	/* ATI 88800		*/
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/
@@ -381,6 +402,8 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CTF65510	SVGA_TYPE(V_CT,8)	/* C&T F65510		*/
 #define CHIP_CTF65520	SVGA_TYPE(V_CT,9)	/* C&T F65520		*/
 #define CHIP_CTF65530	SVGA_TYPE(V_CT,10)	/* C&T F65530		*/
+#define CHIP_CTF65540	SVGA_TYPE(V_CT,11)	/* C&T F65540		*/
+#define CHIP_CTF65545	SVGA_TYPE(V_CT,12)	/* C&T F65545		*/
 #define CHIP_CL_UNKNOWN	SVGA_TYPE(V_CIRRUS,0)	/* Cirrus unknown	*/
 #define CHIP_CL510	SVGA_TYPE(V_CIRRUS,1)	/* Cirrus CL-GD 510/520	*/
 #define CHIP_CL610	SVGA_TYPE(V_CIRRUS,2)	/* Cirrus CL-GD 610/620	*/
@@ -395,17 +418,18 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CL5426	SVGA_TYPE(V_CIRRUS,11)	/* Cirrus 5426		*/
 #define CHIP_CL5428	SVGA_TYPE(V_CIRRUS,12)	/* Cirrus 5428		*/
 #define CHIP_CL5429	SVGA_TYPE(V_CIRRUS,13)	/* Cirrus 5429		*/
-#define CHIP_CL543X	SVGA_TYPE(V_CIRRUS,14)	/* Cirrus 543x		*/
-#define CHIP_CL6205	SVGA_TYPE(V_CIRRUS,15)	/* Cirrus 6205		*/
-#define CHIP_CL6215	SVGA_TYPE(V_CIRRUS,16)	/* Cirrus 6215		*/
-#define CHIP_CL6225	SVGA_TYPE(V_CIRRUS,17)	/* Cirrus 6225		*/
-#define CHIP_CL6235	SVGA_TYPE(V_CIRRUS,18)	/* Cirrus 6235		*/
-#define CHIP_CL5410	SVGA_TYPE(V_CIRRUS,19)	/* Cirrus 6510		*/
-#define CHIP_CL6410	SVGA_TYPE(V_CIRRUS,20)	/* Cirrus 6410		*/
-#define CHIP_CL6412	SVGA_TYPE(V_CIRRUS,21)	/* Cirrus 6412		*/
-#define CHIP_CL6420A	SVGA_TYPE(V_CIRRUS,22)	/* Cirrus 6420A		*/
-#define CHIP_CL6420B	SVGA_TYPE(V_CIRRUS,23)	/* Cirrus 6420B		*/
-#define CHIP_CL6440	SVGA_TYPE(V_CIRRUS,24)	/* Cirrus 6440		*/
+#define CHIP_CL5430	SVGA_TYPE(V_CIRRUS,14)	/* Cirrus 5430		*/
+#define CHIP_CL5434	SVGA_TYPE(V_CIRRUS,15)	/* Cirrus 5434		*/
+#define CHIP_CL6205	SVGA_TYPE(V_CIRRUS,16)	/* Cirrus 6205		*/
+#define CHIP_CL6215	SVGA_TYPE(V_CIRRUS,17)	/* Cirrus 6215		*/
+#define CHIP_CL6225	SVGA_TYPE(V_CIRRUS,18)	/* Cirrus 6225		*/
+#define CHIP_CL6235	SVGA_TYPE(V_CIRRUS,19)	/* Cirrus 6235		*/
+#define CHIP_CL5410	SVGA_TYPE(V_CIRRUS,20)	/* Cirrus 6510		*/
+#define CHIP_CL6410	SVGA_TYPE(V_CIRRUS,21)	/* Cirrus 6410		*/
+#define CHIP_CL6412	SVGA_TYPE(V_CIRRUS,22)	/* Cirrus 6412		*/
+#define CHIP_CL6420A	SVGA_TYPE(V_CIRRUS,23)	/* Cirrus 6420A		*/
+#define CHIP_CL6420B	SVGA_TYPE(V_CIRRUS,24)	/* Cirrus 6420B		*/
+#define CHIP_CL6440	SVGA_TYPE(V_CIRRUS,25)	/* Cirrus 6440		*/
 #define CHIP_CPQ_UNK	SVGA_TYPE(V_COMPAQ,0)	/* Compaq unknown	*/
 #define CHIP_CPQ_IVGS	SVGA_TYPE(V_COMPAQ,1)	/* Compaq Int Vid Gr Sys*/
 #define CHIP_CPQ_AVGA	SVGA_TYPE(V_COMPAQ,2)	/* Compaq Advanced VGA	*/
@@ -452,6 +476,11 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_S3_928P	SVGA_TYPE(V_S3,13)	/* S3 86c928PCI		*/
 #define CHIP_S3_864	SVGA_TYPE(V_S3,14)	/* S3 Vision864		*/
 #define CHIP_S3_964	SVGA_TYPE(V_S3,15)	/* S3 Vision964		*/
+#define CHIP_S3_866	SVGA_TYPE(V_S3,16)	/* S3 Vision866		*/
+#define CHIP_S3_868	SVGA_TYPE(V_S3,17)	/* S3 Vision868		*/
+#define CHIP_S3_968	SVGA_TYPE(V_S3,18)	/* S3 Vision968		*/
+#define CHIP_S3_Trio32	SVGA_TYPE(V_S3,19)	/* S3 Trio32		*/
+#define CHIP_S3_Trio64	SVGA_TYPE(V_S3,20)	/* S3 Trio64		*/
 #define CHIP_TVGA_UNK	SVGA_TYPE(V_TRIDENT,0)	/* Trident unknown	*/
 #define CHIP_TVGA8200	SVGA_TYPE(V_TRIDENT,1)	/* Trident LX8200	*/
 #define CHIP_TVGA8800BR	SVGA_TYPE(V_TRIDENT,2)	/* Trident 8800BR	*/
@@ -472,7 +501,11 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ET4000W32	SVGA_TYPE(V_TSENG,3)	/* Tseng ET4000/W32	*/
 #define CHIP_ET4000W32I	SVGA_TYPE(V_TSENG,4)	/* Tseng ET4000/W32i	*/
 #define CHIP_ET4KW32P_A	SVGA_TYPE(V_TSENG,5)	/* Tseng ET4000/W32p rA	*/
-#define CHIP_ET4KW32P_O	SVGA_TYPE(V_TSENG,6)	/* Tseng ET4000/W32p oth*/
+#define CHIP_ET4KW32I_B	SVGA_TYPE(V_TSENG,6)	/* Tseng ET4000/W32i rB	*/
+#define CHIP_ET4KW32I_C	SVGA_TYPE(V_TSENG,7)	/* Tseng ET4000/W32i rC	*/
+#define CHIP_ET4KW32P_B	SVGA_TYPE(V_TSENG,8)	/* Tseng ET4000/W32p rB	*/
+#define CHIP_ET4KW32P_C	SVGA_TYPE(V_TSENG,9)	/* Tseng ET4000/W32p rC	*/
+#define CHIP_ET4KW32P_D	SVGA_TYPE(V_TSENG,10)	/* Tseng ET4000/W32p rD	*/
 #define CHIP_UMC_408	SVGA_TYPE(V_UMC,0)	/* UMC 85c408		*/
 #define CHIP_V7_UNKNOWN	SVGA_TYPE(V_VIDEO7,0)	/* Video7 unknown	*/
 #define CHIP_V7_FWRITE	SVGA_TYPE(V_VIDEO7,1)	/* Video7 Fastwrite/VRAM*/
@@ -510,14 +543,20 @@ extern struct RamDac_Name RamDac_Names[];
 #define COPROC_TYPE(c,n)	(((c) << 16) | ((n) << 8) | CHIP_COPROC)
 #define C_8514		0
 #define C_XGA		1
+#define C_MACH64	2
+#define C_I128		3
 
-#define NUM_CP_TYPES	2
+#define NUM_CP_TYPES	4
 #define CHPS_PER_CPTYPE	6
 
 #define CHIP_8514	COPROC_TYPE(C_8514,0)	/* 8514/A or true clone */
-#define CHIP_MACH8	COPROC_TYPE(C_8514,1)	/* ATI Mach-8		*/
-#define CHIP_MACH32	COPROC_TYPE(C_8514,2)	/* ATI Mach-32		*/
+#define CHIP_MACH8	COPROC_TYPE(C_8514,1)	/* ATI Mach8		*/
+#define CHIP_MACH32	COPROC_TYPE(C_8514,2)	/* ATI Mach32		*/
 #define CHIP_CT480	COPROC_TYPE(C_8514,3)	/* C&T 82c480		*/
+
+#define CHIP_MACH64	COPROC_TYPE(C_MACH64,0)	/* ATI Mach64		*/
+
+#define CHIP_I128	COPROC_TYPE(C_I128,0)	/* Number9 Imagine I128 */
 
 /*
  * Useful macros

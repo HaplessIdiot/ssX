@@ -1,6 +1,5 @@
-/* $XConsortium: ppcGetSp.c,v 1.2 94/04/17 20:31:49 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: ppcGetSp.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcGetSp.c,v 3.0 1994/05/04 15:03:24 dawes Exp $ */
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

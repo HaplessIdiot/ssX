@@ -1,5 +1,5 @@
-/* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: agxPntWin.c,v 1.5 95/01/27 14:51:05 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.6 1995/01/20 05:48:56 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,20 +55,21 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 */
 
-
 #include "X.h"
 
 #include "windowstr.h"
 #include "regionstr.h"
 #include "pixmapstr.h"
 #include "scrnintstr.h"
+#include "cfb.h"
+#include "mi.h"
 
-#include "vga256.h"
 #include "agx.h"
 #include "regagx.h"
 
 extern void miPaintWindow();
 
+static void agxFillBoxSolid ();
 
 void
 agxPaintWindow(pWin, pRegion, what)
@@ -78,23 +79,15 @@ agxPaintWindow(pWin, pRegion, what)
 {
     register cfbPrivWin	*pPrivWin;
     void (*pcfbFillBoxTile32)(), (*pcfbFillBoxTileOdd)();
+    WindowPtr pBgWin;
+
+    if (!xf86VTSema)
+    {
+       miPaintWindow( pWin, pRegion, what );
+       return;
+    }
 
     pPrivWin = (cfbPrivWin *)(pWin->devPrivates[cfbWindowPrivateIndex].ptr);
-#if 0
-    switch (pWin->drawable.bitsPerPixel) {
-    case 8:
-	pcfbFillBoxTile32 = cfbFillBoxTile32;
-	pcfbFillBoxTileOdd = cfbFillBoxTileOdd;
-	break;
-    case 16:
-	pcfbFillBoxTile32 = cfb16FillBoxTile32;
-	pcfbFillBoxTileOdd = cfb16FillBoxTileOdd;
-	break;
-    }
-#else
-    pcfbFillBoxTile32 = vga256FillBoxTile32;
-    pcfbFillBoxTileOdd = vga256FillBoxTileOdd;
-#endif
 
     switch (what) {
     case PW_BACKGROUND:
@@ -105,62 +98,69 @@ agxPaintWindow(pWin, pRegion, what)
 	    do {
 		pWin = pWin->parent;
 	    } while (pWin->backgroundState == ParentRelative);
-	    (*pWin->drawable.pScreen->PaintWindowBackground)(pWin, pRegion,
-							     what);
+	    (*pWin->drawable.pScreen->
+                   PaintWindowBackground)(pWin, pRegion, what);
 	    return;
 	case BackgroundPixmap:
-	    if (pPrivWin->fastBackground)
-	    {
-		(*pcfbFillBoxTile32) ((DrawablePtr)pWin,
-				  (int)REGION_NUM_RECTS(pRegion),
-				  REGION_RECTS(pRegion),
-				  pPrivWin->pRotatedBackground);
+	    if (pPrivWin->fastBackground) {
+		agxFillBoxTile( (DrawablePtr)pWin,
+				(int)REGION_NUM_RECTS(pRegion),
+				REGION_RECTS(pRegion),
+				pPrivWin->pRotatedBackground,
+                                0, 0,
+                                MIX_SRC, ~0 );
 		return;
 	    }
-	    else
-	    {
-		(*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
-				   (int)REGION_NUM_RECTS(pRegion),
-				   REGION_RECTS(pRegion),
-				   pWin->background.pixmap,
-				   (int) pWin->drawable.x, 
-                                   (int) pWin->drawable.y);
+	    else {
+		agxFillBoxTile( (DrawablePtr)pWin,
+				(int)REGION_NUM_RECTS(pRegion),
+				REGION_RECTS(pRegion),
+				pWin->background.pixmap,
+				(int) pWin->drawable.x, 
+                                (int) pWin->drawable.y,
+                                MIX_SRC, ~0 );
 		return;
 	    }
 	    break;
 	case BackgroundPixel:
-	    agxFillBoxSolid ((DrawablePtr)pWin,
-				(int)REGION_NUM_RECTS(pRegion),
-				REGION_RECTS(pRegion),
-				pWin->background.pixel);
+	    agxFillBoxSolid( (DrawablePtr)pWin,
+			     (int)REGION_NUM_RECTS(pRegion),
+			     REGION_RECTS(pRegion),
+			     pWin->background.pixel );
 	    return;
     	}
     	break;
     case PW_BORDER:
 	if (pWin->borderIsPixel)
 	{
-	    agxFillBoxSolid ( (DrawablePtr)pWin,
-			      (int)REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion),
-			      pWin->border.pixel );
+	    agxFillBoxSolid( (DrawablePtr)pWin,
+			     (int)REGION_NUM_RECTS(pRegion),
+			     REGION_RECTS(pRegion),
+			     pWin->border.pixel );
 	    return;
 	}
 	else if (pPrivWin->fastBorder)
 	{
-	    (*pcfbFillBoxTile32) ((DrawablePtr)pWin,
-			      (int)REGION_NUM_RECTS(pRegion),
-			      REGION_RECTS(pRegion),
-			      pPrivWin->pRotatedBorder);
+	    agxFillBoxTile( (DrawablePtr)pWin,
+			    (int)REGION_NUM_RECTS(pRegion),
+			    REGION_RECTS(pRegion),
+			    pPrivWin->pRotatedBorder,
+                            0, 0,
+                            MIX_SRC, ~0 );
 	    return;
 	}
-	else if (pWin->border.pixmap->drawable.width >=
-	    /* PPW/2 */ 16 / pWin->drawable.bitsPerPixel)
-	{
-	    (*pcfbFillBoxTileOdd) ((DrawablePtr)pWin,
-			       (int)REGION_NUM_RECTS(pRegion),
-			       REGION_RECTS(pRegion),
-			       pWin->border.pixmap,
-			       (int) pWin->drawable.x, (int) pWin->drawable.y);
+	else {
+	    for (pBgWin = pWin;
+		 pBgWin->backgroundState == ParentRelative;
+		 pBgWin = pBgWin->parent);
+
+	    agxFillBoxTile( (DrawablePtr)pWin,
+			    (int)REGION_NUM_RECTS(pRegion),
+			    REGION_RECTS(pRegion),
+			    pWin->border.pixmap,
+			    (int) pBgWin->drawable.x, 
+                            (int) pBgWin->drawable.y,
+                            MIX_SRC, ~0 );
 	    return;
 	}
 	break;
@@ -168,7 +168,7 @@ agxPaintWindow(pWin, pRegion, what)
     miPaintWindow (pWin, pRegion, what);
 }
 
-void
+static void
 agxFillBoxSolid (pDrawable, nBox, pBox, pixel)
     DrawablePtr	    pDrawable;
     int		    nBox;
@@ -213,5 +213,5 @@ agxFillBoxSolid (pDrawable, nBox, pBox, pixel)
                           | GE_OPW_DEST_MAP_A   );
 	}
     }
-    GE_WAIT_IDLE();
+    GE_WAIT_IDLE_EXIT();
 }

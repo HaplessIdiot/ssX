@@ -1,5 +1,6 @@
-.\" $XFree86: mit/server/ddx/x386/SuperProbe/SuperProbe.man,v 2.9 1994/04/15 05:09:49 dawes Exp $
-.TH SuperProbe 1 "Version 2.1" ""
+.\" $XConsortium: SuperProbe.man,v 1.2 94/11/21 21:29:50 kaleb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/SuperProbe.man,v 3.1 1994/08/31 04:20:05 dawes Exp $
+.TH SuperProbe 1 "Version 2.2" ""
 .SH NAME
 SuperProbe - probe for and identify installed video hardware.
 .SH SYNOPSIS
@@ -200,7 +201,7 @@ of many FTP repositories.
 \fIProgrammer's Guide to the EGA and VGA Cards, 2nd Ed\fP, by Richard
 Ferraro.
 .SH AUTHOR
-David E. Wexelblat <dwex@goblin.org>
+David E. Wexelblat <dwex@xfree86.org>
 .br
-with help from David Dawes <dawes@physics.su.oz.au> and the XFree86 
+with help from David Dawes <dawes@xfree86.org> and the XFree86 
 development team.

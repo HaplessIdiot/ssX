@@ -1,5 +1,5 @@
-/* $XConsortium: cfbwindow.c,v 1.2 94/04/17 20:32:29 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgawindow.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgawindow.c,v 3.0 1994/07/24 11:59:26 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

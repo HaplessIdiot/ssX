@@ -1,3 +1,4 @@
+/* $XConsortium: xdmshell.c,v 1.16 95/01/05 20:57:57 kaleb Exp $ */
 /*
  * xdmshell - simple program for running xdm from login
  *
@@ -36,7 +37,7 @@ in this Software without prior written authorization from the X Consortium.
  * bring down X when you are finished.
  */
 
-/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.0 1994/04/28 12:45:01 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.1 1994/06/28 12:32:45 dawes Exp $ */
 
 #include <stdio.h>
 #include "dm.h"
@@ -60,7 +61,7 @@ extern int errno;
 /*
  * HP-UX does have vfork, but A/UX doesn't
  */
-#if (defined(SYSV) || defined(macII)) && !defined(hpux) || defined(MINIX)
+#ifndef HAS_VFORK
 #define vfork() fork()
 #endif
 

@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514gtim.c,v 1.1 94/03/28 21:04:35 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: gtimg.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/gtimg.c,v 3.0 1994/07/24 11:43:19 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

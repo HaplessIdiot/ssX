@@ -32,6 +32,7 @@ server. The following chipsets for Oak Tech. Inc. are supported:
 	Non-Interlaced and 1280x1024x256 interlaced.  Maximun
 	Dot-Clock is 80Mhz, but usually is coupled with OTI068
 	clock generator whose highest frequency is 78Mhz.
+	Supports up to 2MBytes of 70ns DRAM.
 </descrip>
 
 All the chipsets are "Backwards compatible", in fact some early
@@ -52,8 +53,9 @@ Device section).
 <tag>
 Option &dquot;linear&dquot; (OTI087)
 </tag>
-	This option enables a linear framebuffer at 0xE00000 (14Mb)
-	that will work both in VLB and ISA cards, the aperture depends
+	This option enables a linear framebuffer at 0xE00000 (14Mb) for
+	cards recognized as ISA by the probe.  Cards that are VLB will
+	map the framebuffer at 0x4E00000.  The aperture depends
 	on the VideoRam parameter in the <tt>XF86Config</tt> file or on
 	the probed value for the board. It will speed up performance by
 	about 15&percnt; on a VLB-based boards for a DX2-66 486.
@@ -78,7 +80,7 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
 	will be used as a rudimentary bitblt engine. Performance boost
 	is more or less 100&percnt;, (double BlitStones on xbench). Most
 	OTI087 boards seem to have this feature broken, corrupting text
-	from xterms and leaving mouse droppings thoughout the
+	from xterms and leaving mouse droppings throughout the
 	screen. As a rule of thumb, enable it, if it works badly,
 	disable it ;).
 </descrip>
@@ -102,10 +104,10 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
 
 <sect> Linear addressing<p>
 
-    Linear addressing is hardwired to 14 Mbytes, thus if you have more
-    than that on your board you shouldnt enable it. Work is being done
-    to sidestep that limit, although I doubt anyone with an 87 will
-    have more than that. The aperture is selected from the VideoRam
+    Linear addressing is hardwired to 14 Mbytes for ISA boards and 78 Mbytes
+    for VLB boards, thus if you have more
+    than that on your board you shouldn't enable it.
+    The aperture is selected from the VideoRam
     parameter of the XF86Config or from the amount of memory that is
     detected if VideoRam is not found.
 
@@ -117,7 +119,8 @@ Option &dquot;favour_bitblt&dquot; (OTI087)
     GOOD LUCK!!!!
 
 <verb>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.2 1995/01/21 07:16:36 dawes Exp $
+$XConsortium: Oak.sgml,v 1.1 95/01/23 15:05:36 kaleb Exp $
 </verb>
 
 </article>

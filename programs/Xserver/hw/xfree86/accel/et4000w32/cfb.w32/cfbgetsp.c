@@ -1,5 +1,5 @@
-/* $XConsortium: cfbgetsp.c,v 5.14 94/04/17 20:28:50 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: cfbgetsp.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbgetsp.c,v 3.0 1994/09/11 00:41:33 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

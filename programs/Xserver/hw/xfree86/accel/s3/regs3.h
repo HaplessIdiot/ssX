@@ -1,6 +1,5 @@
-/* $XConsortium: regs3.h,v 1.1 94/03/28 21:13:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.9 1994/11/05 23:42:51 dawes Exp $ */
-/*
+/* $XConsortium: regs3.h,v 1.3 94/12/27 11:29:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/regs3.h,v 3.10 1994/11/06 09:50:57 dawes Exp $ */
  * regs3.h
  * 
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc., Londonderry,

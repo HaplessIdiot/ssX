@@ -1,6 +1,5 @@
-/* $XConsortium: bios_mmap.c,v 1.1 94/03/28 21:29:15 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: bios_mmap.c,v 1.2 94/10/12 20:47:13 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/mach/bios_mmap.c,v 3.0 1994/06/05 05:58:08 dawes Exp $ */
  * Copyright 1992 by Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

@@ -1,6 +1,5 @@
-/* $XConsortium: s3fs.c,v 1.3 94/04/17 20:31:10 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.2 1994/08/03 13:27:56 dawes Exp $ */
-/************************************************************
+/* $XConsortium: s3fs.c,v 1.4 94/10/12 20:07:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fs.c,v 3.3 1994/08/20 07:34:00 dawes Exp $ */
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
                     All Rights Reserved

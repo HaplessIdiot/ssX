@@ -28,8 +28,8 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XConsortium: cfbglblt8.c,v 5.23 94/04/17 20:32:19 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgaglblt8.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaglblt8.c,v 3.0 1994/07/24 11:58:59 dawes Exp $ */
 
 #include	"vga256.h"
 

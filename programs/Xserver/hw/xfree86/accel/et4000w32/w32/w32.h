@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: w32.h,v 1.4 95/01/27 15:36:30 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32.h,v 3.4 1995/01/27 02:32:03 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -36,12 +37,16 @@ glenn@cs.utexas.edu)
 #include <stdio.h>
 
 typedef unsigned char *ByteP; 
+typedef volatile unsigned char *VByteP;
 typedef unsigned short *WordP;
 typedef unsigned *LongP;
 
 
 extern
-ByteP W32Buffer, ACL;
+ByteP W32Buffer;
+
+extern
+VByteP ACL;
 
 
 extern
@@ -121,11 +126,9 @@ extern Bool W32;
 extern Bool W32i;
 extern Bool W32OrW32i;
 extern Bool W32p;
-extern Bool FrameBuffer; /* Is the operation on the frame buffer? */  
-
-extern long W32BlankHackR;
-extern long W32BlankHackG;
-extern long W32BlankHackB;
+extern Bool W32pa;
+extern Bool W32pCAndLater;
+extern Bool FrameBuffer;
 
 extern long W32Foreground;
 extern long W32Background;
@@ -180,7 +183,8 @@ void figure(char*);
 {while (*(volatile unsigned char *)ACL_ACCELERATOR_STATUS & 0x4);}
 
 
-#define SET_XY(X, Y) {*((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + (X) - 1;}
+#define SET_XY(X, Y) \
+    {*((LongP) ACL_X_COUNT) = (((Y) - 1) << 16) + ((X) - 1) * (PSZ >> 3);}
 
 
 /* Must do 0x09 (in one operatoin) for the W32 */
@@ -204,17 +208,17 @@ void figure(char*);
     *ACL_INTERRUPT_MASK = 0x0; \
     *ACL_INTERRUPT_STATUS = 0x0; \
     *ACL_ACCELERATOR_STATUS = 0x0; \
+    *ACL_RELOAD_CONTROL = 0x0; \
     *ACL_SYNC_ENABLE = 0x1; \
     if (W32OrW32i) \
     { \
         *ACL_X_POSITION = 0; \
         *ACL_Y_POSITION = 0; \
         *ACL_OPERATION_STATE = 0x0; \
-        *ACL_RELOAD_CONTROL = 0x0; \
     } \
     else /* w32p */ \
     { /* Enable the W32p startup bit and set use an eight-bit pixel depth */ \
-	*ACL_PIXEL_DEPTH = 0; \
+	*ACL_PIXEL_DEPTH = (PSZ - 8) << 1; \
         *ACL_OPERATION_STATE = 0x10; \
     } \
     *MMU_CONTROL = 0x74; \
@@ -223,7 +227,7 @@ void figure(char*);
 
 #define START_ACL_CPU(dst) \
 { \
-    if (W32) \
+    if (W32OrW32i) \
 	*(MBP2) = dst; \
     else \
 	*(ACL_DESTINATION_ADDRESS) = dst; \

@@ -28,8 +28,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: cfbfillrct.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbfillrct.c,v 3.0 1994/09/11 00:41:29 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"

@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/09/19 14:50:36 rws Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.6 94/11/21 18:24:13 kaleb Exp $
+XCOMM $XFree86: xc/lib/Xbsd/Imakefile,v 3.0 1994/05/30 08:19:36 dawes Exp $
 SRCS = Berklib.c
 OBJS = Berklib.o
 

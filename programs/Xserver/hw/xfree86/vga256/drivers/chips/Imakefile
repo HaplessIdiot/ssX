@@ -1,4 +1,5 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.1 94/12/15 21:08:14 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/Imakefile,v 3.0 1994/11/05 23:51:50 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ct_driver.c ct_bank.s

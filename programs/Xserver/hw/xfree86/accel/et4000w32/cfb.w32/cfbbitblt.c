@@ -30,8 +30,8 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbbitblt.c,v 5.51 94/05/27 11:00:56 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: cfbbitblt.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbbitblt.c,v 3.0 1994/09/11 00:41:27 dawes Exp $ */
 
 #include	"X.h"
 #include	"Xmd.h"

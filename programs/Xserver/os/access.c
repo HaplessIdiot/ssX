@@ -1,5 +1,5 @@
-/* $XConsortium: access.c,v 1.73 94/04/17 20:26:53 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.3 1994/05/21 23:59:02 dawes Exp $ */
+/* $XConsortium: access.c,v 1.75 94/11/21 18:27:47 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.4 1994/11/27 07:06:08 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -558,7 +558,7 @@ DefineSelf (fd)
     register struct ifreq *ifr;
     
 #ifdef DNETCONN
-    struct dn_naddr *dnaddr = getnodeadd(0);
+    struct dn_naddr *dnaddr = getnodeadd();
     /*
      * AF_DECnet may not be listed in the interface list.  Instead use
      * the supported library call to find out the local address (if any).

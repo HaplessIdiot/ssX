@@ -27,8 +27,8 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XConsortium: cfbpush8.c,v 5.10 94/04/17 20:32:23 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgapush8.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgapush8.c,v 3.0 1994/07/24 11:59:11 dawes Exp $ */
 
 #include	"vga256.h"
 

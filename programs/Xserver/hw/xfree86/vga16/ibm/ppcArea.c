@@ -1,6 +1,5 @@
-/* $XConsortium: ppcArea.c,v 1.1 94/03/28 21:35:39 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: ppcArea.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcArea.c,v 3.0 1994/05/04 15:03:16 dawes Exp $ */
  * Copyright IBM Corporation 1987,1988,1989
  *
  * All Rights Reserved

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: linearline.c,v 1.2 95/01/16 13:18:10 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/linearline.c,v 3.2 1995/01/07 04:12:08 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -50,10 +51,10 @@
  *
  * The six cycle timing is for a non-page mode DRAM write, that is
  * a write that doesn't fall in the same DRAM page as the previous
- * write. A typical DRAM page size is 512, which is larger than the
+ * write. A typical DRAM page size is 512, which is smaller than the
  * scanline offset so writes to different scanlines cannot be page-mode
  * (page mode accesses usually take 2 cycles). There is a function
- * that performs a further optimization by drawing the two vertical
+ * that performs a further optimization by drawing two vertical
  * edges in the same loop, scanline by scanline, in the hope of having
  * page-mode access for the second (right edge) pixel in each scanline.
  *
@@ -93,6 +94,7 @@ void LinearFramebufferVerticalLine(destp, fg, lineheight, destpitch)
     }
     while (lineheight > 0) {
 	DOPIXELVERTICAL(destp, 0, fg, destpitch);
+	destp += destpitch;
 	lineheight--;
     }
 }

@@ -1,6 +1,6 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.8 94/04/17 20:37:27 rws Exp $
-XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/Imakefile,v 3.0 1994/05/30 08:20:49 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 5.11 95/01/12 18:38:15 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/Imakefile,v 3.1 1994/12/02 05:42:55 dawes Exp $
 XCOMM
 XCOMM 
 XCOMM Copyright 1989, 1990, 1991 by Sun Microsystems, Inc. and the X Consortium

@@ -2,7 +2,8 @@
  * Hooks for cfb16/32 CopyArea and CopyWindow
  */
 
-/* $XFree86$ */
+/* $XConsortium: cir_blt16.c,v 1.2 95/01/27 14:47:22 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.0 1994/10/30 04:22:33 dawes Exp $ */
 
 /*
 

@@ -1,6 +1,5 @@
-/* $XConsortium: s3bstor.c,v 1.1 94/03/28 21:14:37 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.4 1994/08/20 07:33:48 dawes Exp $ */
-/*-
+/* $XConsortium: s3bstor.c,v 1.3 95/01/16 13:16:51 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bstor.c,v 3.5 1995/01/14 10:47:18 dawes Exp $ */
  * s3bstore.c --
  *	Functions required by the backing-store implementation in MI.
  *

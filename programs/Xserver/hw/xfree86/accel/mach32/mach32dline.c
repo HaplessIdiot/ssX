@@ -1,6 +1,5 @@
-/* $XConsortium: mach32dline.c,v 1.2 94/04/17 20:30:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.2 1994/07/15 06:58:07 dawes Exp $ */
-/*
+/* $XConsortium: mach32dline.c,v 1.3 94/10/12 19:59:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32dline.c,v 3.3 1994/09/11 00:48:51 dawes Exp $ */
 
 Copyright (c) 1987  X Consortium
 

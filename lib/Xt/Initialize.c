@@ -1,5 +1,5 @@
-/* $XConsortium: Initialize.c,v 1.220 94/04/17 20:14:13 converse Exp $ */
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.1 1994/11/30 21:31:51 dawes Exp $ */
+/* $XConsortium: Initialize.c,v 1.222 94/12/12 18:59:11 kaleb Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.2 1994/12/02 05:42:20 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -279,8 +279,10 @@ static String XtGetRootDirName(buf, slash)
 #else
      int uid;
      extern int getuid();
-#if !defined(i386) && !defined(SYSV)
+#ifndef i386
+# ifndef SYSV
      extern struct passwd *getpwuid(), *getpwnam();
+# endif
 #endif
 #endif
 #if defined(sun) && defined(SVR4) && defined(XTHREADS)

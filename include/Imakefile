@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.85 94/03/29 15:54:38 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.86 94/11/21 18:19:48 kaleb Exp $
+XCOMM $XFree86: xc/include/Imakefile,v 3.0 1994/05/30 08:18:59 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags /**/
 

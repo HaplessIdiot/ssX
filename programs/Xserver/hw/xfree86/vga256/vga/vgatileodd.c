@@ -1,5 +1,5 @@
-/* $XConsortium: cfbtileodd.c,v 1.2 94/04/17 20:32:28 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgatileodd.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatileodd.c,v 3.0 1994/07/24 11:59:23 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

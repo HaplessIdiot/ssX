@@ -6,7 +6,7 @@
 # made 06/05/1994 05:08 UTC by root@gamma
 # Source directory /home5/x/XdmConf.svr4
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/XdmConf.svr4,v 3.0 1994/06/05 05:56:57 dawes Exp $
 #
 # existing files will NOT be overwritten unless -c is specified
 #
@@ -376,7 +376,7 @@ else
 echo 'x - extracting Xsession (Text)'
 sed 's/^X//' << 'SHAR_EOF' > 'Xsession' &&
 #!/bin/sh
-# $XConsortium: Xsession,v 1.7 92/08/06 11:08:14 gildea Exp $
+# $XConsortium: XdmConf.svr4,v 1.1 94/10/05 13:37:27 kaleb Exp $
 #
 # Xsession
 #

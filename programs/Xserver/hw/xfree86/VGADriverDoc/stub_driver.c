@@ -1,6 +1,7 @@
-/* $XFree86$ */
+/* $XConsortium: stub_driver.c,v 1.4 95/01/16 13:16:23 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.11 1995/01/10 11:33:50 dawes Exp $ */
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -55,7 +56,7 @@
 #include "vga.h"
 
 /*
- * If the driver makes use of Xconfig 'Option' flags, the following will be
+ * If the driver makes use of XF86Config 'Option' flags, the following will be
  * required
  */
 #define XCONFIG_FLAGS_ONLY
@@ -74,7 +75,7 @@
  * This header is required for drivers that implement STUBFbInit().
  */
 #if !defined(MONOVGA) && !defined(XF86VGA16)
-#include "cfbfuncs.h"
+#include "vga256.h"
 #endif
 
 /*
@@ -109,6 +110,7 @@ static char *   STUBIdent();
 static Bool     STUBClockSelect();
 static void     STUBEnterLeave();
 static Bool     STUBInit();
+static Bool	STUBValidMode();
 static void *   STUBSave();
 static void     STUBRestore();
 static void     STUBAdjust();
@@ -135,6 +137,7 @@ vgaVideoChipRec STUB = {
 	STUBIdent,
 	STUBEnterLeave,
 	STUBInit,
+	STUBValidMode,
 	STUBSave,
 	STUBRestore,
 	STUBAdjust,
@@ -196,6 +199,44 @@ vgaVideoChipRec STUB = {
 	 * will normally be 8, but may be 4 or 16 for some servers.
 	 */
 	8,
+	/*
+	 * If the driver includes support for a linear-mapped frame buffer
+	 * for the detected configuratio this should be set to TRUE in the
+	 * Probe or FbInit function.  In most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is the physical base address of the linear-mapped frame
+	 * buffer (when used).  Set it to 0 when not in use.
+	 */
+	0,
+	/*
+	 * This is the size  of the linear-mapped frame buffer (when used).
+	 * Set it to 0 when not in use.
+	 */
+	0,
+	/*
+	 * This is TRUE if the driver has support for 16bpp for the detected
+	 * configuration. It must be set in the Probe function.
+	 * It most cases it should be FALSE.
+	 */
+	FALSE,
+	/*
+	 * This is TRUE if the driver has support for 32bpp for the detected
+	 * configuration.
+	 */
+	FALSE,
+	/*
+	 * This is a pointer to a list of builtin driver modes.
+	 * This is rarely used, and in must cases, set it to NULL
+	 */
+	NULL,
+	/*
+	 * This is a factor that can be used to scale the raw clocks
+	 * to pixel clocks.  This is rarely used, and in most cases, set
+	 * it to 1.
+	 */
+	1,
 };
 
 /*
@@ -224,7 +265,7 @@ static int Num_STUB_ExtPorts =
  * server will call this function when listing supported chipsets, with 'n' 
  * incrementing from 0, until the function returns NULL.  The 'Probe'
  * function should call this function to get the string name for a chipset
- * and when comparing against an Xconfig-supplied chipset value.  This
+ * and when comparing against an XF86Config-supplied chipset value.  This
  * cuts down on the number of places errors can creep in.
  */
 static char *
@@ -309,7 +350,7 @@ int no;
  * GVGA drivers for the special code that is needed.  Note that the BIOS 
  * base should not be assumed to be at 0xC0000 (although most are).  Use
  * 'vga256InfoRec.BIOSbase', which will pick up any changes the user may
- * have specified in the Xconfig file.
+ * have specified in the XF86Config file.
  *
  * The preferred mechanism for doing this is via register identification.
  * It is important not only the chipset is detected, but also to
@@ -346,7 +387,7 @@ STUBProbe()
 	{
 		/*
 		 * This is the easy case.  The user has specified the
-		 * chipset in the Xconfig file.  All we need to do here
+		 * chipset in the XF86Config file.  All we need to do here
 		 * is a string comparison against each of the supported
 		 * names available from the Ident() function.  If this
 		 * driver supports more than one chipset, there would be
@@ -391,7 +432,7 @@ STUBProbe()
     	}
 
 	/*
-	 * If the user has specified the amount of memory in the Xconfig
+	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
 	 */
   	if (!vga256InfoRec.videoRam)
@@ -405,7 +446,7 @@ STUBProbe()
     	}
 
 	/*
-	 * Again, if the user has specified the clock values in the Xconfig
+	 * Again, if the user has specified the clock values in the XF86Config
 	 * file, we respect those choices.
 	 */
   	if (!vga256InfoRec.clocks)
@@ -483,12 +524,13 @@ Bool enter;
 		/*
 		 * Here undo what was done above.
 		 */
-		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 
-      		/* Protect CRTC[0-7] */
-      		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-      		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
-    	}
+		/* Protect CRTC[0-7] */
+		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
+		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
+
+		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+	}
 }
 
 /*
@@ -639,7 +681,7 @@ int x, y;
 	 * will have additional bits in their extended registers, which
 	 * must also be set.
 	 */
-	int Base = (y * vga256InfoRec.virtualX + x) >> 3;
+	int Base = (y * vga256InfoRec.displayWidth + x) >> 3;
 
 	/*
 	 * These are the generic starting address registers.
@@ -747,4 +789,16 @@ STUBFbInit()
 	vgaHWCursor.Warp = STUBCursorWarp;
 	vgaHWCursor.QueryBestSize = STUBQueryBestSize;
 	
+}
+
+static Bool
+STUBValidMode(mode)
+DisplayModePtr mode;
+{
+	/*
+	 * Code to check if a mode is suitable for the selected chipset.
+	 * In most cases this can just return TRUE.
+	 */
+
+	return(TRUE);
 }

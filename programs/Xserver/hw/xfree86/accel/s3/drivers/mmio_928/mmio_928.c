@@ -1,6 +1,5 @@
-/* $XConsortium: mmio_928.c,v 1.1 94/03/28 21:17:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.4 1995/01/10 10:55:08 dawes Exp $ */
-/*
+/* $XConsortium: mmio_928.c,v 1.3 95/01/16 13:16:55 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.5 1995/01/10 11:18:24 dawes Exp $ */
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,29 +1,43 @@
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Wexelblat not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Wexelblat shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Wexelblat.
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/AsmMacros.h,v 2.0 1993/09/22 15:42:14 dawes Exp $ */
+/* $XConsortium: AsmMacros.h,v 1.7 95/01/25 23:14:20 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/AsmMacros.h,v 3.4 1994/12/17 09:58:03 dawes Exp $ */
 
-#ifdef __GNUC__
+#if defined(__EMX__)
+#include <sys/hw.h>
+#define outb(p,v) _outp8(p,v)
+#define outw(p,v) _outp16(p,v)
+#define outl(p,v) _outp32(p,v)
+#define inb(p) _inp8(p)
+#define inw(p) _inp16(p)
+#define inl(p) _inp32(p)
+#else
+#if defined(__GNUC__)
 
 #ifdef GCCUSESGAS
 static __inline__ void
@@ -34,13 +48,20 @@ char val;
    __asm__ __volatile__("outb %0,%1" : :"a" (val), "d" (port));
 }
 
-
 static __inline__ void
 outw(port, val)
 short port;
 short val;
 {
    __asm__ __volatile__("outw %0,%1" : :"a" (val), "d" (port));
+}
+
+static __inline__ void
+outl(port, val)
+short port;
+unsigned int val;
+{
+   __asm__ __volatile__("outl %0,%1" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
@@ -65,6 +86,17 @@ short port;
    return ret;
 }
 
+static __inline__ unsigned int
+inl(port)
+short port;
+{
+   unsigned int ret;
+   __asm__ __volatile__("inl %1,%0" :
+       "=a" (ret) :
+       "d" (port));
+   return ret;
+}
+
 #else /* GCCUSESGAS */
 
 static __inline__ void
@@ -81,6 +113,14 @@ outw(port, val)
      short val;
 {
   __asm__ __volatile__("out%W0 (%1)" : :"a" (val), "d" (port));
+}
+
+static __inline__ void
+outl(port, val)
+     short port;
+     unsigned int val;
+{
+  __asm__ __volatile__("out%L0 (%1)" : :"a" (val), "d" (port));
 }
 
 static __inline__ unsigned int
@@ -100,6 +140,17 @@ inw(port)
 {
   unsigned int ret;
   __asm__ __volatile__("in%W0 (%1)" :
+                   "=a" (ret) :
+                   "d" (port));
+  return ret;
+}
+
+static __inline__ unsigned int
+inl(port)
+     short port;
+{
+  unsigned int ret;
+  __asm__ __volatile__("in%L0 (%1)" :
                    "=a" (ret) :
                    "d" (port));
   return ret;
@@ -133,16 +184,21 @@ intr_enable()
 #if defined(_MINIX) && defined(_ACK)
 
 /* inb, outb, inw and outw are defined in the library */
+/* ... but I've no idea if the same is true for inl & outl */
 
 u8_t inb(U16_t);
 void outb(U16_t, U8_t);
 u16_t inw(U16_t);
 void outw(U16_t, U16_t);
+u32_t inl(U16_t);
+void outl(U16_t, U32_t);
 
 #else /* not _MINIX and _ACK */
 
 # if defined(__STDC__) && (__STDC__ == 1)
+#  ifndef NCR
 #  define asm __asm
+#  endif
 # endif
 # ifdef SVR4
 #  include <sys/types.h>
@@ -156,3 +212,4 @@ void outw(U16_t, U16_t);
 
 #endif /* _MINIX and _ACK */
 #endif /* __GNUC__ */
+#endif /* __EMX__ */

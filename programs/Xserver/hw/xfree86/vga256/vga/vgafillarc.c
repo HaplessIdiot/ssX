@@ -25,8 +25,8 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: cfbfillarc.c,v 5.13 94/04/17 20:32:16 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgafillarc.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgafillarc.c,v 3.0 1994/07/24 11:58:51 dawes Exp $ */
 
 #include "vga256.h"
 #include "mifillarc.h"

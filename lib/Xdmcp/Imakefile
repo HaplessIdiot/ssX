@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.22 94/03/29 15:54:21 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/Xdmcp/Imakefile,v 3.0 1994/05/30 08:19:45 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 1.23 94/11/21 18:22:20 kaleb Exp $
 #define DoNormalLib NormalLibXdmcp
 #define DoSharedLib SharedLibXdmcp
 #define DoDebugLib DebugLibXdmcp

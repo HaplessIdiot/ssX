@@ -46,8 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: os.h,v 1.61 94/04/17 20:25:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.3 1994/12/17 10:09:08 dawes Exp $ */
+/* $XConsortium: os.h,v 1.64 95/01/05 19:50:01 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.4 1994/12/29 10:21:47 dawes Exp $ */
 
 #ifndef OS_H
 #define OS_H
@@ -83,18 +83,18 @@ typedef struct _NewClientRec *NewClientPtr;
  */
 #ifdef __HIGHC__
 
+#ifndef NCR
 extern char *alloca();
 
 #if HCVERSION < 21003
 #define ALLOCATE_LOCAL(size)	alloca((int)(size))
-#if defined(NCR)
-#pragma on(alloca);
-#else
 pragma on(alloca);
-#endif
 #else /* HCVERSION >= 21003 */
 #define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
 #endif /* HCVERSION < 21003 */
+#else /* NCR */
+#define ALLOCATE_LOCAL(size)	alloca(size)
+#endif
 
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 
@@ -103,13 +103,14 @@ pragma on(alloca);
 
 #if defined(__GNUC__) && !defined(alloca)
 #define alloca __builtin_alloca
-#endif
+#else
 
 /*
  * warning: old mips alloca (pre 2.10) is unusable, new one is builtin
  * Test is easy, the new one is named __builtin_alloca and comes
  * from alloca.h which #defines alloca.
  */
+#ifndef NCR
 #if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
@@ -122,6 +123,8 @@ char *alloca();
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* who does alloca */
+#endif /* NCR */
+#endif /* ! __GNUC__ */
 
 #endif /* NO_ALLOCA */
 

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: p9000init.c,v 1.6 95/01/16 13:16:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.7 1995/01/15 10:32:02 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -45,6 +46,68 @@ static void p9000ProbeMemConfig(
 #endif
 );
 
+/*	
+ * p9000CalcSysconfigHres --
+ *    Calculates the horizontal resolution component of the sysconfig
+ *    register.  Returns whether the horiz res is possible or not.
+ *    Stores the value in sysconfigval.
+ */
+Bool p9000CalcSysconfigHres(hres, bytesperpixel, sysconfigval)
+     int hres; 
+     unsigned long bytesperpixel;
+     unsigned long *sysconfigval;
+{
+  static struct p9000SysconfigHresFieldEntry {
+    unsigned long fieldval;  /* The value to store in the field */
+    int           add;       /* How much to add for this field */
+    Bool          specin[3]; /* Which fields can this be spec'd in */
+  } p9000SysconfigHresFields[] = {
+    /* val  add     0      1      2  */
+    { 0x7, 2048, {FALSE, FALSE, TRUE}  },
+    { 0x6, 1024, {FALSE, TRUE,  TRUE}  },
+    { 0x5, 512,  {TRUE,  TRUE,  TRUE}  },
+    { 0x4, 256,  {TRUE,  TRUE,  TRUE}  },
+    { 0x3, 128,  {TRUE,  TRUE,  TRUE}  },
+    { 0x2, 64,   {TRUE,  TRUE,  FALSE} },
+    { 0x1, 32,   {TRUE,  FALSE, FALSE} },
+    { 0x0, 0,    {TRUE,  TRUE,  TRUE}  },
+  };
+  int p9000SysconfigHresFieldEntries = sizeof(p9000SysconfigHresFields)
+    / sizeof(struct p9000SysconfigHresFieldEntry);
+  int remhres;                     /* The remaining hres */
+  unsigned long cursysconfig = 0;  /* The current version of sysconfig */
+  int curfield, curfv;             /* The current field and field value */
+  
+  remhres = bytesperpixel*hres;
+
+  /* NOTE - the p9000 manual figure 60 has the fields labeled
+     backwards - but if you look at values from viper.ini
+     you'll see that it's the left-most (msb) field that
+     can have values up to 7 , so that must be field 3 . It
+     doesn't work for rectangles if you mess this up, i.e. if
+     you calculate a wrong number or you use a field value
+     illegal for that field */
+
+  for (curfield = 2; curfield >=0; curfield--)
+    for (curfv = 0; curfv < p9000SysconfigHresFieldEntries; curfv++)
+      if (p9000SysconfigHresFields[curfv].specin[curfield]
+	  && (p9000SysconfigHresFields[curfv].add <= remhres))
+	{
+	  remhres -= p9000SysconfigHresFields[curfv].add;
+	  cursysconfig |= 
+	    p9000SysconfigHresFields[curfv].fieldval << (curfield*3 + 14);
+	  break;
+	}
+  if (remhres)
+    {
+      ErrorF("\tIt is not possible to have a horiz resolution\n\tof %d at %d bytes per pixel.  Try a horizontal\n\tresolution of %d instead.\n",
+	     hres, bytesperpixel, hres - remhres/bytesperpixel);
+      return(FALSE);
+    }
+  *sysconfigval = cursysconfig;
+  return(TRUE);
+}
+
 
 /*	
  * p9000CalcMiscRegs --
@@ -75,22 +138,24 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
      p9000CRTCRegPtr crtcRegs;
      DisplayModePtr mode;
 {
-  int bytesperline , diff , bestdiff ;
-  int fieldadd1 , fieldadd2 , fieldadd3 , bestfit , linebytes ;
-  int field1 , field2 , field3 ;
 
-  crtcRegs->XSize = mode->HDisplay;
-  crtcRegs->YSize = mode->VDisplay;
+  crtcRegs->XSize = mode->CrtcHDisplay;
+  crtcRegs->YSize = mode->CrtcVDisplay;
   crtcRegs->BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
   
-  crtcRegs->hrzt  = (mode->HTotal / 4) - 1 ;
-  crtcRegs->hrzsr = ((mode->HSyncEnd - mode->HSyncStart) / 4 ) - 1 ;
-  crtcRegs->hrzbr = ((mode->HTotal - mode->HSyncStart) / 4 ) - 1 ;
-  crtcRegs->hrzbf = ((mode->HDisplay+(mode->HTotal-mode->HSyncStart)) /4) - 1 ;
-  crtcRegs->vrtt  = mode->VTotal ;
-  crtcRegs->vrtsr = mode->VSyncEnd - mode->VSyncStart ;
-  crtcRegs->vrtbr = mode->VTotal - mode->VSyncStart ;
-  crtcRegs->vrtbf = crtcRegs->vrtbr + mode->VDisplay ;
+  /* Where the BytesPerPixel gets multiplied in SHOULD CHANGE!!! *TO*DO* */
+  crtcRegs->hrzt  = (crtcRegs->BytesPerPixel) * (mode->CrtcHTotal / 4) - 1 ;
+  crtcRegs->hrzsr = (crtcRegs->BytesPerPixel) * 
+    ((mode->CrtcHSyncEnd - mode->CrtcHSyncStart) / 4 ) - 1 ;
+  crtcRegs->hrzbr = (crtcRegs->BytesPerPixel) * 
+    ((mode->CrtcHTotal - mode->CrtcHSyncStart) / 4 ) - 1 ;
+  crtcRegs->hrzbf = (crtcRegs->BytesPerPixel) * 
+    ((mode->CrtcHDisplay+(mode->CrtcHTotal-mode->CrtcHSyncStart)) /4) - 1 ;
+
+  crtcRegs->vrtt  = mode->CrtcVTotal ;
+  crtcRegs->vrtsr = mode->CrtcVSyncEnd - mode->CrtcVSyncStart ;
+  crtcRegs->vrtbr = mode->CrtcVTotal - mode->CrtcVSyncStart ;
+  crtcRegs->vrtbf = crtcRegs->vrtbr + mode->CrtcVDisplay ;
   crtcRegs->prehrzc = 0x0L;
   crtcRegs->prevrtc = 0x0L;
 
@@ -103,88 +168,19 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
   if (mode->Flags & V_INTERLACE) crtcRegs->interlaced = TRUE;
   else crtcRegs->interlaced = FALSE;
 
-  /****** This stuff is needed to generate the value of sysconfig ******/
-  bytesperline = mode->HDisplay * (p9000InfoRec.bitsPerPixel / 8) ;
-  diff = bestdiff = bestfit = 0x7FFFFFFF ; /* ((unsigned) -1) >> 1 maxed out */
-  /* only 6 ** 3 posibilities - try them all and find exact
-   * or best resolution
-   */
-  fieldadd3 = 0 ;
-  for ( field3 = 2 ; field3 <= 7 ; field3 ++ )
-    {
-      fieldadd2 = 0 ;
-      for ( field2 = 1 ; field2 <= 6 ; field2 ++ )
-	{
-	  fieldadd1 = 0 ;
-	  for ( field1 = 0 ; field1 <= 5 ; field1 ++ )
-	    {
-	      /* resultant "horizontal res" */
-	      linebytes = fieldadd1 + fieldadd2 + fieldadd3 ; 
-	      /* how close is it to what we want */
-	      diff = bytesperline - linebytes ; 
-	      if ( diff == 0 )
-		break;
-	      if ( diff < 0 )
-		diff = - diff ; /* absolute value */
-	      if ( diff < bestdiff )
-		{
-		  bestfit = linebytes ; /* this is the best fit yet */
-		  bestdiff = diff ; /* this is how close it is (the error) */
-		}
-	      /*it won't get any better in this loop */
-	      if ( linebytes > bytesperline )
-		/* ok - so I can't stand a totally dumb exhaustive search */
-		break ; 
-	      if ( fieldadd1 == 0 )
-		fieldadd1 = 32 ;
-	      else
-		fieldadd1 = ( fieldadd1 * 2 ) ;
-	    }
-	  if ( diff == 0 )
-	    break;
-	  if ( fieldadd2 == 0 )
-	    fieldadd2 = 64 ;
-	  else
-	    fieldadd2 = ( fieldadd2 * 2 ) ;
-	}
-      if ( diff == 0 )
-	break;
-      if ( fieldadd3 == 0 )
-	fieldadd3 = 128 ;
-      else
-	fieldadd3 = ( fieldadd3 * 2 ) ;
-    }
-  /* falls out to here with diff != 0 if no match found */
-  /* impossible HDisplay value (at least for this value of bytes_per_pixel */
-  if (diff != 0)
-    {
-      ErrorF("WARNING: Can't do %d dots/line with %d bit color.  Could do %d dots.\n   Going ahead anyways.  This could be a BadThing[tm].\n",
-	     mode->HDisplay, p9000InfoRec.depth,
-	     bestfit / (p9000InfoRec.bitsPerPixel/8));
-      /* This really should fail now.  ***TO*DO*** */
-    }
-  
-  /* NOTE - the p9000 manual figure 60 has the fields labeled
-     backwards - but if you look at values from viper.ini
-     you'll see that it's the left-most (msb) field that
-     can have values up to 7 , so that must be field 3 . It
-     doesn't work for rectangles if you mess this up, i.e. if
-     you calculate a wrong number or you use a field value
-     illegal for that field */
-
-  if ( fieldadd3 == 0 )
-    field3 = 0 ; /* correct field value if necessary - 0 value means add 0 */
-  if ( fieldadd2 == 0 )
-    field2 = 0 ; /* correct field value if necessary - 0 value means add 0 */
-
-  crtcRegs->sysconfig =
-    0x00003000 | (field1<<14) | (field2<<17) | (field3<< 20);
-  /* Yay!  We have the value of sysconfig.  Now onto other things. */
+  /* Calculate sysconfig */
+  if (!p9000CalcSysconfigHres(mode->CrtcHDisplay, (int)crtcRegs->BytesPerPixel,
+			      &crtcRegs->sysconfig))
+    ErrorF("Bad horizontal resolution!!!!\n");
+#ifdef DEBUG
+  ErrorF("p9000CalcSysconfigHres returned 0x%lx\n", crtcRegs->sysconfig);
+#endif
+  crtcRegs->sysconfig |= 0x00003000;
 
   /* This is set to the default for now. *TO*DO* */
   crtcRegs->memspeed = MEMSPEED;
   /* Get the dot clock */
-  crtcRegs->dotfreq = p9000InfoRec.clock[mode->Clock] * 1000;
+  crtcRegs->dotfreq = mode->SynthClock * 1000;
 
 #ifdef DEBUG
   ErrorF("The value of mode->Clock is %d.  sysconfig is %lx. Dotfreq is %ld\n",
@@ -211,7 +207,7 @@ void p9000SetCRTCRegs(crtcRegs)
   p9000Store(SYSCONFIG,CtlBase,crtcRegs->sysconfig);
 
   /* Disable interrupts from P9000 */
-  p9000Store(INTERRUPTEN,CtlBase,0x00000080L);
+  p9000Store(INTERRUPT_EN,CtlBase,0x00000080L);
 
   /* Write Horizontal Timing Registers */
   p9000Store(PREHRZC,CtlBase, crtcRegs->prehrzc);
@@ -228,10 +224,33 @@ void p9000SetCRTCRegs(crtcRegs)
   p9000Store(VRTT,CtlBase, crtcRegs->vrtt);	/* VRTT  */
 
   /* Memory Configuration */
-  p9000Store(MEMCONF,CtlBase, p9000MiscReg.memconfig);
+  p9000Store(MEM_CONFIG,CtlBase, p9000MiscReg.memconfig);
 
   p9000Store(RFPERIOD,CtlBase, 0x00000186L);
   p9000Store(RLMAX,CtlBase, 0x000000FAL);
+
+  /* Enable writing to all 8 planes */
+  p9000Store(PMASK,CtlBase,0x000000FFL);
+  /* Select buffer 1 and allow drawing in window */
+  p9000Store(DRAW_MODE,CtlBase,0x0000000AL);
+  /* Disable any window (coord) offset */
+  p9000Store(W_MIN,CtlBase,0x00000000L);
+  /* Set the pattern origin to 0,0 */
+  p9000Store(PAT_ORIGINX,CtlBase,0x00000000L);
+  p9000Store(PAT_ORIGINY,CtlBase,0x00000000L); 
+
+  /* Calulate and set registers for clipping */
+  ClipMax= ((long)(crtcRegs->XSize*crtcRegs->BytesPerPixel)-1)<<16
+    | ( p9000MiscReg.memsize / (crtcRegs->XSize*crtcRegs->BytesPerPixel) - 1);
+  p9000Store(W_MIN,CtlBase,0);        /* Minimum Clipping */
+  p9000Store(W_MAX,CtlBase,ClipMax);  /* Maximum Clipping */
+#ifdef DEBUG
+  ErrorF("ClipMax set to 0x%lx\n",ClipMax);
+#endif
+
+  /* Clear the screen the first time before enabling video */
+  if (!p9000Inited)
+    p9000ClearScreen();
 
   /* Enable video (1e5, 1e4, or 1c4) */
   p9000Store(SRTCTL,CtlBase, p9000MiscReg.srtctl);
@@ -240,27 +259,6 @@ void p9000SetCRTCRegs(crtcRegs)
   ErrorF("About to set the clock\n");
 #endif
   p9000VendorPtr->SetClock(crtcRegs->dotfreq, crtcRegs->memspeed);
-
-  /*allow writing in all 8 planes */
-  p9000Store(PLANEMASK,CtlBase,0x000000FFL);
-  /*drawmode=buffer 0, write inside window */
-  p9000Store(DRAWMODE,CtlBase,0x0000000AL);
-  /*disable any co-ord offset */
-  p9000Store(W_OFFXY,CtlBase,0x00000000L);
-  /*set the pattern offset */
-  p9000Store(PATXORG,CtlBase,0x00000000L);
-  /*regesters to zero. */
-  p9000Store(PATYORG,CtlBase,0x00000000L); 
-
-  /* Set clipping registers */
-  /*calc and set max */
-  ClipMax= ((long)(crtcRegs->XSize*crtcRegs->BytesPerPixel)-1)<<16
-    | ( p9000MiscReg.memsize / (crtcRegs->XSize*crtcRegs->BytesPerPixel) - 1);
-  p9000Store(WMIN,CtlBase,0);          /*minimum clipping register */
-  p9000Store(WMAX,CtlBase,ClipMax);	/* maximum clipping; */
-#ifdef DEBUG
-  ErrorF("ClipMax set to 0x%lx\n",ClipMax);
-#endif
 
   p9000InitCursorFlag = TRUE;
   p9000Inited = TRUE;
@@ -282,7 +280,7 @@ void p9000InitAperture(screen_idx)
   p9000VideoMem = xf86MapVidMem(screen_idx, LINEAR_REGION, 
 				(pointer)(p9000InfoRec.MemBase),
 				0x400000L);  /* 4 Megabytes */
-
+  
   /* the start of video memory */
   VidBase = (volatile unsigned long *)((unsigned char *)p9000VideoMem +
 				       0x200000L);
@@ -342,15 +340,20 @@ void  p9000ClearScreen(void)
 {
   p9000NotBusy();         /* Wait for the P9000 to be free */
   /* Drawing a big black rectangle is probably a good way to clear things */
-  p9000Store(FOREGROUND, CtlBase, 0);
-  p9000Store(RASTER, CtlBase, FORE);
-  p9000Store(METACORD | REC, CtlBase,0);
-  p9000Store(METACORD | REC, CtlBase, ((long)(p9000CRTCRegs.XSize*
-					      p9000CRTCRegs.BytesPerPixel)<<16)
-	     | p9000CRTCRegs.YSize);
-  p9000Fetch(QUAD, CtlBase);
+  p9000Store(FGROUND, CtlBase, 1);
+  p9000Store(RASTER, CtlBase, IGM_F_MASK);
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
+	     YX_PACK(0,0));
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
+	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,0));
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
+	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,
+		     p9000CRTCRegs.YSize));
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
+	     YX_PACK(0, p9000CRTCRegs.YSize));
+  while (p9000Fetch(CMD_QUAD, CtlBase) & SR_ISSUE_QBN) ;
   /* Wait for the engine to be free again */
-  p9000NotBusy();
+  p9000QBNotBusy();
   return;
 }
 
@@ -370,7 +373,7 @@ void p9000ProbeMemConfig()
    * will occur and we can detect the type of memory
    * by looking at the errors.
    */
-  p9000Store(MEMCONF, CtlBase, 0x2L);
+  p9000Store(MEM_CONFIG, CtlBase, 0x2L);
 
   /* Write something into a non-first row */
   p9000Store(0x100000, VidBase, 0x5a5a5a5a);
@@ -387,7 +390,7 @@ void p9000ProbeMemConfig()
       {
 	p9000MiscReg.memconfig = 0x0L;
 	p9000MiscReg.memsize = 0x100000L;
-	p9000Store(MEMCONF, CtlBase, p9000MiscReg.memconfig);
+	p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
 	return;
       }
 
@@ -399,13 +402,25 @@ void p9000ProbeMemConfig()
       {
 	p9000MiscReg.memconfig = 0x1L;
 	p9000MiscReg.memsize = 0x100000L;
-	p9000Store(MEMCONF, CtlBase, p9000MiscReg.memconfig);
+	p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
 	return;
       }
 
-  /* Otherwise we guessed right and really do have 2MB of VRAM.
-   * Yay! */
-  p9000MiscReg.memconfig = 0x2L;
-  p9000MiscReg.memsize = 0x200000L;
-  p9000Store(MEMCONF, CtlBase, p9000MiscReg.memconfig);
+  /* Otherwise we guessed right and really do have 2MB of VRAM. 
+   * (unless probe failed and we're overridden) */
+  if (p9000InfoRec.videoRam == 1024) /* Allow user to override */
+    {
+      if (OFLG_ISSET(OPTION_VRAM_128, &p9000InfoRec.options))
+	p9000MiscReg.memconfig = 0x1L;  /* 128Kx8 VRAM */
+      else  
+	p9000MiscReg.memconfig = 0x0L;  /* 256Kx4 VRAM */
+      p9000MiscReg.memsize = 0x100000L;
+      p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);      
+    }
+  else  /* Go with the probed result */
+    {
+      p9000MiscReg.memconfig = 0x2L;
+      p9000MiscReg.memsize = 0x200000L;
+      p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
+    }
 }

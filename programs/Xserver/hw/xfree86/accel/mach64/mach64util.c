@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mach64util.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64util.c,v 3.0 1994/11/26 12:43:02 dawes Exp $ */
 /*
  * Copyright 1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *

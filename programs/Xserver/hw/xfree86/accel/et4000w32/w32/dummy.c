@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: dummy.c,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/dummy.c,v 3.1 1994/09/22 15:48:21 dawes Exp $ */
 /*
  * cfbfuncs.c
  *
@@ -7,27 +8,69 @@
  * To coax et4_driver.c into cooperation--GGL 
  */
 
-#include "cfb.h"
-#include "cfbfuncs.h"
+#include "vga256.h"
 
-GCFuncs vga256TEOps1Rect, vga256NonTEOps1Rect, vga256TEOps, vga256NonTEOps;
+GCOps vga256TEOps1Rect, vga256TEOps, vga256NonTEOps1Rect, vga256NonTEOps;
 
 CfbfuncRec vga256LowlevFuncs;
 
-void speedupvga256FillRectSolidCopy(){FatalError("FillRectSolidCopy");}
+void speedupvga256FillRectSolidCopy(a, b, c, d)
+  DrawablePtr a;
+  GCPtr b;
+  int c;
+  BoxPtr d;
+{FatalError("FillRectSolidCopy");}
 
-void speedupvga256DoBitbltCopy(){FatalError("DoBitbltCopy");}
+void speedupvga256DoBitbltCopy(a, b, c, d, e, f)
+  DrawablePtr a;
+  DrawablePtr b;
+  int c;
+  RegionPtr d;
+  DDXPointPtr e;
+  unsigned long f;
+{FatalError("DoBitbltCopy");}
 
-void speedupvga256SegmentSS(){FatalError("SegmentSS");}
+void speedupvga256SegmentSS(a, b, c, d)
+  DrawablePtr a;
+  GCPtr b;
+  int c;
+  xSegment *d;
+{FatalError("SegmentSS");}
 
-void speedupvga256LineSS(){FatalError("LineSS");}
+void speedupvga256LineSS(a, b, c, d, e)
+  DrawablePtr a;
+  GCPtr b;
+  int c, d;
+  DDXPointPtr e;
+{FatalError("LineSS");}
 
-void speedupvga256TEGlyphBlt8(){FatalError("TEGlyphBlt8");}
+void speedupvga256TEGlyphBlt8(a, b, c, d, e, f, g)
+  DrawablePtr a;
+  GC *b;
+  int c, d;
+  unsigned int e;
+  CharInfoPtr *f;
+  pointer g;
+{FatalError("TEGlyphBlt8");}
 
-void speedupvga2568FillRectTransparentStippled32()
-     {FatalError("FillRectTransparentStippled32");}
+void speedupvga2568FillRectTransparentStippled32(a, b, c, d)
+  DrawablePtr a;
+  GCPtr b;
+  int c;
+  BoxPtr d;
+{FatalError("FillRectTransparentStippled32");}
 
-void speedupvga256FillBoxSolid(){FatalError("FillBoxSolid");}
+void speedupvga256FillBoxSolid(a, b, c, d, e, f)
+  DrawablePtr a;
+  int b;
+  BoxPtr c;
+  unsigned long d, e;
+  int f;
+{FatalError("FillBoxSolid");}
 
-void speedupvga2568FillRectOpaqueStippled32()
-     {FatalError("FillRectOpqueStippled32");}
+void speedupvga2568FillRectOpaqueStippled32(a, b, c, d)
+  DrawablePtr a;
+  GCPtr b;
+  int c;
+  BoxPtr d;
+{FatalError("FillRectOpqueStippled32");}

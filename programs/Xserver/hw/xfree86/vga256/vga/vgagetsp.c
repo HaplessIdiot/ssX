@@ -1,5 +1,5 @@
-/* $XConsortium: cfbgetsp.c,v 5.14 94/04/17 20:28:50 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgagetsp.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagetsp.c,v 3.0 1994/07/24 11:58:58 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium

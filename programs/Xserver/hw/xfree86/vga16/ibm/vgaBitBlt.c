@@ -1,5 +1,5 @@
-/* $XConsortium: vgaBitBlt.c,v 1.1 94/03/28 21:39:02 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgaBitBlt.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vgaBitBlt.c,v 3.0 1994/05/04 15:03:44 dawes Exp $ */
 /* GJA -- span move routines */
 
 #include "X.h"

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: cl_bank.s,v 1.1 95/01/06 20:34:08 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_bank.s,v 3.0 1994/12/17 10:08:20 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

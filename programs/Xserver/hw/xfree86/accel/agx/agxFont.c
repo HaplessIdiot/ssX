@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: agxFont.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFont.c,v 3.0 1994/06/15 15:35:26 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.

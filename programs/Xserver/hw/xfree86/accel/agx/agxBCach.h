@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: agxBCach.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.h,v 3.1 1994/06/26 13:04:12 dawes Exp $ */
 /*
  * Jon's cache malloc rubbish
  *
@@ -73,9 +74,10 @@ typedef struct _bitMapRow *bitMapRowPtr;
      FontPtr font;		        /* font */
      CharInfoPtr pci[256];	        /* font infos */
      unsigned short wBytes;             /* font glyph slot width (bytes) */
-     unsigned short wPix;               /* font glyph slot width (bytes) */
+     unsigned short wPix;               /* font glyph slot width (pixels) */
      unsigned short hPix;		/* font glyph slot height (pixels) */
      unsigned short gper;		/* glphs per cache line */
+     unsigned int   blockSize;          /* num lines for block of glyphs */
      struct _bitMapBlock *fblock[MAX_NUM_ROWS];   /* 8 * 32 cache block chars */
      struct _CacheFont8 *next;	       /* next */
   }

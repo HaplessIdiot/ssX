@@ -1,27 +1,32 @@
 /*
- * Copyright 1993,1994 by David Dawes <dawes@physics.su.oz.au>
+ * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Dawes not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Dawes makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID DAWES DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID DAWES BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID DAWES BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Dawes shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Dawes.
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/OS_386BSD.c,v 2.8 1994/04/10 05:50:10 dawes Exp $ */
+/* $XConsortium: OS_386BSD.c,v 1.4 95/01/23 15:33:33 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.3 1995/01/19 05:20:38 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -35,13 +40,23 @@
 # define CONSOLE_X_MODE_ON PCCONIOCRAW
 # define CONSOLE_X_MODE_OFF PCCONIOCCOOK
 #else
-  /* This header is part of codrv */
 # if defined(__FreeBSD__) || defined(__NetBSD__)
-#  include <machine/ioctl_pc.h>
-/* both, Free and NetBSD have syscons */
-#  include <machine/console.h>
+#  ifdef CODRV_SUPPORT
+    /* This header is part of codrv */
+#   include <machine/ioctl_pc.h>
+#  endif
+#  if defined(PCVT_SUPPORT) && !defined(SYSCONS_SUPPORT)
+#   include <machine/pcvt_ioctl.h>
+#  endif
+#  ifdef SYSCONS_SUPPORT
+    /* both, Free and NetBSD have syscons */
+#   include <machine/console.h>
+#  endif
 # else
-#  include <sys/ioctl_pc.h>
+#  ifdef CODRV_SUPPORT
+    /* This header is part of codrv */
+#   include <sys/ioctl_pc.h>
+#  endif
 # endif
 # undef CONSOLE_X_MODE_ON
 # define CONSOLE_X_MODE_ON _IO('t',121)
@@ -123,6 +138,7 @@ int OpenVideo()
 	else
 	{
 #ifndef __bsdi__
+#ifdef CODRV_SUPPORT
 		struct oldconsinfo tmp;
 
 		if (ioctl(CONS_fd, OLDCONSGINFO, &tmp) < 0)
@@ -131,12 +147,14 @@ int OpenVideo()
 				MyName);
 			return(-1);
 		}
-#endif
 		HasCodrv = TRUE;
+#endif
+#endif
 	}
 #ifndef __bsdi__
 	if (HasCodrv)
 	{
+#ifdef CODRV_SUPPORT
 		int onoff = X_MODE_ON;
 
 		if (ioctl(CONS_fd, CONSOLE_X_MODE, &onoff) < 0)
@@ -146,9 +164,11 @@ int OpenVideo()
 			return(-1);
 		}
 		ioctl(CONS_fd, VGATAKECTRL, 0);
+#endif
 	}
 	else
 	{
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 		/*
 		 * not codrv and not BSDI; first look if we have a console
 		 * driver that understands USL-style VT commands
@@ -168,7 +188,8 @@ int OpenVideo()
 		}
 		else
 #endif
-			if (ioctl(CONS_fd, CONSOLE_X_MODE_ON, 0) < 0)
+#endif
+		if (ioctl(CONS_fd, CONSOLE_X_MODE_ON, 0) < 0)
 		{
 			fprintf(stderr, "%s: CONSOLE_X_MODE_ON failed\n",
 				MyName);
@@ -193,15 +214,21 @@ void CloseVideo()
 	if (CONS_fd != -1)
 	{
 #ifndef __bsdi__
+#ifdef CODRV_SUPPORT
 		int onoff = X_MODE_OFF;
+#endif
 
 		if (HasCodrv)
 		{
+#ifdef CODRV_SUPPORT
 			ioctl(CONS_fd, VGAGIVECTRL, 0);
 			ioctl(CONS_fd, CONSOLE_X_MODE, &onoff);
+#endif
 		}
+#if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT)
 		else if(HasUslVt)
 			ioctl(CONS_fd, KDDISABIO, 0);
+#endif
 		else
 #endif
 			ioctl(CONS_fd, CONSOLE_X_MODE_OFF, 0);

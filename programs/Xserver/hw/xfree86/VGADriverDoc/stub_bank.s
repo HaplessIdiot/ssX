@@ -1,6 +1,7 @@
-/* $XFree86$ */
+/* $XConsortium: stub_bank.s,v 1.2 94/11/21 21:39:05 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_bank.s,v 3.1 1994/09/27 14:18:34 dawes Exp $ */
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: cir_solid.c,v 1.2 95/01/26 15:38:28 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_solid.c,v 3.2 1995/01/26 02:21:03 dawes Exp $ */
 
 /*
 
@@ -110,7 +111,7 @@ Modified for Cirrus by Harm Hanemaayer (hhanemaa@cs.ruu.nl)
 #include "vga.h"
 #include "compiler.h"
 #include "cir_driver.h"
-#include "cir_blitmm.h"		/* MMIO BitBLT commands */
+#include "cirBlitMM.h"		/* MMIO BitBLT commands */
 
 
 /*
@@ -362,12 +363,28 @@ CirrusMMIOFillRectSolid(pDrawable, pGC, nBox, pBox)
 	width_in_bytes = (pBox->x2 - pBox->x1) << pixshift;
 	destaddr = pBox->y1 * pitch + (pBox->x1 << pixshift);
 
-	do { BLTBUSY(busy); } while (busy);
-
-	SETDESTADDR(destaddr);
-	SETWIDTH(width_in_bytes);
-	SETHEIGHT(height);
-	STARTBLT();
+	if (height > 1024) {
+		/* @%$@!#! 5429/5430/4 only works with heights up to 1024. */
+		do { BLTBUSY(busy); } while (busy);
+		SETDESTADDR(destaddr);
+		SETWIDTH(width_in_bytes);
+		SETHEIGHT(1024);
+		STARTBLT();
+		destaddr += 1024 * pitch;
+		height -= 1024;
+		do { BLTBUSY(busy); } while (busy);
+		SETDESTADDR(destaddr);
+		SETWIDTH(width_in_bytes);
+		SETHEIGHT(height);
+		STARTBLT();
+	}
+	else {
+		do { BLTBUSY(busy); } while (busy);
+		SETDESTADDR(destaddr);
+		SETWIDTH(width_in_bytes);
+		SETHEIGHT(height);
+		STARTBLT();
+	}
 
 	nBox--;
 	pBox++;

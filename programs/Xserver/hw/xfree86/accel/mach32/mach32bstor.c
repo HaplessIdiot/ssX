@@ -1,6 +1,5 @@
-/* $XConsortium: mach32bstor.c,v 1.1 94/03/28 21:07:01 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bstor.c,v 3.0 1994/05/08 05:19:15 dawes Exp $ */
-/*-
+/* $XConsortium: mach32bstor.c,v 1.2 94/10/12 19:59:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32bstor.c,v 3.1 1994/07/15 06:58:05 dawes Exp $ */
  * mach32bstore.c --
  *	Functions required by the backing-store implementation in MI.
  *

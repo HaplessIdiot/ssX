@@ -1,7 +1,7 @@
 #ifndef lint
-static char *rid="$XConsortium: main.c,v 1.222 94/04/17 20:23:28 gildea Exp $";
+static char *rid="$XConsortium: main.c,v 1.225.1.1 95/01/13 21:13:04 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.10 1995/01/21 07:21:00 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.11 1995/01/22 03:08:58 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -84,16 +84,6 @@ SOFTWARE.
 #include <pwd.h>
 #include <ctype.h>
 
-#ifdef linux
-#define USE_SYSV_TERMIO
-#define	USE_SYSV_PGRP
-#define USE_SYSV_UTMP
-#define USE_SYSV_SIGNALS
-#define HAS_UTMP_UT_HOST
-#define LASTLOG
-#define WTMP
-#endif
-
 #ifdef AMOEBA
 #include <amoeba.h>
 #include <cmdreg.h>
@@ -169,6 +159,17 @@ static Bool IsPts = False;
 #if defined(sony) && defined(bsd43) && !defined(KANJI)
 #define KANJI
 #endif
+
+#ifdef linux
+#define USE_SYSV_TERMIO
+#define USE_SYSV_PGRP
+#define USE_SYSV_UTMP
+#define USE_SYSV_SIGNALS
+#define HAS_UTMP_UT_HOST
+#define LASTLOG
+#define WTMP
+#endif
+
 #include <sys/ioctl.h>
 #include <sys/stat.h>
 
@@ -256,6 +257,7 @@ static Bool IsPts = False;
 #else /* } !MINIX { */
 #ifndef linux
 #include <sgtty.h>
+#endif
 #include <sys/resource.h>
 #define HAS_UTMP_UT_HOST
 #define HAS_BSD_GROUPS
@@ -263,7 +265,6 @@ static Bool IsPts = False;
 #define USE_SYSV_UTMP
 #define setpgrp setpgid
 #endif
-#endif /* !linux */
 #endif /* } MINIX */
 #endif	/* } !SYSV */
 
@@ -1024,18 +1025,16 @@ char **argv;
 #ifndef sgi
 	d_tio.c_line = 0;
 #endif
-#ifdef linux
-	d_tio.c_cc[VINTR] = 'C' & 0x3f;		/* '^C'  */
-	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
-	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
-	d_tio.c_cc[VKILL] = 'U' & 0x3f;		/* '^U'	*/
-    	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
-	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
-#else
+#ifndef linux
 	d_tio.c_cc[VINTR] = 0x7f;		/* DEL  */
-	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
 	d_tio.c_cc[VERASE] = '#';		/* '#'	*/
 	d_tio.c_cc[VKILL] = '@';		/* '@'	*/
+#else
+	d_tio.c_cc[VINTR] = 'C' & 0x3f;		/* '^C'	*/
+	d_tio.c_cc[VERASE] = 0x7f;		/* DEL	*/
+	d_tio.c_cc[VKILL] = 'U' & 0x3f;		/* '^U'	*/
+#endif
+	d_tio.c_cc[VQUIT] = '\\' & 0x3f;	/* '^\'	*/
     	d_tio.c_cc[VEOF] = 'D' & 0x3f;		/* '^D'	*/
 	d_tio.c_cc[VEOL] = '@' & 0x3f;		/* '^@'	*/
 #endif
@@ -1071,10 +1070,10 @@ char **argv;
         d_ltc.t_lnextc = '\377';
 #endif	/* TIOCSLTC */
 #ifdef USE_TERMIOS
-#ifdef linux
-	d_tio.c_cc[VSUSP] = 'Z' & 0x3f;
-#else
+#ifndef linux
 	d_tio.c_cc[VSUSP] = '\000';
+#else
+	d_tio.c_cc[VSUSP] = 'Z' & 0x3f;
 #endif
 	d_tio.c_cc[VDSUSP] = '\000';
 	d_tio.c_cc[VREPRINT] = '\377';
@@ -1828,9 +1827,8 @@ spawn ()
 	screen->gid = getgid();
 
 #ifdef linux
-	/* clear these entries to avoid garbage */
-	bzero(termcap, sizeof(termcap));
-	bzero(newtc, sizeof(newtc));
+	bzero(termcap, sizeof termcap);
+	bzero(newtc, sizeof newtc);
 #endif
 
 #ifdef SIGTTOU
@@ -2124,7 +2122,7 @@ spawn ()
 #endif
 #if defined(SYSV) && defined(i386) && !defined(SVR4)
                 } else {	/* else pty, not pts */
-#endif /* SYSV && i386 && !SVR4  */
+#endif /* SYSV && i386 && !SVR4 */
 #endif /* USE_USG_PTYS */
 
 #ifdef USE_HANDSHAKE		/* warning, goes for a long ways */
@@ -2554,7 +2552,7 @@ spawn ()
 #ifdef HAS_UTMP_UT_HOST
 		(void) strncpy(buf, DisplayString(screen->display),
 			       sizeof(buf));
-#ifndef linux	/* we want the display number in the ut_hosts field */
+#ifndef linux
 	        {
 		    char *disfin = strrchr(buf, ':');
 		    if (disfin)

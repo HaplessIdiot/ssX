@@ -1,6 +1,5 @@
-/* $XConsortium: XF86_8514.c,v 1.1 94/03/28 21:21:28 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_8514.c,v 3.1 1994/06/28 12:29:05 dawes Exp $ */
-#include "X.h"
+/* $XConsortium: XF86_8514.c,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_8514.c,v 3.2 1994/09/07 15:51:38 dawes Exp $ */
 #include "os.h"
 
 #define _NO_XF86_PROTOTYPES

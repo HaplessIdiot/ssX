@@ -1,6 +1,6 @@
 /*
- * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86: xc/include/Xos.h,v 3.7 1994/11/19 07:46:38 dawes Exp $
+ * $XConsortium: Xos.h,v 1.67 94/11/30 20:48:05 kaleb Exp $
+ * $XFree86: xc/include/Xos.h,v 3.8 1994/11/26 12:34:49 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium

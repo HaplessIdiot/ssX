@@ -1,6 +1,5 @@
-/* $XConsortium: bsd_video.c,v 1.1 94/03/28 21:28:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.2 1994/07/15 07:04:11 dawes Exp $ */
-/*
+/* $XConsortium: bsd_video.c,v 1.2 94/10/12 20:45:13 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.3 1994/09/07 15:54:02 dawes Exp $ */
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

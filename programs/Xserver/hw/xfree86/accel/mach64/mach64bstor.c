@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mach64bstor.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64bstor.c,v 3.0 1994/11/26 12:42:41 dawes Exp $ */
 /*-
  * mach64bstore.c --
  *	Functions required by the backing-store implementation in MI.

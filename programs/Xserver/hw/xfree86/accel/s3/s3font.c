@@ -1,6 +1,5 @@
-/* $XConsortium: s3font.c,v 1.1 94/03/28 21:15:02 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: s3font.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3font.c,v 3.1 1994/08/01 13:19:36 dawes Exp $ */
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

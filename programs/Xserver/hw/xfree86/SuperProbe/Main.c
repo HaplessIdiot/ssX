@@ -1,27 +1,32 @@
 /*
- * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
+ * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Wexelblat not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Wexelblat shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Wexelblat.
  *
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/Main.c,v 2.8 1994/04/15 05:09:40 dawes Exp $ */
+/* $XConsortium: Main.c,v 1.4 95/01/06 20:56:41 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.5 1994/12/17 09:58:07 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -29,7 +34,7 @@
 char MyName[20];
 Word vgaIOBase;
 Bool Verbose = FALSE;
-Byte Chip_data = 0xFF;
+Long Chip_data = (Long)~0;
 Byte *Bios_Base = (Byte *)0;
 Bool NoBIOS = FALSE;
 
@@ -71,6 +76,7 @@ static Chip_Descriptor *SVGA_Descriptors[] = {
 static Chip_Descriptor *CoProc_Descriptors[] = {
     &ATIMach_Descriptor,
     &IBM8514_Descriptor,	/* Make this the last 8514-type entry */
+    &I128_Descriptor,
     NULL
 };
 
@@ -496,22 +502,35 @@ char *argv[];
     }
 
     PRINT_VERSION;
-    printf("\tCopyright 1993,1994 by David Wexelblat <dwex@goblin.org>\n");
+    printf("\t(c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>\n");
     printf("\n\tThis work is derived from the 'vgadoc2.zip' and\n");
     printf("\t'vgadoc3.zip' documentation packages produced by Finn\n");
     printf("\tThoegersen, and released with all appropriate permissions\n");
     printf("\thaving been obtained.  Additional information obtained from\n");
     printf("\t'Programmer's Guide to the EGA and VGA, 2nd ed', by Richard\n");
     printf("\tFerraro, and from manufacturer's data books\n\n");
+#ifndef __EMX__
     printf("The author welcomes bug reports and other comments mailed to\n");
     printf("the electronic mail address above.  In particular, reports of\n");
     printf("chipsets that this program fails to correctly detect are\n");
     printf("appreciated.\n\n");
-
+#else
+/* this will be removed again in future. */
+    printf("This is a PRELIMINARY TEST VERSION for OS/2! Please send bug reports\n");
+    printf("and other comments, e.g. false detections of boards or chipsets to veit@gmd.de.\n");
+    printf("If necessary, they will be forwarded to the author of the program.\n\n");
+#endif
 {
     FILE *f;
-    
+
     f = fopen("/dev/tty", "w");
+#ifdef __EMX__
+    /* note: don't remove the fopen above ! */
+    fclose(f);
+    f = stderr;	/* OS/2 does not know /dev/tty, OTOH you cannot run this
+                 * program in a window.
+		 */
+#endif
     if (f != (FILE *)NULL)
     {
         putc('\007', f);
@@ -590,6 +609,7 @@ char *argv[];
     	Ports[0] = 0x3CC;
     	EnableIOPorts(1, Ports);
     	vgaIOBase = (inp(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+	DisableIOPorts(1, Ports);
     	if (vgaIOBase == 0x3D0)
     	{
     	    /*
@@ -609,99 +629,95 @@ char *argv[];
     	}
     
     	if (!Probe_VGA(&Primary))
-    	{
     	    Primary = CHIP_EGA;
-	    Check_CoProc = TRUE;
-    	}
     
     	/*
-     	 * If it's a VGA, do SVGA probing
+     	 * Do SVGA probing, even if no VGA is detected.  Some SVGA can emulate
+	 * pre-VGA adapters (such as EGA) and be left in such a state by BIOS
+	 * initialization.
      	 */
-    	if (IS_VGA(Primary))
-    	{
-	    if (Verbose)
+	if (Verbose)
+	{
+	    printf("Doing Super-VGA Probes...\n");
+	    fflush(stdout);
+	}
+	matched = &VGA_Descriptor;
+
+	if (order == NULL)
+	{
+	    /* 
+	     * Use default ordering.
+	     */
+	    for (i=0; SVGA_Descriptors[i] != NULL; i++)
 	    {
-		printf("Found VGA; doing Super-VGA Probes...\n");
-		fflush(stdout);
-	    }
-	    matched = &VGA_Descriptor;
-
-    	    if (order == NULL)
-    	    {
-    	    	/* 
-    	    	 * Use default ordering.
-    	    	 */
-    	    	for (i=0; SVGA_Descriptors[i] != NULL; i++)
-    	    	{
-    	    	    chip_p = SVGA_Descriptors[i];
-    	    	    if (TestChip(chip_p, &Primary))
-    	    	    {
-			matched = chip_p;
-    	    	    	break;
-    	    	    }
-    	    	}
-    	    }
-    	    else
-    	    {
-    	        /*
-    	         * Use user specified order
-    	         */
-    	        p = order;
-    	        while (p)
-    	        {
-    	            order = strchr(order, ',');
-    	            if (order != NULL)
-    	            {
-    	                *order = '\0';
-			order++;
-    	            }
-    	    	    flag = FALSE;
-    	            for (i=0; SVGA_Descriptors[i] != NULL; i++)
-		    {
-    	    	    	chip_p = SVGA_Descriptors[i];
-    	    	    	if (StrCaseCmp(p, chip_p->name) == 0)
-    	    	    	{
-    	    		    flag = TRUE;
-    	    		    break;
-    	    	        }
-    	    	    }
-    	    	    if (flag)
-    	    	    {
-    	    	        if (TestChip(chip_p, &Primary))
-    	    	        {
-			    matched = chip_p;
-    	    		    break;
-    	    	        }
-    	    	    }
-    	    	    else
-    	    	    {
-    	    	        fprintf(stderr, "%s: Chip class '%s' not known\n",
-    	    		        MyName, p);
-    	    	    }
-    	    	    p = order;
-    	        }
-    	    }
-
-	    Check_CoProc = matched->check_coproc;
-
-	    if (Probe_Mem)
-	    {
-	    	if (matched->memcheck != (MemCheckFunc)NULL)
-	    	{
-		    MemVGA = (*matched->memcheck)(Primary);
-	    	}
-		else if (Verbose)
+		chip_p = SVGA_Descriptors[i];
+		if (TestChip(chip_p, &Primary))
 		{
-		    printf("Memory probe not supported for this chipset.\n");
-		    fflush(stdout);
+		    matched = chip_p;
+		    break;
 		}
+	    }
+	}
+	else
+	{
+	    /*
+	     * Use user specified order
+	     */
+	    p = order;
+	    while (p)
+	    {
+		order = strchr(order, ',');
+		if (order != NULL)
+		{
+		    *order = '\0';
+		    order++;
+		}
+		flag = FALSE;
+		for (i=0; SVGA_Descriptors[i] != NULL; i++)
+		{
+		    chip_p = SVGA_Descriptors[i];
+		    if (StrCaseCmp(p, chip_p->name) == 0)
+		    {
+			flag = TRUE;
+			break;
+		    }
+		}
+		if (flag)
+		{
+		    if (TestChip(chip_p, &Primary))
+		    {
+			matched = chip_p;
+			break;
+		    }
+		}
+		else
+		{
+		    fprintf(stderr, "%s: Chip class '%s' not known\n",
+			MyName, p);
+		}
+		p = order;
+	    }
+	}
+
+	Check_CoProc = matched->check_coproc;
+
+	if (Probe_Mem)
+	{
+	    if (matched->memcheck != (MemCheckFunc)NULL)
+	    {
+		MemVGA = (*matched->memcheck)(Primary);
 	    }
 	    else if (Verbose)
 	    {
-		printf("Skipping memory probe\n");
+		printf("Memory probe not supported for this chipset.\n");
 		fflush(stdout);
 	    }
-    	}
+	}
+	else if (Verbose)
+	{
+	    printf("Skipping memory probe\n");
+	    fflush(stdout);
+	}
 
 	/*
 	 * If this chipset doesn't exclude probing for a coprocessor,

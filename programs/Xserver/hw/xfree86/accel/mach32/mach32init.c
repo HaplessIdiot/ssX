@@ -1,6 +1,5 @@
-/* $XConsortium: mach32init.c,v 1.1 94/03/28 21:08:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.5 1994/12/17 10:05:04 dawes Exp $ */
-/*
+/* $XConsortium: mach32init.c,v 1.4 95/01/06 20:57:03 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32init.c,v 3.6 1994/12/25 12:23:21 dawes Exp $ */
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: Bt481.h,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.h,v 3.0 1994/06/15 15:35:50 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>

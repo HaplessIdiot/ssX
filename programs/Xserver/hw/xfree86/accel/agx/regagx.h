@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.8 1995/01/23 01:28:45 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -51,12 +52,15 @@
  * crtc regs structure 
  */
 typedef struct {
+    unsigned int  bpp;
     unsigned char htotal_lo;
     unsigned char hdisp_end_lo;
     unsigned char hblnk_strt_lo;
     unsigned char hblnk_end_lo;
     unsigned char hsync_strt_lo;
     unsigned char hsync_end_lo;
+    unsigned char hsync_pos_1;
+    unsigned char hsync_pos_2;
     unsigned char vtotal_lo,      vtotal_hi;
     unsigned char vdisp_end_lo,   vdisp_end_hi;
     unsigned char vblnk_strt_lo,  vblnk_strt_hi;
@@ -72,6 +76,7 @@ typedef struct {
     unsigned char clock_sel;
     unsigned char overscan;
     unsigned char interlaced;
+    unsigned char dbl_scan;
 } agxCRTCRegRec, *agxCRTCRegPtr;
 
 /*
@@ -196,6 +201,20 @@ extern agxPixMap *agxCurPixMap[2];
    if( agxCurPixMap[1] == pMap ) \
       agxCurPixMap[1] = NULL; \
 } 
+
+#if 0
+#define AGX_PIXEL_ADJUST( pix )  ( (pix) << BytesPerPixelShift )
+#define AGX_TO_PIXEL( byt )  ( (byt) >> BytesPerPixelShift )
+#else
+#define AGX_PIXEL_ADJUST( pix )  (pix)
+#define AGX_TO_PIXEL( byt )  (byt)
+#endif
+
+
+#define RGB8_PSEUDO      (-1)
+#define RGB16_565         0
+#define RGB16_555         1
+#define RGB32_888         2
 
 
 /*
@@ -337,7 +356,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define DA_OM_DISP_VGA_XGA_EN	  	0x01
 #define DA_OM_DISP_132_XGA_DIS	  	0x02
 #define DA_OM_DISP_132_XGA_EN	  	0x03
-#define DA_OM_DISP_XGA_MODE       	0x04
+#define DA_OM_DISP_XGA_MODE       	0x05
 
 
 #define DA_APERATURE_CNTL	0x1
@@ -432,8 +451,12 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_CRTC_HSYNC_END_HI		0x1B
 #define IR_CRTC_HSYNC_POS1		0x1C
 #define IR_CHP1_MASK				0x60
+#define IR_CHP1_DELAY_4				0x40
+#define IR_CHP1_NO_DELAY			0x00
 #define IR_CRTC_HSYNC_POS2		0x1E
 #define IR_CHP2_MASK				0x06
+#define IR_CHP2_DELAY_4				0x04
+#define IR_CHP2_NO_DELAY			0x00
 #define IR_CRTC_VTOTAL_LO		0x20
 #define IR_CRTC_VTOTAL_HI		0x21
 #define IR_CRTC_VDISP_END_LO		0x22
@@ -528,6 +551,11 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_DC2_8_BPP				0x03
 #define IR_DC2_16_BPP				0x04
 #define IR_DC2_24_BPP				0x05
+#define IR_DC2_NORMAL_SCAN                      0x00
+#define IR_DC2_DBL_SCAN                         0x40
+#define IR_DC2_DBL_CLOCK                        0x10
+#define IR_DC2_QUAD_SCAN                        0x80
+#define IR_DC2_QUAD_CLOCK                       0x20
 #define IR_DISP_MON_ID_DAC_COMP		0x52
 #define IR_DISP_MON_ID_DAC_COMP		0x52
 
@@ -535,60 +563,77 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define IR_M1_MODE_REG_1		0x77
 #define IR_M1_AGX10_MODE_REG_1		0x7F
-#define IR_M1_MASK				0x37
-#define IR_M1_WRITE_MASK			0x37
+#define IR_M1_PRESERVE_MASK			0x0F
+#define IR_M1_MASK				0xFF
+#define IR_M1_WRITE_MASK			0xFF
+#define IR_M1_EXT_ENG_REQ			0x80
+#define IR_M1_PCLK_DIV_2			0x40
 #define IR_M1_CS3_MASK				0x30
 #define IR_M1_CS3_SHIFT				0x04
-#define IR_M1_CRTC_DELAY			0x08
+#define IR_M1_XGA_CRTC_DELAY			0x08
 #define IR_M1_INTERLACED			0x04
 #define IR_M1_CPU_WAIT_STATE			0x02
 #define IR_M1_AGX_BUS_SIZE			0x01
 
 #define IR_M2_MODE_REG_2		0x76
-#define IR_M2_MASK				0x0F
-#define IR_M2_CCLK_DIV_2			0x20
+#define IR_M2_PRESERVE_MASK			0x01
+#define IR_M2_MASK				0x3F
+#define IR_M2_CCLK_DOUBLED			0x20
 #define IR_M2_DELAY_DISPLAY			0x10
 #define IR_M2_84DAC_SELECT			0x08
 #define IR_M2_COPROC_CLK_DIV_2 			0x04
 #define IR_M2_VRAM_256		    		0x01
 
 #define IR_M3_MODE_REG_3		0x6D
-#define IR_M3_MASK				0xFF
-#define IR_M3_B1F00_GE_ADDRESS		0x01
+#define IR_M3_PRESERVE_MASK			0x2D
+#define IR_M3_MASK				0x2F
+#define IR_M3_B1F00_GE_ADDRESS			0x01
+#define IR_M3_MCS16_INHIBIT    			0x02
 #define IR_M3_256_SRC_ADJUST			0x04
 #define IR_M3_256_DST_ADJUST 			0x08
+#define IR_M3_RGB_PACKED			0x00
+#define IR_M3_RGBX_UNPACKED			0x80
+#define IR_M3_PCLK_EDGE_TRIGGERED		0x40
 #define IR_M3_SCREEN_REFRESH_25			0x20
+#define IR_M3_24BPP_ENGINE         		0x10
 
 #define IR_M4_MODE_REG_4		0x6E
 #define IR_M4_MASK				0xFF
 
 #define IR_M5_MODE_REG_5		0x6F
-#define IR_M5_MASK				0xFF
-#define IR_M5_WRITE_MASK			0xFF
+#define IR_M5_PRESERVE_MASK			0x2C
+#define IR_M5_MASK				0x7F
+#define IR_M5_WRITE_MASK			0x8F
 #define IR_M5_CS4_MASK 				0x30
 #define IR_M5_CS4_SHIFT				0x04
 #define IR_M5_HICOLOR_DAC               	0x80U
+#define IR_M5_ENGINE_DELAY                      0x08
 #define IR_M5_EXT_CLOCK                 	0x40
 #define IR_M5_REFRESH_SPLIT			0x04
 
 #define IR_M7_MODE_REG_7		0x6C
+#define IR_M7_PRESERVE_MASK                     0x3F
 #define IR_M7_MASK				0xFF
-#define IR_M7_PRESERVE_MASK			0x21
-#define IR_M7_ROM_DAC_DISABLE                   0x20
+#define IR_M7_ROM_DAC_DISABLE                   0x20  /* must be preserved! */
+#define IR_M7_VRAM_RAS_DELAY                    0x10
+#define IR_M7_VRAM_LATCH_DELAY                  0x08
 #define IR_M7_VLB_B                             0x04
 #define IR_M7_BUFFER_ENABLE                     0x02
 #define IR_M7_LOCAL_BUS 	                0x01
 
 #define IR_M8_MODE_REG_8		0x71
+#define IR_M8_PRESERVE_MASK                     0x00
 #define IR_M8_288_SRC_ADJUST			0x01
 #define IR_M8_128_SRC_ADJUST			0x02
 #define IR_M8_288_DST_ADJUST			0x04
 #define IR_M8_128_DST_ADJUST			0x08
 #define IR_M8_SPRITE_REFRESH			0x10
 #define IR_M8_SCREEN_REFRESH			0x20
+#define IR_M8_VRAM_RAS_EXTEND                   0x40
 #define IR_M8_BIG_BUFFER_ENABLE			0x80
 
 #define IR_M10_MODE_REG_10		0x71
+#define IR_M10_PRESERVE_MASK                    0x85
 #define IR_M10_PCI_ENABLE			0x01
 #define IR_M10_1MB_AP_ENABLE			0x02
 #define IR_M10_BUS_WAIT_STATE			0x04
@@ -669,22 +714,16 @@ typedef struct {
 
 #define GE_XGA2_BUSY()         ((*(volatile char*)((char *)agxGEBase+0x09))&0x80)
 
-#define GE_WAIT_IDLE()         { int i = 200000, j; \
+#define GE_WAIT_IDLE()         { int i = 500000, j; \
                                  if(GE_BUSY()) { \
                                     if (XGA_2_ONLY(agxChipId))  \
-                                       while(GE_XGA2_BUSY()) { \
-                                          j = 5; \
-                                          while(j--); \
-                                          if(GE_XGA2_BUSY()) sleep(0); \
-                                       } \
-                                    while(GE_BUSY()&&i--) { \
-                                       j = 5; \
-                                      while(j--); \
-                                       if(GE_BUSY()) sleep(0); \
-                                    } \
+                                       while(GE_XGA2_BUSY()); \
+                                    while(GE_BUSY()&&i--);\
                                  } \
-                                 if(GE_BUSY()) \
-                                   ErrorF("GE_WAIT_IDLE Timed Out:0x%02x.\n"); \
+                                 if(GE_BUSY()) { \
+                                   ErrorF("GE_WAIT_IDLE Timed Out - %s:%d\n",\
+                                           __FILE__,__LINE__); \
+                                 } \
                                }
 
 #define GE_WAIT_IDLE_SHORT()   { int i = 500000, j; \
@@ -693,15 +732,27 @@ typedef struct {
                                        while(GE_XGA2_BUSY());  \
                                     while(GE_BUSY()&&i--); \
                                  } \
-                                 if(GE_BUSY()) \
-                                   ErrorF("GE_WAIT_IDLE_SHORT Timed Out:0x%02x.\n"); \
+                                 if(GE_BUSY()) { \
+                                    ErrorF("GE_WAIT_IDLE_SHORT Timed Out \
+- %s:%d\n", \
+                                           __FILE__,__LINE__); \
+                                 } \
                                }
+
+#define GE_WAIT_IDLE_EXIT()    {}
 
 #define GE_START_CMD( cmd )    GE_OUT_D(0x7C, (cmd))
 #define GE_START_CMDW( cmd )   GE_OUT_W(0x7E, (cmd))
-#define GE_RESET()             { GE_OUT_B(0x11,0x20); \
-                                 GE_WAIT_IDLE(); \
-                                 GE_OUT_B(0x11,0x00); }
+
+#define GE_RESET()             { int i = 5000000; \
+                                 GE_OUT_B(0x11,0x20); \
+                                 while(GE_BUSY()&&i--) ; \
+                                 if(GE_BUSY()) {\
+                                    ErrorF("GE_RESET Timed Out - %s:%d\n",\
+                                           __FILE__,__LINE__); \
+                                 } \
+                                 GE_OUT_B(0x11,0x00); \
+                               }
                                      
 
 #define GE_DEF_MEM_BASE		0x0C1C00
@@ -734,7 +785,17 @@ typedef struct {
 #define GE_BRES_CONST_K1  	0x24
 #define GE_BRES_CONST_K2  	0x28
 
-#define GE_SHORT_STROKE	0x2C
+#define GE_SHORT_STROKE		0x2C
+#define GE_SS_MOVE			0x00
+#define GE_SS_DRAW              	0x10
+#define GE_SS_0				0x00
+#define GE_SS_45			0x20
+#define GE_SS_90			0x40
+#define GE_SS_135			0x60
+#define GE_SS_180			0x80
+#define GE_SS_225			0xA0
+#define GE_SS_270			0xC0
+#define GE_SS_315			0XE0	
 
 #define GE_FRGD_MIX		0x48
 #define GE_BKGD_MIX		0x49

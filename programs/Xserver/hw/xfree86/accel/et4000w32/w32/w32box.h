@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: w32box.h,v 1.3 95/01/05 20:37:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32box.h,v 3.3 1994/11/19 07:52:36 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -34,17 +35,15 @@ glenn@cs.utexas.edu)
 /* Paint a solid box */
 #define W32_INIT_BOX(OP, MASK, COLOR, DST_OFFSET) \
 { \
-    WAIT_QUEUE \
     if (MASK == 0xffffffff) \
-    { \
 	*ACL_FOREGROUND_RASTER_OPERATION	= W32OpTable[OP]; \
-    } \
     else \
     { /* w32p only */ \
 	*ACL_FOREGROUND_RASTER_OPERATION	= \
 	    (0xf0 & W32OpTable[OP]) | 0x0a; \
 	*ACL_PATTERN_WRAP			= 0x02; \
 	*ACL_PATTERN_Y_OFFSET			= 0x3; \
+	*ACL_PATTERN_ADDRESS			= W32Pattern; \
 	*MBP0 					= W32Pattern; \
 	*(LongP)W32Buffer 			= MASK; \
     } \
@@ -52,13 +51,13 @@ glenn@cs.utexas.edu)
     *ACL_SOURCE_ADDRESS			= W32Foreground; \
     *MBP0				= W32Foreground; \
     *(LongP)W32Buffer			= COLOR; \
-    if (W32) \
+    if (W32OrW32i) \
     { \
 	*(LongP)(W32Buffer + 4)		= COLOR; \
 	*ACL_SOURCE_WRAP		= 0x12; \
 	*ACL_SOURCE_Y_OFFSET		= 0x3; \
     } \
-    else /* w32i or w32p */ \
+    else /* w32p */ \
 	*ACL_SOURCE_WRAP		= 0x02; \
     *ACL_ROUTING_CONTROL                = 0x0; \
     *ACL_XY_DIRECTION			= 0; \

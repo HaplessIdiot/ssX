@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mach64cmap.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64cmap.c,v 3.0 1994/11/26 12:42:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.

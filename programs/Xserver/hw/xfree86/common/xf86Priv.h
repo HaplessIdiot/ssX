@@ -1,6 +1,5 @@
-/* $XConsortium: xf86Priv.h,v 1.1 94/03/28 21:23:40 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.4 1995/01/10 10:23:48 dawes Exp $ */
-/*
+/* $XConsortium: xf86Priv.h,v 1.5 95/01/16 13:17:01 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.5 1995/01/11 03:50:38 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

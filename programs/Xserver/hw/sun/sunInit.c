@@ -1,5 +1,5 @@
-/* $XConsortium: sunInit.c,v 5.53 94/08/16 13:45:30 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: sunInit.c,v 5.54 94/12/23 16:49:38 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunInit.c,v 3.0 1994/11/19 07:49:07 dawes Exp $ */
 /*
  * sunInit.c --
  *	Initialization functions for screen/keyboard/mouse, etc.
@@ -563,11 +563,11 @@ void InitOutput(pScreenInfo, argc, argv)
      */
     if (nonBlockConsole) {
 	if (!setup_on_exit) {
-#if defined(SVR4) || defined(__NetBSD__) /* { */
+#if defined(SVR4) || defined(__NetBSD__)
 	    if (atexit(sunNonBlockConsoleOff))
-#else /* }{ */
+#else
 	    if (on_exit(sunNonBlockConsoleOff, (char *)0))
-#endif /* } */
+#endif
 		ErrorF("InitOutput: can't register NBIO exit handler\n");
 
 	    setup_on_exit = 1;

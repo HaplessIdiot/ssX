@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 5.38 94/04/08 17:47:15 rws Exp $
-XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.0 1994/05/30 08:21:47 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 5.39 94/11/21 18:30:11 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/Imakefile,v 3.1 1994/06/28 12:25:19 dawes Exp $
 #include <Server.tmpl>
 
 #if HasShm

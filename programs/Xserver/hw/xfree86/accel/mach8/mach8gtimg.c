@@ -1,6 +1,5 @@
-/* $XConsortium: mach8gtimg.c,v 1.1 94/03/28 21:11:35 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: mach8gtimg.c,v 1.2 94/10/12 20:01:59 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8gtimg.c,v 3.0 1994/07/24 11:46:17 dawes Exp $ */
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

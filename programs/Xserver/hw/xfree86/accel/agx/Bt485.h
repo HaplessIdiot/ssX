@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: Bt485.h,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.h,v 3.1 1994/09/07 15:47:44 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -48,7 +49,7 @@
 #define BT485_CURS_Y_LOW		0x0E
 #define BT485_CURS_Y_HIGH		0x0F
 
-/* Directly Accessable RamDac Registers */
+/* Indirectly Accessable RamDac Registers */
 
 #define BT485_COMMAND_REG_3		0x01
 

@@ -1,6 +1,5 @@
-/* $XConsortium: vgaAsm.h,v 1.1 94/03/28 21:55:37 dpw Exp $ */
-/* $XFree86$ */
-
+/* $XConsortium: vgaAsm.h,v 1.3 95/01/13 20:13:39 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaAsm.h,v 3.0 1994/11/26 12:48:16 dawes Exp $ */
 /* Definitions for VGA bank assembler routines */
 
 #ifdef CSRG_BASED

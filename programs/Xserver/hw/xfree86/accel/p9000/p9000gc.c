@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: p9000gc.c,v 1.3 95/01/16 13:16:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000gc.c,v 3.2 1995/01/15 10:32:00 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -76,7 +77,7 @@ Additional P9000 work by Chris Mason <mason@mail.csh.rit.edu>
 #include "cfb16.h"
 #include "cfb32.h"
 
-#if P9000_ACCEL
+#ifdef P9000_ACCEL
 
 #if PSZ == 8
 # define useTEGlyphBlt  cfbTEGlyphBlt8
@@ -126,11 +127,11 @@ GCOps	p9000TEOps1Rect = {
     cfbCopyPlane,
     cfbPolyPoint,
 #ifdef PIXEL_ADDR
-    cfb8LineSS1Rect,
-    cfb8SegmentSS1Rect,
+    p9000Line1Rect,
+    p9000Segment,
 #else
-    cfbLineSS,
-    cfbSegmentSS,
+    p9000Line,
+    p9000Segment,
 #endif
     miPolyRectangle,
     ZeroPolyArc,
@@ -157,11 +158,11 @@ GCOps	p9000NonTEOps1Rect = {
     cfbCopyPlane,
     cfbPolyPoint,
 #ifdef PIXEL_ADDR
-    cfb8LineSS1Rect,
-    cfb8SegmentSS1Rect,
+    p9000Line1Rect,
+    p9000Segment,
 #else
-    cfbLineSS,
-    cfbSegmentSS,
+    p9000Line,
+    p9000Segment,
 #endif
     miPolyRectangle,
     ZeroPolyArc,
@@ -187,8 +188,8 @@ GCOps	p9000TEOps = {
     p9000CopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
+    p9000Line,
+    p9000Segment,
     miPolyRectangle,
     ZeroPolyArc,
     miFillPolygon,
@@ -213,8 +214,8 @@ GCOps	p9000NonTEOps = {
     p9000CopyArea,
     cfbCopyPlane,
     cfbPolyPoint,
-    cfbLineSS,
-    cfbSegmentSS,
+    p9000Line,
+    p9000Segment,
     miPolyRectangle,
 #ifdef PIXEL_ADDR
     cfbZeroPolyArcSS8Copy,
@@ -260,7 +261,27 @@ p9000InitGC()
   p9000alu[GXcopyInverted] = ~IGM_S_MASK;	      /* NOT src */
   p9000alu[GXorInverted] = ~IGM_S_MASK | IGM_D_MASK;  /* NOT src OR dst */
   p9000alu[GXnand] = ~IGM_S_MASK | ~IGM_D_MASK;	      /* NOT src OR NOT dst */
-  p9000alu[GXset] = 1;			              /* 1 */
+  p9000alu[GXset] = ~0;                               /* 1 */
+
+/* for a quad, the source is actually the color of the foreground */
+  p9000QuadAlu[GXclear] = 0;                          /* 0 */
+  p9000QuadAlu[GXand] = IGM_F_MASK & IGM_D_MASK;      /* src AND dst */
+  p9000QuadAlu[GXandReverse] = IGM_F_MASK & ~IGM_D_MASK;  /* src AND NOT dst */
+  p9000QuadAlu[GXcopy] = IGM_F_MASK;                      /* src */
+  p9000QuadAlu[GXandInverted] = ~IGM_F_MASK & IGM_D_MASK; /* NOT src AND dst */
+  p9000QuadAlu[GXnoop] = IGM_D_MASK;                      /* dst */
+  p9000QuadAlu[GXxor] = IGM_F_MASK ^ IGM_D_MASK;          /* src XOR dst */
+  p9000QuadAlu[GXor] = IGM_F_MASK | IGM_D_MASK;           /* src OR dst */
+  p9000QuadAlu[GXnor] = ~IGM_F_MASK & ~IGM_D_MASK;     /* NOT src AND NOT dst */
+  p9000QuadAlu[GXequiv] = ~IGM_F_MASK ^ IGM_D_MASK;    /* NOT src XOR dst */
+  p9000QuadAlu[GXinvert] = ~IGM_D_MASK;                /* NOT dst */
+  p9000QuadAlu[GXorReverse] = IGM_F_MASK | ~IGM_D_MASK;   /* src OR NOT dst */
+  p9000QuadAlu[GXcopyInverted] = ~IGM_F_MASK;             /* NOT src */
+  p9000QuadAlu[GXorInverted] = ~IGM_F_MASK | IGM_D_MASK;  /* NOT src OR dst */
+  p9000QuadAlu[GXnand] = ~IGM_F_MASK | ~IGM_D_MASK;     /* NOT src OR NOT dst */
+  p9000QuadAlu[GXset] = ~0;                             /* 1 */
+
+  p9000BytesPerPixel = p9000InfoRec.bitsPerPixel / 8;
 }
 
 
@@ -294,7 +315,7 @@ p9000MatchCommon (pGC, devPriv)
 	    if (devPriv->oneRect)
 		return &p9000TEOps1Rect;
 	    else
-		return &cfbTEOps;
+		return &p9000TEOps;
 #endif
 	else
 #ifdef NO_ONE_RECT
@@ -660,19 +681,19 @@ p9000ValidateGC(pGC, changes, pDrawable)
 			((pDrawable->x >= pGC->pScreen->width - 32768) &&
 			 (pDrawable->y >= pGC->pScreen->height - 32768)))
 		    {
-			pGC->ops->Polylines = cfb8LineSS1Rect;
-			pGC->ops->PolySegment = cfb8SegmentSS1Rect;
+			pGC->ops->Polylines = p9000Line1Rect;
+			pGC->ops->PolySegment = p9000Segment;
 		    } else
 #endif
 #ifdef NO_ONE_RECT
 		    {
-			pGC->ops->Polylines = cfb8LineSS1Rect;
-			pGC->ops->PolySegment = cfb8SegmentSS1Rect;
+			pGC->ops->Polylines = p9000Line1Rect;
+			pGC->ops->PolySegment = p9000Segment;
 		    }
 #else
 		    {
-		    	pGC->ops->Polylines = cfbLineSS;
-		    	pGC->ops->PolySegment = cfbSegmentSS;
+		    	pGC->ops->Polylines = p9000Line;
+		    	pGC->ops->PolySegment = p9000Segment;
 		    }
 #endif
 		}

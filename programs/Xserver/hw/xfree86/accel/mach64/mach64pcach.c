@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.3 1995/01/15 10:31:13 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -141,8 +142,6 @@ unsigned char reverseByteOrder[0x100] = {
         0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
-#define NEXT_CACHE_ID (++CacheIDNum ? CacheIDNum : ++CacheIDNum)
-
 CacheInfoPtr mach64CacheInfo = NULL;
 static int CacheIDNum = 1;
 
@@ -177,7 +176,12 @@ mach64CacheInit(w, h)
     if (!mach64CacheInfo) {
        cache_sets = lines / 256;
        switch (cache_sets) {
-       case 0:			/* Assume at least 256 lines reserved */
+       case 0:
+	  First256Slot = -1;
+	  First128Slot = -1;
+	  First64Slot  = -1;
+	  MaxSlots     = -1;
+	  break;
        case 1:
 	  First256Slot = -1;
 	  First128Slot =  1;
@@ -202,6 +206,7 @@ mach64CacheInit(w, h)
 
        switch (cache_sets) {
        case 0:
+	  break;
        case 1:
 				/* No 256x256 pixel cache */
 	  for (i = First128Slot; i < First64Slot; i++) {
@@ -296,16 +301,22 @@ void
 mach64CacheFreeSlot(pix)
     PixmapPtr pix;
 {
+#ifdef PIXPRIV
+    mach64PixPrivPtr devPriv;
+
     /* This is not really necessary but for completeness... */
     /* Anyway, the pixmap cache is reinitialized upon VTEnter */
     if (!xf86VTSema)
 	return;
 
-    if (pix->slot > 0 && pix->slot <= MaxSlots &&
-	mach64CacheInfo[pix->slot].id == pix->cacheId) {
-	mach64CacheInfo[pix->slot].id = -1;
-	pix->slot = -1;
+    devPriv = (mach64PixPrivPtr)(pix->devPrivates[mach64PixmapIndex].ptr);
+
+    if (devPriv->slot > 0 && devPriv->slot <= MaxSlots &&
+	mach64CacheInfo[devPriv->slot].id == pix->drawable.serialNumber) {
+	mach64CacheInfo[devPriv->slot].id = 0;
+	devPriv->slot = 0;
     }
+#endif
 }
 
 /*
@@ -320,8 +331,13 @@ FindCacheSlot(pix)
 #ifdef PIXMAP_CACHE_OFF
     return 0;
 #endif
+#ifndef PIXPRIV
+    return 0;
+#endif
 
-    if (First256Slot == -1) {
+    if (MaxSlots == -1) {
+	return 0;
+    } else if (First256Slot == -1) {
        if (pix->drawable.width > 128 || pix->drawable.height > 128)
 	     return 0;
     } else {
@@ -443,7 +459,11 @@ static void
 DoCacheTile(pix)
     PixmapPtr pix;
 {
-    CacheInfoPtr pci = &mach64CacheInfo[pix->slot];
+#ifdef PIXPRIV
+    mach64PixPrivPtr devPriv = 
+	(mach64PixPrivPtr)(pix->devPrivates[mach64PixmapIndex].ptr);
+
+    CacheInfoPtr pci = &mach64CacheInfo[devPriv->slot];
     int fixed_pattern = 0;
     unsigned char pattern[8];
 
@@ -457,10 +477,7 @@ DoCacheTile(pix)
     pci->bg_color = 0;
     pci->flags = 0;
     pci->lru = pixmap_cache_clock;
-    if (pix->cacheId)
-	pci->id = pix->cacheId;
-    else
-	pci->id = pix->cacheId = NEXT_CACHE_ID;
+    pci->id = pix->drawable.serialNumber;
 
     /* see if we can use the fixed pattern registers */
     if ((mach64InfoRec.bitsPerPixel == 8) && (pci->pix_w == 4) &&
@@ -524,6 +541,7 @@ DoCacheTile(pix)
     DoCacheExpandPixmap(pci);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
+#endif
 }
 
 static void
@@ -532,7 +550,11 @@ DoCacheOpStipple(pix, fg, bg)
     int fg;
     int bg;
 {
-    CacheInfoPtr pci = &mach64CacheInfo[pix->slot];
+#ifdef PIXPRIV
+    mach64PixPrivPtr devPriv = 
+	(mach64PixPrivPtr)(pix->devPrivates[mach64PixmapIndex].ptr);
+
+    CacheInfoPtr pci = &mach64CacheInfo[devPriv->slot];
     int fixed_pattern = 0;
 
     pci->pix_w = pix->drawable.width;
@@ -545,10 +567,7 @@ DoCacheOpStipple(pix, fg, bg)
     pci->bg_color = bg;
     pci->flags = 0;
     pci->lru = pixmap_cache_clock;
-    if (pix->cacheId)
-	pci->id = pix->cacheId;
-    else
-	pci->id = pix->cacheId = NEXT_CACHE_ID;
+    pci->id = pix->drawable.serialNumber;
 
     /* see if we can use the 8x8 mono pattern registers */
     if ((mach64InfoRec.bitsPerPixel == 8) && (pci->pix_w == 32) &&
@@ -602,17 +621,21 @@ DoCacheOpStipple(pix, fg, bg)
     DoCacheExpandPixmap(pci);
 
     WaitIdleEmpty(); /* Make sure that all commands have finished */
+#endif
 }
 
 int
 mach64CacheTile(pix)
     PixmapPtr pix;
 {
+#ifdef PIXPRIV
     int slot;
+    mach64PixPrivPtr devPriv = 
+	(mach64PixPrivPtr)(pix->devPrivates[mach64PixmapIndex].ptr);
 
     /* First see if tile is already cached */
-    if ((pix->slot > 0 && pix->slot <= MaxSlots) &&
-	(mach64CacheInfo[pix->slot].id == pix->cacheId)) 
+    if ((devPriv->slot > 0 && devPriv->slot <= MaxSlots) &&
+	(mach64CacheInfo[devPriv->slot].id == pix->drawable.serialNumber)) 
     {
 	return (1);
     } 
@@ -622,11 +645,12 @@ mach64CacheTile(pix)
 
         if (slot) 
 	{
-	    pix->slot = slot;
+	    devPriv->slot = slot;
 	    DoCacheTile(pix);
 	    return (1);
         } 
     }
+#endif
     return (0);
 }
 
@@ -635,12 +659,15 @@ mach64CacheStipple(pix, fg)
     PixmapPtr pix;
     int fg;
 {
+#ifdef PIXPRIV
     int slot;
+    mach64PixPrivPtr devPriv = 
+	(mach64PixPrivPtr)(pix->devPrivates[mach64PixmapIndex].ptr);
 
     /* First see if stipple is already cached */
-    if ((pix->slot > 0 && pix->slot <= MaxSlots) &&
-	(mach64CacheInfo[pix->slot].id == pix->cacheId) &&
-	(mach64CacheInfo[pix->slot].fg_color == fg)) 
+    if ((devPriv->slot > 0 && devPriv->slot <= MaxSlots) &&
+	(mach64CacheInfo[devPriv->slot].id == pix->drawable.serialNumber) &&
+	(mach64CacheInfo[devPriv->slot].fg_color == fg)) 
     {
 	return (1);
     } 
@@ -650,11 +677,12 @@ mach64CacheStipple(pix, fg)
 
         if (slot) 
 	{
-	    pix->slot = slot;
+	    devPriv->slot = slot;
 	    DoCacheOpStipple(pix, fg, (fg ? 0 : 0xffffffff));
 	    return (1);
         }
     }
+#endif
     return (0);
 }
 
@@ -664,13 +692,16 @@ mach64CacheOpStipple(pix, fg, bg)
     int fg;
     int bg;
 {
+#ifdef PIXPRIV
     int slot;
+    mach64PixPrivPtr devPriv = 
+	(mach64PixPrivPtr)(pix->devPrivates[mach64PixmapIndex].ptr);
 
     /* First see if stipple is already cached */
-    if ((pix->slot > 0 && pix->slot <= MaxSlots) &&
-	(mach64CacheInfo[pix->slot].id == pix->cacheId) &&
-	(mach64CacheInfo[pix->slot].fg_color == fg) &&
-	(mach64CacheInfo[pix->slot].bg_color == bg)) 
+    if ((devPriv->slot > 0 && devPriv->slot <= MaxSlots) &&
+	(mach64CacheInfo[devPriv->slot].id == pix->drawable.serialNumber) &&
+	(mach64CacheInfo[devPriv->slot].fg_color == fg) &&
+	(mach64CacheInfo[devPriv->slot].bg_color == bg)) 
     {
 	return (1);
     } 
@@ -680,11 +711,12 @@ mach64CacheOpStipple(pix, fg, bg)
 
         if (slot) 
 	{
-	    pix->slot = slot;
+	    devPriv->slot = slot;
 	    DoCacheOpStipple(pix, fg, bg);
 	    return (1);
         }
     }
+#endif
     return (0);
 }
 

@@ -1,6 +1,5 @@
-/* $XConsortium: compiler.h,v 1.1 94/03/28 21:22:35 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.0 1994/05/08 05:20:45 dawes Exp $ */
-/*
+/* $XConsortium: compiler.h,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.1 1994/07/24 11:49:16 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

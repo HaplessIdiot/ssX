@@ -4,8 +4,8 @@
 <!-- TitleS information -->
 
 <title>README for XFree86 3.1 on Mach
-<author>XFree86, Inc
-<date>v1.0, 17 December 1994
+<author>Robert Baron
+<date>17 December 1994
 
 
 
@@ -17,15 +17,15 @@
 <sect>README for XFree86 3.1 on Mach<p>
 
 <bf>NOTE:</bf>  THIS TEXT WILL LOOK A LOT LIKE THE README.MACH FOR XFREE86 2.1,
-BECAUSE NOT MUCH HAS CHANGED FROM THE MACH OS PRESPECTIVE.  ON THE
-OTHERHAND, THERE ARE SIGNIFICANT DIFFERENCES IN THE BUILD INSTRUCTIONS.
+BECAUSE NOT MUCH HAS CHANGED FROM THE MACH OS PERSPECTIVE.  ON THE
+OTHER HAND, THERE ARE SIGNIFICANT DIFFERENCES IN THE BUILD INSTRUCTIONS.
 BE CAREFUL TO FOLLOW THEM.<p>
 
 All XFree86 client binaries should work with not only the Mach 2.5
 kernel but also the Mach 3.0 kernel.  Mach 2.5 kernels should support
 both the traditional SVGA/VGA servers and the newer accelerator
 servers.  The Mach 3.0 kernel MK83 has a fix necessary for Mach 3.0 to
-support the new accelerator servers and for Superprobe; this change
+support the new accelerator servers and for SuperProbe; this change
 allows the full 64K of I/O ports to be accessed.  <bf>THUS, IF YOU USE
 MACH 3.0, YOU MUST RUN MACH 3.0 Kernel RELEASE MK83 OR LATER TO USE
 ANY ACCELERATOR SERVER</bf>.  The XF86_SVGA server, XF86_VGA16 server, and
@@ -68,7 +68,7 @@ minor.  The value you set the minor to is computed by the formula:<p>
 <quote>
 	&lt type &gt * 8 + &lt com port &gt
 </quote>
-&lt com port &gt is 0, or 1 or ... depending on which com port you plug your
+&lt com port &gt is 0, or 1 or &hellip; depending on which com port you plug your
 mouse into.  (Some architectures prefer to make com0 the modem line.)<p>
 <quote>
 &lt type &gt is:<p>
@@ -87,7 +87,7 @@ represents an up click for the mouse button.  Then the up down, right,
 left, arrow keys actually move the mouse AND if you have a standard
 pad with home, pageup, end, and pagedown filling in the square around
 the up, down, right, and left arrow keys then the former set do the
-obvious and move the mouse along the diagonals.  Try it ...
+obvious and move the mouse along the diagonals.  Try it &hellip;
 Note: whereas most notebooks these days do have an integral mouse, they
 typically provide only two buttons.  Thus this feature still is useful
 for just using F1, F2, and F3 for accessing three mouse buttons.<p>
@@ -131,7 +131,7 @@ the same set of binaries which were developed from the BSD4.3 Tahoe
 release.  (Note the Mt.Xinu system uses a later "generation" of
 application programs.  Lastly, the environment used internally at CMU 
 is still different from what is distributed externally.  This environment
-supports AFS and Kerberos and ...)  The CMU Tahoe environment uses a
+supports AFS and Kerberos and &hellip;)  The CMU Tahoe environment uses a
 gcc 1.36 compiler with a bsd derived cpp (not __STDC__); the Mt.Xinu
 system uses gcc 1.37.<p>
 
@@ -171,7 +171,8 @@ necessary for Mach is that the X servers be able to open <tt>/dev/iopl</tt>
 read/write.  There are many ways to achieve this effect.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Mach,v 3.1 1994/09/26 15:33:09 dawes Exp $
+$XConsortium: Mach.sgml,v 1.3 95/01/27 16:14:25 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.3 1995/01/25 11:08:48 dawes Exp $
 </verb>
 
 </article>

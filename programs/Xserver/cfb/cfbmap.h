@@ -1,6 +1,6 @@
 /*
- * $XConsortium: cfbmap.h,v 1.9 94/04/17 20:28:54 dpw Exp $
- * $XFree86$
+ * $XConsortium: cfbmap.h,v 1.10 94/09/22 21:12:06 dpw Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfbmap.h,v 3.0 1994/06/18 16:19:27 dawes Exp $
  *
 Copyright (c) 1991  X Consortium
 

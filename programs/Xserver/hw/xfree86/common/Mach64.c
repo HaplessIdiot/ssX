@@ -1,5 +1,5 @@
-/* $XConsortium: XF86_Mach64.c,v 1.1 94/03/28 21:21:46 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: Mach64.c,v 1.1 95/01/26 15:26:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/Mach64.c,v 3.0 1994/11/27 20:42:39 dawes Exp $ */
 #include "X.h"
 #include "os.h"
 

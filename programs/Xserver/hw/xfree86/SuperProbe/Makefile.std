@@ -1,4 +1,5 @@
-# $XFree86: mit/server/ddx/x386/SuperProbe/Makefile.std,v 2.8 1994/02/28 14:09:32 dawes Exp $
+# $XConsortium: Makefile.std,v 1.4 95/01/06 20:56:42 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.5 1994/12/18 12:49:19 dawes Exp $
 #
 # Installation parameters
 #
@@ -15,7 +16,7 @@ MODE = 4755
 #OS_DEF = -DSYSV
 #OS_DEF = -DSYSV -DSCO
 #OS_DEF = -DSYSV -DESIX
-#OS_DEF = -DSYSV -DSVR4 -DSOLX86
+#OS_DEF = -DSVR4 -Dsun
 OS_DEF = -DSYSV -DSVR4
 OS_SRC = OS_SYSV.c
 OS_OBJ = OS_SYSV.o
@@ -27,19 +28,22 @@ OS_OBJ = OS_SYSV.o
 #OS_SRC = OS_Linux.c
 #OS_OBJ = OS_Linux.o
 # 386BSD
-#OS_DEF = -D__BSD__ -D__386BSD__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__386BSD__ -DGCCUSESGAS $(CONS_DEF)
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
+#CONS_DEF = -DPCCONS_SUPPORT
 # NetBSD
-#OS_DEF = -D__BSD__ -D__NetBSD__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__NetBSD__ -DGCCUSESGAS $(CONS_DEF)
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
+#CONS_DEF = -DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
 # FreeBSD
-#OS_DEF = -D__BSD__ -D__FreeBSD__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__FreeBSD__ -DGCCUSESGAS $(CONS_DEF)
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
+#CONS_DEF = -DPCCONS_SUPPORT -DSYSCONS_SUPPORT -DPCVT_SUPPORT
 # BSD/386
-#OS_DEF = -D__BSD__ -D__bsdi__ -DGCCUSESGAS
+#OS_DEF = -DCSRG_BASED -D__bsdi__ -DGCCUSESGAS
 #OS_SRC = OS_386BSD.c
 #OS_OBJ = OS_386BSD.o
 # Minix
@@ -56,6 +60,11 @@ OS_OBJ = OS_SYSV.o
 #OS_SRC = OS_Mach.c
 #OS_OBJ = OS_Mach.o
 #OS_LIB = /usr/misc/.mach/lib/libmach.a
+# OS/2 with EMX
+#OS_DEF = -D__EMX__ -DGCCUSESGAS
+#OS_SRC = OS_Os2.c
+#OS_OBJ = OS_Os2.o
+#OS_LIB = -lemxio
 
 HDRS = Probe.h
 BASE_SRC = MDA.c Herc.c CGA.c VGA.c RamDac.c MemProbe.c
@@ -66,14 +75,16 @@ SVGA_SRC = Tseng.c WD.c ChipsTech.c Video7.c Genoa.c Trident.c Oak.c \
 SVGA_OBJ = Tseng.o WD.o ChipsTech.o Video7.o Genoa.o Trident.o Oak.o \
 	   Cirrus.o Ahead.o ATI.o S3.o AL.o Yamaha.o NCR.o MX.o \
 	   RealTek.o Primus.o Compaq.o HMC.o UMC.o Weitek.o
-COPROC_SRC = 8514.c ATIMach.c
-COPROC_OBJ = 8514.o ATIMach.o
+COPROC_SRC = 8514.c ATIMach.c I128.c
+COPROC_OBJ = 8514.o ATIMach.o I128.o
 SRCS = Main.c $(SVGA_SRC) $(COPROC_SRC) $(BASE_SRC) Print.c \
        Utils.c $(OS_SRC) $(IO_SRC)
 OBJS = Main.o $(SVGA_OBJ) $(COPROC_OBJ) $(BASE_OBJ) Print.o \
        Utils.o $(OS_OBJ) $(IO_OBJ)
 LIBS = $(OS_LIB)
 
+
+#PROG = SuperProbe.exe # OS/2
 PROG = SuperProbe
 
 # Options for gcc
@@ -89,6 +100,12 @@ DEBUG_OR_OPT = -g -Wall
 #CCOPTS = -Xa
 #DEBUG_OR_OPT = -g
 #DEBUG_OR_OPT = -O
+
+# Options for OS/2
+#CC= gcc
+#CCOPTS = -m486
+#LDFLAGS = -Zexe
+
 
 CFLAGS = $(CCOPTS) $(DEBUG_OR_OPT) $(OS_DEF)
 

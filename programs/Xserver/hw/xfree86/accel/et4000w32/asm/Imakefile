@@ -1,11 +1,12 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.3 95/01/05 20:31:13 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/Imakefile,v 3.2 1994/11/19 07:50:34 dawes Exp $
 #include <Server.tmpl>
 
-SUSRCS = w32it.s w32pit.s
+SUSRCS = w32it.s w32pit.s w32line.s
 
 SRCS = $(SUSRCS)
 
-SUOBJS = w32it.o w32pit.o
+SUOBJS = w32it.o w32pit.o w32line.o
 
 OBJS = $(SUOBJS)
 
@@ -19,5 +20,7 @@ NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
 NormalLibraryTarget(asm, $(OBJS))
+
+InstallLinkKitNamedLibrary(asm,w32asm,$(LINKKITDIR)/drivers)
 
 DependTarget()

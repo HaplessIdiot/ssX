@@ -1,6 +1,5 @@
-/* $XConsortium: atKeynames.h,v 1.1 94/03/28 21:22:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.0 1994/11/22 02:38:48 dawes Exp $ */
-/*
+/* $XConsortium: atKeynames.h,v 1.6 95/01/13 19:19:20 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.1 1994/12/11 10:54:28 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

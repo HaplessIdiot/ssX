@@ -1,6 +1,5 @@
-/* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.12 1995/01/21 12:54:09 dawes Exp $ */
-/*
+/* $XConsortium: s3fcach.c,v 1.4 95/01/23 15:33:59 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.13 1995/01/21 13:04:19 dawes Exp $ */
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

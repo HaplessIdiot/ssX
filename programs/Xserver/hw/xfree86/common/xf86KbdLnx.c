@@ -1,5 +1,5 @@
-/* $XConsortium: xf86_KbdLnx.c,v 1.1 94/03/28 21:24:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.3 1994/11/30 20:41:22 dawes Exp $ */
+/* $XConsortium: xf86KbdLnx.c,v 1.1 95/01/26 15:26:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.4 1994/12/11 10:54:45 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between

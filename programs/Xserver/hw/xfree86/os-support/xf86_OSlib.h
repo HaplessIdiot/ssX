@@ -1,6 +1,5 @@
-/* $XConsortium: xf86_OSlib.h,v 1.1 94/03/28 21:27:06 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.11 1994/12/18 11:02:02 dawes Exp $ */
-/*
+/* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.12 1995/01/10 10:27:30 dawes Exp $ */
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@physics.su.oz.au>
  * Copyright 1992 by Jim Tsillas <jtsilla@damon.ccs.northeastern.edu>

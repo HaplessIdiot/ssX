@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: p9000.c,v 1.6 95/01/16 13:16:39 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.23 1995/01/15 10:31:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -14,14 +15,14 @@
  * "as is" without express or implied warranty.
  *
  * ERIK NYGREN, THOMAS ROELL, KEVIN E. MARTIN, RICKARD E. FAITH, SCOTT LAIRD,
- * AND TIAGO GONS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO EVENT
- * SHALL ERIK NYGREN, THOMAS ROELL, KEVIN E. MARTIN, RICKARD E. FAITH,
- * SCOTT LAIRD, OR TIAGO GONS BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR 
- * PERFORMANCE OF THIS SOFTWARE.
+ * DAVID MOEWS, AND TIAGO GONS DISCLAIM ALL WARRANTIES WITH REGARD TO THIS
+ * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS,
+ * IN NO EVENT SHALL ERIK NYGREN, THOMAS ROELL, KEVIN E. MARTIN, 
+ * RICKARD E. FAITH, DAVID MOEWS SCOTT LAIRD, OR TIAGO GONS BE LIABLE FOR ANY
+ * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
+ * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  *
@@ -30,6 +31,7 @@
  * Further modifications by Scott Laird (lair@kimbark.uchicago.edu)
  * and Tiago Gons (tiago@comosjn.hobby.nl)
  * Modified for the P9000 by Erik Nygren (nygren@mit.edu)
+ * Bank switching code for P9000 by David Moews (dmoews@xraysgi.ims.uconn.edu)
  *
  * Header: /x/xc/programs/Xserver/hw/xfree86/accel/p9000/RCS/p9000.c,v 4.0 1994/05/28 01:24:17 nygren Exp
  */
@@ -53,6 +55,7 @@
 #include "p9000reg.h"
 #include "p9000Bt485.h"
 #include "p9000viper.h"
+#include "p9000orchid.h"
 #include "mi.h"
 #include "cfb.h"
 
@@ -61,6 +64,15 @@
 
 extern int p9000MaxClock;
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern char *xf86VisualNames[];
+
+extern int defaultColorVisualClass;
+
+static Bool p9000ValidMode(
+#if NeedFunctionPrototypes 
+   DisplayModePtr
+#endif
+);
 
 ScrnInfoRec p9000InfoRec = {
     FALSE,		/* Bool configured */
@@ -68,6 +80,7 @@ ScrnInfoRec p9000InfoRec = {
     -1,			/* int scrnIndex */
     p9000Probe,      	/* Bool (* Probe)() */
     p9000Initialize,	/* Bool (* Init)() */
+    p9000ValidMode,	/* Bool (* ValidMode)() */
     p9000EnterLeaveVT,	/* void (* EnterLeaveVT)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveMonitor)() */
     (void (*)())NoopDDA,/* void (* EnterLeaveCursor)() */
@@ -75,14 +88,18 @@ ScrnInfoRec p9000InfoRec = {
     p9000SwitchMode,	/* Bool (* SwitchMode)() */
     p9000PrintIdent,	/* void (* PrintIdent)() */
     8,			/* int depth */
+    {5, 6, 5},		/* xrgb weight */
     8,			/* int bitsPerPixel */
     PseudoColor,       	/* int defaultVisual */
     -1, -1,		/* int virtualX,virtualY */
+    -1,			/* int displayWidth */
     -1, -1, -1, -1,	/* int frameX0, frameY0, frameX1, frameY1 */
     {0, },              /* OFlagSet options */
     {0, },              /* OFlagSet clockOptions */
     {0, },              /* OFlagSet xconfigFlag */
     NULL,	       	/* char *chipset */
+    NULL,	       	/* char *ramdac */
+    0,			/* int dacSpeed */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -92,14 +109,23 @@ ScrnInfoRec p9000InfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
+    NULL,	       	/* DisplayModePtr pModes */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock, 1.3 new */
     FALSE,              /* Bool bankedMono */
     "P9000",            /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     p9000ValidTokens,	/* int *validTokens */
-    P9000_PATCHLEVEL	/* char *patchlevel */
+    P9000_PATCHLEVEL,	/* char *patchlevel */
+    0,			/* int IObase */
+    0,			/* int PALbase */
+    0,			/* int COPbase */
+    0,			/* int POSbase */
+    0,			/* int instance */
+    0,			/* int s3Madjust */
+    0,			/* int s3Nadjust */
+    0,			/* int s3MClk */
 };
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -119,7 +145,14 @@ p9000VendorRec *p9000VendorPtr = NULL;  /* The probed vendor */
 
 /* A list of vendors to be probed */
 static p9000VendorRec *p9000VendorList[] = {
-  &(p9000ViperVendor),
+#ifdef P9000_VPRPCI_SUP
+  /* The Viper PCI must come before the Viper VLB */
+  &(p9000ViperPciVendor),
+#endif
+  &(p9000ViperVlbVendor),
+#ifdef P9000_ORCHID_SUP
+  &(p9000OrchidVendor),
+#endif
 };
 
 static int Num_p9000_Vendors = (sizeof(p9000VendorList)/
@@ -131,18 +164,26 @@ static ScreenPtr savepScreen = NULL;
 volatile unsigned long *CtlBase; 
 /* P9000 linear mapped frame buffer base */
 volatile unsigned long *VidBase; 
+
 volatile pointer p9000VideoMem;
 
-/* Options that may be specified to Xconfig */
+unsigned p9000BytesPerPixel;  /* The number of bytes per pixel */
+
+/* Options that may be specified to XF86Config */
 Bool p9000SWCursor = FALSE;         /* Use a software cursor */
 Bool p9000DACSyncOnGreen = FALSE;   /* Enables syncing on green */
+Bool p9000DAC8Bit = TRUE;           /* Use 8 bits for cmap entry (the
+				     * alternative is not implemented
+				     * and may never be */
+Bool p9000NoAccel = FALSE;          /* Disables hardware acceleration */
 
 unsigned char p9000SwapBits[256];
 
 static unsigned p9000_IOPorts[] = {
   /* VGA Registers */
   SEQ_INDEX_REG,    SEQ_PORT,         MISC_OUT_REG,     MISC_IN_REG,
-  GRA_I,            GRA_D,
+  GRA_I,            GRA_D,            CRT_IC,           CRT_DC,
+  IS1_RC,           ATT_IW,           ATT_R,            VGA_BANK_REG,
 
   /* BT484/485 Register Defines */  
   BT_PIXEL_MASK,    BT_READ_ADDR,     BT_WRITE_ADDR,    BT_RAMDAC_DATA,
@@ -151,6 +192,13 @@ static unsigned p9000_IOPorts[] = {
   BT_COMMAND_REG_2, BT_CURS_Y_LOW,    BT_CURS_Y_HIGH,   BT_CURS_X_LOW, 
   BT_CURS_X_HIGH,
 };
+
+static int Num_p9000_IOPorts = (sizeof(p9000_IOPorts)/
+				sizeof(p9000_IOPorts[0]));
+
+/* p9000WeightMasks must match p9000weights[], below */
+static short p9000WeightMasks[] = { RGB16_565, RGB16_555, RGB32_888 };
+short p9000WeightMask;
 
 #define p9000ReorderSwapBits(a,b)    b = \
         (a & 0x80) >> 7 | \
@@ -162,8 +210,9 @@ static unsigned p9000_IOPorts[] = {
         (a & 0x02) << 5 | \
         (a & 0x01) << 7;
 
-static int Num_p9000_IOPorts = (sizeof(p9000_IOPorts)/
-				sizeof(p9000_IOPorts[0]));
+/* Raster operation (alu) -> minterm mapping */
+unsigned int p9000alu[16];	/* alu src = p9000 src        */
+unsigned int p9000QuadAlu[16] ; /* alu src = p9000 foreground */
 
 /*
  * p9000Probe --
@@ -173,79 +222,168 @@ Bool
 p9000Probe()
 {
     int            memavail, rounding;
-    DisplayModePtr pMode, pEnd, pmaxX = NULL, pmaxY = NULL;
+    DisplayModePtr pMode, pEnd = NULL;
+    int            numValidModes = 0;
     int            maxX, maxY;
     int            curvendor;
+    Bool           modeIsValid;
     OFlagSet       validOptions;
+    xrgb           p9000weights[] = { { 5, 6, 5 }, { 5, 5, 5 }, /* 16bpp */
+				      { 8, 8, 8 } };            /* 32bpp */
+    int            i;
+    unsigned long  tmpsysconfig;  /* dummy value */
 
-    p9000InfoRec.maxClock = p9000MaxClock;
+    if (!xf86LinearVidMem())
+      {
+	ErrorF("%s %s: This operating system does not support memory mapping of linear regions.\nAs a result, it can not be used with this server\n",
+	       XCONFIG_PROBED, p9000InfoRec.name);
+	return(FALSE);
+      }
 
     xf86ClearIOPortList(p9000InfoRec.scrnIndex);
     xf86AddIOPorts(p9000InfoRec.scrnIndex, Num_p9000_IOPorts, p9000_IOPorts);
 
     if (p9000InfoRec.chipset)
       {
-	if (StrCaseCmp(p9000InfoRec.chipset, "p9000"))
+	for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
 	  {
-	    ErrorF("Chipset specified in Xconfig is not \"p9000\" (%s)!\n",
-		   p9000InfoRec.chipset);
+	    if (0 == strcmp(p9000VendorList[curvendor]->Vendor,
+			    p9000InfoRec.chipset))
+	      {
+		p9000VendorPtr = p9000VendorList[curvendor];
+		break;
+	      }
+	  }
+	if (curvendor >= Num_p9000_Vendors)
+	  {
+	    ErrorF("%s %s: Chipset specified in XF86Config (%s) is not recognized!\n",
+		   XCONFIG_GIVEN, p9000InfoRec.name, p9000InfoRec.chipset);
 	    return(FALSE);
 	  }
-	xf86EnableIOPorts(p9000InfoRec.scrnIndex);
-	
-#ifdef DEBUG
-    ErrorF("Enabled IO Ports...\n");
-#endif
-
       }
     else
       {
-	ErrorF("Autodetection of P9000 is not yet supported.\n    Explicitly specify p9000 as the ChipSet in your Xconfig file.\n");
-	return(FALSE);
+	for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
+	  {
+	    if (p9000VendorList[curvendor]->Probe())
+	      {
+		p9000VendorPtr = p9000VendorList[curvendor];
+		break;
+	      }
+	  }
+	if (curvendor >= Num_p9000_Vendors)
+	  {
+	    ErrorF("%s %s: Autodetection of chipset failed.  Specify explicitly in XF86Config.\n", XCONFIG_PROBED, p9000InfoRec.name);
+	    return(FALSE);
+	  }
       }
+    if (xf86Verbose)
+      ErrorF("%s %s: Vendor/chipset is %s (%s)\n",
+	     (p9000InfoRec.chipset ? XCONFIG_GIVEN : XCONFIG_PROBED),
+	     p9000InfoRec.name, p9000VendorPtr->Vendor, p9000VendorPtr->Desc);
+    p9000InfoRec.chipset = p9000VendorPtr->Vendor;
+
+    xf86EnableIOPorts(p9000InfoRec.scrnIndex);
     
     OFLG_ZERO(&validOptions);
+    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
+    OFLG_SET(OPTION_NOACCEL, &validOptions);
+    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
+    OFLG_SET(OPTION_VRAM_128, &validOptions);
+    OFLG_SET(OPTION_VRAM_256, &validOptions);
     xf86VerifyOptions(&validOptions, &p9000InfoRec);
     
+#if 0  /* We shouldn't need this any more */
     if (!p9000InfoRec.clocks)
       {
-	ErrorF("Autodetection of clocks is not supported.\n    Explicitly specify in Xconfig file on a Clocks line.\n");
+	ErrorF("%s %s: Autodetection of clocks is not supported.\n\tExplicitly specify in XF86Config file on a Clocks line.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
-    
+#endif
+    /* At the moment, all P9000-based boards use a icd2061a compatable
+     * programmable clock so no more differentiation than this is needed */
+    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(p9000InfoRec.clockOptions));
+
     if (!p9000InfoRec.videoRam)
       {
-	ErrorF("Autodetection of video RAM is not yet supported.\n    Explicitly specify VideoRAM in Xconfig file.\n");
+	ErrorF("%s %s: Autodetection of video RAM is not yet supported.\n\tExplicitly specify VideoRAM in XF86Config file.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);	
       }
+    memavail = p9000InfoRec.videoRam*1024;
 
-    if ((p9000InfoRec.MemBase != 0xA0000000) &&
-	(p9000InfoRec.MemBase != 0x20000000) &&
-	(p9000InfoRec.MemBase != 0x80000000))
-      {
-	p9000InfoRec.MemBase = 0x80000000;
-	ErrorF("%s: MemBase not specified.  Using 0x%lx as a default.\n",
-	       p9000InfoRec.name, p9000InfoRec.MemBase);
-      }
+    /* Validate the vendor specific things like MemBase */
+    if (!p9000VendorPtr->Validate())
+      return(FALSE);
+    /* The validate function may set p9000MaxClock.  Reflect this change. */
+    p9000InfoRec.maxClock = p9000MaxClock; 
 
-    /* Probe for the vendor */
-    for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
+    if (xf86bpp < 0) {
+        xf86bpp = p9000InfoRec.depth;
+    }
+    if (xf86weight.red == 0 || xf86weight.green == 0 || xf86weight.blue == 0) {
+        xf86weight = p9000InfoRec.weight;
+    }
+    switch (xf86bpp)
       {
-	if (p9000VendorList[curvendor]->Probe())
-	  {
-	    p9000VendorPtr = p9000VendorList[curvendor];
-
-	    break;
-	  }
-	/* There should be a way of setting this from Xconfig *TO*DO* */
-      }
-    if (p9000VendorPtr == NULL)
-      {
-	ErrorF("Unable to determine vendor of P9000 card.\n");
+      case 8:
+	break;
+      case 16:
+	p9000InfoRec.depth = 16;  /* if 555, set to 15 below */
+	p9000InfoRec.bitsPerPixel = 16;
+	if (p9000InfoRec.defaultVisual < 0)
+	    p9000InfoRec.defaultVisual = TrueColor;
+	if (defaultColorVisualClass < 0)
+	    defaultColorVisualClass = p9000InfoRec.defaultVisual;
+	break;
+      case 24:
+      case 32:
+	xf86bpp = 32;
+	p9000InfoRec.depth = 24;
+	p9000InfoRec.bitsPerPixel = 32;     /* Use sparse 24 bpp (RGBX) */
+	if (p9000InfoRec.defaultVisual < 0)
+	    p9000InfoRec.defaultVisual = TrueColor;
+	if (defaultColorVisualClass < 0)
+	    defaultColorVisualClass = p9000InfoRec.defaultVisual;
+	p9000MaxClock = P9000_MAX_32BPP_CLOCK;
+	break;
+      default:
+	ErrorF("%s %s: Invalid value for bpp.  Valid values are 8, 16, and 32.\n", XCONFIG_GIVEN, p9000InfoRec.name);
 	return(FALSE);
       }
 
-    p9000InfoRec.chipset = "p9000";
+    if (p9000InfoRec.bitsPerPixel > 8 &&
+	defaultColorVisualClass >= 0 && defaultColorVisualClass != TrueColor) {
+	ErrorF("Invalid default visual type: %d (%s)\n",
+	       defaultColorVisualClass,
+	       xf86VisualNames[defaultColorVisualClass]);
+	return(FALSE);
+    }
+
+    if (xf86bpp == 16) 
+      {
+	for (i = 0; i < 2; i++) 
+	  {
+	    if (xf86weight.red == p9000weights[i].red
+		&& xf86weight.green == p9000weights[i].green
+		&& xf86weight.blue == p9000weights[i].blue)
+	      break;
+	  }
+	if (i == 2) 
+	  {
+	    ErrorF("%s %s: Invalid color weighting\n", 
+		   XCONFIG_GIVEN, p9000InfoRec.name);
+	    return(FALSE);
+	  }
+	if (i == RGB16_555)
+	  p9000InfoRec.depth = 15;
+	p9000WeightMask = p9000WeightMasks[i];
+      }
+    else if (xf86bpp == 32)
+      {
+	xf86weight.red =  xf86weight.green = xf86weight.blue = 8;
+	p9000WeightMask = p9000WeightMasks[RGB32_888];
+      }
+
     xf86ProbeFailed = FALSE;
 
     if (xf86Verbose)
@@ -256,105 +394,131 @@ p9000Probe()
                p9000InfoRec.name,
                p9000InfoRec.videoRam,
                p9000InfoRec.clocks,
-	       p9000VendorPtr->Desc,
+	       p9000VendorPtr->Vendor,
 	       p9000InfoRec.MemBase);
       }
 
-    memavail = p9000InfoRec.videoRam*1024;
-    if (p9000InfoRec.virtualX > 0 &&
-        p9000InfoRec.virtualX * p9000InfoRec.virtualY > memavail)
+    /* All modes must have the same width and height as the first valid mode.
+     * Any invalid modes are removed from the mode ring.
+     */
+    pMode = p9000InfoRec.modes;
+    if (pMode == NULL)
       {
-        ErrorF("%s: Too little memory for virtual resolution %d %d\n",
-               p9000InfoRec.name, p9000InfoRec.virtualX,
-               p9000InfoRec.virtualY);
-        return(FALSE);
+	ErrorF("No modes supplied in XF86Config\n");
+	return(FALSE);
       }
-    
-    maxX = maxY = -1;
-    pMode = pEnd = p9000InfoRec.modes;
     do
       {
-	xf86LookupMode(pMode, &p9000InfoRec);
+	DisplayModePtr pModeSv;
+	modeIsValid = TRUE;
+	/* xf86LookupMode returns FALSE if it ran into an invalid
+	 * parameter */
+	if(xf86LookupMode(pMode, &p9000InfoRec) == FALSE)
+	  {
+	    modeIsValid = FALSE;
+	  }
+	/* Now for a bunch of tests to see if the mode is possible and/or
+	 * safe.  It it fails, the mode is removed.
+	 */
+        else if (pMode->HDisplay * pMode->VDisplay * (p9000InfoRec.bitsPerPixel / 8)
+		 > memavail)
+	  {
+	    ErrorF("%s %s: Too little memory for mode %s.\n", XCONFIG_PROBED,
+		   p9000InfoRec.name, pMode->name);
+	    modeIsValid = FALSE;
+	  }
+	else if ((pEnd) && (pEnd->VDisplay != pMode->VDisplay)
+		 && (pEnd->HDisplay != pMode->HDisplay))
+	  {
+	    ErrorF("%s %s: The dimensions of mode %s do not match those of\n\tthe first valid mode (%s).\n", XCONFIG_PROBED,
+		   p9000InfoRec.name, pMode->name, pEnd->name);
+	    modeIsValid = FALSE;
+	  }
+	/* We should do a better test than this...  *TO*DO* */
+	/* These size limits are in effect until 1600x1200 is tested *TO*DO* */
+	else if ((pMode->HDisplay > 1344) && (p9000InfoRec.bitsPerPixel==8)
+		 || (pMode->HDisplay > 1152) && (p9000InfoRec.bitsPerPixel==16)
+		 || (pMode->HDisplay > 832) && (p9000InfoRec.bitsPerPixel==32))
+	  {
+	    ErrorF("%s %s: The width of mode %s is too large for %dbpp.\n",
+		   XCONFIG_PROBED, p9000InfoRec.name, 
+		   pMode->name,p9000InfoRec.bitsPerPixel);
+	    modeIsValid = FALSE;
+	  }
+        else if ((pMode->VDisplay > 1088) && (p9000InfoRec.bitsPerPixel==8)
+		 || (pMode->VDisplay > 910) && (p9000InfoRec.bitsPerPixel==16)
+		 || (pMode->VDisplay > 632) && (p9000InfoRec.bitsPerPixel==32))
+	  {
+	    ErrorF("%s %s: The height of mode %s is too large for %dbpp.\n",
+		   XCONFIG_PROBED, 
+		   p9000InfoRec.name, pMode->name,p9000InfoRec.bitsPerPixel);
+	    modeIsValid = FALSE;
+	  }
+	else if (p9000InfoRec.clock[pMode->Clock] > p9000MaxClock)
+	  {
+	    ErrorF("%s %s: The clock speed of mode %s is too high (max %ld MHz).\n",
+		   XCONFIG_PROBED, p9000InfoRec.name, 
+		   pMode->name, p9000MaxClock/1000);	  
+	    modeIsValid = FALSE;
+	  }
+	/* See if the horizontal resolution is valid.  This is constrained
+	 * by possible values for sysconfig */
+	else if (!p9000CalcSysconfigHres(pMode->HDisplay, 
+					 p9000InfoRec.bitsPerPixel/8,
+					 &tmpsysconfig))
+	  {
+	    ErrorF("%s %s: The width of mode %s is not valid.\n",
+		   XCONFIG_PROBED, p9000InfoRec.name, pMode->name);
+	    modeIsValid = FALSE;
+	  }
 	
-	if (p9000InfoRec.clock[pMode->Clock] > 110000)
-	  {
-	    ErrorF("**********************************************************\n");
-	    ErrorF("WARNING: The use of clocks over 110 MHz is not\n");
-	    ErrorF("  recommended or supported and may damage your video card!\n");
-	    ErrorF("**********************************************************\n");
+	if (!modeIsValid)
+	  {    /* The mode is not valid.  Delete it. */
+	    if (pMode->next == pMode)
+	      {  /* Then this is the last mode.  If we don't do this,
+		  * xf86DeleteMode will have a fatal error */
+		ErrorF("%s %s: Removing mode \"%s\" from list of valid modes.\n", XCONFIG_PROBED, 
+		       p9000InfoRec.name, pMode->name);
+		ErrorF("\n\t*** No valid modes found! ***\n"); 
+		return(FALSE);
+	      }
+	    pModeSv=pMode->next;
+	    xf86DeleteMode(&p9000InfoRec, pMode);
+	    pMode = pModeSv; 
 	  }
+	else   /* The mode has passed and is valid */
+	  {
+	    /*** Print warnings here ***/
+	    if (p9000InfoRec.clock[pMode->Clock] > 110000)
+	      {
+		ErrorF("**********************************************************\n");
+		ErrorF("WARNING: The use of clocks over 110 MHz is not\n");
+		ErrorF("  recommended or supported and may damage your video card!\n");
+		ErrorF("**********************************************************\n");
+	      }
 
-	if ((pMode->HDisplay != p9000InfoRec.virtualX) ||
-	    (pMode->VDisplay != p9000InfoRec.virtualY))
-	  {
-	    ErrorF("%s: Virtual displays not supported!\n",p9000InfoRec.name);
-	    ErrorF("  Please modify your Xconfig file to make the virtual\n");
-	    ErrorF("  resolution the same as the physical resolution.\n");
-	    return(FALSE);
+	    /*
+	     * Successfully looked up this mode.  If pEnd isn't 
+	     * initialized, set it to this mode.
+	     */
+	    if (pEnd == (DisplayModePtr) NULL)
+	      {
+		pEnd = pMode;
+		p9000InfoRec.virtualX = pEnd->HDisplay;
+		p9000InfoRec.virtualY = pEnd->VDisplay;
+	      }
+	    /* Set the clock synthesizer frequency */
+	    pMode->SynthClock = p9000InfoRec.clock[pMode->Clock];
+	    pMode = pMode->next;
 	  }
-
-        if (pMode->HDisplay * pMode->VDisplay > memavail)
-	  {
-            ErrorF("%s: Too little memory for mode %s\n", p9000InfoRec.name,
-                   pMode->name);
-            return(FALSE);
-	  }
-	
-        if (pMode->HDisplay > maxX)
-	  {
-            maxX = pMode->HDisplay;
-            pmaxX = pMode;
-	  }
-        if (pMode->VDisplay > maxY)
-	  {
-            maxY = pMode->VDisplay;
-            pmaxY = pMode;
-	  }
-        pMode = pMode->next;
-
-       
       } while (pMode != pEnd);
     
-    p9000InfoRec.virtualX = max(maxX, p9000InfoRec.virtualX);
-    p9000InfoRec.virtualY = max(maxY, p9000InfoRec.virtualY);
-    
-    rounding = 32;
-  
-    if (p9000InfoRec.virtualX % rounding)
-    {
-      p9000InfoRec.virtualX -= p9000InfoRec.virtualX % rounding;
-      ErrorF("%s: Virtual width rounded down to a multiple of %d (%d)\n",
-	     p9000InfoRec.name, rounding, p9000InfoRec.virtualX);
-      if (p9000InfoRec.virtualX < maxX)
-        {
-	  ErrorF(
-              "%s: Rounded down virtual width (%d) is too small for mode %s",
-		 p9000InfoRec.name, p9000InfoRec.virtualX, pmaxX->name);
-	  return(FALSE);
-        }
-      ErrorF("%s: Virtual width rounded down to a multiple of %d (%d)\n",
-	     p9000InfoRec.name, rounding, p9000InfoRec.virtualX);
-    }
-    
-    if ( p9000InfoRec.virtualX * p9000InfoRec.virtualY > memavail)
-      {
-        if (p9000InfoRec.virtualX != maxX || p9000InfoRec.virtualY != maxY)
-	  ErrorF(
-	     "%s: Too little memory to accomodate virtual size and mode %s\n",
-		 p9000InfoRec.name,
-		 (p9000InfoRec.virtualX == maxX) ? pmaxX->name : pmaxY->name);
-        else
-	  ErrorF("%s: Too little memory to accomodate modes %s and %s\n",
-		 p9000InfoRec.name, pmaxX->name, pmaxY->name);
-        return(FALSE);
-      }
-
     if (xf86Verbose)
       ErrorF("%s %s: Virtual resolution set to %dx%d\n",
 	     OFLG_ISSET(XCONFIG_VIRTUAL,&p9000InfoRec.xconfigFlag) ?
 	     XCONFIG_GIVEN : XCONFIG_PROBED, p9000InfoRec.name,
 	     p9000InfoRec.virtualX, p9000InfoRec.virtualY);
-    
+
     if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &p9000InfoRec.options))
       {
 	p9000DACSyncOnGreen = TRUE;
@@ -363,11 +527,35 @@ p9000Probe()
 		 XCONFIG_GIVEN, p9000InfoRec.name);
       }
 
+    if (OFLG_ISSET(OPTION_NOACCEL, &p9000InfoRec.options))
+      {
+	p9000NoAccel = TRUE;
+	if (xf86Verbose)
+	  ErrorF("%s %s: Disabling hardware acceleration\n",
+		 XCONFIG_GIVEN, p9000InfoRec.name);
+      }
+
     p9000SWCursor = OFLG_ISSET(OPTION_SW_CURSOR, &p9000InfoRec.options);
     if (xf86Verbose)
       ErrorF("%s %s: Using %s cursor\n", p9000SWCursor ? XCONFIG_GIVEN :
 	     XCONFIG_PROBED, p9000InfoRec.name,
 	     p9000SWCursor ? "software" : "hardware");
+
+    if (xf86Verbose) 
+      {
+	if (p9000InfoRec.bitsPerPixel == 8)
+	  ErrorF("%s %s: Using %d bits per RGB value\n",
+		 XCONFIG_PROBED, p9000InfoRec.name,
+		 p9000DAC8Bit ?  8 : 6);
+	else if (p9000InfoRec.bitsPerPixel == 16)
+	  ErrorF("%s %s: Using 16 bpp.  Color weight: %1d%1d%1d\n", 
+		 XCONFIG_GIVEN, p9000InfoRec.name, xf86weight.red,
+		 xf86weight.green, xf86weight.blue);
+	else if (p9000InfoRec.bitsPerPixel == 32)
+	  ErrorF("%s %s: Using sparse 32 bpp.  Color weight: %1d%1d%1d\n", 
+		 XCONFIG_GIVEN, p9000InfoRec.name, xf86weight.red,
+		 xf86weight.green, xf86weight.blue);
+      }
 
     xf86DisableIOPorts(p9000InfoRec.scrnIndex);   
 #ifdef DEBUG
@@ -380,9 +568,17 @@ p9000Probe()
 void
 p9000PrintIdent()
 {
-    ErrorF("  %s: accelerated server for ", p9000InfoRec.name);
-    ErrorF("Weitek P9000 graphics adaptors (Patchlevel %s)\n", 
-	   p9000InfoRec.patchLevel);
+  int curvendor;
+
+  ErrorF("  %s: accelerated server for ", p9000InfoRec.name);
+  ErrorF("Weitek P9000 graphics adaptors (Patchlevel %s)\n", 
+	 p9000InfoRec.patchLevel);
+  ErrorF("  Supported vendors (specify on chipset line):\n");
+  for (curvendor = 0; curvendor < Num_p9000_Vendors; curvendor++)
+    {
+      ErrorF("\t%s\t%s\n", p9000VendorList[curvendor]->Vendor,
+	     p9000VendorList[curvendor]->Desc);
+    }
 }
 
 /*
@@ -403,20 +599,32 @@ p9000Initialize (scr_index, pScreen, argc, argv)
 
   xf86EnableIOPorts(scr_index);
 #ifdef DEBUG
-    ErrorF("Entered p9000Initialize...\n");
+  ErrorF("Entered p9000Initialize...\n");
+  ErrorF("Entering Server Generation %d\n", serverGeneration);
 #endif
-    
-  /* Maps P9000 linear address space into video memory */
-  p9000InitAperture(scr_index);
 
-  /* Set up swap bits table */
-  for (i = 0; i < 256; i++)
+#ifdef P9000_ACCEL
+  /* Prepare GC stuff for use */
+  p9000InitGC();
+#endif
+
+  if (serverGeneration == 1)  /* First time */
     {
-      p9000ReorderSwapBits(i, p9000SwapBits[i]);
-    }
+      /* Maps P9000 linear address space into video memory */
+      p9000InitAperture(scr_index);
 
-  /* Save the VT's colormap and such before anyone messes with it */
-  p9000SaveVT();
+      /* Do vendor specific initialization */
+      p9000VendorPtr->Initialize(scr_index, pScreen, argc, argv);
+
+      /* Set up swap bits table */
+      for (i = 0; i < 256; i++)
+	{
+	  p9000ReorderSwapBits(i, p9000SwapBits[i]);
+	}
+
+      /* Save the VT's colormap and such before anyone messes with it */
+      p9000SaveVT();
+    }
 
   /* Calculates registers for this mode */
   p9000CalcCRTCRegs(&p9000CRTCRegs, p9000InfoRec.modes);
@@ -424,8 +632,11 @@ p9000Initialize (scr_index, pScreen, argc, argv)
   /* Enables the P9000 */
   p9000VendorPtr->Enable(&p9000CRTCRegs);
 
-  /* Calculates registers specific to the P9000 and its memory size */
-  p9000CalcMiscRegs();  /* Enable must be run before this! */
+  if (serverGeneration == 1)
+  {
+    /* Calculates registers specific to the P9000 and its memory size */
+    p9000CalcMiscRegs();  /* Enable must be run before this! */
+  }
 
 #ifdef DEBUG
     ErrorF("About to enter p9000SetCRTCRegs\n");
@@ -446,7 +657,7 @@ p9000Initialize (scr_index, pScreen, argc, argv)
 #endif
   
   if (!p9000ScreenInit(pScreen,
-		       (volatile pointer) VidBase,
+		       (pointer) VidBase,
 		       p9000InfoRec.virtualX, p9000InfoRec.virtualY,
 		       75, 75,
 		       p9000InfoRec.virtualX))
@@ -454,17 +665,31 @@ p9000Initialize (scr_index, pScreen, argc, argv)
   
   pScreen->CloseScreen = p9000CloseScreen;
   pScreen->SaveScreen = p9000SaveScreen;
-  pScreen->InstallColormap = p9000InstallColormap;
-  pScreen->UninstallColormap = p9000UninstallColormap;
-  pScreen->ListInstalledColormaps = p9000ListInstalledColormaps;
-  pScreen->StoreColors = p9000StoreColors;
   
 #ifdef DEBUG
     ErrorF("pScreen being set up...\n");
 #endif
 
-  /* mfbRegisterCopyPlaneProc (pScreen, miCopyPlane); */
-  
+#if 0
+  mfbRegisterCopyPlaneProc (pScreen, miCopyPlane);
+#endif
+
+  switch (p9000InfoRec.bitsPerPixel) 
+    {
+    case 8:
+      pScreen->InstallColormap = p9000InstallColormap;
+      pScreen->UninstallColormap = p9000UninstallColormap;
+      pScreen->ListInstalledColormaps = p9000ListInstalledColormaps;
+      pScreen->StoreColors = p9000StoreColors;
+      break;
+    case 16:
+    case 32:
+      pScreen->InstallColormap = cfbInstallColormap;
+      pScreen->UninstallColormap = cfbUninstallColormap;
+      pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+      pScreen->StoreColors = (void (*)())NoopDDA;
+    }
+
   if (p9000SWCursor)
     miDCInitialize (pScreen, &xf86PointerScreenFuncs);
   else
@@ -476,16 +701,16 @@ p9000Initialize (scr_index, pScreen, argc, argv)
   
   savepScreen = pScreen;
 
-#ifdef DEBUG
-    ErrorF("About to leave p9000Initialize\n");
-#endif
+  p9000savepScreen = pScreen;
 
-  /*  xf86DisableIOPorts(scr_index); */
 #ifdef DEBUG
     ErrorF("Leaving p9000Initialize...\n");
 #endif
 
-  p9000savepScreen = pScreen;
+#ifdef P9000_ACCEL
+  p9000ImageInit();
+#endif
+
   return (cfbCreateDefColormap(pScreen));
 }
 
@@ -499,9 +724,11 @@ p9000EnterLeaveVT(enter, screen_idx)
      Bool enter;
      int screen_idx;
 {
-
 #ifdef DEBUG
-  ErrorF("Entered EnterLeaveVT: ");
+  ErrorF("EnterLeave: %s with xf86Resetting=%s xf86Exiting=%s\n",
+	 enter?"Entering":"Leaving",
+	 xf86Resetting?"TRUE":"FALSE",
+	 xf86Exiting?"TRUE":"FALSE");
 #endif
   if (enter)
     {
@@ -522,6 +749,7 @@ p9000EnterLeaveVT(enter, screen_idx)
 #endif
       p9000CleanUp();     /* This does p9000RestoreVT() */
       xf86DisableIOPorts(p9000InfoRec.scrnIndex);
+      AlreadyInited = FALSE;
     }
 }
 
@@ -548,6 +776,8 @@ p9000CloseScreen(screen_idx, pScreen)
 /*
  * p9000SaveScreen --
  *      blank the screen.
+ *      Only supported for 8bpp.  *TO*DO*  
+ *      For now, use the screen saver extension.
  */
 
 Bool
@@ -558,14 +788,18 @@ p9000SaveScreen (pScreen, on)
   if (on) 
     {
       SetTimeSinceLastInputEvent();
+#if 0  /* This shouldn't be needed because we turn off the RAMDAC to blank */
       if (xf86VTSema && !p9000SWCursor)
 	p9000BtCursorOn();
+#endif
       p9000UnblankScreen(pScreen);
     }
   else
     {
+#if 0  /* This shouldn't be needed because we turn off the RAMDAC to blank */
       if (xf86VTSema && !p9000SWCursor)
 	p9000BtCursorOff();
+#endif
       p9000BlankScreen(pScreen);
     }
   return(TRUE);
@@ -584,5 +818,16 @@ p9000SwitchMode(mode)
   p9000SetCRTCRegs(&p9000CRTCRegs); 
   
   return(TRUE);
+}
+
+/*
+ * p9000ValidMode --
+ *
+ */
+static Bool
+p9000ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 

@@ -1,6 +1,5 @@
-/* $XConsortium: mach8text.c,v 1.1 94/03/28 21:13:00 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: mach8text.c,v 1.3 95/01/05 20:28:29 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.1 1994/11/27 08:22:05 dawes Exp $ */
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: mach64gc.c,v 1.1 94/12/14 15:04:34 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64gc.c,v 3.1 1994/12/05 03:45:42 dawes Exp $ */
 /***********************************************************
 Copyright (c) 1987  X Consortium
 
@@ -911,7 +912,7 @@ mach64ValidateGC(pGC, changes, pDrawable)
 		    (nstipple = (*pcfbCopyPixmap)(pGC->stipple)))
 		{
 		    (*pcfbPadPixmap)(nstipple);
-		    (*pcfbDestroyPixmap)(pGC->stipple);
+		    mach64DestroyPixmap(pGC->stipple);
 		    pGC->stipple = nstipple;
 		}
 	    }
@@ -1000,7 +1001,7 @@ mach64ValidateGC(pGC, changes, pDrawable)
 	}
 	if (!new_pix && devPriv->pRotatedPixmap)
 	{
-	    (*pcfbDestroyPixmap)(devPriv->pRotatedPixmap);
+	    mach64DestroyPixmap(devPriv->pRotatedPixmap);
 	    devPriv->pRotatedPixmap = (PixmapPtr) NULL;
 	}
     }

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: w32it.s,v 1.2 94/11/21 22:10:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32it.s,v 3.1 1994/09/25 12:27:33 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -24,10 +25,10 @@ Glenn G. Lai
 P.O. Box 4314
 Austin, Tx 78765
 glenn@cs.utexas.edu
-8/8/94
+9/8/94
 *******************************************************************************/
 /*
- *	W32ImageText[1-4](dst, width_glyph, height, nglyph, dst_pitch, ggl_ptrs)
+ *	W32ImageText[1-4](h, char1)
  */
 
 
@@ -36,12 +37,8 @@ glenn@cs.utexas.edu
 	FILE("w32it.s")
 	AS_BEGIN
 
-#define dst		REGOFF(8,EBP)
-#define width_glyph	REGOFF(12,EBP)
-#define height		REGOFF(16,EBP)
-#define nglyph		REGOFF(20,EBP)
-#define dst_pitch	REGOFF(24,EBP)
-#define ggl_ptrs	REGOFF(28,EBP)
+#define h		REGOFF(8,ESP)
+#define char1		REGOFF(12,ESP)
 
 	GLOBL	GLNAME(W32ImageText1)
 	GLOBL	GLNAME(W32ImageText2)
@@ -52,167 +49,92 @@ glenn@cs.utexas.edu
 	ALIGNTEXT4
 
 GLNAME(W32ImageText1):
-	PUSH_L	(EBP)
-	MOV_L	(ESP, EBP)
 	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-	PUSH_L	(EBX)
 
-	MOV_L	(dst, EDI)
-	MOV_L	(CONTENT(GLNAME(MBP2)), EBX)
+	MOV_L	(char1, ESI)
 	MOV_L	(CONTENT(GLNAME(ACL)), EDX)
-for_a:
-	MOV_L	(ggl_ptrs, ESI)
-	SUB_L	(ECX, ECX)
-for_a1:
-	MOV_L	(REGBISD(ESI, ECX, 4, 0), EAX)
-	MOV_L	(REGIND(EAX), EAX)
-	ADD_L	(CONST(4), REGBISD(ESI, ECX, 4, 0))
-
-	MOV_L	(EDI, REGIND(EBX))
-	MOV_B	(AL, REGIND(EDX))
-
-	ADD_L	(width_glyph, EDI)
-
+	MOV_L	(h, ECX)
 	INC_L	(ECX)
-	CMP_L	(nglyph, ECX)
-	JNE	(for_a1)
+	JMP	(ita1)
+	ALIGNTEXT4
+ita2:
+	MOV_L	(REGIND(ESI), EAX)
+	ADD_L	(CONST(4), ESI)
+	MOV_B	(AL, REGIND(EDX))
+ita1:
+	DEC_L	(ECX)
+	JNZ	(ita2)
 
-	ADD_L	(dst_pitch, EDI)
-
-	DEC_L	(height)
-	JNZ	(for_a)
-
-	POP_L	(EBX)
-	POP_L	(EDI)
 	POP_L	(ESI)
-	LEAVE
 	RET
 
-
-/*************/
+	ALIGNTEXT4
 GLNAME(W32ImageText2):
-	PUSH_L	(EBP)
-	MOV_L	(ESP, EBP)
 	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-	PUSH_L	(EBX)
 
-	MOV_L	(dst, EDI)
-	MOV_L	(CONTENT(GLNAME(MBP2)), EBX)
+	MOV_L	(char1, ESI)
 	MOV_L	(CONTENT(GLNAME(ACL)), EDX)
-for_b:
-	MOV_L	(ggl_ptrs, ESI)
-	SUB_L	(ECX, ECX)
-for_b1:
-	MOV_L	(REGBISD(ESI, ECX, 4, 0), EAX)
-	MOV_L	(REGIND(EAX), EAX)
-	ADD_L	(CONST(4), REGBISD(ESI, ECX, 4, 0))
-
-	MOV_L	(EDI, REGIND(EBX))
+	MOV_L	(h, ECX)
+	INC_L	(ECX)
+	JMP	(itb1)
+	ALIGNTEXT4
+itb2:
+	MOV_L	(REGIND(ESI), EAX)
+	ADD_L	(CONST(4), ESI)
 	MOV_B	(AL, REGIND(EDX))
 	MOV_B	(AH, REGIND(EDX))
+itb1:
+	DEC_L	(ECX)
+	JNZ	(itb2)
 
-	ADD_L	(width_glyph, EDI)
-
-	INC_L	(ECX)
-	CMP_L	(nglyph, ECX)
-	JNE	(for_b1)
-
-	ADD_L	(dst_pitch, EDI)
-
-	DEC_L	(height)
-	JNZ	(for_b)
-
-	POP_L	(EBX)
-	POP_L	(EDI)
 	POP_L	(ESI)
-	LEAVE
 	RET
 
-
-/*************/
+	ALIGNTEXT4
 GLNAME(W32ImageText3):
-	PUSH_L	(EBP)
-	MOV_L	(ESP, EBP)
 	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-	PUSH_L	(EBX)
 
-	MOV_L	(dst, EDI)
-	MOV_L	(CONTENT(GLNAME(MBP2)), EBX)
+	MOV_L	(char1, ESI)
 	MOV_L	(CONTENT(GLNAME(ACL)), EDX)
-for_c:
-	MOV_L	(ggl_ptrs, ESI)
-	SUB_L	(ECX, ECX)
-for_c1:
-	MOV_L	(REGBISD(ESI, ECX, 4, 0), EAX)
-	MOV_L	(REGIND(EAX), EAX)
-	ADD_L	(CONST(4), REGBISD(ESI, ECX, 4, 0))
-
-	MOV_L	(EDI, REGIND(EBX))
+	MOV_L	(h, ECX)
+	INC_L	(ECX)
+	JMP	(itc1)
+	ALIGNTEXT4
+itc2:
+	MOV_L	(REGIND(ESI), EAX)
+	ADD_L	(CONST(4), ESI)
 	MOV_B	(AL, REGIND(EDX))
 	MOV_B	(AH, REGIND(EDX))
 	SHR_L	(CONST(16), EAX)
 	MOV_B	(AL, REGIND(EDX))
+itc1:
+	DEC_L	(ECX)
+	JNZ	(itc2)
 
-	ADD_L	(width_glyph, EDI)
-
-	INC_L	(ECX)
-	CMP_L	(nglyph, ECX)
-	JNE	(for_c1)
-
-	ADD_L	(dst_pitch, EDI)
-
-	DEC_L	(height)
-	JNZ	(for_c)
-
-	POP_L	(EBX)
-	POP_L	(EDI)
 	POP_L	(ESI)
-	LEAVE
 	RET
 
-
-/*************/
+	ALIGNTEXT4
 GLNAME(W32ImageText4):
-	PUSH_L	(EBP)
-	MOV_L	(ESP, EBP)
 	PUSH_L	(ESI)
-	PUSH_L	(EDI)
-	PUSH_L	(EBX)
 
-	MOV_L	(dst, EDI)
-	MOV_L	(CONTENT(GLNAME(MBP2)), EBX)
+	MOV_L	(char1, ESI)
 	MOV_L	(CONTENT(GLNAME(ACL)), EDX)
-for_d:
-	MOV_L	(ggl_ptrs, ESI)
-	SUB_L	(ECX, ECX)
-for_d1:
-	MOV_L	(REGBISD(ESI, ECX, 4, 0), EAX)
-	MOV_L	(REGIND(EAX), EAX)
-	ADD_L	(CONST(4), REGBISD(ESI, ECX, 4, 0))
-
-	MOV_L	(EDI, REGIND(EBX))
+	MOV_L	(h, ECX)
+	INC_L	(ECX)
+	JMP	(itd1)
+	ALIGNTEXT4
+itd2:
+	MOV_L	(REGIND(ESI), EAX)
+	ADD_L	(CONST(4), ESI)
 	MOV_B	(AL, REGIND(EDX))
 	MOV_B	(AH, REGIND(EDX))
 	SHR_L	(CONST(16), EAX)
 	MOV_B	(AL, REGIND(EDX))
 	MOV_B	(AH, REGIND(EDX))
+itd1:
+	DEC_L	(ECX)
+	JNZ	(itd2)
 
-	ADD_L	(width_glyph, EDI)
-
-	INC_L	(ECX)
-	CMP_L	(nglyph, ECX)
-	JNE	(for_d1)
-
-	ADD_L	(dst_pitch, EDI)
-
-	DEC_L	(height)
-	JNZ	(for_d)
-
-	POP_L	(EBX)
-	POP_L	(EDI)
 	POP_L	(ESI)
-	LEAVE
 	RET

@@ -2,8 +2,8 @@
 #
 # Accelerated card supported by XFree86
 # 
-# Version 1.4 - Apr 13, 1994
-#  List for XFree86 2.1.1 - David Wexelblat <dwex@goblin.org>, <dwex@aib.com>
+# Version 1.5 - August 27, 1994
+#  List for XFree86 3.1 - David Wexelblat <dwex@xfree86.org>
 #---------------------------------------------------------------------------#
 # This file contains the list of accelerated cards that have been tested
 # as compatible with XFree86.  Other cards with supported chipsets may
@@ -23,6 +23,7 @@
 #   8514/A
 #   ATI Mach8
 #   ATI Mach32
+#   Weitek P9000
 #   SVGA (Cirrus)
 #   SVGA (Western Digital)
 #
@@ -84,7 +85,7 @@ Clocks			: 25.175 28.33 40 0 50 77 36 44.9
 Clocks (cont)		: 130 120 80 31.5 110 65 75 96
 Option Flags		:
 RAMDAC			: SC11483CV (Silkscreen outine for Bt476)
-Submitter		: Douglas Lenz (lenz@comm.mot.com)
+Submitter		: Douglas Lenz <lenz@comm.mot.com>
 Last Edit Date		: Sept 29, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : Orchid
@@ -169,8 +170,24 @@ Clocks			: 25.20 28.32 39.70 0.00 50.00 77.00 35.70 44.70
 Clocks (cont)		: 130.30 119.60 79.50 31.20 109.70 65.30 75.00 71.40
 Option Flags		:
 RAMDAC			: AT&T 20C491
-Submitter		: Jean-F. Cormier (jfcor@phy.ulaval.ca)
+Submitter		: Jean-F. Cormier <jfcor@phy.ulaval.ca>
 Last Edit Date		: Jan 23, 1994
+#---------------------------------------------------------------------------#
+Card Vendor		: WA
+Card Model		: WA911
+Card Bus (ISA/EISA/VLB)	: ISA
+Chipset			: 86C911
+Video Memory		: 1024K
+Memory Type (DRAM/VRAM)	: DRAM
+Memory Speed		: 
+Clock Chip		: 
+Programmable? (Y/N)	: N
+Number of clocks	: 
+Clocks			: 25.2 28.32 39.9 0.0 50.10 79.80 36.10 44.9
+Option Flags		:
+RAMDAC			:
+Submitter		: Steffan Henke <henker@informatik.uni-bremen.de>
+Last Edit Date		: June 7, 1994
 #---------------------------------------------------------------------------#
 # S3 801/805                                                                #
 #---------------------------------------------------------------------------#
@@ -188,7 +205,7 @@ Clocks			: 25 28 40 72 49 77 36 45
 Clocks (cont)		: 90 120 80 32 110 65 75 95
 Option Flags		:
 RAMDAC			: AT&T 20C491-11
-Submitter		: Jon Tombs <jon@gtex02.us.es>
+Submitter		: Jon Tombs <jon@xfree86.org>
 Last Edit Date		: Sept 27, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : Actix
@@ -239,7 +256,7 @@ Clocks			: 25.175 28.322 40.0 0.0 50.0 77.0 36.0 44.9
 Clocks (cont)		: 130.0 120.0 80.0 31.5 110.0 65.0 75.0 95.0
 Option Flags		: 
 RAMDAC			: AT&T 20C490-11
-Submitter		: David E. Wexelblat <dwex@goblin.org>
+Submitter		: David E. Wexelblat <dwex@xfree86.org>
 Last Edit Date		: Sept 25, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: "made in taiwan" VGA windows accellerator
@@ -273,7 +290,7 @@ Clocks                  :  25  28 40    0  50 77 36 45
 Clocks (cont)           : 130 120 80 31.5 110 65 75 95
 Option Flags            :
 RAMDAC                  : AT&T 20C490-11
-Submitter               : Marc Wandschneider (marcwan@microsoft.com)
+Submitter               : Marc Wandschneider <marcwan@microsoft.com>
 Last Edit Date          : Oct 25, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : Actix
@@ -393,7 +410,7 @@ Clocks (cont)           : 130 120 80 31.5 110 65 75 95
 Option Flags            :
 RAMDAC                  : AT&T 20C491-80
 Comments                : RAMDAC limits max clock to 80MHz
-Submitter               : David Dawes <dawes@physics.su.oz.au>
+Submitter               : David Dawes <dawes@xfree86.org>
 Last Edit Date          : Dec 14, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : miro Computer Products AG Germany
@@ -444,7 +461,7 @@ Clocks			:  25.20  28.32 40.00  0.00  50.10 77.00 36.10 45.00
 Clocks (cont)		: 130.00 120.20 80.00 31.50 110.30 65.00 75.00 94.60
 Option Flags		: 
 RAMDAC			: AT&T 490
-Submitter		: Yasu-Hiro Yamazaki(hiro@rainbow.physics.utoronto.ca)
+Submitter		: Yasu-Hiro Yamazaki<hiro@rainbow.physics.utoronto.ca>
 Last Edit Date		: Oct. 7, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: Orchid
@@ -581,7 +598,7 @@ Number of clocks	: programmable
 Clocks			: "icd2061a"
 Option Flags		: 
 RAMDAC			: Sierra SC 15025CV Highcolor 24 - 110
-Submitter		: hohndel@informatik.uni-wuerzburg.de
+Submitter		: Dirk Hohndel <hohndel@xfree86.org>
 Last Edit Date		: 09/27/93
 #---------------------------------------------------------------------------#
 Card Vendor		: ELSA, Aachen, Germany
@@ -661,7 +678,7 @@ Number of clocks	: programmable
 Clocks			: "icd2061a"
 Option Flags		:
 RAMDAC			: Sierra SC 15025CV 
-Submitter		: Helmut Geyer 	geyer@kalliope.iwr.uni-heidelberg.de
+Submitter		: Helmut Geyer <geyer@kalliope.iwr.uni-heidelberg.de>
 Last Edit Date		: Oct 12, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : ELSA
@@ -680,6 +697,24 @@ RAMDAC                  :
 Submitter               : Walter Tuppa <tuppa@iue.tuwien.ac.at>
 Last Edit Date          : Oct 11, 1993
 #---------------------------------------------------------------------------#
+Card Vendor		: Miro Computer Products GmbH - GERMANY
+Card Model		: MIRO 32S Eisa 
+Card Bus (ISA/EISA/VLB)	: EISA 
+Chipset			: S3 928 
+Video Memory		: 4 Mb 
+Memory Type (DRAM/VRAM)	: VRAM 
+Memory Speed		: ? 
+Clock Chip		: ICS 2494 
+Programmable? (Y/N)	: N 
+Number of clocks	: 16 
+Clocks			:  50.350  56.644  65.000  72.000  80.000  89.800
+Clocks (cont)		:   0.000  29.500  14.750  25.175  44.900  84.000
+Clocks (cont)		: 100.000 110.000 125.000 135.000
+Option Flags		: ?
+RAMDAC			: BT 485
+Submitter		: ?
+Last Edit Date		: May 13, 1994
+#---------------------------------------------------------------------------#
 Card Vendor		: Number 9
 Card Model		: GXE Level 11
 Card Bus (ISA/EISA/VLB)	: ISA
@@ -691,9 +726,9 @@ Clock Chip		: ICD2061A
 Programmable? (Y/N)	: Y
 Number of clocks	: programmable
 Clocks			: "icd2061a"
-Option Flags		: "Bt485"
+Option Flags		:
 RAMDAC			: BrookTree Bt485
-Submitter		: Marc Evans
+Submitter		: Marc Evans <marc@xfree86.org>
 Last Edit Date		:
 #---------------------------------------------------------------------------#
 Card Vendor             : Number Nine
@@ -707,9 +742,9 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Bt485KPJ135 
-Submitter               : David Wexelblat <dwex@goblin.org>
+Submitter               : David Wexelblat <dwex@xfree86.org>
 Last Edit Date          : October 16, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : Number 9
@@ -723,7 +758,7 @@ Clock Chip              : ?
 Programmable? (Y/N)     : Yes
 Number of clocks        : Programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Brooktree Bt485
 Submitter               : Orest Zborowski <orestz@microsoft.com>
 Last Edit Date          : Sep 25, 1993
@@ -739,7 +774,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 N}mber of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : BrookTree Bt485
 Submitter               : Daniel Ling <danzig@eclipse.its.rpi.edu>
 Last Edit Date          :
@@ -755,7 +790,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Bt485KPJ135 [other codes: 006 9320]
 Submitter               : Ed Hall <edhall@rand.org>
 Last Edit Date          : October 15, 1993
@@ -771,7 +806,7 @@ Clock Chip              : icd2061a
 Programmable? (Y/N)     : Y
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : Bt485
 Submitter               : Ted Goldblatt
 Last Edit Date          : 25 October 1993
@@ -787,7 +822,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Yes
 Number of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : BrookTree 485
 Submitter               : Randy Terbush <randyt@cse.unl.edu>
 Last Edit Date          : Oct 25, 1993
@@ -803,7 +838,7 @@ Clock Chip              : ICD2061A
 Programmable? (Y/N)     : Y
 N}mber of clocks        : programmable
 Clocks                  : "icd2061a"
-Option Flags            : "bt485"
+Option Flags            :
 RAMDAC                  : BrookTree Bt485 
 Submitter               : Daniel Ling <danzig@eclipse.its.rpi.edu>
 Last Edit Date          : 
@@ -819,7 +854,7 @@ Clock Chip		: ICD2061A
 Programmable? (Y/N)	: Y 
 Number of clocks	: programmable
 Clocks			: "icd2061a"
-Option Flags		: "bt485", "nolinear", "nomemaccess", "bt485_curs"
+Option Flags		: "nolinear", "nomemaccess", "bt485_curs"
 RAMDAC			: BT485
 Submitter		: Andreas Joppich <aj@ms.DeTeMobil.de> 
 Last Edit Date		: March 24,1994 
@@ -836,10 +871,42 @@ Programmable? (Y/N)	: N
 Number of clocks	: 16
 Clocks			: 25 28 40 0 50 77 36 45
 Clocks (cont)		: 130 120 80 31 110 65 75 95
-Option Flags		: "sc15025" "dac_8_bit"
+Option Flags		: "dac_8_bit"
 RAMDAC			: Sierra SC 15025
 Submitter		: Kai Maekisara <Kai.Makisara@vtt.fi>
 Last Edit Date		: March 24, 1994
+#---------------------------------------------------------------------------#
+Card Vendor		: SPEA Video7
+Card Model		: Mercury PCI
+Card Bus (ISA/EISA/VLB)	: PCI
+Chipset			: S3-928
+Video Memory		: 2048 kB
+Memory Type (DRAM/VRAM)	: VRAM
+Memory Speed		: 
+Clock Chip		: SC11412
+Programmable? (Y/N)	: Y
+Number of clocks        : programmable
+Clocks                  : "sc11412"
+Option Flags		: "spea_mercury"
+RAMDAC			: BT485
+Submitter		: preuss@cach02.chm.tu-dresden.de
+Last Edit Date		: May 24, 1994
+#---------------------------------------------------------------------------#
+Card Vendor		: STB
+Card Model		: Pegasus
+Card Bus (ISA/EISA/VLB)	: VLB
+Chipset			: S3 86C928
+Video Memory		: 2048k or 4096k
+Memory Type (DRAM/VRAM)	: VRAM
+Memory Speed		: 17.86, 18.52, 19.23, or 20 ns
+Clock Chip		: ICD2061A
+Programmable? (Y/N)	: Y
+Number of clocks        : programmable
+Clocks			: "icd2061a"
+Option Flags		: stb_pegasus,dac_8_bit,sync_on_green
+RAMDAC			: Bt485
+Submitter		: David Gadbois
+Last Edit Date		: May 27, 1994
 #---------------------------------------------------------------------------#
 # 8514/A                                                                    #
 #---------------------------------------------------------------------------#
@@ -896,7 +963,7 @@ Clocks (cont)		: 21.47 24.38 45.2 18.0 25.17 28.32 0.0 22.45
 Clocks (cont)		: 15.12 16.0 55.0 40.0 19.95 22.45 37.5 32.5
 Option Flags		:
 RAMDAC			: Unknown
-Submitter		: Scott Laird (lair@midway.uchicago.edu)
+Submitter		: Scott Laird <lair@midway.uchicago.edu>
 Last Edit Date		:
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI
@@ -949,7 +1016,7 @@ Clocks (cont)           : 21.50 24.40   0.00 18.00 25.20 28.30  0.00 22.40
 Clocks (cont)           : 15.10 16.00  55.00 40.00 20.00 22.40 37.50 32.50
 Option Flags            :
 RAMDAC                  : (?) INMOS IMSG176J666     
-Submitter               : Henry Worth (haw30@ras.amdahl.com)
+Submitter               : Henry Worth <haw30@ras.amdahl.com>
 Last Edit Date          : Oct 3, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI
@@ -1004,7 +1071,7 @@ Clocks			: 100 126 92 36 51 57 0 44 135 32 110 80 39 45 75 65
 Clocks (cont)		: 50 63 46 18 25 28 0 22 67 16 55 40 19 23 37 33
 Option Flags		: 
 RAMDAC			: ATI 68875
-Submitter		: Alan Hourihane (alanh@metro.co.uk)
+Submitter		: Alan Hourihane <alanh@metro.co.uk>
 Last Edit Date		: Jan 6, 1994
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI
@@ -1038,7 +1105,7 @@ Clocks			: 100 126 92.4 36 50.35 56.64 External 44.9
 Clocks (cont)		: 135 32  110  80 39.91 44.9  75       65
 Option Flags		: none
 RAMDAC			: ATI 68875
-Submitter		: Craig E. Groeschel <craig@adikia.sccsi.com>
+Submitter		: Craig E. Groeschel <craig@metrolink.com>
 Last Edit Date		: Oct 3, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI 
@@ -1055,7 +1122,7 @@ Clocks			: 51.00 36.00 126.00 25.00 80.00 65.00 45.00 40.00
 Clocks (cont)		: 135.00 32.00 110.00 80.00 45.00 40.00 75.00 65.00
 Option Flags		: 
 RAMDAC			: ATI68875
-Submitter		: Bill Broadley Broadley@neurocog.lrdc.pitt.edu
+Submitter		: Bill Broadley <Broadley@neurocog.lrdc.pitt.edu>
 Last Edit Date		:
 #---------------------------------------------------------------------------#
 Card Vendor             : ATI
@@ -1072,7 +1139,7 @@ Clocks                  : 18.00 22.00 25.00 28.00 36.00 44.00 50.00 56.00
 Clocks (cont)           : 30.00 32.00 37.00 39.00 40.00 0.00 75.00 65.00
 Option Flags            : 
 RAMDAC                  : ATI68830
-Submitter               : Ed Krohne (krohne@elrond.mcdata.com)
+Submitter               : Ed Krohne <krohne@elrond.mcdata.com>
 Last Edit Date          : Sept 30, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI Technologies Inc
@@ -1106,7 +1173,7 @@ Clocks			: 100 126 92 36 51 57 0 44 135 32 110 80 39 45 75 65
 Clocks (cont)		: 50 63 46 18 25 28 0 22 67 16 55 40 19 23 37 33
 Option Flags		:
 RAMDAC			:
-Submitter		: Linus Torvalds (Linus.Torvalds@Helsinki.FI)
+Submitter		: Linus Torvalds <Linus.Torvalds@Helsinki.FI>
 Last Edit Date		: Oct 4, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI
@@ -1141,7 +1208,7 @@ Number of clocks	: 16
 Clocks			: 100 126 92 36 50 56 0 45 135 32 110 80 40 45 75 65
 Option Flags		:
 RAMDAC			: ?
-Submitter		: Ari Laakkonen (apl@doc.ic.ac.uk)
+Submitter		: Ari Laakkonen <apl@doc.ic.ac.uk>
 Last Edit Date		: Oct 4, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: ATI
@@ -1192,7 +1259,7 @@ Clocks                  : 100 126 92 36 51 57 0 44 135 32 110 80 39 45 75 65
 Clocks (cont)           :  50  63 46 18 25 28 0 22  67 16  55 40 19 23 37 33
 Option Flags            : --
 RAMDAC                  : 18820 ATI 
-Submitter               : Christoph Kukulies (kuku@acds.physik.rwth-aachen.de)
+Submitter               : Christoph Kukulies <kuku@acds.physik.rwth-aachen.de>
 Last Edit Date          : Oct 30, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : ATI
@@ -1209,8 +1276,27 @@ Clocks                  : 100 126 92 36 51 57 0 44 135 32 110 80 39 45 75 65
 Clocks (cont)           :  50  63 46 18 25 28 0 22  67 16  55 40 19 23 37 33
 Option Flags            :
 RAMDAC                  : ATI68875
-Submitter               : Marc Wandschneider (marcwan@microsoft.com)
+Submitter               : Marc Wandschneider <marcwan@microsoft.com>
 Last Edit Date          : Oct 25, 1993
+#---------------------------------------------------------------------------#
+Card Vendor		: Dell Computer on board video card
+Card Model		: Omniplex 466
+Card Bus (ISA/EISA/VLB)	: PCI
+Chipset			: ATI 68800 (Mach32, 8514/A compatible)
+Video Memory		: 1024k
+Memory Type (DRAM/VRAM)	: ?
+Memory Speed		: ?
+Clock Chip		: ?
+Programmable? (Y/N)	: N
+Number of clocks	: 32
+Clocks			: 17.40 19.60 21.80 24.90 27.70 31.00 34.60 44.90
+Clocks (cont)		: 51.80 53.50 55.30 62.20 69.30 76.00 87.10 93.30
+Clocks (cont)		:  8.70  9.80 10.90 12.45 13.85 15.50 17.30 22.45
+Clocks (cont)		: 25.90 26.75 27.65 31.10 34.65 38.00 43.55 46.65
+Option Flags		: None
+RAMDAC			: ?
+Submitter		: Blaine Benson <benson@ssu.abratech.com>
+Last Edit Date		: June 15, 1994
 #---------------------------------------------------------------------------#
 Card Vendor             : NCR
 Card Model              : Clarity II
@@ -1226,7 +1312,7 @@ Clocks                  : ?
 Clocks (cont)           : ?
 Option Flags            : none
 RAMDAC                  : TIC34075
-Submitter               : Stuart Anderson (Stuart.Anderson@ColumbiaSC.NCR.COM)
+Submitter               : Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM>
 Last Edit Date          : Thu Dec  2 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : PRISMA
@@ -1265,6 +1351,24 @@ RAMDAC                 :  BT481
 Submitter              :  Jin Tao
 Last Edit Date         :  Dec. 15, 1993
 #---------------------------------------------------------------------------#
+# Weitek P9000                                                              #
+#---------------------------------------------------------------------------#
+Card Vendor		: Diamond Computer Systems, Inc.
+Card Model		: Viper
+Card Bus (ISA/EISA/VLB)	: VLB
+Chipset			: Weitek Power 9000
+Video Memory		: 2048k
+Memory Type (DRAM/VRAM)	: VRAM
+Memory Speed		: 
+Clock Chip		: icd2061a Compatable
+Programmable? (Y/N)	: Y
+Number of clocks	: programmable
+Clocks			: 25 to 135 (over 110 not recommended)
+Option Flags		: 
+RAMDAC			: bt485
+Submitter		: Erik Nygren <nygren@mit.edu>
+Last Edit Date		: July 8, 1994
+#---------------------------------------------------------------------------#
 # SVGA (Cirrus)                                                             #
 #---------------------------------------------------------------------------#
 Card Vendor		: Boca
@@ -1281,7 +1385,7 @@ Clocks			: 25.23  28.32  41.16  36.08  31.50  39.99  45.08
 Clocks (cont)		: 49.87 64.98  72.16  75.00  80.01
 Option Flags		:
 RAMDAC			: Cirrus Logic Built-in 15/16/24-bit DAC
-Submitter		: johnsonp@nicco.sscnet.ucla.edu
+Submitter		: <johnsonp@nicco.sscnet.ucla.edu>
 Last Edit Date		: Oct 3, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: Cirrus Logic 
@@ -1298,7 +1402,7 @@ Clocks			: 25.23 28.23 42.16 36.08 31.50 39.99 45.08 49.87
 Clocks (cont)		: 64.89 72.16 75.00 80.01
 Option Flags		: 
 RAMDAC			: internal
-Submitter		: woju@keep.fan.bln.sub.org
+Submitter		: <woju@keep.fan.bln.sub.org>
 Last Edit Date		: Thu Oct  7 10:56:50 MET 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: Diamond
@@ -1332,8 +1436,8 @@ Clocks			: 25.20 28.30 41.20 36.10 31.50 40.00 44.90 49.87
 Clocks (cont)		: 65.00 72.20 75.00 80.00 
 Option Flags		: 
 RAMDAC			: Integrated
-Submitter		: scooper@noc.rutgers.edu
-Last Edit Date		: 1993-10-05
+Submitter		: <scooper@noc.rutgers.edu>
+Last Edit Date		: Oct 5, 1993
 #---------------------------------------------------------------------------#
 Card Vendor		: Genoa
 Card Model		: 8500VL
@@ -1349,7 +1453,7 @@ Clocks			: 25.23 28.32 41.16 36.08 31.50 39.99 45.08 49.87
 Clocks (cont)		: 64.98 72.16 75.00 80.01
 Option Flags		:
 RAMDAC			: internal
-Submitter		: Dave Kochan (slflq@cc.usu.edu)
+Submitter		: Dave Kochan <slflq@cc.usu.edu>
 Last Edit Date		: Oct. 5, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : No Name
@@ -1486,7 +1590,7 @@ Clocks                  : 25.20  28.32  65.60 36.30 0.00 28.30 0.00 0.00
 Clocks (cont)           : 49.70  (most bogus because of server probing problem)
 Option Flags            :
 RAMDAC                  : ?
-Submitter               : [skelton%jdp.UUCP@dragon.com]
+Submitter               : <skelton%jdp.UUCP@dragon.com>
 Last Edit Date          : Nov 29, 1993
 #---------------------------------------------------------------------------#
 Card Vendor             : OCTEK
@@ -1566,7 +1670,7 @@ ICS ICS2494-275, ICS2494-305:
 # Blank form for new supported cards.  Fill this in and mail in everything  #
 # below header section.                                                     #
 #---------------------------------------------------------------------------#
-To: xfree86@physics.su.oz.au
+To: XFree86@XFree86.org
 Subject: New accelerated card database entry.
 
 Card Vendor		: 
@@ -1587,4 +1691,5 @@ Last Edit Date		:
 
 
 
-$XFree86$
+$XConsortium: AccelCards,v 1.2 94/11/21 21:48:41 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/AccelCards,v 3.2 1994/09/26 15:32:54 dawes Exp $

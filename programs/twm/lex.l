@@ -53,8 +53,8 @@ in this Software without prior written authorization from the X Consortium.
 
 /***********************************************************************
  *
- * $XConsortium: lex.l,v 1.68 94/04/17 20:38:14 rws Exp $
- * $XFree86: xc/programs/twm/lex.l,v 3.1 1994/05/08 05:25:58 dawes Exp $
+ * $XConsortium: lex.l,v 1.69 94/11/21 18:33:32 kaleb Exp $
+ * $XFree86: xc/programs/twm/lex.l,v 3.2 1994/11/26 12:49:12 dawes Exp $
  *
  * .twmrc lex file
  *

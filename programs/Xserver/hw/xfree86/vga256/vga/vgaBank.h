@@ -1,6 +1,5 @@
-/* $XConsortium: vgaBank.h,v 1.1 94/03/28 21:55:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.0 1994/07/24 11:58:42 dawes Exp $ */
-/*
+/* $XConsortium: vgaBank.h,v 1.4 95/01/05 20:51:38 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaBank.h,v 3.1 1994/11/26 12:48:17 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,6 +1,5 @@
-/* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.12 1995/01/21 07:18:44 dawes Exp $ */
-/*
+/* $XConsortium: oak_driver.c,v 1.6 95/01/23 15:35:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.13 1995/01/27 04:53:09 dawes Exp $ */
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

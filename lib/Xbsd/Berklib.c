@@ -1,5 +1,5 @@
-/* $XConsortium: Berklib.c,v 1.24 94/04/17 20:23:08 dpw Exp $ */
-/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.1 1994/11/30 20:33:29 dawes Exp $ */
+/* $XConsortium: Berklib.c,v 1.25 94/11/30 16:21:19 kaleb Exp $ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.2 1994/12/02 05:42:00 dawes Exp $ */
 /*
 
 Copyright (c) 1987 X Consortium

@@ -1,27 +1,36 @@
 /*
- * Copyright 1993,1994 by David Wexelblat <dwex@goblin.org>
+ * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Wexelblat not be used in
- * advertising or publicity pertaining to distribution of the software without
- * specific, written prior permission.  David Wexelblat makes no representations
- * about the suitability of this software for any purpose.  It is provided
- * "as is" without express or implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a 
+ * copy of this software and associated documentation files (the "Software"), 
+ * to deal in the Software without restriction, including without limitation 
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+ * and/or sell copies of the Software, and to permit persons to whom the 
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
- * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
- * EVENT SHALL DAVID WEXELBLAT BE LIABLE FOR ANY SPECIAL, INDIRECT OR
- * CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
- * DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
- * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
- * PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL 
+ * DAVID WEXELBLAT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, 
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF 
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
+ * SOFTWARE.
+ * 
+ * Except as contained in this notice, the name of David Wexelblat shall not be
+ * used in advertising or otherwise to promote the sale, use or other dealings
+ * in this Software without prior written authorization from David Wexelblat.
  *
+ * Contributing Authors:
+ *	Robin Cutshaw <robin@xfree86.org>
+ *	Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
+ * 
  */
 
-/* $XFree86: mit/server/ddx/x386/SuperProbe/RamDac.c,v 2.11 1994/04/15 05:09:47 dawes Exp $ */
+/* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.6 1994/11/30 20:36:17 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -40,7 +49,9 @@ static Bool TestDACBit __STDCARGS((Byte, Byte, Byte));
 static Bool S3_Bt485Check __STDCARGS((int *));
 static Bool S3_TVP3020Check __STDCARGS((int *));
 static Bool S3_ATT498Check __STDCARGS((int *));
-static void CheckMach32 __STDCARGS((int *));
+static Bool S3_STG1700Check __STDCARGS((int *));
+static Bool S3_GENDACCheck __STDCARGS((int *));
+static void CheckMach32_64 __STDCARGS((int, int *));
 
 #ifdef __STDC__
 static void ReadPelReg(Byte Index, Byte *Pixel)
@@ -263,14 +274,38 @@ int *RamDac;
 	old4 = inp(0x3C7);     /* read ID register from data register       */
 	if (old4 == 0x20) {
 		Found = TRUE;
-		*RamDac = DAC_TVP3020;
-		*RamDac |= DAC_6_8_PROGRAM;
+		*RamDac = DAC_TVP3020 | DAC_6_8_PROGRAM;
 		wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00); /* regular VGA */
 		if (Width8Check())
 		{
 			*RamDac |= DAC_8BIT;
 		}
-	}
+	} else {
+	    Byte old5, old6;
+
+	    /* check for Ti3025 hiding behind Bt485 mode */
+	    old5 = rdinx(CRTC_IDX, 0x5C);
+
+	    /* clear 0x20 (RS4) for 3020 mode */
+	    wrinx(CRTC_IDX, 0x5C, old5 & 0xDF);
+	    /* already twiddled CR55 above */
+	    old6 = inp(0x3C6);          /* read current index register value */
+	    outp(0x3C6, 0x3F);  /* write ID register index to index register */
+	    old4 = inp(0x3C7);  /* read ID register from data register       */
+	    if (old4 == 0x25) {
+		Found = TRUE;
+	        *RamDac = DAC_TVP3025 | DAC_6_8_PROGRAM;
+		wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x00); /* regular VGA */
+		if (Width8Check())
+		{
+			*RamDac |= DAC_8BIT;
+		}
+	        wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x01);
+	    }
+
+	    outp(0x3C6, old6);              /* restore index register value */
+	    wrinx(CRTC_IDX, 0x5C, old5);    /* restore 5C                   */
+        }
 
 	wrinx(CRTC_IDX, 0x55, (old2 & 0xFC) | 0x01); /* high four registers */
 	outp(0x3C6, old3);                  /* restore index register value */
@@ -287,7 +322,7 @@ int *RamDac;
 static Bool S3_ATT498Check(RamDac)
 int *RamDac;
 {
-	Byte mir, dir;
+	Byte mir, dir, daccomm;
 	int i;
 	Bool Found = FALSE;
 
@@ -297,32 +332,188 @@ int *RamDac;
 	 * The ATT498 has 4 direct registers accessed through standard
 	 * VGA registers 0x3C8, 0x3C9, 0x3C6, and 0x3C7 and 6 indirect
 	 * registers accessed through a back door by successive reads 
-	 * on RMR (Pixel read mask register 0x3C6 ???).
+	 * on RMR (Pixel read mask register 0x3C6).
 	 */
 
-	inp(0x3C7); /* reset state machine for indirect registers to state 0 */
-	for(i=0; i<6; i++) mir = inp(0x3C6);	/* 6th read  is MIR */
-	dir = inp(0x3C6);			/* next will be DIR */
-
-	fprintf(stderr,"ATT498 MIR=0x%02x DIR=0x%02x\n",mir,dir);
+	dactocomm();
+	inp(0x3C6);		/* reading CR0 */
+	mir = inp(0x3C6);
+	dir = inp(0x3C6);
+	dactopel();
 
 	if ((mir == 0x84) && (dir == 0x98)) {
-                Found = TRUE;
-		*RamDac = DAC_ATT498;
-		*RamDac |= DAC_6_8_PROGRAM;
+	   daccomm = getdaccomm();
+	   SetComm(0);
+	   SetComm(0x0a);
+	   if (getdaccomm() == 0)
+	      *RamDac = DAC_ATT22C498;
+	   else
+	      *RamDac = DAC_ATT498;
+	   SetComm(daccomm);
+	   Found = TRUE;
+	   *RamDac |= DAC_6_8_PROGRAM;
 	}
 
 	return(Found);
 }
 
-static void CheckMach32(RamDac)
+static Bool S3_STG1700Check(RamDac)
+int *RamDac;
+{
+	Byte cid, did, daccomm, readmask;
+	int i;
+	Bool Found = FALSE;
+
+	readmask = inp(0x3c6);
+	dactopel();
+	daccomm = getdaccomm();
+	SetComm(daccomm | 0x10);
+	dactocomm();
+	inp(0x3C6);
+	outp(0x3c6, 0x00);
+	outp(0x3c6, 0x00);
+	cid = inp(0x3c6);     /* company ID */
+	did = inp(0x3c6);     /* device ID */
+	dactopel();
+	outp(0x3c6,readmask);
+	SetComm(daccomm);
+
+	if ((cid == 0x44) && (did == 0x00)) {
+	   Found = TRUE;
+	   *RamDac = DAC_STG1700;
+	   *RamDac |= DAC_6_8_PROGRAM;
+	}
+
+	return(Found);
+}
+
+static Bool S3_GENDACCheck(RamDac)
+int *RamDac;
+{
+   Byte daccomm;
+   int i;
+   Bool Found = FALSE;
+   Byte lock1, lock2;
+
+   Byte saveCR55, savelut[6];
+   long clock01, clock23;
+
+   /* probe for S3 GENDAC or SDAC */
+   /* 
+    * S3 GENDAC and SDAC have two fixed read only PLL clocks
+    *     CLK0 f0: 25.255MHz   M-byte 0x28  N-byte 0x61
+    *     CLK0 f1: 28.311MHz   M-byte 0x3d  N-byte 0x62
+    * which can be used to detect GENDAC and SDAC since there is no chip-id
+    * for the GENDAC.
+    * 
+    * NOTE: for the GENDAC on a MIRO 10SD (805+GENDAC) reading PLL values
+    * for CLK0 f0 and f1 always returns 0x7f (but is documented "read only)
+    */
+
+
+   lock1 = rdinx(CRTC_IDX, 0x38);
+   lock2 = rdinx(CRTC_IDX, 0x39);
+   wrinx(CRTC_IDX, 0x38, 0x48);
+   wrinx(CRTC_IDX, 0x39, 0xA5);
+	 
+   saveCR55 = rdinx(CRTC_IDX, 0x55);
+   wrinx(CRTC_IDX, 0x55, saveCR55 & ~1);
+   
+   outp(0x3c7,0);
+   for(i=0; i<2*3; i++)		/* save first two LUT entries */
+      savelut[i] = inp(0x3c9);
+   outp(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* set first two LUT entries to zero */
+      outp(0x3c9,0);
+
+   wrinx(CRTC_IDX, 0x55, saveCR55 | 1);
+	 
+   outp(0x3c7,0);
+   for(i=clock01=0; i<4; i++)
+      clock01 = (clock01 << 8) | (inp(0x3c9) & 0xff);
+   for(i=clock23=0; i<4; i++)
+      clock23 = (clock23 << 8) | (inp(0x3c9) & 0xff);
+
+   wrinx(CRTC_IDX, 0x55, saveCR55 & ~1);
+
+   outp(0x3c8,0);
+   for(i=0; i<2*3; i++)		/* restore first two LUT entries */
+      outp(0x3c9,savelut[i]);
+
+   wrinx(CRTC_IDX, 0x55, saveCR55);
+   wrinx(CRTC_IDX, 0x39, lock2);
+   wrinx(CRTC_IDX, 0x38, lock1);
+
+   if ( clock01 == 0x28613d62 ||
+       (clock01 == 0x7f7f7f7f && clock23 != 0x7f7f7f7f)) {      
+      Found = TRUE;
+      
+      dactopel();
+      inp(0x3c6);
+      inp(0x3c6);
+      inp(0x3c6);
+      
+      /* the forth read will show the SDAC chip ID and revision */
+      if (((i=inp(0x3c6)) & 0xf0) == 0x70)
+	 *RamDac = DAC_S3_SDAC;
+      else
+	 *RamDac = DAC_S3_GENDAC;
+      dactopel();
+   }
+      
+   return(Found);
+}
+
+static Bool S3_SC15025Check(RamDac)
+int *RamDac;
+{
+	Byte c,id[4];
+	int i;
+	Bool Found = FALSE;
+
+	/*
+	 * Sierra 15025 support - Harald Koenig
+	 *
+	 * The SC15025 has 9 indexed extended registers which can be accessed
+	 * by setting bit 0x10 in the command register. 
+	 * In extended registers 0x9-0xC an identification code is stored
+	 * should be 53 3a b1 41 
+	 */
+
+	c = getdaccomm();
+	SetComm(c | 0x10); /* enable extened data registers */
+	for (i=0; i<4; i++) {
+	   outp(0x3C7, 0x9+i); 
+	   id[i] = inp(0x3C8);
+	}
+	SetComm(c); /* restore command register */
+	dactopel();
+
+	if (id[0] == 'S' &&                  /* Sierra */
+	    ((id[1]<<8)|id[2]) == 15025) {   /* unique for the SC 15025/26 */
+	        if (id[3] != 'A') {                     /* version number */
+		   fprintf(stderr,"*** ==> New Sierra SC 15025/26 version (%x) found, please report!\n",id[3]);
+		}
+                Found = TRUE;
+		*RamDac = DAC_SIERRA24;
+		*RamDac |= DAC_6_8_PROGRAM;
+        }
+
+	return(Found);
+}
+
+static void CheckMach32_64(ChipSet, RamDac)
+int ChipSet;
 int *RamDac;
 {
 	Word Port = CONFIG_STATUS_1;
 
+	if (ChipSet >= CHIP_ATI88800)
+		Port = CONFIG_STATUS_0;
+
 	EnableIOPorts(1, &Port);
 
-	switch ((inpw(CONFIG_STATUS_1) & 0x0E00) >> 9)
+	switch ((inpw(Port) & 0x0E00) >> 9)
 	{
 	case 0x00:
 		*RamDac = DAC_ATI68830;
@@ -357,8 +548,13 @@ int *RamDac;
 			*RamDac |= DAC_8BIT;
 		}
 		break;
-	default:
-		*RamDac = DAC_UNKNOWN;
+	case 0x06:
+		*RamDac = DAC_STG1700;
+		*RamDac |= DAC_6_8_PROGRAM;
+		break;
+	case 0x07:
+		*RamDac = DAC_ATT498;
+		*RamDac |= DAC_6_8_PROGRAM;
 		break;
 	}
 
@@ -415,7 +611,7 @@ int *RamDac;
 	    }
 	    else
 	    {
-		CheckMach32(RamDac);
+		CheckMach32_64(Chipset, RamDac);
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
@@ -440,17 +636,40 @@ int *RamDac;
 	}
 	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_928D))
 	{
-	    if (S3_Bt485Check(RamDac))
-	    {
-		DisableIOPorts(NUMPORTS, Ports);
-		return;
-	    }
 	    if (S3_TVP3020Check(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
 	    }
+	    if (S3_Bt485Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
 	    if (S3_ATT498Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_STG1700Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_GENDACCheck(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	    if (S3_SC15025Check(RamDac))
+	    {
+		DisableIOPorts(NUMPORTS, Ports);
+		return;
+	    }
+	}
+	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_801B))
+	{
+	    if (S3_GENDACCheck(RamDac))
 	    {
 		DisableIOPorts(NUMPORTS, Ports);
 		return;
@@ -678,270 +897,3 @@ int *RamDac;
 	DisableIOPorts(NUMPORTS, Ports);
 	return;
 }
-
-#ifdef OLD_DAC_CODE /* { */
-
-static void CheckATT __STDCARGS((int *));
-
-static Bool Width8Check()
-{
-	int i;
-	Byte save[3];
-	Bool result = FALSE;
-
-	/*
-	 * Figure out whether this RAMDAC has 6-bit or 8-bit wide lookup
-	 * table columns.
-	 */
-	outp(0x3C6, 0xFF);
-	outp(0x3C7, 0x00);
-	for (i=0; i < 3; i++)
-	{
-		save[i] = inp(0x3C9);
-	}
-	outp(0x3C8, 0x00);
-	for (i=0; i < 3; i++)
-	{
-		outp(0x3C9, 0xFF);
-	}
-	outp(0x3C7, 0x00);
-	if ((inp(0x3C9) == (Byte)0xFF) && 
-	    (inp(0x3C9) == (Byte)0xFF) &&
-	    (inp(0x3C9) == (Byte)0xFF))
-	{
-		result = TRUE;
-	}
-	outp(0x3C8, 0x00);
-	for (i=0; i < 3; i++)
-	{
-		outp(0x3C9, save[i]);
-	}
-
-	return(result);
-}
-
-static void CheckATT(RamDac)
-int *RamDac;
-{
-	Byte savecomm, tmp;
-
-	(void)dactocomm();
-	savecomm = inp(0x3C6);
-	(void)dactocomm();
-	outp(0x3C6, 0xE0);
-	(void)dactocomm();
-	if ((inp(0x3C6) & 0xE0) != 0xE0)
-	{
-		*RamDac = DAC_ATT497;
-	}
-	else
-	{
-		(void)dactocomm();
-		outp(0x3C6, 0x60);
-		(void)dactocomm();
-		if ((inp(0x3C6) & 0xE0) == 0x00)
-		{
-			(void)dactocomm();
-			tmp = inp(0x3C6);
-			(void)dactocomm();
-			outp(0x3C6, tmp | 0x02);
-			(void)dactocomm();
-			if ((inp(0x3C6) & 0x02) == 0x02)
-			{
-				*RamDac = DAC_ATT490;
-				*RamDac |= DAC_6_8_PROGRAM;
-			}
-			else
-			{
-				*RamDac = DAC_ATT493;
-			}
-		}
-		else
-		{
-			(void)dactocomm();
-			tmp = inp(0x3C6);
-			(void)dactocomm();
-			outp(0x3C6, tmp | 0x02);
-			if (Width8Check())
-			{
-				*RamDac = DAC_ATT491;
-				*RamDac |= DAC_6_8_PROGRAM;
-			}
-			else
-			{
-				*RamDac = DAC_ATT492;
-			}
-		}
-	}
-	(void)dactocomm();
-	outp(0x3C6, savecomm);
-}
-
-void Probe_RamDac(Chipset, RamDac)
-int Chipset;
-int *RamDac;
-{
-	Byte x, y, z, v, oldcommreg, oldpelreg;
-
-	*RamDac = DAC_STANDARD;
-	Ports[0] = CRTC_IDX;
-	Ports[1] = CRTC_REG;
-	EnableIOPorts(NUMPORTS, Ports);
-
-	if (Chipset == CHIP_AL2101)
-	{
-		*RamDac = DAC_ALG1101;
-		if (Width8Check())
-		{
-			*RamDac |= DAC_8BIT;
-		}
-		DisableIOPorts(NUMPORTS, Ports);
-		return;
-	}
-	else if (SVGA_VENDOR(Chipset) == V_ATI)
-	{
-		if (ReadBIOS(0x44, &x, 1) != 1)
-		{
-			fprintf(stderr, "%s: Failed to read ATI BIOS data\n",
-				MyName);
-			DisableIOPorts(NUMPORTS, Ports);
-			return;
-		}
-		if (x & 0x80)
-		{
-			*RamDac = DAC_ATI68830;
-			if (Width8Check())
-			{
-				*RamDac |= DAC_8BIT;
-			}
-			DisableIOPorts(NUMPORTS, Ports);
-			return;
-		}
-	}
-	else if ((SVGA_VENDOR(Chipset) == V_CIRRUS) &&
-		 (Chipset >= CHIP_CL5420) &&
-		 (Chipset != CHIP_CL_UNKNOWN))
-	{
-		if (Chipset == CHIP_CL5420)
-		{
-			*RamDac = DAC_CIRRUSA;
-		}
-		else
-		{
-			*RamDac = DAC_CIRRUSB;
-		}
-		if (Width8Check())
-		{
-			*RamDac |= DAC_8BIT;
-		}
-		DisableIOPorts(NUMPORTS, Ports);
-		return;
-	}
-	else if ((SVGA_VENDOR(Chipset) == V_S3) && (Chipset >= CHIP_S3_924))
-	{
-		if (S3_Bt485Check(RamDac))
-		{
-			DisableIOPorts(NUMPORTS, Ports);
-			return;
-		}
-		if (S3_TVP3020Check(RamDac))
-		{
-			DisableIOPorts(NUMPORTS, Ports);
-			return;
-		}
-		if (S3_ATT498Check(RamDac))
-		{
-		       DisableIOPorts(NUMPORTS, Ports);
-		       return;
-		}
-	}
-	dactopel();
-	x = inp(0x3C6);
-	do
-	{
-		y = x;
-		x = inp(0x3C6);
-	} while (x != y);
-	z = x;
-	x = dactocomm();
-	y = 8;
-	while ((x != 0x8E) && (y > 0))
-	{
-		x = inp(0x3C6);
-		y--;
-	}
-	if (x == 0x8E)
-	{
-		*RamDac = DAC_SS24;
-		dactopel();
-	}
-	else
-	{
-		(void)dactocomm();
-		oldcommreg = inp(0x3C6);
-		dactopel();
-		oldpelreg = inp(0x3C6);
-		x = oldcommreg ^ 0xFF;
-		outp(0x3C6, x);
-		(void)dactocomm();
-		v = inp(0x3C6);
-		if (v != x)
-		{
-			(void)dactocomm();
-			x = oldcommreg ^ 0x60;
-			outp(0x3C6, x);
-			(void)dactocomm();
-			v = inp(0x3C6);
-			*RamDac = DAC_SIERRA15;
-			if ((x & 0xE0) == (v & 0xE0))
-			{
-				x = inp(0x3C6);
-				dactopel();
-				*RamDac = DAC_SIERRA15_16;
-				if (x == inp(0x3C6))
-				{
-					(void)dactocomm();
-					outp(0x3C6, 0xFF);
-					(void)dactocomm();
-					if (inp(0x3C6) != 0xFF)
-					{
-						*RamDac = DAC_ACUMOS;
-					}
-					/*
-					 * It's an AT&T RAMDAC; figure out
-					 * which one.
-					 */
-					CheckATT(RamDac);
-				}
-			}
-			else
-			{
-				(void)dactocomm();
-				x = oldcommreg ^ 0xC0;
-				outp(0x3C6, x);
-				(void)dactocomm();
-				v = inp(0x3C6);
-				if ((x & 0xC0) == (v & 0xC0))
-				{
-					/*
-					 * It's an AT&T RAMDAC; figure out
-					 * which one.
-					 */
-					CheckATT(RamDac);
-				}
-			}
-		}
-		(void)dactocomm();
-		outp(0x3C6, oldcommreg);
-		dactopel();
-		outp(0x3C6, oldpelreg);
-	}
-	if (Width8Check())
-	{
-		*RamDac |= DAC_8BIT;
-	}
-	DisableIOPorts(NUMPORTS, Ports);
-	return;
-}
-
-#endif /* OLD_DAC_CODE } */

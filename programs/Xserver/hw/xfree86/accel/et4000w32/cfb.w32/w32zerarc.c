@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32zerarc.c,v 3.1 1994/11/19 07:51:14 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -26,7 +26,7 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.22 94/04/17 20:29:07 dpw Exp $ */
+/* $XConsortium: w32zerarc.c,v 1.2 95/01/05 20:36:45 kaleb Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"
@@ -197,7 +197,6 @@ RROP_NAME (W32ZeroPolyArcSS8) (pDraw, pGC, narcs, parcs)
     CHECK_NOOP
 
     cfbGetPixelWidthAndPointer(pDraw,npwidth, addrp)
-/*GGLGGL if (pDraw->type != DRAWABLE_WINDOW)*/
     if ((CARD32)addrp != VGABASE)
     {
 	RROP_NAME (cfbZeroPolyArcSS8) (pDraw, pGC, narcs, parcs);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.4 1994/11/19 07:50:06 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -30,7 +30,7 @@
  *
  * Rewritten for the AGX by Henry A. Worth (haw30@eng.amdahl.com)
  * 
- * $XConsortium: cfbfillrct.c,v 5.13 90/05/15 18:40:19 keith Exp $
+ * $XConsortium: agxFRect.c,v 1.2 95/01/05 20:29:54 kaleb Exp $
  */
 
 #include "X.h"
@@ -70,9 +70,6 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
    int   numRects;
    int   n;
    int   xorg, yorg;
-   int   width, height;
-   PixmapPtr pPix;
-   int   pixWidth;
    int   xrot, yrot;
 
    if (!xf86VTSema)
@@ -198,194 +195,97 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
       n = pboxClipped - pboxClippedBase;
       switch (pGC->fillStyle) {
 	case FillSolid:
-
-           GE_WAIT_IDLE();
-
-           MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
-
-           GE_OUT_B(GE_FRGD_MIX, pGC->alu);
-           GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
-           GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
-
-           GE_OUT_W( GE_PIXEL_OP, 
-                     GE_OP_PAT_FRGD
-                     | GE_OP_MASK_DISABLED
-                     | GE_OP_INC_X
-                     | GE_OP_INC_Y         );
-
-	   pboxClipped = pboxClippedBase;
-	   while (n--) {
-              width = pboxClipped->x2 - pboxClipped->x1 - 1;
-              height = pboxClipped->y2 - pboxClipped->y1 - 1;
-
+   	   pboxClipped = pboxClippedBase;
+           {
+              register unsigned int opDim 
+                     = (pboxClipped->y2-pboxClipped->y1-1) << 16
+                       | (pboxClipped->x2-pboxClipped->x1-1);
+              register unsigned int dstCoOrd 
+                     = pboxClipped->y1 << 16 | pboxClipped->x1;
+   
+              MAP_SET_DST( GE_MS_MAP_A );
+   
               GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-              GE_OUT_D( GE_DEST_MAP_X, pboxClipped->y1 << 16
-                                       | pboxClipped->x1 );
-              GE_OUT_D( GE_OP_DIM_WIDTH, height << 16 | width );
+              GE_OUT_B(GE_FRGD_MIX, pGC->alu);
+              GE_OUT_D(GE_PIXEL_BIT_MASK, pGC->planemask);
+              GE_OUT_D(GE_FRGD_CLR, pGC->fgPixel);
+#if 0   
+              GE_OUT_D( GE_DEST_MAP_X, dstCoOrd ); 
+              GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+              GE_START_CMD( GE_OP_BITBLT
+                            | GE_OP_PAT_FRGD
+                            | GE_OP_MASK_DISABLED
+                            | GE_OP_INC_X
+                            | GE_OP_INC_Y       
+                            | GE_OP_FRGD_SRC_CLR
+                            | GE_OP_DEST_MAP_A   );
 #else
-              GE_OUT_W( GE_DEST_MAP_X, (short)(pboxClipped->x1) );
-              GE_OUT_W( GE_DEST_MAP_Y, (short)(pboxClipped->y1) );
-              GE_OUT_W( GE_OP_DIM_WIDTH, width );
-              GE_OUT_W( GE_OP_DIM_HEIGHT, height );
+              GE_OUT_W( GE_PIXEL_OP,
+                        GE_OP_PAT_FRGD
+                        | GE_OP_MASK_DISABLED
+                        | GE_OP_INC_X
+                        | GE_OP_INC_Y         );
 #endif
-              GE_START_CMDW( GE_OPW_BITBLT
-                             | GE_OPW_FRGD_SRC_CLR
-                             | GE_OPW_SRC_MAP_A
-                             | GE_OPW_DEST_MAP_A   );
-
-	      pboxClipped++;
-	   }
-           GE_WAIT_IDLE();
+   
+#if 0
+   	      while (n--) {
+	         pboxClipped++;
+                 opDim = (pboxClipped->y2-pboxClipped->y1-1) << 16
+                         | (pboxClipped->x2-pboxClipped->x1-1);
+                 dstCoOrd = pboxClipped->y1 << 16 | pboxClipped->x1; 
+                 GE_WAIT_IDLE();
+#else
+              for(;;) {
+#endif
+   
+                 GE_OUT_D( GE_DEST_MAP_X, dstCoOrd ); 
+                 GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+                 GE_START_CMDW( GE_OPW_BITBLT
+                                | GE_OPW_FRGD_SRC_CLR
+                                | GE_OPW_DEST_MAP_A   );
+#if 1
+                 
+                 if (--n <= 0)  
+                    break;
+	         pboxClipped++;
+                 opDim = (pboxClipped->y2-pboxClipped->y1-1) << 16
+                         | (pboxClipped->x2-pboxClipped->x1-1);
+                 dstCoOrd = pboxClipped->y1 << 16 | pboxClipped->x1;
+                 GE_WAIT_IDLE();
+#endif
+	      }
+           }
+           GE_WAIT_IDLE_EXIT();
 	   break;
 
 	case FillTiled:
 	   xrot = pDrawable->x + pGC->patOrg.x;
 	   yrot = pDrawable->y + pGC->patOrg.y;
 
-	   pPix = pGC->tile.pixmap;
-	   width = pPix->drawable.width;
-	   height = pPix->drawable.height;
-	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-	   pboxClipped = pboxClippedBase;
-#if 0
-	   if ( agxMAX_SLOTS 
-                && agxCacheTile(pPix, (pextent->x2 - pboxClipped->x1)
-					      - width)) {
-	      while (n--) {
-	        int w, h;
-		w = pboxClipped->x2 - pboxClipped->x1;
-		h = pboxClipped->y2 - pboxClipped->y1;
-		if ((w > 9) || (h > 9))
-		 agxCImageFill(pPix->slot,
-			      pboxClipped->x1, pboxClipped->y1,
-			      w, h,
-			      xrot, yrot,
-			      pGC->alu, pGC->planemask);
-		 else
-		   (agxImageFillFunc) (pboxClipped->x1, pboxClipped->y1,
-				    w, h,
-				    pPix->devPrivate.ptr, pixWidth,
-				    width, height, xrot, yrot,
-				    pGC->alu, pGC->planemask);
-		 pboxClipped++;
-	      }
-	   }
-           else
-#endif
-           {
-	      while (n--) {
-		 (agxImageFillFunc) (pboxClipped->x1, pboxClipped->y1,
-				    pboxClipped->x2 - pboxClipped->x1,
-				    pboxClipped->y2 - pboxClipped->y1,
-				    pPix->devPrivate.ptr, pixWidth,
-				    width, height, xrot, yrot,
-				    pGC->alu, pGC->planemask);
-		 pboxClipped++;
-	      }
-	   }
+           agxFillBoxTile( pDrawable, n, pboxClippedBase,
+                           pGC->tile.pixmap, xrot, yrot,
+			   pGC->alu, pGC->planemask );
 	   break;
 
 	case FillStippled:
 	   xrot = pDrawable->x + pGC->patOrg.x;
 	   yrot = pDrawable->y + pGC->patOrg.y;
 
-	   pPix = pGC->stipple;
-	   width = pPix->drawable.width;
-	   height = pPix->drawable.height;
-	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-	   pboxClipped = pboxClippedBase;
-#if 0
-	   if (agxMAX_SLOTS &&
-	       agxCacheStipple(pPix, (pextent->x2 - pboxClipped->x1) - width)) {
-	      while (n--) {
-	         int w, h;
-	         w = pboxClipped->x2 - pboxClipped->x1;
-		 h = pboxClipped->y2 - pboxClipped->y1;
-		 if ((w > 9) || (h > 9))
-	       		  agxCImageStipple(pPix->slot,
-				 pboxClipped->x1, pboxClipped->y1,
-				 w, h,
-				 xrot, yrot, pGC->fgPixel,
-				 pGC->alu, pGC->planemask);
-		 else
-		  agxImageStipple(pboxClipped->x1, pboxClipped->y1,
-				w, h,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height, xrot, yrot,
-				pGC->fgPixel,
-				pGC->alu, pGC->planemask);
-		 pboxClipped++;
-	      }
-	   } 
-           else 
-#endif
-           {
-	      while (n--) {
-		 agxImageStipple(pboxClipped->x1, pboxClipped->y1,
-				pboxClipped->x2 - pboxClipped->x1,
-				pboxClipped->y2 - pboxClipped->y1,
-				pPix->devPrivate.ptr, pixWidth,
-				width, height, xrot, yrot,
-				pGC->fgPixel,
-				pGC->alu, pGC->planemask);
-		 pboxClipped++;
-	      }
-	   }
+           agxFillBoxStipple( pDrawable, n, pboxClippedBase,
+                              pGC->stipple, xrot, yrot,
+			      pGC->fgPixel, 0,
+			      pGC->alu, MIX_DST,
+                              pGC->planemask);
 	   break;
 	case FillOpaqueStippled:
 	   xrot = pDrawable->x + pGC->patOrg.x;
 	   yrot = pDrawable->y + pGC->patOrg.y;
 
-	   pPix = pGC->stipple;
-	   width = pPix->drawable.width;
-	   height = pPix->drawable.height;
-	   pixWidth = PixmapBytePad(width, pPix->drawable.depth);
-
-	   pboxClipped = pboxClippedBase;
-#if 0
-	   if (agxMAX_SLOTS && agxCacheOpStipple(pPix,
-				(pextent->x2 - pboxClipped->x1) - width)) {
-	      while (n--) {
-      	         int w, h;
-	         w = pboxClipped->x2 - pboxClipped->x1;
-		 h = pboxClipped->y2 - pboxClipped->y1;
-		 if ((w > 9) || (h > 9))
-		  agxCImageOpStipple(pPix->slot,
-				   pboxClipped->x1, pboxClipped->y1,
-				   w, h,
-				   xrot, yrot,
-				   pGC->fgPixel, pGC->bgPixel,
-				   pGC->alu,
-				   pGC->planemask);
-		  else
-		     agxImageOpStipple(pboxClipped->x1, pboxClipped->y1,
-				  w, h,
-				  pPix->devPrivate.ptr, pixWidth,
-				  width, height, xrot, yrot,
-				  pGC->fgPixel, pGC->bgPixel,
-				  pGC->alu,
-				  pGC->planemask);		   
-		 pboxClipped++;
-	      }
-	   } 
-           else
-#endif
-           {
-	      while (n--) {
-		 agxImageOpStipple(pboxClipped->x1, pboxClipped->y1,
-				  pboxClipped->x2 - pboxClipped->x1,
-				  pboxClipped->y2 - pboxClipped->y1,
-				  pPix->devPrivate.ptr, pixWidth,
-				  width, height, xrot, yrot,
-				  pGC->fgPixel, pGC->bgPixel,
-				  pGC->alu,
-				  pGC->planemask);
-		 pboxClipped++;
-	      }
-	   }
+           agxFillBoxStipple( pDrawable, n, pboxClippedBase,
+                              pGC->stipple, xrot, yrot,
+		              pGC->fgPixel, pGC->bgPixel,
+			      pGC->alu, pGC->alu, 
+                              pGC->planemask );
 	   break;
       }
    }

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: xf861502x.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.2 1994/11/30 20:37:42 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -127,13 +128,6 @@ xf86InSc1502xCmd()
    unsigned char data;
    unsigned int  ramDacBase = 0x3c6;
 
-/* The question is whether this is needed in general or only for the -016? */
-#ifdef AGX_SERVER          
-   unsigned char agxMode;
-   agxMode = inb(0x2160);
-   outb(0x2160,0x01);
-#endif
-
    if( SC1502X_EPRF_SET ) {
       data = inb(ramDacBase);
    }
@@ -152,9 +146,6 @@ xf86InSc1502xCmd()
          data = xf86InRamDacReg( SC1502X_COMMAND );
       }
    }
-#ifdef AGX_SERVER
-   outb(0x2160,agxMode);
-#endif
    return data;
 }
    
@@ -179,13 +170,6 @@ xf86OutSc1502xIndReg(reg, mask, data)
    unsigned char tmp;
    Bool          setEPRF = !SC1502X_EPRF_SET;
    
-/* The question is whether this is needed in general or only for the -016? */
-#ifdef AGX_SERVER          
-   unsigned char agxMode;
-   agxMode = inb(0x2160);
-   outb(0x2160,0x01);
-#endif
-
    if( setEPRF ) 
       xf86OutSc1502xCmd( 0xFF, SC1502X_CMD_EPRF );
    xf86OutRamDacData(SC1502X_EXT_IDX_WO, reg);
@@ -193,9 +177,6 @@ xf86OutSc1502xIndReg(reg, mask, data)
    if( setEPRF )
       xf86OutSc1502xCmd( ~SC1502X_CMD_EPRF, 0x00 );
 
-#ifdef AGX_SERVER
-   outb(0x2160,agxMode);
-#endif
 }
 
 #ifdef __STDC__
@@ -211,12 +192,6 @@ xf86InSc1502xIndReg(reg)
    unsigned char tmp;
    Bool          setEPRF = !SC1502X_EPRF_SET;
 
-#ifdef AGX_SERVER
-   unsigned char agxMode;
-   agxMode = inb(0x2160);
-   outb(0x2160,0x01);
-#endif
-
    if( setEPRF ) 
       xf86OutSc1502xCmd( 0xFF, SC1502X_CMD_EPRF );
    xf86OutRamDacData(SC1502X_EXT_IDX_WO, reg);
@@ -224,9 +199,6 @@ xf86InSc1502xIndReg(reg)
    if( setEPRF )
       xf86OutSc1502xCmd( ~SC1502X_CMD_EPRF, 0x00 );
 
-#ifdef AGX_SERVER
-   outb(0x2160,agxMode);
-#endif
    return(ret);
 }
 
@@ -272,7 +244,7 @@ xf86Sc1502xInit()
 {
    xf86OutSc1502xCmd( 0x00, SC1502X_CMD_8BPP_PSUEDO ); 
    xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, SC1502X_RP_8X1_TO_8X1);
-   if( SC15021 ) {
+   if( xf86RamDacType == SC15021_DAC ) {
       xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, SC15021_SC_8BPP_PSUEDO );
    }
 

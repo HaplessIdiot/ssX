@@ -1,6 +1,5 @@
-/* $XConsortium: xf86Kbd.c,v 1.1 94/03/28 21:23:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.3 1994/12/11 10:54:39 dawes Exp $ */
-/*
+/* $XConsortium: xf86Kbd.c,v 1.6 95/01/23 15:34:04 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.4 1995/01/21 07:15:47 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

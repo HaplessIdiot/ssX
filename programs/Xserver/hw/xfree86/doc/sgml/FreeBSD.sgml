@@ -1,9 +1,9 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1 on FreeBSD 1.1.5
-<author>Rich Murphey David Dawes
-<date>12 Dec 1994
+<title> README for XFree86 3.1.1 on FreeBSD 2.0
+<author>Rich Murphey, David Dawes
+<date>20 January 1995
 
 <toc>
  
@@ -21,14 +21,17 @@ See the <url url="COPYRIGHT.html" name="Copyright Notice">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-<url url="ftp://ftp.XFree86.org/pub/XFree86/current">
+<url name="ftp.XFree86.org:/pub/XFree86/current"
+url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 
-Binaries for XFree86 on FreeBSD will be available from:
+Binaries for XFree86 on FreeBSD are available from:
 
-<url url="ftp://ftp.XFree86.org/pub/XFree86/current/FreeBSD">
+<url name="ftp.XFree86.org:/pub/XFree86/current/binaries/FreeBSD-2.0"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/FreeBSD-2.0">
 <p>
-<url url="ftp://XFree86.cdrom.com/pub/XFree86">
+<url name="XFree86.cdrom.com:/pub/XFree86/current/binaries/FreeBSD-2.0"
+url="ftp://XFree86.cdrom.com/pub/XFree86/current/binaries/FreeBSD-2.0">
 
 Send email to <em/Rich-Murphey@Rice.edu/ or <em/XFree86@XFree86.org/
 if you have comments or suggestions about this file and we'll revise
@@ -37,103 +40,116 @@ it.
 
 <sect>Installing the Binaries
 <p>
-If you want to save space, first select which archives you want to unpack.
-If you can't decide what to pick and you have 36Mb of disk space, it's safe
-to unpack everything.
+If you want to save space, first select which archives you want to
+unpack.  If you can't decide what to pick and you have 52Mb of disk
+space, it's safe to unpack everything.
 
-At a minimum you need to unpack the REQUIRED <tt/XFree86-3.1-*.tar.gz/
-archives plus at least one SERVER that matches your vga card.  You'll
-need 8.3Mb minimum for the required run-time binaries only.
-
-<descrip>
-<tag/Required (8.2Mb):/
+At a minimum you need to unpack the 'required' <tt/X311*.tgz/
+archives plus at least one server that matches your vga card.  You'll
+need 9Mb for the minimum required run-time binaries only.
 
 <descrip>
-<tag/bin/
+<tag/Required (6.7Mb):/
+
+<descrip>
+<tag/X311bin.tgz/
      all the executable X client applications and shared libs
 
-<tag/fonts/
+<tag/X311fnts.tgz/
      the misc and 75 dpi fonts
 
-<tag/lib/
+<tag/X311lib.tgz/
      data files needed at runtime
-
-<tag/xinit-config/
-     customizable xinit runtime configuration file
 </descrip>
 
-<tag/Choose one server (~2Mb):/
+<tag/Required unless you have already customized your configuration files:
 
 <descrip>
-<tag/8514/
+<tag/X311xicf.tgz/
+     customizable xinit runtime configuration file
+
+<tag/X311xdcf.tgz/
+     customizable xdm runtime configuration file
+</descrip>
+
+<tag/Choose at least one server (~2.3Mb):/
+
+<descrip>
+<tag/X3118514.tgz/
      8-bit color for IBM 8514 and true compatibles.
 
-<tag/AGX/
+<tag/X311AGX.tgz/
      8-bit color for AGX boards.
 
-<tag/Mach32/
-     8-bit color for ATI Mach32 boards.
+<tag/X311Mch3.tgz/
+     8 and 16-bit color for ATI Mach32 boards.
 
-<tag/Mach8/
+<tag/X311Mch8.tgz/
      8-bit color for ATI Mach8 boards.
 
-<tag/Mono/
+<tag/X311Mono.tgz/
      1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
-<tag/P9000/
-     8-bit color for Weitek P9000 boards (Diamond Viper).
+<tag/X311P9K.tgz/
+     8, 16, and 24-bit color for Weitek P9000 boards (Diamond Viper).
 
-<tag/S3/
-     8-bit color for S3 boards (&num 9 GXE, Actix GE32, SPEA Mercury, STB Pegasus)
+<tag/X311S3.tgz/
+     8, 16 and 24-bit color for S3 boards (&num;9 GXE, Actix GE32, SPEA Mercury, STB Pegasus)
 
-<tag/SVGA/
+<tag/X311SVGA.tgz/
      8-bit color for Super-VGA cards.
 
-<tag/VGA16/
+<tag/X311VG16.tgz/
      4-bit color for VGA and Super-VGA cards
+
+<tag/X311W32.tgz/
+     8-bit Color for ET4000/W32, /W32i and /W32p cards.
+
+<tag/X311nest.tgz/
+     A nested server running as a client window on another display.
 </descrip>
 
 <tag/Optional:/
 
 <descrip>
 
-<tag/doc/
-     (.3Mb) READMEs and XFree86 specific man pages
+<tag/X311doc.tgz/
+     (.5Mb) READMEs and XFree86 specific man pages
 
-<tag/man/
+<tag/X311man.tgz/
      (1.7Mb) man pages except XFree86 specific ones in etc archive
 
-<tag/fonts-100dpi/
-     (1.6Mb) 100dpi fonts
+<tag/X311f100.tgz/
+     (1.8Mb) 100dpi fonts
 
-<tag/fonts-scaled/
+<tag/X311fscl.tgz/
      (1.6Mb) Speedo and Type1 fonts
 
-<tag/fonts-other/
-     (3.3Mb) Japanese, Chinese, etc. fonts
+<tag/X311fnon.tgz/
+     (3.3Mb) Japanese, Chinese and other non-english fonts
 
-<tag/prog/
-     (3.7Mb) config, lib*.a and *.h files needed only for compiling
-
-<tag/fontserver/
+<tag/X311fsrv.tgz/
      (.3Mb) the font server and it's man page
 
-<tag/xdm-des/
-     (.1Mb) xdm executable for systems with secrdist installed.
+<tag/X311prog.tgz/
+     (3.9Mb) config, lib*.a and *.h files needed only for compiling
 
-<tag/xdm-nodes/
-     (.1Mb) xdm executable for systems without secrdist installed.
+<tag/X311link.tgz/
+     (7.8Mb) X server reconfiguration kit
 
-<tag/linkkit/
-     (1.6Mb) X server reconfiguration kit
+<tag/X311pex.tgz/
+     (.5Mb) PEX fonts and shared libs needed by PEX applications.
 
-<tag/pex/
-     (.7Mb) include files and libraries for compiling PEX applications.
-
-<tag/lbx/
-     (.7Mb) low bandwidth X proxy server and libraries.
+<tag/X311lbx.tgz/
+     (.2Mb) low bandwidth X proxy server and libraries.
 </descrip>
 </descrip>
+
+Note that there is no longer a separate xdm archive.  FreeBSD 2.0
+handles this in shared libraries now, so that the xdm binary does not
+itself contain des and there is no more need for us to provide
+separate tar balls.
+
 
 <sect1>Full Install:
 <p>
@@ -148,9 +164,9 @@ need 8.3Mb minimum for the required run-time binaries only.
  # umask 022
 </verb></tscreen>
 
-<item> If you have 36Mb free in the <tt>/usr</tt> partion ``<tt>cd
+<item> If you have 52Mb free in the <tt>/usr</tt> partition ``<tt>cd
      /usr</tt>'' and skip to no. 3.
-     Otherwise, create a directory on another partion and sym link it into
+     Otherwise, create a directory on another partition and sym link it into
      <tt>/usr</tt>:
 
 <tscreen><verb>
@@ -164,14 +180,14 @@ need 8.3Mb minimum for the required run-time binaries only.
      If you are using sh (as root usually does):
 
 <tscreen><verb>
- # for i in XFree86-3.1-*.tar.gz; do
+ # for i in X311*.tgz; do
  #   tar -xzf $i
  # done
 </verb></tscreen>
 
      Else, if you are using csh:
 <tscreen><verb>
- % foreach i (XFree86-3.1-*.tar.gz)
+ % foreach i (X311*.tgz)
  %   tar -xzf $i
  % end
 </verb></tscreen>
@@ -191,8 +207,8 @@ need 8.3Mb minimum for the required run-time binaries only.
 First do numbers 1 and 2 above. Then unpack the required archives:
 
 <tscreen><verb>
- # for i in bin fonts lib xinit-config; do
- #   tar -xzf  XFree86-3.1-$i.tar.gz
+ # for i in bin fnts lib xicf; do
+ #   tar -xzf  X311$i.tgz
  # done
 </verb></tscreen>
 
@@ -202,7 +218,7 @@ sets supported by each server.  For example, if you have an ET4000
 based card you will use the XF86_SVGA server:
 
 <tscreen><verb>
- # tar -xzf XFree86-3.1-SVGA.tar.gz
+ # tar -xzf X311SVGA.tgz
  # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 </verb></tscreen>
 
@@ -231,8 +247,8 @@ If you had already configured <tt>X11R6/lib/X11/xinit/xinitrc</tt> or
 <tt/xdm-config/ archive or unpack it separately and merge in your
 customizations.
 
-The <tt/fonts-scaled/ and <tt/fonts-100dpi/ archives are optional and
-can be omitted if you are short on space.  The optional <tt/linkkit/
+The <tt/fscl/ and <tt/f100/ archives are optional and
+can be omitted if you are short on space.  The optional <tt/link/
 archive allows you to reconfigure and customize a X server binary.
 The optional <tt/prog/ archive is needed only for writing or compiling X
 applications.  The optional <tt/pex/ archive contains pex clients and
@@ -279,35 +295,8 @@ to ``off'' or build another kernel with more VTs as described below.
 The display manager makes your PC look like an X terminal.  That is, it
 presents you with a login screen that runs under X.
 
-Because encryption is an optional part of FreeBSD there are two different xdm
-binaries, one for systems without DES encription of passwords and one for
-systems with.  If you have installed FreeBSD's security distribution set
-(<tt/secrdist/) then your password database is DES encripted.
-
-To determine whether you have DES encryption, run this:
-
-<tscreen><verb>
- ldd /usr/bin/login|grep crypt
-</verb></tscreen>
-
-If the output is ``<tt>-lcrypt.1 => ...</tt>'' then you do have DES
-installed and you should install <tt/xdm-des/.
-
-<tscreen><verb>
- gzcat XFree86-3.1-xdm-des.tar.gz | tar xf -
- cd /usr/X11R6/bin; ln -s xdm-des xdm
-</verb></tscreen>
-
-If the output is blank then you don't have DES installed and you should
-install <tt/xdm-nodes/.
-
-<tscreen><verb>
- gzcat XFree86-3.1-xdm-nodes.tar.gz | tar xf -
- cd /usr/X11R6/bin; ln -s xdm-nodes xdm
-</verb></tscreen>
-
-The easiest way to automaticly start the display manager on boot is to
-add a line in <tt>/etc/ttys</tt> to start it on one of the unocupied
+The easiest way to automatically start the display manager on boot is to
+add a line in <tt>/etc/ttys</tt> to start it on one of the unoccupied
 virtual terminals:
 
 <tscreen><verb>
@@ -319,7 +308,7 @@ link to the Xserver that matches your video card or edit the file
 Xservers in <tt>/usr/X11R6/lib/X11/xdm</tt> to specify the pathname of
 the X server.
 
-The change to <tt>/etc/ttys</tt> won't take effect untill you either
+The change to <tt>/etc/ttys</tt> won't take effect until you either
 reboot or ``<tt/kill -HUP 1/'' to force initd to reread
 <tt>/etc/ttys</tt>.  You can also test the display manager manually by
 loging in as root on the console and typing ``<tt/xdm -nodaemon/''.
@@ -328,7 +317,7 @@ loging in as root on the console and typing ``<tt/xdm -nodaemon/''.
 <sect>Configuring X for Your Hardware
 <p>
 The <tt/XF86Config/ file tells the X server what kind of monitor, video card
-and mouse you have.  You <em/must/ create it to tell the xerver what
+and mouse you have.  You <em/must/ create it to tell the server what
 specific hardware you have.
 
 XFree86 3.1 uses a new configuration file format. Consult the
@@ -342,8 +331,8 @@ translate part of it into the new format:
  # reconfig <Xconfig >XF86Config
 </verb></tscreen>
 
-and complete the rest according to the <em/XF86Config/ man page and the
-<tt/XF86Config.sample/ file as a template.
+and complete the rest according to the <em/XF86Config/ man page and
+the <tt/XF86Config.sample/ file as a template.
 
 In order to protect your hardware from damage, the server no longer
 will read <tt/XF86Config/ files from a user's home directory, but
@@ -392,12 +381,13 @@ need the specs for sync frequencies from your monitor's manual.
 
 <sect>Running X
 <p>
-8mb of memory is a recommended minimum for running X.  The server, window
-manager and an xterm take about 4Mb of memory themselves.  On a 4Mb system
-that would leave nothing left over for other applications like gcc that
-expect a few meg free.  X may work with 4Mb of memory, but in practice
-compilation while running X can take 5 or 10 times as long due to constant
-paging.
+8mb of memory is a recommended minimum for running X.  The server,
+window manager, display manager and an xterm take about 8Mb of virtual
+memory themselves.  Even if their resident set size is smaller, on a
+8Mb system that leaves very space for other applications such as gcc
+that expect a few meg free.  The R6 X servers may work with 4Mb of
+memory, but in practice compilation while running X can take 5 or 10
+times as long due to constant paging.
 
 The easiest way for new users to start X windows is to type
 ``<tt>startx >&amp; startx.log</tt>''.  Error messages are lost unless
@@ -413,26 +403,28 @@ and <em/startx/ man pages.
 <sect>Rebuilding Kernels for X
 <p>
 
-The server supports several console drivers: pccons, syscons, codrv and pcvt.
-The syscons driver is the default in FreeBSD 1.1.5 and higher.  They are
-detected at runtime and no configuration of the server itself is required.
+The GENERIC FreeBSD 2.0 kernel supports XFree86 without any
+modifications required.  You do not need to make any changes to the
+GENERIC kernel or any kernel configuration which is a superset.
 
 For a general description of BSD kernel configuration get <url
+name="smm.02.config.ps.Z"
 url="ftp://gatekeeper.dec.com/pub/BSD/manuals/smm.02.config.ps.Z">.
-It is a ready postscript copy of the kernel configuration chapter from
-the systems maintainers manual.
+It is a ready-to-print postscript copy of the kernel configuration
+chapter from the system maintainers manual.
 
-Do not remove the two lines below from your kernel configuration file (in
-<tt>/sys/arch/i386/conf</tt>).  They are both required for X support:
+If you do decide to reduce your kernel configuration file, do not
+remove the two lines below (in <tt>/sys/arch/i386/conf</tt>).  They
+are both required for X support:
 
 <tscreen><verb>
  options		XSERVER			#Xserver
  options		UCONSOLE		#X Console support
 </verb></tscreen>
 
-The generic FreeBSD 1.1.5 kernel is configured by default with the syscons
-driver.  To configure your kernel add a line like that in
-<tt>/sys/i386/conf/GENERICISA</tt>:
+The generic FreeBSD 2.0 kernel is configured by default with the
+syscons driver.  To configure your kernel similarly it should have a
+line like this in <tt>/usr/src/sys/i386/conf/GENERIC</tt>:
 
 <tscreen><verb>
  device		sc0	at isa? port "IO_KBD" tty irq 1 vector scintr
@@ -441,34 +433,32 @@ driver.  To configure your kernel add a line like that in
 The number of virtual consoles can be set using the NCONS option:
 
 <tscreen><verb>
- options		"NCONS=8"		#8 virtual consoles
+ options		"NCONS=4"		#4 virtual consoles
 </verb></tscreen>
 
 Otherwise, the default without a line like this is 12.  You must have more
-VTs than gettys as described in the end of section 3, and 8 is a reasonable
+VTs than gettys as described in the end of section 3, and 4 is a reasonable
 minimum.
 
-The codrv console driver is not bundled with FreeBSD.  It is available
-from <url
-url="ftp://ftp.uni-duisburg.de/pub/unix/386bsd-0.1/unofficial/codrv">
-and from <tt/bsd386.first.gmd.de/ in <tt>~veit/codrv</tt> (no ANON
-FTP, login with ``<tt/guest/''/``<tt/guest/'', cd to
-<tt>~veit/codrv</tt>).
+The server supports several console drivers: pccons, syscons and pcvt.
+The syscons driver is the default in FreeBSD 1.1.5 and higher.  They are
+detected at runtime and no configuration of the server itself is required.
 
 The pcvt console driver is bundled in <tt>/usr/ports/util/pcvt</tt> in
 FreeBSD versions 1.0.2 and above.  It can also be ftp-ed from:
 
-<url url="ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt">
+<url name="FreeBSD.cdrom.com:/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt"
+url="ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt">
 
 Refer to the <url
-url="ftp:/FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD"
+url="ftp://FreeBSD.cdrom.com/pub/FreeBSD/FreeBSD-1.1/ports/util/pcvt/README.FreeBSD"
 name="README.FreeBSD">
-file there for complete installation
-instructions.
+file there for complete installation instructions.
 
-The XFree86 servers include support for the MIT-SHM extension.  If you want
-to make use of this, you will need a kernel configured with SYSV shared
-memory support.  To do this, add the following line to your kernel config
+The XFree86 servers include support for the MIT-SHM extension.  The
+GENERIC kernel does not support this, so if you want to make use of
+this, you will need a kernel configured with SYSV shared memory
+support.  To do this, add the following line to your kernel config
 file:
 
 <tscreen><verb>
@@ -477,39 +467,36 @@ file:
  options		SYSVMSG			# System V message queues
 </verb></tscreen>
 
-However, the last report on FreeBSD 2.x was that this feature had not been
-added yet to the 2.x kernel sources.
-
 If you are using a SoundBlaster 16 on IRQ 2 (9), then you need a patch for
 sb16_dsp.c.  Otherwise a kernel configured with the SoundBlaster driver will
 claim interrupt 9 doesn't exist and X server will lock up.
 
-You can't use S3 cards and COM 4 togeather because the I/O ports conflict.
+S3 cards and serial port COM 4 cannot be installed together on a
+system because the I/O port addresses overlap.
 
- 
 
 <sect>Rebuilding XFree86
 <p>
 
-The server link kit allow you to rebuild just the X server with a
-minimum amount of disk space.  Just unpack it, make the appropriate
-changes to the <tt/xf86site.def/ and/or <tt/site.def/, type
-``<tt>./mkmf</tt>' and ``<tt/make/'' to link the server.  See
-<tt>/usr/X11R6/lib/Server/README</tt> for more info.
+The server link kit allows you to build an X server using a minimum
+amount of disk space.  Just unpack it, make the appropriate changes to
+<tt/site.def/, type ``<tt>./mkmf</tt>' and ``<tt/make/'' to link the
+server.  See <url name=README.LinkKit url=LinkKit.html> for more info.
 
-The source tree takes about 110Mb before compiling and 170Mb after
-``<tt/make World/''.  You should configure the distribution by editing
-<tt/xf86site.def/ and <tt/site.def/ in <tt>xc/config/cf</tt> before
-compiling.  By default, the config files are set up to build shared
-libraries.  If you are running a version of FreeBSD that doesn't
-include shared library support, add the following line to <tt/site.def/:
+The source tree takes about 114Mb before compiling and an additional
+100Mb after ``<tt/make World/''.  You should configure the
+distribution by editing <tt/xf86site.def/ and <tt/site.def/ in
+<tt>xc/config/cf</tt> before compiling.  By default, the config files
+are set up to build shared libraries.  If you are running a version of
+FreeBSD that doesn't include shared library support, add the following
+line to <tt/site.def/:
 
 <tscreen><verb>
  #define BuildBsdSharedLibs		NO
 </verb></tscreen>
 
 If your system doesn't have support or SYSV shared memory (for
-example, if you don't have the <tt>&lt sys/shm.h&gt</tt> header), you
+example, if you don't have the <tt>&lt;sys/shm.h&gt;</tt> header), you
 should disable the MIT-SHM extension by adding the following line to
 <tt/site.def/:
 
@@ -540,9 +527,11 @@ to create the Makefiles, then type ``<tt/make/''.  Whenever you install
 additional man pages you should update <tt/whatis.db/ by running
 ``<tt>makewhatis /usr/X11R6/man</tt>''.
 
-To avoid the ``Virtual memory exhausted'' message from cc while
-compiling, increase the data and stack size limits (in csh type
-``<tt/limit datasize 32M/'' and ``<tt/limit stacksize 16M/'').
+On FreeBSD 1.0 and earlier systems, to avoid the ``Virtual memory
+exhausted'' message from cc while compiling, increase the data and
+stack size limits (in csh type ``<tt/limit datasize 32M/'' and
+``<tt/limit stacksize 16M/'').  This is not needed on FreeBSD 2.0 and
+later since the defaults are ample.
 
 <bf/Note:/ Starting with XFree86 2.1 and FreeBSD 1.1, the symbol
 <bf/__386BSD__/ no longer gets defined either by the compiler or via the
@@ -552,13 +541,15 @@ BSD-specific.  The value of the symbol can be used to distinguish
 different BSD releases.  For example, code specific to the Net-2 and
 later releases can use:
 
-<tscreen><verb>
+<tscreen>
 #if (BSD >= 199103)
-</verb></tscreen>
+</tscreen>
 
-To ensure that this symbol is correctly defined, include either
-<tt>&lt X11/Xos.h &gt</tt> (best) or <tt>&lt sys/param.h &gt</tt> in
-the source that requires it.  
+To ensure that this symbol is correctly defined, include
+<tt>&lt;sys/param.h&gt;</tt> in the source that requires it.  Note that
+the symbol <bf/CSRG_BASED/ is defined for *BSD systems in XFree86 3.1.1
+and later.  This should be used to protect the inclusion of
+<tt>&lt;sys/param.h&gt;</tt>.
 
 For code that really is specific to a particular i386 BSD port, use
 <bf/__FreeBSD__/ for FreeBSD, <bf/__NetBSD__/ for NetBSD,
@@ -573,13 +564,14 @@ Many thanks to:
 <item> <bf/Amancio Hasty/ for 386BSD kernel and S3 chipset support.
 <item> <bf/David Greenman, Nate Williams, Jordan Hubbard/ for FreeBSD
        kernel support.  
-<item> <bf/Rod Grimes/ and <bf/Jack Velte/ for the use of Walnut Creek
-       Cdrom's resources. 
-<item> <bf/Simon Cooper/ and <bf/Dirk Hohndel/ for ideas from the Linux README.
+<item> <bf/Rod Grimes/, <bf/Jordan Hubbard/ and <bf/Jack Velte/ for
+       the use of Walnut Creek Cdrom's hardware. 
+<item> <bf/Orest Zborowski/, <bf/Simon Cooper/ and <bf/Dirk Hohndel/ for ideas from the Linux distribution.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.3 1994/09/27 10:30:30 dawes Exp $
+$XConsortium: FreeBSD.sgml,v 1.3 95/01/23 15:34:41 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.9 1995/01/28 00:50:57 dawes Exp $
 </verb>
 
 </article>

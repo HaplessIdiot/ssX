@@ -1,6 +1,5 @@
-/* $XConsortium: vga.h,v 1.1 94/03/28 21:55:30 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.5 1994/11/26 12:48:15 dawes Exp $ */
-/*
+/* $XConsortium: vga.h,v 1.4 95/01/16 13:18:28 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.6 1995/01/10 10:35:38 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

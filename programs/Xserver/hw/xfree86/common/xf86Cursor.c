@@ -1,6 +1,5 @@
-/* $XConsortium: xf86Cursor.c,v 1.1 94/03/28 21:22:57 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.2 1994/11/30 20:41:12 dawes Exp $ */
-/*
+/* $XConsortium: xf86Cursor.c,v 1.3 95/01/06 20:57:31 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.3 1994/12/11 10:54:36 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osinit.c,v 1.48 94/04/17 20:27:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.7 1995/01/04 10:50:10 dawes Exp $ */
+/* $XConsortium: osinit.c,v 1.49 95/01/17 14:12:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.8 1995/01/07 04:18:26 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -193,8 +193,7 @@ OsInit()
     OsVendorInit();
 #endif
     OsInitAllocator();
-    if (!OsDelayInitColors)
-	OsInitColors();
+    if (!OsDelayInitColors) OsInitColors();
 }
 
 void

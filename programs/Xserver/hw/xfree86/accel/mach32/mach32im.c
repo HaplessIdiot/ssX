@@ -1,6 +1,5 @@
-/* $XConsortium: mach32im.c,v 1.1 94/03/28 21:08:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.4 1994/11/19 13:18:15 dawes Exp $ */
-/*
+/* $XConsortium: mach32im.c,v 1.5 95/01/05 20:27:25 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32im.c,v 3.5 1994/11/26 12:41:45 dawes Exp $ */
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

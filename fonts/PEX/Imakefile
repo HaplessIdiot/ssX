@@ -1,6 +1,6 @@
 XCOMM
-XCOMM $XConsortium: Imakefile,v 5.19 94/04/17 22:20:44 rws Exp $
-XCOMM $XFree86: xc/fonts/PEX/Imakefile,v 3.1 1994/11/26 12:34:16 dawes Exp $
+XCOMM $XConsortium: Imakefile,v 5.20 94/11/21 18:41:42 kaleb Exp $
+XCOMM $XFree86: xc/fonts/PEX/Imakefile,v 3.2 1995/01/25 10:44:57 dawes Exp $
 XCOMM 
 XCOMM
 XCOMM Copyright (c) 1989,1990, 1991 by Sun Microsystems, Inc. 

@@ -47,4 +47,5 @@ requires libX11.
 with this cut-down source tree.
 
 
-$XFree86$
+$XConsortium: ServersOnly,v 1.2 94/11/21 21:48:41 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/ServersOnly,v 3.0 1994/07/24 11:50:20 dawes Exp $

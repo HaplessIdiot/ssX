@@ -1,6 +1,5 @@
-/* $XConsortium: mnx_io.c,v 1.1 94/03/28 21:29:50 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: mnx_io.c,v 1.2 94/10/12 20:47:58 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.0 1994/05/08 05:23:49 dawes Exp $ */
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *

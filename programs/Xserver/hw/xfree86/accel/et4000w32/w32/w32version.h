@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: w32version.h,v 1.2 94/11/21 22:31:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/w32version.h,v 3.0 1994/09/11 00:42:29 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 

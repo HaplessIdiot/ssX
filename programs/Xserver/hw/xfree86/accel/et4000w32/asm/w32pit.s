@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: w32pit.s,v 1.2 94/11/21 22:10:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/asm/w32pit.s,v 3.1 1994/09/25 12:27:35 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 
@@ -80,7 +81,11 @@ GLNAME(W32pImageText2):
 itb2:
 	MOV_L	(REGIND(ESI), EAX)
 	ADD_L	(CONST(4), ESI)
-	MOV_W	(AX, REGIND(EDX))
+
+	MOV_B	(AL, REGIND(EDX))
+	INC_L	(EDX)
+	MOV_B	(AH, REGIND(EDX))
+	DEC_L	(EDX)
 itb1:
 	DEC_L	(ECX)
 	JNZ	(itb2)
@@ -101,9 +106,12 @@ GLNAME(W32pImageText3):
 itc2:
 	MOV_L	(REGIND(ESI), EAX)
 	ADD_L	(CONST(4), ESI)
-	MOV_W	(AX, REGIND(EDX))
+
+	MOV_B	(AL, REGIND(EDX))
+	INC_L	(EDX)
+	MOV_B	(AH, REGIND(EDX))
 	SHR_L	(CONST(16), EAX)
-	ADD_L	(CONST(2), EDX)
+	INC_L	(EDX)
 	MOV_B	(AL, REGIND(EDX))
 	SUB_L	(CONST(2), EDX)
 itc1:
@@ -126,7 +134,16 @@ GLNAME(W32pImageText4):
 itd2:
 	MOV_L	(REGIND(ESI), EAX)
 	ADD_L	(CONST(4), ESI)
-	MOV_L	(EAX, REGIND(EDX))
+
+	MOV_B	(AL, REGIND(EDX))
+	INC_L	(EDX)
+	MOV_B	(AH, REGIND(EDX))
+	SHR_L	(CONST(16), EAX)
+	INC_L	(EDX)
+	MOV_B	(AL, REGIND(EDX))
+	INC_L	(EDX)
+	MOV_B	(AH, REGIND(EDX))
+	SUB_L	(CONST(3), EDX)
 itd1:
 	DEC_L	(ECX)
 	JNZ	(itd2)

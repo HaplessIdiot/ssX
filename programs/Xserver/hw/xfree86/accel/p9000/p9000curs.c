@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: p9000curs.c,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.0 1994/05/29 02:05:38 dawes Exp $ */
 /*
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 

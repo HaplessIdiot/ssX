@@ -1,5 +1,5 @@
-/* $XConsortium: vgaBank.s,v 1.2 94/03/29 11:57:11 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgaLBank.s,v 1.1 94/10/12 21:23:24 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/vga/vgaLBank.s,v 3.0 1994/05/31 08:13:50 dawes Exp $ */
 /* The original file was: */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.

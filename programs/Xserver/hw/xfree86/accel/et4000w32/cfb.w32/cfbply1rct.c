@@ -1,6 +1,6 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.14 94/04/17 20:28:56 dpw Exp $
- * $XFree86$
+ * $XConsortium: cfbply1rct.c,v 1.1 94/10/05 13:29:50 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbply1rct.c,v 3.0 1994/09/11 00:41:36 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 

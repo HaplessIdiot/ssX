@@ -45,10 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mipoly.c,v 5.1 94/04/17 20:27:41 keith Exp $ */
-/* $XConsortium: mipolycon.c,v 5.1 94/04/17 20:27:43 keith Exp $ */
-/* $XConsortium: mipolygen.c,v 5.2 94/04/17 20:27:43 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: agxFPoly.c,v 1.2 95/01/12 19:39:46 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFPoly.c,v 3.0 1994/11/19 07:50:04 dawes Exp $ */
 
 
 #include "gcstruct.h"

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: cfbply1rct.c,v 1.12 94/04/17 20:32:21 dpw Exp $
- * $XFree86$
+ * $XConsortium: vgaply1rct.c,v 1.1 94/10/13 13:04:50 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaply1rct.c,v 3.0 1994/07/24 11:59:04 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 

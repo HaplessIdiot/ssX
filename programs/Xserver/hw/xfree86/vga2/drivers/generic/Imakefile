@@ -1,6 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:41:46 dpw Exp $
-XCOMM $XFree86$
-#include <Server.tmpl>
+XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 21:17:22 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga2/drivers/generic/Imakefile,v 3.1 1994/05/15 03:01:52 dawes Exp $
 
 SRCS = gen_driver.c
 

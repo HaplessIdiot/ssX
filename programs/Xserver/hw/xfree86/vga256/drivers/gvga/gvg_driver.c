@@ -1,6 +1,5 @@
-/* $XConsortium: gvg_driver.c,v 1.1 94/03/28 21:51:24 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.3 1994/09/11 00:52:50 dawes Exp $ */
-/*
+/* $XConsortium: gvg_driver.c,v 1.3 95/01/16 13:18:16 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.4 1995/01/10 10:31:39 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,7 +1,8 @@
 #!/bin/sh
 ######################################################################
 #
-# $XFree86$
+# $XConsortium: svr4_rem_pch,v 1.1 95/01/26 15:22:00 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/svr4_rem_pch,v 3.0 1994/06/05 05:57:26 dawes Exp $
 #
 # Back out the patch to kernel that prevents losing IOPL on signals.
 #

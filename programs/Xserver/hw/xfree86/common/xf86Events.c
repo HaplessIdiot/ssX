@@ -1,6 +1,5 @@
-/* $XConsortium: xf86Events.c,v 1.2 94/03/31 11:11:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.7 1995/01/10 10:23:46 dawes Exp $ */
-/*
+/* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.8 1995/01/11 03:50:36 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

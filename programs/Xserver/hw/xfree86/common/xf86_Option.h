@@ -1,6 +1,5 @@
-/* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.19 1995/01/18 06:10:19 dawes Exp $ */
-/*
+/* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.20 1995/01/20 04:21:00 dawes Exp $ */
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

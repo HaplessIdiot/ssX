@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: agxText.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxText.c,v 3.2 1994/11/19 07:50:20 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -50,19 +51,19 @@ agxPolyText8(pDraw, pGC, x, y, count, chars)
      GCPtr pGC;
      int   x, y;
      int   count;
-     unsigned char *chars;
+     char *chars;
 {
    CacheFont8Ptr ret;
 
    if (!xf86VTSema)
    {
-      return(miPolyText8(pDraw, pGC, x, y, count, (char *)chars));
+      return(miPolyText8(pDraw, pGC, x, y, count, chars));
    }
 
    if ((ret = agxCacheFont8(pGC->font)) == NULL)
-       return miPolyText8(pDraw, pGC, x, y, count, (char *)chars);
+       return miPolyText8(pDraw, pGC, x, y, count, chars);
    else
-       return agxCPolyText8(pDraw, pGC, x, y, count, chars, ret);
+       return agxCPolyText8(pDraw, pGC, x, y, count, chars, ret, FALSE);
 }
 
 void
@@ -84,5 +85,9 @@ agxImageText8(pDraw, pGC, x, y, count, chars)
    if ((ret = agxCacheFont8(pGC->font)) == NULL)
       miImageText8(pDraw, pGC, x, y, count, chars);
    else
+#if 0
       agxCImageText8(pDraw, pGC, x, y, count, chars, ret);
+#else
+      agxCPolyText8(pDraw, pGC, x, y, count, chars, ret, TRUE);
+#endif 
 }

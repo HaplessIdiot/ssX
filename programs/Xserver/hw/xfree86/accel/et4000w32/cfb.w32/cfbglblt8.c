@@ -1,5 +1,5 @@
-/* $XConsortium: cfbglblt8.c,v 5.31 94/04/17 20:28:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: cfbglblt8.c,v 1.1 94/10/05 13:29:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbglblt8.c,v 3.0 1994/09/11 00:41:35 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

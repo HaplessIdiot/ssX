@@ -1,5 +1,5 @@
-/* $XConsortium: s3bstor.c,v 1.1 94/03/28 21:14:37 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: agxBStor.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBStor.c,v 3.0 1994/08/01 12:08:44 dawes Exp $ */
 /*-
  * agxbstore.c --
  *	Functions required by the backing-store implementation in MI.

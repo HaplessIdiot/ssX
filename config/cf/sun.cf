@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.134 94/08/17 18:56:43 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.15 1995/01/19 05:18:27 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.139 95/01/12 15:30:26 kaleb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.16 1995/01/23 01:26:17 dawes Exp $
 
 #ifdef SVR4Architecture
 #ifdef i386Architecture
@@ -252,7 +252,7 @@ XCOMM operating system:  OSName
 	$(CC) -c $(CFLAGS) $*.c
 
 #endif /* HasGcc2 (else) */
-#else
+#else /* not HasGcc */
 
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H
 
@@ -301,7 +301,7 @@ XCOMM operating system:  OSName
 
 #define PexCCOptions DefaultCCOptions
 
-#endif
+#endif /* HasGcc (else) */
 
 #if OSMajorVersion < 5
 #define SharedAllocateLocalDefines -DINCLUDE_ALLOCA_H

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: cfb8cppl.c,v 1.15 94/04/17 20:28:41 dpw Exp $
- * $XFree86$
+ * $XConsortium: cfb8cppl.c,v 1.1 94/10/05 13:29:50 kaleb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfb8cppl.c,v 3.0 1994/09/11 00:41:24 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 

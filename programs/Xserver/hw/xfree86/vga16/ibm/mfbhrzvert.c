@@ -47,8 +47,8 @@ SOFTWARE.
 
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
-/* $XConsortium: mfbhrzvert.c,v 1.14 94/01/12 18:05:00 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: mfbhrzvert.c,v 1.1 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/mfbhrzvert.c,v 3.0 1994/05/04 15:03:12 dawes Exp $ */
 #include "X.h"
 
 #include "gc.h"

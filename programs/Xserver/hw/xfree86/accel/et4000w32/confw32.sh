@@ -1,6 +1,7 @@
 #!/bin/sh
 
-# $XFree86$
+# $XConsortium: confw32.sh,v 1.2 94/11/21 22:08:46 kaleb Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/confw32.sh,v 3.0 1994/09/11 00:39:40 dawes Exp $
 #
 # This script generates w32Conf.c
 #

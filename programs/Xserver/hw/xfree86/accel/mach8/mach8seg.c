@@ -1,6 +1,5 @@
-/* $XConsortium: mach8seg.c,v 1.2 94/04/17 20:31:01 dpw Exp $ */
-/* $XFree86$ */
-/*
+/* $XConsortium: mach8seg.c,v 1.3 94/10/12 20:01:59 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8seg.c,v 3.0 1994/06/06 06:46:45 dawes Exp $ */
 
 Copyright (c) 1987  X Consortium
 

@@ -1,6 +1,5 @@
-/* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.30 1995/01/20 04:23:10 dawes Exp $ */
-/*
+/* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.31 1995/01/21 07:18:04 dawes Exp $ */
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico

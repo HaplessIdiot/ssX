@@ -1,5 +1,5 @@
-/* $XConsortium: util.c,v 1.17 94/04/17 20:03:48 rws Exp $ */
-/* $XFree86: xc/programs/xdm/util.c,v 3.3 1994/07/24 12:00:09 dawes Exp $ */
+/* $XConsortium: util.c,v 1.18 94/11/21 18:33:11 kaleb Exp $ */
+/* $XFree86: xc/programs/xdm/util.c,v 3.4 1994/10/20 06:15:13 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: cl_driver.c,v 1.2 95/01/16 13:18:11 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.3 1995/01/12 08:52:46 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -101,6 +102,7 @@ static char *	CL64XXIdent();
 static Bool	CL64XXClockSelect();
 static void	CL64XXEnterLeave();
 static Bool	CL64XXInit();
+static Bool	CL64XXValidMode();
 static void *	CL64XXSave();
 static void	CL64XXRestore();
 static void	CL64XXAdjust();
@@ -126,12 +128,13 @@ vgaVideoChipRec CL64XX = {
 	CL64XXIdent,
 	CL64XXEnterLeave,
 	CL64XXInit,
+	CL64XXValidMode,
 	CL64XXSave,
 	CL64XXRestore,
 	CL64XXAdjust,
-	NoopDDA,
-	NoopDDA,
-	NoopDDA,
+	(void (*)())NoopDDA,
+	(void (*)())NoopDDA,
+	(void (*)())NoopDDA,
 	CL64XXSetRead,
 	CL64XXSetWrite,
 	CL64XXSetReadWrite,
@@ -796,7 +799,7 @@ vgaCL64XXPtr restore;
 	/*
 	 * This function handles restoring the generic VGA registers.
 	 */
-	vgaHWRestore(restore);
+	vgaHWRestore((vgaHWPtr)restore);
 }
 
 /*
@@ -822,7 +825,7 @@ vgaCL64XXPtr save;
 	 * This function will handle creating the data structure and filling
 	 * in the generic VGA portion.
 	 */
-	save = (vgaCL64XXPtr)vgaHWSave(save, sizeof(vgaCL64XXRec));
+	save = (vgaCL64XXPtr)vgaHWSave((vgaHWPtr)save, sizeof(vgaCL64XXRec));
 
 	/*
 	 * The port I/O code necessary to read in the extended registers 
@@ -907,10 +910,13 @@ DisplayModePtr mode;
 	 * we adapt them here so that the VGA module will initialise
 	 * the CRTC fields correctly
 	 */
-	mode->HTotal <<= 1;
-	mode->HDisplay <<= 1;
-	mode->HSyncStart <<= 1;
-	mode->HSyncEnd <<= 1;
+	if (!mode->CrtcHAdjusted) {
+		mode->CrtcHTotal <<= 1;
+		mode->CrtcHDisplay <<= 1;
+		mode->CrtcHSyncStart <<= 1;
+		mode->CrtcHSyncEnd <<= 1;
+		mode->CrtcHAdjusted = TRUE;
+	}
 #endif
 
 	/*
@@ -930,30 +936,20 @@ DisplayModePtr mode;
 	 */
 	new->HBEX =
 		(new->std.CRTC[3] & 0x1F) |
-		((((mode->HSyncStart >> 3) - 1) & 0x100) >> 1);
+		((((mode->CrtcHSyncStart >> 3) - 1) & 0x100) >> 1);
 	new->HREX =
 		(new->std.CRTC[5] & 0x9F) |
-		(((mode->HSyncStart >> 3) & 0x100) >> 2) |
-		((((mode->HTotal >> 3) - 5) & 0x100) >> 3);
-
-#if !defined(MONOVGA) && !defined(XF86VGA16)
-	/*
-	 * Restore changed horizontal display parameters
-	 */
-	mode->HTotal >>= 1;
-	mode->HDisplay >>= 1;
-	mode->HSyncStart >>= 1;
-	mode->HSyncEnd >>= 1;
-#endif
+		(((mode->CrtcHSyncStart >> 3) & 0x100) >> 2) |
+		((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 3);
 
 	/*
 	 * For the vertical values only the extension bits have to be set
 	 */
 	new->VOVFL = 
-		(((mode->VTotal - 2) & 0x400) >> 10) |
-		(((mode->VDisplay - 1) & 0x400) >> 9) |
-		((mode->VSyncStart & 0x600) >> 7) |
-		((mode->VSyncStart & 0x400) >> 6);
+		(((mode->CrtcVTotal - 2) & 0x400) >> 10) |
+		(((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
+		((mode->CrtcVSyncStart & 0x600) >> 7) |
+		((mode->CrtcVSyncStart & 0x400) >> 6);
 
 	new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
 	new->std.CRTC[23] = 0xE3;
@@ -1098,7 +1094,7 @@ int x, y;
 	 * will have additional bits in their extended registers, which
 	 * must also be set.
 	 */
-	int Base = (y * vga256InfoRec.virtualX + x), msb, tempin;
+	int Base = (y * vga256InfoRec.displayWidth + x), msb, tempin;
 
 #ifdef MONOVGA
   	msb = (Base + 3) >> 3;
@@ -1116,5 +1112,16 @@ int x, y;
 	outb(0x3CE, 0x7C);
 	tempin = inb(0x3CF);
 	outb(0x3CF, (tempin & 0xF0) | ((msb >> 16) & 0x0F));
+}
+
+/*
+ * CL64XXValidMode --
+ *
+ */
+static Bool
+CL64XXValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 

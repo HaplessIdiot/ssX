@@ -1,6 +1,6 @@
 
-/* $XConsortium: sunCfb.c,v 1.15 94/05/18 11:17:56 kaleb Exp $ */
-/* $XFree86$ */
+/* $XConsortium: sunCfb.c,v 1.15.1.2 95/01/12 18:54:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.0 1994/11/19 07:49:05 dawes Exp $ */
 
 /*
 Copyright (c) 1990  X Consortium
@@ -274,7 +274,11 @@ Bool sunCG3Init (screen, pScreen, argc, argv)
 #ifdef SVR4
 #include <sys/cg2reg.h>
 #else
+#ifndef __NetBSD__
 #include <pixrect/cg2reg.h>
+#else
+#include <machine/cgtworeg.h>
+#endif
 #endif
 #endif        /* __NetBSD__ */
 
@@ -359,20 +363,6 @@ Bool sunCG2Init (screen, pScreen, argc, argv)
     }
     return ret;
 }
-
-/*
- * This used to #include <sundev/cg4reg.h> for SunOS 4 and <sys/cg4reg.h>
- * for Solaris, but it doesn't use anything from the file.  Since other
- * systems don't have this #include file anywhere, I deleted the reference
- * to it.
- */
-#if 0
-#ifdef SVR4
-#include    <sys/cg4reg.h>
-#else
-#include    <sundev/cg4reg.h>
-#endif
-#endif
 
 #define	CG4_HEIGHT	900
 #define	CG4_WIDTH	1152

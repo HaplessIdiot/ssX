@@ -45,8 +45,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbimage.c,v 1.18 94/04/17 20:28:52 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgaimage.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaimage.c,v 3.0 1994/07/24 11:59:00 dawes Exp $ */
 
 #include "vga256.h"
 

@@ -1,5 +1,5 @@
-/* $XConsortium: cfbblt.c,v 1.2 94/04/17 20:32:12 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgablt.c,v 1.2 95/01/16 20:08:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgablt.c,v 3.0 1994/07/24 11:58:46 dawes Exp $ */
 /*
  * cfb copy area
  */
@@ -32,7 +32,6 @@ in this Software without prior written authorization from the X Consortium.
 Author: Keith Packard
 
 */
-/* $XConsortium: cfbblt.c,v 1.2 94/04/17 20:32:12 dpw Exp $ */
 
 #include	"vga256.h"
 #include	"fastblt.h"

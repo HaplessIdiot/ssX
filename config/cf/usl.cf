@@ -1,7 +1,7 @@
-XCOMM platform:  $XConsortium: usl.cf,v 1.30 94/03/29 15:42:18 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.3 1994/11/19 07:32:34 dawes Exp $
+XCOMM platform:  $XConsortium: usl.cf,v 1.35 95/01/12 15:37:24 kaleb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/usl.cf,v 3.4 1994/12/10 01:16:51 dawes Exp $
 
-#define OSName			UNIX System V/386 Release 4.2 Version 1
+#define OSName			UNIX System V/386 Release 4.2 Version 1.1.1
 XCOMM operating system:  OSName
 #define OSMajorVersion		4
 #define OSMinorVersion		2

@@ -1,6 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:10 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.6 1995/01/20 04:21:17 dawes Exp $
-#include <Server.tmpl>
+XCOMM $XConsortium: Imakefile,v 1.6 95/01/26 15:36:36 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.7 1995/01/26 02:18:59 dawes Exp $
 
 SRCS = I2061Acal.c I2061Aset.c I2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
        SC11412.c ATTDac.c S3gendac.c Ti3025clk.c SlowBcopy.s IODelay.s \

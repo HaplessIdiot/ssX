@@ -1,4 +1,5 @@
-XCOMM $XFree86$
+XCOMM $XConsortium: Imakefile,v 1.4 95/01/06 20:56:53 kaleb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/Imakefile,v 3.4 1994/12/17 09:59:32 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -7,8 +8,8 @@ XCOMM $XFree86$
 
 #if PixelSize == 8
 /* cfb8cppl.c MUST come last to avoid confusing makedepend */
-PSZSRCS = cfbglrop8.c cfbpush8.c w32rctstp8.c cfb8cppl.c
-PSZOBJS = cfbglrop8.o cfbpush8.o w32rctstp8.o cfb8cppl.o
+PSZSRCS = cfbglrop8.c cfbpush8.c cfbrctstp8.c w32rctstp8.c cfb8cppl.c
+PSZOBJS = cfbglrop8.o cfbpush8.o cfbrctstp8.o w32rctstp8.o cfb8cppl.o
 #endif
 
 #if PixelSize == 32
@@ -36,7 +37,8 @@ SRCS =	 cfbgc.c cfbwindow.c \
 	 w32zerarcC.c w32zerarcX.c w32zerarcG.c \
 	 w32fillarcC.c w32fillarcG.c \
 	 w32teblt8.c \
-	 w32line.c w32seg.c w32bres.c w32bresd.c w32hrzvert.c \
+	 w32polypnt.c \
+	 w32line.c w32seg.c w32bresd.c \
 	 w32zerarcC.c w32zerarcX.c w32zerarcG.c
 
 
@@ -56,7 +58,8 @@ OBJS =	 cfbgc.o cfbwindow.o \
 	 w32zerarcC.o w32zerarcX.o w32zerarcG.o \
 	 w32fillarcC.o w32fillarcG.o \
 	 w32teblt8.o \
-	 w32line.o w32seg.o w32bres.o w32bresd.o w32hrzvert.o \
+	 w32polypnt.o \
+	 w32line.o w32seg.o w32bresd.o \
 	 w32zerarcC.o w32zerarcX.o w32zerarcG.o
 
 
@@ -68,10 +71,7 @@ OBJS =	 cfbgc.o cfbwindow.o \
 	
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
-#ifdef XFree86Version
-COLORDEFINES = -DSTATIC_COLOR
-#endif
-    DEFINES = -DPSZ=PixelSize $(COLORDEFINES)
+    DEFINES = -DPSZ=PixelSize
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(cfb,$(OBJS))
@@ -140,6 +140,8 @@ LinkSourceFile(stipsprc32.s,LinkDirectory)
 
 ObjectFromSpecialSource(cfbbstore,../../../../../cfb/cfbbstore,/**/)
 ObjectFromSpecialSource(cfbimage,../../../../../cfb/cfbimage,/**/)
+ObjectFromSpecialSource(cfbpolypnt,../../../../../cfb/cfbpolypnt,/**/)
+ObjectFromSpecialSource(cfbrctstp8,../../../../../cfb/cfbrctstp8,/**/)
 ObjectFromSpecialSource(cfbscrinit,../../../../../cfb/cfbscrinit,/**/)
 ObjectFromSpecialSource(cfbwindow,../../../../../cfb/cfbwindow,/**/)
 
@@ -227,19 +229,8 @@ stipsprcte32.o: stipsprcte32.s
 #endif
 #endif
 
-#if PixelSize == 32
-InstallLinkKitNamedLibrary(cfb,cfb32,$(LINKKITDIR)/lib)
-#endif
-#if PixelSize == 16
-InstallLinkKitNamedLibrary(cfb,cfb16,$(LINKKITDIR)/lib)
-#endif
-#if PixelSize == 8
-InstallLinkKitLibrary(cfb,$(LINKKITDIR)/lib)
-InstallLinkKitNonExecFile(cfb.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfb8bit.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfbmap.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfbmskbits.h,$(LINKKITDIR)/include)
-InstallLinkKitNonExecFile(cfbrrop.h,$(LINKKITDIR)/include)
-#endif
+InstallLinkKitNamedLibrary(cfb,w32cfb,$(LINKKITDIR)/drivers)
 
+#ifndef OS2Architecture
 DependTarget()
+#endif

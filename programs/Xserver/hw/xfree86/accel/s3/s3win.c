@@ -1,6 +1,5 @@
-/* $XConsortium: s3win.c,v 1.2 94/04/17 20:31:16 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.3 1994/08/12 14:01:45 dawes Exp $ */
-/*
+/* $XConsortium: s3win.c,v 1.3 94/10/12 20:07:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.4 1994/08/20 07:34:31 dawes Exp $ */
 
 Copyright (c) 1987  X Consortium
 

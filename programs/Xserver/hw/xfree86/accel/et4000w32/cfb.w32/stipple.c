@@ -1,4 +1,5 @@
-/* $XFree86$ */
+ * $XConsortium: stipple.c,v 1.2 94/11/21 22:14:00 kaleb Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/stipple.c,v 3.0 1994/09/11 00:41:46 dawes Exp $ */
 /*******************************************************************************
                         Copyright 1994 by Glenn G. Lai
 

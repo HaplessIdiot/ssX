@@ -1,5 +1,5 @@
-/* $XConsortium: s3gc.c,v 1.2 94/04/17 20:31:11 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: s3gc16.c,v 1.2 94/12/27 11:29:42 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gc16.c,v 3.4 1994/11/26 12:44:51 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -175,6 +175,7 @@ static GCOps cfbTEOps =
    NULL,
 };
 
+#if 0 /* XXX defined but not used */
 static GCOps cfbNonTEOps1Rect =
 {
    cfb16SolidSpansCopy,
@@ -199,6 +200,7 @@ static GCOps cfbNonTEOps1Rect =
    mfbPushPixels,
    NULL,
 };
+#endif
 
 static GCOps cfbNonTEOps =
 {
@@ -292,6 +294,7 @@ s3CreateGC16(pGC)
  * create a private op array for a gc
  */
 
+#if 0 /* XXX defined but not used */
 static GCOps *
 cfbCreateOps(prototype)
      GCOps *prototype;
@@ -308,7 +311,7 @@ cfbCreateOps(prototype)
    ret->devPrivate.val = 1;
    return ret;
 }
-
+#endif
 
 /*
  * Clipping conventions if the drawable is a window CT_REGION ==>
@@ -335,11 +338,6 @@ s3ValidateGC(pGC, changes, pDrawable)
  /* flags for changing the proc vector */
    cfbPrivGCPtr devPriv;
    int   oneRect;
-
-#ifdef PIXPRIV
-   if (pDrawable->type == DRAWABLE_PIXMAP)
-      s3CacheFreeSlot(pDrawable);
-#endif
 
    new_rotate = pGC->lastWinOrg.x != pDrawable->x ||
       pGC->lastWinOrg.y != pDrawable->y;
@@ -758,80 +756,114 @@ s3ValidateGC(pGC, changes, pDrawable)
 	 }
       }
    }
-   if (new_fillspans) {
+
+
+
+    if (new_fillspans) {
       if (pWin) {
-	 switch (pGC->fillStyle) {
-	   case FillSolid:
+	switch (pGC->fillStyle) {
+	  case FillSolid:
 	      pGC->ops->FillSpans = s3SolidFSpans;
 	      break;
-	   case FillTiled:
+	  case FillTiled:
 	      pGC->ops->FillSpans = s3TiledFSpans;
 	      break;
-	   case FillStippled:
+	  case FillStippled:
 	      pGC->ops->FillSpans = s3StipFSpans;
 	      break;
-	   case FillOpaqueStippled:
+	  case FillOpaqueStippled:
 	      pGC->ops->FillSpans = s3OStipFSpans;
 	      break;
-	   default:
+	  default:
 	      FatalError("s3ValidateGC: illegal fillStyle\n");
-	 }
-      } else {
-	 switch (pGC->fillStyle) {
-	   case FillSolid:
-	      switch (devPriv->rop) {
-		case GXcopy:
-		   pGC->ops->FillSpans = cfb16SolidSpansCopy;
-		   break;
-		case GXxor:
-		   pGC->ops->FillSpans = cfb16SolidSpansXor;
-		   break;
-		default:
-		   pGC->ops->FillSpans = cfb16SolidSpansGeneral;
-		   break;
-	      }
-	      break;
-
-	   case FillTiled:
-	      if (devPriv->pRotatedPixmap) {
-		 if (pGC->alu == GXcopy && (pGC->planemask & PMSK) == PMSK)
-		    pGC->ops->FillSpans = cfb16Tile32FSCopy;
-		 else
-		    pGC->ops->FillSpans = cfb16Tile32FSGeneral;
-	      } else
-		 pGC->ops->FillSpans = cfb16UnnaturalTileFS;
-	      break;
-	   case FillStippled:
-
-		 pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
-	      break;
-	   case FillOpaqueStippled:
-		 pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
-	      break;
-	   default:
-	      FatalError("s3ValidateGC: illegal fillStyle\n");
-	 }
-      }
-   }				/* end of new_fillspans */
-   if (new_fillarea) {
-      if (pWin) {
-	 pGC->ops->PolyFillRect = s3PolyFillRect;
-	 pGC->ops->PolyFillArc = miPolyFillArc;
-	 pGC->ops->PushPixels = miPushPixels;
-      } else {
-	 pGC->ops->PolyFillArc = miPolyFillArc;
-	 if (pGC->fillStyle == FillSolid) {
+	  }
+        } else {
+	switch (pGC->fillStyle) {
+	  case FillSolid:
 	    switch (devPriv->rop) {
-	      case GXcopy:
-		 pGC->ops->PolyFillArc = cfb16PolyFillArcSolidCopy;
-		 break;
-	      default:
-		 pGC->ops->PolyFillArc = cfb16PolyFillArcSolidGeneral;
-		 break;
+	    case GXcopy:
+		pGC->ops->FillSpans = cfb16SolidSpansCopy;
+		break;
+	    case GXxor:
+		pGC->ops->FillSpans = cfb16SolidSpansXor;
+		break;
+	    default:
+		pGC->ops->FillSpans = cfb16SolidSpansGeneral;
+		break;
 	    }
-	 }
+	    break;
+	  case FillTiled:
+	    if (devPriv->pRotatedPixmap)
+	    {
+		if (pGC->alu == GXcopy && (pGC->planemask & 0xffff) == 0xffff)
+		      pGC->ops->FillSpans = cfb16Tile32FSCopy;
+		else
+		      pGC->ops->FillSpans = cfb16Tile32FSGeneral;
+	    }
+	    else
+		pGC->ops->FillSpans = cfb16UnnaturalTileFS;
+	    break;
+	case FillStippled:
+		pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
+	    break;
+	case FillOpaqueStippled:
+		pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
+	    break;
+	default:
+	    FatalError("s3ValidateGC: illegal fillStyle\n");
+	}
       }
-   }
+    }
+#if 0
+else {
+	switch (pGC->fillStyle) {
+	case FillSolid:
+	    pGC->ops->FillSpans = cfb16SolidSpansGeneral;
+	    break;
+	case FillTiled:
+	    pGC->ops->FillSpans = cfb16UnnaturalTileFS;
+	    break;
+	case FillStippled:
+	case FillOpaqueStippled:
+	    pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
+	    break;
+	}
+    }
+#endif
+     /* end of new_fillspans */
+
+    if (new_fillarea) {
+	if (pWin) {
+	    pGC->ops->PolyFillArc = miPolyFillArc;
+	} else { /* pWin */
+	    pGC->ops->PolyFillArc = miPolyFillArc;
+	    if (pGC->fillStyle == FillSolid)
+	    {
+		switch (devPriv->rop)
+		{
+		case GXcopy:
+		    pGC->ops->PolyFillArc = cfb16PolyFillArcSolidCopy;
+		    break;
+		default:
+		    pGC->ops->PolyFillArc = cfb16PolyFillArcSolidGeneral;
+		    break;
+		}
+	    }
+	} /* if pWin */
+    } /* if new_fillarea */
+    if (new_fillarea || pGC->ops->devPrivate.val == 2) {
+	if (pWin) {
+	    pGC->ops->PolyFillRect = s3PolyFillRect;
+	} else {
+		pGC->ops->PolyFillRect = miPolyFillRect;
+		if (pGC->fillStyle == FillSolid || pGC->fillStyle == FillTiled)
+		{
+		    pGC->ops->PolyFillRect = cfb16PolyFillRect;
+		}
+	    }
+    }
+
 }
+
 
 

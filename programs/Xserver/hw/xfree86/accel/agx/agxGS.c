@@ -1,5 +1,5 @@
-/* $XConsortium: mach32gs.c,v 1.2 94/04/17 20:30:47 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: agxGS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGS.c,v 3.2 1994/08/20 07:32:04 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -93,6 +93,11 @@ agxGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
     char		*pdst; /* where to put the bits */
     int			pixmapStride;
 
+    if (!xf86VTSema) {
+       cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
+       return;
+    }
+
     if (pDrawable->type != DRAWABLE_WINDOW) {
 	switch (pDrawable->bitsPerPixel) {
 	    case 1:
@@ -101,9 +106,11 @@ agxGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart)
 	    case 8:
 		cfbGetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 		break;
+#if 0
 	    case 16:
 		cfb16GetSpans(pDrawable, wMax, ppt, pwidth, nspans, pdstStart);
 		break;
+#endif
 	    default:
 		ErrorF("agxGetSpans: Unsupported pixmap depth\n");
 		break;

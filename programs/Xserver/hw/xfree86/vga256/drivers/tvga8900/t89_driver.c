@@ -1,6 +1,5 @@
-/* $XConsortium: t89_driver.c,v 1.1 94/03/28 21:53:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.5 1994/12/11 10:57:35 dawes Exp $ */
-/*
+/* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.6 1995/01/10 10:33:16 dawes Exp $ */
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

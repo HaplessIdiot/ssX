@@ -1,5 +1,5 @@
-/* $XConsortium: cfbgc.c,v 1.2 94/04/17 20:32:18 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgagc.c,v 1.3 95/01/13 20:17:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.1 1994/12/25 12:36:06 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -48,7 +48,6 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: cfbgc.c,v 1.2 94/04/17 20:32:18 dpw Exp $ */
 
 #include "vga256.h"
 #include "migc.h"
@@ -590,6 +589,10 @@ vga256ValidateGC(pGC, changes, pDrawable)
     if (new_fillspans) {
 	switch (pGC->fillStyle) {
 	case FillSolid:
+	    if (vga256LowlevFuncs.fillSolidSpans != vga256SolidSpansGeneral) {
+	        pGC->ops->FillSpans = vga256LowlevFuncs.fillSolidSpans;
+	        break;
+	    }
 	    switch (devPriv->rop) {
 	    case GXcopy:
 		pGC->ops->FillSpans = vga256SolidSpansCopy;

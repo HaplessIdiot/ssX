@@ -1,6 +1,5 @@
-/* $XConsortium: cir_fill.c,v 1.1 94/03/28 21:49:00 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.5 1994/08/31 04:44:24 dawes Exp $ */
-/*
+/* $XConsortium: cir_fill.c,v 1.3 95/01/05 20:48:33 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.6 1994/12/02 05:48:16 dawes Exp $ */
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
  *

@@ -2,13 +2,13 @@
  
 <article>
  
-<title> README for XFree86 3.1 on BSD/386 1.1
-<author> The XFree86 Project, Inc.
-<date> 13 November 1994
+<title> README for XFree86 3.1.1 on BSD/386 1.1
+<author> Hans Nasten
+<date> 27 January 1995
 <toc>
 
 <sect> What and Where is XFree86? <p>
-XFree86 3.1 is a port of X11R6 that supports several versions of
+XFree86 3.1.1 is a port of X11R6 that supports several versions of
 Intel-based Unix.  It is derived from X386 1.2, which was the X server
 distributed with X11R5.  This release consists of many new features
 and performance improvements as well as many bug fixes.  The release
@@ -16,15 +16,19 @@ is available as source patches against the X Consortium X11R6 code, as
 well as binary distributions for many architectures.
 
 The sources for XFree86 are available by anonymous ftp from:
-<verb>
-    ftp.XFree86.org:/pub/XFree86/current
-</verb>
+<p>
+<url
+    name="ftp.XFree86.org:/pub/XFree86/current"
+    url="ftp://ftp.XFree86.org/pub/XFree86/current">
+<p>
 Binaries for BSD/386 1.1 will be available from:
-<verb>
-    ftp.bsdi.com:/contrib/X11/XFree86
-</verb>
-If you're running BSD 1.0, you'll have to build it from the source.
-Building the distribution on BSD/386 1.0 is untested, but belived to
+<p>
+<url
+    name="ftp.XFree86.org:/pub/XFree86/current/binaries/Bsdi"
+    url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/Bsdi">
+<p>
+If you're running BSD 1.0, you'll have to build it from source.
+Building the distribution on BSD/386 1.0 is untested, but believed to
 work correctly. If you run into trouble building on BSD/386 1.0, please
 let us know so that we can correct any incompatibilities.
 If you've done it and want to share your binaries, please let the Bsdi
@@ -40,12 +44,12 @@ or <it>XFree86@XFree86.org</it>
 if you have comments or suggestions about this file and we'll revise it.
 
 <sect> Installing the Binaries <p>
-The binary distribution is composed of a number of tar archives
+The binary distribution is composed of a number of gzipped tar archives
 which contains the executables, servers, fonts, libraries, include files,
 man pages, config files, and the server link kit. All tar archives should
-be extraced as root with <tt>/</tt> as the default directory. The full
-distribution
-takes over 40MB of disk space.
+be extracted as root with <tt>/</tt> as the default directory. The full
+distribution takes over 40MB of disk space.
+The file names are converted to be compatible with CD-rom conventions.
 
 Note that many clients were moved from the X11R6 distribution to the
 `contrib' area. However, they are still distributed with the
@@ -55,32 +59,33 @@ The contents of the archives are:
 <descrip>
 <tag>REQUIRED:</tag>
     <descrip>
-    <tag/xf86-doc.tar.gz/       READMEs and XFree86 specific man pages.
-    <tag/xf86-bin.tar.gz/       all of the executable X client applications.
-    <tag/xf86-fonts.tar.gz/     all fonts
-    <tag/xf86-lib.tar.gz/       data files needed at runtime
+    <tag/X311doc.tgz/     READMEs and XFree86 specific man pages.
+    <tag/X311bin.tgz/     all of the executable X client applications.
+    <tag/X311fnts.tgz/    all fonts
+    <tag/X311lib.tgz/     data files needed at runtime
     </descrip>
 <tag>Choose at least one of the following to match your hardware:</tag>
     <descrip>
-    <tag/XF86_SVGA.gz/    the 8-bit pseudo-color X server for Super VGA cards
-    <tag/XF86_VGA16.gz/   the 4-bit pseudo-color X server for VGA &amp;
+    <tag/X311SVGA.tgz/    the 8-bit pseudo-color X server for Super VGA cards
+    <tag/X311VG16.tgz/    the 4-bit pseudo-color X server for VGA &amp;
 			  SVGA cards.
-    <tag/XF86_Mono.gz/    the Monochrome X Server
-    <tag/XF86_8514.gz/    the X server for IBM 8514/A and compatible boards
-    <tag/XF86_AGX.gz/     the X server for AGX boards
-    <tag/XF86_Mach8.gz/   the X server for ATI Mach8 boards
-    <tag/XF86_Mach32.gz/  the X server for ATI Mach32 boards
-    <tag/XF86_P9000.gz/   the X server for P9000 based boards
-    <tag/XF86_S3.gz/      the X server for S3 based boards
-    <tag/XF86_W32.gz/     the X server for ET4000/W32 based boards
+    <tag/X311Mono.tgz/    the Monochrome X Server
+    <tag/X3118514.tgz/    the X server for IBM 8514/A and compatible boards
+    <tag/X311AGX.tgz/     the X server for AGX boards
+    <tag/X311Ma8.tgz/     the X server for ATI Mach8 boards
+    <tag/X311Ma32.tgz/    the X server for ATI Mach32 boards
+    <tag/X311Ma64.tgz/    the X server for ATI Mach64 boards
+    <tag/X311P9K.tgz/     the X server for P9000 based boards
+    <tag/X311S3.tgz/      the X server for S3 based boards
+    <tag/X311W32.tgz/     the X server for ET4000/W32 based boards
     </descrip>
 <tag/OPTIONAL:</tag>
     <descrip>
-    <tag/xf86-fs.tar.gz/        the font server with man pages.
-    <tag/xf86-prog.tar.gz/      the <tt>include/X11</tt> header files and
+    <tag/X311fsrv.tgz/    the font server with man pages.
+    <tag/X311prog.tgz/    the <tt>include/X11</tt> header files and
 	static libraries needed only for compiling other X applications
-    <tag/xf86-man.tar.gz/       all man pages
-    <tag/xf86-linkkit.tar.gz/   the server reconfiguration kit.
+    <tag/X311man.tgz/     all man pages
+    <tag/X311link.tgz/    the server reconfiguration kit.
     </descrip>
 </descrip>
 If this is your first time, then you should be able to safely
@@ -107,7 +112,7 @@ To unpack and install the archives:
 	`<tt>umask</tt>' value of 022.  Typing `<tt>umask 022</tt>' sets it.
         Caution:
 	If you do not extract the files as user `<tt>root</tt>' with the
-	correct umask you may not be able to run XFree86 3.1.  The X
+	correct umask you may not be able to run XFree86 3.1.1. The X
 	server needs special permissions that are only granted to the
 	root user. You must also cd to <tt>/</tt> before extracting the
         archives.
@@ -155,7 +160,8 @@ The <tt>XF86Config</tt> file tells the X server what kind of monitor, video
 card and mouse you have.
 You <em>must</em> create it to tell the server what specific hardware you have.
 
-XFree86 3.1 uses a new configuration file format. Consult the
+XFree86 3.1 and later releases uses a new configuration file format.
+Consult the
 <tt>XF86Config</tt> man
 page and the general <tt>INSTALL</tt> file for instructions.
 
@@ -168,7 +174,7 @@ it into the new format:
 and complete the rest according to the <tt>XF86Config</tt> man page and the
 <tt>XF86Config.sample</tt> file as a template.
 
-In order to protect your hardware from damage, the server no longer will read
+In order to protect your hardware from damage, the server will no longer read
 <tt>XF86Config</tt> files from a user's home directory, but requires that it
 be in <tt>/etc/XF86Config</tt>, <tt>/usr/X11R6/lib/X11/XF86Config.hostname</tt>
 or <tt>/usr/X11R6/lib/X11/XF86Config</tt>.
@@ -209,8 +215,8 @@ Error messages are lost unless you redirect them because
 the server takes over the screen.
 
 To get out of X windows, type `<tt>exit</tt>' in the console xterm.  You can
-customize your X by creating <tt>.xinitrc</tt>, <tt>.xserverrc</tt>, and
-<tt>.twmrc</tt> files in your home directory as described in the xinit and
+customize your X by creating <tt>.xinitrc</tt>, <tt>.xserverrc</tt>,
+and <tt>.twmrc</tt> files in your home directory as described in the xinit and
 startx man pages.
 
 <sect> Rebuilding the XFree86 Distribution <p>
@@ -254,9 +260,12 @@ later releases can use:
 <verb>                   
 #if (BSD >= 199103)
 </verb>
-To ensure that this symbol is correctly defined, include either
-<tt>&lt;X11/Xos.h&gt;</tt> (best) or <tt>&lt;sys/param.h&gt;</tt> in the
-source that requires it.
+To ensure that this symbol is correctly defined, include
+<tt>&lt;sys/param.h&gt;</tt> in the source that requires it.  Note that
+the symbol <bf/CSRG_BASED/ is defined for *BSD systems in XFree86 3.1.1
+and later.  This should be used to protect the inclusion of
+<tt>&lt;sys/param.h&gt;</tt>.
+
 For code that really is specific to a particular i386 BSD port, use
 <tt>__FreeBSD__</tt> for FreeBSD, <tt>__NetBSD__</tt> for NetBSD,
 <tt>__386BSD__</tt> for 386BSD, and <tt>__bsdi__</tt> for BSD/386.
@@ -300,7 +309,8 @@ instructions on how to build a new kernel.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Bsdi,v 3.3 1994/10/29 22:39:02 dawes Exp $
+$XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.8 1995/01/28 00:50:52 dawes Exp $
 </verb>
 
 </article>

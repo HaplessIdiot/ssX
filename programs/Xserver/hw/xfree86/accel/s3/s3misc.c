@@ -1,6 +1,6 @@
 
-/* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.21 1995/01/12 12:03:16 dawes Exp $ */
+/* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.22 1995/01/23 01:29:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 

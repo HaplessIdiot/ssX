@@ -29,8 +29,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cfbtile32.c,v 1.5 94/04/17 20:32:27 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgatile32.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgatile32.c,v 3.0 1994/07/24 11:59:22 dawes Exp $ */
 
 #include "vga256.h"
 #include "mergerop.h"

@@ -1,6 +1,5 @@
-/* $XConsortium: ppcRslvC.c,v 1.2 94/04/17 20:31:56 dpw Exp $ */
-/* $XFree86$ */
-/************************************************************
+/* $XConsortium: ppcRslvC.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcRslvC.c,v 3.0 1994/05/04 15:03:35 dawes Exp $ */
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
                     All Rights Reserved

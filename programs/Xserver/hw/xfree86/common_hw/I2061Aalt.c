@@ -1,5 +1,5 @@
-/* $XConsortium: ICD2061Aalt.c,v 1.1 94/03/28 21:24:51 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ICD2061Aalt.c,v 3.2 1995/01/10 10:25:13 dawes Exp $ */
+/* $XConsortium: I2061Aalt.c,v 1.1 95/01/26 15:25:49 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/I2061Aalt.c,v 3.3 1995/01/20 04:21:16 dawes Exp $ */
 
 /*
  * This code is derived from code available from the STB bulletin board

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: ICD2061A.h,v 1.2 94/11/21 22:38:44 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/ICD2061A.h,v 3.1 1994/09/07 15:50:40 dawes Exp $ */
 /* Id: ICD2061A.h,v 4.0 1994/05/28 01:24:17 nygren Exp */
 #ifndef DEBUG
 /* #define DEBUG */
@@ -42,9 +43,9 @@
  * purpose.  It is provided "as is" without express or implied warranty.
  */
 
-extern unsigned int ICD2061ACalcClock (
+extern unsigned long ICD2061ACalcClock (
 #if NeedFunctionPrototypes
-   int, int
+   long, int
 #endif
 );
 
@@ -56,17 +57,17 @@ extern int ICD2061AGCD (
 
 extern void ICD2061ASetClock (
 #if NeedFunctionPrototypes
-   unsigned int 
+   unsigned long 
 #endif
 );
 
 extern unsigned int ICD2061AGetClock (
 #if NeedFunctionPrototypes
-   unsigned int
+   unsigned long
 #endif
 );
 
-extern unsigned int CalcVCOfreq (
+extern unsigned long CalcVCOfreq (
 #if NeedFunctionPrototypes
    unsigned int, unsigned int
 #endif
@@ -75,3 +76,4 @@ extern unsigned int CalcVCOfreq (
 
 #define CRYSTAL_FREQUENCY       (14318180 * 2)
 #define MIN_VCO_FREQUENCY       50000000              /* 50 Mhz */
+#define NUM_PROGRAMMABLE_CLOCKS 3

@@ -1,6 +1,5 @@
-/* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.11 1995/01/15 10:30:27 dawes Exp $ */
-/*
+/* $XConsortium: ibm8514.c,v 1.6 95/01/26 15:34:40 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.12 1995/01/26 02:17:19 dawes Exp $ */
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
  * Permission to use, copy, modify, distribute, and sell this software and its

@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: keyword.i,v 1.2 94/11/21 21:55:13 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/keyword.i,v 3.0 1994/09/03 02:52:16 dawes Exp $ */
 
   { FONTPATH,   "fontpath" },
   { RGBPATH,    "rgbpath" },

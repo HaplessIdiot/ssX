@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: agxGtImg.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.0 1994/09/07 15:47:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

@@ -1,6 +1,5 @@
-/* $XConsortium: am_init.c,v 1.1 94/03/28 21:27:29 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.0 1994/09/23 10:22:13 dawes Exp $ */
-/*
+/* $XConsortium: am_init.c,v 1.3 95/01/05 20:41:59 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/amoeba/am_init.c,v 3.1 1994/10/23 12:59:40 dawes Exp $ */
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *

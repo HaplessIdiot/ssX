@@ -1,6 +1,5 @@
-/* $XConsortium: cir_bltC.c,v 1.2 94/04/17 20:32:32 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.5 1994/12/05 03:47:59 dawes Exp $ */
-/*
+/* $XConsortium: cir_bltC.c,v 1.5 95/01/23 15:35:09 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_bltC.c,v 3.6 1995/01/18 06:14:32 dawes Exp $ */
  
 
 Copyright (c) 1989  X Consortium

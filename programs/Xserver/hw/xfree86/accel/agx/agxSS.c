@@ -1,5 +1,5 @@
-/* $XConsortium: mach32ss.c,v 1.2 94/04/17 20:30:51 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: agxSS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.0 1994/06/15 15:35:38 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

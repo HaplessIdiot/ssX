@@ -25,8 +25,8 @@ in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
 
-/* $XConsortium: cfbzerarc.c,v 5.19 94/04/17 20:32:29 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgazerarc.c,v 1.1 94/10/13 13:04:50 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgazerarc.c,v 3.0 1994/07/24 11:59:27 dawes Exp $ */
 
 /* Derived from:
  * "Algorithm for drawing ellipses or hyperbolae with a digital plotter"

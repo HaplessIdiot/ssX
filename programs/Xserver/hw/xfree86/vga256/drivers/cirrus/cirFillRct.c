@@ -28,8 +28,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
 
-/* $XConsortium: cir_fillrct.c,v 5.14 94/04/17 20:32:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fillrct.c,v 3.4 1994/10/30 02:59:33 dawes Exp $ */
+/* $XConsortium: cirFillRct.c,v 1.1 95/01/26 15:08:31 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.5 1994/12/25 12:35:02 dawes Exp $ */
 
 /* Modified for Cirrus by Harm Hanemaayer, <hhanemaa@cs.ruu.nl> */
 

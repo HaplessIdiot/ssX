@@ -1,4 +1,5 @@
-# $XFree86$
+# $XConsortium: jump_funcs,v 1.2 94/12/07 10:46:47 kaleb Exp $
+# $XFree86: xc/lib/Xaw/jump_funcs,v 3.0 1994/04/28 12:31:51 dawes Exp $
 #
 00000000 T _XawAsciiSourceFreeString libXaw         AsciiSrc
 00000000 T _XawAsciiSave        libXaw         AsciiSrc

@@ -1,6 +1,5 @@
-/* $XConsortium: xf86Keymap.h,v 1.1 94/03/28 21:23:34 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.2 1995/01/21 07:15:49 dawes Exp $ */
-/*
+/* $XConsortium: xf86Keymap.h,v 1.8 95/01/23 15:34:05 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Keymap.h,v 3.3 1995/01/23 01:29:46 dawes Exp $ */
  * For Scancodes see notes in atKeynames.h  !!!!
  */
 static KeySym map[NUM_KEYCODES * GLYPHS_PER_KEY] = { 

@@ -1,6 +1,5 @@
-/* $XConsortium: s3plypt.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.1 1994/08/03 13:30:46 dawes Exp $ */
-/************************************************************
+/* $XConsortium: s3plypt.c,v 1.4 95/01/13 19:09:26 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3plypt.c,v 3.2 1994/08/20 07:34:22 dawes Exp $ */
 
 Copyright (c) 1989  X Consortium
 
@@ -37,7 +36,6 @@ PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XConsortium: s3plypt.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs

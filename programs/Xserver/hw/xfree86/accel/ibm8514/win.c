@@ -1,5 +1,5 @@
-/* $XConsortium: ibm8514win.c,v 1.2 94/04/17 20:30:40 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: win.c,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/win.c,v 3.1 1994/09/07 16:19:12 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium

@@ -1,6 +1,5 @@
-/* $XConsortium: fLineH.s,v 1.2 94/03/29 11:19:13 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineH.s,v 3.1 1994/08/31 04:49:25 dawes Exp $ */
-/* Copyright 1992 by James Tsillas, Arlignton, Massachusetts.
+/* $XConsortium: fLineH.s,v 1.3 94/10/13 13:16:19 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fLineH.s,v 3.2 1994/09/21 10:59:43 dawes Exp $ */
 
 		All Rights Reserved
 

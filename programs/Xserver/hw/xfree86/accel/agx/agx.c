@@ -1,4 +1,5 @@
-/* $XFree86$ */
+/* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.25 1995/01/23 01:28:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -50,7 +51,7 @@
 #include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "cfb.h"
-#include "cfbfuncs.h"
+#include "mi.h"
 #include "agx.h"
 #include "regagx.h"
 #include "xf86RamDac.h"
@@ -59,12 +60,15 @@
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
-extern int  agxMaxClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
 
-
+static Bool agxValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+); 
 
 ScrnInfoRec agxInfoRec = {
     FALSE,		/* Bool configured */
@@ -72,6 +76,7 @@ ScrnInfoRec agxInfoRec = {
     -1,			/* int scrnIndex */
     agxProbe,      	/* Bool (* Probe)() */
     agxInit,	        /* Bool (* Init)() */
+    agxValidMode,       /* Bool (* ValidMode)() */
     agxEnterLeaveVT,    /* void (* EnterLeaveVT)() */
     (void(*)())NoopDDA,	/* void (* EnterLeaveMonitor)() */
     (void(*)())NoopDDA,	/* void (* EnterLeaveCursor)() */
@@ -89,6 +94,8 @@ ScrnInfoRec agxInfoRec = {
     {0, },	       	/* OFlagSet clockOptions */
     {0, },	       	/* OFlagSet xconfigFlag */
     NULL,       	/* char *chipset */
+    NULL,       	/* char *ramdac */
+    0,			/* int dacSpeed */
     0,			/* int clocks */
     {0, },		/* int clock[MAXCLOCKS] */
     0,			/* int maxClock */
@@ -98,12 +105,13 @@ ScrnInfoRec agxInfoRec = {
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
+    NULL,	       	/* DisplayModePtr pModes */
     NULL,               /* char *clockprog */
     -1,                 /* int textclock */   
     FALSE,              /* Bool bankedMono */
     "AGX",              /* char *name */
-    {0, },		/* RgbRec blackColour */
-    {0, },		/* RgbRec whiteColour */
+    {0, },		/* xrgb blackColour */
+    {0, },		/* xrgb whiteColour */
     agxValidTokens,	/* int *validTokens */
     AGX_PATCHLEVEL,	/* char *patchlevel */
     0,		 	/* int IObase       */
@@ -111,66 +119,42 @@ ScrnInfoRec agxInfoRec = {
     0,			/* int COPbase      */
     POS_DEF_IO_BASE,    /* int POSbase      */
     1,                  /* int instance     */
+    0,                  /* int s3Madjust    */
+    0,                  /* int s3Nadjust    */
+    0,                  /* int s3MClk    */
 };
 
-#if 0
-short agxalu[16] = {
-    MIX_0,
-    MIX_AND,
-    MIX_SRC_AND_NOT_DST,
-    MIX_SRC,
-    MIX_NOT_SRC_AND_DST,
-    MIX_DST,
-    MIX_XOR,
-    MIX_OR,
-    MIX_NOR,
-    MIX_XNOR,
-    MIX_NOT_DST,
-    MIX_SRC_OR_NOT_DST,
-    MIX_NOT_SRC,
-    MIX_NOT_SRC_OR_DST,
-    MIX_NAND,
-    MIX_1
-};
-#endif
-
-#if 0
-void (* vgaEnterLeaveFunc)() = agxEnterLeaveVT;
-Bool (* vgaInitFunc)() = agxInit;
-void (* vgaSaveScreenFunc)() = (void (*)())agxSaveScreen;
-void *(* vgaSaveFunc)() = vgaHWSave;
-void (* vgaRestoreFunc)() = vgaHWRestore;
-void (* vgaSetReadFunc)() = agxSetRead;
-void (* vgaSetWriteFunc)() = agxSetWrite;
-void (* vgaSetReadWriteFunc)() = agxSetReadWrite;
-int vgaMapSize = 0x10000;
-int vgaSegmentSize = 0x10000;
-int vgaSegmentShift = 16;
-int vgaSegmentMask = 0xFFFF;
-void *vgaReadBottom = (pointer) 0x00000;
-void *vgaReadTop = (pointer) 0x10000;
-void *vgaWriteBottom = (pointer) 0x00000;
-void *vgaWriteTop = (pointer) 0x10000;
-Bool vgaReadFlag;
-Bool vgaWriteFlag;
-Bool vgaUse2Banks = FALSE;
-int  vgaInterlaceType = VGA_NO_DIVIDE_VERT;
-#endif
-int vga256ValidTokens[2] = {0,0};
-extern void OneBankvgaBitBlt();
-vgaVideoChipPtr vgaDrivers;
-
+int vgaInterlaceType = VGA_NO_DIVIDE_VERT;
+void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA;
+pointer vgaNewVideoState = NULL;
 
 static Bool LUTissaved = FALSE;
-static ScreenPtr savepScreen = NULL;
+ScreenPtr savepScreen = NULL;
 static PixmapPtr ppix = NULL;
 
 static unsigned agxDAIOPorts[ DA_NUM_IO_REG ] = {0, };
 static unsigned agxPOSIOPorts[ POS_NUM_IO_REG ] = {0, };
 
+static SymTabRec agxDacTable[] = {
+   { NORMAL_DAC,        "normal" },
+   { BT481_DAC,         "bt481" },
+   { BT482_DAC,         "bt482" },
+#if 0  /* not yet directly supported */
+   { BT485_DAC,         "bt485" },
+   { ATT20C505_DAC,     "att20c505" },
+#endif
+   { SC15025_DAC,       "sc15025" },
+   { HERC_DUAL_DAC,     "herc_dual_dac" },
+   { HERC_SMALL_DAC,    "herc_small_dac" },
+   { -1,                "" },
+};
+
+
 unsigned short agxMemorySize = 0;
 pointer  agxPhysVidMem = NULL;
 pointer  vgaPhysBase = NULL;
+pointer  vgaBase = NULL;
+pointer  vgaVirtBase = NULL;
 pointer  agxVideoMem = NULL;
 unsigned int  agxVideoBase = 0x0;
 unsigned char agxPOSMemBase = 0x0;
@@ -186,9 +170,10 @@ Bool     agxHWCursor = FALSE;
 
 
 extern Bool xf86VTSema;
-short agxMaxX, agxMaxY;
-short agxVirtX, agxVirtY;
-short agxAdjustedVirtX;
+int agxMaxX, agxMaxY;
+int agxVirtX, agxVirtY;
+int agxAdjustedVirtX;
+int agxDisplayWidth;
 Bool  agx128WidthAdjust;
 Bool  agx256WidthAdjust;
 Bool  agx288WidthAdjust;
@@ -212,7 +197,6 @@ extern int agxPixMux;
 extern int agxBusType;
 
 agxCRTCRegRec agxCRTCRegs;
-
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
@@ -364,13 +348,9 @@ static AGXInformationBlock *GetAGXInformationBlock(instance)
 Bool
 agxProbe()
 {
-   int                   i, j;
+   int                   i;
    DisplayModePtr        pMode, pEnd;
-   AGXInformationBlock   *info;
-   char			 *chipId;
-   int                   extra_ram;
-   int                   extra_caches;
-   Bool                  sw_cursor_supplied;
+   /* AGXInformationBlock   *info; */
    OFlagSet              validOptions;
    int                   tx, ty;
    agxCRTCRegRec         agxProbeCRTC;
@@ -380,23 +360,6 @@ agxProbe()
    vgaBase = NULL;
    vgaVirtBase = NULL;
    vgaPhysBase = NULL;
-   vgaMapSize = 0x10000;
-   vgaSegmentSize = 0x10000;
-   vgaSegmentShift = 16;
-   vgaSegmentMask = 0xFFFF;
-   vgaReadBottom = (pointer) 0x00000;
-   vgaReadTop = (pointer) 0x10000;
-   vgaWriteBottom = (pointer) 0x00000;
-   vgaWriteTop = (pointer) 0x10000;
-   vgaSetReadFunc = agxSetRead;
-   vgaSetWriteFunc = agxSetWrite;
-   vgaSetReadWriteFunc = agxSetReadWrite;
-   vgaReadFlag = FALSE;
-   vgaWriteFlag = FALSE;
-   vgaUse2Banks = FALSE;
-   vgaInterlaceType = VGA_NO_DIVIDE_VERT;
-   cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
-   useSpeedUp = 0;
 
    if( !StrCaseCmp( agxInfoRec.chipset, "XGA-1" ) )
       agxChipId = XGA_1;
@@ -412,11 +375,13 @@ agxProbe()
       agxChipId = AGX_16;
    else {
       agxChipId = 0;
-      xf86ProbeFailed = TRUE;
       agxInfoRec.chipset = "UNKNOWN";
       ErrorF("%s :Valid AGX/XGA Chip type must be specified.\n",
              agxInfoRec.name);
+      return FALSE;
    }
+   ErrorF( "%s %s: Graphics chip type \"%s\"\n", 
+           XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.chipset );
 
    for( i= 0; i <= POS_LAST_IO_REG; i++ )
       agxPOSIOPorts[ i ] = agxInfoRec.POSbase + i;
@@ -437,6 +402,9 @@ agxProbe()
           agxInfoRec.IObase = DA_AGX_IO_BASE;
       else
           agxInfoRec.IObase = DA_XGA_IO_BASE + (agxInfoRec.instance << 4);
+   ErrorF( "%s %s: XGA Instance = %d, I/O Register Base = 0x%04x.\n",
+            XCONFIG_GIVEN, agxInfoRec.name, 
+            agxInfoRec.instance, agxInfoRec.IObase );
 
    for( i= 0; i <= DA_LAST_IO_REG; i++ )
       agxDAIOPorts[ i ] = agxInfoRec.IObase + i;
@@ -489,14 +457,19 @@ agxProbe()
              agxInfoRec.COPbase = 0xD1F00;
       }
       else {
+/*
          if(info->xgaBiosAddress != 0)
             agxInfoRec.COPbase = info->xgaBiosAddress + 0x1C00;
          else
+*/
             agxInfoRec.COPbase = GE_DEF_MEM_BASE;
          agxInfoRec.COPbase += agxInfoRec.instance << 7;
       }
    }
-   agxGEPhysBase = (char*) agxInfoRec.COPbase;
+   agxGEPhysBase = (pointer) agxInfoRec.COPbase;
+
+   ErrorF( "%s %s: Graphics Engine Register Memory Base Address = 0x%05x.\n",
+            XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.COPbase );
 
    agxGEBase = xf86MapVidMem( agxInfoRec.scrnIndex, LINEAR_REGION,
                               (pointer)((unsigned int)agxGEPhysBase & 0xFFF000),
@@ -505,21 +478,17 @@ agxProbe()
 			((unsigned int)agxGEPhysBase & 0x0FFF));
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION); 
 
+   if( !AGX_SERIES(agxChipId)) {
+      /* until someone with an XGA can complete POS register probing */
+      agxPOSMemBase = agxInfoRec.POSbase;
+   }
    agxMemBase = ( (agxPOSMemBase&0xFE)<<24 | (agxInfoRec.instance&0x07)<<22 );
-   
+
    OFLG_ZERO(&validOptions);
-   OFLG_SET(OPTION_NORMAL_DAC, &validOptions);
    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
-   OFLG_SET(OPTION_BT485, &validOptions);
-   OFLG_SET(OPTION_BT481, &validOptions);
-   OFLG_SET(OPTION_BT482, &validOptions);
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_BT482_CURS, &validOptions);
-   OFLG_SET(OPTION_20C505, &validOptions);
-   OFLG_SET(OPTION_SC15025, &validOptions);
    OFLG_SET(OPTION_DAC_8_BIT, &validOptions);
-   OFLG_SET(OPTION_HERC_DUAL_DAC, &validOptions);
-   OFLG_SET(OPTION_HERC_SMALL_DAC, &validOptions);
    OFLG_SET(OPTION_NOACCEL, &validOptions);
    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_8_BIT_BUS, &validOptions);
@@ -533,8 +502,18 @@ agxProbe()
    OFLG_SET(OPTION_SPRITE_REFRESH, &validOptions);
    OFLG_SET(OPTION_SCREEN_REFRESH, &validOptions);
    OFLG_SET(OPTION_FIFO_CONSERV, &validOptions);
+   OFLG_SET(OPTION_FIFO_MODERATE, &validOptions);
+   OFLG_SET(OPTION_FIFO_AGGRESSIVE, &validOptions);
    OFLG_SET(OPTION_VLB_A, &validOptions);
    OFLG_SET(OPTION_VLB_B, &validOptions);
+   OFLG_SET(OPTION_FAST_DRAM, &validOptions);
+   OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
+   OFLG_SET(OPTION_MED_DRAM, &validOptions);
+   OFLG_SET(OPTION_VRAM_DELAY_LATCH, &validOptions);
+   OFLG_SET(OPTION_VRAM_DELAY_RAS, &validOptions);
+   OFLG_SET(OPTION_VRAM_EXTEND_RAS, &validOptions);
+   OFLG_SET(OPTION_ENGINE_DELAY, &validOptions);
+
 
    xf86VerifyOptions(&validOptions, &agxInfoRec);
 
@@ -546,20 +525,34 @@ agxProbe()
        && OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &agxInfoRec.clockOptions)) {
       /* has programmable clocks */ 
       agxClockSelectFunc = xgaNiClockSelect;  
-      agxMaxClock        = MAX_XGA_NI_CLOCK;
+      xf86MaxClock        = MAX_XGA_NI_CLOCK;
    }
    else {
       agxClockSelectFunc = agxClockSelect;
       if (AGX_16_ONLY(agxChipId))
-         agxMaxClock = MAX_AGX_16_CLOCK;
+         xf86MaxClock = MAX_AGX_16_CLOCK;
       else if (AGX_15_ONLY(agxChipId))
-         agxMaxClock = MAX_AGX_15_CLOCK;
+         xf86MaxClock = MAX_AGX_15_CLOCK;
       else if (AGX_14_ONLY(agxChipId))
-         agxMaxClock = MAX_AGX_14_CLOCK;
+         xf86MaxClock = MAX_AGX_14_CLOCK;
       else 
-         agxMaxClock = MAX_XGA_1_CLOCK;
+         xf86MaxClock = MAX_XGA_1_CLOCK;
    }
-   agxInfoRec.maxClock = agxMaxClock;
+   agxInfoRec.maxClock = xf86MaxClock;
+
+   /*
+    * Save the VGA state
+    */
+   agxSavedState = agxHWSave(agxSavedState, sizeof(agxSaveBlock));
+   agxClearColor0();
+   outb(agxIdxReg, 0);
+   if(XGA_PALETTE_CONTROL(agxChipId)) {
+      outb(agxIdxReg, IR_PAL_MASK);
+      outb(agxByteData, 0x00);
+   }
+   else {
+      outb(VGA_PAL_MASK, 0x00);
+   }
 
    /* 
     * The Hercules specific routines are also generic for accessing
@@ -570,47 +563,25 @@ agxProbe()
    xf86InRamDacReg   = hercInRamDacReg;
 
    /*
-    * Handle RAMDAC Option flags first.
+    * Handle RAMDAC Option flags.
     */
-   if(AGX_SERIES(agxChipId)) { 
-      xf86RamDacType == UNKNOWN_DAC;
-      xf86DacSyncOnGreen = FALSE;
-      if (OFLG_ISSET(OPTION_NORMAL_DAC, &agxInfoRec.options)) {
-         xf86RamDacType = NORMAL_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_BT481, &agxInfoRec.options)) {
-         xf86RamDacType = BT481_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_BT482, &agxInfoRec.options)) {
-         xf86RamDacType = BT482_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_BT485, &agxInfoRec.options)) {
-         xf86RamDacType = BT485_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_20C505, &agxInfoRec.options)) {
-         xf86RamDacType = ATT20C505_DAC;
-      }
-      else if (OFLG_ISSET(OPTION_SC15025, &agxInfoRec.options)) {
-         xf86RamDacType = SC15025_DAC;
-         agxMaxClock = 110000;
-      }
-      else if (OFLG_ISSET(OPTION_HERC_DUAL_DAC, &agxInfoRec.options)) {
-         xf86RamDacType = HERC_DUAL_DAC;
-         hercProbeRamDac();
-      }
-      else if (OFLG_ISSET(OPTION_HERC_SMALL_DAC, &agxInfoRec.options)) {
-         xf86RamDacType = HERC_SMALL_DAC;
-         hercProbeRamDac();
-      }
-      else {
-         xf86RamDacType = NORMAL_DAC;   /* for now we don't probe */
-         /*
-          * Any RAMDAC probe activity must restore the video board's
-          * state before return
-          */
-         /* xf86ProbeRamDac(); */
+   if(AGX_SERIES(agxChipId)) {
+
+      if (agxInfoRec.ramdac) {
+         xf86RamDacType = xf86StringToToken(agxDacTable, agxInfoRec.ramdac);
+         if (xf86RamDacType < 0 && AGX_SERIES(agxChipId)) {
+            ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+                   agxInfoRec.name, agxInfoRec.ramdac);
+            xf86RamDacType = NORMAL_DAC; 
+         }
       }
 
+      if( xf86RamDacType == HERC_DUAL_DAC
+          || xf86RamDacType == HERC_SMALL_DAC ) {
+         hercProbeRamDac();
+      }
+
+      xf86DacSyncOnGreen = FALSE;
       if ( DAC_IS_BT485_SERIES || DAC_IS_BT481_SERIES ) {
          if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &agxInfoRec.options)) {
             xf86DacSyncOnGreen = TRUE;
@@ -619,30 +590,56 @@ agxProbe()
                    XCONFIG_GIVEN, agxInfoRec.name);
          } 
       }
-
-      xf86SetUpRamDac();
-      agxInfoRec.maxClock = agxMaxClock;
+ 
+      if( !hercBigDAC )
+         xf86SetUpRamDac();
+      agxInfoRec.maxClock = xf86MaxClock;
    }
 
-   agxSavedState = agxHWSave(agxSavedState, sizeof(agxSaveBlock));
-   agxSetUpProbeCRTC( &agxProbeCRTC ); 
-   agxSetCRTCRegs(&agxProbeCRTC);
-   if (!agxInfoRec.videoRam) {
-      agxInfoRec.videoRam = agxGetMemSize();
-      if (agxInfoRec.videoRam == 0 )
-         ErrorF("%s %s: Video memory probe failed, specify the \
-memory size in your Xconfig file.\n",
-                XCONFIG_PROBED, agxInfoRec.name);
+   if( !agxInfoRec.videoRam
+       || agxClockSelectFunc != xgaNiClockSelect ) {
+      /* we'll have to go into XGA mode and probe */
+      agxClearColor0();
+      outb(agxIdxReg, 0);
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_PAL_MASK);
+         outb(agxByteData, 0x00);
+      }
+      else {
+         outb(VGA_PAL_MASK, 0x00);
+      }
+      agxSetUpProbeCRTC( &agxProbeCRTC ); 
+      agxSetCRTCRegs(&agxProbeCRTC);
+      agxInitGE();
+      if (!agxInfoRec.videoRam) {
+         agxInfoRec.videoRam = agxGetMemSize();
+         if (agxInfoRec.videoRam == 0 )
+            ErrorF("%s %s: Video memory probe failed, specify the \
+   memory size in your XF86Config file.\n",
+                   XCONFIG_PROBED, agxInfoRec.name);
+      }
+   
+      if (agxClockSelectFunc != xgaNiClockSelect) {
+         if (!agxInfoRec.clocks)
+            agxProbeClocks(1);
+         else if (!hercBigDAC)   /* mask out doubled clocks */
+            if (agxInfoRec.clocks > 16)         
+               agxInfoRec.clocks = 16;
+      }
+   
+   
+      outb(agxIdxReg, 0);
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_PAL_MASK);
+         outb(agxByteData, 0xFF);
+      }
+      else {
+         outb(VGA_PAL_MASK, 0xFF);
+      }
    }
-
-   if (agxClockSelectFunc != xgaNiClockSelect) {
-      if (!agxInfoRec.clocks)
-         agxProbeClocks(1);
-   }
-
 
    /*
-    * x386LookupMode may exit, so cleanup up now
+    * xf86LookupMode may exit, so cleanup up now
     */
    agxHWRestore(agxSavedState);
 
@@ -651,20 +648,63 @@ memory size in your Xconfig file.\n",
    tx = agxInfoRec.virtualX;
    ty = agxInfoRec.virtualY;
    pMode = pEnd = agxInfoRec.modes;
-   if( pMode != NULL )
-      do {
-         xf86LookupMode(pMode, &agxInfoRec);
-         agxInfoRec.virtualX = max(agxInfoRec.virtualX, pMode->HDisplay);
-         agxInfoRec.virtualY = max(agxInfoRec.virtualY, pMode->VDisplay);
-         pMode = pMode->next;
-      }
-      while (pMode != pEnd);
+   if( pMode == NULL ) {
+      ErrorF("No modes supplied in XF86Config\n");
+      return FALSE;
+   } 
+   pEnd = NULL;
+   do {
+      DisplayModePtr pModeSv;
 
-   agxVirtX = agxInfoRec.virtualX;
-   agxVirtY = agxInfoRec.virtualY;
+      pModeSv = pMode->next;
+      /*
+       * xf86LookupMode returns FALSE if it ran into an invalid
+       * parameter 
+       */
+   
+      if (!xf86LookupMode(pMode, &agxInfoRec)) {
+         xf86DeleteMode(&agxInfoRec, pMode);
+      }
+      else {
+         if (pMode->HDisplay > 2048) {
+            ErrorF("%s %s: Width of mode \"%s\" is too large (max is %d)\n",
+                   XCONFIG_PROBED, agxInfoRec.name, pMode->name, 2048);
+            xf86DeleteMode(&agxInfoRec, pMode);
+         }
+         else if ((pMode->HDisplay * (1 + pMode->VDisplay)) >
+                    agxInfoRec.videoRam * 1024) {
+            ErrorF("%s %s: Too little memory for mode \"%s\"\n", XCONFIG_PROBED,
+                   agxInfoRec.name, pMode->name);
+            xf86DeleteMode(&agxInfoRec, pMode);
+         }
+         else if (((tx > 0) && (pMode->HDisplay > tx)) ||
+                    ((ty > 0) && (pMode->VDisplay > ty))) {
+            ErrorF("%s %s: Resolution %dx%d too large for virtual %dx%d\n",
+                   XCONFIG_PROBED, agxInfoRec.name,
+                   pMode->HDisplay, pMode->VDisplay, tx, ty);
+            xf86DeleteMode(&agxInfoRec, pMode);
+         }
+         else {
+            /*
+             * Successfully looked up this mode.  If pEnd isn't
+             * initialized, set it to this mode.
+             */
+            if (pEnd == (DisplayModePtr) NULL)
+               pEnd = pMode;
+   
+            agxInfoRec.virtualX = max( agxInfoRec.virtualX, pMode->HDisplay );
+            agxInfoRec.virtualY = max( agxInfoRec.virtualY, pMode->VDisplay );
+            pMode = pMode->next;
+         }
+      }
+      pMode = pModeSv;
+   } while (pMode != pEnd);
 
    if ((tx != agxInfoRec.virtualX) || (ty != agxInfoRec.virtualY))
       OFLG_CLR(XCONFIG_VIRTUAL,&agxInfoRec.xconfigFlag);
+
+   agxVirtX = agxInfoRec.virtualX;
+   agxVirtY = agxInfoRec.virtualY;
 
    /*
     * AGX 014,015,016 display map width must be power of
@@ -672,64 +712,52 @@ memory size in your Xconfig file.\n",
     * and later have a +256 adjust. The -016 has some additional
     * adjusts for 640 and 800.
     */
-   agx128WidthAdjust = FALSE;
-   agx256WidthAdjust = FALSE;
-   agx288WidthAdjust = FALSE;
-   agxAdjustedVirtX = agxVirtX;
    if (AGX_SERIES(agxChipId)) {
-      int i = 0;
-      unsigned int width = 1;
-      unsigned int adjWidth = 0;
-
-      while( width < agxVirtX && i < 13 ) {
-         width <<= 1;
-         i++;
+      agx128WidthAdjust = FALSE;
+      agx256WidthAdjust = FALSE;
+      agx288WidthAdjust = FALSE;
+      if (agxVirtX <= 512) {
+         agxAdjustedVirtX = 512;
+         agxDisplayWidth = 512;
       }
-      adjWidth = width;
-      agxAdjustedVirtX = width;
-
-      if (agxVirtX != width && AGX_15_16_ONLY(agxChipId)) {
-         if (AGX_16_ONLY(agxChipId) && ((width>>1) + 128) >= agxVirtX) {
-            agx128WidthAdjust = TRUE;
-            width >>= 1;
-            agxAdjustedVirtX = width;
-            adjWidth = width + 128;
-         } else if (((width>>1) + 256) >= agxVirtX) {
-               agx256WidthAdjust = TRUE;
-               width >>= 1;
-               agxAdjustedVirtX = width;
-               adjWidth = width + 256;
-         } else if (AGX_16_ONLY(agxChipId) && ((width>>1) + 288) >= agxVirtX) {
-               agx288WidthAdjust = TRUE;
-               width >>= 1;
-               agxAdjustedVirtX = width;
-               adjWidth = width + 288;
-         } 
-         if (agxVirtX != adjWidth)
-            ErrorF("%s: Virtual screen width must be a power of 2 or \
-256 plus a power of 2 (the AGX-016 also has adjusts of 129 and 288); \
-adjusting to %d\n", 
-                    agxInfoRec.name, adjWidth);
+      else
+      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 640) {
+         agx128WidthAdjust = TRUE;
+         agxAdjustedVirtX = 512;
+         agxDisplayWidth = 640;
       }
-      else {
-         if (agxVirtX != adjWidth)
-             ErrorF("%s: Virtual screen width must be a power of 2; \
-adjusting to %d\n", 
-                    agxInfoRec.name, adjWidth);
+      else
+      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 800) {
+         agx288WidthAdjust = TRUE;
+         agxAdjustedVirtX = 512;
+         agxDisplayWidth = 800;
       }
-      agxVirtX = adjWidth;
+      else
+      if (agxVirtX <= 1024) {
+         agxAdjustedVirtX = 1024;
+         agxDisplayWidth = 1024;
+      }
+      else
+      if (AGX_15_16_ONLY(agxChipId) && agxVirtX <= 1280) {
+         agx256WidthAdjust = TRUE;
+         agxAdjustedVirtX = 1024;
+         agxDisplayWidth = 1280;
+      }
+      else
+      if (agxVirtX <= 2048) {
+         agxAdjustedVirtX = 2048;
+         agxDisplayWidth = 2048;
+      }
    }        
 
-   agxInfoRec.virtualX = agxVirtX;
-   agxInfoRec.virtualY = agxVirtY;
    agxMaxX = agxVirtX - 1;
    agxMaxY = agxVirtY - 1;
 
    if (xf86Verbose) {
-      ErrorF("%s %s: Virtual resolution: %dx%d\n",
+      ErrorF("%s %s: Virtual resolution = %dx%d, CRTC Line Width = %d\n",
 	     OFLG_ISSET(XCONFIG_VIRTUAL, &agxInfoRec.xconfigFlag)
                 ? XCONFIG_GIVEN : XCONFIG_PROBED,
-	     agxInfoRec.name, agxVirtX, agxVirtY);
+	     agxInfoRec.name, agxVirtX, agxVirtY, agxDisplayWidth);
    }
 
     /* Set agxMemorySize to required MEM_SIZE value in MISC_OPTIONS */
@@ -743,48 +771,48 @@ adjusting to %d\n",
       agxMemorySize = MEM_SIZE_4M;
 
    if (xf86Verbose) {
-      ErrorF("%s %s: videoram: %dk\n",
+      ErrorF("%s %s: Videoram = %dk\n",
 	     OFLG_ISSET(XCONFIG_VIDEORAM, &agxInfoRec.xconfigFlag)
 	        ? XCONFIG_GIVEN : XCONFIG_PROBED, 
              agxInfoRec.name,
 	     agxInfoRec.videoRam );
    }
 
-   if (((agxMaxX+1)*(agxMaxY+1)) > (agxInfoRec.videoRam*1024)) {
-      ErrorF("%s %s: Not enough memory for requested virtual resolution (%dx%d)\n",
+   if (((agxDisplayWidth)*(agxVirtY)) > (agxInfoRec.videoRam<<10)) {
+      ErrorF("%s %s: Not enough memory for requested CRTC resolution (%dx%d).\n",
              XCONFIG_PROBED, agxInfoRec.name,
-             agxVirtX, agxVirtY);
-      return TRUE;
+             agxDisplayWidth, agxVirtY);
+      return FALSE;
    }
 
    {
-     unsigned int end;
+     unsigned int end = agxDisplayWidth * agxVirtY;
      unsigned int avail;
+     unsigned int total = agxInfoRec.videoRam << 10;
  
-     end = agxVirtX * agxVirtY;
-     agxFontCacheOffset = (end + 0xFFFF) & 0xFFFF0000;
-     avail = (agxInfoRec.videoRam<<10) - end;
-     if( avail < 0x00010000 ) {     /*  64K */
-        agxFontCacheSize = 0;
-     }
-     else if( avail < 0x00020000 ) {   /* 128K */
-        agxFontCacheSize = 0x10000;
-     }
-     else {   
-        agxFontCacheSize = (avail >> 1) & 0xFFFF0000;
-     }
-     agxScratchOffset = (agxFontCacheOffset + agxFontCacheSize + 0x7FFF) 
-                        & 0xFFFF8000;
-     agxScratchSize   = (avail - agxFontCacheSize) & 0xFFFF8000;
+     /* align to 64K */
+     agxScratchOffset = (end + 0xFFFF) & 0xFFFF0000;
+     avail = total - agxScratchOffset;
+     if( avail < 0x10000 )
+        agxScratchSize = 0;
+     else if( avail < 0x50000 )
+        agxScratchSize = 0x10000;
+     else 
+        agxScratchSize = 0x20000; 
 
-     if( agxScratchSize < 0x8000 ) {
-         ErrorF("%s %s 32K video memory minimum required for scratchpad, reduce number of lines\n",
+     /* align to 64K */
+     agxFontCacheOffset = (agxScratchOffset + agxScratchSize + 0xFFFF) 
+                              & 0xFFFF0000;
+     agxFontCacheSize  = total - agxFontCacheOffset;
+
+     if( agxScratchSize < 0x10000 ) {
+         ErrorF("%s %s: 64K video memory required for scratchpad, reduce the number of lines\n",
              XCONFIG_PROBED, agxInfoRec.name );
+         return FALSE; 
      }
-
      
      if (xf86Verbose) 
-       ErrorF( "%s %s: ScratchPad: %dk @ offset 0x%x\n",
+       ErrorF( "%s %s: ScratchPad = %dk @ offset 0x%x\n",
 	       XCONFIG_PROBED, agxInfoRec.name,
                agxScratchSize>>10, agxScratchOffset );
    }
@@ -797,7 +825,7 @@ adjusting to %d\n",
              agxInfoRec.name, vgaPhysBase, vgaBase );
    }
 
-   return !xf86ProbeFailed;
+   return TRUE;
 }
 
 
@@ -808,7 +836,7 @@ adjusting to %d\n",
 void
 agxPrintIdent()
 {
-    ErrorF("  %s: not so accelerated server for AGX/XGA graphics adaptors ",
+    ErrorF("  %s: Accelerated server for AGX graphics adaptors ",
 	   agxInfoRec.name);
     ErrorF("(Patchlevel %s)\n", agxInfoRec.patchLevel);
 }
@@ -816,8 +844,6 @@ agxPrintIdent()
 int
 agxGetMemSize()
 {
-   #include <sys/types.h>
-   #include <sys/mman.h>
    char i, lastBank=-1;
    unsigned int mask;
    unsigned int tmp1, tmp2;
@@ -825,16 +851,21 @@ agxGetMemSize()
 
    x1 = vgaBase;
    x2 = x1 + 0xFFFC;
-
    xf86MapDisplay(agxInfoRec.scrnIndex, VGA_REGION); 
    for( i=0; i<0x40; i++) {
       outb( agxApIdxReg, i );
+      usleep(10000);
       mask = (~i<<24) | 0x00A55A00 | i;
       MemToBus( (pointer)x1, &mask, 4);
       MemToBus( (pointer)x2, &mask, 4);
+      x1 += 128;
+      x2 -= 128;
    }
+   x1 = vgaBase;
+   x2 = x1 + 0xFFFC;
    for( i=0; i<0x40; i++ ) {
       outb( agxApIdxReg, i );
+      usleep(10000);
       mask = (~i<<24) | 0x00A55A00 | i;
       BusToMem( &tmp1, (pointer)x1, 4);
       BusToMem( &tmp2, (pointer)x2, 4);
@@ -844,7 +875,9 @@ agxGetMemSize()
       else {
          lastBank++;
          break;
-     }
+      }
+      x1 += 128;
+      x2 -= 128;
    }
    outb( agxApIdxReg, 0 );
    return lastBank*0x40;
@@ -878,20 +911,7 @@ agxInit (scr_index, pScreen, argc, argv)
    }
    xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
 
-   /*
-    * For the bootstrap server we will use one bank cfb.banked
-    */
-   cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
-
    vgaVirtBase = (pointer)VGABASE;
-   vgaReadBottom  = (void *)((unsigned int)vgaReadBottom
-		      + (unsigned int)vgaBase); 
-   vgaReadTop     = (void *)((unsigned int)vgaReadTop
-		      + (unsigned int)vgaBase); 
-   vgaWriteBottom = (void *)((unsigned int)vgaWriteBottom
-		      + (unsigned int)vgaBase); 
-   vgaWriteTop    = (void *)((unsigned int)vgaWriteTop
-		      + (unsigned int)vgaBase); 
 
    agxCalcCRTCRegs(&agxCRTCRegs, agxInfoRec.modes);
    agxInited = FALSE;
@@ -901,13 +921,10 @@ agxInit (scr_index, pScreen, argc, argv)
    /* Clear the display.
     * Need to set the color, origin, and size.  Then draw.
     */
-   agxBitCache8Init(agxVirtX, agxVirtY);
+   agxBitCache8Init(agxDisplayWidth, agxVirtY);
 
 #ifndef DIRTY_STARTUP
    agxImageClear();
-#endif
-#if 0
-   agxCacheInit(agxVirtX, agxVirtY);
 #endif
    /*
     * Take display resolution from the -dpi flag if specified
@@ -916,21 +933,15 @@ agxInit (scr_index, pScreen, argc, argv)
    if (monitorResolution)
       displayResolution = monitorResolution;
 
-   /*
-    * for the bootstrap server we will use the unbanked CFB server
-    * and a 64k aperature
-    */
-
    if (!agxScreenInit(pScreen, 
 		      (pointer) vgaVirtBase,
 		      agxInfoRec.virtualX,
 		      agxInfoRec.virtualY,
 		      displayResolution,
 		      displayResolution,
-		      agxInfoRec.virtualX))
+		      agxDisplayWidth))
       return(FALSE);
 
-   cfbLowlevFuncs.vgaBitblt = OneBankvgaBitBlt;
    pScreen->CloseScreen = agxCloseScreen;
    pScreen->SaveScreen = agxSaveScreen;
    pScreen->InstallColormap = agxInstallColormap;
@@ -949,6 +960,16 @@ agxInit (scr_index, pScreen, argc, argv)
 
    savepScreen = pScreen;
 
+   /* enable DAC output */
+   outb(agxIdxReg, 0);
+   if(XGA_PALETTE_CONTROL(agxChipId)) {
+      outb(agxIdxReg, IR_PAL_MASK);
+      outb(agxByteData, 0xFF);
+   }
+   else {
+      outb(VGA_PAL_MASK, 0xFF);
+   }
+
    return cfbCreateDefColormap(pScreen);
 }
 
@@ -965,7 +986,8 @@ agxEnterLeaveVT(enter, screen_idx)
    BoxRec  pixBox;
    RegionRec pixReg;
    DDXPointRec pixPt;
-   PixmapPtr pspix;
+   unsigned int  palDataReg;
+   PixmapPtr pspix = NULL;
    ScreenPtr pScreen = savepScreen;
 
    if (!xf86Resetting && !xf86Exiting) {
@@ -987,6 +1009,30 @@ agxEnterLeaveVT(enter, screen_idx)
 
       if (!xf86Resetting) {
 	 ScrnInfoPtr pScr = XF86SCRNINFO(pScreen);
+
+         /* make sure screen is blanked during setup */
+         if(XGA_PALETTE_CONTROL(agxChipId)) {
+            outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
+            outb(agxByteData, 0x00);
+            outb(agxIdxReg, IR_PAL_DATA);
+            palDataReg = agxByteData;
+         }
+         else {
+            outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
+            outb(VGA_PAL_WRITE_INDEX, 0x00);
+            palDataReg = VGA_PAL_DATA;
+         }
+         outb(palDataReg, 0);
+         outb(palDataReg, 0);
+         outb(palDataReg, 0);
+         if(XGA_PALETTE_CONTROL(agxChipId)) {
+            outb(agxIdxReg, IR_PAL_MASK);
+            outb(agxByteData, 0x00);
+         }
+         else {
+            outb(VGA_PAL_MASK, 0x00);
+         }
+
          agxCalcCRTCRegs(&agxCRTCRegs, agxInfoRec.modes);
          agxInited = FALSE;
          agxInitDisplay(agxInfoRec.scrnIndex,&agxCRTCRegs);
@@ -997,39 +1043,34 @@ agxEnterLeaveVT(enter, screen_idx)
 #ifndef DIRTY_STARTUP
          agxImageClear();
 #endif
-#if 0
-   	 agxCacheInit(agxVirtX, agxVirtY);
-#endif
-  	 agxBitCache8Init(agxVirtX, agxVirtY);
+  	 agxBitCache8Init(agxDisplayWidth, agxVirtY);
   	 agxRestoreCursor(pScreen);
   	 agxAdjustFrame(pScr->frameX0, pScr->frameY0);
 
+	 if ( (pointer)pspix->devPrivate.ptr != (pointer)vgaVirtBase
+               && ppix ) {
+	    pspix->devPrivate.ptr = vgaVirtBase;
+            GE_WAIT_IDLE();
+            (*agxImageWriteFunc)( 0, 0, 
+                                  pScreen->width, pScreen->height,
+		 	          ppix->devPrivate.ptr,
+				  PixmapBytePad( agxDisplayWidth,
+					         pScreen->rootDepth ),
+				  0, 0, MIX_SRC, ~0 );
+	 }
 	 if (LUTissaved) {
 	    agxRestoreLUT(agxsavedLUT);
 	    LUTissaved = FALSE;
 	    /*agxRestoreColor0(pScreen);*/
 	 }
 
-	 if ( (pointer)pspix->devPrivate.ptr != (pointer)vgaVirtBase
-               && ppix ) {
-	    pspix->devPrivate.ptr = vgaVirtBase;
-            GE_WAIT_IDLE();
-#if 1
-            (*agxImageWriteFunc)( 0, 0, 
-                                  pScreen->width, pScreen->height,
-		 	          ppix->devPrivate.ptr,
-				  PixmapBytePad( pScreen->width,
-					         pScreen->rootDepth ),
-				  0, 0, MIX_SRC, ~0 );
-#else
-            cfbDoBitblt( &ppix->drawable, 
-                         &pspix->drawable,
-                         GXcopy, &pixReg, 
-                         &pixPt, 0xFF     );
-
-#endif
-	 }
-         outb(VGA_PAL_MASK,0xFF);
+         if(XGA_PALETTE_CONTROL(agxChipId)) {
+            outb(agxIdxReg, IR_PAL_MASK);
+            outb(agxByteData, 0xFF);
+         }
+         else {
+            outb(VGA_PAL_MASK, 0xFF);
+         }
       }
       if (ppix) {
 	 (pScreen->DestroyPixmap)(ppix);
@@ -1053,25 +1094,17 @@ agxEnterLeaveVT(enter, screen_idx)
           */
 
 	 ppix = (pScreen->CreatePixmap)(pScreen,
-					pScreen->width, pScreen->height,
+					agxDisplayWidth, pScreen->height,
 					pScreen->rootDepth);
 
 	 if (ppix) {
             GE_WAIT_IDLE();
-#if 1
    	    (agxImageReadFunc)( 0, 0, 
 				pScreen->width, pScreen->height,
 				ppix->devPrivate.ptr,
-				PixmapBytePad( pScreen->width,
+				PixmapBytePad( agxDisplayWidth,
 					       pScreen->rootDepth ),
 				0, 0, ~0 );
-#else
-            cfbDoBitblt( &pspix->drawable, 
-                         &ppix->drawable, 
-                         GXcopy, &pixReg,
-                         &pixPt, 0xFF );
-#endif
-
 	    pspix->devPrivate.ptr = ppix->devPrivate.ptr;
 	 }
       }
@@ -1080,6 +1113,29 @@ agxEnterLeaveVT(enter, screen_idx)
 #endif
       agxSaveLUT(agxsavedLUT);
       LUTissaved = TRUE;
+
+      /* make sure screen is blanked during exit */
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
+         outb(agxByteData, 0x00);
+         outb(agxIdxReg, IR_PAL_DATA);
+         palDataReg = agxByteData;
+      }
+      else {
+         outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
+         outb(VGA_PAL_WRITE_INDEX, 0x00);
+         palDataReg = VGA_PAL_DATA;
+      }
+      outb(palDataReg, 0);
+      outb(palDataReg, 0);
+      outb(palDataReg, 0);
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_PAL_MASK);
+         outb(agxByteData, 0x00);
+      }
+      else {
+         outb(VGA_PAL_MASK, 0x00);
+      }
 
       if (!xf86Resetting) {
 	 agxCleanUp();
@@ -1098,8 +1154,9 @@ agxEnterLeaveVT(enter, screen_idx)
  */
 
 Bool
-agxCloseScreen(screen_idx)
+agxCloseScreen(screen_idx, pScreen)
    int screen_idx;
+   ScreenPtr pScreen;
 {
    /*
     * Hmm... The server may shut down even if it is not running on the
@@ -1132,7 +1189,6 @@ agxSaveScreen (pScreen, on)
    ScreenPtr     pScreen;
    Bool          on;
 {
-   int	   ext_ge_config;
    unsigned char oldIndex;
    unsigned int  palDataReg;
 
@@ -1152,21 +1208,7 @@ agxSaveScreen (pScreen, on)
 
       oldIndex = inb(agxIdxReg);
       if (on) {
-
-         if(XGA_PALETTE_CONTROL(agxChipId)) {
-            outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
-            outb(agxByteData, 0x00);
-            outb(agxIdxReg, IR_PAL_DATA);
-            palDataReg = agxByteData;
-         }
-         else {
-            outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-            outb(VGA_PAL_WRITE_INDEX, 0x00);
-            palDataReg = VGA_PAL_DATA;
-         }
-	 outb(palDataReg, 0xFF);
-	 outb(palDataReg, 0xFF);
-	 outb(palDataReg, 0xFF);
+         agxRestoreColor0(savepScreen);
 
          if(XGA_PALETTE_CONTROL(agxChipId)) {
             outb(agxIdxReg, IR_PAL_MASK);
@@ -1177,21 +1219,8 @@ agxSaveScreen (pScreen, on)
          }
       }
       else {
-         if(XGA_PALETTE_CONTROL(agxChipId)) {
-            outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
-            outb(agxByteData, 0x00);
-            outb(agxIdxReg, IR_PAL_DATA);
-            palDataReg = agxByteData;
-         }
-         else {
-            outb(agxIdxReg, 0);  /* make sure index is not 0x51 */
-            outb(VGA_PAL_WRITE_INDEX, 0x00);
-            palDataReg = VGA_PAL_DATA;
-         }
-	 outb(palDataReg, 0);
-	 outb(palDataReg, 0);
-	 outb(palDataReg, 0);
-
+         agxClearColor0();
+   
          if(XGA_PALETTE_CONTROL(agxChipId)) {
             outb(agxIdxReg, IR_PAL_MASK);
             outb(agxByteData, 0x00);
@@ -1213,11 +1242,12 @@ void
 agxAdjustFrame(x, y)
    int x, y;
 {
+   unsigned int byte_offset;
    /*
     * XGA and AGX are documented as being offset in units of 8.
     * But, the AGX-015 is actually offset in units of 4.
     */
-   unsigned int byte_offset = (x + y*agxVirtX + 1) >> 2;
+   byte_offset = (x + y*agxDisplayWidth + 1) >> 2;
 
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
    if (vgaPhysBase)
@@ -1238,3 +1268,13 @@ agxAdjustFrame(x, y)
    /*agxRepositionCursor(savepScreen); */
 }
 
+/*
+ * agxValidMode --
+ *
+ */
+static Bool
+agxValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}

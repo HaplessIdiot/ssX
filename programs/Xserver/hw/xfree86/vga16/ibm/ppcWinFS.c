@@ -1,5 +1,5 @@
-/* $XConsortium: ppcWindowFS.c,v 1.2 94/04/17 20:31:58 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: ppcWinFS.c,v 1.1 95/01/26 15:21:11 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcWinFS.c,v 3.0 1994/05/04 15:03:40 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *

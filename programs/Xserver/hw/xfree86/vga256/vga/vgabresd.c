@@ -1,5 +1,5 @@
-/* $XConsortium: cfbbresd.c,v 1.2 94/04/17 20:32:16 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: vgabresd.c,v 1.2 95/01/13 20:15:15 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgabresd.c,v 3.0 1994/07/24 11:58:49 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -47,7 +47,6 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: cfbbresd.c,v 1.2 94/04/17 20:32:16 dpw Exp $ */
 
 #include "vga256.h"
 #include "miline.h"
