@@ -1,5 +1,5 @@
-/* $XConsortium: auth.c,v 1.56 94/10/03 21:01:57 mor Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.7 1994/11/27 07:06:48 dawes Exp $ */
+/* $XConsortium: auth.c,v 1.56.1.1 95/01/27 14:42:23 kaleb Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.8 1995/01/12 05:57:06 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium

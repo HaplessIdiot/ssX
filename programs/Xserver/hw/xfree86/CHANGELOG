@@ -1,4 +1,8 @@
-XFree86 3.1.0Zf (29 January 1995)
+XFree86 3.1.1 (30 January 1995)
+265. --- Code freeze ---
+264. Include final form of fix-11.
+
+XFree86 3.1.0Zg (29 January 1995)
 263. Include final form of fix-10.
 262. Fix some merge problems.
 
