@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.11 1997/02/25 14:21:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.12 1997/02/27 13:58:47 hohndel Exp $ */
 
 
 
@@ -49,7 +49,7 @@ extern Bool xf86Resetting;
 extern Bool xf86ProbeFailed;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern char **xf86VisualNames;
-extern vgaVideoChipPtr vgaDrivers[];
+extern vgaVideoChipPtr videoDrivers[];
 extern unsigned char (* dacInTi3026IndReg)(unsigned char);
 extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
 extern int LoaderDefaultFunc(void);
@@ -233,7 +233,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86ccdScreenPrivateIndex)
    SYMVAR(xf86xaaloaded)
    SYMVAR(xf86ProbeOnly)
-   SYMVAR(vgaDrivers)
+   SYMVAR(videoDrivers)
    SYMVAR(TimingTab)
 
   { 0, 0 },

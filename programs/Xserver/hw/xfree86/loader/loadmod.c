@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.7 1997/02/28 13:32:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.8 1997/03/03 15:55:27 hohndel Exp $ */
 
 
 
@@ -233,7 +233,7 @@ LoadModule(module,path)
 			case MAGIC_DONE:
 				break;
 			case MAGIC_ADD_VIDEO_CHIP_REC:
-				addChipRec((vgaVideoChipRec*)data);
+				addChipRec((void *)data);
 				break;
 			case MAGIC_LOAD:
 				LoadModule((char*)data,path);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/coffloader.c,v 1.2 1997/03/03 15:55:24 hohndel Exp $ */
 
 
 
@@ -194,6 +194,8 @@ if( listCOMMON == NULL )
 common=listCOMMON;
 while(common) {
 	/* Ensure long word alignment */
+	if(   common->sym->n_value != 2
+	   && common->sym->n_value != 1) /* But not for short and char ;-)(mr)*/
 	if( common->sym->n_value%4 != 0 )
 		common->sym->n_value+= 4-(common->sym->n_value%4);
 

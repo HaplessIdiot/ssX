@@ -1,4 +1,9 @@
-XFree86 3.2Ak ( 5 March 1997)
+XFree86 3.2Ak ( 4 March 1997)
+ 545. Make Mono drivers loadable and clean up some of XF86_LOADER (#119,
+      H.J. Lu).
+ 544. Fix char alignement in COFF loader as well (#120, Thomas Mueller).
+ 543. Fix short alignement in COFF loader and add missing entry to SYMENT
+      (#118, Michael Rohleder).
  542. Build fix for libc_wrapper.c on ISC (#117, Michael Rohleder).
  541. Add Module Version to Mach32 server (#117, Michael Rohleder).
  540. Add smarter handling of unresolved symbols in the loader (#116,
