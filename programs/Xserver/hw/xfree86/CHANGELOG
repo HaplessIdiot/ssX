@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 347. SECURITY: don't let a non-root user halt the machine by having X
+      send SIGUSR1 to init (Thomas Moestl).
  346. Changed itn10 module to stub on Sparc (Egbert Eich).
  345. Added hyperpen driver (Roland Jansen et. al.).
  344. Fixed alignments of x86emu-structures for AXP (Jay Estabrook).
@@ -13956,4 +13958,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1963 2001/10/01 13:43:59 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1964 2001/10/01 17:19:40 alanh Exp $
