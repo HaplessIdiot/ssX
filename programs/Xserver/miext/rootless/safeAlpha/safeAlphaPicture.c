@@ -32,7 +32,7 @@
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  */
- /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.2 2003/10/18 00:00:34 torrey Exp $ */
+ /* $XFree86: xc/programs/Xserver/miext/rootless/safeAlpha/safeAlphaPicture.c,v 1.3 2003/10/24 00:33:15 torrey Exp $ */
 
 #ifdef RENDER
 
@@ -41,6 +41,7 @@
 #include "mipict.h"
 #include "fbpict.h"
 #include "safeAlpha.h"
+#include "rootlessCommon.h"
 
 # define mod(a,b)	((b) == 1 ? 0 : (a) >= 0 ? (a) % (b) : (b) - (-a) % (b))
 

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.47 2004/01/01 17:15:14 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/darwin.cf,v 1.48 2004/01/02 19:39:08 torrey Exp $
 
 /* Darwin / Mac OS X configuration by John Carmack <johnc@idsoftware.com> */
 
@@ -25,21 +25,21 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * Define the operating system's capabilities
  */
 #define HasSnprintf             YES
-#define HasStrlcat		YES
 #define HasPutenv               YES
 #define HasBSD44Sockets         YES
 #define Malloc0ReturnsNull      NO
 #define HasShadowPasswd         NO
 #define HasUsableFileMmap       YES
 #define HasZlib                 YES
-#define HasArc4Random		YES
-#define HasGetIfAddrs		YES
 #ifndef HasShm
 # define HasShm                 YES
 #endif
 #define HasNdbm                 YES
 #if OSMajorVersion >= 6
 # define HasNCurses             YES
+# define HasArc4Random          YES
+# define HasGetIfAddrs          YES
+# define HasStrlcat             YES
 #else
 # define HasNCurses             NO
 #endif
@@ -48,6 +48,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #ifndef HasGcc3
 # define HasGcc3                NO
+#endif
+
+/* Older versions don't really support IPv6, but #define AF_INET6. */
+#if OSMajorVersion < 6
+# define BuildIPv6              NO
 #endif
 
 /* Thread support */
