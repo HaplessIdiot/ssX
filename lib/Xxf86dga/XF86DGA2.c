@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.22tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.23 2003/05/05 20:42:30 tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -68,6 +68,7 @@ static XExtensionHooks xdga_extension_hooks = {
 static XEXT_GENERATE_CLOSE_DISPLAY (xdga_close_display, xdga_info)
 
 
+XExtDisplayInfo* xdga_find_display(Display*);
 XEXT_GENERATE_FIND_DISPLAY (xdga_find_display, xdga_info, 
 				   "XFree86-DGA", 
 				   &xdga_extension_hooks, 
@@ -934,11 +935,6 @@ DGAMapPhysical(
 			MAP_FILE | MAP_SHARED, pMap->fd, (off_t)base);
     if (pMap->virtual == (void *)-1)
 	return False;
-#endif
-
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) \
-	&& !(defined(Lynx) && defined(NO_MMAP)) \
-	&& !defined(__UNIXOS2__)
     mprotect(pMap->virtual, size, PROT_READ | PROT_WRITE);
 #endif
 
@@ -950,16 +946,23 @@ DGAMapPhysical(
 static void
 DGAUnmapPhysical(DGAMapPtr pMap)
 {
-#if !defined(ISC) && !defined(HAS_SVR3_MMAP) \
-	&& !(defined(Lynx) && defined(NO_MMAP)) \
-	&& !defined(__UNIXOS2__)
-    mprotect(pMap->virtual,pMap->size, PROT_READ);
+#if defined(ISC) && defined(HAS_SVR3_MMAP)
+    /* XXX Add unmapping code here. */
+#elif defined (__UNIXOS2__)
+    /* XXX Add unmapping code here. */
 #elif defined(Lynx) && defined(NO_MMAP)
 	/* XXX this doesn't allow enable after disable */
     smem_create(NULL, pMap->virtual, pMap->size, SM_DETACH);
     smem_remove("XF86DGA");
+#else
+    if (pMap->virtual && pMap->virtual != (void *)-1) {
+	mprotect(pMap->virtual,pMap->size, PROT_READ);
+	munmap(pMap->virtual, pMap->size);
+	pMap->virtual = 0;
+    }
+    if (pMap->fd >= 0) {
+	close(pMap->fd);
+	pMap->fd = -1;
+    }
 #endif
-
-
-   /* We need to unmap and close too !!!!!!!!!!*/
 }
