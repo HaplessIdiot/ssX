@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/XF86Dga.c,v 3.1 1995/12/09 11:09:12 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/XF86Dga.c,v 3.2 1995/12/16 08:22:36 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/Shell.h>
@@ -135,6 +135,10 @@ int *width, *bank, *ram;
    /* This requires linux-0.99.pl10 or above */
    *addr = (void *)mmap(NULL, *bank, PROT_READ,
                             MAP_SHARED, fd, (off_t)offset);
+#ifdef DEBUG
+   fprintf(stderr, "XF86DGAGetVideo: physaddr: 0x%08x, size: %d\n",
+	   (long)offset, *bank);
+#endif
    if (*addr == (char *) -1) {
         fprintf(stderr, "XF86DGAGetVideo: failed to mmap /dev/mem (%s)\n",
                            strerror(errno));

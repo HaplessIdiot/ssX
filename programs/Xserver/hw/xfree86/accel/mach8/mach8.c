@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.7 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.24 1995/12/02 05:04:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.25 1995/12/09 11:07:24 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -129,6 +129,8 @@ ScrnInfoRec mach8InfoRec = {
 #ifdef XFreeXDGA
     0,			/* int directMode */
     NULL,		/* Set Vid Page */
+    0,			/* unsigned long physBase */
+    0,			/* int physSize */
 #endif
 };
 
