@@ -1,4 +1,7 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 255. Add zh_CN.GBK locale support (#A.293, Yong Li).
+ 254. Fix a problem with the ThinkingMousePS/2 protocol handling of left
+      movement (#A.292, Ian Remmler).  (This has been in 3.3.x since 3.3.4.)
  253. Make xdm Xinerama-aware so that it can avoid splitting login and
       chooser windows across physical screens (#A.276,
       Dmitry Yu. Bolkhovityanov).
@@ -12674,4 +12677,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1617 2001/03/06 17:07:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1618 2001/03/06 17:31:35 dawes Exp $
