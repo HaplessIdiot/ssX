@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:41:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.40 2001/10/08 17:20:11 alanh Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.41 2001/11/16 16:47:51 dawes Exp $
 
 #if UseCCMakeDepend
 CCMDEP_PROG = ccmakedep
@@ -27,10 +27,6 @@ LNDIR_PROG = lndir
 
 #if BuildRman
 RMAN_PROG = rman
-#endif
-
-#ifdef QNX4Architecture
-QNXCopyInstaller($(PROJECTROOT)/bin/install.qnx,./install.sh)
 #endif
 
 PROGRAMS = $(RMAN_PROG) $(LNDIR_PROG) makestrs revpath $(EXPORTLISTGEN) $(CMKDIRHIER)
@@ -142,7 +138,7 @@ InstallDriverSDKNamedProg(os2inst.cmd,os2inst.cmd,$(DRIVERSDKDIR)/config/util)
 InstallNamedProg(xmkmf,xmkmf,$(BINDIR))
 InstallNamedProg(mkdirhier.sh,mkdirhier,$(BINDIR))
 InstallNamedProg(gccmakedep,gccmakedep,$(BINDIR))
-#ifdef NTOArchitecture
+#if defined(QNX4Architecture) || defined(NTOArchitecture)
 InstallNamedProg(install.sh,install,$(BINDIR))
 #endif
 InstallDriverSDKNamedProg(mkdirhier.sh,mkdirhier.sh,$(DRIVERSDKDIR)/config/util)

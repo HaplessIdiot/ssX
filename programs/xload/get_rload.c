@@ -1,13 +1,31 @@
-/* $XFree86: xc/programs/xload/get_rload.c,v 1.2 2001/08/15 16:27:53 tsi Exp $ */
+/* $XFree86: xc/programs/xload/get_rload.c,v 1.3 2001/08/27 23:35:14 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
-#include <protocols/rwhod.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include "xload.h"
 
+/* Not all OS supports get_rload
+   steal the STUB idea from get_load
+ */
+#if defined(__QNX__)
+#define RLOADSTUB
+#endif
+
+#ifdef RLOADSTUB
+void GetRLoadPoint( w, closure, call_data )
+     Widget   w;              /* unused */
+     XtPointer  closure;        /* unused */
+     XtPointer  call_data;      /* pointer to (double) return value */
+
+{
+  *(double *)call_data = 1.0;
+}
+#else  /* RLOADSTUB */
+
+#include <protocols/rwhod.h>
 #ifndef _PATH_RWHODIR
 #define _PATH_RWHODIR "/var/spool/rwho"
 #endif
@@ -54,3 +72,5 @@ void GetRLoadPoint( w, closure, call_data )
 
   *(double *)call_data = buf.wd_loadav[0] / 100.0;
 }
+
+#endif  /* RLOADSTUB */

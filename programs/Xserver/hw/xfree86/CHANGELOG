@@ -1,4 +1,8 @@
-XFree86 4.1.99.5 (xx January 2002)
+XFree86 4.1.99.5 (7 January 2002)
+ 643. Some QNX4 fixes/updates (#5121, Frank Liu).
+ 642. Prefer POSIX O_NONBLOCK to O_NDELAY (when defined) in lib/dps (#5121,
+      Frank Liu).
+ 641. Fix portability problem with XpmI.h (based on #5121, Frank Liu).
  640. Only use SA_RESTART in xterm when it's available (#5121, Frank Liu).
  639. Work around Watcom compiler bug that shows up when building Mesa's
       stencil.c (David Dawes, based on #5121, Frank Liu).
@@ -14460,4 +14464,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2112 2002/01/04 19:24:11 paulo Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2113 2002/01/07 18:46:00 dawes Exp $

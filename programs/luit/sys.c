@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/sys.c,v 1.5 2001/12/19 15:40:08 tsi Exp $ */
+/* $XFree86: xc/programs/luit/sys.c,v 1.6 2001/12/19 23:11:05 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -47,6 +47,10 @@ THE SOFTWARE.
 #ifdef HAVE_POLL
 #include <sys/poll.h>
 #undef HAVE_SELECT
+#endif
+
+#ifdef __QNX__
+#include <sys/select.h>
 #endif
 
 
@@ -237,7 +241,9 @@ setRawTermios(void)
         return rc;
     tio.c_lflag &= ~(ECHO|ICANON|ISIG);
     tio.c_iflag &= ~(ICRNL|IXOFF|IXON|ISTRIP);
+#ifdef ONLCR
     tio.c_oflag &= ~ONLCR;
+#endif
 #ifdef OCRNL
     tio.c_oflag &= ~OCRNL;
 #endif

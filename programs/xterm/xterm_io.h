@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.4 2001/06/08 08:40:23 alanh Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.5 2001/06/08 09:48:16 alanh Exp $
  */
 
 /*
@@ -233,7 +233,7 @@ extern int ptioctl(int fd, int func, void* data);
 
 #ifdef Lynx
 #include <resource.h>
-#elif !(defined(SYSV) || defined(linux) || defined(VMS))
+#elif !(defined(SYSV) || defined(linux) || defined(VMS) || (defined(__QNX__)&&!defined(__QNXNTO__)))
 #include <sys/resource.h>
 #endif
 

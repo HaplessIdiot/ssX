@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.37 2001/11/19 20:44:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.38 2001/12/14 20:00:33 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -92,7 +92,7 @@ SOFTWARE.
 #endif
 
 
-#if defined(hpux)
+#if defined(hpux) || defined(QNX4)
 # include <sys/utsname.h>
 # ifdef HAS_IFREQ
 #  include <net/if.h>
@@ -454,7 +454,7 @@ DefineSelf (int fd)
 
 #else /* WINTCP */
 
-#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ))
+#if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ)) || defined(QNX4)
 void
 DefineSelf (int fd)
 {
@@ -486,7 +486,16 @@ DefineSelf (int fd)
      * uname() lets me access to the whole string (it smashes release, you
      * see), whereas gethostname() kindly truncates it for me.
      */
+#ifndef QNX4
     uname(&name);
+#else
+    /* QNX4's uname returns node number in name.nodename, not the hostname
+       have to overwrite it */
+    char hname[1024];
+    gethostname(hname, 1024);
+    name.nodename = hname;
+#endif
+
     hp = _XGethostbyname(name.nodename, hparams);
     if (hp != NULL)
     {

@@ -34,7 +34,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/dpsexec/dpsexec.c,v 1.4 2001/04/01 14:00:16 tsi Exp $ */
+/* $XFree86: xc/programs/dpsexec/dpsexec.c,v 1.5 2001/10/28 03:34:20 tsi Exp $ */
 
 #include <errno.h>
 #include <stdlib.h>
@@ -47,6 +47,10 @@
 #include <X11/Xlib.h>
 #include <DPS/XDPSlib.h>
 #include <DPS/dpsXclient.h>
+
+#ifdef __QNX__
+#include <sys/select.h>
+#endif
 
 #define W_HEIGHT	512
 #define W_WIDTH		512

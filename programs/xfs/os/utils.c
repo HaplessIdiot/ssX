@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.16 2001/12/03 21:25:46 herrb Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.17 2001/12/14 20:01:41 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -485,6 +485,7 @@ SetUserId(void)
 		ErrorF("fatal: couldn't set groupid to xfs user's group\n");
 		exit(1);
 	    }
+#ifndef QNX4
 #ifndef __CYGWIN__
 	    if (setgroups(0, NULL)) {
 		ErrorF("fatal: couldn't drop supplementary groups\n");
@@ -495,6 +496,7 @@ SetUserId(void)
 		ErrorF("fatal: couldn't init supplementary groups\n");
 		exit(1);
 	    }
+#endif /* QNX4 */
 	    if (setuid(pwent->pw_uid)) {
 		ErrorF("fatal: couldn't set userid to %s user\n", user);
 		exit(1);

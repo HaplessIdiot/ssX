@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.13 2001/08/27 23:35:14 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.14 2001/11/16 16:47:58 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -46,7 +46,7 @@ from the X Consortium.
 #include "xload.h"
 
 #if !defined(DGUX)
-#ifdef att
+#if defined(att) || defined(QNX4)
 #define LOADSTUB
 #endif
 
@@ -542,8 +542,8 @@ InitLoadPoint()
 void
 GetLoadPoint( w, closure, call_data )           /* QNX NTO version */
 Widget  w;              /* unused */
-caddr_t closure;      /* unused */
-caddr_t call_data;    /* pointer to (double) return value */
+XtPointer closure;      /* unused */
+XtPointer call_data;    /* pointer to (double) return value */
 {
     double *loadavg = (double *)call_data;
     double timediff;
