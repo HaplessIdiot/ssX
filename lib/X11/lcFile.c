@@ -23,6 +23,8 @@
  * SOFTWARE.
  *
 */
+/* $XFree86$ */
+
 #include <stdio.h>
 #include <ctype.h>
 #include "Xlibint.h"
