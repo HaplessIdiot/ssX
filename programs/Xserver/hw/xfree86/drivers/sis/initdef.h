@@ -29,7 +29,7 @@
  *
  * Author: 	Thomas Winischhofer <thomas@winischhofer.net>
  *
- * Based on code by Silicon Intergrated Systems
+ * Based on code by Silicon Integrated Systems
  *
  */
 
@@ -363,6 +363,7 @@
 #define VCLK108_3_315           0x45   /* Index in VBVCLKData table (315) */
 #define VCLK100_315             0x46   /* Index in VBVCLKData table (315) */
 #define VCLK34_315              0x55   /* Index in VBVCLKData table (315) */
+#define VCLK68_315		0x0d
 
 #define TVCLKBASE_300		0x21   /* Indices on TV clocks in VCLKData table (300) */
 #define TVCLKBASE_315	        0x3a   /* Indices on TV clocks in (VB)VCLKData table (315) */

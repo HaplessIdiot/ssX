@@ -1947,6 +1947,10 @@ SiS_GetVCLK2Ptr(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
               VCLKIndex = LVDSXlatVCLK2[VCLKIndex];
 	   else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1152x768)
               VCLKIndex = LVDSXlatVCLK2[VCLKIndex];
+	   else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x768)
+	      VCLKIndex = VCLK68_315;
+	   else if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1600x1200)
+	      VCLKIndex = VCLK162_315;
      	   else
 	      VCLKIndex = LVDSXlatVCLK3[VCLKIndex];
 
@@ -4790,7 +4794,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
  	     if( (SiS_IsVAMode(SiS_Pr,HwInfo)) ||
 	         (SiS_IsLCDOrLCDA(SiS_Pr,HwInfo)) ) {
 	     	SiS_Chrontel701xBLOn(SiS_Pr, HwInfo);
-	     	SiS_ChrontelDoSomething4(SiS_Pr,HwInfo);
+	     	SiS_ChrontelInitTVVSync(SiS_Pr,HwInfo);
              }
        	  }
        } else if(SiS_Pr->SiS_IF_DEF_CH70xx == 0) {
@@ -8977,6 +8981,8 @@ SiS_ChrontelPowerSequencing(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
   UCHAR regtable[]      = { 0x67, 0x68, 0x69, 0x6a, 0x6b };
   UCHAR table1024_740[] = { 0x01, 0x02, 0x01, 0x01, 0x01 };
   UCHAR table1400_740[] = { 0x01, 0x6e, 0x01, 0x01, 0x01 };
+  UCHAR asus1024_740[]  = { 0x19, 0x6e, 0x01, 0x19, 0x09 };
+  UCHAR asus1400_740[]  = { 0x19, 0x6e, 0x01, 0x19, 0x09 };
   UCHAR table1024_650[] = { 0x01, 0x02, 0x01, 0x01, 0x02 };
   UCHAR table1400_650[] = { 0x01, 0x02, 0x01, 0x01, 0x02 };
   UCHAR *tableptr = NULL;
@@ -8986,11 +8992,13 @@ SiS_ChrontelPowerSequencing(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
   if(HwInfo->jChipType == SIS_740) {
      if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
-        tableptr = table1024_740;
+        if(SiS_Pr->SiS_CustomT == CUT_ASUSL3000D) tableptr = asus1024_740;
+        else    			          tableptr = table1024_740;
      } else if((SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) ||
                (SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) ||
 	       (SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1600x1200)) {
-        tableptr = table1400_740;
+	if(SiS_Pr->SiS_CustomT == CUT_ASUSL3000D) tableptr = asus1400_740;
+        else					  tableptr = table1400_740;
      } else return;
   } else {
      if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1024x768) {
@@ -9063,7 +9071,7 @@ SiS_SetCH701xForLCD(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
         if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1280x1024) return;
 	if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) return;
      } else if(tempbh == 0xde) {
-        if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1400x1050) return;
+        if(SiS_Pr->SiS_LCDResInfo == SiS_Pr->SiS_Panel1600x1200) return;
      }
   }
 
@@ -9095,18 +9103,18 @@ SiS_SetCH701xForLCD(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 }
 
 static void
-SiS_ChrontelDoSomething5(SiS_Private *SiS_Pr)
+SiS_ChrontelResetVSync(SiS_Private *SiS_Pr)
 {
      unsigned char temp, temp1;
 
      temp1 = SiS_GetCH701x(SiS_Pr,0x49);
      SiS_SetCH701x(SiS_Pr,0x3e49);
      temp = SiS_GetCH701x(SiS_Pr,0x47);
-     temp &= 0x7f;
+     temp &= 0x7f;	/* Use external VSYNC */
      SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x47);
      SiS_LongDelay(SiS_Pr,3);
      temp = SiS_GetCH701x(SiS_Pr,0x47);
-     temp |= 0x80;
+     temp |= 0x80;	/* Use internal VSYNC */
      SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x47);
      SiS_SetCH701x(SiS_Pr,(temp1 << 8) | 0x49);
 }
@@ -9119,7 +9127,7 @@ SiS_Chrontel701xOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
   if(SiS_Pr->SiS_IF_DEF_CH70xx == 2) {
      if(HwInfo->jChipType == SIS_740) {
         temp = SiS_GetCH701x(SiS_Pr,0x1c);
-        temp |= 0x04;
+        temp |= 0x04;	/* Invert XCLK phase */
         SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x1c);
      }
      if(SiS_IsYPbPr(SiS_Pr, HwInfo)) {
@@ -9135,10 +9143,10 @@ SiS_Chrontel701xOn(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x01);
      }
      if(HwInfo->jChipType == SIS_740) {
-        SiS_ChrontelDoSomething5(SiS_Pr);
-        SiS_SetCH701x(SiS_Pr,0x2049);   			/* Enable TV path */
+        SiS_ChrontelResetVSync(SiS_Pr);
+        SiS_SetCH701x(SiS_Pr,0x2049);   /* Enable TV path */
      } else {
-        SiS_SetCH701x(SiS_Pr,0x2049);   			/* Enable TV path */
+        SiS_SetCH701x(SiS_Pr,0x2049);   /* Enable TV path */
         temp = SiS_GetCH701x(SiS_Pr,0x49);
         if(SiS_IsYPbPr(SiS_Pr,HwInfo)) {
            temp = SiS_GetCH701x(SiS_Pr,0x73);
@@ -9184,9 +9192,10 @@ SiS_ChrontelResetDB(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
      USHORT temp;
 
      if(HwInfo->jChipType == SIS_740) {
-        temp = SiS_GetCH701x(SiS_Pr,0x4a);
+
+        temp = SiS_GetCH701x(SiS_Pr,0x4a);  /* Version ID */
         temp &= 0x01;
-        if(!(temp)) {
+        if(!temp) {
 
            if(SiS_WeHaveBacklightCtrl(SiS_Pr,HwInfo)) {
 	      temp = SiS_GetCH701x(SiS_Pr,0x49);
@@ -9198,12 +9207,13 @@ SiS_ChrontelResetDB(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
            SiS_SetCH701x(SiS_Pr,0x1848);
 
 	   if(SiS_WeHaveBacklightCtrl(SiS_Pr, HwInfo)) {
-	      SiS_ChrontelDoSomething5(SiS_Pr);
+	      SiS_ChrontelResetVSync(SiS_Pr);
 	      SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x49);
 	   }
 
         } else {
 
+	   /* Clear/set/clear GPIO */
            temp = SiS_GetCH701x(SiS_Pr,0x5c);
 	   temp &= 0xef;
 	   SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x5c);
@@ -9218,6 +9228,7 @@ SiS_ChrontelResetDB(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	      SiS_SetCH701xForLCD(SiS_Pr, HwInfo);
 	   }
         }
+
      } else { /* 650 */
         /* Reset Chrontel 7019 datapath */
         SiS_SetCH701x(SiS_Pr,0x1048);
@@ -9227,14 +9238,14 @@ SiS_ChrontelResetDB(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 }
 
 void
-SiS_ChrontelDoSomething4(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
+SiS_ChrontelInitTVVSync(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 {
      USHORT temp;
 
      if(HwInfo->jChipType == SIS_740) {
 
         if(SiS_WeHaveBacklightCtrl(SiS_Pr,HwInfo)) {
-           SiS_ChrontelDoSomething5(SiS_Pr);
+           SiS_ChrontelResetVSync(SiS_Pr);
         }
 
      } else {
@@ -9267,8 +9278,8 @@ SiS_ChrontelDoSomething3(SiS_Private *SiS_Pr, USHORT ModeNo, PSIS_HW_INFO HwInfo
            temp++;
 	   SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x61);
         }
-        SiS_SetCH701x(SiS_Pr,0x4566);
-        SiS_SetCH701x(SiS_Pr,0xaf76);
+        SiS_SetCH701x(SiS_Pr,0x4566);  /* Panel power on */
+        SiS_SetCH701x(SiS_Pr,0xaf76);  /* All power on */
         SiS_LongDelay(SiS_Pr,1);
         SiS_GenericDelay(SiS_Pr,0x16ff);
 
@@ -9317,10 +9328,11 @@ SiS_ChrontelDoSomething2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
      do {
        temp = SiS_GetCH701x(SiS_Pr,0x66);
-       temp &= 0x04;
+       temp &= 0x04;  /* PLL stable? -> bail out */
        if(temp == 0x04) break;
 
        if(HwInfo->jChipType == SIS_740) {
+          /* Power down LVDS output, PLL normal operation */
           SiS_SetCH701x(SiS_Pr,0xac76);
        }
 
@@ -9334,21 +9346,21 @@ SiS_ChrontelDoSomething2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
        }
        tempcl--;
        temp = SiS_GetCH701x(SiS_Pr,0x76);
-       temp &= 0xfb;
+       temp &= 0xfb;  /* Reset PLL */
        SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x76);
        SiS_LongDelay(SiS_Pr,2);
        temp = SiS_GetCH701x(SiS_Pr,0x76);
-       temp |= 0x04;
+       temp |= 0x04;  /* PLL normal operation */
        SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x76);
        if(HwInfo->jChipType == SIS_740) {
-          SiS_SetCH701x(SiS_Pr,0xe078);
+          SiS_SetCH701x(SiS_Pr,0xe078);	/* PLL loop filter */
        } else {
           SiS_SetCH701x(SiS_Pr,0x6078);
        }
        SiS_LongDelay(SiS_Pr,2);
     } while(0);
 
-    SiS_SetCH701x(SiS_Pr,0x0077);
+    SiS_SetCH701x(SiS_Pr,0x0077);  /* MV? */
 }
 
 void
@@ -9364,37 +9376,42 @@ SiS_ChrontelDoSomething1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
      if(HwInfo->jChipType == SIS_740) {
 
         temp = SiS_GetCH701x(SiS_Pr,0x1c);
-        temp &= 0xfb;
+        temp &= 0xfb;	/* Normal XCLK phase */
         SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x1c);
 
         SiS_SetReg(SiS_Pr->SiS_Part1Port,0x2d,0x03);
 
         temp = SiS_GetCH701x(SiS_Pr,0x64);
-        temp |= 0x40;
+        temp |= 0x40;	/* ? Bit not defined */
         SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x64);
 
         temp = SiS_GetCH701x(SiS_Pr,0x03);
-        temp &= 0x3f;
+        temp &= 0x3f;	/* D1 input to both LVDS and TV */
         SiS_SetCH701x(SiS_Pr,(temp << 8) | 0x03);
 
-        temp = SiS_GetCH701x(SiS_Pr,0x66);
-        if(temp != 0x45) {
-           SiS_ChrontelResetDB(SiS_Pr, HwInfo);
-           SiS_ChrontelDoSomething2(SiS_Pr, HwInfo);
-	   temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x34);
-           SiS_ChrontelDoSomething3(SiS_Pr, temp, HwInfo);
-        }
+	if(SiS_Pr->SiS_CustomT == CUT_ASUSL3000D) {
+	   SiS_SetCH701x(SiS_Pr,0x4063); /* LVDS off */
+	   SiS_LongDelay(SiS_Pr, 1);
+	   SiS_SetCH701x(SiS_Pr,0x0063); /* LVDS on */
+	   SiS_ChrontelResetDB(SiS_Pr, HwInfo);
+	   SiS_ChrontelDoSomething2(SiS_Pr, HwInfo);
+	   SiS_ChrontelDoSomething3(SiS_Pr, 0, HwInfo);
+	} else {
+           temp = SiS_GetCH701x(SiS_Pr,0x66);
+           if(temp != 0x45) {
+              SiS_ChrontelResetDB(SiS_Pr, HwInfo);
+              SiS_ChrontelDoSomething2(SiS_Pr, HwInfo);
+              SiS_ChrontelDoSomething3(SiS_Pr, 0, HwInfo);
+           }
+	}
 
      } else { /* 650 */
 
         SiS_ChrontelResetDB(SiS_Pr,HwInfo);
-
         SiS_ChrontelDoSomething2(SiS_Pr,HwInfo);
-
         temp = SiS_GetReg(SiS_Pr->SiS_P3d4,0x34);
         SiS_ChrontelDoSomething3(SiS_Pr,temp,HwInfo);
-
-        SiS_SetCH701x(SiS_Pr,0xaf76);
+        SiS_SetCH701x(SiS_Pr,0xaf76);  /* All power on, LVDS normal operation */
 
      }
 
