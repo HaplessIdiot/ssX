@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.42 2000/06/21 17:28:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.43 2000/06/30 18:27:02 dawes Exp $ */
 
 
 #include "apm.h"
@@ -486,7 +486,7 @@ ApmProbeDDC(ScrnInfoPtr pScrn, int index)
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
         pVbe = VBEInit(NULL, index);
-        ConfiguredMonitor = vbeDoEDID(pVbe);
+        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 
