@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.14 2000/02/08 13:13:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_io.c,v 3.15 2000/02/12 20:45:43 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -72,7 +72,7 @@ xf86GetKbdLeds()
 
 static int
 KDKBDREP_ioctl_ok(int rate, int delay) {
-#ifdef KDKBDREP
+#if defined(KDKBDREP) && !defined(__sparc__)
      /* This ioctl is defined in <linux/kd.h> but is not
 	implemented anywhere - must be in some m68k patches. */
    struct kbd_repeat kbdrep_s;

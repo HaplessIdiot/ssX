@@ -1,7 +1,12 @@
 XFree86 4.0b (18 May 2000)
+ 193. Accelerated driver for Sun Leo/ZX cards (#3899, Jakub Jelinek).
+ 192. Fully accelerated driver for Sun FFB and AFB chips (#3898,
+      Jakub Jelinek).
+ 191. Generic SBUS and UPA support for XFree86 (#3897, Jakub Jelinek).
  190. Fix building xf86cfg on systems where libxpm isn't linked in
       implicitly (#3903, Matthieu Herrb).
- 189. Update the fbdevhw stubs for an interface change (#3902, Matthieu Herrb).
+ 189. Update the fbdevhw stubs for an interface change (#3902, Matthieu Herrb,
+      #3910, Bernd Ernesti).
  188. Simplify the platform defines in servermd.h to make them more hardware
       dependent than OS dependent (#3913, Kurt Lidl).
  187. Fix a bug in the search/replace dialog in the Xaw text widget (#3896,
@@ -10365,4 +10370,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1156 2000/05/18 00:33:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1157 2000/05/18 16:29:53 dawes Exp $

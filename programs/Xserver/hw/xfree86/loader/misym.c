@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.26 2000/01/02 21:02:48 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/misym.c,v 1.30 2000/03/13 22:26:02 mvojkovi Exp $ */
 
 /*
  *
@@ -79,6 +79,7 @@ LOOKUP miLookupTab[] = {
    SYMFUNC(miImageGlyphBlt)
    SYMFUNC(miPolyGlyphBlt)
    SYMFUNC(miFillPolygon)
+   SYMFUNC(miFillConvexPoly)
    SYMFUNC(miPolySegment)
    SYMFUNC(miZeroLine)
    SYMFUNC(miWideLine)
