@@ -30,6 +30,11 @@ from The Open Group.
 #ifndef _FontGrid_h_
 #define _FontGrid_h_
 
+#ifdef XRENDER
+#include <X11/Xft/Xft.h>
+#include <X11/extensions/Xrender.h>
+#endif
+
 typedef struct _FontGridRec *FontGridWidget;
 extern WidgetClass fontgridWidgetClass;
 
@@ -60,15 +65,24 @@ extern WidgetClass fontgridWidgetClass;
 #define XtNgridWidth "gridWidth"
 #define XtCGridWidth "GridWidth"
 
+#define XtRXftColor "XftColor"
+
+#define XtNface "face"
+#define XtCFace "Face"
+#define XtRXftFont "XftFont"
+
 typedef struct _FontGridCharRec {
+#ifdef XRENDER
+    XftFont *		theface;
+#endif
     XFontStruct *	thefont;
-    XChar2b		thechar;
+    long		thechar;
 } FontGridCharRec;
 
 extern void GetFontGridCellDimensions(
 #if NeedFunctionPrototypes
    Widget,
-   Dimension *,
+   long *,
    int *,
    int *
 #endif
@@ -78,8 +92,17 @@ extern void GetPrevNextStates(
 #if NeedFunctionPrototypes
     Widget,
     Bool *,
+    Bool *,
+    Bool *,
     Bool *
 #endif
 );
 
+long
+GridFirstChar (Widget w);
+
+long
+GridLastChar (Widget w);
+
+    
 #endif /* _FontGrid_h_ */

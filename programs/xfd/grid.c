@@ -77,10 +77,12 @@ static XtResource resources[] = {
 	Offset(cell_width), XtRImmediate, (XtPointer) 0 },
     { XtNcellHeight, XtCCellHeight, XtRInt, sizeof(int),
 	Offset(cell_height), XtRImmediate, (XtPointer) 0 },
-    { XtNstartChar, XtCStartChar, XtRDimension, sizeof(Dimension),
-	Offset(start_char), XtRImmediate, (XtPointer) 0xffff },
+    { XtNstartChar, XtCStartChar, XtRLong, sizeof(long),
+	Offset(start_char), XtRImmediate, (XtPointer) 0xffffffff },
+#ifndef XRENDER
     { XtNforeground, XtCForeground, XtRPixel, sizeof(Pixel),
 	Offset(foreground_pixel), XtRString, (XtPointer) XtDefaultForeground },
+#endif
     { XtNcenterChars, XtCCenterChars, XtRBoolean, sizeof(Boolean),
 	Offset(center_chars), XtRImmediate, (XtPointer) FALSE },
     { XtNboxChars, XtCBoxChars, XtRBoolean, sizeof(Boolean),
@@ -93,6 +95,12 @@ static XtResource resources[] = {
 	Offset(internal_pad), XtRImmediate, (XtPointer) 4 },
     { XtNgridWidth, XtCGridWidth, XtRInt, sizeof(int),
 	Offset(grid_width), XtRImmediate, (XtPointer) 1 },
+#ifdef XRENDER
+    {XtNforeground, XtCForeground, XtRXftColor, sizeof(XftColor),
+        Offset(fg_color), XtRString, XtDefaultForeground},
+    {XtNface, XtCFace, XtRXftFont, sizeof (XftFont *),
+	Offset (text_face), XtRString, 0},
+#endif
 };
 
 #undef Offset
@@ -147,32 +155,114 @@ FontGridClassRec fontgridClassRec = {
 WidgetClass fontgridWidgetClass = (WidgetClass) &fontgridClassRec;
 
 
+long
+GridFirstChar (Widget w)
+{
+    FontGridWidget	fgw = (FontGridWidget) w;
+    XFontStruct		*fs = fgw->fontgrid.text_font;
+#ifdef XRENDER
+    XftFont		*xft = fgw->fontgrid.text_face;
+    if (xft)
+    {
+	FcChar32    map[FC_CHARSET_MAP_SIZE];
+	FcChar32    next;
+	FcChar32    first;
+	int	    i;
+
+	first = FcCharSetFirstPage (xft->charset, map, &next);
+	for (i = 0; i < FC_CHARSET_MAP_SIZE; i++)
+	    if (map[i])
+	    {
+		FcChar32    bits = map[i];
+		first += i * 32;
+		while (!(bits & 0x1))
+		{
+		    bits >>= 1;
+		    first++;
+		}
+		break;
+	    }
+	return first;
+    }
+    else
+#endif
+    if (fs)
+    {
+	return (fs->min_byte1 << 8) | (fs->min_char_or_byte2);
+    }
+    else
+	return 0;
+}
+
+long
+GridLastChar (Widget w)
+{
+    FontGridWidget	fgw = (FontGridWidget) w;
+    XFontStruct		*fs = fgw->fontgrid.text_font;
+#ifdef XRENDER
+    XftFont		*xft = fgw->fontgrid.text_face;
+    if (xft)
+    {
+	FcChar32    this, last, next;
+	FcChar32    map[FC_CHARSET_MAP_SIZE];
+	int	    i;
+	last = FcCharSetFirstPage (xft->charset, map, &next);
+	while ((this = FcCharSetNextPage (xft->charset, map, &next)) != FC_CHARSET_DONE)
+	    last = this;
+	last &= ~0xff;
+	for (i = FC_CHARSET_MAP_SIZE - 1; i >= 0; i--)
+	    if (map[i])
+	    {
+		FcChar32    bits = map[i];
+		last += i * 32 + 31;
+		while (!(bits & 0x80000000))
+		{
+		    last--;
+		    bits <<= 1;
+		}
+		break;
+	    }
+	return (long) last;
+    }
+    else
+#endif
+    if (fs)
+    {
+	return (fs->max_byte1 << 8) | (fs->max_char_or_byte2);
+    }
+    else
+	return 0;
+}
+
 /*
  * public routines
  */
 
 void 
-GetFontGridCellDimensions(Widget w, Dimension *startp, 
+GetFontGridCellDimensions(Widget w, long *startp, 
 			  int *ncolsp, int *nrowsp)
 {
     FontGridWidget fgw = (FontGridWidget) w;
-    *startp = (long)fgw->fontgrid.start_char;
+    *startp = fgw->fontgrid.start_char;
     *ncolsp = fgw->fontgrid.cell_cols;
     *nrowsp = fgw->fontgrid.cell_rows;
 }
 
 
 void 
-GetPrevNextStates(Widget w, Bool *prevvalidp, Bool *nextvalidp)
+GetPrevNextStates(Widget w, Bool *prevvalidp, Bool *nextvalidp,
+		  Bool *prev16validp, Bool *next16validp)
 {
     FontGridWidget fgw = (FontGridWidget) w;
+    long minn = (long) GridFirstChar (w);
+    long maxn = (long) GridLastChar (w);
 
-    XFontStruct *fs = fgw->fontgrid.text_font;
-    long minn = (long) ((fs->min_byte1 << 0) | fs->min_char_or_byte2);
-    long maxn = (long) ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
-
-    *prevvalidp = ((long)fgw->fontgrid.start_char > minn);
-    *nextvalidp = (((long)fgw->fontgrid.start_char +
+    *prev16validp = (fgw->fontgrid.start_char - 0xf00 > minn);
+    *prevvalidp = (fgw->fontgrid.start_char > minn);
+    *nextvalidp = (fgw->fontgrid.start_char +
+		   (fgw->fontgrid.cell_cols * fgw->fontgrid.cell_rows)
+		   < maxn);
+    *next16validp =((fgw->fontgrid.start_char + 0xf00 +
 		    (fgw->fontgrid.cell_cols * fgw->fontgrid.cell_rows))
 		   < maxn);
 }
@@ -190,11 +280,15 @@ get_gc(FontGridWidget fgw, Pixel fore)
     XtGCMask mask;
     XGCValues gcv;
 
-    mask = (GCForeground | GCBackground | GCFunction | GCFont);
+    mask = (GCForeground | GCBackground | GCFunction);
     gcv.foreground = fore;
     gcv.background = fgw->core.background_pixel;
     gcv.function = GXcopy;
-    gcv.font = fgw->fontgrid.text_font->fid;
+    if (fgw->fontgrid.text_font)
+    {
+	mask |= GCFont;
+	gcv.font = fgw->fontgrid.text_font->fid;
+    }
     gcv.cap_style = CapProjecting;
     mask |= GCCapStyle;
     if (fgw->fontgrid.grid_width > 0) {
@@ -206,10 +300,195 @@ get_gc(FontGridWidget fgw, Pixel fore)
 }
 
 
+#ifdef XRENDER
+XtConvertArgRec xftColorConvertArgs[] = {
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)},
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.colormap),
+     sizeof(Colormap)}
+};
+
+#define	donestr(type, value, tstr) \
+	{							\
+	    if (toVal->addr != NULL) {				\
+		if (toVal->size < sizeof(type)) {		\
+		    toVal->size = sizeof(type);			\
+		    XtDisplayStringConversionWarning(dpy, 	\
+			(char*) fromVal->addr, tstr);		\
+		    return False;				\
+		}						\
+		*(type*)(toVal->addr) = (value);		\
+	    }							\
+	    else {						\
+		static type static_val;				\
+		static_val = (value);				\
+		toVal->addr = (XPointer)&static_val;		\
+	    }							\
+	    toVal->size = sizeof(type);				\
+	    return True;					\
+	}
+
+static void
+XmuFreeXftColor (XtAppContext app, XrmValuePtr toVal, XtPointer closure,
+		 XrmValuePtr args, Cardinal *num_args)
+{
+    Screen	*screen;
+    Colormap	colormap;
+    XftColor	*color;
+    
+    if (*num_args != 2)
+    {
+	XtAppErrorMsg (app,
+		       "freeXftColor", "wrongParameters",
+		       "XtToolkitError",
+		       "Freeing an XftColor requires screen and colormap arguments",
+		       (String *) NULL, (Cardinal *)NULL);
+	return;
+    }
+
+    screen = *((Screen **) args[0].addr);
+    colormap = *((Colormap *) args[1].addr);
+    color = (XftColor *) toVal->addr;
+    XftColorFree (DisplayOfScreen (screen),
+		  DefaultVisual (DisplayOfScreen (screen),
+				 XScreenNumberOfScreen (screen)),
+		  colormap, color);
+}
+    
+static Boolean
+XmuCvtStringToXftColor(Display *dpy,
+		       XrmValue *args, Cardinal *num_args,
+		       XrmValue *fromVal, XrmValue *toVal,
+		       XtPointer *converter_data)
+{
+    char	    *spec;
+    XRenderColor    renderColor;
+    XftColor	    xftColor;
+    Screen	    *screen;
+    Colormap	    colormap;
+    
+    if (*num_args != 2)
+    {
+	XtAppErrorMsg (XtDisplayToApplicationContext (dpy),
+		       "cvtStringToXftColor", "wrongParameters",
+		       "XtToolkitError",
+		       "String to render color conversion needs screen and colormap arguments",
+		       (String *) NULL, (Cardinal *)NULL);
+	return False;
+    }
+
+    screen = *((Screen **) args[0].addr);
+    colormap = *((Colormap *) args[1].addr);
+
+    spec = (char *) fromVal->addr;
+    if (strcasecmp (spec, XtDefaultForeground) == 0)
+    {
+	renderColor.red = 0;
+	renderColor.green = 0;
+	renderColor.blue = 0;
+	renderColor.alpha = 0xffff;
+    }
+    else if (strcasecmp (spec, XtDefaultBackground) == 0)
+    {
+	renderColor.red = 0xffff;
+	renderColor.green = 0xffff;
+	renderColor.blue = 0xffff;
+	renderColor.alpha = 0xffff;
+    }
+    else if (!XRenderParseColor (dpy, spec, &renderColor))
+	return False;
+    if (!XftColorAllocValue (dpy, 
+			     DefaultVisual (dpy,
+					    XScreenNumberOfScreen (screen)),
+			     colormap,
+			     &renderColor,
+			     &xftColor))
+	return False;
+    
+    donestr (XftColor, xftColor, XtRXftColor);
+}
+
+static void
+XmuFreeXftFont (XtAppContext app, XrmValuePtr toVal, XtPointer closure,
+		XrmValuePtr args, Cardinal *num_args)
+{
+    Screen  *screen;
+    XftFont *font;
+    
+    if (*num_args != 1)
+    {
+	XtAppErrorMsg (app,
+		       "freeXftFont", "wrongParameters",
+		       "XtToolkitError",
+		       "Freeing an XftFont requires screen argument",
+		       (String *) NULL, (Cardinal *)NULL);
+	return;
+    }
+
+    screen = *((Screen **) args[0].addr);
+    font = *((XftFont **) toVal->addr);
+    if (font)
+	XftFontClose (DisplayOfScreen (screen), font);
+}
+
+static Boolean
+XmuCvtStringToXftFont(Display *dpy,
+		      XrmValue *args, Cardinal *num_args,
+		      XrmValue *fromVal, XrmValue *toVal,
+		      XtPointer *converter_data)
+{
+    char    *name;
+    XftFont *font;
+    Screen  *screen;
+    
+    if (*num_args != 1)
+    {
+	XtAppErrorMsg (XtDisplayToApplicationContext (dpy),
+		       "cvtStringToXftFont", "wrongParameters",
+		       "XtToolkitError",
+		       "String to XftFont conversion needs screen argument",
+		       (String *) NULL, (Cardinal *)NULL);
+	return False;
+    }
+
+    screen = *((Screen **) args[0].addr);
+    name = (char *) fromVal->addr;
+    
+    if (name)
+    {
+	font = XftFontOpenName (dpy,
+				XScreenNumberOfScreen (screen),
+				name);
+	if (!font)
+	{
+	    XtDisplayStringConversionWarning(dpy, (char *) fromVal->addr, XtRXftFont);
+	    return False;
+	}
+    }
+    donestr (XftFont *, font, XtRXftFont);
+}
+
+static XtConvertArgRec xftFontConvertArgs[] = {
+    {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
+     sizeof(Screen *)},
+};
+
+#endif
+
 static void 
 ClassInitialize(void)
 {
     XtAddConverter (XtRString, XtRLong, XmuCvtStringToLong, NULL, 0);
+#ifdef XRENDER
+    XtSetTypeConverter (XtRString, XtRXftColor, 
+			XmuCvtStringToXftColor, 
+			xftColorConvertArgs, XtNumber(xftColorConvertArgs),
+			XtCacheByDisplay, XmuFreeXftColor);
+    XtSetTypeConverter (XtRString, XtRXftFont,
+			XmuCvtStringToXftFont,
+			xftFontConvertArgs, XtNumber(xftFontConvertArgs),
+			XtCacheByDisplay, XmuFreeXftFont);
+#endif
 }
 
 
@@ -219,12 +498,20 @@ Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
     FontGridWidget reqfg = (FontGridWidget) request;
     FontGridWidget newfg = (FontGridWidget) new;
     XFontStruct *fs = newfg->fontgrid.text_font;
+#ifdef XRENDER
+    XftFont *xft = newfg->fontgrid.text_face;
+#endif
     unsigned maxn;
 
     if (reqfg->fontgrid.cell_cols <= 0)
       newfg->fontgrid.cell_cols = 16;
 
     if (reqfg->fontgrid.cell_rows <= 0) {
+#ifdef XRENDER
+	if (xft)
+	    newfg->fontgrid.cell_rows = 16;
+	else
+#endif
 	if (fs && fs->max_byte1 == 0) {
 	    newfg->fontgrid.cell_rows = (fs->max_char_or_byte2 / 
 					 newfg->fontgrid.cell_cols) + 1;
@@ -235,9 +522,9 @@ Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
     }
 
     if (reqfg->fontgrid.cell_width <= 0)
-      newfg->fontgrid.cell_width = (fs ? DefaultCellWidth (newfg) : 1);
+      newfg->fontgrid.cell_width = DefaultCellWidth (newfg);
     if (reqfg->fontgrid.cell_height <= 0)
-      newfg->fontgrid.cell_height = (fs ? DefaultCellHeight (newfg) : 1);
+      newfg->fontgrid.cell_height = DefaultCellHeight (newfg);
 
     /* give a nice size that fits one screen full */
     if (newfg->core.width == 0)
@@ -256,16 +543,13 @@ Initialize(Widget request, Widget new, ArgList args, Cardinal *num_args)
      * select the first character
      */
 
-    if (newfg->fontgrid.start_char == 0xffff) {
-	newfg->fontgrid.start_char = (fs ? (unsigned)(fs->min_byte1 << 8) : 0);
-    }
-    if (fs) {
-	maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
-	if (newfg->fontgrid.start_char > maxn) 
-	  newfg->fontgrid.start_char = (maxn + 1 - 
-					(newfg->fontgrid.cell_cols * 
-					 newfg->fontgrid.cell_rows));
-    }
+    if (newfg->fontgrid.start_char == 0xffffffff)
+	newfg->fontgrid.start_char = GridFirstChar(new) & ~0xff;
+    maxn = GridLastChar (new);
+    if (newfg->fontgrid.start_char > maxn) 
+	newfg->fontgrid.start_char = (maxn + 1 - 
+				      (newfg->fontgrid.cell_cols * 
+				       newfg->fontgrid.cell_rows));
 }
 
 static void 
@@ -274,11 +558,17 @@ Realize(Widget gw, Mask *valueMask, XSetWindowAttributes *attributes)
     FontGridWidget fgw = (FontGridWidget) gw;
     FontGridPart *p = &fgw->fontgrid;
 
-    p->text_gc = get_gc (fgw, p->foreground_pixel);
+    p->text_gc = get_gc (fgw, GridForeground (fgw));
     p->box_gc = get_gc (fgw, p->box_pixel);
     Resize (gw);
 
     (*(XtSuperclass(gw)->core_class.realize)) (gw, valueMask, attributes);
+#ifdef XRENDER
+    p->draw = XftDrawCreate (XtDisplay (gw), XtWindow (gw),
+			     DefaultVisual (XtDisplay (gw),
+					    DefaultScreen(XtDisplay (gw))),
+			     fgw->core.colormap);
+#endif
     return;
 }
 
@@ -323,6 +613,9 @@ Redisplay(Widget gw, XEvent *event, Region region)
     int left, right, top, bottom;	/* which cells were damaged */
     int cw, ch;				/* cell size */
 
+#ifdef XRENDER
+    if (!fgw->fontgrid.text_face)
+#endif
     if (!fgw->fontgrid.text_font) {
 	Bell (gw, XkbBI_BadValue);
 	return;
@@ -357,8 +650,7 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
     int tcols = p->cell_cols;
     int trows = p->cell_rows;
     int x1, y1, x2, y2, x, y;
-    unsigned maxn = ((p->text_font->max_byte1 << 8) |
-		     p->text_font->max_char_or_byte2);
+    unsigned maxn = GridLastChar ((Widget) fgw);
     unsigned n, prevn;
     int startx;
 
@@ -398,14 +690,37 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
     prevn = p->start_char + col + row * tcols;
     startx = col * cw + p->internal_pad + p->grid_width;
     for (j = 0,
-	 y = row * ch + p->internal_pad + p->grid_width + p->text_font->ascent;
+	 y = row * ch + p->internal_pad + p->grid_width + GridFontAscent (fgw);
 	 j < nrows; j++, y += ch) {
 	n = prevn;
 	for (i = 0, x = startx; i < ncols; i++, x += cw) {
-	    XChar2b thechar;
 	    int xoff = p->xoff, yoff = p->yoff;
-
 	    if (n > maxn) goto done;	/* no break out of nested */
+
+#ifdef XRENDER
+	    if (fgw->fontgrid.text_face)
+	    {
+		XftFont *xft = p->text_face;
+		FcChar32    c = n;
+		XGlyphInfo  extents;
+		XftTextExtents32 (dpy, xft, &c, 1, &extents);
+		if (p->center_chars)
+		{
+		    xoff = (p->cell_width - extents.width) / 2 - extents.x;
+		    yoff = (p->cell_height - extents.height) / 2 - extents.y;
+		}
+		if (p->box_chars)
+		    XDrawRectangle (dpy, wind, p->box_gc,
+				    x + xoff, y + yoff - xft->ascent,
+				    extents.width - 1,
+				    extents.height - 1);
+		XftDrawString32 (p->draw, &p->fg_color, xft, x + xoff, y + yoff,
+				 &c, 1);
+	    }
+	    else
+#endif
+	    {
+	    XChar2b thechar;
 
 	    thechar.byte1 = (n >> 8);	/* high eight bits */
 	    thechar.byte2 = (n & 255);	/* low eight bits */
@@ -440,6 +755,7 @@ paint_grid(FontGridWidget fgw, 		/* widget in which to draw */
 	    }
 	    XDrawString16 (dpy, wind, p->text_gc, x + xoff, y + yoff,
 			   &thechar, 1);
+	    }
 	    n++;
 	}
 	prevn += tcols;
@@ -465,10 +781,9 @@ SetValues(Widget current, Widget request, Widget new,
 	redisplay = TRUE;
     }
 
-    if (curfg->fontgrid.foreground_pixel != newfg->fontgrid.foreground_pixel) {
+    if (GridForeground(curfg) != GridForeground (newfg)) {
 	XtReleaseGC (new, curfg->fontgrid.text_gc);
-	newfg->fontgrid.text_gc = get_gc (newfg,
-					  newfg->fontgrid.foreground_pixel);
+	newfg->fontgrid.text_gc = get_gc (newfg, GridForeground (newfg));
 	redisplay = TRUE;
     }
 
@@ -483,14 +798,12 @@ SetValues(Widget current, Widget request, Widget new,
       redisplay = TRUE;
 
     if (curfg->fontgrid.start_char != newfg->fontgrid.start_char) {
-	XFontStruct *fs = newfg->fontgrid.text_font;
-	unsigned maxn = ((fs->max_byte1 << 8) | fs->max_char_or_byte2);
+	long maxn = GridLastChar (new);
 
 	if (newfg->fontgrid.start_char > maxn) 
 	  newfg->fontgrid.start_char = (maxn + 1 - 
 					(newfg->fontgrid.cell_cols * 
 					 newfg->fontgrid.cell_rows));
-
 	redisplay = (curfg->fontgrid.start_char != newfg->fontgrid.start_char);
     }
 
@@ -546,8 +859,10 @@ Notify(Widget gw, XEvent *event, String *params, Cardinal *nparams)
 	    ((y / ch) * fgw->fontgrid.cell_cols) + (x / cw));
 
 	rec.thefont = fgw->fontgrid.text_font;
-	rec.thechar.byte1 = (n >> 8);
-	rec.thechar.byte2 = (n & 255);
+#ifdef XRENDER
+	rec.theface = fgw->fontgrid.text_face;
+#endif
+	rec.thechar = n;
     }
 
     XtCallCallbacks (gw, XtNcallback, (XtPointer) &rec);
