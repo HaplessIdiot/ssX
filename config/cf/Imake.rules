@@ -1,7 +1,7 @@
 XCOMM -----------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules,v 1.197 94/12/05 19:30:41 gildea Exp $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.11 1995/01/14 10:39:25 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.12 1995/03/11 14:02:40 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -570,6 +570,7 @@ InstallProgram(program,$(BINDIR))					@@\
 InstallManPage(program,$(MANDIR))
 #endif /* ProgramTargetHelper */
 
+#if 0
 #ifndef ProgramTargetHelperNoMan
 #define	ProgramTargetHelperNoMan(program,srcs,objs,deplib,locallib,syslib) @@\
 ProgramTargetName(program): $(objs) $(deplib)				@@\
@@ -583,6 +584,7 @@ ProofProgramTarget(program,$(objs) $(deplib),$(objs) locallib $(LDLIBS) syslib) 
 									@@\
 InstallProgram(program,$(BINDIR))
 #endif /* ProgramTargetHelperNoMan */
+#endif
 
 #ifndef CplusplusProgramTargetHelper
 #define	CplusplusProgramTargetHelper(program,srcs,objs,deplib,locallib,syslib) @@\
@@ -620,6 +622,7 @@ clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTarget */
 
+#if 0
 /*
  * ComplexProgramTargetNoMan - generate rules for compiling and linking
  * the program specified by $(OBJS) and $(SRCS), installing the program 
@@ -640,6 +643,7 @@ LintTarget()								@@\
 clean::									@@\
 	RemoveFile(ProgramTargetName(program))
 #endif /* ComplexProgramTargetNoMan */
+#endif
 
 #ifndef ComplexCplusplusProgramTarget
 #define	ComplexCplusplusProgramTarget(program)				@@\
