@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.89 2003/07/09 15:27:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.90 2003/07/24 13:50:25 eich Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -153,6 +153,10 @@ extern int SelectWaitTime;
 #ifndef SPECIAL_MALLOC
 #define MEMBUG
 #endif
+#endif
+
+#if defined(SVR4) || defined(__linux__) || defined(CSRG_BASED)
+#define HAS_SAVED_IDS_AND_SETEUID
 #endif
 
 #ifdef MEMBUG
@@ -1763,6 +1767,98 @@ Popen(char *command, char *type)
     return iop;
 }
 
+/* fopen that drops privileges */
+pointer
+Fopen(char *file, char *type)
+{
+    FILE *iop;
+#ifndef HAS_SAVED_IDS_AND_SETEUID
+    struct pid *cur;
+    int pdes[2], pid;
+
+    if (file == NULL || type == NULL)
+	return NULL;
+
+    if ((*type != 'r' && *type != 'w') || type[1])
+	return NULL;
+
+    if ((cur = (struct pid *)xalloc(sizeof(struct pid))) == NULL)
+	return NULL;
+
+    if (pipe(pdes) < 0) {
+	xfree(cur);
+	return NULL;
+    }
+
+    switch (pid = fork()) {
+    case -1: 	/* error */
+	close(pdes[0]);
+	close(pdes[1]);
+	xfree(cur);
+	return NULL;
+    case 0:	/* child */
+	setgid(getgid());
+	setuid(getuid());
+	if (*type == 'r') {
+	    if (pdes[1] != 1) {
+		/* stdout */
+		dup2(pdes[1], 1);
+		close(pdes[1]);
+	    }
+	    close(pdes[0]);
+	} else {
+	    if (pdes[0] != 0) {
+		/* stdin */
+		dup2(pdes[0], 0);
+		close(pdes[0]);
+	    }
+	    close(pdes[1]);
+	}
+	execl("/bin/cat", "cat", file, (char *)NULL);
+	_exit(127);
+    }
+
+    /* Avoid EINTR during stdio calls */
+    OsBlockSignals ();
+    
+    /* parent */
+    if (*type == 'r') {
+	iop = fdopen(pdes[0], type);
+	close(pdes[1]);
+    } else {
+	iop = fdopen(pdes[1], type);
+	close(pdes[0]);
+    }
+
+    cur->fp = iop;
+    cur->pid = pid;
+    cur->next = pidlist;
+    pidlist = cur;
+
+#ifdef DEBUG
+    ErrorF("Popen: `%s', fp = %p\n", command, iop);
+#endif
+
+    return iop;
+#else
+    int ruid, euid;
+
+    ruid = getuid();
+    euid = geteuid();
+    
+    if (seteuid(ruid) == -1) {
+	    return NULL;
+    }
+    iop = fopen(file, type);
+
+    if (seteuid(euid) == -1) {
+	    fclose(iop);
+	    return NULL;
+    }
+    return iop;
+#endif /* HAS_SAVED_IDS_AND_SETEUID */
+}
+
 int
 Pclose(pointer iop)
 {
@@ -1797,6 +1893,17 @@ Pclose(pointer iop)
     
     return pid == -1 ? -1 : pstat;
 }
+
+int 
+Fclose(pointer iop)
+{
+#ifdef HAS_SAVED_IDS_AND_SETEUID
+    return fclose(iop);
+#else
+    return Pclose(iop);
+#endif
+}
+
 #endif /* !WIN32 && !__UNIXOS2__ */
 
 

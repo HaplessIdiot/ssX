@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.43 2002/12/24 17:42:59 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.45 2003/07/04 16:24:29 eich Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -305,10 +305,14 @@ void OsReleaseSignals (void);
 extern int System(char *);
 extern pointer Popen(char *, char *);
 extern int Pclose(pointer);
+extern pointer Fopen(char *, char *);
+extern int Fclose(pointer);
 #else
 #define System(a) system(a)
 #define Popen(a,b) popen(a,b)
 #define Pclose(a) pclose(a)
+#define Fopen(a,b) fopen(a,b)
+#define Fclose(a) fclose(a)
 #endif
 
 extern void CheckUserParameters(int argc, char **argv, char **envp);
