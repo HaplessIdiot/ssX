@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.4 1994/12/03 10:08:14 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.5 1994/12/10 02:05:21 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture)
 # define OSModule OS_SYSV
@@ -25,6 +25,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.4 1994/1
    SYS_LIBRARIES = /usr/lib/libmach.a
 # define OSModule OS_Mach
 #endif
+#if defined(OS2Architecture)
+# define OSModule OS_Os2
+  CCOPTIONS = -Zmts
+#endif
 
 OS_SRC = OSModule.c $(OS_IO_SRC)
 OS_OBJ = OSModule.o $(OS_IO_OBJ)
@@ -48,11 +52,14 @@ CONSDEFINES = XFree86ConsoleDefines
 
 DEFINES = $(GASDEFINES) $(CONSDEFINES)
 
+#ifdef OS2Architecture
+SPECIALS = -lemxio
+#endif
 
 PROG = SuperProbe
 
-AllTarget($(PROG))
-SetUIDProgramTarget($(PROG),$(OBJS),NullParameter,NullParameter,NullParameter)
+AllTarget(ProgramTargetName($(PROG)))
+SetUIDProgramTarget($(PROG),$(OBJS),NullParameter,$(SPECIALS),NullParameter)
 InstallProgramWithFlags($(PROG),$(BINDIR),$(INSTUIDFLAGS))
 InstallManPage($(PROG),$(MANDIR))
 

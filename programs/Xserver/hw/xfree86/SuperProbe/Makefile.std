@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.2 1994/12/03 10:08:17 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Makefile.std,v 3.3 1994/12/10 02:05:22 dawes Exp $
 #
 # Installation parameters
 #
@@ -59,6 +59,11 @@ OS_OBJ = OS_SYSV.o
 #OS_SRC = OS_Mach.c
 #OS_OBJ = OS_Mach.o
 #OS_LIB = /usr/misc/.mach/lib/libmach.a
+# OS/2 with EMX
+#OS_DEF = -D__EMX__ -DGCCUSESGAS
+#OS_SRC = OS_Os2.c
+#OS_OBJ = OS_Os2.o
+#OS_LIB = -lemxio
 
 HDRS = Probe.h
 BASE_SRC = MDA.c Herc.c CGA.c VGA.c RamDac.c MemProbe.c
@@ -77,6 +82,8 @@ OBJS = Main.o $(SVGA_OBJ) $(COPROC_OBJ) $(BASE_OBJ) Print.o \
        Utils.o $(OS_OBJ) $(IO_OBJ)
 LIBS = $(OS_LIB)
 
+
+#PROG = SuperProbe.exe # OS/2
 PROG = SuperProbe
 
 # Options for gcc
@@ -92,6 +99,12 @@ DEBUG_OR_OPT = -g -Wall
 #CCOPTS = -Xa
 #DEBUG_OR_OPT = -g
 #DEBUG_OR_OPT = -O
+
+# Options for OS/2
+CC= gcc
+CCOPTS = -m486
+LDFLAGS = -Zexe
+
 
 CFLAGS = $(CCOPTS) $(DEBUG_OR_OPT) $(OS_DEF)
 

@@ -25,13 +25,15 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/I128.c,v 3.0 1994/12/03 10:08:13 dawes Exp $ */
 
 #include "Probe.h"
 
-static Word Ports[] = {0xCF8, 0xCFA, 0x0000, 0x0000 };
+static Word Ports[] = {0xCF8, 0xCFA, 0xCFC, 0x000 };
 
 #define NUMPORTS (sizeof(Ports)/sizeof(Word))
+
+#define PCI_EN 0x80000000
 
 static int MemProbe_I128 __STDCARGS((int));
 static int I128Mem = 0;
@@ -52,17 +54,83 @@ int *Chipset;
 {
 	Bool result = FALSE;
 	Word ioaddr, vendor, device, iobase;
-	Long id, vendordevice;
+	Long id, vendordevice, tmplong1, tmplong2, pcibus, cardnum;
+	Byte tmp1, tmp2, configtype = 0;
 
-	EnableIOPorts(NUMPORTS, Ports);
+	EnableIOPorts(2, Ports);
 
 	outp(0xCF8, 0x80);
 	outp(0xCFA, 0x00);
+	tmp1 = inp(0xCF8);
+	tmp2 = inp(0xCFA);
+	if ((tmp1 == 0x00) && (tmp2 == 0x00))
+	    configtype = 2;
+	else {
+	    tmplong1 = inpl(0xCF8);
+	    outpl(0xCF8, PCI_EN);
+	    tmplong2 = inpl(0xCF8);
+	    if (tmplong2 == PCI_EN);
+		configtype = 1;
+	    outpl(0xCF8, tmplong1);
+	}
 
-	DisableIOPorts(NUMPORTS, Ports);
+	DisableIOPorts(2, Ports);
+
+	if (configtype == 0)
+	    return(FALSE);
+	else if (configtype == 1) {
+	    EnableIOPorts(3, Ports);
+	    for (pcibus = 0x000000; pcibus < 0x100000; pcibus += 0x10000) {
+		for (cardnum = 0x00000; cardnum < 0x10000; cardnum += 0x0800) {
+		    outpl(0xCF8, PCI_EN | pcibus | cardnum);
+		    tmplong1 = inpl(0xCFC);
+		    vendor = (unsigned short )(tmplong1 & 0xFFFF);
+		    device = (unsigned short )((tmplong1 >> 16) & 0xFFFF);
+#ifdef DEBUG
+	printf("pci bus/card 0x%08x, vendor 0x%04x device 0x%04x\n",
+	    pcibus | cardnum, vendor, device);
+#endif
+		    if ((vendor == 0x105D) && (device == 0x2309)) {
+			outpl(0xCF8, PCI_EN | pcibus | cardnum | 0x24);
+			iobase = inpl(0xCFC) & 0xFFFFFF00;
+
+			DisableIOPorts(3, Ports);
+			Ports[3] = iobase + 0x18;
+			EnableIOPorts(4, Ports);
+
+			id = inpl(iobase + 0x18);
+			DisableIOPorts(4, Ports);
+
+	                switch (id & 0xC0) {
+	                    case 0x00:
+	                        I128Mem =  4096;
+	                        break;
+	                    case 0x40:
+	                        I128Mem =  8192;
+	                        break;
+	                    case 0x80:
+	                        I128Mem =  16384;
+	                        break;
+	                    case 0xC0:
+	                        I128Mem =  32768;
+	                        break;
+	                }
+
+	                *Chipset = CHIP_I128;
+			return(TRUE);
+		    }
+		}
+	    }
+	    /* not found */
+	    DisableIOPorts(3, Ports);
+	    return(FALSE);
+	}
+
+	/* else configtype == 2 */
 
 	for (ioaddr = 0xC000; ioaddr < 0xD000; ioaddr += 0x0100) {
 	    Ports[2] = ioaddr;
+	    Ports[3] = ioaddr + 0x24;
 	    EnableIOPorts(NUMPORTS, Ports);
 
 	    vendordevice = inpl(ioaddr);
@@ -70,8 +138,8 @@ int *Chipset;
             device = (unsigned short )((vendordevice >> 16) & 0xFFFF);
 
 #ifdef DEBUG
-	printf("pci slot at 0x%04x, vendor 0x%04x board 0x%04x\n",
-	    ioaddr, vendor, board);
+	printf("pci slot at 0x%04x, vendor 0x%04x device 0x%04x\n",
+	    ioaddr, vendor, device);
 #endif
 
 	    if ((vendor != 0x105D) || (device != 0x2309)) {
@@ -82,7 +150,8 @@ int *Chipset;
             iobase = inpl(ioaddr + 0x24) & 0xFFFFFF00;
 
 	    DisableIOPorts(NUMPORTS, Ports);
-	    Ports[3] = iobase;
+	    Ports[2] = iobase + 0x18;
+	    Ports[3] = 0x000;
 	    EnableIOPorts(NUMPORTS, Ports);
 
 	    id = inpl(iobase + 0x18) & 0x7FFFFFFF;

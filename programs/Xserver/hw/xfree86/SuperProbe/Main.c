@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.3 1994/11/30 20:36:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.4 1994/12/03 10:08:15 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -508,15 +508,28 @@ char *argv[];
     printf("\thaving been obtained.  Additional information obtained from\n");
     printf("\t'Programmer's Guide to the EGA and VGA, 2nd ed', by Richard\n");
     printf("\tFerraro, and from manufacturer's data books\n\n");
+#ifndef __EMX__
     printf("The author welcomes bug reports and other comments mailed to\n");
     printf("the electronic mail address above.  In particular, reports of\n");
     printf("chipsets that this program fails to correctly detect are\n");
     printf("appreciated.\n\n");
-
+#else
+/* this will be removed again in future. */
+    printf("This is a PRELIMINARY TEST VERSION for OS/2! Please send bug reports\n");
+    printf("and other comments, e.g. false detections of boards or chipsets to veit@gmd.de.\n");
+    printf("If necessary, they will be forwarded to the author of the program.\n\n");
+#endif
 {
     FILE *f;
-    
+
     f = fopen("/dev/tty", "w");
+#ifdef __EMX__
+    /* note: don't remove the fopen above ! */
+    fclose(f);
+    f = stderr;	/* OS/2 does not know /dev/tty, OTOH you cannot run this
+                 * program in a window.
+		 */
+#endif
     if (f != (FILE *)NULL)
     {
         putc('\007', f);
