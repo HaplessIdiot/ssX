@@ -356,18 +356,25 @@ miOverlayMarkOverlappedWindows(
 	    if(doUnderlay && IN_UNDERLAY(pChild))
 		pTree = MIOVERLAY_GET_WINDOW_TREE(pChild);
 
-	    if (pChild->viewable &&  
-	       (markAll || RECT_IN_REGION(pScreen, &pChild->borderSize, box)))
-	    {
-		MARK_OVERLAY(pChild);
-		overMarked = TRUE;
-		if(doUnderlay && IN_UNDERLAY(pChild)) {
-		    MARK_UNDERLAY(pChild);
-		    underMarked = TRUE;
-		}
-		if (pChild->firstChild) {
-		    pChild = pChild->firstChild;
-		    continue;
+	    if(pChild->viewable) {
+                if (REGION_BROKEN (pScreen, &pChild->winSize))
+                    SetWinSize (pChild);
+                if (REGION_BROKEN (pScreen, &pChild->borderSize))
+		    SetBorderSize (pChild);
+
+	    	if (markAll || 
+		    RECT_IN_REGION(pScreen, &pChild->borderSize, box))
+		{
+		    MARK_OVERLAY(pChild);
+		    overMarked = TRUE;
+		    if(doUnderlay && IN_UNDERLAY(pChild)) {
+			MARK_UNDERLAY(pChild);
+			underMarked = TRUE;
+		    }
+		    if (pChild->firstChild) {
+			pChild = pChild->firstChild;
+			continue;
+		    }
 		}
 	    }
 	    while (!pChild->nextSib && (pChild != pLast)) {
@@ -408,11 +415,17 @@ miOverlayMarkOverlappedWindows(
 	tLast = pTree->nextSib;	
 
 	while(1) {
-	    if(tChild->pWin->viewable && 
-	       RECT_IN_REGION(pScreen, &(tChild->pWin->borderSize), box)) 
-	    {
-		MARK_UNDERLAY(tChild->pWin);
-		underMarked = TRUE;
+	    if(tChild->pWin->viewable) { 
+                if (REGION_BROKEN (pScreen, &tChild->pWin->winSize))
+                    SetWinSize (tChild->pWin);
+                if (REGION_BROKEN (pScreen, &tChild->pWin->borderSize))
+		    SetBorderSize (tChild->pWin);
+
+		if(RECT_IN_REGION(pScreen, &(tChild->pWin->borderSize), box)) 
+	        {
+		    MARK_UNDERLAY(tChild->pWin);
+		    underMarked = TRUE;
+	        }
 	    }
 
 	    if(tChild->lastChild) {
@@ -746,11 +759,27 @@ miOverlayValidateTree(
     else
 	tChild = tParent->firstChild;
 
-    for(tWin = tChild; tWin; tWin = tWin->nextSib) {
-	if(tWin->valdata)
-	   REGION_APPEND(pScreen, &totalClip, &tWin->borderClip);
+    if (REGION_BROKEN (pScreen, &tParent->clipList) &&
+        !REGION_BROKEN (pScreen, &tParent->borderClip))
+    {
+	kind = VTBroken;
+	REGION_COPY (pScreen, &totalClip, &tParent->borderClip);
+	REGION_INTERSECT (pScreen, &totalClip, &totalClip,
+						 &tParent->pWin->winSize);
+        
+        for (tWin = tParent->firstChild; tWin != tChild; tWin = tWin->nextSib) {
+            if (tWin->pWin->viewable)
+                REGION_SUBTRACT (pScreen, &totalClip, &totalClip, 
+					&tWin->pWin->borderSize);
+        }        
+        REGION_EMPTY (pScreen, &tParent->clipList);
+    } else {
+	for(tWin = tChild; tWin; tWin = tWin->nextSib) {
+	    if(tWin->valdata)
+		REGION_APPEND(pScreen, &totalClip, &tWin->borderClip);
+	}
+	REGION_VALIDATE(pScreen, &totalClip, &overlap);
     }
-    REGION_VALIDATE(pScreen, &totalClip, &overlap);
 
     if(kind != VTStack)
 	REGION_UNION(pScreen, &totalClip, &totalClip, &tParent->clipList);
@@ -1686,7 +1715,31 @@ miOverlayChangeBorderWidth(
 	WindowsRestructured ();
 }
 
+/*  We need this as an addition since the xf86 common code doesn't
+    know about the second tree which is static to this file.  */
 
+void
+miOverlaySetRootClip(ScreenPtr pScreen, Bool enable)
+{
+    WindowPtr pRoot = WindowTable[pScreen->myNum];
+    miOverlayTreePtr pTree = MIOVERLAY_GET_WINDOW_TREE(pRoot);
+
+    MARK_UNDERLAY(pRoot);
+
+    if(enable) {
+	BoxRec box;
+	
+	box.x1 = 0;
+	box.y1 = 0;
+	box.x2 = pScreen->width;
+	box.y2 = pScreen->height;
+
+	REGION_RESET(pScreen, &pTree->borderClip, &box);
+    } else 
+	REGION_EMPTY(pScreen, &pTree->borderClip);
+
+    REGION_BREAK(pScreen, &pTree->clipList);
+}
 
 /****************************************************************/
 
