@@ -1,5 +1,5 @@
 /* $XConsortium: Init.c /main/7 1996/12/02 10:21:37 lehors $ */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.9 1996/12/23 07:09:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.10 1997/01/12 10:48:33 dawes Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -34,6 +34,15 @@ is" without express or implied warranty.
 #include "Drawable.h"
 #include "XNGC.h"
 #include "XNFont.h"
+
+#ifdef XFree86LOADER
+/*
+ * when building the loader, we add some code that tries to 
+ * switch bit ordering based on xf86bpp; since Xnest doesn't
+ * use that, we have to add this dummy here
+ */
+int xf86bpp = 8;
+#endif
 
 Bool xnestDoFullGeneration = True;
 
