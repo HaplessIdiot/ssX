@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.78 2001/12/02 13:35:28 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.79 2001/12/14 20:00:35 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -119,7 +119,6 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <X11/Xos_r.h>
 
 #include <errno.h>
-extern int errno;
 
 Bool CoreDump;
 Bool noTestExtensions;
@@ -1781,6 +1780,15 @@ Pclose(iop)
 #define REMOVE_LONG_ENV 1
 #endif
 
+/*
+ * Disallow stdout or stderr as pipes?  It's possible to block the X server
+ * when piping stdout+stderr to a pipe.
+ */
+#ifndef NO_OUTPUT_PIPES
+#define NO_OUTPUT_PIPES 1
+#endif
+
+
 /* Check args and env only if running setuid (euid == 0 && euid != uid) ? */
 #ifndef CHECK_EUID
 #define CHECK_EUID 1
@@ -1811,6 +1819,7 @@ enum BadCode {
     ArgTooLong,
     UnprintableArg,
     EnvTooLong,
+    OutputIsPipe,
     InternalError
 };
 
@@ -1915,6 +1924,16 @@ CheckUserParameters(int argc, char **argv, char **envp)
 		}
 	    }
 	}
+#if NO_OUTPUT_PIPES
+	if (!bad) {
+	    struct stat buf;
+
+	    if (fstat(fileno(stdout), &buf) == 0 && S_ISFIFO(buf.st_mode))
+		bad = OutputIsPipe;
+	    if (fstat(fileno(stderr), &buf) == 0 && S_ISFIFO(buf.st_mode))
+		bad = OutputIsPipe;
+	}
+#endif
     }
     switch (bad) {
     case NotBad:
@@ -1935,6 +1954,9 @@ CheckUserParameters(int argc, char **argv, char **envp)
     case EnvTooLong:
 	ErrorF("Environment variable `%s' is too long\n", e);
 	ErrorF(ENVMSG);
+	break;
+    case OutputIsPipe:
+	ErrorF("Stdout and/or stderr is a pipe\n");
 	break;
     case InternalError:
 	ErrorF("Internal Error\n");
