@@ -24,8 +24,13 @@ MSRCS = glxmodule.c
 MOBJS = glxmodule.o
 #endif
 
+#if BuildModuleInSubdir
+SRCS = glx/module/?*.c $(MSRCS)
+OBJS = glx/module/?*.o $(MOBJS)
+#else
 SRCS = glx/?*.c $(MSRCS)
 OBJS = glx/?*.o $(MOBJS)
+#endif
 
 DONES = glx/DONE
 

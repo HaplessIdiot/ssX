@@ -111,9 +111,6 @@ typedef FcObjectSet	XftObjectSet;
 #define XftObjectSetDestroy	FcObjectSetDestroy
 #define XftObjectSetVaBuild	FcObjectSetVaBuild
 #define XftObjectSetBuild	FcObjectSetBuild
-
-#define XftListFontsPatternObjects	FcListFontsPatternObjects
-
 #define XftFontSetMatch		FcFontSetMatch
 #define XftFontSetDestroy	FcFontSetDestroy
 

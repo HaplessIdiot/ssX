@@ -1,4 +1,24 @@
 XFree86 4.3.99.10 (xx July 2003)
+ 357. Include Xmd.h in Xpm/lib/XpmI.h to get definitions of LONG64 
+      (Bugzilla #562, John Dennis).
+ 356. Moved Meta_L/R keys and added Super_L/R keys on macintosh keyboard.
+      This makes the layout more compatible to the PC keyboard layout 
+      (Bugzilla #565, Frank Murphy).
+ 355. Add check for Xmalloc() return value in XGetErrorDatabaseText() to avoid
+      Sig11 (Bugzilla #563, Alan Coopersmith).
+ 354. Separated build of libglx.a module and normal libglx.a library 
+      (Bugzilla #541, Frank Giessler).
+ 353. Fixed build of Xnest, Xprt and Xvfb for OS/2 by linking with the linker
+      definition files (Bugzilla #541, Frank Giessler).
+ 352. Fixed freeing of properties form xkb_geomerty block (Bugzilla #550, 
+      Alexander Pohoyda).
+ 351. Fixed string octal number parsing and string to int conversion for "\00"
+      in xkbcomp (BugzillaR #553, Egbert Eich).
+ 350. Removed stale definition from XftCompat.h (BugzillaR #543, Egbert Eich).
+ 349. Added XLC_LOCALE file for zh_CN.UTF-8, moved iso10646 encoding to the end
+      in ja_JP, ko_KR and zh_TW UTF-8  XLC_LOCALE files 
+      (Bugzilla #544, Akira TAGOH).
+ 348. Fixed typo in #if conditional in cfb code (Bugzilla #556, Dave Love).
  347. Fixed ValidMode() in C&T driver to work with option 'FixPanelSize' 
       (Egbert Eich).
  346. Fixed Meta_R key on us layout Macintosh keyboard (Bugzilla #539, 
@@ -17467,7 +17487,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2793 2003/08/04 04:22:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2794 2003/08/04 10:32:21 eich Exp $
 
 
 
