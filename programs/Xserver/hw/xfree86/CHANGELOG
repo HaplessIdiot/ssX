@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 369. Update XDarwin Japanese localization (Toshimitsu Tanaka).
  368. Fix calculation of DPI when Xinerama in use (#4986, Andrew C Aitchison).
  367. Update XDarwin preferences GUI to match current features
       (Torrey T. Lyons).
@@ -13993,4 +13994,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1987 2001/10/14 03:02:16 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1988 2001/10/14 23:16:56 alanh Exp $
