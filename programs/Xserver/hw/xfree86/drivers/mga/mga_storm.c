@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.69 2000/06/29 20:56:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.70 2000/07/08 22:09:11 mvojkovi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -102,6 +102,12 @@ static void MGANAME(SetupForDashedLine)(ScrnInfoPtr pScrn, int fg, int bg,
 static void MGANAME(SubsequentDashedTwoPointLine)(ScrnInfoPtr pScrn,
 				int x1, int y1, int x2, int y2, 
 				int flags, int phase);
+void MGANAME(RestoreAccelState)(ScrnInfoPtr pScrn);
+#if PSZ == 8
+void Mga16RestoreAccelState(ScrnInfoPtr pScrn);
+void Mga24RestoreAccelState(ScrnInfoPtr pScrn);
+void Mga32RestoreAccelState(ScrnInfoPtr pScrn);
+#endif
 
 #ifdef XF86DRI
 void MGANAME(DRIInitBuffers)(WindowPtr pWin, 
@@ -157,7 +163,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
  			   USE_RECTS_FOR_LINES; 
         break;
     case PCI_CHIP_MGAG400:
-	pMga->MaxBlitDWORDS = 0x400000 >> 5;
+        if(pMga->SecondCrtc == TRUE) {
+	    pMga->HasFBitBlt = FALSE;
+	}
+        pMga->MaxBlitDWORDS = 0x400000 >> 5;
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
         pMga->AccelFlags = TRANSC_SOLID_FILL |
@@ -212,7 +221,6 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->FillCacheBltRects = MGAFillCacheBltRects;
 	infoPtr->FillCacheBltRectsFlags = NO_TRANSPARENCY;
     }
-
     /* solid fills */
     infoPtr->SetupForSolidFill = MGANAME(SetupForSolidFill);
     infoPtr->SubsequentSolidFillRect = MGANAME(SubsequentSolidFillRect);
@@ -338,7 +346,6 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->ValidatePolyPoint = MGAValidatePolyPoint;
 	infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
     }
-
     if(pMga->AccelFlags & MGA_NO_PLANEMASK) {
 	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
@@ -382,12 +389,71 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     AvailFBArea.x2 = pScrn->displayWidth;
     AvailFBArea.y1 = 0;
     AvailFBArea.y2 = maxlines;
+
+    /*
+     * Need to keep a strip of memory to the right of screen to workaround
+     * a display problem with the second CRTC.
+     */
+    if (pMga->SecondCrtc)
+	AvailFBArea.x2 = pScrn->virtualX;
+    
     xf86InitFBManager(pScreen, &AvailFBArea); 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using %d lines for offscreen "
 		   "memory.\n",
 		   maxlines - pScrn->virtualY);
 
+    {
+	Bool shared_accel = FALSE;
+	int i;
+
+	for(i = 0; i < pScrn->numEntities; i++) {
+	    if(xf86IsEntityShared(pScrn->entityList[i]))
+		shared_accel = TRUE;
+	}
+	if(shared_accel == TRUE)
+	    infoPtr->RestoreAccelState = MGANAME(RestoreAccelState);
+    }
+
     return(XAAInit(pScreen, infoPtr));
+}
+
+void
+MGANAME(InitSolidFillRectFuncs)(MGAPtr pMga)
+{
+    pMga->SetupForSolidFill = MGANAME(SetupForSolidFill);
+    pMga->SubsequentSolidFillRect = MGANAME(SubsequentSolidFillRect);
+}
+
+/* Support for multiscreen */
+void 
+MGANAME(RestoreAccelState)(ScrnInfoPtr pScrn)
+{
+   MGAPtr pMga = MGAPTR(pScrn);
+   MGAFBLayout *pLayout = &pMga->CurrentLayout;
+   CARD32 tmp;
+
+   MGAStormSync(pScrn);
+   WAITFIFO(12);
+   pMga->SrcOrg = 0;
+   OUTREG(MGAREG_MACCESS, pMga->MAccess);
+   OUTREG(MGAREG_PITCH, pLayout->displayWidth);
+   OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
+   tmp = pMga->PlaneMask;
+   pMga->PlaneMask = ~tmp;
+   SET_PLANEMASK(tmp);
+   tmp = pMga->BgColor;
+   pMga->BgColor = ~tmp;
+   SET_BACKGROUND(tmp);
+   tmp = pMga->FgColor;
+   pMga->FgColor = ~tmp;
+   SET_FOREGROUND(tmp);
+   OUTREG(MGAREG_SRCORG, pMga->realSrcOrg);
+   OUTREG(MGAREG_DSTORG, pMga->DstOrg);
+   OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
+   OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); /* (maxX << 16) | minX */
+   OUTREG(MGAREG_YTOP, 0x00000000);    /* minPixelPointer */
+   OUTREG(MGAREG_YBOT, 0x007FFFFF);    /* maxPixelPointer */   
+   pMga->AccelFlags &= ~CLIPPER_ON;
 }
 
 #if PSZ == 8
@@ -453,7 +519,8 @@ MGAStormSync(ScrnInfoPtr pScrn)
     }
 }
 
-void MGAStormEngineInit(ScrnInfoPtr pScrn)
+void 
+MGAStormEngineInit(ScrnInfoPtr pScrn)
 {
     long maccess = 0;
     MGAPtr pMga = MGAPTR(pScrn);
@@ -467,17 +534,24 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     switch( pLayout->bitsPerPixel )
     {
     case 8:
+	pMga->RestoreAccelState = Mga8RestoreAccelState;
         break;
     case 16:
         maccess |= 1;
 	if(pLayout->depth == 15)
 	   maccess |= (1 << 31);
+	Mga16InitSolidFillRectFuncs(pMga);
+	pMga->RestoreAccelState = Mga16RestoreAccelState;
         break;
     case 24:
         maccess |= 3;
+	Mga24InitSolidFillRectFuncs(pMga);
+	pMga->RestoreAccelState = Mga24RestoreAccelState;
         break;
     case 32:
         maccess |= 2;
+	Mga32InitSolidFillRectFuncs(pMga);
+	pMga->RestoreAccelState = Mga32RestoreAccelState;
         break;
     }
     
@@ -514,14 +588,14 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     case PCI_CHIP_MGAG400:
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
-	pMga->SrcOrg = 0;
-	pMga->DstOrg = 0;
-	OUTREG(MGAREG_SRCORG, 0);
-	OUTREG(MGAREG_DSTORG, 0);
+	OUTREG(MGAREG_SRCORG, pMga->realSrcOrg);
+	OUTREG(MGAREG_DSTORG, pMga->DstOrg);
 	break;
     default:
 	break;
     }
+    xf86SetLastScrnFlag(pScrn->entityList[0], pScrn->scrnIndex);
+
 }
 
 void MGASetClippingRectangle(
@@ -551,7 +625,6 @@ void MGADisableClipping(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_YBOT, 0x007FFFFF);        /* maxPixelPointer */ 
     pMga->AccelFlags &= ~CLIPPER_ON;
 }
-
 
 #endif
 
@@ -632,10 +705,10 @@ MGANAME(SubsequentScreenToScreenCopy)(
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
 	WAITFIFO(7); 
 	if(DstOrg)
-	    OUTREG(MGAREG_DSTORG, DstOrg << 6);
+	    OUTREG(MGAREG_DSTORG, (DstOrg << 6) + pMga->DstOrg);
 	if(SrcOrg != pMga->SrcOrg) {
 	    pMga->SrcOrg = SrcOrg;
-	    OUTREG(MGAREG_SRCORG, SrcOrg << 6);
+	    OUTREG(MGAREG_SRCORG, (SrcOrg << 6) + pMga->realSrcOrg);
  	}
 	if(SrcOrg) {
 	    SrcOrg = (SrcOrg << 9) / PSZ;
@@ -647,7 +720,7 @@ MGANAME(SubsequentScreenToScreenCopy)(
 	OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
 	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
 	if(DstOrg)
-	   OUTREG(MGAREG_DSTORG, 0);
+	   OUTREG(MGAREG_DSTORG, pMga->DstOrg);
     } else {
 	WAITFIFO(4); 
 	OUTREG(MGAREG_AR0, end);
@@ -1441,12 +1514,12 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 
 	WAITFIFO(2);
 	if(DstOrg) {
-            OUTREG(MGAREG_DSTORG, DstOrg << 6);
+            OUTREG(MGAREG_DSTORG, (DstOrg << 6) + pMga->DstOrg);
 	    resetDstOrg = TRUE;
 	}
         if(SrcOrg != pMga->SrcOrg) {
             pMga->SrcOrg = SrcOrg;
-            OUTREG(MGAREG_SRCORG, SrcOrg << 6);
+            OUTREG(MGAREG_SRCORG, (SrcOrg << 6) + pMga->realSrcOrg);
         }
     }
 
@@ -1497,7 +1570,7 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 
     if(resetDstOrg) {
 	WAITFIFO(1);
-	OUTREG(MGAREG_DSTORG, 0);
+	OUTREG(MGAREG_DSTORG, pMga->DstOrg);
     }
 }
 
@@ -2039,3 +2112,4 @@ MGANAME(DRIMoveBuffers)(WindowPtr pParent, DDXPointRec ptOldOrg,
 }
 	   
 #endif /* XF86DRI */
+

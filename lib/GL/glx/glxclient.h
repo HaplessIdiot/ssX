@@ -43,6 +43,9 @@
 #ifdef NEED_GL_FUNCS_WRAPPED
 #include "indirect.h"
 #endif
+#ifdef XTHREADS
+#include "Xthreads.h"
+#endif
 
 
 #define GLX_MAJOR_VERSION	1	/* current version numbers */
@@ -560,8 +563,15 @@ extern __GLXcontext *__glXcurrentContext;
 ** Global lock for all threads in this address space using the GLX
 ** extension
 */
+#if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
+extern xmutex_rec __glXmutex;
+extern xmutex_rec __glXSwapBuffersMutex;
+#define __glXLock()    xmutex_lock(&__glXmutex)
+#define __glXUnlock()  xmutex_unlock(&__glXmutex)
+#else
 #define __glXLock()
 #define __glXUnlock()
+#endif
 
 /*
 ** Setup for a command.  Initialize the extension for dpy if necessary.

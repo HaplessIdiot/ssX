@@ -61,7 +61,7 @@
 #define V3F_COUNT       8
 #define V3F_STRIDE      12
 
-#define MAT_INV         64
+#define MAT_INV         4
 
 #define M(i)    REGOFF(i * 4, ECX)
 #define STRIDE  REGOFF(12, ESI)
@@ -72,28 +72,24 @@ GLOBL GLNAME(gl_3dnow_transform_normalize_normals_raw)
 GLNAME(gl_3dnow_transform_normalize_normals_raw):
 
  #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
 
-    MOV_L   ( ARG_LENGTHS, EDI )
-    MOV_L   ( ARG_IN, EAX )
-    MOV_L   ( ARG_DEST, EDX )
-    MOV_L   ( REGOFF(V3F_COUNT, EAX), EAX ) /*  dest->count = in->count   */
-    MOV_L   ( EAX, REGOFF(V3F_COUNT, EDX) )
-    MOV_L   ( ARG_IN, ESI )
-    MOV_L   ( ARG_MAT, ECX )
-    MOV_L   ( REGOFF(V3F_START, EDX), EAX ) /*  dest->start  */
-    MOV_L   ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
-    MOV_L   ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
+    PUSH_L     ( EBP )
 
+    MOV_L      ( ARG_LENGTHS, EDI )
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EBP ) /*  dest->count = in->count   */
+    MOV_L      ( EBP, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( ARG_MAT, ECX )
+    MOV_L      ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
 
-ALIGNTEXT32
-
-    CMP_L      ( CONST(0), REGOFF (V3F_COUNT, ESI ) ) /*   count > 0 ??  */
+    CMP_L      ( CONST(0), EBP )        /*   count > 0 ??  */
     JE         ( LLBL (G3TN_end) )
 
-    PUSH_L     ( EBP )
     MOV_L      ( REGOFF (V3F_COUNT, ESI), EBP )
     FEMMS
 
@@ -101,7 +97,8 @@ ALIGNTEXT32
     PUSH_L     ( EAX )
     PUSH_L     ( EDX )                  /*  save counter & pointer for   */
                                         /*  the normalize pass           */
-
+ #undef  FRAME_OFFSET
+ #define FRAME_OFFSET 24
 
     MOVQ       ( M(0), MM3 )            /*  m1              | m0         */
     MOVQ       ( M(4), MM4 )            /*  m5              | m4         */
@@ -115,8 +112,6 @@ ALIGNTEXT32
     CMP_L      ( CONST(0), EDI )        /*  lengths == 0 ?                 */
     JNE        ( LLBL (G3TN_scale_end ) )
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 28
     MOVD       ( ARG_SCALE, MM0 )       /*               | scale           */
     PUNPCKLDQ  ( MM0, MM0 )             /* scale         | scale           */
 
@@ -138,6 +133,8 @@ LLBL (G3TN_transform):
     PFMUL      ( MM3, MM0 )             /*  x1*m1           | x0*m0        */
     ADD_L      ( CONST(12), EAX )       /*  next r                         */
 
+    PREFETCHW  ( REGIND(EAX) )
+
     PFMUL      ( MM4, MM1 )             /*  x1*m5           | x0*m4        */
     PFACC      ( MM1, MM0 )             /*  x0*m4+x1*m5     | x0*m0+x1*m1  */
 
@@ -155,6 +152,8 @@ LLBL (G3TN_transform):
 
     PFADD      ( MM2, MM1 )             /*  *not used*   | x0*m8+x1*m9+x2*m*/
     ADD_L      ( STRIDE, EDX )          /*  next normal                    */
+
+    PREFETCH   ( REGIND(EDX) )
 
     MOVD       ( MM1, REGOFF(-4, EAX) ) /*  write r2                       */
     MOVQ       ( REGIND (EDX), MM0 )    /*  x1           | x0              */
@@ -177,19 +176,24 @@ LLBL (G3TN_transform):
 
 ALIGNTEXT32
 LLBL (G3TN_norm_w_lengths):
+
+    PREFETCHW  ( REGOFF(12,EAX) )
+
     MOVD       ( REGIND (EDI), MM3 )    /*                  | length (x)   */
     PFMUL      ( MM3, MM1 )             /*                  | x2 (normalize*/
 
     PUNPCKLDQ  ( MM3, MM3 )             /*  length (x)      | length (x)   */
     PFMUL      ( MM3, MM0 )             /*  x1 (normalized) | x0 (normalize*/
 
+    ADD_L      ( STRIDE, EDX )          /*  next normal                    */
+    ADD_L      ( CONST(4), EDI )        /*  next length                    */
+
+    PREFETCH   ( REGIND(EDI) )
+
     MOVQ       ( MM0, REGIND(EAX) )     /*  write new x0, x1               */
     MOVD       ( MM1, REGOFF(8, EAX) )  /*  write new x2                   */
 
-    ADD_L      ( STRIDE, EDX )          /*  next normal                    */
     ADD_L      ( CONST(12), EAX )       /*  next r                         */
-
-    ADD_L      ( CONST(4), EDI )        /*  next length                    */
     DEC_L      ( EBP )                  /*  decrement normal counter       */
 
     MOVQ       ( REGIND(EAX), MM0 )     /*  x1              | x0           */
@@ -199,6 +203,9 @@ LLBL (G3TN_norm_w_lengths):
 
 ALIGNTEXT32
 LLBL (G3TN_norm):
+
+    PREFETCHW  ( REGIND(EAX) )
+
     MOVQ       ( MM0, MM3 )             /*  x1              | x0           */
     MOVQ       ( MM1, MM4 )             /*                  | x2           */
 
@@ -233,46 +240,39 @@ LLBL (G3TN_norm):
 
 LLBL (G3TN_exit_3dnow):
     FEMMS
-    POP_L      ( EBP )
 
 LLBL (G3TN_end):
+    POP_L      ( EBP )
     POP_L      ( ESI )
     POP_L      ( EDI )
-    POP_L      ( ECX )
     RET
 
 
 
 ALIGNTEXT16
-
 GLOBL GLNAME(gl_3dnow_transform_normalize_normals_no_rot_raw)
 GLNAME(gl_3dnow_transform_normalize_normals_no_rot_raw):
 
  #undef FRAME_OFFSET 
  #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
 
-    MOV_L   ( ARG_LENGTHS, EDI )
-    MOV_L   ( ARG_IN, EAX )
-    MOV_L   ( ARG_DEST, EDX )
-    MOV_L   ( REGOFF(V3F_COUNT, EAX), EAX ) /*  dest->count = in->count   */
-    MOV_L   ( EAX, REGOFF(V3F_COUNT, EDX) )
-    MOV_L   ( ARG_IN, ESI )
-    MOV_L   ( ARG_MAT, ECX )
-    MOV_L   ( REGOFF(V3F_START, EDX), EAX ) /*  dest->start  */
-    MOV_L   ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
-    MOV_L   ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
+    PUSH_L     ( EBP )
 
+    MOV_L      ( ARG_LENGTHS, EDI )
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EBP ) /*  dest->count = in->count   */
+    MOV_L      ( EBP, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( ARG_MAT, ECX )
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
+    MOV_L      ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
 
-ALIGNTEXT32
-
-    CMP_L      ( CONST(0), REGOFF (V3F_COUNT, ESI ) ) /*   count > 0 ??  */
+    CMP_L      ( CONST(0), EBP ) /*   count > 0 ??  */
     JE         ( LLBL (G3TNNR_end) )
 
-    PUSH_L     ( EBP )
-    MOV_L      ( REGOFF (V3F_COUNT, ESI), EBP )
     FEMMS
 
     MOVD       ( M(0), MM0 )            /*               | m0                 */
@@ -284,14 +284,13 @@ ALIGNTEXT32
     CMP_L      ( CONST(0), EDI )        /*  lengths == 0 ?                    */
     JNE        ( LLBL (G3TNNR_scale_end ) )
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 16
     MOVD       ( ARG_SCALE, MM7 )       /*               | scale              */
     PUNPCKLDQ  ( MM7, MM7 )             /* scale         | scale              */
 
     PFMUL      ( MM7, MM0 )             /* scale * m5    | scale * m0         */
     PFMUL      ( MM7, MM2 )             /* scale * m10   | scale * m10        */
 
+ALIGNTEXT32
 LLBL (G3TNNR_scale_end):
     MOVQ       ( REGIND(EDX), MM6 )     /* x1            | x0                 */
     MOVD       ( REGOFF(8, EDX), MM7 )  /*               | x2                 */
@@ -302,9 +301,15 @@ LLBL (G3TNNR_scale_end):
     MOVD       ( REGIND(EDI), MM3 )     /*                 | length (x)       */
 
 
+ALIGNTEXT32
 LLBL (G3TNNR_norm_w_lengths):           /* use precalculated lengths          */
+
+    PREFETCHW  ( REGIND(EAX) )
+
     PFMUL      ( MM0, MM6 )             /* x1*m5         | x0*m0              */
     ADD_L      ( STRIDE, EDX )          /* next normal                        */
+
+    PREFETCH   ( REGIND(EDX) )
 
     PFMUL      ( MM2, MM7 )             /*               | x2*m10             */
     ADD_L      ( CONST(12), EAX )       /* next r                             */
@@ -327,7 +332,11 @@ LLBL (G3TNNR_norm_w_lengths):           /* use precalculated lengths          */
     JA         ( LLBL (G3TNNR_norm_w_lengths) )
     JMP        ( LLBL (G3TNNR_exit_3dnow) )
 
+ALIGNTEXT32
 LLBL (G3TNNR_norm):                     /* need to calculate lengths          */
+
+    PREFETCHW  ( REGIND(EAX) )
+
     PFMUL      ( MM0, MM6 )             /* x1*m5           | x0*m0            */
     ADD_L      ( CONST(12), EAX )       /* next r                             */
 
@@ -337,11 +346,14 @@ LLBL (G3TNNR_norm):                     /* need to calculate lengths          */
     MOVQ       ( MM7, MM4 )             /*                 | x2 (transformed) */
     PFMUL      ( MM6, MM3 )             /* x1*x1           | x0*x0            */
 
+
     PFMUL      ( MM7, MM4 )             /*                 | x2*x2            */
     PFACC      ( MM3, MM3 )             /* **not used**    | x0*x0+x1*x1      */
 
     PFADD      ( MM4, MM3 )             /*                 | x0*x0+x1*x1+x2*x2*/
     ADD_L      ( STRIDE, EDX )          /* next normal            */
+
+    PREFETCH   ( REGIND(EDX) )
 
     PFRSQRT    ( MM3, MM5 )             /* 1/sqrt (x0*x0+x1*x1+x2*x2)         */
     MOVQ       ( MM5, MM4 )
@@ -367,12 +379,11 @@ LLBL (G3TNNR_norm):                     /* need to calculate lengths          */
 
 LLBL (G3TNNR_exit_3dnow):
     FEMMS
-    POP_L      ( EBP )
 
 LLBL (G3TNNR_end):
+    POP_L      ( EBP )
     POP_L      ( ESI )
     POP_L      ( EDI )
-    POP_L      ( ECX )
     RET
 
 
@@ -381,38 +392,31 @@ LLBL (G3TNNR_end):
 
 
 ALIGNTEXT16
-
 GLOBL GLNAME(gl_3dnow_transform_rescale_normals_no_rot_raw)
 GLNAME(gl_3dnow_transform_rescale_normals_no_rot_raw):
 
  #undef FRAME_OFFSET 
  #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
 
-    MOV_L   ( ARG_IN, EAX )
-    MOV_L   ( ARG_DEST, EDX )
-    MOV_L   ( REGOFF(V3F_COUNT, EAX), EAX ) /*  dest->count = in->count   */
-    MOV_L   ( EAX, REGOFF(V3F_COUNT, EDX) )
-    MOV_L   ( ARG_IN, ESI )
-    MOV_L   ( ARG_MAT, ECX )
-    MOV_L   ( REGOFF(V3F_START, EDX), EAX ) /*  dest->start  */
-    MOV_L   ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
-    MOV_L   ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
+    PUSH_L     ( EBP )
 
+    MOV_L      ( ARG_IN, EAX )
+    MOV_L      ( ARG_DEST, EDX )
+    MOV_L      ( REGOFF(V3F_COUNT, EAX), EBP ) /*  dest->count = in->count   */
+    MOV_L      ( EBP, REGOFF(V3F_COUNT, EDX) )
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_MAT, ECX )
+    MOV_L      ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
+    MOV_L      ( REGOFF(V3F_START, EDX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
 
-ALIGNTEXT32
-
-    CMP_L      ( CONST(0), REGOFF (V3F_COUNT, ESI) )
+    CMP_L      ( CONST(0), EBP )
     JE         ( LLBL (G3TRNR_end) )
 
-    PUSH_L     ( EBP )
-    MOV_L      ( REGOFF (V3F_COUNT, ESI), EBP )
     FEMMS
 
- #undef  FRAME_OFFSET
- #define FRAME_OFFSET 16
     MOVD       ( ARG_SCALE, MM6 )       /*               | scale              */
     PUNPCKLDQ  ( MM6, MM6 )             /* scale         | scale              */
 
@@ -428,10 +432,14 @@ ALIGNTEXT32
     MOVD       ( REGOFF(8, EDX), MM5 )  /*               | x2                 */
 
 ALIGNTEXT32
-
 LLBL (G3TRNR_rescale):
+
+    PREFETCHW  ( REGIND(EAX) )
+
     PFMUL      ( MM0, MM4 )             /* x1*m5         | x0*m0              */
     ADD_L      ( STRIDE, EDX )          /* next normal                        */
+
+    PREFETCH   ( REGIND(EDX) )
 
     PFMUL      ( MM2, MM5 )             /*               | x2*m10             */
     ADD_L      ( CONST(12), EAX )       /* next r                             */
@@ -446,12 +454,11 @@ LLBL (G3TRNR_rescale):
     JA         ( LLBL (G3TRNR_rescale) ) /* cnt > 0 ? -> process next normal  */
 
     FEMMS
-    POP_L      ( EBP )
 
 LLBL (G3TRNR_end):
+    POP_L      ( EBP )
     POP_L      ( ESI )
     POP_L      ( EDI )
-    POP_L      ( ECX )
     RET
 
 
@@ -463,24 +470,19 @@ GLOBL GLNAME(gl_3dnow_transform_rescale_normals_raw)
 GLNAME(gl_3dnow_transform_rescale_normals_raw):
 
  #undef  FRAME_OFFSET
- #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
+ #define FRAME_OFFSET 8
 
-    MOV_L   (REGOFF(24,ESP), EAX)
-    MOV_L   (REGOFF(36,ESP), EDX)
-    MOV_L   (REGOFF(8,EAX), EAX)
-    MOV_L   (EAX, REGOFF(8,EDX))
-    MOV_L   (REGOFF(24,ESP), EDI)
-    MOV_L   (REGOFF(4,EDX), EAX)
-    MOV_L   (REGOFF(16,ESP), ECX)
-    MOV_L   (REGOFF(24,ESP), ESI)
-    MOV_L   (REGOFF(64,ECX), ECX)
-    MOV_L   (REGOFF(4,EDI), EDX)
-    MOV_L   (REGOFF(8,EDI), EDI)
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
 
-ALIGNTEXT32
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( ARG_MAT, ECX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EDI ) /*  dest->count = in->count   */
+    MOV_L      ( EDI, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    MOV_L      ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
 
     CMP_L      ( CONST(0), EDI )
     JE         ( LLBL (G3TR_end) )
@@ -490,12 +492,12 @@ ALIGNTEXT32
     MOVQ       ( REGIND(ECX), MM3 )     /* m1            | m0                 */
 
     MOVQ       ( REGOFF(16,ECX), MM4 )  /* m5            | m4                 */
-    MOVD       ( REGOFF(20, ESP), MM0 ) /* scale       */
+    MOVD       ( ARG_SCALE, MM0 )       /* scale       */
 
     MOVD       ( REGOFF(8,ECX), MM5 )   /*               | m2                 */
     PUNPCKLDQ  ( MM0, MM0 )             /* scale         | scale              */
 
-    PUNPCKLDQ ( REGOFF(24, ECX), MM5 )
+    PUNPCKLDQ  ( REGOFF(24, ECX), MM5 )
     PFMUL      ( MM0, MM3 )             /* scale*m1      | scale*m0           */
 
     MOVQ       ( REGOFF(32, ECX), MM6 ) /* m9            | m8*/
@@ -510,7 +512,11 @@ ALIGNTEXT32
     PFMUL      ( MM0, MM7 )             /*               | scale*m10          */
     MOVQ       ( REGIND(EDX), MM0 )     /* x1            | x0                 */
 
+ALIGNTEXT32
 LLBL (G3TR_rescale):
+
+    PREFETCHW  ( REGIND(EAX) )
+
     MOVQ       ( MM0, MM1 )             /* x1            | x0                 */
     PUNPCKLDQ  ( MM2, MM2 )             /* x2            | x2                 */
 
@@ -520,25 +526,28 @@ LLBL (G3TR_rescale):
     PFMUL      ( MM4, MM1 )             /* x1*m5         | x0*m4              */
     PFACC      ( MM1, MM0 )             /* x0*m4+x1*m5   | x0*m0+x1*m1        */
 
+    MOVQ       ( REGIND(EDX), MM1 )     /* x1            | x0                 */
+
     PFMUL      ( MM5, MM2 )             /* x2*m6         | x2*m2              */
     PFADD      ( MM2, MM0 )             /* x0*m4...+x2*m6| x0*m0+x1*m1+x2*m2  */
 
-    MOVQ       ( REGIND(EDX), MM1 )     /* x1            | x0                 */
-    MOVQ       ( MM0, REGOFF(-12, EAX) ) /* write r0, r1                      */
-
-    PFMUL      ( MM6, MM1 )             /* x1*m9         | x0*m8              */
     MOVD       ( REGOFF(8, EDX), MM2 )  /*               | x2                 */
+    ADD_L      ( STRIDE, EDX )          /* next normal                    */
+
+    PREFETCH   ( REGIND(EDX) )
+
+    MOVQ       ( MM0, REGOFF(-12, EAX) ) /* write r0, r1                      */
+    PFMUL      ( MM6, MM1 )             /* x1*m9         | x0*m8              */
 
     PFMUL      ( MM7, MM2 )             /*               | x2*m10             */
     PFACC      ( MM1, MM1 )             /* *not used*    | x0*m8+x1*m9        */
 
     PFADD      ( MM2, MM1 )             /* *not used*    | x0*m8+x1*m9+x2*m10 */
-    ADD_L      ( REGOFF(12, ESI), EDX ) /* next normal                    */
-
     MOVD       ( MM1, REGOFF(-4, EAX) ) /* write r2                           */
-    MOVQ       ( REGIND(EDX), MM0 )     /* x1            | x0                 */
 
+    MOVQ       ( REGIND(EDX), MM0 )     /* x1            | x0                 */
     MOVD       ( REGOFF(8, EDX), MM2 )  /*               | x2                 */
+
     DEC_L      ( EDI )                  /* decrement normal counter           */
     JA         ( LLBL (G3TR_rescale) )
 
@@ -547,7 +556,6 @@ LLBL (G3TR_rescale):
 LLBL (G3TR_end):
     POP_L       ( ESI )
     POP_L       ( EDI )
-    POP_L       ( ECX )
     RET
 
 
@@ -560,25 +568,20 @@ ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_transform_normals_no_rot_raw)
 GLNAME(gl_3dnow_transform_normals_no_rot_raw):
 
- #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
+ #undef  FRAME_OFFSET
+ #define FRAME_OFFSET 8
 
-    MOV_L   (REGOFF(24,ESP), EAX)
-    MOV_L   (REGOFF(36,ESP), EDX)
-    MOV_L   (REGOFF(8,EAX), EAX)
-    MOV_L   (EAX, REGOFF(8,EDX))
-    MOV_L   (REGOFF(24,ESP), EDI)
-    MOV_L   (REGOFF(4,EDX), EAX)
-    MOV_L   (REGOFF(16,ESP), ECX)
-    MOV_L   (REGOFF(24,ESP), ESI)
-    MOV_L   (REGOFF(64,ECX), ECX)
-    MOV_L   (REGOFF(4,EDI), EDX)
-    MOV_L   (REGOFF(8,EDI), EDI)
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
 
-	
-ALIGNTEXT32
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( ARG_MAT, ECX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EDI ) /*  dest->count = in->count   */
+    MOV_L      ( EDI, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    MOV_L      ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
 
     CMP_L      ( CONST(0), EDI )
     JE         ( LLBL (G3TNR_end) )
@@ -595,10 +598,14 @@ ALIGNTEXT32
     MOVD       ( REGOFF(8, EDX), MM5 )  /*               | x2                 */
 
 ALIGNTEXT32
-
 LLBL (G3TNR_transform):
+
+    PREFETCHW  ( REGIND(EAX) )
+
     PFMUL      ( MM0, MM4 )             /* x1*m5         | x0*m0              */
-    ADD_L      ( REGOFF(12, ESI), EDX)  /* next normal      */
+    ADD_L      ( STRIDE, EDX)           /* next normal      */
+
+    PREFETCH   ( REGIND(EDX) )
 
     PFMUL      ( MM2, MM5 )             /*               | x2*m10             */
     ADD_L      ( CONST(12), EAX )       /* next r                             */
@@ -617,7 +624,6 @@ LLBL (G3TNR_transform):
 LLBL (G3TNR_end):
     POP_L       ( ESI )
     POP_L       ( EDI )
-    POP_L       ( ECX )
     RET
 
 
@@ -631,24 +637,20 @@ ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_transform_normals_raw)
 GLNAME(gl_3dnow_transform_normals_raw):
 
- #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
-	
-    MOV_L   (REGOFF(24,ESP), EAX)
-    MOV_L   (REGOFF(36,ESP), EDX)
-    MOV_L   (REGOFF(8,EAX), EAX)
-    MOV_L   (EAX, REGOFF(8,EDX))
-    MOV_L   (REGOFF(24,ESP), EDI)
-    MOV_L   (REGOFF(4,EDX), EAX)
-    MOV_L   (REGOFF(16,ESP), ECX)
-    MOV_L   (REGOFF(24,ESP), ESI)
-    MOV_L   (REGOFF(64,ECX), ECX)
-    MOV_L   (REGOFF(4,EDI), EDX)
-    MOV_L   (REGOFF(8,EDI), EDI)
-	
-ALIGNTEXT32
+ #undef  FRAME_OFFSET
+ #define FRAME_OFFSET 8
+
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
+
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( ARG_MAT, ECX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EDI ) /*  dest->count = in->count   */
+    MOV_L      ( EDI, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(V3F_START, ESI), EDX ) /*  in->start    */
+    MOV_L      ( REGOFF(MAT_INV, ECX), ECX ) /*  mat->inv     */
 
     CMP_L      ( CONST(0), EDI )        /* count > 0 ??                       */
     JE         ( LLBL (G3T_end) )
@@ -659,15 +661,19 @@ ALIGNTEXT32
     MOVQ       ( REGOFF(16, ECX), MM4 ) /* m5            | m4                 */
 
     MOVD       ( REGOFF(8, ECX), MM5 )  /*               | m2                 */
-    PUNPCKLDQ  ( REGOFF(24, ECX), MM5 ) /* m6            | m2*/
+    PUNPCKLDQ  ( REGOFF(24, ECX), MM5 ) /* m6            | m2                 */
 
-    MOVQ       ( REGOFF(32,ECX), MM6 )  /* m9            | m8                 */
-    MOVD       ( REGOFF(40,ECX), MM7 )  /*               | m10                */
+    MOVQ       ( REGOFF(32, ECX), MM6 ) /* m9            | m8                 */
+    MOVD       ( REGOFF(40, ECX), MM7 ) /*               | m10                */
 
     MOVQ       ( REGIND(EDX), MM0 )     /* x1            | x0                 */
     MOVD       ( REGOFF(8, EDX), MM2 )  /*               | x2                 */
 
+ALIGNTEXT32
 LLBL (G3T_transform):
+
+    PREFETCHW  ( REGIND(EAX) )
+
     MOVQ       ( MM0, MM1 )             /* x1            | x0                 */
     PUNPCKLDQ  ( MM2, MM2 )             /* x2            | x2                 */
 
@@ -687,10 +693,12 @@ LLBL (G3T_transform):
     MOVD       ( REGOFF(8, EDX), MM2 )  /*               | x2                 */
 
     PFMUL      ( MM7, MM2 )             /*               | x2*m10             */
-    PFACC      ( MM1, MM1 )             /* *not used*    | x0*m8+x1*m9        */
+    ADD_L      ( STRIDE, EDX )          /* next normal               */
 
+    PREFETCH   ( REGIND(EDX) )
+
+    PFACC      ( MM1, MM1 )             /* *not used*    | x0*m8+x1*m9        */
     PFADD      ( MM2, MM1 )             /* *not used*    | x0*m8+x1*m9+x2*m10 */
-    ADD_L      ( REGOFF(12, ESI), EDX ) /* next normal               */
 
     MOVD       ( MM1, REGOFF(-4, EAX) ) /* write r2                           */
     MOVQ       ( REGIND(EDX), MM0 )     /* x1            | x0                 */
@@ -704,7 +712,6 @@ LLBL (G3T_transform):
 LLBL (G3T_end):
     POP_L  ( ESI )
     POP_L  ( EDI )
-    POP_L  ( ECX )
     RET
 
 
@@ -716,30 +723,23 @@ ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_normalize_normals_raw)
 GLNAME(gl_3dnow_normalize_normals_raw):
 
+ #undef  FRAME_OFFSET
  #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
 
-    MOV_L   (REGOFF(16,ESP), ESI)
-    MOV_L   (REGOFF(24,ESP), EAX)
-    MOV_L   (REGOFF(36,ESP), EDX)
-    MOV_L   (REGOFF(8,EAX), EAX)
-    MOV_L   (EAX, REGOFF(8,EDX))
-    MOV_L   (REGOFF(4,EDX), EAX)
-    MOV_L   (REGOFF(24,ESP), ECX)
-    MOV_L   (REGOFF(28,ESP), EDX)
-    MOV_L   (REGOFF(24,ESP), EDI)
-    MOV_L   (REGOFF(4,ECX), ECX)
-
-	
-ALIGNTEXT32
-
-    CMP_L      ( CONST(0), REGOFF(8, EDI) ) /* count > 0 ?? */
-    JE         ( LLBL (G3N_end) )
-
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
     PUSH_L     ( EBP )
-    MOV_L      (REGOFF(8,EDI), EBP)
+
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EBP ) /*  dest->count = in->count   */
+    MOV_L      ( EBP, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(V3F_START, ESI), ECX ) /*  in->start    */
+    MOV_L      ( ARG_LENGTHS, EDX )
+
+    CMP_L      ( CONST(0), EBP ) /* count > 0 ?? */
+    JE         ( LLBL (G3N_end) )
 
     FEMMS
 
@@ -749,17 +749,23 @@ ALIGNTEXT32
     CMP_L      ( CONST(0), EDX )        /* lengths == 0 ?                     */
     JE         ( LLBL (G3N_norm2) )     /* calculate lengths                  */
 
+ALIGNTEXT32
 LLBL (G3N_norm1):                       /* use precalculated lengths          */
+
+    PREFETCH   ( REGIND(EAX) )
+
     MOVD       ( REGIND(EDX), MM3 )     /*                 | length (x)       */
     PFMUL      ( MM3, MM1 )             /*                 | x2 (normalized)  */
 
     PUNPCKLDQ  ( MM3, MM3 )             /* length (x)      | length (x)       */
+    ADD_L      ( STRIDE, ECX )          /* next normal            */
+
+    PREFETCH   ( REGIND(ECX) )
+
     PFMUL      ( MM3, MM0 )             /* x1 (normalized) | x0 (normalized)  */
-
     MOVQ       ( MM0, REGIND(EAX) )     /* write new x0, x1                   */
-    MOVD       ( MM1, REGOFF(8, EAX) )  /* write new x2                       */
 
-    ADD_L      ( REGOFF(12, EDI), ECX ) /* next normal            */
+    MOVD       ( MM1, REGOFF(8, EAX) )  /* write new x2                       */
     ADD_L      ( CONST(12), EAX )       /* next r                             */
 
     ADD_L      ( CONST(4), EDX )        /* next length                        */
@@ -771,10 +777,15 @@ LLBL (G3N_norm1):                       /* use precalculated lengths          */
 
     JMP        ( LLBL (G3N_end1) )
 
-LLBL (G3N_norm2):
-                                        /* need to calculate lengths          */
+ALIGNTEXT32
+LLBL (G3N_norm2):                       /* need to calculate lengths          */
+
+    PREFETCHW  ( REGIND(EAX) )
+
     MOVQ       ( MM0, MM3 )             /* x1              | x0               */
-    ADD_L      ( REGOFF(12, EDI), ECX ) /* next normal    */
+    ADD_L      ( STRIDE, ECX )          /* next normal    */
+
+    PREFETCH   ( REGIND(ECX) )
 
     PFMUL      ( MM0, MM3 )             /* x1*x1           | x0*x0            */
     MOVQ       ( MM1, MM4 )             /*                 | x2               */
@@ -808,12 +819,11 @@ LLBL (G3N_norm2):
 
 LLBL (G3N_end1):
     FEMMS
-    POP_L      ( EBP )
 
 LLBL (G3N_end):
-    POP_L  ( ESI )
-    POP_L  ( EDI )
-    POP_L  ( ECX )
+    POP_L      ( EBP )
+    POP_L      ( ESI )
+    POP_L      ( EDI )
     RET
 
 
@@ -825,48 +835,46 @@ ALIGNTEXT16
 GLOBL GLNAME(gl_3dnow_rescale_normals_raw)
 GLNAME(gl_3dnow_rescale_normals_raw):
 
- #define FRAME_OFFSET 12
-    SUB_L   ( CONST(4), ESP )
-    PUSH_L  ( EDI )
-    PUSH_L  ( ESI )
+ #undef  FRAME_OFFSET
+ #define FRAME_OFFSET 8
+    PUSH_L     ( EDI )
+    PUSH_L     ( ESI )
 
-    MOV_L   (REGOFF(20,ESP), ESI)
-    MOV_L   (REGOFF(24,ESP), EAX)
-    MOV_L   (REGOFF(36,ESP), EDX)
-    MOV_L   (REGOFF(8,EAX), EAX)
-    MOV_L   (EAX, REGOFF(8,EDX))
-    MOV_L   (REGOFF(24,ESP), EDI)
-    MOV_L   (EDI, ECX)
-    MOV_L   (REGOFF(4,EDX), EAX)
-    MOV_L   (REGOFF(4,ECX), ECX)
-    MOV_L   (REGOFF(8,EDI), EDX)
-
-ALIGNTEXT32
+    MOV_L      ( ARG_IN, ESI )
+    MOV_L      ( ARG_DEST, EAX )
+    MOV_L      ( REGOFF(V3F_COUNT, ESI), EDX ) /*  dest->count = in->count   */
+    MOV_L      ( EDX, REGOFF(V3F_COUNT, EAX) )
+    MOV_L      ( REGOFF(V3F_START, EAX), EAX ) /*  dest->start  */
+    MOV_L      ( REGOFF(V3F_START, ESI), ECX ) /*  in->start    */
 
     CMP_L      ( CONST(0), EDX )
     JE         ( LLBL (G3R_end) )
 
     FEMMS
 
-    MOVD       ( ESI, MM0 )             /* scale                              */
+    MOVD       ( ARG_SCALE, MM0 )       /* scale                              */
     PUNPCKLDQ  ( MM0, MM0 )
 
     MOVQ       ( REGIND(ECX), MM1 )     /* x1            | x0                 */
     MOVD       ( REGOFF(8, ECX), MM2 )  /*               | x2                 */
 
 ALIGNTEXT32
-
 LLBL (G3R_rescale):
+
+    PREFETCHW  ( REGIND(EAX) )
+
     PFMUL      ( MM0, MM1 )             /* x1*scale      | x0*scale           */
-    ADD_L      ( REGOFF(12, EDI), ECX ) /* next normal                  */
+    ADD_L      ( STRIDE, ECX )          /* next normal                  */
+
+    PREFETCH   ( REGIND(ECX) )
 
     PFMUL      ( MM0, MM2 )             /*               | x2*scale           */
     ADD_L      ( CONST(12), EAX )       /* next r                             */
 
-    DEC_L      ( EDX )                  /* decrement normal counter           */
     MOVQ       ( MM1, REGOFF(-12, EAX) ) /* write r0, r1                      */
-
     MOVD       ( MM2, REGOFF(-4, EAX) ) /* write r2                           */
+
+    DEC_L      ( EDX )                  /* decrement normal counter           */
     MOVQ       ( REGIND(ECX), MM1 )     /* x1            | x0                 */
 
     MOVD       ( REGOFF(8, ECX), MM2 )  /*               | x2                 */
@@ -875,17 +883,9 @@ LLBL (G3R_rescale):
     FEMMS
 
 LLBL (G3R_end):
-    POP_L  ( ESI )
-    POP_L  ( EDI )
-    POP_L  ( ECX )
+    POP_L      ( ESI )
+    POP_L      ( EDI )
     RET
-
-
-
-
-
-
-
 
 
 

@@ -556,13 +556,8 @@ static void general_smooth_rgba_line( GLcontext *ctx,
 static void general_flat_rgba_line( GLcontext *ctx,
                                     GLuint vert0, GLuint vert1, GLuint pvert )
 {
-   GLint count;
-   GLint *pbx = ctx->PB->x;
-   GLint *pby = ctx->PB->y;
-   GLdepth *pbz = ctx->PB->z;
-   GLubyte *color = ctx->VB->ColorPtr->data[pvert];
+   const GLubyte *color = ctx->VB->ColorPtr->data[pvert];
    PB_SET_COLOR( ctx->PB, color[0], color[1], color[2], color[3] );
-   count = ctx->PB->count;
 
    if (ctx->Line.StippleFlag) {
       /* stippled */
@@ -570,12 +565,7 @@ static void general_flat_rgba_line( GLcontext *ctx,
 #define INTERP_Z 1
 #define WIDE 1
 #define STIPPLE 1
-#define PLOT(X,Y)			\
-	pbx[count] = X;			\
-	pby[count] = Y;			\
-	pbz[count] = Z;			\
-	count++;			\
-	CHECK_FULL(count);
+#define PLOT(X,Y)  PB_WRITE_PIXEL(ctx->PB, X, Y, Z);
 #include "linetemp.h"
    }
    else {
@@ -584,18 +574,10 @@ static void general_flat_rgba_line( GLcontext *ctx,
          /* special case: unstippled and width=2 */
 #define INTERP_XY 1
 #define INTERP_Z 1
-#define XMAJOR_PLOT(X,Y)			\
-	pbx[count] = X;  pbx[count+1] = X;	\
-	pby[count] = Y;  pby[count+1] = Y+1;	\
-	pbz[count] = Z;  pbz[count+1] = Z;	\
-	count += 2;				\
-	CHECK_FULL(count);
-#define YMAJOR_PLOT(X,Y)			\
-	pbx[count] = X;  pbx[count+1] = X+1;	\
-	pby[count] = Y;  pby[count+1] = Y;	\
-	pbz[count] = Z;  pbz[count+1] = Z;	\
-	count += 2;				\
-	CHECK_FULL(count);
+#define XMAJOR_PLOT(X,Y) PB_WRITE_PIXEL(ctx->PB, X, Y, Z); \
+                         PB_WRITE_PIXEL(ctx->PB, X, Y+1, Z);
+#define YMAJOR_PLOT(X,Y)  PB_WRITE_PIXEL(ctx->PB, X, Y, Z); \
+                          PB_WRITE_PIXEL(ctx->PB, X+1, Y, Z);
 #include "linetemp.h"
       }
       else {
@@ -603,17 +585,11 @@ static void general_flat_rgba_line( GLcontext *ctx,
 #define INTERP_XY 1
 #define INTERP_Z 1
 #define WIDE 1
-#define PLOT(X,Y)			\
-	pbx[count] = X;			\
-	pby[count] = Y;			\
-	pbz[count] = Z;			\
-	count++;			\
-	CHECK_FULL(count);
+#define PLOT(X,Y) PB_WRITE_PIXEL(ctx->PB, X, Y, Z);
 #include "linetemp.h"
       }
    }
 
-   ctx->PB->count = count;
    gl_flush_pb(ctx);
 }
 
@@ -847,6 +823,104 @@ static void smooth_multitextured_line( GLcontext *ctx,
 }
 
 
+/* Flat-shaded, multitextured, any width, maybe stippled, separate specular
+ * color interpolation.
+ */
+static void flat_multitextured_line( GLcontext *ctx,
+                                     GLuint vert0, GLuint vert1, GLuint pvert )
+{
+   GLint count = ctx->PB->count;
+   GLint *pbx = ctx->PB->x;
+   GLint *pby = ctx->PB->y;
+   GLdepth *pbz = ctx->PB->z;
+   GLfloat *pbs = ctx->PB->s[0];
+   GLfloat *pbt = ctx->PB->t[0];
+   GLfloat *pbu = ctx->PB->u[0];
+   GLfloat *pbs1 = ctx->PB->s[1];
+   GLfloat *pbt1 = ctx->PB->t[1];
+   GLfloat *pbu1 = ctx->PB->u[1];
+   GLubyte (*pbrgba)[4] = ctx->PB->rgba;
+   GLubyte (*pbspec)[3] = ctx->PB->spec;
+   GLubyte *color = ctx->VB->ColorPtr->data[pvert];
+   GLubyte sRed   = ctx->VB->Specular ? ctx->VB->Specular[pvert][0] : 0;
+   GLubyte sGreen = ctx->VB->Specular ? ctx->VB->Specular[pvert][1] : 0;
+   GLubyte sBlue  = ctx->VB->Specular ? ctx->VB->Specular[pvert][2] : 0;
+
+   (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
+
+   if (ctx->Line.StippleFlag) {
+      /* stippled */
+#define INTERP_XY 1
+#define INTERP_Z 1
+#define INTERP_ALPHA 1
+#define INTERP_STUV0 1
+#define INTERP_STUV1 1
+#define WIDE 1
+#define STIPPLE 1
+#define PLOT(X,Y)					\
+	{						\
+	   pbx[count] = X;				\
+	   pby[count] = Y;				\
+	   pbz[count] = Z;				\
+	   pbs[count] = s;				\
+	   pbt[count] = t;				\
+	   pbu[count] = u;				\
+	   pbs1[count] = s1;				\
+	   pbt1[count] = t1;				\
+	   pbu1[count] = u1;				\
+	   pbrgba[count][RCOMP] = color[0];		\
+	   pbrgba[count][GCOMP] = color[1];		\
+	   pbrgba[count][BCOMP] = color[2];		\
+	   pbrgba[count][ACOMP] = color[3];		\
+	   pbspec[count][RCOMP] = sRed;			\
+	   pbspec[count][GCOMP] = sGreen;		\
+	   pbspec[count][BCOMP] = sBlue;		\
+	   count++;					\
+	   CHECK_FULL(count);				\
+	}
+#include "linetemp.h"
+   }
+   else {
+      /* unstippled */
+#define INTERP_XY 1
+#define INTERP_Z 1
+#define INTERP_ALPHA 1
+#define INTERP_STUV0 1
+#define INTERP_STUV1 1
+#define WIDE 1
+#define PLOT(X,Y)					\
+	{						\
+	   pbx[count] = X;				\
+	   pby[count] = Y;				\
+	   pbz[count] = Z;				\
+	   pbs[count] = s;				\
+	   pbt[count] = t;				\
+	   pbu[count] = u;				\
+	   pbs1[count] = s1;				\
+	   pbt1[count] = t1;				\
+	   pbu1[count] = u1;				\
+	   pbrgba[count][RCOMP] = color[0];		\
+	   pbrgba[count][GCOMP] = color[1];		\
+	   pbrgba[count][BCOMP] = color[2];		\
+	   pbrgba[count][ACOMP] = color[3];		\
+	   pbspec[count][RCOMP] = sRed;			\
+	   pbspec[count][GCOMP] = sGreen;		\
+	   pbspec[count][BCOMP] = sBlue;		\
+	   count++;					\
+	   CHECK_FULL(count);				\
+	}
+#include "linetemp.h"
+   }
+
+   ctx->PB->count = count;
+   gl_flush_pb(ctx);
+}
+
+
+
+
 /*
  * Antialiased RGBA line
  *
@@ -934,6 +1008,61 @@ static void null_line( GLcontext *ctx, GLuint v1, GLuint v2, GLuint pv )
 }
 
 
+
+#ifdef DEBUG
+void
+_mesa_print_line_function(GLcontext *ctx)
+{
+   printf("Line Func == ");
+   if (ctx->Driver.LineFunc == flat_ci_line)
+      printf("flat_ci_line\n");
+   else if (ctx->Driver.LineFunc == flat_ci_z_line)
+      printf("flat_ci_z_line\n");
+   else if (ctx->Driver.LineFunc == flat_rgba_line)
+      printf("flat_rgba_line\n");
+   else if (ctx->Driver.LineFunc == flat_rgba_z_line)
+      printf("flat_rgba_z_line\n");
+   else if (ctx->Driver.LineFunc == smooth_ci_line)
+      printf("smooth_ci_line\n");
+   else if (ctx->Driver.LineFunc == smooth_ci_z_line)
+      printf("smooth_ci_z_line\n");
+   else if (ctx->Driver.LineFunc == smooth_rgba_line)
+      printf("smooth_rgba_line\n");
+   else if (ctx->Driver.LineFunc == smooth_rgba_z_line)
+      printf("smooth_rgba_z_line\n");
+   else if (ctx->Driver.LineFunc == general_smooth_ci_line)
+      printf("general_smooth_ci_line\n");
+   else if (ctx->Driver.LineFunc == general_flat_ci_line)
+      printf("general_flat_ci_line\n");
+   else if (ctx->Driver.LineFunc == general_smooth_rgba_line)
+      printf("general_smooth_rgba_line\n");
+   else if (ctx->Driver.LineFunc == general_flat_rgba_line)
+      printf("general_flat_rgba_line\n");
+   else if (ctx->Driver.LineFunc == flat_textured_line)
+      printf("flat_textured_line\n");
+   else if (ctx->Driver.LineFunc == smooth_textured_line)
+      printf("smooth_textured_line\n");
+   else if (ctx->Driver.LineFunc == smooth_multitextured_line)
+      printf("smooth_multitextured_line\n");
+   else if (ctx->Driver.LineFunc == flat_multitextured_line)
+      printf("flat_multitextured_line\n");
+   else if (ctx->Driver.LineFunc == aa_rgba_line)
+      printf("aa_rgba_line\n");
+   else if (ctx->Driver.LineFunc == aa_tex_rgba_line)
+      printf("aa_tex_rgba_line\n");
+   else if (ctx->Driver.LineFunc == aa_multitex_rgba_line)
+      printf("aa_multitex_rgba_line\n");
+   else if (ctx->Driver.LineFunc == aa_ci_line)
+      printf("aa_ci_line\n");
+   else if (ctx->Driver.LineFunc == null_line)
+      printf("null_line\n");
+   else
+      printf("Driver func %p\n", ctx->Driver.PointsFunc);
+}
+#endif
+
+
+
 /*
  * Determine which line drawing function to use given the current
  * rendering context.
@@ -975,7 +1104,10 @@ void gl_set_line_function( GLcontext *ctx )
          if (ctx->Texture.ReallyEnabled >= TEXTURE1_1D
              || ctx->Light.Model.ColorControl==GL_SEPARATE_SPECULAR_COLOR) {
             /* multi-texture and/or separate specular color */
-            ctx->Driver.LineFunc = smooth_multitextured_line;
+            if (ctx->Light.ShadeModel==GL_SMOOTH)
+               ctx->Driver.LineFunc = smooth_multitextured_line;
+            else
+               ctx->Driver.LineFunc = flat_multitextured_line;
          }
          else {
             if (ctx->Light.ShadeModel==GL_SMOOTH) {
@@ -1041,5 +1173,6 @@ void gl_set_line_function( GLcontext *ctx )
       /* GL_SELECT mode */
       ctx->Driver.LineFunc = gl_select_line;
    }
-}
 
+   /*_mesa_print_line_function(ctx);*/
+}

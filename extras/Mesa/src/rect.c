@@ -43,13 +43,6 @@
 void
 _mesa_Rectf( GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2 )
 {
-   /*
-    * TODO: we could examine a bunch of state variables and ultimately
-    * call the Driver->RectFunc() function to draw a screen-aligned
-    * filled rectangle.  Someday...
-    *
-    * KW: What happens to cull mode here?
-    */
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END(ctx, "glRect"); 
    RESET_IMMEDIATE(ctx);
@@ -59,6 +52,16 @@ _mesa_Rectf( GLfloat x1, GLfloat y1, GLfloat x2, GLfloat y2 )
    gl_Vertex2f( ctx, x2, y2 );
    gl_Vertex2f( ctx, x1, y2 );
    gl_End( ctx );
+
+   /* If compiling, flush these vertices so that they aren't saved
+    * by the normal vertex compilation methods.
+    */
+   if (ctx->CompileFlag) 
+   {
+      ctx->CompileFlag = 0;
+      ctx->input->maybe_transform_vb( ctx->input );
+      ctx->CompileFlag = GL_TRUE;
+   }
 }
 
 

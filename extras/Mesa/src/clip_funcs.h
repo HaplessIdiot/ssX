@@ -162,14 +162,18 @@ static GLuint TAG(viewclip_polygon)( struct vertex_buffer *VB,
 	 clipmask[idxPrev] |= (PLANE&CLIP_ALL_BITS);			\
 									\
 	 if (!NEGATIVE(dpPrev)) {					\
+	    if (IND&CLIP_TAB_EDGEFLAG) {				\
+	       if (outcount)						\
+		  VB->EdgeFlagPtr->data[outlist[outcount-1]] &= ~2;	\
+	    }								\
 	    outlist[outcount++] = idxPrev;				\
  	    clipmask[idxPrev] &= ~(PLANE&CLIP_ALL_BITS);		\
 	 }								\
 									\
 	 if (DIFFERENT_SIGNS(dp, dpPrev)) {				\
-	    if (NEGATIVE(dp)) { 					\
-	       /* Coming back in.  Avoid division by zero as we know    \
-		* dp != dpPrev from DIFFERENT_SIGNS, above.		\
+	    if (NEGATIVE(dp)) {						\
+	       /* Going out of bounds.  Avoid division by zero as we	\
+		* know dp != dpPrev from DIFFERENT_SIGNS, above.	\
 		*/							\
 	       GLfloat t = dp / (dp - dpPrev);				\
                INTERP_SZ( t, VB->ClipPtr->data, vb_free,		\
@@ -177,26 +181,26 @@ static GLuint TAG(viewclip_polygon)( struct vertex_buffer *VB,
 	       interp( VB, vb_free, t, idx, idxPrev );			\
 									\
 	       if (IND&CLIP_TAB_EDGEFLAG)				\
-		  VB->EdgeFlagPtr->data[vb_free] =			\
-		     VB->EdgeFlagPtr->data[idxPrev];			\
+		      VB->EdgeFlagPtr->data[vb_free] = 3;		\
 	    } else {							\
-	       /* Going out of bounds					\
+	       /* Coming back in.					\
 		*/							\
 	       GLfloat t = dpPrev / (dpPrev - dp);			\
-               INTERP_SZ( t, VB->ClipPtr->data, vb_free, 		\
+               INTERP_SZ( t, VB->ClipPtr->data, vb_free,		\
 			  idxPrev, idx, SIZE );				\
 	       interp( VB, vb_free, t, idxPrev, idx );			\
 									\
-	       if (IND&CLIP_TAB_EDGEFLAG)				\
-		  VB->EdgeFlagPtr->data[vb_free] = 3;			\
+	       if (IND&CLIP_TAB_EDGEFLAG) {				\
+		  VB->EdgeFlagPtr->data[vb_free] =			\
+		     VB->EdgeFlagPtr->data[idxPrev];			\
+               }							\
 	    }								\
 									\
-	    if (IND&CLIP_TAB_EDGEFLAG) {				\
 	       /* Demote trailing edge to internal edge.		\
 		*/							\
-	       if (outcount &&						\
-		   (VB->EdgeFlagPtr->data[outlist[outcount-1]] & 0x2))	\
-		  VB->EdgeFlagPtr->data[outlist[outcount-1]] = 1;	\
+	    if (IND&CLIP_TAB_EDGEFLAG) {				\
+	       if (outcount)						\
+		  VB->EdgeFlagPtr->data[outlist[outcount-1]] &= ~2;	\
 	    }								\
 									\
 	    outlist[outcount++] = vb_free;				\
@@ -210,6 +214,7 @@ static GLuint TAG(viewclip_polygon)( struct vertex_buffer *VB,
       if (outcount < 3)							\
 	 return 0;							\
 									\
+									\
       {									\
 	 GLuint *tmp = inlist;						\
 	 inlist = outlist;						\
@@ -217,7 +222,6 @@ static GLuint TAG(viewclip_polygon)( struct vertex_buffer *VB,
 	 n = outcount;							\
       }									\
    }
-
 
 #include "general_clip.h"
 
@@ -365,6 +369,8 @@ static GLuint TAG(userclip_polygon)( struct vertex_buffer *VB,
             GLuint flagI = INSIDE(dpI);
 
 	    if (flagJ) {
+	       if ((IND&CLIP_TAB_EDGEFLAG) && outcount)
+		  VB->EdgeFlagPtr->data[outlist[outcount-1]] &= ~2;
 	       outlist[outcount++] = prevj;
 	    } else {
 	       VB->ClipMask[prevj] |= CLIP_USER_BIT;
@@ -392,12 +398,11 @@ static GLuint TAG(userclip_polygon)( struct vertex_buffer *VB,
 		     VB->EdgeFlagPtr->data[vb_free] = 3;
 	       }		  
 
-	       if (IND&CLIP_TAB_EDGEFLAG) {		  
 		  /* Demote trailing edge to internal edge.
 		   */
-		  if (outcount && 
-		      (VB->EdgeFlagPtr->data[outlist[outcount-1]] & 0x2))
-		     VB->EdgeFlagPtr->data[outlist[outcount-1]] = 1;
+	       if (IND&CLIP_TAB_EDGEFLAG) {		  
+		  if (outcount)
+		     VB->EdgeFlagPtr->data[outlist[outcount-1]] &= ~2;
 	       }
 	       
 	       INTERP_SZ( t, coord, vb_free, in, out, SIZE );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.9 2000/06/20 20:54:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.10 2000/06/23 23:43:45 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -127,9 +127,10 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
       }
     }
     if (i!=numConfigs) {
-      ErrorF("Incorrect initialization of visuals\n");
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "Incorrect initialization of visuals\n");
       return FALSE;
-    } else ErrorF("Created %d visuals\n", numConfigs);
+    }
     break; /* 16bpp */
 
   case 24:
@@ -224,7 +225,7 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
       xf86DrvMsg(pScreen->myNum, X_ERROR,
                  "Incorrect initialization of visuals\n");
       return FALSE;
-    } else ErrorF("Created %d visuals\n", numConfigs);
+    }
     break;
   }
   pTDFX->numVisualConfigs = numConfigs;
@@ -263,12 +264,21 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 
   switch (pScrn->bitsPerPixel) {
   case 8:
+    xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "DRI not supported in 8 bpp mode, disabling DRI.\n");
     return FALSE;
   case 16:
     break;
   case 24:
+    xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "DRI not supported in 24 bpp mode, disabling DRI.\n");
+    return FALSE;
   case 32:
-    if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) return FALSE;
+     if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) {
+       xf86DrvMsg(pScreen->myNum, X_ERROR,
+                  "DRI requires Voodoo3 or later, disabling DRI.\n");
+       return FALSE;
+     }
   }
 
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing
@@ -295,8 +305,12 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   }
 
   pDRIInfo = DRICreateInfoRec();
-  if (!pDRIInfo)
-     return FALSE;
+  if (!pDRIInfo) {
+    xf86DrvMsg(pScreen->myNum, X_ERROR,
+               "DRICreatInfoRect() failed, disabling DRI.\n");
+    return FALSE;
+  }
+
   pTDFX->pDRIInfo = pDRIInfo;
 
   pDRIInfo->drmDriverName = TDFXKernelDriverName;
@@ -336,13 +350,14 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
    * in the SAREA header
    */
   if (sizeof(XF86DRISAREARec)+sizeof(TDFXSAREAPriv)>SAREA_MAX) {
-     xf86DrvMsg(pScreen->myNum, X_ERROR, "Data does not fit in SAREA\n");
+    xf86DrvMsg(pScreen->myNum, X_ERROR, "Data does not fit in SAREA\n");
     return FALSE;
   }
   pDRIInfo->SAREASize = SAREA_MAX;
 #endif
 
   if (!(pTDFXDRI = (TDFXDRIPtr)xnfcalloc(sizeof(TDFXDRIRec),1))) {
+    xf86DrvMsg(pScreen->myNum, X_ERROR, "DRI memory allocation failed, disabling DRI.\n");
     DRIDestroyInfoRec(pTDFX->pDRIInfo);
     pTDFX->pDRIInfo=0;
     return FALSE;
@@ -363,6 +378,8 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->devPrivate=0;
     DRIDestroyInfoRec(pTDFX->pDRIInfo);
     pTDFX->pDRIInfo=0;
+    xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed, disabling DRI.\n");
+
     return FALSE;
   }
 
@@ -391,6 +408,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
   if (drmAddMap(pTDFX->drmSubFD, (drmHandle)pTDFX->MMIOAddr[0], 
 		pTDFXDRI->regsSize, DRM_REGISTERS, 0, &pTDFXDRI->regs)<0) {
     TDFXDRICloseScreen(pScreen);
+    xf86DrvMsg(pScreen->myNum, X_ERROR, "drmAddMap failed, disabling DRI.\n");
     return FALSE;
   }
   xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Registers = 0x%08lx\n",
@@ -398,6 +416,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 
   if (!(TDFXInitVisualConfigs(pScreen))) {
     TDFXDRICloseScreen(pScreen);
+    xf86DrvMsg(pScreen->myNum, X_ERROR, "TDFXInitVisualConfigs failed, disabling DRI.\n");
     return FALSE;
   }
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "visual configs initialized\n" );

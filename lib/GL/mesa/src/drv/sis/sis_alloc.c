@@ -40,7 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 # include "xf86fbman.h"
 #else
 # include "drm.h"
-# include "sis_drm_public.h"
+# include "sis_drm.h"
 # include <sys/ioctl.h>
 #endif
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.8 2000/08/16 01:45:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/dri/drm/Imakefile,v 1.9 2000/08/24 15:35:46 tsi Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -43,7 +43,7 @@ LinkSourceFile(drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
 LinkSourceFile(i810_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
 LinkSourceFile(mga_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
 LinkSourceFile(r128_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
-LinkSourceFile(sis_drm_public.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
+LinkSourceFile(sis_drm.h,$(XF86OSSRC)/$(OS_SUBDIR2)/drm/kernel)
 
 #include <Library.tmpl>
 

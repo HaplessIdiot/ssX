@@ -185,11 +185,18 @@ static void clean_texcoord( struct vertex_buffer *VB, GLuint i )
    tc->stride = 4 * sizeof(GLfloat);
 }
 
+static void clean_unprojected( struct vertex_buffer *VB )
+{
+   (void) Transform( &VB->Eye,
+                     &gl_identity_mat,
+                     VB->Unprojected,
+                     0,
+                     0);
+   VB->Unprojected = &VB->Eye;
+}
 
 static void clean_clip( struct vertex_buffer *VB )
 {
-/*     printf("clean clip, stride %d, not writable\n", VB->ClipPtr->stride); */
-
    (void) Transform( &VB->Clip,
                      &gl_identity_mat,
                      VB->ClipPtr,
@@ -329,7 +336,11 @@ static void do_vertex_pipeline( struct vertex_buffer *VB )
    }
 
    if (VB->ClipAndMask) {
+      if (MESA_VERBOSE&VERBOSE_CULL)
+	 fprintf(stderr, "Culled in clip\n");
+
       VB->Culled = 1;
+      gl_dont_cull_vb( VB );
       gl_update_materials(VB);
       return;
    }
@@ -344,6 +355,7 @@ static void do_vertex_pipeline( struct vertex_buffer *VB )
 	 if (MESA_VERBOSE&VERBOSE_CULL)
 	    fprintf(stderr, "Culled in userclip\n");
 
+	 gl_dont_cull_vb( VB );
 	 gl_update_materials(VB);
 	 return;
       }
@@ -436,12 +448,23 @@ static void do_normal_transform( struct vertex_buffer *VB )
 
 static void do_lighting( struct vertex_buffer *VB )
 {
-   GLubyte flags = (GLubyte) (VB->CullMode & (CULL_MASK_ACTIVE|COMPACTED_NORMALS));
+   GLubyte flags = (GLubyte) (VB->CullMode & 
+			      (CULL_MASK_ACTIVE|COMPACTED_NORMALS));
 
    if ((flags&CULL_MASK_ACTIVE) && !VB->NormCullStart)
       gl_make_normal_cullmask( VB );
 
-   gl_shade_func_tab[VB->ctx->shade_func_flags | flags]( VB );
+   /* Make sure we can talk about elements 0..2 in the vector we are
+    * lighting.
+    */
+   if (VB->Unprojected->size == 2) {
+      if (VB->Unprojected->flags & VEC_WRITABLE)
+	 gl_vector4f_clean_elem(VB->Unprojected, VB->Count, 2);
+      else 
+	 clean_unprojected( VB );
+   }
+
+   VB->ctx->shade_func_tab[flags]( VB );
 }
 
 

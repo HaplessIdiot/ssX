@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.5 2000/02/15 07:13:44 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfxdefs.h,v 1.6 2000/06/17 00:03:25 martin Exp $ */
 /*
    Voodoo Banshee driver version 1.0.1
 
@@ -52,8 +52,26 @@
 
 #define MEM_TYPE_SGRAM  0
 #define MEM_TYPE_SDRAM  1
+/*
+ * SST_RAW_LFB_ADDR_STRIDE(Lg2SizeInK) takes the
+ * lfbMemoryConfig value for SGRAMStrideInTiles.  This
+ * is given by this table:
+ *  SGRAMStrideInBytes        lfbMemoryConfig Value
+ *  ==================        =====================
+ *          1k                          0
+ *          2k                          1
+ *          4k                          2
+ *          8k                          3
+ *         16k                          4
+ *
+ * FWIW, the right hand column is log2(left hand column)-10
+ */
 #define SST_RAW_LFB_ADDR_STRIDE_SHIFT 13
-#define SST_RAW_LFB_ADDR_STRIDE_4K 0x2<<SST_RAW_LFB_ADDR_STRIDE_SHIFT
+#define SST_RAW_LFB_ADDR_STRIDE(Lg2SizeInK) \
+		((Lg2SizeInK)<<SST_RAW_LFB_ADDR_STRIDE_SHIFT)
+#define SST_RAW_LFB_ADDR_STRIDE_4K SST_RAW_LFB_ADDR_STRIDE(2)
+#define SST_RAW_LFB_ADDR_STRIDE_8K SST_RAW_LFB_ADDR_STRIDE(3)
+#define SST_RAW_LFB_ADDR_STRIDE_16K SST_RAW_LFB_ADDR_STRIDE(4)
 #define SST_RAW_LFB_TILE_STRIDE_SHIFT 16
 
 #define BLIT_LEFT 1

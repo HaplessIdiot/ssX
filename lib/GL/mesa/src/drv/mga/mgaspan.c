@@ -1,9 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaspan.c,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
 
 #include "types.h"
 #include "mgadd.h"
-#include "mgalib.h"
-#include "mgalog.h"
+#include "mgacontext.h"
 #include "mgaspan.h"
 #include "mgaioctl.h"
 
@@ -18,13 +17,13 @@
    GLuint height = dPriv->h;				\
    char *read_buf = (char *)(sPriv->pFB +		\
 			mmesa->readOffset +		\
-			dPriv->x * mgaScreen->cpp +			\
-			dPriv->y * pitch);              \
+			dPriv->x * mgaScreen->cpp +	\
+			dPriv->y * pitch);		\
    char *buf = (char *)(sPriv->pFB +			\
 			mmesa->drawOffset +		\
-			dPriv->x * mgaScreen->cpp +			\
-			dPriv->y * pitch);              \
-   GLushort p = MGA_CONTEXT( ctx )->MonoColor;          \
+			dPriv->x * mgaScreen->cpp +	\
+			dPriv->y * pitch);		\
+   GLushort p = MGA_CONTEXT( ctx )->MonoColor;		\
    (void) read_buf; (void) buf; (void) p
    
 
@@ -39,6 +38,8 @@
 			mgaScreen->depthOffset +	\
 			dPriv->x * 2 +			\
 			dPriv->y * pitch)
+
+#define LOCAL_STENCIL_VARS LOCAL_DEPTH_VARS 
 
 #define INIT_MONO_PIXEL(p) 
 
@@ -150,20 +151,47 @@ do {								\
 
 
 
-
-
-
-
 /* 32 bit depthbuffer functions.
  */
 #define WRITE_DEPTH( _x, _y, d )	\
-   *(GLushort *)(buf + _x*4 + _y*pitch) = d;
+   *(GLuint *)(buf + _x*4 + _y*pitch) = d;
 
 #define READ_DEPTH( d, _x, _y )		\
-   d = *(GLushort *)(buf + _x*4 + _y*pitch);	
+   d = *(GLuint *)(buf + _x*4 + _y*pitch);	
 
 #define TAG(x) mga##x##_32
 #include "depthtmp.h"
+
+
+
+/* 24/8 bit interleaved depth/stencil functions
+ */
+#define WRITE_DEPTH( _x, _y, d ) {			\
+   GLuint tmp = *(GLuint *)(buf + _x*4 + _y*pitch);	\
+   tmp &= 0xff;						\
+   tmp |= (d) & 0xffffff00;				\
+   *(GLuint *)(buf + _x*4 + _y*pitch) = tmp;		\
+}
+
+#define READ_DEPTH( d, _x, _y )		\
+   d = *(GLuint *)(buf + _x*4 + _y*pitch) >> 8;	
+
+
+#define TAG(x) mga##x##_24_8
+#include "depthtmp.h"
+
+#define WRITE_STENCIL( _x, _y, d ) {			\
+   GLuint tmp = *(GLuint *)(buf + _x*4 + _y*pitch);	\
+   tmp &= 0xffffff00;					\
+   tmp |= d & 0xff;					\
+   *(GLuint *)(buf + _x*4 + _y*pitch) = tmp;		\
+}
+
+#define READ_STENCIL( d, _x, _y )		\
+   d = *(GLuint *)(buf + _x*4 + _y*pitch) & 0xff;	
+
+#define TAG(x) mga##x##_24_8
+#include "stenciltmp.h"
 
 
 
@@ -196,20 +224,32 @@ void mgaDDInitSpanFuncs( GLcontext *ctx )
       ctx->Driver.WriteMonoRGBAPixels = mgaWriteMonoRGBAPixels_8888;
       ctx->Driver.ReadRGBASpan = mgaReadRGBASpan_8888;
       ctx->Driver.ReadRGBAPixels = mgaReadRGBAPixels_8888;
+      
+      if (mmesa->hw_stencil) {
+	 ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_32;
+	 ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_32;
+	 ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_32;
+	 ctx->Driver.WriteDepthPixels = mgaWriteDepthPixels_32;
+      } else {
+	 ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_24_8;
+	 ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_24_8;
+	 ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_24_8;
+	 ctx->Driver.WriteDepthPixels = mgaWriteDepthPixels_24_8;
 
-      ctx->Driver.ReadDepthSpan = mgaReadDepthSpan_32;
-      ctx->Driver.WriteDepthSpan = mgaWriteDepthSpan_32;
-      ctx->Driver.ReadDepthPixels = mgaReadDepthPixels_32;
-      ctx->Driver.WriteDepthPixels = mgaWriteDepthPixels_32;
+	 ctx->Driver.ReadStencilSpan = mgaReadStencilSpan_24_8;
+	 ctx->Driver.WriteStencilSpan = mgaWriteStencilSpan_24_8;
+	 ctx->Driver.ReadStencilPixels = mgaReadStencilPixels_24_8;
+	 ctx->Driver.WriteStencilPixels = mgaWriteStencilPixels_24_8;
+      }
       break;
    }
 
 
-   ctx->Driver.WriteCI8Span        =NULL;
-   ctx->Driver.WriteCI32Span       =NULL;
-   ctx->Driver.WriteMonoCISpan     =NULL;
-   ctx->Driver.WriteCI32Pixels     =NULL;
-   ctx->Driver.WriteMonoCIPixels   =NULL;
-   ctx->Driver.ReadCI32Span        =NULL;
-   ctx->Driver.ReadCI32Pixels      =NULL;
+   ctx->Driver.WriteCI8Span = 0;
+   ctx->Driver.WriteCI32Span = 0;
+   ctx->Driver.WriteMonoCISpan = 0;
+   ctx->Driver.WriteCI32Pixels = 0;
+   ctx->Driver.WriteMonoCIPixels = 0;
+   ctx->Driver.ReadCI32Span = 0;
+   ctx->Driver.ReadCI32Pixels = 0;
 }

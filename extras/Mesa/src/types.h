@@ -2,7 +2,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -831,8 +831,17 @@ struct gl_texture_unit {
    GLuint Enabled;
    GLuint ReallyEnabled;
 
-   GLenum EnvMode;		/* GL_MODULATE, GL_DECAL, GL_BLEND */
+   GLenum EnvMode;	   /* GL_MODULATE, GL_DECAL, GL_BLEND, GL_COMBINE_EXT */
    GLenum LastEnvMode;
+
+   GLenum CombineSourceRGB[3];  /* arg[i] for rgb EXT_texture_combine   */
+   GLenum CombineSourceA[3];    /* dito for alpha combiner              */
+   GLenum CombineModeRGB;       /* GL_REPLACE, GL_DECAL, GL_ADD ...     */
+   GLenum CombineModeA;
+   GLenum CombineOperandRGB[3]; /* SRC_COLOR or ONE_MINUS_SRC_COLOR     */
+   GLenum CombineOperandA[3];   /* SRC_ALPHA or ONE_MINUS_SRC_ALPHA     */
+   GLuint CombineScaleShiftRGB; /* 0, 1 or 2   */
+   GLuint CombineScaleShiftA;
 
    GLfloat EnvColor[4];
    GLuint TexGenEnabled;	/* Bitwise-OR of [STRQ]_BIT values */
@@ -868,6 +877,7 @@ struct gl_texture_unit {
    struct gl_texture_object Saved1D;  /* only used by glPush/PopAttrib */
    struct gl_texture_object Saved2D;
    struct gl_texture_object Saved3D;
+   struct gl_texture_object SavedCubeMap;
 };
 
 
@@ -1259,6 +1269,8 @@ struct gl_shared_state {
    /* Default texture objects (shared by all multi-texture units) */
    struct gl_texture_object *DefaultD[4];
    struct gl_texture_object *DefaultCubeMap;
+
+   void *DriverData;  /* Device driver shared state */
 };
 
 
@@ -1365,6 +1377,7 @@ struct gl_extensions {
    struct extension *ext_list;
    /* flags to quickly test if certain extensions are available */
    GLboolean HaveTextureEnvAdd;
+   GLboolean HaveTextureEnvCombine;
    GLboolean HaveTextureLodBias;
    GLboolean HaveHpOcclusionTest;
    GLboolean HaveTextureCubeMap;
@@ -1520,10 +1533,7 @@ struct gl_extensions {
  * shared with the cull mode (ie. cull_mask_active and
  * compacted_normals.)
  */
-#define SHADE_RGBA_VERTICES     0x4
-#define SHADE_RGBA_NORMALS      0x8
-#define SHADE_RGBA_SPEC         0xc /* note - not a seperate bit */
-#define SHADE_TWOSIDE           0x10
+#define SHADE_TWOSIDE           0x4
 
 /* Flags for selecting a normal transformation function. 
  */
@@ -1778,7 +1788,7 @@ struct gl_context {
    GLmatrix ProjectionMatrix;    /* current matrix, not stored on stack */
    GLuint ProjectionStackDepth;
    GLmatrix ProjectionStack[MAX_PROJECTION_STACK_DEPTH - 1];
-   GLfloat NearFarStack[MAX_PROJECTION_STACK_DEPTH - 1][2];
+   GLfloat NearFarStack[MAX_PROJECTION_STACK_DEPTH][2];
 
    /* Combined modelview and projection matrix */
    GLmatrix ModelProjectMatrix;
@@ -1825,18 +1835,18 @@ struct gl_context {
    struct gl_attrib_node *AttribStack[MAX_ATTRIB_STACK_DEPTH];
 
    /* Renderer attribute groups */
-   struct gl_accum_attrib		Accum;
+   struct gl_accum_attrib	Accum;
    struct gl_colorbuffer_attrib	Color;
    struct gl_current_attrib	Current;
    struct gl_depthbuffer_attrib	Depth;
-   struct gl_eval_attrib		Eval;
+   struct gl_eval_attrib	Eval;
    struct gl_fog_attrib		Fog;
-   struct gl_hint_attrib		Hint;
-   struct gl_light_attrib		Light;
-   struct gl_line_attrib		Line;
-   struct gl_list_attrib		List;
-   struct gl_pixel_attrib		Pixel;
-   struct gl_point_attrib		Point;
+   struct gl_hint_attrib	Hint;
+   struct gl_light_attrib	Light;
+   struct gl_line_attrib	Line;
+   struct gl_list_attrib	List;
+   struct gl_pixel_attrib	Pixel;
+   struct gl_point_attrib	Point;
    struct gl_polygon_attrib	Polygon;
    GLuint PolygonStipple[32];
    struct gl_scissor_attrib	Scissor;
@@ -1847,23 +1857,23 @@ struct gl_context {
 
    /* Other attribute groups */
    struct gl_histogram_attrib	Histogram;
-   struct gl_minmax_attrib		MinMax;
-   struct gl_convolution_attrib    Convolution1D;
-   struct gl_convolution_attrib    Convolution2D;
-   struct gl_convolution_attrib    Separable2D;
+   struct gl_minmax_attrib	MinMax;
+   struct gl_convolution_attrib Convolution1D;
+   struct gl_convolution_attrib Convolution2D;
+   struct gl_convolution_attrib Separable2D;
 
    /* Client attribute stack */
    GLuint ClientAttribStackDepth;
    struct gl_attrib_node *ClientAttribStack[MAX_CLIENT_ATTRIB_STACK_DEPTH];
 
    /* Client attribute groups */
-   struct gl_array_attrib		Array;	/* Vertex arrays */
+   struct gl_array_attrib	Array;	/* Vertex arrays */
    struct gl_pixelstore_attrib	Pack;	/* Pixel packing */
    struct gl_pixelstore_attrib	Unpack;	/* Pixel unpacking */
 
-   struct gl_evaluators EvalMap;	/* All evaluators */
-   struct gl_feedback Feedback;	/* Feedback */
-   struct gl_selection Select;	/* Selection */
+   struct gl_evaluators EvalMap;   /* All evaluators */
+   struct gl_feedback   Feedback;  /* Feedback */
+   struct gl_selection  Select;    /* Selection */
 
    struct gl_color_table ColorTable;       /* Pre-convolution */
    struct gl_color_table ProxyColorTable;  /* Pre-convolution */
@@ -1878,21 +1888,21 @@ struct gl_context {
 
    struct gl_fallback_arrays Fallback; 
 
-   GLenum ErrorValue;		/* Last error code */
+   GLenum ErrorValue;        /* Last error code */
 
    /* Miscellaneous */
-   GLuint NewState;        /* bitwise OR of NEW_* flags */
-   GLuint Enabled;         /* bitwise or of ENABLE_* flags */
-   GLenum RenderMode;	/* either GL_RENDER, GL_SELECT, GL_FEEDBACK */
-   GLuint StippleCounter;	/* Line stipple counter */
-   GLuint RasterMask;	/* OR of rasterization flags */
+   GLuint NewState;          /* bitwise OR of NEW_* flags */
+   GLuint Enabled;           /* bitwise or of ENABLE_* flags */
+   GLenum RenderMode;        /* either GL_RENDER, GL_SELECT, GL_FEEDBACK */
+   GLuint StippleCounter;    /* Line stipple counter */
+   GLuint RasterMask;        /* OR of rasterization flags */
    GLuint TriangleCaps;      /* OR of DD_* flags */
    GLuint IndirectTriangles; /* TriangleCaps not handled by the driver */
-   GLfloat PolygonZoffset;	/* Z offset for GL_FILL polygons */
-   GLfloat LineZoffset;	/* Z offset for GL_LINE polygons */
-   GLfloat PointZoffset;	/* Z offset for GL_POINT polygons */
-   GLboolean NeedNormals;	/* Are vertex normal vectors needed? */
-   GLuint FogMode;         /* FOG_OFF, FOG_VERTEX or FOG_FRAGMENT */
+   GLfloat PolygonZoffset;   /* Z offset for GL_FILL polygons */
+   GLfloat LineZoffset;      /* Z offset for GL_LINE polygons */
+   GLfloat PointZoffset;     /* Z offset for GL_POINT polygons */
+   GLboolean NeedNormals;    /* Are vertex normal vectors needed? */
+   GLuint FogMode;           /* FOG_OFF, FOG_VERTEX or FOG_FRAGMENT */
 
    GLboolean DoViewportMapping;
 
@@ -1906,8 +1916,8 @@ struct gl_context {
 
    normal_func *NormalTransform; 
 
-   /* Current shading function */
-   GLuint shade_func_flags;
+   /* Current shading function table */
+   gl_shade_func *shade_func_tab;
 
    GLfloat EyeZDir[3];
    GLfloat rescale_factor;

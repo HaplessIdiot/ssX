@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.8 2000/08/13 10:19:56 alanh Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.9 2000/08/28 16:04:48 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -83,17 +83,27 @@ static XEXT_GENERATE_CLOSE_DISPLAY (close_display, xf86dri_info)
  *                                                                           *
  *****************************************************************************/
 
+#if 0
+#define TRACE(msg)  printf("XF86DRI%s\n", msg);
+#else
+#define TRACE(msg)
+#endif
+
+
 Bool XF86DRIQueryExtension (dpy, event_basep, error_basep)
     Display *dpy;
     int *event_basep, *error_basep;
 {
     XExtDisplayInfo *info = find_display (dpy);
 
+    TRACE("QueryExtension...");
     if (XextHasExtension(info)) {
 	*event_basep = info->codes->first_event;
 	*error_basep = info->codes->first_error;
+        TRACE("QueryExtension... return True");
 	return True;
     } else {
+        TRACE("QueryExtension... return False");
 	return False;
     }
 }
@@ -108,6 +118,7 @@ Bool XF86DRIQueryVersion(dpy, majorVersion, minorVersion, patchVersion)
     xXF86DRIQueryVersionReply rep;
     xXF86DRIQueryVersionReq *req;
 
+    TRACE("QueryVersion...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -117,6 +128,7 @@ Bool XF86DRIQueryVersion(dpy, majorVersion, minorVersion, patchVersion)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("QueryVersion... return False");
 	return False;
     }
     *majorVersion = rep.majorVersion;
@@ -124,6 +136,7 @@ Bool XF86DRIQueryVersion(dpy, majorVersion, minorVersion, patchVersion)
     *patchVersion = rep.patchVersion;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("QueryVersion... return True");
     return True;
 }
 
@@ -136,6 +149,7 @@ Bool XF86DRIQueryDirectRenderingCapable(dpy, screen, isCapable)
     xXF86DRIQueryDirectRenderingCapableReply rep;
     xXF86DRIQueryDirectRenderingCapableReq *req;
 
+    TRACE("QueryDirectRenderingCapable...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -146,11 +160,13 @@ Bool XF86DRIQueryDirectRenderingCapable(dpy, screen, isCapable)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("QueryDirectRenderingCapable... return False");
 	return False;
     }
     *isCapable = rep.isCapable;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("QueryDirectRenderingCapable... return True");
     return True;
 }
 
@@ -164,6 +180,7 @@ Bool XF86DRIOpenConnection(dpy, screen, hSAREA, busIdString)
     xXF86DRIOpenConnectionReply rep;
     xXF86DRIOpenConnectionReq *req;
 
+    TRACE("OpenConnection...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -174,6 +191,7 @@ Bool XF86DRIOpenConnection(dpy, screen, hSAREA, busIdString)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("OpenConnection... return False");
 	return False;
     }
 
@@ -187,6 +205,7 @@ Bool XF86DRIOpenConnection(dpy, screen, hSAREA, busIdString)
             _XEatData(dpy, ((rep.busIdStringLength+3) & ~3));
             UnlockDisplay(dpy);
             SyncHandle();
+            TRACE("OpenConnection... return False");
             return False;
         }
 	_XReadPad(dpy, *busIdString, rep.busIdStringLength);
@@ -195,6 +214,7 @@ Bool XF86DRIOpenConnection(dpy, screen, hSAREA, busIdString)
     }
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("OpenConnection... return True");
     return True;
 }
 
@@ -207,6 +227,7 @@ Bool XF86DRIAuthConnection(dpy, screen, magic)
     xXF86DRIAuthConnectionReq *req;
     xXF86DRIAuthConnectionReply rep;
 
+    TRACE("AuthConnection...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -219,10 +240,12 @@ Bool XF86DRIAuthConnection(dpy, screen, magic)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse) || !rep.authenticated) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("AuthConnection... return False");
 	return False;
     }
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("AuthConnection... return True");
     return True;
 }
 
@@ -233,6 +256,8 @@ Bool XF86DRICloseConnection(dpy, screen)
     XExtDisplayInfo *info = find_display (dpy);
     xXF86DRICloseConnectionReq *req;
 
+    TRACE("CloseConnection...");
+
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -242,6 +267,7 @@ Bool XF86DRICloseConnection(dpy, screen)
     req->screen = screen;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("CloseConnection... return True");
     return True;
 }
 
@@ -258,6 +284,7 @@ Bool XF86DRIGetClientDriverName(dpy, screen, ddxDriverMajorVersion,
     xXF86DRIGetClientDriverNameReply rep;
     xXF86DRIGetClientDriverNameReq *req;
 
+    TRACE("GetClientDriverName...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -268,6 +295,7 @@ Bool XF86DRIGetClientDriverName(dpy, screen, ddxDriverMajorVersion,
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("GetClientDriverName... return False");
 	return False;
     }
 
@@ -278,6 +306,9 @@ Bool XF86DRIGetClientDriverName(dpy, screen, ddxDriverMajorVersion,
     if (rep.length) {
         if (!(*clientDriverName = (char *)Xcalloc(rep.clientDriverNameLength + 1, 1))) {
             _XEatData(dpy, ((rep.clientDriverNameLength+3) & ~3));
+            UnlockDisplay(dpy);
+            SyncHandle();
+            TRACE("GetClientDriverName... return False");
             return False;
         }
 	_XReadPad(dpy, *clientDriverName, rep.clientDriverNameLength);
@@ -286,6 +317,7 @@ Bool XF86DRIGetClientDriverName(dpy, screen, ddxDriverMajorVersion,
     }
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("GetClientDriverName... return True");
     return True;
 }
 
@@ -300,6 +332,7 @@ Bool XF86DRICreateContext(dpy, screen, visual, context, hHWContext)
     xXF86DRICreateContextReply rep;
     xXF86DRICreateContextReq *req;
 
+    TRACE("CreateContext...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -313,11 +346,13 @@ Bool XF86DRICreateContext(dpy, screen, visual, context, hHWContext)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("CreateContext... return False");
 	return False;
     }
     *hHWContext = rep.hHWContext;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("CreateContext... return True");
     return True;
 }
 
@@ -329,6 +364,7 @@ Bool XF86DRIDestroyContext(dpy, screen, context)
     XExtDisplayInfo *info = find_display (dpy);
     xXF86DRIDestroyContextReq *req;
 
+    TRACE("DestroyContext...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -339,6 +375,7 @@ Bool XF86DRIDestroyContext(dpy, screen, context)
     req->context = context;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("DestroyContext... return True");
     return True;
 }
 
@@ -352,6 +389,7 @@ Bool XF86DRICreateDrawable(dpy, screen, drawable, hHWDrawable)
     xXF86DRICreateDrawableReply rep;
     xXF86DRICreateDrawableReq *req;
 
+    TRACE("CreateDrawable...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -363,11 +401,13 @@ Bool XF86DRICreateDrawable(dpy, screen, drawable, hHWDrawable)
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("CreateDrawable... return False");
 	return False;
     }
     *hHWDrawable = rep.hHWDrawable;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("CreateDrawable... return True");
     return True;
 }
 
@@ -379,6 +419,7 @@ Bool XF86DRIDestroyDrawable(dpy, screen, drawable)
     XExtDisplayInfo *info = find_display (dpy);
     xXF86DRIDestroyDrawableReq *req;
 
+    TRACE("DestroyDrawable...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -389,6 +430,7 @@ Bool XF86DRIDestroyDrawable(dpy, screen, drawable)
     req->drawable = drawable;
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("DestroyDrawable... return True");
     return True;
 }
 
@@ -419,6 +461,7 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
     xXF86DRIGetDrawableInfoReq *req;
     int total_rects;
 
+    TRACE("GetDrawableInfo...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -432,6 +475,7 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
     {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("GetDrawableInfo... return False");
 	return False;
     }
     *index = rep.drawableTableIndex;
@@ -448,13 +492,21 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
     *numBackClipRects = rep.numBackClipRects;
     total_rects += *numBackClipRects;
 
-    if (rep.length != (SIZEOF(xXF86DRIGetDrawableInfoReply) - 
+#if 0
+    /* Because of the fix in Xserver/GL/dri/xf86dri.c, this check breaks
+     * backwards compatibility (Because of the >> 2 shift) but the fix
+     * enables multi-threaded apps to work.
+     */
+    if (rep.length !=  ((((SIZEOF(xXF86DRIGetDrawableInfoReply) - 
 		       SIZEOF(xGenericReply) + 
-		       total_rects * sizeof(XF86DRIClipRectRec))) {
-       _XEatData(dpy, rep.length);
-       return False;
+		       total_rects * sizeof(XF86DRIClipRectRec)) + 3) & ~3) >> 2)) {
+        _XEatData(dpy, rep.length);
+	UnlockDisplay(dpy);
+	SyncHandle();
+        TRACE("GetDrawableInfo... return False");
+        return False;
     }
-       
+#endif
 
     if (*numClipRects) {
        int len = sizeof(XF86DRIClipRectRec) * (*numClipRects);
@@ -478,6 +530,7 @@ Bool XF86DRIGetDrawableInfo(dpy, screen, drawable,
 
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("GetDrawableInfo... return True");
     return True;
 }
 
@@ -496,6 +549,7 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
     xXF86DRIGetDeviceInfoReply rep;
     xXF86DRIGetDeviceInfoReq *req;
 
+    TRACE("GetDeviceInfo...");
     XF86DRICheckExtension (dpy, info, False);
 
     LockDisplay(dpy);
@@ -506,6 +560,7 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
 	SyncHandle();
+        TRACE("GetDeviceInfo... return False");
 	return False;
     }
 
@@ -520,15 +575,20 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
     *devPrivateSize = rep.devPrivateSize;
 
     if (rep.length) {
-        if (!(*pDevPrivate = (void *)Xcalloc(rep.length, 1))) {
-            _XEatData(dpy, ((rep.length+3) & ~3));
+        if (!(*pDevPrivate = (void *)Xcalloc(rep.devPrivateSize, 1))) {
+            _XEatData(dpy, ((rep.devPrivateSize+3) & ~3));
+            UnlockDisplay(dpy);
+            SyncHandle();
+            TRACE("GetDeviceInfo... return False");
             return False;
         }
-	_XRead(dpy, (char*)*pDevPrivate, rep.length);
+	_XRead(dpy, (char*)*pDevPrivate, rep.devPrivateSize);
     } else {
         *pDevPrivate = NULL;
     }
+
     UnlockDisplay(dpy);
     SyncHandle();
+    TRACE("GetDeviceInfo... return True");
     return True;
 }

@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.c,v 1.4 2000/08/28 02:43:11 tsi Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -98,7 +98,7 @@ void i810DDTrifuncInit()
 
 
 
-#define ALL_FALLBACK (DD_MULTIDRAW | DD_SELECT | DD_FEEDBACK)
+#define ALL_FALLBACK (DD_MULTIDRAW | DD_SELECT | DD_FEEDBACK | DD_STENCIL)
 #define POINT_FALLBACK (ALL_FALLBACK)
 #define LINE_FALLBACK (ALL_FALLBACK | DD_LINE_STIPPLE)
 #define TRI_FALLBACK (ALL_FALLBACK | DD_TRI_UNFILLED)

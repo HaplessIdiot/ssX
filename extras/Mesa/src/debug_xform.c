@@ -30,6 +30,7 @@
 #include "glheader.h"
 #include "context.h"
 #include "types.h"
+#include "mem.h"
 #include "xform.h"
 #include "debug_xform.h"
 #endif
@@ -234,7 +235,7 @@ static int test_transform_function( transform_func fn, int psize, int mtype,
    GLvector4f source[1], dest[1], ref[1];
    GLmatrix mat[1];
    GLfloat s[TEST_COUNT][5], d[TEST_COUNT][4], r[TEST_COUNT][4];
-   GLfloat *m = mat->m;
+   GLfloat *m;
    GLubyte mask[TEST_COUNT];
    int i, j;
 #ifdef  RUN_XFORM_BENCHMARK
@@ -248,7 +249,10 @@ static int test_transform_function( transform_func fn, int psize, int mtype,
       return 0;
    }
 
+   mat->m = (GLfloat *) ALIGN_MALLOC( 16 * sizeof(GLfloat), 16 );
    mat->type = mtypes[mtype];
+
+   m = mat->m;
 
    m[0] = 63.0; m[4] = 43.0; m[ 8] = 29.0; m[12] = 43.0;
    m[1] = 55.0; m[5] = 17.0; m[ 9] = 31.0; m[13] =  7.0;
@@ -311,19 +315,19 @@ static int test_transform_function( transform_func fn, int psize, int mtype,
    if (mesa_profile) {
       if (masked) {
          BEGIN_RACE (*cycles);
-         fn(dest, mat, source, mask, 1);
+         fn(dest, mat->m, source, mask, 1);
          END_RACE (*cycles);
       } else {
          BEGIN_RACE (*cycles);
-         fn(dest, mat, source, NULL, 0);
+         fn(dest, mat->m, source, NULL, 0);
          END_RACE (*cycles);
       }
    }
    else {
       if (masked) {
-         fn(dest, mat, source, mask, 1);
+         fn(dest, mat->m, source, mask, 1);
       } else {
-         fn(dest, mat, source, NULL, 0);
+         fn(dest, mat->m, source, NULL, 0);
       }
    }
 
@@ -351,6 +355,8 @@ static int test_transform_function( transform_func fn, int psize, int mtype,
          }
       }
    }
+
+   ALIGN_FREE( mat->m );
    return 1;
 }
 
@@ -583,7 +589,7 @@ static int test_norm_function( normal_func fn, int mtype,
    GLfloat s [TEST_COUNT][5], d [TEST_COUNT][3], r [TEST_COUNT][3];
    GLfloat d2 [TEST_COUNT][3], r2 [TEST_COUNT][3], length [TEST_COUNT];
    GLfloat scale;
-   GLfloat *m = mat->m;
+   GLfloat *m;
    GLubyte mask[TEST_COUNT];
    int i, j;
 #ifdef  RUN_XFORM_BENCHMARK
@@ -592,7 +598,8 @@ static int test_norm_function( normal_func fn, int mtype,
 
    (void) cycles;
 
-   mat->inv = mat->m;
+   mat->m = (GLfloat *) ALIGN_MALLOC( 16 * sizeof(GLfloat), 16 );
+   mat->inv = m = mat->m;
 
    m[0] = 63.0; m[4] = 43.0; m[ 8] = 29.0; m[12] = 43.0;
    m[1] = 55.0; m[5] = 17.0; m[ 9] = 31.0; m[13] =  7.0;
@@ -728,6 +735,8 @@ static int test_norm_function( normal_func fn, int mtype,
          }
       }
    }
+
+   ALIGN_FREE( mat->m );
    return 1;
 }
 

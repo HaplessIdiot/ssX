@@ -36,6 +36,7 @@
 #include "all.h"
 #else
 #include "glheader.h"
+#include "macros.h"
 #include "mem.h"
 #endif
 
@@ -71,3 +72,84 @@ _mesa_free(void *ptr)
 }
 
 
+
+/*
+ * N-byte aligned memory allocation functions.  Called via the ALIGN_MALLOC,
+ * ALIGN_CALLOC and ALIGN_FREE macros.  Debug versions?
+ * These functions allow dynamically allocated memory to be correctly
+ * aligned for improved cache utilization and specialized assembly
+ * support.
+ */
+
+
+/*
+ * Allocate N-byte aligned memory (uninitialized)
+ */
+void *
+_mesa_align_malloc(size_t bytes, unsigned long alignment)
+{
+   unsigned long ptr, buf;
+
+   ASSERT( alignment > 0 );
+
+   ptr = (unsigned long) MALLOC( bytes + alignment );
+
+   buf = (ptr + alignment) & ~(unsigned long)(alignment - 1);
+   *(unsigned long *)(buf - sizeof(void *)) = ptr;
+
+#ifdef DEBUG
+   /* mark the non-aligned area */
+   while ( ptr < buf - sizeof(void *) ) {
+      *(unsigned long *)ptr = 0xcdcdcdcd;
+      ptr += sizeof(unsigned long);
+   }
+#endif
+
+   return (void *)buf;
+}
+
+
+/*
+ * Allocate N-byte aligned memory and initialize to zero
+ */
+void *
+_mesa_align_calloc(size_t bytes, unsigned long alignment)
+{
+   unsigned long ptr, buf;
+
+   ASSERT( alignment > 0 );
+
+   ptr = (unsigned long) CALLOC( bytes + alignment );
+
+   buf = (ptr + alignment) & ~(unsigned long)(alignment - 1);
+   *(unsigned long *)(buf - sizeof(void *)) = ptr;
+
+#ifdef DEBUG
+   /* mark the non-aligned area */
+   while ( ptr < buf - sizeof(void *) ) {
+      *(unsigned long *)ptr = 0xcdcdcdcd;
+      ptr += sizeof(unsigned long);
+   }
+#endif
+
+   return (void *)buf;
+}
+
+
+/*
+ * Free N-byte aligned memory
+ */
+void
+_mesa_align_free(void *ptr)
+{
+#if 0
+   FREE( (void *)(*(unsigned long *)((unsigned long)ptr - sizeof(void *))) );
+#else
+   /* The actuall address to free is stuffed in the word immediately
+    * before the address the client sees.
+    */
+   void **cubbyHole = (void **) ((char *) ptr - sizeof(void *));
+   void *realAddr = *cubbyHole;
+   FREE(realAddr);
+#endif
+}

@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaeltpath.c,v 1.3 2000/08/28 02:43:12 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -32,7 +32,7 @@
 #include "mmath.h"
 #include "xform.h"
 
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgapipeline.h"
 #include "mgatris.h"
 #include "mgastate.h"

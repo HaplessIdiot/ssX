@@ -27,11 +27,11 @@
  *    Sung-Ching Lin <sclin@sis.com.tw>
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_mm.c,v 1.3 2000/08/25 13:42:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/sis_mm.c,v 1.4 2000/09/22 11:35:47 alanh Exp $ */
 
 #define __NO_VERSION__
 #include "drmP.h"
-#include "sis_drm_public.h"
+#include "sis_drm.h"
 #include "sis_ds.h"
 #include "sis_drv.h"
 #include <linux/fb.h>

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/X/xmesa1.c,v 1.6 2000/08/09 23:40:10 dawes Exp $ */
 
 
 /*
@@ -70,6 +70,7 @@
 #include "xmesaP.h"
 #include "context.h"
 #include "extensions.h"
+#include "glthread.h"
 #include "matrix.h"
 #include "mem.h"
 #include "types.h"
@@ -84,9 +85,9 @@
 
 
 /*
- * Current X/Mesa context pointer:
+ * Global X driver lock
  */
-static XMesaContext XMesa = NULL;
+_glthread_Mutex _xmesa_lock;
 
 
 /*
@@ -242,7 +243,9 @@ static void get_drawable_size( XMesaDisplay *dpy, XMesaDrawable d,
    int x, y;
    unsigned int bw, depth;
 
+   _glthread_LOCK_MUTEX(_xmesa_lock);
    XGetGeometry( dpy, d, &root, &x, &y, width, height, &bw, &depth );
+   _glthread_UNLOCK_MUTEX(_xmesa_lock);
 #endif
 }
 
@@ -1464,10 +1467,14 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
 
    /* For debugging only */
    if (getenv("MESA_XSYNC")) {
+      /* This makes debugging X easier.
+       * In your debugger, set a breakpoint on _XError to stop when an
+       * X protocol error is generated.
+       */
 #ifdef XFree86Server
       /* NOT_NEEDED */
 #else
-      XSynchronize( display, 1 );    /* This makes debugging X easier */
+      XSynchronize( display, 1 );
 #endif
    }
 
@@ -1558,6 +1565,9 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
       }
    }
 
+   if (alpha_flag && alpha_bits == 0)
+      alpha_bits = 8;
+
    v->gl_visual = _mesa_create_visual( rgb_flag, db_flag, stereo_flag,
                                        red_bits, green_bits,
                                        blue_bits, alpha_bits,
@@ -1608,6 +1618,12 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
    XMesaContext c;
    GLboolean direct = GL_TRUE; /* XXXX */
    /* NOT_DONE: should this be GL_FALSE??? */
+   static GLboolean firstTime = GL_TRUE;
+
+   if (firstTime) {
+      _glthread_INIT_MUTEX(_xmesa_lock);
+      firstTime = GL_FALSE;
+   }
 
    c = (XMesaContext) CALLOC_STRUCT(xmesa_context);
    if (!c) {
@@ -1624,6 +1640,7 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
 
    gl_extensions_enable(c->gl_ctx, "GL_HP_occlusion_test");
    gl_extensions_enable(c->gl_ctx, "GL_ARB_texture_cube_map");
+   gl_extensions_enable(c->gl_ctx, "GL_EXT_texture_env_combine");
 
    if (CHECK_BYTE_ORDER(v)) {
       c->swapbytes = GL_FALSE;
@@ -1686,10 +1703,6 @@ void XMesaDestroyContext( XMesaContext c )
          }
       }
    }
-
-   /* Set current context ptr to NULL if we freed it */
-   if (XMesa == c)
-	   XMesa = NULL;
 
    FREE( c );
 }
@@ -2017,7 +2030,6 @@ GLboolean XMesaMakeCurrent2( XMesaContext c, XMesaBuffer drawBuffer,
 #ifdef FX
       if (drawBuffer->FXctx) {
          fxMesaMakeCurrent(drawBuffer->FXctx);
-         XMesa = c;
 
          /* Disassociate old buffer from this context */
          if (c->xm_buffer)
@@ -2051,7 +2063,6 @@ GLboolean XMesaMakeCurrent2( XMesaContext c, XMesaBuffer drawBuffer,
       c->use_read_buffer = (drawBuffer != readBuffer);
 
       gl_make_current2(c->gl_ctx, drawBuffer->gl_buffer, readBuffer->gl_buffer);
-      XMesa = c;
 
       if (c->gl_ctx->Viewport.Width == 0) {
 	 /* initialize viewport to window size */
@@ -2083,7 +2094,6 @@ GLboolean XMesaMakeCurrent2( XMesaContext c, XMesaBuffer drawBuffer,
    else {
       /* Detach */
       gl_make_current2( NULL, NULL, NULL );
-      XMesa = NULL;
    }
    return GL_TRUE;
 }
@@ -2101,14 +2111,23 @@ GLboolean XMesaUnbindContext( XMesaContext c )
 
 XMesaContext XMesaGetCurrentContext( void )
 {
-   return XMesa;
+   GET_CURRENT_CONTEXT(ctx);
+   if (ctx) {
+      XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+      return xmesa;
+   }
+   else {
+      return 0;
+   }
 }
 
 
 XMesaBuffer XMesaGetCurrentBuffer( void )
 {
-   if (XMesa) {
-      return XMesa->xm_buffer;
+   GET_CURRENT_CONTEXT(ctx);
+   if (ctx) {
+      XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+      return xmesa->xm_buffer;
    }
    else {
       return 0;
@@ -2119,8 +2138,10 @@ XMesaBuffer XMesaGetCurrentBuffer( void )
 /* New in Mesa 3.1 */
 XMesaBuffer XMesaGetCurrentReadBuffer( void )
 {
-   if (XMesa) {
-      return XMesa->xm_buffer;
+   GET_CURRENT_CONTEXT(ctx);
+   if (ctx) {
+      XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
+      return xmesa->xm_buffer;
    }
    else {
       return 0;
@@ -2133,12 +2154,10 @@ GLboolean XMesaForceCurrent(XMesaContext c)
    if (c) {
       if (c->gl_ctx != gl_get_current_context()) {
 	 gl_make_current(c->gl_ctx, c->xm_buffer->gl_buffer);
-	 XMesa = c;
       }
    }
    else {
       gl_make_current(NULL, NULL);
-      XMesa = NULL;
    }
    return GL_TRUE;
 }
@@ -2148,7 +2167,6 @@ GLboolean XMesaLoseCurrent(XMesaContext c)
 {
    (void) c;
    gl_make_current(NULL, NULL);
-   XMesa = NULL;
    return GL_TRUE;
 }
 
@@ -2161,6 +2179,7 @@ GLboolean XMesaSetFXmode( GLint mode )
 #ifdef FX
    const char *fx = getenv("MESA_GLX_FX");
    if (fx && fx[0] != 'd') {
+      GET_CURRENT_CONTEXT(ctx);
       GrHwConfiguration hw;
       if (!FX_grSstQueryHardware(&hw)) {
          /*fprintf(stderr, "!grSstQueryHardware\n");*/
@@ -2170,17 +2189,18 @@ GLboolean XMesaSetFXmode( GLint mode )
          /*fprintf(stderr, "hw.num_sst < 1\n");*/
          return GL_FALSE;
       }
-      if (XMesa) {
+      if (ctx) {
+         XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
          if (mode == XMESA_FX_WINDOW) {
-	    if (XMesa->xm_buffer->FXisHackUsable) {
+	    if (xmesa->xm_buffer->FXisHackUsable) {
 	       FX_grSstControl(GR_CONTROL_DEACTIVATE);
-	       XMesa->xm_buffer->FXwindowHack = GL_TRUE;
+	       xmesa->xm_buffer->FXwindowHack = GL_TRUE;
 	       return GL_TRUE;
 	    }
 	 }
 	 else if (mode == XMESA_FX_FULLSCREEN) {
 	    FX_grSstControl(GR_CONTROL_ACTIVATE);
-	    XMesa->xm_buffer->FXwindowHack = GL_FALSE;
+	    xmesa->xm_buffer->FXwindowHack = GL_FALSE;
 	    return GL_TRUE;
 	 }
 	 else {
@@ -2207,8 +2227,9 @@ static void FXgetImage( XMesaBuffer b )
    int x, y;
    XMesaWindow root;
    unsigned int bw, depth, width, height;
+   XMesaContext xmesa = (XMesaContext) b->xm_context->gl_ctx->DriverCtx;
 
-   assert(XMesa->xm_buffer->FXctx);
+   assert(xmesa->xm_buffer->FXctx);
 
 #ifdef XFree86Server
    x = b->frontbuffer->x;
@@ -2217,30 +2238,29 @@ static void FXgetImage( XMesaBuffer b )
    height = b->frontbuffer->height;
    depth = b->frontbuffer->depth;
 #else
-   XGetGeometry( XMesa->xm_visual->display, b->frontbuffer,
+   XGetGeometry( xmesa->xm_visual->display, b->frontbuffer,
                  &root, &x, &y, &width, &height, &bw, &depth);
 #endif
    if (b->width != width || b->height != height) {
-      b->width = MIN2((int)width, XMesa->xm_buffer->FXctx->width);
-      b->height = MIN2((int)height, XMesa->xm_buffer->FXctx->height);
+      b->width = MIN2((int)width, xmesa->xm_buffer->FXctx->width);
+      b->height = MIN2((int)height, xmesa->xm_buffer->FXctx->height);
       if (b->width & 1)
          b->width--;  /* prevent odd width */
       xmesa_alloc_back_buffer( b );
    }
 
    grLfbWriteColorFormat(GR_COLORFORMAT_ARGB);
-   if (XMesa->xm_visual->undithered_pf==PF_5R6G5B) {
+   if (xmesa->xm_visual->undithered_pf==PF_5R6G5B) {
       /* Special case: 16bpp RGB */
       grLfbReadRegion( GR_BUFFER_FRONTBUFFER,       /* src buffer */
-                       0, XMesa->xm_buffer->FXctx->height - b->height,  /*pos*/
+                       0, xmesa->xm_buffer->FXctx->height - b->height,  /*pos*/
                        b->width, b->height,         /* size */
                        b->width * sizeof(GLushort), /* stride */
                        b->backimage->data);         /* dest buffer */
    }
-   else if (XMesa->xm_visual->dithered_pf==PF_DITHER
-	    && GET_VISUAL_DEPTH(XMesa->xm_visual)==8) {
+   else if (xmesa->xm_visual->dithered_pf==PF_DITHER
+	    && GET_VISUAL_DEPTH(xmesa->xm_visual)==8) {
       /* Special case: 8bpp RGB */
-      XMesaContext xmesa = XMesa;  /* Needed for DITHER macros */
       for (y=0;y<b->height;y++) {
          GLubyte *ptr = (GLubyte*) xmesa->xm_buffer->backimage->data
                         + xmesa->xm_buffer->backimage->bytes_per_line * y;
@@ -2248,7 +2268,7 @@ static void FXgetImage( XMesaBuffer b )
 
          /* read row from 3Dfx frame buffer */
          grLfbReadRegion( GR_BUFFER_FRONTBUFFER,
-                          0, XMesa->xm_buffer->FXctx->height-(b->height-y),
+                          0, xmesa->xm_buffer->FXctx->height-(b->height-y),
                           b->width, 1, 
                           0,
                           pixbuf );
@@ -2267,7 +2287,7 @@ static void FXgetImage( XMesaBuffer b )
       for (y=0;y<b->height;y++) {
          /* read row from 3Dfx frame buffer */
          grLfbReadRegion( GR_BUFFER_FRONTBUFFER,
-                          0, XMesa->xm_buffer->FXctx->height-(b->height-y),
+                          0, xmesa->xm_buffer->FXctx->height-(b->height-y),
                           b->width, 1, 
                           0,
                           pixbuf );
@@ -2275,11 +2295,11 @@ static void FXgetImage( XMesaBuffer b )
          /* write to XImage back buffer */
          for (x=0;x<b->width;x++) {
             XMesaPutPixel(b->backimage,x,y,
-			  xmesa_color_to_pixel(XMesa,
+			  xmesa_color_to_pixel(xmesa,
 					       (pixbuf[x] & 0xf800) >> 8,
 					       (pixbuf[x] & 0x07e0) >> 3,
 					       (pixbuf[x] & 0x001f) << 3,
-					       0xff, XMesa->pixelformat));
+					       0xff, xmesa->pixelformat));
          }
       }
    }
@@ -2294,18 +2314,20 @@ static void FXgetImage( XMesaBuffer b )
  */
 void XMesaSwapBuffers( XMesaBuffer b )
 {
-#ifdef PROFILE
-   GLdouble t0 = gl_time();
-#endif
+   GET_CURRENT_CONTEXT(ctx);
 
-   _mesa_swapbuffers(XMesa->gl_ctx);
+   /* If we're swapping the buffer associated with the current context
+    * we have to flush any pending rendering commands first.
+    */
+   if (b->xm_context && b->xm_context->gl_ctx == ctx)
+      _mesa_swapbuffers(ctx);
 
    if (b->db_state) {
 #ifdef FX
-      if (XMesa->xm_buffer->FXctx) {
+      if (b->FXctx) {
          fxMesaSwapBuffers();
 
-         if (XMesa->xm_buffer->FXwindowHack)
+         if (b->FXwindowHack)
             FXgetImage(b);
          else
             return;
@@ -2315,11 +2337,12 @@ void XMesaSwapBuffers( XMesaBuffer b )
 	 /* Copy Ximage from host's memory to server's window */
 #if defined(USE_XSHM) && !defined(XFree86Server)
 	 if (b->shm) {
+            /*_glthread_LOCK_MUTEX(_xmesa_lock);*/
 	    XShmPutImage( b->xm_visual->display, b->frontbuffer,
 			  b->cleargc,
 			  b->backimage, 0, 0,
 			  0, 0, b->width, b->height, False );
-	    /* wait for finished event??? */
+            /*_glthread_UNLOCK_MUTEX(_xmesa_lock);*/
 	 }
 	 else
 #endif
@@ -2327,15 +2350,18 @@ void XMesaSwapBuffers( XMesaBuffer b )
 #if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
 	    XMesaDriSwapBuffers( b );
 #else
+            /*_glthread_LOCK_MUTEX(_xmesa_lock);*/
             XMesaPutImage( b->xm_visual->display, b->frontbuffer,
 			   b->cleargc,
 			   b->backimage, 0, 0,
 			   0, 0, b->width, b->height );
+            /*_glthread_UNLOCK_MUTEX(_xmesa_lock);*/
 #endif
          }
       }
       else {
 	 /* Copy pixmap to window on server */
+         /*_glthread_LOCK_MUTEX(_xmesa_lock);*/
 	 XMesaCopyArea( b->xm_visual->display,
 			b->backpixmap,   /* source drawable */
 			b->frontbuffer,  /* dest. drawable */
@@ -2343,16 +2369,11 @@ void XMesaSwapBuffers( XMesaBuffer b )
 			0, 0, b->width, b->height,  /* source region */
 			0, 0                 /* dest region */
 		      );
+         /*_glthread_UNLOCK_MUTEX(_xmesa_lock);*/
       }
    }
-#if defined(GLX_DIRECT_RENDERING) || defined(XFree86Server)
-   /* NOT_NEEDED */
-#else
+#if !defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
    XSync( b->xm_visual->display, False );
-#endif
-#ifdef PROFILE
-   XMesa->gl_ctx->SwapCount++;
-   XMesa->gl_ctx->SwapTime += gl_time() - t0;
 #endif
 }
 
@@ -2363,18 +2384,20 @@ void XMesaSwapBuffers( XMesaBuffer b )
  */
 void XMesaCopySubBuffer( XMesaBuffer b, int x, int y, int width, int height )
 {
-#ifdef PROFILE
-   GLdouble t0 = gl_time();
-#endif
+   GET_CURRENT_CONTEXT(ctx);
 
-   FLUSH_VB( XMesa->gl_ctx, "swap buffers" );
+   /* If we're swapping the buffer associated with the current context
+    * we have to flush any pending rendering commands first.
+    */
+   if (b->xm_context->gl_ctx == ctx)
+      _mesa_swapbuffers(ctx);
 
    if (b->db_state) {
       int yTop = b->bottom - y - height;
 #ifdef FX
-      if (XMesa->xm_buffer->FXctx) {
+      if (b->FXctx) {
          fxMesaSwapBuffers();
-         if (XMesa->xm_buffer->FXwindowHack)
+         if (b->FXwindowHack)
             FXgetImage(b);
          else
             return;
@@ -2412,15 +2435,6 @@ void XMesaCopySubBuffer( XMesaBuffer b, int x, int y, int width, int height )
                       );
       }
    }
-#ifdef XFree86Server
-   /* NOT_NEEDED */
-#else
-   XSync( b->xm_visual->display, False );
-#endif
-#ifdef PROFILE
-   XMesa->gl_ctx->SwapCount++;
-   XMesa->gl_ctx->SwapTime += gl_time() - t0;
-#endif
 }
 
 
@@ -2550,7 +2564,6 @@ void XMesaReset( void )
 	XMesaDestroyBuffer(XMesaBufferList);
 
     XMesaBufferList = NULL;
-    XMesa = NULL;
 }
 
 

@@ -33,67 +33,63 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#include "tdfx_init.h"
 #include <glide.h>
+#include "fxdrv.h"
 
-GLboolean tdfxInitHW(__DRIdrawablePrivate *driDrawPriv,
-                     tdfxContextPrivate *fxMesa)
+
+GLboolean
+tdfxInitHW(__DRIdrawablePrivate * driDrawPriv, fxMesaContext fxMesa)
 {
-  /* KW: Would be nice to make one of these a member of the other.
-   */
-  __DRIscreenPrivate *driScrnPriv = driDrawPriv->driScreenPriv;
-  tdfxScreenPrivate *sPriv = (tdfxScreenPrivate*)driScrnPriv->private;
+    /* KW: Would be nice to make one of these a member of the other.
+     */
+    __DRIscreenPrivate *driScrnPriv = driDrawPriv->driScreenPriv;
+    tdfxScreenPrivate *sPriv = (tdfxScreenPrivate *) driScrnPriv->private;
 
 #ifdef DEBUG_LOCKING
-  fprintf(stderr, "Debug locking enabled\n");
+    fprintf(stderr, "Debug locking enabled\n");
 #endif
-    
-  if (fxMesa->initDone) return GL_TRUE;
 
-  fxMesa->width=driDrawPriv->w;
-  fxMesa->height=driDrawPriv->h;
+    if (fxMesa->initDone)
+        return GL_TRUE;
 
-  /* We have to use a light lock here, because we can't do any glide
-     operations yet. No use of FX_* functions in this function. */
-  DRM_LIGHT_LOCK(driScrnPriv->fd, &driScrnPriv->pSAREA->lock, 
-		 driDrawPriv->driContextPriv->hHWContext);
-  FX_grGlideInit_NoLock();
+    fxMesa->width = driDrawPriv->w;
+    fxMesa->height = driDrawPriv->h;
 
-  fxMesa->board = 0;
-  FX_grSstSelect_NoLock(fxMesa->board); 
+    /* We have to use a light lock here, because we can't do any glide
+       operations yet. No use of FX_* functions in this function. */
+    DRM_LIGHT_LOCK(driScrnPriv->fd, &driScrnPriv->pSAREA->lock,
+                   driDrawPriv->driContextPriv->hHWContext);
+    FX_grGlideInit_NoLock();
 
-  if (sPriv->deviceID==0x3)
-    fxMesa->haveTwoTMUs=GL_FALSE;
-  else
-    fxMesa->haveTwoTMUs=GL_TRUE;
+    fxMesa->board = 0;
+    FX_grSstSelect_NoLock(fxMesa->board);
 
-  /* !!! We are forcing these !!! */
-  fxMesa->haveAlphaBuffer=GL_FALSE; 
-  fxMesa->haveGlobalPaletteTexture=GL_FALSE;
+    if (sPriv->deviceID == 0x3)
+        fxMesa->haveTwoTMUs = GL_FALSE;
+    else
+        fxMesa->haveTwoTMUs = GL_TRUE;
 
-  fxMesa->glideContext =  FX_grSstWinOpen_NoLock((FxU32)-1, GR_RESOLUTION_NONE,
-						 GR_REFRESH_NONE,
-						 GR_COLORFORMAT_ABGR,
-						 GR_ORIGIN_LOWER_LEFT, 2, 1);
+    /* !!! We are forcing these !!! */
+    fxMesa->haveAlphaBuffer = GL_FALSE;
+    fxMesa->haveGlobalPaletteTexture = GL_FALSE;
 
-  grDRIResetSAREA();
-  DRM_UNLOCK(driScrnPriv->fd, &driScrnPriv->pSAREA->lock, 
-	     driDrawPriv->driContextPriv->hHWContext);
+    fxMesa->glideContext =
+        FX_grSstWinOpen_NoLock((FxU32) - 1, GR_RESOLUTION_NONE,
+                               GR_REFRESH_NONE, GR_COLORFORMAT_ABGR,
+                               GR_ORIGIN_LOWER_LEFT, 2, 1);
 
-  fxMesa->needClip=1;
+    grDRIResetSAREA();
+    DRM_UNLOCK(driScrnPriv->fd, &driScrnPriv->pSAREA->lock,
+               driDrawPriv->driContextPriv->hHWContext);
 
-  if (!fxMesa->glideContext || !fxDDInitFxMesaContext( fxMesa ))
-    return GL_FALSE;
+    fxMesa->needClip = 1;
 
-  fxInitPixelTables(fxMesa, GL_FALSE); /* Load tables of pixel colors */
+    if (!fxMesa->glideContext || !fxDDInitFxMesaContext(fxMesa))
+        return GL_FALSE;
 
-  fxMesa->initDone=GL_TRUE;
-  return GL_TRUE;
+    fxMesa->initDone = GL_TRUE;
 
+    return GL_TRUE;
 }
 
 #endif
-
-
-
-

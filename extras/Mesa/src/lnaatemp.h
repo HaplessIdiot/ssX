@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.9 2000/06/21 15:12:28 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/lnaatemp.h,v 1.10 2000/06/21 20:18:13 tsi Exp $ */
 
 /*
  * Antialiased Line Rasterizer Template
@@ -103,12 +103,12 @@
    ctx->PB->mono = GL_FALSE;
 
    if (depthBits <= 16) {
-      z0 = FloatToFixed(VB->Win.data[vert0][2]);
-      z1 = FloatToFixed(VB->Win.data[vert1][2]);
+      z0 = FloatToFixed(VB->Win.data[vert0][2] + ctx->LineZoffset);
+      z1 = FloatToFixed(VB->Win.data[vert1][2] + ctx->LineZoffset);
    }
    else {
-      z0 = (int) VB->Win.data[vert0][2];
-      z1 = (int) VB->Win.data[vert1][2];
+      z0 = (int) VB->Win.data[vert0][2] + ctx->LineZoffset;
+      z1 = (int) VB->Win.data[vert1][2] + ctx->LineZoffset;
    }
 
 #ifdef INTERP_STUV0

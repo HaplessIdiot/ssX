@@ -1,4 +1,4 @@
-/* $XFree86$
+/* $XFree86: xc/lib/GL/mesa/src/drv/ffb/ffb_vb.c,v 1.1 2000/06/20 05:08:40 dawes Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000 David S. Miller
@@ -28,7 +28,7 @@
 #include "ffb_xmesa.h"
 #include "ffb_context.h"
 #include "ffb_vb.h"
-
+#include "mem.h"
 #include "stages.h"
 
 #define COL {							\
@@ -242,8 +242,8 @@ void ffbDDResizeVB(struct vertex_buffer *VB, GLuint size)
 		exit(1);
 	}
 
-	free(VB->ClipMask);
-	VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * mvb->size);
+	ALIGN_FREE(VB->ClipMask);
+	VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * mvb->size, 4);
 	if (!VB->ClipMask) {
 		fprintf(stderr, "ffb-glx: out of memory !\n");
 		exit(1);
@@ -283,8 +283,8 @@ void ffbDDRegisterVB(struct vertex_buffer *VB)
 		exit(1);
 	}
 
-	free(VB->ClipMask);
-	VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * mvb->size);
+	ALIGN_FREE(VB->ClipMask);
+	VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * mvb->size, 4);
 	if (!VB->ClipMask) {
 		fprintf(stderr, "ffb-glx: out of memory !\n");
 		exit(1);

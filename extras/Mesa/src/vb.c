@@ -43,9 +43,9 @@ struct vertex_buffer *gl_vb_create_for_immediate( GLcontext *ctx )
 {
    struct vertex_buffer *VB;
    struct immediate *IM;
-   GLuint alignment = 32;
+   const GLuint alignment = 32;
 
-   VB = CALLOC_STRUCT(vertex_buffer);
+   VB = ALIGN_CALLOC_STRUCT( vertex_buffer, alignment );
    if (!VB) 
       return 0;
 
@@ -63,14 +63,14 @@ struct vertex_buffer *gl_vb_create_for_immediate( GLcontext *ctx )
    gl_vector4ub_alloc( &VB->BColor, VEC_WRITABLE, VB_SIZE, alignment );      
    gl_vector1ui_alloc( &VB->BIndex, VEC_WRITABLE, VB_SIZE, alignment );
 
-   VB->ClipMask = (GLubyte *)MALLOC(sizeof(GLubyte) * VB_SIZE);
-   VB->UserClipMask = (GLubyte *)CALLOC(sizeof(GLubyte) * VB_SIZE);
-   VB->CullMask = (GLubyte *)MALLOC(sizeof(GLubyte) * VB_SIZE);
-   VB->NormCullMask = (GLubyte *)MALLOC(sizeof(GLubyte) * VB_SIZE);
-   VB->Spec[0] = (GLubyte (*)[4])MALLOC(sizeof(GLubyte) * 4 * VB_SIZE);
-   VB->Spec[1] = (GLubyte (*)[4])MALLOC(sizeof(GLubyte) * 4 * VB_SIZE);
+   VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * VB_SIZE, alignment);
+   VB->UserClipMask = (GLubyte *) ALIGN_CALLOC(sizeof(GLubyte) * VB_SIZE, alignment);
+   VB->CullMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * VB_SIZE, alignment);
+   VB->NormCullMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * VB_SIZE, alignment);
+   VB->Spec[0] = (GLubyte (*)[4]) ALIGN_MALLOC(sizeof(GLubyte) * 4 * VB_SIZE, alignment);
+   VB->Spec[1] = (GLubyte (*)[4]) ALIGN_MALLOC(sizeof(GLubyte) * 4 * VB_SIZE, alignment);
 
-   IM = VB->IM = gl_immediate_alloc( ctx );
+   IM = VB->IM = gl_immediate_alloc(ctx);
       
    VB->store.Obj = &IM->v.Obj;
    VB->store.Normal = &IM->v.Normal;
@@ -105,7 +105,7 @@ struct vertex_buffer *gl_vb_create_for_cva( GLcontext *ctx, GLuint size )
    struct vertex_buffer *VB;
    GLuint alignment = 32;
 
-   VB = CALLOC_STRUCT(vertex_buffer);
+   VB = ALIGN_CALLOC_STRUCT( vertex_buffer, alignment );
    if (!VB) 
       return 0;
 
@@ -121,11 +121,14 @@ struct vertex_buffer *gl_vb_create_for_cva( GLcontext *ctx, GLuint size )
    VB->ClipAndMask = CLIP_ALL_BITS;
    VB->pipeline = &ctx->CVA.pre;
 
-   VB->ClipMask = (GLubyte *)MALLOC(sizeof(GLubyte) * size);
-   VB->UserClipMask = (GLubyte *)CALLOC(sizeof(GLubyte) * size);
-   VB->Spec[0] = (GLubyte (*)[4])MALLOC(sizeof(GLubyte) * 4 * size);
-   VB->Spec[1] = (GLubyte (*)[4])MALLOC(sizeof(GLubyte) * 4 * size);
-   VB->Flag = (GLuint *)MALLOC(sizeof(GLuint) * size);
+   VB->ClipMask = (GLubyte *)ALIGN_MALLOC( sizeof(GLubyte) * size, alignment );
+   VB->UserClipMask = (GLubyte *)ALIGN_CALLOC( sizeof(GLubyte) * size,
+					       alignment );
+   VB->Spec[0] = (GLubyte (*)[4])ALIGN_MALLOC( sizeof(GLubyte) * 4 * size,
+					       alignment );
+   VB->Spec[1] = (GLubyte (*)[4])ALIGN_MALLOC( sizeof(GLubyte) * 4 * size,
+					       alignment );
+   VB->Flag = (GLuint *)ALIGN_MALLOC( sizeof(GLuint) * size, alignment );
 
    gl_vector4f_alloc( &VB->Eye, 2, VEC_WRITABLE, size, alignment );
    gl_vector4f_alloc( &VB->Clip, 2, VEC_WRITABLE, size, alignment );
@@ -201,8 +204,8 @@ void gl_vb_free( struct vertex_buffer *VB )
       if ( ! --VB->IM->ref_count )
 	 gl_immediate_free( VB->IM );
 
-      FREE( VB->CullMask );
-      FREE( VB->NormCullMask );
+      ALIGN_FREE( VB->CullMask );
+      ALIGN_FREE( VB->NormCullMask );
    } else {
       if (VB->store.Elt) 
       gl_vector4f_free( VB->store.Obj );          FREE( VB->store.Obj );
@@ -221,22 +224,22 @@ void gl_vb_free( struct vertex_buffer *VB )
       gl_vector1ui_free( VB->FoggedIndex[0] );    FREE( VB->FoggedIndex[0] );
       gl_vector1ui_free( VB->FoggedIndex[1] );    FREE( VB->FoggedIndex[1] );
 
-      FREE( VB->Flag );
+      ALIGN_FREE( VB->Flag );
    }
 
-   if (VB->tmp_f) FREE(VB->tmp_f);
-   if (VB->tmp_m) FREE(VB->tmp_m);
-   if (VB->EvaluatedFlags) FREE(VB->EvaluatedFlags);
+   if (VB->tmp_f) FREE( VB->tmp_f );
+   if (VB->tmp_m) FREE( VB->tmp_m );
+   if (VB->EvaluatedFlags) FREE( VB->EvaluatedFlags );
 
-   FREE( VB->Spec[0] );
-   FREE( VB->Spec[1] );
-   FREE( VB->ClipMask );
-   FREE( VB->UserClipMask );
+   ALIGN_FREE( VB->Spec[0] );
+   ALIGN_FREE( VB->Spec[1] );
+   ALIGN_FREE( VB->ClipMask );
+   ALIGN_FREE( VB->UserClipMask );
 
    if (VB->ctx->Driver.UnregisterVB)
       VB->ctx->Driver.UnregisterVB( VB );
 
-   FREE( VB );
+   ALIGN_FREE( VB );
 }
 
 
@@ -254,7 +257,7 @@ struct immediate *gl_immediate_alloc( GLcontext *ctx )
       return IM;
    }
 
-   IM = MALLOC_STRUCT(immediate);
+   IM = ALIGN_MALLOC_STRUCT( immediate, 32 );
    if (!IM)
       return 0;
 
@@ -272,7 +275,7 @@ struct immediate *gl_immediate_alloc( GLcontext *ctx )
    IM->Material = 0;
    IM->MaterialMask = 0;
 #ifdef VMS
-   for (j=0; j<VB_SIZE ; j++ )
+   for (j = 0; j < VB_SIZE; j++)
      IM->Normal[j][0] = IM->Normal[j][1] = IM->Normal[j][2] = 0.0;
 #endif
    
@@ -323,7 +326,7 @@ void gl_immediate_free( struct immediate *IM )
       if (MESA_VERBOSE&VERBOSE_IMMEDIATE)
 	 fprintf(stderr, "really free immediate %d\n", IM->id);
 
-      FREE( IM );
+      ALIGN_FREE( IM );
    }
    else {
       if (MESA_VERBOSE&VERBOSE_IMMEDIATE)

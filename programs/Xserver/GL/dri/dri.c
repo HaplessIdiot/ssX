@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.18 2000/06/23 19:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.19 2000/06/25 16:03:43 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -113,6 +113,8 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
     if (fd < 0) {
         /* failed to open DRM */
         pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
+        DRIDrvMsg(pScreen->myNum, X_INFO,
+                  "[drm] drmOpen failed\n");
         return FALSE;
     }
 
@@ -139,6 +141,9 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	pDRIPriv->directRenderingSupport = FALSE;
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
 	drmClose(pDRIPriv->drmFD);
+        DRIDrvMsg(pScreen->myNum, X_INFO,
+                  "[drm] drmSetBusid failed (%d, %s)\n",
+                  pDRIPriv->drmFD, pDRIPriv->pDriverInfo->busIdString);
 	return FALSE;
     }
 
@@ -158,6 +163,8 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	pDRIPriv->directRenderingSupport = FALSE;
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
 	drmClose(pDRIPriv->drmFD);
+        DRIDrvMsg(pScreen->myNum, X_INFO,
+                  "[drm] drmAddMap failed\n");
 	return FALSE;
     }
     DRIDrvMsg(pScreen->myNum, X_INFO,
@@ -172,6 +179,8 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	pDRIPriv->directRenderingSupport = FALSE;
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
 	drmClose(pDRIPriv->drmFD);
+        DRIDrvMsg(pScreen->myNum, X_INFO,
+                  "[drm] drmMap failed\n");
 	return FALSE;
     }
     DRIDrvMsg(pScreen->myNum, X_INFO, "[drm] mapped SAREA 0x%08lx to %p\n",
@@ -188,6 +197,8 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
 	drmUnmap(pDRIPriv->pSAREA, pDRIPriv->pDriverInfo->SAREASize);
 	drmClose(pDRIPriv->drmFD);
+        DRIDrvMsg(pScreen->myNum, X_INFO,
+                  "[drm] drmAddMap failed\n");
 	return FALSE;
     }
     DRIDrvMsg(pScreen->myNum, X_INFO, "[drm] framebuffer handle = 0x%08lx\n",
@@ -1430,7 +1441,11 @@ static void
 DRISpinLockTimeout(drmLock *lock, int val, unsigned long timeout /* in mS */)
 {
     int  count = 10000;
+#ifndef __alpha__
     char ret;
+#else
+    int ret;
+#endif
     long s_secs, s_usecs;
     long f_secs, f_usecs;
     long msecs;

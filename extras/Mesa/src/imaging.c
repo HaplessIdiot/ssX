@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -938,6 +938,7 @@ _mesa_ConvolutionFilter1D(GLenum target, GLenum internalFormat, GLsizei width, G
        format == GL_COLOR_INDEX ||
        format == GL_STENCIL_INDEX ||
        format == GL_DEPTH_COMPONENT ||
+       format == GL_INTENSITY ||
        type == GL_BITMAP) {
       gl_error(ctx, GL_INVALID_ENUM, "glConvolutionFilter1D(format or type)");
       return;
@@ -1007,6 +1008,7 @@ _mesa_ConvolutionFilter2D(GLenum target, GLenum internalFormat, GLsizei width, G
        format == GL_COLOR_INDEX ||
        format == GL_STENCIL_INDEX ||
        format == GL_DEPTH_COMPONENT ||
+       format == GL_INTENSITY ||
        type == GL_BITMAP) {
       gl_error(ctx, GL_INVALID_ENUM, "glConvolutionFilter2D(format or type)");
       return;
@@ -1353,6 +1355,7 @@ _mesa_GetConvolutionFilter(GLenum target, GLenum format, GLenum type, GLvoid *im
        format == GL_COLOR_INDEX ||
        format == GL_STENCIL_INDEX ||
        format == GL_DEPTH_COMPONENT ||
+       format == GL_INTENSITY ||
        type == GL_BITMAP) {
       gl_error(ctx, GL_INVALID_ENUM, "glGetConvolutionFilter(format or type)");
       return;
@@ -1460,7 +1463,7 @@ _mesa_GetConvolutionParameteriv(GLenum target, GLenum pname, GLint *params)
          params[3] = FLOAT_TO_INT(ctx->Pixel.ConvolutionBorderColor[c][3]);
          break;
       case GL_CONVOLUTION_BORDER_MODE:
-         *params = (GLint) ctx->Pixel.ConvolutionBorderMode;
+         *params = (GLint) ctx->Pixel.ConvolutionBorderMode[c];
          break;
       case GL_CONVOLUTION_FILTER_SCALE:
          params[0] = (GLint) ctx->Pixel.ConvolutionFilterScale[c][0];
@@ -1511,6 +1514,7 @@ _mesa_GetSeparableFilter(GLenum target, GLenum format, GLenum type, GLvoid *row,
        format == GL_COLOR_INDEX ||
        format == GL_STENCIL_INDEX ||
        format == GL_DEPTH_COMPONENT ||
+       format == GL_INTENSITY ||
        type == GL_BITMAP) {
       gl_error(ctx, GL_INVALID_ENUM, "glGetConvolutionFilter(format or type)");
       return;
@@ -1554,6 +1558,7 @@ _mesa_SeparableFilter2D(GLenum target, GLenum internalFormat, GLsizei width, GLs
        format == GL_COLOR_INDEX ||
        format == GL_STENCIL_INDEX ||
        format == GL_DEPTH_COMPONENT ||
+       format == GL_INTENSITY ||
        type == GL_BITMAP) {
       gl_error(ctx, GL_INVALID_ENUM, "glSeparableFilter2D(format or type)");
       return;

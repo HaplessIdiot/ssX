@@ -134,7 +134,7 @@ typedef void (*vec_copy_func)( GLvector4f *to,
  *     parameter, to allow a unified interface.  
  */
 typedef void (_XFORMAPIP transform_func)( GLvector4f *to_vec,
-				const GLmatrix *mat, 
+					  const GLfloat m[16],
 				const GLvector4f *from_vec, 
 				const GLubyte *clipmask,
 				const GLubyte flag );
@@ -144,11 +144,11 @@ extern GLvector4f *gl_project_points( GLvector4f *to,
 			       const GLvector4f *from );
 
 extern void gl_transform_bounds3( GLubyte *orMask, GLubyte *andMask,
-			   const GLmatrix *mat,
+				  const GLfloat m[16],
 			   CONST GLfloat src[][3] );
 
 extern void gl_transform_bounds2( GLubyte *orMask, GLubyte *andMask,
-			   const GLmatrix *mat,
+				  const GLfloat m[16],
 			   CONST GLfloat src[][3] );
 
 
@@ -168,11 +168,11 @@ extern void gl_transform_point_sz( GLfloat Q[4], const GLfloat M[16],
 
 
 #define TransformRaw( to, mat, from ) \
-      ( (*gl_transform_tab[0][(from)->size][(mat)->type])( to, mat, from, 0, 0 ), \
+      ( (*gl_transform_tab[0][(from)->size][(mat)->type])( to, (mat)->m, from, 0, 0 ), \
         (to) )
 
 #define Transform( to, mat, from, mask, cull ) \
-      ( (*gl_transform_tab[cull!=0][(from)->size][(mat)->type])( to, mat, from, mask, cull ), \
+      ( (*gl_transform_tab[cull!=0][(from)->size][(mat)->type])( to, (mat)->m, from, mask, cull ), \
 	(to) )
 
 

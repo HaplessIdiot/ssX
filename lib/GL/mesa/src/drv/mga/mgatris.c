@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -33,22 +33,27 @@
 #include "pipeline.h"
 
 #include "mm.h"
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgatris.h"
 #include "mgavb.h"
-#include "mgalog.h"
 
 
 static void mga_null_quad( GLcontext *ctx, GLuint v0,
-			   GLuint v1, GLuint v2, GLuint v3, GLuint pv ) {
+			   GLuint v1, GLuint v2, GLuint v3, GLuint pv ) 
+{
 }     
+
 static void mga_null_triangle( GLcontext *ctx, GLuint v0,
-			       GLuint v1, GLuint v2, GLuint pv ) {
+			       GLuint v1, GLuint v2, GLuint pv ) 
+{
 }     
-static void mga_null_line( GLcontext *ctx, GLuint v1, GLuint v2, GLuint pv ) {
+
+static void mga_null_line( GLcontext *ctx, GLuint v1, GLuint v2, GLuint pv ) 
+{
 }
 
-static void mga_null_points( GLcontext *ctx, GLuint first, GLuint last ) {
+static void mga_null_points( GLcontext *ctx, GLuint first, GLuint last ) 
+{
 }
 
 
@@ -65,17 +70,6 @@ static triangle_func tri_tab[0x10];
 static quad_func     quad_tab[0x10];  
 static line_func     line_tab[0x10];  
 static points_func   points_tab[0x10];
-
-static void mgaPrintRenderState( const char *msg, GLuint state )
-{
-   fprintf(stderr, "%s: (%x) %s%s%s%s%s\n",
-	   msg, state,
-	   (state & MGA_FLAT_BIT)       ? "flat, "       : "",
-	   (state & MGA_OFFSET_BIT)     ? "offset, "     : "",
-	   (state & MGA_TWOSIDE_BIT)    ? "twoside, "    : "",
-	   (state & MGA_NODRAW_BIT)     ? "no-draw, "    : "",
-	   (state & MGA_FALLBACK_BIT)   ? "fallback"     : "");
-}
 
 #define IND (0)
 #define TAG(x) x
@@ -148,8 +142,8 @@ void mgaDDTrifuncInit()
 void mgaDDChooseRenderState(GLcontext *ctx)
 {
     mgaContextPtr mmesa = MGA_CONTEXT(ctx);
-    GLuint         flags   = ctx->TriangleCaps;
-    CARD32 index    = 0;
+    GLuint flags = ctx->TriangleCaps;
+    GLuint index = 0;
 
     if (mmesa->Fallback) {
 	mmesa->renderindex = MGA_FALLBACK_BIT;
@@ -203,8 +197,3 @@ void mgaDDChooseRenderState(GLcontext *ctx)
 	}
     }
 }
-
-
-
-
-

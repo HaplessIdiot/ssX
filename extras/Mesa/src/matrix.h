@@ -33,8 +33,8 @@
 
 
 typedef struct {
-   GLfloat m[16];
-   GLfloat *inv;		/* optional */
+   GLfloat *m;			/* 16-byte aligned */
+   GLfloat *inv;		/* optional, 16-byte aligned */
    GLuint flags;
    GLuint type;
 } GLmatrix;

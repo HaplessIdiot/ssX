@@ -638,7 +638,8 @@ static void read_rgba_pixels( GLcontext *ctx,
          return;
    }
 
-   if (!_mesa_is_legal_format_and_type(format, type)) {
+   if (!_mesa_is_legal_format_and_type(format, type) ||
+       format == GL_INTENSITY) {
       gl_error(ctx, GL_INVALID_OPERATION, "glReadPixels(format or type)");
       return;
    }

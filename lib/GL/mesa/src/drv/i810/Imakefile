@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.8 2000/08/24 22:20:07 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.9 2000/08/25 13:42:19 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -24,7 +24,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 MESA_INCLUDES = -I. -I.. -I../../include \
 		-I../../../../dri/drm
-
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) 
@@ -229,7 +228,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
      MMX_OBJS = ../../X86/mmx_blend.o
 
 XCOMM Disabling 3Dnow code for the time being.
-#if 0
+#ifdef MesaUse3DNow
    3DNOW_SRCS = ../../X86/3dnow.c \
 		../../X86/3dnow_norm_raw.S \
 		../../X86/3dnow_xform_masked1.S \

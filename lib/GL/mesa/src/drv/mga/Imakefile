@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.8 2000/08/24 22:20:07 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/mga/Imakefile,v 1.9 2000/08/25 13:42:22 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -34,7 +34,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 MESA_INCLUDES = -I. -I.. -I../../include \
 		-I../../../../dri/drm
 
-
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(ASM_DEFS)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) 
 
@@ -56,17 +55,15 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 		../../../../dri/drm/xf86drmSL.o
 
 
-      MGASRCS = mgaclear.c mgacnvtex.c mgadd.c \
-		mgafastpath.c mgaeltpath.c \
-		mgapipeline.c	\
-		mgaspan.c mgastate.c mgatex.c		\
-		mgatris.c mgavb.c mgaioctl.c mga_xmesa.c mgabuffers.c
+      MGASRCS = mgatexcnv.c mgadd.c mgafastpath.c		\
+		mgaeltpath.c mgapipeline.c mgaspan.c mgastate.c		\
+		mgatex.c mgatexmem.c mgatris.c mgavb.c mgaioctl.c	\
+		mga_xmesa.c mgabuffers.c
 
-      MGAOBJS = mgaclear.o mgacnvtex.o mgadd.o \
-		mgafastpath.o mgaeltpath.o \
-		mgapipeline.o	\
-		mgaspan.o mgastate.o mgatex.o		\
-		mgatris.o mgavb.o mgaioctl.o mga_xmesa.o mgabuffers.o
+      MGAOBJS = mgatexcnv.o mgadd.o mgafastpath.o		\
+		mgaeltpath.o mgapipeline.o mgaspan.o mgastate.o		\
+		mgatex.o mgatexmem.o mgatris.o mgavb.o mgaioctl.o	\
+		mga_xmesa.o mgabuffers.o
 
      MESASRCS = ../../aatriangle.c \
 		../../accum.c \
@@ -279,7 +276,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
          OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(MESAOBJS) $(ASMOBJS)	\
 		$(COMMONOBJS) $(MGAOBJS) $(HIOBJS)
 
-REQUIREDLIBS += -lm
+REQUIREDLIBS += -lm 
 #if !GlxBuiltInMga
 REQUIREDLIBS += -L../../../.. -lGL -L../../../../../X11 -lX11
 #endif

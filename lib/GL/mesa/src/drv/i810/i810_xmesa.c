@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.5 2000/08/03 02:30:19 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.6 2000/08/25 13:42:20 dawes Exp $ */
 
 /*
  * Authors:
@@ -394,9 +394,6 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
    /* Ask mesa to clip fog coordinates for us.
     */
    ctx->TriangleCaps |= DD_CLIP_FOG_COORD;
-
-   ctx->Shared->DefaultD[2][0].DriverData = 0;
-   ctx->Shared->DefaultD[2][1].DriverData = 0;
 
    if (ctx->VB) 
       i810DDRegisterVB( ctx->VB );

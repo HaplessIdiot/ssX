@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgafastpath.c,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -31,7 +31,7 @@
 #include "vertices.h"
 #include "mmath.h"
 
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgapipeline.h"
 #include "mgatris.h"
 #include "mgastate.h"
@@ -487,8 +487,10 @@ void mgaDDFastPath( struct vertex_buffer *VB )
    struct mga_fast_tab *tab = &mgaFastTab[mmesa->setupindex & VALID_SETUP];
    GLuint do_cliptest = 1;
 
+
    gl_prepare_arrays_cva( VB );	                 /* still need this */
 
+#if 1
    if (gl_reduce_prim[prim] == GL_TRIANGLES && 
        VB->Count < (MGA_DMA_BUF_SZ / 48) &&
        (ctx->ModelProjectMatrix.flags & (MAT_FLAG_GENERAL|
@@ -498,6 +500,7 @@ void mgaDDFastPath( struct vertex_buffer *VB )
       mgaDDEltPath( VB );
       return;
    }
+#endif
 
    /* Reserve enough space for the pathological case.
     */

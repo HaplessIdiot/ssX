@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.7 2000/06/17 00:02:50 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.8 2000/06/26 05:41:29 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -285,7 +285,7 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
     }
 
-    /* Bind Mesa's drawable to Mesa's context */
+    /* Call device-specific MakeCurrent */
     (*psp->MesaAPI.MakeCurrent)(pcp, pdp, pdp);
 
     return GL_TRUE;
@@ -293,6 +293,13 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 
 /*****************************************************************/
 
+/*
+ * This function basically updates the __DRIdrawablePrivate struct's
+ * cliprect information by calling XF86DRIGetDrawableInfo().
+ * This is usually called by a macro which compares the
+ * __DRIdrwablePrivate pStamp and lastStamp values.  If the values
+ * are different that means we have to update the clipping info.
+ */
 void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
 			       __DRIdrawablePrivate *pdp)
 {
@@ -317,7 +324,6 @@ void driMesaUpdateDrawableInfo(Display *dpy, int scrn,
     if (pdp->pBackClipRects) {
 	Xfree(pdp->pBackClipRects); 
     }
-
 
     DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 

@@ -49,7 +49,7 @@
 
 
 #define XFORM_ARGS      GLvector4f *to_vec,             \
-                        const GLmatrix *mat,            \
+                        const GLfloat m[16],            \
                         const GLvector4f *from_vec,     \
                         const GLubyte *mask,            \
                         const GLubyte flag

@@ -4055,7 +4055,7 @@ static void execute_list( GLcontext *ctx, GLuint list )
             break;
          case OPCODE_VERTEX_CASSETTE: {
 	    struct immediate *IM;
-
+	    
 	    if (ctx->NewState)
 	       gl_update_state(ctx);
 	    if (ctx->CompileCVAFlag) {
@@ -4515,6 +4515,7 @@ static void execute_list( GLcontext *ctx, GLuint list )
 	    break;
          case OPCODE_RECTF:
             (*ctx->Exec->Rectf)( n[1].f, n[2].f, n[3].f, n[4].f );
+	    FLUSH_VB( ctx, "dlist rectf" );
             break;
          case OPCODE_RESET_HISTOGRAM:
             (*ctx->Exec->ResetHistogram)( n[1].e );
@@ -4968,8 +4969,6 @@ _mesa_CallLists( GLsizei n, GLenum type, const GLvoid *lists )
       ctx->CurrentDispatch = ctx->Save;
       _glapi_set_dispatch( ctx->CurrentDispatch );
    }
-
-/*    RESET_IMMEDIATE( ctx ); */
 }
 
 

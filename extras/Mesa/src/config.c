@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/config.c,v 1.5 2000/08/09 23:40:10 dawes Exp $ */
 
 
 /* Mesa config file parse and execute code.
@@ -447,8 +447,10 @@ void gl_read_config_file( GLcontext *ctx )
 	 
 
    if (!run_init( ctx, default_config, list )) {
-      fprintf(stderr, "No default configuration '%s' in init file\n", 
-	      default_config);
+      if (getenv("MESA_DEBUG")) {
+         fprintf(stderr, "No default configuration '%s' in init file\n", 
+                 default_config);
+      }
    }
 
    free_list( list );

@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -690,7 +690,16 @@ void *__glapi_noop_table[] = {
    (void *) NoOpGetColorTableEXT,
    (void *) NoOpGetColorTableParameterivEXT,
    (void *) NoOpGetColorTableParameterfvEXT,
-
+   /* GL_3DFX_tbuffer */
+   (void *) NoOpTbufferMask3DFX,
+   /* GL_ARB_texture_compression */
+   (void *) NoOpCompressedTexImage3DARB,
+   (void *) NoOpCompressedTexImage2DARB,
+   (void *) NoOpCompressedTexImage1DARB,
+   (void *) NoOpCompressedTexSubImage3DARB,
+   (void *) NoOpCompressedTexSubImage2DARB,
+   (void *) NoOpCompressedTexSubImage1DARB,
+   (void *) NoOpGetCompressedTexImageARB,
    /* A whole bunch of no-op functions.  These might be called
     * when someone tries to call a dynamically-registered extension
     * function without a current rendering context.

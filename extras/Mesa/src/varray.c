@@ -375,7 +375,6 @@ _mesa_VertexPointerEXT(GLint size, GLenum type, GLsizei stride,
                        GLsizei count, const GLvoid *ptr)
 {
    (void) count;
-   printf("glVertexPointerEXT %p\n", ptr);
    _mesa_VertexPointer(size, type, stride, ptr);
 }
 

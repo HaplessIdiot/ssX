@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.13 2000/08/25 13:42:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.14 2000/08/25 16:25:36 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -161,12 +161,22 @@ TDFXSetLFBConfig(TDFXPtr pTDFX) {
   } else {
     int chip;
     int stride, bits;
+    int TileAperturePitch, lg2TileAperturePitch;
     if (pTDFX->cpp==2) stride=pTDFX->stride;
     else stride=4*pTDFX->stride/pTDFX->cpp;
     bits=pTDFX->backOffset>>12;
+    for (lg2TileAperturePitch = 0, TileAperturePitch = 1024;
+         (lg2TileAperturePitch < 5) &&
+             TileAperturePitch < stride;
+         lg2TileAperturePitch += 1, TileAperturePitch <<= 1);
+#if	0
+    fprintf(stderr, "Using %d (== lg2(%d)-10) for tile aperture pitch\n",
+            lg2TileAperturePitch, TileAperturePitch);
+    fprintf(stderr, "stride == %d\n", stride);
+#endif
     for (chip=0; chip<pTDFX->numChips; chip++) {
       TDFXWriteChipLongMMIO(pTDFX, chip, LFBMEMORYCONFIG, (bits&0x1FFF) |
-			    SST_RAW_LFB_ADDR_STRIDE_4K | 
+			    SST_RAW_LFB_ADDR_STRIDE(lg2TileAperturePitch) | 
 			    ((bits&0x6000)<<10) |
 			    ((stride+127)/128)<<SST_RAW_LFB_TILE_STRIDE_SHIFT);
     }

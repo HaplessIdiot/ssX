@@ -166,6 +166,7 @@ static void copy_rgba_pixels( GLcontext *ctx,
                       ctx->Pixel.ScaleOrBiasRGBApcm ||
                       ctx->Pixel.ColorTableEnabled ||
                       ctx->Pixel.PostColorMatrixColorTableEnabled ||
+                      ctx->Pixel.PostConvolutionColorTableEnabled ||
                       ctx->Pixel.MinMaxEnabled ||
                       ctx->Pixel.HistogramEnabled;
 
@@ -224,6 +225,11 @@ static void copy_rgba_pixels( GLcontext *ctx,
          if (ctx->Pixel.ColorTableEnabled) {
             _mesa_lookup_rgba(&ctx->ColorTable, width, rgbaFloat);
          }
+         /* XXX convolution here */
+         /* GL_POST_CONVOLUTION_COLOR_TABLE lookup */
+         if (ctx->Pixel.PostConvolutionColorTableEnabled) {
+            _mesa_lookup_rgba(&ctx->PostConvolutionColorTable, width, rgbaFloat);
+         }
          /* color matrix */
          if (ctx->ColorMatrix.type != MATRIX_IDENTITY ||
              ctx->Pixel.ScaleOrBiasRGBApcm) {
@@ -256,12 +262,17 @@ static void copy_rgba_pixels( GLcontext *ctx,
 
       if (ctx->Texture.ReallyEnabled && ctx->Pixel.PixelTextureEnabled) {
          GLfloat s[MAX_WIDTH], t[MAX_WIDTH], r[MAX_WIDTH], q[MAX_WIDTH];
+         GLubyte primary_rgba[MAX_WIDTH][4];
          GLuint unit;
          /* XXX not sure how multitexture is supposed to work here */
+
+         MEMCPY(primary_rgba, rgba, 4 * width * sizeof(GLubyte));
+
          for (unit = 0; unit < MAX_TEXTURE_UNITS; unit++) {
             _mesa_pixeltexgen(ctx, width, (const GLubyte (*)[4]) rgba,
                               s, t, r, q);
-            gl_texture_pixels(ctx, unit, width, s, t, r, NULL, rgba);
+            gl_texture_pixels(ctx, unit, width, s, t, r, NULL,
+                              primary_rgba, rgba);
          }
       }
 

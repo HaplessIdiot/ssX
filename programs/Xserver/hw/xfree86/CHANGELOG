@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx September 2000)
+ 711. Resync DRI code/drivers with the DRI CVS (VA Linux).
  710. Add glxinfo to programs list (#4138, Mark Paton).
  709. Add LVDS support for SiS and fix copyright messages (#4136, Can-Ru Yeou).
  708. Fix support for C&T 69030 (#4137, David Bateman).
@@ -11157,4 +11158,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1318 2000/09/22 11:12:28 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1319 2000/09/22 11:35:42 alanh Exp $

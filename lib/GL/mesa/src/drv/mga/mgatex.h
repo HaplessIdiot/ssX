@@ -24,43 +24,15 @@
  *    John Carmack <johnc@idsoftware.com>
  *    Keith Whitwell <keithw@precisioninsight.com>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.h,v 1.3 2000/06/22 16:59:24 tsi Exp $ */
 
 #ifndef MGATEX_INC
 #define MGATEX_INC
 
-#include "types.h"
-#include "mgacommon.h"
-#include "mm.h"
+#include "mgacontext.h"
 
+typedef struct mga_texture_object_s *mgaTextureObjectPtr;
 
-#define MGA_TEX_MAXLEVELS 5
-
-
-typedef struct mga_texture_object_s {
-	struct mga_texture_object_s *next;	
-	struct mga_texture_object_s *prev;	
-	struct gl_texture_object *tObj;
-	mgaContextPtr ctx;
-	PMemBlock	MemBlock;               
-	mgaUI32		offsets[MGA_TEX_MAXLEVELS];
-        int             lastLevel;
-        mgaUI32         dirty_images;
-	mgaUI32		totalSize;		
-	int		texelBytes;
-	mgaUI32 	age;
-        int             bound;
-        int             heap;	/* agp or card */
-        mgaUI32         Setup[MGA_TEX_SETUP_SIZE];
-} mgaTextureObject_t;
-
-typedef mgaTextureObject_t *mgaTextureObjectPtr;
-
-/* called to check for environment variable options */
-void mgaInitTextureSystem( void );
-
-/* called when a context is being destroyed */
-void mgaDestroyContextTextures( mgaContextPtr ctx );
 
 /* Called before a primitive is rendered to make sure the texture
  * state is properly setup.  Texture residence is checked later
@@ -71,35 +43,7 @@ void mgaUpdateTextureState( GLcontext *ctx );
 
 /* Driver functions which are called directly from mesa */
 
-void mgaTexEnv( GLcontext *ctx, GLenum target, GLenum pname,
-                const GLfloat *param );
-
-void mgaTexImage( GLcontext *ctx, GLenum target,
-		  struct gl_texture_object *tObj, GLint level,
-		  GLint internalFormat,
-		  const struct gl_texture_image *image );
-
-void mgaTexSubImage( GLcontext *ctx, GLenum target,
-		  struct gl_texture_object *tObj, GLint level,
-		  GLint xoffset, GLint yoffset,
-		  GLsizei width, GLsizei height,
-		  GLint internalFormat,
-		  const struct gl_texture_image *image );
-
-void mgaTexParameter( GLcontext *ctx, GLenum target,
-		      struct gl_texture_object *tObj,
-		      GLenum pname, const GLfloat *params );
-
-void mgaBindTexture( GLcontext *ctx, GLenum target,
-		     struct gl_texture_object *tObj );
-
-void mgaDeleteTexture( GLcontext *ctx, struct gl_texture_object *tObj );
-
-void mgaUpdateTexturePalette( GLcontext *ctx, struct gl_texture_object *tObj );
-
-GLboolean mgaIsTextureResident( GLcontext *ctx, struct gl_texture_object *t );
-
-void mgaConvertTexture( mgaUI32 *dest, int texelBytes,
+void mgaConvertTexture( GLuint *dest, int texelBytes,
 			struct gl_texture_image *image,
 			int x, int y, int width, int height );
 
@@ -107,14 +51,11 @@ void mgaConvertTexture( mgaUI32 *dest, int texelBytes,
 
 int mgaUploadTexImages( mgaContextPtr mmesa, mgaTextureObjectPtr t );
 
-
-
+void mgaDestroyTexObj( mgaContextPtr mmesa, mgaTextureObjectPtr t );
 
 void mgaAgeTextures( mgaContextPtr mmesa, int heap );
 
 void mgaDDInitTextureFuncs( GLcontext *ctx );
-
-
 
 
 #endif

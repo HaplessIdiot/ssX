@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/tritemp.h,v 1.7 2000/02/18 12:18:46 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/tritemp.h,v 1.8 2000/06/17 00:02:18 martin Exp $ */
 
 /*
  * Triangle Rasterizer Template
@@ -146,10 +146,17 @@
       const GLfloat area = eMaj.dx * eBot.dy - eBot.dx * eMaj.dy;
 
       /* Do backface culling */
-      if (area * bf < 0 || area * area < .0025)
+      if (area * bf < 0.0)
 	 return;
 
-      oneOverArea = 1.0F / area;
+      if (area == 0.0F)
+         return;
+
+      /* check for very tiny triangle */
+      if (area * area < 0.0025F)  /* square it to ensure positive value */
+         oneOverArea = 1.0F / 0.0025F;  /* a close-enough value */
+      else
+         oneOverArea = 1.0F / area;
    }
 
 #ifndef DO_OCCLUSION_TEST

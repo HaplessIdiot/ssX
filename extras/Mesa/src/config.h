@@ -104,8 +104,8 @@
 /* Number of texture units - GL_ARB_multitexture */
 #define MAX_TEXTURE_UNITS 2
 
-/* Maximum viewport size: */
-#define MAX_WIDTH 1600
+/* Maximum viewport/image size: */
+#define MAX_WIDTH 2048
 #define MAX_HEIGHT 1200
 
 /* Maxmimum size for CVA.  May be overridden by the drivers.  */

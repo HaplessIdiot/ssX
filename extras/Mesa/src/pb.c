@@ -254,17 +254,22 @@ void gl_flush_pb( GLcontext *ctx )
       if ((ctx->RasterMask & modBits) || !PB->mono) {
 
 	 if (ctx->Texture.ReallyEnabled) {
-            int texUnit;
+            GLubyte primary_rgba[PB_SIZE][4];
+            GLint texUnit;
+
+            /* must make a copy of primary colors since they may be modified */
+            MEMCPY(primary_rgba, PB->rgba, 4 * PB->count * sizeof(GLubyte));
+
             for (texUnit=0;texUnit<MAX_TEXTURE_UNITS;texUnit++) {
-	        gl_texture_pixels( ctx, texUnit,
-                                   PB->count, PB->s[texUnit], PB->t[texUnit],
-                                   PB->u[texUnit], PB->lambda[texUnit],
-                                   PB->rgba);
+               gl_texture_pixels( ctx, texUnit,
+                                  PB->count, PB->s[texUnit], PB->t[texUnit],
+                                  PB->u[texUnit], PB->lambda[texUnit],
+                                  primary_rgba, PB->rgba );
             }
 	 }
 
          if (ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR
-             && ctx->Light.Enabled) {
+             && ctx->Light.Enabled && ctx->Texture.ReallyEnabled) {
             /* add specular color to primary color */
             add_colors( PB->count, PB->rgba, (const GLubyte (*)[3]) PB->spec );
          }

@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.2 2000/06/22 16:59:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.3 2000/08/25 13:42:22 dawes Exp $ */
 
 /*
  * Authors:
@@ -34,7 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 #include <stdio.h>
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgabuffers.h"
 #include "mgastate.h"
 #include "mgaioctl.h"
@@ -88,37 +88,29 @@ static void mgaUpdateRectsFromSarea( mgaContextPtr mmesa )
 
 
    if (sarea->exported_buffers & MGA_BACK) {
-      XF86DRIClipRectPtr boxes = 
-	 (XF86DRIClipRectPtr)malloc( sarea->exported_nback * sizeof(*boxes) );
-
-      if (driDrawable->pBackClipRects)
-	 free(driDrawable->pBackClipRects);
 
       driDrawable->numBackClipRects = sarea->exported_nback;
-      driDrawable->pBackClipRects = boxes;
+      driDrawable->pBackClipRects = mmesa->tmp_boxes[0];
 
       top = sarea->exported_nback;
       for (i = 0 ; i < top ; i++)
-	 boxes[i] = *(XF86DRIClipRectPtr)&(sarea->exported_boxes[i]);
+	 driDrawable->pBackClipRects[i] = 
+	    *(XF86DRIClipRectPtr)&(sarea->exported_boxes[i]);
    }
 
 
    if (sarea->exported_buffers & MGA_FRONT) 
    {
       int start = top;
-      XF86DRIClipRectPtr boxes = 
-	 (XF86DRIClipRectPtr)malloc( sarea->exported_nfront * sizeof(*boxes) );
-
-      if (driDrawable->pClipRects)
-	 free(driDrawable->pClipRects);
 
       driDrawable->numClipRects = sarea->exported_nfront;
-      driDrawable->pClipRects = boxes;
+      driDrawable->pClipRects = mmesa->tmp_boxes[1];
 
       top += sarea->exported_nfront;
       for ( ; i < top ; i++)
-	 boxes[i-start] = *(XF86DRIClipRectPtr)&(sarea->exported_boxes[i]);
-
+	 driDrawable->pClipRects[i-start] = 
+	    *(XF86DRIClipRectPtr)&(sarea->exported_boxes[i]);
+      
    } 
 
 
@@ -223,7 +215,8 @@ void mgaUpdateRects( mgaContextPtr mmesa, GLuint buffers )
     */
    if (0) printSareaRects(mmesa);
 
-   if (sarea->exported_drawable == driDrawable->draw && 
+   if (0 && 
+       sarea->exported_drawable == driDrawable->draw && 
        (sarea->exported_buffers & buffers) == buffers)
    {
       mgaUpdateRectsFromSarea( mmesa );

@@ -46,7 +46,7 @@ extern void gl_update_texture_unit( GLcontext *ctx,
 extern void gl_texture_pixels( GLcontext *ctx, GLuint texSet, GLuint n,
                                const GLfloat s[], const GLfloat t[],
                                const GLfloat r[], GLfloat lambda[],
-                               GLubyte rgba[][4] );
+                               GLubyte primary_rgba[][4], GLubyte rgba[][4] );
 
 
 #endif

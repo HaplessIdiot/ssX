@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.3 2000/06/22 16:59:24 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.4 2000/08/25 13:42:23 dawes Exp $ */
 
 
 
@@ -35,10 +35,8 @@
 #include <stdlib.h>
 
 #include "mm.h"
-#include "mgalib.h"
-#include "mgaclear.h"
+#include "mgacontext.h"
 #include "mgadd.h"
-#include "mgalog.h"
 #include "mgastate.h"
 #include "mgaspan.h"
 #include "mgatex.h"
@@ -74,24 +72,28 @@ static const GLubyte *mgaDDGetString( GLcontext *ctx, GLenum name )
 
 static GLint mgaGetParameteri(const GLcontext *ctx, GLint param)
 {
-  switch (param) {
-  case DD_HAVE_HARDWARE_FOG:  
-    return 1; 
-  default:
-    mgaError("mgaGetParameteri(): unknown parameter!\n");
-    return 0;
-  }
+   switch (param) {
+   case DD_HAVE_HARDWARE_FOG:  
+      return 1; 
+   default:
+      fprintf(stderr, "mgaGetParameteri(): unknown parameter!\n");
+      return 0;
+   }
 }
 
 
 static void mgaBufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);  
-   
-/*     LOCK_HARDWARE( mmesa ); */
+
+   /* Need to lock to make sure the driDrawable is uptodate.  This
+    * information is used to resize Mesa's software buffers, so it has
+    * to be correct.
+    */
+   LOCK_HARDWARE( mmesa ); 
    *width = mmesa->driDrawable->w;
    *height = mmesa->driDrawable->h;
-/*     UNLOCK_HARDWARE( mmesa ); */
+   UNLOCK_HARDWARE( mmesa ); 
 }
 
 void mgaDDExtensionsInit( GLcontext *ctx )
@@ -138,10 +140,6 @@ void mgaDDExtensionsInit( GLcontext *ctx )
    gl_extensions_disable( ctx, "GL_ARB_texture_compression" );   
    gl_extensions_disable( ctx, "GL_EXT_convolution" );   
 }
-
-
-
-
 
 
 

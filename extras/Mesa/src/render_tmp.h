@@ -210,13 +210,15 @@ static void TAG(render_vb_poly)( struct vertex_buffer *VB,
 	 RENDER_TRI( start, j-1, j, start, 0 );
 	 EDGEFLAG_POLY_TRI_POST( start, j-1, j, start );
       }
+      if (VB->Flag[count] & VERT_END) {
+	 RESET_STIPPLE;
+      }
    }
    else {
       for (j=start+2;j<count;j++) {
 	 RENDER_TRI( start, j-1, j, start, 0 );
       }
    }
-   RESET_STIPPLE;
    POSTFIX;
 }
 

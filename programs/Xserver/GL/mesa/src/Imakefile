@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.14 2000/06/17 00:03:13 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.15 2000/08/01 20:28:39 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -355,6 +355,7 @@ LinkSourceFile(zoom.h,$(MESASRCDIR)/src)
 
      INCLUDES = -I. -I../include -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
                 -I../../include -I../../glx
+
       DEFINES = $(GLX_DEFINES) /*-DUSE_X86_ASM */
 
 #if DoLoadableServer

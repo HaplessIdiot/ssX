@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.60 2000/07/08 22:09:10 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.61 2000/08/21 00:36:37 mvojkovi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -32,6 +32,11 @@
 #include "mga_dri.h"
 #endif
 
+#ifdef USEMGAHAL
+#include "client.h"
+#endif
+#include "mga_bios.h"
+
 #if !defined(EXTRADEBUG)
 #define INREG8(addr) MMIO_IN8(pMga->IOBase, addr)
 #define INREG16(addr) MMIO_IN16(pMga->IOBase, addr)
@@ -58,6 +63,8 @@ void dbg_outreg32(ScrnInfoPtr,int,int);
 
 #define MGA_VERSION 4000
 #define MGA_NAME "MGA"
+#define MGA_C_NAME MGA
+#define MGA_MODULE_DATA mgaModuleData
 #define MGA_DRIVER_NAME "mga"
 #define MGA_MAJOR_VERSION 1
 #define MGA_MINOR_VERSION 0
@@ -137,6 +144,31 @@ typedef struct mgaSave {
 #endif
 
 typedef struct {
+    int			lastInstance;
+#ifdef USEMGAHAL
+    LPCLIENTDATA	pClientStruct;
+    LPBOARDHANDLE	pBoard;
+    LPMGAHWINFO		pMgaHwInfo;
+#endif
+    int			refCount;
+    CARD32		masterFbAddress;
+    long		masterFbMapSize;
+    CARD32		slaveFbAddress;
+    long		slaveFbMapSize;
+    int			mastervideoRam;
+    int			slavevideoRam;
+    Bool		directRenderingEnabled;
+    ScrnInfoPtr 	pScrn_1;
+    ScrnInfoPtr 	pScrn_2;
+} MGAEntRec, *MGAEntPtr;
+
+typedef struct {
+#ifdef USEMGAHAL
+    LPCLIENTDATA	pClientStruct;
+    LPBOARDHANDLE	pBoard;
+    LPMGAMODEINFO	pMgaModeInfo;
+    LPMGAHWINFO		pMgaHwInfo;
+#endif
     EntityInfoPtr	pEnt;
     MGABiosInfo		Bios;
     MGABios2Info	Bios2;
@@ -247,8 +279,20 @@ typedef struct {
     MGAConfigPrivPtr 	pVisualConfigsPriv;
     MGARegRec		DRContextRegs;
     MGADRIServerPrivatePtr  DRIServerInfo;
+    void		(*GetQuiescence)(ScrnInfoPtr pScrn);
 #endif
     XF86VideoAdaptorPtr adaptor;
+    Bool		SecondCrtc;
+    GDevPtr		device;
+    /* The hardware's real SrcOrg */
+    int			realSrcOrg;
+    MGAEntPtr		entityPrivate;
+    void		(*SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
+					     int rop, unsigned int planemask);
+    void		(*SubsequentSolidFillRect)(ScrnInfoPtr pScrn,
+					     int x, int y, int w, int h);
+    void		(*RestoreAccelState)(ScrnInfoPtr pScrn);
+    int			allowedWidth;
     void		(*VideoTimerCallback)(ScrnInfoPtr, Time);
     void		(*PaletteLoadCallback)(ScrnInfoPtr);
     MGAPaletteInfo	palinfo[256];  /* G400 hardware bug workaround */
@@ -303,6 +347,11 @@ Bool Mga16AccelInit(ScreenPtr pScreen);
 Bool Mga24AccelInit(ScreenPtr pScreen);
 Bool Mga32AccelInit(ScreenPtr pScreen);
 
+void Mga8InitSolidFillRectFuncs(MGAPtr pMga);
+void Mga16InitSolidFillRectFuncs(MGAPtr pMga);
+void Mga24InitSolidFillRectFuncs(MGAPtr pMga);
+void Mga32InitSolidFillRectFuncs(MGAPtr pMga);
+
 void MGAPolyArcThinSolid(DrawablePtr, GCPtr, int, xArc*);
 
 Bool MGADGAInit(ScreenPtr pScreen);
@@ -319,6 +368,8 @@ Bool MgaCleanupDma(ScrnInfoPtr pScrn);
 Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size);
 #ifdef XF86DRI
 Bool MgaLockUpdate(ScrnInfoPtr pScrn, drmLockFlags flags);
+void mgaGetQuiescence(ScrnInfoPtr pScrn);
+void mgaGetQuiescence_shared(ScrnInfoPtr pScrn);
 #endif
 void MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/vbrender.c,v 1.6 2000/08/28 02:43:10 tsi Exp $ */
 
 /*
  * Render points, lines, and polygons.  The only entry point to this
@@ -100,20 +100,14 @@ static INLINE void gl_render_clipped_line2( GLcontext *ctx,
 static void offset_polygon( GLcontext *ctx, GLfloat a, GLfloat b, GLfloat c )
 {
    GLfloat ac, bc, m;
-   GLfloat offset;
+   GLfloat offset = 0.0F;
 
-   if (c<0.001F && c>-0.001F) {
-      /* to prevent underflow problems */
-      offset = 0.0F;
-   }
-   else {
+   if (c*c > 1e-16) {
       ac = a / c;
       bc = b / c;
       if (ac<0.0F)  ac = -ac;
       if (bc<0.0F)  bc = -bc;
       m = MAX2( ac, bc );
-      /* m = sqrt( ac*ac + bc*bc ); */
-
       offset = m * ctx->Polygon.OffsetFactor + ctx->Polygon.OffsetUnits;
    }
 
@@ -125,8 +119,15 @@ static void offset_polygon( GLcontext *ctx, GLfloat a, GLfloat b, GLfloat c )
 #define FLUSH_PRIM(prim)			\
 do {						\
    if (ctx->PB->primitive != prim) {		\
-      gl_reduced_prim_change( ctx, prim );		\
+      gl_reduced_prim_change( ctx, prim );	\
    }						\
+} while(0)
+
+#define FLUSH_POLY(prim)					\
+do {								\
+   if ((ctx->IndirectTriangles & DD_TRI_UNFILLED) == 0) {	\
+      FLUSH_PRIM(prim);						\
+   }								\
 } while(0)
 
 
@@ -156,7 +157,6 @@ static void unfilled_polygon( GLcontext *ctx,
    }
    else if (mode==GL_LINE) {
       GLuint i, j0, j1;
-      ctx->StippleCounter = 0;
 
       /* draw the edges */
       for (i=0;i<n-1;i++) {
@@ -319,6 +319,13 @@ static void render_triangle( GLcontext *ctx,
    else {
       (*ctx->Driver.TriangleFunc)( ctx, v0, v1, v2, pv );
    }
+
+   if (tricaps & DD_TRI_OFFSET) {
+      /* reset Z offsets now */
+      ctx->PointZoffset   = 0.0;
+      ctx->LineZoffset    = 0.0;
+      ctx->PolygonZoffset = 0.0;
+   }
 }
 
 
@@ -377,6 +384,13 @@ static void render_quad( GLcontext *ctx, GLuint v0, GLuint v1,
    else {
       (*ctx->Driver.QuadFunc)( ctx, v0, v1, v2, v3, pv );
    }
+
+   if (tricaps & DD_TRI_OFFSET) {
+      /* reset Z offsets now */
+      ctx->PointZoffset   = 0.0;
+      ctx->LineZoffset    = 0.0;
+      ctx->PolygonZoffset = 0.0;
+   }
 }
 
 
@@ -415,15 +429,16 @@ do {							\
 
 #define EDGEFLAG_POLY_TRI_PRE( i2, i1, i, pv)	\
 do {						\
+  eflag[i2] |= (eflag[i2] >> 2) & 1; 		\
   eflag[i1] |= (eflag[i1] >> 2) & 1; 		\
   eflag[i] |= (eflag[i] >> 2) & 2;		\
 } while (0)
 
 #define EDGEFLAG_POLY_TRI_POST( i2, i1, i, pv)	\
 do {						\
-  eflag[i2] = 0; 		\
+  eflag[i2] &= ~(4|1); 		\
   eflag[i1] &= ~(4|1); 		\
-  eflag[i] &= ~(8|2);		\
+  eflag[i] &= ~(8|2); 		\
 } while (0)
 
 
@@ -503,7 +518,7 @@ do {							\
     (void) vlist; (void) eflag; (void) stipplecounter;
 
 #define TAG(x) x##_cull
-#define INIT(x)  FLUSH_PRIM(x)
+#define INIT(x)  if (x == GL_POLYGON) FLUSH_POLY(x); else FLUSH_PRIM(x)
 #define RESET_STIPPLE *stipplecounter = 0
 #include "render_tmp.h"
 
@@ -541,7 +556,7 @@ do {						\
     GLuint *stipplecounter = &VB->ctx->StippleCounter; \
     (void) eflag; (void) stipplecounter;
 
-#define INIT(x)  FLUSH_PRIM(x);
+#define INIT(x)  if (x == GL_POLYGON) FLUSH_POLY(x); else FLUSH_PRIM(x)
 #define RESET_STIPPLE *stipplecounter = 0
 #include "render_tmp.h"
 
@@ -575,7 +590,7 @@ do {						\
     GLuint *stipplecounter = &VB->ctx->StippleCounter; \
     (void) eflag; (void) stipplecounter;
 
-#define INIT(x)  FLUSH_PRIM(x);
+#define INIT(x)  if (x == GL_POLYGON) FLUSH_POLY(x); else FLUSH_PRIM(x)
 #define TAG(x) x##_clipped
 #define RESET_STIPPLE *stipplecounter = 0
 
@@ -633,9 +648,9 @@ setup_edgeflag( struct vertex_buffer *VB,
    case GL_POLYGON:
       if (flag[0]) flag[0] = 0x1;
       for (i = 1 ; i < n-1 ; i++) {
-	 if (flag[i]) flag[i] = 0x1<<2;
+	 if (flag[i]) flag[i] = 0x4;
       }
-      if (flag[i]) flag[i] = 0x3<<2;
+      if (flag[i]) flag[i] = 0x8;
       break;
    default:
       break;

@@ -63,7 +63,7 @@ _mesa_LogicOp( GLenum opcode )
       case GL_OR_INVERTED:
          ctx->Color.LogicOp = opcode;
          ctx->NewState |= NEW_RASTER_OPS;
-	 return;
+	 break;
       default:
          gl_error( ctx, GL_INVALID_ENUM, "glLogicOp" );
 	 return;

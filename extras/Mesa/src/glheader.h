@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.7 2000/08/09 23:40:10 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/src/glheader.h,v 1.8 2000/08/11 17:01:49 dawes Exp $ */
 
 
 #ifndef GLHEADER_H
@@ -139,7 +139,12 @@ typedef void *HDC;
 typedef unsigned long COLORREF;
 #endif
 
-#if defined(_WIN32) && !defined(_WINGDI_) && !defined(_GNU_H_WINDOWS32_DEFINES) && !defined(OPENSTEP) && !defined(__CYGWIN__)
+
+/* Make sure we include glext.h from gl.h */
+#define GL_GLEXT_PROTOTYPES
+
+
+#if defined(_WIN32) && !defined(_WINGDI_) && !defined(_GNU_H_WINDOWS32_DEFINES) && !defined(OPENSTEP)
 #	define WGL_FONT_LINES      0
 #	define WGL_FONT_POLYGONS   1
 #ifndef _GNU_H_WINDOWS32_FUNCTIONS
@@ -160,8 +165,6 @@ typedef struct tagPIXELFORMATDESCRIPTOR PIXELFORMATDESCRIPTOR, *PPIXELFORMATDESC
 
 
 
-/* Make sure we include glext.h */
-#define GL_GLEXT_PROTOTYPES
 #include "GL/gl.h"
 #include "GL/glext.h"
 
