@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.22 2001/08/15 11:54:21 tsi Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.23 2001/10/28 03:32:35 tsi Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -3086,7 +3086,9 @@ _XlcGenericLoader(
     const char *name)
 {
     XLCd lcd;
+#ifdef STDCVT
     XLCdGenericPart *gen;
+#endif
 
     lcd = _XlcCreateLC(name, _XlcGenericMethods);
 

@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/sys.c,v 1.4 2001/12/12 00:53:08 dawes Exp $ */
+/* $XFree86: xc/programs/luit/sys.c,v 1.5 2001/12/19 15:40:08 tsi Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -303,13 +303,15 @@ fix_pty_perms(char *line)
 int
 allocatePty(int *pty_return, char **line_return)
 {
-    int rc;
-    char name[12], *temp_line, *line = NULL;
+    char name[12], *line = NULL;
     int pty = -1;
     char *name1 = "pqrstuvwxyzPQRST", *name2 = "0123456789abcdef";
     char *p1, *p2;
 
 #ifdef HAVE_GRANTPT
+    char *temp_line;
+    int rc;
+
     pty = open("/dev/ptmx", O_RDWR);
     if(pty < 0)
         goto bsd;
@@ -343,9 +345,9 @@ allocatePty(int *pty_return, char **line_return)
     *pty_return = pty;
     *line_return = line;
     return 0;
-#endif /* HAVE_GRANTPT */
 
   bsd:
+#endif /* HAVE_GRANTPT */
 
     strcpy(name, "/dev/pty??");
     for(p1 = name1; *p1; p1++) {
