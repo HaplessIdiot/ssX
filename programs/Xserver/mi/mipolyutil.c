@@ -50,12 +50,7 @@ SOFTWARE.
 #include "gc.h"
 #include "miscanfill.h"
 #include "mipoly.h"
-#include "misc.h"	/* INT_MAX */
-
-#undef MAXINT
-#define MAXINT INT_MAX
-#undef MININT
-#define MININT INT_MIN
+#include "misc.h"	/* MAXINT */
 
 /*
  *     fillUtils.c
