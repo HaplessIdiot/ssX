@@ -1,5 +1,4 @@
-/* $XConsortium: XKBsrv.h /main/16 1996/01/14 16:42:21 kaleb $ */
-/* $XFree86: xc/include/extensions/XKBsrv.h,v 3.2 1996/01/16 11:00:27 dawes Exp $ */
+/* $XConsortium: XKBsrv.h /main/17 1996/01/17 16:48:06 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,14 +1,16 @@
-XCOMM $XConsortium: Imakefile /main/10 1995/11/09 12:57:16 matt $
-XCOMM $XFree86: xc/config/util/Imakefile,v 3.6 1995/07/12 15:28:28 dawes Exp $
+XCOMM $XFree86: xc/config/util/Imakefile,v 3.7 1996/01/05 13:07:36 dawes Exp $
 #if UseCCMakeDepend
 MDEP_PROG = makedepend
 #endif
 #ifndef OS2Architecture
 GCCMDEP_PROG = gccmakedep
 #endif
-         PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib makestrs
+         PROGRAMS = xmkmf $(MDEP_PROG) $(GCCMDEP_PROG) mergelib \
+                    ProgramTargetName(makestrs)
           DEPLIBS =
+#ifndef Win32Architecture
   EXTRA_LIBRARIES =
+#endif
 
 all:: $(PROGRAMS)
 
@@ -18,7 +20,7 @@ GCCCMD = $(CC)
 GCCCMD = gcc
 #endif
 
-includes:: makestrs
+includes:: ProgramTargetName(makestrs)
 
 CppScriptTarget(xmkmf,xmkmf.cpp,-DCONFIGDIRSPEC='"'"-I$(CONFIGDIR)"'"',$(ICONFIGFILES))
 CppScriptTarget(makedepend,mdepend.cpp,-DPREPROC='"'"$(PREPROCESSCMD)"'"',$(ICONFIGFILES))

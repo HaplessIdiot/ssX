@@ -52,6 +52,10 @@ Beta test reports should be sent to <htmlurl name="report@XFree86.org"
 url="mailto:report@XFree86.org">.  Please do not send these reports to
 our usual support address.
 
+<url name="The XFree86 FAQ" url="http://www.xfree86.org/FAQ"> contains
+a section about the current beta version.  It includes a regularly
+updated list of known problems.
+
 <sect> New Features in 3.1.2B
 <sect1> General X server changes
 <p>
@@ -432,7 +436,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.14 1995/12/28 03:49:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.15 1995/12/31 12:02:13 dawes Exp $
 </verb>
 
 </article>

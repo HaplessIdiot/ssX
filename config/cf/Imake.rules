@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules /main/206 1995/12/14 14:57:37 matt $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.21 1996/01/06 05:20:36 dawes Exp $
+XCOMM rules:  $XConsortium: Imake.rules /main/208 1996/01/17 11:08:27 kaleb $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.22 1996/01/12 14:32:46 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -69,11 +69,13 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.21 1996/01/06 05:20:36 dawe
  * ManKeywordsTarget		(manpath)
  * InstallNamedNonExec		(srcname,dstname,dest)
  * InstallNonExecFile		(file,dest)
+ * InstallNonExecFileNoClobber	(file,dest)
  * InstallNonExec		(file,dest)
  * InstallProgramWithFlags	(program,dest,flags)
  * InstallProgram		(program,dest)
  * InstallScript		(program,dest)
  * InstallNamedProg		(srcname,dstname,dest)
+ * InstallNamedProgNoClobber	(srcname,dstname,dest)
  * MakeFlagsToShellFlags	(makeflags,shellcmd)
  * LinkFileList			(step,list,dir,sub)
  * InstallMultipleDestFlags	(step,list,dest,flags)
@@ -786,14 +788,30 @@ ServerTargetWithFlags(server,subdirs,objects,libs,syslibs,$(_NOOP_))
 #endif
 
 #ifndef InstallNamedTarget
-#define	InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
+#define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 step:: srcname								@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname
 #endif /* InstallNamedTarget */
 
+/*
+ * InstallNamedTargetNoClobber - Like InstallNamedTarget, but doesn't
+ * do the install if an installed version already exists.  Useful
+ * for files that might have local customizations that you don't
+ * want to clobber.  Config files are good candidates for this.
+ */
+#ifndef InstallNamedTargetNoClobber
+#define InstallNamedTargetNoClobber(step,srcname,flags,dest,dstname)	@@\
+step:: srcname								@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@if [ -f $(DESTDIR)dest/dstname ]; then \			@@\
+	 echo "Not overwriting existing" $(DESTDIR)dest/dstname; \	@@\
+	else set -x; \							@@\
+	 $(INSTALL) $(INSTALLFLAGS) flags srcname $(DESTDIR)dest/dstname; fi
+#endif /* InstallNamedTargetNoClobber */
+
 #ifndef InstallTarget
-#define	InstallTarget(step,file,flags,dest)				@@\
+#define InstallTarget(step,file,flags,dest)				@@\
 InstallNamedTarget(step,file,flags,dest,file)
 #endif /* InstallTarget */
 
@@ -973,9 +991,18 @@ InstallNamedTarget(install,srcname,$(INSTDATFLAGS),dest,dstname)
  * InstallNonExecFile - generate rules to install a data file
  */
 #ifndef InstallNonExecFile
-#define	InstallNonExecFile(file,dest)					@@\
+#define InstallNonExecFile(file,dest)					@@\
 InstallTarget(install,file,$(INSTDATFLAGS),dest)
 #endif /* InstallNonExecFile */
+
+
+/*
+ * InstallNonExecFileNoClobber - install a data file once
+ */
+#ifndef InstallNonExecFileNoClobber
+#define InstallNonExecFileNoClobber(file,dest)				@@\
+InstallNamedTargetNoClobber(install,file,$(INSTDATFLAGS),dest,file)
+#endif /* InstallNonExecFileNoClobber */
 
 
 /*
@@ -1034,9 +1061,19 @@ InstallNamedTarget(install,program.script,$(INSTBINFLAGS),dest,program)
  * InstallNamedProg - install a program with renaming and no stripping.
  */
 #ifndef InstallNamedProg
-#define	InstallNamedProg(srcname,dstname,dest)				@@\
+#define InstallNamedProg(srcname,dstname,dest)				@@\
 InstallNamedTarget(install,srcname,$(INSTBINFLAGS),dest,dstname)
 #endif /* InstallNamedProg */
+
+
+/*
+ * InstallNamedProgNoClobber - Like InstallNamedProg, but doesn't
+ * do the install if an installed version already exists.
+ */
+#ifndef InstallNamedProgNoClobber
+#define InstallNamedProgNoClobber(srcname,dstname,dest)			@@\
+InstallNamedTargetNoClobber(install,srcname,$(INSTBINFLAGS),dest,dstname)
+#endif /* InstallNamedProgNoClobber */
 
 
 /*

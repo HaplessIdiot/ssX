@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XConsortium: Project.tmpl /main/r61_main/5 1996/01/14 16:41:49 kaleb $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.24 1996/01/07 03:45:09 dawes Exp $
+XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.25 1996/01/16 15:00:01 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1128,28 +1128,23 @@ UnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC))
 
 
 /*
- * InstallAppDefaults - generate rules to install appliation default files 
- * if the InstallAppDefFiles configuration parameter is set.
+ * InstallAppDefaults - simple rules to install application default file
  */
 #ifndef InstallAppDefaults
-#if InstallAppDefFiles
-#define	InstallAppDefaults(class)					@@\
-InstallNamedTarget(install,class.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
-#else
-#define	InstallAppDefaults(class)
-#endif /* InstallAppDefFiles */
+#define InstallAppDefaults(class) InstallAppDefaultsLong(class,class)
 #endif /* InstallAppDefaults */
 
 /*
- * InstallAppDefaultsLong - generate rules to install appliation default files 
+ * InstallAppDefaultsLong - general rule to install application default file
  * if the InstallAppDefFiles configuration parameter is set.
  */
 #ifndef InstallAppDefaultsLong
 #if InstallAppDefFiles
-#define	InstallAppDefaultsLong(file,class)				@@\
+#define InstallAppDefaultsLong(file,class)				@@\
 InstallNamedTarget(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #else
-#define	InstallAppDefaultsLong(file,class)
+#define InstallAppDefaultsLong(file,class)				@@\
+InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #endif /* InstallAppDefFiles */
 #endif /* InstallAppDefaultsLong */
 
