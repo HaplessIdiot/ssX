@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.16 1999/01/14 13:05:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.17 1999/01/31 12:22:07 dawes Exp $ */
 
 /*
  *
@@ -828,7 +828,9 @@ vgaHWRestoreColormap(ScrnInfoPtr scrninfp, vgaRegPtr restore)
     vgaHWPtr hwp = VGAHWPTR(scrninfp);
     int i;
 
+#if 0
     hwp->enablePalette(hwp);
+#endif
 
     hwp->writeDacMask(hwp, 0xFF);
     hwp->writeDacWriteAddr(hwp, 0x00);
@@ -1033,7 +1035,9 @@ vgaHWSaveColormap(ScrnInfoPtr scrninfp, vgaRegPtr save)
     if (hwp->cmapSaved)
 	return;
 
+#if 0
     hwp->enablePalette(hwp);
+#endif
 
     hwp->writeDacMask(hwp, 0xFF);
     /*
@@ -1478,8 +1482,6 @@ vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     int i, index;
 
-    hwp->enablePalette(hwp);
-
     for (i = 0; i < numColors; i++) {
 	index = indices[i];
 	hwp->writeDacWriteAddr(hwp, index);
@@ -1492,6 +1494,7 @@ vgaHWLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 	DACDelay(hwp);
     }
 
+    /* This shouldn't be necessary, but we'll play safe. */
     hwp->disablePalette(hwp);
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.24 1999/01/26 05:53:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.25 1999/01/26 10:40:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -295,6 +295,8 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 	if (scrp->depth > -1) {
 	    if (scrp->depth == 1)
 		scrp->bitsPerPixel = 1;
+	    else if (scrp->depth <= 4)
+		scrp->bitsPerPixel = 4;
 	    else if (scrp->depth <= 8)
 		scrp->bitsPerPixel = 8;
 	    else if (scrp->depth <= 16)

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.7 1998/11/15 04:30:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.8 1998/12/06 06:08:14 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -32,6 +32,7 @@ in this Software without prior written authorization from The Open Group.
 #include <ctype.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
+#include <X11/Xfuncs.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/Atoms.h>
 #include <X11/Xmu/CharSet.h>

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86: xc/include/Xfuncs.h,v 3.2 1995/01/28 15:42:03 dawes Exp $ */
+/* $XFree86: xc/include/Xfuncs.h,v 3.3 1998/10/02 07:38:49 dawes Exp $ */
 
 #ifndef _XFUNCS_H_
 #define _XFUNCS_H_
@@ -89,5 +89,9 @@ int bcmp();
 #define memcmp(b1,b2,len) bcmp((char *)(b1),(char *)(b2),(int)(len))
 #endif /* SYSV else */
 #endif /* ! X_NOT_STDC_ENV else */
+
+#if defined(X_NOT_STDC_ENV) || (defined(sun) && !defined(SVR4))
+#define atexit(f) on_exit(f, 0)
+#endif
 
 #endif /* _XFUNCS_H_ */
