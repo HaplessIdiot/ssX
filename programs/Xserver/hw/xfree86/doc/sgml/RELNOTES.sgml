@@ -4,12 +4,12 @@
 
 <article>
 
-<title>Release Notes for XFree86&trade; &relvers;
+<title>Release Notes for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
 <date>3 March 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.117 2004/03/03 18:02:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.118 2004/06/05 01:34:39 dawes Exp $
 </ident>
 
 <abstract>

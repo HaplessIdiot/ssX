@@ -11,12 +11,12 @@
 
 <article>
 
-<title>README for XFree86&tm; &relvers;
+<title>README for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
 <date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.140 2004/02/24 03:41:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.141 2004/02/26 17:11:45 dawes Exp $
 </ident>
 
 <abstract>
@@ -86,7 +86,7 @@ the "vesa" driver.  The <htmlurl name="Releaes Notes" url="RELNOTES3.html">
 has a table showing the drivers provided with XFree86 &relvers;, and links
 to related documentation.
 
-XFree86&trade; is produced by The XFree86 Project, Inc through the work
+XFree86&reg; is produced by The XFree86 Project, Inc through the work
 of a group of volunteer independent developers.  The XFree86 Project is
 a non-commercial organisation and XFree86 would not exist without the
 invaluable development contributions of volunteers from around the world.

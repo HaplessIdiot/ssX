@@ -4,12 +4,12 @@
 
 <article>
 
-<title>Installation Details for XFree86&trade; &relvers;
+<title>Installation Details for XFree86&reg; &relvers;
 <author>The XFree86 Project, Inc
 <date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.17 2003/02/24 17:09:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.18 2004/02/24 03:41:39 dawes Exp $
 </ident>
 
 <abstract>
