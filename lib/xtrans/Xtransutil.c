@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.18 2001/07/23 13:15:43 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransutil.c,v 3.19 2001/10/28 03:32:49 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -321,7 +321,7 @@ TRANS(GetPeerNetworkId) (XtransConnInfo ciptr)
     case AF_INET:
     {
 	struct sockaddr_in *saddr = (struct sockaddr_in *) peer_addr;
-#ifdef XTHREADS
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
 	_Xgethostbynameparams hparams;
 #endif
 	struct hostent * volatile hostp = NULL;

@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.75 2001/10/28 03:34:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.76 2001/11/06 16:11:38 alanh Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -1096,7 +1096,9 @@ pointer client;
 	char hname[1024], *hnameptr;
 	struct hostent *host;
 	int len;
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
 	_Xgethostbynameparams hparams;
+#endif
 
 	gethostname(hname, 1024);
 	host = _XGethostbyname(hname, hparams);

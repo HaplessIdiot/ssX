@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.18 2001/08/27 17:41:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.19 2001/11/06 16:11:38 alanh Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -1363,7 +1363,9 @@ get_manager_by_name(
     int	    i)
 {
     struct hostent *hep;
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
     _Xgethostbynameparams hparams;
+#endif
 
     if (i == argc)
     {
@@ -1398,7 +1400,9 @@ get_fromaddr_by_name(
     int	    i)
 {
     struct hostent *hep;
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
     _Xgethostbynameparams hparams;
+#endif
 
     if (i == argc)
     {

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.50 2001/07/25 15:04:59 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.51 2001/10/28 03:32:49 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -807,7 +807,7 @@ TRANS(SocketINETCreateListener) (XtransConnInfo ciptr, char *port)
     int		namelen = sizeof(sockname);
     int		status;
     long	tmpport;
-#ifdef XTHREADS
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
     _Xgetservbynameparams sparams;
 #endif
     struct servent *servp;
@@ -1235,7 +1235,7 @@ TRANS(SocketINETConnect) (XtransConnInfo ciptr, char *host, char *port)
 #else
     int namelen = sizeof sockname;
 #endif
-#ifdef XTHREADS
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
     _Xgethostbynameparams hparams;
     _Xgetservbynameparams sparams;
 #endif
@@ -1478,7 +1478,7 @@ UnixHostReallyLocal (char *host)
 	 */
 	char specified_local_addr_list[10][4];
 	int scount, equiv, i, j;
-#ifdef XTHREADS
+#ifdef XTHREADS_NEEDS_BYNAMEPARAMS
 	_Xgethostbynameparams hparams;
 #endif
 	struct hostent *hostp;

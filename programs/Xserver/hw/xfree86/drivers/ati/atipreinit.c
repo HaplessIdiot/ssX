@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.49 2001/08/15 11:54:26 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.50 2001/10/28 03:33:24 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -442,7 +442,7 @@ ATIPreInit
     }
 
     /* Register resources */
-    pEntity = xf86GetEntityInfo(pScreenInfo->entityList[0]);
+    pEntity = xf86GetEntityInfo(pATI->iEntity);
     pGDev = pEntity->device;
     pResources = pEntity->resources;
     xfree(pEntity);
@@ -1328,6 +1328,13 @@ ATIPreInit
 
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
         "%s adapter detected.\n", ATIAdapterNames[pATI->Adapter]);
+
+#if defined(i386) || defined(__i386) || defined(__i386__)
+    if (pATI->Chip >= ATI_CHIP_264GT)
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+            "For more information on using the multimedia capabilities of this"
+            " adapter,\n please see http://www.linuxvideo.org/gatos.\n");
+#endif
 
     if ((pATI->DAC & ~0x0FU) == ATI_DAC_INTERNAL)
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,

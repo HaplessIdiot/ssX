@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/include/Xos_r.h,v 1.12 2001/08/22 22:52:15 dawes Exp $ */
+/* $XFree86: xc/include/Xos_r.h,v 1.13 2001/10/28 03:32:26 tsi Exp $ */
 
 /* 
  * Various and sundry Thread-Safe functions used by X11, Motif, and CDE.
@@ -394,6 +394,7 @@ typedef int _Xgetpwret;
  *				 _Xgetservbynameparams);
  */
 
+#undef XTHREADS_NEEDS_BYNAMEPARAMS
 #if defined(X_INCLUDE_NETDB_H) && !defined(_XOS_INCLUDED_NETDB_H) \
     && !defined(WIN32)
 # include <netdb.h>
@@ -432,6 +433,9 @@ typedef struct {
   char		 s_proto[255];
   struct servent *sptr;
 } _Xgetservbynameparams;
+
+# define XTHREADS_NEEDS_BYNAMEPARAMS
+
 # define _Xg_copyHostent(hp) \
    (memcpy(&(hp).hent, (hp).hptr, sizeof(struct hostent)), \
     strcpy((hp).h_name, (hp).hptr->h_name), \
@@ -477,6 +481,8 @@ typedef struct {
 # ifdef _POSIX_THREAD_SAFE_FUNCTIONS
 #  define X_POSIX_THREAD_SAFE_FUNCTIONS 1
 # endif
+
+# define XTHREADS_NEEDS_BYNAMEPARAMS
 
 # ifndef X_POSIX_THREAD_SAFE_FUNCTIONS
 typedef struct {
