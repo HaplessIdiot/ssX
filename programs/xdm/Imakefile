@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/80 1996/01/14 18:35:47 kaleb $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.12 1996/08/20 12:33:02 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.13 1996/09/01 04:49:49 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -194,6 +194,11 @@ NormalProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter,NullParameter)
 NormalProgramTarget(sessreg,$(OBJS4),NullParameter,NullParameter,NullParameter)
 InstallProgram(sessreg,$(BINDIR))
 InstallManPage(sessreg,$(MANDIR))
+
+#if defined(FreeBSDArchitecture) && (OSMajorVersion < 2)
+SpecialCObjectRule(daemon,$(ICONFIGFILES),-UCSRG_BASED)
+#endif
+
 #if BuildChooser
 SpecialCObjectRule(chooser, $(ICONFIGFILES), $(SOCK_DEFINES))
 NormalProgramTarget(chooser,$(OBJS3),$(DEPLIBS3),$(LIBS3),NullParameter)

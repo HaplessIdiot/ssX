@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.41 1996/08/13 11:37:00 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.42 1996/08/20 12:33:50 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -1195,13 +1195,13 @@ char **argv;
 #ifdef ECHOCTL
 	d_tio.c_lflag |= ECHOCTL|IEXTEN;
 #endif
+#ifndef USE_POSIX_TERMIOS
 #ifdef NTTYDISC
         d_tio.c_line = NTTYDISC;
 #else
-#ifndef USE_POSIX_TERMIOS
 	d_tio.c_line = 0;
-#endif /* USE_POSIX_TERMIOS */
 #endif	
+#endif /* USE_POSIX_TERMIOS */
 #ifdef __sgi
         d_tio.c_cflag &= ~(HUPCL|PARENB);
         d_tio.c_iflag |= BRKINT|ISTRIP|IGNPAR;
