@@ -7,7 +7,7 @@
  * that use X include files to avoid symbol collisions.
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.7 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzCocoa.m,v 1.8 2001/09/23 23:02:38 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -43,7 +43,8 @@ void QuartzReadPreferences(void)
 }
 
 // Write text to the Mac OS X pasteboard.
-void QuartzWriteCocoaPasteboard(char *text)
+void QuartzWriteCocoaPasteboard(
+    char *text)
 {
     NSPasteboard *pasteboard;
     NSArray *pasteboardTypes;
@@ -87,4 +88,22 @@ char *QuartzReadCocoaPasteboard(void)
     }
 
     return text;
+}
+
+// Return whether the screen should use a QuickDraw cursor
+int QuartzFSUseQDCursor(
+    int depth)  // screen depth
+{
+    switch ([Preferences useQDCursor]) {
+        case qdCursor_Always:
+            return TRUE;
+        case qdCursor_Never:
+            return FALSE;
+        case qdCursor_Not8Bit:
+            if (depth > 8)
+                return TRUE;
+            else
+                return FALSE;
+    }
+    return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.7 2001/07/15 01:57:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.8 2001/09/23 23:02:38 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -43,6 +43,7 @@
 + (void)setDockSwitch:(BOOL)newDockSwitch;
 + (void)setFakeButtons:(BOOL)newFakeButtons;
 + (void)setMouseAccelChange:(BOOL)newMouseAccelChange;
++ (void)setUseQDCursor:(int)newUseQDCursor;
 + (void)setRootless:(BOOL)newRootless;
 + (void)setModeWindow:(BOOL)newModeWindow;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
@@ -59,6 +60,7 @@
 + (BOOL)dockSwitch;
 + (BOOL)fakeButtons;
 + (BOOL)mouseAccelChange;
++ (int)useQDCursor;
 + (BOOL)rootless;
 + (BOOL)modeWindow;
 + (BOOL)startupHelp;
@@ -66,3 +68,10 @@
 + (BOOL)xinerama;
 
 @end
+
+// Possible settings for useQDCursor
+enum {
+    qdCursor_Never,	// never use QuickDraw cursor
+    qdCursor_Not8Bit,	// don't try to use QuickDraw with 8-bit depth
+    qdCursor_Always	// always try to use QuickDraw cursor
+};

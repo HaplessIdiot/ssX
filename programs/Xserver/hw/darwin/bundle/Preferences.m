@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.10 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.11 2001/09/23 23:02:38 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzCommon.h"
@@ -27,6 +27,7 @@
                     @"SwitchModifiers", @"NO", @"UseSystemBeep", 
                     @"NO", @"DockSwitch", 
                     @"NO", @"AllowMouseAccelChange",
+                    [NSNumber numberWithInt:qdCursor_Not8Bit], @"UseQDCursor",
                     @"YES", @"Xinerama", nil];
 
     [super initialize];
@@ -231,6 +232,12 @@
     quartzMouseAccelChange = newMouseAccelChange;
 }
 
++ (void)setUseQDCursor:(int)newUseQDCursor
+{
+    [[NSUserDefaults standardUserDefaults] setInteger:newUseQDCursor
+            forKey:@"UseQDCursor"];
+}
+
 + (void)setModeWindow:(BOOL)newModeWindow
 {
     [[NSUserDefaults standardUserDefaults] setBool:newModeWindow
@@ -318,6 +325,12 @@
 {
     return [[NSUserDefaults standardUserDefaults]
                 boolForKey:@"AllowMouseAccelChange"];
+}
+
++ (int)useQDCursor
+{
+    return [[NSUserDefaults standardUserDefaults]
+                integerForKey:@"UseQDCursor"];
 }
 
 + (BOOL)rootless
