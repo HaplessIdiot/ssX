@@ -212,6 +212,19 @@ DarwinEQEnqueue(
 }
 
 
+/*
+ * DarwinEQPointerPost
+ *  Post a pointer event. Used by the mipointer.c routines.
+ */
+void
+DarwinEQPointerPost(
+    xEvent *e)
+{
+    (*darwinEventQueue.pPtr->processInputProc)
+            (e, (DeviceIntPtr)darwinEventQueue.pPtr, 1);
+}
+
+
 void
 DarwinEQSwitchScreen(
     ScreenPtr   pScreen,
@@ -288,6 +301,9 @@ void ProcessInputEvents(void)
 	    	break;
 
 	    case ButtonPress:
+                miPointerAbsoluteCursor(xe.u.keyButtonPointer.rootX,
+                                        xe.u.keyButtonPointer.rootY,
+                                        xe.u.keyButtonPointer.time);
                 if (darwinFakeButtons && xe.u.u.detail == 1) {
                     // Mimic multi-button mouse with modifier-clicks
                     // If both sets of modifiers are pressed,
@@ -314,6 +330,9 @@ void ProcessInputEvents(void)
                 break;
 
             case ButtonRelease:
+                miPointerAbsoluteCursor(xe.u.keyButtonPointer.rootX,
+                                        xe.u.keyButtonPointer.rootY,
+                                        xe.u.keyButtonPointer.time);
                 if (darwinFakeButtons && xe.u.u.detail == 1 &&
                     darwinFakeMouseButtonDown)
                 {
@@ -336,8 +355,9 @@ void ProcessInputEvents(void)
                 break;
 
             case MotionNotify:
-	    	(*darwinEventQueue.pPtr->processInputProc)
-                        (&xe, (DeviceIntPtr)darwinEventQueue.pPtr, 1);
+                miPointerAbsoluteCursor(xe.u.keyButtonPointer.rootX,
+                                        xe.u.keyButtonPointer.rootY,
+                                        xe.u.keyButtonPointer.time);
 	    	break;
 
             case kXDarwinUpdateModifiers:

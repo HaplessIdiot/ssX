@@ -23,7 +23,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.11 2002/03/28 02:21:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.12 2002/10/12 00:32:44 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -61,6 +61,7 @@ void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
 // From darwinEvents.c
 Bool DarwinEQInit(DevicePtr pKbd, DevicePtr pPtr);
 void DarwinEQEnqueue(const xEvent *e);
+void DarwinEQPointerPost(xEvent *e);
 void DarwinEQSwitchScreen(ScreenPtr pScreen, Bool fromDIX);
 
 // From darwinKeyboard.c
