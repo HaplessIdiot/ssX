@@ -317,6 +317,7 @@ ATICloseScreen
 
     xfree(pATI->pShadow);
     pATI->pShadow = NULL;
+    pScreenInfo->pScreen = NULL;
 
     return Closed;
 }
