@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.52 2002/10/08 23:31:39 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.53 2002/10/15 01:54:36 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -134,6 +134,7 @@ en_GB:						en_GB.ISO8859-1
 en_GB.88591:					en_GB.ISO8859-1
 en_GB.88591.en:					en_GB.ISO8859-1
 en_GB.iso88591:					en_GB.ISO8859-1
+en_GB.iso885915:				en_GB.ISO8859-15
 en_GB.ISO-8859-1:				en_GB.ISO8859-1
 en_GB.ISO_8859-1:				en_GB.ISO8859-1
 en_UK:						en_GB.ISO8859-1
@@ -141,6 +142,7 @@ ENG_GB.8859:					en_GB.ISO8859-1
 ENG_GB.8859.in:					en_GB.ISO8859-1
 en_IE:						en_IE.ISO8859-1
 en_IE.iso88591:					en_IE.ISO8859-1
+en_IE.iso885915:				en_IE.ISO8859-15
 en_IE@euro:					en_IE.ISO8859-15
 en_NZ:						en_NZ.ISO8859-1
 en_NZ.iso88591:					en_NZ.ISO8859-1
@@ -148,6 +150,7 @@ en_US:						en_US.ISO8859-1
 en_US.88591:					en_US.ISO8859-1
 en_US.88591.en:					en_US.ISO8859-1
 en_US.iso88591:					en_US.ISO8859-1
+en_US.iso885915:				en_US.ISO8859-15
 en_US.ISO-8859-1:				en_US.ISO8859-1
 en_US.ISO_8859-1:				en_US.ISO8859-1
 #if defined(SVR4) && defined(sun)
