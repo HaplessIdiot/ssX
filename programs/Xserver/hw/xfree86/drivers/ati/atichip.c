@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.32 2003/02/08 23:24:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.c,v 1.33 2003/02/19 15:07:46 tsi Exp $ */
 /*
  * Copyright 1997 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -87,7 +87,9 @@ const char *ATIChipNames[] =
     "ATI Radeon",
     "ATI Radeon VE",
     "ATI Radeon Mobility M6",
+    "ATI Radeon IGP320",
     "ATI Radeon Mobility M7",
+    "ATI Radeon IGP330/340/350",
     "ATI Radeon 8500",
     "ATI Radeon 7500",
     "ATI Radeon 9000",
@@ -629,6 +631,14 @@ ATIChipID
         case NewChipID('L', 'Z'):
             return ATI_CHIP_RADEONMOBILITY6;
 
+        case NewChipID('A', '6'):
+        case NewChipID('C', '6'):
+             return ATI_CHIP_RS100;
+
+        case NewChipID('A', '7'):
+        case NewChipID('C', '7'):
+             return ATI_CHIP_RS200;
+
         case NewChipID('L', 'W'):
         case NewChipID('L', 'X'):
             return ATI_CHIP_RADEONMOBILITY7;
@@ -664,6 +674,18 @@ ATIChipID
         case NewChipID('L', 'f'):
         case NewChipID('L', 'g'):
             return ATI_CHIP_RADEONMOBILITY9;
+
+        case NewChipID('Y', '\''):
+        case NewChipID('Y', 'a'):
+        case NewChipID('I', 'b'):
+        case NewChipID('I', 'c'):
+            return ATI_CHIP_RV280;
+
+        case NewChipID('Y', 'h'):
+        case NewChipID('Y', 'i'):
+        case NewChipID('Y', 'j'):
+        case NewChipID('Y', 'k'):
+            return ATI_CHIP_RADEONMOBILITY9PLUS;
 
         case NewChipID('A', 'D'):
         case NewChipID('A', 'E'):

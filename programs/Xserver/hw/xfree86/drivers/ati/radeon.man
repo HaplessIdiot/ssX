@@ -28,14 +28,23 @@ Radeon 7200
 .B RV100
 Radeon 7000(VE), M6
 .TP 12
+.B RS100
+Radeon IGP320(M)
+.TP 12
 .B RV200
 Radeon 7500, M7
+.TP 12
+.B RS200
+Radeon IGP330(M)/IGP340(M)
 .TP 12
 .B R200
 Radeon 8500, 9100, FireGL 8800/8700
 .TP 12
 .B RV250
 Radeon 9000, M9
+.TP 12
+.B R280
+Radeon 9200
 .TP 12
 .B R300
 Radeon 9700PRO/9700/9500PRO/9500, FireGL X1/Z1
@@ -86,7 +95,7 @@ The default is
 This overrides the default pixel value for the YUV video overlay key.
 .br
 The default value is
-.B undefined.
+.B 0x1E.
 .TP 
 .BI "Option \*qUseFBDev\*q \*q" boolean \*q
 Enable or disable use of an OS\-specific framebuffer device interface
@@ -130,33 +139,25 @@ Force to use the modes queried from the connected monitor.
 The default is
 .B off.
 .TP 
-.BI "Option \*qCloneDisplay\*q \*q" integer \*q
+.BI "Option \*qMonitorLayout\*q \*q" string \*q
 .br 
-This option is only used for dual\-head cards with only single 
-screen section specified in the configuration file.
-
-0      \-\- disable
+This option is used to overwrite the detected monitor types.
+This is only required when driver makes a false detection.
+The possible monitor types are:
 .br 
-1      \-\- auto\-detect (default)
+NONE   \-\- Not connected
 .br 
-2      \-\- force on
+CRT    \-\- Analog CRT monitor
 .br 
-3      \-\- auto\-detect + 2nd head overlay
+TMDS   \-\- Desktop flat panel
 .br 
-4      \-\- force on + 2nd head overlay
-.br 
-others \-\- auto\-detect
-
-.B disable 
-means only one CRTC is used for both heads.
-.B auto\-detect 
-means the secondary head will be driven by CRTC2 
-if a monitor is detected there.
-.B force on
-means the secondary head will be driven by CRTC2
-even no monitor is detected there.
-.B 2nd-head overlay 
-means the only hardware overlay will be placed to the secondary head.
+LVDS   \-\- Lapto flat panel
+.br
+This option can be used in following format:
+.br
+Option "MonitorLayout" "[type on primary], [type on secondary]"
+.br
+For example, Option "MonitorLayout" "CRT, TMDS"
 
 Primary/Secondary head for dual\-head cards:
 .br 
@@ -177,17 +178,26 @@ VGA port on DVI+VGA cards
 VGA port on laptops
 .br 
 External TMDS port on DVI+DVI cards
- 
+
+The default value is
+.B undefined.
 .TP 
 .BI "Option \*qCloneMode\*q \*q" "string" \*q
 Set the first mode for the secondary head.
 It can be different from the modes used for the primary head. If you don't
 have this line while clone is on, the modes specified for the primary head
 will be used for the secondary head.
+.br
+For example, Option "CloneMode" "1024x768"
+.br
+The default value is
+.B undefined.
 .TP 
 .BI "Option \*qCloneHSync\*q \*q" "string" \*q
 Set the horizontal sync range for the secondary  monitor. 
 It is not required if a DDC\-capable monitor is connected.
+.br
+For example, Option "CloneHSync" "30.0-86.0"
 .br
 The default value is
 .B undefined.
@@ -196,8 +206,23 @@ The default value is
 Set the vertical refresh range for the secondary monitor. 
 It is not required if a DDC\-capable monitor is connected.
 .br
+For example, Option "CloneVRefresh" "50.0-120.0"
+.br
 The default value is
 .B undefined.
+.TP 
+.BI "Option \*qOverlayOnCRTC2\*q \*q" boolean \*q
+Force hardware overlay to clone head.
+.br
+The default value is
+.B off.
+.TP 
+.BI "Option \*qIgnoreEDID\*q \*q" boolean \*q
+Do not use EDID data for mode validation, but DDC is still used
+for monitor detection. This is different from NoDDC option.  
+.br
+The default value is
+.B off.
 .TP 
 .BI "Option \*qPanelOff\*q \*q" boolean \*q
 Disable panel output. Only used when clone is enabled.

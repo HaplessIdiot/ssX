@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.24 2003/02/07 20:41:15 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.25 2003/04/03 16:16:01 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -87,6 +87,10 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_LX, "ATI Mobility FireGL 7800 M7 LX (AGP)" },
     { PCI_CHIP_RADEON_LY, "ATI Radeon Mobility M6 LY (AGP)" },
     { PCI_CHIP_RADEON_LZ, "ATI Radeon Mobility M6 LZ (AGP)" },
+    { PCI_CHIP_RS100_4136, "ATI Radeon IGP320 (A3) 4136" },
+    { PCI_CHIP_RS100_4336, "ATI Radeon IGP320M (U1) 4336" },
+    { PCI_CHIP_RS200_4137, "ATI Radeon IGP330/340/350 (A4) 4137" },
+    { PCI_CHIP_RS200_4337, "ATI Radeon IGP330M/340M/350M (U2) 4337" },
     { PCI_CHIP_R200_QH, "ATI FireGL 8700/8800 QH (AGP)" },
     { PCI_CHIP_R200_QI, "ATI Radeon 8500 QI (AGP)" },
     { PCI_CHIP_R200_QJ, "ATI Radeon 8500 QJ (AGP)" },
@@ -111,6 +115,14 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RV250_Le, "ATI Radeon Mobility M9 Le (AGP)" },
     { PCI_CHIP_RV250_Lf, "ATI Radeon Mobility M9 Lf (AGP)" },
     { PCI_CHIP_RV250_Lg, "ATI Radeon Mobility M9 Lg (AGP)" },
+    { PCI_CHIP_RV280_5960, "ATI Radeon 9200 5960 (AGP)" },
+    { PCI_CHIP_RV280_5961, "ATI Radeon 9200 5961 (AGP)" },
+    { PCI_CHIP_RV280_5962, "ATI Radeon 9200 5962 (AGP)" },
+    { PCI_CHIP_RV280_5963, "ATI Radeon 9200 5963 (AGP)" },
+    { PCI_CHIP_RV280_5968, "ATI Radeon M9+ 5968 (AGP)" },
+    { PCI_CHIP_RV280_5969, "ATI Radeon M9+ 5969 (AGP)" },
+    { PCI_CHIP_RV280_596A, "ATI Radeon M9+ 596A (AGP)" },
+    { PCI_CHIP_RV280_596B, "ATI Radeon M9+ 596B (AGP)" },
     { PCI_CHIP_R300_AD, "ATI Radeon 9500 AD (AGP)" },
     { PCI_CHIP_R300_AE, "ATI Radeon 9500 AE (AGP)" },
     { PCI_CHIP_R300_AF, "ATI Radeon 9500 AF (AGP)" },
@@ -133,6 +145,10 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RADEON_LX, PCI_CHIP_RADEON_LX, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_LY, PCI_CHIP_RADEON_LY, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_LZ, PCI_CHIP_RADEON_LZ, RES_SHARED_VGA },
+    { PCI_CHIP_RS100_4136, PCI_CHIP_RS100_4136, RES_SHARED_VGA },
+    { PCI_CHIP_RS100_4336, PCI_CHIP_RS100_4336, RES_SHARED_VGA },
+    { PCI_CHIP_RS200_4137, PCI_CHIP_RS200_4137, RES_SHARED_VGA },
+    { PCI_CHIP_RS200_4337, PCI_CHIP_RS200_4337, RES_SHARED_VGA },
     { PCI_CHIP_R200_QH, PCI_CHIP_R200_QH, RES_SHARED_VGA },
     { PCI_CHIP_R200_QI, PCI_CHIP_R200_QI, RES_SHARED_VGA },
     { PCI_CHIP_R200_QJ, PCI_CHIP_R200_QJ, RES_SHARED_VGA },
@@ -157,6 +173,14 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RV250_Le, PCI_CHIP_RV250_Le, RES_SHARED_VGA },
     { PCI_CHIP_RV250_Lf, PCI_CHIP_RV250_Lf, RES_SHARED_VGA },
     { PCI_CHIP_RV250_Lg, PCI_CHIP_RV250_Lg, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5960, PCI_CHIP_RV280_5960, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5961, PCI_CHIP_RV280_5961, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5962, PCI_CHIP_RV280_5962, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5963, PCI_CHIP_RV280_5963, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5968, PCI_CHIP_RV280_5968, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_5969, PCI_CHIP_RV280_5969, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_596A, PCI_CHIP_RV280_596A, RES_SHARED_VGA },
+    { PCI_CHIP_RV280_596B, PCI_CHIP_RV280_596A, RES_SHARED_VGA },
     { PCI_CHIP_R300_AD, PCI_CHIP_R300_AD, RES_SHARED_VGA },
     { PCI_CHIP_R300_AE, PCI_CHIP_R300_AE, RES_SHARED_VGA },
     { PCI_CHIP_R300_AF, PCI_CHIP_R300_AF, RES_SHARED_VGA },
@@ -252,7 +276,7 @@ RADEONProbe(DriverPtr drv, int flags)
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr    pScrn = NULL;
 	    EntityInfoPtr  pEnt;
-
+	    pEnt = xf86GetEntityInfo(usedChips[i]);
 	    if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
 					     RADEONPciChipsets, 0, 0, 0,
 					     0, 0))) {
@@ -285,46 +309,37 @@ RADEONProbe(DriverPtr drv, int flags)
 
 	    pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	    /* All Radeon chips except the original ones support
-	     * Dual-Head, mark the entity as sharable.
-	     */
-	    if (pEnt->chipset != PCI_CHIP_RADEON_QD &&
-		pEnt->chipset != PCI_CHIP_RADEON_QE &&
-		pEnt->chipset != PCI_CHIP_RADEON_QF &&
-		pEnt->chipset != PCI_CHIP_RADEON_QG) {
-		static int  instance = 0;
+            /* create a RADEONEntity for all chips, even with 
+               old single head Radeon, need to use pRADEONEnt 
+               for new monitor detection routines
+            */   
+            {
 		DevUnion   *pPriv;
+		RADEONEntPtr pRADEONEnt;
 
 		xf86SetEntitySharable(usedChips[i]);
-		xf86SetEntityInstanceForScreen(pScrn, pScrn->entityList[0],
-					       instance);
 
-		if (gRADEONEntityIndex < 0) {
+		if (gRADEONEntityIndex == -1)
 		    gRADEONEntityIndex = xf86AllocateEntityPrivateIndex();
-		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
-						 gRADEONEntityIndex);
 
-		    if (!pPriv->ptr) {
-			RADEONEntPtr pRADEONEnt;
+		pPriv = xf86GetEntityPrivate(pEnt->index,
+					     gRADEONEntityIndex);
 
-			pPriv->ptr = xnfcalloc(sizeof(RADEONEntRec), 1);
-			pRADEONEnt = pPriv->ptr;
-			pRADEONEnt->IsDRIEnabled = FALSE;
-			pRADEONEnt->BypassSecondary = FALSE;
-			pRADEONEnt->HasSecondary = FALSE;
-			pRADEONEnt->IsSecondaryRestored = FALSE;
-		    }
-		}
-		instance++;
-		if (instance == 2) {
-		    RADEONEntPtr  pRADEONEnt;
+		if (!pPriv->ptr) {
+		    int j;
+		    int instance = xf86GetNumEntityInstances(pEnt->index);
 
-		    pPriv = xf86GetEntityPrivate(pScrn->entityList[0],
-						 gRADEONEntityIndex);
-		    pRADEONEnt = pPriv->ptr;		
+		    for (j = 0; j < instance; j++)
+			xf86SetEntityInstanceForScreen(pScrn, pEnt->index, j);
+
+		    pPriv->ptr = xnfcalloc(sizeof(RADEONEntRec), 1);
+		    pRADEONEnt = pPriv->ptr;
+		    pRADEONEnt->HasSecondary = FALSE;
+		    pRADEONEnt->IsSecondaryRestored = FALSE;
+		} else {
+		    pRADEONEnt = pPriv->ptr;
 		    pRADEONEnt->HasSecondary = TRUE;
 		}
-
 	    }
 	    xfree(pEnt);
 	}
