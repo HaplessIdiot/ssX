@@ -129,13 +129,6 @@ static GLboolean check_##NM( GLcontext *ctx, int idx )	\
 }
 
 
-static GLboolean check_firsttime( GLcontext *ctx, int idx )	
-{
-   static int firsttime = 1;
-   int i = firsttime;
-   firsttime = 0;
-   return i;
-}
 
 CHECK( always, GL_TRUE )
 CHECK( tex_any, ctx->Texture._ReallyEnabled )
@@ -246,7 +239,7 @@ void r200InitState( r200ContextPtr rmesa )
    ALLOC_STATE( vap, always, VAP_STATE_SIZE, "VAP/vap", 0 );
    ALLOC_STATE( vte, always, VTE_STATE_SIZE, "VTE/vte", 0 );
    ALLOC_STATE( msc, always, MSC_STATE_SIZE, "MSC/misc", 0 );
-   ALLOC_STATE( cst, firsttime, CST_STATE_SIZE, "CST/constant", 0 );
+   ALLOC_STATE( cst, always, CST_STATE_SIZE, "CST/constant", 0 );
    ALLOC_STATE( zbs, always, ZBS_STATE_SIZE, "ZBS/zbias", 0 );
    ALLOC_STATE( tam, tex_any, TAM_STATE_SIZE, "TAM/tam", 0 );
    ALLOC_STATE( tf, tex_any, TF_STATE_SIZE, "TF/tfactor", 0 );

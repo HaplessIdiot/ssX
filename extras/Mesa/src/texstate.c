@@ -380,6 +380,7 @@ _mesa_TexEnvfv( GLenum target, GLenum pname, const GLfloat *param )
 		  return;
 	       FLUSH_VERTICES(ctx, _NEW_TEXTURE);
 	       texUnit->CombineOperandRGB[2] = operand;
+	       break;
 	    default:
                TE_ERROR(GL_INVALID_ENUM, "glTexEnv(param=%s)", operand);
 	       return;

@@ -56,8 +56,8 @@ static void TAG(ffb_vb_points)(GLcontext *ctx, GLuint start, GLuint count, GLuin
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_POINTS);
 	if (ctx->_TriangleCaps & DD_POINT_SMOOTH) {
@@ -90,8 +90,8 @@ static void TAG(ffb_vb_lines)(GLcontext *ctx, GLuint start, GLuint count, GLuint
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_LINES);
 	for (i = start + 1; i < count; i += 2) {
@@ -123,8 +123,8 @@ static void TAG(ffb_vb_line_loop)(GLcontext *ctx, GLuint start, GLuint count, GL
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_LINE_LOOP);
 	if ((flags & PRIM_BEGIN) != 0) {
@@ -185,8 +185,8 @@ static void TAG(ffb_vb_line_strip)(GLcontext *ctx, GLuint start, GLuint count, G
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_LINE_STRIP);
 	FFBFifo(fmesa, (1 + FFB_PRIM_COLOR_COST +
@@ -278,8 +278,8 @@ static void TAG(ffb_vb_triangles)(GLcontext *ctx, GLuint start, GLuint count, GL
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_TRIANGLES);
 	for (i = start + 2; i < count; i += 3) {
@@ -321,8 +321,8 @@ static void TAG(ffb_vb_tri_strip)(GLcontext *ctx, GLuint start, GLuint count, GL
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_TRIANGLE_STRIP);
 	if ((flags & PRIM_PARITY) != 0)
@@ -394,8 +394,8 @@ static void TAG(ffb_vb_tri_fan)(GLcontext *ctx, GLuint start, GLuint count, GLui
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_TRIANGLE_FAN);
 
@@ -464,8 +464,8 @@ static void TAG(ffb_vb_poly)(GLcontext *ctx, GLuint start, GLuint count, GLuint 
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_POLYGON);
 
@@ -508,8 +508,8 @@ static void TAG(ffb_vb_quads)(GLcontext *ctx, GLuint start, GLuint count, GLuint
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_QUADS);
 
@@ -557,8 +557,8 @@ static void TAG(ffb_vb_quad_strip)(GLcontext *ctx, GLuint start, GLuint count, G
 	IMPL_LOCAL_VARS;
 
 #ifdef FFB_RENDER_TRACE
-	fprintf(stderr, __FUNCTION__ ": start(%d) count(%d) flags(%x)\n",
-		start, count, flags);
+	fprintf(stderr, "%s: start(%d) count(%d) flags(%x)\n",
+		__FUNCTION__, start, count, flags);
 #endif
 	ffbRenderPrimitive(ctx, GL_QUAD_STRIP);
 
