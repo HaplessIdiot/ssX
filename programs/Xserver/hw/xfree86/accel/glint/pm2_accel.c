@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_accel.c,v 1.3 1998/03/27 23:23:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/pm2_accel.c,v 1.4 1998/04/05 00:45:49 robin Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -45,7 +45,7 @@
 
 #include <float.h>
 
-#if DEBUG
+#if DEBUG && !defined(XFree86LOADER)
 #include <stdio.h>
 #endif
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.25 1997/12/28 21:28:34 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.26 1998/01/24 16:58:26 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -26,30 +26,15 @@
  */
 /* $XConsortium: et4_driver.c /main/27 1996/10/28 04:48:15 kaleb $ */
 
-#include "X.h"
-#include "input.h"
-#include "screenint.h"
-#include "dix.h"
-
-#include "compiler.h"
-
 #include "xf86.h"
 #include "xf86Version.h"
-#include "xf86Procs.h"
 #include "xf86Priv.h"
 #include "xf86_ansic.h"
-#include "xf86_HWlib.h"
-#include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
-#include "vga.h"
 #include "vgaPCI.h"
 
 #ifdef XFreeXDGA
-#include "X.h"
-#include "Xproto.h"
-#include "scrnintstr.h"
-#include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
 #endif
@@ -183,7 +168,6 @@ static SymTabRec chipsets[] = {
   { TYPE_ET4000W32Pd,	"ET4000W32p_rev_d" },
   { TYPE_ET6000,	"ET6000" },
   { TYPE_ET6100,	"ET6100" },
-  { TYPE_ET6300,	"ET6300" },
   { -1,			"" },
 };
 
@@ -351,7 +335,6 @@ TsengFindBusType()
         break;
     case TYPE_ET6000:
     case TYPE_ET6100:
-    case TYPE_ET6300:
         Tseng_bus = BUS_PCI;
         Tseng_MemBase_mask = 0xFF000000;
         break;
@@ -448,7 +431,6 @@ ET4000LinMem(Bool autodetect)
         break;
       case TYPE_ET6000:
       case TYPE_ET6100:
-      case TYPE_ET6300:
         if (tseng_pcr && autodetect) /* don't trust PCI when not autodetecting */
           vga256InfoRec.MemBase = tseng_pcr->_base0;
         else if (inb(ET6Kbase+0x13) != 0)
@@ -885,11 +867,6 @@ ET4000Probe()
                         else
                           et4000_type = TYPE_ET6100;
                         break;
-		  et4000_type = TYPE_ET6000;
-		  break;
-                      case PCI_CHIP_ET6300:
-                        et4000_type = TYPE_ET6300;
-                        break;
 	      case PCI_CHIP_ET4000_W32P_A:
 		  et4000_type = TYPE_ET4000W32Pa;
 		  break;
@@ -1072,7 +1049,7 @@ ET4000Probe()
     if (Is_ET6K)
     {
         /* upper 8kb used for externally mapped and memory mapped registers */
-        TSENG_MEMLIMIT(4096-8, "in linear + accelerated mode on ET6000/6100/6300");
+        TSENG_MEMLIMIT(4096-8, "in linear + accelerated mode on ET6000/6100");
     }
   }
 
@@ -1520,7 +1497,7 @@ ET4000Restore(restore)
     outb(0x3c9,restore->gendac.PLL_f2_N);
     outb(0x3c9,restore->gendac.PLL_f2_M);
     outb(0x3c8,restore->gendac.PLL_w_idx);
-    xf86usleep(500);
+    usleep(500);
     inb(0x3c7); /* reset sequence */
     inb(0x3c8); /* loop to Clock Select Register */
     inb(0x3c8);
@@ -1909,7 +1886,7 @@ ET4000Init(mode)
 
        if (mode->Flags & V_PIXMUX)
        {
-         commonCalcClock(mode->SynthClock,1,1,31,2,3,100000,vga256InfoRec.dacSpeeds[0]*2+1, 
+         commonCalcClock(mode->SynthClock/2,1,1,31,2,3,100000,vga256InfoRec.dacSpeeds[0]*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
        }
        else
@@ -2001,7 +1978,7 @@ ET4000Init(mode)
        }
        else
        {
-         /* not used right now (MClk ionly adjusted when explicitly set by "set_mclk" option) */
+         /* not used right now (MClk is only adjusted when explicitly set by "set_mclk" option) */
          new->MClkM = initialET6KMclkM;
          new->MClkN = initialET6KMclkN;
        }
@@ -2225,21 +2202,32 @@ int flag;
 #define Tseng_VMAX (2048-1)
 
   /*
-   * Check for pixmux and adjust clocks if needed. This has the rather
-   * confusing side effect that the mode is suddenly reported as using only
-   * half the clock specified in the modeline. We'd better be verbose enough
-   * about that to avoid confusing the poor user. Could this be avoided?
+   * Check for pixmux modes. We try not to change the mode clock here
+   * (although that would be the easiest way), because that confuses all the
+   * rest of the code. E.g. clock limit checking is done outside this
+   * driver, and it would be made to think the clock is only half of what it
+   * actually is, and thus allow clocks that should be banned.
+   *
+   * For the time being, cards with PIXMUX capabilities but without
+   * programmable clockchips use this "bad" method until a better solution
+   * is found.
    */
   if ( (Tseng_pixMuxPossible) &&
        (mode->Clock > Tseng_nonMuxMaxClock) &&
-       (mode->HDisplay >= Tseng_pixMuxMinWidth) &&
-       (!(mode->Flags & V_INTERLACE)) ) {
+       (mode->HDisplay >= Tseng_pixMuxMinWidth)
+        /* && (!(mode->Flags & V_INTERLACE)) */   /* PIXMUX+interlace seem to work now */
+     ) {
            mode->Flags |= V_PIXMUX;
            mode->Flags |= V_DBLCLK;
-           mode->Clock /= 2;
            if (verbose)
-               ErrorF("%s %s: Mode \"%s\" will use pixel multiplexing (clock will be reported as 1/2 of clock in modeline).\n",
+               ErrorF("%s %s: Mode \"%s\" will use pixel multiplexing.",
                        XCONFIG_PROBED, vga256InfoRec.name, mode->name);
+           if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
+           {
+             mode->Clock /=2;
+             if (verbose) ErrorF(" (clock will be reported as 1/2 of clock in modeline)");
+           }
+           if (verbose) ErrorF("\n");
   }
 
   /* Check for CRTC timing bits overflow. */

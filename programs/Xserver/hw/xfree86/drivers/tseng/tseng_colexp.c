@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_colexp.c,v 1.2 1997/12/29 12:05:21 hohndel Exp $ */
 /*
  * ET4/6K acceleration interface -- color expansion primitives.
  *
@@ -19,12 +19,10 @@
  *   ET6000           Yes              No              8/16/24/32 bpp
  */
 
-#include "vga256.h"
 #include "xf86.h"
-#include "vga.h"
+#include "vga256.h"
 #include "tseng.h"
 #include "tseng_acl.h"
-#include "compiler.h"
 
 #include "xf86xaa.h"
 
@@ -48,7 +46,11 @@ void
 TsengAccelInit_Colexp ()
 {
 
-  /*
+  if (OFLG_ISSET(OPTION_XAA_NO_COL_EXP, &vga256InfoRec.options)) return;
+
+  /* FIXME! disable accelerated color expansion for W32/W32i until it's fixed */
+  if (et4000_type < TYPE_ET4000W32P) return;  /*
+
    * Screen-to-screen color expansion.
    *
    * Scanline-screen-to-screen color expansion is slower than
@@ -63,7 +65,8 @@ TsengAccelInit_Colexp ()
   if (!Is_ET6K)
     {
       /* fast 8bpp-only XAA replacements for text drawing and Bitmap writing */
-      if ((vgaBitsPerPixel == 8) && (et4000_type != TYPE_ET4000W32Pa))
+      /* FIXME! This should be "... && (et4000_type != TYPE_ET4000W32Pa))" */
+      if ((vgaBitsPerPixel == 8) && (et4000_type > TYPE_ET4000W32Pa))
 	{
 	  xf86AccelInfoRec.WriteBitmap = W32WriteBitmap;
 	  xf86AccelInfoRec.ImageTextTE = W32ImageTextTECPUToScreenColorExpand;

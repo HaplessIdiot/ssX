@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.17 1997/11/22 08:17:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.18 1997/12/28 21:28:32 hohndel Exp $ */
 
 
 /*
@@ -38,10 +38,8 @@
 
 #include "vga256.h"
 #include "xf86.h"
-#include "vga.h"
 #include "tseng.h"
 #include "tseng_acl.h"
-#include "compiler.h"
 
 #include "xf86xaa.h"
 #include "tseng_colexp.h"
@@ -216,7 +214,8 @@ void TsengAccelInit() {
     }
 #endif
 
-    if ( (vgaBitsPerPixel != 24) && (et4000_type > TYPE_ET4000W32) )
+    /* FIXME! This needs to be fixed for W32 and W32i (it "should work") */
+    if ( (vgaBitsPerPixel != 24) && (et4000_type >= TYPE_ET4000W32P) )
     {
       xf86AccelInfoRec.SetupForFill8x8Pattern =
           TsengSetupForFill8x8Pattern;

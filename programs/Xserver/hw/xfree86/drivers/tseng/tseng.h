@@ -1,12 +1,12 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.16 1997/12/28 21:28:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.17 1998/01/24 16:58:25 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
 
+#include "compiler.h"   /* for inb(), outb(), ... */
+
 #include "xf86.h"
-#include "xf86Procs.h"
-#include "xf86Priv.h"
 
 #include "vga.h"
 
@@ -65,8 +65,7 @@ typedef enum {
     TYPE_ET4000W32Pc,
     TYPE_ET4000W32Pd,
     TYPE_ET6000,
-    TYPE_ET6100,
-    TYPE_ET6300
+    TYPE_ET6100
 } t_tseng_type;
 
 #define Is_W32_any  ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET6000) )
@@ -182,7 +181,7 @@ void tseng_set_dacspeed(void);
 void tseng_validate_mode(DisplayModePtr mode, Bool verbose);
 void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs);
 #ifdef DPMSExtension
-void TsengCrtcDPMSSet(CARD16);
-void TsengHVSyncDPMSSet(CARD16);
+void TsengCrtcDPMSSet(int);
+void TsengHVSyncDPMSSet(int);
 #endif
 #endif

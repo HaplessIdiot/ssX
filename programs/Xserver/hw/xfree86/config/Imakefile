@@ -1,13 +1,8 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/config/Imakefile,v 1.2 1998/03/22 05:09:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/config/Imakefile,v 1.3 1998/04/05 16:16:00 robin Exp $
 
 
 
-#define DoNormalLib     YES
-#define DoSharedLib     NO
-#define DoDebugLib      NO
-#define DoProfileLib    NO
-#define HasSharedData   NO
-#define LibName         xf86config
+#include <Server.tmpl>
 
 #define UseDBMalloc	NO
 
@@ -30,12 +25,11 @@ OBJS = Device.o Files.o Flags.o Keyboard.o Layout.o Module.o \
 
 CONFIG_DEFINES = -DXCONFIGDIR=\"$(XCONFIGDIR)\" -DXCONFIGFILE=\"$(XCONFIGFILE)\"
 
-#include <Library.tmpl>
-
 SpecialObjectRule(scan.o,scan.c,$(CONFIG_DEFINES) $(MODULEDEFINES) $(EXT_DEFINES))
 
 NormalProgramTarget(cpconfig,cpconfig.o $(OBJS),NullParameter,NullParameter,NullParameter)
 
+NormalLibraryTarget(xf86config,$(OBJS))
 InstallLinkKitLibrary(xf86config,$(LINKKITDIR)/drivers)
 
 AllTarget(cpconfig)
