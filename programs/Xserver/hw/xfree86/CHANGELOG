@@ -1,4 +1,7 @@
-XFree86 4.0.99.3 (xx April 2001)
+XFree86 4.0.99.3 (26 April 2001)
+ 439. [SECURITY] Check for negative reply length/overflow in _XAsyncReply
+      (Xlib) (#4601, Mike Harris).
+ 438. New 'hu' xkb symbols file (#A.364, Peter Soos).
  437. Trident driver fixes for PC98 platforms (#4612, Akio Morita).
  436. Convert apm driver from cfb to fb (Alan Hourihane).
  435. Fix makedepend for '//' comment parsing and symbols that contain
@@ -13079,4 +13082,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1717 2001/04/25 17:46:40 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1718 2001/04/26 15:07:41 alanh Exp $

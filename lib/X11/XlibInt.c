@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.24 2001/01/17 19:41:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.25 2001/01/25 16:21:44 keithp Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -1815,7 +1815,13 @@ _XAsyncReply(dpy, rep, buf, lenp, discard)
 
     (void) _XSetLastRequestRead(dpy, &rep->generic);
     len = SIZEOF(xReply) + (rep->generic.length << 2);
-
+    if (len < SIZEOF(xReply)) {
+	_XIOError (dpy);
+	buf += *lenp;
+	*lenp = 0;
+	return buf;
+    }
+    
     for (async = dpy->async_handlers; async; async = next) {
 	next = async->next;
 	if ((consumed = (*async->handler)(dpy, rep, buf, *lenp, async->data)))
