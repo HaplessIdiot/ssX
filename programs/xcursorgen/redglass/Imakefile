@@ -14,7 +14,7 @@ name: name.cfg CursorSources(name)					@@\
 clean::									@@\
 	$(RM) name							@@\
 									@@\
-InstallTarget(install,name,$(INSTDATAFLAGS),$(THEMEDIR))
+InstallTarget(install,name,$(INSTDATFLAGS),$(THEMEDIR))
 
 
 #define CursorLinkTarget(dst,src)					@@\
