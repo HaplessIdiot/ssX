@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.51 2001/01/21 21:19:33 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.52 2001/02/15 11:03:58 alanh Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -50,12 +50,7 @@
 /* colormap manipulation */
 #include "micmap.h"
 
-/* TGA only does 8 and 32 bpp */
-#define PSZ 8
-#include "cfb.h"
-#undef PSZ
-
-#include "cfb32.h"
+#include "fb.h"
 
 /* more RAC stuff */
 #include "xf86RAC.h"
@@ -761,16 +756,7 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     pTga->FbMapSize = pScrn->videoRam * 1024;
 
-    /* Load bpp-specific modules */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	break;
-    case 32:
-	mod = "cfb32";
-	break;
-    }
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
+    if (mod && xf86LoadSubModule(pScrn, "fb") == NULL) {
 	TGAFreeRec(pScrn);
 	return FALSE;
     }
@@ -1236,7 +1222,7 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * function.  If not, the visuals will need to be setup before calling
      * a fb ScreenInit() function and fixed up after.
      *
-     * For most PC hardware at depths >= 8, the defaults that cfb uses
+     * For most PC hardware at depths >= 8, the defaults that fb uses
      * are not appropriate.  In this driver, we fixup the visuals after.
      */
 
@@ -1264,6 +1250,8 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     }
 
+    miSetPixmapDepths ();
+
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
@@ -1271,14 +1259,12 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     switch (pScrn->bitsPerPixel) {
     case 8:
-	ret = cfbScreenInit(pScreen, pTga->FbBase, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
-	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, pTga->FbBase, pScrn->virtualX,
-			      pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			      pScrn->displayWidth);
+	ret = fbScreenInit(pScreen, pTga->FbBase, pScrn->virtualX,
+			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
+			pScrn->displayWidth, pScrn->bitsPerPixel);
+	if (ret)
+    	    fbPictureInit (pScreen, 0, 0);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
