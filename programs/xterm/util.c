@@ -2,7 +2,7 @@
  *	$Xorg: util.c,v 1.3 2000/08/17 19:55:10 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/util.c,v 3.78 2003/10/27 01:07:57 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/util.c,v 3.79 2004/03/04 02:21:56 dickey Exp $ */
 
 /*
  * Copyright 1999-2003,2004 by Thomas E. Dickey
@@ -1280,8 +1280,8 @@ ReverseVideo(XtermWidget termw)
      */
     if_OPT_ISO_COLORS(screen, {
 	ColorRes tmp2;
-	EXCHANGE(screen->Acolors[0], screen->Acolors[7], tmp2)
-	    EXCHANGE(screen->Acolors[8], screen->Acolors[15], tmp2)
+	EXCHANGE(screen->Acolors[0], screen->Acolors[7], tmp2);
+	EXCHANGE(screen->Acolors[8], screen->Acolors[15], tmp2);
     });
 
     tmp = termw->core.background_pixel;
@@ -1290,11 +1290,11 @@ ReverseVideo(XtermWidget termw)
     termw->core.background_pixel = screen->foreground;
     screen->foreground = tmp;
 
-    EXCHANGE(screen->mousecolor, screen->mousecolorback, tmp)
-	EXCHANGE(NormalGC(screen), ReverseGC(screen), tmpGC)
-	EXCHANGE(NormalBoldGC(screen), ReverseBoldGC(screen), tmpGC)
+    EXCHANGE(screen->mousecolor, screen->mousecolorback, tmp);
+    EXCHANGE(NormalGC(screen), ReverseGC(screen), tmpGC);
+    EXCHANGE(NormalBoldGC(screen), ReverseBoldGC(screen), tmpGC);
 #ifndef NO_ACTIVE_ICON
-	tmpGC = screen->iconVwin.normalGC;
+    tmpGC = screen->iconVwin.normalGC;
     screen->iconVwin.normalGC = screen->iconVwin.reverseGC;
     screen->iconVwin.reverseGC = tmpGC;
 

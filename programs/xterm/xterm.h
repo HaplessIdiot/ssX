@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.95 2004/03/04 02:21:56 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.96 2004/04/03 22:26:26 dawes Exp $ */
 
 /************************************************************
 
@@ -89,6 +89,14 @@ authorization.
 #define USE_POSIX_TERMIOS 1
 #endif
 
+#ifdef __NetBSD__
+#include <sys/param.h>
+#if __NetBSD_Version__ >= 106030000	/* 1.6C */
+#define BSD_UTMPX 1
+#define ut_xtime ut_tv.tv_sec
+#endif
+#endif
+
 #if defined(hpux) && !defined(__hpux)
 #define __hpux 1		/* HPUX 11.0 does not define this */
 #endif
@@ -106,7 +114,7 @@ authorization.
 #define HAVE_UTMP 1
 #endif
 
-#if (defined(__MVS__) || defined(SVR4) || defined(__SCO__)) && !defined(__CYGWIN__)
+#if (defined(__MVS__) || defined(SVR4) || defined(__SCO__) || defined(BSD_UTMPX)) && !defined(__CYGWIN__)
 #define UTMPX_FOR_UTMP 1
 #endif
 
@@ -122,7 +130,7 @@ authorization.
 #define ut_xstatus ut_exit.e_exit
 #endif
 
-#if defined(SVR4) || defined(__SCO__) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && !(defined(__powerpc__) && (__GLIBC__ == 2) && (__GLIBC_MINOR__ == 0)))
+#if defined(SVR4) || defined(__SCO__) || defined(BSD_UTMPX) || (defined(linux) && defined(__GLIBC__) && (__GLIBC__ >= 2) && !(defined(__powerpc__) && (__GLIBC__ == 2) && (__GLIBC_MINOR__ == 0)))
 #define HAVE_UTMP_UT_XTIME 1
 #endif
 
@@ -130,7 +138,11 @@ authorization.
 #define USE_LASTLOG
 #define HAVE_LASTLOG_H
 #elif defined(BSD) && (BSD >= 199103)
+#ifdef BSD_UTMPX
+#define USE_LASTLOGX
+#else
 #define USE_LASTLOG
+#endif
 #endif
 
 #if defined(__SCO__)
@@ -142,7 +154,7 @@ authorization.
 #define USE_POSIX_WAIT
 #endif
 
-#if defined(AIXV3) || defined(CRAY) || defined(__SCO__) || defined(SVR4) || (defined(SYSV) && defined(i386)) || defined(__MVS__) || defined(__hpux) || defined(__osf__) || defined(linux) || defined(macII)
+#if defined(AIXV3) || defined(CRAY) || defined(__SCO__) || defined(SVR4) || (defined(SYSV) && defined(i386)) || defined(__MVS__) || defined(__hpux) || defined(__osf__) || defined(linux) || defined(macII) || defined(BSD_UTMPX)
 #define USE_SYSV_UTMP
 #endif
 

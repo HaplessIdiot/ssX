@@ -2,7 +2,7 @@
  *	$Xorg: data.h,v 1.3 2000/08/17 19:55:08 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/data.h,v 3.30 2003/03/23 02:01:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/data.h,v 3.31 2003/10/13 00:58:22 dickey Exp $ */
 
 /*
  * Copyright 2002,2003 by Thomas E. Dickey
@@ -167,6 +167,9 @@ typedef struct {
 #endif
 #if OPT_HP_FUNC_KEYS
     Boolean hpFunctionKeys;
+#endif
+#if OPT_SCO_FUNC_KEYS
+    Boolean scoFunctionKeys;
 #endif
 #if OPT_INITIAL_ERASE
     Boolean ptyInitialErase;	/* if true, use pty's sense of erase char */

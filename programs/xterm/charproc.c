@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.153 2004/03/04 02:21:54 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.154 2004/03/17 00:44:56 dickey Exp $ */
 
 /*
 
@@ -5417,7 +5417,7 @@ xim_real_init(void)
 
     term->screen.xic = NULL;
 
-    if (!term->misc.open_im) {
+    if (!term->misc.open_im || term->misc.cannot_im) {
 	return;
     }
 
@@ -5469,6 +5469,7 @@ xim_real_init(void)
 	|| !xim_styles->count_styles) {
 	fprintf(stderr, "input method doesn't support any style\n");
 	XCloseIM(xim);
+	term->misc.cannot_im = True;
 	return;
     }
 
@@ -5512,6 +5513,7 @@ xim_real_init(void)
 		"input method doesn't support my preedit type (%s)\n",
 		term->misc.preedit_type);
 	XCloseIM(xim);
+	term->misc.cannot_im = True;
 	return;
     }
 
@@ -5522,6 +5524,7 @@ xim_real_init(void)
 	fprintf(stderr,
 		"This program doesn't support the 'OffTheSpot' preedit type\n");
 	XCloseIM(xim);
+	term->misc.cannot_im = True;
 	return;
     }
 
@@ -5560,6 +5563,7 @@ xim_real_init(void)
 	    fprintf(stderr, "Preparation of default font set "
 		    "\"%s\" for XIM failed.\n", DEFXIMFONT);
 	    XCloseIM(xim);
+	    term->misc.cannot_im = True;
 	    return;
 	}
 	(void) XExtentsOfFontSet(term->screen.fs);
@@ -5609,7 +5613,7 @@ VTInitI18N(void)
     xim_real_init();
 
 #if defined(USE_XIM_INSTANTIATE_CB)
-    if (term->screen.xic == NULL)
+    if (term->screen.xic == NULL && !term->misc.cannot_im)
 	XRegisterIMInstantiateCallback(XtDisplay(term), NULL, NULL, NULL,
 				       xim_instantiate_cb, NULL);
 #endif
@@ -5806,7 +5810,7 @@ ShowCursor(void)
 		fg_pix = hi_pix;
 	    }
 #endif
-	    EXCHANGE(fg_pix, bg_pix, tmp)
+	    EXCHANGE(fg_pix, bg_pix, tmp);
 	} else {		/* normal video */
 	    if (screen->reversecursorGC) {
 		setGC(screen->reversecursorGC);
