@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.20 2001/03/21 17:02:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.21 2001/04/05 21:29:17 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -238,10 +238,6 @@ typedef struct {
 #define TDFX_DEPTH 2
 
 #define TDFX2XCUTOFF 135000
-
-#ifndef PCI_CHIP_VOODOO5
-#define PCI_CHIP_VOODOO5 9
-#endif
 
 extern Bool TDFXAccelInit(ScreenPtr pScreen);
 extern Bool TDFXCursorInit(ScreenPtr pScreen);

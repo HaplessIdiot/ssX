@@ -1,4 +1,15 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 405. Add support to xman for parsing '\" <string> formatting hints.
+      Also cleanup some of the vendor-specific definitions and fix
+      processing of mandoc pages on FreeBSD (based on #4573,
+      Branden Robinson, David Dawes).
+ 404. Fix default mailbox selection in xbiff for Linux, add recognition of
+      $MAIL, and update the man page accordingly (based on #4571,
+      Branden Robinson).
+ 403. Remove redundant PCI id definitions in the tdfx driver, and clean up
+      the messages printed when the DRI can't be enabled because the bpp
+      isn't supported (based on #4570, Branden Robinson and #4598,
+      Antti Tapaninen).  Also, re-enable soft booting.
  402. Install the XftConfig file under $(CONFDIR), with a link from the
       usual place (based on #4569, Branden Robinson).
  401. Update the Debian section on linux.cf (#4568, Branden Robinson).
@@ -13011,4 +13022,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1700 2001/04/19 15:08:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1701 2001/04/19 16:07:08 dawes Exp $

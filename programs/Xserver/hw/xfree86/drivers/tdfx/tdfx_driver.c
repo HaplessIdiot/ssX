@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.67 2001/04/05 21:29:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.68 2001/04/10 16:08:02 dawes Exp $ */
 
 /*
  * Authors:
@@ -135,9 +135,6 @@ static void TDFXBlockHandler(int, pointer, pointer, pointer);
 /* Switch to various Display Power Management System levels */
 static void TDFXDisplayPowerManagementSet(ScrnInfoPtr pScrn, 
 					int PowerManagermentMode, int flags);
-
-#define PCI_SUBDEVICE_ID_VOODOO3_2000 0x0036
-#define PCI_SUBDEVICE_ID_VOODOO3_3000 0x003a
 
 DriverRec TDFX = {
   TDFX_VERSION,
@@ -684,7 +681,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 #if !defined(__powerpc__)
   if (xf86LoadSubModule(pScrn, "int10")) {
     xf86Int10InfoPtr pInt;
-#if 0
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
                "Softbooting the board (through the int10 interface).\n");
     pInt = xf86InitInt10(pTDFX->pEnt->index);
@@ -699,7 +695,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
                  "Softbooting the board succeeded.\n");
       xf86FreeInt10(pInt);
     }
-#endif
   }
 #endif
 
@@ -904,10 +899,10 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
       break;
     case PCI_CHIP_VOODOO3:
       switch(match->subsysCard) {
-      case PCI_SUBDEVICE_ID_VOODOO3_2000:
+      case PCI_CARD_VOODOO3_2000:
 	pTDFX->MaxClock = 300000;
 	break;
-      case PCI_SUBDEVICE_ID_VOODOO3_3000:
+      case PCI_CARD_VOODOO3_3000:
 	pTDFX->MaxClock = 350000;
 	break;
       default:

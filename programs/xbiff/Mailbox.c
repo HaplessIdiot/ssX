@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xbiff/Mailbox.c,v 1.2 2001/04/01 14:00:19 tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -544,6 +544,7 @@ static void GetMailFile (w)
     MailboxWidget w;
 {
     char *username;
+    char *mailpath;
 #ifdef WIN32
     if (!(username = getenv("USERNAME"))) {
 	fprintf (stderr, "%s:  unable to find a username for you.\n",
@@ -565,11 +566,16 @@ static void GetMailFile (w)
 	username = pw->pw_name;
     }
 #endif
-    w->mailbox.filename = (String) XtMalloc (strlen (MAILBOX_DIRECTORY) + 1 +
-				   	     strlen (username) + 1);
-    strcpy (w->mailbox.filename, MAILBOX_DIRECTORY);
-    strcat (w->mailbox.filename, "/");
-    strcat (w->mailbox.filename, username);
+    if (mailpath = getenv("MAIL")) {
+	w->mailbox.filename = (String) XtMalloc (strlen (mailpath) + 1);
+	strcpy (w->mailbox.filename, mailpath);
+    } else {
+	w->mailbox.filename = (String) XtMalloc (strlen (MAILBOX_DIRECTORY) + 1
+						 + strlen (username) + 1);
+	strcpy (w->mailbox.filename, MAILBOX_DIRECTORY);
+	strcat (w->mailbox.filename, "/");
+	strcat (w->mailbox.filename, username);
+    }
     return;
 }
 
