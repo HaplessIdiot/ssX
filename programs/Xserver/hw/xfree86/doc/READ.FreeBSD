@@ -1,6 +1,6 @@
   README for XFree86 3.1.1 on FreeBSD 2.0
   Rich Murphey, David Dawes
-  15 January 1995
+  20 January 1995
 
   1.  What and Where is XFree86?
 
@@ -37,71 +37,82 @@
   unpack.  If you can't decide what to pick and you have 52Mb of disk
   space, it's safe to unpack everything.
 
-  At a minimum you need to unpack the 'required' XFree86-3.1.1-*.tar.gz
-  archives plus at least one server that matches your vga card.  You'll
-  need 9Mb for the minimum required run-time binaries only.
+  At a minimum you need to unpack the 'required' X311*.tgz archives plus
+  at least one server that matches your vga card.  You'll need 9Mb for
+  the minimum required run-time binaries only.
 
 
      Required (6.7Mb):
 
-        bin
+        X311bin.tgz
            all the executable X client applications and shared libs
 
 
-        fonts
+        X311fnts.tgz
            the misc and 75 dpi fonts
 
 
-        lib
+        X311lib.tgz
            data files needed at runtime
 
 
-        xinit-config
+     Required unless you have already customized your configuration
+        files:
+
+        X311xicf.tgz
            customizable xinit runtime configuration file
 
 
-     Choose one server ( 2.3Mb):
 
-        8514
+        X311xdcf.tgz
+           customizable xdm runtime configuration file
+
+
+     Choose at least one server ( 2.3Mb):
+
+        X3118514.tgz
            8-bit color for IBM 8514 and true compatibles.
-        AGX
+
+
+        X311AGX.tgz
            8-bit color for AGX boards.
 
 
-        Mach32
+        X311Mch3.tgz
            8 and 16-bit color for ATI Mach32 boards.
 
 
-        Mach8
+        X311Mch8.tgz
            8-bit color for ATI Mach8 boards.
 
 
-        Mono
+        X311Mono.tgz
            1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
 
-        P9000
+        X311P900.tgz
            8, 16, and 24-bit color for Weitek P9000 boards (Diamond
            Viper).
 
 
-        S3 8, 16 and 24-bit color for S3 boards (#9 GXE, Actix GE32,
+        X311S3.tgz
+           8, 16 and 24-bit color for S3 boards (#9 GXE, Actix GE32,
            SPEA Mercury, STB Pegasus)
 
 
-        SVGA
+        X311SVGA.tgz
            8-bit color for Super-VGA cards.
 
 
-        VGA16
+        X311VG16.tgz
            4-bit color for VGA and Super-VGA cards
 
 
-        W32
+        X311W32.tgz
            8-bit Color for ET4000/W32, /W32i and /W32p cards.
 
 
-        Xnest
+        X311nest.tgz
            A nested server running as a client window on another
            display.
 
@@ -109,45 +120,42 @@
      Optional:
 
 
-        doc
+        X311doc.tgz
            (.5Mb) READMEs and XFree86 specific man pages
 
 
-        man
+        X311man.tgz
            (1.7Mb) man pages except XFree86 specific ones in etc archive
 
 
-        fonts-100dpi
+        X311f100.tgz
            (1.8Mb) 100dpi fonts
-
-
-        fonts-scaled
+        X311fscl.tgz
            (1.6Mb) Speedo and Type1 fonts
 
 
-        fonts-non-english
-           (3.3Mb) Japanese, Chinese, etc. fonts
+        X311fnon.tgz
+           (3.3Mb) Japanese, Chinese and other non-english fonts
 
 
+        X311fsrv.tgz
+           (.3Mb) the font server and it's man page
 
-        prog
+
+        X311prog.tgz
            (3.9Mb) config, lib*.a and *.h files needed only for
            compiling
 
 
-        fontserver
-           (.3Mb) the font server and it's man page
-
-
-        linkkit
+        X311link.tgz
            (7.8Mb) X server reconfiguration kit
 
 
-        pex
+        X311pex.tgz
            (.5Mb) PEX fonts and shared libs needed by PEX applications.
 
 
-        lbx
+        X311lbx.tgz
            (.2Mb) low bandwidth X proxy server and libraries.
 
   Note that there is no longer a separate xdm archive.  FreeBSD 2.0
@@ -188,8 +196,7 @@
 
         If you are using sh (as root usually does):
 
-
-           # for i in XFree86-3.1.1-*.tar.gz; do
+           # for i in X311*.tgz; do
            #   tar -xzf $i
            # done
 
@@ -198,7 +205,7 @@
 
      Else, if you are using csh:
 
-           % foreach i (XFree86-3.1.1-*.tar.gz)
+           % foreach i (X311*.tgz)
            %   tar -xzf $i
            % end
 
@@ -221,8 +228,8 @@
   First do numbers 1 and 2 above. Then unpack the required archives:
 
 
-        # for i in bin fonts lib xinit-config; do
-        #   tar -xzf  XFree86-3.1.1-$i.tar.gz
+        # for i in bin fnts lib xicf; do
+        #   tar -xzf  X311$i.tgz
         # done
 
 
@@ -233,7 +240,7 @@
   card you will use the XF86_SVGA server:
 
 
-        # tar -xzf XFree86-3.1.1-SVGA.tar.gz
+        # tar -xzf X311SVGA.tgz
         # cd /usr/X11R6/bin; rm X; ln -s XF86_SVGA X
 
 
@@ -255,8 +262,6 @@
 
   Next either reboot or invoke ldconfig as root to put the shared
   libraries in ld.so's cache:
-
-
         # ldconfig /usr/lib /usr/local/lib /usr/X11R6/lib
 
 
@@ -265,12 +270,12 @@
   X11R6/lib/X11/xdm/* omit the xinit-config or xdm-config archive or
   unpack it separately and merge in your customizations.
 
-  The fonts-scaled and fonts-100dpi archives are optional and can be
-  omitted if you are short on space.  The optional linkkit archive
-  allows you to reconfigure and customize a X server binary.  The
-  optional prog archive is needed only for writing or compiling X
-  applications.  The optional pex archive contains pex clients and
-  libraries for building 3D graphics applications.
+  The fscl and f100 archives are optional and can be omitted if you are
+  short on space.  The optional link archive allows you to reconfigure
+  and customize a X server binary.  The optional prog archive is needed
+  only for writing or compiling X applications.  The optional pex
+  archive contains pex clients and libraries for building 3D graphics
+  applications.
 
 
        NOTE: You don't need to uncompress the font files, but if
@@ -323,11 +328,10 @@
 
         ttyv4  "/usr/X11R6/bin/xdm -nodaemon" xterm    on secure
 
-
-
   You should also make sure that /usr/X11R6/bin/X is a symbolic link to
   the Xserver that matches your video card or edit the file Xservers in
   /usr/X11R6/lib/X11/xdm to specify the pathname of the X server.
+
   The change to /etc/ttys won't take effect untill you either reboot or
   ``kill -HUP 1'' to force initd to reread /etc/ttys.  You can also test
   the display manager manually by loging in as root on the console and
@@ -394,8 +398,8 @@
   exist:
 
 
-   % cd /dev
-   % sh MAKEDEV tty00
+        % cd /dev
+        % sh MAKEDEV tty00
 
 
 
@@ -456,9 +460,8 @@
 
         device         sc0     at isa? port "IO_KBD" tty irq 1 vector scintr
 
-
-
   The number of virtual consoles can be set using the NCONS option:
+
 
         options                "NCONS=4"               #4 virtual consoles
 
@@ -523,8 +526,6 @@
 
         #define BuildBsdSharedLibs             NO
 
-
-
   If your system doesn't have support or SYSV shared memory (for
   example, if you don't have the <sys/shm.h> header), you should disable
   the MIT-SHM extension by adding the following line to site.def:
@@ -588,6 +589,9 @@
 
 
 
+
+
+
   9.  Thanks
 
   Many thanks to:
@@ -605,11 +609,7 @@
      o  Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from
         the Linux distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.5 1995/01/15 10:34:13 dawes Exp $
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.6 1995/01/20 04:21:38 dawes Exp $
 
 
 

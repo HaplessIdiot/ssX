@@ -10,7 +10,8 @@
   XF86_SVGA, those not applicable to the ET4000/W32 series are silently
   ignored; e.g., the keyword "SpeedUp" is a no-op.  The server currently
   supports the w32, w32i, and w32p chips.  For a complete list, see the
-  sign-on message printed by XF86_W32.
+  sign-on message printed by XF86_W32.  The server supports only 8bpp
+  operation at present.
 
   Just as with XF86_SVGA, you can specify a virtual world that has a
   width that is a multiple of four.  The size of the virtual world is
@@ -63,7 +64,6 @@
         dmm0t@rincewind.mech.virginia.edu (David Meyer)
 
         nrh@philabs.Philips.COM (Nikolaus R. Haus)
-
         jdooley@dbp.caltech.edu (James Dooley)
 
         thumper@hitchcock.eng.uiowa.edu (Timothy Paul Schlie)
@@ -88,7 +88,7 @@
         ljo@ljo-slip.DIALIN.CWRU.Edu (L Jonas Olsson)
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.1 1994/12/26 11:03:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/W32.sgml,v 3.2 1995/01/20 05:21:46 dawes Exp $
 
 
 
