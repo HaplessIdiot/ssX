@@ -1,37 +1,47 @@
 XCOMM $XConsortium: xf86.rules,v 1.1 94/03/29 15:34:48 gildea Exp $
-XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.2 1994/12/02 05:38:39 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.rules,v 3.3 1994/12/17 09:32:51 dawes Exp $
 
 /*
  * These rules are needed to build the Xfree86 X Servers
  */
 
+#ifndef CPPOnlyAsm
+#define CPPOnlyAsm(basename,options) RemoveFile(basename.i)		@@\
+	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) options basename.s | \	@@\
+		grep -v '^\#' > basename.i
+#endif
+
 #ifndef AssembleObject
-#define AssembleObject(flags) $(RM) $@                                  @@\
-	$(CPP) AsmDefines $(DEFINES) $(INCLUDES) flags $*.s | \		@@\
-		grep -v '^\#' > $*.i					@@\
+#define AssembleObject(flags) CPPOnlyAsm($*,flags)                      @@\
 	$(AS) -o $*.o $*.i                                              @@\
-	$(RM) $*.i
+	RemoveFile($*.i)
 #endif
 
 #ifndef NormalAsmObjectRule
 #define NormalAsmObjectRule()                                           @@\
 .s.o:                                                                   @@\
-	AssembleObject($(_NOOP_))
+	AssembleObject($(_NOOP_))					@@\
+									@@\
+.s.i:                                                                   @@\
+	CPPOnlyAsm($*,$(_NOOP_))
 #endif
 
 #ifndef ObjectFromSpecialAsmSource
 #define ObjectFromSpecialAsmSource(dst,src,flags)                       @@\
 dst.s:  src.s                                                           @@\
-	$(RM) $@                                                        @@\
+	RemoveFile($@)                                                  @@\
 	$(LN) $? $@                                                     @@\
                                                                         @@\
 dst.o:  dst.s                                                           @@\
 	AssembleObject(flags)                                           @@\
                                                                         @@\
+dst.i:  dst.s								@@\
+	CPPOnlyAsm(dst,flags)						@@\
+                                                                        @@\
 depend:: dst.s                                                          @@\
                                                                         @@\
 clean::                                                                 @@\
-	$(RM) dst.s
+	RemoveFile(dst.s)
 #endif
 
 /*
