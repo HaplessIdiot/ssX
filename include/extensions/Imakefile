@@ -1,8 +1,13 @@
 XCOMM $XConsortium: Imakefile,v 1.37 94/04/07 15:03:02 rws Exp $
+XCOMM $XFree86$
+
+#if BuildExtraExtensionLibrary
+EXTRAHEADERS = saver.h saverproto.h scrnsaver.h
+#endif
 
 HEADERS = Xext.h multibuf.h shape.h XShm.h MITMisc.h XI.h XInput.h XIproto.h \
 	XTest.h xtestext1.h XIE.h XIEproto.h XIEprotost.h \
-	sync.h XKB.h XKBproto.h XKBstr.h
+	sync.h XKB.h XKBproto.h XKBstr.h $(EXTRAHEADERS)
 
 all::
 

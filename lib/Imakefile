@@ -1,4 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.27 94/04/07 15:01:48 rws Exp $
+XCOMM $XFree86$
 #define IHaveSubdirs
 #define PassCDebugFlags
 
@@ -10,7 +11,11 @@ XCOMM $XConsortium: Imakefile,v 1.27 94/04/07 15:01:48 rws Exp $
 BERKDIR = Xbsd
 #endif
 
-LINTSUBDIRS = Xau Xdmcp X11 oldX ICE SM Xext Xt Xmu Xaw XIE Xi \
+#if BuildExtraExtensionLibrary
+EXEXTLIB = XExExt
+#endif
+
+LINTSUBDIRS = Xau Xdmcp X11 oldX ICE SM Xext $(EXEXTLIB) Xt Xmu Xaw XIE Xi \
 	      Xtst FS PEX5
 
 SUBDIRS = $(BERKDIR) xtrans $(LINTSUBDIRS) font
