@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.264 2004/07/17 17:26:32 herrb Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.265 2004/09/15 15:01:24 dawes Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -295,18 +295,6 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef MakeLocalFontDir
 #define MakeLocalFontDir	YES
-#endif
-#ifndef HasXAudio
-#define HasXAudio		NO
-#endif
-#ifndef BuildXAudio
-#define BuildXAudio		(HasXAudio & HasCplusplus)
-#endif
-#ifndef HasXAServer
-#define HasXAServer		NO
-#endif
-#ifndef BuildXAServer
-#define BuildXAServer		(HasXAServer & HasCplusplus)
 #endif
 #ifndef BuildX11Lib
 #define BuildX11Lib		BuildLibraries
@@ -2938,32 +2926,6 @@ ProjectUnsharedLibReferences(XTOOLONLY,Xt,$(TOOLKITSRC),XBuildLibDir)
       DEPXTOOLLIB = $(DEPXTOOLONLYLIB) $(DEPSMLIB) $(DEPICELIB)
          XTOOLLIB = $(XTOOLONLYLIB) $(SMLIB) $(ICELIB)
      LINTXTOOLLIB = $(LINTXTOOLONLYLIB)
-
-#ifndef SharedLibXa
-#define SharedLibXa	(HasSharedLibraries & HasCplusplus)
-#endif
-#ifndef ExtraLibXa
-#define ExtraLibXa	SharedLibXa
-#endif
-#ifndef NormalLibXa
-/* #define NormalLibXa	((!SharedLibXa | ForceNormalLib) & HasCplusplus) */
-#define NormalLibXa	YES /* needed for current tests, will correct later */
-#endif
-#ifndef DebugLibXa
-#define DebugLibXa	NO	/* debugged audio library */
-#endif
-#ifndef ProfileLibXa
-#define ProfileLibXa	NO	/* profiled audio library */
-#endif
-       XALIBSRC = $(LIBSRC)/Xa
-#if SharedLibXa
-#ifndef SharedXaRev
-#define SharedXaRev 1.0
-#endif
-SharedLibReferences(XA,Xa,$(XALIBSRC),SOXAREV,SharedXaRev)
-#else
-UnsharedLibReferences(XA,Xa,$(XALIBSRC))
-#endif
 
 #ifndef SharedLibXaw
 #define SharedLibXaw HasSharedLibraries
