@@ -24,7 +24,7 @@
 !! dealings in this Software without prior written authorization from the
 !! XFree86 Project.
 !!
-!! $XFree86$
+!! $XFree86: xc/programs/Xserver/hw/xfree86/Options,v 1.1 2001/05/15 18:22:21 paulo Exp $
 
 !! XAA options
 xaa.XaaNoCPUToScreenColorExpandFill:\
@@ -147,3 +147,10 @@ mga.TexturedVideo:\
 This has XvImage support use the texture engine rather than the video \
 overlay. This option is only supported by the G200 and G400, and only in \
 16 and 32 bits per pixel. Default: off.
+
+
+!! Vesa options
+vesa.ShadowFB:\
+Enable or disable use of the shadow framebuffer layer. See shadowfb(4)\
+for further information. Default: on.
+

@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.6 2001/05/18 16:03:14 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/options.c,v 1.7 2001/05/21 22:21:57 paulo Exp $
  */
 
 #include "options.h"
@@ -81,6 +81,12 @@ static char *types[] = {
  * Implementation
  */
 #ifdef USE_MODULES
+static int
+qcmp_str(_Xconst void *a, _Xconst void *b)
+{
+    return (strcmp(*(char**)a, *(char**)b));
+}
+
 void
 ModuleOptionsPopup(Widget w, XtPointer user_data, XtPointer call_data)
 {
@@ -118,6 +124,8 @@ ModuleOptionsPopup(Widget w, XtPointer user_data, XtPointer call_data)
 	    ops[0] = XtNewString("");
 	    nops = 1;
 	}
+	else
+	    qsort(ops, nops, sizeof(char*), qcmp_str);
 	modList = XtVaCreateManagedWidget("modL", listWidgetClass,
 					  viewport, XtNlist, ops,
 					  XtNnumberStrings, nops,
@@ -149,12 +157,16 @@ ModuleOptionsPopup(Widget w, XtPointer user_data, XtPointer call_data)
 
     if (module_sel && *module_sel) {
 	XawListReturnStruct list;	/* hack to call ballbacks */
-	int idx = 0;
+	char **strs;
+	int nstrs, idx = 0;
 
+	XtVaGetValues(modList, XtNlist, &strs, XtNnumberStrings, &nstrs, NULL);
+	for (idx = nstrs - 1; idx > 0; idx--)
+	    if (strcmp(module_sel, strs[idx]) == 0)
+		break;
 	while (info) {
 	    if (strcmp(module_sel, info->name) == 0)
 		break;
-	    ++idx;
 	    info = info->next;
 	}
 	if (info) {
