@@ -1,4 +1,6 @@
 XFree86 3.9Py (17 July 1999)
+2897. Work around a problem in mfb that is caused by an optimiser bug
+      in egcs-1.1.2 for the alpha (#3027, Doug Rabson).
 2896. Fix a problem that shows up in the s3virge driver after the recent
       vgahw module changes (David Dawes).
 2895. Add missing references to xf86MiscExt.c in common/Imakefile (#3025,
@@ -8457,4 +8459,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.802 1999/07/17 06:30:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.803 1999/07/17 07:18:11 dawes Exp $

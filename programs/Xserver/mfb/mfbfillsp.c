@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.3 1998/10/04 09:39:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbfillsp.c,v 1.4 1999/04/11 13:11:13 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -837,8 +837,16 @@ mfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		    {
 			putbitsrop(*psrc, (x & PIM), nstart, pdst, rop);
 			pdst++;
+#ifdef __alpha__
+			/*
+			 * XXX workaround an egcs 1.1.2 code generation
+			 * bug. This version might actually be faster.
+			 */
+			psrc += srcStartOver;
+#else
 			if(srcStartOver)
 			    psrc++;
+#endif
 		    }
 		     
 		    while(nlMiddle--)
