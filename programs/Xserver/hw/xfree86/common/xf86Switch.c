@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.2 1997/06/17 12:33:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Switch.c,v 3.6 1999/04/04 05:44:33 dawes Exp $ */
 
 #if !defined(sun) || defined(i386)
 #include "xf86Xinput.h"
@@ -121,7 +121,7 @@ xf86SwtProc(pSwt, what)
   int			loop;
   int                   nbaxes;
   LocalDevicePtr        local = (LocalDevicePtr)pSwt->public.devicePrivate;
-  SwitchDevPtr		priv = (SwitchDevPtr)PRIVATE(pSwt);
+  SwitchDevPtr		priv = (SwitchDevPtr)XI_PRIVATE(pSwt);
 
   DBG(2, ErrorF("BEGIN xf86SwtProc dev=0x%x priv=0x%x\n", pSwt, priv));
   
