@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.10 2001/11/25 15:20:54 alanh Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.12 2002/09/16 18:05:17 eich Exp $ */
 
 #include "xttversion.h"
 
@@ -2079,8 +2079,12 @@ XTrueTypeRegisterFontFileFunctions()
 
     /* reset */
     /* register */
-    for (i=0;i<sizeof(renderers)/sizeof(renderers[0]);i++)
-        FontFileRegisterRenderer(renderers + i);
+    for (i=0;i<sizeof(renderers)/sizeof(renderers[0]);i++) {
+        /* If the user has both the FreeType and the X-TT backends
+           linked in, he probably wants X-TT to be used for TrueType
+           fonts. */
+        FontFilePriorityRegisterRenderer(renderers + i, +10);
+    }
 
     return 0;
 }

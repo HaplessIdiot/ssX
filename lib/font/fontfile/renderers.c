@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/renderers.c,v 1.5 2002/09/21 02:50:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/renderers.c,v 1.6 2002/10/16 20:53:55 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -46,8 +46,14 @@ static unsigned long rendererGeneration = 0;
 Bool
 FontFileRegisterRenderer (FontRendererPtr renderer)
 {
+    return FontFilePriorityRegisterRenderer(renderer, 0);
+}
+
+Bool
+FontFilePriorityRegisterRenderer (FontRendererPtr renderer, int priority)
+{
     int		    i;
-    FontRendererPtr *new;
+    struct _FontRenderersElement *new;
 
     if (rendererGeneration != serverGeneration) {
 	rendererGeneration = serverGeneration;
@@ -58,24 +64,32 @@ FontFileRegisterRenderer (FontRendererPtr renderer)
     }
 
     for (i = 0; i < renderers.number; i++) {
-	if (!strcmp (renderers.renderers[i]->fileSuffix, 
+	if (!strcmp (renderers.renderers[i].renderer->fileSuffix, 
                      renderer->fileSuffix)) {
-	    /* Only print these warnings for the first generation. */
-	    if (rendererGeneration == 1) {
-        	ErrorF("Warning: font renderer for \"%s\" "
-		       "registered more than once\n", renderer->fileSuffix);
-	    }
-	    return TRUE;
+            if(renderers.renderers[i].priority >= priority) {
+                if(renderers.renderers[i].priority == priority) {
+                    if (rendererGeneration == 1)
+                        ErrorF("Warning: font renderer for \"%s\" "
+                               "already registered at priority %d\n",
+                               renderer->fileSuffix, priority);
+                }
+                return TRUE;
+            } else {
+                break;
+            }
         }
     }
-    i = renderers.number + 1;
-    new = (FontRendererPtr *) xrealloc (renderers.renderers, sizeof *new * i);
-    if (!new)
-	return FALSE;
-    renderer->number = i - 1;
-    renderers.renderers = new;
-    renderers.renderers[i - 1] = renderer;
-    renderers.number = i;
+
+    if(i >= renderers.number) {
+        new = xrealloc (renderers.renderers, sizeof(*new) * (i + 1));
+        if (!new)
+            return FALSE;
+        renderers.renderers = new;
+        renderers.number = i + 1;
+    }
+    renderer->number = i;
+    renderers.renderers[i].renderer = renderer;
+    renderers.renderers[i].priority = priority;
     return TRUE;
 }
 
@@ -89,7 +103,7 @@ FontFileMatchRenderer (char *fileName)
     fileLen = strlen (fileName);
     for (i = 0; i < renderers.number; i++)
     {
-	r = renderers.renderers[i];
+	r = renderers.renderers[i].renderer;
 	if (fileLen >= r->fileSuffixLen &&
 	    !strcmp (fileName + fileLen - r->fileSuffixLen, r->fileSuffix))
 	{

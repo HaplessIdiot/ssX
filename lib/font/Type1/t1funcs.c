@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.28 2002/10/30 21:57:33 alanh Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.29 2002/10/30 23:17:36 alanh Exp $ */
 
 /*
 
@@ -1469,11 +1469,11 @@ Type1RegisterFontFileFunctions(void)
 #ifdef BUILDCID
     Type1InitStdProps();
     for (i=0; i < sizeof(Type1RendererInfo) / sizeof(FontRendererRec); i++)
-            FontFileRegisterRenderer(&Type1RendererInfo[i]);
+            FontFilePriorityRegisterRenderer(&Type1RendererInfo[i], -10);
 #else
     T1InitStdProps();
     for (i=0; i < sizeof(renderers) / sizeof(FontRendererRec); i++)
-            FontFileRegisterRenderer(&renderers[i]);
+            FontFilePriorityRegisterRenderer(&renderers[i], -10);
 #endif
 }
 
