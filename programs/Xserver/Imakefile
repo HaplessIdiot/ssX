@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.57 1996/08/14 14:31:25 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.58 1996/08/18 01:45:08 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -355,11 +355,17 @@ XF86MINIT  = $(XF86COMSRC)/xf86Init_m.o $(XF86CONFIGSRC)/xf86MIniExt.o
 XF86CONFIG = $(XF86CONFIGSRC)/xf86_Option.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86OSLIB  = $(XF86OSSRC)/LibraryTargetName(xf86_os)
-#if !XF86FBDevServer
 XF86HWLIB  = $(XF86HWSRC)/LibraryTargetName(xf86_hw)
-#endif
 XF86LIBS   = $(XF86INIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB)
 XF86MLIBS  = $(XF86MINIT) $(XF86CONFIG) $(XF86COMLIB) $(XF86HWLIB)
+ 
+XF68INIT   = $(XF68COMSRC)/xf86Init.o $(XF68CONFIGSRC)/xf86IniExt.o
+XF68MINIT  = $(XF68COMSRC)/xf86Init_m.o $(XF68CONFIGSRC)/xf86MIniExt.o
+XF68CONFIG = $(XF68CONFIGSRC)/xf86_Option.o
+XF68COMLIB = $(XF68COMSRC)/LibraryTargetName(xf86)
+XF68OSLIB  = $(XF68OSSRC)/LibraryTargetName(xf86_os)
+XF68LIBS   = $(XF68INIT) $(XF68CONFIG) $(XF68COMLIB)
+XF68MLIBS  = $(XF68MINIT) $(XF68CONFIG) $(XF68COMLIB)
  
 XF98INIT       = $(XF98COMSRC)/xf86Init.o $(XF98CONFIGSRC)/xf86IniExt.o
 XF98MINIT      = $(XF98COMSRC)/xf86Init_m.o $(XF98CONFIGSRC)/xf86MIniExt.o
@@ -1182,7 +1188,7 @@ XCOMM
 XCOMM XFree86(??) Linux/m68k Frame Buffer Device Server
 XCOMM
 MFBDIR  = mfb
-DDXDIR1 = hw/xfree86
+DDXDIR3 = hw/xfree68
 #if XF86FBDevIPLAN2p2
 IPLAN2P2DIR = iplan2p2
 FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p2/libipl2p2.a
@@ -1217,10 +1223,10 @@ FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB32)
 #endif
 XF86FBDevSUBDIRS = $(STDDIRS) $(MFBDIR) $(IPLAN2P2DIR) $(IPLAN2P4DIR) \
                    $(IPLAN2P8DIR) $(ILBMDIR) $(AFBDIR) $(CFB8DIR) \
-                   $(CFB16DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-XF86FBDevOBJS = $(XF86COMSRC)/XF86_FBDev.o
-XF86FBDevLIBS = $(XF86SRC)/fbdev/LibraryTargetName(fbdev) $(XF86LIBS) \
-                PreFbLibs $(FBDEVFBLIBS) PostFbLibs $(XF86OSLIB)
+                   $(CFB16DIR) $(CFB32DIR) $(DDXDIR3) $(DEPDIRS)
+XF86FBDevOBJS = $(XF68COMSRC)/XF86_FBDev.o
+XF86FBDevLIBS = $(XF68SRC)/fbdev/LibraryTargetName(fbdev) $(XF68LIBS) \
+                PreFbLibs $(FBDEVFBLIBS) PostFbLibs $(XF68OSLIB)
 XF86FBDevSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF86FBDevSUBDIRS) $(XF86FBDevOBJS) $(XF86FBDevLIBS) $(XF86FBDevSYSLIBS))
