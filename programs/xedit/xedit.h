@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.9 1999/05/23 06:33:53 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.10 1999/06/14 02:38:08 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -43,6 +43,9 @@
 #include <X11/Xaw/Viewport.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/SimpleMenu.h>
+
+#include <X11/IntrinsicP.h>
+#include <X11/Xaw/TextSinkP.h>		/* for the property list definition */
 
 #include <X11/Xmu/SysUtil.h>
 
@@ -67,6 +70,7 @@ typedef struct _xedit_flist_item {
     FileAccess file_access;
     XawTextPosition display_position, insert_position;
     int mode;
+    XawTextPropertyList *properties;
 } xedit_flist_item;
 
 extern struct _xedit_flist {
@@ -130,6 +134,7 @@ void LoadFile(Widget, XEvent*, String*, Cardinal*);
 void FileCompletion(Widget, XEvent*, String*, Cardinal*);
 void KillFile(Widget, XEvent*, String*, Cardinal*);
 void DirWindowCB(Widget, XtPointer, XtPointer);
+void SourceChanged(Widget, XtPointer, XtPointer);
 
 /*	externs in ispell.c	*/
 
@@ -140,6 +145,8 @@ void IspellCallback(Widget, XtPointer, XtPointer);
 
 void CreateEditPopup(void);
 void SetEditMenu(void);
+void SetTextProperties(xedit_flist_item*, Bool);
+void UpdateTextProperties(void);
 
 /*	externs in hook.c	*/
 Bool StartHooks(XtAppContext);

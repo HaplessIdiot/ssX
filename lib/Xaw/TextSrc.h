@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.8 1999/05/09 10:51:43 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.9 1999/06/06 08:48:18 dawes Exp $ */
 
 #ifndef _XawTextSrc_h
 #define _XawTextSrc_h
@@ -102,6 +102,8 @@ typedef enum {
 
 #define XtNsourceChanged	"sourceChanged"
 #define XtCChanged		"Changed"
+
+#define XtNpropertyCallback	"propertyCallback"
 #endif
 
 /*

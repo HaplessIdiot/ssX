@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.30 1999/07/06 11:38:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.32 1999/07/19 13:36:02 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -553,22 +553,15 @@ Move(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
     insertPos = SrcScan(ctx->text.source, ctx->text.insertPos,
 			type, dir, mult, include);
 
-    /*
-     * Avoid screen flashing
-     */
+    StartAction(ctx, event);
+
     if (ctx->text.s.left != ctx->text.s.right)
 	XawTextUnsetSelection((Widget)ctx);
-    else if (insertPos == ctx->text.insertPos
-	     && IsPositionVisible(ctx, insertPos)) {
-	ctx->text.mult = 1;
+
 #ifndef OLDXAW
-	ctx->text.numeric = False;
+    ctx->text.numeric = False;
 #endif
-
-	return;
-    }
-
-    StartAction(ctx, event);
+    ctx->text.mult = 1;
     ctx->text.showposition = True;
     ctx->text.from_left = -1;
     ctx->text.insertPos = insertPos;
@@ -718,9 +711,9 @@ MoveLine(TextWidget ctx, XEvent *event, XawTextScanDirection dir)
     int itemp, from_left;
     short mult = MULT(ctx);
 
-    XawTextUnsetSelection((Widget)ctx);
-
     StartAction(ctx, event);
+
+    XawTextUnsetSelection((Widget)ctx);
 
     if (dir == XawsdLeft)
 	mult = mult == 0 ? 5 : mult + 1;
@@ -918,6 +911,7 @@ MoveNextPage(Widget w, XEvent *event, String *p, Cardinal *n)
     if (ctx->text.insertPos < ctx->text.lastPos) {
 	XawTextUnsetSelection(w);
 	StartAction(ctx, event);
+	ctx->text.clear_to_eol = True;
 	while (mult-- && ctx->text.insertPos < ctx->text.lastPos)
 	    MovePage(ctx, event, XawsdRight);
 	EndAction(ctx);
@@ -942,6 +936,7 @@ MovePreviousPage(Widget w, XEvent *event, String *p, Cardinal *n)
     if (ctx->text.insertPos > 0) {
 	XawTextUnsetSelection(w);
 	StartAction(ctx, event);
+	ctx->text.clear_to_eol = True;
 	while (mult-- && ctx->text.insertPos > 0)
 	    MovePage(ctx, event, XawsdLeft);
 	EndAction(ctx);
@@ -2663,6 +2658,7 @@ ModifySelection(TextWidget ctx, XEvent *event,
 {
     int old_y = ctx->text.ev_y;
 
+    StartAction(ctx, event);
     NotePosition(ctx, event);
 
     if (event->type == MotionNotify) {
@@ -2678,7 +2674,6 @@ ModifySelection(TextWidget ctx, XEvent *event,
     }
     ctx->text.from_left = -1;
 
-    StartAction(ctx, event);
     _XawTextAlterSelection(ctx, mode, action, params, num_params);
 
     EndAction(ctx);
@@ -2823,6 +2818,7 @@ static void
 TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
 {
     TextWidget ctx = (TextWidget)w;
+    Bool display_caret = ctx->text.display_caret;
 
     if (event->xfocus.detail == NotifyPointer)
 	return;
@@ -2830,8 +2826,11 @@ TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
     /* Let the input method know focus has arrived. */
     _XawImSetFocusValues(w, NULL, 0);
 
+    if (display_caret)
+	StartAction(ctx, event);
     ctx->text.hasfocus = TRUE;
-    XawTextDisplayCaret(w, ctx->text.display_caret);
+    if (display_caret)
+	EndAction(ctx);
 }
 
 /*ARGSUSED*/
@@ -2839,6 +2838,7 @@ static void
 TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
 {
     TextWidget ctx = (TextWidget)w;
+    Bool display_caret = ctx->text.display_caret;
 
     if (event->xfocus.detail == NotifyPointer)
 	return;
@@ -2846,8 +2846,11 @@ TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
     /* Let the input method know focus has left.*/
     _XawImUnsetFocus(w);
 
+    if (display_caret)
+	StartAction(ctx, event);
     ctx->text.hasfocus = FALSE;
-    XawTextDisplayCaret(w, ctx->text.display_caret);
+    if (display_caret)
+	EndAction(ctx);
 }
 
 /*ARGSUSED*/
@@ -2857,11 +2860,8 @@ TextEnterWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     TextWidget ctx = (TextWidget)w;
 
     if ((event->xcrossing.detail != NotifyInferior) && event->xcrossing.focus
-	&& !ctx->text.hasfocus) {
+	&& !ctx->text.hasfocus)
 	_XawImSetFocusValues(w, NULL, 0);
-
-	XawTextDisplayCaret(w, ctx->text.display_caret);
-    }
 }
 
 /*ARGSUSED*/
@@ -2871,11 +2871,8 @@ TextLeaveWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     TextWidget ctx = (TextWidget)w;
 
     if ((event->xcrossing.detail != NotifyInferior) && event->xcrossing.focus
-	&& !ctx->text.hasfocus) {
+	&& !ctx->text.hasfocus)
 	_XawImUnsetFocus(w);
-
-	XawTextDisplayCaret(w, ctx->text.display_caret);
-    }
 }
 
 /*

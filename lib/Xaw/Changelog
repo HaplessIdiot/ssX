@@ -1292,5 +1292,36 @@ xedit.c:
  + Fixed a bug in the ispell code that checks for repeated words.
 
 
+# 14 Aug 1999
+-- Xaw --
+ + Mixed fonts and colors can be used in the text widget (currently only
+   in the Ascii*Object).
+ + Added the XawTextAnchor, XawTextEntity, XawTextProperty, XawTextPropertyList,
+   XawTextPaintStruct, XawTextPaintList and XawTextPropertyInfo structures to
+   Xaw, to be used in the new text code.
+ + Added the functions XawTextSourceAddAnchor, XawTextSourceNextAnchor,
+   XawTextSourcePrevAnchor, XawTextSourceRemoveAnchor and
+   XawTextSinkConvertPropertyList, that probably should not be used outside of
+   Xaw.
+ + Added the functions XawTextSourceFindAnchor, XawTextSourceAnchorAndEntity,
+   XawTextSourceAddEntity, XawTextSourceClearEntities and XawTextSinkGetProperty
+   that are probably the ones that should be most used in programs.
+ + Italic fonts should be always displayed correctly.
+ + The text widget cursor is now displayed with a gc with the Xor function, to
+   avoid unnecessary computation/redrawing.
+ + Most changes were done in the {Ascii,Text}{Src,Sink}Object, but the text
+   widget was also a bit modified for things like automatically changing the
+   number of lines in the line table when needed.
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.29 1999/07/11 08:49:13 dawes Exp $
+-- Xmu --
+ + Fixed bug in Clip.c, that could cause a SEGV.
+
+-- xedit --
+ + Added the file c-mode.c, to interface with the new Xaw text code, and show
+   what can be done when interfacing that new code.
+ + Added the necessary code to util.c and options.c to let the user select
+   if he or she wants to use the color/font syntax highlight in the C/C++ mode.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.30 1999/07/19 13:36:00 dawes Exp $

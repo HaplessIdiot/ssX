@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.11 1999/05/09 10:52:02 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.12 1999/06/13 13:47:51 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -187,6 +187,9 @@ AddTextSource(Widget source, char *name, char *filename, int flags,
     item->display_position = item->insert_position = 0;
     item->mode = 0;
 
+    item->properties = NULL;
+    SetTextProperties(item, False);
+
     flist.itens = (xedit_flist_item**)
 	XtRealloc((char*)flist.itens, sizeof(xedit_flist_item*)
 		  * (flist.num_itens + 1));
@@ -265,6 +268,9 @@ KillTextSource(xedit_flist_item *item)
 	    XtSetValues(labels[i], largs, lnum_args);
 	    XawTextDisableRedisplay(texts[i]);
 	    XtSetValues(texts[i], targs, tnum_args);
+
+	    UpdateTextProperties();
+
 	    _XawTextShowPosition((TextWidget)texts[i]);
 	    XawTextEnableRedisplay(texts[i]);
 	    if (texts[i] == textwindow) {
@@ -386,6 +392,9 @@ SwitchTextSource(xedit_flist_item *item)
     XtSetArg(args[num_args], XtNinsertPosition, item->insert_position);
     ++num_args;
     XtSetValues(textwindow, args, num_args);
+
+    UpdateTextProperties();
+
     _XawTextShowPosition((TextWidget)textwindow);
     XawTextEnableRedisplay(textwindow);
 
@@ -540,6 +549,8 @@ DeleteWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	XtSetArg(args[num_args], XtNinsertPosition, i_pos);	++num_args;
 	XtSetArg(args[num_args], XtNtextSource, source);	++num_args;
 	XtSetValues(texts[0], args, num_args);
+
+	UpdateTextProperties();
     }
 
     labelwindow = labels[0];
@@ -732,6 +743,8 @@ SplitWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
     XtSetArg(args[num_args], XtNdisplayPosition, d_pos);	++num_args;
     XtSetArg(args[num_args], XtNinsertPosition, i_pos);		++num_args;
     XtSetValues(ntext, args, num_args);
+
+    UpdateTextProperties();
 
     _XawTextShowPosition((TextWidget)textwindow);
     _XawTextShowPosition((TextWidget)ntext);

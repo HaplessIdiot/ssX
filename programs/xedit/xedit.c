@@ -24,12 +24,14 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.c,v 1.8 1999/04/29 09:13:58 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.c,v 1.9 1999/05/23 06:33:53 dawes Exp $ */
 
+#include <X11/IntrinsicP.h>
 #include "xedit.h"
 #include <X11/Xaw/SmeBSB.h>
 #include <time.h>
 #include <sys/stat.h>
+#include <X11/CoreP.h>
 
 #ifdef X_NOT_STDC_ENV
 void srand(); 
@@ -237,6 +239,8 @@ main(int argc, char *argv[])
 	      XtSetValues(source, args, num_args);
 	      item = AddTextSource(source, argv[i], filename,
 				   flags, file_access);
+	      XtAddCallback(item->source, XtNcallback, SourceChanged,
+			    (XtPointer)item);
 	      if (exists && file_access == WRITE_OK)
 		  item->mode = st.st_mode & (S_IRWXU | S_IRWXG | S_IRWXO);
 	      if (!num_loaded)
@@ -378,6 +382,8 @@ makeButtonsAndBoxes(Widget parent)
 
     item = AddTextSource(scratch, "*scratch*", "*scratch*",
 			 0, WRITE_OK);
+    XtAddCallback(item->source, XtNcallback, SourceChanged,
+		  (XtPointer)item);
     ResetSourceChanged(item);
 
     for (num_args = 0; num_args < 3; num_args++)

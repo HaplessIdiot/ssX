@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.6 1999/06/06 08:48:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.7 1999/06/20 08:41:11 dawes Exp $ */
 
 #ifndef _XawTextSinkP_h
 #define _XawTextSinkP_h
@@ -54,8 +54,64 @@ SOFTWARE.
  * TextSink Object Private Data
  */
 #include <X11/Xaw/TextSink.h>
-#include <X11/Xaw/TextP.h>	/* This source works with the Text widget */
-#include <X11/Xaw/TextSrcP.h>	/* This source works with the Text Source */
+#include <X11/Xaw/TextP.h>	/* This sink works with the Text widget */
+#include <X11/Xaw/TextSrcP.h>	/* This sink works with the Text Source */
+#include <X11/Xmu/Xmu.h>
+
+#ifndef OLDXAW
+#define XAW_TPROP_FOREGROUND	(1<<0)
+#define XAW_TPROP_BACKGROUND	(1<<1)
+#define XAW_TPROP_FONT		(1<<2)
+#define XAW_TPROP_FONTSET	(1<<3)
+#define XAW_TPROP_OVERSTRIKE	(1<<4)
+#define XAW_TPROP_UNDERLINE	(1<<5)
+struct _XawTextProperty {
+    XrmQuark identifier;
+    Pixel foreground, background;
+    XFontStruct *font;
+    XFontSet fontset;
+    unsigned long mask;
+};
+
+struct _XawTextPropertyList {
+    XrmQuark identifier;
+    Screen *screen;
+    Colormap colormap;
+    int depth;
+    XawTextProperty **properties;
+    Cardinal num_properties;
+    XawTextPropertyList *next;
+};
+
+typedef struct _XawTextPaintStruct XawTextPaintStruct;
+struct _XawTextPaintStruct {
+    XawTextPaintStruct *next;
+    int x, y, width;
+    unsigned char *text;	/* formatted text */
+    Cardinal length;		/* length of text */
+    XawTextProperty *property;
+    int max_ascent, max_descent;
+    XmuArea *backtabs;
+    Boolean highlight;
+};
+
+typedef struct {
+    XmuArea *clip, *hightabs;			/* clip list */
+    XawTextPaintStruct *paint, *bearings;	/* drawing information */
+} XawTextPaintList;
+
+typedef struct {
+    XtPointer next_extension;
+    XrmQuark record_type;
+    long version;
+    Cardinal record_size;
+    Bool (*BeginPaint)(Widget);
+    void (*PreparePaint)(Widget, int, int,
+			 XawTextPosition, XawTextPosition, Bool);
+    void (*DoPaint)(Widget);
+    Bool (*EndPaint)(Widget);
+} TextSinkExtRec, *TextSinkExt;
+#endif
 
 typedef void (*_XawSinkDisplayTextProc)
      (Widget, int, int, XawTextPosition, XawTextPosition, Bool);
@@ -100,7 +156,7 @@ typedef struct _TextSinkClassPart {
     _XawSinkSetTabsProc	SetTabs;
     _XawSinkGetCursorBoundsProc GetCursorBounds;
 #ifndef OLDXAW
-    XtPointer extension;
+    TextSinkExt extension;
 #endif
 } TextSinkClassPart;
 
@@ -126,7 +182,9 @@ typedef struct {
 #ifndef OLDXAW
     /* more resources */
     Pixel cursor_color;
-    XtPointer pad[4];	/* for future use and keep binary compatability */
+    XawTextPropertyList *properties;
+    XawTextPaintList *paint;
+    XtPointer pad[2];	/* for future use and keep binary compatability */
 #endif
 } TextSinkPart;
 
@@ -135,6 +193,49 @@ typedef struct _TextSinkRec {
     ObjectPart	 object;
     TextSinkPart text_sink;
 } TextSinkRec;
+
+/* Semi private routines */
+#ifndef OLDXAW
+XawTextPropertyList *XawTextSinkConvertPropertyList
+(
+ String			 name,
+ String			 spec,
+ Screen			*screen,
+ Colormap		 Colormap,
+ int			 depth
+ );
+
+XawTextProperty *XawTextSinkGetProperty
+(
+ Widget			 w,
+ XrmQuark		 property
+ );
+
+Bool XawTextSinkBeginPaint
+(
+ Widget			w
+ );
+
+void XawTextSinkPreparePaint
+(
+ Widget			w,
+ int			y,
+ int			line,
+ XawTextPosition	from,
+ XawTextPosition	to,
+ Bool			highlight
+);
+
+void XawTextSinkDoPaint
+(
+ Widget			w
+ );
+
+Bool XawTextSinkEndPaint
+(
+ Widget			w
+ );
+#endif
 
 #define XtInheritDisplayText	   ((_XawSinkDisplayTextProc)_XtInherit)
 #define XtInheritInsertCursor	   ((_XawSinkInsertCursorProc)_XtInherit)

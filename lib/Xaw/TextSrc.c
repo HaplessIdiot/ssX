@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.18 1999/07/11 08:49:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.19 1999/07/19 13:36:03 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -43,6 +43,8 @@ in this Software without prior written authorization from The Open Group.
 
 #ifndef OLDXAW
 #define UNDO_DEPTH	16384
+
+#define ANCHORS_DIST	4096	/* default distance between anchors */
 
 /*
  * Types
@@ -106,6 +108,7 @@ static void TellSourceChanged(TextSrcObject, XawTextPosition, XawTextPosition,
 			      XawTextBlock*, int);
 Bool _XawTextSrcUndo(TextSrcObject, XawTextPosition*);
 Bool _XawTextSrcToggleUndo(TextSrcObject);
+XawTextAnchor *_XawTextSourceFindAnchor(Widget, XawTextPosition);
 
 /*
  * External
@@ -165,6 +168,15 @@ static XtResource resources[] = {
     offset(enable_undo),
     XtRImmediate,
     (XtPointer)False
+  },
+  {
+    XtNpropertyCallback,
+    XtCCallback,
+    XtRCallback,
+    sizeof(XtPointer),
+    offset(property_callback),
+    XtRCallback,
+    NULL
   },
 #endif /* OLDXAW */
 };
@@ -302,6 +314,10 @@ XawTextSrcInitialize(Widget request, Widget cnew,
 	src->textSrc.text = NULL;
 	src->textSrc.num_text = 0;
     }
+
+    src->textSrc.anchors = NULL;
+    src->textSrc.num_anchors = 0;
+    (void)XawTextSourceAddAnchor(cnew, 0);
 #endif /* OLDXAW */
 }
 
@@ -316,6 +332,22 @@ XawTextSrcDestroy(Widget w)
 	XtFree((char*)src->textSrc.undo);
     }
     XtFree((char*)src->textSrc.text);
+
+    if (src->textSrc.num_anchors) {
+	XawTextEntity *entity, *enext;
+	int i;
+
+	for (i = 0; i < src->textSrc.num_anchors; i++) {
+	    entity = src->textSrc.anchors[i]->entities;
+	    while (entity) {
+		enext = entity->next;
+		XtFree((XtPointer)entity);
+		entity = enext;
+	    }
+	    XtFree((XtPointer)src->textSrc.anchors[i]);
+	}
+	XtFree((XtPointer)src->textSrc.anchors);
+    }
 #endif /* OLDXAW */
 }
 
@@ -943,6 +975,150 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 	src->textSrc.changed = True;
 
     if (error == XawEditDone) {
+	XawTextPropertyInfo info;
+	XawTextAnchor *anchor;
+
+	/* find anchor and index */
+	/* XXX index (i) could be returned by XawTextSourceFindAnchor
+	 * or similar function, to speed up */
+	if ((anchor = XawTextSourceFindAnchor(w, left))) {
+	    XawTextAnchor *aprev = anchor;
+	    XawTextEntity *eprev, *entity, *enext;
+	    XawTextPosition offset, diff = block->length - (right - left);
+
+	    for (i = 0; i < src->textSrc.num_anchors; i++)
+		if (src->textSrc.anchors[i] == anchor)
+		    break;
+	    if (anchor->cache && anchor->position + anchor->cache->offset +
+		anchor->cache->length <= left)
+		eprev = entity = anchor->cache;
+	    else
+		eprev = entity = anchor->entities;
+	    while (entity) {
+		offset = anchor->position + entity->offset;
+
+		if (offset > left)
+		    break;
+		if (offset + entity->length > left)
+		    break;
+
+		eprev = entity;
+		entity = entity->next;
+	    }
+
+	    /* try to do the right thing here (and most likely correct), but
+	     * other code needs to check what was done */
+
+	    /* adjust entity length */
+	    if (entity && offset < left) {
+		if (offset + entity->length < right)
+		    entity->length = left - offset + block->length;
+		else
+		    entity->length += diff;
+
+		if (entity->length == 0) {
+		    enext = entity->next;
+		    eprev->next = enext;
+		    anchor->cache = NULL;
+		    XtFree((XtPointer)entity);
+		    if (entity == anchor->entities) {
+			if ((anchor->entities = enext) == NULL) {
+			    anchor = XawTextSourceRemoveAnchor(w, anchor);
+			    entity = anchor ? anchor->entities : NULL;
+			    eprev = NULL;
+			}
+			else {
+			    eprev = NULL;
+			    entity = enext;
+			}
+		    }
+		    else
+			entity = enext;
+		}
+		else {
+		    eprev = entity;
+		    entity = entity->next;
+		}
+	    }
+
+	    while (anchor) {
+		while (entity) {
+		    offset = anchor->position + entity->offset + entity->length;
+
+		    if (offset > right) {
+			entity->length = XawMin(entity->length, offset - right);
+			if (entity->offset + diff < 0) {
+			    entity->offset = 0;
+			    entity = entity->next;
+			}
+			goto exit_anchor_loop;
+		    }
+
+		    enext = entity->next;
+		    if (eprev)
+			eprev->next = enext;
+		    XtFree((XtPointer)entity);
+		    anchor->cache = NULL;
+		    if (entity == anchor->entities) {
+			if ((anchor->entities = enext) == NULL) {
+			    if (i == 0)
+				++i;
+			    else if (i < --src->textSrc.num_anchors) {
+				memmove(&src->textSrc.anchors[i],
+					&src->textSrc.anchors[i + 1],
+					(src->textSrc.num_anchors - i) *
+					sizeof(XawTextAnchor*));
+				XtFree((XtPointer)anchor);
+			    }
+			    if (i >= src->textSrc.num_anchors) {
+				anchor = NULL;
+				entity = NULL;
+				break;
+			    }
+			    anchor = src->textSrc.anchors[i];
+			    eprev = NULL;
+			    entity = anchor->entities;
+			    continue;
+			}
+		    }
+		    entity = enext;
+		}
+		if (anchor && i + 1 < src->textSrc.num_anchors) {
+		    anchor = src->textSrc.anchors[++i];
+		    entity = anchor->entities;
+		    eprev = NULL;
+		}
+		else
+		    break;
+		if (entity == NULL)
+		    break;
+		eprev = NULL;
+	    }
+
+exit_anchor_loop:
+	    while (entity) {
+		entity->offset += diff;
+		entity = entity->next;
+	    }
+	    if (anchor && anchor->position != 0 && anchor != aprev) {
+		if (anchor->position > left + diff) {
+		    XawTextPosition tmp = (left + diff) - anchor->position;
+
+		    anchor->position += tmp;
+		    entity = anchor->entities;
+		    while (entity) {
+			entity->offset -= tmp;
+			entity = entity->next;
+		    }
+		}
+	    }
+
+	    if (diff) {
+		for (++i; i < src->textSrc.num_anchors; i++)
+		    src->textSrc.anchors[i]->position += diff;
+	    }
+	}
+
 	start = left;
 	end = start + block->length;
 	while (start < end) {
@@ -955,6 +1131,11 @@ XawTextSourceReplace(Widget w, XawTextPosition left,
 		}
 	    }
 	}
+
+	info.left = left;
+	info.right = right;
+	info.block = block;
+	XtCallCallbacks(w, XtNpropertyCallback, &info);
 
 	TellSourceChanged(src, left, right, block, lines);
 	/* Call callbacks, we have changed the buffer */
@@ -1357,3 +1538,404 @@ _XawTextMBToWC(Display *d, char *str, int *len_in_out)
 
     return (wstr);
 }
+
+#ifndef OLDXAW
+static int
+qcmp_anchors(_Xconst void *left, _Xconst void *right)
+{
+    return ((*(XawTextAnchor**)left)->position -
+	    (*(XawTextAnchor**)right)->position);
+}
+
+XawTextAnchor *
+XawTextSourceAddAnchor(Widget w, XawTextPosition position)
+{
+    TextSrcObject src = (TextSrcObject)w;
+    XawTextAnchor *anchor, *panchor;
+
+    if ((panchor = XawTextSourceFindAnchor(w, position)) != NULL) {
+	XawTextEntity *pentity, *entity;
+
+	if (position - panchor->position < ANCHORS_DIST)
+	    return (panchor);
+
+	anchor = XtNew(XawTextAnchor);
+
+	if (panchor->cache && panchor->position + panchor->cache->offset < position)
+	    pentity = entity = panchor->cache;
+	else
+	    pentity = entity = panchor->entities;
+	while (entity && panchor->position + entity->offset < position) {
+	    pentity = entity;
+	    entity = entity->next;
+	}
+	if (pentity &&
+	    panchor->position + pentity->offset + pentity->length > position) {
+	    XawTextPosition diff;
+
+	    if (entity != pentity)
+		position = panchor->position + pentity->offset + pentity->length;
+
+	    diff = position - panchor->position;
+
+	    panchor->cache = anchor->cache = NULL;
+	    anchor->entities = entity;
+	    if (pentity != entity)
+		pentity->next = NULL;
+	    else
+		panchor->entities = NULL;
+	    while (entity) {
+		entity->offset -= diff;
+		entity = entity->next;
+	    }
+	}
+	else
+	    anchor->entities = NULL;
+    }
+    else {
+	anchor = XtNew(XawTextAnchor);
+	anchor->entities = NULL;
+    }
+
+    anchor->position = position;
+    anchor->cache = NULL;
+
+    src->textSrc.anchors = (XawTextAnchor**)
+	XtRealloc((XtPointer)src->textSrc.anchors, sizeof(XawTextAnchor*) *
+		  (src->textSrc.num_anchors + 1));
+    src->textSrc.anchors[src->textSrc.num_anchors++] = anchor;
+    qsort((void*)src->textSrc.anchors, src->textSrc.num_anchors,
+	  sizeof(XawTextAnchor*), qcmp_anchors);
+
+    return (anchor);
+}
+
+XawTextAnchor *
+XawTextSourceFindAnchor(Widget w, XawTextPosition position)
+{
+    TextSrcObject src = (TextSrcObject)w;
+    int i = 0, left, right, nmemb = src->textSrc.num_anchors;
+    XawTextAnchor *anchor, **anchors = src->textSrc.anchors;
+
+    left = 0;
+    right = nmemb - 1;
+    while (left <= right) {
+	anchor = anchors[i = (left + right) >> 1];
+	if (anchor->position == position)
+	    return (anchor);
+	else if (position < anchor->position)
+	    right = i - 1;
+	else
+	    left = i + 1;
+    }
+
+    if (nmemb)
+	return (right < 0 ? anchors[0] : anchors[right]);
+
+    return (NULL);
+}
+
+Bool
+XawTextSourceAnchorAndEntity(Widget w, XawTextPosition position,
+			     XawTextAnchor **anchor_return,
+			     XawTextEntity **entity_return)
+{
+    XawTextAnchor *anchor = XawTextSourceFindAnchor(w, position);
+    XawTextEntity *pentity, *entity;
+    XawTextPosition offset;
+    Bool next_anchor = True, retval = False;
+
+    if (anchor->cache && anchor->position + anchor->cache->offset +
+	anchor->cache->length <= position)
+	pentity = entity = anchor->cache;
+    else
+	pentity = entity = anchor->entities;
+    while (entity) {
+	offset = anchor->position + entity->offset;
+
+	if (offset > position) {
+	    retval = next_anchor = False;
+	    break;
+	}
+	if (offset + entity->length > position) {
+	    retval = True;
+	    next_anchor = False;
+	    break;
+	}
+	pentity = entity;
+	entity = entity->next;
+    }
+
+    if (next_anchor) {
+	*anchor_return = anchor = XawTextSourceNextAnchor(w, anchor);
+	*entity_return = anchor ? anchor->entities : NULL;
+    }
+    else {
+	*anchor_return = anchor;
+	*entity_return = retval ? entity : pentity;
+    }
+
+    if (*anchor_return)
+	(*anchor_return)->cache = *entity_return;
+
+    return (retval);
+}
+
+XawTextAnchor *
+XawTextSourceNextAnchor(Widget w, XawTextAnchor *anchor)
+{
+    int i;
+    TextSrcObject src = (TextSrcObject)w;
+
+    for (i = 0; i < src->textSrc.num_anchors - 1; i++)
+	if (src->textSrc.anchors[i] == anchor)
+	    return (src->textSrc.anchors[i + 1]);
+
+    return (NULL);
+}
+
+XawTextAnchor *
+XawTextSourcePrevAnchor(Widget w, XawTextAnchor *anchor)
+{
+    int i;
+    TextSrcObject src = (TextSrcObject)w;
+
+    for (i = src->textSrc.num_anchors - 1; i > 0; i--)
+	if (src->textSrc.anchors[i] == anchor)
+	    return (src->textSrc.anchors[i - 1]);
+
+    return (NULL);
+}
+
+XawTextAnchor *
+XawTextSourceRemoveAnchor(Widget w, XawTextAnchor *anchor)
+{
+    int i;
+    TextSrcObject src = (TextSrcObject)w;
+
+    for (i = 0; i < src->textSrc.num_anchors; i++)
+	if (src->textSrc.anchors[i] == anchor)
+	    break;
+
+    if (i == 0)
+	return (src->textSrc.num_anchors > 1 ? src->textSrc.anchors[1] : NULL);
+
+    if (i < src->textSrc.num_anchors) {
+	XtFree((XtPointer)anchor);
+	if (i < --src->textSrc.num_anchors) {
+	    memmove(&src->textSrc.anchors[i],
+		    &src->textSrc.anchors[i + 1],
+		    (src->textSrc.num_anchors - i) *
+		    sizeof(XawTextAnchor*));
+
+	    return (src->textSrc.anchors[i]);
+	}
+    }
+
+    return (NULL);
+}
+
+XawTextEntity *
+XawTextSourceAddEntity(Widget w, int type, int flags,
+		       XawTextPosition position, Cardinal length,
+		       XrmQuark property)
+{
+    TextSrcObject src = (TextSrcObject)w;
+    XawTextAnchor *next, *anchor = _XawTextSourceFindAnchor(w, position);
+    XawTextEntity *entity, *eprev;
+
+    if (anchor->cache && anchor->position + anchor->cache->offset +
+	anchor->cache->length <= position)
+	eprev = entity = anchor->cache;
+    else
+	eprev = entity = anchor->entities;
+
+    while (entity && anchor->position + entity->offset + entity->length <=
+	   position) {
+	eprev = entity;
+	entity = entity->next;
+    }
+    if (entity && anchor->position + entity->offset < position + length) {
+	fprintf(stderr, "Cannot (yet) add more than one entity to same region.\n");
+	return (NULL);
+    }
+
+    next = XawTextSourceFindAnchor(w, position + length);
+    if (next && next != anchor) {
+	if ((entity = next->entities) != NULL) {
+	    if (next->position + entity->offset < position + length) {
+		fprintf(stderr, "Cannot (yet) add more than one entity to same region.\n");
+		return (NULL);
+	    }
+	}
+	if (position + length > next->position) {
+	    XawTextPosition diff = position + length - next->position;
+
+	    next->position += diff;
+	    entity = next->entities;
+	    while (entity) {
+		entity->offset -= diff;
+		entity = entity->next;
+	    }
+	    entity = anchor->entities;
+	    while (entity && entity->offset < 0)
+		entity = entity->next;
+	    if (entity && entity->offset < 0) {
+		if (eprev)
+		    eprev->next = next->entities;
+		else
+		    anchor->entities = next->entities;
+		if ((next->entities = entity->next) == NULL)
+		    (void)XawTextSourceRemoveAnchor(w, next);
+		entity->next = NULL;
+
+		return (XawTextSourceAddEntity(w, type, flags, position,
+					       length, property));
+	    }
+	}
+    }
+
+    entity = XtNew(XawTextEntity);
+    entity->type = type;
+    entity->flags = flags;
+    entity->offset = position - anchor->position;
+    entity->length = length;
+    entity->property = property;
+
+    if (eprev == NULL) {
+	anchor->entities = entity;
+	entity->next = NULL;
+	anchor->cache = NULL;
+    }
+    else if (eprev->offset > entity->offset) {
+	anchor->cache = NULL;
+	anchor->entities = entity;
+	entity->next = eprev;
+    }
+    else {
+	anchor->cache = eprev;
+	entity->next = eprev->next;
+	eprev->next = entity;
+    }
+
+    return (entity);
+}
+
+void
+XawTextSourceClearEntities(Widget w, XawTextPosition left, XawTextPosition right)
+{
+    TextSrcObject src = (TextSrcObject)w;
+    XawTextAnchor *anchor = XawTextSourceFindAnchor(w, left);
+    XawTextEntity *entity, *eprev, *enext;
+    XawTextPosition offset;
+    int i, length;
+
+    while (anchor && anchor->entities == NULL)
+	anchor = XawTextSourceNextAnchor(w, anchor);
+
+    if (anchor == NULL || left >= right)
+	return;
+
+    if (anchor->cache && anchor->position + anchor->cache->offset +
+	anchor->cache->length < left)
+	eprev = entity = anchor->cache;
+    else
+	eprev = entity = anchor->entities;
+
+    /* find first entity before left position */
+    while (anchor->position + entity->offset + entity->length < left) {
+	eprev = entity;
+	if ((entity = entity->next) == NULL) {
+	    if ((anchor = XawTextSourceNextAnchor(w, anchor)) == NULL)
+		return;
+	    if ((eprev = entity = anchor->entities) == NULL) {
+		fprintf(stderr, "Bad anchor found!\n");
+		return;
+	    }
+	}
+    }
+
+    offset = anchor->position + entity->offset;
+    if (offset <= left) {
+	length = XawMin(entity->length, left - offset);
+
+	if (length <= 0) {
+	    enext = entity->next;
+	    eprev->next = enext;
+	    XtFree((XtPointer)entity);
+	    anchor->cache = NULL;
+	    if (entity == anchor->entities) {
+		if ((anchor->entities = enext) == NULL) {
+		    if ((anchor = XawTextSourceRemoveAnchor(w, anchor)) == NULL)
+			return;
+		    entity = anchor->entities;
+		    eprev = NULL;
+		}
+		else
+		    entity = enext;
+	    }
+	    else
+		entity = enext;
+	}
+	else {
+	    entity->length = length;
+	    eprev = entity;
+	    entity = entity->next;
+	}
+    }
+
+    /* clean everything until right position is reached */
+    while (anchor) {
+	while (entity) {
+	    offset = anchor->position + entity->offset + entity->length;
+
+	    if (offset > right) {
+		anchor->cache = NULL;
+		entity->offset = XawMax(entity->offset, right - anchor->position);
+		entity->length = XawMin(entity->length, offset - right);
+		return;
+	    }
+
+	    enext = entity->next;
+	    if (eprev)
+		eprev->next = enext;
+	    XtFree((XtPointer)entity);
+	    if (entity == anchor->entities) {
+		eprev = anchor->cache = NULL;
+		if ((anchor->entities = enext) == NULL) {
+		    if ((anchor = XawTextSourceRemoveAnchor(w, anchor)) == NULL)
+			return;
+		    entity = anchor->entities;
+		    continue;
+		}
+	    }
+	    entity = enext;
+	}
+	if (anchor)
+	    anchor->cache = NULL;
+	if ((anchor = XawTextSourceNextAnchor(w, anchor)) != NULL)
+	    entity = anchor->entities;
+	eprev = NULL;
+    }
+}
+
+/* checks the anchors up to position, and create an appropriate anchor
+ * at position, if required.
+ */
+XawTextAnchor *
+_XawTextSourceFindAnchor(Widget w, XawTextPosition position)
+{
+    TextSrcObject src = (TextSrcObject)w;
+    XawTextAnchor *anchor;
+
+    if (position < ANCHORS_DIST)
+	return (src->textSrc.anchors[0]);
+
+    anchor = XawTextSourceFindAnchor(w, position);
+
+    if (position - anchor->position >= ANCHORS_DIST)
+	return (XawTextSourceAddAnchor(w, position - (position % ANCHORS_DIST)));
+
+    return (anchor);
+}
+#endif

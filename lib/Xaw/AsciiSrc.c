@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.19 1999/06/06 08:47:51 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.20 1999/06/20 08:40:56 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -44,6 +44,10 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/AsciiSrcP.h>
 #include <X11/Xaw/MultiSrcP.h> 
+#ifndef OLDXAW
+#include <X11/Xaw/TextSinkP.h>
+#include <X11/Xaw/AsciiSinkP.h>
+#endif
 #include "Private.h"
 
 #if (defined(ASCII_STRING) || defined(ASCII_DISK))
@@ -350,8 +354,9 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
 {
     AsciiSrcObject src = (AsciiSrcObject)w;
     XawTextPosition count, start;
-    Piece *piece = FindPiece(src, pos, &start);
+    Piece *piece;
 
+    piece = FindPiece(src, pos, &start);
     text->firstPos = pos;
     text->ptr = piece->text + (pos - start);
     count = piece->used - (pos - start);
@@ -395,6 +400,64 @@ ReplaceText(Widget w, XawTextPosition startPos, XawTextPosition endPos,
 
     start_piece = FindPiece(src, startPos, &start_first);
     end_piece = FindPiece(src, endPos, &end_first);
+
+#ifndef OLDXAW
+    /*
+     * This is a big hack, but I can't think about a clever way to know
+     * if the character being moved forward has a negative lbearing.
+     *
+     */
+    if (start_piece->used) {
+	int i;
+
+	for (i = 0; i < src->text_src.num_text; i++) {
+	    int line;
+	    TextWidget ctx = (TextWidget)src->text_src.text[i];
+
+	    for (line = 0; line < ctx->text.lt.lines; line++)
+		if (startPos < ctx->text.lt.info[line + 1].position)
+		    break;
+	    if (i < ctx->text.lt.lines &&
+		startPos > ctx->text.lt.info[i].position) {
+		AsciiSinkObject sink = (AsciiSinkObject)ctx->text.sink;
+		XawTextAnchor *anchor;
+		XawTextEntity *entity;
+		XawTextProperty *property;
+		XFontStruct *font;
+
+		if (XawTextSourceAnchorAndEntity(w, startPos, &anchor, &entity) &&
+		    (property = XawTextSinkGetProperty(ctx->text.sink,
+						       entity->property)) != NULL &&
+		    (property->mask & XAW_TPROP_FONT))
+		    font = property->font;
+		else
+		    font = sink->ascii_sink.font;
+
+		if (font->min_bounds.lbearing < 0) {
+		    int lbearing = font->min_bounds.lbearing;
+		    unsigned char c = *(unsigned char*)
+			(start_piece->text + (startPos - start_first));
+
+		    if (c == '\t' || c == '\n')
+			c = ' ';
+		    else if ((c & 0177) < XawSP || c == 0177) {
+			if (sink->ascii_sink.display_nonprinting)
+			    c = c > 0177 ? '\\' : c + '^';
+			else
+			    c = ' ';
+		    }
+		    if (font->per_char &&
+			(c >= font->min_char_or_byte2 && c <= font->max_char_or_byte2))
+			lbearing = font->per_char[c - font->min_char_or_byte2].lbearing;
+		    if (lbearing < 0)
+			_XawTextNeedsUpdating(ctx, startPos - 1, startPos);
+		}
+	    }
+	}
+    }
+
+
+#endif
 
     /*
      * Remove Old Stuff
