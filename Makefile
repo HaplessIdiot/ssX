@@ -1,5 +1,5 @@
 # $TOG: Makefile /main/37 1998/02/17 14:30:04 kaleb $
-# $XFree86: xc/Makefile,v 3.12 1998/11/01 07:57:43 dawes Exp $
+# $XFree86: xc/Makefile,v 3.13 1998/12/20 11:56:08 dawes Exp $
 
 # Luna users will need to either run make as "make MAKE=make"
 # or add "MAKE = make" to this file.
@@ -76,26 +76,27 @@ World:
 # This is just a sequence of bootstrapping steps we have to do.
 # The steps are listed as separate targets so clearmake can wink in
 # the Makefile.proto files.
-Makefile.boot: imake.proto $(DEPENDSRC)/Makefile.proto depend.bootstrap $(IMAKESRC)/Makefile.proto imake.bootstrap
+
+Makefile.boot: imake.bootstrap
 
 imake.proto:
 	cd $(IMAKESRC) && $(MAKE) $(FLAGS)
 	$(RM) $(DEPENDSRC)/Makefile.proto
 
-$(DEPENDSRC)/Makefile.proto:
+$(DEPENDSRC)/Makefile.proto: imake.proto
 	$(IMAKE_CMD) -s $(DEPENDSRC)/Makefile.proto -f $(DEPENDSRC)/Imakefile -DTOPDIR=$(DEPENDTOP) -DCURDIR=$(DEPENDSRC)
 
-depend.bootstrap:
+depend.bootstrap: $(DEPENDSRC)/Makefile.proto
 	cd $(DEPENDSRC) && $(RM) -r Makefile Makefile.dep makedepend *.o bootstrap
 	cd $(DEPENDSRC) && $(MAKE) -f Makefile.proto bootstrap
 
-$(IMAKESRC)/Makefile.proto:
+$(IMAKESRC)/Makefile.proto: depend.bootstrap
 	$(IMAKE_CMD) -s $(IMAKESRC)/Makefile.proto -f $(IMAKESRC)/Imakefile -DTOPDIR=$(IMAKETOP) -DCURDIR=$(IMAKESRC)
 
-imake.bootstrap:
+imake.bootstrap: $(IMAKESRC)/Makefile.proto
 	cd $(IMAKESRC) && $(MAKE) -f Makefile.proto bootstrapdepend
 	cd $(IMAKESRC) && $(MAKE) $(FLAGS) bootstrap
-	cd $(IMAKESRC) && $(MAKE) -f Makefile.proto all 
+	cd $(IMAKESRC) && $(MAKE) -f Makefile.proto all
 	-@if [ -f xmakefile ]; then set -x; \
 	  $(RM) xmakefile.bak; $(MV) xmakefile xmakefile.bak; \
 	  else exit 0; fi
