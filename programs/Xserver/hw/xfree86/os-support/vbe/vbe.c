@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.20 2002/04/04 14:05:55 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.22 2002/09/16 18:06:15 eich Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -39,6 +39,8 @@ const char *vbe_ddcSymbols[] = {
     NULL
 };
 
+static const char vbeVersionString[] = "VBE2";
+
 vbeInfoPtr
 VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
 {
@@ -52,7 +54,6 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
     pointer page = NULL;
     ScrnInfoPtr pScrn = xf86FindScreenForEntity(entityIndex);
     vbeControllerInfoPtr vbe = NULL;
-    char vbeVersionString[] = "VBE2";
     Bool init_int10 = FALSE;
     vbeInfoPtr vip = NULL;
     int screen = pScrn->scrnIndex;
@@ -62,7 +63,7 @@ VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags)
 	    goto error;
 
 	xf86DrvMsg(screen,X_INFO,"initializing int10\n");
-	pInt = xf86ExtendedInitInt10(entityIndex, Flags);
+	pInt = xf86InitInt10(entityIndex);
 	if (!pInt)
 	    goto error;
 	init_int10 = TRUE;
@@ -263,10 +264,14 @@ vbeReadEDID(vbeInfoPtr pVbe)
     if (novbe || noddc) return NULL;
     
     if (!vbeProbeDDC(pVbe)) goto error;
-    
+
+    memset(page,0,sizeof(vbeInfoPtr));
+    strcpy(page,vbeVersionString);
+
     pVbe->pInt10->ax = 0x4F15;
     pVbe->pInt10->bx = 0x01;
     pVbe->pInt10->cx = 0;
+    pVbe->pInt10->dx = 0;
     pVbe->pInt10->es = SEG_ADDR(RealOff);
     pVbe->pInt10->di = SEG_OFF(RealOff);
     pVbe->pInt10->num = 0x10;

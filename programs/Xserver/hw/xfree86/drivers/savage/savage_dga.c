@@ -275,7 +275,7 @@ Savage_SetMode(
 
 	psav->DGAactive = FALSE;
 	SavageSwitchMode(index, pScrn->currentMode, 0);
-	if( psav->hwcursor )
+	if( psav->hwcursor && psav->hwc_on )
 	    SavageShowCursor(pScrn);
     } else {
 	Bool holdBIOS = psav->UseBIOS;
@@ -289,8 +289,11 @@ Savage_SetMode(
 	    pMode->bitsPerPixel, pMode->depth);
 #endif
 
-	if( psav->hwcursor )
+	if( psav->hwcursor && psav->hwc_on) {
 	    SavageHideCursor(pScrn);
+	    psav->hwc_on = TRUE;    /* save for later restauration */
+	}
+	
 
 	if(!psav->DGAactive) {  /* save the old parameters */
 	    OldDisplayWidth[index] = pScrn->displayWidth;

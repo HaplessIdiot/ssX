@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.10 2000/10/24 18:07:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/pnp.c,v 1.13 2002/09/16 18:06:08 eich Exp $ */
 /*
  * Copyright 1998 by Kazutaka YOKOTA <yokota@zodiac.mech.utsunomiya-u.ac.jp>
  *
@@ -567,11 +567,18 @@ readMouse(InputInfoPtr pInfo, unsigned char *u)
     return TRUE;
 }
 
+static void
+ps2DisableWrapMode(InputInfoPtr pInfo)
+{
+    unsigned char reset_wrap_mode[] = { 0xEC };
+    ps2SendPacket(pInfo, reset_wrap_mode, sizeof(reset_wrap_mode));
+}
+
 Bool
 ps2SendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len)
 {
     unsigned char c;
-    int i;
+    int i,j;
     
 #ifdef DEBUG
     xf86ErrorF("Ps/2 data package:");
@@ -581,18 +588,35 @@ ps2SendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len)
 #endif
 
     for (i = 0; i < len; i++) {
-	xf86WriteSerial(pInfo->fd, bytes + i, 1);
-	usleep(10000);
-	if (!readMouse(pInfo,&c)) {
+	for (j = 0; j < 10; j++) {
+	    xf86WriteSerial(pInfo->fd, bytes + i, 1);
+	    usleep(10000);
+	    if (!readMouse(pInfo,&c)) {
 #ifdef DEBUG
-	    xf86ErrorF("sending 0x%x to PS/2 unsuccessful\n",*(bytes + i));
+		xf86ErrorF("sending 0x%x to PS/2 unsuccessful\n",*(bytes + i));
 #endif
+		return FALSE;
+	    }
+#ifdef DEBUG
+	    xf86ErrorF("Recieved: 0x%x\n",c);
+#endif
+	    if (c == 0xFA) /* ACK */
+		break;
+
+	    if (c == 0xFE) /* resend */
+		continue;
+	    
+
+	    if (c == 0xFC) /* error */
+		return FALSE;
+
+	    /* Some mice accidently enter wrap mode during init */
+	    if (c == *(bytes + i)) /* wrap mode */
+		ps2DisableWrapMode(pInfo);
+
 	    return FALSE;
 	}
-#ifdef DEBUG
-	xf86ErrorF("Recieved: 0x%x\n",c);
-#endif
-	if (c != 0xFA)
+	if (j == 10)
 	    return FALSE;
     }
     
