@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.21 2001/12/22 05:28:34 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/bundle/Imakefile,v 1.22 2002/01/26 05:04:08 torrey Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -49,8 +49,13 @@ INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
 CUSTOMVERSION = XFree86CustomVersion
 CUSTOMVERDEF =  -DXF86_CUSTOM_VERSION='$(CUSTOMVERSION)'
 #endif
+#if HasCGMachPort
+QUARTZDEFINES = -DHAS_CG_MACH_PORT
+#endif
 
-DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(BINDIR) -DXINITDIR=$(XINITDIR)
+DEFINES = $(CUSTOMVERDEF) -DXBINDIR=$(BINDIR) -DXINITDIR=$(XINITDIR) \
+          $(QUARTZDEFINES)
+EXTRAMANDEFS = -D__XBinDir__=$(BINDIR)
 #if NothingOutsideProjectRoot
 XDARWINROOT = $(BINDIR)
 #else
@@ -75,8 +80,9 @@ NormalLibraryTarget(XQuartz,$(OBJS))
 AllTarget(quartzStartup.o)
 
 AllTarget(XDarwinStartup)
-NormalProgramTarget(XDarwinStartup,XDarwinStartup.o,NullParameter, \
-	NullParameter,NullParameter)
+NormalProgramTarget(XDarwinStartup,XDarwinStartup.o, \
+	NullParameter,NullParameter, \
+	-framework CoreFoundation -framework ApplicationServices)
 InstallProgram(XDarwinStartup,$(BINDIR))
 install::
 	-(cd $(DESTDIR)$(BINDIR); $(RM) X; $(LN) XDarwinStartup X)
@@ -91,6 +97,8 @@ XDarwin:
 install::
 	pbxbuild install -target XDarwin $(PBXBUILDSTYLE) \
 		DSTROOT=$(DESTDIR)$(XDARWINROOT)
+
+InstallManPage(XDarwinStartup,$(MANDIR))
 
 clean::
 	pbxbuild "clean" -target XDarwin $(PBXBUILDSTYLE)
