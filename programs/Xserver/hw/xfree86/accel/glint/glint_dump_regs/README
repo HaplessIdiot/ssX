@@ -1,0 +1,27 @@
+Instructions to build glint_dump_regs:
+-------------------------------------
+
+Please do the following to build glint_dump_regs:
+
+- edit the "XC" path (without concluding slash) in Makefile 
+- do "make clean; make" to compile glint_dump_regs
+
+There are two configuration files for reading and writing registers of GLINT:
+- read_regs.dat (for reading registers)
+- write_regs.dat (for writing registers)
+
+The syntax is delared in the files themselves. You have to know that
+there must not be any white spaces neither between "#" and a command
+like "reg", "dacreg", "echo", "echon" nor in a string. This is bad
+parsing, I know. I have to fix that soon.
+
+When you read or write registers, you get the logfiles
+"/tmp/write_regs.log" and "/tmp/read_regs.log".
+
+Have fun!
+
+--
+email: sndirsch@suse.de
+
+
+$XFree86: $

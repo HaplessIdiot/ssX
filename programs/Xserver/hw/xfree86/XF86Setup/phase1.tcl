@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.13 1996/12/27 06:54:09 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.14 1997/04/08 10:11:06 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -323,6 +323,9 @@ if { ![getuid] } {
 		    && [file type $Pointer(Device)] == "link" } {
 	        set Pointer(RealDev) [readlink $Pointer(Device)]
 	        set Pointer(OldLink) $Pointer(Device)
+	    	if ![string compare $Pointer(RealDev) "/dev/psaux"] {
+		    set Pointer(Protocol) "PS/2"
+		}
 	    } else {
 		set Pointer(RealDev) $Pointer(Device)
 	    }

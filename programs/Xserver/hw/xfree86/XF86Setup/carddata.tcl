@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.12 1996/12/27 06:54:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.13 1997/06/03 14:11:15 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -387,6 +387,7 @@ set CardReadmes(SVGA-oak)	README.Oak
 set CardReadmes(SVGA-pvga1)	README.WstDig
 set CardReadmes(SVGA-tvga8900)	README.trident
 set CardReadmes(SVGA-video7)	README.Video7
+set CardReadmes(SVGA-NONE)	{}
 set rdmelist ""
 foreach idx [array names CardReadmes SVGA-*] {
 	eval lappend rdmelist $CardReadmes($idx)
