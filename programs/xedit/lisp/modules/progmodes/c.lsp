@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.26 2003/01/29 03:05:54 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.27 2004/01/12 17:53:20 paulo Exp $
 ;;
 
 (require "syntax")
@@ -490,8 +490,6 @@
     (indreduce :while
 	t
 	((:c-while :parens)
-	 ;; Assume that it is yet being edited, or adjusting indentation
-	(:c-while)
 	)
 	(incf c-complex)
     )
