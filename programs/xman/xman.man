@@ -1,8 +1,8 @@
 .\" $XConsortium: xman.man,v 1.23 94/04/17 20:44:02 matt Exp $
 .\"
-.\" $XFree86: xc/programs/xman/xman.man,v 1.4 2002/10/12 16:06:48 herrb Exp $
+.\" $XFree86: xc/programs/xman/xman.man,v 1.5 2004/03/12 02:17:55 dickey Exp $
 .\"
-.TH XMAN 1 __xorgversion__
+.TH XMAN 1 __vendorversion__
 .SH NAME
 xman \- Manual page display program for the X Window System
 .SH SYNOPSIS
