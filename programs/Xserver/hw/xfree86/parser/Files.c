@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.9 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Files.c,v 1.10 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -213,6 +213,7 @@ xf86freeFiles (XF86ConfFilesPtr p)
 	TestFree (p->file_rgbpath);
 	TestFree (p->file_modulepath);
 	TestFree (p->file_fontpath);
+	TestFree (p->file_comment);
 
 	xf86conffree (p);
 }

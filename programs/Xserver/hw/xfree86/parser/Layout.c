@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.15 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.16 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -325,6 +325,7 @@ xf86freeLayoutList (XF86ConfLayoutPtr ptr)
 	while (ptr)
 	{
 		TestFree (ptr->lay_identifier);
+		TestFree (ptr->lay_comment);
 		xf86freeAdjacencyList (ptr->lay_adjacency_lst);
 		xf86freeInputrefList (ptr->lay_input_lst);
 		prev = ptr;

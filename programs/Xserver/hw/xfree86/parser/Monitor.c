@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.21 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.22 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -770,6 +770,7 @@ xf86freeMonitorList (XF86ConfMonitorPtr ptr)
 		TestFree (ptr->mon_identifier);
 		TestFree (ptr->mon_vendor);
 		TestFree (ptr->mon_modelname);
+		TestFree (ptr->mon_comment);
 		xf86optionListFree (ptr->mon_option_lst);
 		xf86freeModeLineList (ptr->mon_modeline_lst);
 		prev = ptr;

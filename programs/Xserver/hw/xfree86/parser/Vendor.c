@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.10 2001/06/30 04:00:24 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.11 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -189,6 +189,7 @@ xf86freeVendorList (XF86ConfVendorPtr p)
 		return;
 	xf86freeVendorSubList (p->vnd_sub_lst);
 	TestFree (p->vnd_identifier);
+	TestFree (p->vnd_comment);
 	xf86optionListFree (p->vnd_option_lst);
 	xf86conffree (p);
 }

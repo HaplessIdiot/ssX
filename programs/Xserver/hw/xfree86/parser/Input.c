@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.7 2001/06/30 04:00:23 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Input.c,v 1.8 2001/07/02 15:38:34 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -124,6 +124,7 @@ xf86freeInputList (XF86ConfInputPtr ptr)
 	{
 		TestFree (ptr->inp_identifier);
 		TestFree (ptr->inp_driver);
+		TestFree (ptr->inp_comment);
 		xf86optionListFree (ptr->inp_option_lst);
 
 		prev = ptr;
