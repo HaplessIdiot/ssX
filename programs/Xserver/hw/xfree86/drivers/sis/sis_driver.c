@@ -2769,7 +2769,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 				     pSiS->sisfbpdc = mysisfbinfo.sisfb_lcdpdc;
 				     if(sisfbversion >= 0x010618) {
 				        pSiS->sisfb_haveemi = mysisfbinfo.sisfb_haveemi ? TRUE : FALSE;
-					pSiS->sisfb_haveemilcd = FALSE;
+					pSiS->sisfb_haveemilcd = TRUE;  /* will match most cases */
 					pSiS->sisfb_emi30 = mysisfbinfo.sisfb_emi30;
 					pSiS->sisfb_emi31 = mysisfbinfo.sisfb_emi31;
 					pSiS->sisfb_emi32 = mysisfbinfo.sisfb_emi32;
