@@ -17,6 +17,7 @@
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "xf86Module.h"
+#include "xf86Opt.h"
 
 /*
  * memType is of the size of the addressable memory (machine size)
@@ -213,6 +214,7 @@ typedef struct _DriverRec {
     char *		driverName;
     void		(*Identify)(int flags);
     Bool		(*Probe)(struct _DriverRec *drv, int flags);
+    OptionInfoPtr	(*AvailableOptions)(int chipid);
     pointer		module;
     int			refCount;
 } DriverRec, *DriverPtr;

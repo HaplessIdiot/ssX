@@ -1658,7 +1658,9 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     if (xf86DoConfigure) {
 	for (i = 0; i < allocatedInstances; i++) {
 	    pPci = instances[i].pci;
-	    if (xf86IsPrimaryPci(pPci)) return 1;
+	    ConfiguredID = ((pPci->vendor << 16) | pPci->chipType);
+	    if (xf86IsPrimaryPci(pPci))
+		return 1;
 	}
 	return 0;
     }
@@ -1846,7 +1848,14 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
 	return 0;
 
     if (xf86DoConfigure) {
-	if (xf86IsPrimaryIsa()) return 1;
+	GDevPtr dev = NULL;
+    	for (i = 0; i < numDevs; i++) {
+	    if (xf86IsPrimaryIsa()) {
+	    	dev = devList[i];
+	    	if (FindIsaDevice) ConfiguredID = (*FindIsaDevice)(dev);
+ 		return 1;
+	    }
+	}
 	return 0;
     }
 

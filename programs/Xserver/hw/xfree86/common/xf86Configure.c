@@ -39,6 +39,8 @@
 #include "xf86tokens.h"
 #include "Configint.h"
 
+int ConfiguredID = -1;
+
 static int haveVGA = -1;
 
 XF86ConfInputPtr
@@ -223,7 +225,7 @@ configureModuleSection (void)
     	module1 = xf86confmalloc(sizeof(XF86LoadRec));
     	memset((XF86LoadPtr)module1,0,sizeof(XF86LoadRec));
     	module1->load_name = "extmod";
-	ptr->mod_load_lst = (XF86LoadPtr)addListItem(
+	ptr->mod_load_lst = (XF86OptionPtr)addListItem(
 					(glp)ptr->mod_load_lst, (glp)module1);
     }
 
