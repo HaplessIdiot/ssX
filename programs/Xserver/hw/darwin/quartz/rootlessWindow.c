@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.9 2002/07/24 05:58:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessWindow.c,v 1.10 2002/08/28 06:41:26 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -375,7 +375,9 @@ RootlessResizeCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg,
                          RegionPtr prgnSrc)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
-    SCREEN_UNWRAP(pScreen, CopyWindow);
+    // Don't unwrap pScreen->CopyWindow.
+    // The bogus rewrap with RootlessCopyWindow causes a crash if
+    // CopyWindow is called again during the same resize.
     RL_DEBUG_MSG("resizecopywindowFB start (win 0x%x) ", pWin);
 
     {
@@ -395,12 +397,10 @@ RootlessResizeCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg,
                       &rgnDst, dx, dy, fbCopyWindowProc, 0, 0);
 
         // don't update - resize will update everything
-        // fixme DO update?
         REGION_UNINIT(pScreen, &rgnDst);
         fbValidateDrawable (&pWin->drawable);
     }
 
-    SCREEN_WRAP(pScreen, CopyWindow);
     RL_DEBUG_MSG("resizecopywindowFB end\n");
 }
 
@@ -718,7 +718,7 @@ RootlessPaintWindowBackground(WindowPtr pWin, RegionPtr pRegion, int what)
  
     SCREEN_UNWRAP(pScreen, PaintWindowBackground);
     RL_DEBUG_MSG("paintwindowbackground start (win 0x%x, framed %i) ",
-                 pWin, framed);
+                 pWin, IsFramedWindow(pWin));
 
     if (IsFramedWindow(pWin)) {
         if (IsRoot(pWin)) {
