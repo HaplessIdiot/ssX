@@ -32,12 +32,16 @@ PERFORMANCE OF THIS SOFTWARE.
 		 	     makoto@sm.sony.co.jp
 				
 ***********************************************************************/
-/* $XFree86: xc/lib/X11/imCallbk.c,v 3.7 2001/08/18 02:41:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imCallbk.c,v 3.8 2002/12/15 01:20:56 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "XlcPubI.h"
+#ifdef X_LOCALE
+#define mblen(a,b)	_Xmblen(a,b)
+extern int _Xmblen ();
+#endif
 
 #define sz_CARD8                 1
 #define sz_INT8                  1
