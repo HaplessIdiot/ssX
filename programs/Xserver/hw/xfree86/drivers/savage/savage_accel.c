@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.16 2002/05/14 20:19:51 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.17 2002/10/02 20:39:54 alanh Exp $ */
 
 /*
  *
@@ -417,7 +417,7 @@ SavageInitAccel(ScreenPtr pScreen)
 #if 1
     xaaptr->SetupForScreenToScreenCopy = SavageSetupForScreenToScreenCopy;
     xaaptr->SubsequentScreenToScreenCopy = SavageSubsequentScreenToScreenCopy;
-    xaaptr->ScreenToScreenCopyFlags = NO_TRANSPARENCY | ROP_NEEDS_SOURCE;
+    xaaptr->ScreenToScreenCopyFlags = NO_TRANSPARENCY | NO_PLANEMASK | ROP_NEEDS_SOURCE;
 #endif
 
 
@@ -438,6 +438,7 @@ SavageInitAccel(ScreenPtr pScreen)
     xaaptr->Mono8x8PatternFillFlags = 0
 	| HARDWARE_PATTERN_PROGRAMMED_BITS 
 	| HARDWARE_PATTERN_SCREEN_ORIGIN
+	| ROP_NEEDS_SOURCE
 	| BIT_ORDER_IN_BYTE_MSBFIRST
 	;
     if( psav->Chipset == S3_SAVAGE4 )

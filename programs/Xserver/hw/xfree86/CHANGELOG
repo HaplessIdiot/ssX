@@ -1,4 +1,7 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 469. Fix Mono8x8 code in savage driver, needed ROP_NEEDS_SOURCE, also
+      add NO_PLANEMASK to ScreenToScreen as code doesn't handle that case
+      (Alan Hourihane).
  468. Add a little utility to read and write I/O ports, for those host
       architectures that have them (Marc La France).
  467. Ignore (with messages) any HorizSync and VertRefresh specifications for
@@ -15476,4 +15479,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2381 2002/11/08 02:46:01 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2382 2002/11/08 17:41:06 tsi Exp $
