@@ -3509,7 +3509,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,USHORT ModeNo)
    SiSRegInit(SiS_Pr, BaseAddr);
    SiS_GetSysFlags(SiS_Pr, HwInfo);
 
-#if defined(LINUX_XF86) && (defined(i386) || defined(__i386) || defined(__i386__))
+#if defined(LINUX_XF86) && (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
    if(pScrn) SiS_Pr->SiS_VGAINFO = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
    else
 #endif
@@ -3740,7 +3740,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SiSRegInit(SiS_Pr, BaseAddr);
    SiSInitPtr(SiS_Pr, HwInfo);
    SiS_GetSysFlags(SiS_Pr, HwInfo);
-#if (defined(i386) || defined(__i386) || defined(__i386__))
+#if (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
    SiS_Pr->SiS_VGAINFO = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
 #else
    SiS_Pr->SiS_VGAINFO = 0x11;
@@ -3920,7 +3920,7 @@ SiSBIOSSetModeCRT1(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, ScrnInfoPtr pScrn,
    SiSInitPtr(SiS_Pr, HwInfo);
    SiSRegInit(SiS_Pr, BaseAddr);
    SiS_GetSysFlags(SiS_Pr, HwInfo);
-#if (defined(i386) || defined(__i386) || defined(__i386__))
+#if (defined(i386) || defined(__i386) || defined(__i386__) || defined(__AMD64__))
    SiS_Pr->SiS_VGAINFO = SiS_GetSetBIOSScratch(pScrn, 0x489, 0xff);
 #else
    SiS_Pr->SiS_VGAINFO = 0x11;

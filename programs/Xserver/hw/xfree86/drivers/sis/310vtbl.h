@@ -684,7 +684,8 @@ static SiS_VCLKDataStruct SiS310_VCLKData[]=
 	{ 0x5a,0x64, 65}, /* 0x5f 1280x720 - temp */
 	{ 0x63,0x46, 68}, /* 0x60 1280x768_2 */
 	{ 0x31,0x42, 79}, /* 0x61 1280x768_3 - temp */
-	{    0,   0,  0}  /* 0x62 - custom (will be filled out at run-time) */
+	{    0,   0,  0}, /* 0x62 - custom (will be filled out at run-time) */
+	{ 0x5a,0x64, 65}  /* 0x63 1280x720 (LCD LVDS) */
 };
 
 static SiS_VBVCLKDataStruct SiS310_VBVCLKData[]=
@@ -794,7 +795,7 @@ static SiS_VBVCLKDataStruct SiS310_VBVCLKData[]=
 	{ 0x63,0x46, 68}, /* 0x60 1280x768_2 */
 	{ 0x31,0x42, 79}, /* 0x61 1280x768_3 - temp */
 	{    0,   0,  0}, /* 0x62 - custom (will be filled out at run-time) */
-	{ 0x5a,0x64, 65}, /* 0x63 1280x720 (LCD LVDS) */
+	{ 0x5a,0x64, 65}  /* 0x63 1280x720 (LCD LVDS) */
 };
 
 static const DRAM4Type SiS310_SR15[8] = {

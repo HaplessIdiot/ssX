@@ -1363,23 +1363,33 @@ SiSEstimateCRT2Clock(ScrnInfoPtr pScrn, BOOLEAN IsForMergedFBCRT2)
         SISPtr pSiS = SISPTR(pScrn);
 
 	if(pSiS->VBFlags & CRT2_LCD) {
-  	   if(pSiS->VBLCDFlags & (VB_LCD_320x480 | VB_LCD_800x600 | VB_LCD_640x480))
+  	   if(pSiS->VBLCDFlags & (VB_LCD_320x480 | VB_LCD_800x600 | VB_LCD_640x480)) {
 	      return 40000;
-	   else if(pSiS->VBLCDFlags & (VB_LCD_1024x768 | VB_LCD_1024x600 | VB_LCD_1152x768))
+	   } else if(pSiS->VBLCDFlags & (VB_LCD_1024x768 | VB_LCD_1024x600 | VB_LCD_1152x768)) {
 	      return 65000;
-	   else if(pSiS->VBLCDFlags & VB_LCD_1280x768)
+	   } else if(pSiS->VBLCDFlags & VB_LCD_1280x720) {
+	      return 75000;
+	   } else if(pSiS->VBLCDFlags & VB_LCD_1280x768) {
 	      return 81000;
-	   else if(pSiS->VBLCDFlags & VB_LCD_1400x1050) {
+	   } else if(pSiS->VBLCDFlags & VB_LCD_1280x800) {
+	      /* Must fake clock; built-in mode shows 83 for VGA, but uses only 70 for LCD */
+	      if(IsForMergedFBCRT2) return 83000;
+	      else                  return 70000;
+	   } else if(pSiS->VBLCDFlags & VB_LCD_1400x1050) {
 	      /* Must fake clock; built-in mode shows 122 for VGA, but uses only 108 for LCD */
 	      if(IsForMergedFBCRT2) return 123000;
 	      else                  return 108000;
-	   } else if(pSiS->VBLCDFlags & (VB_LCD_1280x1024 | VB_LCD_1280x960))
+	   } else if(pSiS->VBLCDFlags & (VB_LCD_1280x1024 | VB_LCD_1280x960)) {
 	      return 108000;
-	   else if(pSiS->VBLCDFlags & VB_LCD_1600x1200)
+	   } else if(pSiS->VBLCDFlags & VB_LCD_1680x1050) {
+	      /* Must fake clock; built-in mode shows 147 for VGA, but uses only 122 for LCD */
+	      if(IsForMergedFBCRT2) return 148000;
+	      else                  return 122000;
+	   } else if(pSiS->VBLCDFlags & VB_LCD_1600x1200) {
 	      return 162000;
-	   else if((pSiS->VBLCDFlags & VB_LCD_CUSTOM) && (pSiS->SiS_Pr->CP_HaveCustomData))
+	   } else if((pSiS->VBLCDFlags & VB_LCD_CUSTOM) && (pSiS->SiS_Pr->CP_HaveCustomData)) {
 	      return pSiS->SiS_Pr->CP_MaxClock;
-	   else
+	   } else
 	      return 108000;
 	} else if(pSiS->VBFlags & CRT2_TV) {
 	   if(pSiS->VBFlags & VB_CHRONTEL) {
