@@ -198,10 +198,6 @@ typedef struct _XtAppStruct {
     ThreadAppYieldLockProc yield_lock;
     ThreadAppRestoreLockProc restore_lock;
     ThreadAppProc free_lock;
-    ThreadAppProc push_thread;
-    ThreadAppProc pop_thread;
-    ThreadAppTopProc is_top_thread;
-    ThreadAppProc wait_thread;
 #endif
 } XtAppStruct;
 
