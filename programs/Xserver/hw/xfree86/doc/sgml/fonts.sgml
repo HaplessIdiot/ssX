@@ -9,7 +9,7 @@
 <date>5 March 2000</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.6 2000/02/14 19:20:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.7 2000/03/06 22:59:25 dawes Exp $
 </ident>
 
 <toc>
@@ -354,9 +354,9 @@ example,
 <p>mulearabic-2 encodings/mulearabic-2.enc
 </tscreen>
 
-Note that the name of an encoding must be specified in the encoding
-file's STARTENCODING or ALIAS line.  It is not enough to create an
-`<tt/encodings.dir/' entry.
+Note that the name of an encoding <it/must/ be specified in the
+encoding file's STARTENCODING or ALIAS line.  It is not enough to
+create an `<tt/encodings.dir/' entry.
 
 If your platform supports it (it probably does), encoding files may be
 compressed or gzipped.
@@ -405,10 +405,25 @@ should be
 <tscreen>
 SIZE 0x75 0x80
 </tscreen>
-Codes outside the region defined by the size line are supposed to be
-undefined.  Encodings default to linear encoding with a size of 256
-(0x100).  This means that you must declare the size of all 16 bit
-encodings.
+In the case of a matrix encoding, a `<tt/FIRSTINDEX/' may be included
+to specify the minimum glyph index in an encoding.  The keyword
+`<tt/FIRSTINDEX/' is followed by two integers, the minimum row number
+followed by the minimum column number:
+<tscreen>
+FIRSTINDEX 0x20 0x20
+</tscreen>
+In the case of a linear encoding, a `<tt/FIRSTINDEX/' line should
+usually not be included.  If for some reason however it is desired
+that it should be included, it should be followed by a single integer.
+
+Note that in some font backends inclusion of a `<tt/FIRSTINDEX/' line
+has the side effect of disabling default glyph generation, and this
+keyword should therefore be avoided unless absolutely necessary.
+
+Codes outside the region defined by the `<tt/SIZE/' and
+`<tt/FIRSTINDEX/' lines are supposed to be undefined.  Encodings
+default to linear encoding with a size of 256 (0x100).  This means
+that you must declare the size of all 16 bit encodings.
 
 What follows is one or more mapping sections.  A mapping section
 starts with a `<tt/STARTMAPPING/' line stating the target of the mapping.

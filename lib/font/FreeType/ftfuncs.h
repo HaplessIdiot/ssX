@@ -1,4 +1,26 @@
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.7 1999/04/25 15:54:25 dawes Exp $ */
+/*
+Copyright (c) 1998-2000 by Juliusz Chroboczek
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+*/
+
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.8 1999/10/13 04:20:50 dawes Exp $ */
 
 /* Number of buckets in the hashtable holding faces */
 #define NUMFACEBUCKETS 32
@@ -61,10 +83,6 @@ typedef struct TTFInstance_s {
                                 /* 1=known not to exist */
                                 /* 2=known to exist, not rasterised */
                                 /* 3=rasterised, glyph available */
-#ifdef ANTI_ALIASING
-  CharInfoPtr *glyphsAnti;
-  int **availableAnti;
-#endif
   int refcount;
   struct TTFInstance_s *next;   /* link to next instance */
 } TTFInstance;
@@ -89,11 +107,9 @@ static int
                       int charcell, FontBitmapFormat *bmfmt);
 static void FreeTypeFreeInstance(TTFInstance *instance);
 static int
- FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, TTFInstance *instance,
-                          int nlevels);
+ FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, TTFInstance *instance);
 static int 
-FreeTypeRasteriseGlyph(CharInfoPtr tgp, TTFInstance *instance,
-                       int hasMetrics, int nlevels);
+FreeTypeRasteriseGlyph(CharInfoPtr tgp, TTFInstance *instance, int hasMetrics);
 static void FreeTypeFreeFont(TTFFont *font);
 static void FreeTypeFreeXFont(FontPtr pFont, int freeProps);
 static void FreeTypeUnloadXFont(FontPtr pFont);
@@ -101,8 +117,8 @@ static int
 FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info, 
                       char *fontname, 
                       int rawAverageWidth);
-static int FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font, int nlevels);
-static int FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, TTFFont *font, int nlevels);
+static int FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font);
+static int FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, TTFFont *font);
 static int
 FreeTypeLoadFont(TTFFont **fontp, char *fileName,
                  FontScalablePtr vals, FontEntryPtr entry,

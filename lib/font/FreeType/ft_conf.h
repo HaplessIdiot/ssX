@@ -1,6 +1,6 @@
 /* ft_conf.h.  Xserver-specific version. */
 
-/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.6 1999/03/14 03:21:16 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft_conf.h,v 1.7 1999/04/25 10:01:35 dawes Exp $ */
 
 /* we need the following because there are some typedefs in this file */
 #ifndef FT_CONF_H
@@ -107,9 +107,7 @@
 /* by the engine and need no extensions, undefine this configuration     */
 /* macro to save a few more bytes.                                       */
 
-/* we're using ftxcmap.h */
-
-#define  TT_CONFIG_OPTION_EXTEND_ENGINE
+#undef  TT_CONFIG_OPTION_EXTEND_ENGINE
 
 
 /*************************************************************************/
@@ -117,12 +115,7 @@
 /* a.k.a. font-smoothing or anti-aliasing. Default is on, but you can    */
 /* disable it if you don't need it.                                      */
 
-#ifdef ANTI_ALIASING
-#define  TT_CONFIG_OPTION_GRAY_SCALING
-#else
 #undef  TT_CONFIG_OPTION_GRAY_SCALING
-#endif
-
 
 /*************************************************************************/
 /* Define this if you want to use a big 'switch' statement within the    */

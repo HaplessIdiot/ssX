@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.62 2000/06/30 17:15:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.64 2000/11/03 18:46:13 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -116,9 +116,9 @@ static int pix24bpp = 0;
  
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "1.3.0"
+#define S3VIRGE_VERSION_NAME "1.4.0"
 #define S3VIRGE_VERSION_MAJOR   1
-#define S3VIRGE_VERSION_MINOR   3
+#define S3VIRGE_VERSION_MINOR   4
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -319,6 +319,9 @@ static const char *vbeSymbols[] = {
 static const char *fbSymbols[] = {
   "fbScreenInit",
   "fbBres",
+#ifdef RENDER
+  "fbPictureInit",
+#endif
   NULL
 };
 
@@ -1510,7 +1513,24 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
-   
+
+    /* Setup WAITFIFO() for accel and ModeInit() */
+    /* Needs to be done prior to first ModeInit call */
+    /* and any accel activity. */
+    switch(ps3v->Chipset) 
+      {
+	/* GX2_SERIES chips, GX2 & TRIO_3D_2X */
+      case S3_ViRGE_GX2:
+      case S3_TRIO_3D_2X:
+	ps3v->pWaitFifo = S3VWaitFifoGX2;
+	break;
+      case S3_ViRGE:
+      case S3_ViRGE_VX:
+      default:
+	ps3v->pWaitFifo = S3VWaitFifoMain;
+	break;
+      }
+
     return TRUE;
 }
 
@@ -1537,14 +1557,6 @@ S3VEnterVT(int scrnIndex, int flags)
 #ifdef unmap_always
     S3VMapMem(pScrn);
 #endif
-    #if 0
-    	/* todo - KJB - cep */
-    				/* New pointer mapping means we need to call */
-    				/* cfb...Init again and anything else required */
-    				/* to notify the upper layers of the change. */
-    if( !S3VInternalScreenInit(scrnIndex, pScreen) )
-    	return FALSE;
-	#endif
     S3VSave(pScrn);
     return S3VModeInit(pScrn, pScrn->currentMode);
 }
@@ -1687,7 +1699,7 @@ S3VSave (ScrnInfoPtr pScrn)
    VGAOUT8(vgaCRIndex, 0x33);             
    save->CR33 = VGAIN8(vgaCRReg);
    if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset) || S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-      /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ ) 
+       /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) ) 
    {
       VGAOUT8(vgaCRIndex, 0x85);
       save->CR85 = VGAIN8(vgaCRReg);
@@ -1695,6 +1707,19 @@ S3VSave (ScrnInfoPtr pScrn)
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
       VGAOUT8(vgaCRIndex, 0x86);
       save->CR86 = VGAIN8(vgaCRReg);
+   }
+   if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
+       S3_ViRGE_MX_SERIES(ps3v->Chipset) ) {
+      VGAOUT8(vgaCRIndex, 0x7B);
+      save->CR7B = VGAIN8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x7D);
+      save->CR7D = VGAIN8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x87);
+      save->CR87 = VGAIN8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x92);
+      save->CR92 = VGAIN8(vgaCRReg);
+      VGAOUT8(vgaCRIndex, 0x93);
+      save->CR93 = VGAIN8(vgaCRReg);
    }
    if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) || 
        S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
@@ -1773,7 +1798,7 @@ S3VSave (ScrnInfoPtr pScrn)
 
    /* Now save Memory Interface Unit registers */
    if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-      /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ )
+      /* MXTESTME /* || S3_ViRGE_MX_SERIES(ps3v->Chipset) )
      {
      /* No MMPR regs on MX & GX2 */
      }
@@ -1910,9 +1935,6 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRIndex, 0x55);
    VGAOUT8(vgaCRReg, restore->CR55);
 
-   /* cep kjb 
-      sleep( 7 );*/
-
    /* Extended mode timings registers */  
    VGAOUT8(vgaCRIndex, 0x53);             
    VGAOUT8(vgaCRReg, restore->CR53); 
@@ -1930,9 +1952,6 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRReg, restore->CR65);
    VGAOUT8(vgaCRIndex, 0x6d);
    VGAOUT8(vgaCRReg, restore->CR6D);
-
-   /* cep kjb 
-      sleep( 7 );*/
 
    /* Restore the desired video mode with CR67 */
         
@@ -1974,7 +1993,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRIndex, 0x33);
    VGAOUT8(vgaCRReg, restore->CR33);
    if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset) || S3_ViRGE_GX2_SERIES(ps3v->Chipset)
-      /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ ) 
+       /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) ) 
    {
       VGAOUT8(vgaCRIndex, 0x85);
       VGAOUT8(vgaCRReg, restore->CR85);
@@ -1982,6 +2001,18 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    if (ps3v->Chipset == S3_ViRGE_DXGX) {
       VGAOUT8(vgaCRIndex, 0x86);
       VGAOUT8(vgaCRReg, restore->CR86);
+   }
+   if (ps3v->Chipset == S3_ViRGE_GX2) {
+      VGAOUT8(vgaCRIndex, 0x7B);
+      VGAOUT8(vgaCRReg, restore->CR7B);
+      VGAOUT8(vgaCRIndex, 0x7D);
+      VGAOUT8(vgaCRReg, restore->CR7D);
+      VGAOUT8(vgaCRIndex, 0x87);
+      VGAOUT8(vgaCRReg, restore->CR87);
+      VGAOUT8(vgaCRIndex, 0x92);
+      VGAOUT8(vgaCRReg, restore->CR92);
+      VGAOUT8(vgaCRIndex, 0x93);
+      VGAOUT8(vgaCRReg, restore->CR93);
    }
    if (ps3v->Chipset == S3_ViRGE_DXGX || S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
        S3_ViRGE_MX_SERIES(ps3v->Chipset)) {
@@ -2090,7 +2121,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
 
    VerticalRetraceWait();
    if (S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-       /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ )
+       /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) )
      {
       VGAOUT8(vgaCRIndex, 0x85);    
       /* primary stream threshold */
@@ -2101,7 +2132,7 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
        OUTREG(FIFO_CONTROL_REG, restore->MMPR0);
      }
    if( !( S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-         /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ ))
+	  /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) ))
    {
      WaitIdle();                  /* Don't ask... */
      OUTREG(MIU_CONTROL_REG, restore->MMPR1);
@@ -2443,14 +2474,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	
   miInitializeBackingStore(pScreen);
   xf86SetBackingStore(pScreen);
-  /* Problem with accel appears to crash GX2 on mouse moves */
-  /* re-enable this when fixed. */
-  if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) )
-  {}
-  else
-    {
-    xf86SetSilkenMouse(pScreen);
-    }
+  xf86SetSilkenMouse(pScreen);
   						/* hardware cursor needs to wrap this layer */
   S3VDGAInit(pScreen);
 
@@ -2600,6 +2624,10 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
 	  ret = FALSE;
 	  break;
 	}
+#ifdef RENDER
+      if (ret)
+	fbPictureInit (pScreen, 0, 0);
+#endif
     }
   else
     {
@@ -2721,7 +2749,7 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    VGAOUT8(vgaCRIndex, 0x3a);
    tmp = VGAIN8(vgaCRReg);
    if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-       /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ )
+       /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) )
      {
      if(ps3v->pci_burst)
         new->CR3A = (tmp & 0x78) | 0x10; /* ENH 256, PCI burst */
@@ -2754,8 +2782,17 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       new->CR63 = 0x09;
       }
    else {
-      new->CR66 = 0x89; 
-      new->CR63 = 0;
+     new->CR66 = 0x89; 
+     /* Set display fifo */
+     if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) ||
+	 S3_ViRGE_MX_SERIES(ps3v->Chipset) )
+       {
+	 new->CR63 = 0x08;
+       }
+     else
+       {
+	 new->CR63 = 0;
+       }
       }    
 
   /* Now set linear addr. registers */
@@ -2909,19 +2946,19 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        if (pScrn->bitsPerPixel == 8)
 	  new->CR67 = 0x00;
        else if (pScrn->bitsPerPixel == 16) {
+	 /* XV support needs STREAMS in depth 16 */
+          ps3v->NeedSTREAMS = TRUE;
+          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
 	  if (pScrn->weight.green == 5)
-	     new->CR67 = 0x30;                  /* 15bpp */
+	     new->CR67 = 0x30 | 0x4;                  /* 15bpp */
 	  else
-	     new->CR67 = 0x50;                  /* 16bpp */
+	     new->CR67 = 0x50 | 0x4;                  /* 16bpp */
           }
-       else if ((pScrn->bitsPerPixel == 24) /* || (pScrn->bitsPerPixel == 32) */ ) {
-          new->CR67 = 0x74;              /* 24bpp, STREAMS */
+       else if ((pScrn->bitsPerPixel == 24) ) {
+	 new->CR67 = 0x74;              /* 24bpp, STREAMS */
 	  					/* Flag STREAMS proc. required */
           ps3v->NeedSTREAMS = TRUE;
           S3VInitSTREAMS(pScrn, new->STREAMS, mode);
-          /* MXTESTME - remove the next 2 lines completely */
-          if( S3_ViRGE_MX_SERIES(ps3v->Chipset) )
-            new->MMPR0 = 0xc098;            /* Adjust FIFO slots */
           }
        else if (pScrn->bitsPerPixel == 32) {
           new->CR67 = 0xd0;              /* 32bpp */
@@ -3040,8 +3077,8 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          }
       else if (pScrn->bitsPerPixel == 16) {
          new->CR67 = 0x50 | 0x0c;
-	  					/* Flag STREAMS proc. required */
-	 /* cep */
+	 /* Flag STREAMS proc. required */
+	 /* XV support needs STREAMS in depth 16 */
          ps3v->NeedSTREAMS = TRUE;
          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
 	 /*new->MMPR0 = 0xc000;            / Adjust FIFO slots */
@@ -3054,7 +3091,6 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
          S3VInitSTREAMS(pScrn, new->STREAMS, mode);
 	 /*new->MMPR0 = 0xc000;            / Adjust FIFO slots */
          new->MMPR0 = 0x107c02;            /* Adjust FIFO slots, overlay */
-	 /* kjb cep */
          }
       else if (pScrn->bitsPerPixel == 32) { 
          new->CR67 = 0xd0 | 0x0c;
@@ -3091,9 +3127,16 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
         new->CR42 = 0x00;
         }
 
-   /* Set display fifo */
-   new->CR34 = 0x10;  
-
+   if(S3_ViRGE_GX2_SERIES(ps3v->Chipset) || 
+      S3_ViRGE_MX_SERIES(ps3v->Chipset) )
+     {
+       new->CR34 = 0;
+     }
+   else
+     {
+       /* Set display fifo */
+       new->CR34 = 0x10;  
+     }
    /* Now we adjust registers for extended mode timings */
    /* This is taken without change from the accel/s3_virge code */
 
@@ -3138,11 +3181,20 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
    new->CR33 = 0x20;
    if (S3_TRIO_3D_2X_SERIES(ps3v->Chipset) || S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-       /* MXTESTME || S3_ViRGE_MX_SERIES(ps3v->Chipset) */ ) 
+       /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) ) 
    {
-      new->CR85 = 0x1f;  /* avoid sreen flickering */
+     new->CR85 = 0x12;  /* avoid sreen flickering */
       /* by increasing FIFO filling, larger # fills FIFO from memory earlier */
       /* on GX2 this affects all depths, not just those running STREAMS. */
+      /* new, secondary stream settings. */
+      new->CR87 = 0x10;
+      /* gx2 - set up in XV init code */
+      new->CR92 = 0x00;
+      new->CR93 = 0x00;
+      /* gx2 primary mclk timeout, def=0xb */
+      new->CR7B = 0xb;
+      /* gx2 secondary mclk timeout, def=0xb */
+      new->CR7D = 0xb;
    }
    if (ps3v->Chipset == S3_ViRGE_DXGX || S3_TRIO_3D_SERIES(ps3v->Chipset)) {
       new->CR86 = 0x80;  /* disable DAC power saving to avoid bright left edge */
@@ -3318,6 +3370,8 @@ S3VSaveScreen(ScreenPtr pScreen, int mode)
 static void
 S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode)
 {
+  PVERB5("	S3VInitSTREAMS\n");
+  
   switch (pScrn->bitsPerPixel)
     {
     case 16:

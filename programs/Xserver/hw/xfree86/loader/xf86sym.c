@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.169 2000/11/02 19:10:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.170 2000/11/06 19:24:08 dawes Exp $ */
 
 /*
  *
@@ -915,7 +915,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86WriteMmioNB8)
    SYMFUNC(memcpy)
 #endif
-#if defined(sun) || defined(SVR4) && !defined(USL)
+#if defined(sun) && defined(SVR4)
    SYMFUNC(inb)
    SYMFUNC(inw)
    SYMFUNC(inl)

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 1998 by Juliusz Chroboczek
+Copyright (c) 1998-2000 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.8 1999/08/21 13:48:03 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.9 1999/10/13 04:20:51 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
@@ -538,26 +538,26 @@ static char *iso8859_15_aliases[2]={"fcd8859-15",0};
 
 static struct font_encoding initial_encodings[]=
 {
-  {"iso10646-1",0,256*256,0,iso10646,0}, /* Unicode */
-  {"iso8859-1",0,256,0,iso8859_1,0},  /* Latin 1 (West European) */
-  {"iso8859-2",0,256,0,iso8859_2,0},  /* Latin 2 (East European) */
-  {"iso8859-3",0,256,0,iso8859_3,0},  /* Latin 3 (South European) */
-  {"iso8859-4",0,256,0,iso8859_4,0},  /* Latin 4 (North European) */
-  {"iso8859-5",0,256,0,iso8859_5,0},  /* Cyrillic */
-  {"iso8859-6",0,256,0,iso8859_6,0},  /* Arabic */
-  {"iso8859-7",0,256,0,iso8859_7,0},  /* Greek */
-  {"iso8859-8",0,256,0,iso8859_8,0},  /* Hebrew */
-  {"iso8859-9",0,256,0,iso8859_9,0},  /* Latin 5 (Turkish) */
-  {"iso8859-10",0,256,0,iso8859_10,0},/* Latin 6 (Nordic) */
-  {"iso8859-15",iso8859_15_aliases,256,0,iso8859_15,0}, /* Latin 9 */
-  {"koi8-r",0,256,0,koi8_r,0},        /* Russian */
-  {"koi8-ru",0,256,0,koi8_ru,0},      /* Ukrainian */
-  {"koi8-uni",0,256,0,koi8_uni,0},    /* Russian/Ukrainian/Bielorussian */
-  {"koi8-e",0,256,0,koi8_e,0},        /* ``European'' */
-  {"koi8-u",0,256,0,koi8_u,0},        /* Ukrainian too */
-  {"microsoft-symbol",0,256,0,microsoft_symbol,0},
-  {"apple-roman",0,256,0,apple_roman,0},
-  {0,0,0,0,0}
+  {"iso10646-1",0,256*256,0,iso10646,0,0,0}, /* Unicode */
+  {"iso8859-1",0,256,0,iso8859_1,0,0,0}, /* Latin 1 (West European) */
+  {"iso8859-2",0,256,0,iso8859_2,0,0,0}, /* Latin 2 (East European) */
+  {"iso8859-3",0,256,0,iso8859_3,0,0,0}, /* Latin 3 (South European) */
+  {"iso8859-4",0,256,0,iso8859_4,0,0,0}, /* Latin 4 (North European) */
+  {"iso8859-5",0,256,0,iso8859_5,0,0,0}, /* Cyrillic */
+  {"iso8859-6",0,256,0,iso8859_6,0,0,0}, /* Arabic */
+  {"iso8859-7",0,256,0,iso8859_7,0,0,0}, /* Greek */
+  {"iso8859-8",0,256,0,iso8859_8,0,0,0}, /* Hebrew */
+  {"iso8859-9",0,256,0,iso8859_9,0,0,0}, /* Latin 5 (Turkish) */
+  {"iso8859-10",0,256,0,iso8859_10,0,0,0}, /* Latin 6 (Nordic) */
+  {"iso8859-15",iso8859_15_aliases,256,0,iso8859_15,0,0,0}, /* Latin 9 */
+  {"koi8-r",0,256,0,koi8_r,0,0,0},       /* Russian */
+  {"koi8-ru",0,256,0,koi8_ru,0,0,0},     /* Ukrainian */
+  {"koi8-uni",0,256,0,koi8_uni,0,0,0},   /* Russian/Ukrainian/Bielorussian */
+  {"koi8-e",0,256,0,koi8_e,0,0,0},       /* ``European'' */
+  {"koi8-u",0,256,0,koi8_u,0,0,0},       /* Ukrainian too */
+  {"microsoft-symbol",0,256,0,microsoft_symbol,0,0,0},
+  {"apple-roman",0,256,0,apple_roman,0,0,0},
+  {0,0,0,0,0,0,0}
 };
 
 static struct font_encoding *font_encodings=NULL;
@@ -629,10 +629,17 @@ font_encoding_recode(unsigned code,
                      struct font_encoding_mapping *mapping)
 {
   if(mapping->recode) {
-    if((encoding->row_size==0 && code>=encoding->size) ||
-       (encoding->row_size!=0 &&
-        (code/0x100>=encoding->size || ((code&0xFF)>=encoding->row_size))))
-      return 0;
+    if(encoding->row_size==0) {
+      /* linear encoding */
+      if(code < encoding->first || code>=encoding->size)
+        return 0;
+    } else {
+      /* matrix encoding */
+      int row=code/0x100, col=code&0xFF;
+      if(row < encoding->first || row >= encoding->size ||
+         col < encoding->first_col || col >= encoding->row_size)
+        return 0;
+    }
     return (*mapping->recode)(code, mapping->client_data);
   } else
     return code;
@@ -683,8 +690,49 @@ loadEncoding(const char *encoding_name, const char *filename)
   if((encoding=loadEncodingFile(encoding_name, filename))==NULL) {
     return 0;
   } else {
+    char **alias;
+    int found = 0;
+
+    /* Check whether the name is already known for this encoding */
+    if(strcasecmp(encoding->name, encoding_name) == 0) {
+      found = 1;
+    } else {
+      for(alias=encoding->aliases; *alias; alias++)
+        if(!strcasecmp(*alias, encoding_name)) {
+          found = 1;
+          break;
+        }
+    }
+
+    if(!found) {
+      /* Add a new alias.  This works because the encoding has been
+         allocated dynamically */
+      char **new_aliases;
+      char *new_name;
+      int numaliases = 0;
+
+      new_name = xalloc(strlen(encoding_name + 1));
+      if(new_name == NULL)
+        return NULL;
+      strcpy(new_name, encoding_name);
+      for(alias = encoding->aliases; *alias; alias++)
+        numaliases++;
+      new_aliases = (char**)xalloc((numaliases+2)*sizeof(char*));
+      if(new_aliases == NULL) {
+        xfree(new_name);
+        return NULL;
+      }
+      memcpy(new_aliases, encoding->aliases, numaliases*sizeof(char*));
+      new_aliases[numaliases] = new_name;
+      new_aliases[numaliases+1] = NULL;
+      xfree(encoding->aliases);
+      encoding->aliases = new_aliases;
+    }
+          
+    /* register the new encoding */
     encoding->next=font_encodings;
     font_encodings=encoding;
+
     return encoding;
   }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.18 2000/03/06 22:59:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.19 2000/10/23 12:10:15 alanh Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -69,6 +69,7 @@ static void S3VPolylinesThinSolidWrapper(DrawablePtr, GCPtr, int, int,
 				DDXPointPtr);
 static void S3VPolySegmentThinSolidWrapper(DrawablePtr, GCPtr, int, xSegment*);
 
+
 Bool 
 S3VAccelInit(ScreenPtr pScreen)
 {
@@ -80,15 +81,16 @@ S3VAccelInit(ScreenPtr pScreen)
     ps3v->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
 
-
-    switch(ps3v->Chipset) {
-    case S3_ViRGE:
-    case S3_ViRGE_VX:
+    switch(ps3v->Chipset) 
+      {
+      case S3_ViRGE:
+      case S3_ViRGE_VX:
 	ps3v->AccelFlags = BLT_BUG;
-    default:
+	break;
+      default:
 	ps3v->AccelFlags = 0;
 	break;
-    }
+      }
 
     ps3v->AccelFlags |= MONO_TRANS_BUG; /* which aren't broken ? */
 
@@ -140,7 +142,6 @@ S3VAccelInit(ScreenPtr pScreen)
                 S3VSetupForCPUToScreenColorExpand;
     infoPtr->SubsequentCPUToScreenColorExpandFill =
                 S3VSubsequentCPUToScreenColorExpand;
-
     
     /* Image Writes */
     infoPtr->ImageWriteFlags =  	ROP_NEEDS_SOURCE |
@@ -1013,4 +1014,22 @@ fbBres (DrawablePtr     pDrawable,
 
 
 
+void
+S3VWaitFifoGX2(S3VPtr ps3v, int slots )
+{
+  if(ps3v->NoPCIRetry)
+    while(((INREG(SUBSYS_STAT_REG) >> 9) & 0x60) < slots){}
+}
+
+
+
+void
+S3VWaitFifoMain(S3VPtr ps3v, int slots )
+{
+  if(ps3v->NoPCIRetry) 
+    while(((INREG(SUBSYS_STAT_REG) >> 8) & 0x1f) < slots){}
+}
+
+
+/*EOF*/
 

@@ -1,6 +1,6 @@
 /*
 Copyright (c) 1997 by Mark Leisher
-Copyright (c) 1998, 1999 by Juliusz Chroboczek
+Copyright (c) 1998-2000 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.14 2000/04/05 18:13:24 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.15 2000/08/11 21:12:42 dawes Exp $ */
 
 #ifndef FONT_MODULE
 #include <string.h>
@@ -34,7 +34,6 @@ THE SOFTWARE.
 #include "fontutil.h"
 #include "FSproto.h"
 #include "freetype.h"
-#include "ftxcmap.h"
 
 #include "ttconfig.h"
 #include "fontenc.h"
@@ -82,7 +81,7 @@ ifloor(int x, int y)
   if(x>=0)
     return x/y;
   else
-    return x/y+1;
+    return x/y-1;
 }
 
 static int
@@ -195,8 +194,7 @@ FreeTypeFreeFace(TTFFace *face)
       if(otherFace && otherFace->next)
         otherFace->next=otherFace->next->next;
       else
-        fprintf(stderr,
-                "Congratulations, \
+        ErrorF("Congratulations, \
 you've found a bug in the TrueType backend: freeing unknown face\n");
     }
     MUMBLE1("Closing face: %s\n", face->filename);
@@ -302,10 +300,6 @@ FreeTypeOpenInstance(TTFInstance **instancep,
   instance->nglyphs=properties->num_Glyphs;
   instance->glyphs=0;
   instance->available=0;
-#ifdef ANTI_ALIASING
-  instance->glyphsAnti=0;
-  instance->availableAnti=0;
-#endif
 
   if(ftrc=TT_New_Instance(instance->face->face, &instance->instance)) {
     MUMBLE("Couldn't create instance\n");
@@ -465,28 +459,15 @@ FreeTypeInstanceFindGlyph(unsigned idx, TTFInstance *instance,
 }
 
 static int
-FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, TTFInstance *instance,
-                         int nlevels)
+FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, TTFInstance *instance)
 {
   int found, segment, offset;
   int xrc, ftrc;
   int ***available;
   CharInfoPtr **glyphs;
 
-  switch(nlevels) {
-  case 1: 
-    available=&instance->available;
-    glyphs=&instance->glyphs;
-    break;
-#ifdef ANTI_ALIASING
-  case 4:
-    available=&instance->availableAnti;
-    glyphs=&instance->glyphsAnti;
-    break;
-#endif
-  default:
-    return BadFontFormat;
-  }
+  available=&instance->available;
+  glyphs=&instance->glyphs;
 
   if((xrc=FreeTypeInstanceFindGlyph(idx, instance, glyphs, available,
                                     &found, &segment, &offset))
@@ -513,7 +494,7 @@ FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, TTFInstance *instance,
            sizeof(xCharInfo));
 
   xrc=FreeTypeRasteriseGlyph(&(*glyphs)[segment][offset],
-                             instance, instance->monospaced==2, nlevels);
+                             instance, instance->monospaced==2);
   if(xrc!=Successful)
     return xrc;
   else
@@ -554,7 +535,7 @@ FreeTypeInstanceGetGlyphMetrics(unsigned idx,
     
   if(instance->available[segment][offset]==0) {
     if(instance->monospaced<2) { /* not a charcell instance */
-      if((xrc=FreeTypeInstanceGetGlyph(idx, &g, instance, 1))!=Successful)
+      if((xrc=FreeTypeInstanceGetGlyph(idx, &g, instance))!=Successful)
         return xrc;
     } else {
       memcpy((char*)&instance->glyphs[segment][offset].metrics,
@@ -574,7 +555,7 @@ FreeTypeInstanceGetGlyphMetrics(unsigned idx,
     
 int
 FreeTypeRasteriseGlyph(CharInfoPtr tgp, TTFInstance *instance, 
-                       int hasMetrics, int nlevels)
+                       int hasMetrics)
 {
 #define TRANSFORM_X(x_value) \
   ((int)floor((((double)(x_value)*(double)instance->transformation.matrix.xx)/\
@@ -598,15 +579,6 @@ FreeTypeRasteriseGlyph(CharInfoPtr tgp, TTFInstance *instance,
   int leftSideBearing, rightSideBearing, characterWidth, rawCharacterWidth,
     ascent, descent;
   int i=0;
-
-  if(nlevels!=1
-#ifdef ANTI_ALIASING
-     && nlevels!=4
-#endif
-     ) {
-    MUMBLE1("Bad number of levels: %d\n", nlevels);
-    return BadFontFormat;       /* is there anything better? */
-  }
 
   face=instance->face;
 
@@ -643,63 +615,21 @@ FreeTypeRasteriseGlyph(CharInfoPtr tgp, TTFInstance *instance,
     raster.flow = TT_Flow_Down;
     raster.rows=ht;
     raster.width=wd;
-#ifdef ANTI_ALIASING
-    if(nlevels==1)
-#endif
-      raster.cols=bpr;
-#ifdef ANTI_ALIASING
-    else
-      raster.cols=(wd+3)&-4;
-#endif
+    raster.cols=bpr;
     raster.size = (long)raster.rows*raster.cols;
     raster.bitmap = (void*)xalloc(ht*raster.cols);
     if(raster.bitmap==NULL) return AllocError;
     memset(raster.bitmap,0,(int)raster.size);
 
-#ifdef ANTI_ALIASING
-    if(nlevels==1)
-#endif
-      ftrc=TT_Get_Glyph_Bitmap(face->glyph,&raster,xoff,yoff);
-#ifdef ANTI_ALIASING
-    else
-      ftrc=TT_Get_Glyph_Pixmap(face->glyph,&raster,xoff,yoff);
-#endif
+    ftrc=TT_Get_Glyph_Bitmap(face->glyph,&raster,xoff,yoff);
     if(ftrc) {
       MUMBLE("Failed to draw bitmap\n");
       /* Ignore error, return blank bitmap */
     }
-#ifdef ANTI_ALIASING
-    if(nlevels==1)
-#endif
-      tgp->bits=raster.bitmap;
-#ifdef ANTI_ALIASING
-    else {
-      /* Need to convert pixmap to family of bitmaps */
-      tgp->bits=(char*)xalloc(nlevels*ht*bpr);
-      if(tgp->bits==0) {
-        xfree(raster.bitmap);
-        return AllocError;
-      }
-      memset(tgp->bits, 0, nlevels*ht*bpr);
+    tgp->bits=raster.bitmap;
 
-      for(i=0; i<nlevels; i++) {
-        int j,k;
-        for(j=0; j<raster.width; j++)
-          for(k=0; k<ht; k++) {
-            if(((char*)raster.bitmap)[j+raster.cols*k]==i+1)
-              tgp->bits[i*ht*bpr+k*bpr+j/8]|= 1<<(8-j%8);
-          }
-      }
-      xfree(raster.bitmap);
-    }
-#endif
-
-    i=0;
     if(instance->bmfmt.bit==LSBFirst) {
-#ifdef ANTI_ALIASING      
-      for(i=0; i<nlevels; i++)
-#endif
-        BitOrderInvert((unsigned char*)(tgp->bits)+i*ht*bpr, ht*bpr);
+      BitOrderInvert((unsigned char*)(tgp->bits)+i*ht*bpr, ht*bpr);
     }
     
     if(instance->bmfmt.byte!=instance->bmfmt.bit)
@@ -707,31 +637,22 @@ FreeTypeRasteriseGlyph(CharInfoPtr tgp, TTFInstance *instance,
       case 1:
         break;
       case 2:
-#ifdef ANTI_ALIASING      
-        for(i=0; i<nlevels; i++)
-#endif
-          TwoByteSwap((unsigned char*)(tgp->bits)+i*ht*bpr, ht*bpr);
+        TwoByteSwap((unsigned char*)(tgp->bits)+i*ht*bpr, ht*bpr);
         break;
       case 4:
-#ifdef ANTI_ALIASING      
-        for(i=0; i<nlevels; i++)
-#endif
-          FourByteSwap((unsigned char*)(tgp->bits)+i*ht*bpr, ht*bpr);
+        FourByteSwap((unsigned char*)(tgp->bits)+i*ht*bpr, ht*bpr);
         break;
       case 8:                   /* no util function for 64 bits! */
-#ifdef ANTI_ALIASING      
-        for(i=0; i<nlevels; i++)
-#endif
-          {
-            int j,k;
-            char c, *cp=tgp->bits+i*ht*bpr;
-            for(j=ht*bpr; j>=0; j-=8, cp+=8)
-              for(k=0; k<4; k++) {
-                c=cp[k];
-                cp[k]=cp[7-k];
-                cp[7-k]=cp[k];
-              }
-          }
+        {
+          int j,k;
+          char c, *cp=tgp->bits+i*ht*bpr;
+          for(j=ht*bpr; j>=0; j-=8, cp+=8)
+            for(k=0; k<4; k++) {
+              c=cp[k];
+              cp[k]=cp[7-k];
+              cp[7-k]=cp[k];
+            }
+        }
         break;
       default:
         ;
@@ -858,9 +779,6 @@ FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info,
   maxprops=
     1+                          /* NAME */
     (xlfdProps?14:0)+          /* from XLFD */
-#ifdef ANTI_ALIASING
-    1+
-#endif
     (hheaProps?5:0)+           /* from `hhea' table */
     3+                          /* from `name' table */
     (os2Props?6:0)+            /* from `os/2' table */
@@ -924,14 +842,6 @@ FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info,
     }
     i++;
   }
-
-#ifdef ANTI_ALIASING
-  info->props[i].name = MakeAtom("ANTI_ALIASING_LEVELS", 20, TRUE); 
-  info->props[i].value = MakeAtom("1 4", 3, TRUE);
-  info->isStringProp[i] = 1;
-  i++;
-#endif
-
 
   /* the following two have already been properly scaled */
 
@@ -1066,14 +976,14 @@ FreeTypeAddProperties(TTFFont *font, FontScalablePtr vals, FontInfoPtr info,
 }
 
 static int
-FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font, int nlevels)
+FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font)
 {
   unsigned idx;
   int i;
 
-  /* As a special case, we pass 0 even when its not in the ranges;
-   * this will allow for the default glyph, which should exist in
-   * any TrueType font. */
+  /* As a special case, we pass 0 even when it is not in the ranges;
+   * this will allow for the default glyph, which should exist in any
+   * TrueType font. */
 
   if(code>0 && font->nranges) {
     for(i=0; i<font->nranges; i++)
@@ -1091,11 +1001,15 @@ FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font, int nlevels)
 
   idx=ttf_remap(code, &font->mapping);
 
-  if(idx==0 && code!=0) {
+  /* Only pass the default glyph if there is no first index */
+  if(idx==0 &&
+     (code != 0 ||
+      (font->mapping.encoding->first != 0 || 
+       font->mapping.encoding->first_col != 0))) {
     *g=0;
     return Successful;
   } else {
-    return FreeTypeInstanceGetGlyph(idx, g, font->instance, nlevels);
+    return FreeTypeInstanceGetGlyph(idx, g, font->instance);
   }
 }
 
@@ -1105,9 +1019,9 @@ FreeTypeFontGetGlyphMetrics(unsigned code, xCharInfo **metrics, TTFFont *font)
   unsigned idx;
   int i;
 
-  /* As a special case, we pass 0 even when its not in the ranges;
-   * this will allow for the default glyph, which should exist in
-   * any TrueType font. */
+  /* As a special case, we pass 0 even when it is not in the ranges;
+   * this will allow for the default glyph, which should exist in any
+   * TrueType font. */
 
   if(code>0 && font->nranges) {
     for(i=0; i<font->nranges; i++)
@@ -1134,12 +1048,19 @@ FreeTypeFontGetGlyphMetrics(unsigned code, xCharInfo **metrics, TTFFont *font)
 }
 
 static int
-FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, TTFFont *font, int nlevels)
+FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, TTFFont *font)
 {
+  /* Disable default glyph generation if there is a first index */
+  if(font->mapping.encoding && 
+     (font->mapping.encoding->first || font->mapping.encoding->first_col)) {
+    *g=0;
+    return Successful;
+  }
+    
   /* Using FreeTypeInstanceGetGlyph(0,...) would cause inconsistencies
    * between metrics and glyphs in the unlikely case that 0 is not
    * mapped to 0. */
-  return FreeTypeFontGetGlyph(0, g, font, nlevels);
+  return FreeTypeFontGetGlyph(0, g, font);
 }
 
 static int
@@ -1369,7 +1290,7 @@ FreeTypeLoadXFont(char *fileName,
   TT_Face_Properties *properties;
   int xrc, ftrc, i;
   int charcell, constantWidth;
-  long rawWidth, rawAverageWidth, aw, code, lastCode;
+  long rawWidth, rawAverageWidth, aw, code, lastCode, firstCode;
   int upm, minLsb, maxRsb, ascent, descent, width, averageWidth;
   
 
@@ -1422,15 +1343,18 @@ FreeTypeLoadXFont(char *fileName,
       TRANSFORM_FUNITS_Y(properties->horizontal->Ascender);
     info->fontDescent = 
       -TRANSFORM_FUNITS_Y(properties->horizontal->Descender);
+    firstCode=0;
+    lastCode=0xFFFFL;
     if(font->nranges) {
       lastCode=0;
+      /* The ranges information does not have an effect on firstCode,
+         as we pass the default glyph at position 0. */
       for(i=0; i<font->nranges; i++) {
         code=font->ranges[i].max_char_low+(font->ranges[i].max_char_high<<8);
         if(lastCode<code)
           lastCode=code;
       }
-    } else
-      lastCode=0xFFFFL;
+    }
 
     if(!font->mapping.encoding || font->mapping.encoding->row_size == 0) {
       /* linear indexing */
@@ -1438,19 +1362,24 @@ FreeTypeLoadXFont(char *fileName,
                    font->mapping.encoding ?
                    font->mapping.encoding->size-1 :
                    (font->mapping.has_cmap ? 0xFF : 0xFFFF));
-
-      info->firstRow=0;
+      if(font->mapping.encoding && font->mapping.encoding->first)
+        firstCode=font->mapping.encoding->first;
+      info->firstRow=firstCode/0x100;
       info->lastRow=lastCode/0x100;
-      info->firstCol=0;
-      info->lastCol=info->lastRow?0xFF:(lastCode&0xFF);
+      info->firstCol=
+        (info->firstRow || info->lastRow) ? 0 : (firstCode & 0xFF);
+      info->lastCol=info->lastRow ? 0xFF : (lastCode & 0xFF);
     } else {
       /* matrix indexing */
-      info->firstRow=0;
+      info->firstRow=font->mapping.encoding->first;
       info->lastRow=MIN(font->mapping.encoding->size-1, lastCode/0x100);
-      info->firstCol=0;
+      info->firstCol=font->mapping.encoding->first_col;
       info->lastCol=MIN(font->mapping.encoding->row_size-1, 
                         lastCode<0x100?lastCode:0xFF);
     }
+
+    /* firstCode and lastCode are not valid in case of a matrix
+       encoding */
 
     transformBBox(&instance->transformation, upm,
                   instance->imetrics.x_ppem, instance->imetrics.y_ppem,
@@ -1578,9 +1507,9 @@ FreeTypeGetMetrics(FontPtr pFont, unsigned long count, unsigned char *chars,
 }
 
 static int
-FreeTypeGetGlyphsAnti(FontPtr pFont, unsigned long count, unsigned char *chars,
-                      FontEncoding charEncoding, unsigned long *glyphCount,
-                      CharInfoPtr *glyphs, int nlevels)
+FreeTypeGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
+                  FontEncoding charEncoding, unsigned long *glyphCount,
+                  CharInfoPtr *glyphs)
 {
   unsigned code;
   TTFFont *tf;
@@ -1601,25 +1530,15 @@ FreeTypeGetGlyphsAnti(FontPtr pFont, unsigned long count, unsigned char *chars,
       break;
     }
       
-    if(FreeTypeFontGetGlyph(code, &g, tf, nlevels)==Successful && g!=0) {
+    if(FreeTypeFontGetGlyph(code, &g, tf)==Successful && g!=0) {
       *gp++ = g;
     } else
-      if(FreeTypeFontGetDefaultGlyph(&g, tf, nlevels)==Successful && g!=0)
+      if(FreeTypeFontGetDefaultGlyph(&g, tf)==Successful && g!=0)
         *gp++ = g;
   }
     
   *glyphCount = gp - glyphs;
   return Successful;
-}
-
-static int
-FreeTypeGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars,
-                  FontEncoding charEncoding, unsigned long *glyphCount,
-                  CharInfoPtr *glyphs)
-{
-  return FreeTypeGetGlyphsAnti(pFont, count, chars,
-                               charEncoding, glyphCount,
-                               glyphs, 1);
 }
 
 static int

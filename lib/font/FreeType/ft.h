@@ -1,6 +1,6 @@
 /*
 Copyright (c) 1997 by Mark Leisher
-Copyright (c) 1998 by Juliusz Chroboczek
+Copyright (c) 1998-2000 by Juliusz Chroboczek
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -21,14 +21,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.11 1999/04/25 10:01:34 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.12 1999/10/13 04:20:49 dawes Exp $ */
 
 #undef DEBUG_TRUETYPE
 
-/* if stderr, the output will go to the errors file */
 #ifdef DEBUG_TRUETYPE
-#define MUMBLE(s) (printf((s)))
-#define MUMBLE1(s,x) (printf((s),(x)))
+#define MUMBLE(s) (ErrorF((s)))
+#define MUMBLE1(s,x) (ErrorF((s),(x)))
 #else
 #define MUMBLE(s)
 #define MUMBLE1(s,x)
