@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.9 2004/06/10 17:28:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suncg6/cg6_driver.c,v 1.10tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -54,8 +54,6 @@ static void	CG6AdjustFrame(int scrnIndex, int x, int y, int flags);
 static void	CG6FreeScreen(int scrnIndex, int flags);
 static ModeStatus CG6ValidMode(int scrnIndex, DisplayModePtr mode,
 			       Bool verbose, int flags);
-
-void CG6Sync(ScrnInfoPtr pScrn);
 
 #define VERSION 4000
 #define CG6_NAME "SUNCG6"
@@ -91,7 +89,6 @@ typedef enum {
 static const OptionInfoRec CG6Options[] = {
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -115,7 +112,7 @@ static XF86ModuleVersionInfo suncg6VersRec =
 
 XF86ModuleData suncg6ModuleData = { &suncg6VersRec, cg6Setup, NULL };
 
-pointer
+static pointer
 cg6Setup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
     static Bool setupDone = FALSE;
@@ -384,11 +381,6 @@ CG6PreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pCg6->HWCursor ? "HW" : "SW");
 
-    if (xf86ReturnOptValBool(pCg6->Options, OPTION_NOACCEL, FALSE)) {
-	pCg6->NoAccel = TRUE;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
-    }
-
     if (xf86LoadSubModule(pScrn, "fb") == NULL) {
 	CG6FreeRec(pScrn);
 	return FALSE;
@@ -431,26 +423,36 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 {
     ScrnInfoPtr pScrn;
     Cg6Ptr pCg6;
+    sbusDevicePtr psdp;
     int ret;
 
-    /*
-     * First get the ScrnInfoRec
-     */
     pScrn = xf86Screens[pScreen->myNum];
-
     pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    psdp = pCg6->psdp;
 
-    /* Map the CG6 memory */
-    pCg6->fbc =
-	xf86MapSbusMem (pCg6->psdp, CG6_FBC_VOFF,
-			CG6_RAM_VOFF - CG6_FBC_VOFF +
-			(pCg6->psdp->width * pCg6->psdp->height));
+    /* Map CG6 memory areas */
+    pCg6->fbc = xf86MapSbusMem(psdp, CG6_FBC_VOFF, sizeof(*pCg6->fbc));
+    pCg6->thc = xf86MapSbusMem(psdp, CG6_THC_VOFF, sizeof(*pCg6->thc));
+    pCg6->fb = xf86MapSbusMem(psdp, CG6_RAM_VOFF, psdp->width * psdp->height);
 
-    if (! pCg6->fbc)
+    if (!pCg6->fbc || !pCg6->thc || !pCg6->fb) {
+	if (pCg6->fbc) {
+	    xf86UnmapSbusMem(psdp, pCg6->fbc, sizeof(*pCg6->fbc));
+	    pCg6->fbc = NULL;
+	}
+
+	if (pCg6->thc) {
+	    xf86UnmapSbusMem(psdp, pCg6->thc, sizeof(*pCg6->thc));
+	    pCg6->thc = NULL;
+	}
+
+	if (pCg6->fb) {
+	    xf86UnmapSbusMem(psdp, pCg6->fb, psdp->width * psdp->height);
+	    pCg6->fb = NULL;
+	}
+
 	return FALSE;
-
-    pCg6->fb = (unsigned char *)pCg6->fbc + CG6_RAM_VOFF - CG6_FBC_VOFF;
-    pCg6->thc = (Cg6ThcPtr)((char *)pCg6->fbc + CG6_THC_VOFF - CG6_FBC_VOFF);
+    }
 
     /* Darken the screen for aesthetic reasons and set the viewport */
     CG6SaveScreen(pScreen, SCREEN_SAVER_ON);
@@ -478,7 +480,7 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
-    miSetPixmapDepths ();
+    miSetPixmapDepths();
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -491,7 +493,7 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     if (!ret)
 	return FALSE;
 
-    fbPictureInit (pScreen, 0, 0);
+    fbPictureInit(pScreen, 0, 0);
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
@@ -499,37 +501,25 @@ CG6ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
-#if 0
-    if (!pCg6->NoAccel) {
-	extern Bool CG6AccelInit(ScreenPtr pScreen, Cg6Ptr pCg6);
-
-	if (!CG6AccelInit(pScreen, pCg6))
-	    return FALSE;
-	xf86Msg(X_INFO, "%s: Using acceleration\n", pCg6->psdp->device);
-    }
-#endif
-
     /* Initialise cursor functions */
-    miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
     /* Initialize HW cursor layer.
        Must follow software cursor initialization*/
     if (pCg6->HWCursor) {
-	extern Bool CG6HWCursorInit(ScreenPtr pScreen);
-
 	if(!CG6HWCursorInit(pScreen)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "Hardware cursor initialization failed\n");
 	    return(FALSE);
 	}
-	xf86SbusHideOsHwCursor(pCg6->psdp);
+	xf86SbusHideOsHwCursor(psdp);
     }
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;
 
-    if(!xf86SbusHandleColormaps(pScreen, pCg6->psdp))
+    if(!xf86SbusHandleColormaps(pScreen, psdp))
 	return FALSE;
 
     pCg6->CloseScreen = pScreen->CloseScreen;
@@ -582,7 +572,7 @@ CG6EnterVT(int scrnIndex, int flags)
     Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
 
     if (pCg6->HWCursor) {
-	xf86SbusHideOsHwCursor (pCg6->psdp);
+	xf86SbusHideOsHwCursor(pCg6->psdp);
 	pCg6->CursorFg = 0;
 	pCg6->CursorBg = 0;
     }
@@ -613,15 +603,16 @@ CG6CloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     Cg6Ptr pCg6 = GET_CG6_FROM_SCRN(pScrn);
+    sbusDevicePtr psdp = pCg6->psdp;
 
     pScrn->vtSema = FALSE;
 
-    xf86UnmapSbusMem(pCg6->psdp, pCg6->fbc,
-		     CG6_RAM_VOFF - CG6_FBC_VOFF +
-		     (pCg6->psdp->width * pCg6->psdp->height));
+    xf86UnmapSbusMem(psdp, pCg6->fbc, sizeof(*pCg6->fbc));
+    xf86UnmapSbusMem(psdp, pCg6->thc, sizeof(*pCg6->thc));
+    xf86UnmapSbusMem(psdp, pCg6->fb, psdp->width * psdp->height);
 
     if (pCg6->HWCursor)
-	xf86SbusHideOsHwCursor(pCg6->psdp);
+	xf86SbusHideOsHwCursor(psdp);
 
     pScreen->CloseScreen = pCg6->CloseScreen;
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);
@@ -677,13 +668,4 @@ CG6SaveScreen(ScreenPtr pScreen, int mode)
 
     pCg6->thc->thc_misc = tmp;
     return TRUE;
-}
-
-/*
- * This is the implementation of the Sync() function.
- */
-void
-CG6Sync(ScrnInfoPtr pScrn)
-{
-    return;
 }

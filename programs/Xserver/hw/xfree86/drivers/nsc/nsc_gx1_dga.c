@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_dga.c,v 1.3tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_dga.c $
- * $Revision: 1.3 $
+ * $Revision: 1.4 $
  * $Author: tsi $
  * 
  * File contents: DGA(Direct Acess Graphics mode) is feature of
@@ -155,9 +155,8 @@
 /* forward declarations */
 static Bool GX1_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
 				int *, int *, int *);
-static void GX1_CloseFramebuffer(ScrnInfoPtr pScrn);
 static Bool GX1_SetMode(ScrnInfoPtr, DGAModePtr);
-static int GX1_GetViewport(ScrnInfoPtr);
+static int  GX1_GetViewport(ScrnInfoPtr);
 static void GX1_SetViewport(ScrnInfoPtr, int, int, int);
 static void GX1_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void GX1_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
@@ -170,7 +169,7 @@ Bool GX1DGAInit(ScreenPtr pScreen);
 
 static DGAFunctionRec GeodeDGAFuncs = {
    GX1_OpenFramebuffer,
-   GX1_CloseFramebuffer,
+   NULL,
    GX1_SetMode,
    GX1_SetViewport,
    GX1_GetViewport,
@@ -184,7 +183,7 @@ static DGAFunctionRec GeodeDGAFuncs = {
  * GX1DGAInit.
  *
  * Description	:This function is used to intiallize the DGA modes and sets the
-			 	 viewport based on the screen mode.
+ *		 viewport based on the screen mode.
  * Parameters.
  *	pScreeen	:Pointer to screen info structure.
  *
@@ -292,7 +291,7 @@ GX1DGAInit(ScreenPtr pScreen)
  * GX1_SetMode.
  *
  * Description	:This function is sets into the DGA mode.
- *.
+ *
  * Parameters.
  *	pScreeen	:Pointer to screen info structure.
  *	pMode		:Points to the DGAmode ptr data
@@ -347,7 +346,7 @@ GX1_SetMode(ScrnInfoPtr pScrn, DGAModePtr pMode)
  * GX1_GetViewPort.
  *
  * Description	:This function is Gets the viewport window memory.
- *.
+ *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
  *	
@@ -373,8 +372,8 @@ GX1_GetViewport(ScrnInfoPtr pScrn)
  *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
-		x		:x-cordinate of viewport window
- *		y		:y-codinate of the viewport window.
+ *	x		:x-cordinate of viewport window
+ *	y		:y-codinate of the viewport window.
  *	flags		:indicates the viewport to be flipped or not.
  * Returns		:returns the viewport status  as zero.
  *
@@ -395,12 +394,12 @@ GX1_SetViewport(ScrnInfoPtr pScrn, int x, int y, int flags)
  * GX1_FillRect.
  *
  * Description	:This function is Gets the viewport window memory.
- *.
+ *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
- *		x		:x-cordinate of viewport window
- *		y		:y-codinate of the viewport window.
- *		w		:width of the rectangle
+ *	x		:x-cordinate of viewport window
+ *	y		:y-codinate of the viewport window.
+ *	w		:width of the rectangle
  *      h		:height of the rectangle.
  *	color		:color to be filled in rectangle.
  *
@@ -427,15 +426,15 @@ GX1_FillRect(ScrnInfoPtr pScrn, int x, int y,
  * GX1_BlitRect.
  *
  * Description	:This function implementing Blit and it moves a
- *			 	 Rectangular block of data from one location to other
- *			 	 Location.
+ *		 Rectangular block of data from one location to other
+ *		 Location.
  *
  * Parameters.
  *	pScrn		:Pointer to screen info structure.
  *	srcx		:x-cordinate of the src rectangle
  *	srcy		:y-codinate of src rectangle.
- *	  w			:width of the rectangle
- *    h			:height of the rectangle.
+ *	w		:width of the rectangle
+ *	h		:height of the rectangle.
  *	dstx		:x-cordinate of the dst rectangle.
  *	dsty		:y -coordinates of the dst rectangle.
  * Returns		:none.
@@ -472,8 +471,8 @@ GX1_BlitRect(ScrnInfoPtr pScrn, int srcx, int srcy, int w,
  *	pScrn		:Pointer to screen info structure.
  *	srcx		:x-cordinate of the src rectangle
  *	srcy		:y-codinate of src rectangle.
- *		w		:width of the rectangle
- *    	h		:height of the rectangle.
+ *	w		:width of the rectangle
+ *	h		:height of the rectangle.
  *	dstx		:x-cordinate of the dst rectangle.
  *	dsty		:y -coordinates of the dst rectangle.
  * Returns		:none.
@@ -495,11 +494,6 @@ GX1_OpenFramebuffer(ScrnInfoPtr pScrn,
    *offset = 0;
    *flags = DGA_NEED_ROOT;
    return TRUE;
-}
-
-static void
-GX1_CloseFramebuffer(ScrnInfoPtr pScrn)
-{
 }
 
 /* end of file */

@@ -23,7 +23,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_cursor.c,v 1.1 2000/05/18 23:21:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunleo/leo_cursor.c,v 1.2tsi Exp $ */
 
 #include "leo.h"
 
@@ -135,7 +135,6 @@ LeoHWCursorInit(ScreenPtr pScreen)
     if(!infoPtr) return FALSE;
 
     pLeo->CursorInfoRec = infoPtr;
-    pLeo->dac = (LeoCursor *)((char *)pLeo->fb + LEO_LX0_CURSOR_VOFF);
 
     infoPtr->MaxWidth = 32;
     infoPtr->MaxHeight = 32;
