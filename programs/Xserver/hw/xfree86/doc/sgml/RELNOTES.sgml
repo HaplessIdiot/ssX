@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>26 February 2003
+<date>21 November 2003
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.80 2003/02/26 21:59:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.82 2003/06/12 14:12:32 eich Exp $
 </ident>
 
 <abstract>
@@ -41,32 +41,47 @@ in 3.3.x.  Our <htmlurl name="Driver Status document" url="Status.html">
 summarizes how the hardware driver support compares between &legacyvers;
 and &relvers;.  Please check there first before downloading &relvers;.
 
-The 4.0.1 release introduced a new graphical configuration tool,
-"<tt>xf86cfg</tt>", and a text mode interface was added to it for the
-4.0.2 release.  It is the preferred configuration tool provided by with
-XFree86.  The trusty old text-based tool "<tt>xf86config</tt>" can also
-be used for generating X server config files.  In addition to these
-tools, the XFree86 server has some built in capabilities for generating
-a base config file.  This works well for most hardware, and in most
-cases is the easiest way to get an initial config file.  To try it out,
-just run (as root):
+XFree86 4.4 introduces an automatic configuration mechanism for the
+XFree86 server.  This makes it possible to start XFree86 in a usable
+way without first creating a configuration file.  The initial automatic
+configuration support is currently targetted towards Linux and FreeBSD.
+Automatic configuration will be supported on other platforms in future
+releases.  If you're running Linux or FreeBSD, try it out if you don't
+already have a working <tt>XF86Config</tt> file.  If you want to customise
+things afterwards, you can cut and paste the automatically generated
+configuration from the <tt>/var/log/XFree86.0.log</tt> file into an
+<tt>XF86Config</tt> file and make your customisations there.  Runtime
+and dynamic configuration is planned for future releases.
+
+If you don't have any luck with automatic configuration, or you are using
+a platform that it isn't currently supported on, try one of the older
+methods for getting started.
+
+XFree86 comes with a graphical configuration tool called "<tt>xf86cfg</tt>".
+It also has a text mode interface.  It can be used to create an iniital
+configuration file, and to customise existing configurations.
+
+Next in the order of configuration preferences is to make use of the
+XFree86 server's ability to create a starting configuration file.  To
+do this, just run (as root):
 
 <tscreen><verb>
 XFree86 -configure
 </verb></tscreen>
 
-Each of these configuration options will give you a reasonable starting
-point for a suitable configuration file.  We've put some effort into
-documenting the &relvers; config file format, and you can find that
-information in the <htmlurl name="XF86Config manual page"
-url="XF86Config.5.html">.  Check there and the driver-specific manual
-pages and the related documentation for further information.  References
-to this driver-specific information can be found in the <ref id="drivertables"
-name="tables below">.
+and follow the instructions.
 
-We have plans to make the configuration file optional in a future release.
-The XFree86 server is close to being able to automatically determine
-a complete base configuration for most popular hardware configurations.
+Finally, the trusty old text-based tool "<tt>xf86config</tt>" can also
+be used for generating X server config files.
+
+At least one of these configuration options will give you a reasonable
+starting point for a suitable configuration file.  With the automatic
+mechanism you might even find that you don't need one!  If you do need
+to customise the configuration file, you can find it fully documented
+in the <htmlurl name="XF86Config manual page" url="XF86Config.5.html">.
+Also check the driver-specific manual pages and the related documentation
+for further information.  References to this driver-specific information
+can be found in the <ref id="drivertables" name="tables below">.
 
 Before you go to download and install the binary distributions for
 this release, please have a quick read through the <htmlurl
@@ -95,6 +110,8 @@ don't have enough space to cover them all here.
 ]]>
 
 <sect>Summary of new features in &fullrelvers;.
+
+<sect1>NEEDS TO BE UPDATED
 
 <sect1>Video Driver Enhancements
 
