@@ -1,4 +1,5 @@
 /* $XConsortium: makekeys.c,v 11.8 94/04/17 20:22:22 gildea Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1990  X Consortium
