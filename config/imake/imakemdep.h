@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.45 2000/11/14 18:20:32 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.46 2001/01/17 16:38:56 dawes Exp $ */
 
 
 /* 
@@ -803,11 +803,10 @@ char *cpp_argv[ARGUMENTS] = {
     } while (0)
 #elif defined(__Lynx__) || defined(Lynx)
 /* Lynx 2.4.0 /bin/cc doesn't like #elif */
-#  define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
-#  define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
-#  define DEFAULT_OS_TEENY_REV   "r %*d.%*d.%[0-9]" 
-#  define DEFAULT_OS_NAME        "srm %[^\n]"
-# endif
+# define DEFAULT_OS_MAJOR_REV   "r %[0-9]"
+# define DEFAULT_OS_MINOR_REV   "r %*d.%[0-9]"
+# define DEFAULT_OS_TEENY_REV   "r %*d.%*d.%[0-9]" 
+# define DEFAULT_OS_NAME        "srm %[^\n]"
 #elif defined(_SEQUENT_)
 /* uname -v returns 'Vx.y.z', e.g. 'V4.4.2' */
 # define DEFAULT_OS_MAJOR_REV	"v V%[0-9]"
