@@ -1,4 +1,5 @@
 /* $XConsortium: Error.c,v 1.38 94/04/17 20:13:59 kaleb Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
