@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.76 2003/01/19 02:46:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.77 2003/01/28 22:47:09 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -123,6 +123,7 @@ static SymTabRec I810Chipsets[] = {
    {PCI_CHIP_I830_M,		"i830M"},
    {PCI_CHIP_845_G,		"845G"},
    {PCI_CHIP_I855_GM,		"855GM"},
+   {PCI_CHIP_I865_G,		"865G"},
    {-1,				NULL}
 };
 
@@ -136,6 +137,7 @@ static PciChipsets I810PciChipsets[] = {
    {PCI_CHIP_I830_M,		PCI_CHIP_I830_M,	RES_SHARED_VGA},
    {PCI_CHIP_845_G,		PCI_CHIP_845_G,		RES_SHARED_VGA},
    {PCI_CHIP_I855_GM,		PCI_CHIP_I855_GM,	RES_SHARED_VGA},
+   {PCI_CHIP_I865_G,		PCI_CHIP_I865_G,	RES_SHARED_VGA},
    {-1,				-1, RES_UNDEFINED }
 };
 
@@ -534,6 +536,7 @@ I810Probe(DriverPtr drv, int flags)
 	    case PCI_CHIP_I830_M:
 	    case PCI_CHIP_845_G:
 	    case PCI_CHIP_I855_GM:
+	    case PCI_CHIP_I865_G:
 	       I830InitpScrn(pScrn);
 	       break;
 #ifndef I830_ONLY

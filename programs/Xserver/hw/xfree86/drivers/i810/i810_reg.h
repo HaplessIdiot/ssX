@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.11 2002/12/10 01:27:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_reg.h,v 1.12 2003/01/28 22:47:09 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -150,7 +150,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Cursor control registers, pp383-384
  */
-/* Desktop (845G) */
+/* Desktop (845G, 865G) */
 #define CURSOR_CONTROL     0x70080
 #define CURSOR_ENABLE          0x80000000
 #define CURSOR_GAMMA_ENABLE    0x40000000
