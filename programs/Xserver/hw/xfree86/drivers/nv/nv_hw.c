@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.9 2004/08/26 22:38:47 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_hw.c,v 1.10 2004/10/12 21:12:45 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -72,7 +72,7 @@ int NVShowHideCursor (
     VGA_WR08(pNv->PCIO, 0x3D4, 0x31);
     VGA_WR08(pNv->PCIO, 0x3D5, pNv->CurrentState->cursor1);
 
-    if((pNv->Chipset & 0x0000fff0) == 0x00000040) {  /* HW bug */
+    if(pNv->Architecture == NV_ARCH_40) {  /* HW bug */
        volatile CARD32 curpos = pNv->PRAMDAC[0x0300/4];
        pNv->PRAMDAC[0x0300/4] = curpos;
     }
@@ -1148,13 +1148,44 @@ void NVLoadStateExt (
        } else {
            if(pNv->Architecture >= NV_ARCH_40) {
               pNv->PGRAPH[0x0084/4] = 0x401287c0;
-              pNv->PGRAPH[0x008C/4] = 0x60de8051; 
+              pNv->PGRAPH[0x008C/4] = 0x60de8051;
               pNv->PGRAPH[0x0090/4] = 0x00008000;
               pNv->PGRAPH[0x0610/4] = 0x00be3c5f;
-              pNv->PGRAPH[0x09b0/4] = 0x83280fff;
-              pNv->PGRAPH[0x09b4/4] = 0x000000a0;
-              pNv->PGRAPH[0x09b8/4] = 0x0078e366;
-              pNv->PGRAPH[0x09bc/4] = 0x0000014c;
+
+              if((pNv->Chipset & 0xfff0) == 0x0040) {
+                 pNv->PGRAPH[0x09b0/4] = 0x83280fff;
+                 pNv->PGRAPH[0x09b4/4] = 0x000000a0;
+              } else {
+                 pNv->PGRAPH[0x0820/4] = 0x83280eff;
+                 pNv->PGRAPH[0x0824/4] = 0x000000a0;
+              }
+
+              switch(pNv->Chipset & 0xfff0) {
+              case 0x0040:
+                 pNv->PGRAPH[0x09b8/4] = 0x0078e366;
+                 pNv->PGRAPH[0x09bc/4] = 0x0000014c;
+                 break;
+              case 0x00C0:
+                 pNv->PGRAPH[0x0828/4] = 0x007596ff;
+                 pNv->PGRAPH[0x082C/4] = 0x00000108;
+                 break;
+              case 0x0160:
+                 pNv->PMC[0x1700/4] = pNv->PFB[0x020C/4];
+                 pNv->PMC[0x1704/4] = 0;
+                 pNv->PMC[0x1708/4] = 0;
+                 pNv->PMC[0x170C/4] = pNv->PFB[0x020C/4];
+                 pNv->PGRAPH[0x0860/4] = 0;
+                 pNv->PGRAPH[0x0864/4] = 0;
+                 pNv->PRAMDAC[0x0608/4] |= 0x00100000;
+                 break;
+              case 0x0140:
+                 pNv->PGRAPH[0x0828/4] = 0x0072cb77;
+                 pNv->PGRAPH[0x082C/4] = 0x00000108;
+                 break;
+              default:
+                 break;
+              };
+
               pNv->PGRAPH[0x0b38/4] = 0x2ffff800;
               pNv->PGRAPH[0x0b3c/4] = 0x00006000;
               pNv->PGRAPH[0x032C/4] = 0x01000000; 
@@ -1197,23 +1228,41 @@ void NVLoadStateExt (
            for(i = 0; i < 32; i++)
              pNv->PGRAPH[(0x0900/4) + i] = pNv->PFB[(0x0240/4) + i];
 
-           pNv->PGRAPH[0x09A4/4] = pNv->PFB[0x0200/4];
-           pNv->PGRAPH[0x09A8/4] = pNv->PFB[0x0204/4];
-
            if(pNv->Architecture >= NV_ARCH_40) {
-              pNv->PGRAPH[0x69A4/4] = pNv->PFB[0x0200/4];
-              pNv->PGRAPH[0x69A8/4] = pNv->PFB[0x0204/4];
-            } else {
+              if((pNv->Chipset & 0xfff0) == 0x0040) {
+                 pNv->PGRAPH[0x09A4/4] = pNv->PFB[0x0200/4];
+                 pNv->PGRAPH[0x09A8/4] = pNv->PFB[0x0204/4];
+                 pNv->PGRAPH[0x69A4/4] = pNv->PFB[0x0200/4];
+                 pNv->PGRAPH[0x69A8/4] = pNv->PFB[0x0204/4];
+
+                 pNv->PGRAPH[0x0820/4] = 0;
+                 pNv->PGRAPH[0x0824/4] = 0;
+                 pNv->PGRAPH[0x0864/4] = pNv->FbMapSize - 1;
+                 pNv->PGRAPH[0x0868/4] = pNv->FbMapSize - 1;
+              } else {
+                 pNv->PGRAPH[0x09F0/4] = pNv->PFB[0x0200/4];
+                 pNv->PGRAPH[0x09F4/4] = pNv->PFB[0x0204/4];
+                 pNv->PGRAPH[0x69F0/4] = pNv->PFB[0x0200/4];
+                 pNv->PGRAPH[0x69F4/4] = pNv->PFB[0x0204/4];
+
+                 pNv->PGRAPH[0x0840/4] = 0;
+                 pNv->PGRAPH[0x0844/4] = 0;
+                 pNv->PGRAPH[0x08a0/4] = pNv->FbMapSize - 1;
+                 pNv->PGRAPH[0x08a4/4] = pNv->FbMapSize - 1;
+              }
+           } else {
+              pNv->PGRAPH[0x09A4/4] = pNv->PFB[0x0200/4];
+              pNv->PGRAPH[0x09A8/4] = pNv->PFB[0x0204/4];
               pNv->PGRAPH[0x0750/4] = 0x00EA0000;
               pNv->PGRAPH[0x0754/4] = pNv->PFB[0x0200/4];
               pNv->PGRAPH[0x0750/4] = 0x00EA0004;
               pNv->PGRAPH[0x0754/4] = pNv->PFB[0x0204/4];
-           }
 
-           pNv->PGRAPH[0x0820/4] = 0;
-           pNv->PGRAPH[0x0824/4] = 0;
-           pNv->PGRAPH[0x0864/4] = pNv->FbMapSize - 1;
-           pNv->PGRAPH[0x0868/4] = pNv->FbMapSize - 1;
+              pNv->PGRAPH[0x0820/4] = 0;
+              pNv->PGRAPH[0x0824/4] = 0;
+              pNv->PGRAPH[0x0864/4] = pNv->FbMapSize - 1;
+              pNv->PGRAPH[0x0868/4] = pNv->FbMapSize - 1;
+           }
 
            pNv->PGRAPH[0x0B20/4] = 0x00000000;
            pNv->PGRAPH[0x0B04/4] = 0xFFFFFFFF;
