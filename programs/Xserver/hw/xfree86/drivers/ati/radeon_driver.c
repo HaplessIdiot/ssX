@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.75 2002/12/16 16:19:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.76 2002/12/17 03:16:50 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -4882,7 +4882,8 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 			 (pScrn->bitsPerPixel * 8));
     save->crtc_pitch |= save->crtc_pitch << 16;
 
-    save->surface_cntl = RADEON_SURF_TRANSLATION_DIS;
+    save->surface_cntl = 0;
+
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     switch (pScrn->bitsPerPixel) {
     case 16:
