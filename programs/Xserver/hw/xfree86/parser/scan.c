@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.16 2001/02/15 19:54:41 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.17 2001/06/30 04:00:24 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -319,6 +319,40 @@ again:
 	}
 
 	return (ERROR_TOKEN);		/* Error catcher */
+}
+
+int
+xf86getSubToken (char **comment)
+{
+	int token;
+
+	for (;;) {
+		token = xf86getToken(NULL);
+		if (token == COMMENT) {
+			if (comment)
+				*comment = xf86addComment(*comment, val.str);
+		}
+		else
+			return (token);
+	}
+	/*NOTREACHED*/
+}
+
+int
+xf86getSubTokenWithTab (char **comment, xf86ConfigSymTabRec *tab)
+{
+	int token;
+
+	for (;;) {
+		token = xf86getToken(tab);
+		if (token == COMMENT) {
+			if (comment)
+				*comment = xf86addComment(*comment, val.str);
+		}
+		else
+			return (token);
+	}
+	/*NOTREACHED*/
 }
 
 void

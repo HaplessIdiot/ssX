@@ -24,7 +24,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.9 2001/03/08 21:32:35 anderson Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/parser/DRI.c,v 1.10 2001/06/30 04:00:23 paulo Exp $
  * 
  */
 
@@ -50,29 +50,20 @@ xf86parseBuffers (void)
 {
     parsePrologue (XF86ConfBuffersPtr, XF86ConfBuffersRec)
 
-    if (xf86getToken (NULL) != NUMBER)
+    if (xf86getSubToken (&(ptr->buf_comment)) != NUMBER)
 	Error ("Buffers count expected", NULL);
     ptr->buf_count = val.num;
 
-    if (xf86getToken (NULL) != NUMBER)
+    if (xf86getSubToken (&(ptr->buf_comment)) != NUMBER)
 	Error ("Buffers size expected", NULL);
     ptr->buf_size = val.num;
 
-    switch (token = xf86getToken (NULL)) {
-	case STRING:
-	    ptr->buf_flags = val.str;
-	    if ((token = xf86getToken (NULL)) == COMMENT)
-		ptr->buf_comment = xf86addComment(ptr->buf_comment, val.str);
-	    else
-		xf86unGetToken(token);
-	    break;
-	case COMMENT:
+    if ((token = xf86getSubToken (&(ptr->buf_comment))) == STRING) {
+	ptr->buf_flags = val.str;
+	if ((token = xf86getToken (NULL)) == COMMENT)
 	    ptr->buf_comment = xf86addComment(ptr->buf_comment, val.str);
-	    break;
-	default:
-	    ptr->buf_flags = NULL;
-	    xf86unGetToken (token);
-	    break;
+	else
+	    xf86unGetToken(token);
     }
 
 #ifdef DEBUG
@@ -97,7 +88,7 @@ xf86parseDRISection (void)
 	switch (token)
 	    {
 	    case GROUP:
-		if ((token = xf86getToken (NULL)) == STRING)
+		if ((token = xf86getSubToken (&(ptr->dri_comment))) == STRING)
 		    ptr->dri_group_name = val.str;
 		else if (token == NUMBER)
 		    ptr->dri_group = val.num;
@@ -105,7 +96,7 @@ xf86parseDRISection (void)
 		    Error (GROUP_MSG, NULL);
 		break;
 	    case MODE:
-		if (xf86getToken (NULL) != NUMBER)
+		if (xf86getSubToken (&(ptr->dri_comment)) != NUMBER)
 		    Error (NUMBER_MSG, "Mode");
 		ptr->dri_mode = val.num;
 		break;

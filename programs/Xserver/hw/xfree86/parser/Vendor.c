@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.9 2001/02/21 23:37:04 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Vendor.c,v 1.10 2001/06/30 04:00:24 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -59,7 +59,7 @@ xf86parseVendorSubSection (void)
 			ptr->vs_comment = xf86addComment(ptr->vs_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->vs_comment)))
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
@@ -113,7 +113,7 @@ xf86parseVendorSection (void)
 			ptr->vnd_comment = xf86addComment(ptr->vnd_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->vnd_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
@@ -124,7 +124,7 @@ xf86parseVendorSection (void)
 			ptr->vnd_option_lst = xf86parseOption(ptr->vnd_option_lst);
 			break;
 		case SUBSECTION:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->vnd_comment)) != STRING)
 				Error (QUOTE_MSG, "SubSection");
 			{
 				HANDLE_LIST (vnd_sub_lst, xf86parseVendorSubSection,

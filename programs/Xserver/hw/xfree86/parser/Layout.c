@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.14 2001/02/21 23:37:04 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.15 2001/06/30 04:00:23 paulo Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -73,7 +73,7 @@ xf86parseLayoutSection (void)
 			ptr->lay_comment = xf86addComment(ptr->lay_comment, val.str);
 			break;
 		case IDENTIFIER:
-			if (xf86getToken (NULL) != STRING)
+			if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 				Error (QUOTE_MSG, "Identifier");
 			if (has_ident == TRUE)
 				Error (MULTIPLE_MSG, "Identifier");
@@ -86,7 +86,7 @@ xf86parseLayoutSection (void)
 
 				iptr = xf86confcalloc (1, sizeof (XF86ConfInactiveRec));
 				iptr->list.next = NULL;
-				if (xf86getToken (NULL) != STRING)
+				if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 					Error (INACTIVE_MSG, NULL);
 				iptr->inactive_device_str = val.str;
 				ptr->lay_inactive_lst = (XF86ConfInactivePtr)
@@ -104,16 +104,16 @@ xf86parseLayoutSection (void)
 				aptr->adj_x = 0;
 				aptr->adj_y = 0;
 				aptr->adj_refscreen = NULL;
-				if ((token = xf86getToken (NULL)) == NUMBER)
+				if ((token = xf86getSubToken (&(ptr->lay_comment))) == NUMBER)
 					aptr->adj_scrnum = val.num;
 				else
 					xf86unGetToken (token);
-				token = xf86getToken(NULL);
+				token = xf86getSubToken(&(ptr->lay_comment));
 				if (token != STRING)
 					Error (SCREEN_MSG, NULL);
 				aptr->adj_screen_str = val.str;
 
-				token = xf86getToken(AdjTab);
+				token = xf86getSubTokenWithTab(&(ptr->lay_comment), AdjTab);
 				switch (token)
 				{
 				case RIGHTOF:
@@ -136,7 +136,7 @@ xf86parseLayoutSection (void)
 					break;
 				default:
 					xf86unGetToken (token);
-					token = xf86getToken(NULL);
+					token = xf86getSubToken(&(ptr->lay_comment));
 					if (token == STRING)
 						aptr->adj_where = CONF_ADJ_OBSOLETE;
 					else
@@ -148,7 +148,7 @@ xf86parseLayoutSection (void)
 					if (token == NUMBER)
 					{
 						aptr->adj_x = val.num;
-						token = xf86getToken(NULL);
+						token = xf86getSubToken(&(ptr->lay_comment));
 						if (token != NUMBER)
 							Error(INVALID_SCR_MSG, NULL);
 						aptr->adj_y = val.num;
@@ -160,17 +160,17 @@ xf86parseLayoutSection (void)
 				case CONF_ADJ_ABOVE:
 				case CONF_ADJ_BELOW:
 				case CONF_ADJ_RELATIVE:
-					token = xf86getToken(NULL);
+					token = xf86getSubToken(&(ptr->lay_comment));
 					if (token != STRING)
 						Error(INVALID_SCR_MSG, NULL);
 					aptr->adj_refscreen = val.str;
 					if (aptr->adj_where == CONF_ADJ_RELATIVE)
 					{
-						token = xf86getToken(NULL);
+						token = xf86getSubToken(&(ptr->lay_comment));
 						if (token != NUMBER)
 							Error(INVALID_SCR_MSG, NULL);
 						aptr->adj_x = val.num;
-						token = xf86getToken(NULL);
+						token = xf86getSubToken(&(ptr->lay_comment));
 						if (token != NUMBER)
 							Error(INVALID_SCR_MSG, NULL);
 						aptr->adj_y = val.num;
@@ -181,17 +181,17 @@ xf86parseLayoutSection (void)
 					aptr->adj_top_str = val.str;
 
 					/* bottom */
-					if (xf86getToken (NULL) != STRING)
+					if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 						Error (SCREEN_MSG, NULL);
 					aptr->adj_bottom_str = val.str;
 
 					/* left */
-					if (xf86getToken (NULL) != STRING)
+					if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 						Error (SCREEN_MSG, NULL);
 					aptr->adj_left_str = val.str;
 
 					/* right */
-					if (xf86getToken (NULL) != STRING)
+					if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 						Error (SCREEN_MSG, NULL);
 					aptr->adj_right_str = val.str;
 
@@ -207,10 +207,10 @@ xf86parseLayoutSection (void)
 				iptr = xf86confcalloc (1, sizeof (XF86ConfInputrefRec));
 				iptr->list.next = NULL;
 				iptr->iref_option_lst = NULL;
-				if (xf86getToken (NULL) != STRING)
+				if (xf86getSubToken (&(ptr->lay_comment)) != STRING)
 					Error (INPUTDEV_MSG, NULL);
 				iptr->iref_inputdev_str = val.str;
-				while ((token = xf86getToken (NULL)) == STRING)
+				while ((token = xf86getSubToken (&(ptr->lay_comment))) == STRING)
 				{
 					iptr->iref_option_lst =
 						xf86addNewOption (iptr->iref_option_lst, val.str, NULL);
