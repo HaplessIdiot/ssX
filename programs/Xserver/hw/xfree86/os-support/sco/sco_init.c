@@ -1,5 +1,5 @@
 /* $XConsortium: sco_init.c,v 1.1 94/03/28 21:30:32 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_init.c,v 3.0 1994/05/21 23:57:13 dawes Exp $ */
 /*
  * Copyright 1993 by David McCullough <davidm@stallion.oz.au>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -96,7 +96,7 @@ void xf86OpenConsole()
 
 	sprintf(vtname,"/dev/tty%02d", xf86Info.vtno+1); /* /dev/tty[01-12] */
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
 	{

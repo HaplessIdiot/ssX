@@ -1,5 +1,5 @@
 /* $XConsortium: sco_mouse.c,v 1.1 94/03/28 21:30:44 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sco/sco_mouse.c,v 3.0 1994/05/21 23:57:14 dawes Exp $ */
 
 /******************************************************************************/
 
@@ -26,7 +26,7 @@ static int		config_buttons = 0;
 
 /******************************************************************************/
 /*
- *	Handle any Xconfig options for "OsMouse", How you treat errors
+ *	Handle any XF86Config options for "OsMouse", How you treat errors
  *	is up to you, they may or may not be Fatal
  */
 

@@ -1,4 +1,5 @@
 /* $XConsortium: am_init.c,v 1.1 94/03/28 21:27:29 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -70,7 +71,7 @@ void xf86OpenConsole()
 		       err_why(ERR_CONVERT(seg)));
 	}
  
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
     }
     return;
 }

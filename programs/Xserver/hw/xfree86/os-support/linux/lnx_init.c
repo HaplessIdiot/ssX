@@ -1,4 +1,5 @@
 /* $XConsortium: lnx_init.c,v 1.1 94/03/28 21:28:51 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -87,7 +88,7 @@ void xf86OpenConsole()
 
 	sprintf(vtname,"/dev/tty%d",xf86Info.vtno); /* /dev/tty1-N */
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
 	{
