@@ -1,4 +1,7 @@
 XFree86 4.4.99.902 (xx February 2005)
+ 335. Apply changelog #124 (don't do various keycode conversions on NEC
+      PC-98 platforms) to the kbd driver (Bugzilla #1549, reported by
+      Dejan Lesjak).
  334. Prevent EDID modes from overriding modes explicitly supplied in the
       Monitor section (David Dawes).
  333. Log when modes are excluded due to not meeting TargetRefresh or
@@ -19396,7 +19399,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3442 2005/02/17 03:46:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3443 2005/02/18 00:31:41 dawes Exp $
 
 
 
