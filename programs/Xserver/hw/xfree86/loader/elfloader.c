@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.58 2003/10/15 16:29:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.59 2003/10/15 16:58:34 dawes Exp $ */
 
 /*
  *
@@ -54,13 +54,13 @@
 
 #include "compiler.h"
 
-#undef LDTEST
+#ifndef LOADERDEBUG
+#define LOADERDEBUG 0
+#endif
 
-/*
-#ifndef LDTEST
+#if LOADERDEBUG
 # define ELFDEBUG ErrorF
 #endif
-*/
 
 #if defined(__ia64__)
 
@@ -432,9 +432,10 @@ ElfDelayRelocation(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel)
     reloc->rel = rel;
     reloc->next = 0;
 #ifdef ELFDEBUG
-    ELFDEBUG("ElfDelayRelocation %lx: file %lx, sec %d,"
+    ELFDEBUG("ElfDelayRelocation %p: file %p, sec %d,"
 	     " r_offset 0x%lx, r_info 0x%x",
-	     reloc, elffile, secn, rel->r_offset, rel->r_info);
+	     (void *)reloc, (void *)elffile, secn,
+	     (unsigned long)rel->r_offset, rel->r_info);
 # if defined(__powerpc__) || \
     defined(__mc68000__) || \
     defined(__alpha__) || \
@@ -540,8 +541,8 @@ ElfCreateCOMMON(ELFModulePtr elffile, LOOKUP *pLookup)
 		xf86loaderstrdup(ElfGetString(elffile, common->sym->st_name));
 	pLookup[l].offset = (funcptr) (elffile->common + offset);
 #ifdef ELFDEBUG
-	ELFDEBUG("Adding common %lx %s\n",
-		 pLookup[l].offset, pLookup[l].symName);
+	ELFDEBUG("Adding common %p %s\n",
+		 (void *)pLookup[l].offset, pLookup[l].symName);
 #endif
 
 	/* Record the symbol address for gdb */
@@ -614,7 +615,7 @@ ElfGetSymbolNameIndex(ELFModulePtr elffile, int index, int secndx)
     ELFDEBUG("%s ", ElfGetString(elffile, syms[index].st_name));
     ELFDEBUG("%x %x ", ELF_ST_BIND(syms[index].st_info),
 	     ELF_ST_TYPE(syms[index].st_info));
-    ELFDEBUG("%lx\n", syms[index].st_value);
+    ELFDEBUG("%lx\n", (unsigned long)syms[index].st_value);
 #endif
 
     return ElfGetString(elffile, syms[index].st_name);
@@ -679,15 +680,15 @@ ElfGetSymbolValue(ELFModulePtr elffile, int index)
 	    break;
 	}
 #ifdef ELFDEBUG
-	ELFDEBUG("%lx\t", symbol);
-	ELFDEBUG("%lx\t", symval);
+	ELFDEBUG("%p\t", (void *)symbol);
+	ELFDEBUG("%lx\t", (unsigned long)symval);
 	ELFDEBUG("%s\n", symname ? symname : "NULL");
 #endif
 	break;
     case STT_SECTION:
 	symval = (Elf_Addr) elffile->saddr[syms[index].st_shndx];
 #ifdef ELFDEBUG
-	ELFDEBUG("ST_SECTION %lx\n", symval);
+	ELFDEBUG("ST_SECTION %lx\n", (unsigned long)symval);
 #endif
 	break;
     case STT_FILE:
@@ -1226,7 +1227,7 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
     Elf_Addr symval = 0;	/* value of the indicated symbol */
 
 #ifdef ELFDEBUG
-    ELFDEBUG("%lx %d %d\n", rel->r_offset,
+    ELFDEBUG("%lx %d %d\n", (unsigned long)rel->r_offset,
 	     ELF_R_SYM(rel->r_info), ELF_R_TYPE(rel->r_info));
 # if defined(__powerpc__) || \
     defined(__mc68000__) || \
@@ -1265,12 +1266,12 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 	dest32 = (unsigned int *)(secp + rel->r_offset);
 # ifdef ELFDEBUG
 	ELFDEBUG("R_386_32\t");
-	ELFDEBUG("dest32=%x\t", dest32);
-	ELFDEBUG("*dest32=%8.8lx\t", *dest32);
+	ELFDEBUG("dest32=%p\t", (void *)dest32);
+	ELFDEBUG("*dest32=%8.8x\t", (unsigned int)*dest32);
 # endif
 	*dest32 = symval + (*dest32);	/* S + A */
 # ifdef ELFDEBUG
-	ELFDEBUG("*dest32=%8.8lx\n", *dest32);
+	ELFDEBUG("*dest32=%8.8x\n", (unsigned int)*dest32);
 # endif
 	break;
     case R_386_PC32:
@@ -1278,16 +1279,16 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 # ifdef ELFDEBUG
 	ELFDEBUG("R_386_PC32 %s\t",
 		 ElfGetSymbolName(elffile, ELF_R_SYM(rel->r_info)));
-	ELFDEBUG("secp=%x\t", secp);
-	ELFDEBUG("symval=%lx\t", symval);
-	ELFDEBUG("dest32=%x\t", dest32);
-	ELFDEBUG("*dest32=%8.8lx\t", *dest32);
+	ELFDEBUG("secp=%p\t", secp);
+	ELFDEBUG("symval=%lx\t", (unsigned long)symval);
+	ELFDEBUG("dest32=%p\t", (void *)dest32);
+	ELFDEBUG("*dest32=%8.8x\t", (unsigned int)*dest32);
 # endif
 
 	*dest32 = symval + (*dest32) - (Elf_Addr) dest32;	/* S + A - P */
 
 # ifdef ELFDEBUG
-	ELFDEBUG("*dest32=%8.8lx\n", *dest32);
+	ELFDEBUG("*dest32=%8.8x\n", (unsigned int)*dest32);
 # endif
 
 	break;
@@ -2549,7 +2550,8 @@ ELF_GetSymbols(ELFModulePtr elffile, unsigned short **psecttable)
     for (i = 0, l = 0; i < numsyms; i++) {
 #ifdef ELFDEBUG
 	ELFDEBUG("value=%lx\tsize=%lx\tBIND=%x\tTYPE=%x\tndx=%x\t%s\n",
-		 syms[i].st_value, syms[i].st_size,
+		 (unsigned long)syms[i].st_value,
+		 (unsigned long)syms[i].st_size,
 		 ELF_ST_BIND(syms[i].st_info), ELF_ST_TYPE(syms[i].st_info),
 		 syms[i].st_shndx, ElfGetString(elffile, syms[i].st_name));
 #endif
@@ -2595,7 +2597,8 @@ ELF_GetSymbols(ELFModulePtr elffile, unsigned short **psecttable)
 		secttable[l] = syms[i].st_shndx;
 #ifdef ELFDEBUG
 		ELFDEBUG("Adding symbol %lx(%d) %s\n",
-			 lookup[l].offset, secttable[l], lookup[l].symName);
+			 (unsigned long)lookup[l].offset, secttable[l],
+			 lookup[l].symName);
 #endif
 #ifdef __ia64__
 		if (ELF_ST_TYPE(syms[i].st_info) == STT_FUNC) {
@@ -2750,8 +2753,8 @@ ELFCollectSections(ELFModulePtr elffile, int pass, int *totalsize,
 	}
 	elffile->saddr[i] = elffile->lsection[j].saddr;
 #ifdef ELFDEBUG
-	ELFDEBUG("%s starts at %lx size: %lx\n",
-		 name, elffile->saddr[i], SecSize(i));
+	ELFDEBUG("%s starts at %p size: %lx\n",
+		 name, elffile->saddr[i], (unsigned long)SecSize(i));
 #endif
 	elffile->lsection[j].name = name;
 	elffile->lsection[j].ndx = i;
@@ -2997,8 +3000,8 @@ ELFLoadModule(loaderPtr modrec, int elffd, LOOKUP **ppLookup)
 		    (funcptr) ((long)pLookup[i].offset +
 			       (long)elffile->saddr[secttable[i]]);
 #ifdef ELFDEBUG
-	    ELFDEBUG("Finalizing symbol %lx %s\n",
-		     pLookup[i].offset, pLookup[i].symName);
+	    ELFDEBUG("Finalizing symbol %p %s\n",
+		     (void *)pLookup[i].offset, pLookup[i].symName);
 #endif
 	}
     xf86loaderfree(secttable);
@@ -3051,7 +3054,10 @@ ELFResolveSymbols(void *mod)
     newlist = 0;
     for (p = _LoaderGetRelocations(mod)->elf_reloc; p;) {
 #ifdef ELFDEBUG
-	ErrorF("ResolveSymbols: file %lx, sec %d, r_offset 0x%x, r_info 0x%lx\n", p->file, p->secn, p->rel->r_offset, p->rel->r_info);
+	ELFDEBUG("ResolveSymbols: "
+		 "file %p, sec %d, r_offset 0x%x, r_info 0x%p\n",
+		 (void *)p->file, p->secn, p->rel->r_offset,
+		 (void *)p->rel->r_info);
 #endif
 	tmp = Elf_RelocateEntry(p->file, p->secn, p->rel, FALSE);
 	if (tmp) {
