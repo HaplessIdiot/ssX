@@ -18,6 +18,7 @@ suffix=`echo "$END_FILE" | sed -e 's/^[^.]*.//'`
 NEW_FILE=temp$$
 
 sed	-e 's/__vendorversion__/"X Window System"/' \
+	-e s@__apploaddir__@/usr/lib/X11/app-defaults@ \
 	-e s/__miscmansuffix__/$suffix/ \
 	$OLD_FILE >$NEW_FILE
 

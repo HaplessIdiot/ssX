@@ -6316,8 +6316,12 @@ fi
 
 ###	remove from CPPFLAGS the optional features we define in xtermcfg.h
 for cf_def in \
+	ALLOWLOGGING \
+	OPT_WIDE_CHARS \
 	SCROLLBAR_RIGHT \
-	OPT_WIDE_CHARS
+	USE_TTY_GROUP \
+	USE_UTEMPTER \
+	XRENDERFONT
 do
 	CPPFLAGS=`echo "$CPPFLAGS" | sed -e s/-D$cf_def//`
 done

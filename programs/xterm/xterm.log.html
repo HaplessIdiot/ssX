@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.74 2001/10/10 19:46:23 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.75 2001/10/24 01:21:25 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_163">Patch #163 - 2001/11/04 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_162">Patch #162 - 2001/10/23 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_161">Patch #161 - 2001/10/10 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_160">Patch #160 - 2001/10/7 - XFree86 4.1.0</A>
@@ -206,6 +207,30 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_163">Patch #163 - 2001/1l/04 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>correct ifdef's for <code>__QNX__</code> and
+	  <code>USE_SYSV_PGRP</code> in main.c call to <code>tcsetpgrp</code>,
+	  which broke bash behavior around patch #140 (report/patch by Frank
+	  Liu &lt;fliu@mail.vipstage.com&gt;).
+
+	<li>modify trace.c to fix missing definition of GCC_UNUSED for
+	  compilers other than gcc when configured for trace code (report/patch
+	  by Paul Gilmartin).
+
+	<li>change format in TraceOptions() to use long rather than int, since
+	  the latter could lose precision on 64-bit machines (report/patch by
+	  Nelson Beebe).
+
+	<li>modify xterm manual page and minstall.sh to allow imake rules
+	  to define location of app-defaults directory (Debian #87611). 
+
+	<li>review/update list of conflicting preprocesor symbols to remove
+	  from $CPPFLAGS at the end of the configure script.  In particular,
+	  this allows one to configure xterm without the utempter library on
+	  Redhat 7.1 (report/patch by Adam Sulmicki).
+</ul>
 
 <H1><A NAME="xterm_162">Patch #162 - 2001/10/23 - XFree86 4.1.0</A></H1>
 <ul>
