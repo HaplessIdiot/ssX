@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/bufio.h,v 1.4 2000/09/19 12:46:08 eich Exp $ */
+/* $XFree86: xc/lib/font/include/bufio.h,v 1.5 2001/01/17 19:43:31 dawes Exp $ */
 
 #ifndef ___BUFIO_H___
 #define ___BUFIO_H___ 1
@@ -74,7 +74,7 @@ extern int BufFileWrite ( BufFilePtr, char*, int );
 extern void BufFileFree ( BufFilePtr );
 
 #define BufFileGet(f)	((f)->left-- ? *(f)->bufp++ : ((f)->eof = (*(f)->input) (f)))
-#define BufFilePut(c,f)	(--(f)->left ? *(f)->bufp++ = (c) : (*(f)->output) (c,f))
+#define BufFilePut(c,f)	(--(f)->left ? *(f)->bufp++ = ((unsigned char)(c)) : (*(f)->output) ((unsigned char)(c),f))
 #define BufFileSkip(f,c)    ((f)->eof = (*(f)->skip) (f, c))
 
 #ifndef TRUE
