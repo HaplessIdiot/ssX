@@ -1,5 +1,5 @@
 XCOMM $Xorg: bsdLib.tmpl,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
-XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.20tsi Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.tmpl,v 3.21 2003/07/11 22:17:41 tsi Exp $
 
 /*
  * NetBSD/FreeBSD/OpenBSD shared library template
@@ -68,7 +68,6 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXpmReqs   $(LDPRELIB) $(XLIB)
 #define SharedXrandrReqs  $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 #define SharedXrenderReqs $(LDPRELIB) $(XLIB)
-#define SharedXssReqs	$(LDPRELIB) $(XLIB) $(XTOOLLIB)
 #define SharedXtstReqs	$(LDPRELIBS) $(XLIB)
 #define SharedXvReqs	$(LDPRELIB) $(XLIB)
 #define SharedSMReqs	$(LDPRELIBS) $(ICELIB)
@@ -81,5 +80,14 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedDPSReqs	$(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
 #define SharedDPSTKReqs	$(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(DPSLIB) $(XLIB)
 #define SharedpsresReqs	$(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
-
+#define SharedXResReqs	$(LDPRELIB) $(XLIB)
+#define SharedXfontcacheReqs	$(LDPRELIB) $(XLIB)
+#define SharedXineramaReqs	$(LDPRELIB) $(XLIB)
+#define SharedXssReqs	$(LDPRELIB) $(XLIB)
+#define SharedXvMCReqs	$(LDPRELIB) $(XLIB)
+#define SharedXxf86dgaReqs	$(LDPRELIB) $(XLIB)
+#define SharedXxf86miscReqs	$(LDPRELIB) $(XLIB)
+#define SharedXxf86vmReqs	$(LDPRELIB) $(XLIB)
+#define SharedxkbfileReqs	$(LDPRELIB) $(XONLYLIB)
+#define SharedxkbuiReqs $(LDPRELIB) $(XKBFILELIB) $(XONLYLIB)
 #endif /* UseElfFormat */
