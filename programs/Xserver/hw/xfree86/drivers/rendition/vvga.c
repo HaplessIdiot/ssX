@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * file vvga.c
  *
@@ -15,8 +16,8 @@
 #include "vos.h"
 #include "v1kregs.h"
 #include "v2kregs.h"
-#include <stdlib.h>
-#include <unistd.h>
+#include "xf86.h"
+#include "xf86_OSproc.h"
 
 void set_PLL(vu16, vu32);
 
@@ -143,14 +144,22 @@ void v_loadvgafont(void)
 
     /* fill plane 2 with 8x16 font */
     address=font8x16;
-    vbase=v_mapmemory((vu8 *)0xa0000, 64*1024);
+#if defined(__alpha__)
+    vbase = (vu8 *)xf86MapVidMemSparse(0, VIDMEM_FRAMEBUFFER, (pointer)0xa0000, 64*1024);
+#else
+    vbase = (vu8 *)xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, (pointer)0xa0000, 64*1024);
+#endif
     vidmem=vbase;
     for (c=0; c<=255; c++) {
         v_memtobus(vbase, 32*c, address, 16);
 	    address+=16;
     }
 
-    v_unmapmemory(vbase, 64*1024);
+#if defined(__alpha__)
+    xf86UnMapVidMemSparse(0, VIDMEM_FRAMEBUFFER, vbase);
+#else
+    xf86UnMapVidMem(0, VIDMEM_FRAMEBUFFER, vbase);
+#endif
 
     /* restore the standard vga register values */
     v_resetvga();
@@ -161,6 +170,7 @@ void v_loadvgafont(void)
 void v_textmode(struct v_board_t *board) 
 {
     vu16 iob=board->io_base;
+    int tmp;
 
     /* dac */
     v_out8(iob+DACCOMMAND0, 0x80);     /* 6 bit op, enable extended */
@@ -175,11 +185,12 @@ void v_textmode(struct v_board_t *board)
     if (V1000_DEVICE == board->chip) {
         v_out32(iob+DRAMCTL, 0x140000);
         set_PLL(iob, 0x40000);
-        usleep(500);
+        xf86usleep(500);
      }
     else {
         /* memctl */
-        v_out32(iob+DRAMCTL, 0x1800|v_in32(iob+DRAMCTL));    /* linear mode */
+	tmp = 0x1800|v_in32(iob+DRAMCTL);
+        v_out32(iob+DRAMCTL, tmp);    /* linear mode */
 
         /* pixel clock */
         v_out32(iob+PCLKPLL, 0x300000);
@@ -188,7 +199,7 @@ void v_textmode(struct v_board_t *board)
 
         /* Need to wait 200uS for PLL to stabilize --
          * let's play it safe with 500 */
-        usleep(500);
+        xf86usleep(500);
 
         /* wait until VBLANK */
         while ((v_in32(iob+CRTCSTATUS)&CRTCSTATUS_VERT_MASK) !=
@@ -234,10 +245,18 @@ void v_savetextmode(struct v_board_t *board)
     board->offset_low=getvgareg(0x3d4, 0xd);
 
     /* save the screen contents */
-    board->scr_contents=(vu8 *)malloc(0x8000);
-    vbase=v_mapmemory((vu8 *)0xb8000, 0x8000);
+    board->scr_contents=(vu8 *)xalloc(0x8000);
+#if defined(__alpha__)
+    vbase = (vu8 *)xf86MapVidMemSparse(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+#else
+    vbase = (vu8 *)xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+#endif
     v_bustomem(board->scr_contents, vbase, 0x8000);
-    v_unmapmemory(vbase, 0x8000);
+#if defined(__alpha__)
+    xf86UnMapVidMemSparse(0, VIDMEM_FRAMEBUFFER, vbase);
+#else
+    xf86UnMapVidMem(0, VIDMEM_FRAMEBUFFER, vbase);
+#endif
 }
 
 
@@ -255,10 +274,18 @@ void v_restoretextmode(struct v_board_t *board)
     setvgareg(0x3d4, 0xd, board->offset_low);
 
     /* restore the screen contents */
-    vbase=v_mapmemory((vu8 *)0xb8000, 0x8000);
+#if defined(__alpha__)
+    vbase = (vu8 *)xf86MapVidMemSparse(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+#else
+    vbase = (vu8 *)xf86MapVidMem(0, VIDMEM_FRAMEBUFFER, (pointer)0xb8000, 0x8000);
+#endif
     v_memtobus(vbase, 0, board->scr_contents, 0x8000);
-    v_unmapmemory(vbase, 0x8000);
-    free(board->scr_contents);
+#if defined(__alpha__)
+    xf86UnMapVidMemSparse(0, VIDMEM_FRAMEBUFFER, vbase);
+#else
+    xf86UnMapVidMem(0, VIDMEM_FRAMEBUFFER, vbase);
+#endif
+    xfree(board->scr_contents);
 }
 
 

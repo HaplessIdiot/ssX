@@ -1,37 +1,30 @@
-XCOMM
-XCOMM This is an Imakefile for the Rendition driver.  
-XCOMM
 XCOMM $XFree86$
 
+#define IHaveModules
 #include <Server.tmpl>
 
-XCOMM #define IHaveSubdirs
-XCOMM #define SUBDIRS vlib
+SRCS = rendition.c vboard.c vmodes.c vramdac.c v1krisc.c vvga.c
 
-SRCS=rendition_driver.c hwcursor.c vmodes.c vos.c vramdac.c vvga.c v1krisc.o vboard.c vloaduc.c
-OBJS=rendition_driver.o hwcursor.o vmodes.o vos.o vramdac.o vvga.o v1krisc.o vboard.o vloaduc.o
+OBJS = rendition.o vboard.o vmodes.o vramdac.o v1krisc.o vvga.o
 
-DEFINES=-DXSERVER 
-#-DDEBUG
-
-RDRVDIR=drivers/vga256/rendition
-
-#if XF86LinkKit
-INCLUDES=-I. -I../../../include -I../../../include/X11 -I../..
-#else
-INCLUDES=-I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
-         -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
-         -I$(SERVERSRC)/cfb -I../../vga -I../../../xaa \
-         -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC)
-#endif
+INCLUDES = -I. -I$(XF86SRC)/xf4bpp -I$(XF86SRC)/xf1bpp \
+	   -I$(SERVERSRC)/cfb -I$(SERVERSRC)/mfb \
+	   -I$(SERVERSRC)/mi -I$(SERVERSRC)/cfb\
+	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c -I$(XF86SRC)/vgahw \
+	   -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(FONTINCSRC) -I$(XINCLUDESRC) \
+	   -I$(SERVERSRC)/include  -I$(XF86SRC)/xaa \
+	   -I$(XF86SRC)/xf24_32bpp -I$(XF86SRC)/xf8_32bpp \
+	   -I$(XF86SRC)/ramdac -I$(SERVERSRC)/Xext \
+	   -I$(XF86SRC)/shadowfb -I$(XF86SRC)/rac
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
 #endif
-NormalLibraryObjectRule()
-NormalAsmObjectRule()
-NormalRelocatableTarget(rendition_drv, $(OBJS))
 
-InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/$(RDRVDIR))
+ModuleObjectRule()
+
+ObjectModuleTarget(rendition,$(OBJS))
+
+InstallObjectModule(rendition,$(MODULEDIR),drivers)
 
 DependTarget()

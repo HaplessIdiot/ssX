@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.1 1999/03/21 07:34:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.2 1999/04/11 13:10:37 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -34,14 +34,24 @@ static DISPATCH_PROC(ProcXDGAOpenFramebuffer);
 static DISPATCH_PROC(ProcXDGACloseFramebuffer);
 static DISPATCH_PROC(ProcXDGASetViewport);
 static DISPATCH_PROC(ProcXDGAInstallColormap);
+static DISPATCH_PROC(ProcXDGASelectInput);
+static DISPATCH_PROC(ProcXDGAFillRectangle);
+static DISPATCH_PROC(ProcXDGACopyArea);
+static DISPATCH_PROC(ProcXDGACopyTransparentArea);
+static DISPATCH_PROC(ProcXDGAGetViewportStatus);
+static DISPATCH_PROC(ProcXDGAFlush);
+
 
 extern DISPATCH_PROC(ProcXF86DGADispatch);
 
 
 static void XDGAResetProc(ExtensionEntry *extEntry);
 
+static ClientPtr DGAClients[MAXSCREENS];
+
 unsigned char DGAReqCode = 0;
 int DGAErrorBase;
+int DGAEventBase;
 
 void
 XFree86DGAExtensionInit(void)
@@ -55,9 +65,16 @@ XFree86DGAExtensionInit(void)
 				SProcXDGADispatch,
 				XDGAResetProc,
 				StandardMinorOpcode))) {
+	int i;
+
+	for(i = 0; i < MAXSCREENS; i++)
+	     DGAClients[i] = NULL;
+
 	DGAReqCode = (unsigned char)extEntry->base;
 	DGAErrorBase = extEntry->errorBase;
+	DGAEventBase = extEntry->eventBase;
     }
+
 }
 
 
@@ -243,7 +260,13 @@ ProcXDGASetMode(ClientPtr client)
     if (!DGAAvailable(stuff->screen)) 
         return DGAErrorBase + XF86DGANoDirectVideoMode;
 
+    if(DGAClients[stuff->screen] && 
+      (DGAClients[stuff->screen] != client))
+        return DGAErrorBase + XF86DGANoDirectVideoMode;
+
     if(!stuff->mode) {
+	DGAClients[stuff->screen] = NULL;
+	DGASelectInput(stuff->screen, NULL, 0);
 	DGASetMode(stuff->screen, 0, &mode, &pPix);
 	WriteToClient(client, sz_xXDGASetModeReply, (char*)&rep);
 	return (client->noClientException);
@@ -251,6 +274,8 @@ ProcXDGASetMode(ClientPtr client)
 
     if(Success != DGASetMode(stuff->screen, stuff->mode, &mode, &pPix))
 	return BadValue;
+
+    DGAClients[stuff->screen] = client;
 
     if(pPix) {
 	if(AddResource(stuff->pid, RT_PIXMAP, (pointer)(pPix))) {
@@ -304,7 +329,7 @@ ProcXDGASetViewport(ClientPtr client)
     if (stuff->screen > screenInfo.numScreens)
         return BadValue;
 
-    if (!DGAActive(stuff->screen)) 
+    if(DGAClients[stuff->screen] != client)
         return DGAErrorBase + XF86DGADirectNotActivated;
 
     REQUEST_SIZE_MATCH(xXDGASetViewportReq);
@@ -323,7 +348,7 @@ ProcXDGAInstallColormap(ClientPtr client)
     if (stuff->screen > screenInfo.numScreens)
         return BadValue;
 
-    if (!DGAActive(stuff->screen)) 
+    if(DGAClients[stuff->screen] != client)
         return DGAErrorBase + XF86DGADirectNotActivated;
 
     REQUEST_SIZE_MATCH(xXDGAInstallColormapReq);
@@ -337,6 +362,135 @@ ProcXDGAInstallColormap(ClientPtr client)
         return (BadColor);
     }
 
+    return (client->noClientException);
+}
+
+
+static int
+ProcXDGASelectInput(ClientPtr client)
+{
+    REQUEST(xXDGASelectInputReq);
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGASelectInputReq);
+   
+    if(DGAClients[stuff->screen] == client)
+	DGASelectInput(stuff->screen, client, stuff->mask);
+
+    return (client->noClientException);
+}
+
+
+static int
+ProcXDGAFillRectangle(ClientPtr client)
+{
+    REQUEST(xXDGAFillRectangleReq);
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGAFillRectangleReq);
+   
+    if(Success != DGAFillRect(stuff->screen, stuff->x, stuff->y,
+			stuff->width, stuff->height, stuff->color))
+	return BadMatch;
+
+    return (client->noClientException);
+}
+
+static int
+ProcXDGACopyArea(ClientPtr client)
+{
+    REQUEST(xXDGACopyAreaReq);
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGACopyAreaReq);
+   
+    if(Success != DGABlitRect(stuff->screen, stuff->srcx, stuff->srcy,
+		stuff->width, stuff->height, stuff->dstx, stuff->dsty))
+	return BadMatch;
+
+    return (client->noClientException);
+}
+
+
+static int
+ProcXDGACopyTransparentArea(ClientPtr client)
+{
+    REQUEST(xXDGACopyTransparentAreaReq);
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGACopyTransparentAreaReq);
+   
+    if(Success != DGABlitTransRect(stuff->screen, stuff->srcx, stuff->srcy,
+	stuff->width, stuff->height, stuff->dstx, stuff->dsty, stuff->key))
+	return BadMatch;
+
+    return (client->noClientException);
+}
+
+
+static int
+ProcXDGAGetViewportStatus(ClientPtr client)
+{
+    REQUEST(xXDGAGetViewportStatusReq);
+    xXDGAGetViewportStatusReply rep;
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGAGetViewportStatusReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+
+    rep.status = DGAGetViewportStatus(stuff->screen);
+
+    WriteToClient(client, sizeof(xXDGAGetViewportStatusReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+static int
+ProcXDGAFlush(ClientPtr client)
+{
+    REQUEST(xXDGAFlushReq);
+    xXDGAFlushReply rep;
+
+    if (stuff->screen > screenInfo.numScreens)
+        return BadValue;
+
+    if(DGAClients[stuff->screen] != client)
+        return DGAErrorBase + XF86DGADirectNotActivated;
+
+    REQUEST_SIZE_MATCH(xXDGAFlushReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+
+    DGAFlush(stuff->screen);
+
+    WriteToClient(client, sizeof(xXDGAFlushReply), (char *)&rep);
     return (client->noClientException);
 }
 
@@ -377,6 +531,18 @@ ProcXDGADispatch (ClientPtr client)
 	return ProcXDGASetViewport(client);
     case X_XDGAInstallColormap:
 	return ProcXDGAInstallColormap(client);
+    case X_XDGASelectInput:
+	return ProcXDGASelectInput(client);
+    case X_XDGAFillRectangle:
+	return ProcXDGAFillRectangle(client);
+    case X_XDGACopyArea:
+	return ProcXDGACopyArea(client);
+    case X_XDGACopyTransparentArea:
+	return ProcXDGACopyTransparentArea(client);
+    case X_XDGAGetViewportStatus:
+	return ProcXDGAGetViewportStatus(client);
+    case X_XDGAFlush:
+	return ProcXDGAFlush(client);
     default:
 	return BadRequest;
     }

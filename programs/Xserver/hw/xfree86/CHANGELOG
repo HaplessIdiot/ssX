@@ -1,4 +1,29 @@
 XFree86 3.9Pj (18 April 1999)
+2744. Disable WC for the framebuffer for the Rendition V1K by default,
+      because it appears to be causing lockups (Dejan Ilic).
+2743. Some fixes for the Rendition driver (Dejan Ilic).
+2742. Add HW cursor using the Bt485 ramdac to the DEC TGA driver (#2687,
+      Matt Grossman).
+2741. More of the DGA 2.0 extension.  Most of it is there now except for
+      the events (#2686, Mark Vojkovich).
+2740. Imlement attributes for Audio (mute, volume) and implement
+      QueryBestSize for the v4l driver (#2685, Gerd Knorr).
+2739. Fix hardware cursor code so that it works with the internal 64 bit
+      scanlines used on Alpha platforms (#2679, Matt Grossman).
+2738. Export new DGA symbols from the loader (#2678, Alan Hourihane).
+2737. Update C&T driver to use independent clocks for FP/dual and CRT modes
+      with HiQV chipsets (#2677, Egbert Eich).
+2736. Port of Precision Insight's NeoMagic driver to the new design
+      (#2677, Egbert Eich).
+2735. Add a Linux kernel backbone to the Permedia 2 Xv driver (#2661+revisions,
+      Michael Schimek).
+2734. Port of the rendition driver to the new design (#2674, Marc Langenbach).
+2733. Fix for the parser's printDeviceSection() function (#2673, Joe Moss).
+2732. Fix a bug in the handling of ZAxisMapping in the parser (#2672,
+      Nicholas Brealey).
+2731. Enable mono 8x8 pattern fills for the SiS driver (#2670,
+      Juanjo Santamarta).
+2730. Remove references to ru_SU in locale.alias (#2669, Aleksey Nowodworsky).
 2729. Fix a bug in xf86CollectOptions() that could cause a server crash.
 2728. Fix the problem causing the mouse acceleration to be done twice
       (#2671, Frederic Lepied).
@@ -7,7 +32,8 @@ XFree86 3.9Pj (18 April 1999)
 2726. Add Trident Blade3D support (#2681, Alan Hourihane).
 2725. Add Mono8x8 pattern for the Trident Image series (#2681, Alan Hourihane).
 2724. Fix trident screen glitches when mode switching (#2681, Alan Hourihane).
-2723. Some minor documentation-related cleanups.
+2723. Some minor documentation-related cleanups.  Doctools version 1.0.2 is
+      now required to format the XFree86 docs.
 
 XFree86 3.9Pi (11 April 1999)
 2722. Fix a Linux/PPC loader relocation bug, and reenable building the
@@ -7777,4 +7803,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.726 1999/04/15 08:36:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.727 1999/04/15 14:39:36 dawes Exp $

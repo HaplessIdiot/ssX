@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _V1KREGS_H_
 #define _V1KREGS_H_
 

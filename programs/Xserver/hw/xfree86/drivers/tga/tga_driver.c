@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.18 1999/03/07 11:40:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.19 1999/03/20 08:59:26 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -82,6 +82,8 @@ static Bool	TGAUnmapMem(ScrnInfoPtr pScrn);
 static void	TGASave(ScrnInfoPtr pScrn);
 static void	TGARestore(ScrnInfoPtr pScrn);
 static Bool	TGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
+
+static void     TGARestoreHWCursor(ScrnInfoPtr pScrn);
 
 #ifdef DPMSExtension
 static void TGADisplayPowerManagementSet(ScrnInfoPtr pScrn,
@@ -345,7 +347,8 @@ TGAProbe(DriverPtr drv, int flags)
     xfree(usedPci);
     return foundScreen;
 }
-	
+
+#if 0
 /*
  * GetAccelPitchValues -
  *
@@ -375,6 +378,7 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
     }
     return linePitches;
 }
+#endif /* 0 */
 
 /* Mandatory */
 static Bool
@@ -495,13 +499,21 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
     from = X_DEFAULT;
-    pTga->HWCursor = FALSE;
+    pTga->HWCursor = TRUE;
     if (xf86GetOptValBool(TGAOptions, OPTION_HW_CURSOR, &pTga->HWCursor))
 	from = X_CONFIG;
     if (xf86ReturnOptValBool(TGAOptions, OPTION_SW_CURSOR, FALSE)) {
 	from = X_CONFIG;
 	pTga->HWCursor = FALSE;
     }
+    
+    if(pScrn->depth != 8) {
+      pTga->HWCursor = FALSE;
+      from = X_WARNING;
+      xf86DrvMsg(pScrn->scrnIndex, from,
+		 "Hardware cursor currently only works with BT485 ramdac\n");
+    }
+    
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
 		pTga->HWCursor ? "HW" : "SW");
     if (xf86ReturnOptValBool(TGAOptions, OPTION_NOACCEL, FALSE)) {
@@ -656,25 +668,18 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 	pScrn->videoRam = pScrn->device->videoRam;
 	from = X_CONFIG;
     } else {
-#if 0
-	pTga->FbMapSize = 0; /* Need to set FbMapSize for MMIO access */
-	/* Need to access MMIO to determine videoRam */
-        TGAMapMem(pScrn);
-#endif
-	switch (pTga->CardType) {
-        case TYPE_TGA_8PLANE:
-                pScrn->videoRam = 2*1024;
-                break;
-        case TYPE_TGA_24PLANE:
-                pScrn->videoRam = 8*1024;
-                break;
-        case TYPE_TGA_24PLUSZ:
-                pScrn->videoRam = 16*1024;
-                break;
-	}	  
-#if 0
-        TGAUnmapMem(pScrn);
-#endif
+
+      switch (pTga->CardType) {
+      case TYPE_TGA_8PLANE:
+	pScrn->videoRam = 2*1024;
+	break;
+      case TYPE_TGA_24PLANE:
+	pScrn->videoRam = 8*1024;
+	break;
+      case TYPE_TGA_24PLUSZ:
+	pScrn->videoRam = 16*1024;
+	break;
+      }	  
     }
 
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
@@ -714,8 +719,6 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	    break;
     }
-
-    /* XXX Set HW cursor use */
 
     /* Set the min pixel clock */
     pTga->MinClock = 16250;	/* XXX Guess, need to check this */
@@ -775,36 +778,18 @@ TGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     /* Select valid modes from those available */
-#if 0
-    if (pTga->NoAccel) {
-#endif
-	/*
-	 * XXX Assuming min pitch 256, max 2048
-	 * XXX Assuming min height 128, max 2048
-	 */
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      NULL, 256, 2048,
-			      pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pTga->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
-#if 0
-    } else {
-	/*
-	 * XXX Assuming min height 128, max 2048
-	 */
-	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
-			      pScrn->display->modes, clockRanges,
-			      GetAccelPitchValues(pScrn), 0, 0,
-			      pScrn->bitsPerPixel, 128, 2048,
-			      pScrn->display->virtualX,
-			      pScrn->display->virtualY,
-			      pTga->FbMapSize,
-			      LOOKUP_BEST_REFRESH);
-    }
-#endif
+    /*
+     * XXX Assuming min pitch 256, max 2048
+     * XXX Assuming min height 128, max 2048
+     */
+    i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+			  pScrn->display->modes, clockRanges,
+			  NULL, 256, 2048,
+			  pScrn->bitsPerPixel, 128, 2048,
+			  pScrn->display->virtualX,
+			  pScrn->display->virtualY,
+			  pTga->FbMapSize,
+			  LOOKUP_BEST_REFRESH);
 
     if (i == -1) {
 	TGAFreeRec(pScrn);
@@ -889,22 +874,6 @@ TGAMapMem(ScrnInfoPtr pScrn)
     /*
      * Map IO registers to virtual address space
      */ 
-#if 0
-#if !defined(__alpha__)
-    pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pTga->PciTag, (pointer)pTga->IOAddress, 0x10000);
-#else
-    /*
-     * For Alpha, we need to map SPARSE memory, since we need
-     * byte/short access.
-     */
-    pTga->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-		pTga->PciTag, (pointer)pTga->IOAddress, 0x10000);
-#endif
-    if (pTga->IOBase == NULL)
-	return FALSE;
-#endif
-
 #if defined(SVR4)
     /*
      * For some SVR4 versions, a 32-bit read is done for the first
@@ -923,18 +892,14 @@ TGAMapMem(ScrnInfoPtr pScrn)
     }
 #endif
 
-#ifdef __alpha__
-    /*
-     * for Alpha, we need to map DENSE memory as well, for
-     * setting CPUToScreenColorExpandBase.
-     */
-    pTga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+    /* TGA doesn't need a sparse memory mapping, because all register
+       accesses are doublewords */
+    
+    pTga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
 				      pTga->PciTag,
 				      (pointer)pTga->IOAddress, 0x100000);
-    if (pTga->IOBaseDense == NULL)
+    if (pTga->IOBase == NULL)
 	return FALSE;
-
-#endif /* __alpha__ */
 
     pTga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pTga->PciTag,
@@ -962,23 +927,8 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
 
     pTga = TGAPTR(pScrn);
 
-    /*
-     * Unmap IO registers to virtual address space
-     */ 
-#if 0
-#ifndef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBase, 0x10000);
-#else
-    xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)pTga->IOBase, 0x10000);
-#endif
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBase, 0x100000);
     pTga->IOBase = NULL;
-#endif
-
-#ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->IOBaseDense, 0x100000);
-    pTga->IOBaseDense = NULL;
-
-#endif /* __alpha__ */
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->FbBase, pScrn->videoRam);
     pTga->FbBase = NULL;
@@ -1088,6 +1038,8 @@ TGARestore(ScrnInfoPtr pScrn)
 	    pBT = RAMDACHWPTR(pScrn);
 	    BTreg = &pBT->SavedReg;
 	    (*pTga->RamDac->Restore)(pScrn, pTga->RamDacRec, BTreg);
+	    if(pTga->HWCursor)
+	      TGARestoreHWCursor(pScrn);
 	} else {
 	    BT463ramdacRestore(pScrn, pTga->Bt463saveReg);
 	}
@@ -1219,26 +1171,28 @@ TGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         {
 	case PCI_CHIP_DEC21030:
 
-	    if(DEC21030AccelInit(pScreen) == FALSE)
-	      xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			 "XAA Initialization failed\n");
-	    break;
+	  if(DEC21030AccelInit(pScreen) == FALSE) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "XAA Initialization failed\n");
+	    return(FALSE);
+	  }
+	  break;
         }
     }
 
     /* Initialise cursor functions */
     miDCInitialize (pScreen, xf86GetPointerScreenFuncs());
-#if 0
-    /* AFAIK, TGA HW cursor doesn't support the features of the X
-       hardware cursor */
+
     /* Initialize HW cursor layer. 
-	Must follow software cursor initialization*/
+       Must follow software cursor initialization*/
     if (pTga->HWCursor) { 
-	if(!TGAHWCursorInit(pScreen))
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-		"Hardware cursor initialization failed\n");
+      if(!TGAHWCursorInit(pScreen)) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+		   "Hardware cursor initialization failed\n");
+	return(FALSE);
+      }
     }
-#endif
+
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -1431,3 +1385,69 @@ TGADisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 }
 
 #endif /* DPMSExtension */
+
+
+static void
+TGARestoreHWCursor(ScrnInfoPtr pScrn)
+     /*
+       from tga.c in the linux kernel...may not work for BSD...
+       when the cursor is restored, it is one line down from where it should
+       be...this is disconcerting, but purely cosmetic.  Unfortunately reading
+       in the cursor framebuffer doesn't seem to work, I get a bunch of junk
+       at the beginning...other than that, see tga_cursor.c
+       I believe this to be a problem with the linux kernel code.
+     */
+{
+  unsigned char *p = NULL;
+  int i = 0;
+  TGAPtr pTga;
+  const CARD64 cursor_source[64] = {
+    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
+    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
+    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
+    0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,0x000000ff00000000,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+  };
+
+  pTga = TGAPTR(pScrn);
+
+  /* set a windows cursor -- oddly, this doesn't seem necessary */
+  tgaBTOutIndReg(pScrn, BT_COMMAND_REG_2, 0xFC, 0x02);
+  
+  /* set a 64 bit cursor */
+/*    tgaBTOutIndReg(pScrn, BT_COMMAND_REG_0, 0x7F, 0x80); */
+/*    tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0x00, 0x01); */
+/*    tgaBTOutIndReg(pScrn, BT_STATUS_REG, 0xF8, 0x04); */
+
+  /* set the colors */
+  tgaBTOutIndReg(pScrn, BT_CURS_WR_ADDR, 0xFC, 0x01);
+  
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0xaa);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0xaa);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0xaa);
+
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+  tgaBTOutIndReg(pScrn, BT_CURS_DATA, 0x00, 0x00);
+
+  /* load the console cursor */
+  tgaBTOutIndReg(pScrn, BT_WRITE_ADDR, 0xFC, 0x00);
+  p = (unsigned char *)cursor_source;
+  for(i = 0; i < 512; i++)
+    tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, *p++);
+  for(i = 0; i < 512; i++)
+    tgaBTOutIndReg(pScrn, BT_CURS_RAM_DATA, 0x00, 0xff);
+
+  return;
+}
+

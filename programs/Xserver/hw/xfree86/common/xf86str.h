@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.27 1999/04/05 07:13:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.28 1999/04/11 13:10:51 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -618,7 +618,7 @@ typedef struct {
    void	(*CloseFramebuffer)(ScrnInfoPtr pScrn);
    Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
    void (*SetViewport)(ScrnInfoPtr pScrn, int x, int y, int flags);
-   int  (*GetViewport)(ScrnInfoPtr pScrn, int flags);
+   int  (*GetViewport)(ScrnInfoPtr pScrn);
    void (*Flush)(ScrnInfoPtr);
    void (*FillRect)(
 	ScrnInfoPtr pScrn, 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.4 1999/03/28 15:31:33 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dgastr.h,v 3.5 1999/04/11 13:10:29 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -75,7 +75,7 @@ typedef struct _XDGASetMode {
 
 typedef struct {
     BYTE	type;			/* X_Reply */
-    BOOL	pad1;			/* pixmap is available */
+    BOOL	pad1;
     CARD16	sequenceNumber B16;
     CARD32	length B32;
     CARD32	offset B32;		/* offset into framebuffer map */
@@ -169,7 +169,102 @@ typedef struct _XDGAInstallColormap {
 } xXDGAInstallColormapReq;
 #define sz_xXDGAInstallColormapReq	12
 
+typedef struct _XDGASelectInput {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+    CARD32	mask B32;
+} xXDGASelectInputReq;
+#define sz_xXDGASelectInputReq	12
 
+typedef struct _XDGAFillRectangle {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+    CARD16	x B16;
+    CARD16	y B16;
+    CARD16	width B16;
+    CARD16	height B16;
+    CARD32	color B32;
+} xXDGAFillRectangleReq;
+#define sz_xXDGAFillRectangleReq	20
+
+
+typedef struct _XDGACopyArea {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+    CARD16	srcx B16;
+    CARD16	srcy B16;
+    CARD16	width B16;
+    CARD16	height B16;
+    CARD16	dstx B16;
+    CARD16	dsty B16;
+} xXDGACopyAreaReq;
+#define sz_xXDGACopyAreaReq	20
+
+typedef struct _XDGACopyTransparentArea {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+    CARD16	srcx B16;
+    CARD16	srcy B16;
+    CARD16	width B16;
+    CARD16	height B16;
+    CARD16	dstx B16;
+    CARD16	dsty B16;
+    CARD32	key B32;
+} xXDGACopyTransparentAreaReq;
+#define sz_xXDGACopyTransparentAreaReq	24
+
+
+typedef struct _XDGAGetViewportStatus {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+} xXDGAGetViewportStatusReq;
+#define sz_xXDGAGetViewportStatusReq	8
+
+typedef struct {
+    BYTE	type;			
+    BOOL	pad1;	
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	status B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xXDGAGetViewportStatusReply;
+#define sz_xXDGAGetViewportStatusReply	32
+
+typedef struct _XDGAFlush {
+    CARD8	reqType;
+    CARD8	dgaReqType;
+    CARD16	length B16;
+    CARD32	screen B32;
+} xXDGAFlushReq;
+#define sz_xXDGAFlushReq	8
+
+typedef struct {
+    BYTE	type;			
+    BOOL	pad1;	
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+    CARD32	pad7 B32;
+} xXDGAFlushReply;
+#define sz_xXDGAFlushReply	32
 
 #endif /* _XF86DGASTR_H_ */
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.214 1999/04/04 08:45:59 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.215 1999/04/11 13:10:25 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -114,7 +114,8 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
-#define XF86CardDrivers		mga glint tga s3virge sis cirrus tseng \
+#define XF86CardDrivers		mga glint tga s3virge sis rendition neomagic \
+				cirrus tseng \
 				trident chips apm GlideDriver fbdev \
 				vga XF86ExtraCardDrivers
 #endif
@@ -216,7 +217,8 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
-#define XF86CardDrivers		mga glint tga vga XF86ExtraCardDrivers
+#define XF86CardDrivers		mga glint s3virge rendition tga \
+				vga XF86ExtraCardDrivers
 #endif
 #endif
 

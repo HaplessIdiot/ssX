@@ -1,3 +1,4 @@
+/* $XFree86$ */
 unsigned char vga_pal[]=
 {
 /* 00 - 0f */

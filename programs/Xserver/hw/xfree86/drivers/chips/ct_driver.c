@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.55 1999/03/28 15:32:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.56 1999/04/11 13:10:54 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -528,7 +528,6 @@ static IsaChipsets CHIPSISAchipsets[] = {
 
 /* The options supported by the Chips and Technologies Driver */
 typedef enum {
-    OPTION_FORCE_VCLK1,
     OPTION_LINEAR,
     OPTION_NOACCEL,
     OPTION_HW_CLKS,
@@ -546,7 +545,11 @@ typedef enum {
     OPTION_18_BIT_BUS,
     OPTION_SHOWCACHE,
     OPTION_SHADOW_FB,
-    OPTION_8_PLUS_16
+    OPTION_8_PLUS_16,
+    OPTION_FP_CLOCK_8,
+    OPTION_FP_CLOCK_16,
+    OPTION_FP_CLOCK_24,
+    OPTION_FP_CLOCK_32
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
@@ -566,6 +569,10 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_18_BIT_BUS,	"18BitBus",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_REAL,      {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -582,7 +589,6 @@ static OptionInfoRec ChipsWingineOptions[] = {
 };
 
 static OptionInfoRec ChipsHiQVOptions[] = {
-    { OPTION_FORCE_VCLK1,	"UseVclk1",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_LINEAR,		"Linear",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SW_CURSOR,		"SWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -599,6 +605,10 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_8_PLUS_16,		"8Plus16",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_REAL,      {0}, FALSE },
+    { OPTION_FP_CLOCK_32,	"FPClock32",	OPTV_REAL,      {0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1288,6 +1298,10 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     int bytesPerPixel;
     unsigned char tmp;
     MessageType from;
+    int i;
+    unsigned int Probed[3], FPclkI, CRTclkI;
+    double real;
+    int val;
 
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -1617,11 +1631,18 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     tmp = cPtr->readFR(cPtr, 0x01);
     if ((tmp & 0x03) == 0x02) {
 	cPtr->PanelType |= ChipsLCD;
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
-    } else {
-	cPtr->PanelType |= ChipsCRT;
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
     }
+    tmp = cPtr->readXR(cPtr,0xD0);	
+    if (tmp & 0x01) {
+	cPtr->PanelType |= ChipsCRT;
+    }
+    if ((cPtr->PanelType & ChipsLCD) && (cPtr->PanelType & ChipsCRT))
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD/CRT\n");
+    else if (cPtr->PanelType & ChipsLCD)
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
+    else if (cPtr->PanelType & ChipsCRT)
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
+
 
     /* screen size */
     /* 
@@ -1775,12 +1796,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Using programmable clocks\n");
 
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_FORCE_VCLK1, FALSE)) {
-        cPtr->Flags |= ChipsUseVClk1;
-	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
-		   "Using VCLK1 as programmable clocks\n");
-    }
-
     /* Set the maximum memory clock. */
     switch (cPtr->Chipset) {
     case CHIPS_CT65550:
@@ -1798,6 +1813,47 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	MemClk->Max = 83000;
 	break;
     }
+
+    /* Probe the dot clocks */
+    for (i = 0; i < 3; i++) {
+      unsigned int N,M,PSN,P,VCO_D;
+      unsigned char tmp;
+      int offset = i * 4;
+      
+      tmp = cPtr->readXR(cPtr,0xC2 + offset);
+      M = (cPtr->readXR(cPtr, 0xC0 + offset) 
+	   | (tmp & 0x03)) + 2;
+      N = (cPtr->readXR(cPtr, 0xC1 + offset) 
+	| (( tmp >> 4) & 0x03)) + 2;
+      tmp = cPtr->readXR(cPtr, 0xC3 + offset);
+      PSN = ((tmp & 0x1) ? 1 : 4) * ((tmp & 0x02) ? 5 : 1);
+      VCO_D = ((tmp & 0x04) ? 16 : 4);
+      P = ((tmp & 0x70) >> 4);
+      Probed[i] = VCO_D * Fref / N;
+      Probed[i] = Probed[i] * M / (PSN * (1 << P));
+      Probed[i] = Probed[i] / 1000;
+    }
+    CRTclkI = (hwp->readMiscOut(hwp) >> 2) & 0x03; 
+    if (CRTclkI == 3) CRTclkI = 2;
+    FPclkI = (cPtr->readFR(cPtr, 0x03) >> 2) & 0x3; 
+    if (FPclkI == 3) FPclkI = 2;
+    for (i = 0; i < 3; i++) {
+      xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		 "Dot clock %i: %7.3f MHz",i,
+		 (float)(Probed[i])/1000.);
+      if (FPclkI == i) ErrorF(" FPclk");
+      if (CRTclkI == i) ErrorF(" CRTclk");
+      ErrorF("\n");
+    }
+    cPtr->FPclock = Probed[FPclkI];
+    cPtr->FPclkInx = FPclkI;
+    if (CRTclkI == FPclkI) {
+      if (FPclkI == 2)
+	CRTclkI = 1;
+      else
+	CRTclkI = 2;
+    }
+    cPtr->CRTclkInx = CRTclkI;
 
     /* Probe the memory clock currently in use */
     MemClk->xrCC = cPtr->readXR(cPtr, 0xCC);
@@ -1918,6 +1974,46 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   "Max pixel clock is %7.3f MHz\n",
 		   (float)(cPtr->MaxClock / 1000.));
     }
+    /* 
+     * Prepare the FPclock: 
+     *    if FPclock >= MaxClock : don't modify the FP clock.
+     *    else set FPclock to 90% of MaxClock.
+     */
+    real = 0.;
+    switch(bytesPerPixel) {
+    case 1:
+        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_8, &real))
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "FP clock %7.3f MHz requested\n",real);
+	break;
+    case 2:
+        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_16, &real))
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "FP clock %7.3f MHz requested\n",real);
+	break;
+    case 3:
+        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_24, &real))
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "FP clock %7.3f MHz requested\n",real);
+	break;
+    case 4:
+        if (xf86GetOptValReal(cPtr->Options, OPTION_FP_CLOCK_32, &real))
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		       "FP clock %7.3f MHz requested\n",real);
+	break;
+    }
+    val = (int) (real * 1000.);
+    if (val && val >= cPtr->MinClock && val <= cPtr->MaxClock)
+      cPtr->FPclock = val;
+    else if (cPtr->FPclock > cPtr->MaxClock)
+        cPtr->FPclock = (int)((float)cPtr->MaxClock * 0.9);
+    else
+        cPtr->FPclock = 0; /* special value */
+    cPtr->FPClkModified = FALSE;
+    if (cPtr->FPclock)
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "FP clock set to %7.3f MHz\n",
+		   (float)(cPtr->FPclock / 1000.));
 
 #if defined(__arm32__) && defined(__NetBSD__)
     ChipsPALMode.next = pScrn->monitor->Modes;
@@ -2604,12 +2700,18 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     /* XR51[2]:   Display Type, 0 = CRT, 1 = FlatPanel */
     if (tmp & 0x04) {
 	cPtr->PanelType |= ChipsLCD;
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
-    } else {
+    } 
+    if ((cPtr->readXR(cPtr, 0x06)) & 0x02) {
 	cPtr->PanelType |= ChipsCRT;
-	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
     }
+    if ((cPtr->PanelType & ChipsLCD) && (cPtr->PanelType & ChipsCRT))
+	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD/CRT\n");
+    else if (cPtr->PanelType & ChipsLCD)
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
+    else if (cPtr->PanelType & ChipsCRT)
+        xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
 
+      
     /* screen size */
     /* 
      * In LCD mode / dual mode we want to derive the timing values from
@@ -3056,7 +3158,7 @@ chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 
     for (i = 0; i < numColors; i++) {
 	index = indices[i];
-	hwp->writeDacWriteAddr(hwp, index << shift);
+	hwp->writeDacWriteAddr(hwp,index << shift);
 	DACDelay(hwp);
 	hwp->writeDacData(hwp, colors[index].red);
 	DACDelay(hwp);
@@ -3087,17 +3189,6 @@ chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors, int *indices,
 	DACDelay(hwp);
 	hwp->writeDacData(hwp, colors[index >> 1].blue);
 	DACDelay(hwp);
-
-	if(index <= 31) {
-	    hwp->writeDacWriteAddr(hwp, index << 3);
-	    DACDelay(hwp);
-	    hwp->writeDacData(hwp, colors[index].red);
-	    DACDelay(hwp);
-	    hwp->writeDacData(hwp, colors[(index << 1) + 1].green);
-	    DACDelay(hwp);
-	    hwp->writeDacData(hwp, colors[index].blue);
-	    DACDelay(hwp);
-	}
     }
 
     /* This shouldn't be necessary, but we'll play safe. */
@@ -3881,18 +3972,16 @@ chipsClockSave(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
     case HiQV_STYLE:
 	Clock->fr03 = cPtr->readFR(cPtr, 0x03); /* save alternate clock select reg.*/
 	if (!Clock->Clock) {   /* save HiQV console clock           */
-	    if (cPtr->Flags & ChipsUseVClk1) {
-		tmp = 1;
-	    } else {
-		tmp = (Clock->fr03 & 0xC) >> 2;
-		if (tmp == 3)
-		    tmp = 2;
-	    }
-	    tmp = tmp << 2;
-	    cPtr->ConsoleClk[0] = cPtr->readXR(cPtr, 0xC0 + tmp);
-	    cPtr->ConsoleClk[1] = cPtr->readXR(cPtr, 0xC1 + tmp);
-	    cPtr->ConsoleClk[2] = cPtr->readXR(cPtr, 0xC2 + tmp);
-	    cPtr->ConsoleClk[3] = cPtr->readXR(cPtr, 0xC3 + tmp);
+	    tmp = cPtr->CRTclkInx << 2;
+	    cPtr->CRTClk[0] = cPtr->readXR(cPtr, 0xC0 + tmp);
+	    cPtr->CRTClk[1] = cPtr->readXR(cPtr, 0xC1 + tmp);
+	    cPtr->CRTClk[2] = cPtr->readXR(cPtr, 0xC2 + tmp);
+	    cPtr->CRTClk[3] = cPtr->readXR(cPtr, 0xC3 + tmp);
+	    tmp = cPtr->FPclkInx << 2;
+	    cPtr->FPClk[0] = cPtr->readXR(cPtr, 0xC0 + tmp);
+	    cPtr->FPClk[1] = cPtr->readXR(cPtr, 0xC1 + tmp);
+	    cPtr->FPClk[2] = cPtr->readXR(cPtr, 0xC2 + tmp);
+	    cPtr->FPClk[3] = cPtr->readXR(cPtr, 0xC3 + tmp);
 	}
 	break;
     case OLD_STYLE: 
@@ -3925,12 +4014,13 @@ chipsClockFind(ScrnInfoPtr pScrn, int no, CHIPSClockPtr Clock)
 
     switch (Type & GET_STYLE) {
     case HiQV_STYLE:
-	if (cPtr->Flags & ChipsUseVClk1)
-	    Clock->msr = 1 << 2;
-	else
-	    Clock->msr = 3 << 2;
-	Clock->fr03 = Clock->msr;
+	Clock->msr = cPtr->CRTclkInx << 2;
+	Clock->fr03 = cPtr->FPclkInx << 2;
 	Clock->Clock = pScrn->currentMode->Clock;
+	if (xf86ReturnOptValBool(cPtr->Options, OPTION_USE_MODELINE, FALSE)) {
+	    Clock->FPClock = pScrn->currentMode->Clock;
+	} else
+	    Clock->FPClock = cPtr->FPclock;
 	break;
     case NEW_STYLE:
 	if (Type & TYPE_HW) {
@@ -4046,34 +4136,40 @@ chipsClockLoad(ScrnInfoPtr pScrn, CHIPSClockPtr Clock)
 			   cPtr->SuspendHack.vgaIOBaseFlag);
 	cPtr->writeFR(cPtr, 0x03, (tmpf03 & ~0x0C) | 0x04);
 	if (!Clock->Clock) {      /* Hack to load saved console clock  */
-	    if (cPtr->Flags & ChipsUseVClk1) {
-		tmp = 1;
-	    } else {
-		tmp = (Clock->fr03 & 0xC) >> 2;
-		if (tmp == 3)
-		    tmp = 2;
+	    tmp = cPtr->CRTclkInx << 2;
+	    cPtr->writeXR(cPtr, 0xC0 + tmp, (cPtr->CRTClk[0] & 0xFF));
+	    cPtr->writeXR(cPtr, 0xC1 + tmp, (cPtr->CRTClk[1] & 0xFF));
+	    cPtr->writeXR(cPtr, 0xC2 + tmp, (cPtr->CRTClk[2] & 0xFF));
+	    cPtr->writeXR(cPtr, 0xC3 + tmp, (cPtr->CRTClk[3] & 0xFF));
+
+	    if (cPtr->FPClkModified) {
+	        usleep(10000); /* let VCO stabilize */
+	        tmp = cPtr->FPclkInx << 2;
+		cPtr->writeXR(cPtr, 0xC0 + tmp, (cPtr->FPClk[0] & 0xFF));
+		cPtr->writeXR(cPtr, 0xC1 + tmp, (cPtr->FPClk[1] & 0xFF));
+		cPtr->writeXR(cPtr, 0xC2 + tmp, (cPtr->FPClk[2] & 0xFF));
+		cPtr->writeXR(cPtr, 0xC3 + tmp, (cPtr->FPClk[3] & 0xFF));
 	    }
-	    tmp = tmp << 2;
-	    cPtr->writeXR(cPtr, 0xC0 + tmp, (cPtr->ConsoleClk[0] & 0xFF));
-	    cPtr->writeXR(cPtr, 0xC1 + tmp, (cPtr->ConsoleClk[1] & 0xFF));
-	    cPtr->writeXR(cPtr, 0xC2 + tmp, (cPtr->ConsoleClk[2] & 0xFF));
-	    cPtr->writeXR(cPtr, 0xC3 + tmp, (cPtr->ConsoleClk[3] & 0xFF));
 	} else {
 	    /* 
 	     * Don't use the extra 2 bits in the M, N registers available
 	     * on the HiQV, so write zero to 0xCA 
 	     */
 	    chipsCalcClock(pScrn, Clock->Clock, vclk);
-	    if (cPtr->Flags & ChipsUseVClk1) { 
-		cPtr->writeXR(cPtr, 0xC4, (vclk[1] & 0xFF));
-		cPtr->writeXR(cPtr, 0xC5, (vclk[2] & 0xFF));
-		cPtr->writeXR(cPtr, 0xC6, 0x0);
-		cPtr->writeXR(cPtr, 0xC7, (vclk[0] & 0xFF));
-	    } else {
-		cPtr->writeXR(cPtr, 0xC8, (vclk[1] & 0xFF));
-		cPtr->writeXR(cPtr, 0xC9, (vclk[2] & 0xFF));
-		cPtr->writeXR(cPtr, 0xCA, 0x0);
-		cPtr->writeXR(cPtr, 0xCB, (vclk[0] & 0xFF));
+	    tmp = cPtr->CRTclkInx << 2;
+	    cPtr->writeXR(cPtr, 0xC0 + tmp, (vclk[1] & 0xFF));
+	    cPtr->writeXR(cPtr, 0xC1 + tmp, (vclk[2] & 0xFF));
+	    cPtr->writeXR(cPtr, 0xC2 + tmp, 0x0);
+	    cPtr->writeXR(cPtr, 0xC3 + tmp, (vclk[0] & 0xFF));
+	    if (Clock->FPClock) { 
+	        usleep(10000); /* let VCO stabilize */
+    	        chipsCalcClock(pScrn, Clock->FPClock, vclk);
+	        tmp = cPtr->FPclkInx << 2;
+		cPtr->writeXR(cPtr, 0xC0 + tmp, (vclk[1] & 0xFF));
+		cPtr->writeXR(cPtr, 0xC1 + tmp, (vclk[2] & 0xFF));
+		cPtr->writeXR(cPtr, 0xC2 + tmp, 0x0);
+		cPtr->writeXR(cPtr, 0xC3 + tmp, (vclk[0] & 0xFF));
+		cPtr->FPClkModified = TRUE;
 	    }
 	}
 	usleep(10000);		         /* Let VCO stabilise    */
@@ -4347,6 +4443,32 @@ chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
       return chipsModeInit655xx(pScrn, mode);
 }
 
+/*
+ * The timing register of the C&T FP chipsets are organized
+ * as follows:
+ * The chipsets have two sets of timing registers:
+ * the standard horizontal and vertical timing registers for
+ * display size, blank start, sync start, sync end, blank end 
+ * and total size at their default VGA locations and extensions
+ * and the alternate horizontal and vertical timing registers for
+ * display size, sync start, sync end and total size.
+ * In LCD and mixed (LCD+CRT) mode the alternate timing registers
+ * control the timing. The alternate horizontal and vertical display 
+ * size registers are set to the physical pixel size of the display. 
+ * Normally the alternalte registers are set by the BIOS to optimized 
+ * values. 
+ * While the horizontal an vertical refresh rates are fixed independent
+ * of the visible display size to enshure optimal performace of both 
+ * displays they can be adapted to the screen resolution and CRT
+ * requirements in CRT mode by programming the standard timing registers
+ * in the VGA fashion.
+ * In LCD and mixed mode the _standard_ horizontal and vertical display
+ * size registers control the size of the _visible_ part of the display
+ * in contast to the _physical_ size of the display which is specified
+ * by the _alternate_ horizontal and vertical display size registers.
+ * The size of the visible should always be equal or less than the
+ * physical size.
+ */
 static Bool
 chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
@@ -5136,7 +5258,7 @@ chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->XR[0x28] &= 0xEF;       /* 16-color video      */
     }
     /* set up extended display timings */
-    if (cPtr->PanelType & ChipsCRT) {
+    if (!(cPtr->PanelType & ChipsLCD)) {
 	/* in CRTonly mode this is simple: only set overflow for CR00-CR06 */
 	ChipsNew->XR[0x17] = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8)
 	    | ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7)

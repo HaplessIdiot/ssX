@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.3 1999/01/14 13:05:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86HWCurs.c,v 1.4 1999/01/31 12:22:06 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -15,6 +15,37 @@
 #include "mipointer.h"
 #include "xf86Cursor.h"
 #include "xf86CursorPriv.h"
+
+#include "servermd.h"
+
+#if BITMAP_SCANLINE_PAD == 64
+#define SCANLINE CARD64
+#define REVERSE_BIT_ORDER(w) xf86CARD64ReverseBits(w)
+static CARD64 xf86CARD64ReverseBits(CARD64 w);
+
+static CARD64
+xf86CARD64ReverseBits(CARD64 w)
+{
+  unsigned char *p = (unsigned char *)&w;
+
+  p[0] = byte_reversed[p[0]];
+  p[1] = byte_reversed[p[1]];
+  p[2] = byte_reversed[p[2]];
+  p[3] = byte_reversed[p[3]];
+  p[4] = byte_reversed[p[4]];
+  p[5] = byte_reversed[p[5]];
+  p[6] = byte_reversed[p[6]];
+  p[7] = byte_reversed[p[7]];
+
+  return(w);
+}
+
+#else
+#define SCANLINE CARD32
+#define REVERSE_BIT_ORDER(w) xf86ReverseBitOrder(w)
+#endif /* BITMAP_SCANLINE_PAD == 64 */
+
+
 
 static unsigned char* RealizeCursorInterleave0(xf86CursorInfoPtr, CursorPtr);
 static unsigned char* RealizeCursorInterleave1(xf86CursorInfoPtr, CursorPtr);
@@ -156,26 +187,36 @@ xf86RecolorCursor(ScreenPtr pScreen, CursorPtr pCurs, Bool displayed)
 static unsigned char* 
 RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 {
-    CARD32 *SrcS, *SrcM, *DstS, *DstM;
-    CARD32 *pSrc, *pMsk;
+
+    SCANLINE *SrcS, *SrcM, *DstS, *DstM;
+    SCANLINE *pSrc, *pMsk;
     unsigned char *mem;
     int size = (infoPtr->MaxWidth * infoPtr->MaxHeight) >> 2;
     int SrcPitch, DstPitch, y, x;
-    int dwords = size >> 3;
+    /* how many words are in the source or mask */
+    int words = size / (BITMAP_SCANLINE_PAD / 4);
+
 
     if(!(mem = xcalloc(1, size)))
 	return NULL;
 
-    SrcPitch = (pCurs->bits->width + 31) >> 5;
-    DstPitch = infoPtr->MaxWidth >> 5;
+    /* SrcPitch == the number of scanlines wide the cursor image is */
+    SrcPitch = (pCurs->bits->width + (BITMAP_SCANLINE_PAD - 1)) >>
+      LOG2_BITMAP_PAD;
 
-    SrcS = (CARD32*)pCurs->bits->source;
-    SrcM = (CARD32*)pCurs->bits->mask;
-    DstS = (CARD32*)mem;
-    DstM = DstS + dwords;
+    /* DstPitch is the width of the hw cursor in scanlines */
+    DstPitch = infoPtr->MaxWidth >> LOG2_BITMAP_PAD;
+    
+/*      SrcPitch = (pCurs->bits->width + 31) >> 5; */
+/*      DstPitch = infoPtr->MaxWidth >> 5; */
+
+    SrcS = (SCANLINE*)pCurs->bits->source;
+    SrcM = (SCANLINE*)pCurs->bits->mask;
+    DstS = (SCANLINE*)mem;
+    DstM = DstS + words;
 
     if(infoPtr->Flags & HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK) {
-	CARD32 *tmp;
+	SCANLINE *tmp;
 	tmp = DstS; DstS = DstM; DstM = tmp;
     }
 
@@ -189,9 +230,9 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
     }
 
     if(infoPtr->Flags & HARDWARE_CURSOR_AND_SOURCE_WITH_MASK) {
-	int count = dwords;
-	CARD32* pntr = DstS;
-	CARD32* pntr2 = DstM;
+	int count = words;
+	SCANLINE* pntr = DstS;
+	SCANLINE* pntr2 = DstM;
 	while(count--) {
 	   *pntr &= *pntr2;
 	    pntr++; pntr2++;
@@ -219,8 +260,8 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
      * out entire source mask.
      */
     if(infoPtr->Flags & HARDWARE_CURSOR_INVERT_MASK) {
-	int count = dwords;
-	CARD32* pntr = DstM;
+	int count = words;
+	SCANLINE* pntr = DstM;
 	while(count--) {
 	   *pntr = ~(*pntr);
 	    pntr++;
@@ -232,8 +273,8 @@ RealizeCursorInterleave0(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 	    y--; 
 	    pSrc+=DstPitch, pMsk+=DstPitch) {
 	    for(x = 0; x < SrcPitch; x++) {
-		pSrc[x] = xf86ReverseBitOrder(pSrc[x]);
-		pMsk[x] = xf86ReverseBitOrder(pMsk[x]);
+		pSrc[x] = REVERSE_BIT_ORDER(pSrc[x]);
+		pMsk[x] = REVERSE_BIT_ORDER(pMsk[x]);
 	    }
 	}
     }
@@ -425,5 +466,3 @@ RealizeCursorInterleave64(xf86CursorInfoPtr infoPtr, CursorPtr pCurs)
 
     return mem;
 }
-
-

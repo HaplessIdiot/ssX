@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.12 1999/03/28 15:32:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.13 1999/04/11 13:10:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -37,6 +37,7 @@ DGACopyModeInfo(
 	((DGAScreenPtr)((pScreen)->devPrivates[DGAScreenIndex].ptr))
 
 
+
 typedef struct {
    ScrnInfoPtr 		pScrn;
    int			numModes;
@@ -45,6 +46,7 @@ typedef struct {
    DGADevicePtr		current;
    DGAFunctionPtr	funcs;
    int			input;
+   ClientPtr		client;
 } DGAScreenRec, *DGAScreenPtr;
 
 Bool
@@ -78,8 +80,9 @@ DGAInit(
     pScreenPriv->numModes = num;
     pScreenPriv->modes = modes;
     pScreenPriv->current = NULL;
-    pScreenPriv->input = 0;
     pScreenPriv->funcs = funcs;
+    pScreenPriv->input = 0;
+    pScreenPriv->client = NULL;
     
     for(i = 0; i < num; i++)
 	modes[i].num = i + 1;
@@ -229,24 +232,6 @@ DGAActive(int index)
 }
 
 
-/* Called by the event code to see which events are getting redirected */
-
-int
-DGAGetInput(int index)
-{
-   DGAScreenPtr pScreenPriv;
-
-   if(DGAScreenIndex < 0)
-	return 0;
-
-   if(!(pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index])))
-	return 0;
-	
-   if(pScreenPriv->current)
-	return pScreenPriv->input;
-
-   return 0;    
-}   
 
 /* Called by the event code in case the server is abruptly terminated */
 
@@ -304,23 +289,24 @@ DGASetMode(
 void
 DGASelectInput(
    int index,
+   ClientPtr client,
    long mask
 ){
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
 
-   /* We rely on the extension to check that DGA is available */ 
-
-   pScreenPriv->input = mask; 
+   /* We rely on the extension to check that DGA is available */
+   pScreenPriv->client = client;
+   pScreenPriv->input = mask;
 }
 
 int 
-DGAGetViewportStatus(int index, int flags) 
+DGAGetViewportStatus(int index) 
 {
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
 
    /* We rely on the extension to check that DGA is active */ 
 
-   return((*pScreenPriv->funcs->GetViewport)(pScreenPriv->pScrn, flags));
+   return((*pScreenPriv->funcs->GetViewport)(pScreenPriv->pScrn));
 }
 
 int
@@ -530,12 +516,8 @@ DGAStealKeyEvent(int index, xEvent *e)
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
 
-   if(pScreenPriv->input) { /* steal this event */
-	if(pScreenPriv->input & e->u.u.type) {
-
-	    /* send to the DGA 2.0 client */
-
-	}
+   if(pScreenPriv->client && (pScreenPriv->input & e->u.u.type)){ 
+	/* steal this event */
 	return TRUE;
    } 
 
@@ -594,12 +576,15 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 	e->u.keyButtonPointer.time = GetTimeInMillis();
    }
 
-   if(pScreenPriv->input) { /* steal this event */
-	if(pScreenPriv->input & e->u.u.type) {
+   if(pScreenPriv->client && (pScreenPriv->input & e->u.u.type)){ 
+	/* steal this event */
 
-	    /* send to the DGA 2.0 client */
+	e->u.keyButtonPointer.eventX =  dx;
+	e->u.keyButtonPointer.eventY =  dy;
+	e->u.keyButtonPointer.rootX =   dx;
+	e->u.keyButtonPointer.rootY =   dy;
 
-	}
+	WriteEventsToClient(pScreenPriv->client, 1, e);
 	return TRUE;
    } 
 

@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 /*
  * file vloaduc.h
  *
@@ -21,8 +23,6 @@
 /*
  * defines 
  */
-
-#define LITTLE_ENDIAN
 
 
 

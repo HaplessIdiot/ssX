@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.4 1998/08/20 08:56:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_dac.c,v 1.5 1998/08/29 05:43:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -34,7 +34,10 @@
 #include "tga_regs.h"
 #include "tga.h"
 
-void
+static void ICS1562ClockSelect(ScrnInfoPtr pScrn, int freq);
+extern void ICS1562_CalcClockBits(long f, unsigned char *bits);
+
+static void
 ICS1562ClockSelect(ScrnInfoPtr pScrn, int freq)
 {
     TGAPtr pTga = TGAPTR(pScrn);

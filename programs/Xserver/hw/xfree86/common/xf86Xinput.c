@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.42 1999/04/04 07:03:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.43 1999/04/11 13:10:49 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -876,6 +876,9 @@ xf86PostMotionEvent(DeviceIntPtr	device,
     ValuatorClassPtr		val = device->valuator;
     int				*axisvals;
     AxisInfoPtr			axes;
+#ifdef XFreeXDGA
+    int xdelta, ydelta;
+#endif
 
     DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) switch=0x%x is_core=%s is_shared=%s is_absolute=%s\n",
 		  device, device->name, switch_device,
@@ -951,6 +954,15 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		    DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
 		}
             }
+#ifdef XFreeXDGA
+            /* We need to save this for DGA so we can undo it 
+               to get relative motion again */
+            if(!is_absolute) {
+		xdelta = axisvals[loop+first_valuator-1];
+		ydelta = axisvals[loop+first_valuator];
+	    } else 
+		xdelta = ydelta = 0;
+#endif
 	    RELATIVE_CHECK(xv->valuator0, loop+first_valuator-1);
 	    RELATIVE_CHECK(xv->valuator1, loop+first_valuator);
 	    break;
@@ -1028,7 +1040,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		 */
 
 #ifdef XFreeXDGA
-		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x, y)) {
+		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x - xdelta, y - ydelta )) {
 #endif
 		    miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
 

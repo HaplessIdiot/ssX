@@ -1,7 +1,7 @@
 /*
    Copyright (c) 1999  XFree86 Inc
 */
-/* $XFree86: xc/include/extensions/xf86dga.h,v 3.7 1999/03/28 15:31:33 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86dga.h,v 3.8 1999/04/11 13:10:29 dawes Exp $ */
 
 #ifndef _XF86DGA_H_
 #define _XF86DGA_H_
@@ -13,12 +13,20 @@
 
 /* 1 through 9 are in xf86dga1.h */
 
-#define X_XDGAQueryModes		10
-#define X_XDGAOpenFramebuffer		11
-#define	X_XDGACloseFramebuffer		12
+/* 10 and 11 are reserved to avoid conflicts with rogue DGA extensions */
+
+#define X_XDGAQueryModes		12
 #define X_XDGASetMode			13
 #define X_XDGASetViewport		14
 #define X_XDGAInstallColormap		15
+#define X_XDGASelectInput		16
+#define X_XDGAFillRectangle		17
+#define X_XDGACopyArea			18
+#define X_XDGACopyTransparentArea	19
+#define X_XDGAGetViewportStatus		20
+#define X_XDGAFlush			21
+#define X_XDGAOpenFramebuffer		22
+#define	X_XDGACloseFramebuffer		23
 
 
 #define XDGAConcurrentAcces	0x00000001
@@ -33,11 +41,16 @@
 #define XDGAFlipImmediate	0x00000001
 #define XDGAFlipRetrace		0x00000002
 
-#define XDGACompleted           0x00000000
-#define XDGAPending             0x00000001
-
 #define XDGANeedRoot		0x00000001
 
+#define XF86DGANumberEvents		7
+
+#define XF86DGAClientNotLocal		0
+#define XF86DGANoDirectVideoMode	1
+#define XF86DGAScreenNotActive		2
+#define XF86DGADirectNotActivated	3
+#define XF86DGAOperationNotSupported	4
+#define XF86DGANumberErrors		(XF86DGAOperationNotSupported + 1)
 
 
 typedef struct {
@@ -73,6 +86,9 @@ typedef struct {
    unsigned char *data;
    Pixmap pixmap;
 } XDGADevice;
+
+
+
 
 
 #ifndef _XF86DGA_SERVER_
@@ -130,7 +146,59 @@ void XDGAInstallColormap(
 void XDGAFlush(
     Display	*dpy,
     int		screen
-);   
+);
+
+void XDGASelectInput(
+    Display	*dpy,
+    int		screen,
+    long	event_mask
+);
+
+void XDGAFillRectangle(
+    Display	*dpy,
+    int		screen,
+    int		x,
+    int		y,
+    unsigned int	width,
+    unsigned int	height,
+    unsigned long	color
+);
+
+
+void XDGACopyArea(
+    Display	*dpy,
+    int		screen,
+    int		srcx,
+    int		srcy,
+    unsigned int	width,
+    unsigned int	height,
+    int		dstx,
+    int		dsty
+);
+
+
+void XDGACopyTransparentArea(
+    Display	*dpy,
+    int		screen,
+    int		srcx,
+    int		srcy,
+    unsigned int	width,
+    unsigned int	height,
+    int		dstx,
+    int		dsty,
+    unsigned long key
+);
+
+int XDGAGetViewportStatus(
+    Display	*dpy,
+    int		screen
+);
+   
+void XDGAFlush(
+    Display	*dpy,
+    int		screen
+);
+
 
 _XFUNCPROTOEND
 #endif /* _XF86DGA_SERVER_ */

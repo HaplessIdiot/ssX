@@ -105,7 +105,7 @@ option names.  All names listed here are in their preferred user-visible
 form.  Some registered option names are:
 
 Types are:  B = boolean, O = set/unset (no value), I = integer, S = string,
-            F = floating point number
+            A = optional string, F = floating point number
 
 Scopes are: F = global flags, V = video driver, C = common (per screen),
             I = input drivers, X = XAA, Xv = Xv extension, M = misc.
@@ -178,7 +178,12 @@ FifoConservative          O     V    Conservative FIFO setting
 FifoModerate              O     V    Moderate FIFO setting
 FireGL3000                B     V    Card is Diamond FireGL3000
 FixPanelSize              B     V    ??
+FPClock8                  F     V    Flat panel clock for 8bpp fb (MHz)
+FPClock16                 F     V    Flat panel clock for 16bpp fb (MHz)
+FPClock24                 F     V    Flat panel clock for 24bpp fb (MHz)
+FPClock32                 F     V    Flat panel clock for 32bpp fb (MHz)
 FPMVRAM                   O     V    Fast page mode VRAM
+FramebufferWC             B     V    Enable/disable WC for the framebuffer
 HiBitHigh                 O     V    High clock bit default to set
 HiBitLow                  O     V    High clock bit default to cleared
 HWClocks                  B     V    Enable/disable HW clocks
@@ -217,7 +222,6 @@ SuspendHack               B     V    ??
 SyncOnGreen               B     V    Enable/disable sync on green
 UseFBDev                  B     V    Use the fbdev driver interface
 UseModeLine               B     V    Use Modeline (??)
-UseVclk1                  B     V    ??
 W32Interleave             B     V    ??
 
 Buffers			  I	Xv   Number of buffers
@@ -297,4 +301,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.6 1999/03/28 15:32:18 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.7 1999/04/11 13:10:43 dawes Exp $

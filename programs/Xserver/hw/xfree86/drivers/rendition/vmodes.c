@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * file vmodes.c
  *
@@ -17,8 +18,12 @@
 #include "v1kregs.h"
 #include "v2kregs.h"
 #include "vvga.h"
+
+#include "xf86.h"
+/*
+#include "xf86_ansic.h"
+*/
 #include <math.h>
-#include <unistd.h>
 
 
 
@@ -116,6 +121,73 @@
  * global data
  */
 
+struct width_to_stride_t {
+    vu32 width8bpp;
+    vu8 stride0;
+    vu8 stride1;
+    vu16 chip;
+} width_to_stride_table[]={
+/*  {    0, 0, 0, V1000_DEVICE }, */
+    {    4, 4, 0, V1000_DEVICE },
+    {   16, 0, 1, V1000_DEVICE },
+    {   20, 4, 1, V1000_DEVICE },
+    {   32, 0, 2, V1000_DEVICE },
+    {   36, 4, 2, V1000_DEVICE },
+    {   64, 0, 3, V1000_DEVICE },
+    {   68, 4, 3, V1000_DEVICE },
+    {  128, 0, 4, V1000_DEVICE },
+    {  132, 4, 4, V1000_DEVICE },
+    {  256, 1, 0, V1000_DEVICE },
+    {  272, 1, 1, V1000_DEVICE },
+    {  288, 1, 2, V1000_DEVICE },
+    {  320, 1, 3, V1000_DEVICE },
+    {  384, 1, 4, V1000_DEVICE },
+    {  512, 2, 0, V1000_DEVICE },
+    {  528, 2, 1, V1000_DEVICE },
+    {  544, 2, 2, V1000_DEVICE },
+    {  576, 2, 3, V1000_DEVICE },
+    {  592, 6, 1, V2000_DEVICE },
+    {  608, 6, 2, V2000_DEVICE },
+    {  640, 2, 4, V1000_DEVICE },
+    {  704, 6, 4, V2000_DEVICE },
+    {  768, 5, 0, V2000_DEVICE },
+    {  784, 5, 1, V2000_DEVICE },
+    {  800, 5, 2, V2000_DEVICE },
+    {  832, 5, 3, V2000_DEVICE },
+    {  896, 5, 4, V2000_DEVICE },
+    { 1024, 3, 0, V1000_DEVICE },
+    { 1028, 4, 5, V1000_DEVICE },
+    { 1040, 3, 1, V1000_DEVICE },
+    { 1056, 3, 2, V1000_DEVICE },
+    { 1088, 3, 3, V1000_DEVICE },
+    { 1152, 3, 4, V1000_DEVICE },
+    { 1168, 7, 1, V2000_DEVICE },
+    { 1184, 7, 2, V2000_DEVICE },
+    { 1216, 7, 3, V2000_DEVICE },
+    { 1280, 1, 5, V1000_DEVICE },
+    { 1536, 2, 5, V1000_DEVICE },
+    { 1600, 6, 5, V2000_DEVICE },
+    { 1792, 5, 5, V2000_DEVICE },
+    { 2048, 0, 6, V1000_DEVICE },
+    { 2052, 4, 6, V1000_DEVICE },
+    { 2176, 7, 5, V2000_DEVICE },
+    { 2304, 1, 6, V1000_DEVICE },
+    { 2560, 2, 6, V1000_DEVICE },
+    { 2624, 6, 6, V2000_DEVICE },
+    { 2816, 5, 6, V2000_DEVICE },
+    { 3072, 3, 6, V1000_DEVICE },
+    { 3200, 7, 6, V2000_DEVICE },
+    { 4096, 0, 7, V1000_DEVICE },
+    { 4100, 4, 7, V1000_DEVICE },
+    { 4352, 1, 7, V1000_DEVICE },
+    { 4608, 2, 7, V1000_DEVICE },
+    { 4672, 6, 7, V2000_DEVICE },
+    { 4864, 5, 7, V2000_DEVICE },
+    { 5120, 3, 7, V1000_DEVICE },
+    { 5248, 7, 7, V2000_DEVICE },
+    {    0, 0, 0, 0 }
+};
+
 
 
 /*
@@ -158,10 +230,11 @@ int v_setmodefixed(struct v_board_t *board)
         set_PLL(iob, combineNMP(21, 55, 0));
     } 
     else {
-        v_out32(iob+DRAMCTL, (~0x1800) & v_in32(iob+DRAMCTL));  
+	tmp = (~0x1800) & v_in32(iob+DRAMCTL);
+        v_out32(iob+DRAMCTL, tmp);
         v_out32(iob+PCLKPLL, v2kcombineNMP(2, 21, 2));
     }
-    usleep(500);
+    xf86usleep(500);
   
     v_initdac(board, 16, 0);
   
@@ -212,6 +285,13 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
       break;
     }
 
+    /* increase Mem/Sys clock to avoid nasty artifacts */
+    if (board->chip != V1000_DEVICE) {
+      v_out32(iob+SCLKPLL, 0xa4854);  /* mclk=125 sclk=60 */
+                                      /* M/N/P/P = 84/5/2/4 */
+      xf86usleep(500);
+    }
+
     /* this has something to do with memory */
     tmp=v_in32(iob+DRAMCTL)&0xdfff;              /* reset bit 13 */
     v_out32(iob+DRAMCTL, tmp|0x330000);
@@ -225,11 +305,12 @@ int v_setmode(struct v_board_t *board, struct v_modeinfo_t *mode)
         set_PLL(iob, combineNMP(N, M, P));
     } 
     else {
-        v_out32(iob+DRAMCTL, (~0x1800) & v_in32(iob+DRAMCTL));
+	tmp = (~0x1800) & v_in32(iob+DRAMCTL);
+        v_out32(iob+DRAMCTL, tmp);
         V2200CalcClock(mode->clock/1000.0, &M, &N, &P);
         v_out32(iob+PCLKPLL, v2kcombineNMP(N, M, P));
     }
-    usleep(500);
+    xf86usleep(500);
 
     /* init the ramdac */
     v_initdac(board, mode->bitsperpixel, doubleclock);
@@ -282,7 +363,7 @@ void v_setframebase(struct v_board_t *board, vu32 framebase)
     int fifo_size=board->mode.fifosize;
 
 #ifdef DEBUG
-    fprintf(stderr, "w=%d v=%d b=%d f=%d\n", 
+    ErrorF( "w=%d v=%d b=%d f=%d\n", 
         swidth, vwidth, bytespp, fifo_size);
 #endif
 
@@ -314,6 +395,32 @@ void v_setframebase(struct v_board_t *board, vu32 framebase)
     /* crtc offset */
     v_out32(iob+CRTCOFFSET, offset&0xffff);
 
+}
+
+
+
+int v_getstride(struct v_board_t *board, int *width, vu16 *stride0, vu16 *stride1)
+{
+    int bytesperline;
+    int c=0;
+
+    bytesperline=board->mode.virtualwidth*(board->mode.bitsperpixel>>3);
+#ifdef DEBUG
+     ErrorF("RENDITION: %d bytes per line\n", bytesperline);
+#endif
+
+    /* for now, I implemented a linear search only, should be fixed <ml> */
+    while (0 != width_to_stride_table[c].width8bpp) {
+        if (width_to_stride_table[c].width8bpp==bytesperline 
+            && width_to_stride_table[c].chip == board->chip) {
+            *stride0=width_to_stride_table[c].stride0;
+            *stride1=width_to_stride_table[c].stride1;
+            return 1;
+        }
+        c++;
+    }
+
+    return 0;
 }
 
 
@@ -382,7 +489,7 @@ static double V1000CalcClock(double target, int *M, int *N, int *P)
     freq=vco/(1<<(*P));
 
 #ifdef DEBUG
-    fprintf(stderr,
+    ErrorF(
         "RENDITION: target=%f freq=%f vco=%f pcf=%f n=%d m=%d p=%d\n",
         target, freq, vco, pcf, *N, *M, *P);
 #endif
@@ -420,7 +527,7 @@ static double V2200CalcClock(double target, int *m, int *n, int *p)
     freq = vco / *p;
 
 #ifdef DEBUG
-    fprintf(stderr,
+    ErrorF(
         "RENDITION: target=%f freq=%f vco=%f pcf=%f n=%d m=%d p=%d\n",
         target, freq, vco, pcf, *n, *m, *p);
 #endif

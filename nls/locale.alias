@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.10 1998/01/11 03:48:17 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.11 1998/10/02 08:13:52 dawes Exp $
 XCOMM
 POSIX:						C
 POSIX-UTF2:					C
@@ -214,9 +214,12 @@ ro_RO.iso88592:					ro_RO.ISO8859-2
 ru:						ru_RU.ISO8859-5
 ru_RU:						ru_RU.ISO8859-5
 ru_RU.iso88595:					ru_RU.ISO8859-5
+#if defined(INCLUDE_ru_SU)
+XCOMM ru_SU is redundant now
 ru_SU:						ru_RU.ISO8859-5
 ru_SU.ISO8859-5:				ru_RU.ISO8859-5
 ru_SU.KOI8-R:					ru_RU.KOI8-R
+#endif
 sh:						sh_YU.ISO8859-2
 sh_HR.iso88592:					sh_HR.ISO8859-2
 sh_YU:						sh_YU.ISO8859-2
@@ -287,7 +290,7 @@ norwegian.iso88591:				no_NO.ISO8859-1
 polish:						pl_PL.ISO8859-2
 portuguese.iso88591:				pt_PT.ISO8859-1
 rumanian:					ro_RO.ISO8859-2
-russian:					ru_SU.ISO8859-5
+russian:					ru_RU.ISO8859-5
 serbocroatian:					sh_YU.ISO8859-2
 slovak:						sk_SK.ISO8859-2
 slovene:					sl_CS.ISO8859-2

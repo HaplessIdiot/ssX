@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * file v1krisc.h
  *
