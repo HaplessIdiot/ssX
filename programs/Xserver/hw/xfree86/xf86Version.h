@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.475 2001/08/20 21:02:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.476 2001/09/04 13:49:18 dawes Exp $ */
 
 #ifndef XF86_VERSION_CURRENT
 
@@ -24,7 +24,7 @@
 			0)
 
 
-#define XF86_DATE	"xx September 2001"
+#define XF86_DATE	"xx October 2001"
 
 #endif
 

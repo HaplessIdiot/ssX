@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:29 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.13 2001/10/07 10:46:48 alanh Exp $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.14 2001/10/08 16:36:48 alanh Exp $
 
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
@@ -34,11 +34,7 @@ ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),$(DEFFILE))
 MakeScriptFromCpp(xinitrc, -DXINITDIR=$(XINITDIR))
 #endif
 
-#ifdef i386ScoArchitecture
-MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR))
-#else
-MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) $(COOKIEDEFS))
-#endif
+MakeScriptFromCpp(startx, -DXINITDIR=$(XINITDIR) -DBINDIR=$(BINDIR) $(COOKIEDEFS))
 
 EXTRAMANDEFS=-D__xinitdir__=$(XINITDIR)
 
