@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.54 2001/05/28 18:14:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.55 2001/08/01 00:44:55 tsi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -49,13 +49,22 @@
 static Bool ExtendedEnabled = FALSE;
 
 #ifdef __ia64__
+
 #include "compiler.h"
 #include <sys/io.h>
-#endif
 
-#ifdef __i386__
-#define _ASM_IO_H	/* don't include asm/io.h */
-#include <sys/io.h>
+#elif !defined(__powerpc__) && \
+      !defined(__mc68000__) && \
+      !defined(__sparc__) && \
+      !defined(__mips__)
+
+/*
+ * Due to conflicts with "compiler.h", don't rely on <sys/io.h> to declare
+ * these.
+ */
+extern int ioperm(unsigned long __from, unsigned long __num, int __turn_on));
+extern int iopl(int __level);
+
 #endif
 
 #ifdef __alpha__
