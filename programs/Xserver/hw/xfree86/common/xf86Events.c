@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.78 1999/10/13 22:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.81 1999/12/03 19:17:23 eich Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -879,7 +879,6 @@ special:
 void
 xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 {
-
 #ifndef __EMX__
 #ifdef	__OSF__
     fd_set kbdDevices;
@@ -899,7 +898,10 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 	    while (pInfo) {
 		if (pInfo->read_input && pInfo->fd >= 0 &&
 		    (FD_ISSET(pInfo->fd, ((fd_set *)pReadmask)) != 0)) {
+		    int sigstate = xf86BlockSIGIO();
+		    
 		    pInfo->read_input(pInfo);
+		    xf86UnblockSIGIO(sigstate);		    
 		    /*
 		     * Must break here because more than one device may share
 		     * the same file descriptor.
@@ -954,6 +956,45 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
 #endif /* AMOEBA */
 
+/*
+ * xf86SigioReadInput --
+ *    signal handler for the SIGIO signal.
+ */
+static void
+xf86SigioReadInput(int fd,
+		   void *closure)
+{
+    int sigstate = xf86BlockSIGIO();
+    InputInfoPtr pInfo = (InputInfoPtr) closure;
+
+    pInfo->read_input(pInfo);
+
+    xf86UnblockSIGIO(sigstate);
+}
+
+/*
+ * xf86AddEnabledDevice --
+ *    
+ */
+void
+xf86AddEnabledDevice(InputInfoPtr pInfo)
+{
+    if (!xf86InstallSIGIOHandler (pInfo->fd, xf86SigioReadInput, pInfo)) {
+	AddEnabledDevice(pInfo->fd);
+    }
+}
+
+/*
+ * xf86RemoveEnabledDevice --
+ *    
+ */
+void
+xf86RemoveEnabledDevice(InputInfoPtr pInfo)
+{
+    if (!xf86RemoveSIGIOHandler (pInfo->fd)) {
+	RemoveEnabledDevice(pInfo->fd);
+    }
+}
 
 /*
  * xf86SigHandler --

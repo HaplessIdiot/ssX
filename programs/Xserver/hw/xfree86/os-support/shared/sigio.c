@@ -25,7 +25,7 @@
  * DEALINGS IN THE SOFTWARE.
  * 
  * $PI: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.1 1999/06/07 13:01:43 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.3 1999/10/13 22:33:07 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.6 1999/12/03 19:17:45 eich Exp $
  * 
  */
 
@@ -37,6 +37,7 @@
 # include "xf86Priv.h"
 # include "xf86_OSlib.h"
 # include "xf86drm.h"
+# include "inputstr.h"
 #else
 # include <unistd.h>
 # include <signal.h>
@@ -55,7 +56,14 @@
 #  define O_ASYNC FASYNC
 #endif
 
-#define MAX_FUNCS   16
+#ifdef MAX_DEVICES
+/* MAX_DEVICES represents the maximimum number of input devices usable
+ * at the same time plus one entry for DRM support.
+ */
+# define MAX_FUNCS   (MAX_DEVICES + 1)
+#else
+# define MAX_FUNCS 16
+#endif
 
 typedef struct _xf86SigIOFunc {
     void    (*f) (int, void *);
@@ -93,6 +101,11 @@ xf86SIGIO (int sig)
 				   xf86SigIOFuncs[i].closure);
 	    r--;
 	}
+#ifdef XFree86Server
+    if (r > 0) {
+      xf86Msg(X_ERROR, "SIGIO %d descriptors not handled\n", r);
+    }
+#endif
 }
 
 int
@@ -141,6 +154,13 @@ xf86InstallSIGIOHandler(int fd, void (*f)(int, void *), void *closure)
 	    }
 	    return 1;
 	}
+ 	/* Allow overwriting of the closure and callback */
+ 	else if (xf86SigIOFuncs[i].fd == fd)
+ 	{
+ 	    xf86SigIOFuncs[i].closure = closure;
+ 	    xf86SigIOFuncs[i].f = f;
+ 	    return 1;
+ 	}
     }
     return 0;
 }
@@ -230,7 +250,6 @@ xf86AssertBlockedSIGIO (char *where)
     if (!sigismember (&old, SIGIO))
 	xf86Msg (X_ERROR, "SIGIO not blocked at %s\n", where);
 }
-#endif
 
 /* XXX This is a quick hack for the benefit of xf86SetSilkenMouse() */
 
@@ -240,3 +259,4 @@ xf86SIGIOSupported (void)
     return 1;
 }
 
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.18 1999/09/04 13:04:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.21 1999/11/19 13:54:56 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -76,6 +76,7 @@ static Bool MouseConvert(LocalDevicePtr local, int first, int num, int v0,
 static void MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 static void MousePostEvent(InputInfoPtr pInfo, int buttons,
 			   int dx, int dy, int dz);
+static void MouseReadInput(InputInfoPtr pInfo);
 /* XXX This is temporary. */
 const char * xf86ProtocolIDToName(ProtocolID id);
 
@@ -399,7 +400,7 @@ MousePreInit(InputDriverPtr drv, IDevPtr dev, int flags)
     pInfo->type_name = XI_MOUSE;
     pInfo->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
     pInfo->device_control = MouseProc;
-    pInfo->read_input = MouseNoSigioReadInput;
+    pInfo->read_input = MouseReadInput;
     pInfo->motion_history_proc = xf86GetMotionEvents;
     pInfo->history_size = 0;
     pInfo->control_proc = NULL;
@@ -1329,22 +1330,6 @@ post_event:
     pMse->protoBufTail = pBufP;
 }
 
-static void
-MouseNoSigioReadInput (InputInfoPtr info)
-{
-    int	i;
-
-    i = xf86BlockSIGIO ();
-    MouseReadInput (info);
-    xf86UnblockSIGIO (i);
-}
-
-static void
-MouseSigioReadInput (int fd, void *closure)
-{
-    MouseReadInput ((InputInfoPtr) closure);
-}
-
 /*
  * MouseCtrl --
  *      Alter the control parameters for the mouse. Note that all special
@@ -1437,8 +1422,7 @@ MouseProc(DeviceIntPtr device, int what)
 		    xf86FlushInput(pInfo->fd);
 		    if (pMse->protocolID == PROT_PS2)
 			xf86WriteSerial(pInfo->fd, "\364", 1);
-		    if (!xf86InstallSIGIOHandler (pInfo->fd, MouseSigioReadInput, pInfo))
-			AddEnabledDevice(pInfo->fd);
+		    xf86AddEnabledDevice(pInfo);
 		}
 	    }
 	}
@@ -1450,8 +1434,7 @@ MouseProc(DeviceIntPtr device, int what)
     case DEVICE_OFF:
     case DEVICE_CLOSE:
 	if (pInfo->fd != -1) {
-	    if (!xf86RemoveSIGIOHandler (pInfo->fd))
-		RemoveEnabledDevice(pInfo->fd);
+	    xf86RemoveEnabledDevice(pInfo);
 	    if (pMse->buffer) {
 		XisbFree(pMse->buffer);
 		pMse->buffer = NULL;

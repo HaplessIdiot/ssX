@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.12 1999/07/11 08:49:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.14 1999/11/19 13:54:58 hohndel Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -2544,7 +2544,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    if ((local->fd < 0) && (!xf86WcmOpenDevice(pWcm))) {
 		return !Success;
 	    }
-#ifndef XFREE86_V4	    
+#ifdef XFREE86_V4	    
 	    xf86AddEnabledDevice(local);
 #else
 	    AddEnabledDevice(local->fd);
@@ -2556,7 +2556,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	    DBG(1, ErrorF("xf86WcmProc  pWcm=0x%x what=%s\n", pWcm,
 			  (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    if (local->fd >= 0) {
-#ifndef XFREE86_V4	    
+#ifdef XFREE86_V4	    
 		xf86RemoveEnabledDevice(local);
 #else
 		RemoveEnabledDevice(local->fd);

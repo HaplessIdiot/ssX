@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.52 1999/06/13 05:18:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.53 1999/10/13 22:33:00 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -62,6 +62,8 @@
 
 #include "osdep.h"		/* EnabledDevices */
 
+#include "xf86_OSproc.h"	/* sigio stuff */
+
 /******************************************************************************
  * debugging macro
  *****************************************************************************/
@@ -82,7 +84,14 @@ static int      debug_level = 0;
 #define DBG(lvl, f)
 #endif
 
+/******************************************************************************
+ * macros
+ *****************************************************************************/
+#define ENQUEUE(e) xf86eqEnqueue((e))
 
+/******************************************************************************
+ * Global variables
+ *****************************************************************************/
 static LocalDevicePtr	switch_device = NULL;
 extern DeviceAssocRec	switch_assoc;
 
@@ -891,7 +900,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 #ifdef XFreeXDGA
     int				xdelta = 0, ydelta = 0;
 #endif
-
+    
     DBG(5, ErrorF("xf86PostMotionEvent BEGIN 0x%x(%s) switch=0x%x is_core=%s is_shared=%s is_absolute=%s\n",
 		  device, device->name, switch_device,
 		  is_core ? "True" : "False",
@@ -1036,8 +1045,7 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		    memcpy(buff+sizeof(Time)+sizeof(INT32)*xv->first_valuator, &xv->valuator0,
 			   sizeof(INT32)*xv->num_valuators);
 		}
-		
-		xf86eqEnqueue(xE);
+		ENQUEUE(xE);
 	    }
 	    /* Drag is true if no buttons are down, or if there are buttons
 	     * down and SendDragEvents is true.
@@ -1148,7 +1156,7 @@ xf86PostProximityEvent(DeviceIntPtr	device,
     ValuatorClassPtr		val = device->valuator;
     Bool			is_core = xf86IsCorePointer(device);
     Bool			is_absolute = val && ((val->mode & 1) == Relative);
-
+    
     DBG(5, ErrorF("xf86PostProximityEvent BEGIN 0x%x(%s) prox=%s is_core=%s is_absolute=%s\n",
 		  device, device->name, is_in ? "true" : "false",
 		  is_core ? "True" : "False",
@@ -1206,8 +1214,7 @@ xf86PostProximityEvent(DeviceIntPtr	device,
 
 		xv->num_valuators = (loop % 6) + 1;
 		xv->first_valuator = first_valuator + (loop / 6) * 6;
-	
-		xf86eqEnqueue(xE);
+		ENQUEUE(xE);
 	    }
 	}
 	va_end(var);
@@ -1218,8 +1225,7 @@ xf86PostProximityEvent(DeviceIntPtr	device,
 
 	xv->num_valuators = 0;
 	xv->first_valuator = 0;
-      
-	xf86eqEnqueue(xE);
+	ENQUEUE(xE);
     }
     DBG(5, ErrorF("xf86PostProximityEvent END   0x%x(%s) prox=%s is_core=%s is_absolute=%s\n",
 		  device, device->name, is_in ? "true" : "false",
@@ -1308,7 +1314,8 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 		    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
 		    xv->num_valuators = (loop % 6) + 1;
 		    xv->first_valuator = first_valuator + (loop / 6) * 6;
-		    xf86eqEnqueue(xE);
+		    ENQUEUE(xE);
+		    
 		}
 	    }
 	    va_end(var);
@@ -1318,7 +1325,7 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
 	    xv->num_valuators = 0;
 	    xv->first_valuator = 0;
-	    xf86eqEnqueue(xE);
+	    ENQUEUE(xE);
 	}
     }
 
@@ -1331,7 +1338,7 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 #ifdef XFreeXDGA
 	if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, 0, 0))
 #endif
-	    xf86eqEnqueue (xE);
+	    ENQUEUE(xE);
     }
     DBG(5, ErrorF("xf86PostButtonEvent END\n"));
 }
@@ -1388,7 +1395,7 @@ xf86PostKeyEvent(DeviceIntPtr	device,
 	    xv->num_valuators = is_absolute ? (loop % 6) + 1 : 0;
 	    xv->first_valuator = first_valuator + (loop / 6) * 6;
 	    
-	    xf86eqEnqueue(xE);
+	    ENQUEUE(xE);
 	    /* if the device is in the relative mode only one event is needed */
 	    if (!is_absolute) break;
 	}

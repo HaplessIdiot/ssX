@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.27 1999/06/13 05:18:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.29 1999/11/19 13:54:22 hohndel Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -177,6 +177,8 @@ void xf86InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, int minval,
 				int maxval, int resolution, int min_res,
 				int max_res);
 void xf86InitValuatorDefaults(DeviceIntPtr dev, int axnum);
+void xf86AddEnabledDevice(InputInfoPtr pInfo);
+void xf86RemoveEnabledDevice(InputInfoPtr pInfo);
 
 /* xf86Helper.c */
 void xf86AddInputDriver(InputDriverPtr driver, pointer module, int flags);
