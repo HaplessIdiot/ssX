@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.23 1999/03/21 16:20:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.24 1999/03/28 15:32:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -277,6 +277,7 @@ typedef struct _confxvadaptrec {
 
 typedef struct _confscreenrec {
     char *		id;
+    int			screennum;
     int			defaultdepth;
     int			defaultbpp;
     int			defaultfbbpp;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.165 1999/03/21 16:20:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.166 1999/03/28 15:32:26 dawes Exp $ */
 
 
 /*
@@ -39,7 +39,7 @@ static char *logFilePath;
 
 /* Forward declarations */
 static Bool configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
-			 MessageType from);
+			 int scrnum, MessageType from);
 static Bool configMonitor(MonPtr monitorp, XF86ConfMonitorPtr conf_monitor);
 static Bool configDevice(GDevPtr devicep, XF86ConfDevicePtr conf_device,
 			 Bool active);
@@ -1089,6 +1089,7 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     XF86ConfAdjacencyPtr adjp;
     XF86ConfInactivePtr idp;
     int count = 0;
+    int scrnum;
     XF86ConfLayoutPtr l;
     MessageType from;
     screenLayoutPtr slp;
@@ -1141,7 +1142,12 @@ configLayout(serverLayoutPtr servlayoutp, XF86ConfLayoutPtr conf_layout)
     count = 0;
     while (adjp) {
         slp[count].screen = xnfalloc(sizeof(confScreenRec));
-	if (!configScreen(slp[count].screen, adjp->adj_screen, X_CONFIG))
+	if (adjp->adj_scrnum < 0)
+	    scrnum = count;
+	else
+	    scrnum = adjp->adj_scrnum;
+	if (!configScreen(slp[count].screen, adjp->adj_screen, scrnum,
+			  X_CONFIG))
 	    return FALSE;
         count++;
         adjp = (XF86ConfAdjacencyPtr)adjp->list.next;
@@ -1217,7 +1223,7 @@ configImpliedLayout(serverLayoutPtr servlayoutp, XF86ConfScreenPtr conf_screen)
     slp = xnfalloc(2 * sizeof(screenLayoutRec));
     slp[0].screen = xnfalloc(sizeof(confScreenRec));
     slp[1].screen = NULL;
-    if (!configScreen(slp[0].screen, conf_screen, from))
+    if (!configScreen(slp[0].screen, conf_screen, 0, from))
 	return FALSE;
     servlayoutp->id = "(implicit)";
     servlayoutp->screens = slp;
@@ -1264,18 +1270,20 @@ configXvAdaptor(confXvAdaptorPtr adaptor, XF86ConfVideoAdaptorPtr conf_adaptor)
 }
 
 static Bool
-configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen,
+configScreen(confScreenPtr screenp, XF86ConfScreenPtr conf_screen, int scrnum,
 	     MessageType from)
 {
     int count = 0;
     XF86ConfDisplayPtr dispptr;
     XF86ConfAdaptorLinkPtr conf_adaptor;
 
-    xf86Msg(from, "|-->Screen \"%s\"\n", conf_screen->scrn_identifier);
+    xf86Msg(from, "|-->Screen \"%s\" (%d)\n", conf_screen->scrn_identifier,
+	    scrnum);
     /*
      * now we fill in the elements of the screen
      */
     screenp->id         = conf_screen->scrn_identifier;
+    screenp->screennum  = scrnum;
     screenp->defaultdepth = conf_screen->scrn_defaultdepth;
     screenp->defaultbpp = conf_screen->scrn_defaultbpp;
     screenp->defaultfbbpp = conf_screen->scrn_defaultfbbpp;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.104 1999/03/14 11:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.105 1999/03/21 12:46:39 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -295,8 +295,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * look for screen config entry which refers to the same device
      * section as picked out by the probe.
      *
-     * Should the screen sorting (ie assignment of screen number) go here
-     * or elsewhere?
      */
 
     for (i = 0; i < xf86NumScreens; i++) {
@@ -322,6 +320,28 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if (xf86NumScreens == 0) {
       ErrorF("Device(s) detected, but none match those in the config file\n");
       return;
+    }
+
+    /*
+     * Sort the drivers to match the requested ording.  Using a slow
+     * bubble sort.
+     */
+    for (j = 0; j < xf86NumScreens - 1; j++) {
+	for (i = 0; i < xf86NumScreens - j - 1; i++) {
+	    if (xf86Screens[i + 1]->confScreen->screennum <
+		xf86Screens[i]->confScreen->screennum) {
+		ScrnInfoPtr tmpScrn = xf86Screens[i + 1];
+		xf86Screens[i + 1] = xf86Screens[i];
+		xf86Screens[i] = tmpScrn;
+		xf86ChangeBusIndex(i + 1, xf86NumScreens);
+		xf86ChangeBusIndex(i, i + 1);
+		xf86ChangeBusIndex(xf86NumScreens, i);
+	    }
+	}
+    }
+    /* Fix up the indexes */
+    for (i = 0; i < xf86NumScreens; i++) {
+	xf86Screens[i]->scrnIndex = i;
     }
 
     /*
@@ -1227,9 +1247,8 @@ xf86GetPixFormat(ScrnInfoPtr pScrn, int depth)
 		break;
 	if (i != pScrn->numFormats)
 	    return &pScrn->formats[i];
-	else
-	    return NULL;
     }
+    return NULL;
 }
 
 int

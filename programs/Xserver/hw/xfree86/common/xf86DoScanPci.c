@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.3 1999/02/13 16:44:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.4 1999/02/15 18:47:34 hohndel Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -11,7 +11,11 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include "X.h"
+#include "Xmd.h"
 #include "os.h"
+#ifdef XFree86LOADER
+#include "loaderProcs.h"
+#endif
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Pci.h"

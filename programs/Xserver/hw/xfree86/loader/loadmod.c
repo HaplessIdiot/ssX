@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.44 1999/03/14 03:22:13 dawes Exp $ */
 
 /*
  *
@@ -282,11 +282,26 @@ FreePatterns(PatternPtr patterns)
 static const char **
 InitSubdirs(const char **subdirlist)
 {
-	int i, j;
-	const char **subdirs = NULL;
-	const char **s;
+	int i;
+	char **subdirs = NULL;
+	const char **s, **stmp = NULL;
+    const char *osname;
+    const char *slash;
+    int oslen = 0, len;
+    Bool indefault;
 
-	if (subdirlist) {
+    if (subdirlist == NULL) {
+	    subdirlist = xalloc(2 * sizeof(char *));
+	    if (subdirlist == NULL)
+			return NULL;
+		subdirlist[0] = DEFAULT_LIST;
+		subdirlist[1] = NULL;
+	}
+	
+    LoaderGetOS(&osname, NULL, NULL, NULL);
+    oslen = strlen(osname);
+
+    {
 		/* Count number of entries and check for invalid paths */
 		for (i = 0, s = subdirlist; *s; i++, s++) {
 			if (*s == DEFAULT_LIST) {
@@ -305,29 +320,56 @@ InitSubdirs(const char **subdirlist)
 				}
 			}
 		}
-		subdirs = xalloc((i + 1) * sizeof(char *));
+		subdirs = xalloc((i * 2 + 1) * sizeof(char *));
 		if (!subdirs)
 			return NULL;
-		for (i = 0, s = subdirlist; *s; i++, s++)
-			if (*s != DEFAULT_LIST)
-				subdirs[i] = *s;
-			else {
-				for (j = 0; stdSubdirs[j]; j++, i++)
-					subdirs[i] = stdSubdirs[j];
-				if (j)
-					i--;
+		i = 0;
+		s = subdirlist;
+		indefault = FALSE;
+		while (*s) {
+			if (*s == DEFAULT_LIST) {
+				/* Divert to the default list */
+				indefault = TRUE;
+				stmp = ++s;
+				s = stdSubdirs;
 			}
+			len = strlen(*s);
+			if (**s && (*s)[len - 1] != '/') {
+				slash = "/";
+				len++;
+			} else
+				slash = "";
+			len += oslen + 2;
+			if (!(subdirs[i] = xalloc(len)))
+				return NULL;
+			/* tack on the OS name */
+			sprintf(subdirs[i], "%s%s%s/", *s, slash, osname);
+			i++;
+			/* path as given */
+			subdirs[i] = xstrdup(*s);
+			i++;
+			s++;
+			if (indefault && !s) {
+				/* revert back to the main list */
+				indefault = FALSE;
+				s = stmp;
+			}
+		}
 		subdirs[i] = NULL;
-	} else
-		subdirs = stdSubdirs;
-	return subdirs;
+	}
+	return (const char **)subdirs;
 }
 
 static void
 FreeSubdirs(const char **subdirs)
 {
-	if (subdirs && subdirs != stdSubdirs)
+	const char **s;
+
+	if (subdirs) {
+		for (s = subdirs; *s; s++)
+			xfree(*s);
 		xfree(subdirs);
+	}
 }
 
 static char *

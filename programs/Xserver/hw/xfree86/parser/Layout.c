@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.3 1999/01/12 06:24:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Layout.c,v 1.4 1999/01/14 13:05:15 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -81,7 +81,14 @@ parseLayoutSection (void)
 
 				aptr = xf86confmalloc (sizeof (XF86ConfAdjacencyRec));
 				aptr->list.next = NULL;
-				if (xf86GetToken (NULL) != STRING)
+				aptr->adj_scrnum = -1;
+				if ((token = xf86GetToken (NULL)) == NUMBER)
+				{
+					aptr->adj_scrnum = val.num;
+					if ((token = xf86GetToken (NULL)) != STRING)
+						Error (SCREEN_MSG, NULL);
+				}
+				else if (token != STRING)
 					Error (SCREEN_MSG, NULL);
 				aptr->adj_screen_str = val.str;
 

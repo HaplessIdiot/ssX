@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.32 1999/03/20 08:59:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.33 1999/03/28 15:32:27 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -27,8 +27,6 @@
 #if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/resource.h>
 #endif
-
-extern WindowPtr *WindowTable;
 
 static int xf86ScrnInfoPrivateCount = 0;
 

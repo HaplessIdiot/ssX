@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.24 1999/03/07 14:05:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.25 1999/03/28 15:32:28 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -1242,12 +1242,13 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 /* Increase this as required */
 #define MAX_CARD_PER_VENDOR 64
 
+typedef void (*pciPrintProcPtr)(pciCfgRegs *);
 typedef struct {
     unsigned short VendorID;
     struct pciCard {
 	unsigned short SubsystemID;
         char *CardName;
-        void (*print_func)(pciCfgRegs *);
+	pciPrintProcPtr printFunc;
     } Device[MAX_CARD_PER_VENDOR];
 } pciVendorCardInfo;
 
@@ -1255,7 +1256,7 @@ extern pciVendorCardInfo *xf86PCICardInfo;
 extern pciVendorCardInfo xf86PCICardInfoData[];
 #ifdef INIT_PCI_CARD_INFO
 
-#define NF ((void (*)())NULL)
+#define NF (pciPrintProcPtr)NULL
 
 pciVendorCardInfo xf86PCICardInfoData[] = {
 #ifdef VENDOR_INCLUDE_NONVIDEO

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.6 1999/03/07 11:40:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.7 1999/03/21 07:35:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -320,6 +320,7 @@ XF86ConfScreenRec, *XF86ConfScreenPtr;
 typedef struct
 {
 	GenericListRec list;
+	int adj_scrnum;
 	XF86ConfScreenPtr adj_screen;
 	char *adj_screen_str;
 	XF86ConfScreenPtr adj_top;
@@ -399,5 +400,6 @@ XF86ConfModeLinePtr xf86FindModeLine(const char *ident, XF86ConfModeLinePtr p);
 XF86ConfScreenPtr xf86FindScreen(const char *ident, XF86ConfScreenPtr p);
 XF86ConfDisplayPtr xf86FindDisplay(int depth, XF86ConfDisplayPtr p);
 XF86ConfVendorPtr xf86FindVendor(const char *name, XF86ConfVendorPtr list);
+GenericListPtr addListItem(GenericListPtr head, GenericListPtr new);
 
 #endif /* _xf86Parser_h_ */

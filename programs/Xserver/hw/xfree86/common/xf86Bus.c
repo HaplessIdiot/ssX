@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.17 1999/03/28 15:32:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.18 1999/03/29 07:06:34 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -785,6 +785,8 @@ xf86ParseIsaBusString(const char *busID)
 /*
  * Change the scrnIndex in bus slots to reflect the new indices after a
  * screen has been removed.
+ * XXX It might be better to put this information in a scrnInfoRec private
+ * rather than keeping track of indexes.
  */
 
 void
