@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.6 2001/04/11 08:34:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.7 2001/04/16 06:51:48 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -230,10 +230,17 @@ void QuartzHide(void)
 /*
  * QuartzGiveUp
  *  Cleanup before X server shutdown
- *  Release the screen
+ *  Release the screen and restore the Aqua cursor.
  */
 void QuartzGiveUp(void)
 {
+    int i;
+
+    for (i = 0; i < darwinNumScreens; i++) {
+        if (darwinScreens[i]) {
+            QuartzSuspendXCursor(darwinScreens[i]);
+        }
+    }
     QuartzRelease();
 }
 

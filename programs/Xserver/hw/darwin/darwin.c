@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.20 2001/04/16 06:51:48 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.21 2001/04/25 02:23:47 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -1045,8 +1045,7 @@ void ddxUseMsg( void )
  */
 void ddxGiveUp( void )
 {
-    ErrorF( "   ddxGiveUp\n" ); 
-    close(darwinEventFD);
+    ErrorF( "Quitting XDarwin...\n" ); 
 
     if (quartz) {
         QuartzGiveUp();

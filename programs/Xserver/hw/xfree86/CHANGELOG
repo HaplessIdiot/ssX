@@ -1,4 +1,10 @@
 XFree86 4.0.99.x (xx April 2001)
+ 459. Small XDarwin fixes:
+       - Don't leak IOService objects when searching for desired screen.
+       - Eliminate chance of SIGPIPE while shutting down.
+       - Revert to Aqua cursor when quit by exiting main client.
+       - Stop console error messages when using mouse button 3.
+      (Torrey Lyons and Christoph Pfisterer).
  458. At Linus' request, make linux/int10 module deal with shmat() errors
       (Marc La France).
  457. Fix makedepend's integer value parsing and make it understand GCC's
@@ -13117,4 +13123,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1730 2001/04/29 23:25:03 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1731 2001/04/30 14:34:55 tsi Exp $
