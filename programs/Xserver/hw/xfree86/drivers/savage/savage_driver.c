@@ -61,6 +61,9 @@ static Bool SavageSaveScreen(ScreenPtr pScreen, int mode);
 static void SavageLoadPalette(ScrnInfoPtr pScrn, int numColors,
 			      int *indicies, LOCO *colors,
 			      VisualPtr pVisual);
+static void SavageLoadPaletteSavage4(ScrnInfoPtr pScrn, int numColors,
+			      int *indicies, LOCO *colors,
+			      VisualPtr pVisual);
 static void SavageCalcClock(long freq, int min_m, int min_n1, int max_n1,
 			   int min_n2, int max_n2, long freq_min,
 			   long freq_max, unsigned int *mdiv,
@@ -86,7 +89,7 @@ extern ScrnInfoPtr gpScrn;
 			 PATCHLEVEL)
 
 
-/* #define TRACEON */
+/*#define TRACEON*/
 #ifdef TRACEON
 #define TRACE(prms)	ErrorF prms
 #else
@@ -341,27 +344,23 @@ static Bool
 ShadowWait( SavagePtr psav )
 {
     BCI_GET_PTR;
-    static int dwBCIWait2DIdle = 0;
     int loop = 0;
 
-    if( !dwBCIWait2DIdle )
-    {
-	if( psav->Chipset == S3_SAVAGE2000 )
-	    dwBCIWait2DIdle = 0xc0040000;
-	else
-	    dwBCIWait2DIdle = 0xc0020000;
-    }
+    if( !psav->NoPCIRetry )
+	return 0;
 
     psav->ShadowCounter = (psav->ShadowCounter + 1) & 0x7fff;
-    BCI_SEND( dwBCIWait2DIdle );
+    BCI_SEND( psav->dwBCIWait2DIdle );
     BCI_SEND( 0x98000000 + psav->ShadowCounter );
 
     while(
 	(psav->ShadowVirtual[1] & 0x7fff) != psav->ShadowCounter  &&
 	(loop++ < MAXLOOP)
-    )
-	;
-
+	) {};
+#if 0
+      ErrorF("s: %x i: %x\n",psav->ShadowCounter,
+  	   psav->ShadowVirtual[1] & 0x7fff);
+#endif
     return loop >= MAXLOOP;
 }
 
@@ -374,17 +373,10 @@ WaitQueue3D( SavagePtr psav, int v )
     int slots = MAXFIFO - v;
 
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdle = ShadowWait;
-	return ShadowWait(psav);
-    }
-    else
-    {
-	loop &= STATUS_WORD0;
-	while( ((STATUS_WORD0 & 0x0000ffff) > slots) && (loop++ < MAXLOOP))
-	    ;
-    }
+
+    loop &= STATUS_WORD0;
+    while( ((STATUS_WORD0 & 0x0000ffff) > slots) && (loop++ < MAXLOOP))
+	;
     return loop >= MAXLOOP;
 }
 
@@ -397,14 +389,9 @@ WaitQueue4( SavagePtr psav, int v )
     if( !psav->NoPCIRetry )
 	return 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdle = ShadowWait;
-	return ShadowWait(psav);
-    }
-    else
-	while( ((ALT_STATUS_WORD0 & 0x001fffff) > slots) && (loop++ < MAXLOOP))
-	    ;
+ 
+    while( ((ALT_STATUS_WORD0 & 0x001fffff) > slots) && (loop++ < MAXLOOP))
+	;
     return loop >= MAXLOOP;
 }
 
@@ -417,14 +404,9 @@ WaitQueue2K( SavagePtr psav, int v )
     if( !psav->NoPCIRetry )
 	return 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdle = ShadowWait;
-	return ShadowWait(psav);
-    }
-    else
-	while( ((ALT_STATUS_WORD0 & 0x000fffff) > slots) && (loop++ < MAXLOOP))
-	    ;
+ 
+    while( ((ALT_STATUS_WORD0 & 0x000fffff) > slots) && (loop++ < MAXLOOP))
+	;
     if( loop >= MAXLOOP )
 	ResetBCI2K(psav);
     return loop >= MAXLOOP;
@@ -437,11 +419,7 @@ WaitIdleEmpty3D(SavagePtr psav)
 {
     int loop = 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdleEmpty = ShadowWait;
-	return ShadowWait(psav);
-    }
+
     loop &= STATUS_WORD0;
     while( ((STATUS_WORD0 & 0x0008ffff) != 0x80000) && (loop++ < MAXLOOP) )
 	;
@@ -453,11 +431,6 @@ WaitIdleEmpty4(SavagePtr psav)
 {
     int loop = 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdleEmpty = ShadowWait;
-	return ShadowWait(psav);
-    }
     while( ((ALT_STATUS_WORD0 & 0x00a1ffff) != 0x00a00000) && (loop++ < MAXLOOP) )
 	;
     return loop >= MAXLOOP;
@@ -468,12 +441,9 @@ WaitIdleEmpty2K(SavagePtr psav)
 {
     int loop = 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdleEmpty = ShadowWait;
-	return ShadowWait(psav);
-    }
+
     loop &= ALT_STATUS_WORD0;
+
     while( ((ALT_STATUS_WORD0 & 0x009fffff) != 0) && (loop++ < MAXLOOP) )
 	;
     if( loop >= MAXLOOP )
@@ -488,11 +458,7 @@ WaitIdle3D(SavagePtr psav)
 {
     int loop = 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdle = ShadowWait;
-	return ShadowWait(psav);
-    }
+
     while( (!(STATUS_WORD0 & 0x00080000)) && (loop++ < MAXLOOP) )
 	;
     return loop >= MAXLOOP;
@@ -503,11 +469,6 @@ WaitIdle4(SavagePtr psav)
 {
     int loop = 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdle = ShadowWait;
-	return ShadowWait(psav);
-    }
     while( (!(ALT_STATUS_WORD0 & 0x00800000)) && (loop++ < MAXLOOP) )
 	;
     return loop >= MAXLOOP;
@@ -518,11 +479,7 @@ WaitIdle2K(SavagePtr psav)
 {
     int loop = 0;
     mem_barrier();
-    if( psav->ShadowVirtual )
-    {
-	psav->WaitIdle = ShadowWait;
-	return ShadowWait(psav);
-    }
+
     loop &= ALT_STATUS_WORD0;
     while( (ALT_STATUS_WORD0 & 0x00900000) && (loop++ < MAXLOOP) )
 	;
@@ -1585,7 +1542,6 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 	int width;
 	unsigned short cr6d;
 	unsigned short cr79 = 0;
-
 	/* Set up the mode.  Don't clear video RAM. */
 	SavageSetVESAMode( psav, restore->mode | 0x8000, restore->refresh );
 
@@ -1715,10 +1671,10 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
 		break;
 	}
 
-	#if 0
+#if 0
 	if( !psav->NoAccel )
 	{
-	#endif
+#endif
 	    SavageInitialize2DEngine(pScrn);
 	    SavageSetGBD(pScrn);
 #if 0
@@ -1937,11 +1893,11 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
     {
 	VerticalRetraceWait();
 	OUTREG(FIFO_CONTROL_REG, restore->MMPR0);
-	psav->WaitIdle(psav);
+/*  	psav->WaitIdle(psav); */
 	OUTREG(MIU_CONTROL_REG, restore->MMPR1);
-	psav->WaitIdle(psav);
+/*  	psav->WaitIdle(psav); */
 	OUTREG(STREAMS_TIMEOUT_REG, restore->MMPR2);
-	psav->WaitIdle(psav);
+/*  	psav->WaitIdle(psav); */
 	OUTREG(MISC_TIMEOUT_REG, restore->MMPR3);
     }
 
@@ -2099,7 +2055,29 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     if (!SavageMapFB(pScrn))
 	return FALSE;
-
+ 
+    if( psav->ShadowStatus ) {
+	psav->ShadowPhysical = 
+	    psav->FrameBufferBase + psav->CursorKByte*1024 + 4096 - 32;
+	
+	psav->ShadowVirtual = (unsigned long*)
+	    (psav->FBBase + psav->CursorKByte*1024 + 4096 - 32);
+	
+	xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
+		    "Shadow area physical %08x, linear %08x\n",
+		    psav->ShadowPhysical, psav->ShadowVirtual );
+	psav->WaitQueue = ShadowWait;
+	psav->WaitIdle = ShadowWait;
+	psav->WaitIdleEmpty = ShadowWait;
+	
+	if( psav->Chipset == S3_SAVAGE2000 )
+	    psav->dwBCIWait2DIdle = 0xc0040000;
+	else
+	    psav->dwBCIWait2DIdle = 0xc0020000;
+	
+    }
+    psav->ShadowCounter = 0;
+    
     SavageSave(pScrn);
 
     vgaHWBlankScreen(pScrn, TRUE);
@@ -2184,11 +2162,15 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     if (!miCreateDefColormap(pScreen))
 	    return FALSE;
-
-    if (!xf86HandleColormaps(pScreen, 256, 6, SavageLoadPalette, NULL,
-			     CMAP_RELOAD_ON_MODE_SWITCH))
-	return FALSE;
-
+    if (psav->Chipset == S3_SAVAGE4) {
+        if (!xf86HandleColormaps(pScreen, 256, 6, SavageLoadPaletteSavage4,
+				 NULL, CMAP_RELOAD_ON_MODE_SWITCH))
+	  return FALSE;
+    } else {
+        if (!xf86HandleColormaps(pScreen, 256, 6, SavageLoadPalette, NULL,
+				 CMAP_RELOAD_ON_MODE_SWITCH))
+	  return FALSE;
+    }
     vgaHWBlankScreen(pScrn, FALSE);
 
     psav->CloseScreen = pScreen->CloseScreen;
@@ -2745,7 +2727,6 @@ void SavageDisableMMIO(ScrnInfoPtr pScrn)
     return;
 }
 
-
 void SavageLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
 		       LOCO *colors, VisualPtr pVisual)
 {
@@ -2753,6 +2734,32 @@ void SavageLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
     int i, index;
 
     for (i=0; i<numColors; i++) {
+	index = indicies[i];
+	VGAOUT8(0x3c8, index);
+	VGAOUT8(0x3c9, colors[index].red);
+	VGAOUT8(0x3c9, colors[index].green);
+	VGAOUT8(0x3c9, colors[index].blue);
+    }
+}
+
+#define inStatus1() (hwp->readST01( hwp ))
+
+void SavageLoadPaletteSavage4(ScrnInfoPtr pScrn, int numColors, int *indicies,
+		       LOCO *colors, VisualPtr pVisual)
+{
+    SavagePtr psav = SAVPTR(pScrn);
+    int i, index;
+
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    int vgaCRIndex, vgaCRReg, vgaIOBase;
+    vgaIOBase = hwp->IOBase;
+    vgaCRIndex = vgaIOBase + 4;
+    vgaCRReg = vgaIOBase + 5;
+    VerticalRetraceWait();
+
+    for (i=0; i<numColors; i++) {
+          if (!(inStatus1()) & 0x08)
+  	    VerticalRetraceWait(); 
 	index = indicies[i];
 	VGAOUT8(0x3c8, index);
 	VGAOUT8(0x3c9, colors[index].red);

@@ -656,6 +656,18 @@ void          xf86writepci(int, int, int, int, int, CARD32, CARD32);
 
 extern int pciNumBuses;
 
+typedef enum {
+  ROM_BASE_PRESET = -2,
+  ROM_BASE_BIOS,
+  ROM_BASE_MEM0 = 0,
+  ROM_BASE_MEM1,
+  ROM_BASE_MEM2,
+  ROM_BASE_MEM3,
+  ROM_BASE_MEM4,
+  ROM_BASE_MEM5,
+  ROM_BASE_FIND
+} romBaseSource;
+
 #endif /* _XF86PCI_H */
 
 

@@ -65,6 +65,8 @@ static int SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen);
 static void SMI_PrintRegs(ScrnInfoPtr);
 static ModeStatus SMI_ValidMode(int scrnIndex, DisplayModePtr mode,
 								Bool verbose, int flags);
+static void SMI_DisableVideo(ScrnInfoPtr pScrn);
+static void SMI_EnableVideo(ScrnInfoPtr pScrn);
 static Bool SMI_MapMem(ScrnInfoPtr pScrn);
 static void SMI_UnmapMem(ScrnInfoPtr pScrn);
 static Bool SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -188,7 +190,7 @@ static const OptionInfoRec SMIOptions[] =
  * Note that vgahwSymbols and xaaSymbols are referenced outside the
  * XFree86LOADER define in later code, so are defined outside of that
  * define here also.
- * cfbSymbols and ramdacSymbols are only referenced from within the
+ * fbSymbols and ramdacSymbols are only referenced from within the
  * ...LOADER define.
  */
 
@@ -267,10 +269,12 @@ static const char *vbeSymbols[] =
 	NULL
 };
 
-#ifdef XFree86LOADER
-
-static const char *cfbSymbols[] =
+static const char *fbSymbols[] =
 {
+#ifdef USE_FB
+	"fbScreenInit",
+	"fbPictureInit",
+#else
 	"cfbScreenInit",
 	"cfb16ScreenInit",
 	"cfb24ScreenInit",
@@ -278,8 +282,11 @@ static const char *cfbSymbols[] =
 	"cfb32ScreenInit",
 	"cfb16BresS",
 	"cfb24BresS",
+#endif
 	NULL
 };
+
+#ifdef XFree86LOADER
 
 static MODULESETUPPROTO(siliconmotionSetup);
 
@@ -330,7 +337,7 @@ siliconmotionSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		 * Tell the loader about symbols from other modules that this module
 		 * might refer to.
 		 */
-		LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, ramdacSymbols,
+		LoaderRefSymLists(vgahwSymbols, fbSymbols, xaaSymbols, ramdacSymbols,
 						  ddcSymbols, i2cSymbols, int10Symbols, vbeSymbols,
 						  shadowSymbols, NULL);
 
@@ -489,8 +496,10 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	int i;
 	double real;
 	ClockRangePtr clockRanges;
+#ifndef USE_FB
 	char *mod = NULL;
 	const char *reqSym = NULL;
+#endif
 	char *s;
 	unsigned char config, m, n, shift;
 	int mclk;
@@ -812,8 +821,8 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	else
 	{
-		/* Default to ZoomOnLCD disabled. */
-		pSmi->zoomOnLCD = FALSE;
+		/* Default to ZoomOnLCD enabled. */
+		pSmi->zoomOnLCD = TRUE;
 	}
 
 	/* Find the PCI slot for this screen */
@@ -905,6 +914,8 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 			pSmi->PciInfo->func);
 
 	SMI_MapMem(pScrn);
+	SMI_DisableVideo(pScrn);
+
 	hwp = VGAHWPTR(pScrn);
 	vgaIOBase  = hwp->IOBase;
 	vgaCRIndex = vgaIOBase + VGA_CRTC_INDEX_OFFSET;
@@ -984,6 +995,8 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		if (!xf86SetGamma(pScrn, zeros))
 		{
 			LEAVE_PROC("SMI_PreInit");
+			SMI_EnableVideo(pScrn);
+			SMI_UnmapMem(pScrn);
 			return(FALSE);
 		}
 	}
@@ -1087,6 +1100,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Detected current MCLK value of "
 			"%1.3f MHz\n", mclk / 1000.0);
 
+	SMI_EnableVideo(pScrn);
 	SMI_UnmapMem(pScrn);
 
 	pScrn->virtualX = pScrn->display->virtualX;
@@ -1150,6 +1164,16 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	/* Set display resolution */
 	xf86SetDpi(pScrn, 0, 0);
 
+#ifdef USE_FB
+	if ((xf86LoadSubModule(pScrn, "fb") == NULL))
+	{
+		SMI_FreeRec(pScrn);
+		LEAVE_PROC("SMI_PreInit");
+		return(FALSE);
+	}
+
+	xf86LoaderReqSymLists(fbSymbols, NULL);
+#else
 	/* Load bpp-specific modules */
 	switch (pScrn->bitsPerPixel)
 	{
@@ -1177,7 +1201,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	xf86LoaderReqSymbols(reqSym, NULL);
-
+#endif
 	/* Load XAA if needed */
 	if (!pSmi->NoAccel || pSmi->hwcursor)
 	{
@@ -1842,7 +1866,7 @@ SMI_MapMem(ScrnInfoPtr pScrn)
 			pSmi->lcdHeight = 1024;
 			break;
 	}
-	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV, "%s Panel Size = %dx%d\n",
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "%s Panel Size = %dx%d\n",
 			(pSmi->lcd == 0) ? "OFF" : (pSmi->lcd == 1) ? "TFT" : "DSTN",
 			pSmi->lcdWidth, pSmi->lcdHeight);
 
@@ -1954,7 +1978,7 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * support TrueColor and not DirectColor.  To deal with this, call
 	 * miSetVisualTypes with the appropriate visual mask.
 	 */
-
+#ifndef USE_FB
 	if (pScrn->bitsPerPixel > 8)
 	{
 		if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
@@ -1965,6 +1989,7 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	}
 	else
+#endif
 	{
 		if (!miSetVisualTypes(pScrn->depth,
 				miGetDefaultVisualMask(pScrn->depth), pScrn->rgbBits,
@@ -1974,6 +1999,9 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			return(FALSE);
 		}
 	}
+#ifdef USE_FB
+	if (!miSetPixmapDepths ()) return FALSE;
+#endif
 
 	if (!SMI_InternalScreenInit(scrnIndex, pScreen))
 	{
@@ -2155,28 +2183,40 @@ SMI_InternalScreenInit(int scrnIndex, ScreenPtr pScreen)
 			pSmi->FBBase, width, height, displayWidth));
 	switch (pScrn->bitsPerPixel)
 	{
-		case 8:
-			ret = cfbScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
-					yDpi, displayWidth);
-			break;
+#ifdef USE_FB
+	case 8:
+	case 16:
+	case 24:
+	  ret = fbScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
+			     yDpi, displayWidth,pScrn->bitsPerPixel);
+	  break;
+#else
+	case 8:
+	  ret = cfbScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
+			      yDpi, displayWidth);
+	  break;
 
-		case 16:
-			ret = cfb16ScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
+	case 16:
+	  ret = cfb16ScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
 					yDpi, displayWidth);
-			break;
+	  break;
 
-		case 24:
-			ret = cfb24ScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
-					yDpi, displayWidth);
-			break;
-
-		default:
-			xf86DrvMsg(scrnIndex, X_ERROR, "Internal error: invalid bpp (%d) "
-					"in SMI_InternalScreenInit\n", pScrn->bitsPerPixel);
-			LEAVE_PROC("SMI_InternalScreenInit");
-			return(FALSE);
+	case 24:
+	  ret = cfb24ScreenInit(pScreen, pSmi->FBBase, width, height, xDpi,
+				yDpi, displayWidth);
+	  break;
+#endif
+	default:
+	  xf86DrvMsg(scrnIndex, X_ERROR, "Internal error: invalid bpp (%d) "
+		     "in SMI_InternalScreenInit\n", pScrn->bitsPerPixel);
+	  LEAVE_PROC("SMI_InternalScreenInit");
+	  return(FALSE);
 	}
-
+	
+#ifdef USE_FB
+	if (ret)
+	    fbPictureInit(pScreen, 0, 0);
+#endif
 	LEAVE_PROC("SMI_InternalScreenInit");
 	return(ret);
 }
@@ -2187,11 +2227,13 @@ SMI_ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	SMIPtr pSmi = SMIPTR(pScrn);
+	float refresh;
 
 	ENTER_PROC("SMI_ValidMode");
-
+	refresh = (mode->VRefresh > 0) ? mode->VRefresh 
+	  : mode->Clock * 1000.0 / mode->VTotal / mode->HTotal;
 	xf86DrvMsg(scrnIndex, X_INFO, "Mode: %dx%d %d-bpp, %fHz\n", mode->HDisplay,
-			mode->VDisplay, pScrn->bitsPerPixel, mode->VRefresh);
+			mode->VDisplay, pScrn->bitsPerPixel, refresh);
 
 	if (pSmi->shadowFB)
 	{
@@ -2762,6 +2804,27 @@ SMI_LoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors,
 	LEAVE_PROC("SMI_LoadPalette");
 }
 
+static void
+SMI_DisableVideo(ScrnInfoPtr pScrn)
+{
+	SMIPtr pSmi = SMIPTR(pScrn);
+	CARD8 tmp;
+
+	if (!(tmp = VGAIN8(pSmi, VGA_DAC_MASK)))
+	  return;
+	pSmi->DACmask = tmp;
+	VGAOUT8(pSmi, VGA_DAC_MASK, 0);
+}
+
+static void
+SMI_EnableVideo(ScrnInfoPtr pScrn)
+{
+	SMIPtr pSmi = SMIPTR(pScrn);
+
+	VGAOUT8(pSmi, VGA_DAC_MASK, pSmi->DACmask);
+}
+
+
 void
 SMI_EnableMmio(ScrnInfoPtr pScrn)
 {
@@ -2776,9 +2839,6 @@ SMI_EnableMmio(ScrnInfoPtr pScrn)
 	 * needed once we use the VGA softbooter
 	 */
 	vgaHWSetStdFuncs(hwp);
-
-	/* Disable video output */
-	outb(VGA_DAC_MASK, 0x00);
 
 	/* Enable linear mode */
 	outb(VGA_SEQ_INDEX, 0x18);

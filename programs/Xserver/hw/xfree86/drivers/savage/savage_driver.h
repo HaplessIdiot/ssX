@@ -175,6 +175,7 @@ typedef struct _Savage {
     int			videoFourCC;
     XF86VideoAdaptorPtr	adaptor;
     int			VideoZoomMax;
+    int dwBCIWait2DIdle;
 
 } SavageRec, *SavagePtr;
 

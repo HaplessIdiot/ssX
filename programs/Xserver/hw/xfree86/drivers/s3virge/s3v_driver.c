@@ -940,11 +940,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     if (pScrn->chipset == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "ChipID 0x%04X is not recognised\n", ps3v->Chipset);
+	vbeFree(ps3v->pVbe);
 	return FALSE;
     }
     if (ps3v->Chipset < 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Chipset \"%s\" is not recognised\n", pScrn->chipset);
+	vbeFree(ps3v->pVbe);
 	return FALSE;
     }
 
@@ -1002,6 +1004,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
        Gamma zeros = {0.0, 0.0, 0.0};
        
        if (!xf86SetGamma(pScrn, zeros)) {
+	   vbeFree(ps3v->pVbe);
 	   return FALSE;
        }
    }
@@ -1403,6 +1406,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
   
     if (i == -1) {
 	S3VFreeRec(pScrn);
+	vbeFree(ps3v->pVbe);
 	return FALSE;
     }
     /* Prune the modes marked as invalid */
@@ -1411,6 +1415,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
 	S3VFreeRec(pScrn);
+	vbeFree(ps3v->pVbe);
 	return FALSE;
     }
 
@@ -1435,6 +1440,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     if ( ((pScrn->depth == 24) || (pScrn->depth == 16)) && 
          ((pScrn->bitsPerPixel/8) * pScrn->virtualX > 4095) ) {
       xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Virtual width to large for ViRGE\n");
+      vbeFree(ps3v->pVbe);
       S3VFreeRec(pScrn);
       return FALSE;
     }
@@ -1444,8 +1450,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       {
 	if( xf86LoadSubModule(pScrn, "fb") == NULL )
 	  {
-	    S3VFreeRec(pScrn);
-	    return FALSE;
+	      vbeFree(ps3v->pVbe);
+	      S3VFreeRec(pScrn);
+	      return FALSE;
 	  }	       
 	xf86LoaderReqSymLists(fbSymbols, NULL);       
       }
@@ -1475,8 +1482,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	  break;
 	}
 	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	  S3VFreeRec(pScrn);
-	  return FALSE;
+	    vbeFree(ps3v->pVbe);
+	    S3VFreeRec(pScrn);
+	    return FALSE;
 	}	       
     
 	xf86LoaderReqSymbols(reqSym, NULL);
@@ -1485,6 +1493,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load XAA if needed */
     if (!ps3v->NoAccel || ps3v->hwcursor ) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    vbeFree(ps3v->pVbe);
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1494,6 +1503,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     /* Load ramdac if needed */
     if (ps3v->hwcursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	    vbeFree(ps3v->pVbe);
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1502,6 +1512,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (ps3v->shadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    vbeFree(ps3v->pVbe);
 	    S3VFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -3367,6 +3378,8 @@ S3VCloseScreen(int scrnIndex, ScreenPtr pScreen)
       vgaHWLock(hwp);
       S3VUnmapMem(pScrn);
   }
+  if (ps3v->pVbe)
+      vbeFree(ps3v->pVbe);
   if (ps3v->AccelInfoRec)
     XAADestroyInfoRec(ps3v->AccelInfoRec);
   if (ps3v->DGAModes)
@@ -3862,6 +3875,7 @@ S3VProbeDDC(ScrnInfoPtr pScrn, int index)
     if (xf86LoadSubModule(pScrn, "vbe")) {
         pVbe = VBEInit(NULL,index);
         ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 

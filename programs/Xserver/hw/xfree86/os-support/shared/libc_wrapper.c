@@ -1898,7 +1898,7 @@ xf86shmctl(int id, int xf86cmd, pointer *buf)
 	return 0;
     }
     
-    return shmctl(id, cmd, NULL);
+    return shmctl(id, cmd, buf);
 }
 #else
 

@@ -230,20 +230,7 @@ SavageInitialize2DEngine(ScrnInfoPtr pScrn)
     OUTREG(0x812C, ~0); /* enable all read planes */
     OUTREG16(0x8134, 0x27);
     OUTREG16(0x8136, 0x07);
-
-    if( psav->ShadowStatus && !psav->ShadowPhysical )
-    {
-	psav->ShadowPhysical = 
-	    psav->FrameBufferBase + psav->CursorKByte*1024 + 4096 - 32;
-
-	psav->ShadowVirtual = (unsigned long*)
-	    (psav->FBBase + psav->CursorKByte*1024 + 4096 - 32);
-
-	xf86DrvMsg( pScrn->scrnIndex, X_PROBED,
-	    "Shadow area physical %08x, linear %08x\n",
-	    psav->ShadowPhysical, psav->ShadowVirtual );
-    }
-
+    
     switch( psav->Chipset ) {
 
     case S3_SAVAGE3D:
@@ -442,6 +429,7 @@ SavageInitAccel(ScreenPtr pScreen)
     xaaptr->SubsequentMono8x8PatternFillRect 
     	= SavageSubsequentMono8x8PatternFillRect;
     xaaptr->Mono8x8PatternFillFlags = 0
+	| NO_TRANSPARENCY 
 	| HARDWARE_PATTERN_PROGRAMMED_BITS 
 	| HARDWARE_PATTERN_SCREEN_ORIGIN
 	| BIT_ORDER_IN_BYTE_LSBFIRST
@@ -512,6 +500,7 @@ SavageInitAccel(ScreenPtr pScreen)
     /* CPU to Screen color expansion */
 
     xaaptr->ScanlineCPUToScreenColorExpandFillFlags = 0
+	| ROP_NEEDS_SOURCE
 	| NO_PLANEMASK
 	| CPU_TRANSFER_PAD_DWORD
 	| SCANLINE_PAD_DWORD
@@ -546,7 +535,6 @@ SavageInitAccel(ScreenPtr pScreen)
      * to the end of the command overflow buffer can be used. If you haven't
      * enabled the PIXMAP_CACHE flag, then these lines can be omitted.
      */
-
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
@@ -556,6 +544,10 @@ SavageInitAccel(ScreenPtr pScreen)
     		"Using %d lines for offscreen memory.\n",
 		psav->ScissB - pScrn->virtualY );
 
+     if (psav->Chipset == S3_SAVAGE4) {
+         xaaptr->Mono8x8PatternFillFlags |= NO_TRANSPARENCY ;
+         xaaptr->ScanlineCPUToScreenColorExpandFillFlags |= ROP_NEEDS_SOURCE;
+     }
     return XAAInit(pScreen, xaaptr);
 }
 

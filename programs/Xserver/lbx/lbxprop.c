@@ -69,8 +69,7 @@ in this Software without prior written authorization from The Open Group.
 #define _SECURITY_SERVER
 #include "extensions/security.h"
 #endif
-
-extern ReplySwapPtr CopySwap16Write, CopySwap32Write, Swap32Write;
+#include "swaprep.h"
 
 void
 LbxStallPropRequest(ClientPtr   client,
@@ -515,10 +514,10 @@ LbxGetProperty(ClientPtr client)
     if (len) {
 	switch (reply.format) {
 	case 32:
-	    client->pSwapReplyFunc = CopySwap32Write;
+	    client->pSwapReplyFunc = (ReplySwapPtr)CopySwap32Write;
 	    break;
 	case 16:
-	    client->pSwapReplyFunc = CopySwap16Write;
+	    client->pSwapReplyFunc = (ReplySwapPtr)CopySwap16Write;
 	    break;
 	default:
 	    client->pSwapReplyFunc = (ReplySwapPtr) WriteToClient;

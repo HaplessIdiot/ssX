@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.73 2001/05/10 16:32:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.74 2001/05/10 21:05:34 dawes Exp $ */
 
 /*
  * Authors:
@@ -392,6 +392,7 @@ TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
     {
 	pVbe =  VBEInit(NULL,index);
 	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 
@@ -1015,7 +1016,9 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   /* Initialize DDC1 if possible */
   if (xf86LoadSubModule(pScrn, "vbe")) {
       xf86MonPtr pMon;
-      pMon = vbeDoEDID(VBEInit(NULL,pTDFX->pEnt->index), NULL);
+      vbeInfoPtr pVbe = VBEInit(NULL,pTDFX->pEnt->index);
+      pMon = vbeDoEDID(pVbe, NULL);
+      vbeFree(pVbe);
       xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
   }
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.108 2001/05/09 19:57:04 dbateman Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.109 2001/05/10 22:18:56 dbateman Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -126,6 +126,8 @@
 /* Needed for replacement LoadPalette function for Gamma Correction */
 #include "xf86cmap.h"
 
+#include "dixstruct.h"
+
 /* Driver specific headers */
 #include "ct_driver.h"
 
@@ -187,6 +189,7 @@ static void     chipsLoadPalette(ScrnInfoPtr pScrn, int numColors,
 static void     chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors,
 				int *indices, LOCO *colors, VisualPtr pVisual);
 static void chipsSetPanelType(CHIPSPtr cPtr);
+static void chipsBlockHandler(int, pointer, pointer, pointer);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -1180,9 +1183,11 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     if (cPtr->UseFullMMIO)
 	chipsUnmapMem(pScrn);
 
-    if (!res)
+    if (!res) {
+	vbeFree(cPtr->pVbe);
 	return FALSE;
-
+    }
+    
 /*********/
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
@@ -1217,6 +1222,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 			  LOOKUP_BEST_REFRESH);
 
     if (i == -1) {
+	vbeFree(cPtr->pVbe);
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
@@ -1231,6 +1237,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (i == 0 || pScrn->modes == NULL) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "No valid modes found\n");
+	vbeFree(cPtr->pVbe);
 	CHIPSFreeRec(pScrn);
 	return FALSE;
     }
@@ -1258,6 +1265,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     switch (pScrn->bitsPerPixel) {
     case 1:
 	if (xf86LoadSubModule(pScrn, "xf1bpp") == NULL) {
+	    vbeFree(cPtr->pVbe);
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
@@ -1265,6 +1273,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	break;
     case 4:
 	if (xf86LoadSubModule(pScrn, "xf4bpp") == NULL) {
+	    vbeFree(cPtr->pVbe);
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
@@ -1273,6 +1282,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     case 16:
 	if (cPtr->Flags & ChipsOverlay8plus16) {
 	    if (xf86LoadSubModule(pScrn, "xf8_16bpp") == NULL) {
+		vbeFree(cPtr->pVbe);
 	        CHIPSFreeRec(pScrn);
 		return FALSE;
 	    }	
@@ -1281,6 +1291,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     default:
 	if (xf86LoadSubModule(pScrn, "fb") == NULL) {
+	    vbeFree(cPtr->pVbe);
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}	
@@ -1290,6 +1301,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (cPtr->Flags & ChipsAccelSupport) {
 	if (!xf86LoadSubModule(pScrn, "xaa")) {
+	    vbeFree(cPtr->pVbe);
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1298,6 +1310,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (cPtr->Flags & ChipsShadowFB) {
 	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    vbeFree(cPtr->pVbe);
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1306,6 +1319,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (cPtr->Accel.UseHWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
+	    vbeFree(cPtr->pVbe);
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
@@ -1318,7 +1332,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
     if (cPtr->MMIOBaseVGA)
  	xf86SetOperatingState(RES_SHARED_VGA, cPtr->pEnt->index, ResDisableOpr);
-    
     return TRUE;
 }
 
@@ -3600,7 +3613,7 @@ CHIPSEnterVT(int scrnIndex, int flags)
 	&& (cPtr->Flags & ChipsAccelSupport)) 
         CHIPSResetVideo(pScrn); 
 
-    xf86UDelay(50000);
+    /*xf86UDelay(50000);*/
     chipsHWCursorOn(cPtr, pScrn);
     /* cursor settle delay */
     xf86UDelay(50000);
@@ -3957,6 +3970,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     xf86SetBlackWhitePixels(pScreen);
 
+    cPtr->BlockHandler = pScreen->BlockHandler;
+    pScreen->BlockHandler = chipsBlockHandler;
+
     if ( (pScrn->depth >= 8))
 	CHIPSDGAInit(pScreen);
 
@@ -4301,7 +4317,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
     
     Base = y * pScrn->displayWidth + x;
-
+    
     /* calculate base bpp dep. */
     switch (pScrn->bitsPerPixel) {
     case 1:
@@ -4404,7 +4420,8 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	cPtrEnt = pPriv->ptr;
 	cPtrEnt->refCount--;
     }
-
+    if (cPtr->pVbe)
+	vbeFree(cPtr->pVbe);
     if (cPtr->AccelInfoRec)
 	XAADestroyInfoRec(cPtr->AccelInfoRec);
     if (cPtr->CursorInfoRec)
@@ -4414,6 +4431,9 @@ CHIPSCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (cPtr->DGAModes)
 	xfree(cPtr->DGAModes);
     pScrn->vtSema = FALSE;
+    if(cPtr->BlockHandler)
+	pScreen->BlockHandler = cPtr->BlockHandler;
+
     pScreen->CloseScreen = cPtr->CloseScreen; /*§§§*/
     xf86ClearPrimInitDone(pScrn->entityList[0]);
     return (*pScreen->CloseScreen)(scrnIndex, pScreen);/*§§§*/
@@ -5156,6 +5176,12 @@ chipsModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     chipsUnlock(pScrn);
     chipsFixResume(pScrn);
 
+    /*
+     * We need to delay cursor loading after resetting the video mode
+     * to give the engine a chance to recover.
+     */
+    cPtr->cursorDelay = TRUE;
+    
     if (IS_HiQV(cPtr))
 	return chipsModeInitHiQV(pScrn, mode);
     else if (IS_Wingine(cPtr))
@@ -5598,18 +5624,21 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (cPtr->PanelType & ChipsLCD) {
 	cPtr->OverlaySkewX = (((ChipsNew->FR[0x23] & 0xFF) 
 			    - (ChipsNew->FR[0x20] & 0xFF) + 3) << 3) 
-			    - 1;
+	    - 1;
 	cPtr->OverlaySkewY = (ChipsNew->FR[0x33]
 			    + ((ChipsNew->FR[0x36] & 0xF) << 8)
 			    - (ChipsNew->FR[0x31] & 0xF0)
 			    - (ChipsNew->FR[0x32] & 0x0F)
 			    - ((ChipsNew->FR[0x35] & 0xF0) << 4));
+	if (!xf86ReturnOptValBool(cPtr->Options, OPTION_LCD_STRETCH,
+				  FALSE)) {
 	if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay)
 	    cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
 						mode->CrtcHDisplay) / 2;
 	if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
 	    cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay - 
-						mode->CrtcVDisplay) / 2;
+				   mode->CrtcVDisplay) / 2;
+	}
     } else {
 	cPtr->OverlaySkewX = mode->CrtcHTotal - mode->CrtcHBlankStart - 9;
 	cPtr->OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd - 2;
@@ -5625,6 +5654,25 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		cPtr->OverlaySkewY *= 2;
 	    
 	}
+    }
+
+    /* mask for viewport granularity */
+
+    switch (pScrn->bitsPerPixel) {
+    case 8:
+	cPtr->viewportMask = ~7U;
+	break;
+    case 16:
+	cPtr->viewportMask = ~3U;
+	break;
+    case 24:
+	cPtr->viewportMask = ~7U;
+	break;
+    case 32:
+	cPtr->viewportMask = ~0U;
+	break;
+    default:
+	cPtr->viewportMask = ~7U;
     }
     
     /* Turn off multimedia by default as it degrades performance */
@@ -5684,7 +5732,7 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->MR[0x41] = 0xFF;
 	ChipsNew->MR[0x42] = 0x00;
     } else if (cPtr->Flags & ChipsVideoSupport) {
-#if 0
+#if 0   /* if we do this even though video isn't playing we kill performance */
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
 #endif
 #ifdef SAR04
@@ -7268,4 +7316,23 @@ chipsSetPanelType(CHIPSPtr cPtr)
     }
 }
 
+static void
+chipsBlockHandler (
+    int i,
+    pointer     blockData,
+    pointer     pTimeout,
+    pointer     pReadmask
+){
+    ScreenPtr   pScreen = screenInfo.screens[i];
+    ScrnInfoPtr pScrn = xf86Screens[i];
+    CHIPSPtr    cPtr = CHIPSPTR(pScrn);
+    
+    pScreen->BlockHandler = cPtr->BlockHandler;
+    (*pScreen->BlockHandler) (i, blockData, pTimeout, pReadmask);
+    pScreen->BlockHandler = chipsBlockHandler;
 
+    if(cPtr->VideoTimerCallback) {
+	UpdateCurrentTime();
+	(*cPtr->VideoTimerCallback)(pScrn, currentTime.milliseconds);
+    }
+}

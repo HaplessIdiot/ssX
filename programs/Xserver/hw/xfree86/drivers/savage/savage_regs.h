@@ -173,8 +173,14 @@ enum S3CHIPTAGS {
 
 #define MAXFIFO		0x7f00
 
+/*
+ * NOTE: don't remove 'VGAIN8(vgaCRIndex);'.
+ * If not present it will cause lockups on Savage4.
+ * Ask S3, why.
+ */
 #define VerticalRetraceWait() \
 { \
+        VGAIN8(vgaCRIndex); \
 	VGAOUT8(vgaCRIndex, 0x17); \
 	if (VGAIN8(vgaCRReg) & 0x80) { \
 		while ((VGAIN8(vgaIOBase + 0x0a) & 0x08) == 0x08) ; \

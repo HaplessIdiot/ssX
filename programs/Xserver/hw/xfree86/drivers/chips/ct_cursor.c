@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.21 2001/05/09 19:57:04 dbateman Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.22 2001/05/10 22:18:56 dbateman Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -296,6 +296,11 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 
     CURSOR_SYNC(pScrn);
 
+    if (cPtr->cursorDelay) {
+	usleep(200000);
+	cPtr->cursorDelay = FALSE;
+    }
+    
     if (IS_Wingine(cPtr)) {
 	int i;
 	CARD32 *tmp = (CARD32 *)src;

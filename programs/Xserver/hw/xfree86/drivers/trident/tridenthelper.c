@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.15 2000/12/14 19:29:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.17 2001/02/15 17:59:07 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -334,3 +334,7 @@ TGUISetMCLK(ScrnInfoPtr pScrn, int clock, CARD8 *a, CARD8 *b)
 	}
     }
 }
+
+
+
+

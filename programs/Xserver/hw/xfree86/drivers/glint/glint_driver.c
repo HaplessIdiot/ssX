@@ -590,6 +590,7 @@ GLINTProbeDDC(ScrnInfoPtr pScrn, int index)
     {
 	pVbe =  VBEInit(NULL,index);
 	vbeDoEDID(pVbe, NULL);
+	vbeFree(pVbe);
     }
 }
 

@@ -72,8 +72,8 @@ in this Software without prior written authorization from The Open Group.
 #ifdef XAPPGROUP
 #include "Xagsrv.h"
 #endif
+#include "swaprep.h"
 
-extern ReplySwapPtr CopySwap32Write;
 extern int  (*ProcVector[256]) (ClientPtr);
 extern int  (*SwappedProcVector[256]) (ClientPtr);
 
@@ -312,7 +312,7 @@ LbxGetKeyboardMapping(ClientPtr   client)
     WriteToClient(client, sizeof(xLbxGetKeyboardMappingReply), (char *)&rep);
 
     if (send_data) {
-	client->pSwapReplyFunc = CopySwap32Write;
+	client->pSwapReplyFunc = (ReplySwapPtr)CopySwap32Write;
 	WriteSwappedDataToClient(client,
 			curKeySyms->mapWidth * stuff->count * sizeof(KeySym),
 	    &curKeySyms->map[(stuff->firstKeyCode - curKeySyms->minKeyCode) *
