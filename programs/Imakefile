@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2000/08/17 19:47:01 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Imakefile,v 3.42 2001/04/01 14:00:03 tsi Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.43 2001/04/02 21:12:07 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -23,13 +23,13 @@ XCOMM $XFree86: xc/programs/Imakefile,v 3.42 2001/04/01 14:00:03 tsi Exp $
 #if BuildXKBlib
       XKBSRCDIRS = setxkbmap xkbcomp xkbevd xkbprint xkbutils
 #endif
-#if BuildScreenSaverExt
+#if BuildScreenSaverLibrary
 SCREENSAVESRCDIR = beforelight
 #endif
-#if BuildXF86VidModeExt
+#if BuildXF86VidModeLibrary
   XVIDTUNESRCDIR = xvidtune
 #endif
-#if BuildXF86DGA
+#if BuildXF86DGALibrary
    XF86DGASRCDIR = xf86dga
 #endif
 #if BuildXAServer
@@ -46,10 +46,10 @@ SCREENSAVESRCDIR = beforelight
        XDMSRCDIR = xdm
 XFINDPROXYSRCDIR = xfindproxy
       XFWPSRCDIR = xfwp
-#if BuildXF86VidModeExt
+#if BuildXF86VidModeLibrary
     XGAMMASRCDIR = xgamma
 #endif
-#if BuildXvExt
+#if BuildXvLibrary
     XVINFOSRCDIR = xvinfo
 #endif
      XHOSTSRCDIR = xhost
@@ -62,6 +62,14 @@ XFINDPROXYSRCDIR = xfindproxy
 #endif
 #if BuildCID
      MKCFMSRCDIR = mkcfm
+#endif
+
+#if BuildXIElib
+   XIECLIENTDIRS = xieperf
+#endif
+
+#if BuildXInputLib
+XINPUTCLIENTDIRS = xsetmode xsetpointer
 #endif
 
 /* makepsres should be considered as part of the DPS libraries */
@@ -99,10 +107,11 @@ SUBDIRS = \
 	xcmsdb $(XCONSOLESRCDIR) xditview $(XDMSRCDIR) xdpyinfo \
 	$(XF86DGASRCDIR) xedit xev xeyes xfd xfontsel $(XFSSRCDIR) xfsinfo \
 	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XGAMMASRCDIR) xgc $(XHOSTSRCDIR) \
-	xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xload xlogo xlsatoms \
+	$(XIECLIENTDIRS) $(XINITSRCDIR) $(XKBSRCDIRS) xkill xload xlogo \
+	xlsatoms \
 	xlsclients xlsfonts xmag xman xmessage xmh xmodmap xprop xrdb \
 	xrefresh $(XRXSRCDIR) xset \
-	xsetroot $(XSMSRCDIR) xstdcmap xsetmode xsetpointer \
+	xsetroot $(XSMSRCDIR) xstdcmap $(XINPUTCLIENTDIRS) \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
 	$(XPMCLIENTDIRS) $(XVINFOSRCDIR) \
 	$(XSSRCDIR) $(XASSRCDIR) $(LBXPROXYSRCDIR) $(SCRIPTSDIR) \

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.92 2001/02/07 23:28:44 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.93 2001/03/31 01:57:20 keithp Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3254,7 +3254,7 @@ MutexDirective:	targets
  * ObjectModuleTarget - build a module as a single object file
  */
 #ifndef ObjectModuleTarget
-#if MakeDllModules
+#if MakeDllModules && DoLoadableServer
 #define ObjectModuleTarget(module,objects)				@@\
 DynamicModuleTarget(Concat(module,_drv.so), objects)
 #else
@@ -3267,7 +3267,7 @@ NormalRelocatableTarget(Concat(module,_drv), objects)
  * LibraryModuleTarget
  */
 #ifndef LibraryModuleTarget
-#if MakeDllModules
+#if MakeDllModules && DoLoadableServer
 #define LibraryModuleTarget(module,objects)				@@\
 NormalLibraryTarget(module, objects)					@@\
 DynamicModuleTarget(Concat3(lib,module,.so), objects)
@@ -3281,7 +3281,7 @@ NormalLibraryTarget(module, objects)
  * DepLibraryModuleTarget
  */
 #ifndef DepLibraryModuleTarget
-#if MakeDllModules
+#if MakeDllModules && DoLoadableServer
 #define DepLibraryModuleTarget(module,deplist,objects)			@@\
 NormalDepLibraryTarget(module, deplist, objects)			@@\
 DepDynamicModuleTarget(Concat3(lib,module,.so), deplist, objects)
