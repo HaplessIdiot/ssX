@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.7 2000/08/04 03:51:49 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.9 2000/12/08 21:51:06 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -502,10 +502,10 @@ WriteXKBConfiguration(char *filename, XkbConfigRtrnPtr conf)
 	fprintf(fp, "Rules			 =	%s\n",
 		conf->rules_file);
     if (conf->model != NULL)
-	fprintf(fp, "Model			 =	%s\n",
+	fprintf(fp, "Model			 =	\"%s\"\n",
 		conf->model);
     if (conf->layout != NULL)
-	fprintf(fp, "Layout			 =	%s\n",
+	fprintf(fp, "Layout			 =	\"%s\"\n",
 		conf->layout);
     if (conf->variant != NULL)
 	fprintf(fp, "Variant			 =	%s\n",
