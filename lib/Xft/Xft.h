@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.22 2002/02/21 05:30:31 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.23 2002/05/13 19:06:22 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -25,7 +25,11 @@
 #ifndef _XFT_H_
 #define _XFT_H_
 
-#define XftVersion  20000
+#define XFT_MAJOR	2
+#define XFT_MINOR	0
+#define XFT_REVISION	0
+#define XFT_VERSION	((XFT_MAJOR * 10000) + (XFT_MINOR * 100) + (XFT_REVISION))
+#define XftVersion	XFT_VERSION
 
 #include <stdarg.h>
 #include <freetype/freetype.h>
@@ -367,6 +371,9 @@ XftCharIndex (Display	    *dpy,
 /* xftinit.c */
 FcBool
 XftInit (char *config);
+
+int
+XftGetVersion (void);
 
 /* xftlex.l */
 

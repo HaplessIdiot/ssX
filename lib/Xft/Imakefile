@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.16 2002/02/15 07:36:10 keithp Exp $
+XCOMM $XFree86: xc/lib/Xft/Imakefile,v 1.17 2002/02/20 00:54:09 keithp Exp $
 
 #define DoNormalLib NormalLibXft
 #define DoSharedLib SharedLibXft
@@ -29,6 +29,49 @@ WARNINGS=-Wall -Wpointer-arith -Wstrict-prototypes -Wmissing-prototypes -Wmissin
 INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) $(WARNINGS)
 DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
 
+XFT_REVISION=0
+
+FREETYPE_LIBS=$(FREETYPE2LIB)
+FREETYPE_CFLAGS=$(FREETYPE2INCLUDES)
+XRENDER_LIBS=$(XRENDERLIB)
+XRENDER_CFLAGS=$(XRENDERINCLUDES)
+FONTCONFIG_CFLAGS=$(FONTCONFIGINCLUDES)
+FONTCONFIG_LIBS=$(FONTCONFIGLIB)
+
+#if !UseInstalled
+
+/* these must always be computed using the installed location,
+ * when building inside the tree that means extra work
+ */
+#if BuildFontconfigLibrary
+FONTCONFIG_LIBS=-L$(USRLIBDIR) -lfontconfig
+FONTCONFIG_CFLAGS=-I$(INCROOT)
+#endif
+
+#if BuildFreetype2Library
+FREETYPE_LIBS=-L$(USRLIBDIR) -lfreetype
+FREETYPE_CFLAGS=-I$(INCROOT)/freetype2
+#endif
+
+#if BuildRenderLibrary
+XRENDER_LIBS=-L$(USRLIBDIR) -lXrender
+XRENDER_CFLAGS=-I$(INCROOT)
+#endif
+
+#endif
+
+SUBSTVARS=prefix="$(PROJECTROOT)" \
+	  exec_prefix="$(BINDIR)" \
+	  libdir="$(USRLIBDIR)" \
+	  includedir="$(INCROOT)" \
+	  PACKAGE_VERSION="$(SOXFTREV).$(XFT_REVISION)" \
+	  FREETYPE_LIBS="$(FREETYPE_LIBS)" \
+	  FREETYPE_CFLAGS="$(FREETYPE_CFLAGS)" \
+	  XRENDER_LIBS="$(XRENDER_LIBS)" \
+	  XRENDER_CFLAGS="$(XRENDER_CFLAGS)" \
+	  FONTCONFIG_CFLAGS="$(FONTCONFIG_CFLAGS)" \
+	  FONTCONFIG_LIBS="$(FONTCONFIG_LIBS)"
+
 REQUIREDLIBS=$(LDPRELIBS) $(XRENDERLIB) $(XLIB) $(FONTCONFIGLIB) $(EXPATLIB) $(FREETYPE2LIB)
 
 HEADERS = Xft.h XftCompat.h
@@ -54,3 +97,26 @@ SpecialCObjectRule(sharedlib,NullParameter,$(SHLIBDEF))
 MANSUFFIX = $(LIBMANSUFFIX)
 InstallManPage(Xft,$(LIBMANDIR))
 DependTarget()
+
+all:: xft-config.script
+
+xft-config.script: xft-config.in
+	RemoveFile($@)
+	sh config/config-subst $(SUBSTVARS) < $< > $@
+
+InstallScript(xft-config,$(BINDIR))
+
+clean::
+	RemoveFile(xft-config.script)
+	
+all:: xft.pc
+
+xft.pc: xft.pc.in
+	RemoveFile($@)
+	sh config/config-subst $(SUBSTVARS) < $< > $@
+
+InstallNonExecFile(xft.pc,$(USRLIBDIR)/pkgconfig)
+
+clean::
+	RemoveFile(xft.pc)
+

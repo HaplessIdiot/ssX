@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftinit.c,v 1.2 2000/12/15 17:12:53 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftinit.c,v 1.3 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -39,6 +39,12 @@ XftInit (char *config)
 	return False;
     _XftNameInit ();
     return True;
+}
+
+int
+XftGetVersion (void)
+{
+    return XftVersion;
 }
 
 static struct {
