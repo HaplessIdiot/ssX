@@ -41,10 +41,10 @@
 #define KeyCode CARD8
 #define KeySym CARD32
 
-#define ROTATION CARD16
-#define VISUALSETID CARD16
-#define SetofVisualsetID CARD16
-#define SIZESETID CARD16
+#define Rotation CARD16
+#define VisualGroupID CARD16
+#define GroupOfVisualGroupID CARD16
+#define SizeID CARD16
 
 /*
  * data structures
@@ -55,7 +55,7 @@ typedef struct {
     CARD16 heightInPixels B16;
     CARD16 widthInMillimeters B16;
     CARD16 heightInMillimeters B16;
-    SetofVisualsetID visualGroup B16;
+    GroupOfVisualGroupID visualGroup B16;
     CARD16 pad1 B16;
 } xScreenSizes;
 #define sz_xScreenSizes 12
@@ -99,19 +99,18 @@ typedef struct {
 
 typedef struct {
     BYTE    type;   /* X_Reply */
-    BYTE    pad1;
+    BYTE    setOfRotations;
     CARD16  sequenceNumber B16;
     CARD32  length B32;
+    Window  root B32;
     Time    timestamp B32;
-    CARD16  rotation B16;
+    Time    configTimestamp B32;
+    CARD16  nVisualGroups B16;
+    CARD16  nGroupsOfVisualGroups B16;
     CARD16  nSizes B16;
-    CARD16  nVisualSets B16;
-    CARD16  nSetsOfVisualSets B16;
-    CARD16  nAccelerated B16;
-    CARD16  nRotations B16;
-    CARD16  sizeSetID B16;
-    CARD16  visualSetID B16;
-    CARD32  pad2 B32;
+    SizeID  sizeID B16;
+    VisualGroupID  visualGroupID B16;
+    Rotation  rotation B16;
 } xRRGetScreenInfoReply;
 #define sz_xRRGetScreenInfoReply	32
 
@@ -120,22 +119,23 @@ typedef struct {
     CARD8    randrReqType;
     CARD16   length B16;
     Drawable drawable B32;
-    Time      timestamp B32;
-    SIZESETID  sizeSetIndex B16;
-    VISUALSETID visualSetIndex B16;
-    ROTATION rotation B16;
+    Time     timestamp B32;
+    Time     configTimestamp B32;
+    SizeID   sizeID B16;
+    Rotation rotation B16;
+    VisualGroupID visualGroupID B16;
     CARD16   pad B16;
 } xRRSetScreenConfigReq;
-#define sz_xRRSetScreenConfigReq   20
+#define sz_xRRSetScreenConfigReq   24
 
 typedef struct {
     BYTE    type;   /* X_Reply */
-    BYTE    pad1;
+    BOOL    success;
     CARD16  sequenceNumber B16;
     CARD32  length B32;
-    Time    newtimestamp B32;  
-    CARD32  pad2 B32;
-    CARD32  pad3 B32;
+    Time    newTimestamp B32;  
+    Time    newConfigTimestamp B32;
+    Window  root;
     CARD32  pad4 B32;
     CARD32  pad5 B32;
     CARD32  pad6 B32;
@@ -158,14 +158,14 @@ typedef struct {
  */
 typedef struct {
     CARD8 type;			/* always eventBase + ScreenChangeNotify */
-    BYTE state;			/* off, on, cycle */
+    BOOL resident;
     CARD16 sequenceNumber B16;
     Time timestamp B32;
-    Window root B32;		/* root window being notfied */
-    CARD16 pad0 B16;
-    CARD32 pad1 B32;
-    CARD32 pad2 B32;
-    CARD32 pad3 B32;
+    Time configTimestamp B32;
+    Window root B32;		/* root window being notified */
+    SizeID sizeIndex B16;
+    Rotation rotation B16;
+    xScreenSizes new;		/* size is 12 bytes */
 } xRRScreenChangeNotifyEvent;
 #define sz_xRRScreenChangeNotifyEvent	32
 
@@ -181,7 +181,9 @@ typedef struct {
 #undef Time
 #undef KeyCode
 #undef KeySym
-
-
+#undef Rotation
+#undef VisualGroupID
+#undef GroupOfVisualGroupID
+#undef SizeID
 
 #endif /* _XRANDRP_H_ */

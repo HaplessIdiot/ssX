@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/include/extensions/randr.h,v 1.1 2001/05/23 03:29:38 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -26,11 +26,10 @@
 #ifndef _RANDR_H_
 #define _RANDR_H_
 
-typedef unsigned long	Rotation;
-typedef unsigned long	VisualsetID;
-typedef unsigned long	SetofVisualsetID;
-typedef unsigned long	SizesetID;
-
+typedef CARD16	Rotation;
+typedef CARD16	VisualGroupID;
+typedef CARD16	GroupOfVisualGroupID;
+typedef CARD16	SizeID;
 
 #define RANDR_NAME		"RANDR"
 #define RANDR_MAJOR		0
@@ -45,5 +44,10 @@ typedef unsigned long	SizesetID;
 #define X_RRScreenChangeSelectInput	3
 
 #define RRScreenChangeNotify	0
+
+#define RR_Rotate_0		1
+#define RR_Rotate_90		2
+#define RR_Rotate_180		4
+#define RR_Rotate_270		8
 
 #endif	/* _RANDR_H_ */
