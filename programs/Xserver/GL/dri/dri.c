@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.36 2002/10/30 12:52:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.37 2002/11/04 21:43:21 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -412,6 +412,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 	pDRIPriv->wrap.AdjustFrame      = pScrn->AdjustFrame;
 	pScrn->AdjustFrame              = pDRIInfo->wrap.AdjustFrame;
     }
+    pDRIPriv->wrapped = TRUE;
 
     DRIDrvMsg(pScreen->myNum, X_INFO, "[DRI] installation complete\n");
 
@@ -430,31 +431,34 @@ DRICloseScreen(ScreenPtr pScreen)
 
         pDRIInfo = pDRIPriv->pDriverInfo;
 
-	/* Unwrap DRI Functions */
-	if (pDRIPriv->wrap.ValidateTree) {
-    	    pScreen->ValidateTree           = pDRIPriv->wrap.ValidateTree;
-    	    pDRIPriv->wrap.ValidateTree     = NULL;
-       	}
-	if (pDRIPriv->wrap.PostValidateTree) {
-	    pScreen->PostValidateTree       = pDRIPriv->wrap.PostValidateTree;
-	    pDRIPriv->wrap.PostValidateTree = NULL;
-	}
-	if (pDRIPriv->wrap.WindowExposures) {
-	    pScreen->WindowExposures        = pDRIPriv->wrap.WindowExposures;
-	    pDRIPriv->wrap.WindowExposures  = NULL;
-	}
-	if (pDRIPriv->wrap.CopyWindow) {
-	    pScreen->CopyWindow             = pDRIPriv->wrap.CopyWindow;
-	    pDRIPriv->wrap.CopyWindow       = NULL;
-	}
-	if (pDRIPriv->wrap.ClipNotify) {
-	    pScreen->ClipNotify             = pDRIPriv->wrap.ClipNotify;
-	    pDRIPriv->wrap.ClipNotify       = NULL;
-	}
-	if (pDRIPriv->wrap.AdjustFrame) {
-	    ScrnInfoPtr pScrn               = xf86Screens[pScreen->myNum];
-	    pScrn->AdjustFrame              = pDRIPriv->wrap.AdjustFrame;
-	    pDRIPriv->wrap.AdjustFrame      = NULL;
+	if (pDRIPriv->wrapped) {
+	    /* Unwrap DRI Functions */
+	    if (pDRIInfo->wrap.ValidateTree) {
+		pScreen->ValidateTree           = pDRIPriv->wrap.ValidateTree;
+		pDRIPriv->wrap.ValidateTree     = NULL;
+	    }
+	    if (pDRIInfo->wrap.PostValidateTree) {
+		pScreen->PostValidateTree       = pDRIPriv->wrap.PostValidateTree;
+		pDRIPriv->wrap.PostValidateTree = NULL;
+	    }
+	    if (pDRIInfo->wrap.WindowExposures) {
+		pScreen->WindowExposures        = pDRIPriv->wrap.WindowExposures;
+		pDRIPriv->wrap.WindowExposures  = NULL;
+	    }
+	    if (pDRIInfo->wrap.CopyWindow) {
+		pScreen->CopyWindow             = pDRIPriv->wrap.CopyWindow;
+		pDRIPriv->wrap.CopyWindow       = NULL;
+	    }
+	    if (pDRIInfo->wrap.ClipNotify) {
+		pScreen->ClipNotify             = pDRIPriv->wrap.ClipNotify;
+		pDRIPriv->wrap.ClipNotify       = NULL;
+	    }
+	    if (pDRIInfo->wrap.AdjustFrame) {
+		ScrnInfoPtr pScrn               = xf86Screens[pScreen->myNum];
+		pScrn->AdjustFrame              = pDRIPriv->wrap.AdjustFrame;
+		pDRIPriv->wrap.AdjustFrame      = NULL;
+	    }
+	    pDRIPriv->wrapped = FALSE;
 	}
 
 	if (pDRIPriv->drmSIGIOHandlerInstalled) {
