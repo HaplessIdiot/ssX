@@ -1,4 +1,11 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 134. Set subpixel order to horizontal RGB in atimisc panel support
+      (Adam J. Richter, Marc La France).
+ 133. Fix off-by-one error in the interpration and programming of VGA sync
+      pulses.  This has only been done for atimisc, and should also be for
+      vgahw and callers, but the complexity of doing so right now far exceeds
+      my ability to test such a change (Marc La France).
+ 132. Some RENDER cleanup in drivers (Marc La France).
  131. Intel driver updates to support:-
        - i915 latest generation hardware
        - Dual Head & Clone support for i915, i855 and i830 chipsets.
@@ -18984,7 +18991,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3275 2004/06/10 13:08:27 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3276 2004/06/10 13:10:52 alanh Exp $
 
 
 

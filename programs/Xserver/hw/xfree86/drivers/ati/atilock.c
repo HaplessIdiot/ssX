@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.21tsi Exp $ */
 /*
  * Copyright 1999 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -311,8 +311,8 @@ ATIUnlock
                 VBlankEnd += 0x0100U;
             VSyncEnd = (((crt07 & 0x80U) << 2) | ((crt07 & 0x04U) << 6) |
                 GetReg(CRTX(pATI->CPIO_VGABase), 0x10U)) + 0x0FU;
-            if (VSyncEnd >= VBlankEnd)
-                VSyncEnd = VBlankEnd - 1;
+            if (VSyncEnd > VBlankEnd)
+                VSyncEnd = VBlankEnd;
             pATI->LockData.crt11 = (VSyncEnd & 0x0FU) | 0x20U;
             PutReg(CRTX(pATI->CPIO_VGABase), 0x11U, pATI->LockData.crt11);
             pATI->LockData.crt11 |= 0x80U;
@@ -377,8 +377,8 @@ ATIUnlock
                     VBlankEnd += 0x0100U;
                 VSyncEnd = (((crt07 & 0x80U) << 2) | ((crt07 & 0x04U) << 6) |
                     GetReg(CRTX(pATI->CPIO_VGABase), 0x10U)) + 0x0FU;
-                if (VSyncEnd >= VBlankEnd)
-                    VSyncEnd = VBlankEnd - 1;
+                if (VSyncEnd > VBlankEnd)
+                    VSyncEnd = VBlankEnd;
                 pATI->LockData.shadow_crt11 = (VSyncEnd & 0x0FU) | 0x20U;
                 PutReg(CRTX(pATI->CPIO_VGABase), 0x11U,
                     pATI->LockData.shadow_crt11);

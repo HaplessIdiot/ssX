@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.64 2003/08/23 16:09:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.65tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -1419,9 +1419,9 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				      pScreenInfo->bitsPerPixel);
 		if (!Inited)
 		    break;
-#ifdef RENDER
+
 		fbPictureInit (pScreen, 0, 0);
-#endif
+
 		ShadowFBInit(pScreen, GenericRefreshArea1bpp);
 	    }
 	    else
@@ -1451,9 +1451,9 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				      pScreenInfo->bitsPerPixel);
 		if (!Inited)
 		    break;
-#ifdef RENDER
+
 		fbPictureInit (pScreen, 0, 0);
-#endif
+
 		ShadowFBInit(pScreen, GenericRefreshArea4bpp);
 	    }
 	    else
@@ -1471,9 +1471,11 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				  pScreenInfo->xDpi, pScreenInfo->yDpi,
 				  pScreenInfo->displayWidth,
 				  pScreenInfo->bitsPerPixel);
-#ifdef RENDER
+	    if (!Inited)
+		break;
+
 	    fbPictureInit (pScreen, 0, 0);
-#endif
+
 	    break;
 	default:
 	    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,

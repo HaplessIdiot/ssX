@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.6 2001/08/07 07:04:51 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/suntcx/tcx_driver.c,v 1.7tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -568,10 +568,8 @@ TCXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
-#ifdef RENDER
     /* must be after RGB ordering fixed */
     fbPictureInit (pScreen, 0, 0);
-#endif
 
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.15 2002/09/26 02:56:48 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.16tsi Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -1164,4 +1164,36 @@ fbPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats)
 #endif /* RENDER */
 
     return TRUE;
+}
+
+Bool
+fbPictureSetSubpixelOrder (ScreenPtr pScreen, int subpixel)
+{
+
+#ifdef RENDER
+
+    return PictureSetSubpixelOrder (pScreen, subpixel);
+
+#else
+
+    return FALSE;
+
+#endif
+
+}
+
+int
+fbPictureGetSubpixelOrder (ScreenPtr pScreen)
+{
+
+#ifdef RENDER
+
+    return PictureGetSubpixelOrder (pScreen);
+
+#else
+
+    return 0;
+
+#endif
+
 }
