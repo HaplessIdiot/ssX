@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.228 2002/12/16 16:19:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.229 2003/01/08 15:06:40 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1066,6 +1066,20 @@ MGAdoDDC(ScrnInfoPtr pScrn)
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "DDC Monitor info: %p\n", MonInfo);
     xf86PrintEDID( MonInfo );
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of DDC Monitor info\n");
+  }
+  if (!MonInfo){
+    vbeInfoPtr pVbe;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+      pVbe = VBEInit(NULL,pScrn->scrnIndex);
+      MonInfo = vbeDoEDID(pVbe, NULL);
+      vbeFree(pVbe);
+
+      if (MonInfo){
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VBE DDC Monitor info: %p\n", MonInfo);
+	xf86PrintEDID( MonInfo );
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of VBE DDC Monitor info\n\n");
+      }
+    }
   }
 
 
