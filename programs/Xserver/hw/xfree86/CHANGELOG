@@ -1,4 +1,7 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 690. Fix a problem in the trident driver for older chipsets and using
+      16bit clock programming, manifested itself on a Thinkpad 760EL,
+      but there are probably lots of others. (Alan Hourihane).
  689. On Darwin add Mac font directories to fonts.conf (Torrey T. Lyons).
  688. Post XDarwin mouse events in Quartz mode where they happen rather than
       where the cursor currently is (Adrian Umpleby).
@@ -15922,4 +15925,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2464 2003/01/02 07:05:09 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2465 2003/01/03 18:54:09 torrey Exp $

@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.67 2002/04/04 14:27:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.69 2002/09/16 18:06:02 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -657,6 +657,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     if (pTrident->IsCyber && !pTrident->MMIOonly)
 	pReg->tridentRegs3x4[DRAMControl] |= 0x20;
 
+    if (pTrident->NewClockCode && pTrident->Chipset <= CYBER9397DVD) {
+	    OUTB(vgaIOBase + 4, ClockControl);
+	    pReg->tridentRegs3x4[ClockControl] = INB(vgaIOBase + 5) | 0x01;
+    }
+
     OUTB(vgaIOBase+ 4, AddColReg);
     pReg->tridentRegs3x4[AddColReg] = INB(vgaIOBase + 5) & 0xEF;
     pReg->tridentRegs3x4[AddColReg] |= (offset & 0x100) >> 4;
@@ -775,6 +780,8 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3CE(MiscIntContReg);
     OUTW_3CE(MiscExtFunc);
     OUTW_3x4(Offset);
+    if (pTrident->NewClockCode && pTrident->Chipset <= CYBER9397DVD)
+	OUTW_3x4(ClockControl);
     if (pTrident->Chipset >= CYBER9388) {
 	OUTW_3C4(Threshold);
 	OUTW_3C4(SSetup);
@@ -904,6 +911,8 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(GraphEngReg);
     INB_3x4(PCIReg);
     INB_3x4(PCIRetry);
+    if (pTrident->NewClockCode && pTrident->Chipset <= CYBER9397DVD)
+	INB_3x4(ClockControl);
     if (pTrident->Chipset >= CYBER9388) {
 	INB_3C4(Threshold);
 	INB_3C4(SSetup);
