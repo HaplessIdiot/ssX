@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.14 2001/08/01 00:44:42 tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.15 2001/08/01 04:57:49 tsi Exp $ */
 
 #ifndef _FT_H_
 #define _FT_H_
@@ -69,8 +69,7 @@ struct ttf_mapping
   int has_cmap;
   TT_CharMap cmap;
   int base;
-  struct font_encoding *encoding;
-  struct font_encoding_mapping *mapping;
+  struct _FontMap *mapping;     /* allow inclusion without fontenc.h */
 };
 
 /* Prototypes */

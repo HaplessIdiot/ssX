@@ -1,4 +1,19 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 214. Patch for the Thai glyphs in Mark Leisher's ClearlyU font (#4846,
+      Theppitak Karoonboonyanan).
+ 213. Add a font encoding file for tis620-2 (#4845, Theppitak Karoonboonyanan).
+ 212. Add a font encoding file for ISO8859-16 (#4844, Markus Kuhn).
+ 211. Make the input method framework in Xlib work better in an UTF-8
+      locale (#4843, Yao Zhang and Bruno Haible).
+ 210. Default *sampleText*international to false in xfontsel's app-defaults
+      file, since it breaks if the user has '*international: true' (#4842,
+      Juliusz Chroboczek).
+ 209. A new version of the fontenc layer.  A major difference is that it
+      reads from a "system" encodings directory
+      <ProjectRoot>/lib/fonts/encodings/encodings.dir, which is searched
+      after any encodings.dir file in the font's directory.  The font
+      ABI version is bumped to 1.0 since the interface isn't
+      binary-compatible by default (#4839, Juliusz Chroboczek).
  208. Add support to xload for displaying the load of remote hosts by using
       information in rwhod(1)'s database (#4833, Anders Eriksson).
  207. Rename the XVisibilityNotifyEvent man page to XVisibilityEvent,
@@ -13681,4 +13696,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1909 2001/08/13 17:46:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1910 2001/08/13 19:34:54 dawes Exp $

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.174 2001/06/14 21:45:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.175 2001/08/12 22:48:43 alanh Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -393,6 +393,13 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.174 2001/06/14 21:45:34 dawes Exp 
  *
 #define BuildFreeType		NO
 #define BuildXTrueType		NO
+ */
+
+/*
+ * To enable binary compatibility with previous versions of the font
+ * encoding support, uncomment this.
+ *
+#define FontencCompatibility    YES
  */
 
 /*

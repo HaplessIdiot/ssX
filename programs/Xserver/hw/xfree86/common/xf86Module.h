@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.28 2001/03/13 16:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.29 2001/06/13 23:10:40 dawes Exp $ */
 
 /*
- * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2001 by The XFree86 Project, Inc.
  */
 
 /*
@@ -60,12 +60,16 @@ typedef enum {
  * Whenever the ABI_ANSIC_VERSION is changed, the others must also be
  * changed.  The minor revision mask is 0x0000FFFF and the major revision
  * mask is 0xFFFF0000.
+ *
+ * ABI_FONT_VERSION should really depend on FontencCompatibility's setting,
+ * but that means passing -DFONTENC_COMPATIBILITY when building all font
+ * modules.
  */
 #define ABI_ANSIC_VERSION	SET_ABI_VERSION(0, 1)
 #define ABI_VIDEODRV_VERSION	SET_ABI_VERSION(0, 5)
 #define ABI_XINPUT_VERSION	SET_ABI_VERSION(0, 3)
 #define ABI_EXTENSION_VERSION	SET_ABI_VERSION(0, 1)
-#define ABI_FONT_VERSION	SET_ABI_VERSION(0, 2)
+#define ABI_FONT_VERSION	SET_ABI_VERSION(1, 0)
 
 #define MODINFOSTRING1	0xef23fdc5
 #define MODINFOSTRING2	0x10dc023a

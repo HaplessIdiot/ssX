@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.17 2001/02/13 21:15:15 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.18 2001/05/16 08:32:33 alanh Exp $ */
 
 #ifndef FONT_MODULE
 #include <string.h>
@@ -1004,9 +1004,9 @@ FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, TTFFont *font)
   /* Only pass the default glyph if there is no first index */
   if(idx==0 &&
      (code != 0 ||
-      (font->mapping.encoding &&
-       (font->mapping.encoding->first != 0 || 
-        font->mapping.encoding->first_col != 0)))) {
+      (font->mapping.mapping->encoding &&
+       (font->mapping.mapping->encoding->first != 0 || 
+        font->mapping.mapping->encoding->first_col != 0)))) {
     *g=0;
     return Successful;
   } else {
@@ -1042,9 +1042,9 @@ FreeTypeFontGetGlyphMetrics(unsigned code, xCharInfo **metrics, TTFFont *font)
 
   if(idx==0 && 
      (code!=0 ||
-      (font->mapping.encoding &&
-       (font->mapping.encoding->first != 0 || 
-        font->mapping.encoding->first_col != 0)))) {
+      (font->mapping.mapping->encoding &&
+       (font->mapping.mapping->encoding->first != 0 || 
+        font->mapping.mapping->encoding->first_col != 0)))) {
     *metrics=0;
     return Successful;
   } else {
@@ -1056,8 +1056,9 @@ static int
 FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, TTFFont *font)
 {
   /* Disable default glyph generation if there is a first index */
-  if(font->mapping.encoding && 
-     (font->mapping.encoding->first || font->mapping.encoding->first_col)) {
+  if(font->mapping.mapping->encoding && 
+     (font->mapping.mapping->encoding->first || 
+      font->mapping.mapping->encoding->first_col)) {
     *g=0;
     return Successful;
   }
@@ -1361,14 +1362,15 @@ FreeTypeLoadXFont(char *fileName,
       }
     }
 
-    if(!font->mapping.encoding || font->mapping.encoding->row_size == 0) {
+    if(!font->mapping.mapping->encoding || 
+       font->mapping.mapping->encoding->row_size == 0) {
       /* linear indexing */
       lastCode=MIN(lastCode,
-                   font->mapping.encoding ?
-                   font->mapping.encoding->size-1 :
+                   font->mapping.mapping ?
+                   font->mapping.mapping->encoding->size-1 :
                    (font->mapping.has_cmap ? 0xFF : 0xFFFF));
-      if(font->mapping.encoding && font->mapping.encoding->first)
-        firstCode=font->mapping.encoding->first;
+      if(font->mapping.mapping && font->mapping.mapping->encoding->first)
+        firstCode=font->mapping.mapping->encoding->first;
       info->firstRow=firstCode/0x100;
       info->lastRow=lastCode/0x100;
       info->firstCol=
@@ -1376,10 +1378,11 @@ FreeTypeLoadXFont(char *fileName,
       info->lastCol=info->lastRow ? 0xFF : (lastCode & 0xFF);
     } else {
       /* matrix indexing */
-      info->firstRow=font->mapping.encoding->first;
-      info->lastRow=MIN(font->mapping.encoding->size-1, lastCode/0x100);
-      info->firstCol=font->mapping.encoding->first_col;
-      info->lastCol=MIN(font->mapping.encoding->row_size-1, 
+      info->firstRow=font->mapping.mapping->encoding->first;
+      info->lastRow=MIN(font->mapping.mapping->encoding->size-1,
+                        lastCode/0x100);
+      info->firstCol=font->mapping.mapping->encoding->first_col;
+      info->lastCol=MIN(font->mapping.mapping->encoding->row_size-1, 
                         lastCode<0x100?lastCode:0xFF);
     }
 

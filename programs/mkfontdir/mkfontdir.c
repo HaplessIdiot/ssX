@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.12 2001/01/17 23:45:00 dawes Exp $ */
+/* $XFree86: xc/programs/mkfontdir/mkfontdir.c,v 3.13 2001/07/25 15:05:15 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1988  X Consortium
@@ -118,6 +118,8 @@ SOFTWARE.
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
 
+Bool processFonts = TRUE;
+
 char *progName;
 char *prefix = "";
 Bool relative = FALSE;
@@ -151,8 +153,9 @@ typedef struct _encodingBucket {
 #define ENCODING_HASH_SIZE 256
 
 
-static Bool WriteFontTable ( char *dirName, FontTablePtr table,
-                             EncodingBucketPtr *encodings, int count);
+static Bool WriteFontTable ( char *dirName, FontTablePtr table);
+static Bool WriteEncodingsTable(char *dirName, EncodingBucketPtr *encodings, 
+                                int count);
 static char * NameForAtomOrNone ( Atom a );
 static Bool GetFontName ( char *file_name, char *font_name );
 static char * FontNameExists ( FontTablePtr table, char *font_name );
@@ -173,15 +176,12 @@ void ErrorF ( void );
 static Bool
 WriteFontTable(
     char	    *dirName,
-    FontTablePtr    table,
-    EncodingBucketPtr *encodings,
-    int             count)
+    FontTablePtr    table)
 {
-    int		    i;
     FILE	    *file;
     char	    full_name[PATH_MAX];
     FontEntryPtr    entry;
-    EncodingBucketPtr encoding;
+    int             i;
 
     sprintf (full_name, "%s/%s", dirName, FontDirFile);
 
@@ -206,20 +206,29 @@ WriteFontTable(
     }
     fclose (file);
 
-    /* Write out encodings directory */
+    return TRUE;
+}
+
+static Bool
+WriteEncodingsTable(char *dirName, EncodingBucketPtr *encodings, int count)
+{
+    char full_name[PATH_MAX];
+    FILE *file;
+    int i;
+    EncodingBucketPtr encoding;
 
     sprintf (full_name, "%s/%s", dirName, "encodings.dir");
     if (unlink(full_name) < 0 && errno != ENOENT)
     {
       fprintf(stderr, "%s: warning: cannot unlink %s\n", progName, full_name);
-      return TRUE;              /* non fatal error */
+      return FALSE;
     }
     if(!count) return TRUE;
     file = fopen (full_name, "w");
     if (!file)
     {
       fprintf (stderr, "%s: can't create directory %s\n", progName, full_name);
-      return TRUE;
+      return FALSE;
     }
     fprintf(file, "%d\n", count);
     for(i=0; i<ENCODING_HASH_SIZE; i++)
@@ -603,7 +612,7 @@ LoadEncodings(EncodingBucketPtr *encodings, char *dirName, int priority)
       continue;
     }
     strcpy(fullname+len, FileName(file));
-    names=identifyEncodingFile(fullname);
+    names=FontEncIdentify(fullname);
     if(names) {
       if((filename=New(char, strlen(fullname)+1))==NULL) {
         fprintf(stderr, "%s: warning: out of memory.\n", progName);
@@ -630,22 +639,26 @@ DoDirectory(char *dirName, EncodingBucketPtr *encodings, int count)
     FontTableRec	table;
     Bool		status;
 
-    if (!FontFileInitTable (&table, 100))
-	return FALSE;
-    if (!LoadDirectory (dirName, &table))
-    {
-	FontFileFreeTable (&table);
-	return FALSE;
-    }
-    if (!LoadScalable (dirName, &table))
-    {
-	FontFileFreeTable (&table);
-	return FALSE;
-    }
     status = TRUE;
-    if (table.used >= 0)
-	status = WriteFontTable (dirName, &table, encodings, count);
-    FontFileFreeTable (&table);
+
+    if(processFonts) {
+        if (!FontFileInitTable (&table, 100))
+            return FALSE;
+        if (!LoadDirectory (dirName, &table))
+            {
+                FontFileFreeTable (&table);
+                return FALSE;
+            }
+        if (!LoadScalable (dirName, &table))
+            {
+                FontFileFreeTable (&table);
+                return FALSE;
+            }
+        if (table.used >= 0)
+            status = WriteFontTable (dirName, &table);
+        FontFileFreeTable (&table);
+    }
+    status = status || WriteEncodingsTable(dirName, encodings, count);
     return status;
 }
 
@@ -725,6 +738,13 @@ main (int argc, char **argv)
           prefix=argv[argn];
         } else
           prefix=argv[argn]+2;
+      } else if(argv[argn][1]=='n') {
+        if(argv[argn][2] == '\0') {
+          processFonts = FALSE;
+        } else {
+          fprintf(stderr, "%s: unknown option `%s'\n", progName, argv[argn]);
+          continue;
+        }
       } else if(argv[argn][1]=='r') {
         if(argv[argn][2]=='\0')
           relative=TRUE;
