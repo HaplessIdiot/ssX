@@ -1,4 +1,6 @@
 XFree86 4.1.99.6 (xx January 2002)
+ 652. Fix sparklies problem for other Trident *BladeXP chipsets 
+      (Alan Hourihane).
  651. In XDarwin IOKit mode, ignore screens that can not provide the requested
       size, depth, or refresh rate instead of generating a fatal error
       (Torrey T. Lyons).
@@ -14479,4 +14481,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2115 2002/01/07 22:12:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2116 2002/01/08 05:05:43 torrey Exp $

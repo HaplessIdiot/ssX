@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.60 2001/12/13 18:14:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.61 2001/12/19 18:55:16 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -563,15 +563,22 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     pReg->tridentRegs3x4[CRTCModuleTest] = 
 				(mode->Flags & V_INTERLACE ? 0x84 : 0x80);
+
     OUTB(vgaIOBase+ 4, InterfaceSel);
     pReg->tridentRegs3x4[InterfaceSel] = INB(vgaIOBase + 5) | 0x40;
+
     OUTB(vgaIOBase+ 4, Performance);
-    if (pTrident->Chipset != CYBERBLADEXPAI1)
-	pReg->tridentRegs3x4[Performance] = INB(vgaIOBase + 5) | 0x10;
+    pReg->tridentRegs3x4[Performance] = INB(vgaIOBase + 5);
+
+    if (pTrident->Chipset < CYBERBLADEXPm8)
+	pReg->tridentRegs3x4[Performance] |= 0x10;
+
     OUTB(vgaIOBase+ 4, DRAMControl);
     pReg->tridentRegs3x4[DRAMControl] = INB(vgaIOBase + 5) | 0x10;
+
     if (pTrident->IsCyber && !pTrident->MMIOonly)
 	pReg->tridentRegs3x4[DRAMControl] |= 0x20;
+
     OUTB(vgaIOBase+ 4, AddColReg);
     pReg->tridentRegs3x4[AddColReg] = INB(vgaIOBase + 5) & 0xEF;
     pReg->tridentRegs3x4[AddColReg] |= (offset & 0x100) >> 4;
