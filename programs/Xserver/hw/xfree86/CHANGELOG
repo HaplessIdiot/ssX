@@ -1,7 +1,16 @@
+3268. Add -withrevinfo flag to lndir to allow shadowing of RCS, SCCS, CVS and
+      CVS.adm directories (Marc La France).
+3267. SIGIO workaround for older Linux kernels (Marc La France).
+3266. Fix xalloc.c compilationb failure with -DXALLOC_LOG (Marc La France).
+3265. Change ATIProbe() to use int 10 vector to locate the BIOS of VGA and
+      VGA Wonder non-PCI adapters (Marc La France).
+3264. Make '-probe' work for static server and ATI driver (Marc La France).
+3263. #define _POSIX_C_SOURCE to 2 for Linux libc5 (Marc La France).
+
 XFree86 3.9.16c (13 October 1999)
-3362. Export SetCriticalEvent from DIX, it was an unresolved external in
+3262. Export SetCriticalEvent from DIX, it was an unresolved external in
       xf86dga2.c (#3326, Jarno Paananen).
-3361. Removes Alpha-specific MMIO-mappings from NVIDIA driver in the
+3261. Removes Alpha-specific MMIO-mappings from NVIDIA driver in the
       same fashion that was done in MGA-driver (#3326, Jarno Paananen).
 3260. Add SilkenMouse to NVIDIA and Glint drivers (#3326, Jarno Paananen).
 3259. Workaround for problem in xf86RegisterRootWindowProperty() code
@@ -8950,4 +8959,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.838 1999/10/13 22:50:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.839 1999/10/14 02:45:19 dawes Exp $
