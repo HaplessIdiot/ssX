@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
+/* $XFree86: xc/lib/GL/apple/dri_driver.c,v 1.2 2003/10/31 02:22:12 torrey Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -203,6 +203,7 @@ static void __driMesaCollectCallback(void *k, void *v, void *data)
     }
 }
 
+/* pdp->mutex is held. */
 static void __driMesaGarbageCollectDrawables(void *drawHash)
 {
     __DRIdrawable *pdraw;
@@ -643,18 +644,16 @@ static void driMesaSwapBuffers(Display *dpy, void *drawPrivate)
         }
     }
 
-
     xmutex_unlock(pdp->driScreenPriv->mutex);
 }
 
+/* pdp->mutex is held. */
 static void driMesaDestroyDrawable(Display *dpy, void *drawPrivate)
 {
     __DRIdrawablePrivate *pdp = (__DRIdrawablePrivate *)drawPrivate;
 
     if (pdp) {
-        xmutex_lock(pdp->driScreenPriv->mutex);
         unbind_drawable(pdp);
-        xmutex_unlock(pdp->driScreenPriv->mutex);
         if (pdp->surface_id != 0) {
             xp_destroy_surface(pdp->surface_id);
             pdp->surface_id = 0;
@@ -831,6 +830,10 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     }
 
     psp->mutex = xmutex_malloc();
+    if (psp->mutex != NULL) {
+        xmutex_init (psp->mutex);
+        xmutex_set_name (psp->mutex, "AppleDRI");
+    }
     psp->display = dpy;
     psp->myNum = scrn;
 
