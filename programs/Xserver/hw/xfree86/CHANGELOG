@@ -1,4 +1,5 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 116. Xterm patch #191 (Thomas Dickey).
  115. Integrate the TinyX servers into the standard XFree86 build:
        - Numerous build and warning fixes.
        - Eliminate unnecessary requirement differences at the DIX level
@@ -18953,7 +18954,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3263 2004/06/01 01:30:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3264 2004/06/02 22:43:03 dawes Exp $
 
 
 
