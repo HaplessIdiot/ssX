@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.18 2003/02/18 15:42:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86Cursor.c,v 1.19tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -360,11 +360,12 @@ xf86CursorSetCursor(ScreenPtr pScreen, CursorPtr pCurs, int x, int y)
 
     if (ScreenPriv->isUp) {
 	/* Remove the HW cursor, or make it transparent */
-	if (infoPtr->Flags & HARDWARE_CURSOR_SHOW_TRANSPARENT)
+	if (infoPtr->Flags & HARDWARE_CURSOR_SHOW_TRANSPARENT) {
 	    xf86SetTransparentCursor(pScreen);
-	else
+	} else {
 	    xf86SetCursor(pScreen, NullCursor, x, y);
-	ScreenPriv->isUp = FALSE;
+	    ScreenPriv->isUp = FALSE;
+	}
     }
 
     ScreenPriv->SWCursor = TRUE;
