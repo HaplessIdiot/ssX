@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftname.c,v 1.2 2000/12/01 00:41:48 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftname.c,v 1.3 2000/12/02 10:02:06 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -72,41 +72,52 @@ XftNameGetType (const char *object)
 
 typedef struct _XftConstant {
     const char  *name;
+    const char	*object;
     int		value;
 } XftConstant;
 
 static XftConstant XftConstants[] = {
-    { "light",		XFT_WEIGHT_LIGHT, },
-    { "medium",		XFT_WEIGHT_MEDIUM, },
-    { "demibold",	XFT_WEIGHT_DEMIBOLD, },
-    { "bold",		XFT_WEIGHT_BOLD, },
-    { "black",		XFT_WEIGHT_BLACK, },
+    { "light",		"weight",   XFT_WEIGHT_LIGHT, },
+    { "medium",		"weight",   XFT_WEIGHT_MEDIUM, },
+    { "demibold",	"weight",   XFT_WEIGHT_DEMIBOLD, },
+    { "bold",		"weight",   XFT_WEIGHT_BOLD, },
+    { "black",		"weight",   XFT_WEIGHT_BLACK, },
 
-    { "roman",		XFT_SLANT_ROMAN, },
-    { "italic",		XFT_SLANT_ITALIC, },
-    { "oblique",	XFT_SLANT_OBLIQUE, },
+    { "roman",		"slant",    XFT_SLANT_ROMAN, },
+    { "italic",		"slant",    XFT_SLANT_ITALIC, },
+    { "oblique",	"slant",    XFT_SLANT_OBLIQUE, },
 
-    { "proportional",	XFT_PROPORTIONAL, },
-    { "mono",		XFT_MONO, },
-    { "charcell",	XFT_CHARCELL, },
+    { "proportional",	"spacing",  XFT_PROPORTIONAL, },
+    { "mono",		"spacing",  XFT_MONO, },
+    { "charcell",	"spacing",  XFT_CHARCELL, },
 
-    { "rgb",		XFT_RGBA_RGB, },
-    { "bgr",		XFT_RGBA_BGR, },
+    { "rgb",		"rgba",	    XFT_RGBA_RGB, },
+    { "bgr",		"rgba",	    XFT_RGBA_BGR, },
 };
 
 #define NUM_XFT_CONSTANTS   (sizeof XftConstants/sizeof XftConstants[0])
 
+static XftConstant *
+_XftNameConstantLookup (char *string)
+{
+    int	i;
+    
+    for (i = 0; i < NUM_XFT_CONSTANTS; i++)
+	if (!strcmp (string, XftConstants[i].name))
+	    return &XftConstants[i];
+    return 0;
+}
+
 Bool
 XftNameConstant (char *string, int *result)
 {
-    int	    i;
+    XftConstant	*c;
 
-    for (i = 0; i < NUM_XFT_CONSTANTS; i++)
-	if (!strcmp (string, XftConstants[i].name))
-	{
-	    *result = XftConstants[i].value;
-	    return True;
-	}
+    if ((c = _XftNameConstantLookup(string)))
+    {
+	*result = c->value;
+	return True;
+    }
     return False;
 }
 
@@ -139,9 +150,14 @@ _XftNameConvert (XftType type, char *string)
 static const char *
 _XftNameFindNext (const char *cur, const char *delim, char *save, char *last)
 {
+    char    c;
+    
     while (*cur && !strchr (delim, *cur))
     {
-	*save++ = *cur++;
+	c = *cur++;
+	if (isupper (c))
+	    c = tolower (c);
+	*save++ = c;
     }
     *save = 0;
     *last = *cur;
@@ -160,6 +176,7 @@ XftNameParse (const char *name)
     char		delim;
     XftValue		v;
     const XftObjectType	*t;
+    XftConstant		*c;
 
     save = malloc (strlen (name) + 1);
     if (!save)
@@ -196,15 +213,15 @@ XftNameParse (const char *name)
     }
     while (delim == ':')
     {
-	name = _XftNameFindNext (name, "=:", save, &delim);
+	name = _XftNameFindNext (name, "=-:", save, &delim);
 	if (save[0])
 	{
-	    if (delim == '=')
+	    if (delim == '=' || delim == '-')
 	    {
 		t = XftNameGetType (save);
 		for (;;)
 		{
-		    name = _XftNameFindNext (name, "=:,", save, &delim);
+		    name = _XftNameFindNext (name, ":,", save, &delim);
 		    if (save[0] && t)
 		    {
 			v = _XftNameConvert (t->type, save);
@@ -213,6 +230,14 @@ XftNameParse (const char *name)
 		    }
 		    if (delim != ',')
 			break;
+		}
+	    }
+	    else
+	    {
+		if ((c = _XftNameConstantLookup (save)))
+		{
+		    if (!XftPatternAddInteger (pat, c->object, c->value))
+			goto bail2;
 		}
 	    }
 	}
