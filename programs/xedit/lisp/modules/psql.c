@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.3 2001/10/15 15:36:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.4 2002/01/30 21:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -305,11 +305,8 @@ Lisp_PQexec(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(connection));
     conn = (PGconn*)(connection->data.opaque.data);
 
-    if (!STRING_P(query))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(query));
-
-    res = PQexec(conn, STRPTR(query));
+    ERROR_CHECK_STRING(query);
+    res = PQexec(conn, THESTR(query));
 
     return (res ? OPAQUE(res, PGresult_t) : NIL);
 }
@@ -356,9 +353,7 @@ Lisp_PQfname(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    if (!INDEX_P(field_number))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(field_number);
     field = field_number->data.integer;
 
     string = PQfname(res, field);
@@ -386,11 +381,8 @@ Lisp_PQfnumber(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    if (!STRING_P(field_name))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(field_name));
-
-    number = PQfnumber(res, STRPTR(field_name));
+    ERROR_CHECK_STRING(field_name);
+    number = PQfnumber(res, THESTR(field_name));
 
     return (INTEGER(number));
 }
@@ -414,9 +406,7 @@ Lisp_PQfsize(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    if (!INDEX_P(field_number))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(field_number);
     field = field_number->data.integer;
 
     size = PQfsize(res, field);
@@ -441,9 +431,7 @@ Lisp_PQftype(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    if (!INDEX_P(field_number))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(field_number);
     field = field_number->data.integer;
 
     oid = PQftype(res, field);
@@ -471,14 +459,10 @@ Lisp_PQgetlength(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    if (!INDEX_P(otupple))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(otupple);
     tuple = otupple->data.integer;
 
-    if (!INDEX_P(field_number))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(field_number);
     field = field_number->data.integer;
 
     length = PQgetlength(res, tuple, field);
@@ -509,14 +493,10 @@ Lisp_PQgetvalue(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(result));
     res = (PGresult*)(result->data.opaque.data);
 
-    if (!INDEX_P(otupple))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(otupple);
     tuple = otupple->data.integer;
 
-    if (!INDEX_P(field_number))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(field_number));
+    ERROR_CHECK_INDEX(field_number);
     field = field_number->data.integer;
 
     string = PQgetvalue(res, tuple, field);
@@ -524,10 +504,7 @@ Lisp_PQgetvalue(LispMac *mac, LispBuiltin *builtin)
     if (type != NIL) {
 	char *typestring;
 
-	if (!SYMBOL_P(type))
-	    LispDestroy(mac, "%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(type));
-
+	ERROR_CHECK_SYMBOL(type);
 	typestring = STRPTR(type);
 
 	if (strcmp(typestring, "INT16") == 0) {
@@ -688,9 +665,9 @@ Lisp_PQnotifies(LispMac *mac, LispBuiltin *builtin)
 
     GCProtect();
     code = CONS(ATOM("MAKE-PG-NOTIFY"),
-		  CONS(KEYWORD(ATOM("RELNAME")),
+		  CONS(KEYWORD("RELNAME"),
 		       CONS(STRING(notifies->relname),
-			    CONS(KEYWORD(ATOM("BE-PID")),
+			    CONS(KEYWORD("BE-PID"),
 				 CONS(REAL(notifies->be_pid), NIL)))));
     FRM = CONS(code, FRM);
     GCUProtect();
@@ -842,64 +819,50 @@ LispPQsetdb(LispMac *mac, LispBuiltin *builtin, int loginp)
     ohost = ARGUMENT(0);
 
     if (ohost != NIL) {
-	if (!STRING_P(ohost))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(ohost));
-	host = STRPTR(ohost);
+	ERROR_CHECK_STRING(ohost);
+	host = THESTR(ohost);
     }
     else
 	host = NULL;
 
     if (oport != NIL) {
-	if (!STRING_P(oport))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(oport));
-	port = STRPTR(oport);
+	ERROR_CHECK_STRING(oport);
+	port = THESTR(oport);
     }
     else
 	port = NULL;
 
     if (ooptions != NIL) {
-	if (!STRING_P(ooptions))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(ooptions));
-	options = STRPTR(ooptions);
+	ERROR_CHECK_STRING(ooptions);
+	options = THESTR(ooptions);
     }
     else
 	options = NULL;
 
     if (otty != NIL) {
-	if (!STRING_P(otty))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(otty));
-	tty = STRPTR(otty);
+	ERROR_CHECK_STRING(otty);
+	tty = THESTR(otty);
     }
     else
 	tty = NULL;
 
     if (odbname != NIL) {
-	if (!STRING_P(odbname))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(odbname));
-	dbname = STRPTR(odbname);
+	ERROR_CHECK_STRING(odbname);
+	dbname = THESTR(odbname);
     }
     else
 	dbname = NULL;
 
     if (ologin != NIL) {
-	if (!STRING_P(ologin))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(ologin));
-	login = STRPTR(ologin);
+	ERROR_CHECK_STRING(ologin);
+	login = THESTR(ologin);
     }
     else
 	login = NULL;
 
     if (opassword != NIL) {
-	if (!STRING_P(opassword))
-	    LispDestroy(mac, "%s: %s is not a string",
-			STRFUN(builtin), STROBJ(opassword));
-	password = STRPTR(opassword);
+	ERROR_CHECK_STRING(opassword);
+	password = THESTR(opassword);
     }
     else
 	password = NULL;

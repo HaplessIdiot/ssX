@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.7 2001/10/18 03:15:25 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.8 2002/01/30 21:01:00 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -275,9 +275,9 @@ Lisp_XawCoerceToListReturnStruct(LispMac *mac, LispBuiltin *builtin)
 
     GCProtect();
     code = CONS(ATOM("MAKE-XAW-LIST-RETURN-STRUCT"),
-		CONS(KEYWORD(ATOM("STRING")),
+		CONS(KEYWORD("STRING"),
 		       CONS(STRING(retlist->string),
-			    CONS(KEYWORD(ATOM("INDEX")),
+			    CONS(KEYWORD("INDEX"),
 				 CONS(INTEGER(retlist->list_index), NIL)))));
     FRM = CONS(code, FRM);
     GCUProtect();
@@ -406,9 +406,7 @@ Lisp_XawTextSetInsertionPoint(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    if (!INDEX_P(oposition))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oposition));
+    ERROR_CHECK_INDEX(oposition);
     position = (XawTextPosition)oposition->data.integer;
 
     XawTextSetInsertionPoint(widget, position);
@@ -438,22 +436,15 @@ Lisp_XawTextReplace(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    if (!INDEX_P(oleft))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oleft));
+    ERROR_CHECK_INDEX(oleft);
     left = (XawTextPosition)oleft->data.integer;
 
-    if (!INDEX_P(oright))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(oright));
+    ERROR_CHECK_INDEX(oright);
     right = (XawTextPosition)oright->data.integer;
 
-    if (!STRING_P(otext))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(otext));
-
+    ERROR_CHECK_STRING(otext);
     block.firstPos = 0;
-    block.ptr = STRPTR(otext);
+    block.ptr = THESTR(otext);
     block.length = strlen(block.ptr);
     block.format = FMT8BIT;
 
@@ -481,20 +472,15 @@ Lisp_XawTextSearch(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    if (!INDEX_P(odirection))
-	LispDestroy(mac, "%s: %s is not a positive integer",
-		    STRFUN(builtin), STROBJ(odirection));
+    ERROR_CHECK_INDEX(odirection);
     direction = (XawTextPosition)odirection->data.integer;
     if (direction != XawsdLeft && direction != XawsdRight)
 	LispDestroy(mac, "%s: %d does not fit in XawTextScanDirection",
 		    STRFUN(builtin), direction);
 
-    if (!STRING_P(otext))
-	LispDestroy(mac, "%s: %s is not a string",
-		    STRFUN(builtin), STROBJ(otext));
-
+    ERROR_CHECK_STRING(otext);
     block.firstPos = 0;
-    block.ptr = STRPTR(otext);
+    block.ptr = THESTR(otext);
     block.length = strlen(block.ptr);
     block.format = FMT8BIT;
 
@@ -520,9 +506,7 @@ Lisp_XawListHighlight(LispMac *mac, LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(owidget));
     widget = (Widget)(owidget->data.opaque.data);
 
-    if (!INDEX_P(oindex))
-	LispDestroy(mac, "%s: %s is not a positive number",
-		    STRFUN(builtin), STROBJ(oindex));
+    ERROR_CHECK_INDEX(oindex);
     position = oindex->data.integer;
 
     XawListHighlight(widget, position);
