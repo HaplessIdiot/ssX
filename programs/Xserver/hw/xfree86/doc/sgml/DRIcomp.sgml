@@ -15,7 +15,7 @@
       <date>29 October 2000
         
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.7 2000/11/08 05:03:03 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.8 2000/12/01 14:28:55 dawes Exp $
     </ident>
 
     <toc>
@@ -321,7 +321,8 @@
           The default <tt>host.def</tt> file will look something like this:
           <verb>
             #define DefaultCCOptions -Wall
-            #define DefaultGcc2i386Opt -O2
+(i386)      #define DefaultGcc2i386Opt -O2
+(Alpha)     #define DefaultGcc2AxpOpt -O2 -mcpu=ev6 (or similar)
             #define LibraryCDebugFlags -O2
             #define BuildServersOnly YES
             #define XF86CardDrivers vga tdfx mga r128 i810
