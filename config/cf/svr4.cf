@@ -224,6 +224,10 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.37 1999/12/05 02:37:09 robin Exp $
 #endif
 #endif
 
+#ifndef SharedLibXdmGreet
+#define SharedLibXdmGreet	YES
+#endif
+
 #if defined(i386Architecture) || defined(PpcArchitecture)
 #ifndef DoLoadableServer
 #define DoLoadableServer	YES

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.287 2000/05/18 23:21:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.288 2000/05/23 04:47:34 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -13,7 +13,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  */
 
 #ifndef XFree86Devel
-# define XFree86Devel		NO
+# define XFree86Devel		YES
 #endif
 
 /*
@@ -143,9 +143,18 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
  * support (when it is useful to do so).
  */
 # if HasAgpGart
-#  define AgpGartDrivers		i810
+#  define AgpGartDrivers	i810
 # else
-#  define AgpGartDrivers		/**/
+#  define AgpGartDrivers	/**/
+# endif
+
+/* Drivers under development, but not ready for binary releases */
+# ifndef DevelDrivers
+#  if XFree86Devel
+#   define DevelDrivers		imstt
+#  else
+#   define DevelDrivers		/**/
+#  endif
 # endif
 
 /* Pure PCI drivers should go first */
@@ -154,7 +163,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 				neomagic i740 tdfx \
 				cirrus tseng trident chips apm \
 				GlideDriver fbdev \
-				ati r128 AgpGartDrivers cyrix \
+				ati r128 AgpGartDrivers DevelDrivers cyrix \
 				vga XF86OSCardDrivers XF86ExtraCardDrivers
 # endif
 #endif

@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.36 2000/03/03 20:02:05 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.37 2000/06/13 02:28:27 dawes Exp $
 .\"
 .\"
 .\" Copyright 1996,1997,1998,1999,2000 by Thomas E. Dickey
@@ -925,6 +925,7 @@ Valid values for the first parameter:
   \*(Ps = \*6\*1 \(-> VT100
   \*(Ps = \*6\*2 \(-> VT200
   \*(Ps = \*6\*3 \(-> VT300
+.br
 Valid values for the second parameter:
   \*(Ps = \*0 \(-> 8-bit controls
   \*(Ps = \*1 \(-> 7-bit controls (always set for VT100)

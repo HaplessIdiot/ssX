@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.32 2000/05/23 04:47:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.33 2000/05/23 23:48:42 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -126,7 +126,6 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 
 static int  R128ValidMode(int scrnIndex, DisplayModePtr mode,
 			  Bool verbose, int flag);
-static void R128AdjustFrame(int scrnIndex, int x, int y, int flags);
 static Bool R128EnterVT(int scrnIndex, int flags);
 static void R128LeaveVT(int scrnIndex, int flags);
 static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen);
@@ -135,7 +134,6 @@ static Bool R128SaveScreen(ScreenPtr pScreen, int mode);
 static void R128Save(ScrnInfoPtr pScrn);
 static void R128Restore(ScrnInfoPtr pScrn);
 static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-static Bool R128SwitchMode(int ScrnIndex, DisplayModePtr mode, int flags);
 static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags);
 static Bool R128EnterVTFBDev(int scrnIndex, int flags);
@@ -707,16 +705,18 @@ static Bool R128PreInitVisual(ScrnInfoPtr pScrn)
 
     info->fifo_slots  = 0;
     info->pix24bpp    = xf86GetBppFromDepth(pScrn, pScrn->depth);
-    info->pixel_bytes = pScrn->bitsPerPixel / 8;
-    info->pixel_code  = (pScrn->bitsPerPixel != 16
-			 ? pScrn->bitsPerPixel
-			 : pScrn->depth);
+    info->CurrentLayout.bitsPerPixel = pScrn->bitsPerPixel;
+    info->CurrentLayout.depth        = pScrn->depth;
+    info->CurrentLayout.pixel_bytes  = pScrn->bitsPerPixel / 8;
+    info->CurrentLayout.pixel_code   = (pScrn->bitsPerPixel != 16
+				       ? pScrn->bitsPerPixel
+				       : pScrn->depth);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	       "Pixel depth = %d bits stored in %d byte%s (%d bpp pixmaps)\n",
 	       pScrn->depth,
-	       info->pixel_bytes,
-	       info->pixel_bytes > 1 ? "s" : "",
+	       info->CurrentLayout.pixel_bytes,
+	       info->CurrentLayout.pixel_bytes > 1 ? "s" : "",
 	       info->pix24bpp);
 
 
@@ -1011,6 +1011,9 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 #endif
     if (mod && !xf86LoadSubModule(pScrn, mod)) return FALSE;
     xf86LoaderReqSymbols(Sym, NULL);
+
+    info->CurrentLayout.displayWidth = pScrn->displayWidth;
+    info->CurrentLayout.mode = pScrn->currentMode;
     
     return TRUE;
 }
@@ -1153,62 +1156,50 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     return FALSE;
 }
 
-/* Load a palette for 15bpp mode.  This sends 32 values. */
-static void R128LoadPalette15(ScrnInfoPtr pScrn, int numColors,
-			      int *indices, LOCO *colors, VisualPtr pVisual)
+/* Load a palette. */
+static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
+			    int *indices, LOCO *colors, VisualPtr pVisual)
 {
+    R128InfoPtr info = R128PTR(pScrn);
     int           i;
     int           idx;
     unsigned char r, g, b;
     R128MMIO_VARS();
 
-    for (i = 0; i < numColors; i++) {
-	idx = indices[i];
-	r   = colors[idx].red;
-	g   = colors[idx].green;
-	b   = colors[idx].blue;
-	OUTPAL(idx * 8, r, g, b);
+    if (info->CurrentLayout.depth == 15) {
+	/* 15bpp mode.  This sends 32 values. */
+	for (i = 0; i < numColors; i++) {
+	    idx = indices[i];
+	    r   = colors[idx].red;
+	    g   = colors[idx].green;
+	    b   = colors[idx].blue;
+	    OUTPAL(idx * 8, r, g, b);
+	}
     }
-}
-
-/* Load a palette for 16bpp mode.  This sends 64 values. */
-static void R128LoadPalette16(ScrnInfoPtr pScrn, int numColors,
-			      int *indices, LOCO *colors, VisualPtr pVisual)
-{
-    int           i;
-    int           idx;
-    unsigned char r, g, b;
-    R128MMIO_VARS();
-
+    else if (info->CurrentLayout.depth == 16) {
+	/* 16bpp mode.  This sends 64 values. */
 				/* There are twice as many green values as
                                    there are values for red and blue.  So,
                                    we take each red and blue pair, and
                                    combine it with each of the two green
                                    values. */
-    for (i = 0; i < numColors; i++) {
-	idx = indices[i];
-	r   = colors[idx / 2].red;
-	g   = colors[idx].green;
-	b   = colors[idx / 2].blue;
-	OUTPAL(idx * 4, r, g, b);
+	for (i = 0; i < numColors; i++) {
+	    idx = indices[i];
+	    r   = colors[idx / 2].red;
+	    g   = colors[idx].green;
+	    b   = colors[idx / 2].blue;
+	    OUTPAL(idx * 4, r, g, b);
+	}
     }
-}
-
-/* Load a palette for 8bpp mode.  This sends 256 values. */
-static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
-			    int *indices, LOCO *colors, VisualPtr pVisual)
-{
-    int           i;
-    int           idx;
-    unsigned char r, g, b;
-    R128MMIO_VARS();
-
-    for (i = 0; i < numColors; i++) {
-	idx = indices[i];
-	r   = colors[idx].red;
-	b   = colors[idx].blue;
-	g   = colors[idx].green;
-	OUTPAL(idx, r, g, b);
+    else {
+	/* 8bpp mode.  This sends 256 values. */
+	for (i = 0; i < numColors; i++) {
+	    idx = indices[i];
+	    r   = colors[idx].red;
+	    b   = colors[idx].blue;
+	    g   = colors[idx].green;
+	    OUTPAL(idx, r, g, b);
+	}
     }
 }
 
@@ -1309,11 +1300,13 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	}
     }
 
+    R128DGAInit(pScreen);
+
 				/* Memory manager setup */
     MemBox.x1 = 0;
     MemBox.y1 = 0;
     MemBox.x2 = pScrn->displayWidth;
-    y2        = info->FbMapSize / (pScrn->displayWidth * info->pixel_bytes);
+    y2        = info->FbMapSize / (pScrn->displayWidth * info->CurrentLayout.pixel_bytes);
     if (y2 >= 32768) y2 = 32767; /* because MemBox.y2 is signed short */
     MemBox.y2 = y2;
 
@@ -1395,28 +1388,12 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 
 				/* Colormap setup */
     if (!miCreateDefColormap(pScreen)) return FALSE;
-    if (pScrn->depth == 15) {
-	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-				 (info->FBDev ? fbdevHWLoadPalette :
-				 R128LoadPalette15), NULL,
-				 CMAP_PALETTED_TRUECOLOR
-				 | CMAP_RELOAD_ON_MODE_SWITCH
-				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
-    } else if (pScrn->depth == 16) {
-	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-				 (info->FBDev ? fbdevHWLoadPalette :
-				 R128LoadPalette16), NULL,
-				 CMAP_PALETTED_TRUECOLOR
-				 | CMAP_RELOAD_ON_MODE_SWITCH
-				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
-    } else {
-	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-				 (info->FBDev ? fbdevHWLoadPalette :
-				 R128LoadPalette), NULL,
-				 CMAP_PALETTED_TRUECOLOR
-				 | CMAP_RELOAD_ON_MODE_SWITCH
-				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
-    }
+    if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
+			     (info->FBDev ? fbdevHWLoadPalette :
+			     R128LoadPalette), NULL,
+			     CMAP_PALETTED_TRUECOLOR
+			     | CMAP_RELOAD_ON_MODE_SWITCH
+			     | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
 
 				/* DPMS setup */
 #ifdef DPMSExtension
@@ -1757,7 +1734,7 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
     int    vsync_wid;
     int    bytpp;
     
-    switch (info->pixel_code) {
+    switch (info->CurrentLayout.pixel_code) {
     case 4:  format = 1; bytpp = 0; hsync_fudge =  0; break;
     case 8:  format = 2; bytpp = 1; hsync_fudge = 18; break;
     case 15: format = 3; bytpp = 2; hsync_fudge =  9; break;	/*  555 */
@@ -1766,7 +1743,7 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
     case 32: format = 6; bytpp = 4; hsync_fudge =  5; break;	/* xRGB */
     default:
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Unsupported pixel depth (%d)\n", pScrn->bitsPerPixel);
+		   "Unsupported pixel depth (%d)\n", info->CurrentLayout.bitsPerPixel);
 	return FALSE;
     }
     R128TRACE(("Format = %d (%d bytes per pixel)\n", format, bytpp));
@@ -1826,10 +1803,10 @@ static Bool R128InitCrtcRegisters(ScrnInfoPtr pScrn, R128SavePtr save,
 				    : 0));
     save->crtc_offset      = 0;
     save->crtc_offset_cntl = 0;
-    save->crtc_pitch       = pScrn->displayWidth / 8;
+    save->crtc_pitch       = info->CurrentLayout.displayWidth / 8;
 
     R128TRACE(("Pitch = %d bytes (virtualX = %d, displayWidth = %d)\n",
-	       save->crtc_pitch, pScrn->virtualX, pScrn->displayWidth));
+	       save->crtc_pitch, pScrn->virtualX, info->CurrentLayout.displayWidth));
     return TRUE;
 }
 
@@ -1906,13 +1883,13 @@ static Bool R128InitDDARegisters(ScrnInfoPtr pScrn, R128SavePtr save,
 		       pll->reference_div * save->post_div);
 		
     XclksPerTransfer = R128Div(XclkFreq * DisplayFifoWidth,
-			       VclkFreq * (info->pixel_bytes * 8));
+			       VclkFreq * (info->CurrentLayout.pixel_bytes * 8));
     
     UseablePrecision = R128MinBits(XclksPerTransfer) + 1;
     
     XclksPerTransferPrecise = R128Div((XclkFreq * DisplayFifoWidth)
 				      << (11 - UseablePrecision),
-				      VclkFreq * (info->pixel_bytes * 8));
+				      VclkFreq * (info->CurrentLayout.pixel_bytes * 8));
     
     Roff  = XclksPerTransferPrecise * (DisplayFifoDepth - 4);
     
@@ -2018,7 +1995,7 @@ static Bool R128Init(ScrnInfoPtr pScrn, DisplayModePtr mode, R128SavePtr save)
     if (!R128InitDDARegisters(pScrn, save, mode, &info->pll, info))
 	return FALSE;
     R128InitPalette(save, info);
-    
+
     R128TRACE(("R128Init returns %p\n", save));
     return TRUE;
 }
@@ -2032,6 +2009,9 @@ static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     R128Blank(pScrn);
     R128RestoreMode(pScrn, &info->ModeReg);
     R128Unblank(pScrn);
+
+    info->CurrentLayout.mode = mode;
+
     return TRUE;
 }
 
@@ -2046,7 +2026,7 @@ static Bool R128SaveScreen(ScreenPtr pScreen, int mode)
     return TRUE;
 }
 
-static Bool R128SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
+Bool R128SwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
     return R128ModeInit(xf86Screens[scrnIndex], mode);
 }
@@ -2060,16 +2040,16 @@ static int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 
 /* Adjust viewport into virtual desktop such that (0,0) in viewport space
    is (x,y) in virtual space. */
-static void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
+void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr   pScrn = xf86Screens[scrnIndex];
     R128InfoPtr   info  = R128PTR(pScrn);
     int           Base;
     R128MMIO_VARS();
 
-    Base = y * pScrn->displayWidth + x;
+    Base = y * info->CurrentLayout.displayWidth + x;
 
-    switch (info->pixel_code) {
+    switch (info->CurrentLayout.pixel_code) {
     case 15:
     case 16: Base *= 2; break;
     case 24: Base *= 3; break;
@@ -2078,7 +2058,7 @@ static void R128AdjustFrame(int scrnIndex, int x, int y, int flags)
 
     Base &= ~7;			/* 3 lower bits are always 0 */
 
-    if (info->pixel_code == 24)
+    if (info->CurrentLayout.pixel_code == 24)
 	Base += 8 * (Base % 3); /* Must be multiple of 8 and 3 */
 
     OUTREG(R128_CRTC_OFFSET, Base);
@@ -2157,6 +2137,9 @@ static Bool R128CloseScreen(int scrnIndex, ScreenPtr pScreen)
     
     if (info->cursor)            xf86DestroyCursorInfoRec(info->cursor);
     info->cursor                 = NULL;
+
+    if (info->DGAModes)          xfree(info->DGAModes);
+    info->DGAModes               = NULL;
     
     pScrn->vtSema = FALSE;
 

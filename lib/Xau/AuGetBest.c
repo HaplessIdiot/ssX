@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xau/AuGetBest.c,v 1.2 1999/05/09 10:51:33 dawes Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
@@ -125,16 +125,14 @@ XauGetBestAuthByAddr (family, address_length, address,
 	/*
 	 * Match when:
 	 *   either family or entry->family are FamilyWild or
-	 *    family and entry->family are the same
-	 *  and
-	 *   either address or entry->address are empty or
-	 *    address and entry->address are the same
+	 *    family and entry->family are the same and
+	 *     address and entry->address are the same
 	 *  and
 	 *   either number or entry->number are empty or
 	 *    number and entry->number are the same
 	 *  and
-	 *   name matches one of the specified names, or no names
-	 *    were specified
+	 *   either name or entry->name are empty or
+	 *    name and entry->name are the same
 	 */
 
 	if ((family == FamilyWild || entry->family == FamilyWild ||

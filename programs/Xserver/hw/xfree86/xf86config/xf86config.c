@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.51 2000/01/23 05:24:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.52 2000/04/05 18:14:00 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -180,6 +180,7 @@ int config_xkbdisable = 0;
 char *config_xkbrules;
 char *config_xkbmodel;
 char *config_xkblayout;
+char *config_xkbcompat;
 char *config_depth;
 
 char *temp_dir = "";
@@ -546,31 +547,33 @@ static char *xkblayouttext =
 static struct xkb_layout_str {
     char *layout;
     char *desc;
+    char *compat;
 } xkb_layout_list[] = {
-    { "us",            "U.S. English" },
-    { "en_US",         "U.S. English w/ISO9995-3" },
-    { "be",            "Belgian" },
-    { "bg",            "Bulgarian" },
-    { "ca",            "Canadian" },
-    { "cs",            "Czechoslovakian" },
-    { "de",            "German" },
-    { "de_CH",         "Swiss German" },
-    { "dk",            "Danish" },
-    { "es",            "Spanish" },
-    { "fi",            "Finnish" },
-    { "fr",            "French" },
-    { "fr_CH",         "Swiss French" },
-    { "gb",            "United Kingdom" },
-    { "hu",            "Hungarian" },
-    { "it",            "Italian" },
-    { "jp",            "Japanese" },
-    { "no",            "Norwegian" },
-    { "pl",            "Polish" },
-    { "pt",            "Portugese" },
-    { "ru",            "Russian" },
-    { "se",            "Swedish" },
-    { "th",            "Thai" },
-    { "nec/jp",        "PC-98xx Series" },
+    { "us",                 "U.S. English",             ""},
+    { "en_US",              "U.S. English w/ISO9995-3", "" },
+    { "be",                 "Belgian",                  "" },
+    { "bg",                 "Bulgarian",                "" },
+    { "ca",                 "Canadian",                 "" },
+    { "czsk(cz_us_qwertz)", "Czech",                    "group_led" },
+    { "de",                 "German",                   "" },
+    { "de_CH",              "Swiss German",             "" },
+    { "dk",                 "Danish",                   "" },
+    { "es",                 "Spanish",                  "" },
+    { "fi",                 "Finnish",                  "" },
+    { "fr",                 "French",                   "" },
+    { "fr_CH",              "Swiss French",             "" },
+    { "gb",                 "United Kingdom",           "" },
+    { "hu",                 "Hungarian",                "" },
+    { "it",                 "Italian",                  "" },
+    { "jp",                 "Japanese",                 "" },
+    { "no",                 "Norwegian",                "" },
+    { "pl",                 "Polish",                   "" },
+    { "pt",                 "Portugese",                "" },
+    { "ru",                 "Russian",                  "" },
+    { "czsk(sk_us_qwertz)", "Slovak",                   "group_led" },
+    { "se",                 "Swedish",                  "" },
+    { "th",                 "Thai",                     "" },
+    { "nec/jp",             "PC-98xx Series",           "" },
 };
 static int nlayouts = sizeof(xkb_layout_list)/sizeof(struct xkb_layout_str);
 
@@ -639,6 +642,9 @@ keyboard_configuration(void)
 
 	config_xkblayout = Malloc(strlen(xkb_layout_list[xkblayout].layout)+1);
 	sprintf(config_xkblayout,"%s", xkb_layout_list[xkblayout].layout);
+
+	config_xkbcompat = Malloc(strlen(xkb_layout_list[xkblayout].compat)+1);
+	sprintf(config_xkbcompat,"%s", xkb_layout_list[xkblayout].compat);
 
 	return;
 }
@@ -2295,6 +2301,8 @@ write_XF86Config(char *filename)
 		config_xkbmodel);
 	fprintf(f, "    Option \"XkbLayout\"	\"%s\"\n",
 		config_xkblayout);
+	fprintf(f, "    Option \"XkbCompat\"	\"%s\"\n",
+		config_xkbcompat);
 
 	fprintf(f, "%s",keyboardlastchunk_text);
 

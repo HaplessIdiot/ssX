@@ -1,6 +1,6 @@
 /*
  * $XConsortium: charproc.c /main/196 1996/12/03 16:52:46 swick $
- * $XFree86: xc/programs/xterm/charproc.c,v 3.105 2000/05/18 16:30:03 dawes Exp $
+ * $XFree86: xc/programs/xterm/charproc.c,v 3.106 2000/06/13 02:28:37 dawes Exp $
  */
 
 /*
@@ -1110,6 +1110,8 @@ static void VTparse(void)
 			if((row = param[nparam - 1]) == DEFAULT)
 				row = 0;
 			param[nparam - 1] = 10 * row + (c - '0');
+			if (param[nparam - 1] > 65535)
+				param[nparam - 1] = 65535;
 			break;
 
 		 case CASE_ESC_SEMI:

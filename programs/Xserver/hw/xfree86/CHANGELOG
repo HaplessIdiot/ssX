@@ -1,4 +1,31 @@
 XFree86 4.0c (13 June 2000)
+ 273. Fix comments for the address matching algorithm in
+      XauGetAuthByAddr() and XauGetBestAuthByAddr() (Keith Packard, based on
+      #3939, Peter Runestig).
+ 272. Handle setting SharedLibXdmGreet in the OS imake config files rather
+      than having a complicated expression in the xdm Imakefile (#3980,
+      Matthieu Herrb).
+ 271. xdm updates from the OpenBSD team, including:
+       - support for Kerberos IV authentication [enabled only in OpenBSD.cf,
+         but could be enabled for other systems by setting HasdKrbIV]
+       - use the arc4random(4) random number generator on OpenBSD
+       - add a new resource "allowRootLogin", which can be used to disable
+         root logins through xdm
+       - log failed logins to syslogd [OpenBSD only, but could be enabled on
+         other systems]
+       - verify that the shell is valid using /etc/shells [OpenBSD only]
+       - verify that the account hasn't expired [OpenBSD only, but could be
+         enabled on other system that use the same passwd aging structure]
+      (#3948, 3980, OpenBSD team, Matthieu Herrb).
+ 270. Big/little endian MMIO_XX macros for ppc, and also PIO macros check
+      that IOBase is mmapped before doing any accesses (#3979,
+      Kostas Gewrgiou).
+ 269. Preliminary driver for Integrated Micro Solutions TwinTurbo128
+      (imstt) (#3978, Ani Joshi).
+ 268. Fix broken czsk keymaps, and let the user directly select either
+      Czech or Slovak keyboard in xf86config (#3975, Kamil Toman).
+ 267. Implement DGA2 support with depth switching for ATI Rage 128 cards
+      (#3974, Ove Kaaven).
  266. Recent versions of FreeBSD have the xpg4 library folded into libc.
  265. xf86cfg updates (#3973, Paulo Cesar Pereira de Andrade).
  264. Xaw bug fixes (#3973, Paulo Cesar Pereira de Andrade).
@@ -10521,4 +10548,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1179 2000/06/13 02:52:43 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1180 2000/06/13 23:15:49 dawes Exp $

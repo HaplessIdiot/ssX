@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.8 2000/04/04 19:25:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.9 2000/05/06 21:09:37 keithp Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -192,7 +192,7 @@ static void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 /* Wait for the graphics engine to be completely idle: the FIFO has
    drained, the Pixel Cache is flushed, and the engine is idle.  This is a
    standard "sync" function that will make the hardware "quiescent". */
-static void R128WaitForIdle(ScrnInfoPtr pScrn)
+void R128WaitForIdle(ScrnInfoPtr pScrn)
 {
     int i;
     R128MMIO_VARS();
@@ -916,12 +916,12 @@ void R128EngineInit(ScrnInfoPtr pScrn)
     R128InfoPtr info = R128PTR(pScrn);
     R128MMIO_VARS();
 
-    R128TRACE(("EngineInit (%d/%d)\n", info->pixel_code, pScrn->bitsPerPixel));
+    R128TRACE(("EngineInit (%d/%d)\n", info->CurrentLayout.pixel_code, info->CurrentLayout.bitsPerPixel));
 
     OUTREG(R128_SCALE_3D_CNTL, 0);
     R128EngineReset(pScrn);
 
-    switch (info->pixel_code) {
+    switch (info->CurrentLayout.pixel_code) {
     case 8:  info->datatype = 2; break;
     case 15: info->datatype = 3; break;
     case 16: info->datatype = 4; break;
@@ -929,9 +929,10 @@ void R128EngineInit(ScrnInfoPtr pScrn)
     case 32: info->datatype = 6; break;
     default:
 	R128TRACE(("Unknown depth/bpp = %d/%d (code = %d)\n",
-		   pScrn->depth, pScrn->bitsPerPixel, info->pixel_code));
+		   info->CurrentLayout.depth, info->CurrentLayout.bitsPerPixel,
+		   info->CurrentLayout.pixel_code));
     }
-    info->pitch = (pScrn->displayWidth / 8) * (info->pixel_bytes == 3 ? 3 : 1);
+    info->pitch = (info->CurrentLayout.displayWidth / 8) * (info->CurrentLayout.pixel_bytes == 3 ? 3 : 1);
 
     R128TRACE(("Pitch for acceleration = %d\n", info->pitch));
 
@@ -1039,7 +1040,7 @@ Bool R128AccelInit(ScreenPtr pScreen)
 					  | LINE_PATTERN_POWER_OF_2_ONLY);
 #if R128_CLIPPING
 				/* Clipping. */
-    if (pScrn->depth != 8 && info->pixel_code != 24) {
+    if (info->CurrentLayout.depth != 8 && info->CurrentLayout.pixel_code != 24) {
 				/* There is one xtest error in 8bpp and
                                    many xtest errors in 24/24 that do not
                                    appear at other depths. */

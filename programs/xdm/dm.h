@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.17 2000/05/31 07:15:11 eich Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.18 2000/06/07 22:03:16 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -272,6 +272,7 @@ struct greet_info {
 	int		version;	/* for dynamic greeter to see */
 	/* add new fields below this line, and preferably at the end */
 	Boolean		allow_null_passwd; /* allow null password on login */
+	Boolean		allow_root_login; /* allow direct root login */
 };
 
 /* setgroups is not covered by POSIX, arg type varies */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.5 2000/02/23 04:47:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.6 2000/03/06 22:59:26 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -245,7 +245,7 @@ Bool R128CursorInit(ScreenPtr pScreen)
     } else {
 	info->cursor_start    = R128_ALIGN((fbarea->box.x1
 					    + width * fbarea->box.y1)
-					   * info->pixel_bytes, 16);
+					   * info->CurrentLayout.pixel_bytes, 16);
 	info->cursor_end      = info->cursor_start + 1024;
     }
 

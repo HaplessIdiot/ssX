@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.7 2000/02/18 16:23:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.8 2000/02/23 04:47:18 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -141,6 +141,15 @@ typedef struct {
 } R128PLLRec, *R128PLLPtr;
 
 typedef struct {
+    int                bitsPerPixel;
+    int                depth;
+    int                displayWidth;
+    int                pixel_code;
+    int                pixel_bytes;
+    DisplayModePtr     mode;
+} R128FBLayout;
+
+typedef struct {
     EntityInfoPtr     pEnt;
     pciVideoPtr       PciInfo;
     PCITAG            PciTag;
@@ -176,8 +185,6 @@ typedef struct {
 
     int               fifo_slots; /* Free slots in the FIFO (64 max)         */
     int               pix24bpp;	  /* Depth of pixmap for 24bpp framebuffer   */
-    int               pixel_code; /* Unified depth/fbbpp value               */
-    int               pixel_bytes;/* Bytes per framebuffer pixel             */
     Bool              dac6bits;	  /* Use 6 bit DAC?                          */
 
 				/* Computed values for Rage 128 */
@@ -199,13 +206,26 @@ typedef struct {
     int               scanline_words;
     int               scanline_direct;
     int               scanline_bpp; /* Only used for ImageWrite */
+
+    DGAModePtr        DGAModes;
+    int               numDGAModes;
+    Bool              DGAactive;
+    int               DGAViewportStatus;
+
+    R128FBLayout      CurrentLayout;
 } R128InfoRec, *R128InfoPtr;
 
 extern int         INPLL(ScrnInfoPtr pScrn, int addr);
 extern void        R128WaitForVerticalSync(ScrnInfoPtr pScrn);
+extern void        R128AdjustFrame(int scrnIndex, int x, int y, int flags);
+extern Bool        R128SwitchMode(int ScrnIndex, DisplayModePtr mode, int flags);
 
 extern Bool        R128AccelInit(ScreenPtr pScreen);
 extern void        R128EngineInit(ScrnInfoPtr pScrn);
 extern Bool        R128CursorInit(ScreenPtr pScreen);
+extern Bool        R128DGAInit(ScreenPtr pScreen);
+
+/* accel */
+extern void        R128WaitForIdle(ScrnInfoPtr pScrn);
 
 #endif

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.6 1998/10/10 15:25:46 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.8 2000/05/31 07:15:13 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -78,6 +78,13 @@ static char *envvars[] = {
     NULL
 };
 
+#ifdef KERBEROS
+#include <sys/param.h>
+#include <kerberosIV/krb.h>
+#include <kerberosIV/kafs.h>
+static char krbtkfile[MAXPATHLEN];
+#endif
+
 static char **
 userEnv (struct display *d, int useSystemPath, char *user, char *home, char *shell)
 {
@@ -92,6 +99,10 @@ userEnv (struct display *d, int useSystemPath, char *user, char *home, char *she
     env = setEnv (env, "USER", user);    /* BSD */
     env = setEnv (env, "PATH", useSystemPath ? d->systemPath : d->userPath);
     env = setEnv (env, "SHELL", shell);
+#ifdef KERBEROS
+    if (krbtkfile[0] != '\0')
+        env = setEnv (env, "KRBTKFILE", krbtkfile);
+#endif
     for (envvar = envvars; *envvar; envvar++)
     {
 	str = getenv(*envvar);
@@ -145,7 +156,7 @@ static struct pam_conv PAM_conversation = {
 	&PAM_conv,
 	NULL
 };
-#endif
+#endif /* USE_PAM */
 
 int
 Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
@@ -158,15 +169,17 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	struct spwd	*sp;
 #endif
 #endif
-	char		*user_pass;
+#ifdef __OpenBSD__
+	char            *s;
+	struct timeval  tp;
+#endif
+	char		*user_pass = NULL;
 	char		*shell, *home;
 	char		**argv;
 
 	Debug ("Verify %s ...\n", greet->name);
 	p = getpwnam (greet->name);
-#ifdef linux
 	endpwent();
-#endif
 
 	if (!p || strlen (greet->name) == 0) {
 		Debug ("getpwnam() failed.\n");
@@ -182,6 +195,45 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 #endif
 	    user_pass = p->pw_passwd;
 	}
+#ifdef KERBEROS
+	if(strcmp(greet->name, "root") != 0){
+		char name[ANAME_SZ];
+		char realm[REALM_SZ];
+		char *q;
+		int ret;
+	    
+		if(krb_get_lrealm(realm, 1)){
+			Debug ("Can't get Kerberos realm.\n");
+		} else {
+
+		    sprintf(krbtkfile, "%s.%s", TKT_ROOT, d->name);
+		    krb_set_tkt_string(krbtkfile);
+		    unlink(krbtkfile);
+           
+		    ret = krb_verify_user(greet->name, "", realm, 
+				      greet->password, 1, "rcmd");
+           
+		    if(ret == KSUCCESS){
+			    chown(krbtkfile, p->pw_uid, p->pw_gid);
+			    Debug("kerberos verify succeeded\n");
+			    if (k_hasafs()) {
+				    if (k_setpag() == -1)
+					    LogError ("setpag() failed for %s\n",
+						      greet->name);
+				    
+				    if((ret = k_afsklog(NULL, NULL)) != KSUCCESS)
+					    LogError("Warning %s\n", 
+						     krb_get_err_text(ret));
+			    }
+			    goto done;
+		    } else if(ret != KDC_PR_UNKNOWN && ret != SKDC_CANT){
+			    /* failure */
+			    Debug("kerberos verify failure %d\n", ret);
+			    krbtkfile[0] = '\0';
+		    }
+		}
+	}
+#endif
 #ifndef USE_PAM
 #ifdef USESHADOW
 	errno = 0;
@@ -207,7 +259,55 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 			return 0;
 		} /* else: null passwd okay */
 	}
-
+done:
+#ifdef __OpenBSD__
+	/*
+	 * Only accept root logins if allowRootLogin resource is set
+	 */
+	if ((p->pw_uid == 0) && !greet->allow_root_login) {
+		Debug("root logins not allowed\n");
+		bzero(greet->password, strlen(greet->password));
+		return 0;
+	}
+	/*
+	 * Shell must be in /etc/shells 
+	 */
+	for (;;) {
+		s = getusershell();
+		if (s == NULL) {
+			/* did not found the shell in /etc/shells 
+			   -> failure */
+			Debug("shell not in /etc/shells\n");
+			bzero(greet->password, strlen(greet->password));
+			endusershell();
+			return 0;
+		}
+		if (strcmp(s, p->pw_shell) == 0) {
+			/* found the shell in /etc/shells */
+			endusershell();
+			break;
+		}
+	} 
+	/*
+	 * Test for expired password
+	 */
+	if (p->pw_change || p->pw_expire)
+		(void)gettimeofday(&tp, (struct timezone *)NULL);
+	if (p->pw_change) {
+		if (tp.tv_sec >= p->pw_change) {
+			Debug("Password has expired.\n");
+			bzero(greet->password, strlen(greet->password));
+			return 0;
+		}
+	}
+	if (p->pw_expire) {
+		if (tp.tv_sec >= p->pw_expire) {
+			Debug("account has expired.\n");
+			bzero(greet->password, strlen(greet->password));
+			return 0;
+		} 
+	}
+#endif /* __OpenBSD__ */
 	bzero(user_pass, strlen(user_pass)); /* in case shadow password */
 
 #else /* USE_PAM */

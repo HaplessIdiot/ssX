@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/LoginP.h,v 3.3 1998/10/10 15:25:46 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/LoginP.h,v 3.5 2000/05/31 07:15:13 eich Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -84,6 +84,7 @@ typedef struct {
 	Boolean		secure_session;	/* session is secured */
 	Boolean		allow_access;	/* disable access control on login */
 	Boolean		allow_null_passwd; /* allow null password on login */
+	Boolean		allow_root_login; /* allow root login */
 	XIC		xic;		/* input method of input context */
 #ifdef XPM
 	/*caolan begin*/

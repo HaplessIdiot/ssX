@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.81 2000/03/21 19:56:57 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.82 2000/03/31 22:55:14 dawes Exp $
 
 
 #ifndef OSName
@@ -472,6 +472,8 @@ sed 's/\.[0-9]*$$//'`
  */
 #ifdef AlphaArchitecture
 #define	BuildServer	NO
+/* Build the shared XDM greeter on Alph if it supports shared libs */
+#define SharedLibXdmGreet HasSharedLibraries
 #endif
 
 /*
@@ -479,4 +481,8 @@ sed 's/\.[0-9]*$$//'`
  */
 #ifdef VaxArchitecture
 #define BuildServer	NO
+#endif
+
+#ifndef SharedLibXdmGreet
+#define SharedLibXdmGreet NO
 #endif

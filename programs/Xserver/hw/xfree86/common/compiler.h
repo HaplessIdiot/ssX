@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.59 2000/05/18 23:21:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.60 2000/05/23 04:47:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -630,74 +630,210 @@ static __inline__ unsigned long ldw_u(unsigned short * r11)
 
 #elif (defined(Lynx) || defined(linux)) && defined(__powerpc__)
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
+
 extern volatile unsigned char *ioBase;
 
 #define eieio()		__asm__ __volatile__ ("eieio")
 
+static __inline__ unsigned char
+xf86ReadMmio8(void *base, const unsigned long offset)
+{
+        register unsigned char val;
+        __asm__ __volatile__(
+                        "lbzx %0,%1,%2\n\t"
+                        "eieio"
+                        : "=r" (val)
+                        : "b" (base), "r" (offset),
+                        "m" (*(volatile unsigned char *)(base+offset)));
+        return(val);
+}
+
+static __inline__ unsigned short
+xf86ReadMmio16Be(void *base, const unsigned long offset)
+{
+        register unsigned short val;
+        __asm__ __volatile__(
+                        "lhzx %0,%1,%2\n\t"
+                        "eieio"
+                        : "=r" (val)
+                        : "b" (base), "r" (offset),
+                        "m" (*(volatile unsigned char *)(base+offset)));
+        return(val);
+}
+
+static __inline__ unsigned short
+xf86ReadMmio16Le(void *base, const unsigned long offset)
+{
+        register unsigned short val;
+        __asm__ __volatile__(
+                        "lhbrx %0,%1,%2\n\t"
+                        "eieio"
+                        : "=r" (val)
+                        : "b" (base), "r" (offset),
+                        "m" (*(volatile unsigned char *)(base+offset)));
+        return(val);
+}
+
+static __inline__ unsigned int
+xf86ReadMmio32Be(void *base, const unsigned long offset)
+{
+        register unsigned int val;
+        __asm__ __volatile__(
+                        "lwzx %0,%1,%2\n\t"
+                        "eieio"
+                        : "=r" (val)
+                        : "b" (base), "r" (offset),
+                        "m" (*(volatile unsigned char *)(base+offset)));
+        return(val);
+}
+
+static __inline__ unsigned int
+xf86ReadMmio32Le(void *base, const unsigned long offset)
+{
+        register unsigned int val;
+        __asm__ __volatile__(
+                        "lwbrx %0,%1,%2\n\t"
+                        "eieio"
+                        : "=r" (val)
+                        : "b" (base), "r" (offset),
+                        "m" (*(volatile unsigned char *)(base+offset)));
+        return(val);
+}
+
+static __inline__ void
+xf86WriteMmioNB8(void *base, const unsigned long offset,
+               const unsigned int val)
+{
+        __asm__ __volatile__(
+                        "stbx %1,%2,%3\n\t"
+                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "r" (val), "b" (base), "r" (offset));
+}
+
+static __inline__ void
+xf86WriteMmioNB16Le(void *base, const unsigned long offset,
+                  const unsigned int val)
+{
+        __asm__ __volatile__(
+                        "sthbrx %1,%2,%3\n\t"
+                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "r" (val), "b" (base), "r" (offset));
+}
+
+static __inline__ void
+xf86WriteMmioNB16Be(void *base, const unsigned long offset,
+                  const unsigned int val)
+{
+        __asm__ __volatile__(
+                        "sthx %1,%2,%3\n\t"
+                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "r" (val), "b" (base), "r" (offset));
+}
+
+static __inline__ void
+xf86WriteMmioNB32Le(void *base, const unsigned long offset,
+                  const unsigned long val)
+{
+        __asm__ __volatile__(
+                        "stwbrx %1,%2,%3\n\t"
+                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "r" (val), "b" (base), "r" (offset));
+}
+
+static __inline__ void
+xf86WriteMmioNB32Be(void *base, const unsigned long offset,
+                  const unsigned long val)
+{
+        __asm__ __volatile__(
+                        "stwx %1,%2,%3\n\t"
+                        : "=m" (*(volatile unsigned char *)(base+offset))
+                        : "r" (val), "b" (base), "r" (offset));
+}
+
+static __inline__ void
+xf86WriteMmio8(void *base, const unsigned long offset,
+               const unsigned int val)
+{
+        xf86WriteMmioNB8(base,offset,val);
+        eieio();
+}
+
+static __inline__ void
+xf86WriteMmio16Le(void *base, const unsigned long offset,
+                  const unsigned int val)
+{
+        xf86WriteMmioNB16Le(base,offset,val);
+        eieio();
+}
+
+static __inline__ void
+xf86WriteMmio16Be(void *base, const unsigned long offset,
+                  const unsigned int val)
+{
+        xf86WriteMmioNB16Be(base,offset,val);
+        eieio();
+}
+
+static __inline__ void
+xf86WriteMmio32Le(void *base, const unsigned long offset,
+                  const unsigned long val)
+{
+        xf86WriteMmioNB32Le(base,offset,val);
+        eieio();
+}
+
+static __inline__ void
+xf86WriteMmio32Be(void *base, const unsigned long offset,
+                  const unsigned long val)
+{
+        xf86WriteMmioNB32Be(base,offset,val);
+        eieio();
+}
+
+
 static __inline__ void
 outb(unsigned short port, unsigned char value)
 {
-	*((volatile unsigned char *)(ioBase + port)) = value; eieio();
+        if(ioBase == MAP_FAILED) return;
+        xf86WriteMmio8((void *)ioBase,port,value);
 }
 
 static __inline__ void
 outw(unsigned short port, unsigned short value)
 {
-	__asm__ __volatile__ (
-		"sthbrx %0,%1,%2\n\t"
-		"eieio"
-                  : 
-		  : "r" (value), "b" (ioBase), "r" (port) 
-		  : "memory"
-        );
+        if(ioBase == MAP_FAILED) return;
+        xf86WriteMmio16Le((void *)ioBase,port,value);
 }
 
 static __inline__ void
 outl(unsigned short port, unsigned int value)
 {
-	__asm__ __volatile__ (
-		"stwbrx %0,%1,%2\n\t"
-		"eieio"
-                  : 
-		  : "r" (value), "b" (ioBase), "r" (port) 
-		  : "memory"
-        );
+        if(ioBase == MAP_FAILED) return;
+        xf86WriteMmio32Le((void *)ioBase,port,value);
 }
 
 static __inline__ unsigned int
 inb(unsigned short port)
 {
-	unsigned char val;
-
-	val = *((volatile unsigned char *)(ioBase + port));
-	eieio();
-	return(val);
+        if(ioBase == MAP_FAILED) return(0);
+        return(xf86ReadMmio8((void *)ioBase, port));
 }
 
 static __inline__ unsigned int
 inw(unsigned short port)
 {
-	register unsigned short val;
-
-        __asm__ ("lhbrx %0,%1,%2\n\t"
-        	 "eieio"
-                  : "=r" (val) 
-                  : "b" (ioBase), "r" (port)
-        );
-	return(val);
+        if(ioBase == MAP_FAILED) return(0);
+        return(xf86ReadMmio16Le((void *)ioBase, port));
 }
 
 static __inline__ unsigned int
 inl(unsigned short port)
 {
-	register unsigned long val;
-
-        __asm__ ("lwbrx %0,%1,%2\n\t"
-        	 "eieio"
-                  : "=r" (val) 
-                  : "b" (ioBase), "r" (port)
-        );
-	return(val);
+        if(ioBase == MAP_FAILED) return(0);
+        return(xf86ReadMmio32Le((void *)ioBase, port));
 }
 
 #define ldq_u(p)	ldl_u(p)
@@ -1702,7 +1838,31 @@ extern int  (*xf86ReadMmio32)(void *Base, unsigned long Offset);
 #define MMIO_OUT16(base, offset, val) (*xf86WriteMmio16)(val, base, offset)
 #define MMIO_ONB8(base, offset, val) (*xf86WriteMmioNB8)(val, base, offset)
 #define MMIO_ONB16(base, offset, val) (*xf86WriteMmioNB16)(val, base, offset)
-#else /* !__alpha__ */
+#elif defined(__powerpc__)  
+ /* 
+  * we provide byteswapping and no byteswapping functions here
+  * with byteswapping as default, 
+  * drivers that don't need byteswapping should define PPC_MMIO_IS_BE 
+  */
+ #define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
+ #define MMIO_OUT8(base, offset, val) xf86WriteMmio8(base, offset, val)
+ #define MMIO_ONB8(base, offset, val) xf86WriteMmioNB8(base, offset, val)
+ #if defined(PPC_MMIO_IS_BE) /* No byteswapping */
+  #define MMIO_IN16(base, offset) xf86ReadMmio16Be(base, offset)
+  #define MMIO_IN32(base, offset) xf86ReadMmio32Be(base, offset)
+  #define MMIO_OUT16(base, offset, val) xf86WriteMmio16Be(base, offset, val)
+  #define MMIO_OUT32(base, offset, val) xf86WriteMmio32Be(base, offset, val)
+  #define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Be(base, offset, val)
+  #define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Be(base, offset, val)
+ #else /* byteswapping is the default */
+  #define MMIO_IN16(base, offset) xf86ReadMmio16Le(base, offset)
+  #define MMIO_IN32(base, offset) xf86ReadMmio32Le(base, offset)
+  #define MMIO_OUT16(base, offset, val) xf86WriteMmio16Le(base, offset, val)
+  #define MMIO_OUT32(base, offset, val) xf86WriteMmio32Le(base, offset, val)
+  #define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16Le(base, offset, val)
+  #define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32Le(base, offset, val)
+ #endif
+#else /* !__alpha__ && !__powerpc__ */
 #define MMIO_IN8(base, offset) *(volatile CARD8 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN16(base, offset) *(volatile CARD16 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN32(base, offset) *(volatile CARD32 *)(((CARD8*)(base)) + (offset))

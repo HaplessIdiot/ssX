@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/Login.h,v 3.2 1998/10/04 09:41:03 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.h,v 3.3 1999/03/14 03:22:26 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -72,6 +72,7 @@ from The Open Group.
 # define XtNsecureSession	"secureSession"
 # define XtNallowAccess		"allowAccess"
 # define XtNallowNullPasswd	"allowNullPasswd"
+# define XtNallowRootLogin	"allowRootLogin"
 
 #ifdef XPM
 /* added by Amit Margalit Oct 1996 */
@@ -105,6 +106,7 @@ from The Open Group.
 # define XtCSecureSession	"SecureSession"
 # define XtCAllowAccess		"AllowAccess"
 # define XtCAllowNullPasswd	"AllowNullPasswd"
+# define XtCAllowRootLogin	"AllowRootLogin"
 
 /* notifyDone interface definition */
 

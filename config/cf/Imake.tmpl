@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.78 2000/05/18 00:33:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.79 2000/06/07 02:13:01 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -368,6 +368,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasSecureRPC
 #define HasSecureRPC		NO	/* if you have Secure RPC */
 #endif
+#ifndef HasKrbIV
+#define HasKrbIV		NO	/* if you have Kerberos IV */
+#endif
 #ifndef HasKrb5
 #define HasKrb5			NO      /* if you have Kerberos V5 */
 #endif
@@ -395,6 +398,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef GzipLibrary	/* if OS config didn't define it, assume it's -lz */
 #define GzipLibrary -lz
+#endif
+#if HasKrbIV
+#ifndef KrbIVIncludes
+#define KrbIVIncludes /**/
+#endif
+#ifndef KrbIVLibraries
+#define KrbIVLibraries -lkafs -lkrb -ldes
+#endif
 #endif
 #if HasKrb5
 #ifndef Krb5Includes

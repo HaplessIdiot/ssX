@@ -5,10 +5,10 @@
 <article>
 <title>Information for ATI Rage 128 Users
 <author>Precision Insight, Inc., SuSE GmbH
-<date>12 November 1999
+<date>13 June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.6 2000/03/04 00:47:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.7 2000/03/08 15:14:48 dawes Exp $
 </ident>
 
 <toc>
@@ -86,7 +86,7 @@ However, if you have problems with auto-detection, you can specify:
 <sect>Known Limitations
 <p>
 <itemize>
-  <item>DGA is not supported yet
+  <item>None
 </itemize>
 
 

@@ -1,6 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.32 2000/03/31 22:55:14 dawes Exp $
-XCOMM
-XCOMM $OpenBSD: OpenBSD.cf,v 1.33 1998/09/27 04:52:48 rahnds Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.33 2000/05/18 00:33:16 dawes Exp $
 XCOMM
 
 #ifndef OSName
@@ -37,12 +35,19 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define HasWChar32		YES
 #define HasMkstemp		YES
 #define HasZlib			YES
+#ifndef HasKrbIV
+#define HasKrbIV		YES
+#endif
 #define HasDlopen		YES
 #define DlLibrary		/**/
 #define HasUsableFileMmap	YES
 
 #define HasNCurses		YES
 #define NCursesLibName		-lcurses
+#if defined(TermcapLibrary)
+#undef TermcapLibrary
+#endif
+#define TermcapLibrary		-lcurses
 
 #define HasVarRun		YES
 #define HasVarDb		YES
@@ -55,10 +60,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define ThreadedX		YES
 #define BuildThreadStubLibrary  YES 
 #define NeedUIThrStubs          YES 
-#define HasThreadSafeAPI	YES
 #define SystemMTDefines		-D_REENTRANT
 #define ThreadsCompileFlags	-pthread
 #define ThreadsLibraries 	-lc_r
+#endif
+#if OSMajorVersion == 2 && OSMinorVersion > 6 || OSMajorVersion >= 3
+#define HasThreadSafeAPI	YES
 #endif
 
 /*
@@ -129,19 +136,19 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  endif
 # endif
 #else
-# if defined(AlphaArchitecture)
-#  define ServerExtraDefines GccGasOption -D_XSERVER64
+# if defined(SparcArchitecture)
+#  define ServerExtraDefines  XFree86ServerDefines
 # else
-#  define ServerExtraDefines GccGasOption
+#  if defined(AlphaArchitecture)
+#   define ServerExtraDefines GccGasOption -D_XSERVER64
+#  else
+#   define ServerExtraDefines GccGasOption
+#  endif
 # endif
 #endif
 
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
-
-#ifndef DoLoadableServer
-#define DoLoadableServer	YES
-#endif
 
 #ifndef ExtraLibraries
 #define ExtraLibraries		/**/
@@ -348,27 +355,31 @@ install:: fonts.alias							@@\
  */
 #ifdef i386Architecture
 
+# ifndef DoLoadableServer
+# define DoLoadableServer	YES
+# endif
+
 /* 2.7 and later will have support for setting MTRRs */
-#ifndef HasMTRRSupport
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 6)
-#define HasMTRRSupport		YES
-#else
-#define HasMTRRSupport		NO
-#endif
-#endif
+# ifndef HasMTRRSupport
+#  if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 6)
+#   define HasMTRRSupport		YES
+#  else
+#   define HasMTRRSupport		NO
+#  endif
+# endif
 
 /* Support for USB Mices */
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
-#define UsbMouseSupport		YES
-#endif
+# if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 6)
+#  define UsbMouseSupport		YES
+# endif
 
 /*
  * A hack to work around an optimisation problem with the compiler on
  * OpenBSD 2.6-current in late 1999/early 2000.
  */
-#if OSMajorVersion == 2 && OSMinorVersion == 6 
-#define FreeBSDGccOptBug
-#endif
+# if OSMajorVersion == 2 && OSMinorVersion >= 6 
+#  define FreeBSDGccOptBug
+# endif
 
 # include <xfree86.cf>
 
@@ -483,11 +494,11 @@ install:: fonts.alias							@@\
 # ifndef BuildXKBlib
 #  define BuildXKBlib     	NO
 # endif
+#endif
 
 # ifndef BuildPexExt
 #  define BuildPexExt 		(XsunServer || Xsun24Server)
 # endif
-#endif
 
 #endif /* Sun3Architecture */
 
@@ -534,18 +545,28 @@ install:: fonts.alias							@@\
 
 #endif /* PmaxArchitecture */
 
-#ifdef ppcArchitecture
+/*
+ * Definitions for the PowerPC architecture 
+ */
+#ifdef PpcArchitecture
+
+/* #define GccWarningOptions -Wall -Wpointer-artith */
+
+# include <xf86.rules>
+# ifndef BuildServer
+#  define BuildServer		NO
+# endif
+
 # define HasSharedLibraries	NO
 # define UseElfFormat		YES
 # define BuildDynamicLoading	NO
-#endif
+
+#endif /* PpcArchitecture */
 
 /*
  * Definitions for the sparc architecture
  */
 #ifdef SparcArchitecture
-
-# include <xf86.rules>
 
 # ifndef Xsun24Server
 # define Xsun24Server		YES
@@ -562,6 +583,12 @@ install:: fonts.alias							@@\
 # ifndef BuildPexExt
 #  define BuildPexExt 	(XsunServer || Xsun24Server)
 # endif
+
+# define BuildXF86VidModeExt	NO
+# define BuildXF86DGA		NO
+# define BuildXInputExt		NO
+# include <xfree86.cf>
+
 #endif /* SparcArchitecture */
 
 
@@ -569,7 +596,12 @@ install:: fonts.alias							@@\
 
 /*
  * Generic settings for all architectures
+ * which can be overridden by architecture specific sections above
  */
+
+#ifndef DoLoadableServer
+#define DoLoadableServer		NO
+#endif
 
 #ifndef XVirtualFramebufferServer
 # undef BuildServer
@@ -593,6 +625,10 @@ install:: fonts.alias							@@\
 
 #ifndef CompressAllFonts
 # define CompressAllFonts		YES
+#endif
+
+#ifndef SharedLibXdmGreet
+# define SharedLibXdmGreet		NO
 #endif
 
 /*
