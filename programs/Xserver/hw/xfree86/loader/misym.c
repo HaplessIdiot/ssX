@@ -36,6 +36,7 @@
 #include "mifillarc.h"
 #include "micmap.h"
 #ifdef PANORAMIX
+#include "resource.h"
 #include "panoramiX.h"
 #endif
 
