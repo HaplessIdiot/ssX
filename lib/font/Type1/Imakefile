@@ -1,8 +1,9 @@
 XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
-XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.5 1999/01/11 05:13:16 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.6 1999/01/31 04:59:28 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
+#define NoLibSubdirs
 #define PassCDebugFlags
 SUBDIRS = module
 #endif

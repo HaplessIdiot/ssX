@@ -1,4 +1,8 @@
-XFree86 3.9Pc (27 February 1999)
+XFree86 3.9Pc (2 March 1999)
+2290.
+2289. Fix a 'make includes' problem in lib/font that shows up on SVR4.
+2288. Integrate SGI's GLX and the Mesa core rendering library
+      (#2492, Precision Insight, SGI, Mesa).
 2287. Remove pixmaps from offscreen memory when they are used to tile
       drawables that aren't in videomemory (#2497, Mark Vojkovich).
 2286. New DGA DDX layer (not finished yet) (#2495, Mark Vojkovich).
@@ -7346,4 +7350,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.694 1999/02/26 02:35:01 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.695 1999/02/28 11:19:23 dawes Exp $

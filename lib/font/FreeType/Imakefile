@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.12 1999/01/31 04:59:21 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.13 1999/01/31 13:45:17 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM Mark Leisher <mleisher@crl.nmsu.edu>
@@ -6,6 +6,7 @@ XCOMM Juliusz Chroboczek <jec@dcs.ed.ac.uk>
 
 #if DoLoadableServer
 #define IHaveSubdirs
+#define NoLibSubdirs
 #define PassCDebugFlags
 SUBDIRS = module
 #endif
