@@ -2,13 +2,57 @@
  
 <article>
  
-<title> XFree86 3.1 P9000 Server Release Notes
+<title> XFree86 3.1.1 P9000 Server Release Notes
 <author> Erik Nygren (<it>nygren@mit.edu</it>)
-<date> 20 September 1994
+<date> 1995 January 15
 <toc>
  
 <sect> Change Log <p>
 <descrip>
+<tag/1995.01.15:/
+	<itemize>
+	<item>
+	  Fixed problem with line capping in accelerated line
+	  drawing. (Chris Mason)
+	<item>
+	  Fixed p9000QuadAlu[GXset] to be ~0 rather than 1.  (Erik Nygren)
+	</itemize>
+<tag/1995.01.14:/
+	<itemize>
+	<item>
+	 <tt>Clocks</tt> line is no longer used in <tt>XF86Config</tt> file.
+	 Operation should now be consistent with the operation of the
+	 other servers which use programmable clocks. (Erik Nygren)
+	<item>
+	 Users with 1MB cards can now explicitly specify <tt>videoRam</tt>
+	 in the <tt>XF86Config</tt> file when autoprobing fails.
+	 The new <tt>vram_128</tt> option may also be used to force
+	 the detection of 128Kx8 SIMM's. (Erik Nygren)
+	<item>
+	 Added p9000line.c and p9000seg.c for accelerated line drawing code
+	 using the p9000 quad/clipping engine.  Blazingly fast for 1 clipping
+	 rectangle, could be made faster for multiple clipping regions by
+	 using software clipping. There is still a bug which causes
+	 xtest to report <tt>Cap style incorrect for thin line and
+	 CapNotLast</tt> for the <tt>XDrawLines</tt> tests but not
+	 for the <tt>XDrawLine</tt> or <tt>XDrawSegments</tt> tests
+	 [fixed in 1995.01.15 patch]. (Chris Mason)
+	<item>
+	 Changed p9000blt.c, and p9000win.c to wait for the quad/blit engine
+	 to be free.  Before a quad/blit, check SR_ISSUE_QBN, then blit, then
+	 when all blits are done, do a p9000QBNotBusy. (Chris Mason)
+	<item>
+	 Changed p9000init.c to clear the screen using the quad meta coord
+	 drawing mode.  Appears the rect mode does not update the CINDEX
+	 register correctly.  Changed the color to 1 (black) from 0. (Chris)
+	<item>
+	 Added p9000QuadAlu.  When drawing a quad, the p9000 equivilant to X's
+	 source	is the foreground mask.  When bliting/pixel8ing/pixel1ing,
+ 	 it is the p9000 source mask and the p9000alu lookup table should be
+ 	 used. (Chris Mason)
+	<item>
+	 Added some more registers to p9000reg.h. (Chris Mason)
+	</itemize>
 <tag/1994.09.20:/
 	<itemize>
 	<item>
@@ -102,6 +146,7 @@
 	  Removed banking support   :-(
 	</itemize>
 </descrip>
+
 I've started adding in support for other cards and for acceleration.
 Due to its untested nature, it is disabled.  A define at the top of
 <tt>p9000.h</tt> controls all of these features.  The Viper PCI code is
@@ -125,9 +170,14 @@ I've started adding in support for other cards and for acceleration.
 Due to its untested nature, much of it is disabled.  A define at the top of
 <tt>p9000.h</tt> controls all of these features.  
 
-<sect> Supported Cards <p>
+<sect> Supported Cards <p> 
+
 <sect1> Diamond Viper VLB <p>
-All Viper VLB's should work with this server, hopefully....  :-)
+ All Viper VLB's should work with this server, hopefully....  :-) Due
+to Diamond's putting the same BIOS in some Viper VLB's as are used in
+Viper PCI's, the probe may detect you have a Viper PCI when you really
+have a Viper VLB.  If this happens, put <tt>chipset "vipervlb"</tt>
+into your <tt>XF86Config</tt> file.
 
 <sect1> Diamond Viper PCI <p>
 This should now work, thanks to help from Bob Hollinger and Matt Thomas.
@@ -143,6 +193,12 @@ send
 </verb>
 You should run this program and change these values after you
 add more PCI cards or move existing cards to different slots.
+According to David DeWolfe (<it>SXDJD@orca.alaska.edu</it>),
+you need to run <tt>PCIDUMP.EXE</tt> after a clean boot
+to DOS (with no <tt>AUTOEXEC.BAT</tt> or <tt>CONFIG.SYS</tt>).
+This may be accomplished by holding down the <tt>SHIFT</tt>
+key while <tt>DOS</tt> is booting.
+
 Eventually we would like to autodetect the <tt>IOBase</tt> and
 <tt>memBase</tt>, but this doesn't yet work.
 
@@ -156,13 +212,12 @@ the <tt>Device</tt> section of <tt>XF86Config</tt>
 <sect> Viper Pro and other P9100 and P9130 cards (UNSUPPORTED!!!) <p>
 These are NOT supported yet.  We don't have the hardware to write and
 or test drivers for them on.  The docs I have says the P9100 has a
-different interface.  As a result, they may need an entirely new
-server.  If you need support for one of these cards, you should look
-into XInside's AcceleratedX.  It's a commercial product that costs
-about &dollar;199.  Send email to <it>info@xinside.com</it> for more
-information.
-Their P9000 server is also much faster than ours at present (but then
-this server is free :-)
+different interface than the P9000.  As a result, they may need an
+entirely new server.  If you need support for one of these cards, you
+should look into XInside's AcceleratedX.  It's a commercial product
+that costs about &dollar;199.  Send email to <it>info@xinside.com</it>
+for more information.  Their P9000 server is also much faster than
+ours at present (but then this server is free :-)
 
 <sect> Acceleration <p>
 Some of the accelration code is working, but
@@ -267,10 +322,14 @@ of the <tt>XF86Config</tt> file are:
 			<tag/Others:/ unused
 			</descrip>
    <tag/Clocks/		any values between 25 and 135 corresponding to the
-			clocks for the mode entries being used
+			clocks for the mode entries being used.
+			This line may now be omitted and clocks will
+			be matched automatically.
    <tag/Option/		<descrip>
 			<tag/&dquot;sw_cursor&dquot;/
 			   use software cursor
+			<tag/&dquot;vram_128&dquot;/
+			   use if you have 1024K VRAM in 128Kx8 SIMMS
 			<tag/&dquot;sync_on_green&dquot;/
 			   generate sync pulses on the green signal.  Most
 			   (all?) P9000 based boards don't support this.
@@ -280,6 +339,7 @@ of the <tt>XF86Config</tt> file are:
 			</descrip>
    <tag/Modes/		almost any valid mode (there are constraints on
 				the horiz res so not all values are possible)
+			
 </descrip>
 The current supported keywords in the Display section
 of the <tt>XF86Config</tt> file are:
@@ -301,9 +361,9 @@ Section "Device"
     Identifier "ViperVLB"
     VendorName "Diamond"
     BoardName "Viper VLB"
-    Clocks 81 50 31 87 115 25 25.175 60  # These only need to match to modes
     Videoram 2048                        # This is manditory
     Membase 0x80000000                   # This is manditory on non-ViperVLB's
+    IOBase  0xe000			 # Use this ONLY on ViperPCI's
 EndSection
 
 Section "Screen"
@@ -325,6 +385,11 @@ If the cursor changes while you're in a VT, the cursor won't look
 right when you return from the VT until it is moved between windows
 (and changes color and shape).
 
+Autoprobing doesn't always properly detect cards with 1024K of VRAM.
+If you have a problem with this, try putting <tt>VideoRAM 1024</tt>
+into the <tt>Device</tt> section of your <tt>XF86Config</tt> file.  If
+this still doesn't help, try adding <tt>Option "vram_128"</tt>.
+
 <sect> Credits <p>
 Major contributors to P9000 code:
 <itemize>
@@ -338,6 +403,10 @@ Thanks to Matt Thomas (<it>thomas@lkg.dec.com</it>) and Bob Hollinger
 Special thanks to David Moews (<it>dmoews@xraysgi.ims.uconn.edu</it>)
 whose banking patch could unfortunately not be included.
 
+Special thanks to Henrik Harmsen (<it>d9hh@dtek.chalmers.se</it>)
+whose 16bpp and 32bpp accelerated blit code won't be included until 
+the next XFree86 release.
+
 Thanks to Andy, David, Dave, Michael, Bob, all the XFree86 core team
 people, and everyone else!
 
@@ -345,7 +414,7 @@ During the course of the next few months, people will be working on
 acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.1 1994/12/26 11:03:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.2 1995/01/11 09:47:52 dawes Exp $
 </verb>
 
 </article>

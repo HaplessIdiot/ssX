@@ -4,7 +4,7 @@
 
  <title>README for XFree86(TM) 3.1.1
  <author> The XFree86 Project, Inc
- <date>8 January 1995
+ <date>15 January 1995
 
 
 <abstract>
@@ -28,8 +28,32 @@ as well as binary distributions for many architectures.
 The following items have been added since XFree86 3.1 was released in
 October 1994:
 <enum>
-    <item> FILL THIS IN
+    <item> XFree86 3.1.1 includes the X Consortium's recently released
+	public patches (up to fix-11).  The XFree86 Project, Inc has
+	worked with the X Consortium to have much of XFree86 3.1.1
+	included in the X Consortium's fix-11.
+    <item> A new accelerated server for Mach64 boards.
+    <item> Bug fixes and some performance improvements for most of the
+	accelerated servers.
+    <item> Support for `double scan' video modes (most servers).
+    <item> New chipset support for the SVGA server.  This includes the
+	Avance Logic 2228/2301, Chips &amp; Technology 655xx, Cirrus Logic
+	6440, and improved support for the Oak OTI-087.
+    <item> Support for FreeBSD 2.0.
+    <item> Preliminary support for OS/2 (client-only at this stage; this
+	is still under development).
+    <item> Linear aperture access when running on BSD/386.
+    <item> 16bpp and 32bpp support for more S3 boards (refer to <url
+	url="S3.html" name="README.S3"> for details).
+    <item> Support for ISC's SVR3 (only tested for 3.x and 4.x).
+    <item> The `xf86config' utility for generating XF86Config files has
+	been improved and how uses a database of video cards.
+    <item> The X server LinkKit has been updated to include support for LBX.
+    <item> The slow X server startup time on machine without hardware
+	floating point has been improved.
 </enum>
+Plus a number of other small.  Refer to the CHANGELOG file in the
+source distribution for full details.
 
 <sect> What's new in XFree86 3.1?
 <p>
@@ -107,12 +131,13 @@ source distribution for full details.
     <tag/SVR3:/
 	<itemize>
 	<ITEM>SCO: 3.2.2, 3.2.4
+	<ITEM>ISC: 4.0, 4.1
 	</itemize>	
 
     <tag/Others:/
 	<itemize>	
 	<ITEM>NetBSD 1.0,
-	<ITEM>FreeBSD 2.0
+	<ITEM>FreeBSD 1.1.5.1, 2.0
 	<ITEM>BSD/386 1.1
 	<ITEM>Mach 386
 	<ITEM>Linux
@@ -216,7 +241,8 @@ size is limited to approximately 800x600.
 <quote>
       The Diamond SpeedStar 24 (and possibly recent SpeedStar+) boards are
       NOT supported, even though they use the ET4000.  The Stealth 32 which
-      uses the ET4000/W32p is also not supported.  Historically the
+      uses the ET4000/W32p is also not supported.  Most other Diamond boards
+      will work with this release of XFree86.  Historically the
       information required for this support was only available under
       non-disclosure.  As of September 27, 1994, Diamond has verbally
       agreed to provide The XFree86 Project, Inc. with detailed information
@@ -293,8 +319,8 @@ distribution, and in the directory
 <tt>xc/programs/Xserver/hw/xfree86/VGADriverDoc</tt> in the source
 distribution.  
 
-If you are totally at a loss, you can contact the XFree86 Core Team at
-the electronic mail address below.
+If you are totally at a loss, you can contact the XFree86 Support Team at
+<it/&lt;XFree86@XFree86.Org&gt;/.
 
 There is a Usenet news group comp.windows.x.i386unix that contains
 mostly discussions about XFree86 and related topics. Many questions can
@@ -391,6 +417,10 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Doug Anson <it>&lt;danson@lgc.com&gt;</it>,
        <item> David Holland <it>&lt;davidh@use.com&gt;</it>
+</itemize>
+<tag/ISC SVR3 support by:  /
+<itemize>
+       <item> Michael Rohleder <it>&lt;michael.rohleder%iktffm.uucp@germany.eu.net&gt</it>
 </itemize>
 <tag/Linux shared libraries by:  /
 <itemize>
@@ -542,6 +572,8 @@ Core Team.  At this time the Core Team consists of (in alphabetical order):
        <item>David Wexelblat <it>&lt;dwex@XFree86.org&gt;</it> 
 </itemize>
 Mail sent to <it>&lt;Core@XFree86.org&gt;</it> will reach the core team.
+Please note that support questions should be sent to
+<it>&lt;XFree86@XFree86.org&gt;</it>.
 
 <sect>The XFree86 Project, Inc.
 <p>
@@ -565,10 +597,11 @@ avenue we needed to meet the requirements of the X Consortium bylaws.
 
 By doing this, we were able to be involved in the beta-test interval for
 X11R6, and have contributed the majority of XFree86 to the X11R6 core
-release.  The version of XFree86 in the X11R6 core is 3.0.  As time goes
-on, XFree86 will be involved with more of the development of The X Window
-System, as a full Consortium member.  How exactly this will evolve is still
-being determined.
+release.  The version of XFree86 in the initial X11R6 core is 3.0.  The
+version of XFree86 in the current X11R6 patched release is 3.1.1.  As time
+goes on, XFree86 will be involved with more of the development of The X
+Window System, as a full Consortium member.  How exactly this will evolve
+is still being determined.
 
 An additional benefit of this incorporation is that The XFree86 Project,
 Inc has obtained outside financial support for our work.  This will
@@ -614,7 +647,7 @@ organization stepped forward and contributed the entire 1994 X Consortium
 membership fee on a moment's notice.  This single act ensured XFree86's
 involvement in X11R6.
 <itemize>
-  <item>  <url url="ftp://ftp.uu.net:/vendor/AIB/" 
+  <item>  <url url="ftp://ftp.uu.net/vendor/AIB/" 
 	name="AIB Software Corporation">, Dulles, VA
   <item>  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
   <item>  American Micro Group
@@ -630,7 +663,7 @@ involvement in X11R6.
   <item>  Elsa GmbH, Aachen, Germany
   <item>  Dirk Hohndel
   <item>  Frank &amp; Paige McCormick
-  <item>  <url url="//www.infomagic.com/"  
+  <item>  <url url="http://www.infomagic.com/"  
 	name="InfoMagic">, Rocky Hill, NJ
   <item>  LunetIX Softfair, Berlin, Germany
   <item>  Rich &amp; Amy Murphey
@@ -660,12 +693,13 @@ information, contact The XFree86 Project, Inc, at
 <sect>Source and binary archive sites
 <p>
 
-Source patches are available to upgrade X11R6 PL9 from the X Consortium
+Source patches are available to upgrade X11R6 PL11 from the X Consortium
 to XFree86 3.1.1.  They and binaries for many OSs are available via anonymous
 FTP from:
 
 <itemize>
-<item>       ftp.XFree86.org (under /pub/XFree86/current)
+<item>       <url url="ftp://ftp.XFree86.org/pub/XFree86/current"
+	     name="ftp.XFree86.org:/pub/XFree86/current">
 </itemize>
 
 and the following mirror sites:
@@ -673,60 +707,81 @@ and the following mirror sites:
 <item>       North America:  
 <itemize>
 <item>   <url url="ftp://xfree86.cdrom.com/pub/XFree86" 
-	name="Xfree86.cdrom.com">:/pub/XFree86           (source and binaries)
+	name="Xfree86.cdrom.com:/pub/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.bsdi.com/contrib/X11/XFree86" 
-	name="ftp.bsdi.com">:/contrib/X11/XFree86        (source and BSD/386 binaries)
+	name="ftp.bsdi.com:/contrib/X11/XFree86">
+	(source and BSD/386 binaries)
 <item>   <url url="ftp://ref.tfs.com/pub/mirrors/XFree86" 
-	name="ref.tfs.com">:/pub/mirrors/XFree86         (source and FreeBSD binaries)
-<item>   <url url="ftp://ftp.iastate.edu/pub/netbsd/XFree86/XFree86-3.1" 
-	name="ftp.iastate.edu">:/pub/netbsd/XFree86/XFree86-3.1  (source and NetBSD binaries)
+	name="ref.tfs.com:/pub/mirrors/XFree86">
+	(source and FreeBSD binaries)
+<item>   <url url="ftp://ftp.iastate.edu/pub/netbsd/XFree86/XFree86-3.1.1" 
+	name="ftp.iastate.edu:/pub/netbsd/XFree86/XFree86-3.1.1">
+	(source and NetBSD binaries)
 <item>   <url url="ftp://tsx-11.mit.edu/pub/linux/packages/X11" 
-	name="tsx-11.mit.edu">:/pub/linux/packages/X11   (Linux binaries and source diffs)
+	name="tsx-11.mit.edu:/pub/linux/packages/X11">
+	(Linux binaries and source diffs)
 <item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86" 
-	name="ftp.eecs.umich.edu">:/BSD/XFree86          (source and binaries)
+	name="ftp.eecs.umich.edu:/BSD/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://sunsite.unc.edu/pub/X11/XFree86" 
-	name="sunsite.unc.edu">:/pub/X11/XFree86         (source and binaries)
+	name="sunsite.unc.edu:/pub/X11/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://abode.ccd.bnl.gov/pub/XFree86" 
-	name="abode.ccd.bnl.gov">:/pub/XFree86           (Solaris, SVR4, SCO binaries)
+	name="abode.ccd.bnl.gov:/pub/XFree86">
+	(Solaris, SVR4, SCO binaries)
 </itemize> 
 
 <item>      Europe:  
 <itemize>
 <item>   <url url="ftp://ftp.fee.vutbr.cz/pub/XFree86" 
-	name="ftp.fee.vutbr.cz">:/pub/XFree86            (source and binaries)
+	name="ftp.fee.vutbr.cz:/pub/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.gwdg.de/pub/Xfree86" 
-	name="ftp.gwdg.de">:/pub/Xfree86                 (source and binaries)
+	name="ftp.gwdg.de:/pub/Xfree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86" 
-	name="ftp.uni-stuttgart.de">:/Pub/X11/Xfree86    (source and binaries)
+	name="ftp.uni-stuttgart.de:/Pub/X11/Xfree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86" 
-	name="ftp.funet.fi">:/pub/X11/XFree86            (source and binaries)
-<item>   <url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1" 
-	name="ftp.laas.fr">:/pub/netbsd/XFree86-3.1      (NetBSD binaries only)
-<item>   <url url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1" 
-	name="ftp.unipi.it">:/pub/mirrors/XFree86-3.1    (source and binaries)
+	name="ftp.funet.fi:/pub/X11/XFree86">
+	(source and binaries)
+<item>   <url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1" 
+	name="ftp.laas.fr:/pub/netbsd/XFree86-3.1.1">
+	(NetBSD binaries only)
+<item>   <url url="ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.1"
+	name="ftp.unipi.it:/pub/mirrors/XFree86-3.1.1">
+	(source and binaries)
 <item>   <url url="ftp://nova.pvv.unit.no/pub/XFree86/current" 
-	name="nova.pvv.unit.no">:/pub/XFree86/current    (source and binaries)
+	name="nova.pvv.unit.no:/pub/XFree86/current">
+	(source and binaries)
 <item>   <url url="ftp://ftp.demon.co.uk/pub/Xwindows/XFree86" 
-	name="ftp.demon.co.uk">:/pub/Xwindows/XFree86    (source and binaries)
+	name="ftp.demon.co.uk:/pub/Xwindows/XFree86">
+	(source and binaries)
 </itemize>
 
   
 <item>     Middle East:  
 <itemize>
 <item>   <url url="ftp://orgchem.weizmann.ac.il/pub/XFree86" 
-	name="orgchem.weizmann.ac.il">:/pub/XFree86      (sources and FreeBSD binaries)
+	name="orgchem.weizmann.ac.il:/pub/XFree86">
+	(sources and FreeBSD binaries)
 </itemize>
 
 <item>   Asia/Australia:
 <itemize>
 <item>   <url url="ftp://x.physics.su.oz.au/pub/XFree86" 
-	name="x.physics.su.oz.au">:/pub/XFree86          (source and binaries)
+	name="x.physics.su.oz.au:/pub/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.iij.ad.jp/pub/X/XFree86" 
-	name="ftp.iij.ad.jp">:/Pub/X/XFree86             (source and binaries)
+	name="ftp.iij.ad.jp:/pub/X/XFree86">
+	(source and binaries)
 <item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
-	name="ftp.nectec.or.th">:/pub/mirrors/XFree86    (source and binaries)
-<item>   <url url="ftp://ftp.edu.tw/X/XFree86/3.1" 
-	name="ftp.edu.tw">:/X/XFree86/3.1                (source and Linux binaries)
+	name="ftp.nectec.or.th:/pub/mirrors/XFree86">
+	(source and binaries)
+<item>   <url url="ftp://ftp.edu.tw/X/XFree86/3.1.1" 
+	name="ftp.edu.tw:/X/XFree86/3.1.1">
+	(source and Linux binaries)
 </itemize>
 
 </itemize>
@@ -742,7 +797,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.5 1995/01/11 03:50:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.6 1995/01/12 12:04:07 dawes Exp $
 </verb>
 
 </article>

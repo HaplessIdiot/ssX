@@ -1,13 +1,13 @@
 <!doctype linuxdoc system>
 
 <article>
-<title> README for XFree86 3.1.0B on NetBSD
+<title> README for XFree86 3.1.1 on NetBSD
 <author>Rich  Murphey,
 David Dawes,
 Marc  Wandschneider,
 Mark  Weaver,
 Matthieu Herrb
-<Date>29 November 1994
+<Date>15 January 1995
 
 <toc>
 
@@ -25,17 +25,22 @@ See the <url url="COPYRIGHT.html" name="Copyright Notice">.
 
 The sources for XFree86 are available by anonymous ftp from:
 
-<url url="ftp://ftp.XFree86.org/pub/XFree86/current">
+<url name="ftp.XFree86.org:/pub/XFree86/current"
+url="ftp://ftp.XFree86.org/pub/XFree86/current">
 
 Binaries for NetBSD 1.0 are available from:
 
-<url url="ftp://ftp.XFree86.org/pub/XFree86/current/NetBSD">
+<url name="ftp.XFree86.org:/pub/XFree86/current/NetBSD"
+url="ftp://ftp.XFree86.org/pub/XFree86/current/NetBSD">
 <p>
-<url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1">
+<url name="ftp.laas.fr:/pub/NetBSD/XFree86-3.1.1"
+url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1">
 <p>
-<url url="ftp://ftp.iastate.edu/pub/netbsd/XFree86-3.1">
+<url name="ftp.iastate.edu:/pub/netbsd/XFree86-3.1.1"
+url="ftp://ftp.iastate.edu/pub/netbsd/XFree86-3.1.1">
 <p>
-<url url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
+<url name="ftp.eecs.umich.edu:/BSD/XFree86"
+url="ftp://ftp.eecs.umich.edu/BSD/XFree86">
 
 If you're still running NetBSD 0.9, you'll have to build it from the source.
 If you've done it and want to share your binaries, please let us know.
@@ -43,7 +48,8 @@ If you've done it and want to share your binaries, please let us know.
 This release has also been tested on NetBSD-current of January, 1st 1995 with
 <tt/option "COMPAT_10"/ in the kernel config file.
 
-XFree86 now also builds on NetBSD/sparc. See section <ref id="sparc">
+XFree86 now also builds on NetBSD/sparc. See section <ref id="sparc"
+name="Building on NetBSD/sparc">
 for details.
 
 <sect>Bug Reports for This Document
@@ -121,10 +127,10 @@ config, and one X server.
 <item> Concatenate back the multi-part packages you want to install
 (bin, fonts, linkkit and otherfonts): 
 <tscreen><verb>
- % cat xf86-3.1.0B-bin.tar.gz.* > xf86-3.1.0B-bin.tar.gz
- % cat xf86-3.1.0B-fonts.tar.gz.* > xf86-3.1.0B-fonts.tar.gz
- % cat xf86-3.1.0B-linkkit.tar.gz.* > xf86-3.1.0B-linkkit.tar.gz
- % cat xf86-3.1.0B-otherfonts.tar.gz.* > xf86-3.1.0B-otherfonts.tar.gz
+ % cat xf86-3.1.1-bin.tar.gz.* > xf86-3.1.1-bin.tar.gz
+ % cat xf86-3.1.1-fonts.tar.gz.* > xf86-3.1.1-fonts.tar.gz
+ % cat xf86-3.1.1-linkkit.tar.gz.* > xf86-3.1.1-linkkit.tar.gz
+ % cat xf86-3.1.1-otherfonts.tar.gz.* > xf86-3.1.1-otherfonts.tar.gz
 </verb></tscreen>
 You can remove individual parts once they are cat'd together.
 
@@ -132,7 +138,7 @@ You can remove individual parts once they are cat'd together.
 
 <item> For each package that you want to install type:
 <tscreen><verb>
- # pkg_add xf86-3.1.0B-<pkg>.tar.gz
+ # pkg_add xf86-3.1.1-<pkg>.tar.gz
 </verb></tscreen>
 If you don't have enough room in /usr/X11R6 you can specify another
 directory by using the <tt/-p/ option to <tt/pkg_add/. See
@@ -162,29 +168,29 @@ below.
 <item> You must be logged in as root to unpack the archives and use a
 	``umask'' value of 022.  Typing ``<tt/umask 022/'' sets it.
 	<em/Caution:/ If you do not extract the files as user ``root''
-	with the correct umask you may not be able to run XFree86 3.1.0B.
+	with the correct umask you may not be able to run XFree86 3.1.1.
 	The X server needs special permissions that are only granted
 	to the root user.
 
-	Assuming that the destination directory for XFree86 3.1.0B is
+	Assuming that the destination directory for XFree86 3.1.1 is
 	<tt>/usr/X11R6</tt>, run the following from wherever all the archive
 	files are (replace <tt>/usr/X11R6</tt> with wherever you wish them to
 	go if that isn't the place):
 <tscreen><verb>
  cd /usr/X11R6
 
- cat xf86-3.1.0B-bin.tar.gz.* | tar xzf -
- cat xf86-3.1.0B-fonts.tar.gz.* | tar xzf -
- cat xf86-3.1.0B-linkkit.tar.gz.* | tar xzf -
- cat xf86-3.1.0B-other-fonts.tar.gz.* | tar xzf -
+ cat xf86-3.1.1-bin.tar.gz.* | tar xzf -
+ cat xf86-3.1.1-fonts.tar.gz.* | tar xzf -
+ cat xf86-3.1.1-linkkit.tar.gz.* | tar xzf -
+ cat xf86-3.1.1-other-fonts.tar.gz.* | tar xzf -
 
- tar xzf xf86-3.1.0B-config.tar.gz
- tar xzf xf86-3.1.0B-doc.tar.gz
- tar xzf xf86-3.1.0B-fs.tar.gz
- tar xzf xf86-3.1.0B-lib.tar.gz 
- tar xzf xf86-3.1.0B-man.tar.gz
- tar xzf xf86-3.1.0B-man.tar.gz
- tar xzf xf86-3.1.0B-prog.tar.gz
+ tar xzf xf86-3.1.1-config.tar.gz
+ tar xzf xf86-3.1.1-doc.tar.gz
+ tar xzf xf86-3.1.1-fs.tar.gz
+ tar xzf xf86-3.1.1-lib.tar.gz 
+ tar xzf xf86-3.1.1-man.tar.gz
+ tar xzf xf86-3.1.1-man.tar.gz
+ tar xzf xf86-3.1.1-prog.tar.gz
 </verb></tscreen>
 	And unpack the server(s) you need:
 <tscreen><verb>
@@ -350,7 +356,7 @@ available by anonymous FTP from a number of sites.
 If using pccons you get the mesage:
 
 <tscreen><verb>
-> XFree86 Version 3.1.0B / X Window System
+> XFree86 Version 3.1.1 / X Window System
 > (protocol Version 11, revision 0, vendor release 6000)
 > Operating System: NetBSD
 > Configured drivers:
@@ -426,7 +432,7 @@ There are two ways to allow XFree86 to access linear memory:
 
 <sect1>MIT-SHM
 <p>
-NetBSD 1.0 supports System V shared memory. If XFree86 3.1.0B detects
+NetBSD 1.0 supports System V shared memory. If XFree86 3.1.1 detects
 this support in your kernel, it will support the MIT-SHM extension.
 
     Under NetBSD 1.0, use the following to add shared memory
@@ -502,7 +508,7 @@ files should be taken from your installed version of the driver.
 <sect1> Support for shared libs under NetBSD 1.0
 
 <p>
-    By default XFree86 3.1.0B builds for NetBSD 1.0 with shared libraries 
+    By default XFree86 3.1.1 builds for NetBSD 1.0 with shared libraries 
     support. If you're building on 0.9 or don't want shared libraries 
     add the following line to <tt/xf86site.def/:
 
@@ -513,7 +519,7 @@ files should be taken from your installed version of the driver.
 <sect1>Building on NetBSD/sparc<label id="sparc">
 
 <p>
-XFree86 3.1.0B now also compiles on NetBSD/sparc. The Sun server
+XFree86 3.1.1 now also compiles on NetBSD/sparc. The Sun server
 patches from Dennis Ferguson and Matthew Green have been integrated in
 <tt>xc/programs/Xserver/hw/sun</tt>.  Small
 modifications to <tt/xf86site.def/ are needed:
@@ -594,7 +600,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.2 1994/12/26 11:03:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.3 1995/01/04 04:40:32 dawes Exp $
 </verb>
 
 </article>

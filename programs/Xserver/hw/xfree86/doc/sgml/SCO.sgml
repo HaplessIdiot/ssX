@@ -292,26 +292,26 @@ tree so that it will still compile.<p>
 
 
 Compiling XFree86,
-<quote>
-A)  Check that you have a "<tt>sys/uio.h</tt>" as there have been reports of
+<enum>
+<item> Check that you have a "<tt>sys/uio.h</tt>" as there have been reports of
     systems which have it and systems which don't!  If you already have
     one it need not be changed.  Otherwise see the 3.2.2 section above on
-	how to create one.<p>
+	how to create one.
 
-B)  Check the paragraph on <tt>site.def/xf86site.def</tt> in the compiling for
-    3.2.2 section.<p>
+<item> Check the paragraph on <tt>site.def/xf86site.def</tt> in the compiling for
+    3.2.2 section.
 
-G)  Add a <tt>-DSCO324</tt> to the <tt>BOOTSTRAPCFLAGS</tt> when you do the make World.
+<item> Add a <tt>-DSCO324</tt> to the <tt>BOOTSTRAPCFLAGS</tt> when you do the make World.
 <verb>
         make BOOTSTRAPCFLAGS="-DSYSV -Di386 -DSCO -DSCO324" World
 </verb>
-    Under 3.2.4 several different options become activated.<p>
+    Under 3.2.4 several different options become activated.
 <itemize>
 <item>Compress is used instead of pack for compressing the man pages.
 <item>The default compile line will contain <tt>-D_NO_PROTOTYPE</tt> instead
       of <tt>-DNO_PROTOTYP</tt>E as this is what 3.2.4 expects.
 </itemize>
-H)  If you have problems with <tt>mkshlib</tt> reporting an error like
+<item> If you have problems with <tt>mkshlib</tt> reporting an error like
 <verb>
         mkshlib: : cannot exec /bin/sh
  </verb>   
@@ -321,7 +321,7 @@ H)  If you have problems with <tt>mkshlib</tt> reporting an error like
         env - make
 </verb>
     The error is related to a lack of environment space.
-</quote>
+</enum>
 <sect>Compiling with <tt>__STDC__=0</tt><p>
 
 <bf>DO NOT</bf> make these changes unless you have gcc configured 
@@ -582,6 +582,6 @@ for providing an
 ftp site for the binary distribution.
 
 <verb>  
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.0 1994/12/20 11:33:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.1 1994/12/26 11:03:36 dawes Exp $
 </verb>
 </article>

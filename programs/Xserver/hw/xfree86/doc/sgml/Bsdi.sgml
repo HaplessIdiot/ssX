@@ -2,7 +2,7 @@
  
 <article>
  
-<title> README for XFree86 3.1 on BSD/386 1.1
+<title> README for XFree86 3.1.1 on BSD/386 1.1
 <author> Hans Nasten
 <date> 13 November 1994
 <toc>
@@ -303,7 +303,7 @@ instructions on how to build a new kernel.
 </verb>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.2 1994/12/26 11:03:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.3 1995/01/04 04:40:27 dawes Exp $
 </verb>
 
 </article>

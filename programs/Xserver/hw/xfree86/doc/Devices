@@ -52,6 +52,24 @@ Section "Device"
     BoardName "Dell"
 EndSection
 
+#From: hedrick@klinzhai.rutgers.edu (Charles Hedrick)
+#Date: Sat, 26 Nov 1994 20:21:32 -0500
+Section "Device"
+    Identifier "Speedstar"
+    VendorName "Diamond"
+    BoardName "SpeedStar 64"
+# for 1MB version.  probably fast_dram would be appropriate for 2MB.
+    Option "slow_dram"
+# getting a stable high refresh rate with the 1 MB version took some
+# doing.  (Generally 2 MB would be recommended for high refresh.)  Critical
+# factors were using slow_dram (specifying this isn't really necessary, as the
+# BIOS defaults to this -- I mention it simply because I had
+# experimented with fast_dram), and using a slightly higher second
+# horizontal time, e.g.
+# "1024x768" 80 1024 1100 1100 1260 768 768 768 788
+# though 1100 is higher than needed.
+EndSection
+
 #From: peterc@a3.ph.man.ac.uk (Peter Chang)
 #Date: Fri, 23 Sep 1994 17:40:40 +0100
 #Note: 'freq' may not exist.
@@ -178,6 +196,16 @@ Section "Device"
     Chipset	"generic"
 EndSection
 
+#From: Artur Gomes <agomes@mozart.si.ualg.pt>
+#Date: Tue, 20 Dec 1994 16:55:09 +0000 (GMT)
+Section "Device"
+    Identifier	"Genoa Phantom 64"
+    VendordName	"Genoa"
+    BoardName	"Phantom 64 2MB PCI (864)"
+    ClockChip	"s3_sdac"
+    Ramdac	"s3_sdac"
+EndSection
+    
 #From: dlj0@chern.math.lehigh.edu (DAVID L. JOHNSON)
 #Date: Fri, 23 Sep 1994 23:23:18 -0400
 Section "Device"
@@ -478,6 +506,19 @@ Section "Device"
     Option "sync_on_green"
 EndSection
 
+#From: Jeff Stern <jstern@eclectic.ss.uci.edu>
+#Date: Fri, 30 Dec 1994 12:07:46 -0800 (PST)
+Section "Device"
+    Identifier	"STB X24 S3 ISA"
+    VendorName	"STB"
+    BoardName	"PowerGraph X.24"
+    Ramdac	"ATT20C490"
+    Dacspeed	110
+    Option	"dac_8_bit"
+    #VideoRam	1024
+    ClockChip	"icd2061a"
+EndSection
+
 #Date: Sun, 18 Sep 1994 22:55:32 -0700 (PDT)
 #From: Shyam Subramanyan <shyam@crl.com>
 Section "Device"
@@ -546,6 +587,17 @@ Section "Device"
                 50.00 56.65 64.93 72.04 80.03 89.70 62.99 75.04
 EndSection
 
+#From: hedrick@klinzhai.rutgers.edu (Charles Hedrick)
+#Date: Sat, 26 Nov 1994 20:21:32 -0500
+Section "Device"
+    Identifier "928Movie"
+    VendorName "VideoLogic"
+    BoardName "928Movie"
+    Ramdac "bt485"
+    DacSpeed 135
+    ClockChip "ics2595"
+EndSection
+
 #From: "william (w.f.) conn" <conn@bnr.ca>
 #Date:  Sun, 25 Sep 1994 19:51:00 -0500
 Section "Device"
@@ -555,4 +607,4 @@ Section "Device"
 EndSection
 
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.4 1994/10/01 01:49:52 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Devices,v 3.5 1995/01/10 10:26:05 dawes Exp $

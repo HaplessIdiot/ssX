@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.0 1994/11/26 12:42:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.1 1994/12/11 10:52:36 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -34,7 +34,6 @@
 #include "xf86_Config.h"
 
 extern Bool xf86Verbose;
-extern int  mach64MaxClock;
 
 static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;
@@ -61,8 +60,6 @@ static unsigned long old_MEM_CNTL;
 static unsigned long old_CRTC_OFF_PITCH;
 static unsigned long old_DST_OFF_PITCH;
 static unsigned long old_SRC_OFF_PITCH;
-
-extern void mach64SetVGAPage();
 
 
 /*
@@ -184,6 +181,163 @@ int mach64FIFOdepth(cdepth, clock)
 }
 
 
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+/*
+ * mach64StrobeClock --
+ *
+ */
+void mach64StrobeClock()
+{
+    char tmp;
+
+    usleep(26); /* delay for 26 us */
+    tmp = inb(ioCLOCK_CNTL);
+    outb(ioCLOCK_CNTL, tmp | CLOCK_STROBE);
+}
+
+/*
+ * mach64ICS2595_1bit --
+ *
+ */
+mach64ICS2595_1bit(data)
+    char data;
+{
+    char tmp;
+
+    tmp = inb(ioCLOCK_CNTL);
+    outb(ioCLOCK_CNTL, (tmp & ~0x04) | (data << 2));
+
+    tmp = inb(ioCLOCK_CNTL);
+    outb(ioCLOCK_CNTL, (tmp & ~0x08) | (0 << 3));
+
+    mach64StrobeClock();
+
+    tmp = inb(ioCLOCK_CNTL);
+    outb(ioCLOCK_CNTL, (tmp & ~0x08) | (1 << 3));
+
+    mach64StrobeClock();
+}
+
+/*
+ * mach64ProgramICS2595 --
+ *
+ */
+void mach64ProgramICS2595(clkCntl, MHz100)
+    int clkCntl;
+    int MHz100;
+{
+    char old_clock_cntl;
+    char old_crtc_ext_disp;
+    unsigned int program_word;
+    unsigned int divider;
+    int i;
+
+#define MAX_FREQ_2595 15938
+#define ABS_MIN_FREQ_2595 1000
+#define MIN_FREQ_2595 8000
+#define N_ADJ_2595 257
+#define REF_DIV_2595 46
+#define REF_FREQ_2595 1432
+#define STOP_BITS_2595 0x1800
+
+    old_clock_cntl = inb(ioCLOCK_CNTL);
+    outb(ioCLOCK_CNTL, 0);
+
+    old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
+
+    usleep(15000); /* delay for 15 ms */
+
+    /* Calculate the programming word */
+    program_word = -1;
+    divider = 1;
+
+    if (MHz100 > MAX_FREQ_2595)
+	MHz100 = MAX_FREQ_2595;
+    else if (MHz100 < ABS_MIN_FREQ_2595)
+	program_word = 0;
+    else
+	while (MHz100 < MIN_FREQ_2595) {
+	    MHz100 *= 2;
+	    divider *= 2;
+	}
+
+    MHz100 *= 1000;
+    MHz100 = (REF_DIV_2595*MHz100)/REF_FREQ_2595;
+
+    MHz100 += 500;
+    MHz100 /= 1000;
+
+    if (program_word == -1) {
+	program_word = MHz100 - N_ADJ_2595;
+	switch (divider) {
+	case 1:
+	    program_word |= 0x0600;
+	    break;
+	case 2:
+	    program_word |= 0x0400;
+	    break;
+	case 4:
+	    program_word |= 0x0200;
+	    break;
+	case 8:
+	default:
+	    break;
+	}
+    }
+
+   program_word |= STOP_BITS_2595;
+
+    /* Program the clock chip */
+    outb(ioCLOCK_CNTL, 0);
+    mach64StrobeClock();
+    outb(ioCLOCK_CNTL, 1);
+    mach64StrobeClock();
+
+    mach64ICS2595_1bit(1); /* Send start bits */
+    mach64ICS2595_1bit(0);
+    mach64ICS2595_1bit(0);
+
+    for (i = 0; i < 5; i++) {
+	mach64ICS2595_1bit(clkCntl & 1);
+	clkCntl >>= 1;
+    }
+
+    for (i = 0; i < 8 + 1 + 2 + 2; i++) {
+	mach64ICS2595_1bit(program_word & 1);
+	program_word >>= 1;
+    }
+
+    usleep(1000); /* delay for 1 ms */
+
+    inb(ioDAC_REGS); /* Clear DAC Counter */
+    outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp);
+    outb(ioCLOCK_CNTL, old_clock_cntl | CLOCK_STROBE);
+}
+
+
+/*
+ * mach64ProgramClk --
+ *	Program the clock chip for the use with RAMDAC.
+ */
+void mach64ProgramClk(clkCntl, MHz100)
+    int clkCntl;
+    int MHz100;
+{
+    switch (mach64ClockType) {
+    case 1:
+	mach64ProgramICS2595(clkCntl, MHz100);
+	break;
+    case 2:
+    default:
+	ErrorF("mach64ProgramClk: ClockType %d not currently supported.\n",
+	       mach64ClockType);
+	break;
+    }
+}
+#endif
+
+
 /*
  * mach64SetCRTCRegs --
  *	Initializes the Mach64 for the currently selected CRTC parameters.
@@ -200,6 +354,15 @@ void mach64SetCRTCRegs(crtcRegs)
     WaitIdleEmpty();
     crtcGenCntl = regr(CRTC_GEN_CNTL);
     regw(CRTC_GEN_CNTL, crtcGenCntl & ~CRTC_EXT_EN);
+
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+    /* Check to see if we need to program the clock chip */
+    if (mach64ClockType != 0 && mach64Ramdac == DAC_ATI68860_ATI68880)
+	if (crtcRegs->clock_cntl & 0x30) {
+	    mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock);
+	    crtcRegs->clock_cntl = mach64CXClk;
+	}
+#endif
 
     WaitQueue(12);
     /* Horizontal CRTC registers */

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64orect.c,v 3.0 1994/11/26 12:42:55 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -114,6 +114,34 @@ mach64PolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
 	    clippedY1 = max (origY1, clipYMin);
 	    clippedY2 = min (origY2, clipYMax);
 
+	    width = clippedX2 - clippedX1 + 1;
+
+	    /* use bitblt to draw top edge if not clipped */
+	    if (origY1 >= clipYMin)
+	    {
+                WaitQueue(3);
+                regw(DST_CNTL, (DST_X_LEFT_TO_RIGHT | 
+                                DST_Y_TOP_TO_BOTTOM));
+                regw(DST_Y_X, ((clippedX1 << 16) | clippedY1));
+                regw(DST_HEIGHT_WIDTH, ((width << 16) | 1));
+
+		/* don't overwrite corner */
+		clippedY1++;
+	    }
+
+	    /* use bitblt to draw bottom edge if not clipped */
+	    if ((origY2 <= clipYMax) && (origY1 != origY2))
+	    {
+                WaitQueue(3);
+                regw(DST_CNTL, (DST_X_LEFT_TO_RIGHT | 
+                                DST_Y_TOP_TO_BOTTOM));
+                regw(DST_Y_X, ((clippedX1 << 16) | clippedY2));
+                regw(DST_HEIGHT_WIDTH, ((width << 16) | 1));
+
+		/* don't overwrite corner */
+		clippedY2--; 
+	    }
+
 	    /* draw vertical edges using lines if not clipped out */
             if (origX1 >= clipXMin)
 	    {
@@ -124,9 +152,6 @@ mach64PolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
                 regw(DST_BRES_INC, 0x00000000);
                 regw(DST_BRES_DEC, (0x3ffff - (2 * (clippedY2 - clippedY1))));
                 regw(DST_BRES_LNTH, ((clippedY2 - clippedY1) + 2));
-
-		/* don't overwrite corner */
-		clippedX1++;
 	    }
 
             if ((origX2 <= clipXMax) && (origX2 != origX1))
@@ -138,31 +163,6 @@ mach64PolyRectangle (pDrawable, pGC, nRectsInit, pRectsInit)
                 regw(DST_BRES_INC, 0x00000000);
                 regw(DST_BRES_DEC, (0x3ffff - (2 * (clippedY2 - clippedY1))));
                 regw(DST_BRES_LNTH, ((clippedY2 - clippedY1) + 2));
-
-		/* don't overwrite corner */
-		clippedX2--; 
-	    }
-
-	    width = clippedX2 - clippedX1 + 1;
-
-	    /* use bitblt to draw top edge if not clipped */
-	    if (origY1 >= clipYMin)
-	    {
-                WaitQueue(3);
-                regw(DST_CNTL, (DST_X_LEFT_TO_RIGHT | 
-                                DST_Y_TOP_TO_BOTTOM));
-                regw(DST_Y_X, ((clippedX1 << 16) | clippedY1));
-                regw(DST_HEIGHT_WIDTH, ((width << 16) | 1));
-	    }
-
-	    /* use bitblt to draw bottom edge if not clipped */
-	    if ((origY2 <= clipYMax) && (origY1 != origY2))
-	    {
-                WaitQueue(3);
-                regw(DST_CNTL, (DST_X_LEFT_TO_RIGHT | 
-                                DST_Y_TOP_TO_BOTTOM));
-                regw(DST_Y_X, ((clippedX1 << 16) | clippedY2));
-                regw(DST_HEIGHT_WIDTH, ((width << 16) | 1));
 	    }
 	}
     }

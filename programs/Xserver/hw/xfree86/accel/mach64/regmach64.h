@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.0 1994/11/26 12:43:04 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -41,6 +41,8 @@
 #define ioDAC_REGS              0x5eec
 #define ioDAC_CNTL              0x62ec
 #define ioGEN_TEST_CNTL 	0x66ec
+#define ioCLOCK_CNTL	 	0x4aec
+#define ioCRTC_GEN_CNTL 	0x1eec
 
 
 /* NON-GUI MEMORY MAPPED Registers - expressed in BYTE offsets */
@@ -239,6 +241,11 @@
 #define BLOCK_WRITE_ENABLE      0x200
 
 /* CLOCK_CNTL register constants */
+#define CLOCK_SEL		0x0f
+#define CLOCK_DIV		0x30
+#define CLOCK_DIV1		0x00
+#define CLOCK_DIV2		0x10
+#define CLOCK_DIV4		0x20
 #define CLOCK_STROBE		0x40
 
 /* CONFIG_CNTL register constants */
@@ -268,7 +275,7 @@
 #define DAC_BT476_BT478		3
 #define DAC_BT481		4
 #define DAC_ATI68860_ATI68880	5
-#define DAC_ST61700		6
+#define DAC_STG1700		6
 #define DAC_SC15021		7
 
 /* CONFIG_CNTL register constants */

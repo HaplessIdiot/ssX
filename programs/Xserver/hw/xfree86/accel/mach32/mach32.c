@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.26 1994/12/29 09:47:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.27 1995/01/10 10:21:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -66,6 +66,12 @@ extern int mach32Max16bppClock;
 extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 unsigned short mach32MemorySize = 0;
 extern char *xf86VisualNames[];
+
+static Bool mach32ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
 
 ScrnInfoRec mach32InfoRec = {
     FALSE,		/* Bool configured */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.5 1994/09/07 15:50:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000reg.h,v 3.6 1994/11/30 20:39:59 dawes Exp $ */
 /* p9000reg.h
  *
  * Copyright 1994, Erik Nygren (nygren@mit.edu)
@@ -122,6 +122,15 @@
 #define SR_Q_VISIBLE 0x00000002L  /* Quad is Inside Clipping Window */
 #define SR_Q_INTERS  0x00000001L  /* Quad Intersects Clipping Window */
 
+/*** Clipping Regs ***/
+/* initial tests show p9000 clipping slower than software - Chris Mason */
+#define CINDEX          0x8018CL  /* current meta coord index */
+#define W_OFFSET_XY     0x80190L  /* current window offset (use YX_PACK) */
+#define YCLIP           0x801B0L  /* read only result of clipping checks */
+#define XCLIP           0x801B4L  /* read only result of clipping checks */
+#define CLIPLT0         0x00001L  /* and with results of XCLIP or YCLIP  */
+#define CLIPGT0         0x00010L  /* and with results of XCLIP or YCLIP  */
+
 /*** Drawing Engine Pixel Processing Registers ***/
 
 #define FGROUND         0x80200L  /* Foreground Color */
@@ -139,6 +148,7 @@
 
 /* Drawing Engine Raster Register (see p9000 docs, sec 4.1.5 for minterms) */
 #define USE_PATTERN  0x00020000L  /* Enable Patter for Quad Draw */
+#define IGM_OVERSIZED    0x00010000L  /* oversized mode (use to draw  lines) */
 #define IGM_F_MASK       0xFF00L  /* Foreground Minterm Mask */
 #define IGM_B_MASK       0xF0F0L  /* Backgound Minterm Mask */
 #define IGM_S_MASK       0xCCCCL  /* Source Minterm Mask */
@@ -182,7 +192,21 @@
 #define MC_YX             0x018L  /* YX:    16-bit X value (high bits) and
                                    *        16-bit Y value (low bits) */
 
+/* 
+ * various endian swapping modes.  Usually endup swapping all for anything
+ * that copies data from host to the card.
+ *
+ * these should be combined with the register address. ex:
+ * p9000Store(CMD_PIXEL8 | HBBSWAP, CtlBase, psrc)
+ */
+
+#define HALFSWAP        0x40000L  /* half word swapping */
+#define BYTESWAP        0x20000L  /* byte swapping      */
+#define BITSWAP         0x10000L  /* bit swapping       */
+#define HBBSWAP         0x70000L  /* swap everything for lazy typers ;) */
+
 /* Packs two 16-bit values for MC_YX and DC_YX */
+/* CAREFUL! This will drop y's sign bit. Don't use where y could be neg */
 #define YX_PACK(x,y)   (((long)(x)<<16)|(long)(y))
 
 

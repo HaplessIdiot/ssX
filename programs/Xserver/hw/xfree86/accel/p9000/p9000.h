@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.7 1994/11/26 12:44:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.8 1995/01/10 10:22:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -144,12 +144,6 @@ extern Bool p9000Probe(
 extern Bool p9000Initialize(
 #if NeedFunctionPrototypes
    int, ScreenPtr, int, char **
-#endif
-);
-
-extern Bool p9000ValidMode(
-#if NeedFunctionPrototypes
-   DisplayModePtr
 #endif
 );
 
@@ -437,6 +431,39 @@ Bool p9000CursorInit(
 #endif
 );
 
+/*********************** p9000Line.c *****************************/
+
+void p9000Line(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    DDXPointPtr
+#endif
+);
+
+void p9000Line1Rect(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    int,
+    DDXPointPtr
+#endif
+);
+
+/********************** p9000seg.c ******************************/
+
+void p9000Segment(
+#if NeedFunctionPrototypes
+    DrawablePtr,
+    GCPtr,
+    int,
+    register xSegment *
+#endif
+);
+
 /****************************************************************/
 
 
@@ -462,7 +489,8 @@ extern ScreenPtr p9000savepScreen;
 extern unsigned p9000BytesPerPixel;
 
 /* Raster operation (alu) -> minterm mapping */
-extern unsigned int p9000alu[];
+extern unsigned int p9000alu[];		/* alu src = p9000 src        */
+extern unsigned int p9000QuadAlu[] ;	/* alu src = p9000 foreground */
 
 /* Retrieve a long word from memory */
 #ifndef p9000Fetch

@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.1 1995/01/07 04:13:58 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.2 1995/01/12 12:06:37 dawes Exp $
 
 # Cirrus Logic
 
@@ -147,6 +147,13 @@ SERVER S3
 RAMDAC s3gendac
 CLOCKCHIP s3gendac
 
+NAME S3-801/805 with ATT20c490 RAMDAC and ICD2061A
+CHIPSET S3-801/805
+SERVER S3
+RAMDAC att20c490
+CLOCKCHIP icd2061a
+LINE     #Option "dac_8_bit"		# Not supported by some 20c490 clones
+
 #tested
 NAME Actix GE32+ 2MB
 CHIPSET S3-801/805
@@ -192,7 +199,7 @@ NAME Dell S3-805
 SEE S3-801/805 (generic)
 
 NAME STB Powergraph X-24
-SEE S3-801/805 (generic)
+SEE S3-801/805 with ATT20c490 RAMDAC and ICD2061A
 
 # S3-864/Trio64
 
@@ -308,7 +315,11 @@ CHIPSET S3-928
 SERVER S3
 
 NAME Diamond Stealth Pro
-SEE S3-928 (generic)
+CHIPSET S3-928
+SERVER S3
+CLOCKCHIP icd2061a
+RAMDAC normal
+LINE     # 16/32bpp not supported? (SS2410 DAC?)
 
 NAME Elsa Winner 1000
 CHIPSET S3-928
@@ -365,6 +376,13 @@ SERVER S3
 CLOCKCHIP icd2061a
 LINE     OPTION "dac_8_bit"
 LINE     OPTION "number_nine"
+
+NAME 928Movie
+CHIPSET S3-928
+SERVER S3
+CLOCKCHIP icd2595
+RAMDAC bt485
+LINE     # pixel multiplexing not supported
 
 # S3-911/924
 

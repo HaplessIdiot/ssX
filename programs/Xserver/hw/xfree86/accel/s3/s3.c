@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.59 1995/01/11 03:47:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.60 1995/01/12 12:03:03 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -32,8 +32,6 @@
  * 
  * Id: s3.c,v 2.6 1993/08/09 06:17:57 jon Exp jon
  */
-
-#define ICS2595
 
 #include "misc.h"
 #include "cfb.h"
@@ -180,6 +178,7 @@ static Bool s3ClockSelect();
 static Bool icd2061ClockSelect();
 static Bool s3GendacClockSelect();
 static Bool ti3025ClockSelect();
+static Bool ch8391ClockSelect();
 ScreenPtr s3savepScreen;
 Bool  s3Localbus = FALSE;
 Bool  s3LinearAperture = FALSE;
@@ -1052,9 +1051,10 @@ s3Probe()
                                      /* overwritten 			 */	
      card_id = check_SPEA_bios(s3InfoRec.BIOSbase); 
      if (card_id > 0) {
-        
+
        switch (s3RamdacType) {
        case BT485_DAC: 
+       case ATT20C505_DAC: 
           if (S3_928_ONLY(s3ChipId)) {
              /* SPEA Mercury */
              ErrorF("%s %s: SPEA Mercury detected.\n",
@@ -1435,14 +1435,20 @@ s3Probe()
       }
       numClocks = 3;
    } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
-#ifdef ICS2595
       s3ClockSelectFunc = icd2061ClockSelect;
       if (xf86Verbose)
 	 ErrorF("%s %s: Using ICS2595 programmable clock\n",
 		XCONFIG_GIVEN, s3InfoRec.name);
       numClocks = 3;
+   } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
+#ifdef CH8391
+      s3ClockSelectFunc = ch8391ClockSelect;
+      if (xf86Verbose)
+	 ErrorF("%s %s: Using Chrontel 8391 programmable clock\n",
+		XCONFIG_GIVEN, s3InfoRec.name);
+      numClocks = 3;
 #else
-      ErrorF("ICS2595 clock chip support is not yet included\n");
+      ErrorF("CH8391 clock chip support is not yet included\n");
       xf86DisableIOPorts(s3InfoRec.scrnIndex);
       return(FALSE);
 #endif
@@ -1480,10 +1486,10 @@ s3Probe()
 	 maxRawClock = 110000;
       } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
 	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
-#ifdef ICS2595
       } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 145000; /* This is what is in common_hw/ICS2595.h */
-#endif
+      } else if (OFLG_ISSET(CLOCK_OPTION_CH8391, &s3InfoRec.clockOptions)) {
+	 maxRawClock = 135000;
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;
@@ -2273,11 +2279,9 @@ icd2061ClockSelect(freq)
 	    AltICD2061SetClock(freq, 2);
 	 } else if (OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions)) {
 	    result = SC11412SetClock((long)freq/1000);
-#ifdef ICS2595
 	 } else if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)) {
 	    result = ICS2595SetClock((long)freq/1000);
 	    result = ICS2595SetClock((long)freq/1000);
-#endif
 	 } else { /* Should never get here */
 	    result = FALSE;
 	    break;
@@ -2355,6 +2359,43 @@ ti3025ClockSelect(freq)
 	    break;
 	 }
 	 (void) Ti3025SetClock(freq, 2); /* can't fail */
+	 outb(vgaCRIndex, 0x42);/* select the clock */
+	 outb(vgaCRReg, 0x02);
+	 usleep(150000);
+      }
+   }
+   LOCK_SYS_REGS;
+   return(result);
+}
+
+static Bool
+ch8391ClockSelect(freq)
+     int   freq;
+
+{
+   Bool result = TRUE;
+ 
+   UNLOCK_SYS_REGS;
+   
+   switch(freq)
+   {
+   case CLK_REG_SAVE:
+   case CLK_REG_RESTORE:
+      result = s3ClockSelect(freq);
+      break;
+   default:
+      {
+	 /* Check if clock frequency is within range */
+	 /* XXXX Check this elsewhere */
+	 if (freq < 8500 || freq > 135000) {
+	    ErrorF("%s %s: Specified dot clock (%.3f) out of range for Chrontel 8391",
+		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
+	    result = FALSE;
+	    break;
+	 }
+#ifdef CH8391
+	 (void) Chrontel8391SetClock(freq, 2); /* can't fail */
+#endif
 	 outb(vgaCRIndex, 0x42);/* select the clock */
 	 outb(vgaCRReg, 0x02);
 	 usleep(150000);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.5 1994/10/20 06:11:20 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.6 1995/01/10 10:30:49 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -408,6 +408,11 @@ cirrusMoveCursor(pScr, x, y)
 
   if (XF86SCRNINFO(pScr)->modes->Flags & V_DBLSCAN)
       y *= 2;
+
+  if (XF86SCRNINFO(pScr)->modes->CrtcHAdjusted)
+      /* 5434 palette-clock doubling mode; cursor is squashed but */
+      /* get at least the position right. */
+      x /= 2;
 
   /* Your eyes do not deceive you - the low order bits form part of the
    * the INDEX

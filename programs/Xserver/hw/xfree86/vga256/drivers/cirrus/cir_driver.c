@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.26 1995/01/07 04:12:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.27 1995/01/10 10:30:53 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -1419,7 +1419,8 @@ nolinear:
 #ifdef CIRRUS_SUPPORT_MMIO
     /* Optional Memory-Mapped I/O. */
     /* Register is set in init function. */
-    if (HAVE543X() && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
+    if ((HAVE543X() || cirrusChip == CLGD5429)
+    && OFLG_ISSET(OPTION_MMIO, &vga256InfoRec.options)) {
         cirrusUseMMIO = TRUE;
         /* We can't set cirrusMMIOBase, since vgaBase hasn't been */
         /* mapped yet. For now we do that in the init function. */

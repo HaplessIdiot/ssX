@@ -3,7 +3,7 @@
 <article>
 <title> Information for S3 Chipset Users
 <author>The XFree86 Project Inc.
-<date>14 December 1994
+<date>15 January 1995
 <toc>
 
 <sect> Supported hardware
@@ -44,6 +44,24 @@ might work for you, too.
  <tscreen><verb>
  ClockChip "s3gendac"
  RamDac    "s3gendac"
+ </verb></tscreen>
+
+
+<tag>S3 801/805, AT&amp;T 20C490 RAMDAC, ICD2061A Clockchip</tag>
+	<itemize>
+	<item> STB PowerGraph X.24 S3 (ISA)
+	</itemize>
+
+	8 and 15/16 bpp
+
+        Note: the AT&amp;T20C490 RAMDAC is not automatically detected by
+        the server.  You need to provide a `<tt/Ramdac "att20c490"/'
+        entry in your <tt/XF86Config/.
+
+ <tscreen><verb>
+ ClockChip "icd2061a"
+ RamDac    "att20c490"
+ Option    "dac_8_bit
  </verb></tscreen>
 
 
@@ -332,7 +350,7 @@ symptom of this not being correct is the HW cursor being chopped off
 when positioned close to the right edge of the screen.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.2 1995/01/10 10:26:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.3 1995/01/11 09:47:53 dawes Exp $
 </verb>
 
 </article>

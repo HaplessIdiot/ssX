@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.5 1994/11/26 12:44:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.6 1994/12/11 10:53:42 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -178,7 +178,7 @@ void p9000CalcCRTCRegs(crtcRegs, mode)
   /* This is set to the default for now. *TO*DO* */
   crtcRegs->memspeed = MEMSPEED;
   /* Get the dot clock */
-  crtcRegs->dotfreq = p9000InfoRec.clock[mode->Clock] * 1000;
+  crtcRegs->dotfreq = mode->SynthClock * 1000;
 
 #ifdef DEBUG
   ErrorF("The value of mode->Clock is %d.  sysconfig is %lx. Dotfreq is %ld\n",
@@ -338,16 +338,20 @@ void  p9000ClearScreen(void)
 {
   p9000NotBusy();         /* Wait for the P9000 to be free */
   /* Drawing a big black rectangle is probably a good way to clear things */
-  p9000Store(FGROUND, CtlBase, 0);
+  p9000Store(FGROUND, CtlBase, 1);
   p9000Store(RASTER, CtlBase, IGM_F_MASK);
-  p9000Store(META_COORD | MC_RECT | MC_YX, CtlBase,
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
 	     YX_PACK(0,0));
-  p9000Store(META_COORD | MC_RECT | MC_YX, CtlBase,
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
+	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,0));
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
 	     YX_PACK(p9000CRTCRegs.XSize*p9000CRTCRegs.BytesPerPixel,
 		     p9000CRTCRegs.YSize));
-  p9000Fetch(CMD_QUAD, CtlBase);
+  p9000Store(META_COORD | MC_QUAD | MC_YX, CtlBase,
+	     YX_PACK(0, p9000CRTCRegs.YSize));
+  while (p9000Fetch(CMD_QUAD, CtlBase) & SR_ISSUE_QBN) ;
   /* Wait for the engine to be free again */
-  p9000NotBusy();
+  p9000QBNotBusy();
   return;
 }
 
@@ -400,9 +404,21 @@ void p9000ProbeMemConfig()
 	return;
       }
 
-  /* Otherwise we guessed right and really do have 2MB of VRAM.
-   * Yay! */
-  p9000MiscReg.memconfig = 0x2L;
-  p9000MiscReg.memsize = 0x200000L;
-  p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
+  /* Otherwise we guessed right and really do have 2MB of VRAM. 
+   * (unless probe failed and we're overridden) */
+  if (p9000InfoRec.videoRam == 1024) /* Allow user to override */
+    {
+      if (OFLG_ISSET(OPTION_VRAM_128, &p9000InfoRec.options))
+	p9000MiscReg.memconfig = 0x1L;  /* 128Kx8 VRAM */
+      else  
+	p9000MiscReg.memconfig = 0x0L;  /* 256Kx4 VRAM */
+      p9000MiscReg.memsize = 0x100000L;
+      p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);      
+    }
+  else  /* Go with the probed result */
+    {
+      p9000MiscReg.memconfig = 0x2L;
+      p9000MiscReg.memsize = 0x200000L;
+      p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
+    }
 }

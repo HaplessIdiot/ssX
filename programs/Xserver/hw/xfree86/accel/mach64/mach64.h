@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.2 1994/12/05 03:45:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.h,v 3.3 1995/01/10 10:21:23 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -32,6 +32,8 @@
 
 #define MACH64_CURSBYTES	1024
 #define MACH64_CURSMAX		64
+
+#define IMPLEMENTED_CLOCK_PROGRAMMING
 
 #include "X.h"
 #include "input.h"
@@ -71,6 +73,14 @@ extern int mach64BusType;
 extern int mach64MemType;
 extern int mach64ClockType;
 extern int mach64Clocks[MACH64_NUM_CLOCKS];
+#ifdef IMPLEMENTED_CLOCK_PROGRAMMING
+extern int mach64MinFreq;
+extern int mach64MaxFreq;
+extern int mach64RefFreq;
+extern int mach64RefDivider;
+extern int mach64NAdj;
+extern int mach64CXClk;
+#endif
 
 extern unsigned int mach64MemorySize;
 
@@ -131,11 +141,6 @@ Bool mach64Initialize(
     ScreenPtr pScreen,
     int argc,
     char **argv
-#endif
-);
-Bool mach64ValidMode(
-#if NeedFunctionPrototypes
-    DisplayModePtr
 #endif
 );
 void mach64EnterLeaveVT(

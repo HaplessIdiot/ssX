@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.22 1994/12/29 09:43:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.23 1995/01/10 10:20:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -63,7 +63,11 @@ extern Bool xf86Verbose, xf86Resetting, xf86Exiting, xf86ProbeFailed;
 extern Bool miDCInitialize();
 extern void SetTimeSinceLastInputEvent();
 
-
+static Bool agxValidMode(
+#if NeedFunctionPrototypes
+    DisplayModePtr
+#endif
+); 
 
 ScrnInfoRec agxInfoRec = {
     FALSE,		/* Bool configured */

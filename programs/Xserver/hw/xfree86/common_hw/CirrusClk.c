@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.2 1994/12/05 03:46:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/CirrusClk.c,v 3.3 1995/01/04 04:39:57 dawes Exp $ */
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -25,7 +25,7 @@ typedef struct {
 } cirrusClockRec;
 
 static cirrusClockRec cirrusClockTab[] = {
-  { 0x33, 0x3B },		/* 12.588 */
+  { 0x2C, 0x33 },		/* 12.599 */
   { 0x4A, 0x2B },		/* 25.227 */
   { 0x5B, 0x2F },		/* 28.325 */
   { 0x45, 0x30 }, 		/* 41.164 */
@@ -125,7 +125,7 @@ int CirrusSetClock(freq)
 	int num, den, usemclk;
 	unsigned char tmp;
 
-	CirrusFindClock(freq, &num, &den, usemclk);
+	CirrusFindClock(freq, &num, &den, &usemclk);
 
 	/*
 	 * The 'Use MCLK as VCLK' flag is ignored.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.21 1994/12/29 10:05:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.22 1995/01/10 10:22:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -66,6 +66,12 @@ extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
 extern char *xf86VisualNames[];
 
 extern int defaultColorVisualClass;
+
+static Bool p9000ValidMode(
+#if NeedFunctionPrototypes 
+   DisplayModePtr
+#endif
+);
 
 ScrnInfoRec p9000InfoRec = {
     FALSE,		/* Bool configured */
@@ -204,7 +210,8 @@ short p9000WeightMask;
         (a & 0x01) << 7;
 
 /* Raster operation (alu) -> minterm mapping */
-unsigned int p9000alu[16];
+unsigned int p9000alu[16];	/* alu src = p9000 src        */
+unsigned int p9000QuadAlu[16] ; /* alu src = p9000 foreground */
 
 /*
  * p9000Probe --
@@ -278,14 +285,24 @@ p9000Probe()
     xf86EnableIOPorts(p9000InfoRec.scrnIndex);
     
     OFLG_ZERO(&validOptions);
+    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
+    OFLG_SET(OPTION_NOACCEL, &validOptions);
+    OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
+    OFLG_SET(OPTION_VRAM_128, &validOptions);
+    OFLG_SET(OPTION_VRAM_256, &validOptions);
     xf86VerifyOptions(&validOptions, &p9000InfoRec);
     
+#if 0  /* We shouldn't need this any more */
     if (!p9000InfoRec.clocks)
       {
 	ErrorF("%s %s: Autodetection of clocks is not supported.\n\tExplicitly specify in XF86Config file on a Clocks line.\n", XCONFIG_PROBED, p9000InfoRec.name);
 	return(FALSE);
       }
-    
+#endif
+    /* At the moment, all P9000-based boards use a icd2061a compatable
+     * programmable clock so no more differentiation than this is needed */
+    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &(p9000InfoRec.clockOptions));
+
     if (!p9000InfoRec.videoRam)
       {
 	ErrorF("%s %s: Autodetection of video RAM is not yet supported.\n\tExplicitly specify VideoRAM in XF86Config file.\n", XCONFIG_PROBED, p9000InfoRec.name);
@@ -489,6 +506,8 @@ p9000Probe()
 		p9000InfoRec.virtualX = pEnd->HDisplay;
 		p9000InfoRec.virtualY = pEnd->VDisplay;
 	      }
+	    /* Set the clock synthesizer frequency */
+	    pMode->SynthClock = p9000InfoRec.clock[pMode->Clock];
 	    pMode = pMode->next;
 	  }
       } while (pMode != pEnd);

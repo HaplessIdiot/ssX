@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.4 1994/09/14 10:39:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000blt.c,v 3.5 1994/11/26 12:44:19 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -116,10 +116,11 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
     if (!xf86VTSema
 	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) &&
 	    (pDstDrawable->type != DRAWABLE_WINDOW))
-#ifndef P9000_IM_ACCEL
-	/* These are temporary until implemented *TO*DO* */
+	/* p9000 has nothing special for this.  Use cfb */
 	|| ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
 	    (pDstDrawable->type != DRAWABLE_WINDOW))
+#ifndef P9000_IM_ACCEL
+	/* Ends up calling ImageWrite */
 	|| ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
 	    (pDstDrawable->type == DRAWABLE_WINDOW))
 #endif /* P9000_IM_ACCEL */
@@ -354,9 +355,8 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 #ifdef P9000_DEBUG_BLT
 		ErrorF("Moving rect: (%d,%d,%d,%d) -> (%d,%d,%d,%d) PM: 0x%x ALU: %d\n", prect->x1+dx, prect->y1+dy, prect->x2+dx, prect->y2+dy-1, prect->x1, prect->y1, prect->x2, prect->y2-1, pGC->planemask, pGC->alu);
 #endif
-		p9000NotBusy();
 		/* Load the coordinates */
-		/* Should this be done with YX_PACKING or not?  *TO*DO* */
+		/* for blits, YX packing makes little difference */
 		p9000Store(DEVICE_COORD | DC_ABS | DC_X | DC_0, 
 			   CtlBase, prect->x1+dx);
 		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_0,
@@ -373,17 +373,18 @@ p9000CopyArea(pSrcDrawable, pDstDrawable,
 			   CtlBase, prect->x2-1);
 		p9000Store(DEVICE_COORD | DC_ABS | DC_Y | DC_3,
 			   CtlBase, prect->y2-1);
-		/* Do the Blit and wait for it to be done */
+		/* wait for engine and blit */
 		do engstatus = p9000Fetch(CMD_BLIT, CtlBase);
 		while (engstatus & SR_ISSUE_QBN);
 	      }
 	    DEALLOCATE_LOCAL(ordering);
-	    /* Wait for it to be all done.  Do you need this?  *TO*DO* */
-	    p9000NotBusy(); 
+	    /* wait for the quad/blit engine to finish */
+	    p9000QBNotBusy(); 
 	}
 	else if (pSrcDrawable->type == DRAWABLE_WINDOW
 		 && pDstDrawable->type != DRAWABLE_WINDOW)
 	  {
+	    /* THIS GETS PASSED TO CFB FUNCTIONS ABOVE. NEVER CALLED */
 	    /* Window --> Pixmap */
 	    int pixWidth = PixmapBytePad(pDstDrawable->width,
 					 pDstDrawable->depth);

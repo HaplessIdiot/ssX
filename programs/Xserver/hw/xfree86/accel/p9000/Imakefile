@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.5 1994/08/31 04:22:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/Imakefile,v 3.6 1994/09/22 15:49:33 dawes Exp $
 XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
 
 #include <Server.tmpl>
@@ -6,11 +6,13 @@ XCOMM Id: Imakefile,v 4.0 1994/05/28 01:24:17 nygren Exp
 SRCS = 	p9000.c p9000cmap.c p9000init.c p9000viper.c p9000orchid.c \
 	p9000gc.c p9000blt.c p9000im.c p9000win.c \
 	p9000BtCurs.c p9000Bt485.c p9000vga.c \
+	p9000line.c p9000seg.c \
 	p9000scrin.c p9000curs.c ICD2061Aset.c ICD2061Acal.c
 
 OBJS = 	p9000.o p9000cmap.o p9000init.o p9000viper.o p9000orchid.o \
 	p9000gc.o p9000blt.o p9000im.o p9000win.o \
 	p9000BtCurs.o p9000Bt485.o p9000vga.o \
+	p9000line.o p9000seg.o \
 	p9000scrin.o p9000curs.o ICD2061Aset.o ICD2061Acal.o
 
 INCLUDES = -I$(XF86SRC) -I. -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \

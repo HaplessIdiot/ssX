@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.9 1994/12/29 09:45:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.10 1995/01/10 10:20:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -54,6 +54,12 @@
 #include "cfb.h"
 
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+
+static Bool ibm8514ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
 
 ScrnInfoRec ibm8514InfoRec = {
     FALSE,		/* Bool configured */

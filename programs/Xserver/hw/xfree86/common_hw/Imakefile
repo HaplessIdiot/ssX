@@ -1,14 +1,14 @@
 XCOMM $XConsortium: Imakefile,v 1.1 94/03/28 21:25:10 dpw Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.3 1994/09/20 12:47:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Imakefile,v 3.4 1994/10/20 06:09:43 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = ICD2061Acal.c ICD2061Aset.c ICD2061Aalt.c xf86_ClkPr.c BUSmemcpy.s \
        SC11412.c ATTDac.c S3gendac.c Ti3025clk.c SlowBcopy.s IODelay.s \
-       ICS2595.c CirrusClk.c
+       ICS2595.c CirrusClk.c /* Ch8391clk.c */
 
 OBJS = ICD2061Acal.o ICD2061Aset.o ICD2061Aalt.o xf86_ClkPr.o BUSmemcpy.o \
        SC11412.o ATTDac.o S3gendac.o Ti3025clk.o SlowBcopy.o IODelay.o \
-       ICS2595.o CirrusClk.o
+       ICS2595.o CirrusClk.o /* Ch8391clk.o */
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(INCLUDESRC) -I../accel/s3
