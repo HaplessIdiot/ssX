@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:08 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.4 2001/01/17 23:45:10 dawes Exp $
+XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.5 2001/03/30 02:15:23 keithp Exp $
 
 #ifndef X11perfcompLib
 #define X11perfcompLib $(LIBDIR)/x11perfcomp
@@ -35,6 +35,10 @@ XCOMM $XFree86: xc/programs/x11perf/Imakefile,v 3.4 2001/01/17 23:45:10 dawes Ex
 LOCAL_LIBRARIES = $(XFTLIBS) $(XMUULIB) $(XLIB)
         DEPLIBS = $(XFTDEPS) $(DEPXMUULIB) $(DEPXLIB)
   SYS_LIBRARIES = MathLibrary
+
+#if UseCygIPC
+EXTRA_LIBRARIES = -lcygipc
+#endif
 
 #ifndef OS2Architecture
 ComplexProgramTarget(x11perf)

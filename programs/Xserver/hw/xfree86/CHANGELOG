@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx April 2001)
+ 462. Disable xload on Cygwin/XFree86 (Alan Hourihane).
  461. Remove an errorneous i++ from os/xdmcp.c with -class (Alexander Gottwald).
  460. Allow Cygwin/XFree86 to build with cygipc support (Alan Hourihane).
  459. Small XDarwin fixes:
@@ -13125,4 +13126,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1732 2001/04/30 16:25:58 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1733 2001/05/01 07:53:48 alanh Exp $
