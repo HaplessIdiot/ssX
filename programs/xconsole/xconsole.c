@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.26 2001/07/23 13:15:51 dawes Exp $ */
+/* $XFree86: xc/programs/xconsole/xconsole.c,v 3.27 2001/07/25 15:05:18 dawes Exp $ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
@@ -310,7 +310,7 @@ KillChild(int sig)
 {
     if (child_pid > 0)
 	kill(child_pid, SIGTERM);
-    exit(0);
+    _exit(0);
 }
 #endif
 
