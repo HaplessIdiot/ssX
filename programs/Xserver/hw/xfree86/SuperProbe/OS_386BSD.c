@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.14 1997/03/17 11:22:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.15 1997/10/25 13:50:06 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -112,6 +112,11 @@
 #  define CONSOLE_DEVICE "/dev/ttyC0"
 #endif
 
+#ifdef __NetBSD__
+/* Temporary while we don't have a wscons driver for XFree86. */
+#  define WSCONS_PCVT_COMPAT_CONSOLE_DEV "/dev/ttyE0"
+#endif
+
 #ifdef USE_ARM32_MMAP
 #define	DEV_MEM_IOBASE	0x43000000
 extern unsigned int IOPortBase;
@@ -177,7 +182,12 @@ int OpenVideo()
 			return(-1);
 		}
 		if ((CONS_fd = open("/dev/vga", O_RDWR, 0)) < 0
-		    && (CONS_fd = open(CONSOLE_DEVICE, O_RDWR, 0)) < 0)
+		    && (CONS_fd = open(CONSOLE_DEVICE, O_RDWR, 0)) < 0
+#ifdef WSCONS_PCVT_COMPAT_CONSOLE_DEV
+		    && (CONS_fd = open(WSCONS_PCVT_COMPAT_CONSOLE_DEV,
+				       O_RDWR, 0)) < 0
+#endif
+		    )
 		{
 			fprintf(stderr,
 				"%s: Cannot open /dev/vga nor %s\n", 

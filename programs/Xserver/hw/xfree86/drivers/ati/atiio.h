@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.3 1999/07/06 11:38:31 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -107,9 +107,9 @@ extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
     {                                             \
         while (inw(GP_STAT) & (0x0100U >> (_n))); \
     }
-#define ATIWaitQueue(_n)                                   \
-    {                                                      \
-        while (inw(EXT_FIFO_STATUS) & (0x10000U >> (_n))); \
+#define ATIWaitQueue(_n)                                    \
+    {                                                       \
+        while (inw(EXT_FIFO_STATUS) & (0x010000U >> (_n))); \
     }
 
 /* Wait until GP is idle and queue is empty */

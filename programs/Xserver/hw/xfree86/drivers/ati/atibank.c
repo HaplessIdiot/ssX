@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.3 1999/07/06 11:38:24 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -43,7 +43,7 @@ ATIV3SetBank
     unsigned int iBank
 )
 {
-    ATIModifyExtReg(pATI, 0xB2, -1, (CARD8)(~0x1EU), SetBits(iBank, 0x1EU));
+    ATIModifyExtReg(pATI, 0xB2U, -1, (CARD8)(~0x1EU), SetBits(iBank, 0x1EU));
 }
 
 /*
@@ -60,7 +60,7 @@ ATIV3SetReadWrite
 {
     ATIPtr pATI = ATIPTR(XF86SCRNINFO(pScreen));
 
-    ATIModifyExtReg(pATI, 0xB2, -1, (CARD8)(~0x1EU), SetBits(iBank, 0x1EU));
+    ATIModifyExtReg(pATI, 0xB2U, -1, (CARD8)(~0x1EU), SetBits(iBank, 0x1EU));
     return 0;
 }
 
@@ -108,7 +108,7 @@ ATIV4V5SetRead
 
     if (B2Reg != pATI->B2Reg)
     {
-        ATIPutExtReg(0xB2, B2Reg);
+        ATIPutExtReg(0xB2U, B2Reg);
         pATI->B2Reg = B2Reg;
     }
 

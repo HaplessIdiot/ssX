@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.6 1999/06/20 05:23:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.7 1999/06/27 14:08:29 dawes Exp $ */
 
 /* Standard resource information code */
 
@@ -92,10 +92,9 @@ xf86FindPciBridgeInfo(const pciConfigPtr *pciInfo)
     PciBus->secondary = 0;
     /* for the primary host bridge assume: io: 0-0xffff mem: 0-0xffffffff */
     /* prefetchable range is unknown therefore we don't set it            */
-    RANGE(range,0,0xFFFF, ResIo | ResBlock | ResExclusive | ResMinimised);
+    RANGE(range, 0, 0xFFFF, ResIo | ResBlock | ResExclusive);
     PciBus->io = xf86AddResToList(NULL, &range, -1);
-    RANGE(range,0,~(memType)0,
-		      ResMem | ResBlock | ResExclusive | ResMinimised);
+    RANGE(range, 0, ~(memType)0, ResMem | ResBlock | ResExclusive);
     PciBus->mem = xf86AddResToList(NULL, &range, -1);
     /* Add each PCI-PCI bridge */
     /* XXX What about secondary host bridges?? */
@@ -115,19 +114,19 @@ xf86FindPciBridgeInfo(const pciConfigPtr *pciInfo)
 	    if (pcrp->pci_io_base <= pcrp->pci_io_limit) {
 		RANGE(range,pcrp->pci_io_base << 8,
 		      (pcrp->pci_io_limit << 8) | 0xfff,
-		      ResIo | ResBlock | ResExclusive | ResMinimised);
+		      ResIo | ResBlock | ResExclusive);
 		PciBus->io = xf86AddResToList(NULL, &range, -1);
 	    }
 	    if (pcrp->pci_mem_base <= pcrp->pci_mem_limit) {
 		RANGE(range,pcrp->pci_mem_base << 16,
 		      (pcrp->pci_mem_limit << 16) | 0xfffff,
-		      ResMem | ResBlock | ResExclusive | ResMinimised);
+		      ResMem | ResBlock | ResExclusive);
 		PciBus->mem = xf86AddResToList(NULL, &range, -1);
 	    }
 	    if (pcrp->pci_prefetch_mem_base <= pcrp->pci_prefetch_mem_limit) {
 		RANGE(range,pcrp->pci_prefetch_mem_base << 16,
 		      (pcrp->pci_prefetch_mem_limit << 16) | 0xfffff,
-		      ResMem | ResBlock | ResExclusive | ResMinimised);
+		      ResMem | ResBlock | ResExclusive);
 		PciBus->pmem = xf86AddResToList(NULL, &range, -1);
 	    }
 	    xf86MsgVerb(X_INFO, 3, "Bus %d: bridge is at (%d:%d:%d), "

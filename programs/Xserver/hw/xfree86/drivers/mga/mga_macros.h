@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.7 1999/03/14 03:22:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_macros.h,v 1.8 1999/07/04 06:39:05 dawes Exp $ */
 
 #ifndef _MGA_MACROS_H_
 #define _MGA_MACROS_H_
@@ -26,7 +26,8 @@
 	pMga->fifoCount -= n;\
    }
 
-#define XYADDRESS(x,y) ((y) * pScrn->displayWidth + (x) + pMga->YDstOrg)
+#define XYADDRESS(x,y) \
+    ((y) * pMga->CurrentLayout.displayWidth + (x) + pMga->YDstOrg)
 
 #define MAKEDMAINDEX(index)  ((((index) >> 2) & 0x7f) | (((index) >> 6) & 0x80))
 

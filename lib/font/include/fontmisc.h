@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.7 1999/04/27 07:08:58 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.8 1999/07/17 05:30:48 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -95,12 +95,14 @@ extern char *NameForAtom (Atom atom);
 extern pointer Xalloc(unsigned long);
 extern pointer Xrealloc(pointer, unsigned long);
 extern void Xfree(pointer);
+extern pointer Xcalloc(unsigned long, unsigned long);
 extern int f_strcasecmp(const char *s1, const char *s2);
 
 #ifndef xalloc
 #define xalloc(n)   Xalloc ((unsigned) n)
 #define xfree(p)    Xfree ((pointer) p)
 #define xrealloc(p,n)	Xrealloc ((pointer)p,n)
+#define xcalloc(n,s)    Xcalloc((unsigned) n, (unsigned) s)
 #endif
 #define lowbit(x) ((x) & (~(x) + 1))
 
@@ -145,5 +147,7 @@ extern void CopyISOLatin1Lowered(
     unsigned char * /*source*/,
     int /*length*/
 );
+
+extern void register_fpe_functions(void);
 
 #endif /* _FONTMISC_H_ */

@@ -1,16 +1,10 @@
-/* $XConsortium: miscutil.c,v 1.4 94/04/17 20:17:36 gildea Exp $ */
+/* $TOG: miscutil.c /main/6 1998/05/01 16:43:52 kaleb $ */
 
 /*
 
-Copyright (c) 1991, 1994  X Consortium
+Copyright 1991, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,15 +12,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -36,6 +30,7 @@ from the X Consortium.
 #else
 char *malloc(), *realloc();
 #endif
+#include "fontmisc.h"
 
 #define XK_LATIN1
 #include    <X11/keysymdef.h>
@@ -45,32 +40,36 @@ char *malloc(), *realloc();
 
 long serverGeneration = 1;
 
-unsigned long *
-Xalloc (m)
+void *
+Xalloc (unsigned long m)
 {
-    return (unsigned long *) malloc (m);
+    return malloc (m);
 }
 
-unsigned long *
-Xrealloc (n,m)
-    unsigned long   *n;
+void *
+Xrealloc (void *n, unsigned long m)
 {
     if (!n)
-	return (unsigned long *) malloc (m);
+	return malloc (m);
     else
-	return (unsigned long *) realloc ((char *) n, m);
+	return realloc (n, m);
 }
 
-Xfree (n)
-    unsigned long   *n;
+void
+Xfree (void *n)
 {
     if (n)
-	free ((char *) n);
+	free (n);
 }
 
-CopyISOLatin1Lowered (dst, src, len)
-    char    *dst, *src;
-    int	    len;
+void *
+Xcalloc (unsigned long n, unsigned long m)
+{
+    return calloc (n, m);
+}
+
+void
+CopyISOLatin1Lowered (unsigned char *dst, unsigned char *src, int len)
 {
     register unsigned char *dest, *source;
 
@@ -90,6 +89,7 @@ CopyISOLatin1Lowered (dst, src, len)
     *dest = '\0';
 }
 
+void
 register_fpe_functions ()
 {
 }

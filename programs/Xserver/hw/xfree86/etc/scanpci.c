@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.65 1999/06/12 07:19:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.66 1999/06/27 14:08:14 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -739,12 +739,28 @@ struct pci_vendor_device {
                             { 0x4554, "Mach64 ET", print_mach64 },
                             { 0x4742, "Mach64 GB", print_mach64 },
                             { 0x4744, "Mach64 GD", print_mach64 },
+                            { 0x4749, "Mach64 GI", print_mach64 },
+                            { 0x474D, "Mach64 GM", print_mach64 },
+                            { 0x474E, "Mach64 GN", print_mach64 },
+                            { 0x474F, "Mach64 GO", print_mach64 },
                             { 0x4750, "Mach64 GP", print_mach64 },
+                            { 0x4751, "Mach64 GQ", print_mach64 },
+                            { 0x4752, "Mach64 GR", print_mach64 },
+                            { 0x4753, "Mach64 GS", print_mach64 },
                             { 0x4754, "Mach64 GT", print_mach64 },
-                            { 0x4755, "Mach64 GT", print_mach64 },
+                            { 0x4755, "Mach64 GU", print_mach64 },
+                            { 0x4756, "Mach64 GV", print_mach64 },
+                            { 0x4757, "Mach64 GW", print_mach64 },
                             { 0x4758, "Mach64 GX", print_mach64 },
-                            { 0x4C47, "Mach64 LT", print_mach64 },
+                            { 0x475A, "Mach64 GZ", print_mach64 },
+                            { 0x4C42, "Mach64 LB", print_mach64 },
+                            { 0x4C44, "Mach64 LD", print_mach64 },
+                            { 0x4C47, "Mach64 LG", print_mach64 },
+                            { 0x4C49, "Mach64 LI", print_mach64 },
+                            { 0x4C50, "Mach64 LP", print_mach64 },
                             { 0x5654, "Mach64 VT", print_mach64 },
+                            { 0x5655, "Mach64 VU", print_mach64 },
+                            { 0x5656, "Mach64 VV", print_mach64 },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1004, "VLSI", {
                             { 0x0005, "82C592-FC1", NF },
@@ -796,6 +812,7 @@ struct pci_vendor_device {
                             { 0x00BC, "GD 5480", NF },
                             { 0x00D0, "GD 5462", NF },
                             { 0x00D4, "GD 5464", NF },
+                            { 0x00D6, "GD 5465", NF },
                             { 0x1100, "CL 6729", NF },
                             { 0x1110, "CL 6832", NF },
                             { 0x1200, "GD 7542", NF },
@@ -826,7 +843,10 @@ struct pci_vendor_device {
                             { 0x9680, "TGUI 9680", NF },
                             { 0x9682, "TGUI 9682", NF },
 #endif
+                            { 0x9388, "TGUI 9388", NF },
+                            { 0x9397, "TGUI 9397", NF },
                             { 0x9750, "TGUI 9750", NF },
+                            { 0x9850, "TGUI 9850", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1025, "ALI", {
                             { 0x1435, "M1435", NF },
@@ -836,13 +856,21 @@ struct pci_vendor_device {
                             { 0x0519, "MGA Millennium", NF },
                             { 0x051a, "MGA Mystique", NF },
                             { 0x051b, "MGA Millennium II", NF },
+                            { 0x051f, "MGA Millennium II AGP", NF },
+                            { 0x0520, "MGA Millennium G200 PCI", NF },
+                            { 0x0521, "MGA Millennium G200 AGP", NF },
                             { 0x0D10, "MGA Impression", NF },
+                            { 0x1000, "MGA Productiva G100 PCI", NF },
+                            { 0x1001, "MGA Productiva G100 AGP", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x102C, "CT", {
                             { 0x00D8, "65545", NF },
                             { 0x00DC, "65548", NF },
                             { 0x00E0, "65550", NF },
                             { 0x00E4, "65554", NF },
+                            { 0x00E5, "65555", NF },
+                            { 0x00F4, "68554", NF },
+                            { 0x00C0, "69000", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1031, "Miro", {
                             { 0x5601, "ZR36050", NF },
@@ -923,6 +951,7 @@ struct pci_vendor_device {
                             { 0x2309, "Imagine-128", print_i128 },
                             { 0x2339, "Imagine-128-II", print_i128 },
                             { 0x493D, "Imagine-128-T2R", print_i128 },
+                            { 0x5348, "Imagine-128-T2R4", print_i128 },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1060, "UMC", {
                             { 0x0101, "UM8673F", NF },
@@ -940,6 +969,9 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1066, "PICOP", {
                             { 0x0001, "PT86C52x Vesuvius", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x1069, "Mylex", {
+                            { 0x0010, "AccelRAID 250", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x106B, "Apple", {
                             { 0x0001, "Bandit", NF },
@@ -1062,6 +1094,7 @@ struct pci_vendor_device {
         { 0x10DE, "NVidia", {
                             { 0x0008, "NV1", NF },
                             { 0x0009, "DAC64", NF },
+                            { 0x0020, "Riva TNT", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x10E0, "IMS", {
                             { 0x8849, "8849", NF },
@@ -1137,6 +1170,7 @@ struct pci_vendor_device {
                             { 0x0000, (char *)NULL, NF } } },
         { 0x121A, "3Dfx Interactive", {
                             { 0x0001, "Voodoo Graphics", NF },
+                            { 0x0003, "Banshee", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x1236, "Sigma Designs", {
                             { 0x6401, "REALmagic64/GX (SD 6425)", NF },
@@ -1198,9 +1232,10 @@ struct pci_vendor_device {
                             { 0x0484, "82378IB/ZB pci-isa bridge", NF },
                             { 0x0486, "82430ZX Aries", NF },
                             { 0x04A3, "82434LX/NX pci cache mem controller", NF },
+                            { 0x0960, "960RD processor/bridge", NF },
                             { 0x1230, "82371 bus-master IDE controller", NF },
                             { 0x1223, "SAA7116", NF },
-                            { 0x1229, "82557 10/100MBit network controller",NF},
+                            { 0x1229, "82557/8 10/100MBit network controller",NF},
                             { 0x122D, "82437 Triton", NF },
                             { 0x122E, "82471 Triton", NF },
                             { 0x1230, "82438", NF },
@@ -1212,18 +1247,33 @@ struct pci_vendor_device {
                             { 0x7111, "82371AB PIIX4 IDE", NF },
                             { 0x7112, "82371AB PIIX4 USB", NF },
                             { 0x7113, "82371AB PIIX4 ACPI", NF },
+			    { 0x7180, "82443LX PAC Host", NF },
+			    { 0x7181, "82443LX PAC AGP", NF },
+			    { 0x7190, "82443BX Host", NF },
+			    { 0x7191, "82443BX AGP", NF },
+			    { 0x7192, "82443BX Host (no AGP)", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x9004, "Adaptec", {
+                            { 0x0010, "2940U2", NF },
+                            { 0x1078, "7810", NF },
                             { 0x5078, "7850", NF },
                             { 0x5578, "7855", NF },
                             { 0x6078, "7860", NF },
-                            { 0x7078, "294x", NF },
+                            { 0x6178, "2940AU", NF },
+                            { 0x7078, "7870", NF },
                             { 0x7178, "2940", NF },
                             { 0x7278, "7872", NF },
+                            { 0x7378, "398X", NF },
                             { 0x7478, "2944", NF },
-                            { 0x8178, "2940U", NF },
-                            { 0x8278, "3940U", NF },
+                            { 0x7895, "7895", NF },
+                            { 0x8078, "7880", NF },
+                            { 0x8178, "2940U/UW", NF },
+                            { 0x8278, "3940U/UW", NF },
+                            { 0x8378, "389XU", NF },
                             { 0x8478, "2944U", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+        { 0x9005, "Adaptec", {
+                            { 0x001F, "7890/7891", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x907F, "Atronics", {
                             { 0x2015, "IDE-2015PL", NF },
@@ -1233,6 +1283,9 @@ struct pci_vendor_device {
                             { 0xA099, "2000PV", NF },
                             { 0xA0A1, "2000MT", NF },
                             { 0xA0A9, "2000MI", NF },
+                            { 0x0000, (char *)NULL, NF } } },
+	{ 0x1274, "Ensoniq", {
+			    { 0x5000, "AudioPCI", NF },
                             { 0x0000, (char *)NULL, NF } } },
         { 0x0000, (char *)NULL, {
                             { 0x0000, (char *)NULL, NF } } }
@@ -1288,7 +1341,7 @@ main(int argc, unsigned char *argv[])
 #endif
 
 #if defined(DGUX)
-    printf("Scanpci for Intel ix86 DG/ux R4.20MU03...MUxx\n\n");
+    printf("Scanpci for Intel ix86 DG/ux R4.20MU04...MUxx\n\n");
 #endif
 
     enable_os_io();
@@ -1695,6 +1748,10 @@ print_mach64(struct pci_config_reg *pcr)
     if (pcr->_base1)
         printf("  BLOCKIO   0x%08x  addr 0x%08x\n",
             pcr->_base1, pcr->_base1 & (pcr->_base1 & 0x1 ?
+		0xFFFFFFFC : 0xFFFFFFF0));
+    if (pcr->_base2)
+        printf("  REGBASE   0x%08x  addr 0x%08x\n",
+            pcr->_base2, pcr->_base2 & (pcr->_base2 & 0x1 ?
 		0xFFFFFFFC : 0xFFFFFFF0));
     if (pcr->_baserom)
         printf("  BASEROM   0x%08x  addr 0x%08x  %sdecode-enabled\n",

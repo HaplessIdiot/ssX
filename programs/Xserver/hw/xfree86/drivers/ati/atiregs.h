@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.4 1999/07/06 11:38:36 dawes Exp $ */
 /*
  * Copyright 1994 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -708,14 +708,14 @@
 #define OVR_CLR_G			0x00ff0000ul
 #define OVR_CLR_R			0xff000000ul
 #define OVR_WID_LEFT_RIGHT	IOPortTag(0x09u, 0x11u)
-#define OVR_WID_LEFT			0x0000003ful
+#define OVR_WID_LEFT			0x0000003ful	/* 0x0f on <LT */
 /*	?				0x0000ffc0ul */
-#define OVR_WID_RIGHT			0x003f0000ul
+#define OVR_WID_RIGHT			0x003f0000ul	/* 0x0f0000 on <LT */
 /*	?				0xffc00000ul */
 #define OVR_WID_TOP_BOTTOM	IOPortTag(0x0au, 0x12u)
-#define OVR_WID_TOP			0x000001fful
+#define OVR_WID_TOP			0x000001fful	/* 0x00ff on <LT */
 /*	?				0x0000fe00ul */
-#define OVR_WID_BOTTOM			0x01ff0000ul
+#define OVR_WID_BOTTOM			0x01ff0000ul	/* 0x00ff0000 on <LT */
 /*	?				0xfe000000ul */
 #define VGA_DSP_CONFIG		BlockIOTag(0x13u)	/* VTB/GTB/LT */
 #define VGA_DSP_XCLKS_PER_QW		DSP_XCLKS_PER_QW

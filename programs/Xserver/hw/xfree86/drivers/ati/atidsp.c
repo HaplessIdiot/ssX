@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.4 1999/07/06 11:38:29 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -57,20 +57,20 @@ ATIDSPPreInit
     /* Retrieve XCLK settings */
     IOValue = ATIGetMach64PLLReg(PLL_XCLK_CNTL);
     pATI->XCLKPostDivider = GetBits(IOValue, PLL_XCLK_SRC_SEL);
-    pATI->XCLKReferenceDivider = pATI->ClockDescriptor.MinM;
+    pATI->XCLKReferenceDivider = 1;
     switch (pATI->XCLKPostDivider)
     {
-        case 0: case 1: case 2: case 3:
+        case 0:  case 1:  case 2:  case 3:
             break;
 
         case 4:
-            pATI->XCLKReferenceDivider *= 3;
+            pATI->XCLKReferenceDivider = 3;
             pATI->XCLKPostDivider = 0;
             break;
 
         default:
             xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                "Unsupported XCLK source:  %d", pATI->XCLKPostDivider);
+                "Unsupported XCLK source:  %d.\n", pATI->XCLKPostDivider);
             return FALSE;
     }
 
@@ -173,19 +173,21 @@ ATIDSPSave
 void
 ATIDSPCalculate
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI,
-    ATIHWPtr    pATIHW
+    ScrnInfoPtr    pScreenInfo,
+    ATIPtr         pATI,
+    ATIHWPtr       pATIHW,
+    DisplayModePtr pMode
 )
 {
     int Multiplier, Divider;
+    int RASMultiplier = pATI->XCLKMaxRASDelay, RASDivider = 1;
     int dsp_precision, dsp_on, dsp_off, dsp_xclks;
     int tmp, vshift, xshift;
 
 #   define Maximum_DSP_PRECISION ((int)MaxBits(DSP_PRECISION))
 
     /* Compute a memory-to-screen bandwidth ratio */
-    Multiplier = pATIHW->ReferenceDivider * pATI->XCLKFeedbackDivider *
+    Multiplier = pATI->XCLKFeedbackDivider *
         pATI->ClockDescriptor.PostDividers[pATIHW->PostDivider];
     Divider = pATIHW->FeedbackDivider * pATI->XCLKReferenceDivider;
     if (pScreenInfo->depth >= 8)
@@ -194,6 +196,16 @@ ATIDSPCalculate
     vshift = (5 - 2) - pATI->XCLKPostDivider;
     if (pATIHW->crtc != ATI_CRTC_VGA)
         vshift++;               /* Nope, it's 64 bits wide */
+
+    if (pATI->LCDPanelID >= 0)
+    {
+        /* Compensate for horizontal stretching */
+        Multiplier *= pATI->LCDHorizontal;
+        Divider *= pMode->HDisplay;
+
+        RASMultiplier *= pATI->LCDHorizontal;
+        RASDivider *= pMode->HTotal;
+    }
 
     /* Determine dsp_precision first */
     tmp = ATIDivide(Multiplier * pATI->DisplayFIFODepth, Divider, vshift, 1);
@@ -209,7 +221,7 @@ ATIDSPCalculate
 
     /* Move on to dsp_off */
     dsp_off = ATIDivide(Multiplier * (pATI->DisplayFIFODepth - 1), Divider,
-        vshift, 1);
+        vshift, -1) - ATIDivide(1, 1, vshift - xshift, 1);
 
     /* Next is dsp_on */
     if ((pATIHW->crtc == ATI_CRTC_VGA) && (dsp_precision < 3))
@@ -218,15 +230,16 @@ ATIDSPCalculate
          * TODO:  I don't yet know why something like this appears necessary.
          *        But I don't have time to explore this right now.
          */
-        dsp_on = ATIDivide(Multiplier * 5, Divider, vshift + 2, -1);
+        dsp_on = ATIDivide(Multiplier * 5, Divider, vshift + 2, 1);
     }
     else
     {
-        dsp_on = ATIDivide(Multiplier, Divider, vshift, -1);
-        tmp = ATIDivide(pATI->XCLKMaxRASDelay, 1, xshift, 1);
+        dsp_on = ATIDivide(Multiplier, Divider, vshift, 1);
+        tmp = ATIDivide(RASMultiplier, RASDivider, xshift, 1);
         if (dsp_on < tmp)
             dsp_on = tmp;
-        dsp_on += tmp + ATIDivide(pATI->XCLKPageFaultDelay, 1, xshift, 1);
+        dsp_on += (tmp * 2) +
+            ATIDivide(pATI->XCLKPageFaultDelay, 1, xshift, 1);
     }
 
     /* Last but not least:  dsp_xclks */

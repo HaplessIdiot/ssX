@@ -8,7 +8,7 @@
 <date>4 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.4 1999/07/07 12:05:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/mouse.sgml,v 1.5 1999/07/10 07:24:44 dawes Exp $
 </ident>
 
 <toc>
@@ -126,17 +126,22 @@ FreeBSD supports the <tt>"SysMouse"</tt> protocol which must be
 specified when the <tt>moused</tt> daemon is running in versions 2.2.1 
 or later.
 
+FreeBSD versions 2.2.6 or later include the kernel-level
+support for extended PS/2 mouse protocols and there is no need to specify
+the exact protocol name to the X server.
+Instead specify the <tt>"PS/2"</tt> or <tt>"Auto"</tt> protocol and 
+the X server will automatically make use of the kernel-level support.
+
+In fact, <tt>"Auto"</tt> protocol support is really efficient in these 
+versions.
+You may always specify <tt>"Auto"</tt> to any mouse, serial, 
+bus or PS/2, unless the mouse is an old serial model which doesn't
+support PnP.
+
 FreeBSD versions 2.2.5 or earlier do not support extended PS/2 
 mouse protocols (<tt>"xxxPS/2"</tt>).
 Always specify the <tt>"PS/2"</tt> protocol for any PS/2 mouse 
 in these versions regardless of the brand of the mouse.
-
-FreeBSD versions 2.2.6 or later include the kernel-level
-support for these mice.
-Specify the <tt>"PS/2"</tt> or <tt>"Auto"</tt> protocol and 
-the X server will automatically make use of the kernel-level support.
-In fact, you may always specify <tt>"Auto"</tt> to any mouse in these
-versions unless the mouse is an old serial model which doesn't support PnP.
 
 <sect1>FreeBSD(98) <p>
 The PS/2 mouse is not supported.

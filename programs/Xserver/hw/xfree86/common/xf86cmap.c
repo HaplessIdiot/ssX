@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.14 1999/07/06 11:38:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.15 1999/07/18 03:26:49 dawes Exp $ */
 
 #ifdef _XOPEN_SOURCE
 #include <math.h>
@@ -37,7 +37,7 @@
 #define LOAD_PALETTE(pmap, index) \
     ((pmap == miInstalledMaps[index]) && \
      ((pScreenPriv->flags & CMAP_LOAD_EVEN_IF_OFFSCREEN) || \
-      xf86Screens[index]->vtSema))
+      (xf86Screens[index]->vtSema || pScreenPriv->isDGAmode)))
 
 
 typedef struct _CMapLink {
@@ -64,6 +64,7 @@ typedef struct {
   int				*PreAllocIndices;
   CMapLinkPtr			maps;
   unsigned int			flags;
+  Bool				isDGAmode;
 } CMapScreenRec, *CMapScreenPtr;
 
 typedef struct {
@@ -163,16 +164,18 @@ Bool xf86HandleColormaps(
     pScreenPriv->PreAllocIndices = indices;
     pScreenPriv->maps = NULL;
     pScreenPriv->flags = flags;
+    pScreenPriv->isDGAmode = FALSE;
 
     pScreenPriv->EnterVT = pScrn->EnterVT;
     pScreenPriv->SwitchMode = pScrn->SwitchMode;
     pScreenPriv->SetDGAMode = pScrn->SetDGAMode;    
 
     pScrn->EnterVT = CMapEnterVT;
-    if(flags & CMAP_RELOAD_ON_MODE_SWITCH) {
+    if(flags & CMAP_RELOAD_ON_MODE_SWITCH) 
 	pScrn->SwitchMode = CMapSwitchMode;
-	pScrn->SetDGAMode = CMapSetDGAMode;
-    }
+#ifdef XFreeXDGA
+    pScrn->SetDGAMode = CMapSetDGAMode;
+#endif
     pScrn->ChangeGamma = CMapChangeGamma;
  
     ComputeGamma(pScreenPriv);
@@ -400,6 +403,10 @@ CMapInstallColormap(ColormapPtr pmap)
     (*pScreen->InstallColormap)(pmap);
     pScreen->InstallColormap = CMapInstallColormap;
 
+    /* Important. We let the lower layers, namely DGA, 
+       overwrite the choice of Colormap to install */
+    pmap = miInstalledMaps[index];
+
     if(!(pScreenPriv->flags & CMAP_PALETTED_TRUECOLOR) &&
 	(pmap->pVisual->class == TrueColor) &&
 	((1 << pmap->pVisual->nplanes) > pScreenPriv->maxColors))
@@ -443,7 +450,7 @@ CMapSwitchMode(int index, DisplayModePtr mode, int flags)
     return FALSE;
 }
 
-
+#ifdef XFreeXDGA
 static int  
 CMapSetDGAMode(int index, int num, DGADevicePtr dev)
 {
@@ -454,11 +461,14 @@ CMapSetDGAMode(int index, int num, DGADevicePtr dev)
 
     ret = (*pScreenPriv->SetDGAMode)(index, num, dev);
 
+    pScreenPriv->isDGAmode = DGAActive(index);
+
     if(miInstalledMaps[index])
 	CMapReinstallMap(miInstalledMaps[index]);
 
     return ret;
 }
+#endif
 
 
 /**** Utilities ****/
@@ -878,7 +888,8 @@ CMapChangeGamma(
 	pLink = pLink->next;
     }
 
-    if(miInstalledMaps[pScreen->myNum] && pScrn->vtSema) {
+    if(miInstalledMaps[pScreen->myNum] && 
+       (pScrn->vtSema || pScreenPriv->isDGAmode)) {
 	ColormapPtr pMap = miInstalledMaps[pScreen->myNum];
 
 	if(!(pScreenPriv->flags & CMAP_PALETTED_TRUECOLOR) &&

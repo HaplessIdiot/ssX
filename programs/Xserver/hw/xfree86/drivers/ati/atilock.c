@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atilock.c,v 1.1 1999/07/06 11:38:31 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -39,21 +39,11 @@ ATIUnlock
     ATIPtr pATI
 )
 {
-    pciVideoPtr  pVideo;
-    pciConfigPtr pPCI;
     CARD32       tmp;
 
     if (pATI->Unlocked)
         return;
     pATI->Unlocked = TRUE;
-
-    if ((pVideo = pATI->PCIInfo))
-    {
-        pPCI = (pciConfigPtr)(pVideo->thisCard);
-        tmp = pciReadLong(pPCI->tag, PCI_CMD_STAT_REG);
-        if ((tmp & PCI_CMD_ENABLE) != PCI_CMD_ENABLE)
-            pciWriteLong(pPCI->tag, PCI_CMD_STAT_REG, tmp | PCI_CMD_ENABLE);
-    }
 
     if (pATI->ChipHasSUBSYS_CNTL)
     {
@@ -212,7 +202,7 @@ ATIUnlock
             crt09 = GetReg(CRTX(pATI->CPIO_VGABase), 0x09U);
             VBlankStart = (((crt09 & 0x20U) << 4) | ((crt07 & 0x08U) << 5) |
                 GetReg(CRTX(pATI->CPIO_VGABase), 0x15U)) + 1;
-            VBlankEnd = (VBlankStart & 0x300U) |
+            VBlankEnd = (VBlankStart & 0x0300U) |
                 GetReg(CRTX(pATI->CPIO_VGABase), 0x16U);
             if (VBlankEnd <= VBlankStart)
                 VBlankEnd += 0x0100U;
@@ -238,10 +228,6 @@ ATILock
     ATIPtr pATI
 )
 {
-#if 0
-    pciVideoPtr  pVideo;
-    pciConfigPtr pPCI;
-#endif
     CARD32 tmp;
 
     if (!pATI->Unlocked)
@@ -327,14 +313,4 @@ ATILock
         if (pATI->Chip < ATI_CHIP_264CT)
             outl(pATI->CPIO_MEM_INFO, pATI->LockData.mem_info);
     }
-
-#if 0
-    if ((pVideo = pATI->PCIInfo))
-    {
-        pPCI = (pciConfigPtr)(pVideo->thisCard);
-        tmp = pciReadLong(pPCI->tag, PCI_CMD_STAT_REG);
-        if (tmp & PCI_CMD_ENABLE)
-            pciWriteLong(pPCI->tag, PCI_CMD_STAT_REG, tmp & ~PCI_CMD_ENABLE);
-    }
-#endif
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.1 1999/07/06 11:38:38 dawes Exp $ */
 /*
  * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -66,6 +66,17 @@ typedef struct _ATIHWRec
            ovr_clr, ovr_wid_left_right, ovr_wid_top_bottom,
            clock_cntl, bus_cntl, mem_vga_wp_sel, mem_vga_rp_sel,
            dac_cntl, config_cntl;
+
+    /* LCD registers */
+    CARD32 lcd_index, config_panel, lcd_gen_ctrl, power_management,
+           horz_stretching, vert_stretching, ext_vert_stretch;
+
+    /* Shadow VGA CRTC registers */
+    CARD8 shadow_vga[25];
+
+    /* Shadow Mach64 CRTC registers */
+    CARD32 shadow_h_total_disp, shadow_h_sync_strt_wid,
+           shadow_v_total_disp, shadow_v_sync_strt_wid;
 
     /* Clock map pointers */
     const CARD8 *ClockMap, *ClockUnmap;
@@ -192,6 +203,8 @@ typedef struct _ATIRec
      * LCD panel data.
      */
     int LCDPanelID, LCDClock, LCDHorizontal, LCDVertical;
+    int LCDHSyncStart, LCDHSyncWidth, LCDHBlankWidth;
+    int LCDVSyncStart, LCDVSyncWidth, LCDVBlankWidth;
 
     /*
      * Data used by ATIAdjustFrame().
@@ -220,11 +233,6 @@ typedef struct _ATIRec
 
     /* Mode data */
     ATIHWRec OldHW, NewHW;
-
-    /*
-     * XF86Config Device section.
-     */
-    GDevPtr pGDev;
 
     /*
      * Resource Access Control entity index.

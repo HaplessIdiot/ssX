@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.17 1999/04/11 13:10:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.18 1999/05/03 12:15:55 dawes Exp $ */
 
 /*
 
@@ -203,7 +203,7 @@ ProcXF86DGAInstallColormap(ClientPtr client)
 
     pcmp = (ColormapPtr  )LookupIDByType(stuff->id, RT_COLORMAP);
     if (pcmp) {
-	DGAInstallColormap(pcmp);
+	DGAInstallCmap(pcmp);
         return (client->noClientException);
     } else {
         client->errorValue = stuff->id;

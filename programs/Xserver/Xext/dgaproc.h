@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.15 1999/07/10 12:17:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.16 1999/07/18 08:14:24 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -74,7 +74,7 @@ DGASelectInput(
 Bool DGAAvailable(int index);
 Bool DGAActive(int index);
 void DGAShutdown(void);
-void DGAInstallColormap(ColormapPtr cmap);
+void DGAInstallCmap(ColormapPtr cmap);
 int DGAGetViewportStatus(int index); 
 int DGAFlush(int index);
 

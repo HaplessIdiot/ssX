@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.3 1999/06/12 07:18:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Resources.h,v 1.4 1999/06/27 14:07:57 dawes Exp $ */
 
 #ifndef _XF86_RESOURCES_H
 
@@ -8,7 +8,6 @@
 
 #define _END {ResEnd,0,0}
 
-#if 1
 #define _VGA_EXCLUSIVE {ResExcMemBlock,0xA0000,0xAFFFF},\
 		      {ResExcMemBlock,0xB0000,0xB7FFF},\
 		      {ResExcMemBlock,0xB8000,0xBFFFF},\
@@ -28,6 +27,7 @@
 			       {ResExcUusdMemBlock,0xB8000,0xBFFFF},\
                                {ResExcUusdIoBlock,0x3B0,0x3BB},\
                                {ResExcUusdIoBlock,0x3C0,0x3DF}
+
 /* shared unused VGA: resources unneeded but cannot be disabled */
 /* independently. This is used to determine if a device needs rac */
 #define _VGA_SHARED_UNUSED {ResShrUusdMemBlock,0xA0000,0xAFFFF},\
@@ -35,49 +35,34 @@
 			       {ResShrUusdMemBlock,0xB8000,0xBFFFF},\
                                {ResShrUusdIoBlock,0x3B0,0x3BB},\
                                {ResShrUusdIoBlock,0x3C0,0x3DF}
-#else
-#define _VGA_EXCLUSIVE {ResExcMemBlock,0xA0000,0xAFFFF},\
-		       {ResExcMemBlock,0xB0000,0xB7FFF},\
-		       {ResExcMemBlock,0xB8000,0xBFFFF},\
-                       {ResExcIoBlock,0x3B0,0x3DF}
 
-#define _VGA_SHARED    {ResShrMemBlock,0xA0000,0xAFFFF},\
-		       {ResShrMemBlock,0xB0000,0xB7FFF},\
-		       {ResShrMemBlock,0xB8000,0xBFFFF},\
-                       {ResShrIoBlock,0x3B0,0x3DF}
+/* Sparse versions of the above for those adapters that respond to all ISA
+ * aliases of VGA ports. */
+#define _VGA_EXCLUSIVE_SPARSE {ResExcMemBlock,0xA0000,0xAFFFF},\
+			      {ResExcMemBlock,0xB0000,0xB7FFF},\
+			      {ResExcMemBlock,0xB8000,0xBFFFF},\
+			      {ResExcIoSparse,0x3B0,0x3F8},\
+			      {ResExcIoSparse,0x3B8,0x3FC},\
+			      {ResExcIoSparse,0x3C0,0x3E0}
 
-#define _VGA_EXCLUSIVE_UNUSED {ResExcUusdMemBlock,0xA0000,0xAFFFF},\
-			       {ResExcUusdMemBlock,0xB0000,0xB7FFF},\
-			       {ResExcUusdMemBlock,0xB8000,0xBFFFF},\
-                               {ResExcUusdIoBlock,0x3B0,0x3DF}
+#define _VGA_SHARED_SPARSE {ResShrMemBlock,0xA0000,0xAFFFF},\
+			   {ResShrMemBlock,0xB0000,0xB7FFF},\
+			   {ResShrMemBlock,0xB8000,0xBFFFF},\
+			   {ResShrIoSparse,0x3B0,0x3F8},\
+			   {ResShrIoSparse,0x3B8,0x3FC},\
+			   {ResShrIoSparse,0x3C0,0x3E0}
 
-#define _VGA_SHARED_UNUSED {ResShrUusdMemBlock,0xA0000,0xAFFFF},\
-			       {ResShrUusdMemBlock,0xB0000,0xB7FFF},\
-			       {ResShrUusdMemBlock,0xB8000,0xBFFFF},\
-                               {ResShrUusdIoBlock,0x3B0,0x3DF}
-#endif
+#define _8514_EXCLUSIVE {ResExcIoSparse,0x2E8,0x3F8}
 
-#if 0
-#define _8514_EXCLUSIVE {ResExcIoSparse,0x2E8,0x3FF},\
-                        {ResExcIoSparse,0x2EA,0x3FF},\
-                        {ResExcIoSparse,0x2EB,0x3FF},\
-                        {ResExcIoSparse,0x2EC,0x3FC}
-
-#define _8514_SHARED    {ResShrIoSparse,0x2E8,0x3FF},\
-                        {ResShrIoSparse,0x2EA,0x3FF},\
-                        {ResShrIoSparse,0x2EB,0x3FF},\
-                        {ResShrIoSparse,0x2EC,0x3FC}
-#else
-#define _8514_EXCLUSIVE {ResExcIoSparse,0x2EC,0x3F8}
-
-#define _8514_SHARED    {ResShrIoSparse,0x2EC,0x3F8}
-#endif
+#define _8514_SHARED    {ResShrIoSparse,0x2E8,0x3F8}
 
 /* predefined resources */
 extern resRange resVgaExclusive[];
 extern resRange resVgaShared[];
 extern resRange resVgaUnusedExclusive[];
 extern resRange resVgaUnusedShared[];
+extern resRange resVgaSparseExclusive[];
+extern resRange resVgaSparseShared[];
 extern resRange res8514Exclusive[];
 extern resRange res8514Shared[];
 

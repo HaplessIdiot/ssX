@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiwonder.c,v 1.4 1999/07/06 11:38:40 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,14 +21,15 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* The ATI x8800 chips use special registers for their extended VGA features.
+/*
+ * The ATI x8800 chips use special registers for their extended VGA features.
  * These registers are accessible through an index I/O port and a data I/O
  * port.  BIOS initialization stores the index port number in the Graphics
  * register bank (0x03CE), indices 0x50 and 0x51.  Unfortunately, for all but
  * the 18800-x series of adapters, these registers are write-only (a.k.a. black
- * holes).  On all but Mach64's, the index port number can be found in the
- * short integer at offset 0x10 in the BIOS.  For Mach64's, this driver will
- * use 0x01CE or 0x03CE as the index port number, depending on the I/O port
+ * holes).  On all but 88800's, the index port number can be found in the short
+ * integer at offset 0x10 in the BIOS.  For 88800's, this driver will use
+ * 0x01CE or 0x03CE as the index port number, depending on the I/O port
  * decoding used.  The data port number is one more than the index port number
  * (i.e. 0x01CF).  These ports differ slightly in their I/O behaviour from the
  * normal VGA ones:
@@ -43,10 +44,10 @@
  * be bracketed by a sequencer reset.
  *
  * The number of these extended VGA registers varies by chipset.  The 18800
- * series have 16, the 28800 series have 32, while Mach32's and Mach64's have
- * 64.  The last 16 on each have almost identical definitions.  Thus, the BIOS
- * (and this driver) sets up an indexing scheme whereby the last 16 extended
- * VGA registers are accessed at indices 0xB0 through 0xBF on all chipsets.
+ * series have 16, the 28800 series have 32, while 68800's and 88800's have 64.
+ * The last 16 on each have almost identical definitions.  Thus, the BIOS sets
+ * up an indexing scheme whereby the last 16 extended VGA registers are
+ * accessed at indices 0xB0 through 0xBF on all chipsets.
  */
 
 #include "atichip.h"

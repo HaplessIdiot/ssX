@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.4 1999/07/06 11:38:39 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -165,7 +165,7 @@ ATIVGACalculate
     DisplayModePtr pMode
 )
 {
-    int Index;
+    int Index, VDisplay;
 
     /* If not already done, adjust horizontal timings */
     if (!pMode->CrtcHAdjusted)
@@ -246,17 +246,22 @@ ATIVGACalculate
     }
     else
     {
-        if (pMode->CrtcVDisplay < 400)
+        if (pATI->LCDPanelID >= 0)
+            VDisplay = pATI->LCDVertical;
+        else
+            VDisplay = pMode->CrtcVDisplay;
+
+        if (VDisplay < 400)
         {
             pMode->Flags |= V_PHSYNC | V_NVSYNC;
             pATIHW->genmo |= 0x80U;
         }
-        else if (pMode->CrtcVDisplay < 480)
+        else if (VDisplay < 480)
         {
             pMode->Flags |= V_NHSYNC | V_PVSYNC;
             pATIHW->genmo |= 0x40U;
         }
-        else if (pMode->CrtcVDisplay < 768)
+        else if (VDisplay < 768)
         {
             pMode->Flags |= V_NHSYNC | V_NVSYNC;
             pATIHW->genmo |= 0xC0U;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.33 1999/07/10 07:24:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.34 1999/07/12 05:10:45 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -64,6 +64,8 @@ resRange resVgaExclusive[] = {_VGA_EXCLUSIVE, _END};
 resRange resVgaShared[] = {_VGA_SHARED, _END};
 resRange resVgaUnusedExclusive[] = {_VGA_EXCLUSIVE_UNUSED, _END};
 resRange resVgaUnusedShared[] = {_VGA_SHARED_UNUSED, _END};
+resRange resVgaSparseExclusive[] = {_VGA_EXCLUSIVE_SPARSE, _END};
+resRange resVgaSparseShared[] = {_VGA_SHARED_SPARSE, _END};
 resRange res8514Exclusive[] = {_8514_EXCLUSIVE, _END};
 resRange res8514Shared[] = {_8514_SHARED, _END};
 resRange PciAvoid[] = {_PCI_AVOID, _END};
@@ -534,21 +536,132 @@ xf86ClaimPciSlot(int bus, int device, int func, DriverPtr drvp,
  * Get xf86PciVideoInfo for a driver.
  */
 pciVideoPtr *
-xf86GetPciVideoInfo()
+xf86GetPciVideoInfo(void)
 {
     return xf86PciVideoInfo;
 }
 
+/* --- Used by ATI driver, but also more generally useful */
+
 /*
  * Get the full xf86scanpci data.
- * XXX This function may be removed, so don't rely on it.
  */
-
 pciConfigPtr *
 xf86GetPciConfigInfo(void)
 {
     return xf86PciInfo;
 }
+
+/*
+ * Enable a device and route VGA to it.  This is intended for a driver's
+ * Probe(), before creating EntityRec's.  Only one device can be thus enabled
+ * at any one time, and should be disabled when the driver is done with it.
+ *
+ * The following special calls are also available:
+ *
+ * pvp == NULL && rt == NONE    disable previously enabled device
+ * pvp != NULL && rt == NONE    ensure device is disabled
+ * pvp == NULL && rt != NONE    disable >all< subsequent calls to this function
+ *                              (done from xf86PostProbe())
+ *
+ * The device represented by pvp may not have been previously claimed.
+ */
+void
+xf86SetPciVideo(pciVideoPtr pvp, resType rt)
+{
+    static BusAccPtr pbap = NULL;
+    static xf86AccessPtr pAcc = NULL;
+    static Bool DoneProbes = FALSE;
+    pciAccPtr pcaccp;
+    int i;
+
+    if (DoneProbes)
+	return;
+
+    /* Disable previous access */
+    if (pAcc) {
+	if (pAcc->AccessDisable)
+	    (*pAcc->AccessDisable)(pAcc->arg);
+	pAcc = NULL;
+    }
+    if (pbap) {
+	while (pbap->primary) {
+	    if (pbap->disable_f)
+		(*pbap->disable_f)(pbap);
+	    pbap->primary->current = NULL;
+	    pbap = pbap->primary;
+	}
+	pbap = NULL;
+    }
+
+    /* Check for xf86PostProbe's magic combo */
+    if (!pvp) {
+	if (rt != NONE)
+	    DoneProbes = TRUE;
+	return;
+    }
+
+    /* Validate device */
+    if (!xf86PciVideoInfo || !xf86PciAccInfo || !xf86PciBusAccInfo)
+	return;
+
+    for (i = 0; pvp != xf86PciVideoInfo[i]; i++)
+	if (!xf86PciVideoInfo[i])
+	    return;
+
+    /* Ignore request for claimed adapters */
+    if (!xf86CheckPciSlot(pvp->bus, pvp->device, pvp->func))
+	return;
+
+    /* Find pciAccRec structure */
+    for (i = 0; ; i++) {
+	if (!(pcaccp = xf86PciAccInfo[i]))
+	    return;
+	if ((pvp->bus == pcaccp->busnum) &&
+	    (pvp->device == pcaccp->devnum) &&
+	    (pvp->func == pcaccp->funcnum))
+	    break;
+    }
+
+    if (rt == NONE) {
+	/* This is a call to ensure the adapter is disabled */
+	if (pcaccp->io_memAccess.AccessDisable)
+	    (*pcaccp->io_memAccess.AccessDisable)(pcaccp->io_memAccess.arg);
+	return;
+    }
+
+    /* Find BusAccRec structure */
+    for (pbap = xf86PciBusAccInfo; ; pbap = pbap->next) {
+	if (!pbap)
+	    return;
+	if (pvp->bus == pbap->busdep.pci.bus)
+	    break;
+    }
+
+    /* Route VGA */
+    if (pbap->set_f)
+	(*pbap->set_f)(pbap);
+
+    /* Enable device */
+    switch (rt) {
+    case IO:
+	pAcc = &pcaccp->ioAccess;
+	break;
+    case MEM_IO:
+	pAcc = &pcaccp->io_memAccess;
+	break;
+    case MEM:
+	pAcc = &pcaccp->memAccess;
+	break;
+    default:	/* no compiler noise */
+	break;
+    }
+
+    if (pAcc && pAcc->AccessEnable)
+	(*pAcc->AccessEnable)(pAcc->arg);
+}
+
+/* --- */
 
 /*
  * Determine what bus type the busID string represents.  The start of the
@@ -2005,8 +2118,8 @@ xf86PrintResList(int verb, resPtr list)
 		    s = "?";
 		}
 		xf86ErrorFVerb(verb, "%s", s);
-		if (list->res_type & ResMinimised)
-		    xf86ErrorFVerb(verb, "M");
+		if (list->res_type & ResEstimated)
+		    xf86ErrorFVerb(verb, "E");
 		if (list->res_type & ResInit)
 		    xf86ErrorFVerb(verb, "t");
 		if (list->res_type & ResBios)
@@ -2119,19 +2232,19 @@ xf86GetPciSysRes(resPtr *res, int flags)
 		if (pvp->ioBase[i]) {
 		    RANGE(range,pvp->ioBase[i],
 			  pvp->ioBase[i] + (1 << pvp->size[i]) - 1,
-			  ResExcIoBlock | ResMinimised | ResBios);
+			  ResExcIoBlock | ResBios);
 		    nonsysRes = xf86AddResToList(nonsysRes, &range,-1);
 		} else if (pvp->memBase[i]) {
 		    RANGE(range,pvp->memBase[i],
 			  pvp->memBase[i] + (1 << pvp->size[i]) - 1,
-			  ResExcMemBlock | ResMinimised | ResBios);
+			  ResExcMemBlock | ResBios);
 		    nonsysRes = xf86AddResToList(nonsysRes, &range, -1);
 		}
 	    }
 	    if (pvp->biosBase) {
 		RANGE(range, pvp->biosBase,
 		      pvp->biosBase + (1 << pvp->biosSize) - 1,
-		      ResExcMemBlock | ResMinimised | ResBios);
+		      ResExcMemBlock | ResBios);
 		nonsysRes = xf86AddResToList(nonsysRes, &range, -1);
 	    }
 	}
@@ -2144,14 +2257,16 @@ xf86GetPciSysRes(resPtr *res, int flags)
     
     /* XXX Needs to be updated for 64 bit mappings */
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
-	Bool bios = FALSE;
+	long resMisc;
 	if (PCINONSYSTEMCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
-	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
-	    bios = TRUE;
 	/* Only process devices with type 0 headers */
 	if ((pcrp->pci_header_type & 0x7f) != 0)
 	    continue;
+	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
+	    resMisc = ResBios;
+	else
+	    resMisc = ResEstimated;
 
 	basep = &pcrp->pci_base0;
 	for (i = 0; i < 6; i++) {
@@ -2159,12 +2274,12 @@ xf86GetPciSysRes(resPtr *res, int flags)
 		if (PCI_MAP_IS_IO(basep[i])) {
 		    RANGE(range,PCIGETIO(basep[i]),
 			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
-			  ResExcIoBlock | (bios ? ResBios : 0));
+			  ResExcIoBlock | resMisc);
 		    sysRes = xf86AddResToList(sysRes, &range, -1);
 		} else {
 		    RANGE(range,PCIGETMEMORY(basep[i]),
 			  range.rBegin + (1 << pcrp->basesize[i]) - 1,
-			  ResExcMemBlock | (bios ? ResBios : 0));
+			  ResExcMemBlock | resMisc);
 		    sysRes = xf86AddResToList(sysRes, &range, -1);
 		}
 	    }
@@ -2172,7 +2287,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
 	if (pcrp->pci_baserom) {
 	    RANGE(range,PCIGETROM(pcrp->pci_baserom),
 		  range.rBegin	+ (1 << pcrp->basesize[6]) - 1,
-		  ResExcIoBlock | (bios ? ResBios : 0));
+		  ResExcMemBlock | resMisc);
 	    sysRes = xf86AddResToList(sysRes, &range, -1);
 	}
     }
@@ -2217,7 +2332,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
     xf86PrintResList(verb, sysRes);
     if (flags & PSR_NO_OVERLAP) {
 	for (pRes = sysRes; pRes; pRes = pRes->next) {
-	    if (!ResIsMinimised(&pRes->val)) {
+	    if (ResIsEstimated(&pRes->val)) {
 		RemoveOverlaps(pRes, nonsysRes, TRUE);
 		RemoveOverlaps(pRes, sysRes, TRUE);
 	    }
@@ -2230,6 +2345,7 @@ xf86GetPciSysRes(resPtr *res, int flags)
     if (flags & (PSR_NONSYS | PSR_VIDEO)) {
 	*res = xf86JoinResLists(sysRes, nonsysRes);
     } else {
+	xf86FreeResList(nonsysRes);
 	*res = sysRes;
     }
 }
@@ -2525,11 +2641,14 @@ xf86ClaimFixedResources(resList list, int entityIndex)
     }
     xf86Entities[entityIndex]->resources =
 	xf86JoinResLists(xf86Entities[entityIndex]->resources,ptr);
-    xf86MsgVerb(X_INFO, 3, "resource ranges after probing driver:\n");
+    xf86MsgVerb(X_INFO, 3,
+	"resource ranges after xf86ClaimFixedResources() call:\n");
     xf86PrintResList(3,Acc);
 #ifdef DEBUG
-    xf86MsgVerb(X_INFO, 3, "to be registered later:\n");
-    xf86PrintResList(3,ptr);
+    if (ptr) {
+	xf86MsgVerb(X_INFO, 3, "to be registered later:\n");
+	xf86PrintResList(3,ptr);
+    }
 #endif
 }
 
@@ -2594,6 +2713,8 @@ xf86PostProbe(void)
     memType val;
     int i,j;
     resPtr resp, acc, tmp, resp_x, *pprev_next;
+
+    xf86SetPciVideo(NULL, MEM_IO);
 
     /* don't compare against ResInit - remove it from clone.*/
     acc = tmp = xf86DupResList(Acc);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.105 1999/07/10 12:17:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.106 1999/07/11 10:27:08 dawes Exp $ */
 
 /*
  *
@@ -238,6 +238,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ClaimPciSlot)
    SYMFUNC(xf86GetPciVideoInfo)
    SYMFUNC(xf86GetPciConfigInfo)
+   SYMFUNC(xf86SetPciVideo)
    SYMFUNC(xf86ClaimIsaSlot)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
@@ -246,6 +247,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86IsPrimaryPci)
    SYMFUNC(xf86IsPrimaryIsa)
    SYMFUNC(xf86CheckPciGAType)
+   SYMFUNC(xf86PrintResList)
    SYMFUNC(xf86ClaimFixedResources)
    SYMFUNC(xf86AddEntityToScreen)
    SYMFUNC(xf86RemoveEntityFromScreen)
@@ -283,7 +285,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGASelectInput)
    SYMFUNC(DGAGetViewportStatus)
    SYMFUNC(DGASetViewport)
-   SYMFUNC(DGAInstallColormap)
+   SYMFUNC(DGAInstallCmap)
    SYMFUNC(DGAFlush)
    SYMFUNC(DGAFillRect)
    SYMFUNC(DGABlitRect)
@@ -292,6 +294,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGAGetOldDGAMode)
    SYMFUNC(DGAGetModeInfo)
    SYMFUNC(DGAChangePixmapMode)
+   SYMFUNC(DGACreateColormap)
    SYMFUNC(DGAOpenFramebuffer)
    SYMFUNC(DGACloseFramebuffer)
 
@@ -857,6 +860,8 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(resVgaShared)
    SYMVAR(resVgaUnusedExclusive)
    SYMVAR(resVgaUnusedShared)
+   SYMVAR(resVgaSparseExclusive)
+   SYMVAR(resVgaSparseShared)
    SYMVAR(res8514Exclusive)
    SYMVAR(res8514Shared)
    SYMVAR(PciAvoid)

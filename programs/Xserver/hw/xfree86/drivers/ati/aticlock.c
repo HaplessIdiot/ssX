@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.c,v 1.4 1999/07/06 11:38:25 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1074,6 +1074,9 @@ ATIClockCalculate
     }
     else
     {
+        if (pATI->LCDPanelID >= 0)
+            pMode->Clock = pATI->LCDClock;
+
         /* Generate clock programme word, using units of kHz */
         MinimumGap = ((unsigned int)(-1)) >> 1;
 
@@ -1152,7 +1155,7 @@ ATIClockCalculate
 
         if ((pATI->Chip >= ATI_CHIP_264VTB) &&
             (pATI->CPIODecoding == BLOCK_IO))
-            ATIDSPCalculate(pScreenInfo, pATI, pATIHW);
+            ATIDSPCalculate(pScreenInfo, pATI, pATIHW, pMode);
     }
 
     /* Set clock select bits, after remapping them */

@@ -1,10 +1,52 @@
-XFree86 3.9.15a (25 July 1999)
+XFree86 3.9.15a (1 August 1999)
+2934. Reduce memory consumption of the bitmap font backends when using
+      sparse fonts, which is important when using Unicode-encoded fonts
+      (#3092, Juliusz Chroboczek).
+2933. Fix Option register initialisation in multi-head for MGA 2064/2164
+      (#3089, Andrew Aitchison).
+2932. Convert the nv (NVIDIA) driver from 3.3.4 (#3078-3080, 3087,
+      Jarno Paananen).
+2931. Add SuperProbe for NetBSD 1.4 wscons (#3083, Matthias Drochner).
+2930. Fix button and modifier key state problems in DGA (#3082,
+      Mark Vojkovich).
+2929. Avoid a possible segsegmentation fault in "xsm" which, for example, 
+      occurs local hostname can't be resolved (#3073, Matthias Scheler).
+2928. ATI driver updates, including:
+        - Add preliminary panel support.
+        - Rework RAC interface.
+        - PCI VGA's not on primary bus are now detected.
+        - Fix bug when an adapter's VGA has been disabled.
+        - Fix gamma support.
+      (#3069, Marc La France)
+2927. Fix 8514/A pre-defined resource and pre-define VGA sparse I/O resources
+      (#3069, 3081, Marc La France).
+2926. Fix a bug in the registration of background device BIOS'es (#3069,
+      Marc La France).
+2925. Invert the meaning of ResMinimised bit into ResEstimated (#3069,
+      Marc La France).
+2924. Allow drivers to print resource lists, and allow them to enable/disable
+      adapters before creating bus slots for them (#3069, Marc La France).
+2923. Resync SuperProbe and scanpci with 3.3.x (#3069, Marc La France).
+2922. Add some missing man pages for the DGA and VidMode extensions (#3064,
+      Joe Moss).
+2921. Some changes to the DGA and colormap layers to allow gamma changes
+      during DGA mode (#3060, Mark Vojkovich).
+2920. Fix XIM segv error (#3033, 3051, Manabe Takashi).
+2919. Add a client state callback to the DGA extension so that the server side
+      can be cleaned up when a DGA client exits (#3048, 3049, Mark Vojkovich).
+2918. Update the FreeBSD/mouse documentation (#3047, Kazutaka Yokota).
+2917. Fix an undocumented blitter constraint on the G200 (#3046,
+      Mark Vojkovich).
+2916. Fix the MGA driver so that it can support changing depth on the fly
+      in DGA mode.  All depths are now offered to DGA clients regardless of
+      what the screen's main depth is (#3045, Mark Vojkovich).
+2915. Fix a bug in the InstallGenManPageLong() rule in lynx.cf (#3043,
+      Thomas Mueller).
 2914. Update ATI doc with info about a VGA/RAC problem (#3044,
       Andrew Aitchison).
 
 XFree86 3.9.15 (19 July 1999)
-2913. Fix a bug in the InstallGenManPageLong() rule in lynx.cf (#3043,
-      Thomas Mueller).
+2913. -
 2912. Fix a problem with the library spec in xgc/Imakefile (#3042,
       Thomas Mueller).
 2911. Add native 69030 support to the C&T driver (#3041, David Bateman).
@@ -8492,4 +8534,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.808 1999/07/19 13:36:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.809 1999/07/20 03:55:50 dawes Exp $

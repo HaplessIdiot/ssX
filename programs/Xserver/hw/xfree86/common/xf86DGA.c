@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.21 1999/07/10 12:17:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.22 1999/07/18 08:14:30 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -16,11 +16,17 @@
 #include "XIproto.h"
 #include "globals.h"
 #include "servermd.h"
+#include "micmap.h"
+#ifdef XKB
+#include "XKBsrv.h"
+#endif
 
 static unsigned long DGAGeneration = 0;
 static int DGAScreenIndex = -1;
 
 static Bool DGACloseScreen(int i, ScreenPtr pScreen);
+static void DGADestroyColormap(ColormapPtr pmap);
+static void DGAInstallColormap(ColormapPtr pmap);
 
 static int
 DGASetDGAMode(
@@ -46,6 +52,7 @@ int *XDGAEventBase = &DGAEventBase;
 
 
 typedef struct _FakedVisualList{
+   Bool free;
    VisualPtr pVisual;
    struct _FakedVisualList *next;
 } FakedVisualList;
@@ -56,12 +63,16 @@ typedef struct {
    int			numModes;
    DGAModePtr		modes;
    CloseScreenProcPtr	CloseScreen;
+   DestroyColormapProcPtr DestroyColormap;
+   InstallColormapProcPtr InstallColormap;
    DGADevicePtr		current;
    DGAFunctionPtr	funcs;
    int			input;
    ClientPtr		client;
    int			pixmapMode;
    FakedVisualList	*fakedVisuals;
+   ColormapPtr 		dgaColormap;
+   ColormapPtr		savedColormap;
 } DGAScreenRec, *DGAScreenPtr;
 
 
@@ -100,6 +111,8 @@ DGAInit(
     pScreenPriv->input = 0;
     pScreenPriv->client = NULL;
     pScreenPriv->fakedVisuals = NULL;
+    pScreenPriv->dgaColormap = NULL;
+    pScreenPriv->savedColormap = NULL;
     
     for(i = 0; i < num; i++)
 	modes[i].num = i + 1;
@@ -114,6 +127,10 @@ DGAInit(
     pScreen->devPrivates[DGAScreenIndex].ptr = (pointer)pScreenPriv;
     pScreenPriv->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = DGACloseScreen;
+    pScreenPriv->DestroyColormap = pScreen->DestroyColormap;
+    pScreen->DestroyColormap = DGADestroyColormap;
+    pScreenPriv->InstallColormap = pScreen->InstallColormap;
+    pScreen->InstallColormap = DGAInstallColormap;
 
     pScrn->SetDGAMode = DGASetDGAMode;
 
@@ -121,13 +138,46 @@ DGAInit(
 }
 
 
+static void
+FreeMarkedVisuals(ScreenPtr pScreen)
+{
+    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+    FakedVisualList *prev, *curr, *tmp;
+
+    if(!pScreenPriv->fakedVisuals)
+	return;
+
+    prev = NULL;
+    curr = pScreenPriv->fakedVisuals;
+
+    while(curr) {
+	if(curr->free) {
+	    tmp = curr;
+	    curr = curr->next;
+	    if(prev)
+		prev->next = curr;
+	    else 
+		pScreenPriv->fakedVisuals = curr;
+	    xfree(tmp->pVisual);
+	    xfree(tmp);
+	} else {
+	    prev = curr;
+	    curr = curr->next;
+	}
+    }
+}
+
 
 static Bool 
 DGACloseScreen(int i, ScreenPtr pScreen)
 {
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
 
+   FreeMarkedVisuals(pScreen);
+
    pScreen->CloseScreen = pScreenPriv->CloseScreen;
+   pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
+   pScreen->InstallColormap = pScreenPriv->InstallColormap;
 
    /* DGAShutdown() should have ensured that no DGA
 	screen were active by here */
@@ -137,6 +187,53 @@ DGACloseScreen(int i, ScreenPtr pScreen)
    return((*pScreen->CloseScreen)(i, pScreen));
 }
 
+
+static void 
+DGADestroyColormap(ColormapPtr pmap)
+{
+   ScreenPtr pScreen = pmap->pScreen;
+   DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+   VisualPtr pVisual = pmap->pVisual;
+
+   if(pScreenPriv->fakedVisuals) {
+	FakedVisualList *curr = pScreenPriv->fakedVisuals;
+	
+	while(curr) {
+	    if(curr->pVisual == pVisual) {
+		/* We can't get rid of them yet since FreeColormap
+		   still needs the pVisual during the cleanup */
+		curr->free = TRUE;
+		break;
+	    }
+	    curr = curr->next;
+	}
+   }  
+
+   if(pScreenPriv->DestroyColormap) {
+        pScreen->DestroyColormap = pScreenPriv->DestroyColormap;
+        (*pScreen->DestroyColormap)(pmap);
+        pScreen->DestroyColormap = DGADestroyColormap;
+   }
+}
+
+
+static void 
+DGAInstallColormap(ColormapPtr pmap)
+{
+    ScreenPtr pScreen = pmap->pScreen;
+    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
+
+    if(pScreenPriv->current) {
+	if (pmap != pScreenPriv->dgaColormap) {
+	    pScreenPriv->savedColormap = pmap;
+	    pmap = pScreenPriv->dgaColormap;
+	}
+    }
+
+    pScreen->InstallColormap = pScreenPriv->InstallColormap;
+    (*pScreen->InstallColormap)(pmap);
+    pScreen->InstallColormap = DGAInstallColormap;
+}
 
 static int
 DGASetDGAMode(
@@ -163,20 +260,15 @@ DGASetDGAMode(
 	    xfree(pScreenPriv->current);
 	    pScreenPriv->current = NULL;
 	    pScrn->vtSema = TRUE;
+	    if(pScreenPriv->savedColormap) {
+		miInstalledMaps[index] = pScreenPriv->savedColormap;
+		pScreenPriv->savedColormap = NULL;
+	    }
+	    pScreenPriv->dgaColormap = NULL;
 	    (*pScreenPriv->funcs->SetMode)(pScreenPriv->pScrn, NULL);
 	    (*pScrn->SaveRestoreImage)(index, RestoreImage);
 
-	   if(pScreenPriv->fakedVisuals) {
-		FakedVisualList *tmp, *vis = pScreenPriv->fakedVisuals;
-		while(vis) {
-		   tmp = vis;
-		   vis = vis->next;
-		   xfree(tmp->pVisual);
-		   xfree(vis);
-		}
-		pScreenPriv->fakedVisuals = NULL;
-	    }
-
+	    FreeMarkedVisuals(pScreen);
 	}
 	return Success;
    }
@@ -232,17 +324,6 @@ DGASetDGAMode(
    devRet->pPix = device->pPix = pPix;
    pScreenPriv->current = device;
    pScreenPriv->pixmapMode = FALSE;
-
-   if(pScreenPriv->fakedVisuals) {
-	FakedVisualList *tmp, *vis = pScreenPriv->fakedVisuals;
-	while(vis) {
-	   tmp = vis;
-	   vis = vis->next;
-	   xfree(tmp->pVisual);
-	   xfree(vis);
-	}
-	pScreenPriv->fakedVisuals = NULL;
-   }
 
    return Success;
 }
@@ -452,6 +533,9 @@ DGACreateColormap(int index, ClientPtr client, int id, int mode, int alloc)
    if(!mode || (mode > pScreenPriv->numModes))
 	return BadValue;
 
+   if((alloc != AllocNone) && (alloc != AllocAll))
+	return BadValue;
+
    pMode = &(pScreenPriv->modes[mode - 1]);
 
    if(!(pVisual = xalloc(sizeof(VisualRec))))
@@ -460,13 +544,14 @@ DGACreateColormap(int index, ClientPtr client, int id, int mode, int alloc)
    pVisual->vid = FakeClientID(0);
    pVisual->class = pMode->visualClass;
    pVisual->nplanes = pMode->depth;
+   pVisual->ColormapEntries = 1 << pMode->depth;
+   pVisual->bitsPerRGBValue = (pMode->depth + 2) / 3;
 
    switch (pVisual->class) {
    case PseudoColor:
    case GrayScale:
    case StaticGray:
 	pVisual->bitsPerRGBValue = 8; /* not quite */
-	pVisual->ColormapEntries = 1 << pMode->depth;
 	pVisual->redMask     = 0;
 	pVisual->greenMask   = 0;
 	pVisual->blueMask    = 0;
@@ -479,7 +564,6 @@ DGACreateColormap(int index, ClientPtr client, int id, int mode, int alloc)
 	pVisual->ColormapEntries = 1 << pVisual->bitsPerRGBValue;
                 /* fall through */
    case StaticColor:
-	pVisual->bitsPerRGBValue = (pMode->depth + 2) / 3;
 	pVisual->redMask = pMode->red_mask;
 	pVisual->greenMask = pMode->green_mask;
 	pVisual->blueMask = pMode->blue_mask;
@@ -493,6 +577,7 @@ DGACreateColormap(int index, ClientPtr client, int id, int mode, int alloc)
 	return BadAlloc;
    }
 
+   fvlp->free = FALSE;
    fvlp->pVisual = pVisual;
    fvlp->next = pScreenPriv->fakedVisuals;
    pScreenPriv->fakedVisuals = fvlp;
@@ -505,16 +590,18 @@ DGACreateColormap(int index, ClientPtr client, int id, int mode, int alloc)
 /*  Called by the extension to install a colormap on DGA active screens */
 
 void
-DGAInstallColormap(ColormapPtr cmap)
+DGAInstallCmap(ColormapPtr cmap)
 {
     ScreenPtr pScreen = cmap->pScreen;
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(pScreen);
 
     /* We rely on the extension to check that DGA is active */ 
 
-    pScrn->vtSema = TRUE;
+    if(!pScreenPriv->dgaColormap) 
+	pScreenPriv->savedColormap = miInstalledMaps[pScreen->myNum];
+    pScreenPriv->dgaColormap = cmap;    
+
     (*pScreen->InstallColormap)(cmap);
-    pScrn->vtSema = FALSE;
 }
 
 int
@@ -685,10 +772,17 @@ DGAVTSwitch(void)
 
 /* We have the power to steal or modify events that are about to get queued */
 
+extern InputInfo inputInfo;
+
 Bool
 DGAStealKeyEvent(int index, xEvent *e)
 {
    DGAScreenPtr pScreenPriv;
+   DeviceIntPtr keybd;
+   KeyClassPtr keyc;
+   int key, bit, i;
+   BYTE *kptr;
+   CARD8 modifiers, mask;
 
    if(DGAScreenIndex < 0) /* no DGA */
 	return FALSE;
@@ -698,6 +792,43 @@ DGAStealKeyEvent(int index, xEvent *e)
    if(!pScreenPriv || !pScreenPriv->current) /* no direct mode */
 	return FALSE;
 
+   keybd = (DeviceIntPtr)xf86Info.pKeyboard;
+   keyc = keybd->key;
+
+   e->u.keyButtonPointer.state = (keyc->state |
+				  inputInfo.pointer->button->state);
+
+   key = e->u.u.detail;
+   kptr = &keyc->down[key >> 3];
+   bit = 1 << (key & 7);
+   modifiers = keyc->modifierMap[key];
+
+   if(e->u.u.type == KeyPress) {
+	if(!(*kptr & bit)) {
+	    *kptr |= bit;
+	    keyc->prev_state = keyc->state;
+	    keyc->state |= modifiers;
+
+	    for(mask = 0x80, i = 0; mask; mask >>= 1, i++) {
+		if(mask & modifiers)
+		    keyc->modifierKeyCount[i]++;
+	    }
+	}
+   } else {  /* KeyRelease */
+	if(!(*kptr & bit))
+	    return TRUE;
+	*kptr &= ~bit;
+	keyc->prev_state = keyc->state;
+	for(mask = 0x80, i = 0; mask; mask >>= 1, i++) {
+	    if(mask & modifiers) {
+		if(--keyc->modifierKeyCount[i] <= 0) {
+		    keyc->state &= ~mask;
+		    keyc->modifierKeyCount[i] = 0;	
+		}	
+	    }
+	}
+   }
+   
    if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
 	Bool GrabEvent = FALSE;
 
@@ -714,29 +845,19 @@ DGAStealKeyEvent(int index, xEvent *e)
 
         if(GrabEvent){ /* steal this event */
             dgaEvent de;
-	    DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
-	    KeyClassPtr keyc = keybd->key;
-	    int keycode = e->u.u.detail;
-	    BYTE *kptr;
-
-	    kptr = &keyc->down[keycode >> 3];
             
             de.u.u.type = e->u.u.type + *XDGAEventBase;
-	    de.u.u.detail = e->u.u.detail;
+	    de.u.u.detail = key;
             de.u.u.sequenceNumber = pScreenPriv->client->sequence;
             de.u.event.time = e->u.keyButtonPointer.time;
             de.u.event.screen = index;
             de.u.event.state = e->u.keyButtonPointer.state;
 
-	    /* clear the keypress state */
-	    if (e->u.u.type == KeyPress) 
-		*kptr &= ~(1 << (keycode & 7));
-
             TryClientEvents(pScreenPriv->client, (xEvent*)&de, 1, 
                         NoEventMask, NoEventMask, NullGrab);
 	}
 	return TRUE;
-   }
+    }
 
 
    /* Not sure how best to handle this stuff. It's only for
@@ -744,22 +865,12 @@ DGAStealKeyEvent(int index, xEvent *e)
       some day */
 
    if(((DeviceIntPtr)(xf86Info.pKeyboard))->grab){
-	DeviceIntPtr keybd = (DeviceIntPtr)xf86Info.pKeyboard;
-	KeyClassPtr keyc = keybd->key;
-	int keycode = e->u.u.detail;
-	BYTE *kptr;
-
-	kptr = &keyc->down[keycode >> 3];
-
 	/* these would be non-sense otherwise */
 	e->u.keyButtonPointer.eventX =  0;
 	e->u.keyButtonPointer.eventY =  0;
 	e->u.keyButtonPointer.rootX =   0;
 	e->u.keyButtonPointer.rootY =   0;
 
-	/* clear the keypress state */
-	if (e->u.u.type == KeyPress) 
-	    *kptr &= ~(1 << (keycode & 7));
 	keybd->public.processInputProc(e, keybd, 1);
    }
 
@@ -775,6 +886,7 @@ Bool
 DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 {
    DGAScreenPtr pScreenPriv;
+   ButtonClassPtr butc;
 
    if(DGAScreenIndex < 0) /* no DGA */
 	return FALSE;
@@ -794,6 +906,38 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
 	e->u.keyButtonPointer.time = GetTimeInMillis();
    }
 
+   butc = ((DeviceIntPtr)xf86Info.pMouse)->button;
+
+   e->u.keyButtonPointer.state = butc->state | (
+#ifdef XKB
+	!noXkbExtension ? inputInfo.keyboard->key->xkbInfo->state.grab_mods :
+#endif
+	inputInfo.keyboard->key->state);
+
+   if(e->u.u.type != MotionNotify) {
+	ButtonClassPtr butc = ((DeviceIntPtr)xf86Info.pMouse)->button;
+ 	int key = e->u.u.detail;
+	BYTE *kptr = &butc->down[key >> 3];
+	int bit = 1 << (key & 7);
+
+	if(e->u.u.type == ButtonPress) {
+	    butc->buttonsDown++;
+	    butc->motionMask = ButtonMotionMask;
+	    *kptr |= bit;
+	    if (!e->u.u.detail)
+		return TRUE;
+	    if (e->u.u.detail <= 5)
+		butc->state |= (Button1Mask >> 1) << e->u.u.detail;
+	} else { /* ButtonRelease */
+	    if (!--butc->buttonsDown)
+		butc->motionMask = 0;
+	    *kptr &= ~bit;
+	    if (!e->u.u.detail)
+		return TRUE;
+	    if (e->u.u.detail <= 5)
+		butc->state &= ~((Button1Mask >> 1) << e->u.u.detail);
+	}
+   }
   
    if(pScreenPriv->client && !pScreenPriv->client->clientGone) {
 	Bool GrabEvent = FALSE;

@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.10 1999/07/10 12:17:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.11 1999/07/18 08:14:24 dawes Exp $ */
 
 
 #define NEED_REPLIES
@@ -56,6 +56,8 @@ extern DISPATCH_PROC(ProcXF86DGADispatch);
 
 static void XDGAResetProc(ExtensionEntry *extEntry);
 
+static void DGAClientStateChange (CallbackListPtr*, pointer, pointer);
+
 static ClientPtr DGAClients[MAXSCREENS];
 
 unsigned char DGAReqCode = 0;
@@ -64,6 +66,7 @@ int DGAEventBase;
 
 static int DGAGeneration = 0;
 static int DGAClientPrivateIndex;
+static int DGACallbackRefCount = 0;
 
 /* This holds the client's version information */
 typedef struct {
@@ -118,6 +121,8 @@ XFree86DGAExtensionInit(void)
 static void
 XDGAResetProc (ExtensionEntry *extEntry)
 {
+   DeleteCallback (&ClientStateCallback, DGAClientStateChange, NULL);
+   DGACallbackRefCount = 0;
 }
 
 
@@ -274,6 +279,38 @@ ProcXDGAQueryModes(ClientPtr client)
 }
 
 
+static void 
+DGAClientStateChange (
+    CallbackListPtr* pcbl,
+    pointer nulldata,
+    pointer calldata
+){
+    NewClientInfoRec* pci = (NewClientInfoRec*) calldata;
+    ClientPtr client = NULL;
+    int i;
+
+    for(i = 0; i < screenInfo.numScreens; i++) {
+	if(DGAClients[i] == pci->client) {
+	   client = pci->client;
+	   break;
+	}
+    }
+
+    if(client && 
+      ((client->clientState == ClientStateGone) ||
+       (client->clientState == ClientStateRetained))) {
+	XDGAModeRec mode;
+	PixmapPtr pPix;
+
+	DGAClients[i] = NULL;
+	DGASelectInput(i, NULL, 0);
+	DGASetMode(i, 0, &mode, &pPix);
+
+	if(--DGACallbackRefCount == 0)
+	    DeleteCallback(&ClientStateCallback, DGAClientStateChange, NULL);
+    }
+}
+
 static int
 ProcXDGASetMode(ClientPtr client)
 {
@@ -302,6 +339,10 @@ ProcXDGASetMode(ClientPtr client)
         return DGAErrorBase + XF86DGANoDirectVideoMode;
 
     if(!stuff->mode) {
+	if(DGAClients[stuff->screen]) {
+	  if(--DGACallbackRefCount == 0)
+	    DeleteCallback(&ClientStateCallback, DGAClientStateChange, NULL);
+	}
 	DGAClients[stuff->screen] = NULL;
 	DGASelectInput(stuff->screen, NULL, 0);
 	DGASetMode(stuff->screen, 0, &mode, &pPix);
@@ -311,6 +352,11 @@ ProcXDGASetMode(ClientPtr client)
 
     if(Success != DGASetMode(stuff->screen, stuff->mode, &mode, &pPix))
 	return BadValue;
+
+    if(!DGAClients[stuff->screen]) {
+	if(DGACallbackRefCount++ == 0)
+	   AddCallback (&ClientStateCallback, DGAClientStateChange, NULL);
+    }
 
     DGAClients[stuff->screen] = client;
 
@@ -393,7 +439,7 @@ ProcXDGAInstallColormap(ClientPtr client)
    
     cmap = (ColormapPtr)LookupIDByType(stuff->cmap, RT_COLORMAP);
     if (cmap) {
-        DGAInstallColormap(cmap);
+        DGAInstallCmap(cmap);
         return (client->noClientException);
     } else {
         client->errorValue = stuff->cmap;

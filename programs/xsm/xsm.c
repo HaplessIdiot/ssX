@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/xsm.c,v 1.4 1999/01/31 12:22:30 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/xsm.c,v 1.5 1999/03/07 11:41:30 dawes Exp $ */
 
 /*
  * X Session Manager.
@@ -525,7 +525,10 @@ StartSession(char *name, Bool use_default)
     }
 
     if (!sm_id)
+    {
 	sm_id = SmsGenerateClientID (NULL);
+	if (!sm_id) return (0);
+    }
     XChangeProperty (XtDisplay (topLevel), XtWindow (topLevel),
 	XInternAtom (XtDisplay (topLevel), "SM_CLIENT_ID", False),
 	XA_STRING, 8, PropModeReplace,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.44 1999/07/06 11:38:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.45 1999/07/18 08:14:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -77,6 +77,7 @@ typedef enum {
     MODE_VSYNC_WIDE,	/* vertical sync too wide */
     MODE_VBLANK_NARROW,	/* vertical blanking too narrow */
     MODE_VBLANK_WIDE,	/* vertical blanking too wide */
+    MODE_PANEL,         /* exceeds panel dimensions */
     MODE_BAD = -2,	/* unspecified reason */
     MODE_ERROR	= -1	/* error condition */
 } ModeStatus;
@@ -452,7 +453,7 @@ typedef struct _CurrAccRec {
 #define ResSparse	0x0800
 #define ResExtMask	0x0C00
 
-#define ResMinimised	0x1000
+#define ResEstimated	0x1000
 #define ResInit 	0x2000
 #define ResBios		0x4000
 #define ResMiscMask	0xF000
@@ -467,6 +468,10 @@ typedef struct _CurrAccRec {
 #define ResExcUusdIoBlock	(ResIo | ResExclusive | ResUnused | ResBlock)
 #define ResShrUusdMemBlock	(ResMem | ResShared | ResUnused | ResBlock)
 #define ResShrUusdIoBlock	(ResIo | ResShared | ResUnused | ResBlock)
+#define ResExcUusdMemSparse	(ResMem | ResExclusive | ResUnused | ResSparse)
+#define ResExcUusdIoSparse	(ResIo | ResExclusive | ResUnused | ResSparse)
+#define ResShrUusdMemSparse	(ResMem | ResShared | ResUnused | ResSparse)
+#define ResShrUusdIoSparse	(ResIo | ResShared | ResUnused | ResSparse)
 
 #define ResExcMemSparse		(ResMem | ResExclusive | ResSparse)
 #define ResExcIoSparse		(ResIo | ResExclusive | ResSparse)
@@ -482,7 +487,7 @@ typedef struct _CurrAccRec {
 #define ResIsUnused(r)		(((r)->type & ResAccMask) == ResUnused)
 #define ResIsBlock(r)		(((r)->type & ResExtMask) == ResBlock)
 #define ResIsSparse(r)		(((r)->type & ResExtMask) == ResSparse)
-#define ResIsMinimised(r)	(((r)->type & ResMiscMask) == ResMinimised)
+#define ResIsEstimated(r)	(((r)->type & ResMiscMask) == ResEstimated)
 
 typedef struct {
     long type;     /* shared, exclusive, unused etc. */

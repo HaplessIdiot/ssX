@@ -46,7 +46,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.6 1999/07/17 05:30:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.7 1999/07/17 08:55:11 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -213,11 +213,17 @@ bdfFreeFontBits(FontPtr pFont)
 {
     BitmapFontPtr  bitmapFont;
     BitmapExtraPtr bitmapExtra;
-    int         i;
+    int         i, nencoding;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
     bitmapExtra = (BitmapExtraPtr) bitmapFont->bitmapExtra;
     xfree(bitmapFont->ink_metrics);
+    if(bitmapFont->encoding) {
+        nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
+	    (pFont->info.lastRow - pFont->info.firstRow + 1);
+        for(i=0; i<NUM_SEGMENTS(nencoding); i++)
+            xfree(bitmapFont->encoding[i]);
+    }
     xfree(bitmapFont->encoding);
     for (i = 0; i < bitmapFont->num_chars; i++)
 	xfree(bitmapFont->metrics[i].bits);
@@ -470,11 +476,13 @@ bdfReadCharacters(FontFilePtr file, FontPtr pFont, bdfFileState *pState,
 
     nencoding = (pFont->info.lastRow - pFont->info.firstRow + 1) *
 	(pFont->info.lastCol - pFont->info.firstCol + 1);
-    bitmapFont->encoding = (CharInfoPtr *) xalloc(nencoding * sizeof(CharInfoPtr));
+    bitmapFont->encoding = 
+      (CharInfoPtr **) xcalloc(NUM_SEGMENTS(nencoding),
+                               sizeof(CharInfoPtr*));
     if (!bitmapFont->encoding) {
 	bdfError("Couldn't allocate ppCI (%d,%d)\n",
-		 nencoding,
-		 sizeof(CharInfoPtr));
+                 NUM_SEGMENTS(nencoding),
+                 sizeof(CharInfoPtr*));
 	goto BAILOUT;
     }
     pFont->info.allExist = TRUE;
@@ -484,19 +492,26 @@ bdfReadCharacters(FontFilePtr file, FontPtr pFont, bdfFileState *pState,
 	    char_row++) {
 	if (bdfEncoding[char_row] == (CharInfoPtr *) NULL) {
 	    pFont->info.allExist = FALSE;
-	    for (char_col = pFont->info.firstCol;
-		    char_col <= pFont->info.lastCol;
-		    char_col++) {
-		bitmapFont->encoding[i++] = NullCharInfo;
-	    }
+            i += pFont->info.lastCol - pFont->info.firstCol + 1;
 	} else {
 	    for (char_col = pFont->info.firstCol;
 		    char_col <= pFont->info.lastCol;
 		    char_col++) {
 		if (!bdfEncoding[char_row][char_col])
 		    pFont->info.allExist = FALSE;
-		bitmapFont->encoding[i++] = bdfEncoding[char_row][char_col];
-	    }
+                else {
+                    if (!bitmapFont->encoding[SEGMENT_MAJOR(i)]) {
+                        bitmapFont->encoding[SEGMENT_MAJOR(i)]=
+                            (CharInfoPtr*)xcalloc(BITMAP_FONT_SEGMENT_SIZE,
+                                                  sizeof(CharInfoPtr));
+                        if (!bitmapFont->encoding[SEGMENT_MAJOR(i)])
+                            goto BAILOUT;
+                    }
+                    ACCESSENCODINGL(bitmapFont->encoding,i) = 
+                        bdfEncoding[char_row][char_col];
+                }
+                i++;
+            }
 	}
     }
     for (i = 0; i < 256; i++)
@@ -811,7 +826,8 @@ bdfReadFont(FontPtr pFont, FontFilePtr file,
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
 	    r = r - pFont->info.firstRow;
 	    c = c - pFont->info.firstCol;
-	    bitmapFont->pDefault = bitmapFont->encoding[r * cols + c];
+	    bitmapFont->pDefault = ACCESSENCODING(bitmapFont->encoding, 
+                                                 r * cols + c);
 	}
     }
     pFont->bit = bit;

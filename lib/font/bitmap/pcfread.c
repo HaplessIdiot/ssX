@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.8 1999/06/13 13:47:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.9 1999/07/17 05:30:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -325,7 +325,7 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
     CharInfoPtr metrics = 0;
     xCharInfo  *ink_metrics = 0;
     char       *bitmaps = 0;
-    CharInfoPtr *encoding = 0;
+    CharInfoPtr **encoding = 0;
     int         nencoding;
     int         encodingOffset;
     CARD32      bitmapSizes[GLYPHPADOPTIONS];
@@ -488,7 +488,8 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
     nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
 	(pFont->info.lastRow - pFont->info.firstRow + 1);
 
-    encoding = (CharInfoPtr *) xalloc(nencoding * sizeof(CharInfoPtr));
+    encoding = (CharInfoPtr **) xcalloc(NUM_SEGMENTS(nencoding),
+                                       sizeof(CharInfoPtr*));
     if (!encoding)
 	goto Bail;
 
@@ -497,9 +498,16 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
 	encodingOffset = pcfGetINT16(file, format);
 	if (encodingOffset == 0xFFFF) {
 	    pFont->info.allExist = FALSE;
-	    encoding[i] = 0;
-	} else
-	    encoding[i] = metrics + encodingOffset;
+	} else {
+            if(!encoding[SEGMENT_MAJOR(i)]) {
+                encoding[SEGMENT_MAJOR(i)]=
+                    (CharInfoPtr*)xcalloc(BITMAP_FONT_SEGMENT_SIZE,
+                                          sizeof(CharInfoPtr));
+                if(!encoding[SEGMENT_MAJOR(i)])
+                    goto Bail;
+            }
+	    ACCESSENCODINGL(encoding, i) = metrics + encodingOffset;
+        }
     }
 
     /* BDF style accelerators (i.e. bounds based on encoded glyphs) */
@@ -532,7 +540,7 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
 	    r = r - pFont->info.firstRow;
 	    c = c - pFont->info.firstCol;
-	    bitmapFont->pDefault = encoding[r * cols + c];
+	    bitmapFont->pDefault = ACCESSENCODING(encoding, r * cols + c);
 	}
     }
     bitmapFont->bitmapExtra = (BitmapExtraPtr) 0;
@@ -549,6 +557,10 @@ pcfReadFont(FontPtr pFont, FontFilePtr file,
     return Successful;
 Bail:
     xfree(ink_metrics);
+    if(encoding) {
+        for(i=0; i<NUM_SEGMENTS(nencoding); i++)
+            xfree(encoding[i]);
+    }
     xfree(encoding);
     xfree(bitmaps);
     xfree(offsets);
@@ -630,9 +642,16 @@ static void
 pcfUnloadFont(FontPtr pFont)
 {
     BitmapFontPtr  bitmapFont;
+    int i,nencoding;
 
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
     xfree(bitmapFont->ink_metrics);
+    if(bitmapFont->encoding) {
+        nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
+	    (pFont->info.lastRow - pFont->info.firstRow + 1);
+        for(i=0; i<NUM_SEGMENTS(nencoding); i++)
+            xfree(bitmapFont->encoding[i]);
+    }
     xfree(bitmapFont->encoding);
     xfree(bitmapFont->bitmaps);
     xfree(bitmapFont->metrics);
@@ -658,7 +677,7 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
     CharInfoPtr metrics = 0;
     xCharInfo  *ink_metrics = 0;
     char       *bitmaps = 0;
-    CharInfoPtr *encoding = 0;
+    CharInfoPtr **encoding = 0;
     int         nencoding;
     int         encodingOffset;
     Bool	hasBDFAccelerators;
@@ -772,7 +791,8 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
     nencoding = (pFont->info.lastCol - pFont->info.firstCol + 1) *
 	(pFont->info.lastRow - pFont->info.firstRow + 1);
 
-    encoding = (CharInfoPtr *) xalloc(nencoding * sizeof(CharInfoPtr));
+    encoding = (CharInfoPtr **) xcalloc(NUM_SEGMENTS(nencoding),
+                                       sizeof(CharInfoPtr*));
     if (!encoding)
 	goto Bail;
 
@@ -783,7 +803,14 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
 	    pFont->info.allExist = FALSE;
 	    encoding[i] = 0;
 	} else
-	    encoding[i] = metrics + encodingOffset;
+            if(!encoding[SEGMENT_MAJOR(i)]) {
+                encoding[SEGMENT_MAJOR(i)]=
+                    (CharInfoPtr*)xcalloc(BITMAP_FONT_SEGMENT_SIZE,
+                                          sizeof(CharInfoPtr));
+                if(!encoding[SEGMENT_MAJOR(i)])
+                    goto Bail;
+            }
+	    ACCESSENCODINGL(encoding, i) = metrics + encodingOffset;
     }
 
     /* BDF style accelerators (i.e. bounds based on encoded glyphs) */
@@ -816,7 +843,7 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
 	    cols = pFont->info.lastCol - pFont->info.firstCol + 1;
 	    r = r - pFont->info.firstRow;
 	    c = c - pFont->info.firstCol;
-	    bitmapFont->pDefault = encoding[r * cols + c];
+	    bitmapFont->pDefault = ACCESSENCODING(encoding, r * cols + c);
 	}
     }
     bitmapFont->bitmapExtra = (BitmapExtraPtr) 0;
@@ -833,6 +860,10 @@ pmfReadFont(FontPtr pFont, FontFilePtr file,
     return Successful;
 Bail:
     xfree(ink_metrics);
+    if(encoding) {
+        for(i=0; i<nencoding; i++)
+            xfree(encoding[i]);
+    }
     xfree(encoding);
     xfree(metrics);
     xfree(pFont->info.props);

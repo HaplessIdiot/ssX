@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.c,v 1.3 1999/07/06 11:38:40 dawes Exp $ */
 /*
  * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -23,7 +23,6 @@
 
 #include "ati.h"
 #include "atiadapter.h"
-#include "atibus.h"
 #include "atistruct.h"
 #include "atividmem.h"
 
@@ -96,7 +95,7 @@ ATIMapApertures
     /* Map linear aperture */
     if (pATI->LinearBase)
     {
-        if ((pATI->BusType == ATI_BUS_PCI) && (pATI->BusType == ATI_BUS_AGP))
+        if (pATI->PCIInfo)
             pATI->pMemory = xf86MapPciMem(pScreenInfo->scrnIndex,
                 VIDMEM_FRAMEBUFFER,
                 ((pciConfigPtr)(pATI->PCIInfo->thisCard))->tag,

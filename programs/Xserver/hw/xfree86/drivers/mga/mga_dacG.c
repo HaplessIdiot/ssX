@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.25 1999/06/27 09:20:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.26 1999/07/18 03:26:58 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -268,15 +268,19 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	};
 
 	int hd, hs, he, ht, vd, vs, ve, vt, wd;
-	int i;
+	int i, BppShift;
 	MGAPtr pMga;
 	MGARegPtr pReg;
 	vgaRegPtr pVga;
+	MGAFBLayout *pLayout;
 	int weight555 = FALSE;
 	
 	pMga = MGAPTR(pScrn);
 	pReg = &pMga->ModeReg;
 	pVga = &VGAHWPTR(pScrn)->ModeReg;
+	pLayout = &pMga->CurrentLayout;
+
+	BppShift = pMga->BppShifts[(pLayout->bitsPerPixel >> 3) - 1];
 
 	/* Allocate the DacRegs space if not done already */
 	if (pReg->DacRegs == NULL) {
@@ -367,15 +371,15 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 		pReg->Option |= 0x20000000;
 
-	switch(pScrn->bitsPerPixel)
+	switch(pLayout->bitsPerPixel)
 	{
 	case 8:
 		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_8bits;
 		break;
 	case 16:
 		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_16bits;
-		if ( (pScrn->weight.red == 5) && (pScrn->weight.green == 5)
-					&& (pScrn->weight.blue == 5) ) {
+		if ( (pLayout->weight.red == 5) && (pLayout->weight.green == 5)
+					&& (pLayout->weight.blue == 5) ) {
 		    weight555 = TRUE;
 		    pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_15bits;
 		}
@@ -384,7 +388,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_24bits;
 		break;
 	case 32:
-		if(pMga->Overlay8Plus24) {
+		if(pLayout->Overlay8Plus24) {
 		   pReg->DacRegs[ MGA1064_MUL_CTL ] = MGA1064_MUL_CTL_32bits;
 		   pReg->DacRegs[ MGA1064_COL_KEY_MSK_LSB ] = 0xFF;
 		   pReg->DacRegs[ MGA1064_COL_KEY_LSB ] = pMga->colorKey;
@@ -419,10 +423,10 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if((ht & 0x07) == 0x06 || (ht & 0x07) == 0x04)
 		ht++;
 		
-	if (pScrn->bitsPerPixel == 24)
-		wd = (pScrn->displayWidth * 3) >> (4 - pMga->BppShift);
+	if (pLayout->bitsPerPixel == 24)
+		wd = (pLayout->displayWidth * 3) >> (4 - BppShift);
 	else
-		wd = pScrn->displayWidth >> (4 - pMga->BppShift);
+		wd = pLayout->displayWidth >> (4 - BppShift);
 
 	pReg->ExtVga[0] = 0;
 	pReg->ExtVga[5] = 0;
@@ -444,10 +448,10 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				((vd & 0x400) >> 8) |
 				((vd & 0xc00) >> 7) |
 				((vs & 0xc00) >> 5);
-	if (pScrn->bitsPerPixel == 24)
-		pReg->ExtVga[3]	= (((1 << pMga->BppShift) * 3) - 1) | 0x80;
+	if (pLayout->bitsPerPixel == 24)
+		pReg->ExtVga[3]	= (((1 << BppShift) * 3) - 1) | 0x80;
 	else
-		pReg->ExtVga[3]	= ((1 << pMga->BppShift) - 1) | 0x80;
+		pReg->ExtVga[3]	= ((1 << BppShift) - 1) | 0x80;
 
 #if 0
 	/* Set viddelay (CRTCEXT3 Bits 3-4). */
@@ -913,11 +917,11 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
     
     /* Disable interleaving and set the rounding value */
     pMga->Interleave = FALSE;
-	
-    if ((pScrn->bitsPerPixel == 16) || (pScrn->bitsPerPixel == 32))
-	pMga->Rounding = 32;
-    else
-	pMga->Rounding = 64;
+
+    pMga->Roundings[0] = 64;
+    pMga->Roundings[1] = 32;
+    pMga->Roundings[2] = 64;
+    pMga->Roundings[3] = 32;
 
     /* Clear Fast bitblt flag */
     pMga->HasFBitBlt = FALSE;

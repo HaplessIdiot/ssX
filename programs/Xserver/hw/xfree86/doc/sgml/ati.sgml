@@ -8,10 +8,10 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>1999 June 23
+<date>1999 July 8
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.22 1999/07/19 13:36:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.23 1999/07/20 03:55:54 dawes Exp $
 </ident>
 
 <abstract>
@@ -83,10 +83,7 @@ VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
 The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D Rage
 series of adapters using the accelerator CRTC (but not the VGA CRTC).
 This support is as yet unaccelerated.<p>
-Only the CRT port of 3D Rage LT, 3D Rage LT Pro, 3D Rage XL and 3D Rage XC
-chips is supported, not the LCD panel.
-LCD support will be included in a future release.<p>
-The newer Rage 128 chips are also not yet supported.<p>
+The newer Rage 128 chips are not yet supported.<p>
 Adapters based on the above chips have been marketed under a rather large
 number of names over the years.
 Among them are:

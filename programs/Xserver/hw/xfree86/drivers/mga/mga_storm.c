@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.54 1999/06/20 15:02:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.55 1999/07/04 06:39:05 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -151,7 +151,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
         pMga->AccelFlags = TRANSC_SOLID_FILL |
 			   TWO_PASS_COLOR_EXPAND;
 
-	if(pMga->FbMapSize > 16*1024*1024)
+	if(pMga->FbMapSize > 8*1024*1024)
 	   pMga->AccelFlags |= LARGE_ADDRESSES;
         break;
     case PCI_CHIP_MGA1064:
@@ -439,10 +439,12 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
 {
     long maccess = 0;
     MGAPtr pMga = MGAPTR(pScrn);
+    MGAFBLayout *pLayout = &pMga->CurrentLayout;
+
     if (pMga->Chipset == PCI_CHIP_MGAG100)
     	maccess = 1 << 14;
     
-    switch( pScrn->bitsPerPixel )
+    switch( pLayout->bitsPerPixel )
     {
     case 8:
         break;
@@ -461,7 +463,7 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     pMga->fifoCount = 0;
 
     WAITFIFO(12);
-    OUTREG(MGAREG_PITCH, pScrn->displayWidth);
+    OUTREG(MGAREG_PITCH, pLayout->displayWidth);
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
     pMga->PlaneMask = ~0;
@@ -473,7 +475,7 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_BCOL, pMga->BgColor);
     OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
 
-    /* put clipping in a know state */
+    /* put clipping in a known state */
     OUTREG(MGAREG_CXBNDRY, 0xFFFF0000);	/* (maxX << 16) | minX */ 
     OUTREG(MGAREG_YTOP, 0x00000000);	/* minPixelPointer */ 
     OUTREG(MGAREG_YBOT, 0x007FFFFF);	/* maxPixelPointer */ 
@@ -550,7 +552,7 @@ MGANAME(SetupForScreenToScreenCopy)(
     }
     OUTREG(MGAREG_SGN, pMga->BltScanDirection);
     SET_PLANEMASK(planemask);
-    OUTREG(MGAREG_AR5, ydir * pScrn->displayWidth);
+    OUTREG(MGAREG_AR5, ydir * pMga->CurrentLayout.displayWidth);
 }
 
 
@@ -563,8 +565,8 @@ MGANAME(SubsequentScreenToScreenCopy)(
     MGAPtr pMga = MGAPTR(pScrn);
 
     if (pMga->AccelFlags & LARGE_ADDRESSES) {
-	SrcOrg = ((srcY & ~1023) * pScrn->displayWidth * PSZ) >> 9;
-	DstOrg = ((dstY & ~1023) * pScrn->displayWidth * PSZ) >> 9;
+	SrcOrg = ((srcY & ~1023) * pMga->CurrentLayout.displayWidth * PSZ) >> 9;
+	DstOrg = ((dstY & ~1023) * pMga->CurrentLayout.displayWidth * PSZ) >> 9;
         dstY &= 1023;
     }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.18 1999/05/30 03:03:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Mode.c,v 1.19 1999/07/06 11:38:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -121,6 +121,8 @@ xf86ModeStatusToString(ModeStatus status)
 	return "vertical blanking too narrow";
     case MODE_VBLANK_WIDE:
 	return "vertical blanking too wide";
+    case MODE_PANEL:
+	return "exceeds panel dimensions";
     case MODE_BAD:
 	return "unknown reason";
     case MODE_ERROR:

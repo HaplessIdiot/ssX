@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/bitmap/bitmaputil.c,v 1.2 1999/07/17 05:30:30 dawes Exp $ */
 
 #include "fntfilst.h"
 #include "bitmap.h"
@@ -67,8 +67,7 @@ bitmapComputeFontBounds(FontPtr pFont)
     int         nchars;
     int         r,
                 c;
-    CharInfoPtr ci,
-               *pci;
+    CharInfoPtr ci;
     int         maxOverlap;
     int         overlap;
     xCharInfo  *minbounds,
@@ -109,11 +108,11 @@ bitmapComputeFontBounds(FontPtr pFont)
 	maxbounds = &pFont->info.maxbounds;
 	*minbounds = initMinMetrics;
 	*maxbounds = initMaxMetrics;
-	pci = bitmapFont->encoding;
+        i = 0;
 	maxOverlap = MINSHORT;
 	for (r = pFont->info.firstRow; r <= pFont->info.lastRow; r++) {
 	    for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++) {
-		ci = *pci++;
+		ci = ACCESSENCODING(bitmapFont->encoding, i);
 		if (ci) {
 		    COMPUTE_MINMAX(&ci->metrics);
 		    if (ci->metrics.characterWidth < 0)
@@ -127,6 +126,7 @@ bitmapComputeFontBounds(FontPtr pFont)
 		    if (maxOverlap < overlap)
 			maxOverlap = overlap;
 		}
+                i++;
 	    }
 	}
     }
@@ -180,10 +180,10 @@ bitmapComputeFontInkBounds(FontPtr pFont)
 	    maxbounds = &pFont->info.ink_maxbounds;
 	    *minbounds = initMinMetrics;
 	    *maxbounds = initMaxMetrics;
-	    pci = bitmapFont->encoding;
+            i=0;
 	    for (r = pFont->info.firstRow; r <= pFont->info.lastRow; r++) {
 		for (c = pFont->info.firstCol; c <= pFont->info.lastCol; c++) {
-		    cit = *pci++;
+		    cit = ACCESSENCODING(bitmapFont->encoding, i);
 		    if (cit) {
 			offset = cit - bitmapFont->metrics;
 			ci = &bitmapFont->ink_metrics[offset];
@@ -191,6 +191,7 @@ bitmapComputeFontInkBounds(FontPtr pFont)
 			minbounds->attributes &= ci->attributes;
 			maxbounds->attributes |= ci->attributes;
 		    }
+                    i++;
 		}
 	    }
 	}

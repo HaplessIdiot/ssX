@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.5 1999/06/13 13:47:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.6 1999/07/17 05:30:33 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -197,7 +197,7 @@ snfReadFont(FontPtr pFont, FontFilePtr file,
 {
     snfFontInfoRec fi;
     unsigned    bytestoalloc;
-    int         i;
+    int         i, j;
     char       *fontspace;
     BitmapFontPtr  bitmapFont;
     int         num_chars;
@@ -234,7 +234,8 @@ snfReadFont(FontPtr pFont, FontFilePtr file,
     metrics_off = bytestoalloc;
     bytestoalloc += num_chars * sizeof(CharInfoRec);	/* metrics */
     encoding_off = bytestoalloc;
-    bytestoalloc += num_chars * sizeof(CharInfoPtr);	/* encoding */
+    bytestoalloc += NUM_SEGMENTS(num_chars) * sizeof(CharInfoPtr**);	
+                                                /* encoding */
     props_off = bytestoalloc;
     bytestoalloc += fi.nProps * sizeof(FontPropRec);	/* props */
     isStringProp_off = bytestoalloc;
@@ -261,7 +262,7 @@ snfReadFont(FontPtr pFont, FontFilePtr file,
     bitmapFont = (BitmapFontPtr) fontspace;
     bitmapFont->num_chars = num_chars;
     bitmapFont->metrics = (CharInfoPtr) (fontspace + metrics_off);
-    bitmapFont->encoding = (CharInfoPtr *) (fontspace + encoding_off);
+    bitmapFont->encoding = (CharInfoPtr **) (fontspace + encoding_off);
     bitmapFont->bitmaps = bitmaps;
     bitmapFont->pDefault = NULL;
     bitmapFont->bitmapExtra = NULL;
@@ -277,16 +278,30 @@ snfReadFont(FontPtr pFont, FontFilePtr file,
      */
 
     ret = Successful;
+    memset(bitmapFont->encoding, 0, 
+           NUM_SEGMENTS(num_chars)*sizeof(CharInfoPtr*));
     for (i = 0; ret == Successful && i < num_chars; i++) {
 	ret = snfReadCharInfo(file, &bitmapFont->metrics[i], bitmaps);
-	if (bitmapFont->metrics[i].bits)
-	    bitmapFont->encoding[i] = &bitmapFont->metrics[i];
-	else
-	    bitmapFont->encoding[i] = 0;
+	if (bitmapFont->metrics[i].bits) {
+            if (!bitmapFont->encoding[SEGMENT_MAJOR(i)]) {
+                bitmapFont->encoding[SEGMENT_MAJOR(i)]=
+                    (CharInfoPtr*)xcalloc(BITMAP_FONT_SEGMENT_SIZE,
+                                          sizeof(CharInfoPtr));
+                if (!bitmapFont->encoding[SEGMENT_MAJOR(i)]) {
+                    ret = AllocError;
+                    break;
+                }
+            }
+            ACCESSENCODINGL(bitmapFont->encoding,i) = &bitmapFont->metrics[i];
+        }
     }
 
     if (ret != Successful) {
 	xfree(bitmaps);
+        if(bitmapFont->encoding) {
+            for(j=0; j<SEGMENT_MAJOR(i); j++)
+                xfree(bitmapFont->encoding[i]);
+        }
 	xfree(fontspace);
 	return ret;
     }
