@@ -1,6 +1,6 @@
 
 //
-// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.2 2002/11/22 04:03:28 dawes Exp $
+// $XFree86: xc/programs/xkbcomp/symbols/pc/pc,v 1.3 2002/12/02 11:11:49 alanh Exp $
 
 partial hidden alphanumeric_keys modifier_keys 
 xkb_symbols "basic" {
@@ -215,15 +215,15 @@ xkb_symbols "pc102" {
 default
 xkb_symbols "pc104" {
     include "pc/pc(basic)"
-    key <LALT> {	[ 	Alt_L		]	};
-    key <RALT> {	[	Alt_R		]	};
-    key <LWIN> {	[	Meta_L		]	};
-    key <RWIN> {	[	Multi_key	]	};
-    key <MENU> {	[	Menu		]	};
+    key <LALT> {	[ 	Alt_L,	Meta_L		]	};
+    key <RALT> {	[	Alt_R,	Meta_R		]	};
+    key <LWIN> {	[	Super_L			]	};
+    key <RWIN> {	[	Super_R			]	};
+    key <MENU> {	[	Menu			]	};
 
     // modifier mappings
-    modifier_map Mod1   { Alt_L, Alt_R };
-    modifier_map Mod4   { Meta_L, Meta_R };
+    modifier_map Mod1   { Alt_L, Alt_R, Meta_L, Meta_R };
+    modifier_map Mod4   { Super_L, Super_R };
 };
 
 // defintion which includes both the Windows95 keyboards _and_
