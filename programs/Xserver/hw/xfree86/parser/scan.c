@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.8 1999/06/06 15:23:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/scan.c,v 1.9 2000/01/31 19:33:39 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -357,6 +357,7 @@ PathIsSafe(const char *path)
  *    %G    config file environment ($XF86CONFIG) as a safe path
  *    %D    $HOME
  *    %P    projroot
+ *    %M    major version number
  *    %%    %
  */
 
@@ -368,6 +369,13 @@ PathIsSafe(const char *path)
 #endif
 #ifndef XCONFENV
 #define XCONFENV	"XF86CONFIG"
+#endif
+#ifndef XF86_VERSION_MAJOR
+#ifdef XVERSION
+#define XF86_VERSION_MAJOR	(XVERSION / 1000)
+#else
+#define XF86_VERSION_MAJOR	4
+#endif
 #endif
 
 #define BAIL_OUT		do {									\
@@ -398,6 +406,7 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 	int i, l;
 	static const char *env = NULL, *home = NULL;
 	static char *hostname = NULL;
+	static char majorvers[3] = "";
 
 	if (!template)
 		return NULL;
@@ -500,6 +509,16 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 				else
 					BAIL_OUT;
 				break;
+			case 'M':
+				if (!majorvers[0]) {
+					if (XF86_VERSION_MAJOR < 0 || XF86_VERSION_MAJOR > 99) {
+						fprintf(stderr, "XF86_VERSION_MAJOR is out of range\n");
+						BAIL_OUT;
+					} else
+						sprintf(majorvers, "%d", XF86_VERSION_MAJOR);
+				}
+				APPEND_STR(majorvers);
+				break;
 			case '%':
 				result[l++] = '%';
 				CHECK_LENGTH;
@@ -539,11 +558,14 @@ DoSubstitution(const char *template, const char *cmdline, const char *projroot,
 							"%P/etc/X11/%S," \
 							"/etc/X11/%G," \
 							"%P/etc/X11/%G," \
+							"/etc/X11/%X-%M," \
 							"/etc/X11/%X," \
 							"/etc/%X," \
 							"%P/etc/X11/%X.%H," \
+							"%P/etc/X11/%X-%M," \
 							"%P/etc/X11/%X," \
 							"%P/lib/X11/%X.%H," \
+							"%P/lib/X11/%X-%M," \
 							"%P/lib/X11/%X"
 #endif
 

@@ -1,4 +1,4 @@
-.\" $XConsortium: buffer.ms,v 1.2 94/04/17 20:06:09 dpw Exp $
+.\" $TOG: buffer.ms /main/9 1997/11/04 17:55:08 kaleb $
 .TL
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
 .AU
@@ -9,7 +9,9 @@ Jeff Vroom
 Version 3.3
 January 11, 1990
 
-For Public Review
+\fIThe \fRMulti-Buffering\fP extension described here was a draft standard of the
+X Consortium prior to Release 6.1.  It has been superseded by the Double Buffer
+Extension (DBE).  DBE is an X Consortium Standard as of Release 6.1.\fP
 .SH
 Introduction
 .LP
@@ -37,8 +39,8 @@ notice and this permission notice appear in all copies.
 Digital Equipment Corporation makes no representations
 about the suitability for any purpose of the information in
 this document.  This documentation is provided "as is"
-without express or implied warranty.  This document is only a draft
-standard of the X Consortium and is therefore subject to change.
+without express or implied warranty.  This document
+is subject to change.
 .LP
 Copyright \(co 1989, 1994 X Consortium
 .LP
@@ -69,8 +71,6 @@ in this Software without prior written authorization from the X Consortium.
 The authors of this proposal have tried to unify the above documents
 to yield a proposal that incorporates support for double-buffering,
 multi-buffering, and stereo in a way that is acceptable to all concerned.
-Hopefully, the X consortium will adopt this proposal so that a portable
-method for these features will be identified.
 .SH
 Goals
 .LP
@@ -99,7 +99,7 @@ Image Buffers
 .LP
 Normal windows are created using the standard \fBCreateWindow\fP request:
 .DS
-.ft 8
+.\" .ft 8
 CreateWindow
 	parent          : WINDOW
 	w_id            : WINDOW
@@ -110,7 +110,7 @@ CreateWindow
 	border_width    : INT16
 	value_mask      : BITMASK
 	value_list      : LISTofVALUE
-.ft
+.\" .ft
 .DE
 .LP
 This request allocates a set of window attributes and
@@ -198,7 +198,7 @@ New Requests
 The new request, \fBCreateImageBuffers\fP, creates a group of
 image buffers and associates them with a normal X window:
 .DS
-.ft 8
+.\" .ft 8
 CreateImageBuffers
 	w_id           : WINDOW
 	buffers        : LISTofBUFFER
@@ -208,7 +208,7 @@ CreateImageBuffers
 	number_buffers : CARD16
 
 	(Errors: Window, IDChoice, Value)
-.ft
+.\" .ft
 .DE
 One image buffer will be associated with each ID passed in \fIbuffers\fP.
 The first buffer of the list is referred to as buffer[0], the next
@@ -309,14 +309,14 @@ whenever there is a pause in the animation.
 .LP
 To display an image buffer the following request can be used:
 .DS
-.ft 8
+.\" .ft 8
 DisplayImageBuffers
 	buffers         : LISTofBUFFER
 	min_delay       : CARD16
 	max_delay       : CARD16
 
 	(Errors: Buffer, Match)
-.ft
+.\" .ft
 .DE
 The image buffers listed will become displayed as simultaneously
 as possible and the update action, bound at \fBCreateImageBuffers\fP
@@ -389,7 +389,7 @@ as those defined for the core protocol.
 To explicitly clear a rectangular area of an image buffer to
 the window background, the following request can be used:
 .DS
-.ft 8
+.\" .ft 8
 ClearImageBufferArea
 	buffer          : BUFFER
 	x, y            : INT16
@@ -397,7 +397,7 @@ ClearImageBufferArea
 	exposures       : BOOL
 
 	(Errors: Buffer, Value)
-.ft P
+.\" .ft P
 .DE
 .LP
 Like the X \fBClearArea\fP request, \fIx\fP and \fIy\fP are relative to
@@ -415,12 +415,12 @@ either visible or are being retained in backing store.
 The group of image buffers allocated by a \fBCreateImageBuffers\fP
 request can be destroyed with the following request:
 .DS
-.ft 8
+.\" .ft 8
 DestroyImageBuffers
 	w_id		: WINDOW
 
 	(Error: Window)
-.ft
+.\" .ft
 .DE
 .LP
 The association between the buffer ID's and their corresponding
@@ -433,13 +433,13 @@ Attributes
 The following attributes will be associated with each window that
 is multi-buffered:
 .DS
-.ft 8
+.\" .ft 8
 	displayed_buffer : CARD16
 	update_action    : {Undefined,Background,Untouched,Copied}
 	update_hint      : {Frequent,Intermittent,Static}
 	window_mode      : {Mono,Stereo}
 	buffers          : LISTofBUFFER
-.ft
+.\" .ft
 .DE
 .LP
 \fIdisplayed_buffer\fP is set to the \fIindex\fP of the currently
@@ -451,7 +451,7 @@ The ID for each buffer associated with the window is recorded
 in the \fIbuffers\fP list.
 The above attributes can be queried with the following request:
 .DS
-.ft 8
+.\" .ft 8
 GetMultiBufferAttributes
 	w_id             : WINDOW
 	=>
@@ -462,7 +462,7 @@ GetMultiBufferAttributes
 	buffers          : LISTofBUFFER
 
 	(Errors: Window, Access, Value)
-.ft
+.\" .ft
 .DE
 .LP
 If the window is not multi-buffered, a \fBAccess\fP error will be generated.
@@ -471,26 +471,26 @@ is \fIupdate_hint\fP.  Rather than have a specific request
 to set this attribute, a generic set request is provided to
 allow for future expansion:
 .DS
-.ft 8
+.\" .ft 8
 SetMultiBufferAttributes
 	w_id            : WINDOW
 	value_mask      : BITMASK
 	value_list      : LISTofVALUE
 
 	(Errors: Window, Match, Value)
-.ft
+.\" .ft
 .DE
 .LP
 If the window is not multi-buffered, a \fBMatch\fP error will be generated.
 The following attributes are maintained for each buffer of a
 multi-buffered window:
 .DS
-.ft 8
+.\" .ft 8
 	window           : WINDOW
 	event_mask       : SETofEVENT
 	index            : CARD16
 	side             : {Mono,Left,Right}
-.ft
+.\" .ft
 .DE
 .LP
 \fIwindow\fP indicates the window this buffer is associated with.
@@ -503,7 +503,7 @@ the left side or right side of a stereo window.
 For non-stereo windows, this attribute will be set to \fIMono\fP.
 These attributes can be queried with the following request:
 .DS
-.ft 8
+.\" .ft 8
 GetBufferAttributes
 	buffer          : BUFFER
 	=>
@@ -513,7 +513,7 @@ GetBufferAttributes
 	side             : {Mono,Left,Right}
 
 	(Errors: Buffer, Value)
-.ft
+.\" .ft
 .DE
 .LP
 The only buffer attribute that can be explicitly set 
@@ -527,14 +527,14 @@ Rather than have a specific request
 to set this attribute, a generic set request is provided to
 allow for future expansion:
 .DS
-.ft 8
+.\" .ft 8
 SetBufferAttributes
 	buffer          : BUFFER
 	value_mask      : BITMASK
 	value_list      : LISTofVALUE
 
 	(Errors: Buffer, Value)
-.ft
+.\" .ft
 .DE
 .LP
 Clients may want to query the server about basic multi-buffer
@@ -543,17 +543,17 @@ returns a large list of information
 that would most likely be read once by Xlib for each screen, and used as a data base for
 other Xlib queries:
 .DS
-.ft 8
+.\" .ft 8
 GetBufferInfo
 	root            : WINDOW
 	=>
 	info            : LISTofSCREEN_INFO
-.ft
+.\" .ft
 .DE
 .LP
 Where \fBSCREEN_INFO\fP and \fBBUFFER_INFO\fP are defined as:
 .DS
-.ft 8
+.\" .ft 8
 
 	SCREEN_INFO     : [ normal_info : LISTofBUFFER_INFO,
 	                    stereo_info : LISTofBUFFER_INFO ]
@@ -561,7 +561,7 @@ Where \fBSCREEN_INFO\fP and \fBBUFFER_INFO\fP are defined as:
 	BUFFER_INFO     : [ visual      : VISUALID, 
 	                    max_buffers : CARD16,
 	                    depth       : CARD8 ]
-.ft
+.\" .ft
 .DE
 .LP
 Information regarding multi-buffering of normal (mono) windows
@@ -576,12 +576,12 @@ memory limitations.
 The following request returns the major and minor version numbers
 of this extension:
 .DS
-.ft 8
+.\" .ft 8
 GetBufferVersion
 	=>
 	major_number    : CARD8
 	minor_number    : CARD8
-.ft
+.\" .ft
 .DE
 .LP
 The version numbers are an escape hatch in case future revisions of
@@ -620,11 +620,11 @@ client drawing into one of these buffers the opportunity
 to stop drawing until some portion of the buffer is
 writable, the following event is added:
 .DS
-.ft 8
+.\" .ft 8
 ClobberNotify
 	buffer         :  BUFFER
 	state          : {Unclobbered,PartiallyClobbered,FullyClobbered}
-.ft
+.\" .ft
 .DE
 .LP
 The \fBClobberNotify\fP event is reported to clients selecting
@@ -653,10 +653,10 @@ request.  This allows the FIFO manager to load up a future frame as
 soon as a buffer becomes available.  To support this,
 the following event is added:
 .DS
-.ft 8
+.\" .ft 8
 UpdateNotify
 	buffer         :  BUFFER
-.ft
+.\" .ft
 .DE
 .LP
 The \fBUpdateNotify\fP event is reported to clients selecting
@@ -678,7 +678,7 @@ Double-Buffering Normal Windows
 The following pseudo-code fragment illustrates how to create and display
 a double-buffered image:
 .DS
-.ft 8
+.\" .ft 8
 /*
  * Create a normal window
  */
@@ -716,7 +716,7 @@ while animating
  * contents of last displayed image buffer.
  */
 DestroyImageBuffers( W )
-.ft
+.\" .ft
 .DE
 .bp
 .SH
@@ -727,7 +727,7 @@ The following pseudo-code fragment illustrates how to create a
 a multi-buffered image and cycle through the images to
 simulate a movie loop:
 .DS
-.ft 8
+.\" .ft 8
 /*
  * Create a normal window
  */
@@ -760,7 +760,7 @@ while animating
 	foreach frame
 		DisplayImageBuffers( [B(i)], 100, 0 )
 }
-.ft
+.\" .ft
 .DE
 .bp
 .SH
@@ -782,7 +782,7 @@ except the displayed image is made up of a left image
 buffer and a right image buffer.  To create a stereo window,
 a client makes the following request:
 .DS
-.ft 8
+.\" .ft 8
 CreateStereoWindow
 	parent          : WINDOW
 	w_id            : WINDOW
@@ -797,7 +797,7 @@ CreateStereoWindow
 
 	(Errors: Alloc, Color, Cursor, Match,
 	         Pixmap, Value, Window)
-.ft
+.\" .ft
 .DE
 .LP
 This request, modeled after the \fBCreateWindow\fP request,
@@ -853,7 +853,7 @@ Single-Buffered Stereo Windows
 The following shows how to create and display a single-buffered
 stereo image:
 .DS
-.ft 8
+.\" .ft 8
 /*
  * Create the stereo window, map it the screen,
  * and draw the left and right images
@@ -863,7 +863,7 @@ CreateStereoWindow( W, L, R, ... )
 MapWindow( W )
 
 <draw picture using L,R>
-.ft
+.\" .ft
 .DE
 .KE
 .bp
@@ -896,7 +896,7 @@ either the left buffer ID or right buffer ID may be specified in a
 .LP
 To double-buffer a stereo window:
 .DS
-.ft 8
+.\" .ft 8
 /*
  * Create stereo window and map it to the screen
  */
@@ -927,7 +927,7 @@ while animating
 	<draw picture using L0,R0>
 	DisplayImageBuffers( [L0], 100, 0 )
 }
-.ft
+.\" .ft
 .DE
 .bp
 .SH
@@ -935,7 +935,7 @@ Multi-Buffering Stereo Windows
 .LP
 To cycle through \fIN\fP stereo images:
 .DS
-.ft 8
+.\" .ft 8
 /*
  * Create stereo window
  */
@@ -968,7 +968,7 @@ while animating
 	foreach stereo image
 		DisplayImageBuffers( [L(i)], 100, 0 )
 }
-.ft
+.\" .ft
 .DE
 .bp
 .SH
