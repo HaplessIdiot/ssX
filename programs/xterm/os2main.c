@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid = "$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.60 2003/03/25 04:18:29 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.61 2003/05/19 00:47:33 dickey Exp $ */
 
 /***********************************************************
 
@@ -80,6 +80,8 @@ SOFTWARE.
 #include <X11/Xaw3d/Form.h>
 #elif defined(HAVE_LIB_NEXTAW)
 #include <X11/neXtaw/Form.h>
+#elif defined(HAVE_LIB_XAWPLUS)
+#include <X11/XawPlus/Form.h>
 #endif
 
 #endif /* OPT_TOOLBAR */
