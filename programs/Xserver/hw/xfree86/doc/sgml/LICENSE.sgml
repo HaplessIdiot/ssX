@@ -8,17 +8,24 @@
 <date>22 February 2004</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.34 2004/03/17 19:53:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.35 2004/03/17 19:55:39 dawes Exp $
 </ident>
 
 <sect>Introduction
 <p>
+<bf>The information in this document is intended to be complete and
+accurate only for formal XFree86 releases.  It may not be complete or
+accurate for development code obtained directly from the CVS repository
+or from development, experimental, release candidate, or other snapshots.
+For licensing infomation about development code, contact the relevant
+authors, contributors and copyright holders.</bf>
+
 XFree86&trade; code without an explicit copyright or not explicitly
-marked as being in the public domain is covered by the XFree86 1.0
-copyright/license as shown <ref name="below" id="xf10">.  Portions of code are
-covered by other licenses/copyrights, as shown in subsequent sections.
-In all cases, see individual source files for specific license details,
-copyright owner information, and copyright dates.
+marked as being in the public domain is covered by the XFree86 1.1
+copyright/license as shown <ref name="below" id="xf11">.  Portions of
+code are covered by other licenses/copyrights, as shown in subsequent
+sections.  In all cases, see individual source files for specific license
+details, copyright owner information, and copyright dates.
 
 <sect>XFree86 Project Licensing Policy
 <p>
