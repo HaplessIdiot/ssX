@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.30 2002/10/30 12:52:12 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.31 2002/10/31 05:49:58 keithp Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -512,12 +512,12 @@ typedef struct {
     CARD32            aux_sc_cntl;
 
     int               irq;
-    CARD32            gen_int_cntl;
 
 #ifdef PER_CONTEXT_SAREA
     int               perctx_sarea_size;
 #endif
 #endif
+    CARD32            gen_int_cntl;
 
 				/* XVideo */
     XF86VideoAdaptorPtr adaptor;
