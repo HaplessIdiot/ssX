@@ -9,7 +9,7 @@ XCOMM Xterm assumes that bcopy can handle overlapping arguments.  If your
 XCOMM bcopy (or memcpy) cannot, write a routine called bcopy and link it in
 XCOMM or add -Dbcopy=mybcopy to the DEFINES list below.
 XCOMM
-XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.54 2004/03/25 03:36:23 dawes Exp $
+XCOMM $XFree86: xc/programs/xterm/Imakefile,v 3.56 2005/01/14 01:50:02 dickey Exp $
 XCOMM
 
 /* Uncomment SCROLLBAR_RIGHT if you want the scroll bar to be on the right */
@@ -222,11 +222,11 @@ InstallNamedProg(uxterm,uxterm,$(BINDIR))
 /*
  * Link with the termcap library if USE_TERMCAP is defined in resize.c
  */
-#if	defined(NTOArchitecture) || \
-	defined(SCOArchitecture) || \
-	defined(LinuxArchitecture) || \
-	defined(OpenBSDArchitecture)
-	defined(SGIArchitecture) || \
+#if	defined(NTOArchitecture)	|| \
+	defined(SCOArchitecture)	|| \
+	defined(LinuxArchitecture)	|| \
+	defined(OpenBSDArchitecture)	|| \
+	defined(SGIArchitecture)	|| \
 	defined(SunArchitecture)
 NormalProgramTarget(resize,$(OBJS2),$(DEPLIBS2),NullParameter,NullParameter)
 #else
