@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.9 2003/08/06 14:03:58 eich Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/XpmI.h,v 1.10 2004/09/15 16:00:37 herrb Exp $ */
 
 /*****************************************************************************\
 * XpmI.h:                                                                     *
@@ -49,8 +49,10 @@
  * lets try to solve include files
  */
 
+#include <sys/types.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <limits.h>
 /* stdio.h doesn't declare popen on a Sequent DYNIX OS */
 #ifdef sequent
 extern FILE *popen();
