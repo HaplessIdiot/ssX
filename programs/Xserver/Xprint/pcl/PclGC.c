@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclGC.c,v 1.7 1999/12/13 02:12:55 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclGC.c,v 1.8 2001/01/17 22:36:30 dawes Exp $ */
 
 #include "gcstruct.h"
 
@@ -1000,10 +1000,8 @@ PclValidateGC(
 	  else if( pDrawable->depth <= 32 )
 	    {
 #if PSZ == 8
-		miRegisterGCPrivateIndex( cfbGCPrivateIndex );
 		cfbValidateGC( pGC, ~0, pDrawable );
 #else
-		miRegisterGCPrivateIndex( cfbGCPrivateIndex );
 		cfb32ValidateGC( pGC, ~0, pDrawable );
 #endif
 	    }
