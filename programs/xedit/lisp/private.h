@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.2 2001/08/31 19:00:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.3 2001/09/09 23:03:47 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -109,6 +109,7 @@ struct _LispMac {
     int justsize;	/* just calculate size of output,
 			 * needed to calculate formatted output */
     int newline;	/* at a newline in the output */
+    int column;		/* column number in the output */
     int interactive;
     int errexit;
     LispString *strs[STRTBLSZ];
@@ -149,8 +150,10 @@ struct _LispMac {
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);
+    int (*sigfpe)(int);
 #else
     void (*sigint)(int);
+    void (*sigfpe)(int);
 #endif
 };
 

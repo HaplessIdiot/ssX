@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.3 2001/09/01 18:28:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.4 2001/09/09 23:03:47 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -66,8 +66,10 @@ LispObj *LispAddVar(LispMac*, char*, LispObj*);
 
 #ifdef SIGNALRETURNSINT
 int LispAbortSignal(int);
+int LispFPESignal(int);
 #else
 void LispAbortSignal(int);
+void LispFPESignal(int);
 #endif
 
 /*
@@ -115,6 +117,9 @@ LispDestroy(LispMac *mac, char *fmt, ...)
 
     fputc('\n', lisp_stderr);
     fflush(lisp_stderr);
+
+    mac->column = 0;
+    mac->newline = 1;
 
     if (mac->errexit)
 	exit(1);
@@ -262,7 +267,7 @@ LispCalloc(LispMac *mac, unsigned nmemb, unsigned size)
 void *
 LispRealloc(LispMac *mac, void *pointer, unsigned size)
 {
-    void *ptr = realloc(pointer, size);
+    void *ptr;
     int i;
 
     for (i = 0; i < mac->mem.mem_level; i++)
@@ -523,8 +528,10 @@ LispGet(LispMac *mac)
     }
 
     ++mac->cp;
-    if (ch == '\n' && mac->interactive && mac->fp == lisp_stdin)
+    if (ch == '\n' && mac->interactive && mac->fp == lisp_stdin) {
 	mac->newline = 1;
+	mac->column = 0;
+    }
 
     return (mac->tok = ch);
 }
@@ -1815,7 +1822,8 @@ LispPrintObj(LispMac *mac, LispObj *stream, LispObj *obj, int paren)
 				      obj->data.stream.source.str);
 		else
 		    len += LispPrintf(mac, stream, "\"%s\"",
-				      obj->data.stream.source.str);
+				      obj->data.stream.source.str ?
+					obj->data.stream.source.str : "");
 	    }
 	    break;
     }
@@ -1828,9 +1836,12 @@ LispPrint(LispMac *mac, LispObj *obj)
 {
     if (!obj)
 	LispDestroy(mac, "internal error, at internal:print");
-    if (!mac->newline)
+    if (!mac->newline) {
 	LispPrintf(mac, NIL, "\n");
-    LispPrintObj(mac, NIL, obj, 1);
+	mac->column = 0;
+    }
+    /* XXX maybe should check for newlines in object */
+    mac->column = LispPrintObj(mac, NIL, obj, 1);
     mac->newline = 0;
 }
 
@@ -1845,12 +1856,26 @@ LispAbortSignal(int signum)
     if (global_mac != NULL)
 	LispDestroy(global_mac, "aborted");
 }
+
+int
+LispFPESignal(int signum)
+{
+    if (global_mac != NULL)
+	LispDestroy(global_mac, "Floating point exception");
+}
 #else
 void
 LispAbortSignal(int signum)
 {
     if (global_mac != NULL)
 	LispDestroy(global_mac, "aborted");
+}
+
+void
+LispFPESignal(int signum)
+{
+    if (global_mac != NULL)
+	LispDestroy(global_mac, "Floating point exception");
 }
 #endif
 
@@ -1864,6 +1889,7 @@ LispMachine(LispMac *mac)
 	if (setjmp(mac->jmp) == 0) {
 	    global_mac = mac;
 	    mac->sigint = signal(SIGINT, LispAbortSignal);
+	    mac->sigfpe = signal(SIGFPE, LispFPESignal);
 	    if (mac->interactive && mac->prompt)
 		fprintf(lisp_stdout, "%s", mac->prompt);
 	    mac->level = 0;
@@ -1874,10 +1900,12 @@ LispMachine(LispMac *mac)
 		if (!mac->newline) {
 		    LispPrintf(mac, NIL, "\n");
 		    mac->newline = 1;
+		    mac->column = 0;
 		}
 	    }
 	    global_mac = NULL;
 	    signal(SIGINT, mac->sigint);
+	    signal(SIGFPE, mac->sigfpe);
 	    mac->sigint = NULL;
 	    LispTopLevel(mac);
 	    if (mac->tok == EOF)
@@ -1983,6 +2011,7 @@ LispBegin(int argc, char *argv[])
 
     mac->prompt = ">";
     mac->newline = 1;
+    mac->column = 0;
 
     mac->errexit = !mac->interactive;
 
