@@ -1,4 +1,13 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 289. Some vesa driver updates, including:
+       - Wrap CloseScreen().
+       - Call xf86PrintModes().
+       - Add error messages for when PreInit bails out for lack of modes.
+       - Rework how the debugging information is printed.
+       _ Avoid some build warnings.
+      (David Dawes)
+ 288. Make it possible to call xf86PrintModes() when there is no hsync or
+      refresh data available, like from the vesa drivers (David Dawes).
  287. Add a "cleanlinks" script for cleaning up dangling links in lndir-created
       shadow trees (David Dawes).
  286. Resync with DRI CVS trunk (VA Linux Systems).
@@ -12735,4 +12744,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1639 2001/03/21 17:36:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1640 2001/03/21 19:46:22 dawes Exp $
