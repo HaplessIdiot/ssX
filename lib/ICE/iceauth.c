@@ -1,4 +1,5 @@
 /* $XConsortium: iceauth.c,v 1.20 94/04/17 20:15:34 mor Exp $ */
+/* $XFree86$ */
 /******************************************************************************
 
 
@@ -32,7 +33,7 @@ Author: Ralph Mor, X Consortium
 #include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 
-#ifdef X_NOT_STDC_ENV
+#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 #define Time_t long
 extern Time_t time ();
 #else
@@ -74,8 +75,9 @@ int len;
     }
 #else
     {
+#ifndef __EMX__
 	long    time ();
-
+#endif
 	ldata[0] = time ((long *) 0);
 	ldata[1] = getpid ();
     }

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.72 94/04/01 12:37:39 gildea Exp $
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.1 1994/08/31 04:50:47 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.2 1994/09/18 08:50:16 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -129,6 +129,7 @@ DEF_SERVER = $(BINDIR)/X
 DEF_USER_PATH = DefaultUserPath		/* no leading spaces or imake will */
 DEF_SYSTEM_PATH = DefaultSystemPath	/* indent as rule */
 BOURNE_SHELL = DefaultSystemShell
+#ifndef OS2Architecture
 RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DXRDB_PROGRAM="$(BINDIR)/xrdb"' \
 		  '-DDEF_SESSION="$(BINDIR)/xterm -ls"' \
@@ -140,6 +141,7 @@ RES_DEFINES = '-DDEF_SERVER_LINE=":0 local $(DEF_SERVER) :0"' \
 		  '-DDEF_CHOOSER="$(XDMDIR)/chooser"' \
 		  '-DDEF_AUTH_DIR="$(XDMDIR)"' \
 		  '-DDEF_GREETER_LIB="$(XDMDIR)/libXdmGreet.so"'
+#endif
 
 ComplexProgramTarget_1(xdm,$(LOCAL_LIBRARIES),NullParameter)
 NormalProgramTarget(xdmshell,$(OBJS2),NullParameter,NullParameter,NullParameter)

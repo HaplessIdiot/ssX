@@ -1,0 +1,67 @@
+LIBRARY ICE
+DESCRIPTION "X11R6 XFree86 libICE.dll for OS/2 EMX08H VERSION=6.0"
+CODE
+	PRELOAD
+DATA
+	SINGLE NONSHARED
+STACKSIZE 4096
+EXPORTS
+	 IceAcceptConnection  @ 1
+	 IceAddConnectionWatch  @ 2
+	 IceAllocScratch  @ 3
+	 IceAppLockConn  @ 4
+	 IceAppUnlockConn  @ 5
+	 IceAuthFileName  @ 6
+	 IceCheckShutdownNegotiation  @ 7
+	 IceCloseConnection  @ 8
+	 IceComposeNetworkIdList  @ 9
+	 IceConnectionNumber  @ 10
+	 IceConnectionStatus  @ 11
+	 IceConnectionString  @ 12
+	 IceFlush  @ 13
+	 IceFreeAuthFileEntry  @ 14
+	 IceFreeListenObjs  @ 15
+	 IceGenerateMagicCookie  @ 16
+	 IceGetAuthFileEntry  @ 17
+	 IceGetConnectionContext  @ 18
+	 IceGetInBufSize  @ 19
+	 IceGetListenConnectionNumber  @ 20
+	 IceGetListenConnectionString  @ 21
+	 IceGetOutBufSize  @ 22
+	 IceInitThreads  @ 23
+	 IceLastReceivedSequenceNumber  @ 24
+	 IceLastSentSequenceNumber  @ 25
+	 IceListenForConnections  @ 26
+	 IceLockAuthFile  @ 27
+	 IceOpenConnection  @ 28
+	 IcePing  @ 29
+	 IceProcessMessages  @ 30
+	 IceProtocolRevision  @ 31
+	 IceProtocolSetup  @ 32
+	 IceProtocolShutdown  @ 33
+	 IceProtocolVersion  @ 34
+	 IceReadAuthFileEntry  @ 35
+	 IceRegisterForProtocolReply  @ 36
+	 IceRegisterForProtocolSetup  @ 37
+	 IceRelease  @ 38
+	 IceRemoveConnectionWatch  @ 39
+	 IceSetErrorHandler  @ 40
+	 IceSetHostBasedAuthProc  @ 41
+	 IceSetIOErrorHandler  @ 42
+	 IceSetPaAuthData  @ 43
+	 IceSetShutdownNegotiation  @ 44
+	 IceSwapping  @ 45
+	 IceUnlockAuthFile  @ 46
+	 IceVendor  @ 47
+	 IceWriteAuthFileEntry  @ 48
+	 _IceTransGetPeerAddr  @ 49
+	 _IceTransGetPeerNetworkId  @ 50
+	 _IceErrorBadMinor  @ 51
+	 _IceErrorBadLength  @ 52
+	 _IceErrorBadState  @ 53
+	 _IceErrorBadValue  @ 54
+	 _IcePaMagicCookie1Proc  @ 55
+	 _IcePoMagicCookie1Proc  @ 56
+	 _IceRead  @ 57
+	 _IceReadSkip  @ 58
+	 _IceWrite  @ 59

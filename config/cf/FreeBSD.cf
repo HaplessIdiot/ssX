@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.15 1994/09/23 10:03:44 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.16 1994/09/24 15:09:39 dawes Exp $
 
 #define OSName            FreeBSD 1.1.5
 #define OSVendor          /**/
@@ -35,14 +35,18 @@ XCOMM operating system:  OSName
 #define NeedVarargsPrototypes	YES
 #define NeedWidePrototypes	NO
 
-#define CcCmd			gcc
+#define CcCmd			cc
 #define CppCmd			/usr/libexec/cpp
 #define PreProcessCmd		CppCmd
 #define StandardCppDefines	-traditional
+#if UseInstalled
 #define DefaultCCOptions	/**/
+#else
+#define DefaultCCOptions	-ansi -pedantic -Dasm=__asm
+#endif
 #ifndef ExtraLibraries
 #if OSMajorVersion == 1
-#define ExtraLibraries		-lmalloc
+#define ExtraLibraries		/* -lmalloc */
 #else
 #define ExtraLibraries		-lgnumalloc
 #endif

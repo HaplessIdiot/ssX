@@ -1,3 +1,35 @@
+XFree86 3.1.0a (19 October 1994)
+ 25. OS/2 client support (Holger Veit).
+ 24. Fix some data initialisation problems in libX11 and libXt
+     (Christos Zoulas).
+ 23. Use '-ansi -pedantic' with GCC when building the core tree.
+ 22. Changes to vgaFasm.h to allow compilation with 'gcc -ansi -pedantic'.
+ 21. Revised OAK driver which includes OTI-087 support (Jorge Delgado).
+ 20. Don't use -lmalloc for FreeBSD 1.1.5 -- it seems to cause some server
+     crashes.
+ 19. Change FreeBSD.cf to refer to the compiler as 'cc' instead of 'gcc'
+     (Rich Murphey).
+ 18. Work around some problems GNU make 3.62 has with the rstart Imakefile
+     (Jim Tsillas).
+ 17. Fix HW cursor problems after switching resolutions with the SVGA
+     server (Harm Hanemaayer).
+ 16. Fix I/O permission problem with AL2101 driver (Harm Hanemaayer).
+ 15. Preliminary doublescan mode flag support (Harm Hanemaayer).
+ 14. Accelerated transparent text for Cirrus 5426/8 (Harm Hanemaayer).
+ 13. Cirrus programmable clock support (Harm Hanemaayer).
+ 12. Cirrus accelerated image text for 16/32bpp (Harm Hanemaayer).
+ 11. Fix Cirrus HW cursor colour map at 16/32bpp (Harm Hanemaayer).
+ 10. Fix 16bpp VC switch lockup on Cirrus 5426 (Harm Hanemaayer).
+  9. Fix SDAC 15/16bpp setup and 8bpp pixmux clock selection (Harald Koenig).
+  8. New (faster) S3 stipple code (Hans Nasten).
+  7. Add the xf86config program to the source tree (Harm Hanemaayer).
+  6. Gamma correction support for Ti3025 (Hans Nasten).
+  5. Add code to set 170MHz Bt485/20C505 limits for 32bpp.
+  4. Fix incorrect clock limit for ATT20C490 + programmable clock.
+  3. Fix S3 co-ord overflow check for bpp > 8.
+  2. Fix to S3 server to support newer #9 GXE64Pro boards (Robin Cutshaw).
+  1. Documentation updates.
+
 XFree86 3.1 (29 September 1994)
 400. --- Code freeze ---
 399. Fix slow server death and VT switching problems with W32 server

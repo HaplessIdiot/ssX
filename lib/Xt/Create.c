@@ -1,4 +1,5 @@
 /* $XConsortium: Create.c,v 1.105 94/04/17 20:13:54 converse Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -287,7 +288,7 @@ xtWidgetAlloc(widget_class, parent_constraint_class, parent, name,
 		    wsize = (wsize + sizeof(double) - 1) & ~(sizeof(double)-1);
 	    }
 	}
-	widget = (Widget) XtMalloc((unsigned)(wsize + csize));
+	widget = (Widget) XtCalloc(1, (unsigned)(wsize + csize));
 	widget->core.constraints =
 	    (csize ? (XtPointer)((char *)widget + wsize) : NULL);
     }

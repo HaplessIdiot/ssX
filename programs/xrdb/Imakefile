@@ -1,8 +1,13 @@
 XCOMM $XConsortium: Imakefile,v 1.8 92/09/14 18:53:12 rws Exp $
+XCOMM $XFree86$
 #if PatheticCpp
         CPPDEFS = -DPATHETICCPP
 #endif
+#ifdef OS2Architecture
+        DEFINES = -DCPP=\"$(CPP)\" $(CPPDEFS)
+#else
         DEFINES = -DCPP="\"$(CPP)\"" $(CPPDEFS)
+#endif
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
 

@@ -1,4 +1,5 @@
 /* $XConsortium: osglue.c,v 1.10 94/04/17 19:56:07 dpw Exp $ */
+/* $XFree86$ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -60,6 +61,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <stdio.h>
 #define  XK_LATIN1
 #include <X11/keysymdef.h>
+#ifdef __EMX__
+#define _NFILE NOFILE
+#endif
 
 Bool        drone_server = FALSE;
 extern Bool CloneSelf;
@@ -302,7 +306,7 @@ CloneMyself()
 
     old_listen_arg[0] = '\0';
 
-#if defined(hpux) || defined(SVR4)
+#if defined(hpux) || defined(SVR4) || defined(__EMX__)
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;

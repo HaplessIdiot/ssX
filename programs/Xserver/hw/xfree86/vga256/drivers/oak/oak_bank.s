@@ -1,4 +1,5 @@
 /* $XConsortium: oak_bank.s,v 1.2 94/03/29 11:04:46 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -98,6 +99,19 @@ GLNAME(OAKSetReadWrite):
 	OUT_W				/* Send index, and then bank */
 	RET
 
+/* Now we do the same function for the OTI087 chipset which supports 2MB */
+
+        ALIGNTEXT4
+        GLOBL   GLNAME(OTI87SetReadWrite)
+GLNAME(OTI87SetReadWrite):
+        MOV_B   (AL, AH)                /* Move bank to high half */
+        MOV_B   (CONST(0x25),AL)        /* Put read index in low byte, it
+                                         *  addresses the Extended R/W Reg. */
+        MOV_L   (CONST(0x3DE),EDX)      /* Store base register */
+        OUT_W                           /* Output read/write  bank */
+        RET
+ 
+
 /* 
  * The SetWrite function sets just the write bank pointer
  */
@@ -114,6 +128,17 @@ GLNAME(OAKSetWrite):
 	OUT_W				/* Output r/w segment */
 	RET
 
+/* Now we do the same function for the OTI087 chipset which supports 2MB */
+
+        ALIGNTEXT4
+        GLOBL   GLNAME(OTI87SetWrite)
+GLNAME(OTI87SetWrite):
+        MOV_B   (AL, AH)                /* Move bank to high half */
+        MOV_L   (CONST(0x3DE),EDX)      /* Store base register */
+        MOV_B   (CONST(0x24),AL)        /* Put write index in low byte */
+        OUT_W                           /* Output write bank */
+        RET
+ 
 /* 
  * The SetRead function sets just the read bank pointer
  */
@@ -128,3 +153,15 @@ GLNAME(OAKSetRead):
 	MOV_B	(CONST(0x11),AL)	/* OTI segment register index */
 	OUT_W				/* Output r/w segment */
 	RET
+
+/* Now we do the same function for the OTI087 chipset which supports 2MB */
+
+        ALIGNTEXT4
+        GLOBL   GLNAME(OTI87SetRead)
+GLNAME(OTI87SetRead):
+        MOV_B   (AL, AH)                /* Move bank to high half */
+        MOV_B   (CONST(0x23),AL)        /* Put read index in low byte */
+        MOV_L   (CONST(0x3DE),EDX)      /* Store base register */
+        OUT_W                           /* Output read bank */
+        RET
+

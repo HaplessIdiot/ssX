@@ -1,5 +1,6 @@
 /*
  * $XConsortium: GenKey.c,v 1.6 94/04/17 20:16:36 rws Exp $
+ * $XFree86$
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -43,7 +44,8 @@ static getbits (data, dst)
     dst[3] = (data >> 24) & 0xff;
 }
 
-#ifdef X_NOT_STDC_ENV
+/* EMX is not STDC, but sometimes it is */
+#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 #define Time_t long
 extern Time_t time ();
 #else

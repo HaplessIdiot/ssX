@@ -1,4 +1,5 @@
 /* $XConsortium: RdBitF.c,v 1.19 94/04/17 20:20:42 rws Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -158,6 +159,9 @@ int XReadBitmapFileData (filename, width, height, data, x_hot, y_hot)
     /* first time initialization */
     if (initialized == False) initHexTable();
 
+#ifdef __EMX__
+    filename = __XOS2RedirRoot(filename);
+#endif
     if (!(fstream = fopen(filename, "r")))
 	return BitmapOpenFailed;
 

@@ -1,4 +1,5 @@
 /* $XConsortium: Intrinsic.c,v 1.194 94/04/17 20:14:16 kaleb Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1056,7 +1057,7 @@ static char *ExtractLocaleName(lang)
     String	lang;
 {
 
-#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32)
+#if defined(hpux) || defined(__bsdi__) || defined(sun) || defined(SVR4) || defined(sgi) || defined(__osf__) || defined(AIXV3) || defined(ultrix) || defined(WIN32) || defined(__EMX__)
 #ifdef hpux
 #define SKIPCOUNT 2
 #define STARTCHAR ':'
@@ -1067,7 +1068,7 @@ static char *ExtractLocaleName(lang)
 #define STARTCHAR '\001'
 #define ENDCHAR '\001'
 #else
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
 #define SKIPCOUNT 1
 #define STARTCHAR '='
 #define ENDCHAR ';'

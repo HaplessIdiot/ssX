@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.22 94/03/29 15:54:05 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/makedepend/Imakefile,v 3.0 1994/05/21 23:39:58 dawes Exp $
 
     SRCS = include.c main.c parse.c pr.c cppsetup.c ifparser.c 
     OBJS = include.o main.o parse.o pr.o cppsetup.o ifparser.o 
@@ -44,3 +44,8 @@ ComplexProgramTarget(makedepend)
 SpecialCObjectRule(main,$(ICONFIGFILES),$(MAIN_DEFINES))
 
 InstallManPageLong(mkdepend,$(MANDIR),makedepend)
+
+#ifdef OS2Architecture
+all::
+	$(CP) ProgramTargetName(makedepend) /
+#endif

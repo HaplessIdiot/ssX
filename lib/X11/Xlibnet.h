@@ -1,5 +1,5 @@
 /* $XConsortium: Xlibnet.h,v 1.39 94/04/17 20:21:51 mor Exp $ */
-/* $XFree86: xc/lib/X11/Xlibnet.h,v 3.0 1994/04/28 12:31:12 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlibnet.h,v 3.1 1994/05/08 05:15:12 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -84,6 +84,11 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef USE_POLL
 #include <sys/poll.h>
+#endif
+
+#ifdef __EMX__
+#define BSD_SELECT
+#include <sys/select.h>
 #endif
 
 #if !defined(USE_POLL) || defined(STREAMSCONN)

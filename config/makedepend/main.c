@@ -1,5 +1,5 @@
 /* $XConsortium: main.c,v 1.83 94/04/17 20:10:36 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.0 1994/05/08 05:13:25 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -113,7 +113,7 @@ catch (sig)
 	fatalerr ("got signal %d\n", sig);
 }
 
-#if defined(USG) || (defined(SYSV386) && defined(SYSV)) || defined(WIN32)
+#if defined(USG) || (defined(SYSV386) && defined(SYSV)) || defined(WIN32) || defined(__EMX__)
 #define USGISH
 #endif
 
@@ -560,7 +560,7 @@ char *base_name(file)
 	return(file);
 }
 
-#if defined(USG) && !defined(CRAY) && !defined(SVR4)
+#if defined(USG) && !defined(CRAY) && !defined(SVR4) && !defined(__EMX__)
 int rename (from, to)
     char *from, *to;
 {
@@ -608,12 +608,12 @@ redirect(line, makefile)
 		fatalerr("cannot open \"%s\"\n", makefile);
 	sprintf(backup, "%s.bak", makefile);
 	unlink(backup);
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
 	fclose(fdin);
 #endif
 	if (rename(makefile, backup) < 0)
 		fatalerr("cannot rename %s to %s\n", makefile, backup);
-#ifdef WIN32
+#if defined(WIN32) || defined(__EMX__)
 	if ((fdin = fopen(backup, "r")) == NULL)
 		fatalerr("cannot open \"%s\"\n", backup);
 #endif

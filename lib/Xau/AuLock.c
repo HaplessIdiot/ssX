@@ -1,4 +1,5 @@
 /* $XConsortium: AuLock.c,v 1.15 94/04/17 20:15:43 rws Exp $ */
+/* $XFree86$ */
 
 /*
 
@@ -31,7 +32,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <X11/Xos.h>
 #include <sys/stat.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
+#if defined(X_NOT_STDC_ENV)
 extern int errno;
 #define Time_t long
 extern Time_t time ();
@@ -47,6 +48,9 @@ extern unsigned	sleep ();
 #else
 #define link rename
 #endif
+#endif
+#ifdef __EMX__
+#define link rename
 #endif
 
 #if NeedFunctionPrototypes

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf,v 1.12 94/03/29 15:42:08 gildea Exp $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.4 1994/06/05 05:52:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.5 1994/09/24 15:09:40 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -414,6 +414,13 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.4 1994/06/05 05:52:54 dawes Exp $
 #endif	/* i386 */
 #undef i386
 #endif /* MACH */
+
+#ifdef emxos2
+#define MacroIncludeFile <os2.cf>
+#define MacroFile os2.cf
+#define OS2Architecture
+#define i386Architecture
+#endif /* emxos2 */
 
 #ifndef MacroIncludeFile
 XCOMM WARNING:  Imake.cf not configured; guessing at definitions!!!

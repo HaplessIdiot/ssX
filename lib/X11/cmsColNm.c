@@ -1,4 +1,5 @@
 /* $XConsortium: cmsColNm.c,v 1.28 94/03/31 21:50:05 rws Exp $" */
+/* $XFree86$ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -729,6 +730,9 @@ LoadColornameDB()
     if ((pathname = getenv("XCMSDB")) == NULL) {
 	pathname = XCMSDB;
     }
+#ifdef __EMX__
+    pathname = __XOS2RedirRoot(pathname);
+#endif
 
     length = strlen(pathname);
     if ((length == 0) || (length >= (BUFSIZ - 5))){

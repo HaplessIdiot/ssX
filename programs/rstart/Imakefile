@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.10 94/03/29 19:43:33 mor Exp $
-XCOMM $XFree86: xc/programs/rstart/Imakefile,v 3.0 1994/05/22 01:49:05 dawes Exp $
+XCOMM $XFree86: xc/programs/rstart/Imakefile,v 3.1 1994/06/05 06:01:26 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -84,15 +84,13 @@ DEFAULT_USER_PATH=DefaultUserPath
 #define MakeDirect(dir) if [ -d dir ]; then set +x;			\@@\
 		else (set -x; $(MKDIRHIER) dir); fi
 
-#define	FilterContext(src, dest)					\@@\
-	RemoveFile(dest);						\@@\
+#define	FilterContext(src, dest) RemoveFile(dest);			\@@\
 	sed								\@@\
 		-e 's,_PATH,$(DEFAULT_USER_PATH),g'			\@@\
 		-e 's,_MANPATH,$(DEFAULT_X_MANPATH),g'			\@@\
 		< src > dest
 
-#define	FilterCommand(src, dest)					\@@\
-	RemoveFile(dest);						\@@\
+#define	FilterCommand(src, dest) RemoveFile(dest);			\@@\
 	sed								\@@\
 		-e 's,ENVPREFIX,$(ENVPREFIX),g'				\@@\
 		< src > dest;						\@@\
@@ -103,8 +101,7 @@ DEFAULT_USER_PATH=DefaultUserPath
 		chmod +x dest ;;					\@@\
 	esac
 
-#define	Recurse(src, dest, filefunc)					\@@\
-	set -x;								\@@\
+#define	Recurse(src, dest, filefunc) set -x;				\@@\
 	find src -print |						\@@\
 		while read name;					\@@\
 		do							\@@\
@@ -117,8 +114,7 @@ DEFAULT_USER_PATH=DefaultUserPath
  		done
 
 #if	HasSymLinks
-#define	InstallAliases()						\@@\
-	set -x;								\@@\
+#define	InstallAliases() set -x;					\@@\
  	cd $(DESTDIR)$(MYLIBDIR)/contexts;				\@@\
  		sed -e '/^$$/d' -e '/^#/d' @Aliases |			\@@\
  		while read real aliases;				\@@\

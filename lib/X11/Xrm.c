@@ -1,4 +1,5 @@
 /* $XConsortium: Xrm.c,v 1.88 94/04/17 20:21:54 rws Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988, 1990 by Digital Equipment Corporation, Maynard
@@ -1535,12 +1536,14 @@ char * filename;
 {
     register int fd, size;
     char * filebuf;
-
+#ifdef __EMX__
+    filename = __XOS2RedirRoot(filename);
+#endif
     if ( (fd = OpenFile(filename)) == -1 )
 	return (char *)NULL;
 
     GetSizeOfFile(filename, size);
-	
+
     if (!(filebuf = Xmalloc(size + 1))) { /* leave room for '\0' */
 	close(fd);
 	return (char *)NULL;

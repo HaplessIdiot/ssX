@@ -1,4 +1,5 @@
 /* $XConsortium: loadData.c,v 1.12 94/02/07 23:28:48 rws Exp $ */
+/* $XFree86$ */
 
 /*
  * (c) Copyright 1990 Tektronix Inc.
@@ -52,7 +53,7 @@
  *		files (external includes or internal includes).
  */
 
-#ifdef X_NOT_STDC_ENV
+#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
 extern char *strtok();
 extern char *strchr();
 #endif

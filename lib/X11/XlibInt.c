@@ -1,5 +1,5 @@
 /* $XConsortium: XlibInt.c,v 11.228 94/04/17 20:21:48 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.0 1994/04/28 12:31:08 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986, 1987  X Consortium
@@ -88,7 +88,11 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ETEST() (WSAGetLastError() == WSAEWOULDBLOCK)
 #else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
+#ifdef __EMX__
+#define ETEST() (sock_errno() == EAGAIN || sock_errno() == EWOULDBLOCK)
+#else
 #define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK)
+#endif
 #else
 #ifdef EAGAIN
 #define ETEST() (errno == EAGAIN)
@@ -101,8 +105,13 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ECHECK(err) (WSAGetLastError() == err)
 #define ESET(val) WSASetLastError(val)
 #else
+#ifdef __EMX__
+#define ECHECK(err) (sock_errno() == err)
+#define ESET(val)
+#else
 #define ECHECK(err) (errno == err)
 #define ESET(val) errno = val
+#endif
 #endif
 
 #if defined(LOCALCONN) || defined(LACHMAN)
@@ -2687,7 +2696,11 @@ _XDefaultIOError (dpy)
 #ifdef WIN32
 			WSAGetLastError(), strerror(WSAGetLastError()),
 #else
+#ifdef __EMX__
+			sock_errno(), "socket error",
+#else
 			errno, strerror (errno),
+#endif
 #endif
 			DisplayString (dpy));
 	    (void) fprintf (stderr, 
@@ -3238,5 +3251,26 @@ _XANYSET(src)
 	if (src[ i ])
 	    return (1);
     return (0);
+}
+#endif
+
+#ifdef __EMX__
+char *__XOS2RedirRoot(char *fname)
+{
+    /* This adds a further redirection by allowing the ProjectRoot
+     * to be prepended by the content of the envvar X11ROOT.
+     * This is for the purpose to move the whole X11 stuff to a different
+     * disk drive.
+     * The feature was added despite various environment variables
+     * because not all file opens respect them.
+     */
+    static char redirname[300]; /* enough for long filenames */
+    char *root = (char*)getenv("X11ROOT");
+    if (root==0 || 
+	(fname[1]==':' && tolower(fname[0]) >= 'a' && tolower(fname[0] <= 'z') ||
+        (strlen(fname)+strlen(root)+2) > 300))
+	return fname;
+    sprintf(redirname,"%s%s",root,fname);
+    return access(redirname,R_OK)==0 ? redirname : fname;
 }
 #endif

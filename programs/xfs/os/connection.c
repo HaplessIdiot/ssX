@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.29 94/04/17 19:56:05 mor Exp $ */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.0 1994/05/08 05:26:20 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.1 1994/06/28 12:33:01 dawes Exp $ */
 /*
  * handles connections
  */
@@ -80,6 +80,10 @@ in this Software without prior written authorization from the X Consortium.
 #include	<sys/uio.h>
 #endif
 #include	<signal.h>
+
+#ifdef __EMX__
+#define _NFILE  NOFILE
+#endif
 
 #include	"FS.h"
 #include	"FSproto.h"
@@ -198,7 +202,7 @@ OldListenRec *old_listen;
     for (i = 0; i < MAXSOCKS; i++)
 	ConnectionTranslation[i] = 0;
 
-#if defined(hpux) || defined(SVR4)
+#if defined(hpux) || defined(SVR4) || defined(__EMX__)
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;
