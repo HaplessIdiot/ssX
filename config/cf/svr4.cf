@@ -2,7 +2,7 @@ XCOMM $Xorg: svr4.cf,v 1.3 2000/08/17 19:41:48 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.48 2002/06/07 21:40:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.49 2002/08/19 03:16:31 tsi Exp $
 /*
  * A default OS name
  */
@@ -277,6 +277,12 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.48 2002/06/07 21:40:53 dawes Exp $
 #endif
 #ifndef XFree86ServerOSDefines
 # define XFree86ServerOSDefines -DDDXOSINIT
+#endif
+
+#if HasGcc2ForCplusplus
+# ifndef CplusplusLibCDir
+#  define CplusplusLibCDir	/usr/local/lib
+# endif
 #endif
 
 #include <sv4Lib.rules>
