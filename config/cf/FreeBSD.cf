@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf,v 1.1 94/03/29 15:34:45 gildea Exp $
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.0 1994/04/29 14:03:02 dawes Exp $
 
 #define OSName            FreeBSD 1.1
 #define OSVendor          /**/
@@ -45,6 +45,10 @@ XCOMM operating system:  OSName
 #define ServerOSDefines /**/
 #endif
 #define ServerExtraDefines GccGasOption
+
+#ifndef PreIncDir
+#define PreIncDir	/usr/include
+#endif
 
 #define TroffCmd        groff -Tps
 #define SetTtyGroup     YES
