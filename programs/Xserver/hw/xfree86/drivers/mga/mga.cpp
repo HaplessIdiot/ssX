@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.10 1999/11/19 13:54:40 hohndel Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.12 2000/03/03 18:48:38 mvojkovi Exp $ 
 .TH MGA __drivermansuffix__ "Version 4.0"  "XFree86"
 .SH NAME
 mga \- Matrox video driver
@@ -93,8 +93,8 @@ Set clocks to values used by some commercial X-Servers (G100, G200 and G400
 only).  Default: off.
 .TP
 .BI "Option ""Overlay""
-Enable 8+24 overlay mode.  Only appropriate for depth 24. (
-.B Note: 
+Enable 8+24 overlay mode.  Only appropriate for depth 24.
+.RB ( Note: 
 the G100 is unaccelerated in the 8+24 overlay mode due to a missing 
 hardware feature) Default: off.
 .TP

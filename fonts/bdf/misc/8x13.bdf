@@ -2,7 +2,7 @@ STARTFONT 2.1
 COMMENT AUTOMATICALLY GENERATED FILE. DO NOT EDIT!
 COMMENT In this version of the font file, all characters >= U+3200 are
 COMMENT not encoded to keep XFontStruct small.
-COMMENT "Id: 8x13.bdf,v 1.46 1999-11-13 20:49:01+00 mgk25 Rel mgk25 $"
+COMMENT "Id: 8x13.bdf,v 1.47 2000-01-22 20:53:29+00 mgk25 Rel mgk25 $"
 COMMENT "Send bug reports to Markus Kuhn <mkuhn@acm.org>"
 FONT -Misc-Fixed-Medium-R-Normal--13-120-75-75-C-80-ISO10646-1
 SIZE 13 78 78
@@ -27,7 +27,7 @@ DEFAULT_CHAR 0
 FONT_DESCENT 2
 FONT_ASCENT 11
 COPYRIGHT "Public domain font.  Share and enjoy."
-_XMBDFED_INFO "Edited with xmbdfed 4.2."
+_XMBDFED_INFO "Edited with xmbdfed 4.3."
 CAP_HEIGHT 9
 X_HEIGHT 6
 ENDPROPERTIES
@@ -2224,7 +2224,7 @@ BITMAP
 00
 00
 00
-7C
+3C
 00
 00
 00

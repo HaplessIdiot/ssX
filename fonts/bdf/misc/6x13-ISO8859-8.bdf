@@ -3,7 +3,7 @@ COMMENT AUTOMATICALLY GENERATED FILE. DO NOT EDIT!
 COMMENT Generated with 'ucs2any.pl ../6x13.bdf ../map-ISO8859-8 ISO8859-8'
 COMMENT from an ISO10646-1 encoded source BDF font.
 COMMENT ucs2any.pl by Markus Kuhn <mkuhn@acm.org>, 1999.
-COMMENT Id: 6x13.bdf,v 1.103 1999-12-14 19:47:10+00 mgk25 Exp mgk25 $
+COMMENT Id: 6x13.bdf,v 1.104 2000-01-17 09:57:55+00 mgk25 Rel mgk25 $
 COMMENT Send bug reports to Markus Kuhn <mkuhn@acm.org>
 FONT -Misc-Fixed-Medium-R-SemiCondensed--13-120-75-75-C-60-ISO8859-8
 SIZE 12 75 75
@@ -2744,7 +2744,7 @@ BITMAP
 00
 00
 00
-F8
+70
 00
 00
 00
