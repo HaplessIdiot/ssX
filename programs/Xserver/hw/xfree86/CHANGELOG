@@ -1,4 +1,5 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 253. Fix omission in BUILD instructions (Reported by Boris Dusek).
  252. Bump DGA client library minor version (Marc La France).
  251. Fix minor bug in Linux/Alpha's xf86GetPciSizeFromOS() (Marc La France).
  250. Cause the Linux port to warn when MAX_PCI_BUSES and/or MAX_PCI_DEVICES
@@ -19232,7 +19233,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3371 2004/12/31 03:30:39 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3372 2004/12/31 14:55:36 tsi Exp $
 
 
 
