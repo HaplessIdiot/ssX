@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.206 2002/05/02 15:20:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.208 2002/05/22 21:38:28 herrb Exp $ */
 
 /*
  *
@@ -155,13 +155,14 @@ void _savef29();
 extern volatile unsigned char *ioBase;
 
 /* XXX Should get all of these from elsewhere */
-
+#ifndef linux
 extern void outb(IOADDRESS, unsigned char);
 extern void outw(IOADDRESS, unsigned short);
 extern void outl(IOADDRESS, unsigned int);
 extern unsigned int inb(IOADDRESS);
 extern unsigned int inw(IOADDRESS);
 extern unsigned int inl(IOADDRESS);
+#endif
 extern void stl_brx(unsigned long, volatile unsigned char *, int);
 extern void stw_brx(unsigned short, volatile unsigned char *, int);
 extern unsigned long ldl_brx(volatile unsigned char *, int);
