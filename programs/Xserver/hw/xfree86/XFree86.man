@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.38 1997/05/22 14:22:20 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.39 1997/05/31 13:51:25 dawes Exp $ 
 .TH XFree86 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -134,7 +134,7 @@ Suppress most informational messages at startup.
 .TP 8
 .B \-bpp \fIn\fP
 Set number of bits per pixel.  The default is 8.  Legal values are
-8, 15, 16, 24, 32.  Not all servers support all values.
+1, 4, 8, 15, 16, 24, 32.  Not all servers support all values.
 .TP 8
 .B \-weight \fInnn\fP
 Set RGB weighting at 16 bpp.  The default is 565.  This applies
@@ -476,8 +476,8 @@ WD 90C24A support.
 Alan Hourihane,    \fIalanh@fairlite.demon.co.uk\fP
 Trident SVGA driver, SiS SVGA driver and DEC 21030 server.
 .TP 8
-Marc La France,    \fIMarc.La-France@ualberta.ca\fP
-ATI vgawonder SVGA driver
+Marc Aurele La France, \fItsi@ualberta.ca\fP
+ATI SVGA driver
 .TP 8
 Steve Goldman,     \fIsgoldman@encore.com\fP
 Oak 067/077 SVGA driver.

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.28 1997/06/03 14:11:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.29 1997/06/11 12:24:37 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -267,7 +267,7 @@ i128Probe()
    int Num_PCI_DevIOPorts = 16;
    unsigned I128_IOPorts[] = { 0x0000, 0x0000 };
    int Num_I128_IOPorts = 2;
-   unsigned char n, m, p, mdc;
+   unsigned char n, m, p, mdc, df;
    float mclk;
    pciConfigPtr pcrp, *pcrpp;
    unsigned char tmpl, tmph, tmp;
@@ -549,6 +549,16 @@ i128Probe()
          i128mem.rbase_g_b[IDXH_I] = 0;
          i128mem.rbase_g_b[IDXL_I] = IBMRGB_id;
 	 tmp = i128mem.rbase_g_b[DATA_I];
+
+         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
+	 n = i128mem.rbase_g_b[DATA_I] & 0x1f;
+         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_vco_div;
+	 m = i128mem.rbase_g_b[DATA_I];
+	 df = m>>6;
+	 m &= 0x3f;
+	 if (n == 0) { m=0; n=1; }
+	 mclk = ((2517500 * (m+65)) / n / (8>>df) + 50) / 100;
+
 	 i128mem.rbase_g_b[IDXL_I] = tmpl;
 	 i128mem.rbase_g_b[IDXH_I] = tmph;
          if (tmp != 2) {
@@ -556,9 +566,12 @@ i128Probe()
 		i128InfoRec.ramdac);
             return(FALSE);
          }
-/* Set MClock speed?? */
+
          OFLG_SET(CLOCK_OPTION_IBMRGB, &i128InfoRec.clockOptions);
 
+         if (xf86Verbose)
+            ErrorF("%s %s: Using IBM 526 programmable clock (MCLK %1.3f MHz)\n",
+	           XCONFIG_PROBED, i128InfoRec.name, mclk / 1000.0);
          break;
 
       case IBM528_DAC:
@@ -570,6 +583,16 @@ i128Probe()
          i128mem.rbase_g_b[IDXH_I] = 0;
          i128mem.rbase_g_b[IDXL_I] = IBMRGB_id;
 	 tmp = i128mem.rbase_g_b[DATA_I];
+
+         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
+	 n = i128mem.rbase_g_b[DATA_I] & 0x1f;
+         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_vco_div;
+	 m = i128mem.rbase_g_b[DATA_I];
+	 df = m>>6;
+	 m &= 0x3f;
+	 if (n == 0) { m=0; n=1; }
+	 mclk = ((2517500 * (m+65)) / n / (8>>df) + 50) / 100;
+
 	 i128mem.rbase_g_b[IDXL_I] = tmpl;
 	 i128mem.rbase_g_b[IDXH_I] = tmph;
          if (tmp != 2) {
@@ -577,9 +600,12 @@ i128Probe()
 		i128InfoRec.ramdac);
             return(FALSE);
          }
-/* Set MClock speed?? */
+
          OFLG_SET(CLOCK_OPTION_IBMRGB, &i128InfoRec.clockOptions);
 
+         if (xf86Verbose)
+            ErrorF("%s %s: Using IBM 528 programmable clock (MCLK %1.3f MHz)\n",
+	           XCONFIG_PROBED, i128InfoRec.name, mclk / 1000.0);
          break;
 
       default:

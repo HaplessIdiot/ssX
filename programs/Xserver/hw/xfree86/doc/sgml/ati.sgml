@@ -5,7 +5,7 @@
 
 <title>ATI adapters README
 <author>Marc Aurele La France
-<date>23 March 1996
+<date>11 June 1997
 <abstract>
 This is the README for the XFree86 ATI VGA driver used in the XF86_Mono,
 XF86_VGA16 and XF86_SVGA servers.
@@ -52,7 +52,10 @@ with this driver:
 VGA Wonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
     Mach32 series:  68800-3, 68800-6, 68800AX, 68800LX
     Mach64 series:  88800GX-C, 88800GX-D, 88800GX-E, 88800GX-F, 88800CX,
-                    264CT, 264ET, 264VT, 264VT2, 264GT</verb>
+                    264CT, 264ET, 264VT, 264VT-B, 264VT3, 264GT, 264GT-B,
+                    264GT3</verb>
+There is some support for the 264LT (ATI's entry into the laptop world), but it
+is untested.
 The 264xT series are integrated controllers, meaning that they include an
 internal RAMDAC and clock generator.
 Some early Mach32 adapters will not work with this driver because they do not
@@ -74,6 +77,14 @@ The VGA Wonder series was also available through ATI's OEM channel under the
 name VGA1024.
 Thus, the ATI VGA driver also supports VGA1024, VGA1024D, VGA1024XL,
 VGA1024DXL and VGA1024VLB adapters, among others.<p>
+Other names that have been used for adapters supported by this driver are:
+<verb>
+VGA Basic 16, VGA Edge, VGA Edge 16, VGA Integra, VGA 640, VGA 800, VGA 1024,
+VGA Charger, VGAStereo F/X, Graphics Ultra, Graphics Vantage, VGAWonder GT,
+Graphics Ultra, Graphics Ultra Pro, Grpahics Wonder, Graphics Ultra XLR,
+Graphics Ultra AXO, mach32, Graphics Xpression, Graphics Pro Turbo, WinBoost,
+WinTurbo, WinCharger, Graphics Pro Turbo 1600, Video Xpression, 3D Xpression,
+All-In-Wonder. 3D Pro Turbo, ATI-TV, XPERT@Play, XPERT@Work, etc.</verb>
 <sect>What should I put in my XF86Config file?<p>
 The chipset will be automatically detected.
 The chipset name for this driver is "ati".
@@ -241,7 +252,9 @@ be allowed on 264xT adapters.
 For now, clocks will be limited to 135MHz by default.  
 This limit can only be increased (up to a driver-calculated absolute maximum)
 through the DACSpeed option in XF86Config.
-Be aware however that doing this is untested and might damage the adapter.<p>
+Be aware however that doing this is untested and might damage the adapter.
+The default limit has been raised to 170MHz for VT-B, VT3, GT-B, GT3, LT and
+later adapters.<p>
 The default mode does not work on the more recent Mach64 adapters.
 This will be fixed in a future release by reading the programmable clock
 generator's registers.<p>
@@ -250,7 +263,7 @@ accelerated functionality.<p>
 Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.14 1996/12/28 08:15:35 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.15 1997/01/24 09:32:43 dawes Exp $
 
 
 

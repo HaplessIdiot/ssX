@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.4 1997/05/09 09:19:41 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.5 1997/06/03 14:12:10 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -38,6 +38,9 @@
 #include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
+
+/* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
+#define MCLK_FROM_XCONFIG 0
 
 /*
  * exported functions
@@ -968,9 +971,11 @@ MGA3026RamdacInit()
     else
         MGAdac.MemoryClock = MGABios.Clk8MB * 10;
 
+#if MCLK_FROM_XCONFIG
     /* or get it from XF86Config */
     if (vga256InfoRec.MemClk)
         MGAdac.MemoryClock = vga256InfoRec.MemClk;
+#endif
         
     MGATi3026SetMCLK( MGAdac.MemoryClock );
 }

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.25 1996/12/23 06:43:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.26 1997/05/12 13:27:59 hohndel Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -346,7 +346,44 @@ xf86WcmConfig(LocalDevicePtr    *array,
     int			mtoken;
     
     DBG(1, ErrorF("xf86WcmConfig\n"));
+
+    if (xf86GetToken(WcmTab) != PORT) {
+	xf86ConfigError("PORT option must be the first option of a Wacom SubSection");
+    }
     
+    if (xf86GetToken(NULL) != STRING)
+	xf86ConfigError("Option string expected");
+    else {
+	int     loop;
+		
+	/* try to find another wacom device which share the same port */
+	for(loop=0; loop<max; loop++) {
+	    if (loop == inx)
+		continue;
+	    if ((array[loop]->device_config == xf86WcmConfig) &&
+		(strcmp(((WacomDevicePtr)array[loop]->private)->common->wcmDevice, val->str) == 0)) {
+		DBG(2, ErrorF("xf86WcmConfig wacom port share between"
+			      " %s and %s\n",
+			      dev->name, array[loop]->name));
+		((WacomDevicePtr) array[loop]->private)->common->wcmHasEraser |= common->wcmHasEraser;
+		xfree(common->wcmDevices);
+		xfree(common);
+		common = priv->common = ((WacomDevicePtr) array[loop]->private)->common;
+		common->wcmNumDevices++;
+		common->wcmDevices = (LocalDevicePtr *) xrealloc(common->wcmDevices,
+								 sizeof(LocalDevicePtr) * common->wcmNumDevices);
+		common->wcmDevices[common->wcmNumDevices - 1] = dev;
+		break;
+	    }
+	}
+	if (loop == max) {
+	    common->wcmDevice = strdup(val->str);
+	    if (xf86Verbose)
+		ErrorF("%s Wacom port is %s\n", XCONFIG_GIVEN,
+		       common->wcmDevice);
+	}
+    }
+
     while ((token = xf86GetToken(WcmTab)) != ENDSUBSECTION) {
 	switch(token) {
 	case DEVICENAME:
@@ -356,41 +393,7 @@ xf86WcmConfig(LocalDevicePtr    *array,
 	    if (xf86Verbose)
 		ErrorF("%s Wacom X device name is %s\n", XCONFIG_GIVEN,
 		       dev->name);
-	    break;
-	    
-	case PORT:
-	    if (xf86GetToken(NULL) != STRING)
-		xf86ConfigError("Option string expected");
-	    else {
-		int     loop;
-		
-		/* try to find another wacom device which share the same port */
-		for(loop=0; loop<max; loop++) {
-		    if (loop == inx)
-			continue;
-		    if ((array[loop]->device_config == xf86WcmConfig) &&
-			(strcmp(((WacomDevicePtr)array[loop]->private)->common->wcmDevice, val->str) == 0)) {
-			DBG(2, ErrorF("xf86WcmConfig wacom port share between"
-				      " %s and %s\n",
-				      dev->name, array[loop]->name));
-			xfree(common->wcmDevices);
-			xfree(common);
-			common = priv->common = ((WacomDevicePtr) array[loop]->private)->common;
-			common->wcmNumDevices++;
-			common->wcmDevices = (LocalDevicePtr *) xrealloc(common->wcmDevices,
-									 sizeof(LocalDevicePtr) * common->wcmNumDevices);
-			common->wcmDevices[common->wcmNumDevices - 1] = dev;
-			break;
-		    }
-		}
-		if (loop == max) {
-		    common->wcmDevice = strdup(val->str);
-		    if (xf86Verbose)
-			ErrorF("%s Wacom port is %s\n", XCONFIG_GIVEN,
-			       common->wcmDevice);
-		}
-	    }
-	    break;
+	    break;	    
 	    
 	case THE_MODE:
 	    mtoken = xf86GetToken(ModeTabRec);
@@ -690,6 +693,46 @@ send_request(int	fd,
     return answer;
 }
 
+/*
+ ***************************************************************************
+ *
+ * xf86WcmConvert --
+ *	Convert valuators to X and Y.
+ *
+ ***************************************************************************
+ */
+static Bool
+xf86WcmConvert(LocalDevicePtr	local,
+	       int		first,
+	       int		num,
+	       int		v0,
+	       int		v1,
+	       int		v2,
+	       int		v3,
+	       int		v4,
+	       int		v5,
+	       int*		x,
+	       int*		y)
+{
+    WacomDevicePtr	priv = (WacomDevicePtr) local->private;
+
+    if (first != 0 || num == 1)
+      return FALSE;
+
+    *x = v0 * priv->factorX;
+    *y = v1 * priv->factorY;
+
+    return TRUE;
+}
+
+/*
+ ***************************************************************************
+ *
+ * xf86WcmSendEvents --
+ *	Send events according to the device state.
+ *
+ ***************************************************************************
+ */
 static void
 xf86WcmSendEvents(LocalDevicePtr	local,
 		  int			is_stylus,
@@ -799,11 +842,6 @@ xf86WcmSendEvents(LocalDevicePtr	local,
     is_absolute = (priv->flags & ABSOLUTE_FLAG);
     is_core_pointer = xf86IsCorePointer(local->dev);
 
-    if (is_core_pointer) {
-	x = x * priv->factorX;
-	y = y * priv->factorY;
-    }
-
     /* sets rx and ry according to the mode */
     if (is_absolute) {
 	rx = x;
@@ -823,9 +861,8 @@ xf86WcmSendEvents(LocalDevicePtr	local,
     if (is_proximity) {
 
 	if (!common->wcmOldProximity) {
-	    if (!is_core_pointer) {
-		xf86PostProximityEvent(local->dev, 1, 0, 5, rx, ry, z, tx, ty);
-	    }
+	    xf86PostProximityEvent(local->dev, 1, 0, 5, rx, ry, z, tx, ty);
+
 	    priv->flags |= FIRST_TOUCH_FLAG;
 	    DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
 		    
@@ -861,7 +898,7 @@ xf86WcmSendEvents(LocalDevicePtr	local,
 	if ((priv->oldX != x) ||
 	    (priv->oldY != y) ||
 	    (priv->oldZ != z) ||
-	    (!is_core_pointer && is_stylus && HANDLE_TILT(common) &&
+	    (is_stylus && HANDLE_TILT(common) &&
 	     (tx != priv->oldTiltX || ty != priv->oldTiltY))) {
 	    if (!is_absolute && (priv->flags & FIRST_TOUCH_FLAG)) {
 		priv->flags -= FIRST_TOUCH_FLAG;
@@ -1271,11 +1308,14 @@ xf86WcmOpen(LocalDevicePtr	local)
 	char	buf[20];
       
 	if (common->wcmSuppress < 0) {
-	    common->wcmSuppress = 0;
-	} else {
-	    if (common->wcmSuppress > 100) {
-		common->wcmSuppress = 99;
-	    }
+	    int	xratio = common->wcmMaxX/screenInfo.screens[0]->width;
+	    int yratio = common->wcmMaxY/screenInfo.screens[0]->height;
+	    
+	    common->wcmSuppress = (xratio > yratio) ? yratio : xratio;
+	}
+	
+	if (common->wcmSuppress > 100) {
+	    common->wcmSuppress = 99;
 	}
 	sprintf(buf, "%s%d\r", WC_SUPPRESS, common->wcmSuppress);
 	SYSCALL(err = write(local->fd, buf, strlen(buf)));
@@ -1698,13 +1738,16 @@ xf86WcmAllocate(char *  name,
     local->control_proc = xf86WcmChangeControl;
     local->close_proc = xf86WcmClose;
     local->switch_mode = xf86WcmSwitchMode;
+    local->conversion_proc = xf86WcmConvert;
     local->fd = -1;
     local->atom = 0;
     local->dev = NULL;
     local->private = priv;
     local->private_flags = 0;
     local->history_size  = 0;
-
+    local->old_x = -1;
+    local->old_y = -1;
+    
     priv->flags = flag;			/* various flags (device type, absolute, first touch...) */
     priv->oldX = -1;			/* previous X position */
     priv->oldY = -1;			/* previous Y position */
@@ -1729,7 +1772,7 @@ xf86WcmAllocate(char *  name,
     }
 #endif
     common->wcmOldProximity = 0;	/* previous proximity */
-    common->wcmSuppress = 20;		/* transmit position if increment is superior */
+    common->wcmSuppress = -1;		/* transmit position if increment is superior */
     common->wcmFlags = 0;		/* various flags */
     common->wcmDevices = (LocalDevicePtr*) xalloc(sizeof(LocalDevicePtr));
     common->wcmDevices[0] = local;
@@ -1742,7 +1785,7 @@ xf86WcmAllocate(char *  name,
     common->wcmResolX = 1270;		/* X resolution in points/inch */
     common->wcmResolY = 1270;		/* Y resolution in points/inch */
     common->wcmResolZ = 1270;		/* Z resolution in points/inch */
-    common->wcmHasEraser = FALSE;	/* True if an eraser has been configured */
+    common->wcmHasEraser = (flag & ERASER_ID) ? TRUE : FALSE;	/* True if an eraser has been configured */
 
     return local;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.95 1997/06/10 12:30:34 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.96 1997/06/11 12:24:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -304,6 +304,7 @@ void (* vgaAdjustFunc)(
     int
 #endif
 ) = (void (*)())NoopDDA;
+
 void (* vgaSaveScreenFunc)() = vgaHWSaveScreen;
 void (* vgaFbInitFunc)() = (void (*)())NoopDDA;
 Bool (* vgaScrInitFunc)() = (Bool (*)())NoopDDA;
@@ -312,6 +313,8 @@ int (* vgaLinearOffsetFunc)() = (int (*)())NoopDDA;
 void (* vgaSetReadFunc)() = (void (*)())NoopDDA;
 void (* vgaSetWriteFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadWriteFunc)() = (void (*)())NoopDDA;
+Bool (*vgaBlankScreenFunc)()=vgaBlankScreen;
+
 int vgaMapSize;
 int vgaSegmentSize;
 int vgaSegmentShift;
@@ -1772,6 +1775,24 @@ vgaCloseScreen(screen_idx, pScreen)
     ppix = NULL;
   }
   return(TRUE);
+}
+
+/*
+ * vgaSaveScreen -- blank the screen.
+ */
+
+Bool
+vgaSaveScreen(pScreen, on)
+     ScreenPtr pScreen;
+     Bool  on;
+{
+   if (on)
+      SetTimeSinceLastInputEvent();
+
+   if (xf86VTSema) {
+     (*vgaBlankScreenFunc)(pScreen,on);
+   }
+   return (TRUE);
 }
 
 /*

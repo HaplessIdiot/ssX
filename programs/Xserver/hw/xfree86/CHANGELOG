@@ -1,4 +1,39 @@
-XFree86 3.9e (12 June 1997)
+XFree86 3.9e (15 June 1997)
+1020. Add some more I128 acceleration, including pixmap cache, rectangle
+      fills and line drawing (#669, Robin Cutshaw).
+1019. Fix a compile problem that shows up with GLX isn't enabled
+      (#668, Frederic Lepied).
+1018. If the Wacom driver isn't supplied with a value for the Suppress
+      option it is calculated to report motions according to the screen
+      resolution (#668, Frederic Lepied).
+1017. Fix a bug in the XInput Wacom driver which prevented the eraser from
+      working (#668, Frederic Lepied).
+1016. Add a virtual XInput deviced called "Switch" which sends extended
+      motions when a different device sends a core event (with AlwaysCore
+      enabled (#668, Frederic Lepied).
+1015. Fix behaviour of XInput relative devices.  They send events with
+      accumulated valuators not with valuators deltas (#668, Frederic Lepied).
+1014. XInput devices with AlwaysCore enabled send both core and extended
+      events at the same time (#668, Frederic Lepied).
+1014. Move HP's HPkeysym.h (#667, Kaleb Keithley).
+1013. Fix a bad include in FS.h (#666, Arthur Barstow).
+1012. Add the mechanism to acknowledge the new DacSpeed[] values to the
+      svga/s3 driver.  Only the Trios use it so far (#665, Mark Vojkovich).
+1011. Fix(?) Truecolor depths for the Ti 3026/3030 ramdacs in the svga/s3
+      driver (#665, Mark Vojkovich).
+1010. Fix a logic bug in the XAA code that checks to see if there is
+      enough room for 8x8 patterns in the pixmap cache (#664,
+      Mark Vojkovich).
+1009. Changes to vga256/vga to allow the NV1 driver to work without
+      requiring any VGA functionality (#663, David McKay).
+1008. Resync the MGA driver with 3.3 (#660, Radoslaw Kapitan).
+1007. Lots of updates to the svga/ati driver (#659, Marc Aurele La France).
+1006. Update support for ATI Rage II+, Rage Pro in the Mach64 server, scanpci,
+      and SuperProbe (#659, Marc Aurele La France).
+1005. Remove man pages for VGA16 and Mono servers (#659,
+      Marc Aurele La France).
+1004. Fix duplicate target in drivers/s3/Imakefile (#658, Robin Cutshaw).
+1003. Fix some Xprt problems (#655-657, Kevin Samborn).
 1002. Fix some DPMS problems, including problems when the DPMS timeouts  
       are smaller than the screensaver cycle time, and problems with the
       various DPMS setting not being re-initialised at server reset.
@@ -4909,4 +4944,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.486 1997/06/10 12:30:22 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.487 1997/06/11 12:24:34 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.29 1997/06/06 06:07:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.h,v 3.30 1997/06/08 15:31:58 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -43,6 +43,8 @@
 #define PCI_CHIP_MACH64CT	0x4354
 #define PCI_CHIP_MACH64ET	0x4554
 #define PCI_CHIP_MACH64VT	0x5654
+#define PCI_CHIP_MACH64VU	0x5655
+#define PCI_CHIP_MACH64GP	0x4750
 #define PCI_CHIP_MACH64GT	0x4754
 #define PCI_CHIP_MACH64GU	0x4755
 #define PCI_CHIP_MACH64LT	0x4C47
@@ -196,6 +198,8 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_MACH64CT,	"Mach64 CT"},
 				{PCI_CHIP_MACH64ET,	"Mach64 ET"},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
+				{PCI_CHIP_MACH64VU,	"Mach64 VT"},
+				{PCI_CHIP_MACH64GP,	"Mach64 GT"},
 				{PCI_CHIP_MACH64GT,	"Mach64 GT"},
 				{PCI_CHIP_MACH64GU,	"Mach64 GT"},
 				{PCI_CHIP_MACH64LT,	"Mach64 LT"},

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.71 1997/04/12 13:45:06 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.72 1997/05/18 12:12:07 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -421,6 +421,7 @@ InitInput(argc, argv)
 
 #ifdef XINPUT
   (xf86Info.pMouse)->public.devicePrivate = xf86Info.mouseLocal;
+  ((LocalDevicePtr) xf86Info.mouseLocal)->dev = xf86Info.pMouse;
 #else
   (xf86Info.pMouse)->public.devicePrivate = (pointer) xf86Info.mouseDev;
 #endif

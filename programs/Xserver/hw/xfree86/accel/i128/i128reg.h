@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.5 1997/01/24 01:02:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.6 1997/06/03 14:11:21 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -183,7 +183,6 @@ struct i128mem {
 #define  CMD_CLP_MSK 0x00E00000
 #define  CMD_PAT_MSK 0x0F000000
 #define  CMD_HDF_MSK 0x70000000
-#define  CMD_BLIT    0x00000C01
 #define CMD_OPC   0x0050/4
 #define  CO_NOOP     0x00
 #define  CO_BITBLT   0x01

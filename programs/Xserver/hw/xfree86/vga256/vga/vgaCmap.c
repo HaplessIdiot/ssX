@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.17 1997/03/22 09:36:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaCmap.c,v 3.18 1997/04/12 13:46:39 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -42,7 +42,6 @@
 #define NOMAPYET        (ColormapPtr) 0
 
 extern Bool clgd6225Lcd;
-extern Bool nv1VGABodge;
 
 static ColormapPtr InstalledMaps[MAXSCREENS];
 				/* current colormap for each screen */
@@ -71,6 +70,12 @@ vgaGetInstalledColormaps(pScreen, pmaps)
   return(1);
 }
 
+int vgaCheckColorMap(ColormapPtr pmap)
+{
+  return (pmap != InstalledMaps[pmap->pScreen->myNum]);
+
+}
+
 
 void
 vgaStoreColors(pmap, ndef, pdefs)
@@ -85,7 +90,7 @@ vgaStoreColors(pmap, ndef, pdefs)
     unsigned char overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
     unsigned char tmp_overscan;
 
-    if (pmap != InstalledMaps[pmap->pScreen->myNum])
+    if (vgaCheckColorMap(pmap))
         return;
 
     if ((pmap->pVisual->class | DynamicClass) == DirectColor)
@@ -212,13 +217,11 @@ vgaStoreColors(pmap, ndef, pdefs)
 	       )
 	    {
 #ifndef PC98_EGC
-	      if(!nv1VGABodge) {
-	        (void)inb(vgaIOBase + 0x0A);
-	        outb(0x3C0, OVERSCAN);
-	        outb(0x3C0, overscan);
-	        (void)inb(vgaIOBase + 0x0A);
-	        outb(0x3C0, 0x20);
-	      }
+	      (void)inb(vgaIOBase + 0x0A);
+	      outb(0x3C0, OVERSCAN);
+	      outb(0x3C0, overscan);
+	      (void)inb(vgaIOBase + 0x0A);
+	      outb(0x3C0, 0x20);
 #endif
 	    }
         }
@@ -270,7 +273,7 @@ vgaInstallColormap(pmap)
       defs[i].flags =  DoRed|DoGreen|DoBlue;
     }
 
-  vgaStoreColors( pmap, entries, defs);
+  pmap->pScreen->StoreColors( pmap, entries, defs);
 
   WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);
   

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.25 1997/03/27 18:38:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.26 1997/05/16 11:11:56 hohndel Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -809,7 +809,7 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
     Q = (mhz100 * M)/(2.0 * R);
 
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01)) {
+	(mach64ChipRev & 0x07)) {
 	if (Q > 255) {
 	    ErrorF("mach64ProgramClkMach64CT: Warning: Q > 255\n");
 	    Q = 255;
@@ -887,7 +887,7 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
     outb(ioCLOCK_CNTL + 2, tmp1 & ~0x04);
 
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01)) {
+	(mach64ChipRev & 0x07)) {
 	outb(ioCLOCK_CNTL + 1, PLL_XCLK_CNTL << 2);
 	tmp1 = inb(ioCLOCK_CNTL + 2);
 	outb(ioCLOCK_CNTL + 1, (PLL_XCLK_CNTL << 2) | PLL_WR_EN);
@@ -1139,7 +1139,7 @@ void mach64SetCRTCRegs(crtcRegs)
 
     /* Set the DSP registers on the VT-B and GT-B */
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01))
+	(mach64ChipRev & 0x07))
 	mach64SetDSPRegs(crtcRegs);
 
     /* Check to see if we need to program the clock chip */
@@ -1303,7 +1303,7 @@ mach64GetCTClock(i)
     outb(ioCLOCK_CNTL + 1, VCLK_POST_DIV << 2);
     postDiv = (inb(ioCLOCK_CNTL + 2) >> (2 * i)) & 0x03;
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01)) {
+	(mach64ChipRev & 0x07)) {
 	outb(ioCLOCK_CNTL + 1, PLL_XCLK_CNTL << 2);
 	if ((inb(ioCLOCK_CNTL + 2) >> (4 + i)) & 0x01) {
 	    switch (postDiv) {
@@ -2251,7 +2251,7 @@ void mach64InitDisplay(screen_idx)
 	}
 
 	if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	    (mach64ChipRev & 0x01)) {
+	    (mach64ChipRev & 0x07)) {
 	    old_DSP_CONFIG = regr(DSP_CONFIG);
 	    old_DSP_ON_OFF = regr(DSP_ON_OFF);
 	}
@@ -2333,7 +2333,7 @@ void mach64CleanUp()
 	}
 
 	if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	    (mach64ChipRev & 0x01)) {
+	    (mach64ChipRev & 0x07)) {
 	    regw(DSP_CONFIG, old_DSP_CONFIG);
 	    regw(DSP_ON_OFF, old_DSP_ON_OFF);
 	}

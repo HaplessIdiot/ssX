@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.19 1997/06/03 14:12:33 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.20 1997/06/06 06:07:21 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -196,10 +196,11 @@ void xf86InitPixmapCacheSlots()
      if (!(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_PROGRAMMED_BITS))
        disable8x8ColorExpand = FALSE;
  
-     if((xf86AccelInfoRec.PatternFlags &
-	 HARDWARE_PATTERN_NOT_LINEAR) && (MaxHeight >= 16)) {
-       disable8x8 = FALSE;
-       disable8x8ColorExpand = FALSE;
+     if(xf86AccelInfoRec.PatternFlags & HARDWARE_PATTERN_NOT_LINEAR){
+       if(MaxHeight >= 16) {
+           disable8x8 = FALSE;
+           disable8x8ColorExpand = FALSE;
+       }
      } else if (MaxHeight >= 8) {
        disable8x8 = FALSE;
        disable8x8ColorExpand = FALSE;

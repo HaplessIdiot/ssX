@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.27 1997/05/03 09:19:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.28 1997/05/03 12:53:19 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -291,6 +291,10 @@ extern void (* vgaSetReadWriteFunc)(
 	int
 #endif
 );
+
+
+extern Bool (*vgaBlankScreenFunc)(ScreenPtr pScreen,Bool On);
+
 extern int vgaMapSize;
 extern int vgaSegmentSize;
 extern int vgaSegmentShift;
@@ -555,5 +559,11 @@ void vgaUninstallColormap(
     ColormapPtr pmap
 #endif
 );
+
+/* Blanks screen */
+Bool vgaBlankScreen(ScreenPtr pScreen,Bool On);
+
+/* Checks if color map already installed ? */
+int vgaCheckColorMap(ColormapPtr pmap);
 
 #endif /* _XF86_VGA_H_ */

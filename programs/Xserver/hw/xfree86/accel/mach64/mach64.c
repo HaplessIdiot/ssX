@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.79 1997/06/08 15:31:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.80 1997/06/11 12:24:38 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -567,6 +567,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 	info.ChipType = MACH64_ET;
 	break;
    case MACH64_VT_ID:
+   case MACH64_VU_ID:
 	info.ChipType = MACH64_VT;
 	break;
    case MACH64_GT_ID:
@@ -617,7 +618,7 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
 
    tmp = inl(ioMEM_CNTL);
    if ((info.ChipType == MACH64_VT || info.ChipType == MACH64_GT) &&
-       (info.ChipRev & 0x01)) {
+       (info.ChipRev & 0x07)) {
      switch (tmp & MEM_SIZE_ALIAS_GTB) {
      case MEM_SIZE_512K:
        info.Mem_Size = 512;
@@ -747,6 +748,7 @@ GetATIPCIInformation()
 		info.ChipType = MACH64_ET;
 		break;
 	    case PCI_MACH64_VT:
+	    case PCI_MACH64_VU:
 		info.ChipType = MACH64_VT;
 		break;
 	    case PCI_MACH64_GT:
@@ -845,7 +847,7 @@ mach64PrintCTPLL()
 
     N = pll[VCLK0_FB_DIV];
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x10)) {
+	(mach64ChipRev & 0x07) && (pll[PLL_XCLK_CNTL] & 0x10)) {
 	switch (pll[VCLK_POST_DIV] & VCLK0_POST) {
 	case 0: P = 3; break;
 	case 1: P = 2; break; /* Unknown */
@@ -859,7 +861,7 @@ mach64PrintCTPLL()
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[VCLK1_FB_DIV];
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x20)) {
+	(mach64ChipRev & 0x07) && (pll[PLL_XCLK_CNTL] & 0x20)) {
 	switch ((pll[VCLK_POST_DIV] & VCLK1_POST) >> 2) {
 	case 0: P = 3; break;
 	case 1: P = 2; break; /* Unknown */
@@ -873,7 +875,7 @@ mach64PrintCTPLL()
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[VCLK2_FB_DIV];
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x40)) {
+	(mach64ChipRev & 0x07) && (pll[PLL_XCLK_CNTL] & 0x40)) {
 	switch ((pll[VCLK_POST_DIV] & VCLK2_POST) >> 4) {
 	case 0: P = 3; break;
 	case 1: P = 2; break; /* Unknown */
@@ -887,7 +889,7 @@ mach64PrintCTPLL()
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[VCLK3_FB_DIV];
     if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x80)) {
+	(mach64ChipRev & 0x07) && (pll[PLL_XCLK_CNTL] & 0x80)) {
 	switch ((pll[VCLK_POST_DIV] & VCLK3_POST) >> 6) {
 	case 0: P = 3; break;
 	case 1: P = 2; break; /* Unknown */
@@ -1158,7 +1160,7 @@ mach64Probe()
 	break;
     case DAC_INTERNAL:
 	if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
-	    (mach64ChipRev & 0x01)) {
+	    (mach64ChipRev & 0x07)) {
 	    mach64InfoRec.maxClock = 170000;
 	} else {
 	    if (xf86bpp == 8)

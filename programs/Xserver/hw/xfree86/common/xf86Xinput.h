@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Xinput.h /main/11 1996/10/27 11:05:29 kaleb $ */
 /*
- * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
+ * Copyright 1995-1997 by Frederic Lepied, France. <Frederic.Lepied@sugix.frmug.org>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.14 1996/12/23 06:43:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.15 1997/05/12 13:28:01 hohndel Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -91,6 +91,21 @@ typedef struct _LocalDeviceRec {
     int /*mode*/
 #endif
     );
+  Bool           (*conversion_proc)(
+#if NeedNestedPrototypes
+    struct _LocalDeviceRec* /*local*/,
+    int	/* first */,
+    int /* num */,
+    int /* v0 */,
+    int /* v1 */,
+    int /* v2 */,
+    int /* v3 */,
+    int /* v4 */,
+    int /* v5 */,
+    int* /* x */,
+    int* /* y */
+#endif
+    );
     int			fd;
     Atom		atom;
     DeviceIntPtr	dev;
@@ -101,6 +116,8 @@ typedef struct _LocalDeviceRec {
     unsigned int	history_size;	/* only for configuration purpose */
     unsigned int	first;
     unsigned int	last;
+    int			old_x;
+    int			old_y;
     char		*type_name;
     IntegerFeedbackPtr	always_core_feedback;
 } LocalDeviceRec, *LocalDevicePtr;
@@ -114,15 +131,6 @@ typedef struct _DeviceAssocRec
 #endif
 );
 } DeviceAssocRec, *DeviceAssocPtr;
-
-extern	int		DeviceKeyPress;
-extern	int		DeviceKeyRelease;
-extern	int		DeviceButtonPress;
-extern	int		DeviceButtonRelease;
-extern	int		DeviceMotionNotify;
-extern	int		DeviceValuator;
-extern	int		ProximityIn;
-extern	int		ProximityOut;
 
 extern int
 xf86IsCorePointer(
@@ -274,6 +282,14 @@ xf86CheckButton(
 #if NeedFunctionPrototypes
 		int	button,
 		int	down
+#endif
+);
+
+void
+xf86SwitchCoreDevice(
+#if NeedFunctionPrototypes
+		LocalDevicePtr	device,
+		DeviceIntPtr	core
 #endif
 );
 

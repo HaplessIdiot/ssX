@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.4 1997/01/27 06:57:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.5 1997/06/03 14:11:20 hohndel Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -39,25 +39,26 @@ extern int i128DisplayWidth;
 extern int i128DeviceType;
 static volatile CARD32 *eng_a;
 static volatile CARD32 *eng_b;
-static int i128blitdir, i128rop;
+static volatile CARD32 *eng_cur;
+static int i128blitdir, i128rop, i128cmd, i128clptl, i128clpbr;
 
 short i128alu[16] =
 {
    CR_CLEAR,
-   CR_NOR,
-   CR_AND_INV,
-   CR_COPY_INV,
-   CR_AND_REV,
-   CR_INVERT,
-   CR_XOR,
-   CR_NAND,
    CR_AND,
-   CR_EQUIV,
-   CR_NOOP,
-   CR_OR_INV,
+   CR_AND_REV,
    CR_COPY,
-   CR_OR_REV,
+   CR_AND_INV,
+   CR_NOOP,
+   CR_XOR,
    CR_OR,
+   CR_NOR,
+   CR_EQUIV,
+   CR_INVERT,
+   CR_OR_REV,
+   CR_COPY_INV,
+   CR_OR_INV,
+   CR_NAND,
    CR_SET
 };
                         /*  8bpp   16bpp  32bpp unused */
@@ -110,6 +111,12 @@ i128EngineDone()
 	do {
 		flow = eng_a[FLOW];
 	} while (flow & (FLOW_DEB | FLOW_MCB));
+
+#if 0
+	do {
+		flow = eng_b[FLOW];
+	} while (flow & (FLOW_DEB | FLOW_MCB));
+#endif
 }
 
 void
@@ -118,71 +125,21 @@ i128EngineReady()
 	int busy;
 
 	do {
-		busy = eng_a[BUSY];
+		busy = eng_cur[BUSY];
 	} while (busy & BUSY_BUSY) ;
 }
 
 void
-i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
-	int transparency_color)
-{
-	i128EngineReady();
-
-	switch (xf86bpp) {
-		case 8:
-			eng_a[BUF_CTRL] = BC_PSIZ_8B;
-			break;
-		case 16:
-			eng_a[BUF_CTRL] = BC_PSIZ_16B;
-			break;
-		case 24:
-		case 32:
-			eng_a[BUF_CTRL] = BC_PSIZ_32B;
-			break;
-		default:
-			/* programming error */
-			return;
-	}
-
-	eng_a[DE_PGE] = 0x00;
-	eng_a[DE_SORG] = 0x00;
-	eng_a[DE_DORG] = 0x00;
-	eng_a[DE_MSRC] = 0x00;
-	eng_a[DE_WKEY] = 0x00;
-	eng_a[DE_SPTCH] = i128mem.rbase_g[DB_PTCH];
-	eng_a[DE_DPTCH] = i128mem.rbase_g[DB_PTCH];
-	eng_a[MASK] = planemask;
-	eng_a[RMSK] = planemask;
-	eng_a[CLPTL] = 0x00000000;
-	eng_a[CLPBR] = 0xffffffff;
-
-
-	if (xdir == -1) {
-		if (ydir == -1)
-			i128blitdir = DIR_RL_BT;
-		else
-			i128blitdir = DIR_RL_TB;
-	} else {
-		if (ydir == -1)
-			i128blitdir = DIR_LR_BT;
-		else
-			i128blitdir = DIR_LR_TB;
-	}
-
-	i128rop = i128alu[rop];
-}
-
-void
-i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
+i128BitBlit(int x1, int y1, int x2, int y2, int w, int h, int cmd, int dir)
 {
 	int origx2 = x2;
 	int origy2 = y2;
 
 	i128EngineReady();
 
-	eng_a[CMD] = CMD_BLIT;
-	eng_a[XY3_DIR] = i128blitdir;
-	eng_a[XY4_ZM] = ZOOM_NONE;
+	eng_cur[CMD] = cmd;
+	eng_cur[XY3_DIR] = dir;
+	eng_cur[XY4_ZM] = ZOOM_NONE;
 
 	if (i128blitdir & DIR_RL_TB) {
 		x1 += w - 1;
@@ -202,7 +159,7 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 		 * that occurs when dest is exactly 8 pages wide
 		 */
 		
-		bppi = (eng_a[BUF_CTRL] & BC_PSIZ_MSK) >> 24;
+		bppi = (eng_cur[BUF_CTRL] & BC_PSIZ_MSK) >> 24;
 
 		if ((w >= min_size[bppi]) && (w <= max_size[bppi])) {
 			if (first_time_through) {
@@ -215,11 +172,11 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 #if 1
 			/* split method */
 
-			eng_a[XY2_WH] = (bppi<<16) | h;
-			eng_a[XY0_SRC] = (x1<<16) | y1;
-			eng_a[XY1_DST] = (x2<<16) | y2;
+			eng_cur[XY2_WH] = (bppi<<16) | h;
+			eng_cur[XY0_SRC] = (x1<<16) | y1;
+			eng_cur[XY1_DST] = (x2<<16) | y2;
 
-			i128EngineDone();
+			i128EngineReady();
 
 			w -= bppi;
 
@@ -234,22 +191,196 @@ i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w,int h)
 			}
 #else
 			/* clip method */
-			eng_a[CLPTL] = (origx2<<16) | origy2;
-			eng_a[CLPBR] = ((origx2+w)<<16) | (origy2+h);
+			eng_cur[CLPTL] = (origx2<<16) | origy2;
+			eng_cur[CLPBR] = ((origx2+w)<<16) | (origy2+h);
 			w += bppi;
 #endif
 		}
 	}
 
-	eng_a[XY2_WH] = (w<<16) | h;
-	eng_a[XY0_SRC] = (x1<<16) | y1;
-	eng_a[XY1_DST] = (x2<<16) | y2;
+	eng_cur[XY2_WH] = (w<<16) | h;
+	eng_cur[XY0_SRC] = (x1<<16) | y1;
+	eng_cur[XY1_DST] = (x2<<16) | y2;
 }
+
+void
+i128SetupForScreenToScreenCopy(int xdir, int ydir, int rop, unsigned planemask,
+	int transparency_color)
+{
+	i128EngineReady();
+
+	switch (xf86bpp) {
+		case 8:
+			eng_cur[BUF_CTRL] = BC_PSIZ_8B;
+			break;
+		case 16:
+			eng_cur[BUF_CTRL] = BC_PSIZ_16B;
+			break;
+		case 24:
+		case 32:
+			eng_cur[BUF_CTRL] = BC_PSIZ_32B;
+			break;
+		default:
+			/* programming error */
+			return;
+	}
+
+	eng_cur[DE_PGE] = 0x00;
+	eng_cur[DE_SORG] = 0x00;
+	eng_cur[DE_DORG] = 0x00;
+	eng_cur[DE_MSRC] = 0x00;
+	eng_cur[DE_WKEY] = 0x00;
+	eng_cur[DE_SPTCH] = i128mem.rbase_g[DB_PTCH];
+	eng_cur[DE_DPTCH] = i128mem.rbase_g[DB_PTCH];
+	eng_cur[MASK] = planemask;
+	eng_cur[RMSK] = 0x00000000;
+
+	eng_cur[CLPTL] = 0x00000000;
+	eng_cur[CLPBR] = (4095<<16) | 2047;
+
+	if (transparency_color != -1)
+		eng_cur[BACK] = transparency_color;
+
+
+	if (xdir == -1) {
+		if (ydir == -1)
+			i128blitdir = DIR_RL_BT;
+		else
+			i128blitdir = DIR_RL_TB;
+	} else {
+		if (ydir == -1)
+			i128blitdir = DIR_LR_BT;
+		else
+			i128blitdir = DIR_LR_TB;
+	}
+
+	i128rop = i128alu[rop];
+	i128cmd = (transparency_color != -1 ? (CS_TRNSP<<16) : 0) |
+		  (i128rop<<8) | CO_BITBLT;
+}
+
+void
+i128SubsequentScreenToScreenCopy(int x1, int y1, int x2, int y2, int w, int h)
+{
+	i128BitBlit(x1, y1, x2, y2, w, h, i128cmd, i128blitdir);
+}
+
+void
+i128SetupForFillRectSolid(int color, int rop, unsigned planemask)
+{
+	i128EngineReady();
+#if 0
+ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128alu[rop], planemask);
+#endif
+
+	switch (xf86bpp) {
+		case 8:
+			eng_cur[BUF_CTRL] = BC_PSIZ_8B;
+			if (planemask != -1)
+				eng_cur[MASK] = planemask |
+						(planemask<<8) |
+						(planemask<<16) |
+						(planemask<<24);
+			else
+				eng_cur[MASK] = planemask;
+			break;
+		case 16:
+			eng_cur[BUF_CTRL] = BC_PSIZ_16B;
+			if (planemask != -1)
+				eng_cur[MASK] = planemask | (planemask<<16);
+			else
+				eng_cur[MASK] = planemask;
+			break;
+		case 24:
+		case 32:
+			eng_cur[BUF_CTRL] = BC_PSIZ_32B;
+			eng_cur[MASK] = planemask;
+			break;
+		default:
+			/* programming error */
+			return;
+	}
+
+	eng_cur[DE_PGE] = 0x00;
+	eng_cur[DE_SORG] = 0x00;
+	eng_cur[DE_DORG] = 0x00;
+	eng_cur[DE_MSRC] = 0x00;
+	eng_cur[DE_WKEY] = 0x00;
+	eng_cur[DE_SPTCH] = i128mem.rbase_g[DB_PTCH];
+	eng_cur[DE_DPTCH] = i128mem.rbase_g[DB_PTCH];
+	eng_cur[RMSK] = 0x00000000;
+	eng_cur[FORE] = color;
+
+	i128clptl = eng_cur[CLPTL] = 0x00000000;
+	i128clpbr = eng_cur[CLPBR] = (4095<<16) | 2047 ;
+
+	eng_cur[LPAT] = 0xffffffff;  /* for lines */
+	eng_cur[PCTRL] = 0x00000000; /* for lines */
+
+
+	i128blitdir = DIR_LR_TB;
+
+	i128rop = i128alu[rop];
+	i128cmd = (CS_SOLID<<16) | (i128rop<<8) | CO_BITBLT;
+}
+
+void
+i128SubsequentFillRectSolid(int x, int y, int w, int h)
+{
+#if 0
+ErrorF("SFRS %d,%d %d,%d  cmd 0x%x dir 0x%x\n", x, y, w, h, i128cmd, i128blitdir);
+#endif
+	i128BitBlit(0, 0, x, y, w, h, i128cmd, i128blitdir);
+}
+
+void
+i128SubsequentTwoPointLine(int x1, int y1, int x2, int y2, int bias)
+{
+	i128EngineReady();
+#if 0
+ErrorF("STPL i128rop 0x%x  %d,%d %d,%d   clip %d,%d %d,%d\n", i128rop, x1, y1, x2, y2, i128clptl>>16, i128clptl&0xffff, (i128clpbr>>16)&0xffff, i128clpbr&0xffff);
+#endif
+
+	eng_cur[CMD] =
+			((bias&0x0100) ? (CP_NLST<<24) : 0) |
+			(CC_CLPRECI<<21) |
+			(CS_SOLID<<16) |
+			(i128rop<<8) |
+			CO_LINE;
+
+	eng_cur[CLPTL] = i128clptl;
+	eng_cur[CLPBR] = i128clpbr;
+
+	eng_cur[XY0_SRC] = (x1<<16) | y1;
+	eng_cur[XY1_DST] = (x2<<16) | y2;
+
+}
+
+void
+i128SetClippingRectangle(int x1, int y1, int x2, int y2)
+{
+	int tmp;
+#if 0
+ErrorF("SCR  %d,%d %d,%d\n", x1, y1, x2, y2);
+#endif
+
+	if (x1 > x2) { tmp = x2; x2 = x1; x1 = tmp; }
+	if (y1 > y2) { tmp = y2; y2 = y1; y1 = tmp; }
+
+	i128clptl = (x1<<16) | y1;
+	i128clpbr = (x2<<16) | y2;
+}
+
 
 void
 i128AccelInit()
 {
-	xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE;
+	xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS |
+				 HARDWARE_CLIP_LINE |
+				 USE_TWO_POINT_LINE |
+				 TWO_POINT_LINE_NOT_LAST |
+				 PIXMAP_CACHE |
+				 DELAYED_SYNC;
 
 	xf86AccelInfoRec.ServerInfoRec = &i128InfoRec;
 
@@ -260,8 +391,19 @@ i128AccelInit()
 	xf86AccelInfoRec.SubsequentScreenToScreenCopy =
 		i128SubsequentScreenToScreenCopy;
 
-	xf86GCInfoRec.CopyAreaFlags =
-		GXCOPY_ONLY | NO_PLANEMASK | NO_TRANSPARENCY;
+	xf86GCInfoRec.CopyAreaFlags = 0;
+
+	xf86AccelInfoRec.SetupForFillRectSolid =
+		i128SetupForFillRectSolid;
+	xf86AccelInfoRec.SubsequentFillRectSolid =
+		i128SubsequentFillRectSolid;
+	xf86AccelInfoRec.SubsequentTwoPointLine =
+		i128SubsequentTwoPointLine;
+
+	xf86AccelInfoRec.SetClippingRectangle =
+		i128SetClippingRectangle;
+
+	xf86GCInfoRec.PolyFillRectSolidFlags = 0;
 
 	xf86AccelInfoRec.PixmapCacheMemoryStart = i128InfoRec.virtualY *
 		i128DisplayWidth * i128InfoRec.bitsPerPixel / 8;
@@ -269,6 +411,12 @@ i128AccelInit()
 	xf86AccelInfoRec.PixmapCacheMemoryEnd =
 		i128InfoRec.videoRam * 1024-1024;
 	
+	i128InfoRec.displayWidth = i128DisplayWidth;
+
 	eng_a = i128mem.rbase_a;
 	eng_b = i128mem.rbase_b;
+	eng_cur = eng_a;
+
+	eng_cur[CLPTL] = 0x00000000;
+	eng_cur[CLPBR] = (4095<<16) | 2047 ;
 }

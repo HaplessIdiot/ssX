@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.58 1997/04/08 10:14:05 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.59 1997/06/08 15:31:58 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -117,7 +117,6 @@
  * vga.c/vgaHW.c/vgaCmap.c).
  */
 Bool clgd6225Lcd= FALSE;
-Bool nv1VGABodge= FALSE;
 
 /* DAC indices for white and black */
 #define WHITE_VALUE 0x3F
@@ -283,51 +282,34 @@ vgaProtect(on)
 }
 
 /*
- * vgaSaveScreen -- blank the screen.
+ * vgaBlankScreen -- blank the screen.
  */
 
-Bool
-vgaSaveScreen(pScreen, on)
-     ScreenPtr pScreen;
-     Bool  on;
+Bool vgaBlankScreen(ScreenPtr ptr, Bool on)
 {
+
 #if !defined(PC98_EGC) && !defined(PC98_PEGC)
-   unsigned char scrn;
+  unsigned char scrn;
 
-   if (on)
-      SetTimeSinceLastInputEvent();
+  outb(0x3C4,1);
+  scrn = inb(0x3C5);
 
-   if (xf86VTSema) {
-      /* the server is running on the current vt */
-      /* so just go for it */
-     if(nv1VGABodge) return;
+  if(on) {
+    scrn &= 0xDF;			/* enable screen */
+  }else {
+    scrn |= 0x20;			/* blank screen */
+  }
 
-      outb(0x3C4,1);
-      scrn = inb(0x3C5);
-
-      if (on) {
-	 scrn &= 0xDF;			/* enable screen */
-      } else {
-	 scrn |= 0x20;			/* blank screen */
-      }
-
-      (*vgaSaveScreenFunc)(SS_START);
-      outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
-      (*vgaSaveScreenFunc)(SS_FINISH);
-   }
-#else /* PC98_EGC || PC98_PEGC */
-  if (on)
-    SetTimeSinceLastInputEvent();
-  
-  if (xf86VTSema) 
-    {
-      if (on) 
-	outb(0xa2, 0xd);
-      else
-	outb(0xa2, 0xc);
-    }
-#endif /* PC98_EGC || PC98_PEGC */
-   return (TRUE);
+  (*vgaSaveScreenFunc)(SS_START);
+  outw(0x3C4, (scrn << 8) | 0x01); /* change mode */
+  (*vgaSaveScreenFunc)(SS_FINISH);
+#else
+  if(on) 
+    outb(0xa2, 0xd);
+  else
+    outb(0xa2, 0xc);
+#endif    
+  return TRUE;
 }
 
 /*

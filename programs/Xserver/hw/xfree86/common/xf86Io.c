@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.28 1997/01/05 11:58:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.29 1997/04/17 08:16:58 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -477,7 +477,27 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
 			      miPointerGetMotionEvents,
 			      ctrl, 
 			      miPointerGetMotionBufferSize());
-
+#ifdef XINPUT
+      InitValuatorAxisStruct(pPointer,
+			     0,
+			     0, /* min val */
+			     screenInfo.screens[0]->width, /* max val */
+			     1, /* resolution */
+			     0, /* min_res */
+			     1); /* max_res */
+      InitValuatorAxisStruct(pPointer,
+			     1,
+			     0, /* min val */
+			     screenInfo.screens[0]->height, /* max val */
+			     1, /* resolution */
+			     0, /* min_res */
+			     1); /* max_res */
+      /* Initialize valuator values in synch
+       * with dix/event.c DefineInitialRootWindow
+       */
+      *pPointer->valuator->axisVal = screenInfo.screens[0]->width / 2;
+      *(pPointer->valuator->axisVal+1) = screenInfo.screens[0]->height / 2;
+#endif
       xf86MouseInit(mouse);
 
       break;

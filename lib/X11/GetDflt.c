@@ -1,5 +1,4 @@
-/* $XConsortium: GetDflt.c /main/55 1996/12/03 19:15:16 kaleb $ */
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.10 1996/12/23 05:59:31 dawes Exp $ */
+/* $TOG: GetDflt.c /main/56 1997/06/11 06:40:28 kaleb $ */
 
 /***********************************************************
 
@@ -48,6 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.11 1997/06/11 12:24:25 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -144,7 +144,7 @@ static XrmDatabase InitDefaults (dpy)
     XrmInitialize();
 
     /*
-     * See lib/Xtk/Initialize.c
+     * See lib/Xt/Initialize.c
      *
      * First, get the defaults from the server; if none, then load from
      * ~/.Xdefaults.  Next, if there is an XENVIRONMENT environment variable,

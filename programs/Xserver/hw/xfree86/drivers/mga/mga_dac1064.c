@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.3 1997/05/03 09:18:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.4 1997/06/03 14:12:09 hohndel Exp $ */
 
 
 /*
@@ -364,28 +364,9 @@ MGA1064SGSetPCLK( f_out, bpp )
 	newVS->DACclk[ 1 ] = ( n & 0x7f );
 	newVS->DACclk[ 2 ] = ( p & 0x07 | ((s & 0x3) << 3) );
 
-	/*
-	 * Now that the pixel clock PLL is setup,
-	 * the loop clock PLL must be setup.
-	 */
-
-
-	/* Stop PCLK (pixclkdis = 1) according doc p 5.77 */
-	/* Guy DESBIEF April 4 97 */
-	pclk_ctrl = inMGA1064(MGA1064_PIX_CLK_CTL);
-	pclk_ctrl |= MGA1064_PIX_CLK_CTL_CLK_DIS;
-	outMGA1064(MGA1064_MISC_CTL,pclk_ctrl);
-
-	/*  select Non VGA Mode  p 5.77 */
-	misc_ctrl = inMGA1064(MGA1064_MISC_CTL);
-	misc_ctrl |= MGA1064_MISC_CTL_DAC_POW_DN;
-	misc_ctrl |= MGA1064_MISC_CTL_DAC_RAM_CS;
-	misc_ctrl |= MGA1064_MISC_CTL_DIS_CON;
-	misc_ctrl |= MGA1064_MISC_CTL_VGA8;
-
-	outMGA1064(MGA1064_MISC_CTL,misc_ctrl);
-
+#ifdef DEBUG
 	ErrorF( "MGA1064SGSetPCLK: MISC Reg %x\n",inb(MGAREG_MISC_READ));
+#endif
 	/* Select PLL C values p 4-151 */
 #ifdef JAMAIS
 	misc_reg= inb(MGAREG_MISC_READ);
@@ -394,7 +375,9 @@ MGA1064SGSetPCLK( f_out, bpp )
 	outb(MGAREG_MISC_WRITE, misc_reg);
 /* #endif */
 #endif
+#ifdef DEBUG
 	ErrorF( "MGA1064SGSetPCLK: MISC Reg %x (apres ecriture)\n",inb(MGAREG_MISC_READ));
+#endif
 
 /* Set the new PCLK frequency  */
 	/* see page 4.184 */	
@@ -543,7 +526,9 @@ DisplayModePtr mode;
 	unsigned char* initDAC;
 	int weight555 = FALSE;
 
+#ifdef DEBUG
 	ErrorF("MGA1064Init: depth %x bits\n",vgaBitsPerPixel);
+#endif
 	switch(vgaBitsPerPixel)
 	{
 	case 8:
@@ -770,9 +755,15 @@ vgaMGAPtr restore;
 	for (i = 0; i < 6; i++)
 		outw(0x3DE, (restore->ExtVga[i] << 8) | i);
 
+	/* restore DAC regs */
+	for (i = 0; i < sizeof(MGADACregs); i++)
+		outMGA1064(MGADACregs[i], restore->DACreg[i]);
+
 	option_reg = pciReadLong(MGAPciTag, PCI_OPTION_REG) ;
+#ifdef DEBUG
 	ErrorF("MGA1064Restore(1): DAClong %x option_reg %x\n",
 		restore->DAClong,option_reg);
+#endif
 	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong );
 
 	/*
@@ -803,11 +794,6 @@ vgaMGAPtr restore;
 	for (i = 0; i < 3; i++)
 		outMGA1064((MGA1064_SYS_PLL_M + i), restore->DACclk[j++]);
 #endif
-	/* restore other DAC regs */
-	
-	j = 0;
-	for (i = 0; i < sizeof(MGADACregs); i++)
-		outMGA1064(MGADACregs[i], restore->DACreg[j++]);
 	
 #ifdef DEBUG
 	ErrorF("PCI retry (0-enabled / 1-disabled): %d\n",
@@ -884,5 +870,5 @@ MGA1064RamdacInit()
 {
     MGAdac.isHwCursor = FALSE;
     
-    MGAdac.maxPixelClock = 135000;
+    MGAdac.maxPixelClock = 170000;
 }

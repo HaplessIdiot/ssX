@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.22 1997/04/17 08:17:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.23 1997/05/12 13:28:02 hohndel Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -615,6 +615,36 @@ xf86MouseReadInput(local)
 /*
  ***************************************************************************
  *
+ * xf86MouseConvert --
+ *	Convert valuators to X and Y.
+ *
+ ***************************************************************************
+ */
+static Bool
+xf86MouseConvert(LocalDevicePtr	local,
+		 int		first,
+		 int		num,
+		 int		v0,
+		 int		v1,
+		 int		v2,
+		 int		v3,
+		 int		v4,
+		 int		v5,
+		 int*		x,
+		 int*		y)
+{
+    if (first != 0 || num != 2)
+      return FALSE;
+
+    *x = v0;
+    *y = v1;
+
+    return TRUE;
+}
+
+/*
+ ***************************************************************************
+ *
  * xf86MouseAllocate --
  *
  ***************************************************************************
@@ -636,6 +666,7 @@ xf86MouseAllocate()
     local->control_proc = 0;
     local->close_proc = 0;
     local->switch_mode = 0;
+    local->conversion_proc = xf86MouseConvert;
     local->fd = -1;
     local->atom = 0;
     local->dev = NULL;

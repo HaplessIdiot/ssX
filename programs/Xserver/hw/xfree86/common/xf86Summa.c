@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.5 1996/12/18 03:12:27 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -119,6 +119,7 @@ typedef struct
 #define BORDER		6
 #define DEBUG_LEVEL     7
 #define HISTORY_SIZE	8
+#define ALWAYS_CORE	9
 
 #if !defined(sun) || defined(i386)
 static SymTabRec SumTab[] = {
@@ -131,6 +132,7 @@ static SymTabRec SumTab[] = {
 	{BORDER,		"border"},
 	{DEBUG_LEVEL,		"debuglevel"},
 	{HISTORY_SIZE,		"historysize"},
+	{ ALWAYS_CORE,		"alwayscore" },
 	{-1,			""}
 };
 
@@ -211,10 +213,6 @@ extern void miPointerDeltaCursor(
     unsigned long /*time*/
 #endif
 );
-
-#if NeedFunctionPrototypes
-static LocalDevicePtr xf86SumAllocateTablet(void);
-#endif
 
 #if !defined(sun) || defined(i386)
 /*
@@ -327,6 +325,13 @@ xf86SumConfig(LocalDevicePtr *array, int inx, int max, LexPtr val)
 		       dev->history_size);      
 	    break;
 
+	case ALWAYS_CORE:
+	    xf86AlwaysCore(dev, TRUE);
+	    if (xf86Verbose)
+		ErrorF("%s SummaSketch device always stays core pointer\n",
+		       XCONFIG_GIVEN);
+	    break;
+
 	case EOF:
 	    FatalError("Unexpected EOF (missing EndSubSection)");
 	    break;
@@ -344,6 +349,36 @@ xf86SumConfig(LocalDevicePtr *array, int inx, int max, LexPtr val)
 #endif
 
 /*
+** xf86SumConvert
+** Convert valuators to X and Y.
+*/
+static Bool
+xf86SumConvert(LocalDevicePtr	local,
+	       int		first,
+	       int		num,
+	       int		v0,
+	       int		v1,
+	       int		v2,
+	       int		v3,
+	       int		v4,
+	       int		v5,
+	       int*		x,
+	       int*		y)
+{
+    SummaDevicePtr	priv = (SummaDevicePtr) local->private;
+
+    if (first != 0 || num == 1)
+      return FALSE;
+
+    *x = v0 * screenInfo.screens[0]->width / priv->sumMaxX;
+    *y = v1 * screenInfo.screens[0]->height / priv->sumMaxY;
+
+    DBG(6, ErrorF("Adjusted coords x=%d y=%d\n", *x, *y));
+
+    return TRUE;
+}
+
+/*
 ** xf86SumReadInput
 ** Reads from the SummaSketch and posts any new events to the server.
 */
@@ -352,7 +387,7 @@ xf86SumReadInput(LocalDevicePtr local)
 {
     SummaDevicePtr	priv = (SummaDevicePtr) local->private;
     int			len, loop;
-    int			is_core_pointer, is_absolute;
+    int			is_absolute;
     int			x, y, buttons, prox;
     DeviceIntPtr	device;
     unsigned char	buffer[BUFFER_SIZE];
@@ -424,22 +459,14 @@ xf86SumReadInput(LocalDevicePtr local)
 		   prox ? "true" : "false", x, y, buttons));
 
 	    is_absolute = (priv->flags & ABSOLUTE_FLAG);
-	    is_core_pointer = xf86IsCorePointer(device);
-
-	    if (is_core_pointer) {
-		x = x * screenInfo.screens[0]->width / priv->sumMaxX;
-		y = y * screenInfo.screens[0]->height / priv->sumMaxY;
-		DBG(6, ErrorF("Adjusted coords x=%d y=%d\n", x, y));
-	    }
 
 /* coordonates are ready we can send events */
 	    if (prox) {
 		if (!(priv->sumOldProximity))
-		    if (!is_core_pointer)
-			xf86PostProximityEvent(device, 1, 0, 2, x, y);
+		    xf86PostProximityEvent(device, 1, 0, 2, x, y);
 
-		if (is_absolute && ((priv->sumOldX != x) || (priv->sumOldY != y))
-		       || !is_absolute && (x || y)) {
+		if ((is_absolute && ((priv->sumOldX != x) || (priv->sumOldY != y)))
+		       || (!is_absolute && (x || y))) {
 		    if (is_absolute || priv->sumOldProximity) {
 			xf86PostMotionEvent(device, is_absolute, 0, 2, x, y);
 		    }
@@ -466,9 +493,8 @@ xf86SumReadInput(LocalDevicePtr local)
 		priv->sumOldProximity = prox;
 	    } else { /* !PROXIMITY */
 /* Any changes in buttons are ignored when !proximity */
-		if (!is_core_pointer)
-		    if (priv->sumOldProximity)
-			xf86PostProximityEvent(device, 0, 0, 2, x, y);
+		if (priv->sumOldProximity)
+		    xf86PostProximityEvent(device, 0, 0, 2, x, y);
 		priv->sumOldProximity = 0;
 	    }
 	}
@@ -575,8 +601,6 @@ xf86SumOpen(LocalDevicePtr local)
     char		buffer[256];
     int			err;
     SummaDevicePtr	priv = (SummaDevicePtr)local->private;
-    int			a, b;
-    int			loop, idx;
 
     DBG(1, ErrorF("opening %s\n", priv->sumDevice));
 
@@ -873,8 +897,6 @@ static int
 xf86SumChangeControl(LocalDevicePtr local, xDeviceCtl *control)
 {
     xDeviceResolutionCtl	*res;
-    int				*resolutions;
-    char			str[10];
 
     res = (xDeviceResolutionCtl *)control;
 	
@@ -991,12 +1013,16 @@ DeviceAssocRec summasketch_assoc =
 ** Entry point for dynamic module.
 */
 int
+#ifndef DLSYM_BUG
 init_module(unsigned long server_version)
+#else
+init_xf86Summa(unsigned long server_version)
+#endif
 {
     xf86AddDeviceAssoc(&summasketch_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
-	ErrorF("Warning : SummaKetch module compiled for version%s\n",
+	ErrorF("Warning: SummaKetch module compiled for version%s\n",
 	       XF86_VERSION);
 	return 0;
     } else {
