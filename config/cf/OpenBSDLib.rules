@@ -7,7 +7,7 @@ XCOMM $OpenBSD: OpenBSDLib.rules,v 1.1 2000/10/09 20:43:58 matthieu Exp $
  * OpenBSD shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.12 2004/03/18 07:06:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.13 2004/03/21 11:11:44 herrb Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat NO
@@ -21,7 +21,7 @@ XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.12 2004/03/18 07:06:19 dawes E
 #endif
 
 #ifndef UseRpath
-#define UseRpath NO
+#define UseRpath YES
 #endif
 
 #ifndef BaseShLibReqs
