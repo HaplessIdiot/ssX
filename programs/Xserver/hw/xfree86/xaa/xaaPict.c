@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.5 2000/10/22 20:54:30 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.6 2001/01/07 00:29:36 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -171,7 +171,6 @@ XAA_888_plus_PICT_a8_to_8888 (
     } 
 }
 
-
 Bool
 XAADoComposite (
     CARD8      op,
@@ -215,35 +214,65 @@ XAADoComposite (
 	   if(!XAAGetRGBAFromPixel(pixel,&red,&green,&blue,&alpha,pSrc->format))
 		return FALSE;
 
-#if 0				
+	   xMask += pMask->pDrawable->x;
+	   yMask += pMask->pDrawable->y;	
+		
 	   /* pull out color expandable operations here */
 	   if((pMask->format == PICT_a1) && (alpha == 0xffff) &&
-	       infoRec->WriteBitmap &&  (op == PictOpOver) &&
+	       (op == PictOpOver) && infoRec->WriteBitmap &&  
 	       !(infoRec->WriteBitmapFlags & NO_TRANSPARENCY) &&
 	       (!(infoRec->WriteBitmapFlags & RGB_EQUAL) || 
 	         (red == green == blue)))
 	   {
-	        XAAGetPixelFromRGBA(&pixel, red, green, blue, 0, pDst->format);
+	        PixmapPtr pPix = (PixmapPtr)(pMask->pDrawable);
+		int skipleft;
+		        
+	  	if (!miComputeCompositeRegion (&region, pSrc, pMask, pDst,
+                                   xSrc, ySrc, xMask, yMask, xDst, yDst,
+                                   width, height))
+		      return TRUE;
+		      
+	  	nbox = REGION_NUM_RECTS(&region);
+	  	pbox = REGION_RECTS(&region);   
 		
-		return TRUE;
-	   }
-#endif
+	        if(!nbox)
+		    return TRUE;	
+		    
+	        XAAGetPixelFromRGBA(&pixel, red, green, blue, 0, pDst->format);
+		    
+	   	xMask -= xDst;
+	   	yMask -= yDst;
 
-	   if((alpha != 0xffff) &&
+	   	while(nbox--) {
+		    skipleft = pbox->x1 + xMask;
+		    
+	            (*infoRec->WriteBitmap)(infoRec->pScrn,
+			        pbox->x1, pbox->y1, 
+			        pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
+			        (unsigned char*)(pPix->devPrivate.ptr) + 
+				  (pPix->devKind * (pbox->y1 + yMask)) + 
+			          ((skipleft >> 3) & ~3), pPix->devKind, 
+				skipleft & 31, pixel, -1, GXcopy, ~0);
+	            pbox++;
+	   	}
+				  
+		/* WriteBitmap sets the Sync flag */		  
+	        REGION_UNINIT(pScreen, &region);
+		return TRUE;
+	  }
+
+	  if((alpha != 0xffff) &&
               (infoRec->CPUToScreenAlphaTextureFlags & XAA_RENDER_NO_SRC_ALPHA))
 		return FALSE;
 
-	   formats = infoRec->CPUToScreenAlphaTextureFormats;
+	  formats = infoRec->CPUToScreenAlphaTextureFormats;
 
-	   while(*formats != pMask->format) {
+	  while(*formats != pMask->format) {
 		if(!(*formats)) return FALSE;
 		formats++;
-           }
+          }
 
-	   xMask += pMask->pDrawable->x;
-	   yMask += pMask->pDrawable->y;
-
-	   if (!miComputeCompositeRegion (&region, pSrc, pMask, pDst,
+	  if (!miComputeCompositeRegion (&region, pSrc, pMask, pDst,
                                    xSrc, ySrc, xMask, yMask, xDst, yDst,
                                    width, height))
 		return TRUE;
