@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 #include "xf86.h"
 #include "xf86PciInfo.h"
 

@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 typedef unsigned long ULong;
 typedef unsigned short UShort;
 typedef unsigned char UChar;

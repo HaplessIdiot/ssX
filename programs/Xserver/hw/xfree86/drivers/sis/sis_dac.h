@@ -1,3 +1,4 @@
+/* $XFree86: $ */
 int compute_vclk(int Clock, int *out_n, int *out_dn, int *out_div, 
 	     			    int *out_sbit, int *out_scale);
 void SISDACPreInit(ScrnInfoPtr pScrn);
