@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.8 2001/08/15 11:54:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonfig.c,v 1.9 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -143,7 +143,7 @@ ATIProcessOptions
         ShadowFB = TRUE;
     }
 
-    Blend = CSync = /* Sync = */ TRUE;
+    Blend = /* CSync = Sync = */ TRUE;
 
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
         PublicOption);
