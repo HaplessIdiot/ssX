@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 297. Disable MIT-SHM in Xnest, caused a segfault (Matthieu Herrb). 
  296. Update wskbd keyboard protocol handling for OpenBSD/macppc
       (Matthieu Herrb).
  295. Fix problems starting XDarwin from the Finder and pasting with
@@ -13846,4 +13847,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1959 2001/09/29 04:48:51 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1960 2001/09/29 20:48:38 herrb Exp $
