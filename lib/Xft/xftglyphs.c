@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.16 2002/05/22 17:15:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.17 2002/05/31 04:45:12 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -277,16 +277,16 @@ XftFontLoadGlyphs (Display	*dpy,
 		if (font->info.load_flags & FT_LOAD_VERTICAL_LAYOUT)
 		{
 		    vector.x = 0;
-		    vector.y = -font->public.max_advance_width;
+		    vector.y = -face->size->metrics.max_advance;
 		}
 		else
 		{
-		    vector.x = font->public.max_advance_width;
+		    vector.x = face->size->metrics.max_advance;
 		    vector.y = 0;
 		}
 		FT_Vector_Transform (&vector, &font->info.matrix);
-		xftg->metrics.xOff = vector.x;
-		xftg->metrics.yOff = -vector.y;
+		xftg->metrics.xOff = vector.x >> 6;
+		xftg->metrics.yOff = -(vector.y >> 6);
 	    }
 	    else
 	    {
