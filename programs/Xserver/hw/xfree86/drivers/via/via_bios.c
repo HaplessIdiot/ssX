@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.4 2003/09/08 14:25:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_bios.c,v 1.5 2003/09/11 10:08:37 eich Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -9087,7 +9087,7 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
     if (!pBIOSInfo->IsSecondary) {
         /* CRT Display Source Bit 6 - 0: CRT, 1: LCD */
         VGAOUT8(0x3c4, 0x16);
-        VGAOUT8(0x3c5, VGAIN(0x3c5) | 0x40);
+        VGAOUT8(0x3c5, VGAIN8(0x3c5) | 0x40);
 
         /* Enable Simultaneous */
         if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
@@ -9114,7 +9114,7 @@ void VIASetLCDMode(VIABIOSInfoPtr pBIOSInfo)
     else {
         /* CRT Display Source Bit 6 - 0: CRT, 1: LCD */
         VGAOUT8(0x3c4, 0x16);
-        VGAOUT8(0x3c5, VGAIN(0x3c5) & ~0x40);
+        VGAOUT8(0x3c5, VGAIN8(0x3c5) & ~0x40);
 
         /* Enable SAMM */
         if (pBIOSInfo->BusWidth == VIA_DI_12BIT) {
