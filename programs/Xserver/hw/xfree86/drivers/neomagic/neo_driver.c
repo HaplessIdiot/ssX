@@ -465,11 +465,10 @@ NEOProbe(DriverPtr drv, int flags)
 		foundScreen = TRUE;
 	    else for (i = 0; i < numUsed; i++) {
 		ScrnInfoPtr pScrn = NULL;
+		/* Allocate a ScrnInfoRec and claim the slot */
 		if ((pScrn = xf86ConfigPciEntity(pScrn, 0, usedChips[i],
 						       NEOPCIchipsets,NULL, NULL,
 						       NULL, NULL, NULL))) {
-		    /* Allocate a ScrnInfoRec and claim the slot */
-		    pScrn = xf86AllocateScreen(drv,0);
 		    pScrn->driverVersion = VERSION;
 		    pScrn->driverName    = NEO_DRIVER_NAME;
 		    pScrn->name          = NEO_NAME;
@@ -498,24 +497,24 @@ NEOProbe(DriverPtr drv, int flags)
       if (flags & PROBE_DETECT)
 	foundScreen = TRUE;
       else for (i = 0; i < numUsed; i++) {
-	ScrnInfoPtr pScrn;
-
-	pScrn = xf86AllocateScreen(drv,0);
-	pScrn->driverVersion = VERSION;
-	pScrn->driverName    = NEO_DRIVER_NAME;
-	pScrn->name          = NEO_NAME;
-	pScrn->Probe         = NEOProbe;
-	pScrn->PreInit       = NEOPreInit;
-	pScrn->ScreenInit    = NEOScreenInit;
-	pScrn->SwitchMode    = NEOSwitchMode;
-	pScrn->AdjustFrame   = NEOAdjustFrame;
-	pScrn->EnterVT       = NEOEnterVT;
-	pScrn->LeaveVT       = NEOLeaveVT;
-	pScrn->FreeScreen    = NEOFreeScreen;
-	pScrn->ValidMode     = NEOValidMode;
-	foundScreen = TRUE;
-	xf86ConfigIsaEntity(pScrn, 0, usedChips[i], NEOISAchipsets,
-				  NULL, NULL, NULL, NULL, NULL);
+	ScrnInfoPtr pScrn = NULL;
+	if ((pScrn = xf86ConfigIsaEntity(pScrn, 0, usedChips[i],
+					 NEOISAchipsets, NULL, NULL,
+					 NULL, NULL, NULL))) {
+	    pScrn->driverVersion = VERSION;
+	    pScrn->driverName    = NEO_DRIVER_NAME;
+	    pScrn->name          = NEO_NAME;
+	    pScrn->Probe         = NEOProbe;
+	    pScrn->PreInit       = NEOPreInit;
+	    pScrn->ScreenInit    = NEOScreenInit;
+	    pScrn->SwitchMode    = NEOSwitchMode;
+	    pScrn->AdjustFrame   = NEOAdjustFrame;
+	    pScrn->EnterVT       = NEOEnterVT;
+	    pScrn->LeaveVT       = NEOLeaveVT;
+	    pScrn->FreeScreen    = NEOFreeScreen;
+	    pScrn->ValidMode     = NEOValidMode;
+	    foundScreen = TRUE;
+	}
       }
       xfree(usedChips);
     }
