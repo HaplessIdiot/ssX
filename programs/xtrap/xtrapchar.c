@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xtrap/xtrapchar.c,v 1.1 2001/11/02 23:29:34 dawes Exp $ */
 /*
  * @DEC_COPYRIGHT@
  */
@@ -11,7 +11,7 @@
  *
  * EndLog$
  */
-#ifndef lint
+#if !defined(lint) && 0
 static char *rcsid = "@(#)RCSfile: xtrapchar.c,v $ Revision: 1.1.2.2 $ (DEC) Date: 1993/12/14 12:37:15 $";
 #endif
 /*****************************************************************************

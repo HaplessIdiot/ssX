@@ -23,7 +23,7 @@
  * SOFTWARE.
  *
 */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.23 2001/05/18 23:35:28 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.24 2001/11/16 00:52:27 dawes Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -390,8 +390,7 @@ _XlcLocaleDirName(dir_name, lc_name)
      char *lc_name;
 {
   char dir[PATH_MAX], buf[PATH_MAX], *name = NULL;
-  char *dst;
-  int i, n, sinamelen;
+  int i, n;
   char *args[NUM_LOCALEDIR];
   static char locale_alias[] = LOCALE_ALIAS;
   char *target_name = (char*)0;
@@ -424,7 +423,7 @@ _XlcLocaleDirName(dir_name, lc_name)
     }
     if (target_name != NULL) {
       char *p = 0;
-      if (p = strstr(target_name, "/XLC_LOCALE")) {
+      if ((p = strstr(target_name, "/XLC_LOCALE"))) {
 	*p = '\0';
 	break;
       }

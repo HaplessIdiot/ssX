@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/XTrap/XEConTxt.c,v 1.1 2001/11/02 23:29:27 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991, 1994 by Digital Equipment Corp., 
 Maynard, MA
@@ -139,7 +139,7 @@ XETC *XECreateTC(Display *dpy, CARD32 valuemask, XETCValues *value)
             if (XETrapGetAvailVersion(&rep) <= XETrapVersion)
             {
                 tc->version = XETrapGetAvailVersion(&rep);
-                tc->revision = (XETrapGetAvailRevision(&rep) < XETrapRevision ?
+                tc->revision = (XETrapGetAvailRevision(&rep) <= XETrapRevision ?
                     XETrapGetAvailRevision(&rep) : XETrapRevision);
             }
             else

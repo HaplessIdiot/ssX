@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.19 2001/10/04 18:28:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.20 2001/10/10 14:08:37 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -113,7 +113,7 @@ int I810AllocateGARTMemory (ScrnInfoPtr pScrn)
 
 		alloc_size = size;
 		if (alloc_size <= pI810->StolenSize)
-		  alloc_size = 0;
+		  offset = alloc_size = 0;
 		else
 		  {
 			 alloc_size -= pI810->StolenSize; /* Stolen size is in bytes */

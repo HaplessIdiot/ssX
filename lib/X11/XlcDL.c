@@ -41,6 +41,7 @@ interest in or to any trademark, service mark, logo or trade name of
 Sun Microsystems, Inc. or its licensors is granted.
 
 */
+/* $XFree86$ */
 
 #include <stdio.h>
 #if defined(hpux)
@@ -275,8 +276,12 @@ const char *lc_dir;
 }
 
 XLCd
+#if NeedFunctionPrototypes
+_XlcDynamicLoad(const char *lc_name)
+#else
 _XlcDynamicLoad(lc_name)
-     char *lc_name;
+     const char *lc_name;
+#endif
 {
     XLCd lcd = (XLCd)NULL;
     XLCd (*lc_loader)() = (XLCd(*)())NULL;
@@ -291,7 +296,8 @@ _XlcDynamicLoad(lc_name)
 
     if (lc_name == NULL) return (XLCd)NULL;
 
-    if (_XlcLocaleDirName(lc_dir, lc_name) == (char*)NULL) return (XLCd)NULL;
+    if (_XlcLocaleDirName(lc_dir, (char *)lc_name) == (char*)NULL)
+	return (XLCd)NULL;
 
     resolve_object(lc_dir, lc_name);
 
@@ -572,8 +578,12 @@ XPointer	*client_data;
 }
 
 Bool
+#if NeedFunctionPrototypes
+_XInitDynamicIM(XLCd lcd)
+#else
 _XInitDynamicIM(lcd)
 XLCd lcd;
+#endif
 {
     if(lcd == (XLCd)NULL)
 	return False;
@@ -661,8 +671,12 @@ char *res_class;
 }
 
 Bool
+#if NeedFunctionPrototypes
+_XInitDynamicOM(XLCd lcd)
+#else
 _XInitDynamicOM(lcd)
     XLCd lcd;
+#endif
 {
     if(lcd == (XLCd)NULL)
 	return False;

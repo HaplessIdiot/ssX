@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.10 2001/08/01 00:44:38 tsi Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.11 2001/11/16 00:52:27 dawes Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,
@@ -1040,12 +1040,28 @@ extern XLCd _XlcJisLoader(
 );
 
 extern XLCd _XlcDynamicLoad(
-    char*
+    const char*		name
 );
 
 /* The old dynamic loader. */
 extern XLCd _XlcDynamicLoader(
     const char*		name
+);
+
+extern Bool _XInitDefaultIM(
+    XLCd		lcd
+);
+
+extern Bool _XInitDefaultOM(
+    XLCd		lcd
+);
+
+extern Bool _XInitDynamicIM(
+    XLCd		lcd
+);
+
+extern Bool _XInitDynamicOM(
+    XLCd		lcd
 );
 
 _XFUNCPROTOEND
