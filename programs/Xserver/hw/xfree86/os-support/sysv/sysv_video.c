@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.16 1999/04/18 04:08:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.17 1999/04/25 15:30:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -31,6 +31,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86OSpriv.h"
 
 #ifndef MAP_FAILED
 #define MAP_FAILED ((void *)-1)
@@ -132,12 +133,12 @@ linearVidMem()
 	xf86Msg(X_WARNING, "xf86LinearVidMem: failed to open /dev/mmap (%s)\n",
 	        strerror(errno));
 	xf86ErrorF("\tlinear memory access disabled\n");
-#endif
 	return FALSE;
+#endif
 }
 
 static pointer
-mapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	pointer base;
 	int fd;
@@ -245,7 +246,7 @@ unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 #define X_PAGE_SIZE 4096
 
 static void
-readSideEffects(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+readSideEffects(int ScreenNum, pointer Base, unsigned long Size)
 {
 	unsigned long base, end, addr;
 	CARD32 val;
