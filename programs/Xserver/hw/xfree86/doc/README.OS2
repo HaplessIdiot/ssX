@@ -1,8 +1,13 @@
   README for XFree86 3.1.2D on OS/2
   Holger Veit
-  Last modified on: 17 Feb 1996
+  Last modified on: 20 Feb 1996
 
   1.  Introductory Note about the ALPHA release 3.1.2D
+
+  Before looking into this file, please check for any LATEST.OS2 files
+  that may come with the binary distribution. Some statements made here
+  refer to the official public version of XFree86/OS2, and may not be
+  fully functional in the alpha release.
 
   This version of the code is called XFree86/OS2 3.1.2D. The letter
   ``D'', according to the naming rules of XFree86, usually denotes a
@@ -62,8 +67,6 @@
   See the Copyright Notice <COPYRIGHT.html>.
 
   Binaries for OS/2 2.11 and OS/2 Warp are available from:
-
-
   ftp.XFree86.org:/pub/XFree86/beta/binaries/OS2
   <ftp://ftp.XFree86.org/pub/XFree86/beta/binaries/OS2>
 
@@ -126,17 +129,17 @@
 
         1. For OS/2 2.11, IBM TCP/IP 2.0 or later is mandatory.
 
+
         2. Warp comes with the Internet Access Kit (IAK), which is
            sufficient. Warp Connect and Warp Server come with a full
            version of TCP/IP (3.0). Use of this software is prefered
-
            over IAK then.
 
         Other versions of TCP/IP, such as FTP's, DEC's, or Hummingbird's
         TCP/IP versions, as well as IBM TCP/IP 1.X are not supported.
         Nor does any networking support from DOS (packet drivers,
-        winsock), Netware, or NetBIOS work, and it is not intended in
-        the future to provide support for that.
+        winsock), Netware, or NetBIOS work, and I won't to provide sup-
+        port for that in the future.
 
      o  If you want to write or port applications for XFree86, you are
         encouraged to do so. You will need a complete installation of
@@ -258,9 +261,9 @@
 
   In order to save space on your disk and reduce net bandwidth, choose
   the software to obtain carefully. Each X server is an archive of about
+
   1.4MB and occupies 2.5MB on the disk. You won't normally need more
   than the single Xserver tailored to your video card.
-
 
   If it is your first time install, get the 312Dbase archive before any
   of the other packages. This package contains a driver and a test
@@ -291,7 +294,7 @@
         somewhere:
 
 
-          DEVICE=Y:\XFree86\dll\xf86sup.sys
+          DEVICE=Y:\XFree86\lib\xf86sup.sys
 
 
 
@@ -324,7 +327,10 @@
         file by entering:
 
 
-          [C:\] Y:\XFree86\bin\SuperProbe >filename
+
+     [C:\] Y:\XFree86\bin\SuperProbe >filename
+
+
 
 
 
@@ -387,6 +393,7 @@
 
 
 
+
      Note that forward ``/'' is used as a directory separator.
 
      ETC
@@ -394,7 +401,7 @@
         ETC directory of the TCP/IP code, such as
 
 
-     SET ETC=C:\TCPIP\ETC
+          SET ETC=C:\TCPIP\ETC
 
 
 
@@ -451,7 +458,9 @@
         variable might be set to
 
 
-          SET HOME=H:\user\holger
+
+
+     SET HOME=H:\user\holger
 
 
 
@@ -459,7 +468,6 @@
      X11ROOT
         This is one of the most important settings, it determines the
         root of the XFree86 directory tree. Normally, you will set this
-
         to the drive letter of the partition where the \XFree86 tree
         resides, such as in
 
@@ -517,6 +525,7 @@
 
      It is possible to move the binaries to another directory in the
      search path; for maintenance reasons and clarity of the structure,
+
      this is not recommended, though.
 
      LIBPATH
@@ -524,9 +533,7 @@
         This is normally the directory (adjust the letter)
 
 
-
-
-     Y:\XFree86\lib
+          Y:\XFree86\lib
 
 
 
@@ -583,11 +590,12 @@
 
 
 
+
+
      6. After rebooting, verify that the following command works:
 
 
           [C:\] ping localhost
-
 
 
 
@@ -637,13 +645,18 @@
 
      for a Mousesystems compatible mouse, for instance.
 
-     o  You have no options to choose whether you want to use the
-        XKEYBOARD extension or not; you must use it, i.e. you may not
-        enable XkbDisable and therefore must choose an appropriate
-        keyboard setting.
+     o  Currently, the X server does not read the native OS/2 keyboard
+        map, so you need a xmodmap file for a non-us keyboard.
+        Fortunately, it is the same you use for Linux. The server is
+        compiled with the XEYBOARD option, so this might be an
+        alternative. At the time of this documentation, unfortunately,
+        some subtle bug in the OS/2 implementation is still waiting for
+        a fix, so this might not yet work. Read the LATEST.OS2 file with
+        the binary distribution.
 
      o  There is no support for the Wacom and Elographics input devices
         yet.
+
 
   Other than that, an existing XF86Config file for the same XFree86
   version from Linux or another platform may be used without changes.
@@ -657,7 +670,6 @@
   software, X and the presentation manager in parallel.  The server,
   window manager and an xterm take about 4-6 Mb of memory themselves.  X
   will start up on a system with 8MB or less, but the performance will
-
   severely suffer from heavy disk swapping. Your mileage may vary,
   though, so some people might consider this still tolerable.
 
@@ -711,7 +723,8 @@
   defeats the improper SHELL setting typically found in a Makefile
   generated from an Imakefile.
 
-  14.  Thanks
+
+  14.  Acknowledgements
 
   Many thanks to:
 
@@ -724,26 +737,13 @@
      o  ME - no, no, forget this: I won't praise myself :-)
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.0 1996/02/19 09:50:43 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OS2.sgml,v 3.1 1996/02/22 05:12:05 dawes Exp $
 
 
 
 
 
   $XConsortium$
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

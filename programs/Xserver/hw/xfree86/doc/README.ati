@@ -1,6 +1,6 @@
   ATI adapters README
   Marc Aurele La France
-  22 January 1996
+  16 February 1996
 
   This is the README for the XFree86 ATI VGA driver used in the
   XF86_Mono, XF86_VGA16 and XF86_SVGA servers.  Users of ATI adapters
@@ -256,11 +256,13 @@
   *does* work on 88800CT & 88800ET adapters, but not on any other Mach64
   adapters.
 
-  88800CT & 88800ET adapters are as yet only supported if they use
-  sparsely decoded I/O based at 0x2EC.  Support for any other setting,
-  such as 0x1C8, or block (a.k.a. relocatable) I/O is being worked on.
-  On some such adapters, the I/O decoding is controlled by a jumper.
+  There is some controversy over whether or not clocks higher than
+  135MHz should be allowed on CT & ET adapters.  For now, clocks will be
+  limited to 135MHz by default.  This limit can only be increased (upto
+  a driver-calculated absolute maximum) through the DACSpeed option in
+  XF86Config.  Be aware however that doing this is untested and might
 
+  damage the adapter.
 
   Future development plans include addressing the above problems and
   using accelerated functionality.
@@ -269,15 +271,13 @@
   France, tsi@ualberta.ca
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.7 1996/02/09 08:20:41 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.8 1996/02/22 05:12:06 dawes Exp $
 
 
 
 
 
   $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
-
-
 
 
 
