@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.4 2001/10/02 11:44:13 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.5 2001/11/30 13:16:25 alanh Exp $ */
 
 /*
  * Original rewrite:
@@ -175,7 +175,7 @@ GLboolean tdfxCreateContext( Display *dpy, GLvisual *mesaVis,
       return GL_FALSE;
    }
 
-   fxMesa->Glide.grDRIOpen( sPriv->pFB, fxScreen->regs.map, fxScreen->deviceID,
+   fxMesa->Glide.grDRIOpen( (char*) sPriv->pFB, fxScreen->regs.map, fxScreen->deviceID,
 	      fxScreen->width, fxScreen->height, fxScreen->mem, fxScreen->cpp,
 	      fxScreen->stride, fxScreen->fifoOffset, fxScreen->fifoSize,
 	      fxScreen->fbOffset, fxScreen->backOffset, fxScreen->depthOffset,

@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_lock.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_lock.c,v 1.2 2001/08/18 02:51:06 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -69,7 +69,7 @@ void tdfxGetLock( tdfxContextPtr fxMesa )
 	 * that state onto the hardware when you set the state.
 	 */
         void *state;
-        FxU32 size;
+        FxI32 size;
         fxMesa->Glide.grGet( GR_GLIDE_STATE_SIZE, 4, &size );
         state = malloc( size );
         FX_grGlideGetState_NoLock( state );
