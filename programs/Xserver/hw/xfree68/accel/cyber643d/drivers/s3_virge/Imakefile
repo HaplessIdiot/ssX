@@ -1,3 +1,7 @@
+
+XCOMM $XFree86: $
+
+
 SRCS = s3_virge.c
 
 OBJS = s3_virge.o
