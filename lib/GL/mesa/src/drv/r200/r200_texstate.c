@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texstate.c,v 1.1tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -707,7 +707,7 @@ static void r200UpdateTextureEnv( GLcontext *ctx, int unit )
    GLuint alpha_scale = rmesa->hw.pix[unit].cmd[PIX_PP_TXABLEND2];
 
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %d )\n", ctx, unit );
+      fprintf( stderr, "%s( %p, %d )\n", __FUNCTION__, ctx, unit );
    }
 
    /* Set the texture environment state.  Isn't this nice and clean?

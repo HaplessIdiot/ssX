@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.1 2002/09/18 18:14:58 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accelfuncs.c,v 1.2tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -610,8 +610,8 @@ FUNC_NAME(RADEONSetupForMono8x8PatternFill)(ScrnInfoPtr pScrn,
     OUT_ACCEL_REG(RADEON_DP_BRUSH_FRGD_CLR,  fg);
     if (bg != -1)
 	OUT_ACCEL_REG(RADEON_DP_BRUSH_BKGD_CLR, bg);
-    OUT_ACCEL_REG(RADEON_BRUSH_DATA0,        *(CARD32 *)&pattern[0]);
-    OUT_ACCEL_REG(RADEON_BRUSH_DATA1,        *(CARD32 *)&pattern[4]);
+    OUT_ACCEL_REG(RADEON_BRUSH_DATA0,        *(CARD32 *)(pointer)&pattern[0]);
+    OUT_ACCEL_REG(RADEON_BRUSH_DATA1,        *(CARD32 *)(pointer)&pattern[4]);
 
     FINISH_ACCEL();
 }

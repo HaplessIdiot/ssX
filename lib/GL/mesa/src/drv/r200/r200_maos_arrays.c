@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_maos_arrays.c,v 1.1tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -331,6 +331,7 @@ void r200EmitArrays( GLcontext *ctx, GLuint inputs )
       case 3: vfmt0 |= R200_VTX_Z0;
       case 2: 
       default:
+	break;
       }
       component[nr++] = &rmesa->tcl.obj;
    }

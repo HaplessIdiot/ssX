@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texstate.c,v 1.3 2002/09/16 18:05:21 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texstate.c,v 1.4tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -737,7 +737,7 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
    GLuint i, numColorArgs = 0, numAlphaArgs = 0;
 
    if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %d ) format=%s\n",
+      fprintf( stderr, "%s( %p, %d ) format=%s\n", __FUNCTION__,
 	       ctx, unit, _mesa_lookup_enum_by_nr( format ) );
    }
 
@@ -1360,6 +1360,7 @@ static GLboolean radeonUpdateTextureUnit( GLcontext *ctx, int unit )
 						   RADEON_TCL_VTX_Q1);
 	 break;
       default:
+	 break;
       }
 
 

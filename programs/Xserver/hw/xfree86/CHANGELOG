@@ -1,4 +1,7 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 457. When building with gcc >= 2.8, generate Makefiles with `imake -Wundef`
+      (Marc La France).
+ 456. Re-instate changes clobbered by DRI merge (Marc La France).
  455. Fix a typo in shadowfb support from #5413 (#5430, Nolan Leake).
  454. Fix a bug in vmware's HW cursor support which conditionally hid the
       cursor (#5430, Nolan Leake).
@@ -15455,4 +15458,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2370 2002/11/05 17:10:21 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2371 2002/11/05 17:19:36 alanh Exp $

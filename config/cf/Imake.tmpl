@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.131 2002/10/25 23:57:44 keithp Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.132tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -1324,6 +1324,9 @@ TCLIBDIR = TclLibDir
 #define ImakeCmd $(IMAKESRC)/imake
 #endif
 #endif
+#ifndef ImakeWarningFlags
+#define ImakeWarningFlags	/* Nothing */
+#endif
 #ifndef DependCmd
 #if UseGccMakeDepend
 #ifdef UseInstalled		/* assume BINDIR in path */
@@ -1925,12 +1928,14 @@ XCOMM Not sure this belongs here
            RM_CMD = $(RM)
 
     IMAKE_DEFINES = /* leave blank, for command line use only */
+   IMAKE_WARNINGS = ImakeWarningFlags
 #ifdef UseInstalled
          IRULESRC = $(CONFIGDIR)	/* used in rules file */
-        IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(IRULESRC) $(IMAKE_DEFINES)
+        IMAKE_CMD = $(IMAKE) -DUseInstalled -I$(IRULESRC) $(IMAKE_DEFINES) \
+		    $(IMAKE_WARNINGS)
 #else
          IRULESRC = $(CONFIGSRC)/cf
-        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES)
+        IMAKE_CMD = $(IMAKE) -I$(IRULESRC) $(IMAKE_DEFINES) $(IMAKE_WARNINGS)
 #endif
 #if !HasClearmake
      /* clearmake records relevant defines and flags in the build script,

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.412 2002/10/30 12:51:23 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.413tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1798,15 +1798,15 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #endif
 
 #if HasGcc
-# ifndef GccWarningOptions
-#  ifndef Gcc28Warnings
-#   if (GccMajorVersion > 2) || \
-       ((GccMajorVersion == 2) && (GccMinorVersion >= 8))
-#    define Gcc28Warnings -Wundef
-#   else
-#    define Gcc28Warnings /* */
-#   endif
+# ifndef Gcc28Warnings
+#  if (GccMajorVersion > 2) || \
+      ((GccMajorVersion == 2) && (GccMinorVersion >= 8))
+#   define Gcc28Warnings -Wundef
+#  else
+#   define Gcc28Warnings /* */
 #  endif
+# endif
+# ifndef GccWarningOptions
 #  if XFree86Devel
 #   define GccWarningOptions -Wall -Wpointer-arith -Wstrict-prototypes \
 			  -Wmissing-prototypes -Wmissing-declarations \
@@ -1826,6 +1826,15 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 #  ifndef UseGccMakeDepend
 #   define UseGccMakeDepend YES
 #  endif
+# endif
+#endif
+
+/* Make imake noisier */
+#ifndef ImakeWarningFlags
+# ifdef Gcc28Warnings
+#  define ImakeWarningFlags Gcc28Warnings
+# else
+#  define ImakeWarningFlags /* */
 # endif
 #endif
 

@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.7 2002/09/18 17:11:41 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.8tsi Exp $ */
 
 #include "enums.h"
 #include "mtypes.h"
@@ -220,7 +220,6 @@ mgaTryReadPixels( GLcontext *ctx,
 		  GLvoid *pixels )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
-   drmMGABlit blit;
    GLint size, skipPixels, skipRows;
    GLint pitch = pack->RowLength ? pack->RowLength : width;
    GLboolean ok;
@@ -228,6 +227,7 @@ mgaTryReadPixels( GLcontext *ctx,
    GLuint planemask;
    GLuint source;
 #if 0
+   drmMGABlit blit;
    GLuint dest;
    GLint source_pitch, dest_pitch;
    GLint delta_sx, delta_sy;
@@ -392,6 +392,7 @@ static void do_draw_pix( GLcontext *ctx,
 			 const void *pixels,
 			 GLuint dest, GLuint planemask)
 {
+#if 0
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
    drmMGABlit blit;
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
@@ -403,7 +404,6 @@ static void do_draw_pix( GLcontext *ctx,
    x += mmesa->drawX;
    y += mmesa->drawY;
 
-#if 0
    blit.dest = dest;
    blit.planemask = planemask;
    blit.source = ((mmesa->mgaScreen->agp.handle + AGP_OFFSET(mmesa, pixels))

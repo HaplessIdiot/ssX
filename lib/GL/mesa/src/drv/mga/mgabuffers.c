@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.11 2002/09/11 19:49:07 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgabuffers.c,v 1.12tsi Exp $ */
 
 #include <stdio.h>
 #include "mgacontext.h"
@@ -134,7 +134,7 @@ static void mgaUpdateRectsFromSarea( mgaContextPtr mmesa )
 }
 #endif
 
-#if 1
+#if 0
 static void printSareaRects( mgaContextPtr mmesa )
 {
    __DRIscreenPrivate *driScreen = mmesa->driScreen;
@@ -220,8 +220,9 @@ void mgaUpdateRects( mgaContextPtr mmesa, GLuint buffers )
    else
       mgaXMesaSetBackClipRects( mmesa );
 
-   if (0)
-      printMmesaRects(mmesa); 
+#if 0
+   printMmesaRects(mmesa); 
+#endif
 
    sarea->req_drawable = driDrawable->draw;
    sarea->req_draw_buffer = mmesa->draw_buffer;
