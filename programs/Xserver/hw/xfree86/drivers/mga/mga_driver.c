@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.182 2000/12/01 14:28:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.184 2000/12/06 15:35:20 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -354,6 +354,9 @@ static const char *driSymbols[] = {
     "DRIGetSAREAPrivate",
     "DRIGetContext",
     "DRIQueryVersion",
+    "DRIAdjustFrame",
+    "DRIOpenFullScreen",
+    "DRICloseFullScreen",
     "GlxSetVisualConfigs",
     NULL
 };
@@ -3079,6 +3082,16 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
 #endif
    
+    pScrn->memPhysBase = pMga->FbAddress;
+    pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+
+    if(pMga->SecondCrtc == TRUE) {
+	pScreen->SaveScreen = MGASaveScreenCrtc2;
+    } else {
+	pScreen->SaveScreen = MGASaveScreen;
+    }
+    MGAInitVideo(pScreen);
+
 #ifdef XF86DRI
     /* Initialize the Warp engine */
     if (pMga->directRenderingEnabled) {
@@ -3100,16 +3113,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     pMga->have_quiescense = 1;
 #endif
      
-    pScrn->memPhysBase = pMga->FbAddress;
-    pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
-
-    if(pMga->SecondCrtc == TRUE) {
-	pScreen->SaveScreen = MGASaveScreenCrtc2;
-    } else {
-	pScreen->SaveScreen = MGASaveScreen;
-    }
-    MGAInitVideo(pScreen);
-
     /* Wrap the current CloseScreen function */
     pMga->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = MGACloseScreen;

@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/sarea.h,v 1.6 2000/09/26 15:57:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/sarea.h,v 1.7 2000/11/18 19:37:06 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -30,6 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Jens Owen <jens@precisioninsight.com>
+ *   Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -56,12 +58,21 @@ typedef struct _XF86DRISAREADrawable {
     unsigned int	flags;
 } XF86DRISAREADrawableRec, *XF86DRISAREADrawablePtr;
 
+typedef struct _XF86DRISAREAFrame {
+    unsigned int        x;
+    unsigned int        y;
+    unsigned int        width;
+    unsigned int        height;
+    unsigned int        fullscreen;
+} XF86DRISAREAFrameRec, *XF86DRISAREAFramePtr;
+
 typedef struct _XF86DRISAREA {
     /* first thing is always the drm locking structure */
     drmLock			lock;
 		/* NOT_DONE: Use readers/writer lock for drawable_lock */
     drmLock			drawable_lock;
     XF86DRISAREADrawableRec	drawableTable[SAREA_MAX_DRAWABLES];
+    XF86DRISAREAFrameRec        frame;
 } XF86DRISAREARec, *XF86DRISAREAPtr;
 
 #endif

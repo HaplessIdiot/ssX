@@ -1,4 +1,29 @@
 XFree86 4.0.1i (xx December 2000)
+1140. Resync with DRI CVS trunk, including:
+       - SSE support updates
+       - DRI-specific full screen mode
+       - Reduce the minimum space required for 3D on the Rage 128
+      (VA Linux).
+1139. Fix a memory leak in the UTF-8 <--> CompoundText converter (#4354,
+      Bruno Haible).
+1138. Add support for the selection target UTF8_STRING to libXaw (#4353,
+      Bruno Haible).
+1137. Make Xlib's CompoundText converter ISO-2022 compliant (#4352,
+      Bruno Haible).
+1136. Fix 2 wacom driver bugs (core dump on VT switching, and USB support)
+      (#4350, Frederic Lepied).
+1135. Update the ClearlyU fonts to 1.8b.  Changes include:
+       - Cleaned up the Arabic glyphs so they don't look quite so juvenile.
+       - Squared up the Hebrew glyphs so they match the style of the other
+         scripts better.
+       - Added many of the basic Hangul glyphs.
+       - Brought the Cyrillic block in line with Unicode 3.0 and moved the
+         extra glyphs into the PUA font in the 0xE4XX range.
+      (#4349, Mark Leisher).
+1134. Update the savage driver to all I/O via MMIO, and add DPMS support
+      (4347, Ani Joshi).
+1133. Change xfs to drop privs after daemonising so that the pid file can
+      be written (#4346, Frederic Lepied).
 1132. Miscellaneous fixups to the trident driver (Alan Hourihane).
 1131. Add Xv support to the trident driver. Works for Blade and Image series 
       chips, but zooming currently doesn't work on Image series.
@@ -13,7 +38,7 @@ XFree86 4.0.1i (xx December 2000)
       list of undefined symbols (Marc La France).
 1124. Move Alpha MMIO definitions from xf86_OSproc.h to compiler.h
       (Marc La France).
-1123. Change update.docs rule for shodow tree friendliness (Marc La France).
+1123. Change update.docs rule for shadow tree friendliness (Marc La France).
 1122. Don't reference libc wrapper names directly in the newport driver
       (David Dawes).
 1121. Fix the fr_CH xkb Macintosh symbols file (#4345, Olaf Hering).
@@ -11955,4 +11980,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1454 2000/12/07 15:43:37 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1455 2000/12/07 16:48:02 alanh Exp $

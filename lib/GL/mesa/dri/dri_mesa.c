@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.11 2000/10/11 17:27:32 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesa.c,v 1.12 2000/11/13 23:31:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -51,7 +51,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static Bool driMesaBindContext(Display *dpy, int scrn,
 			       GLXDrawable draw, GLXContext gc);
 static Bool driMesaUnbindContext(Display *dpy, int scrn,
-				 GLXDrawable draw, GLXContext gc);
+				 GLXDrawable draw, GLXContext gc,
+				 int will_rebind);
 
 /* Drawable methods */
 static void *driMesaCreateDrawable(Display *dpy, int scrn, GLXDrawable draw,
@@ -71,6 +72,21 @@ static void *driMesaCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 				 int numConfigs, __GLXvisualConfig *config);
 static void driMesaDestroyScreen(Display *dpy, int scrn, void *private);
 
+static Bool driFeatureOn(const char *name)
+{
+    char *env = getenv(name);
+
+    if (!env) return GL_FALSE;
+    if (!strcasecmp(env, "enable")) return GL_TRUE;
+    if (!strcasecmp(env, "1"))      return GL_TRUE;
+    if (!strcasecmp(env, "on"))     return GL_TRUE;
+    if (!strcasecmp(env, "true"))   return GL_TRUE;
+    if (!strcasecmp(env, "t"))      return GL_TRUE;
+    if (!strcasecmp(env, "yes"))    return GL_TRUE;
+    if (!strcasecmp(env, "y"))      return GL_TRUE;
+
+    return GL_FALSE;
+}
 
 
 /*
@@ -180,12 +196,15 @@ static void driMesaInitAPI(__MesaAPI *MesaAPI)
     MesaAPI->SwapBuffers = XMesaSwapBuffers;
     MesaAPI->MakeCurrent = XMesaMakeCurrent;
     MesaAPI->UnbindContext = XMesaUnbindContext;
+    MesaAPI->OpenFullScreen = XMesaOpenFullScreen;
+    MesaAPI->CloseFullScreen = XMesaCloseFullScreen;
 }
 
 /*****************************************************************/
 
 static Bool driMesaUnbindContext(Display *dpy, int scrn,
-				 GLXDrawable draw, GLXContext gc)
+				 GLXDrawable draw, GLXContext gc,
+				 int will_rebind)
 {
     __DRIscreen *pDRIScreen;
     __DRIdrawable *pdraw;
@@ -219,6 +238,16 @@ static Bool driMesaUnbindContext(Display *dpy, int scrn,
 	return GL_FALSE;
     }
     pdp = (__DRIdrawablePrivate *)pdraw->private;
+
+				/* Don't leave fullscreen mode if the
+                                   drawable will be rebound in the next
+                                   step -- this avoids a protocol
+                                   request. */
+    if (!will_rebind && psp->fullscreen) {
+	psp->MesaAPI.CloseFullScreen(pcp);
+	XF86DRICloseFullScreen(dpy, scrn, draw);
+	psp->fullscreen = NULL;
+    }
 
     /* Unbind Mesa's drawable from Mesa's context */
     (*psp->MesaAPI.UnbindContext)(pcp);
@@ -269,6 +298,8 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     __DRIdrawablePrivate *pdp;
     __DRIscreenPrivate *psp;
     __DRIcontextPrivate *pcp;
+    static Bool envchecked      = False;
+    static Bool checkfullscreen = False;
 
     /*
     ** Assume error checking is done properly in glXMakeCurrent before
@@ -326,8 +357,10 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
     /*
     ** Now that we have a context associated with this drawable, we can
     ** initialize the drawable information if has not been done before.
+    ** Also, since we need it when LIBGL_DRI_FULLSCREEN, pick up any changes
+    ** that are outstanding.
     */
-    if (!pdp->pStamp) {
+    if (!pdp->pStamp || *pdp->pStamp != pdp->lastStamp) {
 	DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
 	driMesaUpdateDrawableInfo(dpy, scrn, pdp);
 	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);
@@ -335,6 +368,74 @@ static Bool driMesaBindContext(Display *dpy, int scrn,
 
     /* Call device-specific MakeCurrent */
     (*psp->MesaAPI.MakeCurrent)(pcp, pdp, pdp);
+
+    /* Check for the potential to enter an automatic full-screen mode.
+       This may need to be moved up. */
+    if (!envchecked) {
+	checkfullscreen = driFeatureOn("LIBGL_DRI_AUTOFULLSCREEN");
+	envchecked = GL_TRUE;
+    }
+    if (checkfullscreen && pdp->numClipRects == 1) {
+	/* If there is valid information in the SAREA, we can use it to
+	avoid a protocol request.  The only time when the SAREA
+	information won't be valid will be initially, so in the worst
+	case, we'll make one protocol request that we could have
+	avoided. */
+	int try = 1;
+	int clw = pdp->pClipRects[0].x2 - pdp->pClipRects[0].x1;
+	int clh = pdp->pClipRects[0].y2 - pdp->pClipRects[0].y1;
+
+#if 0
+				/* Useful client-side debugging message */
+	fprintf(stderr,
+		"********************************************\n"
+		"********************************************\n"
+		"********************************************\n"
+		"%d @ %d,%d,%d,%d\n"
+		"frame %d,%d,%d,%d\n"
+		"win   %d,%d,%d,%d\n"
+		"fs = %p pdp = %p sarea = %d\n"
+		"********************************************\n"
+		"********************************************\n"
+		"********************************************\n",
+		pdp->numClipRects,
+		pdp->pClipRects[0].x1,
+		pdp->pClipRects[0].y1,
+		pdp->pClipRects[0].x2,
+		pdp->pClipRects[0].y2,
+		psp->pSAREA->frame.x,
+		psp->pSAREA->frame.y,
+		psp->pSAREA->frame.width,
+		psp->pSAREA->frame.height,
+		pdp->x, pdp->y, pdp->w, pdp->h,
+		psp->fullscreen, pdp, psp->pSAREA->frame.fullscreen);
+#endif
+
+
+	if (pdp->x != pdp->pClipRects[0].x1
+	    || pdp->y != pdp->pClipRects[0].y1
+	    || pdp->w != clw
+	    || pdp->h != clh) try = 0;
+
+	if (try && psp->pSAREA->frame.width && psp->pSAREA->frame.height) {
+	    if (pdp->x != psp->pSAREA->frame.x
+		|| pdp->y != psp->pSAREA->frame.y
+		|| pdp->w != psp->pSAREA->frame.width
+		|| pdp->h != psp->pSAREA->frame.height) try = 0;
+	}
+
+	if (try) {
+	    if (psp->fullscreen && !psp->pSAREA->frame.fullscreen) {
+				/* Server has closed fullscreen mode */
+		__driMesaMessage("server closed fullscreen mode\n");
+		psp->fullscreen = NULL;
+	    }
+	    if (XF86DRIOpenFullScreen(dpy, scrn, draw)) {
+		psp->fullscreen = pdp;
+		psp->MesaAPI.OpenFullScreen(pcp);
+	    }
+	}
+    }
 
     return GL_TRUE;
 }
@@ -594,8 +695,18 @@ static void *driMesaCreateContext(Display *dpy, XVisualInfo *vis, void *shared,
 static void driMesaDestroyContext(Display *dpy, int scrn, void *private)
 {
     __DRIcontextPrivate  *pcp   = (__DRIcontextPrivate *)private;
+    __DRIscreenPrivate   *psp;
+    __DRIdrawablePrivate *pdp;
 
     if (pcp) {
+  	if ((pdp = pcp->driDrawablePriv)) {
+ 	    /* Shut down fullscreen mode */
+ 	    if ((psp = pdp->driScreenPriv) && psp->fullscreen) {
+ 		psp->MesaAPI.CloseFullScreen(pcp);
+ 		XF86DRICloseFullScreen(dpy, scrn, pdp->draw);
+ 		psp->fullscreen = NULL;
+ 	    }
+	}
 	__driMesaGarbageCollectDrawables(pcp->driScreenPriv->drawHash);
 	(void)XF86DRIDestroyContext(dpy, scrn, pcp->contextID);
 	(*pcp->driScreenPriv->MesaAPI.DestroyContext)(pcp);

@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.9 2000/11/28 18:49:50 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.10 2000/12/04 18:49:28 dawes Exp $ */
 
 /*
  * This file contains:
@@ -477,10 +477,6 @@ create_tocs_conv(
     int i, j, k;
     Utf8Conv *preferred;
 
-    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
-    if (conv == (XlcConv) NULL)
-	return (XlcConv) NULL;
-
     lazy_init_all_charsets();
 
     codeset_list = XLC_GENERIC(lcd, codeset_list);
@@ -491,11 +487,12 @@ create_tocs_conv(
 	charset_num += codeset_list[i]->num_charsets;
     if (charset_num > all_charsets_count-1)
 	charset_num = all_charsets_count-1;
-    preferred = (Utf8Conv *) Xmalloc((charset_num + 1) * sizeof(Utf8Conv));
-    if (preferred == (Utf8Conv *) NULL) {
-	Xfree((char *) conv);
+
+    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec)
+			     + (charset_num + 1) * sizeof(Utf8Conv));
+    if (conv == (XlcConv) NULL)
 	return (XlcConv) NULL;
-    }
+    preferred = (Utf8Conv *) ((char *) conv + sizeof(XlcConvRec));
 
     /* Loop through all codesets mentioned in the locale. */
     charset_num = 0;
@@ -531,6 +528,7 @@ static void
 close_tocs_converter(
     XlcConv conv)
 {
+    /* conv->state is allocated together with conv, free both at once.  */
     Xfree((char *) conv);
 }
 
@@ -946,29 +944,27 @@ create_ucstocs_conv(
     XlcConvMethods methods)
 {
 
-    if (XLC_PUBLIC_PART(lcd)->codeset &&
-	(!_XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "UTF-8"))) {
+    if (XLC_PUBLIC_PART(lcd)->codeset
+	&& _XlcCompareISOLatin1(XLC_PUBLIC_PART(lcd)->codeset, "UTF-8") == 0) {
+	XlcConv conv;
+	Utf8Conv *preferred;
 
-        XlcConv conv;
-        Utf8Conv *preferred;
-        conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
-        if (conv == (XlcConv) NULL)
+	lazy_init_all_charsets();
+
+	conv = (XlcConv) Xmalloc(sizeof(XlcConvRec) + 2 * sizeof(Utf8Conv));
+	if (conv == (XlcConv) NULL)
 	    return (XlcConv) NULL;
-    
-        preferred = (Utf8Conv *) Xmalloc(sizeof(Utf8Conv) * 2);
-        if (preferred == (Utf8Conv *) NULL) {
-	    Xfree((char *) conv);
-	    return (XlcConv) NULL;
-        }
-        preferred[0] = &all_charsets[0]; /* ISO10646 */
-        preferred[1] = (Utf8Conv) NULL;
+	preferred = (Utf8Conv *) ((char *) conv + sizeof(XlcConvRec));
 
-        conv->methods = methods;
-        conv->state = (XPointer) preferred;
+	preferred[0] = &all_charsets[0]; /* ISO10646 */
+	preferred[1] = (Utf8Conv) NULL;
 
-        return conv;
+	conv->methods = methods;
+	conv->state = (XPointer) preferred;
+
+	return conv;
     } else {
-        return create_tocs_conv(lcd, methods);
+	return create_tocs_conv(lcd, methods);
     }
 }
 
@@ -1712,8 +1708,6 @@ open_identity(
 /* They really use converters to CharSet
  * but with different create_conv procedure. */
 
-#define BUFFSIZE 20
-
 static XlcConv
 create_tofontcs_conv(
     XLCd lcd,
@@ -1721,43 +1715,39 @@ create_tofontcs_conv(
 {
     XlcConv conv;
     int i, num, k, count;
-    char **value, buf[BUFFSIZE];
+    char **value, buf[20];
     Utf8Conv *preferred;
-
-    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec));
-    if (conv == (XlcConv) NULL)
-	return (XlcConv) NULL;
 
     lazy_init_all_charsets();
 
-    for (i = 0, num= 0;; i++) {
-        sprintf(buf, "fs%d.charset.name", i);
-        _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
-        if( count < 1){
-            sprintf(buf, "fs%d.charset", i);
-            _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
-            if (count < 1)
-                break;
-        }
-        num += count;
+    for (i = 0, num = 0;; i++) {
+	sprintf(buf, "fs%d.charset.name", i);
+	_XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+	if (count < 1) {
+	    sprintf(buf, "fs%d.charset", i);
+	    _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
+	    if (count < 1)
+		break;
+	}
+	num += count;
     }
-    preferred = (Utf8Conv *) Xmalloc((num + 1) * sizeof(Utf8Conv));
-    if (preferred == (Utf8Conv *) NULL) {
-	Xfree((char *) conv);
+
+    conv = (XlcConv) Xmalloc(sizeof(XlcConvRec) + (num + 1) * sizeof(Utf8Conv));
+    if (conv == (XlcConv) NULL)
 	return (XlcConv) NULL;
-    }
+    preferred = (Utf8Conv *) ((char *) conv + sizeof(XlcConvRec));
 
     /* Loop through all fontsets mentioned in the locale. */
     for (i = 0, num = 0;; i++) {
         sprintf(buf, "fs%d.charset.name", i);
         _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
-        if( count < 1){
+        if (count < 1) {
             sprintf(buf, "fs%d.charset", i);
             _XlcGetResource(lcd, "XLC_FONTSET", buf, &value, &count);
             if (count < 1)
                 break;
         }
-	while (count-- > 0){
+	while (count-- > 0) {
 	    XlcCharSet charset = _XlcGetCharSet(*value++);
 	    const char *name = charset->encoding_name;
 	    /* If it wasn't already encountered... */

@@ -1,7 +1,8 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.9 2000/08/28 16:04:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.10 2000/09/24 13:50:59 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,8 +29,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Jens Owen <jens@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Jens Owen <jens@valinux.com>
+ *   Rickard E. (Rik) Faith <faith@valinux.com>
  *
  */
 
@@ -590,5 +592,65 @@ Bool XF86DRIGetDeviceInfo(dpy, screen, hFrameBuffer,
     UnlockDisplay(dpy);
     SyncHandle();
     TRACE("GetDeviceInfo... return True");
+    return True;
+}
+
+Bool XF86DRIOpenFullScreen(dpy, screen, drawable)
+    Display* dpy;
+    int screen;
+    Drawable drawable;
+{
+    XExtDisplayInfo             *info = find_display (dpy);
+    xXF86DRIOpenFullScreenReply rep;
+    xXF86DRIOpenFullScreenReq   *req;
+
+    XF86DRICheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86DRIOpenFullScreen, req);
+    req->reqType    = info->codes->major_opcode;
+    req->driReqType = X_XF86DRIOpenFullScreen;
+    req->screen     = screen;
+    req->drawable   = drawable;
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return rep.isFullScreen ? True : False;
+}
+
+Bool XF86DRICloseFullScreen(dpy, screen, drawable)
+    Display* dpy;
+    int screen;
+    Drawable drawable;
+{
+    XExtDisplayInfo              *info = find_display (dpy);
+    xXF86DRICloseFullScreenReply rep;
+    xXF86DRICloseFullScreenReq   *req;
+
+    XF86DRICheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86DRICloseFullScreen, req);
+    req->reqType    = info->codes->major_opcode;
+    req->driReqType = X_XF86DRICloseFullScreen;
+    req->screen     = screen;
+    req->drawable   = drawable;
+
+				/* The reply doesn't contain any data --
+                                   we just use it as a synchronization
+                                   point. */
+    if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
+	UnlockDisplay(dpy);
+	SyncHandle();
+	return False;
+    }
+
+    UnlockDisplay(dpy);
+    SyncHandle();
     return True;
 }

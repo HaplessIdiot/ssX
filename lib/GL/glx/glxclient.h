@@ -18,7 +18,7 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 */
-/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.9 2000/09/26 15:56:46 tsi Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxclient.h,v 1.10 2000/11/13 23:31:22 dawes Exp $ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -157,7 +157,7 @@ struct __DRIcontextRec {
     ** Method to unbind a DRI drawable to a DRI graphics context.
     */
     Bool (*unbindContext)(Display *dpy, int scrn, GLXDrawable draw,
-			  GLXContext gc);
+			  GLXContext gc, int will_rebind);
 
     /*
     ** Opaque pointer to private per context direct rendering data.

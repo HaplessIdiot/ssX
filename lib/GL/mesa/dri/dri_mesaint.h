@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.7 2000/06/17 00:02:51 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_mesaint.h,v 1.8 2000/11/13 23:31:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -273,6 +273,10 @@ struct __DRIscreenPrivateRec {
     ** This pointer is never touched by the DRI layer.
     */
     void *private;
+
+    /* If we're in full screen mode (via DRIOpenFullScreen), this points
+       to the drawable that was bound.  Otherwise, this is NULL. */
+    __DRIdrawablePrivate *fullscreen;
 };
 
 

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.33 1999/08/15 13:00:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.34 1999/09/27 06:29:10 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,7 +88,6 @@ static int InsertNewLineAndBackupInternal(TextWidget);
 static int LocalInsertNewLine(TextWidget, XEvent*);
 static void LoseSelection(Widget, Atom*);
 static void ParameterError(Widget, String);
-static int ProbablyMB(char*);
 static Bool MatchSelection(Atom, XawTextSelection*);
 static void ModifySelection(TextWidget, XEvent*, XawTextSelectionMode,
 			    XawTextSelectionAction, String*, Cardinal*);
@@ -350,29 +349,10 @@ struct _SelectionList {
     String* params;
     Cardinal count;
     Time time;
-    Boolean CT_asked;	/* flag if asked XA_COMPOUND_TEXT */
-    Atom selection;	/* selection atom when asking XA_COMPOUND_TEXT */
+    int asked;		/* which selection currently has been asked for:
+			   0 = UTF8_STRING, 1 = COMPOUND_TEXT, 2 = STRING */
+    Atom selection;	/* selection atom (normally XA_PRIMARY) */
 };
-
-static int
-ProbablyMB(char *s)
-{
-    int escapes = 0;
-    int has_hi_bit = False;
-
-    /* if it has more than one ESC char, I assume it is COMPOUND_TEXT.
-       If it has at least one hi bit set character, I pretend it is multibyte. */
-
-    while ((*s) != (wchar_t)0) {
-	if (*s & 128)
-	    has_hi_bit = True;
-	if (*s++ == '\033')
-	    escapes++;
-	if (escapes >= 2)
-	    return (0);
-    }
-    return (has_hi_bit);
-}
 
 /*ARGSUSED*/
 static void
@@ -380,6 +360,7 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
 		   Atom *type, XtPointer value, unsigned long *length,
 		   int *format)
 {
+    Display *d = XtDisplay(w);
     TextWidget ctx = (TextWidget)w;
     XawTextBlock text;
 
@@ -387,16 +368,23 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
 	struct _SelectionList* list = (struct _SelectionList*)client_data;
 
 	if (list != NULL) {
-	    if (list->CT_asked) {
-
-		/* If we just asked for a XA_COMPOUND_TEXT and got a null
-		   response, we'll ask again, this time for an XA_STRING. */
-		list->CT_asked = False;
+	    if (list->asked == 0) {
+		/* If we just asked for XA_UTF8_STRING and got no response,
+		   we'll ask again, this time for XA_COMPOUND_TEXT. */
+		list->asked++;
+		XtGetSelectionValue(w, list->selection, XA_COMPOUND_TEXT(d),
+				    _SelectionReceived,
+				    (XtPointer)list, list->time);
+	    } else if (list->asked == 1) {
+		/* If we just asked for XA_COMPOUND_TEXT and got no response,
+		   we'll ask again, this time for XA_STRING. */
+		list->asked++;
 		XtGetSelectionValue(w, list->selection, XA_STRING,
 				    _SelectionReceived,
 				    (XtPointer)list, list->time);
-	    }
-	    else {
+	    } else {
+		/* We tried all possible text targets in this param.
+		   Recurse on the tail of the params list. */
 		GetSelection(w, list->time, list->params, list->count);
 		XtFree(client_data);
 	    }
@@ -404,51 +392,31 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
 	return;
     }
 
-    /* Many programs, especially old terminal emulators, give us multibyte text
-       but tell us it is COMPOUND_TEXT :(  The following routine checks to see
-       if the string is a legal multibyte string in our locale using a spooky
-       heuristic :O and if it is we can only assume the sending client is using
-       the same locale as we are, and convert it.  I also warn the user that the
-       other client is evil */
-
     StartAction(ctx, NULL);
     if (XawTextFormat(ctx, XawFmtWide)) {
 	XTextProperty textprop;
-	Display *d = XtDisplay((Widget)ctx);
 	wchar_t **wlist;
 	int count;
-	int try_CT = 1;
 
-	/* IS THE SELECTION IN MULTIBYTE FORMAT? */
-	if (ProbablyMB( (char *)value)) {
-	    char *list[1];
+	textprop.encoding = *type;
+	textprop.value = (unsigned char *)value;
+	textprop.nitems = strlen(value);
+	textprop.format = 8;
 
-	    list[0] = (char *)value;
-	    if (XmbTextListToTextProperty(d, (char**)list, 1, XCompoundTextStyle,
-					  &textprop) == Success)
-		try_CT = 0;
-	}
-
-	/* OR IN COMPOUND TEXT FORMAT? */
-	if (try_CT) {
-	    textprop.encoding = XA_COMPOUND_TEXT(d);
-	    textprop.value = (unsigned char *)value;
-	    textprop.nitems = strlen(value);
-	    textprop.format = 8;
-	}
-
-	if (XwcTextPropertyToTextList(d, &textprop, (wchar_t***)&wlist, &count)
-	    !=	Success)  {
-	    XwcFreeStringList((wchar_t**)wlist);
+	if (XwcTextPropertyToTextList(d, &textprop, &wlist, &count)
+	    !=	Success
+	    || count < 1) {
+	    XwcFreeStringList(wlist);
 
 	    /* Notify the user on strerr and in the insertion :) */
-	    textprop.value = (unsigned char *)" >> ILLEGAL SELECTION << ";
-	    count = 1;
 	    fprintf(stderr, "Xaw Text Widget: An attempt was made to insert "
 		    "an illegal selection.\n");
 
-	    if (XwcTextPropertyToTextList(d, &textprop, (wchar_t***)&wlist,
-					  &count) !=  Success)
+	    textprop.value = (unsigned char *)" >> ILLEGAL SELECTION << ";
+	    textprop.nitems = strlen((char *) textprop.value);
+	    if (XwcTextPropertyToTextList(d, &textprop, &wlist, &count)
+		!=  Success
+		|| count < 1)
 		return;
 	}
 
@@ -458,9 +426,40 @@ _SelectionReceived(Widget w, XtPointer client_data, Atom *selection,
 	*length = wcslen(wlist[0]);
 	XtFree((XtPointer)wlist);
 	text.format = XawFmtWide;
-    }
-    else
+    } else {
+	XTextProperty textprop;
+	char **list;
+	int count;
+
+	textprop.encoding = *type;
+	textprop.value = (unsigned char *)value;
+	textprop.nitems = strlen(value);
+	textprop.format = 8;
+
+	if (XmbTextPropertyToTextList(d, &textprop, &list, &count)
+	    !=	Success
+	    || count < 1) {
+	    XFreeStringList(list);
+
+	    /* Notify the user on strerr and in the insertion :) */
+	    fprintf(stderr, "Xaw Text Widget: An attempt was made to insert "
+		    "an illegal selection.\n");
+
+	    textprop.value = (unsigned char *)" >> ILLEGAL SELECTION << ";
+	    textprop.nitems = strlen((char *) textprop.value);
+	    if (XmbTextPropertyToTextList(d, &textprop, &list, &count)
+		!=  Success
+		|| count < 1)
+		return;
+	}
+
+	XFree(value);
+	value = (XPointer)list[0];
+
+	*length = strlen(list[0]);
+	XtFree((XtPointer)list);
 	text.format = XawFmt8Bit;
+    }
     text.ptr = (char*)value;
     text.firstPos = 0;
     text.length = *length;
@@ -517,12 +516,12 @@ GetSelection(Widget w, Time timev, String *params, Cardinal num_params)
 	    list->params = params + 1;
 	    list->count = num_params;
 	    list->time = timev;
-	    list->CT_asked = True;
+	    list->asked = 0;
 	    list->selection = selection;
 	}
 	else
 	    list = NULL;
-	XtGetSelectionValue(w, selection, XA_COMPOUND_TEXT(XtDisplay(w)),
+	XtGetSelectionValue(w, selection, XA_UTF8_STRING(XtDisplay(w)),
 			    _SelectionReceived, (XtPointer)list, timev);
     }
 }
@@ -983,27 +982,25 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	if (SrcCvtSel(src, selection, target, type, value, length, format))
 	    return (True);
 
+	XtSetArg(args[0], XtNeditType,&edit_mode);
+	XtGetValues(src, args, 1);
+
 	XmuConvertStandardSelection(w, ctx->text.time, selection,
 				    target, type, (XPointer *)&std_targets,
 				    &std_length, format);
 
-	*value = XtMalloc((unsigned)sizeof(Atom) * (std_length + 7));
+	*length = 7 + (edit_mode == XawtextEdit) + std_length;
+	*value = XtMalloc((unsigned)sizeof(Atom)*(*length));
 	targetP = *(Atom**)value;
-
-	*length = std_length + 6;
 	*targetP++ = XA_STRING;
 	*targetP++ = XA_TEXT(d);
+	*targetP++ = XA_UTF8_STRING(d);
 	*targetP++ = XA_COMPOUND_TEXT(d);
 	*targetP++ = XA_LENGTH(d);
 	*targetP++ = XA_LIST_LENGTH(d);
 	*targetP++ = XA_CHARACTER_POSITION(d);
-
-	XtSetArg(args[0], XtNeditType,&edit_mode);
-	XtGetValues(src, args, 1);
-
 	if (edit_mode == XawtextEdit) {
 	    *targetP++ = XA_DELETE(d);
-	    (*length)++;
 	}
 	memcpy((char*)targetP, (char*)std_targets, sizeof(Atom)*std_length);
 	XtFree((char*)std_targets);
@@ -1023,6 +1020,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
     s = &salt->s;
     if (*target == XA_STRING
 	|| *target == XA_TEXT(d)
+	|| *target == XA_UTF8_STRING(d)
 	|| *target == XA_COMPOUND_TEXT(d)) {
 	if (*target == XA_TEXT(d)) {
 	    if (XawTextFormat(ctx, XawFmtWide))
@@ -1062,6 +1060,7 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	    strcpy (*value, salt->contents);
 	    *length = salt->length;
 	}
+	/* Got *value,*length, now in COMPOUND_TEXT format. */
 	if (XawTextFormat(ctx, XawFmtWide) && *type == XA_STRING) {
 	    XTextProperty textprop;
 	    wchar_t **wlist;
@@ -1071,20 +1070,40 @@ ConvertSelection(Widget w, Atom *selection, Atom *target, Atom *type,
 	    textprop.value = (unsigned char *)*value;
 	    textprop.nitems = strlen(*value);
 	    textprop.format = 8;
-	    if (XwcTextPropertyToTextList(d, &textprop, (wchar_t***)&wlist,
-					  &count) < Success) {
+	    if (XwcTextPropertyToTextList(d, &textprop, &wlist, &count)
+		 < Success
+		|| count < 1) {
 		XtFree(*value);
 		return (False);
 	    }
 	    XtFree(*value);
-	    if (XwcTextListToTextProperty(d, (wchar_t**)wlist, 1,
-					  XStringStyle, &textprop) < Success) {
+	    if (XwcTextListToTextProperty(d, wlist, 1, XStringStyle, &textprop)
+		 < Success) {
 		XwcFreeStringList((wchar_t**)wlist);
 		return (False);
 	    }
 	    *value = (XtPointer)textprop.value;
 	    *length = textprop.nitems;
 	    XwcFreeStringList((wchar_t**) wlist);
+	} else if (*type == XA_UTF8_STRING(d)) {
+	    XTextProperty textprop;
+	    char **list;
+	    int count;
+
+	    textprop.encoding = XA_COMPOUND_TEXT(d);
+	    textprop.value = (unsigned char *)*value;
+	    textprop.nitems = strlen(*value);
+	    textprop.format = 8;
+	    if (Xutf8TextPropertyToTextList(d, &textprop, &list, &count)
+		 < Success
+		|| count < 1) {
+		XtFree(*value);
+		return (False);
+	    }
+	    XtFree(*value);
+	    *value = *list;
+	    *length = strlen(*list);
+	    XFree(list);
 	}
 	*format = 8;
 	return (True);

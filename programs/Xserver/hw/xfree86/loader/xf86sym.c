@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.173 2000/11/21 23:10:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.175 2000/12/06 15:35:28 eich Exp $ */
 
 /*
  *
@@ -365,6 +365,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86AddEnabledDevice)
    SYMFUNC(xf86RemoveEnabledDevice)
    SYMFUNC(xf86InterceptSignals)
+   SYMFUNC(xf86EnableVTSwitch)
 
    /* xf86Helper.c */
    SYMFUNC(xf86AddDriver)

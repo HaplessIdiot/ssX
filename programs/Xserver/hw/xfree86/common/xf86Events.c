@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.101 2000/11/18 19:37:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.102 2000/12/07 15:43:40 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -115,7 +115,10 @@ extern void  XTestStealMotionData();
 #ifdef USE_VT_SYSREQ
 static Bool VTSysreqToggle = FALSE;
 #endif /* !USE_VT_SYSREQ */
-static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for *BSD */
+static Bool VTSwitchEnabled = TRUE;   /* Allows run-time disabling for
+                                         *BSD and for avoiding VT
+                                         switches when using the DRI
+                                         automatic full screen mode.*/
 
 extern fd_set EnabledDevices;
 
@@ -1318,6 +1321,27 @@ xf86EnableInputHandler(pointer handler)
     ih->enabled = TRUE;
     if (ih->fd >= 0)
 	AddEnabledDevice(ih->fd);
+}
+
+/*
+ * As used currently by the DRI, the return value is ignored.
+ */
+Bool
+xf86EnableVTSwitch(Bool new)
+{
+    static Bool default = TRUE;
+    Bool old;
+
+    old = VTSwitchEnabled;
+    if (!new) {
+	/* Disable VT switching */
+	default = VTSwitchEnabled;
+	VTSwitchEnabled = FALSE;
+    } else {
+	/* Restore VT switching to default */
+	VTSwitchEnabled = default;
+    }
+    return old;
 }
 
 #ifdef XTESTEXT1

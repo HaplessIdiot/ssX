@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.20 2000/12/01 17:43:02 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.21 2000/12/04 18:49:25 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"
@@ -155,10 +155,7 @@ static CTDataRec default_ct_data[] =
 #define XctGL94MB	0x2428
 #define XctGR94MB	0x2429
 #define XctExtSeg	0x252f
-#define XctOtherSeg	0x2f00
-
-#define XctESCSeq	0x1b00
-#define XctCSISeq	0x9b00
+#define XctReturn	0x2540
 
 /*
  * Parses the header of a Compound Text segment, i.e. the charset designator.
@@ -167,7 +164,7 @@ static CTDataRec default_ct_data[] =
  *   0 (no valid charset designator),
  *   XctGL94, XctGR94, XctGR96, XctGL94MB, XctGR94MB,
  *   XctLeftToRight, XctRightToLeft, XctDirectionEnd,
- *   XctExtSeg, XctOtherCoding, XctIgnoreExt, XctNotIgnoreExt.
+ *   XctExtSeg, XctOtherCoding, XctReturn, XctIgnoreExt, XctNotIgnoreExt.
  * If the return value is not 0, *text is incremented and *length decremented,
  * to point past the charset designator. If the return value is one of
  *   XctGL94, XctGR94, XctGR96, XctGL94MB, XctGR94MB,
@@ -202,6 +199,8 @@ _XlcParseCT(
                             return 0;
                         ret = XctExtSeg;
                         ch = *str++;
+                    } else if (ch == '@') {
+                        ret = XctReturn;
                     } else {
                         ret = XctOtherCoding;
                     }
@@ -560,6 +559,7 @@ typedef struct _StateRec {
     XlcCharSet charset;		/* The charset of the current segment */
     XlcCharSet GL_charset;	/* The charset responsible for 0x00..0x7F */
     XlcCharSet GR_charset;	/* The charset responsible for 0x80..0xFF */
+    XlcCharSet Other_charset;	/* != NULL if currently in an other segment */
     int ext_seg_left;		/* > 0 if currently in an extended segment */
 } StateRec, *State;
 
@@ -599,6 +599,11 @@ _XlcCheckCTSequence(
             *ctext = tmp_ctext;
             *ctext_len = tmp_ctext_len;
             break;
+        case XctReturn:
+            *ctext = tmp_ctext;
+            *ctext_len = tmp_ctext_len;
+            state->Other_charset = NULL;
+            return resOK;
         case XctExtSeg:
             if (tmp_ctext_len > 2
                 && (tmp_ctext[0] & 0x80) && (tmp_ctext[0] & 0x80)) {
@@ -627,6 +632,8 @@ _XlcCheckCTSequence(
             *ctext += ct_info->ext_segment_len;
             *ctext_len -= ct_info->ext_segment_len;
             state->ext_seg_left -= ct_info->ext_segment_len;
+        } else if (type == XctOtherCoding) {
+            state->Other_charset = charset;
         } else {
             if (charset->side == XlcGL) {
                 state->GL_charset = charset;
@@ -665,6 +672,8 @@ init_state(
     /* The initial state is ISO-8859-1 on both sides. */
     state->GL_charset = state->charset = default_GL_charset;
     state->GR_charset = default_GR_charset;
+
+    state->Other_charset = NULL;
 
     state->ext_seg_left = 0;
 }
@@ -721,7 +730,8 @@ cttocs(
             }
 
             /* Find the charset which is responsible for this byte. */
-            ch_charset = (ch & 0x80 ? state->GR_charset : state->GL_charset);
+            ch_charset = (state->Other_charset != NULL ? state->Other_charset :
+                          (ch & 0x80 ? state->GR_charset : state->GL_charset));
 
             /* Set the charset of this run, or continue the current run,
                or stop the current run. */
@@ -850,7 +860,6 @@ cstoct(
     State state = (State) conv->state;
     XlcSide side;
     unsigned char min_ch, max_ch;
-    unsigned char ch;
     int length, unconv_num;
     CTInfo ct_info;
     XlcCharSet charset;
@@ -880,6 +889,16 @@ cstoct(
 
     ext_segment_start = NULL;
 
+    if (ct_info->type == XctOtherCoding) {
+        /* Output the Escape sequence for switching to the charset, and
+           reserve room now for the XctReturn sequence at the end. */
+        if (ct_len < length + 3)
+            return -1;
+
+        memcpy(ctptr, ct_info->ct_sequence, length);
+        ctptr += length;
+        ct_len -= length + 3;
+    } else
     /* Test whether the charset is already active. */
     if (((side == XlcGR || side == XlcGLGR)
 	 && charset != state->GR_charset)
@@ -1011,7 +1030,13 @@ cstoct(
         }
     }
 
-    if (ext_segment_start != NULL) {
+    if (ct_info->type == XctOtherCoding) {
+        /* Terminate with an XctReturn sequence. */
+        ctptr[0] = XctESC;
+        ctptr[1] = XctOtherCoding;
+        ctptr[2] = '@';
+        ctptr += 3;
+    } else if (ext_segment_start != NULL) {
         /* Backpatch the extended segment's length. */
         int ext_segment_length = ctptr - ext_segment_start;
         *(ext_segment_start - 2) = (ext_segment_length >> 7) | 0x80;

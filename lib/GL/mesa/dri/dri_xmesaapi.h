@@ -1,7 +1,8 @@
-/* $XFree86: xc/lib/GL/mesa/dri/dri_xmesaapi.h,v 1.3 2000/02/23 04:46:38 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/dri/dri_xmesaapi.h,v 1.4 2000/06/17 00:02:51 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
+Copyright 2000 VA Linux Systems, Inc.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,8 +29,8 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Brian E. Paul <brian@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Brian E. Paul <brianp@valinux.com>
  */
 
 
@@ -84,7 +85,8 @@ extern GLboolean XMesaUnbindContext( __DRIcontextPrivate *driContextPriv );
 
 extern void XMesaSwapBuffers( __DRIdrawablePrivate *driDrawPriv );
 
-
+extern GLboolean XMesaOpenFullScreen(__DRIcontextPrivate *driContextPriv);
+extern GLboolean XMesaCloseFullScreen(__DRIcontextPrivate *driContextPriv);
 
 
 
@@ -131,6 +133,8 @@ struct __MesaAPIRec {
                                 __DRIdrawablePrivate *driDrawPriv,
                                 __DRIdrawablePrivate *driReadPriv);
     GLboolean    (*UnbindContext)(__DRIcontextPrivate *driContextPriv);
+    GLboolean    (*OpenFullScreen)(__DRIcontextPrivate *driContextPriv);
+    GLboolean    (*CloseFullScreen)(__DRIcontextPrivate *driContextPriv);
 };
 
 

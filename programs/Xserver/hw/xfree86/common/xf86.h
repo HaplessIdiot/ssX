@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.145 2000/12/06 15:35:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.146 2000/12/06 20:22:36 eich Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -185,6 +185,7 @@ int xf86RemoveInputHandler(pointer handler);
 void xf86DisableInputHandler(pointer handler);
 void xf86EnableInputHandler(pointer handler);
 void xf86InterceptSignals(int *signo);
+Bool xf86EnableVTSwitch(Bool new);
 
 /* xf86Helper.c */
 
