@@ -1,5 +1,5 @@
 /* $XConsortium: mach64pcach.c,v 1.2 95/01/16 13:16:35 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.6 1995/07/12 15:35:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64pcach.c,v 3.7 1995/11/12 09:51:14 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -202,7 +202,9 @@ mach64CacheInit(w, h)
 	  MaxSlots     = First64Slot   + 32;
 	  break;
        }
-       mach64CacheInfo = (CacheInfoPtr)xcalloc(MaxSlots, sizeof(CacheInfo));
+
+       if (cache_sets > 0)
+          mach64CacheInfo = (CacheInfoPtr)xcalloc(MaxSlots, sizeof(CacheInfo));
 
        switch (cache_sets) {
        case 0:

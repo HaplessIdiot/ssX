@@ -1,5 +1,5 @@
 /* $XConsortium: mach64.c,v 1.4 95/01/23 15:33:50 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.22 1995/07/15 15:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.23 1995/11/12 09:51:08 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -225,12 +225,36 @@ typedef struct ATIInformationBlock {
    int  CXClk;
 } ATIInformationBlock;
 
-typedef struct _RamdacTable {
-    int subtype;
-    char *name;
-} mach64RamdacTableRec;
+SymTabRec mach64RamdacTableNames[] = {
+    { DAC_INTERNAL, "internal" },
+    { DAC_IBM514, "ibm514" },
+    { DAC_ATI68875, "ati68875" },
+    { DAC_ATI68875, "tlc34075" },
+    { DAC_TVP3026_A, "tvp3026" },
+    { DAC_BT476, "bt476" },
+    { DAC_BT476, "bt478" },
+    { DAC_BT476, "inmos176" },
+    { DAC_BT476, "inmos178" },
+    { DAC_BT481, "bt481" },  
+    { DAC_ATT20C491, "att20c491" },
+    { DAC_SC15026, "sc15026" },
+    { DAC_MU9C1880, "mu9c1880" },
+    { DAC_IMSG174, "ims_g174" },
+    { DAC_ATI68860, "ati68860" },
+    { DAC_ATI68880, "ati68880" },
+    { DAC_TVP3026_B, "tvp3026" },
+    { DAC_STG1700, "stg1700" },
+    { DAC_ATT498, "att498" },
+    { DAC_STG1702, "stg1702" },
+    { DAC_SC15021, "sc15021" },
+    { DAC_ATT21C498, "att21c498" },
+    { DAC_STG1703, "stg1703" },
+    { DAC_CH8398, "ch8398" },
+    { DAC_ATT20C408, "att20c408" },
+    { -1, "" },
+};  
 
-mach64RamdacTableRec mach64RamdacTable[] = {
+SymTabRec mach64RamdacTable[] = {
     { DAC_INTERNAL, "Internal" },
     { DAC_IBM514, "IBM514" },
     { DAC_ATI68875, "ATI-68875/TLC34075" },
@@ -251,16 +275,16 @@ mach64RamdacTableRec mach64RamdacTable[] = {
     { DAC_ATT21C498, "AT&T21C498" },
     { DAC_STG1703, "STG1703" },
     { DAC_CH8398, "CH8398" },
-    { DAC_ATT20C408, "AT&T21C408" },
-    { 0xff, "Unknown" },
+    { DAC_ATT20C408, "AT&T20C408" },
+    { -1, "" },
 };  
 
 char *mach64ClockTypeTable[] = {
     "ATI18818-0",
-    "ATI18818-1",
+    "ATI18818-1/ICS2595",
     "STG1703",
     "CH8398",
-    "BedRock",
+    "ATI-Mach64CT",
     "AT&T20C408",
     "IBM514",
   };  
@@ -429,6 +453,7 @@ mach64Probe()
     Bool                  sw_cursor_supplied;
     OFlagSet              validOptions;
     int                   tx, ty;
+    Bool                  clock_type_probed = TRUE;
 
     xf86ClearIOPortList(mach64InfoRec.scrnIndex);
     xf86AddIOPorts(mach64InfoRec.scrnIndex, Num_Mach64_IOPorts, Mach64_IOPorts);
@@ -559,7 +584,7 @@ mach64Probe()
     OFLG_SET(OPTION_BLOCK_WRITE, &validOptions);
     OFLG_SET(OPTION_POWER_SAVER, &validOptions);
     OFLG_SET(OPTION_NO_BIOS_CLOCKS, &validOptions);
-    OFLG_SET(OPTION_PROGRAM_CLOCKS, &validOptions);
+    OFLG_SET(OPTION_NO_PROGRAM_CLOCKS, &validOptions);
     xf86VerifyOptions(&validOptions, &mach64InfoRec);
 
     mach64InfoRec.chipset = "mach64";
@@ -606,17 +631,23 @@ mach64Probe()
     for (i = 0; i < MACH64_NUM_FREQS; i++)
 	mach64FreqTable2[i] = info->Freq_Table2[i];
 
-    if (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
-	if (mach64InfoRec.clocks) {
-	    ErrorF("Warning: Clocks being programmed from the video mode\n");
-	    ErrorF("  specifications and the clocks lines in XF86Config\n");
-	    ErrorF("  file are ignored.\n");
+    if (mach64InfoRec.ramdac) {
+	mach64RamdacSubType =
+	    xf86StringToToken(mach64RamdacTableNames, mach64InfoRec.ramdac);
+	mach64Ramdac = mach64RamdacSubType & 0x0f;
+	if (mach64RamdacSubType < 0) {
+	    ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+		   mach64InfoRec.name, mach64InfoRec.ramdac);
+	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	    return(FALSE);
 	}
-	for (i = 0; i < MACH64_NUM_CLOCKS; i++) {
-	    mach64InfoRec.clock[i] = mach64Clocks[i] * 10;
+    }
+
+    if (OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
+	if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions)) {
+	    ErrorF("Warning: Clock programming overriden\n");
 	}
-	mach64InfoRec.clocks = MACH64_NUM_CLOCKS;
-    } else {
+
 	/* No need to use auto probing code since the BIOS contains
 	 * all of the clocks unless the "no_bios_clocks" option is
 	 * set. */
@@ -641,13 +672,33 @@ mach64Probe()
 	} else {
 	    ErrorF("Warning: BIOS Clocks overidden.\n");
 	}
+    } else if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions)) {
+	if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &mach64InfoRec.clockOptions))
+	    mach64ClockType = CLK_ATI18818_1;
+	else if (OFLG_ISSET(CLOCK_OPTION_STG1703, &mach64InfoRec.clockOptions))
+	    mach64ClockType = CLK_STG1703;
+	else if (OFLG_ISSET(CLOCK_OPTION_CH8398, &mach64InfoRec.clockOptions))
+	    mach64ClockType = CLK_CH8398;
+	else if (OFLG_ISSET(CLOCK_OPTION_ATT409, &mach64InfoRec.clockOptions))
+	    mach64ClockType = CLK_ATT20C408;
+	else {
+	    ErrorF("Unrecognized clock chip type\n");
+	    xf86DisableIOPorts(mach64InfoRec.scrnIndex);
+	    return(FALSE);
+	}
+	clock_type_probed = FALSE;
+    } else {
+	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions);
     }
 
     if (xf86Verbose) {
-	ErrorF("%s %s: Clock type: %s\n", XCONFIG_PROBED, mach64InfoRec.name,
-	       mach64ClockType < NUM_CLOCK_TYPES ?
-		mach64ClockTypeTable[mach64ClockType] : "Unknown");
-	if (!OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
+	ErrorF("%s %s: Clock type: %s\n",
+	       (clock_type_probed ? XCONFIG_PROBED : XCONFIG_GIVEN),
+	       mach64InfoRec.name,
+	       (mach64ClockType < NUM_CLOCK_TYPES ?
+		mach64ClockTypeTable[mach64ClockType] : "Unknown"));
+	if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions) ||
+	    OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
 	    ErrorF("%s ",(OFLG_ISSET(XCONFIG_CLOCKS,&mach64InfoRec.xconfigFlag) &&
 			  OFLG_ISSET(OPTION_NO_BIOS_CLOCKS, &mach64InfoRec.options)) ?
 		   XCONFIG_GIVEN : XCONFIG_PROBED);
@@ -702,9 +753,7 @@ mach64Probe()
 		    if ((mach64FreqTable2[i].h_disp << 3 >= pMode->HDisplay) &&
 			(mach64FreqTable2[i].dacmask == mach64RamdacSubType) &&
 			(mach64FreqTable2[i].max_dot_clock >=
-			 ((OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) ?
-			  pMode->SynthClock / 1000:
-			  mach64InfoRec.clock[pMode->Clock] / 1000)) &&
+			 mach64InfoRec.clock[pMode->Clock] / 1000) &&
 			(mach64CDepths[mach64FreqTable2[i].color_depth & 0x07]
 			 >= mach64InfoRec.bitsPerPixel)) {
 			found = TRUE;
@@ -716,9 +765,7 @@ mach64Probe()
 			if ((mach64FreqTable[i].h_disp << 3 >= pMode->HDisplay) &&
 			    (mach64FreqTable[i].dacmask & (1 << mach64Ramdac)) &&
 			    (mach64FreqTable[i].max_dot_clock >=
-			     ((OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) ?
-			      pMode->SynthClock / 1000 :
-			      mach64InfoRec.clock[pMode->Clock] / 1000)) &&
+			     mach64InfoRec.clock[pMode->Clock] / 1000) &&
 			    (mach64CDepths[mach64FreqTable[i].color_depth & 0x07]
 			     >= mach64InfoRec.bitsPerPixel)) {
 			    found = TRUE;
@@ -754,6 +801,16 @@ mach64Probe()
 		}
           }
     } while (pMode != pEnd);
+
+    /* For programmable clocks, fill in the SynthClock value for each
+     * mode */
+    if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions)) {
+	pEnd = pMode = mach64InfoRec.modes;
+	do {
+	    pMode->SynthClock = mach64InfoRec.clock[pMode->Clock];
+	    pMode = pMode->next;
+	} while (pMode != pEnd);
+    }
 
     mach64VirtX = mach64InfoRec.virtualX = (mach64InfoRec.virtualX+7) & 0xfff8;
     mach64VirtY = mach64InfoRec.virtualY;
@@ -866,16 +923,18 @@ mach64Probe()
 	    return(FALSE);
 	}
 	for (i = 0;
-	     ((mach64RamdacTable[i].subtype != 0xff) &&
-	      (mach64RamdacTable[i].subtype != mach64RamdacSubType));
+	     ((mach64RamdacTable[i].token != -1) &&
+	      (mach64RamdacTable[i].token != mach64RamdacSubType));
 	     i++);
-	if (mach64RamdacTable[i].subtype == 0xff) {
-	    ErrorF("%s %s: Ramdac is %s (%d)\n", XCONFIG_PROBED,
+	if (mach64RamdacTable[i].token == -1) {
+	    ErrorF("%s %s: Ramdac is Unknown (%d)\n",
+		   (mach64InfoRec.ramdac ? XCONFIG_GIVEN : XCONFIG_PROBED),
 		   mach64InfoRec.name,
-		   mach64RamdacTable[i].name,
 		   mach64RamdacSubType);
 	} else {
-	    ErrorF("%s %s: Ramdac is %s\n", XCONFIG_PROBED, mach64InfoRec.name,
+	    ErrorF("%s %s: Ramdac is %s\n",
+		   (mach64InfoRec.ramdac ? XCONFIG_GIVEN : XCONFIG_PROBED),
+		   mach64InfoRec.name,
 		   mach64RamdacTable[i].name);
 	}
     }
@@ -1416,4 +1475,3 @@ DisplayModePtr mode;
 {
 return TRUE;
 }
-

@@ -1,5 +1,5 @@
 /* $XConsortium: mach64init.c,v 1.3 95/01/16 13:16:33 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.6 1995/07/12 15:35:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.7 1995/11/12 09:51:13 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -66,6 +66,7 @@ static char old_ATI68860[4];
 static char old_ATI68875[3];
 static char old_CH8398;
 static char old_STG170X[4];
+static char old_ATT20C408;
 
 
 /*
@@ -141,7 +142,8 @@ void mach64CalcCRTCRegs(crtcRegs, mode)
     if (OFLG_ISSET(OPTION_CSYNC, &mach64InfoRec.options))
 	crtcRegs->crtc_gen_cntl |= CRTC_CSYNC_EN;
 
-    if (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)) {
+    if (!OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options) &&
+	OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions)) {
 	crtcRegs->clock_cntl = mach64CXClk;
 	crtcRegs->dot_clock = mode->SynthClock / 10;
 
@@ -322,7 +324,10 @@ void mach64StrobeClock()
 {
     char tmp;
 
-    usleep(26); /* delay for 26 us */
+    /* Delay for 26 us */
+    for (tmp = 0; tmp < 26; tmp++)
+	GlennsIODelay();
+
     tmp = inb(ioCLOCK_CNTL);
     outb(ioCLOCK_CNTL, tmp | CLOCK_STROBE);
 }
@@ -420,6 +425,9 @@ void mach64ProgramICS2595(clkCntl, MHz100)
 
     program_word |= STOP_BITS_2595;
 
+    /* Turn off interrupts */
+    (void)xf86DisableInterrupts(); 
+
     /* Program the clock chip */
     outb(ioCLOCK_CNTL, 0);
     mach64StrobeClock();
@@ -439,6 +447,9 @@ void mach64ProgramICS2595(clkCntl, MHz100)
 	mach64ICS2595_1bit(program_word & 1);
 	program_word >>= 1;
     }
+
+    /* Enable interrupts */
+    (void)xf86EnableInterrupts();
 
     usleep(1000); /* delay for 1 ms */
 
@@ -709,16 +720,16 @@ void mach64ProgramClk(clkCntl, MHz100)
     int MHz100;
 {
     switch (mach64ClockType) {
-    case 1: /* ATI18818 */
+    case CLK_ATI18818_1:
 	mach64ProgramICS2595(clkCntl, MHz100);
 	break;
-    case 2: /* STG1703 */
+    case CLK_STG1703:
 	mach64ProgramClk1703(clkCntl, MHz100);
 	break;
-    case 3: /* CH8398 */
+    case CLK_CH8398:
 	mach64ProgramClk8398(clkCntl, MHz100);
 	break;
-    case 5: /* ATT20C408 */
+    case CLK_ATT20C408:
 	mach64ProgramClk408(clkCntl, MHz100);
 	break;
     default:
@@ -749,7 +760,8 @@ void mach64SetCRTCRegs(crtcRegs)
     if (mach64ClockType != 0 &&
 	((mach64Ramdac == DAC_ATI68860 && crtcRegs->clock_cntl & 0x30) ||
 	 (crtcRegs->clock_cntl == mach64CXClk) ||
-	 (OFLG_ISSET(OPTION_PROGRAM_CLOCKS, &mach64InfoRec.options)))) {
+	 (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &mach64InfoRec.clockOptions) &&
+	  !OFLG_ISSET(OPTION_NO_PROGRAM_CLOCKS, &mach64InfoRec.options)))) {
 	if (crtcRegs->clock_cntl & CLOCK_DIV2)
 	    mach64ProgramClk(mach64CXClk, crtcRegs->dot_clock >> 1);
 	else
@@ -1614,6 +1626,10 @@ void mach64InitDisplay(screen_idx)
 	old_STG170X[3] = inb(ioDAC_REGS+2);
 	(void)inb(ioDAC_REGS);
 	break;
+    case DAC_ATT20C408:
+	mach64DACRead4();
+	old_ATT20C408 = inb(ioDAC_REGS+2);
+	break;
     default:
 	break;
     }
@@ -1731,6 +1747,10 @@ void mach64CleanUp()
 	mach64DACRead4();
 	outb(ioDAC_REGS+2, old_STG170X[0]);
 	(void)inb(ioDAC_REGS);
+	break;
+    case DAC_ATT20C408:
+	mach64DACRead4();
+	outb(ioDAC_REGS+2, old_ATT20C408);
 	break;
     default:
 	break;

@@ -1,5 +1,5 @@
 /* $XConsortium: regmach64.h,v 1.2 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.3 1995/03/06 14:47:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.4 1995/11/12 09:51:16 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -302,6 +302,14 @@
 #define DAC_STG1703		0x37
 #define DAC_CH8398		0x47
 #define DAC_ATT20C408		0x57
+
+#define CLK_ATI18818_0		0
+#define CLK_ATI18818_1		1
+#define CLK_STG1703		2
+#define CLK_CH8398		3
+#define CLK_MACH64CT		4
+#define CLK_ATT20C408		5
+#define CLK_IBM514		6
 
 /* CONFIG_CNTL register constants */
 #define MEM_SIZE_ALIAS		0x00000007
