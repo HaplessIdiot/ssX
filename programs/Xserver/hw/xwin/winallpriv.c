@@ -28,11 +28,20 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.6 2001/06/25 08:12:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.7 2001/07/02 09:37:17 alanh Exp $ */
 
 #include "win.h"
 
+
+
 /* See Porting Layer Definition - p. 58 */
+/*
+ * Allocate indexes for the privates that we use.
+ * Allocate memory directly for the screen privates.
+ * Reserve space in GCs and Pixmaps for our privates.
+ * Colormap privates are handled in winAllocateCmapPrivates ()
+ */
+
 Bool
 winAllocatePrivates (ScreenPtr pScreen)
 {
@@ -73,7 +82,7 @@ winAllocatePrivates (ScreenPtr pScreen)
   /* Save the screen private pointer */
   winSetScreenPriv (pScreen, pScreenPriv);
 
-  /* Allocate the GC privates */
+  /* Reserve GC memory for our privates */
   if (!AllocateGCPrivate (pScreen, g_iGCPrivateIndex,
 			  sizeof (winPrivGCRec)))
     {
@@ -81,7 +90,7 @@ winAllocatePrivates (ScreenPtr pScreen)
       return FALSE;
     }
 
-  /* Allocate the Pixmap privates */
+  /* Reserve Pixmap memory for our privates */
   if (!AllocatePixmapPrivate (pScreen, g_iPixmapPrivateIndex,
 			      sizeof (winPrivPixmapRec)))
     {
@@ -92,11 +101,13 @@ winAllocatePrivates (ScreenPtr pScreen)
   return TRUE;
 }
 
+
 /*
  * Colormap privates may be allocated after the default colormap has
  * already been created for some screens.  This initialization procedure
  * is called for each default colormap that is found.
  */
+
 Bool
 winInitCmapPrivates (ColormapPtr pcmap)
 {
@@ -115,6 +126,10 @@ winInitCmapPrivates (ColormapPtr pcmap)
   return TRUE;
 }
 
+
+/*
+ * Allocate memory for our colormap privates
+ */
 
 Bool
 winAllocateCmapPrivates (ColormapPtr pCmap)

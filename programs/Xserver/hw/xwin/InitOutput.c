@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.22 2001/10/04 20:02:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.23 2001/10/23 08:32:05 alanh Exp $ */
 
 #include "win.h"
 
@@ -51,6 +51,7 @@ static PixmapFormatRec g_PixmapFormats[] = {
 };
 
 const int NUMFORMATS = sizeof (g_PixmapFormats) / sizeof (g_PixmapFormats[0]);
+
 
 void
 winInitializeDefaultScreens (void)
@@ -97,6 +98,7 @@ winInitializeDefaultScreens (void)
   g_fInitializedDefaultScreens = TRUE;
 }
 
+
 DWORD
 winBitsPerPixel (DWORD dwDepth)
 {
@@ -105,6 +107,7 @@ winBitsPerPixel (DWORD dwDepth)
   else if (dwDepth <= 16) return 16;
   else return 32;
 }
+
 
 /* See Porting Layer Definition - p. 57 */
 void
@@ -137,6 +140,7 @@ ddxGiveUp()
   /* Tell Windows that we want to end the app */
   PostQuitMessage (0);
 }
+
 
 /* See Porting Layer Definition - p. 57 */
 void
@@ -246,8 +250,6 @@ ddxProcessArgument (int argc, char *argv[], int i)
   /* Initialize once */
   if (!beenHere)
     {
-      printf ("Foo!\n");
-
 #ifdef DDXOSVERRORF
       /*
        * This initialises our hook into VErrorF () for catching log messages
@@ -262,6 +264,9 @@ ddxProcessArgument (int argc, char *argv[], int i)
 
       beenHere = TRUE;
 
+      /* Detach from any console we are connected to */
+      FreeConsole ();
+
       /*
        * Initialize default screen settings.  We have to do this before
        * OsVendorInit () gets called, otherwise we will overwrite
@@ -271,7 +276,9 @@ ddxProcessArgument (int argc, char *argv[], int i)
       winInitializeDefaultScreens ();
   }
 
+#if CYGDEBUG
   ErrorF ("ddxProcessArgument ()\n");
+#endif
   
   /*
    * Look for the '-screen scr_num width height' argument

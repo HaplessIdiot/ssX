@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.5 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.6 2001/10/22 15:21:11 alanh Exp $ */
 
 #include "win.h"
 
@@ -407,6 +407,8 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       
 	  /* Push the drawable pixmap out of the GC HDC */
 	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
+
+	  DEBUG_MSG("Completed tile fill");
 	  break;
 
 	case FillOpaqueStippled:

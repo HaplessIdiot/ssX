@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.22 2001/10/22 15:21:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.23 2001/10/23 22:22:47 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -77,7 +77,7 @@
 #define WIN_DIB_MAXIMUM_SIZE_MB (WIN_DIB_MAXIMUM_SIZE / 8 / 1024 / 1024)
 
 /*
- * Windows only supports 256 color palettes, I think
+ * Windows only supports 256 color palettes
  */
 #define WIN_NUM_PALETTE_ENTRIES	256
 
@@ -191,13 +191,13 @@ if (fDebugProcMsg) \
   \
   iLength = sprintf (NULL, str, ##__VA_ARGS__); \
   \
-  pszTemp = malloc (iLength + 1); \
+  pszTemp = xalloc (iLength + 1); \
   \
   sprintf (pszTemp, str, ##__VA_ARGS__); \
   \
   MessageBox (NULL, pszTemp, szFunctionName, MB_OK); \
   \
-  free (pszTemp); \
+  xfree (pszTemp); \
 }
 #else
 #define DEBUG_MSG(str,...)
