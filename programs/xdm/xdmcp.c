@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.19 2001/12/14 20:01:25 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmcp.c,v 3.20 2002/12/07 20:31:05 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -1154,7 +1154,7 @@ NetworkAddressToHostname (
 	{
 	    struct hostent	*hostent = NULL;
 	    char dotted[20];
-	    char *local_name;
+	    char *local_name = "";
 
 	    hostent = gethostbyaddr ((char *)connectionAddress->data,
 				     connectionAddress->length, AF_INET);

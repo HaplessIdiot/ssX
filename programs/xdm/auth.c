@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.25 2002/05/31 18:46:10 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.26 2002/12/07 20:31:04 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -1224,7 +1224,7 @@ RemoveUserAuthorization (struct display *d, struct verify_info *verify)
     if (!home)
 	return;
     Debug ("RemoveUserAuthorization\n");
-    snprintf(name, "%s/.Xauthority", home);
+    snprintf(name, sizeof(name), "%s/.Xauthority", home);
     Debug ("XauLockAuth %s\n", name);
     lockStatus = XauLockAuth (name, 1, 2, 10);
     Debug ("Lock is %d\n", lockStatus);
