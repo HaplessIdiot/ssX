@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.1 2001/02/13 19:19:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.2 2001/04/05 17:42:32 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -260,9 +260,9 @@ static CARD32 G450IsPllLocked(ScrnInfoPtr pScrn, Bool *lpbLocked)
 
    /* Pixel PLL */
    if (!pMga->SecondCrtc)
-      OUTREG8(0x3c00, 0x4f);    
+      OUTREG8(0x3c00, 0x4f);    /* Pixel PLL */
    else
-      OUTREG8(0x3c00, 0x8f);
+      OUTREG8(0x3c00, 0x8c);    /* Video PLL */
 
    ulFallBackCounter = 0;
 
@@ -295,7 +295,7 @@ double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
 {
    Bool bFoundValidPLL;
    Bool bLocked;
-   CARD8  ucMisc;
+   CARD8  ucMisc, ucSIndex, ucSTable[4];
    CARD32 ulMaxIndex;
    CARD32 ulMNP;
    CARD32 ulMNPTable[MNP_TABLE_SIZE];
@@ -357,18 +357,36 @@ double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
    ulMNP = 0;
 
    /* For pixel pll */
-   ucMisc = INREG8(0x1FCC);
-   OUTREG8(0x1fc2, (CARD8)(ucMisc | CLKSEL_MGA));    
+   if (!pMga->SecondCrtc) {
+       ucMisc = INREG8(0x1FCC);
+       OUTREG8(0x1fc2, (CARD8)(ucMisc | CLKSEL_MGA));    
+   }
 
    for(ulIndex = 0; !bFoundValidPLL && (ulIndex < ulMaxIndex); ulIndex++)
    {
       ulTryMNP = ulMNPTable[ulIndex];
 
-/*    for(ucS = 0; !bFoundValidPLL && (ucS < 0x40); ucS += 8)*/
+      ucSTable[3] = 0xff;
+      ucSTable[2] = 0xff;
+      ucSTable[0] = (CARD8) (ulTryMNP & 0x38);
+      if (ucSTable[0] != 0)
       {
-/*         ulTryMNP &= 0xffffffc7;*/
-/*         ulTryMNP |= (CARD32)ucS;*/
-         
+	  ucSTable[1] = ucSTable[0] - 8;
+	  if (ucSTable[0] != 0x38)
+	  {
+	      ucSTable[2] = ucSTable[0] + 8;
+	  }
+      }
+      else
+      {
+	  ucSTable[1] = 8;
+      }
+
+      for(ucSIndex = 0; !bFoundValidPLL && (ucSTable[ucSIndex] != 0xff); ucSIndex++)
+      {
+         ulTryMNP &= 0xffffffc7;
+         ulTryMNP |= (CARD32)ucSTable[ucSIndex];
+	 
          bLocked = TRUE;
          if((ulMNPTable[ulIndex] & 0xff00) < 0x300 ||
             (ulMNPTable[ulIndex] & 0xff00) > 0x7a00)

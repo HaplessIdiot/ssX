@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.104 2001/08/18 17:25:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.105 2001/09/25 14:58:49 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -373,6 +373,7 @@
 #define PCI_CHIP_MGAG200_PCI	0x0520
 #define PCI_CHIP_MGAG200	0x0521
 #define PCI_CHIP_MGAG400	0x0525
+#define PCI_CHIP_MGAG550	0x2527
 #define PCI_CHIP_IMPRESSION	0x0D10
 #define PCI_CHIP_MGAG100_PCI	0x1000
 #define PCI_CHIP_MGAG100	0x1001
@@ -992,6 +993,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MGAG200_PCI,	"MGA G200 PCI",0},
 				{PCI_CHIP_MGAG200,	"MGA G200 AGP",0},
 				{PCI_CHIP_MGAG400,	"MGA G400 AGP",0},
+				{PCI_CHIP_MGAG550,	"MGA G550 AGP",0},
 				{PCI_CHIP_MGAG100_PCI,	"MGA G100 PCI",0},
 				{PCI_CHIP_MGAG100,	"MGA G100 AGP",0},
 				{0x0000,		NULL,0}}},

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.24 2001/04/25 14:23:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.25 2001/06/01 02:10:06 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -77,7 +77,8 @@ void MGAInitVideo(ScreenPtr pScreen)
        (pMga->SecondCrtc == FALSE) &&
        ((pMga->Chipset == PCI_CHIP_MGAG200) ||
         (pMga->Chipset == PCI_CHIP_MGAG200_PCI) ||
-        (pMga->Chipset == PCI_CHIP_MGAG400))) 
+        (pMga->Chipset == PCI_CHIP_MGAG400) ||
+	(pMga->Chipset == PCI_CHIP_MGAG550))) 
     {
 	if((pMga->Overlay8Plus24 || pMga->TexturedVideo) &&
 	   (pScrn->bitsPerPixel != 24))
@@ -246,7 +247,8 @@ MGASetupImageVideoOverlay(ScreenPtr pScreen)
     adapt->pFormats = Formats;
     adapt->nPorts = 1;
     adapt->pAttributes = Attributes;
-    if (pMga->Chipset == PCI_CHIP_MGAG400) {
+    if (pMga->Chipset == PCI_CHIP_MGAG400 || 
+	pMga->Chipset == PCI_CHIP_MGAG550) {
 	adapt->nImages = 4;
 	adapt->nAttributes = 3;
     } else {
@@ -294,7 +296,8 @@ MGASetupImageVideoTexture(ScreenPtr pScreen)
     adapt->pAttributes = NULL;
     adapt->nAttributes = 0;
     adapt->pImages = Images;
-    if (pMga->Chipset == PCI_CHIP_MGAG400)
+    if (pMga->Chipset == PCI_CHIP_MGAG400 ||
+	pMga->Chipset == PCI_CHIP_MGAG550)
 	adapt->nImages = 4;
     else
 	adapt->nImages = 3;
@@ -1212,7 +1215,7 @@ MGAInitOffscreenImages(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     MGAPtr pMga = MGAPTR(pScrn);
-    int num = (pMga->Chipset == PCI_CHIP_MGAG400) ? 2 : 1;
+    int num = (pMga->Chipset == PCI_CHIP_MGAG400 || pMga->Chipset == PCI_CHIP_MGAG550) ? 2 : 1;
     XF86OffscreenImagePtr offscreenImages;
 
     /* need to free this someplace */

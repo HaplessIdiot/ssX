@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.91 2001/05/10 21:53:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.92 2001/09/14 19:15:35 keithp Exp $ */
 
 
 /* All drivers should typically include these */
@@ -599,6 +599,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
  			   USE_RECTS_FOR_LINES;
         break;
     case PCI_CHIP_MGAG400:
+    case PCI_CHIP_MGAG550:
         if(pMga->SecondCrtc == TRUE) {
 	    pMga->HasFBitBlt = FALSE;
 	}
@@ -954,7 +955,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 #ifdef RENDER
    if(doRender && ((pScrn->bitsPerPixel == 32) || (pScrn->bitsPerPixel == 16)))
    {
-       if(pMga->Chipset == PCI_CHIP_MGAG400) {
+       if(pMga->Chipset == PCI_CHIP_MGAG400 || pMga->Chipset == PCI_CHIP_MGAG550) {
            infoPtr->CPUToScreenAlphaTextureFlags = XAA_RENDER_NO_TILE;
            infoPtr->SetupForCPUToScreenAlphaTexture =
 				MGASetupForCPUToScreenAlphaTexture;
@@ -1164,6 +1165,7 @@ MGAStormEngineInit(ScrnInfoPtr pScrn)
     pMga->AccelFlags &= ~CLIPPER_ON;
 
     switch(pMga->Chipset) {
+    case PCI_CHIP_MGAG550:
     case PCI_CHIP_MGAG400:
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:

@@ -1,8 +1,8 @@
 /*
- * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
+ * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.45 2001/04/05 21:29:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.46 2001/04/06 16:51:19 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -110,6 +110,7 @@ MGAGCalcClock ( ScrnInfoPtr pScrn, long f_out,
 		post_div_max = 7;
 		break;
 	case PCI_CHIP_MGAG400:
+	case PCI_CHIP_MGAG550:
 		ref_freq     = 27050.5;
 		feed_div_min = 7;
 		feed_div_max = 127;
@@ -210,7 +211,7 @@ MGAGSetPCLK( ScrnInfoPtr pScrn, long f_out )
 	/* The actual frequency output by the clock */
 	double f_pll;
 
-	if(MGAISG450(pMga)) {
+	if(MGAISGx50(pMga)) {
 		G450SetPLLFreq(pScrn, f_out);
 		return;
 	}
@@ -327,10 +328,11 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->Option2 = 0x0000007;
 		break;
 	case PCI_CHIP_MGAG400:
+	case PCI_CHIP_MGAG550:
 #ifdef USEMGAHAL
 	       MGA_HAL(break;);
 #endif
-	       if (MGAISG450(pMga))
+	       if (MGAISGx50(pMga))
 		       break;
 
 	       if(pMga->Dac.maxPixelClock == 360000) {  /* G400 MAX */
@@ -523,7 +525,7 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	if (mode->Flags & V_DBLSCAN)
 		pVga->CRTC[9] |= 0x80;
 
-	if(MGAISG450(pMga)) {
+	if(MGAISGx50(pMga)) {
 		OUTREG(MGAREG_ZORG, 0);
 	}
 
@@ -589,7 +591,7 @@ void MGAGLoadPalette(
     if((pMga->CurrentLayout.Overlay8Plus24) && (pVisual->nplanes != 8)) 
 	return;
 
-     if(pMga->Chipset == PCI_CHIP_MGAG400){ 
+     if(pMga->Chipset == PCI_CHIP_MGAG400 || pMga->Chipset == PCI_CHIP_MGAG550){ 
 	 /* load them at the retrace in the block handler instead to 
 	    work around some problems with static on the screen */
 	while(numColors--) {
@@ -672,7 +674,7 @@ MGA_NOT_HAL(
 		  (i == 0x1c) ||
 		  ((i >= 0x1f) && (i <= 0x29)) ||
 		  ((i >= 0x30) && (i <= 0x37)) ||
-		  (MGAISG450(pMga) &&
+		  (MGAISGx50(pMga) &&
 		   ((i == 0x2c) || (i == 0x2d) || (i == 0x2e) ||
 		    (i == 0x4c) || (i == 0x4d) || (i == 0x4e))))
 		 continue; 
@@ -683,14 +685,14 @@ MGA_NOT_HAL(
 	      should be correct already */
 	   optionMask = (pMga->Primary) ? OPTION1_MASK_PRIMARY : OPTION1_MASK; 
 	   
-	   if (!MGAISG450(pMga)) {
+	   if (!MGAISGx50(pMga)) {
 	      /* restore pci_option register */
 	      pciSetBitsLong(pMga->PciTag, PCI_OPTION_REG, optionMask,
 			     mgaReg->Option);
 	      if (pMga->Chipset != PCI_CHIP_MGA1064)
 		 pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION2, OPTION2_MASK,
 				mgaReg->Option2);
-	      if (pMga->Chipset == PCI_CHIP_MGAG400)
+	      if (pMga->Chipset == PCI_CHIP_MGAG400 || pMga->Chipset == PCI_CHIP_MGAG550)
 		 pciSetBitsLong(pMga->PciTag, PCI_MGA_OPTION3, OPTION3_MASK,
 				mgaReg->Option3);
 	   }
@@ -715,6 +717,7 @@ MGA_NOT_HAL(
 	   /* Second Crtc */
 	   xMODEINFO ModeInfo;
 
+MGA_NOT_HAL(
 	   /* Enable Dual Head */
 	   CRTC2Set(pScrn, &ModeInfo); 
 	   EnableSecondOutPut(pScrn, &ModeInfo); 
@@ -727,8 +730,10 @@ MGA_NOT_HAL(
 		   continue;
 		}
                 outMGAdac(i,   mgaReg->dac2[ i - 0x80]);
-	   }           
-        } /* endif pMga->SecondCrtc */
+	   }
+); /* MGA_NOT_HAL */
+
+        } 
 
 #ifdef DEBUG		
 	ErrorF("Setting DAC:");
@@ -797,7 +802,7 @@ MGAGSave(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, MGARegPtr mgaReg,
 	mgaReg->Option = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 
 	mgaReg->Option2 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION2);
-	if (pMga->Chipset == PCI_CHIP_MGAG400)
+	if (pMga->Chipset == PCI_CHIP_MGAG400 || pMga->Chipset == PCI_CHIP_MGAG550)
 	    mgaReg->Option3 = pciReadLong(pMga->PciTag, PCI_MGA_OPTION3);
 	);	/* MGA_NOT_HAL */
 
@@ -1040,6 +1045,7 @@ MGAGRamdacInit(ScrnInfoPtr pScrn)
 	        MGAdac->maxPixelClock = 220000;
 	    break;
     	case PCI_CHIP_MGAG400:
+    	case PCI_CHIP_MGAG550:
 	    /* We don't know the new pins format but we know that
 	       the maxclock / 4 is where the RamdacType was in the
 	       old pins format */
