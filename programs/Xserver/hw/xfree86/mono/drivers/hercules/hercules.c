@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hercules/hercules.c,v 3.0 1994/05/04 15:01:02 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -363,8 +363,8 @@ HGA6845SaveScreen (pScreen, on)
     return(TRUE);
 }
 
-static unsigned long *hga6845Mapping;
-static unsigned long *hga6845RevMapping;
+static unsigned long *hga6845Mapping=NULL;
+static unsigned long *hga6845RevMapping=NULL;
 
 /*
  * HGA6845MapFrameBuffer --
@@ -375,8 +375,15 @@ static int HGA6845MapFrameBuffer()
     unsigned long voffset;
     unsigned long roffset;
 
+    if ( (NULL!=hga6845Mapping) && (NULL!=hga6845RevMapping) )
+	return(0); /* already done */
+
+    if (NULL!=hga6845Mapping)
+	xfree(hga6845Mapping);
     hga6845Mapping    = (unsigned long *)xalloc(
 				HGA6845MapSize * sizeof(unsigned long));
+    if (NULL!=hga6845RevMapping)
+	xfree(hga6845RevMapping);
     hga6845RevMapping = (unsigned long *)xalloc(
 				HGA6845MapSize * sizeof(unsigned long));
     if ( (NULL==hga6845Mapping) || (NULL==hga6845RevMapping) ) {
