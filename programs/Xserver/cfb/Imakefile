@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 5.41 93/09/06 18:37:23 rws Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile,v 3.0 1994/05/30 08:21:57 dawes Exp $
 #include <Server.tmpl>
 
 #ifndef PixelSize
@@ -66,7 +66,12 @@ OBJS =   cfbgc.o cfbrrop.o cfbwindow.o \
    INCLUDES = -I. -I../mfb -I../mi -I../include -I$(INCLUDESRC) -I$(FONTINCSRC)
    LINTLIBS = ../dix/llib-ldix.ln ../os/llib-los.ln \
 	     ../mfb/llib-lmfb.ln ../mi/llib-lmi.ln
-    DEFINES = -DPSZ=PixelSize
+#ifdef XFree86Version
+#if XF86Mach32Server && Mach32ShareCfb
+COLORDEFINES = -DSTATIC_COLOR
+#endif
+#endif
+    DEFINES = -DPSZ=PixelSize $(COLORDEFINES)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(cfb,$(OBJS))

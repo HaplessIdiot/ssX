@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.2 1994/05/08 06:21:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.3 1994/05/31 08:04:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -863,8 +863,26 @@ mach32EnterLeaveVT(enter, screen_idx)
     PixmapPtr pspix;
     ScreenPtr pScreen = savepScreen;
 
-    if (!xf86Exiting && !xf86Resetting)
-	pspix = (PixmapPtr)pScreen->devPrivate; /* cfbGetScreenPixmap(pScreen) */
+    if (!xf86Exiting && !xf86Resetting) {
+	/* cfbGetScreenPixmap(pScreen) */
+#ifdef MACH32_SHARE_CFB
+	switch (mach32InfoRec.bitsPerPixel) {
+	case 8:
+	    pspix = (PixmapPtr)pScreen->devPrivate;
+	    break;
+	case 16:
+	    {
+		extern int cfb16ScreenPrivateIndex;
+
+		pspix =
+		  (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
+	    }
+	    break;
+	}
+#else
+	pspix = (PixmapPtr)pScreen->devPrivate;
+#endif
+    }
 
     if (pScreen)
 	WalkTree(pScreen, mach32NewSerialNumber, 0);
