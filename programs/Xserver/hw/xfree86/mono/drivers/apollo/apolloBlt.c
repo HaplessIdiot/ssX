@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/apollo/apolloBlt.c,v 3.0 1994/05/04 15:00:53 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -23,6 +23,7 @@
 #endif
 #include	"mono.h"
 #include	"apolloHW.h"
+#include	<sys/types.h>
 #include	<netinet/in.h>
 
 
