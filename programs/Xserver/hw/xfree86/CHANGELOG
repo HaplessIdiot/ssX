@@ -1,4 +1,11 @@
 XFree86 4.2.99.3 (xx December 2002)
+ 627. Fix some bugs in the Iranian xkb layout (A.1135, Roozbeh Pournader).
+ 626. Add a Bosnian xkb layout (A.1398, Amila Akagic).
+ 625. Fix for Hungarian xkb layout (A.1175, Peter Soos).
+ 624. Update the Maltese xkb layouts (A.1243, Ramon Casha).
+ 623. Add EuroSign to the xkb "gb" layout (A.901, Dermot McNally).
+ 622. Various updates for the xkb "xfree86" keymap list (including A.777,
+      Andriy Rysin).
  621. Let kbd driver test if Xserver is in suspend before handling any
       input events (Egbert Eich).
  620. Fixed agp version checking to accept minor versions >= the specified
@@ -15775,4 +15782,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2443 2002/12/11 03:58:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2445 2002/12/12 18:29:06 eich Exp $
