@@ -1,4 +1,5 @@
 ! $XConsortium: XErrorDB,v 1.25 94/04/13 18:11:43 gildea Exp $
+! $XFree86$
 ! Copyright 1993 Massachusetts Institute of Technology
 !
 ! Permission to use, copy, modify, distribute, and sell this software and
@@ -544,3 +545,13 @@ XRequest.RECORD.4: XRecordGetConfig
 XRequest.RECORD.5: XRecordEnableConfig
 XRequest.RECORD.6: XRecordDisableConfig
 XProtoError.RECORD.0: XRecordBadConfiguration
+! XFree86-VidModeExtension  -- not an X Consortium standard
+XRequest.XFree86-VidModeExtension.0: XF86VidModeQueryVersion
+XRequest.XFree86-VidModeExtension.1: XF86VidModeGetModeLine
+XRequest.XFree86-VidModeExtension.2: XF86VidModeModModeLine
+XRequest.XFree86-VidModeExtension.3: XF86VidModeSwitchMode
+XRequest.XFree86-VidModeExtension.4: XF86VidModeGetMonitor
+XProtoError.XFree86-VidModeExtension.0: XF86VidModeBadClock
+XProtoError.XFree86-VidModeExtension.1: XF86VidModeBadHTimings
+XProtoError.XFree86-VidModeExtension.2: XF86VidModeBadVTimings
+XProtoError.XFree86-VidModeExtension.3: XF86VidModeModeUnsuitable
