@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf,v 1.4 94/04/07 15:46:42 rws Exp $
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.0 1994/05/04 14:54:14 dawes Exp $
 
 #define OSName			Linux
 #define OSVendor		/**/
@@ -51,6 +51,7 @@ XCOMM platform:  $XFree86$
 #define ExtensionOSDefines	-DXTESTEXT1
 #define ServerExtraDefines	-DGCCUSESGAS -DXDMCP
 #define ServerExtraSysLibs	$(CBRT) -lm
+#define MathLibrary		/**/
 #define ConnectionFlags		-DUNIXCONN -DTCPCONN
 #define InstUidFlags		-s -m 4755
 
