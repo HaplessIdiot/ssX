@@ -315,7 +315,7 @@
 				0A79E1A4004499A1CE6F79C2,
 			);
 			buildSettings = {
-				INSTALL_PATH = "";
+				INSTALL_PATH = /;
 				OTHER_CFLAGS = "";
 				OTHER_LDFLAGS = "";
 				OTHER_REZFLAGS = "";
@@ -328,7 +328,7 @@
 			);
 			isa = PBXApplicationTarget;
 			name = XDarwin;
-			productInstallPath = "";
+			productInstallPath = /;
 			productName = XDarwin;
 			productReference = 0A79E19E004499A1CE6F79C2;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
