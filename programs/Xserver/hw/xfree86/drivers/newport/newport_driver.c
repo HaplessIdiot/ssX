@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.17 2001/12/19 21:31:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.18 2001/12/21 15:37:23 tsi Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -344,7 +344,7 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	pNewport = NEWPORTPTR(pScrn);
 	pNewport->busID = busID;
 
-	/* We use a programamble clock */
+	/* We use a programmable clock */
 	pScrn->progClock = TRUE;
 
 	/* Fill in pScrn->options) */

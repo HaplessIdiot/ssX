@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.59 2001/11/26 16:25:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.61 2001/11/30 12:11:56 eich Exp $ */
 
 /*
  * Authors:
@@ -562,7 +562,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    if (!xf86SetDefaultVisual(pScrn, -1)) 
       return FALSE;
 
-   /* We use a programamble clock */
+   /* We use a programmable clock */
    pScrn->progClock = TRUE;
 
    hwp = VGAHWPTR(pScrn);

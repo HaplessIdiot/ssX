@@ -45,7 +45,7 @@
    * Support static loading.  
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.26 2001/06/13 23:34:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glide/glide_driver.c,v 1.27 2001/08/07 07:04:46 keithp Exp $ */
 
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -514,7 +514,7 @@ GLIDEPreInit(ScrnInfoPtr pScrn, int flags)
     }
   }
 
-  /* We use a programamble clock */
+  /* We use a programmable clock */
   pScrn->progClock = TRUE;
 
   /* Allocate the GLIDERec driverPrivate */

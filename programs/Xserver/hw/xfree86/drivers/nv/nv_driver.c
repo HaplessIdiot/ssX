@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.79 2001/12/07 00:09:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.80 2001/12/12 00:34:49 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -1039,7 +1039,7 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
     
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->progClock = TRUE;
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */

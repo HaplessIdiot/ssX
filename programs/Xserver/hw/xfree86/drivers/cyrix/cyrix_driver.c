@@ -26,7 +26,7 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.22 2001/10/28 03:33:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.23 2001/11/19 15:44:18 tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -604,7 +604,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->progClock = TRUE;
 
     /* Allocate the CYRIXRec driverPrivate */

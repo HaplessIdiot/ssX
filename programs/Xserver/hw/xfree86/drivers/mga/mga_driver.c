@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.210 2001/10/28 03:33:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.212 2001/11/30 12:11:56 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1391,7 +1391,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     bytesPerPixel = pScrn->bitsPerPixel / 8;
 
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->progClock = TRUE;
 
     /* Collect all of the relevant option flags (fill in pScrn->options) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.115 2001/10/01 13:44:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.116 2001/10/28 03:33:26 tsi Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -2062,7 +2062,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* sync reset ignored on this chipset */
     cPtr->SyncResetIgn = TRUE;   /* !! */
 
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     pScrn->numClocks = 26;		/* Some number */
     pScrn->progClock = TRUE;
     cPtr->ClockType = HiQV_STYLE | TYPE_PROGRAMMABLE;
@@ -3438,7 +3438,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     if (cPtr->ClockMulFactor != 1)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 	       "Clocks scaled by %d\n", cPtr->ClockMulFactor);
-    /* We use a programamble clock */
+    /* We use a programmable clock */
     switch (cPtr->Chipset) {
     case CHIPS_CT65520:
     case CHIPS_CT65525:

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.23 2001/08/07 07:04:45 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.25 2001/10/01 13:44:05 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -892,7 +892,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	  break;
 	}
 
-     /* We use a programamble clock */
+     /* We use a programmable clock */
      pScrn->progClock = TRUE;
  
 	/* XXX Set HW cursor use */
