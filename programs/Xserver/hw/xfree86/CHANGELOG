@@ -1,4 +1,17 @@
 XFree86 4.3.99.2 (xx March 2003)
+  47. Workaround for a crash that happens if a scalable font has a bitmap
+      entry in fonts.dir (#5687, Juliusz Chroboczek).
+  46. Single/dual rasterizer quiescence patch for the glint/gamma DRI driver
+      (#5685, Sven Luther).
+  45. Fix a FreeBSD/alpha build problem (#5679, Fred Clift).
+  44. Fix a bug in the GLU/project.3gl man page (#5676, Thomas Klausner).
+  43. Luit fixes:
+       - Fix a buffer overflow.
+       - Allow for holes in the pty space, and use the union of the pty
+         names in 4.4BSD and recent FreeBSD.
+       - Allow luit to be set-uid on all BSD releases, and introduce an
+         additional security fix on POSIX saved-id systems.
+      (#5672, 5674, ITO Tsuyoshi, Juliusz Chroboczek).
   42. Fix memory leaks in ProcXF86VidModeModModeLine and
       ProcXF86VidModeValidateModeLine, and unintialized fields of the mode
       structure in ProcXF86VidModeAddModeLine, VidModeCreateMode, and
@@ -16618,4 +16631,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2611 2003/04/03 16:30:12 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2612 2003/04/03 16:41:15 dawes Exp $
