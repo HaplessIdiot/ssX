@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.13 2000/06/30 18:27:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_funcs.c,v 1.15 2001/10/01 13:44:03 eich Exp $ */
 
 #define FASTER
 #ifndef PSZ
@@ -19,7 +19,7 @@
 #  define WRXB	WRXB_IOP
 #  define WRXW	WRXW_IOP
 #  define WRXL	WRXL_IOP
-#  define ApmWriteSeq(i, v)	wrinx(0x3C4, i, v)
+#  define ApmWriteSeq(i, v)	wrinx(pApm->xport, i, v)
 #else
 #  define APM_SUFF_IOP	""
 #endif

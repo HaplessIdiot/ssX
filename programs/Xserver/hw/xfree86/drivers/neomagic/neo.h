@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.17 2000/11/03 18:46:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.19 2001/10/01 13:44:07 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -264,18 +264,20 @@ typedef struct {
 #define GRAX	0x3CE
 
 /* vga IO functions */
-#define VGArCR(index) hwp->readCrtc(hwp,index)
-#define VGAwCR(index,val) hwp->writeCrtc(hwp,index,val)
-#define VGArGR(index) hwp->readGr(hwp,index)
-#define VGAwGR(index,val) hwp->writeGr(hwp,index,val)
+#define VGArCR(index)		(*hwp->readCrtc)(hwp, index)
+#define VGAwCR(index, val)	(*hwp->writeCrtc)(hwp, index, val)
+#define VGArGR(index)		(*hwp->readGr)(hwp, index)
+#define VGAwGR(index, val)	(*hwp->writeGr)(hwp, index, val)
+#define VGArSQ(index)		(*hwp->readSeq)(hwp, index)
+#define VGAwSQ(index, val)	(*hwp->writeSeq)(hwp, index, val)
 
 /* memory mapped register access macros */
-#define INREG8(addr) MMIO_IN8(nPtr->NeoMMIOBase, (addr))
-#define INREG16(addr) MMIO_IN16(nPtr->NeoMMIOBase, (addr))
-#define INREG(addr) MMIO_IN32(nPtr->NeoMMIOBase, (addr))
-#define OUTREG8(addr, val) MMIO_OUT8(nPtr->NeoMMIOBase, (addr), (val))
-#define OUTREG16(addr, val) MMIO_OUT16(nPtr->NeoMMIOBase, (addr), (val))
-#define OUTREG(addr, val) MMIO_OUT32(nPtr->NeoMMIOBase, (addr), (val))
+#define INREG8(addr)		MMIO_IN8(nPtr->NeoMMIOBase, addr)
+#define INREG16(addr)		MMIO_IN16(nPtr->NeoMMIOBase, addr)
+#define INREG(addr)		MMIO_IN32(nPtr->NeoMMIOBase, addr)
+#define OUTREG8(addr, val)	MMIO_OUT8(nPtr->NeoMMIOBase, addr, val)
+#define OUTREG16(addr, val)	MMIO_OUT16(nPtr->NeoMMIOBase, addr, val)
+#define OUTREG(addr, val)	MMIO_OUT32(nPtr->NeoMMIOBase, addr, val)
 
 /* This swizzle macro is to support the manipulation of cursor masks when
  * the sprite moves off the left edge of the display.  This code is

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.80 2002/01/04 21:22:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.81 2002/01/14 18:02:58 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -414,7 +414,7 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 #endif /* XFree86LOADER */
 
 
-static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
+static unsigned char *find_bios_string(PCITAG Tag, int BIOSbase, char *match1, char *match2)
 {
 #define BIOS_BSIZE 1024
 #define BIOS_BASE  0xc0000
@@ -425,7 +425,7 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
 
    if (!init) {
       init = 1;
-      if (xf86ReadBIOS(BIOSbase, 0, bios, BIOS_BSIZE) != BIOS_BSIZE)
+      if (xf86ReadDomainMemory(Tag, BIOSbase, BIOS_BSIZE, bios) != BIOS_BSIZE)
 	 return NULL;
       if ((bios[0] != 0x55) || (bios[1] != 0xaa))
 	 return NULL;
@@ -1158,7 +1158,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
       usleep(10000);  /* wait a little bit... */
    }
 
-   if (find_bios_string(BIOS_BASE, "S3 86C325",
+   if (find_bios_string(ps3v->PciTag, BIOS_BASE, "S3 86C325",
 			"MELCO WGP-VG VIDEO BIOS") != NULL) {
       if (xf86GetVerbosity())
 	 xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "MELCO BIOS found\n");
@@ -1268,12 +1268,12 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
        * Toshiba Tecra 5x0/7x0 seems to use 28.636 MHz
        * Compaq Armada 7x00 uses 14.318 MHz
        */
-      if (find_bios_string(BIOS_BASE, "COMPAQ M5 BIOS", NULL) != NULL) {
+      if (find_bios_string(ps3v->PciTag, BIOS_BASE, "COMPAQ M5 BIOS", NULL) != NULL) {
 	 if (xf86GetVerbosity())
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "COMPAQ M5 BIOS found\n");
 	 /* ps3v->refclk_fact = 1.0; */
       }
-      else if (find_bios_string(BIOS_BASE, "TOSHIBA Video BIOS", NULL) != NULL) {
+      else if (find_bios_string(ps3v->PciTag, BIOS_BASE, "TOSHIBA Video BIOS", NULL) != NULL) {
 	 if (xf86GetVerbosity())
 	    xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "TOSHIBA Video BIOS found\n");
 	 /* ps3v->refclk_fact = 2.0; */
@@ -3709,7 +3709,7 @@ S3VEnableMmio(ScrnInfoPtr pScrn)
 {
   vgaHWPtr hwp;
   S3VPtr ps3v;
-  int vgaCRIndex, vgaCRReg;
+  IOADDRESS vgaCRIndex, vgaCRReg;
   unsigned char val;
   
   PVERB5("	S3VEnableMmio\n");
@@ -3728,18 +3728,18 @@ S3VEnableMmio(ScrnInfoPtr pScrn)
    * to be set correctly already and MMIO _has_ to be
    * enabled.
    */
-  val = inb(0x3C3);               /*@@@EE*/
-  outb(0x3C3,val | 0x01);
+  val = inb(hwp->PIOOffset + 0x3C3);               /*@@@EE*/
+  outb(hwp->PIOOffset + 0x3C3, val | 0x01);
   /*
    * set CR registers to color mode
    * in mono mode extended CR registers
    * are not accessible. (EE 05/04/99)
    */
-  val = inb(VGA_MISC_OUT_R);      /*@@@EE*/
-  outb(VGA_MISC_OUT_W,val | 0x01);
+  val = inb(hwp->PIOOffset + VGA_MISC_OUT_R);      /*@@@EE*/
+  outb(hwp->PIOOffset + VGA_MISC_OUT_W, val | 0x01);
   vgaHWGetIOBase(hwp);             	/* Get VGA I/O base */
-  vgaCRIndex = hwp->IOBase + 4;
-  vgaCRReg = hwp->IOBase + 5;
+  vgaCRIndex = hwp->PIOOffset + hwp->IOBase + 4;
+  vgaCRReg = vgaCRIndex + 1;
 #if 1
   /*
    * set linear base register to the PCI register values
@@ -3756,14 +3756,13 @@ S3VEnableMmio(ScrnInfoPtr pScrn)
   ps3v->EnableMmioCR53 = inb(vgaCRReg);
   			      	/* Enable new MMIO, if TRIO mmio is already */
 				/* enabled, then it stays enabled. */
-  outb(vgaCRReg, (ps3v->EnableMmioCR53 | 0x08) );
-  outb(VGA_MISC_OUT_W,val);
+  outb(vgaCRReg, ps3v->EnableMmioCR53 | 0x08);
+  outb(hwp->PIOOffset + VGA_MISC_OUT_W, val);
   if (S3_TRIO_3D_SERIES(ps3v->Chipset)) {
     outb(vgaCRIndex, 0x40);
     val = inb(vgaCRReg);
     outb(vgaCRReg, val | 1);  
   }
-  return;
 }
 
 
@@ -3773,26 +3772,24 @@ S3VDisableMmio(ScrnInfoPtr pScrn)
 {
   vgaHWPtr hwp;
   S3VPtr ps3v;
-  int vgaCRIndex, vgaCRReg;
+  IOADDRESS vgaCRIndex, vgaCRReg;
   
   PVERB5("	S3VDisableMmio\n");
   
   hwp = VGAHWPTR(pScrn);
-  
   ps3v = S3VPTR(pScrn);
 
-  vgaCRIndex = hwp->IOBase + 4;
-  vgaCRReg = hwp->IOBase + 5;
+  vgaCRIndex = hwp->PIOOffset + hwp->IOBase + 4;
+  vgaCRReg = vgaCRIndex + 1;
   outb(vgaCRIndex, 0x53);
 				/* Restore register's original state */
-  outb(vgaCRReg,ps3v->EnableMmioCR53 );
+  outb(vgaCRReg, ps3v->EnableMmioCR53);
   if (S3_TRIO_3D_SERIES(ps3v->Chipset)) {
     unsigned char val;
     outb(vgaCRIndex, 0x40);
     val = inb(vgaCRReg);
     outb(vgaCRReg, val | 1);  
   }
-  return;
 }
 
 

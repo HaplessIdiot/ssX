@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.7 2001/05/04 19:05:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vtypes.h,v 1.8 2001/10/28 03:33:44 tsi Exp $ */
 #ifndef _VTYPES_H_
 #define _VTYPES_H_
 
@@ -105,7 +105,7 @@ struct verite_board_t {
     vu16  chip;
 
     /* */
-    vu16 io_base;
+    IOADDRESS io_base, vgaio_base;
     vu32 mmio_base;
     vu32 vmmio_base;
     vu32 mem_size;

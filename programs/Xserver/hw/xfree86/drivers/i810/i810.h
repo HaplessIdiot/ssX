@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.28 2002/01/09 00:37:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.29 2002/01/14 18:43:51 dawes Exp $ */
 
 /*
  * Authors:
@@ -315,11 +315,12 @@ Bool I830BIOSCloseScreen(int scrnIndex, ScreenPtr pScreen);
 
 typedef struct _I810Rec *I810Ptr;
 
-typedef void  (*I810WriteIndexedByteFunc)(I810Ptr pI810, int addr, 
+typedef void  (*I810WriteIndexedByteFunc)(I810Ptr pI810, IOADDRESS addr, 
 					  CARD8 index, CARD8 value);
-typedef CARD8 (*I810ReadIndexedByteFunc)(I810Ptr pI810, int addr, CARD8 index);
-typedef void  (*I810WriteByteFunc)(I810Ptr pI810, int addr, CARD8 value);
-typedef CARD8 (*I810ReadByteFunc)(I810Ptr pI810, int addr);
+typedef CARD8 (*I810ReadIndexedByteFunc)(I810Ptr pI810, IOADDRESS addr,
+					 CARD8 index);
+typedef void  (*I810WriteByteFunc)(I810Ptr pI810, IOADDRESS addr, CARD8 value);
+typedef CARD8 (*I810ReadByteFunc)(I810Ptr pI810, IOADDRESS addr);
 
 
 extern void I810SetTiledMemory(ScrnInfoPtr pScrn, 
@@ -485,6 +486,7 @@ typedef struct _I810Rec {
    int Chipset;
    unsigned long LinearAddr;
    unsigned long MMIOAddr;
+   IOADDRESS ioBase;
    EntityInfoPtr pEnt;
    pciVideoPtr PciInfo;
    PCITAG PciTag;

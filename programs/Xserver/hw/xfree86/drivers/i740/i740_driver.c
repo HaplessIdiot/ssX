@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.34 2001/10/01 13:44:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.35 2002/01/04 21:22:31 tsi Exp $ */
 
 /*
  * Authors:
@@ -501,6 +501,8 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
 
   /* Allocate a vgaHWRec */
   if (!vgaHWGetHWRec(pScrn)) return FALSE;
+  hwp = VGAHWPTR(pScrn);
+  pI740->ioBase = hwp->PIOOffset;
 
   pI740->PciInfo = xf86GetPciInfoForEntity(pI740->pEnt->index);
   pI740->PciTag = pciTag(pI740->PciInfo->bus, pI740->PciInfo->device,
@@ -571,7 +573,6 @@ I740PreInit(ScrnInfoPtr pScrn, int flags) {
   /* We use a programmable clock */
   pScrn->progClock = TRUE;
 
-  hwp = VGAHWPTR(pScrn);
   pI740->cpp = pScrn->bitsPerPixel/8;
 
   /* We have to use PIO to probe, because we haven't mappend yet */
@@ -1736,11 +1737,6 @@ I740ValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags) {
 static Bool
 I740SaveScreen(ScreenPtr pScreen, int mode)
 {
-#if 0
-  Bool unblack = xf86IsUnblank(mode);
-  if (unblack) outw(SRX, 0x0300);
-  else outw(SRX, 0x0100);
-#endif
   return vgaHWSaveScreen(pScreen, mode);
 }
 

@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.57 2001/10/01 13:44:07 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.59 2001/11/30 12:11:57 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2764,9 +2764,8 @@ NeoDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     }
 
     /* Turn the screen on/off */
-    outb(0x3C4, 0x01);
-    SEQ01 |= inb(0x3C5) & ~0x20;
-    outb(0x3C5, SEQ01);
+    SEQ01 |= VGArSQ(0x01) & ~0x20;
+    VGAwSQ(0x01, SEQ01);
 
     /* Turn the LCD on/off */
     LCD_on |= VGArGR(0x20) & ~0x02;

@@ -7,7 +7,7 @@ char rcsId_vmware[] =
 
     "Id: vmware.c,v 1.11 2001/02/23 02:10:39 yoel Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.8 2001/10/28 03:33:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmware.c,v 1.9 2002/01/23 18:48:08 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -389,14 +389,15 @@ VMWAREPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	if (pVMWARE->PciInfo->chipType == PCI_CHIP_VMWARE0710) {
-		pVMWARE->indexReg =
+		pVMWARE->indexReg = pScrn->domainIOBase +
 		   SVGA_LEGACY_BASE_PORT + SVGA_INDEX_PORT*sizeof(uint32);
-		pVMWARE->valueReg =
+		pVMWARE->valueReg = pScrn->domainIOBase +
 		   SVGA_LEGACY_BASE_PORT + SVGA_VALUE_PORT*sizeof(uint32);
 	} else {
-		pVMWARE->indexReg =
+		/* Note:  This setting of valueReg causes unaligned I/O */
+		pVMWARE->indexReg = pScrn->domainIOBase +
 		   pVMWARE->PciInfo->ioBase[0] + SVGA_INDEX_PORT;
-		pVMWARE->valueReg =
+		pVMWARE->valueReg = pScrn->domainIOBase +
 		   pVMWARE->PciInfo->ioBase[0] + SVGA_VALUE_PORT;
 	}
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED,

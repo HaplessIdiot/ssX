@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.159 2002/01/13 00:26:49 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.160 2002/01/15 18:31:19 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -697,15 +697,15 @@ TRIDENTFix1bpp(ScrnInfoPtr pScrn) {
    black. I'm sure there's a better way to do that, just lazy to
    search the docs.  */
 
-#if 1
-   hwp->writeDacWriteAddr(hwp, 0x00);
-   hwp->writeDacData(hwp, 0x00); hwp->writeDacData(hwp, 0x00); hwp->writeDacData(hwp, 0x00);
-   hwp->writeDacWriteAddr(hwp, 0x3F);
-   hwp->writeDacData(hwp, 0x3F); hwp->writeDacData(hwp, 0x3F); hwp->writeDacData(hwp, 0x3F);
-#else
-   outb(0x3C8, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00);
-   outb(0x3C8, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F);
-#endif
+   (*hwp->writeDacWriteAddr)(hwp, 0x00);
+   (*hwp->writeDacData)(hwp, 0x00);
+   (*hwp->writeDacData)(hwp, 0x00);
+   (*hwp->writeDacData)(hwp, 0x00);
+
+   (*hwp->writeDacWriteAddr)(hwp, 0x3F);
+   (*hwp->writeDacData)(hwp, 0x3F);
+   (*hwp->writeDacData)(hwp, 0x3F);
+   (*hwp->writeDacData)(hwp, 0x3F);
 }
 
 Bool
@@ -1040,6 +1040,7 @@ static Bool
 TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 {
     TRIDENTPtr pTrident;
+    vgaHWPtr hwp;
     MessageType from;
     CARD8 videoram, videorammask;
     char *ramtype = NULL, *chipset = NULL;
@@ -1156,8 +1157,10 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
 
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+    hwp = VGAHWPTR(pScrn);
+    vgaHWGetIOBase(hwp);
+    vgaIOBase = hwp->IOBase;
+    pTrident->PIOBase = hwp->PIOOffset;
 
     xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
 
@@ -2315,8 +2318,8 @@ TRIDENTMapMem(ScrnInfoPtr pScrn)
     	pTrident->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
 		pTrident->PciTag, pTrident->IOAddress, mapsize);
     else {
-    	pTrident->IOBase = xf86MapVidMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pTrident->IOAddress, 0x1000);
+    	pTrident->IOBase = xf86MapDomainMemory(pScrn->scrnIndex, VIDMEM_MMIO, 
+		pTrident->PciTag, pTrident->IOAddress, 0x1000);
     	pTrident->IOBase += 0xF00;
     }
 
@@ -3056,9 +3059,9 @@ TRIDENTSaveScreen(ScreenPtr pScreen, int mode)
 static void
 TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
 {
-    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    CARD8 temp = 0;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    IOADDRESS vgaIOBase = pTrident->PIOBase + VGAHWPTR(pScrn)->IOBase;
+    CARD8 temp = 0;
 
     /*
      * Skip MMIO Enable in PC-9821 PCI Trident Card!!
@@ -3068,14 +3071,17 @@ TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
       return;
 
     /* Goto New Mode */
-    outb(0x3C4, 0x0B); inb(0x3C5);
+    outb(pTrident->PIOBase + 0x3C4, 0x0B);
+    inb(pTrident->PIOBase + 0x3C5);
 
     /* Unprotect registers */
-    outb(0x3C4, NewMode1); temp = inb(0x3C5);
-    outb(0x3C5, 0x80);
+    outb(pTrident->PIOBase + 0x3C4, NewMode1);
+    temp = inb(pTrident->PIOBase + 0x3C5);
+    outb(pTrident->PIOBase + 0x3C5, 0x80);
 
     /* Enable MMIO */
-    outb(vgaIOBase + 4, PCIReg); pTrident->REGPCIReg = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 4, PCIReg);
+    pTrident->REGPCIReg = inb(vgaIOBase + 5);
     outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01); /* Enable it */
 
     /* Protect registers */
@@ -3110,9 +3116,10 @@ TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
     OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
 
     /* Protect registers */
-    outb(0x3C4, NewMode1);
-    outb(0x3C5, temp);
+    outb(pTrident->PIOBase + 0x3C4, NewMode1);
+    outb(pTrident->PIOBase + 0x3C5, temp);
 }
+
 /* Initialize VGA Block for Trident Chip on PC-98x1 */
 static void
 PC98TRIDENTInit(ScrnInfoPtr pScrn)

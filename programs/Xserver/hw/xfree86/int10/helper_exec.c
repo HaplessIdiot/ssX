@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.15 2001/03/25 05:32:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_exec.c,v 1.16 2001/04/30 14:34:57 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -18,7 +18,6 @@
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "compiler.h"
-#include "xf86Pci.h"
 #define _INT10_PRIVATE
 #include "int10Defines.h"
 #include "xf86int10.h"
@@ -293,7 +292,7 @@ x_inb(CARD16 port)
 	}
 #endif /* __NOT_YET__ */
     } else {
-	val = inb(port);
+	val = inb(Int10Current->ioBase + port);
 #ifdef PRINT_PORT
 	ErrorF(" inb(%#x) = %2.2x\n", port, val);
 #endif
@@ -315,7 +314,7 @@ x_inw(CARD16 port)
 	(void)getsecs(&sec, &usec);
 	val = (CARD16)(usec / 3);
     } else {
-	val = inw(port);
+	val = inw(Int10Current->ioBase + port);
     }
 #ifdef PRINT_PORT
     ErrorF(" inw(%#x) = %4.4x\n", port, val);
@@ -352,7 +351,7 @@ x_outb(CARD16 port, CARD8 val)
 #ifdef PRINT_PORT
 	ErrorF(" outb(%#x, %2.2x)\n", port, val);
 #endif
-	outb(port, val);
+	outb(Int10Current->ioBase + port, val);
     }
 }
 
@@ -363,7 +362,7 @@ x_outw(CARD16 port, CARD16 val)
     ErrorF(" outw(%#x, %4.4x)\n", port, val);
 #endif
 
-    outw(port, val);
+    outw(Int10Current->ioBase + port, val);
 }
 
 CARD32
@@ -374,7 +373,7 @@ x_inl(CARD16 port)
 #if !defined(_PC) && !defined(_PC_PCI)
     if (!pciCfg1in(port, &val))
 #endif
-    val = inl(port);
+    val = inl(Int10Current->ioBase + port);
 
 #ifdef PRINT_PORT
     ErrorF(" inl(%#x) = %8.8x\n", port, val);
@@ -392,7 +391,7 @@ x_outl(CARD16 port, CARD32 val)
 #if !defined(_PC) && !defined(_PC_PCI)
     if (!pciCfg1out(port, val))
 #endif
-    outl(port, val);
+    outl(Int10Current->ioBase + port, val);
 }
 
 CARD8
@@ -495,27 +494,27 @@ bios_checksum(CARD8 *start, int size)
  * doing int10.
  */
 void
-LockLegacyVGA(int screenIndex,legacyVGAPtr vga)
+LockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga)
 {
-    xf86SetCurrentAccess(FALSE, xf86Screens[screenIndex]);
-    vga->save_msr = inb(0x3CC);
-    vga->save_vse = inb(0x3C3);
-    vga->save_46e8 = inb(0x46e8);
-    vga->save_pos102 = inb(0x102);
-    outb(0x3C2, ~(CARD8)0x03 & vga->save_msr);
-    outb(0x3C3, ~(CARD8)0x01 & vga->save_vse);
-    outb(0x46e8, ~(CARD8)0x08 & vga->save_46e8);
-    outb(0x102, ~(CARD8)0x01 & vga->save_pos102);
-    xf86SetCurrentAccess(TRUE, xf86Screens[screenIndex]);
+    xf86SetCurrentAccess(FALSE, xf86Screens[pInt->scrnIndex]);
+    vga->save_msr    = inb(pInt->ioBase + 0x03CC);
+    vga->save_vse    = inb(pInt->ioBase + 0x03C3);
+    vga->save_46e8   = inb(pInt->ioBase + 0x46E8);
+    vga->save_pos102 = inb(pInt->ioBase + 0x0102);
+    outb(pInt->ioBase + 0x03C2, ~(CARD8)0x03 & vga->save_msr);
+    outb(pInt->ioBase + 0x03C3, ~(CARD8)0x01 & vga->save_vse);
+    outb(pInt->ioBase + 0x46E8, ~(CARD8)0x08 & vga->save_46e8);
+    outb(pInt->ioBase + 0x0102, ~(CARD8)0x01 & vga->save_pos102);
+    xf86SetCurrentAccess(TRUE, xf86Screens[pInt->scrnIndex]);
 }
 
 void
-UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga)
+UnlockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga)
 {
-    xf86SetCurrentAccess(FALSE, xf86Screens[screenIndex]);
-    outb(0x102, vga->save_pos102);
-    outb(0x46e8, vga->save_46e8);
-    outb(0x3C3, vga->save_vse);
-    outb(0x3C2, vga->save_msr);
-    xf86SetCurrentAccess(TRUE, xf86Screens[screenIndex]);
+    xf86SetCurrentAccess(FALSE, xf86Screens[pInt->scrnIndex]);
+    outb(pInt->ioBase + 0x0102, vga->save_pos102);
+    outb(pInt->ioBase + 0x46E8, vga->save_46e8);
+    outb(pInt->ioBase + 0x03C3, vga->save_vse);
+    outb(pInt->ioBase + 0x03C2, vga->save_msr);
+    xf86SetCurrentAccess(TRUE, xf86Screens[pInt->scrnIndex]);
 }

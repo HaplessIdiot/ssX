@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_accel.c,v 1.3 2000/11/14 17:28:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_accel.c,v 1.5 2001/01/29 15:15:44 keithp Exp $ */
 /*
  *      Copyright 2000  Ani Joshi <ajoshi@unixbox.com>
  *
@@ -46,8 +46,10 @@ int curx, cury, cmd_flags;
 
 static void ARKSync(ScrnInfoPtr pScrn)
 {
+	IOADDRESS port = pScrn->domainIOBase + 0x3cb;
+
 	for (;;) {
-		if (!(inb(0x3cb) & 0x40))
+		if (!(inb(port) & 0x40))
 			break;
 	}
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.8 2000/08/04 16:13:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/axpPci.c,v 1.9 2000/08/28 16:04:51 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -67,8 +67,10 @@ pciBusInfo_t axpPci0 = {
 /* numDevices  */	  32,
 /* secondary   */	  FALSE,
 /* primary_bus */	  0,
+#ifdef PowerMAX_OS
 /* ppc_io_base */	  0,
 /* ppc_io_size */	  0,		  
+#endif
 /* funcs       */	  {
 	                    axpPciCfgRead,
 			    axpPciCfgWrite,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.12 2000/06/19 15:01:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.13 2001/06/30 22:41:48 tsi Exp $ */
 /*
  * includes
  */
@@ -35,7 +35,7 @@ verite_initboard(ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
 
-  vu16 iob=pRendition->board.io_base;
+  IOADDRESS iob=pRendition->board.io_base;
   vu8 *vmb;
   vu32 offset;
   vu8 memendian;
@@ -201,7 +201,7 @@ void
 verite_check_csucode(ScrnInfoPtr pScreenInfo)
 {
   renditionPtr pRendition = RENDITIONPTR(pScreenInfo);
-  vu16 iob=pRendition->board.io_base;
+  IOADDRESS iob=pRendition->board.io_base;
   vu8 *vmb;
   vu32 offset;
   int c;

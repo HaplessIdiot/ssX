@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.52 2001/08/18 02:51:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.53 2001/09/18 21:23:23 herrb Exp $ */
 
 /*
  *
@@ -1652,6 +1652,7 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 {
     vgaRegPtr regp;
     vgaHWPtr hwp;
+    pciVideoPtr pvp;
     int i;
     
     /*
@@ -1736,6 +1737,10 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
     /* Initialise the function pointers with the standard VGA versions */
     vgaHWSetStdFuncs(hwp);
 
+    hwp->PIOOffset = scrp->domainIOBase;
+    if ((pvp = xf86GetPciInfoForEntity(scrp->entityList[0])))
+	hwp->Tag = pciTag(pvp->bus, pvp->device, pvp->func);
+
     return TRUE;
 }
 
@@ -1786,8 +1791,8 @@ vgaHWMapMem(ScrnInfoPtr scrp)
 #ifdef DEBUG
     ErrorF("Mapping VGAMem\n");
 #endif
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO_32BIT,
-			      hwp->MapPhys, hwp->MapSize);
+    hwp->Base = xf86MapDomainMemory(scr_index, VIDMEM_MMIO_32BIT, hwp->Tag,
+				    hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
 }
 
@@ -2009,4 +2014,3 @@ vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, xf86ddcSpeed speed)
 	break;
     }
 }
-

@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.25 2001/10/01 13:44:05 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.26 2002/01/04 21:22:29 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -542,6 +542,7 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 
 	pCir = CIRPTR(pScrn);
 	pCir->pScrn = pScrn;
+	pCir->PIOReg = hwp->PIOOffset + 0x3CE;
 
 	/* Get the entity, and make sure it is PCI. */
 	pCir->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);

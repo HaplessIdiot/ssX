@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.201 2001/12/31 18:13:38 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.202 2002/01/14 18:16:52 dawes Exp $ */
 
 /*
  *
@@ -22,7 +22,6 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-#define COMPILER_H_EXTRAS
 #include <fcntl.h>
 #include "sym.h"
 #include "misc.h"
@@ -151,22 +150,16 @@ extern volatile unsigned char *ioBase;
 
 /* XXX Should get all of these from elsewhere */
 
-extern void outb(unsigned short, unsigned char);
-extern void outw(unsigned short, unsigned short);
-extern void outl(unsigned short, unsigned int);
-extern unsigned int inb(unsigned short);
-extern unsigned int inw(unsigned short);
-extern unsigned int inl(unsigned short);
+extern void outb(IOADDRESS, unsigned char);
+extern void outw(IOADDRESS, unsigned short);
+extern void outl(IOADDRESS, unsigned int);
+extern unsigned int inb(IOADDRESS);
+extern unsigned int inw(IOADDRESS);
+extern unsigned int inl(IOADDRESS);
 extern void stl_brx(unsigned long, volatile unsigned char *, int);
 extern void stw_brx(unsigned short, volatile unsigned char *, int);
 extern unsigned long ldl_brx(volatile unsigned char *, int);
 extern unsigned short ldw_brx(volatile unsigned char *, int);
-extern unsigned char rdinx(unsigned short, unsigned char);
-extern void wrinx(unsigned short, unsigned char, unsigned char);
-extern void modinx(unsigned short, unsigned char, unsigned char, unsigned char);
-extern int testrg(unsigned short, unsigned char);
-extern int testinx2(unsigned short, unsigned char, unsigned char);
-extern int testinx(unsigned short, unsigned char);
 #endif
 
 /* XFree86 things */
@@ -184,6 +177,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86MapVidMem)
    SYMFUNC(xf86UnMapVidMem)
    SYMFUNC(xf86MapReadSideEffects)
+   SYMFUNC(xf86GetPciDomain)
+   SYMFUNC(xf86MapDomainMemory)
+   SYMFUNC(xf86MapDomainIO)
+   SYMFUNC(xf86ReadDomainMemory)
    SYMFUNC(xf86UDelay) 
    SYMFUNC(xf86IODelay)
    SYMFUNC(xf86SlowBcopy)
@@ -240,6 +237,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ClaimFbSlot)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
+   SYMFUNC(xf86FormatPciBusNumber)
    SYMFUNC(xf86ParseIsaBusString)
    SYMFUNC(xf86EnableAccess)
    SYMFUNC(xf86SetCurrentAccess)
@@ -938,12 +936,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(stw_u)
    SYMFUNC(write_mem_barrier)
 # endif
-   SYMFUNC(rdinx)
-   SYMFUNC(wrinx)
-   SYMFUNC(modinx)
-   SYMFUNC(testrg)
-   SYMFUNC(testinx2)
-   SYMFUNC(testinx)
 # if defined(Lynx)
    SYMFUNC(_restf14)
    SYMFUNC(_restf17)

@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.20 2002/01/04 21:22:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.21 2002/01/23 18:48:07 dawes Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -940,6 +940,7 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	vgaIOBase  = hwp->IOBase;
 	vgaCRIndex = vgaIOBase + VGA_CRTC_INDEX_OFFSET;
 	vgaCRReg   = vgaIOBase + VGA_CRTC_DATA_OFFSET;
+	pSmi->PIOBase = hwp->PIOOffset;
 
 	xf86ErrorFVerb(VERBLEV, "\tSMI_PreInit vgaCRIndex=%x, vgaIOBase=%x, "
 			"MMIOBase=%x\n", vgaCRIndex, vgaIOBase, hwp->MMIOBase);
@@ -1565,9 +1566,9 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 		xf86ExecX86int10(pSmi->pVbe->pInt10);
 
 		/* Enable linear mode. */
-		outb(VGA_SEQ_INDEX, 0x18);
-		tmp = inb(VGA_SEQ_DATA);
-		outb(VGA_SEQ_DATA, tmp | 0x01);
+		outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x18);
+		tmp = inb(pSmi->PIOBase + VGA_SEQ_DATA);
+		outb(pSmi->PIOBase + VGA_SEQ_DATA, tmp | 0x01);
 
 		/* Enable DPR/VPR registers. */
 		tmp = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x21);
@@ -2413,8 +2414,8 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	}
 	pSmi->Bpp    = pScrn->bitsPerPixel / 8;
 
-	outb(VGA_SEQ_INDEX, 0x17);
-	tmp = inb(VGA_SEQ_DATA);
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x17);
+	tmp = inb(pSmi->PIOBase + VGA_SEQ_DATA);
 	if (pSmi->pci_burst)
 	{
 		new->SR17 = tmp | 0x20;
@@ -2424,17 +2425,17 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		new->SR17 = tmp & ~0x20;
 	}
 
-	outb(VGA_SEQ_INDEX, 0x18);
-	new->SR18 = inb(VGA_SEQ_DATA) | 0x11;
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x18);
+	new->SR18 = inb(pSmi->PIOBase + VGA_SEQ_DATA) | 0x11;
 
-	outb(VGA_SEQ_INDEX, 0x21);
-	new->SR21 = inb(VGA_SEQ_DATA) & ~0x03;
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x21);
+	new->SR21 = inb(pSmi->PIOBase + VGA_SEQ_DATA) & ~0x03;
 
-	outb(VGA_SEQ_INDEX, 0x31);
-	new->SR31 = inb(VGA_SEQ_DATA) & ~0xC0;
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x31);
+	new->SR31 = inb(pSmi->PIOBase + VGA_SEQ_DATA) & ~0xC0;
 
-	outb(VGA_SEQ_INDEX, 0x32);
-	new->SR32 = inb(VGA_SEQ_DATA) & ~0x07;
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x32);
+	new->SR32 = inb(pSmi->PIOBase + VGA_SEQ_DATA) & ~0x07;
 	if (SMI_LYNXM_SERIES(pSmi->Chipset))
 	{
 		new->SR32 |= 0x04;
@@ -2540,11 +2541,10 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		}
 	}
 
-
-    /* CZ 2.11.2001: for gamma correction (TODO: other chipsets?) */
-    new->CCR66 = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x66);
-    if (pSmi->Chipset == SMI_LYNX3DM) {
-        switch (pScrn->bitsPerPixel) {
+	/* CZ 2.11.2001: for gamma correction (TODO: other chipsets?) */
+	new->CCR66 = VGAIN8_INDEX(pSmi, VGA_SEQ_INDEX, VGA_SEQ_DATA, 0x66);
+	if (pSmi->Chipset == SMI_LYNX3DM) {
+	    switch (pScrn->bitsPerPixel) {
 	    case 8:
 		new->CCR66 = (new->CCR66 & 0xF3) | 0x00; /* 6 bits-RAM */
 		break;
@@ -2559,12 +2559,11 @@ SMI_ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    default:
 		LEAVE_PROC("SMI_ModeInit");
 		return(FALSE);
-        }
-    }
-    /* end CZ */
+	    }
+	}
 
-	outb(VGA_SEQ_INDEX, 0x30);
-	if (inb(VGA_SEQ_DATA) & 0x01)
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x30);
+	if (inb(pSmi->PIOBase + VGA_SEQ_DATA) & 0x01)
 	{
 		new->SR21 = 0x00;
 	}
@@ -2950,16 +2949,16 @@ SMI_EnableMmio(ScrnInfoPtr pScrn)
 	vgaHWSetStdFuncs(hwp);
 
 	/* Enable linear mode */
-	outb(VGA_SEQ_INDEX, 0x18);
-	tmp = inb(VGA_SEQ_DATA);
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x18);
+	tmp = inb(pSmi->PIOBase + VGA_SEQ_DATA);
 	pSmi->SR18Value = tmp;					/* PDR#521 */
-	outb(VGA_SEQ_DATA, tmp | 0x11);
+	outb(pSmi->PIOBase + VGA_SEQ_DATA, tmp | 0x11);
 
 	/* Enable 2D/3D Engine and Video Processor */
-	outb(VGA_SEQ_INDEX, 0x21);
-	tmp = inb(VGA_SEQ_DATA);
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x21);
+	tmp = inb(pSmi->PIOBase + VGA_SEQ_DATA);
 	pSmi->SR21Value = tmp;					/* PDR#521 */
-	outb(VGA_SEQ_DATA, tmp & ~0x03);
+	outb(pSmi->PIOBase + VGA_SEQ_DATA, tmp & ~0x03);
 
 	LEAVE_PROC("SMI_EnableMmio");
 }
@@ -2975,12 +2974,12 @@ SMI_DisableMmio(ScrnInfoPtr pScrn)
 	vgaHWSetStdFuncs(hwp);
 
 	/* Disable 2D/3D Engine and Video Processor */
-	outb(VGA_SEQ_INDEX, 0x21);
-	outb(VGA_SEQ_DATA, pSmi->SR21Value);	/* PDR#521 */
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x21);
+	outb(pSmi->PIOBase + VGA_SEQ_DATA, pSmi->SR21Value);	/* PDR#521 */
 
 	/* Disable linear mode */
-	outb(VGA_SEQ_INDEX, 0x18);
-	outb(VGA_SEQ_DATA, pSmi->SR18Value);	/* PDR#521 */
+	outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x18);
+	outb(pSmi->PIOBase + VGA_SEQ_DATA, pSmi->SR18Value);	/* PDR#521 */
 
 	LEAVE_PROC("SMI_DisableMmio");
 }

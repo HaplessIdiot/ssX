@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.19 2001/05/04 19:05:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.20 2002/01/04 21:26:54 tsi Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -19,6 +19,7 @@ typedef struct {
 	CARD32			properties;
 	pciVideoPtr		PciInfo;
 	PCITAG			PciTag;
+	IOADDRESS		PIOReg;
     union {
 	struct lgRec		*lg;
 	struct alpRec		*alp;

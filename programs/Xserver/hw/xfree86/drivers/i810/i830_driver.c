@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.6 2001/11/19 15:33:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.7 2002/01/08 18:59:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1172,132 +1172,73 @@ Bool I830BIOSPreInit (ScrnInfoPtr pScrn,int flags)
    return TRUE;
 }
 
-/*
- * Just adapted from the std* functions in vgaHW.c
- */
-
-static void
-WriteAttr(int index, int value)
-{
-   CARD8 tmp;
-
-   tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
-
-   index |= 0x20;
-   outb(VGA_ATTR_INDEX, index);
-   outb(VGA_ATTR_DATA_W, value);
-}
-
-static int
-ReadAttr(int index)
-{
-   CARD8 tmp;
-
-   tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
-
-   index |= 0x20;
-   outb(VGA_ATTR_INDEX, index);
-   return (inb(VGA_ATTR_DATA_R));
-}
-
-#define WriteMiscOut(value)	outb(VGA_MISC_OUT_W, value)
-#define ReadMiscOut()		inb(VGA_MISC_OUT_R)
-#define WriteSeq(index, value)	outb(VGA_SEQ_INDEX, index);\
-				outb(VGA_SEQ_DATA, value)
-
-static int
-ReadSeq(int index)
-{
-   outb(VGA_SEQ_INDEX, index);
-
-   return (inb(VGA_SEQ_DATA));
-}
-
-#define WriteGr(index, value)	outb(VGA_GRAPH_INDEX, index);\
-				outb(VGA_GRAPH_DATA, value)
-static int
-ReadGr(int index)
-{
-   outb(VGA_GRAPH_INDEX, index);
-
-   return (inb(VGA_GRAPH_DATA));
-}
-
-static void
-SeqReset(Bool start)
-{
-   if(start) {
-      WriteSeq(0x00, 0x01);		/* Synchronous Reset */
-   } else {
-      WriteSeq(0x00, 0x03);			/* End Reset */
-   }
-}
-
 static void
 SaveFonts(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810;
    VESAPtr pVesa;
+   vgaHWPtr hwp;
    unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4, scrn;
 
    pI810 = I810PTR(pScrn);
    pVesa = pI810->vesa;
+   hwp = VGAHWPTR(pScrn);
 
    if(pVesa->fonts != NULL) return;
 
    /* If in graphics mode, don't save anything */
-   attr10 = ReadAttr(0x10);
+   attr10 = (*hwp->readAttr)(hwp, 0x10);
    if(attr10 & 0x01) return;
 
    pVesa->fonts = xalloc(16384);
 
    /* save the registers that are needed here */
-   miscOut = ReadMiscOut();
-   gr4 = ReadGr(0x04);
-   gr5 = ReadGr(0x05);
-   gr6 = ReadGr(0x06);
-   seq2 = ReadSeq(0x02);
-   seq4 = ReadSeq(0x04);
+   miscOut = (*hwp->readMiscOut)(hwp);
+   gr4 = (*hwp->readGr)(hwp, 0x04);
+   gr5 = (*hwp->readGr)(hwp, 0x05);
+   gr6 = (*hwp->readGr)(hwp, 0x06);
+   seq2 = (*hwp->readSeq)(hwp, 0x02);
+   seq4 = (*hwp->readSeq)(hwp, 0x04);
 
    /* Force into colour mode */
-   WriteMiscOut(miscOut | 0x01);
+   (*hwp->writeMiscOut)(hwp, miscOut | 0x01);
 
-   scrn = ReadSeq(0x01) | 0x20;
-   SeqReset(TRUE);
-   WriteSeq(0x01, scrn);
-   SeqReset(FALSE);
+   scrn = (*hwp->readSeq)(hwp, 0x01) | 0x20;
+   (*hwp->writeSeq)(hwp, 0x00, 0x01);
+   (*hwp->writeSeq)(hwp, 0x01, scrn);
+   (*hwp->writeSeq)(hwp, 0x00, 0x03);
 
-   WriteAttr(0x10, 0x01);	/* graphics mode */
+   (*hwp->writeAttr)(hwp, 0x10, 0x01);	/* graphics mode */
 
-   /*font1 */
-   WriteSeq(0x02, 0x04);	/* write to plane 2 */
-   WriteSeq(0x04, 0x06);	/* enable plane graphics */
-   WriteGr(0x04, 0x02); 	/* read plane 2 */
-   WriteGr(0x05, 0x00); 	/* write mode 0, read mode 0 */
-   WriteGr(0x06, 0x05); 	/* set graphics */
+   /* font1 */
+   (*hwp->writeSeq)(hwp, 0x02, 0x04);	/* write to plane 2 */
+   (*hwp->writeSeq)(hwp, 0x04, 0x06);	/* enable plane graphics */
+   (*hwp->writeGr)(hwp, 0x04, 0x02); 	/* read plane 2 */
+   (*hwp->writeGr)(hwp, 0x05, 0x00); 	/* write mode 0, read mode 0 */
+   (*hwp->writeGr)(hwp, 0x06, 0x05); 	/* set graphics */
    slowbcopy_frombus(pVesa->VGAbase, pVesa->fonts, 8192);
 
    /* font2 */
-   WriteSeq(0x02, 0x08);	/* write to plane 3 */
-   WriteSeq(0x04, 0x06);	/* enable plane graphics */
-   WriteGr(0x04, 0x03); 	/* read plane 3 */
-   WriteGr(0x05, 0x00); 	/* write mode 0, read mode 0 */
-   WriteGr(0x06, 0x05); 	/* set graphics */
+   (*hwp->writeSeq)(hwp, 0x02, 0x08);	/* write to plane 3 */
+   (*hwp->writeSeq)(hwp, 0x04, 0x06);	/* enable plane graphics */
+   (*hwp->writeGr)(hwp, 0x04, 0x03); 	/* read plane 3 */
+   (*hwp->writeGr)(hwp, 0x05, 0x00); 	/* write mode 0, read mode 0 */
+   (*hwp->writeGr)(hwp, 0x06, 0x05); 	/* set graphics */
    slowbcopy_frombus(pVesa->VGAbase, pVesa->fonts + 8192, 8192);
 
-   scrn = ReadSeq(0x01) & ~0x20;
-   SeqReset(TRUE);
-   WriteSeq(0x01, scrn);
-   SeqReset(FALSE);
+   scrn = (*hwp->readSeq)(hwp, 0x01) & ~0x20;
+   (*hwp->writeSeq)(hwp, 0x00, 0x01);
+   (*hwp->writeSeq)(hwp, 0x01, scrn);
+   (*hwp->writeSeq)(hwp, 0x00, 0x03);
 
    /* Restore clobbered registers */
-   WriteAttr(0x10, attr10);
-   WriteSeq(0x02, seq2);
-   WriteSeq(0x04, seq4);
-   WriteGr(0x04, gr4);
-   WriteGr(0x05, gr5);
-   WriteGr(0x06, gr6);
-   WriteMiscOut(miscOut);
+   (*hwp->writeAttr)(hwp, 0x10, attr10);
+   (*hwp->writeSeq)(hwp, 0x02, seq2);
+   (*hwp->writeSeq)(hwp, 0x04, seq4);
+   (*hwp->writeGr)(hwp, 0x04, gr4);
+   (*hwp->writeGr)(hwp, 0x05, gr5);
+   (*hwp->writeGr)(hwp, 0x06, gr6);
+   (*hwp->writeMiscOut)(hwp, miscOut);
 }
 
 static void
@@ -1305,65 +1246,67 @@ RestoreFonts(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810;
    VESAPtr pVesa;
+   vgaHWPtr hwp;
    unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4, scrn;
 
    pI810 = I810PTR(pScrn);
    pVesa = pI810->vesa;
+   hwp = VGAHWPTR(pScrn);
 
    if(pVesa->fonts == NULL) return;
 
    /* save the registers that are needed here */
-   miscOut = ReadMiscOut();
-   attr10 = ReadAttr(0x10);
-   gr1 = ReadGr(0x01);
-   gr3 = ReadGr(0x03);
-   gr4 = ReadGr(0x04);
-   gr5 = ReadGr(0x05);
-   gr6 = ReadGr(0x06);
-   gr8 = ReadGr(0x08);
-   seq2 = ReadSeq(0x02);
-   seq4 = ReadSeq(0x04);
+   miscOut = (*hwp->readMiscOut)(hwp);
+   attr10 = (*hwp->readAttr)(hwp, 0x10);
+   gr1 = (*hwp->readGr)(hwp, 0x01);
+   gr3 = (*hwp->readGr)(hwp, 0x03);
+   gr4 = (*hwp->readGr)(hwp, 0x04);
+   gr5 = (*hwp->readGr)(hwp, 0x05);
+   gr6 = (*hwp->readGr)(hwp, 0x06);
+   gr8 = (*hwp->readGr)(hwp, 0x08);
+   seq2 = (*hwp->readSeq)(hwp, 0x02);
+   seq4 = (*hwp->readSeq)(hwp, 0x04);
 
    /* Force into colour mode */
-   WriteMiscOut(miscOut | 0x01);
+   (*hwp->writeMiscOut)(hwp, miscOut | 0x01);
 
-   scrn = ReadSeq(0x01) | 0x20;
-   SeqReset(TRUE);
-   WriteSeq(0x01, scrn);
-   SeqReset(FALSE);
+   scrn = (*hwp->readSeq)(hwp, 0x01) | 0x20;
+   (*hwp->writeSeq)(hwp, 0x00, 0x01);
+   (*hwp->writeSeq)(hwp, 0x01, scrn);
+   (*hwp->writeSeq)(hwp, 0x00, 0x03);
 
-   WriteAttr(0x10, 0x01);	/* graphics mode */
+   (*hwp->writeAttr)(hwp, 0x10, 0x01);	/* graphics mode */
 
-   WriteSeq(0x02, 0x04);   /* write to plane 2 */
-   WriteSeq(0x04, 0x06);   /* enable plane graphics */
-   WriteGr(0x04, 0x02);    /* read plane 2 */
-   WriteGr(0x05, 0x00);    /* write mode 0, read mode 0 */
-   WriteGr(0x06, 0x05);    /* set graphics */
+   (*hwp->writeSeq)(hwp, 0x02, 0x04);   /* write to plane 2 */
+   (*hwp->writeSeq)(hwp, 0x04, 0x06);   /* enable plane graphics */
+   (*hwp->writeGr)(hwp, 0x04, 0x02);    /* read plane 2 */
+   (*hwp->writeGr)(hwp, 0x05, 0x00);    /* write mode 0, read mode 0 */
+   (*hwp->writeGr)(hwp, 0x06, 0x05);    /* set graphics */
    slowbcopy_tobus(pVesa->fonts, pVesa->VGAbase, 8192);
 
-   WriteSeq(0x02, 0x08);   /* write to plane 3 */
-   WriteSeq(0x04, 0x06);   /* enable plane graphics */
-   WriteGr(0x04, 0x03);    /* read plane 3 */
-   WriteGr(0x05, 0x00);    /* write mode 0, read mode 0 */
-   WriteGr(0x06, 0x05);    /* set graphics */
+   (*hwp->writeSeq)(hwp, 0x02, 0x08);   /* write to plane 3 */
+   (*hwp->writeSeq)(hwp, 0x04, 0x06);   /* enable plane graphics */
+   (*hwp->writeGr)(hwp, 0x04, 0x03);    /* read plane 3 */
+   (*hwp->writeGr)(hwp, 0x05, 0x00);    /* write mode 0, read mode 0 */
+   (*hwp->writeGr)(hwp, 0x06, 0x05);    /* set graphics */
    slowbcopy_tobus(pVesa->fonts + 8192, pVesa->VGAbase, 8192);
 
-   scrn = ReadSeq(0x01) & ~0x20;
-   SeqReset(TRUE);
-   WriteSeq(0x01, scrn);
-   SeqReset(FALSE);
+   scrn = (*hwp->readSeq)(hwp, 0x01) & ~0x20;
+   (*hwp->writeSeq)(hwp, 0x00, 0x01);
+   (*hwp->writeSeq)(hwp, 0x01, scrn);
+   (*hwp->writeSeq)(hwp, 0x00, 0x03);
 
    /* restore the registers that were changed */
-   WriteMiscOut(miscOut);
-   WriteAttr(0x10, attr10);
-   WriteGr(0x01, gr1);
-   WriteGr(0x03, gr3);
-   WriteGr(0x04, gr4);
-   WriteGr(0x05, gr5);
-   WriteGr(0x06, gr6);
-   WriteGr(0x08, gr8);
-   WriteSeq(0x02, seq2);
-   WriteSeq(0x04, seq4);
+   (*hwp->writeMiscOut)(hwp, miscOut);
+   (*hwp->writeAttr)(hwp, 0x10, attr10);
+   (*hwp->writeGr)(hwp, 0x01, gr1);
+   (*hwp->writeGr)(hwp, 0x03, gr3);
+   (*hwp->writeGr)(hwp, 0x04, gr4);
+   (*hwp->writeGr)(hwp, 0x05, gr5);
+   (*hwp->writeGr)(hwp, 0x06, gr6);
+   (*hwp->writeGr)(hwp, 0x08, gr8);
+   (*hwp->writeSeq)(hwp, 0x02, seq2);
+   (*hwp->writeSeq)(hwp, 0x04, seq4);
 }
 
 /* End font code */

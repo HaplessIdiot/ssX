@@ -11,7 +11,7 @@ supporting documentation, and that the name of Precision Insight not be
 used in advertising or publicity pertaining to distribution of the
 software without specific, written prior permission.  Precision Insight
 and its suppliers make no representations about the suitability of this
-software for any purpose.  It is provided "as is" without express or 
+software for any purpose.  It is provided "as is" without express or
 implied warranty.
 
 PRECISION INSIGHT DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_bank.c,v 1.1 1999/04/17 07:06:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_bank.c,v 1.2 2000/04/04 19:25:12 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -51,25 +51,27 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 int
 NEOSetReadWrite(ScreenPtr pScreen, int bank)
-{ 
+{
+    IOADDRESS ioBase = xf86Screens[pScreen->myNum]->domainIOBase + 0x3CE;
     unsigned char tmp;
-    
-    outb(0x3CE, 0x11);
-    tmp = inb(0x3CF);
-    outw(0x3CE, (( tmp & 0xFC ) << 8 ) | 0x11);
-    outw(0x3CE, ((((bank << 2) & 0xFF) << 8) | 0x15));
+
+    outb(ioBase, 0x11);
+    tmp = inb(ioBase + 1);
+    outw(ioBase, (( tmp & 0xFC ) << 8 ) | 0x11);
+    outw(ioBase, ((((bank << 2) & 0xFF) << 8) | 0x15));
     return 0;
 }
 
 int
 NEOSetWrite(ScreenPtr pScreen, int bank)
 {
+    IOADDRESS ioBase = xf86Screens[pScreen->myNum]->domainIOBase + 0x3CE;
     unsigned char tmp;
-    
-    outb(0x3CE, 0x11);
-    tmp = inb(0x3CF);
-    outw(0x3CE, ((( tmp & 0xFC ) | 0x01 ) << 8 ) | 0x11);
-    outw(0x3CE, ((((bank << 2) & 0xFF) << 8) | 0x16));
+
+    outb(ioBase, 0x11);
+    tmp = inb(ioBase + 1);
+    outw(ioBase, ((( tmp & 0xFC ) | 0x01 ) << 8 ) | 0x11);
+    outw(ioBase, ((((bank << 2) & 0xFF) << 8) | 0x16));
     return 0;
 }
 
@@ -77,19 +79,12 @@ NEOSetWrite(ScreenPtr pScreen, int bank)
 int
 NEOSetRead(ScreenPtr pScreen, int bank)
 {
+    IOADDRESS ioBase = xf86Screens[pScreen->myNum]->domainIOBase + 0x3CE;
     unsigned char tmp;
-    
-    outb(0x3CE, 0x11);
-    tmp = inb(0x3CF);
-    outw(0x3CE, ((( tmp & 0xFC ) | 0x01 ) << 8 ) | 0x11);
-    outw(0x3CE, ((((bank << 2) & 0xFF) << 8) | 0x15));
+
+    outb(ioBase, 0x11);
+    tmp = inb(ioBase + 1);
+    outw(ioBase, ((( tmp & 0xFC ) | 0x01 ) << 8 ) | 0x11);
+    outw(ioBase, ((((bank << 2) & 0xFF) << 8) | 0x15));
     return 0;
 }
-
-
-
-
-
-
-
-

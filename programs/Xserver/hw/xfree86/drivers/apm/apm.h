@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.16 2001/04/25 17:46:42 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.17 2001/05/04 19:05:31 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -61,6 +61,15 @@
 #endif
 #define TRUE	(1)
 
+#define rdinx(port, ind)	(outb((port), (ind)), inb((port) + 1))
+#define wrinx(port, ind, val)	outb((port), (ind)),  outb((port) + 1, (val))
+#define modinx(port, ind, mask, bits)					\
+    do {								\
+	unsigned char tmp;						\
+	tmp = (rdinx((port), (ind)) & ~(mask)) | ((bits) & (mask));	\
+	wrinx((port), (ind), tmp);					\
+    } while(0)
+
 typedef unsigned char	u8;
 typedef unsigned short	u16;
 typedef unsigned long	u32;
@@ -108,7 +117,7 @@ typedef struct {
     char		*MemMap;
     pointer		BltMap;
     Bool		UnlockCalled;
-    int			xbase;
+    IOADDRESS		iobase, xport, xbase;
     unsigned char	savedSR10;
     CARD8		MiscOut;
     CARD8		c9, d9, db, Rush;

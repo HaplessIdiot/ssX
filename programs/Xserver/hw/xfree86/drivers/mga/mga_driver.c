@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.213 2002/01/04 21:22:32 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.214 2002/01/07 21:50:11 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -740,8 +740,9 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	pBios = &pMga->Bios;
 	pBios2 = &pMga->Bios2;
         
-        /* Get the output mode set by the BIOS */
-        xf86ReadBIOS(pMga->BiosAddress, 0x7ff1, &pMga->BiosOutputMode, sizeof(CARD8)); 
+	/* Get the output mode set by the BIOS */
+	xf86ReadDomainMemory(pMga->PciTag, pMga->BiosAddress + 0x7ff1u,
+			     sizeof(CARD8), &pMga->BiosOutputMode); 
 
 	/*
 	 * If the BIOS address was probed, it was found from the PCI config
@@ -757,7 +758,8 @@ MGAReadBios(ScrnInfoPtr pScrn)
 	    rlen = xf86ReadPciBIOS(0, pMga->PciTag, pMga->FbBaseReg,
 				   BIOS, sizeof(BIOS));
 	else
-	    rlen = xf86ReadBIOS(pMga->BiosAddress, 0, BIOS, sizeof(BIOS));
+	    rlen = xf86ReadDomainMemory(pMga->PciTag, pMga->BiosAddress,
+					sizeof(BIOS), BIOS);
 
 	if (rlen < (BIOS[2] << 9)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING,

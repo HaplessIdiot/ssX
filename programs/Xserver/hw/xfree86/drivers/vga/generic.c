@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.57 2001/10/01 13:44:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.58 2002/01/04 22:03:26 tsi Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -346,12 +346,12 @@ VGAFindIsaDevice(GDevPtr dev)
 
     /* VGA has one more read/write attribute register than EGA */
     (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
-    outb(0x3C0, 0x14 | 0x20);
-    CurrentValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue ^ 0x0F);
-    outb(0x3C0, 0x14 | 0x20);
-    TestValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue);
+    outb(VGA_ATTR_INDEX, 0x14 | 0x20);
+    CurrentValue = inb(VGA_ATTR_DATA_R);
+    outb(VGA_ATTR_DATA_W, CurrentValue ^ 0x0F);
+    outb(VGA_ATTR_INDEX, 0x14 | 0x20);
+    TestValue = inb(VGA_ATTR_DATA_R);
+    outb(VGA_ATTR_DATA_W, CurrentValue);
 
     /* Quit now if no VGA is present */
     if ((CurrentValue ^ 0x0F) != TestValue)
@@ -364,20 +364,22 @@ static Bool
 GenericClockSelect(ScrnInfoPtr pScreenInfo, int ClockNumber)
 {
 #   ifndef PC98_EGC
+        vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
         static CARD8 save_misc;
 
         switch (ClockNumber)
         {
             case CLK_REG_SAVE:
-                save_misc = inb(0x3CC);
+                save_misc = inb(pvgaHW->PIOOffset + VGA_MISC_OUT_R);
                 break;
 
             case CLK_REG_RESTORE:
-                outb(0x3C2, save_misc);
+                outb(pvgaHW->PIOOffset + VGA_MISC_OUT_W, save_misc);
                 break;
 
             default:
-                outb(0x3C2, (save_misc & 0xF3) | ((ClockNumber << 2) & 0x0C));
+                outb(pvgaHW->PIOOffset + VGA_MISC_OUT_W,
+		    (save_misc & 0xF3) | ((ClockNumber << 2) & 0x0C));
                 break;
         }
 #   endif
@@ -493,7 +495,7 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
     if (xf86LoadSubModule(pScreenInfo, "int10")) {
  	xf86Int10InfoPtr pInt;
  	xf86LoaderReqSymLists(int10Symbols, NULL);
-	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "initializing int10\n");
+	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO, "Initializing int10.\n");
 	pInt = xf86InitInt10(pEnt->index);
 	xf86FreeInt10(pInt);
     }
@@ -627,13 +629,15 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
             pScreenInfo->clock[i] = pEnt->device->clock[i];
         From = X_CONFIG;
     } else
-    if (xf86ReturnOptValBool(pGenericPriv->Options,OPTION_VGA_CLOCKS,FALSE)) {
+    if (xf86ReturnOptValBool(pGenericPriv->Options, OPTION_VGA_CLOCKS, FALSE)) {
         pScreenInfo->numClocks = 2;
         pScreenInfo->clock[0] = 25175;
         pScreenInfo->clock[1] = 28322;
     } else {
-        xf86GetClocks(pScreenInfo, 4, GenericClockSelect, GenericProtect,
-            GenericBlankScreen, VGAHW_GET_IOBASE() + 0x0A, 0x08, 1, 28322);
+        xf86GetClocks(pScreenInfo, 4,
+	    GenericClockSelect, GenericProtect, GenericBlankScreen,
+	    pvgaHW->PIOOffset + pvgaHW->IOBase + VGA_IN_STAT_1_OFFSET,
+	    0x08, 1, 28322);
         From = X_PROBED;
     }
     xf86ShowClocks(pScreenInfo, From);
@@ -696,14 +700,14 @@ GenericPreInit(ScrnInfoPtr pScreenInfo, int flags)
 
     if (xf86ReturnOptValBool(pGenericPriv->Options, OPTION_SHADOW_FB, FALSE)) {
 	pGenericPriv->ShadowFB = TRUE;
-	xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
-		   "Using \"Shadow Framebuffer\"\n");
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
+		   "Using \"Shadow Framebuffer\".\n");
     }
 #ifdef SPECIAL_FB_BYTE_ACCESS
     if (!pGenericPriv->ShadowFB && (pScreenInfo->depth == 4)) {
 	xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-		   "Architecture requires special FB access for this depth:"
-		   "  ShadowFB enabled\n");
+	    "Architecture requires special FB access for this depth:"
+	    "  ShadowFB enabled.\n");
  	pGenericPriv->ShadowFB = TRUE;
     }
 #endif
@@ -1423,8 +1427,10 @@ GenericAdjustFrame(int scrnIndex, int x, int y, int flags)
         vgaHWPtr pvgaHW = VGAHWPTR(pScreenInfo);
         int Base = (y * pScreenInfo->displayWidth + x) >> 3;
 
-        outw(pvgaHW->IOBase + 4, (Base & 0x00FF00) | 0x0C);
-        outw(pvgaHW->IOBase + 4, ((Base & 0x0000FF) << 8) | 0x0D);
+        outw(pvgaHW->PIOOffset + pvgaHW->IOBase + 4,
+	     (Base & 0x00FF00) | 0x0C);
+        outw(pvgaHW->PIOOffset + pvgaHW->IOBase + 4,
+	     ((Base & 0x0000FF) << 8) | 0x0D);
 #   endif
 }
 
@@ -1476,8 +1482,9 @@ GenericMapMem(ScrnInfoPtr scrp)
     if (hwp->MapPhys == 0)
 	hwp->MapPhys = VGA_DEFAULT_PHYS_ADDR;
 
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_MMIO,
-			      hwp->MapPhys, hwp->MapSize);
+    hwp->Base = xf86MapDomainMemory(scr_index, VIDMEM_MMIO,
+				      hwp->Tag,
+				      hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
 }
 

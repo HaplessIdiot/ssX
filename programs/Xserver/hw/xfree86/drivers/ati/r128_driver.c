@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.56 2002/01/01 01:04:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.57 2002/01/04 21:22:26 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -535,7 +535,7 @@ static Bool R128GetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		       "Attempting to read Video BIOS from legacy ISA space!\n");
 	    info->BIOSAddr = 0x000c0000;
-	    xf86ReadBIOS(info->BIOSAddr, 0, info->VBIOS, R128_VBIOS_SIZE);
+	    xf86ReadDomainMemory(info->PciTag, info->BIOSAddr, R128_VBIOS_SIZE, info->VBIOS);
 	}
     }
     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa) {

@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.24 2001/10/01 13:44:12 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.25 2002/01/23 17:10:53 dawes Exp $
  */
 
 #include "vesa.h"
@@ -192,13 +192,6 @@ static const char *ddcSymbols[] = {
     "xf86SetDDCproperties",
     NULL
 };
-
-#if 0
-static const char *vgahwSymbols[] = {
-    "vgaHWDPMSSet",
-    NULL
-};
-#endif
 
 #ifdef XFree86LOADER
 
@@ -365,13 +358,13 @@ VESAFindIsaDevice(GDevPtr dev)
     /* There's no need to unlock VGA CRTC registers here */
 
     /* VGA has one more read/write attribute register than EGA */
-    (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
-    outb(0x3C0, 0x14 | 0x20);
-    CurrentValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue ^ 0x0F);
-    outb(0x3C0, 0x14 | 0x20);
-    TestValue = inb(0x3C1);
-    outb(0x3C0, CurrentValue);
+    (void) inb(GenericIOBase + VGA_IN_STAT_1_OFFSET);  /* Reset flip-flop */
+    outb(VGA_ATTR_INDEX, 0x14 | 0x20);
+    CurrentValue = inb(VGA_ATTR_DATA_R);
+    outb(VGA_ATTR_DATA_W, CurrentValue ^ 0x0F);
+    outb(VGA_ATTR_INDEX, 0x14 | 0x20);
+    TestValue = inb(VGA_ATTR_DATA_R);
+    outb(VGA_ATTR_DATA_R, CurrentValue);
 
     /* Quit now if no VGA is present */
     if ((CurrentValue ^ 0x0F) != TestValue)
@@ -1303,16 +1296,20 @@ VESAMapVidMem(ScrnInfoPtr pScrn)
 				    pVesa->pciTag, pScrn->memPhysBase,
 				    pVesa->mapSize);
     else
-	pVesa->base = xf86MapVidMem(pScrn->scrnIndex, 0,
-				    pScrn->memPhysBase, pVesa->mapSize);
+	pVesa->base = xf86MapDomainMemory(pScrn->scrnIndex, 0, pVesa->pciTag,
+					  pScrn->memPhysBase, pVesa->mapSize);
 
     if (pVesa->base) {
 	if (pVesa->mapPhys != 0xa0000)
-	    pVesa->VGAbase = xf86MapVidMem(pScrn->scrnIndex, 0,
-				0xa0000, 0x10000);
+	    pVesa->VGAbase = xf86MapDomainMemory(pScrn->scrnIndex, 0,
+						 pVesa->pciTag,
+						 0xa0000, 0x10000);
 	else
 	    pVesa->VGAbase = pVesa->base;
     }
+
+    pVesa->ioBase = pScrn->domainIOBase;
+
     xf86ErrorFVerb(DEBUG_VERB,
 	"virtual address = %p  -  physical address = %p  -  size = %d\n",
 	    pVesa->base, pScrn->memPhysBase, pVesa->mapSize);
@@ -1344,8 +1341,8 @@ VESAWindowPlanar(ScreenPtr pScreen, CARD32 row, CARD32 offset, int mode,
     int window;
     int mask = 1 << (offset & 3);
 
-    outb(0x3c4, 2);
-    outb(0x3c5, mask);
+    outb(pVesa->ioBase + VGA_SEQ_INDEX, 2);
+    outb(pVesa->ioBase + VGA_SEQ_DATA, mask);
     offset = (offset >> 2) + pVesa->maxBytesPerScanline * row;
     window = offset / (data->WinGranularity * 1024);
     pVesa->windowAoffset = window * data->WinGranularity * 1024;
@@ -1390,10 +1387,13 @@ static void
 VESALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
 		LOCO *colors, VisualPtr pVisual)
 {
-#if 0
-    /* This code works, but is very slow for programs that use it intensively */
     VESAPtr pVesa = VESAGetRec(pScrn);
-    int i, idx, base;
+    int i, idx;
+
+#if 0
+
+    /* This code works, but is very slow for programs that use it intensively */
+    int base;
 
     if (pVesa->pal == NULL)
 	pVesa->pal = xcalloc(1, sizeof(CARD32) * 256);
@@ -1416,28 +1416,27 @@ VESALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
     if (idx - 1 == indices[i - 1])
 	VBESetGetPaletteData(pVesa->pVbe, TRUE, base, idx - base,
 			      pVesa->pal + base, FALSE, TRUE);
+
 #else
-#define WriteDacWriteAddr(value)	outb(VGA_DAC_WRITE_ADDR, value)
-#define WriteDacData(value)		outb(VGA_DAC_DATA, value);
-#undef DACDelay
-#define DACDelay()								\
-	do {									\
-	    unsigned char temp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);	\
-	    temp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);		\
-	} while (0)
-    int i, idx;
+
+#define VESADACDelay()							    \
+    do {								    \
+	(void)inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET); \
+	(void)inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET); \
+    } while (0)
 
     for (i = 0; i < numColors; i++) {
 	idx = indices[i];
-	WriteDacWriteAddr(idx);
-	DACDelay();
-	WriteDacData(colors[idx].red);
-	DACDelay();
-	WriteDacData(colors[idx].green);
-	DACDelay();
-	WriteDacData(colors[idx].blue);
-	DACDelay();
+	outb(pVesa->ioBase + VGA_DAC_WRITE_ADDR, idx);
+	VESADACDelay();
+	outb(pVesa->ioBase + VGA_DAC_DATA, colors[idx].red);
+	VESADACDelay();
+	outb(pVesa->ioBase + VGA_DAC_DATA, colors[idx].green);
+	VESADACDelay();
+	outb(pVesa->ioBase + VGA_DAC_DATA, colors[idx].blue);
+	VESADACDelay();
     }
+
 #endif
 }
 
@@ -1445,64 +1444,64 @@ VESALoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices,
  * Just adapted from the std* functions in vgaHW.c
  */
 static void
-WriteAttr(int index, int value)
+WriteAttr(VESAPtr pVesa, int index, int value)
 {
     CARD8 tmp;
 
-    tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    tmp = inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
 
     index |= 0x20;
-    outb(VGA_ATTR_INDEX, index);
-    outb(VGA_ATTR_DATA_W, value);
+    outb(pVesa->ioBase + VGA_ATTR_INDEX, index);
+    outb(pVesa->ioBase + VGA_ATTR_DATA_W, value);
 }
 
 static int
-ReadAttr(int index)
+ReadAttr(VESAPtr pVesa, int index)
 {
     CARD8 tmp;
 
-    tmp = inb(VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
+    tmp = inb(pVesa->ioBase + VGA_IOBASE_COLOR + VGA_IN_STAT_1_OFFSET);
 
     index |= 0x20;
-    outb(VGA_ATTR_INDEX, index);
-    return (inb(VGA_ATTR_DATA_R));
+    outb(pVesa->ioBase + VGA_ATTR_INDEX, index);
+    return (inb(pVesa->ioBase + VGA_ATTR_DATA_R));
 }
 
-#define WriteMiscOut(value)	outb(VGA_MISC_OUT_W, value)
-#define ReadMiscOut()		inb(VGA_MISC_OUT_R)
-#define WriteSeq(index, value)	outb(VGA_SEQ_INDEX, index);\
-				outb(VGA_SEQ_DATA, value)
+#define WriteMiscOut(value)	outb(pVesa->ioBase + VGA_MISC_OUT_W, value)
+#define ReadMiscOut()		inb(pVesa->ioBase + VGA_MISC_OUT_R)
+#define WriteSeq(index, value)	outb(pVesa->ioBase + VGA_SEQ_INDEX, index);\
+				outb(pVesa->ioBase + VGA_SEQ_DATA, value)
 
 static int
-ReadSeq(int index)
+ReadSeq(VESAPtr pVesa, int index)
 {
-    outb(VGA_SEQ_INDEX, index);
+    outb(pVesa->ioBase + VGA_SEQ_INDEX, index);
 
-    return (inb(VGA_SEQ_DATA));
+    return (inb(pVesa->ioBase + VGA_SEQ_DATA));
 }
 
-#define WriteGr(index, value)	outb(VGA_GRAPH_INDEX, index);\
-				outb(VGA_GRAPH_DATA, value)
+#define WriteGr(index, value)	outb(pVesa->ioBase + VGA_GRAPH_INDEX, index);\
+				outb(pVesa->ioBase + VGA_GRAPH_DATA, value)
 static int
-ReadGr(int index)
+ReadGr(VESAPtr pVesa, int index)
 {
-    outb(VGA_GRAPH_INDEX, index);
+    outb(pVesa->ioBase + VGA_GRAPH_INDEX, index);
 
-    return (inb(VGA_GRAPH_DATA));
+    return (inb(pVesa->ioBase + VGA_GRAPH_DATA));
 }
 
-#define WriteCrtc(index, value)	outb(VGA_CRTC_INDEX_OFFSET, index);\
-				outb(VGA_CRTC_DATA_OFFSET, value)
+#define WriteCrtc(index, value)	outb(pVesa->ioBase + VGA_CRTC_INDEX_OFFSET, index);\
+				outb(pVesa->ioBase + VGA_CRTC_DATA_OFFSET, value)
 
 static int
-ReadCrtc(int index)
+ReadCrtc(VESAPtr pVesa, int index)
 {
-    outb(VGA_CRTC_INDEX_OFFSET, index);
-    return inb(VGA_CRTC_DATA_OFFSET);
+    outb(pVesa->ioBase + VGA_CRTC_INDEX_OFFSET, index);
+    return inb(pVesa->ioBase + VGA_CRTC_DATA_OFFSET);
 }
 
 static void
-SeqReset(Bool start)
+SeqReset(VESAPtr pVesa, Bool start)
 {
     if (start) {
 	WriteSeq(0x00, 0x01);		/* Synchronous Reset */
@@ -1522,7 +1521,7 @@ SaveFonts(ScrnInfoPtr pScrn)
 	return;
 
     /* If in graphics mode, don't save anything */
-    attr10 = ReadAttr(0x10);
+    attr10 = ReadAttr(pVesa, 0x10);
     if (attr10 & 0x01)
 	return;
 
@@ -1530,21 +1529,21 @@ SaveFonts(ScrnInfoPtr pScrn)
 
     /* save the registers that are needed here */
     miscOut = ReadMiscOut();
-    gr4 = ReadGr(0x04);
-    gr5 = ReadGr(0x05);
-    gr6 = ReadGr(0x06);
-    seq2 = ReadSeq(0x02);
-    seq4 = ReadSeq(0x04);
+    gr4 = ReadGr(pVesa, 0x04);
+    gr5 = ReadGr(pVesa, 0x05);
+    gr6 = ReadGr(pVesa, 0x06);
+    seq2 = ReadSeq(pVesa, 0x02);
+    seq4 = ReadSeq(pVesa, 0x04);
 
     /* Force into colour mode */
     WriteMiscOut(miscOut | 0x01);
 
-    scrn = ReadSeq(0x01) | 0x20;
-    SeqReset(TRUE);
+    scrn = ReadSeq(pVesa, 0x01) | 0x20;
+    SeqReset(pVesa, TRUE);
     WriteSeq(0x01, scrn);
-    SeqReset(FALSE);
+    SeqReset(pVesa, FALSE);
 
-    WriteAttr(0x10, 0x01);	/* graphics mode */
+    WriteAttr(pVesa, 0x10, 0x01);	/* graphics mode */
 
     /*font1 */
     WriteSeq(0x02, 0x04);	/* write to plane 2 */
@@ -1562,13 +1561,13 @@ SaveFonts(ScrnInfoPtr pScrn)
     WriteGr(0x06, 0x05);	/* set graphics */
     slowbcopy_frombus(pVesa->VGAbase, pVesa->fonts + 8192, 8192);
 
-    scrn = ReadSeq(0x01) & ~0x20;
-    SeqReset(TRUE);
+    scrn = ReadSeq(pVesa, 0x01) & ~0x20;
+    SeqReset(pVesa, TRUE);
     WriteSeq(0x01, scrn);
-    SeqReset(FALSE);
+    SeqReset(pVesa, FALSE);
 
     /* Restore clobbered registers */
-    WriteAttr(0x10, attr10);
+    WriteAttr(pVesa, 0x10, attr10);
     WriteSeq(0x02, seq2);
     WriteSeq(0x04, seq4);
     WriteGr(0x04, gr4);
@@ -1591,25 +1590,25 @@ RestoreFonts(ScrnInfoPtr pScrn)
 
     /* save the registers that are needed here */
     miscOut = ReadMiscOut();
-    attr10 = ReadAttr(0x10);
-    gr1 = ReadGr(0x01);
-    gr3 = ReadGr(0x03);
-    gr4 = ReadGr(0x04);
-    gr5 = ReadGr(0x05);
-    gr6 = ReadGr(0x06);
-    gr8 = ReadGr(0x08);
-    seq2 = ReadSeq(0x02);
-    seq4 = ReadSeq(0x04);
+    attr10 = ReadAttr(pVesa, 0x10);
+    gr1 = ReadGr(pVesa, 0x01);
+    gr3 = ReadGr(pVesa, 0x03);
+    gr4 = ReadGr(pVesa, 0x04);
+    gr5 = ReadGr(pVesa, 0x05);
+    gr6 = ReadGr(pVesa, 0x06);
+    gr8 = ReadGr(pVesa, 0x08);
+    seq2 = ReadSeq(pVesa, 0x02);
+    seq4 = ReadSeq(pVesa, 0x04);
 
     /* Force into colour mode */
     WriteMiscOut(miscOut | 0x01);
 
-    scrn = ReadSeq(0x01) | 0x20;
-    SeqReset(TRUE);
+    scrn = ReadSeq(pVesa, 0x01) | 0x20;
+    SeqReset(pVesa, TRUE);
     WriteSeq(0x01, scrn);
-    SeqReset(FALSE);
+    SeqReset(pVesa, FALSE);
 
-    WriteAttr(0x10, 0x01);	/* graphics mode */
+    WriteAttr(pVesa, 0x10, 0x01);	/* graphics mode */
     if (pScrn->depth == 4) {
 	/* GJA */
 	WriteGr(0x03, 0x00);	/* don't rotate, write unmodified */
@@ -1631,14 +1630,14 @@ RestoreFonts(ScrnInfoPtr pScrn)
     WriteGr(0x06, 0x05);    /* set graphics */
     slowbcopy_tobus(pVesa->fonts + 8192, pVesa->VGAbase, 8192);
 
-    scrn = ReadSeq(0x01) & ~0x20;
-    SeqReset(TRUE);
+    scrn = ReadSeq(pVesa, 0x01) & ~0x20;
+    SeqReset(pVesa, TRUE);
     WriteSeq(0x01, scrn);
-    SeqReset(FALSE);
+    SeqReset(pVesa, FALSE);
 
     /* restore the registers that were changed */
     WriteMiscOut(miscOut);
-    WriteAttr(0x10, attr10);
+    WriteAttr(pVesa, 0x10, attr10);
     WriteGr(0x01, gr1);
     WriteGr(0x03, gr3);
     WriteGr(0x04, gr4);
@@ -1653,21 +1652,22 @@ static Bool
 VESASaveScreen(ScreenPtr pScreen, int mode)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    VESAPtr pVesa = VESAGetRec(pScrn);
     Bool on = xf86IsUnblank(mode);
 
     if (on)
 	SetTimeSinceLastInputEvent();
 
     if (pScrn->vtSema) {
-	unsigned char scrn = ReadSeq(0x01);
+	unsigned char scrn = ReadSeq(pVesa, 0x01);
 
 	if (on)
 	    scrn &= ~0x20;
 	else
 	    scrn |= 0x20;
-	SeqReset(TRUE);
+	SeqReset(pVesa, TRUE);
 	WriteSeq(0x01, scrn);
-	SeqReset(FALSE);
+	SeqReset(pVesa, FALSE);
     }
 
     return (TRUE);
@@ -1676,10 +1676,9 @@ VESASaveScreen(ScreenPtr pScreen, int mode)
 static int 
 VESABankSwitch(ScreenPtr pScreen, unsigned int iBank)
 {
-    VESAPtr pVesa;
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    VESAPtr pVesa = VESAGetRec(pScrn);
 
-    pVesa = VESAGetRec(pScrn);
     if (pVesa->curBank == iBank)
 	return (0);
     if (!VBEBankSwitch(pVesa->pVbe, iBank, 0))
@@ -1756,10 +1755,7 @@ static void
 VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
                 int flags)
 {
-#if 0
-   /* XXX How can this work without the vgahw module being initialized? */
-   vgaHWDPMSSet(pScrn, mode, flags);
-#else
+    VESAPtr pVesa = VESAGetRec(pScrn);
     unsigned char seq1 = 0, crtc17 = 0;
 
     if (!pScrn->vtSema)
@@ -1788,13 +1784,12 @@ VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
 	    break;
     }
     WriteSeq(0x00, 0x01);		  /* Synchronous Reset */
-    seq1 |= ReadSeq(0x01) & ~0x20;
+    seq1 |= ReadSeq(pVesa, 0x01) & ~0x20;
     WriteSeq(0x01, seq1);
-    crtc17 |= ReadCrtc(0x17) & ~0x80;
+    crtc17 |= ReadCrtc(pVesa, 0x17) & ~0x80;
     usleep(10000);
     WriteCrtc(0x17, crtc17);
     WriteSeq(0x00, 0x03);		  /* End Reset */
-#endif
 }
 
 

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.64 2002/01/08 18:59:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.65 2002/01/09 16:02:29 dawes Exp $ */
 
 /*
  * Authors:
@@ -523,6 +523,8 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    /* Allocate a vgaHWRec */
    if (!vgaHWGetHWRec(pScrn)) return FALSE;
+   hwp = VGAHWPTR(pScrn);
+   pI810->ioBase = hwp->PIOOffset;
 
    pI810->PciInfo = xf86GetPciInfoForEntity(pI810->pEnt->index);
    pI810->PciTag = pciTag(pI810->PciInfo->bus, pI810->PciInfo->device,
@@ -575,7 +577,6 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
    /* We use a programmable clock */
    pScrn->progClock = TRUE;
 
-   hwp = VGAHWPTR(pScrn);
    pI810->cpp = pScrn->bitsPerPixel/8;
 
    /* Process the options */
