@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.2 1999/04/05 07:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhwstub.c,v 1.3 1999/04/11 13:11:01 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86cmap.h"
@@ -70,12 +70,6 @@ void*
 fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 {
 	return NULL;
-}
-
-int
-fbdevHWLinearOffset(ScrnInfoPtr pScrn)
-{
-	return 0;
 }
 
 int
