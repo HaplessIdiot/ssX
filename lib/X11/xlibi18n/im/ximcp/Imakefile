@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #include "../../Xi18nLib.conf"
 
  EXTRA_INCLUDES = -I../../..
