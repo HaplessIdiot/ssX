@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.47 1999/06/12 07:18:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.48 1999/06/13 05:18:46 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -377,7 +377,7 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
      * supported on these platforms.
      */
     depth24flags &= ~(SupportConvert32to24 | SupportConvert32to24 |
-		      PreferConvert24to32 | PreferConvert32to24)
+		      PreferConvert24to32 | PreferConvert32to24);
 #endif
      
     if (xf86FbBpp > 0) {
