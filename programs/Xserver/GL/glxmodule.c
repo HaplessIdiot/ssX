@@ -25,13 +25,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.7 2000/01/29 17:16:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glxmodule.c,v 1.8 2000/02/18 16:23:12 dawes Exp $ */
 
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/glxmodule.c,v 1.10 1999/06/08 11:01:04 faith Exp $
  */
 
 #include "xf86Module.h"

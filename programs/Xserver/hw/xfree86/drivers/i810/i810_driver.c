@@ -25,13 +25,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.2 2000/02/15 18:01:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.3 2000/02/21 19:23:03 dawes Exp $ */
 
 /*
  * Authors:
  *   Keith Whitwell <keithw@precisioninsight.com>
  *
- * $PI$
  */
 
 /*

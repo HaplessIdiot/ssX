@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.17 2000/02/18 16:23:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.19 2000/02/22 02:00:52 mvojkovi Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -52,7 +52,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   overlay planes
  *   DGA
  *
- * $PI$
  */
 
 

@@ -24,14 +24,13 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/GL/dri/drimodule.c,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/drimodule.c,v 1.2 2000/01/25 18:37:36 dawes Exp $ */
 
 /*
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Rickard E. Faith <faith@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/drimodule.c,v 1.1 1999/06/07 12:55:30 faith Exp $
  */
 
 #include "xf86Module.h"

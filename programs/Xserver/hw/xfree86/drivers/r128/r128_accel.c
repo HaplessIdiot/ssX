@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.5 2000/02/12 20:45:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.6 2000/02/13 19:33:55 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -68,7 +68,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  *                  method slows down common operations.  Perhaps additional
  *                  XAA flags to use this only for some operations would help.
  *
- * $PI$
  */
 
 #define R128_CLIPPING   1

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.3 2000/02/11 17:25:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/dri/XF86dri.c,v 1.4 2000/02/14 06:27:11 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/XF86dri.c,v 1.14 1999/06/16 20:08:33 faith Exp $
  */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */

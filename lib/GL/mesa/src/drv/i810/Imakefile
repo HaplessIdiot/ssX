@@ -1,4 +1,3 @@
-XCOMM $PI:$
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx

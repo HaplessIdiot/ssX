@@ -25,13 +25,12 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.10 2000/02/15 18:01:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.12 2000/02/22 02:00:50 mvojkovi Exp $ */
 
 /*
  * Authors:
  *   Daryll Strauss <daryll@precisioninsight.com>
  *
- * $PI$
  */
 
 /*

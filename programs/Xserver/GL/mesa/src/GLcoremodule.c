@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/src/GLcoremodule.c,v 1.3 1999/06/14 07:31:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/src/GLcoremodule.c,v 1.4 2000/02/18 16:23:12 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/mesa/src/GLcoremodule.c,v 1.6 1999/05/27 03:43:46 jens Exp $
  */
 
 #include "xf86Module.h"

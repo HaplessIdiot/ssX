@@ -34,7 +34,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *        Kevin E. Martin <kevin@precisioninsight.com> 
  *   
  *
- * $PI$
  */
 
 /* I/O register offsets 

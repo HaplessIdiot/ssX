@@ -29,7 +29,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Keith Whitwell <keithw@precisioninsight.com>
  *
- * $PI: $
  */
 
 #ifdef GLX_DIRECT_RENDERING
