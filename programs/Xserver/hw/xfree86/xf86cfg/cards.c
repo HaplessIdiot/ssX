@@ -127,10 +127,12 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	}
 
 	/* Search for vendor in xf86PCIVendorInfo */
-	for (ivnd = 0; xf86PCIVendorInfo[ivnd].VendorID; ivnd++)
-	    if (vendor == xf86PCIVendorInfo[ivnd].VendorID)
-		break;
-	if (xf86PCIVendorInfo[ivnd].VendorID) {
+	if (xf86PCIVendorInfo) {
+	    for (ivnd = 0; xf86PCIVendorInfo[ivnd].VendorID; ivnd++)
+		if (vendor == xf86PCIVendorInfo[ivnd].VendorID)
+		    break;
+	}
+	if (xf86PCIVendorInfo && xf86PCIVendorInfo[ivnd].VendorID) {
 	    check[ichk].valid_vendor = 1;
 	    check[ichk].ivendor = ivnd;
 	}
@@ -143,7 +145,8 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	    continue;
 	}
 
-	if ((pDev = xf86PCIVendorInfo[ivnd].Device) != NULL) {
+	if (xf86PCIVendorInfo &&
+	    (pDev = xf86PCIVendorInfo[ivnd].Device) != NULL) {
 	    if (check[ichk].chipsets == NULL) {
 		for (j = 0; pDev[j]; j++)
 		    ;
@@ -179,7 +182,7 @@ CheckChipsets(xf86cfgModuleOptions *opts, int *err)
 	    ++*err;
 	}
 	for (j = 0; j < check[i].num_chipsets; j++) {
-	    if (!check[i].chipsets[j]) {
+	    if (xf86PCIVendorInfo && !check[i].chipsets[j]) {
 		CheckMsg(CHECKER_CHIPSET_NOT_SUPPORTED,
 			 "NOTICE chipset \"%s\" (0x%x) not listed as supported.\n",
 			 xf86PCIVendorInfo[check[i].ivendor].Device[j]->DeviceName,
@@ -218,18 +221,20 @@ ReadCardsDatabase(void)
 		    if (ivendor == 0)
 			ivendor = opts->vendor;
 
-		    for (i = 0; xf86PCIVendorInfo[i].VendorName; i++)
-			if (ivendor == xf86PCIVendorInfo[i].VendorID) {
-			    vendor = xf86PCIVendorInfo[i].VendorName;
-			    break;
-			}
-		    if (xf86PCIVendorInfo[i].VendorName) {
-			if ((pDev = xf86PCIVendorInfo[i].Device)) {
-			    for (j = 0; pDev[j]; j++)
-				if (idevice == pDev[j]->DeviceID) {
-				    device = pDev[j]->DeviceName;
-				    break;
-				}
+		    if (xf86PCIVendorInfo) {
+			for (i = 0; xf86PCIVendorInfo[i].VendorName; i++)
+			    if (ivendor == xf86PCIVendorInfo[i].VendorID) {
+				vendor = xf86PCIVendorInfo[i].VendorName;
+				break;
+			    }
+			if (xf86PCIVendorInfo[i].VendorName) {
+			    if ((pDev = xf86PCIVendorInfo[i].Device)) {
+				for (j = 0; pDev[j]; j++)
+				    if (idevice == pDev[j]->DeviceID) {
+					device = pDev[j]->DeviceName;
+					break;
+				    }
+			    }
 			}
 		    }
 
