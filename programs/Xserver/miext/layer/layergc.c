@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.2 2001/06/04 09:45:41 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layergc.c,v 1.3 2001/06/05 01:11:07 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -177,7 +177,7 @@ layerCopyClip(GCPtr pGCDst, GCPtr pGCSrc)
 {
     layerGCPriv(pGCDst);
     LayerUnwrap (pGCDst,pLayGC,funcs);
-    (*pGCDst->funcs->CopyClip) (pGCSrc, pGCDst);
+    (*pGCDst->funcs->CopyClip) (pGCDst, pGCSrc);
     LayerWrap(pGCDst,pLayGC,funcs,&layerGCFuncs);
 }
 
