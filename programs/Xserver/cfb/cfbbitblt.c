@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.14 2001/12/14 19:59:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.15 2003/07/16 01:38:36 dawes Exp $ */
 
 /*
 
@@ -331,7 +331,7 @@ cfbBitBlt (
 }
 
 
-RegionPtr
+static RegionPtr
 cfbCopyPlaneReduce (
     register DrawablePtr pSrcDrawable,
     register DrawablePtr pDstDrawable,
