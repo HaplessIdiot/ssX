@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.14 2000/02/08 13:13:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.15 2000/03/05 23:47:50 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -9,14 +9,13 @@
 #include "xaa.h"
 #include "xf86i2c.h"
 
-#if 0
-#define CIR_DEBUG
-#endif
-
 /* Card-specific driver information */
 #define CIRPTR(p) ((CirPtr)((p)->driverPrivate))
 struct lgRec;
 struct alpRec;
+
+typedef enum {
+  LCD_NONE, LCD_DUAL_MONO, LCD_UNKNOWN, LCD_DSTN, LCD_TFT } LCDType;
 
 typedef struct {
 	ScrnInfoPtr			pScrn;
@@ -40,7 +39,7 @@ typedef struct {
 	long				FbMapSize;
 	long				IoMapSize;
 	int					MinClock;
-	int					MaxClock;
+	int   				MaxClock;
 	Bool				NoAccel;
 	Bool				HWCursor;
 	Bool				UseMMIO;
@@ -60,6 +59,11 @@ typedef struct {
         unsigned char *         ShadowPtr;
         void	                (*PointerMoved)(int index, int x, int y);
         int                     pitch;
+
+        unsigned char **        ScanlineColorExpandBuffers;
+
+        LCDType                 lcdType;
+        int                     lcdWidth, lcdHeight;
 } CirRec, *CirPtr;
 
 /* CirrusClk.c */

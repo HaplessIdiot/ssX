@@ -1,4 +1,5 @@
 XFree86 4.0.1d (xx September 2000)
+ 707. Support Cirrus Logic 7548 chip (#4146, David Monniaux).
  706. Fix typos in Xt man pages (#4156, Carlos Santos).
  705. Fix libdps bug (#4154, Juliusz Chroboczek).
  704. Xterm patch #146 (#4144, Thomas Dickey).
@@ -11153,4 +11154,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1316 2000/09/22 10:42:04 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1317 2000/09/22 11:06:43 alanh Exp $

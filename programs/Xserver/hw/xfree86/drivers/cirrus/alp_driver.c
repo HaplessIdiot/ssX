@@ -2,6 +2,8 @@
  * Driver for CL-GD5480.
  * Itai Nahshon.
  *
+ * Support for the CL-GD7548: David Monniaux
+ *
  * This is mainly a cut & paste from the MGA driver.
  * Original autors and contributors list include:
  *    Radoslaw Kapitan, Andrew Vanderstock, Dirk Hohndel,
@@ -9,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.10 2000/04/17 16:29:59 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.13 2000/09/19 12:46:16 eich Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -44,6 +46,12 @@
 
 /* Needed by the Shadow Framebuffer */
 #include "shadowfb.h"
+
+/* Note: can HWCUR64 be set even though the hw cursor is disabled for
+   want of memory ? */
+
+/* Framebuffer memory manager */
+#include "xf86fbman.h"
 
 /*
  * If using cfb, cfb.h is required.  Select the others for the bpp values
@@ -111,6 +119,8 @@ static void	AlpSave(ScrnInfoPtr pScrn);
 static void	AlpRestore(ScrnInfoPtr pScrn);
 static Bool	AlpModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
+static void AlpProbeLCD(ScrnInfoPtr pScrn);
+
 static void AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq);
 
 #ifdef DPMSExtension
@@ -151,6 +161,7 @@ static int unsupp_MaxClocks[] = {      0,      0,      0,      0,      0 }; */
 static int gd5430_MaxClocks[] = {  85500,  85500,  50000,  28500,      0 };
 static int gd5446_MaxClocks[] = { 135100, 135100,  85500,  85500,      0 };
 static int gd5480_MaxClocks[] = { 135100, 200000, 200000, 135100, 135100 };
+static int gd7548_MaxClocks[] = {  80100,  80100,  80100,  80100,  80100 };
 
 /*
  * List of symbols from other modules that this module references.  This
@@ -357,10 +368,18 @@ AlpCountRam(ScrnInfoPtr pScrn)
     pCir->IoMapSize = 0x4000;	/* 16K for moment */
     if (!CirMapMem(pCir, pScrn->scrnIndex))
 	return 0;
-    
-    if (pCir->UseMMIO)
+
+    /* The 754x supports MMIO for the BitBlt engine but
+       not for the VGA registers */
+    switch (pCir->Chipset)
+    {
+    case PCI_CHIP_GD7548:
+      break;
+    default:
+      if (pCir->UseMMIO)
 	vgaHWSetMmioFuncs(hwp, pCir->IOBase, -0x3C0);
-    
+    }
+
     if (pCir->chip.alp->sr0f != (CARD32)-1) {
 	from = X_CONFIG;
 	hwp->writeSeq(hwp, 0x0F, pCir->chip.alp->sr0f);
@@ -447,6 +466,10 @@ AlpCountRam(ScrnInfoPtr pScrn)
 	}
 	if (pCir->chip.alp->sr17 & 0x80)
 	    videoram <<= 1;
+	break;
+	
+    case PCI_CHIP_GD7548:
+	videoram = 1024; /* TODO: actual size */
 	break;
     }
 
@@ -782,6 +805,9 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
  	xf86SetDDCproperties(pScrn,xf86PrintEDID(
  	    xf86DoEDID_DDC2(pScrn->scrnIndex,pCir->I2CPtr1)));
  
+     /* Probe the possible LCD display */
+     AlpProbeLCD(pScrn);
+
 #ifdef CIRPROBEI2C
      CirProbeI2C(pScrn->scrnIndex);
 #endif
@@ -870,7 +896,12 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 
 	if ((pCir->chip.alp->sr0f & 0x18) > 0x8)
 	  pCir->properties |= HWCUR64;
+
 	switch (pCir->Chipset) {
+        case PCI_CHIP_GD7548:
+	  pCir->properties |= HWCUR64;
+	  pCir->properties |= ACCEL_AUTOSTART;
+	  break;
 	case PCI_CHIP_GD5436:
 	case PCI_CHIP_GD5480:
 	  pCir->properties |= ACCEL_AUTOSTART;
@@ -912,6 +943,9 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 		case PCI_CHIP_GD5480:
 			p = gd5480_MaxClocks;
 			break;
+		case PCI_CHIP_GD7548:
+		        p = gd7548_MaxClocks;
+                        break;
 		}
 		if (!p)
 			return FALSE;
@@ -961,7 +995,15 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 	clockRanges->ClockDivFactor = 1;
 	clockRanges->PrivFlags = 0;
 
-	pCir->Rounding = 128 >> pCir->BppShift;
+	switch (pCir->Chipset)
+	{
+	case PCI_CHIP_GD7548:
+	  pCir->Rounding = 1;
+	  break;
+
+	default:
+	  pCir->Rounding = 128 >> pCir->BppShift;
+        }
 
 #if 0
 	if (pCir->Chipset != PCI_CHIP_GD5446 &&
@@ -1107,7 +1149,10 @@ AlpSave(ScrnInfoPtr pScrn)
 	pCir->chip.alp->ModeReg.ExtVga[SR0E] = pCir->chip.alp->SavedReg.ExtVga[SR0E] = hwp->readSeq(hwp, 0x0E);
 	pCir->chip.alp->ModeReg.ExtVga[SR12] = pCir->chip.alp->SavedReg.ExtVga[SR12] = hwp->readSeq(hwp, 0x12);
 	pCir->chip.alp->ModeReg.ExtVga[SR13] = pCir->chip.alp->SavedReg.ExtVga[SR13] = hwp->readSeq(hwp, 0x13);
+	pCir->chip.alp->ModeReg.ExtVga[SR17] = pCir->chip.alp->SavedReg.ExtVga[SR17] = hwp->readSeq(hwp, 0x17);
 	pCir->chip.alp->ModeReg.ExtVga[SR1E] = pCir->chip.alp->SavedReg.ExtVga[SR1E] = hwp->readSeq(hwp, 0x1E);
+	pCir->chip.alp->ModeReg.ExtVga[SR21] = pCir->chip.alp->SavedReg.ExtVga[SR21] = hwp->readSeq(hwp, 0x21);
+	pCir->chip.alp->ModeReg.ExtVga[SR2D] = pCir->chip.alp->SavedReg.ExtVga[SR2D] = hwp->readSeq(hwp, 0x2D);
 	pCir->chip.alp->ModeReg.ExtVga[GR17] = pCir->chip.alp->SavedReg.ExtVga[GR17] = hwp->readGr(hwp, 0x17);
 	pCir->chip.alp->ModeReg.ExtVga[GR18] = pCir->chip.alp->SavedReg.ExtVga[GR18] = hwp->readGr(hwp, 0x18);
 	/* The first 4 reads are for the pixel mask register. After 4 times that
@@ -1146,7 +1191,10 @@ alpRestore(vgaHWPtr hwp, AlpRegPtr cirReg)
     hwp->writeSeq(hwp, 0x0E, cirReg->ExtVga[SR0E]);
     hwp->writeSeq(hwp, 0x12, cirReg->ExtVga[SR12]);
     hwp->writeSeq(hwp, 0x13, cirReg->ExtVga[SR13]);
+    hwp->writeSeq(hwp, 0x17, cirReg->ExtVga[SR17]);
     hwp->writeSeq(hwp, 0x1E, cirReg->ExtVga[SR1E]);
+    hwp->writeSeq(hwp, 0x21, cirReg->ExtVga[SR21]);
+    hwp->writeSeq(hwp, 0x2D, cirReg->ExtVga[SR2D]);
     hwp->writeGr(hwp, 0x17, cirReg->ExtVga[GR17]);
     hwp->writeGr(hwp, 0x18, cirReg->ExtVga[GR18]);
     /* The first 4 reads are for the pixel mask register. After 4 times that
@@ -1241,7 +1289,16 @@ AlpModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* Turn off HW cursor, gamma correction, overscan color protect.  */
 	pCir->chip.alp->ModeReg.ExtVga[SR12] = 0;
 	if ((pCir->properties & HWCUR64) == HWCUR64)
-	    pCir->chip.alp->ModeReg.ExtVga[SR12] = 0x4;
+	{
+            pCir->chip.alp->ModeReg.ExtVga[SR12] = 0x4;
+            switch (pCir->Chipset)
+	    {
+            case PCI_CHIP_GD7548:
+	      pCir->chip.alp->ModeReg.ExtVga[SR21] |= 0x10;
+	      break;
+	    }
+
+	}
 	else
 	    pCir->chip.alp->ModeReg.ExtVga[SR12] = 0;
 
@@ -1321,6 +1378,27 @@ AlpModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 		pCir->chip.alp->ModeReg.ExtVga[GR18] &= ~0x20;
 
+
+	/* Some extra init stuff */
+	switch (pCir->Chipset)
+        {
+          case PCI_CHIP_GD7548:
+	    /* Do we use MMIO ?
+	       If we do and we are on a 7548, we need to tell the board
+	       that we want MMIO. */
+	    if (pCir->UseMMIO)
+	    {
+	      pCir->chip.alp->ModeReg.ExtVga[SR17] =
+		(pCir->chip.alp->ModeReg.ExtVga[SR17] & ~0x40) | 4;
+	      ErrorF("UseMMIO: SR17=%2X\n", (int) (pCir->chip.alp->ModeReg.ExtVga[SR17]));
+	    }
+#ifdef ALP_SETUP
+	    ErrorF("SR2D=%2X\n", (int) (pCir->chip.alp->ModeReg.ExtVga[SR17]));
+#endif
+	    pCir->chip.alp->ModeReg.ExtVga[SR2D] |= 0xC0;
+	    break;
+	}
+
 	/* No support for interlace (yet) */
 	pCir->chip.alp->ModeReg.ExtVga[CR1A] = 0x00;
 
@@ -1389,6 +1467,7 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	ScrnInfoPtr pScrn;
 	vgaHWPtr hwp;
 	CirPtr pCir;
+	AlpPtr pAlp;
 	int i, ret;
 	VisualPtr visual;
 	int displayWidth,width,height;
@@ -1405,7 +1484,8 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	hwp = VGAHWPTR(pScrn);
 	pCir = CIRPTR(pScrn);
-
+	pAlp = ALPPTR(pCir);
+	
 	/* Map the VGA memory when the primary video */
 	if (!vgaHWMapMem(pScrn))
 	    return FALSE;
@@ -1414,8 +1494,16 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!CirMapMem(pCir, pScrn->scrnIndex))
 		return FALSE;
 
-	if(pCir->UseMMIO)
+	/* The 754x supports MMIO for the BitBlt engine but
+	   not for the VGA registers */
+	switch (pCir->Chipset)
+	{
+	case PCI_CHIP_GD7548:
+	  break;
+	default:
+	  if(pCir->UseMMIO)
 		vgaHWSetMmioFuncs(hwp, pCir->IOBase, -0x3C0);
+        }
 
 	vgaHWGetIOBase(hwp);
 
@@ -1572,29 +1660,77 @@ AlpScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 */
 	xf86SetBlackWhitePixels(pScreen);
 
-	if (!pCir->NoAccel) { /* Initialize XAA functions */
-		if (!(pCir->UseMMIO ? AlpXAAInitMMIO(pScreen) :
-									AlpXAAInit(pScreen)))
-			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not initialize XAA\n");
-	}
-
 	/* Initialise cursor functions */
 	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-	if (pCir->HWCursor) { /* Initialize HW cursor layer */
-	    int offscreen_size = pScrn->videoRam * 1024 - 
-	        (BitmapBytePad(pScrn->displayWidth 
-			       * pScrn->bitsPerPixel) * pScrn->virtualY);
-	    int cursor_size = 32;
-	    if ((pCir->properties & HWCUR64) 
-		&& (offscreen_size >= 64*8*2))
-	        cursor_size = 64;
-	    else if (offscreen_size < 32*4*2)
-	        cursor_size = 0;
-		if (!AlpHWCursorInit(pScreen,cursor_size))
+	/* Allocation of off-screen memory to various stuff
+	   (hardware cursor, 8x8 mono pattern...)
+	   Allocation goes top-down in memory, since the cursor
+	   *must* be in the last videoram locations */
+	{
+	    int offscreen_offset = pScrn->videoRam*1024,
+	      offscreen_size = pScrn->videoRam * 1024 - pScrn->virtualY *
+	      (BitmapBytePad(pScrn->displayWidth * pScrn->bitsPerPixel));
+	    int cursor_size = 0;
+
+#ifdef ALP_DEBUG
+	    ErrorF("offscreen_offset=%d, offscreen_size=%d\n",
+		   offscreen_offset, offscreen_size);
+#endif
+	    
+	/* Initialise cursor functions */
+	    if (pCir->HWCursor) { /* Initialize HW cursor layer */
+	      if ((pCir->properties & HWCUR64) 
+		  && (offscreen_size >= 64*8*2))
+		{
+	          cursor_size = 64;
+		  offscreen_size -= 64*8*2;
+		  offscreen_offset -= 64*8*2;
+		}
+	      else if (offscreen_size >= 32*4*2)
+		{
+		  cursor_size = 32;
+		  offscreen_size -= 32*8*2;
+		  offscreen_offset -= 32*8*2;
+		}
+	      if (!AlpHWCursorInit(pScreen, cursor_size))
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-				"Hardware cursor initialization failed\n");
+				"Hardware cursor initialization failed\n"); 
+	    }
+#ifdef ALP_DEBUG
+	    ErrorF("AlpHWCursorInit complete.\n");
+#endif
+	    if (offscreen_size >= 8 && !pCir->NoAccel &&
+		pCir->Chipset == PCI_CHIP_GD7548)
+	      {
+		offscreen_offset -= 8;
+		offscreen_size -= 8;
+		pAlp->monoPattern8x8 = offscreen_offset;
+#ifdef ALP_DEBUG
+	        ErrorF("monoPattern8x8=%d\n", pAlp->monoPattern8x8);
+#endif
+	      }
+	    else pAlp->monoPattern8x8 = 0;
+	  {
+	    /* TODO: probably not correct if rotated */
+	    BoxRec box;
+	    box.x1=0;
+	    box.y1=0;
+	    box.x2=pScrn->virtualX;
+	    box.y2=offscreen_offset / pCir->pitch;
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	      "Using %d lines for offscreen memory\n",
+		       box.y2 - pScrn->virtualY);
+	  }
+
 	}
+
+	if (!pCir->NoAccel) { /* Initialize XAA functions */
+		if (!(pCir->UseMMIO ? AlpXAAInitMMIO(pScreen) :
+		      AlpXAAInit(pScreen)))
+		  xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not initialize XAA\n");
+	}
+
 #if 0
 	if (!AlpDGAInit(pScreen))
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "DGA initialization failed\n");
@@ -1855,7 +1991,9 @@ AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq)
 	int num, den, ffreq, usemclk, diff, mclk;
 	CARD8 tmp;
 
+#ifdef ALP_DEBUG
 	ErrorF("AlpSetClock freq=%d.%03dMHz\n", freq / 1000, freq % 1000);
+#endif
 
 	ffreq = freq;
 	if (!CirrusFindClock(&ffreq, pCir->MaxClock, &num, &den))
@@ -1874,9 +2012,10 @@ AlpSetClock(CirPtr pCir, vgaHWPtr hwp, int freq)
 	else
 		usemclk = FALSE;
 
+#ifdef ALP_DEBUG
 	ErrorF("AlpSetClock: nom=%x den=%x ffreq=%d.%03dMHz usemclk=%x\n",
 		num, den, ffreq / 1000, ffreq % 1000, usemclk);
-
+#endif
 	/* So - how do we use MCLK here for the VCLK ? */
 
 	/* Set VCLK3. */
@@ -1964,3 +2103,73 @@ static void AlpProbeI2C(int scrnIndex)
 	}
 }
 #endif
+
+static void
+AlpProbeLCD(ScrnInfoPtr pScrn)
+{
+        CirPtr pCir = CIRPTR(pScrn); 
+        vgaHWPtr hwp = VGAHWPTR(pScrn);
+	static const char* lcd_type_names[] =
+	{
+	  "none",
+	  "dual-scan monochrome",
+	  "unknown",
+	  "DSTN (dual scan color)",
+	  "TFT (active matrix)"
+        };
+
+
+	pCir -> lcdType = LCD_NONE;
+
+	switch (pCir -> Chipset)
+	{
+	case PCI_CHIP_GD7548:
+	  switch (hwp->readCrtc(hwp, 0x2C) >> 6)
+	  {
+	    case 0: pCir->lcdType = LCD_DUAL_MONO; break;
+	    case 1: pCir->lcdType = LCD_UNKNOWN; break;
+	    case 2: pCir->lcdType = LCD_DSTN; break;
+	    case 3: pCir->lcdType = LCD_TFT; break;
+	  }
+
+	  /* Enable LCD control registers instead of normal CRTC registers */
+          hwp->writeCrtc(hwp, 0x2D, hwp->readCrtc(hwp, 0x2D) | 0x80);
+
+	  switch ((hwp->readCrtc(hwp, 0x9) >> 2) & 3)
+	  {
+	  case 0:
+	    pCir->lcdWidth = 640;
+	    pCir->lcdHeight = 480;
+	    break;
+
+	  case 1:
+	    pCir->lcdWidth = 800;
+	    pCir->lcdHeight = 600;
+	    break;
+
+	  case 2:
+	    pCir->lcdWidth = 1024;
+	    pCir->lcdHeight = 768;
+	    break;
+
+	  case 3:
+	    pCir->lcdWidth = 0;
+	    pCir->lcdHeight = 0;
+	    break;
+	  }
+	
+	  /* Disable LCD control registers */
+          hwp->writeCrtc(hwp, 0x2D, hwp->readCrtc(hwp, 0x2D) & ~0x80);
+	  break;
+        }
+
+	if (pCir -> lcdType != LCD_NONE)
+	{
+	  xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+		     "LCD display: %dx%d %s\n",
+		     pCir->lcdWidth, pCir->lcdHeight,
+		     lcd_type_names[pCir->lcdType]);
+	}
+}
+
+
