@@ -2581,7 +2581,12 @@ ProjectUnsharedLibReferences(XPM,Xpm,$(XPMLIBSRC),XBuildLibDir)
           FREETYPE2LIBSRC = $(LIBSRC)/freetype2
 #if SharedLibFreetype2
 #ifndef SharedFreetype2Rev
-#define SharedFreetype2Rev 7.0
+/* FreeType 2.0.6, version_info 8:0:2 */
+#if LibtoolMinorVersions
+#define SharedFreetype2Rev 6.2
+#else
+#define SharedFreetype2Rev 8.0
+#endif
 #endif
 SharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),SOFREETYPE2REV,SharedFreetype2Rev)
 #else

@@ -640,6 +640,17 @@ TCLIBDIR = TclLibDir
 #define TclLibrary
 #endif
 #endif
+/*
+ * Libtool has two different behaviours for version numbers.
+ * On platforms which support a minor number, the library
+ * version is (version - minor).minor, on those that don't,
+ * the version if version.0.  Linux and Darwin support minor
+ * numbers; some BSDs do as well.  Set this to YES if libtool
+ * uses minor numbers on your platform.
+ */
+#ifndef LibtoolMinorVersions
+#define LibtoolMinorVersions	NO
+#endif
 #ifndef NeedConstPrototypes
 #define NeedConstPrototypes	NO
 #endif
