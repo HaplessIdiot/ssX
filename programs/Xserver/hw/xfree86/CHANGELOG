@@ -1,4 +1,6 @@
 XFree86 4.0.1d (xx October 2000)
+ 752. Make VBE module log a message when the BIOS doesn't support any VESA
+      extensions (Marc La France).
  751. Fix int10 so that it rejects BIOS's that are not aligned on a 512-byte
       boundary (Marc La France).
  750. Fix int10 for ISA adapters on Alpha's (Egbert Eich).
@@ -11212,4 +11214,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1339 2000/10/11 17:56:56 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1340 2000/10/11 22:52:48 tsi Exp $
