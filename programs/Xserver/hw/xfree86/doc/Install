@@ -1,4 +1,4 @@
-               Installation Details for XFree86[tm] 4.3.99.15
+               Installation Details for XFree86[tm] 4.3.99.16
 
                           The XFree86 Project, Inc
 
@@ -25,12 +25,12 @@ XFree86 CVS repository's "utils" module, and from our ftp site
 Note: for snapshot releases like this one, binaries are only available for a
 small number of platforms.
 
-2.  Downloading the XFree86 4.3.99.15 binaries
+2.  Downloading the XFree86 4.3.99.16 binaries
 
-We provide XFree86 4.3.99.15 binaries for a range of operating systems at our
-ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/snapshots/4.3.99.15/bina-
+We provide XFree86 4.3.99.16 binaries for a range of operating systems at our
+ftp site <URL:ftp://ftp.xfree86.org/pub/XFree86/snapshots/4.3.99.16/bina-
 ries/> and our web site <URL:http://ftp.xfree86.org/pub/XFree86/snap-
-shots/4.3.99.15/binaries/>.  Often during releases our site is heavily
+shots/4.3.99.16/binaries/>.  Often during releases our site is heavily
 loaded.  Instead of downloading directly from us we recommend that instead
 you use one of our mirror sites.
 
@@ -77,9 +77,9 @@ NOTES:
      are looking soon after the release date.  The second possibility is that
      we won't have it available at all for this release.  This is likely if
      it's still not there about two weeks after the release date.  Check here
-     <URL:http://www.xfree86.org/4.3.99.15/UPDATES.html> for information
+     <URL:http://www.xfree86.org/4.3.99.16/UPDATES.html> for information
      about updates to our binary distributions, and here
-     <URL:http://www.xfree86.org/4.3.99.15/ERRATA.html> for errata related to
+     <URL:http://www.xfree86.org/4.3.99.16/ERRATA.html> for errata related to
      this release.
 
 Once you're run the Xinstall.sh script and found which binary distribution is
@@ -100,9 +100,9 @@ NOTES:
    o Some distributions may have additional mandatory tarballs.  While rare,
      the installer script will tell you if any are missing.
 
-3.  Installing XFree86 4.3.99.15 using the Xinstall.sh script
+3.  Installing XFree86 4.3.99.16 using the Xinstall.sh script
 
-We strongly recommend that our XFree86 4.3.99.15 binaries be installed using
+We strongly recommend that our XFree86 4.3.99.16 binaries be installed using
 the Xinstall.sh script that we provide.  There are a lot of steps in the man-
 ual installation process, and those steps can vary according to the platform
 and hardware setup.
@@ -155,7 +155,7 @@ removed.  If none are listed, then none were removed.
 
 The next step is to configure the X server.  That is covered in detail in an
 as-yet unwritten document :-(.  In the meantime, there are three ways to cre-
-ate a basic X server configuration file for XFree86 4.3.99.15.  One is to run
+ate a basic X server configuration file for XFree86 4.3.99.16.  One is to run
 the xf86config utility.  Another is to run the xf86cfg utility.  The third
 option is to use the new -configure X server option:
 
