@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_Trio64DAC.c,v 1.8tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -35,6 +35,7 @@
 #include "s3.h"
 
 /* this is really quite dumb */
+/* Indeed... */
 Bool S3Trio64DACProbe(ScrnInfoPtr pScrn)
 {
 	S3Ptr pS3 = S3PTR(pScrn);
@@ -42,12 +43,21 @@ Bool S3Trio64DACProbe(ScrnInfoPtr pScrn)
 	if (!S3_TRIO_SERIES())
 		return FALSE;
 
-	RamDacInit(pScrn, pS3->RamDacRec);
+	pS3->RamDacRec = RamDacCreateInfoRec();
+	if (!pS3->RamDacRec)
+		return FALSE;
 
-	pS3->RamDac = RamDacHelperCreateInfoRec();
-	pS3->RamDac->RamDacType = TRIO64_RAMDAC;
+	if (RamDacInit(pScrn, pS3->RamDacRec)) {
+		pS3->RamDac = RamDacHelperCreateInfoRec();
+		if (pS3->RamDac) {
+			pS3->RamDac->RamDacType = TRIO64_RAMDAC;
+			return TRUE;
+		}
+		RamDacDestroyInfoRec(pS3->RamDacRec);
+		pS3->RamDacRec = NULL;
+	}
 
-	return TRUE;
+	return FALSE;
 }
 
 

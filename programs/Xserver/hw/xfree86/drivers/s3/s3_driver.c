@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.23tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.24tsi Exp $ */
 
 
 #include "xf86.h"
@@ -633,7 +633,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 			pS3->LoadPalette = S3TiLoadPalette;
 		else
 			pS3->LoadPalette = S3GenericLoadPalette;
-	}
+	} else
 	if (S3ProbeIBMramdac(pScrn)) {
 		pS3->DacPreInit = S3IBMRGB_PreInit;
 		pS3->DacInit = S3IBMRGB_Init;
@@ -644,7 +644,7 @@ static Bool S3PreInit(ScrnInfoPtr pScrn, int flags)
 		pS3->MaxClock = 170000;
 		pScrn->rgbBits = 8;
 		pS3->LoadPalette = S3GenericLoadPalette;
-	}
+	} else
 	if (S3Trio64DACProbe(pScrn)) {
 		pS3->DacPreInit = S3Trio64DAC_PreInit;
 		pS3->DacInit = S3Trio64DAC_Init;

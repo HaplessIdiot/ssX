@@ -1,4 +1,5 @@
 XFree86 4.4.99.18 (xx November 2004)
+ 225. Fix DAC probing in s3 driver (Marc La France).
  224. An attempt at fixing various video mode timing issues in the apm, ark,
       chips, cirrus, cyrix, i740, i810, neomagic, s3, s3virge, savage, sis,
       tdfx, trident and tseng drivers (Marc La France).
@@ -19177,7 +19178,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3348 2004/11/26 12:11:28 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3349 2004/11/26 13:44:58 tsi Exp $
 
 
 
