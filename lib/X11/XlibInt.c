@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.18 1999/12/27 00:39:22 robin Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.19 2000/01/29 18:58:12 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -591,7 +591,11 @@ static void _XFlushInt (dpy, cv)
 	if (dpy->flags & XlibDisplayIOError) return;
 #ifdef XTHREADS
 	while (dpy->flags & XlibDisplayWriting) {
-	    ConditionWait(dpy, dpy->lock->writers);
+	    if (dpy->lock) {
+		ConditionWait(dpy, dpy->lock->writers);
+	    } else {
+		_XWaitForWritable (dpy, cv);
+	    }
 	}
 #endif
 	size = todo = dpy->bufptr - dpy->buffer;
