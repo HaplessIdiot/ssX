@@ -70,11 +70,12 @@ static void Do_Pseudo(Display *dpy, Colormap *colormap, int ncolors,
 		      XColor *colors, XImage *in_image, XImage *out_image);
 static void Do_Direct(Display *dpy, XWDFileHeader *header, Colormap *colormap, 
 		      int ncolors, XColor *colors, 
-		      XImage *in_image, XImage *out_image);
+		      XImage *in_image, XImage *out_image, XVisualInfo *vinfo);
 static unsigned int Image_Size(XImage *image);
 static void Error(char *string);
 static void _swapshort(char *bp, unsigned int n);
 static void _swaplong(char *bp, unsigned int n);
+static void DumpHeader(const XWDFileHeader *header, const char *win_name);
 
 static void
 usage(void)
@@ -148,6 +149,7 @@ main(int argc, char *argv[])
     XStandardColormap *stdmaps, *stdmap = NULL;
     char c;
     int win_width, win_height;
+    Bool dump_header = False;
 
     progname = argv[0];
 
@@ -160,6 +162,10 @@ main(int argc, char *argv[])
 	if (strcmp(argv[i], "-display") == 0) {
 	    if (++i >= argc) usage();
 	    display_name = argv[i];
+	    continue;
+	}
+	if (strcmp(argv[i], "-dumpheader") == 0) {
+	    dump_header = True;
 	    continue;
 	}
 	if (strcmp(argv[i], "-fg") == 0) {
@@ -276,6 +282,11 @@ main(int argc, char *argv[])
     if(!Read(win_name + 6, sizeof(char), win_name_size, in_file))
       Error("Unable to read window name from dump file.");
 
+    if (dump_header) {
+	DumpHeader(&header, win_name);
+	exit(0);
+    }
+   
     /* initialize the input image */
 
     in_image = &in_image_struct;
@@ -530,7 +541,7 @@ main(int argc, char *argv[])
 	} else if ((header.visual_class == TrueColor) ||
 		   (header.visual_class == DirectColor))
 	    Do_Direct(dpy, &header, &colormap, ncolors, colors,
-		      in_image, out_image);
+		      in_image, out_image, &vinfo);
 	else
 	    Do_Pseudo(dpy, &colormap, ncolors, colors, in_image, out_image);
     }
@@ -981,12 +992,15 @@ Do_Pseudo(Display *dpy, Colormap *colormap,
 
 static void
 Do_Direct(Display *dpy, XWDFileHeader *header, Colormap *colormap, 
-	  int ncolors, XColor *colors, XImage *in_image, XImage *out_image)
+	  int ncolors, XColor *colors, XImage *in_image, XImage *out_image,
+          XVisualInfo *vinfo)
 {
     register int x, y;
     XColor color;
     unsigned long rmask, gmask, bmask;
-    int rshift = 0, gshift = 0, bshift = 0;
+    unsigned long ormask, ogmask, obmask;
+    unsigned long  rshift = 0, gshift = 0, bshift = 0;
+    unsigned long  orshift = 0, ogshift = 0, obshift = 0;
     int i;
     unsigned long pix, xpix;
     unsigned long *pixels, *rpixels;
@@ -1040,7 +1054,38 @@ Do_Direct(Display *dpy, XWDFileHeader *header, Colormap *colormap,
 		XPutPixel(out_image, x, y, color.pixel);
 	    }
 	}
+    } else if (header->visual_class == TrueColor &&
+	       vinfo->class == TrueColor) {
+	ormask = vinfo->red_mask;
+	while (!(ormask & 1)) {
+	    ormask >>= 1;
+	    orshift++;
+	}
+	ogmask = vinfo->green_mask;
+	while (!(ogmask & 1)) {
+	    ogmask >>= 1;
+	    ogshift++;
+	}
+	obmask = vinfo->blue_mask;
+	while (!(obmask & 1)) {
+	    obmask >>= 1;
+	    obshift++;
+	}
+	for (y = 0; y < in_image->height; y++) {
+	    for (x = 0; x < in_image->width; x++) {
+		pix = XGetPixel(in_image, x, y);
+		xpix = (((((pix >> rshift) & rmask) * 65535 / rmask)
+			 * ormask / 65535) << orshift) |
+		       (((((pix >> gshift) & gmask) * 65535 / gmask)
+			 * ogmask / 65535) << ogshift) |
+		       (((((pix >> bshift) & bmask) * 65535 / bmask)
+			 * obmask / 65535) << obshift);
+		XPutPixel(out_image, x, y, xpix);
+	    }
+	}
     } else {
+	if (header->visual_class == TrueColor)
+	    ncolors = 0;
 	pix = 1 << 12;
 	pixels = (unsigned long *)malloc(sizeof(unsigned long) * pix);
 	rpixels = (unsigned long *)malloc(sizeof(unsigned long) * pix);
@@ -1136,3 +1181,36 @@ _swaplong(char *bp, unsigned int n)
 	bp += 2;
     }
 }
+
+static void
+DumpHeader(const XWDFileHeader *header, const char *win_name)
+{
+	printf("window name:        %s\n", win_name);
+	printf("sizeof(XWDheader):  %d\n", sizeof(*header));
+	printf("header size:        %ld\n", header->header_size);
+	printf("file version:       %ld\n", header->file_version);
+	printf("pixmap format:      %ld\n", header->pixmap_format);
+	printf("pixmap depth:       %ld\n", header->pixmap_depth);
+	printf("pixmap width:       %ld\n", header->pixmap_width);
+	printf("pixmap height:      %ld\n", header->pixmap_height);
+	printf("x offset:           %ld\n", header->xoffset);
+	printf("byte order:         %ld\n", header->byte_order);
+	printf("bitmap unit:        %ld\n", header->bitmap_unit);
+	printf("bitmap bit order:   %ld\n", header->bitmap_bit_order);
+	printf("bitmap pad:         %ld\n", header->bitmap_pad);
+	printf("bits per pixel:     %ld\n", header->bits_per_pixel);
+	printf("bytes per line:     %ld\n", header->bytes_per_line);
+	printf("visual class:       %ld\n", header->visual_class);
+	printf("red mask:           %ld\n", header->red_mask);
+	printf("green mask:         %ld\n", header->green_mask);
+	printf("blue mask:          %ld\n", header->blue_mask);
+	printf("bits per rgb:       %ld\n", header->bits_per_rgb);
+	printf("colormap entries:   %ld\n", header->colormap_entries);
+	printf("num colors:         %ld\n", header->ncolors);
+	printf("window width:       %ld\n", header->window_width);
+	printf("window height:      %ld\n", header->window_height);
+	printf("window x:           %ld\n", header->window_x);
+	printf("window y:           %ld\n", header->window_y);
+	printf("border width:       %ld\n", header->window_bdrwidth);
+}
+

@@ -1,4 +1,7 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 596. Fix several problems xwud has displaying TrueColor dumps (extreme
+      slowness displaying on TrueColor visuals, and incorrectness displaying
+      on DirectColor visuals) (David Dawes).
  595. Rank TrueColor above DirectColor in xwud.  This avoids colourmap flashing
       by default when running on a server with both visuals available
       (David Dawes).
@@ -18194,7 +18197,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2965 2003/11/15 00:23:40 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2966 2003/11/15 00:39:54 dawes Exp $
 
 
 
