@@ -1,4 +1,4 @@
-/* $XConsortium: symbols.c,v 1.4 94/04/08 15:29:04 erik Exp $ */
+/* $XConsortium: symbols.c /main/11 1996/03/01 14:32:31 kaleb $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -26,7 +26,6 @@
  ********************************************************/
 
 #include "xkbcomp.h"
-#include "xkbfile.h"
 #include "tokens.h"
 #include "expr.h"
 
@@ -37,10 +36,12 @@
 #include "vmod.h"
 #include "action.h"
 #include "keycodes.h"
+#include "misc.h"
+#include "alias.h"
 
-extern StringToken	tok_ONE_LEVEL;
-extern StringToken	tok_TWO_LEVEL;
-extern StringToken	tok_KEYPAD;
+extern Atom	tok_ONE_LEVEL;
+extern Atom	tok_TWO_LEVEL;
+extern Atom	tok_KEYPAD;
 
 /***====================================================================***/
 
@@ -48,51 +49,87 @@ extern StringToken	tok_KEYPAD;
 #define	RepeatNo	0
 #define	RepeatUndefined	~((unsigned)0)
 
+#define	_Key_Syms	(1<<0)
+#define	_Key_Acts	(1<<1)
+#define	_Key_Repeat	(1<<2)
+#define	_Key_Behavior	(1<<3)
+#define	_Key_Type_Dflt	(1<<4)
+#define	_Key_Types	(1<<5)
+#define	_Key_GroupInfo	(1<<6)
+#define	_Key_VModMap	(1<<7)
+
 typedef struct _KeyInfo {
-    unsigned		fileID;
+    CommonInfo 		defs;
     unsigned long	name;
+    unsigned char	groupInfo;
+    unsigned char	typesDefined;
     unsigned char	symsDefined;
     unsigned char	actsDefined;
-    short		groupWidth[XkbNumKbdGroups];
+    short		numLevels[XkbNumKbdGroups];
     KeySym *		syms[XkbNumKbdGroups];
     XkbAction *		acts[XkbNumKbdGroups];
+    Atom		types[XkbNumKbdGroups];
     unsigned		repeat;
     XkbBehavior		behavior;
-    StringToken		type;
+    unsigned short	vmodmap;
+    unsigned long	nameForOverlayKey;
+    unsigned long	allowNone;
+    Atom		dfltType;
 } KeyInfo;
 
 static void
+#if NeedFunctionPrototypes
+InitKeyInfo(KeyInfo *info)
+#else
 InitKeyInfo(info)
     KeyInfo *	info;
+#endif
 {
 register int i;
 static char dflt[4]= "*";
 
-    info->fileID= 0;
+    info->defs.defined= 0;
+    info->defs.fileID= 0;
+    info->defs.merge= MergeOverride;
+    info->defs.next= NULL;
     info->name= KeyNameToLong(dflt);
-    info->symsDefined= info->actsDefined= 0;
+    info->groupInfo= 0;
+    info->typesDefined= info->symsDefined= info->actsDefined= 0;
     for (i=0;i<XkbNumKbdGroups;i++) {
-	info->groupWidth[i]= 0;
+	info->numLevels[i]= 0;
+	info->types[i]= None;
 	info->syms[i]= NULL;
 	info->acts[i]= NULL;
     }
-    info->type= NullStringToken;
+    info->dfltType= None;
     info->behavior.type= XkbKB_Default;
     info->behavior.data= 0;
+    info->vmodmap= 0;
+    info->nameForOverlayKey= 0;
     info->repeat= RepeatUndefined;
+    info->allowNone= 0;
     return;
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeKeyInfo(KeyInfo *info)
+#else
 FreeKeyInfo(info)
     KeyInfo *	info;
+#endif
 {
 register int i;
 
-    info->fileID= 0;
-    info->symsDefined= info->actsDefined= 0;
+    info->defs.defined= 0;
+    info->defs.fileID= 0;
+    info->defs.merge= MergeOverride;
+    info->defs.next= NULL;
+    info->groupInfo= 0;
+    info->typesDefined= info->symsDefined= info->actsDefined= 0;
     for (i=0;i<XkbNumKbdGroups;i++) {
-	info->groupWidth[i]= 0;
+	info->numLevels[i]= 0;
+	info->types[i]= None;
 	if (info->syms[i]!=NULL)
 	    uFree(info->syms[i]);
 	info->syms[i]= NULL;
@@ -100,25 +137,32 @@ register int i;
 	    uFree(info->acts[i]);
 	info->acts[i]= NULL;
     }
-    info->type=	 NullStringToken;
+    info->dfltType= None;
     info->behavior.type= XkbKB_Default;
     info->behavior.data= 0;
+    info->vmodmap= 0;
+    info->nameForOverlayKey= 0;
     info->repeat= RepeatUndefined;
     return;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyKeyInfo(KeyInfo *old,KeyInfo *new,Bool clearOld)
+#else
 CopyKeyInfo(old,new,clearOld)
     KeyInfo *	old;
     KeyInfo *	new;
     Bool	clearOld;
+#endif
 {
 register int i;
 
     *new= *old;
+    new->defs.next= NULL;
     if (clearOld) {
 	for (i=0;i<XkbNumKbdGroups;i++) {
-	    old->groupWidth[i]= 0;
+	    old->numLevels[i]= 0;
 	    old->syms[i]= NULL;
 	    old->acts[i]= NULL;
 	}
@@ -126,12 +170,12 @@ register int i;
     else {
 	int width;
 	for (i=0;i<XkbNumKbdGroups;i++) {
-	    width= new->groupWidth[i];
+	    width= new->numLevels[i];
 	    if (old->syms[i]!=NULL) {
 		new->syms[i]= uTypedCalloc(width,KeySym);
 		if (!new->syms[i]) {
 		    new->syms[i]= NULL;
-		    new->groupWidth[i]= 0;
+		    new->numLevels[i]= 0;
 		    return False;
 		}
 		memcpy((char *)new->syms[i],(char *)old->syms[i],
@@ -154,91 +198,80 @@ register int i;
 /***====================================================================***/
 
 typedef struct _ModMapEntry {
+    CommonInfo 			defs;
     Bool			haveSymbol;
     int				modifier;
     union {
 	unsigned long		keyName;
 	KeySym			keySym;
     } u;
-    struct _ModMapEntry *	next;
 } ModMapEntry;
 
 #define	SYMBOLS_INIT_SIZE	110
 #define	SYMBOLS_CHUNK		20
 typedef struct _SymbolsInfo {
-    StringToken			name;
+    char *			name;
     int				errorCount;
     unsigned			fileID;
-    Bool			allowActions;
+    unsigned			merge;
+    unsigned			groupInfo;
     unsigned			szKeys;
     unsigned			nKeys;
     KeyInfo *			keys;
     KeyInfo			dflt;
     VModInfo			vmods;
     ActionInfo *		action;
+    Atom			groupNames[XkbNumKbdGroups];
 
     ModMapEntry *		modMap;
-
-    unsigned			parentMerge;
-    struct _SymbolsInfo	*	parent;
+    AliasInfo *			aliases;
 } SymbolsInfo;
 
 static void
+#if NeedFunctionPrototypes
+InitSymbolsInfo(SymbolsInfo *info,XkbDescPtr xkb)
+#else
 InitSymbolsInfo(info,xkb)
     SymbolsInfo *	info;
     XkbDescPtr		xkb;
+#endif
 {
 register int i;
 
-    tok_ONE_LEVEL= stGetToken("ONE_LEVEL");
-    tok_TWO_LEVEL= stGetToken("TWO_LEVEL");
-    tok_KEYPAD= stGetToken("KEYPAD");
-    info->name= NullStringToken;
+    tok_ONE_LEVEL= XkbInternAtom(NULL,"ONE_LEVEL",False);
+    tok_TWO_LEVEL= XkbInternAtom(NULL,"TWO_LEVEL",False);
+    tok_KEYPAD= XkbInternAtom(NULL,"KEYPAD",False);
+    info->name= NULL;
     info->errorCount= 0;
     info->fileID= 0;
-    info->allowActions= True;
+    info->merge= MergeOverride;
+    info->groupInfo= 0;
     info->szKeys= SYMBOLS_INIT_SIZE;
     info->nKeys= 0;
     info->keys= uTypedCalloc(SYMBOLS_INIT_SIZE,KeyInfo);
-    info->parent= NULL;
-    info->parentMerge= MergeDefault;
     info->modMap= NULL;
+    for (i=0;i<XkbNumKbdGroups;i++)
+	info->groupNames[i]= None;
     InitKeyInfo(&info->dflt);
     InitVModInfo(&info->vmods,xkb);
     info->action= NULL;
+    info->aliases= NULL;
     return;
 }
 
 static void
-ClearSymbolsInfo(info,xkb)
-    SymbolsInfo *	info;
-    XkbDescPtr		xkb;
-{
-register int i;
-ModMapEntry *mm,*next;
-
-    info->name= NullStringToken;
-    info->fileID= 0;
-    for (i=0;i<info->nKeys;i++) {
-	FreeKeyInfo(&info->keys[i]);
-    }
-    for (mm=info->modMap;mm!=NULL;mm=next) {
-	next= mm->next;
-	uFree(mm);
-    }
-    info->nKeys= 0;
-    FreeKeyInfo(&info->dflt);
-    ClearVModInfo(&info->vmods,xkb);
-    return;
-}
-
-static void
+#if NeedFunctionPrototypes
+FreeSymbolsInfo(SymbolsInfo *info)
+#else
 FreeSymbolsInfo(info)
     SymbolsInfo *	info;
+#endif
 {
 register int	i;
-ModMapEntry *	mm,*next;
 
+    if (info->name)
+	uFree(info->name);
+    info->name= NULL;
     if (info->keys) {
 	for (i=0;i<info->nKeys;i++) {
 	    FreeKeyInfo(&info->keys[i]);
@@ -246,91 +279,115 @@ ModMapEntry *	mm,*next;
 	uFree(info->keys);
 	info->keys= NULL;
     }
-    for (mm=info->modMap;mm!=NULL;mm=next) {
-	next= mm->next;
-	uFree(mm);
+    if (info->modMap) {
+	ClearCommonInfo(&info->modMap->defs);
+	info->modMap= NULL;
+    }
+    if (info->aliases) {
+	ClearAliases(&info->aliases);
+	info->aliases= NULL;
     }
     bzero((char *)info,sizeof(SymbolsInfo));
     return;
 }
 
 static Bool
-ResizeKeyGroup(key,group,newWidth,forceActions)
+#if NeedFunctionPrototypes
+ResizeKeyGroup(	KeyInfo *	key,
+		unsigned	group,
+		unsigned 	atLeastSize,
+		Bool 		forceActions)
+#else
+ResizeKeyGroup(key,group,atLeastSize,forceActions)
     KeyInfo *		key;
     unsigned		group;
-    unsigned		newWidth;
+    unsigned		atLeastSize;
     Bool		forceActions;
+#endif
 {
-Bool	tooSmall;
-    tooSmall= (key->groupWidth[group]<newWidth);
+Bool		tooSmall;
+unsigned	newWidth;
+
+    tooSmall= (key->numLevels[group]<atLeastSize);
+    if (tooSmall)	newWidth= atLeastSize;
+    else		newWidth= key->numLevels[group];
+
     if ((key->syms[group]==NULL)||tooSmall) {
 	key->syms[group]= uTypedRecalloc(key->syms[group],
-					 key->groupWidth[group],
-					 newWidth,KeySym);
+					key->numLevels[group],newWidth,
+					KeySym);
 	if (!key->syms[group])
 	    return False;
     }
     if (((forceActions)&&(tooSmall||(key->acts[group]==NULL)))||
 				(tooSmall&&(key->acts[group]!=NULL))) {
 	key->acts[group]= uTypedRecalloc(key->acts[group],
-					     key->groupWidth[group],
-					     newWidth,XkbAction);
+					key->numLevels[group],newWidth,
+					XkbAction);
 	if (!key->acts[group])
 	    return False;
     }
-    key->groupWidth[group]= newWidth;
+    key->numLevels[group]= newWidth;
     return True;
 }
 
 static Bool
-MergeKeyGroups(info,into,from,group,clobber,report)
+#if NeedFunctionPrototypes
+MergeKeyGroups(	SymbolsInfo *	info,
+		KeyInfo *	into,
+		KeyInfo *	from,
+		unsigned	group)
+#else
+MergeKeyGroups(info,into,from,group)
     SymbolsInfo *	info;
     KeyInfo *		into;
     KeyInfo *		from;
     unsigned		group;
-    unsigned		clobber;
-    Bool		report;
+#endif
 {
 KeySym	*	resultSyms;
 XkbAction *	resultActs;
 int		resultWidth;
 register int	i;
+Bool		report,clobber;
 
-    report= report&&(into->fileID==from->fileID);
-    if (into->groupWidth[group]>=from->groupWidth[group]) {
+    clobber= (from->defs.merge!=MergeAugment);
+    report= (warningLevel>9)||
+	    ((into->defs.fileID==from->defs.fileID)&&(warningLevel>0));
+    if (into->numLevels[group]>=from->numLevels[group]) {
 	resultSyms= into->syms[group];
 	resultActs= into->acts[group];
-	resultWidth= into->groupWidth[group];
+	resultWidth= into->numLevels[group];
     }
     else {
 	resultSyms= from->syms[group];
 	resultActs= from->acts[group];
-	resultWidth= from->groupWidth[group];
+	resultWidth= from->numLevels[group];
     }
     if (resultSyms==NULL) {
 	resultSyms= uTypedCalloc(resultWidth,KeySym);
 	if (!resultSyms) {
-	    uInternalError("Couldn't allocate symbols for group merge\n");
-	    uAction("Group %d of key %s not merged\n",group,
-						longText(into->name));
+	    WSGO("Could not allocate symbols for group merge\n");
+	    ACTION2("Group %d of key %s not merged\n",group,
+					longText(into->name,XkbMessage));
 	    return False;
 	}
     }
     if ((resultActs==NULL)&&(into->acts[group]||from->acts[group])) {
 	resultActs= uTypedCalloc(resultWidth,XkbAction);
 	if (!resultActs) {
-	    uInternalError("Couldn't allocate actions for group merge\n");
-	    uAction("Group %d of key %s not merged\n",group,
-						longText(into->name));
+	    WSGO("Could not allocate actions for group merge\n");
+	    ACTION2("Group %d of key %s not merged\n",group,
+					longText(into->name,XkbMessage));
 	    return False;
 	}
     }
     for (i=0;i<resultWidth;i++) {
 	KeySym fromSym,toSym;
-	if (from->syms[group] && (i<from->groupWidth[group]))
+	if (from->syms[group] && (i<from->numLevels[group]))
 	     fromSym= from->syms[group][i];
 	else fromSym= NoSymbol;
-	if (into->syms[group] && (i<into->groupWidth[group]))
+	if (into->syms[group] && (i<into->numLevels[group]))
 	     toSym= into->syms[group][i];
 	else toSym= NoSymbol;
 	if ((fromSym==NoSymbol)||(fromSym==toSym))
@@ -338,15 +395,16 @@ register int	i;
 	else if (toSym==NoSymbol)
 	    resultSyms[i]= fromSym;
 	else {
-	    if ((report)&&(warningLevel>0)) {
-		uWarning("Multiple symbols for level %d/group %d on key %s\n",
-						i,group,longText(into->name));
-		uAction("Using %s, ignoring %s\n",
-			XkbKeysymText(clobber?fromSym:toSym,XkbMessage),
-			XkbKeysymText(clobber?toSym:fromSym,XkbMessage));
+	    KeySym use,ignore;
+	    if (clobber) 	{ use= fromSym; ignore= toSym; 		}
+	    else 		{ use= toSym;	ignore= fromSym;	}
+	    if (report) {
+		WARN3("Multiple symbols for level %d/group %d on key %s\n",
+				i,group,longText(into->name,XkbMessage));
+		ACTION2("Using %s, ignoring %s\n",XkbKeysymText(use,XkbMessage),
+					XkbKeysymText(ignore,XkbMessage));
 	    }
-	    if (clobber)	resultSyms[i]= fromSym;
-	    else		resultSyms[i]= toSym;
+	    resultSyms[i]= use;
 	}
 	if (resultActs!=NULL) {
 	    XkbAction *fromAct,*toAct;
@@ -361,15 +419,17 @@ register int	i;
 		resultActs[i]= *fromAct;
 	    }
 	    else {
-		if ((report)&&(warningLevel>0)) {
-		  uWarning("Multiple actions for level %d/group %d on key %s\n",
-						  i,group,longText(into->name));
-		  uAction("Using %s, ignoring %s\n",
-			actionTypeText(clobber?fromAct->type:toAct->type),
-			actionTypeText(clobber?toAct->type:fromAct->type));
+		XkbAction *use,*ignore;
+		if (clobber) 	{ use= fromAct; ignore= toAct; 		}
+		else 		{ use= toAct;	ignore= fromAct;	}
+		if (report) {
+		  WARN3("Multiple actions for level %d/group %d on key %s\n",
+				i,group,longText(into->name,XkbMessage));
+		  ACTION2("Using %s, ignoring %s\n",
+				XkbActionTypeText(use->type,XkbMessage),
+				XkbActionTypeText(ignore->type,XkbMessage));
 		}
-		if (clobber)	resultActs[i]= *fromAct;
-		else		resultActs[i]= *toAct;
+		resultActs[i]= *use;
 	    }
 	}
     }
@@ -377,7 +437,7 @@ register int	i;
 	uFree(into->syms[group]);
     if ((from->syms[group]!=NULL)&&(resultSyms!=from->syms[group]))
 	uFree(from->syms[group]);
-    into->groupWidth[group]= resultWidth;
+    into->numLevels[group]= resultWidth;
     into->syms[group]= resultSyms;
     from->syms[group]= NULL;
     into->symsDefined|= (1<<group);
@@ -386,62 +446,131 @@ register int	i;
 }
 
 static Bool
-MergeKeys(info,into,from,clobber,report)
+#if NeedFunctionPrototypes
+MergeKeys(SymbolsInfo *info,KeyInfo *into,KeyInfo *from)
+#else
+MergeKeys(info,into,from)
     SymbolsInfo *	info;
     KeyInfo *		into;
     KeyInfo *		from;
-    unsigned		clobber;
-    Bool		report;
+#endif
 {
-register int i;
+register int	i;
+unsigned	collide= 0;
+Bool		report;
     
+    if (from->defs.merge==MergeReplace) {
+	for (i=0;i<XkbNumKbdGroups;i++) {
+	    if (into->numLevels[i]!=0) {
+		if (into->syms[i])
+		    uFree(into->syms[i]);
+		if (into->acts[i])
+		    uFree(into->acts[i]);
+	    }
+	}
+	*into= *from;
+	bzero(from,sizeof(KeyInfo));
+	return True;
+    }
+    report= ((warningLevel>9)||
+	     (into->defs.fileID==from->defs.fileID)&&(warningLevel>0));
     for (i=0;i<XkbNumKbdGroups;i++) {
-	if (from->groupWidth[i]>0) {
-	    if (into->groupWidth[i]==0) {
-		into->groupWidth[i]= from->groupWidth[i];
+	if (from->numLevels[i]>0) {
+	    if (into->numLevels[i]==0) {
+		into->numLevels[i]= from->numLevels[i];
 		into->syms[i]= from->syms[i];
 		into->acts[i]= from->acts[i];
 		into->symsDefined|= (1<<i);
 		from->syms[i]= NULL;
 		from->acts[i]= NULL;
-		from->groupWidth[i]= 0;
+		from->numLevels[i]= 0;
 		from->symsDefined&= ~(1<<i);
+		if (into->syms[i])	into->defs.defined|= _Key_Syms;
+		if (into->acts[i])	into->defs.defined|= _Key_Acts;
 	    }
 	    else {
-		MergeKeyGroups(info,into,from,i,clobber,report);
+		if (report) {
+		    if (into->syms[i])	collide|= _Key_Syms;
+		    if (into->acts[i])	collide|= _Key_Acts;
+		}
+		MergeKeyGroups(info,into,from,(unsigned)i);
+	    }
+	}
+	if (from->types[i]!=None) {
+	    if ((into->types[i]!=None)&&(report)&&
+				(into->types[i]!=from->types[i])) {
+		Atom	use,ignore;
+		collide|= _Key_Types;
+		if (from->defs.merge!=MergeAugment) {
+		    use= from->types[i];
+		    ignore= into->types[i];
+		}
+		else {
+		    use= into->types[i];
+		    ignore= from->types[i];
+		}
+		WARN2("Multiple definitions for group %d type of key %s\n",
+	    				i,longText(into->name,XkbMessage));
+		ACTION2("Using %s, ignoring %s\n",
+	    				XkbAtomText(NULL,use,XkbMessage),
+					XkbAtomText(NULL,ignore,XkbMessage));
+	    }
+	    if ((from->defs.merge!=MergeAugment)||(into->types[i]==None)) {
+		into->types[i]= from->types[i];
 	    }
 	}
     }
-    if (clobber) {
-	if (from->behavior.type!=XkbKB_Default)
-	    into->behavior= from->behavior;
-	if (from->repeat!=RepeatUndefined)
-	    into->repeat= from->repeat;
-	if (from->type!=NullStringToken)
-	    into->type= from->type;
+    if (UseNewField(_Key_Behavior,&into->defs,&from->defs,&collide)) {
+	into->behavior= from->behavior;
+	into->nameForOverlayKey= from->nameForOverlayKey;
+	into->defs.defined|= _Key_Behavior;
+    }
+    if (UseNewField(_Key_VModMap,&into->defs,&from->defs,&collide)) {
+	into->vmodmap= from->vmodmap;
+	into->defs.defined|= _Key_VModMap;
+    }
+    if (UseNewField(_Key_Repeat,&into->defs,&from->defs,&collide)) {
+	into->repeat= from->repeat;
+	into->defs.defined|= _Key_Repeat;
+    }
+    if (UseNewField(_Key_Type_Dflt,&into->defs,&from->defs,&collide)) {
+	into->dfltType= from->dfltType;
+	into->defs.defined|= _Key_Type_Dflt;
+    }
+    if (UseNewField(_Key_GroupInfo,&into->defs,&from->defs,&collide)) {
+	into->groupInfo= from->groupInfo;
+	into->defs.defined|= _Key_GroupInfo;
+    }
+    if ( collide ) {
+	WARN1("Symbol map for key %s redefined\n",
+			longText(into->name,XkbMessage));
+	ACTION1("Using %s definition for conflicting fields\n",
+			(from->defs.merge==MergeAugment?"first":"last"));
     }
     return True;
 }
 
 static Bool
-AddKeySymbols(info,key,clobber,report)
+#if NeedFunctionPrototypes
+AddKeySymbols(SymbolsInfo *info,KeyInfo *key)
+#else
+AddKeySymbols(info,key)
     SymbolsInfo *	  info;
     KeyInfo *		  key;
-    unsigned		  clobber;
-    Bool		  report;
+#endif
 {
-register int i,n;
+register int i;
 
     for (i=0;i<info->nKeys;i++) {
 	if (info->keys[i].name==key->name)
-	    return MergeKeys(info,&info->keys[i],key,clobber,report);
+	    return MergeKeys(info,&info->keys[i],key);
     }
     if (info->nKeys>=info->szKeys) {
 	info->szKeys+= SYMBOLS_CHUNK;
-	info->keys= uTypedRealloc(info->keys,info->szKeys,KeyInfo);
+	info->keys= uTypedRecalloc(info->keys,info->nKeys,info->szKeys,KeyInfo);
 	if (!info->keys) {
-	    uInternalError("Couldn't allocate key symbols descriptions\n");
-	    uAction("Some key symbols definitions may be lost\n");
+	    WSGO("Could not allocate key symbols descriptions\n");
+	    ACTION("Some key symbols definitions may be lost\n");
 	    return False;
 	}
     }
@@ -449,14 +578,19 @@ register int i,n;
 }
 
 static Bool
-AddModMapEntry(info,new,clobber)
+#if NeedFunctionPrototypes
+AddModMapEntry(SymbolsInfo *info,ModMapEntry *new)
+#else
+AddModMapEntry(info,new)
     SymbolsInfo *	info;
     ModMapEntry *	new;
-    Bool		clobber;
+#endif
 {
 ModMapEntry *	mm;
+Bool		clobber;
 
-    for (mm=info->modMap;mm!=NULL;mm= mm->next) {
+    clobber= (new->defs.merge!=MergeAugment);
+    for (mm=info->modMap;mm!=NULL;mm= (ModMapEntry *)mm->defs.next) {
 	if (new->haveSymbol&&mm->haveSymbol&&(new->u.keySym==mm->u.keySym)) {
 	    unsigned	use,ignore;
 	    if (mm->modifier!=new->modifier) {
@@ -468,10 +602,10 @@ ModMapEntry *	mm;
 		    use= mm->modifier;
 		    ignore= new->modifier;
 		}
-		uError("Symbol %s added to map for multiple modifiers\n",
+		ERROR1("%s added to symbol map for multiple modifiers\n",
 				XkbKeysymText(new->u.keySym,XkbMessage));
-		uAction("Using %s, ",XkbModIndexText(use,XkbMessage));
-		uInformation("ignoring %s\n",
+		ACTION2("Using %s, ignoring %s.\n",
+					XkbModIndexText(use,XkbMessage),
 					XkbModIndexText(ignore,XkbMessage));
 		mm->modifier= use;
 	    }
@@ -489,11 +623,11 @@ ModMapEntry *	mm;
 		    use= mm->modifier;
 		    ignore= new->modifier;
 		}
-		uError("Key <%s> added to map for multiple modifiers\n",
-						longText(new->u.keyName));
-		uAction("Using %s, ",XkbModIndexText(use,XkbMessage));
-		uInformation("ignoring %s\n",
-				     XkbModIndexText(ignore,XkbMessage));
+		ERROR1("Key %s added to map for multiple modifiers\n",
+					longText(new->u.keyName,XkbMessage));
+		ACTION2("Using %s, ignoring %s.\n",
+					XkbModIndexText(use,XkbMessage),
+					XkbModIndexText(ignore,XkbMessage));
 		mm->modifier= use;
 	    }
 	    return True;
@@ -501,72 +635,151 @@ ModMapEntry *	mm;
     }
     mm= uTypedAlloc(ModMapEntry);
     if (mm==NULL) {
-	uInternalError("Couldn't allocate modifier map entry\n");
-	uAction("Modifier map for %s will be incomplete\n",
+	WSGO("Could not allocate modifier map entry\n");
+	ACTION1("Modifier map for %s will be incomplete\n",
 				XkbModIndexText(new->modifier,XkbMessage));
 	return False;
     }
     *mm= *new;
-    mm->next= info->modMap;
+    mm->defs.next= &info->modMap->defs;
     info->modMap= mm;
     return True;
 }
 
 /***====================================================================***/
 
+static void
+#if NeedFunctionPrototypes
+MergeIncludedSymbols(SymbolsInfo *into,SymbolsInfo *from,unsigned merge)
+#else
+MergeIncludedSymbols(into,from,merge)
+    SymbolsInfo *	into;
+    SymbolsInfo *	from;
+    unsigned		merge;
+#endif
+{
+register int 	i;
+KeyInfo *	key;
+
+    if (from->errorCount>0) {
+	into->errorCount+= from->errorCount;
+	return;
+    }
+    if (into->name==NULL) {
+	into->name= from->name;
+	from->name= NULL;
+    }
+    for (i=0;i<XkbNumKbdGroups;i++) {
+	if (from->groupNames[i]!=None) {
+	    if ((merge!=MergeAugment)||(into->groupNames[i]==None))
+		into->groupNames[i]= from->groupNames[i];
+	}
+    }
+    for (i=0,key=from->keys;i<from->nKeys;i++,key++) {
+	if (merge!=MergeDefault)
+	    key->defs.merge= merge;
+	if (!AddKeySymbols(into,key))
+	    into->errorCount++;
+    }
+    if (from->modMap!=NULL) {
+	ModMapEntry *mm,*next;
+	for (mm=from->modMap;mm!=NULL;mm=next) {
+	    if (merge!=MergeDefault)
+		mm->defs.merge= merge;
+	    if (!AddModMapEntry(into,mm))
+		into->errorCount++;
+	    next= (ModMapEntry *)mm->defs.next;
+	    uFree(mm);
+	}
+	from->modMap= NULL;
+    }
+    if (!MergeAliases(&into->aliases,&from->aliases))
+	into->errorCount++;
+    return;
+}
+
+typedef void	(*FileHandler)(
+#if NeedFunctionPrototypes
+	XkbFile *	/* rtrn */,
+	XkbDescPtr	/* xkb */,
+	unsigned	/* merge */,
+	SymbolsInfo *	/* included */
+#endif
+);
+
 static Bool
+#if NeedFunctionPrototypes
+HandleIncludeSymbols(	IncludeStmt *	stmt,
+			XkbDescPtr	xkb,
+			SymbolsInfo *	info,
+			FileHandler	hndlr)
+#else
 HandleIncludeSymbols(stmt,xkb,info,hndlr)
     IncludeStmt	*	  stmt;
     XkbDescPtr		  xkb;
     SymbolsInfo *	  info;
     void		(*hndlr)();
+#endif
 {
-unsigned 	newMerge,tmp;
-Bool		clobber;
-FILE	*	file;
+unsigned 	newMerge;
 XkbFile	*	rtrn;
+SymbolsInfo	included;
+Bool		haveSelf;
 
-    if (ProcessIncludeFile(stmt,XkmSymbolsIndex,&rtrn,&newMerge)) {
-	SymbolsInfo 	myInfo;
-
-	if (newMerge==MergeReplace) {
-	    ClearSymbolsInfo(info,xkb);
-	    newMerge= MergeAugment;
-	}
-	InitSymbolsInfo(&myInfo,xkb);
-	myInfo.allowActions= info->allowActions;
-	myInfo.parent= info;
-	myInfo.parentMerge= newMerge;
-	(*hndlr)(rtrn,xkb,MergeOverride,&myInfo);
-	/* 3/14/94 (ef) -- XXX! should free rtrn and contents here */
-	info->errorCount+= myInfo.errorCount;
-	if (myInfo.errorCount==0) {
-	    register int i;
-	    KeyInfo *key;
-	    clobber= (newMerge!=MergeAugment);
-	    if (info->name==(Atom)NullStringToken)
-		info->name= myInfo.name;
-
-	    for (i=0,key=myInfo.keys;i<myInfo.nKeys;i++,key++) {
-		if (!AddKeySymbols(info,key,clobber,False))
-		    info->errorCount++;
-	    }
-	    if (myInfo.modMap!=NULL) {
-		ModMapEntry *mm,*next;
-		for (mm=myInfo.modMap;mm!=NULL;mm=next) {
-		    if (!AddModMapEntry(info,mm,clobber))
-			info->errorCount++;
-		    next= mm->next;
-		    uFree(mm);
-		}
-		myInfo.modMap= NULL;
-	    }
-	}
-	FreeSymbolsInfo(&myInfo);
-	return (info->errorCount==0);
+    haveSelf= False;
+    if ((stmt->file==NULL)&&(stmt->map==NULL)) {
+	haveSelf= True;
+	included= *info;
+	bzero(info,sizeof(SymbolsInfo));
     }
-    info->errorCount+= 10;
-    return False;
+    else if (ProcessIncludeFile(stmt,XkmSymbolsIndex,&rtrn,&newMerge)) {
+	InitSymbolsInfo(&included,xkb);
+	included.fileID= included.dflt.defs.fileID= rtrn->id;
+	included.merge= included.dflt.defs.merge= MergeOverride;
+	(*hndlr)(rtrn,xkb,MergeOverride,&included);
+	if (stmt->stmt!=NULL) {
+	    if (included.name!=NULL)
+		uFree(included.name);
+	    included.name= stmt->stmt;
+	    stmt->stmt= NULL;
+	}
+    }
+    else {
+	info->errorCount+= 10;
+	return False;
+    }
+    if ((stmt->next!=NULL)&&(included.errorCount<1)) {
+	IncludeStmt *	next;
+	unsigned	op;
+	SymbolsInfo	next_incl;
+
+	for (next=stmt->next;next!=NULL;next=next->next) {
+	    if ((next->file==NULL)&&(next->map==NULL)) {
+		haveSelf= True;
+		MergeIncludedSymbols(&included,info,next->merge);
+		FreeSymbolsInfo(info);
+	    }
+	    else if (ProcessIncludeFile(next,XkmSymbolsIndex,&rtrn,&op)) {
+		InitSymbolsInfo(&next_incl,xkb);
+		next_incl.fileID= next_incl.dflt.defs.fileID= rtrn->id;
+		next_incl.merge= next_incl.dflt.defs.merge= MergeOverride;
+		(*hndlr)(rtrn,xkb,MergeOverride,&next_incl);
+		MergeIncludedSymbols(&included,&next_incl,op);
+		FreeSymbolsInfo(&next_incl);
+	    }
+	    else {
+		info->errorCount+= 10;
+		return False;
+	    }
+	}
+    }
+    if (haveSelf)
+	*info= included;
+    else {
+	MergeIncludedSymbols(info,&included,newMerge);
+	FreeSymbolsInfo(&included);
+    }
+    return (info->errorCount==0);
 }
 
 static LookupEntry	groupNames[]= {
@@ -586,11 +799,18 @@ static LookupEntry	groupNames[]= {
 #define	ACTIONS	2
 
 static Bool
+#if NeedFunctionPrototypes
+GetGroupIndex(	KeyInfo *	key,
+		ExprDef *	arrayNdx,
+		unsigned	what,
+		unsigned *	ndx_rtrn)
+#else
 GetGroupIndex(key,arrayNdx,what,ndx_rtrn)
     KeyInfo *	key;
     ExprDef *	arrayNdx;
     unsigned	what;
     unsigned *	ndx_rtrn;
+#endif
 {
 char *		name;
 ExprResult	tmp;
@@ -610,21 +830,23 @@ ExprResult	tmp;
 		return True;
 	    }
 	}
-	uError("Too many groups of %s for key <%s> (max 8)\n",name,
-							longText(key->name));
-	uAction("Ignoring %s defined for extra groups\n",name);
+	ERROR3("Too many groups of %s for key %s (max %d)\n",name,
+						XkbNumKbdGroups+1,
+						longText(key->name,XkbMessage));
+	ACTION1("Ignoring %s defined for extra groups\n",name);
 	return False;
     }
-    if (!ExprResolveInteger(arrayNdx,&tmp,SimpleLookup,groupNames)) {
-	uError("Illegal group index for %s of key <%s>\n",name,
-							longText(key->name));
-	uAction("Definition with non-integer array index ignored\n");
+    if (!ExprResolveInteger(arrayNdx,&tmp,SimpleLookup,(XPointer)groupNames)) {
+	ERROR2("Illegal group index for %s of key %s\n",name,
+						longText(key->name,XkbMessage));
+	ACTION("Definition with non-integer array index ignored\n");
 	return False;
     }
     if ((tmp.uval<1)||(tmp.uval>XkbNumKbdGroups)) {
-	uError("Group index for %s of key <%s> is out of range (1..8)\n",name,
-							longText(key->name));
-	uError("Symbols for group %d ignored\n",tmp.uval);
+	ERROR3("Group index for %s of key %s is out of range (1..%d)\n",name,
+						longText(key->name,XkbMessage),
+						XkbNumKbdGroups+1);
+	ACTION2("Ignoring %s for group %d\n",name,tmp.uval);
 	return False;
     }
     *ndx_rtrn= tmp.uval-1;
@@ -632,17 +854,25 @@ ExprResult	tmp;
 }
 
 static Bool
-AddSymbolsToKey(key,xkb,field,arrayNdx,value,clobber,info)
+#if NeedFunctionPrototypes
+AddSymbolsToKey(	KeyInfo *	key,
+			XkbDescPtr	xkb,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			SymbolsInfo *	info)
+#else
+AddSymbolsToKey(key,xkb,field,arrayNdx,value,info)
     KeyInfo *		key;
     XkbDescPtr		xkb;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		clobber;
     SymbolsInfo *	info;
+#endif
 {
 unsigned	ndx,nSyms;
-ExprResult	tmp;
+int		i;
 
     if (!GetGroupIndex(key,arrayNdx,SYMBOLS,&ndx))
 	return False;
@@ -651,22 +881,23 @@ ExprResult	tmp;
 	return True;
     }
     if (value->op!=ExprKeysymList) {
-	uError("Expected a list of symbols, found %s\n",exprOpText(value->op));
-	uAction("Ignoring symbols for group %d of <%s>\n",ndx,
-							longText(key->name));
+	ERROR1("Expected a list of symbols, found %s\n",exprOpText(value->op));
+	ACTION2("Ignoring symbols for group %d of %s\n",ndx,
+						longText(key->name,XkbMessage));
 	return False;
     }
     if (key->syms[ndx]!=NULL) {
-	uInternalError("Symbols for key <%s>, group %d already defined\n",
-						longText(key->name),ndx);
+	WSGO2("Symbols for key %s, group %d already defined\n",
+						longText(key->name,XkbMessage),
+						ndx);
 	return False;
     }
     nSyms= value->value.list.nSyms;
-    if (((key->groupWidth[ndx]<nSyms)||(key->syms[ndx]==NULL))&&
+    if (((key->numLevels[ndx]<nSyms)||(key->syms[ndx]==NULL))&&
 				(!ResizeKeyGroup(key,ndx,nSyms,False))) {
-	uInternalError("Couldn't resize group %d of key %s\n",ndx,
-							longText(key->name));
-	uAction("Symbols lost\n");
+	WSGO2("Could not resize group %d of key %s\n",ndx,
+						longText(key->name,XkbMessage));
+	ACTION("Symbols lost\n");
 	return False;
     }
     key->symsDefined|= (1<<ndx);
@@ -674,63 +905,66 @@ ExprResult	tmp;
 							nSyms*sizeof(KeySym));
     uFree(value->value.list.syms);
     value->value.list.syms= NULL;
+    for (i=key->numLevels[ndx]-1;(i>=0)&&(key->syms[ndx][i]==NoSymbol);i--) {
+	key->numLevels[ndx]--;
+    }
     return True;
 }
 
 static Bool
-AddActionsToKey(key,xkb,field,arrayNdx,value,clobber,info)
+#if NeedFunctionPrototypes
+AddActionsToKey(	KeyInfo *	key,
+			XkbDescPtr	xkb,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			SymbolsInfo *	info)
+#else
+AddActionsToKey(key,xkb,field,arrayNdx,value,info)
     KeyInfo *		key;
     XkbDescPtr		xkb;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		clobber;
     SymbolsInfo *	info;
+#endif
 {
 register int	i;
 unsigned	ndx,nActs;
-ExprResult	tmp;
 ExprDef	*	act;
 XkbAnyAction *	toAct;
 
     if (!GetGroupIndex(key,arrayNdx,ACTIONS,&ndx))
 	return False;
 
-    if (!info->allowActions) {
-	if (warningLevel>0) {
-	    uWarning("Alternate symbol sets cannot define key actions\n");
-	    uAction("Ignoring actions assigned to group %d of key <%s>\n",ndx,
-							  longText(key->name));
-	}
-	return False;
-    }
     if (value==NULL) {
 	key->actsDefined|= (1<<ndx);
 	return True;
     }
     if (value->op!=ExprActionList) {
-	uInternalError("Bad expression type (%d) for action list value\n");
-	uAction("Ignoring actions for group %d of <%s>\n",ndx,
-							longText(key->name));
+	WSGO1("Bad expression type (%d) for action list value\n",value->op);
+	ACTION2("Ignoring actions for group %d of %s\n",ndx,
+						longText(key->name,XkbMessage));
 	return False;
     }
     if (key->acts[ndx]!=NULL) {
-	uInternalError("Actions for key <%s>, group %d already defined\n",
-						longText(key->name),ndx);
+	WSGO2("Actions for key %s, group %d already defined\n",
+						longText(key->name,XkbMessage),
+						ndx);
 	return False;
     }
     for (nActs=0,act= value->value.child;act!=NULL;nActs++) {
 	act= (ExprDef *)act->common.next;
     }
     if (nActs<1) {
-	uInternalError("Action list but not actions in AddActionsToKey\n");
+	WSGO("Action list but not actions in AddActionsToKey\n");
 	return False;
     }
-    if (((key->groupWidth[ndx]<nActs)||(key->acts[ndx]==NULL))&&
+    if (((key->numLevels[ndx]<nActs)||(key->acts[ndx]==NULL))&&
 				(!ResizeKeyGroup(key,ndx,nActs,True))) {
-	uInternalError("Couldn't resize group %d of key %s\n",ndx,
-							longText(key->name));
-	uAction("Actions lost\n");
+	WSGO2("Could not resize group %d of key %s\n",ndx,
+					longText(key->name,XkbMessage));
+	ACTION("Actions lost\n");
 	return False;
     }
     key->actsDefined|= (1<<ndx);
@@ -739,13 +973,56 @@ XkbAnyAction *	toAct;
     act= value->value.child;
     for (i=0;i<nActs;i++,toAct++) {
 	if (!HandleActionDef(act,xkb,toAct,MergeOverride,info->action)) {
-	    uError("Illegal action definition for <%s>\n",longText(key->name));
-	    uAction("Action for group %d/level %d ignored\n",ndx,i);
+	    ERROR1("Illegal action definition for %s\n",
+	    				longText(key->name,XkbMessage));
+	    ACTION2("Action for group %d/level %d ignored\n",ndx,i);
 	}
 	act= (ExprDef *)act->common.next;
     }
     return True;
 }
+
+static int
+#if NeedFunctionPrototypes
+SetAllowNone(KeyInfo *key,ExprDef *arrayNdx,ExprDef *value)
+#else
+SetAllowNone(key,arrayNdx,value)
+    KeyInfo *	key;
+    ExprDef *	arrayNdx;
+    ExprDef *	value;
+#endif
+{
+ExprResult	tmp;
+unsigned	radio_groups= 0;
+
+    if (arrayNdx==NULL) {
+	radio_groups= XkbAllRadioGroupsMask;
+    }
+    else {
+        if (!ExprResolveInteger(arrayNdx,&tmp,RadioLookup,NULL)){
+	    ERROR("Illegal index in group name definition\n");
+	    ACTION("Definition with non-integer array index ignored\n");
+	    return False;
+	}
+	if ((tmp.uval<1)||(tmp.uval>XkbMaxRadioGroups)) {
+	    ERROR1("Illegal radio group specified (must be 1..%d)\n",
+							XkbMaxRadioGroups+1);
+	    ACTION1("Value of \"allow none\" for group %d ignored\n",tmp.uval);
+	    return False;
+	}
+	radio_groups|= (1<<(tmp.uval-1));
+    }
+    if (!ExprResolveBoolean(value,&tmp,NULL,NULL)) {
+	ERROR1("Illegal \"allow none\" value for %s\n",
+	    					longText(key->name,XkbMessage));
+	ACTION("Non-boolean value ignored\n"); 
+	return False;
+    }
+    if (tmp.uval)	key->allowNone|= radio_groups;
+    else		key->allowNone&= ~radio_groups;
+    return True;
+}
+
 
 static LookupEntry	lockingEntries[] = {
 	{	"true",		XkbKB_Lock	},
@@ -775,49 +1052,91 @@ static	LookupEntry	rgEntries[]= {
 };
 
 static Bool
-SetSymbolsField(key,xkb,field,arrayNdx,value,clobber,info)
+#if NeedFunctionPrototypes
+SetSymbolsField(	KeyInfo *	key,
+			XkbDescPtr	xkb,
+			char *		field,
+			ExprDef *	arrayNdx,
+			ExprDef *	value,
+			SymbolsInfo *	info)
+#else
+SetSymbolsField(key,xkb,field,arrayNdx,value,info)
     KeyInfo *		key;
     XkbDescPtr		xkb;
     char *		field;
     ExprDef *		arrayNdx;
     ExprDef *		value;
-    unsigned		clobber;
     SymbolsInfo *	info;
+#endif
 {
 Bool 		ok= True;
 ExprResult	tmp;
 
     if (uStrCaseCmp(field,"type")==0) {
-	if ((arrayNdx!=NULL)&&(warningLevel>0)) {
-	    uWarning("The type field of a key symbol map is not an array\n");
-	    uAction("Illegal subscript ignored\n");
-	}
+	ExprResult	ndx;
 	if ((!ExprResolveString(value,&tmp,NULL,NULL))&&(warningLevel>0)) {
-	    uWarning("The type field of a key symbol map must be a string\n");
-	    uAction("Ignoring illegal type definition\n");
+	    WARN("The type field of a key symbol map must be a string\n");
+	    ACTION("Ignoring illegal type definition\n");
 	}
-	key->type= stGetToken(tmp.str);
+	if (arrayNdx==NULL) {
+	    key->dfltType= XkbInternAtom(NULL,tmp.str,False);
+	    key->defs.defined|= _Key_Type_Dflt;
+	}
+	else if (!ExprResolveInteger(arrayNdx,&ndx,SimpleLookup,
+							(XPointer)groupNames)) {
+	    ERROR1("Illegal group index for type of key %s\n",
+						longText(key->name,XkbMessage));
+	    ACTION("Definition with non-integer array index ignored\n");
+	    return False;
+	}
+	else if ((ndx.uval<1)||(ndx.uval>XkbNumKbdGroups)) {
+	    ERROR2("Group index for type of key %s is out of range (1..%d)\n",
+						longText(key->name,XkbMessage),
+						XkbNumKbdGroups+1);
+	    ACTION1("Ignoring type for group %d\n",ndx.uval);
+	    return False;
+        }
+	else {
+	    key->types[ndx.uval-1]= XkbInternAtom(NULL,tmp.str,False);
+	    key->typesDefined|= (1<<(ndx.uval-1));
+	}
     }
     else if (uStrCaseCmp(field,"symbols")==0)
-	return AddSymbolsToKey(key,xkb,field,arrayNdx,value,clobber,info);
+	return AddSymbolsToKey(key,xkb,field,arrayNdx,value,info);
     else if (uStrCaseCmp(field,"actions")==0)
-	return AddActionsToKey(key,xkb,field,arrayNdx,value,clobber,info);
+	return AddActionsToKey(key,xkb,field,arrayNdx,value,info);
+    else if ((uStrCaseCmp(field,"vmods")==0)||
+	     (uStrCaseCmp(field,"virtualmods")==0)||
+	     (uStrCaseCmp(field,"virtualmodifiers")==0)) {
+	ok= ExprResolveModMask(arrayNdx,&tmp,LookupVModMask,(XPointer)xkb);
+	if (ok) {
+	    key->vmodmap= tmp.uval;
+	    key->defs.defined|= _Key_VModMap;
+	}
+	else {
+	    ERROR1("Expected a virtual modifier mask, found %s\n",
+							exprOpText(value->op));
+	    ACTION1("Ignoring virtual modifiers definition for key %s\n",
+						longText(key->name,XkbMessage));
+	}
+    }
     else if ((uStrCaseCmp(field,"locking")==0)||(uStrCaseCmp(field,"lock")==0)||
    	     (uStrCaseCmp(field,"locks")==0)) {
 	ok= ExprResolveEnum(value,&tmp,lockingEntries);
 	if (ok)
 	    key->behavior.type= tmp.uval;
+	key->defs.defined|= _Key_Behavior;
     }
     else if ((uStrCaseCmp(field,"radiogroup")==0)||
 	     (uStrCaseCmp(field,"permanentradiogroup")==0)) {
 	Bool permanent= False;
 	if (uStrCaseCmp(field,"permanentradiogroup")==0)
 	    permanent= True;
-	ok= ExprResolveInteger(value,&tmp,SimpleLookup,rgEntries);
+	ok= ExprResolveInteger(value,&tmp,SimpleLookup,(XPointer)rgEntries);
 	if (!ok) {
-	    uError("Illegal radio group specification for <%s>\n",
-							longText(key->name));
-	    uAction("Non-integer radio group ignored\n");
+	    ERROR1("Illegal radio group specification for %s\n",
+					longText(key->name,XkbMessage));
+	    ACTION("Non-integer radio group ignored\n");
 	    return False;
 	}
 	if (tmp.uval==0) {
@@ -826,59 +1145,250 @@ ExprResult	tmp;
 	    return ok;
 	}
 	if ((tmp.uval<1)||(tmp.uval>XkbMaxRadioGroups)) {
-	    uError("Radio group specification for <%s> out of range (1..32)\n",
-							longText(key->name));
-	    uAction("Illegal radio group %d ignored\n",tmp.uval);
+	    ERROR1("Radio group specification for %s out of range (1..32)\n",
+						longText(key->name,XkbMessage));
+	    ACTION1("Illegal radio group %d ignored\n",tmp.uval);
 	    return False;
 	}
 	key->behavior.type= XkbKB_RadioGroup|(permanent?XkbKB_Permanent:0);
 	key->behavior.data= tmp.uval-1;
+	if (key->allowNone&(1<<(tmp.uval-1)))
+	    key->behavior.data|= XkbKB_RGAllowNone;
+	key->defs.defined|= _Key_Behavior;
+    }
+    else if (uStrCaseEqual(field,"allownone")) {
+	ok= SetAllowNone(key,arrayNdx,value);
+    }
+    else if (uStrCasePrefix("overlay",field)||
+	     uStrCasePrefix("permanentoverlay",field)) {
+	Bool permanent= False;
+	char *which;
+	int  overlayNdx;
+	if (uStrCasePrefix("permanent",field)) {
+	    permanent= True;
+	    which= &field[sizeof("permanentoverlay")-1];
+	}
+	else {
+	    which= &field[sizeof("overlay")-1];
+	}
+	if (sscanf(which,"%d",&overlayNdx)==1) {
+	    if (((overlayNdx<1)||(overlayNdx>2))&&(warningLevel>0)) {
+		ERROR2("Illegal overlay %d specified for %s\n",
+						overlayNdx,
+						longText(key->name,XkbMessage));
+		ACTION("Ignored\n");
+		return False;
+	    }
+	}
+	else if (*which=='\0')
+	    overlayNdx=1;
+	else if (warningLevel>0) {
+	    ERROR2("Illegal overlay \"%s\" specified for %s\n",
+						which,
+						longText(key->name,XkbMessage));
+	    ACTION("Ignored\n");
+	    return False;
+	}
+	ok= ExprResolveKeyName(value,&tmp,NULL,NULL);
+	if (!ok) {
+	    ERROR1("Illegal overlay key specification for %s\n",
+						longText(key->name,XkbMessage));
+	    ACTION("Overlay key must be specified by name\n");
+	    return False;
+	}
+	if (overlayNdx==1)	key->behavior.type= XkbKB_Overlay1;
+	else			key->behavior.type= XkbKB_Overlay2;
+	if (permanent)
+	    key->behavior.type|= XkbKB_Permanent;
+
+	key->behavior.data= 0;
+	key->nameForOverlayKey= KeyNameToLong(tmp.keyName.name);
+	key->defs.defined|= _Key_Behavior;
     }
     else if ((uStrCaseCmp(field,"repeating")==0)||
-	     (uStrCaseCmp(field,"repeats")==0)||(uStrCaseCmp(field,"repeat")==0)){
+	     (uStrCaseCmp(field,"repeats")==0)||
+	     (uStrCaseCmp(field,"repeat")==0)){
 	ok= ExprResolveEnum(value,&tmp,repeatEntries);
 	if (!ok) {
-	    uError("Illegal repeat setting for <%s>\n",longText(key->name));
-	    uAction("Non-boolean repeat setting ignored\n");
+	    ERROR1("Illegal repeat setting for %s\n",
+	    					longText(key->name,XkbMessage));
+	    ACTION("Non-boolean repeat setting ignored\n");
 	    return False;
 	}
 	key->repeat= tmp.uval;
+	key->defs.defined|= _Key_Repeat;
+    }
+    else if ((uStrCaseCmp(field,"groupswrap")==0)||
+   	     (uStrCaseCmp(field,"wrapgroups")==0)) {
+	ok= ExprResolveBoolean(value,&tmp,NULL,NULL);
+	if (!ok) {
+	    ERROR1("Illegal groupsWrap setting for %s\n",
+	    					longText(key->name,XkbMessage));
+	    ACTION("Non-boolean value ignored\n"); 
+	    return False;
+	}
+	if (tmp.uval) 	key->groupInfo= XkbWrapIntoRange;
+	else		key->groupInfo= XkbClampIntoRange;
+	key->defs.defined|= _Key_GroupInfo;
+    }
+    else if ((uStrCaseCmp(field,"groupsclamp")==0)||
+   	     (uStrCaseCmp(field,"clampgroups")==0)) {
+	ok= ExprResolveBoolean(value,&tmp,NULL,NULL);
+	if (!ok) {
+	    ERROR1("Illegal groupsClamp setting for %s\n",
+	    					longText(key->name,XkbMessage));
+	    ACTION("Non-boolean value ignored\n"); 
+	    return False;
+	}
+	if (tmp.uval)	key->groupInfo= XkbClampIntoRange;
+	else		key->groupInfo= XkbWrapIntoRange;
+	key->defs.defined|= _Key_GroupInfo;
+    }
+    else if ((uStrCaseCmp(field,"groupsredirect")==0)||
+	     (uStrCaseCmp(field,"redirectgroups")==0)) {
+	if (!ExprResolveInteger(value,&tmp,SimpleLookup,(XPointer)groupNames)) {
+	    ERROR1("Illegal group index for redirect of key %s\n",
+						longText(key->name,XkbMessage));
+	    ACTION("Definition with non-integer group ignored\n");
+	    return False;
+	}
+	if ((tmp.uval<1)||(tmp.uval>XkbNumKbdGroups)) {
+	    ERROR2("Out-of-range (1..%d) group for redirect of key %s\n",
+						XkbNumKbdGroups,
+						longText(key->name,XkbMessage));
+	    ERROR1("Ignoring illegal group %d\n",tmp.uval);
+	    return False;
+	}
+	key->groupInfo= XkbSetGroupInfo(0,XkbRedirectIntoRange,tmp.uval-1);
+	key->defs.defined|= _Key_GroupInfo;
     }
     else {
-	uError("Unknown field %s in a symbol interpretation\n",field);
-	uAction("Definition ignored\n");
+	ERROR1("Unknown field %s in a symbol interpretation\n",field);
+	ACTION("Definition ignored\n");
 	ok= False;
     }
     return ok;
 }
 
 static int
-HandleSymbolsVar(stmt,xkb,clobber,info)
+#if NeedFunctionPrototypes
+SetGroupName(SymbolsInfo *info,ExprDef *arrayNdx,ExprDef *value)
+#else
+SetGroupName(info,arrayNdx,value)
+    SymbolsInfo *	info;
+    ExprDef *		arrayNdx;
+    ExprDef *		value;
+#endif
+{
+ExprResult	tmp,name;
+
+    if ((arrayNdx==NULL)&&(warningLevel>0)) {
+	WARN("You must specify an index when specifying a group name\n");
+	ACTION("Group name definition without array subscript ignored\n");
+	return False;
+    }
+    if (!ExprResolveInteger(arrayNdx,&tmp,SimpleLookup,(XPointer)groupNames)) {
+	ERROR("Illegal index in group name definition\n");
+	ACTION("Definition with non-integer array index ignored\n");
+	return False;
+    }
+    if ((tmp.uval<1)||(tmp.uval>XkbNumKbdGroups)) {
+	ERROR1("Attempt to specify name for illegal group (must be 1..%d)\n",
+							XkbNumKbdGroups+1);
+	ACTION1("Name for group %d ignored\n",tmp.uval);
+	return False;
+    }
+    if (!ExprResolveString(value,&name,NULL,NULL)) {
+	ERROR("Group name must be a string\n");
+	ACTION1("Illegal name for group %d ignored\n",tmp.uval);
+	return False;
+    }
+    info->groupNames[tmp.uval-1]= XkbInternAtom(NULL,name.str,False);
+    return True;
+}
+
+static int
+#if NeedFunctionPrototypes
+HandleSymbolsVar(VarDef *stmt,XkbDescPtr xkb,SymbolsInfo *info)
+#else
+HandleSymbolsVar(stmt,xkb,info)
     VarDef *		stmt;
     XkbDescPtr		xkb;
-    Bool 		clobber;
     SymbolsInfo *	info;
+#endif
 {
-ExprResult	elem,field;
+ExprResult	elem,field,tmp;
 ExprDef *	arrayNdx;
 
     if (ExprResolveLhs(stmt->name,&elem,&field,&arrayNdx)==0) 
 	return 0; /* internal error, already reported */
     if (elem.str&&(uStrCaseCmp(elem.str,"key")==0)) {
 	return SetSymbolsField(&info->dflt,xkb,field.str,arrayNdx,stmt->value,
-							     clobber,info);	
+							     		info);	
+    }
+    else if ((elem.str==NULL)&&((uStrCaseCmp(field.str,"name")==0)||
+				(uStrCaseCmp(field.str,"groupname")==0))) {
+	return SetGroupName(info,arrayNdx,stmt->value);
+    }
+    else if ((elem.str==NULL)&&((uStrCaseCmp(field.str,"groupswrap")==0)||
+				(uStrCaseCmp(field.str,"wrapgroups")==0))) {
+	if (!ExprResolveBoolean(stmt->value,&tmp,NULL,NULL)) {
+	    ERROR("Illegal setting for global groupsWrap\n");
+	    ACTION("Non-boolean value ignored\n"); 
+	    return False;
+	}
+	if (tmp.uval) 	info->groupInfo= XkbWrapIntoRange;
+	else		info->groupInfo= XkbClampIntoRange;
+	return True;
+    }
+    else if ((elem.str==NULL)&&((uStrCaseCmp(field.str,"groupsclamp")==0)||
+				(uStrCaseCmp(field.str,"clampgroups")==0))) {
+	if (!ExprResolveBoolean(stmt->value,&tmp,NULL,NULL)) {
+	    ERROR("Illegal setting for global groupsClamp\n");
+	    ACTION("Non-boolean value ignored\n"); 
+	    return False;
+	}
+	if (tmp.uval)	info->groupInfo= XkbClampIntoRange;
+	else		info->groupInfo= XkbWrapIntoRange;
+	return True;
+    }
+    else if ((elem.str==NULL)&&((uStrCaseCmp(field.str,"groupsredirect")==0)||
+				(uStrCaseCmp(field.str,"redirectgroups")==0))) {
+	if (!ExprResolveInteger(stmt->value,&tmp,
+					SimpleLookup,(XPointer)groupNames)) {
+	    ERROR("Illegal group index for global groupsRedirect\n");
+	    ACTION("Definition with non-integer group ignored\n");
+	    return False;
+	}
+	if ((tmp.uval<1)||(tmp.uval>XkbNumKbdGroups)) {
+	    ERROR1("Out-of-range (1..%d) group for global groupsRedirect\n",
+	    						XkbNumKbdGroups);
+	    ACTION1("Ignoring illegal group %d\n",tmp.uval);
+	    return False;
+	}
+	info->groupInfo= XkbSetGroupInfo(0,XkbRedirectIntoRange,tmp.uval);
+	return True;
+    }
+    else if ((elem.str==NULL)&&(uStrCaseCmp(field.str,"allownone")==0)) {
+	return SetAllowNone(&info->dflt,arrayNdx,stmt->value);
     }
     return SetActionField(xkb,elem.str,field.str,arrayNdx,stmt->value,
 							     &info->action);
 }
 
 static Bool
-HandleSymbolsBody(def,xkb,key,clobber,info)
+#if NeedFunctionPrototypes
+HandleSymbolsBody(	VarDef *	def,
+			XkbDescPtr	xkb,
+			KeyInfo *	key,
+			SymbolsInfo *	info)
+#else
+HandleSymbolsBody(def,xkb,key,info)
     VarDef *		def;
     XkbDescPtr		xkb;
     KeyInfo *		key;
-    unsigned 		clobber;
     SymbolsInfo *	info;
+#endif
 {
 Bool		ok= True;
 ExprResult	tmp,field;
@@ -886,7 +1396,7 @@ ExprDef *	arrayNdx;
 
     for (;def!=NULL;def= (VarDef *)def->common.next) {
 	if ((def->name)&&(def->name->type==ExprFieldRef)) {
-	    ok= HandleSymbolsVar(def,xkb,clobber,info);
+	    ok= HandleSymbolsVar(def,xkb,info);
 	    continue;
 	}
 	else {
@@ -900,44 +1410,38 @@ ExprDef *	arrayNdx;
 		ok= ExprResolveLhs(def->name,&tmp,&field,&arrayNdx);
 	    }
 	    if (ok)
-		ok= SetSymbolsField(key,xkb,field.str,arrayNdx,def->value,
-							 clobber,info);
+		ok= SetSymbolsField(key,xkb,field.str,arrayNdx,def->value,info);
 	}
     }
     return ok;
 }
 
 static int
-HandleSymbolsDef(stmt,xkb,clobber,info)
+#if NeedFunctionPrototypes
+HandleSymbolsDef(	SymbolsDef *	stmt,
+			XkbDescPtr 	xkb,
+			unsigned 	merge,
+			SymbolsInfo *	info)
+#else
+HandleSymbolsDef(stmt,xkb,merge,info)
     SymbolsDef *	stmt;
     XkbDescPtr		xkb;
-    unsigned 		clobber;
+    unsigned 		merge;
     SymbolsInfo *	info;
+#endif
 {
 KeyInfo			key;
-char			buf[5];
  
-    if (stmt->merge!=MergeDefault) {
-	if ((stmt->merge==MergeReplace)||(stmt->merge==MergeOverride))
-	    clobber= True;
-	else if (stmt->merge==MergeAugment)
-	    clobber= False;
-	else {
-	    uInternalError("Unknown merge mode %d in HandleSymbolsDef\n",
-								stmt->merge);
-	    uAction("Ignored\n");
-	}
-    }
-
     InitKeyInfo(&key);
     CopyKeyInfo(&info->dflt,&key,False);
+    key.defs.merge= stmt->merge;
     key.name= KeyNameToLong(stmt->keyName);
-    if (!HandleSymbolsBody(stmt->symbols,xkb,&key,clobber,info)) {
+    if (!HandleSymbolsBody((VarDef *)stmt->symbols,xkb,&key,info)) {
 	info->errorCount++;
 	return False;
     }
 
-    if (!AddKeySymbols(info,&key,clobber,True)) {
+    if (!AddKeySymbols(info,&key)) {
 	info->errorCount++;
 	return False;
     }
@@ -945,21 +1449,28 @@ char			buf[5];
 }
 
 static Bool
-HandleModMapDef(def,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleModMapDef(	ModMapDef *	def,
+			XkbDescPtr	xkb,
+			unsigned	merge,
+			SymbolsInfo *	info)
+#else
+HandleModMapDef(def,xkb,merge,info)
     ModMapDef *		def;
     XkbDescPtr		xkb;
-    unsigned		mergeMode;
+    unsigned		merge;
     SymbolsInfo *	info;
+#endif
 {
 ExprDef	*	key;
 ModMapEntry	tmp;
 ExprResult	rtrn;
-int		mod;
 Bool 		ok;
 
-    if (!LookupModIndex(NULL,NullStringToken,def->modifier,TypeInt,&rtrn)) {
-	uError("Illegal modifier map definition\n");
-	uAction("Ignoring map for non-modifier \"%s\"\n",stText(def->modifier));
+    if (!LookupModIndex(NULL,None,def->modifier,TypeInt,&rtrn)) {
+	ERROR("Illegal modifier map definition\n");
+	ACTION1("Ignoring map for non-modifier \"%s\"\n",
+				XkbAtomText(NULL,def->modifier,XkbMessage));
 	return False;
     }
     ok= True;
@@ -974,23 +1485,30 @@ Bool 		ok;
 	    tmp.u.keySym= rtrn.uval;
 	}
 	else {
-	    uError("Modmap entries may contain only key names or keysyms\n");
-	    uAction("Illegal definition for %s modifier ignored\n",
+	    ERROR("Modmap entries may contain only key names or keysyms\n");
+	    ACTION1("Illegal definition for %s modifier ignored\n",
 				XkbModIndexText(tmp.modifier,XkbMessage));
 	    continue;
 	}
 
-	ok= AddModMapEntry(info,&tmp,(mergeMode!=MergeAugment))&&ok;
+	ok= AddModMapEntry(info,&tmp)&&ok;
     }
     return ok;
 }
 
 static void
-HandleSymbolsFile(file,xkb,mergeMode,info)
+#if NeedFunctionPrototypes
+HandleSymbolsFile(	XkbFile	*	file,
+			XkbDescPtr	xkb,
+			unsigned	merge,
+			SymbolsInfo *	info)
+#else
+HandleSymbolsFile(file,xkb,merge,info)
     XkbFile	*	file;
     XkbDescPtr	 	xkb;
-    unsigned		mergeMode;
+    unsigned		merge;
     SymbolsInfo	*	info;
+#endif
 {
 ParseCommon	*stmt;
 
@@ -1004,41 +1522,42 @@ ParseCommon	*stmt;
 		    info->errorCount++;
 		break;
 	    case StmtSymbolsDef:
-		if (!HandleSymbolsDef((SymbolsDef *)stmt,xkb,mergeMode,info))
+		if (!HandleSymbolsDef((SymbolsDef *)stmt,xkb,merge,info))
 		    info->errorCount++;
 		break;
 	    case StmtVarDef:
-		if (!HandleSymbolsVar((VarDef *)stmt,xkb,mergeMode,info))
+		if (!HandleSymbolsVar((VarDef *)stmt,xkb,info))
 		    info->errorCount++;
 		break;
 	    case StmtVModDef:
-		if (!HandleVModDef((VModDef *)stmt,mergeMode,&info->vmods))
+		if (!HandleVModDef((VModDef *)stmt,merge,&info->vmods))
 		    info->errorCount++;
 		break;
 	    case StmtInterpDef:
-		uError("Interpretation files may not include other types\n");
-		uAction("Ignoring definition of symbol interpretation\n");
+		ERROR("Interpretation files may not include other types\n");
+		ACTION("Ignoring definition of symbol interpretation\n");
 		info->errorCount++;
 		break;
 	    case StmtKeycodeDef:
-		uError("Interpretation files may not include other types\n");
-		uAction("Ignoring definition of key name\n");
+		ERROR("Interpretation files may not include other types\n");
+		ACTION("Ignoring definition of key name\n");
 		info->errorCount++;
 		break;
 	    case StmtModMapDef:
-		if (!HandleModMapDef((ModMapDef *)stmt,xkb,mergeMode,info))
+		if (!HandleModMapDef((ModMapDef *)stmt,xkb,merge,info))
 		    info->errorCount++;
 		break;
 	    default:
-		uInternalError(
-			"Unexpected statement type %d in HandleSymbolsFile\n",
+		WSGO1("Unexpected statement type %d in HandleSymbolsFile\n",
 			stmt->stmtType);
 		break;
 	}
 	stmt= stmt->next;
 	if (info->errorCount>10) {
-	    uError("Too many errors\n");
-	    uAction("Abandoning %s\n",stText(file->name));
+#ifdef NOISY
+	    ERROR("Too many errors\n");
+#endif
+	    ACTION1("Abandoning symbols file \"%s\"\n",file->topName);
 	    break;
 	}
     }
@@ -1046,31 +1565,14 @@ ParseCommon	*stmt;
 }
 
 Bool
-FindNamedKey(xkb,name,kc_rtrn)
-    XkbDescPtr		xkb;
-    unsigned long	name;
-    unsigned int *	kc_rtrn;
-{
-register unsigned n;
-
-    if (xkb&&xkb->names&&xkb->names->keys) {
-	for (n=xkb->min_key_code;n<=xkb->max_key_code;n++) {
-	    unsigned long tmp;
-	    tmp= KeyNameToLong(xkb->names->keys[n].name);
-	    if (tmp==name) {
-		*kc_rtrn= n;
-		return True;
-	    }
-	}
-    }
-    return False;
-}
-
-Bool
+#if NeedFunctionPrototypes
+FindKeyForSymbol(XkbDescPtr xkb,KeySym sym,unsigned int *kc_rtrn)
+#else
 FindKeyForSymbol(xkb,sym,kc_rtrn)
     XkbDescPtr		xkb;
     KeySym		sym;
     unsigned int *	kc_rtrn;
+#endif
 {
 register int 	i, j;
 register Bool	gotOne;
@@ -1093,10 +1595,14 @@ register Bool	gotOne;
 }
 
 Bool
+#if NeedFunctionPrototypes
+FindNamedType(XkbDescPtr xkb,Atom name,unsigned *type_rtrn)
+#else
 FindNamedType(xkb,name,type_rtrn)
     XkbDescPtr		xkb;
-    StringToken		name;
+    Atom		name;
     unsigned *		type_rtrn;
+#endif
 {
 register unsigned n;
 
@@ -1112,107 +1618,141 @@ register unsigned n;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+FindAutomaticType(int width,KeySym *syms,Atom *typeNameRtrn)
+#else
+FindAutomaticType(width,syms,typeNameRtrn)
+    int		width;
+    KeySym *	syms;
+    Atom *	typeNameRtrn;
+#endif
+{
+    if ((width==1)||(width==0))
+	 *typeNameRtrn= XkbInternAtom(NULL,"ONE_LEVEL",False);
+    else if ( syms && XkbKSIsLower(syms[0]) && XkbKSIsUpper(syms[1]) )
+	 *typeNameRtrn= XkbInternAtom(NULL,"ALPHABETIC",False);
+    else if ( syms && (XkbKSIsKeypad(syms[0]) || XkbKSIsKeypad(syms[1])) ) 
+	 *typeNameRtrn= XkbInternAtom(NULL,"KEYPAD",False);
+    else *typeNameRtrn= XkbInternAtom(NULL,"TWO_LEVEL",False);
+    return ((width>=0)&&(width<=2));
+}
+
+static Bool
+#if NeedFunctionPrototypes
+CopySymbolsDef(XkbFileInfo *result,KeyInfo *key)
+#else
 CopySymbolsDef(result,key)
     XkbFileInfo *	result;
     KeyInfo *		key;
+#endif
 {
 register int	i;
-unsigned	kc,width,tmp,nGroups;
+unsigned	okc,kc,width,tmp,nGroups;
 XkbKeyTypePtr	type;
-Bool		haveActions;
+Bool		haveActions,autoType;
 KeySym *	outSyms;
 XkbAction *	outActs;
 XkbDescPtr	xkb;
+unsigned	types[XkbNumKbdGroups];
 
-    xkb= &result->xkb;
-    if (!FindNamedKey(xkb,key->name,&kc)) {
+    xkb= result->xkb;
+    if (!FindNamedKey(xkb,key->name,&kc,True,CreateKeyNames(xkb))) {
 	if (warningLevel>=5) {
-	    uWarning("Key <%s> not found in %s keycodes\n",longText(key->name),
-						stText(xkb->names->keycodes));
-	    uAction("Symbols ignored\n");
+	    WARN2("Key %s not found in %s keycodes\n",
+	    		longText(key->name,XkbMessage),
+			XkbAtomText(NULL,xkb->names->keycodes,XkbMessage));
+	    ACTION("Symbols ignored\n");
 	}
 	return False;
     }
 
     haveActions= False;
     for (i=width=nGroups=0;i<XkbNumKbdGroups;i++) {
-	if (key->groupWidth[i]>width)
-	    width= key->groupWidth[i];
-	if (((i+1)>nGroups)&&((key->symsDefined|key->actsDefined)&(1<<i)))
+	if (((i+1)>nGroups)&&(((key->symsDefined|key->actsDefined)&(1<<i))||
+						(key->typesDefined)&(1<<i))) 
 	    nGroups= i+1;
 	if (key->acts[i])
 	    haveActions= True;
-    }
-
-    if (key->type==NullStringToken) {
-	if (width==1)	
-	    tmp= XkbOneLevelIndex;
-	else if (width==2) {
-	    if (key->syms[0]&&(IsKeypadKey(key->syms[0])||
-				IsKeypadKey(key->syms[1]))) {
-		 tmp= XkbKeypadIndex;
+	autoType= False;
+	if (key->types[i]==None) {
+	    if (key->dfltType!=None)
+		key->types[i]= key->dfltType;
+	    else if (FindAutomaticType(key->numLevels[i],key->syms[i],
+  							&key->types[i])) {
+		autoType= True;
 	    }
-	    else tmp= XkbTwoLevelIndex;
+	    else {
+		if (warningLevel>=5) {
+		    WARN1("No automatic type for %d symbols\n",
+						(unsigned int)key->numLevels[i]);
+		    ACTION3("Using %s for the %s key (keycode %d)\n",
+				XkbAtomText(NULL,key->types[i],XkbMessage),
+				longText(key->name,XkbMessage),kc);
+		}
+	    }
+	}
+	if (FindNamedType(xkb,key->types[i],&types[i]))  {
+	    if (!autoType)
+		xkb->server->explicit[kc]|= (1<<i);
 	}
 	else {
-	    if (warningLevel>=5) {
-		uWarning("No automatic type for keys with %d symbols\n",width);
-		uAction("Using TWO_LEVEL for the <%s> key (keycode %d)\n",
-							longText(key->name),kc);
+	    if (warningLevel>=3) {
+		WARN1("Type \"%s\" is not defined\n",
+	    			XkbAtomText(NULL,key->types[i],XkbMessage));
+		ACTION2("Using TWO_LEVEL for the %s key (keycode %d)\n",
+					longText(key->name,XkbMessage),kc);
 	    }
-	    tmp= XkbTwoLevelIndex;
+	    types[i]= XkbTwoLevelIndex;
 	}
-    }
-    else if (!FindNamedType(xkb,key->type,&tmp)) {
-	if (warningLevel>=3) {
-	    uWarning("Type \"%s\" is not defined\n",stText(key->type));
-	    uAction("Using TWO_LEVEL for the <%s> key (keycode %d)\n",
-							longText(key->name),kc);
+	type= &xkb->map->types[types[i]];
+	if (type->num_levels<key->numLevels[i]) {
+	    if (warningLevel>0) {
+		WARN4("Type \"%s\" has %d levels, but %s has %d symbols\n",
+					XkbAtomText(NULL,type->name,XkbMessage),
+					(unsigned int)type->num_levels,
+					longText(key->name,XkbMessage),
+					(unsigned int)key->numLevels[i]);
+		ACTION("Ignoring extra symbols\n");
+	    }
+	    key->numLevels[i]= type->num_levels;
 	}
-	tmp= XkbTwoLevelIndex;
+	if (key->numLevels[i]>width)
+	    width= key->numLevels[i];
+	if (type->num_levels>width)
+	    width= type->num_levels;
     }
-    else xkb->server->explicit[kc]|= XkbExplicitKeyTypeMask;
 
-    type= &xkb->map->types[tmp];
-    if (type->group_width<width) {
-	if (warningLevel>0) {
-	    uWarning("Type \"%s\" has %d levels, but <%s> has %d symbols\n",
-					stText(type->name),type->group_width,
-					longText(key->name),width);
-	    uAction("Ignoring extra symbols\n");
-	}
-	width= type->group_width;
-    }
-    else if (type->group_width>width)
-	width= type->group_width;
     i= width*nGroups;
-    outSyms= XkbEnlargeKeySyms(xkb,kc,i);
-    xkb->map->key_sym_map[kc].kt_index= tmp;
-    xkb->map->key_sym_map[kc].group_info= 
-		XkbSetNumGroups(xkb->map->key_sym_map[kc].group_info,nGroups);
+    outSyms= XkbResizeKeySyms(xkb,kc,i);
     if (outSyms==NULL) {
-	uInternalError("Couldn't enlarge symbols for <%s> (keycode %d)\n",
-							longText(key->name),kc);
+	WSGO2("Could not enlarge symbols for %s (keycode %d)\n",
+					longText(key->name,XkbMessage),kc);
 	return False;
     }
     if (haveActions) {
-	outActs= XkbEnlargeKeyActions(xkb,kc,i);
+	outActs= XkbResizeKeyActions(xkb,kc,i);
 	if (outActs==NULL) {
-	    uInternalError("Couldn't enlarge actions for <%s> (keycode %d)\n",
-							longText(key->name),kc);
-	    return False;
+		WSGO2("Could not enlarge actions for %s (key %d)\n",
+					longText(key->name,XkbMessage),kc);
+		return False;
 	}
 	xkb->server->explicit[kc]|= XkbExplicitInterpretMask;
     }
     else outActs= NULL;
+    if (key->defs.defined&_Key_GroupInfo)
+	 i= key->groupInfo;
+    else i= xkb->map->key_sym_map[kc].group_info;
+    xkb->map->key_sym_map[kc].group_info= XkbSetNumGroups(i,nGroups);
+    xkb->map->key_sym_map[kc].width= width;
     for (i=0;i<nGroups;i++) {
+	xkb->map->key_sym_map[kc].kt_index[i]= types[i];
 	if (key->syms[i]!=NULL) {
 	    for (tmp=0;tmp<width;tmp++) {
-		if (tmp<key->groupWidth[i])
+		if (tmp<key->numLevels[i])
 		     outSyms[tmp]= key->syms[i][tmp];
 		else outSyms[tmp]= NoSymbol;
 		if ((outActs!=NULL)&&(key->acts[i]!=NULL)) {
-		    if (tmp<key->groupWidth[i])
+		    if (tmp<key->numLevels[i])
 			 outActs[tmp]= key->acts[i][tmp];
 		    else outActs[tmp].type= XkbSA_NoAction;
 		}
@@ -1222,99 +1762,152 @@ XkbDescPtr	xkb;
 	if (outActs)
 	    outActs+= width;
     }
-    if (key->behavior.type!=XkbKB_Default) {
-	xkb->server->behaviors[kc]= key->behavior;
-	xkb->server->explicit[kc]|= XkbExplicitBehaviorMask;
+    switch (key->behavior.type&XkbKB_OpMask) {
+	case XkbKB_Default:
+	    break;
+	case XkbKB_Overlay1: 
+	case XkbKB_Overlay2:
+	    /* find key by name! */
+	    if (!FindNamedKey(xkb,key->nameForOverlayKey,&okc,True,
+	    						CreateKeyNames(xkb))) {
+		if (warningLevel>=1) {
+		    WARN2("Key %s not found in %s keycodes\n",
+			longText(key->nameForOverlayKey,XkbMessage),
+			XkbAtomText(NULL,xkb->names->keycodes,XkbMessage));
+		    ACTION1("Not treating %s as an overlay key \n",
+					longText(key->name,XkbMessage));
+		}
+		break;
+	    }
+	    key->behavior.data= okc;
+	default:
+	    xkb->server->behaviors[kc]= key->behavior;
+	    xkb->server->explicit[kc]|= XkbExplicitBehaviorMask;
+	    break;
+    }
+    if (key->defs.defined&_Key_VModMap) {
+	xkb->server->vmodmap[kc]= key->vmodmap;
+	xkb->server->explicit[kc]|= XkbExplicitVModMapMask;
     }
     if (key->repeat!=RepeatUndefined) {
-	result->defined|=XkbPerKeyRepeatDefined;
 	if (key->repeat==RepeatYes)
-	     result->repeat[kc/8]|= (1<<(kc%8));
-	else result->repeat[kc/8]&= ~(1<<(kc%8));
-	xkb->server->explicit[kc]|= XkbExplicitAutorepeatMask;
+	     xkb->ctrls->per_key_repeat[kc/8]|= (1<<(kc%8));
+	else xkb->ctrls->per_key_repeat[kc/8]&= ~(1<<(kc%8));
+	xkb->server->explicit[kc]|= XkbExplicitAutoRepeatMask;
     }
     return True;
 }
 
 static Bool
+#if NeedFunctionPrototypes
+CopyModMapDef(XkbFileInfo *result,ModMapEntry *entry)
+#else
 CopyModMapDef(result,entry)
     XkbFileInfo *	result;
     ModMapEntry *	entry;
+#endif
 {
 unsigned	kc;
 XkbDescPtr	xkb;
 
-    xkb= &result->xkb;
-    if ((!entry->haveSymbol)&&(!FindNamedKey(xkb,entry->u.keyName,&kc))) {
+    xkb= result->xkb;
+    if ((!entry->haveSymbol)&&(!FindNamedKey(xkb,entry->u.keyName,&kc,True,
+    							CreateKeyNames(xkb)))) {
 	if (warningLevel>=5) {
-	    uWarning("Key <%s> not found in %s keycodes\n",
-						longText(entry->u.keyName),
-						stText(xkb->names->keycodes));
-	    uAction("Modifier map entry for %s not updated\n",
+	    WARN2("Key %s not found in %s keycodes\n",
+			longText(entry->u.keyName,XkbMessage),
+			XkbAtomText(NULL,xkb->names->keycodes,XkbMessage));
+	    ACTION1("Modifier map entry for %s not updated\n",
 				XkbModIndexText(entry->modifier,XkbMessage));
 	}
 	return False;
     }
     else if (entry->haveSymbol&&(!FindKeyForSymbol(xkb,entry->u.keySym,&kc))) {
 	if (warningLevel>5) {
-	    uWarning("Symbol %s not found in the %s symbol map\n",
-				XkbKeysymText(entry->u.keySym,XkbMessage),
-				stText(xkb->names->symbols));
-	    uAction("Modifier map entry for %s not updated\n",
+	    WARN2("Key \"%s\" not found in %s symbol map\n",
+			XkbKeysymText(entry->u.keySym,XkbMessage),
+			XkbAtomText(NULL,xkb->names->symbols,XkbMessage));
+	    ACTION1("Modifier map entry for %s not updated\n",
 				XkbModIndexText(entry->modifier,XkbMessage));
 	}
 	return False;
     }
-    result->defined|= XkbModMapDefined;
-    result->modmap[kc]|= (1<<entry->modifier);
+    xkb->map->modmap[kc]|= (1<<entry->modifier);
     return True;
 }
 
 Bool
-CompileSymbols(file,result,mergeMode,allowActions)
+#if NeedFunctionPrototypes
+CompileSymbols(XkbFile *file,XkbFileInfo *result,unsigned merge)
+#else
+CompileSymbols(file,result,merge)
     XkbFile *		file;
     XkbFileInfo *	result;
-    unsigned	 	mergeMode;
-    Bool	 	allowActions;
+    unsigned	 	merge;
+#endif
 {
 register int	i;
 SymbolsInfo	info;
 XkbDescPtr	xkb;
 
-    xkb= &result->xkb;
+    xkb= result->xkb;
     InitSymbolsInfo(&info,xkb);
-    info.allowActions= allowActions;
-    HandleSymbolsFile(file,xkb,mergeMode,&info);
+    info.dflt.defs.fileID= file->id;
+    info.dflt.defs.merge= merge;
+    HandleSymbolsFile(file,xkb,merge,&info);
 
     if (info.errorCount==0) {
 	KeyInfo *key;
-	if (xkb->names!=NULL)
-	    xkb->names->symbols= (Atom)info.name;
-	if ((xkb->names==NULL)||(xkb->names->keys==NULL)) {
-	    uInternalError("Key names not defined in CompileSymbols\n");
-	    uAction("Symbols not added\n");
+	if (XkbAllocNames(xkb,XkbSymbolsNameMask|XkbGroupNamesMask,0,0)
+								!=Success) {
+	    WSGO("Can not allocate names in CompileSymbols\n");
+	    ACTION("Symbols not added\n");
 	    return False;
 	}
-	if (!XkbAllocClientMap(xkb,XkbKeySymsMask,0)) {
-	    uInternalError("Couldn't allocate client map in CompileSymbols\n");
-	    uAction("Symbols not added\n");
+	if(XkbAllocClientMap(xkb,XkbKeySymsMask|XkbModifierMapMask,0)!=Success){
+	    WSGO("Could not allocate client map in CompileSymbols\n");
+	    ACTION("Symbols not added\n");
 	    return False;
 	}
-	if (!XkbAllocServerMap(xkb,XkbFullServerInfoMask,32)) {
-	    uInternalError("Couldn't allocate client map in CompileSymbols\n");
-	    uAction("Symbols not added\n");
+	if (XkbAllocServerMap(xkb,XkbAllServerInfoMask,32)!=Success) {
+	    WSGO("Could not allocate server map in CompileSymbols\n");
+	    ACTION("Symbols not added\n");
 	    return False;
+	}
+	if (XkbAllocControls(xkb,XkbPerKeyRepeatMask)!=Success) {
+	    WSGO("Could not allocate controls in CompileSymbols\n");
+	    ACTION("Symbols not added\n");
+	    return False;
+	}
+	xkb->names->symbols= XkbInternAtom(xkb->dpy,info.name,False);
+	if (info.aliases)
+	    ApplyAliases(xkb,False,&info.aliases);
+	for (i=0;i<XkbNumKbdGroups;i++) {
+	    if (info.groupNames[i]!=None)
+		xkb->names->groups[i]= info.groupNames[i];
 	}
 	for (key=info.keys,i=0;i<info.nKeys;i++,key++) {
 	    if (!CopySymbolsDef(result,key))
 		info.errorCount++;
+	}
+	if (warningLevel>3) {
+	    for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
+		if (xkb->names->keys[i].name[0]=='\0')
+		    continue;
+		if (XkbKeyNumGroups(xkb,i)<1) {
+		    char buf[5];
+		    memcpy(buf,xkb->names->keys[i].name,4);
+		    buf[4]= '\0';
+		    WARN1("No symbols defined for <%s>\n",buf);
+		}
+	    }
 	}
 	if (info.modMap) {
 	    ModMapEntry	*mm,*next;
 	    for (mm=info.modMap;mm!=NULL;mm=next) {
 		if (!CopyModMapDef(result,mm))
 		    info.errorCount++;
-		next= mm->next;
+		next= (ModMapEntry *)mm->defs.next;
 	    }
 	}
 	return True;

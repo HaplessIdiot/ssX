@@ -1,4 +1,4 @@
-/* $XConsortium: xkbActions.c /main/1 1996/01/14 16:46:20 kaleb $ */
+/* $XConsortium: xkbActions.c /main/3 1996/03/01 14:31:12 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -672,6 +672,7 @@ _XkbFilterPointerBtn(xkbi,filter,keycode,pAction)
 		if (((xkbi->lockedPtrButtons&(1<<button))==0)&&
 			((pAction->btn.flags&XkbSA_LockNoLock)==0)) {
 		    xkbi->lockedPtrButtons|= (1<<button);
+		    AccessXCancelRepeatKey(xkbi,keycode);
 		    XkbDDXFakePointerButton(ButtonPress,button);
 		    filter->upAction.type= XkbSA_NoAction;
 		}
@@ -679,6 +680,7 @@ _XkbFilterPointerBtn(xkbi,filter,keycode,pAction)
 	    case XkbSA_PtrBtn:
 		{
 		    register int i,nClicks;
+		    AccessXCancelRepeatKey(xkbi,keycode);
 		    if (pAction->btn.count>0) {
 			nClicks= pAction->btn.count;
 			for (i=0;i<nClicks;i++) {
@@ -697,6 +699,7 @@ _XkbFilterPointerBtn(xkbi,filter,keycode,pAction)
 		    xkbControlsNotify	cn;
 
 		    old= *ctrls;
+		    AccessXCancelRepeatKey(xkbi,keycode);
 		    switch (pAction->dflt.affect) {
 			case XkbSA_AffectDfltBtn:
 			    if (pAction->dflt.flags&XkbSA_DfltBtnAbsolute)
@@ -918,26 +921,109 @@ _XkbFilterRedirectKey(xkbi,filter,keycode,pAction)
     XkbAction *		pAction;
 #endif
 {
+unsigned	realMods;
+xEvent 		ev;
+int		x,y,kc;
+XkbStateRec	old;
+unsigned	mods,mask,oldCoreState,oldCorePrevState;
+
+    if ((filter->keycode!=0)&&(filter->keycode!=keycode))
+	return 0;
+
+    GetSpritePosition(&x,&y);
+    ev.u.keyButtonPointer.time = GetTimeInMillis();
+    ev.u.keyButtonPointer.rootX = x;
+    ev.u.keyButtonPointer.rootY = y;
+
+    mask= XkbSARedirectVModsMask(&pAction->redirect);
+    mods= XkbSARedirectVMods(&pAction->redirect);
+    if (mask)	XkbVirtualModsToReal(xkbi->desc,mask,&mask);
+    if (mods)	XkbVirtualModsToReal(xkbi->desc,mods,&mods);
+    mask|= pAction->redirect.mods_mask;
+    mods|= pAction->redirect.mods;
+
     if (filter->keycode==0) {		/* initial press */
+	if ((pAction->redirect.new_key<xkbi->desc->min_key_code)||
+	    (pAction->redirect.new_key>xkbi->desc->max_key_code)) {
+	    return 1;
+	}
 	filter->keycode = keycode;
 	filter->active = 1;
 	filter->filterOthers = 0;
 	filter->priv = 0;
 	filter->filter = _XkbFilterRedirectKey;
 	filter->upAction = *pAction;
-	/* 7/20/95 (ef) -- XXX! Not implemented yet */
-	ErrorF("Redirect KeyPress Not Implemented Yet\n");
+
+	ev.u.u.type = KeyPress;
+	ev.u.u.detail = pAction->redirect.new_key;
+
+	if ( mask || mods ) {
+	    old= xkbi->state;
+	    oldCoreState= xkbi->device->key->state;
+	    oldCorePrevState= xkbi->device->key->prev_state;
+	    xkbi->state.base_mods&= ~mask;
+	    xkbi->state.base_mods|= (mods&mask);
+	    xkbi->state.latched_mods&= ~mask;
+	    xkbi->state.latched_mods|= (mods&mask);
+	    xkbi->state.locked_mods&= ~mask;
+	    xkbi->state.locked_mods|= (mods&mask);
+	    XkbComputeDerivedState(xkbi);
+	    xkbi->device->key->state= xkbi->device->key->prev_state= 
+							xkbi->state.mods;
+	}
+
+	realMods = xkbi->device->key->modifierMap[ev.u.u.detail];
+	xkbi->device->key->modifierMap[ev.u.u.detail] = 0;
+	CoreProcessKeyboardEvent(&ev,xkbi->device,1);
+	xkbi->device->key->modifierMap[ev.u.u.detail] = realMods;
+	
+	if ( mask || mods ) {
+	    xkbi->device->key->state= oldCoreState;
+	    xkbi->device->key->prev_state= oldCorePrevState;
+	    xkbi->state= old;
+	}
+
 	return 0;
     }
     else if (filter->keycode==keycode) {
-	/* 7/20/95 (ef) -- XXX! Not implemented yet */
-	ErrorF("Redirect KeyRelease Not Implemented Yet\n");
+
+	ev.u.u.type = KeyRelease;
+	ev.u.u.detail = filter->upAction.redirect.new_key;
+
+	if ( mask || mods ) {
+	    old= xkbi->state;
+	    oldCoreState= xkbi->device->key->state;
+	    oldCorePrevState= xkbi->device->key->prev_state;
+	    xkbi->state.base_mods&= ~mask;
+	    xkbi->state.base_mods|= (mods&mask);
+	    xkbi->state.latched_mods&= ~mask;
+	    xkbi->state.latched_mods|= (mods&mask);
+	    xkbi->state.locked_mods&= ~mask;
+	    xkbi->state.locked_mods|= (mods&mask);
+	    XkbComputeDerivedState(xkbi);
+	    xkbi->device->key->state= xkbi->device->key->prev_state= 
+							xkbi->state.mods;
+	}
+
+	realMods = xkbi->device->key->modifierMap[ev.u.u.detail];
+	xkbi->device->key->modifierMap[ev.u.u.detail] = 0;
+	CoreProcessKeyboardEvent(&ev,xkbi->device,1);
+	xkbi->device->key->modifierMap[ev.u.u.detail] = realMods;
+
+	if ( mask || mods ) {
+	    xkbi->device->key->state= oldCoreState;
+	    xkbi->device->key->prev_state= oldCorePrevState;
+	    xkbi->state= old;
+	}
+
 	filter->keycode= 0;
 	filter->active= 0;
 	return 0;
     }
     return 0;
 }
+
+#ifdef XINPUT
 
 static int
 #if NeedFunctionPrototypes
@@ -1017,6 +1103,7 @@ int		button;
     }
     return 0;
 }
+#endif
 
 static	int		szFilters = 0;
 static	XkbFilterPtr	filters = NULL;
@@ -1179,11 +1266,13 @@ Bool		xiEvent;
 		    filter = _XkbNextFreeFilter();
 		    sendEvent= _XkbFilterRedirectKey(xkbi,filter,key,&act);
 		    break;
+#ifdef XINPUT
 		case XkbSA_DeviceBtn:
 		case XkbSA_LockDeviceBtn:
 		    filter = _XkbNextFreeFilter();
 		    sendEvent= _XkbFilterDeviceBtn(xkbi,filter,key,&act);
 		    break;
+#endif
 	    }
 	}
     }

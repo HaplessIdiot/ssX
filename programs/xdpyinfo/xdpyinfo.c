@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xdpyinfo.c /main/34 1995/12/08 12:09:32 dpw $
- * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.7 1996/01/28 07:32:51 dawes Exp $
+ * $XFree86: xc/programs/xdpyinfo/xdpyinfo.c,v 3.8 1996/01/30 15:27:50 dawes Exp $
  * 
  * xdpyinfo - print information about X display connecton
  *
@@ -33,7 +33,9 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#ifdef MULTIBUFFER
 #include <X11/extensions/multibuf.h>
+#endif
 #include <X11/extensions/XIElib.h>
 #include <X11/extensions/XTest.h>
 #include <X11/extensions/sync.h>
@@ -420,6 +422,7 @@ print_standard_extension_info(dpy, extname, majorrev, minorrev)
     printf("\n");
 }
 
+#ifdef MULTIBUFFER
 int
 print_multibuf_info(dpy, extname)
     Display *dpy;
@@ -462,6 +465,7 @@ print_multibuf_info(dpy, extname)
     }
     return 1;
 } /* end print_multibuf_info */
+#endif
 
 
 /* XIE stuff */
@@ -887,7 +891,9 @@ ExtensionPrintInfo known_extensions[] =
 #ifdef XKB
     {XkbName, print_xkb_info, False},
 #endif /* XKB */
+#ifdef MULTIBUFFER
     {MULTIBUFFER_PROTOCOL_NAME,	print_multibuf_info, False},
+#endif
     {"SHAPE", print_shape_info, False},
     {SYNC_NAME, print_sync_info, False},
 #ifdef XFreeXDGA
@@ -992,7 +998,6 @@ int main (argc, argv)
     Display *dpy;			/* X connection */
     char *displayname = NULL;		/* server to contact */
     int i;				/* temp variable:  iterator */
-    Bool multibuf = False;
     int mbuf_event_base, mbuf_error_base;
 
     ProgramName = argv[0];

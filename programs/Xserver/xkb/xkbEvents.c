@@ -1,4 +1,4 @@
-/* $XConsortium: xkbEvents.c,v 1.8 94/04/08 02:58:03 erik Exp $ */
+/* $XConsortium: xkbEvents.c /main/17 1996/03/01 14:31:28 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,7 +33,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XI.h"
 #include "inputstr.h"
 #include "windowstr.h"
-#include "XKBproto.h"
 #include "XKBsrv.h"
 
 extern int (*InitialVector[3])();
@@ -41,51 +40,126 @@ extern int (*InitialVector[3])();
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+XkbSendNewKeyboardNotify(DeviceIntPtr kbd,xkbNewKeyboardNotify *pNKN)
+#else
+XkbSendNewKeyboardNotify(kbd,pNKN)
+    DeviceIntPtr	 	kbd;
+    xkbNewKeyboardNotify *	pNKN;
+#endif
+{		
+register int	i;
+Time 		time;
+CARD16		changed;
+XkbChangesRec	changes;
+
+    pNKN->type = XkbEventCode + XkbEventBase;
+    pNKN->xkbType = XkbNewKeyboardNotify;
+    pNKN->time = time = GetTimeInMillis();
+    changed = pNKN->changed;
+
+    for (i=1; i<currentMaxClients; i++) {
+        if ((!clients[i]) || clients[i]->clientGone ||
+				(clients[i]->requestVector==InitialVector)) {
+	    continue;
+	}
+
+	if (clients[i]->xkbClientFlags&_XkbClientInitialized)  {
+	    if (clients[i]->newKeyboardNotifyMask&changed) {
+		pNKN->sequenceNumber = clients[i]->sequence;
+		pNKN->time = time;
+		pNKN->changed = changed;
+		if ( clients[i]->swapped ) {
+		    register int n;
+		    swaps(&pNKN->sequenceNumber,n);
+		    swapl(&pNKN->time,n);
+		    swaps(&pNKN->changed,n);
+		}
+		WriteToClient(clients[i],sizeof(xEvent),(char *)pNKN);
+		if (changed&XkbNKN_KeycodesMask) {
+		    clients[i]->minKC= pNKN->minKeyCode;
+		    clients[i]->maxKC= pNKN->maxKeyCode;
+		}
+	    }
+	}
+	else if (changed&XkbNKN_KeycodesMask) {
+	    xEvent	event;
+	    event.u.u.type= MappingNotify;
+	    event.u.mappingNotify.request= MappingKeyboard;
+	    event.u.mappingNotify.firstKeyCode= clients[i]->minKC;
+	    event.u.mappingNotify.count= clients[i]->maxKC-clients[i]->minKC+1;
+	    event.u.u.sequenceNumber= clients[i]->sequence;
+	    if (clients[i]->swapped) {
+		int n;
+		swaps(&event.u.u.sequenceNumber,n);
+	    }
+	    WriteToClient(clients[i],SIZEOF(xEvent), (char *)&event);
+	    event.u.mappingNotify.request= MappingModifier;
+	    WriteToClient(clients[i],SIZEOF(xEvent), (char *)&event);
+	}
+    }
+    return;
+}
+
+/***====================================================================***/
+
+void
+#if NeedFunctionPrototypes
+XkbSendStateNotify(DeviceIntPtr kbd,xkbStateNotify *pSN)
+#else
 XkbSendStateNotify(kbd,pSN)
     DeviceIntPtr	 kbd;
     xkbStateNotify	*pSN;
+#endif
 {
-    int i;
-    xkbStateNotify	sn;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		time;
-    register CARD16	changed;
+XkbSrvInfoPtr	xkbi;
+XkbStatePtr	state;
+XkbInterestPtr	interest;
+Time 		time;
+register CARD16	changed,bState;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
+    xkbi = kbd->key->xkbInfo;
+    state= &xkbi->state;
 
     pSN->type = XkbEventCode + XkbEventBase;
     pSN->xkbType = XkbStateNotify;
     pSN->deviceID = kbd->id;
     pSN->time = time = GetTimeInMillis();
-    pSN->mods = xkb->state.mods;
-    pSN->baseMods = xkb->state.base_mods;
-    pSN->latchedMods = xkb->state.latched_mods;
-    pSN->lockedMods = xkb->state.locked_mods;
-    pSN->group = xkb->state.group;
-    pSN->baseGroup = xkb->state.base_group;
-    pSN->latchedGroup = xkb->state.latched_group;
-    pSN->lockedGroup = xkb->state.locked_group;
-    pSN->compatState = xkb->state.compat_state;
+    pSN->mods = state->mods;
+    pSN->baseMods = state->base_mods;
+    pSN->latchedMods = state->latched_mods;
+    pSN->lockedMods = state->locked_mods;
+    pSN->group = state->group;
+    pSN->baseGroup = state->base_group;
+    pSN->latchedGroup = state->latched_group;
+    pSN->lockedGroup = state->locked_group;
+    pSN->compatState = state->compat_state;
+    pSN->grabMods = state->grab_mods;
+    pSN->compatGrabMods = state->compat_grab_mods;
+    pSN->lookupMods = state->lookup_mods;
+    pSN->compatLookupMods = state->compat_lookup_mods;
+    pSN->ptrBtnState = state->ptr_buttons;
     changed = pSN->changed;
-
-    interest = xkb->interest;
+    bState= pSN->ptrBtnState;
 
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
 	    (interest->stateNotifyMask&changed)) {
 	    pSN->sequenceNumber = interest->client->sequence;
 	    pSN->time = time;
 	    pSN->changed = changed;
+	    pSN->ptrBtnState = bState;
 	    if ( interest->client->swapped ) {
 		register int n;
 		swaps(&pSN->sequenceNumber,n);
 		swapl(&pSN->time,n);
 		swaps(&pSN->changed,n);
+		swaps(&pSN->ptrBtnState,n);
 	    }
 	    WriteToClient(interest->client, sizeof(xEvent), (char *)pSN);
 	}
@@ -97,26 +171,39 @@ XkbSendStateNotify(kbd,pSN)
 /***====================================================================***/
 
 void
+#if NeedFunctionPrototypes
+XkbSendMapNotify(DeviceIntPtr kbd,xkbMapNotify *pMN)
+#else
 XkbSendMapNotify(kbd,pMN)
     DeviceIntPtr kbd;
     xkbMapNotify *pMN;
+#endif
 {
-    int i;
-    XkbSrvInfoRec	*xkb;
-    CARD16		 changed;
+int 		i;
+XkbSrvInfoPtr	xkbi;
+unsigned	time,initialized;
+CARD16		changed;
 
-    xkb = kbd->key->xkbInfo;
-    pMN->type = XkbEventCode + XkbEventBase;
-    pMN->xkbType = XkbMapNotify;
-    pMN->deviceID = kbd->id;
+    xkbi = kbd->key->xkbInfo;
+    initialized= 0;
 
     changed = pMN->changed;
+    pMN->minKeyCode= xkbi->desc->min_key_code;
+    pMN->maxKeyCode= xkbi->desc->max_key_code;
     for (i=1; i<currentMaxClients; i++) {
         if (clients[i] && ! clients[i]->clientGone &&
 	    (clients[i]->requestVector != InitialVector) &&
-	    (clients[i]->xkbClientFlags&XKB_INITIALIZED) &&
+	    (clients[i]->xkbClientFlags&_XkbClientInitialized) &&
 	    (clients[i]->mapNotifyMask&changed))
 	{
+	    if (!initialized) {
+		pMN->type = XkbEventCode + XkbEventBase;
+		pMN->xkbType = XkbMapNotify;
+		pMN->deviceID = kbd->id;
+		time = GetTimeInMillis();
+		initialized= 1;
+	    }
+	    pMN->time= time;
 	    pMN->sequenceNumber = clients[i]->sequence;
 	    pMN->changed = changed;
 	    if ( clients[i]->swapped ) {
@@ -132,86 +219,113 @@ XkbSendMapNotify(kbd,pMN)
 }
 
 int
-XkbComputeControlsNotify(kbd,old,new,pCN)
+#if NeedFunctionPrototypes
+XkbComputeControlsNotify(	DeviceIntPtr	 	kbd,
+				XkbControlsPtr		old,
+				XkbControlsPtr		new,
+				xkbControlsNotify *	pCN,
+				Bool			forceCtrlProc)
+#else
+XkbComputeControlsNotify(kbd,old,new,pCN,forceCtrlProc)
     DeviceIntPtr	 kbd;
-    XkbControlsRec	*old;
-    XkbControlsRec	*new;
+    XkbControlsPtr	old;
+    XkbControlsPtr	new;
     xkbControlsNotify	*pCN;
+    Bool		forceCtrlProc;
+#endif
 {
-    int			 i,initialized;
-    CARD32 		 changedControls;
-    CARD32		 enableChanges;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		 time;
+int		i;
+CARD32 		changedControls;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
-	return 0;
- 
     changedControls= 0;
     if (old->enabled_ctrls!=new->enabled_ctrls)
 	changedControls|= XkbControlsEnabledMask;
     if ((old->repeat_delay!=new->repeat_delay)||
 	(old->repeat_interval!=new->repeat_interval))
 	changedControls|= XkbRepeatKeysMask;
+    for (i = 0; i < XkbPerKeyBitArraySize; i++)
+	if (old->per_key_repeat[i] != new->per_key_repeat[i])
+	    changedControls|= XkbPerKeyRepeatMask;
     if (old->slow_keys_delay!=new->slow_keys_delay)
 	changedControls|= XkbSlowKeysMask;
     if (old->debounce_delay!=new->debounce_delay)
 	changedControls|= XkbBounceKeysMask;
-    if ((old->mouse_keys_delay!=new->mouse_keys_delay)||
-	(old->mouse_keys_interval!=new->mouse_keys_interval)||
-	(old->mouse_keys_dflt_btn!=new->mouse_keys_dflt_btn))
+    if ((old->mk_delay!=new->mk_delay)||
+	(old->mk_interval!=new->mk_interval)||
+	(old->mk_dflt_btn!=new->mk_dflt_btn))
 	changedControls|= XkbMouseKeysMask;
-    if ((old->mouse_keys_time_to_max!=new->mouse_keys_time_to_max)||
-	(old->mouse_keys_curve!=new->mouse_keys_curve)||
-	(old->mouse_keys_max_speed!=new->mouse_keys_max_speed))
+    if ((old->mk_time_to_max!=new->mk_time_to_max)||
+	(old->mk_curve!=new->mk_curve)||
+	(old->mk_max_speed!=new->mk_max_speed))
 	changedControls|= XkbMouseKeysAccelMask;
-    if ((old->accessx_timeout!=new->accessx_timeout)||
-	(old->accessx_timeout_mask!=new->accessx_timeout_mask))
+    if (old->ax_options!=new->ax_options)
 	changedControls|= XkbAccessXKeysMask;
-    if (old->num_groups!=new->num_groups)
-	changedControls|= XkbKeyboardGroupsMask;
-    if ((old->internal_mask!=new->internal_mask)||
-	(old->internal_real_mods!=new->internal_real_mods)||
-	(old->internal_vmods!=new->internal_vmods))
+    if ((old->ax_timeout!=new->ax_timeout)||
+	(old->axt_ctrls_mask!=new->axt_ctrls_mask)||
+	(old->axt_ctrls_values!=new->axt_ctrls_values)||
+	(old->axt_opts_mask!=new->axt_opts_mask)||
+	(old->axt_opts_values!= new->axt_opts_values)) {
+	changedControls|= XkbAccessXTimeoutMask;
+    }
+    if ((old->internal.mask!=new->internal.mask)||
+	(old->internal.real_mods!=new->internal.real_mods)||
+	(old->internal.vmods!=new->internal.vmods))
 	changedControls|= XkbInternalModsMask;
-    if ((old->ignore_lock_mask!=new->ignore_lock_mask)||
-	(old->ignore_lock_real_mods!=new->ignore_lock_real_mods)||
-	(old->ignore_lock_vmods!=new->ignore_lock_vmods))
+    if ((old->ignore_lock.mask!=new->ignore_lock.mask)||
+	(old->ignore_lock.real_mods!=new->ignore_lock.real_mods)||
+	(old->ignore_lock.vmods!=new->ignore_lock.vmods))
 	changedControls|= XkbIgnoreLockModsMask;
-    if (!changedControls)
+
+    if (new->enabled_ctrls&XkbRepeatKeysMask)
+	 kbd->kbdfeed->ctrl.autoRepeat=TRUE;
+    else kbd->kbdfeed->ctrl.autoRepeat=FALSE;
+
+    if (kbd->kbdfeed && kbd->kbdfeed->CtrlProc &&
+	(changedControls || forceCtrlProc))
+	(*kbd->kbdfeed->CtrlProc)(kbd, &kbd->kbdfeed->ctrl);
+
+    if ((!changedControls)&&(old->num_groups==new->num_groups))
 	return 0;
+
+    if (!kbd->xkb_interest)
+	return 0;
+
     pCN->changedControls = changedControls;
     pCN->enabledControls = new->enabled_ctrls;
     pCN->enabledControlChanges = (new->enabled_ctrls^old->enabled_ctrls);
+    pCN->numGroups = new->num_groups;
+
     return 1;
 }
 
 void
+#if NeedFunctionPrototypes
+XkbSendControlsNotify(DeviceIntPtr kbd,xkbControlsNotify *pCN)
+#else
 XkbSendControlsNotify(kbd,pCN)
     DeviceIntPtr	 kbd;
     xkbControlsNotify	*pCN;
+#endif
 {
-    int			 i,initialized;
-    CARD32 		 changedControls,enabledControls,enabledChanges;
-    xkbControlsNotify	 cn;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		 time;
+int			initialized;
+CARD32 		 	changedControls,enabledControls,enabledChanges;
+XkbSrvInfoPtr		xkbi;
+XkbInterestPtr		interest;
+Time 		 	time;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
+    xkbi = kbd->key->xkbInfo;
  
     initialized = 0;
-    interest = xkb->interest;
-    enabledControls = xkb->desc.ctrls->enabled_ctrls;
+    enabledControls = xkbi->desc->ctrls->enabled_ctrls;
     changedControls = pCN->changedControls;
+    pCN->numGroups= xkbi->desc->ctrls->num_groups;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
 	    (interest->ctrlsNotifyMask&changedControls)) {
 	    if (!initialized) {
 		pCN->type = XkbEventCode + XkbEventBase;
@@ -242,52 +356,52 @@ XkbSendControlsNotify(kbd,pCN)
 }
 
 void
-XkbSendIndicatorNotify(kbd,pEv)
+#if NeedFunctionPrototypes
+XkbSendIndicatorNotify(DeviceIntPtr kbd,int xkbType,xkbIndicatorNotify *pEv)
+#else
+XkbSendIndicatorNotify(kbd,xkbType,pEv)
     DeviceIntPtr	 kbd;
+    int			 xkbType;
     xkbIndicatorNotify	*pEv;
+#endif
 {
-    int			 i,initialized;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		 time;
-    CARD32		 state,stateChanged,mapChanged;
+int		initialized;
+XkbInterestPtr	interest;
+Time 		time;
+CARD32		state,changed;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
  
-    /* 2/23/94 (ef) - XXX! Have to decide whether to send indicator state or
-			   map notify */
     initialized = 0;
-    interest = xkb->interest;
     state = pEv->state;
-    stateChanged = pEv->stateChanged;
-    mapChanged = pEv->mapChanged;
+    changed = pEv->changed;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
-	    ((interest->iStateNotifyMask&stateChanged)||
-	     (interest->iMapNotifyMask&mapChanged))) {
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
+	    (((xkbType==XkbIndicatorStateNotify)&&
+				(interest->iStateNotifyMask&changed))||
+	     ((xkbType==XkbIndicatorMapNotify)&&
+	    			(interest->iMapNotifyMask&changed)))) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
-		pEv->xkbType = XkbIndicatorStateNotify;
+		pEv->xkbType = xkbType;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
 	    }
 	    pEv->sequenceNumber = interest->client->sequence;
 	    pEv->time = time;
-	    pEv->stateChanged = stateChanged;
+	    pEv->changed = changed;
 	    pEv->state = state;
-	    pEv->mapChanged = mapChanged;
 	    if ( interest->client->swapped ) {
 		register int n;
 		swaps(&pEv->sequenceNumber,n);
 		swapl(&pEv->time,n);
-		swapl(&pEv->stateChanged,n);
+		swapl(&pEv->changed,n);
 		swapl(&pEv->state,n);
-		swapl(&pEv->mapChanged,n);
 	    }
 	    WriteToClient(interest->client, sizeof(xEvent), (char *)pEv);
 	}
@@ -297,9 +411,10 @@ XkbSendIndicatorNotify(kbd,pEv)
 }
 
 
-#if NeedFunctionPrototypes
 void
+#if NeedFunctionPrototypes
 XkbHandleBell(	BOOL		 force,
+		BOOL		 eventOnly,
 		DeviceIntPtr	 kbd,
 		CARD8		 percent,
 		pointer		 pCtrl,
@@ -308,9 +423,9 @@ XkbHandleBell(	BOOL		 force,
 		WindowPtr	 pWin,
 		ClientPtr	 pClient)
 #else
-void
-XkbHandleBell(force,kbd,percent,pCtrl,class,name,pWin,pClient)
+XkbHandleBell(force,eventOnly,kbd,percent,pCtrl,class,name,pWin,pClient)
     BOOL		 force;
+    BOOL		 eventOnly;
     DeviceIntPtr	 kbd;
     CARD8		 percent;
     pointer		*pCtrl;
@@ -320,20 +435,23 @@ XkbHandleBell(force,kbd,percent,pCtrl,class,name,pWin,pClient)
     ClientPtr		 pClient;
 #endif
 {
-    xkbBellNotify	 bn;
-    int			 i,initialized;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    CARD8		 id;
-    CARD16		 pitch,duration;
-    Time 		 time;
-    XID			 winID;
+xkbBellNotify	bn;
+int		initialized;
+XkbSrvInfoPtr	xkbi;
+XkbInterestPtr	interest;
+CARD8		id;
+CARD16		pitch,duration;
+Time 		time;
+XID		winID;
 
-    xkb = kbd->key->xkbInfo;
+    xkbi = kbd->key->xkbInfo;
 
-    if (force||(xkb->desc.ctrls->enabled_ctrls&XkbAudibleBellMask))
+    if ((force||(xkbi->desc->ctrls->enabled_ctrls&XkbAudibleBellMask))&&
+							(!eventOnly)) {
 	(*kbd->kbdfeed->BellProc)(percent,kbd,(pointer)pCtrl,class);
-    if ((!xkb->interest)||(force))
+    }
+    interest = kbd->xkb_interest;
+    if ((!interest)||(force))
 	return;
 
     if ((class==0)||(class==KbdFeedbackClass)) {
@@ -351,12 +469,11 @@ XkbHandleBell(force,kbd,percent,pCtrl,class,name,pWin,pClient)
     else return;
  
     initialized = 0;
-    interest = xkb->interest;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
-	    (interest->bellNotifyWanted)) {
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
+	    (interest->bellNotifyMask)) {
 	    if (!initialized) {
 		time = GetTimeInMillis();
 		bn.type = XkbEventCode + XkbEventBase;
@@ -365,6 +482,7 @@ XkbHandleBell(force,kbd,percent,pCtrl,class,name,pWin,pClient)
 		bn.bellClass = class;
 		bn.bellID = id;
 		bn.percent= percent;
+		bn.eventOnly = (eventOnly!=0);
 		winID= (pWin?pWin->drawable.id:None);
 		initialized= 1;
 	    }
@@ -391,43 +509,48 @@ XkbHandleBell(force,kbd,percent,pCtrl,class,name,pWin,pClient)
 }
 
 void
-XkbSendSlowKeyNotify(kbd,pEv)
+#if NeedFunctionPrototypes
+XkbSendAccessXNotify(DeviceIntPtr kbd,xkbAccessXNotify *pEv)
+#else
+XkbSendAccessXNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
-    xkbSlowKeyNotify	*pEv;
+    xkbAccessXNotify	*pEv;
+#endif
 {
-    int			 i,initialized;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		 time;
-    CARD16		 delay;
+int		initialized;
+XkbInterestPtr	interest;
+Time 		time;
+CARD16		sk_delay,db_delay;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
  
     initialized = 0;
-    interest = xkb->interest;
-    delay= pEv->delay;
+    sk_delay= pEv->slowKeysDelay;
+    db_delay= pEv->debounceDelay;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
-	    (interest->slowKeyNotifyMask&(1<<pEv->slowKeyState))) {
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
+	    (interest->accessXNotifyMask&(1<<pEv->detail))) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
-		pEv->xkbType = XkbSlowKeyNotify;
+		pEv->xkbType = XkbAccessXNotify;
 		pEv->deviceID = kbd->id;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
 	    }
 	    pEv->sequenceNumber = interest->client->sequence;
 	    pEv->time = time;
-	    pEv->delay = delay;
+	    pEv->slowKeysDelay = sk_delay;
+	    pEv->debounceDelay = db_delay;
 	    if ( interest->client->swapped ) {
 		register int n;
 		swaps(&pEv->sequenceNumber,n);
 		swapl(&pEv->time,n);
-		swaps(&pEv->delay,n);
+		swaps(&pEv->slowKeysDelay,n);
+		swaps(&pEv->debounceDelay,n);
 	    }
 	    WriteToClient(interest->client, sizeof(xEvent), (char *)pEv);
 	}
@@ -437,30 +560,32 @@ XkbSendSlowKeyNotify(kbd,pEv)
 }
 
 void
+#if NeedFunctionPrototypes
+XkbSendNamesNotify(DeviceIntPtr kbd,xkbNamesNotify *pEv)
+#else
 XkbSendNamesNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
     xkbNamesNotify	*pEv;
+#endif
 {
-    int			 i,initialized;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		 time;
-    CARD16		 changed,changedVirtualMods;
-    CARD32		 changedIndicators;
+int		initialized;
+XkbInterestPtr	interest;
+Time 		time;
+CARD16		changed,changedVirtualMods;
+CARD32		changedIndicators;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
  
     initialized = 0;
-    interest = xkb->interest;
     changed= pEv->changed;
     changedIndicators= pEv->changedIndicators;
     changedVirtualMods= pEv->changedVirtualMods;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
 	    (interest->namesNotifyMask&pEv->changed)) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
@@ -490,26 +615,28 @@ XkbSendNamesNotify(kbd,pEv)
 }
 
 void
+#if NeedFunctionPrototypes
+XkbSendCompatMapNotify(DeviceIntPtr kbd,xkbCompatMapNotify *pEv)
+#else
 XkbSendCompatMapNotify(kbd,pEv)
     DeviceIntPtr	 kbd;
     xkbCompatMapNotify	*pEv;
+#endif
 {
-    int			 i,initialized;
-    XkbSrvInfoRec	*xkb;
-    XkbInterestRec	*interest;
-    Time 		 time;
-    CARD16		 firstSI,nSI,nTotalSI,virtualMods;
+int		initialized;
+XkbInterestPtr	interest;
+Time 		time;
+CARD16		firstSI,nSI,nTotalSI;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
  
     initialized = 0;
-    interest = xkb->interest;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
 	    (interest->compatNotifyMask)) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
@@ -519,7 +646,6 @@ XkbSendCompatMapNotify(kbd,pEv)
 		firstSI= pEv->firstSI;
 		nSI= pEv->nSI;
 		nTotalSI= pEv->nTotalSI;
-		virtualMods= pEv->changedVirtualMods;
 		initialized= 1;
 	    }
 	    pEv->sequenceNumber = interest->client->sequence;
@@ -527,7 +653,6 @@ XkbSendCompatMapNotify(kbd,pEv)
 	    pEv->firstSI = firstSI;
 	    pEv->nSI = nSI;
 	    pEv->nTotalSI = nTotalSI;
-	    pEv->changedVirtualMods = virtualMods;
 	    if ( interest->client->swapped ) {
 		register int n;
 		swaps(&pEv->sequenceNumber,n);
@@ -535,7 +660,6 @@ XkbSendCompatMapNotify(kbd,pEv)
 		swaps(&pEv->firstSI,n);
 		swaps(&pEv->nSI,n);
 		swaps(&pEv->nTotalSI,n);
-		swaps(&pEv->changedVirtualMods,n);
 	    }
 	    WriteToClient(interest->client, sizeof(xEvent), (char *)pEv);
 	}
@@ -545,31 +669,37 @@ XkbSendCompatMapNotify(kbd,pEv)
 }
 
 void
+#if NeedFunctionPrototypes
+XkbSendActionMessage(DeviceIntPtr kbd,xkbActionMessage *pEv)
+#else
 XkbSendActionMessage(kbd,pEv)
     DeviceIntPtr	 kbd;
     xkbActionMessage *	pEv;
+#endif
 {
-    int			 i,initialized;
-    XkbSrvInfoPtr	 xkb;
-    XkbInterestPtr	 interest;
-    Time 		 time;
-    CARD16		 firstSym,nSyms,nTotalSyms;
+int		 initialized;
+XkbSrvInfoPtr	 xkbi;
+XkbInterestPtr	 interest;
+Time 		 time;
 
-    xkb = kbd->key->xkbInfo;
-    if (!xkb->interest)
+    xkbi = kbd->key->xkbInfo;
+    interest = kbd->xkb_interest;
+    if (!interest)
 	return;
  
     initialized = 0;
-    interest = xkb->interest;
+    pEv->mods= xkbi->state.mods;
+    pEv->group= xkbi->state.group;
     while (interest) {
 	if ((!interest->client->clientGone) &&
 	    (interest->client->requestVector != InitialVector) &&
-	    (interest->client->xkbClientFlags&XKB_INITIALIZED) &&
-	    (interest->actionMessageWanted)) {
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
+	    (interest->actionMessageMask)) {
 	    if (!initialized) {
 		pEv->type = XkbEventCode + XkbEventBase;
 		pEv->xkbType = XkbActionMessage;
 		pEv->deviceID = kbd->id;
+		pEv->sequenceNumber = interest->client->sequence;
 		pEv->time = time = GetTimeInMillis();
 		initialized= 1;
 	    }
@@ -588,21 +718,98 @@ XkbSendActionMessage(kbd,pEv)
 }
 
 void
-XkbSendNotification(kbd,pChanges,keycode,event,major,minor)
-    DeviceIntPtr	 kbd;
-    XkbChangesRec	*pChanges;
-    unsigned		 keycode;
-    unsigned		 event;
-    unsigned		 major;
-    unsigned		 minor;
+#if NeedFunctionPrototypes
+XkbSendExtensionDeviceNotify(	DeviceIntPtr 			dev,
+				ClientPtr			client,
+				xkbExtensionDeviceNotify *	pEv)
+#else
+XkbSendExtensionDeviceNotify(dev,client,pEv)
+    DeviceIntPtr	 	dev;
+    ClientPtr			client;
+    xkbExtensionDeviceNotify *	pEv;
+#endif
 {
+int		 initialized;
+XkbInterestPtr	 interest;
+Time 		 time;
+CARD32		 defined,state;
+CARD16		 reason,supported;
+
+    interest = dev->xkb_interest;
+    if (!interest)
+	return;
+ 
+    initialized = 0;
+    reason= pEv->reason;
+    defined= pEv->ledsDefined;
+    state= pEv->ledState;
+    while (interest) {
+	if ((!interest->client->clientGone) &&
+	    (interest->client->requestVector != InitialVector) &&
+	    (interest->client->xkbClientFlags&_XkbClientInitialized) &&
+	    (interest->extDevNotifyMask&reason)) {
+	    if (!initialized) {
+		pEv->type = XkbEventCode + XkbEventBase;
+		pEv->xkbType = XkbExtensionDeviceNotify;
+		pEv->deviceID = dev->id;
+		pEv->sequenceNumber = interest->client->sequence;
+		pEv->time = time = GetTimeInMillis();
+		supported= pEv->supported;
+		initialized= 1;
+	    }
+	    else {
+		pEv->sequenceNumber = interest->client->sequence;
+		pEv->time = time;
+		pEv->ledsDefined= defined;
+		pEv->ledState= state;
+		pEv->reason= reason;
+		pEv->supported= supported;
+	    }
+	    if (client!=interest->client) {
+		/* only report UnsupportedFeature to the client that */
+		/* issued the failing request */
+		pEv->reason&= ~XkbXI_UnsupportedFeatureMask;
+		if ((interest->extDevNotifyMask&reason)==0)
+		    continue;
+	    }
+	    if ( interest->client->swapped ) {
+		register int n;
+		swaps(&pEv->sequenceNumber,n);
+		swapl(&pEv->time,n);
+		swapl(&pEv->ledsDefined,n);
+		swapl(&pEv->ledState,n);
+		swaps(&pEv->reason,n);
+		swaps(&pEv->supported,n);
+	    }
+	    WriteToClient(interest->client, sizeof(xEvent), (char *)pEv);
+	}
+	interest= interest->next;
+    }
+    return;
+}
+
+void
+#if NeedFunctionPrototypes
+XkbSendNotification(	DeviceIntPtr		kbd,
+			XkbChangesPtr		pChanges,
+			XkbEventCausePtr	cause)
+#else
+XkbSendNotification(kbd,pChanges,cause)
+    DeviceIntPtr	kbd;
+    XkbChangesPtr	pChanges;
+    XkbEventCausePtr	cause;
+#endif
+{
+XkbSrvLedInfoPtr	sli;
+
+    sli= NULL;
     if (pChanges->state_changes) {
 	xkbStateNotify sn;
 	sn.changed= pChanges->state_changes;
-	sn.keycode= keycode;
-	sn.eventType= event;
-	sn.requestMajor= major;
-	sn.requestMinor= minor;
+	sn.keycode= cause->kc;
+	sn.eventType= cause->event;
+	sn.requestMajor= cause->mjr;
+	sn.requestMinor= cause->mnr;
 	XkbSendStateNotify(kbd,&sn);
     }
     if (pChanges->map.changed) {
@@ -612,13 +819,17 @@ XkbSendNotification(kbd,pChanges,keycode,event,major,minor)
 	mn.nTypes= pChanges->map.num_types;
 	mn.firstKeySym= pChanges->map.first_key_sym;
 	mn.nKeySyms= pChanges->map.num_key_syms;
-	mn.firstKeyAction= pChanges->map.first_key_act;
-	mn.nKeyActions= pChanges->map.num_key_acts;
+	mn.firstKeyAct= pChanges->map.first_key_act;
+	mn.nKeyActs= pChanges->map.num_key_acts;
 	mn.firstKeyBehavior= pChanges->map.first_key_behavior;
 	mn.nKeyBehaviors= pChanges->map.num_key_behaviors;
 	mn.virtualMods= pChanges->map.vmods;
 	mn.firstKeyExplicit= pChanges->map.first_key_explicit;
 	mn.nKeyExplicit= pChanges->map.num_key_explicit;
+	mn.firstModMapKey= pChanges->map.first_modmap_key;
+	mn.nModMapKeys= pChanges->map.num_modmap_keys;
+	mn.firstVModMapKey= pChanges->map.first_vmodmap_key;
+	mn.nVModMapKeys= pChanges->map.num_vmodmap_keys;
 	XkbSendMapNotify(kbd,&mn);
     }
     if ((pChanges->ctrls.changed_ctrls)||
@@ -626,19 +837,27 @@ XkbSendNotification(kbd,pChanges,keycode,event,major,minor)
 	xkbControlsNotify cn;
 	cn.changedControls= pChanges->ctrls.changed_ctrls;
 	cn.enabledControlChanges= pChanges->ctrls.enabled_ctrls_changes;
-	cn.keycode= keycode;
-	cn.eventType= event;
-	cn.requestMajor= major;
-	cn.requestMinor= minor;
+	cn.keycode= cause->kc;
+	cn.eventType= cause->event;
+	cn.requestMajor= cause->mjr;
+	cn.requestMinor= cause->mnr;
 	XkbSendControlsNotify(kbd,&cn);
     }
-    if ((pChanges->indicators.state_changes)||
-					(pChanges->indicators.map_changes)){
+    if (pChanges->indicators.map_changes) {
 	xkbIndicatorNotify in;
-	in.stateChanged= pChanges->indicators.state_changes;
-	in.state= kbd->key->xkbInfo->iStateEffective;
-	in.mapChanged= pChanges->indicators.map_changes;
-	XkbSendIndicatorNotify(kbd,&in);
+	if (sli==NULL)
+	    sli= XkbFindSrvLedInfo(kbd,XkbDfltXIClass,XkbDfltXIId,0);
+	in.state= sli->effectiveState;
+	in.changed= pChanges->indicators.map_changes;
+	XkbSendIndicatorNotify(kbd,XkbIndicatorMapNotify,&in);
+    }
+    if (pChanges->indicators.state_changes) {
+	xkbIndicatorNotify in;
+	if (sli==NULL)
+	    sli= XkbFindSrvLedInfo(kbd,XkbDfltXIClass,XkbDfltXIId,0);
+	in.state= sli->effectiveState;
+	in.changed= pChanges->indicators.state_changes;
+	XkbSendIndicatorNotify(kbd,XkbIndicatorStateNotify,&in);
     }
     if (pChanges->names.changed) {
 	xkbNamesNotify nn;
@@ -648,20 +867,16 @@ XkbSendNotification(kbd,pChanges,keycode,event,major,minor)
 	nn.firstLevelName= pChanges->names.first_lvl;
 	nn.nLevelNames= pChanges->names.num_lvls;
 	nn.nRadioGroups= pChanges->names.num_rg;
-	nn.nCharSets= kbd->key->xkbInfo->desc.names->num_char_sets;
-	nn.changedMods= pChanges->names.changed_mods;
 	nn.changedVirtualMods= pChanges->names.changed_vmods;
 	nn.changedIndicators= pChanges->names.changed_indicators;
 	XkbSendNamesNotify(kbd,&nn);
     }
-    if ((pChanges->compat.changed_mods)||(pChanges->compat.num_si>0)||
-				(pChanges->compat.changed_vmods)) {
+    if ((pChanges->compat.changed_groups)||(pChanges->compat.num_si>0)) {
 	xkbCompatMapNotify cmn;
-	cmn.changedMods= pChanges->compat.changed_mods;
-	cmn.changedVirtualMods= pChanges->compat.changed_vmods;
+	cmn.changedGroups= pChanges->compat.changed_groups;
 	cmn.firstSI= pChanges->compat.first_si;
 	cmn.nSI= pChanges->compat.num_si;
-	cmn.nTotalSI= kbd->key->xkbInfo->desc.compat->num_si;
+	cmn.nTotalSI= kbd->key->xkbInfo->desc->compat->num_si;
 	XkbSendCompatMapNotify(kbd,&cmn);
     }
     return;
@@ -669,77 +884,121 @@ XkbSendNotification(kbd,pChanges,keycode,event,major,minor)
 
 /***====================================================================***/
 
-void
-XkbFilterWriteEvents(pClient,nEvents,xE)
+Bool
+#if NeedFunctionPrototypes
+XkbFilterEvents(ClientPtr pClient,int nEvents,xEvent *xE)
+#else
+XkbFilterEvents(pClient,nEvents,xE)
     ClientPtr	 pClient;
     int		 nEvents;
     xEvent	*xE;
+#endif
 {
 int	i;
 DeviceIntPtr pXDev = (DeviceIntPtr)LookupKeyboardDevice();
+XkbSrvInfoPtr	xkbi;
 
-    if ( pClient->xkbClientFlags & XKB_INITIALIZED ) {
-	(void)WriteToClient(pClient,nEvents*sizeof(xEvent),(char *)xE);
-    }
-    else {
-	XkbSrvInfoRec *xkb= pXDev->key->xkbInfo;
-	register CARD8 type;
-	for (i=0;i<nEvents;i++) {
-	    type= xE[i].u.u.type;
-	    if ( (type>=KeyPress)&&(type<=MotionNotify) ) {
-		CARD16 old;
-		char n;
-		if (pClient->swapped) {
-		    swaps(&xE[i].u.keyButtonPointer.state, n);
+    xkbi= pXDev->key->xkbInfo;
+    if ( pClient->xkbClientFlags & _XkbClientInitialized ) {
+#ifdef DEBUG
+	if ((xkbDebugFlags&0x10)&&
+		((xE[0].u.u.type==KeyPress)||(xE[0].u.u.type==KeyRelease))) {
+	    ErrorF("XKbFilterWriteEvents:\n");
+	    ErrorF("   Event state= 0x%04x\n",xE[0].u.keyButtonPointer.state);
+	    ErrorF("   XkbLastRepeatEvent!=xE (0x%x!=0x%x) %s\n",
+			XkbLastRepeatEvent,xE,
+			((XkbLastRepeatEvent!=(pointer)xE)?"True":"False"));
+	    ErrorF("   (xkbClientEventsFlags&XWDA)==0 (0x%x) %s\n",
+		pClient->xkbClientFlags,
+		(_XkbWantsDetectableAutoRepeat(pClient)?"True":"False"));
+	    ErrorF("   !IsRelease(%d) %s\n",xE[0].u.u.type,
+			(!_XkbIsReleaseEvent(xE[0].u.u.type))?"True":"False");
+	}
+#endif /* DEBUG */
+	if (	(XkbLastRepeatEvent==(pointer)xE) &&
+	     	(_XkbWantsDetectableAutoRepeat(pClient)) &&
+	     	(_XkbIsReleaseEvent(xE[0].u.u.type)) ) {
+	    return False;
+	}
+	if ((pXDev->grab != NullGrab) &&
+	    ((xE[0].u.u.type==KeyPress)||(xE[0].u.u.type==KeyRelease))) {
+	    register unsigned state,flags;
+
+	    flags= pClient->xkbClientFlags;
+	    state= xkbi->state.compat_grab_mods;
+	    if (flags & XkbPCF_GrabsUseXKBStateMask) {
+		int group;
+		if (flags&XkbPCF_LookupStateWhenGrabbed) {
+		     group= xkbi->state.group;
+		     state= xkbi->state.lookup_mods;
 		}
-		old = xE[i].u.keyButtonPointer.state;
-		xE[i].u.keyButtonPointer.state&= 0x1F00;
-		if ((old&0xE0FF)==(xkb->lookupState&0xE0FF))
-		     xE[i].u.keyButtonPointer.state|= 
-						(xkb->compatLookupState&0xff);
-		else xE[i].u.keyButtonPointer.state|= 
-						(xkb->compatGrabState&0xFF);
-		if (pClient->swapped) {
-		    swaps(&old, n);
-		    swaps(&xE[i].u.keyButtonPointer.state, n);
+		else {
+		    state= xkbi->state.grab_mods;
+		    group= xkbi->state.base_group+xkbi->state.latched_group;
+		    if ((group<0)||(group>=xkbi->desc->ctrls->num_groups)) {
+			group= XkbAdjustGroup(group,xkbi->desc->ctrls);
+		    }
 		}
-		(void)WriteToClient(pClient,sizeof(xEvent),(char *)&xE[i]);
-		xE[i].u.keyButtonPointer.state= old;
 	    }
-	    else if ((type==EnterNotify)||(type==LeaveNotify)) {
-		CARD16 old;
-		char n;
-		if (pClient->swapped) {
-		    swaps(&xE[i].u.enterLeave.state, n);
-		}
-		old= xE->u.enterLeave.state;
-		xE->u.enterLeave.state&= 0x1F00;
-		xE->u.enterLeave.state|= (xkb->compatGrabState&0xFF);
-		if (pClient->swapped) {
-		    swaps(&old, n);
-		    swaps(&xE[i].u.enterLeave.state, n);
-		}
-		(void)WriteToClient(pClient,sizeof(xEvent),(char *)&xE[i]);
-		xE->u.enterLeave.state= old;
-	    }
-	    else WriteToClient(pClient,sizeof(xEvent),(char *)&xE[i]);
+	    else if (flags&XkbPCF_LookupStateWhenGrabbed)
+		state= xkbi->state.compat_lookup_mods;
+	    xE[0].u.keyButtonPointer.state= state;
 	}
     }
-    return;
+    else {
+	register CARD8 	type;
+
+	for (i=0;i<nEvents;i++) {
+	    type= xE[i].u.u.type;
+#ifdef DEBUG
+	    if ((xkbDebugFlags&0x4)&&
+		((xE[0].u.u.type==KeyPress)||(xE[0].u.u.type==KeyRelease))) {
+		XkbStatePtr s= &xkbi->state;
+		ErrorF("XKbFilterWriteEvents (non-XKB):\n");
+		ErrorF("event= 0x%04x\n",xE[0].u.keyButtonPointer.state);
+		ErrorF("lookup= 0x%02x, grab= 0x%02x\n",s->lookup_mods,
+							s->grab_mods);
+		ErrorF("compat lookup= 0x%02x, grab= 0x%02x\n",
+							s->compat_lookup_mods,
+							s->compat_grab_mods);
+	    }
+#endif
+	    if ( (type>=KeyPress)&&(type<=MotionNotify) ) {
+		CARD16	old,new;
+
+		old= xE[i].u.keyButtonPointer.state&(~0x1f00);
+		new= xE[i].u.keyButtonPointer.state&0x1F00;
+
+		if (old==XkbStateFieldFromRec(&xkbi->state))
+		     new|= xkbi->state.compat_lookup_mods;
+		else new|= xkbi->state.compat_grab_mods;
+		xE[i].u.keyButtonPointer.state= new;
+	    }
+	    else if ((type==EnterNotify)||(type==LeaveNotify)) {
+		xE->u.enterLeave.state&= 0x1F00;
+		xE->u.enterLeave.state|= xkbi->state.compat_grab_mods;
+	    }
+	}
+    }
+    return True;
 }
 
 /***====================================================================***/
 
-XkbInterestRec *
+XkbInterestPtr	
+#if NeedFunctionPrototypes
+XkbFindClientResource(DevicePtr inDev,ClientPtr client)
+#else
 XkbFindClientResource(inDev,client)
     DevicePtr	 inDev;
-    ClientRec	*client;
+    ClientPtr	client;
+#endif
 {
-DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XkbInterestRec	*interest;
+DeviceIntPtr	dev = (DeviceIntPtr)inDev;
+XkbInterestPtr	interest;
 
-    if ( dev->key && dev->key->xkbInfo ) {
-	interest = dev->key->xkbInfo->interest;
+    if ( dev->xkb_interest ) {
+	interest = dev->xkb_interest;
 	while (interest){
 	    if (interest->client==client) {
 		return interest;
@@ -750,97 +1009,145 @@ XkbInterestRec	*interest;
     return NULL;
 }
 
-XkbInterestRec *
+XkbInterestPtr	
+#if NeedFunctionPrototypes
+XkbAddClientResource(DevicePtr inDev,ClientPtr client,XID id)
+#else
 XkbAddClientResource(inDev,client,id)
     DevicePtr	 inDev;
-    ClientRec	*client;
+    ClientPtr	client;
     XID		 id;
+#endif
 {
-DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XkbInterestRec	*interest;
+DeviceIntPtr	dev = (DeviceIntPtr)inDev;
+XkbInterestPtr	interest;
 
-    if ( dev->key && dev->key->xkbInfo ) {
-	interest = dev->key->xkbInfo->interest;
-	while (interest) {
-	    if (interest->client==client)
-		return ((interest->resource==id)?interest:NULL);
-	    interest = interest->next;
-	}
-	interest = (XkbInterestRec *)xalloc(sizeof(XkbInterestRec));
-	if (interest) {
-	    interest->kbd = dev->key->xkbInfo;
-	    interest->client = client;
-	    interest->resource = id;
-	    interest->stateNotifyMask= 0;
-	    interest->ctrlsNotifyMask= 0;
-	    interest->namesNotifyMask= 0;
-	    interest->compatNotifyMask= 0;
-	    interest->bellNotifyWanted= FALSE;
-	    interest->slowKeyNotifyMask= 0;
-	    interest->iStateNotifyMask= 0;
-	    interest->iMapNotifyMask= 0;
-	    interest->altSymsNotifyMask= 0;
-	    interest->next = dev->key->xkbInfo->interest;
-	    dev->key->xkbInfo->interest= interest;
-	    return interest;
-	}
+    interest = dev->xkb_interest;
+    while (interest) {
+	if (interest->client==client)
+	    return ((interest->resource==id)?interest:NULL);
+	interest = interest->next;
+    }
+    interest = _XkbTypedAlloc(XkbInterestRec);
+    bzero(interest,sizeof(XkbInterestRec));
+    if (interest) {
+	interest->dev = dev;
+	interest->client = client;
+	interest->resource = id;
+	interest->stateNotifyMask= 0;
+	interest->ctrlsNotifyMask= 0;
+	interest->namesNotifyMask= 0;
+	interest->compatNotifyMask= 0;
+	interest->bellNotifyMask= FALSE;
+	interest->accessXNotifyMask= 0;
+	interest->iStateNotifyMask= 0;
+	interest->iMapNotifyMask= 0;
+	interest->altSymsNotifyMask= 0;
+	interest->next = dev->xkb_interest;
+	dev->xkb_interest= interest;
+	return interest;
     }
     return NULL;
 }
 
 int
+#if NeedFunctionPrototypes
+XkbRemoveClient(DevicePtr inDev,ClientPtr client)
+#else
 XkbRemoveClient(inDev,client)
-DevicePtr	 inDev;
-ClientRec	*client;
+DevicePtr	inDev;
+ClientPtr	client;
+#endif
 {
-DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XkbInterestRec	*interest;
+XkbSrvInfoPtr	xkbi;
+DeviceIntPtr	dev = (DeviceIntPtr)inDev;
+XkbInterestPtr	interest;
+unsigned long	autoCtrls,autoValues;
+Bool		found;
 
-    if ( dev->key && dev->key->xkbInfo ) {
-	interest = dev->key->xkbInfo->interest;
+    found= False;
+    autoCtrls= autoValues= 0;
+    if ( dev->xkb_interest ) {
+	interest = dev->xkb_interest;
 	if (interest && (interest->client==client)){
-	    dev->key->xkbInfo->interest = interest->next;
+	    dev->xkb_interest = interest->next;
+	    autoCtrls= interest->autoCtrls;
+	    autoValues= interest->autoCtrlValues;
 	    xfree(interest);
-	    return 1;
+	    found= True;
 	}
-	while (interest->next) {
+	while ((!found)&&(interest->next)) {
 	    if (interest->next->client==client) {
-		XkbInterestRec *victim = interest->next;
+		XkbInterestPtr	victim = interest->next;
 		interest->next = victim->next;
+		autoCtrls= victim->autoCtrls;
+		autoValues= victim->autoCtrlValues;
 		xfree(victim);
-		return 1;
+		found= True;
 	    }
 	    interest = interest->next;
 	}
     }
-    return 0;
+    if (found && autoCtrls && dev->key && dev->key->xkbInfo ) {
+	XkbEventCauseRec cause;
+
+	xkbi= dev->key->xkbInfo;
+	XkbSetCauseXkbReq(&cause,X_kbPerClientFlags,client);
+	XkbChangeEnabledControls(xkbi,autoCtrls,autoValues,NULL,&cause);
+    }
+    return found;
 }
 
 int
+#if NeedFunctionPrototypes
+XkbRemoveResourceClient(DevicePtr inDev,XID id) 
+#else
 XkbRemoveResourceClient(inDev,id) 
     DevicePtr	 inDev;
     XID		 id;
+#endif
 {
-DeviceIntPtr	 dev = (DeviceIntPtr)inDev;
-XkbInterestRec	*interest;
+XkbSrvInfoPtr	xkbi;
+DeviceIntPtr	dev = (DeviceIntPtr)inDev;
+XkbInterestPtr	interest;
+Bool		found;
+unsigned long	autoCtrls,autoValues;
+ClientPtr	client;
 
-    if ( dev->key && dev->key->xkbInfo ) {
-	interest = dev->key->xkbInfo->interest;
+    found= False;
+    autoCtrls= autoValues= 0;
+    if ( dev->xkb_interest ) {
+	interest = dev->xkb_interest;
 	if (interest && (interest->resource==id)){
-	    dev->key->xkbInfo->interest = interest->next;
+	    dev->xkb_interest = interest->next;
+	    autoCtrls= interest->autoCtrls;
+	    autoValues= interest->autoCtrlValues;
+	    client= interest->client;
 	    xfree(interest);
-	    return 1;
+	    found= True;
 	}
-	while (interest->next) {
+	while ((!found)&&(interest->next)) {
 	    if (interest->next->resource==id) {
-		XkbInterestRec *victim = interest->next;
+		XkbInterestPtr	victim = interest->next;
 		interest->next = victim->next;
+		autoCtrls= victim->autoCtrls;
+		autoValues= victim->autoCtrlValues;
+		client= victim->client;
 		xfree(victim);
-		return 1;
+		found= True;
 	    }
 	    interest = interest->next;
 	}
     }
-    return 0;
+    if (found && autoCtrls && dev->key && dev->key->xkbInfo ) {
+	XkbEventCauseRec cause;
+
+	xkbi= dev->key->xkbInfo;
+	XkbSetCauseXkbReq(&cause,X_kbPerClientFlags,client);
+	XkbChangeEnabledControls(xkbi,autoCtrls,autoValues,NULL,&cause);
+    }
+    return found;
 }
+
+
 

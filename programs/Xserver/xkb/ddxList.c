@@ -1,4 +1,4 @@
-/* $XConsortium: ddxList.c /main/1 1996/01/14 16:45:55 kaleb $ */
+/* $XConsortium: ddxList.c /main/3 1996/03/01 14:30:52 kaleb $ */
 /************************************************************
 Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -140,26 +140,25 @@ int	rval;
     map= strrchr(file,'(');
     if (map!=NULL) {
 	char *tmp;
-	*map++= '\0';
+	map++;
 	tmp= strrchr(map,')');
 	if ((tmp==NULL)||(tmp[1]!='\0')) {
 	    /* illegal pattern.  No error, but no match */
 	    return Success;
 	}
-	*tmp= '\0';
     }
 
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -R%s/%s -w %d -l -vlfhp -m \"%s\" %s",
+	sprintf(buf,"%s/xkbcomp -R%s/%s -w %d -l -vlfhp '%s'",
 		XkbBaseDirectory,XkbBaseDirectory,componentDirs[what],
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
-		(map?map:"*"),file);
+		file);
     }
     else {
-	sprintf(buf,"xkbcomp -R%s -w %d -l -vlfhp -m \"%s\" %s",
+	sprintf(buf,"xkbcomp -R%s -w %d -l -vlfhp '%s'",
 		componentDirs[what],
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
-		(map?map:"*"),file);
+		file);
     }
     status= Success;
     in= popen(buf,"r");
@@ -203,8 +202,8 @@ int	rval;
 	status= _AddListComponent(list,what,flags,tmp,client);
     }
     if ((rval=pclose(in))!=0) {
-	client->errorValue= _XkbErrCode2(0xff,rval);
-	return BadValue;
+	if (xkbDebugFlags)
+	    ErrorF("xkbcomp returned exit code %d\n",rval);
     }
     return status;
 }

@@ -1,7 +1,7 @@
 /*
  * @(#)RCSfile: xkbInit.c,v  Revision: 1.1.1.6  (DEC) Date: 1996/02/09 09:44:58 
  */
-/* $XConsortium: xkbInit.c /main/13 1996/02/05 09:59:15 dpw $ */
+/* $XConsortium: xkbInit.c /main/14 1996/03/01 14:31:34 kaleb $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -447,12 +447,11 @@ XkbEventCauseRec	cause;
 								&changes);
 	}
 	else {
-	    XkbUpdateCoreDescription(pXDev);
+	    XkbUpdateCoreDescription(pXDev,True);
 	}
 	XkbSetCauseUnknown(&cause);
 	XkbUpdateActions(pXDev,xkb->min_key_code, XkbNumKeys(xkb),&changes,
 								&check,&cause);
-#ifndef NO_DEC_BUG_FIX
         /* For sanity.  The first time the connection
          * is opened, the client side min and max are set
          * using QueryMinMaxKeyCodes() which grabs them 
@@ -460,7 +459,6 @@ XkbEventCauseRec	cause;
 	 */
 	pXDev->key->curKeySyms.minKeyCode = xkb->min_key_code;
 	pXDev->key->curKeySyms.maxKeyCode = xkb->max_key_code;
-#endif
     }
     if (file.file!=NULL)
 	fclose(file.file);
@@ -488,7 +486,7 @@ XkbInitKeyboardDeviceStruct( dev, names, pSymsIn, pModsIn, bellProc, ctrlProc )
 {
 XkbFileInfo	finfo;
 KeySymsRec	tmpSyms,*pSyms;
-CARD8		tmpMods[XkbMaxLegalKeyCode+1],*pMods;
+CARD8		tmpMods[XkbMaxKeyCount],*pMods;
 char		name[PATH_MAX];
 Bool		ok;
 XPointer	config;
