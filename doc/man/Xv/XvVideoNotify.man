@@ -1,4 +1,5 @@
 .TH XvVideoNotify 3X 
+.\" $XFree86$
 .SH Name
 XvVideoNotify \- event generated for video processing
 .\"

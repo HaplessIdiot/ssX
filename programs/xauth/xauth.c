@@ -24,6 +24,7 @@ in this Software without prior written authorization from The Open Group.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
+/* $XFree86$ */
 
 #include "xauth.h"
 

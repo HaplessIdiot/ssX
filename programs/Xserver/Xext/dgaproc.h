@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.60 1998/12/20 13:16:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.61 1999/02/01 11:56:01 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -140,15 +140,15 @@ extern int xf86GetErrno(void);
 #  if defined(SVR4) && !defined(sun)
 #   include <sys/seg.h>
 #  endif /* SVR4 && !sun */
-#if defined(sun) && defined (i386) && defined (SVR4) 	/* Solaris? */
-# if !defined(V86SC_IOPL)				/* Solaris 7? */
-#include <sys/v86.h>					/* Nope */
-# else
-/* Do nothing what so ever */				/* Yup */
-#endif /* V86SC_IOPL */
-#else 
-#  include <sys/v86.h>					/* Not solaris */
-#endif /* sun / i386 / SVR4 */
+#  if defined(sun) && defined (i386) && defined (SVR4) 	/* Solaris? */
+#   if !defined(V86SC_IOPL)				/* Solaris 7? */
+#    include <sys/v86.h>				/* Nope */
+#   else
+    /* Do nothing what so ever */			/* Yup */
+#   endif /* V86SC_IOPL */
+#  else 
+#   include <sys/v86.h>					/* Not solaris */
+#  endif /* sun && i386 && SVR4 */
 #  if defined(sun) && defined (i386) && defined (SVR4)
 #    include <sys/psw.h>
 #  endif

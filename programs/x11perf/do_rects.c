@@ -21,6 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************************/
+/* $XFree86$ */
 
 #include "x11perf.h"
 #include "bitmaps.h"

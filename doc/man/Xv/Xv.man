@@ -1,5 +1,6 @@
 .TH Xv 3X
 .\"
+.\" $XFree86$
 .SH Name
 Xv --- X Window System video extension
 .SH Description

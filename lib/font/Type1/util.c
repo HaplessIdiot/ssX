@@ -27,6 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+/* $XFree86$ */
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
  
 #ifndef FONTMODULE

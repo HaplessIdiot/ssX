@@ -1,4 +1,5 @@
 .TH XvPutVideo 3X 
+.\" $XFree86$
 .SH Name
 XvPutVideo \- write video into a drawable
 .\"

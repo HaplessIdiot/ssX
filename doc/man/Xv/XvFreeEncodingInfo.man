@@ -1,4 +1,5 @@
 .TH XvFreeEncodingInfo 3X
+.\" $XFree86$
 .SH Name
 XvFreeEncodingInfo \- free encoding information 
 .\"

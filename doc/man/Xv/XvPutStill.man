@@ -1,4 +1,5 @@
 .TH XvPutStill 3X 
+.\" $XFree86$
 .SH Name
 XvPutStill \- write a single frame of video to a drawable
 .\"

@@ -66,6 +66,8 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc. January 3, 1994 
   
 *****************************************************************************/
+/* $XFree86$ */
+
 #include "xieperf.h"
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

@@ -24,6 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
+/* $XFree86$ */
 
 #define	DEBUG_VAR evargsDebug
 #include "xkbevd.h"

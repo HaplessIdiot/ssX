@@ -28,6 +28,7 @@ in this Software without prior written authorization from The Open Group.
  * 11-3-88 Dave Payne, Apple Computer			File created
  *
  ***********************************************************************/
+/* $XFree86$ */
 
 #ifndef _SCREEN_
 #define _SCREEN_

@@ -27,6 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+/* $XFree86$ */
 /* Authors: Sig Nin & Carol Thompson IBM Almaden Research Laboratory */
 #include "t1stdio.h"
 #include "util.h"

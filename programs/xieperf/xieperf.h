@@ -67,6 +67,8 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
+/* $XFree86$ */
+
 #include <stdio.h>
 #ifndef VMS
 #include <X11/Xatom.h>
