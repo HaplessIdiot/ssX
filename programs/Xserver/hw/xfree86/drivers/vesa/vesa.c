@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.41 2003/11/07 22:50:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.42 2004/03/26 15:33:52 tsi Exp $
  */
 
 #include "vesa.h"
@@ -1071,7 +1071,7 @@ VESASetMode(ScrnInfoPtr pScrn, DisplayModePtr pMode)
     if (data->data->XResolution != pScrn->displayWidth)
 	VBESetLogicalScanline(pVesa->pVbe, pScrn->displayWidth);
 
-    if (pScrn->bitsPerPixel >= 8 && pVesa->vbeInfo->Capabilities[0] & 0x01)
+    if (pScrn->bitsPerPixel == 8 && pVesa->vbeInfo->Capabilities[0] & 0x01)
 	VBESetGetDACPaletteFormat(pVesa->pVbe, 8);
 
     pScrn->vtSema = TRUE;
