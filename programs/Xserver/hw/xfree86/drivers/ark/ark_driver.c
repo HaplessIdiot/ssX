@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.16 2001/06/15 21:22:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.17 2001/08/07 07:04:42 keithp Exp $ */
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
  *
@@ -517,7 +517,7 @@ static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 
 	ARKSave(pScrn);
 
-/*	vgaHWBlankScreen(pScrn, TRUE); */
+	vgaHWBlankScreen(pScrn, TRUE);
 
 	if (!ARKModeInit(pScrn, pScrn->currentMode))
 		return FALSE;
@@ -589,7 +589,7 @@ static Bool ARKScreenInit(int scrnIndex, ScreenPtr pScreen, int argc,
 				 CMAP_RELOAD_ON_MODE_SWITCH))
 		return FALSE;
 
-/*	vgaHWBlankScreen(pScrn, TRUE); */
+	vgaHWBlankScreen(pScrn, FALSE);
 
 	pScreen->SaveScreen = ARKSaveScreen;
 	pARK->CloseScreen = pScreen->CloseScreen;
@@ -716,12 +716,9 @@ static Bool ARKModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 	offset = (pScrn->displayWidth * (pScrn->bitsPerPixel / 8)) >> 3;
 	pVga->CRTC[0x13] = offset;
-	pVga->Attribute[0x11] = 0x00;
 	new->cr41 = (offset & 0x100) >> 5;
 
-	pVga->MiscOutReg |= 0x0c;
-
-	new->sr11 = rdinx(0x3c4, 0x11) & ~0x0f;
+	new->sr11 = 0x90;
 	switch (pScrn->bitsPerPixel) {
 		case 8:
 			new->sr11 |= 0x06;
@@ -885,9 +882,6 @@ static Bool ARKModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 			new->dac_command = 0xe0;
 	}
 
-	/* hrmm... */
-	new->dac_command |= 0x02;
-
 #if 0
 	/* hw cursor regs */
 	new->sr20 = rdinx(0x3c4, 0x20);
@@ -958,7 +952,7 @@ static void ARKWriteMode(ScrnInfoPtr pScrn, vgaRegPtr pVga, ARKRegPtr new)
 	 * restoration can suceed
 	 */
 	wrinx(0x3c4, 0x10, new->sr10);
-	modinx(0x3c4, 0x11, 0x3f, new->sr11);
+	wrinx(0x3c4, 0x11, new->sr11);
 	wrinx(0x3c4, 0x12, new->sr12);
 	wrinx(0x3c4, 0x13, new->sr13);
 	wrinx(0x3c4, 0x14, new->sr14);
@@ -1007,9 +1001,6 @@ static void ARKWriteMode(ScrnInfoPtr pScrn, vgaRegPtr pVga, ARKRegPtr new)
 		vgaHWRestore(pScrn, pVga, VGA_SR_ALL);
 	else
 		vgaHWRestore(pScrn, pVga, VGA_SR_MODE);
-
-	inb(0x3c8);
-	outb(0x3c6, 0xff);
 
 	vgaHWProtect(pScrn, FALSE);
 
