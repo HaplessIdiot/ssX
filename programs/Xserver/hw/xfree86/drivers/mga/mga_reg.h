@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.10 1999/12/12 00:37:21 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.12 2000/06/09 22:43:38 mvojkovi Exp $ */
 
 
 
@@ -425,8 +425,10 @@
 #define MGAREG_TEXTRANS		0x2c34
 #define MGAREG_TEXTRANSHIGH	0x2c38
 #define MGAREG_TEXFILTER	0x2c58
+#define MGAREG_ALPHASTART	0x2c70
+#define MGAREG_ALPHAXINC	0x2c74
+#define MGAREG_ALPHAYINC	0x2c78
 #define MGAREG_ALPHACTRL	0x2c7c
-
 #define MGAREG_DWGSYNC		0x2c4c
 
 
