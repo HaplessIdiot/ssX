@@ -35,6 +35,7 @@ PERFORMANCE OF THIS SOFTWARE.
                                  miyamoto@jrd.dec.com
 
 ******************************************************************/
+/* $XFree86$ */
 
 #ifndef _XIMINTP_H
 #define _XIMINTP_H
