@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.15 1994/08/03 13:27:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.16 1994/08/06 06:07:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -725,9 +725,32 @@ s3Probe()
 	 xf86dactopel();
 
 	 if ((mir == 0x84) && (dir == 0x98)) {
-	    ErrorF("%s %s: Detected a ATT 20C498 RAMDAC\n",
+	    ErrorF("%s %s: Detected an ATT 20C498 RAMDAC\n",
 	           XCONFIG_PROBED, s3InfoRec.name);
 	    s3RamdacType = ATT498_DAC;
+	 }
+      }
+
+      /* now, probe for the SC 15025/26 */
+      if (s3RamdacType == UNKNOWN_DAC) {
+	 int i;
+	 unsigned char c,id[4];
+	 c = xf86getdaccomm();
+	 xf86setdaccomm(c | 0x10);
+	 for (i=0; i<4; i++) {
+	    outb(0x3C7, 0x9+i); 
+	    id[i] = inb(0x3C8);
+	 }
+	 xf86setdaccomm(c);
+	 xf86dactopel();
+	 if (id[0] == 'S' &&                  /* Sierra */
+	     ((id[1]<<8)|id[2]) == 15025) {   /* unique for the SC 15025/26 */
+	    if (id[3] != 'A') {                     /* version number */
+	       ErrorF("%s %s: ==> New Sierra SC 15025/26 version (%x) found, please report!\n",XCONFIG_PROBED, s3InfoRec.name,id[3]);
+	    }
+	    ErrorF("%s %s: Detected a Sierra SC 15025/26 RAMDAC\n",
+	           XCONFIG_PROBED, s3InfoRec.name);
+	    s3RamdacType = SC15025_DAC;
 	 }
       }
    }
@@ -1041,6 +1064,8 @@ s3Probe()
 		pMode->name);
 	 ErrorF("%s: NB. 1 scan line is required for the hardware cursor\n",
 	        s3InfoRec.name);
+         pMode = pMode->next;
+	 continue;
 	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
 	 return (FALSE);
       }
@@ -1292,10 +1317,11 @@ s3Probe()
       s3CursorStartY = s3InfoRec.virtualY;
       s3CursorLines = 0;
    } else {
-      int st_addr = (s3InfoRec.virtualY * s3DisplayWidth + 1023) / 1024 * 1024;
-      s3CursorStartX = st_addr % s3DisplayWidth;
-      s3CursorStartY = st_addr / s3DisplayWidth;
-      s3CursorLines = ((s3CursorStartX + 1023) / s3DisplayWidth) + 1;
+      int st_addr = (s3InfoRec.virtualY * s3DisplayWidth + 1023) *
+		    s3Bpp / 1024 * 1024;
+      s3CursorStartX = st_addr % s3BppDisplayWidth;
+      s3CursorStartY = st_addr / s3BppDisplayWidth;
+      s3CursorLines = ((s3CursorStartX + 1023) / s3BppDisplayWidth) + 1;
    }
 
    /*

@@ -1,5 +1,5 @@
 /* $XConsortium: s3win.c,v 1.2 94/04/17 20:31:16 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3win.c,v 3.1 1994/08/03 13:30:54 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -64,6 +64,7 @@ Rewritten for the 8514/A by Kevin E. Martin (martin@cs.unc.edu)
 #include "windowstr.h"
 #include "gcstruct.h"
 #include "cfb.h"
+#include "cfb16.h"
 #include "mistruct.h"
 #include "regionstr.h"
 #include "cfbmskbits.h"
@@ -88,7 +89,15 @@ s3CopyWindow(pWin, ptOldOrg, prgnSrc)
 
    if (!xf86VTSema)
    {
-      cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+      switch (pWin->drawable.bitsPerPixel) {
+	case 8:
+	  cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+        case 15:
+        case 16:
+	  cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+      }
       return;
    }
 

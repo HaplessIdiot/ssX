@@ -1,5 +1,5 @@
 /* $XConsortium: s3gtimg.c,v 1.1 94/03/28 21:15:33 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3gtimg.c,v 3.1 1994/08/03 13:30:41 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -29,6 +29,7 @@
 #include "scrnintstr.h"
 #include "pixmapstr.h"
 #include "cfb.h"
+#include "cfb16.h"
 #include "cfbmskbits.h"
 #include "s3.h"
 
@@ -51,9 +52,16 @@ s3GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
       return;
    }
 
-   if (pDrawable->type != DRAWABLE_WINDOW)
+   if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW)
    {
-      cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+      switch (pDrawable->bitsPerPixel) {
+      case 8:
+         cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	 break;
+      case 15:
+      case 16:
+         cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+      }
       return;
    }
 

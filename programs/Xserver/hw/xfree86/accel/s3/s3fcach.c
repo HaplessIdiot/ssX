@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.1 1994/08/01 12:12:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.2 1994/08/03 13:27:53 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -167,10 +167,6 @@ Dos3CPolyText8(x, y, count, chars, fentry, pGC, pBox)
 		  if (s3InfoRec.bitsPerPixel == 32)
 		     S3_OUTW(RD_MASK, 0xFFFF);
 #endif
-		  S3_OUTW(MULTIFUNC_CNTL, 
-			PIX_CNTL | MIXSEL_FRGDMIX | COLCMPOP_F);
-		  S3_OUTW(FRGD_MIX, FSS_FRGDCOL | MIX_SRC);
-		  S3_OUTW(BKGD_MIX, BSS_BKGDCOL | MIX_SRC);
 
 		  xf86loadFontBlock(fentry, blocki);
 		  block = fentry->fblock[blocki];		  

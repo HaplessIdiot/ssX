@@ -1,14 +1,15 @@
 /* $XConsortium: ibm8514cach.h,v 1.1 94/03/28 21:03:26 dpw Exp $ */
+/* $XFree86$ */
 void ibm8514GlyphWrite(
 #if NeedFunctionPrototypes
     int /*x*/,
     int /*y*/,
     int /*count*/,
-    int /*numRects*/,
     unsigned char */*chars*/,
     CacheFont8Ptr /*fentry*/,
     GCPtr /*pGC*/,
-    BoxPtr /*pBox*/
+    BoxPtr /*pBox*/,
+    int /*numRects*/
 #endif
 );
 
@@ -61,9 +62,9 @@ void ibm8514ImageOpStipple(
     int /*pox*/,
     int /*poy*/,
     int /*pwidth*/,
-    int /*fgPixel*/,
-    int /*bgPixel*/,
+    Pixel /*fgPixel*/,
+    Pixel /*bgPixel*/,
     short /*alu*/,
-    short /*planemask*/
+    Pixel /*planemask*/
 #endif
 );

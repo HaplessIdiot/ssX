@@ -1,6 +1,6 @@
 /*
  * $XConsortium: s3Cursor.c,v 1.2 94/03/28 21:14:00 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.2 1994/08/01 12:12:10 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Cursor.c,v 3.3 1994/08/03 13:27:45 dawes Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -256,7 +256,7 @@ s3LoadCursor(pScr, pCurs, x, y)
       return;
 
    /* Load storage location.  */
-   cpos = (s3DisplayWidth * s3CursorStartY + s3CursorStartX) / 1024;
+   cpos = (s3BppDisplayWidth * s3CursorStartY + s3CursorStartX) / 1024;
    outb(vgaCRIndex, 0x4d);
    outb(vgaCRReg, (0xff & cpos));
    outb(vgaCRIndex, 0x4c);
@@ -302,8 +302,8 @@ s3LoadCursor(pScr, pCurs, x, y)
    bytes_remaining = 1024;
    ram_loc = 0;
    while (bytes_remaining > 0) {
-      if (s3DisplayWidth - xpos < bytes_remaining)
-         n = s3DisplayWidth - xpos;
+      if (s3BppDisplayWidth - xpos < bytes_remaining)
+         n = s3BppDisplayWidth - xpos;
       else
          n = bytes_remaining;
 
@@ -424,7 +424,8 @@ s3MoveCursor(pScr, x, y)
 
    if (s3BlockCursor)
       return;
-   
+
+   x *= s3Bpp; /* XXX why? */
    x -= s3hotX;
    y -= s3hotY;
 
@@ -495,24 +496,56 @@ s3RecolorCursor(pScr, pCurs, displayed)
      Bool displayed;
 {
    ColormapPtr pmap;
+   unsigned short packedcolfg, packedcolbg;
    xColorItem sourceColor, maskColor;
 
-   s3GetInstalledColormaps(pScr, &pmap);
-   sourceColor.red = pCurs->foreRed;
-   sourceColor.green = pCurs->foreGreen;
-   sourceColor.blue = pCurs->foreBlue;
-   FakeAllocColor(pmap, &sourceColor);
-   maskColor.red = pCurs->backRed;
-   maskColor.green = pCurs->backGreen;
-   maskColor.blue = pCurs->backBlue;
-   FakeAllocColor(pmap, &maskColor);
-   FakeFreeColor(pmap, sourceColor.pixel);
-   FakeFreeColor(pmap, maskColor.pixel);
-
-   outb(vgaCRIndex, 0x0E);
-   outb(vgaCRReg, sourceColor.pixel);
-   outb(vgaCRIndex, 0x0F);
-   outb(vgaCRReg, maskColor.pixel);
+   switch (s3InfoRec.bitsPerPixel) {
+     case 8:
+	s3GetInstalledColormaps(pScr, &pmap);
+	sourceColor.red = pCurs->foreRed;
+	sourceColor.green = pCurs->foreGreen;
+	sourceColor.blue = pCurs->foreBlue;
+	FakeAllocColor(pmap, &sourceColor);
+	maskColor.red = pCurs->backRed;
+	maskColor.green = pCurs->backGreen;
+	maskColor.blue = pCurs->backBlue;
+	FakeAllocColor(pmap, &maskColor);
+	FakeFreeColor(pmap, sourceColor.pixel);
+	FakeFreeColor(pmap, maskColor.pixel);
+	
+	outb(vgaCRIndex, 0x0E);
+	outb(vgaCRReg, sourceColor.pixel);
+	outb(vgaCRIndex, 0x0F);
+	outb(vgaCRReg, maskColor.pixel);
+	break;
+     case 16: /*XXX: can we use the rgb values like this? */
+        if (s3InfoRec.depth == 15) {
+	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  1) 
+	               | ((pCurs->foreGreen & 0xf800) >>  6)
+		       | ((pCurs->foreBlue  & 0xf800) >> 11);
+	   packedcolbg = ((pCurs->backRed   & 0xf800) >>  1) 
+	               | ((pCurs->backGreen & 0xf800) >>  6)
+		       | ((pCurs->backBlue  & 0xf800) >> 11);
+	} else {
+	   packedcolfg = ((pCurs->foreRed   & 0xf800) >>  0) 
+	               | ((pCurs->foreGreen & 0xfc00) >>  5)
+		       | ((pCurs->foreBlue  & 0xf800) >> 11);
+	   packedcolbg = ((pCurs->backRed   & 0xf800) >>  0) 
+	               | ((pCurs->backGreen & 0xfc00) >>  5)
+		       | ((pCurs->backBlue  & 0xf800) >> 11);
+	}
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4A);
+	outb(vgaCRReg, packedcolfg);
+	outb(vgaCRReg, packedcolfg>>8);
+	outb(vgaCRIndex, 0x45);
+	inb(vgaCRReg);  /* reset stack pointer */
+	outb(vgaCRIndex, 0x4B);
+	outb(vgaCRReg, packedcolbg);
+	outb(vgaCRReg, packedcolbg>>8);
+     break;
+   }
 }
 
 void

@@ -1,5 +1,6 @@
+
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.5 1994/08/01 12:12:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.6 1994/08/03 13:28:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -49,6 +50,8 @@ extern char s3Mbanks;
 extern Bool s3Mmio928;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
+extern int cfb16ScreenPrivateIndex;
+
 static Bool s3TryAddress();
 extern ScreenPtr s3savepScreen;
 static PixmapPtr ppix = NULL;
@@ -330,18 +333,29 @@ s3Initialize(scr_index, pScreen, argc, argv)
 
    pScreen->CloseScreen = s3CloseScreen;
    pScreen->SaveScreen = s3SaveScreen;
-   pScreen->InstallColormap = s3InstallColormap;
-   pScreen->UninstallColormap = s3UninstallColormap;
-   pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
-   pScreen->StoreColors = s3StoreColors;
 
 
-#ifdef SOFTWARE_CURSOR 
-   miDCInitialize (pScreen, &xf86PointerScreenFuncs);
-#else   
-   xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
-   (void)s3CursorInit(0, pScreen); 
-   pScreen->QueryBestSize = s3QueryBestSize;
+#if 0
+	miDCInitialize (pScreen, &xf86PointerScreenFuncs);
+#else
+ 	switch (s3InfoRec.bitsPerPixel) {
+	case 8:
+	    pScreen->InstallColormap = s3InstallColormap;
+	    pScreen->UninstallColormap = s3UninstallColormap;
+	    pScreen->ListInstalledColormaps = s3ListInstalledColormaps;
+	    pScreen->StoreColors = s3StoreColors;
+	    break;       
+	case 15:
+	case 16:
+        case 32:
+	    pScreen->InstallColormap = cfbInstallColormap;
+	    pScreen->UninstallColormap = cfbUninstallColormap;
+	    pScreen->ListInstalledColormaps = cfbListInstalledColormaps;
+	    pScreen->StoreColors = (void (*)())NoopDDA;
+	}
+	pScreen->QueryBestSize = s3QueryBestSize;
+	xf86PointerScreenFuncs.WarpCursor = s3WarpCursor;
+	(void)s3CursorInit(0, pScreen);
 #endif
    s3savepScreen = pScreen;
    return (cfbCreateDefColormap(pScreen));
@@ -361,8 +375,19 @@ s3EnterLeaveVT(enter, screen_idx)
    PixmapPtr pspix;
    ScreenPtr pScreen = s3savepScreen;
 
-   if (!xf86Exiting && !xf86Resetting)
-      pspix = (PixmapPtr)pScreen->devPrivate;
+   if (!xf86Exiting && !xf86Resetting) {
+      /* cfbGetScreenPixmap(pScreen) */
+        switch (s3InfoRec.bitsPerPixel) {
+        case 8:
+            pspix = (PixmapPtr)pScreen->devPrivate;
+            break;
+        case 15:
+        case 16:
+            pspix =
+                  (PixmapPtr)pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr;
+            break;
+	}
+   }
 
    if (enter) {
       xf86MapDisplay(screen_idx, VGA_REGION);
@@ -535,7 +560,7 @@ s3AdjustFrame(int x, int y)
          y += 512;
    }
       
-   Base = (y * s3DisplayWidth + x) >> 2;
+   Base = (y * s3BppDisplayWidth + x) >> 2;
 
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);

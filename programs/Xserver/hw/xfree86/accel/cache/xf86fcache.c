@@ -1,5 +1,5 @@
 /* $XConsortium: xf86fcache.c,v 1.1 94/03/28 21:02:22 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.0 1994/04/29 14:06:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.1 1994/05/30 08:23:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -46,8 +46,8 @@ static CachePool xf86FontPool = NULL;
 static int xf86MaxWidth;
 static int xf86MaxHeight;
 static void (*xf86ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
-				      int, int, int, int, int, int,
-				      short, short);
+				      int, int, int, int, Pixel, Pixel,
+				      short, Pixel);
 static short *xf86Alu;
 
 /*
@@ -59,7 +59,7 @@ void xf86InitFontCache( FontCache, MaxWidth, MaxHeight,
 CachePool FontCache;
 int MaxWidth, MaxHeight;
 void (*ImageOpStippleFunc)(int, int, int, int, unsigned char *, int,
-			   int, int, int, int, int, int, short, short);
+			   int, int, int, int, Pixel, Pixel, short, Pixel);
 short *Alu;
 
 {
@@ -264,7 +264,7 @@ xf86loadFontBlock(fentry, block)
 					fentry->fblock[block]->x +
 					(c % 32) * fentry->w,
 					fentry->fblock[block]->y,
-					0xff, 0, xf86Alu[GXcopy],
+					~0, 0, xf86Alu[GXcopy],
 					1 << fentry->fblock[block]->daddy->id);
 	    }
 	 }

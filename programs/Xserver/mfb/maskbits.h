@@ -22,6 +22,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: maskbits.h,v 1.33 94/04/17 20:28:13 dpw Exp $ */
+/* $XFree86$ */
 #include "X.h"
 #include "Xmd.h"
 #include "servermd.h"
@@ -249,10 +250,10 @@ extern PixelType mask[];
  *  the Danbury C and i386cc
  */
 #if PPW == 32
-#define LONG2CHARS( x ) ( ( ( ( x ) & 0x000000FF ) << 0x18 ) \
-                      | ( ( ( x ) & 0x0000FF00 ) << 0x08 ) \
-                      | ( ( ( x ) & 0x00FF0000 ) >> 0x08 ) \
-                      | ( ( ( x ) & (unsigned long)0xFF000000 ) >> 0x18 ) )
+#define LONG2CHARS( x ) ( ( ( ( x ) & (unsigned long)0x000000FF ) << 0x18 ) \
+                        | ( ( ( x ) & (unsigned long)0x0000FF00 ) << 0x08 ) \
+                        | ( ( ( x ) & (unsigned long)0x00FF0000 ) >> 0x08 ) \
+                        | ( ( ( x ) & (unsigned long)0xFF000000 ) >> 0x18 ) )
 #else /* PPW == 64 */
 #define LONG2CHARS( x ) \
       ( ( ( ( x ) & 0x000000FF) << 0x18 ) \

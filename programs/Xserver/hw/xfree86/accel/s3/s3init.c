@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.11 1994/08/03 13:28:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.12 1994/08/06 06:08:04 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -46,7 +46,7 @@
 
 typedef struct {
    vgaHWRec std;                /* good old IBM VGA */
-   unsigned char SC15025[2];    /* Sierra SC 15025/6 command registers */
+   unsigned char SC15025[3];    /* Sierra SC 15025/6 command registers */
    unsigned char ATT490_1;	/* AT&T 20C490/1 command register */
    unsigned char ATT498;	/* AT&T 20C498 command register */
    unsigned char Bt485[4];	/* Bt485 Command Registers 0-3 */
@@ -133,7 +133,7 @@ s3CleanUp(void)
     * Restore AT&T 20C490/1 command register.
     */
    if (DAC_IS_ATT490) {
-      xf86setdaccomm(oldS3->ATT490_1);
+       xf86setdaccomm(oldS3->ATT490_1);
    }
    
    /*
@@ -150,8 +150,10 @@ s3CleanUp(void)
       c=xf86getdaccomm();
       xf86setdaccomm( c | 0x10 );  /* set internal register access */
       (void)xf86dactocomm();
-      outb(0x3c7, 0x8);
+      outb(0x3c7, 0x8);   /* Auxiliary Control Register */
       outb(0x3c8, oldS3->SC15025[1]);
+      outb(0x3c7, 0x10);  /* Pixel Repack Register */
+      outb(0x3c8, oldS3->SC15025[2]);
       xf86setdaccomm( c );
       xf86setdaccomm(oldS3->SC15025[0]);
    }
@@ -321,8 +323,10 @@ s3Init(mode)
          oldS3->SC15025[0] = xf86getdaccomm();
 	 xf86setdaccomm((oldS3->SC15025[0] | 0x10));
          (void)xf86dactocomm();
-	 outb(0x3c7,0x8);
+	 outb(0x3c7,0x8);   /* Auxiliary Control Register */
 	 oldS3->SC15025[1] = inb(0x3c8);
+	 outb(0x3c7,0x10);  /* Pixel Repack Register */
+	 oldS3->SC15025[2] = inb(0x3c8);
 	 xf86setdaccomm(oldS3->SC15025[0]);
       }
       UNLOCK_SYS_REGS;
@@ -428,21 +432,21 @@ s3Init(mode)
       mode->HSyncEnd >>= pixMuxShift;
    }
 
-   if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
-      mode->HTotal <<= (s3Bpp>>1);
-      mode->HDisplay <<= (s3Bpp>>1);
-      mode->HSyncStart <<= (s3Bpp>>1);
-      mode->HSyncEnd <<= (s3Bpp>>1);
+   if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
+      mode->HTotal <<= 1;
+      mode->HDisplay <<= 1;
+      mode->HSyncStart <<= 1;
+      mode->HSyncEnd <<= 1;
    }
 
    if (!vgaHWInit(mode, sizeof(vgaS3Rec)))
       return(FALSE);
 
-   if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
-      mode->HTotal >>= (s3Bpp>>1);
-      mode->HDisplay >>= (s3Bpp>>1);
-      mode->HSyncStart >>= (s3Bpp>>1);
-      mode->HSyncEnd >>= (s3Bpp>>1);
+   if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
+      mode->HTotal >>= 1;
+      mode->HDisplay >>= 1;
+      mode->HSyncStart >>= 1;
+      mode->HSyncEnd >>= 1;
    }
 
    if (pixel_multiplexing) {
@@ -455,7 +459,7 @@ s3Init(mode)
 
    new->MiscOutReg |= 0x0C;		/* enable CR42 clock selection */
    new->Sequencer[0] = 0x03;		/* XXXX shouldn't need this */
-   new->CRTC[19] = s3DisplayWidth >> 3;
+   new->CRTC[19] = s3BppDisplayWidth >> 3;
    new->CRTC[23] = 0xE3;		/* XXXX shouldn't need this */
    new->Attribute[17] = 0xFF;		/* The overscan colour gets */
 					/* disabled anyway */
@@ -509,12 +513,27 @@ s3Init(mode)
    /*
     * Set AT&T 20C490/1 command register to 8-bit mode if desired.
     */
+
    if (DAC_IS_ATT490) {
-      if (s3DAC8Bit) {
-         xf86setdaccommbit(0x02);
+
+      if (s3InfoRec.bitsPerPixel == 8) {
+	if (s3DAC8Bit) {
+         xf86setdaccomm(0x02);
+	} else {
+	 xf86setdaccomm(0x00);
+	}
       } else {
-	 xf86clrdaccommbit(0x02);
-      }
+	switch (s3InfoRec.depth) {
+	  case 15:
+		xf86setdaccomm(0xa0);
+                break;
+          case 16:
+		xf86setdaccomm(0xc0);
+                break;
+          default:
+		ErrorF("unsupported mode!\n");
+	}
+      }    
    }
 
    /*
@@ -532,22 +551,94 @@ s3Init(mode)
     * Set Sierra SC 15025/6 command registers to 8-bit mode if desired.
     */
    if (DAC_IS_SC15025) {
+#undef BYPASS_SC15025_LUT
+#define BYPASS_SC15025_LUT
+      unsigned char aux=0, comm=0, prr=0;
+#ifndef BYPASS_SC15025_LUT
+      extern double pow();
+      extern double xf86rGamma, xf86gGamma, xf86bGamma;
+      int nr=5, ng=5, nb=5;
+#endif
       LOCK_SYS_REGS;
-      if (s3DAC8Bit) {
-         tmp2=xf86getdaccomm();
-         xf86setdaccomm(tmp2 | 0x10);
-         (void)xf86dactocomm();
-	 outb(0x3c7,0x8);
-	 outb(0x3c8,0x01);
-	 xf86setdaccomm(tmp2);
-      } else {
-         tmp2=xf86getdaccomm();
-         xf86setdaccomm(tmp2 | 0x10);
-         (void)xf86dactocomm();
-         outb(0x3c7,0x8);
-         outb(0x3c8,0x00);
-         xf86setdaccomm(tmp2);
+      if (s3DAC8Bit) aux=1;
+      switch (s3InfoRec.bitsPerPixel) {
+      case 8: 
+	 comm = 0;  /* repack mode 0, color mode 0 */
+	 break;
+      case 15:
+      case 16:
+	 aux=1; /*KTS*/
+	 if (s3Weight == RGB16_555) {
+#if 1
+	    comm = 0x80;  /* repack mode 1a using both clock edges */
+#else
+	    comm = 0xa0;  /* repack mode 1b using only rising clock edge */
+#endif
+	 }
+	 else {  /* RGB16_565 */
+#if 1
+	    comm = 0xc0;  /* repack mode 1a using both clock edges */
+#else
+	    comm = 0xe0;  /* repack mode 1b using only rising clock edge */
+#endif
+#ifndef BYPASS_SC15025_LUT
+	    ng = 6;
+#endif
+	 }
+	 break;
+      case 24:
+      case 32:
+#if 0  /* 3 bytes/pixel */
+	 comm = 0x60;  /* repack mode 2 (3 byte RGB) using only rising clock edges */
+#else  /* 4 bytes/pixel */
+#if 1
+	 comm = 0x40;  /* repack mode 3a using both clock edges */
+	 prr = 1;
+#else
+	 comm = 0x60;  /* repack mode 3b using only rising clock edge */
+	 prr = 1;
+#endif
+#endif
+#ifndef BYPASS_SC15025_LUT
+	 nr = ng = nb = 8;
+#endif
+	 break;
+	 default:
+	    ;
       }
+      
+      tmp2=xf86getdaccomm();
+      xf86setdaccomm(tmp2 | 0x10);
+      (void)xf86dactocomm();
+      outb(0x3c7,0x8);
+      outb(0x3c8,aux);
+      outb(0x3c7,0x10);
+      outb(0x3c8,prr);
+#ifdef BYPASS_SC15025_LUT
+      xf86setdaccomm(comm);
+#else
+      comm |= 0x08;
+      xf86setdaccomm(comm);
+      if (s3InfoRec.bitsPerPixel > 8) {
+	 int r,g,b;
+	 int mr=(1<<nr)-1;
+	 int mg=(1<<ng)-1;
+	 int mb=(1<<nb)-1;
+
+	 outb(DAC_W_INDEX, 0);
+	 for(i=0; i<256; i++) {
+	    if (ng==8) r = g = b = i;
+	    else {
+	       r = (i >> (8-nr-2)) & mr;
+	       g = (i >> (8-ng-2)) & mg;
+	       b = (i >> (8-nb-2)) & mb;
+	    }
+	    outb(DAC_DATA, (int)(pow((double)r/mr,xf86rGamma)*255+0.5));
+	    outb(DAC_DATA, (int)(pow((double)g/mg,xf86gGamma)*255+0.5));
+	    outb(DAC_DATA, (int)(pow((double)b/mb,xf86bGamma)*255+0.5));
+	 }
+      }
+#endif
       UNLOCK_SYS_REGS;
    }
 
@@ -652,6 +743,7 @@ s3Init(mode)
 	       outb(vgaCRReg, 0x00 | invert_vclk); 
 	       xf86setdaccomm(tmp | 0x00);  /* set mode 0 */
 	       break;
+	    case 15: 
 	    case 16: 
 	       if (s3Weight == RGB16_555) {
 		  outb(vgaCRReg, 0x30 | invert_vclk); /* set Mode 9: 15-bit color, 1 VCLK/pixel */
@@ -668,8 +760,8 @@ s3Init(mode)
 	       xf86setdaccomm(tmp | 0x50);  /* set mode 5 */
 	       delay_blank = 2;
 	       break;
-	    default:
-	       ErrorF("default switch 2\n");
+	       default:
+		  ;
 	    }
 	    outb(vgaCRIndex, 0x6d);
 	    outb(vgaCRReg, delay_blank);
@@ -1002,7 +1094,7 @@ s3Init(mode)
       outb(0x3C0, new->Attribute[i]);
    }
 
-   if (s3DisplayWidth == 2048)
+   if (s3DisplayWidth == 2048 || 1)
       s3Port31 = 0x8f;
    else
       s3Port31 = 0x8d;
@@ -1054,20 +1146,53 @@ s3Init(mode)
    }
 
    outb(vgaCRIndex, 0x43);
-   outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
+   switch (s3InfoRec.depth) {
+        case 15:
+	   outb(vgaCRReg, 0x80);
+	   break;
+	case 16:
+	   outb(vgaCRReg, 0x88);
+           break;
+        case 8:
+        default:
+	   outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
+	   break;
+   }
+
+       
 
    outb(vgaCRIndex, 0x44);
    outb(vgaCRReg, 0x00);
 
    outb(vgaCRIndex, 0x45);
    i = inb(vgaCRReg);
-   outb(vgaCRReg, i & 0x01); /* Don't change the cursor state */
+   /* hi/true cursor color enable */
+   switch (s3InfoRec.bitsPerPixel) {
+	case 15:
+	case 16:
+	  i = i | 0x04;
+	  break;
+	case 32:
+	  i = i | 0x08;
+	  break;
+   }
+
+   outb(vgaCRReg, i & 0xfe); /* Don't change the cursor state */
 
    if (S3_801_928_SERIES(s3ChipId)) {	/* S3 801 specific initialization */
 
       outb(vgaCRIndex, 0x50);
       i = inb(vgaCRReg);
-      i &= ~0xc1;
+      i &= 0xf;
+      switch (s3InfoRec.bitsPerPixel) {
+	case 8:
+           break;
+        case 15:
+	case 16:
+	   i = i | 0x10;
+        default:
+	   break;
+      }
       switch (s3DisplayWidth) { 
 	case 640:
 	   outb(vgaCRReg, i | 0x40);
@@ -1089,7 +1214,7 @@ s3Init(mode)
       }
 
       outb(vgaCRIndex, 0x51);
-      s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3DisplayWidth >> 7) & 0x30);
+      s3Port51 = (inb(vgaCRReg) & 0xC0) | ((s3BppDisplayWidth >> 7) & 0x30);
       outb(vgaCRReg, s3Port51);
 
       outb(vgaCRIndex, 0x53);
@@ -1120,7 +1245,7 @@ s3Init(mode)
 	    CR54   208  200  192  184  160  144  112   88
 	    CR54/8  26   25   24   23   20   18   14   11
 	    */
-	 s3Port54 = (232-s3InfoRec.clock[mode->Clock]/900) & ~8;
+	 s3Port54 = (232-s3InfoRec.clock[mode->Clock]/900 / s3Bpp) & 0xf8;
       }
       else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 s3Port54 = 0x00;
@@ -1156,11 +1281,11 @@ s3Init(mode)
          mode->HSyncEnd >>= pixMuxShift;
       }
 
-      if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
-	 mode->HTotal <<= (s3Bpp>>1);
-	 mode->HDisplay <<= (s3Bpp>>1);
-	 mode->HSyncStart <<= (s3Bpp>>1);
-	 mode->HSyncEnd <<= (s3Bpp>>1);
+      if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
+	 mode->HTotal <<= 1;
+	 mode->HDisplay <<= 1;
+	 mode->HSyncStart <<= 1;
+	 mode->HSyncEnd <<= 1;
       }
       
       i = ((mode->HTotal & 0x800) >> 11) |
@@ -1168,11 +1293,11 @@ s3Init(mode)
 	  ((mode->HSyncStart & 0x800) >> 9) |
 	  ((mode->HSyncStart & 0x800) >> 7);
 
-      if (S3_864_SERIES(s3ChipId) && s3Bpp>1) {
-	 mode->HTotal >>= (s3Bpp>>1);
-	 mode->HDisplay >>= (s3Bpp>>1);
-	 mode->HSyncStart >>= (s3Bpp>>1);
-	 mode->HSyncEnd >>= (s3Bpp>>1);
+      if (S3_864_SERIES(s3ChipId) /* && DAC_IS_ATT498 */ && s3Bpp>2) {
+	 mode->HTotal >>= 1;
+	 mode->HDisplay >>= 1;
+	 mode->HSyncStart >>= 1;
+	 mode->HSyncEnd >>= 1;
       }
 
       if (pixel_multiplexing) {
@@ -1183,9 +1308,18 @@ s3Init(mode)
          mode->HSyncEnd <<= pixMuxShift;
       }
 
+      outb(vgaCRIndex, 0x3b);
+      tmp = (  new->CRTC[0] + ((i&0x01)<<8)
+	     + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
+      outb(vgaCRReg, tmp & 0xff);
+      i |= (tmp&0x100) >> 2;
+      outb(vgaCRIndex, 0x3c);
+      outb(vgaCRReg, (new->CRTC[0] + (i&0x01)<<8) /2);	/* Interlace mode frame offset */
+
       outb(vgaCRIndex, 0x5d);
       tmp = inb(vgaCRReg);
-      outb(vgaCRReg, (tmp & ~0x17) | i);
+      outb(vgaCRReg, (tmp & ~0x57) | i);
+
 
       /*
        * Set up CR60 according the the DRAM speed specified in the Xconfig
@@ -1247,14 +1381,14 @@ s3Init(mode)
       outb(vgaCRReg, tmp);
 
       if (S3_x64_SERIES(s3ChipId)) {
+	 int tmp;
 	 outb(vgaCRIndex, 0x60);
 	 outb(vgaCRReg, 255);
 	 
-ErrorF("0x61:  %d %d\n",s3DisplayWidth,s3BppDisplayWidth);
 	 if (s3InfoRec.videoRam < 2048) 
-	    tmp = s3BppDisplayWidth / 4;
+	    tmp = mode->HDisplay * s3Bpp / 4;
 	 else
-	    tmp = s3BppDisplayWidth / 8;
+	    tmp = mode->HDisplay * s3Bpp / 8;
 	 
  	 outb(vgaCRIndex, 0x61);
 	 outb(vgaCRReg, (tmp >> 8) | 0x80);

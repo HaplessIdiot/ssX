@@ -4,11 +4,11 @@ void mach8GlyphWrite(
     int /*x*/,
     int /*y*/,
     int /*count*/,
-    int /*numRects*/,
     unsigned char */*chars*/,
     CacheFont8Ptr /*fentry*/,
     GCPtr /*pGC*/,
-    BoxPtr /*pBox*/
+    BoxPtr /*pBox*/,
+    int /*numRects*/
 #endif
 );
 
@@ -61,9 +61,9 @@ void mach8ImageOpStipple(
     int /*pox*/,
     int /*poy*/,
     int /*pwidth*/,
-    int /*fgPixel*/,
-    int /*bgPixel*/,
+    Pixel /*fgPixel*/,
+    Pixel /*bgPixel*/,
     short /*alu*/,
-    short /*planemask*/
+    Pixel /*planemask*/
 #endif
 );

@@ -1,5 +1,5 @@
 /* $XConsortium: s3scrin.c,v 1.2 94/04/17 20:31:14 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3scrin.c,v 3.1 1994/08/03 13:30:48 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -115,6 +115,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
 	if (s3DAC8Bit)
 	    bitsPerRGB = 8;
 	break;
+    case 15:
     case 16:
 	if (xf86weight.red == 5 && xf86weight.green == 5
 	    && xf86weight.blue == 5)
@@ -199,7 +200,7 @@ s3ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->DestroyColormap = (DestroyColormapProcPtr)NoopDDA;
     pScreen->ResolveColor = cfbResolveColor;
     pScreen->BitmapToRegion = mfbPixmapToRegion;
-/* XXX: new cache   pScreen->BlockHandler = s3BlockHandler;*/
+/* XXX: new cursor?   pScreen->BlockHandler = s3BlockHandler;*/
 
     if (rootdepth != 8) {
 	oldDevPrivate = pScreen->devPrivate;

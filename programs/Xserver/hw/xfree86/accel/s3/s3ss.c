@@ -1,5 +1,5 @@
 /* $XConsortium: s3ss.c,v 1.2 94/04/17 20:31:15 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ss.c,v 3.1 1994/08/03 13:30:52 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -117,6 +117,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	case 8:
 	   cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	   break;
+	case 15:
 	case 16:
 	   cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 	   break;

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.2 94/03/28 21:23:10 dpw Exp $
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.0 1994/05/08 05:20:51 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -52,6 +52,7 @@ Bool xf86coFlag = FALSE;
 char xf86ConfigFile[PATH_MAX] = "";
 int  xf86bpp = 8;
 xrgb xf86weight = { 5, 6, 5 } ;	/* RGB weighting at 16 bpp */
+double xf86rGamma=1.0, xf86gGamma=1.0, xf86bGamma=1.0;
 
 static void xf86PrintConfig();
 
@@ -473,6 +474,25 @@ ddxProcessArgument (argc, argv, i)
       return 0;
     }
   }
+  if (!strcmp(argv[i], "-gamma")  || !strcmp(argv[i], "-rgamma") || 
+      !strcmp(argv[i], "-ggamma") || !strcmp(argv[i], "-bgamma"))
+  {
+    double gamma;
+    if (++i >= argc)
+      return 0;
+    if (sscanf(argv[i], "%lf", &gamma) == 1) {
+       if (gamma < 0.1 || gamma > 10) {
+	  ErrorF("gamma out of range, only  0.1 < gamma_value < 10  is valid\n");
+	  return 0;
+       }
+       if (!strcmp(argv[i-1], "-gamma")) 
+	  xf86rGamma = xf86gGamma = xf86bGamma = 1.0 / gamma;
+       else if (!strcmp(argv[i-1], "-rgamma")) xf86rGamma = 1.0 / gamma;
+       else if (!strcmp(argv[i-1], "-ggamma")) xf86gGamma = 1.0 / gamma;
+       else if (!strcmp(argv[i-1], "-bgamma")) xf86bGamma = 1.0 / gamma;
+       return 2;
+    }
+ }
   return xf86ProcessArgument(argc, argv, i);
 }
 
@@ -494,6 +514,10 @@ ddxUseMsg()
   ErrorF("-verbose               verbose startup messages\n");
   ErrorF("-quiet                 minimal startup messages\n");
   ErrorF("-bpp n                 set number of bits per pixel. Default: 8\n");
+  ErrorF("-gamma f               set gamma value (0.1 < f < 10.0) Default: 1.0\n");
+  ErrorF("-rgamma f              set gamma value for red phase\n");
+  ErrorF("-ggamma f              set gamma value for green phase\n");
+  ErrorF("-bgamma f              set gamma value for blue phase\n");
   ErrorF("-weight nnn            set RGB weighting at 16 bpp.  Default: 565\n");
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");

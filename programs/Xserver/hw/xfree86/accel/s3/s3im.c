@@ -1,5 +1,5 @@
 /* $XConsortium: s3im.c,v 1.1 94/03/28 21:15:39 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.3 1994/08/01 13:01:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.4 1994/08/03 13:28:06 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -798,7 +798,7 @@ s3ImageReadNoMem (x, y, w, h, psrc, pwidth, px, py, planemask)
    outw (CUR_Y, (short) y);
    outw (MAJ_AXIS_PCNT, (short) w - 1);
    outw (MULTIFUNC_CNTL, MIN_AXIS_PCNT | (h - 1));
-   outw (CMD, CMD_RECT | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW |
+   outw (CMD, CMD_RECT  | BYTSEQ | _16BIT | INC_Y | INC_X | DRAW |
 	  PCDATA);
    S3_OUTW(RD_MASK, (short)planemask);
 #ifdef S3_32BPP

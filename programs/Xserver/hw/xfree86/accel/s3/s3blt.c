@@ -1,5 +1,5 @@
 /* $XConsortium: s3blt.c,v 1.2 94/04/17 20:31:05 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.3 1994/08/01 12:12:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3blt.c,v 3.4 1994/08/03 13:27:47 dawes Exp $ */
 /*
 
 Copyright (c) 1998  X Consortium
@@ -58,6 +58,7 @@ PERFORMANCE OF THIS SOFTWARE.
 #include	"regionstr.h"
 #include	"mi.h"
 #include	"cfb.h"
+#include	"cfb16.h"
 #include	"cfbmskbits.h"
 #include	"cfb8bit.h"
 #include	"fastblt.h"
@@ -104,8 +105,15 @@ s3CopyArea(pSrcDrawable, pDstDrawable,
    if (!xf86VTSema || 
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
                       pDstDrawable->type != DRAWABLE_WINDOW))
-      return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-                          srcx, srcy, width, height, dstx, dsty);
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+ 	case 8:
+	    return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+			       srcx, srcy, width, height, dstx, dsty);
+	case 15:
+	case 16:
+	    return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+				 srcx, srcy, width, height, dstx, dsty);
+	} 
 
    origSource.x = srcx;
    origSource.y = srcy;
@@ -513,10 +521,16 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
        (pSrcDrawable->type != DRAWABLE_WINDOW &&
 	pDstDrawable->type != DRAWABLE_WINDOW))
    {
-      return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
-                      srcx, srcy, width, height, dstx, dsty, bitPlane);
-   }
-
+	switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+ 	case 8:
+	    return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			    srcx, srcy, width, height, dstx, dsty, bitPlane);
+	case 15:
+	case 16:
+	    return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+			      srcx, srcy, width, height, dstx, dsty, bitPlane);
+	}
+   } 
 #if 0
    /* This can cause server lockups */
    /*
@@ -897,7 +911,7 @@ s3CopyPlane(pSrcDrawable, pDstDrawable,
          /* Pixmap --> Window */
          PixmapPtr pix = (PixmapPtr) pSrcDrawable;
 	 int   pixWidth;
-	 char *psrc;
+	 unsigned char *psrc;
 
 	 pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
 	 psrc = pix->devPrivate.ptr;

@@ -1,4 +1,5 @@
 /* $XConsortium: s3cmap.c,v 1.1 94/03/28 21:14:43 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -42,6 +43,10 @@
 
 #include "s3.h"
 #include "regs3.h"
+
+extern double xf86rGamma, xf86gGamma, xf86bGamma;
+extern double pow();
+#define GAMMA(v,max,gamma) (((gamma)==1.0)?(v):((int)(pow((double)(v)/(max),(gamma))*(max)+0.5)))
 
 #define NOMAPYET        (ColormapPtr) 0
 
@@ -116,13 +121,19 @@ s3StoreColors(pmap, ndef, pdefs)
       unsigned char r, g, b;
 
       if (s3DAC8Bit) {
-         r = currents3dac[pdefs[i].pixel].r = pdefs[i].red >> 8;
-         g = currents3dac[pdefs[i].pixel].g = pdefs[i].green >> 8;
-         b = currents3dac[pdefs[i].pixel].b = pdefs[i].blue >> 8;
+         r = currents3dac[pdefs[i].pixel].r =
+	     GAMMA(pdefs[i].red >> 8, 255, xf86rGamma);
+         g = currents3dac[pdefs[i].pixel].g =
+	     GAMMA(pdefs[i].green >> 8, 255, xf86gGamma);
+         b = currents3dac[pdefs[i].pixel].b =
+	     GAMMA(pdefs[i].blue >> 8, 255, xf86bGamma);
       } else {
-         r = currents3dac[pdefs[i].pixel].r = pdefs[i].red >> 10;
-         g = currents3dac[pdefs[i].pixel].g = pdefs[i].green >> 10;
-         b = currents3dac[pdefs[i].pixel].b = pdefs[i].blue >> 10;
+         r = currents3dac[pdefs[i].pixel].r =
+	     GAMMA(pdefs[i].red >> 10, 63, xf86rGamma);
+         g = currents3dac[pdefs[i].pixel].g =
+	     GAMMA(pdefs[i].green >> 10, 63, xf86gGamma);
+         b = currents3dac[pdefs[i].pixel].b =
+	     GAMMA(pdefs[i].blue >> 10, 63, xf86bGamma);
       }
       if (xf86VTSema) {
 	 outb(DAC_W_INDEX, pdefs[i].pixel);
@@ -221,13 +232,13 @@ s3RestoreColor0(pScreen)
    BLOCK_CURSOR;
    outb(DAC_W_INDEX, 0);
    if (s3DAC8Bit) {
-      outb(DAC_DATA, rgb.red >> 8);
-      outb(DAC_DATA, rgb.green >> 8);
-      outb(DAC_DATA, rgb.blue >> 8);
+      outb(DAC_DATA, GAMMA(rgb.red >> 8, 255, xf86rGamma));
+      outb(DAC_DATA, GAMMA(rgb.green >> 8, 255, xf86gGamma));
+      outb(DAC_DATA, GAMMA(rgb.blue >> 8, 255, xf86bGamma));
    } else {
-      outb(DAC_DATA, rgb.red >> 10);
-      outb(DAC_DATA, rgb.green >> 10);
-      outb(DAC_DATA, rgb.blue >> 10);
+      outb(DAC_DATA, GAMMA(rgb.red >> 10, 63, xf86rGamma));
+      outb(DAC_DATA, GAMMA(rgb.green >> 10, 63, xf86gGamma));
+      outb(DAC_DATA, GAMMA(rgb.blue >> 10, 63, xf86bGamma));
    }
    UNBLOCK_CURSOR;
 }

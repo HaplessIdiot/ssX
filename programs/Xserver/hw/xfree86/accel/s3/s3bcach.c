@@ -1,5 +1,5 @@
 /* $XConsortium: s3bcach.c,v 1.1 94/03/28 21:14:19 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.1 1994/07/16 10:20:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3bcach.c,v 3.2 1994/08/01 12:12:11 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 
@@ -56,10 +56,18 @@ unsigned int id;
    S3_OUTW(MULTIFUNC_CNTL, PIX_CNTL | MIXSEL_FRGDMIX);  
    S3_OUTW(FRGD_MIX, FSS_BITBLT | MIX_SRC);
    S3_OUTW(BKGD_MIX, BSS_BITBLT | MIX_SRC);
-   S3_OUTW(WRT_MASK, id);
+   S3_OUTW(WRT_MASK, 1 << id);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(WRT_MASK, (short)(1 << id));
+#endif
 
    WaitQueue(8);		/* now shift the cache */
-   S3_OUTW(RD_MASK, id);
+   S3_OUTW(RD_MASK, 1 << id);
+#ifdef S3_32BPP
+   if (s3InfoRec.bitsPerPixel == 32)
+      S3_OUTW(RD_MASK, (short)(1 << id));
+#endif
    S3_OUTW(CUR_Y, srcy);
    S3_OUTW(CUR_X, srcx);
    S3_OUTW(DESTX_DIASTP, dstx);
