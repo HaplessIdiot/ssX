@@ -1,4 +1,7 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 762. Fix a lockup problem on Trident Blade3D engines by permanently turning
+      on PCI Retry. Also sync the engine on CloseScreen and LeaveVT.
+      (Yukun Chen, Alan Hourihane).
  761. Fix getaddrinfo() return value check in SmsGenerateClientID() that was
       causing a crash when the current hostname is unresolved, and returning
       a NULL id otherwise (Bugzilla #1096, David Dawes).
@@ -18555,7 +18558,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3105 2004/01/17 15:20:01 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3106 2004/01/20 03:36:28 dawes Exp $
 
 
 
