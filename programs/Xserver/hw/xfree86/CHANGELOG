@@ -1,3 +1,6 @@
+3566. Change trident driver to use fb instead of cfb and make DDC1 info
+      available to the primary card (Alan Hourihane).
+
 XFree86 3.9.17a (21 January 2000)
 3565. Update linux.cf to use the kernel header files on Debian rather than
       those packaged with the libc headers (#3544, Simon Richter).
