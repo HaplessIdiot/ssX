@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadext.c,v 1.1 2000/01/25 18:50:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadext.c,v 1.2 2000/01/29 17:17:05 dawes Exp $ */
 
 /* Maybe this file belongs elsewhere? */
 
@@ -389,11 +389,13 @@ LoaderSortExtensions()
 	}
 	tsort();
 	newList = xnfalloc((numExtensionModules + 1) * sizeof(ExtensionModule));
-	for (i = 0, node = sorted; node; node = node->n_next, i++) {
+	i = 0;
+	for (node = sorted; node; node = node->n_next) {
 		for (j = 0; j < numExtensionModules; j++)
 			if (!strcmp(node->n_name, ExtensionModuleList[j].name))
 				break;
-		newList[i] = ExtensionModuleList[j];
+		if (j != numExtensionModules)
+			newList[i++] = ExtensionModuleList[j];
 	}
 	if (sorted)
 		free_nodes(sorted);
