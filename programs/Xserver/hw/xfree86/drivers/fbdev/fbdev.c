@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.32 2001/06/14 02:23:49 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.33 2001/06/15 21:22:49 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -889,8 +889,11 @@ FBDevCloseScreen(int scrnIndex, ScreenPtr pScreen)
 	fbdevHWUnmapVidmem(pScrn);
 	if (fPtr->shadowmem)
 		xfree(fPtr->shadowmem);
-	if (fPtr->pDGAMode)
+	if (fPtr->pDGAMode) {
 	  xfree(fPtr->pDGAMode);
+	  fPtr->pDGAMode = NULL;
+	  fPtr->nDGAMode = 0;
+	}
 	pScrn->vtSema = FALSE;
 
 	pScreen->CloseScreen = fPtr->CloseScreen;
