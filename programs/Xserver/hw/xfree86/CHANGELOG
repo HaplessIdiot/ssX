@@ -1,3 +1,11 @@
+XFree86 3.2Ae (XX February 1997)
+ 439. Stop S3 and S3V server from overwriting CR11 (#30, Harald Koenig).
+ 438. Fix banking code in S3/SVGA driver (#29, Thomas Mueller).
+ 437. Fix DPMS code for C&T (#28, David Bateman).
+ 436. Enable left edge clipping for HiQV chips (#28, David Bateman).
+ 435. Stop C&T probe from printing out messages for non C&T chips (#28,
+      David Bateman).
+
 XFree86 3.2Ad (14 February 1997)
  434. Merge Metro Link loader code and make all SVGA drivers and S3, S3V 
       server loadable (Metro Link, Dirk Hohndel).
