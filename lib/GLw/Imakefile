@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/GLw/Imakefile,v 1.1 2000/11/02 20:39:07 dawes Exp $
 
 XCOMM
 XCOMM Imakefile for GLw library - lots of modifications for XFree86 by
@@ -38,50 +38,6 @@ XCOMM correct (unfortunatelly, a common mistake).
 
 XCOMM MOTIF_INCLUDES = -I/usr/local/include
 XCOMM MOTIF_LDFLAGS  = -L/usr/local/lib
-
-/*
- * Repeat some defines of X11.tmpl so that we can generate a standalone
- * distribution.  X11.tmpl already has everything defined if ProfileLibGLw
- * has been defined (for example).
- */
-#ifndef ProfileLibGLw
-/*
- * Repeat some defines of X11.tmpl so that we can generate a standalone
- * distribution.
- *
- * Don't make a shared GLw library because is would depend on Motif.
- */
-#ifndef SharedLibGLw
-#define SharedLibGLw		NO	/* HasSharedLibraries */
-#endif
-#ifndef NormalLibGLw
-#define NormalLibGLw		YES	/* (!SharedLibGLw | ForceNormalLib) */
-#endif
-#ifndef DebugLibGLw
-#define DebugLibGLw		NO	/* debugged widget library */
-#endif
-#ifndef ProfileLibGLw
-#define ProfileLibGLw		NO	/* profiled widget library */
-#endif
-#ifndef GLwUseXmStubs
-#define GLwUseXmStubs		NO	/* create stub (weak) Motif symbols */
-#endif
-
-XCOMM =========================================================================
-XCOMM NO USER SERVICABLE PARTS BELOW THIS LINE.
-XCOMM =========================================================================
-
-       GLWIDGETSRC = $(LIBSRC)/GLw
-#if SharedLibGLw
-#ifndef SharedGLwRev
-#define SharedGLwRev 1.0		/* used to name the shared library */
-#endif
-SharedDSLibReferences(GLW,GLw,$(GLWIDGETSRC),SOGLWREV,SharedGLwRev)
-#else
-ProjectUnsharedLibReferences(GLW,GLw,$(GLWIDGETSRC),XBuildLibDir)
-#endif
-#endif
-
 
 #define DoNormalLib	NormalLibGLw
 #define DoSharedLib	SharedLibGLw
@@ -109,59 +65,11 @@ LOCAL_LDFLAGS = $(MOTIF_LDFLAGS)
 
 LINTLIBS = $(LINTXLIB) $(LINTXTOOL)
 
-MANDIR = $(LIBMANDIR)
-MANSUFFIX = $(LIBMANSUFFIX)
-
 HEADERS = GLwDrawA.h GLwDrawAP.h GLwMDrawA.h GLwMDrawAP.h
 SRCS = GLwDrawA.c GLwM1DrawA.c GLwM2DrawA.c GLwDAUtil.c
 OBJS = GLwDrawA.o GLwM1DrawA.o GLwM2DrawA.o GLwDAUtil.o
 
 #include <Library.tmpl>
-
-#if 0
-standalone::
-	$(MAKE) EXTRA_INCLUDES="$(EXTRA_INCLUDES) -Iexports/include" \	@@\
-		LOCAL_LDFLAGS="-L. $(LOCAL_LDFLAGS)"
-
-demos:: xmdemo xtdemo
-
-stand-demos:: standalone
-	$(MAKE) EXTRA_INCLUDES="$(EXTRA_INCLUDES) -Iexports/include" \	@@\
-		LOCAL_LDFLAGS="-L. $(LOCAL_LDFLAGS)" xmdemo xtdemo
-
-stand-xmdemo:: standalone
-	$(MAKE) EXTRA_INCLUDES="$(EXTRA_INCLUDES) -Iexports/include" \	@@\
-		LOCAL_LDFLAGS="-L. $(LOCAL_LDFLAGS)" xmdemo xtdemo
-
-stand-xtdemo:: standalone
-	$(MAKE) EXTRA_INCLUDES="$(EXTRA_INCLUDES) -Iexports/include" \	@@\
-		LOCAL_LDFLAGS="-L. $(LOCAL_LDFLAGS)" xmdemo xtdemo
-
-/* xmdemo depends on Motif */
-#ifndef XmClientDepLibs
-#define XmClientDepLibs $(DEPXTOOLLIB) $(DEPXPLIB) $(DEPXLIB)
-#endif
-
-#ifndef XmClientLibs
-#define XmClientLibs -lXm $(XTOOLLIB) $(XPLIB) $(XLIB)
-#endif
-
-SRCS1 = xmdemo.c
-OBJS1 = xmdemo.o
-DEPLIBS1 = XmClientDepLibs $(DEPXMULIB) libGLw.a
-LIBS1 = XmClientLibs $(XMULIBONLY) -lGL -lGLU -lGLw
-
-SpecialCObjectRule(xmdemo,,)
-NormalProgramTarget(xmdemo,$(OBJS1),$(DEPLIBS1),$(LIBS1),NullParameter)
-
-SRCS2 = xtdemo.c
-OBJS2 = xtdemo.o
-DEPLIBS2 = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) libGLw.a
-LIBS2 = $(XMULIBONLY) $(XTOOLLIB) $(XLIB) -lGL -lGLU -lGLw
-
-SpecialCObjectRule(xtdemo,,)
-NormalProgramTarget(xtdemo,$(OBJS2),$(DEPLIBS2),$(LIBS2),NullParameter)
-#endif
 
 LinkSourceFile(GLwDAUtil.c,$(GLWSRCDIR))
 LinkSourceFile(GLwDrawA.c,$(GLWSRCDIR))
