@@ -1,11 +1,5 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/Xrender/Imakefile,v 1.1 2000/08/26 00:38:36 keithp Exp $
 
-#define NormalLibXrender YES
-#define SharedLibXrender YES
-
-#define SharedXrenderRev 1.0
-   XRENDERLIBSRC = $(LIBSRC)/Xrender
-SharedLibReferences(XRENDER,Xrender,$(RENDERLIBSRC),SOXRENDERREV,SharedXrenderRev)
 
 #define DoNormalLib NormalLibXrender
 #define DoSharedLib SharedLibXrender
@@ -27,12 +21,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
       DEFINES = $(ALLOC_DEFINES)
-#ifdef UseInstalled
-      XSRCDIR = /x11
-     INCLUDES = -I$(XSRCDIR)/include/extensions -I..
-#else
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I..
-#endif
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC)
          SRCS = Xrender.c \
 	 	Composite.c \
 		Glyph.c \
