@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.228 2004/07/07 03:46:21 martin Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.229 2004/08/27 16:28:05 dawes Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -1001,7 +1001,7 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 #ifndef BuildDmx
-#define BuildDmx	YES
+#define BuildDmx	NO
 #endif
 
 #include <lnxLib.rules>
