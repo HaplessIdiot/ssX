@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.14 2001/12/14 20:01:40 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.15 2002/05/31 18:46:12 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -288,7 +288,7 @@ SetConfigValues(void)
 
     err = SetFontCatalogue(font_catalogue, &num);
     if (err != FSSuccess) {
-	FatalError("Element #%d (starting at 0) of font path is bad or has a bad font:\n\"%s\"\n",
+	FatalError("element #%d (starting at 0) of font path is bad or has a bad font:\n\"%s\"\n",
 		   num, font_catalogue);
     }
     InitErrors();
@@ -536,7 +536,7 @@ config_set_catalogue(
 	fsfree((char *) font_catalogue);	/* dump any previous one */
 	b = font_catalogue = (char *) fsalloc(strlen(val) + 1);
 	if (!font_catalogue)
-	    FatalError("Insufficent memory for font catalogue\n");
+	    FatalError("insufficent memory for font catalogue\n");
 	while (*val) {		/* remove all the gunk */
 	    if (!isspace(*val)) {
 		*b++ = *val;
@@ -615,7 +615,7 @@ config_set_resolutions(
     if (!strcmp(parm->parm_name, "default-resolutions")) {
 	err = SetDefaultResolutions(start);
 	if (err != FSSuccess) {
-	    FatalError("Bogus resolution list \"%s\"\n", start);
+	    FatalError("bogus resolution list \"%s\"\n", start);
 	}
     }
     *val = t;
