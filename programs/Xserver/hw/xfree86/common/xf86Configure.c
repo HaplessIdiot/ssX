@@ -1,4 +1,4 @@
-/* $XFree86: */
+/* $XFree86$ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *

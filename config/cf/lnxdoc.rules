@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.16 1999/07/04 08:31:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/lnxdoc.rules,v 3.17 2000/01/25 01:06:37 dawes Exp $
 XCOMM
 XCOMM Rules for formatting Linuxdoc-SGML documentation
 XCOMM
@@ -86,16 +86,21 @@ update.docs:: textfile							@@\
 	@if [ -f $(FORMATTEDDIR)/textfile ]; then \			@@\
 	    if [ "$(FORCEUPDATE)" = yes ]; then set -x; \		@@\
 		cp textfile $(FORMATTEDDIR)/textfile; \			@@\
+		echo "" >> $(FORMATTEDDIR)/textfile; \			@@\
+		echo "\$$XFree86\$$" >> $(FORMATTEDDIR)/textfile; \	@@\
 	    else \							@@\
 		$(RM) __tmp1__ __tmp2__; \				@@\
 		grep "Generated from XFree86:" textfile > __tmp1__; \	@@\
 		grep "Generated from XFree86:" $(FORMATTEDDIR)/textfile > __tmp2__; \	@@\
 		if diff __tmp1__ __tmp2__ > /dev/null 2>&1; then :; \ @@\
 		else set -x; \						@@\
-			cp textfile $(FORMATTEDDIR)/textfile ; \
+			cp textfile $(FORMATTEDDIR)/textfile ; \	@@\
+			echo "" >> $(FORMATTEDDIR)/textfile; \		@@\
+			echo "\$$XFree86\$$" >> $(FORMATTEDDIR)/textfile; \ @@\
 		fi; \							@@\
 	    fi; \							@@\
-	fi
+	fi								@@\
+	@$(RM) __tmp1__ __tmp2__
 #endif
 
 #define LinuxDocTargetLong(sgmlfile,textfile,base)			@@\
