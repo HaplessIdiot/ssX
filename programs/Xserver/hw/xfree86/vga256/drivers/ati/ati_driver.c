@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.39 1996/12/23 06:56:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.40 1996/12/28 08:16:43 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -288,7 +288,7 @@
 #define numberof(_what) (sizeof(_what) / sizeof(_what[0]))
 
 /* This is the type of all banking functions */
-typedef void BankFunction FunctionPrototype((const unsigned int));
+typedef void BankFunction FunctionPrototype((int));
 
 /*
  * Driver data structures.
@@ -328,14 +328,13 @@ static ATIHWPtr Current_ATIHWPtr;
  * definitions of these functions for the real scoop.
  */
 static Bool   ATIProbe      FunctionPrototype((void));
-static char * ATIIdent      FunctionPrototype((const unsigned int));
+static char * ATIIdent      FunctionPrototype((int));
 static void   ATIEnterLeave FunctionPrototype((const Bool));
 static Bool   ATIInit       FunctionPrototype((DisplayModePtr));
 static int    ATIValidMode  FunctionPrototype((DisplayModePtr, const Bool));
-static void * ATISave       FunctionPrototype((ATIHWPtr));
-static void   ATIRestore    FunctionPrototype((ATIHWPtr));
-static void   ATIAdjust     FunctionPrototype((const unsigned int,
-                                               const unsigned int));
+static void * ATISave       FunctionPrototype((void *));
+static void   ATIRestore    FunctionPrototype((void *));
+static void   ATIAdjust     FunctionPrototype((int, int));
 static void   ATISaveScreen FunctionPrototype((const Bool));
 static void   ATIGetMode    FunctionPrototype((DisplayModePtr));
 /*
@@ -972,7 +971,7 @@ static const unsigned char *ATIClockMap = ATIVGAWonderClockMap;
  * Returns a string name for this driver or NULL.
  */
 static char *
-ATIIdent(const unsigned int n)
+ATIIdent(int n)
 {
         static const char *chipsets[] = {"ati"};
 
@@ -3921,8 +3920,9 @@ ATIClockRestore(ATIHWPtr restore)
  * been initialized by the Init() function, below.
  */
 static void
-ATIRestore(ATIHWPtr restore)
+ATIRestore(void *data)
 {
+	ATIHWPtr restore = data;
         int Index;
 
         /* Unlock registers */
@@ -4051,8 +4051,9 @@ ATIRestore(ATIHWPtr restore)
  * bits here - just read the registers.
  */
 static void *
-ATISave(ATIHWPtr save)
+ATISave(void *data)
 {
+	ATIHWPtr save = data;
         int Index;
 
         /* If need be, allocate the data structure */
@@ -4845,7 +4846,7 @@ ATIInit(DisplayModePtr mode)
  * window.
  */
 static void
-ATIAdjust(const unsigned int x, const unsigned int y)
+ATIAdjust(int x, int y)
 {
         int Base = (y * vga256InfoRec.displayWidth + x) >> 3;
 

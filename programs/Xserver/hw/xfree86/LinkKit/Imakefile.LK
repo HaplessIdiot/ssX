@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile.LK /main/11 1996/10/25 21:18:33 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.35 1996/12/23 06:30:44 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.36 1996/12/26 06:59:45 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.35 1996/
 #include <Server.tmpl>
 
 #define PreFbLibs $(DIX) $(OS) $(FONT)
-#define BarePostFbLibs $(MFB) $(MI)
+#define BarePostFbLibs $(MFB) $(XPSTUBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 #define NoMfbBarePostFbLibs $(MI)
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
@@ -82,14 +82,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.35 1996/
           CFB16 = lib/LibraryTargetName(cfb) lib/LibraryTargetName(cfb16)
           CFB24 = lib/LibraryTargetName(cfb) lib/LibraryTargetName(cfb24)
           CFB32 = lib/LibraryTargetName(cfb) lib/LibraryTargetName(cfb32)
-#if BuildLBX
-             OS = lib/LibraryTargetName(oslbx) $(XAULIB) $(XDMCPLIB)
-            DIX = lib/LibraryTargetName(dixlbx)
-#else
              OS = lib/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
             DIX = lib/LibraryTargetName(dix)
-#endif
              MI = lib/LibraryTargetName(mi)
+        XPSTUBS = lib/LibraryTargetName(xpstubs)
+           ZLIB = lib/LibraryTargetName(z)
            FONT = lib/LibraryTargetName(font)
         XAALIBS = lib/LibraryTargetName(xaa)
         XAAOBJS = lib/xaavga256.o lib/xaa16.o lib/xaa24.o lib/xaa32.o
@@ -99,7 +96,7 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.35 1996/
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
-        SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS) $(GCCLIB)
+        SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(EXTRASYSLIBS) $(GCCLIB)
            CBRT = lib/LibraryTargetName(cbrt)
 
        INCLUDES = -Iinclude -Iinclude/X11 -Idrivers

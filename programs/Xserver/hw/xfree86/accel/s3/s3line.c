@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.11 1996/11/18 13:10:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3line.c,v 3.12 1996/12/23 06:41:57 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -176,11 +176,11 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
         * semantics
         */
 	 if (y1 > y2) {
-	    register int tmp;
+	    register int tmp2;
 
-	    tmp = y2;
+	    tmp2 = y2;
 	    y2 = y1 + 1;
-	    y1 = tmp + 1;
+	    y1 = tmp2 + 1;
 	 }
        /* get to first band that might contain part of line */
 	 while ((nbox) && (pbox->y2 <= y1)) {
@@ -216,11 +216,11 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
         * force line from left to right, keeping endpoint semantics
         */
 	 if (x1 > x2) {
-	    register int tmp;
+	    register int tmp2;
 
-	    tmp = x2;
+	    tmp2 = x2;
 	    x2 = x1 + 1;
-	    x1 = tmp + 1;
+	    x1 = tmp2 + 1;
 	 }
        /* find the correct band */
 	 while ((nbox) && (pbox->y2 <= y1)) {

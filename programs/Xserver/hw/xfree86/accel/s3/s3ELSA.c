@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.17 1996/12/23 06:41:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.18 1996/12/27 06:56:21 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -48,25 +48,25 @@
 
 
 elsa_board_types_t elsa_board_types[] = {
-   ELSA_WINNER_1000,		"ELSA Winner 1000",		0,
-   ELSA_WINNER_1000VL,		"ELSA Winner 1000VL",		0,
-   ELSA_WINNER_1000PCI,		"ELSA Winner 1000PCI",		0,
-   ELSA_WINNER_1000ISA,		"ELSA Winner 1000ISA",		0,
-   ELSA_WINNER_2000,		"ELSA Winner 2000",		0,
-   ELSA_WINNER_2000VL,		"ELSA Winner 2000VL",		0,
-   ELSA_WINNER_2000PCI,		"ELSA Winner 2000PCI",		0,
-   ELSA_WINNER_1000PRO,		"ELSA Winner 1000PRO",		0,
-   ELSA_WINNER_1000PRO_TRIO32,	"ELSA Winner 1000PRO Trio32",	0,
-   ELSA_WINNER_1000PRO_TRIO64,	"ELSA Winner 1000PRO Trio64",	0,
-   ELSA_WINNER_1000AVI,		"ELSA Winner 1000AVI",		0,
-   ELSA_WINNER_1000PRO_X,	"ELSA Winner 1000PRO/X",	0,
-   ELSA_WINNER_2000PRO,		"ELSA Winner 2000PRO",		0,
-   ELSA_WINNER_2000PRO_X,	"ELSA Winner 2000PRO/X",	0,
-   ELSA_WINNER_2000AVI,		"ELSA Winner 2000AVI",		0,
-   ELSA_WINNER_2000PRO_X8,	"ELSA Winner 2000PRO/X-8",	0,
-   ELSA_GLORIA_4,		"ELSA Gloria-4",		0,
-   ELSA_GLORIA_8,		"ELSA Gloria-8",		0,
-   0, 0, 0
+   { ELSA_WINNER_1000,		"ELSA Winner 1000",		0 },
+   { ELSA_WINNER_1000VL,	"ELSA Winner 1000VL",		0 },
+   { ELSA_WINNER_1000PCI,	"ELSA Winner 1000PCI",		0 },
+   { ELSA_WINNER_1000ISA,	"ELSA Winner 1000ISA",		0 },
+   { ELSA_WINNER_2000,		"ELSA Winner 2000",		0 },
+   { ELSA_WINNER_2000VL,	"ELSA Winner 2000VL",		0 },
+   { ELSA_WINNER_2000PCI,	"ELSA Winner 2000PCI",		0 },
+   { ELSA_WINNER_1000PRO,	"ELSA Winner 1000PRO",		0 },
+   { ELSA_WINNER_1000PRO_TRIO32,"ELSA Winner 1000PRO Trio32",	0 },
+   { ELSA_WINNER_1000PRO_TRIO64,"ELSA Winner 1000PRO Trio64",	0 },
+   { ELSA_WINNER_1000AVI,	"ELSA Winner 1000AVI",		0 },
+   { ELSA_WINNER_1000PRO_X,	"ELSA Winner 1000PRO/X",	0 },
+   { ELSA_WINNER_2000PRO,	"ELSA Winner 2000PRO",		0 },
+   { ELSA_WINNER_2000PRO_X,	"ELSA Winner 2000PRO/X",	0 },
+   { ELSA_WINNER_2000AVI,	"ELSA Winner 2000AVI",		0 },
+   { ELSA_WINNER_2000PRO_X8,	"ELSA Winner 2000PRO/X-8",	0 },
+   { ELSA_GLORIA_4,		"ELSA Gloria-4",		0 },
+   { ELSA_GLORIA_8,		"ELSA Gloria-8",		0 },
+   { 0, 0, 0 }
 };
 
 
@@ -79,7 +79,7 @@ static __inline__ void shift_out(int b) {
    outb(0x3d5,j); outb(0x3d5,j); outb(0x3d5,j); outb(0x3d5,j); 
 } 
 
-static __inline__ int shift_in() 
+static __inline__ int shift_in(void)
 { 
    int i,j; 
    outb(0x3d4,0x5c); i = inb(0x3d5) & 0xaf; 
@@ -336,7 +336,6 @@ int s3DetectELSA(int BIOSbase, char **pcard, char **pserno,
    unsigned short *data;
    unsigned short crc16;
    elsa_eeprom_data_t *eedata;
-   elsa_eeprom_timing_t *eetim;
    unsigned long serno;
 
    if (check_ELSA_bios(BIOSbase>0 ? BIOSbase : BIOS_BASE) <= 0) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.11 1996/09/01 04:15:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3dline.c,v 3.12 1996/12/23 06:41:40 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -142,7 +142,7 @@ s3Dline(pDrawable, pGC, mode, npt, pptInit)
    int dashIndex;
    int dashIndexTmp, dashOffsetTmp, thisDash, dashRemaining;
    int unclippedlen;
-   short dashPat;
+   short dashPat = 0;
  /* a bunch of temporaries */
    int   tmp;
    register int y1, y2;

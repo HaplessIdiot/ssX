@@ -29,7 +29,7 @@
  * cir_blitLG.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.3 1996/12/18 03:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.4 1996/12/27 07:05:22 dawes Exp $ */
 
 
 /* This header file defines the necessary structures, contstants, and 
@@ -56,27 +56,49 @@ enum {                            /* Offsets into MMIO space for bitBLT regs */
   STATUS       = 0x0400,
   OP0_opRDRAM  = 0x0520,
   OP1_opRDRAM  = 0x0540,
+  OP2_opRDRAM  = 0x0560,
   OP0_opMRDRAM = 0x0524,
   OP1_opMRDRAM = 0x0544,
   DRAWDEF      = 0x0584,
   BLTDEF       = 0x0586,
   BLTEXT_EX    = 0x0700,
+  MBLTEXT_EX   = 0x0720,
   QFREE        = 0x0404,
   PATOFF       = 0x052A,
   HOSTDATA     = 0x0800,
   OP_opBGCOLOR = 0x05E4,
-  OP_opFGCOLOR = 0x05E0
+  OP_opFGCOLOR = 0x05E0,
+  bltCONTROL   = 0x0402
 };
 
-enum {                            /* OR these together to form a bitBLT mode */
-  HOST2SCR  = 0x1120,
-  SCR2HOST  = 0x2010,
-  SCR2SCR   = 0x1110,
-  COLORSRC  = 0x0000,
-  MONOSRC   = 0x0040,
-  PATTERN   = 0x0080,
-  COLORFILL = 0x0070,
-  BLITUP    = 0x8000
+enum { HOSTDATASIZE = 2048 };   /* The HOSTDATA port is 2048 DWORDS */
+ 
+enum {                      /* OR these together to form a bitBLT mode */
+  HOST2SCR   = 0x1120,      /* CPU/Screen transfer modes */
+  SCR2HOST   = 0x2010,
+  HOST2PAT   = 0x1102,
+
+  SCR2SCR    = 0x1110,      /* Screen/Screen transfers */
+  COLORSRC   = 0x0000,      /* Source is color data */
+  MONOSRC    = 0x0040,      /* Source is mono data (color expansion) */
+  COLORTRANS = 0x0009,      /* Transparent screen/screen transfer */
+  COLORFILL  = 0x0070,      /* Solid color fill mode */
+
+  PAT2SCR    = 0x1109,      /* Pattern/Screen transfers */
+  COLORPAT   = 0x0000,      /* Pattern is color data */
+  MONOPAT    = 0x0004,      /* Pattern is mono data (color expansion) */
+
+  PATeqSRC   = 0x0800,      /* The Pattern and Source operands are the same */
+
+  BLITUP     = 0x8000       /* The blit is proceeding from bottom to top */
+};
+
+enum {                      /* Select transparency compare */
+  TRANSBG   = 0x0100,
+  TRANSFG   = 0x0300,
+  TRANSEQ   = 0x0100,
+  TRANSNE   = 0x0300,
+  TRANSNONE = 0x0000
 };
 
 extern int lgCirrusRop[16];  /* Defined in cir_blitLG.c */
@@ -95,6 +117,10 @@ int LgReady(void);
 #define LgSETROP(rop) \
   *(unsigned short *)(cirrusMMIOBase + DRAWDEF) = (rop);
 
+#define LgSETTRANSPARENCY(trans) \
+  *(unsigned short *)(cirrusMMIOBase + DRAWDEF) = \
+  (trans) | (*(unsigned short *)(cirrusMMIOBase + DRAWDEF) & 0x00FF);
+
 #define LgSETMODE(mode) \
   *(unsigned short *)(cirrusMMIOBase + BLTDEF) = (mode);
 
@@ -104,11 +130,25 @@ int LgReady(void);
 #define LgSETSRCXY(X, Y) \
   *(unsigned long *)(cirrusMMIOBase + OP1_opRDRAM) = (((Y) << 16) | (X));
     
+#define LgSETPATXY(X, Y) \
+  *(unsigned long *)(cirrusMMIOBase + OP2_opRDRAM) = (((Y) << 16) | (X));
+
+#define LgSETTRANSMASK(X, Y) LgSETPATXY(X, Y)
+
+#define LgSETMDSTXY(X, Y) \
+  *(unsigned long *)(cirrusMMIOBase + OP0_opMRDRAM) = (((Y) << 16) | (X));
+
+#define LgSETMSRCXY(X, Y) \
+  *(unsigned long *)(cirrusMMIOBase + OP1_opMRDRAM) = (((Y) << 16) | (X));
+    
 #define LgSETPHASE0(phase) \
   *(unsigned long *)(cirrusMMIOBase + OP0_opRDRAM) = (phase);
 
 #define LgSETPHASE1(phase) \
   *(unsigned long *)(cirrusMMIOBase + OP1_opRDRAM) = (phase);
+
+#define LgSETPHASE2(phase) \
+  *(unsigned long *)(cirrusMMIOBase + OP2_opRDRAM) = (phase);
 
 #define LgSETMPHASE0(phase) \
   *(unsigned long *)(cirrusMMIOBase + OP0_opMRDRAM) = (phase);
@@ -118,6 +158,9 @@ int LgReady(void);
 
 #define LgSETEXTENTS(width, height)  \
   *(unsigned long *)(cirrusMMIOBase + BLTEXT_EX) = (((height) << 16)|(width));
+
+#define LgSETMEXTENTS(width, height)  \
+  *(unsigned long *)(cirrusMMIOBase + MBLTEXT_EX) = (((height) << 16)|(width));
 
 #define LgHOSTDATAWRITE(data)  \
   *(unsigned long *)(cirrusMMIOBase + HOSTDATA) = (data);
@@ -130,6 +173,15 @@ int LgReady(void);
 
 #define LgSETFOREGROUND(color) \
   *(unsigned long *)(cirrusMMIOBase + OP_opFGCOLOR) = (color);
+
+#define LgSETPATOFF(xoff, yoff) \
+  *(unsigned short *)(cirrusMMIOBase + PATOFF) = ((yoff) << 8) | (xoff));
+
+#define LgSETSWIZZLE() \
+  *(unsigned short *)(cirrusMMIOBase + bltCONTROL) |= 0x0400;
+
+#define LgCLEARSWIZZLE() \
+  *(unsigned short *)(cirrusMMIOBase + bltCONTROL) &= ~0x0400;
 
 
 #endif  /* __CIR_BLITLG_H */

@@ -1,4 +1,11 @@
 XCOMM $XConsortium: Imakefile /main/3 1996/11/04 09:57:27 kaleb $
+
+
+
+
+
+XCOMM $XFree86$
+
 #define DoNormalLib   YES
 #define DoSharedLib   NO
 #define DoDebugLib    NO
@@ -17,5 +24,7 @@ OBJS = adler32.o crc32.o deflate.o trees.o \
        infcodes.o infutil.o inffast.o
 
 #include <Library.tmpl>
+
+InstallLinkKitLibrary(z,$(LINKKITDIR)/lib)
 
 DependTarget()

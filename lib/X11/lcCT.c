@@ -91,6 +91,7 @@ static CTDataRec default_ct_data[] =
     /* Non-Standard Character Set Encodings */
     { "TIS620.2533-1:GR", "\033-T"},
 #endif
+    { "KOI8-R:GR", "\033%/1\177\210koi8-r\002"},
 } ; 
 
 #define XctC0		0x0000

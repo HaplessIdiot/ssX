@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.124 1997/01/03 07:58:06 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.125 1997/01/05 11:49:43 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -123,7 +123,7 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 #endif
 
 /* 
- * For Mips/Arc platorms, the default is to build all X servers which
+ * For Mips/Arc platforms, the default is to build all X servers which
  * are supported on this platform. 
  */
 #ifdef ArcArchitecture
@@ -641,12 +641,11 @@ XCOMM $XConsortium: xfree86.cf /main/34 1996/12/06 11:45:18 rws $
 /*
  * The expiry date for beta versions
  *
- * 841536000 is Sun Sep  1 00:00:00 1996 GMT
- * 849398400 is Sun Dec  1 00:00:00 1996 GMT
  * 853286400 is Wed Jan 15 00:00:00 1997 GMT
+ * 855964800 is Sat Feb 15 00:00:00 1997 GMT
  */
 #ifndef XF86ServerExpiry
-#define XF86ServerExpiry 853286400
+#define XF86ServerExpiry 855964800
 #endif
 
 /*

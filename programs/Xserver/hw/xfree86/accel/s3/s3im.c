@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.38 1996/12/23 06:41:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.39 1997/01/05 11:54:19 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -325,7 +325,7 @@ s3ImageReadBanked (x, y, w, h, psrc, pwidth, px, py, planemask)
    int   offset;
    int   bank;
    char *videobuffer;
-   unsigned long l_planemask;
+   unsigned long l_planemask = 0;
 
    if (w == 0 || h == 0)
       return;
@@ -726,7 +726,7 @@ s3ImageRead (x, y, w, h, psrc, pwidth, px, py, planemask)
    int   offset;
    int   bank;
    char *videobuffer;
-   unsigned long l_planemask;
+   unsigned long l_planemask = 0;
 
    if (w == 0 || h == 0)
       return;

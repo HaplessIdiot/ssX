@@ -1,5 +1,5 @@
 /* $XConsortium: XKBCvt.c /main/25 1996/12/27 15:12:44 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.11 1996/12/23 05:59:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.12 1996/12/28 08:09:34 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -109,7 +109,7 @@ static unsigned short Const latin2[128] =
    0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x000c};
 
 /* maps Cyrillic keysyms to 8859-5 */
-static unsigned char Const cyrillic[128] =
+unsigned char Const _Xcyrillic[128] =
    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -127,8 +127,8 @@ static unsigned char Const cyrillic[128] =
     0xbf, 0xcf, 0xc0, 0xc1, 0xc2, 0xc3, 0xb6, 0xb2, /* 15 */
     0xcc, 0xcb, 0xb7, 0xc8, 0xcd, 0xc9, 0xc7, 0xca};
 
-/* maps Cyrillic keysyms to KOI0-8 */
-static unsigned char Const koi8[128] =
+/* maps Cyrillic keysyms to KOI8-R */
+unsigned char Const _Xkoi8[128] =
    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -147,7 +147,7 @@ static unsigned char Const koi8[128] =
     0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff};
 
 /* maps Greek keysyms to 8859-7 */
-static unsigned char Const greek[128] =
+unsigned char Const _Xgreek[128] =
    {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -296,10 +296,10 @@ _XkbKSToKnownSet (priv, keysym, buffer, nbytes, extra_rtrn)
                 count = 0;
             break;
         case sCyrillic:
-            buf[0] = cyrillic[keysym & 0x7f];
+            buf[0] = _Xcyrillic[keysym & 0x7f];
             break;
         case sGreek:
-            buf[0] = greek[keysym & 0x7f];
+            buf[0] = _Xgreek[keysym & 0x7f];
             if (!buf[0])
                 count = 0;
             break;
@@ -470,7 +470,7 @@ static int _XkbKSToKoi8 (priv, keysym, buffer, nbytes, status)
 	if (nbytes>0) {
 	    if ( (keysym&0x80)==0 )
 		 buffer[0] = keysym&0x7f;
-	    else buffer[0] = koi8[keysym & 0x7f];
+	    else buffer[0] = _Xkoi8[keysym & 0x7f];
 	    if (nbytes>1)
 		buffer[1]= '\0';
 	    return 1;
@@ -492,8 +492,8 @@ _XkbKoi8ToKS(priv,buffer,nbytes,status)
         return buffer[0];
     else if ((buffer[0]&0x7f)>=32) {
 	register int i;
-	for (i=0;i<sizeof(koi8)/sizeof(unsigned char);i++) {
-	    if (koi8[i]==buffer[0])
+	for (i=0;i<sizeof(_Xkoi8)/sizeof(unsigned char);i++) {
+	    if (_Xkoi8[i]==buffer[0])
 		return 0x680|i;
 	}
     }

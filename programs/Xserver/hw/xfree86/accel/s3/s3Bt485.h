@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Bt485.h,v 3.0 1996/11/18 13:10:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Bt485.h,v 3.1 1996/12/23 06:41:27 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -67,13 +67,13 @@ extern void s3OutBtRegCom3(
 );
 
 extern unsigned char s3InBtRegCom3(
-#if NeedFunctionPrototype
+#if NeedFunctionPrototypes
 	void
 #endif
 );
 
 extern unsigned char s3InBtStatReg(
-#if NeedFunctionPrototype
+#if NeedFunctionPrototypes
 	void
 #endif
 );

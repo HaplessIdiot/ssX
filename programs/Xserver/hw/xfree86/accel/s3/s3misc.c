@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.62 1996/12/29 13:49:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.63 1997/01/05 11:54:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -67,7 +67,33 @@ extern unsigned long s3MemBase;
 
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
-static Bool s3TryAddress();
+static Bool s3TryAddress(
+#if NeedFunctionPrototypes
+     long *	/* addr */,
+     long	/* value */,
+     long	/* physaddr */,
+     int	/* stage */
+#endif
+);
+
+static CARD32
+s3SuspendMode(
+#if NeedFunctionPrototypes
+     OsTimerPtr	/* timer */,
+     CARD32	/* now */,
+     pointer	/* arg */
+#endif
+);
+
+static CARD32
+s3OffMode(
+#if NeedFunctionPrototypes
+     OsTimerPtr	/* timer */,
+     CARD32	/* now */,
+     pointer	/* arg */
+#endif
+);
+
 extern ScreenPtr s3savepScreen;
 static PixmapPtr ppix = NULL;
 extern Bool  s3Localbus;
@@ -257,7 +283,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	 /* Now, see if we can map a high buffer */
 	 if (s3Localbus && !S3_911_SERIES(s3ChipId) &&
 	     !OFLG_ISSET(OPTION_NO_MEM_ACCESS, &s3InfoRec.options)) {
-	    long i;
+	    long i2;
 	    long *poker;
 	    unsigned long pVal;
 	    Bool CachedFrameBuffer = FALSE;
@@ -292,8 +318,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	     */
 	    if (OFLG_ISSET(OPTION_FB_DEBUG, &s3InfoRec.options)
 		&& !s3NewMmio) {  /* don't poke around for newmmio */
-	       for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
-		  addr = (i << 24);
+	       for (i2 = 0xff; i2 >= 3; i2--) { /* 4080Mb..48Mb stepsize 16Mb */
+		  addr = (i2 << 24);
 
 	          s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 				          (pointer)addr, 4096);
@@ -391,8 +417,8 @@ s3Initialize(scr_index, pScreen, argc, argv)
 		     }
 		 } else {
 #endif
-	          for (i = 0xff; i >= 3; i--) { /* 4080Mb..48Mb stepsize 16Mb */
-		     addr = (i << 24);
+	          for (i2 = 0xff; i2 >= 3; i2--) { /* 4080Mb..48Mb stepsize 16Mb */
+		     addr = (i2 << 24);
 
 		     s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
 						(pointer)addr, s3BankSize);
@@ -429,7 +455,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 					    addr, 3)) {
 			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n", 
 				     XCONFIG_PROBED, s3InfoRec.name,
-				     (i << 4 | 0x0c));
+				     (i2 << 4 | 0x0c));
 			      s3LinearAperture = TRUE;
 			      break;
 			   }
@@ -439,7 +465,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 			    * control address bits A29 and A26 rather than
 			    * A22 and A23. Don't ask we why.
 			    */
-			   addr = (i << 24) | 0x24000000;
+			   addr = (i2 << 24) | 0x24000000;
 			   xf86UnMapVidMem(scr_index, LINEAR_REGION,
 					   s3VideoMem, s3BankSize);
 			   s3VideoMem = xf86MapVidMem(scr_index, LINEAR_REGION,
@@ -456,7 +482,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 					    addr, 4)) {
 			      ErrorF("%s %s: Local bus LAW is 0x%03Xxxxxx\n", 
 				     XCONFIG_PROBED, s3InfoRec.name,
-				     (i | 0x24) << 4);
+				     (i2 | 0x24) << 4);
 			      s3LinearAperture = TRUE;
 			      break;
 			   }
@@ -835,7 +861,7 @@ s3EnterLeaveVT(enter, screen_idx)
      Bool  enter;
      int screen_idx;
 {
-   PixmapPtr pspix;
+   PixmapPtr pspix = 0;
    ScreenPtr pScreen = s3savepScreen;
 
    if (!xf86Exiting && !xf86Resetting) {
@@ -980,7 +1006,7 @@ s3OffMode(timer, now, arg)
      CARD32 now;
      pointer arg;
 {
-   unsigned char sync;
+   unsigned char sync2;
    Bool on = (Bool)arg;
 
    if (!s3PowerSaver) return(0);
@@ -990,16 +1016,16 @@ s3OffMode(timer, now, arg)
       /* so just go for it */
 
       outb(vgaCRIndex, 0x17);
-      sync = inb(vgaCRReg);
+      sync2 = inb(vgaCRReg);
 
       if (on) {
-	 sync |= 0x80;			/* enable sync   */
+	 sync2 |= 0x80;			/* enable sync   */
       } else {
-	 sync &= ~0x80;			/* disable sync */
+	 sync2 &= ~0x80;		/* disable sync */
       }
 
       usleep(10000);
-      outb(vgaCRReg, sync);
+      outb(vgaCRReg, sync2);
    }
    if (offTimer) {
       TimerFree(offTimer);

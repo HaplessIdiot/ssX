@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.151 1996/12/23 06:41:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.152 1996/12/29 13:49:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -82,6 +82,14 @@ static int s3ValidMode(
 #endif
 );
 
+extern unsigned char *find_bios_string(
+#if NeedFunctionPrototypes 
+    int		/* BIOSbase */,
+    char *	/* match1 */,
+    char *	/* match2 */
+#endif
+);
+
 ScrnInfoRec s3InfoRec =
 {
    FALSE,			/* Bool configured */
@@ -103,9 +111,9 @@ ScrnInfoRec s3InfoRec =
    -1, -1,			/* int virtualX,virtualY */
    -1,				/* int displayWidth */
    -1, -1, -1, -1,		/* int frameX0, frameY0, frameX1, frameY1 */
-   {0,},			/* OFlagSet options */
-   {0,},			/* OFlagSet clockOptions */   
-   {0, },              		/* OFlagSet xconfigFlag */
+   {{0}},			/* OFlagSet options */
+   {{0}},			/* OFlagSet clockOptions */   
+   {{0}},              		/* OFlagSet xconfigFlag */
    NULL,			/* char *chipset */
    NULL,			/* char *ramdac */
    0,				/* int dacSpeed */
@@ -391,6 +399,8 @@ unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
    l1 = strlen(match1);
    if (match2 != NULL) 
       l2 = strlen(match2);
+   else	/* for compiler-warnings */
+      l2 = 0;
 
    for (i=0; i<BIOS_BSIZE-l1; i++)
       if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
@@ -643,7 +653,7 @@ Bool
 s3Probe()
 {
    DisplayModePtr pMode, pEnd;
-   unsigned char config, tmp;
+   unsigned char config;
    int i, j;
    OFlagSet validOptions;
    char *card, *serno;

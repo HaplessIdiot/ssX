@@ -461,8 +461,11 @@ XRefreshKeyboardMapping(event)
     XkbMapChangesRec changes;
     XkbInfoPtr xkbi;
 
+    /* always do this for input methods, which still use the old keymap */
+    (void) _XRefreshKeyboardMapping(event);
+
     if (_XkbUnavailable(dpy))
-	return _XRefreshKeyboardMapping(event);
+	return 1;
 
     xkbi = dpy->xkb_info;
 

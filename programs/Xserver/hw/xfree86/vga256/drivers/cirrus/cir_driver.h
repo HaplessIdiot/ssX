@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.30 1996/12/18 03:12:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.31 1996/12/23 06:56:46 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -286,6 +286,25 @@ enum {CLGD5420 = 0,
 #define LGROP_NAND		0x11	/* ~S+~D */
 #define LGROP_XOR		0x66	/*  S~=D */
 #define LGROP_XNOR		0x99	/*   S=D */
+
+
+/* The Laguna family also has special ROPs for patterns */
+#define LGPATROP_0		 0x00	/*     0 */
+#define LGPATROP_1		 0xFF	/*     1 */
+#define LGPATROP_SRC		 0xF0	/*     S */
+#define LGPATROP_DST		 0xAA	/*     D */
+#define LGPATROP_NOT_SRC	 0x33	/*    ~S */
+#define LGPATROP_NOT_DST	 0x0F	/*    ~D */
+#define LGPATROP_AND		 0xA0	/*   S.D */
+#define LGPATROP_SRC_AND_NOT_DST 0x0A	/*  S.~D */
+#define LGPATROP_NOT_SRC_AND_DST 0x30	/*  ~S.D */
+#define LGPATROP_NOR		 0x03	/* ~S.~D */
+#define LGPATROP_OR		 0xFA	/*   S+D */
+#define LGPATROP_SRC_OR_NOT_DST	 0xAF	/*  S+~D */
+#define LGPATROP_NOT_SRC_OR_DST	 0xF3	/*  ~S+D */
+#define LGPATROP_NAND		 0x3F	/* ~S+~D */
+#define LGPATROP_XOR		 0x3A	/*  S~=D */
+#define LGPATROP_XNOR		 0xA0	/*   S=D */
 
 /* Array that maps from alu to Cirrus ROP. */
 

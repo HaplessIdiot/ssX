@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.4 1996/12/20 10:32:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ramdacs.c,v 3.5 1996/12/28 08:14:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -66,77 +66,79 @@ extern int s3BiosVendor;
 extern int maxRawClock;
 extern int numClocks;
 extern int s3MaxClock;
+
 extern unsigned char *find_bios_string(int, char *, char *);
 extern void (* dacOutTi3026IndReg)(unsigned char,unsigned char,unsigned char);
 extern unsigned char (* dacInTi3026IndReg)(unsigned char);
  
 
-static Bool NORMAL_Probe();
-static Bool S3_TRIO32_Probe();
-static Bool S3_TRIO64_Probe();
-static Bool TI3026_Probe();
-static Bool TI3030_Probe();
-static Bool TI3020_Probe();
-static Bool TI3025_Probe();
-static Bool BT485_Probe();
-static Bool ATT20C505_Probe();
-static Bool ATT22C498_Probe();
-static Bool ATT498_Probe();
-static Bool ATT20C409_Probe();
-static Bool SC15025_Probe();
-static Bool STG1700_Probe();
-static Bool STG1703_Probe();
-static Bool IBMRGB524_Probe();
-static Bool IBMRGB525_Probe();
-static Bool IBMRGB528_Probe();
-static Bool S3_SDAC_Probe();
-static Bool S3_GENDAC_Probe();
-static Bool ATT20C490_Probe();
-static Bool SS2410_Probe();
-static Bool SC1148x_Probe();
-static Bool Null_Probe() {return FALSE;}
+static Bool NORMAL_Probe(void);
+static Bool S3_TRIO32_Probe(void);
+static Bool S3_TRIO64_Probe(void);
+static Bool TI3026_Probe(void);
+static Bool TI3030_Probe(void);
+static Bool TI3020_Probe(void);
+static Bool TI3025_Probe(void);
+static Bool BT485_Probe(void);
+static Bool ATT20C505_Probe(void);
+static Bool ATT22C498_Probe(void);
+static Bool ATT498_Probe(void);
+static Bool ATT20C409_Probe(void);
+static Bool SC15025_Probe(void);
+static Bool STG1700_Probe(void);
+static Bool STG1703_Probe(void);
+static Bool IBMRGB524_Probe(void);
+static Bool IBMRGB525_Probe(void);
+static Bool IBMRGB528_Probe(void);
+static Bool S3_SDAC_Probe(void);
+static Bool S3_GENDAC_Probe(void);
+static Bool ATT20C490_Probe(void);
+static Bool SS2410_Probe(void);
+static Bool SC1148x_Probe(void);
 
-static int BT485_SERIES_PreInit();
-static int TI3020_3025_PreInit();
-static int ATT409_498_PreInit();
-static int SC15025_PreInit();
-static int STG17xx_PreInit();
-static int S3_SDAC_GENDAC_PreInit();
-static int S3_TRIO_PreInit();
-static int TI3030_3026_PreInit();
-static int IBMRGB52x_PreInit();
-static int MISC_HI_COLOR_PreInit();
-static int NORMAL_PreInit();
-static int Null_PreInit() {return 0;}
+static Bool Null_Probe(void) {return FALSE;}
+
+static int BT485_SERIES_PreInit(void);
+static int TI3020_3025_PreInit(void);
+static int ATT409_498_PreInit(void);
+static int SC15025_PreInit(void);
+static int STG17xx_PreInit(void);
+static int S3_SDAC_GENDAC_PreInit(void);
+static int S3_TRIO_PreInit(void);
+static int TI3030_3026_PreInit(void);
+static int IBMRGB52x_PreInit(void);
+static int MISC_HI_COLOR_PreInit(void);
+static int NORMAL_PreInit(void);
+static int Null_PreInit(void) {return 0;}
 
 
-static void Null_Restore(){}
-static void S3_TRIO_Restore();
-static void TI3030_3026_Restore();
-static void TI3020_3025_Restore();
-static void BT485_Restore();
-static void ATT409_498_Restore();
-static void SC15025_Restore();
-static void STG17xx_Restore();
-static void IBMRGB52x_Restore();
-static void S3_SDAC_GENDAC_Restore();
-static void SC1148x_Restore();
-static void SS2410_Restore();
-static void ATT20C490_Restore();
+static void Null_Restore(void) {}
+static void S3_TRIO_Restore(void);
+static void TI3030_3026_Restore(void);
+static void TI3020_3025_Restore(void);
+static void BT485_Restore(void);
+static void ATT409_498_Restore(void);
+static void SC15025_Restore(void);
+static void STG17xx_Restore(void);
+static void IBMRGB52x_Restore(void);
+static void S3_SDAC_GENDAC_Restore(void);
+static void SC1148x_Restore(void);
+static void SS2410_Restore(void);
+static void ATT20C490_Restore(void);
 
-static void Null_Save(){}
-static void S3_TRIO_Save();
-static void TI3030_3026_Save();
-static void TI3020_3025_Save();
-static void BT485_Save();
-static void ATT409_498_Save();
-static void SC15025_Save();
-static void STG17xx_Save();
-static void IBMRGB52x_Save();
-static void S3_SDAC_GENDAC_Save();
-static void SC1148x_Save();
-static void SS2410_Save();
-static void ATT20C490_Save();
+static void Null_Save(void) {}
+static void S3_TRIO_Save(void);
+static void TI3030_3026_Save(void);
+static void TI3020_3025_Save(void);
+static void BT485_Save(void);
+static void ATT409_498_Save(void);
+static void SC15025_Save(void);
+static void STG17xx_Save(void);
+static void IBMRGB52x_Save(void);
+static void S3_SDAC_GENDAC_Save(void);
+static void SC1148x_Save(void);
+static void SS2410_Save(void);
+static void ATT20C490_Save(void);
 
 static int Null_Init(DisplayModePtr mode){return 1;}
 static int SC1148x_Init(DisplayModePtr);
@@ -158,14 +160,15 @@ extern pointer vgaNewVideoState;
 #define new ((vgaHWPtr)vgaNewVideoState)
 
 
-Bool  (*s3ClockSelectFunc) ();
-static Bool LegendClockSelect();
-static Bool s3ClockSelect();
-static Bool icd2061ClockSelect();
-static Bool s3GendacClockSelect();
-static Bool ti3025ClockSelect();
-static Bool ti3026ClockSelect();
-static Bool IBMRGBClockSelect();
+Bool  (*s3ClockSelectFunc) (int);
+static Bool LegendClockSelect(int);
+static Bool s3ClockSelect(int);
+static Bool icd2061ClockSelect(int);
+static Bool s3GendacClockSelect(int);
+static Bool ti3025ClockSelect(int);
+static Bool ti3026ClockSelect(int);
+static Bool IBMRGBClockSelect(int);
+
 static void s3ProgramTi3025Clock(
 #if NeedFunctionPrototypes
 	int clk,
@@ -174,10 +177,11 @@ static void s3ProgramTi3025Clock(
 	unsigned char p
 #endif
 );
-static Bool ch8391ClockSelect();
-static Bool att409ClockSelect();
-static Bool STG1703ClockSelect();
-static Bool Gloria8ClockSelect();
+
+static Bool ch8391ClockSelect(int);
+static Bool att409ClockSelect(int);
+static Bool STG1703ClockSelect(int);
+static Bool Gloria8ClockSelect(int);
 
 static unsigned char s3DacRegs[0x101];
 
@@ -262,7 +266,7 @@ static Bool TEMPLATE_PreInit()
 
 #endif
 
-static void OtherClocksSetup();
+static void OtherClocksSetup(void);
 
 
 /*************************************************************\
@@ -508,7 +512,7 @@ static void BT485_Save()
 
 static int BT485_Init(DisplayModePtr mode)
 {
-   register unsigned char tmp, tmp2;
+   register unsigned char tmp, tmp2 = 0;
 
    outb(0x3C4, 1);
    tmp = inb(0x3C5);
@@ -3913,7 +3917,7 @@ static int NORMAL_PreInit()
 
 \**********************************************************/
 
-
+static
 void OtherClocksSetup()
 {
 	/*******************************************\

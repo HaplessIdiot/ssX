@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.106 1996/12/23 06:41:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.107 1996/12/28 08:14:52 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -71,7 +71,11 @@ static LUTENTRY oldlut[256];
 static Bool LUTInited = FALSE;
 static short s3Initialised = 0;
 static int   old_clock;
-extern Bool (*s3ClockSelectFunc) ();
+extern Bool (*s3ClockSelectFunc) (
+#if NeedNestedPrototypes
+	int	/* clock */
+#endif
+	);
 extern int s3DisplayWidth;
 extern Bool s3Localbus;
 extern Bool s3Mmio928;
@@ -81,6 +85,12 @@ extern pointer vgaBase;
 extern pointer vgaBaseLow;
 extern pointer vgaBaseHigh;
 int currents3dac_border = 0xff;
+
+static void InitLUT(
+#if NeedFunctionPrototypes
+	void
+#endif
+	);
 
 #ifdef PC98
 extern void crtswitch(short);
@@ -94,10 +104,10 @@ int  s3ChipRev = 0;
 
 #define	cebank() do {							\
    	if (S3_801_928_SERIES(s3ChipId)) {				\
-		unsigned char tmp;					\
+		unsigned char tmp2;					\
 		outb(vgaCRIndex, 0x51);					\
-		tmp = inb(vgaCRReg);					\
-		outb(vgaCRReg, (tmp & 0xf3));				\
+		tmp2 = inb(vgaCRReg);					\
+		outb(vgaCRReg, (tmp2 & 0xf3));				\
 	}								\
 } while (1 == 0)
 
@@ -935,8 +945,8 @@ s3Init(mode)
       n = 255;
       outb(vgaCRIndex, 0x54);
       if (S3_x64_SERIES(s3ChipId) || S3_805_I_SERIES(s3ChipId)) {
-	 int clock,mclk;
-	 clock = s3InfoRec.clock[mode->Clock] * s3Bpp;
+	 int clock2,mclk;
+	 clock2 = s3InfoRec.clock[mode->Clock] * s3Bpp;
 	 if (s3InfoRec.s3MClk > 0) 
 	    mclk = s3InfoRec.s3MClk;
 	 else if (S3_805_I_SERIES(s3ChipId))
@@ -944,8 +954,8 @@ s3Init(mode)
 	 else
 	    mclk = 60000;  /* 60 MHz, limit for 864 */
 	 if (s3InfoRec.videoRam < 2048 || S3_TRIO32_SERIES(s3ChipId))
-	    clock *= 2;
-	 m = (int)((mclk/1000.0*.72+16.867)*89.736/(clock/1000.0+39)-21.1543);
+	    clock2 *= 2;
+	 m = (int)((mclk/1000.0*.72+16.867)*89.736/(clock2/1000.0+39)-21.1543);
 	 if (s3InfoRec.videoRam < 2048 || S3_TRIO32_SERIES(s3ChipId))
 	    m /= 2;
 	 m -= s3InfoRec.s3Madjust;
@@ -1141,7 +1151,7 @@ s3Init(mode)
 	 /*
 	  * This is the design alert from S3 with Bt485A and Vision 964. 
 	  */
-	 int i,last,tmp,cr55,cr67;
+	 int i1, last, tmp1, cr55, cr67;
 	 int port, bit;
 
 #define VerticalRetraceWait() \
@@ -1168,21 +1178,21 @@ s3Init(mode)
 	 outb(vgaCRIndex, 0x67);
 	 cr67 = inb(vgaCRReg);
 
-	 for(last=i=30; --i;) {
+	 for(last=i1=30; --i1;) {
 	    VerticalRetraceWait();
 	    VerticalRetraceWait();
 	    if ((inb(port) & bit) == 0) { /* if GD2 is low then */
-	       last = i;
+	       last = i1;
 	       outb(vgaCRIndex, 0x67);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, tmp ^ 0x01); /* clock should be inverted */
+	       tmp1 = inb(vgaCRReg);
+	       outb(vgaCRReg, tmp1 ^ 0x01); /* clock should be inverted */
 #if 0
-	       ErrorF("inverted VCLK %d  to 0x%02x\n",i,tmp ^ 0x01);
+	       ErrorF("inverted VCLK %d  to 0x%02x\n",i1,tmp1 ^ 0x01);
 #endif
 	    }
-	    if (last-i > 4) break;
+	    if (last-i1 > 4) break;
 	 }
-	 if (!i) {  /* didn't get stable input, restore original CR67 value */
+	 if (!i1) {  /* didn't get stable input, restore original CR67 value */
 	    outb(vgaCRIndex, 0x67);
 	    outb(vgaCRReg, cr67);
 	 }
@@ -1192,9 +1202,9 @@ s3Init(mode)
 	 }
 #if 0
 	 outb(vgaCRIndex, 0x67);
-	 tmp = inb(vgaCRReg);
-	 /* if ((cr67 ^ tmp) & 0x01)  */ 
-	 ErrorF("VCLK has been inverted %d times from 0x%02x to 0x%02x now\n",i,cr67,tmp);
+	 tmp1 = inb(vgaCRReg);
+	 /* if ((cr67 ^ tmp1) & 0x01)  */ 
+	 ErrorF("VCLK has been inverted %d times from 0x%02x to 0x%02x now\n",i1,cr67,tmp1);
 #endif
       }
    }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.11 1996/11/18 13:10:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3seg.c,v 3.12 1996/12/23 06:42:06 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -168,11 +168,11 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
         * semantics
         */
 	 if (y1 > y2) {
-	    register int tmp;
+	    register int tmp2;
 
-	    tmp = y2;
+	    tmp2 = y2;
 	    y2 = y1 + 1;
-	    y1 = tmp + 1;
+	    y1 = tmp2 + 1;
 	    if (pGC->capStyle != CapNotLast)
 	       y1--;
 	 } else if (pGC->capStyle != CapNotLast)
@@ -210,11 +210,11 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
         * force line from left to right, keeping endpoint semantics
         */
 	 if (x1 > x2) {
-	    register int tmp;
+	    register int tmp2;
 
-	    tmp = x2;
+	    tmp2 = x2;
 	    x2 = x1 + 1;
-	    x1 = tmp + 1;
+	    x1 = tmp2 + 1;
 	    if (pGC->capStyle != CapNotLast)
 	       x1--;
 	 } else if (pGC->capStyle != CapNotLast)

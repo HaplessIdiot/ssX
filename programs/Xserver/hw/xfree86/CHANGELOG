@@ -1,3 +1,32 @@
+xFree86 3.2p (8 January 1997)
+ 207. XAA support for the Cirrus Laguna chips (Corin Anderson).
+ 206. Modify the PF1-PF4 coding in the xterm termcap/terminfo, and add an
+      interim xterm-vt220 descripton to accomodate the old and new styles
+      (Thomas E. Dickey).
+ 205. Combine the coding for foreground and background colours in xterm
+      into a single byte (Thomas E. Dickey).
+ 204. Some optimisations and transparent 8x8 pattern tiling for the ET6000
+      driver (Koen Gadeyne)
+ 203. Parallel make fix for lbxproxy (Robin Cutshaw).
+ 202. LinkKit fixes (David Bateman).
+ 201. Defining XF86ExpireServer to YES in host.def allows easy enabling
+      of server expiry.
+ 200. The item 176 fix was missing.  It is included now.
+ 199. Fix an Xlib  problem with non-8859-1 locales (Kaleb Keithley).
+ 198. Set default hsync and vsync polarity for the MGA driver in the same
+      way as other servers (Leonard N. Zubkoff).
+ 197. Fix sync polarity in MGA driver (Radislaw Kapitan).
+ 196. Add DGA support to the MGA driver (Mark Vojkovich).
+ 195. Some xterm cleanups (Thomas E. Dickey).
+ 194. Implement DECSTR (soft terminal reset) for xterm (Thomas E. Dickey).
+ 193. Fix some unalignes accesses in cfb16SegmentSS1RectCopy() on Alpha
+      (Harald Koenig).
+ 192. 8x8 colour expand patterns for MGA (Radislaw Kapitan).
+ 191. Fix various compiler warnings in the S3 server (Thomas E. Dickey).
+ 190. Fix TRANS_ENABLE definition for the TGUI driver (Alan Hourihane).
+ 189. Fix a problem with the location of ident lines in the tclIndex file
+      (Joe Moss).
+
 XFree86 3.2o (5 January 1997)
  188. Add MIPS/Arc support to build the S3 server on OpenBSD (Per Fogelstrom).
  187. Split OpenBSD config support out into a new OpenBSD.cf file
@@ -12,7 +41,7 @@ XFree86 3.2o (5 January 1997)
  182. Fix a problem for Mach64 CT-D cards where the server writes to the
       wrong I/O address, possibly that of another PCI device (Kevin Martin).
  181. Fix Rage II support in the Mach64 server (Kevin Martin).
- 180. Add preliminary XAA support for the TGA server.
+ 180. Add preliminary XAA support for the TGA server (Alan Hourihane).
  179. Don't compile Xprint/Xrm.c because it is already included in
       attributes.c (Holger Veit).
  178. Various updates for OS/2 (Holger Veit).
@@ -26,7 +55,6 @@ XFree86 3.2o (5 January 1997)
  172. Enable acceleration support for the Trident 9320LCD chips
       (Alan Hourihane).
  171. Add parallel make support for the lbxutil Imakefile (Robin Cutshaw).
-      field (Alan Hourihane).
  170. Fix a problem with the Xmark script (Andrew E. Mileski).
 
 XFree86 3.2n (3 January 1997)

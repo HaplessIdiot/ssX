@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.73 1996/12/23 06:56:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.74 1996/12/28 08:17:03 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -2332,7 +2332,9 @@ nolinear:
        * If linear addressing is enabled, also enable the scratch buffer
        * that is used for some operations.
        */
-      if (cirrusUseBLTEngine) {
+    if (HAVE546X()) {
+      LagunaAccelInit();
+    } else if (cirrusUseBLTEngine) {
           if (cirrusUseLinear &&
           vga256InfoRec.videoRam * 1024 - CirrusMemTop >= 16384) {
               cirrusBufferSpaceAddr = vga256InfoRec.videoRam * 1024 - 16384;

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/8 1996/11/03 19:32:12 kaleb $
 
 
 
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/lbxutil/Imakefile,v 1.2 1997/01/04 12:17:36 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -27,3 +27,5 @@ NormalDepLibraryTarget(lbxutil,$(SUBDIRS) $(DONES),$(OBJS))
 ForceSubdirs($(SUBDIRS))
 
 DependSubdirs($(SUBDIRS))
+
+InstallLinkKitLibrary(lbxutil,$(LINKKITDIR)/lib)

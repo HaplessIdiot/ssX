@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.6 1996/02/04 08:58:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.h,v 3.7 1996/12/23 06:33:21 dawes Exp $ */
 
 /*
  * Data structures and function prototypes for the font cache.
@@ -28,7 +28,11 @@ typedef struct _CacheFont8 *CacheFont8Ptr;
  * Entrypoints into cache code.
  */
 
-void xf86ReleaseFontCache();
+void xf86ReleaseFontCache(
+#if NeedFunctionPrototypes
+    void
+#endif
+);
 
 void xf86InitFontCache(
 #if NeedFunctionPrototypes

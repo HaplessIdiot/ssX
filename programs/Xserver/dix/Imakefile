@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/52 1996/12/02 10:20:03 lehors $
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.6 1996/01/05 13:17:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.7 1996/12/23 06:29:33 dawes Exp $
 #include <Server.tmpl>
 
 #if PrintOnlyServer
@@ -86,5 +86,6 @@ NormalLibraryTarget(xpstubs,$(XPOBJ))
 #endif
 
 InstallLinkKitLibrary(dix,$(LINKKITDIR)/lib)
+InstallLinkKitLibrary(xpstubs,$(LINKKITDIR)/lib)
 
 DependTarget()

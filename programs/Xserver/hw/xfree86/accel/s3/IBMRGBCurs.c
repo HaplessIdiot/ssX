@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.7 1996/11/18 13:10:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/IBMRGBCurs.c,v 3.8 1996/12/23 06:41:18 dawes Exp $ */
 /*
  *
  * Copyright 1995 The XFree86 Project, Inc.
@@ -52,8 +52,8 @@ s3IBMRGBRealizeCursor(pScr, pCurs)
    register int i, j;
    unsigned char *pServMsk;
    unsigned char *pServSrc;
-   int   index = pScr->myNum;
-   pointer *pPriv = &pCurs->bits->devPriv[index];
+   int   indx2 = pScr->myNum;
+   pointer *pPriv = &pCurs->bits->devPriv[indx2];
    int   wsrc, h;
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
@@ -68,7 +68,7 @@ s3IBMRGBRealizeCursor(pScr, pCurs)
 
    if (s3SwapExpandBits_init) {
       int k;
-      unsigned short s;
+      unsigned short s = 0;
       s3SwapExpandBits_init = 0;
       for(i=0; i<256; i++) {
 	 j = i;
@@ -290,7 +290,7 @@ s3IBMRGBLoadCursor(pScr, pCurs, x, y)
      CursorPtr pCurs;
      int x, y;
 {
-   int   index = pScr->myNum;
+   int   indx2 = pScr->myNum;
    register int   i;
    unsigned char *ram, *p, tmp, tmp2, tmpcurs;
    extern int s3InitCursorFlag;
@@ -308,7 +308,7 @@ s3IBMRGBLoadCursor(pScr, pCurs, x, y)
    /* load colormap */
    s3IBMRGBRecolorCursor(pScr, pCurs);
 
-   ram = (unsigned char *)pCurs->bits->devPriv[index];
+   ram = (unsigned char *)pCurs->bits->devPriv[indx2];
 
    UNLOCK_SYS_REGS;
    BLOCK_CURSOR;

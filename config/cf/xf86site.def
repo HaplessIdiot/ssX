@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.97 1997/01/04 12:17:08 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.98 1997/01/05 11:49:41 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -124,6 +124,8 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.97 1997/01/04 12:17:08 dawes Exp $
  * by only compiling the server you will be using.  It will also save you
  * considerable compile time.
  *
+ * The following servers are supported in Intel x86 platforms
+ *
 #define XF86SVGAServer          NO
 #define XF86VGA16Server         NO
 #define XF86VGA16DualServer	NO
@@ -143,6 +145,32 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.97 1997/01/04 12:17:08 dawes Exp $
  */
 
 /*
+ * Which servers do you wish to build, you can save a lot of disk space
+ * by only compiling the server you will be using.  It will also save you
+ * considerable compile time.
+ *
+ * The following servers are supported on Digital Alpha platforms:
+ *
+#define XF86SVGAServer          NO
+#define XF86MonoServer          NO
+#define XF86S3Server            NO
+#define XF86S3VServer           NO
+#define XF86P9000Server		NO
+#define XF86I128Server		NO
+#define XF86TGAServer		NO
+ */
+
+/*
+ * Which servers do you wish to build, you can save a lot of disk space
+ * by only compiling the server you will be using.  It will also save you
+ * considerable compile time.
+ *
+ * The following server is supported on Mips/Arc platforms:
+ *
+#define XF86S3Server            NO
+ */
+
+/*
  * PC98 X servers
  *
 #define XF98EGCServer		YES
@@ -157,6 +185,12 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.97 1997/01/04 12:17:08 dawes Exp $
 #define XF98PWSKBServer		YES
 #define XF98PWLBServer		YES
 #define XF98GA968Server		YES
+ */
+
+/*
+ * The following server is supported on Motorola 68k platforms:
+ *
+#define XF68FBDevServer		NO
  */
 
 /*

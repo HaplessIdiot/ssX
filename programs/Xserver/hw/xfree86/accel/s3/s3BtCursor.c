@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.12 1996/11/18 13:10:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.13 1996/12/23 06:41:28 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -165,10 +165,17 @@ unsigned char s3InBtStatReg()
  * These three functions partition the work so it can be done more
  * efficiently.
  */
+#if NeedFunctionPrototypes
+static __inline__ void s3StartBtData(
+	unsigned short addr_reg,
+	unsigned char addr,
+	unsigned short data_reg)
+#else
 static __inline__ void s3StartBtData(addr_reg, addr, data_reg)
 unsigned short addr_reg;
 unsigned char addr;
 unsigned short data_reg;
+#endif
 {
    unsigned char tmp;
 
@@ -179,14 +186,26 @@ unsigned short data_reg;
    tmp = inb(vgaCRReg) & 0xFC;
    outb(vgaCRReg, tmp | ((data_reg & 0x0C) >> 2));
 }
+
+#if NeedFunctionPrototypes
+static __inline__ void s3OutBtData(
+	unsigned short reg,
+	unsigned char data)
+#else
 static __inline__ void s3OutBtData(reg, data)
 unsigned short reg;
 unsigned char data;
+#endif
 {
    /* Output data to RAMDAC */
    outb(s3BtLowBits[reg & 0x03], data);
 }
+
+#if NeedFunctionPrototypes
+static __inline__ void s3EndBtData(void)
+#else
 static __inline__ void s3EndBtData()
+#endif
 {
    unsigned char tmp;
 
@@ -208,8 +227,8 @@ s3BtRealizeCursor(pScr, pCurs)
    register int i, j;
    unsigned char *pServMsk;
    unsigned char *pServSrc;
-   int   index = pScr->myNum;
-   pointer *pPriv = &pCurs->bits->devPriv[index];
+   int   indx2 = pScr->myNum;
+   pointer *pPriv = &pCurs->bits->devPriv[indx2];
    int   wsrc, h;
    unsigned char *ram, *plane0, *plane1;
    CursorBitsPtr bits = pCurs->bits;
@@ -415,7 +434,7 @@ s3BtLoadCursor(pScr, pCurs, x, y)
      CursorPtr pCurs;
      int x, y;
 {
-   int   index = pScr->myNum;
+   int   indx2 = pScr->myNum;
    register int   i, j;
    unsigned char *ram, *p, tmpcurs;
    extern int s3InitCursorFlag;
@@ -433,7 +452,7 @@ s3BtLoadCursor(pScr, pCurs, x, y)
    /* load colormap */
    s3BtRecolorCursor(pScr, pCurs);
 
-   ram = (unsigned char *)pCurs->bits->devPriv[index];
+   ram = (unsigned char *)pCurs->bits->devPriv[indx2];
 
    UNLOCK_SYS_REGS;
    BLOCK_CURSOR;

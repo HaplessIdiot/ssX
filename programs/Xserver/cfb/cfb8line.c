@@ -1,6 +1,6 @@
 /*
  * $XConsortium: cfb8line.c,v 1.30 95/01/03 15:28:30 dpw Exp $
- * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.0 1996/06/29 09:05:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/cfb/cfb8line.c,v 3.1 1996/08/25 14:05:38 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -902,9 +902,17 @@ FUNC_NAME(cfb8LineSS1Rect) (pDrawable, pGC, mode, npt, pptInit, pptInitOrig,
 		    RROP_SOLID_MASK((unsigned long *) addrp, e);
 		    addrp += PPW;
 	    	}
+#if 0
+		RROP_SPAN_lu(addrp, x1_or_len)
+#else
 		RROP_SPAN(addrp, x1_or_len)
+#endif
 	    	if (e3)
+#if 0
+		    RROP_SOLID_MASK_lu((unsigned long *) addrp, e3);
+#else
 		    RROP_SOLID_MASK((unsigned long *) addrp, e3);
+#endif
 	    }
 #endif /* PSZ == 24 */
 	}

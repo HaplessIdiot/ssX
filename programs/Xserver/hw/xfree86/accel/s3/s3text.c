@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.17 1996/11/18 13:10:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3text.c,v 3.18 1996/12/23 06:42:08 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -68,7 +68,7 @@ unsigned char *pb;
 		  pix = 0;
 	       
 		  for (i = 0; i < width; i += 16) {
-		     getbuf = (getbuf << 8) | SWPBIT (pix++);
+		     getbuf = SWPBIT (pix++);
 		     getbuf = (getbuf << 8) | SWPBIT (pix++);
 		     SET_PIX_TRANS_W(getbuf);		  
 		  }

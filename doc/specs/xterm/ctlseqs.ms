@@ -1,7 +1,7 @@
 .\"#! troff -ms $1		-*- Nroff -*-
 .\" "Xterm Control Sequences" document
 .\" $XConsortium: ctlseqs.ms,v 1.16 94/12/28 20:45:48 gildea Exp $
-.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.6 1996/11/18 13:07:33 dawes Exp $
+.\" $XFree86: xc/doc/specs/xterm/ctlseqs.ms,v 3.7 1996/11/24 09:50:58 dawes Exp $
 .\"
 .\" Copyright 1991, 1994 X Consortium
 .\"
@@ -193,6 +193,7 @@
 .[] x x
 .[] | |
 .[] } }
+.[] ! !
 .[] c" \(lq
 .[] c~ ~
 .[] Sc \fIc\fP
@@ -559,8 +560,11 @@ Cursor Backward Tabulation \*(Ps tab stops (default = 1) (CBT)
 .IP \\*(Cs\\*(Ps\\*s\\*^
 Scroll down \*(Ps lines (default = 1) (SD, according to ISO)
 .
+.IP \\*(Cs\\*(Pm\\*s\\*`
+Character Position Absolute  [column] (default = [row,1]) (HPA)
+.
 .IP \\*(Cs\\*(Ps\\*s\\*b
-Repeat the preceding graphic character \*(Ps times.
+Repeat the preceding graphic character \*(Ps times (REP)
 .
 .IP \\*(Cs\\*(Ps\\*s\\*c
 Send Device Attributes (DA)
@@ -582,9 +586,6 @@ Tab Clear (TBC)
 Set Mode (SM)
   \*(Ps = \*4 \(-> Insert Mode (IRM)
   \*(Ps = \*2\*0 \(-> Automatic Newline (LNM)
-.
-.IP \\*(Cs\\*(Pm\\*s\\*`
-Character Position Absolute  [column] (default = [row,1]) (HPA)
 .
 .IP \\*(Cs\\*(Pm\\*s\\*l
 Reset Mode (RM)
@@ -643,6 +644,9 @@ or
 \*(Cs\*?\*2\*1\*s\*n (locked)
   \*(Ps = \*2\*6 \(-> Report Keyboard status as
 \*(Cs\*?\*2\*7\*s\*;\*s\*1\*s\*;\*s\*0\*s\*;\*s\*0\*s\*n (North American)
+.
+.IP \\*(Cs\\*s\\*!\\*p
+Soft terminal reset (DECSTR)
 .
 .IP \\*(Cs\\*(Ps\\*s\\*;\\*(Ps\\*s\\*(c"\\*p
 Set conformance level (DECSCL)
@@ -818,6 +822,8 @@ range of lines from the program, highlights the region covered by
 the mouse within that range until button release, and then sends the
 program the release coordinates.
 It is enabled by specifying parameter 1001 to DECSET.
+Highlighting is performed only for button 1, though other button events
+can be received.
 Warning: use of this mode requires a cooperating program or it will
 hang \fIxterm.\fP
 On button press, the same information as for normal tracking is
@@ -879,7 +885,7 @@ Begin 4015 APL mode (ignored by \fIxterm\fP) (ESC Ctrl-N)
 .IP \\*(Es\\*(Si
 End 4015 APL mode (ignored by \fIxterm\fP) (ESC Ctrl-O)
 .IP \\*(Es\\*(Eb
-COPY (Save Tektronix Codes to file COPYyy-mm-dd.hh:mm:ss) (ESC Ctrl-W)
+COPY (Save Tektronix Codes to file COPYyyyy-mm-dd.hh:mm:ss) (ESC Ctrl-W)
 .IP \\*(Es\\*(Ca
 Bypass Condition (ESC Ctrl-X)
 .IP \\*(Es\\*(Su

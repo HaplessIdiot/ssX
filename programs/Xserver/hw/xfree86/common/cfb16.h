@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb16.h,v 3.2 1996/11/24 09:54:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/cfb16.h,v 3.3 1996/12/23 06:43:14 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -227,7 +227,17 @@ extern RegionPtr cfb16BitBlt(
     int /*height*/,
     int /*dstx*/,
     int /*dsty*/,
-    void (* /*doBitBlt*/)(),
+    void (* /*doBitBlt*/)(
+#if NeedNestedPrototypes
+	DrawablePtr /*pSrc*/,
+	DrawablePtr /*pDst*/,
+	int /*alu*/,
+	RegionPtr /*prgnDst*/,
+	DDXPointPtr /*pptSrc*/,
+	unsigned long /*planemask*/,
+	unsigned long /*bitPlane*/
+#endif
+	),
     unsigned long /*bitPlane*/
 #endif
 );
