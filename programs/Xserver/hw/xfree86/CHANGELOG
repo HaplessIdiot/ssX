@@ -1,4 +1,6 @@
 XFree86 4.3.99.9 (xx July 2003)
+ 320. Fix generic rootless crash while resizing when CopyBytes is not defined
+      by the implementation (Torrey T. Lyons).
  319. Fix XDarwin Cocoa rootless crash when unshaping a shaped window
       (Torrey T. Lyons).
  318. More IPv6 changes from Alan Coopersmith as follows:
@@ -17345,7 +17347,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2781 2003/07/20 16:12:15 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2782 2003/07/22 01:16:56 torrey Exp $
 
 
 
