@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.111 2001/08/01 00:44:52 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.112 2001/08/08 14:22:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -243,7 +243,14 @@ ProcessInputEvents ()
   xf86SetViewport(xf86Info.currentScreen, x, y);
 }
 
+void
+xf86GrabServerCallback(pointer callbacks, pointer data, pointer args)
+{
+    ServerGrabInfoRec *grab = (ServerGrabInfoRec*)args;
 
+    xf86Info.grabInfo.server.client = grab->client;
+    xf86Info.grabInfo.server.grabstate = grab->grabstate;
+}
 
 /*
  * xf86PostKbdEvent --
@@ -430,6 +437,9 @@ customkeycodes:
       case 0x0e: specialkey = 0x0e; break; /* KEY_BackSpace */
       case 0x40: specialkey = 0x4a; break; /* KEY_KP_Minus  */
       case 0x49: specialkey = 0x4e; break; /* KEY_KP_Plus   */
+
+      /* XXX needs cases for KEY_KP_Divide and KEY_KP_Multiply */
+
       case 0x62: specialkey = 0x3b; break; /* KEY_F1        */
       case 0x63: specialkey = 0x3c; break; /* KEY_F2        */
       case 0x64: specialkey = 0x3d; break; /* KEY_F3        */
@@ -453,6 +463,9 @@ special:
       case 0x2b: specialkey = KEY_BackSpace; break;
       case 0x47: specialkey = KEY_KP_Minus; break;
       case 0x7d: specialkey = KEY_KP_Plus; break;
+
+      /* XXX needs cases for KEY_KP_Divide and KEY_KP_Multiply */
+
       case 0x05: specialkey = KEY_F1; break;
       case 0x06: specialkey = KEY_F2; break;
       case 0x08: specialkey = KEY_F3; break;
@@ -492,6 +505,45 @@ special:
 #endif
 	 GiveUp(0);
         }
+	break;
+
+      /*
+       * Check grabs
+       */
+      case KEY_KP_Divide:
+	if (!xf86Info.grabInfo.disabled && xf86Info.grabInfo.allowDeactivate) {
+	  if (inputInfo.pointer && inputInfo.pointer->grab != NULL &&
+	      inputInfo.pointer->DeactivateGrab)
+	    inputInfo.pointer->DeactivateGrab(inputInfo.pointer);
+	  if (inputInfo.keyboard && inputInfo.keyboard->grab != NULL &&
+	      inputInfo.keyboard->DeactivateGrab)
+	    inputInfo.keyboard->DeactivateGrab(inputInfo.keyboard);
+	}
+	break;
+      case KEY_KP_Multiply:
+	if (!xf86Info.grabInfo.disabled && xf86Info.grabInfo.allowClosedown) {
+	  ClientPtr pointer, keyboard, server;
+
+	  pointer = keyboard = server = NULL;
+	  if (inputInfo.pointer && inputInfo.pointer->grab != NULL)
+	    pointer = clients[CLIENT_ID(inputInfo.pointer->grab->resource)];
+	  if (inputInfo.keyboard && inputInfo.keyboard->grab != NULL) {
+	    keyboard = clients[CLIENT_ID(inputInfo.keyboard->grab->resource)];
+	    if (keyboard == pointer)
+	      keyboard = NULL;
+	  }
+	  if (xf86Info.grabInfo.server.grabstate == SERVER_GRABBED &&
+	      (server = xf86Info.grabInfo.server.client) == pointer ||
+	      server == keyboard)
+	      server = NULL;
+
+	  if (pointer)
+	    CloseDownClient(pointer);
+	  if (keyboard)
+	    CloseDownClient(keyboard);
+	  if (server)
+	    CloseDownClient(server);
+	}
 	break;
 	
 	/*

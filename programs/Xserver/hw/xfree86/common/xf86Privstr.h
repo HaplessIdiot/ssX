@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.25 2001/05/18 16:03:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.26 2001/07/23 13:15:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -120,6 +120,18 @@ typedef struct {
     Bool                pmFlag;
     int                 estimateSizesAggressively;
     Bool                kbdCustomKeycodes;
+    struct {
+	Bool		disabled;		/* enable/disable deactivating
+						 * grabs or closing the
+						 * connection to the grabbing
+						 * client */
+	ClientPtr	override;		/* client that disabled
+						 * grab deactivation.
+						 */
+	Bool		allowDeactivate;
+	Bool		allowClosedown;
+	ServerGrabInfoRec server;
+    } grabInfo;
 } xf86InfoRec, *xf86InfoPtr;
 
 #ifdef DPMSExtension

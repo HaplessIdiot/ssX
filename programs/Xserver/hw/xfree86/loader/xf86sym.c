@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.194 2001/06/16 21:58:12 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.195 2001/06/18 16:07:42 dawes Exp $ */
 
 /*
  *
@@ -568,6 +568,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(MiscExtGetKbdSettings)
    SYMFUNC(MiscExtGetKbdValue)
    SYMFUNC(MiscExtSetKbdValue)
+   SYMFUNC(MiscExtSetGrabKeysState)
    SYMFUNC(MiscExtCreateStruct)
    SYMFUNC(MiscExtDestroyStruct)
    SYMFUNC(MiscExtApply)

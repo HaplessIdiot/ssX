@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.72 2001/05/15 18:22:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.73 2001/08/13 17:46:05 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -158,7 +158,7 @@ void xf86SigHandler(int signo);
 void xf86HandlePMEvents(int fd, pointer data);
 extern int (*xf86PMGetEventFromOs)(int fd,pmEvent *events,int num);
 extern pmWait (*xf86PMConfirmEventToOs)(int fd,pmEvent event);
-
+void xf86GrabServerCallback(pointer, pointer, pointer);
 
 /* xf86Helper.c */
 void xf86LogInit(void);

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.3 1999/09/04 13:04:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86MiscExt.c,v 1.6 2000/08/04 16:13:25 eich Exp $ */
 
 /*
  * This file contains the Pointer/Keyboard functions needed by the 
@@ -68,6 +68,8 @@ typedef enum {
     TO_MISC,
     FROM_MISC
 } MseProtoMapDirection;
+
+static void MiscExtClientStateCallback(pointer, pointer, pointer);
 
 /*
     Sigh...
@@ -263,6 +265,53 @@ MiscExtSetKbdValue(pointer keyboard, MiscExtKbdValType valtype, int value)
 		return TRUE;
     }
     return FALSE;
+}
+
+static void
+MiscExtClientStateCallback(pointer callbacks, pointer data, pointer args)
+{
+    NewClientInfoRec *clientinfo = (NewClientInfoRec*)args;
+
+    if (clientinfo->client == xf86Info.grabInfo.override &&
+	clientinfo->client->clientState == ClientStateGone) {
+	xf86Info.grabInfo.override = NULL;
+	xf86Info.grabInfo.disabled = 0;
+	DeleteCallback(&ClientStateCallback,
+		       (CallbackProcPtr)MiscExtClientStateCallback, NULL);
+    }
+}
+
+#define MiscExtGrabStateSuccess	0	/* No errors */
+#define MiscExtGrabStateLocked	1	/* A client already requested that
+					 * grabs cannot be removed/killed */
+#define MiscExtGrabStateAlready	2	/* Request for enabling/disabling
+					 * grab removeal/kill already done */
+int
+MiscExtSetGrabKeysState(ClientPtr client, int state)
+{
+    DEBUG_P("MiscExtSetGrabKeysState");
+
+    if (xf86Info.grabInfo.override == NULL ||
+	xf86Info.grabInfo.override == client) {
+	if (state == 0 && xf86Info.grabInfo.disabled == 0) {
+	    xf86Info.grabInfo.disabled = 1;
+	    AddCallback(&ClientStateCallback,
+			(CallbackProcPtr)MiscExtClientStateCallback, NULL);
+	    xf86Info.grabInfo.override = client;
+	}
+	else if (state == 1 && xf86Info.grabInfo.disabled == 1) {
+	    xf86Info.grabInfo.disabled = 0;
+	    DeleteCallback(&ClientStateCallback,
+			   (CallbackProcPtr)MiscExtClientStateCallback, NULL);
+	    xf86Info.grabInfo.override = NULL;
+	}
+	else
+	    return MiscExtGrabStateAlready;
+
+	return MiscExtGrabStateSuccess;
+    }
+
+    return MiscExtGrabStateLocked;
 }
 
 pointer

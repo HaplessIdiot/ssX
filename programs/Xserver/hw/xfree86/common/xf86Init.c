@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.181 2001/07/25 15:05:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.182 2001/08/13 17:46:05 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -715,6 +715,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
     /* set up the proper access funcs */
     xf86PostPreInit();
+
+    AddCallback(&ServerGrabCallback, xf86GrabServerCallback, NULL);
     
   } else {
     /*

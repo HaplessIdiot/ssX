@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.8 1998/06/28 03:52:34 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86mscstr.h,v 3.9 2001/08/01 00:44:36 tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -14,7 +14,7 @@
 #define XF86MISCNAME		"XFree86-Misc"
 
 #define XF86MISC_MAJOR_VERSION	0	/* current version numbers */
-#define XF86MISC_MINOR_VERSION	4
+#define XF86MISC_MINOR_VERSION	5
 
 typedef struct _XF86MiscQueryVersion {
     CARD8	reqType;		/* always XF86MiscReqCode */
@@ -152,5 +152,29 @@ typedef struct _XF86MiscSetKbdSettings {
     CARD16	pad2 B16;
 } xXF86MiscSetKbdSettingsReq;
 #define sz_xXF86MiscSetKbdSettingsReq	20
+
+typedef struct _XF86MiscSetGrabKeysState {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;	/* always X_XF86MiscSetKbdSettings */
+    CARD16	length B16;
+    BOOL	enable;
+    BOOL	pad1;
+    CARD16	pad2 B16;
+} xXF86MiscSetGrabKeysStateReq;
+#define sz_xXF86MiscSetGrabKeysStateReq	8
+
+typedef struct {
+    BYTE	type;
+    BOOL	pad1;
+    CARD16	sequenceNumber B16;
+    CARD32	length B32;
+    CARD32	status B32;
+    CARD32	pad2 B32;
+    CARD32	pad3 B32;
+    CARD32	pad4 B32;
+    CARD32	pad5 B32;
+    CARD32	pad6 B32;
+} xXF86MiscSetGrabKeysStateReply;
+#define sz_xXF86MiscSetGrabKeysStateReply	32
 
 #endif /* _XF86MISCSTR_H_ */

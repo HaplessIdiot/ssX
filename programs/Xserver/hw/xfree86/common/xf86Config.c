@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.243 2001/07/23 13:15:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.244 2001/08/15 08:54:59 herrb Exp $ */
 
 
 /*
@@ -699,7 +699,9 @@ typedef enum {
     FLAG_PC98,
     FLAG_ESTIMATE_SIZES_AGGRESSIVELY,
     FLAG_NOPM,
-    FLAG_XINERAMA
+    FLAG_XINERAMA,
+    FLAG_ALLOW_DEACTIVATE_GRABS,
+    FLAG_ALLOW_CLOSEDOWN_GRABS,
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -751,8 +753,12 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_XINERAMA,		"Xinerama",			OPTV_BOOLEAN,
 	{0}, FALSE },
+  { FLAG_ALLOW_DEACTIVATE_GRABS,"AllowDeactivateGrabs",		OPTV_BOOLEAN,
+	{0}, FALSE },
+  { FLAG_ALLOW_CLOSEDOWN_GRABS, "AllowClosedownGrabs",		OPTV_BOOLEAN,
+	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
-	{0}, FALSE }
+	{0}, FALSE },
 };
 
 static Bool
@@ -801,6 +807,11 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
     xf86GetOptValBool(FlagOptions, FLAG_NOTRAPSIGNALS, &xf86Info.notrapSignals);
     xf86GetOptValBool(FlagOptions, FLAG_DONTZAP, &xf86Info.dontZap);
     xf86GetOptValBool(FlagOptions, FLAG_DONTZOOM, &xf86Info.dontZoom);
+
+    xf86GetOptValBool(FlagOptions, FLAG_ALLOW_DEACTIVATE_GRABS,
+		      &(xf86Info.grabInfo.allowDeactivate));
+    xf86GetOptValBool(FlagOptions, FLAG_ALLOW_CLOSEDOWN_GRABS,
+		      &(xf86Info.grabInfo.allowClosedown));
 
     /*
      * Set things up based on the config file information.  Some of these
