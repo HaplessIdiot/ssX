@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.54 2003/08/24 17:37:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.55 2003/09/05 17:05:44 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -32,7 +32,7 @@
 #
 
 #
-# This script should be used to install XFree86 4.3.0.
+# This script should be used to install XFree86 4.4.0.
 #
 # Parts of this script are based on the old preinst.sh and postinst.sh
 # scripts.
@@ -49,20 +49,16 @@ SNAPSHOT=n
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX
-	VERSION=4.2.99.902
+	VERSION=4.3.99.15
 	PATCHLEVEL=0
 	FULLVERSION=$VERSION
 else
-	FULLPREFIX=4.3
+	FULLPREFIX=4.4
 	PATCHLEVEL=0
 	VERSION=$FULLPREFIX.$PATCHLEVEL
 	FULLVERSION=$FULLPREFIX.0
 fi
 SCRIPTVERSION=$VERSION
-
-# XXX Could get this (and above) version info from imake...
-FreetypeCurrent=9
-FreetypeAge=3
 
 BINDISTFULLPREFIX=
 BINDISTPATCHLEVEL=
@@ -163,6 +159,7 @@ OPTDIST=" \
 	Xhtml.tgz \
 	Xjdoc.tgz \
 	Xps.tgz \
+	Xpdf.tgz \
 	"
 
 ETCDLINKS=" \
@@ -286,6 +283,8 @@ Description()
 		echo "Docs in Japanese";;
 	Xps*)
 		echo "Docs in PostScript";;
+	Xpdf*)
+		echo "Docs in PDF";;
 	Xaout*)
 		echo "a.out compatibility libraries";;
 	Xquartz*)
@@ -1617,36 +1616,6 @@ if [ -f $RUNDIR/lib/libGL.so ]; then
 		fi
 		;;
 	esac
-fi
-
-# Create compatibility links for the freetype library on systems where the
-# major version gets incremented even though the library is compatible with
-# older versions.
-
-echo ""
-echo "Checking if compatibility links for the FreeType2 library are needed ..."
-if [ -f $RUNDIR/lib/libfreetype.so.$FreetypeCurrent ]; then
-	v=`expr $FreetypeCurrent - $FreetypeAge`
-	while [ $v != $FreetypeCurrent ]; do
-		if [ ! -f $RUNDIR/lib/libfreetype.so.$v ]; then
-			rm -f $RUNDIR/lib/libfreetype.so.$v
-			ln -s libfreetype.so.$FreetypeCurrent $RUNDIR/lib/libfreetype.so.$v
-			echo "Linking libfreetype.so.$FreetypeCurrent to $RUNDIR/lib/libfreetype.so.$v"
-		fi
-		v=`expr $v + 1`
-	done
-fi
-
-if [ -f $RUNDIR/lib/libfreetype.so.$FreetypeCurrent.0 ]; then
-	v=`expr $FreetypeCurrent - $FreetypeAge`
-	while [ $v != $FreetypeCurrent ]; do
-		if [ ! -f $RUNDIR/lib/libfreetype.so.$v.0 ]; then
-			rm -f $RUNDIR/lib/libfreetype.so.$v.0
-			ln -s libfreetype.so.$FreetypeCurrent.0 $RUNDIR/lib/libfreetype.so.$v.0
-			echo "Linking libfreetype.so.$FreetypeCurrent.0 to $RUNDIR/lib/libfreetype.so.$v".0
-		fi
-		v=`expr $v + 1`
-	done
 fi
 
 # Need to run ldconfig on some OSs
