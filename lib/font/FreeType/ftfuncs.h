@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.h,v 1.12 2002/10/01 00:02:10 alanh Exp $ */
 
 /* Number of buckets in the hashtable holding faces */
 #define NUMFACEBUCKETS 32
@@ -45,6 +45,7 @@ struct FTSize_s;
 typedef struct _FTFace {
     char *filename;
     FT_Face face;
+    int bitmap;
     struct _FTInstance *instances;
     struct _FTInstance *active_instance;
     struct _FTFace *next;       /* link to next face in bucket */
@@ -99,12 +100,12 @@ typedef struct _FTFont{
 static int FreeTypeOpenFace(FTFacePtr *facep, char *fileName);
 static void FreeTypeFreeFace(FTFacePtr face);
 static int 
- FreeTypeOpenInstance(FTInstancePtr *instancep,
-                      char *fileName, FTNormalisedTransformationPtr trans,
-                      int charcell, FontBitmapFormatPtr bmfmt);
+FreeTypeOpenInstance(FTInstancePtr *instancep, FTFacePtr face,
+                     char *fileName, FTNormalisedTransformationPtr trans,
+                     int charcell, FontBitmapFormatPtr bmfmt);
 static void FreeTypeFreeInstance(FTInstancePtr instance);
 static int
- FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, FTInstancePtr instance);
+FreeTypeInstanceGetGlyph(unsigned idx, CharInfoPtr *g, FTInstancePtr instance);
 static int 
 FreeTypeRasteriseGlyph(CharInfoPtr tgp, FTInstancePtr instance, int hasMetrics);
 static void FreeTypeFreeFont(FTFontPtr font);
@@ -117,6 +118,6 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
 static int FreeTypeFontGetGlyph(unsigned code, CharInfoPtr *g, FTFontPtr font);
 static int FreeTypeFontGetDefaultGlyph(CharInfoPtr *g, FTFontPtr font);
 static int
-FreeTypeLoadFont(FTFontPtr *fontp, char *fileName,
+FreeTypeLoadFont(FTFontPtr *fontp, FTFacePtr face, char *fileName,
                  FontScalablePtr vals, FontEntryPtr entry,
                  FontBitmapFormatPtr bmfmt);

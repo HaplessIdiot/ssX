@@ -21,7 +21,7 @@
   THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/font/FreeType/fttools.c,v 1.5 2003/03/26 20:43:52 tsi Exp $ */
 
 #include "fontmisc.h"
 #ifndef FONTMODULE
@@ -51,7 +51,9 @@ int FTtoXReturnCode(int rc)
 {
     if(rc == 0x40)
         return AllocError;
-    else return BadFontFormat;
+    /* Anything else stops the font matching mechanism */
+    else return BadFontName;
+
 }
 
 /* Convert slen bytes from UCS-2 to ISO 8859-1.  Byte specifies the
@@ -132,7 +134,7 @@ FTGetEnglishName(FT_Face face, int nid, char *name_return, int name_len)
         len = name.string_len;
         if(len > name_len)
             len = name_len;
-        memcpy(name_return, name.string, name_len);
+        memcpy(name_return, name.string, len);
         return len;
     }
 
