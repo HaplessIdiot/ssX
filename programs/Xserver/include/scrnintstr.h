@@ -189,6 +189,13 @@ typedef    Bool (* UnrealizeWindowProcPtr)(
 #endif
 );
 
+typedef    void (* RestackWindowProcPtr)(
+#if NeedNestedPrototypes
+	WindowPtr /*pWindow*/,
+	WindowPtr /*pOldNextSib*/
+#endif
+);
+
 typedef    int  (* ValidateTreeProcPtr)(
 #if NeedNestedPrototypes
 	WindowPtr /*pParent*/,
@@ -832,6 +839,7 @@ typedef struct _Screen {
     CopyWindowProcPtr		CopyWindow;
     ClearToBackgroundProcPtr	ClearToBackground;
     ClipNotifyProcPtr		ClipNotify;
+    RestackWindowProcPtr	RestackWindow;
 
     /* Pixmap procedures */
 
