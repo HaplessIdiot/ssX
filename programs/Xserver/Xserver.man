@@ -22,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.26 2003/07/09 15:27:30 tsi Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.27 2003/07/24 13:50:20 eich Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH XSERVER 1 __xorgversion__
@@ -62,7 +62,10 @@ Many X servers have device-specific command line options.  See the manual
 pages for the individual servers for more details; a list of
 server-specific manual pages is provided in the SEE ALSO section below.
 .PP
-All of the X servers accept the following command line options:
+All of the X servers accept the command line options described below.
+Some X servers may have alternative ways of providing the parameters
+described here, but the values provided via the command line options
+should override values specified via other mechanisms.
 .TP 8
 .B :\fIdisplaynumber\fP
 The X server runs as the given \fIdisplaynumber\fP, which by default is 0.
@@ -137,8 +140,9 @@ different from the user's real uid.
 causes the server to generate a core dump on fatal errors.
 .TP 8
 .B \-dpi \fIresolution\fP
-sets the resolution of the screen, in dots per inch.
-To be used when the server cannot determine the screen size from the hardware.
+sets the resolution for all screens, in dots per inch.
+To be used when the server cannot determine the screen size(s) from the
+hardware.
 .TP 8
 .B \-deferglyphs \fIwhichfonts\fP
 specifies the types of fonts for which the server should attempt to use
