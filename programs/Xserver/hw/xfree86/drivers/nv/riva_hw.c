@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.17 2001/09/19 23:40:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.18 2001/10/08 22:28:53 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1438,6 +1438,8 @@ static void LoadStateExt
                 chip->PGRAPH[0x00000864/4] = state->pitch3;
                 chip->PGRAPH[0x000009A4/4] = chip->PFB[0x00000200/4]; 
                 chip->PGRAPH[0x000009A8/4] = chip->PFB[0x00000204/4];
+                chip->PRAMDAC[0x0000052C/4] = 0x00000101;
+                chip->PRAMDAC[0x0000252C/4] = 0x00000001;
 	    }
 	    chip->PMC[0x00008704/4] = 1;
 	    chip->PMC[0x00008140/4] = 0;
@@ -1970,7 +1972,9 @@ static void nv10GetConfig
             chip->RamBandwidthKBytesPerSec = 1000000;
             break;
     }
-    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x00000000/4] & 0x00000040) ? 14318 : 13500;
+    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x0000/4] & (1 << 6))  ? 14318 : 
+                             (chip->PEXTDEV[0x0000/4] & (1 << 22)) ? 27000 :
+                                                                     13500;
     chip->CursorStart      = (chip->RamAmountKBytes - 128) * 1024;
     chip->CURSOR           = NULL;  /* can't set this here */
     chip->CURSORPOS        = &(chip->PRAMDAC[0x0300/4]);
