@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.5 1998/11/15 04:30:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.6 1999/03/21 07:34:31 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -87,12 +87,12 @@ typedef Boolean (*_XawSrcConvertSelectionProc)
      (Widget, Atom*, Atom*, Atom*, XtPointer*, unsigned long*, int*);
 
 typedef struct _TextSrcClassPart {
-  _XawSrcReadProc Read;
-  _XawSrcReplaceProc Replace;
-  _XawSrcScanProc Scan;
-  _XawSrcSearchProc Search;
-  _XawSrcSetSelectionProc SetSelection;
-  _XawSrcConvertSelectionProc ConvertSelection;
+    _XawSrcReadProc Read;
+    _XawSrcReplaceProc Replace;
+    _XawSrcScanProc Scan;
+    _XawSrcSearchProc Search;
+    _XawSrcSetSelectionProc SetSelection;
+    _XawSrcConvertSelectionProc ConvertSelection;
 } TextSrcClassPart;
 
 /* Full class record */
@@ -111,6 +111,7 @@ typedef struct {
     XawTextEditType	edit_mode;
     XrmQuark text_format;		/* 2 formats: FMT8BIT for Ascii
 					   FMTWIDE for ISO 10646 */
+#ifndef OLDXAW
     XtCallbackList callback;		/* A callback list to call when the
 					   source is changed */
     Boolean changed;
@@ -121,12 +122,14 @@ typedef struct {
     XawTextUndo *undo;
     WidgetList text;			/* TextWidget's using this source */
     Cardinal num_text;
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } TextSrcPart;
 
 /* Full instance record */
 typedef struct _TextSrcRec {
-  ObjectPart    object;
-  TextSrcPart	textSrc;
+    ObjectPart	object;
+    TextSrcPart	textSrc;
 } TextSrcRec;
 
 /*
@@ -157,7 +160,9 @@ typedef XawTextPosition (*_XawTextPositionFunc)();
 #define XtInheritSearch			((_XawSrcSearchProc)_XtInherit)
 #define XtInheritSetSelection		((_XawSrcSetSelectionProc)_XtInherit)
 #define XtInheritConvertSelection     ((_XawSrcConvertSelectionProc)_XtInherit)
+#if 0
 #define XtTextSrcExtVersion	      1
 #define XtTextSrcExtTypeString        "XT_TEXTSRC_EXT"
+#endif
 
 #endif /* _XawTextSrcP_h */

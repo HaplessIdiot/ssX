@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcImg.c,v 1.1.2.1 1998/06/27 14:48:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcImg.c,v 1.2 1998/07/25 16:59:35 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -24,28 +24,20 @@
 
 /* $XConsortium: ppcImg.c /main/4 1996/02/21 17:57:53 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "misc.h"
-#include "gcstruct.h"
-#include "pixmapstr.h"
-#include "windowstr.h"
-#include "scrnintstr.h"
-#include "regionstr.h"
-#include "servermd.h"
-#include "mi.h"
-
+#include "xf4bpp.h"
 #include "OScompiler.h"
-
-#include "ppc.h"
-#include "ibmTrace.h"
+#include "mi.h"
+#include "scrnintstr.h"
+#include "servermd.h"
 
 /* GETBITSPERPIXEL -- Find out how many bits per pixel are supported at
  * this depth -- another helper function
  */
 static int
-GetBitsPerPixel( depth ) 
-    int	depth ;
+GetBitsPerPixel
+(
+    int	depth
+)
 {
     register int     i ;
 

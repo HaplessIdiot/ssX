@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaReg.h,v 1.1.2.1 1998/06/27 14:48:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaReg.h,v 1.2 1998/07/25 16:59:44 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -30,8 +30,9 @@
 /* GJA -- deleted RTIO and ATRIO case here, so that a PCIO #define became
  * superfluous.
  */
-#define SET_INDEXED_REGISTER( RegGroup, index, value ) \
-	outw( RegGroup, ( ( value ) << 8 ) | ( index ) )
+#define SET_INDEXED_REGISTER(RegGroup, Index, Value) \
+	(SET_BYTE_REGISTER(RegGroup, Index), \
+	 SET_BYTE_REGISTER((RegGroup) + 1, Value))
 
 /* There is a jumper on the ega to change this to 0x200 instead !! */
 #define REGBASE				0x300

@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/PanedP.h,v 1.3 1998/08/20 13:59:04 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/PanedP.h,v 1.4 1998/10/03 08:42:14 dawes Exp $ */
 
 /*
  * Updated and significantly modified from the Athena VPaned Widget.
@@ -62,7 +62,7 @@ SOFTWARE.
 
 /* New fields for the Paned widget class record */
 typedef struct _PanedClassPart {
-  XtPointer extension;
+    XtPointer extension;
 } PanedClassPart;
 
 /* Full Class record declaration */
@@ -70,20 +70,20 @@ typedef struct _PanedClassRec {
     CoreClassPart       core_class;
     CompositeClassPart  composite_class;
     ConstraintClassPart constraint_class;
-    PanedClassPart     paned_class;
+    PanedClassPart      paned_class;
 } PanedClassRec;
 
 extern PanedClassRec panedClassRec;
 
 /* Paned constraint record */
 typedef struct _PanedConstraintsPart {
-  /* Resources */
+    /* Resources */
     Dimension	min;		/* Minimum height */
     Dimension	max;		/* Maximum height */
-  Boolean allow_resize;		/* True if child resize requests are ok */
-  Boolean show_grip;		/* True if child will have grip below it,
+    Boolean	allow_resize;	/* True if child resize requests are ok */
+    Boolean	show_grip;	/* True if child will have grip below it,
 				   when it is not the bottom pane */
-  Boolean skip_adjust;		/* True if child's height should not be
+    Boolean skip_adjust;	/* True if child's height should not be
 				   changed without explicit user action */
     int		position;	/* position location in Paned (relative to
 				   other children) ** NIY ** */
@@ -93,13 +93,13 @@ typedef struct _PanedConstraintsPart {
 				   on a resize or change managed after 
 				   realize */
 
-  /* Private state */
+    /* Private state */
     Position	delta;		/* Desired Location */
-  Position olddelta;		/* The last value of dy */
+    Position	olddelta;	/* The last value of dy */
     Boolean     paned_adjusted_me; /* Has the vpaned adjusted this widget w/o
 				     user interaction to make things fit? */
     Dimension	wp_size;	/* widget's preferred size */ 
-  int size;			/* the size the widget will actually get */
+    int size;			/* the size the widget will actually get */
     Widget	grip;		/* The grip for this child */
 } PanedConstraintsPart, *Pane;
 
@@ -111,9 +111,9 @@ typedef struct _PanedConstraintsRec {
  * The Pane Stack Structure
  */
 typedef struct _PaneStack {
-  struct _PaneStack *next;	/* The next element on the stack */
-  Pane pane;			/* The pane in this element on the stack */
-  int start_size;		/* The size of this element when it
+    struct _PaneStack *next;	/* The next element on the stack */
+    Pane pane;			/* The pane in this element on the stack */
+    int start_size;		/* The size of this element when it
 				   was pushed onto the stack */
 } PaneStack;
 
@@ -125,9 +125,9 @@ typedef struct {
     Boolean     refiguremode;              /* Whether to refigure changes 
 					      right now */
     XtTranslations grip_translations;      /* grip translation table */
-  Pixel internal_bp;			/* color of internal borders */
-  Dimension internal_bw;		/* internal border width */
-  XtOrientation orientation;		/* Orientation of paned widget */
+    Pixel	internal_bp;		/* color of internal borders */
+    Dimension	internal_bw;		/* internal border width */
+    XtOrientation orientation;		/* Orientation of paned widget */
 
     Cursor	cursor;		           /* Cursor for paned window */
     Cursor	grip_cursor;               /* inactive grip cursor */
@@ -137,13 +137,13 @@ typedef struct {
     Cursor	v_adjust_this_cursor;      /* active vert grip cursor: T */
     Cursor	h_adjust_this_cursor;      /* active horiz grip cursor: T */
 
-  /* vertical */
+    /* vertical */
     Cursor	adjust_upper_cursor;      /* active grip cursor: U */
     Cursor	adjust_lower_cursor;      /* active grip cursor: D */
 
-  /* horizontal */
-    Cursor	adjust_left_cursor;       /* active grip cursor: U */
-    Cursor	adjust_right_cursor;      /* active grip cursor: D */
+    /* horizontal */
+    Cursor	adjust_left_cursor;        /* active grip cursor: U */
+    Cursor	adjust_right_cursor;       /* active grip cursor: D */
 
     /* private */
     Boolean	recursively_called;        /* for ChangeManaged */
@@ -155,19 +155,22 @@ typedef struct {
     Widget      whichsub;                  /* Which pane to sub changes from */
     GC          normgc;                    /* GC to use when drawing borders */
     GC          invgc;                     /* GC to use when erasing borders */
-  GC flipgc;				/* GC to use when animating borders */
+    GC		flipgc;			   /* GC to use when animating borders */
     int		num_panes;                 /* count of managed panes */
-  PaneStack *stack;			/* The pane stack for this widget */
+    PaneStack	*stack;			   /* The pane stack for this widget */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } PanedPart;
 
 /*
  * Full instance record declaration
  */
 typedef struct _PanedRec {
-    CorePart       core;
+    CorePart	   core;
     CompositePart  composite;
     ConstraintPart constraint;
-    PanedPart     paned;
+    PanedPart	   paned;
 } PanedRec;
 
 #endif /* _XawPanedP_h */

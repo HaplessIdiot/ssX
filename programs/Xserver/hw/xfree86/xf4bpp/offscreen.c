@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/offscreen.c,v 1.1.2.1 1998/06/27 14:48:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/offscreen.c,v 1.2 1998/07/25 16:59:30 dawes Exp $ */
 /*
  * Copyright 1993 Gerrit Jan Akkerman 
  *
@@ -43,15 +43,11 @@
 */
 /* $XConsortium: offscreen.c /main/4 1996/02/21 17:56:55 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "compiler.h"
+#include "xf4bpp.h"
 #include "vgaVideo.h"
-
-#include "windowstr.h" /* GJA -- for pWin */
-#include "scrnintstr.h" /* GJA -- for pWin */
-#include "pixmapstr.h" /* GJA -- for pWin */
-#include "ppc.h" /* GJA -- for pWin */
+#include "pixmapstr.h"
+#include "scrnintstr.h"
+#include "windowstr.h"
 
 #define saved_screen(pWin) \
         ((unsigned char *)(((PixmapPtr)((pWin)->drawable.pScreen->devPrivate))->devPrivate.ptr))
@@ -68,9 +64,13 @@
  */
 
 static int
-do_rop(src,dst,alu,planes)
-int src,dst,alu;
-const unsigned long planes;
+do_rop
+(
+	int src,
+	int dst,
+	int alu,
+	const unsigned long planes
+)
 { 
 	int _dst;	/* New dst */
 
@@ -81,6 +81,7 @@ const unsigned long planes;
 			_dst = ~dst; break ; 
 		case GXset:		/* 0xf 1 */ 
 			_dst = src; break ; 
+		default:
 		case GXnoop:		/* 0x5 dst */ 
 			return dst; 
 		case GXnor:		/* 0x8 NOT src AND NOT dst */ 
@@ -107,17 +108,15 @@ const unsigned long planes;
 			_dst = ~src; break ; 
 		case GXcopy:		/* 0x3 src */ 
 			_dst = src; break ; 
-		default: 
-			break ; 
 	} 
 	return (dst & ~planes) | (_dst & planes); 
 }
 
 /* File vgaBitBlt.c */
 void
-xf4bppOffBitBlt( pWin, alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
+xf4bppOffBitBlt( pWin, alu, writeplanes, x0, y0, x1, y1, w, h )
 WindowPtr pWin; /* GJA */
-const int alu, readplanes, writeplanes ;
+const int alu, writeplanes ;
 register int x0 ;
 int y0 ;
 register int x1 ;
@@ -220,10 +219,15 @@ register const int ly ;		/* MUST BE > 0 !! */
  * reduce x and y to Width and Height by taking remainders.
  */
 static unsigned char
-xygetbits( x, y, Width, paddedByteWidth, Height, data )
-register int x,y ;
-register const unsigned int Width, paddedByteWidth, Height ;
-register const unsigned char * const data ;
+xygetbits
+(
+	register int x,
+	register int y,
+        register const unsigned int Width,
+	register const unsigned int paddedByteWidth,
+	register const unsigned int Height,
+	register const unsigned char * const data
+)
 {
 	register unsigned char bits ;
 	unsigned const char *lineptr, *cptr ;
@@ -248,17 +252,23 @@ register const unsigned char * const data ;
 }
 
 static void
-DoMono( pWin, w, x, y, mastersrc, h, width, paddedByteWidth, height,
-	      xshift, yshift, alu, planes, fg )
-WindowPtr pWin; /* GJA */
-int x, y ;
-register const unsigned char *mastersrc ;
-int w, h ;			/* width and height of area to be stippled */
-unsigned int width, height ;	/* width and height of stipple */
-register unsigned int paddedByteWidth;
-int xshift ;
-int yshift ;
-int alu, planes, fg;
+DoMono
+(
+	WindowPtr pWin, /* GJA */
+	int w,
+	int x,
+	int y,
+	register const unsigned char *mastersrc,
+	int h,
+	unsigned int width,
+	register unsigned int paddedByteWidth,
+	unsigned int height,
+	int xshift,
+	int yshift,
+	int alu,
+	int planes,
+	int fg
+)
 {
 	int dy, dx, i;
 	int byte;
@@ -341,7 +351,7 @@ const int xSrc, ySrc ;
 		(const unsigned char *) pStipple->devPrivate.ptr,
 		h,
 		width,
-		( ( width + 31 ) & ~31 ) >> 3,
+		( ( width + 31 ) & (unsigned)(~31) ) >> 3,
 		height,
 		xshift, yshift,
 		alu, (int)planes, (int)fg ) ;

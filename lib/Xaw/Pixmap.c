@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.10 1999/04/04 08:46:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.11 1999/04/11 13:10:31 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -33,11 +33,11 @@
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xfuncs.h>
-#ifdef USE_XPM
 #include <X11/extensions/shape.h>
 #include <X11/xpm.h>
-#endif
 #include "Private.h"
+
+#ifndef OLDXAW
 
 /*
  * Types
@@ -61,10 +61,8 @@ static Bool BitmapLoader(XawParams*, Screen*, Colormap, int,
 			    Pixmap*, Pixmap*, Dimension*, Dimension*);
 static Bool GradientLoader(XawParams*, Screen*, Colormap, int,
 			      Pixmap*, Pixmap*, Dimension*, Dimension*);
-#ifdef USE_XPM
 static Bool XPixmapLoader(XawParams*, Screen*, Colormap, int,
 			  Pixmap*, Pixmap*, Dimension*, Dimension*);
-#endif
 static XawPixmap *_XawFindPixmap(String, Screen*, Colormap, int);
 static void _XawCachePixmap(XawPixmap*, Screen*, Colormap, int);
 static int _XawFindPixmapLoaderIndex(String, String);
@@ -95,9 +93,7 @@ XawPixmapsInitialize(void)
   (void)XawAddPixmapLoader(NULL, NULL, BitmapLoader);
   (void)XawAddPixmapLoader("bitmap", NULL, BitmapLoader);
   (void)XawAddPixmapLoader("gradient", NULL, GradientLoader);
-#ifdef USE_XPM
   (void)XawAddPixmapLoader("xpm", "xpm", XPixmapLoader);
-#endif
 
   return (True);
 }
@@ -859,7 +855,6 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   return (True);
 }
 
-#ifdef USE_XPM
 static Bool
 XPixmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	      Pixmap *pixmap_return, Pixmap *mask_return,
@@ -917,4 +912,5 @@ XawReshapeWidget(Widget w, XawPixmap *pixmap)
     XShapeCombineMask(XtDisplay(w), XtWindow(w), ShapeBounding, 0, 0,
 		      pixmap->mask, ShapeSet);
 }
-#endif
+
+#endif /* OLDXAW */

@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.4 1998/10/03 08:42:30 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.5 1999/03/21 07:34:31 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -577,6 +577,11 @@ static void
 XawTreeRedisplay(Widget gw, XEvent *event, Region region)
 {
     TreeWidget tw = (TreeWidget) gw;
+
+#ifndef OLDXAW
+    if (tw->tree.display_list)
+	XawRunDisplayList(gw, tw->tree.display_list, event, region);
+#endif
 
     /*
      * If the Tree widget is visible, visit each managed child.

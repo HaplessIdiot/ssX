@@ -44,7 +44,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.7 1999/05/03 12:15:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.h,v 1.8 1999/05/09 10:51:43 dawes Exp $ */
 
 #ifndef _XawTextSrc_h
 #define _XawTextSrc_h
@@ -69,38 +69,40 @@ typedef struct _TextSrcClassRec *TextSrcObjectClass;
 typedef struct _TextSrcRec      *TextSrcObject;
 
 typedef enum {
-  XawstPositions,
-  XawstWhiteSpace,
-  XawstEOL,
-  XawstParagraph,
-  XawstAll,
-  XawstAlphaNumeric
-} XawTextScanType;
+    XawstPositions,
+    XawstWhiteSpace,
+    XawstEOL,
+    XawstParagraph,
+    XawstAll,
+    XawstAlphaNumeric
+  } XawTextScanType;
 
 typedef enum {
-  Normal,
-  Selected
+    Normal,
+    Selected
 } highlightType;
 
 typedef enum {
-  XawsmTextSelect,
-  XawsmTextExtend
+    XawsmTextSelect,
+    XawsmTextExtend
 } XawTextSelectionMode;
 
 typedef enum {
-  XawactionStart,
-  XawactionAdjust,
-  XawactionEnd
+    XawactionStart,
+    XawactionAdjust,
+    XawactionEnd
 } XawTextSelectionAction;
 
 #define XawTextReadError -1
 #define XawTextScanError -1
 
+#ifndef OLDXAW
 #define XtNenableUndo		"enableUndo"
 #define XtCUndo			"Undo"
 
 #define XtNsourceChanged	"sourceChanged"
 #define XtCChanged		"Changed"
+#endif
 
 /*
  * Public Functions
@@ -165,8 +167,8 @@ int XawTextSourceReplace
  *	type	 - type of thing to scan for
  *	dir	 - direction to scan
  *	count	 - which occurance if this thing to search for
- *                 include - whether or not to include the character found in
- *                           the position that is returned. 
+ *	include	 - whether or not to include the character found in
+ *		   the position that is returned. 
  *
  * Description:
  *	Scans the text source for the number and type of item specified.

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.4 1998/08/20 13:59:15 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSinkP.h,v 1.5 1998/10/03 08:42:27 dawes Exp $ */
 
 #ifndef _XawTextSinkP_h
 #define _XawTextSinkP_h
@@ -71,7 +71,7 @@ typedef void (*_XawSinkFindPositionProc)
 
 typedef void (*_XawSinkFindDistanceProc)
      (Widget, XawTextPosition, int, XawTextPosition, int*,
-					 XawTextPosition*, int*);
+      XawTextPosition*, int*);
 
 typedef void (*_XawSinkResolveProc)
      (Widget, XawTextPosition, int, int, XawTextPosition*);
@@ -89,16 +89,16 @@ typedef void (*_XawSinkGetCursorBoundsProc)
      (Widget, XRectangle*);
 
 typedef struct _TextSinkClassPart {
-  _XawSinkDisplayTextProc	DisplayText;
-  _XawSinkInsertCursorProc	InsertCursor;
-  _XawSinkClearToBackgroundProc	ClearToBackground;
-  _XawSinkFindPositionProc	FindPosition;
-  _XawSinkFindDistanceProc	FindDistance;
-  _XawSinkResolveProc		Resolve;
-  _XawSinkMaxLinesProc		MaxLines;
-  _XawSinkMaxHeightProc		MaxHeight;
-  _XawSinkSetTabsProc		SetTabs;
-  _XawSinkGetCursorBoundsProc	GetCursorBounds;
+    _XawSinkDisplayTextProc DisplayText;
+    _XawSinkInsertCursorProc InsertCursor;
+    _XawSinkClearToBackgroundProc ClearToBackground;
+    _XawSinkFindPositionProc FindPosition;
+    _XawSinkFindDistanceProc FindDistance;
+    _XawSinkResolveProc Resolve;
+    _XawSinkMaxLinesProc MaxLines;
+    _XawSinkMaxHeightProc MaxHeight;
+    _XawSinkSetTabsProc	SetTabs;
+    _XawSinkGetCursorBoundsProc GetCursorBounds;
 } TextSinkClassPart;
 
 /* Full class record */
@@ -112,22 +112,25 @@ extern TextSinkClassRec textSinkClassRec;
 /* New fields for the TextSink object */
 typedef struct {
     /* resources */
-  Pixel foreground;		/* Foreground color */
-  Pixel background;		/* Background color */
+    Pixel foreground;		/* Foreground color */
+    Pixel background;		/* Background color */
 
-  /* private */
-  Position *tabs;		/* The tab stops as pixel values */
-  short *char_tabs;		/* The tabs stops as character values */
-    int      tab_count;		/* number of items in tabs */
+    /* private */
+    Position *tabs;		/* The tab stops as pixel values */
+    short *char_tabs;		/* The tabs stops as character values */
+    int tab_count;		/* number of items in tabs */
 
+#ifndef OLDXAW
     /* more resources */
     Pixel cursor_color;
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } TextSinkPart;
 
 /* Full instance record */
 typedef struct _TextSinkRec {
-  ObjectPart    object;
-  TextSinkPart	text_sink;
+    ObjectPart	 object;
+    TextSinkPart text_sink;
 } TextSinkRec;
 
 #define XtInheritDisplayText	   ((_XawSinkDisplayTextProc)_XtInherit)

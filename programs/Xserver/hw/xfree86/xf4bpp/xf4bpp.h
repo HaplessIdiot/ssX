@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.2 1998/07/25 16:59:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.3 1998/09/26 08:34:24 dawes Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -398,8 +398,7 @@ void xf4bppReplicateArea(
     int,
     int,
     int,
-    int,
-    ScreenPtr
+    int
 #endif
 );
 
@@ -431,7 +430,6 @@ Mask xf4bppChangeWindowGC(
 void xf4bppBitBlt(
 #if NeedFunctionPrototypes
     WindowPtr,
-    int,
     int,
     int,
     int,
@@ -545,7 +543,6 @@ void xf4bppFillSolid(
 void xf4bppOffBitBlt(
 #if NeedFunctionPrototypes
     WindowPtr,
-    const int,
     const int,
     const int,
     int,

@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/SmeP.h,v 1.3 1998/08/20 13:59:13 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeP.h,v 1.4 1998/10/03 08:42:22 dawes Exp $ */
 
 /*
  * This is the private header file for the Athena Sme object.
@@ -42,10 +42,10 @@ in this Software without prior written authorization from The Open Group.
 
 /* New fields for the Sme widget class */
 typedef struct _SmeClassPart {
-  XtWidgetProc highlight;
-  XtWidgetProc unhighlight;
-  XtWidgetProc notify;
-  XtPointer extension;
+    XtWidgetProc highlight;
+    XtWidgetProc unhighlight;
+    XtWidgetProc notify;
+    XtPointer	 extension;
 } SmeClassPart;
 
 /* Full class record */
@@ -59,15 +59,18 @@ extern SmeClassRec smeClassRec;
 /* New fields for the Sme widget */
 typedef struct {
     /* resources */
-  XtCallbackList callbacks;
-    Boolean     international;
+    XtCallbackList callbacks;
+    Boolean international;
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } SmePart;
 
 /* Full instance record */
 typedef struct _SmeRec {
-  ObjectPart     object;
-  RectObjPart    rectangle;
-  SmePart	 sme;
+    ObjectPart	object;
+    RectObjPart	rectangle;
+    SmePart	sme;
 } SmeRec;
 
 #define XtInheritHighlight	((XtWidgetProc)_XtInherit)

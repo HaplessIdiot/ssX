@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.10 1999/04/04 10:05:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.11 1999/04/11 13:10:32 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -60,7 +60,9 @@ SOFTWARE.
 static Bool ChangeSensitive(Widget);
 static void XawSimpleClassInitialize(void);
 static void XawSimpleClassPartInitialize(WidgetClass);
+#ifndef OLDXAW
 void XawSimpleExpose(Widget, XEvent*, Region);
+#endif
 static void XawSimpleRealize(Widget, Mask*, XSetWindowAttributes*);
 static Boolean XawSimpleSetValues(Widget, Widget, Widget, ArgList, Cardinal*);
 
@@ -72,12 +74,14 @@ static void ConvertCursor(Widget);
 /*
  * Initialization
  */
+#ifndef OLDXAW
 static XtActionsRec actions[] = {
   {"set-values", XawSetValuesAction},
   {"get-values", XawGetValuesAction},
   {"declare",    XawDeclareAction},
   {"call-proc",  XawCallProcAction},
 };
+#endif
 
 #define offset(field) XtOffsetOf(SimpleRec, simple.field)
 static XtResource resources[] = {
@@ -135,6 +139,7 @@ static XtResource resources[] = {
     XtRImmediate,
     (XtPointer)False
   },
+#ifndef OLDXAW
   {
     XawNdisplayList,
     XawCDisplayList,
@@ -144,6 +149,7 @@ static XtResource resources[] = {
     XtRImmediate,
     NULL
   },
+#endif
 #undef offset
 };
 
@@ -159,8 +165,13 @@ SimpleClassRec simpleClassRec = {
     NULL,				/* initialize */
     NULL,				/* initialize_hook */
     XawSimpleRealize,			/* realize */
+#ifndef OLDXAW
     actions,				/* actions */
     XtNumber(actions),			/* num_actions */
+#else
+    NULL,				/* actions */
+    0,					/* num_actions */
+#endif
     resources,				/* resources */
     XtNumber(resources),		/* num_resources */
     NULLQUARK,				/* xrm_class */
@@ -170,7 +181,11 @@ SimpleClassRec simpleClassRec = {
     False,				/* visible_interest */
     NULL,				/* destroy */
     NULL,				/* resize */
+#ifndef OLDXAW
     XawSimpleExpose,			/* expose */
+#else
+    NULL,				/* expose */
+#endif
     XawSimpleSetValues,			/* set_values */
     NULL,				/* set_values_hook */
     XtInheritSetValuesAlmost,		/* set_values_almost */
@@ -218,18 +233,17 @@ XawSimpleClassInitialize(void)
     };
 
     XawInitializeWidgetSet();
-  XtSetTypeConverter(XtRString, XtRColorCursor, XmuCvtStringToColorCursor,
-		     convertArg, XtNumber(convertArg), XtCacheByDisplay, NULL);
+    XtSetTypeConverter(XtRString, XtRColorCursor, XmuCvtStringToColorCursor,
+		       convertArg, XtNumber(convertArg), XtCacheByDisplay, NULL);
 }
 
 static void
 XawSimpleClassPartInitialize(WidgetClass cclass)
 {
-  SimpleWidgetClass c = (SimpleWidgetClass)cclass;
-  SimpleWidgetClass super = (SimpleWidgetClass)c->core_class.superclass;
+    SimpleWidgetClass c = (SimpleWidgetClass)cclass;
+    SimpleWidgetClass super = (SimpleWidgetClass)c->core_class.superclass;
 
-  if (c->simple_class.change_sensitive == NULL)
-    {
+    if (c->simple_class.change_sensitive == NULL) {
 	char buf[BUFSIZ];
 
 	(void)XmuSnprintf(buf, sizeof(buf),
@@ -248,7 +262,7 @@ XawSimpleClassPartInitialize(WidgetClass cclass)
 static void
 XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 {
-#ifdef USE_XPM
+#ifndef OLDXAW
     XawPixmap *pixmap;
 #endif
     Pixmap border_pixmap = CopyFromParent;
@@ -282,7 +296,7 @@ XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
     if (!XtIsSensitive(w))
 	w->core.border_pixmap = border_pixmap;
 
-#ifdef USE_XPM
+#ifndef OLDXAW
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
@@ -324,7 +338,7 @@ ConvertCursor(Widget w)
 	XtAppErrorMsg(XtWidgetToApplicationContext(w),
 		      "convertFailed","ConvertCursor","XawError",
 		      "Simple: ConvertCursor failed.",
-		    NULL, NULL);
+		      NULL, NULL);
 }
 
 
@@ -333,91 +347,92 @@ static Boolean
 XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 		   ArgList args, Cardinal *num_args)
 {
-  SimpleWidget s_old = (SimpleWidget)current;
-  SimpleWidget s_new = (SimpleWidget)cnew;
-  Bool new_cursor = False;
+    SimpleWidget s_old = (SimpleWidget)current;
+    SimpleWidget s_new = (SimpleWidget)cnew;
+    Bool new_cursor = False;
 
-  /* this disables user changes after creation */
+    /* this disables user changes after creation */
     s_new->simple.international = s_old->simple.international;
 
-  if (XtIsSensitive(current) != XtIsSensitive(cnew))
-    (*((SimpleWidgetClass)XtClass(cnew))->simple_class.change_sensitive)(cnew);
+    if (XtIsSensitive(current) != XtIsSensitive(cnew))
+	(*((SimpleWidgetClass)XtClass(cnew))->simple_class.change_sensitive)
+	   (cnew);
 
-  if (s_old->simple.cursor != s_new->simple.cursor)
-    new_cursor = True;
+    if (s_old->simple.cursor != s_new->simple.cursor)
+	new_cursor = True;
 	
-  /*
-   * We are not handling the string cursor_name correctly here
- */
+    /*
+     * We are not handling the string cursor_name correctly here
+     */
 
-  if (s_old->simple.pointer_fg != s_new->simple.pointer_fg
-      || s_old->simple.pointer_bg != s_new->simple.pointer_bg
-      || s_old->simple.cursor_name != s_new->simple.cursor_name)
-    {
-      ConvertCursor(cnew);
-      new_cursor = True;
+    if (s_old->simple.pointer_fg != s_new->simple.pointer_fg ||
+	s_old->simple.pointer_bg != s_new->simple.pointer_bg ||
+	s_old->simple.cursor_name != s_new->simple.cursor_name) {
+	ConvertCursor(cnew);
+	new_cursor = True;
     }
 
-  if (new_cursor && XtIsRealized(cnew))
-      {
+    if (new_cursor && XtIsRealized(cnew)) {
 	if (s_new->simple.cursor != None)
-	XDefineCursor(XtDisplay(cnew), XtWindow(cnew), s_new->simple.cursor);
+	    XDefineCursor(XtDisplay(cnew), XtWindow(cnew), s_new->simple.cursor);
 	else
-	XUndefineCursor(XtDisplay(cnew), XtWindow(cnew));
+	    XUndefineCursor(XtDisplay(cnew), XtWindow(cnew));
       }
 
-#ifdef USE_XPM
+#ifndef OLDXAW
     if (s_old->core.background_pixmap != s_new->core.background_pixmap) {
 	XawPixmap *opix, *npix;
 
-	opix = XawPixmapFromXPixmap(s_old->core.background_pixmap, XtScreen(s_old),
-				    s_old->core.colormap, s_old->core.depth);
-	npix = XawPixmapFromXPixmap(s_new->core.background_pixmap, XtScreen(s_new),
-				    s_new->core.colormap, s_new->core.depth);
+	opix = XawPixmapFromXPixmap(s_old->core.background_pixmap,
+				    XtScreen(s_old), s_old->core.colormap,
+				    s_old->core.depth);
+	npix = XawPixmapFromXPixmap(s_new->core.background_pixmap,
+				    XtScreen(s_new), s_new->core.colormap,
+				    s_new->core.depth);
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
     }
-#endif
 
     if (s_old->simple.display_list != s_new->simple.display_list)
-      return (True);
+	return (True);
+#endif /* OLDXAW */
 
-  return (False);
+    return (False);
 }
 
+#ifndef OLDXAW
 void
 XawSimpleExpose(Widget w, XEvent *event, Region region)
 {
-  SimpleWidget xaw = (SimpleWidget)w;
+    SimpleWidget xaw = (SimpleWidget)w;
 
-  if (xaw->simple.display_list)
-    XawRunDisplayList(w, xaw->simple.display_list, event, region);
+    if (xaw->simple.display_list)
+	XawRunDisplayList(w, xaw->simple.display_list, event, region);
 }
+#endif
 
 static Bool
 ChangeSensitive(Widget w)
 {
-  if (XtIsRealized(w))
-    {
+    if (XtIsRealized(w)) {
 	if (XtIsSensitive(w))
 	    if (w->core.border_pixmap != XtUnspecifiedPixmap)
-	  XSetWindowBorderPixmap(XtDisplay(w), XtWindow(w),
-				 w->core.border_pixmap);
+	    XSetWindowBorderPixmap(XtDisplay(w), XtWindow(w),
+				    w->core.border_pixmap);
 	    else
-	  XSetWindowBorder(XtDisplay(w), XtWindow(w),
-			   w->core.border_pixel);
-      else
-	{
+		XSetWindowBorder(XtDisplay(w), XtWindow(w),
+				 w->core.border_pixel);
+	else {
 	    if (((SimpleWidget)w)->simple.insensitive_border == None)
 		((SimpleWidget)w)->simple.insensitive_border =
 		    XmuCreateStippledPixmap(XtScreen(w),
 					    w->core.border_pixel, 
 					    w->core.background_pixel,
 					    w->core.depth);
-	  XSetWindowBorderPixmap(XtDisplay(w), XtWindow(w),
-				 ((SimpleWidget)w)->simple.insensitive_border);
+	    XSetWindowBorderPixmap(XtDisplay(w), XtWindow(w),
+				   ((SimpleWidget)w)->simple.insensitive_border);
 	}
     }
 
-  return (False);
+    return (False);
 }

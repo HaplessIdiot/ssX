@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.50 1999/05/16 10:13:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.51 1999/05/23 06:33:48 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -146,8 +146,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
         break;
     case PCI_CHIP_MGAG200:
     case PCI_CHIP_MGAG200_PCI:
+    case PCI_CHIP_MGAG400:
         pMga->AccelFlags = TRANSC_SOLID_FILL |
-			   TWO_PASS_COLOR_EXPAND;
+			   TWO_PASS_COLOR_EXPAND |
+			   LARGE_ADDRESSES;
         break;
     case PCI_CHIP_MGA1064:
 	pMga->AccelFlags = 0;
@@ -266,7 +268,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 		MGANAME(SetupForPlanarScreenToScreenColorExpandFill);
 	infoPtr->SubsequentScreenToScreenColorExpandFill = 
 		MGANAME(SubsequentPlanarScreenToScreenColorExpandFill);
-	infoPtr->CacheColorExpandDensity = pScrn->bitsPerPixel;
+	infoPtr->CacheColorExpandDensity = PSZ;
 	infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple;
 	/* It's faster to blit the stipples if you have fastbilt */
 	if(pMga->HasFBitBlt)
@@ -333,7 +335,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask | 
 				GCLineStyle | GCFillStyle;
 
-    if((pScrn->bitsPerPixel == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
+    if((PSZ == 24) || (pMga->AccelFlags & MGA_NO_PLANEMASK)) {
 	infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
@@ -452,7 +454,8 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
         break;
     }
     
-    WAITFIFO(10);
+
+    WAITFIFO(12);
     OUTREG(MGAREG_PITCH, pScrn->displayWidth);
     OUTREG(MGAREG_YDSTORG, pMga->YDstOrg);
     OUTREG(MGAREG_MACCESS, maccess);
@@ -470,6 +473,11 @@ void MGAStormEngineInit(ScrnInfoPtr pScrn)
     OUTREG(MGAREG_YTOP, 0x00000000);	/* minPixelPointer */ 
     OUTREG(MGAREG_YBOT, 0x007FFFFF);	/* maxPixelPointer */ 
     pMga->AccelFlags &= ~CLIPPER_ON;
+
+    if (pMga->AccelFlags & LARGE_ADDRESSES) {
+	OUTREG(MGAREG_SRCORG, 0);
+	OUTREG(MGAREG_DSTORG, 0);
+    }
 }
 
 void MGASetClippingRectangle(
@@ -538,15 +546,21 @@ MGANAME(SetupForScreenToScreenCopy)(
     OUTREG(MGAREG_AR5, ydir * pScrn->displayWidth);
 }
 
-
 static void 
 MGANAME(SubsequentScreenToScreenCopy)(
     ScrnInfoPtr pScrn,
     int srcX, int srcY, int dstX, int dstY, int w, int h
 )
 {
-    int start, end;
+    int start, end, srcAddr, dstAddr;
     MGAPtr pMga = MGAPTR(pScrn);
+
+    if (pMga->AccelFlags & LARGE_ADDRESSES) {
+	srcAddr = (srcY * pScrn->displayWidth * PSZ) >> 9;
+	dstAddr = (dstY * pScrn->displayWidth * PSZ) >> 9;
+
+	srcY = dstY = 0;
+    }
 
     if(pMga->BltScanDirection & BLIT_UP) {
 	srcY += h - 1;
@@ -558,12 +572,24 @@ MGANAME(SubsequentScreenToScreenCopy)(
 
     if(pMga->BltScanDirection & BLIT_LEFT) start += w;
     else end += w; 
-   
-    WAITFIFO(4); 
-    OUTREG(MGAREG_AR0, end);
-    OUTREG(MGAREG_AR3, start);
-    OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
-    OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
+
+    if (pMga->AccelFlags & LARGE_ADDRESSES) {
+	WAITFIFO(8); 
+	OUTREG(MGAREG_DSTORG, dstAddr << 6);
+	OUTREG(MGAREG_SRCORG, srcAddr << 6);
+	OUTREG(MGAREG_AR0, end);
+	OUTREG(MGAREG_AR3, start);
+	OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
+	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
+	OUTREG(MGAREG_SRCORG, 0);
+	OUTREG(MGAREG_DSTORG, 0);
+    } else {
+	WAITFIFO(4); 
+	OUTREG(MGAREG_AR0, end);
+	OUTREG(MGAREG_AR3, start);
+	OUTREG(MGAREG_FXBNDRY, ((dstX + w) << 16) | (dstX & 0xffff));
+	OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (dstY << 16) | h);
+    }
 }
 
 
@@ -1245,6 +1271,20 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
     int pitch = pScrn->displayWidth * PSZ;
     int start, end, next, num;
 
+    if (pMga->AccelFlags & LARGE_ADDRESSES) {
+	int srcAddr, dstAddr;
+
+	/* this is not quite right yet since we're 
+	   messing up our 2 Meg boundary checks below */
+        dstAddr = (y * pScrn->displayWidth * PSZ) >> 9;
+        srcAddr = (srcy * pScrn->displayWidth * PSZ) >> 9;
+	srcy = y = 0;
+
+	WAITFIFO(2);
+	OUTREG(MGAREG_SRCORG, srcAddr << 6);
+	OUTREG(MGAREG_DSTORG, dstAddr << 6);
+    }
+
     w--;
     start = (XYADDRESS(srcx, srcy) * PSZ) + skipleft;
     end = start + w + (pitch * (h - 1));
@@ -1288,6 +1328,12 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
 		h -= num; y += num;		
 	    }
 	}
+    }
+
+    if (pMga->AccelFlags & LARGE_ADDRESSES) {
+	WAITFIFO(2);
+	OUTREG(MGAREG_SRCORG, 0);
+	OUTREG(MGAREG_DSTORG, 0);
     }
 }
 

@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * 
  * This widget is used for press-and-hold style buttons.
  */
-/* $XFree86: xc/lib/Xaw/Repeater.c,v 1.3 1998/08/20 13:59:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Repeater.c,v 1.4 1998/10/03 08:42:16 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -38,10 +38,9 @@ XtAppAddTimeOut(XtWidgetToApplicationContext((Widget)rw),	\
 		delay, tic, (XtPointer)rw)
 
 #define CLEAR_TIMEOUT(rw) \
-if ((rw)->repeater.timer)			\
-{						\
-  XtRemoveTimeOut((rw)->repeater.timer);	\
-      (rw)->repeater.timer = 0; \
+if ((rw)->repeater.timer) {			\
+    XtRemoveTimeOut((rw)->repeater.timer);	\
+    (rw)->repeater.timer = 0;			\
 }
 
 /*
@@ -211,27 +210,25 @@ WidgetClass repeaterWidgetClass = (WidgetClass) &repeaterClassRec;
 static void
 tic(XtPointer client_data, XtIntervalId *id)
 {
-  RepeaterWidget rw = (RepeaterWidget)client_data;
+    RepeaterWidget rw = (RepeaterWidget)client_data;
 
     rw->repeater.timer = 0;		/* timer is removed */
-  if (rw->repeater.flash)
-    {
-      Widget w = (Widget)rw;
+    if (rw->repeater.flash) {
+	Widget w = (Widget)rw;
 
-      XClearWindow(XtDisplay(w), XtWindow(w));
-      XtCallActionProc(w, "reset", NULL, NULL, 0);
-      XClearWindow(XtDisplay(w), XtWindow(w));
-      XtCallActionProc(w, "set", NULL, NULL, 0);
+	XClearWindow(XtDisplay(w), XtWindow(w));
+	XtCallActionProc(w, "reset", NULL, NULL, 0);
+	XClearWindow(XtDisplay(w), XtWindow(w));
+	XtCallActionProc(w, "set", NULL, NULL, 0);
     }
-  DO_CALLBACK(rw);
+    DO_CALLBACK(rw);
 
-  rw->repeater.timer = ADD_TIMEOUT(rw, rw->repeater.next_delay);
+    rw->repeater.timer = ADD_TIMEOUT(rw, rw->repeater.next_delay);
 
-  if (rw->repeater.decay)
-    {
+    if (rw->repeater.decay) {
 	rw->repeater.next_delay -= rw->repeater.decay;
 	if (rw->repeater.next_delay < rw->repeater.minimum_delay)
-	  rw->repeater.next_delay = rw->repeater.minimum_delay;
+	    rw->repeater.next_delay = rw->repeater.minimum_delay;
     }
 }
 
@@ -240,11 +237,11 @@ static void
 XawRepeaterInitialize(Widget greq, Widget gnew,
 		      ArgList args, Cardinal *num_args)
 {
-  RepeaterWidget cnew = (RepeaterWidget)gnew;
+    RepeaterWidget cnew = (RepeaterWidget)gnew;
 
-  if (cnew->repeater.minimum_delay < 0)
-    cnew->repeater.minimum_delay = 0;
-  cnew->repeater.timer = 0;
+    if (cnew->repeater.minimum_delay < 0)
+	cnew->repeater.minimum_delay = 0;
+    cnew->repeater.timer = 0;
 }
 
 static void
@@ -258,30 +255,29 @@ static Boolean
 XawRepeaterSetValues(Widget gcur, Widget greq, Widget gnew,
 		     ArgList args, Cardinal *num_args)
 {
-  RepeaterWidget cur = (RepeaterWidget)gcur;
-  RepeaterWidget cnew = (RepeaterWidget)gnew;
+    RepeaterWidget cur = (RepeaterWidget)gcur;
+    RepeaterWidget cnew = (RepeaterWidget)gnew;
 
-  if (cur->repeater.minimum_delay != cnew->repeater.minimum_delay)
-    {
-      if (cnew->repeater.next_delay < cnew->repeater.minimum_delay)
-	cnew->repeater.next_delay = cnew->repeater.minimum_delay;
+    if (cur->repeater.minimum_delay != cnew->repeater.minimum_delay) {
+	if (cnew->repeater.next_delay < cnew->repeater.minimum_delay)
+	    cnew->repeater.next_delay = cnew->repeater.minimum_delay;
     }
 
-  return (False);
+    return (False);
 }
 
 /*ARGSUSED*/
 static void
 ActionStart(Widget gw, XEvent *event, String *params, Cardinal *num_params)
 {
-  RepeaterWidget rw = (RepeaterWidget)gw;
+    RepeaterWidget rw = (RepeaterWidget)gw;
 
-  CLEAR_TIMEOUT(rw);
+    CLEAR_TIMEOUT(rw);
     if (rw->repeater.start_callbacks) 
-    XtCallCallbackList(gw, rw->repeater.start_callbacks, NULL);
+	XtCallCallbackList(gw, rw->repeater.start_callbacks, NULL);
 
-  DO_CALLBACK(rw);
-  rw->repeater.timer = ADD_TIMEOUT(rw, rw->repeater.initial_delay);
+    DO_CALLBACK(rw);
+    rw->repeater.timer = ADD_TIMEOUT(rw, rw->repeater.initial_delay);
     rw->repeater.next_delay = rw->repeater.repeat_delay;
 }
 
@@ -289,9 +285,9 @@ ActionStart(Widget gw, XEvent *event, String *params, Cardinal *num_params)
 static void
 ActionStop(Widget gw, XEvent *event, String *params, Cardinal *num_params)
 {
-  RepeaterWidget rw = (RepeaterWidget)gw;
+    RepeaterWidget rw = (RepeaterWidget)gw;
 
-  CLEAR_TIMEOUT((RepeaterWidget)gw);
+    CLEAR_TIMEOUT((RepeaterWidget)gw);
     if (rw->repeater.stop_callbacks) 
-    XtCallCallbackList(gw, rw->repeater.stop_callbacks, NULL);
+	XtCallCallbackList(gw, rw->repeater.stop_callbacks, NULL);
 }

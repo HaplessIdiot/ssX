@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulRepAre.c,v 1.1.2.1 1998/06/27 14:48:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/emulRepAre.c,v 1.2 1998/07/25 16:59:27 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -28,46 +28,38 @@
  * P. Shupak 1/88
  */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "scrnintstr.h"
-#include "screenint.h"
-#include "pixmapstr.h"
-#include "pixmap.h"
-#include "windowstr.h"	/* GJA */
-#include "ppc.h"
+#include "xf4bpp.h"
 
 void xf4bppReplicateArea( pWin, x, y, planeMask, goalWidth, goalHeight,
-			currentHoriz, currentVert, pScrn )
+			currentHoriz, currentVert)
 WindowPtr pWin; /* GJA */
 register int x, y, planeMask ;
 int goalWidth, goalHeight ;
 int currentHoriz, currentVert ;
-ScreenPtr pScrn ;
 {
 	for ( ;
 	      currentHoriz <= ( goalWidth >> 1 ) ;
 	      currentHoriz <<= 1 ) {
-		xf4bppBitBlt( pWin, GXcopy, planeMask, planeMask,
+		xf4bppBitBlt( pWin, GXcopy, planeMask,
 			x, y,
 			x + currentHoriz, y,
 			currentHoriz, currentVert ) ;
 	}
 	if ( goalWidth - currentHoriz )
-		xf4bppBitBlt( pWin, GXcopy, planeMask, planeMask,
+		xf4bppBitBlt( pWin, GXcopy, planeMask,
 			x, y,
 			x + currentHoriz, y,
 			goalWidth - currentHoriz, currentVert ) ;
 	for ( ;
 	      currentVert <= ( goalHeight >> 1 ) ;
 	      currentVert <<= 1 ) {
-		xf4bppBitBlt( pWin, GXcopy, planeMask, planeMask,
+		xf4bppBitBlt( pWin, GXcopy, planeMask,
 			x, y,
 			x, y + currentVert,
 			goalWidth, currentVert ) ;
 	}
 	if ( goalHeight - currentVert )
-		xf4bppBitBlt( pWin, GXcopy, planeMask, planeMask,
+		xf4bppBitBlt( pWin, GXcopy, planeMask,
 			x, y,
 			x, y + currentVert,
 			goalWidth, goalHeight - currentVert ) ;

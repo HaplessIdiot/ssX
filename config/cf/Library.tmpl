@@ -19,7 +19,7 @@ XCOMM $TOG: Library.tmpl /main/44 1997/04/28 11:47:53 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.8 1999/01/03 03:58:09 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.9 1999/03/02 02:49:12 dawes Exp $
 
 #ifndef LibraryCplusplusOptions
 # if DoSharedLib && defined(SharedLibraryCplusplusOptions)
@@ -441,3 +441,9 @@ InstallMultipleFlags($(HEADERS),$(INCDIR),$(INSTINCFLAGS))
 
 NormalLintTarget($(SRCS))
 #endif /* defined(LibName) */
+
+#ifdef NoSoSymlink
+SOSYMLINK = false
+#else
+SOSYMLINK = true
+#endif

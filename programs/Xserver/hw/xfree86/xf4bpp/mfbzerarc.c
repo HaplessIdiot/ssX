@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbzerarc.c,v 1.1.2.2 1998/07/18 17:54:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbzerarc.c,v 1.2 1998/07/25 16:59:30 dawes Exp $ */
 
 /************************************************************
 
@@ -36,20 +36,14 @@ in this Software without prior written authorization from the X Consortium.
  * The Computer Journal, November 1967, Volume 10, Number 3, pp. 282-289
  */
 
+#include "xf4bpp.h"
+#include "OScompiler.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xprotostr.h"
-#include "miscstruct.h"
-#include "gcstruct.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
 #include "mfb.h"
 #include "maskbits.h"
-#include "mizerarc.h"
-#include "OScompiler.h"	/* GJA */
-#include "wm3.h"	/* GJA */
-#include "ppc.h"
 #include "mi.h"
+#include "mizerarc.h"
+#include "wm3.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
@@ -93,17 +87,19 @@ extern ScrnInfoPtr *xf86Screens;
     UPDRW(paddr,(pixel & pmask)); \
 }
 
-#define DoPix(bit,base,off) if (mask & bit) Pixelate(base,off);
+#define DoPix(bit,base,off) if (msk & bit) Pixelate(base,off);
 
 static void
-v16ZeroArcSS(pDraw, pGC, arc)
-    DrawablePtr pDraw;
-    GCPtr pGC;
-    xArc *arc;
+v16ZeroArcSS
+(
+    DrawablePtr pDraw,
+    GCPtr pGC,
+    xArc *arc
+)
 {
     miZeroArcRec info;
     Bool do360;
-    register int x, y, a, b, d, mask;
+    register int x, y, a, b, d, msk;
     register int k1, k3, dx, dy;
     int *addrl;
     int *yorgl, *yorgol;
@@ -139,7 +135,7 @@ v16ZeroArcSS(pDraw, pGC, arc)
     MIARCSETUP();
     yoffset = y ? nlwidth : 0;
     dyoffset = 0;
-    mask = info.initialMask;
+    msk = info.initialMask;
     if (!(arc->width & 1))
     {
 	DoPix(2, yorgl, info.xorgo);
@@ -147,7 +143,7 @@ v16ZeroArcSS(pDraw, pGC, arc)
     }
     if (!info.end.x || !info.end.y)
     {
-	mask = info.end.mask;
+	msk = info.end.mask;
 	info.end = info.altend;
     }
     if (do360 && (arc->width == arc->height) && !(arc->width & 1))
@@ -194,7 +190,7 @@ v16ZeroArcSS(pDraw, pGC, arc)
 	    MIARCOCTANTSHIFT(dyoffset = nlwidth;);
 	    if ((x == info.start.x) || (y == info.start.y))
 	    {
-		mask = info.start.mask;
+		msk = info.start.mask;
 		info.start = info.altstart;
 	    }
 	    DoPix(1, yorgl + yoffset, info.xorg + x);
@@ -203,14 +199,14 @@ v16ZeroArcSS(pDraw, pGC, arc)
 	    DoPix(8, yorgol - yoffset, info.xorg + x);
 	    if ((x == info.end.x) || (y == info.end.y))
 	    {
-		mask = info.end.mask;
+		msk = info.end.mask;
 		info.end = info.altend;
 	    }
 	    MIARCSTEP(yoffset += dyoffset;, yoffset += nlwidth;);
 	}
     }
     if ((x == info.start.x) || (y == info.start.y))
-	mask = info.start.mask;
+	msk = info.start.mask;
     DoPix(1, yorgl + yoffset, info.xorg + x);
     DoPix(4, yorgol - yoffset, info.xorgo - x);
     if (arc->height & 1)
@@ -221,11 +217,13 @@ v16ZeroArcSS(pDraw, pGC, arc)
 }
 
 static void
-xf4bppZeroPolyArcSS(pDraw, pGC, narcs, parcs)
-    DrawablePtr	pDraw;
-    GCPtr	pGC;
-    int		narcs;
-    xArc	*parcs;
+xf4bppZeroPolyArcSS
+(
+    DrawablePtr	pDraw,
+    GCPtr	pGC,
+    int		narcs,
+    xArc	*parcs
+)
 {
     register xArc *arc;
     register int i;

@@ -22,7 +22,7 @@ Except as contained in this notice, the name of the X Consortium shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xanti/XAnti.c,v 1.1 1998/11/15 04:29:56 dawes Exp $ */
 
 /*
   Based on xc/lib/X11/Text.c and others.  
@@ -85,14 +85,13 @@ XAntiInterpolateColors(
     Display *dpy,
     GC gc,
     Colormap cmap,
-    int num,
     XColor *colors
 ){
    xAntiInterpolateColorsReq *req;
    xAntiInterpolateColorsReply rep;
    int i;
 
-   if(!colors || (num <= 0) || (num > 254)) return BadValue;
+   if(!colors) return BadValue;
  
    PREAMBLE(dpy);
 
@@ -100,16 +99,16 @@ XAntiInterpolateColors(
 
    XAntiGetReq(InterpolateColors, req);
    req->colormap = cmap;
-   req->number = num;
+   req->number = 3;
    req->gc = gc->gid;
 
    if (_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
    	xColorItem *items;
-	int size = num * sizeof(xColorItem);
+	int size = 3 * sizeof(xColorItem);
 
 	if((items = (xColorItem*)Xmalloc(size))) {
 	    _XRead(dpy, (char*)items, size);
-	    for(i = 0; i < num; i++) {
+	    for(i = 0; i < 3; i++) {
 		colors[i].pixel = items[i].pixel;
 		colors[i].red   = items[i].red;
 		colors[i].green = items[i].green;
@@ -144,35 +143,26 @@ int
 XAntiSetInterpolationPixels(
    Display *dpy,
    GC gc,
-   int num,
    unsigned long *pixels
 ){
    xAntiSetInterpolationPixelsReq *req;
-   CARD32 *toSend;
-   int i;
+   CARD32 toSend[3];
 
-   if((num + 1) & num)
+   if(!pixels)
 	return BadValue;
 
-   if((num < 0) || (num > 255) || (num && !pixels))
-	return BadValue;
-
-   if(!(toSend = (CARD32*)Xmalloc(num << 2)))
-	return BadAlloc;
-
-   for(i = 0; i < num; i++)
-	toSend[i] = pixels[i];
+   toSend[0] = pixels[0];
+   toSend[1] = pixels[1];
+   toSend[2] = pixels[2];
 
    PREAMBLE(dpy);
    XAntiGetReq(SetInterpolationPixels, req);
-   req->length += num;
+   req->length += 3;
    req->gc = gc->gid;
-   req->number = num;
+   req->number = 3;
 
-   if(num)
-	Data(dpy, (char*)toSend, (long)num << 2);
+   Data(dpy, (char*)toSend, 12);
 
-   Xfree(toSend);
    POSTAMBLE(dpy);
    return Success;
 }

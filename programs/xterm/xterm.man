@@ -1,5 +1,5 @@
 .\" $XConsortium: xterm.man /main/85 1996/12/09 17:10:53 kaleb $
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.42 1999/05/03 12:16:15 dawes Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.43 1999/05/15 06:25:09 dawes Exp $
 .\"
 .\"
 .\" Copyright 1999 by Thomas E. Dickey <dickey@clark.net>
@@ -1260,6 +1260,19 @@ effect as the original 47 control sequence.
 .B "translations (\fPclass\fB Translations)"
 Specifies the key and button bindings for menus, selections, ``programmed
 strings,'' etc.  See \fBACTIONS\fP below.
+.TP 8
+.B "trimSelection (\fPclass\fB TrimSelection)"
+If you set \fBhighlightSelection\fP,
+you can see the text which is selected, including any trailing spaces.
+Clearing the screen (or a line) resets it to a state containing no spaces.
+Some lines may contain trailing spaces when an application writes them to
+the screen.
+However, you may not wish to paste lines with trailing spaces.
+If this resource is true, \fIxterm\fP will trim trailing spaces from
+text which is selected.
+It does not affect spaces which result in a wrapped line, nor will it
+trim the trailing newline from your selection.
+The default is ``false.''
 .TP 8
 .B "underLine (\fPclass\fB UnderLine)"
 This specifies whether or not text with the underline attribute should be

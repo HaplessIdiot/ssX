@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.12 1998/11/01 07:57:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.13 1999/03/14 03:21:09 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -39,6 +39,8 @@
 #include <X11/Xmu/SysUtil.h>
 #include <X11/Xfuncs.h>
 #include "Private.h"
+
+#ifndef OLDXAW
 
 /*
  * Definitions
@@ -1124,3 +1126,5 @@ _XawDestroyActionVarList(Widget w, XtPointer client_data, XtPointer call_data)
   XtFree((char *)list->variables);
   XtFree((char *)list);
 }
+
+#endif /* OLDXAW */

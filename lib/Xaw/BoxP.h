@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/BoxP.h,v 1.6 1998/11/01 07:57:45 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/BoxP.h,v 1.7 1998/11/15 04:29:59 dawes Exp $ */
 
 #ifndef _XawBoxP_h
 #define _XawBoxP_h
@@ -59,7 +59,7 @@ SOFTWARE.
 
 /* New fields for the Box widget class record */
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } BoxClassPart;
 
 /* Full class record declaration */
@@ -74,14 +74,17 @@ extern BoxClassRec boxClassRec;
 /* New fields for the Box widget record */
 typedef struct {
     /* resources */
-    Dimension   h_space, v_space;
+    Dimension h_space, v_space;
     XtOrientation orientation;
 
     /* private state */
-    Dimension	preferred_width, preferred_height;
-    Dimension	last_query_width, last_query_height;
+    Dimension preferred_width, preferred_height;
+    Dimension last_query_width, last_query_height;
     XtGeometryMask last_query_mode;
+#ifndef OLDXAW
     XawDisplayList *display_list;
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } BoxPart;
 
 /*

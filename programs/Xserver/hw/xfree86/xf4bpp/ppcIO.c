@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.2 1998/07/25 16:59:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcIO.c,v 1.3 1998/11/22 10:37:39 dawes Exp $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -50,22 +50,13 @@ SOFTWARE.
 */
 /* $XConsortium: ppcIO.c /main/8 1996/02/21 17:57:49 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "resource.h"
-#include "scrnintstr.h"
-#include "servermd.h"	/* GJA */
-#include "mistruct.h"
-#include "mi.h" /* GJA */
 #include "mfb.h"
+#include "mi.h"
 #include "micmap.h"
-
-#include "compiler.h"	/* rvb */
+#include "scrnintstr.h"
 #include "vgaVideo.h"
-
-#include "ibmTrace.h"
-#include "windowstr.h"
-#include "ppc.h"
 
 #if 0
 /* XXX This remains to remind of the PC98 difference */
@@ -103,9 +94,11 @@ static BSFuncRec ppcBSFuncRec = {
 
 /*ARGSUSED*/
 static Bool
-vgaScreenClose( idx, pScreen )
-int	idx;
-ScreenPtr pScreen;
+vgaScreenClose
+(
+	int       idx,
+	ScreenPtr pScreen
+)
 {
 	pScreen->defColormap = 0 ;
 	return TRUE;
@@ -138,8 +131,10 @@ typedef struct
  * screen pixmap here.
  */
 static Bool
-v16CreateScreenResources(pScreen)
-    ScreenPtr pScreen;
+v16CreateScreenResources
+(
+    ScreenPtr pScreen
+)
 {
     miScreenInitParmsPtr pScrInitParms;
     pointer value;
@@ -237,7 +232,7 @@ xf4bppScreenInit( pScreen, pbits, virtx, virty, dpix, dpiy, width )
   pScreen-> InstallColormap = miInstallColormap;
   pScreen-> UninstallColormap = miUninstallColormap;
   pScreen-> ListInstalledColormaps = miListInstalledColormaps;
-  pScreen-> StoreColors = (void (*)())NoopDDA;
+  pScreen-> StoreColors = (StoreColorsProcPtr)NoopDDA;
   pScreen-> ResolveColor = xf4bppResolveColor;
   pScreen-> BitmapToRegion = mfbPixmapToRegion;
 

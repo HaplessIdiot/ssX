@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPntWin.c,v 1.1.2.1 1998/06/27 14:48:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPntWin.c,v 1.2 1998/07/25 16:59:36 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -71,19 +71,12 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPntWin.c /main/5 1996/02/21 17:58:04 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-
-#include "windowstr.h"
-#include "regionstr.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "mi.h"
 #include "mfb.h"
-#include "ppc.h"
-
+#include "mi.h"
+#include "scrnintstr.h"
 #include "ibmTrace.h"
-#include "OScompiler.h"	/* GJA */
 
 /* NOTE: These functions only work for visuals up to 31-bits deep */
 static void xf4bppPaintWindowSolid(

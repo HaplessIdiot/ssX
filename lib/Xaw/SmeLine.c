@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/SmeLine.c,v 1.4 1998/08/20 13:59:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SmeLine.c,v 1.5 1998/10/03 08:42:21 dawes Exp $ */
 
 /*
  * Sme.c - Source code for the generic menu entry
@@ -151,12 +151,12 @@ static void
 XawSmeLineInitialize(Widget request, Widget cnew,
 		     ArgList args, Cardinal *num_args)
 {
-  SmeLineObject entry = (SmeLineObject)cnew;
+    SmeLineObject entry = (SmeLineObject)cnew;
 
-  if (XtHeight(entry) == 0)
-    XtHeight(entry) = entry->sme_line.line_width;
+    if (XtHeight(entry) == 0)
+	XtHeight(entry) = entry->sme_line.line_width;
 
-  CreateGC(cnew);
+    CreateGC(cnew);
 }
 
 /*
@@ -176,16 +176,15 @@ XawSmeLineInitialize(Widget request, Widget cnew,
 static void
 CreateGC(Widget w)
 {
-  SmeLineObject entry = (SmeLineObject)w;
+    SmeLineObject entry = (SmeLineObject)w;
     XGCValues values;
-  XtGCMask mask = GCForeground | GCGraphicsExposures | GCLineWidth;
+    XtGCMask mask = GCForeground | GCGraphicsExposures | GCLineWidth;
     
     values.foreground = entry->sme_line.foreground;
-  values.graphics_exposures = False;
+    values.graphics_exposures = False;
     values.line_width = entry->sme_line.line_width;
     
-  if (entry->sme_line.stipple != XtUnspecifiedPixmap)
-    {
+    if (entry->sme_line.stipple != XtUnspecifiedPixmap) {
 	values.stipple = entry->sme_line.stipple;
 	values.fill_style = FillStippled; 
 	mask |= GCStipple | GCFillStyle;
@@ -201,13 +200,13 @@ CreateGC(Widget w)
 static void
 XawSmeLineDestroy(Widget w)
 {
-  DestroyGC(w);
+    DestroyGC(w);
 }
 
 static void
 DestroyGC(Widget w)
 {
-  SmeLineObject entry = (SmeLineObject)w;
+    SmeLineObject entry = (SmeLineObject)w;
 
     if (entry->sme_line.stipple != XtUnspecifiedPixmap) 
 	XFreeGC(XtDisplayOfObject(w), entry->sme_line.gc);
@@ -219,15 +218,15 @@ DestroyGC(Widget w)
 static void
 XawSmeLineRedisplay(Widget w, XEvent *event, Region region)
 {
-  SmeLineObject entry = (SmeLineObject)w;
-  int y = XtY(w) + (((int)XtHeight(w) - entry->sme_line.line_width) >> 1);
+    SmeLineObject entry = (SmeLineObject)w;
+    int y = XtY(w) + (((int)XtHeight(w) - entry->sme_line.line_width) >> 1);
 
     if (entry->sme_line.stipple != XtUnspecifiedPixmap) 
 	XSetTSOrigin(XtDisplayOfObject(w), entry->sme_line.gc, 0, y);
 
     XFillRectangle(XtDisplayOfObject(w), XtWindowOfObject(w),
-		 entry->sme_line.gc, XtX(w), y,
-		 XtWidth(w), entry->sme_line.line_width);
+		   entry->sme_line.gc, XtX(w), y,
+		   XtWidth(w), entry->sme_line.line_width);
 }
 
 /*
@@ -247,16 +246,15 @@ static Boolean
 XawSmeLineSetValues(Widget current, Widget request, Widget cnew,
 		    ArgList args, Cardinal *num_args)
 {
-  SmeLineObject entry = (SmeLineObject)cnew;
-  SmeLineObject old_entry = (SmeLineObject)current;
+    SmeLineObject entry = (SmeLineObject)cnew;
+    SmeLineObject old_entry = (SmeLineObject)current;
   
-  if (entry->sme_line.line_width != old_entry->sme_line.line_width
-      && entry->sme_line.stipple != old_entry->sme_line.stipple)
-    {
+    if (entry->sme_line.line_width != old_entry->sme_line.line_width &&
+	entry->sme_line.stipple != old_entry->sme_line.stipple) {
 	DestroyGC(current);
-      CreateGC(cnew);
-      return (True);
+	CreateGC(cnew);
+	return (True);
     }
 
-  return (False);
+    return (False);
 }

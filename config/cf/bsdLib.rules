@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.10 1998/12/20 11:56:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.11 1999/01/11 05:13:05 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -202,8 +202,9 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
 	@T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\	@@\
 	  set -x; $(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T	@@\
-	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
-	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
+	@if $(SOSYMLINK); then (set -x; \				@@\
+	  $(RM) Concat($(DESTDIR)dest/lib,libname.so); \		@@\
+	  $(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)); fi
 #endif /* InstallSharedLibrary */
 #else
 /* FreeBSD version */
@@ -214,8 +215,9 @@ install:: Concat(lib,libname.so.rev) 					@@\
 	@T=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\	@@\
 	  set -x;\							@@\
 	  $(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest/$$T;\ @@\
-	  $(RM) Concat($(DESTDIR)dest/lib,libname.so);\			@@\
-	  $(LN) $$T Concat($(DESTDIR)dest/lib,libname.so)
+	  if $(SOSYMLINK); then \					@@\
+	    $(RM) Concat($(DESTDIR)dest/lib,libname.so);\		@@\
+	    $(LN) $$T Concat($(DESTDIR)dest/lib,libname.so); fi
 #endif /* InstallSharedLibrary */
 #endif /* FreeBSDArchitecture */
 
@@ -251,10 +253,11 @@ Concat(lib,libname.so.rev):  solist					@@\
 		LinkBuildSonameLibrary($$SONAME)			@@\
 	$(RM) $@							@@\
 	$(MV) $@~ $@							@@\
-	$(RM) Concat(lib,libname.so)					@@\
-	$(LN) $@ Concat(lib,libname.so)					@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibrary(Concat(lib,libname.so))			@@\
+	@if $(SOSYMLINK); then (set -x; \				@@\
+	  $(RM) Concat(lib,libname.so); \				@@\
+	  $(LN) $@ Concat(lib,libname.so)); fi				@@\
+	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
 	@SONAME=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`; \ @@\

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPolyPnt.c,v 1.1.2.1 1998/06/27 14:48:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPolyPnt.c,v 1.2 1998/07/25 16:59:36 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,26 +70,13 @@ SOFTWARE.
 */
 /* $XConsortium: ppcPolyPnt.c /main/5 1996/02/21 17:58:07 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xprotostr.h"
-#include "misc.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "pixmapstr.h"
-#include "colormapst.h"
+#include "mfb.h"
+#include "mi.h"
 #include "scrnintstr.h"
-#include "regionstr.h"
-#include "region.h"
-
-#include "mistruct.h"
-
-#include "OScompiler.h"
-
-#include "ppc.h"
+#include "ppcGCstr.h"
 #include "ibmTrace.h"
-
-extern int mfbGCPrivateIndex;
 
 void
 xf4bppPolyPoint( pDrawable, pGC, mode, npt, pptInit )
@@ -135,7 +122,8 @@ if ( pGC->miTranslate ) {
 }
 
 {
-	register int (* PointInRegion)() = pDrawable->pScreen->PointInRegion ;
+	register PointInRegionProcPtr PointInRegion =
+                 pDrawable->pScreen->PointInRegion ;
 	register RegionPtr pRegion = pGC->pCompositeClip ;
 	register unsigned long int fg = devPriv->colorRrop.fgPixel ;
 	register unsigned long int pm = devPriv->colorRrop.planemask ;

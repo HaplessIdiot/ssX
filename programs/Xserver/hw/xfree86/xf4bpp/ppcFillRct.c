@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.1.2.1 1998/06/27 14:48:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcFillRct.c,v 1.2 1998/07/25 16:59:33 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -49,19 +49,11 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcFillRct.c /main/5 1996/02/21 17:57:35 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xprotostr.h"
-#include "pixmapstr.h"
-#include "gcstruct.h"
-#include "windowstr.h"
-#include "miscstruct.h"
-#include "regionstr.h"
-#include "scrnintstr.h"
 #include "mfb.h"
 #include "maskbits.h"
-
-#include "ppc.h"
+#include "scrnintstr.h"
 
 #define MODEQ(a, b) ((a) %= (b))
 

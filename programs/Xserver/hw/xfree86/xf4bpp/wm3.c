@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.c,v 1.1.2.1 1998/06/27 14:48:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.c,v 1.2 1998/07/25 16:59:46 dawes Exp $ */
 
 
 
@@ -6,15 +6,10 @@
 
 /* $XConsortium: wm3.c /main/5 1996/02/21 17:59:21 kaleb $ */
 
-#include <sys/types.h>
-#include "mfbmap.h"
-#include "compiler.h"
-#include "vgaReg.h"
-#include "vgaVideo.h"
-#include "X.h"
-#include "gcstruct.h"
+#include "xf4bpp.h"
+#include "OScompiler.h"
 #include "wm3.h"
-#include "ppc.h"
+#include "vgaVideo.h"
 
 /* Ferraro is wrong. GJA */
 #define COPY (0 << 3)
@@ -53,6 +48,7 @@ GC *pGC;
         pGC->bgPixel = ~pGC->bgPixel;
         ALU = AND;
         break;
+    default:
     case GXnoop:         /* rop0 = RROP_NOP;    rop1 = RROP_NOP; */
         return 0;
     case GXxor:          /* rop0 = RROP_NOP;    rop1 = RROP_INVERT; */

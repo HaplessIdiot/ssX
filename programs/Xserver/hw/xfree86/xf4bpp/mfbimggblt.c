@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.1.2.2 1998/07/18 17:54:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbimggblt.c,v 1.2 1998/07/25 16:59:29 dawes Exp $ */
 
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
@@ -50,32 +50,18 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: mfbimggblt.c /main/5 1996/02/21 17:56:44 kaleb $ */
 
-#include	"mfbmap.h"
-#include	"X.h"
-#include	"Xmd.h"
-#include	"Xproto.h"
-#include	"mfb.h"
-#include	"fontstruct.h"
-#include	"dixfontstr.h"
-#include	"gcstruct.h"
-#include	"windowstr.h"
-#include	"scrnintstr.h"
-#include	"pixmapstr.h"
-#include	"regionstr.h"
-#include	"maskbits.h"
-#include	"mi.h"
-
-#include "ppc.h"	/* GJA */
-#include "vgaReg.h"	/* GJA */
-#include "compiler.h"	/* rvb */
-#include "vgaVideo.h"	/* GJA */
-#include "wm3.h"	/* GJA */
-#include "OScompiler.h"	/* GJA */
+#include "xf4bpp.h"
+#include "OScompiler.h"
+#include "mfbmap.h"
+#include "mfb.h"
+#include "maskbits.h"
+#include "mi.h"
+#include "dixfontstr.h"
+#include "ppcGCstr.h"
+#include "wm3.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
-
-extern void QueryGlyphExtents();
 
 /*
     we should eventually special-case fixed-width fonts for ImageText.
@@ -373,7 +359,7 @@ doImageGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase,infop)
 	BoxPtr pbox;
 	RegionPtr cclip;
 	int xpos;		/* x position of char origin */
-	int i;
+	unsigned int i;
 	BoxRec clip;
 	int leftEdge, rightEdge;
 	int topEdge, bottomEdge;

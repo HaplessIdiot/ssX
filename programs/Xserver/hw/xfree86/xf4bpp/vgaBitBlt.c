@@ -1,20 +1,14 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaBitBlt.c,v 1.1.2.2 1998/07/18 17:54:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaBitBlt.c,v 1.2 1998/07/25 16:59:43 dawes Exp $ */
 /* GJA -- span move routines */
 
 
 
 /* $XConsortium: vgaBitBlt.c /main/8 1996/10/27 11:06:39 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
+#include "xf4bpp.h"
 #include "OScompiler.h"
 #include "vgaReg.h"
 #include "vgaVideo.h"
-
-#include "windowstr.h" /* GJA -- for pWin */
-#include "scrnintstr.h" /* GJA -- for pWin */
-#include "pixmapstr.h" /* GJA -- for pWin */
-#include "ppc.h" /* GJA -- for pWin */
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
@@ -79,6 +73,7 @@ static unsigned char rmasktab[] = {
 		_ndst = src;			break; \
 	case GXandInverted: \
 		_ndst = ~ src & _odst;		break; \
+	default: \
 	case GXnoop: \
 		_ndst = _odst;			break; \
 	case GXxor: \
@@ -113,7 +108,7 @@ static void aligned_blit(
 
 static void aligned_blit_center(
 #if NeedFunctionPrototypes
-    WindowPtr, int, int, int, int, int, int, int
+    WindowPtr, int, int, int, int, int, int
 #endif
 );
 
@@ -135,10 +130,9 @@ static void shift_center(
 #endif
 );
 
-void xf4bppBitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h)
+void xf4bppBitBlt(pWin,alu,writeplanes,x0,y0,x1,y1,w,h)
 WindowPtr pWin; /* GJA */
 int alu;
-int readplanes; /* unused */
 int writeplanes; /* planes */
 int x0, y0, x1, y1, w, h;
 {
@@ -147,7 +141,7 @@ int x0, y0, x1, y1, w, h;
     if ( !w || !h ) return;
 
     if ( ! xf86Screens[((DrawablePtr)pWin)->pScreen->myNum]->vtSema ) {
-        xf4bppOffBitBlt(pWin,alu,readplanes,writeplanes,x0,y0,x1,y1,w,h);
+        xf4bppOffBitBlt(pWin,alu,writeplanes,x0,y0,x1,y1,w,h);
         return;
     }
 
@@ -287,12 +281,8 @@ int w; /* length of source, and of target */
 int h;
 int alu;
 {
-  int l0 = x0 & WMASK; /* Left edge of source, as bit */
   int l1 = x1 & WMASK; /* Left edge of target, as bit */
-  int r0 = (x0 + w) & WMASK; /* Right edge of source, as bit */
   int r1 = (x1 + w) & WMASK; /* Right edge of target, as bit */
-  int L0 = x0 >> WSHIFT; /* Left edge of source, as byte */
-  int L1 = x1 >> WSHIFT; /* Left edge of target, as byte */
   int pad;
   int htmp, wtmp; /* Temporaries for indices over height and width */
   volatile unsigned char tmp; /* Temporary result of the shifts */
@@ -458,7 +448,7 @@ int planes;
      SetVideoGraphics(Graphics_ModeIndex, 1); /* Write mode 1 */
      SetVideoSequencer(Mask_MapIndex, planes);
 
-     aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu);
+     aligned_blit_center(pWin,x0,x1,y0,y1,w,h);
 
      if ( l1 ) { /* left edge */
 	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
@@ -502,7 +492,7 @@ int planes;
      SetVideoGraphics(Graphics_ModeIndex, 1); /* Write mode 1 */
      SetVideoSequencer(Mask_MapIndex, planes);
 
-     aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu);
+     aligned_blit_center(pWin,x0,x1,y0,y1,w,h);
 
      if ( r1 ) { /* right edge */
 	SetVideoGraphics(Enb_Set_ResetIndex, 0); /* All from CPU */
@@ -525,7 +515,7 @@ int planes;
 }
 
 static void
-aligned_blit_center(pWin,x0,x1,y0,y1,w,h,alu)
+aligned_blit_center(pWin,x0,x1,y0,y1,w,h)
 WindowPtr pWin; /* GJA */
 int x0;  /* left edge of source */
 int x1;  /* left edge of target */
@@ -533,14 +523,9 @@ int y0;
 int y1;
 int w; /* length of source, and of target */
 int h;
-int alu;
 {
-  int l0 = x0 & WMASK; /* Left edge of source, as bit */
   int l1 = x1 & WMASK; /* Left edge of target, as bit */
-  int r0 = (x0 + w) & WMASK; /* Right edge of source, as bit */
   int r1 = (x1 + w) & WMASK; /* Right edge of target, as bit */
-  int L0 = x0 >> WSHIFT; /* Left edge of source, as byte */
-  int L1 = x1 >> WSHIFT; /* Left edge of target, as byte */
   int pad;
   int htmp, wtmp; /* Temporaries for indices over height and width */
   volatile unsigned char tmp; /* Temporary result of the shifts */
@@ -742,15 +727,14 @@ return;
 }
 
 void
-xf4bppBitBlt( pWin,alu, readplanes, writeplanes, x0, y0, x1, y1, w, h )
+xf4bppBitBlt( pWin,alu, writeplanes, x0, y0, x1, y1, w, h )
 WindowPtr pWin; /* GJA */
 int alu;
-int readplanes; /* unused */
 int writeplanes; /* planes */
 int x0, y0, x1, y1, w, h;
 {
 	if ( ! xf86Screens[((DrawablePtr)pWin)->pScreen->myNum]->vtSema ) {
-		xf4bppOffBitBlt( pWin, alu, readplanes, writeplanes,
+		xf4bppOffBitBlt( pWin, alu, writeplanes,
 			   x0, y0, x1, y1, w, h );
 		return;
 	}

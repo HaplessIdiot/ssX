@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/Sme.c,v 1.3 1998/08/20 13:59:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Sme.c,v 1.4 1998/10/03 08:42:20 dawes Exp $ */
 
 /*
  * Date:    September 26, 1989
@@ -140,8 +140,8 @@ XawSmeClassPartInitialize(WidgetClass cclass)
 {
     SmeObjectClass m_ent, superC;
 
-  m_ent = (SmeObjectClass)cclass;
-  superC = (SmeObjectClass)m_ent->rect_class.superclass;
+    m_ent = (SmeObjectClass)cclass;
+    superC = (SmeObjectClass)m_ent->rect_class.superclass;
 
     if (m_ent->sme_class.highlight == XtInheritHighlight) 
 	m_ent->sme_class.highlight = superC->sme_class.highlight;
@@ -169,7 +169,7 @@ static void
 XawSmeInitialize(Widget request, Widget cnew,
 		 ArgList args, Cardinal *num_args)
 {
-  SmeObject entry = (SmeObject)cnew;
+    SmeObject entry = (SmeObject)cnew;
 
     entry->rectangle.border_width = 0;
 }
@@ -244,23 +244,22 @@ static XtGeometryResult
 XawSmeQueryGeometry(Widget w, XtWidgetGeometry *intended,
 		    XtWidgetGeometry *return_val)
 {
-  SmeObject entry = (SmeObject)w;
+    SmeObject entry = (SmeObject)w;
     Dimension width;
     XtGeometryResult ret_val = XtGeometryYes;
     XtGeometryMask mode = intended->request_mode;
 
-  width = 1;
+    width = 1;
 
-  if (((mode & CWWidth) && intended->width != width) ||  !(mode & CWWidth))
-    {
+    if (((mode & CWWidth) && intended->width != width) || !(mode & CWWidth)) {
 	return_val->request_mode |= CWWidth;
 	return_val->width = width;
 	mode = return_val->request_mode;
 	
-      if ((mode & CWWidth) && width == XtWidth(entry))
-	return (XtGeometryNo);
-      return (XtGeometryAlmost);
+	if ((mode & CWWidth) && width == XtWidth(entry))
+	    return (XtGeometryNo);
+	return (XtGeometryAlmost);
     }
 
-  return (ret_val);
+    return (ret_val);
 }

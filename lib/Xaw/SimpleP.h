@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.6 1998/11/01 07:57:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.7 1998/11/15 04:30:02 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
@@ -52,7 +52,7 @@ SOFTWARE.
 #include <X11/Xaw/XawInit.h>
 
 typedef struct {
-  Bool	(*change_sensitive)(Widget);
+    Bool (*change_sensitive)(Widget);
 } SimpleClassPart;
 
 #define XtInheritChangeSensitive	((Bool (*)(Widget))_XtInherit)
@@ -66,14 +66,17 @@ extern SimpleClassRec simpleClassRec;
 
 typedef struct {
     /* resources */
-    Cursor	cursor;
-    Pixmap	insensitive_border;
-  String cursor_name;			/* cursor specified by name */
-  Pixel  pointer_fg, pointer_bg;	/* Pointer colors */
-    Boolean     international;
+    Cursor cursor;
+    Pixmap insensitive_border;
+    String cursor_name;			/* cursor specified by name */
+    Pixel pointer_fg, pointer_bg;	/* Pointer colors */
+    Boolean international;
 
-  /* private */
+    /* private */
+#ifndef OLDXAW
     XawDisplayList *display_list;
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } SimplePart;
 
 typedef struct _SimpleRec {

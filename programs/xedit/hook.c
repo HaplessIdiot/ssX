@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/hook.c,v 1.1 1999/05/23 06:33:52 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/hook.c,v 1.2 1999/05/30 03:03:36 dawes Exp $ */
 
 /*
  * This file is intended to be used to add all the necessary hooks to xedit
@@ -174,6 +174,8 @@ StartAutoReplace(void)
 	esc = False;
 	while ((ch = *replace) != '\0') {
 	    ++replace;
+	    if (len + 2 >= rlen)
+		right = XtRealloc(right, rlen += 256);
 	    if (ch == '\\') {
 		if (esc)
 		    right[len++] = '\\';
@@ -185,8 +187,6 @@ StartAutoReplace(void)
 	    else
 		right[len++] = ch;
 	    esc = False;
-	    if (len + 2 >= rlen)
-		right = XtRealloc(right, rlen += 256);
 	}
 	right[len] = '\0';
 

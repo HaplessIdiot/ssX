@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWindow.c,v 1.1.2.1 1998/06/27 14:48:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcWindow.c,v 1.2 1998/07/25 16:59:42 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -70,14 +70,10 @@ SOFTWARE.
 */
 /* $XConsortium: ppcWindow.c /main/5 1996/02/21 17:58:43 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
-#include "mistruct.h"
-#include "regionstr.h"
 #include "mfb.h"
-#include "ppc.h"
+#include "scrnintstr.h"
 #include "ibmTrace.h"
 
 /*
@@ -182,7 +178,7 @@ xf4bppCopyWindow(pWin, ptOldOrg, prgnSrc)
 
     pm = ( 1 << pWin->drawable.depth ) - 1 ;
     for ( ; nbox-- ; pbox++ )
-	xf4bppBitBlt( pWin, GXcopy, pm, pm, 
+	xf4bppBitBlt( pWin, GXcopy, pm,
 		 pbox->x1 + dx, pbox->y1 + dy, 
 		 pbox->x1, pbox->y1, 
 		 pbox->x2 - pbox->x1, pbox->y2 - pbox->y1) ;

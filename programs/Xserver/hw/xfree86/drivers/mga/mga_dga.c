@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.6 1999/04/11 13:10:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.7 1999/04/17 07:06:13 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -91,7 +91,7 @@ SECOND_PASS:
 	currentMode->blue_mask = pScrn->mask.blue;
 	currentMode->viewportWidth = pMode->HDisplay;
 	currentMode->viewportHeight = pMode->VDisplay;
-	currentMode->xViewportStep = 1;
+	currentMode->xViewportStep = (3 - pMga->BppShift);
 	currentMode->yViewportStep = 1;
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
 	currentMode->offset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);

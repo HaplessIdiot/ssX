@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Grip.c,v 1.4 1998/08/20 13:58:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Grip.c,v 1.5 1998/10/03 08:42:05 dawes Exp $ */
 
 /*
  * Grip.c - Grip Widget (Used by Paned Widget)
@@ -177,5 +177,5 @@ GripAction(Widget widget, XEvent *event, String *params, Cardinal *num_params)
     call_data.params = params;
     call_data.num_params = *num_params;
 
-  XtCallCallbacks(widget, XtNcallback, (XtPointer)&call_data);
+    XtCallCallbacks(widget, XtNcallback, (XtPointer)&call_data);
 }

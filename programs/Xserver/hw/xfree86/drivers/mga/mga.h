@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.35 1999/04/17 07:06:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.36 1999/04/25 10:02:09 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -59,6 +59,7 @@ typedef struct {
     unsigned char *     DacRegs;
     CARD32		Option;
     CARD32		Option2;
+    CARD32		Option3;
     Bool		VgaEnable;
 } MGARegRec, *MGARegPtr;
 
@@ -181,6 +182,7 @@ extern CARD32 MGAAtypeNoBLK[16];
 #define	TWO_PASS_COLOR_EXPAND	0x00000040
 #define	MGA_NO_PLANEMASK	0x00000080
 #define USE_LINEAR_EXPANSION	0x00000100
+#define LARGE_ADDRESSES		0x00000200
 
 
 #define TRANSPARENCY_KEY	255

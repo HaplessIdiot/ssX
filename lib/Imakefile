@@ -1,7 +1,11 @@
 XCOMM $TOG: Imakefile /main/39 1997/02/26 18:09:44 kaleb $
-XCOMM $XFree86: xc/lib/Imakefile,v 3.25 1999/01/11 14:40:02 dawes Exp $
+XCOMM $XFree86: xc/lib/Imakefile,v 3.26 1999/03/01 02:14:09 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags
+
+#if BuildXaw6
+XAW6LIBDIR = Xaw6
+#endif
 
 #ifndef NeedBerklib
 #define NeedBerklib NO
@@ -70,7 +74,7 @@ FONTSUBDIR = font
 #if !BuildServersOnly
 LINTSUBDIRS = Xau Xdmcp $(THRSTUBLIB) X11 oldX ICE SM Xext Xt \
 	     $(SSLIB) $(XF86MISCLIB) $(XF86VMLIB) $(XF86DGALIB) \
-	     Xmu Xaw Xpm XIE Xi Xtst FS \
+	     Xmu Xaw $(XAW6LIBDIR) Xpm XIE Xi Xtst FS \
 	     PEX5 $(XKBLIBDIR) $(XKBUILIBDIR) $(LBXUTILDIR) $(XALIBDIR) \
 	     Xp $(XVLIB) $(GLXLIB) $(ZLIBDIR) $(REGEXDIR)
 #else

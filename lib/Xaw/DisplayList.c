@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.11 1999/05/16 10:12:47 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.12 1999/05/23 06:33:26 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -40,6 +40,8 @@
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xmu/SysUtil.h>
 #include "Private.h"
+
+#ifndef OLDXAW
 
 /*
  * Types
@@ -2147,3 +2149,5 @@ _XawFindDLClass(String name)
 
   return (lc ? *lc : NULL);
 }
+
+#endif /* OLDXAW */

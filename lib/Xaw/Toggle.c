@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/Toggle.c,v 1.4 1998/08/20 13:59:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Toggle.c,v 1.5 1998/10/03 08:42:29 dawes Exp $ */
 
 /*
  * Author: Chris D. Peterson
@@ -111,22 +111,22 @@ static XtResource resources[] = {
 #undef offset
 
 static XtActionsRec actionsList[] = {
-  {"toggle",	        Toggle},
-  {"notify",	        Notify},
-  {"set",	        ToggleSet},
+  {"toggle",		Toggle},
+  {"notify",		Notify},
+  {"set",		ToggleSet},
 };
 
 #define Superclass	((CommandWidgetClass)&commandClassRec)
 ToggleClassRec toggleClassRec = {
   /* core */
   {
-    (WidgetClass)Superclass,		/* superclass */
+    (WidgetClass)Superclass,		/* superclass		  */
     "Toggle",				/* class_name		  */
     sizeof(ToggleRec),			/* size			  */
-    XawToggleClassInitialize,		/* class_initialize */
+    XawToggleClassInitialize,		/* class_initialize	  */
     NULL,				/* class_part_initialize  */
-    False,				/* class_inited */
-    XawToggleInitialize,		/* initialize */
+    False,				/* class_inited		  */
+    XawToggleInitialize,		/* initialize		  */
     NULL,				/* initialize_hook	  */
     XtInheritRealize,			/* realize		  */
     actionsList,			/* actions		  */
@@ -134,14 +134,14 @@ ToggleClassRec toggleClassRec = {
     resources,				/* resources		  */
     XtNumber(resources),		/* resource_count	  */
     NULLQUARK,				/* xrm_class		  */
-    False,				/* compress_motion */
-    True,				/* compress_exposure */
-    True,				/* compress_enterleave */
-    False,				/* visible_interest */
-    NULL,         			/* destroy		  */
+    False,				/* compress_motion	  */
+    True,				/* compress_exposure	  */
+    True,				/* compress_enterleave	  */
+    False,				/* visible_interest	  */
+    NULL,	 			/* destroy		  */
     XtInheritResize,			/* resize		  */
     XtInheritExpose,			/* expose		  */
-    XawToggleSetValues,			/* set_values */
+    XawToggleSetValues,			/* set_values		  */
     NULL,				/* set_values_hook	  */
     XtInheritSetValuesAlmost,		/* set_values_almost	  */
     NULL,				/* get_values_hook	  */
@@ -151,7 +151,7 @@ ToggleClassRec toggleClassRec = {
     defaultTranslations,		/* tm_table		  */
     XtInheritQueryGeometry,		/* query_geometry	  */
     XtInheritDisplayAccelerator,	/* display_accelerator	  */
-    NULL,				/* extension */
+    NULL,				/* extension		  */
   },
   /* simple */
   {
@@ -181,44 +181,42 @@ WidgetClass toggleWidgetClass = (WidgetClass)&toggleClassRec;
 static void
 XawToggleClassInitialize(void)
 {
-  XtActionList actions;
-  Cardinal num_actions;
-  Cardinal i;
-  ToggleWidgetClass cclass = (ToggleWidgetClass)toggleWidgetClass;
-  static XtConvertArgRec parentCvtArgs[] = {
-      {XtBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.parent),
-	   sizeof(Widget)}
-  };
+    XtActionList actions;
+    Cardinal num_actions;
+    Cardinal i;
+    ToggleWidgetClass cclass = (ToggleWidgetClass)toggleWidgetClass;
+    static XtConvertArgRec parentCvtArgs[] = {
+	{XtBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.parent),
+	 sizeof(Widget)}
+    };
 
-  XawInitializeWidgetSet();
-  XtSetTypeConverter(XtRString, XtRWidget, XmuNewCvtStringToWidget,
-		     parentCvtArgs, XtNumber(parentCvtArgs),
-		     XtCacheNone, NULL);
-  XtSetTypeConverter(XtRWidget, XtRString, XmuCvtWidgetToString,
-		     NULL, 0, XtCacheNone, NULL);
+    XawInitializeWidgetSet();
+    XtSetTypeConverter(XtRString, XtRWidget, XmuNewCvtStringToWidget,
+		       parentCvtArgs, XtNumber(parentCvtArgs),
+		       XtCacheNone, NULL);
+    XtSetTypeConverter(XtRWidget, XtRString, XmuCvtWidgetToString,
+		       NULL, 0, XtCacheNone, NULL);
 
-  /*
-   * Find the set and unset actions in the command widget's action table
-   */
-  XtGetActionList(commandWidgetClass, &actions, &num_actions);
+    /*
+     * Find the set and unset actions in the command widget's action table
+     */
+    XtGetActionList(commandWidgetClass, &actions, &num_actions);
 
-  for (i = 0 ; i < num_actions ; i++)
-    {
-    if (streq(actions[i].string, "set"))
-	cclass->toggle_class.Set = actions[i].proc;
-    if (streq(actions[i].string, "unset")) 
-	cclass->toggle_class.Unset = actions[i].proc;
+    for (i = 0 ; i < num_actions ; i++) {
+	if (streq(actions[i].string, "set"))
+	    cclass->toggle_class.Set = actions[i].proc;
+	if (streq(actions[i].string, "unset")) 
+	    cclass->toggle_class.Unset = actions[i].proc;
 
-      if (cclass->toggle_class.Set != NULL
-	  && cclass->toggle_class.Unset != NULL)
-	{
-	  XtFree((char *)actions);
-	return;
+	if (cclass->toggle_class.Set != NULL &&
+	    cclass->toggle_class.Unset != NULL)	{
+	    XtFree((char *)actions);
+	    return;
+	}
     }
-  }  
 
-  /* We should never get here */
-  XtError("Aborting, due to errors resolving bindings in the Toggle widget.");
+    /* We should never get here */
+    XtError("Aborting, due to errors resolving bindings in the Toggle widget.");
 }
 
 /*ARGSUSED*/
@@ -226,67 +224,66 @@ static void
 XawToggleInitialize(Widget request, Widget cnew,
 		    ArgList args, Cardinal *num_args)
 {
-  ToggleWidget tw = (ToggleWidget)cnew;
-  ToggleWidget tw_req = (ToggleWidget)request;
+    ToggleWidget tw = (ToggleWidget)cnew;
+    ToggleWidget tw_req = (ToggleWidget)request;
 
     tw->toggle.radio_group = NULL;
 
     if (tw->toggle.radio_data == NULL) 
-    tw->toggle.radio_data = (XtPointer)cnew->core.name;
+	tw->toggle.radio_data = (XtPointer)cnew->core.name;
 
-  if (tw->toggle.widget != NULL)
-    {
-      if (GetRadioGroup(tw->toggle.widget) == NULL)
-	CreateRadioGroup(cnew, tw->toggle.widget);
-      else
-	AddToRadioGroup(GetRadioGroup(tw->toggle.widget), cnew);
-    }      
-  XtAddCallback(cnew, XtNdestroyCallback, XawToggleDestroy, NULL);
+    if (tw->toggle.widget != NULL) {
+	if (GetRadioGroup(tw->toggle.widget) == NULL)
+	    CreateRadioGroup(cnew, tw->toggle.widget);
+	else
+	    AddToRadioGroup(GetRadioGroup(tw->toggle.widget), cnew);
+    }
+    XtAddCallback(cnew, XtNdestroyCallback, XawToggleDestroy, NULL);
 
-  /*
- * Command widget assumes that the widget is unset, so we only 
-   * have to handle the case where it needs to be set
- *
- * If this widget is in a radio group then it may cause another
-   * widget to be unset, thus calling the notify proceedure
- *
- * I want to set the toggle if the user set the state to "On" in 
-   * the resource group, reguardless of what my ancestors did
- */
+    /*
+     * Command widget assumes that the widget is unset, so we only 
+     * have to handle the case where it needs to be set
+     *
+     * If this widget is in a radio group then it may cause another
+     * widget to be unset, thus calling the notify proceedure
+     *
+     * I want to set the toggle if the user set the state to "On" in 
+     * the resource group, reguardless of what my ancestors did
+     */
     if (tw_req->command.set)
-    ToggleSet(cnew, NULL, NULL, NULL);
+	ToggleSet(cnew, NULL, NULL, NULL);
 }
 
 /*ARGSUSED*/
 static void 
 ToggleSet(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ToggleWidgetClass cclass = (ToggleWidgetClass)w->core.widget_class;
+    ToggleWidgetClass cclass = (ToggleWidgetClass)w->core.widget_class;
 
     TurnOffRadioSiblings(w);
-  cclass->toggle_class.Set(w, event, NULL, NULL);
+    cclass->toggle_class.Set(w, event, NULL, NULL);
 }
 
 static void 
 Toggle(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ToggleWidget tw = (ToggleWidget)w;
-  ToggleWidgetClass cclass = (ToggleWidgetClass)w->core.widget_class;
+    ToggleWidget tw = (ToggleWidget)w;
+    ToggleWidgetClass cclass = (ToggleWidgetClass)w->core.widget_class;
 
-  if (tw->command.set) 
-    cclass->toggle_class.Unset(w, event, NULL, NULL);
-  else 
-    ToggleSet(w, event, params, num_params);
+    if (tw->command.set) 
+	cclass->toggle_class.Unset(w, event, NULL, NULL);
+    else 
+	ToggleSet(w, event, params, num_params);
 }
 
 /*ARGSUSED*/
 static void
 Notify(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
-  ToggleWidget tw = (ToggleWidget)w;
-  long antilint = tw->command.set;
+    ToggleWidget tw = (ToggleWidget)w;
+    long antilint = tw->command.set;
 
-  XtCallCallbacks(w, XtNcallback, (XtPointer)antilint);
+    XtCallCallbacks(w, XtNcallback, (XtPointer)antilint);
 }
 
 /*ARGSUSED*/
@@ -294,23 +291,22 @@ static Boolean
 XawToggleSetValues(Widget current, Widget request, Widget cnew,
 		   ArgList args, Cardinal *num_args)
 {
-  ToggleWidget oldtw = (ToggleWidget)current;
-  ToggleWidget tw = (ToggleWidget)cnew;
-  ToggleWidget rtw = (ToggleWidget)request;
+    ToggleWidget oldtw = (ToggleWidget)current;
+    ToggleWidget tw = (ToggleWidget)cnew;
+    ToggleWidget rtw = (ToggleWidget)request;
 
     if (oldtw->toggle.widget != tw->toggle.widget)
-    XawToggleChangeRadioGroup(cnew, tw->toggle.widget);
+	XawToggleChangeRadioGroup(cnew, tw->toggle.widget);
 
     if (!tw->core.sensitive && oldtw->core.sensitive && rtw->command.set)
 	tw->command.set = True;
 
-  if (oldtw->command.set != tw->command.set)
-    {
+    if (oldtw->command.set != tw->command.set) {
 	tw->command.set = oldtw->command.set;
-      Toggle(cnew, NULL, NULL, NULL);
+	Toggle(cnew, NULL, NULL, NULL);
     }
 
-  return (False);
+    return (False);
 }
 
 /*
@@ -329,7 +325,7 @@ XawToggleSetValues(Widget current, Widget request, Widget cnew,
 static void
 XawToggleDestroy(Widget w, XtPointer temp1, XtPointer temp2)
 {
-  RemoveFromRadioGroup(w);
+    RemoveFromRadioGroup(w);
 }
 
 /*
@@ -348,12 +344,12 @@ XawToggleDestroy(Widget w, XtPointer temp1, XtPointer temp2)
 static RadioGroup *
 GetRadioGroup(Widget w)
 {
-  ToggleWidget tw = (ToggleWidget)w;
+    ToggleWidget tw = (ToggleWidget)w;
 
-  if (tw == NULL)
-    return (NULL);
+    if (tw == NULL)
+	return (NULL);
 
-  return (tw->toggle.radio_group);
+    return (tw->toggle.radio_group);
 }
 
 /*
@@ -373,16 +369,16 @@ GetRadioGroup(Widget w)
 static void
 CreateRadioGroup(Widget w1, Widget w2)
 {
-  ToggleWidget tw1 = (ToggleWidget)w1;
-  ToggleWidget tw2 = (ToggleWidget) w2;
+    ToggleWidget tw1 = (ToggleWidget)w1;
+    ToggleWidget tw2 = (ToggleWidget) w2;
 
-  if (tw1->toggle.radio_group != NULL || tw2->toggle.radio_group != NULL)
-    XtAppWarning(XtWidgetToApplicationContext(w1),
-		 "Toggle Widget Error - Attempting to create a "
-		 "new toggle group, when one already exists.");
+    if (tw1->toggle.radio_group != NULL || tw2->toggle.radio_group != NULL)
+	XtAppWarning(XtWidgetToApplicationContext(w1),
+		     "Toggle Widget Error - Attempting to create a "
+		     "new toggle group, when one already exists.");
 
-  AddToRadioGroup(NULL, w1);
-  AddToRadioGroup(GetRadioGroup(w1), w2);
+    AddToRadioGroup(NULL, w1);
+    AddToRadioGroup(GetRadioGroup(w1), w2);
 }
 
 /*
@@ -399,24 +395,23 @@ CreateRadioGroup(Widget w1, Widget w2)
 static void
 AddToRadioGroup(RadioGroup *group, Widget w)
 {
-  ToggleWidget tw = (ToggleWidget)w;
-  RadioGroup *local;
+    ToggleWidget tw = (ToggleWidget)w;
+    RadioGroup *local;
 
-  local = (RadioGroup *)XtMalloc(sizeof(RadioGroup));
-  local->widget = w;
-  tw->toggle.radio_group = local;
+    local = (RadioGroup *)XtMalloc(sizeof(RadioGroup));
+    local->widget = w;
+    tw->toggle.radio_group = local;
 
-  if (group == NULL)		/* Creating new group */
-    {
-    group = local;
-    group->next = NULL;
-    group->prev = NULL;
-    return;
-  }
-  local->prev = group;		/* Adding to previous group */
-  if ((local->next = group->next) != NULL)
-      local->next->prev = local;
-  group->next = local;
+    if (group == NULL) {		  /* Creating new group */
+	group = local;
+	group->next = NULL;
+	group->prev = NULL;
+	return;
+    }
+    local->prev = group;	  /* Adding to previous group */
+    if ((local->next = group->next) != NULL)
+	local->next->prev = local;
+    group->next = local;
 }
 
 /*
@@ -432,27 +427,25 @@ AddToRadioGroup(RadioGroup *group, Widget w)
 static void
 TurnOffRadioSiblings(Widget w)
 {
-  RadioGroup *group;
-  ToggleWidgetClass cclass = (ToggleWidgetClass)w->core.widget_class;
+    RadioGroup *group;
+    ToggleWidgetClass cclass = (ToggleWidgetClass)w->core.widget_class;
 
-  if ((group = GetRadioGroup(w)) == NULL)	/* Punt if there is no group */
-    return;
+    if ((group = GetRadioGroup(w)) == NULL)	/* Punt if there is no group */
+	return;
 
-  /* Go to the top of the group */
-  for (; group->prev != NULL ; group = group->prev)
-    ;
+    /* Go to the top of the group */
+    for (; group->prev != NULL ; group = group->prev)
+	;
 
-  while (group != NULL)
-    {
-      ToggleWidget local_tog = (ToggleWidget)group->widget;
+    while (group != NULL) {
+	ToggleWidget local_tog = (ToggleWidget)group->widget;
 
-      if (local_tog->command.set)
-	{
-	  cclass->toggle_class.Unset(group->widget, NULL, NULL, NULL);
-	  Notify(group->widget, NULL, NULL, NULL);
+	if (local_tog->command.set) {
+	    cclass->toggle_class.Unset(group->widget, NULL, NULL, NULL);
+	    Notify(group->widget, NULL, NULL, NULL);
+	}
+	group = group->next;
     }
-    group = group->next;
-  }
 }
 
 /*
@@ -468,15 +461,14 @@ TurnOffRadioSiblings(Widget w)
 static void
 RemoveFromRadioGroup(Widget w)
 {
-  RadioGroup *group = GetRadioGroup(w);
-  if (group != NULL)
-    {
-    if (group->prev != NULL)
-      (group->prev)->next = group->next;
-    if (group->next != NULL)
-      (group->next)->prev = group->prev;
-      XtFree((char *)group);
-  }
+    RadioGroup *group = GetRadioGroup(w);
+    if (group != NULL) {
+	if (group->prev != NULL)
+	    (group->prev)->next = group->next;
+	if (group->next != NULL)
+	    (group->next)->prev = group->prev;
+	XtFree((char *)group);
+    }
 }
 
 /*
@@ -493,24 +485,24 @@ RemoveFromRadioGroup(Widget w)
 void
 XawToggleChangeRadioGroup(Widget w, Widget radio_group)
 {
-  ToggleWidget tw = (ToggleWidget)w;
-  RadioGroup *group;
+    ToggleWidget tw = (ToggleWidget)w;
+    RadioGroup *group;
 
-  RemoveFromRadioGroup(w);
+    RemoveFromRadioGroup(w);
 
-  /*
- * If the toggle that we are about to add is set then we will 
-   * unset all toggles in the new radio group
- */
+    /*
+     * If the toggle that we are about to add is set then we will 
+     * unset all toggles in the new radio group
+     */
 
-  if (tw->command.set && radio_group != NULL)
-    XawToggleUnsetCurrent(radio_group);
+    if (tw->command.set && radio_group != NULL)
+	XawToggleUnsetCurrent(radio_group);
 
-  if (radio_group != NULL)
-      if ((group = GetRadioGroup(radio_group)) == NULL)
-	  CreateRadioGroup(w, radio_group);
+    if (radio_group != NULL)
+	if ((group = GetRadioGroup(radio_group)) == NULL)
+	    CreateRadioGroup(w, radio_group);
     else
-      AddToRadioGroup(group, w);
+	AddToRadioGroup(group, w);
 }
 
 /*
@@ -522,7 +514,7 @@ XawToggleChangeRadioGroup(Widget w, Widget radio_group)
  *
  * Description:
  *	  Returns the RadioData associated with the toggle
- *                   widget that is currently active in a toggle group.
+ *	widget that is currently active in a toggle group.
  *
  * Returns:
  *	The XtNradioData associated with the toggle widget
@@ -530,24 +522,23 @@ XawToggleChangeRadioGroup(Widget w, Widget radio_group)
 XtPointer
 XawToggleGetCurrent(Widget w)
 {
-  RadioGroup *group;
+    RadioGroup *group;
 
-  if ((group = GetRadioGroup(w)) == NULL)
+    if ((group = GetRadioGroup(w)) == NULL)
+	return (NULL);
+
+    for (; group->prev != NULL ; group = group->prev)
+	;
+
+    while (group != NULL) {
+	ToggleWidget local_tog = (ToggleWidget)group->widget;
+
+	if (local_tog->command.set)
+	    return (local_tog->toggle.radio_data);
+	group = group->next;
+    }
+
     return (NULL);
-
-  for (; group->prev != NULL ; group = group->prev)
-    ;
-
-  while (group != NULL)
-    {
-      ToggleWidget local_tog = (ToggleWidget)group->widget;
-
-      if (local_tog->command.set)
-	return (local_tog->toggle.radio_data);
-    group = group->next;
-  }
-
-  return (NULL);
 }
 
 /*
@@ -564,50 +555,45 @@ XawToggleGetCurrent(Widget w)
 void
 XawToggleSetCurrent(Widget radio_group, XtPointer radio_data)
 {
-  RadioGroup *group;
-  ToggleWidget local_tog; 
+    RadioGroup *group;
+    ToggleWidget local_tog; 
 
-  /* Special case of no radio group */
+    /* Special case of no radio group */
 
-  if ((group = GetRadioGroup(radio_group)) == NULL)
-    {
-    local_tog = (ToggleWidget) radio_group;
+    if ((group = GetRadioGroup(radio_group)) == NULL) {
+	local_tog = (ToggleWidget)radio_group;
 
-      if (local_tog->toggle.radio_data == radio_data)
-	if (!local_tog->command.set)
-	  {
-	    ToggleSet((Widget)local_tog, NULL, NULL, NULL);
-	    Notify((Widget)local_tog, NULL, NULL, NULL);
-      }
-    return;
-  }
-
-  /*
- * find top of radio_roup 
- */
-  for (; group->prev != NULL ; group = group->prev)
-    ;
-
-  /*
-   * search for matching radio data
- */
-  while (group != NULL)
-    {
-    local_tog = (ToggleWidget) group->widget;
-
-      if (local_tog->toggle.radio_data == radio_data)
-	{
-	  if (!local_tog->command.set)	/* if not already set */
-	    {
-	      ToggleSet((Widget)local_tog, NULL, NULL, NULL);
-	      Notify((Widget)local_tog, NULL, NULL, NULL);
-      }
-      return;			/* found it, done */
+	if (local_tog->toggle.radio_data == radio_data &&
+	    !local_tog->command.set) {
+	    ToggleSet(radio_group, NULL, NULL, NULL);
+	    Notify(radio_group, NULL, NULL, NULL);
+	}
+	return;
     }
-    group = group->next;
-  }
+
+    /*
+     * find top of radio_roup 
+     */
+    for (; group->prev != NULL ; group = group->prev)
+	;
+
+    /*
+     * search for matching radio data
+     */
+    while (group != NULL) {
+	local_tog = (ToggleWidget)group->widget;
+
+	if (local_tog->toggle.radio_data == radio_data) {
+	    if (!local_tog->command.set) {	/* if not already set */
+		ToggleSet(group->widget, NULL, NULL, NULL);
+		Notify(group->widget, NULL, NULL, NULL);
+	    }
+	    return;			/* found it, done */
+	}
+	group = group->next;
+    }
 }
- 
+
 /*
  * Function:
  *	XawToggleUnsetCurrent
@@ -621,19 +607,18 @@ XawToggleSetCurrent(Widget radio_group, XtPointer radio_data)
 void
 XawToggleUnsetCurrent(Widget radio_group)
 {
-  ToggleWidgetClass cclass;
-  ToggleWidget local_tog = (ToggleWidget)radio_group;
+    ToggleWidgetClass cclass;
+    ToggleWidget local_tog = (ToggleWidget)radio_group;
 
-  /* Special Case no radio group */
+    /* Special Case no radio group */
 
-  if (local_tog->command.set)
-    {
-      cclass = (ToggleWidgetClass)local_tog->core.widget_class;
-      cclass->toggle_class.Unset(radio_group, NULL, NULL, NULL);
-      Notify(radio_group, NULL, NULL, NULL);
-  }
-  if (GetRadioGroup(radio_group) == NULL)
-    return;
+    if (local_tog->command.set) {
+	cclass = (ToggleWidgetClass)local_tog->core.widget_class;
+	cclass->toggle_class.Unset(radio_group, NULL, NULL, NULL);
+	Notify(radio_group, NULL, NULL, NULL);
+    }
+    if (GetRadioGroup(radio_group) == NULL)
+	return;
 
-  TurnOffRadioSiblings(radio_group);
+    TurnOffRadioSiblings(radio_group);
 }

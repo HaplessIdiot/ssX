@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaGC.c,v 1.1.2.1 1998/06/27 14:48:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaGC.c,v 1.2 1998/07/25 16:59:43 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -71,26 +71,11 @@ SOFTWARE.
 
 /* $XConsortium: vgaGC.c /main/6 1996/02/21 17:58:54 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "Xproto.h"
-#include "windowstr.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "misc.h"
-#include "dixfont.h" /* GJA */
-#include "gcstruct.h"
-#include "cursorstr.h"
-#include "region.h"
-
-#include "mi.h"
-#include "mistruct.h"
 #include "mfb.h"
-
-#include "OScompiler.h"
-
-#include "ppc.h"
+#include "mi.h"
+#include "ppcGCstr.h"
 
 void
 xf4bppChangeGCtype( pGC, devPriv )

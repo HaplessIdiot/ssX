@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit-sample,v 1.5 1999/04/25 10:02:47 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit-sample,v 1.6 1999/05/30 03:03:36 dawes Exp $
 
 Xedit*insertFile*text.width:		150
 Xedit*search*searchText.width:		192
@@ -163,24 +163,36 @@ Xedit*dirwindow*foreground:		rgb:9/0/2
 Xedit*dirwindow.backgroundPixmap:	gradient:vertical?dimension=3&start=rgb:e/d/d&end=rgb:f/e/e
 Xedit*viewport*Scrollbar.thumb:		hlines2
 Xedit*ispell*text.width:		192
-Xedit*ispell*commands.vertDistance:	6
 Xedit*ispell.form.defaultDistance:	4
-Xedit*ispell*Command.vertDistance:	0
-Xedit*ispell*check.vertDistance:	3
-Xedit*ispell*undo.vertDistance:		2
-Xedit*ispell*Command.height:		22
-Xedit*ispell*replaceAll.width:		37
-Xedit*ispell*ignoreAll.width:		37
-Xedit*ispell*check.width:		100
-Xedit*ispell*undo.width:		100
-Xedit*ispell*add.width:			100
-Xedit*ispell*suspend.vertDistance:	2
-Xedit*ispell*suspend.width:		100
-Xedit*ispell*cancel.width:		100
+Xedit*ispell*commands.Command.vertDistance:	0
+Xedit*ispell*commands.Command.height:	22
+Xedit*ispell*commands.check.vertDistance:	3
+Xedit*ispell*commands.look.vertDistance:	3
+Xedit*ispell*replaceAll.width:		39
+Xedit*ispell*ignoreAll.width:		39
+Xedit*ispell*check.width:		54
+Xedit*ispell*look.width:		50
+Xedit*ispell*undo.width:		104
+Xedit*ispell*add.width:			52
+Xedit*ispell*addUncap.width:		52
+Xedit*ispell*suspend.width:		60
+Xedit*ispell*suspend.internalWidth:	0
+Xedit*ispell*cancel.width:		44
+Xedit*ispell*cancel.internalWidth:	0
+Xedit*ispell*terse.width:		101
+Xedit*ispell*terse.height:		18
+Xedit*ispell*terse.vertDistance:	2
 Xedit*ispell*replace.internalWidth:	0
+Xedit*ispell*viewport.height:		139
 Xedit*ispell*list.foreground:		rgb:9/0/2
 Xedit*ispell*list.backgroundPixmap:	gradient:vertical?dimension=3&start=rgb:e/d/d&end=rgb:f/e/e
 Xedit*ispell*borderColor:		rgb:9/0/2
+Xedit*ispell*word.font:			-*-courier-medium-r-*-*-12-*-*-*-*-*-*-1
+Xedit*ispell*word.displayList:
+Xedit*ispell*word.foreground:		black
+Xedit*ispell*word.background:		rgb:f/e/e
+Xedit*ispell*word.borderWidth:		1
+Xedit*ispell*word.height:		18
 Xedit*SimpleMenu.SimpleMenu.displayList:\
 foreground	rgb:3/0/1;\
 draw-lines	+1,-1,-1,-1,-1,+1;\
@@ -196,3 +208,25 @@ Xedit*columns.minHeight:		80
 Xedit*columns.maxWidth:			130
 Xedit*columns.maxHeight:		80
 Xedit*columns*cancel.horizDistance:	6
+Xedit*ispell*SimpleMenu.displayList:\
+foreground	rgb:3/0/1;\
+draw-lines	+1,-1,-1,-1,-1,+1;\
+foreground	rgb:d/0/3;\
+draw-lines	-1,+0,+0,+0,+0,-1;\
+foreground	rgb:b/2/3;\
+draw-lines	+2,-2,-2,-2,-2,+2;\
+foreground	rgb:8/0/1;\
+draw-lines	-2,+1,+1,+1,+1,-2
+Xedit*ispell*MenuButton.borderColor:		rgb:f/e/e
+Xedit*ispell*MenuButton.background:		rgb:9/0/2
+Xedit*ispell*MenuButton.foreground:		rgb:d/c/8
+Xedit*ispell*MenuButton.highlightThickness:	0
+Xedit*ispell*MenuButton.displayList:\
+foreground	rgb:3/0/1;\
+draw-lines	+1,-1,-1,-1,-1,+1;\
+foreground	rgb:d/0/3;\
+draw-lines	-1,+0,+0,+0,+0,-1;\
+foreground	rgb:b/2/3;\
+draw-lines	+2,-2,-2,-2,-2,+2;\
+foreground	rgb:8/0/1;\
+draw-lines	-2,+1,+1,+1,+1,-2

@@ -18,7 +18,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/lib/Xaw/MenuButtoP.h,v 1.3 1998/08/20 13:59:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MenuButtoP.h,v 1.4 1998/10/03 08:42:08 dawes Exp $ */
 
 /*
  * MenuButtonP.h - Private Header file for MenuButton widget.
@@ -40,26 +40,28 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xaw/CommandP.h>
 
 /* New fields for the MenuButton widget class */
-typedef struct _MenuButtonClass 
-{
-  XtPointer extension;
+typedef struct _MenuButtonClass {
+    XtPointer extension;
 } MenuButtonClassPart;
 
 /* class record declaration */
 typedef struct _MenuButtonClassRec {
-  CoreClassPart	    core_class;
-  SimpleClassPart	    simple_class;
-  LabelClassPart	    label_class;
-  CommandClassPart	    command_class;
-  MenuButtonClassPart     menuButton_class;
+    CoreClassPart	    core_class;
+    SimpleClassPart	    simple_class;
+    LabelClassPart	    label_class;
+    CommandClassPart	    command_class;
+    MenuButtonClassPart	    menuButton_class;
 } MenuButtonClassRec;
 
 extern MenuButtonClassRec menuButtonClassRec;
 
 /* New fields for the MenuButton widget */
 typedef struct {
-  /* resources */
-  String menu_name;
+    /* resources */
+    String menu_name;
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } MenuButtonPart;
 
 /* widget declaration */

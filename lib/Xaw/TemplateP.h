@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TemplateP.h,v 1.3 1998/08/20 13:59:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TemplateP.h,v 1.4 1998/10/03 08:42:24 dawes Exp $ */
 
 #ifndef _TemplateP_h
 #define _TemplateP_h
@@ -35,7 +35,7 @@ in this Software without prior written authorization from The Open Group.
 #define XtRTemplateResource "TemplateResource"
 
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } TemplateClassPart;
 
 typedef struct _TemplateClassRec {
@@ -48,8 +48,8 @@ extern TemplateClassRec templateClassRec;
 typedef struct {
     /* resources */
     char* resource;
-  /* private */
-  char *private;
+    /* private */
+    char *private;
 } TemplatePart;
 
 typedef struct _TemplateRec {

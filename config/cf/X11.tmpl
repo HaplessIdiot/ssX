@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.46 1999/05/15 12:10:04 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.47 1999/05/30 02:27:53 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1561,11 +1561,39 @@ UnsharedLibReferences(XA,Xa,$(XALIBSRC))
        AWIDGETSRC = $(LIBSRC)/Xaw
 #if SharedLibXaw
 #ifndef SharedXawRev
-#define SharedXawRev 6.1
+#define SharedXawRev 7.0
 #endif
 SharedDSLibReferences(XAW,Xaw,$(AWIDGETSRC),SOXAWREV,SharedXawRev)
 #else
 ProjectUnsharedLibReferences(XAW,Xaw,$(AWIDGETSRC),XBuildLibDir)
+#endif
+
+#ifndef BuildXaw6
+#define BuildXaw6 HasSharedLibraries
+#endif
+
+#if BuildXaw6
+#ifndef SharedLibXaw6
+#define SharedLibXaw6 HasSharedLibraries
+#endif
+#ifndef NormalLibXaw6
+#define NormalLibXaw6		NO
+#endif
+#ifndef DebugLibXaw6
+#define DebugLibXaw6		NO	/* debugged widget library */
+#endif
+#ifndef ProfileLibXaw6
+#define ProfileLibXaw6		NO	/* profiled widget library */
+#endif
+       AWIDGET6SRC = $(LIBSRC)/Xaw6
+#if SharedLibXaw6
+#ifndef SharedXaw6Rev
+#define SharedXaw6Rev 6.1
+#endif
+SharedDSLibReferences(XAW6,Xaw,$(AWIDGET6SRC),SOXAW6REV,SharedXaw6Rev)
+#else
+ProjectUnsharedLibReferences(XAW6,Xaw,$(AWIDGET6SRC),XBuildLibDir)
+#endif
 #endif
 
 #ifndef SharedLibXi
@@ -1865,11 +1893,15 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #endif
 #endif /* BuildXKBuilib */
 
+#ifndef XawDepLibs
+#define XawDepLibs $(XPMLIB)
+        DEPXAWLIB = $(XPMLIB)
+#endif
 #ifndef XawClientDepLibs
-#define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB)
+#define XawClientDepLibs $(DEPXAWLIB) $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXPMLIB) $(DEPXLIB)
 #endif
 #ifndef XawClientLibs
-#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
+#define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XPMLIB) $(XLIB)
 #endif
 
 #ifndef NeedDefaultDepLibs

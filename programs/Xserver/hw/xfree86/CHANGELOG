@@ -1,4 +1,27 @@
 XFree86 3.9Pq (6 June 1999)
+2715. Add defines to the Xaw code to make it possible to build a version
+      of the shared library that is binary compatible with the standard 6.1
+      version (#2849, Paulo Cesar Pereira de Andrade).
+2714. Xedit updates (see the Xaw Changelog for details) (#2849,
+      Paulo Cesar Pereira de Andrade).
+2713. Bump the Xaw library major version (now 7.0), and enable the Xpm
+      dependency by default (#2849, Paulo Cesar Pereira de Andrade).
+2712. Fix an Xmu build warning (#2849, Paulo Cesar Pereira de Andrade).
+2711. Some updates to the XAnti extension (#2851, 2852, Mark Vojkovich).
+2710. Update the scanline width choices used in the MGA driver to better
+      match the capabilities of the different chips (#2850, Mark Vojkovich).
+2709. Add G400 support to the MGA driver (#2850, Mark Vojkovich).
+2708. Resync SuperProbe with 3.3.3.1e, and add ATI Rage XL & XC detection
+      (#2847, Marc La France).
+2707. Fix for drivers/v4l/README (#2846, David Woodhouse).
+2706. Fixes for the big5.eten-0 and gb2312.1980-0 encoding files (#2840, 2841,
+      2846, Juliusz Chroboczek).
+2705. Use 8-bit I/O instead of 16-bit I/O in xf4bpp (better for older
+      adapters), and some cleanups (#2838, Marc La France).
+2704. Fix RGB "masks" for depth <=8, and fix the formatting of the "Clocks"
+      messages (#2838, Marc La France).
+2703. Remove assumption that PCI systems contain PCI video (#2838,
+      Marc La France).
 2702. Add missing parsing of the ZAxisMapping option to the revised mouse
       driver (David Dawes).
 2701. Add a simple verification check for core-capable input devices
@@ -8090,4 +8113,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.764 1999/06/05 15:55:16 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.765 1999/06/06 05:14:05 dawes Exp $

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/Template.c,v 1.4 1998/10/03 08:42:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Template.c,v 1.5 1999/03/21 07:34:28 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -70,7 +70,7 @@ static XtResource resources[] = {
 
 static XtActionsRec actions[] =
 {
-/*{name,	procedure},*/
+    /*{name,		procedure},*/
     {"template",	TemplateAction},
 };
 
@@ -143,9 +143,9 @@ WidgetClass templateWidgetClass = (WidgetClass)&templateClassRec;
 static void
 TemplateInitialize(Widget request, Widget w, ArgList args, Cardinal *num_args)
 {
-  TemplateWidget tw = (TemplateWidget)w;
+    TemplateWidget tw = (TemplateWidget)w;
 
-  tw->template.private = NULL;
+    tw->template.private = NULL;
 }
 
 /*
@@ -168,7 +168,7 @@ TemplateInitialize(Widget request, Widget w, ArgList args, Cardinal *num_args)
 static Bool
 TemplateFunction(TemplateWidget tw, int x, int y, Bool force)
 {
-  return (force);
+    return (force);
 }
 
 /*

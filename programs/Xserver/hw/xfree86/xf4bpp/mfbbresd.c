@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbbresd.c,v 1.1.2.1 1998/06/27 14:48:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/mfbbresd.c,v 1.2 1998/07/25 16:59:28 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -48,17 +48,14 @@ SOFTWARE.
 ******************************************************************/
 /* GJA -- modified this file for vga16 */
 /* $XConsortium: mfbbresd.c /main/5 1996/02/21 17:56:34 kaleb $ */
+
+#include "xf4bpp.h"
+#include "OScompiler.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "misc.h"
+#include "mfb.h"
 #include "maskbits.h"
 #include "miline.h"
-#include "mfb.h"
-
-#include "wm3.h"	/* GJA */
-#include "windowstr.h"	/* GJA */
-#include "ppc.h"	/* GJA */
-#include "OScompiler.h"	/* GJA */
+#include "wm3.h"
 
 /* Dashed bresenham line */
 

@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Private.h,v 3.8 1999/04/04 08:46:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Private.h,v 3.9 1999/05/16 10:12:48 dawes Exp $ */
 
 #ifndef _XawPrivate_h
 #define _XawPrivate_h
@@ -61,6 +61,7 @@ do {						\
 #define XtBorderWidth(w)  (((RectObj)w)->rectangle.border_width)
 #endif
 
+#ifndef OLDXAW
 #define XAW_PRIV_VAR_PREFIX '$'
 
 typedef Bool (*XawParseBooleanProc)(Widget, String, XEvent*, Bool*);
@@ -141,9 +142,8 @@ XawPixmap *XawPixmapFromXPixmap(Pixmap, Screen*, Colormap, int);
 XawParams *XawParseParamsString(String name);
 void XawFreeParamsStruct(XawParams *params);
 XawArgVal *XawFindArgVal(XawParams *params, String name);
-#ifdef USE_XPM
 void XawReshapeWidget(Widget, XawPixmap*);
-#endif
+#endif /* OLDXAW */
 
 /* misc */
 void XawTypeToStringWarning(Display*, String);

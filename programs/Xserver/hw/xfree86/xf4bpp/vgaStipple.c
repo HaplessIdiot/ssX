@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaStipple.c,v 1.1.2.2 1998/07/18 17:54:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/vgaStipple.c,v 1.2 1998/07/25 16:59:45 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -23,27 +23,22 @@
 */
 /* $XConsortium: vgaStipple.c /main/5 1996/02/21 17:59:10 kaleb $ */
 
-#include "mfbmap.h"
-#include "X.h"
-#include "pixmapstr.h"
+#include "xf4bpp.h"
 #include "OScompiler.h"
-#include "vgaVideo.h"
 #include "vgaReg.h"
-
-#include "windowstr.h" /* GJA -- for pWin */
-#include "scrnintstr.h" /* GJA -- for pWin */
-#include "pixmapstr.h" /* GJA -- for pWin */
-#include "ppc.h" /* GJA -- for pWin */
+#include "vgaVideo.h"
 
 #include "xf86str.h" /* for pScrn->vtSema */
 extern ScrnInfoPtr *xf86Screens;
 
 #ifndef	PC98_EGC
 static unsigned char
-getbits( x, patternWidth, lineptr )
-register const int x ;
-register const unsigned int patternWidth ;
-register const unsigned char * const lineptr ;
+getbits
+(
+	register const int x,
+	register const unsigned int patternWidth,
+	register const unsigned char * const lineptr
+)
 {
 register unsigned char bits ;
 register const unsigned char *cptr ;
@@ -101,17 +96,20 @@ return bits ;
  * This is taken care of above.
  */
 static void
-DoMonoSingle( pWin, w, x, y, mastersrc, h, width, paddedByteWidth, height,
-	      xshift, yshift )
-WindowPtr pWin; /* GJA */
-int w, x, y ;
-register const unsigned char *mastersrc ;
-int h ;
-register unsigned int width ;
-register unsigned int paddedByteWidth ;
-unsigned int height ;
-int xshift ;
-int yshift ;
+DoMonoSingle
+(
+	WindowPtr pWin, /* GJA */
+	int w,
+	int x,
+	int y,
+	register const unsigned char *mastersrc,
+	int h,
+	register unsigned int width,
+	register unsigned int paddedByteWidth,
+	unsigned int height,
+	int xshift,
+	int yshift
+)
 {
 register volatile unsigned char *xDst ;
 register VideoAdapterObject tmp2 ;
@@ -145,7 +143,7 @@ if ((tmp1 = x & 07)) {
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
 
-		if ( tmp1 >= height )
+		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 #ifndef	PC98_EGC
 		/* Read To Save */
@@ -193,7 +191,7 @@ if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
 		register const unsigned char *l_ptr ;
-		if ( tmp1 >= height )
+		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		l_ptr = mastersrc + ( tmp1 * paddedByteWidth ) ;
 		/*
@@ -239,7 +237,7 @@ if ((tmp1 = BIT_OFFSET(w))) { /* x Now Is Byte Aligned */
 	for ( tmp1 = yshift, rowCounter = h;
 	      rowCounter ;
 	      rowCounter-- , tmp1++ ) {
-		if ( tmp1 >= height )
+		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 #ifndef	PC98_EGC
 		/* Read To Save */
@@ -270,17 +268,20 @@ return ;
 }
 
 static void
-DoMonoMany( pWin, w, x, y, mastersrc, h, width, paddedByteWidth, height,
-	    xshift, yshift )
-WindowPtr pWin; /* GJA */
-int w, x, y ;
-register const unsigned char *mastersrc ;
-int h ;
-register unsigned int width ;
-register unsigned int paddedByteWidth ;
-unsigned int height ;
-int xshift ;
-int yshift ;
+DoMonoMany
+(
+	WindowPtr pWin, /* GJA */
+	int w,
+	int x,
+	int y,
+	register const unsigned char *mastersrc,
+	int h,
+	register unsigned int width,
+	register unsigned int paddedByteWidth,
+	unsigned int height,
+	int xshift,
+	int yshift
+)
 {
 register volatile unsigned char *xDst ;
 register VideoAdapterObject tmp2 ;
@@ -316,7 +317,7 @@ if ((tmp1 = x & 07)) {
 	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) ) {
 		register unsigned bitPattern ;
 
-		if ( tmp1 >= height )
+		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		/*
 		 * For Each Time Pattern Repeats In The Y Dimension
@@ -338,7 +339,7 @@ if ((tmp1 = x & 07)) {
 					+ ( tmp1 * paddedByteWidth ), 0 ) ;
 #endif
 #endif
-		      DestinationRow < h ;
+		      (int)DestinationRow < h ;
 		      DestinationRow += height ) {
 #ifndef	PC98_EGC
 			/* Read To Save */
@@ -373,7 +374,7 @@ if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 	      SourceRow < height ;
 	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) - byte_cnt ) {
 		register const unsigned char *l_ptr ;
-		if ( tmp1 >= height )
+		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		l_ptr = mastersrc + ( tmp1 * paddedByteWidth ) ;
 		/*
@@ -398,7 +399,7 @@ if ((byte_cnt = ROW_OFFSET(w))) { /* Fill The Center Of The Box */
 			      bitPattern = getbits_x( NeedValX, width, l_ptr, 0 ) ;
 #endif
 #endif
-			      DestinationRow < h ;
+			      (int)DestinationRow < h ;
 			      DestinationRow += height ) {
 #ifndef	PC98_EGC
 				/* Read To Save */
@@ -429,7 +430,7 @@ if ((tmp1 = BIT_OFFSET(w))) { /* x Now Is Byte Aligned */
 	      SourceRow < height ;
 	      tmp1++, SourceRow++, dst += BYTES_PER_LINE(pWin) ) {
 		register unsigned bitPattern ;
-		if ( tmp1 >= height )
+		if ( tmp1 >= (int)height )
 			tmp1 -= height ;
 		/*
 		 * For Each Time Pattern Repeats In The Y Dimension
@@ -451,7 +452,7 @@ if ((tmp1 = BIT_OFFSET(w))) { /* x Now Is Byte Aligned */
 					+ ( tmp1 * paddedByteWidth ), 0 ) ;
 #endif
 #endif
-		      DestinationRow < h ;
+		      (int)DestinationRow < h ;
 		      DestinationRow += height ) {
 #ifndef	PC98_EGC
 			/* Read To Save */
@@ -474,9 +475,11 @@ return ;
 #define DO_RECURSE 0x10000
 
 static void
-vgaSetMonoRegisters( plane_mask, desiredState )
-register unsigned long int plane_mask ;
-register unsigned long int desiredState ;
+vgaSetMonoRegisters
+(
+	register unsigned long int plane_mask,
+	register unsigned long int desiredState
+)
 {
 #ifndef	PC98_EGC
 /* Setup VGA Registers */
@@ -537,9 +540,11 @@ return ;
 }
 
 static unsigned long
-vgaCalcMonoMode( rasterOp, color )
-int rasterOp ;
-register unsigned long int color ;
+vgaCalcMonoMode
+(
+	int rasterOp,
+	register unsigned long int color
+)
 {
 register unsigned int data_rotate_value = VGA_COPY_MODE << 8 ;
 register unsigned int invert_existing_data = 0 ;
@@ -593,13 +598,18 @@ return ( color & VGA_ALLPLANES ) | data_rotate_value | invert_existing_data ;
 }
 
 static void
-vgaDrawMonoImage( pWin, data, x, y, w, h, fg, alu, planes )
-WindowPtr pWin; /* GJA */
-unsigned char *data;
-int x, y, w, h ;
-unsigned long int fg ;
-int alu ;
-unsigned long int planes;
+vgaDrawMonoImage
+(
+	WindowPtr pWin, /* GJA */
+	unsigned char *data,
+	int x,
+	int y,
+	int w,
+	int h,
+	unsigned long int fg,
+	int alu,
+	unsigned long int planes
+)
 {
 unsigned long regState ;
 
@@ -675,21 +685,21 @@ if ( ( xshift = ( x - xSrc ) ) < 0 )
 	xshift = width - ( ( - xshift ) % width ) ;
 else
 	xshift %= width ;
-if ( xshift == width ) xshift = 0;
+if ( xshift == (int)width ) xshift = 0;
 
 height = pStipple->drawable.height ;
 if ( ( yshift = ( y - ySrc ) ) < 0 )
 	yshift = height - ( ( - yshift ) % height ) ;
 else
 	yshift %= height ;
-if ( yshift == height ) yshift = 0;
+if ( yshift == (int)height ) yshift = 0;
 
-	(* ( (h > height) ? DoMonoMany : DoMonoSingle ) ) (
+	(* ( (h > (int)height) ? DoMonoMany : DoMonoSingle ) ) (
 			pWin, w, x, y,
 			(const unsigned char *) pStipple->devPrivate.ptr,
 			h,
 			width,
-			( ( width + 31 ) & ~31 ) >> 3,
+			( ( width + 31 ) & ((unsigned)(~31)) ) >> 3,
 			height,
 			xshift, yshift
 			) ;

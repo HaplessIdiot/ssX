@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.5 1999/03/14 03:21:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.6 1999/05/09 10:51:36 dawes Exp $ */
 
 /*
  * AsciiText.c - Source code for AsciiText Widget
@@ -254,21 +254,20 @@ static void
 XawAsciiInitialize(Widget request, Widget cnew,
 		   ArgList args, Cardinal *num_args)
 {
-  AsciiWidget w = (AsciiWidget)cnew;
-  int i;
-  int tabs[TAB_COUNT], tab;
+    AsciiWidget w = (AsciiWidget)cnew;
+    int i;
+    int tabs[TAB_COUNT], tab;
 
-  MultiSinkObject sink;
+    MultiSinkObject sink;
 
-  /* superclass Initialize can't set the following,
-   * as it didn't know the source or sink when it was called
-   */
-  if (XtHeight(request) == DEFAULT_TEXT_HEIGHT)
-    XtHeight(cnew) = DEFAULT_TEXT_HEIGHT;
+    /* superclass Initialize can't set the following,
+     * as it didn't know the source or sink when it was called
+     */
+    if (XtHeight(request) == DEFAULT_TEXT_HEIGHT)
+	XtHeight(cnew) = DEFAULT_TEXT_HEIGHT;
 
-  /* This is the main change for internationalization  */
-  if (w->simple.international == True)	/* The multi* are international */
-    {
+    /* This is the main change for internationalization  */
+    if (w->simple.international == True) { /* The multi* are international */
 	if (w->text.sink == NULL)
 	    w->text.sink = XtCreateWidget("textSink", multiSinkObjectClass,
 					  cnew, args, *num_args);
@@ -280,11 +279,12 @@ XawAsciiInitialize(Widget request, Widget cnew,
 					    cnew, args, *num_args);
 	else if (!XtIsSubclass(w->text.source, multiSrcObjectClass))
 	    XtError("Source object is not a subclass of multiSrc");
+#ifndef OLDXAW
 	else
 	    _XawSourceAddText(w->text.source, cnew);
-  }
-  else
-    {
+#endif
+    }
+    else {
 	if (w->text.sink == NULL)
 	    w->text.sink = XtCreateWidget("textSink", asciiSinkObjectClass,
 					  cnew, args, *num_args);
@@ -296,35 +296,37 @@ XawAsciiInitialize(Widget request, Widget cnew,
 					    cnew, args, *num_args);
 	else if (!XtIsSubclass(w->text.source, asciiSrcObjectClass))
 	    XtError("Source object is not a subclass of asciiSrc");
+#ifndef OLDXAW
 	else
 	    _XawSourceAddText(w->text.source, cnew);
-  }
+#endif
+    }
 
-  if (XtHeight(w) == DEFAULT_TEXT_HEIGHT)
-    XtHeight(w) = VMargins(w) + XawTextSinkMaxHeight(w->text.sink, 1);
+    if (XtHeight(w) == DEFAULT_TEXT_HEIGHT)
+	XtHeight(w) = VMargins(w) + XawTextSinkMaxHeight(w->text.sink, 1);
 
-  for (i = 0, tab = 0; i < TAB_COUNT; i++)
-    tabs[i] = (tab += 8);
+    for (i = 0, tab = 0; i < TAB_COUNT; i++)
+	tabs[i] = (tab += 8);
   
-  XawTextSinkSetTabs(w->text.sink, TAB_COUNT, tabs);
+    XawTextSinkSetTabs(w->text.sink, TAB_COUNT, tabs);
 
-  XawTextDisableRedisplay(cnew);
-  XawTextEnableRedisplay(cnew);
+    XawTextDisableRedisplay(cnew);
+    XawTextEnableRedisplay(cnew);
 
-  _XawImRegister(cnew);
+    _XawImRegister(cnew);
 
-  /* If we are using a MultiSink we need to tell the input method stuff */
-  if (w->simple.international == True) {
-    Arg list[4];
-    Cardinal ac = 0;
+    /* If we are using a MultiSink we need to tell the input method stuff */
+    if (w->simple.international == True) {
+	Arg list[4];
+	Cardinal ac = 0;
 
-    sink = (MultiSinkObject)w->text.sink;
-    XtSetArg(list[ac], XtNfontSet, sink->multi_sink.fontset);		ac++;
-    XtSetArg(list[ac], XtNinsertPosition, w->text.insertPos);		ac++;
-    XtSetArg(list[ac], XtNforeground, sink->text_sink.foreground);	ac++;
-    XtSetArg(list[ac], XtNbackground, sink->text_sink.background);	ac++;
-    _XawImSetValues(cnew, list, ac);
-  }
+	sink = (MultiSinkObject)w->text.sink;
+	XtSetArg(list[ac], XtNfontSet, sink->multi_sink.fontset);	ac++;
+	XtSetArg(list[ac], XtNinsertPosition, w->text.insertPos);	ac++;
+	XtSetArg(list[ac], XtNforeground, sink->text_sink.foreground);	ac++;
+	XtSetArg(list[ac], XtNbackground, sink->text_sink.background);	ac++;
+	_XawImSetValues(cnew, list, ac);
+    }
 }
 
 static void 
@@ -337,7 +339,12 @@ XawAsciiDestroy(Widget w)
     if (w == XtParent(ascii->text.sink))
 	XtDestroyWidget(ascii->text.sink);
 
+#ifdef OLDXAW
+    if (w == XtParent(ascii->text.source))
+	XtDestroyWidget(ascii->text.source);
+#else
     _XawSourceRemoveText(ascii->text.source, w,
 			 ascii->text.source &&
 			 w == XtParent(ascii->text.source));
+#endif
 }

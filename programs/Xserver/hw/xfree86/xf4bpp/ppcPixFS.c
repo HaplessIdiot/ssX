@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixFS.c,v 1.1.2.2 1998/07/18 17:54:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/ppcPixFS.c,v 1.2 1998/07/25 16:59:35 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -46,27 +46,16 @@ SOFTWARE.
 ******************************************************************/
 /* $XConsortium: ppcPixFS.c /main/3 1996/02/21 17:57:57 kaleb $ */
 
+#include "xf4bpp.h"
 #include "mfbmap.h"
-#include "X.h"
-#include "misc.h"
-#include "gcstruct.h"
-#include "window.h"
-#include "pixmapstr.h"
-#include "scrnintstr.h"
-#include "windowstr.h"
 #include "mfb.h"
+#include "maskbits.h"
 #include "mi.h"
 #include "mispans.h"
-
-#include "maskbits.h"
-
-#include "OScompiler.h"
-
-#include "ppc.h"
+#include "ppcGCstr.h"
 #include "ppcSpMcro.h"
-
+#include "vgaVideo.h"
 #include "ibmTrace.h"
-extern int mfbGCPrivateIndex;
 
 #define LeftMostBitInScreenLongWord SCRLEFT( 0xFFFFFFFF, 31 )
 
@@ -86,8 +75,11 @@ MaxRectsPerBand * nSpans.
 /* A mod definition that goes smoothly into the negative.
  */
 static int
-modulo(n1,n2)
-int n1, n2;
+modulo
+(
+      int n1,
+      int n2
+)
 {
       int tmp;
       if ( n1 < 0 ) {
@@ -173,10 +165,12 @@ xf4bppSolidPixmapFS( pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted )
 
 /* GJA -- copied from vgaStipple.c */
 static unsigned char
-vgagetbits( x, patternWidth, lineptr )
-register const int x ;
-register const unsigned int patternWidth ;
-register const unsigned char * const lineptr ;
+vgagetbits
+(
+	register const int x,
+	register const unsigned int patternWidth,
+	register const unsigned char * const lineptr
+)
 {
 register unsigned char bits ;
 register const unsigned char *cptr ;

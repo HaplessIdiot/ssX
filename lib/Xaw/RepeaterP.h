@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/RepeaterP.h,v 1.3 1998/08/20 13:59:07 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/RepeaterP.h,v 1.4 1998/10/03 08:42:16 dawes Exp $ */
 
 #ifndef _XawRepeaterP_h
 #define _XawRepeaterP_h
@@ -31,7 +31,7 @@ in this Software without prior written authorization from The Open Group.
 
 /* new fields in widget class */
 typedef struct {
-  XtPointer extension;
+    XtPointer extension;
 } RepeaterClassPart;
 
 /* repeater widget class */
@@ -53,9 +53,12 @@ typedef struct {
     XtCallbackList start_callbacks;	/* startCallback/StartCallback */
     XtCallbackList stop_callbacks;	/* stopCallback/StopCallback */
 
-  /* private */
+    /* private */
     int next_delay;			/* next amount for timer */
     XtIntervalId timer;			/* timer that will fire */
+#ifndef OLDXAW
+    char pad[16];	/* for future use and keep binary compatability */
+#endif
 } RepeaterPart;
 
 typedef struct _RepeaterRec {
