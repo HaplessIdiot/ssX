@@ -1,4 +1,5 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 444. Add missing xf86write symbol (Marc La France).
  443. Fix open(, O_CREAT) emulation (Marc La France).
  442. Fix Trident Cyber9320 > 8bpp modes (Alan Hourihane).
  441. Allow memory mapping during probe phase (Marc La France).
@@ -10857,4 +10858,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1240 2000/07/11 23:19:50 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1241 2000/07/12 21:14:36 tsi Exp $
