@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.1 2000/11/15 01:36:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.4 2001/03/24 23:08:53 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -44,5 +44,6 @@ extern Bool                 quartz;
 extern UInt32               darwinDesiredWidth, darwinDesiredHeight;
 extern IOIndex              darwinDesiredDepth;
 extern SInt32               darwinDesiredRefresh;
+extern UInt32               darwinScreenNumber;
 
 #endif	/* _DARWIN_H */

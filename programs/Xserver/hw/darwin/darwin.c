@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.12 2001/03/24 23:08:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.14 2001/04/01 07:12:13 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -40,6 +40,7 @@ Bool                    quartz = FALSE;
 UInt32                  darwinDesiredWidth = 0, darwinDesiredHeight = 0;
 IOIndex                 darwinDesiredDepth = -1;
 SInt32                  darwinDesiredRefresh = -1;
+UInt32			darwinScreenNumber = 0;
 
 // Quit after this many seconds if no quartz event poster is found.
 // Leave undefined for no safety quit.
@@ -792,7 +793,6 @@ void OsVendorInit(void)
  */
 int ddxProcessArgument( int argc, char *argv[], int i )
 {
-#if 0
     if ( !strcmp( argv[i], "-screen" ) ) {
     	if ( i == argc-1 ) {
             FatalError( "-screen must be followed by a number\n" );
@@ -801,7 +801,6 @@ int ddxProcessArgument( int argc, char *argv[], int i )
         ErrorF( "Attempting to use screen number %i\n", darwinScreenNumber );
         return 2;
     }
-#endif
 
     if ( !strcmp( argv[i], "-fakebuttons" ) ) {
     	fake3Buttons = TRUE;
@@ -906,9 +905,6 @@ void ddxUseMsg( void )
     ErrorF("\n");
     ErrorF("Device Dependent Usage:\n");
     ErrorF("\n");
-#if 0
-    ErrorF("-screen <0,1,...> : use this mac screen num.\n" );
-#endif
     ErrorF("-fakebuttons : fake a three button mouse with Command and Option keys.\n");
     ErrorF("-nofakebuttons : don't fake a three button mouse.\n");
     ErrorF("-version : show the server version\n");
@@ -917,6 +913,7 @@ void ddxUseMsg( void )
     ErrorF("\n");
     ErrorF("IOKit specific options (ignored with -quartz):\n");
 #endif
+    ErrorF("-screen <0,1,...> : use this screen number.\n");
     ErrorF("-size <height> <width> : use a screen resolution of <height> x <width>.\n");
     ErrorF("-depth <8,15,24> : use this bit depth.\n");
     ErrorF("-refresh <rate> : use a monitor refresh rate of <rate> Hz.\n");
