@@ -1,4 +1,7 @@
 XFree86 4.3.99.17 (xx November 2003)
+ 626. Update libfreetype-xtt2 to version 1.1:
+       - Fixed erroneous method of making up italic bitmap.
+      (Chisato Yamauchi, After X-TT Project).
  625. OS/2 build fixes:
        - Cleanup of bootstrap leftovers in xc/config/imake.
        - Explicitly define int32_t and int64_t in Mesa.
@@ -18267,7 +18270,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2994 2003/11/27 02:05:40 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2995 2003/11/29 01:31:21 dawes Exp $
 
 
 
