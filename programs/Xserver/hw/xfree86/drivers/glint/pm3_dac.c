@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.20 2001/03/19 22:50:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.21 2001/03/20 15:49:36 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -353,6 +353,8 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     }
     STOREDAC(PM2VDACRDMiscControl, temp3);
 
+    STOREREG(PM3FifoControl, 0x905); /* Lower the default fifo threshold */
+
     return(TRUE);
 }
 
@@ -384,6 +386,7 @@ Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     SAVEREG(ChipConfig);
     SAVEREG(Aperture0);
     SAVEREG(Aperture1);
+    SAVEREG(PM3FifoControl);
 
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
    	SAVEREG(DFIFODis);
@@ -453,6 +456,7 @@ Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr pReg)
     RESTOREREG(ChipConfig);
     RESTOREREG(Aperture0);
     RESTOREREG(Aperture1);
+    RESTOREREG(PM3FifoControl);
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
     	RESTOREREG(DFIFODis);
     RESTOREREG(FIFODis);
