@@ -1,4 +1,5 @@
 XFree86 4.4.99.2 (xx March 2004)
+  35. Add OpenBSD/amd64 support (Matthieu Herrb, Todd Fries).
   34. Fix Rage 128 XV support for interlaced and doublescanned modes
       (Marc La France).
   33. Fix bad xfree()'s in renditionProbe() (Reported by Lee Olsen).
@@ -18748,7 +18749,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3188 2004/03/19 17:00:14 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3189 2004/03/21 02:30:16 tsi Exp $
 
 
 
