@@ -201,7 +201,7 @@ CRT    \-\- Analog CRT monitor
 .br
 TMDS   \-\- Desktop flat panel
 .br
-LVDS   \-\- Lapto flat panel
+LVDS   \-\- Laptop flat panel
 .br
 This option can be used in following format:
 .br
