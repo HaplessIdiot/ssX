@@ -9,7 +9,7 @@
 <date>31 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.17 1999/08/30 13:09:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.18 1999/08/31 08:39:09 dawes Exp $
 </ident>
 
 <abstract>
@@ -29,6 +29,29 @@ listed here.  For detailed information, refer to the <tt>CHANGELOG</tt>
 file in the <tt>xc/programs/Xserver/hw/xfree86</tt> directory in the
 source tree.  The sections that follow this one have details of features
 that are new to the pre-4.0 snapshot series.
+
+<itemize>
+  <item>The 3dfx driver is now supported by the DRI.
+  <item>Tiny-X for the Itsy has been added.
+  <item>Significant font and font server enhancements.
+  <item>New driver for ATI Rage 128.  The driver is called "r128".
+  <item>Xterm enhancements and fixes.
+  <item>DPS support hooks have been added.
+  <item>DRI enhancements including Mesa update to version 3.2, full support
+     and fifo code for 3dfx hardware, and device driver updates for
+     Linux 2.3 kernels.
+  <item>Add Riva TNT2 M64 support to nv_driver.
+  <item>Significant enhancements to Xv.
+  <item>Add initial VESA VBE support including initialization and DDC.
+  <item>Several PCI enhancements.
+  <item>"SilkenMouse" enhancement for smoother mouse movement.
+  <item>Add GeForce/Quadro support to the NVIDIA driver.
+  <item>Int10 support for Linux.
+  <item>Resource allocation infrastructure added.
+</itemize>
+
+<sect>Summary of new features in 3.9.16 compared with 3.9.15.
+<p>
 
 <itemize>
   <item>The "apm" driver has been updated.
@@ -559,9 +582,9 @@ highly optimized path for sending 3D data directly to the graphics
 hardware.  This release <url name="demonstrates a sample implementation
 of direct rendering" url="http://www.precisioninsight.com/demo.html">
 by providing a single path of 3D hardware accelerated rendering for
-the GMX2000 graphics card.  Future releases will support much broader
-implementations of hardware accelerated direct rendering on a wide
-range of 3D capable graphics devices.
+the GMX2000 and 3dfx voodoo graphics cards.  Future releases will support
+much broader implementations of hardware accelerated direct rendering on
+a wide range of 3D capable graphics devices.
 
 
 <sect1>Other extensions
@@ -600,6 +623,7 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>mga</tt><colsep>Matrox</tabrow>
    <tabrow><tt>neomagic</tt><colsep>NeoMagic</tabrow>
    <tabrow><tt>nv</tt><colsep>NVIDIA</tabrow>
+   <tabrow><tt>r128</tt><colsep>ATI Rage 128</tabrow>
    <tabrow><tt>rendition</tt><colsep>Rendition</tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE</tabrow>
    <tabrow><tt>sis</tt><colsep>SiS</tabrow>
