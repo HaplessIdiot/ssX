@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.24 2002/08/02 18:48:56 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.25 2002/08/12 22:16:08 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -294,7 +294,19 @@ FT_Face
 XftLockFace (XftFont *public)
 {
     XftFontInt	*font = (XftFontInt *) public;
-    return _XftLockFile (font->info.file);
+    XftFontInfo	*fi = &font->info;
+    FT_Face	*face
+    
+    face = _XftLockFile (fi->file);
+    /*
+     * Make sure the face is usable at the requested size
+     */
+    if (face && !_XftSetFace (fi->file, fi->xsize, fi->ysize, &fi->matrix))
+    {
+	_XftUnlockFile (fi->file);
+	face = 0;
+    }
+    return face;
 }
 
 void
@@ -657,6 +669,9 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     if (!face)
 	goto bail0;
 
+    if (!_XftSetFace (fi->file, fi->xsize, fi->ysize, &fi->matrix))
+	goto bail1;
+
     /*
      * Get the set of Unicode codepoints covered by the font.
      * If the incoming pattern doesn't provide this data, go
@@ -666,9 +681,6 @@ XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi)
     if (FcPatternGetCharSet (pattern, FC_CHARSET, 0, &charset) != FcResultMatch)
 	charset = FcFreeTypeCharSet (face, FcConfigGetBlanks (0));
     
-    if (!_XftSetFace (fi->file, fi->xsize, fi->ysize, &fi->matrix))
-	goto bail1;
-
     antialias = fi->antialias;
     if (!(face->face_flags & FT_FACE_FLAG_SCALABLE))
 	antialias = FcFalse;
