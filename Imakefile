@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/137 1996/10/08 07:38:14 swick $
-XCOMM $XFree86: xc/Imakefile,v 3.11 1996/12/23 05:49:49 dawes Exp $
+XCOMM $XFree86: xc/Imakefile,v 3.12 1997/06/03 14:11:01 hohndel Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
@@ -188,42 +188,6 @@ install::
 XCOMM special target to determine if the xmakefile exists. 
 XCOMM Works on both Unix and NMAKE.EXE
 xmakefile-exists::
-
-#if XF86GLINTServer
-XCOMM
-XCOMM XFree86 Glint Server
-XCOMM
-MFBDIR   = mfb
-CFB8DIR  = cfb
-CFB16DIR = cfb16
-CFB24DIR = cfb24
-CFB32DIR = cfb32
-DDXDIR1  = hw/xfree86
-XF86GLINTSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
-                  $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
-XF86GLINTOBJS = $(XF86COMSRC)/XF86_GLINT.o \
-	       $(XF86SRC)/xaa/xaa8/xaa8.o $(XF86SRC)/xaa/xaa16/xaa16.o \
-	       $(XF86SRC)/xaa/xaa24/xaa24.o $(XF86SRC)/xaa/xaa32/xaa32.o
-XF86GLINTLIBS = $(XF86ACCELSRC)/glint/LibraryTargetName(glint) \
-	       $(XF86SRC)/xaa/LibraryTargetName(xaa) $(XF86LIBS) \
-               CFBLibs $(XF86ACCELSRC)/cache/LibraryTargetName(xf86cache)
-XF86GLINTSYSLIBS = $(SYSLIBS)
-#if HasParallelMake
-MakeMutex($(XF86GLINTSUBDIRS) $(XF86GLINTOBJS) $(XF86GLINTLIBS) $(XF86GLINTSYSLIBS))
-#endif
-#if HasGnuMake
-$(XF86GLINTOBJS) $(XF86GLINTLIBS) $(XF86GLINTSYSLIBS):: $(XF86GLINTSUBDIRS)
-	@if [ -f $@ ]; then touch $@; fi
-#endif
-SetUIDServerTarget(XF86_GLINT,$(XF86GLINTSUBDIRS),$(XF86GLINTOBJS),$(XF86GLINTLIBS),$(XF86GLINTSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF86_GLINT
-#endif
-#ifdef OS2Architecture
-LinkFile(XF86_GLINT.def,GLINT.def)
-InstallLinkKitNonExecFile(GLINT.def,$(LINKKITDIR))
-#endif
-#endif        /* XF86GLINTServer */
 
 #ifndef MakeManKeywords
 #define MakeManKeywords YES	/* install.man rebuilds "man -k" database? */
