@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.13 1997/02/18 22:26:34 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.14 1997/02/20 08:49:25 hohndel Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -43,10 +43,10 @@ EXT_DEFINES = ExtensionDefines -UXINPUT -UXF86VIDMODE -UXFreeXDGA -UXF86MISC
 #else
 EXT_DEFINES = ExtensionDefines
 #endif
-#if PexModule
+#if PexModule | DoLoadableServer
 PEX_MODULE_DEFINES = -DPEX_MODULE
 #endif
-#if XieModule
+#if XieModule | DoLoadableServer
 XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
 EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)
@@ -64,7 +64,7 @@ NormalLintTarget($(SRCS))
 NormalLibraryTarget(cbrt,cbrt.o)
 #endif
 
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
 AllTarget($(EXTRAMIINITEXTOBJ))

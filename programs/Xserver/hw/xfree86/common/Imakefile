@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.54 1997/02/25 14:20:54 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.55 1997/02/27 13:58:22 hohndel Exp $
 
 
 
@@ -74,10 +74,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.54 1997/02/2
 # endif
 #endif
 
-#if PexModule
+#if PexModule | DoLoadableServer
    PEX_MODULE_DEFINES = -DPEX_MODULE
 #endif
-#if XieModule
+#if XieModule | DoLoadableServer
    XIE_MODULE_DEFINES = -DXIE_MODULE
 #endif
 
@@ -94,6 +94,7 @@ EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)
 #else
 #if DoLoadableServer
 MODULEDEFINES = -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
+EXT_MODULES_DEFINES = $(PEX_MODULE_DEFINES) $(XIE_MODULE_DEFINES)
 #endif
 #endif
 
