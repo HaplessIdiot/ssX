@@ -1697,9 +1697,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     cPtr->IOBase = (unsigned int)(cPtr->SuspendHack.vgaIOBaseFlag ?
 				  0x3D0 : 0x3B0);
 
-    /* monitor info */
-    cPtr->Monitor = chipsSetMonitor(pScrn);
-
     /*test STN / TFT */
     tmp = cPtr->readFR(cPtr, 0x10);
 
@@ -1733,9 +1730,11 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD/CRT\n");
     else if (cPtr->PanelType & ChipsLCD)
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
-    else if (cPtr->PanelType & ChipsCRT)
+    else if (cPtr->PanelType & ChipsCRT) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
-
+	/* monitor info */
+	cPtr->Monitor = chipsSetMonitor(pScrn);
+    }
 
     /* screen size */
     /* 
@@ -2418,11 +2417,11 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* monitor info */
-    cPtr->Monitor = chipsSetMonitor(pScrn);
-
     cPtr->PanelType |= ChipsCRT;
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
+
+    /* monitor info */
+    cPtr->Monitor = chipsSetMonitor(pScrn);
 
     /* bus type */
     tmp = cPtr->readXR(cPtr, 0x01) & 3;
@@ -2920,9 +2919,6 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-    /* monitor info */
-    cPtr->Monitor = chipsSetMonitor(pScrn);
-
     /*test STN / TFT */
     tmp = cPtr->readXR(cPtr, 0x51);
 
@@ -2956,9 +2952,11 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD/CRT\n");
     else if (cPtr->PanelType & ChipsLCD)
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "LCD\n");
-    else if (cPtr->PanelType & ChipsCRT)
+    else if (cPtr->PanelType & ChipsCRT) {
         xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "CRT\n");
-
+	/* monitor info */
+	cPtr->Monitor = chipsSetMonitor(pScrn);
+    }
       
     /* screen size */
     /* 

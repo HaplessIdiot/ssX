@@ -25,6 +25,7 @@ XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.31 1999/12/27 00:40:07 robin Exp $
 #define SharedLibXdmGreet						\
     ((defined(AlphaArchitecture) &&					\
       (!defined(NetBSDArchitecture) ||					\
+       !defined(LinuxArchitecture)  ||					\
        (defined(NetBSDArchitecture) && HasSharedLibraries))) ||		\
      SystemV4)
 #endif
@@ -84,6 +85,11 @@ PWD_DEFINES = -DUSESHADOW
 PWD_DEFINES = -DUSESHADOW -DSHADOWSUITE
 #endif
 
+#if HasPam
+PAM_LIBRARIES = -lpam DlLibrary
+PAM_DEFINES = -DUSE_PAM
+#endif
+
 #if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture) && !defined(NTOArchitecture)
 SYS_LIBRARIES3 = -lresolv
 #endif
@@ -139,7 +145,8 @@ SYS_LIBRARIES1 = -lutil
 
 INCLUDES = $(KRB5_INCLUDE)
 DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) $(DEPXLIB) $(DEPXAUTHLIB) $(DEPXDMCPLIB)
-LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) $(RPCLIB) $(DLLIBRARY) $(CRYPT_LIBRARIES)
+LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB) \
+		  $(RPCLIB) $(PAM_LIBRARIES) $(DLLIBRARY) $(CRYPT_LIBRARIES)
 
           SRCS1 = auth.c daemon.c server.c dpylist.c dm.c error.c file.c \
 		  netaddr.c reset.c resource.c protodpy.c policy.c \
@@ -191,7 +198,7 @@ LOCAL_LIBRARIES = $(XPMLIB) $(XMULIB) $(XTOOLLIB) $(XLIB) $(XAUTHLIB) $(XDMCPLIB
         DEFINES = -DBINDIR=\"$(BINDIR)\" -DXDMDIR=\"$(XDMDIR)\" \
 		$(SIGNAL_DEFINES) \
 		$(XDMAUTH_DEFINES) $(RPC_DEFINES) $(KRB5_DEFINES) \
-		$(PWD_DEFINES) $(CONN_DEFINES) \
+		$(PWD_DEFINES) $(PAM_DEFINES) $(CONN_DEFINES) \
 		$(GREET_DEFINES) $(FRAGILE_DEFINES) \
 		-DOSMAJORVERSION=$(OSMAJORVERSION) \
 		-DOSMINORVERSION=$(OSMINORVERSION) \

@@ -206,7 +206,7 @@ pciBusFuncs_t pciNOOPFuncs = {
 	pciAddrNOOP
 };
 		
-pciBusInfo_t  *pciBusInfo[MAX_PCI_BUSES];
+pciBusInfo_t  *pciBusInfo[MAX_PCI_BUSES] = { NULL, };
 int            pciNumBuses = 0;     /* Actual number of PCI buses */
 
 static pciConfigPtr pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
@@ -240,7 +240,13 @@ pciInit()
 		xf86Verbose = DEBUGPCI;
 #endif
 
-	ARCH_PCI_INIT();	
+	ARCH_PCI_INIT();
+#if defined(ARCH_PCI_OS_INIT)
+	if (!pciNumBuses)
+	    ARCH_PCI_OS_INIT();
+#else
+	xf86Msg(X_ERROR,"No OS PCI support available\n");
+#endif
 }
 
   

@@ -91,7 +91,17 @@ extern	void	endspent(void);
 #include <unistd.h>
 #else
 extern	struct passwd	*getpwnam(GETPWNAM_ARGS);
+#ifdef linux
+extern  void	endpwent(void);
+#endif
 extern	char	*crypt(CRYPT_ARGS);
+#endif
+#ifdef USE_PAM
+pam_handle_t *thepamh()
+{
+	static pam_handle_t *pamh = NULL;
+	return pamh;
+}
 #endif
 
 static	struct dlfuncs	dlfuncs = {
@@ -109,6 +119,7 @@ static	struct dlfuncs	dlfuncs = {
 	source,
 	defaultEnv,
 	setEnv,
+	putEnv,
 	parseArgs,
 	printEnv,
 	systemEnv,
@@ -123,7 +134,13 @@ static	struct dlfuncs	dlfuncs = {
 #endif /* QNX4 doesn't use endspent */
 #endif
 	getpwnam,
+#ifdef linux
+	endpwent,
+#endif
 	crypt,
+#ifdef USE_PAM
+	thepamh,
+#endif
 	};
 
 #ifdef X_NOT_STDC_ENV
@@ -450,6 +467,9 @@ SessionExit (struct display *d, int status, int removeAuth)
 	ResetServer (d);
     if (removeAuth)
     {
+#ifdef USE_PAM
+	pam_handle_t *pamh = thepamh();
+#endif
 	setgid (verify.gid);
 	setuid (verify.uid);
 	RemoveUserAuthorization (d, &verify);
@@ -477,6 +497,14 @@ SessionExit (struct display *d, int status, int removeAuth)
 	    }
 	}
 #endif /* K5AUTH */
+#ifdef USE_PAM
+	if (pamh) {
+	    /* shutdown PAM session */
+	    pam_close_session(pamh, 0);
+	    pam_end(pamh, PAM_SUCCESS);
+	    pamh = NULL;
+	}
+#endif
     }
     Debug ("Display %s exiting with status %d\n", d->name, status);
     exit (status);
@@ -496,6 +524,9 @@ StartClient (
 #ifdef HAS_SETUSERCONTEXT
     struct passwd* pwd;
 #endif
+#ifdef USE_PAM 
+    pam_handle_t *pamh = thepamh();
+#endif
 
     if (verify->argv) {
 	Debug ("StartSession %s: ", verify->argv[0]);
@@ -508,6 +539,9 @@ StartClient (
 		Debug ("%s ", *f);
 	Debug ("\n");
     }
+#ifdef USE_PAM
+    if (pamh) pam_open_session(pamh, 0);
+#endif    
     switch (pid = fork ()) {
     case 0:
 	CleanUpChild ();
@@ -517,6 +551,18 @@ StartClient (
 #endif
 
 	/* Do system-dependent login setup here */
+
+#ifdef USE_PAM
+	/* pass in environment variables set by libpam and modules it called */
+	if (pamh) {
+	    long i;
+	    char **pam_env = pam_getenvlist(pamh);
+	    for(i = 0; pam_env && pam_env[i]; i++) {
+		verify->userEnviron = putEnv(pam_env[i], verify->userEnviron);
+	    }
+	}
+#endif
+
 
 #ifndef AIXV3
 #ifndef HAS_SETUSERCONTEXT

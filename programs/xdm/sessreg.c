@@ -295,7 +295,7 @@ main (int argc, char **argv)
 		else
 			line = line_tmp;
 	}
-	current_time = time ((Time_t *) 0);
+	time (&current_time);
 	set_utmp (&utmp_entry, line, user_name, host_name, current_time, aflag);
 	if (!utmp_none) {
 #ifdef SYSV
@@ -328,11 +328,13 @@ main (int argc, char **argv)
 	        struct passwd *pwd = getpwnam(user_name);
 
 	        sysnerr( pwd != NULL, "get user id");
-	        llog = open (llog_file, O_WRONLY);
+	        llog = open (llog_file, O_RDWR);
 
 		if (llog != -1) {
 			struct lastlog ll;
 
+			sysnerr (lseek(llog, (long) pwd->pw_uid*sizeof(ll), 0)
+				        != -1, "seeking lastlog entry");
 			bzero((char *)&ll, sizeof(ll));
 			ll.ll_time = current_time;
 			if (line)
@@ -340,7 +342,6 @@ main (int argc, char **argv)
 			if (host_name)
 			 (void) strncpy (ll.ll_host, host_name, sizeof (ll.ll_host));
 
-			sysnerr (lseek(llog, (long) pwd->pw_uid*sizeof(ll), 0) != -1, "seeking lastlog entry");
 			sysnerr (write (llog, (char *) &ll, sizeof (ll))
 				        == sizeof (ll), "write lastlog entry");
 			close (llog);

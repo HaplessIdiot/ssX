@@ -43,7 +43,7 @@ extern void	MitInitAuth (unsigned short name_len, char *name);
 extern Xauth	*MitGetAuth (unsigned short namelen, char *name);
 
 #ifdef HASXDMAUTH
-extern int	XdmInitAuth (unsigned short name_len, char *name);
+extern void	XdmInitAuth (unsigned short name_len, char *name);
 extern Xauth	*XdmGetAuth (unsigned short namelen, char *name);
 #ifdef XDMCP
 extern void	XdmGetXdmcpAuth (

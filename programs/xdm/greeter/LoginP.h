@@ -84,6 +84,7 @@ typedef struct {
 	Boolean		secure_session;	/* session is secured */
 	Boolean		allow_access;	/* disable access control on login */
 	Boolean		allow_null_passwd; /* allow null password on login */
+	XIC		xic;		/* input method of input context */
 #ifdef XPM
 	/*caolan begin*/
 	int lastEventTime;

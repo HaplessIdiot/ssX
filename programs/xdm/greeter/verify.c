@@ -37,12 +37,16 @@ from The Open Group.
 # include	"dm_error.h"
 
 # include	<pwd.h>
-#ifdef USESHADOW
-# include	<shadow.h>
-# include	<errno.h>
-#ifdef X_NOT_STDC_ENV
+#ifdef USE_PAM
+# include	<security/pam_appl.h>
+#else
+# ifdef USESHADOW
+#  include	<shadow.h>
+#  include	<errno.h>
+#  ifdef X_NOT_STDC_ENV
 extern int errno;
-#endif
+#  endif
+# endif
 #endif
 
 # include	"greet.h"
@@ -97,12 +101,62 @@ userEnv (struct display *d, int useSystemPath, char *user, char *home, char *she
     return env;
 }
 
+#ifdef USE_PAM
+static char *PAM_password;
+static int pam_error;
+
+static int PAM_conv (int num_msg,
+		     const struct pam_message **msg,
+		     struct pam_response **resp,
+		     void *appdata_ptr) {
+	int replies = 0;
+	struct pam_response *reply = NULL;
+
+	reply = malloc(sizeof(struct pam_response));
+	if (!reply) return PAM_CONV_ERR;
+#define COPY_STRING(s) (s) ? strdup(s) : NULL
+
+	for (replies = 0; replies < num_msg; replies++) {
+		switch (msg[replies]->msg_style) {
+		case PAM_PROMPT_ECHO_OFF:
+			/* wants password */
+			reply[replies].resp_retcode = PAM_SUCCESS;
+			reply[replies].resp = COPY_STRING(PAM_password);
+			break;
+		case PAM_TEXT_INFO:
+			/* ignore the informational mesage */
+			break;
+		case PAM_PROMPT_ECHO_ON:
+			/* user name given to PAM already */
+			/* fall through */
+		default:
+			/* unknown or PAM_ERROR_MSG */
+			free (reply);
+			return PAM_CONV_ERR;
+		}
+	}
+
+#undef COPY_STRING
+	*resp = reply;
+	return PAM_SUCCESS;
+}
+
+static struct pam_conv PAM_conversation = {
+	&PAM_conv,
+	NULL
+};
+#endif
+
 int
 Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 {
 	struct passwd	*p;
+#ifdef USE_PAM
+	pam_handle_t *pamh = thepamh();
+#else
 #ifdef USESHADOW
 	struct spwd	*sp;
+#endif
 #endif
 	char		*user_pass;
 	char		*shell, *home;
@@ -110,13 +164,25 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 
 	Debug ("Verify %s ...\n", greet->name);
 	p = getpwnam (greet->name);
+#ifdef linux
+	endpwent();
+#endif
+
 	if (!p || strlen (greet->name) == 0) {
 		Debug ("getpwnam() failed.\n");
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	} else {
+#ifdef linux
+	    if (p->pw_passwd[0] == '!' || p->pw_passwd[0] == '*') {
+		Debug ("The account is locked, no login allowed.\n");
+		bzero(greet->password, strlen(greet->password));
+		return 0;
+	    }
+#endif
 	    user_pass = p->pw_passwd;
 	}
+#ifndef USE_PAM
 #ifdef USESHADOW
 	errno = 0;
 	sp = getspnam(greet->name);
@@ -141,8 +207,29 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 			return 0;
 		} /* else: null passwd okay */
 	}
-	Debug ("verify succeeded\n");
+
 	bzero(user_pass, strlen(user_pass)); /* in case shadow password */
+
+#else /* USE_PAM */
+#define PAM_BAIL	\
+	if (pam_error != PAM_SUCCESS) { pam_end(pamh, 0); return 0; }
+
+	PAM_password = greet->password;
+	pam_error = pam_start("xdm", p->pw_name, &PAM_conversation, &pamh);
+	PAM_BAIL;
+	pam_error = pam_set_item(pamh, PAM_TTY, d->name);
+	PAM_BAIL;
+	pam_error = pam_authenticate(pamh, 0);
+	PAM_BAIL;
+	pam_error = pam_acct_mgmt(pamh, 0);
+	/* really should do password changing, but it doesn't fit well */
+	PAM_BAIL;
+	pam_error = pam_setcred(pamh, 0);
+	PAM_BAIL;
+#undef PAM_BAIL
+#endif /* USE_PAM */
+
+	Debug ("verify succeeded\n");
 	/* The password is passed to StartClient() for use by user-based
 	   authorization schemes.  It is zeroed there. */
 	verify->uid = p->pw_uid;

@@ -47,33 +47,40 @@ from The Open Group.
  * Function pointers filled in by the initial call ito the library
  */
 
-int     (*__xdm_PingServer)() = NULL;
-int     (*__xdm_SessionPingFailed)() = NULL;
-int     (*__xdm_Debug)() = NULL;
-int     (*__xdm_RegisterCloseOnFork)() = NULL;
-int     (*__xdm_SecureDisplay)() = NULL;
-int     (*__xdm_UnsecureDisplay)() = NULL;
-int     (*__xdm_ClearCloseOnFork)() = NULL;
-int     (*__xdm_SetupDisplay)() = NULL;
-int     (*__xdm_LogError)() = NULL;
-int     (*__xdm_SessionExit)() = NULL;
-int     (*__xdm_DeleteXloginResources)() = NULL;
-int     (*__xdm_source)() = NULL;
-char    **(*__xdm_defaultEnv)() = NULL;
-char    **(*__xdm_setEnv)() = NULL;
-char    **(*__xdm_parseArgs)() = NULL;
-int     (*__xdm_printEnv)() = NULL;
-char    **(*__xdm_systemEnv)() = NULL;
-int     (*__xdm_LogOutOfMem)() = NULL;
-void    (*__xdm_setgrent)() = NULL;
-struct group    *(*__xdm_getgrent)() = NULL;
-void    (*__xdm_endgrent)() = NULL;
+int     (*__xdm_PingServer)(struct display *d, Display *alternateDpy) = NULL;
+void    (*__xdm_SessionPingFailed)(struct display *d) = NULL;
+void    (*__xdm_Debug)(char * fmt, ...) = NULL;
+void    (*__xdm_RegisterCloseOnFork)(int fd) = NULL;
+void    (*__xdm_SecureDisplay)(struct display *d, Display *dpy) = NULL;
+void    (*__xdm_UnsecureDisplay)(struct display *d, Display *dpy) = NULL;
+void    (*__xdm_ClearCloseOnFork)(int fd) = NULL;
+void    (*__xdm_SetupDisplay)(struct display *d) = NULL;
+void    (*__xdm_LogError)(char * fmt, ...) = NULL;
+void    (*__xdm_SessionExit)(struct display *d, int status, int removeAuth) = NULL;
+void    (*__xdm_DeleteXloginResources)(struct display *d, Display *dpy) = NULL;
+int     (*__xdm_source)(char **environ, char *file) = NULL;
+char    **(*__xdm_defaultEnv)(void) = NULL;
+char    **(*__xdm_setEnv)(char **e, char *name, char *value) = NULL;
+char    **(*__xdm_putEnv)(const char *string, char **env) = NULL;
+char    **(*__xdm_parseArgs)(char **argv, char *string) = NULL;
+void    (*__xdm_printEnv)(char **e) = NULL;
+char    **(*__xdm_systemEnv)(struct display *d, char *user, char *home) = NULL;
+void    (*__xdm_LogOutOfMem)(char * fmt, ...) = NULL;
+void    (*__xdm_setgrent)(void) = NULL;
+struct group    *(*__xdm_getgrent)(void) = NULL;
+void    (*__xdm_endgrent)(void) = NULL;
 #ifdef USESHADOW
-struct spwd   *(*__xdm_getspnam)() = NULL;
-void   (*__xdm_endspent)() = NULL;
+struct spwd   *(*__xdm_getspnam)(GETSPNAM_ARGS) = NULL;
+void   (*__xdm_endspent)(void) = NULL;
 #endif
-struct passwd   *(*__xdm_getpwnam)() = NULL;
-char     *(*__xdm_crypt)() = NULL;
+struct passwd   *(*__xdm_getpwnam)(GETPWNAM_ARGS) = NULL;
+#ifdef linux
+void   (*__xdm_endpwent)(void) = NULL;
+#endif
+char     *(*__xdm_crypt)(CRYPT_ARGS) = NULL;
+#ifdef USE_PAM
+pam_handle_t *(*__xdm_thepamh)(void) = NULL;
+#endif
 
 #endif
 
@@ -248,8 +255,15 @@ Greet (struct display *d, struct greet_info *greet)
     Debug ("dispatching %s\n", d->name);
     done = 0;
     while (!done) {
-	    XtAppNextEvent (context, &event);
+	XtAppNextEvent (context, &event);
+	switch (event.type) {
+	case MappingNotify:
+	    XRefreshKeyboardMapping(&event.xmapping);
+	    break;
+	default:
 	    XtDispatchEvent (&event);
+	    break;
+	}
     }
     XFlush (XtDisplay (toplevel));
     Debug ("Done dispatch %s\n", d->name);
@@ -302,6 +316,7 @@ greet_user_rtn GreetUser(
     __xdm_source = dlfuncs->_source;
     __xdm_defaultEnv = dlfuncs->_defaultEnv;
     __xdm_setEnv = dlfuncs->_setEnv;
+    __xdm_putEnv = dlfuncs->_putEnv;
     __xdm_parseArgs = dlfuncs->_parseArgs;
     __xdm_printEnv = dlfuncs->_printEnv;
     __xdm_systemEnv = dlfuncs->_systemEnv;
@@ -314,7 +329,13 @@ greet_user_rtn GreetUser(
     __xdm_endspent = dlfuncs->_endspent;
 #endif
     __xdm_getpwnam = dlfuncs->_getpwnam;
+#ifdef linux
+    __xdm_endpwent = dlfuncs->_endpwent;
+#endif
     __xdm_crypt = dlfuncs->_crypt;
+#ifdef USE_PAM
+    __xdm_thepamh = dlfuncs->_thepamh;
+#endif
 #endif
 
     *dpy = InitGreet (d);

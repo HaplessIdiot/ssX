@@ -115,6 +115,11 @@ typedef union wait	waitType;
 #endif
 #endif /* X_NOT_POSIX */
 
+#ifdef USE_PAM
+#include <security/pam_appl.h>
+#endif
+
+
 # define waitCompose(sig,core,code) ((sig) * 256 + (core) * 128 + (code))
 # define waitVal(w)	waitCompose(waitSig(w), waitCore(w), waitCode(w))
 
@@ -410,6 +415,7 @@ extern void LoadSessionResources (struct display *d);
 extern void ReinitResources (void);
 
 /* in session.c */
+extern pam_handle_t *thepamh(void);
 extern char **defaultEnv (void);
 extern char **systemEnv (struct display *d, char *user, char *home);
 extern int PingServer(struct display *d, Display *alternateDpy);
@@ -439,6 +445,7 @@ extern void CreateWellKnownSockets (void);
 extern char *localHostname (void);
 extern char **parseArgs (char **argv, char *string);
 extern char **setEnv (char **e, char *name, char *value);
+extern char **putEnv(const char *string, char **env);
 extern char *getEnv (char **e, char *name);
 extern void CleanUpChild (void);
 extern void freeArgs (char **argv);

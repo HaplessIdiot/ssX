@@ -20,3 +20,12 @@ xf86ErrorF(const char *format, ...)
     va_end(ap);
 }
 
+void
+ErrorF(const char *format, ...)
+{
+    va_list ap;
+
+    va_start(ap, format);
+    VErrorFVerb(1, format, ap);
+    va_end(ap);
+}

@@ -1,3 +1,12 @@
+ 224. Added a call ioperm() to to allow vm86 to execute in/out calls
+      directly to avoid problems with certain notebook bioses (Egbert Eich).
+ 223. Fixed mouse driver to flush pending button press events on
+      protocol change (Egbert Eich).
+ 222. Fixed DDC support and sync flags handling in trident driver 
+      (Egbert Eich).
+ 221. Added PAM support to xdm, ANSIfied prototypes (Werner Fink).
+ 220. Added ServerFlag to force the use of OS PCI config space
+      support (Egbert Eich).
  219. Fix Xv DDX stop overlaid stills/images when XvStopVideo() is called
       (Mark Vojkovich).
  218. Have the Xv DDX send clients exposure events when windows containing
