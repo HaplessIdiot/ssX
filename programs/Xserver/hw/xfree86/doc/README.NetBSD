@@ -111,7 +111,7 @@
         X311mc64
            the X server for ATI Mach64 graphics boards
 
-        X311p900
+        X311p9k
            the X server for P9000 based boards
 
         X311s3
@@ -679,7 +679,7 @@
      o  Rod Grimes and Jack Velte of Walnut Creek Cdrom for use of their
         machines in preparing the FreeBSD binary release.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.8 1995/01/27 10:31:27 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.9 1995/01/28 00:51:02 dawes Exp $
 
 
 

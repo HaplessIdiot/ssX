@@ -90,7 +90,7 @@
            1-bit monochrome for VGA, Super-VGA, Hercules, and others.
 
 
-        X311P900.tgz
+        X311P9K.tgz
            8, 16, and 24-bit color for Weitek P9000 boards (Diamond
            Viper).
 
@@ -609,7 +609,7 @@
      o  Orest Zborowski, Simon Cooper and Dirk Hohndel for ideas from
         the Linux distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.8 1995/01/21 10:44:19 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.9 1995/01/28 00:50:57 dawes Exp $
 
 
 

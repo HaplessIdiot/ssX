@@ -1,6 +1,6 @@
   README for XFree86 3.1.1 on BSD/386 1.1
   Hans Nasten
-  21 January 1995
+  27 January 1995
 
   1.  What and Where is XFree86?
 
@@ -41,11 +41,12 @@
 
   3.  Installing the Binaries
 
-  The binary distribution is composed of a number of tar archives which
-  contains the executables, servers, fonts, libraries, include files,
-  man pages, config files, and the server link kit. All tar archives
-  should be extracted as root with / as the default directory. The full
-  distribution takes over 40MB of disk space.
+  The binary distribution is composed of a number of gzipped tar
+  archives which contains the executables, servers, fonts, libraries,
+  include files, man pages, config files, and the server link kit. All
+  tar archives should be extracted as root with / as the default
+  directory. The full distribution takes over 40MB of disk space.  The
+  file names are converted to be compatible with CD-rom conventions.
 
   Note that many clients were moved from the X11R6 distribution to the
   `contrib' area. However, they are still distributed with the XFree86
@@ -55,66 +56,65 @@
 
      REQUIRED:
 
-        xf86-doc.tar.gz
+        X311doc.tgz
            READMEs and XFree86 specific man pages.
 
-        xf86-bin.tar.gz
+        X311bin.tgz
            all of the executable X client applications.
 
-        xf86-fonts.tar.gz
+        X311fnts.tgz
            all fonts
-
-        xf86-lib.tar.gz
+        X311lib.tgz
            data files needed at runtime
 
      Choose at least one of the following to match your hardware:
 
-        XF86_SVGA.gz
+        X311SVGA.tgz
            the 8-bit pseudo-color X server for Super VGA cards
 
-        XF86_VGA16.gz
+        X311VG16.tgz
            the 4-bit pseudo-color X server for VGA & SVGA cards.
 
-        XF86_Mono.gz
+        X311Mono.tgz
            the Monochrome X Server
 
-        XF86_8514.gz
+        X3118514.tgz
            the X server for IBM 8514/A and compatible boards
 
-        XF86_AGX.gz
+        X311AGX.tgz
            the X server for AGX boards
 
-        XF86_Mach8.gz
+        X311Ma8.tgz
            the X server for ATI Mach8 boards
 
-        XF86_Mach32.gz
+        X311Ma32.tgz
            the X server for ATI Mach32 boards
 
-        XF86_Mach64.gz
+        X311Ma64.tgz
            the X server for ATI Mach64 boards
 
-        XF86_P9000.gz
+        X311P9K.tgz
            the X server for P9000 based boards
 
-        XF86_S3.gz
+        X311S3.tgz
            the X server for S3 based boards
 
-        XF86_W32.gz
+        X311W32.tgz
            the X server for ET4000/W32 based boards
 
      OPTIONAL:
 
-        xf86-fs.tar.gz
+        X311fsrv.tgz
            the font server with man pages.
 
-        xf86-prog.tar.gz
+        X311prog.tgz
            the include/X11 header files and static libraries needed only
            for compiling other X applications
 
-        xf86-man.tar.gz
+        X311man.tgz
            all man pages
 
-        xf86-linkkit.tar.gz
+        X311link.tgz
            the server reconfiguration kit.
 
   If this is your first time, then you should be able to safely install
@@ -349,7 +349,7 @@
     #endif
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.7 1995/01/22 03:06:27 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.8 1995/01/28 00:50:52 dawes Exp $
 
 
 
