@@ -32,7 +32,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/pseudoramiX.c,v 1.1 2001/12/22 05:28:34 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/pseudoramiX.c,v 1.2 2001/12/30 03:56:40 torrey Exp $ */
 
 #include "pseudoramiX.h"
 
@@ -108,11 +108,10 @@ void PseudoramiXExtensionInit(int argc, char *argv[])
 {
     Bool	     	success = FALSE;
     ExtensionEntry 	*extEntry;
-    extern int darwinScreensFound; // in case AddScreen hasn't been called yet
 
     if (noPseudoramiXExtension) return;
 
-    if (pseudoramiXNumScreens == 1  ||  darwinScreensFound == 1) {
+    if (pseudoramiXNumScreens == 1  ||  aquaNumScreens == 1) {
         // Only one screen - disable Xinerama extension.
         noPseudoramiXExtension = TRUE;
         return;

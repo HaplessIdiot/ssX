@@ -1,4 +1,6 @@
 XFree86 4.1.99.7 (16 January 2002)
+ 689. Fix bug introduced in shapshot 4.1.99.5 causing XDarwin's PseudoramiX
+      extension to always be disabled (Torrey T. Lyons).
  688. Disable the pipe check for stdout/stderr that was added in the previous
       snapshot because it looks like it might cause too many problems
       (David Dawes).
@@ -14549,4 +14551,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2138 2002/01/16 02:00:39 martin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2139 2002/01/16 20:50:56 dawes Exp $
