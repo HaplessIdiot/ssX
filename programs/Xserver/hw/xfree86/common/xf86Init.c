@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.153 2000/02/23 19:16:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.155 2000/03/03 00:21:58 mvojkovi Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1435,6 +1435,10 @@ ddxProcessArgument(int argc, char **argv, int i)
   }
   if (!strcmp(argv[i], "-configure"))
   {
+    if (getuid() != 0) {
+	ErrorF("The '-configure' option can only be used by root.\n");
+	exit(1);
+    }
     xf86DoConfigure = TRUE;
     xf86AllowMouseOpenFail = TRUE;
     return 1;
@@ -1460,15 +1464,15 @@ ddxUseMsg()
     ErrorF("-xf86config file       specify a configuration file\n");
     ErrorF("-modulepath paths      specify the module search path\n");
     ErrorF("-logfile file          specify a log file name\n");
-    ErrorF("-scanpci               execute the scanpci module and exit\n");
+    ErrorF("-configure             probe for devices and write an XF86Config\n");
   }
   else
   {
     ErrorF("-xf86config file       specify a configuration file, relative to the\n");
     ErrorF("                       XF86Config search path, only root can use absolute\n");
   }
-  ErrorF("-configure             probe for devices and write an XF86Config\n");
   ErrorF("-probeonly             probe for devices, then exit\n");
+  ErrorF("-scanpci               execute the scanpci module and exit\n");
   ErrorF("-verbose [n]           verbose startup messages\n");
   ErrorF("-logverbose [n]        verbose log messages\n");
   ErrorF("-quiet                 minimal startup messages\n");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.25 2000/03/02 21:19:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.26 2000/03/02 23:15:03 tsi Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -614,7 +614,9 @@ DoConfigure()
     xf86DoConfigurePass1 = FALSE;
     /* Try to get DDC information filled in */
     xf86ConfigFile = filename;
-    xf86HandleConfigFile();
+    if (!xf86HandleConfigFile()) {
+	goto bail;
+    }
 
     xf86DoConfigurePass1 = FALSE;
 
@@ -659,21 +661,24 @@ DoConfigure()
 
     xf86WriteConfigFile(filename, xf86config);
 
-    ErrorF("\n\n");
+    ErrorF("\n");
 
     if (!foundMouse) {
-	ErrorF("XFree86 is not able to detect your mouse. Edit the file and correct the Device.\n");
+	ErrorF("\nXFree86 is not able to detect your mouse.\n"
+		"Edit the file and correct the Device.\n");
     } else {
-	ErrorF("XFree86 detected your mouse at device /dev/mouse. Please check your config\nif the mouse is still not operational, as by default XFree86 tries to autodetect\nthe protocol.\n");
+	ErrorF("\nXFree86 detected your mouse at device /dev/mouse.\n"
+		"Please check your config if the mouse is still not\n"
+		"operational, as by default XFree86 tries to autodetect\n"
+		"the protocol.\n");
     }
 
     if (xf86NumScreens > 1) {
-	ErrorF("XFree86 has configured a multihead system, please check your config.\n");
+	ErrorF("\nXFree86 has configured a multihead system, please check your config.\n");
     }
 
-    ErrorF("Your XF86Config file is located in %s, and is called XF86Config.new\n\n",home);
-    ErrorF("To test the server, type 'cd <return>' to take you back to\n");
-    ErrorF("Your home directory. Then type 'XFree86 -xf86config XF86Config.new'\n");
+    ErrorF("\nYour XF86Config file is %s\n\n", filename);
+    ErrorF("To test the server, run 'XFree86 -xf86config %s'\n\n", filename);
 
 bail:
     OsCleanup();
