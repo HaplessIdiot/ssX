@@ -1,5 +1,5 @@
 dnl
-dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.47 2003/05/21 22:59:11 dickey Exp $
+dnl $XFree86: xc/programs/xterm/aclocal.m4,v 3.48 2003/09/21 17:12:44 dickey Exp $
 dnl
 dnl ---------------------------------------------------------------------------
 dnl
@@ -614,7 +614,7 @@ AC_DEFUN([CF_HELP_MESSAGE],
 [AC_DIVERT_HELP([$1])dnl
 ])dnl
 dnl ---------------------------------------------------------------------------
-dnl CF_IMAKE_CFLAGS version: 14 updated: 2003/04/12 15:42:00
+dnl CF_IMAKE_CFLAGS version: 15 updated: 2003/10/11 12:01:23
 dnl ---------------
 dnl Use imake to obtain compiler flags.  We could, in principle, write tests to
 dnl get these, but if imake is properly configured there is no point in doing
@@ -637,6 +637,7 @@ esac
 
 # If it's installed properly, imake (or its wrapper, xmkmf) will point to the
 # config directory.
+if test -n "$IMAKE" ; then
 if mkdir conftestdir; then
 	cf_makefile=`cd $srcdir;pwd`/Imakefile
 	CDPATH=; export CDPATH
@@ -720,6 +721,7 @@ CF_EOF
 		fi
 	    fi
 	fi
+fi
 fi
 AC_SUBST(IMAKE_CFLAGS)
 AC_SUBST(IMAKE_LOADFLAGS)
@@ -1514,7 +1516,7 @@ CF_UPPER(cf_x_athena_LIBS,HAVE_LIB_$cf_x_athena)
 AC_DEFINE_UNQUOTED($cf_x_athena_LIBS)
 ])
 dnl ---------------------------------------------------------------------------
-dnl CF_X_FREETYPE version: 4 updated: 2003/09/17 20:51:30
+dnl CF_X_FREETYPE version: 5 updated: 2003/09/21 13:12:44
 dnl -------------
 dnl Check for X freetype libraries (XFree86 4.x)
 AC_DEFUN([CF_X_FREETYPE],

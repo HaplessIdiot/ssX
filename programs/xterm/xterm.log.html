@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.97 2003/05/21 22:59:14 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.98 2003/09/21 17:12:49 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,7 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_dev">current development</A>
+<LI><A HREF="#xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_177">Patch #177 - 2003/3/23 - XFree86 4.3.0</A>
@@ -226,8 +226,49 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_dev">current development</A></H1>
+<H1><A NAME="xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A></H1>
 <ul>
+	<li>several fixes for rendering using Xft (option <code>-fa</code>):
+	  <ul>
+	  <li>translate Unicode values (from UTF-8 output to xterm) for
+	      line-drawing to xterm's internal code, etc., since TrueType fonts
+	      generally do not have either set of line-drawing glyphs.  xterm
+	      can draw these directly (report by Abigail Brady).
+	  <li>pass 16-bit values rather than 8-bit values to
+	      xtermXftDrawString() to allow for wide-characters.
+	  <li>remove spurious check for <code>colorBDMode</code> resource in
+	      logic that does bold fonts.
+	  <li>implement underlining.
+	  </ul>
+
+	<li>patches by Ilya Zakharevich:
+	  <ul>
+	  <li>improve drawXtermText() by making the recursive calls
+	      communicate through arguments, and not through saving/restoring
+	      global variables.
+
+	  <li>make double-width characters work with <code>-u8</code> option.
+
+	  <li>modify lookup of double-sized fonts by checking for a match
+	      ignoring x/y resolution if the first check fails.
+	  </ul>
+
+	<li>make height of TrueType fonts match ascent+descent (patch by
+	    Keith Packard). 
+
+	<li>correct configure-script check for imake $CFLAGS, which did not
+	    check properly if imake was not available.
+
+	<li>correct install rule in Makefile.in for <code>uxterm</code>, which
+	    was attempting to strip the script (newsgroup posting by Fernan
+	    Aguero).
+
+	<li>correct AF/AB strings in termcap for xterm-256color and
+	    xterm-88color entries (report by Josh Howard).
+
+	<li>update wcwidth.c to incorporate changes from Markus Kuhn's
+	    2003-05-20 (Unicode 4.0) version of that file.
+
 	<li>modify <code>scroll-back</code> and <code>scroll-forw</code>
 	    actions to accept an adjustment value, e.g.,
 	    <pre>
