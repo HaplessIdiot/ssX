@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xdmauth.c,v 1.7 2002/11/05 05:50:34 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmauth.c,v 1.9tsi Exp $ */
 
 /*
  * XDM-AUTHENTICATION-1 (XDMCP authentication) and
@@ -64,11 +64,10 @@ XdmAuthenticationValidator (ARRAY8Ptr privateData, ARRAY8Ptr incomingData,
 {
     XdmAuthKeyPtr	incoming;
 
-    XdmcpUnwrap (incomingData->data, &privateKey,
+    XdmcpUnwrap (incomingData->data, (unsigned char *)&privateKey,
 			      incomingData->data,incomingData->length);
-    switch (packet_type)
+    if (packet_type == ACCEPT)
     {
-    case ACCEPT:
     	if (incomingData->length != 8)
 	    return FALSE;
     	incoming = (XdmAuthKeyPtr) incomingData->data;
@@ -84,18 +83,18 @@ XdmAuthenticationGenerator (ARRAY8Ptr privateData, ARRAY8Ptr outgoingData,
 {
     outgoingData->length = 0;
     outgoingData->data = 0;
-    switch (packet_type)
+    if (packet_type == REQUEST)
     {
-    case REQUEST:
 	if (XdmcpAllocARRAY8 (outgoingData, 8))
-	    XdmcpWrap (&rho, &privateKey, outgoingData->data, 8);
+	    XdmcpWrap ((unsigned char *)&rho, (unsigned char *)&privateKey,
+		       outgoingData->data, 8);
     }
     return TRUE;
 }
 
 static Bool
-XdmAuthenticationAddAuth (int name_len, char *name, 
-    int data_len, char *data)
+XdmAuthenticationAddAuth (unsigned int name_len, char *name, 
+			  unsigned int data_len, char *data)
 {
     Bool    ret;
     XdmcpUnwrap (data, (unsigned char *)&privateKey, data, data_len);
