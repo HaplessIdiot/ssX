@@ -1,5 +1,5 @@
 /* $XConsortium: t1funcs.c /main/22 1996/09/28 16:47:46 rws $ */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.2 1996/01/05 13:13:35 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.3 1996/12/23 06:01:33 dawes Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -645,7 +645,7 @@ static void fillrun(p, x0, x1, bit)
        else {
                *p++ |= startmask;
                while (--middle > 0)
-                       *p++ = ALLONES;
+                       *p++ = (char)ALLONES;
                *p |= endmask;
        }
 }

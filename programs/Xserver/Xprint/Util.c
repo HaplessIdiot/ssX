@@ -30,7 +30,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xprint/Util.c,v 1.2 1996/12/26 01:38:18 dawes Exp $ */
 
 /* To get the tempnam() prototype in <stdio.h> */
 #if defined(linux) && defined(__STRICT_ANSI__)
@@ -39,6 +39,10 @@ copyright holders.
 
 #include <stdio.h>
 #include <string.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
+#include <sys/types.h>
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include "dixstruct.h"

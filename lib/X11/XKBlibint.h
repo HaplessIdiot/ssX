@@ -1,5 +1,5 @@
-/* $XConsortium: XKBlibint.h /main/11 1996/02/02 14:10:04 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: XKBlibint.h /main/12 1996/12/27 15:12:48 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBlibint.h,v 3.0 1996/12/12 09:13:31 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -83,8 +83,6 @@ typedef struct _XkbInfoRec {
 	XkbDescRec	*desc;
 	XkbMapChangesRec changes;
 	Atom		 composeLED;
-
-	char		*charset;
 	XkbConverters	 cvt;
 } XkbInfoRec, *XkbInfoPtr;
 
@@ -343,13 +341,13 @@ _XkbGetReadBufferCountedString(
 
 extern char	*_XkbGetCharset(
 #if NeedFunctionPrototypes
-	char *		/* locale */
+    void
 #endif
 );
 extern int	 _XkbGetConverters(
 #if NeedFunctionPrototypes
-	char *		/* charset */,
-	XkbConverters *	/* cvt_rtrn */
+    char *		/* encoding_name */,
+    XkbConverters *	/* cvt_rtrn */
 #endif
 );
 

@@ -1,5 +1,5 @@
-XCOMM	$XConsortium: locale.dir /main/6 1996/10/23 07:15:55 kaleb $
-XCOMM	$XFree86$
+XCOMM	$XConsortium: locale.dir /main/7 1996/12/25 23:52:49 kaleb $
+XCOMM	$XFree86: xc/nls/locale.dir,v 1.2 1996/12/23 06:04:25 dawes Exp $
 XCOMM
 XCOMM	This file contains locale database file name 
 XCOMM	The first word is the locale database file name and
@@ -35,7 +35,8 @@ ja/XLC_LOCALE		ja_JP.eucJP
 ja.SJIS/XLC_LOCALE	ja_JP.SJIS
 ja.JIS/XLC_LOCALE	ja_JP.JIS7
 ko/XLC_LOCALE		ko_KR.eucKR
-ISO8859-5/XLC_LOCALE	mk_MK.ISO8859-5
+iso8859-1/XLC_LOCALE	lt_LN.ISO8859-1
+iso8859-5/XLC_LOCALE	mk_MK.ISO8859-5
 iso8859-1/XLC_LOCALE	nl_BE.ISO8859-1
 iso8859-1/XLC_LOCALE	nl_NL.ISO8859-1
 iso8859-1/XLC_LOCALE	no_NO.ISO8859-1

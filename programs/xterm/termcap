@@ -1,5 +1,5 @@
 # $XConsortium: termcap,v 1.13 94/10/13 21:24:32 gildea Exp $
-# $XFree86: xc/programs/xterm/termcap,v 3.6 1996/10/19 15:18:09 dawes Exp $
+# $XFree86: xc/programs/xterm/termcap,v 3.7 1996/10/20 13:36:05 dawes Exp $
 #
 # Note:
 #	termcap format is limited to 1023 characters.  This set of descriptions
@@ -38,7 +38,8 @@ vs|xterm|xterm-24|xterms|vs100|xterm terminal emulator (X Window System):\
 	:ti=\E7\E[?47h:te=\E[2J\E[?47l\E8:\
 	:vi=\E[?25l:ve=\E[?25h:\
 	:up=\E[A:us=\E[4m:ue=\E[24m:xn:\
-	:ut:Co#8:op=\E[100m:AB=\E[4%dm:AF=\E[3%dm:
+	:ut:Co#8:op=\E[100m:AB=\E[4%dm:AF=\E[3%dm:\
+	:pa#64:Sf=\E[3%dm:Sb=\E[4%dm:
 v2|xterm-65|xterm with tall window 65x80 (X Window System):\
 	:li#65:tc=xterm:
 vb|xterm-bold|xterm with bold instead of underline (X Window System):\
@@ -49,7 +50,7 @@ xtermm|monochrome xterm (X Window System):\
 	:F1=\E[23~:F2=\E[24~:F3=\E[25~:F4=\E[26~:F5=\E[28~:\
 	:F6=\E[29~:F7=\E[31~:F8=\E[32~:F9=\E[33~:FA=\E[34~:\
 	:kn#20:\
-	:st@:ut@:Co@:NC@:op@:AB@:AF@:tc=xterm:
+	:st@:ut@:Co@:NC@:op@:AB@:AF@:pa@:Sf@:Sb@:tc=xterm:
 #
 # vi may work better with this entry, because vi
 # doesn't use insert mode much

@@ -1,4 +1,35 @@
 XFree86 3.2k (28 December 1996)
+ 142. Fix a problem introduced in 3.2i which causes the S3 server to crashed
+      for cards with a Ti3026.
+ 141. Updates for GNU libc on Linux, and fix some compile warnings
+      (H.J. Lu).
+ 140. Updated Russian XKB layout (Andrey Chernov).
+ 139. Workaround for KOI8-R problem in XmbLookupString().  The change
+      is to XLC_XLOCALE/koi8-r (Andrey Chernov).
+ 138. Fix some problems with the server build on Alphas (Jay Estabrook).
+ 137. Avoid a server hang in the et4000 driver (Koen Gadeyne).
+ 136. Add some more acceleration for ET4000 chips (Koen Gadeyne).
+ 135. Fix server crash when chipset "et6000" is specified (Koen Gadeyne).
+ 134. Cleanup of vgaHW.c (Marc Aurele La France).
+ 133. In the vga2 server, use the bank size, not the aperture size, to
+      decide between banked and non-banked support (Marc Aurele La France).
+ 132. Fix to FIFO depth calculation in the Mach64 server
+      (Marc Aurele La France).
+ 131. Fix some problems with the width of the pixmap used by the VGA servers
+      when the server's VT isn't active (Marc Aurele La France).
+ 130. Major ati SVGA driver updates (Marc Aurele La France).
+ 129. Fix Xserver/Imakefile problem that sometimes causes problems with
+      cfb24 not being built (Marc Aurele La France).
+ 128. Fix some compiler warnings (including a problem with the ScreenInfoRec
+      initialisation in the I128 server) (Marc Aurele La France).
+ 127. Updated PC98 TGUI support (Akio Morita).
+ 126. Add MMIO support to the TGUI driver, and remove MCLK limits
+      (Alan Hourihane).
+ 125. Add pa, Sf, Sb capabilities to the xterm termcap.
+ 124. Add Tcl interfaces for the new vidmoe functions (Joe Moss).
+ 123. Complete the implementation of XF86VidModeAddModeLine() (Joe Moss).
+ 122. Some more s3init.c cleanups (Mark Vojkovich).
+ 121. XC fixes.
  120. More R6.3-related updates.
 
 XFree86 3.2j (26 December 1996)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.13 1996/10/16 14:42:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/gvga/gvg_driver.c,v 3.14 1996/12/23 06:57:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -269,6 +269,8 @@ static void
 GVGARestore(restore)
   vgaGVGAPtr restore;
 {
+  vgaProtect(TRUE);
+
   outw(0x3C4, 0x0006);  /* segment select */
 
   vgaHWRestore((vgaHWPtr)restore);
@@ -280,6 +282,8 @@ GVGARestore(restore)
   outw(0x3C4, (restore->ExtCtrlReg3 << 8) | 0x08);
   outw(0x3C4, (restore->ExtCtrlReg4 << 8) | 0x10);
   outw(0x3CE, (restore->ExtCtrlReg5 << 8) | 0x09);
+
+  vgaProtect(FALSE);
 }
 
 

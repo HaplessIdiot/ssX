@@ -1,4 +1,4 @@
-/* $XConsortium: XKBBind.c /main/20 1996/08/31 12:44:10 kaleb $ */
+/* $XConsortium: XKBBind.c /main/21 1996/12/27 15:12:34 kaleb $ */
 /*
 
 Copyright (c) 1985, 1987, 1994  X Consortium
@@ -582,8 +582,7 @@ _XkbLoadDpy(dpy)
     LockDisplay(dpy);
     xkbi->desc = desc;
 
-    xkbi->charset = _XkbGetCharset(NULL);
-    _XkbGetConverters(xkbi->charset,&xkbi->cvt);
+    _XkbGetConverters(_XkbGetCharset(),&xkbi->cvt);
     UnlockDisplay(dpy);
     oldEvents= xkbi->selected_events;
     if (!(xkbi->xlib_ctrls&XkbLC_IgnoreNewKeyboards)) {

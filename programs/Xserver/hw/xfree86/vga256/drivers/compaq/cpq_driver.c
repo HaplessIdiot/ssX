@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.15 1996/10/16 14:42:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.16 1996/12/23 06:57:13 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -299,6 +299,8 @@ Bool enter;
 static void COMPAQRestore(restore)
 vgaCOMPAQPtr restore;
 {
+	vgaProtect(TRUE);
+
 	if (restore->EnvironmentReg == 0x0f)
 		outw(0x3ce, 0 << 8 | 0x0f);		/* lock */
 	else
@@ -316,6 +318,8 @@ vgaCOMPAQPtr restore;
 	 * Don't need to do any clock stuff - the bits are in MiscOutReg,
 	 * which is handled by vgaHWRestore.
 	 */
+
+	vgaProtect(FALSE);				/* Turn on screen */
 }
 
 /*
@@ -452,11 +456,11 @@ int mode;
 		outb(0x3ce, 0x40);
 		regsave[nest_depth].CR0 = inb(0x3cf);  /* Control Register 0 */
 		nest_depth++;
-		outb(0x3c4, 0x0100);		       /* Start reset */
+		outw(0x3c4, 0x0100);		       /* Start reset */
 	}
 	else
 	{
-		outb(0x3c4, 0x0300);		       /* End reset */
+		outw(0x3c4, 0x0300);		       /* End reset */
 		nest_depth--;
 		if (nest_depth > MAX_NEST_DEPTH)
 			return;

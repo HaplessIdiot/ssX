@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.16 1996/10/16 14:43:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.17 1996/12/23 06:57:47 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -17,7 +17,7 @@
  * purpose.  It is provided "as is" without express or implied
  * warranty.
  *
- * NCR DISCLAIMs ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
+ * NCR DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
  * INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN
  * NO EVENT SHALL NCR BE LIABLE FOR ANY SPECIAL,
  * INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER
@@ -382,6 +382,8 @@ NCRRestore(restore)
 {
   unsigned char temp;
 
+  vgaProtect(TRUE);
+
   /*
    * First Enable the extended registers
    */
@@ -441,6 +443,7 @@ NCRRestore(restore)
   outw(0x3C4, 0x05|(restore->ExtModes<<8)); /* restore this last because it */
 					    /* may lock out the extended    */
 					    /* registers when set.          */
+  vgaProtect(FALSE);
 }
 
 
