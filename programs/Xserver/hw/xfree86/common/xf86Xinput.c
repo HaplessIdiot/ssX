@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.62 2000/09/22 23:41:01 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.63 2001/04/01 14:00:08 tsi Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -297,6 +297,10 @@ xf86ActivateDevice(LocalDevicePtr local)
 	
 	xf86XinputFinalizeInit(dev);
 
+	/*
+	 * XXX Can a single device instance be both core keyboard and
+	 * core pointer?  If so, this should be changed.
+	 */
 	if (local->flags & XI86_CORE_POINTER)
 	    RegisterPointerDevice(dev);
 	else if (local->flags & XI86_CORE_KEYBOARD)
@@ -311,39 +315,6 @@ xf86ActivateDevice(LocalDevicePtr local)
 		    local->name, local->type_name);
     }
 }
-
-#if 0
-/***********************************************************************
- *
- * InitExtInput --
- * 
- *	Initialize any extended devices we might have. It is called from
- * ddx InitInput.
- *
- ***********************************************************************
- */
-void
-InitExtInput()
-{
-    LocalDevicePtr	local;
-
-    /* Register a Wakeup handler to handle input when generated */
-    RegisterBlockAndWakeupHandlers((BlockHandlerProcPtr) NoopDDA, ReadInput,
-				   NULL);
-
-    /* Create and initialize the special device Switch */
-    local = switch_assoc.device_allocate();
-    switch_device = local;
-    switch_device->flags |= XI86_CONFIGURED; /* no configuration available */
-    switch_device->next = xf86FirstLocalDevice();
-
-    /* Add each device */
-    while(local) {
-	xf86ActivateDevice(local);
-	local = local->next;
-    }
-}
-#endif
 
 
 #ifdef XINPUT
