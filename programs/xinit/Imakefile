@@ -1,5 +1,5 @@
-XCOMM $XConsortium: Imakefile,v 1.24 93/09/21 17:58:25 kaleb Exp $
-XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.0 1994/04/28 12:45:46 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/25 1996/01/15 12:19:07 gildea $
+XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.1 1994/05/22 00:02:27 dawes Exp $
 #if HasVFork
   VFORK_DEFINES = -DHAS_VFORK
 #endif
@@ -12,8 +12,8 @@ XCOMM $XFree86: xc/programs/xinit/Imakefile,v 3.0 1994/04/28 12:45:46 dawes Exp 
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB)
           SRCS1 = xinit.c 
           OBJS1 = xinit.o 
-  SAMPLECONFIGS = xinitrc /* xserverrc */
-       PROGRAMS = xinit startx $(SAMPLECONFIGS)
+   SAMPLECONFIG = xinitrc
+       PROGRAMS = xinit startx $(SAMPLECONFIG)
 
 
 ComplexProgramTarget_1(xinit,$(LOCAL_LIBRARIES),NullParameter)
@@ -30,5 +30,7 @@ InstallNamedProg(startx,startx,$(BINDIR))
 InstallManPage(startx,$(MANDIR))
 
 #if InstallXinitConfig
-InstallMultiple($(SAMPLECONFIGS),$(XINITDIR))
+InstallNonExecFile($(SAMPLECONFIG),$(XINITDIR))
+#else
+InstallNonExecFileNoClobber($(SAMPLECONFIG),$(XINITDIR))
 #endif
