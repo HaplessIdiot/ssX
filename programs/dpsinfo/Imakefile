@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/dpsinfo/Imakefile,v 1.1 2001/03/01 01:23:58 dawes Exp $
 XCOMM XTOOLLIB is currently needed by our version of DPSLIB
 
 LOCAL_LIBRARIES = $(DPSLIB) $(XTOOLLIB) $(XLIB)
@@ -18,6 +18,8 @@ DERIVED_FILES = iwraps.h iwraps.c
 
 .psw.h : ProgramTargetName($(PSWRAP))
 	RunProgram(PSWRAP,-a -h $*.h $< > /dev/null)
+
+depend:: $(DERIVED_FILES)
 
 ComplexProgramTarget(dpsinfo)
 
