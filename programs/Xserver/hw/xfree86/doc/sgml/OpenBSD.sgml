@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 15 August 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.18 2001/06/05 20:12:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.19 2001/08/15 19:35:53 herrb Exp $
 </ident>
 
 <toc>
@@ -59,7 +59,7 @@ non-OS dependent new features in XFree86 &relvers;.
 <sect1>New OS dependent features in 4.2
 <p>
 <itemize>
-<item>Support for OpenBSD/powerpc on the ATI Rage128 based
+<item>Support for OpenBSD/macppc on the ATI Rage128 based
 Power Macintosh. 
 </itemize>
 
@@ -341,13 +341,20 @@ source tree is available by anoncvs from all OpenBSD anoncvs
 servers. See <htmlurl url="http://www.openbsd.org/anoncvs.html"
 name="http://www.openbsd.org/anoncvs.html"> for details on anoncvs.
 
-<sect2>XFree86 on OpenBSD/powerpc
+<sect2>XFree86 on OpenBSD/macppc
 <p>
 The XFree86 server is currently known to work on the G4 Macs with ATI
-Rage 128 cards. Other machines are more or less untested.
+Rage 128 cards with OpenBSD 3.0. 
+Other machines are more or less untested. Earlier OpenBSD versions
+lack some kernel support for it.
 <p>
 Use xf86config to build a /etc/X11/XF86Config file before starting 
 the server for the first time. 
+<p> 
+Tou configure the keyboard, the protocol should be specified as
+<bf/wskbd/ and the device as <tt>/dev/wskbd0</tt>.
+Using a wsmux device as the keyboard device doesn't work (yet). Use 
+<bf/Macintosh/ as XkbModel. 
 <p>
 For the Titanium Powerbook G4, you can try the following mode line in
 <tt>/etc/X11/XF86Config</tt> to match the flat panel resolution:
@@ -357,7 +364,7 @@ Modeline "1152x768" 78.741 1152 1173 1269 1440  768 769 772 800 +HSync +VSync
 </verb></tscreen>
 <p>
 You need a kernel compiled with ``option INSECURE'' in the
-configuration file to run XFree86 on OpenBSD/powerpc. 
+configuration file to run XFree86 on OpenBSD/macppc. 
 
 
 <sect>Building New X Clients
