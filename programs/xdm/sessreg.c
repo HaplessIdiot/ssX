@@ -1,6 +1,6 @@
 /*
  * $XConsortium: sessreg.c,v 1.17 95/01/29 12:07:22 kaleb Exp $
- * $XFree86: xc/programs/xdm/sessreg.c,v 3.4 1995/01/30 03:28:58 dawes Exp $
+ * $XFree86: xc/programs/xdm/sessreg.c,v 3.5 1995/06/19 14:39:19 dawes Exp $
  *
  * Copyright (c) 1990  X Consortium
  * 
@@ -54,7 +54,7 @@
 # include	<stdio.h>
 # include	<utmp.h>
 
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) || defined(Lynx)
 #define NO_LASTLOG
 #endif
 
