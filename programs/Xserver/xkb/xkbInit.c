@@ -24,11 +24,12 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.20 2001/10/16 11:27:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbInit.c,v 3.22 2002/04/04 14:05:57 eich Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <unistd.h>
 #include <math.h>
 #define NEED_EVENTS 1
 #include <X11/X.h>
@@ -983,6 +984,28 @@ XkbProcessArguments(argc,argv,i)
     else if (strcmp(argv[i],"+kb")==0) {
 	noXkbExtension= False;
 	return 1;
+    }
+    else if (strncmp(argv[i], "-xkbdir", 7) == 0) {
+	if(++i < argc) {
+#if !defined(WIN32) && !defined(__UNIXOS2__) && !defined(__CYGWIN__)
+	    if (getuid() != geteuid()) {
+		ErrorF("-xkbdir is not available for setuid X servers\n");
+		return -1;
+	    } else
+#endif
+	    {
+		if (strlen(argv[i]) < PATH_MAX) {
+		    XkbBaseDirectory= argv[i];
+		    return 2;
+	        } else {
+		    ErrorF("-xkbdir pathname too long\n");
+		    return -1;
+		}
+	    }
+	}
+	else {
+	    return -1;
+	}
     }
     else if (strncmp(argv[i], "-xkbmap", 7) == 0) {
 	if(++i < argc) {

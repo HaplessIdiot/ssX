@@ -22,7 +22,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.19 2002/10/08 23:55:17 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/Xserver.man,v 3.20 2002/10/12 16:06:42 herrb Exp $
 .TH XSERVER 1 __xorgversion__
 .SH NAME
 Xserver \- X Window System display server
@@ -315,9 +315,11 @@ enables(+) or disables(-) the XKEYBOARD extension.
 .TP 8
 .BR [+-]accessx " [ \fItimeout\fP [ \fItimeout_mask\fP [ \fIfeedback\fP [ \fIoptions_mask\fP ] ] ] ]"
 enables(+) or disables(-) AccessX key sequences.
-.\" .TP 8
-.\" .B \-xkbdir \fIdirectory\fP
-.\" base directory for keyboard layout files
+.TP 8
+.B \-xkbdir \fIdirectory\fP
+base directory for keyboard layout files.  This option is not available
+for setuid X servers (i.e., when the X server's real and effective uids
+are different).
 .TP 8
 .B \-ar1 \fImilliseconds\fP
 sets the autorepeat delay (length of time in milliseconds that a key must
