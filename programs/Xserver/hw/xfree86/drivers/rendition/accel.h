@@ -3,6 +3,7 @@
  *
  * header file for accel.c
  */
+/* $XFree86$ */
 
 #ifndef __ACCEL_H__
 #define __ACCEL_H__

@@ -3,6 +3,7 @@
  *
  * accelerator functions for X -- only for v1000 (for the moment ;)
  */
+/* $XFree86$ */
 
 
 
