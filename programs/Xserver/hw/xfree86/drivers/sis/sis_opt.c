@@ -58,6 +58,7 @@ typedef enum {
     OPTION_FORCECRT1,
     OPTION_XVONCRT2,
     OPTION_PDC,
+    OPTION_EMI,
     OPTION_TVSTANDARD,
     OPTION_USEROMDATA,
     OPTION_NOINTERNALMODES,
@@ -160,6 +161,9 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_FORCECRT1,         	"ForceCRT1",              OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_XVONCRT2,          	"XvOnCRT2",               OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_PDC,               	"PanelDelayCompensation", OPTV_INTEGER,   {0}, -1    },
+    { OPTION_EMI,               	"EMI", 			  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_LVDSHL,			"LVDSHL", 	  	  OPTV_INTEGER,   {0}, -1    },
+    { OPTION_SPECIALTIMING,        	"SpecialTiming",          OPTV_STRING,    {0}, -1    },
     { OPTION_TVSTANDARD,        	"TVStandard",             OPTV_STRING,    {0}, -1    },
     { OPTION_USEROMDATA,		"UseROMData",	          OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_NOINTERNALMODES,   	"NoInternalModes",        OPTV_BOOLEAN,   {0}, FALSE },
@@ -218,8 +222,6 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_XVMEMCPY,			"XvUseMemcpy",  	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_SCALELCD,			"ScaleLCD",	   	  OPTV_BOOLEAN,   {0}, -1    },
     { OPTION_ENABLEHOTKEY,		"EnableHotkey",	   	  OPTV_BOOLEAN,   {0}, -1    },
-    { OPTION_SPECIALTIMING,        	"SpecialTiming",          OPTV_STRING,    {0}, -1    },
-    { OPTION_LVDSHL,			"LVDSHL", 	  	  OPTV_INTEGER,   {0}, -1    },
     { OPTION_ENABLESISCTRL,		"EnableSiSCtrl",   	  OPTV_BOOLEAN,   {0}, -1    },
 #ifdef SISMERGED
     { OPTION_MERGEDFB,			"MergedFB",		  OPTV_BOOLEAN,	  {0}, FALSE },
@@ -291,6 +293,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->XvOnCRT2 = FALSE;
     pSiS->NoYV12 = -1;
     pSiS->PDC = -1;
+    pSiS->EMI = -1;
     pSiS->OptTVStand = -1;
     pSiS->OptROMUsage = -1;
     pSiS->noInternalModes = FALSE;
@@ -739,6 +742,9 @@ SiSOptions(ScrnInfoPtr pScrn)
        if(xf86GetOptValInteger(pSiS->Options, OPTION_PDC, &vali)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "PanelDelayCompensation");
        }
+       if(xf86GetOptValInteger(pSiS->Options, OPTION_EMI, &vali)) {
+          xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "EMI");
+       }
        if(xf86GetOptValString(pSiS->Options, OPTION_SPECIALTIMING)) {
           xf86DrvMsg(pScrn->scrnIndex, X_WARNING, mystring, "SpecialTiming");
        }
@@ -1108,6 +1114,28 @@ SiSOptions(ScrnInfoPtr pScrn)
                 xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                     "LVDSHL will be %d\n",
 	             pSiS->SiS_Pr->LVDSHL);
+	     }
+          }
+
+	 /* EMI (315/330 series + 302LV/302ELV bridge only)
+          * This might be required if the LCD panel loses sync on
+	  * mode switches. So far, this problem should not show up
+	  * due to the auto-detection (from reading the values set
+	  * by the BIOS; however, the BIOS values are wrong sometimes
+	  * such as in the case of some Compal machines with a
+	  * 1400x1050, or some Inventec(Compaq) machines with a
+	  * 1280x1024 panel.
+          * The parameter is an integer from 0 to 0x60ffffff.
+          */
+          if(xf86GetOptValInteger(pSiS->Options, OPTION_EMI, &pSiS->EMI)) {
+	     if((pSiS->EMI < 0) || (pSiS->EMI > 0x60ffffff)) {
+	        xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+	            "Illegal EMI parameter, valid is 0 through 0x60ffffff\n");
+	        pSiS->EMI = -1;
+	     } else {
+	        pSiS->EMI &= 0x60ffffff;
+                xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+                    "EMI will be 0x%04x\n", pSiS->EMI);
 	     }
           }
 

@@ -46,6 +46,7 @@
 #endif
 
 #define COMPAL_HACK	/* Needed for compal 1400x1050 (EMI) */
+#define COMPAQ_HACK	/* Needed for Inventec/Compaq 1280x1024 (EMI) */
 
 #include "init301.h"
 
@@ -4268,6 +4269,11 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	          (SiS_Pr->SiS_CustomT != CUT_CLEVO1400)) {
 	          SiS_PanelDelay(SiS_Pr, HwInfo, 2);
 	       }
+#ifdef COMPAQ_HACK
+	       if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+	          SiS_PanelDelay(SiS_Pr, HwInfo, 2);
+	       }
+#endif
 
 	       SiS_SetRegOR(SiS_Pr->SiS_Part4Port,0x1f,0x10);
 
@@ -4304,8 +4310,9 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
 		     /* EMI_30 is read at driver start; however, the BIOS sets this
 		      * (if it is used) only if the LCD is in use. In case we caught
-		      * the machine while on TV output, this bit is not set - hence
-		      * our detection is wrong. Work-around this here:
+		      * the machine while on TV output, this bit is not set and we
+		      * don't know if it should be set - hence our detection is wrong.
+		      * Work-around this here:
 		      */
 
 		     if((!SiS_Pr->HaveEMI) || (!SiS_Pr->HaveEMILCD)) {
@@ -4351,9 +4358,23 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		     }
 
 #ifdef COMPAL_HACK   /* BIOS values don't work so well */
-		     if(SiS_Pr->SiS_CustomT == CUT_COMPAL1400_2) {
-		        if((cr36 & 0x0f) == 0x09) {
-			   r30 = 0x60; r31 = 0x05; r32 = 0x60; r33 = 0x00;
+		     if(!SiS_Pr->OverruleEMI) {
+		        if(SiS_Pr->SiS_CustomT == CUT_COMPAL1400_2) {
+		           if((cr36 & 0x0f) == 0x09) {
+			      r30 = 0x60; r31 = 0x05; r32 = 0x60; r33 = 0x00;
+			   }
+ 		        }
+		     }
+#endif
+#ifdef COMPAQ_HACK
+		     if(!SiS_Pr->OverruleEMI) {
+		        if(SiS_Pr->SiS_CustomT == CUT_COMPAQ1280) {
+		           if((cr36 & 0x0f) == 0x03) {
+			      r30 = 0x20; r31 = 0x12; r32 = 0xd0; r33 = 0x6b;        /* rev 1 */
+			      /* r30 = 0x60; r31 = 0x12; r32 = 0xd0; r33 = 0x6b;  */ /* rev 2 */
+			      /* r30 = 0x20; r31 = 0x05; r32 = 0x60; r33 = 0x00;  */ /* rev 3 */
+			      /* r30 = 0x60; r31 = 0x05; r32 = 0x60; r33 = 0x00;  */ /* rev 4 */
+			   }
 			}
  		     }
 #endif
@@ -6681,8 +6702,8 @@ SiS_SetGroup1(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 		    }
 		}
 		if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
-		   if(HwInfo->pdc) {
-			temp = HwInfo->pdc & 0x3c;
+		   if(SiS_Pr->PDC) {
+			temp = SiS_Pr->PDC & 0x3c;
 		   }
 		}
 	   } else {
@@ -6696,8 +6717,8 @@ SiS_SetGroup1(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 		    }
 		}
 		if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCD) {
-		   if(HwInfo->pdc) {
-		      temp = HwInfo->pdc & 0x3c;
+		   if(SiS_Pr->PDC) {
+		      temp = SiS_Pr->PDC & 0x3c;
 		   }
 		}
 	   }
@@ -6748,8 +6769,8 @@ SiS_SetGroup1(SiS_Private *SiS_Pr, USHORT ModeNo, USHORT ModeIdIndex,
 		 }
 		 if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD|SetCRT2ToLCDA)) {
 		    if(SiS_Pr->SiS_VBType & VB_SIS301LV302LV) {
-		       if(HwInfo->pdc) {
-		          temp = HwInfo->pdc;
+		       if(SiS_Pr->PDC) {
+		          temp = SiS_Pr->PDC;
 		          tempbl = 0;
 		       }
 		    }
@@ -11077,9 +11098,9 @@ SetDelayComp(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
 
      /* Could we detect a PDC for LCD? If yes, use it */
 
-     if(HwInfo->pdc) {
+     if(SiS_Pr->PDC) {
         if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
-	   SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x2d,0x0f,((HwInfo->pdc & 0x0f) << 4));
+	   SiS_SetRegANDOR(SiS_Pr->SiS_Part1Port,0x2d,0x0f,((SiS_Pr->PDC & 0x0f) << 4));
 	}
         return;
      }
@@ -11624,8 +11645,8 @@ SetDelayComp661(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo,
       delay = myptr[index];
       if(SiS_GetReg(SiS_Pr->SiS_Part1Port,0x13) & 0x04) delay >>= 4;  /* Should test dual edge */
    } else if(SiS_Pr->SiS_VBInfo & (SetCRT2ToLCD | SetCRT2ToLCDA)) {
-      if(HwInfo->pdc) {
-         delay = HwInfo->pdc & 0x0f;
+      if(SiS_Pr->PDC) {
+         delay = SiS_Pr->PDC & 0x0f;
 	 if(SiS_Pr->SiS_VBInfo & SetCRT2ToLCDA) {
             delay |= (delay << 12);
          }
@@ -12076,7 +12097,7 @@ SetOEMLCDDelay(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
    * Thus we don't set this if the user select a custom pdc or if
    * we otherwise detected a valid pdc.
    */
-  if(HwInfo->pdc) return;
+  if(SiS_Pr->PDC) return;
 
   temp = GetOEMLCDPtr(SiS_Pr,HwInfo, 0);
 
