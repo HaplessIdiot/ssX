@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.8tsi Exp $ */
 /*
  * Copyright 2002 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -98,13 +98,13 @@ usage(void)
 int
 main(int argc, char **argv)
 {
-    off_t Offset = 0, offset;
+    off_t Offset = 0, offset, End;
     size_t Length = 0, length, size;
     char *BadString, *data;
     void *buffer;
     int fd, pagesize, prettyprint = 0;
     char Address[20], Hex[36], Glyph[17];
-    char Size = sizeof(datal);
+    char Size = sizeof(datal), Format = 0;
 
     while (argv[1] && (argv[1][0] == '-') && argv[1][1])
     {
@@ -182,10 +182,33 @@ main(int argc, char **argv)
 
     if (prettyprint)
     {
-        if (sizeof(Offset) > 4)
+        End = Offset + Length - 1;
+
+        if ((sizeof(Offset) > sizeof(dataL)) &&
+            ((unsigned long long)End != (unsigned long)End))
+        {
             sprintf(Address, "0x%015llX0", (unsigned long long)Offset >> 4);
+            Format = 3;
+        }
         else
+        if ((sizeof(Offset) > sizeof(dataw)) &&
+            ((unsigned long long)End != (unsigned short)End))
+        {
             sprintf(Address, "0x%07lX0", (unsigned long)Offset >> 4);
+            Format = 2;
+        }
+        else
+        if ((sizeof(Offset) > sizeof(datab)) &&
+            ((unsigned long long)End != (unsigned char)End))
+        {
+            sprintf(Address, "0x%03X0", (unsigned short)Offset >> 4);
+            Format = 1;
+        }
+        else
+        {
+            sprintf(Address, "0x%01X0", (unsigned char)Offset >> 4);
+         /* Format = 0; */
+        }
 
         memset(Hex, ' ', 35);
         Hex[35] = 0;
@@ -260,14 +283,33 @@ main(int argc, char **argv)
 
             if (!Length || !(Offset & 15))
             {
-                printf("%s:  %s |%s|\n", Address, Hex, Glyph);
+                printf("%s:  %s  |%s|\n", Address, Hex, Glyph);
 
-                if (sizeof(Offset) > 4)
-                    sprintf(Address, "0x%016llX",
-                            (unsigned long long)(Offset + offset));
-                else
-                    sprintf(Address, "0x%08lX",
-                            (unsigned long)(Offset + offset));
+                if (!Length)
+                    break;
+
+                switch(Format)
+                {
+                    case 0:
+                        sprintf(Address, "0x%02X",
+                                (unsigned char)(Offset + offset));
+                        break;
+
+                    case 1:
+                        sprintf(Address, "0x%04X",
+                                (unsigned short)(Offset + offset));
+                        break;
+
+                    case 2:
+                        sprintf(Address, "0x%08lX",
+                                (unsigned long)(Offset + offset));
+                        break;
+
+                    case 3:  default:
+                        sprintf(Address, "0x%016llX",
+                                (unsigned long long)(Offset + offset));
+                        break;
+                }
 
                 memset(Hex, ' ', 35);
                 memset(Glyph, ' ', 16);
