@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.man,v 1.5 2001/09/18 11:21:31 alanh Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.man,v 1.6 2001/11/30 13:08:44 alanh Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH TRIDENT __drivermansuffix__ __vendorversion__
@@ -28,8 +28,8 @@ Trident chips:
 .TP 12
 .B Blade
 Blade3D, CyberBlade series i1, i7 (DSTN), i1, i1 (DSTN), Ai1, Ai1 (DSTN),
-CyberBlade/e4, CyberBladeXPm8, CyberBladeXPm16
-NOTE: The XPm8 and XPm16 are NOT hardware accelerated due to the specifications
+CyberBlade/e4, CyberBladeXPm8, CyberBladeXPm16, CyberBladeAi1/XP, BladeXP
+NOTE: The XP series are NOT hardware accelerated due to the specifications
 of the chip not being released.
 .TP 12
 .B Image
@@ -83,13 +83,13 @@ Default: undefined.
 Turn off PCI burst mode, PCI Bursting is on by default.
 Default: off.
 .TP
-.BI "Option \*qXvHsync\*q \*q" real \*q
+.BI "Option \*qXvHsync\*q \*q" integer \*q
 Override the default Horizontal-sync value for the Xv extension.
 This is used to center the Xv image on the screen.  By default the values
 are assigned based on the video card.
 Default: undefined.
 .TP
-.BI "Option \*qXvVsync\*q \*q" real \*q
+.BI "Option \*qXvVsync\*q \*q" integer \*q
 Override the default Vertical-sync value for the Xv extension.
 This is used to center the Xv image on the screen.  By default the values
 are assigned based on the video card.
