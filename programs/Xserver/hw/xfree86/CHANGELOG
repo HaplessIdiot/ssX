@@ -1,4 +1,4 @@
-XFree86 4.0.99.1 (16 February 2001)
+XFree86 4.0.99.1 (19 February 2001)
  202. Gamma correction and DirectColor visual support for NVIDIA RIVA TNT
       and newer chipsets (Mark Vojkovich).
  201. IA64 fix for generic int10 code (Egbert Eich).
@@ -12559,4 +12559,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1584 2001/02/16 15:35:29 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1585 2001/02/18 23:49:53 mvojkovi Exp $
