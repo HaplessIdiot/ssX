@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_i2c.c,v 1.1 1999/04/17 07:06:26 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -50,26 +50,27 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 static void
 neo_I2CPutBits(I2CBusPtr b, int clock,  int data) {
+    vgaHWPtr hwp = VGAHWPTR(xf86Screens[b->scrnIndex]);
     unsigned int reg = 0xF0;
 
-    outw(0x3D4,0x0021);
-    outw(0x3D4,0x011d);
+    VGAwCR(0x21,0x00);
+    VGAwCR(0x1D,0x01);
     
     if(clock) reg |= 1;
     if(data)  reg |= 0x4;
-    outw(0x3CE, (reg << 8) | 0xa1);
+    VGAwGR(0xA1,reg);
     /*ErrorF("neo_I2CPutBits: %d %d\n", clock, data); */
 }
 
 static void
 neo_I2CGetBits(I2CBusPtr b, int *clock, int *data) {
     unsigned int reg;
-
-    outb(0x3CE, 0xA1);
-    reg = inb(0x3CF);
-    *clock = 1 /* (reg & 0x??) */;
+    vgaHWPtr hwp = VGAHWPTR(xf86Screens[b->scrnIndex]);
+    
+    reg = VGArGR(0xA1);
+    *clock = 1 /* (reg & 0x?? ) */;
     *data  = (reg & 0x8) != 0;
-    /* ErrorF("neo_I2CGetBits: %d %d\n", *clock, *data); */
+    /*ErrorF("neo_I2CGetBits: %d %d\n", *clock, *data);*/
 }
 
 Bool 
@@ -94,4 +95,6 @@ neo_I2CInit(ScrnInfoPtr pScrn)
 
     return TRUE;
 }
+
+
 

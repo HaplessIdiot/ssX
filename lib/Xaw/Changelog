@@ -1207,7 +1207,7 @@ xedit.c:
    scrollbars in options.c.
 
 
-# 19 Jun 1999
+#2899 19 Jun 1999
 -- Xaw --
  + Changed all the 'char pad[<number>]' to 'XtPointer pad[<number>/4]' to
    make sure 64 bit machines will not have binary compatibility problems before
@@ -1243,5 +1243,23 @@ xedit.c:
  + Updated xedit.man.
 
 
+# 26 Jun 1999
+-- Xaw --
+ + Added a new tip resource to the SimpleWidget. This may also be seen as
+   a test of the binary compatibility issues. Besides of being a new feature,
+   it cannot cause problems with old binaries, because the code is only
+   called if the tip resource is set to any SimpleWidget subclass. If the
+   tip resource is set or reset, the SimpleWidget code will call one of the
+   two new functions XawTipEnable or XawTipDisable.
+ + Added 3 new files: Tip.c, Tip.h and TipP.h. These files are used only
+   by the new Xaw.
+ + Updates to Xaw.man, including a problem with accented characters on SunOS.
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.25 1999/06/13 13:47:16 dawes Exp $
+-- xedit --
+ + Added resource configurations to show the new tip code in Xaw.
+ + Some fixes to ispell.c, to make it more previsible/user-friendly.
+ + Fixes xedit.man to avoid problems with accented characters.
+
+
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.26 1999/06/20 08:40:58 dawes Exp $

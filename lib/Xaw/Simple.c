@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.12 1999/06/06 08:48:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.13 1999/06/20 08:41:05 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -53,6 +53,9 @@ SOFTWARE.
 #include <X11/Xaw/SimpleP.h>
 #include <X11/Xaw/XawInit.h>
 #include "Private.h"
+#ifndef OLDXAW
+#include <X11/Xaw/Tip.h>
+#endif
 
 /*
  * Class Methods
@@ -146,6 +149,15 @@ static XtResource resources[] = {
     XawRDisplayList,
     sizeof(XawDisplayList*),
     offset(display_list),
+    XtRImmediate,
+    NULL
+  },
+  {
+    XtNtip,
+    XtCTip,
+    XtRString,
+    sizeof(String),
+    offset(tip),
     XtRImmediate,
     NULL
   },
@@ -303,6 +315,9 @@ XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 	if (pixmap && pixmap->mask)
 	    XawReshapeWidget(w, pixmap);
     }
+
+    if (((SimpleWidget)w)->simple.tip)
+	XawTipEnable(w);
 #endif
 }
 
@@ -392,6 +407,11 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
     }
+
+    if (s_old->simple.tip && !s_new->simple.tip)
+	XawTipDisable(cnew);
+    else if (!s_old->simple.tip && s_new->simple.tip)
+	XawTipEnable(cnew);
 
     if (s_old->simple.display_list != s_new->simple.display_list)
 	return (True);

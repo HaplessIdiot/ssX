@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/87 1996/09/28 16:43:34 rws $
-XCOMM $XFree86: xc/lib/Xaw/Imakefile,v 1.6 1998/12/20 11:57:02 dawes Exp $
+XCOMM $XFree86: xc/lib/Xaw/Imakefile,v 1.7 1999/05/09 10:51:38 dawes Exp $
 #define DoNormalLib NormalLibXaw
 #define DoSharedLib SharedLibXaw
 #define DoExtraLib SharedLibXaw
@@ -80,6 +80,8 @@ HEADERS = \
 	TextSinkP.h \
 	TextSrc.h \
 	TextSrcP.h \
+	Tip.h \
+	TipP.h \
 	Toggle.h \
 	ToggleP.h \
 	Tree.h \
@@ -127,6 +129,7 @@ SRCS = \
 	TextAction.c \
 	TextPop.c \
 	TextTr.c \
+	Tip.c \
 	Toggle.c \
 	Tree.c \
 	Vendor.c \
@@ -177,6 +180,7 @@ OBJS = \
 	TextAction.o \
 	TextPop.o \
 	TextTr.o \
+	Tip.o \
 	Toggle.o \
 	Tree.o \
 	Vendor.o \

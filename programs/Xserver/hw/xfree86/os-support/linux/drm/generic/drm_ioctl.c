@@ -1,6 +1,6 @@
 /* drm_ioctl.c -- IOCTL processing for DRM -*- linux-c -*-
  * Created: Fri Jan  8 09:01:26 1999 by faith@precisioninsight.com
- * Revised: Wed Apr 28 09:48:43 1999 by faith@precisioninsight.com
+ * Revised: Fri Jun 18 09:49:12 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_ioctl.c,v 1.14 1999/04/28 13:59:21 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_ioctl.c,v 1.17 1999/06/21 14:31:21 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_ioctl.c,v 1.1 1999/06/14 07:32:04 dawes Exp $
  *
  */
 
@@ -82,7 +82,6 @@ int drm_list DRM_IOCTL_ARGS
 	int                           count = 0;
 	drm_driver_t                  *pt;
 	int                           len;
-	static const drm_capability_t null_caps = { 0, };
 
 	DRM_TRACE("\n");
 	copy_from_user_ret(&list,
@@ -108,10 +107,6 @@ int drm_list DRM_IOCTL_ARGS
 			copy_to_user_ret(&list.version[count],
 					 &version,
 					 sizeof(version),
-					 -EFAULT);
-			copy_to_user_ret(&list.capability[count],
-					 pt->caps ?: &null_caps,
-					 sizeof(*pt->caps),
 					 -EFAULT);
 		}
 		++count;
@@ -159,10 +154,7 @@ int drm_create DRM_IOCTL_ARGS
 
 	DRM_TRACE("%s %s\n", name, busid);
 	
-	memcpy(&request.caps_granted,
-	       &request.caps_request,
-	       sizeof(request.caps_granted));
-	retcode = drm_register_device(name, busid, 0, &request.caps_granted);
+	retcode = drm_register_device(name, busid, 0);
 	if (retcode < 0) return retcode;
 	request.device_major = drm_major;
 	request.device_minor = retcode;
@@ -247,7 +239,7 @@ int drm_ioctl DRM_IOCTL_ARGS
 		  cmd, nr, MAJOR(inode->i_rdev), dev->device_minor,
 		  priv->auth);
 
-	if (priv->auth && cmd != DRM_IOCTL_AUTH) {
+	if (priv->auth && cmd != DRM_IOCTL_GET_MAGIC) {
 		retcode = -EACCES;
 	} else if (nr >= drv->ioctl_count) {
 		retcode = -EINVAL;
@@ -257,7 +249,7 @@ int drm_ioctl DRM_IOCTL_ARGS
 
 		if (!func) {
 			retcode = -EINVAL;
-		} else 	if (ioctl->root_only && current->uid) {	/* FIXME */
+		} else 	if (ioctl->root_only && !capable(CAP_SYS_ADMIN)) {
 			retcode = -EACCES;
 		} else {
 			retcode = (func)(inode, filp, cmd, arg);

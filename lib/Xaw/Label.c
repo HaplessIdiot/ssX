@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Label.c,v 1.9 1998/10/03 08:42:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Label.c,v 1.10 1999/06/06 08:47:58 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -285,7 +285,7 @@ XawLabelClassInitialize(void)
 static XChar2b *buf2b;
 static int buf2blen = 0;
 
-static ont
+static int
 _XawLabelWidth16(XFontStruct *fs, char *str, int n)
 {
     int i;

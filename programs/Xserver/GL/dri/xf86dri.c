@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.1 1999/06/14 07:31:21 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,7 +31,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.17 1999/06/07 12:55:30 faith Exp $
+ * $PI: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.20 1999/06/24 19:10:40 faith Exp $
  */
 
 #if XFree86LOADER
@@ -73,6 +73,7 @@ static DISPATCH_PROC(ProcXF86DRIDestroyDrawable);
 static DISPATCH_PROC(ProcXF86DRIGetDrawableInfo);
 static DISPATCH_PROC(ProcXF86DRIGetDeviceInfo);
 static DISPATCH_PROC(ProcXF86DRIDispatch);
+static DISPATCH_PROC(ProcXF86DRIAuthConnection);
 
 static DISPATCH_PROC(SProcXF86DRIQueryVersion);
 static DISPATCH_PROC(SProcXF86DRIDispatch);
@@ -81,8 +82,7 @@ static void XF86DRIResetProc(ExtensionEntry* extEntry);
 
 static unsigned char DRIReqCode = 0;
 
-extern void XFree86DRIExtensionInit(void); /* FIXME NOT_DONE: why isn't
-					      this in a header file? */
+extern void XFree86DRIExtensionInit(void);
 
 void
 XFree86DRIExtensionInit(void)
@@ -180,8 +180,6 @@ ProcXF86DRIOpenConnection(
     REQUEST_SIZE_MATCH(xXF86DRIOpenConnectionReq);
 
     if (!DRIOpenConnection( screenInfo.screens[stuff->screen], 
-			    (drmKeyPtr)&rep.drmClientKeyLow,
-			    (drmKeyPtr)&rep.drmClientKeyHigh,
 			    &hSAREA,
 			    &busIdString)) {
 	return BadValue;
@@ -205,6 +203,20 @@ ProcXF86DRIOpenConnection(
     WriteToClient(client, sizeof(xXF86DRIOpenConnectionReply), (char *)&rep);
     if (rep.busIdStringLength)
 	WriteToClient(client, rep.busIdStringLength, busIdString);
+    return (client->noClientException);
+}
+
+static int
+ProcXF86DRIAuthConnection(
+    register ClientPtr client
+)
+{
+    REQUEST(xXF86DRIAuthConnectionReq);
+    REQUEST_SIZE_MATCH(xXF86DRIAuthConnectionReq);
+
+    if (!DRIAuthConnection( screenInfo.screens[stuff->screen], stuff->magic))
+	ErrorF("Failed to authenticate %u\n", stuff->magic);
+
     return (client->noClientException);
 }
 
@@ -503,6 +515,8 @@ ProcXF86DRIDispatch (
 	return ProcXF86DRIGetDrawableInfo(client);
     case X_XF86DRIGetDeviceInfo:
 	return ProcXF86DRIGetDeviceInfo(client);
+    case X_XF86DRIAuthConnection:
+	return ProcXF86DRIAuthConnection(client);
     default:
 	return BadRequest;
     }

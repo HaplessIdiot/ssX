@@ -23,7 +23,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/X/xmesaP.h,v 1.3 1999/06/14 14:37:11 dawes Exp $ */
 
 
 /*
@@ -561,6 +561,29 @@ static int const kernel1[16] = {
 	((addr)->b) | \
 	((addr)->g << 8) | \
 	((addr)->r << 16))
+
+#if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
+
+/*
+ * Direct rendering macros:
+ */
+
+#define XMESA_VALIDATE_DRAWABLE_INFO(dpy, psp, pdp)                     \
+do {                                                                    \
+    while (*(pdp->pStamp) != pdp->lastStamp) {                          \
+	DRM_UNLOCK(psp->fd, &psp->pSAREA->lock,                         \
+		   pdp->driContextPriv->hHWContext);                    \
+                                                                        \
+	DRM_SPINLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);     \
+	DRI_MESA_VALIDATE_DRAWABLE_INFO(dpy, psp->myNum, pdp);          \
+	DRM_SPINUNLOCK(&psp->pSAREA->drawable_lock, psp->drawLockID);   \
+                                                                        \
+	DRM_LIGHT_LOCK(psp->fd, &psp->pSAREA->lock,                     \
+		       pdp->driContextPriv->hHWContext);                \
+    }                                                                   \
+} while (0)
+
+#endif
 
 /*
  * External functions:

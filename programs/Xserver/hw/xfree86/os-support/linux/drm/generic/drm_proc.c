@@ -1,6 +1,6 @@
 /* drm_proc.c -- /proc support for DRM -*- linux-c -*-
  * Created: Mon Jan 11 09:48:47 1999 by faith@precisioninsight.com
- * Revised: Sun May 16 22:37:45 1999 by faith@precisioninsight.com
+ * Revised: Wed Jun 23 09:04:32 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_proc.c,v 1.26 1999/05/17 03:27:05 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_proc.c,v 1.31 1999/06/23 13:04:58 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_proc.c,v 1.1 1999/06/14 07:32:04 dawes Exp $
  *
  */
 
@@ -35,6 +35,7 @@
 static struct proc_dir_entry *drm_root = NULL;
 
 #define DRM_PROC_LIMIT (PAGE_SIZE-80)
+
 #define DRM_PROC_PRINT(fmt, arg...)        \
    len += sprintf(&buf[len], fmt , ##arg); \
    if (len > DRM_PROC_LIMIT) return len;
@@ -216,17 +217,17 @@ int drm_proc_cleanup(void)
 	return 0;
 }
 
-/* drm_driver_info is called whenever a process reads /dev/drm/drivers.
-   FIXME: should use locks. */
+/* drm_driver_info is called whenever a process reads /dev/drm/drivers. */
 
-int drm_driver_info(char *buf, char **start, off_t offset, int len,
-		    int *eof, void *data)
+static int _drm_driver_info(char *buf, char **start, off_t offset, int len,
+			    int *eof, void *data)
 {
 	drm_driver_t *pt;
 	
 	if (offset > 0) return 0; /* no partial requests */
 	len  = 0;
 	*eof = 1;
+	
 	DRM_PROC_PRINT("b name       major minor patch       date desc\n\n");
 	for (pt = drm_drivers; pt; pt = pt->next) {
 		DRM_PROC_PRINT("%c %-10s %5d %5d %5d \"%s\" \"%s\"\n",
@@ -242,8 +243,19 @@ int drm_driver_info(char *buf, char **start, off_t offset, int len,
 	return len;
 }
 
+int drm_driver_info(char *buf, char **start, off_t offset, int len,
+		    int *eof, void *data)
+{
+	int ret;
+	
+	spin_lock(&drm_meta_lock);
+	ret = _drm_driver_info(buf, start, offset, len, eof, data);
+	spin_unlock(&drm_meta_lock);
+	return ret;
+}
+
 /* drm_device_info is called whenever a process reads /dev/drm/devices.
-   FIXME: should use locks. */
+   This doesn't need a lock because .inuse is checked. */
 
 int drm_device_info(char *buf, char **start, off_t offset, int len,
 		    int *eof, void *data)
@@ -253,6 +265,7 @@ int drm_device_info(char *buf, char **start, off_t offset, int len,
 	if (offset > 0) return 0; /* no partial requests */
 	len  = 0;
 	*eof = 1;
+	
 	for (i = 0; i < DRM_MAX_DEVICES; i++) {
 		if (!drm_devices[i].inuse) continue;
 		DRM_PROC_PRINT("%3d %s %s\n",
@@ -266,8 +279,8 @@ int drm_device_info(char *buf, char **start, off_t offset, int len,
 
 /* drm_mem_info is called whenever a process reads /dev/drm/mem. */
 
-int drm_mem_info(char *buf, char **start, off_t offset, int len,
-		 int *eof, void *data)
+static int _drm_mem_info(char *buf, char **start, off_t offset, int len,
+			 int *eof, void *data)
 {
 	drm_mem_stats_t *pt;
 
@@ -299,11 +312,22 @@ int drm_mem_info(char *buf, char **start, off_t offset, int len,
 	return len;
 }
 
-/* drm_meminfo_info is called whenever a process reads
-   /dev/drm/<dev>/meminfo.  FIXME: should use locks. */
+int drm_mem_info(char *buf, char **start, off_t offset, int len,
+		 int *eof, void *data)
+{
+	int ret;
+	
+	spin_lock(&drm_mem_lock);
+	ret = _drm_mem_info(buf, start, offset, len, eof, data);
+	spin_unlock(&drm_mem_lock);
+	return ret;
+}
 
-int drm_meminfo_info(char *buf, char **start, off_t offset, int len,
-		     int *eof, void *data)
+/* drm_meminfo_info is called whenever a process reads
+   /dev/drm/<dev>/meminfo. */
+
+int _drm_meminfo_info(char *buf, char **start, off_t offset, int len,
+		      int *eof, void *data)
 {
 	drm_device_t *dev = (drm_device_t *)data;
 	drm_map_t    *map;
@@ -356,11 +380,23 @@ int drm_meminfo_info(char *buf, char **start, off_t offset, int len,
 	return len;
 }
 
+int drm_meminfo_info(char *buf, char **start, off_t offset, int len,
+		     int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *)data;
+	int          ret;
+
+	spin_lock(&dev->struct_lock);
+	ret = _drm_meminfo_info(buf, start, offset, len, eof, data);
+	spin_unlock(&dev->struct_lock);
+	return ret;
+}
+
 /* drm_queues_info is called whenever a process reads
    /dev/drm/<dev>/queues. */
 
 int drm_queues_info(char *buf, char **start, off_t offset, int len,
-		     int *eof, void *data)
+		    int *eof, void *data)
 {
 	drm_device_t *dev = (drm_device_t *)data;
 	int          i;
@@ -399,10 +435,10 @@ int drm_queues_info(char *buf, char **start, off_t offset, int len,
 }
 
 /* drm_bufs_info is called whenever a process reads
-   /dev/drm/<dev>/bufs.  FIXME: should use locks. */
+   /dev/drm/<dev>/bufs. */
 
-int drm_bufs_info(char *buf, char **start, off_t offset, int len,
-		  int *eof, void *data)
+static int _drm_bufs_info(char *buf, char **start, off_t offset, int len,
+			  int *eof, void *data)
 {
 	drm_device_t *dev  = (drm_device_t *)data;
 	int          i;
@@ -430,11 +466,23 @@ int drm_bufs_info(char *buf, char **start, off_t offset, int len,
 	return len;
 }
 
-/* drm_clients_info is called whenever a process reads
-   /dev/drm/<dev>/clients.  FIXME: should use locks. */
+int drm_bufs_info(char *buf, char **start, off_t offset, int len,
+		  int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *)data;
+	int          ret;
 
-int drm_clients_info(char *buf, char **start, off_t offset, int len,
-		     int *eof, void *data)
+	spin_lock(&dev->struct_lock);
+	ret = _drm_bufs_info(buf, start, offset, len, eof, data);
+	spin_unlock(&dev->struct_lock);
+	return ret;
+}
+
+/* drm_clients_info is called whenever a process reads
+   /dev/drm/<dev>/clients. */
+
+static int _drm_clients_info(char *buf, char **start, off_t offset, int len,
+			     int *eof, void *data)
 {
 	drm_file_t   *priv;
 	const char   auths[] = { 'a', 'p', 'u' };
@@ -442,29 +490,37 @@ int drm_clients_info(char *buf, char **start, off_t offset, int len,
 	if (offset > 0) return 0; /* no partial requests */
 	len  = 0;
 	*eof = 1;
-	DRM_PROC_PRINT("a dev   pid    uid                  key"
-		       "     ioctls\n\n");
+	DRM_PROC_PRINT("a dev   pid    uid      magic     ioctls\n\n");
 	for (priv = drm_file_first; priv; priv = priv->next) {
-		DRM_PROC_PRINT("%c %3d %5d %5d 0x%08x:0x%08x %10lu\n",
+		DRM_PROC_PRINT("%c %3d %5d %5d %10u %10lu\n",
 			       priv->auth > 2 ? '?' : auths[priv->auth],
                                priv->minor,
 			       priv->pid,
 			       priv->uid,
-			       priv->hi,
-			       priv->lo,
+			       priv->magic,
 			       priv->ioctl_count);
 	}
 
 	return len;
 }
 
+int drm_clients_info(char *buf, char **start, off_t offset, int len,
+		     int *eof, void *data)
+{
+	int ret;
+
+	spin_lock(&drm_meta_lock);
+	ret = _drm_clients_info(buf, start, offset, len, eof, data);
+	spin_unlock(&drm_meta_lock);
+	return ret;
+}
 
 #if DRM_DEBUG_CODE
 /* drm_vmainfo_info is called whenever a process reads
-   /dev/drm/<dev>/vmainfo.  FIXME: should use locks. */
+   /dev/drm/<dev>/vmainfo. */
 
-int drm_vmainfo_info(char *buf, char **start, off_t offset, int len,
-		     int *eof, void *data)
+static int _drm_vmainfo_info(char *buf, char **start, off_t offset, int len,
+			     int *eof, void *data)
 {
 	drm_device_t          *dev = (drm_device_t *)data;
 	drm_vma_entry_t       *pt;
@@ -482,7 +538,7 @@ int drm_vmainfo_info(char *buf, char **start, off_t offset, int len,
 	len  = 0;
 	*eof = 1;
 	DRM_PROC_PRINT("vma use count: %d, high_memory = %p, 0x%08lx\n",
-		       dev->vma_count.counter,
+		       atomic_read(&dev->vma_count),
 		       high_memory, virt_to_phys(high_memory));
 	for (pt = dev->vmalist; pt; pt = pt->next) {
 		if (!(vma = pt->vma)) continue;
@@ -503,7 +559,7 @@ int drm_vmainfo_info(char *buf, char **start, off_t offset, int len,
 			       pgprot & _PAGE_PRESENT  ? 'p' : '-',
 			       pgprot & _PAGE_RW       ? 'w' : 'r',
 			       pgprot & _PAGE_USER     ? 'u' : 's',
-			       pgprot & _PAGE_WT       ? 't' : 'b',
+			       pgprot & _PAGE_PWT      ? 't' : 'b',
 			       pgprot & _PAGE_PCD      ? 'u' : 'c',
 			       pgprot & _PAGE_ACCESSED ? 'a' : '-',
 			       pgprot & _PAGE_DIRTY    ? 'd' : '-',
@@ -535,12 +591,24 @@ int drm_vmainfo_info(char *buf, char **start, off_t offset, int len,
 	
 	return len;
 }
+
+int drm_vmainfo_info(char *buf, char **start, off_t offset, int len,
+		     int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *)data;
+	int          ret;
+
+	spin_lock(&dev->struct_lock);
+	ret = _drm_vmainfo_info(buf, start, offset, len, eof, data);
+	spin_unlock(&dev->struct_lock);
+	return ret;
+}
 #endif
 
 
 #if DRM_DMA_HISTOGRAM
-int drm_histo_info(char *buf, char **start, off_t offset, int len,
-		   int *eof, void *data)
+static int _drm_histo_info(char *buf, char **start, off_t offset, int len,
+			   int *eof, void *data)
 {
 	drm_device_t  *dev = (drm_device_t *)data;
 	int           i;
@@ -637,5 +705,23 @@ int drm_histo_info(char *buf, char **start, off_t offset, int len,
 		slot_value = DRM_DMA_HISTOGRAM_NEXT(slot_value);
 	}
 	return len;
+}
+
+int drm_histo_info(char *buf, char **start, off_t offset, int len,
+		   int *eof, void *data)
+{
+	drm_device_t *dev = (drm_device_t *)data;
+	int          ret;
+
+				/* This prevents the structure from being
+                                   deleted while we-re using it.  All
+                                   updates to contents are already atomic,
+                                   so they don't need to be locked (i.e.,
+                                   we don't need locking in
+                                   drm_histogram_compute). */
+	spin_lock(&dev->struct_lock);
+	ret = _drm_histo_info(buf, start, offset, len, eof, data);
+	spin_unlock(&dev->struct_lock);
+	return ret;
 }
 #endif

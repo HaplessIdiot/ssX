@@ -1,6 +1,6 @@
 /* gen_ioctl.c -- Generic IOCTL and function support -*- linux-c -*-
  * Created: Tue Feb  2 08:37:54 1999 by faith@precisioninsight.com
- * Revised: Fri Jun  4 12:53:53 1999 by faith@precisioninsight.com
+ * Revised: Fri Jun 25 09:05:55 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_ioctl.c,v 1.38 1999/06/07 13:01:43 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_ioctl.c,v 1.44 1999/06/25 13:06:07 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_ioctl.c,v 1.1 1999/06/14 07:32:06 dawes Exp $
  *
  */
 
@@ -35,109 +35,145 @@
 
 static int drm_gen_registered;
 
-				/* FIXME: this can be made much faster. */
 int drm_order(unsigned long size)
 {
 	int           order;
 	unsigned long tmp;
 
+				/* FIXME: This can be made much faster.
+                                   Algorithms are posted on occassion to
+                                   comp.lang.c.moderated, but the
+                                   optimization usually depends on assuming
+                                   a certain word length. */
 	for (order = 0, tmp = size; tmp >>= 1; ++order);
 	if (size & ~(1 << order)) ++order;
 	return order;
 }
 
-int drm_hash_key(drm_key_t hi, drm_key_t lo)
+static int drm_hash_magic(drm_magic_t magic)
 {
-	return (hi ^ lo) & (DRM_HASH_SIZE-1);
+	return magic & (DRM_HASH_SIZE-1);
 }
 
-int drm_check_key(drm_device_t *dev, drm_key_t hi, drm_key_t lo)
+static drm_file_t *drm_find_file(drm_device_t *dev, drm_magic_t magic)
 {
-	drm_key_entry_t *pt;
+	drm_file_t        *retval = NULL;
+	drm_magic_entry_t *pt;
+	int               hash    = drm_hash_magic(magic);
 
-				/* Always called from inside an IOCTL, so
-                                   no locking is needed. */
-	for (pt = dev->keylist[drm_hash_key(hi, lo)].head; pt; pt = pt->next) {
-		if (pt->hi == hi && pt->lo == lo) {
-			return 1;
+        spin_lock(&dev->struct_lock);
+	for (pt = dev->magiclist[hash].head; pt; pt = pt->next) {
+		if (pt->priv->auth != DRM_AUTH_PENDING) continue;
+		if (pt->magic == magic) {
+			retval = pt->priv;
+			break;
 		}
 	}
-	return 0;
+        spin_unlock(&dev->struct_lock);
+	return retval;
 }
 
-int drm_addkey DRM_IOCTL_ARGS
+int drm_add_magic(drm_device_t *dev, drm_file_t *priv, drm_magic_t magic)
 {
-	drm_file_t      *priv   = filp->private_data;
-	drm_device_t    *dev    = priv->dev;
-	int             hash;
-	drm_auth_t      key;
-	drm_key_entry_t *entry;
+        int               hash;
+        drm_magic_entry_t *entry;
+        
+        DRM_TRACE("%d\n", magic);
 	
-	copy_from_user_ret(&key, (drm_auth_t *)arg, sizeof(key), -EFAULT);
-	DRM_TRACE("0x%08x:0x%08x\n", key.hi, key.lo);
-	
-	hash        = drm_hash_key(key.hi, key.lo);
-	entry       = drm_alloc(sizeof(*entry), DRM_MEM_KEYS);
-	if (!entry) return -ENOMEM;
-	entry->hi   = key.hi;
-	entry->lo   = key.lo;
-	entry->next = NULL;
+        hash         = drm_hash_magic(magic);
+        entry        = drm_alloc(sizeof(*entry), DRM_MEM_MAGIC);
+        if (!entry) return -ENOMEM;
+        entry->magic = magic;
+	entry->priv  = priv;
+        entry->next  = NULL;
 
-	spin_lock(&dev->struct_lock);
-	if (dev->keylist[hash].tail) {
-		dev->keylist[hash].tail->next = entry;
-		dev->keylist[hash].tail       = entry;
+        spin_lock(&dev->struct_lock);
+        if (dev->magiclist[hash].tail) {
+                dev->magiclist[hash].tail->next = entry;
+                dev->magiclist[hash].tail       = entry;
+        } else {
+                dev->magiclist[hash].head       = entry;
+                dev->magiclist[hash].tail       = entry;
+        }
+        spin_unlock(&dev->struct_lock);
+        
+        return 0;
+}
+
+int drm_remove_magic(drm_device_t *dev, drm_magic_t magic)
+{
+        drm_magic_entry_t *prev = NULL;
+        drm_magic_entry_t *pt;
+        int               hash;
+        
+        DRM_TRACE("%d\n", magic);
+        hash = drm_hash_magic(magic);
+        
+        spin_lock(&dev->struct_lock);
+        for (pt = dev->magiclist[hash].head; pt; prev = pt, pt = pt->next) {
+                if (pt->magic == magic) {
+                        if (dev->magiclist[hash].head == pt) {
+                                dev->magiclist[hash].head = pt->next;
+                        }
+                        if (dev->magiclist[hash].tail == pt) {
+                                dev->magiclist[hash].tail = prev;
+                        }
+                        if (prev) {
+                                prev->next = pt->next;
+                        }
+                        spin_unlock(&dev->struct_lock);
+                        return 0;
+                }
+        }
+        spin_unlock(&dev->struct_lock);
+
+        drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
+        
+        return -EINVAL;
+}
+
+int drm_getmagic DRM_IOCTL_ARGS
+{
+	static drm_magic_t sequence = 0;
+	static spinlock_t  lock     = SPIN_LOCK_UNLOCKED;
+	drm_file_t         *priv    = filp->private_data;
+	drm_device_t       *dev     = priv->dev;
+	drm_auth_t         auth;
+
+				/* Find unique magic */
+	if (priv->magic) {
+		auth.magic = priv->magic;
 	} else {
-		dev->keylist[hash].head       = entry;
-		dev->keylist[hash].tail       = entry;
+		spin_lock(&lock);
+		do {
+			if (!sequence) ++sequence; /* reserve 0 */
+			auth.magic = sequence++;
+		} while (drm_find_file(dev, auth.magic));
+		spin_unlock(&lock);
+		priv->magic = auth.magic;
+		drm_add_magic(dev, priv, auth.magic);
 	}
-	spin_unlock(&dev->struct_lock);
 	
+	DRM_TRACE("%u\n", auth.magic);
+	copy_to_user_ret((drm_auth_t *)arg, &auth, sizeof(auth), -EFAULT);
 	return 0;
 }
 
-int drm_remove_key(drm_device_t *dev, drm_key_t hi, drm_key_t lo)
+int drm_authmagic DRM_IOCTL_ARGS
 {
-	drm_key_entry_t *prev = NULL;
-	drm_key_entry_t *pt;
-	int             hash;
-	
-	DRM_TRACE("0x%08x:0x%08x\n", hi, lo);
-	hash = drm_hash_key(hi, lo);
-	
-	spin_lock(&dev->struct_lock);
-	for (pt = dev->keylist[hash].head; pt; prev = pt, pt = pt->next) {
-		if (pt->lo == lo && pt->hi == hi) {
-			if (dev->keylist[hash].head == pt) {
-				dev->keylist[hash].head = pt->next;
-			}
-			if (dev->keylist[hash].tail == pt) {
-				dev->keylist[hash].tail = prev;
-			}
-			if (prev) {
-				prev->next = pt->next;
-			}
-			spin_unlock(&dev->struct_lock);
-			return 0;
-		}
+	drm_file_t         *priv    = filp->private_data;
+	drm_device_t       *dev     = priv->dev;
+	drm_auth_t         auth;
+	drm_file_t         *file;
+
+	copy_from_user_ret(&auth, (drm_auth_t *)arg, sizeof(auth), -EFAULT);
+        DRM_TRACE("%u\n", auth.magic);
+	if ((file = drm_find_file(dev, auth.magic))) {
+		file->auth = DRM_AUTH_OK;
+		drm_remove_magic(dev, auth.magic);
+		return 0;
 	}
-	spin_unlock(&dev->struct_lock);
-
-	drm_free(pt, sizeof(*pt), DRM_MEM_KEYS);
-	
 	return -EINVAL;
-}
-
-int drm_rmkey DRM_IOCTL_ARGS
-{
-	drm_file_t      *priv   = filp->private_data;
-	drm_device_t    *dev    = priv->dev;
-	drm_auth_t      key;
-	
-	DRM_TRACE("\n");
-	
-	copy_from_user_ret(&key, (drm_auth_t *)arg, sizeof(key), -EFAULT);
-	return drm_remove_key(dev, key.hi, key.lo);
 }
 
 int drm_addmap DRM_IOCTL_ARGS
@@ -188,8 +224,10 @@ int drm_addmap DRM_IOCTL_ARGS
                                    But some architectures might want
                                    write-combining for fast MMIO access.
 				   
-				   FIXME: should we allow mappings in the
-				   area 0xa0000-0xc0000? */
+				   Should we allow mappings in the area
+				   0xa0000-0xc0000?  Currently we don't,
+				   although this may be necessary for some
+				   cards. */
 		
 		if (map->offset + map->size < map->offset
 		    || map->offset < virt_to_phys(high_memory)) {
@@ -418,7 +456,7 @@ int drm_addbufs DRM_IOCTL_ARGS
 			buf->next    = NULL;
 			buf->waiting = 0;
 			buf->pending = 0;
-			buf->dma_wait= NULL;
+			init_waitqueue_head(&buf->dma_wait);
 			buf->pid     = 0;
 #if DRM_DMA_HISTOGRAM
 			buf->time_queued     = 0;
@@ -784,7 +822,7 @@ int drm_lock_free(drm_device_t *dev,
 
 static int drm_flush_queue(drm_device_t *dev, int context)
 {
-	struct wait_queue entry = { current, NULL };
+	DECLARE_WAITQUEUE(entry, current);
 	int               ret   = 0;
 	drm_queue_t       *q    = dev->queuelist[context];
 	
@@ -800,6 +838,9 @@ static int drm_flush_queue(drm_device_t *dev, int context)
 			if (!DRM_BUFCOUNT(&q->waitlist)) break;
 			schedule();
 			if (signal_pending(current)) {
+				/* This returns -EINTR instead of
+                                   -ERESTARTSYS so that we can control-c
+                                   out of the server. */
 				ret = -EINTR;
 				break;
 			}
@@ -882,7 +923,7 @@ int drm_lock DRM_IOCTL_ARGS
 {
 	drm_file_t        *priv   = filp->private_data;
 	drm_device_t      *dev    = priv->dev;
-	struct wait_queue entry = { current, NULL };
+	DECLARE_WAITQUEUE(entry, current);
 	int               ret   = 0;
 	drm_lock_t        lock;
 	drm_queue_t       *q;
@@ -923,6 +964,11 @@ int drm_lock DRM_IOCTL_ARGS
 		}
 		add_wait_queue(&dev->lock.lock_queue, &entry);
 		for (;;) {
+			if (!dev->lock.hw_lock) {
+				/* Device has been unregistered */
+				ret = -EINTR;
+				break;
+			}
 			if (drm_lock_take(&dev->lock.hw_lock->lock,
 					  lock.context)) {
 				dev->lock.pid       = current->pid;
@@ -1026,9 +1072,9 @@ static int drm_init_queue(drm_device_t *dev, drm_queue_t *q, drm_ctx_t *ctx)
 	atomic_set(&q->total_flushed, 0);
 	atomic_set(&q->total_locks,   0);
 
-	q->write_queue = NULL;
-	q->read_queue  = NULL;
-	q->flush_queue = NULL;
+	init_waitqueue_head(&q->write_queue);
+	init_waitqueue_head(&q->read_queue);
+	init_waitqueue_head(&q->flush_queue);
 
 	q->flags = ctx->flags;
 
@@ -1310,30 +1356,6 @@ int drm_adddraw DRM_IOCTL_ARGS
 int drm_rmdraw DRM_IOCTL_ARGS
 {
 	return 0;		/* NOOP */
-}
-
-int drm_auth DRM_IOCTL_ARGS
-{
-	drm_file_t      *priv   = filp->private_data;
-	drm_device_t    *dev    = priv->dev;
-	drm_auth_t      auth;
-	
-	if (priv->auth == DRM_AUTH_FAILED) return -EACCES; /* One try */
-
-	copy_from_user_ret(&auth, (drm_auth_t *)arg, sizeof(auth), -EFAULT);
-	DRM_TRACE("0x%08x:0x%08x\n", auth.hi, auth.lo);
-	if (drm_check_key(dev, auth.hi, auth.lo)) {
-		priv->auth = DRM_AUTH_OK;
-		priv->hi   = auth.hi;
-		priv->lo   = auth.lo;
-				/* Must remove key, since used keys are
-                                   made available via the /proc/drm/clients
-                                   interface. */
-		drm_remove_key(dev, priv->hi, priv->lo);
-		return 0;
-	}
-	priv->auth = DRM_AUTH_FAILED;
-	return -EACCES;
 }
 
 int drm_finish DRM_IOCTL_ARGS

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.5 1999/05/30 07:18:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/write.c,v 1.6 1999/05/30 14:04:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -76,6 +76,10 @@ xf86WriteConfigFile (const char *filename, XF86ConfigPtr cptr)
 	printDeviceSection (cf, cptr->conf_device_lst);
 
 	printScreenSection (cf, cptr->conf_screen_lst);
+
+	fprintf (cf, "Section \"DRI\"\n");
+	printDRISection (cf, cptr->conf_dri);
+	fprintf (cf, "EndSection\n\n");
 
 	fclose(cf);
 	return 1;

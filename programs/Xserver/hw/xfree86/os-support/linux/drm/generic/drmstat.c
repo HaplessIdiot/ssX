@@ -1,6 +1,6 @@
 /* drmstat.c -- DRM device status and testing program
  * Created: Tue Jan  5 08:19:24 1999 by faith@precisioninsight.com
- * Revised: Tue May 11 09:10:46 1999 by faith@precisioninsight.com
+ * Revised: Thu Jun 24 14:53:46 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drmstat.c,v 1.21 1999/05/12 11:54:02 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drmstat.c,v 1.26 1999/06/24 18:54:56 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drmstat.c,v 1.1 1999/06/14 07:32:05 dawes Exp $
  * 
  */
 
@@ -101,15 +101,6 @@ static int getinfo(const char *label)
 		    list->version[i].date ? list->version[i].date : "?" );
 	    printf( "        Desc: %s\n",
 		    list->version[i].desc ? list->version[i].desc : "?" );
-#if 0
-	    if (list->capability) {
-		printf( "        Caps: 0x%08x 0x%08x 0x%08x 0x%08x\n",
-			list->capability[i].dma_methods,
-			list->capability[i].ctx_methods,
-			list->capability[i].dma_capabilities,
-			list->capability[i].ctx_capabilities );
-	    }
-#endif
 	}
 	drmFreeVersionList(list);
     }
@@ -161,7 +152,7 @@ int main(int argc, char **argv)
     fdDRM = drmOpenDRM();
 
     while ((c = getopt(argc, argv,
-		       "lc:d:vo:pf:s:w:W:b:r:R:P:L:C:XS:B:F:")) != EOF)
+		       "lc:d:vo:f:s:w:W:b:r:R:P:L:C:XS:B:F:")) != EOF)
 	switch (c) {
 	case 'F':
 	    count  = strtoul(optarg, NULL, 0);
@@ -208,12 +199,6 @@ int main(int argc, char **argv)
 		return 1;
 	    }
 	    break;
-	case 'p':
-	    if ((r = drmAddKey(fd,0,0))) {
-		drmError(r, argv[0]);
-		return 1;
-	    }
-	    break;
 	case 'B':		/* Test buffer allocation */
 	    count  = strtoul(optarg, &pt, 0);
 	    size   = strtoul(pt+1, &pt, 0);
@@ -246,7 +231,7 @@ int main(int argc, char **argv)
 	case 'b':
 	    count   = strtoul(optarg, &pt, 0);
 	    size    = strtoul(pt+1, NULL, 0);
-	    if ((r = drmAddBufs(fd, count, size)) < 0) {
+	    if ((r = drmAddBufs(fd, count, size, 0)) < 0) {
 		drmError(r, argv[0]);
 		return 1;
 	    }
@@ -295,24 +280,6 @@ int main(int argc, char **argv)
 	    printf("===== /proc/drm/1/vmainfo =====\n");
 	    sprintf(buf, "cat /proc/drm/1/vmainfo");
 	    system(buf);
-#endif
-#if 0
-	    {
-		unsigned long  *pt;
-		drm_dma_t      dma;
-		int            i;
-		int            idx, cnt;
-		
-		pt    = bufs.buflist[0].address;
-		for (i = 0; i < 6; i++) *pt++ = i;
-		idx = 0;
-		cnt = 6 * 4;
-		dma.send_count    = 1;
-		dma.send_indices  = &idx;
-		dma.send_sizes    = &cnt;
-		dma.request_count = 0;
-		drmDMA(fd, &dma);
-	    }
 #endif
 	    break;
 	case 'f':

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.99 1999/06/14 07:31:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.100 1999/06/20 05:23:45 dawes Exp $ */
 
 /*
  *
@@ -52,6 +52,7 @@
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
 #include "xisb.h"
+#include "xf86Priv.h"
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)
@@ -712,19 +713,21 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86getsecs)
    SYMFUNC(xf86fpossize)      /* for returning sizeof(fpos_t) */
 
-#ifdef XF86DRI
-				/* These may have more general uses, but
-                                   for now, they are only used by the DRI.
-                                   Loading them only when the DRI is built
-                                   may make porting (the non-DRI portions
-                                   of the X server) easier. */
+				/* These provide for DRI support. */
    SYMFUNC(xf86stat)
    SYMFUNC(xf86fstat)
    SYMFUNC(xf86access)
    SYMFUNC(xf86geteuid)
    SYMFUNC(xf86mknod)
    SYMFUNC(xf86chmod)
+   SYMFUNC(xf86chown)
    SYMFUNC(xf86sleep)
+#ifdef XF86DRI
+				/* These may have more general uses, but
+                                   for now, they are only used by the DRI.
+                                   Loading them only when the DRI is built
+                                   may make porting (the non-DRI portions
+                                   of the X server) easier. */
    SYMFUNC(xf86InstallSIGIOHandler)
    SYMFUNC(xf86RemoveSIGIOHandler)
 #endif
@@ -841,6 +844,11 @@ LOOKUP xfree86LookupTab[] = {
 
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)
+#endif
+
+   /* Globals from xf86Globals.c and xf86Priv.h */
+#ifdef XF86DRI
+   SYMVAR(xf86ConfigDRI)
 #endif
 
   { 0, 0 },

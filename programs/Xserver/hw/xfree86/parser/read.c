@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.8 1999/05/30 07:18:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/read.c,v 1.9 1999/05/30 14:04:27 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -139,6 +139,10 @@ xf86ReadConfigFile (void)
 			{
 				HANDLE_LIST (conf_vendor_lst, parseVendorSection,
 							 XF86ConfVendorPtr);
+			}
+			else if (NameCompare (val.str, "dri") == 0)
+			{
+				HANDLE_RETURN (conf_dri, parseDRISection ());
 			}
 			else
 			{

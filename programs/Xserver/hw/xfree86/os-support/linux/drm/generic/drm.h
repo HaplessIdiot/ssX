@@ -1,6 +1,6 @@
 /* drm.h -- Header for Direct Rendering Manager -*- linux-c -*-
  * Created: Mon Jan  4 10:05:05 1999 by faith@precisioninsight.com
- * Revised: Thu Jun  3 15:08:51 1999 by faith@precisioninsight.com
+ * Revised: Fri Jun 18 09:47:37 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All rights reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm.h,v 1.36 1999/06/07 13:01:43 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm.h,v 1.41 1999/06/21 14:31:21 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm.h,v 1.1 1999/06/14 07:32:03 dawes Exp $
  * 
  */
 
@@ -38,7 +38,9 @@
 #define DRM_PROC_MISC    "/proc/misc"
 #define DRM_PROC_DRM     "/proc/drm"
 #define DRM_DEV_DRM      "/dev/drm"
-#define DRM_DEV_MODE     (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP|S_IROTH|S_IWOTH)
+#define DRM_DEV_MODE     (S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP)
+#define DRM_DEV_UID      0
+#define DRM_DEV_GID      0
 #define DRM_MISC_NAME    "misc"
 
 
@@ -57,7 +59,7 @@
 #define DRM_MAX_DEVICES 6	  /* Support n-2 graphics card drivers      */
 #define DRM_DEV_MAJOR   0	  /* Default device major number            */
 #define DRM_MIN_ORDER   5	  /* At least 2^5 bytes = 32 bytes          */
-#define DRM_MAX_ORDER   17	  /* Up to 2^17 bytes = 128kB               */
+#define DRM_MAX_ORDER   22	  /* Up to 2^22 bytes = 4MB                 */
 #define DRM_RAM_PERCENT 10	  /* How much system ram can we lock?       */
 
 #define _DRM_LOCK_HELD  0x80000000 /* Hardware lock is held                 */
@@ -69,8 +71,7 @@
 typedef unsigned long drm_handle_t;
 typedef unsigned int  drm_context_t;
 typedef unsigned int  drm_drawable_t;
-typedef unsigned int  drm_key_t;
-
+typedef unsigned int  drm_magic_t;
 
 
 typedef struct drm_version {
@@ -85,26 +86,14 @@ typedef struct drm_version {
 	char   *desc;             /* User-space buffer to hold desc         */
 } drm_version_t;
 
-typedef struct drm_capability {
-				  /* Changes here should be reflected in
-				     drm_register_device.                   */
-	unsigned int dma_methods;      /* DMA methods supported             */
-	unsigned int ctx_methods;      /* Context switching methods         */
-	unsigned int dma_capabilities; /* DMA capabilities                  */
-	unsigned int ctx_capabilities; /* CTX capabilities                  */
-} drm_capability_t;
-
 typedef struct drm_list {
 	int              count;	  /* Length of user-space structures        */
 	drm_version_t    *version;
-	drm_capability_t *capability;
 } drm_list_t;
 
 typedef struct drm_request {
 	const char       *device_name; /* Requested device name             */
 	const char       *device_busid;/* Bus id                            */
-	drm_capability_t caps_request; /* Requested capabilities            */
-	drm_capability_t caps_granted; /* Granted capabilities              */
 	int              device_major;
 	int              device_minor;
 } drm_request_t;
@@ -319,8 +308,7 @@ typedef struct drm_draw {
 } drm_draw_t;
 
 typedef struct drm_auth {
-	drm_key_t hi;
-	drm_key_t lo;
+	drm_magic_t     magic;
 } drm_auth_t;
 
 typedef struct drm_irq_busid {
@@ -338,8 +326,6 @@ typedef struct drm_irq_busid {
 #define DRM_IOWR(nr,size)    _IOWR(DRM_IOCTL_BASE,nr,size)
 
 
-				/* FIXME: remember to pad ioctl structs for
-                                   future expansion. */
 #define DRM_IOCTL_VERSION    DRM_IOR( 0x00, drm_version_t)
 #define DRM_IOCTL_LIST       DRM_IOR( 0x01, drm_list_t)
 #define DRM_IOCTL_CREATE     DRM_IOWR(0x02, drm_request_t)
@@ -349,8 +335,8 @@ typedef struct drm_irq_busid {
 #define DRM_IOCTL_BLOCK      DRM_IOWR(0x10, drm_block_t)
 #define DRM_IOCTL_UNBLOCK    DRM_IOWR(0x11, drm_block_t)
 #define DRM_IOCTL_CONTROL    DRM_IOW( 0x12, drm_control_t)
-#define DRM_IOCTL_ADD_KEY    DRM_IOW( 0x13, drm_auth_t)
-#define DRM_IOCTL_RM_KEY     DRM_IOW( 0x14, drm_auth_t)
+#define DRM_IOCTL_GET_MAGIC  DRM_IOW( 0x13, drm_auth_t)
+#define DRM_IOCTL_AUTH_MAGIC DRM_IOW( 0x14, drm_auth_t)
 #define DRM_IOCTL_ADD_MAP    DRM_IOWR(0x15, drm_map_t)
 #define DRM_IOCTL_ADD_BUFS   DRM_IOWR(0x16, drm_buf_desc_t)
 #define DRM_IOCTL_MARK_BUFS  DRM_IOW( 0x17, drm_buf_desc_t)
@@ -368,9 +354,8 @@ typedef struct drm_irq_busid {
 #define DRM_IOCTL_ADD_DRAW   DRM_IOWR(0x27, drm_draw_t)
 #define DRM_IOCTL_RM_DRAW    DRM_IOWR(0x28, drm_draw_t)
 #define DRM_IOCTL_DMA        DRM_IOWR(0x29, drm_dma_t)
-#define DRM_IOCTL_AUTH       DRM_IOW( 0x2a, drm_auth_t)
-#define DRM_IOCTL_LOCK       DRM_IOW( 0x2b, drm_lock_t)
-#define DRM_IOCTL_UNLOCK     DRM_IOW( 0x2c, drm_lock_t)
-#define DRM_IOCTL_FINISH     DRM_IOW( 0x2d, drm_lock_t)
+#define DRM_IOCTL_LOCK       DRM_IOW( 0x2a, drm_lock_t)
+#define DRM_IOCTL_UNLOCK     DRM_IOW( 0x2b, drm_lock_t)
+#define DRM_IOCTL_FINISH     DRM_IOW( 0x2c, drm_lock_t)
 
 #endif

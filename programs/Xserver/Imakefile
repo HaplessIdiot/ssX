@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.164 1999/06/13 13:47:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.165 1999/06/14 07:31:18 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -504,17 +504,6 @@ ServerTarget(Xhp,$(HPSUBDIRS),$(HPOBJS),$(HPLIBS),$(HPSYSLIBS))
 #endif	/* XhpServer */
 
 
-#ifdef XFree86Version
-XF68INIT   = $(XF68COMSRC)/xf86Init.o $(XF68COMSRC)/xf86IniExt.o
-XF68CONFIG = $(XF68COMSRC)/xf86Option.o
-XF68COMLIB = $(XF68COMSRC)/LibraryTargetName(xf86)
-XF68OSLIB  = $(XF68OSSRC)/LibraryTargetName(xf86_os)
-XF68LIBS   = $(XF68INIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
-XF68MLIBS  = $(XF68MINIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
-XF68LLIBS  = $(XF68LINIT) $(XF68CONFIG) $(XF68COMLIB) $(XF68OSLIB)
-#endif
- 
-
 #if HasParallelMake
 XCOMM
 XCOMM force non-parallel build of XF86 servers to prevent MUTEX overrides
@@ -639,69 +628,6 @@ SetUIDServerTarget(XFree86,$(XF86SERVERSUBDIRS),$(XF86SERVEROBJS),$(XF86SERVERLI
 #endif
 #endif        /* XF86Server */
 
-
-#if XF68LoaderServer
-XCOMM
-XCOMM XFree68 Loadable Server
-XCOMM
-#if XF68FBDevIPLAN2p2
-IPLAN2P2DIR = iplan2p2
-FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p2/LibraryTargetName(ipl2p2)
-#endif
-#if XF68FBDevIPLAN2p4
-IPLAN2P4DIR = iplan2p4
-FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p4/LibraryTargetName(ipl2p4)
-#endif
-#if XF68FBDevIPLAN2p8
-IPLAN2P8DIR = iplan2p8
-FBDEVFBLIBS:= $(FBDEVFBLIBS) iplan2p8/LibraryTargetName(ipl2p8)
-#endif
-#if XF68FBDevILBM
-ILBMDIR = ilbm
-FBDEVFBLIBS:= $(FBDEVFBLIBS) ilbm/LibraryTargetName(ilbm)
-#endif
-#if XF68FBDevAFB
-AFBDIR = afb
-FBDEVFBLIBS:= $(FBDEVFBLIBS) afb/LibraryTargetName(afb)
-#endif
-#if XF68FBDevCFB8
-CFB8DIR = cfb
-FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB8)
-#endif
-#if XF68FBDevCFB16
-CFB16DIR = cfb16
-FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB16)
-#endif
-#if XF68FBDevCFB32
-CFB32DIR = cfb32
-FBDEVFBLIBS:= $(FBDEVFBLIBS) $(CFB32)
-#endif
-MFBDIR  = mfb
-CFB8DIR = cfb
-CFB16DIR = cfb16
-CFB24DIR = cfb24
-CFB32DIR = cfb32
-DDXDIR1  = hw/xfree68
-XF68LOADERSUBDIRS = $(STDDIRS) $(MFBDIR) $(IPLAN2P2DIR) $(IPLAN2P4DIR) \
-                   $(IPLAN2P8DIR) $(ILBMDIR) $(AFBDIR) $(CFB8DIR) \
-                   $(CFB16DIR) $(CFB32DIR) $(DDXDIR3) $(DEPDIRS)
-XF68LOADEROBJS = $(XF68COMSRC)/XF68_LOADER.o
-XF68LOADERLIB = $(XF68SRC)/loader/LibraryTargetName(loader)
-XF68LOADERLIBS = $(XF68LLIBS) $(XF68COMLIB) $(XF68LOADERLIB) \
-                 $(XF68OSLIB) PreFbLibs $(OTHEREXTS) NoMfbPostFbLibs
-XF68LOADERSYSLIBS = $(SYSLIBS)
-#if HasParallelMake
-MakeMutex($(XF68LOADERSUBDIRS) $(XF68LOADEROBJS) $(XF68LOADERLIBS) $(XF68LOADERSYSLIBS))
-#endif
-#if HasGnuMake
-$(XF68LOADEROBJS) $(XF68LOADERLIBS) $(XF68LOADERSYSLIBS):: $(XF68LOADERSUBDIRS)
-	@if [ -f $@ ]; then touch $@; fi
-#endif
-SetUIDServerTarget(XF68_LOADER,$(XF68LOADERSUBDIRS),$(XF68LOADEROBJS),$(XF68LOADERLIBS),$(XF68LOADERSYSLIBS))
-#ifndef ServerToInstall
-#define ServerToInstall XF68_LOADER
-#endif
-#endif        /* XF68LoaderServer */
 
 #if XprtServer && !MakeDllModules
 XCOMM

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.26 1999/05/22 08:40:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.27 1999/05/23 05:02:01 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -79,7 +79,9 @@ NormalLibraryObjectRule()
 # if DoLoadableServer
 #  if JoystickSupport
 AllTarget(bsd_jstk.o)
+#if 0
 InstallDynamicModule(bsd_jstk.o,$(MODULEDIR))
+#endif
 #  endif
 # endif
 #endif

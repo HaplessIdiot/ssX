@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.14 1999/05/30 07:18:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/xf86Parser.h,v 1.15 1999/05/30 14:04:28 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -249,6 +249,7 @@ typedef struct
 	int dev_clock[CONF_MAXCLOCKS];
 	int dev_chipid;
 	int dev_chiprev;
+	int dev_irq;
 	XF86OptionPtr dev_option_lst;
 }
 XF86ConfDeviceRec, *XF86ConfDevicePtr;
@@ -374,6 +375,23 @@ XF86ConfVendorRec, *XF86ConfVendorPtr;
 
 typedef struct
 {
+	GenericListRec list;
+	int buf_count;
+	int buf_size;
+	char *buf_flags;
+}
+XF86ConfBuffersRec, *XF86ConfBuffersPtr;
+
+typedef struct
+{
+	int dri_group;
+        int dri_mode;
+	XF86ConfBuffersPtr dri_buffers_lst;
+}
+XF86ConfDRIRec, *XF86ConfDRIPtr;
+
+typedef struct
+{
 	XF86ConfFilesPtr conf_files;
 	XF86ConfModulePtr conf_modules;
 	XF86ConfFlagsPtr conf_flags;
@@ -389,6 +407,7 @@ typedef struct
 	XF86ConfInputPtr conf_input_lst;
 	XF86ConfLayoutPtr conf_layout_lst;
 	XF86ConfVendorPtr conf_vendor_lst;
+	XF86ConfDRIPtr conf_dri;
 }
 XF86ConfigRec, *XF86ConfigPtr;
 

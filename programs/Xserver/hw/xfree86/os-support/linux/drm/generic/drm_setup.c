@@ -1,6 +1,6 @@
 /* drm_setup.c -- Setup/Cleanup for DRM -*- linux-c -*-
  * Created: Mon Jan  4 08:58:31 1999 by faith@precisioninsight.com
- * Revised: Sun May 16 22:08:02 1999 by faith@precisioninsight.com
+ * Revised: Thu Jun 24 15:49:09 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_setup.c,v 1.44 1999/05/17 03:27:05 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_setup.c,v 1.52 1999/06/24 20:29:42 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/drm_setup.c,v 1.1 1999/06/14 07:32:04 dawes Exp $
  *
  */
 
@@ -56,7 +56,7 @@ drm_mem_stats_t               drm_mem_stats[] = {
 	[DRM_MEM_DMA]      = { "dmabufs"  },
 	[DRM_MEM_SAREA]    = { "sareas"   },
 	[DRM_MEM_DRIVER]   = { "driver"   },
-	[DRM_MEM_KEYS]     = { "keylist"  },
+	[DRM_MEM_MAGIC]    = { "magic"    },
 	[DRM_MEM_IOCTLS]   = { "ioctltab" },
 	[DRM_MEM_MAPS]     = { "maplist"  },
 	[DRM_MEM_VMAS]     = { "vmalist"  },
@@ -138,17 +138,15 @@ static drm_ioctl_desc_t       drm_gen_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_BLOCK)]      = { drm_block,    1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_UNBLOCK)]    = { drm_unblock,  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_CONTROL)]    = { drm_control,  1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_ADD_KEY)]    = { drm_addkey,   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_RM_KEY)]     = { drm_rmkey,    1, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_GET_MAGIC)]  = { drm_getmagic, 0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_AUTH_MAGIC)] = { drm_authmagic,1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_MAP)]    = { drm_addmap,   1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_BUFS)]   = { drm_addbufs,  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MARK_BUFS)]  = { drm_markbufs, 1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_INFO_BUFS)]  = { drm_infobufs, 0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]  = { drm_freebufs, 0, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MAP_BUFS)]   = { drm_mapbufs,  0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]        = { drm_dma,      0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]       = { drm_lock,     0, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]     = { drm_unlock,   0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_FREE_BUFS)]  = { drm_freebufs, 0, 0 },
+	
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_CTX)]    = { drm_addctx,   1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_CTX)]     = { drm_rmctx,    1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_MOD_CTX)]    = { drm_modctx,   1, 0 },
@@ -158,14 +156,12 @@ static drm_ioctl_desc_t       drm_gen_ioctls[] = {
 	[DRM_IOCTL_NR(DRM_IOCTL_RES_CTX)]    = { drm_resctx,   0, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_ADD_DRAW)]   = { drm_adddraw,  1, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_RM_DRAW)]    = { drm_rmdraw,   1, 0 },
-	[DRM_IOCTL_NR(DRM_IOCTL_AUTH)]       = { drm_auth,     0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_DMA)]        = { drm_dma,      0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_LOCK)]       = { drm_lock,     0, 0 },
+	[DRM_IOCTL_NR(DRM_IOCTL_UNLOCK)]     = { drm_unlock,   0, 0 },
 	[DRM_IOCTL_NR(DRM_IOCTL_FINISH)]     = { drm_finish,   0, 0 },
 };
 #define DRM_GEN_IOCTL_COUNT DRM_ARRAY_SIZE(drm_gen_ioctls)
-
-static drm_capability_t       drm_gen_caps = {
-	0,
-};
 
 static drm_func_desc_t        drm_gen_funcs = {
 	reg:   drm_reg,
@@ -343,7 +339,9 @@ int drm_init(void)
 
 	DRM_TRACE("\n");
 
+#ifdef MODULE
 	drm_parse_drm(drm);
+#endif
 
 	retcode = register_chrdev(drm_major, DRM_NAME, &drm_fops);
 	if (retcode < 0) {
@@ -367,16 +365,14 @@ int drm_init(void)
 				     DRM_BASE_IOCTL_COUNT,
 				     drm_base_ioctls,
 				     NULL,
-				     NULL,
 				     1);
 	drm_register_driver(DRM_GEN_NAME,
 			    &drm_gen_version,
 			    DRM_GEN_IOCTL_COUNT,
 			    drm_gen_ioctls,
-			    &drm_gen_funcs,
-			    &drm_gen_caps);
+			    &drm_gen_funcs);
 
-	drm_base_minor = drm_register_device(DRM_NAME, DRM_NAME, 1, NULL);
+	drm_base_minor = drm_register_device(DRM_NAME, DRM_NAME, 1);
 	if (drm_base_minor < 0) {
 		DRM_ERROR("Cannot install %s: %d\n", DRM_NAME, drm_base_minor);
 		drm_cleanup();
@@ -387,7 +383,7 @@ int drm_init(void)
 	drm_ram_available = si.totalram;
 	drm_ram_used      = 0;
 
-	DRM_INFO("Device driver loaded\n");
+	DRM_INFO("Initialized\n");
 	
 	return 0;
 }
@@ -408,14 +404,11 @@ void drm_cleanup(void)
 	for (pt = drm_drivers; pt; pt = pt->next) {
 		drm_unregister_driver(pt->name);
 	}
-#if 0	
-	drm_unregister_driver(DRM_GEN_NAME);
-	drm_unregister_driver(DRM_NAME);
-#endif
+
 	if (unregister_chrdev(drm_major, DRM_NAME)) {
 		DRM_ERROR("Cannot unload device driver\n");
 	} else {
-		DRM_INFO("Device driver unloaded\n");
+		DRM_INFO("Module unloaded\n");
 	}
 }
 
@@ -446,7 +439,7 @@ int drm_open(struct inode *inode, struct file *filp)
 	
 	DRM_TRACE("pid = %d, minor = %d, open_count = %d, ioctl_count = %d\n",
 		  current->pid, minor, dev->open_count,
-		  dev->ioctl_count.counter);
+		  atomic_read(&dev->ioctl_count));
 
 	priv               = drm_alloc(sizeof(*priv), DRM_MEM_FILES);
 	memset(priv, 0, sizeof(*priv));
@@ -572,7 +565,7 @@ int drm_flush(struct file *filp)
 	return 0;
 }
 
-/* drm_release is called whenever a process closes /dev/drm.  Linux calls
+/* drm_release is called whenever a process closes /dev/drm*.  Linux calls
    this only if any mappings have been closed. */
 
 int drm_release(struct inode *inode, struct file *filp)
@@ -630,7 +623,7 @@ unsigned long drm_vm_nopage(struct vm_area_struct *vma,
 {
 	DRM_TRACE("0x%08lx, %d\n", address, write_access);
 
-	return 0;		/* FIXME: Disallow mremap */
+	return 0;		/* Disallow mremap */
 }
 
 #ifdef MODULE
@@ -675,7 +668,7 @@ unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 #ifdef MODULE
 	if (!drm_init_mm) drm_init_mm = drm_get_init_mm();
 #else
-	if (!drm_init_mm) drm_init_mm = &mm_init;
+	if (!drm_init_mm) drm_init_mm = &init_mm;
 #endif
 	
 	if (!drm_init_mm) {
@@ -683,7 +676,7 @@ unsigned long drm_vm_shm_nopage(struct vm_area_struct *vma,
 		return 0;	/* This will cause a user-space SIGBUS */
 	}
 
-	if (address > vma->vm_end) return 0; /* FIXME: Disallow mremap? */
+	if (address > vma->vm_end) return 0; /* Disallow mremap */
 
 	kernel_virtual = vma->vm_offset + (address - vma->vm_start);
 
@@ -713,13 +706,13 @@ unsigned long drm_vm_dma_nopage(struct vm_area_struct *vma,
 	unsigned long   offset;
 	unsigned long   page;
 	
-	if (address > vma->vm_end) return 0; /* FIXME: Disallow mremap? */
+	if (address > vma->vm_end) return 0; /* Disallow mremap */
 	if (!dev->pagelist)        return 0; /* Nothing allocated */
 
 	offset   = address - vma->vm_start; /* vm_offset should be 0 */
 	page     = offset >> PAGE_SHIFT;
 	physical = dev->pagelist[page] + (offset & (~PAGE_MASK));
-	atomic_inc(&mem_map[MAP_NR(physical)].count); /* FIXME: dec? */
+	atomic_inc(&mem_map[MAP_NR(physical)].count); /* Dec. by kernel */
 
 	DRM_TRACE("0x%08lx (page %lu) => 0x%08lx\n", address, page, physical);
 	return physical;
@@ -741,10 +734,12 @@ void drm_vm_open(struct vm_area_struct *vma)
 #if DRM_DEBUG_CODE
 	vma_entry = drm_alloc(sizeof(*vma_entry), DRM_MEM_VMAS);
 	if (vma_entry) {
+		spin_lock(&dev->struct_lock);
 		vma_entry->vma  = vma;
 		vma_entry->next = dev->vmalist;
 		vma_entry->pid  = current->pid;
 		dev->vmalist    = vma_entry;
+		spin_unlock(&dev->struct_lock);
 	}
 #endif
 }
@@ -763,6 +758,7 @@ void drm_vm_close(struct vm_area_struct *vma)
 	atomic_dec(&dev->vma_count);
 
 #if DRM_DEBUG_CODE
+	spin_lock(&dev->struct_lock);
 	for (pt = dev->vmalist, prev = NULL; pt; prev = pt, pt = pt->next) {
 		if (pt->vma == vma) {
 			if (prev) {
@@ -774,6 +770,7 @@ void drm_vm_close(struct vm_area_struct *vma)
 			break;
 		}
 	}
+	spin_unlock(&dev->struct_lock);
 #endif
 }
 
@@ -792,7 +789,7 @@ int drm_mmap_dma(struct file *filp, struct vm_area_struct *vma)
 	vma->vm_ops   = &drm_vm_dma_ops;
 	vma->vm_flags |= VM_LOCKED | VM_SHM; /* Don't swap */
 	
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,3)
+#if LINUX_VERSION_CODE < 0x020203 /* KERNEL_VERSION(2,2,3) */
 				/* In Linux 2.2.3 and above, this is
                                    handled in do_mmap() in mm/mmap.c. */
 	++filp->f_count;
@@ -841,7 +838,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 #if defined(__i386__)
 			if (boot_cpu_data.x86 > 3) {
 				pgprot_val(vma->vm_page_prot) |= _PAGE_PCD;
-				pgprot_val(vma->vm_page_prot) &= ~_PAGE_WT;
+				pgprot_val(vma->vm_page_prot) &= ~_PAGE_PWT;
 			}
 #endif
 			vma->vm_flags |= VM_IO;	/* not in core dump */
@@ -868,7 +865,7 @@ int drm_mmap(struct file *filp, struct vm_area_struct *vma)
 	}
 
 	
-#if LINUX_VERSION_CODE < KERNEL_VERSION(2,2,3)
+#if LINUX_VERSION_CODE < 0x020203 /* KERNEL_VERSION(2,2,3) */
 				/* In Linux 2.2.3 and above, this is
                                    handled in do_mmap() in mm/mmap.c. */
 	++filp->f_count;
@@ -884,7 +881,6 @@ void drm_register_driver_internal(const char *name,
 				  int ioctl_count,
 				  drm_ioctl_desc_t *ioctls,
 				  drm_func_desc_t *funcs,
-				  drm_capability_t *caps,
 				  int base)
 {
 	drm_driver_t *pt;
@@ -899,7 +895,6 @@ void drm_register_driver_internal(const char *name,
 	pt->name        = name;
 	pt->version     = version;
 	pt->funcs       = funcs;
-	pt->caps        = caps;
 	pt->next        = NULL;
 	pt->refcount    = 0;
 	pt->base        = base;
@@ -945,11 +940,10 @@ void drm_register_driver(const char *name,
 			 drm_version_t *version,
 			 int ioctl_count,
 			 drm_ioctl_desc_t *ioctls,
-			 drm_func_desc_t *funcs,
-			 drm_capability_t *caps)
+			 drm_func_desc_t *funcs)
 {
 	drm_register_driver_internal( name, version, ioctl_count,
-				      ioctls, funcs, caps, 0);
+				      ioctls, funcs, 0);
 }
 
 
@@ -986,14 +980,18 @@ void drm_unregister_driver(const char *name)
 	DRM_ERROR("Cannot unregister driver \"%s\"\n", name);
 }
 
+static void drm_dma_schedule_wrapper(unsigned long data)
+{
+	drm_dma_schedule((drm_device_t *)data, 0);
+}
+
 /* drm_register_device registers a device on the next available minor
    number.  If the device can be registered, the minor number is returned.
    Otherwise a value < 0 is returned. */
 
 int drm_register_device(const char *name,
 			const char *busid,
-			int allow_base,
-			drm_capability_t *caps)
+			int allow_base)
 {
 	drm_driver_t *drv;
 	drm_device_t *dev  = NULL;
@@ -1033,8 +1031,11 @@ int drm_register_device(const char *name,
 		}
 		if (!strcmp(drv->version->name, name)) {
 			if (drv->refcount) {
-				/* FIXME -- allow more than one device with
-                                   the same name */
+				/* FIXME: Allow more than one device with
+                                   the same name for 1) multihead support,
+                                   and 2) support for recycling the server
+                                   when a client refuses to die quickly
+                                   (see drm_unregister_device). */
 				dev->inuse = 0;
 				spin_unlock(&drm_meta_lock);
 				DRM_ERROR("Cannot load %s twice -- FIXME\n",
@@ -1058,12 +1059,26 @@ int drm_register_device(const char *name,
 			dev->buf_end      = dev->buf + DRM_BSZ;
 			
 			init_timer(&dev->timer);
+			dev->timer.function = drm_dma_schedule_wrapper;
 			dev->timer.data     = (unsigned long)dev;
 
 			drm_free(buf, buflen, DRM_MEM_DRIVER);
 			buf               = NULL;
+
+			init_waitqueue_head(&dev->waiting);
+			init_waitqueue_head(&dev->context_wait);
+			init_waitqueue_head(&dev->buf_readers);
+			init_waitqueue_head(&dev->buf_writers);
+			init_waitqueue_head(&dev->lock.lock_queue);
 			
-				/* FIXME: create initial context here */
+				/* The kernel's context could be created
+                                   here, but is now created in
+                                   drm_dma_enqueue.  This is more
+                                   resource-efficient for hardware that
+                                   does not do DMA, but may mean that
+                                   drm_select_queue fails between the time
+                                   the interrupt is initialized and the
+                                   time the queues are initialized. */
 			
 			drm_proc_add_device(dev);
 			
@@ -1076,15 +1091,6 @@ int drm_register_device(const char *name,
 					spin_unlock(&drm_meta_lock);
 					return retcode;
 				}
-			}
-				/* FIXME: remove capability support */
-			if (caps) {
-				caps->dma_methods &= drv->caps->dma_methods;
-				caps->ctx_methods &= drv->caps->ctx_methods;
-				caps->dma_capabilities
-					&= drv->caps->dma_capabilities;
-				caps->ctx_capabilities
-					&= drv->caps->ctx_capabilities;
 			}
 			spin_unlock(&drm_meta_lock);
 			return minor;
@@ -1103,12 +1109,12 @@ int drm_register_device(const char *name,
 
 int drm_unregister_device(int minor)
 {
-	drm_driver_t    *drv;
-	drm_device_t    *dev;
-	int             i, j;
-	drm_key_entry_t *pt, *next;
-	drm_map_t       *map;
-	drm_vma_entry_t *vma, *vma_next;
+	drm_driver_t      *drv;
+	drm_device_t      *dev;
+	int               i, j;
+	drm_magic_entry_t *pt, *next;
+	drm_map_t         *map;
+	drm_vma_entry_t   *vma, *vma_next;
 
 	spin_lock(&drm_meta_lock);
 	
@@ -1133,10 +1139,19 @@ int drm_unregister_device(int minor)
 		spin_unlock(&drm_meta_lock);
 		return -EINVAL;
 	}
-	if (dev->open_count || dev->ioctl_count.counter || dev->blocked) {
-				/* FIXME: Allow flagging for deletion */
+	if (dev->open_count || atomic_read(&dev->ioctl_count) || dev->blocked){
+				/* FIXME: Allow flagging for deletion so
+                                   that the server can recycle even if a
+                                   client refuses to die quickly.  See
+                                   comment in drm_register_device. */
 		spin_unlock(&dev->count_lock);
 		spin_unlock(&drm_meta_lock);
+		DRM_ERROR("Device busy: %s at busid %s (%d, %d, %d)\n",
+			  dev->driver->name,
+			  dev->busid,
+			  dev->open_count,
+			  atomic_read(&dev->ioctl_count),
+			  dev->blocked);
 		return -EBUSY;
 	}
 	dev->inuse = 0;
@@ -1147,6 +1162,9 @@ int drm_unregister_device(int minor)
 
 				/* Unhook interrupt handler */
 	if (dev->irq) drm_irq_uninstall(dev);
+
+				/* Delete timer, if any */
+	del_timer(&dev->timer);
 		
 				/* Free busid */
 	drm_strfree(dev->busid, DRM_MEM_DRIVER);
@@ -1159,11 +1177,11 @@ int drm_unregister_device(int minor)
 				/* Clear pid list */
 	DRM_DEBUG("pidlist\n");
 	for (i = 0; i < DRM_HASH_SIZE; i++) {
-		for (pt = dev->keylist[i].head; pt; pt = next) {
+		for (pt = dev->magiclist[i].head; pt; pt = next) {
 			next = pt->next;
-			drm_free(pt, sizeof(*pt), DRM_MEM_KEYS);
+			drm_free(pt, sizeof(*pt), DRM_MEM_MAGIC);
 		}
-		dev->keylist[i].head = dev->keylist[i].tail = NULL;
+		dev->magiclist[i].head = dev->magiclist[i].tail = NULL;
 	}
 	
 				/* Clear vma list (only built for debugging) */
@@ -1267,8 +1285,7 @@ int drm_unregister_device(int minor)
 	dev->pagelist        = NULL;
 	dev->lock.hw_lock    = NULL; /* SHM removed */
 	dev->lock.pid        = 0;
-				/* FIXME: what kind of cleanup does
-                                   lock_queue need? */
+	wake_up_interruptible(&dev->lock.lock_queue);
 	
 				/* callback */
 	DRM_DEBUG("callbacks\n");

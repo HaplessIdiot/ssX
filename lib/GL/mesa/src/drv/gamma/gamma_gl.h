@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.h,v 1.1 1999/06/14 07:31:14 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.h,v 1.1 1999/04/05 05:24:35 martin Exp $
+ * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_gl.h,v 1.4 1999/06/21 05:13:55 martin Exp $
  */
 
 #ifndef _GAMMA_GL_H_
@@ -38,10 +38,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-#define NEED_GAMMA_FUNCS_WRAPPED
-#include "gamma_gl_wrap.h"
-
-#include <GL/gl.h>
+#ifndef GLX_USE_DLOPEN
+#define NEED_MESA_FUNCS_WRAPPED
+#include "mesa_api.h"
+#endif
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.60 1999/06/12 07:18:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.61 1999/06/20 05:23:34 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1247,7 +1247,17 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     
     if (cPtr->UseFullMMIO)
 	chipsUnmapMem(pScrn);
-
+    
+    if (cPtr->Flags & ChipsLinearSupport) {
+	resRange vgamem[] =	{ {ResShrMemBlock,0xA0000,0xAFFFF},
+				  {ResShrMemBlock,0xB0000,0xB7FFF},
+ 				  {ResShrMemBlock,0xB8000,0xBFFFF},
+ 				  _END };
+ 	xf86SetOperatingState(vgamem, cPtr->pEnt->index, ResDisableOpr);
+    }
+    if (cPtr->Flags & ChipsFullMMIOSupport)
+ 	xf86SetOperatingState(RES_SHARED_VGA, cPtr->pEnt->index, ResDisableOpr);
+	
     return TRUE;
 }
 
@@ -2302,7 +2312,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
-	linearRes[0].type = ResShrIoSparse | ResBios;
+	linearRes[0].type = ResExcIoSparse | ResBios;
 	linearRes[0].rBase = cPtr->Regs32[0];
 	linearRes[0].rMask = 0x83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
@@ -2960,7 +2970,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    ErrorF("DR[%X] = %X\n",i,cPtr->Regs32[i]);
 #endif
 	}
-	linearRes[0].type = ResShrIoSparse;
+	linearRes[0].type = ResExcIoSparse;
 	linearRes[0].rBase = cPtr->Regs32[0];
 	linearRes[0].rMask = 0x83FC;
 	if (xf86RegisterResources(cPtr->pEnt->index,linearRes,ResNone)) {
@@ -3787,13 +3797,7 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
 
     if (cPtr->Flags & ChipsOverlay8plus16) {
-	/*
-	 * FIXME:
-	 * This Calculation of Base is Wrong!!! The result is that the
-	 * 16bpp is misaligned in X with the 8bpp mask for 8plus16 overlays
-	 */
-	Base -= (pScrn->displayWidth - pScrn->currentMode->HDisplay) >> 3;
-	Base <<= 3;
+	Base = (Base << 3) & ~(unsigned long)0xF;
 
 	cPtr->writeMR(cPtr, 0x22, (cPtr->FbOffset16 + Base) & 0xF8);
 	cPtr->writeMR(cPtr, 0x23, ((cPtr->FbOffset16 + Base) >> 8) & 0xFF);
@@ -5995,13 +5999,18 @@ chipsUnmapMem(ScrnInfoPtr pScrn)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
 
     if (cPtr->Flags & ChipsLinearSupport) {
-      if (IS_HiQV(cPtr)) 
-	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x20000);
-      else
-	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase, 0x10000);
-      cPtr->MMIOBase = NULL;
-      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase, 
-		      cPtr->FbMapSize);
+	if (IS_HiQV(cPtr)) {
+	    if (cPtr->MMIOBase)
+		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase,
+				0x20000);
+	} else {
+	  if (cPtr->MMIOBase)
+	      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase,
+			      0x10000);
+	}
+	cPtr->MMIOBase = NULL;
+	xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->FbBase, 
+			cPtr->FbMapSize);
     }
     cPtr->FbBase = NULL;
     

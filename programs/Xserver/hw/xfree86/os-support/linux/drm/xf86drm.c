@@ -1,6 +1,6 @@
 /* xf86drm.c -- User-level interface to DRM device
  * Created: Tue Jan  5 08:16:21 1999 by faith@precisioninsight.com
- * Revised: Mon Jun  7 08:17:55 1999 by faith@precisioninsight.com
+ * Revised: Fri Jun 18 09:52:23 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,8 +24,8 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.37 1999/06/07 13:01:42 faith Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.1 1999/06/14 07:32:01 dawes Exp $
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.41 1999/06/21 14:31:20 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drm.c,v 1.2 1999/06/14 12:02:10 dawes Exp $
  * 
  */
 
@@ -33,6 +33,7 @@
 # include "xf86.h"
 # include "xf86_OSproc.h"
 # include "xf86_ansic.h"
+# include "xf86Priv.h"
 # define _DRM_MALLOC xalloc
 # define _DRM_FREE   xfree
 # ifndef XFree86LOADER
@@ -257,7 +258,6 @@ static int drmOpen(const char *name, const char *busid)
     int             minor;
     dev_t           dev;
     
-    
     if (!drmAvailable())                       return DRM_ERR_NO_DEVICE;
     if ((major = drmGetMajor()) < 0)           return major;
     if ((minor = drmGetMinor(name,busid)) < 0) return minor;
@@ -273,7 +273,16 @@ static int drmOpen(const char *name, const char *busid)
     if (!access(path, F_OK)) {
 	if (stat(path, &st))   return DRM_ERR_NO_ACCESS;
 	if (st.st_rdev == dev) {
+#if defined(XFree86Server)
+	    chmod(path,
+		  xf86ConfigDRI.mode  ? xf86ConfigDRI.mode : DRM_DEV_MODE);
+	    chown(path, DRM_DEV_UID,
+		  xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID);
+#endif
+#if defined(DRM_USE_MALLOC)
 	    chmod(path, DRM_DEV_MODE);
+	    chown(path, DRM_DEV_UID, DRM_DEV_GID);
+#endif
 	    return drm_open(path);
 	}
     }
@@ -286,7 +295,15 @@ static int drmOpen(const char *name, const char *busid)
 	remove(path);
 	return DRM_ERR_NOT_ROOT;
     }
+#if defined(XFree86Server)
+    chmod(path, xf86ConfigDRI.mode ? xf86ConfigDRI.mode : DRM_DEV_MODE);
+    chown(path, DRM_DEV_UID,
+	  xf86ConfigDRI.group ? xf86ConfigDRI.group : DRM_DEV_GID);
+#endif
+#if defined(DRM_USE_MALLOC)
     chmod(path, DRM_DEV_MODE);
+    chown(path, DRM_DEV_UID, DRM_DEV_GID);
+#endif
     return drm_open(path);
 }
 
@@ -336,11 +353,6 @@ static void drmCopyVersion(drmVersionPtr d, drm_version_t *s)
     d->date               = drmStrdup(s->date);
     d->desc_len           = s->desc_len;
     d->desc               = drmStrdup(s->desc);
-}
-
-static void drmCopyCapability(drmCapabilityPtr d, drm_capability_t *s)
-{
-
 }
 
 /* drmVersion obtains the version information via an ioctl.  Similar
@@ -424,7 +436,6 @@ static void drmFreeKernelVersionList(drm_list_t *list)
 	}
 	drmFree(list->version);
     }
-    if (list->capability) drmFree(list->capability);
     drmFree(list);
 }
 
@@ -449,8 +460,6 @@ drmListPtr drmGetVersionList(int fd)
     for (i = 0; i < list->count; i++) {
 	list->version
 	    = drmMalloc(list->count * sizeof(*list->version));
-	list->capability
-	    = drmMalloc(list->count * sizeof(*list->capability));
 	list->version[i].name_len = 0;
 	list->version[i].name     = NULL;
 	list->version[i].date_len = 0;
@@ -499,22 +508,9 @@ drmListPtr drmGetVersionList(int fd)
     retval->capability = drmMalloc(list->count * sizeof(*retval->capability));
     for (i = 0; i < list->count; i++) {
 	drmCopyVersion(&retval->version[i], &list->version[i]);
-	drmCopyCapability(&retval->capability[i], &list->capability[i]);
     }
     drmFreeKernelVersionList(list);
     return retval;
-}
-
-				/* FIXME -- this gets removed later */
-
-int drmGenerateKey(drmKeyPtr hi, drmKeyPtr lo)
-{
-    static void *state = NULL;
-
-    if (!state) state = drmRandomCreate(1);
-    *hi = drmRandom(state);
-    *lo = drmRandom(state);
-    return 0;
 }
 
 int drmCreateSub(int fd, const char *name, const char *busid)
@@ -523,7 +519,6 @@ int drmCreateSub(int fd, const char *name, const char *busid)
 
     request.device_name  = name;
     request.device_busid = busid;
-    memset(&request.caps_request, 0, sizeof(request.caps_request));
     if (ioctl(fd, DRM_IOCTL_CREATE, &request)) {
 	return -errno;
     }
@@ -543,23 +538,22 @@ int drmDestroySub(int fd, const char *busid)
     return 0;
 }
 
-int drmAddKey(int fd, drmKey hi, drmKey lo)
+int drmGetMagic(int fd, drmMagicPtr magic)
 {
-    drm_auth_t key;
+    drm_auth_t auth;
 
-    key.hi = hi;
-    key.lo = lo;
-    if (ioctl(fd, DRM_IOCTL_ADD_KEY, &key)) return -errno;
+    *magic = 0;
+    if (ioctl(fd, DRM_IOCTL_GET_MAGIC, &auth)) return -errno;
+    *magic = auth.magic;
     return 0;
 }
 
-int drmDelKey(int fd, drmKey hi, drmKey lo)
+int drmAuthMagic(int fd, drmMagic magic)
 {
-    drm_auth_t key;
+    drm_auth_t auth;
 
-    key.hi = hi;
-    key.lo = lo;
-    if (ioctl(fd, DRM_IOCTL_ADD_KEY, &key)) return -errno;
+    auth.magic = magic;
+    if (ioctl(fd, DRM_IOCTL_AUTH_MAGIC, &auth)) return -errno;
     return 0;
 }
 
@@ -582,7 +576,7 @@ int drmAddMap(int fd,
     return 0;
 }
 
-int drmAddBufs(int fd, int count, int size) /* FIXME: add flags */
+int drmAddBufs(int fd, int count, int size, int flags)
 {
     drm_buf_desc_t request;
     
@@ -590,7 +584,7 @@ int drmAddBufs(int fd, int count, int size) /* FIXME: add flags */
     request.size      = size;
     request.low_mark  = 0;
     request.high_mark = 0;
-    request.flags     = 0;
+    request.flags     = flags;
     if (ioctl(fd, DRM_IOCTL_ADD_BUFS, &request)) return -errno;
     return request.count;
 }
@@ -639,17 +633,6 @@ int drmFreeBufs(int fd, int count, int *list)
     if (ioctl(fd, DRM_IOCTL_FREE_BUFS, &request)) return -errno;
     return 0;
 }
-
-int drmAuth(int fd, drmKey hi, drmKey lo)
-{
-    drm_auth_t auth;
-    
-    auth.hi = hi;
-    auth.lo = lo;
-    if (ioctl(fd, DRM_IOCTL_AUTH, &auth)) return -errno;
-    return 0;
-}
-
 
 int drmOpenSub(const char *busid)
 {
@@ -879,9 +862,7 @@ int drmSetContextFlags(int fd, drmContext context, drmContextFlags flags)
                                    promises to maintain hardware context,
                                    or in the client-side library when
                                    buffers are swapped on behalf of two
-                                   threads.  FIXME: is this last assertion
-                                   correct in the case that a third unknown
-                                   thread is intermingling DMA? */
+                                   threads. */
     ctx.handle = context;
     ctx.flags  = 0;
     if (flags & DRM_CONTEXT_PRESERVED) ctx.flags |= _DRM_CONTEXT_PRESERVED;

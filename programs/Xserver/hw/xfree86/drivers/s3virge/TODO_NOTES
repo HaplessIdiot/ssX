@@ -1,7 +1,7 @@
 S3 ViRGE 4.0 devel notes
 
 rev: 
-May 28 1999 KJB
+26 Jun 1999 KJB
 
 
 Function		Implemented
@@ -23,6 +23,17 @@ S3VRestore		X
 
 Status
 ------
+6/26/99 KJB
+Make the memory settings for fifo_conservative the default, 'fifo_conservative'
+does nothing additional now.  Patch includes DGA2 additions below, non-working.
+Expected to be included in 3.9Pu.
+
+Changes in 3.9Pt by others include additions for newer RAC support.  Some reports
+say multi-head works now with ViRGE.
+
+6/17/99 KJB
+Ver 0.9.0 - Prelim DGA2 support modeled after MGA.
+
 5/28/99 KJB
 Ver 0.8.0 - Changes to 3.9Po - Cleaned up debug register printing function, minor
 changes to man page, remove S3V.sgml and add new s3virge.sgml in doc/sgml, also
@@ -170,4 +181,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.8 1999/03/29 12:17:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.9 1999/05/30 14:41:03 dawes Exp $

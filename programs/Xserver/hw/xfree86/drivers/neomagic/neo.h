@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.2 1999/04/18 14:02:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo.h,v 1.3 1999/06/20 15:02:53 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -214,6 +214,12 @@ typedef struct neoRec
 
 /* I/O register offsets */
 #define GRAX	0x3CE
+
+/* vga IO functions */
+#define VGArCR(index) hwp->readCrtc(hwp,index)
+#define VGAwCR(index,val) hwp->writeCrtc(hwp,index,val)
+#define VGArGR(index) hwp->readGr(hwp,index)
+#define VGAwGR(index,val) hwp->writeGr(hwp,index,val)
 
 /* memory mapped register access macros */
 #define INREG8(addr) *(volatile CARD8 *)(nPtr->NeoMMIOBase + (addr))

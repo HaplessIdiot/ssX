@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,12 +30,15 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.42 1999/06/09 15:00:38 jens Exp $
+ * $PI: xc/programs/Xserver/GL/dri/dri.c,v 1.49 1999/06/24 18:37:07 faith Exp $
  */
 
 #if XFree86LOADER
 #include "xf86.h"
 #include "xf86_ansic.h"
+#else
+#include <sys/time.h>
+#include <unistd.h>
 #endif
 
 #define NEED_REPLIES
@@ -60,6 +63,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86drm.h"
 #include "glxserver.h"
 #include "mi.h"
+#include "xf86Priv.h"
 
 static int DRIScreenPrivIndex = -1;
 static int DRIWindowPrivIndex = -1;
@@ -469,26 +473,27 @@ DRIQueryDirectRenderingCapable(
 Bool
 DRIOpenConnection(
     ScreenPtr pScreen,
-    drmKeyPtr drmClientKeyLow,
-    drmKeyPtr drmClientKeyHigh,
     drmHandlePtr hSAREA,
     char **busIdString
 )
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
 
-    drmGenerateKey(&pDRIPriv->drmClientKeyHigh, &pDRIPriv->drmClientKeyLow);
-    if (drmAddKey(pDRIPriv->drmSubFD,
-		  pDRIPriv->drmClientKeyHigh,
-		  pDRIPriv->drmClientKeyLow) < 0) {
-	return FALSE;
-    }
-
-    *drmClientKeyLow  = pDRIPriv->drmClientKeyLow;
-    *drmClientKeyHigh = pDRIPriv->drmClientKeyHigh;
     *hSAREA           = pDRIPriv->hSAREA;
     *busIdString      = pDRIPriv->pDriverInfo->busIdString;
 
+    return TRUE;
+}
+
+Bool
+DRIAuthConnection(
+    ScreenPtr pScreen,
+    drmMagic magic
+)
+{
+    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+
+    if (drmAuthMagic(pDRIPriv->drmSubFD, magic)) return FALSE;
     return TRUE;
 }
 
@@ -498,10 +503,6 @@ DRICloseConnection(
 )
 {
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-
-    drmDelKey(pDRIPriv->drmSubFD,
-	      pDRIPriv->drmClientKeyHigh,
-	      pDRIPriv->drmClientKeyLow);
 
     return TRUE;
 }
@@ -600,9 +601,12 @@ DRICreateContextPrivFromHandle(ScreenPtr pScreen,
 Bool
 DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv)
 {
-    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pDRIContextPriv->pScreen);
+    DRIScreenPrivPtr pDRIPriv;
 
-    drmDelContextTag(pDRIPriv->drmSubFD, pDRIContextPriv->hwContext);
+    if (!pDRIContextPriv) return TRUE;
+    
+    pDRIPriv = DRI_SCREEN_PRIV(pDRIContextPriv->pScreen);
+
     if (!(pDRIContextPriv->flags & DRI_CONTEXT_RESERVED)) {
 				/* Don't delete reserved contexts from
                                    kernel area -- the kernel manages its
@@ -610,6 +614,12 @@ DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv)
 	if (drmDestroyContext(pDRIPriv->drmSubFD, pDRIContextPriv->hwContext))
 	    return FALSE;
     }
+				/* Remove the tag last to prevent a race
+                                   condition where the context has pending
+                                   buffers.  The context can't be re-used
+                                   while in this thread, but buffers can be
+                                   dispatched asynchronously. */
+    drmDelContextTag(pDRIPriv->drmSubFD, pDRIContextPriv->hwContext);
     xfree(pDRIContextPriv);
     return TRUE;
 }
@@ -811,7 +821,7 @@ DRIGetDrawableInfo(
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIDrawablePrivPtr	pDRIDrawablePriv, pOldDrawPriv;
     WindowPtr		pWin, pOldWin;
-    int			i, oldestIndex;
+    int			i, oldestIndex = 0;
     unsigned int	oldestStamp;
 
     if (pDrawable->type == DRAWABLE_WINDOW) {
@@ -1273,6 +1283,62 @@ DRICopyWindow(
     pScreen->CopyWindow = DRICopyWindow;
 }
 
+static void
+DRIGetSecs(unsigned long *secs, unsigned long *usecs)
+{
+#if XFree86LOADER
+    xf86getsecs(secs,usecs);
+#else
+    struct timeval tv;
+
+    gettimeofday(&tv, NULL);
+
+    *secs  = tv.tv_sec;
+    *usecs = tv.tv_usec;
+#endif
+}
+
+static unsigned long
+DRIComputeMilliSeconds(unsigned long s_secs, unsigned long s_usecs,
+		       unsigned long f_secs, unsigned long f_usecs)
+{
+    if (f_usecs < s_usecs) {
+	--f_secs;
+	f_usecs += 1000000;
+    }
+    return (f_secs - s_secs) * 1000 + (f_usecs - s_usecs) / 1000;
+}
+
+static void
+DRISpinLockTimeout(drmLock *lock, int val, unsigned long timeout /* in mS */)
+{
+    int           count = 10000;
+    char          ret;
+    unsigned long s_secs, s_usecs;
+    unsigned long f_secs, f_usecs;
+    unsigned long msecs;
+    unsigned long prev  = 0;
+
+    DRIGetSecs(&s_secs, &s_usecs);
+
+    do {
+	DRM_SPINLOCK_COUNT(lock, val, count, ret);
+	if (!ret) return;	/* Got lock */
+	DRIGetSecs(&f_secs, &f_usecs);
+	msecs = DRIComputeMilliSeconds(s_secs, s_usecs, f_secs, f_usecs);
+	if (msecs - prev < 250) count *= 2; /* Not more than 0.5S */
+    } while (msecs < timeout);
+
+				/* Didn't get lock, so take it.  The worst
+                                   that can happen is that there is some
+                                   garbage written to the wrong part of the
+                                   framebuffer that a refresh will repair.
+                                   That's undesirable, but better than
+                                   locking the server.  This should be a
+                                   very rare event. */
+    DRM_SPINLOCK_TAKE(lock, val);
+}
+
 int
 DRIValidateTree(
     WindowPtr pParent,
@@ -1299,7 +1365,7 @@ DRIValidateTree(
     DRM_UNLOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext);
 
     /* Grab drawable spin lock */
-    DRM_SPINLOCK(&pDRIPriv->pSAREA->drawable_lock, 1);
+    DRISpinLockTimeout(&pDRIPriv->pSAREA->drawable_lock, 1, 1000); /* 1 sec */
 
     /* Call kernel flush outstanding buffers and relock */
     DRM_LOCK(pDRIPriv->drmSubFD, pDRIPriv->pSAREA, pDRIPriv->myContext,

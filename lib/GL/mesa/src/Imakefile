@@ -1,5 +1,5 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.1 1999/06/14 07:23:43 dawes Exp $
-XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.2 1999/04/05 05:24:33 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.2 1999/06/14 07:31:08 dawes Exp $
+XCOMM $PI: xc/lib/GL/mesa/src/Imakefile,v 1.5 1999/06/21 05:13:55 martin Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -40,19 +40,38 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          SRCS = $(CORE_SRCS) /* $(ASM_SRCS) */
          OBJS = $(CORE_OBJS) /* $(ASM_OBJS) */
 
+#if !GlxUseBuiltInDRIDriver
+#undef DoNormalLib NormalLibGlx
+#undef DoExtraLib SharedLibGlx
+#undef DoDebugLib DebugLibGlx
+#undef DoProfileLib ProfileLibGlx
+#endif
+
+#if GlxBuiltInMesa || !GlxUseBuiltInDRIDriver
+  MESASUBDIRS = X
+
 #include <Library.tmpl>
 
 LibraryObjectRule()
 
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
+#endif
 
 #define IHaveSubdirs
 #define PassCDebugFlags
 
-SUBDIRS = X drv
+SUBDIRS = $(MESASUBDIRS) drv
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+
+#if !GlxUseBuiltInDRIDriver
+LIBNAME = mesa.so
+ALL_OBJS = $(CORE_OBJS) X/?*.o
+ALL_DEPS = $(SUBDIRS) DONE X/DONE
+SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
+InstallDynamicModule($(LIBNAME),$(MODULEDIR),.)
+#endif
 
 DependTarget()

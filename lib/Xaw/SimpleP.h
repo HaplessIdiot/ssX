@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.8 1999/06/06 08:48:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleP.h,v 1.9 1999/06/20 08:41:06 dawes Exp $ */
 
 #ifndef _SimpleP_h
 #define _SimpleP_h
@@ -78,7 +78,8 @@ typedef struct {
     /* private */
 #ifndef OLDXAW
     XawDisplayList *display_list;
-    XtPointer pad[4];	/* for future use and keep binary compatability */
+    String tip;
+    XtPointer pad[3];	/* for future use and keep binary compatability */
 #endif
 } SimplePart;
 

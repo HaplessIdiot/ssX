@@ -1,5 +1,5 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.6 1999/06/08 11:31:03 dawes Exp $
-XCOMM $PI: xc/lib/GL/Imakefile,v 1.9 1999/06/08 16:35:11 faith Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.7 1999/06/14 07:23:30 dawes Exp $
+XCOMM $PI: xc/lib/GL/Imakefile,v 1.11 1999/06/14 21:10:34 faith Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -12,8 +12,9 @@ XCOMM $PI: xc/lib/GL/Imakefile,v 1.9 1999/06/08 16:35:11 faith Exp $
 
 #if BuildXF86DRI
 DRIDIRS = dri
+MESADIRS = mesa/src
 #endif
-SUBDIRS = glx $(DRIDIRS) mesa/src
+SUBDIRS = glx $(DRIDIRS) $(MESADIRS)
 
 #ifdef SharedGLReqs
 REQUIREDLIBS = SharedGLReqs
@@ -44,33 +45,35 @@ DependSubdirs($(SUBDIRS))
     DRMPOBJS = dri/drm/profiled/?*.o
     DRMDONES = dri/drm/DONE
 #if !GlxUseSGISI
-    MESAOBJS = mesa/src/?*.o mesa/src/X/?*.o
-   MESAUOBJS = mesa/src/unshared/?*.o mesa/src/X/unshared/?*.o
-   MESADOBJS = mesa/src/debugger/?*.o mesa/src/X/debugger/?*.o
-   MESAPOBJS = mesa/src/profiled/?*.o mesa/src/X/profiled/?*.o
-   MESADONES = mesa/src/DONE mesa/src/X/DONE
-
-   GAMMAOBJS = mesa/src/drv/gamma/?*.o
-  GAMMAUOBJS = mesa/src/drv/gamma/unshared/?*.o
-  GAMMADOBJS = mesa/src/drv/gamma/debugger/?*.o
-  GAMMAPOBJS = mesa/src/drv/gamma/profiled/?*.o
-  GAMMADONES = mesa/src/drv/gamma/DONE
+#if GlxBuiltInGamma
+     DRVOBJS = mesa/src/drv/gamma/?*.o
+    DRVUOBJS = mesa/src/drv/gamma/unshared/?*.o
+    DRVDOBJS = mesa/src/drv/gamma/debugger/?*.o
+    DRVPOBJS = mesa/src/drv/gamma/profiled/?*.o
+    DRVDONES = mesa/src/drv/gamma/DONE
+#elif GlxBuiltInMesa
+     DRVOBJS = mesa/src/?*.o mesa/src/X/?*.o
+    DRVUOBJS = mesa/src/unshared/?*.o mesa/src/X/unshared/?*.o
+    DRVDOBJS = mesa/src/debugger/?*.o mesa/src/X/debugger/?*.o
+    DRVPOBJS = mesa/src/profiled/?*.o mesa/src/X/profiled/?*.o
+    DRVDONES = mesa/src/DONE mesa/src/X/DONE
+#endif
 #endif
 #endif
 
 #ifdef OS2Architecture
         OBJS = $(LIBNAME).a
 #else
-        OBJS = $(GLXOBJS)  $(DRIOBJS)  $(DRMOBJS)  $(MESAOBJS)  $(GAMMAOBJS)
+        OBJS = $(GLXOBJS)  $(DRIOBJS)  $(DRMOBJS)  $(DRVOBJS)
 #endif
 #if HasSharedLibraries
-       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRMUOBJS) $(MESAUOBJS) $(GAMMAUOBJS)
+       UOBJS = $(GLXUOBJS) $(DRIUOBJS) $(DRMUOBJS) $(DRVUOBJS)
 #else
        UOBJS = $(OBJS)
 #endif
-       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRMDOBJS) $(MESADOBJS) $(GAMMADOBJS)
-       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRMPOBJS) $(MESAPOBJS) $(GAMMAPOBJS)
-       DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES) $(MESADONES) $(GAMMADONES)
+       DOBJS = $(GLXDOBJS) $(DRIDOBJS) $(DRMDOBJS) $(DRVDOBJS)
+       POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRMPOBJS) $(DRVPOBJS)
+       DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES) $(DRVDONES)
 
 #include <Library.tmpl>
 

@@ -1,6 +1,6 @@
 /* gen_dma.c -- Generic DMA IOCTL and function support -*- linux-c -*-
  * Created: Fri Mar 19 14:30:16 1999 by faith@dict.org
- * Revised: Sun May 16 23:26:57 1999 by faith@dict.org
+ * Revised: Thu Jun 24 15:49:10 1999 by faith@dict.org
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,16 +24,17 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_dma.c,v 1.26 1999/05/17 03:27:06 faith Exp $
- * $XFree86$
+ * $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_dma.c,v 1.31 1999/06/24 20:29:42 faith Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/generic/gen_dma.c,v 1.1 1999/06/14 07:32:05 dawes Exp $
  *
  */
 
 #define __NO_VERSION__
 #include "drmP.h"
 
-#include <linux/delay.h>	/* FIXME -- remove when mdelay not needed */
 #include <linux/interrupt.h>	/* For task queue support */
+
+#define DRM_ENGINE_VERBOSE 0	/* Make drm_engine trace verbosely */
 
 #if DRM_DEBUG_CODE > 1
 #define CHECK                                                            \
@@ -212,38 +213,13 @@ int drm_engine(drm_device_t *dev,
 #define MODVAL  _DRM_E_MODVAL(cmd->inst[i])
 #define COND    _DRM_E_COND(cmd->inst[i])
 
-#if 0
+#if DRM_ENGINE_VERBOSE
 	DRM_TRACE("0x%08lx (0x%08lx bytes); %d instructions for %d\n",
 		  address, length, cmd->count, command);
 #endif
 
 	if (!cmd->count || !cmd->inst) return -EINVAL;
 
-#if 0
-				/* FIXME: remove this code */
-	{
-				/* Check for gamma errors */
-		unsigned int err;
-
-		err = *(__volatile__ int *)
-			((unsigned long)dev->maplist[0]->handle + 0x838);
-		if (err) {
-			DRM_ERROR("GErrorFlags = 0x%08x\n", err);
-			*(__volatile__ int *)
-				((unsigned long)dev->maplist[0]->handle
-				 + 0x838) = 0xffff; /* clear */
-		}
-		err = *(__volatile__ int *)
-			((unsigned long)dev->maplist[0]->handle + 0xc58);
-		if (err) {
-			DRM_ERROR("CommandErrorFlags = 0x%08x\n", err);
-			*(__volatile__ int *)
-				((unsigned long)dev->maplist[0]->handle
-				 + 0xc58) = 0xffff; /* clear */
-		}
-	}
-#endif
-	
 	for (i = 0; i < cmd->count * _DRM_INST_LENGTH; /* MUST UPDATE i */) {
 		CHECK;
 		switch (TYPE) {
@@ -267,7 +243,7 @@ int drm_engine(drm_device_t *dev,
 		
 		switch (CMD) {
 		case _DRM_M_WRITE:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  (%d,0x%04x)=0x%lx <= 0x%08lx\n",
 				 cmd->inst[i+1],
 				 cmd->inst[i+2],
@@ -283,7 +259,7 @@ int drm_engine(drm_device_t *dev,
 			i += _DRM_INST_LENGTH;
 			break;
 		case _DRM_M_WHILE:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  while (%d,0x%04x)=0x%lx %s %lu\n",
 				 cmd->inst[i+1],
 				 cmd->inst[i+2],
@@ -302,7 +278,7 @@ int drm_engine(drm_device_t *dev,
 			i += _DRM_INST_LENGTH;
 			break;
 		case _DRM_M_IF:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  if (%d,0x%04x)=0x%lx [%lu %s %u]"
 				 " goto %d\n",
 				 cmd->inst[i+1],
@@ -324,7 +300,7 @@ int drm_engine(drm_device_t *dev,
 			}
 			break;
 		case _DRM_M_TEST:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  test (%lu) %s %lu goto %d\n",
 				 accumulator,
 				 COND == _DRM_C_NE ? "!=" : "?",
@@ -342,26 +318,26 @@ int drm_engine(drm_device_t *dev,
 			}
 			break;
 		case _DRM_M_GOTO:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  goto %d\n", cmd->inst[i+4]);
 #endif
 			i = cmd->inst[i+4] * _DRM_INST_LENGTH;
 			break;
 		case _DRM_M_NOOP:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  noop\n");
 #endif
 			i += _DRM_INST_LENGTH;
 			break;
 		case _DRM_M_RETURN:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  return %ld\n", val);
 #endif
 			retcode = val;
 			i = cmd->count * _DRM_INST_LENGTH; /* End */
 			break;
 		case _DRM_M_DO:
-#if 0
+#if DRM_ENGINE_VERBOSE
 			DRM_VERB("  do %d\n", cmd->inst[i+4]);
 #endif
 			switch (cmd->inst[i+4]) {
@@ -388,7 +364,7 @@ int drm_engine(drm_device_t *dev,
 			break;
 		}
 	}
-#if 0	
+#if DRM_ENGINE_VERBOSE
 	DRM_VERB("  exit %d\n", retcode);
 #endif
 	return retcode;
@@ -437,7 +413,6 @@ int drm_irq_install(drm_device_t *dev, int irq)
 	dev->next_queue     = NULL;
 	dev->this_buffer    = NULL;
 
-				/* FIXME: initialize all this? */
 	dev->tq.next        = NULL;
 	dev->tq.sync        = 0;
 	dev->tq.routine     = drm_dma_wrapper;
@@ -757,11 +732,6 @@ cleanup:
 	return retcode;
 }
 
-static void drm_dma_schedule_wrapper(unsigned long data)
-{
-	drm_dma_schedule((drm_device_t *)data, 0);
-}
-
 static int drm_select_queue(drm_device_t *dev)
 {
 	int        i;
@@ -773,7 +743,9 @@ static int drm_select_queue(drm_device_t *dev)
 		return -1;
 	}
 	if (!dev->queuelist || !dev->queuelist[DRM_KERNEL_CONTEXT]) {
-		DRM_ERROR("No kernel context queue\n");
+				/* This only happens between the time the
+                                   interrupt is initialized and the time
+                                   the queues are initialized. */
 		return -1;
 	}
 
@@ -815,10 +787,6 @@ static int drm_select_queue(drm_device_t *dev)
 	    && dev->last_switch + DRM_TIME_SLICE > j) {
 		if (dev->timer.expires != dev->last_switch + DRM_TIME_SLICE) {
 			del_timer(&dev->timer);
-				/* FIXME: delete this when deleting the
-                                   device. */
-				/* FIXME: set up .function at init time */
-			dev->timer.function = drm_dma_schedule_wrapper;
 			dev->timer.expires  = dev->last_switch+DRM_TIME_SLICE;
 			add_timer(&dev->timer);
 		}
@@ -918,7 +886,7 @@ int drm_dma_enqueue(drm_device_t *dev, drm_dma_t *dma)
 	drm_buf_t         *buf;
 	int               idx;
 	int               while_locked = 0;
-	struct wait_queue entry        = { current, NULL };
+	DECLARE_WAITQUEUE(entry, current);
 
  	DRM_TRACE("%d\n", dma->send_count);
 
@@ -1027,7 +995,7 @@ static int drm_dma_priority(drm_device_t *dev, drm_dma_t *dma)
 	int               idx;
 	drm_buf_t         *buf;
 	drm_buf_t         *last_buf = NULL;
-	struct wait_queue entry     = { current, NULL };
+	DECLARE_WAITQUEUE(entry, current);
 
 				/* Turn off interrupt handling */
 	while (test_and_set_bit(0, &dev->interrupt_flag)) {
@@ -1115,7 +1083,6 @@ static int drm_dma_priority(drm_device_t *dev, drm_dma_t *dma)
 			remove_wait_queue(&dev->context_wait, &entry);
 			if (signal_pending(current)) {
 				retcode = -EINTR;
-				/* FIXME: does this lose a buffer? */
 				goto cleanup;
 			}
 			if (dev->last_context != buf->context) {
@@ -1167,7 +1134,7 @@ cleanup:
 
 static int drm_dma_send_buffers(drm_device_t *dev, drm_dma_t *dma)
 {
-	struct wait_queue entry     = { current, NULL };
+	DECLARE_WAITQUEUE(entry, current);
 	drm_buf_t         *last_buf = NULL;
 	int               retcode   = 0;
 
@@ -1185,7 +1152,7 @@ static int drm_dma_send_buffers(drm_device_t *dev, drm_dma_t *dma)
 	drm_dma_schedule(dev, 0);
 	
 	if (dma->flags & _DRM_DMA_BLOCK) {
-		DRM_DEBUG("%d waiting %p\n", current->pid, last_buf->dma_wait);
+		DRM_DEBUG("%d waiting\n", current->pid);
 		current->state = TASK_INTERRUPTIBLE;
 		for (;;) {
 			if (!last_buf->waiting
@@ -1202,7 +1169,7 @@ static int drm_dma_send_buffers(drm_device_t *dev, drm_dma_t *dma)
 			}
 		}
 		current->state = TASK_RUNNING;
-		DRM_DEBUG("%d running %p\n", current->pid, last_buf->dma_wait);
+		DRM_DEBUG("%d running\n", current->pid);
 		remove_wait_queue(&last_buf->dma_wait, &entry);
 		if (!retcode
 		    || (last_buf->list==DRM_LIST_PEND && !last_buf->pending)) {
@@ -1293,13 +1260,6 @@ static int drm_dma_get_buffers(drm_device_t *dev, drm_dma_t *dma)
 							       tmp_order);
 		}
 	}
-	    
-
-#if 0
-	if (!dma->granted_count) {
-		DRM_ERROR("Returning 0 buffers\n");
-	}
-#endif
 	return 0;
 }
 
@@ -1311,8 +1271,6 @@ int drm_dma DRM_IOCTL_ARGS
 	drm_dma_t         dma;
 
 	copy_from_user_ret(&dma, (drm_dma_t *)arg, sizeof(dma), -EFAULT);
-	if (dma.flags & 0x80000000)
-		drm_flags = 0xffffffff; /* FIXME: FOR DEBUGGING ONLY */
 	DRM_DEBUG("%d %d: %d send, %d req\n",
 		  current->pid, dma.context, dma.send_count,
 		  dma.request_count);
@@ -1350,8 +1308,6 @@ int drm_dma DRM_IOCTL_ARGS
 	DRM_DEBUG("%d returning, granted = %d\n",
 		  current->pid, dma.granted_count);
 	copy_to_user_ret((drm_dma_t *)arg, &dma, sizeof(dma), -EFAULT);
-	if (dma.flags & 0x80000000)
-		drm_flags = 0; /* FIXME: FOR DEBUGGING ONLY */
 
 	return retcode;
 }

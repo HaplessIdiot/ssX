@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.46 1999/06/14 07:32:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.47 1999/06/27 09:20:25 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1298,7 +1298,16 @@ xf86chmod(const char *path, xf86mode_t xfmode)
     return rc;
 }
 
-xf86uid_t xf86geteuid(void)
+int
+xf86chown(const char *path, xf86uid_t owner, xf86gid_t group)
+{
+    int rc = chown(path, owner, group);
+    xf86errno = xf86GetErrno();
+    return rc;
+}
+
+xf86uid_t
+xf86geteuid(void)
 {
     return geteuid();
 }

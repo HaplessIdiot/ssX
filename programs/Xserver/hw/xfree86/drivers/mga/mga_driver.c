@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.103 1999/06/20 08:41:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.104 1999/06/27 09:20:20 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -223,7 +223,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_FBDEV,		"UseFBDev",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,	{0}, FALSE },
-    { OPTION_OVERCLOCK_MEM,	"OverclockMem",	OPTV_FREQ,	{0}, FALSE },
+    { OPTION_OVERCLOCK_MEM,	"OverclockMem",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.11 1999/03/29 12:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.12 1999/05/09 10:51:57 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -38,7 +38,7 @@ in this Software without prior written authorization from the XFree86 Project.
 static void S3VWriteMask(CARD32*, int);
 
 static void S3VEngineReset(ScrnInfoPtr pScrn);
-static void S3VAccelSync(ScrnInfoPtr);
+/* s3v.h - static void S3VAccelSync(ScrnInfoPtr); */
 static void S3VSetupForSolidFill(ScrnInfoPtr, int, int, unsigned);
 static void S3VSubsequentSolidFillRect(ScrnInfoPtr, int, int, int, int);
 static void S3VSubsequentSolidFillRectPlaneMask(ScrnInfoPtr, int, int, 
@@ -302,7 +302,7 @@ S3VGEReset(ScrnInfoPtr pScrn, int from_timeout, int line, char *file)
 }
 
 /* The sync function for the GE */
-static void
+void
 S3VAccelSync(ScrnInfoPtr pScrn)
 {
     S3VPtr ps3v = S3VPTR(pScrn);

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.1 1999/06/14 07:31:20 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/GL/dri/dri.h,v 1.20 1999/06/05 20:49:16 jens Exp $
+ * $PI: xc/programs/Xserver/GL/dri/dri.h,v 1.22 1999/06/16 20:08:35 faith Exp $
  */
 
 /* Prototypes for DRI functions */
@@ -120,11 +120,10 @@ void DRIReset(void);
 Bool DRIQueryDirectRenderingCapable( ScreenPtr pScreen, Bool* isCapable);
 Bool DRIOpenConnection(
     ScreenPtr pScreen,
-    drmKeyPtr drmClientKeyLow,
-    drmKeyPtr drmClientKeyHigh,
     drmHandlePtr hSAREA,
     char **busIdString
 );
+Bool DRIAuthConnection(ScreenPtr pScreen, drmMagic magic);
 Bool DRICloseConnection( ScreenPtr pScreen);
 Bool DRIGetClientDriverName(
     ScreenPtr pScreen,

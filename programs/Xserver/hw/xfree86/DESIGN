@@ -2218,11 +2218,12 @@ xf86fbman.h):
         ScreenPtr    pScreen;
         BoxRec       box;
         int          granularity;
-        void         (*MoveAreaCallback)(struct _FBArea*);
+        void         (*MoveAreaCallback)(struct _FBArea*, struct _FBArea*);
+        void         (*RemoveAreaCallback)(struct _FBArea*);
         DevUnion     devPrivate;
     } FBArea, *FBAreaPtr;
 
-    typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr);
+    typedef void (*MoveAreaCallbackProcPtr)(FBAreaPtr from, FBAreaPtr to);
     typedef void (*RemoveAreaCallbackProcPtr)(FBAreaPtr);
 
     FBAreaPtr xf86AllocateOffscreenArea (
@@ -2240,6 +2241,7 @@ xf86fbman.h):
 	FBAreaPtr area
 	int w, int h
     );
+
 
 The function:
 
@@ -2280,6 +2282,57 @@ an area maintains the area's original granularity, devPrivate,
 and MoveAreaCallback.  xf86ResizeOffscreenArea has considerably less
 overhead than freeing the old area then reallocating the new size,
 so it should be used whenever possible.
+
+The function:
+
+   Bool xf86QueryLargestOffscreenArea(
+	ScreenPtr pScreen,
+	int *width, int *height,
+	int granularity,
+	int preferences,
+	int priority
+   );
+
+is provided to query the width and height of the largest single 
+FBArea allocateable given a particular priority. "preferences" can 
+be one of the following to indicate whether width, height or area
+should be considered when determining which is the largest single
+FBArea available.
+
+  FAVOR_AREA_THEN_WIDTH
+  FAVOR_AREA_THEN_HEIGHT
+  FAVOR_WIDTH_THEN_AREA
+  FAVOR_HEIGHT_THEN_AREA
+
+"priority" is one of the following:
+
+  PRIORITY_LOW
+
+     Return the largest block available without stealing anyone else's
+     space.  This corresponds to the priority of allocating a FBArea
+     when a RemoveAreaCallback is provided. 
+
+  PRIORITY_NORMAL
+
+     Return the largest block available if it is acceptable to steal a
+     lower priority area from someone.  This corresponds to the 
+     priority of allocating a FBArea without providing a RemoveAreaCallback.
+
+  PRIORITY_EXTREME
+
+     Return the largest block available if all FBAreas that aren't
+     locked down were expunged from memory first.  This corresponds
+     to any allocation made directly after a call to 
+     xf86PurgeUnlockedOffscreenAreas().
+
+
+The function:
+
+    Bool xf86PurgeUnlockedOffscreenAreas(ScreenPtr pScreen);
+
+is provided as an extreme method to free up offscreen memory.  This
+will remove all removeable FBArea allocations.
+
 
 Initialization of the XFree86 framebuffer manager is done via
 
@@ -5403,4 +5456,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.33 1999/05/23 06:33:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.34 1999/06/27 09:20:12 dawes Exp $

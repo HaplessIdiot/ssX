@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_cursor.c,v 1.1 1999/04/17 07:06:23 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -36,13 +36,12 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *   1998, 1999 by Egbert Eich (Egbert.Eich@Physik.TU-Darmstadt.DE)
  */
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"   
 
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h" 
+#include "vgaHW.h"
 
 #include "xf86Cursor.h"
 #include "cursorstr.h"
@@ -66,14 +65,16 @@ void
 NeoHideCursor(ScrnInfoPtr pScrn)
 {
     NEOPtr nPtr = NEOPTR(pScrn);
-
+    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    
     /*
      * turn cursor off 
      *
      * Sometimes we loose the I/O map, so directly use I/O here
      */
-    outb(GRAX,0x82);
-    outb(GRAX+1,0x0);
+
+    VGAwGR(0x82,0x00);
+
     nPtr->NeoHWCursorShown = FALSE;
 }
 

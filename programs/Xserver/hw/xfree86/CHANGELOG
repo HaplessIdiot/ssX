@@ -1,4 +1,34 @@
 XFree86 3.9Pu (27 June 1999)
+2797. Xaw and xedit updates (#2932, Paulo Cesar Pereira de Andrade).
+2796. Make the "fifo_conservative" memory settings default for the s3virge
+      accelerator (#2931, Kevin Brosius).
+2795. Preliminary DGA2 code for the s3virge driver (#2931, Kevin Brosius).
+2794. Updates to PI's DRI sample implementation, including:
+      - Dynamic loading of the OpenGL client driver is implemented
+      - 3D client death while holding the drawable lock does not cause deadlock
+      - The kernel module works with Linux 2.2.x [x <= 10] and 2.3.y [y <= 8]
+      - A better authentication mechanism has been implemented
+      - XF86Config options for the DRI are supported
+      (#2929, Precision Insight).
+2793. Add functions to the FBManager to query the largest size available and
+      to purge all areas that aren't nailed down (#2928, Mark Vojkovich).
+2792. Fix some serious performance problems with Xinerama when the number
+      of resource IDs becomes large (#2927, Carsten Haitzler).
+2791. Remove the significant RGB bits check from Xinerama visual eliminations
+      (#2926, Mark Vojkovich).
+2790. Fix a typo in xmodmap and xstdcmap (#2924, Matthieu Herrb).
+2789. Fix the type of the OverclockMem Option in the MGA driver (#2922,
+      Andrew Aitchison).
+2788. Fix PCI resource handling problems that were showing up with the
+      glint driver (#2918, Egbert Eich).
+2787. Fix a problem building some Makefiles when JoystickSupport is enabled
+      (#2917, Todd Fries).
+2786. Fix a typo in the RAC support for the glint driver (#2915, Jens Owen).
+2785. Fix a RAC-related build problem on 64-bit machines (#2913,
+      Matt Grossman).
+2784. Some afb-related updates (#2911, Sven Luther).
+2783. Fix race condition in xinit (Nate Eldredge, Mark Montague).
+2782. Documentation for the new RAC code (Egbert Eich).
 2781. Fix some problems with the glide driver that can result in server crashes
       if there is a problem when it is starting up (David Dawes).
 2780. Install the X server signal handlers before xf86OpenConsole is first
@@ -8243,4 +8273,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.783 1999/06/21 10:06:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.784 1999/06/27 09:20:09 dawes Exp $

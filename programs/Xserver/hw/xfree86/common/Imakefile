@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.100 1999/05/22 08:40:01 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.101 1999/05/30 14:04:17 dawes Exp $
 
 
 
@@ -156,7 +156,7 @@ EXP_DEFINES = -DEXPIRY_TIME=XF86ServerExpiry $(EXP_FORCE_DEFINES)
 PROJECTROOT = ProjectRoot
 XCONFIGDEFINES = -DPROJECTROOT='"$(PROJECTROOT)"'
 
-    DEFINES =	$(CONSDEFINES) $(PNPMOUSEDEFINES) $(KBDDEFINES)
+    DEFINES =	$(CONSDEFINES) $(PNPMOUSEDEFINES) $(KBDDEFINES) $(EXT_DEFINES)
 
 AllTarget($(OFILES))
 

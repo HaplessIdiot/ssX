@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/dri/dri_mesaint.h,v 1.1 1999/06/14 07:23:32 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,7 +30,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/dri/dri_mesaint.h,v 1.6 1999/06/07 02:20:04 martin Exp $
+ * $PI: xc/lib/GL/dri/dri_mesaint.h,v 1.8 1999/06/14 21:10:35 faith Exp $
  */
 
 #ifndef _DRI_MESAINT_H_
@@ -183,6 +183,13 @@ struct __DRIscreenPrivateRec {
     int major;
     int minor;
     int patch;
+
+    /*
+    ** ID used when the client sets the drawable lock.  The X server
+    ** uses this value to detect if the client has died while holding
+    ** the drawable lock.
+    */
+    int drawLockID;
 
     /*
     ** File descriptor returned when the kernel device driver is opened.

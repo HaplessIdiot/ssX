@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.1 1999/06/14 07:31:17 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -30,23 +30,17 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Kevin E. Martin <kevin@precisioninsight.com>
  *
- * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.20 1999/06/07 02:20:06 martin Exp $
+ * $PI: xc/lib/GL/mesa/src/drv/gamma/gamma_xmesa.c,v 1.24 1999/06/23 22:16:31 martin Exp $
  */
 
 #ifdef GLX_DIRECT_RENDERING
 
 #include <X11/Xlibint.h>
 #include "gamma_init.h"
-#include "gamma_xmesa.h"
 
 XMesaContext         nullCC  = NULL;
 XMesaContext         gCC     = NULL;
 gammaContextPrivate *gCCPriv = NULL;
-
-/*
-** The "__GAMMA_" prefix should be removed after we implement dynamic
-** loading in the DRI.
-*/
 
 static int count_bits(unsigned int n)
 {
@@ -59,7 +53,7 @@ static int count_bits(unsigned int n)
    return bits;
 }
 
-GLboolean __GAMMA_XMesaInitDriver(__DRIscreenPrivate *driScrnPriv)
+GLboolean XMesaInitDriver(__DRIscreenPrivate *driScrnPriv)
 {
     gammaScreenPrivate *gsp;
 
@@ -80,13 +74,13 @@ GLboolean __GAMMA_XMesaInitDriver(__DRIscreenPrivate *driScrnPriv)
     return GL_TRUE;
 }
 
-void __GAMMA_XMesaResetDriver(__DRIscreenPrivate *driScrnPriv)
+void XMesaResetDriver(__DRIscreenPrivate *driScrnPriv)
 {
     gammaUnmapAllRegions(driScrnPriv);
     Xfree(driScrnPriv->private);
 }
 
-XMesaVisual __GAMMA_XMesaCreateVisual(XMesaDisplay *display,
+XMesaVisual XMesaCreateVisual(XMesaDisplay *display,
 				      XMesaVisualInfo visinfo,
 				      GLboolean rgb_flag,
 				      GLboolean alpha_flag,
@@ -143,14 +137,14 @@ XMesaVisual __GAMMA_XMesaCreateVisual(XMesaDisplay *display,
     return v;
 }
 
-void __GAMMA_XMesaDestroyVisual(XMesaVisual v)
+void XMesaDestroyVisual(XMesaVisual v)
 {
     Xfree(v->gl_visual);
     Xfree(v->visinfo);
     Xfree(v);
 }
 
-XMesaContext __GAMMA_XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
+XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
 					__DRIcontextPrivate *driContextPriv)
 {
     int i;
@@ -213,19 +207,24 @@ XMesaContext __GAMMA_XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
 		cPriv->ModelViewProj[i] =
 		cPriv->Texture[i] = 0.0;
 
+    /*
+    ** NOT_DONE: The 0xe4 in LBReadMode and FBReadMode refers to the
+    ** partial products for the 640x480 mode.  We will need to look up
+    ** the partial products in a table (c.f., glint_driver.c) to support
+    ** other FB sizes.
+    */
     cPriv->LBReadMode = (LBReadSrcDisable |
 			 LBReadDstDisable |
 			 LBDataTypeDefault |
 			 LBWindowOriginBot |
 			 LBScanLineInt2 |
-			 0xe4 /* NOT_DONE */);
-
+			 0xe4); /* NOT_DONE: 640x480 partial products */
     cPriv->FBReadMode = (FBReadSrcDisable |
 			 FBReadDstDisable |
 			 FBDataTypeDefault |
 			 FBWindowOriginBot |
 			 FBScanLineInt2 |
-			 0xe4 /* NOT_DONE */);
+			 0xe4); /* NOT_DONE: 640x480 partial products */
 
     cPriv->FBWindowBase = driScrnPriv->fbWidth * (driScrnPriv->fbHeight/2 - 1);
     cPriv->LBWindowBase = driScrnPriv->fbWidth * (driScrnPriv->fbHeight/2 - 1);
@@ -308,8 +307,13 @@ XMesaContext __GAMMA_XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
     cPriv->NotClipped = GL_FALSE;
     cPriv->WindowChanged = GL_TRUE;
 
-    /* NOT_DONE: These should be calculated from the registers */
-    /* NOT_DONE: Only one client can use texture memory at this time */
+    /*
+    ** NOT_DONE:
+    ** 1. These values should be calculated from the registers.
+    ** 2. Only one client can use texture memory at this time.
+    ** 3. A two-tiered texture allocation routine is needed to properly
+    **    handle texture management.
+    */
     cPriv->tmm = driTMMCreate(0x00080000,
 			      0x00800000 - 0x00080000,
 			      4, 1,
@@ -369,28 +373,28 @@ XMesaContext __GAMMA_XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
     return c;
 }
 
-void __GAMMA_XMesaDestroyContext(XMesaContext c)
+void XMesaDestroyContext(XMesaContext c)
 {
 }
 
-XMesaBuffer __GAMMA_XMesaCreateWindowBuffer(XMesaVisual v, XMesaWindow w,
+XMesaBuffer XMesaCreateWindowBuffer(XMesaVisual v, XMesaWindow w,
 					    __DRIdrawablePrivate *driDrawPriv)
 {
     return (XMesaBuffer)1;
 }
 
-XMesaBuffer __GAMMA_XMesaCreatePixmapBuffer(XMesaVisual v, XMesaPixmap p,
+XMesaBuffer XMesaCreatePixmapBuffer(XMesaVisual v, XMesaPixmap p,
 					    XMesaColormap c,
 					    __DRIdrawablePrivate *driDrawPriv)
 {
     return (XMesaBuffer)1;
 }
 
-void __GAMMA_XMesaDestroyBuffer(XMesaBuffer b)
+void XMesaDestroyBuffer(XMesaBuffer b)
 {
 }
 
-void __GAMMA_XMesaSwapBuffers(XMesaBuffer b)
+void XMesaSwapBuffers(XMesaBuffer b)
 {
     /*
     ** NOT_DONE: This assumes buffer is currently bound to a context.
@@ -414,7 +418,8 @@ void __GAMMA_XMesaSwapBuffers(XMesaBuffer b)
 	__DRIscreenPrivate *driScrnPriv = gCC->driContextPriv->driScreenPriv;
 
 #ifdef DO_VALIDATE
-	DRM_SPINLOCK(&driScrnPriv->pSAREA->drawable_lock, 1);
+	DRM_SPINLOCK(&driScrnPriv->pSAREA->drawable_lock,
+		     driScrnPriv->drawLockID);
 	VALIDATE_DRAWABLE_INFO_NO_LOCK(gCC,gCCPriv);
 #endif
 
@@ -461,7 +466,8 @@ void __GAMMA_XMesaSwapBuffers(XMesaBuffer b)
 #ifdef DO_VALIDATE
 	PROCESS_DMA_BUFFER_TOP_HALF(gCCPriv);
 
-	DRM_SPINUNLOCK(&driScrnPriv->pSAREA->drawable_lock, 1);
+	DRM_SPINUNLOCK(&driScrnPriv->pSAREA->drawable_lock,
+		       driScrnPriv->drawLockID);
 	VALIDATE_DRAWABLE_INFO_NO_LOCK_POST(gCC,gCCPriv);
 
 	PROCESS_DMA_BUFFER_BOTTOM_HALF(gCCPriv);
@@ -472,7 +478,7 @@ void __GAMMA_XMesaSwapBuffers(XMesaBuffer b)
     }
 }
 
-GLboolean __GAMMA_XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
+GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
 {
     if (c) {
 	gCC     = c;

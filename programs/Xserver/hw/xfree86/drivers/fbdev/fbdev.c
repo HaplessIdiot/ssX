@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.7 1999/06/13 13:47:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.8 1999/06/20 15:02:51 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -424,12 +424,26 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 		}
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:
-		/* Not supported yet, don't know what to do with this */
+               /* Not supported yet, don't know what to do with this */
+               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+               "Interleaved Planes are not supprted yet by drivers/fbdev.");
 		break;
 	case FBDEVHW_TEXT:
-		/* This should never happen ... 
-		 * we should check for this much much earlier ... */
+               /* This should never happen ...
+                * we should check for this much much earlier ... */
+               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+               "Text mode is not supprted by drivers/fbdev.\n"
+               "Why do you want to run the X in TEXT mode anyway ?");
 		break;
+       case FBDEVHW_VGA_PLANES:
+               /* Not supported yet */
+               xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+               "EGA/VGA Planes are not supprted yet by drivers/fbdev.");
+               break;
+       default:
+               xf86DrvMsg(scrnIndex, X_ERROR,
+               "Fbdev type (%d) not supported yet.");
+               break;
 	}
 	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
 		FBDevFreeRec(pScrn);
@@ -594,21 +608,32 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:
-		/* Not supported yet, don't know what to do with this */
+		/* This should never happen ...
+		* we should check for this much much earlier ... */
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: interleaved planes fbdev type unsupported in FBDevScreenInit\n");
+		"Internal error: Text mode is not supprted by drivers/fbdev.\n"
+		"Comment: Why do you want to run the X in TEXT mode anyway ?");
 		ret = FALSE;
 		break;
 	case FBDEVHW_TEXT:
-		/* This should never happen ... 
-		 * we should check for this much much earlier ... */
+		/* This should never happen ...
+		* we should check for this much much earlier ... */
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: text fbdev type unsupported in FBDevScreenInit\n");
+		"Internal error: Text mode is not supprted by drivers/fbdev.\n"
+		"Comment: Why do you want to run the X in TEXT mode anyway ?");
+		ret = FALSE;
+		break;
+	case FBDEVHW_VGA_PLANES:
+		/* Not supported yet */
+		xf86DrvMsg(scrnIndex, X_ERROR,
+		"Internal error: EGA/VGA Planes are not supprted"
+		" yet by drivers/fbdev.");
 		ret = FALSE;
 		break;
 	default:
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: fbdev type (%d) unsupported in FBDevScreenInit\n");
+		"Internal error: fbdev type (%d) unsupported in"
+		" FBDevScreenInit\n");
 		ret = FALSE;
 		break;
 	}
@@ -656,15 +681,22 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		break;
 	case FBDEVHW_INTERLEAVED_PLANES:
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: invalid fbdev type (interleaved planes) in FBDevScreenInit\n");
+		"Internal error: invalid fbdev type (interleaved planes)"
+		" in FBDevScreenInit\n");
 		return FALSE;
 	case FBDEVHW_TEXT:
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: invalid fbdev type (text) in FBDevScreenInit\n");
+		"Internal error: invalid fbdev type (text)"
+		" in FBDevScreenInit\n");
+		return FALSE;
+	case FBDEVHW_VGA_PLANES:
+		xf86DrvMsg(scrnIndex, X_ERROR,
+		"Internal error: invalid fbdev type (ega/vga planes)"
+		" in FBDevScreenInit\n");
 		return FALSE;
 	default:
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: invalid fbdev type (%d) in FBDevScreenInit\n");
+		"Internal error: invalid fbdev type (%d) in FBDevScreenInit\n");
 		return FALSE;
 	}
 	flags = CMAP_PALETTED_TRUECOLOR;

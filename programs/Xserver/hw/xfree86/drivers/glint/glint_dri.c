@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.1 1999/06/14 07:31:52 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -31,12 +31,13 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Author:
  *   Jens Owen <jens@precisioninsight.com>
  *
- * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.45 1999/06/09 23:07:56 martin Exp $
+ * $PI: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_dri.c,v 1.48 1999/06/21 14:24:43 faith Exp $
  */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+#include "xf86Priv.h"
 
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
@@ -437,6 +438,7 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     DRIInfoPtr pDRIInfo;
     GLINTDRIPtr pGlintDRI;
+    int dmabufs = 0;
 
 #if XFree86LOADER
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing
@@ -590,23 +592,52 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 
     /* setup DMA buffers */
 
-    if (drmAddBufs(pGlint->drmSubFD, 100, 0x1000) <= 0) {
-	DRICloseScreen(pScreen);
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-			    "[drm] failure setting up dma buffers\n");
-	return FALSE;
+    if (xf86ConfigDRI.bufs_count) {
+	int i;
+	int bufs;
+	
+	for (i = 0; i < xf86ConfigDRI.bufs_count; i++) {
+	    if ((bufs = drmAddBufs(pGlint->drmSubFD,
+				   xf86ConfigDRI.bufs[i].count,
+				   xf86ConfigDRI.bufs[i].size,
+				   0 /* flags */)) <= 0) {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+			   "[drm] failure adding %d %d byte DMA buffers\n",
+			   xf86ConfigDRI.bufs[i].count,
+			   xf86ConfigDRI.bufs[i].size);
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
+			   "[drm] added %d %d byte DMA buffers\n",
+			   bufs, xf86ConfigDRI.bufs[i].size);
+		dmabufs += bufs;
+	    }
+	}
     }
-#if 0
-			    /* Here's an example of where the buffers
-			       would be marked. */
-    if (drmMarkBufs(pGlint->drmSubFD, 0.1, 0.2) <= 0) {
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, 
-			    "[drm] failure marking dma buffers\n");
-    }
-#endif
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "[drm] added dma buffers\n");
 
+    if (dmabufs <= 0) {
+	int bufs;
+	
+	if ((bufs = drmAddBufs(pGlint->drmSubFD,
+			       GLINT_DRI_BUF_COUNT,
+			       GLINT_DRI_BUF_SIZE,
+			       0 /* flags */)) <= 0) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "[drm] failure adding %d %d byte DMA buffers\n",
+		       GLINT_DRI_BUF_COUNT,
+		       GLINT_DRI_BUF_SIZE);
+	    DRICloseScreen(pScreen);
+	    return FALSE;
+	}
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "[drm] added %d %d byte DMA buffers\n",
+		   bufs, GLINT_DRI_BUF_SIZE);
+    }
+
+    /* -->> If you mark the buffer queueing policy, you'd do it here. <<-- */
+    
     if (!(pGlint->drmBufs = drmMapBufs(pGlint->drmSubFD))) {
+	xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		   "[drm] failure mapping DMA buffers\n");
 	DRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -616,13 +647,15 @@ GLINTDRIScreenInit(ScreenPtr pScreen)
 	       pGlint->drmBufs->count);
 
     /* tell the generic kernel driver how to handle Gamma DMA */
-    pGlint->irq = drmGetInterruptFromBusID(pGlint->drmSubFD,
-					   ((pciConfigPtr)pGlint->PciInfo
-					    ->thisCard)->busnum,
-					   ((pciConfigPtr)pGlint->PciInfo
-					    ->thisCard)->devnum,
-					   ((pciConfigPtr)pGlint->PciInfo
-					    ->thisCard)->funcnum);
+    if (!pGlint->irq) {
+	pGlint->irq = drmGetInterruptFromBusID(pGlint->drmSubFD,
+					       ((pciConfigPtr)pGlint->PciInfo
+						->thisCard)->busnum,
+					       ((pciConfigPtr)pGlint->PciInfo
+						->thisCard)->devnum,
+					       ((pciConfigPtr)pGlint->PciInfo
+						->thisCard)->funcnum);
+    }
     
     if (pGlint->irq <= 0
 	|| GLINTDRIControlInit(pGlint->drmSubFD, pGlint->irq)) {
