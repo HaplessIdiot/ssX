@@ -31,13 +31,14 @@
  * Converted to common header format:
  *   Jens Owen <jens@tungstengraphics.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.4 2003/11/10 18:41:22 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_common.h,v 1.5 2003/12/02 13:02:44 alanh Exp $
  *
  */
 
 #ifndef _RADEON_COMMON_H_
 #define _RADEON_COMMON_H_
 
+#include <inttypes.h>
 #include "xf86drm.h"
 
 /* WARNING: If you change any of these defines, make sure to change
