@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xev/xev.c,v 1.6 2002/11/26 02:10:51 dawes Exp $ */
+/* $XFree86: xc/programs/xev/xev.c,v 1.7 2002/12/24 17:43:00 tsi Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -68,10 +68,8 @@ const char *ProgramName;
 Display *dpy;
 int screen;
 
-void
-prologue (eventp, event_name)
-    XEvent *eventp;
-    char *event_name;
+static void
+prologue (XEvent *eventp, char *event_name)
 {
     XAnyEvent *e = (XAnyEvent *) eventp;
 
@@ -80,9 +78,8 @@ prologue (eventp, event_name)
 }
 
 
-void
-do_KeyPress (eventp)
-    XEvent *eventp;
+static void
+do_KeyPress (XEvent *eventp)
 {
     XKeyEvent *e = (XKeyEvent *) eventp;
     KeySym ks;
@@ -106,16 +103,14 @@ do_KeyPress (eventp)
     printf ("    XLookupString gives %d bytes:  \"%s\"\n", nbytes, str);
 }
 
-void
-do_KeyRelease (eventp)
-    XEvent *eventp;
+static void
+do_KeyRelease (XEvent *eventp)
 {
     do_KeyPress (eventp);		/* since it has the same info */
 }
 
-void
-do_ButtonPress (eventp)
-    XEvent *eventp;
+static void
+do_ButtonPress (XEvent *eventp)
 {
     XButtonEvent *e = (XButtonEvent *) eventp;
 
@@ -125,16 +120,14 @@ do_ButtonPress (eventp)
 	    e->state, e->button, e->same_screen ? Yes : No);
 }
 
-void
-do_ButtonRelease (eventp)
-    XEvent *eventp;
+static void
+do_ButtonRelease (XEvent *eventp)
 {
     do_ButtonPress (eventp);		/* since it has the same info */
 }
 
-void
-do_MotionNotify (eventp)
-    XEvent *eventp;
+static void
+do_MotionNotify (XEvent *eventp)
 {
     XMotionEvent *e = (XMotionEvent *) eventp;
 
@@ -144,9 +137,8 @@ do_MotionNotify (eventp)
 	    e->state, e->is_hint, e->same_screen ? Yes : No);
 }
 
-void
-do_EnterNotify (eventp)
-    XEvent *eventp;
+static void
+do_EnterNotify (XEvent *eventp)
 {
     XCrossingEvent *e = (XCrossingEvent *) eventp;
     char *mode, *detail;
@@ -179,16 +171,14 @@ do_EnterNotify (eventp)
     printf ("    focus %s, state %u\n", e->focus ? Yes : No, e->state);
 }
 
-void
-do_LeaveNotify (eventp)
-    XEvent *eventp;
+static void
+do_LeaveNotify (XEvent *eventp)
 {
     do_EnterNotify (eventp);		/* since it has same information */
 }
 
-void
-do_FocusIn (eventp)
-    XEvent *eventp;
+static void
+do_FocusIn (XEvent *eventp)
 {
     XFocusChangeEvent *e = (XFocusChangeEvent *) eventp;
     char *mode, *detail;
@@ -217,16 +207,14 @@ do_FocusIn (eventp)
     printf ("    mode %s, detail %s\n", mode, detail);
 }
 
-void
-do_FocusOut (eventp)
-    XEvent *eventp;
+static void
+do_FocusOut (XEvent *eventp)
 {
     do_FocusIn (eventp);		/* since it has same information */
 }
 
-void
-do_KeymapNotify (eventp)
-    XEvent *eventp;
+static void
+do_KeymapNotify (XEvent *eventp)
 {
     XKeymapEvent *e = (XKeymapEvent *) eventp;
     int i;
@@ -239,9 +227,8 @@ do_KeymapNotify (eventp)
     printf ("\n");
 }
 
-void
-do_Expose (eventp)
-    XEvent *eventp;
+static void
+do_Expose (XEvent *eventp)
 {
     XExposeEvent *e = (XExposeEvent *) eventp;
 
@@ -249,9 +236,8 @@ do_Expose (eventp)
 	    e->x, e->y, e->width, e->height, e->count);
 }
 
-void
-do_GraphicsExpose (eventp)
-    XEvent *eventp;
+static void
+do_GraphicsExpose (XEvent *eventp)
 {
     XGraphicsExposeEvent *e = (XGraphicsExposeEvent *) eventp;
     char *m;
@@ -268,9 +254,8 @@ do_GraphicsExpose (eventp)
     printf ("    major %s, minor %d\n", m, e->minor_code);
 }
 
-void
-do_NoExpose (eventp)
-    XEvent *eventp;
+static void
+do_NoExpose (XEvent *eventp)
 {
     XNoExposeEvent *e = (XNoExposeEvent *) eventp;
     char *m;
@@ -286,9 +271,8 @@ do_NoExpose (eventp)
     return;
 }
 
-void
-do_VisibilityNotify (eventp)
-    XEvent *eventp;
+static void
+do_VisibilityNotify (XEvent *eventp)
 {
     XVisibilityEvent *e = (XVisibilityEvent *) eventp;
     char *v;
@@ -304,9 +288,8 @@ do_VisibilityNotify (eventp)
     printf ("    state %s\n", v);
 }
 
-void
-do_CreateNotify (eventp)
-    XEvent *eventp;
+static void
+do_CreateNotify (XEvent *eventp)
 {
     XCreateWindowEvent *e = (XCreateWindowEvent *) eventp;
 
@@ -316,18 +299,16 @@ do_CreateNotify (eventp)
 	    e->border_width, e->override_redirect ? Yes : No);
 }
 
-void
-do_DestroyNotify (eventp)
-    XEvent *eventp;
+static void
+do_DestroyNotify (XEvent *eventp)
 {
     XDestroyWindowEvent *e = (XDestroyWindowEvent *) eventp;
 
     printf ("    event 0x%lx, window 0x%lx\n", e->event, e->window);
 }
 
-void
-do_UnmapNotify (eventp)
-    XEvent *eventp;
+static void
+do_UnmapNotify (XEvent *eventp)
 {
     XUnmapEvent *e = (XUnmapEvent *) eventp;
 
@@ -335,9 +316,8 @@ do_UnmapNotify (eventp)
 	    e->event, e->window, e->from_configure ? Yes : No);
 }
 
-void
-do_MapNotify (eventp)
-    XEvent *eventp;
+static void
+do_MapNotify (XEvent *eventp)
 {
     XMapEvent *e = (XMapEvent *) eventp;
 
@@ -345,18 +325,16 @@ do_MapNotify (eventp)
 	    e->event, e->window, e->override_redirect ? Yes : No);
 }
 
-void
-do_MapRequest (eventp)
-    XEvent *eventp;
+static void
+do_MapRequest (XEvent *eventp)
 {
     XMapRequestEvent *e = (XMapRequestEvent *) eventp;
 
     printf ("    parent 0x%lx, window 0x%lx\n", e->parent, e->window);
 }
 
-void
-do_ReparentNotify (eventp)
-    XEvent *eventp;
+static void
+do_ReparentNotify (XEvent *eventp)
 {
     XReparentEvent *e = (XReparentEvent *) eventp;
 
@@ -366,9 +344,8 @@ do_ReparentNotify (eventp)
 	    e->override_redirect ? Yes : No);
 }
 
-void
-do_ConfigureNotify (eventp)
-    XEvent *eventp;
+static void
+do_ConfigureNotify (XEvent *eventp)
 {
     XConfigureEvent *e = (XConfigureEvent *) eventp;
 
@@ -378,9 +355,8 @@ do_ConfigureNotify (eventp)
 	    e->border_width, e->above, e->override_redirect ? Yes : No);
 }
 
-void
-do_ConfigureRequest (eventp)
-    XEvent *eventp;
+static void
+do_ConfigureRequest (XEvent *eventp)
 {
     XConfigureRequestEvent *e = (XConfigureRequestEvent *) eventp;
     char *detail;
@@ -401,9 +377,8 @@ do_ConfigureRequest (eventp)
 	    e->border_width, e->above, detail, e->value_mask);
 }
 
-void
-do_GravityNotify (eventp)
-    XEvent *eventp;
+static void
+do_GravityNotify (XEvent *eventp)
 {
     XGravityEvent *e = (XGravityEvent *) eventp;
 
@@ -411,18 +386,16 @@ do_GravityNotify (eventp)
 	    e->event, e->window, e->x, e->y);
 }
 
-void
-do_ResizeRequest (eventp)
-    XEvent *eventp;
+static void
+do_ResizeRequest (XEvent *eventp)
 {
     XResizeRequestEvent *e = (XResizeRequestEvent *) eventp;
 
     printf ("    width %d, height %d\n", e->width, e->height);
 }
 
-void
-do_CirculateNotify (eventp)
-    XEvent *eventp;
+static void
+do_CirculateNotify (XEvent *eventp)
 {
     XCirculateEvent *e = (XCirculateEvent *) eventp;
     char *p;
@@ -438,9 +411,8 @@ do_CirculateNotify (eventp)
 	    e->event, e->window, p);
 }
 
-void
-do_CirculateRequest (eventp)
-    XEvent *eventp;
+static void
+do_CirculateRequest (XEvent *eventp)
 {
     XCirculateRequestEvent *e = (XCirculateRequestEvent *) eventp;
     char *p;
@@ -456,9 +428,8 @@ do_CirculateRequest (eventp)
 	    e->parent, e->window, p);
 }
 
-void
-do_PropertyNotify (eventp)
-    XEvent *eventp;
+static void
+do_PropertyNotify (XEvent *eventp)
 {
     XPropertyEvent *e = (XPropertyEvent *) eventp;
     char *aname = XGetAtomName (dpy, e->atom);
@@ -477,9 +448,8 @@ do_PropertyNotify (eventp)
     if (aname) XFree (aname);
 }
 
-void
-do_SelectionClear (eventp)
-    XEvent *eventp;
+static void
+do_SelectionClear (XEvent *eventp)
 {
     XSelectionClearEvent *e = (XSelectionClearEvent *) eventp;
     char *sname = XGetAtomName (dpy, e->selection);
@@ -490,9 +460,8 @@ do_SelectionClear (eventp)
     if (sname) XFree (sname);
 }
 
-void
-do_SelectionRequest (eventp)
-    XEvent *eventp;
+static void
+do_SelectionRequest (XEvent *eventp)
 {
     XSelectionRequestEvent *e = (XSelectionRequestEvent *) eventp;
     char *sname = XGetAtomName (dpy, e->selection);
@@ -510,9 +479,8 @@ do_SelectionRequest (eventp)
     if (pname) XFree (pname);
 }
 
-void
-do_SelectionNotify (eventp)
-    XEvent *eventp;
+static void
+do_SelectionNotify (XEvent *eventp)
 {
     XSelectionEvent *e = (XSelectionEvent *) eventp;
     char *sname = XGetAtomName (dpy, e->selection);
@@ -530,9 +498,8 @@ do_SelectionNotify (eventp)
     if (pname) XFree (pname);
 }
 
-void
-do_ColormapNotify (eventp)
-    XEvent *eventp;
+static void
+do_ColormapNotify (XEvent *eventp)
 {
     XColormapEvent *e = (XColormapEvent *) eventp;
     char *s;
@@ -548,9 +515,8 @@ do_ColormapNotify (eventp)
 	    e->colormap, e->new ? Yes : No, s);
 }
 
-void
-do_ClientMessage (eventp)
-    XEvent *eventp;
+static void
+do_ClientMessage (XEvent *eventp)
 {
     XClientMessageEvent *e = (XClientMessageEvent *) eventp;
     char *mname = XGetAtomName (dpy, e->message_type);
@@ -561,9 +527,8 @@ do_ClientMessage (eventp)
     if (mname) XFree (mname);
 }
 
-void
-do_MappingNotify (eventp)
-    XEvent *eventp;
+static void
+do_MappingNotify (XEvent *eventp)
 {
     XMappingEvent *e = (XMappingEvent *) eventp;
     char *r;
@@ -583,12 +548,10 @@ do_MappingNotify (eventp)
 
 
 
-void
-set_sizehints (hintp, min_width, min_height,
-	       defwidth, defheight, defx, defy, geom)
-    XSizeHints *hintp;
-    int min_width, min_height, defwidth, defheight, defx, defy;
-    char *geom;
+static void
+set_sizehints (XSizeHints *hintp, int min_width, int min_height, 
+	       int defwidth, int defheight, int defx, int defy, 
+	       char *geom)
 {
     int geom_result;
 
@@ -640,10 +603,10 @@ set_sizehints (hintp, min_width, min_height,
 
 #if defined(__GNUC__) && \
     ((__GNUC__ > 2) || ((__GNUC__ == 2) && (__GNUC_MINOR__ >= 7)))
-void usage () __attribute__((__noreturn__));
+static void usage (void) __attribute__((__noreturn__));
 #endif
-void
-usage ()
+static void
+usage (void)
 {
     static const char *msg[] = {
 "    -display displayname                X server to contact",
@@ -667,8 +630,8 @@ NULL};
     exit (1);
 }
 
-static int parse_backing_store (s)
-    char *s;
+static int
+parse_backing_store (char *s)
 {
     int len = strlen (s);
     char *cp;
@@ -686,9 +649,7 @@ static int parse_backing_store (s)
 }
 
 int
-main (argc, argv)
-    int argc;
-    char **argv;
+main (int argc, char **argv)
 {
     char *displayname = NULL;
     char *geom = NULL;
@@ -975,5 +936,5 @@ main (argc, argv)
     }
 
     XCloseDisplay (dpy);
-    exit (0);
+    return 0; 
 }
