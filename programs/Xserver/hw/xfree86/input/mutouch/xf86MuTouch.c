@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.9 1999/12/13 23:38:14 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.10 2000/05/23 23:58:25 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1853,6 +1853,7 @@ InputDriverRec MUTOUCH = {
     0				/* ref count */
 };
 
+#ifdef XFree86LOADER
 static pointer
 Plug(pointer	module,
      pointer	options,
@@ -1889,5 +1890,6 @@ static XF86ModuleVersionInfo version_rec = {
  * Do not change it.
  */
 XF86ModuleData mutouchModuleData = { &version_rec, Plug, Unplug };
+#endif
 
 #endif /* XFREE86_V4 */

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.7 1999/12/13 23:38:13 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.8 2000/05/23 23:58:25 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1755,6 +1755,7 @@ InputDriverRec ELOGRAPHICS = {
     0				/* ref count */
 };
 
+#ifdef XFree86LOADER
 static pointer
 Plug(pointer	module,
      pointer	options,
@@ -1792,4 +1793,5 @@ static XF86ModuleVersionInfo version_rec = {
  */
 XF86ModuleData elographicsModuleData = { &version_rec, Plug, Unplug };
 
+#endif
 #endif /* XFREE86_V4 */
