@@ -72,6 +72,8 @@ our usual support address.
   <item>The default black and white pixel values are now black = 0 and
 	white = 1 for all servers.  This may be swapped with the
 	`-flipPixels' command-line option.
+  <item>The <tt>RepeatMiddle</tt> keyword that was added in 3.1.2A has been
+	removed because it didn't work properly.
 </itemize>
 <sect1> PC98 support
 <p>
@@ -100,6 +102,11 @@ our usual support address.
   <item>Hardware Cursor support has problems when mode switching.
 	This is only a positioning issue and shouldn't cause any problems.
   <item>Check README.trident distributed with this release for full details.
+  <item>Known problems:
+	<itemize>
+	  <item>There is a problem with interlaced modes with the SVGA
+		driver.
+	</itemize>
 </itemize>
 <sect1> ARK driver (SVGA server)
 <p>
@@ -176,17 +183,19 @@ our usual support address.
 <sect1> ET4000/W32 server
 <p>
 <itemize>
-  <item>Support for the STG1703 RAMDAC/clock has been added.  To use the
-	programmable clock add the following line to the Device section
-	of the XF86Config:
+  <item>Support for the STG1703 RAMDAC/clock has been added.  Clocks up to
+	135MHz should be OK.  To use the programmable clock add the
+	following line to the Device section of the XF86Config:
 	<tscreen><verb>
 	ClockChip "stg1703"
 	</verb></tscreen>
   <item>Options have been added to allow PCI burst mode and W32 interleaving
-	to be turned off.  The XF86Config Device section entries for these
-	are:
+	to be turned on or off.  The XF86Config Device section entries
+	for these are:
 	<tscreen><verb>
+	Option "pci_burst_on"
 	Option "pci_burst_off"
+	Option "w32_interleave_on"
 	Option "w32_interleave_off"
 	</verb></tscreen>
 </itemize>
@@ -423,7 +432,7 @@ instructions, the files for that version will still be in the
 /usr/XFree86-3.1.2A directory.
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.13 1995/12/28 02:21:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.14 1995/12/28 03:49:33 dawes Exp $
 </verb>
 
 </article>

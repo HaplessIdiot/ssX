@@ -22,13 +22,14 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.0 1995/12/23 09:39:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_jstk.c,v 3.1 1995/12/26 06:09:22 dawes Exp $ */
 
 static const char rcs_id[] = "Id: lnx_jstk.c,v 1.1 1995/12/20 14:06:09 lepied Exp";
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
+#define inline __inline__
 #include <linux/joystick.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
@@ -45,7 +46,7 @@ extern int errno;
  */
 
 int
-xf86JoystickOn(char * name, int *timeout, *centerX, *centerY)
+xf86JoystickOn(char *name, int *timeout, int *centerX, int *centerY)
 {
   int   status;
   struct JS_DATA_TYPE   js;
