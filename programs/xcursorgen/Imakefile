@@ -1,0 +1,17 @@
+XCOMM $XFree86: xc/programs/xcursorgen/Imakefile,v 1.1 1999/03/14 11:18:11 dawes Exp $
+#define IHaveSubdirs
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
+
+SUBDIRS=redglass
+
+       INCLUDES = $(LIBPNGINC)
+        DEPLIBS = $(DEPXLIB)
+LOCAL_LIBRARIES = $(XCURSORLIB) $(XLIB) $(LIBPNGLIB)
+           SRCS = xcursorgen.c
+           OBJS = xcursorgen.o
+
+ComplexProgramTarget(xcursorgen)
+LinkBuildBinary(ProgramTargetName(xcursorgen))
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))

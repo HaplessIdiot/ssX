@@ -450,6 +450,10 @@ XCOMM This may change soon
 #define HasGroff		YES
 #endif
 
+#ifndef HasLibpng
+#define HasLibpng		YES
+#endif
+
 #define AvoidNullMakeCommand	YES
 #ifndef DebuggableLibraries
 #define DebuggableLibraries	NO
