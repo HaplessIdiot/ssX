@@ -524,20 +524,20 @@ static void
 writeSparseJensenNB16(int Value, pointer Base, register unsigned long Offset);
 static void
 writeSparseJensenNB32(int Value, pointer Base, register unsigned long Offset);
-static int readDense8(pointer Base, register unsigned long Offset);
-static int readDense16(pointer Base, register unsigned long Offset);
-static int readDense32(pointer Base, register unsigned long Offset);
-static void
+int readDense8(pointer Base, register unsigned long Offset);
+int readDense16(pointer Base, register unsigned long Offset);
+int readDense32(pointer Base, register unsigned long Offset);
+void
 writeDenseNB8(int Value, pointer Base, register unsigned long Offset);
-static void
+void
 writeDenseNB16(int Value, pointer Base, register unsigned long Offset);
-static void
+void
 writeDenseNB32(int Value, pointer Base, register unsigned long Offset);
-static void
+void
 writeDense8(int Value, pointer Base, register unsigned long Offset);
-static void
+void
 writeDense16(int Value, pointer Base, register unsigned long Offset);
-static void
+void
 writeDense32(int Value, pointer Base, register unsigned long Offset);
 
 static pointer
@@ -778,71 +778,6 @@ writeSparseNB32(int Value, pointer Base, register unsigned long Offset)
     return;
 }
 
-static int
-readDense8(pointer Base, register unsigned long Offset)
-{
-    return *(volatile CARD8*)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset));
-}
-
-static int
-readDense16(pointer Base, register unsigned long Offset)
-{
-    return *(volatile CARD16*)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset));
-}
-
-static int
-readDense32(pointer Base, register unsigned long Offset)
-{
-    return *(volatile CARD32*)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset));
-}
-
-static void
-writeDenseNB8(int Value, pointer Base, register unsigned long Offset)
-{
-    *(volatile CARD8*)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
-}
-
-static void
-writeDenseNB16(int Value, pointer Base, register unsigned long Offset)
-{
-    *(volatile CARD16*)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
-}
-
-static void
-writeDenseNB32(int Value, pointer Base, register unsigned long Offset)
-{
-    *(volatile CARD32*)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
-}
-
-static void
-writeDense8(int Value, pointer Base, register unsigned long Offset)
-{
-    *(volatile CARD8 *)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
-    mem_barrier();
-}
-
-static void
-writeDense16(int Value, pointer Base, register unsigned long Offset)
-{
-    *(volatile CARD16 *)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
-    mem_barrier();
-}
-
-static void
-writeDense32(int Value, pointer Base, register unsigned long Offset)
-{
-    *(volatile CARD32 *)
-	((unsigned long)lnxBase+(unsigned long)Base+(Offset)) = Value;
-    mem_barrier();
-}
 
 static int
 readSparseJensen8(pointer Base, register unsigned long Offset)
