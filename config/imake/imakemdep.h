@@ -1,5 +1,5 @@
 /* $XConsortium: imakemdep.h,v 1.76 94/04/17 20:10:31 gildea Exp $ */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.0 1994/05/08 05:13:16 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.1 1994/05/21 23:39:53 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -144,6 +144,10 @@ in this Software without prior written authorization from the X Consortium.
 #define imake_ccflags "-DSVR4"
 #endif
 
+#ifdef	MACH
+#define imake_ccflags "-DNOSTDHDRS"
+#endif
+
 #else /* not CCIMAKE */
 #ifndef MAKEDEPEND
 /*
@@ -216,6 +220,9 @@ in this Software without prior written authorization from the X Consortium.
 #if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
 #define DEFAULT_CPP "/usr/libexec/cpp"
 #endif
+#ifdef	MACH
+#define USE_CC_E
+#endif
 #ifdef __minix_vmd
 #define DEFAULT_CPP "/usr/lib/cpp"
 #endif
@@ -244,7 +251,7 @@ char *cpp_argv[ARGUMENTS] = {
 #ifdef unix
 	"-Uunix",	/* remove unix symbol so that filename unix.c okay */
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__)
+#if defined(__386BSD__) || defined(__NetBSD__) || defined(__FreeBSD__) || defined(MACH)
 # ifdef __i386__
 	"-D__i386__",
 # endif
