@@ -2327,11 +2327,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
      */
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (%d/%02d/%02d-%d)\n");
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	"Copyright (C) 2001-2004 Thomas Winischhofer <thomas@winischhofer.net> and others\n",
+        "SiS driver (%d/%02d/%02d-%d)\n",
 	SISDRIVERVERSIONYEAR + 2000, SISDRIVERVERSIONMONTH,
 	SISDRIVERVERSIONDAY, SISDRIVERREVISION);
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	"Copyright (C) 2001-2004 Thomas Winischhofer <thomas@winischhofer.net> and others\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "Compiled for XFree86 %d.%d.%d.%d\n",
 	XF86_VERSION_MAJOR, XF86_VERSION_MINOR,
