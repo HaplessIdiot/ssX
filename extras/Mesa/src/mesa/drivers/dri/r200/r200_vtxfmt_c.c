@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_vtxfmt_c.c,v 1.1.1.2 2004/12/10 15:05:56 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt_c.c,v 1.2 2002/12/16 16:18:56 dawes Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -119,7 +119,7 @@ static void r200_Vertex2fv( const GLfloat *v )
 }
 
 
-#if 0
+
 /* Color for ubyte (packed) color formats:
  */
 #if 0
@@ -208,7 +208,7 @@ static void r200_Color4fv_ub( const GLfloat *v )
    UNCLAMPED_FLOAT_TO_UBYTE( dest->alpha, v[3] );
 }
 
-#if 0
+
 /* Color for float color+alpha formats:
  */
 #if 0
@@ -302,7 +302,7 @@ static void r200_Color4fv_4f( const GLfloat *v )
    dest[3] = v[3];
 }
 
-#if 0
+
 /* Color for float color formats:
  */
 #if 0
@@ -392,7 +392,7 @@ static void r200_Color4fv_3f( const GLfloat *v )
    ctx->Current.Attrib[VERT_ATTRIB_COLOR0][3] = v[3]; 
 }
 
-#if 0
+
 /* Secondary Color:
  */
 #if 0

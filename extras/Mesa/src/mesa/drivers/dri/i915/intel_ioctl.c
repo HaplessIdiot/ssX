@@ -1,8 +1,27 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/intel_ioctl.c,v 1.2 2004/06/23 19:40:13 tsi Exp $ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+ * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  **************************************************************************/
 
@@ -10,6 +29,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sched.h>
 
 #include "mtypes.h"
 #include "context.h"
@@ -87,7 +107,7 @@ void intel_dump_batchbuffer( long offset,
    int i;
    fprintf(stderr, "\n\n\nSTART BATCH (%d dwords):\n", count);
    for (i = 0; i < count/4; i += 4) 
-      fprintf(stderr, "\t0x%lx: 0x%08x 0x%08x 0x%08x 0x%08x\n", 
+      fprintf(stderr, "\t0x%x: 0x%08x 0x%08x 0x%08x 0x%08x\n", 
 	      offset + i*4, ptr[i], ptr[i+1], ptr[i+2], ptr[i+3]);
    fprintf(stderr, "END BATCH\n\n\n");
 }
@@ -143,7 +163,6 @@ void intelFlushBatchLocked( intelContextPtr intel,
     * single buffer.
     */
    if (intel->numClipRects == 0 && !ignore_cliprects) {
-      intel->batch.space = intel->batch.size;
       
       /* Without this yeild, an application with no cliprects can hog
        * the hardware.  Without unlocking, the effect is much worse -
@@ -151,13 +170,15 @@ void intelFlushBatchLocked( intelContextPtr intel,
        */
       if (allow_unlock) {
 	 UNLOCK_HARDWARE( intel );
-	 usleep(0);
+	 sched_yield();
 	 LOCK_HARDWARE( intel );
       }
 
       /* Note that any state thought to have been emitted actually
        * hasn't:
        */
+      intel->batch.ptr -= (intel->batch.size - intel->batch.space);
+      intel->batch.space = intel->batch.size;
       intel->vtbl.lost_hardware( intel ); 
    }
 
@@ -226,7 +247,7 @@ void intelFlushBatchLocked( intelContextPtr intel,
 	 }
       } else {
 	 drmI830CmdBuffer cmd;
-	 cmd.buf = (char *)intel->alloc.ptr + batch.start;
+	 cmd.buf = intel->alloc.ptr + batch.start;
 	 cmd.sz = batch.used;
 	 cmd.DR1 = batch.DR1;
 	 cmd.DR4 = batch.DR4;
@@ -458,7 +479,7 @@ void intelFreeAGP( intelContextPtr intel, void *pointer )
  * the kernel data structures, and the current context to get the
  * device fd.
  */
-void *intelAllocateMemoryMESA(Display *dpy, int scrn,
+void *intelAllocateMemoryMESA(__DRInativeDisplay *dpy, int scrn,
 			      GLsizei size, GLfloat readfreq,
 			      GLfloat writefreq, GLfloat priority)
 {
@@ -479,7 +500,7 @@ void *intelAllocateMemoryMESA(Display *dpy, int scrn,
 
 
 /* Called via glXFreeMemoryMESA() */
-void intelFreeMemoryMESA(Display *dpy, int scrn, GLvoid *pointer)
+void intelFreeMemoryMESA(__DRInativeDisplay *dpy, int scrn, GLvoid *pointer)
 {
    GET_CURRENT_CONTEXT(ctx);
    if (INTEL_DEBUG & DEBUG_IOCTL) 
@@ -497,7 +518,7 @@ void intelFreeMemoryMESA(Display *dpy, int scrn, GLvoid *pointer)
  *
  * Returns offset of pointer from the start of agp aperture.
  */
-GLuint intelGetMemoryOffsetMESA(Display *dpy, int scrn, 
+GLuint intelGetMemoryOffsetMESA(__DRInativeDisplay *dpy, int scrn, 
 				const GLvoid *pointer)
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -565,7 +586,7 @@ void intelPageFlip( const __DRIdrawablePrivate *dPriv )
    LOCK_HARDWARE( intel );
 
    if (dPriv->pClipRects) {
-      *(XF86DRIClipRectRec *)intel->sarea->boxes = dPriv->pClipRects[0];
+      *(drm_clip_rect_t *)intel->sarea->boxes = dPriv->pClipRects[0];
       intel->sarea->nbox = 1;
    }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_vtxfmt_c.c,v 1.1.1.2 2004/12/10 15:06:20 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_vtxfmt_c.c,v 1.3 2004/12/10 15:30:10 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2002 ATI Technologies Inc., Ontario, Canada, and
@@ -205,7 +205,7 @@ static void radeon_Color4fv_ub( const GLfloat *v )
    UNCLAMPED_FLOAT_TO_UBYTE( dest->alpha, v[3] );
 }
 
-#if 0
+
 /* Color for float color+alpha formats:
  */
 #if 0
@@ -299,7 +299,7 @@ static void radeon_Color4fv_4f( const GLfloat *v )
    dest[3] = v[3];
 }
 
-#if 0
+
 /* Color for float color formats:
  */
 #if 0
@@ -389,7 +389,7 @@ static void radeon_Color4fv_3f( const GLfloat *v )
    ctx->Current.Attrib[VERT_ATTRIB_COLOR0][3] = v[3]; 
 }
 
-#if 0
+
 /* Secondary Color:
  */
 #if 0

@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texstate.c,v 1.1.1.3 2004/12/10 15:05:48 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texstate.c,v 1.4 2004/12/10 15:30:09 alanh Exp $ */
 
 /**
  * \file i830_texstate.c
@@ -53,11 +53,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i830_tex.h"
 #include "i830_state.h"
 #include "i830_ioctl.h"
-
-#ifndef IEEE_ONE
-static const float floatone = 1.0;
-#define IEEE_ONE (*((const GLuint *)(&floatone)))
-#endif
 
 #define I830_TEX_UNIT_ENABLED(unit)		(1<<unit)
 

@@ -3,6 +3,26 @@
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+ * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
  **************************************************************************/
 
 #include "glheader.h"
@@ -284,6 +304,83 @@ static void intelTexSubImage2D( GLcontext *ctx,
    }
 }
 
+static void intelCompressedTexImage2D( GLcontext *ctx, GLenum target, GLint level,
+                              GLint internalFormat,
+                              GLint width, GLint height, GLint border,
+                              GLsizei imageSize, const GLvoid *data,
+                              struct gl_texture_object *texObj,
+                              struct gl_texture_image *texImage )
+{
+   driTextureObject * t = (driTextureObject *) texObj->DriverData;
+   GLuint face;
+
+   /* which cube face or ordinary 2D image */
+   switch (target) {
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+      face = (GLuint) target - (GLuint) GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+      ASSERT(face < 6);
+      break;
+   default:
+      face = 0;
+   }
+
+   assert(t);
+   intelFlush( ctx );
+   
+   driSwapOutTextureObject( t );
+   texImage->IsClientData = GL_FALSE;
+
+   if (INTEL_DEBUG & DEBUG_TEXTURE)
+     fprintf(stderr, "%s: Using normal storage\n", __FUNCTION__); 
+   
+   _mesa_store_compressed_teximage2d(ctx, target, level, internalFormat, width,
+				     height, border, imageSize, data, texObj, texImage);
+   
+   t->dirty_images[face] |= (1 << level);
+}
+
+
+static void intelCompressedTexSubImage2D( GLcontext *ctx, GLenum target, GLint level,
+                                 GLint xoffset, GLint yoffset,
+                                 GLsizei width, GLsizei height,
+                                 GLenum format,
+                                 GLsizei imageSize, const GLvoid *data,
+                                 struct gl_texture_object *texObj,
+                                 struct gl_texture_image *texImage )
+{
+   driTextureObject * t = (driTextureObject *) texObj->DriverData;
+   GLuint face;
+
+
+   /* which cube face or ordinary 2D image */
+   switch (target) {
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_X:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_X:
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_Y:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Y:
+   case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
+   case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
+      face = (GLuint) target - (GLuint) GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+      ASSERT(face < 6);
+      break;
+   default:
+      face = 0;
+   }
+
+   assert( t ); /* this _should_ be true */
+   intelFlush( ctx );
+   driSwapOutTextureObject( t );
+   
+   _mesa_store_compressed_texsubimage2d(ctx, target, level, xoffset, yoffset, width,
+					height, format, imageSize, data, texObj, texImage);
+   
+   t->dirty_images[face] |= (1 << level);
+}
 
 
 static void intelTexImage3D( GLcontext *ctx, GLenum target, GLint level,
@@ -452,6 +549,11 @@ intelChooseTextureFormat( GLcontext *ctx, GLint internalFormat,
       else
          return &_mesa_texformat_ycbcr_rev;
 
+   case GL_COMPRESSED_RGB_FXT1_3DFX:
+     return &_mesa_texformat_rgb_fxt1;
+   case GL_COMPRESSED_RGBA_FXT1_3DFX:
+     return &_mesa_texformat_rgba_fxt1;
+
    default:
       fprintf(stderr, "unexpected texture format in %s\n", __FUNCTION__);
       return NULL;
@@ -508,6 +610,33 @@ static void intelUploadTexImage( intelContextPtr intel,
 			       0, 0,
 			       image->Width,
 			       image->Height);
+   }
+   else if (image->IsCompressed) {
+      GLuint row_len = image->Width * 2;
+      GLubyte *dst = (GLubyte *)(t->BufAddr + offset);
+      GLubyte *src = (GLubyte *)image->Data;
+      GLuint j;
+
+      if (INTEL_DEBUG & DEBUG_TEXTURE)
+	 fprintf(stderr, 
+		 "Upload image %dx%dx%d offset %xm row_len %x "
+		 "pitch %x depth_pitch %x\n",
+		 image->Width, image->Height, image->Depth, offset,
+		 row_len, t->Pitch, t->depth_pitch);
+
+      switch(image->IntFormat)
+	{
+	case GL_COMPRESSED_RGB_FXT1_3DFX:
+	case GL_COMPRESSED_RGBA_FXT1_3DFX:
+	  for (j = 0 ; j < image->Height/4 ; j++, dst += (t->Pitch)) {
+	    __memcpy(dst, src, row_len );
+	    src += row_len;
+	  }
+	  break;
+	default:
+	  fprintf(stderr,"Internal Compressed format not supported %d\n", image->IntFormat);
+	  break;
+	}
    }
    else {
       GLuint row_len = image->Width * image->TexFormat->TexelBytes;
@@ -662,4 +791,6 @@ void intelInitTextureFuncs( struct dd_function_table *functions )
    functions->IsTextureResident         = driIsTextureResident;
    functions->TestProxyTexImage         = _mesa_test_proxy_teximage;
    functions->DeleteTexture             = intelDeleteTexture;
+   functions->CompressedTexImage2D      = intelCompressedTexImage2D;
+   functions->CompressedTexSubImage2D   = intelCompressedTexSubImage2D;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/glapi/glapitemp.h,v 1.4 2004/12/10 15:30:11 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/glapi/glapitemp.h,v 1.5 2004/12/10 15:41:01 alanh Exp $ */
 /* DO NOT EDIT - This file generated automatically by gl_apitemp.py (from Mesa) script */
 
 /*
@@ -27,15 +27,6 @@
  * SOFTWARE.
  */
 
-
-/*
- * Note directed upstream:
- *
- * glapitemp.py doesn't handle GLbitfield's properly.  Until that's corrected,
- * I'm changing this file directly.
- *
- * Marc Aurele La France, tsi@xfree86.org
- */
 
 /*
  * This file is a template which generates the OpenGL API entry point

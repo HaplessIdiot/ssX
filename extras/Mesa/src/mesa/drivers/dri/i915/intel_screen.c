@@ -3,6 +3,26 @@
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
  * All Rights Reserved.
  * 
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sub license, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject to
+ * the following conditions:
+ * 
+ * The above copyright notice and this permission notice (including the
+ * next paragraph) shall be included in all copies or substantial portions
+ * of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+ * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+ * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+ * IN NO EVENT SHALL TUNGSTEN GRAPHICS AND/OR ITS SUPPLIERS BE LIABLE FOR
+ * ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+ * TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * 
  **************************************************************************/
 
 #include "glheader.h"
@@ -23,9 +43,8 @@
 
 #include "i830_dri.h"
 
-#ifndef _SOLO
-#include "glxextensions.h"
-#endif
+const char __driConfigOptions[] = { 0 };
+const GLuint __driNConfigOptions = 0;
 
 #ifdef USE_NEW_INTERFACE
 static PFNGLXCREATECONTEXTMODES create_context_modes = NULL;
@@ -165,7 +184,6 @@ static GLboolean intelInitDriver(__DRIscreenPrivate *sPriv)
       }
    }
 
-#ifndef _SOLO       
    if ( driCompareGLXAPIVersion( 20030813 ) >= 0 ) {
       PFNGLXSCRENABLEEXTENSIONPROC glx_enable_extension =
           (PFNGLXSCRENABLEEXTENSIONPROC) glXGetProcAddress( (const GLubyte *) "__glXScrEnableExtension" );
@@ -188,7 +206,6 @@ static GLboolean intelInitDriver(__DRIscreenPrivate *sPriv)
 	 }
       }
    }
-#endif
 
    return GL_TRUE;
 }
@@ -299,7 +316,6 @@ static const struct __DriverAPIRec intelAPI = {
  * Return:  pointer to a __DRIscreenPrivate.
  */
 #if !defined(DRI_NEW_INTERFACE_ONLY)
-#ifndef _SOLO
 void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
 			int numConfigs, __GLXvisualConfig *config)
 {
@@ -307,121 +323,8 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    psp = __driUtilCreateScreen(dpy, scrn, psc, numConfigs, config, &intelAPI);
    return (void *) psp;
 }
-#else
-void *__driCreateScreen(struct DRIDriverRec *driver,
-                        struct DRIDriverContextRec *driverContext)
-{
-   __DRIscreenPrivate *psp;
-   psp = __driUtilCreateScreen(driver, driverContext, &i830API);
-   return (void *) psp;
-}
-#endif
 #endif /* !defined(DRI_NEW_INTERFACE_ONLY) */
 	     
-
-/* This function is called by libGL.so as soon as libGL.so is loaded.
- * This is where we'd register new extension functions with the dispatcher.
- *
- * Note: Most of these are probably already registered - just doing
- * this for the benefit of old libGL.so's out there.
- */
-#include "glapioffsets.h"
-
-void __driRegisterExtensions( void )
-{
-   int i;
-   static struct { const char *name; int offset; } funcs[] = {
-	{ "glSecondaryColor3bEXT", _gloffset_SecondaryColor3bEXT },
-	{ "glSecondaryColor3dEXT", _gloffset_SecondaryColor3dEXT },
-	{ "glSecondaryColor3fEXT", _gloffset_SecondaryColor3fEXT },
-	{ "glSecondaryColor3iEXT", _gloffset_SecondaryColor3iEXT },
-	{ "glSecondaryColor3sEXT", _gloffset_SecondaryColor3sEXT },
-	{ "glSecondaryColor3ubEXT", _gloffset_SecondaryColor3ubEXT },
-	{ "glSecondaryColor3uiEXT", _gloffset_SecondaryColor3uiEXT },
-	{ "glSecondaryColor3usEXT", _gloffset_SecondaryColor3usEXT },
-	{ "glSecondaryColor3bvEXT", _gloffset_SecondaryColor3bvEXT },
-	{ "glSecondaryColor3dvEXT", _gloffset_SecondaryColor3dvEXT },
-	{ "glSecondaryColor3fvEXT", _gloffset_SecondaryColor3fvEXT },
-	{ "glSecondaryColor3ivEXT", _gloffset_SecondaryColor3ivEXT },
-	{ "glSecondaryColor3svEXT", _gloffset_SecondaryColor3svEXT },
-	{ "glSecondaryColor3ubvEXT", _gloffset_SecondaryColor3ubvEXT },
-	{ "glSecondaryColor3uivEXT", _gloffset_SecondaryColor3uivEXT },
-	{ "glSecondaryColor3usvEXT", _gloffset_SecondaryColor3usvEXT },
-	{ "glSecondaryColorPointerEXT", _gloffset_SecondaryColorPointerEXT }
-   };
-
-   for (i = 0 ; i < sizeof(funcs) / sizeof(*funcs) ; i++ ) 
-      _glapi_add_entrypoint( funcs[i].name, funcs[i].offset );
-}
-
-
-#ifdef USE_NEW_INTERFACE
-static __GLcontextModes * fill_in_modes( __GLcontextModes * modes,
-					 unsigned pixel_bits, 
-					 unsigned depth_bits,
-					 unsigned stencil_bits,
-					 const GLenum * db_modes,
-					 unsigned num_db_modes,
-					 int visType )
-{
-    static const uint8_t bits[2][4] = {
-	{          5,          6,          5,          0 },
-	{          8,          8,          8,          8 }
-    };
-
-    static const uint32_t masks[2][4] = {
-	{ 0x0000F800, 0x000007E0, 0x0000001F, 0x00000000 },
-	{ 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000 }
-    };
-
-    unsigned   i;
-    unsigned   j;
-    const unsigned index = ((pixel_bits + 15) / 16) - 1;
-
-    for ( i = 0 ; i < num_db_modes ; i++ ) {
-	for ( j = 0 ; j < 2 ; j++ ) {
-
-	    modes->redBits   = bits[index][0];
-	    modes->greenBits = bits[index][1];
-	    modes->blueBits  = bits[index][2];
-	    modes->alphaBits = bits[index][3];
-	    modes->redMask   = masks[index][0];
-	    modes->greenMask = masks[index][1];
-	    modes->blueMask  = masks[index][2];
-	    modes->alphaMask = masks[index][3];
-	    modes->rgbBits   = modes->redBits + modes->greenBits
-		+ modes->blueBits + modes->alphaBits;
-
-	    modes->accumRedBits   = 16 * j;
-	    modes->accumGreenBits = 16 * j;
-	    modes->accumBlueBits  = 16 * j;
-	    modes->accumAlphaBits = (masks[index][3] != 0) ? 16 * j : 0;
-	    modes->visualRating = (j == 0) ? GLX_NONE : GLX_SLOW_CONFIG;
-
-	    modes->stencilBits = stencil_bits;
-	    modes->depthBits = depth_bits;
-
-	    modes->visualType = visType;
-	    modes->renderType = GLX_RGBA_BIT;
-	    modes->drawableType = GLX_WINDOW_BIT;
-	    modes->rgbMode = GL_TRUE;
-
-	    if ( db_modes[i] == GLX_NONE ) {
-		modes->doubleBufferMode = GL_FALSE;
-	    }
-	    else {
-		modes->doubleBufferMode = GL_TRUE;
-		modes->swapMethod = db_modes[i];
-	    }
-
-	    modes = modes->next;
-	}
-    }
-    
-    return modes;
-}
-#endif /* USE_NEW_INTERFACE */
-
 
 #ifdef USE_NEW_INTERFACE
 static __GLcontextModes *
@@ -433,7 +336,8 @@ intelFillInModes( unsigned pixel_bits, unsigned depth_bits,
    unsigned num_modes;
    unsigned depth_buffer_factor;
    unsigned back_buffer_factor;
-   unsigned i;
+   GLenum fb_format;
+   GLenum fb_type;
 
    /* GLX_SWAP_COPY_OML is only supported because the MGA driver doesn't
     * support pageflipping at all.
@@ -442,42 +346,46 @@ intelFillInModes( unsigned pixel_bits, unsigned depth_bits,
       GLX_NONE, GLX_SWAP_UNDEFINED_OML, GLX_SWAP_COPY_OML
    };
 
-   int depth_buffer_modes[2][2];
+   uint8_t depth_bits_array[2];
+   uint8_t stencil_bits_array[2];
 
 
-   depth_buffer_modes[0][0] = depth_bits;
-   depth_buffer_modes[1][0] = depth_bits;
+   depth_bits_array[0] = 0;
+   depth_bits_array[1] = depth_bits;
 
    /* Just like with the accumulation buffer, always provide some modes
     * with a stencil buffer.  It will be a sw fallback, but some apps won't
     * care about that.
     */
-   depth_buffer_modes[0][1] = 0;
-   depth_buffer_modes[1][1] = (stencil_bits == 0) ? 8 : stencil_bits;
+   stencil_bits_array[0] = 0;
+   stencil_bits_array[1] = (stencil_bits == 0) ? 8 : stencil_bits;
 
    depth_buffer_factor = ((depth_bits != 0) || (stencil_bits != 0)) ? 2 : 1;
    back_buffer_factor  = (have_back_buffer) ? 3 : 1;
 
    num_modes = depth_buffer_factor * back_buffer_factor * 4;
 
+    if ( pixel_bits == 16 ) {
+        fb_format = GL_RGB;
+        fb_type = GL_UNSIGNED_SHORT_5_6_5;
+    }
+    else {
+        fb_format = GL_BGRA;
+        fb_type = GL_UNSIGNED_INT_8_8_8_8_REV;
+    }
+
    modes = (*create_context_modes)( num_modes, sizeof( __GLcontextModes ) );
    m = modes;
-   for ( i = 0 ; i < depth_buffer_factor ; i++ ) {
-      m = fill_in_modes( m, pixel_bits, 
-			 depth_buffer_modes[i][0], depth_buffer_modes[i][1],
-			 back_buffer_modes, back_buffer_factor,
-			 GLX_TRUE_COLOR );
-   }
+   if ( ! driFillInModes( & m, fb_format, fb_type,
+			  depth_bits_array, stencil_bits_array, depth_buffer_factor,
+			  back_buffer_modes, back_buffer_factor,
+			  GLX_TRUE_COLOR ) ) {
+	fprintf( stderr, "[%s:%u] Error creating FBConfig!\n",
+		 __func__, __LINE__ );
+	return NULL;
+    }
 
    /* There's no direct color modes on intel? */
-#if 0
-   for ( i = 0 ; i < depth_buffer_factor ; i++ ) {
-      m = fill_in_modes( m, pixel_bits, 
-			 depth_buffer_modes[i][0], depth_buffer_modes[i][1],
-			 back_buffer_modes, back_buffer_factor,
-			 GLX_DIRECT_COLOR );
-   }
-#endif
 
    /* Mark the visual as slow if there are "fake" stencil bits.
     */
@@ -503,7 +411,7 @@ intelFillInModes( unsigned pixel_bits, unsigned depth_bits,
  *         failure.
  */
 #ifdef USE_NEW_INTERFACE
-void * __driCreateNewScreen( Display *dpy, int scrn, __DRIscreen *psc,
+void * __driCreateNewScreen( __DRInativeDisplay *dpy, int scrn, __DRIscreen *psc,
 			     const __GLcontextModes * modes,
 			     const __DRIversion * ddx_version,
 			     const __DRIversion * dri_version,
