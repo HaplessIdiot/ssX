@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.h,v 1.1 94/03/28 21:48:52 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.0 1994/04/29 14:10:07 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -149,8 +149,9 @@ extern int cirrusBankShift;
 #define CLGD6215    7
 #define CLGD6225    8
 #define CLGD6235    9
-#define CLGD543x    10
-#define LASTCLGD    CLGD543x
+#define CLGD5434    10
+#define CLGD5430    11
+#define LASTCLGD    CLGD5430
 
 #define CIRRUS_SLOWBUS 0
 #define CIRRUS_FASTBUS 1
@@ -182,7 +183,7 @@ extern int cirrus_rop[];
 extern unsigned char byte_reversed[];
 
 
-#define HAVE543X() (cirrusChip == CLGD543x)
+#define HAVE543X() (cirrusChip == CLGD5434 || cirrusChip == CLGD5430)
 
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
 

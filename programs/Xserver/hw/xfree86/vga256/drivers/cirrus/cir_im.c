@@ -177,14 +177,16 @@ static __inline__ transferwords( unsigned char *base, unsigned char *srcp, int c
  * We need to read a multiple of 4 bytes in total. We must not pad scanlines.
  * We may only read words.
  *
- * [Doesn't seem to work; maybe the scanlines are padded after all.]
+ * According to the 542x databook, this is the way to go. However, it
+ * doesn't work; we must pad scanlines to multiples of 4.
+ * The 543x book says something similar, but on that chip it appears the
+ * scanline MUST be padded (at least the function that worked on the 5426
+ * doesn't work on the 543x apparently).
  *
  */
 
-#if 0
-
-static void CirrusImageReadTransfer( int w, int h, void *destp, int destpitch,
-void *base ) {
+static void CirrusImageReadTransfer543x( int w, int h, void *destp,
+int destpitch, void *base ) {
 	unsigned char *buffer, *bufferp;
 	int i;
 	int size;
@@ -207,13 +209,11 @@ void *base ) {
 	/* Copy raw data to destination pixmap. */
 	bufferp = buffer;
 	for (i = 0; i < h; i++) {
-		memcpy(destp + i * destpitch, bufferp, w);
+		memcpy((unsigned char *)destp + i * destpitch, bufferp, w);
 		bufferp += w;
 	}
 	DEALLOCATE_LOCAL(buffer);
 }
-
-#endif
 
 
 void
@@ -325,11 +325,17 @@ CirrusImageRead (pdstBase, psrcBase, widthSrc, widthDst, x, y,
        * I doubt whether the reading of a multiple of 4 bytes *per
        * blit line* is right; I think we just need to read a multiple of
        * 4 bytes in total. We must not pad scanlines.
-       * See databook D8-6.
+       * See 542x databook D8-6.
+       *
+       * The databook appears to have been wrong. The 543x databook says
+       * the same thing, but it may be right. Sigh.
        *
        */
 
-      CirrusImageReadTransfer(w, h, pdst, widthDst, vgaBase);
+      if (HAVE543X())
+          CirrusImageReadTransfer543x(w, h, pdst, widthDst, vgaBase);
+      else
+	  CirrusImageReadTransfer(w, h, pdst, widthDst, vgaBase);
 
       WAITUNTILFINISHED();
     }

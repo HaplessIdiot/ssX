@@ -1,5 +1,5 @@
 /* $XConsortium: cir_fill.c,v 1.1 94/03/28 21:49:00 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_fill.c,v 3.0 1994/04/29 14:10:09 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -93,44 +93,6 @@ CirrusFillRectSolidGeneral (pDrawable, pGC, nBox, pBox)
 }
 
 
-#ifdef DETERMINE_BUSSPEED
-
-/* Function to determine bus speed. This is a bad hack, but we need to */
-/* know how fast the bus is for good acceleration selection. */
-
-static int busspeed_initialized = 0;
-
-static void CirrusDetermineBusSpeed() {
-	int starttime, difftime;
-	int count;
-	starttime = GetTimeInMillis();
-	/* Write 1Mb to the card. */
-	count = 20;
-	while (count > 0) {
-		memset(vgaBase, 0, 50000);
-		count--;
-	}
-	difftime = GetTimeInMillis() - starttime;
-	if (difftime == 0)
-		difftime = 1;
-	cirrusBusType = CIRRUS_SLOWBUS;
-	if (1000 / difftime >= 8)
-		cirrusBusType = CIRRUS_FASTBUS;
-#if 0
-	if (xf86Verbose)
-#endif	
-		ErrorF("Cirrus: Approximate bus speed (memset): %dMb/s %s\n",
-			1000 / difftime,
-			cirrusBusType == CIRRUS_FASTBUS ?
-			"(fast color expansion via bus)" :
-			"(emphasis on BitBLT engine)"
-			);
-	busspeed_initialized = 1;
-}
-
-#endif
-
-
 /* General mid-level solid fill. Makes a choice of low-level routines. */
 
 void
@@ -147,13 +109,6 @@ CirrusFillBoxSolid (pDrawable, nBox, pBox, pixel1, pixel2, alu)
   int		  widthDst;
   int             h;
   int		  w;
-
-#ifdef DETERMINE_BUSSPEED
-  /* Hook into the initial server root fill to determine */
-  /* the bus speed (another hack). */
-  if (!busspeed_initialized)
-      CirrusDetermineBusSpeed();
-#endif
 
   if (pDrawable->type == DRAWABLE_WINDOW)
     {

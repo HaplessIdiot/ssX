@@ -1,5 +1,5 @@
 /* $XConsortium: cir_blitter.c,v 1.1 94/03/28 21:48:10 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.0 1994/04/29 14:10:00 dawes Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -266,15 +266,12 @@ void CirrusBLT16x16PatternFill(dstAddr, w, h, pattern, destpitch, rop)
   WAITUNTILFINISHED();
 }
 
-#if 0
-
 /*
  * 32x32 pattern fill for 5434.
  *
  * Uses four 32x8 byte-per-pixel pattern fills (meant for 8x8 32-bit pixel
  * fill), vertically interleaved.
- * This is speculative, and untested. I haven't checked with any official
- * register docs.
+ * This is untested.
  *
  * Something like this would also work on the 5426/28 (by filling vertical
  * bands 16 pixels wide, 4-way interleaved) if the virtual screen width is
@@ -312,7 +309,7 @@ void CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
       /* Write 32x8 pattern. */
       for (i = 0; i < 8; i++)
           memcpy((unsigned char *)vgaBase + 0x8000 + (srcAddr & 0x3fff) + i * 32,
-	  	pattern + i * 32 * 4 + 32 * k, 32);
+	  	(unsigned char *)pattern + i * 32 * 4 + 32 * k, 32);
       blith = h / 4;
       if (h & 3 > k)
   	  blith++;
@@ -326,8 +323,6 @@ void CirrusBLT32x32PatternFill(dstAddr, w, h, pattern, destpitch, rop)
       dstAddr += destpitch;
   }
 }
-
-#endif
 
 
 /*

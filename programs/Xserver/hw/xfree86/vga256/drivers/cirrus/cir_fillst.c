@@ -226,12 +226,9 @@ void CirrusFillRectTile(pDrawable, pGC, nBox, pBox)
 		if (width == 16 && height == 16 && (vga256InfoRec.virtualX
 		< 2048 || (HAVE543X() && vga256InfoRec.virtualX < 4096)))
 			goto tile16x16;
-#if 0
-		/* Not yet. */
 		if (width == 32 && height == 32 && HAVE543X() &&
-		vga256InfoRec.virtualX < 2048))
+		vga256InfoRec.virtualX < 2048)
 			goto tile32x32;
-#endif
 #if 0	/* broken. */
 		if (width * height >= 500 && (width != 32 || height > 32 ||
 		cirrusBusType == CIRRUS_SLOWBUS || HAVE543X()))
@@ -289,13 +286,12 @@ tile16x16:
 	DEALLOCATE_LOCAL(pattern);
 	return;
 
-#if 0
 tile32x32:
 	/* 32x32 BitBLT tile fill (for 5434). */
 	pattern = ALLOCATE_LOCAL(32 * 32);
 	for (;nBox; nBox--, pBox++) {
 		int w, h;
-		rotatepattern(pattern, src, pixWidth, 32, 32,
+		rotatepattern(pattern, (unsigned char *)src, pixWidth, 32, 32,
 			(pBox->x1 - xrot) & 31, (pBox->y1 - yrot) & 31);
 		w = pBox->x2 - pBox->x1;
 		h = pBox->y2 - pBox->y1;
@@ -309,8 +305,8 @@ tile32x32:
 	}
 	DEALLOCATE_LOCAL(pattern);
 	return;
-#endif	
 
+#if 0
 tileblit:
 	/* Tile with repeated BitBLT. For largish tiles. */
 	for (;nBox; nBox--, pBox++) {
@@ -360,6 +356,7 @@ tileblit:
 				x, destPitch, destPitch, w, y + h - blity, 1);
 	}
 	return;
+#endif	
 
 tile32:
 	/* The accel routine will only write on 32-aligned x-coords. */

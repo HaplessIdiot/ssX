@@ -10,7 +10,7 @@
 #define SYSTEMSRC		0x04
 #define TRANSPARENCYCOMPARE	0x08
 #define PIXELWIDTH16		0x10
-#define PIXELWIDTH32		0x30	/* Speculative, 543x only. */
+#define PIXELWIDTH32		0x30	/* 543x only. */
 #define PATTERNCOPY		0x40
 #define COLOREXPAND		0x80
 
