@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.0 1994/12/19 12:52:12 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.1 1994/12/20 11:33:26 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -47,9 +47,7 @@ LinuxDocReadmeTarget(SVR4)
 /* Hardware docs */
 LinuxDocReadmeTarget(P9000)
 LinuxDocReadmeTarget(Video7)
-#if 0
 LinuxDocReadmeTarget(S3)
-#endif
 LinuxDocReadmeTarget(W32)
 LinuxDocReadmeTarget(WstDig)
 LinuxDocReadmeTarget(agx)

@@ -496,7 +496,7 @@ later releases can use:
 </tscreen>
 
 To ensure that this symbol is correctly defined, include either
-<tt>&lt X11/Xos.h &gt</tt> (best) or <tt>&lt sys/param.h &gt</tt> in
+<tt>&lt;X11/Xos.h&gt;</tt> (best) or <tt>&lt;sys/param.h&gt;</tt> in
 the source that requires it.  
 
 For code that really is specific to a particular i386 BSD port, use
@@ -530,7 +530,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.NetBSD,v 3.8 1994/11/22 02:39:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.0 1994/12/20 11:33:30 dawes Exp $
 </verb>
 
 </article>

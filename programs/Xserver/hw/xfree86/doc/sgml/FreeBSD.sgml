@@ -84,7 +84,7 @@ need 8.3Mb minimum for the required run-time binaries only.
      8-bit color for Weitek P9000 boards (Diamond Viper).
 
 <tag/S3/
-     8-bit color for S3 boards (&num 9 GXE, Actix GE32, SPEA Mercury, STB Pegasus)
+     8-bit color for S3 boards (&num;9 GXE, Actix GE32, SPEA Mercury, STB Pegasus)
 
 <tag/SVGA/
      8-bit color for Super-VGA cards.
@@ -509,7 +509,7 @@ include shared library support, add the following line to <tt/site.def/:
 </verb></tscreen>
 
 If your system doesn't have support or SYSV shared memory (for
-example, if you don't have the <tt>&lt sys/shm.h&gt</tt> header), you
+example, if you don't have the <tt>&lt;sys/shm.h&gt;</tt> header), you
 should disable the MIT-SHM extension by adding the following line to
 <tt/site.def/:
 
@@ -557,7 +557,7 @@ later releases can use:
 </verb></tscreen>
 
 To ensure that this symbol is correctly defined, include either
-<tt>&lt X11/Xos.h &gt</tt> (best) or <tt>&lt sys/param.h &gt</tt> in
+<tt>&lt;X11/Xos.h&gt;</tt> (best) or <tt>&lt;sys/param.h&gt;</tt> in
 the source that requires it.  
 
 For code that really is specific to a particular i386 BSD port, use
@@ -579,7 +579,7 @@ Many thanks to:
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/READ.FreeBSD,v 3.3 1994/09/27 10:30:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/FreeBSD.sgml,v 3.0 1994/12/20 11:33:24 dawes Exp $
 </verb>
 
 </article>

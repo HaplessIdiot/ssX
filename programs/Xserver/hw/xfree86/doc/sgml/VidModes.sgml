@@ -20,7 +20,7 @@ This is version 1.0, Jan 8th 1993.
  Please direct comments, criticism,
 and suggestions for improvement to <em/esr@snark.thyrsus.com/.
 
-The X386 server allows users to configure their video subsystem and thus
+The XFree86 server allows users to configure their video subsystem and thus
 encourages best use of existing hardware.  This tutorial is intended to help
 you learn how to generate your own timing numbers to make optimum use of your
 video card and monitor.
@@ -35,8 +35,8 @@ right or left, or too small, or too large) you can go straight to the section
 on Fixing Problems.  This will enlighten you on ways to tweak the timing
 numbers to achieve particular effects.
 
-X386 allows you to hot-key between different modes defined in Xconfig
-(see X386.man for details).  Use this capabilty to save yourself
+XFree86 allows you to hot-key between different modes defined in XF86Config
+(see XF86Config.man for details).  Use this capabilty to save yourself
 hassles!  When you want to test a new mode, give it a unique mode
 label and add it to the <em/end/ your hot-key list.  Leave a
 known-good mode as the default to fall back on if the test mode
@@ -44,8 +44,7 @@ doesn't work.  The Xconfig section at the end of the second Example
 Calculation provides a good example of how to record your experiments
 in a way that will help you quickly converge on a solution.
 
-If you have ftp access, check out David Wexelblat's mode database (part of the
-XFree86 distribution) available on ftp.x.org in contrib/XF86mode.tar.gz.
+First check out the <tt/Monitors/ file in <tt>lib/X11/doc</tt> 
 If your monitor is in it, you can probably skip the rest of this document!
 You may need to scale some of the timing numbers if the clock used to
 generate the mode in the database doesn't match what your card has available,
@@ -56,7 +55,7 @@ but that's easy.
 
 Knowing how the display works is essential to understanding what numbers to put
 in the various fields in the file Xconfig.  Those values are used in the lowest
-levels of controlling the display by the X386 server.
+levels of controlling the display by the XFree86 server.
 
 The display generates a picture from a series of dots.  The dots are arranged
 from left to right to form lines.  The lines are arranged from top to bottom to
@@ -208,7 +207,7 @@ rough upper bounds for the dot clock you can use):
 </verb></tscreen>
 
 BTW, there's nothing magic about this table; these numbers are just the lowest
-dot clocks per resolution in the standard X386 Modes database.  The bandwidth
+dot clocks per resolution in the standard XFree86 Modes database.  The bandwidth
 of your monitor may be higher than the minimum needed for its top resolution,
 so don't be afraid to try a dot clock a few MHz higher.
 
@@ -253,7 +252,7 @@ the driver to tap the potential of your hardware.  A superior hardware
 combination without an equally competent device driver is a waste of money.
 On the other hand, with a versatile device driver but less capable hardware,
 you can push the hardware's envelope a little.  This is the design philosophy
-of X386.
+of XFree86.
 
 <sect> Interpreting the Basic Specifications
 <p>
@@ -433,7 +432,7 @@ advantage of your monitor's potential.  On the other hand, if your SVGA has one
 meg, but your monitor can display at most 800x600, then high resolution is
 beyond your reach anyway.
 
-Don't worry if you have more memory than required; X386 will make use of it by
+Don't worry if you have more memory than required; XFree86 will make use of it by
 allowing you to scroll your viewable area (see the Xconfig file documentation
 on the virtual screen size parameter).  Remember also that a card with 512K
 bytes of memory really doesn't have 512,000 bytes installed, it has 512 x 1024
@@ -744,7 +743,7 @@ done.
       it?
 
    A. Why not?  There is NO reason whatsover why you have to use 640x480,
-800x600, or even 1024x768.  X386 driver lets you config your hardware with a
+800x600, or even 1024x768.  XFree86 driver lets you config your hardware with a
 lot of freedom.  It usually takes two to three minutes to come up the right
 one.  The important thing to shoot for is high refresh rate with reasonable
 viewing area. not high resolution at the price of eye-tearing flicker!
@@ -918,7 +917,7 @@ line becomes
 
      "800x600"  40  800 868 1020 1088  600 603 609 630
 
-Now we have a configuration of X386 to try.  It may not work if any of our
+Now we have a configuration of XFree86 to try.  It may not work if any of our
 assumptions were grossly wrong, but in most cases it should at least give us a
 stable display.  Now it takes a little experimentation to produce something
 pleasing.
@@ -1147,7 +1146,7 @@ Finally, remember that increasing either frame length will decrease your
 refresh rate, and vice-versa.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/VideoModes.doc,v 3.0 1994/05/29 02:06:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.0 1994/12/20 11:33:37 dawes Exp $
 </verb>
 
 </article>
