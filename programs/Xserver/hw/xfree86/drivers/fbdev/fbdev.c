@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.40 2002/01/29 18:04:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.41 2002/06/03 22:43:20 dawes Exp $ */
 
 /*
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
@@ -520,10 +520,13 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 
 	if (fPtr->shadowFB)
 		pScrn->displayWidth = pScrn->virtualX;	/* ShadowFB handles this correctly */
-	else
+	else {
+		int fbbpp;
 		/* FIXME: this doesn't work for all cases, e.g. when each scanline
 			has a padding which is independent from the depth (controlfb) */
-		pScrn->displayWidth = fbdevHWGetLineLength(pScrn)/(fbdevHWGetDepth(pScrn,NULL) >> 3);
+		fbdevHWGetDepth(pScrn,&fbbpp);
+		pScrn->displayWidth = fbdevHWGetLineLength(pScrn)/(fbbpp >> 3);
+	}
 
 	xf86PrintModes(pScrn);
 
