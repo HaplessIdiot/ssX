@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  12. [SECURITY] Fix authentication issues with mmap() on drm devices
+      (Jeff Hartmann).
   11. Add euro locales and some other missing locales to locale.alias and
       locale.dir (#4662, 4665, 4667, Mike Harris).
   10. Fix Romanian XKB map (#4664, Mike Harris).
@@ -13325,4 +13327,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1794 2001/05/23 14:38:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1795 2001/05/23 16:03:46 dawes Exp $
