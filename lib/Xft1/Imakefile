@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.12tsi Exp $
+XCOMM $XFree86: xc/lib/Xft1/Imakefile,v 1.13tsi Exp $
 
 XCOMM Allow for builds against old installed bits
 #ifdef UseInstalled
@@ -86,7 +86,7 @@ YFLAGS = -d
 XFTLIBDIR=XftLibDir
 
 INCLUDES=$(FONTCONFIGINCLUDES) $(FREETYPE2INCLUDES) -I$(XBUILDINCDIR)
-DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES)
+DEFINES=$(FREETYPE2DEFINES) $(RENDERDEFINES) -DXFREE86_FT2
 
 #if UseFreetype2
 FREETYPE2REQLIB = $(FREETYPE2LIB)
