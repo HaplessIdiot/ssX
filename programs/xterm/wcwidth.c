@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
  * This is an implementation of wcwidth() and wcswidth() as defined in
  * "The Single UNIX Specification, Version 2, The Open Group, 1997"
