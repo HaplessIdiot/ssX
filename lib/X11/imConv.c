@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.4 1997/01/18 07:17:39 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -41,7 +41,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "XlcPubI.h"
 
 #ifdef XKB
+/*
+ * Disable this as a temporary solution for Mode_switch problems.
+ */
+#if 0
 #define	XLookupString		_XLookupString
+#endif
 extern unsigned char _Xcyrillic[];
 #define cyrillic _Xcyrillic
 extern unsigned char _Xkoi8[];

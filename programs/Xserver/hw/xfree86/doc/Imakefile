@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.40 1996/10/23 13:09:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.41 1996/12/23 06:44:41 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -84,7 +84,8 @@ all::
 HWREADME =  README.ati README.trident README.tseng README.WstDig \
             README.DECtga \
             README.chips README.cirrus README.Video7 README.P9000 README.agx \
-            README.S3 README.S3V README.W32 README.Oak README.Mach32 \
+            README.S3 README.S3V README.SiS README.W32 README.Oak
+            README.Mach32 \
             README.Mach64 README.ark README.MGA README.NV1
 
 MAINDOCS = COPYRIGHT README README.Config INSTALL RELNOTES

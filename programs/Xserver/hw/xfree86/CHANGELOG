@@ -1,3 +1,22 @@
+XFree86 3.2w (22 January 1997)
+ 341. Updates to TGUI acceleration, to hopefully fix some problems that
+      show up with xtest (Alan Hourihane).
+ 340. Add recognition of some other TGUI Cyber chipset codes (Alan Hourihane).
+ 339. Enable 8x8 mono patern fills for C&T 65545, and limit colour expansion
+      to GXCOPY_ONLY to avoid some crashes when running things like
+      xengine and xdvi (David Bateman).
+ 338. Fix various Chips & Tech display problems for 6554x, 65550 and
+      64300 chips (Egbert Eich).
+ 337. Fix some XAA-related xtest errors (Harm Hanemaayer).
+ 336. Enable the "no_accel" flag for the ET6000 (Koen Gadeyne).
+ 335. When the "et6000" chipset is specified, use the port-probed value
+      for the membase rather than getting it from the PCI info (Koen Gadeyne).
+ 334. Tseng documentation updates (Koen Gadeyne).
+ 333. Cirrus documentation updates (Harm Hanemaayer).
+ 332. Add README.SiS (Xavier Ducoin).
+ 331. Temporary workaround for Mode_switch problems when using XKB and
+      Latin1 charset (Matthieu Herrb).
+
 XFree86 3.2v (20 January 1997)
  330. Added rules to use FreeBSD's sgmlfmt tool to format Linuxdoc/sgml
       docs -- but this needs more work.
