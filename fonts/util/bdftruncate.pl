@@ -34,11 +34,11 @@ if ($ARGV[0] eq '-w' || $ARGV[0] eq '+w') {
 
 print STDERR <<End if $#ARGV != 0;
 
-Usage: bdftruncate.pl [+w|-w] threshold <source.bdf >destination.bdf
+Usage: bdftruncate [+w|-w] threshold <source.bdf >destination.bdf
 
 Example:
 
-   bdftruncate.pl 0x3200 <6x13.bdf >6x13t.bdf
+   bdftruncate 0x3200 <6x13.bdf >6x13t.bdf
 
 will generate the file 6x13t.bdf in which all glyphs with codes
 >= 0x3200 will only be stored unencoded (i.e., ENCODING -1).

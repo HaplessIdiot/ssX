@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/programs/setxkbmap/setxkbmap.man,v 3.3 2001/01/27 18:21:06 dawes Exp $
+.\" $XFree86: xc/programs/setxkbmap/setxkbmap.man,v 3.4 2001/03/01 00:56:55 dawes Exp $
 .\"
 .TH SETXKBMAP 1 __xorgversion__
 .SH NAME
@@ -23,7 +23,7 @@ specified on the command line.
 .P
 An XKB keymap is constructed from a number of components which are compiled
 only as needed.  The source for all of the components can be found in
-<XRoot>/lib/X11/xkb.
+.IR __projectroot__/lib/X11/xkb .
 .SH OPTIONS
 .TP 8
 .B \-help
@@ -92,4 +92,4 @@ may be specified on the command line.
 keyboards(1)
 ..
 .SH FILES
-.I <XRoot>/lib/X11/xkb
+.I __projectroot__/lib/X11/xkb

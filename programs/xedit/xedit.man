@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xedit/xedit.man,v 1.14 2001/01/24 00:06:44 dawes Exp $
+.\" $XFree86: xc/programs/xedit/xedit.man,v 1.17 2002/09/08 02:29:48 paulo Exp $
 .\"
 .TH XEDIT 1 __vendorversion__
 .SH NAME
@@ -419,7 +419,7 @@ to get the name of a resource file that overrides the global resources
 stored in the RESOURCE_MANAGER property.
 .SH FILES
 .TP 20
-.I <XRoot>/lib/X11/app-defaults/Xedit
+.I __apploaddir__/Xedit
 specifies required resources
 .SH "SEE ALSO"
 .IR X (__miscmansuffix__),

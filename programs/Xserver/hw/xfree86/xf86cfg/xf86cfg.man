@@ -26,7 +26,7 @@
 .\"
 .\" Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 .\"
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.man,v 1.6 2001/01/27 18:20:59 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.man,v 1.7 2001/05/21 22:21:57 paulo Exp $
 .\"
 .TH xf86cfg 1 __vendorversion__
 .SH NAME
@@ -119,16 +119,16 @@ Server configuration file
 .I /usr/X11R6/etc/XF86Config
 Server configuration file
 .TP 8
-.I <XRoot>/lib/X11/XF86Config.\fIhostname\fP
+.IR __projectroot__/lib/X11/XF86Config. hostname
 Server configuration file
 .TP 8
-.I <XRoot>/lib/X11/XF86Config
+.I __projectroot__/lib/X11/XF86Config
 Server configuration file
 .TP 8
-.I <XRoot>/lib/X11/app-default/XF86Cfg
+.I __projectroot__/lib/X11/app-default/XF86Cfg
 Specifies xf86cfg resources
 .TP 8
-.I <Xroot>/lib/X11/xkb/X0-config.keyboard
+.I __projectroot__/lib/X11/xkb/X0-config.keyboard
 Keyboard specific configuration
 
 .SH "SEE ALSO"
