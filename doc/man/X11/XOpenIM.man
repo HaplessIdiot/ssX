@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XOpenIM 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XOpenIM 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XOpenIM, XCloseIM, XSetIMValues, XGetIMValues, XDisplayOfIM, XLocaleOfIM, XRegisterIMInstantiateCallback, XUnregisterIMInstantiateCallback \- open, close, and otain input method information
 .SH SYNTAX
@@ -225,11 +227,11 @@ function opens an input method,
 matching the current locale and modifiers specification.
 Current locale and modifiers are bound to the input method at opening time.
 The locale associated with an input method cannot be changed dynamically.
-This implies the strings returned by
+This implies that the strings returned by
 .ZN XmbLookupString
 or
 .ZN XwcLookupString ,
-for any input context affiliated with a given input method,
+for any input context affiliated with a given input method
 will be encoded in the locale current at the time the input method is opened.
 .LP
 The specific input method to which this call will be routed
@@ -277,7 +279,11 @@ function presents a variable argument list programming interface
 for setting attributes of the specified input method.
 It returns NULL if it succeeds;
 otherwise,
-it returns the name of the first argument that could not be obtained.
+it returns the name of the first argument that could not be set.
+Xlib does not attempt to set arguments from the supplied list that
+follow the failed argument;
+all arguments in the list preceding the failed argument have been set
+correctly.
 .LP
 The
 .ZN XGetIMValues
@@ -286,6 +292,18 @@ for querying properties or features of the specified input method.
 This function returns NULL if it succeeds;
 otherwise,
 it returns the name of the first argument that could not be obtained.
+.LP
+Each XIM value argument (following a name) must point to
+a location where the XIM value is to be stored.
+That is, if the XIM value is of type T,
+the argument must be of type T*.
+If T itself is a pointer type,
+then
+.ZN XGetIMValues
+allocates memory to store the actual data,
+and the client is responsible for freeing this data by calling
+.ZN XFree
+with the returned pointer.
 .LP
 The
 .ZN XDisplayOfIM
@@ -301,10 +319,19 @@ function registers a callback to be invoked whenever a new input method
 becomes available for the specified display that matches the current
 locale and modifiers.
 .LP
+The function returns 
+.ZN True
+ if it succeeds; otherwise, it returns 
+.ZN False .
+.LP
 The
 .ZN XUnregisterIMInstantiateCallback
 function removes an input method instantiation callback previously
 registered.
+The function returns
+.ZN True
+if it succeeds; otherwise, it returns 
+.ZN False .
 .SH "SEE ALSO"
 XCreateIC(3X11),
 XSetICFocus(3X11),

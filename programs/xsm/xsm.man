@@ -18,7 +18,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH XSM 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XSM 1 __xorgversion__
 .SH NAME
 xsm \- X Session Manager
 .SH SYNOPSIS

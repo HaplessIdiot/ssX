@@ -1,5 +1,5 @@
 '\" t
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -41,6 +41,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -140,7 +142,7 @@
 ..
 .ny0
 '\" t
-.TH XAllocSizeHints 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XAllocSizeHints 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XAllocSizeHints, XSetWMNormalHints, XGetWMNormalHints, XSetWMSizeHints, XGetWMSizeHints, XSizeHints \- allocate size hints structure and set or read a window's WM_NORMAL_HINTS property
 .SH SYNTAX
@@ -353,7 +355,7 @@ structure contains:
 .LP
 /* Size hints mask bits */
 .TS
-lw(.7i) lw(1.1i) lw(.9i) lw(3.1i).
+lw(.5i) lw(1.1i) lw(1.5i) lw(3.1i).
 T{
 #define
 T}	T{
@@ -445,9 +447,11 @@ T{
 T}	T{
 .ZN PAllHints
 T}	T{
-(PPosition|PSize|PMinSize|
+(PPosition|PSize|
 .br
-PMaxSize|PResizeInc|PAspect)
+PMinSize|PMaxSize|
+.br
+PResizeInc|PAspect)
 T}	T{
 T}
 .TE

@@ -25,9 +25,9 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xedit/xedit.man,v 1.13 1999/07/04 06:40:09 dawes Exp $
+.\" $XFree86: xc/programs/xedit/xedit.man,v 1.14 2001/01/24 00:06:44 dawes Exp $
 .\"
-.TH XEDIT 1 "Release 6" "X Version 11"
+.TH XEDIT 1 __vendorversion__
 .SH NAME
 xedit \- simple text editor for X
 .SH SYNTAX

@@ -1,6 +1,6 @@
-.\" $XFree86: xc/programs/Xserver/hw/darwin/Xdarwin.cpp,v 1.2 2001/01/23 21:14:26 herrb Exp $
+.\" $XFree86: xc/programs/Xserver/hw/darwin/Xdarwin.man,v 1.4 2001/01/23 23:51:34 dawes Exp $
 .\"
-.TH XDARWIN 1 "Release 4.0.2" "XFree86"
+.TH XDARWIN 1 __vendorversion__
 .SH NAME
 Xdarwin \- X window system server for Darwin operating system
 .SH SYNOPSIS

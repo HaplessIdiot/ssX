@@ -19,7 +19,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH FSLSFONTS 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH FSLSFONTS 1 __xorgversion__
 .SH NAME
 fslsfonts \- list fonts served by X font server
 .SH SYNOPSIS

@@ -19,7 +19,10 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.TH XRX 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XRX 1 __xorgversion__
 .SH NAME
 xrx - RX helper program
 .SH SYNOPSIS

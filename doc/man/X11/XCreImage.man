@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XCreateImage 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XCreateImage 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XInitImage, XCreateImage, XGetPixel, XPutPixel, XSubImage, XAddPixel, XDestroyImage \- image utilities
 .SH SYNTAX
@@ -268,7 +270,7 @@ bytes_per_line member to an appropriate value based on the other
 members; otherwise, the value of bytes_per_line is not changed.
 All of the manipulation routines are initialized to functions
 that other Xlib image manipulation functions need to operate on the
-the type of image specified by the rest of the structure.
+type of image specified by the rest of the structure.
 .LP
 This function must be called for any image constructed by the client
 before passing it to any other Xlib function.
@@ -320,7 +322,7 @@ The
 .ZN XGetPixel
 function returns the specified pixel from the named image.
 The pixel value is returned in normalized format (that is,
-the least-significant byte of the long is the least-significant byte
+the least significant byte of the long is the least significant byte
 of the pixel).
 The image must contain the x and y coordinates.
 .LP
@@ -328,7 +330,7 @@ The
 .ZN XPutPixel
 function overwrites the pixel in the named image with the specified pixel value.
 The input pixel value must be in normalized format
-(that is, the least-significant byte of the long is the least-significant
+(that is, the least significant byte of the long is the least significant
 byte of the pixel).
 The image must contain the x and y coordinates.
 .LP

@@ -26,9 +26,9 @@
 .\"
 .\" Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
 .\"
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.cpp,v 1.1 2000/12/11 20:48:56 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/xf86cfg.man,v 1.5 2001/01/23 23:52:47 dawes Exp $
 .\"
-.TH xf86cfg 1 "Version 4.0.2" "XFree86"
+.TH xf86cfg 1 __vendorversion__
 .SH NAME
 xf86cfg - Graphical configuration tool for XFree86 4.0
 .SH SYNOPSIS

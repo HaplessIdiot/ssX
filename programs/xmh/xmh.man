@@ -25,7 +25,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XMH 1 "Release 6.3" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XMH 1 __xorgversion__
 .SH NAME
 xmh \- send and read mail with an X interface to MH
 .SH SYNOPSIS

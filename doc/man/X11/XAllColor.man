@@ -1,5 +1,5 @@
 '\" e
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -41,6 +41,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -140,7 +142,7 @@
 ..
 .ny0
 '\" e
-.TH XAllocColor 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XAllocColor 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XAllocColor, XAllocNamedColor, XAllocColorCells, XAllocColorPlanes, XFreeColors \- allocate and free colors
 .SH SYNTAX
@@ -302,11 +304,11 @@ the closest color supported by the screen.
 The allocated color cell is read-only.
 The pixel value is returned in screen_def_return.
 If the color name is not in the Host Portable Character Encoding, 
-the result is implementation dependent.
+the result is implementation-dependent.
 Use of uppercase or lowercase does not matter.
 If screen_def_return and exact_def_return
-point to the same structure, the pixel field will be set correctly but the
-color values are undefined.
+point to the same structure, the pixel field will be set correctly,
+but the color values are undefined.
 .ZN XAllocNamedColor
 returns nonzero if a cell is allocated;
 otherwise, it returns zero.

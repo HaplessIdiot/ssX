@@ -1,4 +1,4 @@
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -40,6 +40,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -138,7 +140,7 @@
 .el .sp 10p
 ..
 .ny0
-.TH XSetICValues 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XSetICValues 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XSetICValues, XGetICValues \- set and obtain XIC values
 .SH SYNTAX
@@ -192,7 +194,7 @@ An argument could not be obtained for any of the following reasons:
 .IP \(bu 5
 The argument name is not recognized.
 .IP \(bu 5
-The input method encountered an implementation dependent error.
+The input method encountered an implementation-dependent error.
 .LP
 Each IC attribute value argument (following a name) must point to
 a location where the IC value is to be stored.
@@ -206,7 +208,7 @@ and the client is responsible for freeing this data by calling
 .ZN XFree
 with the returned pointer.
 The exception to this rule is for an IC value of type
-.ZN XVaNestedList
+.ZN XNVaNestedList
 (for preedit and status attributes).
 In this case,  the argument must also be of type
 .ZN XVaNestedList .

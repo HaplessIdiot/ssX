@@ -19,7 +19,10 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
-.TH XPROP 1 "XFree86 4.0.3" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH XPROP 1 __vendorversion__
 .SH NAME
 xprop - property displayer for X
 .SH SYNOPSIS

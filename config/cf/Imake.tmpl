@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.91 2001/01/23 23:31:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.92 2001/01/24 17:28:54 tsi Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -733,9 +733,10 @@ TCLIBDIR = TclLibDir
 #ifndef DriverManDefs
 #define DriverManDefs -D__drivermansuffix__=$(DRIVERMANSUFFIX)
 #endif
-#ifndef ExtraManDefs
-#define ExtraManDefs -D__projectroot__=$(PROJECTROOT)
+#ifndef ProjectManDefs
+#define ProjectManDefs -D__projectroot__=$(PROJECTROOT)
 #endif
+
 
 #ifndef CompressManPages
 #define CompressManPages NO
@@ -1483,7 +1484,8 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
   DRIVERMANSUFFIX = DriverManSuffix	/* suffix for driver man pages */
      MANSRCSUFFIX = ManSrcSuffix	/* suffix for man page source */
      MANNEWSUFFIX = ManNewSuffix	/* suffix for preprocessed man source */
-          MANDEFS = FileManDefs MiscManDefs DriverManDefs ExtraManDefs
+          MANDEFS = FileManDefs MiscManDefs DriverManDefs ProjectManDefs $(XORGMANDEFS) $(VENDORMANDEFS)
+
    COMPRESSMANCMD = CompressManCmd
 
             TROFF = TroffCmd

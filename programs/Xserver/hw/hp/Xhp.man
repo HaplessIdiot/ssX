@@ -26,7 +26,10 @@
 .\" for errors contained herein or direct, indirect, special, incidental or
 .\" consequential damages in connection with the furnishing, performance, or 
 .\" use of this material.
-.TH Xhp 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH Xhp 1 __xorgversion__
 .SH NAME
 Xhp \- cfb-based X window system server for Hewlett-Packard workstations
 .SH SYNOPSIS

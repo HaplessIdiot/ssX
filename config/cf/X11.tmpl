@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.95 2001/01/15 22:17:47 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.96 2001/01/17 16:22:31 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -36,6 +36,36 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.95 2001/01/15 22:17:47 dawes Exp $
  * FontObj			(basename)
  * MakeXkbDir			(basedir,subdir)
  */
+
+/* X.Org release string */
+#ifndef XOrgReleaseString
+#define XOrgReleaseString	Release 6.5
+#endif
+
+#ifndef XOrgManNameString
+#define XOrgManNameString	X Version 11
+#endif
+
+XORGRELSTRING = XOrgReleaseString
+XORGMANNAME = XOrgManNameString
+
+#ifndef XOrgManDefs
+#define XOrgManDefs -D__xorgversion__='"$(XORGRELSTRING)" "$(XORGMANNAME)"'
+#endif
+
+#ifndef XVendorManNameString
+#define XVendorManNameString XOrgManNameString
+#endif
+#ifndef XVendorManVersionString
+#define XVendorManVersionString XOrgReleaseString
+#endif
+
+VENDORMANNAME = XVendorManNameString
+VENDORMANVERSION = XVendorManVersionString
+
+#ifndef VendorManDefs
+#define VendorManDefs -D__vendorversion__='"$(VENDORMANVERSION)" "$(VENDORMANNAME)"'
+#endif
 
 /*
  * X-specific things
@@ -1255,6 +1285,10 @@ XCOMM X Window System make variables; these need to be coordinated with rules
 #ifdef X11ProjectRoot
      XPROJECTROOT = X11ProjectRoot
 #endif
+
+      XORGMANDEFS = XOrgManDefs
+    VENDORMANDEFS = VendorManDefs
+
 #if HasSharedLibraries
 #ifndef DontUseLibPathVar
 #ifndef BuildLibPathVar

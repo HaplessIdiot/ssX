@@ -19,7 +19,10 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.TH PROXYMNGR 1 "Release 6.4" "X Version 11"
+.\"
+.\" $XFree86$
+.\"
+.TH PROXYMNGR 1 __xorgversion__
 .SH NAME
 proxymngr - proxy manager service
 .SH SYNOPSIS

@@ -24,7 +24,10 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" Hewlett-Packard Company.
-.TH XdbeGetVisualInfo 3X11 "Release 6.4" "X Version 11" "X FUNCTIONS"
+.\"
+.\" $XFree86$
+.\"
+.TH XdbeGetVisualInfo 3X11 __xorgversion__ "X FUNCTIONS"
 .SH NAME
 XdbeGetVisualInfo
 .SH SYNOPSIS

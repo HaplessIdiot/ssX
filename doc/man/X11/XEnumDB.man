@@ -1,5 +1,5 @@
 '\" t
-.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994 X Consortium
+.\" Copyright \(co 1985, 1986, 1987, 1988, 1989, 1990, 1991, 1994, 1996 X Consortium
 .\"
 .\" Permission is hereby granted, free of charge, to any person obtaining
 .\" a copy of this software and associated documentation files (the
@@ -41,6 +41,8 @@
 .\" of this documentation for any purpose.
 .\" It is provided ``as is'' without express or implied warranty.
 .\" 
+.\" $XFree86$
+.\"
 .ds xT X Toolkit Intrinsics \- C Language Interface
 .ds xW Athena X Widgets \- C Language X Toolkit Interface
 .ds xL Xlib \- C Language X Interface
@@ -140,7 +142,7 @@
 ..
 .ny0
 '\" t
-.TH XrmEnumerateDatabase 3X11 "Release 6" "X Version 11" "XLIB FUNCTIONS"
+.TH XrmEnumerateDatabase 3X11 __xorgversion__ "XLIB FUNCTIONS"
 .SH NAME
 XrmEnumerateDatabase \- enumerate resource database entries
 .SH SYNTAX
@@ -193,7 +195,7 @@ The
 .ZN XrmEnumerateDatabase
 function calls the specified procedure for each resource in the database
 that would match some completion of the given name/class resource prefix.
-The order in which resources are found is implementation dependent.
+The order in which resources are found is implementation-dependent.
 If mode is
 .ZN XrmEnumOneLevel ,
 a resource must match the given name/class prefix with
@@ -222,7 +224,7 @@ The procedure is called with the following arguments:
 	XrmQuarkList \fIquarks\fP\^;
 	XrmRepresentation *\fItype\fP\^;
 	XrmValue *\fIvalue\fP\^;
-	XPointer \fIclosure\fP\^;
+	XPointer \fIarg\fP\^;
 .De
 .\" End marker code here
 .LP

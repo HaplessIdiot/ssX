@@ -1,4 +1,4 @@
-.\" $XConsortium: XShape.man,v 1.5 94/04/17 20:07:47 dpw Exp $
+.\" $Xorg: XShape.man,v 1.3 2000/08/17 19:41:54 cpqbld Exp $
 .\"
 .\" Copyright (c) 1989, 1994  X Consortium
 .\" 
@@ -24,11 +24,14 @@
 .\" be used in advertising or otherwise to promote the sale, use or other 
 .\" dealing in this Software without prior written authorization from the 
 .\" X Consortium.
+.\"
+.\" $XFree86$
+.\"
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
-.TH XSHAPE 3X11 "Release 6" "X Version 11" "X FUNCTIONS"
+.TH XSHAPE 3X11 __xorgversion__ "X FUNCTIONS"
 .SH NAME
 XShapeQueryExtension, XShapeQueryVersion, XShapeCombineRegion, XShapeCombineRectangles, XShapeCombineMask, XShapeCombineShape, XShapeOffsetShape, XShapeQueryExtents, XShapeSelectInput, XShapeInputSelected, XShapeGetRectangles \- X nonrectangular shape functions
 .SH SYNTAX

@@ -20,6 +20,9 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
+.\"
+.\" $XFree86$
+.\"
 .de EX		\"Begin example
 .ne 5
 .if n .sp 1
@@ -34,7 +37,7 @@
 .if t .sp .5
 ..
 .ta .3i .6i .9i 1.2i 1.5i 1.8i
-.TH TWM 1 "Release 6.4" "X Version 11"
+.TH TWM 1 __xorgversion__
 .SH NAME
 twm \- Tab Window Manager for the X Window System
 .SH SYNTAX
