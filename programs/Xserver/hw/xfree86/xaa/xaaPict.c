@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.1 2000/09/20 02:06:13 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -56,9 +56,25 @@ XAAComposite (CARD8      op,
 	      CARD16     height)
 {
     ScreenPtr	pScreen = pDst->pDrawable->pScreen;
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
     XAA_RENDER_PROLOGUE(pScreen, Composite);
-    SYNC_CHECK(pDst->pDrawable);
-    (*GetPictureScreen(pScreen)->Composite) (op,
+
+    if(!infoRec->Composite ||
+       !(*infoRec->Composite)(op,
+                       pSrc,
+                       pMask,
+                       pDst,
+                       xSrc,
+                       ySrc,
+                       xMask,
+                       yMask,
+                       xDst,
+                       yDst,
+                       width,
+                       height))
+    {
+        SYNC_CHECK(pDst->pDrawable);
+        (*GetPictureScreen(pScreen)->Composite) (op,
 		       pSrc,
 		       pMask,
 		       pDst,
@@ -70,6 +86,7 @@ XAAComposite (CARD8      op,
 		       yDst,
 		       width,
 		       height);    
+    }
     XAA_RENDER_EPILOGUE(pScreen, Composite, XAAComposite);
 }
 
@@ -85,9 +102,16 @@ XAAGlyphs (CARD8         op,
 	   GlyphPtr      *glyphs)
 {
     ScreenPtr	pScreen = pDst->pDrawable->pScreen;
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
     XAA_RENDER_PROLOGUE(pScreen, Glyphs);
-    SYNC_CHECK(pDst->pDrawable);
-    (*GetPictureScreen(pScreen)->Glyphs) (op, pSrc, pDst, maskFormat,
+
+    if(!infoRec->Glyphs ||
+       !(*infoRec->Glyphs)(op, pSrc, pDst, maskFormat,
+                                          xSrc, ySrc, nlist, list, glyphs))
+    {
+       SYNC_CHECK(pDst->pDrawable);
+       (*GetPictureScreen(pScreen)->Glyphs) (op, pSrc, pDst, maskFormat,
 					  xSrc, ySrc, nlist, list, glyphs);
+    }
     XAA_RENDER_EPILOGUE(pScreen, Glyphs, XAAGlyphs);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.31 2000/09/20 02:05:41 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.32 2000/09/28 20:47:59 mvojkovi Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -104,6 +104,10 @@
 #include "xf86str.h"
 #include "regionstr.h"
 #include "xf86fbman.h"
+
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 
 /* Flags */
 #define PIXMAP_CACHE			0x00000001
@@ -1236,6 +1240,35 @@ typedef struct _XAAInfoRec {
    Bool offscreenDepthsInitialized;
 
    CARD32 FullPlanemasks[32];
+
+#ifdef RENDER
+   Bool (*Composite) (
+   	CARD8      op,
+        PicturePtr pSrc,
+        PicturePtr pMask,
+        PicturePtr pDst,
+        INT16      xSrc,
+        INT16      ySrc,
+        INT16      xMask,
+        INT16      yMask,
+        INT16      xDst,
+        INT16      yDst,
+        CARD16     width,
+        CARD16     height
+   );
+
+   Bool (*Glyphs) (
+        CARD8         op,
+        PicturePtr    pSrc,
+        PicturePtr    pDst,
+        PictFormatPtr maskFormat,
+        INT16         xSrc,
+        INT16         ySrc,
+        int           nlist,
+        GlyphListPtr  list,
+        GlyphPtr      *glyphs
+   );
+#endif
     
 } XAAInfoRec, *XAAInfoRecPtr;
 
