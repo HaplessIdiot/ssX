@@ -42,7 +42,7 @@ MODULE_DEPEND(tdfx, agp, 1, 1, 1);
 
 #define TDFX_NAME	 "tdfx"
 #define TDFX_DESC	 "tdfx"
-#define TDFX_DATE	 "19991009"
+#define TDFX_DATE	 "20000928"
 #define TDFX_MAJOR	 1
 #define TDFX_MINOR	 0
 #define TDFX_PATCHLEVEL  0

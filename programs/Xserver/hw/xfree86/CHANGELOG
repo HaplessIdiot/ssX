@@ -1,4 +1,10 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 227. Fix a typo in fonts/util/Imakefile (#4499, Juliusz Chroboczek).
+ 226. Add a document describing the DPS code included in the tree, and
+      pointers to web resources (#4498, Juliusz Chroboczek).
+ 225. Use VBE to add runtime DDC support to the i810 driver (#4496,
+      Andrew C. Aitchison).
+ 224. DRM kernel module updates for FreeBSD (#4493, joe at cracktown.org).
  223. Add support for the "Internet" keys of the Genius Comfy KB-16M keyboard
       (#4491, Kamil Toman).
  222. Include three DPS sample clients:
@@ -12627,4 +12633,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1598 2001/03/01 00:56:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1599 2001/03/01 01:23:56 dawes Exp $
