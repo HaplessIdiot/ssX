@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.54 1998/07/25 16:55:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.55 1998/08/16 10:25:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -49,6 +49,8 @@
 #include "XI.h"
 #include "XIproto.h"
 #include "xf86Xinput.h"
+#else
+#include "inputstr.h"
 #endif
 
 #include "mipointer.h"

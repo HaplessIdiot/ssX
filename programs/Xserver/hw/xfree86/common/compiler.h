@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.32 1998/07/25 16:54:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.33 1998/08/19 12:48:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -76,7 +76,7 @@ extern unsigned long ldl_u(unsigned int *);
 extern unsigned short ldw_u(unsigned short *);
 extern void stq_u(unsigned long, unsigned long *);
 extern void stl_u(unsigned long, unsigned int *);
-extern void stw_u(unsigned short, unsigned sort *);
+extern void stw_u(unsigned short, unsigned short *);
 extern void mem_barrier(void);
 extern void write_mem_barrier(void);
 extern void stl_brx(unsigned long, volatile unsigned char *, int);
