@@ -1,5 +1,5 @@
 /* $XConsortium: mach32pntwn.c,v 1.2 94/04/17 20:30:49 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.2 1994/09/11 00:49:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32pntwn.c,v 3.3 1995/01/20 04:20:04 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -164,7 +164,8 @@ mach32PaintWindow(pWin, pRegion, what)
 			       (int)REGION_NUM_RECTS(pRegion),
 			       REGION_RECTS(pRegion),
 			       pWin->border.pixmap,
-			       (int) pWin->drawable.x, (int) pWin->drawable.y);
+			       (int) pBgWin->drawable.x,
+			       (int) pBgWin->drawable.y);
 	    return;
 	}
 	break;
