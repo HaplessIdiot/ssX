@@ -93,7 +93,7 @@ MGASetupDGAMode(
    DisplayModePtr firstMode, pMode;
    MGAPtr pMga = MGAPTR(pScrn);
    DGAModePtr mode, newmodes;
-   int size, pitch, Bpp = bitsPerPixel >> 3;
+   int size, tmp, pitch, Bpp = bitsPerPixel >> 3;
 
 SECOND_PASS:
 
@@ -149,11 +149,15 @@ SECOND_PASS:
 	    mode->bytesPerScanline = pitch * Bpp;
 	    mode->imageWidth = pitch;
 	    mode->imageHeight =  pMga->FbUsableSize / mode->bytesPerScanline; 
-	    mode->pixmapWidth = mode->imageWidth;
-	    mode->pixmapHeight = mode->imageHeight;
+	    mode->pixmapWidth = pitch;
+	    mode->pixmapHeight = (min(pMga->FbUsableSize, 16*1024*1024)) / 
+					mode->bytesPerScanline;
 	    mode->maxViewportX = mode->imageWidth - mode->viewportWidth;
-	   /* this might need to get clamped to some maximum */
-	    mode->maxViewportY = mode->imageHeight - mode->viewportHeight;
+	    tmp = (8*1024*1024 / mode->bytesPerScanline);
+	    mode->maxViewportY = (pMga->FbUsableSize / mode->bytesPerScanline) -
+				 	mode->viewportHeight;
+	    if(tmp < mode->maxViewportY)
+		mode->maxViewportY = tmp;
 
 	    (*num)++;
 	}
@@ -263,6 +267,7 @@ MGA_SetMode(
       if(pMga->DGAactive)
         memcpy(&pMga->CurrentLayout, &SavedLayouts[index], sizeof(MGAFBLayout));
                 
+      pScrn->currentMode = pMga->CurrentLayout.mode;
       MGASwitchMode(index, pScrn->currentMode, 0);
       MGAAdjustFrame(index, pScrn->frameX0, pScrn->frameY0, 0);
       pMga->DGAactive = FALSE;
@@ -271,7 +276,6 @@ MGA_SetMode(
 	memcpy(&SavedLayouts[index], &pMga->CurrentLayout, sizeof(MGAFBLayout));
 	pMga->DGAactive = TRUE;
       }
-
       /* update CurrentLayout */
       pMga->CurrentLayout.bitsPerPixel = pMode->bitsPerPixel;
       pMga->CurrentLayout.depth = pMode->depth;
@@ -281,6 +285,7 @@ MGA_SetMode(
       pMga->CurrentLayout.weight.green = BitsSet(pMode->green_mask);
       pMga->CurrentLayout.weight.blue = BitsSet(pMode->blue_mask);
       pMga->CurrentLayout.Overlay8Plus24 = FALSE;
+      /* MGAModeInit() will set the mode field */
 
       MGASwitchMode(index, pMode->mode, 0);
    }
