@@ -44,7 +44,7 @@ basic functionality, and does not use the accelerated features of the chip.
 
    o The driver should force Weight 555 in 16 bpp mode
 
-     $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NV1.sgml,v 3.2 1997/01/24 09:32:15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NV1.sgml,v 3.2 1997/01/24 09:32:15 dawes Exp $
 
 
 

@@ -118,7 +118,7 @@ the MClk.  I use the default Mclk set by BIOS.	It is hard to reproduce this
 problem (It can take one hour, two or more).  I can't reproduce this problem in
 1024x768 75 MHz or 1280x1024 110 MHz or 1152x900 95 MHz.
 
-     $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.3 1997/01/25 03:22:15 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.3 1997/01/25 03:22:15 dawes Exp $
 
 
 

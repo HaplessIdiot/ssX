@@ -771,7 +771,7 @@ away on the next server start.
 The server for monochrome cards builds properly if you enable it in lynx.cf but
 it has never been tested.
 
-     $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.14 1997/01/25 03:21:57 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.14 1997/01/25 03:21:57 dawes Exp $
 
 
 

@@ -743,7 +743,7 @@ Special thanks to Jerry Whelan (guru@stasi.bradley.edu) for providing an ftp
 site for the binary distribution.
 
 
-     $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.16 1997/01/25 03:22:12 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.16 1997/01/25 03:22:12 dawes Exp $
 
 
 
