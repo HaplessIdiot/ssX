@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.17 1998/01/11 03:48:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_init.c,v 1.18 1998/01/24 01:53:02 hohndel Exp $ */
 /*
  * Copyright 1997 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -697,7 +697,6 @@ InitLUT(void)
 	int nr = xf86weight.red;
 	int ng = xf86weight.green;
 	int nb = xf86weight.blue;
-	extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
 	extern LUTENTRY currentglintdac[];
 	
 	if (!LUTInited) {

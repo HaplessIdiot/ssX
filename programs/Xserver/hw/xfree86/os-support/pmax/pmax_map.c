@@ -1,0 +1,214 @@
+/*
+ * Copyright 1998 by Concurrent Computer Corporation
+ *
+ * Permission to use, copy, modify, distribute, and sell this software
+ * and its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation, and that the name of Concurrent Computer
+ * Corporation not be used in advertising or publicity pertaining to
+ * distribution of the software without specific, written prior
+ * permission.  Concurrent Computer Corporation makes no representations
+ * about the suitability of this software for any purpose.  It is
+ * provided "as is" without express or implied warranty.
+ *
+ * CONCURRENT COMPUTER CORPORATION DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL CONCURRENT COMPUTER CORPORATION BE
+ * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+ * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * Copyright 1998 by Metro Link Incorporated
+ *
+ * Permission to use, copy, modify, distribute, and sell this software
+ * and its documentation for any purpose is hereby granted without fee,
+ * provided that the above copyright notice appear in all copies and that
+ * both that copyright notice and this permission notice appear in
+ * supporting documentation, and that the name of Metro Link
+ * Incorporated not be used in advertising or publicity pertaining to
+ * distribution of the software without specific, written prior
+ * permission.  Metro Link Incorporated makes no representations
+ * about the suitability of this software for any purpose.  It is
+ * provided "as is" without express or implied warranty.
+ *
+ * METRO LINK INCORPORATED DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+ * AND FITNESS, IN NO EVENT SHALL METRO LINK INCORPORATED BE
+ * LIABLE FOR ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY
+ * DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS,
+ * WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION,
+ * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
+ * SOFTWARE.
+ *
+ * This file was derived in part from the original XFree86 sysv OS
+ * support which contains the following copyright notice:
+ *
+ * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
+ * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ *
+ * Permission to use, copy, modify, distribute, and sell this software and its
+ * documentation for any purpose is hereby granted without fee, provided that
+ * the above copyright notice appear in all copies and that both that
+ * copyright notice and this permission notice appear in supporting
+ * documentation, and that the names of Thomas Roell and David Wexelblat 
+ * not be used in advertising or publicity pertaining to distribution of 
+ * the software without specific, written prior permission.  Thomas Roell and
+ * David Wexelblat makes no representations about the suitability of this 
+ * software for any purpose.  It is provided "as is" without express or 
+ * implied warranty.
+ *
+ * THOMAS ROELL AND DAVID WEXELBLAT DISCLAIMS ALL WARRANTIES WITH REGARD TO 
+ * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND 
+ * FITNESS, IN NO EVENT SHALL THOMAS ROELL OR DAVID WEXELBLAT BE LIABLE FOR 
+ * ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
+ * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF 
+ * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ *
+ */
+
+#include "X.h"
+#include "input.h"
+#include "scrnintstr.h"
+
+#include "xf86.h"
+#include "xf86Priv.h"
+#include "xf86_OSlib.h"
+
+#include "../../common_hw/Pci.h"
+
+/***************************************************************************/
+/* Video Memory Mapping section                                            */
+/***************************************************************************/
+struct kd_memloc MapDSC[MAXSCREENS][NUM_REGIONS];
+pointer AllocAddress[MAXSCREENS][NUM_REGIONS];
+
+/*
+ * Map an I/O region given its address (host POV)
+ */
+void *
+pmax_iomap(unsigned long base, unsigned long len)
+{
+	int fd;
+	void *rv;
+
+	if ((fd = open("/dev/iomem", O_RDWR)) < 0)
+	{
+		ErrorF("pmax_iomap: failed to open /dev/iomem (%s)\n",
+		       strerror(errno));
+		return(MAP_FAILED);
+	}
+	
+	rv = (void *)mmap((caddr_t)0, len, PROT_READ|PROT_WRITE,
+			  MAP_SHARED, fd, (off_t)base);
+	
+	close(fd);
+	return(rv);
+}
+
+Bool
+xf86LinearVidMem()
+{
+	return TRUE;
+}
+
+extern void * pmax_iomap(unsigned long, unsigned long);
+
+pointer
+xf86MapVidMem(int ScreenNum, int Region, pointer Base, unsigned long Size)
+{
+	ErrorF("%s: Not supported on this OS. Drivers should use xf86MapPciMem() instead\n",
+	       "xf86MapVidMem");
+	FatalError("%s: Cannot map [s=%x,a=%x]\n", "xf86MapVidMem", Size, Base);
+}
+
+
+pointer
+xf86MapPciMem(int ScreenNum, int Region, PCITAG Tag, pointer Base, unsigned long Size)
+{
+	pointer hostbase = pciBusAddrToHostAddr(Tag, Base);
+	pointer base;
+
+	base = (pointer) pmax_iomap((unsigned long)hostbase, Size);
+	if (base == MAP_FAILED)	{
+		ErrorF("%s: WARNING: Could not mmap PCI memory [base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
+			   "xf86MapPciMem", Base, hostbase, Size, strerror(errno));
+	}
+	return((pointer)base);
+}
+
+
+/* ARGSUSED */
+void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
+int ScreenNum;
+int Region;
+pointer Base;
+unsigned long Size;
+{
+	munmap(Base, Size);
+}
+
+/* ARGSUSED */
+void xf86MapDisplay(ScreenNum, Region)
+int ScreenNum;
+int Region;
+{
+	return;
+}
+
+/* ARGSUSED */
+void xf86UnMapDisplay(ScreenNum, Region)
+int ScreenNum;
+int Region;
+{
+	return;
+}
+
+/***************************************************************************/
+/* Interrupt Handling section                                              */
+/***************************************************************************/
+
+#include <sys/ipl.h>
+
+#ifndef PL_HI
+#define PL_HI PL8
+#endif
+
+#ifndef PL_0
+#define PL_0 PL0
+#endif
+
+static void *spl_map_addr = NULL;
+
+void
+pmax_init_splmap(void)
+{
+     spl_map_addr = spl_map(0);
+     if (!spl_map_addr) {
+	  ErrorF("pmax_init_splmap: spl_map() failed. Cannot bind to IPL register\n");
+	  ErrorF("\nWARNING: Interrupts cannot be disabled/enabled !!!\n");
+     }
+}
+
+
+Bool
+xf86DisableInterrupts()
+{
+	if (spl_map_addr) {
+		(void)spl_request(PL_HI,spl_map_addr);
+		return(TRUE);
+	}
+	
+	return(FALSE);
+}
+
+void xf86EnableInterrupts()
+{
+	if (spl_map_addr) {
+		(void)spl_request(PL_0, spl_map_addr);
+	}
+}
+

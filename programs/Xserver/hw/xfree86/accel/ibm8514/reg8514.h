@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/reg8514.h,v 3.0 1996/11/18 13:09:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/reg8514.h,v 3.1 1996/12/23 06:38:03 dawes Exp $ */
 /* REG8514.H
  *
  * Written by Jake Richter
@@ -26,7 +26,6 @@
 #define _IBM8514_H_
 #ifndef _8514_ASM_
 #include "compiler.h"
-#include "Xos.h"
 
 /* VESA Approved Register Definitions */
 #define	DAC_MASK	0x02ea

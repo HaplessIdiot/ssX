@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3misc.c,v 1.2 1997/06/10 12:30:30 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3misc.c,v 1.3 1997/10/13 17:16:43 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -11,7 +11,6 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "vga.h"
@@ -76,9 +75,11 @@ static short S3PixMuxShift(DisplayModePtr mode)
       pixMuxShift =  (s3Bpp <= 2) ? 2 : 1;
    else if ((mode->Flags & V_DBLCLK) && DAC_IS_TI3030)
       pixMuxShift =  1;
-   else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB)
+   else if (S3_964_SERIES(s3ChipId) && DAC_IS_IBMRGB) {
       pixMuxShift = (mode->Flags & V_DBLCLK) ? 1 : 0;
-   else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
+      if (s3Bpp == 4)
+	  pixMuxShift = 0; /* cf CR67 */
+   } else if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025)
       pixMuxShift =  (mode->Flags & V_DBLCLK) ? 1 : 0;
    else if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES)
       pixMuxShift =  (mode->Flags & V_DBLCLK) ? 1 : 0;
@@ -205,11 +206,13 @@ static void S3SetSynthClock(DisplayModePtr mode)
 	       /*
 	        * This one depends on pixel multiplexing for 8bpp.
 	        * Although existing code implies it depends on ramdac
-	        * clock doubling instead (are the two tied together?)
-	        * We'll act based on clock doubling changeover at 67500
+	        * clock doubling instead (are the two tied together?).
+		* CEG: Yes, if the AT&T dac is in pixmux mode, the clock
+		* must be halved (and the DBLCLK flag set, go figure).
 	        */
-	       if (( DAC_IS_ATT20C498 && mode->SynthClock > nonMuxMaxClock) ||
-		   (!DAC_IS_ATT20C498 && mode->SynthClock > 67500)) {
+	       if (( DAC_IS_ATT20C498 && mode->SynthClock > nonMuxMaxClock)
+		   || (!DAC_IS_ATT20C498 && mode->SynthClock > 67500)
+		   || (mode->Flags & V_PIXMUX)) {
 		  if (!(DAC_IS_SDAC)) {
 		     mode->SynthClock /= 2;
 		     mode->Flags |= V_DBLCLK;
@@ -461,8 +464,9 @@ unsigned char S3MuxOrNot(DisplayModePtr mode)
 			       &vga256InfoRec.clockOptions)) {
 	       if (mode->Clock > 15) 
 		  verdict |= MUSTMUX;
-	}   /* Should this be "else if" or "if"? (MArk) */
-	else if (vga256InfoRec.clock[mode->Clock] > nonMuxMaxClock) {
+	}
+
+	if (vga256InfoRec.clock[mode->Clock] > nonMuxMaxClock) {
 		  verdict |= MUSTMUX;
 	}
 
@@ -489,8 +493,9 @@ unsigned char S3MuxOrNot(DisplayModePtr mode)
 		  verdict |= CANTMUX;
 
         if((verdict == (MUSTMUX | CANTMUX)))
-	  ErrorF("%s: Error! Conflicting multiplexing requirements for "
-		"mode \"%s\"\n", vga256InfoRec.name, mode->name); 
+	  ErrorF("%s: %s: Error! Conflicting multiplexing requirements for "
+		"mode \"%s\"\n", vga256InfoRec.name, vga256InfoRec.chipset,
+		mode->name); 
     
      	return verdict;
 }
@@ -505,36 +510,47 @@ unsigned char S3MuxOrNot(DisplayModePtr mode)
 
 int S3GetWidth(int width)
 {
+    int ret = 0;
     if (pixMuxPossible && pixMuxLimitedWidths) {
        /* NOTE: this happens if pixmux is merely possible. 
 		A casualty of my method (MArk). */
       if (width <= 1024) 
-	 return 1024;
+	 ret = 1024;
     } else if (S3_911_SERIES(s3ChipId)) {
-      return 1024;
+      ret = 1024;
     } else {
       if (width <= 640) 
-	 return 640;
+	 ret = 640;
       else if (width <= 800)
-	 return 800;
+	 ret = 800;
       else if (width <= 1024)
-	 return 1024;
+	 ret = 1024;
       else if ((width <= 1152) &&
 		 (   S3_801_REV_C(s3ChipId) 
                   || S3_805_I_SERIES(s3ChipId)
 		  || S3_928_REV_E(s3ChipId)
 		  || S3_x64_SERIES(s3ChipId)))
-	 return 1152;
+	 ret = 1152;
       else if (width <= 1280)
-	 return 1280;
+	 ret = 1280;
       else if ((width <= 1600) && 
 		((S3_928_REV_E(s3ChipId) &&
 		!(OFLG_ISSET(OPTION_NUMBER_NINE, &vga256InfoRec.options) &&
 		     (s3Bpp == 1))) || S3_x64_SERIES(s3ChipId)))
-	 return 1600;
+	 ret = 1600;
     }
 
-    return 2048;
+    if (ret == 0)
+	ret = 2048;
+
+    if (OFLG_ISSET(OPTION_ELSA_W2000PRO_X8, &vga256InfoRec.options)) {
+	if (ret < 2048 && ret > 1024)
+	    ret = 2048;
+	else if (ret < 1024)
+	    ret = 1024;
+    }
+
+    return ret;
 }
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.4 1997/06/03 14:12:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ncr/ncr_driver.c,v 1.5 1997/08/26 10:01:20 hohndel Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -48,6 +48,11 @@
 #include "servermd.h"
 #define _XF86DGA_SERVER_
 #include "extensions/xf86dgastr.h"
+#endif
+
+#if defined(NCR) && defined(MetroLink)
+/* This must be done after the header file or else Xalloca.h will blow up */
+#undef NCR
 #endif
 
 typedef struct {
@@ -136,7 +141,7 @@ vgaVideoChipRec NCR= {
   FALSE,	/* 32bpp */
   NULL,
   1,            /* ClockMulFactor */
-  1             /* ClockDivFactor */
+  1,            /* ClockDivFactor */
 };
 
 #define new ((vgaNCRPtr)vgaNewVideoState)

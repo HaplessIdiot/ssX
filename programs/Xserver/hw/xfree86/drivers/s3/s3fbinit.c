@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.4 1997/09/25 16:13:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3fbinit.c,v 1.5 1997/11/22 00:00:13 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -14,7 +14,6 @@
 #include "site.h"
 
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -190,15 +189,30 @@ void S3FbInit(void)
 #else
    {
 #endif
+	 pciConfigPtr pcrp, *pcrpp;
+	 unsigned long mem_base = 0;
+
+	 pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+	 for (i = 0, pcrp = pcrpp[0]; pcrp; pcrp = pcrpp[++i])
+	     if (pcrp->_vendor == PCI_S3_VENDOR_ID)
+		 break;
+
+	 if (pcrp) {
+	    if (pcrp->_base0 && !(pcrp->_base0 & 1))
+		mem_base = pcrp->_base0 & 0xfffffff0UL;
+	    else if (pcrp->_base1 && !(pcrp->_base1 & 1))
+		mem_base = pcrp->_base1 & 0xfffffff0UL;
+	 }
+	 /* For some BIZARRE reason scanpci disables the I/O ports. */
+	 xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 
          s3InfoRec.ChipUseLinearAddressing = TRUE;   
 
 	  
 	 if (vga256InfoRec.MemBase) 
 	    s3InfoRec.ChipLinearBase = vga256InfoRec.MemBase;
-         else if (vgaPCIInfo && (vgaPCIInfo->Vendor == PCI_S3_VENDOR_ID) &&
-		(vgaPCIInfo->MemBase & 0xFF800000))
-	    s3InfoRec.ChipLinearBase = vgaPCIInfo->MemBase & 0xFF800000;
+         else if (mem_base & 0xFF800000)
+	    s3InfoRec.ChipLinearBase = mem_base & 0xFF800000;
 	 else if (S3_x64_SERIES(s3ChipId)) 
 	    s3InfoRec.ChipLinearBase = 0xf3000000; 
 	 else 

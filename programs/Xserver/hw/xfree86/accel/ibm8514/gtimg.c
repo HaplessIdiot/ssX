@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/gtimg.c,v 3.2 1996/02/04 09:01:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/gtimg.c,v 3.3 1996/12/23 06:37:51 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -31,6 +31,7 @@
 #include "windowstr.h"
 #include "scrnintstr.h"
 #include "pixmapstr.h"
+#include "mi.h"
 #include "cfb.h"
 #include "cfbmskbits.h"
 #include "ibm8514.h"

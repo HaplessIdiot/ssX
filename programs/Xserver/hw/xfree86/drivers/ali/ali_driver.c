@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.3 1997/06/03 14:11:58 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ali/ali_driver.c,v 1.4 1997/08/26 10:01:07 hohndel Exp $
  */
 
 #include "X.h"
@@ -16,7 +16,6 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #define  XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"

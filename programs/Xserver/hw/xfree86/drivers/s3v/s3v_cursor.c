@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_cursor.c,v 1.1 1997/05/03 09:18:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_cursor.c,v 1.2 1997/05/31 13:51:34 dawes Exp $ */
 
 /*
  *
@@ -51,17 +51,18 @@
 #include "inputstr.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
+#include "xf86_HWlib.h"
 #include "vga.h"
 #include "xf86xaa.h"
 #include "regs3v.h"
 #include "s3v_driver.h"
 
-static Bool S3VRealizeCursor();
-static Bool S3VUnrealizeCursor();
-static void S3VSetCursor();
-static void S3VMoveCursor();
-static void S3VRecolorCursor();
+static Bool S3VRealizeCursor(ScreenPtr, CursorPtr);
+static Bool S3VUnrealizeCursor(ScreenPtr, CursorPtr);
+static void S3VSetCursor(ScreenPtr, CursorPtr, int, int);
+static void S3VMoveCursor(ScreenPtr, int, int);
+static void S3VRecolorCursor(ScreenPtr, CursorPtr, Bool);
+static void S3VLoadCursor(ScreenPtr, CursorPtr, int, int);
 
 static miPointerSpriteFuncRec s3vPointerSpriteFuncs =
 {
@@ -75,7 +76,6 @@ extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 extern xf86InfoRec xf86Info;
 
 /* For byte swapping, use the XAA array */
-extern unsigned char byte_reversed[256];
 extern S3VPRIV s3vPriv;
 extern pointer s3vMmioMem;
 extern int vgaCRIndex, vgaCRReg;
@@ -109,8 +109,8 @@ S3VCursorInit(pm, pScr)
 
 /* This allows the cursor to be displayed */
 
-void
-S3VShowCursor()
+static void
+S3VShowCursor(void)
 {
    unsigned char tmp;
 
@@ -120,8 +120,8 @@ S3VShowCursor()
    outb(vgaCRReg, tmp | 0x01);
 }
 
-void
-S3VHideCursor()
+static void
+S3VHideCursor(void)
 {
    unsigned char tmp;
 
@@ -219,14 +219,15 @@ S3VLoadCursor(pScr, pCurs, x, y)
 {
    int   index = pScr->myNum;
    unsigned short *ram;
-   unsigned char tmp;
    char * videobuffer = (char *) xf86AccelInfoRec.FramebufferBase;
 
    if (!xf86VTSema)
       return;
 
-   if (!pCurs)
+   if (!pCurs) {
+      S3VHideCursor();
       return;
+   }
  
    /* Remember which cursor is loaded */
    s3vCursorpCurs = pCurs;
@@ -272,15 +273,11 @@ S3VLoadCursor(pScr, pCurs, x, y)
 }
 
 static void
-S3VSetCursor(pScr, pCurs, x, y, generateEvent)
+S3VSetCursor(pScr, pCurs, x, y)
      ScreenPtr pScr;
      CursorPtr pCurs;
      int   x, y;
-     Bool  generateEvent;
-
 {
-   int index = pScr->myNum;
-
    if (!pCurs)
       return;
 
@@ -294,16 +291,14 @@ void
 S3VRestoreCursor(pScr)
      ScreenPtr pScr;
 {
-   int index = pScr->myNum;
    int x, y;
 
    miPointerPosition(&x, &y);
    S3VLoadCursor(pScr, s3vCursorpCurs, x, y);
 }
 
-void
-S3VRepositionCursor(pScr)
-     ScreenPtr pScr;
+static void
+S3VRepositionCursor(ScreenPtr pScr)
 {
    int x, y;
 

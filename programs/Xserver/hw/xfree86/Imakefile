@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/12/16 12:31:46 rws $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.38 1997/10/25 13:50:04 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/Imakefile,v 3.39 1997/12/05 22:01:20 hohndel Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -28,8 +28,12 @@ VGA16SCREEN = vga16
 ACCELDIRS = accel
 #endif
 
-#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && !defined(ArcArchitecture) && !defined(Arm32Architecture)
+#if !defined(OsfArchitecture) && !defined(AmoebaArchitecture) && !defined(ArcArchitecture) && !defined(Arm32Architecture) && !defined(PpcArchitecture)
 SUPERPROBE = SuperProbe
+#endif
+
+#if !defined(PpcArchitecture) && !defined(LynxOsArchitecture)
+RECONFIG = reconfig
 #endif
 
 #if BuildXF86Setup
@@ -44,8 +48,8 @@ DRIVERS = drivers
 SCREENS = $(VGA2SCREEN) $(MONOSCREEN) $(VGA16SCREEN) $(VGA256SCREEN) $(ACCELDIRS) $(DRIVERS)
 
 SUBDIRS = os-support common common_hw xaa $(SCREENS) \
-          $(LOADERDIR) doc \
-          reconfig xf86config $(XF86SETUPDIR) etc LinkKit \
+          config $(LOADERDIR) doc \
+          $(RECONFIG) xf86config $(XF86SETUPDIR) etc LinkKit \
           VGADriverDoc $(SUPERPROBE)
 
 #ifndef OS2Architecture

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.8 1997/07/31 07:16:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.9 1997/10/25 13:50:37 hohndel Exp $ */
 
 /*
  *
@@ -24,7 +24,7 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86Procs.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "vga.h"

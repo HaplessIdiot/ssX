@@ -1,4 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.h,v 3.1 1996/11/18 13:15:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.h,v 1.1 1997/03/06 23:14:41 hohndel Exp $ */
+
+#include "xf86_ansic.h"
 
 /* ChipRec declared in ark_driver.c. */
 

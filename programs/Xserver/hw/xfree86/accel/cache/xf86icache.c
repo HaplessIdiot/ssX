@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86icache.c,v 3.1 1997/05/03 09:16:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86icache.c,v 3.2 1997/06/03 14:11:18 hohndel Exp $ */
 
 /*
  * To get rid of complains from the Loader about no existing ModuleInit routine
@@ -12,7 +12,6 @@
 
 #include "xf86Priv.h"
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_Config.h"
 

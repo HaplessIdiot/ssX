@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.7 1997/06/03 14:12:17 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_accel.c,v 1.8 1997/06/29 07:54:35 dawes Exp $ */
 
 /*
  *
@@ -45,7 +45,7 @@
 #include "xf86.h"
 #include "vga.h"
 #include "xf86xaa.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "regs3v.h"
 #include "s3v_driver.h"
 #include "s3v_rop.h"
@@ -78,29 +78,25 @@ static unsigned int s3vCached_RWIDTH_HEIGHT;
 static int s3vCacheHit = 0, s3vCacheMiss = 0;
 
 /* Forward declaration of fucntions used in the driver */
-void S3VAccelSync();
-void S3VAccelInit();
-void S3VAccelInit32();
-void S3VSetupForScreenToScreenCopy();
-void S3VSubsequentScreenToScreenCopy();
-void S3VSetupForScreenToScreenCopy32();
-void S3VSubsequentScreenToScreenCopy32();
-void S3VSetupForFillRectSolid();
-void S3VSubsequentFillRectSolid();
-void S3VSetupForFillRectSolid32();
-void S3VSubsequentFillRectSolid32();
-void S3VSetupForCPUToScreenColorExpand();
-void S3VSubsequentCPUToScreenColorExpand();
-void S3VSetupFor8x8PatternColorExpand();
-void S3VSubsequent8x8PatternColorExpand();
-void S3VSetupForFill8x8Pattern();
-void S3VSubsequentFill8x8Pattern();
-void S3VSubsequentTwoPointLine();
-void S3VSetClippingRectangle();
-void S3VSubsequentFillTrapezoidSolid();
-void S3VWriteImageTransferArea();
-Bool S3VROPHasSrc();
-Bool S3VROPHasDst();
+static void S3VAccelSync(void);
+static void S3VSetClippingRectangle(int, int, int, int);
+static void S3VSetupForScreenToScreenCopy(int, int, int, unsigned, int);
+static void S3VSubsequentScreenToScreenCopy(int, int, int, int, int, int);
+static void S3VSetupForScreenToScreenCopy32(int, int, int, unsigned, int);
+static void S3VSubsequentScreenToScreenCopy32(int, int, int, int, int, int);
+static void S3VSetupForFillRectSolid(int, int, unsigned);
+static void S3VSubsequentFillRectSolid(int, int, int, int);
+static void S3VSetupForFillRectSolid32(int, int, unsigned);
+static void S3VSubsequentFillRectSolid32(int, int, int, int);
+static void S3VSetupForCPUToScreenColorExpand(int, int, int, unsigned);
+static void S3VSubsequentCPUToScreenColorExpand(int, int, int, int, int);
+static void S3VSetupFor8x8PatternColorExpand(int, int, int, int, int, unsigned);
+static void S3VSubsequent8x8PatternColorExpand(int, int, int, int, int, int);
+static void S3VSetupForFill8x8Pattern(int, int, int, unsigned, int);
+static void S3VSubsequentFill8x8Pattern(int, int, int, int, int, int);
+static void S3VSubsequentTwoPointLine(int, int, int, int, int);
+static void S3VSubsequentFillTrapezoidSolid(int, int, int, int, int, int, int, int, int, int);
+static void S3VWriteImageTransferArea(int, unsigned);
 
 
 
@@ -320,7 +316,7 @@ S3VAccelSync()
  */
 
 void
-S3VGEReset()
+S3VGEReset(void)
 {
 unsigned char tmp;
 
@@ -355,7 +351,9 @@ unsigned char tmp;
     s3vCached_PAT_BGCLR = -1;
     s3vCached_CMD_SET = -1;
 
+#ifdef DEBUG
     ErrorF("ViRGE register cache hits: %d misses: %d\n",s3vCacheHit, s3vCacheMiss);    
+#endif
     s3vCacheHit = 0; s3vCacheMiss = 0;
 }
 
@@ -502,7 +500,7 @@ int cmd = s3vAccelCmd;
 
         WaitQueue(1);
         if(vgaBitsPerPixel == 8) 
-            SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask | 
+            SETB_SRC_FG_CLR((planemask & s3vPriv.PlaneMask) |
                         ((planemask & s3vPriv.PlaneMask)<< 8));
         else  
             SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask);
@@ -675,13 +673,12 @@ int x, y, w, h, skipleft;
  */ 
 
 
-void
+static void
 S3VSetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planemask)
-unsigned patternx, patterny;
+int patternx, patterny;
 int bg, fg, rop;
 unsigned planemask;
 {
-    int i;
     int cmd = s3vAccelCmd;
 
     cmd |= ( CMD_AUTOEXEC | CMD_BITBLT | MIX_MONO_PATT | CMD_XP | CMD_YP );
@@ -701,7 +698,7 @@ unsigned planemask;
 
             WaitQueue(1);
             if(vgaBitsPerPixel == 8) 
-                SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask | 
+                SETB_SRC_FG_CLR((planemask & s3vPriv.PlaneMask) |
                             ((planemask & s3vPriv.PlaneMask)<< 8));
             else  
                 SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask);
@@ -739,7 +736,7 @@ unsigned planemask;
 
 void
 S3VSubsequent8x8PatternColorExpand(patternx, patterny, x, y, w, h)
-unsigned patternx, patterny;
+int patternx, patterny;
 int x, y, w, h;
 {
     int dwords_to_transfer;
@@ -779,13 +776,13 @@ int x, y, w, h;
 
 void 
 S3VSetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
-unsigned patternx, patterny;
+int patternx, patterny;
 int rop; 
 unsigned planemask;
 int trans_col;
 {
     int *pattern_addr, *color_regs;
-    int num_bytes, i;
+    int num_bytes;
     int cmd = s3vAccelCmd;
 
     pattern_addr = (int *) (xf86AccelInfoRec.FramebufferBase + 
@@ -812,7 +809,7 @@ int trans_col;
 
         WaitQueue(1);
         if(vgaBitsPerPixel == 8) 
-            SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask | 
+            SETB_SRC_FG_CLR((planemask & s3vPriv.PlaneMask) |
                         ((planemask & s3vPriv.PlaneMask)<< 8));
         else  
             SETB_SRC_FG_CLR(planemask & s3vPriv.PlaneMask);
@@ -828,7 +825,7 @@ int trans_col;
 
 
 void S3VSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
-unsigned patternx, patterny;
+int patternx, patterny;
 int x, y, w, h;
 {
     int dwords_to_transfer;
@@ -869,8 +866,10 @@ int x1, x2, y1, y2, bias;
     dy = y2 - y1;
     WaitQueue(1); 
 
+#ifdef DEBUG
     ErrorF("TwoPointLine, x1 %d y1 %d x2 %d y2 %d bias %d\n",
         x1, y1, x2, y2, bias);
+#endif
 
     if(y1 > y2) {   /* Things are the right way for ViRGE */
         if(dy != 0) Xdelta = -(dx << 20)/ dy;
@@ -934,7 +933,8 @@ int x1, x2, y1, y2, bias;
 }
 
 
-void S3VSetClippingRectangle(x1, y1, x2, y2)
+static void
+S3VSetClippingRectangle(x1, y1, x2, y2)
 int x1, y1, x2, y2;
 {
     WaitQueue(2);

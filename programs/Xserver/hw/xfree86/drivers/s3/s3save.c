@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3save.c $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3save.c,v 1.1 1997/03/06 23:16:41 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -11,7 +11,6 @@
 #include "compiler.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #include "vga.h"

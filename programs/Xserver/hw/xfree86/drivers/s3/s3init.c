@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.5 1997/08/15 07:19:19 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.6 1997/09/25 16:13:56 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -14,7 +14,6 @@
 #include "site.h"
 
 #include "xf86Procs.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -91,6 +90,10 @@ Bool S3Init(DisplayModePtr mode)
 	Bool PriorPixMux = s3PixelMultiplexing;
 	/* in case we are using a prior computed mode. not needed yet */
 	Bool PriorModeMux = (mode->Flags & V_PIXMUX);
+#ifdef EXTENDED_DEBUG
+	ErrorF("PriorPixMux: %d\n", PriorPixMux);
+	ErrorF("PriorModeMux: %d\n", PriorModeMux);
+#endif
 
    /* If mux is changing, fill in mode info again and take to init level 2.
 	Note that the S3MuxOrNot function merely states if we must or can't

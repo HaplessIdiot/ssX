@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/newmmio.h,v 1.4 1997/04/08 10:13:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/newmmio.h,v 1.5 1997/05/03 09:18:33 dawes Exp $ */
 
 /* Copied over from accel/s3_virge */
 
@@ -426,13 +426,43 @@ typedef struct {
 #define CACHE_SETB_CLIP_T_B(t,b)	do { unsigned int clip = ((t)<<16 | (b)); if (s3vCached_CLIP_TB != clip) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.clip_t_b = clip; s3vCached_CLIP_TB = clip; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
 #define CACHE_SETB_RSRC_XY(x,y)		do { unsigned int src = ((x)<<16 | (y)); if (s3vCached_RSRC_XY != src) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.rsrc_xy = src; s3vCached_RSRC_XY = src; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
 #define CACHE_SETB_RWIDTH_HEIGHT(w,h)	do { unsigned int rwh = ((w)<<16 | (h)); if (s3vCached_RWIDTH_HEIGHT != rwh) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.rwidth_height = rwh; s3vCached_RWIDTH_HEIGHT = rwh; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
-#define CACHE_SETB_MONO_PAT0(val)	do { if (s3vCached_MONO_PATTERN0 != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat0 = val; s3vCached_MONO_PATTERN0 = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
-#define CACHE_SETB_MONO_PAT1(val)	do { if (s3vCached_MONO_PATTERN1 != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat1 = val; s3vCached_MONO_PATTERN1 = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
-#define CACHE_SETB_PAT_FG_CLR(val)	do { if (s3vCached_PAT_FGCLR != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_fg_clr = val; s3vCached_PAT_FGCLR = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
-#define CACHE_SETB_PAT_BG_CLR(val)	do { if (s3vCached_PAT_BGCLR != val) { ((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_bg_clr = val; s3vCached_PAT_BGCLR = val; s3vCacheMiss++;} else s3vCacheHit++;} while(0)
-#define CACHE_SETB_CMD_SET(val)		do { if (s3vCached_CMD_SET != val) { write_mem_barrier(); ((mmtr)s3vMmioMem)->bltfill_regs.regs.cmd_set = val; s3vCached_CMD_SET = val; s3vCacheMiss++; write_mem_barrier(); } else s3vCacheHit++;} while(0)
-
-
+#define CACHE_SETB_MONO_PAT0(val) do { \
+	if (s3vCached_MONO_PATTERN0 != (val)) { \
+		((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat0 = (val); \
+		s3vCached_MONO_PATTERN0 = (val); \
+		s3vCacheMiss++; \
+	} else s3vCacheHit++; \
+} while(0)
+#define CACHE_SETB_MONO_PAT1(val) do { \
+	if (s3vCached_MONO_PATTERN1 != (val)) { \
+		((mmtr)s3vMmioMem)->bltfill_regs.regs.mono_pat1 = (val); \
+		s3vCached_MONO_PATTERN1 = (val); \
+		s3vCacheMiss++; \
+	} else s3vCacheHit++;\
+} while(0)
+#define CACHE_SETB_PAT_FG_CLR(val) do { \
+	if (s3vCached_PAT_FGCLR != (val)) { \
+		((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_fg_clr = (val); \
+		s3vCached_PAT_FGCLR = (val); \
+		s3vCacheMiss++; \
+	} else s3vCacheHit++; \
+} while(0)
+#define CACHE_SETB_PAT_BG_CLR(val) do { \
+	if (s3vCached_PAT_BGCLR != (val)) { \
+		((mmtr)s3vMmioMem)->bltfill_regs.regs.pat_bg_clr = (val); \
+		s3vCached_PAT_BGCLR = (val); \
+		s3vCacheMiss++; \
+	} else s3vCacheHit++; \
+} while(0)
+#define CACHE_SETB_CMD_SET(val) do { \
+	if (s3vCached_CMD_SET != (val)) { \
+		write_mem_barrier(); \
+		((mmtr)s3vMmioMem)->bltfill_regs.regs.cmd_set = (val); \
+		s3vCached_CMD_SET = (val); \
+		s3vCacheMiss++; \
+		write_mem_barrier(); \
+	} else s3vCacheHit++; \
+} while(0)
 #define SETL_SRC_BASE(val)	((mmtr)s3vMmioMem)->line_regs.regs.src_base = (val)
 #define SETL_DEST_BASE(val)	((mmtr)s3vMmioMem)->line_regs.regs.dest_base = (val)
 #define SETL_CLIP_L_R(l,r)	((mmtr)s3vMmioMem)->line_regs.regs.clip_l_r = ((l)<<16 | (r))

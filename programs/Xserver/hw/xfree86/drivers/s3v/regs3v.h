@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.6 1997/06/29 07:54:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/regs3v.h,v 1.7 1997/10/25 13:50:36 hohndel Exp $ */
 
 /* regs3v.h
  *
@@ -45,15 +45,39 @@
 				   outb(vgaCRReg, 0xa5); } while (0)
 
 
-#define VerticalRetraceWait() \
-{ \
+#ifndef MetroLink
+#define VerticalRetraceWait() do { \
    outb(vgaCRIndex, 0x17); \
    if ( inb(vgaCRReg) & 0x80 ) { \
        while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
        while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ; \
        while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ; \
        }\
-}
+} while (0)
+#else
+#define SPIN_LIMIT 1000000
+#define VerticalRetraceWait() do { \
+   outb(vgaCRIndex, 0x17); \
+   if ( inb(vgaCRReg) & 0x80 ) { \
+	volatile unsigned long _spin_me; \
+	for (_spin_me = 0; \
+	 ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) && _spin_me <= SPIN_LIMIT; \
+	 _spin_me++) ; \
+	if (_spin_me > SPIN_LIMIT) \
+	    ErrorF("s3v: warning: VerticalRetraceWait timed out.\n"); \
+	for (_spin_me = 0; \
+	 ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) && _spin_me <= SPIN_LIMIT; \
+	 _spin_me++) ; \
+	if (_spin_me > SPIN_LIMIT) \
+	    ErrorF("s3v: warning: VerticalRetraceWait timed out.\n"); \
+	for (_spin_me = 0; \
+	 ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) && _spin_me <= SPIN_LIMIT; \
+	 _spin_me++) ; \
+	if (_spin_me > SPIN_LIMIT) \
+	    ErrorF("s3v: warning: VerticalRetraceWait timed out.\n"); \
+   } \
+} while (0)
+#endif
 
 
 #define S3_ViRGE_SERIES(chip)     ((chip&0xfff0)==0x31e0)

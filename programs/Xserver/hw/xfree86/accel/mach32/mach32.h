@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.14 1996/12/19 10:01:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.h,v 3.15 1996/12/23 06:38:21 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -217,6 +217,10 @@ void mach32RestoreColor0(
     ScreenPtr pScreen
 #endif
 );
+
+/* mach32frect.c */
+void mach32InitFrect(int, int, int);
+
 /* mach32gc.c */
 void mach32InitGC(
 #if NeedFunctionPrototypes

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/regmach8.h,v 3.0 1996/11/18 13:09:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/regmach8.h,v 3.1 1996/12/23 06:40:14 dawes Exp $ */
 
 /* REGMACH8.H
  *
@@ -29,7 +29,6 @@
 #define _REGMACH8_H_
 #ifndef _MACH8_ASM_
 #include "compiler.h"
-#include "Xos.h"
 
 /* mach-8 registers */
 #define CLOCK_SEL       0x4aee

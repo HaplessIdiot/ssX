@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.4 1997/07/06 13:12:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.5 1997/10/25 13:50:19 hohndel Exp $ */
 
 
 /* 
@@ -22,13 +22,13 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 #include "windowstr.h"
+#include "mfb.h"
 #include "compiler.h"
-#include "vga256.h"
 #include "xf86.h"
 #include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "vga.h"
 #include "xf86cursor.h"
 

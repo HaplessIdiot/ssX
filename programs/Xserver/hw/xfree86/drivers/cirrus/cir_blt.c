@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt.c,v 3.5 1996/12/23 06:56:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_blt.c,v 1.1 1997/03/06 23:15:19 hohndel Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -32,7 +32,6 @@
 #include "misc.h"
 #include "xf86.h"
 #include "X.h"
-#include "Xos.h"
 #include "Xmd.h"
 #include "Xproto.h"
 #include "gcstruct.h"

@@ -29,7 +29,7 @@
  * cir_blitLG.h
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitLG.h,v 3.7 1997/01/19 12:50:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_blitLG.h,v 1.1 1997/03/06 23:15:18 hohndel Exp $ */
 
 
 /* This header file defines the necessary structures, contstants, and 
@@ -121,117 +121,97 @@ extern int lgCirrusRop[16];  /* Defined in cir_blitLG.c */
    only one read will be performed, and the machine will hang. */
 int LgReady(void);
 /*
-#define LgREADY() \
-  ((*(unsigned char *)(cirrusMMIOBase + STATUS) & 0x07) == 0x00)
+#define LgREADY(s) \
+  s = CIRCIR_MMIO_READ8(STATUS); (s) = (((s) & 0x07) == 0x00)
 */
 
-#define LgSETROP(rop) \
-  *(unsigned short *)(cirrusMMIOBase + DRAWDEF) = (rop);
+#define LgSETROP(rop)	 	CIR_MMIO_WRITE16(DRAWDEF, rop)
 
 #define LgSETTRANSPARENCY(trans) \
-  *(unsigned short *)(cirrusMMIOBase + DRAWDEF) = \
-  (trans) | (*(unsigned short *)(cirrusMMIOBase + DRAWDEF) & 0x00FF);
+{ \
+  unsigned short tmp16 = CIR_MMIO_READ16(DRAWDEF); \
+  CIR_MMIO_WRITE16(DRAWDEF, (trans) | (tmp16 & 0x00FF)); \
+}
 
-#define LgSETMODE(mode) \
-  *(unsigned short *)(cirrusMMIOBase + BLTDEF) = (mode);
+#define LgSETMODE(mode)		CIR_MMIO_WRITE16(BLTDEF, mode);
 
-#define LgSETDSTXY(X, Y) \
-  *(unsigned long *)(cirrusMMIOBase + OP0_opRDRAM) = (((Y) << 16) | (X));
+#define LgSETDSTXY(X, Y) 	CIR_MMIO_WRITE32(OP0_opRDRAM, (((Y) << 16) | (X)))
 
-#define LgSETSRCXY(X, Y) \
-  *(unsigned long *)(cirrusMMIOBase + OP1_opRDRAM) = (((Y) << 16) | (X));
+#define LgSETSRCXY(X, Y) 	CIR_MMIO_WRITE32(OP1_opRDRAM, (((Y) << 16) | (X)))
     
-#define LgSETPATXY(X, Y) \
-  *(unsigned long *)(cirrusMMIOBase + OP2_opRDRAM) = (((Y) << 16) | (X));
+#define LgSETPATXY(X, Y) 	CIR_MMIO_WRITE32(OP2_opRDRAM, (((Y) << 16) | (X)))
 
 #define LgSETTRANSMASK(X, Y) LgSETPATXY(X, Y)
 
-#define LgSETSRAMDST(offset) \
-  *(unsigned short *)(cirrusMMIOBase + OP0_opSRAM) = (offset);
+#define LgSETSRAMDST(offset) 	CIR_MMIO_WRITE16(OP0_opSRAM, offset)
 
-#define LgSETSRAM1OFFSET(offset) \
-  *(unsigned short *)(cirrusMMIOBase + OP2_opSRAM) = (offset);
+#define LgSETSRAM1OFFSET(offset)	CIR_MMIO_WRITE16(OP2_opSRAM, offset)
 
-#define LgSETSRAM2OFFSET(offset) \
-  *(unsigned short *)(cirrusMMIOBase + OP2_opSRAM) = (offset);
+#define LgSETSRAM2OFFSET(offset)	CIR_MMIO_WRITE16(OP2_opSRAM, offset)
 
-#define LgSETMSRAM1OFFSET(offset) \
-  *(unsigned short *)(cirrusMMIOBase + OP1_opMSRAM) = (offset);
+#define LgSETMSRAM1OFFSET(offset) 	CIR_MMIO_WRITE16(OP1_opMSRAM, offset)
 
-#define LgSETMSRAM2OFFSET(offset) \
-  *(unsigned short *)(cirrusMMIOBase + OP2_opMSRAM) = (offset);
+#define LgSETMSRAM2OFFSET(offset)       CIR_MMIO_WRITE16(OP2_opMSRAM, offset)
 
-#define LgSETMDSTXY(X, Y) \
-  *(unsigned long *)(cirrusMMIOBase + OP0_opMRDRAM) = (((Y) << 16) | (X));
+#define LgSETMDSTXY(X, Y) 	CIR_MMIO_WRITE32(OP0_opMRDRAM, (((Y) << 16) | (X)))
 
-#define LgSETMSRCXY(X, Y) \
-  *(unsigned long *)(cirrusMMIOBase + OP1_opMRDRAM) = (((Y) << 16) | (X));
+#define LgSETMSRCXY(X, Y) 	CIR_MMIO_WRITE32(OP1_opMRDRAM, (((Y) << 16) | (X)))
     
-#define LgSETMPATXY(X, Y) \
-  *(unsigned long *)(cirrusMMIOBase + OP2_opMRDRAM) = (((Y) << 16) | (X));
+#define LgSETMPATXY(X, Y) 	CIR_MMIO_WRITE32(OP2_opMRDRAM, (((Y) << 16) | (X)))
 
 #define LgSETMTRANSMASK(X, Y) LgSETMPATXY(X, Y)
 
-#define LgSETPHASE0(phase) \
-  *(unsigned long *)(cirrusMMIOBase + OP0_opRDRAM) = (phase);
+#define LgSETPHASE0(phase) 	CIR_MMIO_WRITE32(OP0_opRDRAM, phase)
 
-#define LgSETPHASE1(phase) \
-  *(unsigned long *)(cirrusMMIOBase + OP1_opRDRAM) = (phase);
+#define LgSETPHASE1(phase) 	CIR_MMIO_WRITE32(OP1_opRDRAM, phase)
 
-#define LgSETPHASE2(phase) \
-  *(unsigned long *)(cirrusMMIOBase + OP2_opRDRAM) = (phase);
+#define LgSETPHASE2(phase) 	CIR_MMIO_WRITE32(OP2_opRDRAM, phase)
 
-#define LgSETMPHASE0(phase) \
-  *(unsigned long *)(cirrusMMIOBase + OP0_opMRDRAM) = (phase);
+#define LgSETMPHASE0(phase) 	CIR_MMIO_WRITE32(OP0_opMRDRAM, phase)
 
-#define LgSETMPHASE1(phase) \
-  *(unsigned long *)(cirrusMMIOBase + OP1_opMRDRAM) = (phase);
+#define LgSETMPHASE1(phase) 	CIR_MMIO_WRITE32(OP1_opMRDRAM, phase)
 
-#define LgSETEXTENTS(width, height)  \
-  *(unsigned long *)(cirrusMMIOBase + BLTEXT_EX) = (((height) << 16)|(width));
+#define LgSETEXTENTS(width, height)  	CIR_MMIO_WRITE32(BLTEXT_EX, (((height) << 16)|(width)))
 
 #if 0
-#define LgSETMEXTENTS(width, height)  \
-  *(unsigned long *)(cirrusMMIOBase + MBLTEXT_EX) = (((height) << 16)|(width));
+#define LgSETMEXTENTS(width, height)  	CIR_MMIO_WRITE32(MBLTEXT_EX, (((height) << 16)|(width)))
 #else
 /* For monochrome (byte) blits, we need to set how many QWORDs of data 
    encompass the X extent.  Write this piece of data into MONOQW. */
 #define LgSETMEXTENTS(width, height)  \
   { \
-    *(unsigned short *)(cirrusMMIOBase + MONOQW) = ((width + 7) >> 3);  \
-    *(unsigned long *)(cirrusMMIOBase + MBLTEXT_EX) = \
-           (((height) << 16)|(width));  \
+    CIR_MMIO_WRITE16(MONOQW, ((width + 7) >> 3))  \
+    CIR_MMIO_WRITE32(MBLTEXT_EX, (((height) << 16)|(width)))  \
   }
 
 /*
-    *(unsigned short *)(cirrusMMIOBase + MBLTEXT_EX) = height;
-    *(unsigned short *)(cirrusMMIOBase + MBLTEXT_EX + 2) = width;
+    CIR_MMIO_WRITE16(MBLTEXT_EX, height);
+    CIR_MMIO_WRITE16(MBLTEXT_EX + 2, width);
 */
 #endif
 
-#define LgHOSTDATAWRITE(data)  \
-  *(unsigned long *)(cirrusMMIOBase + HOSTDATA) = (data);
+#define LgHOSTDATAWRITE(data)	CIR_MMIO_WRITE32(HOSTDATA, data)
 
-#define LgHOSTDATAREAD()  \
-  (*(unsigned long *)(cirrusMMIOBase + HOSTDATA))
+#define LgHOSTDATAREAD()  	CIR_MMIO_READ32(HOSTDATA)
 
-#define LgSETBACKGROUND(color) \
-  *(unsigned long *)(cirrusMMIOBase + OP_opBGCOLOR) = (color);
+#define LgSETBACKGROUND(color)  CIR_MMIO_WRITE32(OP_opBGCOLOR, color)
 
-#define LgSETFOREGROUND(color) \
-  *(unsigned long *)(cirrusMMIOBase + OP_opFGCOLOR) = (color);
+#define LgSETFOREGROUND(color)	CIR_MMIO_WRITE32(OP_opFGCOLOR, color)
 
-#define LgSETPATOFF(xoff, yoff) \
-  *(unsigned short *)(cirrusMMIOBase + PATOFF) = (((yoff) << 8) | (xoff));
+#define LgSETPATOFF(xoff, yoff) 	CIR_MMIO_WRITE16(PATOFF, (((yoff) << 8) | (xoff)))
 
-#define LgSETSWIZZLE() \
-  *(unsigned short *)(cirrusMMIOBase + bltCONTROL) |= 0x0400;
+#define LgSETSWIZZLE() 	{ \
+  unsigned short tmp16 = CIR_MMIO_READ16(bltCONTROL); \
+  CIR_MMIO_WRITE16(bltCONTROL, tmp16 | 0x0400); \
+}
 
-#define LgCLEARSWIZZLE() \
-  *(unsigned short *)(cirrusMMIOBase + bltCONTROL) &= ~0x0400;
+#define LgCLEARSWIZZLE() { \
+  unsigned short tmp16 = CIR_MMIO_READ16(bltCONTROL); \
+  CIR_MMIO_WRITE16(bltCONTROL, tmp16 & ~0x0400); \
+}
 
-#define LgSETBITMASK(m) \
-  *(unsigned int *)(cirrusMMIOBase + BITMASK) = m;
+
+#define LgSETBITMASK(m) CIR_MMIO_WRITE32(BITMASK, m)
 
 
 #endif  /* __CIR_BLITLG_H */

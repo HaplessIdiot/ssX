@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintcmap.c,v 1.2 1997/11/22 00:00:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glintcmap.c,v 1.3 1997/12/05 22:01:30 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -39,6 +39,7 @@
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "windowstr.h"
+#include "cfb.h"
 #include "compiler.h"
 
 #include "glint_regs.h"

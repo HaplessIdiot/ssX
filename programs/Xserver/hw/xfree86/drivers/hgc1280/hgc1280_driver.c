@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hgc1280/hgc1280_driver.c,v 1.2 1997/06/03 14:12:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/hgc1280/hgc1280_driver.c,v 1.3 1997/08/26 10:01:17 hohndel Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -26,7 +26,7 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_Config.h"
 #include "xf86Procs.h"
 
@@ -167,7 +167,7 @@ HGC1280Probe()
 
     if (monoInfoRec.chipset) {
 	/* Chipset preset */
-	if (xf86strcmp(monoInfoRec.chipset, HGC1280Ident(0)))
+	if (strcmp(monoInfoRec.chipset, HGC1280Ident(0)))
 	    /* desired chipset != this one */
 	    return (FALSE);
 	else {
@@ -558,7 +558,7 @@ void HGC1280ClearScreen()
 	} else {
 		BANK_SEC_A(bank);
 	}
-	xf86memset((unsigned char *)monoBankABottom, 0, HGC_BANK_SIZE);
+	memset((unsigned char *)monoBankABottom, 0, HGC_BANK_SIZE);
     }
 }
 

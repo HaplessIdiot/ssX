@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.8 1997/02/17 09:47:06 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/Imakefile,v 3.9 1997/08/26 10:01:43 hohndel Exp $
 
 
 
@@ -15,11 +15,11 @@ BIOS_MOD = bios_devmem
 #endif
 
 SRCS = sysv_init.c sysv_video.c sysv_io.c $(BIOS_MOD).c VTsw_usl.c \
-       sysv_kbd.c std_kbdEv.c sysv_tty.c std_mouse.c std_mseEv.c xqueue.c \
+       sysv_kbd.c std_kbdEv.c posix_tty.c std_mouse.c std_mseEv.c xqueue.c \
        libc_wrapper.c
 
 OBJS = sysv_init.o sysv_video.o sysv_io.o $(BIOS_MOD).o VTsw_usl.o \
-       sysv_kbd.o std_kbdEv.o sysv_tty.o std_mouse.o std_mseEv.o xqueue.o \
+       sysv_kbd.o std_kbdEv.o std_mouse.o posix_tty.o std_mseEv.o xqueue.o \
        libc_wrapper.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
@@ -35,6 +35,7 @@ ObjectFromSpecialSource(VTsw_usl,../shared/VTsw_usl,/**/)
 ObjectFromSpecialSource(sysv_kbd,../shared/sysv_kbd,/**/)
 ObjectFromSpecialSource(std_kbdEv,../shared/std_kbdEv,/**/)
 ObjectFromSpecialSource(sysv_tty,../shared/sysv_tty,/**/)
+ObjectFromSpecialSource(posix_tty,../shared/posix_tty,/**/)
 ObjectFromSpecialSource(std_mouse,../shared/std_mouse,/**/)
 ObjectFromSpecialSource(std_mseEv,../shared/std_mseEv,/**/)
 ObjectFromSpecialSource(libc_wrapper,../shared/libc_wrapper,/**/)

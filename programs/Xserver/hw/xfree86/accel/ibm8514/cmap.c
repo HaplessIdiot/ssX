@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/cmap.c,v 3.1 1996/12/23 06:37:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/cmap.c,v 3.2 1997/11/16 06:18:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -32,6 +32,7 @@
 #include "scrnintstr.h"
 #include "colormapst.h"
 #include "windowstr.h"
+#include "cfb.h"
 #include "compiler.h"
 
 #include "ibm8514.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.2 1997/08/26 10:01:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.3 1997/10/25 13:50:21 hohndel Exp $ */
 /*
  * Copyright 1997 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -402,6 +402,7 @@ ATIProbe(void)
     int ROMTable = 0, ClockTable = 0, FrequencyTable = 0, Index;
     const DACRec *DAC;
     pciConfigPtr PCIDevice;
+    pciConfigPtr *pcrpp;
 
     /* Get out if this isn't the driver the user wants */
     if (!ATIIdentProbe())
@@ -502,20 +503,18 @@ ATIProbe(void)
         ATIMach64Probe(0x01CCU, SPARSE_IO, 0);
 
         /* Lastly, check PCI configuration space */
-        if (vgaPCIInfo && vgaPCIInfo->AllCards)
-        {
-            Index = 0;
-            while ((ATIAdapter == ATI_ADAPTER_NONE) &&
-                   (PCIDevice = vgaPCIInfo->AllCards[Index++]))
-            {
-                if (PCIDevice->_vendor != PCI_VENDOR_ATI)
-                    continue;
-                if (PCIDevice->_device == PCI_CHIP_MACH32)
-                    continue;
-                ATIMach64Probe(PCIDevice->_base1 & BLOCK_IO_BASE, BLOCK_IO,
-                    PCIDevice->_device);
-            }
+	pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+	for (Index = 0, PCIDevice = pcrpp[0];
+	     (ATIAdapter == ATI_ADAPTER_NONE) && PCIDevice;
+	     PCIDevice = pcrpp[++Index]) {
+	    if (PCIDevice->_vendor != PCI_VENDOR_ATI)
+		continue;
+	    if (PCIDevice->_device == PCI_CHIP_MACH32)
+		continue;
+	    ATIMach64Probe(PCIDevice->_base1 & BLOCK_IO_BASE, BLOCK_IO,
+			   PCIDevice->_device);
         }
+	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
     }
 
     /* Extract various information from any detected accelerator */

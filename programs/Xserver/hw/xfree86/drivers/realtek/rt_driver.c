@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.3 1997/06/03 14:12:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/realtek/rt_driver.c,v 1.4 1997/08/26 10:01:21 hohndel Exp $ */
 
 /*************************************************************************/
 
@@ -75,7 +75,6 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 

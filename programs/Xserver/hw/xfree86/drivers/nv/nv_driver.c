@@ -21,7 +21,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.6 1997/07/31 07:16:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.7 1997/08/26 10:01:20 hohndel Exp $ */
 
 #include <math.h>
 
@@ -33,7 +33,6 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Version.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 
@@ -405,18 +404,23 @@ static Bool NVProbe(void)
     if(!chipName) return FALSE;
   }else {
     /* Now we must scan the PCI data structures to test for the NV1/STG200 */
+      pciConfigPtr pcr, *pcrpp;
+      int i;
 
-    if(!vgaPCIInfo) return FALSE; /* No PCI - no NV */
-     
-    if(vgaPCIInfo->Vendor==PCI_VENDOR_NVIDIA && 
-      vgaPCIInfo->ChipType==PCI_CHIP_NV1) {
-      vga256InfoRec.chipset=NVIdent(0);
-    }else if(vgaPCIInfo->Vendor==PCI_VENDOR_SGS && 
-             vgaPCIInfo->ChipType==PCI_CHIP_STG2000) {
-      vga256InfoRec.chipset=NVIdent(1);
-    }else {
-      return FALSE;
-    }
+      pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+      for (i = 0, pcr = pcrpp[0]; pcr; pcr = pcrpp[++i]) {     
+	  if (pcr->_vendor == PCI_VENDOR_NVIDIA &&
+	      pcr->_device == PCI_CHIP_NV1) {
+	      vga256InfoRec.chipset=NVIdent(0);
+	      break;
+	  } else if (pcr->_vendor == PCI_VENDOR_SGS &&
+		    pcr->_device == PCI_CHIP_STG2000) {
+	      vga256InfoRec.chipset=NVIdent(1);
+	      break;
+	  }
+      }
+      if (!pcr)
+	  return FALSE;
   }
 
 

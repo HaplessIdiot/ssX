@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nvcursor.c,v 1.2 1997/03/23 09:01:42 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nvcursor.c,v 1.3 1997/05/31 13:51:33 dawes Exp $ */
 /*
  * Copyright 1996-1997  David J. McKay
  *
@@ -37,7 +37,6 @@
 #include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
 #include "vga.h"
 
 

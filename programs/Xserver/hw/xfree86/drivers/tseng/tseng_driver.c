@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.24 1997/11/22 00:00:17 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.25 1997/12/28 21:28:34 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -37,7 +37,7 @@
 #include "xf86Version.h"
 #include "xf86Procs.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "xf86_PCI.h"
 #define XCONFIG_FLAGS_ONLY
@@ -67,10 +67,6 @@ static void *   ET4000Save();
 static void     ET4000Restore();
 static void     ET4000Adjust();
 static void     ET4000FbInit();
-#ifdef DPMSExtension
-extern void     TsengCrtcDPMSSet();
-extern void     TsengHVSyncDPMSSet();
-#endif
 extern void     ET4000SetRead();
 extern void     ET4000SetWrite();
 extern void     ET4000SetReadWrite();
@@ -107,6 +103,11 @@ static unsigned char	initialET6KRasCas = 0x15;
 static unsigned char	initialET6KDispFeat = 0x00;
 
 static unsigned char    save_VSConf1=0x03;
+
+/* To hold the clock data between Init and Restore */
+static unsigned long    icd2061_dwv;
+
+static int bustype=0;    /* W32 bus type (currently used for lin mem on W32i) */
 
 /* some exported variables */
 t_tseng_type et4000_type = TYPE_UNKNOWN;
@@ -860,55 +861,55 @@ ET4000Probe()
   }
 
   /* next step: try finding one on the PCI bus */
-  if ((et4000_type == TYPE_UNKNOWN) && vgaPCIInfo)
-  {
-    int i = 0;
-    /* find an active TSENG card in the list of PCI devices */
-    if (vgaPCIInfo->AllCards) {
-      while (tseng_pcr = vgaPCIInfo->AllCards[i++]) {
-            if ((tseng_pcr->_vendor == PCI_VENDOR_TSENG)
-                && (tseng_pcr->_command & PCI_CMD_IO_ENABLE)
-                && (tseng_pcr->_command & PCI_CMD_MEM_ENABLE)) {
-                  /*
-                   * At this moment, "tseng_pcr" holds a pointer to the PCI
-                   * structure of the active TSENG VGA card.
-                   *
-                   * This "searching" should not be necessary anymore once
-                   * the XFree PCI code gives us only the ACTIVE PCI VGA
-                   * card to begin with.
-                   */
-                  switch(tseng_pcr->_device)
-                    {
-                      case PCI_CHIP_ET6000:
+  if (et4000_type == TYPE_UNKNOWN) {
+      int i;
+      pciConfigPtr *pcrpp;
+      /* find an active TSENG card in the list of PCI devices */
+      pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+      for (i = 0, tseng_pcr = pcrpp[0]; tseng_pcr; tseng_pcr = pcrpp[++i]) {
+	  if ((tseng_pcr->_vendor == PCI_VENDOR_TSENG)
+	      && (tseng_pcr->_command & PCI_CMD_IO_ENABLE)
+	      && (tseng_pcr->_command & PCI_CMD_MEM_ENABLE)) {
+	      /*
+	       * At this moment, "tseng_pcr" holds a pointer to the PCI
+	       * structure of the active TSENG VGA card.
+	       *
+	       * This "searching" should not be necessary anymore once
+	       * the XFree PCI code gives us only the ACTIVE PCI VGA
+	       * card to begin with.
+	       */
+	      switch(tseng_pcr->_device) {
+	      case PCI_CHIP_ET6000:
                         if (tseng_pcr->_rev_id < 0x70)
                           et4000_type = TYPE_ET6000;
                         else
                           et4000_type = TYPE_ET6100;
                         break;
+		  et4000_type = TYPE_ET6000;
+		  break;
                       case PCI_CHIP_ET6300:
                         et4000_type = TYPE_ET6300;
                         break;
-                      case PCI_CHIP_ET4000_W32P_A:
-                        et4000_type = TYPE_ET4000W32Pa;
-                        break;
-                      case PCI_CHIP_ET4000_W32P_B:
-                        et4000_type = TYPE_ET4000W32Pb;
-                        break;
-                      case PCI_CHIP_ET4000_W32P_C:
-                        et4000_type = TYPE_ET4000W32Pc;
-                        break;
-                      case PCI_CHIP_ET4000_W32P_D:
-                        et4000_type = TYPE_ET4000W32Pd;
-                        break;
-                      default: 
-                        ErrorF("%s %s: Unknown Tseng Labs PCI device 0x%x -- please report.\n",
-                               XCONFIG_PROBED, vga256InfoRec.name, tseng_pcr->_device);
-                    }
-                  vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);      
-                  break;
-            }
+	      case PCI_CHIP_ET4000_W32P_A:
+		  et4000_type = TYPE_ET4000W32Pa;
+		  break;
+	      case PCI_CHIP_ET4000_W32P_B:
+		  et4000_type = TYPE_ET4000W32Pb;
+		  break;
+	      case PCI_CHIP_ET4000_W32P_C:
+		  et4000_type = TYPE_ET4000W32Pc;
+		  break;
+	      case PCI_CHIP_ET4000_W32P_D:
+		  et4000_type = TYPE_ET4000W32Pd;
+		  break;
+	      default: 
+		  ErrorF("%s %s: Unknown Tseng Labs PCI device 0x%x -- please report.\n",
+			 XCONFIG_PROBED, vga256InfoRec.name, tseng_pcr->_device);
+	      }
+	      vga256InfoRec.chipset = xf86TokenToString(chipsets, et4000_type);      
+	      break;
+	  }
       }
-    }
   }
 
   /* last resort -- try old-style autodetect (port probing) */
@@ -944,8 +945,8 @@ ET4000Probe()
   * Check for RAMDAC type
   */
   Check_Tseng_Ramdac();
-  tseng_init_clockscale(tseng_bytesperpixel);
-  tseng_set_dacspeed(tseng_bytesperpixel);
+  tseng_init_clockscale();
+  tseng_set_dacspeed();
 
  /*
   * ... and system bus type 
@@ -1497,7 +1498,7 @@ ET4000Restore(restore)
      STG1703setIndex(0x03,restore->gendac.PLL_ctrl);/* primary pixel mode */
      outb(0x3c6,restore->gendac.PLL_ctrl);	  /* secondary pixel mode */
      outb(0x3c6,restore->gendac.timingctrl);	  /* pipeline timing control */
-     xf86usleep(500); /* 500 usec PLL settling time required */
+     usleep(500); /* 500 usec PLL settling time required */
 
      STG1703magic(0);
      xf86dactopel();
@@ -1694,7 +1695,7 @@ ET4000Save(save)
   if ( (TsengRamdacType == STG1702_DAC) || (TsengRamdacType == STG1703_DAC) 
       || (TsengRamdacType == STG1700_DAC) )
   {
-     /* Restore STG 1703 GenDAC Command and PLL registers 
+     /* Save STG 1703 GenDAC Command and PLL registers 
       * unfortunately we reuse the gendac data structure, so the 
       * field names are not really good.
       */
@@ -1944,7 +1945,8 @@ ET4000Init(mode)
        new->Compatibility = (new->Compatibility & 0xFD);   
        new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
        new->std.NoClock = 2;
-       Tseng_ICD2061AClockSelect(mode->SynthClock);
+       icd2061_dwv = AltICD2061CalcClock(mode->SynthClock*1000);
+       /* Tseng_ICD2061AClockSelect(mode->SynthClock); */
     }
     else
     if (CH8398_programmable_clock) {

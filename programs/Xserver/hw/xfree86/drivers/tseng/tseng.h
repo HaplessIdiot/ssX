@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.15 1997/09/09 10:27:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.16 1997/12/28 21:28:32 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -109,7 +109,9 @@ typedef enum {
 } t_ramdactype;
 
 extern t_ramdactype TsengRamdacType;
-void Check_Tseng_Ramdac();
+void Check_Tseng_Ramdac(void);
+void tseng_init_clockscale(void);
+void TsengHideCursor(void);
 
 #define DAC_IS_ATT49x ( (TsengRamdacType == ATT20C490_DAC) \
                      || (TsengRamdacType == ATT20C491_DAC) \
@@ -176,13 +178,11 @@ Bool Tseng_ET6000ClockSelect(int freq);
 Bool Tseng_GenDACClockSelect(int freq);
 Bool Tseng_STG1703ClockSelect(int freq);
 Bool Tseng_ICD2061AClockSelect(int freq);
-void tseng_set_dacspeed();
+void tseng_set_dacspeed(void);
 void tseng_validate_mode(DisplayModePtr mode, Bool verbose);
 void tseng_set_ramdac_bpp(DisplayModePtr mode, vgaET4000Ptr tseng_regs);
-
-#if !defined(__GNUC__) || defined(NO_INLINE)
-#undef __inline__
-#define __inline__ /**/
+#ifdef DPMSExtension
+void TsengCrtcDPMSSet(CARD16);
+void TsengHVSyncDPMSSet(CARD16);
 #endif
-
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.7 1997/06/03 14:12:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_cursor.c,v 1.8 1997/08/26 10:01:28 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted mainly from apm/apm_cursor.c
@@ -17,11 +17,13 @@
 #include "scrnintstr.h"
 #include "servermd.h"
 #include "windowstr.h"
+#include "mfb.h"
+#include "compiler.h"
 #include "xf86.h"
 #include "mipointer.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
-#include "xf86_OSlib.h"
+#include "xf86_ansic.h"
 #include "vga.h"
 
 #include "tseng.h"
@@ -164,7 +166,7 @@ static Bool TsengRealizeCursor(pScr, pCurs)
       return FALSE;
 
    /* set to transparent colour*/
-   xf86memset(ram, 0xaa, tsengCursorHeight * tsengCursorWidth * 2 / 8);
+   memset(ram, 0xaa, tsengCursorHeight * tsengCursorWidth * 2 / 8);
 
         /*
           There are two bitmaps for the X cursor:  the Source and
@@ -317,7 +319,7 @@ static void TsengLoadCursorToCard(pScr, pCurs, x, y)
 	cursor_image = pCurs->bits->devPriv[index];
 
 	if (vgaUseLinearAddressing)
-		xf86memcpy((unsigned char *)vgaLinearBase + tsengCursorAddress,
+		memcpy((unsigned char *)vgaLinearBase + tsengCursorAddress,
 			cursor_image, 1024);
 	else {
 		/*
@@ -326,7 +328,7 @@ static void TsengLoadCursorToCard(pScr, pCurs, x, y)
 		 */
 		vgaSaveBank();
 		vgaSetVidPage(tsengCursorAddress >> 16);
-		xf86memcpy((unsigned char *)vgaBase + (tsengCursorAddress & 0xFFFF),
+		memcpy((unsigned char *)vgaBase + (tsengCursorAddress & 0xFFFF),
 			cursor_image, 1024);
 		vgaRestoreBank();
 	}

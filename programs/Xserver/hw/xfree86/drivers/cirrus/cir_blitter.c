@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blitter.c,v 3.16 1997/02/17 09:47:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_blitter.c,v 1.1 1997/03/06 23:15:18 hohndel Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -39,6 +39,7 @@
 
 
 #include "xf86.h"	/* For vgaBase. */
+#include "xf86_ansic.h"
 #include "vga.h"	/* For vgaBase. */
 #include "compiler.h"
 
@@ -472,10 +473,10 @@ destpitch, rop)
 #endif
 
     if (patternpitch == 8)
-	xf86memcpy(base + srcaddr, pattern, 64);
+	memcpy(base + srcaddr, pattern, 64);
     else
 	for (i = 0; i < 8; i++)
-            xf86memcpy(base + srcaddr + i * 8, (unsigned char *)pattern +
+            memcpy(base + srcaddr + i * 8, (unsigned char *)pattern +
                 patternpitch * i, 8);
 
     /* Set up the BitBLT parameters. */
@@ -550,7 +551,7 @@ destpitch, rop)
 
 	do { BLTBUSY(busy); } while (busy);
         for (i = 0; i < 8; i++)
-            xf86memcpy(base + srcaddr + i * 16, (unsigned char *)pattern +
+            memcpy(base + srcaddr + i * 16, (unsigned char *)pattern +
                patternpitch * (i * 2 + k), 16);
         SETDESTADDR(destaddr);
         SETSRCADDR(cirrusBLTPatternAddress);
@@ -621,10 +622,12 @@ destpitch, rop)
     /* Set up the invariant BitBLT parameters. */
     SETROP(rop);
     SETDESTPITCH(destpitch * 4);	/* Four-way interleaving. */
-    if (chip_supports_32byte_fill)
-    	SETBLTMODE(PATTERNCOPY | PIXELWIDTH32)
-    else
+    if (chip_supports_32byte_fill) {
+    	SETBLTMODE(PATTERNCOPY | PIXELWIDTH32);
+    }
+    else {
         SETBLTMODE(PATTERNCOPY | PIXELWIDTH16);
+    }
 
     saved_destaddr = destaddr;
 
@@ -645,7 +648,7 @@ destpitch, rop)
 	if (chip_supports_32byte_fill) {
 	    do { BLTBUSY(busy); } while (busy);
             for (i = 0; i < 8; i++)
-                xf86memcpy(base + srcaddr + i * 32, (unsigned char *)pattern +
+                memcpy(base + srcaddr + i * 32, (unsigned char *)pattern +
                     patternpitch * (i * 4 + k), 32);
             SETDESTADDR(destaddr);
             SETSRCADDR(cirrusBLTPatternAddress);
@@ -682,10 +685,10 @@ destpitch, rop)
              * It helps if this gets expanded into unrolled inline
              * loads/stores. gcc -O2 does this.
              */
-            xf86memcpy(base + srcaddr + i * 16,
+            memcpy(base + srcaddr + i * 16,
 	        pattern + patternpitch * (i * 4 + k), 16);
 	    if (!halves_identical)
-                xf86memcpy(base + srcaddr + i * 16 + 128,
+                memcpy(base + srcaddr + i * 16 + 128,
                     pattern + patternpitch * (i * 4 + k) + 16, 16);
 	}
 

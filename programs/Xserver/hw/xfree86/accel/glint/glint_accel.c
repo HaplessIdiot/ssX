@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.16 1997/11/08 16:24:25 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_accel.c,v 1.17 1997/12/05 22:01:29 hohndel Exp $ */
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
  *
@@ -42,12 +42,11 @@
 #include "glint.h"
 #include "xf86xaa.h"
 
-#include <float.h>
-
 #if DEBUG
 #include <stdio.h>
 #endif
 
+#if !defined(MetroLink)
 unsigned char byte_reversed[256] =
 {
     0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
@@ -83,6 +82,7 @@ unsigned char byte_reversed[256] =
     0x0f, 0x8f, 0x4f, 0xcf, 0x2f, 0xaf, 0x6f, 0xef,
     0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff,
 };
+#endif
 
 extern int pprod;
 extern int coprotype;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.3 1997/06/03 14:12:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_driver.c,v 1.4 1997/08/26 10:01:09 hohndel Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -120,7 +120,8 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
+#include "xf86Procs.h"
+#include "xf86_ansic.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 

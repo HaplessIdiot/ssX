@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_FillSt.c,v 1.3 1997/02/17 09:48:01 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_FillSt.c,v 1.1 1997/03/06 23:16:48 hohndel Exp $ */
 
 /*
  *
@@ -303,12 +303,12 @@ siscfbFillRectTile(pDrawable, pGC, nBox, pBox)
 		vgaBytesPerPixel);
 	    for (i = 0; i < 8; i++) {
 		for (j = 8 - xrot; j < 8; j++)
-		    xf86memcpy(pattern + i * 8 * vgaBytesPerPixel,
+		    memcpy(pattern + i * 8 * vgaBytesPerPixel,
 			(unsigned char *)src + i * pixWidth *
 			vgaBytesPerPixel + 8 - xrot, xrot *
 			vgaBytesPerPixel);
 		for (j = 0; j < 8 - xrot; j++)
-		    xf86memcpy(pattern + i * 8 * vgaBytesPerPixel + xrot,
+		    memcpy(pattern + i * 8 * vgaBytesPerPixel + xrot,
 			(unsigned char *)src + i * pixWidth *
 			vgaBytesPerPixel, (8 - xrot) * vgaBytesPerPixel);
 	    }

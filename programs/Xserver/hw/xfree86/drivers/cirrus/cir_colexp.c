@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_colexp.c,v 1.1 1997/03/06 23:15:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_colexp.c,v 1.2 1997/10/25 13:50:26 hohndel Exp $ */
 /*
  *
  * Copyright 1994 by H. Hanemaayer, Utrecht, The Netherlands
@@ -209,27 +209,6 @@ destpitch )
  * region.
  *
  */
-
-#ifdef AVOID_ASM_ROUTINES
-
-static void CirrusLatchCopySpans(srcp, destp, bcount, n, destpitch)
-	unsigned char *srcp;
-	unsigned char *destp;
-	int bcount;
-	int n;
-	int destpitch;
-{
-	int i;
-	for (i = 0; i < n; i++) {
-		int j;
-		for (j = 0; j < bcount; j++)
-			*(destp + j) = *(srcp + j);
-		srcp += destpitch;
-		destp += destpitch;
-	}
-}
-
-#endif
 
 void CirrusLatchedBitBlt(x1, y1, x2, y2, w, h, destpitch)
 	int x1, y1, x2, y2, w, h, destpitch;
@@ -558,45 +537,6 @@ void CirrusSimpleBitBlt( x1, y1, x2, y2, w, h, destpitch )
  * w >= 32.
  */
 
-#ifdef AVOID_ASM_ROUTINES
-
-static void CirrusColorExpandWriteSpans(destp, leftmask, leftbcount,
-midlcount, rightbcount, rightmask, h, destpitch)
-	unsigned char *destp;
-	int leftmask, leftbcount, midlcount, rightbcount, rightmask;
-	int h;
-	int destpitch;
-{
-	while (h > 0) {
-		unsigned char *destpsave;
-		int i;
-		destpsave = destp;
-		if (leftbcount > 0) {
-			*destp = leftmask;
-			destp++;
-			for (i = 0; i < leftbcount - 1; i++) {
-				*destp = 0xff;
-				destp++;
-			}
-		}
-		for (i = 0; i < midlcount; i++) {
-			*(unsigned long *)destp = 0xffffffff;
-			destp += 4;
-		}
-		if (rightbcount > 1) 
-			for (i = 0; i < rightbcount - 1; i++) {
-				*destp = 0xff;
-				destp++;
-			}
-		if (rightbcount > 0)
-			*destp = rightmask;
-		destp = destpsave + destpitch;
-		h--;
-	}
-}
-
-#endif
-
 void CirrusColorExpandSolidFill(x, y, w, h, fg, destpitch)
 	int x, y, w, h, fg, destpitch;
 {
@@ -696,73 +636,6 @@ masksdone:
  * same stipple bits word. Assumes a virtual screen width that is a multiple
  * 32 (otherwise video memory access will be largely unaligned).
  */
-
-#ifdef AVOID_ASM_ROUTINES
-
-static void CirrusColorExpandWriteStippleSpans(destp, stippleleftmask, leftbcount,
-midlcount, rightbcount, stipplerightmask, h, stippleword, destpitch)
-	unsigned char *destp;
-	int stippleleftmask, leftbcount, midlcount, rightbcount;
-	int stipplerightmask;
-	int h;
-	unsigned long stippleword;
-	int destpitch;
-{
-	while (h > 0) {
-		unsigned char *destpsave;
-		int i;
-		destpsave = destp;
-		switch (leftbcount) {
-		case 1 :
-			*destp = stippleleftmask;
-			destp++;
-			break;
-		case 2 :
-			*destp = stippleleftmask;
-			*(destp + 1) = stippleword >> 24;
-			destp += 2;
-			break;
-		case 3 :
-			*destp = stippleleftmask;
-			*(destp + 1) = stippleword >> 16;
-			*(destp + 2) = stippleword >> 24;
-			destp += 3;
-			break;
-		case 4 :
-			*destp = stippleleftmask;
-			*(destp + 1) = stippleword >> 8;
-			*(unsigned short *)(destp + 2) = stippleword >> 16;
-			destp += 4;
-			break;
-		}
-		for (i = 0; i < midlcount; i++) {
-			*(unsigned long *)destp = stippleword;
-			destp += 4;
-		}
-		switch (rightbcount) {
-		case 1 :
-			*destp = stipplerightmask;
-			break;
-		case 2 :
-			*destp = stippleword;
-			*(destp + 1) = stipplerightmask;
-			break;
-		case 3 :
-			*(unsigned short *)destp = stippleword;
-			*(destp + 2) = stipplerightmask;
-			break;
-		case 4 :
-			*(unsigned short *)destp = stippleword;
-			*(destp + 2) = stippleword >> 16;
-			*(destp + 3) = stipplerightmask;
-			break;
-		}
-		destp = destpsave + destpitch;
-		h--;
-	}
-}
-
-#endif
 
 void CirrusColorExpandStippleFill(x, y, w, h, bits_in, sh, sox, soy, fg,
 destpitch)
@@ -941,7 +814,7 @@ void CirrusColorExpandOpaqueStippleFill(x, y, w, h, bits_in, sh, sox, soy,
 bg, fg, destpitch)
 	int x, y, w, h;
 	unsigned long *bits_in;
-	int sh, sox, soy, fg, destpitch;
+	int sh, sox, soy, bg, fg, destpitch;
 {
 	int destaddr;
 	int bank;
@@ -1172,23 +1045,6 @@ skiprightpart:
  * w must be >= 32.
  * Tile must be aligned to start of scanline.
  */
-
-#ifdef AVOID_ASM_ROUTINES
-
-static void CirrusLatchWriteTileSpans(destp, count, tbytes, linecount, vpitch)
-	unsigned char *destp;
-	int tbytes, count, linecount, vpitch;
-{
-	int i;
-	for (i = 0; i < linecount; i++) {
-		int j;
-		for (j = 0; j < count; j++)
-			*(destp + j * tbytes) = 0;
-		destp += vpitch;
-	}
-}
-
-#endif
 
 void CirrusColorExpandFillTile8(x, y, w, h, vtileaddr, tpitch, tbytes, theight,
 toy, destpitch)

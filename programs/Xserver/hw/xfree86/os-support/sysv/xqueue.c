@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.9 1997/07/06 05:31:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/xqueue.c,v 3.10 1997/07/12 11:32:32 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  *
@@ -92,9 +92,15 @@ xf86XqueSignal(int signum)
 void
 xf86XqueRequest()
 {
-  xqEvent  *XqueEvents = XqueQaddr->xq_events;
-  int      XqueHead = XqueQaddr->xq_head;
-  char buf[100];
+  xqEvent  *XqueEvents;
+  int       XqueHead;
+  char      buf[100];
+
+  if (xqueFd < 0)
+	return;
+
+  XqueEvents = XqueQaddr->xq_events;
+  XqueHead = XqueQaddr->xq_head;
 
   while (XqueHead != XqueQaddr->xq_tail)
     {
@@ -106,13 +112,17 @@ xf86XqueRequest()
 			~(XqueEvents[XqueHead].xq_code) & 0x07, 0, 0);
 	break;
 
-      case XQ_MOTION:
+      case XQ_MOTION: {
+	signed char dx,dy;
+	
+	dx = (signed char)XqueEvents[XqueHead].xq_x;
+	dy = (signed char)XqueEvents[XqueHead].xq_y;
 	xf86PostMseEvent(xf86Info.pMouse,
 			~(XqueEvents[XqueHead].xq_code) & 0x07,
-		       XqueEvents[XqueHead].xq_x,
-		       XqueEvents[XqueHead].xq_y);
+		       (int)dx, (int) dy);
 	break;
-
+      }
+	
       case XQ_KEY:
 	xf86PostKbdEvent(XqueEvents[XqueHead].xq_code);
 	break;

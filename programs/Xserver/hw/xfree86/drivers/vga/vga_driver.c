@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.9 1997/07/29 12:08:04 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.10 1997/08/26 10:01:30 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -76,8 +76,8 @@
 #include "xf86.h"
 #include "xf86Version.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
+#include "xf86_PCI.h"
 #include "vga.h"
 
 #ifdef PC98_EGC
@@ -97,6 +97,8 @@
 #include "extensions/xf86dgastr.h"
 #endif
 
+#define XCONFIG_FLAGS_ONLY
+#include "xf86_Config.h"
 
 typedef struct {
 	vgaHWRec std;               /* good old IBM VGA */
@@ -332,39 +334,105 @@ GenericProbe()
 	 * First we attempt to figure out if one of the supported chipsets
 	 * is present.
 	 */
-	if (vga256InfoRec.chipset)
-	{
-		if (StrCaseCmp(vga256InfoRec.chipset, GenericIdent(0)))
-			return (FALSE);
-      		else
-			GenericEnterLeave(ENTER);
-    	}
-  	else
-	{
-		unsigned char temp, origVal, newVal;
-		GenericEnterLeave(ENTER);
+	if (vga256InfoRec.chipset &&
+	    StrCaseCmp(vga256InfoRec.chipset, GenericIdent(0)) != 0)
+	    return (FALSE);
 
+	GenericEnterLeave(ENTER);
+	
+#if defined(__powerpc__)
+	if (OFLG_ISSET(XCONFIG_PCI_TAG, &vga256InfoRec.xconfigFlag)) {
 		/*
-		* Check if there is a VGA.  VGA has one more attribute register
-		* than EGA, so see if we can read/write it.
-		*/
-#ifndef PC98_EGC
-		temp = inb(vgaIOBase + 0x0A); /* reset ATC flip-flop */
-		outb(0x3C0, 0x14 | 0x20); origVal = inb(0x3C1);
-		outb(0x3C0, origVal ^ 0x0F);
-		outb(0x3C0, 0x14 | 0x20); newVal = inb(0x3C1);
-		outb(0x3C0, origVal);
-		if (newVal != (origVal ^ 0x0F))
-		{
+		 * Explicit pciTag set in Xconfig.  Probe only this device
+		 */
+		unsigned long dev_vend_id = pciReadLong(vga256InfoRec.pciTag, 0);
+		unsigned short vendor = dev_vend_id & 0xffff;
+		unsigned short devid = dev_vend_id >> 16;
+		
+		if (vendor == 0xffff) {
+			ErrorF("Device selected by PCI tag = 0x%08x is not present!\n",
+			       vga256InfoRec.pciTag);
 			GenericEnterLeave(LEAVE);
 			return(FALSE);
 		}
-#endif /* PC98_EGC */
+
+		vga256InfoRec.busType = XF86_BUS_PCI;
+	}	
+	else {
+	    pciConfigPtr *pcrpp;
+	    pciConfigPtr pcrp;
+	    pciConfigPtr fallback_pcr = 0;
+	    int i;
+	    
+	    /*
+	     * Try to find an enabled PCI VGA device.
+	     */
+	    pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
+	    for (i = 0, pcrp = pcrpp[0]; pcrp; pcrp = pcrpp[++i]) {
+		if (pcrp->_base_class != PCI_CLASS_DISPLAY)
+		    continue;  /* Not a display device.  Next please */
+		
+		if (pcrp->_sub_class == PCI_SUBCLASS_DISPLAY_VGA &&
+		    (pcrp->_command & (PCI_CMD_IO_ENABLE|PCI_CMD_MEM_ENABLE))) {
+		    break; /* Yes! We have our man */
+		}
+		else if (!fallback_pcr)
+		    fallback_pcr = pcrp; /* VGA device, but not enabled */
+	    }
+	    
+	    if (!pcrp && fallback_pcr) {
+		unsigned long ultmp;
+		
+		/*
+		 * Found only unenabled VGA devices. Enable I/O and memory
+		 * access now.  Let's hope that somebody has initialized
+		 * the PCI base registers if they needed to be....
+		 */
+		pcrp = fallback_pcr;
+		ultmp = pciReadLong(pcrp->tag, 0x04);
+		pciWriteLong(pcrp->tag, 0x04, ultmp | (PCI_CMD_IO_ENABLE|PCI_CMD_IO_ENABLE));
+	    }
+
+	    if (pcrp) {
+		vga256InfoRec.pciTag = pcrp->tag;
+		vga256InfoRec.busType = XF86_BUS_PCI;
+	    }
 	}
 
-  	if (!vga256InfoRec.videoRam)
+	if (vga256InfoRec.busType != XF86_BUS_PCI) {
+	    ErrorF("genericProbe: Cannot locate a PCI VGA device\n");
+	    GenericEnterLeave(LEAVE);
+	    return(FALSE);
+	}
+
+#ifdef NOTYET
+	ppcSetDefaultPCIDomain(vga256InfoRec.pciTag);
+#endif
+#endif /* __powerpc */
+	
+	/*
+	 * Probe for a VGA device. VGA has one more attribute register
+	 * than EGA, so see if we can read/write it.
+	 */
+#ifndef PC98_EGC
+    {
+	unsigned char temp, origVal, newVal;
+	
+	temp = inb(vgaIOBase + 0x0A); /* reset ATC flip-flop */
+	outb(0x3C0, 0x14 | 0x20); origVal = inb(0x3C1);
+	outb(0x3C0, origVal ^ 0x0F);
+	outb(0x3C0, 0x14 | 0x20); newVal = inb(0x3C1);
+	outb(0x3C0, origVal);
+	if (newVal != (origVal ^ 0x0F))
+	{
+	    GenericEnterLeave(LEAVE);
+	    return(FALSE);
+	}
+#endif /* PC98_EGC */
+    }
+	if (!vga256InfoRec.videoRam)
     	{
-		if( xf86bpp == 4 ) {
+	    if( xf86bpp == 4 ) {
 			vga256InfoRec.videoRam = 256;
 		} else {
 			vga256InfoRec.videoRam = 64;

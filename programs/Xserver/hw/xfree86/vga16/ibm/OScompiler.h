@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.8 1997/07/10 08:17:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/OScompiler.h,v 3.9 1997/10/25 13:50:47 hohndel Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -44,6 +44,7 @@ b/**/
 #define ABS(x) (((x)>0)?(x):-(x))
 
 #include "misc.h"
+#include "xf86_ansic.h"
 #include "compiler.h"
 #include "../vga/vgaBank.h"
 

@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c /main/8 1996/10/23 18:46:36 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga2.c,v 1.2 1997/05/03 09:18:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga2.c,v 1.3 1997/08/26 10:01:30 hohndel Exp $ */
 
 /*
  * Generic VGA driver for mono operation.  This driver doesn't do much since
@@ -17,7 +17,6 @@
 
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
 #include "xf86_HWlib.h"
 #include "vga.h"
 #ifdef PC98_EGC

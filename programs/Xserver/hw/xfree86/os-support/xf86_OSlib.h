@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.43 1997/10/25 13:50:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.44 1997/12/14 05:15:52 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -102,36 +102,46 @@
 
 # include <errno.h>
 
-# if defined(_NEED_SYSI86)
+# if defined(PowerMAX_OS)
+#  define HAS_USL_VTS
 #  include <sys/immu.h>
-#  if !(defined (sun) && defined (i386) && defined (SVR4))
+#  include <sys/sysmacros.h>
+
+# else /* !PowerMAX_OS */
+
+#  if defined(_NEED_SYSI86)
+#   include <sys/immu.h>
+#   if !(defined (sun) && defined (i386) && defined (SVR4))
+#     include <sys/region.h>
+#   endif
+#   include <sys/proc.h>
+#   include <sys/tss.h>
+#   include <sys/sysi86.h>
+#   if defined(SVR4) && !defined(sun)
+#    include <sys/seg.h>
+#   endif /* SVR4 && !sun */
+#   include <sys/v86.h>
+#   if defined(sun) && defined (i386) && defined (SVR4)
+#     include <sys/psw.h>
+#   endif
+#  endif /* _NEED_SYSI86 */
+ 
+#  if defined(HAS_SVR3_MMAPDRV)
+#   include <sys/sysmacros.h>
+#   if !defined(_NEED_SYSI86)
+#    include <sys/immu.h>
 #    include <sys/region.h>
+#   endif
+#   include <sys/mmap.h>		/* MMAP driver header */
 #  endif
-#  include <sys/proc.h>
-#  include <sys/tss.h>
-#  include <sys/sysi86.h>
-#  if defined(SVR4) && !defined(sun)
-#   include <sys/seg.h>
-#  endif /* SVR4 && !sun */
-#  include <sys/v86.h>
-#  if defined(sun) && defined (i386) && defined (SVR4)
-#    include <sys/psw.h>
-#  endif
-# endif /* _NEED_SYSI86 */
 
-#if defined(HAS_SVR3_MMAPDRV)
-# include <sys/sysmacros.h>
-# if !defined(_NEED_SYSI86)
-#  include <sys/immu.h>
-#  include <sys/region.h>
-# endif
-# include <sys/mmap.h>		/* MMAP driver header */
-#endif
-
-# define HAS_USL_VTS
-# if !defined(sun)
+#  define HAS_USL_VTS
+#  if !defined(sun)
 #  include <sys/emap.h>
-# endif
+#  endif
+
+# endif /* ! PowerMAX_OS */
+
 # if defined(SCO)
 #  include <sys/vtkd.h>
 #  include <sys/console.h>
@@ -159,6 +169,8 @@
 #  include <sys/mman.h>
 #  if !(defined(sun) && defined (i386) && defined (SVR4))
 #    define DEV_MEM "/dev/pmem"
+#  elif defined(PowerMAX_OS)
+#    define DEV_MEM "/dev/iomem"
 #  endif
 #  ifdef SCO325
 #   undef DEV_MEM
@@ -183,7 +195,9 @@
 # endif /* ATT && !i386 */
 
 # if (defined(ATT) || defined(SVR4)) && !(defined(sun) && defined (i386) && defined (SVR4)) && !defined(SCO325)
-#  define XQUEUE
+#  ifndef XQUEUE
+#   define XQUEUE
+#  endif
 #  include <sys/xque.h>
 # endif /* ATT || SVR4 */
 
@@ -579,11 +593,4 @@ double RInt(
 #endif
 
 #include "xf86_OSproc.h"
-
-#ifndef NO_WRAPPERS
-/* This probably isn't the right place for these */
-#define usleep(a) xf86usleep(a)
-#define memset(a,b,c) xf86memset(a,b,c)
-#endif
-
 #endif /* _XF86_OSLIB_H */

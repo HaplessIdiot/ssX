@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillRct.c,v 3.10 1996/12/23 06:56:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cirFillRct.c,v 1.1 1997/03/06 23:15:13 hohndel Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -41,6 +41,7 @@ in this Software without prior written authorization from the X Consortium.
  * Support for 24bpp pending.
  */
 
+#include "compiler.h"
 
 #include "vga256.h"
 #include "cfbrrop.h"
