@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.10 2000/11/28 20:59:18 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3virge.cpp,v 1.11 2000/12/11 20:18:24 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH s3virge __drivermansuffix__ "Version 4.0.2"  "XFree86"
@@ -60,7 +60,7 @@ driver supports PCI and AGP video cards based on the following S3 chips:
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
 driver.  All options names are case and white space insensitive when
-parsed by the server, for exmaple,  "virge vx" and "VIRGEvx" are equivalent.
+parsed by the server, for example,  "virge vx" and "VIRGEvx" are equivalent.
 .PP
 The driver auto-detects the chipset type, but the following
 .B ChipSet
