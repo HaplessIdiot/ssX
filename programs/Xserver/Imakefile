@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/r61_main/5 1996/02/02 18:44:52 gildea $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.54 1996/04/15 11:18:10 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.55 1996/06/29 09:05:09 dawes Exp $
 /*
  * Server Master Makefile
  */
@@ -599,8 +599,8 @@ CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
 DDXDIR1 = hw/xfree86
-XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) \
-                $(DDXDIR1) $(DEPDIRS)
+XF86S3SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
+		$(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
 XF86S3OBJS = $(XF86COMSRC)/XF86_S3.o $(XF86ACCELSRC)/s3/s3Conf.o \
              $(S3DRIVERSRC)/mmio_928/mmio_928.o \
              $(S3DRIVERSRC)/s3_generic/s3_generic.o
