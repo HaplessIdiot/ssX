@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _XKBFILE_H_
 #define	_XKBFILE_H_ 1
 

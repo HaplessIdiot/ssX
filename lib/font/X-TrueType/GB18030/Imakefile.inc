@@ -1,3 +1,4 @@
+XCOMM $XFree86$
 
 #define ModuleName GB18030
 MODULENAME = ModuleName
