@@ -156,7 +156,8 @@ dependencies/limitations, other architectures known to work on
 	ALI2401 chipsets.  Support is provided by the XF86_SVGA server,
 	using the al2101 driver for the AL2101, and the ali driver for
 	the others.  The status of this support is unknown because we
-	don't have any recent test reports.
+	don't have any recent test reports, and these drivers have no
+	maintainer.
 
 <tag>&relvers;:</tag>
 	No native support for these chipsets, because the old drivers
@@ -172,10 +173,19 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the 65520, 65525, 65530, 65535, 65540,
+	65545, 65546, 65548, 65550, 65554, 65555, 68554, 69000, 64200
+	and 64300.  This support is provided by the XF86_SVGA server
+	with the chips driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the 65520, 65525, 65530, 65535, 65540,
+	65545, 65546, 65548, 65550, 65554, 65555, 68554, 69000, 64200
+	and 64300.  This support is provided by the "chips" driver.
+
+<tag>Summary:</tag>
+	All chips supported in &legacyvers; are also supported in
+	&relvers;.
 
 </descrip>
 
@@ -183,10 +193,24 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (unaccelerated) for the 6410, 6412, 6420 and 6440 is
+	provided by the XF86_SVGA server with the cl64xx driver.  Support
+	(accelerated) for the 5420, 5422, 5424, 5426, 5428, 5429, 5430,
+	5434, 5436, 5446, 5480, 5462, 5464, 5465, 6205, 6215, 6225,
+	6235, 7541, 7542, 7543, 7548, 7555 and 7556 is provided by the
+	XF86_SVGA server with the cirrus driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the Alpine (5430, 5434, 5436, 5446,
+	5480), and Laguna (5462, 5464, 5465) chips is provided by the
+	"cirrus" driver.
+	NEED TO CHECK IF THE OTHERS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	The following chips are supported in &legacyvers; but not in
+	&relvers;: 6410, 6412, 6420, 6440, 5420, 5422, 5424, 5426, 5428,
+	5429, 6205, 6215, 6225, 6235, 7541, 7542, 7543, 7548, 7555 and
+	7556.
 
 </descrip>
 
@@ -194,10 +218,25 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	The old Compaq AVGA chipset is supported by the XF86_SVGA server
+	with the compaq driver.  The status of this support is unknown
+	because we don't have any recent test reports, and this driver
+	has no maintainer.
+
+	Support (accelerated) for the DEC 21030 TGA 8 plane, 24 plane
+	and 24 plane 3D chips (on Alpha platforms) is provided by the
+	XF86_TGA server.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No support for the Compaq AVGA (driver hasn't been ported).
+
+	Support (accelerated) for the DEC 21030 TGA 8 plane, 24 plane
+	and 24 plane 3D chips (only tested on Alpha platforms) is provided
+	by the "tga" driver.
+
+<tag>Summary:</tag>
+	No Compaq AVGA support in &relvers;.  DEC TGA support is equivalent
+	in both versions.
 
 </descrip>
 
@@ -205,10 +244,16 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the Cyrix MediaGX is provided by the
+	XF86_SVGA server with the cyrix driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for the Cyrix MediaGX, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Cyrix chips are supported in &relvers;.
 
 </descrip>
 
@@ -216,10 +261,16 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the Epson SPC8110 is provided by the
+	XF86_SVGA server with the spc8100 driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for this chipset, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Epson chips are supported in &relvers;.
 
 </descrip>
 
@@ -227,10 +278,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	The old Genoa GVGA chipset is supported by the XF86_SVGA server
+	with the gvga driver.  The status of this support is unknown
+	because we don't have any recent test reports, and this driver
+	has no maintainer.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for this chipset, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Genoa chips are supported in &relvers;.
 
 </descrip>
 
@@ -238,10 +297,42 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the standard IBM VGA chip (and compatibles) is
+	provided by the XF86_Mono, XF86_VGA16 and XF86_SVGA servers with
+	the generic driver.
+
+	Support for the IBM 8514/A chip (and compatibles) is provided by
+	the XF86_8514 server.
+
+	Support for the IBM XGA-2 chip is provided by the XF86_AGX server.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support for the standard IBM VGA chip (and compatibles) is
+	provided by the "vga" driver.
+
+	There is no support for the IBM 8514/A or XGA-2 because the
+	drivers have not been ported.
+
+<tag>Summary:</tag>
+	The standard VGA core is supported in both versions, but there
+	is no support for the 8514/A or XGA-2 in &relvers;.
+
+</descrip>
+
+<sect>IIT
+<p>
+<descrip>
+<tag>&legacyvers;:</tag>
+	Support (accelerated) for the AGX-016, AGX-015 and AGX-014 is
+	provided by the XF86_AGX server..
+
+<tag>&relvers;:</tag>
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No IIT chips are supported in &relvers;.
 
 </descrip>
 
@@ -249,10 +340,19 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the Intel i740 is provided by the
+	XF86_SVGA server with the i740 driver, and for the Intel i810
+	with the i810 driver.  The i810 is currently only supported on
+	Linux, and requires the agpgart.o kernel module.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the Intel i740 is provided by the
+	"i740" driver.  The i810 driver has not yet been ported and/or
+	contributed.
+
+<tag>Summary:</tag>
+	The i740 is supported in both version, but the i810 is not supported
+	in &relvers; or on non-Linux/x86 platforms.
 
 </descrip>
 
@@ -260,10 +360,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the MGA2064W (Millennium I), MGA1064SG
+	(Mystique), MGA2164W (Millennium II) (PCI and AGP), G100, G200
+	and G400 is provided by the XF86_SVGA server with the mga driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the MGA2064W (Millennium I), MGA1064SG
+	(Mystique), MGA2164W (Millennium II) (PCI and AGP), G100, G200
+	and G400 is provided by the "mga" driver.
+
+<tag>Summary:</tag>
+	All chips supported in &legacyvers; are also supported in
+	&relvers;.
 
 </descrip>
 
@@ -271,10 +379,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the MX68000 and MX68010 chips is provided by the
+	XF86_SVGA server with the mx driver.  The status of this support
+	is unknown because we don't have any recent test reports, and
+	this driver has no maintainer.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for this chipset, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No MX (???) chips are supported in &relvers;.
 
 </descrip>
 
@@ -282,21 +398,37 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the old NCR 77C22 and 77C22E chips is provided by
+	the XF86_SVGA server and the ncr77c22 driver.  The status of
+	this support is unknown because we don't have any recent test
+	reports.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for this chipset, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No NCR chips are supported in &relvers;.
 
 </descrip>
 
-<sect>Neomagic
+<sect>NeoMagic
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
+	NM2097, NM2160 and NM2200 chipsets is provided by the XF86_SVGA
+	server with the neo driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
+	NM2097, NM2160 and NM2200 chipsets is provided by the "neomagic"
+	driver.
+
+<tag>Summary:</tag>
+	All chips supported in &legacyvers; are also supported in
+	&relvers;.
 
 </descrip>
 
@@ -304,10 +436,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the NV1, Riva 128, 128ZX, TNT, TNT2
+	(Ultra, Vanta, M64), GeForce (DDR) and Quadro is provided by
+	the XF86_SVGA server and the nv driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
+	Vanta, M64), GeForce (DDR) and Quadro is provided by the XF86_SVGA
+	server and the nv driver.
+
+<tag>Summary:</tag>
+	All chipsets supported in &legacyvers; except the NV1 are also
+	supported in &relvers;.
 
 </descrip>
 
@@ -315,21 +455,35 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the Imagine 128, Ticket 2 Ride,
+	Revolution 3D and Revolution IV is provided by the XF86_I128
+	server.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Number Nine chips are supported in &relvers;.
 
 </descrip>
 
-<sect>Oak
+<sect>Oak Technologies Inc
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the OTI067, OTI077, and OTI087 (the latter with some
+	acceleration) is provided by the XF86_SVGA server and the oak
+	driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Oak chips are supported in &relvers;.
 
 </descrip>
 
@@ -337,10 +491,19 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the Paradise PVGA1 and the Western Digital WD90C00,
+	90C10, 90C30, 90C24, 90C31 and 90C33 chipsets is provided by the
+	XF86_SVGA server with the pvga1 driver.  The status of the support
+	for some of these chipsets is uncertain because we don't have any
+	recent test reports, and this driver has no maintainer.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Paradise/Western Digital chips are supported in &relvers;.
 
 </descrip>
 
@@ -348,10 +511,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the RealTek RTG3106 is provided by the XF86_SVGA
+	server and the realtek driver.  The status of this support is
+	unknown because we don't have any recent test reports, and this
+	driver has no maintainer.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No RealTek chips are supported in &relvers;.
 
 </descrip>
 
@@ -359,10 +530,16 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the Verite 1000, 2100 and 2200 is provided by the
+	XF86_SVGA server with the rendition driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support for the Verite 1000, 2100 and 2200 is provided by the
+	"rendition" driver.
+
+<tag>Summary:</tag>
+	All chips supported in &legacyvers; are also supported in
+	&relvers;.
 
 </descrip>
 
@@ -370,10 +547,28 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the S3 911, 924, 801, 805, 928, 864,
+	868, 964, 968, Trio32, Trio64, Trio64V+, Trio64UV+, Aurora64V+,
+	Trio64V2, PLATO/PX is provided by the XF86_S3 server and the
+	XF86_SVGA server with the s3_svga driver.  Support (accelerated)
+	for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX, ViRGE/GX2, ViRGE/MX,
+	ViRGE/MX+ is provided by the XF86_S3V server.  Support
+	(accelerated) for those ViRGE chips, as well as the Trio3D and
+	Trio3D/2X is provided by the XF86_SVGA server with the s3v
+	driver.  Support (accelerated) for the Savage3D, Savage3D/MV,
+	Savage4, Savage2000, Savage/MX-MV, Savage/MX, Savage/IX-MV and
+	Savage/IX is provided by the XF86_SVGA server with the s3_savage
+	driver (CHECK: is this support Linux-only?).
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX,
+	ViRGE/GX2, ViRGE/MX and ViRGE/MX+ is provided by the "s3virge"
+	driver.  Support for the other S3 chipsets has not yet been
+	ported.
+
+<tag>Summary:</tag>
+	Only the ViRGE chipsets are supported in &relvers;.  All of the
+	other chipsets are only supported in &legacyvers;.
 
 </descrip>
 
@@ -381,10 +576,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the SiS 86C201, 86C202, 86C205, 86C215,
+	86C225, 5597, 5598, 6326, 530, 620, 300, 630 and 540 is provided
+	by the XF86_SVGA server with the sis driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated) for the SiS 86C205, 86C215, 86C225,
+	5597, 5598, 530 and 6326 is provided by the "sis" driver.
+
+<tag>Summary:</tag>
+	Support for the older (CHECK: are they all older than the
+	supported chips?) chips: 86C201, 86C202, 620, 300, 630 and 540
+	is only available in &legacyvers;.
 
 </descrip>
 
@@ -392,10 +595,17 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the Lynx, LynxE, Lynx3D, LynxEM, LynxEM+
+	and Lynx3DM chips is provided by the XF86_SVGA server with the
+	smi driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No SMI chips are supported in &relvers;.
 
 </descrip>
 
@@ -403,10 +613,30 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated where the chip supports it) for the
+	TVGA8200LX, TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL,
+	TVGA8900D, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
+	TGUI9400CXi, TGUI9420, TGUI9420DGi, TGUI9430DGi, TGUI9440AGi,
+	TGUI9660, TGUI9680, ProVidia 9682, ProVidia 9685, Cyber9320,
+	Cyber9382, Cyber9385, Cyber9388, Cyber9397, Cyber9520, Cyber9525,
+	3DImage975, 3DImage985, Cyber9397/DVD, Blade3D, CyberBlade/i7,
+	CyberBlade/DSTN/i7 and CyberBlade/i1 is provided by the XF86_SVGA
+	server with the tvga8900 driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support (accelerated where the chip supports it) for the TVGA8900D,
+	TGUI9420DGi, TGUI9440AGi, TGUI9660, TGUI9680, ProVidia 9682,
+	ProVidia 9685, Cyber9320, Cyber9382, Cyber9385, Cyber9388,
+	Cyber9397, Cyber9520, Cyber9397/DVD, Cyber9525/DVD, 3DImage975,
+	3DImage875, Blade3D, CyberBlade/i7, CyberBlade/DSTN/i7 and
+	CyberBlade/i1 is provided by the "trident" driver.
+	NEED TO CHECK IF THE OTHERS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	The following (older) chipsets that are supported in &legacyvers;
+	are not supported in &relvers;: TVGA8200LX, TVGA8800CS, TVGA8900B,
+	TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
+	TGUI9400CXi, TGUI9420, TGUI9430DGi.
 
 </descrip>
 
@@ -414,10 +644,21 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the ET3000 is provided by the XF86_SVGA server with
+	the et3000 driver.  Support for the ET4000AX, and accelerated
+	support for the ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000
+	and ET6100 is provided by the XF86_SVGA server with the et4000
+	driver.  Support (accelerated) for the ET4000/W32 series and
+	the ET6000 is also provided by the deprecated XF86_W32 server.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	Support for the ET4000AX, and accelerated support for the
+	ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000 and ET6100 is
+	provided by the "tseng" driver.
+
+<tag>Summary:</tag>
+	All cards supporte by &legacyvers; are also supported by &relvers;
+	except for the old ET3000.
 
 </descrip>
 
@@ -425,10 +666,18 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support for the Video 7 chipset is provided by the XF86_SVGA
+	server with the video7 driver.  The status of this support is
+	unknown because we don't have any recent test reports, and this
+	driver has no maintainer.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old driver
+	has not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Video 7 chips are supported in &relvers;.
 
 </descrip>
 
@@ -436,10 +685,17 @@ dependencies/limitations, other architectures known to work on
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support for ...
+	Support (accelerated) for the P9000 is provided by the XF86_P9000
+	server and accelerated support for the P9100 is provided by the
+	XF86_SVGA server with the p9x00 driver.
 
 <tag>&relvers;:</tag>
-	Support for ....
+	No native support for these chipsets, because the old drivers
+	have not been ported.
+	NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
+
+<tag>Summary:</tag>
+	No Weitek chips are supported in &relvers;.
 
 </descrip>
 
