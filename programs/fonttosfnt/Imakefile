@@ -1,0 +1,8 @@
+SRCS = fonttosfnt.c read.c write.c struct.c util.c
+
+OBJS = fonttosfnt.o read.o write.o struct.o util.o
+
+DEFINES = $(FREETYPE2INCLUDES)/include  $(FREETYPE2INCLUDES)
+LOCAL_LIBRARIES = $(FREETYPE2LIB) -lm -lz
+
+ComplexProgramTarget(fonttosfnt)

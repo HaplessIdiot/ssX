@@ -1,5 +1,5 @@
 /*
-  Copyright (c) 2002 by Juliusz Chroboczek
+  Copyright (c) 2002-2003 by Juliusz Chroboczek
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
@@ -32,6 +32,17 @@
 #include "snprintf.c"
 #endif
 
+int
+listMember(char *elt, ListPtr list)
+{
+    while(list != NULL) {
+        if(strcmp(elt, list->value) == 0)
+            return 1;
+        list = list->next;
+    }
+    return 0;
+}
+
 ListPtr
 listCons(char *car, ListPtr cdr)
 {
@@ -42,6 +53,46 @@ listCons(char *car, ListPtr cdr)
     lcar -> next = cdr;
     return lcar;
 }
+
+ListPtr
+listAdjoin(char *car, ListPtr cdr)
+{
+    ListPtr lcar;
+
+    if(listMember(car, cdr)) {
+        free(car);
+        return cdr;
+    }
+    return listCons(car, cdr);
+}
+
+char *
+dsprintf(char *f, ...)
+{
+    va_list args;
+    char *string;
+    {
+	int n, size = 20;
+	while(1) {
+	    if(size > 4096)
+		return NULL;
+	    string = malloc(size);
+	    if(!string)
+		return NULL;
+	    va_start(args, f);
+	    n = vsnprintf(string, size, f, args);
+	    va_end(args);
+	    if(n >= 0 && n < size)
+                return string;
+	    else if(n >= size)
+		size = n + 1;
+	    else
+		size = size * 3 / 2 + 1;
+	    free(string);
+	}
+    }
+}
+    
 
 ListPtr
 listConsF(ListPtr cdr, char *f, ...)
@@ -61,6 +112,33 @@ listConsF(ListPtr cdr, char *f, ...)
 	    va_end(args);
 	    if(n >= 0 && n < size)
 		return listCons(string, cdr);
+	    else if(n >= size)
+		size = n + 1;
+	    else
+		size = size * 3 / 2 + 1;
+	    free(string);
+	}
+    }
+}
+
+ListPtr
+listAdjoinF(ListPtr cdr, char *f, ...)
+{
+    va_list args;
+    char *string;
+    {
+	int n, size = 20;
+	while(1) {
+	    if(size > 4096)
+		return NULL;
+	    string = malloc(size);
+	    if(!string)
+		return NULL;
+	    va_start(args, f);
+	    n = vsnprintf(string, size, f, args);
+	    va_end(args);
+	    if(n >= 0 && n < size)
+		return listAdjoin(string, cdr);
 	    else if(n >= size)
 		size = n + 1;
 	    else
@@ -153,11 +231,10 @@ destroyList(ListPtr old)
     ListPtr next;
     if(!old)
         return;
-    next = old->next;
     while(old) {
+        next = old->next;
         free(old);
         old = next;
-        next = old->next;
     }
 }
 
@@ -167,12 +244,10 @@ deepDestroyList(ListPtr old)
     ListPtr next;
     if(!old)
         return;
-    next = old->next;
     while(old) {
+        next = old->next;
         free(old->value);
         free(old);
         old = next;
-        next = old->next;
     }
 }
-
