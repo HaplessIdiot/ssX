@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.5 1999/08/21 13:48:48 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.6 2000/11/30 23:30:08 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -630,9 +630,9 @@ set_font_path_elements(
     char       *paths,
     int        *bad)
 {
-    int         i,
-		j,
-                err;
+    int		i,
+		validpaths,
+		err;
     int		len;
     int		type;
     char       *cp = paths;
@@ -650,7 +650,7 @@ set_font_path_elements(
 	if (fpe_functions[i].set_path_hook)
 	    (*fpe_functions[i].set_path_hook) ();
     }
-    for (i = 0, j = 0; i < npaths; i++) {
+    for (i = 0, validpaths = 0; i < npaths; i++) {
 	len = *cp++;
 	if (len) {
 	    /* if it's already in our active list, just reset it */
@@ -664,7 +664,7 @@ set_font_path_elements(
 		if (err == Successful) {
 		    UseFPE(fpe);/* since it'll be decref'd later when freed
 				 * from the old list */
-		    fplist[i] = fpe;
+		    fplist[validpaths++] = fpe;
 		    cp += len;
 		    continue;
 		}
@@ -704,15 +704,15 @@ set_font_path_elements(
 		fsfree(fpe);
 		continue;
 	    }
-	    fplist[j++] = fpe;
+	    fplist[validpaths++] = fpe;
 	}
     }
-    if (j < npaths) {
+    if (validpaths < npaths) {
 	fplist = (FontPathElementPtr *)
-	    fsrealloc(fplist, sizeof(FontPathElementPtr) * j);
-	npaths = j;
+	    fsrealloc(fplist, sizeof(FontPathElementPtr) * validpaths);
+	npaths = validpaths;
     }
-    if (j == 0) {
+    if (validpaths == 0) {
 	err = FontToFSError(err);
 	goto bail;
     }
@@ -723,8 +723,8 @@ set_font_path_elements(
 	EmptyFontPatternCache(fontPatternCache);
     return FSSuccess;
 bail:
-    *bad = i;
-    while (--i >= 0)
+    *bad = validpaths;
+    while (--validpaths >= 0)
 	FreeFPE(fplist[i]);
     fsfree(fplist);
     return err;
