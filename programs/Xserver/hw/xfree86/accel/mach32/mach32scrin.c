@@ -1,5 +1,5 @@
 /* $XConsortium: mach32scrin.c,v 1.2 94/04/17 20:30:50 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32scrin.c,v 3.0 1994/05/08 05:19:43 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -140,6 +140,7 @@ mach32ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     int	i;
     Bool Rstatus;
     VisualPtr visual;
+    pointer oldDevPrivate;
 
     rootdepth = 0;
     bitsPerRGB = 6;
@@ -245,10 +246,18 @@ mach32ScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width)
     pScreen->BitmapToRegion = mfbPixmapToRegion;
     pScreen->BlockHandler = mach32BlockHandler;
 
+    if (rootdepth != 8) {
+	oldDevPrivate = pScreen->devPrivate;
+    }
     Rstatus = miScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, width,
 			rootdepth, ndepths, depths,
 			defaultVisual, nvisuals, visuals,
 			&mach32BSFuncRec);
+    if (rootdepth != 8) {
+	pScreen->CreateScreenResources = cfb16CreateScreenResources;
+	pScreen->devPrivates[cfb16ScreenPrivateIndex].ptr = pScreen->devPrivate;
+	pScreen->devPrivate = oldDevPrivate;
+    }
     return Rstatus;
 
 }

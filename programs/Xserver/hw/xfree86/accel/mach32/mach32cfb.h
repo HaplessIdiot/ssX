@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32cfb.h,v 3.0 1994/05/08 05:19:17 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -53,125 +53,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-
-#if PSZ != 8
-#undef cfbScreenPrivateIndex
-#undef QuartetBitsTable
-#undef QuartetPixelMaskTable
-#undef cfbAllocatePrivates
-#undef cfbBSFuncRec
-#undef cfbBitBlt
-#undef cfbBresD
-#undef cfbBresS
-#undef cfbChangeWindowAttributes
-#undef cfbCloseScreen
-#undef cfbCopyArea
-#undef cfbCopyImagePlane
-#undef cfbCopyPixmap
-#undef cfbCopyPlane
-#undef cfbCopyRotatePixmap
-#undef cfbCopyWindow
-#undef cfbCreateGC
-#undef cfbCreatePixmap
-#undef cfbCreateWindow
-#undef cfbCreateScreenResources
-#undef cfbDestroyPixmap
-#undef cfbDestroyWindow
-#undef cfbDoBitblt
-#undef cfbDoBitbltCopy
-#undef cfbDoBitbltGeneral
-#undef cfbDoBitbltOr
-#undef cfbDoBitbltXor
-#undef cfbFillBoxSolid
-#undef cfbFillBoxTile32
-#undef cfbFillBoxTile32sCopy
-#undef cfbFillBoxTile32sGeneral
-#undef cfbFillBoxTileOdd
-#undef cfbFillBoxTileOddCopy
-#undef cfbFillBoxTileOddGeneral
-#undef cfbFillPoly1RectCopy
-#undef cfbFillPoly1RectGeneral
-#undef cfbFillRectSolidCopy
-#undef cfbFillRectSolidGeneral
-#undef cfbFillRectSolidXor
-#undef cfbFillRectTile32Copy
-#undef cfbFillRectTile32General
-#undef cfbFillRectTileOdd
-#undef cfbFillSpanTile32sCopy
-#undef cfbFillSpanTile32sGeneral
-#undef cfbFillSpanTileOddCopy
-#undef cfbFillSpanTileOddGeneral
-#undef cfbFinishScreenInit
-#undef cfbGCFuncs
-#undef cfbGetImage
-#undef cfbGetSpans
-#undef cfbHorzS
-#undef cfbImageGlyphBlt8
-#undef cfbLineSD
-#undef cfbLineSS
-#undef cfbMapWindow
-#undef cfbMatchCommon
-#undef cfbNonTEOps
-#undef cfbNonTEOps1Rect
-#undef cfbPadPixmap
-#undef cfbPaintWindow
-#undef cfbPolyGlyphBlt8
-#undef cfbPolyGlyphRop8
-#undef cfbPolyFillArcSolidCopy
-#undef cfbPolyFillArcSolidGeneral
-#undef cfbPolyFillRect
-#undef cfbPolyPoint
-#undef cfbPositionWindow
-#undef cfbPutImage
-#undef cfbReduceRasterOp
-#undef cfbRestoreAreas
-#undef cfbSaveAreas
-#undef cfbScreenInit
-#undef cfbSegmentSD
-#undef cfbSegmentSS
-#undef cfbSetScanline
-#undef cfbSetSpans
-#undef cfbSetupScreen
-#undef cfbSolidSpansCopy
-#undef cfbSolidSpansGeneral
-#undef cfbSolidSpansXor
-#undef cfbStippleStack
-#undef cfbStippleStackTE
-#undef cfbTEGlyphBlt
-#undef cfbTEOps
-#undef cfbTEOps1Rect
-#undef cfbTile32FSCopy
-#undef cfbTile32FSGeneral
-#undef cfbUnmapWindow
-#undef cfbUnnaturalStippleFS
-#undef cfbUnnaturalTileFS
-#undef cfbValidateGC
-#undef cfbVertS
-#undef cfbXRotatePixmap
-#undef cfbYRotatePixmap
-#undef cfbendpartial
-#undef cfbendtab
-#undef cfbmask
-#undef cfbrmask
-#undef cfbstartpartial
-#undef cfbstarttab
-#undef cfb8LineSS1Rect
-#undef cfb8SegmentSS1Rect
-#undef cfb8ClippedLineCopy
-#undef cfb8ClippedLineXor
-#undef cfb8ClippedLineGeneral
-#undef cfb8SegmentSS1RectCopy
-#undef cfb8SegmentSS1RectXor
-#undef cfb8SegmentSS1RectGeneral
-#undef cfb8SegmentSS1RectShiftCopy
-#undef cfb8LineSS1RectCopy
-#undef cfb8LineSS1RectXor
-#undef cfb8LineSS1RectGeneral
-#undef cfb8LineSS1RectPreviousCopy
-#undef cfbZeroPolyArcSS8Copy
-#undef cfbZeroPolyArcSS8Xor
-#undef cfbZeroPolyArcSS8General
-#endif
 
 /* cfb8bit.c */
 
@@ -920,6 +801,13 @@ extern Bool cfb16ScreenInit(
     int /*width*/
 #endif
 );
+
+extern Bool cfb16CreateScreenResources(
+#if NeedFunctionPrototypes
+    ScreenPtr /*pScreen*/
+#endif
+);
+
 /* cfbseg.c */
 
 extern void cfb16SegmentSS(
@@ -1272,3 +1160,5 @@ extern void cfb16ZeroPolyArcSSXor(
     xArc * /*parcs*/
 #endif
 );
+
+extern int cfb16ScreenPrivateIndex;
