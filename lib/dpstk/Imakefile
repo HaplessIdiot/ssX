@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.1 2000/02/13 00:13:35 dawes Exp $
+XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.2 2000/02/14 18:11:47 dawes Exp $
 
 #define DoNormalLib NormalLibDpsTk
 #define DoSharedLib SharedLibDpsTk
@@ -7,6 +7,7 @@ XCOMM $XFree86: xc/lib/dpstk/Imakefile,v 1.1 2000/02/13 00:13:35 dawes Exp $
 #define DoProfileLib ProfileLibDpsTk
 #define LibName dpstk
 #define SoRev SODPSTKREV
+#define LibHeaders NO
 
         PSWRAP = $(TOP)/config/pswrap/pswrap
 
