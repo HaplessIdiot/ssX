@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.16 1999/05/16 14:24:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.17 1999/06/12 07:19:04 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -602,8 +602,8 @@ PCITAG        pciTag(int busnum, int devnum, int funcnum);
 int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
 pointer       xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,
 				unsigned long Base, unsigned long Size);
-int           xf86ReadPciBIOS(unsigned long Base, unsigned long Offset,
-				PCITAG Tag, unsigned char *Buf, int Len);
+int           xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
+				unsigned char *Buf, int Len);
 pciConfigPtr *xf86scanpci(int flags);
 
 /* Old sytle PCI access functions (for compatibility) */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.14 1999/04/25 15:30:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.15 1999/06/12 07:19:04 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -953,7 +953,7 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 {
 	unsigned long hostbase = pciBusAddrToHostAddr(Tag, Base);
 	pointer base;
-	CARD32 save;
+	CARD32 save = 0;
 
 	/*
 	 * If there are possible read side-effects, disable memory while
@@ -983,23 +983,47 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 
 
 int
-xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
+xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 		unsigned char *Buf, int Len)
 {
-    ADDRESS hostbase = pciBusAddrToHostAddr(Tag, Base);
-    CARD32 romaddr;
+    ADDRESS hostbase;
+    CARD32 romaddr, savebase = 0, romsave = 0;
     int ret;
 
     /* XXX This assumes that memory access is enabled */
 
-    romaddr = pciReadLong(Tag, PCI_MAP_ROM_REG);
+    /*
+     * Check if the rom base address is assigned.  If it isn't, and if
+     * a basereg was supplied, temporarily map the rom at that base
+     * address.
+     */
+    romaddr = romsave = pciReadLong(Tag, PCI_MAP_ROM_REG);
+    if (PCIGETROM(romaddr) == 0 && basereg >= 0 && basereg <= 5) {
+	savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
+	if (PCIGETMEMORY(savebase) != 0 &&
+	    PCIGETMEMORY(savebase) == PCIGETROM(savebase)) {
+	    romaddr = PCIGETROM(savebase);
+	    pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
+	    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
+	}
+    }
+    if (PCIGETROM(romaddr) == 0) {
+	xf86Msg(X_WARNING, "xf86ReadPciBIOS: cannot locate a BIOS address\n");
+	return -1;
+    }
+    hostbase = pciBusAddrToHostAddr(Tag, PCIGETROM(romaddr));
+
     /* Enable ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
 
     ret = xf86ReadBIOS(hostbase, Offset, Buf, Len);
 
     /* Restore ROM address decoding */
-    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
+    pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
+
+    /* Restore the base register if it was changed. */
+    if (savebase)
+	pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), savebase);
 
     return ret;
 }
@@ -1015,7 +1039,7 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, pointer Base,
 }
 
 int
-xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
+xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 		unsigned char *Buf, int Len)
 {
     FatalError("xf86ReadPciBIOS: Unsupported on SPARC\n");
