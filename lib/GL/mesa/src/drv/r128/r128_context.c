@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.1 2000/06/17 00:03:04 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.c,v 1.2 2000/08/25 13:42:28 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,16 +28,15 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
 #include <stdlib.h>
 
-#include "r128_init.h"
-#include "r128_xmesa.h"
 #include "r128_context.h"
-#include "r128_cce.h"
+#include "r128_ioctl.h"
 #include "r128_dd.h"
 #include "r128_state.h"
 #include "r128_span.h"
@@ -47,6 +46,19 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "context.h"
 #include "simple_list.h"
+#include "mem.h"
+
+#ifndef R128_DEBUG
+int R128_DEBUG = (0
+/*		  | DEBUG_ALWAYS_SYNC */
+/*		  | DEBUG_VERBOSE_API */
+/*		  | DEBUG_VERBOSE_MSG */
+/*		  | DEBUG_VERBOSE_LRU */
+/*		  | DEBUG_VERBOSE_DRI */
+/*		  | DEBUG_VERBOSE_IOCTL */
+/*		  | DEBUG_VERBOSE_2D */
+   );
+#endif
 
 /* Create the device specific context */
 GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
@@ -54,21 +66,30 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
 {
     r128ContextPtr  r128ctx;
     r128ScreenPtr   r128scrn;
-    GLcontext      *glCtx    = driContextPriv->mesaContext;
+    GLcontext      *ctx    = driContextPriv->mesaContext;
     int             i;
     char           *v;
+    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
 
-    r128ctx = (r128ContextPtr)Xmalloc(sizeof(*r128ctx));
+    r128ctx = (r128ContextPtr)Xcalloc(1, sizeof(*r128ctx));
     if (!r128ctx) return GL_FALSE;
 
     /* Initialize r128Context */
-    r128ctx->glCtx         = glCtx;
-    r128ctx->display       = dpy;
-    r128ctx->driContext    = driContextPriv;
-    r128ctx->driDrawable   = NULL; /* Set by XMesaMakeCurrent */
+    r128ctx->glCtx       = ctx;
+    r128ctx->display     = dpy;
 
-    r128scrn = r128ctx->r128Screen =
-	(r128ScreenPtr)(driContextPriv->driScreenPriv->private);
+    r128ctx->driContext  = driContextPriv;
+    r128ctx->driScreen   = sPriv;
+    r128ctx->driDrawable = NULL; /* Set by XMesaMakeCurrent */
+
+    r128ctx->hHWContext  = driContextPriv->hHWContext;
+    r128ctx->driFd       = sPriv->fd;
+    r128ctx->driHwLock   = &sPriv->pSAREA->lock;
+
+    r128scrn = r128ctx->r128Screen = (r128ScreenPtr)(sPriv->private);
+
+    r128ctx->sarea = (R128SAREAPriv *)((char *)sPriv->pSAREA +
+				       sizeof(XF86DRISAREARec));
 
     r128ctx->CurrentTexObj[0] = NULL;
     r128ctx->CurrentTexObj[1] = NULL;
@@ -78,16 +99,27 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
 	r128ctx->texHeap[i] = mmInit(0, r128scrn->texSize[i]);
 	r128ctx->lastTexAge[i] = -1;
     }
+    r128ctx->lastTexHeap = r128scrn->NRTexHeaps;
 
-    r128ctx->lastSwapAge      = 0;
+    r128ctx->BufferSize  = glVisual->DepthBits;
+    r128ctx->DepthSize   = glVisual->DepthBits;
+    r128ctx->StencilSize = glVisual->StencilBits;
 
-    r128ctx->useFastPath      = GL_FALSE;
+    r128ctx->useFastPath = GL_FALSE;
+    r128ctx->lod_bias = 0x3f;
 
-    r128ctx->vert_buf         = NULL;
+    r128ctx->num_verts = 0;
+    r128ctx->vert_buf = NULL;
 
-    r128ctx->CCEbuf           = (CARD32 *)malloc(sizeof(*r128ctx->CCEbuf) *
-						 r128scrn->ringEntries);
-    r128ctx->CCEcount         = 0;
+    r128ctx->elt_buf = NULL;
+    r128ctx->retained_buf = NULL;
+    r128ctx->vert_heap = r128ctx->r128Screen->buffers->list->address;
+
+#if 0
+    r128ctx->CCEbuf= (CARD32 *)MALLOC(sizeof(*r128ctx->CCEbuf) *
+				      r128scrn->ringEntries);
+    r128ctx->CCEcount = 0;
+#endif
 
     if ((v = getenv("LIBGL_CCE_TIMEOUT")))
 	r128ctx->CCEtimeout   = strtoul(v, NULL, 10);
@@ -97,45 +129,27 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
     if (r128ctx->CCEtimeout <= 0) r128ctx->CCEtimeout = 1;
 
     /* Initialize GLcontext */
-    glCtx->DriverCtx = (void *)r128ctx;
+    ctx->DriverCtx = (void *)r128ctx;
 
-    r128DDInitExtensions(glCtx);
+    r128DDInitExtensions(ctx);
 
-    r128DDInitDriverFuncs(glCtx);
-    r128DDInitStateFuncs(glCtx);
-    r128DDInitSpanFuncs(glCtx);
-    r128DDInitTextureFuncs(glCtx);
+    r128DDInitDriverFuncs(ctx);
+    r128DDInitIoctlFuncs(ctx);
+    r128DDInitStateFuncs(ctx);
+    r128DDInitSpanFuncs(ctx);
+    r128DDInitTextureFuncs(ctx);
 
-    /* Do this after initialization of r128ctx->Fallback in InitState().
-     */
-    if (getenv("LIBGL_SOFTWARE_RENDERING"))
-	r128ctx->Fallback  |= R128_FALLBACK_SWONLY;
-
-    /* KW: No vertex buffer code for PCI cards -- for now fallback to
-     * software always.
-     * GTH: There is support there, but I'm seeing strange behaviour
-     * with it enabled.  I'll leave the software fallbacks in place
-     * for now.
-     */
-    if (r128scrn->IsPCI)
-	r128ctx->Fallback  |= R128_FALLBACK_SWONLY;
-
-    if (getenv("LIBGL_NO_SOFTWARE_FALLBACKS"))
-	r128ctx->SWfallbackDisable = GL_TRUE;
-    else
-	r128ctx->SWfallbackDisable = GL_FALSE;
-
-    glCtx->Driver.TriangleCaps = (DD_TRI_CULL
-				  | DD_TRI_LIGHT_TWOSIDE
-				  | DD_TRI_OFFSET);
+    ctx->Driver.TriangleCaps = (DD_TRI_CULL
+				| DD_TRI_LIGHT_TWOSIDE
+				| DD_TRI_OFFSET);
 
     /* Ask Mesa to clip fog coordinates for us
      */
-    glCtx->TriangleCaps |= DD_CLIP_FOG_COORD;
+    ctx->TriangleCaps |= DD_CLIP_FOG_COORD;
 
     /* Reset Mesa's current 2D texture pointers to the driver's textures */
-    glCtx->Shared->DefaultD[2][0].DriverData = NULL;
-    glCtx->Shared->DefaultD[2][1].DriverData = NULL;
+    ctx->Shared->DefaultD[2][0].DriverData = NULL;
+    ctx->Shared->DefaultD[2][1].DriverData = NULL;
 
     /* KW: Set the maximum texture size small enough that we can
      * guarentee that both texture units can bind a maximal texture
@@ -143,17 +157,17 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
      * Gareth: Please check these numbers are OK)
      */
     if (r128scrn->texSize[0] < 2*1024*1024) {
-       glCtx->Const.MaxTextureLevels = 9;
-       glCtx->Const.MaxTextureSize = 1<<8;
+       ctx->Const.MaxTextureLevels = 9;
+       ctx->Const.MaxTextureSize = 1<<8;
     } else if (r128scrn->texSize[0] < 8*1024*1024) {
-       glCtx->Const.MaxTextureLevels = 10;
-       glCtx->Const.MaxTextureSize = 1<<9;
+       ctx->Const.MaxTextureLevels = 10;
+       ctx->Const.MaxTextureSize = 1<<9;
     } else {
-       glCtx->Const.MaxTextureLevels = 11;
-       glCtx->Const.MaxTextureSize = 1<<10;
+       ctx->Const.MaxTextureLevels = 11;
+       ctx->Const.MaxTextureSize = 1<<10;
     }
 
-    glCtx->Const.MaxTextureUnits = 2;
+    ctx->Const.MaxTextureUnits = 2;
 
 #if ENABLE_PERF_BOXES
     if (getenv("LIBGL_PERFORMANCE_BOXES"))
@@ -164,14 +178,14 @@ GLboolean r128CreateContext(Display *dpy, GLvisual *glVisual,
 
     /* If Mesa has current a vertex buffer, make sure the driver's VB
        data is up to date */
-    if (glCtx->VB) r128DDRegisterVB(glCtx->VB);
+    if (ctx->VB) r128DDRegisterVB(ctx->VB);
 
     /* Register the fast path */
-    if (glCtx->NrPipelineStages)
-	glCtx->NrPipelineStages =
-	    r128DDRegisterPipelineStages(glCtx->PipelineStage,
-					 glCtx->PipelineStage,
-					 glCtx->NrPipelineStages);
+    if (ctx->NrPipelineStages)
+	ctx->NrPipelineStages =
+	    r128DDRegisterPipelineStages(ctx->PipelineStage,
+					 ctx->PipelineStage,
+					 ctx->NrPipelineStages);
 
     r128DDInitState(r128ctx);
 
@@ -187,7 +201,9 @@ void r128DestroyContext(r128ContextPtr r128ctx)
 	r128TexObjPtr t, next_t;
 	int           i;
 
-	free(r128ctx->CCEbuf);
+#if 0
+	FREE( r128ctx->CCEbuf );
+#endif
 
 	for (i = 0; i < r128ctx->r128Screen->NRTexHeaps; i++) {
 	    foreach_s (t, next_t, &r128ctx->TexObjList[i])
@@ -199,6 +215,10 @@ void r128DestroyContext(r128ContextPtr r128ctx)
 
 	Xfree(r128ctx);
     }
+
+#if 0
+    glx_fini_prof();
+#endif
 }
 
 /* Load the device specific context into the hardware.  The actual
@@ -209,16 +229,17 @@ r128ContextPtr r128MakeCurrent(r128ContextPtr oldCtx,
 {
     if (oldCtx) {
 	if (!R128CCE_USE_RING_BUFFER(newCtx->r128Screen->CCEMode))
-	    newCtx->dirty         |= R128_REQUIRE_QUIESCENCE;
+	    newCtx->dirty |= R128_REQUIRE_QUIESCENCE;
 	if (oldCtx != newCtx) {
-	    newCtx->dirty         |= R128_UPDATE_CONTEXT;
-	    newCtx->dirty_context |= R128_CTX_ALL_DIRTY;
+	    newCtx->new_state |= R128_NEW_CONTEXT;
+	    newCtx->dirty = R128_UPLOAD_ALL;
 	}
-	if (oldCtx->driDrawable != dPriv)
-	    newCtx->dirty         |= R128_UPDATE_WINPOS;
+	if (oldCtx->driDrawable != dPriv) {
+	    newCtx->new_state |= R128_NEW_WINDOW;
+	}
     } else {
-	newCtx->dirty             |= R128_UPDATE_CONTEXT;
-	newCtx->dirty_context     |= R128_CTX_ALL_DIRTY;
+	newCtx->new_state |= R128_NEW_CONTEXT;
+	newCtx->dirty = R128_UPLOAD_ALL;
     }
 
     newCtx->driDrawable = dPriv;

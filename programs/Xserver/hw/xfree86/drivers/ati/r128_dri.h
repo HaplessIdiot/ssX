@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.h,v 1.2 2000/11/09 03:24:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.h,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -32,6 +32,7 @@
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
  *   Rickard E. Faith <faith@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -39,6 +40,7 @@
 #define _R128_DRI_
 
 #include "xf86drm.h"
+#include "xf86drmR128.h"
 
 /* DRI Driver defaults */
 #define R128_DEFAULT_CCE_PIO_MODE R128_PM4_64PIO_64VCBM_64INDBM
@@ -46,14 +48,16 @@
 #define R128_DEFAULT_AGP_MODE     2
 #define R128_DEFAULT_AGP_SIZE     8 /* MB (must be a power of 2 and > 4MB) */
 #define R128_DEFAULT_RING_SIZE    1 /* MB (must be page aligned) */
-#define R128_DEFAULT_VB_SIZE      1 /* MB (must be page aligned) */
-#define R128_DEFAULT_IND_SIZE     1 /* MB (must be page aligned) */
+#define R128_DEFAULT_BUFFER_SIZE  2 /* MB (must be page aligned) */
 #define R128_DEFAULT_AGP_TEX_SIZE 1 /* MB (must be page aligned) */
 
-#define R128_DEFAULT_VB_BUF_SIZE  16384  /* bytes */
 #define R128_DEFAULT_CCE_TIMEOUT  10000  /* usecs */
 
-#define R128_AGP_MAX_MODE         2
+#define R128_AGP_MAX_MODE         4
+
+#define R128_CARD_TYPE_R128          1
+#define R128_CARD_TYPE_R128_PRO      2
+#define R128_CARD_TYPE_R128_MOBILITY 3
 
 #define R128CCE_USE_RING_BUFFER(m)                                        \
 (((m) == R128_PM4_192BM) ||                                               \
@@ -75,15 +79,10 @@ typedef struct {
     drmHandle     ringReadPtrHandle;
     drmSize       ringReadMapSize;
 
-    /* CCE vertex buffer data */
-    drmHandle     vbHandle;
-    drmSize       vbMapSize;
-    int           vbOffset;
-    int           vbBufSize;
-
-    /* CCE indirect buffer data */
-    drmHandle     indHandle;
-    drmSize       indMapSize;
+    /* CCE vertex/indirect buffer data */
+    drmHandle     bufHandle;
+    drmSize       bufMapSize;
+    int           bufOffset;
 
     /* CCE AGP Texture data */
     drmHandle     agpTexHandle;
@@ -98,18 +97,19 @@ typedef struct {
     int           depth;        /* Depth of display (8, 15, 16, 24) */
     int           bpp;          /* Bit depth of display (8, 16, 24, 32) */
 
-    int           fbX;          /* Start of frame buffer */
-    int           fbY;
-    int           backX;        /* Start of shared back buffer */
-    int           backY;
-    int           depthX;       /* Start of shared depth buffer */
-    int           depthY;
-    int           textureX;     /* Start of texture data in frame buffer */
-    int           textureY;
+    int           frontOffset;  /* Start of front buffer */
+    int           frontPitch;
+    int           backOffset;   /* Start of shared back buffer */
+    int           backPitch;
+    int           depthOffset;  /* Start of shared depth buffer */
+    int           depthPitch;
+    int           spanOffset;   /* Start of scratch spanline */
+    int           textureOffset;/* Start of texture data in frame buffer */
     int           textureSize;
     int           log2TexGran;
 
     int           IsPCI;        /* Current card is a PCI card */
+    int           AGPMode;
 
     int           CCEMode;      /* CCE mode that server/clients use */
     int           CCEFifoSize;  /* Size of the CCE command FIFO */

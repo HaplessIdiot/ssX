@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.1 2000/06/17 00:03:06 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.h,v 1.2 2000/08/25 13:42:30 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,7 +28,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -56,17 +57,12 @@ typedef struct {
     /* CCE ring read pointer data */
     r128RegionRec       ringReadRgn;
 
-    /* CCE vertex buffer data */
-    r128RegionRec       vbRgn;
-    unsigned char      *vb;
-    int                 vbOffset;
-    int                 vbMapSize;
-    int                 vbBufSize;
-    drmBufMapPtr        vbBufs;
-
-    /* CCE indirect buffer data */
-    r128RegionRec       indRgn;
-    unsigned char      *ind;
+    /* CCE vertex/indirect buffer data */
+    r128RegionRec       bufRgn;
+    unsigned char      *buf;
+    int                 bufOffset;
+    int                 bufMapSize;
+    drmBufMapPtr        buffers;
 
     /* CCE AGP Texture data */
     r128RegionRec       agpTexRgn;
@@ -79,7 +75,17 @@ typedef struct {
     int                 fbStride;
     int                 fbSize;
 
+    unsigned int	frontX, frontY;	/* Start of front buffer */
+    unsigned int	frontOffset, frontPitch;
+    unsigned int	backX, backY;	/* Start of shared back buffer */
+    unsigned int	backOffset, backPitch;
+    unsigned int	depthX, depthY;	/* Start of shared depth buffer */
+    unsigned int	depthOffset, depthPitch;
+    unsigned int	spanOffset;
+
+    int			chipset;
     int                 IsPCI;		/* Current card is a PCI card */
+    int                 AGPMode;
 
     int                 CCEMode;	/* CCE mode that server/clients use */
     int                 CCEFifoSize;	/* Size of the CCE command FIFO */
@@ -93,18 +99,9 @@ typedef struct {
 
     /* DRI screen private data */
     int                 deviceID;	/* PCI device ID */
-    int                 width;		/* Width in pixels of display */
-    int                 height;		/* Height in scanlines of display */
     int                 depth;		/* Depth of display (8, 15, 16, 24) */
     int                 bpp;		/* Bit depth of disp (8, 16, 24, 32) */
     int                 pixel_code;	/* 8, 15, 16, 24, 32 */
-
-    int                 fbX;		/* Start of frame buffer */
-    int                 fbY;
-    int                 backX;		/* Start of shared back buffer */
-    int                 backY;
-    int                 depthX;		/* Start of shared depth buffer */
-    int                 depthY;
 
     /* Shared texture data */
     int                 NRTexHeaps;
@@ -118,8 +115,6 @@ typedef struct {
     int                 CCEFifoAddr;    /* MMIO offset to write next CCE
 					   value (only used when CCE is
 					   in PIO mode). */
-    R128SAREAPrivPtr    SAREA;		/* Pointer to SAREA private data */
-
     __DRIscreenPrivate *driScreen;
 } r128ScreenRec, *r128ScreenPtr;
 

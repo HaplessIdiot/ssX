@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_fasttmp.h,v 1.1 2000/06/17 00:03:05 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,7 +28,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Keith Whitwell <keithw@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -181,7 +182,7 @@ static void TAG(r128_interp_vert)(GLfloat t,
 }
 
 
-static void TAG(r128_init_fastpath)(r128FastPathTable *tab)
+static void TAG(r128_init_fastpath)(struct r128_fast_tab *tab)
 {
    tab->build_vertices = TAG(r128_setup_full);
    tab->interp         = TAG(r128_interp_vert);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_sarea.h,v 1.2 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_sarea.h,v 1.3 2000/11/18 19:37:11 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -31,6 +31,7 @@
 /*
  * Authors:
  *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -39,21 +40,142 @@
 
 #include "Xmd.h"
 
+/* WARNING: If you change any of these defines, make sure to change the
+ * defines in the kernel file (r128_drm.h)
+ */
+#ifndef __R128_SAREA_DEFINES__
+#define __R128_SAREA_DEFINES__
+
+/* What needs to be changed for the current vertex buffer?
+ */
+#define R128_UPLOAD_CONTEXT		0x001
+#define R128_UPLOAD_SETUP		0x002
+#define R128_UPLOAD_TEX0		0x004
+#define R128_UPLOAD_TEX1		0x008
+#define R128_UPLOAD_TEX0IMAGES		0x010
+#define R128_UPLOAD_TEX1IMAGES		0x020
+#define R128_UPLOAD_CORE		0x040
+#define R128_UPLOAD_MASKS		0x080
+#define R128_UPLOAD_WINDOW		0x100
+#define R128_UPLOAD_CLIPRECTS		0x200	/* handled client-side */
+#define R128_REQUIRE_QUIESCENCE		0x400
+#define R128_UPLOAD_ALL			0x7ff
+
+#define R128_FRONT			0x1
+#define R128_BACK			0x2
+#define R128_DEPTH			0x4
+
+/* Primitive types
+ */
+#define R128_POINTS			0x1
+#define R128_LINES			0x2
+#define R128_LINE_STRIP			0x3
+#define R128_TRIANGLES			0x4
+#define R128_TRIANGLE_FAN		0x5
+#define R128_TRIANGLE_STRIP		0x6
+
+/* Vertex/indirect buffer size
+ */
+#if 1
+#define R128_BUFFER_SIZE		16384
+#else
+#define R128_BUFFER_SIZE		(128 * 1024)
+#endif
+
+/* Byte offsets for indirect buffer data
+ */
+#define R128_INDEX_PRIM_OFFSET		20
+#define R128_HOSTDATA_BLIT_OFFSET	32
+
+/* Keep these small for testing
+ */
+#define R128_NR_SAREA_CLIPRECTS		12
+
 /* There are 2 heaps (local/AGP).  Each region within a heap is a
-   minimum of 64k, and there are at most 64 of them per heap. */
-#define R128_LOCAL_TEX_HEAP       0
-#define R128_AGP_TEX_HEAP         1
-#define R128_NR_TEX_HEAPS         2
-#define R128_NR_TEX_REGIONS      64
-#define R128_LOG_TEX_GRANULARITY 16
+ * minimum of 64k, and there are at most 64 of them per heap.
+ */
+#define R128_LOCAL_TEX_HEAP		0
+#define R128_AGP_TEX_HEAP		1
+#define R128_NR_TEX_HEAPS		2
+#define R128_NR_TEX_REGIONS		64
+#define R128_LOG_TEX_GRANULARITY	16
+
+#define R128_NR_CONTEXT_REGS		12
+#define R128_TEX_MAXLEVELS		11
+
+#endif /* __R128_SAREA_DEFINES__ */
 
 typedef struct {
-    unsigned char next, prev; /* indices to form a circular LRU  */
-    unsigned char in_use;     /* owned by a client, or free? */
-    int           age;        /* tracked by clients to update local LRU's */
-} R128TexRegion;
+    /* Context state - can be written in one large chunk */
+    unsigned long dst_pitch_offset_c;
+    unsigned long dp_gui_master_cntl_c;
+    unsigned long sc_top_left_c;
+    unsigned long sc_bottom_right_c;
+    unsigned long z_offset_c;
+    unsigned long z_pitch_c;
+    unsigned long z_sten_cntl_c;
+    unsigned long tex_cntl_c;
+    unsigned long misc_3d_state_cntl_reg;
+    unsigned long texture_clr_cmp_clr_c;
+    unsigned long texture_clr_cmp_msk_c;
+    unsigned long fog_color_c;
+
+    /* Texture state */
+    unsigned long tex_size_pitch_c;
+    unsigned long constant_color_c;
+
+    /* Setup state */
+    unsigned long pm4_vc_fpu_setup;
+    unsigned long setup_cntl;
+
+    /* Mask state */
+    unsigned long dp_write_mask;
+    unsigned long sten_ref_mask_c;
+    unsigned long plane_3d_mask_c;
+
+    /* Window state */
+    unsigned long window_xy_offset;
+
+    /* Core state */
+    unsigned long scale_3d_cntl;
+} r128_context_regs_t;
+
+/* Setup registers for each texture unit
+ */
+typedef struct {
+    unsigned long tex_cntl;
+    unsigned long tex_combine_cntl;
+    unsigned long tex_size_pitch;
+    unsigned long tex_offset[R128_TEX_MAXLEVELS];
+    unsigned long tex_border_color;
+} r128_texture_regs_t;
 
 typedef struct {
+    unsigned char next, prev;	/* indices to form a circular LRU  */
+    unsigned char in_use;	/* owned by a client, or free? */
+    int           age;		/* tracked by clients to update local LRU's */
+} r128_tex_region_t;
+
+typedef struct {
+    /* The channel for communication of state information to the kernel
+     * on firing a vertex buffer.
+     */
+    r128_context_regs_t	ContextState;
+    r128_texture_regs_t	TexState[R128_NR_TEX_HEAPS];
+    unsigned int	dirty;
+    unsigned int	vertsize;
+    unsigned int	vc_format;
+
+    /* The current cliprects, or a subset thereof.
+     */
+    XF86DRIClipRectRec	boxes[R128_NR_SAREA_CLIPRECTS];
+    unsigned int	nbox;
+
+    /* Counters for throttling of rendering clients.
+     */
+    unsigned int	last_frame;
+    unsigned int	last_dispatch;
+
     /* Maintain an LRU of contiguous regions of texture space.  If you
      * think you own a region of texture memory, and it has an age
      * different to the one you set, then you are mistaken and it has
@@ -69,13 +191,11 @@ typedef struct {
      * else's - simply eject them all in LRU order.
      */
 				/* Last elt is sentinal */
-    R128TexRegion texList[R128_NR_TEX_HEAPS][R128_NR_TEX_REGIONS+1];
+    r128_tex_region_t	texList[R128_NR_TEX_HEAPS][R128_NR_TEX_REGIONS+1];
 				/* last time texture was uploaded */
-    int           texAge[R128_NR_TEX_HEAPS];
+    int			texAge[R128_NR_TEX_HEAPS];
 
-    int           ctxOwner;     /* last context to upload state */
-
-    CARD32        ringWrite;    /* current ring buffer write index */
+    int			ctxOwner;	/* last context to upload state */
 } R128SAREAPriv, *R128SAREAPrivPtr;
 
 #endif

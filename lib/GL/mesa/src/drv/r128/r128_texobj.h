@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_texobj.h,v 1.1 2000/06/17 00:03:08 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_texobj.h,v 1.2 2000/09/27 03:39:03 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,60 +28,55 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
- *   Gareth Hughes <gareth@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
 #ifndef _R128_TEXOBJ_H_
 #define _R128_TEXOBJ_H_
 
+#include "r128_sarea.h"
 #include "mm.h"
-
-#define R128_TEX_MAXLEVELS 11
-
-/* Setup registers for each texture */
-typedef struct {
-    CARD32  tex_cntl;
-    CARD32  size_pitch;
-    CARD32  border_color;
-} r128TextureRegs;
 
 /* Individual texture image information */
 typedef struct {
-    int offset;		/* Offset into locally shared texture space (i.e.,
+    GLuint offset;	/* Offset into locally shared texture space (i.e.,
 			   relative to bufAddr (below) */
-    int width;		/* Width of texture image */
-    int height;		/* Height of texture image */
+    GLuint width;	/* Width of texture image */
+    GLuint height;	/* Height of texture image */
 } r128TexImage;
 
 typedef struct r128_tex_obj r128TexObj, *r128TexObjPtr;
 
 /* Texture object in locally shared texture space */
 struct r128_tex_obj {
-    r128TexObjPtr    next, prev;
+   r128TexObjPtr	next, prev;
 
-    struct gl_texture_object *tObj;	/* Mesa texture object */
+   struct gl_texture_object *tObj;	/* Mesa texture object */
 
-    PMemBlock        memBlock;		/* Memory block containing texture */
-    CARD32           bufAddr;		/* Offset to start of locally
+   PMemBlock		memBlock;	/* Memory block containing texture */
+   CARD32		bufAddr;	/* Offset to start of locally
 					   shared texture block */
 
-    CARD32           dirty_images;	/* Flags for whether or not
+   CARD32		dirty_images;	/* Flags for whether or not
 					   images need to be uploaded to
 					   local or AGP texture space */
-    int              bound;		/* Texture unit currently bound to */
-    int              heap;              /* Texture heap currently stored in */
-    r128TexImage     image[R128_TEX_MAXLEVELS]; /* Image data for all
-						   mipmap levels */
-    int              totalSize;		/* Total size of the texture
-					   including all mipmap levels */
-    int              internFormat;	/* Internal GL format used to store
-					   texture on card */
-    int              textureFormat;	/* Actual hardware format */
-    int              texelBytes;	/* Number of bytes per texel */
 
-    r128TextureRegs  regs;		/* Setup regs for texture */
+   GLuint		age;
+   GLint		bound;		/* Texture unit currently bound to */
+   GLint		heap;		/* Texture heap currently stored in */
+   r128TexImage		image[R128_TEX_MAXLEVELS]; /* Image data for all
+						      mipmap levels */
+
+   GLint		totalSize;	/* Total size of the texture
+					   including all mipmap levels */
+   GLuint		internFormat;	/* Internal GL format used to store
+					   texture on card */
+   CARD32		textureFormat;	/* Actual hardware format */
+   GLint		texelBytes;	/* Number of bytes per texel */
+
+   r128_texture_regs_t	setup;		/* Setup regs for texture */
 };
 
 #endif /* _R128_TEXOBJ_H_ */

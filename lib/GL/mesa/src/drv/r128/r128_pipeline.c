@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_pipeline.c,v 1.1 2000/06/17 00:03:06 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_pipeline.c,v 1.2 2000/08/25 13:42:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,11 +28,12 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
-#include "r128_init.h"
+#include "r128_context.h"
 #include "r128_vb.h"
 #include "r128_pipeline.h"
 
@@ -95,6 +96,7 @@ GLboolean r128DDBuildPrecalcPipeline( GLcontext *ctx )
    return GL_FALSE;
 }
 
+
 /* Still do the normal fixup and copy-to-current, so this isn't so
  * bad.
  */
@@ -119,6 +121,7 @@ static void r128DDCheckRasterSetup( GLcontext *ctx,
    if ( ctx->IndirectTriangles & DD_SW_SETUP )
       d->type = PIPE_IMMEDIATE;
 }
+
 
 /* Register the pipeline with our stages included */
 GLuint r128DDRegisterPipelineStages( struct gl_pipeline_stage *out,

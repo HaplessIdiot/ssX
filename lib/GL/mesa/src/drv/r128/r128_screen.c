@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.1 2000/06/17 00:03:06 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_screen.c,v 1.2 2000/08/25 13:42:29 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -28,28 +28,41 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Authors:
- *   Kevin E. Martin <kevin@precisioninsight.com>
+ *   Kevin E. Martin <martin@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
 #include "r128_dri.h"
-#include "r128_reg.h"
 
-#include "r128_init.h"
 #include "r128_context.h"
-#include "r128_xmesa.h"
-#include "r128_cce.h"
+#include "r128_ioctl.h"
 #include "r128_tris.h"
 #include "r128_vb.h"
 #include "r128_pipeline.h"
 
 #include <sys/mman.h>
 
+#if 1
+/* Including xf86PciInfo.h introduces a bunch of errors...
+ */
+#define PCI_CHIP_RAGE128LE	0x4C45
+#define PCI_CHIP_RAGE128LF	0x4C46
+#define PCI_CHIP_RAGE128PF	0x5046
+#define PCI_CHIP_RAGE128PR	0x5052
+#define PCI_CHIP_RAGE128RE	0x5245
+#define PCI_CHIP_RAGE128RF	0x5246
+#define PCI_CHIP_RAGE128RK	0x524B
+#define PCI_CHIP_RAGE128RL	0x524C
+#endif
+
+
 /* Create the device specific screen private data struct */
 r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 {
     r128ScreenPtr    r128Screen;
     R128DRIPtr       r128DRIPriv = (R128DRIPtr)sPriv->pDevPriv;
+    int cpp;
 
     /* Allocate the private area */
     r128Screen = (r128ScreenPtr)Xmalloc(sizeof(*r128Screen));
@@ -93,13 +106,12 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 	    return NULL;
 	}
 
-	r128Screen->vbRgn.handle = r128DRIPriv->vbHandle;
-	r128Screen->vbRgn.size   = r128DRIPriv->vbMapSize;
-	r128Screen->vbOffset     = r128DRIPriv->vbOffset;
+	r128Screen->bufRgn.handle = r128DRIPriv->bufHandle;
+	r128Screen->bufRgn.size   = r128DRIPriv->bufMapSize;
 	if (drmMap(sPriv->fd,
-		   r128Screen->vbRgn.handle,
-		   r128Screen->vbRgn.size,
-		   (drmAddressPtr)&r128Screen->vb)) {
+		   r128Screen->bufRgn.handle,
+		   r128Screen->bufRgn.size,
+		   (drmAddressPtr)&r128Screen->buf)) {
 	    drmUnmap((drmAddress)r128Screen->ringReadPtr,
 		     r128Screen->ringReadRgn.size);
 	    drmUnmap((drmAddress)r128Screen->ring, r128Screen->ringRgn.size);
@@ -107,22 +119,7 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 	    Xfree(r128Screen);
 	    return NULL;
 	}
-	r128Screen->vbOffset     = r128DRIPriv->vbOffset;
-
-	r128Screen->indRgn.handle = r128DRIPriv->indHandle;
-	r128Screen->indRgn.size   = r128DRIPriv->indMapSize;
-	if (drmMap(sPriv->fd,
-		   r128Screen->indRgn.handle,
-		   r128Screen->indRgn.size,
-		   (drmAddressPtr)&r128Screen->ind)) {
-	    drmUnmap((drmAddress)r128Screen->vb, r128Screen->vbRgn.size);
-	    drmUnmap((drmAddress)r128Screen->ringReadPtr,
-		     r128Screen->ringReadRgn.size);
-	    drmUnmap((drmAddress)r128Screen->ring, r128Screen->ringRgn.size);
-	    drmUnmap((drmAddress)r128Screen->mmio, r128Screen->mmioRgn.size);
-	    Xfree(r128Screen);
-	    return NULL;
-	}
+	r128Screen->bufOffset     = r128DRIPriv->bufOffset;
 
 	r128Screen->agpTexRgn.handle = r128DRIPriv->agpTexHandle;
 	r128Screen->agpTexRgn.size   = r128DRIPriv->agpTexMapSize;
@@ -130,8 +127,7 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 		   r128Screen->agpTexRgn.handle,
 		   r128Screen->agpTexRgn.size,
 		   (drmAddressPtr)&r128Screen->agpTex)) {
-	    drmUnmap((drmAddress)r128Screen->ind,  r128Screen->indRgn.size);
-	    drmUnmap((drmAddress)r128Screen->vb,   r128Screen->vbRgn.size);
+	    drmUnmap((drmAddress)r128Screen->buf,   r128Screen->bufRgn.size);
 	    drmUnmap((drmAddress)r128Screen->ringReadPtr,
 		     r128Screen->ringReadRgn.size);
 	    drmUnmap((drmAddress)r128Screen->ring, r128Screen->ringRgn.size);
@@ -141,11 +137,10 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 	}
 	r128Screen->agpTexOffset   = r128DRIPriv->agpTexOffset;
 
-	if (!(r128Screen->vbBufs = drmMapBufs(sPriv->fd))) {
+	if (!(r128Screen->buffers = drmMapBufs(sPriv->fd))) {
 	    drmUnmap((drmAddress)r128Screen->agpTex,
 		     r128Screen->agpTexRgn.size);
-	    drmUnmap((drmAddress)r128Screen->ind,  r128Screen->indRgn.size);
-	    drmUnmap((drmAddress)r128Screen->vb,   r128Screen->vbRgn.size);
+	    drmUnmap((drmAddress)r128Screen->buf,   r128Screen->bufRgn.size);
 	    drmUnmap((drmAddress)r128Screen->ringReadPtr,
 		     r128Screen->ringReadRgn.size);
 	    drmUnmap((drmAddress)r128Screen->ring, r128Screen->ringRgn.size);
@@ -159,37 +154,34 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
      * the ring walker method, ie. the vertex buffer data is actually part
      * of the command stream.
      */
-    r128Screen->vbMapSize        = r128DRIPriv->vbMapSize;
-    r128Screen->vbBufSize        = r128DRIPriv->vbBufSize;
+    r128Screen->bufMapSize        = r128DRIPriv->bufMapSize;
 
     r128Screen->deviceID         = r128DRIPriv->deviceID;
 
-    r128Screen->width            = r128DRIPriv->width;
-    r128Screen->height           = r128DRIPriv->height;
     r128Screen->depth            = r128DRIPriv->depth;
     r128Screen->bpp              = r128DRIPriv->bpp;
     r128Screen->pixel_code       = (r128Screen->bpp != 16 ?
 				    r128Screen->bpp :
 				    r128Screen->depth);
 
+    cpp                          = r128Screen->bpp / 8;
+
     r128Screen->fb               = sPriv->pFB;
     r128Screen->fbOffset         = sPriv->fbOrigin;
     r128Screen->fbStride         = sPriv->fbStride;
     r128Screen->fbSize           = sPriv->fbSize;
 
-    r128Screen->fbX              = r128DRIPriv->fbX;
-    r128Screen->fbY              = r128DRIPriv->fbY;
-    r128Screen->backX            = r128DRIPriv->backX;
-    r128Screen->backY            = r128DRIPriv->backY;
-    r128Screen->depthX           = r128DRIPriv->depthX;
-    r128Screen->depthY           = r128DRIPriv->depthY;
+    r128Screen->frontOffset      = r128DRIPriv->frontOffset;
+    r128Screen->frontPitch       = r128DRIPriv->frontPitch;
+    r128Screen->backOffset       = r128DRIPriv->backOffset;
+    r128Screen->backPitch        = r128DRIPriv->backPitch;
+    r128Screen->depthOffset      = r128DRIPriv->depthOffset;
+    r128Screen->depthPitch       = r128DRIPriv->depthPitch;
+    r128Screen->spanOffset       = r128DRIPriv->spanOffset;
 
-    r128Screen->texOffset[R128_LOCAL_TEX_HEAP]     = (r128DRIPriv->textureY *
-						      r128Screen->fbStride +
-						      r128DRIPriv->textureX *
-						      (r128Screen->bpp/8));
-    r128Screen->texSize[R128_LOCAL_TEX_HEAP]       = r128DRIPriv->textureSize;
-    r128Screen->log2TexGran[R128_LOCAL_TEX_HEAP]   = r128DRIPriv->log2TexGran;
+    r128Screen->texOffset[R128_LOCAL_TEX_HEAP]   = r128DRIPriv->textureOffset;
+    r128Screen->texSize[R128_LOCAL_TEX_HEAP]     = r128DRIPriv->textureSize;
+    r128Screen->log2TexGran[R128_LOCAL_TEX_HEAP] = r128DRIPriv->log2TexGran;
 
     if (r128Screen->IsPCI) {
 	r128Screen->texOffset[R128_AGP_TEX_HEAP]   = 0;
@@ -205,15 +197,7 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 	r128Screen->NRTexHeaps                     = R128_NR_TEX_HEAPS;
     }
 
-#if 1
-    /* FIXME: For testing only */
-    if (getenv("LIBGL_SHOW_BUFFERS")) {
-	r128Screen->backX        = 0;
-	r128Screen->backY        = r128DRIPriv->height/2;
-	r128Screen->depthX       = r128DRIPriv->width/2;
-	r128Screen->depthY       = r128DRIPriv->height/2;
-    }
-#endif
+    r128Screen->AGPMode          = r128DRIPriv->AGPMode;
 
     r128Screen->CCEMode          = r128DRIPriv->CCEMode;
     r128Screen->CCEFifoSize      = r128DRIPriv->CCEFifoSize;
@@ -230,14 +214,29 @@ r128ScreenPtr r128CreateScreen(__DRIscreenPrivate *sPriv)
 
     r128Screen->CCEFifoAddr      = R128_PM4_FIFO_DATA_EVEN;
 
-    r128Screen->SAREA            = (R128SAREAPrivPtr)((char *)sPriv->pSAREA +
-						      sizeof(XF86DRISAREARec));
-
     r128Screen->driScreen        = sPriv;
 
-    r128InitVertexBuffers(r128Screen);
+    switch ( r128DRIPriv->deviceID ) {
+    case PCI_CHIP_RAGE128RE:
+    case PCI_CHIP_RAGE128RF:
+    case PCI_CHIP_RAGE128RK:
+    case PCI_CHIP_RAGE128RL:
+	r128Screen->chipset = R128_CARD_TYPE_R128;
+	break;
+    case PCI_CHIP_RAGE128PF:
+	r128Screen->chipset = R128_CARD_TYPE_R128_PRO;
+	break;
+    case PCI_CHIP_RAGE128LE:
+    case PCI_CHIP_RAGE128LF:
+	r128Screen->chipset = R128_CARD_TYPE_R128_MOBILITY;
+	break;
+    default:
+	r128Screen->chipset = R128_CARD_TYPE_R128;
+	break;
+    }
 
     r128DDFastPathInit();
+    r128DDEltPathInit();
     r128DDTriangleFuncsInit();
     r128DDSetupInit();
 
@@ -250,11 +249,10 @@ void r128DestroyScreen(__DRIscreenPrivate *sPriv)
     r128ScreenPtr r128Screen = (r128ScreenPtr)sPriv->private;
 
     if (!r128Screen->IsPCI) {
-	drmUnmapBufs(r128Screen->vbBufs);
+	drmUnmapBufs(r128Screen->buffers);
 
 	drmUnmap((drmAddress)r128Screen->agpTex, r128Screen->agpTexRgn.size);
-	drmUnmap((drmAddress)r128Screen->ind,    r128Screen->indRgn.size);
-	drmUnmap((drmAddress)r128Screen->vb,     r128Screen->vbRgn.size);
+	drmUnmap((drmAddress)r128Screen->buf,    r128Screen->bufRgn.size);
 	drmUnmap((drmAddress)r128Screen->ringReadPtr,
 		 r128Screen->ringReadRgn.size);
 	drmUnmap((drmAddress)r128Screen->ring,   r128Screen->ringRgn.size);

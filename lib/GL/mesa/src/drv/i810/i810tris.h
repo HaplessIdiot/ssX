@@ -15,14 +15,14 @@
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
  * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * KEITH WHITWELL, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
+ * KEITH WHITWELL, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM,
+ * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.h,v 1.6 2000/09/29 08:59:42 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810tris.h,v 1.7 2000/11/13 23:31:27 dawes Exp $ */
 
 #ifndef I810TRIS_INC
 #define I810TRIS_INC
@@ -37,7 +37,7 @@ extern void i810DDTrifuncInit( void );
 
 
 #define I810_FLAT_BIT 	     0x1
-#define I810_OFFSET_BIT	     0x2	
+#define I810_OFFSET_BIT	     0x2
 #define I810_TWOSIDE_BIT     0x4
 #define I810_FALLBACK_BIT    0x8
 
@@ -45,13 +45,13 @@ extern void i810DDTrifuncInit( void );
 
 
 static void __inline__ i810_draw_triangle( i810ContextPtr imesa,
-					   i810VertexPtr v0, 
-					   i810VertexPtr v1, 
+					   i810VertexPtr v0,
+					   i810VertexPtr v1,
 					   i810VertexPtr v2 )
 {
    GLuint vertsize = imesa->vertsize;
    GLuint *vb = i810AllocDwordsInline( imesa, 3 * vertsize );
-    int j;
+   int j;
 
 #if defined(USE_X86_ASM)
     __asm__ __volatile__( "rep ; movsl"
@@ -67,23 +67,22 @@ static void __inline__ i810_draw_triangle( i810ContextPtr imesa,
 			  : "0" (vertsize), "S" ((long)v2)
 			  : "memory" );
 #else
+   for (j = 0 ; j < vertsize ; j++)
+      vb[j] = v0->ui[j];
 
-    for (j = 0 ; j < vertsize ; j++)
-        vb[j] = v0->ui[j];
+   vb += vertsize;
+   for (j = 0 ; j < vertsize ; j++)
+      vb[j] = v1->ui[j];
 
-    vb += vertsize;
-    for (j = 0 ; j < vertsize ; j++)
-        vb[j] = v1->ui[j];
-
-    vb += vertsize;
-    for (j = 0 ; j < vertsize ; j++)
-        vb[j] = v2->ui[j];
+   vb += vertsize;
+   for (j = 0 ; j < vertsize ; j++)
+      vb[j] = v2->ui[j];
 #endif
 }
 
 
 static __inline__ void i810_draw_point( i810ContextPtr imesa,
-					i810VertexPtr tmp, 
+					i810VertexPtr tmp,
 					float sz )
 {
    int vertsize = imesa->vertsize;
@@ -127,8 +126,8 @@ static __inline__ void i810_draw_point( i810ContextPtr imesa,
 }
 
 
-static __inline__ void i810_draw_line( i810ContextPtr imesa, 
-				       i810VertexPtr v0, 
+static __inline__ void i810_draw_line( i810ContextPtr imesa,
+				       i810VertexPtr v0,
 				       i810VertexPtr v1 )
 {
    GLuint vertsize = imesa->vertsize;
@@ -136,21 +135,21 @@ static __inline__ void i810_draw_line( i810ContextPtr imesa,
    int j;
 
 #if defined(USE_X86_ASM)
-    __asm__ __volatile__( "rep ; movsl"
-			  : "=%c" (j)
-			  : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)
-			  : "memory" );
-    __asm__ __volatile__( "rep ; movsl"
-			  : "=%c" (j)
-			  : "0" (vertsize), "S" ((long)v1)
-			  : "memory" );
+   __asm__ __volatile__( "rep ; movsl"
+			 : "=%c" (j)
+			 : "0" (vertsize), "D" ((long)vb), "S" ((long)v0)
+			 : "memory" );
+   __asm__ __volatile__( "rep ; movsl"
+			 : "=%c" (j)
+			 : "0" (vertsize), "S" ((long)v1)
+			 : "memory" );
 #else
-    for (j = 0 ; j < vertsize ; j++)
-        vb[j] = v0->ui[j];
+   for (j = 0 ; j < vertsize ; j++)
+      vb[j] = v0->ui[j];
 
-    vb += vertsize;
-    for (j = 0 ; j < vertsize ; j++)
-        vb[j] = v1->ui[j];
+   vb += vertsize;
+   for (j = 0 ; j < vertsize ; j++)
+      vb[j] = v1->ui[j];
 #endif
 }
 

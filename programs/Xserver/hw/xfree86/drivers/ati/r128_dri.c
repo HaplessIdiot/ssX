@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.4 2000/11/18 19:37:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.5 2000/11/21 23:10:33 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -33,6 +33,7 @@
  *   Kevin E. Martin <martin@valinux.com>
  *   Rickard E. Faith <faith@valinux.com>
  *   Daryll Strauss <daryll@valinux.com>
+ *   Gareth Hughes <gareth@valinux.com>
  *
  */
 
@@ -51,144 +52,7 @@
 #define _XF86DRI_SERVER_
 #include "GL/glxtokens.h"
 #include "sarea.h"
-#include "xf86drmR128.h"
 
-#define R128_WATERMARK_L      16
-#define R128_WATERMARK_M       8
-#define R128_WATERMARK_N       8
-#define R128_WATERMARK_K     128
-
-static int CCEFifoSlots = 0;
-
-#define R128CCEWaitForFifo(pScrn, entries)                                   \
-do {                                                                         \
-    if (CCEFifoSlots < entries) R128WaitForFifoFunction(pScrn, entries);     \
-    CCEFifoSlots -= entries;                                                 \
-} while (0)
-
-/* Wait for at least `entries' slots are free.  The actual number of
-   slots available is stored in info->CCEFifoSize. */
-static void R128CCEWaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
-{
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    int           i;
-
-    for (;;) {
-	for (i = 0; i < R128_TIMEOUT; i++) {
-	    CCEFifoSlots = INREG(R128_PM4_STAT) & R128_PM4_FIFOCNT_MASK;
-	    if (CCEFifoSlots >= entries) return;
-	}
-	R128EngineReset(pScrn);
-	if (info->CCE2D) R128CCEStart(pScrn);
-    }
-}
-
-/* Wait until the CCE is completely idle: the FIFO has drained and the
-   CCE is idle. */
-void R128CCEWaitForIdle(ScrnInfoPtr pScrn)
-{
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    int           i;
-
-    if (!info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
-
-    if (R128CCE_USE_RING_BUFFER(info->CCEMode)) {
-	volatile CARD32 *r128RingReadPtr =
-	    (volatile CARD32 *)(info->ringReadPtr);
-	R128SAREAPrivPtr pSAREAPriv;
-
-	OUTREGP(R128_PM4_BUFFER_DL_WPTR,
-		R128_PM4_BUFFER_DL_DONE, ~R128_PM4_BUFFER_DL_DONE);
-
-	pSAREAPriv = (R128SAREAPrivPtr)DRIGetSAREAPrivate(pScrn->pScreen);
-
-	for (;;) {
-	    for (i = 0; i < R128_TIMEOUT; i++) {
-		if (*r128RingReadPtr == pSAREAPriv->ringWrite) {
-		    int pm4stat = INREG(R128_PM4_STAT);
-		    if ((pm4stat & R128_PM4_FIFOCNT_MASK) >= info->CCEFifoSize
-			&& !(pm4stat & (R128_PM4_BUSY|R128_PM4_GUI_ACTIVE))) {
-			R128EngineFlush(pScrn);
-			return;
-		    }
-		}
-	    }
-	    R128EngineReset(pScrn);
-	    if (info->CCE2D) R128CCEStart(pScrn);
-	}
-    } else {
-	R128CCEWaitForFifoFunction(pScrn, info->CCEFifoSize);
-
-	for (;;) {
-	    for (i = 0; i < R128_TIMEOUT; i++) {
-		if (!(INREG(R128_PM4_STAT)
-		      & (R128_PM4_BUSY | R128_PM4_GUI_ACTIVE))) {
-		    R128EngineFlush(pScrn);
-		    return;
-		}
-	    }
-	    R128EngineReset(pScrn);
-	    if (info->CCE2D) R128CCEStart(pScrn);
-	}
-    }
-}
-
-/* Reset the ring buffer status, if the engine was reset */
-void R128CCEResetRing(ScrnInfoPtr pScrn)
-{
-    R128InfoPtr      info      = R128PTR(pScrn);
-    unsigned char    *R128MMIO = info->MMIO;
-    R128SAREAPrivPtr pSAREAPriv;
-    volatile CARD32  *r128RingReadPtr;
-
-    if (!info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
-
-    r128RingReadPtr = (volatile CARD32 *)(info->ringReadPtr);
-    pSAREAPriv      = (R128SAREAPrivPtr)DRIGetSAREAPrivate(pScrn->pScreen);
-
-    OUTREG(R128_PM4_BUFFER_DL_WPTR, 0);
-    OUTREG(R128_PM4_BUFFER_DL_RPTR, 0);
-    pSAREAPriv->ringWrite = 0;
-    *r128RingReadPtr = 0;
-
-    /* Resetting the ring turns off the CCE */
-    info->CCEInUse = FALSE;
-}
-
-/* Start the CCE, but only if it is not already in use and the requested
-   mode is a CCE mode.  The mode is stored in info->CCEMode. */
-void R128CCEStart(ScrnInfoPtr pScrn)
-{
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-
-    if (info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
-
-    R128WaitForIdle(pScrn);
-    OUTREG(R128_PM4_BUFFER_CNTL, info->CCEMode | info->ringSizeLog2QW);
-    (void)INREG(R128_PM4_BUFFER_ADDR); /* as per the sample code */
-    OUTREG(R128_PM4_MICRO_CNTL, R128_PM4_MICRO_FREERUN);
-    info->CCEInUse = TRUE;
-}
-
-/* Stop the CCE, but only if it is in use and the requested mode is not
-   the non-CCE mode.  This function also flushes any outstanding
-   requests before switching modes.*/
-void R128CCEStop(ScrnInfoPtr pScrn)
-{
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-
-    if (!info->CCEInUse || info->CCEMode == R128_PM4_NONPM4) return;
-
-    R128CCEWaitForIdle(pScrn);
-    OUTREG(R128_PM4_MICRO_CNTL, 0);
-    OUTREG(R128_PM4_BUFFER_CNTL, R128_PM4_NONPM4);
-    R128EngineReset(pScrn);
-    info->CCEInUse = FALSE;
-}
 
 /* Initialize the visual configs that are supported by the hardware.
    These are combined with the visual configs that the indirect
@@ -274,7 +138,11 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 		    pConfigs[i].stencilSize    = 0;
 		pConfigs[i].auxBuffers         = 0;
 		pConfigs[i].level              = 0;
-		pConfigs[i].visualRating       = GLX_NONE_EXT;
+		if (accum || stencil) {
+		   pConfigs[i].visualRating    = GLX_SLOW_VISUAL_EXT;
+		} else {
+		   pConfigs[i].visualRating    = GLX_NONE_EXT;
+		}
 		pConfigs[i].transparentPixel   = GLX_NONE;
 		pConfigs[i].transparentRed     = 0;
 		pConfigs[i].transparentGreen   = 0;
@@ -348,7 +216,11 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 		}
 		pConfigs[i].auxBuffers         = 0;
 		pConfigs[i].level              = 0;
-		pConfigs[i].visualRating       = GLX_NONE_EXT;
+		if (accum || stencil) {
+		   pConfigs[i].visualRating    = GLX_SLOW_VISUAL_EXT;
+		} else {
+		   pConfigs[i].visualRating    = GLX_NONE_EXT;
+		}
 		pConfigs[i].transparentPixel   = GLX_NONE;
 		pConfigs[i].transparentRed     = 0;
 		pConfigs[i].transparentGreen   = 0;
@@ -396,13 +268,6 @@ static void R128EnterServer(ScreenPtr pScreen)
     R128InfoPtr info = R128PTR(pScrn);
 
     if (info->accel) info->accel->NeedToSync = TRUE;
-
-#if 1
-    if (!info->CCE2D) R128CCEStop(pScrn);
-#else
-    if (info->CCE2D) R128CCEWaitForIdle(pScrn);
-    else             R128CCEStop(pScrn);
-#endif
 }
 
 /* Called when the X server goes to sleep to allow the X server's
@@ -413,15 +278,22 @@ static void R128EnterServer(ScreenPtr pScreen)
    can start/stop the engine. */
 static void R128LeaveServer(ScreenPtr pScreen)
 {
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr info = R128PTR(pScrn);
+    ScrnInfoPtr   pScrn     = xf86Screens[pScreen->myNum];
+    R128InfoPtr   info      = R128PTR(pScrn);
+    unsigned char *R128MMIO = info->MMIO;
 
-#if 1
-    if (!info->CCE2D) R128CCEStart(pScrn);
-#else
-    if (info->CCE2D) R128CCEWaitForIdle(pScrn);
-    else             R128CCEStart(pScrn);
-#endif
+    if (!info->CCE2D) {
+	if (!info->CCEInUse) {
+	    /* Save all hardware scissors */
+	    info->sc_left     = INREG(R128_SC_LEFT);
+	    info->sc_right    = INREG(R128_SC_RIGHT);
+	    info->sc_top      = INREG(R128_SC_TOP);
+	    info->sc_bottom   = INREG(R128_SC_BOTTOM);
+	    info->aux_sc_cntl = INREG(R128_SC_BOTTOM);
+	}
+
+	R128MMIO_TO_CCE(pScrn, info);
+    }
 }
 
 /* Contexts can be swapped by the X server if necessary.  This callback
@@ -448,9 +320,9 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     /* FIXME: This routine needs to have acceleration turned on */
     ScreenPtr   pScreen = pWin->drawable.pScreen;
     ScrnInfoPtr pScrn   = xf86Screens[pScreen->myNum];
-    R128InfoPtr info   = R128PTR(pScrn);
-    BoxPtr      pbox;
-    int         nbox;
+    R128InfoPtr info    = R128PTR(pScrn);
+    BoxPtr      pbox, pboxSave;
+    int         nbox, nboxSave;
     int         depth;
 
     /* FIXME: Use accel when CCE 2D code is written */
@@ -469,8 +341,8 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     /* FIXME: Only initialize the back and depth buffers for contexts
        that request them */
 
-    pbox = REGION_RECTS(prgn);
-    nbox = REGION_NUM_RECTS(prgn);
+    pboxSave = pbox = REGION_RECTS(prgn);
+    nboxSave = nbox = REGION_NUM_RECTS(prgn);
 
     (*info->accel->SetupForSolidFill)(pScrn, 0, GXcopy, (CARD32)(-1));
     for (; nbox; nbox--, pbox++) {
@@ -485,6 +357,9 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
 						pbox->x2 - pbox->x1,
 						pbox->y2 - pbox->y1);
     }
+
+    pbox = pboxSave;
+    nbox = nboxSave;
 
     (*info->accel->SetupForSolidFill)(pScrn, depth, GXcopy, (CARD32)(-1));
     for (; nbox; nbox--, pbox++)
@@ -542,6 +417,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 
     mode &= ~R128_AGP_MODE_MASK;
     switch (info->agpMode) {
+    case 4:          mode |= R128_AGP_4X_MODE;
     case 2:          mode |= R128_AGP_2X_MODE;
     case 1: default: mode |= R128_AGP_1X_MODE;
     }
@@ -585,16 +461,12 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     info->ringReadOffset  = info->ringStart + info->ringMapSize;
     info->ringReadMapSize = 4096;
 
-				/* Reserve space for the vertex buffer */
-    info->vbStart         = info->ringReadOffset + info->ringReadMapSize;
-    info->vbMapSize       = info->vbSize*1024*1024;
-
-				/* Reserve space for the indirect buffer */
-    info->indStart        = info->vbStart + info->vbMapSize;
-    info->indMapSize      = info->indSize*1024*1024;
+				/* Reserve space for vertex/indirect buffers */
+    info->bufStart        = info->ringReadOffset + info->ringReadMapSize;
+    info->bufMapSize      = info->bufSize*1024*1024;
 
 				/* Reserve the rest for AGP textures */
-    info->agpTexStart     = info->indStart + info->indMapSize;
+    info->agpTexStart     = info->bufStart + info->bufMapSize;
     s = (info->agpSize*1024*1024 - info->agpTexStart);
     l = R128MinBits((s-1) / R128_NR_TEX_REGIONS);
     if (l < R128_LOG_TEX_GRANULARITY) l = R128_LOG_TEX_GRANULARITY;
@@ -642,43 +514,25 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 	       "[agp] Ring read ptr mapped at 0x%08lx\n",
 	       (unsigned long)info->ringReadPtr);
 
-    if (drmAddMap(info->drmFD, info->vbStart, info->vbMapSize,
-		  DRM_AGP, 0, &info->vbHandle) < 0) {
+    if (drmAddMap(info->drmFD, info->bufStart, info->bufMapSize,
+		  DRM_AGP, 0, &info->bufHandle) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[agp] Could not add vertex buffers mapping\n");
+		   "[agp] Could not add vertex/indirect buffers mapping\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] vertex buffers handle = 0x%08lx\n", info->vbHandle);
+	       "[agp] vertex/indirect buffers handle = 0x%08lx\n",
+	       info->bufHandle);
 
-    if (drmMap(info->drmFD, info->vbHandle, info->vbMapSize,
-	       (drmAddressPtr)&info->vb) < 0) {
+    if (drmMap(info->drmFD, info->bufHandle, info->bufMapSize,
+	       (drmAddressPtr)&info->buf) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[agp] Could not map vertex buffers\n");
+		   "[agp] Could not map vertex/indirect buffers\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] Vertex buffers mapped at 0x%08lx\n",
-	       (unsigned long)info->vb);
-
-    if (drmAddMap(info->drmFD, info->indStart, info->indMapSize,
-		  DRM_AGP, flags, &info->indHandle) < 0) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[agp] Could not add indirect buffers mapping\n");
-	return FALSE;
-    }
-    xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] indirect buffers handle = 0x%08lx\n", info->indHandle);
-
-    if (drmMap(info->drmFD, info->indHandle, info->indMapSize,
-	       (drmAddressPtr)&info->ind) < 0) {
-	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[agp] Could not map indirect buffers\n");
-	return FALSE;
-    }
-    xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[agp] Indirect buffers mapped at 0x%08lx\n",
-	       (unsigned long)info->ind);
+	       "[agp] Vertex/indirect buffers mapped at 0x%08lx\n",
+	       (unsigned long)info->buf);
 
     if (drmAddMap(info->drmFD, info->agpTexStart, info->agpTexMapSize,
 		  DRM_AGP, 0, &info->agpTexHandle) < 0) {
@@ -723,14 +577,16 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     return TRUE;
 }
 
+#if 0
 /* Fake the vertex buffers for PCI cards. */
 static Bool R128DRIPciInit(R128InfoPtr info)
 {
-    info->vbStart   = 0;
-    info->vbMapSize = info->vbSize*1024*1024;
+    info->bufStart   = 0;
+    info->bufMapSize = info->bufSize*1024*1024;
 
     return TRUE;
 }
+#endif
 
 /* Add a map for the MMIO registers that will be accessed by any
    DRI-based clients. */
@@ -753,69 +609,37 @@ static Bool R128DRIMapInit(R128InfoPtr info, ScreenPtr pScreen)
     return TRUE;
 }
 
-/* Initialize the ring buffer state for use in the X server and any
-   DRI-based clients. */
-static void R128DRICCEInitRingBuffer(ScrnInfoPtr pScrn)
-{
-    R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
-    unsigned long addr;
-
-    /* FIXME: When we use the CCE for the X server, we should move this
-       function (and the support functions above) to r128_accel.c */
-
-				/* The manual (p. 2) says this address is
-				   in "VM space".  This means it's an
-				   offset from the start of AGP space. */
-    OUTREG(R128_PM4_BUFFER_OFFSET, info->ringStart | 0x02000000);
-
-    OUTREG(R128_PM4_BUFFER_DL_WPTR, 0);
-    OUTREG(R128_PM4_BUFFER_DL_RPTR, 0);
-
-				/* DL_RPTR_ADDR is a physical address.
-				   This should be in the SAREA. */
-    *(volatile long unsigned *)(info->ringReadPtr) = 0;
-    OUTREG(R128_PM4_BUFFER_DL_RPTR_ADDR, (info->ringReadPtrHandle));
-
-				/* Set watermark control */
-    OUTREG(R128_PM4_BUFFER_WM_CNTL,
-	   ((R128_WATERMARK_L/4) << R128_WMA_SHIFT)
-	   | ((R128_WATERMARK_M/4) << R128_WMB_SHIFT)
-	   | ((R128_WATERMARK_N/4) << R128_WMC_SHIFT)
-	   | ((R128_WATERMARK_K/64) << R128_WB_WM_SHIFT));
-
-    addr = INREG(R128_PM4_BUFFER_ADDR); /* Force read.  Why?  Because it's
-					   in the examples... */
-
-#if 0
-    R128CCEWaitForIdle(pScrn);
-#endif
-
-				/* Turn on bus mastering */
-    info->BusCntl &= ~R128_BUS_MASTER_DIS;
-    OUTREGP(R128_BUS_CNTL, 0, ~R128_BUS_MASTER_DIS);
-}
-
 /* Initialize the kernel data structures. */
-static int R128DRIKernelInit(R128InfoPtr info)
+static int R128DRIKernelInit(R128InfoPtr info, ScreenPtr pScreen)
 {
-    drmR128Init      drmInfo;
+    drmR128Init drmInfo;
 
     drmInfo.sarea_priv_offset   = sizeof(XF86DRISAREARec);
     drmInfo.is_pci              = info->IsPCI;
     drmInfo.cce_mode            = info->CCEMode;
-    drmInfo.cce_fifo_size       = info->CCEFifoSize;
     drmInfo.cce_secure          = info->CCESecure;
     drmInfo.ring_size           = info->ringSize*1024*1024;
     drmInfo.usec_timeout        = info->CCEusecTimeout;
 
+    drmInfo.fb_bpp              = info->CurrentLayout.pixel_code;
+    drmInfo.depth_bpp           = info->CurrentLayout.pixel_code;
+
+    drmInfo.front_offset        = info->frontOffset;
+    drmInfo.front_pitch         = info->frontPitch;
+
+    drmInfo.back_offset         = info->backOffset;
+    drmInfo.back_pitch          = info->backPitch;
+
+    drmInfo.depth_offset        = info->depthOffset;
+    drmInfo.depth_pitch         = info->depthPitch;
+    drmInfo.span_offset         = info->spanOffset;
+
     drmInfo.fb_offset           = info->LinearAddr;
-    drmInfo.agp_ring_offset     = info->ringHandle;
-    drmInfo.agp_read_ptr_offset = info->ringReadPtrHandle;
-    drmInfo.agp_vertbufs_offset = info->vbHandle;
-    drmInfo.agp_indbufs_offset  = info->indHandle;
-    drmInfo.agp_textures_offset = info->agpTexHandle;
     drmInfo.mmio_offset         = info->registerHandle;
+    drmInfo.ring_offset         = info->ringHandle;
+    drmInfo.ring_rptr_offset    = info->ringReadPtrHandle;
+    drmInfo.buffers_offset      = info->bufHandle;
+    drmInfo.agp_textures_offset = info->agpTexHandle;
 
     if (drmR128InitCCE(info->drmFD, &drmInfo) < 0) return FALSE;
 
@@ -827,96 +651,44 @@ static int R128DRIKernelInit(R128InfoPtr info)
 static Bool R128DRIBufInit(R128InfoPtr info, ScreenPtr pScreen)
 {
 				/* Initialize vertex buffers */
-    if ((info->vbNumBufs = drmAddBufs(info->drmFD,
-				      info->vbMapSize / info->vbBufSize,
-				      info->vbBufSize,
-				      DRM_AGP_BUFFER,
-				      info->vbStart)) <= 0) {
+    if ((info->bufNumBufs = drmAddBufs(info->drmFD,
+				       info->bufMapSize / R128_BUFFER_SIZE,
+				       R128_BUFFER_SIZE,
+				       DRM_AGP_BUFFER,
+				       info->bufStart)) <= 0) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[drm] Could not create vertex buffers list\n");
+		   "[drm] Could not create vertex/indirect buffers list\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[drm] Added %d %d byte vertex buffers\n",
-	       info->vbNumBufs, info->vbBufSize);
+	       "[drm] Added %d %d byte vertex/indirect buffers\n",
+	       info->bufNumBufs, R128_BUFFER_SIZE);
 
     if (drmMarkBufs(info->drmFD, 0.133333, 0.266666)) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[drm] Failed to mark vertex buffers list\n");
+		   "[drm] Failed to mark vertex/indirect buffers list\n");
 	return FALSE;
     }
 
-    if (!(info->vbBufs = drmMapBufs(info->drmFD))) {
+    if (!(info->buffers = drmMapBufs(info->drmFD))) {
 	xf86DrvMsg(pScreen->myNum, X_ERROR,
-		   "[drm] Failed to map vertex buffers list\n");
+		   "[drm] Failed to map vertex/indirect buffers list\n");
 	return FALSE;
     }
     xf86DrvMsg(pScreen->myNum, X_INFO,
-	       "[drm] Mapped %d vertex buffers\n",
-	       info->vbBufs->count);
+	       "[drm] Mapped %d vertex/indirect buffers\n",
+	       info->buffers->count);
 
     return TRUE;
-}
-
-/* Load the microcode for the CCE */
-static void R128DRILoadMicrocode(ScrnInfoPtr pScrn)
-{
-    R128InfoPtr   info            = R128PTR(pScrn);
-    unsigned char *R128MMIO       = info->MMIO;
-    int           i;
-    unsigned long R128Microcode[] = {
-	/* CCE microcode (from ATI) */
-    0, 276838400, 0, 268449792, 2, 142, 2, 145, 0, 1076765731, 0, 1617039951,
-    0, 774592877, 0, 1987540286, 0, 2307490946U, 0, 599558925, 0, 589505315, 0,
-    596487092, 0, 589505315, 1, 11544576, 1, 206848, 1, 311296, 1, 198656, 2,
-    912273422, 11, 262144, 0, 0, 1, 33559837, 1, 7438, 1, 14809, 1, 6615, 12,
-    28, 1, 6614, 12, 28, 2, 23, 11, 18874368, 0, 16790922, 1, 409600, 9, 30, 1,
-    147854772, 16, 420483072, 3, 8192, 0, 10240, 1, 198656, 1, 15630, 1, 51200,
-    10, 34858, 9, 42, 1, 33559823, 2, 10276, 1, 15717, 1, 15718, 2, 43, 1,
-    15936948, 1, 570480831, 1, 14715071, 12, 322123831, 1, 33953125, 12, 55, 1,
-    33559908, 1, 15718, 2, 46, 4, 2099258, 1, 526336, 1, 442623, 4, 4194365, 1,
-    509952, 1, 459007, 3, 0, 12, 92, 2, 46, 12, 176, 1, 15734, 1, 206848, 1,
-    18432, 1, 133120, 1, 100670734, 1, 149504, 1, 165888, 1, 15975928, 1,
-    1048576, 6, 3145806, 1, 15715, 16, 2150645232U, 2, 268449859, 2, 10307, 12,
-    176, 1, 15734, 1, 15735, 1, 15630, 1, 15631, 1, 5253120, 6, 3145810, 16,
-    2150645232U, 1, 15864, 2, 82, 1, 343310, 1, 1064207, 2, 3145813, 1, 15728,
-    1, 7817, 1, 15729, 3, 15730, 12, 92, 2, 98, 1, 16168, 1, 16167, 1, 16002,
-    1, 16008, 1, 15974, 1, 15975, 1, 15990, 1, 15976, 1, 15977, 1, 15980, 0,
-    15981, 1, 10240, 1, 5253120, 1, 15720, 1, 198656, 6, 110, 1, 180224, 1,
-    103824738, 2, 112, 2, 3145839, 0, 536885440, 1, 114880, 14, 125, 12,
-    206975, 1, 33559995, 12, 198784, 0, 33570236, 1, 15803, 0, 15804, 3,
-    294912, 1, 294912, 3, 442370, 1, 11544576, 0, 811612160, 1, 12593152, 1,
-    11536384, 1, 14024704, 7, 310382726, 0, 10240, 1, 14796, 1, 14797, 1,
-    14793, 1, 14794, 0, 14795, 1, 268679168, 1, 9437184, 1, 268449792, 1,
-    198656, 1, 9452827, 1, 1075854602, 1, 1075854603, 1, 557056, 1, 114880, 14,
-    159, 12, 198784, 1, 1109409213, 12, 198783, 1, 1107312059, 12, 198784, 1,
-    1109409212, 2, 162, 1, 1075854781, 1, 1073757627, 1, 1075854780, 1, 540672,
-    1, 10485760, 6, 3145894, 16, 274741248, 9, 168, 3, 4194304, 3, 4209949, 0,
-    0, 0, 256, 14, 174, 1, 114857, 1, 33560007, 12, 176, 0, 10240, 1, 114858,
-    1, 33560018, 1, 114857, 3, 33560007, 1, 16008, 1, 114874, 1, 33560360, 1,
-    114875, 1, 33560154, 0, 15963, 0, 256, 0, 4096, 1, 409611, 9, 188, 0,
-    10240, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-    0, 0, 0, 0, 0, 0, 0
-    };
-
-    R128WaitForIdle(pScrn);
-
-    OUTREG(R128_PM4_MICROCODE_ADDR, 0);
-    for (i = 0; i < 256; i += 1) {
-	OUTREG(R128_PM4_MICROCODE_DATAH, R128Microcode[i*2]);
-	OUTREG(R128_PM4_MICROCODE_DATAL, R128Microcode[i*2 + 1]);
-    }
 }
 
 /* Initialize the CCE state, and start the CCE (if used by the X server) */
 static void R128DRICCEInit(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info      = R128PTR(pScrn);
-    unsigned char *R128MMIO = info->MMIO;
+
+				/* Turn on bus mastering */
+    info->BusCntl &= ~R128_BUS_MASTER_DIS;
 
 				/* CCEMode is initialized in r128_driver.c */
     switch (info->CCEMode) {
@@ -934,11 +706,10 @@ static void R128DRICCEInit(ScrnInfoPtr pScrn)
 
     if (info->CCE2D) {
 				/* Make sure the CCE is on for the X server */
-	R128CCEStart(pScrn);
+	R128CCE_START(pScrn, info);
     } else {
 				/* Make sure the CCE is off for the X server */
-	OUTREG(R128_PM4_MICRO_CNTL, 0);
-	OUTREG(R128_PM4_BUFFER_CNTL, R128_PM4_NONPM4);
+	R128CCE_STOP(pScrn, info);
     }
 }
 
@@ -1051,6 +822,7 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     pDRIInfo->bufferRequests = DRI_ALL_WINDOWS;
 
     if (!DRIScreenInit(pScreen, pDRIInfo, &info->drmFD)) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "DRIScreenInit failed!\n");
 	xfree(pDRIInfo->devPrivate);
 	pDRIInfo->devPrivate = NULL;
 	DRIDestroyInfoRec(pDRIInfo);
@@ -1061,13 +833,13 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     /* Check the r128 DRM version */
     version = drmGetVersion(info->drmFD);
     if (version) {
-	if (version->version_major != 1 ||
-	    version->version_minor != 0 ||
+	if (version->version_major != 2 ||
+	    version->version_minor != 1 ||
 	    version->version_patchlevel < 0) {
 	    /* incompatible drm version */
 	    xf86DrvMsg(pScreen->myNum, X_ERROR,
 		       "R128DRIScreenInit failed "
-		       "(DRM version = %d.%d.%d, expected 1.0.x).  "
+		       "(DRM version = %d.%d.%d, expected 2.1.x).  "
 		       "Disabling DRI.\n",
 		       version->version_major,
 		       version->version_minor,
@@ -1084,31 +856,24 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
+#if 0
 				/* Initialize PCI */
-    if (info->IsPCI && !R128DRIPciInit(info)) {
+    if (info->IsPCI && !R128DRIPciInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
+#else
+    if (info->IsPCI) {
+	xf86DrvMsg(pScreen->myNum, X_ERROR, "PCI cards not yet supported\n");
+	R128DRICloseScreen(pScreen);
+	return FALSE;
+    }
+#endif
 
 				/* DRIScreenInit doesn't add all the
 				   common mappings.  Add additional
 				   mappings here. */
     if (!R128DRIMapInit(info, pScreen)) {
-	R128DRICloseScreen(pScreen);
-	return FALSE;
-    }
-
-				/* Initialize the ring buffer */
-    if (!info->IsPCI) R128DRICCEInitRingBuffer(pScrn);
-
-				/* Initialize the kernel data structures */
-    if (!R128DRIKernelInit(info)) {
-	R128DRICloseScreen(pScreen);
-	return FALSE;
-    }
-
-				/* Initialize vertex buffers list */
-    if (!info->IsPCI && !R128DRIBufInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
     }
@@ -1121,12 +886,6 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     }
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Visual configs initialized\n");
 
-				/* Load the CCE Microcode */
-    R128DRILoadMicrocode(pScrn);
-
-				/* Reset the Graphics Engine */
-    R128EngineReset(pScrn);
-
     return TRUE;
 }
 
@@ -1135,19 +894,40 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
    initialization. */
 Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
 {
-    ScrnInfoPtr      pScrn      = xf86Screens[pScreen->myNum];
-    R128InfoPtr      info      = R128PTR(pScrn);
+    ScrnInfoPtr      pScrn = xf86Screens[pScreen->myNum];
+    R128InfoPtr      info  = R128PTR(pScrn);
     R128SAREAPrivPtr pSAREAPriv;
     R128DRIPtr       pR128DRI;
 
-    /* Init and start the CCE */
+    info->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
+    /* info->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
+
+    /* NOTE: DRIFinishScreenInit must be called before *DRIKernelInit
+       because *DRIKernelInit requires that the hardware lock is held by
+       the X server, and the first time the hardware lock is grabbed is
+       in DRIFinishScreenInit. */
+    if (!DRIFinishScreenInit(pScreen)) {
+	R128DRICloseScreen(pScreen);
+	return FALSE;
+    }
+
+    /* Initialize the kernel data structures */
+    if (!R128DRIKernelInit(info, pScreen)) {
+	R128DRICloseScreen(pScreen);
+	return FALSE;
+    }
+
+    /* Initialize the vertex buffers list */
+    if (!info->IsPCI && !R128DRIBufInit(info, pScreen)) {
+	R128DRICloseScreen(pScreen);
+	return FALSE;
+    }
+
+    /* Initialize and start the CCE if required */
     R128DRICCEInit(pScrn);
 
     pSAREAPriv = (R128SAREAPrivPtr)DRIGetSAREAPrivate(pScreen);
     memset(pSAREAPriv, 0, sizeof(*pSAREAPriv));
-
-    info->pDRIInfo->driverSwapMethod = DRI_HIDE_X_CONTEXT;
-    /* info->pDRIInfo->driverSwapMethod = DRI_SERVER_SWAP; */
 
     pR128DRI                 = (R128DRIPtr)info->pDRIInfo->devPrivate;
     pR128DRI->registerHandle = info->registerHandle;
@@ -1160,13 +940,9 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     pR128DRI->ringReadPtrHandle = info->ringReadPtrHandle;
     pR128DRI->ringReadMapSize   = info->ringReadMapSize;
 
-    pR128DRI->vbHandle       = info->vbHandle;
-    pR128DRI->vbMapSize      = info->vbMapSize;
-    pR128DRI->vbOffset       = info->vbStart;
-    pR128DRI->vbBufSize      = info->vbBufSize;
-
-    pR128DRI->indHandle      = info->indHandle;
-    pR128DRI->indMapSize     = info->indMapSize;
+    pR128DRI->bufHandle      = info->bufHandle;
+    pR128DRI->bufMapSize     = info->bufMapSize;
+    pR128DRI->bufOffset      = info->bufStart;
 
     pR128DRI->agpTexHandle   = info->agpTexHandle;
     pR128DRI->agpTexMapSize  = info->agpTexMapSize;
@@ -1179,25 +955,24 @@ Bool R128DRIFinishScreenInit(ScreenPtr pScreen)
     pR128DRI->depth          = pScrn->depth;
     pR128DRI->bpp            = pScrn->bitsPerPixel;
 
-    pR128DRI->fbX            = info->fbX;
-    pR128DRI->fbY            = info->fbY;
-    pR128DRI->backX          = info->backX;
-    pR128DRI->backY          = info->backY;
-    pR128DRI->depthX         = info->depthX;
-    pR128DRI->depthY         = info->depthY;
-    pR128DRI->textureX       = info->textureX;
-    pR128DRI->textureY       = info->textureY;
+    pR128DRI->frontOffset    = info->frontOffset;
+    pR128DRI->frontPitch     = info->frontPitch;
+    pR128DRI->backOffset     = info->backOffset;
+    pR128DRI->backPitch      = info->backPitch;
+    pR128DRI->depthOffset    = info->depthOffset;
+    pR128DRI->depthPitch     = info->depthPitch;
+    pR128DRI->spanOffset     = info->spanOffset;
+    pR128DRI->textureOffset  = info->textureOffset;
     pR128DRI->textureSize    = info->textureSize;
     pR128DRI->log2TexGran    = info->log2TexGran;
 
     pR128DRI->IsPCI          = info->IsPCI;
+    pR128DRI->AGPMode        = info->agpMode;
 
     pR128DRI->CCEMode        = info->CCEMode;
     pR128DRI->CCEFifoSize    = info->CCEFifoSize;
 
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "0x%08lx %d\n",
-	       pR128DRI->registerHandle, pR128DRI->registerSize);
-    return DRIFinishScreenInit(pScreen);
+    return TRUE;
 }
 
 /* The screen is being closed, so clean up any state and free any
@@ -1208,12 +983,14 @@ void R128DRICloseScreen(ScreenPtr pScreen)
     R128InfoPtr info = R128PTR(pScrn);
 
 				/* Stop the CCE if it is still in use */
-    if (info->CCE2D) R128CCEStop(pScrn);
+    if (info->CCE2D) {
+	R128CCE_STOP(pScrn, info);
+    }
 
 				/* De-allocate vertex buffers */
-    if (info->vbBufs) {
-	drmUnmapBufs(info->vbBufs);
-	info->vbBufs = NULL;
+    if (info->buffers) {
+	drmUnmapBufs(info->buffers);
+	info->buffers = NULL;
     }
 
 				/* De-allocate all kernel resources */
@@ -1224,13 +1001,9 @@ void R128DRICloseScreen(ScreenPtr pScreen)
 	drmUnmap(info->agpTex, info->agpTexMapSize);
 	info->agpTex = NULL;
     }
-    if (info->ind) {
-	drmUnmap(info->ind, info->indMapSize);
-	info->ind = NULL;
-    }
-    if (info->vb) {
-	drmUnmap(info->vb, info->vbMapSize);
-	info->vb = NULL;
+    if (info->buf) {
+	drmUnmap(info->buf, info->bufMapSize);
+	info->buf = NULL;
     }
     if (info->ringReadPtr) {
 	drmUnmap(info->ringReadPtr, info->ringReadMapSize);

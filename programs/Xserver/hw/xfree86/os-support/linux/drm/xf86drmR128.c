@@ -22,11 +22,11 @@
  * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
- * 
+ *
  * Author: Kevin E. Martin <martin@valinux.com>
- * 
+ *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.3 2000/08/24 22:20:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/xf86drmR128.c,v 1.4 2000/12/02 15:31:01 tsi Exp $ */
 
 #ifdef XFree86Server
 # include "xf86.h"
@@ -77,124 +77,337 @@ extern int xf86RemoveSIGIOHandler(int fd);
 #include "xf86drmR128.h"
 #include "drm.h"
 
-int drmR128InitCCE(int fd, drmR128Init *info)
+#define R128_BUFFER_RETRY	32
+#define R128_IDLE_RETRY		16
+
+
+int drmR128InitCCE( int fd, drmR128Init *info )
 {
-    drm_r128_init_t init;
+   drm_r128_init_t init;
 
-    memset(&init, 0, sizeof(drm_r128_init_t));
+   memset( &init, 0, sizeof(drm_r128_init_t) );
 
-    init.func                = R128_INIT_CCE;
-    init.sarea_priv_offset   = info->sarea_priv_offset;
-    init.is_pci              = info->is_pci;
-    init.cce_mode            = info->cce_mode;
-    init.cce_fifo_size       = info->cce_fifo_size;
-    init.cce_secure          = info->cce_secure;
-    init.ring_size           = info->ring_size;
-    init.usec_timeout        = info->usec_timeout;
+   init.func			= R128_INIT_CCE;
+   init.sarea_priv_offset	= info->sarea_priv_offset;
+   init.is_pci			= info->is_pci;
+   init.cce_mode		= info->cce_mode;
+   init.cce_secure		= info->cce_secure;
+   init.ring_size		= info->ring_size;
+   init.usec_timeout		= info->usec_timeout;
 
-    init.fb_offset           = info->fb_offset;
-    init.agp_ring_offset     = info->agp_ring_offset;
-    init.agp_read_ptr_offset = info->agp_read_ptr_offset;
-    init.agp_vertbufs_offset = info->agp_vertbufs_offset;
-    init.agp_indbufs_offset  = info->agp_indbufs_offset;
-    init.agp_textures_offset = info->agp_textures_offset;
-    init.mmio_offset         = info->mmio_offset;
+   init.fb_bpp			= info->fb_bpp;
+   init.front_offset		= info->front_offset;
+   init.front_pitch		= info->front_pitch;
+   init.back_offset		= info->back_offset;
+   init.back_pitch		= info->back_pitch;
 
-    if (ioctl(fd, DRM_IOCTL_R128_INIT, &init)) return -errno;
+   init.depth_bpp		= info->depth_bpp;
+   init.depth_offset		= info->depth_offset;
+   init.depth_pitch		= info->depth_pitch;
+   init.span_offset		= info->span_offset;
 
-    return 0;
+   init.fb_offset		= info->fb_offset;
+   init.mmio_offset		= info->mmio_offset;
+   init.ring_offset		= info->ring_offset;
+   init.ring_rptr_offset	= info->ring_rptr_offset;
+   init.buffers_offset		= info->buffers_offset;
+   init.agp_textures_offset	= info->agp_textures_offset;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_INIT, &init ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
 }
 
-int drmR128CleanupCCE(int fd)
+int drmR128CleanupCCE( int fd )
 {
-    drm_r128_init_t init;
+   drm_r128_init_t init;
 
-    memset(&init, 0, sizeof(drm_r128_init_t));
+   memset( &init, 0, sizeof(drm_r128_init_t) );
 
-    init.func = R128_CLEANUP_CCE;
+   init.func = R128_CLEANUP_CCE;
 
-    if (ioctl(fd, DRM_IOCTL_R128_INIT, &init)) return -errno;
-
-    return 0;
+   if ( ioctl( fd, DRM_IOCTL_R128_INIT, &init ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
 }
 
-int drmR128EngineReset(int fd)
+int drmR128StartCCE( int fd )
 {
-    if (ioctl(fd, DRM_IOCTL_R128_RESET, NULL)) return -errno;
-
-    return 0;
+   if ( ioctl( fd, DRM_IOCTL_R128_CCE_START, NULL ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
 }
 
-int drmR128EngineFlush(int fd)
+int drmR128StopCCE( int fd )
 {
-    if (ioctl(fd, DRM_IOCTL_R128_FLUSH, NULL)) return -errno;
+   drm_r128_cce_stop_t stop;
+   int ret, i = 0;
 
-    return 0;
+   stop.flush = 1;
+   stop.idle = 1;
+
+   ret = ioctl( fd, DRM_IOCTL_R128_CCE_STOP, &stop );
+
+   if ( ret && errno != EBUSY )
+      return -errno;
+
+   stop.flush = 0;
+
+   do {
+      ret = ioctl( fd, DRM_IOCTL_R128_CCE_STOP, &stop );
+   } while ( ret && errno == EBUSY && i++ < R128_IDLE_RETRY );
+
+   if ( ret && errno != EBUSY )
+      return -errno;
+
+   stop.idle = 0;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_CCE_STOP, &stop ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
 }
 
-int drmR128WaitForIdle(int fd)
+int drmR128ResetCCE( int fd )
 {
-    if (ioctl(fd, DRM_IOCTL_R128_IDLE, NULL)) return -errno;
-
-    return 0;
+   if ( ioctl( fd, DRM_IOCTL_R128_CCE_RESET, NULL ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
 }
 
-int drmR128SubmitPacket(int fd, CARD32 *buffer, int *count, int flags)
+int drmR128WaitForIdleCCE( int fd )
 {
-    drm_r128_packet_t packet;
-    int               ret;
+   int ret, i = 0;
 
-    memset(&packet, 0, sizeof(drm_r128_packet_t));
+   do {
+      ret = ioctl( fd, DRM_IOCTL_R128_CCE_IDLE, NULL );
+   } while ( ret && errno == EBUSY && i++ < R128_IDLE_RETRY );
 
-    packet.count = *count;
-    packet.flags = flags;
-
-    while (packet.count > 0) {
-	packet.buffer = (unsigned int *)buffer + (*count - packet.count);
-	ret = ioctl(fd, DRM_IOCTL_R128_PACKET, &packet);
-	if (ret < 0 && ret != -EAGAIN) {
-	    *count = packet.count;
-	    return -errno;
-	}
-    }
-
-    *count = 0;
-    return 0;
+   if ( ret == 0 ) {
+      return 0;
+   } else {
+      return -errno;
+   }
 }
 
-int drmR128GetVertexBuffers(int fd, int count, int *indices, int *sizes)
+int drmR128EngineReset( int fd )
 {
-    drm_r128_vertex_t v;
-
-    v.send_count      = 0;
-    v.send_indices    = NULL;
-    v.send_sizes      = NULL;
-    v.prim            = DRM_R128_PRIM_NONE;
-    v.request_count   = count;
-    v.request_indices = indices;
-    v.request_sizes   = sizes;
-    v.granted_count   = 0;
-
-    if (ioctl(fd, DRM_IOCTL_R128_VERTEX, &v)) return -errno;
-
-    return v.granted_count;
+   if ( ioctl( fd, DRM_IOCTL_R128_RESET, NULL ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
 }
 
-int drmR128FlushVertexBuffers(int fd, int count, int *indices,
-			      int *sizes, drmR128PrimType prim)
+int drmR128SwapBuffers( int fd )
 {
-    drm_r128_vertex_t v;
+   if ( ioctl( fd, DRM_IOCTL_R128_SWAP, NULL ) ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
 
-    v.send_count      = count;
-    v.send_indices    = indices;
-    v.send_sizes      = sizes;
-    v.prim            = prim;
-    v.request_count   = 0;
-    v.request_indices = NULL;
-    v.request_sizes   = NULL;
-    v.granted_count   = 0;
+int drmR128Clear( int fd, unsigned int flags,
+		  int x, int y, int w, int h,
+		  unsigned int clear_color, unsigned int clear_depth,
+		  unsigned int color_mask, unsigned int depth_mask )
+{
+   drm_r128_clear_t clear;
 
-    if (ioctl(fd, DRM_IOCTL_R128_VERTEX, &v) < 0) return -errno;
+   clear.flags = flags;
+   clear.x = x;
+   clear.y = y;
+   clear.w = w;
+   clear.h = h;
+   clear.clear_color = clear_color;
+   clear.clear_depth = clear_depth;
+   clear.color_mask = color_mask;
+   clear.depth_mask = depth_mask;
 
-    return 0;
+   if ( ioctl( fd, DRM_IOCTL_R128_CLEAR, &clear ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128FlushVertexBuffer( int fd, int prim, int index,
+			      int count, int discard )
+{
+   drm_r128_vertex_t v;
+
+   v.prim = prim;
+   v.idx = index;
+   v.count = count;
+   v.discard = discard;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_VERTEX, &v ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128FlushIndices( int fd, int prim, int index,
+			 int start, int end, int discard )
+{
+   drm_r128_indices_t elts;
+
+   elts.prim = prim;
+   elts.idx = index;
+   elts.start = start;
+   elts.end = end;
+   elts.discard = discard;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_INDICES, &elts ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128TextureBlit( int fd, int index,
+			int offset, int pitch, int format,
+			int x, int y, int width, int height )
+{
+   drm_r128_blit_t blit;
+
+   blit.idx = index;
+   blit.offset = offset;
+   blit.pitch = pitch;
+   blit.format = format;
+   blit.x = x;
+   blit.y = y;
+   blit.width = width;
+   blit.height = height;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_BLIT, &blit ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128WriteDepthSpan( int fd, int n, int x, int y,
+			   const unsigned int depth[],
+			   const unsigned char mask[] )
+{
+   drm_r128_depth_t d;
+
+   d.func = R128_WRITE_SPAN;
+   d.n = n;
+   d.x = &x;
+   d.y = &y;
+   d.buffer = (unsigned int *)depth;
+   d.mask = (unsigned char *)mask;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_DEPTH, &d ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128WriteDepthPixels( int fd, int n,
+			     const int x[], const int y[],
+			     const unsigned int depth[],
+			     const unsigned char mask[] )
+{
+   drm_r128_depth_t d;
+
+   d.func = R128_WRITE_PIXELS;
+   d.n = n;
+   d.x = (int *)x;
+   d.y = (int *)y;
+   d.buffer = (unsigned int *)depth;
+   d.mask = (unsigned char *)mask;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_DEPTH, &d ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128ReadDepthSpan( int fd, int n, int x, int y )
+{
+   drm_r128_depth_t d;
+
+   d.func = R128_READ_SPAN;
+   d.n = n;
+   d.x = &x;
+   d.y = &y;
+   d.buffer = NULL;
+   d.mask = NULL;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_DEPTH, &d ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128ReadDepthPixels( int fd, int n,
+			    const int x[], const int y[] )
+{
+   drm_r128_depth_t d;
+
+   d.func = R128_READ_PIXELS;
+   d.n = n;
+   d.x = (int *)x;
+   d.y = (int *)y;
+   d.buffer = NULL;
+   d.mask = NULL;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_DEPTH, &d ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128PolygonStipple( int fd, unsigned int *mask )
+{
+   drm_r128_stipple_t stipple;
+
+   stipple.mask = mask;
+
+   if ( ioctl( fd, DRM_IOCTL_R128_STIPPLE, &stipple ) < 0 ) {
+      return -errno;
+   } else {
+      return 0;
+   }
+}
+
+int drmR128SubmitPacket( int fd, void *buffer, int *count, int flags )
+{
+   drm_r128_packet_t packet;
+   int ret;
+
+   memset( &packet, 0, sizeof(drm_r128_packet_t) );
+
+   packet.count = *count;
+   packet.flags = flags;
+
+   while (packet.count > 0) {
+      packet.buffer = (unsigned int *)buffer + (*count - packet.count);
+      ret = ioctl(fd, DRM_IOCTL_R128_PACKET, &packet);
+      if (ret < 0 && ret != -EAGAIN) {
+	 *count = packet.count;
+	 return -errno;
+      }
+   }
+
+   *count = 0;
+   return 0;
 }
