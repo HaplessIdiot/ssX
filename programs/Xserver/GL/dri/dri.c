@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.16 2000/06/21 21:26:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.17 2000/06/21 21:35:16 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -949,6 +949,13 @@ DRIGetDrawableInfo(ScreenPtr pScreen,
 		    }
 		}
 
+		/* If the driver wants to be notified when the index is
+		 * set for a drawable, let it know now.
+		 */
+		if (pDRIPriv->pDriverInfo->SetDrawableIndex)
+			pDRIPriv->pDriverInfo->SetDrawableIndex(pWin,
+				pDRIDrawablePriv->drawableIndex);
+
 		/* reinit drawable ID if window is visible */
 		if ((pWin->viewable) && 
 		    (pDRIPriv->pDriverInfo->bufferRequests != DRI_NO_WINDOWS))
@@ -1055,6 +1062,7 @@ DRICreateInfoRec(void)
 
     inforec->TransitionTo2d = 0;
     inforec->TransitionTo3d = 0;
+    inforec->SetDrawableIndex = 0;
 
     return inforec;
 }

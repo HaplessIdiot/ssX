@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.2 2000/05/23 04:47:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb.h,v 1.3 2000/06/20 05:08:47 dawes Exp $ */
 
 #ifndef FFB_H
 #define FFB_H
@@ -213,6 +213,13 @@ typedef struct {
 #endif
 } FFBRec, *FFBPtr;
 
+/* Acceleration */
+extern Bool FFBAccelInit(ScreenPtr, FFBPtr);
+extern void CreatorVtChange (ScreenPtr pScreen, int enter);
+
+/* HW cursor support */
+extern Bool FFBHWCursorInit(ScreenPtr);
+
 /* Exported DAC layer routines. */
 extern void FFBDacLoadCursorPos(FFBPtr, int, int);
 extern void FFBDacLoadCursorColor(FFBPtr, int, int);
@@ -235,6 +242,13 @@ extern Bool FFBWidIsShared(FFBPtr pFfb, unsigned int wid);
 
 /* Accelerated double-buffering. */
 extern Bool FFBDbePreInit(ScreenPtr);
+
+#ifdef XF86DRI
+/* DRI support */
+extern Bool FFBDRIScreenInit(ScreenPtr);
+extern Bool FFBDRIFinishScreenInit(ScreenPtr);
+extern void FFBDRICloseScreen(ScreenPtr);
+#endif
 
 /* The fastfill and pagefill buffer sizes change based upon
  * the resolution.

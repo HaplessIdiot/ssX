@@ -24,7 +24,7 @@
  * USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.1 2000/05/18 23:21:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_accel.c,v 1.2 2000/05/23 04:47:43 dawes Exp $ */
 
 #include	<asm/types.h>
 #include	<math.h>
@@ -451,7 +451,6 @@ CreatorCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 	int dx, dy;
 	int i, nbox;
 	WindowPtr pwinRoot;
-	extern WindowPtr *WindowTable;
 
 	FFBLOG(("CreatorCopyWindow: WIN(%p)\n", pWin));
 

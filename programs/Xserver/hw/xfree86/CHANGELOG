@@ -1,4 +1,6 @@
-XFree86 4.0f (?? June 2000)
+XFree86 4.0f (23 June 2000)
+ 361. Some sunffb cleanups (#4015, David S. Miller).
+ 360. Add DRI drawable index callback (#4015, David S. Miller).
  359. Fix -configure option to print out fatal message and abort gracefully
       when pci data isn't entered into xf86PciInfo.h (Alan Hourihane).
  358. Add generic DGA support to NeoMagic (not tested) (Alan Hourihane).
@@ -10694,4 +10696,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1203 2000/06/22 18:09:36 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1204 2000/06/23 11:01:49 alanh Exp $

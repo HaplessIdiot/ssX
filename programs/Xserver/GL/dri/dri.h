@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.10 2000/05/11 18:14:12 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.11 2000/06/17 00:03:12 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -117,6 +117,7 @@ typedef struct {
 			       CARD32 index);
     void        (*TransitionTo3d)(ScreenPtr pScreen);
     void        (*TransitionTo2d)(ScreenPtr pScreen);
+    void	(*SetDrawableIndex)(WindowPtr pWin, CARD32 index);
 
     /* wrapped functions */
     DRIWrappedFuncsRec  wrap;
