@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/nls/Imakefile,v 1.12 2004/05/20 02:13:46 dawes Exp $
+XCOMM $XFree86: xc/nls/Imakefile,v 1.13tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -65,12 +65,12 @@ DependSubdirs($(SUBDIRS))
 all::
 
 #ifndef R63Compat
-#define R63Compat NO
+# define R63Compat NO
 #endif
 
 #ifndef Win32Architecture
-#if R63Compat
-# define LTarget(name)							@@\
+# if R63Compat
+#  define LTarget(name)							@@\
 CppFileTarget(name.l1,name,$(DEFINES),NullParameter)			@@\
 									@@\
 name.l2: name.l1							@@\
@@ -91,8 +91,27 @@ InstallNamedNonExec(name.lt,name,$(XLOCALEDIR))				@@\
 									@@\
 clean::									@@\
 	RemoveFiles(name.l1 name.l2 name.lt)
-#else
-# define LTarget(name)							@@\
+# else
+#  if defined(SGIArchitecture) && (!defined(HasGcc) || !HasGcc)
+#   define LTarget(name)						@@\
+AllTarget(name.lt)							@@\
+									@@\
+name.lt:								@@\
+	RemoveFile($@)							@@\
+	$(CPP) CppNoLineInfoOption $(DEFINES) name | CppSedMagic >$@	@@\
+	MakeDir($(BUILDLIBDIR)/locale)					@@\
+	RemoveFile($(BUILDLIBDIR)/locale/name)				@@\
+	cd $(BUILDLIBDIR)/locale && $(LN) $(BUILDLIBTOP)/../$(CURRENT_DIR)/name.lt name @@\
+									@@\
+clean::									@@\
+	RemoveFile(name.ct)						@@\
+									@@\
+InstallNamedNonExec(name.lt,name,$(XLOCALEDIR))				@@\
+									@@\
+clean::									@@\
+	RemoveFile(name.lt)
+#  else
+#   define LTarget(name)						@@\
 AllTarget(name.lt)							@@\
 									@@\
 name.lt:								@@\
@@ -109,7 +128,8 @@ InstallNamedNonExec(name.lt,name,$(XLOCALEDIR))				@@\
 									@@\
 clean::									@@\
 	RemoveFile(name.lt)
-#endif
+#  endif
+# endif
 #else
 # define LTarget(name)							@@\
 CppFileTarget(name.lt,name,$(DEFINES),NullParameter)			@@\
