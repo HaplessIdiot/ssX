@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.28 2000/02/11 22:35:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.29 2000/02/12 18:52:12 dawes Exp $ */
 
 
 #include "apm.h"
@@ -814,22 +814,24 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
 
-    vgaHWGetIOBase(VGAHWPTR(pScrn));
-    VGAHWPTR(pScrn)->MapSize = 0x10000;
-    vgaHWMapMem(pScrn);
-    if (pApm->I2C) {
-	if (!ApmI2CInit(pScrn)) {
-	    xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"I2C initialization failed\n");
+    if (!xf86IsPc98()) {
+	vgaHWGetIOBase(VGAHWPTR(pScrn));
+	VGAHWPTR(pScrn)->MapSize = 0x10000;
+	vgaHWMapMem(pScrn);
+	if (pApm->I2C) {
+	    if (!ApmI2CInit(pScrn)) {
+		xf86DrvMsg(pScrn->scrnIndex,X_ERROR,"I2C initialization failed\n");
+	    }
+	    else {
+		MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr);
+	    }
 	}
-	else {
-	    MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex,pApm->I2CPtr);
-	}
+	if (!MonInfo)
+	    MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,ddc1Read);
+	if (MonInfo)
+	    xf86PrintEDID(MonInfo);
+	pScrn->monitor->DDC = MonInfo;
     }
-    if (!MonInfo)
-	MonInfo = xf86DoEDID_DDC1(pScrn->scrnIndex,vgaHWddc1SetSpeed,ddc1Read);
-    if (MonInfo)
-	xf86PrintEDID(MonInfo);
-    pScrn->monitor->DDC = MonInfo;
 
     /* The gamma fields must be initialised when using the new cmap code */
     if (pScrn->depth > 1) {
@@ -1073,6 +1075,7 @@ static Bool
 ApmMapMem(ScrnInfoPtr pScrn)
 {
     APMDECL(pScrn);
+    vgaHWPtr	hwp = VGAHWPTR(pScrn);
 
     pApm->LinMap = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pApm->PciTag,
@@ -1113,7 +1116,7 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	    WRXB(0xDB, (pApm->db & 0xF4) | 0x0A);
 	    WRXB(0xD9, (pApm->d9 & 0xCF) | 0x20);
 
-	    vgaHWSetMmioFuncs(VGAHWPTR(pScrn), (CARD8 *)pApm->LinMap, 0xFFF000);
+	    vgaHWSetMmioFuncs(hwp, (CARD8 *)pApm->LinMap, 0xFFF000);
 	}
 	if (pApm->Chipset >= AP6422)
 	    WRXB(0xC9, pApm->c9 | 0x10);
@@ -1130,6 +1133,11 @@ ApmMapMem(ScrnInfoPtr pScrn)
 	    WRXB_IOP(0xDB, pApm->db & 0xF4);
 	}
     }
+    /*
+     * Save and set color mode
+     */
+    pApm->MiscOut = hwp->readMiscOut(hwp);
+    hwp->writeMiscOut(hwp, pApm->MiscOut | 0x0F);
 
     return TRUE;
 }
@@ -1142,7 +1150,12 @@ static Bool
 ApmUnmapMem(ScrnInfoPtr pScrn)
 {
     APMDECL(pScrn);
+    vgaHWPtr	hwp = VGAHWPTR(pScrn);
 
+    /*
+     * Reset color mode
+     */
+    hwp->writeMiscOut(hwp, pApm->MiscOut);
     if (pApm->LinMap) {
 	if (pApm->Chipset >= AT3D) {
 	    if (!pApm->noLinear) {
@@ -1400,23 +1413,6 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ApmRegPtr	ApmReg = &pApm->ModeReg;
     vgaHWPtr	hwp;
 
-    if (xf86IsPc98()) {
-       /*
-        * Set Color Mode
-        */
-       unsigned char tmp;
-
-       if (!pApm->noLinear) {
-	   tmp = ApmReadMiscOut();
-	   ApmWriteMiscOut(0x0F | tmp);
-       }
-       else {
-	   tmp = inb(0x3CC);
-	   outb(0x3C2, 0x0F | tmp);
-       }
-       outb(0xFAC, 0xFF);
-    }
-
 
     /* set clockIndex to "2" for programmable clocks */
     if (pScrn->progClock)
@@ -1427,6 +1423,11 @@ ApmModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     pScrn->vtSema = TRUE;
     hwp = VGAHWPTR(pScrn);
+
+    hwp->writeMiscOut(hwp, pApm->MiscOut | 0x0F);
+
+    if (xf86IsPc98())
+       outb(0xFAC, 0xFF);
 
     memcpy(ApmReg, &pApm->SavedReg, sizeof pApm->SavedReg);
 
@@ -2038,6 +2039,7 @@ ApmEnterVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     APMDECL(pScrn);
+    vgaHWPtr	hwp = VGAHWPTR(pScrn);
 
     if (pApm->Chipset >= AT3D) {
 	if (!pApm->noLinear) {
@@ -2052,7 +2054,11 @@ ApmEnterVT(int scrnIndex, int flags)
     if (pApm->Chipset >= AP6422)
 	WRXB(0xC9, pApm->c9 | 0x10);
     ApmUnlock(APMPTR(pScrn));
-    vgaHWUnlock(VGAHWPTR(pScrn));
+    vgaHWUnlock(hwp);
+    /*
+     * Set color mode
+     */
+    hwp->writeMiscOut(hwp, pApm->MiscOut | 0x0F);
     /* Should we re-save the text mode on each VT enter? */
     if (!ApmModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
@@ -2066,8 +2072,13 @@ ApmLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     APMDECL(pScrn);
+    vgaHWPtr	hwp = VGAHWPTR(pScrn);
 
     ApmRestore(pScrn, &VGAHWPTR(pScrn)->SavedReg, &pApm->SavedReg);
+    /*
+     * Reset color mode
+     */
+    hwp->writeMiscOut(hwp, pApm->MiscOut);
     vgaHWLock(VGAHWPTR(pScrn));
     ApmLock(pApm);
     if (pApm->Chipset >= AT3D) {

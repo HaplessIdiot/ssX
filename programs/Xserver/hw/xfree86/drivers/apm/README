@@ -1,4 +1,4 @@
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.4 1999/09/27 06:29:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/README,v 1.5 2000/02/11 22:35:55 dawes Exp $
 
 Note 1: This driver is work in progress. It might not work at all.
 Want to help? Docs are at 
@@ -20,7 +20,12 @@ What has worked on my computer :
     - AT24
     - AP6422 (although with problems, including locks)
     - multi card setup (with and without Xinerama)
-    - Xv images, even with (slightly modified) glide2x
+    - Xv images, even with (slightly modified) glide2x ; note that there is
+      still a little problem with vertical offset.
+
+There is some support for PC-98 with the help of Isao Ohishi
+(ohishi@aero.rim.or.jp). It's still under development. I hope that 8bpp
+works correctly.
 
 What has not worked :
     - I2C (I'm not sure my card, Hercules 128/3D, has proper cabling)

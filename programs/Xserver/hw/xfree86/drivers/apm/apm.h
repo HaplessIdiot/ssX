@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.9 2000/02/08 13:13:10 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.10 2000/02/11 22:35:55 dawes Exp $ */
 
 
 /* Everything using inb/outb, etc needs "compiler.h" */
@@ -84,15 +84,7 @@ enum {
     XR80, XRC0, XRD0, XRE0, XRE8, XREC, XR140, XR144, XR148, XR14C, NoEXRegs
 };
 
-#if 0
-static unsigned short XR_addr[NoEXRegs] = {
-    0x80, 0xC0, 0xD0, 0xE0, 0xE8, 0xEC, 0x140, 0x144, 0x148, 0x14C
-};
-#endif
-
 typedef struct {
-	unsigned char	MISC;
-	unsigned char	FCTRL;
 	unsigned char	SEQ[NoSEQRegs];
 	unsigned char	CRT[NoCRTRegs];
 	unsigned char	GRC[NoGRCRegs];
@@ -127,7 +119,8 @@ typedef struct {
     Bool		UnlockCalled;
     int			xbase;
     unsigned char	savedSR10;
-    unsigned char	c9, d9, db;
+    CARD8		MiscOut;
+    CARD8		c9, d9, db;
     unsigned long	saveCmd;
     pointer		FontInfo;
     Bool		hwCursor;

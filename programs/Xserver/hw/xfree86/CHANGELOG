@@ -1,4 +1,9 @@
 XFree86 3.9.17Z (12 February 2000)
+3755. Add a dummylib that provides functions required by libxf86_os.  This
+      makes it easier for utilities (like scanpci and pcitweak) to use
+      libxf86_os (Egbert Eich, David Dawes).
+3754. Some bug fixes and PC-98 enhancements for the apm driver (#3685,
+      Loic Grenie).
 3753. GL build fix (#3683, Christopher Sekiya).
 3752. Xterm patch #127 (#3682, Thomas Dickey).
 3751. Cyrix MediaGX driver.  Not very usable yet (#3681, Richard Hecker).
@@ -9640,4 +9645,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.995 2000/02/13 00:13:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.996 2000/02/13 00:56:03 dawes Exp $
