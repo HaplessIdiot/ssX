@@ -1,4 +1,6 @@
 XFree86 4.4.99.17 (xx October 2004)
+ 209. Add an example for setting the repeat rate to the xset(1) man page
+      (Bugzilla #1506, David Dawes, suggested by Alan Iwi).
  208. Remove vestigial rootlessAqua.h from XDarwin DDX (Torrey T. Lyons).
  207. Modify luit to extract information from pty before fork rather than
       after, to avoid conflict with child process's modifications to the
@@ -19149,7 +19151,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3336 2004/10/28 20:19:29 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3337 2004/10/29 01:17:24 torrey Exp $
 
 
 
