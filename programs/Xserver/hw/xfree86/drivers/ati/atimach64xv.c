@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.3 2003/04/25 14:37:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64xv.c,v 1.3tsi Exp $ */
 /*
  * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -783,9 +783,9 @@ ATIMach64ClipVideo
 
     /* Translate to the current viewport */
     pDstBox->x1 -= pScreenInfo->frameX0;
-    pDstBox->x2 -= pScreenInfo->frameX0 + 1;
+    pDstBox->x2 -= pScreenInfo->frameX0;
     pDstBox->y1 -= pScreenInfo->frameY0;
-    pDstBox->y2 -= pScreenInfo->frameY0 + 1;
+    pDstBox->y2 -= pScreenInfo->frameY0;
 
     *SrcLeft = *SrcTop = 0;
 
@@ -796,7 +796,7 @@ ATIMach64ClipVideo
      */
     if (pDstBox->x1 < 0)
     {
-        *SrcLeft = (((-pDstBox->x1 * SrcW) / *DstW) + 1) & ~1;
+        *SrcLeft = ((-pDstBox->x1 * SrcW) / *DstW) & ~1;
         pDstBox->x1 = 0;
     }
 
@@ -896,7 +896,7 @@ ATIMach64DisplayVideo
     ATIMach64WaitForFIFO(pATI, 8);
     outq(OVERLAY_Y_X_START, OVERLAY_Y_X_END, OVERLAY_LOCK_START |
         SetWord(pDstBox->x1, 1) | SetWord(pDstBox->y1, 0),
-        SetWord(pDstBox->x2, 1) | SetWord(pDstBox->y2, 0));
+        SetWord(pDstBox->x2 - 1, 1) | SetWord(pDstBox->y2 - 1, 0));
     outf(OVERLAY_SCALE_INC, SetWord(HScale, 1) | SetWord(VScale, 0));
     outf(SCALER_HEIGHT_WIDTH, SetWord(Width, 1) | SetWord(Height, 0));
     outf(VIDEO_FORMAT, pATI->NewHW.video_format);
@@ -947,7 +947,7 @@ ATIMach64PutImage
     BoxRec    DstBox;
     int       SrcPitch, SrcPitchUV, DstPitch, DstSize;
     int       SrcTop, SrcLeft, DstWidth, DstHeight;
-    int       Top, Left, nLine, nPixel, Offset;
+    int       Top, Bottom, Left, Right, nLine, nPixel, Offset;
     int       OffsetV, OffsetU;
     int       tmp;
     CARD8     *pDst;
@@ -1015,9 +1015,17 @@ ATIMach64PutImage
         case FOURCC_YV12:
         case FOURCC_I420:
             Left = (SrcX1 >> 16) & ~1;
+            Right = ((SrcX2 + 0x1FFFF) >> 16) & ~1;
             Top = (SrcY1 >> 16) & ~1;
-            nPixel = ((((SrcX2 + 0x0FFFF) >> 16) + 1) & ~1) - Left;
-            nLine = ((((SrcY2 + 0x0FFFF) >> 16) + 1) & ~1) - Top;
+            Bottom = ((SrcY2 + 0x1FFFF) >> 16) & ~1;
+
+            if ((Right < Width) && ((SrcX1 & 0x1FFFF) <= (SrcX2 & 0x1FFFF)))
+                Right += 2;
+            if ((Bottom < Height) && ((SrcY1 & 0x1FFFF) <= (SrcY2 & 0x1FFFF)))
+                Bottom += 2;
+
+            nPixel = Right - Left;
+            nLine = Bottom - Top;
 
             SrcPitch = (Width + 3) & ~3;
             OffsetV = SrcPitch * Height;
@@ -1046,9 +1054,17 @@ ATIMach64PutImage
         case FOURCC_YUY2:
         default:
             Left = (SrcX1 >> 16) & ~1;
+            Right = ((SrcX2 + 0x1FFFF) >> 16) & ~1;
             Top = SrcY1 >> 16;
-            nPixel = ((((SrcX2 + 0x0FFFF) >> 16) + 1) & ~1) - Left;
-            nLine = ((SrcY2 + 0x0FFFF) >> 16) - Top;
+            Bottom = (SrcY2 + 0x0FFFF) >> 16;
+
+            if ((Right < Width) && ((SrcX1 & 0x1FFFF) <= (SrcX2 & 0x1FFFF)))
+                Right += 2;
+            if ((Bottom < Height) && ((SrcY1 & 0x0FFFF) <= (SrcY2 & 0x0FFFF)))
+                Bottom++;
+
+            nPixel = Right - Left;
+            nLine = Bottom - Top;
 
             SrcPitch = Width << 1;
             Buffer += (Top * SrcPitch) + (Left << 1);
@@ -1259,7 +1275,7 @@ ATIMach64SetSurfaceAttribute
                                      ATIPTR(pScreenInfo));
 }
 
-/* XVideo surfce registration data */
+/* XVideo surface registration data */
 static XF86OffscreenImageRec ATIMach64Surface_A[] =
 {
     {
@@ -1276,7 +1292,7 @@ static XF86OffscreenImageRec ATIMach64Surface_A[] =
         ATIMach64Attribute + 4          /* No saturation nor brightness */
     },
     {
-        &ATIMach64Image[1],     /* UYVY */
+        &ATIMach64Image[1],             /* UYVY */
         VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
         ATIMach64AllocateSurface,
         ATIMach64FreeSurface,
@@ -1307,7 +1323,7 @@ static XF86OffscreenImageRec ATIMach64Surface_B[] =
         ATIMach64Attribute + 4          /* No saturation nor brightness */
     },
     {
-        &ATIMach64Image[1],     /* UYVY */
+        &ATIMach64Image[1],             /* UYVY */
         VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
         ATIMach64AllocateSurface,
         ATIMach64FreeSurface,
@@ -1338,7 +1354,7 @@ static XF86OffscreenImageRec ATIMach64Surface_C[] =
         ATIMach64Attribute
     },
     {
-        &ATIMach64Image[1],     /* UYVY */
+        &ATIMach64Image[1],             /* UYVY */
         VIDEO_OVERLAID_IMAGES | VIDEO_CLIP_TO_VIEWPORT,
         ATIMach64AllocateSurface,
         ATIMach64FreeSurface,
