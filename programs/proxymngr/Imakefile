@@ -1,4 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/08/05 09:00:09 kaleb $
+XCOMM $XFree86$
 
          DEFINES = StrcasecmpDefines
 
