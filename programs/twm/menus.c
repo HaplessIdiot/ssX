@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.13tsi Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.14 2002/09/19 13:22:04 tsi Exp $ */
 /*****************************************************************************/
 /*
 
@@ -239,7 +239,7 @@ int CreateTitleButton (name, func, action, menuroot, rightside, append)
     if (!tb) {
 	fprintf (stderr,
 		 "%s:  unable to allocate %ld bytes for title button\n",
-		 ProgramName, (ulong)sizeof(TitleButton));
+		 ProgramName, (unsigned long)sizeof(TitleButton));
 	return 0;
     }
 
