@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/add_window.c,v 1.9 2001/06/21 21:42:39 keithp Exp $ */
+/* $XFree86: xc/programs/twm/add_window.c,v 1.11 2002/04/04 14:05:58 eich Exp $ */
 /*****************************************************************************/
 /*
 
@@ -1223,6 +1223,7 @@ void ComputeCommonTitleOffsets ()
 
 void ComputeWindowTitleOffsets (tmp_win, width, squeeze)
     TwmWindow *tmp_win;
+    int width;
     Bool squeeze;
 {
     tmp_win->highlightx = (Scr->TBInfo.titlex + tmp_win->name_width);
