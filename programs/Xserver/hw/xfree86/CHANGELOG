@@ -1,3 +1,9 @@
+XFree86 3.2Ad (XX February 1997)
+ 433. Avoid installing CVS admin files when doing 'make install' for rstart
+      (#25).
+ 432. Resync xfree98/SuperProbe/Imakefile.
+ 431. Fix for 'xset r rate' and XF86MiscSetKbdSettings() for some OSs (#24).
+
 XFree86 3.2Ac (12 February 1997)
  430. Fix problem with system #define Control on LynxOS (Thomas Mueller).
  429. FreeBSD 2.2 doesn't need libz (Takaaki Nomura).
