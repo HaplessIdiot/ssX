@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.49 2000/06/13 02:28:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.50 2000/06/20 05:08:43 dawes Exp $ */
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
  */
@@ -441,10 +441,13 @@ xf86GetEntityInfo(int entityIndex)
     pEnt->chipset = xf86Entities[entityIndex]->chipset;
     pEnt->resources = xf86Entities[entityIndex]->resources;
     pEnt->driver = xf86Entities[entityIndex]->driver;
-    for (i = 0; i < xf86Entities[entityIndex]->numInstances; i++)
-	if (xf86Entities[entityIndex]->devices[i]->screen == 0)
-	    break;
-    pEnt->device = xf86Entities[entityIndex]->devices[i];
+    if (xf86Entities[entityIndex]->devices[0]) {
+	for (i = 0; i < xf86Entities[entityIndex]->numInstances; i++)
+	    if (xf86Entities[entityIndex]->devices[i]->screen == 0)
+	        break;
+	pEnt->device = xf86Entities[entityIndex]->devices[i];
+    } else
+	pEnt->device = NULL;
     
     return pEnt;
 }
@@ -462,6 +465,10 @@ GDevPtr
 xf86GetDevFromEntity(int entityIndex, int instance)
 {
     int i;
+  
+    /* We might not use AddDevtoEntity */
+    if (!xf86Entities[entityIndex]->devices[0])
+	return NULL;
 
     if (entityIndex >= xf86NumEntities ||
 	instance >= xf86Entities[entityIndex]->numInstances)
