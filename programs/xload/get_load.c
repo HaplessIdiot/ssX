@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.4 2000/09/19 12:46:28 eich Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.5 2000/11/14 18:20:39 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -849,7 +849,7 @@ InitLoadPoint()
     }
 #else /* sun svr4 5.5 or later */
 
-#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi) && !defined(MOTOROLA) && !(BSD >= 199103) && !defined(MINIX)
+#if (!defined(SVR4) || !defined(__STDC__)) && !defined(sgi) && !defined(MOTOROLA) && !(BSD >= 199103) && !defined(MINIX) && !defined(__DARWIN__)
     extern void nlist();
 #endif
 

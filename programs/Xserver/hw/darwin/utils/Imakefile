@@ -1,0 +1,8 @@
+XCOMM $XFree86$
+
+    SRCS = dumpkeymap.c
+    OBJS = dumpkeymap.o
+
+SingleProgramTarget(dumpkeymap,$(OBJS),NullParameter,NullParameter)
+InstallProgram(dumpkeymap,$(BINDIR)
+

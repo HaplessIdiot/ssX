@@ -1,0 +1,25 @@
+XCOMM $XFree86$
+
+#include <Server.tmpl>
+#define IHaveSubdirs
+
+SUBDIRS = utils
+
+SRCS =	darwin.c \
+        darwinCursor.c \
+        darwinKeyboard.c
+
+OBJS =	darwin.o \
+        darwinCursor.o \
+        darwinKeyboard.o
+
+INCLUDES = -I. -I$(SERVERSRC)/mi -I$(SERVERSRC)/mfb -I$(SERVERSRC)/cfb \
+           -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(SERVERSRC)/os
+           -I$(INCLUDESRC) -I$(FONTINCSRC)
+
+NormalLibraryObjectRule()
+NormalLibraryTarget(darwin,$(OBJS))
+
+InstallManPage(Xdarwin,$(MANDIR))
+
+DependTarget()
