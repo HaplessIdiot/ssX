@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.29 2002/01/14 18:43:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.30 2002/01/25 21:56:03 tsi Exp $ */
 
 /*
  * Authors:
@@ -813,6 +813,7 @@ extern int I810_DEBUG;
 			pI810->PciInfo->chipType == PCI_CHIP_I810_E)
 #define IS_I815(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I815)
 #define IS_I830(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I830_M)
+#define IS_845G(pI810) (pI810->PciInfo->chipType == PCI_CHIP_845_G)
 
 
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.22 2001/11/26 16:25:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.23 2002/01/09 00:37:30 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -100,7 +100,7 @@ int I810AllocateGARTMemory (ScrnInfoPtr pScrn)
    /* This allows the 2d only Xserver to regen */
    pI810->agpAcquired2d = TRUE;
 
-   if (IS_I830 (pI810))
+   if (IS_I830 (pI810) || IS_845G (pI810))
 	 {
 		/*
 		 * The I830 is slightly different from the I810/I815, it has no
@@ -298,7 +298,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 
    i810Reg->Fence[nr] = 0;
 
-   fence_mask = IS_I830 (pI810) ? ~I830_FENCE_START_MASK : ~FENCE_START_MASK;
+   fence_mask = IS_I830 (pI810) || IS_845G (pI810) ? ~I830_FENCE_START_MASK : ~FENCE_START_MASK;
 
    if (start & fence_mask)
 	 {
@@ -320,7 +320,7 @@ void I810SetTiledMemory (ScrnInfoPtr pScrn,int nr,unsigned int start,unsigned in
 
    val = (start | FENCE_X_MAJOR | FENCE_VALID);
 
-   if (IS_I830 (pI810))
+   if (IS_I830 (pI810) || IS_845G (pI810))
 	 {
 		switch (size)
 		  {

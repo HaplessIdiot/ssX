@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.125 2002/04/24 16:20:39 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.126 2002/05/07 18:37:33 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -645,6 +645,8 @@
 #define PCI_CHIP_NM2380		0x0016
 
 /* Intel */
+#define PCI_CHIP_845_G_BRIDGE 0x2560
+#define PCI_CHIP_845_G 0x2562
 #define PCI_CHIP_I815_BRIDGE		0x1130
 #define PCI_CHIP_I815			0x1132
 #define PCI_CHIP_I830_M_BRIDGE		0x3575

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_cursor.c,v 1.3 2001/10/04 18:28:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_cursor.c,v 1.4 2001/10/10 14:08:36 alanh Exp $ */
 
 /*
  * Authors:
@@ -77,6 +77,13 @@ I810CursorInit(ScreenPtr pScreen)
   infoPtr->ShowCursor = I810ShowCursor;
   infoPtr->UseHWCursor = I810UseHWCursor;
 
+  if (IS_845G (pI810))
+	 {
+		OUTREG(0x700A0,0x00040040);
+		OUTREG(0x70084,pI810->CursorStart);
+	 }
+   
+   
   if (!pI810->CursorPhysical)
      return FALSE;
 
@@ -158,7 +165,10 @@ I810SetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
    OUTREG8( CURSOR_Y_HI, (((y >> 8) & 0x07) | flag));
 
    /* FIXME */
-   OUTREG(CURABASE, pI810->CursorPhysical);
+   if (IS_845G (pI810))
+	 OUTREG(CURABASE,pI810->CursorStart);
+   else
+	 OUTREG(CURABASE, pI810->CursorPhysical);
 }
 
 static void
@@ -174,7 +184,17 @@ I810ShowCursor(ScrnInfoPtr pScrn)
       temp |= CURSORA_MODE_64_AND_XOR;
       OUTREG(CURACNTR, temp);
       OUTREG(CURABASE, pI810->CursorPhysical);
-   } else {
+	  DPRINTF(PFX,"Value of CursorPhysical is %x   Value of CursorStart is %x ",pI810->CursorPhysical,pI810->CursorStart);
+ 
+   } else if (IS_845G (pI810))
+	 {
+		temp = INREG(CURACNTR);
+		temp &= CURSORA_RESERVED;
+		temp |= 0x80000000;
+		OUTREG(CURACNTR,temp);
+		OUTREG(CURABASE,pI810->CursorStart);
+	 }
+   else {
       OUTREG( CURSOR_BASEADDR, pI810->CursorPhysical);
       OUTREG8( CURSOR_CONTROL, CURSOR_ORIGIN_DISPLAY | CURSOR_MODE_64_3C);
 
@@ -197,7 +217,15 @@ I810HideCursor(ScrnInfoPtr pScrn)
       temp |= CURSORA_DISABLE;
       OUTREG(CURACNTR, temp);
       OUTREG(CURABASE, pI810->CursorPhysical);
-   } else {
+   } else if (IS_845G (pI810))
+		{
+		   temp = INREG(CURACNTR);
+		   temp &= 0x7fffffff;
+		   OUTREG(CURACNTR,temp);
+		   OUTREG(CURABASE,pI810->CursorStart);
+		}
+   
+   else {
       tmp=INREG8( PIXPIPE_CONFIG_0 );
       tmp &= ~HW_CURSOR_ENABLE;
       OUTREG8( PIXPIPE_CONFIG_0, tmp);
@@ -215,7 +243,7 @@ I810SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
    int tmp;
    I810Ptr pI810 = I810PTR(pScrn);
 
-   if(IS_I830(pI810)) {
+   if(IS_I830(pI810) || IS_845G (pI810)) {
       OUTREG(CURAPALET0, bg & 0x00ffffff);
       OUTREG(CURAPALET1, fg & 0x00ffffff);
       OUTREG(CURAPALET2, fg & 0x00ffffff);

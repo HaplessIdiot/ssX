@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.65 2002/01/09 16:02:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.67 2002/04/04 14:05:42 eich Exp $ */
 
 /*
  * Authors:
@@ -103,6 +103,7 @@ static SymTabRec I810Chipsets[] = {
    { PCI_CHIP_I810_E,     "i810e"},
    { PCI_CHIP_I815,	      "i815"},
    { PCI_CHIP_I830_M,     "i830M"},
+   { PCI_CHIP_845_G,	  "845G"},
    { -1, NULL }
 };
 
@@ -112,6 +113,7 @@ static PciChipsets I810PciChipsets[] = {
    { PCI_CHIP_I810_E,     PCI_CHIP_I810_E,     RES_SHARED_VGA },
    { PCI_CHIP_I815,	      PCI_CHIP_I815,       RES_SHARED_VGA },
    { PCI_CHIP_I830_M,     PCI_CHIP_I830_M,     RES_SHARED_VGA },
+   { PCI_CHIP_845_G,      PCI_CHIP_845_G,      RES_SHARED_VGA },
    { -1, -1, RES_UNDEFINED }
 };
 
@@ -409,7 +411,7 @@ I810Probe(DriverPtr drv, int flags) {
 
 		   pEnt = xf86GetEntityInfo(usedChips[i]);
 
-		   if (pEnt->chipset == PCI_CHIP_I830_M) {
+		   if (pEnt->chipset == PCI_CHIP_I830_M || pEnt->chipset == PCI_CHIP_845_G) {
 			   pScrn->driverVersion = I810_VERSION;
 			   pScrn->driverName = I810_DRIVER_NAME;
 			   pScrn->name = I810_NAME;
@@ -1350,7 +1352,7 @@ I810SetRingRegs( ScrnInfoPtr pScrn ) {
    OUTREG(LP_RING + RING_START, itemp );
 
    itemp = INREG(LP_RING + RING_LEN);
-   if (IS_I830 (pI810)) {
+   if (IS_I830 (pI810) || IS_845G (pI810)) {
 	   itemp &= ~(I830_RING_NR_PAGES | RING_REPORT_MASK | RING_VALID_MASK);
    } else {
 	   itemp &= ~(RING_NR_PAGES | RING_REPORT_MASK | RING_VALID_MASK);
