@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.2 2000/10/06 03:52:55 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.3 2000/10/11 23:55:32 tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -528,7 +528,7 @@ I128PreInit(ScrnInfoPtr pScrn, int flags)
 	case 8:
 	case 15:
 	case 16:
-	case 32:
+	case 24:
 	    /* OK */
 	    break;
 	default:
