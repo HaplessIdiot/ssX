@@ -43,6 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * @(#)osstruct.h	4.1	91/05/02
  *
  */
+/* $XFree86$ */
 
 #ifndef _OSSTRUCT_H_
 #define _OSSTRUCT_H_
