@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.29 2002/10/08 22:14:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.30 2002/10/30 12:52:17 alanh Exp $ */
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
  *
@@ -375,7 +375,6 @@ I810DRIScreenInit(ScreenPtr pScreen)
    {
       drmVersionPtr version;
 
-#if defined(XFree86LOADER)
       /* Check the DRM lib version.
        * drmGetLibVersion was not supported in version 1.0, so check for
        * symbol first to avoid possible crash or hang.
@@ -383,7 +382,6 @@ I810DRIScreenInit(ScreenPtr pScreen)
       if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
 	 version = drmGetLibVersion(pI810->drmSubFD);
       } else
-#endif
       {
 	 /* drmlib version 1.0.0 didn't have the drmGetLibVersion
 	  * entry point.  Fake it by allocating a version record
