@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.11 2000/08/03 02:30:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.12 2000/08/04 03:51:45 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,20 +32,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#ifndef XFree86LOADER
 #include "xf86.h"
 #include "xf86_ansic.h"
-#endif
-
-#ifdef linux
-#include <asm/ioctl.h>
-#include <linux/agpgart.h>
-#endif
-
-#ifdef XFree86LOADER
-#include "xf86.h"
-#include "xf86_ansic.h"
-#endif
+#include "xf86_OSproc.h"
 
 #include "i810.h"
 #include "i810_reg.h"
@@ -76,77 +65,38 @@ int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
 
 int I810AllocateGARTMemory( ScrnInfoPtr pScrn ) 
 {
-#ifdef AGPIOC_ACQUIRE
-   struct _agp_info agpinf;
-   struct _agp_bind bind;
-   struct _agp_allocate alloc;
-   int pages = pScrn->videoRam / 4; 
+   unsigned long size = pScrn->videoRam * 1024;
    I810Ptr pI810 = I810PTR(pScrn);
+   int key;
    long tom = 0;
-   int gartfd = -1;
+   unsigned long physical;
 
-   gartfd = open("/dev/agpgart", O_RDWR, 0);
-
-   if (gartfd == -1) {	
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "unable to open /dev/agpgart\n");
+   if (!xf86AgpGARTSupported())
       return FALSE;
-   }
 
-   if (ioctl(gartfd, AGPIOC_ACQUIRE, 0) != 0) {
-      if(pI810->agpAcquired2d == TRUE) {
-	 close(gartfd);
-	 return TRUE;
-      }
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, "AGPIOC_ACQUIRE failed\n"); 
+   if (!xf86AcquireGART(pScrn->scrnIndex))
       return FALSE;
-   }
 
    /* This allows the 2d only Xserver to regen */
    pI810->agpAcquired2d = TRUE;
-   pI810->gartfd = gartfd;
    
-   if (ioctl(pI810->gartfd, AGPIOC_INFO, &agpinf) != 0) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		 "error doing ioctl(AGPIOC_INFO)\n");
-      return FALSE;
-   }
-   
-   if (agpinf.version.major != 0 ||
-      agpinf.version.minor != 99) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		 "Agp kernel driver version not correct\n");
-      return FALSE;
-   }
-   
-
    /* Treat the gart like video memory - we assume we own all that is
     * there, so ignore EBUSY errors.  Don't try to remove it on
     * failure, either, as other X server may be using it.
     */
-   alloc.pg_count = pages;
-   alloc.type = 0;
 
-   if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) != 0) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		 "AGPGART: allocation of %d pages failed\n", pages);
+   if ((key = xf86AllocateGARTMemory(pScrn->scrnIndex, size, 0, NULL)) == -1)
       return FALSE;
-   }	
 
-   bind.pg_start = 0;
-   bind.key = alloc.key;
-   pI810->VramOffset = (off_t) bind.pg_start;
-   pI810->VramKey = bind.key;
+   pI810->VramOffset = 0;
+   pI810->VramKey = key;
 
-   if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
-      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		 "GART: allocation of %d pages failed\n", pages);
+   if (!xf86BindGARTMemory(pScrn->scrnIndex, key, 0))
       return FALSE;
-   }	
-
 
    pI810->SysMem.Start = 0;
-   pI810->SysMem.Size = pages * 4096;
-   pI810->SysMem.End = pages * 4096;
+   pI810->SysMem.Size = size;
+   pI810->SysMem.End = size;
    pI810->SavedSysMem = pI810->SysMem;
 
    tom = pI810->SysMem.End;
@@ -160,32 +110,25 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
     * a 2d server.  Don't bother reporting its presence.  This is
     * mapped in addition to the requested amount of system ram.
     */
-   alloc.pg_count = 1024;
-   alloc.type = 1;
-
+   size = 1024 * 4096;
    /* Keep it 512K aligned for the sake of tiled regions.
     */
    tom += 0x7ffff;
    tom &= ~0x7ffff;
 
-   if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) == 0) {
-      bind.pg_start = tom / 4096;
-      bind.key = alloc.key;
-      pI810->DcacheOffset= (off_t) bind.pg_start;
-      pI810->DcacheKey = bind.key;
-
-      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
+   if ((key = xf86AllocateGARTMemory(pScrn->scrnIndex, size, 1, NULL)) != -1) {
+      pI810->DcacheOffset= tom;
+      pI810->DcacheKey = key;
+      if (!xf86BindGARTMemory(pScrn->scrnIndex, key, tom)) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "GART: allocation of %d DCACHE pages failed\n", 
-		    alloc.pg_count);
+		    "GART: allocation of %d bytes for DCACHE failed\n", size);
       }	else {
 	 pI810->DcacheMem.Start = tom;
-	 pI810->DcacheMem.Size = 1024 * 4096;
+	 pI810->DcacheMem.Size = size;
 	 pI810->DcacheMem.End = pI810->DcacheMem.Start + pI810->DcacheMem.Size;
 	 tom = pI810->DcacheMem.End;
       }
    }
-
 
    /* Mouse cursor -- The i810 (crazy) needs a physical address in
     * system memory from which to upload the cursor.  We get this from 
@@ -196,29 +139,23 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
     * overlay registers later
     */
 
-   alloc.pg_count = 1;
-   alloc.type = 2;
+   size = 4096;
 
-
-   if (ioctl(pI810->gartfd, AGPIOC_ALLOCATE, &alloc) != 0) {
-	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "GART: No physical memory available for mouse\n", 
-		    alloc.pg_count);
+   if ((key = xf86AllocateGARTMemory(pScrn->scrnIndex, size, 2,
+				     &physical)) == -1) {
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		    "No physical memory available for mouse\n");
    } else {
-      bind.pg_start = tom / 4096;
-      bind.key = alloc.key;
-      pI810->HwcursOffset = (off_t) bind.pg_start;
-      pI810->HwcursKey = bind.key;
-
-      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0) {
+      pI810->HwcursOffset= tom;
+      pI810->HwcursKey = key;
+      if (!xf86BindGARTMemory(pScrn->scrnIndex, key, tom)) {
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-		    "GART: allocation of %d physical pages failed\n", 
-		    alloc.pg_count);
+		    "GART: allocation of %d bytes for HW cursor failed\n", 
+		    size);
       }	else {
-	 pI810->CursorPhysical = alloc.physical;
+	 pI810->CursorPhysical = physical;
 	 pI810->CursorStart = tom;
-	 
-	 tom += 4096;
+	 tom += size;
       }
    }
 
@@ -231,13 +168,12 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
         pI810->OverlayStart = pI810->CursorStart + 1024;
    }
 
+   pI810->GttBound = 1;
 
    return TRUE;
-#else
-   return FALSE;
-#endif
 }
 
+#if 0
 void I810FreeGARTMemory( ScrnInfoPtr pScrn ) 
 {
 #ifdef linux
@@ -249,6 +185,7 @@ void I810FreeGARTMemory( ScrnInfoPtr pScrn )
    }
 #endif
 }
+#endif
 
 
 
@@ -270,26 +207,30 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
    CARD32 val;
 
    if (nr < 0 || nr > 7) {
-      ErrorF("I810SetTiledMemory - fence %d out of range\n", nr);
+      xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
+	"I810SetTiledMemory - fence %d out of range\n", nr);
       return;
    }
 
    i810Reg->Fence[nr] = 0;
 
    if (start & ~FENCE_START_MASK) {
-      ErrorF("I810SetTiledMemory %d: start (%x) is not 512k aligned\n", 
-	     nr, start);
+      xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
+	"I810SetTiledMemory %d: start (%x) is not 512k aligned\n", 
+	nr, start);
       return;
    }
    if (start % size) {
-      ErrorF("I810SetTiledMemory %d: start (%x) is not size (%x) aligned\n",
-	     nr, start, size);
+      xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
+	"I810SetTiledMemory %d: start (%x) is not size (%x) aligned\n",
+	nr, start, size);
       return;
    }
 
    if (pitch & 127) {
-      ErrorF("I810SetTiledMemory %d: pitch (%x) not a multiple of 128 bytes\n",
-	     nr, pitch);
+      xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
+	"I810SetTiledMemory %d: pitch (%x) not a multiple of 128 bytes\n",
+	nr, pitch);
       return;
    }
 
@@ -304,7 +245,8 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
    case (16*1024*1024): val |= FENCE_SIZE_16M; break;
    case (32*1024*1024): val |= FENCE_SIZE_32M; break;
    default:
-      ErrorF("I810SetTiledMemory %d: illegal size (%x)\n");
+      xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
+		"I810SetTiledMemory %d: illegal size (0x%x)\n", size);
       return;
    }
 
@@ -316,7 +258,8 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
    case 16: val |= FENCE_PITCH_16; break;
    case 32: val |= FENCE_PITCH_32; break;
    default:
-      ErrorF("I810SetTiledMemory %d: illegal size (%x)\n");
+      xf86DrvMsg(X_WARNING, pScrn->scrnIndex,
+		"%d: illegal size (0x%x)\n", size);
       return;
    }
 
@@ -326,58 +269,40 @@ void I810SetTiledMemory(ScrnInfoPtr pScrn,
 Bool
 I810BindGARTMemory( ScrnInfoPtr pScrn ) 
 {
-#ifdef AGPIOC_ACQUIRE
    I810Ptr pI810 = I810PTR(pScrn);
-   struct _agp_bind bind;
 
-   if (!pI810->GttBound) {
-      if (ioctl(pI810->gartfd, AGPIOC_ACQUIRE, 0) != 0)
-        FatalError ("i810: Unable to acquire agp interface on VT switch!!\n");
-      bind.pg_start = (off_t) pI810->VramOffset;
-      bind.key = pI810->VramKey;
-      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0)
-        FatalError("i810: Unable to bind agp memory on VT switch!!\n");
-      bind.pg_start = (off_t) pI810->DcacheOffset;
-      bind.key = pI810->DcacheKey;
-      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0)
-        FatalError("i810: Unable to bind agp dcache on VT switch!!\n");
-      bind.pg_start = (off_t) pI810->HwcursOffset;
-      bind.key = pI810->HwcursKey;
-      if (ioctl(pI810->gartfd, AGPIOC_BIND, &bind) != 0)
-        FatalError("i810: Unable to bind agp hardware cursor on VT switch!!\n");
+   if (xf86AgpGARTSupported() && !pI810->GttBound) {
+      if (!xf86AcquireGART(pScrn->scrnIndex))
+	 return FALSE;
+      if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->VramKey,
+			      pI810->VramOffset))
+	 return FALSE;
+      if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->DcacheKey,
+			      pI810->DcacheOffset))
+	 return FALSE;
+      if (!xf86BindGARTMemory(pScrn->scrnIndex, pI810->HwcursKey,
+			      pI810->HwcursOffset))
+	 return FALSE;
       pI810->GttBound = 1;
    }
    return TRUE;
-#else
-   return FALSE;
-#endif
 }
 
 Bool
 I810UnbindGARTMemory( ScrnInfoPtr pScrn ) 
 {
-#ifdef AGPIOC_ACQUIRE
    I810Ptr pI810 = I810PTR(pScrn);
-   struct _agp_unbind unbind;
 
-   if (pI810->GttBound) {
-      unbind.priority = 0;
-      unbind.key = pI810->VramKey;
-      if (ioctl(pI810->gartfd, AGPIOC_UNBIND, &unbind) != 0)
-        FatalError("i810: Unable to bind agp memory on VT switch!!\n");
-      unbind.key = pI810->DcacheKey;
-      if (ioctl(pI810->gartfd, AGPIOC_UNBIND, &unbind) != 0)
-        FatalError("i810: Unable to bind agp dcache on VT switch!!\n");
-      unbind.key = pI810->HwcursKey;
-      if (ioctl(pI810->gartfd, AGPIOC_UNBIND, &unbind) != 0)
-        FatalError("i810: Unable to bind agp hardware cursor on VT switch!!\n");
-      if (ioctl(pI810->gartfd, AGPIOC_RELEASE, 0) != 0)
-        FatalError("i810: Unable to release agp interface on VT switch!!\n");
+   if (xf86AgpGARTSupported() && pI810->GttBound) {
+      if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->VramKey))
+	 return FALSE;
+      if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->DcacheKey))
+	 return FALSE;
+      if (!xf86UnbindGARTMemory(pScrn->scrnIndex, pI810->HwcursKey))
+	 return FALSE;
+      if (!xf86ReleaseGART(pScrn->scrnIndex))
+	 return FALSE;
       pI810->GttBound = 0;
    }
-
    return TRUE;
-#else
-   return FALSE;
-#endif
 }

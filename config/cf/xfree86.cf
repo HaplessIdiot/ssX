@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.307 2000/08/09 14:44:27 alanh Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.308 2000/08/11 19:10:36 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -140,11 +140,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #  define XF86AFB		YES
 # endif
 
-/*
- * XXX Should change this to allow such drivers to be built without agpgart
- * support (when it is useful to do so).
- */
-# if HasAgpGart
+# if HasAgpGart || XFree86Devel
 #  define AgpGartDrivers	i810
 # else
 #  define AgpGartDrivers	/**/

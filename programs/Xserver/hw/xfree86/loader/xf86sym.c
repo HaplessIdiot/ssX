@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.157 2000/08/04 16:13:38 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.159 2000/08/08 08:58:08 eich Exp $ */
 
 /*
  *
@@ -250,6 +250,14 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SerialModemClearBits)
    SYMFUNC(xf86LoadKernelModule)
    SYMFUNC(xf86OSMouseInit)
+   SYMFUNC(xf86AgpGARTSupported)
+   SYMFUNC(xf86GetAGPInfo)
+   SYMFUNC(xf86AcquireGART)
+   SYMFUNC(xf86ReleaseGART)
+   SYMFUNC(xf86AllocateGARTMemory)
+   SYMFUNC(xf86BindGARTMemory)
+   SYMFUNC(xf86UnbindGARTMemory)
+   SYMFUNC(xf86EnableAGP)
    
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */

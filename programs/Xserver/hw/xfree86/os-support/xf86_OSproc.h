@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.41 2000/06/21 15:56:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.43 2000/08/04 16:13:39 eich Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -166,6 +166,29 @@ extern int xf86GetSerialModemState(int fd);
 extern int xf86SerialModemSetBits(int fd, int bits);
 extern int xf86SerialModemClearBits(int fd, int bits);
 extern int xf86LoadKernelModule(const char *pathname);
+
+/* AGP GART interface */
+
+typedef struct _AgpInfo {
+	CARD32		bridgeId;
+	CARD32		agpMode;
+	unsigned long	base;
+	unsigned long	size;
+	unsigned long	totalPages;
+	unsigned long	systemPages;
+	unsigned long	usedPages;
+} AgpInfo, *AgpInfoPtr;
+
+extern Bool xf86AgpGARTSupported(void);
+extern AgpInfoPtr xf86GetAGPInfo(int screenNum);
+extern Bool xf86AcquireGART(int screenNum);
+extern Bool xf86ReleaseGART(int screenNum);
+extern int xf86AllocateGARTMemory(int screenNum, unsigned long size, int type,
+				  unsigned long *physical);
+extern Bool xf86BindGARTMemory(int screenNum, int key, unsigned long offset);
+extern Bool xf86UnbindGARTMemory(int screenNum, int key);
+/* preliminary */
+extern Bool xf86EnableAGP(int screenNum);
 
 #if defined(__alpha__)
 /* entry points for Mmio memory access routines */
