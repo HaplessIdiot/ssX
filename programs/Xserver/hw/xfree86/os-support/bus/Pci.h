@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.21 2001/11/01 23:35:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.24 2002/05/22 21:38:30 herrb Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -76,6 +76,7 @@
  */
 #ifndef _PCI_H
 #define _PCI_H 1
+
 #include "Xarch.h"
 #include "Xfuncproto.h"
 #include "xf86Pci.h"
@@ -85,10 +86,7 @@
  */
 #define MAX_PCI_DEVICES 64	/* Max number of devices accomodated */
 				/* by xf86scanpci		     */
-#if defined(i386) || defined(__i386__) || defined(__i386)
-/* Q&D stopgap to deal with mainboards whose PCI space is smaller */
-#define MAX_PCI_BUSES   128	/* Max number of PCI buses           */
-#elif defined(sun) && defined(SVR4) && defined(sparc)
+#if defined(sun) && defined(SVR4) && defined(sparc)
 #define MAX_PCI_BUSES   4096	/* Max number of PCI buses           */
 #else
 #define MAX_PCI_BUSES   256	/* Max number of PCI buses           */
@@ -334,6 +332,8 @@ extern PCITAG (*pciFindNextFP)(void);
 
 extern CARD32 pciDevid;    
 extern CARD32 pciDevidMask;
+
+extern int    pciMaxBusNum;
 
 extern int    pciBusNum;
 extern int    pciDevNum;

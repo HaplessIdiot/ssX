@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.4 2001/05/28 18:20:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/linuxPci.c,v 1.5 2002/01/25 21:56:18 tsi Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -57,11 +57,11 @@
  * linux platform specific PCI access functions -- using /proc/bus/pci
  * needs kernel version 2.2.x
  */
-CARD32 linuxPciCfgRead(PCITAG tag, int off);
-void linuxPciCfgWrite(PCITAG, int off, CARD32 val);
-void linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
+static CARD32 linuxPciCfgRead(PCITAG tag, int off);
+static void linuxPciCfgWrite(PCITAG, int off, CARD32 val);
+static void linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits);
 
-pciBusInfo_t linuxPci0 = {
+static pciBusInfo_t linuxPci0 = {
 /* configMech  */	  PCI_CFG_MECH_OTHER,
 /* numDevices  */	  32,
 /* secondary   */	  FALSE,
@@ -117,7 +117,7 @@ linuxPciOpenFile(PCITAG tag)
 	return fd;
 }
 
-CARD32
+static CARD32
 linuxPciCfgRead(PCITAG tag, int off)
 {
 	int	fd;
@@ -130,7 +130,7 @@ linuxPciCfgRead(PCITAG tag, int off)
 	return PCI_CPU(val);
 }
 
-void
+static void
 linuxPciCfgWrite(PCITAG tag, int off, CARD32 val)
 {
 	int	fd;
@@ -142,7 +142,7 @@ linuxPciCfgWrite(PCITAG tag, int off, CARD32 val)
 	}
 }
 
-void
+static void
 linuxPciCfgSetBits(PCITAG tag, int off, CARD32 mask, CARD32 bits)
 {
 	int	fd;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.52 2002/01/25 21:56:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.54 2002/04/04 14:05:53 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -205,6 +205,7 @@ pciBusFuncs_t pciNOOPFuncs = {
 		
 pciBusInfo_t  *pciBusInfo[MAX_PCI_BUSES] = { NULL, };
 int            pciNumBuses = 0;     /* Actual number of PCI buses */
+int            pciMaxBusNum = MAX_PCI_BUSES;
 static Bool    inProbe = FALSE;
 
 static pciConfigPtr pci_devp[MAX_PCI_DEVICES + 1] = {NULL, };
@@ -684,7 +685,7 @@ pciGenFindNext(void)
 		}
      
 	 
-		if (++pciBusNum >= MAX_PCI_BUSES) {
+		if (++pciBusNum >= pciMaxBusNum) {
 #ifdef DEBUGPCI
 		    ErrorF("pciGenFindNext: out of buses\n");
 #endif
@@ -758,7 +759,7 @@ pciGenFindNext(void)
 			" 0x%08x (0x%02x, 0x%02x)\n",
 			pciDeviceTag, pciBusNum, pri_bus);
 		if ((PCI_BUS_NO_DOMAIN(sec_bus) != 0) &&
-		    (sec_bus < MAX_PCI_BUSES) &&
+		    (sec_bus < pciMaxBusNum) &&
 		    pciBusInfo[pri_bus]) {
 		    /*
 		     * Found a secondary PCI bus
