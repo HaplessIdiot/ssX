@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.55 2003/07/07 16:38:34 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.56 2003/07/17 08:19:36 eich Exp $ */
 
 
 /*
@@ -199,7 +199,6 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(screenInfo)
   SYMVAR(serverClient)
   SYMVAR(serverGeneration)
-  SYMVAR(maxBigRequestSize)
   /* main.c */
   SYMFUNC(NotImplemented)
   /* pixmap.c */
