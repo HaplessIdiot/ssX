@@ -5271,11 +5271,7 @@ static void RADEONSaveMode(ScrnInfoPtr pScrn, RADEONSavePtr save)
 	RADEONSavePLLRegisters(pScrn, save);
 	RADEONSaveCommonRegisters(pScrn, save);
 	RADEONSaveCrtcRegisters(pScrn, save);
-
-	if ((info->DisplayType == MT_DFP) ||
-	    (info->DisplayType == MT_LCD)) {
-	    RADEONSaveFPRegisters(pScrn, save);
-	}
+	RADEONSaveFPRegisters(pScrn, save);
 
 	if (info->Clone) {
 	    RADEONSaveCrtc2Registers(pScrn, save);
