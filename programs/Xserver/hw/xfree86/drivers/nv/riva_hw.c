@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.21 2001/12/17 22:17:55 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.22 2002/01/30 01:35:03 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1525,11 +1525,21 @@ static void LoadStateExt
             chip->PGRAPH[0x00000F50/4] = 0x00000040;
             for (i = 0; i < 4; i++)
                 chip->PGRAPH[0x00000F54/4] = 0x00000000;
+
+            if(chip->flatPanel) {
+               VGA_WR08(chip->PCIO, 0x03D4, 0x53);
+               VGA_WR08(chip->PCIO, 0x03D5, 0);
+               VGA_WR08(chip->PCIO, 0x03D4, 0x54);
+               VGA_WR08(chip->PCIO, 0x03D5, 0);
+               VGA_WR08(chip->PCIO, 0x03D4, 0x21);
+               VGA_WR08(chip->PCIO, 0x03D5, 0xfa);
+            }
             break;
     }
 
     LOAD_FIXED_STATE(Riva,FIFO);
     UpdateFifoState(chip);
+
     /*
      * Load HW mode state.
      */
@@ -1558,13 +1568,14 @@ static void LoadStateExt
     VGA_WR08(chip->PCIO, 0x03D4, 0x41);
     VGA_WR08(chip->PCIO, 0x03D5, state->extra);
 
-    chip->PRAMDAC0[0x0000050C/4] = state->pllsel;
-    chip->PRAMDAC0[0x00000508/4] = state->vpll;
-    chip->PRAMDAC0[0x00000520/4] = state->vpll2;
+    if(!chip->flatPanel) {
+       chip->PRAMDAC0[0x00000508/4] = state->vpll;
+       chip->PRAMDAC0[0x00000520/4] = state->vpll2;
+       chip->PRAMDAC0[0x0000050C/4] = state->pllsel;
+    }
     chip->PRAMDAC[0x00000600/4]  = state->general;
     chip->PRAMDAC[0x00000848/4]  = state->scale;
 
-    chip->PRAMDAC0[0x00000520/4] = state->vpll2;
     /*
      * Turn off VBlank enable and reset.
      */
@@ -1942,6 +1953,7 @@ int RivaGetConfig
         default:
             return (-1);
     }
+    chip->flatPanel = pNv->FlatPanel;
     /*
      * Fill in FIFO pointers.
      */
