@@ -19,7 +19,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE 
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/p9x00/p9x00DAC.c,v 1.1 1998/01/11 03:36:45 dawes Exp $ */
 
 #include "vga.h"
 #include "p9x00DAC.h"
@@ -60,7 +60,7 @@ void p9x00read_LUT_regs(int start, int n, CARD8 *lut)
    }
 }
 
-Bool allways_use_cursor(void)
+Bool allways_use_cursor(void *pScreen)
 {
   return TRUE;
 }

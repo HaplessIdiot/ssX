@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.24 1997/12/14 10:03:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.25 1998/01/11 03:36:43 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -288,7 +288,7 @@ ModuleInit(data,magic)
  * ramdac info structure initialization
  */
 MGARamdacRec MGAdac = {
-	FALSE, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
+	FALSE, 0, 0, 0, NULL, NULL, NULL, NULL, NULL, NULL,
 	90000, /* maxPixelClock */
 	0
 }; 

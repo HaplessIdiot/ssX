@@ -21,6 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
+/* $XFree86$ */
 #define NEED_EVENTS
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -118,7 +119,7 @@ Status XeviGetVisualInfo(dpy, visual, n_visual, evi_return, n_info_return)
     XeviCheckExtension (dpy, info, 0);
     *n_info_return = 0;
     *evi_return = NULL;
-    vinfo = XGetVisualInfo(dpy, NULL, NULL, &sz_info);
+    vinfo = XGetVisualInfo(dpy, 0, NULL, &sz_info);
     if (!vinfo) {
 	return BadValue;
     }

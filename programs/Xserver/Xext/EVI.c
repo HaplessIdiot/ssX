@@ -21,6 +21,7 @@ DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE
 OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 ********************************************************/
+/* $XFree86$ */
 #include "X.h"
 #include "Xproto.h"
 #include "dixstruct.h"
@@ -57,9 +58,9 @@ ProcEVIQueryVersion(ClientPtr client)
    int l1 = l; 						\
    xExtendedVisualInfo *eviInfo1 = eviInfo;		\
    while (l1-- > 0) {					\
-       swapl(eviInfo1->core_visual_id, n);		\
-       swapl(eviInfo1->transparency_value, n);		\
-       swaps(eviInfo1->num_colormap_conflicts, n);	\
+       swapl(&eviInfo1->core_visual_id, n);		\
+       swapl(&eviInfo1->transparency_value, n);		\
+       swaps(&eviInfo1->num_colormap_conflicts, n);	\
        eviInfo1++;					\
    }							\
 }
