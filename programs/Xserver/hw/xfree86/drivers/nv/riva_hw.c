@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.23 2002/02/05 05:24:18 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.24 2002/02/10 04:25:08 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1937,7 +1937,7 @@ static void nv10GetConfig
         chip->twoHeads = TRUE;
         break;
     default:
-        chip->twoHeads = TRUE;
+        chip->twoHeads = FALSE;
         break;
     }
 }
