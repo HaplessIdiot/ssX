@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400, MGA-G550 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.48 2001/10/01 13:44:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.51 2002/09/16 18:05:55 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -479,7 +479,8 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->ExtVga[2]	= ((vt & 0xc00) >> 10) |
 				((vd & 0x400) >> 8) |
 				((vd & 0xc00) >> 7) |
-				((vs & 0xc00) >> 5);
+				((vs & 0xc00) >> 5) |
+				((vd & 0x400) >> 3); /* linecomp */
 	if (pLayout->bitsPerPixel == 24)
 		pReg->ExtVga[3]	= (((1 << BppShift) * 3) - 1) | 0x80;
 	else
@@ -498,17 +499,19 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 				((vd & 0x100) >> 7 ) |
 				((vs & 0x100) >> 6 ) |
 				((vd & 0x100) >> 5 ) |
-				0x10 |
+				((vd & 0x100) >> 4 ) | /* linecomp */
 				((vt & 0x200) >> 4 ) |
 				((vd & 0x200) >> 3 ) |
 				((vs & 0x200) >> 2 );
-	pVga->CRTC[9]	= ((vd & 0x200) >> 4) | 0x40; 
+	pVga->CRTC[9]	= ((vd & 0x200) >> 4) |
+			  ((vd & 0x200) >> 3); /* linecomp */
 	pVga->CRTC[16] = vs & 0xFF;
 	pVga->CRTC[17] = (ve & 0x0F) | 0x20;
 	pVga->CRTC[18] = vd & 0xFF;
 	pVga->CRTC[19] = wd & 0xFF;
 	pVga->CRTC[21] = vd & 0xFF;
 	pVga->CRTC[22] = (vt + 1) & 0xFF;
+	pVga->CRTC[24] = vd & 0xFF; /* linecomp */
 
 	MGA_NOT_HAL(pReg->DacRegs[MGA1064_CURSOR_BASE_ADR_LOW] = pMga->FbCursorOffset >> 10);
 	MGA_NOT_HAL(pReg->DacRegs[MGA1064_CURSOR_BASE_ADR_HI] = pMga->FbCursorOffset >> 18);
