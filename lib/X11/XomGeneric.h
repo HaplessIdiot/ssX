@@ -31,6 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
+/* $XFree86$ */
 
 #ifndef _XOMGENERIC_H_
 #define _XOMGENERIC_H_

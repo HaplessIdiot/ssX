@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /*
  * ARMSCII-8
