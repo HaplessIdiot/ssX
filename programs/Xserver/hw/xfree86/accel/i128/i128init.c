@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.15 1997/12/05 22:01:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128init.c,v 3.16 1998/01/24 16:56:36 hohndel Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -467,6 +467,7 @@ i128Init(mode)
 			tmp |= 0x01000000;  /* split transfer */
 	}
 	i128mem.rbase_g[CRT_2CON] = tmp;
+	i128mem.rbase_g[CRT_ZOOM] = 0x00000000;
 
 	i128mem.rbase_w[MW0_CTRL] = 0x00000000;
 	switch (i128InfoRec.videoRam) {
