@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.80 2004/06/01 01:23:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86pciBus.c,v 3.81tsi Exp $ */
 /*
  * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -771,8 +771,8 @@ savePciState(PCITAG tag, pciSavePtr ptr)
      
     ptr->command = pciReadLong(tag, PCI_CMD_STAT_REG);
     for (i=0; i < 6; i++) 
-        ptr->base[i] = pciReadLong(tag, PCI_CMD_BASE_REG + i*4);
-    ptr->biosBase = pciReadLong(tag, PCI_CMD_BIOS_REG);
+        ptr->base[i] = pciReadLong(tag, PCI_MAP_REG_START + (i * 4));
+    ptr->biosBase = pciReadLong(tag, PCI_MAP_ROM_REG);
 }
 
 /* move to OS layer */
@@ -784,9 +784,9 @@ restorePciState(PCITAG tag, pciSavePtr ptr)
     /* disable card before setting anything */
     pciSetBitsLong(tag, PCI_CMD_STAT_REG,
 		   PCI_CMD_MEM_ENABLE | PCI_CMD_IO_ENABLE , 0);
-    pciWriteLong(tag,PCI_CMD_BIOS_REG, ptr->biosBase);
+    pciWriteLong(tag, PCI_MAP_ROM_REG, ptr->biosBase);
     for (i=0; i<6; i++)
-        pciWriteLong(tag, PCI_CMD_BASE_REG + i*4, ptr->base[i]);        
+        pciWriteLong(tag, PCI_MAP_REG_START + (i * 4), ptr->base[i]);        
     pciWriteLong(tag, PCI_CMD_STAT_REG, ptr->command);
 }
 
@@ -851,7 +851,7 @@ restorePciDrvBusState(BusAccPtr ptr)
 static void
 disablePciBios(PCITAG tag)
 {
-    pciSetBitsLong(tag, PCI_CMD_BIOS_REG, PCI_CMD_BIOS_ENABLE, 0);
+    pciSetBitsLong(tag, PCI_MAP_ROM_REG, PCI_MAP_ROM_DECODE_ENABLE, 0);
 }
 
 /* ????? */
@@ -1501,25 +1501,26 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, unsigned long type)
 	    pvp->ioBase[prt] = range.rBegin;
 	((CARD32 *)(&(pcp->pci_base0)))[res_n] =
 	    (CARD32)(*p_base) | (CARD32)(p_type);
-	pciWriteLong(tag, PCI_CMD_BASE_REG + res_n * sizeof(CARD32),
+	pciWriteLong(tag, PCI_MAP_REG_START + (res_n * sizeof(CARD32)),
 		     ((CARD32 *)(&(pcp->pci_base0)))[res_n]);
 	if (PCI_MAP_IS64BITMEM(p_type)) {
 #if defined(LONG64) || defined(WORD64)
 	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] =
 		(CARD32)(*p_base >> 32);
-	    pciWriteLong(tag, PCI_CMD_BASE_REG + (res_n + 1) * sizeof(CARD32),
+	    pciWriteLong(tag, PCI_MAP_REG_START + ((res_n + 1) * sizeof(CARD32)),
 	    		 ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1]);
 #else
 	    ((CARD32 *)(&(pcp->pci_base0)))[res_n + 1] = 0;
-	    pciWriteLong(tag, PCI_CMD_BASE_REG + (res_n + 1) * sizeof(CARD32),
+	    pciWriteLong(tag, PCI_MAP_REG_START + ((res_n + 1) * sizeof(CARD32)),
 			 0);
 #endif
 	}
     } else {
 	pvp->biosBase = range.rBegin;
-	pcp->pci_baserom = (pciReadLong(tag,PCI_CMD_BIOS_REG) & 0x01) |
+	pcp->pci_baserom =
+	    (pciReadLong(tag, PCI_MAP_ROM_REG) & PCI_MAP_ROM_DECODE_ENABLE) |
 	    (CARD32)(*p_base);
-	pciWriteLong(tag, PCI_CMD_BIOS_REG, pcp->pci_baserom);
+	pciWriteLong(tag, PCI_MAP_ROM_REG, pcp->pci_baserom);
     }
     /* @@@ fake BIOS allocated resource */
     range.type |= ResBios;
@@ -2219,7 +2220,7 @@ xf86GetPciBridgeInfo(void)
 	}
     }
     for (i = 0; i <= MaxBus; i++) { /* find PCI buses not attached to bridge */
-	if (!pciBusInfo[i])
+	if (!pciBusInfo[i] || (pciBusInfo[i]->numDevices == 0))
 	    continue;
 	for (PciBus = PciBusBase; PciBus; PciBus = PciBus->next)
 	    if (PciBus->secondary == i) break;

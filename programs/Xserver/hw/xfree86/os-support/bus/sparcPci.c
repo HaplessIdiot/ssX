@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.18tsi Exp $ */
 /*
  * Copyright (C) 2001-2003 The XFree86 Project, Inc.
  * All rights reserved.
@@ -368,6 +368,8 @@ sparcPciInit(void)
 
 	if (!strcmp("SUNW,psycho",  prop_val) ||
 	    !strcmp("pci108e,8000", prop_val)) {
+	    bridge_name = "Psycho";
+
 	    /*
 	     * A "Psycho" host bridge provides two PCI interfaces, each with
 	     * its own 16-bit I/O and 31-bit memory spaces.  Both share the
@@ -516,6 +518,13 @@ sparcPciInit(void)
 	continue;
 
 newDomain:
+	if (pciNumDomains >= MAX_DOMAINS) {
+	    xf86Msg(X_ERROR, "MAX_PCI_BUSES needs to be increased to"
+		    " accomodate this %s host bridge\n", bridge_name);
+	    pciNumDomains++;
+	    continue;
+	}
+
 	/* Only map as much PCI configuration as we need */
 	domain.pci = (char *)sparcMapAperture(-1, VIDMEM_MMIO,
 	    pci_addr + PCI_MAKE_TAG(domain.bus_min, 0, 0),
@@ -637,6 +646,11 @@ nextNode:;
     }
 
     sparcPromClose();
+
+    if (pciNumDomains >= MAX_DOMAINS)
+	xf86Msg(X_ERROR, "MAX_PCI_BUSES needs to be increased to %d to"
+		" accomodate all host bridges in this system\n",
+		pciNumDomains * 256);
 
     close(apertureFd);
     apertureFd = -1;
