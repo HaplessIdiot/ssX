@@ -212,8 +212,8 @@ ShadowEnterVT(int index, int flags)
 	pPriv->vtSema = TRUE;
 
 	box.x1 = box.y1 = 0;
-	box.x2 = pScrn->virtualX;
-	box.y2 = pScrn->virtualY;
+	box.x2 = pScrn->pScreen->width;
+	box.y2 = pScrn->pScreen->height;
 
 	(*pPriv->refresh)(pScrn, 1, &box);
 

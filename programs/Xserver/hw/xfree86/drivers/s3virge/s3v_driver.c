@@ -29,7 +29,14 @@ in this Software without prior written authorization from the XFree86 Project.
 #include "xf86RAC.h"
 
 #include "xf86DDC.h"
+#if 0
 #include "xf86int10.h"
+#endif
+#include "vbe.h"
+
+/* Needed by the Shadow Framebuffer */
+#include "shadowfb.h"
+
 /*
  * s3v_driver.c
  * Port to 4.0 design level
@@ -158,7 +165,7 @@ static SymTabRec S3VChipsets[] = {
   { PCI_CHIP_VIRGE_DXGX,	"virge gx" },
   { PCI_CHIP_VIRGE_DXGX,	"86C375" },
   { PCI_CHIP_VIRGE_DXGX,	"86C385" },
-  					/* GX2 (86C357) */
+                                        /* GX2 (86C357) */
   { PCI_CHIP_VIRGE_GX2,		"virge gx2" },
   { PCI_CHIP_VIRGE_GX2,		"86C357" },
   					/* MX (86C260) */
@@ -199,7 +206,9 @@ typedef enum {
    OPTION_REFCLK,
    OPTION_SHOWCACHE,
    OPTION_SWCURSOR,
-   OPTION_HWCURSOR
+   OPTION_HWCURSOR,
+   OPTION_SHADOW_FB,
+   OPTION_ROTATE
 } S3VOpts;
 
 static OptionInfoRec S3VOptions[] =
@@ -224,6 +233,8 @@ static OptionInfoRec S3VOptions[] =
    { OPTION_SHOWCACHE,		"show_cache",   OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_HWCURSOR,		"HWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
    { OPTION_SWCURSOR,		"SWCursor",     OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_SHADOW_FB,          "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+   { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
    {-1, NULL, OPTV_NONE,	{0}, FALSE}
 };
 
@@ -290,17 +301,37 @@ static const char *i2cSymbols[] = {
     NULL
 };
 
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
+
+static const char *int10Symbols[] = {
+    "xf86InitInt10",
+    "xf86FreeInt10",
+    NULL
+};
+
+static const char *vbeSymbols[] = {
+    "VBEInit",
+    "vbeDoEDID",
+    "vbeFree",
+    NULL
+};
 
 #ifdef XFree86LOADER
 
 static const char *cfbSymbols[] = {
+#if 1
     "cfbScreenInit",
     "cfb16ScreenInit",
     "cfb24ScreenInit",
     "cfb24_32ScreenInit",
     "cfb32ScreenInit",
+#endif
     NULL
 };
+
 
 static MODULESETUPPROTO(s3virgeSetup);
 
@@ -345,7 +376,8 @@ s3virgeSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	 * might refer to.
 	 */
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-			  ramdacSymbols, NULL);
+			  ramdacSymbols, ddcSymbols, i2cSymbols,
+			  int10Symbols, vbeSymbols, shadowSymbols, NULL);
 			  
 	/*
 	 * The return value must be non-NULL on success even though there
@@ -388,13 +420,15 @@ static unsigned char *find_bios_string(int BIOSbase, char *match1, char *match2)
       l2 = 0;
 
    for (i=0; i<BIOS_BSIZE-l1; i++)
-      if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1))
+       if (bios[i] == match1[0] && !memcmp(&bios[i],match1,l1)) {
 	 if (match2 == NULL) 
 	    return &bios[i+l1];
 	 else
 	    for(j=i+l1; (j<BIOS_BSIZE-l2) && bios[j]; j++) 
 	       if (bios[j] == match2[0] && !memcmp(&bios[j],match2,l2))
-		  return &bios[j+l2];
+		   return &bios[j+l2];
+       }
+   
    return NULL;
 }
 
@@ -474,6 +508,7 @@ S3VProbe(DriverPtr drv, int flags)
     numUsed = xf86MatchPciInstances(S3VIRGE_NAME, PCI_S3_VENDOR_ID,
 				    S3VChipsets, S3VPciChipsets, devSections,
 				    numDevSections, drv, &usedChips);
+    
     /* Free it since we don't need that list after this */
     if (devSections)
 	xfree(devSections);
@@ -524,8 +559,9 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
-
-    unsigned char config1, config2, m, n, n1, n2, cr66;
+    char *s;
+    
+    unsigned char config1, config2, m, n, n1, n2, cr66 = 0;
     int mclk;
     
     vgaHWPtr hwp;
@@ -533,7 +569,6 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     
     PVERB5("	S3VPreInit 1\n");
     	      
-  
     /*
      * Note: This function is only called once at server startup, and
      * not at the start of each server generation.  This means that
@@ -766,7 +801,43 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s Cursor\n",
 		ps3v->hwcursor ? "HW" : "SW");
-	
+
+    if (xf86GetOptValBool(S3VOptions, OPTION_SHADOW_FB,&ps3v->shadowFB))
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB %s.\n",
+		   ps3v->shadowFB ? "enabled" : "disabled");
+
+    if ((s = xf86GetOptValString(S3VOptions, OPTION_ROTATE))) {
+	if(!xf86NameCmp(s, "CW")) {
+	    /* accel is disabled below for shadowFB */
+	    ps3v->shadowFB = TRUE;
+	    ps3v->rotate = 1;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+		       "Rotating screen clockwise - acceleration disabled\n");
+	} else if(!xf86NameCmp(s, "CCW")) {
+	    ps3v->shadowFB = TRUE;
+	    ps3v->rotate = -1;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
+		       "counter clockwise - acceleration disabled\n");
+	} else {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+		       "value for Option \"Rotate\"\n", s);
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+		       "Valid options are \"CW\" or \"CCW\"\n");
+	}
+    }
+    
+    if (ps3v->shadowFB && !ps3v->NoAccel) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "HW acceleration not supported with \"shadowFB\".\n");
+	ps3v->NoAccel = TRUE;
+    }
+
+    if (ps3v->rotate && ps3v->hwcursor) {
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "HW cursor not supported with \"rotate\".\n");
+	ps3v->hwcursor = FALSE;
+    }
+    
     /* Find the PCI slot for this screen */
     /*
      * XXX Ignoring the Type list for now.  It might be needed when
@@ -784,9 +855,11 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	S3VFreeRec(pScrn);
 	return FALSE;
     }
-#if 1
+
+#if 0
     if (xf86LoadSubModule(pScrn, "int10")) {
  	xf86Int10InfoPtr pInt;
+ 	xf86LoaderReqSymLists(int10Symbols, NULL);
 #if 1
 	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
 	pInt = xf86InitInt10(pEnt->index);
@@ -794,6 +867,11 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 #endif
     }
 #endif
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86LoaderReqSymLists(vbeSymbols, NULL);
+	ps3v->pVbe =  VBEInit(NULL,pEnt->index);
+    }
+
     ps3v->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
     xf86RegisterResources(pEnt->index,NULL,ResNone);
     xf86SetOperatingState(RES_SHARED_VGA, pEnt->index, ResUnusedOpr);
@@ -874,20 +952,29 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    config2 = VGAIN8(vgaCRReg);          /* get amount of off-screen ram   */
 
    if (xf86LoadSubModule(pScrn, "ddc")) {
+       xf86MonPtr pMon = NULL;
+       
        xf86LoaderReqSymLists(ddcSymbols, NULL);
-       if (!S3Vddc1(pScrn->scrnIndex)) {
+       if ((ps3v->pVbe) 
+	   && ((pMon = xf86PrintEDID(vbeDoEDID(ps3v->pVbe))) != NULL))
+	   xf86SetDDCproperties(pScrn,pMon);
+       else if (!S3Vddc1(pScrn->scrnIndex)) {
 	   if ( xf86LoadSubModule(pScrn, "i2c") ) {
 	       xf86LoaderReqSymLists(i2cSymbols,NULL);
 	       if (S3V_I2CInit(pScrn)) {
 		   CARD32 tmp = (INREG(DDC_REG));
 		   OUTREG(DDC_REG,(tmp | 0x13));
-		   xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C));
+		   xf86SetDDCproperties(pScrn,xf86PrintEDID(
+		       xf86DoEDID_DDC2(pScrn->scrnIndex,ps3v->I2C)));
 		   OUTREG(DDC_REG,tmp);
 	       }
 	   }
        }
    }
-
+   if (ps3v->pVbe)
+       vbeFree(ps3v->pVbe);
+   
+   
    /*
     * If the driver can do gamma correction, it should call xf86SetGamma()
     * here. (from MGA, no ViRGE gamma support yet, but needed for 
@@ -1361,7 +1448,15 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	xf86LoaderReqSymLists(ramdacSymbols, NULL);
     }
-    
+
+    if (ps3v->shadowFB) {
+	if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+	    S3VFreeRec(pScrn);
+	    return FALSE;
+	}
+	xf86LoaderReqSymLists(shadowSymbols, NULL);
+    }
+   
     return TRUE;
 }
 
@@ -2145,6 +2240,7 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
   ScrnInfoPtr pScrn;
   S3VPtr ps3v;
   int ret;
+  
   PVERB5("	S3VScreenInit\n");
                                         /* First get the ScrnInfoRec */
   pScrn = xf86Screens[pScreen->myNum];
@@ -2251,7 +2347,27 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		"Hardware cursor initialization failed\n");
 		}
   }
-   
+
+  if (ps3v->shadowFB) {
+      RefreshAreaFuncPtr refreshArea = s3vRefreshArea;
+      
+      if(ps3v->rotate) {
+	  if (!ps3v->PointerMoved) {
+	      ps3v->PointerMoved = pScrn->PointerMoved;
+	      pScrn->PointerMoved = s3vPointerMoved;
+	  }
+	  
+	  switch(pScrn->bitsPerPixel) {
+	  case 8:	refreshArea = s3vRefreshArea8;	break;
+	  case 16:	refreshArea = s3vRefreshArea16;	break;
+	  case 24:	refreshArea = s3vRefreshArea24;	break;
+	  case 32:	refreshArea = s3vRefreshArea32;	break;
+	  }
+      }
+      
+      ShadowFBInit(pScreen, refreshArea);
+  }
+
     					/* Initialise default colourmap */
   if (!miCreateDefColormap(pScreen))
     return FALSE;
@@ -2312,10 +2428,32 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
   int ret = TRUE;
   ScrnInfoPtr pScrn;
   S3VPtr ps3v;
+  int width, height, displayWidth;
+  unsigned char* FBStart;
+
   					/* First get the ScrnInfoRec */
   pScrn = xf86Screens[pScreen->myNum];
 
   ps3v = S3VPTR(pScrn);
+
+  displayWidth = pScrn->displayWidth;
+  if (ps3v->rotate) {
+      height = pScrn->virtualX;
+      width = pScrn->virtualY;
+  } else {
+      width = pScrn->virtualX;
+      height = pScrn->virtualY;
+  }
+  
+  if(ps3v->shadowFB) {
+      ps3v->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
+      ps3v->ShadowPtr = xalloc(ps3v->ShadowPitch * height);
+      displayWidth = ps3v->ShadowPitch / (pScrn->bitsPerPixel >> 3);
+      FBStart = ps3v->ShadowPtr;
+  } else {
+      ps3v->ShadowPtr = NULL;
+      FBStart = ps3v->FBStart;
+  }
   
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -2324,35 +2462,35 @@ S3VInternalScreenInit( int scrnIndex, ScreenPtr pScreen)
 
   switch (pScrn->bitsPerPixel) {
     case 8:
-	ret = cfbScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+	ret = cfbScreenInit(pScreen, FBStart,
+			    width,height,
+			    pScrn->xDpi, pScrn->yDpi,
+			    displayWidth);
 	break;
     case 16:
-	ret = cfb16ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+	ret = cfb16ScreenInit(pScreen, FBStart,
+			      width,height,
+			      pScrn->xDpi, pScrn->yDpi,
+			      displayWidth);
 	break;
     case 24:
 	  if (pix24bpp ==24) {
-	    ret = cfb24ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+	    ret = cfb24ScreenInit(pScreen, FBStart,
+			    width,height,
+				  pScrn->xDpi, pScrn->yDpi,
+				  displayWidth);
 	  } else {
-	    ret = cfb24_32ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+	    ret = cfb24_32ScreenInit(pScreen, FBStart,
+				     width,height,
+				     pScrn->xDpi, pScrn->yDpi,
+				     displayWidth);
 	  	}
 	break;
     case 32:
-	ret = cfb32ScreenInit(pScreen, ps3v->FBStart,
-			pScrn->virtualX, pScrn->virtualY,
-			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+	ret = cfb32ScreenInit(pScreen, FBStart,
+			      width,height,
+			      pScrn->xDpi, pScrn->yDpi,
+			      displayWidth);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -3083,7 +3221,12 @@ S3VEnableMmio(ScrnInfoPtr pScrn)
    * (EE 05/04/99)
    */
   vgaHWSetStdFuncs(hwp);
-  
+  /*
+   * any access to the legacy VGA ports is done here.
+   * If legacy VGA is inaccessable the MMIO base _has_
+   * to be set correctly already and MMIO _has_ to be
+   * enabled.
+   */
   val = inb(0x3C3);               /*@@@EE*/
   outb(0x3C3,val | 0x01);
   /*
@@ -3292,17 +3435,20 @@ S3Vddc1Read(ScrnInfoPtr pScrn)
 static Bool
 S3Vddc1(int scrnIndex)
 {
-    S3VPtr ps3v = S3VPTR(xf86Screens[scrnIndex]);
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    S3VPtr ps3v = S3VPTR(pScrn);
     CARD32 tmp;
     Bool success = FALSE;
+    xf86MonPtr pMon;
     
     /* initialize chipset */
     tmp = INREG(DDC_REG);
     OUTREG(DDC_REG,(tmp | 0x12));
     
-    if (xf86PrintEDID(
-	xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,S3Vddc1Read)))
+    if ((pMon = xf86PrintEDID(
+	xf86DoEDID_DDC1(scrnIndex,vgaHWddc1SetSpeed,S3Vddc1Read))) != NULL)
 	success = TRUE;
+    xf86SetDDCproperties(pScrn,pMon);
 
     /* undo initialization */
     OUTREG(DDC_REG,(tmp));

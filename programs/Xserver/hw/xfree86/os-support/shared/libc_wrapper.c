@@ -156,7 +156,10 @@ typedef struct dirent DIRENTRY;
 #ifdef XNO_SYSCONF
 #undef _SC_PAGESIZE
 #endif
-
+#ifdef HAVE_SYSV_IPC
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#endif
 
 #if 0
 #define SETBUF_RETURNS_INT
@@ -1762,3 +1765,79 @@ xf86GetErrno ()
 #ifdef NEED_SNPRINTF
 #include "snprintf.c"
 #endif
+
+#ifdef HAVE_SYSV_IPC
+
+int
+xf86shmget(xf86key_t key, int size, int xf86shmflg)
+{
+    int shmflg = 0;
+
+    if (key == XF86IPC_PRIVATE) key = IPC_PRIVATE;
+    
+
+    if (xf86shmflg & XF86SHM_R) shmflg |= SHM_R;
+    if (xf86shmflg & XF86SHM_W) shmflg |= SHM_W;
+    if (xf86shmflg & XF86IPC_CREAT) shmflg |= IPC_CREAT;
+    if (xf86shmflg & XF86IPC_EXCL) shmflg |= IPC_EXCL;
+    if (xf86shmflg & XF86IPC_NOWAIT) shmflg |= IPC_NOWAIT;
+    return shmget((key_t) key, size, shmflg);
+}
+
+char *
+xf86shmat(int id, char *addr, int xf86shmflg)
+{
+    int shmflg = 0;
+    
+    if (xf86shmflg & XF86SHM_RDONLY) shmflg |= SHM_RDONLY;
+    if (xf86shmflg & XF86SHM_RND) shmflg    |= SHM_RND;
+    if (xf86shmflg & XF86SHM_REMAP) shmflg  |= SHM_REMAP;
+
+    return shmat(id,addr,shmflg);
+}
+
+int
+xf86shmdt(char *addr)
+{
+    return shmdt(addr);
+}
+
+/*
+ * for now only implement the rmid command.
+ */
+int
+xf86shmctl(int id, int xf86cmd, pointer *buf)
+{
+    int cmd;
+
+    switch (xf86cmd) {
+    case XF86IPC_RMID:
+	cmd = IPC_RMID;
+	break;
+    default:
+	return 0;
+    }
+    
+    return shmctl(id, cmd, NULL);
+}
+#else
+
+int
+xf86shmget(xf86key_t key, int size, int xf86shmflg)
+{
+    return -1;
+    
+}
+
+char *
+xf86shmat(int id, char *addr, int xf86shmflg)
+{
+    return (char *)-1;
+}
+
+int
+xf86shmctl(int id, int xf86cmd, pointer *buf)
+{
+    return -1;
+}
+#endif /* HAVE_SYSV_IPC */

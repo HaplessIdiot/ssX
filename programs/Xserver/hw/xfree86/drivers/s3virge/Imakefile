@@ -8,9 +8,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/Imakefile,v 1.14 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = s3v_driver.c s3v_accel.c s3v_dac.c s3v_hwcurs.c s3v_dga.c s3v_i2c.c
+SRCS = s3v_driver.c s3v_accel.c s3v_dac.c s3v_hwcurs.c s3v_dga.c s3v_i2c.c \
+       s3v_shadow.c
 
-OBJS = s3v_driver.o s3v_accel.o s3v_dac.o s3v_hwcurs.o s3v_dga.o s3v_i2c.o
+OBJS = s3v_driver.o s3v_accel.o s3v_dac.o s3v_hwcurs.o s3v_dga.o s3v_i2c.o \
+       s3v_shadow.o
 
 DEFINES = -DPSZ=8
 
@@ -26,7 +28,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
 	   -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
            -I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(FONTINCSRC) \
-           -I$(EXTINCSRC)
+           -I$(EXTINCSRC) -I$(XF86OSSRC)/vbe -I$(XF86SRC)/shadowfb
 #endif
 
 #if MakeHasPosixVariableSubstitutions

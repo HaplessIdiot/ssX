@@ -465,7 +465,7 @@ TsengProbe(DriverPtr drv, int flags)
     GDevPtr *devSections = NULL;
     int numDevSections;
     int numUsed;
-    int *usedChips;
+    int *usedChips = NULL;
     Bool foundScreen = FALSE;
     
     

@@ -416,3 +416,9 @@ getValidBIOSBase(PCITAG tag, int num)
     return 0;
 }
 
+int
+pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag)
+{
+    return 0;
+}
+

@@ -116,6 +116,9 @@ typedef struct _MouseDevRec {
     Bool		chordMiddle;
     Bool		clearDTR;
     Bool		clearRTS;
+    Bool                flipXY;
+    int                 invX;
+    int                 invY;
     int			mouseFlags;	/* Flags to Clear after opening
 					 * mouse dev */
     int			truebuttons;	/* Arg to maintain before

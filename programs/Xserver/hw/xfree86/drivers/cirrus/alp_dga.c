@@ -13,40 +13,39 @@
 #include "vgaHW.h"
 
 #include "cir.h"
-#include "alp.h"
 
 static Bool
-AlpDGAGetParams(int scrnIndex, unsigned long *offset, int *banksize,
+CirDGAGetParams(int scrnIndex, unsigned long *offset, int *banksize,
 				int *memsize)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-	CIRPtr pCir = &ALPPTR(pScrn)->CirRec;
+	CIRPtr pCir = &CIRPTR(pScrn)->CirRec;
 
 	*offset = pCir->FbAddress;
 	*banksize = pScrn->videoRam * 1024;
 	*memsize = pScrn->videoRam * 1024;
 
-#ifdef ALP_DEBUG
-	ErrorF("AlpDGAGetParams %d = 0x%08x, %d, %d\n",
+#ifdef CIR_DEBUG
+	ErrorF("CirDGAGetParams %d = 0x%08x, %d, %d\n",
 		scrnIndex, *banksize, *memsize);
 #endif
 	return TRUE;
 }
 
 static Bool
-AlpDGASetDirect(int scrnIndex, Bool enable)
+CirDGASetDirect(int scrnIndex, Bool enable)
 {
 	return TRUE;
 }
 
 static Bool
-AlpDGASetBank(int scrnIndex, int bank, int flags)
+CirDGASetBank(int scrnIndex, int bank, int flags)
 {
 	return TRUE;
 }
 
 static Bool
-AlpDGASetViewport(int scrnIndex, int x, int y, int flags)
+CirDGASetViewport(int scrnIndex, int x, int y, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	(*pScrn->AdjustFrame)(scrnIndex, x, y, 0);
@@ -54,16 +53,16 @@ AlpDGASetViewport(int scrnIndex, int x, int y, int flags)
 }
 
 static  Bool
-AlpDGAViewportChanged(int scrnIndex, int n, int flags)
+CirDGAViewportChanged(int scrnIndex, int n, int flags)
 {
 	return TRUE;
 }
 
 Bool
-AlpDGAInit(ScreenPtr pScreen)
+CirDGAInit(ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-	CIRPtr pCir = &ALPPTR(pScrn)->CirRec;
+	CIRPtr pCir = &CIRPTR(pScrn)->CirRec;
 	DGAInfoPtr pDGAInfo;
 
 	pDGAInfo = DGACreateInfoRec();
@@ -72,11 +71,11 @@ AlpDGAInit(ScreenPtr pScreen)
 
 	pCir->DGAInfo = pDGAInfo;
 
-	pDGAInfo->GetParams = AlpDGAGetParams;
-	pDGAInfo->SetDirectMode = AlpDGASetDirect;
-	pDGAInfo->SetBank = AlpDGASetBank;
-	pDGAInfo->SetViewport = AlpDGASetViewport;
-	pDGAInfo->ViewportChanged = AlpDGAViewportChanged;;
+	pDGAInfo->GetParams = CirDGAGetParams;
+	pDGAInfo->SetDirectMode = CirDGASetDirect;
+	pDGAInfo->SetBank = CirDGASetBank;
+	pDGAInfo->SetViewport = CirDGASetViewport;
+	pDGAInfo->ViewportChanged = CirDGAViewportChanged;;
 
 	return DGAInit(pScreen, pDGAInfo, 0);
 }

@@ -720,6 +720,7 @@ extern void disable_os_io(void);
 #define PCI_MAP_ROM_REG         0x30
 #define PCI_INTERRUPT_REG       0x3C
 #define PCI_REG_USERCONFIG      0x40
+#define PCI_SUBSYS_VENDOR_REG   0x2C
 #endif
 
 struct pci_vendor_device {
@@ -1508,6 +1509,8 @@ main(int argc, char *argv[])
 			PCI_MAP_ROM_REG, 4, &pcr._baserom);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_INTERRUPT_REG, 4, &pcr._max_min_ipin_iline);
+	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
+			PCI_SUBSYS_VENDOR_REG, 4, &pcr._subsys_card_vendor);
 	    pciconfig_read(pcr._pcibuses[pcr._pcibusidx], (pcr._cardnum<<3)|func,
 			PCI_REG_USERCONFIG, 4, &pcr._user_config);
 #endif

@@ -12,10 +12,9 @@
 #include "compiler.h"
 #include "xf86Pci.h"
 #define _INT10_PRIVATE
-#include "xf86int10.h"
 #include "int10Defines.h"
+#include "xf86int10.h"
 #include "xf86_ansic.h"
-#include "xf86_libc.h"
 
 #ifndef _PC
 static int pciCfg1in(CARD16 addr, CARD32 *val);
@@ -206,19 +205,20 @@ vm86_GP_fault(xf86Int10InfoPtr pInt)
 	return FALSE;
 
     case 0x0f: 
-	xf86Msg(X_ERROR,"CPU 0x0f Trap at eip=0x%lx\n",X86_EIP);
+	xf86DrvMsg(pInt->scrnIndex,
+		X_ERROR,"CPU 0x0f Trap at eip=0x%lx\n",X86_EIP);
 	goto op0ferr; 
 	break;
 
     case 0xf0:			/* lock */
     default:
-	xf86Msg(X_ERROR,"unknown reason for exception\n");
+	xf86DrvMsg(pInt->scrnIndex,X_ERROR,"unknown reason for exception\n");
 	dump_registers(pInt);
 	stack_trace(pInt);
 
     op0ferr:
 	dump_code(pInt);
-	xf86Msg(X_ERROR,"cannot continue\n");
+	xf86DrvMsg(pInt->scrnIndex,X_ERROR,"cannot continue\n");
 	return FALSE;
     }				/* end of switch() */
     return TRUE;
@@ -321,42 +321,6 @@ stack_trace(xf86Int10InfoPtr pInt)
     for (i=0; i < 0x10; i++) 
 	ErrorF("%2.2x ",MEM_RB(pInt,stack + i));
     ErrorF("\n");
-}
-/*
- * Lock/Unlock legacy VGA. Some Bioses try to be very clever and make
- * an attempt to detect a legacy ISA card. If they find one they might
- * act very strange for example they might configure the card as a
- * monochrome card. This might cause some drivers to choke.
- * To avoid this we attempt legacy VGA by writing to all know VGA
- * disable registers before we call the BIOS initialization and
- * restore the original values afterwards. In beween we hold our
- * breath. To get to a (possibly exising) ISA card need to disable
- * our current PCI card. 
- */
-void
-LockLegacyVGA(int screenIndex,legacyVGAPtr vga)
-{
-    xf86SetCurrentAccess(FALSE,xf86Screens[screenIndex]);
-    vga->save_msr = inb(0x3CC);
-    vga->save_vse = inb(0x3C3);
-    vga->save_46e8 = inb(0x46e8);
-    vga->save_pos102 = inb(0x102);
-    outb(0x3C2,~(CARD8)0x03 & vga->save_msr);
-    outb(0x3C3,~(CARD8)0x01 & vga->save_vse);
-    outb(0x46e8, ~(CARD8)0x08 & vga->save_46e8);
-    outb(0x102, ~(CARD8)0x01 & vga->save_pos102);
-    xf86SetCurrentAccess(TRUE,xf86Screens[screenIndex]);
-}
-
-void
-UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga)
-{
-    xf86SetCurrentAccess(FALSE,xf86Screens[screenIndex]);
-    outb(0x102, vga->save_pos102);
-    outb(0x46e8, vga->save_46e8);
-    outb(0x3C3, vga->save_vse);
-    outb(0x3C2, vga->save_msr);
-    xf86SetCurrentAccess(TRUE,xf86Screens[screenIndex]);
 }
 
 int
@@ -615,3 +579,46 @@ bios_checksum(CARD8 *start, int size)
     return val;
 }
 
+/*
+ * Lock/Unlock legacy VGA. Some Bioses try to be very clever and make
+ * an attempt to detect a legacy ISA card. If they find one they might
+ * act very strange: for example they might configure the card as a
+ * monochrome card. This might cause some drivers to choke.
+ * To avoid this we attempt legacy VGA by writing to all know VGA
+ * disable registers before we call the BIOS initialization and
+ * restore the original values afterwards. In beween we hold our
+ * breath. To get to a (possibly exising) ISA card need to disable
+ * our current PCI card. 
+ */
+/*
+ * This is just for booting: we just want to catch pure
+ * legacy vga therefore we don't worry about mmio etc.
+ * This stuff should really go into vgaHW.c. However then
+ * the driver would have to load the vga-module prior to
+ * doing int10.
+ */
+void
+LockLegacyVGA(int screenIndex,legacyVGAPtr vga)
+{
+    xf86SetCurrentAccess(FALSE,xf86Screens[screenIndex]);
+    vga->save_msr = inb(0x3CC);
+    vga->save_vse = inb(0x3C3);
+    vga->save_46e8 = inb(0x46e8);
+    vga->save_pos102 = inb(0x102);
+    outb(0x3C2,~(CARD8)0x03 & vga->save_msr);
+    outb(0x3C3,~(CARD8)0x01 & vga->save_vse);
+    outb(0x46e8, ~(CARD8)0x08 & vga->save_46e8);
+    outb(0x102, ~(CARD8)0x01 & vga->save_pos102);
+    xf86SetCurrentAccess(TRUE,xf86Screens[screenIndex]);
+}
+
+void
+UnlockLegacyVGA(int screenIndex, legacyVGAPtr vga)
+{
+    xf86SetCurrentAccess(FALSE,xf86Screens[screenIndex]);
+    outb(0x102, vga->save_pos102);
+    outb(0x46e8, vga->save_46e8);
+    outb(0x3C3, vga->save_vse);
+    outb(0x3C2, vga->save_msr);
+    xf86SetCurrentAccess(TRUE,xf86Screens[screenIndex]);
+}

@@ -39,8 +39,6 @@ BusRec primaryBus = { BUS_NONE, {{0}}};
 
 Bool xf86ResAccessEnter = FALSE;
 
-int xf86EstimateSizesAggressively = 0;
-
 #ifdef REDUCER
 /* Resources that temporarily conflict with estimated resources */
 static resPtr AccReducers = NULL;
@@ -66,6 +64,9 @@ resRange res8514Shared[] = {_8514_SHARED, _END};
 
 /* Flag: do we need RAC ? */
 static Bool needRAC = FALSE;
+
+/* state change notification callback list */
+static StateChangeNotificationPtr StateChangeNotificationList;
 
 #undef MIN
 #define MIN(x,y) ((x<y)?x:y)
@@ -414,6 +415,21 @@ disableAccess(void)
     }
 }
 
+static void
+clearAccess(void)
+{
+    int i;
+    
+    /* call disable funcs and reset current access pointer */
+    /* the entity specific access funcs are in an enabled  */
+    /* state - driver must restore their state explicitely */
+    for (i = 0; i < xf86NumScreens; i++) {
+	xf86Screens[i]->CurrentAccess->pIoAccess = NULL;
+	xf86Screens[i]->CurrentAccess->pMemAccess = NULL;
+    }
+
+}
+
 /*
  * Generic interface to bus specific code - add other buses here
  */
@@ -499,6 +515,33 @@ xf86AccessLeaveState(void)
  * Otherwise resources needed for access control might be shadowed
  * by other resources!
  */
+#ifdef async
+
+xf86AsyncQPtr *xf86AsyncQ = NULL;
+xf86ScrnInfoPtr xf86CurrentScreen = NULL;
+
+#define SETUP_Q  org = xf86AsyncQ; \
+	         xf86AsyncQ = &new;
+
+#define PROCESS_Q xf86CurrentScreen = pScrn;
+                  if (!new) xf86AsyncQ = org; \
+                  else { \
+                       xf86AsyncQPtr tmp_Q; \
+                       while (1) {\
+                          new->func(new);\
+                          if (!(new->next)) {\
+			      xf86AsyncQ = org; xfree(new); break; \
+			   } \
+			   tmp_Q = new->next; \
+		           xfree(new); \
+ 		           new = tmp_Q; \
+		       } \
+                  }
+#else
+#define SETUP_Q
+#define PROCESS_Q
+#endif
+
 void
 xf86EnableAccess(ScrnInfoPtr pScrn)
 {
@@ -506,14 +549,21 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
     register EntityAccessPtr pceAcc;
     register xf86AccessPtr pAcc;
     EntityAccessPtr tmp;
+#ifdef async
+    xf86AsyncQPtr *org, new = NULL;
+#endif
+
 #ifdef DEBUG
     ErrorF("Enable access %i\n",pScrn->scrnIndex);
 #endif
 
     /* Entity is not under access control or currently enabled */
     if (!pScrn->access) {
-	if (pScrn->busAccess)
+	if (pScrn->busAccess) {
+	    SETUP_Q;
 	    ((BusAccPtr)pScrn->busAccess)->set_f(pScrn->busAccess);
+	    PROCESS_Q;
+	}
 	return;
     }
     
@@ -523,6 +573,7 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	if (peAcc == pceAcc) {
 	    return;
 	}
+	SETUP_Q;
 	if (pScrn->CurrentAccess->pMemAccess == pceAcc)
 	    pScrn->CurrentAccess->pMemAccess = NULL;
 	while (pceAcc) {
@@ -540,11 +591,13 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	    peAcc = peAcc->next;
 	}
 	pScrn->CurrentAccess->pIoAccess = (EntityAccessPtr) pScrn->access;
+	PROCESS_Q;
 	return;
 	
     case MEM_IO:
 	pceAcc = pScrn->CurrentAccess->pIoAccess;
 	if (peAcc != pceAcc) { /* current Io != pAccess */
+	    SETUP_Q;
 	    tmp = pceAcc;
 	    while (pceAcc) {
 		pAcc = pceAcc->pAccess;
@@ -567,6 +620,7 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	    if (pceAcc == peAcc) { /* current Mem == pAccess */
 		return;
 	    }
+	    SETUP_Q;
 	    while (pceAcc) {  /* current Mem != pAccess */
 		pAcc = pceAcc->pAccess;
 		if (pAcc && pAcc->AccessDisable) 
@@ -584,6 +638,7 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	}
 	pScrn->CurrentAccess->pMemAccess =
 	    pScrn->CurrentAccess->pIoAccess = (EntityAccessPtr) pScrn->access;
+	PROCESS_Q;
 	return;
 	
     case MEM:
@@ -591,6 +646,7 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	if (peAcc == pceAcc) {
 	    return;
 	}
+	SETUP_Q;
 	if (pScrn->CurrentAccess->pIoAccess == pceAcc)
 	    pScrn->CurrentAccess->pIoAccess = NULL;
 	while (pceAcc) {
@@ -608,11 +664,15 @@ xf86EnableAccess(ScrnInfoPtr pScrn)
 	    peAcc = peAcc->next;
 	}
 	pScrn->CurrentAccess->pMemAccess = (EntityAccessPtr) pScrn->access;
+	PROCESS_Q;
 	return;
 
     case NONE:
-	if (pScrn->busAccess)
+	if (pScrn->busAccess) {
+	    SETUP_Q;
 	    ((BusAccPtr)pScrn->busAccess)->set_f(pScrn->busAccess);
+	    PROCESS_Q;
+	}
 	return;
     }
 }
@@ -1150,12 +1210,12 @@ xf86ResourceBrokerInit(void)
     resPtr osRes = NULL;
 
     /* Get the addressable ranges */
-    ResRange = xf86AccWindowsFromOS();
-    xf86MsgVerb(X_INFO, 3, "Addressable resource ranges are\n");
+    ResRange = xf86BusAccWindowsFromOS();
+    xf86MsgVerb(X_INFO, 3, "Addressable bus resource ranges are\n");
     xf86PrintResList(3, ResRange);
 
     /* Get the ranges used exclusively by the system */
-    osRes = xf86AccResFromOS(osRes);
+    osRes = xf86AccResFromOS(osRes); /*these need to be in host address space*/
     xf86MsgVerb(X_INFO, 3, "OS-reported resource ranges:\n");
     xf86PrintResList(3, osRes);
 
@@ -1461,6 +1521,25 @@ xf86GetResourcesImplicitly(int entityIndex)
     return NULL;
 }
 
+static void
+convertRange2Host(int entityIndex, resRange *pRange)
+{
+    if (pRange->type & ResBus) {
+	pRange->type &= ~ResBus;
+	
+	switch (xf86Entities[entityIndex]->busType) {
+	case BUS_PCI:
+	    pciConvertRange2Host(entityIndex,pRange);
+	    break;
+	case BUS_ISA:
+	    isaConvertRange2Host(pRange);
+	    break;
+	default:
+	    break;
+	}
+    }
+}
+
 /*
  * xf86RegisterResources() -- attempts to register listed resources.
  * If list is NULL it tries to obtain resources implicitly. Function
@@ -1474,10 +1553,16 @@ xf86RegisterResources(int entityIndex, resList list, int access)
     
     if (!list) {
 	list = xf86GetResourcesImplicitly(entityIndex);
+	/* these resources have to be in host address space already */
 	if (!list) return NULL;
     }
+    
     while(list->type != ResEnd) {
 	range = *list;
+
+	if (range.type & ResBus)
+	    convertRange2Host(entityIndex,&range);
+	
 	if ((access != ResNone) && (access & ResAccMask)) {
 	    range.type = (range.type & ~ResAccMask) | (access & ResAccMask);
 	}
@@ -1504,7 +1589,7 @@ xf86RegisterResources(int entityIndex, resList list, int access)
 /*
  * Server State 
  */
-
+#ifdef notanymore1
 static xf86AccessPtr
 busTypeSpecific(EntityPtr pEnt, xf86State state)
 {
@@ -1657,10 +1742,185 @@ setAccess(EntityPtr pEnt, xf86State state)
 	/* unless they are handeled locally and disabled otherwise         */
     } 
 } 
+#endif
 
+static void
+busTypeSpecific(EntityPtr pEnt, xf86State state, xf86AccessPtr *acc_mem,
+		xf86AccessPtr *acc_io, xf86AccessPtr *acc_mem_io)
+{
+    pciAccPtr *ppaccp;
+    
+    switch (pEnt->bus.type) {
+    case BUS_ISA:
+	    *acc_mem = *acc_io = *acc_mem_io = &AccessNULL;
+	    break;
+	break;
+    case BUS_PCI:
+	ppaccp = xf86PciAccInfo;
+	while (*ppaccp) {
+	    if ((*ppaccp)->busnum == pEnt->pciBusId.bus
+		&& (*ppaccp)->devnum == pEnt->pciBusId.device
+		&& (*ppaccp)->funcnum == pEnt->pciBusId.func) {
+		*acc_io = &(*ppaccp)->ioAccess;
+		*acc_mem = &(*ppaccp)->memAccess;
+		*acc_mem_io = &(*ppaccp)->io_memAccess;
+		break;
+	    }
+	    ppaccp++;
+	}
+	break;
+    default:
+	*acc_mem = *acc_io = *acc_mem_io = NULL;
+	break;
+    }
+    return;
+}
+
+static void
+setAccess(EntityPtr pEnt, xf86State state)
+{
+
+    xf86AccessPtr acc_mem, acc_io, acc_mem_io;
+    xf86AccessPtr org_mem = NULL, org_io = NULL, org_mem_io = NULL;
+    int prop;
+    
+    busTypeSpecific(pEnt,state,&acc_mem,&acc_io,&acc_mem_io);
+
+    /* The replacement function needs to handle _all_ shared resources */
+    /* unless they are handeled locally and disabled otherwise         */
+    if (pEnt->rac) {
+	if (pEnt->rac->io_new) {
+	    org_io = acc_io;
+	    acc_io = pEnt->rac->io_new;
+	}
+	if (pEnt->rac->mem_new) {
+	    org_mem = acc_mem;
+	    acc_mem = pEnt->rac->mem_new;
+	}	
+	if (pEnt->rac->io_mem_new) {
+	    org_mem_io = acc_mem_io;
+	    acc_mem_io = pEnt->rac->io_mem_new;
+	}   
+    }
+    
+    if (state == OPERATING) {
+	prop = pEnt->entityProp;
+	switch(pEnt->entityProp & NEED_SHARED) {
+	case NEED_SHARED:
+	    pEnt->access->rt = MEM_IO;
+	    break;
+	case NEED_IO_SHARED:
+	    pEnt->access->rt = IO;
+	    break;
+	case NEED_MEM_SHARED:
+	    pEnt->access->rt = MEM;
+	    break;
+	default:
+	    pEnt->access->rt = NONE;
+	}
+    } else {
+	prop = NEED_SHARED | NEED_MEM | NEED_IO;
+	pEnt->access->rt = MEM_IO;
+    }
+    
+    
+    switch(pEnt->access->rt) {
+    case IO:
+	pEnt->access->pAccess = acc_io;
+	if (org_io) {
+	    /* does the driver want the old access func? */
+	    if (pEnt->rac->old) {
+		/* give it to the driver, leave state disabled */
+		(*pEnt->rac->old) = org_io;
+	    } else if (org_io->AccessEnable) {
+		/* driver doesn't want it - enable generic access */
+		org_io->AccessEnable(org_io->arg);
+	    }
+	}
+	break;
+    case MEM:
+	pEnt->access->pAccess = acc_mem;
+	if (org_mem) {
+	    /* does the driver want the old access func? */
+	    if (pEnt->rac->old) {
+		/* give it to the driver, leave state disabled */
+		(*pEnt->rac->old) = org_mem;
+	    } else if (org_mem->AccessEnable) {
+		/* driver doesn't want it - enable generic access */
+		org_mem->AccessEnable(org_mem->arg);
+	    }
+	}
+	break;
+    case MEM_IO:
+	pEnt->access->pAccess = acc_mem_io;
+	if (org_mem_io) {
+	    /* does the driver want the old access func? */
+	    if (pEnt->rac->old) {
+		/* give it to the driver, leave state disabled */
+		(*pEnt->rac->old) = org_mem_io;
+	    } else if (org_mem_io->AccessEnable) {
+		/* driver doesn't want it - enable generic access */
+		org_mem_io->AccessEnable(org_mem_io->arg);
+	    }
+	}
+	break;
+    default: /* no conflicts at all */
+	pEnt->access->pAccess =  NULL; /* remove from RAC */
+	if (pEnt->rac && pEnt->rac->old)
+	    (*pEnt->rac->old) = NULL;
+	break;
+    }
+
+    if (!(prop & NEED_MEM_SHARED)){
+	if (prop & NEED_MEM) {
+	    if (acc_mem->AccessEnable)
+		acc_mem->AccessEnable(acc_mem->arg);
+	} else {
+	    if (acc_mem->AccessDisable)
+		acc_mem->AccessDisable(acc_mem->arg);
+	}
+    }
+    if (!(prop & NEED_IO_SHARED)) {
+	if (prop & NEED_IO) {
+	    if (acc_io->AccessEnable)
+	    acc_io->AccessEnable(acc_io->arg);
+	} else {
+	    if (acc_io->AccessDisable)
+		acc_io->AccessDisable(acc_io->arg);
+	}
+    }
+
+    /* disable shared resources */
+    if (pEnt->access->pAccess 
+	&& pEnt->access->pAccess->AccessDisable)
+	pEnt->access->pAccess->AccessDisable(pEnt->access->pAccess->arg);
+
+    /*
+     * If device is not under access control it is enabled.
+     * If it needs bus routing do it here as it isn't bus
+     * type specific. Any conflicts should be checked at this
+     * stage
+     */
+    if (!pEnt->access->pAccess
+	&& (pEnt->entityProp & (state == SETUP ? NEED_VGA_ROUTED_SETUP :
+				NEED_VGA_ROUTED))) 
+	((BusAccPtr)pEnt->busAcc)->set_f(pEnt->busAcc);
+}
+
+    
 /*
  * xf86EnterServerState() -- set state the server is in.
  */
+void
+notifyStateChange(xf86State state, Bool enter)
+{
+    StateChangeNotificationPtr ptr = StateChangeNotificationList;
+    while (ptr) {
+	ptr->func(state,enter);
+	ptr = ptr->next;
+    }
+}
+
 void
 xf86EnterServerState(xf86State state)
 {
@@ -1675,7 +1935,8 @@ xf86EnterServerState(xf86State state)
     else
 	ErrorF("Entering OPERATING state\n");
 #endif
-
+    notifyStateChange(state, TRUE);
+    
     for (i=0; i<xf86NumScreens; i++) {
 	pScrn = xf86Screens[i];
 	j = pScrn->entityList[pScrn->numEntities - 1];
@@ -1695,11 +1956,14 @@ xf86EnterServerState(xf86State state)
      */
     if (!needRAC) {
 	xf86EnableAccess(xf86Screens[0]);
+	notifyStateChange(state, FALSE);
 	return;
     }
-    
+#ifdef notanymore1
     disableAccess();
-    
+#else
+    clearAccess();
+#endif
     for (i=0; i<xf86NumScreens;i++) {
 
 	rt = NONE;
@@ -1741,6 +2005,7 @@ xf86EnterServerState(xf86State state)
 	    break;
 	}
     }
+   notifyStateChange(state, FALSE);
 }
 
 /*
@@ -1751,14 +2016,19 @@ xf86SetOperatingState(resList list, int entityIndex, int mask)
 {
     resPtr acc;
     resPtr r_fail = NULL;
-
+    resRange range;
+    
     while (list->type != ResEnd) {
+	range = *list;
+	if (range.type & ResBus)
+	    convertRange2Host(entityIndex,&range);
+
 	acc = Acc;
 	while (acc) {
 #define MASK (ResPhysMask | ResExtMask)
 	    if ((acc->entityIndex == entityIndex) 
-		&& (acc->val.a == list->a) && (acc->val.b == list->b)
-		&& ((acc->val.type & MASK) == (list->type & MASK)))
+		&& (acc->val.a == range.a) && (acc->val.b == range.b)
+		&& ((acc->val.type & MASK) == (range.type & MASK)))
 		break;
 #undef MASK
 	    acc = acc->next;
@@ -1767,12 +2037,12 @@ xf86SetOperatingState(resList list, int entityIndex, int mask)
 	    acc->val.type = (acc->val.type & ~ResOprMask)
 		| (mask & ResOprMask);
 	else {
-	    r_fail = xf86AddResToList(r_fail,list,entityIndex);
+	    r_fail = xf86AddResToList(r_fail,&range,entityIndex);
 	}
 	list ++;
     }
     
-    return r_fail;
+     return r_fail;
 }
 
 /*
@@ -1831,6 +2101,10 @@ xf86ClaimFixedResources(resList list, int entityIndex)
     
     while (list->type !=ResEnd) {
  	range = *list;
+
+	if (range.type & ResBus)
+	    convertRange2Host(entityIndex,&range);
+
  	range.type &= ~ResEstimated;	/* Not allowed for drivers */
  	switch (range.type & ResAccMask) {
   	case ResExclusive:
@@ -1886,6 +2160,7 @@ checkRoutingForScreens(xf86State state)
 {
     resList list = resVgaUnusedExclusive;
     resPtr pResVGA = NULL;
+    resPtr pResVGAHost;
     pointer vga = NULL;
     int i,j;
     int entityIndex;
@@ -1911,6 +2186,8 @@ checkRoutingForScreens(xf86State state)
 	    pEnt = xf86Entities[entityIndex];
 	    pAcc = Acc;
 	    vga = NULL;
+	    pResVGAHost = xf86DupResList(pResVGA);
+	    xf86ConvertListToHost(entityIndex,pResVGAHost);
 	    while (pAcc) {
 		if (pAcc->entityIndex == entityIndex)
 		    if (checkConflict(&pAcc->val,pResVGA,
@@ -1929,6 +2206,7 @@ checkRoutingForScreens(xf86State state)
 	    }
 	    if (vga)
 		xf86MsgVerb(X_INFO, 3,"Setting vga for screen %i.\n",i);
+	    xf86FreeResList(pResVGAHost);
 	}
     }
     xf86FreeResList(pResVGA);
@@ -2081,10 +2359,9 @@ xf86PostPreInit()
     ErrorF("do I need RAC?\n");
     
     if (needRAC) {
-	char *list[] = { "rac",NULL };
 	ErrorF("  Yes, I do.\n");
 	
-	if (!xf86LoadModules(list, NULL))
+	if (!xf86LoadOneModule("rac",NULL))
 	    FatalError("Cannot load RAC module\n");
     } else
 	ErrorF("  No, I don't.\n");
@@ -2184,35 +2461,202 @@ xf86PostScreenInit(void)
  * Sets
  */
 
- /* not yet used. FIXME: add support for sparse */
 
-Bool
-isSubsetOf(resRange range, resPtr list)
+static resPtr
+decomposeSparse(resRange range)
 {
-    while (list) {
+    resRange new;
+    resPtr ret = NULL;
+    memType val = range.rBegin;
+    int i = 0;
+    
+    new.type = (range.type & ~ResExtMask) | ResSparse;
+
+    while (1) {
+	if (val & 0x01) {
+	    new.rBase = (val << i);
+	    new.rMask = ~((1 << i) - 1);
+	    ret = xf86AddResToList(ret,&new,-1);
+	    val ++;
+	}
+	i++;
+	val >>= 1;
+	if ((((val + 1) << i) - 1) > range.rEnd)
+	    break;
+    }
+    i--;
+    val <<= 1;
+    
+    while (1) {
+	if((((val + 1) << i) - 1)> range.rEnd) {
+	    if (--i < 0) break;
+	    val <<= 1;
+	} else {
+	    new.rBase = (val << i);
+	    new.rMask = ~((1 << i) - 1);
+	    val++;
+	    ret = xf86AddResToList(ret,&new,-1);
+	}
+    }
+    return ret;
+}
+    
+static Bool
+x_isSubsetOf(resRange range, resPtr list1, resPtr list2)
+{
+    resRange range1, range2;
+    memType m1_A_m2;
+    Bool ret;
+    resPtr list;
+    
+    if (list1) {
+	list = list1;
 	if (range.type & list->res_type & ResPhysMask) {
 	    switch (range.type & ResExtMask) {
 	    case ResBlock:
-		switch (list->res_type & ResExtMask) {
-		case ResBlock:
+		if ((list->res_type & ResExtMask) == ResBlock) {
 		    if (range.rBegin >= list->block_begin
 			&& range.rEnd <= list->block_end)
 			return TRUE;
+		    else if (range.rBegin < list->block_begin
+			     && range.rEnd > list->block_end) {
+			RANGE(range1, range.rBegin, list->block_begin - 1,
+			      range.type);
+			RANGE(range2, list->block_end + 1, range.rEnd,
+			      range.type);
+			return (x_isSubsetOf(range1,list->next,list2) &&
+				x_isSubsetOf(range2,list->next,list2));
+		    }
+		    else if (range.rBegin >= list->block_begin
+			     && range.rBegin <= list->block_end) {
+			RANGE(range1, list->block_end + 1, range.rEnd,
+			      range.type);
+			return (x_isSubsetOf(range1,list->next,list2));
+		    } else if (range.rEnd >= list->block_begin
+			       && range.rEnd <= list->block_end) {
+			RANGE(range1,range.rBegin, list->block_begin - 1,
+			      range.type);
+			return (x_isSubsetOf(range1,list->next,list2));
+		    } 
+		}
+		break;
+	    case ResSparse:
+		if ((list->res_type & ResExtMask) == ResSparse) {
+		    memType test;
+		    int i;
+		    
+		    m1_A_m2 = range.rMask & list->sparse_mask;
+		    if ((range.rBase ^ list->sparse_base) & m1_A_m2)
 			break;
+		    /*
+		     * We use the following system:
+		     * let 0 ^= mask:1 base:0, 1 ^= mask:1 base:1,
+		     * X mask:0 ; S: set TSS: test set for subset
+		     * NTSS: new test set after test
+		     *    S: 1   0   1   0   X   X   0   1   X
+		     *  TSS: 1   0   0   1   1   0   X   X   X
+		     *    T: 0   0   1   1   0   0   0   0   0
+		     * NTSS: 1   0  0/X  1/X 1   0   1   0   X
+		     *    R: 0   0   0   0   0   0   1   1   0
+		     * If R != 0 TSS and S are disjunct
+		     * If R == 0 TSS is subset of S
+		     * If R != 0 NTSS contains elements from TSS
+		     * which are not also members of S.
+		     * If a T is set one of the correspondig bits
+		     * in NTSS must be set to the specified value
+		     * all other are X
+		     */
+		    test = list->sparse_mask & ~range.rMask;
+		    if (test == 0)
+			return TRUE;
+		    for (i = 0; i < sizeof(memType); i++) {
+			if ((test >> i) & 0x1) {
+			    RANGE(range1, ((range.rBase & list->sparse_base)
+				  | (range.rBase & ~list->sparse_mask)
+				  | ((~list->sparse_base & list->sparse_mask)
+				     & ~range.rMask)) & range1.rMask,
+				  ((range.rMask | list->sparse_mask) & ~test)
+				  | (1 << i), range.type);
+			    return (x_isSubsetOf(range1,list->next,list2));
+			}
+		    }
 		}
 		break;
 	    }
 	}
-	list = list->next;
-    }
+	return (x_isSubsetOf(range,list->next,list2));
+    } else if (list2) {
+	resPtr tmpList = NULL;
+	switch (range.type & ResExtMask) {
+	case ResBlock:
+	    tmpList = decomposeSparse(range);
+	    while (tmpList) {
+		if (!x_isSubsetOf(tmpList->val,list2,NULL)) {
+		    xf86FreeResList(tmpList);
+		    return FALSE;
+		}
+		tmpList = tmpList->next;
+	    }
+	    xf86FreeResList(tmpList);
+	    return TRUE;
+	    break;
+	case ResSparse:
+	    while (list2) {
+		tmpList = xf86JoinResLists(tmpList,decomposeSparse(list2->val));
+		list2 = list2->next;
+	    }
+	    ret = x_isSubsetOf(range,tmpList,NULL);
+	    xf86FreeResList(tmpList);
+	    return ret;
+	    break;
+	}
+    } else
+	return FALSE;
+
     return FALSE;
 }
 
 Bool
-isListSubsetOf(resPtr list, resPtr BaseList)
+xf86IsSubsetOf(resRange range, resPtr list)
+{
+    resPtr dup = xf86DupResList(list);
+    resPtr r_sp = NULL, r = NULL, tmp = NULL;
+    Bool ret = FALSE;
+    
+    while (dup) {
+	tmp = dup;
+	dup = dup->next;
+	switch (tmp->res_type & ResExtMask) {
+	case ResBlock:
+	    tmp->next = r;
+	    r = tmp;
+	    break;
+	case ResSparse:
+	    tmp->next = r_sp;
+	    r_sp = tmp;
+	    break;
+	}
+    }
+    
+    switch (range.type & ResExtMask) {
+    case ResBlock:
+	ret = x_isSubsetOf(range,r,r_sp);
+	break;
+    case ResSparse:
+	ret = x_isSubsetOf(range,r_sp,r);
+	break;
+    }
+    xf86FreeResList(r);
+    xf86FreeResList(r_sp);
+    
+    return ret;
+}
+
+Bool
+xf86IsListSubsetOf(resPtr list, resPtr BaseList)
 {
     while (list) {
-	if (! isSubsetOf(list->val,BaseList))
+	if (! xf86IsSubsetOf(list->val,BaseList))
 	    return FALSE;
 	list = list->next;
     }
@@ -2244,8 +2688,29 @@ findIntersect(resRange Range, resPtr list)
 			    new = xf86AddResToList(new,&range,-1);
 			}
 			break;
+		    case ResSparse:
+			new = xf86JoinResLists(new,xf86FindIntersectOfLists(new,decomposeSparse(list->val)));
+			break;
 		    }
 		    break;
+		case ResSparse:
+		    switch (list->res_type & ResExtMask) {
+		    case ResSparse:
+			if (!((~(range.rBase ^ list->sparse_base)
+			    & (range.rMask & list->sparse_mask)))) {
+			    RANGE(range, (range.rBase & list->sparse_base)
+				  | (~range.rMask & list->sparse_base)
+				  | (~list->sparse_mask & range.rBase),
+				  range.rMask | list->sparse_mask,
+				  Range.type);
+			    new = xf86AddResToList(new,&range,-1);
+			}
+			break;
+		    case ResBlock:
+			new = xf86JoinResLists(new,xf86FindIntersectOfLists(
+			    decomposeSparse(range),list));
+			break;
+		    }
 		}
 	    }
 	list = list->next;
@@ -2265,6 +2730,52 @@ xf86FindIntersectOfLists(resPtr l1, resPtr l2)
     return ret;
 }
 
+static resPtr
+xf86FindComplement(resRange Range)
+{
+    resRange range;
+    memType tmp;
+    resPtr new = NULL;
+    int i;
+    
+    switch (Range.type & ResExtMask) {
+    case ResBlock:
+	if (Range.rBegin > 0) {
+	    RANGE(range, 0, Range.rBegin - 1, Range.type);
+	    new = xf86AddResToList(new,&range,-1);
+	}
+	if (Range.rEnd < (memType)~0) {
+	    RANGE(range,Range.rEnd + 1, (memType)~0, Range.type);
+	    new = xf86AddResToList(new,&range,-1);
+	}
+	break;
+    case ResSparse:
+	tmp = Range.rMask;
+	for (i = 0; i < sizeof(memType); i++) {
+	    if (tmp & 0x1) {
+		RANGE(range,(~Range.rMask & range.rMask),(1 << i), Range.type);
+		new = xf86AddResToList(new,&range,-1);
+	    }
+	}
+	break;
+    default:
+	break;
+    }
+    return new;
+}
+
+resPtr
+xf86ExtractTypeFromList(resPtr list, unsigned long type)
+{
+    resPtr ret = NULL;
+    
+    while (list) {
+	if ((list->res_type & type) == type)
+	    ret = xf86AddResToList(ret,&(list->val),list->entityIndex);
+	list = list->next;
+    }
+    return ret;
+}
 
 /*------------------------------------------------------------*/
 static void CheckGenericGA(void);
@@ -2326,4 +2837,40 @@ xf86NoSharedMem(int screenIndex)
     }
     return TRUE;
 }
+
+void
+xf86ConvertListToHost(int entityIndex, resPtr list)
+{
+    while (list) {
+	convertRange2Host(entityIndex, &list->val);
+	list = list->next;
+    }
+}
+
+void
+xf86RegisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func)
+{
+    StateChangeNotificationPtr ptr =
+	(StateChangeNotificationPtr)xnfalloc(sizeof(StateChangeNotificationRec));
+
+    ptr->func = func;
+    ptr->next = StateChangeNotificationList;
+    StateChangeNotificationList = ptr;
+}
+
+Bool
+DeregisterStateChangeNotificationCallback(xf86StateChangeNotificationCallbackFunc func)
+{
+    StateChangeNotificationPtr *ptr = &StateChangeNotificationList;
+
+    while (*ptr) {
+	if ((*ptr)->func == func) {
+	    (*ptr) = (*ptr)->next;
+	    return TRUE;
+	}
+	ptr = &((*ptr)->next);
+    }
+    return FALSE;
+}
+
 

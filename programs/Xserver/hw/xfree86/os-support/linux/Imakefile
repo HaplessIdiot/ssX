@@ -37,18 +37,18 @@ RES_OBJS=lnxResource.o
 
 SRCS = lnx_init.c lnx_video.c lnx_io.c libc_wrapper.c bios_mmap.c \
        mapVT_noop.c VTsw_usl.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       lnx_pci.c vidmem.c $(JOYSTICK_SRC) $(DRI_SRC) $(RES_SRCS)
+       lnx_pci.c vidmem.c lnx_apm.c $(JOYSTICK_SRC) $(DRI_SRC) $(RES_SRCS)
 
 OBJS = lnx_init.o lnx_video.o lnx_io.o libc_wrapper.o bios_mmap.o \
        mapVT_noop.o VTsw_usl.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       lnx_pci.o vidmem.o $(JOYSTICK_OBJ) $(DRI_OBJ) $(RES_OBJS)
+       lnx_pci.o vidmem.o lnx_apm.o $(JOYSTICK_OBJ) $(DRI_OBJ) $(RES_OBJS)
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
 RESDEFINES = -DUSESTDRES
 
-DEFINES = $(MTRRDEFINES) $(RESDEFINES)
+DEFINES = $(MTRRDEFINES) $(RESDEFINES) -DHAVE_SYSV_IPC
 
 SubdirLibraryRule($(OBJS))
 NormalLibraryObjectRule()
@@ -57,7 +57,7 @@ NormalLibraryObjectRule()
 DRISUBDIR = drm
 #endif
 
-#if XF86INT10 > X86EMU_GENERIC
+#if XF86INT10_BUILD > X86EMU_GENERIC
 INT10SUBDIR = int10
 #endif 
 
@@ -82,11 +82,11 @@ InstallDynamicModule(lnx_jstk.o,$(MODULEDIR),input)
 
 LinkSourceFile(bios_mmap.c,../shared)
 LinkSourceFile(mapVT_noop.c,../shared)
-LinkSourceFile(VTsw_usl.c,../shared)
 LinkSourceFile(std_kbdEv.c,../shared)
 LinkSourceFile(posix_tty.c,../shared)
 LinkSourceFile(libc_wrapper.c,../shared)
 LinkSourceFile(vidmem.c,../shared)
+LinkSourceFile(VTsw_usl.c,../shared)
 
 LinkSourceFile($(DRI_SRC),../shared)
 

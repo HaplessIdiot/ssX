@@ -566,9 +566,11 @@ Xrealloc (pointer ptr, unsigned long amount)
 		return NULL;
 	    }
 #ifdef FATALERRORS
+	    XfreeTrap();
 		FatalError("Xalloc error: header corrupt in Xrealloc() :-(\n");
 #else
 		ErrorF("Xalloc error: header corrupt in Xrealloc() :-(\n");
+		XfreeTrap();
 #endif
 		LOG_REALLOC("Xalloc error: header corrupt in Xrealloc() :-(",
 			ptr, amount, 0);
@@ -637,9 +639,11 @@ Xfree(pointer ptr)
 	    return;
 	}
 #ifdef FATALERRORS
+	XfreeTrap();
 	FatalError("Xalloc error: Header corrupt in Xfree() :-(\n");
 #else
 	ErrorF("Xalloc error: Header corrupt in Xfree() :-(\n");
+	XfreeTrap();
 #endif
 	LOG_FREE("Xalloc error:  Header corrupt in Xfree() :-(", ptr);
 	return;
@@ -656,9 +660,11 @@ Xfree(pointer ptr)
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
 #ifdef FATALERRORS
+	    	XfreeTrap();
 		FatalError("Xalloc error: Tail corrupt in Xfree() for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
 #else
 		ErrorF("Xalloc error: Tail corrupt in Xfree() for small block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+		XfreeTrap();
 #endif
 		LOG_FREE("Xalloc error: Tail corrupt in Xfree() for small block", ptr);
 		return;
@@ -687,9 +693,11 @@ Xfree(pointer ptr)
 	if (MAGIC2 != ((unsigned long *)((char *)ptr + size))[0]) {
 		/* Diagnostic */
 #ifdef FATALERRORS
+	    XfreeTrap();
 		FatalError("Xalloc error: Tail corrupt in Xfree() for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
 #else
 		ErrorF("Xalloc error: Tail corrupt in Xfree() for big block (adr=0x%x, val=0x%x)\n",(char *)ptr+size,((unsigned long *)((char *)ptr + size))[0]);
+		XfreeTrap();
 #endif
 		LOG_FREE("Xalloc error: Tail corrupt in Xfree() for big block", ptr);
 		return;
@@ -711,9 +719,11 @@ Xfree(pointer ptr)
 	if (MAGIC2 != *(unsigned long *)((char *)ptr + size)) {
 		/* Diagnostic */
 #ifdef FATALERRORS
+	    XfreeTrap();
 		FatalError("Xalloc error: Tail corrupt in Xfree() for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
 #else
 		ErrorF("Xalloc error: Tail corrupt in Xfree() for medium block (adr=0x%x, val=0x%x)\n",(char *)ptr + size,*(unsigned long *)((char *)ptr + size));
+		XfreeTrap();
 #endif
 		LOG_FREE("Xalloc error: Tail corrupt in Xfree() for medium block", ptr);
 		return;

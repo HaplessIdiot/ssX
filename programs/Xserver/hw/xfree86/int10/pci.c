@@ -8,7 +8,6 @@
 #include "xf86Pci.h"
 #include "xf86.h"
 #include "xf86str.h"
-#include "xf86_libc.h"
 #include "xf86_ansic.h"
 #define _INT10_PRIVATE
 #include "xf86int10.h"
@@ -24,14 +23,21 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 
     pciVideoPtr pvp = xf86GetPciInfoForEntity(pInt->entityIndex);
     
-    if (pvp == NULL)
+    if (pvp == NULL) {
+#ifdef DEBUG
+ 	ErrorF("mapPciRom: no PCI info\n");
+#endif
 	return 0;
+    }
     
     tag = pciTag(pvp->bus,pvp->device,pvp->func);
     
     mem = ptr = xnfcalloc(0x10000, 1);
-    if (! xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF)) {
+    if (! xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF) < 0) {
 	xfree(mem);
+#ifdef DEBUG
+ 	ErrorF("mapPciRom: cannot read BIOS\n");
+#endif
 	return 0;
     }
 
@@ -58,8 +64,11 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 		     image_length,indicator);
 #endif
 	     offset = offset + image_length;
-	     if (! xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF)) {
+	     if (xf86ReadPciBIOS(0,tag,offset,mem,0xFFFF) < 0) {
 		 xfree(mem);
+#ifdef DEBUG
+	ErrorF("mapPciRom: cannot read BIOS\n");
+#endif
 		 return 0;
 	     }
 	     continue;
@@ -71,9 +80,12 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 #endif
 	 scratch = (unsigned char *)xnfalloc(length);
 
-	 if (! xf86ReadPciBIOS(0,tag,offset,scratch,length)) {
+	 if (xf86ReadPciBIOS(0,tag,offset,scratch,length) < 0) {
 	     xfree(mem);
 	     xfree(scratch);
+#ifdef DEBUG
+	ErrorF("mapPciRom: cannot read BIOS\n");
+#endif
 	     return 0;
 	 }
 	 break;
@@ -85,8 +97,13 @@ mapPciRom(xf86Int10InfoPtr pInt, unsigned char * address)
 	memcpy(address, scratch, length);
 	xfree(scratch);
     }
+#ifdef DEBUG
+    if (!length)
+	ErrorF("mapPciRom: no BIOS found\n");
+#endif
 #ifdef PRINT_PCI
-    dprint(address,0x20);
+    if (length)
+	dprint(address,0x20);
 #endif
     return length;
 }

@@ -187,7 +187,6 @@ static void     chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 static void     chipsHWCursorOn(CHIPSPtr cPtr);
 static void     chipsHWCursorOff(CHIPSPtr cPtr);
 static void     chipsFixResume(ScrnInfoPtr pScrn);
-static void     chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 static void     chipsLoadPalette(ScrnInfoPtr pScrn, int numColors,
 				int *indices, LOCO *colors, VisualPtr pVisual);
 static void     chipsLoadPalette16(ScrnInfoPtr pScrn, int numColors,
@@ -558,7 +557,8 @@ typedef enum {
     OPTION_FP_CLOCK_16,
     OPTION_FP_CLOCK_24,
     OPTION_FP_CLOCK_32,
-    OPTION_SET_MCLK
+    OPTION_SET_MCLK,
+    OPTION_ROTATE
 } CHIPSOpts;
 
 static OptionInfoRec Chips655xxOptions[] = {
@@ -580,6 +580,7 @@ static OptionInfoRec Chips655xxOptions[] = {
     { OPTION_18_BIT_BUS,	"18BitBus",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_SET_MCLK,		"SetMclk",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_8,        "FPClock8",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
@@ -598,6 +599,7 @@ static OptionInfoRec ChipsWingineOptions[] = {
 #endif
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ROTATE,  	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -617,6 +619,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_SYNC_ON_GREEN,	"SyncOnGreen",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHOWCACHE,		"ShowCache",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_FREQ,      {0}, FALSE },
@@ -1274,7 +1277,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86LoaderReqSymLists(shadowSymbols, NULL);
     }
     
-    if (cPtr->Flags & ChipsHWCursor) {
+    if (cPtr->Accel.UseHWCursor) {
 	if (!xf86LoadSubModule(pScrn, "ramdac")) {
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
@@ -1304,13 +1307,13 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     int val;
     const char *s;
 
-    vgaHWPtr hwp = VGAHWPTR(pScrn);
+    vgaHWPtr hwp;
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSMemClockPtr MemClk = &cPtr->MemClock;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
-    
+
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
     
@@ -1421,10 +1424,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     if (pScrn->bitsPerPixel < 8) {
 	/* Default to SW cursor for 1/4 bpp */
 	cPtr->Accel.UseHWCursor = FALSE;
-	cPtr->Flags &= ~ChipsHWCursor;
     } else {
 	cPtr->Accel.UseHWCursor = TRUE;
-	cPtr->Flags |= ChipsHWCursor;
     }
     if (xf86GetOptValBool(cPtr->Options, OPTION_HW_CURSOR,
 			  &cPtr->Accel.UseHWCursor))
@@ -1434,12 +1435,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
 	cPtr->Accel.UseHWCursor = !cPtr->Accel.UseHWCursor;
     }
-    if (cPtr->Accel.UseHWCursor)
-	cPtr->Flags |= ChipsHWCursor;
-    else
-	cPtr->Flags &= ~ChipsHWCursor;
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
+	       (cPtr->Accel.UseHWCursor) ? "HW" : "SW");
 
     /* Default to nonlinear for < 8bpp and linear for >= 8bpp. */
     if (pScrn->bitsPerPixel < 8) {
@@ -1490,7 +1487,8 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		   "Disabling linear addressing\n");
 
     
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
+    if ((s = xf86GetOptValString(cPtr->Options, OPTION_ROTATE))
+	|| xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	if (!(cPtr->Flags & ChipsLinearSupport)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		    "Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
@@ -1498,13 +1496,33 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		    "Option \"ShadowFB\" ignored. Not supported at this depth.\n");
 	} else {
-	    cPtr->Flags |= ChipsShadowFB;
-	    cPtr->Flags &= ~ChipsAccelSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
+	    cPtr->Rotate = 0;
+	    if (s) {
+		if(!xf86NameCmp(s, "CW")) {
+		    /* accel is disabled below for shadowFB */
+		    cPtr->Flags |= ChipsShadowFB;
+		    cPtr->Rotate = 1;
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			       "Rotating screen clockwise\n");
+		} else if(!xf86NameCmp(s, "CCW")) {
+		    cPtr->Flags |= ChipsShadowFB;
+		    cPtr->Rotate = -1;
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
+			       "counter clockwise\n");
+		} else {
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+			       "value for Option \"Rotate\"\n", s);
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			       "Valid options are \"CW\" or \"CCW\"\n");
+		}
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			   "Using \"Shadow Framebuffer\"\n");
+		cPtr->Flags |= ChipsShadowFB;
+	    }
 	}
     }
-
+    
     if ((s = xf86GetOptValString(cPtr->Options, OPTION_OVERLAY))) {
 	if (!*s || !xf86NameCmp(s, "8,16") || !xf86NameCmp(s, "16,8")) {
 	  if (pScrn->bitsPerPixel == 16) {
@@ -1520,11 +1538,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
 			   "                             - Forcing option \"NoStretch\".\n");
 		if (cPtr->Flags & ChipsShadowFB) {
-		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                             - Disabling \"Shadow Framebuffer\".\n");
+		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		           "                             - Disabling \"Shadow Framebuffer\".\n");
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
 			   "                               Not support with option \"8Plus16\".\n");
 		    cPtr->Flags &= ~ChipsShadowFB;
+		    cPtr->Rotate = 0;
 		}
 	    } else {
 		xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "Option \"Overlay\" ignored. Not supported without linear addressing\n");
@@ -1538,8 +1557,25 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		"\"%s\" is not a valid value for Option \"Overlay\"\n", s); 
 	}
     }
+
+    if (cPtr->Flags & ChipsShadowFB) {
+	if (cPtr->Flags & ChipsAccelSupport) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"HW acceleration is not supported with shadow fb\n");
+	    cPtr->Flags &= ~ChipsAccelSupport;
+	}
+	if (cPtr->Rotate && cPtr->Accel.UseHWCursor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"HW cursor is not supported with rotate\n");
+	    cPtr->Accel.UseHWCursor = FALSE;
+	}
+    }
+    if (cPtr->Accel.UseHWCursor)
+	cPtr->Flags |= ChipsHWCursor;
+    else
+	cPtr->Flags &= ~ChipsHWCursor;
     
-    /* memory size */
+	    /* memory size */
     if (cPtr->pEnt->device->videoRam != 0) {
 	pScrn->videoRam = cPtr->pEnt->device->videoRam;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "VideoRAM: %d kByte\n",
@@ -2036,13 +2072,15 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	Bool ddc_done = FALSE;
+	xf86MonPtr pMon;
 	
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 
 #ifdef XFree86LOADER
 	if (cPtr->pVbe) {
-	    if (xf86PrintEDID(vbeDoEDID(cPtr->pVbe))) 
+	    if ((pMon = xf86PrintEDID(vbeDoEDID(cPtr->pVbe))) != NULL)
 		ddc_done = TRUE;
+	    xf86SetDDCproperties(pScrn,pMon);
 	}
 #endif
 
@@ -2051,9 +2089,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		xf86LoaderReqSymLists(i2cSymbols,NULL);
 	    
 		if (chips_i2cInit(pScrn)) {
-		   if (xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,
-						     cPtr->I2C)))
+		    xf86MonPtr pMon;
+		    
+		    if ((pMon = xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex,
+						      cPtr->I2C))) != NULL)
 		       ddc_done = TRUE;
+		       xf86SetDDCproperties(pScrn,pMon);
 		}
 	    }
 	if (!ddc_done)
@@ -2073,6 +2114,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
+    char *s;
     resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
 
     /* Set pScrn->monitor */
@@ -2201,10 +2243,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     if (pScrn->bitsPerPixel < 8) {
 	/* Default to SW cursor for 1/4 bpp */
 	cPtr->Accel.UseHWCursor = FALSE;
-	cPtr->Flags &= ~ChipsHWCursor;
     } else {
 	cPtr->Accel.UseHWCursor = TRUE;
-	cPtr->Flags |= ChipsHWCursor;
     }
     if (xf86GetOptValBool(cPtr->Options, OPTION_HW_CURSOR,
 			  &cPtr->Accel.UseHWCursor))
@@ -2214,12 +2254,8 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
 	cPtr->Accel.UseHWCursor = !cPtr->Accel.UseHWCursor;
     }
-    if (cPtr->Accel.UseHWCursor)
-	cPtr->Flags |= ChipsHWCursor;
-    else
-	cPtr->Flags &= ~ChipsHWCursor;
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
+	       (cPtr->Accel.UseHWCursor) ? "HW" : "SW");
 
     /* memory size */
     if (cPtr->pEnt->device->videoRam != 0) {
@@ -2308,18 +2344,51 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	cPtr->Flags &= ~ChipsLinearSupport;
     }
 
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
+    if ((s = xf86GetOptValString(cPtr->Options, OPTION_ROTATE))
+	|| xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	if (!(cPtr->Flags & ChipsLinearSupport)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
+		    "Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
 	} else if (pScrn->depth < 8) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported at this depth.\n");
+		    "Option \"ShadowFB\" ignored. Not supported at this depth.\n");
 	} else {
-	    cPtr->Flags |= ChipsShadowFB;
+	    cPtr->Rotate = 0;
+	    if (s) {
+		if(!xf86NameCmp(s, "CW")) {
+		    /* accel is disabled below for shadowFB */
+		    cPtr->Flags |= ChipsShadowFB;
+		    cPtr->Rotate = 1;
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			       "Rotating screen clockwise\n");
+		} else if(!xf86NameCmp(s, "CCW")) {
+		    cPtr->Flags |= ChipsShadowFB;
+		    cPtr->Rotate = -1;
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
+			       "counter clockwise\n");
+		} else {
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+			       "value for Option \"Rotate\"\n", s);
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			       "Valid options are \"CW\" or \"CCW\"\n");
+		}
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			   "Using \"Shadow Framebuffer\"\n");
+		cPtr->Flags |= ChipsShadowFB;
+	    }
+	}
+    }
+    if (cPtr->Flags & ChipsShadowFB) {
+	if (cPtr->Flags & ChipsAccelSupport) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"HW acceleration is not supported with shadow fb\n");
 	    cPtr->Flags &= ~ChipsAccelSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
+	}
+	if (cPtr->Rotate && cPtr->Accel.UseHWCursor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"HW cursor is not supported with rotate\n");
+	    cPtr->Accel.UseHWCursor = FALSE;
 	}
     }
 
@@ -2355,7 +2424,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 
     /* 32bit register address offsets */
     if ((cPtr->Flags & ChipsAccelSupport) ||
-	    (cPtr->Flags & ChipsHWCursor)) {
+	    (cPtr->Accel.UseHWCursor)) {
 	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
 	tmp = cPtr->readXR(cPtr, 0x07);
 	for( i = 0; i < (sizeof(ChipsReg32) / sizeof(ChipsReg32[0])); i++) {
@@ -2375,8 +2444,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 			   "Cannot allocate IO registers: "
 			   "Disabling acceleration\n");
 	    }
-	    if (cPtr->Flags & ChipsHWCursor) {
-		cPtr->Flags &= ~ChipsHWCursor;
+	    if (cPtr->Accel.UseHWCursor) {
 		cPtr->Accel.UseHWCursor = FALSE;
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Cannot allocate IO registers: "
@@ -2384,6 +2452,11 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
     }
+
+    if (cPtr->Accel.UseHWCursor)
+	cPtr->Flags |= ChipsHWCursor;
+    else
+	cPtr->Flags &= ~ChipsHWCursor;
 
     cPtr->ClockMulFactor = ((pScrn->bitsPerPixel >= 8) ? bytesPerPixel : 1);
     if (cPtr->ClockMulFactor != 1)
@@ -2499,7 +2572,7 @@ chipsPreInitWingine(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
-	    xf86PrintEDID(vbeDoEDID(cPtr->pVbe));
+	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe)));
     }
 #endif    
     return TRUE;
@@ -2516,6 +2589,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     CHIPSPanelSizePtr Size = &cPtr->PanelSize;
     CHIPSClockPtr SaveClk = &(cPtr->SavedReg.Clock);
     Bool useLinear = FALSE;
+    char *s;
     resRange linearRes[] = { {ResExcMemBlock|ResBios,0,0},_END };
     
     /* Set pScrn->monitor */
@@ -2642,10 +2716,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     if (pScrn->bitsPerPixel < 8) {
 	/* Default to SW cursor for 1/4 bpp */
 	cPtr->Accel.UseHWCursor = FALSE;
-	cPtr->Flags &= ~ChipsHWCursor;
     } else {
 	cPtr->Accel.UseHWCursor = TRUE;
-	cPtr->Flags |= ChipsHWCursor;
     }
     if (xf86GetOptValBool(cPtr->Options, OPTION_HW_CURSOR,
 			  &cPtr->Accel.UseHWCursor))
@@ -2655,12 +2727,8 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	from = X_CONFIG;
 	cPtr->Accel.UseHWCursor = !cPtr->Accel.UseHWCursor;
     }
-    if (cPtr->Accel.UseHWCursor)
-	cPtr->Flags |= ChipsHWCursor;
-    else
-	cPtr->Flags &= ~ChipsHWCursor;
     xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-	       (cPtr->Flags & ChipsHWCursor) ? "HW" : "SW");
+	       (cPtr->Accel.UseHWCursor) ? "HW" : "SW");
 
     /* memory size */
     if (cPtr->pEnt->device->videoRam != 0) {
@@ -2778,18 +2846,51 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	cPtr->Flags &= ~ChipsLinearSupport;
     }
     
-    if (xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
+    if ((s = xf86GetOptValString(cPtr->Options, OPTION_ROTATE))
+	|| xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	if (!(cPtr->Flags & ChipsLinearSupport)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
+		    "Option \"ShadowFB\" ignored. Not supported without linear addressing\n");
 	} else if (pScrn->depth < 8) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		"Option \"ShadowFB\" ignored. Not supported at this depth.\n");
+		    "Option \"ShadowFB\" ignored. Not supported at this depth.\n");
 	} else {
-	    cPtr->Flags |= ChipsShadowFB;
+	    cPtr->Rotate = 0;
+	    if (s) {
+		if(!xf86NameCmp(s, "CW")) {
+		    /* accel is disabled below for shadowFB */
+		    cPtr->Flags |= ChipsShadowFB;
+		    cPtr->Rotate = 1;
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			       "Rotating screen clockwise\n");
+		} else if(!xf86NameCmp(s, "CCW")) {
+		    cPtr->Flags |= ChipsShadowFB;
+		    cPtr->Rotate = -1;
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
+			       "counter clockwise\n");
+		} else {
+		    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+			       "value for Option \"Rotate\"\n", s);
+		    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			       "Valid options are \"CW\" or \"CCW\"\n");
+		}
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			   "Using \"Shadow Framebuffer\"\n");
+		cPtr->Flags |= ChipsShadowFB;
+	    }
+	}
+    }
+    if (cPtr->Flags & ChipsShadowFB) {
+	if (cPtr->Flags & ChipsAccelSupport) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"HW acceleration is not supported with shadow fb\n");
 	    cPtr->Flags &= ~ChipsAccelSupport;
-	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-		    "Using \"Shadow Framebuffer\" - acceleration disabled\n");
+	}
+	if (cPtr->Rotate && cPtr->Accel.UseHWCursor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
+		"HW cursor is not supported with rotate\n");
+	    cPtr->Accel.UseHWCursor = FALSE;
 	}
     }
 
@@ -2999,7 +3100,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     if (cPtr->UseMMIO)
 	cPtr->Regs32 = ChipsReg32;
     else if ((cPtr->Flags & ChipsAccelSupport) ||
-	     (cPtr->Flags & ChipsHWCursor)) {
+	     (cPtr->Accel.UseHWCursor)) {
 	cPtr->Regs32 = xnfalloc(sizeof(ChipsReg32));
 	tmp =  cPtr->readXR(cPtr, 0x07);
 	for (i = 0; i < (sizeof(ChipsReg32)/sizeof(ChipsReg32[0])); i++) {
@@ -3020,8 +3121,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 			   "Cannot allocate IO registers: "
 			   "Disabling acceleration\n");
 	    }
-	    if (cPtr->Flags & ChipsHWCursor) {
-		cPtr->Flags &= ~ChipsHWCursor;
+	    if (cPtr->Accel.UseHWCursor) {
 		cPtr->Accel.UseHWCursor = FALSE;
 		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			   "Cannot allocate IO registers: "
@@ -3029,6 +3129,10 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
 	    }
 	}
     }
+    if (cPtr->Accel.UseHWCursor)
+	cPtr->Flags |= ChipsHWCursor;
+    else
+	cPtr->Flags &= ~ChipsHWCursor;
 
     /* sync reset ignored on this chipset */
     if (cPtr->Chipset > CHIPS_CT65530) {
@@ -3241,7 +3345,7 @@ chipsPreInit655xx(ScrnInfoPtr pScrn, int flags)
     if (xf86LoadSubModule(pScrn, "ddc")) {
 	xf86LoaderReqSymLists(ddcSymbols, NULL);
 	if (cPtr->pVbe)
-	    xf86PrintEDID(vbeDoEDID(cPtr->pVbe));
+	    xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(cPtr->pVbe)));
     }
 #endif
     return TRUE;
@@ -3282,32 +3386,6 @@ CHIPSLeaveVT(int scrnIndex, int flags)
     chipsLock(pScrn);
 }
 
-static void
-chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
-{
-    CHIPSPtr cPtr = CHIPSPTR(pScrn);
-    int width, height, Bpp, FBPitch;
-    unsigned char *src, *dst;
-   
-    Bpp = pScrn->bitsPerPixel >> 3;
-    FBPitch = BitmapBytePad(pScrn->displayWidth * pScrn->bitsPerPixel);
-
-    while(num--) {
-	width = (pbox->x2 - pbox->x1) * Bpp;
-	height = pbox->y2 - pbox->y1;
-	src = cPtr->ShadowPtr + (pbox->y1 * cPtr->ShadowPitch) + 
-						(pbox->x1 * Bpp);
-	dst = cPtr->FbBase + (pbox->y1 * FBPitch) + (pbox->x1 * Bpp);
-
-	while(height--) {
-	    memcpy(dst, src, width);
-	    dst += FBPitch;
-	    src += cPtr->ShadowPitch;
-	}
-	
-	pbox++;
-    }
-} 
 
 static void
 chipsLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
@@ -3372,6 +3450,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int allocatebase, freespace, currentaddr;
     unsigned int racflag = 0;
     unsigned char *FBStart;
+    int height, width, displayWidth;
     ErrorF("CHIPSScreenInit\n");
     
     /*
@@ -3484,64 +3563,73 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      * Call the framebuffer layer's ScreenInit function, and fill in other
      * pScreen fields.
      */
+    if ((cPtr->Flags & ChipsShadowFB) && cPtr->Rotate) {
+	height = pScrn->virtualX;
+	width = pScrn->virtualY;
+    } else {
+	width = pScrn->virtualX;
+	height = pScrn->virtualY;
+    }
+
     if(cPtr->Flags & ChipsShadowFB) {
-	cPtr->ShadowPitch = 
-		((pScrn->virtualX * pScrn->bitsPerPixel >> 3) + 3) & ~3L;
-	cPtr->ShadowPtr = xalloc(cPtr->ShadowPitch * pScrn->virtualY);
+	cPtr->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
+	cPtr->ShadowPtr = xalloc(cPtr->ShadowPitch * height);
+	displayWidth = cPtr->ShadowPitch / (pScrn->bitsPerPixel >> 3);
 	FBStart = cPtr->ShadowPtr;
     } else {
 	cPtr->ShadowPtr = NULL;
+	displayWidth = pScrn->displayWidth;
 	FBStart = cPtr->FbBase;
     }
 
     switch (pScrn->bitsPerPixel) {
     case 1:
 	ret = xf1bppScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+ 		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 4:
 	ret = xf4bppScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+ 		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 8:
 	ret = cfbScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+ 		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 16:
 	if (cPtr->Flags & ChipsOverlay8plus16)
 	    ret = cfb8_16ScreenInit(pScreen, (unsigned char *)FBStart + 
-			cPtr->FbOffset16, FBStart, pScrn->virtualX,
-			pScrn->virtualY, pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth, pScrn->displayWidth);
+		        cPtr->FbOffset16, FBStart, width, 
+			height, pScrn->xDpi, pScrn->yDpi,
+			displayWidth, displayWidth);
 	else
 	    ret = cfb16ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+		        width, height,			  
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 24:
 	if (pix24bpp == 24)
 	    ret = cfb24ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+ 		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	else
 	    ret = cfb24_32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+ 		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     case 32:
 	ret = cfb32ScreenInit(pScreen, FBStart,
-			pScrn->virtualX, pScrn->virtualY,
+ 		        width,height,
 			pScrn->xDpi, pScrn->yDpi,
-			pScrn->displayWidth);
+			displayWidth);
 	break;
     default:
 	xf86DrvMsg(scrnIndex, X_ERROR,
@@ -3793,9 +3881,25 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	}
     }
 
-    if (cPtr->Flags & ChipsShadowFB)
-	ShadowFBInit(pScreen, chipsRefreshArea);
-    
+    if (cPtr->Flags & ChipsShadowFB) {
+	RefreshAreaFuncPtr refreshArea = chipsRefreshArea;
+
+	if(cPtr->Rotate) {
+	    if (!cPtr->PointerMoved) {
+		cPtr->PointerMoved = pScrn->PointerMoved;
+		pScrn->PointerMoved = chipsPointerMoved;
+	    }
+	    
+	   switch(pScrn->bitsPerPixel) {
+	   case 8:	refreshArea = chipsRefreshArea8;	break;
+	   case 16:	refreshArea = chipsRefreshArea16;	break;
+	   case 24:	refreshArea = chipsRefreshArea24;	break;
+	   case 32:	refreshArea = chipsRefreshArea32;	break;
+	   }
+	}
+	ShadowFBInit(pScreen, refreshArea);
+    }
+	
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
 	return FALSE;

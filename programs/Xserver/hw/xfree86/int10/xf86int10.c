@@ -145,7 +145,16 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (SUCCESSFUL << 8);
 	    X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
 	    X86_EBX = pciSlotBX(pvp); 
-	} else {
+	}
+#ifdef SHOW_ALL_DEVICES
+	else if ((pvp = xf86findPciDeviceVendor(X86_EDX,X86_ECX,X86_ESI,pvp))
+		 != NULL) {
+	    X86_EAX = (X86_EAX & 0x00FF) | (SUCCESSFUL << 8);
+	    X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
+	    X86_EBX = pciSlotBX(pvp);
+	}
+#endif
+	else {
 	    X86_EAX = (X86_EAX & 0x00FF) | (DEVICE_NOT_FOUND << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}
@@ -161,7 +170,18 @@ int1A_handler(xf86Int10InfoPtr pInt)
 	    X86_EAX = (X86_EAX & 0x00FF) | (SUCCESSFUL << 8);
 	    X86_EBX = pciSlotBX(pvp);
 	    X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
-	} else {
+	}
+#ifdef SHOW_ALL_DEVICES
+	else if ((pvp = xf86findPciClass(X86_ECX & 0xFF,
+					 (X86_ECX & 0xff00) >> 8,
+					 (X86_ECX & 0xffff0000) >> 16,
+					 X86_ESI,pvp))!= NULL) {
+	    X86_EAX = (X86_EAX & 0x00FF) | (SUCCESSFUL << 8);
+	    X86_EFLAGS &= ~((unsigned long)0x01); /* clear carry flag */
+	    X86_EBX = pciSlotBX(pvp);
+	}
+#endif
+	else {
 	    X86_EAX = (X86_EAX & 0x00FF) | (DEVICE_NOT_FOUND << 8);
 	    X86_EFLAGS |= ((unsigned long)0x01); /* set carry flag */
 	}

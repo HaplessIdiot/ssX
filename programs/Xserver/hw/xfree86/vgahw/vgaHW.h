@@ -219,6 +219,5 @@ void vgaHWUnlock(vgaHWPtr hwp);
 void vgaHWDPMSSet(ScrnInfoPtr pScrn, int PowerManagementMode, int flags);
 Bool vgaHWHandleColormaps(ScreenPtr pScreen);
 void vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, xf86ddcSpeed speed);
-    
-#endif /* _VGAHW_H */
 
+#endif /* _VGAHW_H */

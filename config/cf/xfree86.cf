@@ -118,11 +118,11 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define X86VM           2
 #define X86EMU_OS       3
 
-#ifndef XF86INT10
+#ifndef XF86INT10_BUILD
 #if UseX86Emu
-#define XF86INT10		X86EMU_GENERIC
+#define XF86INT10_BUILD		X86EMU_GENERIC
 #else
-#define XF86INT10		NO
+#define XF86Int10		NO
 #endif
 #endif
 

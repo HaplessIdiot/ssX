@@ -101,7 +101,7 @@ InstallProgram(joycal,$(BINDIR))
         SRCS4 = pcitweak.c
 
 AllTarget(ProgramTargetName(pcitweak))
-NormalProgramTarget(pcitweak,pcitweak.o,NullParameter,-L../os-support -lxf86_os,NullParameter)
+NormalProgramTarget(pcitweak,pcitweak.o,NullParameter,-L../os-support -lxf86_os ,NullParameter)
 InstallProgram(pcitweak,$(BINDIR))
 
         SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)

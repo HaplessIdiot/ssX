@@ -242,6 +242,8 @@ typedef struct _CHIPSRec {
     long		FbMapSize;
     unsigned char *	ShadowPtr;
     int			ShadowPitch;
+    int                 Rotate;
+    void		(*PointerMoved)(int index, int x, int y);
     int                 FbOffset16;
     int                 FbSize16;  
     OptionInfoPtr	Options;
@@ -352,6 +354,15 @@ extern Bool chips_i2cInit(ScrnInfoPtr pScrn);
 
 /* dga */
 Bool CHIPSDGAInit(ScreenPtr pScreen);
+
+/* shadow fb */
+void     chipsRefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void     chipsRefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void     chipsRefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void     chipsRefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void     chipsRefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+void     chipsPointerMoved(int index, int x, int y);
+
 
 /* To aid debugging of 32 bit register access we make the following defines */
 /*

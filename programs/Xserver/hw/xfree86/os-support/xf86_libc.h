@@ -67,6 +67,9 @@ struct xf86stat {
     xf86dev_t st_rdev;	/* This is incomplete */
 };
 
+/* sysv IPC */
+typedef int xf86key_t;
+
 /* for setvbuf */
 #define XF86_IONBF    1
 #define XF86_IOFBF    2
@@ -148,6 +151,21 @@ struct xf86stat {
 #define xf86_EBUSY		1022
 #define xf86_ENODEV		1023
 #define xf86_EIO		1024
+
+/* sysv IPV */
+/* xf86shmget() */
+#define XF86IPC_CREAT  01000
+#define XF86IPC_EXCL   02000
+#define XF86IPC_NOWAIT 04000
+#define XF86SHM_R           0400         
+#define XF86SHM_W           0200            
+#define XF86IPC_PRIVATE ((xf86key_t)0)
+/* xf86shmat() */
+#define XF86SHM_RDONLY      010000      /* attach read-only else read-write */
+#define XF86SHM_RND         020000      /* round attach address to SHMLBA */
+#define XF86SHM_REMAP       040000      /* take-over region on attach */
+/* xf86shmclt() */
+#define XF86IPC_RMID 0
 
 #endif /* defined(XFree86LOADER) || defined(NEED_XF86_TYPES) */
 
@@ -585,6 +603,28 @@ struct xf86stat {
 #define ENODEV		xf86_ENODEV
 #undef EIO
 #define EIO		xf86_EIO
+
+/* IPC stuff */
+#undef SHM_RDONLY
+#define SHM_RDONLY XF86SHM_RDONLY
+#undef SHM_RND
+#define SHM_RND XF86SHM_RND
+#undef SHM_REMAP
+#define SHM_REMAP XF86SHM_REMAP
+#undef IPC_RMID
+#define IPC_RMID XF86IPC_RMID
+#undef IPC_CREAT
+#define IPC_CREAT XF86IPC_CREAT
+#undef IPC_EXCL
+#define IPC_EXCL XF86IPC_EXCL
+#undef PC_NOWAIT
+#define IPC_NOWAIT XF86IPC_NOWAIT
+#undef SHM_R
+#define SHM_R XF86SHM_R
+#undef SHM_W
+#define SHM_W XF86SHM_W
+#undef IPC_PRIVATE
+#define IPC_PRIVATE XF86IPC_PRIVATE
 
 /* Some ANSI macros */
 #undef FILENAME_MAX

@@ -269,6 +269,11 @@ extern xf86uid_t xf86geteuid(void);
 extern int xf86mknod(const char *, xf86mode_t, xf86dev_t);
 extern int xf86mkdir(const char *, xf86mode_t);
 unsigned int xf86sleep(unsigned int seconds);
+/* sysv IPC */
+extern int xf86shmget(xf86key_t key, int size, int xf86shmflg);
+extern char * xf86shmat(int id, char *addr, int xf86shmflg);
+extern int xf86shmdt(char *addr);
+extern int xf86shmctl(int id, int xf86cmd, pointer *buf);
 
 #else /* XFree86LOADER || NEED_XF86_TYPES */
 #include <unistd.h>

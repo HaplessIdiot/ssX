@@ -99,6 +99,7 @@ SRCS =	\
 	xf86fbman.c \
 	xf86xv.c \
 	xf86cmap.c\
+	xf86PM.c \
 	$(KBD).c \
 	$(XF86_XINPUT_SRC) \
 	$(XINPUT_DEV_SRCS) \
@@ -129,6 +130,7 @@ OBJS = \
 	xf86fbman.o \
 	xf86xv.o \
 	xf86cmap.o\
+	xf86PM.o \
 	$(XF86_XINPUT_OBJ) \
 	$(XKBDDXOBJ) \
 	$(BETAOBJ) \
@@ -145,7 +147,8 @@ OFILES = \
 		-I$(XINCLUDESRC) -I$(SERVERSRC)/Xext -I$(EXTINCSRC) \
 		-I$(SERVERSRC)/Xi -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
 		-I$(FONTLIBSRC)/include -I$(XF86SRC) -I$(XF86PARSERSRC) \
-		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac
+		-I$(XF86SRC)/loader $(VGAINCLUDES) -I$(XF86SRC)/rac \
+	        -I$(XF86SRC)/scanpci
 
 
 

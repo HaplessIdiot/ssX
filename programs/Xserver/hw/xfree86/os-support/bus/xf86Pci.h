@@ -296,7 +296,9 @@
 	(((b) & PCI_MAP_MEMORY_TYPE_MASK) == PCI_MAP_MEMORY_TYPE_64BIT)
 
 #define PCIGETMEMORY(b) ((b) & PCI_MAP_MEMORY_ADDRESS_MASK)
-#define PCIGETMEMORY64HIGH(b)  *((CARD32*)&b + 1)
+#define PCIGETMEMORY64HIGH(b)  (*((CARD32*)&b + 1))
+#define PCIGETMEMORY64(b) (PCIGETMEMORY(b) | ((CARD64)PCIGETMEMORY64HIGH(b) << 32))
+
 #define PCI_MAP_IO_ADDRESS_MASK         0xfffffffc
 
 #define PCIGETIO(b) ((b) & PCI_MAP_IO_ADDRESS_MASK)
@@ -545,6 +547,7 @@ typedef struct pci_device {
     pciCfgSpc cfgspc;
     int       basesize[7];	/* number of bits in base addr allocations */
     Bool      minBasesize;
+    CARD32    listed_class;
 } pciDevice, *pciConfigPtr;
 
 typedef enum {
@@ -552,6 +555,17 @@ typedef enum {
     READ,
     SET_BITS
 } pciFunc;
+
+typedef enum {
+    PCI_MEM,
+    PCI_MEM_SIZE,
+    PCI_MEM_SPARSE_BASE,
+    PCI_MEM_SPARSE_MASK,
+    PCI_IO,
+    PCI_IO_SIZE,
+    PCI_IO_SPARSE_BASE,
+    PCI_IO_SPARSE_MASK
+} PciAddrType;
 
 #define pci_device_vendor	      cfgspc.regs.dv_id.device_vendor
 #define pci_vendor		      cfgspc.regs.dv_id.dv.vendor
@@ -622,8 +636,8 @@ void          pciWriteByte(PCITAG tag, int offset, CARD8 val);
 void          pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val);
 void          pciSetBitsByte(PCITAG tag, int offset, CARD8 mask, CARD8 val);
 pointer       pciLongFunc(PCITAG tag, pciFunc func);
-ADDRESS       pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr);
-ADDRESS       pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr);
+ADDRESS       pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
+ADDRESS       pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr);
 PCITAG        pciTag(int busnum, int devnum, int funcnum);
 int           pciGetBaseSize(PCITAG tag, int indx, Bool destructive, Bool *min);
 pointer       xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag,

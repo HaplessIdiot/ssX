@@ -1566,12 +1566,15 @@ testinx(unsigned short port, unsigned char ind)
 
 /* Some macros to hide the system dependencies for MMIO accesses */
 #ifdef __alpha__
-#define MMIO_IN8(base, offset) xf86ReadSparse8(base, offset)
-#define MMIO_IN16(base, offset) xf86ReadSparse16(base, offset)
-#define MMIO_IN32(base, offset) xf86ReadSparse32(base, offset)
-#define MMIO_OUT8(base, offset, val) xf86WriteSparse8(val, base, offset)
-#define MMIO_OUT16(base, offset, val) xf86WriteSparse16(val, base, offset)
-#define MMIO_OUT32(base, offset, val) xf86WriteSparse32(val, base, offset)
+#define MMIO_IN8(base, offset) xf86ReadMmio8(base, offset)
+#define MMIO_IN16(base, offset) xf86ReadMmio16(base, offset)
+#define MMIO_IN32(base, offset) xf86ReadMmio32(base, offset)
+#define MMIO_OUT8(base, offset, val) xf86WriteMmio8(val, base, offset)
+#define MMIO_OUT16(base, offset, val) xf86WriteMmio16(val, base, offset)
+#define MMIO_OUT32(base, offset, val) xf86WriteMmio32(val, base, offset)
+#define MMIO_ONB8(base, offset, val) xf86WriteMmioNB8(val, base, offset)
+#define MMIO_ONB16(base, offset, val) xf86WriteMmioNB16(val, base, offset)
+#define MMIO_ONB32(base, offset, val) xf86WriteMmioNB32(val, base, offset)
 #else /* !__alpha__ */
 #define MMIO_IN8(base, offset) *(volatile CARD8 *)(((CARD8*)(base)) + (offset))
 #define MMIO_IN16(base, offset) *(volatile CARD16 *)(((CARD8*)(base)) + (offset))
@@ -1579,6 +1582,9 @@ testinx(unsigned short port, unsigned char ind)
 #define MMIO_OUT8(base, offset, val) *(volatile CARD8 *)(((CARD8*)(base)) + (offset)) = (val)
 #define MMIO_OUT16(base, offset, val) *(volatile CARD16 *)(((CARD8*)(base)) + (offset)) = (val)
 #define MMIO_OUT32(base, offset, val) *(volatile CARD32 *)(((CARD8*)(base)) + (offset)) = (val)
+#define MMIO_ONB8(base, offset, val) MMIO_OUT8(base, offset, val) 
+#define MMIO_ONB16(base, offset, val) MMIO_OUT16(base, offset, val) 
+#define MMIO_ONB32(base, offset, val) MMIO_OUT32(base, offset, val) 
 #endif /* __alpha__ */
 
 /*

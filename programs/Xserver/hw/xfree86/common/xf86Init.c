@@ -30,7 +30,6 @@ extern int atoi();
 #ifdef XFree86LOADER
 #include "loaderProcs.h"
 #endif
-
 #ifdef XFreeXDGA
 #include "dgaproc.h"
 #endif
@@ -42,7 +41,6 @@ extern int atoi();
 #include "xf86_OSlib.h"
 #include "xf86Version.h"
 #include "mipointer.h"
-
 #ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
@@ -73,6 +71,8 @@ static char *expKey = NULL;
 #ifdef __EMX__
 extern void os2ServerVideoAccess();
 #endif
+
+void (*xf86OSPMClose)(void) = NULL;
 
 #ifdef XFree86LOADER
 static char *baseModules[] = {
@@ -203,7 +203,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   Pix24Flags		 screenpix24, pix24;
   MessageType		 pix24From = X_DEFAULT;
   Bool			 pix24Fail = FALSE;
-
+  
 #ifdef __EMX__
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
@@ -277,7 +277,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     }
 
     xf86OpenConsole();
-
+    xf86OSPMClose = xf86OSPMOpen();
+    
     /* Run an external VT Init program if specified in the config file */
     xf86RunVtInit();
 
@@ -507,7 +508,7 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * Call the driver's PreInit()'s to complete initialisation for the first
      * generation.
      */
-
+    
     for (i = 0; i < xf86NumScreens; i++) {
 	xf86EnableAccess(xf86Screens[i]);
 	if (xf86Screens[i]->PreInit &&
@@ -715,6 +716,8 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
      * serverGeneration != 1; some OSs have to do things here, too.
      */
     xf86OpenConsole();
+    xf86OSPMClose = xf86OSPMOpen();
+    
     /* Make sure full I/O access is enabled */
     xf86EnableIO();
   }
@@ -763,12 +766,14 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     
   if (serverGeneration != 1) {
     xf86Resetting = TRUE;
-#ifdef HAS_USL_VTS
     /* All screens are in the same state, so just check the first */
     if (!xf86Screens[0]->vtSema) {
+#ifdef HAS_USL_VTS
       ioctl(xf86Info.consoleFd, VT_RELDISP, VT_ACKACQ);
-    } 
 #endif
+      xf86AccessEnter();
+      xf86EnterServerState(SETUP);
+    } 
   }
 #ifdef SCO
   else {
@@ -1017,7 +1022,9 @@ ddxGiveUp()
 #endif
 
     xf86CloseConsole();
-
+    if (xf86OSPMClose)
+	xf86OSPMClose();
+    
     xf86CloseLog();
 
     /* If an unexpected signal was caught, dump a core for debugging */
@@ -1586,6 +1593,36 @@ xf86LoadModules(char **list, pointer *optlist)
     }
     return TRUE;
 }
+
+/*
+ * xf86LoadModules iterates over a list that is being passed in.
+ */             
+pointer
+xf86LoadOneModule(char *name, pointer opt)
+{
+    int errmaj, errmin;
+    char *Name;
+    pointer mod;
+    
+    if (!name)
+	return NULL;
+    
+    /* Normalise the module name */
+    Name = xf86NormalizeName(name);
+
+    /* Skip empty names */
+    if (Name == NULL || *Name == '\0')
+	return NULL;
+
+    if (!(mod = LoadModule(Name, NULL, NULL, NULL, opt, NULL, &errmaj, &errmin))){
+	LoaderErrorMsg(NULL, Name, errmaj, errmin);
+	xfree(Name);
+	return FALSE;
+    }
+    xfree(Name);
+    return mod;
+}
+
 #endif
 
 /* Pixmap format stuff */

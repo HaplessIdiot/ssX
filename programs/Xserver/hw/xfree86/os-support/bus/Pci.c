@@ -422,7 +422,7 @@ pciLongFunc(PCITAG tag, pciFunc func)
 }
 
 ADDRESS
-pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr)
+pciBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   int bus = PCI_BUS_FROM_TAG(tag);
 	
@@ -431,13 +431,13 @@ pciBusAddrToHostAddr(PCITAG tag, ADDRESS addr)
   
   if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciAddrBusToHost)
-	  return (*pciBusInfo[bus]->funcs.pciAddrBusToHost)(tag, addr);
+	  return (*pciBusInfo[bus]->funcs.pciAddrBusToHost)(tag, type, addr);
   else
 	  return(addr);
 }
 
 ADDRESS
-pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr)
+pciHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   int bus = PCI_BUS_FROM_TAG(tag);
 	
@@ -446,7 +446,7 @@ pciHostAddrToBusAddr(PCITAG tag, ADDRESS addr)
   
   if (bus < pciNumBuses && pciBusInfo[bus] &&
 	pciBusInfo[bus]->funcs.pciAddrHostToBus)
-	  return (*pciBusInfo[bus]->funcs.pciAddrHostToBus)(tag, addr);
+	  return (*pciBusInfo[bus]->funcs.pciAddrHostToBus)(tag, type, addr);
   else
 	  return(addr);
 }
@@ -892,7 +892,7 @@ pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 }
 
 ADDRESS
-pciAddrNOOP(PCITAG tag, ADDRESS addr)
+pciAddrNOOP(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
 	return(addr);
 }
@@ -947,6 +947,7 @@ ErrorF("xf86scanpci: tag = 0x%lx\n", tag);
 		for (i = 0; i < 7; i++)
 		    devp->basesize[i] = pciGetBaseSize(tag, i, FALSE, 
 						       &devp->minBasesize);
+	    devp->listed_class = 0;
 
 #ifdef OLD_FORMAT
 	    xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%02x,0x%02x,0x%1x "
@@ -975,7 +976,7 @@ ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
 #ifndef OLD_FORMAT
     xf86MsgVerb(X_INFO, 2, "PCI: End of PCI scan\n");
 #endif
-
+    
     return pci_devp;
 }
 
@@ -985,7 +986,7 @@ pointer
 xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 		unsigned long Size)
 {
-	unsigned long hostbase = pciBusAddrToHostAddr(Tag, Base);
+	unsigned long hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM,Base);
 	pointer base;
 	CARD32 save = 0;
 
@@ -1015,9 +1016,8 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 	return((pointer)base);
 }
 
-
-int
-xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
+static int
+readPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 		unsigned char *Buf, int Len)
 {
     ADDRESS hostbase;
@@ -1036,7 +1036,7 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
     if ((newbase = getValidBIOSBase(Tag,basereg)) != romaddr) {
 	romaddr = PCIGETROM(newbase);
 	if (romaddr != 0 && romaddr == newbase) {
-#if 0
+#if 1
 	    savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
 	    if (PCIGETROM(savebase) == romaddr)
 		pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
@@ -1051,8 +1051,10 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 	xf86Msg(X_WARNING, "xf86ReadPciBIOS: cannot locate a BIOS address\n");
 	return -1;
     }
-    hostbase = pciBusAddrToHostAddr(Tag, PCIGETROM(romaddr));
-
+    hostbase = pciBusAddrToHostAddr(Tag, PCI_MEM, PCIGETROM(romaddr));
+#ifdef DEBUG
+    ErrorF("ReadPciBIOS: base = 0x%x\n",romaddr);
+#endif
     /* Enable ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
 
@@ -1060,13 +1062,53 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
 
     /* Restore ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romsave);
-
     /* Restore the base register if it was changed. */
     if (savebase)
 	pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), savebase);
 
     return ret;
 }
+
+typedef CARD32 (*ReadProcPtr)(PCITAG, int);
+typedef void (*WriteProcPtr)(PCITAG, int, CARD32);
+
+int
+xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
+		unsigned char *Buf, int Len)
+{
+  int size, num;
+  CARD32 Acc1, Acc2;
+  PCITAG *pTag;
+  int i;
+
+  size = readPciBIOS(Offset,Tag,basereg,Buf,Len);
+  
+  if (Buf[0] == 0x55 && Buf[1] == 0xaa)
+    return size;
+
+  num = pciTestMultiDeviceCard(PCI_BUS_FROM_TAG(Tag),
+			       PCI_DEV_FROM_TAG(Tag),
+			       PCI_FUNC_FROM_TAG(Tag),&pTag);
+  
+  if (!num) return size;
+
+#define PCI_ENA (PCI_CMD_MEM_ENABLE | PCI_CMD_IO_ENABLE)
+  Acc1 = ((ReadProcPtr)(pciLongFunc(Tag,READ)))(Tag,PCI_CMD_STAT_REG);
+  ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,
+					   PCI_CMD_STAT_REG,(Acc1 & ~PCI_ENA));
+  
+  for (i = 0; i < num; i++) {
+    Acc2 = ((ReadProcPtr)(pciLongFunc(pTag[i],READ)))(pTag[i],PCI_CMD_STAT_REG);
+    ((WriteProcPtr)(pciLongFunc(pTag[i],WRITE)))(pTag[i],
+					     PCI_CMD_STAT_REG,(Acc2 | PCI_ENA));
+    size = readPciBIOS(Offset,pTag[i],0,Buf,Len);
+    ((WriteProcPtr)(pciLongFunc(pTag[i],WRITE)))(pTag[i],PCI_CMD_STAT_REG,Acc2);
+    if (((CARD8*)Buf)[0] == 0x55 && ((CARD8*)Buf)[1] == 0xaa)
+      break;
+  }
+  ((WriteProcPtr)(pciLongFunc(Tag,WRITE)))(Tag,PCI_CMD_STAT_REG,Acc1);
+  return size;
+}  
 
 #elif defined(__sparc__)
 

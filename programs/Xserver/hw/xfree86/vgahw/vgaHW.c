@@ -1892,3 +1892,4 @@ vgaHWddc1SetSpeed(ScrnInfoPtr pScrn, xf86ddcSpeed speed)
 	break;
     }
 }
+

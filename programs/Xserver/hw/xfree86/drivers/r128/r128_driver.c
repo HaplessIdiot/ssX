@@ -64,7 +64,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86RAC.h"
 #include "xf86cmap.h"
 #include "xf86fbman.h"
-
+#include "xf86int10.h"
 				/* Backing store, software cursor, and
                                    colormap initialization */
 #include "mibstore.h"
@@ -849,7 +849,8 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "I2C initialization failed\n");
 	ret = FALSE;
     } else {
-	xf86PrintEDID(xf86DoEDID_DDC2(pScrn->scrnIndex, info->i2c));
+	xf86SetDDCProperties(pScrn,xf86PrintEDID(
+	    xf86DoEDID_DDC2(pScrn->scrnIndex, info->i2c)));
     }
     R128UnmapMMIO(pScrn);
     return ret;
@@ -952,6 +953,20 @@ static Bool R128PreInitAccel(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
+static Bool R128PreInitInt10(ScrnInfoPtr pScrn)
+{
+    R128InfoPtr   info = R128PTR(pScrn);    
+#if 1
+    if (xf86LoadSubModule(pScrn, "int10")) {
+ 	xf86Int10InfoPtr pInt;
+	xf86DrvMsg(pScrn->scrnIndex,X_INFO,"initializing int10\n");
+	pInt = xf86InitInt10(info->pEnt->index);
+	xf86FreeInt10(pInt);
+    }
+#endif
+    return TRUE;
+}
+
 /* R128PreInit is called once at server startup. */
 static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 {
@@ -989,6 +1004,8 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP;
     pScrn->monitor     = pScrn->confScreen->monitor;
 
+    if (!R128PreInitInt10(pScrn))     goto fail;
+    
     if (!R128PreInitVisual(pScrn))    goto fail;
     
 				/* We can't do this until we have a

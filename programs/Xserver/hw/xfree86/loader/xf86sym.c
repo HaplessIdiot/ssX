@@ -231,6 +231,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86CheckPciSlot)
    SYMFUNC(xf86ClaimPciSlot)
    SYMFUNC(xf86GetPciVideoInfo)
+   SYMFUNC(xf86GetEntityForPciInfo)
    SYMFUNC(xf86GetPciConfigInfo)
    SYMFUNC(xf86SetPciVideo)
    SYMFUNC(xf86ClaimIsaSlot)
@@ -263,6 +264,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86ChkConflict)
    SYMFUNC(xf86IsPciDevPresent)
    SYMFUNC(xf86FindScreenForEntity)
+   SYMFUNC(xf86findPciDeviceVendor)
 	   
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -751,6 +753,10 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86chown)
    SYMFUNC(xf86sleep)
    SYMFUNC(xf86mkdir)
+   SYMFUNC(xf86shmget)
+   SYMFUNC(xf86shmat)
+   SYMFUNC(xf86shmdt)
+   SYMFUNC(xf86shmctl)
 #ifdef XF86DRI
 				/* These may have more general uses, but
                                    for now, they are only used by the DRI.
@@ -779,12 +785,15 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
-   SYMFUNC(xf86ReadSparse32)
-   SYMFUNC(xf86ReadSparse16)
-   SYMFUNC(xf86ReadSparse8)
-   SYMFUNC(xf86WriteSparse32)
-   SYMFUNC(xf86WriteSparse16)
-   SYMFUNC(xf86WriteSparse8)
+   SYMFUNC(xf86ReadMmio32)
+   SYMFUNC(xf86ReadMmio16)
+   SYMFUNC(xf86ReadMmio8)
+   SYMFUNC(xf86WriteMmio32)
+   SYMFUNC(xf86WriteMmio16)
+   SYMFUNC(xf86WriteMmio8)
+   SYMFUNC(xf86WriteMmioNB32)
+   SYMFUNC(xf86WriteMmioNB16)
+   SYMFUNC(xf86WriteMmioNB8)
    SYMFUNC(memcpy)
 #endif
 #if defined(__powerpc__)

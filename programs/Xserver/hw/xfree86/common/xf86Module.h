@@ -165,6 +165,7 @@ pointer LoadSubModule(pointer, const char *, const char **,
 		      int *, int *);
 void UnloadSubModule(pointer);
 void LoadFont(pointer);
+void UnloadModule (pointer);
 #endif
 pointer LoaderSymbol(const char *);
 char **LoaderListDirs(const char **, const char **);

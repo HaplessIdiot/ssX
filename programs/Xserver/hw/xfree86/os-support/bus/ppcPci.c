@@ -99,8 +99,8 @@ ppcPciInit()
  * The moto machines do have different address maps on either side
  * of the PCI-host bridge though.
  */
-ADDRESS motoppcBusAddrToHostAddr(PCITAG, ADDRESS);
-ADDRESS motoppcHostAddrToBusAddr(PCITAG, ADDRESS);
+ADDRESS motoppcBusAddrToHostAddr(PCITAG, PciAddrType, ADDRESS);
+ADDRESS motoppcHostAddrToBusAddr(PCITAG, PciAddrType, ADDRESS);
 
 pciBusInfo_t motoppcPci0 = {
 /* configMech  */	  PCI_CFG_MECH_1,
@@ -144,10 +144,11 @@ extern unsigned long motoPciMemLen     = 0x3f000000;
 extern unsigned long motoPciMemBaseCPU = 0xc0000000;
 
 ADDRESS
-motoppcBusAddrToHostAddr(PCITAG tag, ADDRESS addr)
+motoppcBusAddrToHostAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   unsigned long addr_l = (unsigned long)addr;
 
+  if (type == PCI_MEM) {
   if (addr_l >= motoPciMemBase && addr_l < motoPciMemLen)
 	  /*
 	   * PCI memory space addresses [0-0x3effffff] are
@@ -164,32 +165,37 @@ motoppcBusAddrToHostAddr(PCITAG tag, ADDRESS addr)
   else
 	  FatalError("motoppcBusAddrToHostAddr: PCI addr 0x%x is not accessible to host!!!\n",
 		     addr_l);
+  } else
+      return addr;
   
   /*NOTREACHED*/
 }
 			
 ADDRESS
-motoppcHostAddrToBusAddr(PCITAG tag, ADDRESS addr)
+motoppcHostAddrToBusAddr(PCITAG tag, PciAddrType type, ADDRESS addr)
 {
   unsigned long addr_l = (unsigned long)addr;
-  
-  if (addr_l < 0x80000000)
+
+  if (type == PCI_MEM) {
+      if (addr_l < 0x80000000)
 	  /*
 	   * Moto host memory [0,0x7fffffff] is seen at
 	   * [0x80000000,0xffffffff] on PCI bus
 	   */
 	  return((ADDRESS)(0x80000000 | addr_l));
-  
-  else if (addr_l >= motoPciMemBaseCPU && addr_l < motoPciMemBaseCPU + motoPciMemLen)
+      
+      else if (addr_l >= motoPciMemBaseCPU && addr_l < motoPciMemBaseCPU + motoPciMemLen)
 	  /*
 	   * PCI memory space addresses [0-0x3effffff] are
 	   * are seen at [0xc0000000,0xfeffffff] on moto host
 	   */
 	  return((ADDRESS)(addr_l - (motoPciMemBaseCPU - motoPciMemBase)));
-  
-  else
+      
+      else
 	  FatalError("motoppcHostAddrToBusAddr: Host addr 0x%x is not accessible to PCI!!!\n",
 		     addr_l);
+  } else
+      return addr;
   
   /*NOTREACHED*/
 }

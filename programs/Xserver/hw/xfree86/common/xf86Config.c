@@ -530,7 +530,8 @@ typedef enum {
     FLAG_DPMS_OFFTIME,
     FLAG_PIXMAP,
     FLAG_PC98,
-    FLAG_ESTIMATE_SIZES_AGGRESSIVELY
+    FLAG_ESTIMATE_SIZES_AGGRESSIVELY,
+    FLAG_NOPM
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {
@@ -574,7 +575,7 @@ static OptionInfoRec FlagOptions[] = {
 	{0}, FALSE },
   { FLAG_ESTIMATE_SIZES_AGGRESSIVELY,"EstimateSizesAggressively",OPTV_INTEGER,
 	{0}, FALSE },
-  { FLAG_PC98,			"PC98",				OPTV_BOOLEAN,
+  { FLAG_NOPM,			"NoPM",				OPTV_BOOLEAN,
 	{0}, FALSE },
   { -1,				NULL,				OPTV_NONE,
 	{0}, FALSE }
@@ -670,12 +671,18 @@ configServerFlags(XF86ConfFlagsPtr flagsconf, XF86OptionPtr layoutopts)
 	xf86Info.pciFlags = PCIForceConfig1;
     if (xf86IsOptionSet(FlagOptions, FLAG_PCIFORCECONFIG2))
 	xf86Info.pciFlags = PCIForceConfig2;
-
+    if (xf86IsOptionSet(FlagOptions, FLAG_NOPM))
+	xf86Info.pmFlag = FALSE;
+    else
+	xf86Info.pmFlag = TRUE;
+	
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_ESTIMATE_SIZES_AGGRESSIVELY, &i);
     if (i >= 0)
-	xf86EstimateSizesAggressively = i;
-    
+	xf86Info.estimateSizesAggressively = i;
+    else
+	xf86Info.estimateSizesAggressively = 0;
+	
     i = -1;
     xf86GetOptValInteger(FlagOptions, FLAG_SAVER_BLANKTIME, &i);
     if (i >= 0)
@@ -753,6 +760,7 @@ configInputKbd(IDevPtr inputp)
   xf86Info.xleds         = 0L;
   xf86Info.kbdDelay      = 500;
   xf86Info.kbdRate       = 30;
+  
   xf86Info.kbdProc       = NULL;
   xf86Info.vtinit        = NULL;
   xf86Info.vtSysreq      = VT_SYSREQ_DEFAULT;
@@ -813,7 +821,6 @@ configInputKbd(IDevPtr inputp)
       return FALSE;
     }
   }
-
   s = xf86SetStrOption(inputp->commonOptions, "XLeds", NULL);
   if (s) {
     char *l, *end;

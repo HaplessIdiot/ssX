@@ -131,6 +131,7 @@ void xf86ClearEntityListForScreen(int scrnIndex);
 extern void xf86PostPreInit(void);
 extern void xf86PostScreenInit(void);
 extern memType getValidBIOSBase(PCITAG tag, int num);
+extern int pciTestMultiDeviceCard(int bus, int dev, int func, PCITAG** pTag);
 
 /* xf86Config.c */
 
@@ -156,6 +157,10 @@ void xf86PostKbdEvent(unsigned key);
 void xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy);
 void xf86Wakeup(pointer blockData, int err, pointer pReadmask);
 void xf86SigHandler(int signo);
+void xf86HandlePMEvents(int fd, pointer data);
+extern int (*xf86PMGetEventFromOs)(int fd,pmEvent *events,int num);
+extern pmWait (*xf86PMConfirmEventToOs)(int fd,pmEvent event);
+
 
 /* xf86Helper.c */
 void xf86LogInit(void);
@@ -164,6 +169,7 @@ void OsVendorVErrorF(const char *f, va_list args);
 
 /* xf86Init.c */
 Bool xf86LoadModules(char **list, pointer *optlist);
+pointer xf86LoadOneModule(char *name, pointer optlist);
 
 /* xf86Io.c */
 

@@ -122,6 +122,7 @@ extern fd_set EnabledDevices;
 #if defined(XQUEUE)
 extern void xf86XqueRequest(void);
 #endif
+extern void (*xf86OSPMClose)(void);
 
 static void xf86VTSwitch(void);
 
@@ -977,9 +978,9 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 
 #endif  /* __EMX__ and __QNX__ */
 
-    {
-	IHPtr ih;
-
+    if (err >= 0) { /* we don't want the handlers called if select() */
+	IHPtr ih;   /* returned with an error condition, do we?      */
+	
 	for (ih = InputHandlers; ih; ih = ih->next) {
 	    if (ih->enabled && ih->fd >= 0 && ih->ihproc &&
 		(FD_ISSET(ih->fd, ((fd_set *)pReadmask)) != 0)) {
@@ -987,7 +988,7 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
 	    }
 	}
     }
-	    
+    
     if (xf86VTSwitchPending()) xf86VTSwitch();
 
     if (xf86Info.inputPending) ProcessInputEvents();
@@ -1138,6 +1139,9 @@ xf86VTSwitch()
       xf86EnableInputHandler(ih);
 
     } else {
+	if (xf86OSPMClose)
+	    xf86OSPMClose();
+    
 	for (i = 0; i < xf86NumScreens; i++) {
  	    /*
  	     * zero all access functions to
@@ -1154,7 +1158,8 @@ xf86VTSwitch()
     ErrorF("xf86VTSwitch: Entering\n");
 #endif
     if (!xf86VTSwitchTo()) return;
-      
+    xf86OSPMClose = xf86OSPMOpen();
+
     xf86EnableIO();
     xf86AccessEnter();
     xf86EnterServerState(SETUP);
@@ -1213,15 +1218,18 @@ xf86AddInputHandler(int fd, InputHandlerProc proc, pointer data)
     return ih;
 }
 
-void
+int
 xf86RemoveInputHandler(pointer handler)
 {
     IHPtr ih, p;
-
+    int fd;
+    
     if (!handler)
-	return;
+	return -1;
 
     ih = handler;
+    fd = ih->fd;
+    
     if (ih->fd >= 0)
 	RemoveEnabledDevice(ih->fd);
 
@@ -1235,6 +1243,7 @@ xf86RemoveInputHandler(pointer handler)
 	    p->next = ih->next;
     }
     xfree(ih);
+    return fd;
 }
 
 void
@@ -1284,8 +1293,6 @@ XTestJumpPointer(int jx, int jy, int dev_type)
 {
   miPointerAbsoluteCursor(jx, jy, GetTimeInMillis() );
 }
-
-
 
 void
 XTestGenerateEvent(int dev_type, int keycode, int keystate, int mousex,

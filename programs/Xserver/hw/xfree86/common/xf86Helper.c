@@ -796,7 +796,7 @@ Bool
 xf86SetGamma(ScrnInfoPtr scrp, Gamma gamma)
 {
     MessageType from = X_DEFAULT;
-#if 0
+#if 1
     xf86MonPtr DDC = (xf86MonPtr)(scrp->monitor->DDC); 
 #endif
     if (TEST_GAMMA(xf86Gamma)) {
@@ -1588,6 +1588,8 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     GDevPtr dev = NULL;
     int *retEntities = NULL;
 
+    *foundEntities = NULL;
+
     if (vendorID == 0) {
         for (ppPci = xf86PciVideoInfo; *ppPci != NULL; ppPci++) {
 	    for (id = PCIchipsets; id->PCIid != -1; id++) {
@@ -1840,6 +1842,7 @@ xf86MatchPciInstances(const char *driverName, int vendorID,
     if (numFound > 0) {
 	*foundEntities = retEntities;
     }
+	
     return numFound;
 }
 
@@ -1854,6 +1857,8 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     int i;
     int numFound = 0;
     int *retEntities = NULL;
+
+    *foundEntities = NULL;
 
     /* For now, bail here when xf86DoProbe is set. */
     if (xf86DoProbe)
@@ -2251,6 +2256,44 @@ void xf86Break3(void)
 CARD32 xf86DummyVar1;
 CARD32 xf86DummyVar2;
 CARD32 xf86DummyVar3;
+
+CARD8  xf86PeekFb8(CARD8  *p) { return *p; }
+CARD16 xf86PeekFb16(CARD16 *p) { return *p; }
+CARD32 xf86PeekFb32(CARD32 *p) { return *p; }
+void xf86PokeFb8(CARD8  *p, CARD8  v) { *p = v; }
+void xf86PokeFb16(CARD16 *p, CARD16 v) { *p = v; }
+void xf86PokeFb32(CARD16 *p, CARD32 v) { *p = v; }
+
+CARD8  xf86PeekMmio8(pointer Base, unsigned long Offset)
+{
+    return MMIO_IN8(Base,Offset);
+}
+
+CARD16 xf86PeekMmio16(pointer Base, unsigned long Offset)
+{
+    return MMIO_IN16(Base,Offset);
+}
+
+CARD32 xf86PeekMmio32(pointer Base, unsigned long Offset)
+{
+    return MMIO_IN32(Base,Offset);
+}
+
+void xf86PokeMmio8(pointer Base, unsigned long Offset, CARD8  v)
+{
+    MMIO_OUT8(Base,Offset,v);
+}
+
+void xf86PokeMmio16(pointer Base, unsigned long Offset, CARD16 v)
+{
+    MMIO_OUT16(Base,Offset,v);
+}
+
+void xf86PokeMmio32(pointer Base, unsigned long Offset, CARD32 v)
+{
+    MMIO_OUT32(Base,Offset,v);
+}
+
 
 typedef enum {
    OPTION_BACKING_STORE

@@ -15,8 +15,9 @@
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.15 2000/01/18 16:35:50 tsi Exp $ */
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-/*#include "compiler.h"*/
+#define EXPERIMENTAL
+
+#include "compiler.h"
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -36,6 +37,7 @@
 #include "vgaHW.h"
 
 #include "xf86RAC.h"
+#include "xf86Resources.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -44,6 +46,9 @@
 #include "mibstore.h"
 
 #include "micmap.h"
+
+/* Needed by the Shadow Framebuffer */
+#include "shadowfb.h"
 
 #include "xf86int10.h"
 
@@ -98,6 +103,7 @@ int	LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags);
 static void LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg);
 static int LgFindLineData(int displayWidth, int bpp);
 static CARD16 LgSetClock(CirPtr pCir, vgaHWPtr hwp, int freq);
+static void lg_vgaHWSetMmioFunc(vgaHWPtr hwp, CARD8 *base);
 
 #ifdef DPMSExtension
 static void	LgDisplayPowerManagementSet(ScrnInfoPtr pScrn,
@@ -119,17 +125,20 @@ static int pix24bpp = 0;
  */
 
 typedef enum {
-	OPTION_SW_CURSOR,
 	OPTION_HW_CURSOR,
 	OPTION_PCI_RETRY,
+	OPTION_ROTATE,
+	OPTION_SHADOW_FB,
 	OPTION_NOACCEL
 } LgOpts;
 
 static OptionInfoRec LgOptions[] = {
-	{ OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
-	{ OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
-	/* fifo_conservative/aggressive; fast/med/slow_dram; ... */
-	{ -1,					NULL,		OPTV_NONE,		{0}, FALSE }
+    { OPTION_HW_CURSOR,		"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_NOACCEL,		"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_SHADOW_FB,         "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
+    /* fifo_conservative/aggressive; fast/med/slow_dram; ... */
+    { -1,					NULL,		OPTV_NONE,		{0}, FALSE }
 };
 
 
@@ -238,6 +247,11 @@ static const char *int10Symbols[] = {
 	NULL
 };
 
+static const char *shadowSymbols[] = {
+    "ShadowFBInit",
+    NULL
+};
+
 #ifdef XFree86LOADER
 
 #define LG_MAJOR_VERSION 1
@@ -269,35 +283,17 @@ XF86ModuleData cirrus_lagunaModuleData = { &lgVersRec, lgSetup, NULL };
 static pointer
 lgSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-	static Bool setupDone = FALSE;
+    static Bool setupDone = FALSE;
+    
+    ErrorF("lgSetup\n");
+    
+    if (!setupDone) {
+	setupDone = TRUE;
+	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
+			  ramdacSymbols, ddcSymbols, i2cSymbols,
+			  int10Symbols, NULL);
 
-	ErrorF("lgSetup\n");
-	/* This module should be loaded only once, but check to be sure. */
-
-	if (!setupDone) {
-		setupDone = TRUE;
-
-		/*
-		 * Modules that this driver always requires may be loaded here
-		 * by calling LoadSubModule().
-		 *
-		 * Although this driver currently always requires the vgahw module
-		 * that dependency will be removed later, so we don't load it here.
-		 */
-
-		/*
-		 * Tell the loader about symbols from other modules that this module
-		 * might refer to.
-		 */
-		LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols,
-							ramdacSymbols, ddcSymbols, i2cSymbols,
-							int10Symbols, NULL);
-
-	}
-	/*
-	 * The return value must be non-NULL on success even though there
-	 * is no TearDownProc.
-	 */
+    }
 	return (pointer)1;
 }
 
@@ -312,39 +308,36 @@ LgAvailableOptions(int chipid)
 Bool
 LgProbe(int entity, ScrnInfoPtr pScrn)
 {
-	pScrn->PreInit		= LgPreInit;
-	pScrn->ScreenInit	= LgScreenInit;
-	pScrn->SwitchMode	= LgSwitchMode;
-	pScrn->AdjustFrame	= LgAdjustFrame;
-	pScrn->EnterVT		= LgEnterVT;
-	pScrn->LeaveVT		= LgLeaveVT;
-	pScrn->FreeScreen	= LgFreeScreen;
-	pScrn->ValidMode	= LgValidMode;
-
-	xf86ConfigActivePciEntity(pScrn, entity, CIRPciChipsets, NULL,
-								NULL, NULL, NULL, NULL);
-
-	return TRUE;
+    pScrn->PreInit		= LgPreInit;
+    pScrn->ScreenInit	= LgScreenInit;
+    pScrn->SwitchMode	= LgSwitchMode;
+    pScrn->AdjustFrame	= LgAdjustFrame;
+    pScrn->EnterVT		= LgEnterVT;
+    pScrn->LeaveVT		= LgLeaveVT;
+    pScrn->FreeScreen	= LgFreeScreen;
+    pScrn->ValidMode	= LgValidMode;
+    
+    xf86ConfigActivePciEntity(pScrn, entity, CIRPciChipsets, NULL,
+			      NULL, NULL, NULL, NULL);
+    
+    return TRUE;
 }
 
 
 static Bool
 LgGetRec(ScrnInfoPtr pScrn)
 {
-	LgPtr pLg;
-	/*
-	 * Allocate a LgRec, and hook it into pScrn->driverPrivate.
-	 * pScrn->driverPrivate is initialised to NULL, so we can check if
-	 * the allocation has already been done.
-	 */
+	CirPtr pCir;
+
 	if (pScrn->driverPrivate != NULL)
 		return TRUE;
 
-	pScrn->driverPrivate = xnfcalloc(sizeof(LgRec), 1);
+	pScrn->driverPrivate = xnfcalloc(sizeof(CirRec), 1);
+	((CirPtr)pScrn->driverPrivate)->chip.lg = xnfcalloc(sizeof(LgRec),1);
 
 	/* Initialize it */
-	pLg = LGPTR(pScrn);
-	pLg->oldBitmask = 0x00000000;
+	pCir = CIRPTR(pScrn);
+	pCir->chip.lg->oldBitmask = 0x00000000;
 
 	return TRUE;
 }
@@ -394,19 +387,16 @@ LgCountRam(ScrnInfoPtr pScrn)
 static xf86MonPtr
 LgDoDDC(ScrnInfoPtr pScrn)
 {
-	LgPtr pLg = LGPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 	xf86MonPtr MonInfo = NULL;
 
 	/* Map the CIR memory and MMIO areas */
-	if (!CirMapMem(&pLg->CirRec, pScrn->scrnIndex))
+	if (!CirMapMem(pCir, pScrn->scrnIndex))
 		return FALSE;
 
 	{
-		volatile CARD16 *rambus =
-			(volatile CARD16 *)(pLg->CirRec.IOBase + 0x200);
-
-		ErrorF("RIF Control %#04x,  RAC Control %#04x\n",
-			rambus[0], rambus[1]);
+	    ErrorF("RIF Control %#04x,  RAC Control %#04x\n",
+		   memrw(0x200), memrw(0x201));
 	}
 #if LGuseI2C
 	if (!LgI2CInit(pScrn)) {
@@ -416,7 +406,7 @@ LgDoDDC(ScrnInfoPtr pScrn)
 	}
 
 	/* Read and output monitor info using DDC2 over I2C bus */
-	MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, pLg->CirRec.I2CPtr1);
+	MonInfo = xf86DoEDID_DDC2(pScrn->scrnIndex, pCir->I2CPtr1);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "I2C Monitor info: %p\n", MonInfo);
 	xf86PrintEDID(MonInfo);
 	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "end of I2C Monitor info\n\n");
@@ -425,7 +415,7 @@ LgDoDDC(ScrnInfoPtr pScrn)
 	xf86SetDDCproperties(pScrn, MonInfo);
 
 unmap_out:
-	CirUnmapMem(&pLg->CirRec, pScrn->scrnIndex);
+	CirUnmapMem(pCir, pScrn->scrnIndex);
 
 	return MonInfo;
 }
@@ -434,58 +424,22 @@ unmap_out:
 Bool
 LgPreInit(ScrnInfoPtr pScrn, int flags)
 {
-	LgPtr pLg;
+	CirPtr pCir;
+	vgaHWPtr hwp;
 	MessageType from;
 	int i;
 	ClockRangePtr clockRanges;
 	char *mod = NULL;
 	int fbPCIReg, ioPCIReg;
-#ifdef notYet
-	xf86Int10InfoPtr int10InfoPtr;
-	int entityIndex;
-#endif
-
+	char *s;
+	
 #ifdef LG_DEBUG
 	ErrorF("LgPreInit\n");
 #endif
 
-	/*
-	 * Note: This function is only called once at server startup, and
-	 * not at the start of each server generation.  This means that
-	 * only things that are persistent across server generations can
-	 * be initialised here.  xf86Screens[] is (pScrn is a pointer to one
-	 * of these).  Privates allocated using xf86AllocateScrnInfoPrivateIndex()
-	 * are too, and should be used for data that must persist across
-	 * server generations.
-	 *
-	 * Per-generation data should be allocated with
-	 * AllocateScreenPrivateIndex() from the ScreenInit() function.
-	 */
-
 	/* Check the number of entities, and fail if it isn't one. */
 	if (pScrn->numEntities != 1)
 		return FALSE;
-
-	if (!pScrn->entityList)
-		ErrorF("entityList is empty\n");
-	else
-		ErrorF("EntityIndex = %d\n", pScrn->entityList[0]);
-
-#ifdef notYet
-	entityIndex = pScrn->entityList[0];
-	if (!xf86IsEntityPrimary(entityIndex)) {
-		if (!xf86LoadSubModule(pScrn, "int10"))
-			return FALSE;
-		xf86LoaderReqSymLists(int10Symbols, NULL);
-
-		int10InfoPtr = xf86InitInt10(entityIndex);
-
-		if (int10InfoPtr)
-			return FALSE;
-
-		xf86FreeInt10(int10InfoPtr);
-	}
-#endif
 
 	/* The vgahw module should be loaded here when needed */
 	if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -499,31 +453,37 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	if (!vgaHWGetHWRec(pScrn))
 		return FALSE;
 
+	hwp = VGAHWPTR(pScrn);
+	vgaHWGetIOBase(hwp);
+
 	/* Allocate the LgRec driverPrivate */
 	if (!LgGetRec(pScrn))
 		return FALSE;
 
-	pLg = LGPTR(pScrn);
-	pLg->CirRec.pScrn = pScrn;
+	pCir = CIRPTR(pScrn);
+	pCir->pScrn = pScrn;
 
 	/* Get the entity, and make sure it is PCI. */
-	pLg->CirRec.pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
-	if (pLg->CirRec.pEnt->location.type != BUS_PCI)
+	pCir->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+	if (pCir->pEnt->location.type != BUS_PCI)
 		return FALSE;
+	pCir->Chipset = pCir->pEnt->chipset;
 
 	/* Find the PCI info for this screen */
-	pLg->CirRec.PciInfo = xf86GetPciInfoForEntity(pLg->CirRec.pEnt->index);
-	pLg->CirRec.PciTag = pciTag(pLg->CirRec.PciInfo->bus,
-								pLg->CirRec.PciInfo->device,
-								pLg->CirRec.PciInfo->func);
+	pCir->PciInfo = xf86GetPciInfoForEntity(pCir->pEnt->index);
+	pCir->PciTag = pciTag(pCir->PciInfo->bus,
+								pCir->PciInfo->device,
+								pCir->PciInfo->func);
 
-	/*
-	 * XXX Check which of the VGA resources are decode and/or actually
-	 * required in operating mode?  For now, assume everything is needed,
-	 * so don't call xf86SetOperatingState().
-	 */
-	pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-	pScrn->racIoFlags =  RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+	if (xf86LoadSubModule(pScrn, "int10")) {
+	    xf86Int10InfoPtr int10InfoPtr;
+	    xf86LoaderReqSymLists(int10Symbols, NULL);
+	    
+	    int10InfoPtr = xf86InitInt10(pCir->pEnt->index);
+
+	    if (int10InfoPtr)
+		xf86FreeInt10(int10InfoPtr);
+	}
 
 	/* Set pScrn->monitor */
 	pScrn->monitor = pScrn->confScreen->monitor;
@@ -587,37 +547,22 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		return FALSE;
 	}
 
-	/* The gamma fields must be initialised when using the new cmap code */
-	if (pScrn->depth > 1) {
-		Gamma zeros = {0.0, 0.0, 0.0};
-
-		if (!xf86SetGamma(pScrn, zeros))
-			return FALSE;
-	}
-
-	/* We use a programamble clock */
-	pScrn->progClock = TRUE;
-
 	/* Collect all of the relevant option flags (fill in pScrn->options) */
 	xf86CollectOptions(pScrn, NULL);
 
 	/* Process the options */
 	xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, LgOptions);
 
-	pScrn->rgbBits = 6; /* ??? What's this? */
+	pScrn->rgbBits = 6; 
 	from = X_DEFAULT;
-	pLg->CirRec.HWCursor = FALSE;
-	if (xf86GetOptValBool(LgOptions, OPTION_HW_CURSOR, &pLg->CirRec.HWCursor))
+	pCir->HWCursor = FALSE;
+	if (xf86GetOptValBool(LgOptions, OPTION_HW_CURSOR, &pCir->HWCursor))
 		from = X_CONFIG;
 
-	if (xf86ReturnOptValBool(LgOptions, OPTION_SW_CURSOR, FALSE)) {
-		from = X_CONFIG;
-		pLg->CirRec.HWCursor = FALSE;
-	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "Using %s cursor\n",
-		pLg->CirRec.HWCursor ? "HW" : "SW");
+		pCir->HWCursor ? "HW" : "SW");
 	if (xf86ReturnOptValBool(LgOptions, OPTION_NOACCEL, FALSE)) {
-		pLg->CirRec.NoAccel = TRUE;
+		pCir->NoAccel = TRUE;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
 	}
 	if (pScrn->bitsPerPixel < 8) {
@@ -625,53 +570,20 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 			"Cannot use in less than 8 bpp\n");
 		return FALSE;
 	}
-
 	/*
-	 * Set the Chipset and ChipRev, allowing config file entries to
+	 * Set the ChipRev, allowing config file entries to
 	 * override.
 	 */
-	if (pLg->CirRec.pEnt->device->chipset && *pLg->CirRec.pEnt->device->chipset) {
-		pScrn->chipset = pLg->CirRec.pEnt->device->chipset;
-		pLg->CirRec.Chipset = xf86StringToToken(CIRChipsets, pScrn->chipset);
-		from = X_CONFIG;
-	} else if (pLg->CirRec.pEnt->device->chipID >= 0) {
-		pLg->CirRec.Chipset = pLg->CirRec.pEnt->device->chipID;
-		pScrn->chipset = (char *)xf86TokenToString(CIRChipsets, pLg->CirRec.Chipset);
-		from = X_CONFIG;
-		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
-			pLg->CirRec.Chipset);
-	} else {
-		from = X_PROBED;
-		pLg->CirRec.Chipset = pLg->CirRec.PciInfo->chipType;
-		pScrn->chipset = (char *)xf86TokenToString(CIRChipsets, pLg->CirRec.Chipset);
-	}
-	if (pLg->CirRec.pEnt->device->chipRev >= 0) {
-		pLg->CirRec.ChipRev = pLg->CirRec.pEnt->device->chipRev;
+	if (pCir->pEnt->device->chipRev >= 0) {
+		pCir->ChipRev = pCir->pEnt->device->chipRev;
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
-			pLg->CirRec.ChipRev);
+			pCir->ChipRev);
 	} else {
-		pLg->CirRec.ChipRev = pLg->CirRec.PciInfo->chipRev;
+		pCir->ChipRev = pCir->PciInfo->chipRev;
 	}
-
-	/*
-	 * This shouldn't happen because such problems should be caught in
-	 * CIRProbe(), but check it just in case.
-	 */
-	if (pScrn->chipset == NULL) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			"ChipID 0x%04X is not recognised\n", pLg->CirRec.Chipset);
-		return FALSE;
-	}
-	if (pLg->CirRec.Chipset < 0) {
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			"Chipset \"%s\" is not recognised\n", pScrn->chipset);
-		return FALSE;
-	}
-
-	xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
 	/* Cirrus swapped the FB and IO registers in the 5465 (by design). */
-	if (PCI_CHIP_GD5465 == pLg->CirRec.Chipset) {
+	if (PCI_CHIP_GD5465 == pCir->Chipset) {
 		fbPCIReg = 0;
 		ioPCIReg = 1;
 	} else {
@@ -680,19 +592,19 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	/* Find the frame buffer base address */
-	if (pLg->CirRec.pEnt->device->MemBase != 0) {
+	if (pCir->pEnt->device->MemBase != 0) {
 		/* Require that the config file value matches one of the PCI values. */
-		if (!xf86CheckPciMemBase(pLg->CirRec.PciInfo, pLg->CirRec.pEnt->device->MemBase)) {
+		if (!xf86CheckPciMemBase(pCir->PciInfo, pCir->pEnt->device->MemBase)) {
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 				"MemBase 0x%08lX doesn't match any PCI base register.\n",
-				pLg->CirRec.pEnt->device->MemBase);
+				pCir->pEnt->device->MemBase);
 			return FALSE;
 		}
-		pLg->CirRec.FbAddress = pLg->CirRec.pEnt->device->MemBase;
+		pCir->FbAddress = pCir->pEnt->device->MemBase;
 		from = X_CONFIG;
 	} else {
-		if (pLg->CirRec.PciInfo->memBase[fbPCIReg] != 0) {
-			pLg->CirRec.FbAddress = pLg->CirRec.PciInfo->memBase[fbPCIReg] & 0xff000000;
+		if (pCir->PciInfo->memBase[fbPCIReg] != 0) {
+			pCir->FbAddress = pCir->PciInfo->memBase[fbPCIReg] & 0xff000000;
 			from = X_PROBED;
 		} else {
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -702,22 +614,22 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		}
 	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
-		(unsigned long)pLg->CirRec.FbAddress);
+		(unsigned long)pCir->FbAddress);
 
 	/* Find the MMIO base address */
-	if (pLg->CirRec.pEnt->device->IOBase != 0) {
+	if (pCir->pEnt->device->IOBase != 0) {
 		/* Require that the config file value matches one of the PCI values. */
-		if (!xf86CheckPciMemBase(pLg->CirRec.PciInfo, pLg->CirRec.pEnt->device->IOBase)) {
+		if (!xf86CheckPciMemBase(pCir->PciInfo, pCir->pEnt->device->IOBase)) {
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 				"IOBase 0x%08lX doesn't match any PCI base register.\n",
-				pLg->CirRec.pEnt->device->IOBase);
+				pCir->pEnt->device->IOBase);
 			return FALSE;
 		}
-		pLg->CirRec.IOAddress = pLg->CirRec.pEnt->device->IOBase;
+		pCir->IOAddress = pCir->pEnt->device->IOBase;
 		from = X_CONFIG;
 	} else {
-		if (pLg->CirRec.PciInfo->memBase[ioPCIReg] != 0) {
-			pLg->CirRec.IOAddress = pLg->CirRec.PciInfo->memBase[ioPCIReg] & 0xfffff000;
+		if (pCir->PciInfo->memBase[ioPCIReg] != 0) {
+			pCir->IOAddress = pCir->PciInfo->memBase[ioPCIReg] & 0xfffff000;
 			from = X_PROBED;
 		} else {
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -725,42 +637,21 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		}
 	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at 0x%lX\n",
-		(unsigned long)pLg->CirRec.IOAddress);
+		(unsigned long)pCir->IOAddress);
 
+	pScrn->racIoFlags =   RAC_COLORMAP 
+#ifndef EXPERIMENTAL
+	  | RAC_VIEWPORT
+#endif
+;
+ 	xf86SetOperatingState(resVgaMemShared, pCir->pEnt->index,ResUnusedOpr);
+	
 	/* Register the PCI-assigned resources. */
-	if (xf86RegisterResources(pLg->CirRec.pEnt->index, NULL, ResExclusive)) {
+	if (xf86RegisterResources(pCir->pEnt->index, NULL, ResExclusive)) {
 		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 			"xf86RegisterResources() found resource conflicts\n");
 		return FALSE;
 	}
-
-	/*
-	 * If the user has specified the amount of memory in the XF86Config
-	 * file, we respect that setting.
-	 */
-	if (pLg->CirRec.pEnt->device->videoRam != 0) {
-		pScrn->videoRam = pLg->CirRec.pEnt->device->videoRam;
-		from = X_CONFIG;
-	} else {
-		pScrn->videoRam = LgCountRam(pScrn);
-		from = X_PROBED;
-	}
-	if (2048 == pScrn->videoRam) {
-		/* Two-way interleaving */
-		pLg->memInterleave = 0x40;
-	} else if (4096 == pScrn->videoRam || 8192 == pScrn->videoRam) {
-		/* Four-way interleaving */
-		pLg->memInterleave = 0x80;
-	} else {
-		/* One-way interleaving */
-		pLg->memInterleave = 0x00;
-	}
-
-	xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
-				pScrn->videoRam);
-
-	pLg->CirRec.FbMapSize = pScrn->videoRam * 1024;
-	pLg->CirRec.IoMapSize = 0x4000;	/* 16K for moment,  will increase */
 
 	if (!xf86LoadSubModule(pScrn, "ddc")) {
 		LgFreeRec(pScrn);
@@ -779,23 +670,98 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	/* Read and print the monitor DDC information */
 	pScrn->monitor->DDC = LgDoDDC(pScrn);
 
+	/* The gamma fields must be initialised when using the new cmap code */
+	if (pScrn->depth > 1) {
+		Gamma zeros = {0.0, 0.0, 0.0};
+
+		if (!xf86SetGamma(pScrn, zeros))
+			return FALSE;
+	}
+	if (xf86GetOptValBool(LgOptions,
+			      OPTION_SHADOW_FB,&pCir->shadowFB))
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ShadowFB %s.\n",
+		       pCir->shadowFB ? "enabled" : "disabled");
+	    
+	if ((s = xf86GetOptValString(LgOptions, OPTION_ROTATE))) {
+	    if(!xf86NameCmp(s, "CW")) {
+		/* accel is disabled below for shadowFB */
+		pCir->shadowFB = TRUE;
+		pCir->rotate = 1;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+			   "Rotating screen clockwise - acceleration disabled\n");
+	    } else if(!xf86NameCmp(s, "CCW")) {
+		pCir->shadowFB = TRUE;
+		pCir->rotate = -1;
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,  "Rotating screen"
+			   "counter clockwise - acceleration disabled\n");
+	    } else {
+		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "\"%s\" is not a valid"
+			   "value for Option \"Rotate\"\n", s);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+			   "Valid options are \"CW\" or \"CCW\"\n");
+	    }
+	}
+
+	if (pCir->shadowFB && !pCir->NoAccel) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "HW acceleration not supported with \"shadowFB\".\n");
+	    pCir->NoAccel = TRUE;
+	}
+	
+	if (pCir->rotate && pCir->HWCursor) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "HW cursor not supported with \"rotate\".\n");
+	    pCir->HWCursor = FALSE;
+	}
+	
+	/*
+	 * If the user has specified the amount of memory in the XF86Config
+	 * file, we respect that setting.
+	 */
+	if (pCir->pEnt->device->videoRam != 0) {
+		pScrn->videoRam = pCir->pEnt->device->videoRam;
+		from = X_CONFIG;
+	} else {
+		pScrn->videoRam = LgCountRam(pScrn);
+		from = X_PROBED;
+	}
+	if (2048 == pScrn->videoRam) {
+		/* Two-way interleaving */
+		pCir->chip.lg->memInterleave = 0x40;
+	} else if (4096 == pScrn->videoRam || 8192 == pScrn->videoRam) {
+		/* Four-way interleaving */
+		pCir->chip.lg->memInterleave = 0x80;
+	} else {
+		/* One-way interleaving */
+		pCir->chip.lg->memInterleave = 0x00;
+	}
+
+	xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
+				pScrn->videoRam);
+
+	pCir->FbMapSize = pScrn->videoRam * 1024;
+	pCir->IoMapSize = 0x4000;	/* 16K for moment,  will increase */
+
+	/* We use a programamble clock */
+	pScrn->progClock = TRUE;
+
 	/* XXX Set HW cursor use */
 
 	/* Set the min pixel clock */
-	pLg->CirRec.MinClock = 12000;	/* XXX Guess, need to check this */
+	pCir->MinClock = 12000;	/* XXX Guess, need to check this */
 	xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Min pixel clock is %d MHz\n",
-				pLg->CirRec.MinClock / 1000);
+				pCir->MinClock / 1000);
 	/*
 	 * If the user has specified ramdac speed in the XF86Config
 	 * file, we respect that setting.
 	 */
-	if (pLg->CirRec.pEnt->device->dacSpeeds[0]) {
+	if (pCir->pEnt->device->dacSpeeds[0]) {
 		ErrorF("Do not specify a Clocks line for Cirrus chips\n");
 		return FALSE;
 	} else {
 		int speed;
 		int *p;
-		switch (pLg->CirRec.Chipset) {
+		switch (pCir->Chipset) {
 		case PCI_CHIP_GD5462:
 			p = gd5462_MaxClocks;
 			break;
@@ -829,11 +795,11 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 			speed = 0;
 			break;
 		}
-		pLg->CirRec.MaxClock = speed;
+		pCir->MaxClock = speed;
 		from = X_PROBED;
 	}
 	xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
-				pLg->CirRec.MaxClock / 1000);
+				pCir->MaxClock / 1000);
 
 	/*
 	 * Setup the ClockRanges, which describe what clock ranges are available,
@@ -841,8 +807,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	 */
 	clockRanges = xnfalloc(sizeof(ClockRange));
 	clockRanges->next = NULL;
-	clockRanges->minClock = pLg->CirRec.MinClock;
-	clockRanges->maxClock = pLg->CirRec.MaxClock;
+	clockRanges->minClock = pCir->MinClock;
+	clockRanges->maxClock = pCir->MaxClock;
 	clockRanges->clockIndex = -1;		/* programmable */
 	clockRanges->interlaceAllowed = FALSE;	/* XXX check this */
 	clockRanges->doubleScanAllowed = FALSE;	/* XXX check this */
@@ -854,7 +820,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Depending upon what sized tiles used, either 128 or 256. */
 	/* Aw, heck.  Just say 128. */
-	pLg->CirRec.Rounding = 128 >> pLg->CirRec.BppShift;
+	pCir->Rounding = 128 >> pCir->BppShift;
 
 	/*
 	 * xf86ValidateModes will check that the mode HTotal and VTotal values
@@ -870,10 +836,10 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 							0, 0, /* Any virtual height is allowed. */
 							pScrn->display->virtualX,
 							pScrn->display->virtualY,
-							pLg->CirRec.FbMapSize,
+							pCir->FbMapSize,
 							LOOKUP_BEST_REFRESH);
 
-	pLg->lineDataIndex = LgFindLineData(pScrn->displayWidth,
+	pCir->chip.lg->lineDataIndex = LgFindLineData(pScrn->displayWidth,
 										pScrn->bitsPerPixel);
 
 	if (i == -1) {
@@ -927,7 +893,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	/* Load XAA if needed */
-	if (!pLg->CirRec.NoAccel) {
+	if (!pCir->NoAccel) {
 		if (!xf86LoadSubModule(pScrn, "xaa")) {
 			LgFreeRec(pScrn);
 			return FALSE;
@@ -936,7 +902,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 
 	/* Load ramdac if needed */
-	if (pLg->CirRec.HWCursor) {
+	if (pCir->HWCursor) {
 		if (!xf86LoadSubModule(pScrn, "ramdac")) {
 			LgFreeRec(pScrn);
 			return FALSE;
@@ -944,6 +910,14 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		xf86LoaderReqSymLists(ramdacSymbols, NULL);
 	}
 
+	if (pCir->shadowFB) {
+	    if (!xf86LoadSubModule(pScrn, "shadowfb")) {
+		LgFreeRec(pScrn);
+		return FALSE;
+	    }
+	    xf86LoaderReqSymLists(shadowSymbols, NULL);
+	}
+	
 	return TRUE;
 }
 
@@ -953,56 +927,43 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 static void
 LgSave(ScrnInfoPtr pScrn)
 {
-	LgPtr pLg;
-	vgaHWPtr hwp;
-	CARD8 *p8;
-	CARD16 *p16;
-	CARD32 *p32;
+	CirPtr pCir = CIRPTR(pScrn);
+	vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #ifdef LG_DEBUG
 	ErrorF("LgSave\n");
 #endif
 
-	hwp = VGAHWPTR(pScrn);
-	pLg = LGPTR(pScrn);
-
 	vgaHWSave(pScrn, &VGAHWPTR(pScrn)->SavedReg, VGA_SR_ALL);
 
-	pLg->ModeReg.ExtVga[CR1A] = pLg->SavedReg.ExtVga[CR1A] = hwp->readCrtc(hwp, 0x1A);
-	pLg->ModeReg.ExtVga[CR1B] = pLg->SavedReg.ExtVga[CR1B] = hwp->readCrtc(hwp, 0x1B);
-	pLg->ModeReg.ExtVga[CR1D] = pLg->SavedReg.ExtVga[CR1D] = hwp->readCrtc(hwp, 0x1D);
-	pLg->ModeReg.ExtVga[CR1E] = pLg->SavedReg.ExtVga[CR1E] = hwp->readCrtc(hwp, 0x1E);
-	pLg->ModeReg.ExtVga[SR07] = pLg->SavedReg.ExtVga[SR07] = hwp->readSeq(hwp, 0x07);
-	pLg->ModeReg.ExtVga[SR0E] = pLg->SavedReg.ExtVga[SR0E] = hwp->readSeq(hwp, 0x0E);
-	pLg->ModeReg.ExtVga[SR12] = pLg->SavedReg.ExtVga[SR12] = hwp->readSeq(hwp, 0x12);
-	pLg->ModeReg.ExtVga[SR13] = pLg->SavedReg.ExtVga[SR13] = hwp->readSeq(hwp, 0x13);
-	pLg->ModeReg.ExtVga[SR1E] = pLg->SavedReg.ExtVga[SR1E] = hwp->readSeq(hwp, 0x1E);
+	pCir->chip.lg->ModeReg.ExtVga[CR1A] = pCir->chip.lg->SavedReg.ExtVga[CR1A] = hwp->readCrtc(hwp, 0x1A);
+	pCir->chip.lg->ModeReg.ExtVga[CR1B] = pCir->chip.lg->SavedReg.ExtVga[CR1B] = hwp->readCrtc(hwp, 0x1B);
+	pCir->chip.lg->ModeReg.ExtVga[CR1D] = pCir->chip.lg->SavedReg.ExtVga[CR1D] = hwp->readCrtc(hwp, 0x1D);
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] = pCir->chip.lg->SavedReg.ExtVga[CR1E] = hwp->readCrtc(hwp, 0x1E);
+	pCir->chip.lg->ModeReg.ExtVga[SR07] = pCir->chip.lg->SavedReg.ExtVga[SR07] = hwp->readSeq(hwp, 0x07);
+	pCir->chip.lg->ModeReg.ExtVga[SR0E] = pCir->chip.lg->SavedReg.ExtVga[SR0E] = hwp->readSeq(hwp, 0x0E);
+	pCir->chip.lg->ModeReg.ExtVga[SR12] = pCir->chip.lg->SavedReg.ExtVga[SR12] = hwp->readSeq(hwp, 0x12);
+	pCir->chip.lg->ModeReg.ExtVga[SR13] = pCir->chip.lg->SavedReg.ExtVga[SR13] = hwp->readSeq(hwp, 0x13);
+	pCir->chip.lg->ModeReg.ExtVga[SR1E] = pCir->chip.lg->SavedReg.ExtVga[SR1E] = hwp->readSeq(hwp, 0x1E);
 
-	p16 = (CARD16 *)(pLg->CirRec.IOBase + 0xC0);
-	pLg->ModeReg.FORMAT = pLg->SavedReg.FORMAT = *p16;
-
-	p32 = (CARD32 *)(pLg->CirRec.IOBase + 0x3FC);
-	pLg->ModeReg.VSC = pLg->SavedReg.VSC = *p32;
-
-	p16 = (CARD16 *)(pLg->CirRec.IOBase + 0xEA);
-	pLg->ModeReg.DTTC = pLg->SavedReg.DTTC = *p16;
-
-	if (pLg->CirRec.Chipset == PCI_CHIP_GD5465) {
-		p16 = (CARD16 *)(pLg->CirRec.IOBase + 0x2C4);
-		pLg->ModeReg.TileCtrl = pLg->SavedReg.TileCtrl = *p16;
+	pCir->chip.lg->ModeReg.FORMAT = pCir->chip.lg->SavedReg.FORMAT = memrw(0xC0);
+	
+	pCir->chip.lg->ModeReg.VSC = pCir->chip.lg->SavedReg.VSC = memrl(0x3FC);
+	
+	pCir->chip.lg->ModeReg.DTTC = pCir->chip.lg->SavedReg.DTTC = memrw(0xEA);
+	
+	if (pCir->Chipset == PCI_CHIP_GD5465) {
+	    pCir->chip.lg->ModeReg.TileCtrl = pCir->chip.lg->SavedReg.TileCtrl = memrw(0x2C4);
 	}
-
-	p8 = (CARD8 *)(pLg->CirRec.IOBase + 0x407);
-	pLg->ModeReg.TILE = pLg->SavedReg.TILE = *p8;
-
-	if (pLg->CirRec.Chipset == PCI_CHIP_GD5465)
-		p8 = (CARD8 *)(pLg->CirRec.IOBase + 0x2C0);
+	
+	pCir->chip.lg->ModeReg.TILE = pCir->chip.lg->SavedReg.TILE = memrb(0x407);
+	
+	if (pCir->Chipset == PCI_CHIP_GD5465)
+	    pCir->chip.lg->ModeReg.BCLK = pCir->chip.lg->SavedReg.BCLK = memrb(0x2C0);
 	else
-		p8 = (CARD8 *)(pLg->CirRec.IOBase + 0x8C);
-	pLg->ModeReg.BCLK = pLg->SavedReg.BCLK = *p8;
-
-	p16 = (CARD16 *)(pLg->CirRec.IOBase + 0x402);
-	pLg->ModeReg.CONTROL = pLg->SavedReg.CONTROL = *p16;
+	    pCir->chip.lg->ModeReg.BCLK = pCir->chip.lg->SavedReg.BCLK = memrb(0x8C);
+	
+	pCir->chip.lg->ModeReg.CONTROL = pCir->chip.lg->SavedReg.CONTROL = memrw(0x402);
 }
 
 /*
@@ -1016,7 +977,7 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 {
 	vgaHWPtr hwp;
 	vgaRegPtr vgaReg;
-	LgPtr pLg;
+	CirPtr pCir;
 	int width;
 	Bool VDiv2 = FALSE;
 	CARD16 clockData;
@@ -1038,7 +999,7 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ErrorF("LgModeInit: depth %d bits\n", pScrn->depth);
 #endif
 
-	pLg = LGPTR(pScrn);
+	pCir = CIRPTR(pScrn);
 	hwp = VGAHWPTR(pScrn);
 	vgaHWUnlock(hwp);
 
@@ -1060,19 +1021,12 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		return FALSE;
 	pScrn->vtSema = TRUE;
 
-	/* Program the registers */
-	vgaHWProtect(pScrn, TRUE);
-
 	if (VDiv2)
 		hwp->ModeReg.CRTC[0x17] |= 0x04;
 
 #ifdef LG_DEBUG
 	ErrorF("SynthClock = %d\n", mode->SynthClock);
 #endif
-	clockData = LgSetClock(&pLg->CirRec, hwp, mode->SynthClock);
-	pLg->ModeReg.ExtVga[SR0E] = (clockData >> 8) & 0xFF;
-	pLg->ModeReg.ExtVga[SR1E] = clockData & 0xFF;
-
 	vgaReg = &hwp->ModeReg;
 
 	hwp->IOBase = 0x3D0;
@@ -1082,10 +1036,9 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	hwp->ModeReg.MiscOutReg &= ~0x01;
 #endif
 
-	hwp->writeMiscOut(hwp, hwp->ModeReg.MiscOutReg);
 
 	/* ??? Should these be both ...End or ...Start, not one of each? */
-	pLg->ModeReg.ExtVga[CR1A] = (((mode->CrtcVSyncStart + 1) & 0x300 ) >> 2)
+	pCir->chip.lg->ModeReg.ExtVga[CR1A] = (((mode->CrtcVSyncStart + 1) & 0x300 ) >> 2)
 								| (((mode->CrtcHSyncEnd >> 3) & 0xC0) >> 2);
 
 	width = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
@@ -1093,35 +1046,35 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		width <<= 2;
 	hwp->ModeReg.CRTC[0x13] = (width + 7) >> 3;
 	/* Offset extension (see CR13) */
-	pLg->ModeReg.ExtVga[CR1B] &= 0xEF;
-	pLg->ModeReg.ExtVga[CR1B] |= (((width + 7) >> 3) & 0x100)?0x10:0x00;
-	pLg->ModeReg.ExtVga[CR1B] |= 0x22;
-	pLg->ModeReg.ExtVga[CR1D] = (((width + 7) >> 3) & 0x200)?0x01:0x00;
+	pCir->chip.lg->ModeReg.ExtVga[CR1B] &= 0xEF;
+	pCir->chip.lg->ModeReg.ExtVga[CR1B] |= (((width + 7) >> 3) & 0x100)?0x10:0x00;
+	pCir->chip.lg->ModeReg.ExtVga[CR1B] |= 0x22;
+	pCir->chip.lg->ModeReg.ExtVga[CR1D] = (((width + 7) >> 3) & 0x200)?0x01:0x00;
 
 	/* Set the 28th bit to enable extended modes. */
-	pLg->ModeReg.VSC = 0x10000000;
+	pCir->chip.lg->ModeReg.VSC = 0x10000000;
 
 	/* Overflow register (sure are a lot of overflow bits around...) */
-	pLg->ModeReg.ExtVga[CR1E] = 0x00;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHTotal>>3 & 0x0100)?1:0)<<7;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHDisplay>>3 & 0x0100)?1:0)<<6;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHSyncStart>>3 & 0x0100)?1:0)<<5;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHSyncStart>>3 & 0x0100)?1:0)<<4;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVTotal & 0x0400)?1:0)<<3;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVDisplay & 0x0400)?1:0)<<2;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<1;
-	pLg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<0;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] = 0x00;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHTotal>>3 & 0x0100)?1:0)<<7;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHDisplay>>3 & 0x0100)?1:0)<<6;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHSyncStart>>3 & 0x0100)?1:0)<<5;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcHSyncStart>>3 & 0x0100)?1:0)<<4;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVTotal & 0x0400)?1:0)<<3;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVDisplay & 0x0400)?1:0)<<2;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<1;
+	pCir->chip.lg->ModeReg.ExtVga[CR1E] |= ((mode->CrtcVSyncStart & 0x0400)?1:0)<<0;
 
-	lineData = &LgLineData[pLg->lineDataIndex];
+	lineData = &LgLineData[pCir->chip.lg->lineDataIndex];
 
-	pLg->ModeReg.TILE = lineData->tilesPerLine & 0x3F;
+	pCir->chip.lg->ModeReg.TILE = lineData->tilesPerLine & 0x3F;
 
 	if (8 == pScrn->bitsPerPixel) {
-		pLg->ModeReg.FORMAT = 0x0000;
+		pCir->chip.lg->ModeReg.FORMAT = 0x0000;
 
-		pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080
+		pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.TILE << 8) | 0x0080
 							| (lineData->width << 6);
-		pLg->ModeReg.CONTROL = 0x0000 | (lineData->width << 11);
+		pCir->chip.lg->ModeReg.CONTROL = 0x0000 | (lineData->width << 11);
 
 
 		/* There is an optimal FIFO threshold value (lower 5 bits of DTTC)
@@ -1131,136 +1084,144 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		if (mode->CrtcHDisplay <= 640) {
 			/* BAD numbers:  0x1E */
 			/* GOOD numbers:  0x14 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0014);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0014);
 		} else if (mode->CrtcHDisplay <= 800) {
 			/* BAD numbers:  0x16 */
 			/* GOOD numbers:  0x13 0x14 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0014);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0014);
 		} else if (mode->CrtcHDisplay <= 1024) {
 			/* BAD numbers:  */
 			/* GOOD numbers: 0x15 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0015);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0015);
 		} else if (mode->CrtcHDisplay <= 1280) {
 			/* BAD numbers:  */
 			/* GOOD numbers:  0x16 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0016);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0016);
 		} else {
 			/* BAD numbers:  */
 			/* GOOD numbers:  */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0017);
 		}
 	} else if (16 == pScrn->bitsPerPixel) {
 		/* !!! Assume 5-6-5 RGB mode (for now...) */
-		pLg->ModeReg.FORMAT = 0x1400;
+		pCir->chip.lg->ModeReg.FORMAT = 0x1400;
 
 		if (pScrn->depth == 15)
-			pLg->ModeReg.FORMAT = 0x1600;
+			pCir->chip.lg->ModeReg.FORMAT = 0x1600;
 
-		pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080
+		pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.TILE << 8) | 0x0080
 							| (lineData->width << 6);
-		pLg->ModeReg.CONTROL = 0x2000 | (lineData->width << 11);
+		pCir->chip.lg->ModeReg.CONTROL = 0x2000 | (lineData->width << 11);
 
 		if (mode->CrtcHDisplay <= 640) {
 			/* BAD numbers:  0x12 */
 			/* GOOD numbers: 0x10 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0010);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0010);
 		} else if (mode->CrtcHDisplay <= 800) {
 			/* BAD numbers:  0x13 */
 			/* GOOD numbers:  0x11 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0011);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0011);
 		} else if (mode->CrtcHDisplay <= 1024) {
 			/* BAD numbers:  0x14 */
 			/* GOOD numbers: 0x12  */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0012);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0012);
 		} else if (mode->CrtcHDisplay <= 1280) {
 			/* BAD numbers:   0x08 0x10 */
 			/* Borderline numbers: 0x12 */
 			/* GOOD numbers:  0x15 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0015);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0015);
 		} else {
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0017);
 		}
 	} else if (24 == pScrn->bitsPerPixel) {
-		pLg->ModeReg.FORMAT = 0x2400;
+		pCir->chip.lg->ModeReg.FORMAT = 0x2400;
 
-		pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080
+		pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.TILE << 8) | 0x0080
 							| (lineData->width << 6);
-		pLg->ModeReg.CONTROL = 0x4000 | (lineData->width << 11);
+		pCir->chip.lg->ModeReg.CONTROL = 0x4000 | (lineData->width << 11);
 
 		if (mode->CrtcHDisplay <= 640) {
 			/* BAD numbers:   */
 			/* GOOD numbers:  0x10 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0010);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0010);
 		} else if (mode->CrtcHDisplay <= 800) {
 			/* BAD numbers:   */
 			/* GOOD numbers:   0x11 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0011);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0011);
 		} else if (mode->CrtcHDisplay <= 1024) {
 			/* BAD numbers:  0x12 0x13 */
 			/* Borderline numbers:  0x15 */
 			/* GOOD numbers:  0x17 */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0017);
 		} else if (mode->CrtcHDisplay <= 1280) {
 			/* BAD numbers:   */
 			/* GOOD numbers:  0x1E */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x001E);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x001E);
 		} else {
 			/* BAD numbers:   */
 			/* GOOD numbers:  */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0020);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0020);
 		}
 	} else if (32 == pScrn->bitsPerPixel) {
-		pLg->ModeReg.FORMAT = 0x3400;
+		pCir->chip.lg->ModeReg.FORMAT = 0x3400;
 
-		pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080
+		pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.TILE << 8) | 0x0080
 							| (lineData->width << 6);
-		pLg->ModeReg.CONTROL = 0x6000 | (lineData->width << 11);
+		pCir->chip.lg->ModeReg.CONTROL = 0x6000 | (lineData->width << 11);
 
 		if (mode->CrtcHDisplay <= 640) {
 			/* GOOD numbers:  0x0E */
 			/* BAD numbers:  */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x000E);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x000E);
 		} else if (mode->CrtcHDisplay <= 800) {
 			/* GOOD numbers:  0x17 */
 			/* BAD numbers:  */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0017);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0017);
 		} else if (mode->CrtcHDisplay <= 1024) {
 			/* GOOD numbers: 0x1D */
 			/* OKAY numbers:  0x15 0x14 0x16 0x18 0x19 */
 			/* BAD numbers:  0x0E 0x12 0x13 0x0D */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x001D);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x001D);
 		} else if (mode->CrtcHDisplay <= 1280) {
 			/* GOOD numbers:  */
 			/* BAD numbers:  */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0022); /* 10 */
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0022); /* 10 */
 		} else {
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xFFE0) | (0x0024);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xFFE0) | (0x0024);
 		}
 	} else {
 		/* ??? What could it be?  Use some sane numbers. */
 	}
 
 	/* Setup the appropriate memory interleaving */
-	pLg->ModeReg.DTTC |= (pLg->memInterleave << 8);
-	pLg->ModeReg.TILE |= pLg->memInterleave & 0xC0;
+	pCir->chip.lg->ModeReg.DTTC |= (pCir->chip.lg->memInterleave << 8);
+	pCir->chip.lg->ModeReg.TILE |= pCir->chip.lg->memInterleave & 0xC0;
 
-	if (PCI_CHIP_GD5465 == pLg->CirRec.Chipset) {
+	if (PCI_CHIP_GD5465 == pCir->Chipset) {
 		/* The tile control information in the DTTC is also mirrored
 		   elsewhere. */
-		pLg->ModeReg.TileCtrl = pLg->ModeReg.DTTC & 0xFFC0;
+		pCir->chip.lg->ModeReg.TileCtrl = pCir->chip.lg->ModeReg.DTTC & 0xFFC0;
 
 		/* The 5465's DTTC records _fetches_ per line, not
 		   tiles per line.  Fetchs are 128-byte fetches. */
-		if (pLg->ModeReg.DTTC & 0x0040) {
+		if (pCir->chip.lg->ModeReg.DTTC & 0x0040) {
 			/* Using 256-byte wide tiles.  Double the fetches
 			   per line field. */
-			pLg->ModeReg.DTTC = (pLg->ModeReg.DTTC & 0xC0FF)
-								| ((pLg->ModeReg.DTTC & 0x3F00) << 1);
+			pCir->chip.lg->ModeReg.DTTC = (pCir->chip.lg->ModeReg.DTTC & 0xC0FF)
+								| ((pCir->chip.lg->ModeReg.DTTC & 0x3F00) << 1);
 		}
 	}
 
+	/* Program the registers */
+	vgaHWProtect(pScrn, TRUE);
+	hwp->writeMiscOut(hwp, hwp->ModeReg.MiscOutReg);
+
+	clockData = LgSetClock(pCir, hwp, mode->SynthClock);
+	pCir->chip.lg->ModeReg.ExtVga[SR0E] = (clockData >> 8) & 0xFF;
+	pCir->chip.lg->ModeReg.ExtVga[SR1E] = clockData & 0xFF;
+
 	/* Write those registers out to the card. */
-	LgRestoreLgRegs(pScrn, &pLg->ModeReg);
+	LgRestoreLgRegs(pScrn, &pCir->chip.lg->ModeReg);
 
 	/* Programme the registers */
 	vgaHWRestore(pScrn, &hwp->ModeReg, VGA_SR_MODE | VGA_SR_CMAP);
@@ -1296,14 +1257,11 @@ static int LgFindLineData(int displayWidth, int bpp)
 static void
 LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg)
 {
-	CARD8 *p8;
-	CARD16 *p16;
-	CARD32 *p32;
-	LgPtr pLg;
+	CirPtr pCir;
 	vgaHWPtr hwp;
 	CARD8 cr1D;
 
-	pLg = LGPTR(pScrn);
+	pCir = CIRPTR(pScrn);
 
 	/* First, VGAish registers. */
 	hwp = VGAHWPTR(pScrn);
@@ -1318,33 +1276,25 @@ LgRestoreLgRegs(ScrnInfoPtr pScrn, LgRegPtr lgReg)
 	hwp->writeSeq(hwp, 0x12, lgReg->ExtVga[SR12]);
 	hwp->writeSeq(hwp, 0x13, lgReg->ExtVga[SR13]);
 	hwp->writeSeq(hwp, 0x1E, lgReg->ExtVga[SR1E]);
-
-	p16 = (CARD16 *)(pLg->CirRec.IOBase + 0xC0);
-	*p16 = lgReg->FORMAT;
-
-	/* Vendor Specific Control is touchy.  Only bit 28 is of concern. */
-	p32 = (CARD32 *)(pLg->CirRec.IOBase + 0x3FC);
-	*p32 = (*p32 & ~(1<<28)) | (lgReg->VSC & (1<<28));
-
-	p16 = (CARD16 *)(pLg->CirRec.IOBase + 0xEA);
-	*p16 = lgReg->DTTC;
-
-	if (pLg->CirRec.Chipset == PCI_CHIP_GD5465) {
-		p16 = (CARD16 *)(pLg->CirRec.IOBase + 0x2C4);
-		*p16 = lgReg->TileCtrl;
+	memww(0xC0, lgReg->FORMAT);
+  
+    /* Vendor Specific Control is touchy.  Only bit 28 is of concern. */
+	memwl(0x3FC, ((memrl(0x3FC) & ~(1<<28)) | (lgReg->VSC & (1<<28))));
+	
+	memww(0xEA, lgReg->DTTC);
+  
+	if (pCir->Chipset == PCI_CHIP_GD5465) {
+	    memww(0x2C4, lgReg->TileCtrl);
 	}
-
-	p8 = (CARD8 *)(pLg->CirRec.IOBase + 0x407);
-	*p8 = lgReg->TILE;
-
-	if (pLg->CirRec.Chipset == PCI_CHIP_GD5465)
-		p8 = (CARD8 *)(pLg->CirRec.IOBase + 0x2C0);
+  
+	memwb(0x407, lgReg->TILE);
+        
+	if (pCir->Chipset == PCI_CHIP_GD5465)
+	    memwb(0x2C0, lgReg->BCLK);
 	else
-		p8 = (CARD8 *)(pLg->CirRec.IOBase + 0x8C);
-	*p8 = lgReg->BCLK;
-
-	p16 = (CARD16 *)(pLg->CirRec.IOBase + 0x402);
-	*p16 = lgReg->CONTROL;
+	    memwb(0x8C, lgReg->BCLK);
+    
+	memww(0x402, lgReg->CONTROL);
 }
 
 /*
@@ -1355,17 +1305,17 @@ LgRestore(ScrnInfoPtr pScrn)
 {
 	vgaHWPtr hwp;
 	vgaRegPtr vgaReg;
-	LgPtr pLg;
+	CirPtr pCir;
 	LgRegPtr lgReg;
 
 #ifdef LG_DEBUG
 	ErrorF("LgRestore  pScrn = 0x%08X\n", pScrn);
 #endif
 
-	pLg = LGPTR(pScrn);
+	pCir = CIRPTR(pScrn);
 	hwp = VGAHWPTR(pScrn);
 	vgaReg = &hwp->SavedReg;
-	lgReg = &pLg->SavedReg;
+	lgReg = &pCir->chip.lg->SavedReg;
 
 	vgaHWProtect(pScrn, TRUE);
 
@@ -1385,9 +1335,11 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* The vgaHW references will disappear one day */
 	ScrnInfoPtr pScrn;
 	vgaHWPtr hwp;
-	LgPtr pLg;
+	CirPtr pCir;
 	int i, ret;
 	VisualPtr visual;
+	int displayWidth,width,height;
+	unsigned char * FbBase = NULL;
 
 #ifdef LG_DEBUG
 	ErrorF("LgScreenInit\n");
@@ -1402,16 +1354,22 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
 
-	pLg = LGPTR(pScrn);
+	pCir = CIRPTR(pScrn);
 
 	/* Map the VGA memory and get the VGA IO base */
 	if (!vgaHWMapMem(pScrn))
 		return FALSE;
 
+	/* Map the CIR memory and MMIO areas */
+	if (!CirMapMem(pCir, pScrn->scrnIndex))
+		return FALSE;
+#ifdef EXPERIMENTAL
+	lg_vgaHWSetMmioFunc(hwp, pCir->IOBase);
+#endif
 	vgaHWGetIOBase(hwp);
 
 	/* Map the CIR memory and MMIO areas */
-	if (!CirMapMem(&pLg->CirRec, pScrn->scrnIndex))
+	if (!CirMapMem(pCir, pScrn->scrnIndex))
 		return FALSE;
 
 	/* Save the current state */
@@ -1464,6 +1422,24 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef LG_DEBUG
 	ErrorF("LgScreenInit after miSetVisualTypes\n");
 #endif
+	displayWidth = pScrn->displayWidth;
+	if (pCir->rotate) {
+	    height = pScrn->virtualX;
+	    width = pScrn->virtualY;
+	} else {
+	    width = pScrn->virtualX;
+	    height = pScrn->virtualY;
+	}
+	
+	if(pCir->shadowFB) {
+	    pCir->ShadowPitch = BitmapBytePad(pScrn->bitsPerPixel * width);
+	    pCir->ShadowPtr = xalloc(pCir->ShadowPitch * height);
+	    displayWidth = pCir->ShadowPitch / (pScrn->bitsPerPixel >> 3);
+	    FbBase = pCir->ShadowPtr;
+	} else {
+	    pCir->ShadowPtr = NULL;
+	    FbBase = pCir->FbBase;
+	}
 
 	/*
 	 * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1471,39 +1447,39 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 */
 	switch (pScrn->bitsPerPixel) {
 	case 8:
-		ret = cfbScreenInit(pScreen, pLg->CirRec.FbBase,
-								pScrn->virtualX, pScrn->virtualY,
-								pScrn->xDpi, pScrn->yDpi,
-								pScrn->displayWidth);
+	    ret = cfbScreenInit(pScreen, FbBase,
+				width,height,
+				pScrn->xDpi, pScrn->yDpi,
+				displayWidth);
 		break;
 	case 16:
-		ret = cfb16ScreenInit(pScreen, pLg->CirRec.FbBase,
-								pScrn->virtualX, pScrn->virtualY,
-								pScrn->xDpi, pScrn->yDpi,
-								pScrn->displayWidth);
-		break;
+	    ret = cfb16ScreenInit(pScreen, FbBase,
+				  width,height,
+				  pScrn->xDpi, pScrn->yDpi,
+				  displayWidth);
+	    break;
 	case 24:
-		if (pix24bpp == 24)
-			ret = cfb24ScreenInit(pScreen, pLg->CirRec.FbBase,
-								pScrn->virtualX, pScrn->virtualY,
-								pScrn->xDpi, pScrn->yDpi,
-								pScrn->displayWidth);
-		else
-			ret = cfb24_32ScreenInit(pScreen, pLg->CirRec.FbBase,
-								pScrn->virtualX, pScrn->virtualY,
-								pScrn->xDpi, pScrn->yDpi,
-								pScrn->displayWidth);
-		break;
+	    if (pix24bpp == 24)
+		ret = cfb24ScreenInit(pScreen, FbBase,
+				      width,height,
+				      pScrn->xDpi, pScrn->yDpi,
+				      displayWidth);
+	    else
+		ret = cfb24_32ScreenInit(pScreen, FbBase,
+					 width,height,
+					 pScrn->xDpi, pScrn->yDpi,
+					 displayWidth);
+	    break;
 	case 32:
-		ret = cfb32ScreenInit(pScreen, pLg->CirRec.FbBase,
-								pScrn->virtualX, pScrn->virtualY,
-								pScrn->xDpi, pScrn->yDpi,
-								pScrn->displayWidth);
-		break;
+	    ret = cfb32ScreenInit(pScreen, FbBase,
+				  width,height,
+				  pScrn->xDpi, pScrn->yDpi,
+				  displayWidth);
+	    break;
 	default:
 		xf86DrvMsg(scrnIndex, X_ERROR,
-					"X11: Internal error: invalid bpp (%d) in LgScreenInit\n",
-					pScrn->bitsPerPixel);
+			   "X11: Internal error: invalid bpp (%d) in LgScreenInit\n",
+			   pScrn->bitsPerPixel);
 		ret = FALSE;
 		break;
 	}
@@ -1536,7 +1512,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 */
 	xf86SetBlackWhitePixels(pScreen);
 
-	if (!pLg->CirRec.NoAccel) { /* Initialize XAA functions */
+	if (!pCir->NoAccel) { /* Initialize XAA functions */
 		if (!LgXAAInit(pScreen))
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Could not initialize XAA\n");
 	}
@@ -1544,7 +1520,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	/* Initialise cursor functions */
 	miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
-	if (pLg->CirRec.HWCursor) { /* Initialize HW cursor layer */
+	if (pCir->HWCursor) { /* Initialize HW cursor layer */
 		if (!LgHWCursorInit(pScreen))
 			xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 				"Hardware cursor initialization failed\n");
@@ -1561,7 +1537,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	xf86DPMSInit(pScreen, LgDisplayPowerManagementSet, 0);
 #endif
 
-	pScrn->memPhysBase = pLg->CirRec.FbAddress;
+	pScrn->memPhysBase = pCir->FbAddress;
 	pScrn->fbOffset = 0;
 
 #ifdef XvExtension
@@ -1579,7 +1555,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	 * Wrap the CloseScreen vector and set SaveScreen.
 	 */
 	pScreen->SaveScreen = LgSaveScreen;
-	pLg->CirRec.CloseScreen = pScreen->CloseScreen;
+	pCir->CloseScreen = pScreen->CloseScreen;
 	pScreen->CloseScreen = LgCloseScreen;
 
 	/* Report any unused options (only for the first generation) */
@@ -1611,17 +1587,17 @@ LgAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	int Base, tmp;
-	LgPtr pLg = LGPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	int cursorX, cursorY;
 	int middleX, middleY;
-	const LgLineDataPtr lineData = &LgLineData[pLg->lineDataIndex];
+	const LgLineDataPtr lineData = &LgLineData[pCir->chip.lg->lineDataIndex];
 	const int viewportXRes =
-		(PCI_CHIP_GD5465 == pLg->CirRec.Chipset) ? (24==pScrn->bitsPerPixel?24:1) :
+		(PCI_CHIP_GD5465 == pCir->Chipset) ? (24==pScrn->bitsPerPixel?24:1) :
 			(lineData->width?256:128) /
 			(24==pScrn->bitsPerPixel?1:(pScrn->bitsPerPixel>>3));
 	const int viewportYRes =
-		(PCI_CHIP_GD5465 == pLg->CirRec.Chipset) ? 1 : (24==pScrn->bitsPerPixel?3:1);
+		(PCI_CHIP_GD5465 == pCir->Chipset) ? 1 : (24==pScrn->bitsPerPixel?3:1);
 
 	/* Where's the pointer? */
 	miPointerPosition(&cursorX, &cursorY);
@@ -1698,14 +1674,14 @@ Bool
 LgEnterVT(int scrnIndex, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-	LgPtr pLg = LGPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 #ifdef LG_DEBUG
 	ErrorF("LgEnterVT\n");
 #endif
 
 	/* XXX Shouldn't this be in LeaveVT? */
 	/* Disable HW cursor */
-	if (pLg->CirRec.HWCursor)
+	if (pCir->HWCursor)
 		LgHideCursor(pScrn);
 
 	/* Should we re-save the text mode on each VT enter? */
@@ -1726,14 +1702,14 @@ LgLeaveVT(int scrnIndex, int flags)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
-	LgPtr pLg = LGPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 #ifdef LG_DEBUG
 	ErrorF("LgLeaveVT\n");
 #endif
 
 	/* XXX Shouldn't this be in EnterVT? */
 	/* Enable HW cursor */
-	if (pLg->CirRec.HWCursor)
+	if (pCir->HWCursor)
 		LgShowCursor(pScrn);
 
 	LgRestore(pScrn);
@@ -1754,28 +1730,28 @@ LgCloseScreen(int scrnIndex, ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
-	LgPtr pLg = LGPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 
 	LgRestore(pScrn);
 
-	if (pLg->CirRec.HWCursor)
+	if (pCir->HWCursor)
 		LgHideCursor(pScrn);
 
 	vgaHWLock(hwp);
 
-	CirUnmapMem(&pLg->CirRec, pScrn->scrnIndex);
+	CirUnmapMem(pCir, pScrn->scrnIndex);
 
-	if (pLg->CirRec.AccelInfoRec)
-		XAADestroyInfoRec(pLg->CirRec.AccelInfoRec);
-	pLg->CirRec.AccelInfoRec = NULL;
+	if (pCir->AccelInfoRec)
+		XAADestroyInfoRec(pCir->AccelInfoRec);
+	pCir->AccelInfoRec = NULL;
 
-	if (pLg->CirRec.CursorInfoRec)
-		xf86DestroyCursorInfoRec(pLg->CirRec.CursorInfoRec);
-	pLg->CirRec.CursorInfoRec = NULL;
+	if (pCir->CursorInfoRec)
+		xf86DestroyCursorInfoRec(pCir->CursorInfoRec);
+	pCir->CursorInfoRec = NULL;
 
 	pScrn->vtSema = FALSE;
 
-	pScreen->CloseScreen = pLg->CirRec.CloseScreen;
+	pScreen->CloseScreen = pCir->CloseScreen;
 	return (*pScreen->CloseScreen)(scrnIndex, pScreen);
 }
 
@@ -1828,15 +1804,14 @@ LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 LgSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
-	volatile unsigned char *p;
-
-	p = LGPTR(xf86Screens[pScreen->myNum])->CirRec.IOBase+0xB0;
+	CirPtr pCir = CIRPTR(xf86Screens[pScreen->myNum]);
+	
 	if (unblank)
 		/* Power up the palette DAC */
-		*p &= 0x7F;
+		memwb(0xB0,memrb(0xB0) & 0x7F);
 	else
 		/* Power down the palette DAC */
-		*p |= 0x80;
+		memwb(0xB0,memrb(0xB0) | 0x80);
 
 	return vgaHWSaveScreen(pScreen, unblank);
 }
@@ -1916,3 +1891,27 @@ LgDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	hwp->writeCrtc(hwp, 0x1A, cr1a);
 }
 #endif
+
+#define minb(p) MMIO_IN8(hwp->MMIOBase, (p))
+#define moutb(p,v) MMIO_OUT8(hwp->MMIOBase, (p),(v))
+
+static void
+mmioWriteCrtc(vgaHWPtr hwp, CARD8 index, CARD8 value)
+{
+  moutb(index << 4, value);
+}
+
+static CARD8
+mmioReadCrtc(vgaHWPtr hwp, CARD8 index)
+{
+  return minb(index << 4);
+}
+
+static void
+lg_vgaHWSetMmioFunc(vgaHWPtr hwp, CARD8 *base)
+{
+    hwp->writeCrtc		= mmioWriteCrtc;
+    hwp->readCrtc		= mmioReadCrtc;
+    hwp->MMIOBase		= base;
+    hwp->MMIOOffset		= 0;
+}

@@ -86,6 +86,7 @@ void xf86AddEntityToScreen(ScrnInfoPtr pScrn, int entityIndex);
 void xf86RemoveEntityFromScreen(ScrnInfoPtr pScrn, int entityIndex);
 EntityInfoPtr xf86GetEntityInfo(int entityIndex);
 pciVideoPtr xf86GetPciInfoForEntity(int entityIndex);
+int xf86GetEntityForPciInfo(pciVideoPtr pvp);
 Bool xf86SetEntityFuncs(int entityIndex, EntityProc init,
 			EntityProc enter, EntityProc leave, pointer);
 void xf86DeallocateResourcesForEntity(int entityIndex, long type);
@@ -111,6 +112,13 @@ Bool xf86IsPciDevPresent(int bus, int dev, int func);
 ScrnInfoPtr xf86FindScreenForEntity(int entityIndex);
 Bool xf86NoSharedMem(int screenIndex);
 resPtr xf86FindIntersectOfLists(resPtr l1, resPtr l2);
+pciVideoPtr xf86findPciDeviceVendor(CARD16 vendorID, CARD16 deviceID,
+				    char n, pciVideoPtr pvp_exclude);
+pciVideoPtr xf86findPciClass(CARD8 intf, CARD8 subClass, CARD16 class,
+			     char n, pciVideoPtr pvp_exclude);
+void xf86RegisterStateChangeNotificationCallback(void (*func)(xf86State,Bool));
+Bool xf86DeregisterStateChangeNotificationCallback(void (*func)(xf86State,Bool));
+ 
  
 /* xf86Cursor.c */
 
@@ -135,7 +143,7 @@ Bool DGAInit(ScreenPtr pScreen, DGAFunctionPtr funcs, DGAModePtr modes,
 
 void SetTimeSinceLastInputEvent(void);
 pointer xf86AddInputHandler(int fd, InputHandlerProc proc, pointer data);
-void xf86RemoveInputHandler(pointer handler);
+int xf86RemoveInputHandler(pointer handler);
 void xf86DisableInputHandler(pointer handler);
 void xf86EnableInputHandler(pointer handler);
 
@@ -206,9 +214,23 @@ Bool xf86IsPc98(void);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
 void xf86LoaderReqSymLists(const char **, ...);
 void xf86LoaderReqSymbols(const char *, ...);
-void xf86Break1(void);
+/* debugging */
+ void xf86Break1(void);
 void xf86Break2(void);
 void xf86Break3(void);
+CARD8  xf86PeekFb8(CARD8  *p);
+CARD16 xf86PeekFb16(CARD16 *p);
+CARD32 xf86PeekFb32(CARD32 *p);
+void xf86PokeFb8(CARD8  *p, CARD8  v);
+void xf86PokeFb16(CARD16 *p, CARD16 v);
+void xf86PokeFb32(CARD16 *p, CARD32 v);
+CARD8  xf86PeekMmio8(pointer Base, unsigned long Offset);
+CARD16 xf86PeekMmio16(pointer Base, unsigned long Offset);
+CARD32 xf86PeekMmio32(pointer Base, unsigned long Offset);
+void xf86PokeMmio8(pointer Base, unsigned long Offset, CARD8  v);
+void xf86PokeMmio16(pointer Base, unsigned long Offset, CARD16 v);
+void xf86PokeMmio32(pointer Base, unsigned long Offset, CARD32 v);
+
 void xf86SetBackingStore(ScreenPtr pScreen);
 void xf86SetSilkenMouse(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);

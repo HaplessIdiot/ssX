@@ -12,10 +12,15 @@ typedef struct {
 } pciSave, *pciSavePtr;
 
 typedef void (*SetBitsProcPtr)(PCITAG, int, CARD32, CARD32);
+typedef void (*WriteProcPtr)(PCITAG, int, CARD32);
 
 typedef struct {
     PCITAG tag;
+#ifdef notanymore
     SetBitsProcPtr func;
+#endif
+    WriteProcPtr func;
+    CARD32 ctrl;
 } pciArg;
 
 typedef struct pci_io {
@@ -27,7 +32,9 @@ typedef struct pci_io {
     xf86AccessRec io_memAccess;
     xf86AccessRec memAccess;
     pciSave save;
+#ifdef notanymore2
     pciSave restore;
+#endif
     Bool ctrl;
 } pciAccRec, *pciAccPtr;
 
@@ -51,6 +58,8 @@ void PciBusStateEnter(void);
 void PciStateLeave(void);
 void PciBusStateLeave(void);
 resPtr ResourceBrokerInitPci(resPtr *osRes);
+void pciConvertRange2Host(int entityIndex, resRange *pRange);
+void isaConvertRange2Host(resRange *pRange);
 
 extern pciAccPtr * xf86PciAccInfo;
 

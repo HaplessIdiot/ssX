@@ -1,6 +1,7 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.2 1999/12/06 03:57:06 robin Exp $ */
 
 #include "xf86.h"
+#include "xf86_ansic.h"
 #include "vbe.h"
 #include "Xarch.h"
 
@@ -34,10 +35,11 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
     char vbeVersionString[] = "VBE2";
     Bool init_int10 = FALSE;
     vbeInfoPtr vip = NULL;
+    int screen = pScrn->scrnIndex;
 
     if (!pInt) {
 	if (xf86LoadSubModule(pScrn, "int10")) {
-	    xf86Msg(X_INFO,"initializing int10\n");
+	    xf86DrvMsg(screen,X_INFO,"initializing int10\n");
 	    pInt = xf86InitInt10(entityIndex);
 	    if (!pInt)
 		goto error;
@@ -61,39 +63,40 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
     
     switch (pInt->ax & 0xff00) {
     case 0:
-	xf86Msg(X_INFO,"VESA Bios detected\n");
+	xf86DrvMsg(screen,X_INFO,"VESA Bios detected\n");
 	break;
     case 0x100:
-	xf86Msg(X_INFO,"VESA Bios function failed\n");
+	xf86DrvMsg(screen,X_INFO,"VESA Bios function failed\n");
 	goto error;
     case 0x200:
-	xf86Msg(X_INFO,"VESA Bios not supported\n");
+	xf86DrvMsg(screen,X_INFO,"VESA Bios not supported\n");
 	goto error;
     case 0x300:
-	xf86Msg(X_INFO,"VESA Bios not supported in current mode\n");
+	xf86DrvMsg(screen,X_INFO,"VESA Bios not supported in current mode\n");
 	goto error;
     default:
-	xf86Msg(X_INFO,"Invalid\n");
+	xf86DrvMsg(screen,X_INFO,"Invalid\n");
 	goto error;
     }
     
-    xf86MsgVerb(X_INFO,3,"VESA VBE Version %i.%i\n",VERSION(vbe->VbeVersion));
-    xf86MsgVerb(X_INFO,3,"VESA VBE Total Mem: %i kB\n",vbe->TotalMem * 64);
-    xf86MsgVerb(X_INFO,3,"VESA VBE OEM: %s\n",
-		(CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemStringPtr)));
-
+    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE Version %i.%i\n",
+		   VERSION(vbe->VbeVersion));
+    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE Total Mem: %i kB\n",
+		   vbe->TotalMem * 64);
+    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM: %s\n",
+		   (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemStringPtr)));
+    
     if (B_O16(vbe->VbeVersion) >= 0x200) {
-	xf86MsgVerb(X_INFO,3,"VESA VBE OEM Software Rev: %i.%i\n",
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Software Rev: %i.%i\n",
 		    VERSION(vbe->OemSoftwareRev));
-	xf86MsgVerb(X_INFO,3,"VESA VBE OEM Vendor: %s\n",
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Vendor: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemVendorNamePtr)));
-	xf86MsgVerb(X_INFO,3,"VESA VBE OEM Product: %s\n",
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemProductNamePtr)));
-	xf86MsgVerb(X_INFO,3,"VESA VBE OEM Product Rev: %s\n",
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE OEM Product Rev: %s\n",
 		    (CARD8*)xf86int10Addr(pInt,L_ADD(vbe->OemProductRevPtr)));
     }
     vip = (vbeInfoPtr)xnfalloc(sizeof(vbeInfoRec));
-    vip->scrnIndex = pScrn->scrnIndex;
     vip->version = B_O16(vbe->VbeVersion);
     vip->pInt10 = pInt;
     vip->ddc = DDC_UNCHECKED;
@@ -105,10 +108,10 @@ VBEInit(xf86Int10InfoPtr pInt, int entityIndex)
     return vip;
 
  error:
-    if (init_int10)
-	xf86FreeInt10(pInt);
     if (page)
 	xf86Int10FreePages(pInt, page, 1);
+    if (init_int10)
+	xf86FreeInt10(pInt);
     return NULL;
 }
 
@@ -127,7 +130,8 @@ static Bool
 vbeProbeDDC(vbeInfoPtr pVbe)
 {
     char *ddc_level;
-
+    int screen = pVbe->pInt10->scrnIndex;
+    
     if (!pVbe || (pVbe->ddc == DDC_NONE))
 	return FALSE;
     if (pVbe->ddc != DDC_UNCHECKED)
@@ -149,7 +153,7 @@ vbeProbeDDC(vbeInfoPtr pVbe)
 
     switch ((pVbe->pInt10->ax >> 8) & 0xff) {
     case 0:
-	xf86Msg(X_INFO,"VESA VBE DDC supported\n");
+	xf86DrvMsg(screen,X_INFO,"VESA VBE DDC supported\n");
 	switch (pVbe->pInt10->bx & 0x3) {
 	case 0:
   	    ddc_level = "none"; 
@@ -172,16 +176,17 @@ vbeProbeDDC(vbeInfoPtr pVbe)
 	    pVbe->ddc = DDC_NONE;
 	    break;
 	}
-  	xf86MsgVerb(X_INFO,3,"VESA VBE DDC Level %s\n",ddc_level); 
+  	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC Level %s\n",ddc_level); 
   	if (pVbe->pInt10->bx & 0x4) {
-    	    xf86MsgVerb(X_INFO,3,"VESA VBE DDC Screen blanked" 
+    	    xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC Screen blanked" 
     			"for data transfer\n"); 
     	    pVbe->ddc_blank = TRUE;
     	}  else
     	    pVbe->ddc_blank = FALSE;
 	    
-  	xf86MsgVerb(X_INFO,3,"VESA VBE DDC transfer in appr. %x sec.\n", 
-  		    (pVbe->pInt10->bx >> 8) & 0xff); 
+  	xf86DrvMsgVerb(screen,X_INFO,3,
+		       "VESA VBE DDC transfer in appr. %x sec.\n", 
+		       (pVbe->pInt10->bx >> 8) & 0xff); 
     }
     
     return TRUE; 
@@ -193,7 +198,8 @@ vbeReadEDID(vbeInfoPtr pVbe)
     int RealOff = pVbe->real_mode_base;
     pointer page = pVbe->memory;
     unsigned char *tmp = NULL;
-    
+    int screen = pVbe->pInt10->scrnIndex;
+
     if (!page) return NULL;
     if (!vbeProbeDDC(pVbe)) goto error;
     
@@ -210,12 +216,12 @@ vbeReadEDID(vbeInfoPtr pVbe)
 	goto error;
     switch (pVbe->pInt10->ax & 0xff00) {
     case 0:
-	xf86MsgVerb(X_INFO,3,"VESA VBE DDC read successfully\n");	
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC read successfully\n");
   	tmp = (unsigned char *)xnfalloc(128); 
   	memcpy(tmp,page,128); 
 	break;
     case 1:
-	xf86MsgVerb(X_INFO,3,"VESA VBE DDC read failed\n");	
+	xf86DrvMsgVerb(screen,X_INFO,3,"VESA VBE DDC read failed\n");	
 	break;
     default:
 	break;
@@ -239,7 +245,7 @@ vbeDoEDID(vbeInfoPtr pVbe)
     if (!DDC_data) 
 	return NULL;
     
-    if (!xf86LoadSubModule(xf86Screens[pVbe->scrnIndex], "ddc"))
+    if (!xf86LoadSubModule(xf86Screens[pVbe->pInt10->scrnIndex], "ddc"))
   	return NULL;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 

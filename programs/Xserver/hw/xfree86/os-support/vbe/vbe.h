@@ -16,7 +16,6 @@ ddc_lvl;
 
 typedef struct {
     xf86Int10InfoPtr pInt10;
-    int scrnIndex;
     int version;
     pointer memory;
     int real_mode_base;

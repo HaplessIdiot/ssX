@@ -70,7 +70,7 @@
 
 /*
  * This is private, and should not be included by any drivers.  Drivers
- * may include xf86_OSprocs.h to get prototypes for public interfaces.
+ * may include xf86_OSproc.h to get prototypes for public interfaces.
  */
 
 #ifndef _XF86_OSLIB_H

@@ -18,18 +18,21 @@
 #define minb(p) MMIO_IN8(hwp->MMIOBase, hwp->MMIOOffset + (p))
 #define moutb(p,v) \
 	MMIO_OUT8(hwp->MMIOBase, hwp->MMIOOffset + (p),(v))
+#define minl(p) MMIO_IN32(pCir->IOBase, (p))
+#define moutl(p,v) \
+	MMIO_OUT32(pCir->IOBase, (p),(v))
+
+
+#define WAIT   while(minl(0x140) & pCir->chip.alp->waitMsk){};
+#define WAIT_1 while(minl(0x140) & 0x100){};
 
 static void AlpSync(ScrnInfoPtr pScrn)
 {
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
+    CirPtr pCir = CIRPTR(pScrn);
 #ifdef ALP_DEBUG
 	ErrorF("AlpSync mm\n");
 #endif
-
-	moutb(0x3CE, 0x31);
-	while (minb(0x3CF) & 0x01)
-		;
-
+	WAIT_1;
 	return;
 }
 
@@ -37,59 +40,31 @@ static void
 AlpSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 								unsigned int planemask, int trans_color)
 {
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
-	int pitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
+	CirPtr pCir = CIRPTR(pScrn);
+	int pitch = pCir->pitch;
 
-	moutb(0x3CE, 0x31);
-	while (minb(0x3CF) & 0x01)
-		;
+	WAIT;
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpSetupForScreenToScreenCopy xdir=%d ydir=%d rop=%x planemask=%x trans_color=%x\n",
 			xdir, ydir, rop, planemask, trans_color);
 #endif
+	moutl(0x10C, (pitch << 16) | pitch); 
 
-	moutb(0x3CE, 0x32); moutb(0x3CF, 0x0d);
-
-	/* Set dest pitch */
-	moutb(0x3CE, 0x24);
-	moutb(0x3CF, pitch & 0xff);
-	moutb(0x3CE, 0x25);
-	moutb(0x3CF, (pitch >> 8) & 0x1f);
-	/* Set source pitch */
-	moutb(0x3CE, 0x26);
-	moutb(0x3CF, pitch & 0xff);
-	moutb(0x3CE, 0x27);
-	moutb(0x3CF, (pitch >> 8) & 0x1f);
 }
 
 static void
 AlpSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 								int y2, int w, int h)
 {
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 	int source, dest;
 	int  hh, ww;
 	int decrement = 0;
-	int pitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
+	int pitch = pCir->pitch;
 
-	moutb(0x3CE, 0x31);
-	while (minb(0x3CF) & 0x01)
-		;
-
-	ww = (w * pScrn->bitsPerPixel / 8) - 1;
-	hh = h - 1;
-	/* Width */
-	moutb(0x3CE, 0x20);
-	moutb(0x3CF, ww & 0xff);
-	moutb(0x3CE, 0x21);
-	moutb(0x3CF, (ww >> 8)& 0x1f);
-	/* Height */
-	moutb(0x3CE, 0x22);
-	moutb(0x3CF, hh & 0xff);
-	moutb(0x3CE, 0x23);
-	moutb(0x3CF, (hh >> 8) & 0x07);
-
+	ww = ((w * pScrn->bitsPerPixel / 8) - 1) & 0x1fff;
+	hh = (h - 1) & 0x1fff;
 	dest = y2 * pitch + x2 * pScrn->bitsPerPixel / 8;
 	source = y1 * pitch + x1 * pScrn->bitsPerPixel / 8;
 	if (dest > source) {
@@ -97,20 +72,18 @@ AlpSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 		dest += hh * pitch + ww;
 		source += hh * pitch + ww;
 	}
-	/* dest */
-	moutb(0x3CE, 0x28);
-	moutb(0x3CF, dest & 0xff);
-	moutb(0x3CE, 0x29);
-	moutb(0x3CF, (dest >> 8) & 0xff);
-	moutb(0x3CE, 0x2A);
-	moutb(0x3CF, (dest >> 16) & 0x3f);
+
+	WAIT;
+
+	/* Width / Height */
+	moutl(0x108, (hh << 16) | ww);
 	/* source */
-	moutb(0x3CE, 0x2C);
-	moutb(0x3CF, source & 0xff);
-	moutb(0x3CE, 0x2D);
-	moutb(0x3CF, (source >> 8) & 0xff);
-	moutb(0x3CE, 0x2E);
-	moutb(0x3CF, (source >> 16) & 0x3f);
+	moutl(0x114, source & 0x3fffff);
+	moutl(0x118, 0x0d0000 | decrement);
+
+	/* dest */
+	write_mem_barrier();
+	moutl(0x110, dest & 0x3fffff);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpSubsequentScreenToScreenCopy x1=%d y1=%d x2=%d y2=%d w=%d h=%d\n",
@@ -118,93 +91,61 @@ AlpSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
 	ErrorF("AlpSubsequentScreenToScreenCopy s=%d d=%d ww=%d hh=%d\n",
 			source, dest, ww, hh);
 #endif
-
-	moutb(0x3CE, 0x30);
-	moutb(0x3CF, decrement);
-	moutb(0x3CE, 0x31);
-	moutb(0x3CF, 2);
+	if (!pCir->chip.alp->autoStart)
+	  moutl(0x140,0x02);
+	write_mem_barrier();
 }
+
 
 static void
 AlpSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
 						unsigned int planemask)
 {
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
-	int pitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
+	CirPtr pCir = CIRPTR(pScrn);
+	int pitch = pCir->pitch;
 
-	moutb(0x3CE, 0x31);
-	while (minb(0x3CF) & 0x01)
-		;
+	WAIT;
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpSetupForSolidFill color=%x rop=%x planemask=%x\n",
 			color, rop, planemask);
 #endif
 
-	moutb(0x3CE, 0x32); moutb(0x3CF, 0x0d);
-
-	moutb(0x3CE, 0x33);
-	moutb(0x3CF, 0x04);
-	moutb(0x3CE, 0x30);
-	moutb(0x3CF, 0xC0|((pScrn->bitsPerPixel - 8) << 1));
-
-	moutb(0x3CE, 0x01);
-	moutb(0x3CF, color & 0xff);
-	moutb(0x3CE, 0x11);
-	moutb(0x3CF, (color >> 8) & 0xff);
-	moutb(0x3CE, 0x13);
-	moutb(0x3CF, (color >> 16) & 0xff);
-	moutb(0x3CE, 0x15);
-	moutb(0x3CF, 0);
+	moutl(0x104, color & 0xffffff);
 
 	/* Set dest pitch */
-	moutb(0x3CE, 0x24);
-	moutb(0x3CF, pitch & 0xff);
-	moutb(0x3CE, 0x25);
-	moutb(0x3CF, (pitch >> 8) & 0x1f);
+	moutl(0x10C, pitch & 0x1fff);
+	moutl(0x118, (0xC0|((pScrn->bitsPerPixel - 8) << 1)) | 0x040d0000);
 }
 
 static void
 AlpSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
-	vgaHWPtr hwp = VGAHWPTR(pScrn);
 	int dest;
 	int hh, ww;
-	int pitch = pScrn->displayWidth * pScrn->bitsPerPixel / 8;
+	CirPtr pCir = CIRPTR(pScrn);
+	int pitch = pCir->pitch;
 
-	moutb(0x3CE, 0x31);
-	while (minb(0x3CF) & 0x01)
-		;
-
-	ww = (w * pScrn->bitsPerPixel / 8) - 1;
-	hh = h - 1;
-	/* Width */
-	moutb(0x3CE, 0x20);
-	moutb(0x3CF, ww & 0xff);
-	moutb(0x3CE, 0x21);
-	moutb(0x3CF, (ww >> 8)& 0x1f);
-	/* Height */
-	moutb(0x3CE, 0x22);
-	moutb(0x3CF, hh & 0xff);
-	moutb(0x3CE, 0x23);
-	moutb(0x3CF, (hh >> 8) & 0x07);
-
+	ww = ((w * pScrn->bitsPerPixel / 8) - 1) & 0x1fff;
+	hh = (h - 1) & 0x7ff;
 	dest = y * pitch + x * pScrn->bitsPerPixel / 8;
-	/* dest */
-	moutb(0x3CE, 0x28);
-	moutb(0x3CF, dest & 0xff);
-	moutb(0x3CE, 0x29);
-	moutb(0x3CF, (dest >> 8) & 0xff);
-	moutb(0x3CE, 0x2A);
-	moutb(0x3CF, (dest >> 16) & 0x3f);
+
+	WAIT;
+
+	/* Width / Height */
+	write_mem_barrier();
+	moutl(0x108, (hh << 16) | ww);
 
 #ifdef ALP_DEBUG
 	ErrorF("AlpSubsequentSolidFillRect x=%d y=%d w=%d h=%d\n",
 			x, y, w, h);
 #endif
+	/* dest */
+	moutl(0x110, (dest & 0x3fffff));
 
-	moutb(0x3CE, 0x31);
-	moutb(0x3CF, 2);
+	if (!pCir->chip.alp->autoStart)
+	  moutl(0x140,0x02);
+	write_mem_barrier();
 }
 
 Bool
@@ -212,6 +153,7 @@ AlpXAAInitMMIO(ScreenPtr pScreen)
 {
 	ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
 	vgaHWPtr hwp = VGAHWPTR(pScrn);
+	CirPtr pCir = CIRPTR(pScrn);
 	XAAInfoRecPtr XAAPtr;
 
 #ifdef ALP_DEBUG
@@ -234,9 +176,18 @@ AlpXAAInitMMIO(ScreenPtr pScreen)
 
 	moutb(0x3CE, 0x0E); /* enable writes to gr33 */
 	moutb(0x3CF, 0x20); /* enable writes to gr33 */
+	if (pCir->properties & ACCEL_AUTOSTART) {
+	  moutl(0x140, 0x80); /* enable autostart */
+	  pCir->chip.alp->waitMsk = 0x1000;
+	  pCir->chip.alp->autoStart = TRUE;
+	} else {
+	  pCir->chip.alp->waitMsk = 0x100;
+	  pCir->chip.alp->autoStart = FALSE;
+	}
 
 	if (!XAAInit(pScreen, XAAPtr))
 		return FALSE;
 
 	return TRUE;
 }
+

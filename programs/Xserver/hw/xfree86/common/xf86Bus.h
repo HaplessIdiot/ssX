@@ -82,6 +82,13 @@ typedef struct x_BusAccRec {
     } busdep;
 } BusAccRec, *BusAccPtr;
 
+/* state change notification callback */
+typedef struct _stateChange {
+    xf86StateChangeNotificationCallbackFunc func;
+    struct _stateChange *next;
+} StateChangeNotificationRec, *StateChangeNotificationPtr;
+
+
 extern EntityPtr *xf86Entities;
 extern int xf86NumEntities;
 extern xf86AccessRec AccessNULL;
@@ -93,9 +100,12 @@ extern BusAccPtr xf86BusAccInfo;
 int xf86AllocateEntity(void);
 BusType StringToBusType(const char* busID, const char **retID);
 memType ChkConflict(resRange *rgp, resPtr res, xf86State state);
-Bool isSubsetOf(resRange range, resPtr list);
-Bool isListSubsetOf(resPtr list, resPtr BaseList);
+Bool xf86IsSubsetOf(resRange range, resPtr list);
+Bool xf86IsListSubsetOf(resPtr list, resPtr BaseList);
+resPtr xf86ExtractTypeFromList(resPtr list, unsigned long type);
 resPtr findIntersect(resRange Range, resPtr list);
+resPtr xf86FindIntersect(resRange Range, resPtr list);
 void RemoveOverlaps(resPtr target, resPtr list, Bool pow2Alignment);
+void xf86ConvertListToHost(int entityIndex, resPtr list);
 
 #endif /* _XF86_BUS_H */

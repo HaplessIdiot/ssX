@@ -315,6 +315,7 @@ typedef struct {
     pointer		thisCard;
     Bool                validSize;
     Bool                validate;
+    CARD32              listed_class;
 } pciVideoRec, *pciVideoPtr;
 
 typedef struct {
@@ -436,6 +437,31 @@ typedef enum {
     Pix24Use32
 } Pix24Flags;
 
+/* Power management events: so far we only support APM */
+
+typedef enum {
+    XF86_APM_SYS_STANDBY,
+    XF86_APM_SYS_SUSPEND,
+    XF86_APM_CRITICAL_SUSPEND,
+    XF86_APM_USER_STANDBY,
+    XF86_APM_USER_SUSPEND,
+    XF86_APM_STANDBY_RESUME,
+    XF86_APM_NORMAL_RESUME,
+    XF86_APM_CRITICAL_RESUME,
+    XF86_APM_LOW_BATTERY,
+    XF86_APM_POWER_STATUS_CHANGE,
+    XF86_APM_UPDATE_TIME,
+    XF86_APM_CAPABILITY_CHANGED,
+    XF86_APM_STANDBY_FAILED,
+    XF86_APM_SUSPEND_FAILED
+} pmEvent;
+
+typedef enum {
+    PM_WAIT,
+    PM_CONTINUE,
+    PM_NONE
+} pmWait;
+
 /*
  * The IO access enabler struct. This contains the address for 
  * the IOEnable/IODisable funcs for their specific bus along
@@ -495,6 +521,8 @@ typedef struct _CurrAccRec {
 #define ResInit 	0x2000
 #define ResBios		0x4000
 #define ResMiscMask	0xF000
+
+#define ResBus          0x10000
 
 #define ResEnd		ResNone
 
@@ -588,6 +616,14 @@ typedef enum {
     OPERATING
 } xf86State;
 
+typedef void (*xf86StateChangeNotificationCallbackFunc)(xf86State state,Bool enter);
+/* asynchronous event handling */
+#ifdef async
+typedef struct xf86AsyncQRec {
+    void (*func)(struct xf86AsyncQRec *);
+    struct xf86AsyncQRec *next;
+} *xf86AsyncQPtr;
+#endif
 
 /* DGA */
 
@@ -784,6 +820,8 @@ typedef struct _ScrnInfoRec {
 					DGADevicePtr devRet);
     int			(*ChangeGamma)(int scrnIndex, Gamma gamma);
     void		(*PointerMoved)(int scrnIndex, int x, int y);
+    Bool                (*PMEvent)(int scrnIndex, pmEvent event);
+    
     /*
      * This can be used when the minor ABI version is incremented.
      * The NUM_* parameter must be reduced appropriately to keep the

@@ -155,24 +155,7 @@ cirSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 		setupDone = TRUE;
 		xf86AddDriver(&CIRRUS, module, 0);
 
-		/*
-		 * Modules that this driver always requires may be loaded here
-		 * by calling LoadSubModule().
-		 *
-		 * Although this driver currently always requires the vgahw module
-		 * that dependency will be removed later, so we don't load it here.
-		 */
-
-		/*
-		 * Tell the loader about symbols from other modules that this module
-		 * might refer to.
-		 */
 		LoaderRefSymLists(alpSymbols, lgSymbols, NULL);
-
-		/*
-		 * The return value must be non-NULL on success even though there
-		 * is no TearDownProc.
-		 */
 		return (pointer)1;
 	}
 	if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -216,40 +199,14 @@ CIRProbe(DriverPtr drv, int flags)
 	int numUsed;
 	Bool foundScreen = FALSE;
 	Bool (*subProbe)(int entity, ScrnInfoPtr pScrn);
-
+	Bool lg_loaded = FALSE;
+	Bool alp_loaded = FALSE;
 #ifdef CIR_DEBUG
 	ErrorF("CirProbe\n");
 #endif
 
-	/*
-	 * The aim here is to find all cards that this driver can handle,
-	 * and for the ones not already claimed by another driver, claim the
-	 * slot, and allocate a ScrnInfoRec.
-	 *
-	 * This should be a minimal probe, and it should under no circumstances
-	 * change the state of the hardware.  Because a device is found, don't
-	 * assume that it will be used.  Don't do any initialisations other than
-	 * the required ScrnInfoRec initialisations.  Don't allocate any new
-	 * data structures.
-	 *
-	 * Since this test version still uses vgaHW, we'll only actually claim
-	 * one for now, and just print a message about the others.
-	 */
-
-
-	/*
-	 * Next we check, if there has been a chipset override in the config file.
-	 * For this we must find out if there is an active device section which
-	 * is relevant, i.e., which has no driver specified or has THIS driver
-	 * specified.
-	 */
-
 	if ((numDevSections = xf86MatchDevice(CIR_DRIVER_NAME,
 					  &devSections)) <= 0) {
-		/*
-		 * There's no matching device section in the config file, so quit
-		 * now.
-		 */
 		return FALSE;
 	}
 
@@ -312,18 +269,24 @@ CIRProbe(DriverPtr drv, int flags)
 			pPci->chipType == PCI_CHIP_GD5464BD ||
 			pPci->chipType == PCI_CHIP_GD5465) {
 
-			if (!xf86LoadSubModule(pScrn, "cirrus_laguna")) {
-				xf86DeleteScreen(pScrn->scrnIndex, 0);
-				continue;
+		    if (!lg_loaded) {
+		        if(!xf86LoadSubModule(pScrn, "cirrus_laguna")) {
+			  xf86DeleteScreen(pScrn->scrnIndex, 0);
+			  continue;
 			}
 			xf86LoaderReqSymLists(lgSymbols, NULL);
+			lg_loaded = TRUE;
+		    }
 			subProbe = LgProbe;
 		} else {
-			if (!xf86LoadSubModule(pScrn, "cirrus_alpine")) {
-				xf86DeleteScreen(pScrn->scrnIndex, 0);
-				continue;
+		    if (!alp_loaded) {
+		        if (!xf86LoadSubModule(pScrn, "cirrus_alpine")) {
+			    xf86DeleteScreen(pScrn->scrnIndex, 0);
+			    continue;
 			}
 			xf86LoaderReqSymLists(alpSymbols, NULL);
+			alp_loaded = TRUE;
+		    }
 			subProbe = AlpProbe;
 		}
 		if (subProbe(usedChips[i], pScrn))

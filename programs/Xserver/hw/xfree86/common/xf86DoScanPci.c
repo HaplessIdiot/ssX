@@ -19,17 +19,17 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Pci.h"
-#define DECLARE_CARD_DATASTRUCTURES TRUE
+#define DECLARE_CARD_DATASTRUCTURES
 #include "xf86PciInfo.h"
+#include "xf86ScanPci.h"
 
 static void (*xf86ScanPciFunc)(int);
-
-void xf86DisplayPCICardInfo(int);
 
 void DoScanPci(int argc, char **argv, int i)
 {
   int j,skip,globalVerbose,scanpciVerbose;
 #ifdef XFree86LOADER
+  pointer DataSetupFunc;
   int errmaj, errmin;
   char *name;
 #endif
@@ -85,20 +85,14 @@ void DoScanPci(int argc, char **argv, int i)
       xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
   }
   xf86ScanPciFunc = (void (*)(int))LoaderSymbol("xf86DisplayPCICardInfo");
-  /*
-   * we need to get the pointer to the pci data structures initialized
-   */
-  xf86PCIVendorInfo = 
-    (pciVendorDeviceInfo*)LoaderSymbol("xf86PCIVendorInfoData");
-  xf86PCIVendorNameInfo = 
-    (SymTabPtr)LoaderSymbol("xf86PCIVendorNameInfoData");
-  xf86PCICardInfo = 
-    (pciVendorCardInfo*)LoaderSymbol("xf86PCICardInfoData");
+  DataSetupFunc = LoaderSymbol("xf86SetupPciData");
+  ((void (*)(SymTabPtr*,pciVendorDeviceInfo**,pciVendorCardInfo**))
+   DataSetupFunc)(&xf86PCIVendorNameInfo, &xf86PCIVendorInfo,
+		    &xf86PCICardInfo);
 #else
   xf86ScanPciFunc = xf86DisplayPCICardInfo;
-  xf86PCIVendorNameInfo = xf86PCIVendorNameInfoData;
-  xf86PCIVendorInfo = xf86PCIVendorInfoData;
-  xf86PCICardInfo = xf86PCICardInfoData;
+  xf86SetupScanPci(&xf86PCIVendorNameInfo,
+		     &xf86PCIVendorInfo,&xf86PCICardInfo);
 #endif
 
   (*xf86ScanPciFunc)(scanpciVerbose);

@@ -161,8 +161,8 @@ typedef struct {
     int			MemClk;
     unsigned char	*ShadowPtr;
     int			ShadowPitch;
-    int			ScratchMem, ScratchMemSize, ScratchMemOffset;
-    int			ScratchMemPtr, ScratchMemEnd;
+    memType		ScratchMem, ScratchMemSize, ScratchMemOffset;
+    memType		ScratchMemPtr, ScratchMemEnd;
     int			ScratchMemWidth;
     CARD32		color;
 } ApmRec, *ApmPtr;

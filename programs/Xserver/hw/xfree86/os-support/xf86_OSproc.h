@@ -167,13 +167,16 @@ extern int xf86SerialModemClearBits(int fd, int bits);
 
 
 #if defined(__alpha__)
-/* entry points for SPARSE memory access routines */
-extern int xf86ReadSparse8(pointer, unsigned long);
-extern int xf86ReadSparse16(pointer, unsigned long);
-extern int xf86ReadSparse32(pointer, unsigned long);
-extern void xf86WriteSparse8(int, pointer, unsigned long);
-extern void xf86WriteSparse16(int, pointer, unsigned long);
-extern void xf86WriteSparse32(int, pointer, unsigned long);
+/* entry points for Mmio memory access routines */
+extern int (*xf86ReadMmio8)(pointer, unsigned long);
+extern int (*xf86ReadMmio16)(pointer, unsigned long);
+extern int (*xf86ReadMmio32)(pointer, unsigned long);
+extern void (*xf86WriteMmio8)(int, pointer, unsigned long);
+extern void (*xf86WriteMmio16)(int, pointer, unsigned long);
+extern void (*xf86WriteMmio32)(int, pointer, unsigned long);
+extern void (*xf86WriteMmioNB8)(int, pointer, unsigned long);
+extern void (*xf86WriteMmioNB16)(int, pointer, unsigned long);
+extern void (*xf86WriteMmioNB32)(int, pointer, unsigned long);
 extern void xf86JensenMemToBus(char *, long, long, int);
 extern void xf86JensenBusToMem(char *, char *, unsigned long, int);
 extern void xf86SlowBCopyFromBus(unsigned char *, unsigned char *, int);
@@ -194,6 +197,7 @@ extern void xf86AssertBlockedSIGIO (char *);
 extern Bool xf86SIGIOSupported (void);
 
 #ifdef XF86_OS_PRIVS
+typedef void (*PMClose)(void);
 extern void xf86OpenConsole(void);
 extern void xf86CloseConsole(void);
 extern Bool xf86VTSwitchPending(void);
@@ -212,15 +216,20 @@ extern int xf86KbdOff(void);
 extern void xf86KbdEvents(void);
 extern int  xf86XqueKbdProc(DeviceIntPtr, int);
 extern void xf86XqueEvents(void);
+extern PMClose xf86OSPMOpen(void);
 
 #ifdef NEED_OS_RAC_PROTOS
 /* RAC-related privs */
 /* internal to os-support layer */
-resPtr xf86StdAccWindowsFromOS(void);
+resPtr xf86StdBusAccWindowsFromOS(void);
+resPtr xf86StdPciAccWindowsFromOS(void);
+resPtr xf86StdIsaAccWindowsFromOS(void);
 resPtr xf86StdAccResFromOS(resPtr ret);
 
 /* available to the common layer */
-resPtr xf86AccWindowsFromOS(void);
+resPtr xf86BusAccWindowsFromOS(void);
+resPtr xf86PciBusAccWindowsFromOS(void);
+resPtr xf86IsaBusAccWindowsFromOS(void);
 resPtr xf86AccResFromOS(resPtr ret);
 #endif /* NEED_OS_RAC_PROTOS */
 Bool xf86GetPciSizeFromOS(PCITAG tag, int index, int* bits);

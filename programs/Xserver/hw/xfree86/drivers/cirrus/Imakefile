@@ -6,10 +6,10 @@ XCOMM
 #define IHaveModules
 #include <Server.tmpl>
 
-CSRCS = cir_driver.c CirrusClk.c
-COBJS = cir_driver.o CirrusClk.o
-ASRCS = alp_driver.c alp_xaa.c alp_hwcurs.c alp_i2c.c alp_xaam.c
-AOBJS = alp_driver.o alp_xaa.o alp_hwcurs.o alp_i2c.o alp_xaam.o
+CSRCS = cir_driver.c CirrusClk.c cir_shadow.c
+COBJS = cir_driver.o CirrusClk.o cir_shadow.o
+ASRCS = alp_driver.c alp_xaa.c alp_hwcurs.c alp_i2c.c alp_xaam.c 
+AOBJS = alp_driver.o alp_xaa.o alp_hwcurs.o alp_i2c.o alp_xaam.o 
 LSRCS = lg_driver.c lg_i2c.c lg_xaa.c lg_hwcurs.c
 LOBJS = lg_driver.o lg_i2c.o lg_xaa.o lg_hwcurs.o
 
@@ -27,7 +27,8 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(XF86SRC)/vgahw  -I$(XF86SRC)/ddc \
            -I$(SERVERSRC)/Xext -I$(XF86SRC)/xf24_32bpp \
            -I$(FONTINCSRC)     -I$(SERVERSRC)/include \
-           -I$(XINCLUDESRC)    -I$(EXTINCSRC)
+           -I$(XINCLUDESRC)    -I$(EXTINCSRC) \
+	   -I$(XF86OSSRC)/int10 -I$(XF86SRC)/shadowfb
 #endif
 
 #if MakeHasPosixVariableSubstitutions
@@ -90,10 +91,11 @@ DependTarget()
 
 InstallDriverSDKNonExecFile(CirrusClk.c,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(cir_driver.c,$(DRIVERSDKDIR)/drivers/cirrus)
+InstallDriverSDKNonExecFile(cir_dga.c,$(DRIVERSDKDIR)/drivers/cirrus)
+InstallDriverSDKNonExecFile(cir_shadow.c,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(cir.h,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(alp.h,$(DRIVERSDKDIR)/drivers/cirrus)
-InstallDriverSDKNonExecFile(alp_dga.c,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(alp_driver.c,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(alp_hwcurs.c,$(DRIVERSDKDIR)/drivers/cirrus)
 InstallDriverSDKNonExecFile(alp_i2c.c,$(DRIVERSDKDIR)/drivers/cirrus)

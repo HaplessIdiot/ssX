@@ -2264,13 +2264,18 @@ All modules must NOT include any system include files, or the following:
 
      "xf86Privstr.h"
 
-     "xf86_libc.h"
+     "xf86OSpriv.h"
 
      "xf86_OSlib.h"
 
      "Xos.h"
 
 or any other include files with ``priv'' in their name.
+
+     "xf86_libc.h"
+
+or any other include files with ``priv'' in their name. "xf86_libc.h
+will be included by xf86_ansic.h.
 
 12.  Offscreen Memory Manager
 
