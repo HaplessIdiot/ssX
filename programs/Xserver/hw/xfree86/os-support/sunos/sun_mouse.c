@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.10 2005/02/03 04:24:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sunos/sun_mouse.c,v 1.11 2005/02/04 02:55:49 dawes Exp $ */
 /*
  * Copyright 1999-2005 The XFree86 Project, Inc.
  * All rights reserved.
@@ -384,7 +384,7 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
     if (S_ISLNK(sbuf.st_mode)) {
 	realdev = xalloc(PATH_MAX + 1);
 	if (!realdev)
-	    return NULL:
+	    return NULL;
 	i = readlink(dev, realdev, PATH_MAX);
 	if (i <= 0) {
 #ifdef DEBUG
