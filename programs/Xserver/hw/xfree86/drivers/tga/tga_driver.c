@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.4 1998/08/20 08:56:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.5 1998/08/29 05:43:34 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -112,16 +112,9 @@ static SymTabRec TGAChipsets[] = {
     { -1,				NULL }
 };
 
-/* List of PCI chipset names */
-static char *TGAPciNames[] = {
-    "tga",
-    NULL
-};
-
-/* List of PCI IDs */
-static unsigned int TGAPciIds[] = {
-    PCI_CHIP_DEC21030,
-    ~0
+static PciChipsets TGAPciChipsets[] = {
+    { PCI_CHIP_DEC21030,	PCI_CHIP_DEC21030,	RES_NONE },
+    { -1,			-1,			RES_UNDEFINED }
 };
 
 typedef enum {
@@ -263,6 +256,7 @@ TGAProbe(DriverPtr drv, int flags)
     pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
     GDevPtr *usedDevs;
+    int *usedChips;
     int numDevSections;
     int numUsed;
     Bool foundScreen = FALSE;
@@ -313,11 +307,13 @@ TGAProbe(DriverPtr drv, int flags)
 	return FALSE;
     }
 
-    if ((numUsed = xf86MatchPciInstances(TGA_NAME, PCI_VENDOR_DIGITAL,
-		   TGAPciIds, TGAPciNames, devSections, numDevSections,
-		   &usedDevs, &usedPci)) <= 0) {
+    numUsed = xf86MatchPciInstances(TGA_NAME, PCI_VENDOR_DIGITAL,
+		   TGAChipsets, TGAPciChipsets, devSections, numDevSections,
+		   &usedDevs, &usedPci, &usedChips);
+    xfree(devSections);
+    devSections = NULL;
+    if (numUsed <= 0)
 	return FALSE;
-    }
 
     for (i = 0; i < numUsed; i++) {
 	pPci = usedPci[i];
@@ -326,17 +322,13 @@ TGAProbe(DriverPtr drv, int flags)
 	 * Check that nothing else has claimed the slots.
 	 */
 	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_ONLY)) {
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, RES_NONE)) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
-	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_ONLY, pScrn->scrnIndex)) {
-		/* This can't happen */
-		FatalError("someone claimed the free slot!\n");
-	    }
+	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
+			     RES_NONE, &TGA, usedChips[i], pScrn->scrnIndex);
 
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.7 1998/08/29 14:34:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.8 1998/09/05 06:36:47 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -127,29 +127,17 @@ static SymTabRec GLINTChipsets[] = {
     { -1,					NULL }
 };
 
-/* List of PCI chipset names */
-static char *GLINTPciNames[] = {
-    "ti_pm2",
-    "ti_pm",
-    "pm2v",
-    "pm2",
-    "pm",
-    "500tx",
-    "mx",
-    NULL
+static PciChipsets GLINTPciChipsets[] = {
+    { PCI_VENDOR_TI_CHIP_PERMEDIA2,	 PCI_VENDOR_TI_CHIP_PERMEDIA2,	    RES_NONE },
+    { PCI_VENDOR_TI_CHIP_PERMEDIA,	 PCI_VENDOR_TI_CHIP_PERMEDIA,	    RES_NONE },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V, RES_NONE },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,  RES_NONE },
+    { PCI_VENDOR_3DLABS_CHIP_PERMEDIA,	 PCI_VENDOR_3DLABS_CHIP_PERMEDIA,   RES_NONE },
+    { PCI_VENDOR_3DLABS_CHIP_500TX,	 PCI_VENDOR_3DLABS_CHIP_500TX,	    RES_NONE },
+    { PCI_VENDOR_3DLABS_CHIP_MX,	 PCI_VENDOR_3DLABS_CHIP_MX,	    RES_NONE },
+    { -1,				 -1,				    -1 }
 };
 
-/* List of PCI IDs */
-static unsigned int GLINTPciIds[] = {
-    PCI_VENDOR_TI_CHIP_PERMEDIA2,
-    PCI_VENDOR_TI_CHIP_PERMEDIA,
-    PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V,
-    PCI_VENDOR_3DLABS_CHIP_PERMEDIA2,
-    PCI_VENDOR_3DLABS_CHIP_PERMEDIA,
-    PCI_VENDOR_3DLABS_CHIP_500TX,
-    PCI_VENDOR_3DLABS_CHIP_MX,
-    ~0
-};
 
 typedef enum {
     OPTION_SW_CURSOR,
@@ -421,7 +409,9 @@ GLINTProbe(DriverPtr drv, int flags)
     GDevPtr *usedDevs;
     int numDevSections;
     int numUsed;
+    int *usedChips;
     Bool foundScreen = FALSE;
+    BusResource resource;
     unsigned long glintbase = 0, glintbase3 = 0, deltabase = 0;
     unsigned long *delta_pci_base = 0 ;
 
@@ -441,14 +431,6 @@ GLINTProbe(DriverPtr drv, int flags)
      */
 
     /*
-     * This bit is only here because we're still using vgaHW.  When we're
-     * not it will disappear.
-     */
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
-	return FALSE;
-    }
-
-    /*
      * Next we check, if there has been a chipset override in the config file.
      * For this we must find out if there is an active device section which
      * is relevant, i.e., which has no driver specified or has THIS driver
@@ -463,11 +445,6 @@ GLINTProbe(DriverPtr drv, int flags)
 	 */
 	return FALSE;
     }
-
-    /*
-     * While we're VGA-dependent, can really only have one such instance, but
-     * we'll ignore that.
-     */
 
     /*
      * We need to probe the hardware first.  We then need to see how this
@@ -489,33 +466,31 @@ GLINTProbe(DriverPtr drv, int flags)
 	return FALSE;
     }
 
-    if ((numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
-		   GLINTPciIds, GLINTPciNames, devSections, numDevSections,
-		   &usedDevs, &usedPci)) <= 0) {
+    numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
+		   GLINTChipsets, GLINTPciChipsets, devSections,
+		   numDevSections, &usedDevs, &usedPci, &usedChips);
+    xfree(devSections);
+    devSections = NULL;
+    if (numUsed <= 0)
 	return FALSE;
-    }
 
     for (i = 0; i < numUsed; i++) {
 	pPci = usedPci[i];
+	/* XXX Is this really needed since we already know what it is? */
+	resource = xf86FindPciResource(usedChips[i], GLINTPciChipsets);
 
 	/*
 	 * Check that nothing else has claimed the slots.
-	 * For now we're checking for PCI_VGA, but that will change
-	 * to PCI_ONLY when we remove the vgaHW dependence.
 	 */
 	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_ONLY)) {
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, resource)) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
 	    glintbase = pPci->memBase[0];
-	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_ONLY, pScrn->scrnIndex)) {
-		/* This can't happen */
-		FatalError("someone claimed the free slot!\n");
-	    }
+	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, resource,
+			     &GLINT, usedChips[i], pScrn->scrnIndex);
 
 	    chiptag = pciTag(pPci->bus, pPci->device, pPci->func);
 
@@ -545,10 +520,11 @@ GLINTProbe(DriverPtr drv, int flags)
 		      }
 
 		      /* Claim our devices */
+		      /* XXX Is the usage here correct for the new RM code? */
 	    	      if (!xf86ClaimPciSlot((*checkusedPci)->bus, 
 					  (*checkusedPci)->device, 
 					  (*checkusedPci)->func,
-			  		  PCI_ONLY, 
+			  		  RES_NONE, &GLINT, usedChips[i],
 					  pScrn->scrnIndex)) {
 		          /* This can't happen */
 			  FatalError("someone claimed the free slot!\n");
@@ -576,6 +552,8 @@ GLINTProbe(DriverPtr drv, int flags)
 	    foundScreen = TRUE;
 
 	    {
+		/* XXX Why is the cards state being changed in the Probe? */
+
 		int temp;
 		int bugbase = 0;
   		/*

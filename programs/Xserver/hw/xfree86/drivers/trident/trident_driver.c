@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.27 1998/09/06 13:47:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.28 1998/09/13 05:23:42 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -126,28 +126,16 @@ static SymTabRec TRIDENTChipsets[] = {
     { -1,				NULL }
 };
 
-/* List of PCI chipset names */
-static char *TRIDENTPciNames[] = {
-    "cyber9320",
-    "tgui9420",
-    "tgui9440",
-    "tgui96xx",
-    "3dimage975",
-    "3dimage985",
-    NULL
+static PciChipsets TRIDENTPciChipsets[] = {
+    { PCI_CHIP_9320,	PCI_CHIP_9320,	RES_SHARED_VGA },
+    { PCI_CHIP_9420,	PCI_CHIP_9420,	RES_SHARED_VGA },
+    { PCI_CHIP_9440,	PCI_CHIP_9440,	RES_SHARED_VGA },
+    { PCI_CHIP_9660,	PCI_CHIP_9660,	RES_SHARED_VGA },
+    { PCI_CHIP_9750,	PCI_CHIP_9750,	RES_SHARED_VGA },
+    { PCI_CHIP_9850,	PCI_CHIP_9850,	RES_SHARED_VGA },
+    { -1,		-1,		RES_UNDEFINED }
 };
-
-/* List of PCI IDs */
-static unsigned int TRIDENTPciIds[] = {
-    PCI_CHIP_9320,
-    PCI_CHIP_9420,
-    PCI_CHIP_9440,
-    PCI_CHIP_9660,
-    PCI_CHIP_9750,
-    PCI_CHIP_9850,
-    ~0
-};
-
+    
 typedef enum {
     OPTION_SW_CURSOR,
     OPTION_HW_CURSOR,
@@ -389,8 +377,10 @@ TRIDENTProbe(DriverPtr drv, int flags)
     pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
     GDevPtr *usedDevs;
+    int *usedChips;
     int numDevSections;
     int numUsed;
+    BusResource resource;
     Bool foundScreen = FALSE;
 
     /*
@@ -407,14 +397,6 @@ TRIDENTProbe(DriverPtr drv, int flags)
      * Since this test version still uses vgaHW, we'll only actually claim
      * one for now, and just print a message about the others.
      */
-
-    /*
-     * This bit is only here because we're still using vgaHW.  When we're
-     * not it will disappear.
-     */
-    if (xf86CheckIsaSlot(ISA_COLOR) == FALSE) {
-	return FALSE;
-    }
 
     /*
      * Next we check, if there has been a chipset override in the config file.
@@ -455,32 +437,31 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	return FALSE;
     }
 
-    if ((numUsed = xf86MatchPciInstances(TRIDENT_NAME, PCI_VENDOR_TRIDENT,
-		   TRIDENTPciIds, TRIDENTPciNames, devSections, numDevSections,
-		   &usedDevs, &usedPci)) <= 0) {
+    numUsed = xf86MatchPciInstances(TRIDENT_NAME, PCI_VENDOR_TRIDENT,
+		   TRIDENTChipsets, TRIDENTPciChipsets, devSections,
+		   numDevSections, &usedDevs, &usedPci, &usedChips);
+
+    /* Free it since we don't need that list after this */
+    xfree(devSections);
+    devSections = NULL;
+    if (numUsed <= 0)
 	return FALSE;
-    }
 
     for (i = 0; i < numUsed; i++) {
 	pPci = usedPci[i];
+	resource = xf86FindPciResource(usedChips[i], TRIDENTPciChipsets);
 
 	/*
 	 * Check that nothing else has claimed the slots.
-	 * For now we're checking for PCI_SHARED_VGA, but that will change
-	 * to PCI_ONLY when we remove the vgaHW dependence.
 	 */
 	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			      PCI_SHARED_VGA)) {
+	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, resource)) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
-	    if (!xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				  PCI_SHARED_VGA, pScrn->scrnIndex)) {
-		/* This can't happen */
-		FatalError("someone claimed the free slot!\n");
-	    }
+	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, resource,
+			     &TRIDENT, usedChips[i], pScrn->scrnIndex);
 
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;

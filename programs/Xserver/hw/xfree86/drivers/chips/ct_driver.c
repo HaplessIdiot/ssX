@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.29 1998/08/29 14:34:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.31 1998/09/13 05:23:35 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -459,7 +459,7 @@ static PciChipsets CHIPSPCIchipsets[] = {
     { CHIPS_CT65555, PCI_CHIP_65555, RES_SHARED_VGA },
     { CHIPS_CT68554, PCI_CHIP_68554, RES_SHARED_VGA },
     { CHIPS_CT69000, PCI_CHIP_69000, RES_SHARED_VGA },
-    { -1,	-1	 , -1}
+    { -1,	     -1,	     RES_UNDEFINED}
 };
 
 static IsaChipsets CHIPSISAchipsets[] = {
@@ -478,7 +478,7 @@ static IsaChipsets CHIPSISAchipsets[] = {
     { CHIPS_CT69000,		RES_VGA },
     { CHIPS_CT64200,		RES_VGA },
     { CHIPS_CT64300,		RES_VGA },
-    { -1,			0 }
+    { -1,			RES_UNDEFINED }
 };
 
 /* The options supported by the Chips and Technologies Driver */
@@ -668,7 +668,7 @@ CHIPSProbe(DriverPtr drv, int flags)
    */
   if ((numDevSections = xf86MatchDevice(CHIPS_DRIVER_NAME,
 					&devSections)) <= 0) {
-    return foundScreen;
+    return FALSE;
   }
   
   /* PCI BUS */

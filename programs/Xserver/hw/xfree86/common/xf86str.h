@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.5 1998/08/29 05:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.6 1998/09/13 05:23:33 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -162,6 +162,7 @@ typedef enum {
 } resType;
 
 typedef enum {
+    RES_UNDEFINED = -1,
     RES_NONE,
     RES_VGA,
     RES_SHARED_VGA,

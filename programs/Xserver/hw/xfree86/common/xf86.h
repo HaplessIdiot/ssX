@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.77 1998/08/19 07:49:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.78 1998/09/13 05:23:30 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -64,14 +64,14 @@ void xf86DeleteBusSlotsForScreen(int scrnIndex);
 Bool xf86IsPciBus(int scrnIndex);
 Bool xf86IsIsaBus(int scrnIndex);
 int xf86FindChipsetsForScreen(int scrnIndex, DriverPtr drv, int **chipsets);
-void xf86AccessEnter();
-void xf86AccessLeave();
-void xf86AccessSetup();
+void xf86AccessEnter(void);
+void xf86AccessLeave(void);
+void xf86AccessSetup(void);
 void xf86AddControlledResource(ScrnInfoPtr pScreen, resType rt);
 void xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable);
 void xf86EnableAccess(xf86ScrnAccessPtr pScAcc);
-void xf86FindPrimaryDevice();
-void xf86EnablePrimaryDevice();
+void xf86FindPrimaryDevice(void);
+void xf86EnablePrimaryDevice(void);
 
 /* xf86Config.c */
 
@@ -139,7 +139,7 @@ int xf86MatchPciInstances(const char *driverName, int vendorID,
 			  int **foundChips);
 BusResource xf86FindPciResource(int numChipset, PciChipsets *PCIchipsets);
 int xf86MatchIsaInstances(const char *driverName, SymTabRec *chipsets,
-			  IsaChipsets *ISAchipsets, int (*FindIsaDevice)(),
+			  IsaChipsets *ISAchipsets, int (*FindIsaDevice)(void),
 			  GDevPtr *devList, int numDevs, GDevPtr *foundDev);
 BusResource xf86FindIsaResource(int numChipset, IsaChipsets *ISAchipsets);
 void xf86GetClocks(ScrnInfoPtr pScrn, int num,
@@ -161,9 +161,9 @@ Bool xf86ServerIsExiting(void);
 Bool xf86ServerIsResetting(void);
 Bool xf86CaughtSignal(void);
 pointer xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name);
-void xf86Break1();
-void xf86Break2();
-void xf86Break3();
+void xf86Break1(void);
+void xf86Break2(void);
+void xf86Break3(void);
 
 /* xf86Mode.c */
 

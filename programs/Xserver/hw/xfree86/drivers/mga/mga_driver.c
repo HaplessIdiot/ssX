@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.44 1998/09/13 05:23:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.45 1998/09/13 07:44:54 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -183,7 +183,7 @@ static PciChipsets MGAPciChipsets[] = {
     { PCI_CHIP_MGAG100,		PCI_CHIP_MGAG100,		RES_NONE },
     { PCI_CHIP_MGAG200,		PCI_CHIP_MGAG200,		RES_NONE },
     { PCI_CHIP_MGAG200_PCI,	PCI_CHIP_MGAG200_PCI,		RES_NONE },
-    { -1,			-1,				-1}
+    { -1,			-1,				RES_UNDEFINED }
 };
 
 typedef enum {
@@ -389,6 +389,7 @@ MGAProbe(DriverPtr drv, int flags)
 	pPci = usedPci[i];
 	/* XXX Is this really needed since we already know what it is? */
 	resource = xf86FindPciResource(usedChips[i], MGAPciChipsets);
+
 	/*
 	 * Check that nothing else has claimed the slots.
 	 */

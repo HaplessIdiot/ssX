@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.2 1998/07/25 16:54:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.3 1998/09/13 05:23:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -1168,10 +1168,10 @@ xf86DelControlledResource(xf86ScrnAccessPtr pScAcc, Bool enable)
     xf86AccessPtr pAcc = pScAcc->pAccess;
     if(pAcc) {
 	if(enable)
-	    if(*pAcc->AccessEnable)
+	    if (pAcc->AccessEnable)
 		(*pAcc->AccessEnable)(pAcc->arg);
 	    else
-		if(*pAcc->AccessDisable)
+		if (pAcc->AccessDisable)
 		    (*pAcc->AccessDisable)(pAcc->arg);
 	switch(pScAcc->rt){
 	case IO:
