@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.7 1998/07/25 16:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.8 1998/09/20 14:41:04 dawes Exp $ */
 
 
 /*
@@ -62,7 +62,7 @@
 
 #define DLOPEN_FLAGS ( DLOPEN_LAZY | DLOPEN_GLOBAL )
 
-#ifdef CSRG_BASED
+#if defined(CSRG_BASED) && !defined(__ELF__)
 #define NEED_UNDERSCORE_FOR_DLLSYM
 #endif
 

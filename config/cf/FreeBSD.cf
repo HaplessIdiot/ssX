@@ -2,7 +2,17 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.76 1998/09/05 06:36:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.77 1998/09/06 04:46:48 dawes Exp $
+
+#ifndef UseElfFormat
+#define UseElfFormat		DefaultToElfFormat
+#endif
+
+#if UseElfFormat
+#define OSBinaryFormat		[ELF]
+#else
+#define OSBinaryFormat		[a.out]
+#endif
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryFormat
@@ -40,7 +50,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 # define HasShm          	YES
 #endif
 #define HasWChar32		YES
-#define DlLibrary		/**/
 #define HasUsableFileMmap	YES
 
 #define AvoidNullMakeCommand	YES
@@ -122,11 +131,21 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
  * and they can remove it from the list of directories they add to ld.so.cache 
  * in their /etc/rc file.
  */
-#ifndef UseElfFormat
 #if OSMajorVersion > 2 || (OsMajorVersion == 2 && OSMinorVersion >= 2)
 #ifndef ExtraLoadFlags
+#if UseElfFormat
+#define ExtraLoadFlags		-Wl,-rpath,$(USRLIBDIRPATH)
+#else
 #define ExtraLoadFlags		-Wl,-R,$(USRLIBDIRPATH)
 #endif
+#endif
+#endif
+
+#ifndef SharedLibraryLoadFlags
+#if UseElfFormat
+#define SharedLibraryLoadFlags	-shared -rpath $(USRLIBDIRPATH)
+#else
+#define SharedLibraryLoadFlags	-Bshareable -R $(USRLIBDIRPATH)
 #endif
 #endif
 
@@ -231,20 +250,18 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #undef  InstallCmd
 #define InstallCmd		/usr/bin/install
 
+#if UseElfFormat
+# define AsmElfDefines		-D__ELF__
+#else
+# define AsmElfDefines /**/
+#endif
+
 #if GccUsesGas
 # define GccGasOption		-DGCCUSESGAS
 # define AsmDefines		-DUSE_GAS AsmElfDefines
 #else
 # define GccGasOption /**/
 # define AsmDefines		AsmElfDefines
-#endif
-
-#if UseElfFormat
-# define AsmElfDefines		-D__ELF__
-# define OSBinaryFormat		[ELF]
-#else
-# define AsmElfDefines /**/
-# define OSBinaryFormat /**/
 #endif
 
 #define ServerExtraDefines GccGasOption XFree86ServerDefines
@@ -379,6 +396,12 @@ install.man::                                                           @@\
 
 #ifndef StaticLibrary
 #define StaticLibrary(libpath,libname) -Wl,-Bstatic Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
+#endif
+
+#if UseElfFormat
+#define DlLibrary		-rdynamic
+#else
+#define DlLibrary		/**/
 #endif
 
 #include <bsdLib.rules>

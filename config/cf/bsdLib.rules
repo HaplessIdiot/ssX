@@ -4,7 +4,7 @@ XCOMM $XConsortium: bsdLib.rules /main/3 1996/09/28 16:09:18 rws $
 
 
 
-XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.7 1997/11/01 15:04:19 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/bsdLib.rules,v 3.8 1998/09/05 06:36:02 dawes Exp $
 /*
  * NetBSD/FreeBSD shared library rules
  */
@@ -155,7 +155,7 @@ LintLibReferences(varname,libname,libsource)
 #define ShLibIncludeFile <bsdLib.tmpl>
 #endif
 #ifndef SharedLibraryLoadFlags
-#define SharedLibraryLoadFlags -shared -rpath $(USRLIBDIR)
+#define SharedLibraryLoadFlags -shared -Wl,-rpath,$(USRLIBDIR)
 #endif
 #ifndef PositionIndependentCFlags
 #define PositionIndependentCFlags -fPIC
@@ -175,18 +175,30 @@ LintLibReferences(varname,libname,libsource)
  * InstallSharedLibrary - generate rules to install the shared library.
  * NOTE: file must be executable, hence "INSTBINFLAGS"
  */
+#ifndef FreeBSDArchitecture
 #ifndef InstallSharedLibrary
 #define InstallSharedLibrary(libname,rev,dest)				@@\
 install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
-	(T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\
-		$(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T)	@@\
-	(T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.so.*$$/.so/'`;\
-		$(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T)	@@\
+	@T=`echo Concat($(DESTDIR)dest/lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\	@@\
+	  set -x; $(RM) $$T && $(LN) Concat(lib,libname.so.rev) $$T	@@\
 	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
 	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
 #endif /* InstallSharedLibrary */
+#else
+/* FreeBSD version */
+#ifndef InstallSharedLibrary
+#define InstallSharedLibrary(libname,rev,dest)				@@\
+install:: Concat(lib,libname.so.rev) 					@@\
+	MakeDir($(DESTDIR)dest)						@@\
+	@T=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`;\	@@\
+	  set -x;\							@@\
+	  $(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest/$$T;\ @@\
+	  $(RM) Concat($(DESTDIR)dest/lib,libname.so);\			@@\
+	  $(LN) $$T Concat($(DESTDIR)dest/lib,libname.so)
+#endif /* InstallSharedLibrary */
+#endif /* FreeBSDArchitecture */
 
 /*
  * InstallSharedLibraryData - generate rules to install the shared library data
@@ -214,8 +226,8 @@ AllTarget(Concat(lib,libname.so.rev))					@@\
 									@@\
 Concat(lib,libname.so.rev):  solist					@@\
 	$(RM) $@~							@@\
-	SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; \			@@\
-		(cd down; $(LD) -o up/$@~ $(SHLIBLDFLAGS) -soname $$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
+	@SONAME=`echo $@ | sed 's/\.[^\.]*$$//'`; set -x; \		@@\
+		(cd down; $(CC) -o up/$@~ $(SHLIBLDFLAGS) -Wl,-soname,$$SONAME solist $(REQUIREDLIBS) BaseShLibReqs); \ @@\
 		$(RM) $$SONAME; $(LN) $@ $$SONAME; \			@@\
 		LinkBuildSonameLibrary($$SONAME)			@@\
 	$(RM) $@							@@\

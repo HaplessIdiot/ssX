@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.1 1998/09/13 05:23:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.2 1998/09/19 12:15:00 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -115,7 +115,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		return(-1);
 	}
 
-	base = mmap((caddr_t)0, JENSEN_SHIFT(SIZE), PROT_READ,
+	base = mmap((caddr_t)0, JENSEN_SHIFT(BIOS_SIZE), PROT_READ,
 		    MAP_SHARED, fd, (off_t)(JENSEN_SHIFT(Base) + BUS_BASE));
 
 	if (base == (caddr_t)-1UL)
@@ -127,7 +127,7 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 
 	xf86SlowBCopyFromBus(base+JENSEN_SHIFT(Offset), Buf, Len);
 
-	munmap((caddr_t)JENSEN_SHIFT(base), JENSEN_SHIFT(SIZE));
+	munmap((caddr_t)JENSEN_SHIFT(base), JENSEN_SHIFT(BIOS_SIZE));
 	close(fd);
 	return(Len);
 }
