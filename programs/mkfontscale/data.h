@@ -37,7 +37,9 @@ char *notice_foundries[][2] =
      {"Tiro Typeworks", "tiro"},
      {"XFree86", "xfree86"},
      {"Microsoft", "microsoft"},
-     {"Omega", "omega"}};
+     {"Omega", "omega"},
+     {"Font21", "hwan"},
+     {"HanYang System", "hanyang"}};
 
 /* This table is partly taken from ttmkfdir by Joerg Pommnitz. */
 
