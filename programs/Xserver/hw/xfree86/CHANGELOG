@@ -1,4 +1,6 @@
 XFree86 3.1.2Gk (8 October 1996)
+949. Use cfb code in the S3V server when the planemask is non-trivial
+     (Harald Koenig).
 948. More line/seg fixes for the S3V server (Harald Koenig).
 947. Fix XORing text (and other ROPs) for the S3V server (Harald Koenig).
 946. Force 1-cycle EDO mode for the ViRGE/VX (Harald Koenig).
