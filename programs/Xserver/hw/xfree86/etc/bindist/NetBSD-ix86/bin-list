@@ -66,8 +66,8 @@ lib/libdpstk.so
 lib/libdpstk.so.1
 lib/libdpstk.so.1.0
 lib/libfreetype.so
-lib/libfreetype.so.7
-lib/libfreetype.so.7.0
+lib/libfreetype.so.8
+lib/libfreetype.so.8.0
 lib/liboldX.so
 lib/liboldX.so.6
 lib/liboldX.so.6.0

@@ -48,7 +48,7 @@ lib/libdps.so.1
 lib/libdps.so
 lib/libdpstk.so.1
 lib/libdpstk.so
-lib/libfreetype.so.7
+lib/libfreetype.so.8
 lib/libfreetype.so
 lib/liboldX.so.6
 lib/liboldX.so
