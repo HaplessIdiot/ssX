@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/doc/man/misc/Imakefile,v 1.6 2003/12/19 03:29:21 dawes Exp $
+XCOMM $XFree86: xc/doc/man/misc/Imakefile,v 1.7 2004/06/02 22:42:54 dawes Exp $
 
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -57,7 +57,7 @@ XCOMM $XFree86: xc/doc/man/misc/Imakefile,v 1.6 2003/12/19 03:29:21 dawes Exp $
  * XFree86 Linux/sparc:	sunbw2, suncg14, suncg3, suncg6, sunffb, sunleo,
  *			suntcx
  * XFree86 Linux/ix86:	v4l, glide
- * XFree86 Linux:       ur98
+ * XFree86 Linux:       ur98, eloinput, aiptek
  * XFree86 Darwin:      XDarwin, dumpkeymap
  * XFree86 TinyX:	TinyX, Xvesa, Xfbdev
  */
@@ -98,6 +98,7 @@ LinkSourceFile(suntcx.man,$(XF86DRIVERSRC)/suntcx)
 LinkSourceFile(v4l.man,$(XF86DRIVERSRC)/v4l)
 LinkSourceFile(glide.man,$(XF86DRIVERSRC)/glide)
 LinkSourceFile(aiptek.man,$(XF86SRC)/input/aiptek)
+LinkSourceFile(eloinput.man,$(XF86SRC)/input/eloinput)
 LinkSourceFile(ur98.man,$(XF86SRC)/input/ur98)
 LinkSourceFile(XDarwin.man,$(SERVERSRC)/hw/darwin)
 LinkSourceFile(dumpkeymap.man,$(SERVERSRC)/hw/darwin/utils)
