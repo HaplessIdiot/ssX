@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.24 2003/11/21 05:07:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.25tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -33,10 +33,16 @@ char *xdga_extension_name = XF86DGANAME;
 static XExtensionInfo _xdga_info_data;
 static XExtensionInfo *xdga_info = &_xdga_info_data;
 
+#if !defined(_LP64) && defined(_FILE_OFFSET_BITS) && (_FILE_OFFSET_BITS == 64)
+typedef unsigned long long mmapOffset;
+#else
+typedef unsigned long      mmapOffset;
+#endif
  
-Bool XDGAMapFramebuffer(int, char *, unsigned char*, CARD32, CARD32, CARD32);
-void XDGAUnmapFramebuffer(int);
-unsigned char* XDGAGetMappedMemory(int);
+static Bool
+XDGAMapFramebuffer(int, char *, mmapOffset, CARD32, CARD32, CARD32);
+static void XDGAUnmapFramebuffer(int);
+static unsigned char* XDGAGetMappedMemory(int);
 
 #define XDGACheckExtension(dpy,i,val) \
   XextCheckExtension (dpy, i, xdga_extension_name, val)
@@ -218,11 +224,12 @@ Bool XDGAOpenFramebuffer(
     Display	*dpy,
     int 	screen
 ){
+    mmapOffset offset;
     XExtDisplayInfo *info = xdga_find_display (dpy);
     xXDGAOpenFramebufferReply rep;
     xXDGAOpenFramebufferReq *req;
     char *deviceName = NULL;
-    Bool ret;
+    Bool ret = True;
 
     XDGACheckExtension (dpy, info, False);
 
@@ -242,9 +249,20 @@ Bool XDGAOpenFramebuffer(
 	_XRead(dpy, deviceName, rep.length << 2);
     }
 
-    ret = XDGAMapFramebuffer(screen, deviceName,
-				(unsigned char*)(long)rep.mem1, 
-				rep.size, rep.offset, rep.extra);
+    if ((offset = rep.mem2)) {
+	if (sizeof(offset) == sizeof(rep.mem2))
+	    ret = False;
+	else
+	    /* Not using mmapOffset here should avoid GCC noise */
+	    offset = (unsigned long long)offset << 32;
+    }
+
+    if (ret == True) {
+	offset |= rep.mem1;
+
+	ret = XDGAMapFramebuffer(screen, deviceName, offset,
+				 rep.size, rep.offset, rep.extra);
+    }
 
     if(deviceName)
 	Xfree(deviceName);	
@@ -755,7 +773,7 @@ void XDGAKeyEventToXKeyEvent(
 
 
 typedef struct _DGAMapRec{
-  unsigned char *physical;
+  mmapOffset physical;
   unsigned char *virtual;
   CARD32 size;
   int fd;
@@ -764,13 +782,13 @@ typedef struct _DGAMapRec{
 } DGAMapRec, *DGAMapPtr;
 
 static Bool
-DGAMapPhysical(int, char*, unsigned char*, CARD32, CARD32, CARD32, DGAMapPtr); 
+DGAMapPhysical(int, char*, mmapOffset, CARD32, CARD32, CARD32, DGAMapPtr); 
 static void DGAUnmapPhysical(DGAMapPtr);
 
 static DGAMapPtr _Maps = NULL;
 
 
-unsigned char*
+static unsigned char*
 XDGAGetMappedMemory(int screen)
 {
     DGAMapPtr pMap = _Maps;
@@ -787,11 +805,11 @@ XDGAGetMappedMemory(int screen)
     return pntr;
 }
 
-Bool
+static Bool
 XDGAMapFramebuffer(
    int screen,
    char *name,			/* optional device name */
-   unsigned char* base,		/* physical memory */
+   mmapOffset base,		/* physical memory address */
    CARD32 size,			/* size */
    CARD32 offset,		/* optional offset */
    CARD32 extra			/* optional extra data */
@@ -825,7 +843,7 @@ XDGAMapFramebuffer(
    return result;
 }
 
-void
+static void
 XDGAUnmapFramebuffer(int screen)
 {
    DGAMapPtr pMap = _Maps;
@@ -857,7 +875,7 @@ static Bool
 DGAMapPhysical(
    int screen,
    char *name,			/* optional device name */
-   unsigned char* base,		/* physical memory */
+   mmapOffset base,		/* physical memory address */
    CARD32 size,			/* size */
    CARD32 offset,		/* optional offset */
    CARD32 extra,		/* optional extra data */
@@ -927,8 +945,16 @@ DGAMapPhysical(
 #ifndef MAP_FILE
 #define MAP_FILE 0
 #endif
+#ifdef sun
+    if (!name) {
+	if (((pMap->fd = open(DEV_MEM, O_RDWR)) < 0) &&
+	    ((pMap->fd = open("/dev/fbs/aperture", O_RDWR)) < 0))
+	    return False;
+    } else
+#else
     if (!name)
-	    name = DEV_MEM;
+	name = DEV_MEM;
+#endif
     if ((pMap->fd = open(name, O_RDWR)) < 0)
 	return False;
     pMap->virtual = mmap(NULL, size, PROT_READ | PROT_WRITE, 
