@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.111 2001/10/25 00:18:51 dickey Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.112 2001/11/01 23:35:23 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -470,6 +470,9 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasZlib
 #define HasZlib			NO
+#endif
+#ifndef OsNeedZlibHeaders
+#define OsNeedZlibHeaders	!HasZlib
 #endif
 #if !HasZlib		/* if OS doesn't have it, we'll build it */
 #undef GzipLibrary	/* GzipLibrary was valid only if HasZlib */
