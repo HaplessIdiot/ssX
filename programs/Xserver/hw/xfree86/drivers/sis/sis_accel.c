@@ -51,14 +51,12 @@ static void SiSSetClippingRectangle ( ScrnInfoPtr pScrn,
 
 static void SiSDisableClipping (ScrnInfoPtr pScrn);
 
- 
 static void SiSSetupForSolidLine(ScrnInfoPtr pScrn, 
 				int color, int rop, unsigned int planemask);
-#ifdef USEHWLINES                                                               
-/* SiS accelerated lines are not correct for X */                            
+
 static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
         int x1, int y1, int x2, int y2, int flags);
-#endif
+
 static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
         int x, int y, int len, int dir);
 
@@ -76,7 +74,7 @@ Bool SiSAccelInit(ScreenPtr pScreen)
     BoxRec AvailFBArea;
     int offset;
 
-    pSiS->AccelInfoRec = infoPtr = XAACreateInfoRec();
+    pSiS->AccelInfoPtr = infoPtr = XAACreateInfoRec();
     if (!infoPtr) return FALSE;
 
     SiSInitializeAccelerator(pScrn);
@@ -102,9 +100,7 @@ Bool SiSAccelInit(ScreenPtr pScreen)
 					BIT_ORDER_IN_BYTE_MSBFIRST;
 
 	infoPtr->SetupForSolidLine = SiSSetupForSolidLine;
-#ifdef USEHWLINES
 	infoPtr->SubsequentSolidTwoPointLine = SiSSubsequentSolidTwoPointLine;
-#endif
 	infoPtr->SubsequentSolidHorVertLine = SiSSubsequentSolidHorVertLine;
     }
 
@@ -426,7 +422,7 @@ static void SiSSetupForSolidLine(ScrnInfoPtr pScrn,
     sisSETROP(XAACopyROP[rop]); 	/* dst */
 }
 
-#ifdef USEHWLINES                                                               
+
 static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
         	int x1, int y1, int x2, int y2, int flags)
 
@@ -460,7 +456,7 @@ static void SiSSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn,
     sisSETCMD(op);
 /*    SiSSync(pScrn);*/
 }
-#endif
+
 
 static void SiSSubsequentSolidHorVertLine(ScrnInfoPtr pScrn,
                                 int x, int y, int len, int dir)

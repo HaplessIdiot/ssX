@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.134 2000/02/08 13:13:17 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.135 2000/02/11 17:25:56 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2017,6 +2017,14 @@ MGAMapMem(ScrnInfoPtr pScrn)
 				 pMga->PciTag, pMga->IOAddress, 0x4000);
     if (pMga->IOBase == NULL)
 	return FALSE;
+
+#ifdef __alpha__
+    pMga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex,
+				      VIDMEM_MMIO | VIDMEM_MMIO_32BIT,
+				      pMga->PciTag, pMga->IOAddress, 0x4000);
+    if (pMga->IOBaseDense == NULL)
+	return FALSE;
+#endif
 
     pMga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pMga->PciTag, pMga->FbAddress,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.11 2000/02/10 21:16:00 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.12 2000/02/12 03:39:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -87,6 +87,8 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* vgahw module (for VC save/restore only) */
 #include "vgaHW.h"
 
+#include "fbdevhw.h"
+
 				/* XAA and Cursor Support */
 #include "xaa.h"
 #include "xf86Cursor.h"
@@ -130,6 +132,8 @@ static Bool R128ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool R128SwitchMode(int ScrnIndex, DisplayModePtr mode, int flags);
 static void R128DisplayPowerManagementSet(ScrnInfoPtr pScrn,
 					  int PowerManagementMode, int flags);
+static Bool R128EnterVTFBDev(int scrnIndex, int flags);
+static void R128LeaveVTFBDev(int scrnIndex, int flags);
 
 				/* Define driver                       */
 DriverRec R128 = {
@@ -165,7 +169,8 @@ typedef enum {
   OPTION_SW_CURSOR,
   OPTION_HW_CURSOR,
   OPTION_DAC_6BIT,
-  OPTION_DAC_8BIT
+  OPTION_DAC_8BIT,
+  OPTION_FBDEV
 } R128Opts;
 
 static OptionInfoRec R128Options[] = {
@@ -174,6 +179,7 @@ static OptionInfoRec R128Options[] = {
   { OPTION_HW_CURSOR, "HWcursor", OPTV_BOOLEAN, {0}, TRUE  },
   { OPTION_DAC_6BIT,  "Dac6Bit",  OPTV_BOOLEAN, {0}, FALSE },
   { OPTION_DAC_8BIT,  "Dac8Bit",  OPTV_BOOLEAN, {0}, TRUE  },
+  { OPTION_FBDEV,     "UseFBDev", OPTV_BOOLEAN, {0}, FALSE },
   { -1,               NULL,       OPTV_NONE,    {0}, FALSE }
 };
 
@@ -194,6 +200,34 @@ static const char *vgahwSymbols[] = {
     "vgaHWUnlock",
     "vgaHWSave",
     "vgaHWRestore",
+    NULL
+};
+
+static const char *fbdevHWSymbols[] = {
+    "fbdevHWInit",
+    "fbdevHWUseBuildinMode",
+
+    "fbdevHWGetDepth",
+    "fbdevHWGetVidmem",
+
+    /* colormap */
+    "fbdevHWLoadPalette",
+
+    /* ScrnInfo hooks */
+    "fbdevHWSwitchMode",
+    "fbdevHWAdjustFrame",
+    "fbdevHWEnterVT",
+    "fbdevHWLeaveVT",
+    "fbdevHWValidMode",
+    "fbdevHWRestore",
+    "fbdevHWModeInit",
+    "fbdevHWSave",
+
+    "fbdevHWUnmapMMIO",
+    "fbdevHWUnmapVidmem",
+    "fbdevHWMapMMIO",
+    "fbdevHWMapVidmem",
+
     NULL
 };
 
@@ -290,10 +324,10 @@ static pointer R128Setup(pointer module, pointer opts, int *errmaj,
 			  xaaSymbols, 
                           xf8_32bppSymbols,
 			  ramdacSymbols,
+			  fbdevHWSymbols,
                           0 /* ddcsymbols */,
 			  0 /* i2csymbols */,
 			  0 /* shadowSymbols */,
-                          0 /* fbdevsymbols */,
 			  NULL);
 
         /*
@@ -332,11 +366,15 @@ static Bool R128MapMMIO(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info          = R128PTR(pScrn);
 
-    info->MMIO = xf86MapPciMem(pScrn->scrnIndex,
-			       VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
-			       info->PciTag,
-			       info->MMIOAddr,
-			       R128_MMIOSIZE);
+    if (info->FBDev) {
+	info->MMIO = fbdevHWMapMMIO(pScrn);
+    } else {
+	info->MMIO = xf86MapPciMem(pScrn->scrnIndex,
+				   VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
+				   info->PciTag,
+				   info->MMIOAddr,
+				   R128_MMIOSIZE);
+    }
 
     info->MMIO32 = xf86MapPciMem(pScrn->scrnIndex,
 			       VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_MMIO_32BIT,
@@ -354,8 +392,12 @@ static Bool R128UnmapMMIO(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info          = R128PTR(pScrn);
     
-    xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO, R128_MMIOSIZE);
-    xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO32, R128_MMIOSIZE);
+    if (info->FBDev)
+	fbdevHWUnmapMMIO(pScrn);
+    else {
+	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO, R128_MMIOSIZE);
+	xf86UnMapVidMem(pScrn->scrnIndex, info->MMIO32, R128_MMIOSIZE);
+    }
     info->MMIO = NULL;
     info->MMIO32 = NULL;
     return TRUE;
@@ -366,11 +408,15 @@ static Bool R128MapFB(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info          = R128PTR(pScrn);
 
-    info->FB   = xf86MapPciMem(pScrn->scrnIndex,
-			       VIDMEM_FRAMEBUFFER,
-			       info->PciTag,
-			       info->LinearAddr,
-			       info->FbMapSize);
+    if (info->FBDev) {
+	info->FB = fbdevHWMapVidmem(pScrn);
+    } else {
+	info->FB = xf86MapPciMem(pScrn->scrnIndex,
+				 VIDMEM_FRAMEBUFFER,
+				 info->PciTag,
+				 info->LinearAddr,
+				 info->FbMapSize);
+    }
 
     if (!info->FB) return FALSE;
     return TRUE;
@@ -381,7 +427,10 @@ static Bool R128UnmapFB(ScrnInfoPtr pScrn)
 {
     R128InfoPtr info          = R128PTR(pScrn);
     
-    xf86UnMapVidMem(pScrn->scrnIndex, info->FB, info->FbMapSize);
+    if(info->FBDev) 
+	fbdevHWUnmapVidmem(pScrn);
+    else
+	xf86UnMapVidMem(pScrn->scrnIndex, info->FB, info->FbMapSize);
     info->FB = NULL;
     return TRUE;
 }
@@ -816,7 +865,10 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
     R128MapMMIO(pScrn);
     R128MMIO         = info->MMIO;
     R128MMIO32       = info->MMIO32;
-    pScrn->videoRam  = INREG(R128_CONFIG_MEMSIZE) / 1024;
+    if (info->FBDev)
+	pScrn->videoRam = fbdevHWGetVidmem(pScrn) / 1024;
+    else
+	pScrn->videoRam = INREG(R128_CONFIG_MEMSIZE) / 1024;
     info->MemCntl    = INREG(R128_MEM_CNTL);
     R128MMIO         = NULL;
     R128UnmapMMIO(pScrn);
@@ -842,7 +894,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 		   pScrn->videoRam);
 	from             = X_CONFIG;
 	pScrn->videoRam  = dev->videoRam;
-    }
+    } 
     pScrn->videoRam  &= ~1023;
     info->FbMapSize  = pScrn->videoRam * 1024;
     xf86DrvMsg(pScrn->scrnIndex, from,
@@ -925,6 +977,12 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 				   pScrn->virtualY,
 				   info->FbMapSize,
 				   LOOKUP_BEST_REFRESH);
+
+    if (modesFound < 1 && info->FBDev) {
+	fbdevHWUseBuildinMode(pScrn);
+	pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+	modesFound = 1;
+    }
 
     if (modesFound == -1) return FALSE;
     xf86PruneDriverModes(pScrn);
@@ -1027,16 +1085,35 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
     pScrn->racMemFlags = RAC_FB | RAC_COLORMAP;
     pScrn->monitor     = pScrn->confScreen->monitor;
 
-    if (!R128PreInitInt10(pScrn))     goto fail;
-    
     if (!R128PreInitVisual(pScrn))    goto fail;
     
 				/* We can't do this until we have a
                                    pScrn->display. */
     xf86CollectOptions(pScrn, NULL);
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, R128Options);
-    
+
     if (!R128PreInitWeight(pScrn))    goto fail;
+    
+    if (xf86ReturnOptValBool(R128Options, OPTION_FBDEV, FALSE)) {
+	info->FBDev = TRUE;
+	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
+		   "Using framebuffer device\n");
+    }
+
+    if (info->FBDev) {
+	/* check for linux framebuffer device */
+	if (!xf86LoadSubModule(pScrn, "fbdevhw")) return FALSE;
+	xf86LoaderReqSymLists(fbdevHWSymbols, NULL);
+	if (!fbdevHWInit(pScrn, info->PciInfo, NULL)) return FALSE;
+	pScrn->SwitchMode    = fbdevHWSwitchMode;
+	pScrn->AdjustFrame   = fbdevHWAdjustFrame;
+	pScrn->EnterVT       = R128EnterVTFBDev;
+	pScrn->LeaveVT       = R128LeaveVTFBDev;
+	pScrn->ValidMode     = fbdevHWValidMode;
+    }
+    
+    if (!info->FBDev)
+	if (!R128PreInitInt10(pScrn))     goto fail;
     
     if (!R128PreInitConfig(pScrn))    goto fail;
     
@@ -1138,10 +1215,14 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
     pScrn->fbOffset    = 0;
     
     R128Save(pScrn);
-    if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
+    if (info->FBDev) {
+	if (!fbdevHWModeInit(pScrn, pScrn->currentMode)) return FALSE;
+    } else {
+	if (!R128ModeInit(pScrn, pScrn->currentMode)) return FALSE;
+    }
 
     R128SaveScreen(pScreen, FALSE);
-    R128AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
+    pScrn->AdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
 				/* Visual setup */
     miClearVisualTypes();
@@ -1208,51 +1289,6 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	}
     }
 
-				/* Backing store setup */
-    miInitializeBackingStore(pScreen);
-    xf86SetBackingStore(pScreen);
-
-				/* Cursor setup */
-    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
-
-				/* Colormap setup */
-    if (!miCreateDefColormap(pScreen)) return FALSE;
-    if (pScrn->depth == 15) {
-	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-				 R128LoadPalette15, NULL,
-				 CMAP_PALETTED_TRUECOLOR
-				 | CMAP_RELOAD_ON_MODE_SWITCH
-				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
-    } else if (pScrn->depth == 16) {
-	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-				 R128LoadPalette16, NULL,
-				 CMAP_PALETTED_TRUECOLOR
-				 | CMAP_RELOAD_ON_MODE_SWITCH
-				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
-    } else {
-	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
-				 R128LoadPalette, NULL,
-				 CMAP_PALETTED_TRUECOLOR
-				 | CMAP_RELOAD_ON_MODE_SWITCH
-				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
-    }
-
-				/* DPMS setup */
-#ifdef DPMSExtension
-    xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
-#endif
-
-				/* Xv setup */
-#ifdef XvExtension
-    {
-	XF86VideoAdaptorPtr *ptr;
-	int                 n;
-
-	if ((n = xf86XVListGenericAdaptors(&ptr)))
-	    xf86XVScreenInit(pScreen, ptr, n);
-    }
-#endif
-
 				/* Memory manager setup */
     MemBox.x1 = 0;
     MemBox.y1 = 0;
@@ -1294,6 +1330,26 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	}
     }
 
+				/* Backing store setup */
+    miInitializeBackingStore(pScreen);
+    xf86SetBackingStore(pScreen);
+
+				/* Acceleration setup */
+    if (!xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE)) {
+	if (R128AccelInit(pScreen)) {
+	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
+	} else {
+	    xf86DrvMsg(scrnIndex, X_ERROR,
+		       "Acceleration initialization failed\n");
+	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
+	}
+    } else {
+	xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
+    }
+
+				/* Cursor setup */
+    miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
+
 				/* Hardware cursor setup */
     if (!xf86ReturnOptValBool(R128Options, OPTION_SW_CURSOR, FALSE)) {
 	if (R128CursorInit(pScreen)) {
@@ -1317,18 +1373,46 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 	xf86DrvMsg(scrnIndex, X_INFO, "Using software cursor\n");
     }
 
-				/* Acceleration setup */
-    if (!xf86ReturnOptValBool(R128Options, OPTION_NOACCEL, FALSE)) {
-	if (R128AccelInit(pScreen)) {
-	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration enabled\n");
-	} else {
-	    xf86DrvMsg(scrnIndex, X_ERROR,
-		       "Acceleration initialization failed\n");
-	    xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
-	}
+				/* Colormap setup */
+    if (!miCreateDefColormap(pScreen)) return FALSE;
+    if (pScrn->depth == 15) {
+	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
+				 (info->FBDev ? fbdevHWLoadPalette :
+				 R128LoadPalette15), NULL,
+				 CMAP_PALETTED_TRUECOLOR
+				 | CMAP_RELOAD_ON_MODE_SWITCH
+				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
+    } else if (pScrn->depth == 16) {
+	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
+				 (info->FBDev ? fbdevHWLoadPalette :
+				 R128LoadPalette16), NULL,
+				 CMAP_PALETTED_TRUECOLOR
+				 | CMAP_RELOAD_ON_MODE_SWITCH
+				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
     } else {
-	xf86DrvMsg(scrnIndex, X_INFO, "Acceleration disabled\n");
+	if (!xf86HandleColormaps(pScreen, 256, info->dac6bits ? 6 : 8,
+				 (info->FBDev ? fbdevHWLoadPalette :
+				 R128LoadPalette), NULL,
+				 CMAP_PALETTED_TRUECOLOR
+				 | CMAP_RELOAD_ON_MODE_SWITCH
+				 | CMAP_LOAD_EVEN_IF_OFFSCREEN)) return FALSE;
     }
+
+				/* DPMS setup */
+#ifdef DPMSExtension
+    xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
+#endif
+
+				/* Xv setup */
+#ifdef XvExtension
+    {
+	XF86VideoAdaptorPtr *ptr;
+	int                 n;
+
+	if ((n = xf86XVListGenericAdaptors(&ptr)))
+	    xf86XVScreenInit(pScreen, ptr, n);
+    }
+#endif
 
 				/* Provide SaveScreen */
     pScreen->SaveScreen  = R128SaveScreen;
@@ -1580,6 +1664,10 @@ static void R128Save(ScrnInfoPtr pScrn)
     vgaHWPtr      hwp       = VGAHWPTR(pScrn);
 
     R128TRACE(("R128Save\n"));
+    if (info->FBDev) {
+	fbdevHWSave(pScrn);
+	return;
+    }
     vgaHWUnlock(hwp);
     vgaHWSave(pScrn, &hwp->SavedReg, VGA_SR_ALL); /* save mode, fonts, cmap */
     vgaHWLock(hwp);
@@ -1603,6 +1691,10 @@ static void R128Restore(ScrnInfoPtr pScrn)
     vgaHWPtr      hwp       = VGAHWPTR(pScrn);
 
     R128TRACE(("R128Restore\n"));
+    if (info->FBDev) {
+	fbdevHWRestore(pScrn);
+	return;
+    }
 
     R128Blank(pScrn);
     OUTREG(R128_AMCGPIO_MASK,     restore->amcgpio_mask);
@@ -1985,8 +2077,29 @@ static Bool R128EnterVT(int scrnIndex, int flags)
     return TRUE;
 }
 
+static Bool
+R128EnterVTFBDev(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    R128InfoPtr info = R128PTR(pScrn);
+    R128SavePtr restore = &info->SavedReg;
+    fbdevHWEnterVT(scrnIndex,flags);
+    R128RestorePalette(pScrn,restore); 
+    R128EngineInit(pScrn); 
+    return TRUE;
+}
+
 /* Called when VT switching away from the X server.  Restore the original
    text mode. */
+static void R128LeaveVTFBDev(int scrnIndex, int flags)
+{
+    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
+    R128InfoPtr info = R128PTR(pScrn);
+    R128SavePtr save = &info->SavedReg;
+    R128SavePalette(pScrn,save); 
+    fbdevHWLeaveVT(scrnIndex,flags);
+}
+
 static void R128LeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];

@@ -23,6 +23,11 @@ S3VRestore		X
 
 Status
 ------
+2/11/00 KJB
+Ver 0.11.0 - Add cfb16/24BresS to module symbols to remove warnings.
+Fix viewport restore problem after EnterVT in 24 bpp.
+Clean up log output, removing register dumps from normal console log.
+
 6/26/99 KJB
 Make the memory settings for fifo_conservative the default, 'fifo_conservative'
 does nothing additional now.  Patch includes DGA2 additions below, non-working.
@@ -181,4 +186,4 @@ the new config. management stuff may help here.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.9 1999/05/30 14:41:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/TODO_NOTES,v 1.10 1999/06/27 14:08:11 dawes Exp $

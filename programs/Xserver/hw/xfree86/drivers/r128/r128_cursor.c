@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.1 1999/11/19 13:54:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_cursor.c,v 1.2 2000/02/12 03:39:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -44,6 +44,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 				/* X and server generic header files */
+#include "Xarch.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
@@ -63,6 +64,15 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
+
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+#define        P_SWAP( a , b )             \
+       ((char *)a)[0] = ((char *)b)[3];    \
+       ((char *)a)[1] = ((char *)b)[2];    \
+       ((char *)a)[2] = ((char *)b)[1];    \
+       ((char *)a)[3] = ((char *)b)[0]
+#endif
+
 
 /* Set cursor foreground and background colors. */
 static void R128SetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
@@ -112,10 +122,21 @@ static void R128LoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
     save = INREG(R128_CRTC_GEN_CNTL);
     OUTREG(R128_CRTC_GEN_CNTL, save & ~R128_CRTC_CUR_EN);
     for (y = 0; y < 64; y++) {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+        P_SWAP(d,s);
+        d++; s++;
+        P_SWAP(d,s);
+        d++; s++;
+        P_SWAP(d,s);
+        d++; s++;
+        P_SWAP(d,s);
+        d++; s++;
+#else
 	*d++ = *s++;
 	*d++ = *s++;
 	*d++ = *s++;
 	*d++ = *s++;
+#endif
     }
     OUTREG(R128_CRTC_GEN_CNTL, save);
 }
@@ -163,7 +184,10 @@ Bool R128CursorInit(ScreenPtr pScreen)
     cursor->MaxWidth          = 64;
     cursor->MaxHeight         = 64;
     cursor->Flags             = (HARDWARE_CURSOR_TRUECOLOR_AT_8BPP
-				 | HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
+
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+                                 | HARDWARE_CURSOR_BIT_ORDER_MSBFIRST
+#endif
 				 | HARDWARE_CURSOR_INVERT_MASK
 				 | HARDWARE_CURSOR_AND_SOURCE_WITH_MASK
 				 | HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64

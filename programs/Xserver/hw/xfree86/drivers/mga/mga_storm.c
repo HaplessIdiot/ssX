@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.62 2000/01/01 18:21:31 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.63 2000/02/11 17:25:57 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -269,7 +269,11 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->ColorExpandBase = pMga->ILOADBase;
     } else {
 	infoPtr->ColorExpandRange = 0x1C00;
+#ifdef __alpha__
+	infoPtr->ColorExpandBase = pMga->IOBaseDense;
+#else
 	infoPtr->ColorExpandBase = pMga->IOBase;
+#endif
     }
     infoPtr->SetupForCPUToScreenColorExpandFill =
 		MGANAME(SetupForCPUToScreenColorExpandFill);

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/Imakefile,v 1.2 1999/08/30 01:25:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/Imakefile,v 1.2 2000/02/08 13:13:19 eich Exp $
 XCOMM
 XCOMM This is the Imakefile for the ATI Rage 128 (r128) driver.  
 XCOMM 
@@ -17,7 +17,8 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
 	   -I$(XF86SRC)/xaa -I$(XF86SRC)/rac \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa -I$(XF86SRC)/ramdac \
-	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
+	   -I$(XF86SRC)/vgahw -I$(XF86SRC)/fbdevhw \
+	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
 	   -I$(XF86SRC)/int10 -I$(SERVERSRC)/Xext \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(EXTINCSRC) -I$(XF86SRC)/xf24_32bpp

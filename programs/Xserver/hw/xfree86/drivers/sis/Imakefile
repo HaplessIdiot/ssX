@@ -6,12 +6,13 @@ XCOMM
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = sis_driver.c sis_dac.c sis_accel.c sis_accel2.c
-OBJS = sis_driver.o sis_dac.o sis_accel.o sis_accel2.o
+SRCS = sis_driver.c sis_dac.c sis_cursor.c sis_accel.c sis_setup.c\
+       sis530_accel.c sis300_accel.c sis_vga.c sis_lcd.c sis_tv.c\
+       sis_opt.c sis_bios.c
+OBJS = sis_driver.o sis_dac.o sis_cursor.o sis_accel.o sis_setup.o\
+       sis530_accel.o sis300_accel.o sis_vga.o sis_lcd.o sis_tv.o\
+       sis_opt.o sis_bios.o
 
-#if defined(XF86DriverSDK)
-INCLUDES = -I. -I../../include
-#else
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi \
            -I$(SERVERSRC)/cfb -I$(XF86SRC)/xaa \
@@ -22,7 +23,6 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
 	   -I$(XF86SRC)/rac \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
 	   -I$(XTOP)/include/extensions
-#endif
 
 #if MakeHasPosixVariableSubstitutions
 SubdirLibraryRule($(OBJS))
@@ -36,14 +36,3 @@ InstallObjectModule(sis,$(MODULEDIR),drivers)
 
 DependTarget()
 
-InstallDriverSDKNonExecFile(Imakefile,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis.h,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_accel.c,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_accel2.c,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_dac.c,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_driver.c,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_driver.h,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_regs.h,$(DRIVERSDKDIR)/drivers/sis)
-InstallDriverSDKNonExecFile(sis_regs2.h,$(DRIVERSDKDIR)/drivers/sis)
-
-InstallDriverSDKObjectModule(sis,$(DRIVERSDKMODULEDIR),drivers)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.5 1999/09/25 14:38:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/vidmem.c,v 1.8 2000/02/08 13:13:31 eich Exp $ */
 /*
  * Copyright 1993-1999 by The XFree86 Project, Inc
  *
@@ -214,7 +214,9 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 	if (vp->mtrrEnabled && vidMemInfo.undoWC && mp)
 		vidMemInfo.undoWC(ScreenNum, mp->mtrrInfo);
 
-	if ((mp->flags & VIDMEM_SPARSE) && vidMemInfo.unmapMemSparse)
+	if (((mp->flags & VIDMEM_SPARSE) ||
+	     ((mp->flags & VIDMEM_MMIO) && !(mp->flags & VIDMEM_MMIO_32BIT))) &&
+	    vidMemInfo.unmapMemSparse)
 		vidMemInfo.unmapMemSparse(ScreenNum, Base, Size);
 	else
 		vidMemInfo.unmapMem(ScreenNum, Base, Size);

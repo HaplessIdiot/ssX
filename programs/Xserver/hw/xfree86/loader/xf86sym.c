@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.126 2000/02/08 17:19:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.127 2000/02/10 15:48:32 dawes Exp $ */
 
 /*
  *
@@ -71,12 +71,25 @@ extern unsigned long  inl(unsigned int a);
 #endif
 
 #if defined(__alpha__)
+#ifdef linux
 extern void _outb(char val, unsigned short port);
 extern void _outw(short val, unsigned short port);
 extern void _outl(int val, unsigned short port);
 extern unsigned int _inb(unsigned short port);
 extern unsigned int _inw(unsigned short port);
 extern unsigned int _inl(unsigned short port);
+#endif
+
+#ifdef __FreeBSD__ 
+#include <sys/types.h>
+extern void outb(u_int32_t port, u_int8_t val);
+extern void outw(u_int32_t port, u_int16_t val);
+extern void outl(u_int32_t port, u_int32_t val);
+extern u_int8_t inb(u_int32_t port);
+extern u_int16_t inw(u_int32_t port);
+extern u_int32_t inl(u_int32_t port);
+#endif
+
 extern void* __divl(long, long);
 extern void* __reml(long, long);
 extern void* __divlu(long, long);
@@ -782,12 +795,21 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(__remq)
    SYMFUNC(__remqu)
 
+#ifdef linux
    SYMFUNC(_outw)
    SYMFUNC(_outb)
    SYMFUNC(_outl)
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
+#else
+   SYMFUNC(outw)
+   SYMFUNC(outb)
+   SYMFUNC(outl)
+   SYMFUNC(inb)
+   SYMFUNC(inw)
+   SYMFUNC(inl)
+#endif
    SYMFUNC(xf86ReadMmio32)
    SYMFUNC(xf86ReadMmio16)
    SYMFUNC(xf86ReadMmio8)

@@ -1,3 +1,29 @@
+XFree86 3.9.17Z (12 February 2000)
+3749. Fix the mga driver to work with the MGA 2064W on Alpha architectures
+      (#3679, Doug Rabson).
+3748. Support for building XFree86 on FreeBSD/alpha (#3678, Doug Rabson).
+3747. Restore viewport correctly on VT switch for the s3virge, and clean
+      up the logging messages (#3676, Kevin Brosius).
+3746. Don't try to program the keyboard repeat rate directly for Linux/98
+      (#3675, Takaaki Nomura).
+3745. Update information about mouse support in 3.9.18 (#3673, 3674,
+      Kazutaka Yokota).
+3744. Remove the "Extended PS/2 mouse protocol" class from the supported
+      interfaces in FreeBSD, since they are already handled at the
+      device driver level (#3672, Kazutaka Yokota).
+3743. Merge Kevin Hendricks fbdev/ppc patches in r128, fix wrong order
+      in cursor init (#3671, Kostas Gewrgiou, Kevin Hendricks).
+3742. Fix a problem building xedit/realpath.c that shows up on Linux
+      (#3670, Andrew Aitcheson).
+3741. Fix a build problem for lcUTF.c on Linux/libc5 (#3668,
+      Andrew Aitcheson).
+3740. Make sure the cursor is positioned correctly after mode changes
+      (#3667, Harald Koenig).
+3739. Add support for the SiS 630/540/300/530/620 to the SiS driver with
+      hw acceleration.  Support for the tvout function is included for
+      the 630/540/300 (#3666, Can-Ru Yeou, SiS).
+3738. Fix some build problems with the apm driver on SVR4.0 (David Dawes).
+
 XFree86 3.9.17e (11 February 2000)
 3727. Move xman into the main xc/ tree.
 3726. The leak-tracing allocator now works on 64-bit machines, and update
@@ -9608,4 +9634,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.992 2000/02/12 03:39:45 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.993 2000/02/12 03:55:07 dawes Exp $

@@ -30,8 +30,9 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.20 2000/01/20 01:40:16 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.21 2000/01/21 01:12:15 dawes Exp $ */
 
+#include "Xarch.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"

@@ -26,10 +26,11 @@
  *           David Thomas <davtom@dream.org.uk>. 
  *           Xavier Ducoin <x.ducoin@lectra.com>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs2.h,v 1.1 1999/03/21 07:35:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs2.h,v 1.2 1999/05/15 06:24:56 dawes Exp $ */
 
 /* 3C4 */
 #define BankReg 0x06
+#define ExtGraphicControl 0x06
 #define ClockReg 0x07
 #define CPUThreshold 0x08
 #define CRTThreshold 0x09
@@ -39,6 +40,7 @@
 #define RAMSize 0x0C
 #define Mode64 0x0C
 #define ExtConfStatus1 0x0E
+#define ExtHoznOver 0x12
 #define ClockBase 0x13
 #define LinearAdd0 0x20
 #define LinearAdd1 0x21
@@ -95,8 +97,8 @@ extern int sis2Reg32MMIO[];
    bit 29 Command queue: 1 is empty
 */
 #define sisBLTSync \
-  while(!(*(volatile unsigned short *)(pSiS->IOBase + BR(16)+2) & \
-	(0x8000))){}
+  while((*(volatile unsigned short *)(pSiS->IOBase + BR(16)+2) & \
+	0xE000) != 0xE000){}
 	
 #define sisBLTWAIT \
   if (!pSiS->TurboQueue) {\
@@ -165,7 +167,33 @@ extern int sis2Reg32MMIO[];
   *(volatile unsigned int *)(pSiS->IOBase + BR(7)) = (fgColor)
 
 
+#define sisEnableCRT1HWCursor()\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8500) |= 0x40000000;
+#define sisDisableCRT1HWCursor()\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8500) &= 0xBFFFFFFF;
 
+#define sisSetCRT1CursorBGColor(color)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8504) = (color);
+#define sisSetCRT1CursorFGColor(color)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8508) = (color);
 
+#define sisSetCRT1CursorPositionX(x,preset)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x850C) = (x) | ((preset) << 16);
+#define sisSetCRT1CursorPositionY(y,preset)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8510) = (y) | ((preset) << 16);
 
+#define sisEnableCRT2HWCursor()\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8520) |= 0x40000000;
+#define sisDisableCRT2HWCursor()\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8520) &= 0xBFFFFFFF;
+
+#define sisSetCRT2CursorBGColor(color)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8524) = (color);
+#define sisSetCRT2CursorFGColor(color)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8528) = (color);
+
+#define sisSetCRT2CursorPositionX(x,preset)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x852C) = (x) | ((preset) << 16);
+#define sisSetCRT2CursorPositionY(y,preset)\
+  *(volatile unsigned int *)(pSiS->IOBase + 0x8530) = (y) | ((preset) << 16);
 

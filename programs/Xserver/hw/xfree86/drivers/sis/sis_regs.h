@@ -25,7 +25,55 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.9 1999/07/06 11:38:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_regs.h,v 1.8 1999/05/15 12:10:28 dawes Exp $ */
+
+#include "vgaHW.h"
+
+#define	inSISREG(base)			inb(base)
+#define	outSISREG(base,val)		outb(base,val)
+#define orSISREG(base,val)		outSISREG(base, inb(base)|(val))
+#define andSISREG(base,val)		outSISREG(base, inb(base)&(val))
+
+#define	inSISIDXREG(base,idx,var)	outb(base,idx); var=inb((base)+1);
+//#define	outSISIDXREG(base,idx,val)	outw(base, (val)<<8 | (idx));
+#define	outSISIDXREG(base,idx,val)	outb(base,idx); outb((base)+1,val);
+#define orSISIDXREG(base,idx,val)	outb(base,idx);	\
+		outSISIDXREG(base,idx,inb((base)+1)|(val));
+#define andSISIDXREG(base,idx,and)	outb(base,idx);	\
+		outSISIDXREG(base,idx,inb((base)+1)&(and));
+#define	setSISIDXREG(base,idx,and,or)	outb(base,idx);	\
+		outSISIDXREG(base,idx,(inb((base)+1)&(and))|(or));
+
+#define	BITMASK(h,l)	(((unsigned)(1U << ((h)-(l)+1))-1)<<(l))
+#define	GENMASK(mask)	BITMASK(1?mask,0?mask)
+
+#define	GETBITS(var,mask)	(((var) & GENMASK(mask)) >> (0?mask))
+#define	SETBITS(val,mask)	((val) << (0?mask))
+#define	SETBIT(n)		(1<<(n))
+
+#define	GETBITSTR(val,from,to)	((GETBITS(val,from)) << (0?to))
+#define	SETVARBITS(var,val,from,to)	(((var)&(~(GENMASK(to)))) | \
+					GETBITSTR(val,from,to))
+#define	GETVAR8(var)		((var)&0xFF)
+#define	SETVAR8(var,val)	(var) =  GETVAR8(val)
+
+#define	VGA_RELIO_BASE	0x380
+
+#define	AROFFSET	VGA_ATTR_INDEX - VGA_RELIO_BASE
+#define	ARROFFSET	VGA_ATTR_DATA_R - VGA_RELIO_BASE
+#define	GROFFSET	VGA_GRAPH_INDEX - VGA_RELIO_BASE
+#define	SROFFSET	VGA_SEQ_INDEX - VGA_RELIO_BASE
+#define	CROFFSET	VGA_CRTC_INDEX_OFFSET + VGA_IOBASE_COLOR-VGA_RELIO_BASE
+#define	MISCROFFSET	VGA_MISC_OUT_R - VGA_RELIO_BASE
+#define	MISCWOFFSET	VGA_MISC_OUT_W - VGA_RELIO_BASE
+
+#define	SISAR		pSiS->RElIO+AROFFSET
+#define	SISARR		pSiS->RELIO+ARROFFSET
+#define	SISGR		pSiS->RELIO+GROFFSET
+#define SISSR		pSiS->RelIO+SROFFSET
+#define	SISCR		pSiS->RelIO+CROFFSET
+#define	SISMISCR	pSiS->RelIO+MISCROFFSET
+#define	SISMISCW	pSiS->RelIO+MISCWOFFSET
 
 /* 3C4 */
 #define BankReg 0x06
@@ -37,9 +85,7 @@
 #define MMIOEnable 0x0B
 #define RAMSize 0x0C
 #define Mode64 0x0C
-#define ExtConfStatus0 0x0D
 #define ExtConfStatus1 0x0E
-#define RAMSize86 0x0F
 #define ClockBase 0x13
 #define LinearAdd0 0x20
 #define LinearAdd1 0x21
@@ -205,4 +251,5 @@ extern int sisReg32MMIO[];
 
 #define sisSETLineErrorTerm(ErrorTerm) \
   *(volatile unsigned short *)(pSiS->IOBase + BR(7)) = ErrorTerm
+
 

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.36 2000/01/19 22:37:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.37 2000/02/11 18:06:48 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -32,11 +32,15 @@ SHARED_CFLAGS = PositionIndependentCFlags
 # else
  IOPERMDEFINES = -DUSE_I386_IOPL
 # endif
-#elif defined(FreeBSDArchitecture)
+#elif defined(FreeBSDArchitecture) && !defined(AlphaBsdArchitecture)
  IOPERMDEFINES = -DUSE_DEV_IO
 #else
+# if defined(AlphaBsdArchitecture)
+ IOPERMDEFINES = -DUSE_ALPHA_PORTS
+# else
 IOPERM_SRC = ioperm_noop.c
 IOPERM_OBJ = ioperm_noop.o
+# endif
 #endif
 
 MOUSESRC = bsd_mouse.c

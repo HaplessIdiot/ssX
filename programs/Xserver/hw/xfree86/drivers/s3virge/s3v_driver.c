@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.45 2000/02/08 13:13:20 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.46 2000/02/08 17:19:15 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -121,9 +121,9 @@ static int pix24bpp = 0;
 
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
-#define S3VIRGE_VERSION_NAME "0.10.0"
+#define S3VIRGE_VERSION_NAME "0.11.0"
 #define S3VIRGE_VERSION_MAJOR   0
-#define S3VIRGE_VERSION_MINOR   10
+#define S3VIRGE_VERSION_MINOR   11
 #define S3VIRGE_PATCHLEVEL      0
 #define S3VIRGE_DRIVER_VERSION ((S3VIRGE_VERSION_MAJOR << 24) | \
 				(S3VIRGE_VERSION_MINOR << 16) | \
@@ -337,6 +337,8 @@ static const char *cfbSymbols[] = {
     "cfb24ScreenInit",
     "cfb24_32ScreenInit",
     "cfb32ScreenInit",
+    "cfb16BresS",
+    "cfb24BresS",
 #endif
     NULL
 };
@@ -1181,13 +1183,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 /*cep*/
 #if 0
    if (xf86Verbosity()) {
-      ErrorF("%s %s: Ramdac speed: %d MHz",
+      xf86ErrorFVerb(VERBLEV, "%s %s: Ramdac speed: %d MHz",
 	     OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
 	     XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
 	     pScrn->clock[0] / 1000);
       if (ps3v->dacSpeedBpp != pScrn->clock[0])
-	 ErrorF("  (%d MHz for %d bpp)",ps3v->dacSpeedBpp / 1000, pScrn->bitsPerPixel);
-      ErrorF("\n");
+	 xf86ErrorFVerb(VERBLEV, "  (%d MHz for %d bpp)",ps3v->dacSpeedBpp / 1000, pScrn->bitsPerPixel);
+      xf86ErrorFVerb(VERBLEV, "\n");
    }
 #endif
 
@@ -1749,7 +1751,8 @@ S3VSave (ScrnInfoPtr pScrn)
 
    if (xf86GetVerbosity() > 1) {
       /* Debug */
-      ErrorF("MMPR regs: %08x %08x %08x %08x\n",
+      xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV,
+         "MMPR regs: %08x %08x %08x %08x\n",
 	     INREG(FIFO_CONTROL_REG), 
 	     INREG(MIU_CONTROL_REG), 
 	     INREG(STREAMS_TIMEOUT_REG), 
@@ -2064,7 +2067,8 @@ S3VWriteMode (ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, S3VRegPtr restore)
    VGAOUT8(vgaCRReg, cr3a);
 
    if (xf86GetVerbosity() > 1) {
-      ErrorF("\n\nViRGE driver: done restoring mode, dumping CR registers:\n\n");
+      xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, VERBLEV, 
+         "ViRGE driver: done restoring mode, dumping CR registers:\n");
       S3VPrintRegs(pScrn);
    }
    
@@ -2305,8 +2309,6 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     					/* Initialise the first mode */
   if (!S3VModeInit(pScrn, pScrn->currentMode))
     return FALSE;
-   					/* Adjust the viewport */
-  S3VAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     
     /*
      * The next step is to setup the screen's visuals, and initialise the
@@ -3128,8 +3130,10 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 					/* to hardware, start STREAMS if    */
 					/* needed, etc.		    	    */
    S3VWriteMode( pScrn, vganew, new );
+   					/* Adjust the viewport */
+   S3VAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
-  return TRUE;
+   return TRUE;
 }
 
 
@@ -3191,7 +3195,6 @@ S3VSaveScreen(ScreenPtr pScreen, Bool unblank)
 static void
 S3VInitSTREAMS(ScrnInfoPtr pScrn, unsigned int *streams, DisplayModePtr mode)
 {
-  
    if ( pScrn->bitsPerPixel == 24 ) {
                          /* data format 8.8.8 (24 bpp) */
       streams[0] = 0x06000000;
@@ -3465,54 +3468,56 @@ S3VPrintRegs(ScrnInfoPtr pScrn)
        
 /* All registers */
 /* New formatted registers, matches s3rc (sort of) */
-    ErrorF("Misc Out[3CC]\n  ");
-    ErrorF("%02x\n",VGAIN8(0x3cc));
+    xf86DrvMsgVerb( pScrn->scrnIndex, X_INFO, VERBLEV, "START register dump ------------------\n");
+    xf86ErrorFVerb(VERBLEV, "Misc Out[3CC]\n  ");
+    xf86ErrorFVerb(VERBLEV, "%02x\n",VGAIN8(0x3cc));
 
-    ErrorF("\nCR[00-2f]\n  ");
+    xf86ErrorFVerb(VERBLEV, "\nCR[00-2f]\n  ");
     for(tmp1=0x0;tmp1<=0x2f;tmp1++){
 	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("%02x ",VGAIN8(vgaCRReg));
-	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+	xf86ErrorFVerb(VERBLEV, "%02x ",VGAIN8(vgaCRReg));
+	if((tmp1 & 0x3) == 0x3) xf86ErrorFVerb(VERBLEV, " ");
+	if((tmp1 & 0xf) == 0xf) xf86ErrorFVerb(VERBLEV, "\n  ");
     }
     
-    ErrorF("\nSR[00-27]\n  ");
+    xf86ErrorFVerb(VERBLEV, "\nSR[00-27]\n  ");
     for(tmp1=0x0;tmp1<=0x27;tmp1++){
 	VGAOUT8(0x3c4, tmp1);
-	ErrorF("%02x ",VGAIN8(0x3c5));
-	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+	xf86ErrorFVerb(VERBLEV, "%02x ",VGAIN8(0x3c5));
+	if((tmp1 & 0x3) == 0x3) xf86ErrorFVerb(VERBLEV, " ");
+	if((tmp1 & 0xf) == 0xf) xf86ErrorFVerb(VERBLEV, "\n  ");
     }
-    ErrorF("\n"); /* odd hex number of digits... */
+    xf86ErrorFVerb(VERBLEV, "\n"); /* odd hex number of digits... */
 
-    ErrorF("\nGr Cont GR[00-0f]\n  ");
+    xf86ErrorFVerb(VERBLEV, "\nGr Cont GR[00-0f]\n  ");
     for(tmp1=0x0;tmp1<=0x0f;tmp1++){
 	VGAOUT8(0x3ce, tmp1);
-	ErrorF("%02x ",VGAIN8(0x3cf));
-	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+	xf86ErrorFVerb(VERBLEV, "%02x ",VGAIN8(0x3cf));
+	if((tmp1 & 0x3) == 0x3) xf86ErrorFVerb(VERBLEV, " ");
+	if((tmp1 & 0xf) == 0xf) xf86ErrorFVerb(VERBLEV, "\n  ");
     }
 
-    ErrorF("\nAtt Cont AR[00-1f]\n  ");
+    xf86ErrorFVerb(VERBLEV, "\nAtt Cont AR[00-1f]\n  ");
     VGAIN8(vgaIR); /* preset AR flip-flop by reading 3DA, ignore return value */
     tmp2=VGAIN8(0x3c0) & 0x20;
     for(tmp1=0x0;tmp1<=0x1f;tmp1++){
     VGAIN8(vgaIR); /* preset AR flip-flop by reading 3DA, ignore return value */
 	VGAOUT8(0x3c0, (tmp1 & ~0x20) | tmp2);
-	ErrorF("%02x ",VGAIN8(0x3c1));
-	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+	xf86ErrorFVerb(VERBLEV, "%02x ",VGAIN8(0x3c1));
+	if((tmp1 & 0x3) == 0x3) xf86ErrorFVerb(VERBLEV, " ");
+	if((tmp1 & 0xf) == 0xf) xf86ErrorFVerb(VERBLEV, "\n  ");
     }
 
-    ErrorF("\nCR[30-6f]\n  ");
+    xf86ErrorFVerb(VERBLEV, "\nCR[30-6f]\n  ");
     for(tmp1=0x30;tmp1<=0x6f;tmp1++){
 	VGAOUT8(vgaCRIndex, tmp1);
-	ErrorF("%02x ",VGAIN8(vgaCRReg));
-	if((tmp1 & 0x3) == 0x3) ErrorF(" ");
-	if((tmp1 & 0xf) == 0xf) ErrorF("\n  ");
+	xf86ErrorFVerb(VERBLEV, "%02x ",VGAIN8(vgaCRReg));
+	if((tmp1 & 0x3) == 0x3) xf86ErrorFVerb(VERBLEV, " ");
+	if((tmp1 & 0xf) == 0xf) xf86ErrorFVerb(VERBLEV, "\n  ");
     }
     
-    ErrorF("\n\n");
+    xf86ErrorFVerb(VERBLEV, "\n");
+    xf86DrvMsgVerb( pScrn->scrnIndex, X_INFO, VERBLEV, "END register dump --------------------\n");
 }
 
 /* this is just a debugger hook */
@@ -3571,7 +3576,7 @@ S3VDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
     srd |= 0x50;
     break;
   default:
-    ErrorF("Invalid PowerManagementMode %d passed to S3VDisplayPowerManagementSet\n", PowerManagementMode);
+    xf86ErrorFVerb(VERBLEV, "Invalid PowerManagementMode %d passed to S3VDisplayPowerManagementSet\n", PowerManagementMode);
     break;
   }
 

@@ -17,7 +17,7 @@ XCOMM $TOG: Imake.cf /main/30 1998/04/28 13:55:25 barstow $
  *
  *     4.  Create a .cf file with the name given by MacroFile.
  */
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.51 1999/12/27 00:39:15 robin Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.52 2000/01/21 02:29:33 dawes Exp $
 
 #if defined(clipper) || defined(__clipper__)
 # undef clipper
@@ -161,6 +161,11 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.51 1999/12/27 00:39:15 robin Exp $
 #  define i386BsdArchitecture
 #  define i386Architecture
 #  undef i386
+# endif
+# ifdef __alpha__
+#  define AlphaBsdArchitecture
+#  define AlphaArchitecture
+#  undef __alpha__
 # endif
 #endif /* __FreeBSD__ */
 
