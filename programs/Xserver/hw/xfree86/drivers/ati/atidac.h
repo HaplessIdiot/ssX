@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.10 2001/01/06 20:58:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.h,v 1.11 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -33,6 +33,8 @@
 #include "aticrtc.h"
 #include "atipriv.h"
 #include "atiproto.h"
+
+#include "xf86str.h"
 
 #include "colormapst.h"
 
@@ -69,12 +71,7 @@
 #define ATI_DAC_IBMRGB514               ATI_DAC(0x9U, 0x0U)
 #define ATI_DAC_UNKNOWN                 ATI_DAC((ATI_DAC_MAX_TYPE << 2) + 3, \
                                                 ATI_DAC_MAX_SUBTYPE)
-typedef struct
-{
-        const int DACType;
-        const char *DACName;
-} DACRec;
-extern const DACRec ATIDACDescriptors[];
+extern const SymTabRec ATIDACDescriptors[];
 
 #ifdef AVOID_CPIO
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.10 2002/01/29 03:42:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.11 2002/02/14 22:08:02 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -809,7 +809,7 @@ ATIModeCalculate
             pATIHW->horz_stretching |= (HORZ_STRETCH_MODE | HORZ_STRETCH_EN) |
                 SetBits((HDisplay * (MaxBits(HORZ_STRETCH_BLEND) + 1)) /
                         pATI->LCDHorizontal, HORZ_STRETCH_BLEND);
-        } while(0);
+        } while (0);
 
         if (!pATI->OptionPanelDisplay || (VDisplay >= pATI->LCDVertical))
             pATIHW->vert_stretching = 0;

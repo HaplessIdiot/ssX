@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.15 2002/01/16 16:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativga.c,v 1.16 2002/02/14 22:08:04 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -28,8 +28,6 @@
 #include "atistruct.h"
 #include "ativga.h"
 #include "ativgaio.h"
-
-#include "xf86.h"
 
 #ifndef DPMS_SERVER
 # define DPMS_SERVER

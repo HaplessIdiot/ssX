@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.58 2002/01/29 03:42:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.59 2002/02/14 22:08:03 tsi Exp $ */
 /*
  * Copyright 1999 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1354,18 +1354,18 @@ ATIPreInit
             "Internal RAMDAC (subtype %d) detected.\n", pATI->DAC & 0x0FU);
     else
     {
-        const DACRec *DAC;
+        const SymTabRec *DAC;
 
         for (DAC = ATIDACDescriptors;  ;  DAC++)
         {
-            if (pATI->DAC == DAC->DACType)
+            if (pATI->DAC == DAC->token)
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-                    "%s RAMDAC detected.\n", DAC->DACName);
+                    "%s RAMDAC detected.\n", DAC->name);
                 break;
             }
 
-            if (pATI->DAC < DAC->DACType)
+            if (pATI->DAC < DAC->token)
             {
                 xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_WARNING, 0,
                     "Unknown RAMDAC type 0x%02X detected.\n", pATI->DAC);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.13 2001/08/01 00:44:53 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.14 2002/01/16 16:22:26 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -29,7 +29,7 @@
 /*
  * RAMDAC-related definitions.
  */
-const DACRec ATIDACDescriptors[] =
+const SymTabRec ATIDACDescriptors[] =
 {   /* Keep this table in ascending DACType order */
     {ATI_DAC_ATI68830,      "ATI 68830 or similar"},
     {ATI_DAC_SC11483,       "Sierra 11483 or similar"},
