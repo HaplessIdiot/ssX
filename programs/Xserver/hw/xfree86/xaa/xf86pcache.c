@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.0 1996/11/18 13:22:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.1 1996/12/09 11:55:32 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -681,17 +681,21 @@ static void DoCacheTile(pix)
 
     /* See if we can use any hardware pattern feature. */
     if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
-    !(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64))
+    !(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64) &&
+    /*
+     * As long as cache slots are positioned at multiple-of-128 x-coords,
+     * 64 pixel aligment requirement for 8x8 pattern can be guaranteed
+     * for certain values of FramebufferWidth (such as 1024, 1280).
+     * This only helps when the chip uses HARDWARE_PATTERN_MOD_64_OFFSET.
+     */
+    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET)
+    || (xf86AccelInfoRec.FramebufferWidth & 63) == 0)
+    )
         if (ReduceTileToSize8(pci, pix, FALSE) & TILE_REDUCIBLE) {
             /*
              * The width of the tile is 1, 2, 4, or 8.
              * The height is 1, 2, 4, or 8.
              */
-#if 0 
-            xf86AccelInfoRec.ImageWrite(pci->x, pci->y + 8, pci->pix_w, pci->pix_h,
-                pix->devPrivate.ptr, pix->devKind, GXcopy, 0xFFFFFFFF);
-            Expand8x8Pattern(pci->x, pci->y, pci->pix_w, pci->pix_h);
-#else
 	    /*
 	     * This CPU (non-coprocessor) version is probably faster,
 	     * since it mainly moves small bunches of bytes.
@@ -699,7 +703,6 @@ static void DoCacheTile(pix)
             Write8x8Pattern(pci->x, pci->y,
                 pix->drawable.width, pix->drawable.height,
                 pix->devPrivate.ptr, pix->devKind);
-#endif
             pci->flags = 1;
             return;
         }
@@ -858,8 +861,11 @@ static void DoCacheStipple(pDrawable, pGC)
 
     if (xf86AccelInfoRec.SubsequentFill8x8Pattern &&
     !(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_ALIGN_64) &&
+    (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_MOD_64_OFFSET)
+    || (xf86AccelInfoRec.FramebufferWidth & 63) == 0) &&
     ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_TRANSPARENCY)
-    || pGC->fillStyle == FillOpaqueStippled))
+    || pGC->fillStyle == FillOpaqueStippled) &&
+    xf86AccelInfoRec.BitsPerPixel != 24)
         /*
          * Stipples are often 32 pixels wide. However, we are only
          * able to use the hardware pattern if the 8 pixels are
@@ -898,17 +904,9 @@ static void DoCacheStipple(pDrawable, pGC)
                 GXcopy, &rgnDst, &ptSrc, 0xFFFFFFFF, 1,
                 pci->bg_color, pci->fg_color);
             REGION_UNINIT(pScreen, &rgnDst);
-#if 0
-            xf86AccelInfoRec.ImageWrite(pci->x, pci->y + 8, pci->pix_w,
-                pci->pix_h, scratchpix->devPrivate.ptr, scratchpix->devKind,
-                GXcopy, 0xFFFFFFFF);
-            Expand8x8Pattern(pci->x, pci->y, pci->pix_w, pci->pix_h,
-                scratchpix->devPrivate.ptr, scratchpix->devKind);
-#else
             Write8x8Pattern(pci->x, pci->y,
                 pix->drawable.width, pix->drawable.height,
                 scratchpix->devPrivate.ptr, scratchpix->devKind);
-#endif
             DEALLOCATE_LOCAL(scratchpixptr);
             FreeScratchPixmapHeader(scratchpix);
             pci->flags = 1;

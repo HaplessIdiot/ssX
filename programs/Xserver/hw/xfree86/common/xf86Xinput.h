@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.10 1996/08/13 11:30:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.11 1996/10/16 14:40:49 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -39,6 +39,7 @@
 
 #define XI86_NO_OPEN_ON_INIT    1 /* open the device only when needed */
 #define XI86_CONFIGURED         2 /* the device has been configured */
+#define XI86_ALWAYS_CORE	4 /* the device always controls the pointer */
 
 #ifdef PRIVATE
 #undef PRIVATE
@@ -133,6 +134,14 @@ extern int
 xf86IsCoreKeyboard(
 #if NeedFunctionPrototypes
 	       DeviceIntPtr /*dev*/
+#endif
+);
+
+extern void
+xf86AlwaysCore(
+#if NeedFunctionPrototypes
+	       LocalDevicePtr	/*local*/,
+	       Bool		/*always*/
 #endif
 );
 

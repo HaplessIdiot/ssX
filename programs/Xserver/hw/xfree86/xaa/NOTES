@@ -23,39 +23,61 @@ H.Hanemaayer@inter.nl.net
 Here's a list of known problems (roughly in order of importance). If you
 can confirm a problem using the lastest version, please do so.
 
+- A crash occurs because of recursive calling of
+  xf86miFillRectStippledFallBack. Fixed by mod 135?
+
 - The "NonTE" text acceleration triggers core dumps (related to an invalid
   fall-back function scheme in ValidateGC). It might also trigger lock-ups
   (which would point towards a problem in NonTE text color expansion).
+  These functions are currently disabled.
 
 - The pixmap cache has been re-enabled.
 
-- There is a memory leak that shows up running xscreensaver for a long time.
-  Possibly in ValidateGC. This also shows up with x11perf -gc (Change GC test).
-  Modification 107 does not fix this. Modification 114 does seem to fix it.
-
-- At 8bpp, olvwm is reported to crash. This happened in an old version, but
-  apparently it may happen in a recent version also. No confirmation yet.
-  It may be related to the rectangle problem that showed up with xmag,
-  which has now been fixed.
+- The "NO_PLANEMASK" restriction has been reported not to work correctly --
+  non-trivial planemasks may be passed to low-level solid rectangle fill
+  despite this flag. This might have been fixed now by mod 129.
 
 - At 24bpp, the cursor in an rxvt has a wrong color, and when selecting
   text the colors are wrong. This looks like a missing RGB_EQUAL check.
 
 - Color expanded 8x8 pattern is not working correctly yet.
 
-- At 16bpp, the 8x8 hardware pattern doesn't seem to work. This looks like
-  an ARK chip problem.
-
-- The non-terminal emulator font acceleration is suspect, I don't think
-  it handles horizontally overlapping characters correctly (no visible
-  evidence yet) in the xf86DrawNonTETextScanline function.
+- The disabled non-terminal emulator font acceleration is suspect, I
+  don't think it handles horizontally overlapping characters correctly
+  (no visible evidence yet) in the xf86DrawNonTETextScanline function.
 
 When the server crashes, run 'gdb -c core XF86_SVGA' and print a
 back-trace ('backtrace').
 
 Change Log:
 
-Version 0.4f (28 November 1996)
+Version of 17 December 1996
+138. Enable the Pentium-optimized text transfer functions for 6 and 8-pixel
+     wide fonts.
+137. Fix a problem with accelerated horizontal and vertical lines clashing
+     with framebuffer lines.
+136. In some places, fix the "NO_PLANEMASK" check to only check bits up to
+     the actual depth (rather than PMSK).
+135. Avoid recursive xf86miFillRectStippledFallBack call.
+134. When the new HARDWARE_PATTERN_MOD_64_OFFSET flag is set, do use
+     the hardware pattern when the framebuffer width guarantees
+     corrects alignment.
+133. Avoid unaligned accesses in xf86expblt.c for DEC Alpha. Not tested.
+     What's a mem_barrier? Do we need them?
+132. Do not use 8x8 pattern stipple fill at 24bpp because there's no
+     pixmap-to-pixmap CopyPlane1ToN primitive.
+131. Allow CopyPlane1ToN to be accelerated at 24bpp.
+130. Remove messages printed when xf86miStippleFallBack is called.
+129. Add FillRectSolid graphics operation restriction flags to the line
+     draw restrictions in xf86initac.c, fixing a problem with planemask
+     restrictions not being honoured for some lines.
+128. Add some Pentium-optimized text bitmap transfer functions in
+     xf86txtblt.s, but they are not used yet.
+
+XFree86 3.2e
+127. ImakefileBPP renamed to Imakefile.BPP
+
+Version 0.4f (XFree86 3.2d) (28 November 1996)
 126. Fix typo in xf86frect.c, pixmap-cache re-enabled (Alan).
 125. Disable Non-TE text acceleration.
 124. Add text fall-back functions in xf86gcmisc.c.
@@ -390,10 +412,19 @@ Flags
 
     HARDWARE_PATTERN_ALIGN_64
 
-    Indicate that the 8x8 hardware pattern must be stored on a 64-pixel
-    boundary in video memory. This requires a lot more pre-rotated
-    copies to be made, although they should still fit within a 128x128
-    cache area.
+    Indicates that the 8x8 hardware pattern must be stored on a
+    64-pixel boundary in video memory, and programmed pattern start
+    location must be the start of such a pattern. This requires a lot
+    more pre-rotated copies to be made, although they should still fit
+    within a 128x128 cache area.
+
+    HARDWARE_PATTERN_MOD_64_OFFSET
+
+    Indicates that while the 8x8 hardware pattern must be stored
+    aligned on a 64-pixel boundary, the programmed pattern start
+    location can in fact include a multiple-of-8-pixels offset, which
+    indicates the vertical offset into the pattern. This flag is
+    mutually exclusive to HARDWARE_PATTERN_ALIGN_64.
 
     ONLY_TWO_BITBLT_DIRECTIONS
 
@@ -541,6 +572,8 @@ SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     copies of the pattern. The pattern address will always be at a
     multiple of 8 pixels offset from the start of a scanline (x will
     be a multiple of 8), unless the HARDWARE_PATTERN_ALIGN_64 is set.
+    At the moment, setting HARDWARE_PATTERN_ALIGN_64 will disable the
+    use of this function, but this will change in a future version.
 
 SetupFor8x8PatternColorExpand(patternx, patterny, bg, fg, rop, planemask)
 
@@ -1078,12 +1111,8 @@ xfGCInfoRec.CopyAreaFlags:
   seperate flags indicating the restrictions for the lower-level
   functions.
 
-- The flags for line drawing and solid rectangle fill should be
-  considered together when making decisions about line drawing
-  acceleration.
-
-- VT-switching awareness has not yet been properly implemented.
-  [It is now much better, but no definite word yet]
+- VT-switching awareness has not been extensively tested, and the
+  current implement has a few rough edges.
 
 - Solid tile fill may be faster with cfb in some cases (if the chip
   doesn't have much video memory bandwidth to play with and the PCI
@@ -1104,23 +1133,39 @@ xfGCInfoRec.CopyAreaFlags:
   a little complex.
 
 - Taking more advantage of built-in (8x8) chip pattern registers. This
-  works pretty well now, but things not implemented include detection of
+  works OK now, but things not implemented include detection of
   tiles that have only two colors so that they can be done with
   color-expand 8x8 pattern fill, and interleaving schemes allowing 16
   and 32 pixel high patterns to be done using the hardware pattern. Also
   some chips support 16x8 and 32x8 pattern fill at 8bpp by using 16bpp
-  or 32bpp pattern fill.
+  or 32bpp pattern fill. Currently, support for chips that require the
+  pattern to be aligned on a 64-pixel boundary is missing, which in
+  practice means the 8x8 pattern is not usable for many chips.
 
 - Font-caching (useful for configurations where it's not possible to use
-  color expansion for text, and for certain fonts).
+  color expansion for text, and for certain fonts). Non-"terminal emulator"
+  fonts is certainly a weak area of XAA.
 
 - Complete implementation of non-terminal emulator font text acceleration
-  using color expansion (the low-level code is largely in place).
+  using color expansion (the code is in place, but causes problems).
 
 - Generic hardware-cursor code (this sounds very useful to me), including
   Harald Koenig's support for real-time software/hardware cursor switching.
 
-- More complete 24bpp-in-8bpp-mode support.
+- More complete 24bpp-in-8bpp-mode support. Missing is full implementation
+  of color expansion schemes to allow 24bpp fills in 8bpp mode in two
+  passes.
+
+- The Pentium optimized text bitmap functions exist only for 6 and 8-pixel
+  wide fonts. BTW, on a Cyrix 6x86 the Pentium-optimized 6-wide function
+  seems to cause a 2% performance decrease.
+
+- Accelerated stipples using direct color expansion would definitely be
+  worthwhile.  The lowest-level function is in place (but untested). It
+  would take care of cases where the font cache cannot be used (such as
+  24bpp, lack of transparency color compare for transparent stipples,
+  lack of off-screen video memory), or when color expansion is faster
+  (generally on video memory bandwidth-starved configurations).
 
 3.1	More Concurrency?
 
@@ -1156,7 +1201,7 @@ A somewhat wild way to test this kind of scheme is to simply not define
 the BACKGROUND_OPERATIONS flag, but despite that not do any syncing
 in the graphics primitives. Without BACKGROUND_OPERATIONS set, the XAA
 code almost never calls Sync itself. Someone (inadvertently) tried
-this on an ET6000, and it seemed to significantly increase
+this on an ET6000, and it seemed to measurably increase
 performance. This is of course hazardous and prone to lock-ups etc.
 
 
@@ -1222,7 +1267,8 @@ operations best suit a particular chip. It shows the results (in MB/s)
 for the low-level bandwidth benchmarks run at start-up. Because refresh
 is disabled at the time time benchmark is run, the result reflect the
 full DRAM bandwidth on DRAM-based cards (the dot clock doesn't really
-matter). The virtual display width can have an influence.
+matter). For this reason, the comparison isn't really fair (biased against
+VRAM/WRAM and MDRAM). The virtual display width can have an influence.
 
 Chip	          ARK1000PV Trid9385  CLGD5434  TGUI9440  MGA-Mill  ET6000
 Memory            1MB DRAM  2MB DRAM  2MB DRAM  1MB DRAM  2MB WRAM  2MB MDRAM
@@ -1248,27 +1294,50 @@ scanl. scr-to-scr  71.75       -       80.64       -         -         -
 10x10 scr-to-scr   29.90       -       26.69       -         -         -
 
 Chip	          MGA-Mill  MGA-Mill  MGA-Mill  TGUI9680  ARK2000PV
-Memory            2MB WRAM  4MB WRAM  2MB WRAM  2MB DRAM  2MB DRAM
-CPU               DX4/133   P133      P133                DX4/100
+Memory            2MB WRAM  4MB WRAM  2MB WRAM  2MB DRAM  2MB EDO
+CPU               DX4/133   P133      P133                DX4/100  
 Bus		  PCI 33MHz PCI 33MHz PCI 33Mhz PCI       PCI 33MHz
-bpp, dot clock    8bpp      8bpp 1024 8bpp 1152 8bpp 2048 8bpp 1024
+bpp, width        8bpp      8bpp 1024 8bpp 1152 8bpp 2048 8bpp 1024
 -------------------------------------------------------------------
-framebuffer        26.48     83.70     83.13     10.09     64.44
+framebuffer        26.48     83.70     83.13     10.09     64.44   
 solid filled rect
-10x1               28.63     34.28     41.30      3.06      7.91
-40x40             385.13    316.47    453.02     55.97    155.76
-400x400          1656.93   1367.64   1942.59    145.16    244.35
+10x1               28.63     34.28     41.30      3.06      7.91   
+40x40             385.13    316.47    453.02     55.97    155.76   
+400x400          1656.93   1367.64   1942.59    145.16    244.35   
 screen copy
-10x10		   29.18     23.47     35.09     12.61     33.20
-40x40		   81.52     74.55     99.92     35.38     78.80
-400x400		  114.81    105.83    137.60     46.48     99.03
-400x400 scroll       -         -         -       51.88    100.08
+10x10		   29.18     23.47     35.09     12.61     33.20   
+40x40		   81.52     74.55     99.92     35.38     78.80   
+400x400		  114.81    105.83    137.60     46.48     99.03   
+400x400 scroll       -         -         -       51.88    100.08   
 8x8 pattern fill
-400x400		     -         -         -       51.74    228.70
+400x400		     -         -         -       51.74    228.70   
 color expansion
-CPU to screen     211.11*   419.09*   416.23*      -         -
-scanl. scr-to-scr    -         -         -         -      137.97
-10x10 scr-to-scr     -         -         -       15.26     36.79
+CPU to screen     211.11*   419.09*   416.23*      -         -     
+scanl. scr-to-scr    -         -         -         -      137.97   
+10x10 scr-to-scr     -         -         -       15.26     36.79   
+
+Chip		  ARK2000PV ARK2000PV MGA-Mill  CL-GD5426
+Memory		  2MB EDO   2MB EDO   2MB WRAM  1MB DRAM
+CPU		  6x86P150+ 6x86P166+ 6x86P166+ DX4/100
+Bus		  PCI 30MHz PCI 33Mhz PCI 33MHz VLB 33MHz
+bpp, width	  8bpp 1024 8bpp 1024 8bpp 1024 8bpp 1024
+---------------------------------------------------------
+framebuffer	   46.77     51.70     51.70     13.22
+solid filled rect
+10x1		   20.64     22.82     41.22      1.16
+40x40		  157.00    157.00    457.12     28.88
+400x400		  244.34    244.34   1961.74     41.74
+screen copy
+10x10	           33.22     33.23     35.09      5.35
+40x40		   78.81     78.81     99.93     15.83
+400x400		   99.13     99.02    137.87     20.98
+400x400 scroll	  100.09    100.09    664.02     21.18
+8x8 pattern fill
+400x400		  228.68    228.72       -       41.10
+color expansion
+CPU to screen	     -                411.52       -
+scanl. scr-to-scr 138.01    138.09       -       19.56
+10x10 scr-to-scr   36.87     36.86     39.19      6.16
 
 (*) After this benchmark was taken, the color expansion benchmark was
     changed to write a pattern including both colors instead of just the

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/sampledrv.c,v 3.0 1996/11/18 13:22:06 dawes Exp $ */
 
 
 /*
@@ -124,7 +124,7 @@ void ChipSync() {
 
 /*
  * This is the implementation of the SetupForFillRectSolid function
- * that sets up the coprocessor for a subsequent batch for solid
+ * that sets up the coprocessor for a subsequent batch of solid
  * rectangle fills.
  */
 void ChipSetupForFillRectSolid(color, rop, planemask)

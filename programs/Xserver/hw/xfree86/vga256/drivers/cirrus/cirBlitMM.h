@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.6 1996/02/04 09:12:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirBlitMM.h,v 3.7 1996/09/29 13:39:35 dawes Exp $ */
 
 /* Definitions for BitBLT engine communication. */
 /* Using Memory-Mapped I/O. */
@@ -49,6 +49,8 @@
 #define MMIOBLTMODE		0x18
 #define MMIOROP			0x1a
 #define MMIOBLTMODEEXT		0x1b
+#define MMIOTRANSPARENCYCOLOR   0x1c
+#define MMIOTRANSPARENCYCOLORMASK 0x20
 #define MMIOBLTSTATUS		0x40
 
 extern unsigned char *cirrusMMIOBase;
@@ -94,10 +96,15 @@ extern unsigned char *cirrusMMIOBase;
   *(unsigned char *)(cirrusMMIOBase + MMIOROP) = rop;
 
 #define STARTBLT() \
-  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) |= 0x02;
+  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) = 0x02;
+
+#define SETBLTSTATUS(v) \
+  *(unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) = v;
 
 #define BLTBUSY(s) \
   s = *(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 1;
+#define BLTEMPTY(s) \
+  s = (*(volatile unsigned char *)(cirrusMMIOBase + MMIOBLTSTATUS) & 0x10) == 0;
 
 /* BitBLT reset: temporarily set bit 2 of GR31 */
 #define BLTRESET() \
@@ -145,3 +152,26 @@ extern unsigned char *cirrusMMIOBase;
 #define SETFOREGROUNDCOLOR32(c) \
   *(unsigned int *)(cirrusMMIOBase + MMIOFOREGROUNDCOLOR) = c; \
   cirrusForegroundColorShadow = c;
+
+/*
+ * Extra definitions added for XAA driver.
+ */
+
+#define SETBLTMODEANDROP(m, mext, rop) \
+    *(unsigned int *)(cirrusMMIOBase + MMIOBLTMODE) = \
+        (m) | ((rop) << 16) | ((mext) << 24);
+
+#define SETWIDTHANDHEIGHT(w, h) \
+  *(unsigned int *)(cirrusMMIOBase + MMIOWIDTH) = ((w) - 1) | (((h) - 1) << 16);
+
+#define SETTRANSPARENCYCOLOR(c) \
+  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLOR) = c;
+
+#define SETTRANSPARENCYCOLOR16(c) \
+  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLOR) = c;
+
+#define SETTRANSPARENCYCOLORMASK(c) \
+  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLORMASK) = c;
+
+#define SETTRANSPARENCYCOLORMASK16(c) \
+  *(unsigned short *)(cirrusMMIOBase + MMIOTRANSPARENCYCOLORMASK) = c;

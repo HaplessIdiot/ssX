@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.0 1996/11/18 13:22:00 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xaa/Imakefile,v 3.1 1996/12/12 09:17:25 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -11,7 +11,8 @@ SRCS = 	xf86initac.c \
 	xf86defs.c xf86pcache.c xf86farc.c xf86fpoly.c \
 	xf86expblt.c xf86expblM.c xf86bitmap.c xf86plane.c \
 	xf86orect.c xf86line.c xf86seg.c \
-	xf86bench.c xf86line2.c xf86seg2.c
+	xf86bench.c xf86line2.c xf86seg2.c \
+	xf86txtblt.s xf86txtblM.s
 
 BPPOBJS = xaavga256/xaavga256.o xaa16/xaa16.o xaa24/xaa24.o xaa32/xaa32.o
 
@@ -20,7 +21,8 @@ OBJS = 	xf86initac.o \
 	xf86defs.o xf86pcache.o xf86farc.o xf86fpoly.o \
 	xf86expblt.o xf86expblM.o xf86bitmap.o xf86plane.o \
 	xf86orect.o xf86line.o xf86seg.o \
-	xf86bench.o xf86line2.o xf86seg2.o
+	xf86bench.o xf86line2.o xf86seg2.o \
+	xf86txtblt.o xf86txtblM.o
 
 SUBDIRS = xaavga256 xaa16 xaa24 xaa32
 
@@ -36,6 +38,7 @@ NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
 ObjectFromSpecialSource(xf86expblM, xf86expblt, -DMSBFIRST)
+ObjectFromSpecialAsmSource(xf86txtblM, xf86txtblt, -DMSBFIRST)
 ObjectFromSpecialSource(xf86seg, xf86line, -DPOLYSEGMENT)
 ObjectFromSpecialSource(xf86seg2, xf86line2, -DPOLYSEGMENT)
 

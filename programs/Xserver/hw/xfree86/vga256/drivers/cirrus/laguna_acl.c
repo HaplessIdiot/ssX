@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/laguna_acl.c,v 3.0 1996/11/18 13:17:57 dawes Exp $ */
 
 /*
  * New-style acceleration for the Laguna-family (CL-GD5462/5464).
@@ -8,10 +8,10 @@
 #include "xf86.h"
 #include "vga.h"
 
-#include "../../vgainit/xf86gc.h"
+#include "xf86xaa.h"
 
 #include "cir_driver.h"
-#include "cirBlitLG.h"
+#include "cir_blitLG.h"
 
 void LagunaSync();
 void LagunaSetupForFillRectSolid();
@@ -22,6 +22,26 @@ void LagunaSetupForCPUToScreenColorExpand();
 void LagunaSubsequentCPUToScreenColorExpand();
 void LagunaSetupForScreenToScreenColorExpand();
 void LagunaSubsequentScreenToScreenColorExpand();
+
+/* Cirrus raster operations. */
+int lgCirrusRop[16] = {
+	LGROP_0,		/* GXclear */
+	LGROP_AND,		/* GXand */
+	LGROP_SRC_AND_NOT_DST,	/* GXandReverse */
+	LGROP_SRC,		/* GXcopy */
+	LGROP_NOT_SRC_AND_DST,	/* GXandInverted */
+	LGROP_DST,		/* GXnoop */
+	LGROP_XOR,		/* GXxor */
+	LGROP_OR,		/* GXor */
+	LGROP_NOR,		/* GXnor */
+	LGROP_XNOR,		/* GXequiv */
+	LGROP_NOT_DST,		/* GXinvert */
+	LGROP_SRC_OR_NOT_DST,	/* GXorReverse */
+	LGROP_NOT_SRC,		/* GXcopyInverted */
+	LGROP_NOT_SRC_OR_DST,	/* GXorInverted */
+	LGROP_NAND,		/* GXnand */
+	LGROP_1			/* GXset */
+};
 
 void LagunaAccelInit() {
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE
@@ -65,6 +85,17 @@ void LagunaAccelInit() {
         vga256InfoRec.videoRam * 1024 - 1024);
 }
 
+int LgReady(void)
+{
+  volatile unsigned char status;
+
+  status = *(unsigned char *)(cirrusMMIOBase + 0x0400);
+  if (status & 0x07)
+    return 0;
+  else
+    return 1;
+}
+
 void LagunaSync() {
     while (!LgReady());
 }
@@ -74,7 +105,7 @@ void LagunaSetupForFillRectSolid(color, rop, planemask)
 {
     switch (vga256InfoRec.bitsPerPixel) {
     case 8 :
-        color & = 0xFF;
+        color &= 0xFF;
         color |= (color << 8) | (color << 16) | (color << 24);
         break;
     /* Why isn't this necessary for 16bpp? */
@@ -154,16 +185,16 @@ void LagunaSetupForCPUToScreenColorExpand(bg, fg, rop, planemask)
     unsigned int planemask;
 {
     int load;
-    loadbg = FALSE;
+    Bool loadbg = FALSE;
     if (bg != -1)
         loadbg = TRUE;
     switch (vga256InfoRec.bitsPerPixel) {
     case 8 :
         /* Is this required? */
-        fg & = 0xFF;
+        fg &= 0xFF;
         fg |= (fg << 8) | (fg << 16) | (fg << 24);
         if (bg != -1) {
-            bg & = 0xFF;
+            bg &= 0xFF;
             bg |= (bg << 8) | (bg << 16) | (bg << 24);
         }
         break;

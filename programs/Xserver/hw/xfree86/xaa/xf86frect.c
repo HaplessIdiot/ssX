@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.1 1996/11/24 09:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.2 1996/12/09 11:55:25 dawes Exp $ */
 
 /*
  * Fill rectangles.
@@ -40,7 +40,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.1 1996/11/24 09:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86frect.c,v 3.2 1996/12/09 11:55:25 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -54,6 +54,9 @@ in this Software without prior written authorization from the X Consortium.
 /* PSZ doesn't matter. */
 #define PSZ 8
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb24.h"
+#include "cfb32.h"
 
 #include "xf86.h"
 #include "xf86xaa.h"
@@ -373,12 +376,16 @@ xf86miFillRectStippledFallBack(pDrawable, pGC, nBox, pBox)
 {
     int i;
     xRectangle *pRect;
-    cfbPrivGCPtr devPriv;
-    int clientClipType;
-    RegionPtr pCompositeClip;
-    pointer clientClip;
-    RegionRec scratchRegion;
-    ErrorF("xf86miFillRectStippledFallBack\n");
+    void (*SavedFillSpans)(
+#if NeedNestedPrototypes
+        DrawablePtr pDrawable,
+        GCPtr	pGC,
+        int	nInit,
+        DDXPointPtr pptInit,
+        int	*pwidthInit,
+        int	fSorted
+#endif
+    );
     pRect = (xRectangle *)ALLOCATE_LOCAL(sizeof(xRectangle) * nBox);
     for (i = 0; i < nBox; i++) {
         if (UsingStippleFallBack) {
@@ -400,29 +407,20 @@ xf86miFillRectStippledFallBack(pDrawable, pGC, nBox, pBox)
         pRect[i].width = pBox[i].x2 - pBox[i].x1;
         pRect[i].height = pBox[i].y2 - pBox[i].y1;
     }
-#if 0
-    /*
-     * This is a bit of a hack. We save the clipping region of the
-     * GC, set it to none, call the mi function, and then restore
-     * the old clipping region.
-     */
-    clientClipType = pGC->clientClipType;
-    pGC->clientClipType = CT_NONE;
-    devPriv = cfbGetGCPrivate(pGC);
-    /* A function called later may depend on a composite clip being present. */
-    pCompositeClip = devPriv->pCompositeClip;
-    REGION_INIT(pGC->pScreen, &scratchRegion, NullBox, 0);
-    devPriv->pCompositeClip = &scratchRegion;
-    clientClip = pGC->clientClip;
-    pGC->clientClip = &scratchRegion;
-#endif
+    SavedFillSpans = pGC->ops->FillSpans;
+    switch (pDrawable->bitsPerPixel) {
+    case 16 :
+        pGC->ops->FillSpans = cfb16UnnaturalStippleFS;
+        break;
+    case 24 :
+        pGC->ops->FillSpans = cfb24UnnaturalStippleFS;
+        break;
+    case 32 :
+        pGC->ops->FillSpans = cfb32UnnaturalStippleFS;
+        break;
+    }
     miPolyFillRect(pDrawable, pGC, nBox, pRect);
-#if 0
-    /* Restore the clipping area of the GC. */
-    pGC->clientClipType = clientClipType;
-    pGC->clientClip = clientClip;
-    devPriv->pCompositeClip = pCompositeClip;
-#endif
+    pGC->ops->FillSpans = SavedFillSpans;
     DEALLOCATE_LOCAL(pRect);
 }
 

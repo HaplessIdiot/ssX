@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.15 1996/10/03 08:34:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.16 1996/10/06 13:16:07 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -100,6 +100,7 @@ typedef struct
 #define PORT 10
 #define DEBUG_LEVEL 11
 #define HISTORY_SIZE 12
+#define ALWAYS_CORE 13
 
 static SymTabRec JstkTab[] = {
   { ENDSUBSECTION,	"endsubsection" },
@@ -115,6 +116,7 @@ static SymTabRec JstkTab[] = {
   { PORT,		"port" },
   { DEBUG_LEVEL,	"debuglevel" },
   { HISTORY_SIZE,	"historysize" },
+  { ALWAYS_CORE,        "alwayscore" },
   { -1,			"" },
 };
 
@@ -273,6 +275,13 @@ xf86JstkConfig(LocalDevicePtr    *array,
 	       dev->history_size);      
       break;
 	    
+    case ALWAYS_CORE:
+	xf86AlwaysCore(dev, TRUE);
+	if (xf86Verbose)
+	    ErrorF("%s Joystick device always stays core pointer\n",
+		   XCONFIG_GIVEN);
+	break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break; /* :-) */

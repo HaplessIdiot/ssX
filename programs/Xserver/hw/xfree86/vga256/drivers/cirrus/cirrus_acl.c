@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirrus_acl.c,v 3.0 1996/11/18 13:17:56 dawes Exp $ */
 
 /*
  * New-style acceleration for chips with BitBLT engine:
@@ -84,14 +84,31 @@ int cirrusUseSolidColorFill = FALSE;
 
 extern int cirrusUseAutoStart, cirrusUseSolidColorFill;
 
-#define MMIONAME(x) #define x x##MMIO
+#define MMIONAME(x) x##MMIO
 
-#define MMIONAME(CirrusAccelInit)
-#define MMIONAME(CirrusSetupForFillRectSolid)
-#define MMIONAME(Cirrus8SubsequentFillRectSolid)
-#define MMIONAME(Cirrus16SubsequentFillRectSolid)
-#define MMIONAME(Cirrus24SubsequentFillRectSolid)
-#define MMIONAME(Cirrus32SubsequentFillRectSolid)
+#define CirrusSync MMIONAME(CirrusSync)
+#define CirrusAccelInit MMIONAME(CirrusAccelInit)
+#define CirrusSetupForFillRectSolid MMIONAME(CirrusSetupForFillRectSolid)
+#define Cirrus8SubsequentFillRectSolid MMIONAME(Cirrus8SubsequentFillRectSolid)
+#define Cirrus16SubsequentFillRectSolid MMIONAME(Cirrus16SubsequentFillRectSolid)
+#define Cirrus24SubsequentFillRectSolid MMIONAME(Cirrus24SubsequentFillRectSolid)
+#define Cirrus32SubsequentFillRectSolid MMIONAME(Cirrus32SubsequentFillRectSolid)
+#define CirrusSetupForScreenToScreenCopy MMIONAME(CirrusSetupForScreenToScreenCopy)
+#define Cirrus8SubsequentScreenToScreenCopy MMIONAME(Cirrus8SubsequentScreenToScreenCopy)
+#define Cirrus16SubsequentScreenToScreenCopy MMIONAME(Cirrus16SubsequentScreenToScreenCopy)
+#define Cirrus24SubsequentScreenToScreenCopy MMIONAME(Cirrus24SubsequentScreenToScreenCopy)
+#define Cirrus32SubsequentScreenToScreenCopy MMIONAME(Cirrus32SubsequentScreenToScreenCopy)
+#define CirrusSetupForCPUToScreenColorExpand MMIONAME(CirrusSetupForCPUToScreenColorExpand)
+#define CirrusSubsequentCPUToScreenColorExpand MMIONAME(CirrusSubsequentCPUToScreenColorExpand)
+#define CirrusSetupForScreenToScreenColorExpand MMIONAME(CirrusSetupForScreenToScreenColorExpand)
+#define CirrusSubsequentScreenToScreenColorExpand MMIONAME(CirrusSubsequentScreenToScreenColorExpand)
+#define CirrusSetupForScanlineScreenToScreenColorExpand MMIONAME(CirrusSetupForScanlineScreenToScreenColorExpand)
+#define CirrusSubsequentScanlineScreenToScreenColorExpand MMIONAME(CirrusSubsequentScanlineScreenToScreenColorExpand)
+#define CirrusSetupFor8x8PatternFill MMIONAME(CirrusSetupFor8x8PatternFill)
+#define CirrusSubsequent8x8PatternFill MMIONAME(CirrusSubsequent8x8PatternFill)
+#define CirrusSetupFor8x8PatternColorExpand MMIONAME(CirrusSetupFor8x8PatternColorExpand)
+#define CirrusSubsequent8x8PatternColorExpand MMIONAME(CirrusSubsequent8x8PatternColorExpand)
+#define CirrusInitializeBitBLTEngine MMIONAME(CirrusInitializeBitBLTEngine)
 
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.19 1996/09/14 13:11:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_teblt8.c,v 3.20 1996/09/29 13:39:53 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -247,7 +247,7 @@ void CirrusImageGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 	SETDESTADDR(destaddr);
 	SETDESTPITCH(widthDst);
 	SETSRCADDR(0);
-	SETSRCPITCH(0);
+/*	SETSRCPITCH(0); */
 	blitwidth = (glyphWidth * nglyph) << (vgaBitsPerPixel >> 4);
 	SETWIDTH(blitwidth);
 	SETHEIGHT(h);
@@ -439,7 +439,7 @@ void CirrusPolyGlyphBlt(pDrawable, pGC, xInit, yInit, nglyph, ppci, pglyphBase)
 		SETDESTADDR(destaddr);
 		SETDESTPITCH(widthDst);
 		SETSRCADDR(0);
-		SETSRCPITCH(0);
+/*		SETSRCPITCH(0); */
 		blitwidth = glyphWidth * nglyph;
 		SETWIDTH(blitwidth);
 		SETHEIGHT(h);

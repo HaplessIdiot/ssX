@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.17 1996/08/26 10:49:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.18 1996/10/16 14:40:48 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -76,16 +76,42 @@ static SymTabRec XinputTab[] = {
   { -1,		"" },
 };
 
+/***********************************************************************
+ *
+ * Core devices functions --
+ *	
+ *	Test if device is the core device by checking the
+ * XI86_ALWAYS_CORE flag and the inputInfo struct.
+ *
+ ***********************************************************************
+ */
 int
 xf86IsCorePointer(DeviceIntPtr	device)
 {
-  return(device == inputInfo.pointer);
+    LocalDevicePtr	local = (LocalDevicePtr) device->public.devicePrivate;
+    
+    return((local->flags & XI86_ALWAYS_CORE) ||
+	   (device == inputInfo.pointer));
 }
 
 int
 xf86IsCoreKeyboard(DeviceIntPtr	device)
 {
-  return(device == inputInfo.keyboard);
+    LocalDevicePtr	local = (LocalDevicePtr) device->public.devicePrivate;
+    
+    return((local->flags & XI86_ALWAYS_CORE) ||
+	   (device == inputInfo.keyboard));
+}
+
+void
+xf86AlwaysCore(LocalDevicePtr	local,
+	       Bool		always)
+{
+    if (always) {
+	local->flags |= XI86_ALWAYS_CORE;
+    } else {
+	local->flags &= ~XI86_ALWAYS_CORE;
+    }
 }
 
 /***********************************************************************
@@ -193,7 +219,7 @@ xf86ConfigExtendedInputSection(LexPtr       val)
             xf86ConfigError("Invalid SubSection name");
         }
       else
-        xf86ConfigError("Xinput keyword section expected");        
+        xf86ConfigError("XInput keyword section expected");        
     }
 }
 

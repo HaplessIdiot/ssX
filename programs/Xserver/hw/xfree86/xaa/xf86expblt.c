@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.1 1996/11/24 09:57:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.2 1996/12/09 11:55:24 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -190,16 +190,16 @@ unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
     nwords = nbytes / 4;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER(base, *src);
-    	WRITE_IN_BITORDER(base + 1, *(src + 1));
+    	WRITE_IN_BITORDER(base, ldl_u(src));
+    	WRITE_IN_BITORDER(base + 1, ldl_u(src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER(base + 2, *(src + 2));
+    	WRITE_IN_BITORDER(base + 2, ldl_u(src + 2));
     	base += 4;
-    	WRITE_IN_BITORDER(base - 1, *(src + 3));
+    	WRITE_IN_BITORDER(base - 1, ldl_u(src + 3));
     	src += 4;
     }
     for (i = 0; i < nwords; i++) {
-    	WRITE_IN_BITORDER(base + i, *(src + i));
+    	WRITE_IN_BITORDER(base + i, ldl_u(src + i));
     }
     src += i;
     base += i;
@@ -208,11 +208,11 @@ unsigned int *xf86DrawBitmapScanline(base, src, nbytes)
         WRITE_IN_BITORDER(base, *(unsigned char *)src);
         return base + 1;
     case 2 :
-        WRITE_IN_BITORDER(base, *(unsigned short *)src);
+        WRITE_IN_BITORDER(base, ldw_u(src));
         return base + 1;
     case 3 :
         WRITE_IN_BITORDER(base,
-            *(unsigned short *)src | (*((unsigned char *)src + 2) << 16));
+            ldw_u(src) | (*((unsigned char *)src + 2) << 16));
         return base + 1;
     default :
         break;
@@ -235,16 +235,16 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
     nwords = w / 32;
     while (nwords >= 4) {
     	/* Reshuffled a bit for performance. */
-    	WRITE_IN_BITORDER3(base, *src);
-    	WRITE_IN_BITORDER3(base + 3, *(src + 1));
+    	WRITE_IN_BITORDER3(base, ldl_u(src));
+    	WRITE_IN_BITORDER3(base + 3, ldl_u(src + 1));
     	nwords -= 4;
-    	WRITE_IN_BITORDER3(base + 6, *(src + 2));
+    	WRITE_IN_BITORDER3(base + 6, ldl_u(src + 2));
     	base += 12;
-    	WRITE_IN_BITORDER3(base - 3, *(src + 3));
+    	WRITE_IN_BITORDER3(base - 3, ldl_u(src + 3));
     	src += 4;
     }
     while (nwords >= 1) {
-    	WRITE_IN_BITORDER3(base, *src);
+    	WRITE_IN_BITORDER3(base, ldl_u(src));
     	src++;
     	base += 3;
     	nwords --;
@@ -258,13 +258,13 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
         bits = *(unsigned char *)src;
         break;
     case 2 :
-        bits = *(unsigned short *)src;
+        bits = ldw_u(src);
         break;
     case 3 :
-        bits = *(unsigned short *)src | (*((unsigned char *)src + 2) << 16);
+        bits = ldw_u(src) | (*((unsigned char *)src + 2) << 16);
         break;
     default : /* 4 */
-        bits = *src;
+        bits = ldl_u(src);
     }
     WRITE_IN_BITORDER3_FIRSTWORD(base, bits);
     base++;
@@ -281,6 +281,7 @@ unsigned int *xf86DrawBitmapScanline3(base, src, w)
 
 /*
  * nbytes > 0, src access can be unaligned.
+ * This isn't used yet. It doesn't work.
  */
 
 #ifdef MSBFIRST
@@ -384,7 +385,9 @@ ScanlineReturn xf86DrawBitmapScanlineMSBFirstBytePadded(base, src, bits, nbytes)
 /* Functions that generate text bitmap scanlines. */
 
 static unsigned int *DrawTextScanlineWidth6();
+unsigned int *DrawTextScanlineWidth6P();	/* Pentium-opt ASM version */
 static unsigned int *DrawTextScanlineWidth8();
+unsigned int *DrawTextScanlineWidth8P();
 static unsigned int *DrawTextScanlineWidth10();
 static unsigned int *DrawTextScanlineWidth12();
 static unsigned int *DrawTextScanlineWidth14();
@@ -392,13 +395,28 @@ static unsigned int *DrawTextScanlineWidth16();
 static unsigned int *DrawTextScanlineWidth18();
 static unsigned int *DrawTextScanlineWidth24();
 
-static unsigned int *(*glyphwidth_function[32])(
+#ifdef MSBFIRST
+/* Export just the non-MSBFirst version. */
+static
+#endif
+unsigned int *(*glyphwidth_function[32])(
 #if NeedNestedPrototypes
     unsigned int *base, unsigned int **glyphp, int line, int nglyph
 #endif
 ) = {
     NULL, NULL, NULL, NULL, 
-    NULL, DrawTextScanlineWidth6, NULL, DrawTextScanlineWidth8,
+    NULL,
+#if defined(__i386__) /* && defined(NEVER) */
+    DrawTextScanlineWidth6P,	/* Pentium-optimized ASM version. */
+#else
+    DrawTextScanlineWidth6,
+#endif
+    NULL,
+#if defined(__i386__) /* && defined(NEVER) */
+    DrawTextScanlineWidth8P,	/* Pentium-optimized ASM version. */
+#else
+    DrawTextScanlineWidth8,
+#endif
     NULL, DrawTextScanlineWidth10, NULL, DrawTextScanlineWidth12,
     NULL, DrawTextScanlineWidth14, NULL, DrawTextScanlineWidth16,
     NULL, DrawTextScanlineWidth18, NULL, NULL,
@@ -407,10 +425,15 @@ static unsigned int *(*glyphwidth_function[32])(
     NULL, NULL, NULL, NULL,
 };
 
-static int glyphwidth_stretchsize[32] = {
+#ifndef MSBFIRST
+/* This one needs to be defined only once. */
+int glyphwidth_stretchsize[32] = {
     0, 0, 0, 0, 0, 16, 0, 8, 0, 16, 0, 8, 0, 16, 0, 8,
     0, 16, 0, 0, 0, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0
 };
+#else
+extern int glyphwidth_stretchsize[32];
+#endif
 
 #ifdef MSBFIRST
 unsigned int *xf86DrawTextScanlineMSBFirst(base, glyphp, line, nglyph, glyphwidth)

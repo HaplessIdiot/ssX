@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.22 1996/10/13 11:19:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.23 1996/10/16 14:40:46 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -143,6 +143,7 @@ typedef struct
 #define DEBUG_LEVEL     5
 #define TILT_MODE	6
 #define HISTORY_SIZE	7
+#define ALWAYS_CORE	8
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -154,6 +155,7 @@ static SymTabRec WcmTab[] = {
   { DEBUG_LEVEL,	"debuglevel" },
   { TILT_MODE,		"tiltmode" },
   { HISTORY_SIZE,	"historysize" },
+  { ALWAYS_CORE,	"alwayscore" },
   { -1,			"" }
 };
 
@@ -419,7 +421,14 @@ xf86WcmConfig(LocalDevicePtr    *array,
 		ErrorF("%s Wacom Motion history size is %d\n", XCONFIG_GIVEN,
 		       dev->history_size);      
 	    break;
-	    
+
+	case ALWAYS_CORE:
+	    xf86AlwaysCore(dev, TRUE);
+	    if (xf86Verbose)
+		ErrorF("%s Wacom device always stays core pointer\n",
+		       XCONFIG_GIVEN);
+	    break;
+
 	case EOF:
 	    FatalError("Unexpected EOF (missing EndSubSection)");
 	    break;

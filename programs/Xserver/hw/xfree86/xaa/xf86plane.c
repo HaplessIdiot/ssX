@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86plane.c,v 3.0 1996/11/18 13:22:33 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -74,6 +74,27 @@ static void xf86CopyPlaneNto1();
 
 static int bgPixel, fgPixel;
 
+static int CopyPlane1ToNIsAccelerated(pSrcDrawable, pDstDrawable, alu,
+planemask)
+    DrawablePtr	pSrcDrawable;
+    DrawablePtr	pDstDrawable;
+    int alu;
+    unsigned long planemask;
+{
+    if ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
+	(pDstDrawable->type == DRAWABLE_WINDOW) &&
+	xf86VTSema &&	/* This shouldn't be necessary. */
+	xf86AccelInfoRec.WriteBitmap &&
+	(!(xf86AccelInfoRec.ColorExpandFlags & NO_PLANEMASK) ||
+	(planemask & ((1 << pDstDrawable->depth) - 1)) ==
+	((1 << pDstDrawable->depth) - 1)) &&
+	(!(xf86AccelInfoRec.ColorExpandFlags & GXCOPY_ONLY) ||
+	alu == GXcopy))
+	return TRUE;
+    return FALSE;
+}
+
+
 RegionPtr
 xf86CopyPlane(pSrcDrawable, pDstDrawable,
 	       pGC, srcx, srcy, width, height, dstx, dsty, bitPlane)
@@ -89,6 +110,19 @@ xf86CopyPlane(pSrcDrawable, pDstDrawable,
 
     bgPixel = pGC->bgPixel;
     fgPixel = pGC->fgPixel;
+
+    if (pSrcDrawable->bitsPerPixel == 24 || pDstDrawable->bitsPerPixel == 24) {
+    	/* Check to see if the 24bpp operation can be accelerated. */
+        if (!(pSrcDrawable->bitsPerPixel == 1 && CopyPlane1ToNIsAccelerated(
+        pSrcDrawable, pDstDrawable, pGC->alu, pGC->planemask)))
+            return miCopyPlane(pSrcDrawable, pDstDrawable,
+	        pGC, srcx, srcy, width, height, dstx, dsty, bitPlane);
+	/*
+	 * We continue for the case of a 1 to N copy that is accelerated
+	 * at 24bpp. It will be handled by the first case below.
+	 */
+    }
+
     if (pSrcDrawable->bitsPerPixel == 1)  /* 1 to N copy */
     {
 	if (bitPlane == 1)
@@ -215,18 +249,8 @@ planemask, bitPlane)
      * These checks are ugly, they belong in ValidateGC.
      */
     accel = FALSE;
-    if ((pSrcDrawable->type != DRAWABLE_WINDOW) && 
-	(pDstDrawable->type == DRAWABLE_WINDOW) &&
-	xf86VTSema &&	/* This shouldn't be necessary. */
-	xf86AccelInfoRec.WriteBitmap &&
-	(!(xf86AccelInfoRec.ColorExpandFlags & NO_PLANEMASK) ||
-	(planemask & ((1 << pDstDrawable->depth) - 1)) ==
-	((1 << pDstDrawable->depth) - 1)) &&
-	(!(xf86AccelInfoRec.ColorExpandFlags & GXCOPY_ONLY) ||
-	alu == GXcopy))
-    {
+    if (CopyPlane1ToNIsAccelerated(pSrcDrawable, pDstDrawable, alu, planemask))
 	accel = TRUE;
-    }
     
     if (accel) {
         pixWidth = PixmapBytePad(pSrcDrawable->width, pSrcDrawable->depth);
@@ -246,6 +270,11 @@ planemask, bitPlane)
         }
         return;
     }
+    /*
+     * Note that in the case of 24bpp, checks have done at a higher level
+     * that guarantee that we never get here (the function is only called
+     * when the accelerated WriteBitmap can be used).
+     */
 
 #ifdef VGA256
     cfb8CheckOpaqueStipple(alu, fgPixel, bgPixel, planemask);

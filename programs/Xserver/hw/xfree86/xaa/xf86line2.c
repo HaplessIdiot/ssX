@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.0 1996/11/18 13:22:26 dawes Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbline.c,v 3.0 1996/06/29 09:05:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line2.c,v 3.0 1996/11/18 13:22:26 dawes Exp $ */
 
 /*
  * Accelerated general lines for chips that cannot hardware accelerate
@@ -164,6 +164,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
     unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     int usevline;
     Bool UseTwoPointLine;
+    Bool blit;
 
 				/* a bunch of temporaries */
     int tmp;
@@ -201,7 +202,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
          * preferable for vertical lines.
          */
         int mask;
-        mask = (1 << pDrawable->bitsPerPixel) - 1;
+        mask = (1 << pDrawable->depth) - 1;
         if (xf86AccelInfoRec.SubsequentTwoPointLine)
             usevline = VLINE_TWOPOINTLINE;
         else
@@ -226,7 +227,8 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
          cfb32GetLongWidthAndPointer(pDrawable, &nlwidth, &addrl);
         break;
     }
-
+    blit = FALSE;
+ 
     alu = devPriv->rop;
     xor = devPriv->xor;
     and = devPriv->and;
@@ -307,25 +309,29 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 			{
 			    int length;
 			    length = y2t - y1t;
-			    if (usevline == VLINE_TWOPOINTLINE)
+			    if (usevline == VLINE_TWOPOINTLINE) {
 			        xf86AccelInfoRec.SubsequentTwoPointLine(
 			            x1, y1t, x1, y2t - 1, bias);
+			        blit = TRUE;
+			    }
 			    else
                             if ((usevline == VLINE_FRAMEBUFFER)
                             && length > 30) {
                                 /* This can only happen for GXcopy. */
-		                if (!(xf86AccelInfoRec.Flags &
-		                COP_FRAMEBUFFER_CONCURRENCY)
-		                && (xf86AccelInfoRec.Flags &
-		                BACKGROUND_OPERATIONS))
+		                if (blit && (xf86AccelInfoRec.Flags &
+		                BACKGROUND_OPERATIONS)) {
                                     xf86AccelInfoRec.Sync();
+                                    blit = FALSE;
+                                }
 		                xf86AccelInfoRec.VerticalLineGXcopyFallBack(
   		                    pGC->alu, 0, pGC->fgPixel, addrl, nlwidth,
 		                    x1, y1t, length);
 		            }
-		            else
+		            else {
 	                        xf86AccelInfoRec.SubsequentFillRectSolid(
 	                            x1, y1t, 1, length);
+	                        blit = TRUE;
+	                    }
 			}
 		    }
 		    nbox--;
@@ -395,6 +401,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 		    {
 		        xf86AccelInfoRec.SubsequentFillRectSolid(
 		            x1t, y1, x2t - x1t, 1);
+		        blit = TRUE;
 		    }
 		    nbox--;
 		    pbox++;
@@ -448,6 +455,7 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 		    if (UseTwoPointLine) {
 		        xf86AccelInfoRec.SubsequentTwoPointLine(
 		            x1, y1, x2, y2, bias);
+		        blit = TRUE;
 		        break;
 		    }
 		    if (!(octant & YMAJOR)) {
@@ -460,6 +468,11 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 		    if (pGC->capStyle != CapNotLast)
 			len++;
 #endif
+		    if (blit && (xf86AccelInfoRec.Flags &
+		    BACKGROUND_OPERATIONS)) {
+                        xf86AccelInfoRec.Sync();
+                        blit = FALSE;
+                    }
 		    xf86AccelInfoRec.BresenhamLineFallBack(alu, and, xor,
 		        addrl, nlwidth, signdx, signdy, axis, x1, y1,
 		        e, e1, e2, len);
@@ -510,6 +523,11 @@ xf86PolyLine2(pDrawable, pGC, mode, npt, pptInit)
 			}
 			else
 			    err = e;
+		        if (blit && (xf86AccelInfoRec.Flags &
+		        BACKGROUND_OPERATIONS)) {
+                            xf86AccelInfoRec.Sync();
+                            blit = FALSE;
+                        }
 		        xf86AccelInfoRec.BresenhamLineFallBack(alu, and, xor,
 		            addrl, nlwidth, signdx, signdy, axis,
 		            new_x1, new_y1, err, e1, e2, len);

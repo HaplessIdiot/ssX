@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.1 1996/11/24 09:57:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.2 1996/12/09 11:55:30 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -390,6 +390,14 @@ xf86InitializeAcceleration(pScreen)
                 xf86GCInfoRec.PolyLineSolidZeroWidth = xf86PolyLine;
             if (!xf86GCInfoRec.PolySegmentSolidZeroWidth)
                 xf86GCInfoRec.PolySegmentSolidZeroWidth = xf86PolySegment;
+            /*
+             * FillRectSolid is used for some lines, so register its
+             * restrictions in the operation flags.
+             */
+	    xf86GCInfoRec.PolyLineSolidZeroWidthFlags |=
+	        xf86GCInfoRec.PolyFillRectSolidFlags;
+	    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
+	        xf86GCInfoRec.PolyFillRectSolidFlags;
             if (xf86AccelInfoRec.SubsequentTwoPointLine)
                 xf86AccelInfoRec.Flags |= USE_TWO_POINT_LINE;
             if (!xf86AccelInfoRec.SubsequentBresenhamLine &&
@@ -411,6 +419,10 @@ xf86InitializeAcceleration(pScreen)
                 xf86GCInfoRec.PolyLineSolidZeroWidth = xf86PolyLine2;
             if (!xf86GCInfoRec.PolySegmentSolidZeroWidth)
                 xf86GCInfoRec.PolySegmentSolidZeroWidth = xf86PolySegment2;
+	    xf86GCInfoRec.PolyLineSolidZeroWidthFlags |=
+	        xf86GCInfoRec.PolyFillRectSolidFlags;
+	    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags |=
+	        xf86GCInfoRec.PolyFillRectSolidFlags;
             if (xf86AccelInfoRec.SubsequentTwoPointLine)
                 ErrorF("%s %s: accel: Non-clipped general lines and segments\n",
                     XCONFIG_PROBED, vga256InfoRec.name);

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.15 1996/10/03 08:34:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.16 1996/10/06 13:16:06 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -114,6 +114,7 @@
 #define DEBUG_LEVEL     10
 #define HISTORY_SIZE	11
 #define LINK_SPEED	12
+#define ALWAYS_CORE	13
 
 static SymTabRec EloTab[] = {
   { ENDSUBSECTION,     "endsubsection" },
@@ -129,6 +130,7 @@ static SymTabRec EloTab[] = {
   { DEBUG_LEVEL,       "debuglevel" },
   { HISTORY_SIZE,      "historysize" },
   { LINK_SPEED,        "linkspeed" },
+  { ALWAYS_CORE,       "alwayscore" },
   { -1,                "" },
 };
 
@@ -423,6 +425,13 @@ xf86EloConfig(LocalDevicePtr    *array,
 	       local->history_size);      
       break;
 	    
+    case ALWAYS_CORE:
+	xf86AlwaysCore(local, TRUE);
+	if (xf86Verbose)
+	    ErrorF("%s Elographics device always stays core pointer\n",
+		   XCONFIG_GIVEN);
+	break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSubSection)");
       break;
