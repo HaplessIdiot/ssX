@@ -27,7 +27,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.19 2001/06/14 02:23:50 keithp Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.20 2001/06/15 21:23:06 dawes Exp $
  */
 
 #include "vesa.h"
@@ -1154,6 +1154,7 @@ VESACloseScreen(int scrnIndex, ScreenPtr pScreen)
     if (pVesa->pDGAMode) {
 	xfree(pVesa->pDGAMode);
 	pVesa->pDGAMode = NULL;
+	pVesa->nDGAMode = 0;
     }
     pScrn->vtSema = FALSE;
 
