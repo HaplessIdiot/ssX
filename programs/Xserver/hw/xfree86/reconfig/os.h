@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/os.h,v 3.0 1994/09/04 10:49:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/os.h,v 3.1 1994/09/22 15:50:59 dawes Exp $ */
 
 /* from <X11/Xosdefs.h> */
 #ifdef NOSTDHDRS
@@ -24,6 +24,6 @@ char *malloc(), *realloc(), *calloc();
 #endif
 #endif
 
-#ifdef MACH
+#if defined(MACH) || defined(__bsdi__)
 #include <ctype.h>
 #endif
