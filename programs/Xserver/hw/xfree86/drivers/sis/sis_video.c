@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.5 2002/01/10 19:05:45 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.4 2001/06/15 21:23:00 dawes Exp $ */
 
 /*
  * sis_video.c: SIS Xv driver. Based on the mga Xv driver by Mark Vojkovich
@@ -88,9 +88,9 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define IMAGE_MAX_WIDTH     720
 #define IMAGE_MAX_HEIGHT    576
 
-#define DISPMODE_SINGLE1 0x1
-#define DISPMODE_SINGLE2 0x2
-#define DISPMODE_MIRROR  0x4
+#define DISPMODE_SINGLE1 0x1  /* TW: CRT1 only */
+#define DISPMODE_SINGLE2 0x2  /* TW: CRT2 only */
+#define DISPMODE_MIRROR  0x4  /* TW: CRT1 + CRT2 */
 
 /****************************************************************************
 * raw register access : these routines directly interact with the sis's
@@ -500,9 +500,10 @@ SISSetupImageVideo(ScreenPtr pScreen)
 
     /* set display mode */
     /* TODO: support CRT2-only mode */
-    if(pSIS->VBFlags & VB_DISPMODE_MIRROR) {    /* TW: CRT1 + CRT2 */
-      pPriv->displayMode = DISPMODE_MIRROR;
-      setsrregmask (pSIS, 0x06, 0x80, 0xc0);
+    if( (pSIS->VBFlags & VB_DISPMODE_MIRROR) ||
+        ((pSIS->UseVESA) && (pSIS->VBFlags & DISPTYPE_DISP2)) )  {    /* TW: CRT1 + CRT2 */
+      pPriv->displayMode = DISPMODE_MIRROR;	/* TW: Currently, when using VESA, the image is */
+      setsrregmask (pSIS, 0x06, 0x80, 0xc0);    /*     always mirrored on CRT1 */
       setsrregmask (pSIS, 0x32, 0x80, 0xc0);
     }
     else {
@@ -778,7 +779,7 @@ static void
 merge_line_buf(SISPtr pSIS, SISPortPrivPtr pPriv, Bool enable)
 {
   if(enable) {
-    if(pPriv->displayMode == DISPMODE_MIRROR) { 
+    if(pPriv->displayMode == DISPMODE_MIRROR)  {
       setvideoregmask(pSIS, Index_VI_Control_Misc2, 0x00, 0x11);
       setvideoregmask(pSIS, Index_VI_Control_Misc1, 0x04, 0x04);
       setvideoregmask(pSIS, Index_VI_Control_Misc2, 0x01, 0x11);
@@ -1013,7 +1014,7 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    /* set scale factor */
    set_scale_factor (&overlay, pScrn);
 
-   if( (pPriv->displayMode == DISPMODE_SINGLE2) ) {
+   if (pPriv->displayMode == DISPMODE_SINGLE2) {
      index = 1;
      overlay.VBlankActiveFunc = vblank_active_CRT2;
      overlay.GetScanLineFunc = get_scanline_CRT2;

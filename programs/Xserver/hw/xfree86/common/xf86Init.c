@@ -239,14 +239,13 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 
     xf86PrintBanner();
     xf86PrintMarkers();
-    {
+    if (xf86LogFile)  {
 	time_t t;
 	const char *ct;
 	t = time(NULL);
 	ct = ctime(&t);
-	if (xf86LogFile)
-	    xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
-			xf86LogFile, ct);
+	xf86MsgVerb(xf86LogFileFrom, 0, "Log file: \"%s\", Time: %s",
+		    xf86LogFile, ct);
     }
 
     /* Read and parse the config file */
@@ -279,6 +278,9 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 #endif
 #ifdef SIGXFSZ
        signal(SIGXFSZ,xf86SigHandler);
+#endif
+#ifdef MEMDEBUG
+       signal(SIGUSR2,xf86SigMemDebug);
 #endif
     }
 
@@ -1075,7 +1077,24 @@ OsVendorInit()
 void
 ddxGiveUp()
 {
+    int i;
+
+    if (xf86OSPMClose)
+	xf86OSPMClose();
+    xf86OSPMClose = NULL;
+
     xf86AccessLeaveState();
+
+    for (i = 0; i < xf86NumScreens; i++) {
+	/*
+	 * zero all access functions to
+	 * trap calls when switched away.
+	 */
+	xf86Screens[i]->vtSema = FALSE;
+	xf86Screens[i]->access = NULL;
+	xf86Screens[i]->busAccess = NULL;
+    }
+
 #ifdef USE_XF86_SERVERLOCK
     xf86UnlockServer();
 #endif
@@ -1084,9 +1103,6 @@ ddxGiveUp()
 #endif
 
     xf86CloseConsole();
-    if (xf86OSPMClose)
-	xf86OSPMClose();
-    xf86OSPMClose = NULL;
 
     xf86CloseLog();
 

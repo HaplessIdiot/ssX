@@ -36,12 +36,25 @@ typedef struct pci_io {
     Bool ctrl;
 } pciAccRec, *pciAccPtr;
 
-typedef struct {
-    CARD16      io;
-    CARD32      mem;
-    CARD32      pmem;
-    CARD8       control;
-} pciBridgeSave, *pciBridgeSavePtr;
+typedef union {
+    struct {
+	CARD16      io;
+	CARD32      mem;
+	CARD32      pmem;
+	CARD8       control;
+    } pci;
+    struct {
+	CARD32      io0;
+	CARD32      ioLimit0;
+	CARD32      io1;
+	CARD32      ioLimit1;
+	CARD32      mem0;
+	CARD32      memLimit0;
+	CARD32      mem1;
+	CARD32      memLimit1;
+	CARD16      control;
+    } cardbus;
+} pciBridgesSave, *pciBridgesSavePtr;
 
 typedef struct pciBusRec {
     int brbus, brdev, brfunc;	/* ID of the bridge to this bus */

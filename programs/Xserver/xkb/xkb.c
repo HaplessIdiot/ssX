@@ -4225,7 +4225,7 @@ ProcXkbSetNames(client)
 	names->phys_symbols= *tmp++;
     if (stuff->which&XkbTypesNameMask)
 	names->types= *tmp++;
-    if (stuff->which&XkbCompatNameMask)
+    if (stuff->which&XkbCompatNameMask) 
 	names->compat= *tmp++;
     if ((stuff->which&XkbKeyTypeNamesMask)&&(stuff->nTypes>0)) {
 	register unsigned i;

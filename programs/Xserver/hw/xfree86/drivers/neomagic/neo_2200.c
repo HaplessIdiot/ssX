@@ -120,8 +120,6 @@ Neo2200AccelInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     NEOPtr nPtr = NEOPTR(pScrn);
     NEOACLPtr nAcl = NEOACLPTR(pScrn);
-    BoxRec AvailFBArea;
-    int lines;
 
     nPtr->AccelInfoRec = infoPtr = XAACreateInfoRec();
     if(!infoPtr) return FALSE;
@@ -251,19 +249,6 @@ Neo2200AccelInit(ScreenPtr pScreen)
 	return FALSE;
     }
 
-    lines =  nAcl->cacheEnd /
-      (pScrn->displayWidth * (pScrn->bitsPerPixel >> 3));
-    if(lines > 1024) lines = 1024;
-
-    AvailFBArea.x1 = 0;
-    AvailFBArea.y1 = 0;
-    AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = lines;
-    xf86InitFBManager(pScreen, &AvailFBArea); 
-
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
-               "Using %i scanlines of offscreen memory for pixmap caching\n",
-                lines - pScrn->virtualY);
 
     return(XAAInit(pScreen, infoPtr));
 }
@@ -482,7 +467,7 @@ Neo2200SubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y, int w, int h)
     NEOPtr nPtr = NEOPTR(pScrn);
 
     WAIT_ENGINE_IDLE();
-    OUTREG(NEOREG_DSTSTARTOFF, (y<<16) | (x & 0xffff));
+    OUTREG(NEOREG_DSTSTARTOFF, (y <<16) | (x & 0xffff));
     OUTREG(NEOREG_XYEXT, (h<<16) | (w & 0xffff));
 }
 

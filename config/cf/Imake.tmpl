@@ -301,6 +301,7 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef CrossCompiling
 #define CrossCompiling		NO
+#undef  CrossCompileDir
 #endif
 #ifndef BourneShell			/* to force shell in makefile */
 #define BourneShell		/bin/sh
@@ -407,6 +408,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #elif defined(i386Architecture)
 #define ByteOrder		X_LITTLE_ENDIAN
 #elif defined(ia64Architecture)
+#define ByteOrder		X_LITTLE_ENDIAN
+#elif defined(x86_64Architecture)
 #define ByteOrder		X_LITTLE_ENDIAN
 #elif defined(SparcArchitecture) || defined(Sparc64Architecture)
 #define ByteOrder		X_BIG_ENDIAN
@@ -703,14 +706,18 @@ TCLIBDIR = TclLibDir
 #define	DefaultUsrBin /usr/bin
 #endif
 
+#ifndef LibDirName
+# define LibDirName lib
+#endif
+
 #ifndef UsrLibDir
 #ifdef ProjectRoot
-#define UsrLibDir Concat(ProjectRoot,/lib)
+#define UsrLibDir Concat3(ProjectRoot,/,LibDirName)
 #ifndef AlternateUsrLibDir
 #define AlternateUsrLibDir YES
 #endif
 #else
-#define UsrLibDir /usr/lib
+#define UsrLibDir Concat3(/usr,/,LibDirName)
 #ifndef AlternateUsrLibDir
 #define AlternateUsrLibDir NO
 #endif
@@ -1181,6 +1188,9 @@ TCLIBDIR = TclLibDir
 #define ModuleRanlibCmd RanlibCmd
 #endif
 
+#ifndef HostCcCmd
+#define HostCcCmd cc
+#endif
 #ifndef StandardIncludes	/* for platform-specifics */
 #define StandardIncludes /**/
 #endif
@@ -1487,6 +1497,59 @@ TCLIBDIR = TclLibDir
 #define FilesToClean *.CKP *.ln *.BAK *.bak *.Osuf core errs ,* *~ *.a .emacs_* tags TAGS make.log MakeOut 
 #endif
 
+#ifdef CrossCompileDir
+# ifndef StripPath
+#  define StripPath(x) `echo x|sed "s%.*/%%"`
+# endif
+# ifndef CrossArCmd
+#  define CrossArCmd Concat3(CrossCompileDir,/,StripPath(ArCmd))
+# endif
+# ifndef CrossCcCmd
+#  define CrossCcCmd Concat3(CrossCompileDir,/,StripPath(CcCmd))
+# endif
+# ifndef CrossAsCmd
+#  define CrossAsCmd Concat3(CrossCompileDir,/,StripPath(AsCmd))
+# endif
+# ifdef HasFortran
+#  ifndef CrossFortranCmd
+#   define CrossFortranCmd Concat3(CrossCompileDir,/,StripPath(FortranCmd))
+#  endif
+# endif
+# ifndef CrossCplusplusCmd
+#  define CrossCplusplusCmd Concat3(CrossCompileDir,/,StripPath(CplusplusCmd))
+# endif
+# ifndef CrossCppCmd
+#  define CrossCppCmd Concat3(CrossCompileDir,/,StripPath(CppCmd))
+# endif
+# ifndef CrossRawCppCmdCmd
+#  define CrossRawCppCmd Concat3(CrossCompileDir,/,StripPath(RawCppCmd))
+# endif
+# ifndef CrossPreProcessCmd
+#  define CrossPreProcessCmd Concat3(CrossCompileDir,/,StripPath(PreProcessCmd))
+# endif
+# ifndef CrossAsCmd
+#  define CrossAsCmd Concat3(CrossCompileDir,/,StripPath(AsCmd))
+# endif
+# ifndef CrossLdCmd
+#  define CrossLdCmd Concat3(CrossCompileDir,/,StripPath(LdCmd))
+# endif
+# ifndef CrossModuleLdCmd
+#  define CrossModuleLdCmd CrossLdCmd
+# endif
+# ifndef CrossLintCmd
+#  define CrossLintCmd Concat3(CrossCompileDir,/,StripPath(LintCmd))
+# endif
+# ifndef CrossRanlibCmd
+#  define CrossRanlibCmd Concat3(CrossCompileDir,/,StripPath(RanlibCmd))
+# endif
+# ifndef CrossModuleCcCmd
+#  define CrossModuleCcCmd Concat3(CrossCompileDir,/,StripPath(ModuleCcCmd))
+# endif
+# ifndef CrossAsCmd
+#  define CrossAsCmd Concat3(CrossCompileDir,/,StripPath(AsCmd))
+# endif
+#endif
+
           PATHSEP = PathSeparator
             SHELL = BourneShell
 
@@ -1526,13 +1589,25 @@ TCLIBDIR = TclLibDir
 #ifdef VarDbDirectory
          VARDBDIR = VarDbDirectory	/* OS location of db/state files */
 #endif
-
+#ifdef CrossCompileDir
+               AR = CrossArCmd
+#else
                AR = ArCmd
+#endif
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
+#ifdef CrossCompileDir
+               CC = CrossCcCmd
+               AS = CrossAsCmd
+#else
                CC = CcCmd
                AS = AsCmd
+#endif
 #if HasFortran
+# ifdef CrossCompileDir
+               FC = CrossFortranCmd
+# else
                FC = FortranCmd
+# endif
       FDEBUGFLAGS = FortranDebugFlags
           FCFLAGS = FortranFlags $(FDEBUGFLAGS)
 #endif
@@ -1540,7 +1615,11 @@ TCLIBDIR = TclLibDir
 
 .SUFFIXES: .CCsuf
 
+#ifdef CrossCompileDir
+              CXX = CrossCplusplusCmd
+#else
               CXX = CplusplusCmd
+#endif
           CXXFILT = CplusplusFilt
            CXXLIB = CplusplusLibC
     CXXDEBUGFLAGS = DefaultCplusplusDebugFlags
@@ -1560,19 +1639,33 @@ INSTALLED_INCLUDES = -I$(INCROOT)
 
          COMPRESS = CompressCmd
           GZIPCMD = GzipCmd
+#ifdef CrossCompileDir
+              CPP = CrossCppCmd $(STD_CPP_DEFINES)
+           RAWCPP = CrossRawCppCmd $(STD_CPP_OPTIONS)
+    PREPROCESSCMD = CrossPreProcessCmd $(STD_CPP_DEFINES)
+#else
               CPP = CppCmd $(STD_CPP_DEFINES)		/* simple filters */
            RAWCPP = RawCppCmd $(STD_CPP_OPTIONS)
     PREPROCESSCMD = PreProcessCmd $(STD_CPP_DEFINES)	/* prefered; mdep */
+#endif
           INSTALL = InstallCmd
      INSTALLFLAGS = InstallFlags
+#ifdef CrossCompileDir
+               LD = CrossLdCmd
+#else
                LD = LdCmd
+#endif
               LEX = LexCmd
                M4 = M4Cmd
           M4FLAGS = M4Flags
            LEXLIB = LexLib
              YACC = YaccCmd
            CCYACC = CplusplusYaccCmd
+#ifdef CrossCompileDir
+             LINT = CrossLintCmd
+#else
              LINT = LintCmd
+#endif
       LINTLIBFLAG = LintLibFlag
          LINTOPTS = LintOpts
                LN = LnCmd
@@ -1580,7 +1673,11 @@ INSTALLED_INCLUDES = -I$(INCROOT)
                MV = MvCmd
                CP = CpCmd
 #if DoRanlibCmd
+#ifdef CrossCompileDir
+           RANLIB = CrossCompileDir/RanlibCmd
+#else
            RANLIB = RanlibCmd
+#endif
   RANLIBINSTFLAGS = RanlibInstFlags
 #endif
                RM = RmCmd
@@ -1606,16 +1703,28 @@ INSTALLED_INCLUDES = -I$(INCROOT)
              NEQN = NeqnCmd
               COL = ColCmd
          COLFLAGS = ColFlags
+#ifdef CrossCompileDir
+	    MODCC = CrossModuleCcCmd
+#else
             MODCC = ModuleCcCmd
+#endif
            MODCPP = ModuleCppCmd
         MODCFLAGS = ModuleCFlags
             MODAS = ModuleAsCmd
        MODASFLAGS = ModuleAsFlags
+#ifdef CrossCompileDir
+	    MODLD = CrossModuleLdCmd
+#else
             MODLD = ModuleLdCmd
+#endif
        MODLDFLAGS = ModuleLdFlags
 MODLDCOMBINEFLAGS = ModuleLdCombineFlags
             MODAR = ModuleArCmd
+#ifdef CrossCompileDir
+        MODRANLIB = CrossCompileDir/ModuleRanlibCmd
+#else
         MODRANLIB = ModuleRanlibCmd
+#endif
 #if HasLatex
             DVIPS = DvipsCmd
             LATEX = LatexCmd
@@ -1631,6 +1740,9 @@ MODLDCOMBINEFLAGS = ModuleLdCombineFlags
 #if HasTestCenter
            PROOF = ProofCmd
     PROOFOPTIONS = ProofOptions
+#endif
+#if CrossCompiling
+          HOST_CC = HostCcCmd
 #endif
      STD_INCLUDES = StandardIncludes
   STD_CPP_OPTIONS = StandardCppOptions

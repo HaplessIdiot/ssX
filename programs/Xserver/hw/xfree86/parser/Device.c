@@ -363,8 +363,10 @@ xf86findDevice (const char *ident, XF86ConfDevicePtr p)
 char *
 xf86configStrdup (const char *s)
 {
-	char *tmp = xf86confmalloc (sizeof (char) * (strlen (s) + 1));
-	if (tmp)
-		strcpy (tmp, s);
-	return (tmp);
+    char *tmp;
+    if (!s) return NULL;
+    tmp = xf86confmalloc (sizeof (char) * (strlen (s) + 1));
+    if (tmp)
+	strcpy (tmp, s);
+    return (tmp);
 }

@@ -202,17 +202,14 @@ MiscExtSetMouseValue(pointer mouse, MiscExtMseValType valtype, int value)
     return FALSE;
 }
 
-/* The misc extension doesn't (yet) call this. */
-#if 0
 Bool
 MiscExtSetMouseDevice(pointer mouse, char* device)
 {
     mseParamsPtr mse = mouse;
-
+    
     mse->device = device;
     return TRUE;
 }
-#endif
                                                                                
 Bool
 MiscExtGetKbdSettings(pointer *kbd)
@@ -363,6 +360,8 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
     DEBUG_P("MiscExtApply");
 
     if (mse_or_kbd == MISC_POINTER) {
+	Bool protoChanged = FALSE;
+	int oldflags;
 	Bool reopen = FALSE;
 	mseParamsPtr mse = structure;
 	InputInfoPtr pInfo;
@@ -391,7 +390,9 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 	    return MISC_RET_BADVAL;
 
 	if (mse->type == MTYPE_LOGIMAN
-		&& !(mse->baudrate == 1200 || mse->baudrate == 9600) )
+	    && !(mse->baudrate == 0
+		 || mse->baudrate == 1200
+		 || mse->baudrate == 9600))
 	    return MISC_RET_BADBAUDRATE;
 	if (mse->type == MTYPE_LOGIMAN && mse->samplerate)
 	    return MISC_RET_BADCOMBO;
@@ -413,7 +414,8 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 		&& mse->type != MTYPE_SYSMOUSE)
 	{
 	    if (mse->baudrate % 1200 != 0
-		    || mse->baudrate < 1200 || mse->baudrate > 9600)
+		|| (mse->baudrate != 0 && mse->baudrate < 1200)
+		|| mse->baudrate > 9600)
 		return MISC_RET_BADBAUDRATE;
 	}
 	if ((mse->flags & (MF_CLEAR_DTR|MF_CLEAR_RTS))
@@ -441,17 +443,22 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 
 	pInfo = mse->private;
 	pMse = pInfo->private;
-
-	if (pMse->protocolID != MapMseProto(mse->type, FROM_MISC)
+	oldflags = pMse->mouseFlags;
+	
+	protoChanged = pMse->protocolID != MapMseProto(mse->type, FROM_MISC);
+	if (protoChanged
 		|| pMse->baudRate != mse->baudrate
 		|| pMse->sampleRate != mse->samplerate
 		|| pMse->resolution != mse->resolution
 		|| pMse->mouseFlags != mse->flags)
 	    reopen = TRUE;
 
+	if (mse->device)
+	    reopen = TRUE;
+
 	if (reopen)
 	    (pMse->device->deviceProc)(pMse->device, DEVICE_CLOSE);
-
+	
 	pMse->protocolID      = MapMseProto(mse->type, FROM_MISC);
 	pMse->baudRate        = mse->baudrate;
 	pMse->sampleRate      = mse->samplerate;
@@ -468,13 +475,23 @@ MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd)
 #else
 	pMse->protocol = xf86MouseProtocolIDToName(pMse->protocolID);
 #endif
-	if (reopen)
-	    (pMse->device->deviceProc)(pMse->device, DEVICE_ON);
-	/* Set pInfo->options too */
-	
        if (mse->device)
            xf86ReplaceStrOption(pInfo->options, "Device", mse->device);        
 
+	if (reopen) {
+	    /* Only if protocol is changed explicitely disable auto detect */
+	    if (protoChanged)
+		pMse->autoProbe = FALSE;
+	    (pMse->device->deviceProc)(pMse->device, DEVICE_ON);
+	}
+	/* Set pInfo->options too */
+	
+       if ((oldflags & MF_CLEAR_DTR) != (pMse->mouseFlags & MF_CLEAR_DTR))
+	   xf86ReplaceBoolOption(pInfo->options, "ClearDTR",
+				 pMse->mouseFlags | MF_CLEAR_DTR);
+       if ((oldflags & MF_CLEAR_RTS) != (pMse->mouseFlags & MF_CLEAR_RTS))
+	   xf86ReplaceBoolOption(pInfo->options, "ClearRTS",
+				 pMse->mouseFlags | MF_CLEAR_RTS);
     }
     if (mse_or_kbd == MISC_KEYBOARD) {
 	kbdParamsPtr kbd = structure;

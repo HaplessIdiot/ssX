@@ -13,6 +13,12 @@
 xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
 {
+    return xf86ExtendedInitInt10(entityIndex, 0);
+}
+
+xf86Int10InfoPtr
+xf86ExtendedInitInt10(int entityIndex, int Flags)
+{
     return NULL;
 }
 

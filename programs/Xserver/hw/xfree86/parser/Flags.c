@@ -175,7 +175,6 @@ addNewOption2 (XF86OptionPtr head, char *name, char *val, int used)
 	    new = xf86confcalloc (1, sizeof (XF86OptionRec));
  	    new->list.next = NULL;
  	}
- 	
  	new->opt_name = name;
  	new->opt_val = val;
  	new->opt_used = used;
@@ -209,7 +208,8 @@ xf86optionListDup (XF86OptionPtr opt)
 
 	while (opt)
 	{
-		newopt = xf86addNewOption(newopt, opt->opt_name, opt->opt_val);
+		newopt = xf86addNewOption(newopt, xf86configStrdup(opt->opt_name), 
+					  xf86configStrdup(opt->opt_val));
 		newopt->opt_used = opt->opt_used;
 		if (opt->opt_comment)
 			newopt->opt_comment = xf86configStrdup(opt->opt_comment);
@@ -348,67 +348,53 @@ xf86optionListCreate( const char **options, int count, int used )
 }
 
 /* the 2 given lists are merged. If an option with the same name is present in
- * both, the option from the user list is used. The end result is a single
- * valid list of options. Duplicates are freed, and the original lists are no
- * longer guaranteed to be complete.
+ * both, the option from the user list - specified in the second argument -
+ * is used. The end result is a single valid list of options. Duplicates
+ * are freed, and the original lists are no longer guaranteed to be complete.
  */
 XF86OptionPtr
 xf86optionListMerge (XF86OptionPtr head, XF86OptionPtr tail)
 {
-	XF86OptionPtr a, b, ap = NULL, bp = NULL, f = NULL;
+    XF86OptionPtr a, b, ap = NULL, bp = NULL;
 
-	a = head;
-	while (a)
-	{
-		bp = NULL;
-		b = tail;
-		while (b)
-		{
-			if (xf86nameCompare (a->opt_name, b->opt_name) == 0)
-			{
-				if ((a == head) && (b == tail))
-				{
-					head = b;
-					tail = b->list.next;
-					b->list.next = a->list.next;
-					bp = tail;
-				}
-				else if (a == head)
-				{
-					head = b;
-					bp->list.next = b->list.next;
-					b->list.next = a->list.next;
-				}
-				else if (b == tail)
-				{
-					tail = b->list.next;
-					ap->list.next = b;
-					b->list.next = a->list.next;
-					bp = tail;
-				}
-				else
-				{
-					ap->list.next = b;
-					bp->list.next = b->list.next;
-					b->list.next = a->list.next;
-				}
-				a->list.next = f;
-				f = a;
-				a = b;
-				b = bp;
-				continue;
-			}
-			bp = b;
-			b = b->list.next;
-		}
-		ap = a;
-		a = a->list.next;
+    a = tail;
+    b = head;
+    while (tail && b) {
+	if (xf86nameCompare (a->opt_name, b->opt_name) == 0) {
+	    if (b == head)
+		head = a;
+	    else
+		bp->list.next = a;
+	    if (a == tail)
+		tail = a->list.next;
+	    else
+		ap->list.next = a->list.next;
+	    a->list.next = b->list.next;
+	    b->list.next = NULL;
+	    xf86optionListFree (b);
+	    b = a->list.next;
+	    bp = a;
+	    a = tail;
+	    ap = NULL;
+	} else {
+	    ap = a;
+	    if (!(a = a->list.next)) {
+		a = tail;
+		bp = b;
+		b = b->list.next;
+		ap = NULL;
+	    }
 	}
-
-	ap->list.next = tail;
-
-	xf86optionListFree (f);
-	return (head);
+    }
+    
+    if (head) {
+	for (a = head; a->list.next; a = a->list.next)
+	    ;
+	a->list.next = tail;
+    } else 
+	head = tail;
+    
+    return (head);
 }
 
 char *

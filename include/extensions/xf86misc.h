@@ -21,6 +21,7 @@
 #define X_XF86MiscSetMouseSettings	5
 #define X_XF86MiscSetKbdSettings	6
 #define X_XF86MiscSetGrabKeysState	7
+#define X_XF86MiscSetClientVersion      8
 
 #define XF86MiscNumberEvents		0
 
@@ -32,7 +33,7 @@
 #define XF86MiscModInDevDisabled	5
 #define XF86MiscModInDevClientNotLocal	6
 #define XF86MiscNoModule                7
-#define XF86MiscNumberErrors		(XF86MiscModInDevClientNotLocal + 1)
+#define XF86MiscNumberErrors		(XF86MiscNoModule + 1)
 
 /* Never renumber these */
 #define MTYPE_MICROSOFT		0
@@ -112,6 +113,10 @@ Bool XF86MiscQueryExtension(
     Display*		/* dpy */,
     int*		/* event_base */,
     int*		/* error_base */
+);
+
+Bool XF86MiscSetClientVersion(
+    Display *dpy	/* dpy */
 );
 
 Status XF86MiscGetMouseSettings(

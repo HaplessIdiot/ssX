@@ -151,6 +151,8 @@ typedef struct {
     int                 OverrideRskew;
     OptionInfoPtr	Options;
     Bool		shadowNew;
+    int			displaySize;
+    int			dspOverride;
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {
@@ -169,6 +171,9 @@ typedef struct {
     int shadow_16;
     int shadow_HiOrd;
 } tridentLCD;
+
+#define LCD_ACTIVE 0x01
+#define CRT_ACTIVE 0x02
 
 extern tridentLCD LCD[];
 

@@ -743,7 +743,8 @@ pciGenFindNext(void)
 	if (base_class == PCI_CLASS_BRIDGE) {
 	    if (sub_class == PCI_SUBCLASS_BRIDGE_HOST) {
 		pciBusInfo[pciBusNum]->host_bridge = pciDeviceTag;
-	    } else if (sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
+	    } else if (sub_class == PCI_SUBCLASS_BRIDGE_PCI
+		       || sub_class == PCI_SUBCLASS_BRIDGE_CARDBUS) {
 		tmp = pciReadLong(pciDeviceTag, PCI_PCI_BRIDGE_BUS_REG);
 		sec_bus = PCI_SECONDARY_BUS_EXTRACT(tmp, pciDeviceTag);
 		pri_bus = PCI_PRIMARY_BUS_EXTRACT(tmp, pciDeviceTag);

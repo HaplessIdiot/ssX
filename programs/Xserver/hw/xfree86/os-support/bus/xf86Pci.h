@@ -333,6 +333,36 @@
 #define PCI_PCI_BRIDGE_MASTER_ABORT_EN     0x20
 #define PCI_PCI_BRIDGE_SECONDARY_RESET     0x40
 #define PCI_PCI_BRIDGE_FAST_B2B_EN         0x80
+/* header type 2 extensions */
+#define  PCI_CB_BRIDGE_CTL_CB_RESET	   0x40	/* CardBus reset */
+#define  PCI_CB_BRIDGE_CTL_16BIT_INT	   0x80	/* Enable interrupt for 16-bit cards */
+#define  PCI_CB_BRIDGE_CTL_PREFETCH_MEM0  0x100	
+#define  PCI_CB_BRIDGE_CTL_PREFETCH_MEM1  0x200
+#define  PCI_CB_BRIDGE_CTL_POST_WRITES	  0x400
+
+#define PCI_CB_SEC_STATUS_REG		   0x16	/* Secondary status */
+#define PCI_CB_PRIMARY_BUS_REG		   0x18	/* PCI bus number */
+#define PCI_CB_CARD_BUS_REG		   0x19	/* CardBus bus number */
+#define PCI_CB_SUBORDINATE_BUS_REG	   0x1a	/* Subordinate bus number */
+#define PCI_CB_LATENCY_TIMER_REG	   0x1b	/* CardBus latency timer */
+#define PCI_CB_MEM_BASE_0_REG		   0x1c
+#define PCI_CB_MEM_LIMIT_0_REG		   0x20
+#define PCI_CB_MEM_BASE_1_REG		   0x24
+#define PCI_CB_MEM_LIMIT_1_REG		   0x28
+#define PCI_CB_IO_BASE_0_REG		   0x2c
+#define PCI_CB_IO_LIMIT_0_REG		   0x30
+#define PCI_CB_IO_BASE_1_REG		   0x34
+#define PCI_CB_IO_LIMIT_1_REG		   0x38
+#define PCI_CB_BRIDGE_CONTROL_REG          0x3E
+
+#define PCI_CB_SEC_STATUS_EXTRACT(x)      ((x >> 16) & 0xff)
+#define PCI_CB_PRIMARY_BUS_EXTRACT(x)     ((x >> 0 ) & 0xff)
+#define PCI_CB_CARDBUS_BUS_EXTRACT(x)     ((x >> 8 ) & 0xff)
+#define PCI_CB_SUBORDINATE_BUS_EXTRACT(x) ((x >> 16) & 0xff)
+#define PCI_CB_LATENCY_TIMER_EXTRACT(x)	  ((x >> 24) & 0xff)
+#define PCI_CB_IO_RANGE_MASK	~0x03
+#define PCI_CB_IOBASE(x)  (x & PCI_CB_IO_RANGE_MASK)
+#define PCI_CB_IOLIMIT(x) ((x & PCI_CB_IO_RANGE_MASK) + 3)
 
 /* Subsystem identification register */
 #define PCI_SUBSYSTEM_ID_REG		0x2c
@@ -414,87 +444,121 @@ typedef struct pci_cfg_regs {
 #endif	    
 	} bhlc;
     } bhlc;
-    
-    union {	/* Offset 0x10 - 0x27 */ 
-	struct {	/* header type 0 */
-	    CARD32 dv_base0;
-	    CARD32 dv_base1;
-	    CARD32 dv_base2;
-	    CARD32 dv_base3;
-	    CARD32 dv_base4;
-	    CARD32 dv_base5;
-	} dv;
-	struct {	/* header type 1 */
-	    CARD32 bg_rsrvd[2];
-#if X_BYTE_ORDER == X_BIG_ENDIAN	    
-	    CARD8 secondary_latency_timer;
-	    CARD8 subordinate_bus_number;
-	    CARD8 secondary_bus_number;
-	    CARD8 primary_bus_number;
-
-	    CARD16 secondary_status;
-	    CARD8 io_limit;
-	    CARD8 io_base;
-	    
-	    CARD16 mem_limit;
-	    CARD16 mem_base;
-
-	    CARD16 prefetch_mem_limit;
-	    CARD16 prefetch_mem_base;
-#else
-	    CARD8 primary_bus_number;
-	    CARD8 secondary_bus_number;
-	    CARD8 subordinate_bus_number;
-	    CARD8 secondary_latency_timer;
-	    
-	    CARD8 io_base;
-	    CARD8 io_limit;
-	    CARD16 secondary_status;
-	    
-	    CARD16 mem_base;
-	    CARD16 mem_limit;
-	    
-	    CARD16 prefetch_mem_base;
-	    CARD16 prefetch_mem_limit;
-#endif	    
-	} bg;
-    } bc;
-    union {	/* Offset 0x28 - 0x2b */
-	CARD32 rsvd1;
-        CARD32 pftch_umem_base;
-	CARD32 cardbus_cis_ptr;
-    } um_c_cis;
-    union { 	/* Offset 0x2c - 0x2f */
-	CARD32 subsys_card_vendor;
-        CARD32 pftch_umem_limit;
-	CARD32 rsvd2;
-	struct {
-#if X_BYTE_ORDER == X_BIG_ENDIAN		
-	    CARD16 subsys_card;
-	    CARD16 subsys_vendor;
-#else	    
-	    CARD16 subsys_vendor;
-	    CARD16 subsys_card;
-#endif	    
-	} ssys;
-    } um_ssys_id;
-    union {             /* Offset 0x30 - 0x33 */
-        CARD32 baserom;	
-        struct {
+    union {     /* Offset 0x10 - 0x3b */
+	struct {  /* header type 2 */
+	    CARD32 cg_rsrvd1;    /* 0x10 */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    CARD16 io_ulimit;
-	    CARD16 io_ubase;
+
+	    CARD16 secondary_status;  /* 0x16 */
+	    CARD16 cg_rsrvd2;    /* 0x14 */
+
+	    CARD8  latency_timer;    /* 0x1b */	
+	    CARD8  subordinate_bus_number;   /* 0x1a */
+	    CARD8  cardbus_bus_number;  /* 0x19 */
+	    CARD8  pci_bus_number;  /* 0x18 */
 #else
-	    CARD16 io_ubase;
-	    CARD16 io_ulimit;
+	    CARD16 cg_rsrvd2;    /* 0x14 */
+	    CARD16 secondary_status;  /* 0x16 */
+
+	    CARD8  primary_bus_number;  /* 0x18 */
+	    CARD8  cardbus_bus_number;  /* 0x19 */
+	    CARD8  subordinate_bus_number;   /* 0x1a */
+	    CARD8  latency_timer;    /* 0x1b */
 #endif
-	} b_u_io;
-    } uio_rom;
-    CARD32 rsvd3;	/* Offset 0x34 - 0x37 */
-    CARD32 rsvd4;	/* Offset 0x38 - 0x3b */
+	    CARD32 mem_base0;  /* 0x1c */
+	    CARD32 mem_limit0; /* 0x20 */
+	    CARD32 mem_base1;  /* 0x24 */
+	    CARD32 mem_limit1; /* 0x28 */
+	    CARD32 io_base0;   /* 0x2c */
+	    CARD32 io_limit0;  /* 0x30 */
+	    CARD32 io_base1;   /* 0x34 */
+	    CARD32 io_limit1;  /* 0x38 */
+	} cg;
+	struct {
+	    union {	/* Offset 0x10 - 0x27 */
+		struct {	/* header type 0 */
+		    CARD32 dv_base0;
+		    CARD32 dv_base1;
+		    CARD32 dv_base2;
+		    CARD32 dv_base3;
+		    CARD32 dv_base4;
+		    CARD32 dv_base5;
+		} dv;
+		struct {	/* header type 1 */
+		    CARD32 bg_rsrvd[2];
+#if X_BYTE_ORDER == X_BIG_ENDIAN	    
+		    CARD8 secondary_latency_timer;
+		    CARD8 subordinate_bus_number;
+		    CARD8 secondary_bus_number;
+		    CARD8 primary_bus_number;
+		    
+		    CARD16 secondary_status;
+		    CARD8 io_limit;
+		    CARD8 io_base;
+		    
+		    CARD16 mem_limit;
+		    CARD16 mem_base;
+		    
+		    CARD16 prefetch_mem_limit;
+		    CARD16 prefetch_mem_base;
+#else
+		    CARD8 primary_bus_number;
+		    CARD8 secondary_bus_number;
+		    CARD8 subordinate_bus_number;
+		    CARD8 secondary_latency_timer;
+		    
+		    CARD8 io_base;
+		    CARD8 io_limit;
+		    CARD16 secondary_status;
+		    
+		    CARD16 mem_base;
+		    CARD16 mem_limit;
+		    
+		    CARD16 prefetch_mem_base;
+		    CARD16 prefetch_mem_limit;
+#endif	    
+		} bg;
+	    } bc;
+	    union {	/* Offset 0x28 - 0x2b */
+		CARD32 rsvd1;
+		CARD32 pftch_umem_base;
+		CARD32 cardbus_cis_ptr;
+	    } um_c_cis;
+	    union { 	/* Offset 0x2c - 0x2f */
+		CARD32 subsys_card_vendor;
+		CARD32 pftch_umem_limit;
+		CARD32 rsvd2;
+		struct {
+#if X_BYTE_ORDER == X_BIG_ENDIAN		
+		    CARD16 subsys_card;
+		    CARD16 subsys_vendor;
+#else	    
+		    CARD16 subsys_vendor;
+		    CARD16 subsys_card;
+#endif	    
+		} ssys;
+	    } um_ssys_id;
+	    union {             /* Offset 0x30 - 0x33 */
+		CARD32 baserom;	
+		struct {
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+		    CARD16 io_ulimit;
+		    CARD16 io_ubase;
+#else
+		    CARD16 io_ubase;
+		    CARD16 io_ulimit;
+#endif
+		} b_u_io;
+	    } uio_rom;
+	    struct {
+		CARD32 rsvd3;	/* Offset 0x34 - 0x37 */
+		CARD32 rsvd4;	/* Offset 0x38 - 0x3b */
+	    } rsvd;
+	} cd;
+    } cx;
     union {	/* Offset 0x3c - 0x3f */
 	union {	/* header type 0 */
-            CARD32 max_min_ipin_iline;
+	    CARD32 max_min_ipin_iline;
 	    struct {
 #if X_BYTE_ORDER == X_BIG_ENDIAN		
 		CARD8 max_lat;
@@ -504,28 +568,26 @@ typedef struct pci_cfg_regs {
 #else
 		CARD8 int_line;
 		CARD8 int_pin;
-		CARD8 min_gnt;
+		    CARD8 min_gnt;
 		CARD8 max_lat;
 #endif	    
 	    } mmii;
 	} mmii;
 	struct {	/* header type 1 */
 #if X_BYTE_ORDER == X_BIG_ENDIAN
-	    CARD8 rsvd4;
-	    CARD8 bridge_control;
+	    CARD16 bridge_control; /* header type 1: upper 8 bits reserved */
 	    CARD8 rsvd2;
 	    CARD8 rsvd1;
 #else
 	    CARD8 rsvd1;
 	    CARD8 rsvd2;
-	    CARD8 bridge_control;
-	    CARD8 rsvd4;
+	    CARD16 bridge_control; /* header type 1: upper 8 bits reserved */
 #endif
 	} bctrl;
     } bm;
     union {    /* Offset 0x40 - 0xff */
-	    CARD32 dwords[48];
-	    CARD32 bytes[192];
+	CARD32 dwords[48];
+	CARD32 bytes[192];
     } devspf;
 } pciCfgRegs;
 
@@ -583,34 +645,47 @@ typedef enum {
 #define pci_latency_timer	      cfgspc.regs.bhlc.bhlc.latency_timer
 #define pci_header_type		      cfgspc.regs.bhlc.bhlc.header_type
 #define pci_bist		      cfgspc.regs.bhlc.bhlc.bist
-#define pci_base0		      cfgspc.regs.bc.dv.dv_base0
-#define pci_base1		      cfgspc.regs.bc.dv.dv_base1
-#define pci_base2		      cfgspc.regs.bc.dv.dv_base2
-#define pci_base3		      cfgspc.regs.bc.dv.dv_base3
-#define pci_base4		      cfgspc.regs.bc.dv.dv_base4
-#define pci_base5		      cfgspc.regs.bc.dv.dv_base5
-#define pci_cardbus_cis_ptr	      cfgspc.regs.umem_c_cis.cardbus_cis_ptr
-#define pci_subsys_card_vendor	      cfgspc.regs.um_ssys_id.subsys_card_vendor
-#define pci_subsys_vendor	      cfgspc.regs.um_ssys_id.ssys.subsys_vendor
-#define pci_subsys_card		      cfgspc.regs.um_ssys_id.ssys.subsys_card
-#define pci_baserom		      cfgspc.regs.uio_rom.baserom
-#define pci_primary_bus_number	      cfgspc.regs.bc.bg.primary_bus_number
-#define pci_secondary_bus_number      cfgspc.regs.bc.bg.secondary_bus_number
-#define pci_subordinate_bus_number    cfgspc.regs.bc.bg.subordinate_bus_number
-#define pci_secondary_latency_timer   cfgspc.regs.bc.bg.secondary_latency_timer
-#define pci_io_base		      cfgspc.regs.bc.bg.io_base
-#define pci_io_limit		      cfgspc.regs.bc.bg.io_limit
-#define pci_secondary_status	      cfgspc.regs.bc.bg.secondary_status
-#define pci_mem_base		      cfgspc.regs.bc.bg.mem_base
-#define pci_mem_limit		      cfgspc.regs.bc.bg.mem_limit
-#define pci_prefetch_mem_base	      cfgspc.regs.bc.bg.prefetch_mem_base
-#define pci_prefetch_mem_limit	      cfgspc.regs.bc.bg.prefetch_mem_limit
-#define pci_rsvd1		      cfgspc.regs.um_c_cis.rsvd1
-#define pci_rsvd2		      cfgspc.regs.um_ssys_id.rsvd2
-#define pci_prefetch_upper_mem_base   cfgspc.regs.um_c_cis.pftch_umem_base
-#define pci_prefetch_upper_mem_limit  cfgspc.regs.um_ssys_id.pftch_umem_limit
-#define pci_upper_io_base             cfgspc.regs.uio_rom.b_u_io.io_ubase
-#define pci_upper_io_limit            cfgspc.regs.uio_rom.b_u_io.io_ulimit
+#define pci_cb_secondary_status	      cfgspc.regs.cx.cg.secondary_status
+#define pci_cb_primary_bus_number     cfgspc.regs.cx.cg.primary_bus_number
+#define pci_cb_cardbus_bus_number     cfgspc.regs.cx.cg.cardbus_bus_number
+#define pci_cb_subordinate_bus_number cfgspc.regs.cx.cg.subordinate_bus_number
+#define pci_cb_latency_timer	      cfgspc.regs.cx.cg.latency_timer
+#define pci_cb_membase0		      cfgspc.regs.cx.cg.mem_base0
+#define pci_cb_memlimit0	      cfgspc.regs.cx.cg.mem_limit0
+#define pci_cb_membase1		      cfgspc.regs.cx.cg.mem_base1
+#define pci_cb_memlimit1	      cfgspc.regs.cx.cg.mem_limit1
+#define pci_cb_iobase0		      cfgspc.regs.cx.cg.io_base0
+#define pci_cb_iolimit0		      cfgspc.regs.cx.cg.io_limit0
+#define pci_cb_iobase1		      cfgspc.regs.cx.cg.io_base1
+#define pci_cb_iolimit1		      cfgspc.regs.cx.cg.io_limit1
+#define pci_base0		      cfgspc.regs.cx.cd.bc.dv.dv_base0
+#define pci_base1		      cfgspc.regs.cx.cd.bc.dv.dv_base1
+#define pci_base2		      cfgspc.regs.cx.cd.bc.dv.dv_base2
+#define pci_base3		      cfgspc.regs.cx.cd.bc.dv.dv_base3
+#define pci_base4		      cfgspc.regs.cx.cd.bc.dv.dv_base4
+#define pci_base5		      cfgspc.regs.cx.cd.bc.dv.dv_base5
+#define pci_cardbus_cis_ptr	      cfgspc.regs.cx.cd.umem_c_cis.cardbus_cis_ptr
+#define pci_subsys_card_vendor	      cfgspc.regs.cx.cd.um_ssys_id.subsys_card_vendor
+#define pci_subsys_vendor	      cfgspc.regs.cx.cd.um_ssys_id.ssys.subsys_vendor
+#define pci_subsys_card		      cfgspc.regs.cx.cd.um_ssys_id.ssys.subsys_card
+#define pci_baserom		      cfgspc.regs.cx.cd.uio_rom.baserom
+#define pci_primary_bus_number	      cfgspc.regs.cx.cd.bc.bg.primary_bus_number
+#define pci_secondary_bus_number      cfgspc.regs.cx.cd.bc.bg.secondary_bus_number
+#define pci_subordinate_bus_number    cfgspc.regs.cx.cd.bc.bg.subordinate_bus_number
+#define pci_secondary_latency_timer   cfgspc.regs.cx.cd.bc.bg.secondary_latency_timer
+#define pci_io_base		      cfgspc.regs.cx.cd.bc.bg.io_base
+#define pci_io_limit		      cfgspc.regs.cx.cd.bc.bg.io_limit
+#define pci_secondary_status	      cfgspc.regs.cx.cd.bc.bg.secondary_status
+#define pci_mem_base		      cfgspc.regs.cx.cd.bc.bg.mem_base
+#define pci_mem_limit		      cfgspc.regs.cx.cd.bc.bg.mem_limit
+#define pci_prefetch_mem_base	      cfgspc.regs.cx.cd.bc.bg.prefetch_mem_base
+#define pci_prefetch_mem_limit	      cfgspc.regs.cx.cd.bc.bg.prefetch_mem_limit
+#define pci_rsvd1		      cfgspc.regs.cx.cd.um_c_cis.rsvd1
+#define pci_rsvd2		      cfgspc.regs.cx.cd.um_ssys_id.rsvd2
+#define pci_prefetch_upper_mem_base   cfgspc.regs.cx.cd.um_c_cis.pftch_umem_base
+#define pci_prefetch_upper_mem_limit  cfgspc.regs.cx.cd.um_ssys_id.pftch_umem_limit
+#define pci_upper_io_base             cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ubase
+#define pci_upper_io_limit            cfgspc.regs.cx.cd.uio_rom.b_u_io.io_ulimit
 #define pci_int_line		      cfgspc.regs.bm.mmii.mmii.int_line
 #define pci_int_pin		      cfgspc.regs.bm.mmii.mmii.int_pin
 #define pci_min_gnt		      cfgspc.regs.bm.mmii.mmii.min_gnt

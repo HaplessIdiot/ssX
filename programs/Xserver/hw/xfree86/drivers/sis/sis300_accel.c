@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.10 2002/01/10 19:05:43 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.9 2001/11/30 12:12:00 eich Exp $ */
 
 /*
  *
@@ -774,13 +774,12 @@ SiSSetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 	};
 }
 
-static int     srcpitch;
-static int     xcurrent, ycurrent;     
 static void SiSSubsequentScanlineCPUToScreenColorExpandFill(
                         ScrnInfoPtr pScrn, int x, int y, int w, 
                         int h, int skipleft)
 {
 	SISPtr pSiS = SISPTR(pScrn);
+static int     srcpitch;
 	int _x0, _y0, _x1, _y1;
 	long dstbase;
 
@@ -803,8 +802,8 @@ static void SiSSubsequentScanlineCPUToScreenColorExpandFill(
 	SiSSetupRect(w, 1);
 	srcpitch = ((((w+7)/8)+3) >> 2) * 4;
 	SiSSetupSRCPitch(srcpitch);
-	ycurrent = y;
-	xcurrent = x;
+	pSiS->ycurrent = y;
+	pSiS->xcurrent = x;
 }
 
 static void SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
@@ -813,8 +812,8 @@ static void SiSSubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
 	int newhead,bltbufstage,newtail;
 
 	SiSSetupSRCBase(pSiS->ColorExpandBufferScreenOffset[bufno]);
-	SiSSetupDSTXY(xcurrent, ycurrent);
-	ycurrent++;
+	SiSSetupDSTXY(pSiS->xcurrent, pSiS->ycurrent);
+	pSiS->ycurrent++;
 	SiSDoCMD
 	newhead = pSiS->ColorExpandRingHead = (bufno + 1) & 
 							pSiS->ColorExpandBufferCountMask;

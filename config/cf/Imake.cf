@@ -706,6 +706,12 @@ XCOMM Keep cpp from replacing path elements containing i486/i586/i686
 #  endif
 #  undef __k6
 # endif /* __k6 */
+XCOMM Keep this order! s390x has also __s390__ defined.
+# if defined(__s390x__)
+#  define s390xArchitecture
+#  undef __s390x__
+#  undef __s390__
+# endif
 # ifdef __s390__
 #   define s390Architecture
 #  undef __s390__
@@ -814,6 +820,16 @@ XCOMM  for compatibility with 3.3.x
 # if defined(__s390x__)
 #  define s390xArchitecture
 #  undef __s390x__
+# endif
+# if defined(__x86_64__)
+#  undef(__x86_64__)
+#  define x86_64Architecture
+# endif
+# if defined(x86_64__)
+#  undef(x86_64__)
+#  ifndef(x86_64Architecture)
+#   define x86_64Architecture
+#  endif
 # endif
 #endif /* linux */
 

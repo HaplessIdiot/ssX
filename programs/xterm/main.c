@@ -2235,7 +2235,7 @@ get_pty (int *pty, char *from GCC_UNUSED)
 	/* GNU libc 2 allows us to abstract away from having to know the
 	   master pty device name. */
 	if ((*pty = getpt()) >= 0) {
-	    strcpy(ttydev, ptsname(*pty));
+  	    strcpy(ttydev, ptsname(*pty)); 
 	    result = 0;
 	}
 #elif defined(__MVS__)
@@ -3639,7 +3639,6 @@ spawn (void)
 		(void) strncpy(utmp.ut_user,
 			       (login_name != NULL) ? login_name : "????",
 			       sizeof(utmp.ut_user));
-
 		/* why are we copying this string again?  (see above) */
 		(void) strncpy(utmp.ut_id, my_utmp_id(ttydev), sizeof(utmp.ut_id));
 		(void) strncpy (utmp.ut_line,
@@ -3657,7 +3656,9 @@ spawn (void)
 #endif
 		(void) strncpy(utmp.ut_host, buf, sizeof(utmp.ut_host));
 #endif
-		(void) strncpy(utmp.ut_name, login_name, sizeof(utmp.ut_name));
+		(void) strncpy(utmp.ut_name,
+				  (login_name) ? login_name : "????",
+				  sizeof(utmp.ut_name)); 
 
 		utmp.ut_pid = getpid();
 #if defined(HAVE_UTMP_UT_XTIME)

@@ -72,6 +72,12 @@ VENDORMANVERSION = XVendorManVersionString
 /*
  * X-specific things
  */
+#if CrossCompiling
+# if defined UseInstalled && !defined UseInstalledOnCrossCompile
+#  define UseInstalledOnCrossCompile YES
+# endif
+#endif
+
 #ifndef HasXServer
 #define HasXServer		YES
 #endif
@@ -1282,7 +1288,11 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #define BuildModuleTop $(BUILDLIBTOP)/..
 #endif
 #ifndef LibDir
-#define LibDir $(USRLIBDIR)/X11
+# ifdef ProjectRoot
+#  define LibDir Concat(ProjectRoot,/lib/X11)
+# else
+#  define LibDir /usr/lib/X11
+# endif
 #endif
 #ifndef ModuleDir
 #define ModuleDir $(USRLIBDIR)/modules
@@ -1499,15 +1509,20 @@ XCOMM X Window System make variables; these need to be coordinated with rules
      UCSMAPPREFIX = $(FONTDIR)/util/map-
 #else
               RGB = $(CLIENTENVSETUP) $(XBUILDBINDIR)/rgb
+# if !CrossCompiling
             FONTC = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/bdftopcf
         MKFONTDIR = $(CLIENTENVSETUP) $(PRELOADFONTSETUP) $(XBUILDBINDIR)/mkfontdir
           FCCACHE = set -x; $(CLIENTENVSETUP) $(PRELOADXFTSETUP) FONTCONFIG_PATH=$(FONTCONFIGLIBSRC) $(XBUILDBINDIR)/fc-cache
          XFTCACHE = $(CLIENTENVSETUP) $(PRELOADXFTSETUP) XFT_CONFIG=$(XFT1LIBSRC)/XftConfig $(XBUILDBINDIR)/xftcache
-#if HasPerl
+# elif UseInstalledOnCrossCompile
+        MKFONTDIR = $(BINDIR)/mkfontdir
+            FONTC = $(BINDIR)/bdftopcf
+# endif
+# if HasPerl
       MKHTMLINDEX = RunPerlScript($(CONFIGSRC)/util/mkhtmlindex.pl,)
-#else
+# else
       MKHTMLINDEX = $(SHELL) $(CONFIGSRC)/util/mkhtmlindex.sh
-#endif
+# endif
           UCS2ANY = $(FONTSRC)/util/ucs2any.pl
       BDFTRUNCATE = $(FONTSRC)/util/bdftruncate.pl
      UCSMAPPREFIX = $(FONTSRC)/util/map-
@@ -2996,7 +3011,7 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #define XkbClientLibs /**/
 #endif
 #endif
-#if defined(UseInstalled) || defined(OS2Architecture)
+#if defined(UseInstalled) || defined(OS2Architecture) || (CrossCompiling &&  UseInstalledOnCrossCompile)
      XKBCOMPCMD = $(BINDIR)/XkbComp
 #else
      XKBCOMPSRC = $(PROGRAMSRC)/XkbComp
@@ -3116,10 +3131,10 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
  * MakeXftCache - generate rules to build XftCache database
  */
 
-#ifdef UseFreetype2
+#if defined UseFreetype2 && !CrossCompiling
 
-#ifndef MakeXftCache
-#define MakeXftCache(deplist)						@@\
+# ifndef MakeXftCache
+#  define MakeXftCache(deplist)						@@\
 all:: fonts.cache							@@\
 									@@\
 fonts.cache: deplist							@@\
@@ -3127,12 +3142,12 @@ fonts.cache: deplist							@@\
 									@@\
 clean::									@@\
 	RemoveFile(fonts.cache)
-#endif /* MakeXftCache */
+# endif /* MakeXftCache */
 
-#ifndef InstallXftCache
-#define InstallXftCache(dest)						@@\
+# ifndef InstallXftCache
+#  define InstallXftCache(dest)						@@\
 InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)
-#endif /* InstallXftCache */
+# endif /* InstallXftCache */
 
 #else
 
@@ -3146,12 +3161,12 @@ InstallTarget(install,fonts.cache,$(INSTDATFLAGS),dest)
 
 #endif
 
-
 /*
  * MakeFontsDir - generate rules to build fonts.dir database.
  */
 #ifndef MakeFontsDir
-#define MakeFontsDir(deplist)						@@\
+# if !CrossCompiling ||  UseInstalledOnCrossCompile
+#  define MakeFontsDir(deplist)						@@\
 all:: fonts.dir								@@\
 									@@\
 fonts.dir:  deplist							@@\
@@ -3159,6 +3174,11 @@ fonts.dir:  deplist							@@\
 									@@\
 clean::									@@\
 	RemoveFile(fonts.dir)
+# else
+#  define MakeFontsDir(deplist)						@@\
+clean::									@@\
+	RemoveFile(fonts.dir)
+# endif
 #endif /* MakeFontsDir */
 
 
@@ -3166,13 +3186,21 @@ clean::									@@\
  * MakeFonts - generate rules to build font database.
  */
 #ifndef MakeFonts
-#define MakeFonts()							@@\
+# if !CrossCompiling || UseInstalledOnCrossCompile
+#  define MakeFonts()							@@\
 all::  $(OBJS)								@@\
 									@@\
 MakeFontsDir($(OBJS))							@@\
 									@@\
 clean::									@@\
 	RemoveFiles(*.pcf *.pcf.Z *.pcf.gz)
+# else
+#  define MakeFonts()							@@\
+MakeFontsDir($(OBJS))							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(*.pcf *.pcf.Z *.pcf.gz)
+# endif
 #endif /* MakeFonts */
 
 
@@ -3180,10 +3208,14 @@ clean::									@@\
  * InstallFontObjs - generate rules to install font files
  */
 #ifndef InstallFontObjs
-#define InstallFontObjs(objs,dest)					@@\
+# if !CrossCompiling || UseInstalledOnCrossCompile
+#  define InstallFontObjs(objs,dest)					@@\
 InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
 									@@\
 InstallTarget(install,fonts.dir,$(INSTDATFLAGS),dest)
+# else
+#  define InstallFontObjs(objs,dest)
+# endif
 #endif /* InstallFontObjs */
 
 
@@ -3228,11 +3260,17 @@ InstallTarget(install,fonts.scale,$(INSTDATFLAGS),dest)
 /*
  * UncompressedFontTargetLong
  */
-#ifndef UncompressedFontTargetLong
-#define UncompressedFontTargetLong(sname,tname)				@@\
+#if ! CrossCompiling || UseInstalledOnCrossCompile
+# ifndef UncompressedFontTargetLong
+#  define UncompressedFontTargetLong(sname,tname)			@@\
 FontBaseObj(tname):  FontSrc(sname)					@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $? -o $@)
-#endif /* UncompressedFontTargetLong */
+# endif /* UncompressedFontTargetLong */
+#else
+# ifndef UncompressedFontTargetLong
+#  define UncompressedFontTargetLong(sname,tname)
+# endif
+#endif
 
 /*
  * CompressedFontTarget
@@ -3241,17 +3279,21 @@ FontBaseObj(tname):  FontSrc(sname)					@@\
 #define GzipFontCompression NO
 #endif
 
-#ifndef CompressedFontTargetLong
-#if GzipFontCompression
-#define CompressedFontTargetLong(sname,tname)				@@\
+#if ! CrossCompiling || UseInstalledOnCrossCompile
+# ifndef CompressedFontTargetLong
+#  if GzipFontCompression
+#   define CompressedFontTargetLong(sname,tname)			@@\
 FontBaseObj(tname).gz:  FontSrc(sname)					@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(GZIPCMD) > $@
-#else
-#define CompressedFontTargetLong(sname,tname)				@@\
+#  else
+#   define CompressedFontTargetLong(sname,tname)			@@\
 FontBaseObj(tname).Z:  FontSrc(sname)					@@\
 	RunProgram(FONTC,$(FONTCFLAGS) $?) | $(COMPRESS) > $@
+#  endif
+# endif /* CompressedFontTargetLong */
+#else
+#   define CompressedFontTargetLong(sname,tname)
 #endif
-#endif /* CompressedFontTargetLong */
 
 /*
  * UncompressedFontTarget
@@ -3309,7 +3351,8 @@ EncObjComp(basename): EncObj(basename)					@@\
 #endif
 
 #ifndef MakeEncDir
-#define MakeEncDir(deplist,inst,dirlist )				@@\
+# if !CrossCompiling || UseInstalledOnCrossCompile
+#  define MakeEncDir(deplist,inst,dirlist )				@@\
 AllTarget(encodings.dir)						@@\
 									@@\
 encodings.dir: deplist							@@\
@@ -3321,6 +3364,11 @@ encodings.dir: deplist							@@\
 									@@\
 clean::									@@\
 	RemoveFiles(fonts.dir encodings.dir)
+# else
+#  define MakeEncDir(deplist,inst,dirlist )				@@\
+clean::									@@\
+	RemoveFiles(fonts.dir encodings.dir)
+# endif
 #endif
 
 #ifndef MakeEncodings
@@ -3333,10 +3381,14 @@ clean::									@@\
 #endif /* MakeEncodings */
 
 #ifndef InstallEncObjs
-#define InstallEncObjs(objs,dest)					@@\
+# if !CrossCompiling || UseInstalledOnCrossCompile
+#  define InstallEncObjs(objs,dest)					@@\
 InstallMultipleFlags(objs,dest,$(INSTDATFLAGS))				@@\
 									@@\
 InstallTarget(install,encodings.dir,$(INSTDATFLAGS),dest)
+# else
+#  define InstallEncObjs(objs,dest)
+# endif
 #endif /* InstallEncObjs */
 
 #ifndef InstallEncodings
@@ -3345,8 +3397,12 @@ InstallEncObjs($(OBJS),dest)
 #endif /* InstallEncodings */
 
 #ifndef InstallEncodingsDir
-#define InstallEncodingsDir(edir,fdir)					@@\
+# if !CrossCompiling || UseInstalledOnCrossCompile
+#  define InstallEncodingsDir(edir,fdir)				@@\
 InstallNamedTarget(install,edir/encodings.dir,$(INSTDATFLAGS),fdir,encodings.dir)
+# else
+#  define InstallEncodingsDir(edir,fdir)
+# endif
 #endif
 
 
@@ -3383,7 +3439,8 @@ clean::									@@\
  * MakeXkbDir
  */
 #ifndef MakeXkbDir
-#define MakeXkbDir(basedir,subdir)					@@\
+# if !CrossCompiling || UseInstalledOnCrossCompile
+#  define MakeXkbDir(basedir,subdir)					@@\
 all::   Concat(subdir,.dir)						@@\
 									@@\
 Concat(subdir,.dir):							@@\
@@ -3394,6 +3451,11 @@ InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)	@@\
 									@@\
 clean::									@@\
 	RemoveFile(Concat(subdir,.dir))
+# else
+#  define MakeXkbDir(basedir,subdir)					@@\
+clean::									@@\
+	RemoveFile(Concat(subdir,.dir))
+# endif
 #endif
 
 /*

@@ -109,7 +109,22 @@ NormalProgramTarget(pcitweak,pcitweak.o,$(XF86OSSRC)/libxf86_os.a,-L../os-suppor
 InstallProgram(pcitweak,$(BINDIR))
 InstallManPage(pcitweak,$(MANDIR))
 
-        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4)
+#if 0 /*BuildMatchagp*/
+       SRCS5 = matchagp.c
+
+# if defined(OpenBSDArchitecture) || defined(NetBSDArchitecture) \
+    && ((OSMajorVersion == 1 && OSMinorVersion >= 1) || OSMajorVersion >= 2)
+DEFINES = -DUSE_I386_IOPL
+SYS_LIBRARIES = -li386
+# endif
+
+AllTarget(ProgramTargetName(matchagp))
+
+NormalProgramTarget(matchagp,matchagp.o,$(XF86OSSRC)/libxf86_os.a,-L../os-support -lxf86_os -L../scanpci -lscanpci -L../dummylib -ldummy $(SERVEREXTRASYSLIBS),NullParameter)
+InstallProgram(matchagp,$(BINDIR))
+#endif /* BuildMatchagp */
+
+        SRCS = $(SRCS1) $(SRCS2) $(SRCS3) $(SRCS4) $(SRCS5)
 
 #if (SystemV && !defined(i386ScoArchitecture)) || SystemV4
 InstallNamedProg($(INSTPROG),xf86install,$(LIBDIR)/etc)

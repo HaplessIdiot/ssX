@@ -144,13 +144,12 @@ xf86ValidateFontPath(char *path)
   next = path;
   while (next != NULL) {
     path_elem = xf86GetPathElem(&next);
-#ifndef __EMX__
     if (*path_elem == '/') {
+#ifndef __EMX__
       dir_elem = xnfcalloc(1, strlen(path_elem) + 1);
       if ((p1 = strchr(path_elem, ':')) != 0)
 #else
     /* OS/2 must prepend X11ROOT */
-    if (*path_elem == '/') {
       path_elem = (char*)__XOS2RedirRoot(path_elem);
       dir_elem = xnfcalloc(1, strlen(path_elem) + 1);
       if (p1 = strchr(path_elem+2, ':'))
@@ -167,6 +166,7 @@ xf86ValidateFontPath(char *path)
       if (flag != 0) {
         xf86Msg(X_WARNING, "The directory \"%s\" does not exist.\n", dir_elem);
 	xf86ErrorF("\tEntry deleted from font path.\n");
+	xfree(dir_elem);
 	continue;
       }
       else {
@@ -186,6 +186,7 @@ xf86ValidateFontPath(char *path)
 		  dir_elem);
 	  xf86ErrorF("\tEntry deleted from font path.\n");
 	  xf86ErrorF("\t(Run 'mkfontdir' on \"%s\").\n", dir_elem);
+	  xfree(dir_elem);
 	  continue;
 	}
       }

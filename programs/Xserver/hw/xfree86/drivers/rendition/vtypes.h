@@ -97,7 +97,23 @@ struct verite_modeinfo_t {
     vu16 stride1;
 };
 
-
+typedef struct _renditionRegs {
+    CARD8 mode;
+    CARD8 memendian;
+    CARD32 sclkpll;
+    CARD32 dramctl;
+    CARD8 plldev;
+    CARD32 pclkpll;
+    CARD8 daccmd0;
+    CARD8 daccmd1;
+    CARD8 daccmd2;
+    CARD8 daccmd3;
+    CARD32 crtch;
+    CARD32 crtcv;
+    CARD32 vbasea;
+    CARD32 crtcoff;
+    CARD32 crtcctl;
+} RenditionRegRec, *RenditionRegPtr;
 
 /* structure describing the Verite board and its functionality */
 struct verite_board_t {
@@ -168,6 +184,7 @@ typedef struct _renditionRec
     xf86CursorInfoPtr CursorInfoRec;    /* Cursor data */
     XAAInfoRecPtr AccelInfoRec;         /* Needed for XAA */
     OptionInfoPtr Options;
+    RenditionRegRec saveRegs;
 } renditionRec, *renditionPtr;
 
 #define RENDITIONPTR(p)     ((renditionPtr)((p)->driverPrivate))

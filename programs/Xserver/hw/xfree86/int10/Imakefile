@@ -35,7 +35,8 @@ X86EMUOBJS = x86emu.o
 
 X86EMUDEFINES = -D__DRIVER__ -DFORCE_POST -D_CEXPORT= -DNO_LONG_LONG
 
-# if defined(i386Architecture)
+XCOMM Check the x86_64Architecture
+# if defined(i386Architecture) || defined(x86_64Architecture)
 ARCHDEFINES = -D_PC
 # elif defined(ia64Architecture)
 ARCHDEFINES = -D_PC_IO -D_PC_PCI

@@ -174,7 +174,7 @@ SetSysMouseRes(InputInfoPtr pInfo, const char *protocol, int rate, int res)
     mode.resolution = res > 0 ? res : -1;
     mode.accelfactor = -1;
 #if defined(__FreeBSD__)
-    if (xf86NameCmp(pMse->origProtocol, "Auto") == 0) {
+    if (pMse->autoProbe) {
 	/*
 	 * As the FreeBSD sysmouse driver defaults to protocol level 0
 	 * everytime it is opened we enforce protocol level 1 again at

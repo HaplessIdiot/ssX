@@ -1317,7 +1317,7 @@ xf86MotionHistoryAllocate(LocalDevicePtr	local)
     
     if (!HAS_MOTION_HISTORY(local))
 	return;
-    
+    if (local->motion_history) xfree(local->motion_history);
     local->motion_history = xalloc((sizeof(INT32) * valuator->numAxes + sizeof(Time))
 				   * valuator->numMotionEvents);
     local->first = 0;

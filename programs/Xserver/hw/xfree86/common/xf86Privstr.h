@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.28 2001/09/29 20:40:31 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.30 2001/11/30 12:11:55 eich Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -180,10 +180,6 @@ typedef struct {
 #define PCVT		  16
 #define WSCONS		  32
 #endif
-
-/* Values of xf86Info.mouseFlags */
-#define MF_CLEAR_DTR       1
-#define MF_CLEAR_RTS       2
 
 /* Prefix strings for driver messages */
 #ifndef X_UNKNOWN_STRING

@@ -550,3 +550,5 @@ XkbRF_RulesPtr	rules;
     XkbRF_Free(rules,True);
     return complete;
 }
+
+

@@ -224,8 +224,9 @@ pointer
 xf86AddNewOption(pointer head, char *name, char *val)
 {
     char *tmp = strdup(val);
-                                                                               
-    return xf86addNewOption(head, name, tmp);
+    char *tmp_name = strdup(name);
+
+    return xf86addNewOption(head, tmp_name, tmp);
 }
 
 

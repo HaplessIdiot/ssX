@@ -457,7 +457,9 @@ VESAPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86LoaderReqSymLists(vbeSymbols, NULL);
 
-    if ((pVesa->pVbe = VBEInit(NULL, pVesa->pEnt->index)) == NULL)
+    if ((pVesa->pVbe = VBEExtendedInit(NULL, pVesa->pEnt->index,
+				       SET_BIOS_SCRATCH
+				       | RESTORE_BIOS_SCRATCH)) == NULL)
         return (FALSE);
 
     if (pVesa->pEnt->location.type == BUS_PCI) {
@@ -928,7 +930,9 @@ VESAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int flags;
     int init_picture = 0;
 
-    if ((pVesa->pVbe = VBEInit(NULL, pVesa->pEnt->index)) == NULL)
+    if ((pVesa->pVbe = VBEExtendedInit(NULL, pVesa->pEnt->index,
+				       SET_BIOS_SCRATCH
+				       | RESTORE_BIOS_SCRATCH)) == NULL)
         return (FALSE);
 
     if (pVesa->mapPhys == 0) {

@@ -92,6 +92,7 @@ typedef int xf86jmp_buf[20];
 #define XF86_MAP_FIXED		0x0001
 #define XF86_MAP_SHARED		0x0002
 #define XF86_MAP_PRIVATE	0x0004
+#define XF86_MAP_32BIT	        0x0040
 #define XF86_MAP_FAILED		((void *)-1)
 
 /* for fseek */

@@ -886,7 +886,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
 	}
 	infoRec->WriteBitmapFlags =
 		infoRec->ScanlineCPUToScreenColorExpandFillFlags;
-    }
+    } else
+	infoRec->WriteBitmap = NULL;
 
     /**** TE Glyphs ****/
 
@@ -993,7 +994,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     } else if(HaveScanlineImageWriteRect) {
 	infoRec->WritePixmap = XAAWritePixmapScanline;
 	infoRec->WritePixmapFlags = infoRec->ScanlineImageWriteFlags;
-    }
+    } else
+	infoRec->WritePixmap = NULL;
 
     /**** ReadPixmap ****/
 

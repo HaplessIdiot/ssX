@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.3 2000/02/08 13:13:32 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.5 2001/02/15 20:00:09 eich Exp $ */
 
 /*
  *                   XFree86 vbe module
@@ -35,7 +35,11 @@ typedef struct {
     Bool ddc_blank;
 } vbeInfoRec, *vbeInfoPtr;
 
+#define VBE_VERSION_MAJOR(x) *((CARD8*)(&x) + 1)
+#define VBE_VERSION_MINOR(x) (CARD8)(x)
+
 vbeInfoPtr VBEInit(xf86Int10InfoPtr pInt, int entityIndex);
+vbeInfoPtr VBEExtendedInit(xf86Int10InfoPtr pInt, int entityIndex, int Flags);
 void vbeFree(vbeInfoPtr pVbe);
 xf86MonPtr vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule);
 
@@ -289,5 +293,34 @@ typedef struct _VBEpmi {
 
 VBEpmi *VBEGetVBEpmi(vbeInfoPtr pVbe);
 #define VESAFreeVBEpmi(pmi)	xfree(pmi)
+
+/* high level helper functions */
+
+typedef struct _vbeModeInfoRec {
+    int width;
+    int height;
+    int bpp;
+    int n;
+    struct _vbeModeInfoRec *next;
+} vbeModeInfoRec, *vbeModeInfoPtr;
+
+vbeModeInfoPtr    VBEBuildVbeModeList(vbeInfoPtr pVbe, 
+			    VbeInfoBlock *vbe);
+
+unsigned short VBECalcVbeModeIndex(vbeModeInfoPtr m, 
+				   DisplayModePtr mode, int bpp);
+
+typedef struct {
+    CARD8 *state;
+    CARD8 *pstate;
+    int statePage;
+    int stateSize;
+    int stateMode;
+} vbeSaveRestoreRec, *vbeSaveRestorePtr;
+
+void
+VBEVesaSaveRestore(vbeInfoPtr pVbe, vbeSaveRestorePtr vbe_sr,
+		   vbeSaveRestoreFunction function);
+
 
 #endif

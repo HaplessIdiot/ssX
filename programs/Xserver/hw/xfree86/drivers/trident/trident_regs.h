@@ -40,6 +40,7 @@
 #define OldMode1 0x0E
 #define NewMode1 0x0E
 #define Protection 0x11
+#define Threshold 0x12
 #define MCLKLow 0x16
 #define MCLKHigh 0x17
 #define ClockLow 0x18

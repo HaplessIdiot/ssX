@@ -993,4 +993,8 @@ typedef struct {
 #define LD_RESOLV_FORCE			2	/* force checking... */
 #endif
 
+/* Values of xf86Info.mouseFlags */
+#define MF_CLEAR_DTR       1
+#define MF_CLEAR_RTS       2
+
 #endif /* _XF86STR_H */

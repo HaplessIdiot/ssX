@@ -135,7 +135,7 @@ SiS530AccelInit(ScreenPtr pScreen)
 	else if (pSiS->TurboQueue || pSiS->HWCursor) 
 	    offset = 32768;
     }
-    topFB = (pSiS->maxxfbmem >= pSiS->FbMapSize - offset) ?
+    topFB = (pSiS->maxxfbmem < pSiS->FbMapSize - offset) ?
 	pSiS->maxxfbmem : pSiS->FbMapSize - offset;
 
     /* CPU To screen color expansion indirect method */

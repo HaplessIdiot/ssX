@@ -14,7 +14,7 @@
 #define XF86MISCNAME		"XFree86-Misc"
 
 #define XF86MISC_MAJOR_VERSION	0	/* current version numbers */
-#define XF86MISC_MINOR_VERSION	5
+#define XF86MISC_MINOR_VERSION	6
 
 typedef struct _XF86MiscQueryVersion {
     CARD8	reqType;		/* always XF86MiscReqCode */
@@ -134,7 +134,7 @@ typedef struct _XF86MiscSetMouseSettings {
     CARD32	buttons B32;
     BOOL	emulate3buttons;
     BOOL	chordmiddle;
-    CARD16	pad2 B16;
+    CARD16	devnamelen B16;
     CARD32	emulate3timeout B32;
     CARD32	flags B32;
 } xXF86MiscSetMouseSettingsReq;
@@ -176,5 +176,14 @@ typedef struct {
     CARD32	pad6 B32;
 } xXF86MiscSetGrabKeysStateReply;
 #define sz_xXF86MiscSetGrabKeysStateReply	32
+
+typedef struct _XF86MiscSetClientVersion {
+    CARD8	reqType;		/* always XF86MiscReqCode */
+    CARD8	xf86miscReqType;
+    CARD16	length B16;
+    CARD16	major B16;
+    CARD16	minor B16;
+} xXF86MiscSetClientVersionReq;
+#define sz_xXF86MiscSetClientVersionReq	8
 
 #endif /* _XF86MISCSTR_H_ */

@@ -326,6 +326,7 @@ xf86KbdProc (pKeyboard, what)
 	XkbSetRulesDflts(xf86Info.xkbrules, xf86Info.xkbmodel,
 			 xf86Info.xkblayout, xf86Info.xkbvariant,
 			 xf86Info.xkboptions);
+	
 	XkbInitKeyboardDeviceStruct(pKeyboard, 
 				    &names,
 				    &keySyms, 

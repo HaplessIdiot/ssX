@@ -64,7 +64,7 @@ CHIPSShowCursor(ScrnInfoPtr pScrn)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     unsigned char tmp;
 
-    CURSOR_SYNC(pScrn);
+    CURSOR_SYNC(pScrn); 
     
     /* turn the cursor on */
     if (IS_HiQV(cPtr)) {
@@ -294,7 +294,7 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
 
-    CURSOR_SYNC(pScrn);
+    CURSOR_SYNC(pScrn); 
 
     if (cPtr->cursorDelay) {
 	usleep(200000);
@@ -372,9 +372,8 @@ CHIPSLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 static Bool
 CHIPSUseHWCursor(ScreenPtr pScr, CursorPtr pCurs)
 {
-    CHIPSACLPtr cAcl = CHIPSACLPTR(xf86Screens[pScr->myNum]);
-
-    return cAcl->UseHWCursor;
+    CHIPSPtr cPtr = CHIPSPTR(xf86Screens[pScr->myNum]);
+    return ((cPtr->Flags & ChipsHWCursor) != 0);
 }
 
 Bool
@@ -383,7 +382,7 @@ CHIPSCursorInit(ScreenPtr pScreen)
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
     xf86CursorInfoPtr infoPtr;
-    
+
     infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
 

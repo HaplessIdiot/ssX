@@ -1439,11 +1439,13 @@ vgaHWHBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits,
 	int i = (regp->CRTC[3] & 0x1F) 
 	    | ((regp->CRTC[5] & 0x80) >> 2)
 	    | ExtBits;
-	if ((Flags & KGA_ENABLE_ON_ZERO) 
-	    && (i-- > (((mode->CrtcHBlankStart >> 3) - 1) 
+	if (Flags & KGA_ENABLE_ON_ZERO) {
+	    if ((i-- > (((mode->CrtcHBlankStart >> 3) - 1) 
 		       & (0x3F | ExtBitMask)))
 	    && (mode->CrtcHBlankEnd == mode->CrtcHTotal))
 	    i = 0;
+	} else if (Flags & KGA_BE_TOT_DEC)
+	    i--;
 	regp->CRTC[3] = (regp->CRTC[3] & ~0x1F) | (i & 0x1F);
 	regp->CRTC[5] = (regp->CRTC[5] & ~0x80) | ((i << 2) & 0x80);
 	ExtBits = i & ExtBitMask;
@@ -1476,14 +1478,17 @@ vgaHWVBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits,
       /* Null top overscan */
     {
 	int i = regp->CRTC[22] | ExtBits;
-	if ((Flags & KGA_ENABLE_ON_ZERO) 
-	    && ((BitMask && ((i & BitMask) > (VBlankStart & BitMask)))
+	if (Flags & KGA_ENABLE_ON_ZERO) {
+	    if (((BitMask && ((i & BitMask) > (VBlankStart & BitMask)))
 	     || ((i > VBlankStart)  &&  		/* 8-bit case */
 	    ((i & 0x7F) > (VBlankStart & 0x7F)))) &&	/* 7-bit case */
 	    !(regp->CRTC[9] & 0x9F))			/* 1 scanline/row */
 	    i = 0;
 	else
 	    i = (i - 1);
+	} else if (Flags & KGA_BE_TOT_DEC)
+	    i = (i - 1);
+
 	regp->CRTC[22] = i & 0xFF;
 	ExtBits = i & 0xFF00;
     }

@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/programs/xkbcomp/symbols/Imakefile,v 3.44 2001/11/21 22:28:52
 		 ee el en_US es \
 		 fi fr fr_CH \
 		 gb ge_la ge_ru group guj gur \
-		 hu hu_US hr \
+		 hu hu_US hu_qwerty hr \
 		 il il_phonetic iso9995-3 inet ir is it iu \
 		 jp \
 		 keypad \

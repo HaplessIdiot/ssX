@@ -209,6 +209,13 @@
 # if defined(linux)
 #  define ARCH_PCI_OS_INIT linuxPciInit
 # endif
+#elif defined(__x86_64__)
+# define ARCH_PCI_INIT ix86PciInit
+# define INCLUDE_XF86_MAP_PCI_MEM
+# define INCLUDE_XF86_NO_DOMAIN
+# if defined(linux)
+#  define ARCH_PCI_OS_INIT linuxPciInit
+# endif
 #elif defined(__mc68000__)
 # if defined(linux)
 #  define ARCH_PCI_INIT linuxPciInit

@@ -260,6 +260,8 @@ xkb_symbols "uni_102_qwerty_dot" {
 hidden partial alphanumeric_keys
 xkb_symbols "def_uni" {
 
+    key <AD07> {        [                u, U                ],
+                        [         EuroSign                   ]       };
     key <AC02> {        [                s, S                ],
                         [          dstroke                   ]       };
     key <AC03> {        [                d, D                ],

@@ -589,6 +589,10 @@ extern void __MESA_resetExtension(void)
 	}
 	__glXFree(MESAScreens[i].glx_vis);
 	MESAScreens[i].glx_vis = NULL;
+	__glXFree(MESAScreens[i].private);
+	MESAScreens[i].private = NULL;
+	__glXFree(MESAScreens[i].xm_vis);
+	MESAScreens[i].xm_vis = NULL;
 	MESAScreens[i].num_vis = 0;
     }
     __glDDXScreenInfo.pGlxVisual = NULL;

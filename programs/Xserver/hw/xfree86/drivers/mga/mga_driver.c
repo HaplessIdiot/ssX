@@ -2118,6 +2118,17 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         pMga->pClientStruct->pMga = (MGAPtr) pMga;
 
         MGAMapMem(pScrn);
+	/* 
+	 * For some reason the MGAOPM_DMA_BLIT bit needs to be set
+	 * on G200 before opening the HALlib. I don't know why.
+	 * MATROX: hint, hint.
+	 */
+	/*if (pMga->Chipset == PCI_CHIP_MGAG200 ||
+	  pMga->Chipset == PCI_CHIP_MGAG200_PCI) */{
+	    CARD32 opmode;
+	    opmode = INREG(MGAREG_OPMODE);
+	    OUTREG(MGAREG_OPMODE,  MGAOPM_DMA_BLIT | opmode);
+	}
         MGAOpenLibrary(pMga->pBoard,pMga->pClientStruct,sizeof(CLIENTDATA));
         MGAUnmapMem(pScrn);
         pMga->pMgaHwInfo = xalloc(sizeof(MGAHWINFO));
@@ -2679,6 +2690,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     vgaRegPtr vgaReg;
     MGAPtr pMga = MGAPTR(pScrn);
     MGARegPtr mgaReg;
+
 #ifdef USEMGAHAL
     Bool digital1 = FALSE;
     Bool digital2 = FALSE;
@@ -2785,7 +2797,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     
     );	/* MGA_HAL */
 
-    /* getting around bugs in the HAL lib. MATROX: hint, hint */
+    /* getting around bugs in the HAL lib. MATROX: hint, hint. */
     MGA_HAL(
 	    switch (pMga->Chipset) {
 	    case PCI_CHIP_MGA1064:
@@ -2794,7 +2806,8 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    case PCI_CHIP_MGAG200:
 	    case PCI_CHIP_MGAG200_PCI:
 	    case PCI_CHIP_MGAG400:	      
-	      if(pMga->SecondCrtc == FALSE && pMga->HWCursor == TRUE) {
+	    case PCI_CHIP_MGAG550:
+		if(pMga->SecondCrtc == FALSE && pMga->HWCursor == TRUE) {
 		outMGAdac(MGA1064_CURSOR_BASE_ADR_LOW, 
 			  pMga->FbCursorOffset >> 10);
 		outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, 
@@ -2818,6 +2831,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
+
     vgaHWProtect(pScrn, FALSE);
 
     if (xf86IsPc98()) {
@@ -2889,7 +2903,6 @@ MGARestore(ScrnInfoPtr pScrn)
 
     if (pScrn->pScreen != NULL)
 	MGAStormSync(pScrn);
-
     if(pMga->SecondCrtc) {
         MGARestoreSecondCrtc(pScrn);
         return;
@@ -3037,7 +3050,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef USEMGAHAL
     MGA_HAL(
 	/* There is a problem in the HALlib: set soft reset bit */
-	/* MATROX: hint, hint */
+	/* MATROX: hint, hint. */
 	if (!pMga->Primary && !pMga->FBDev &&
 	    (pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SG) ) {
 	    OUTREG(MGAREG_Reset, 1);
@@ -3089,7 +3102,6 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!MGAModeInit(pScrn, pScrn->currentMode))
 	    return FALSE;
     }
-
     /* Darken the screen for aesthetic reasons and set the viewport */
     if (pMga->SecondCrtc == TRUE) {
         MGASaveScreenCrtc2(pScreen, SCREEN_SAVER_ON);
@@ -3367,7 +3379,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 Bool
 MGASwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
 {
-    return MGAModeInit(xf86Screens[scrnIndex], mode);
+    return  MGAModeInit(xf86Screens[scrnIndex], mode);
 }
 
 
@@ -3562,6 +3574,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
     MGAEntPtr pMgaEnt = NULL;
+
 #ifdef USEMGAHAL    
     MGA_HAL( RESTORE_TEXTMODE_ON_DVI(pMga); );
 #endif

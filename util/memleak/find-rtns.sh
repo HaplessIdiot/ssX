@@ -15,6 +15,9 @@ trap "rm -f $TMP $TMP1" 0
 OBJ=$1
 shift
 echo 'set width 500' > $TMP1
+# To load shared libs set breakpoint and run
+echo 'break main' >> $TMP1
+echo 'r' >> $TMP1
 for i in `grep '\(return stack:\)\|\(allocated at\)' $* | 
 	tr ' ' '\012' | 
 	grep 0x | sort -u`; 

@@ -3312,6 +3312,13 @@ S3VModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
    if ((mode->CrtcHSyncEnd >> 3) - (mode->CrtcHSyncStart >> 3) > 32)
       i |= 0x20;   /* add another 32 DCLKs to hsync pulse width */
 
+   /* video playback chokes if sync start and display end are equal */
+   if (mode->CrtcHSyncStart - mode->CrtcHDisplay < ps3v->HorizScaleFactor) {
+       int tmp = vganew->CRTC[4] + ((i&0x10)<<4) + ps3v->HorizScaleFactor;
+       vganew->CRTC[4] = tmp & 0xff;
+       i |= ((tmp >> 4) & 0x10);
+   }
+		      
    j = (  vganew->CRTC[0] + ((i&0x01)<<8)
         + vganew->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
 

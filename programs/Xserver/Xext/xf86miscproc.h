@@ -56,6 +56,7 @@ int MiscExtSetGrabKeysState(ClientPtr client, int enable);
 pointer MiscExtCreateStruct(MiscExtStructType mse_or_kbd);
 void    MiscExtDestroyStruct(pointer structure, MiscExtStructType mse_or_kbd);
 MiscExtReturn MiscExtApply(pointer structure, MiscExtStructType mse_or_kbd);
+Bool MiscExtSetMouseDevice(pointer mouse, char* device);
 
 #endif
 

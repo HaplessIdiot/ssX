@@ -2137,6 +2137,7 @@ I810LeaveVT(int scrnIndex, int flags) {
    if(pI810->AccelInfoRec != NULL) {
       I810RefreshRing( pScrn );
       I810Sync( pScrn );
+      pI810->AccelInfoRec->NeedToSync=FALSE;
    }
    I810Restore(pScrn);
 

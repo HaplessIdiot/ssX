@@ -502,15 +502,15 @@ XkbRF_ApplyRule(rule,names)
     }
     else {
 	if (rule->keycodes)
-	    names->keycodes= _Concat(names->keycodes,rule->keycodes);
+  	    names->keycodes= _Concat(names->keycodes,rule->keycodes);
 	if (rule->symbols)
-	    names->symbols= _Concat(names->symbols,rule->symbols);
+  	    names->symbols= _Concat(names->symbols,rule->symbols);
 	if (rule->types)
-	    names->types= _Concat(names->types,rule->types);
+  	    names->types= _Concat(names->types,rule->types);
 	if (rule->compat)
-	    names->compat= _Concat(names->compat,rule->compat);
+ 	    names->compat= _Concat(names->compat,rule->compat);
 	if (rule->geometry)
-	    names->geometry= _Concat(names->geometry,rule->geometry);
+  	    names->geometry= _Concat(names->geometry,rule->geometry);
 	if (rule->keymap)
 	    names->keymap= _Concat(names->keymap,rule->keymap);
     }

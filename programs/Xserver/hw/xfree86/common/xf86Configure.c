@@ -742,7 +742,8 @@ configureDDCMonitorSection (int screennum)
 	  len = 0;
 	}
 	if ((ptr->mon_comment =
-	     xrealloc(ptr->mon_comment, len+strlen(displaySize_string)))) {
+	     xf86confrealloc(ptr->mon_comment, 
+			     len+strlen(displaySize_string)))) {
 	  strcpy(ptr->mon_comment + len, displaySize_string);
 	}
       }
@@ -756,9 +757,11 @@ configureDDCMonitorSection (int screennum)
 	    case DS_WHITE_P:
 	      break;
 	    case DS_NAME:
-	      xfree(ptr->mon_modelname);
-	      ptr->mon_modelname = 
-		strdup((char*)(ConfiguredMonitor->det_mon[i].section.name));
+		ptr->mon_modelname  = xf86confrealloc(ptr->mon_modelname, 
+		  strlen((char*)(ConfiguredMonitor->det_mon[i].section.name))
+		    + 1);
+		strcpy(ptr->mon_modelname,
+		       (char*)(ConfiguredMonitor->det_mon[i].section.name));
 	      break;
 	    case DS_ASCII_STR:
 	    case DS_SERIAL:

@@ -95,7 +95,7 @@ typedef struct x_BusAccRec {
 	    int bus;
 	    int primary_bus;
 	    PCITAG acc;
-	    pciBridgeSave save;
+	    pciBridgesSave save;
 	    void (*func)(PCITAG,int,CARD32,CARD32);
 	} pci;
     } busdep;

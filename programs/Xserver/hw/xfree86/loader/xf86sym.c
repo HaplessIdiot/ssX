@@ -574,6 +574,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(MiscExtGetMouseSettings)
    SYMFUNC(MiscExtGetMouseValue)
    SYMFUNC(MiscExtSetMouseValue)
+   SYMFUNC(MiscExtSetMouseDevice)
    SYMFUNC(MiscExtGetKbdSettings)
    SYMFUNC(MiscExtGetKbdValue)
    SYMFUNC(MiscExtSetKbdValue)

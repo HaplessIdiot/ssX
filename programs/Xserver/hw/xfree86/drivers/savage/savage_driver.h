@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.10 2001/05/18 23:35:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.h,v 1.11 2001/08/09 19:14:13 dawes Exp $ */
 
 #ifndef SAVAGE_VGAHWMMIO_H
 #define SAVAGE_VGAHWMMIO_H
@@ -176,7 +176,7 @@ typedef struct _Savage {
     XF86VideoAdaptorPtr	adaptor;
     int			VideoZoomMax;
     int			dwBCIWait2DIdle;
-
+    XF86OffscreenImagePtr offscreenImages;
 } SavageRec, *SavagePtr;
 
 /* Video flags. */

@@ -290,18 +290,6 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
-static const char *int10Symbols[] = {
-    "xf86ExecX86int10",
-#if 0
-    "xf86FreeInt10",
-#endif
-    "xf86InitInt10",
-    "xf86Int10AllocPages",
-    "xf86Int10FreePages",
-    "xf86int10Addr",
-    NULL
-};
-
 static const char *fbSymbols[] = {
     "fbPictureInit",
     "fbScreenInit",
@@ -337,7 +325,7 @@ static pointer SavageSetup(pointer module, pointer opts, int *errmaj,
 	xf86AddDriver(&SAVAGE, module, 0);
 	LoaderRefSymLists(vgaHWSymbols, fbSymbols, ramdacSymbols, 
 			  xaaSymbols, shadowSymbols, vbeSymbols, vbeOptSymbols,
-			  int10Symbols, i2cSymbols, ddcSymbols, NULL);
+			  i2cSymbols, ddcSymbols, NULL);
 	return (pointer) 1;
     } else {
 	if (errmaj)
@@ -673,7 +661,7 @@ static int LookupChipID( PciChipsets* pset, int ChipID )
 
 static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 {
-    EntityInfoPtr pEnt;
+    EntityInfoPtr pEnt = NULL;
     SavagePtr psav;
     MessageType from = X_DEFAULT;
     int i;
@@ -895,14 +883,9 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
     }
     psav->EntityIndex = pEnt->index;
 
-    if (xf86LoadSubModule(pScrn, "int10")) {
- 	xf86LoaderReqSymLists(int10Symbols, NULL);
-	psav->pInt10 = xf86InitInt10(pEnt->index);
-    }
-
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
-	psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
+	psav->pVbe = VBEInit(NULL, pEnt->index);
     }
 
 
@@ -1323,7 +1306,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 			  128, 2048, 
 			  pScrn->virtualX, pScrn->virtualY,
 			  psav->videoRambytes, LOOKUP_BEST_REFRESH);
-
+    xfree(clockRanges);
     if (i == -1) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "xf86ValidateModes failure\n");
 	SavageFreeRec(pScrn);
@@ -1825,7 +1808,7 @@ static void SavageWriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr,
      * switch to mode 3 here seems to eliminate the issue.
      */
 
-    if( ((restore->CR31 & 0x0a) == 0) && psav->pInt10 ) {
+    if( ((restore->CR31 & 0x0a) == 0) && psav->pVbe ) {
 	SavageSetTextMode( psav );
     }
 
@@ -2166,7 +2149,8 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 
     pEnt = xf86GetEntityInfo(pScrn->entityList[0]); 
     psav->pVbe = VBEInit(NULL, pEnt->index);
- 
+    xfree(pEnt);
+
     SavageEnableMMIO(pScrn);
 
     if (!SavageMapFB(pScrn))
@@ -2712,6 +2696,14 @@ static Bool SavageCloseScreen(int scrnIndex, ScreenPtr pScreen)
     SavageRegPtr SavageSavePtr = &psav->SavedReg;
 
     TRACE(("SavageCloseScreen\n"));
+
+    if (psav->CursorInfoRec)
+	xfree(psav->CursorInfoRec);
+    psav->CursorInfoRec = NULL;
+
+    if (psav->adaptor)
+	xfree(psav->adaptor);
+    psav->adaptor = NULL;
 
     if (psav->pVbe)
       vbeFree(psav->pVbe);
