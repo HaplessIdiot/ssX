@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/util.c,v 1.24 2002/11/10 23:21:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/util.c,v 1.25 2002/12/04 05:27:56 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>		/* for realpath() */
@@ -858,7 +858,7 @@ DirWindow(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	return;
 
     if (*num_params == 1) {
-	strncpy(path, params[0], sizeof(path - 2));
+	strncpy(path, params[0], sizeof(path) - 2);
 	path[sizeof(path) - 2] = '\0';
     }
     else {
