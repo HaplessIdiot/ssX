@@ -1,4 +1,8 @@
 XFree86 4.0b (?? April 2000)
+  97. Remove some leftover INTERNAL_VS_EXTERNAL_PADDING stuff from the
+      extensions (Mark Vojkovich).
+  96. Fix a NonTE text bug in XAA where zero-height primitives could be passed
+      to the driver (Mark Vojkovich).
   95. Add colour expansion acceleration for Mach64's (Kevin Martin,
       Marc La France).
 
