@@ -1,4 +1,8 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 672. Fixes for xterm (Thomas Dickey):
+      - Add a limit-check in selection to fix a bug in triple-clicking
+        (Bugzilla #981)
+      - add -v/-version/-h/-help options to uxterm (Debian #223926)
  671. Updates for SCO support (Bugzilla #994, Kean Johnston).
  670. Don't build the Aiptek driver unless HasLinuxInput is set
       (Bugzilla #972, Andrew Aitchison).
@@ -18385,7 +18389,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3040 2003/12/18 15:02:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3041 2003/12/18 16:38:35 dawes Exp $
 
 
 
