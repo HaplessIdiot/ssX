@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.26 2003/08/24 17:37:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.27tsi Exp $ */
 
 /*
  *
@@ -218,12 +218,12 @@ typedef struct _loader {
 
 /* Compiled-in version information */
 typedef struct {
-    INT32 xf86Version;
-    INT32 ansicVersion;
-    INT32 videodrvVersion;
-    INT32 xinputVersion;
-    INT32 extensionVersion;
-    INT32 fontVersion;
+    int xf86Version;
+    int ansicVersion;
+    int videodrvVersion;
+    int xinputVersion;
+    int extensionVersion;
+    int fontVersion;
 } ModuleVersions;
 extern ModuleVersions LoaderVersionInfo;
 

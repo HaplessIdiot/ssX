@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_clear.c,v 1.5 2000/09/26 15:56:48 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_clear.c,v 1.6tsi Exp $ */
 
 /*
  * Authors:
@@ -39,9 +39,11 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "swrast/swrast.h"
 #include "mmath.h"
 
+#if 0
 static GLbitfield sis_3D_Clear( GLcontext * ctx, GLbitfield mask,
 				GLint x, GLint y, GLint width,
 				GLint height );
+#endif
 static void sis_clear_color_buffer( GLcontext *ctx, GLenum mask, GLint x,
 				    GLint y, GLint width, GLint height );
 static void sis_clear_z_stencil_buffer( GLcontext * ctx,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.8tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_xv.c,v 1.9tsi Exp $ */
 /*
 Copyright (C) 2000 The XFree86 Project, Inc.  All Rights Reserved.
 
@@ -471,8 +471,6 @@ S3VStopVideo(ScrnInfoPtr pScrn, pointer data, Bool shutdown)
 {
   S3VPtr ps3v = S3VPTR(pScrn);
   S3VPortPrivPtr pPriv = ps3v->portPrivate;
-
-  vgaHWPtr hwp = VGAHWPTR(pScrn);
 
 #if 0
   MGAPtr pMga = MGAPTR(pScrn);

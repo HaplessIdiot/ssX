@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.30 2003/09/24 02:43:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.31tsi Exp $ */
 
 /*
  * Copyright 2000 VA Linux Systems Inc., Fremont, California.
@@ -1078,8 +1078,8 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
 
    xf86DrvMsg( pScrn->scrnIndex, X_INFO,
 	       "[drm] Sarea %d+%d: %d\n",
-	       sizeof(XF86DRISAREARec), sizeof(MGASAREAPrivRec),
-	       sizeof(XF86DRISAREARec) + sizeof(MGASAREAPrivRec) );
+	       (int)sizeof(XF86DRISAREARec), (int)sizeof(MGASAREAPrivRec),
+	       (int)sizeof(XF86DRISAREARec) + (int)sizeof(MGASAREAPrivRec) );
 
    pDRIInfo->SAREASize = SAREA_MAX;
 

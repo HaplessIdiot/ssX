@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from The XFree86 Project or Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.35tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_driver.c,v 1.36tsi Exp $ */
 
 #include "xf86Resources.h"
 #include "xf86RAC.h"
@@ -3210,21 +3210,21 @@ SMI_PrintRegs(ScrnInfoPtr pScrn)
 	for (i = 0x00; i <= 0x44; i += 4)
 	{
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
-		xf86ErrorFVerb(VERBLEV, " %08lX", READ_DPR(pSmi, i));
+		xf86ErrorFVerb(VERBLEV, " %08lX", (unsigned long)READ_DPR(pSmi, i));
 	}
 
 	xf86ErrorFVerb(VERBLEV, "\n\nVPR    x0       x4       x8       xC");
 	for (i = 0x00; i <= 0x60; i += 4)
 	{
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
-		xf86ErrorFVerb(VERBLEV, " %08lX", READ_VPR(pSmi, i));
+		xf86ErrorFVerb(VERBLEV, " %08lX", (unsigned long)READ_VPR(pSmi, i));
 	}
 
 	xf86ErrorFVerb(VERBLEV, "\n\nCPR    x0       x4       x8       xC");
 	for (i = 0x00; i <= 0x18; i += 4)
 	{
 		if ((i & 0xF) == 0x0) xf86ErrorFVerb(VERBLEV, "\n%02X|", i);
-		xf86ErrorFVerb(VERBLEV, " %08lX", READ_CPR(pSmi, i));
+		xf86ErrorFVerb(VERBLEV, " %08lX", (unsigned long)READ_CPR(pSmi, i));
 	}
 
 	xf86ErrorFVerb(VERBLEV, "\n\n");

@@ -1,4 +1,4 @@
-/* $Id: citron.c,v 1.11 2003/09/24 03:16:58 dawes Exp $
+/* $Id: citron.c,v 1.12 2003/11/06 18:38:11 tsi Exp $
  * Copyright (c) 1998  Metro Link Incorporated
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -25,7 +25,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.10 2003/09/24 02:43:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/citron/citron.c,v 1.11tsi Exp $ */
 
 /*
  * Based, in part, on code with the following copyright notice:
@@ -596,8 +596,10 @@ xf86CitronPrint (int nr, LedCtrl *ctrl)
 {
 	DBG(8, ErrorF("%s------------------------------------------\n", CI_INFO));
 	DBG(8, ErrorF("%sxf86CitronFeedback%d(dev, ctrl)\n", CI_INFO, nr));
-	DBG(8, ErrorF("%s  ctrl->led_values.......:%ld [0x%08lX]\n", CI_INFO, ctrl->led_values, ctrl->led_values));
-	DBG(8, ErrorF("%s  ctrl->led_mask.........:%ld [0x%08lX]\n", CI_INFO, ctrl->led_mask, ctrl->led_mask));
+	DBG(8, ErrorF("%s  ctrl->led_values.......:%ld [0x%08lX]\n", CI_INFO,
+		ctrl->led_values, ctrl->led_values));
+	DBG(8, ErrorF("%s  ctrl->led_mask.........:%ld [0x%08lX]\n", CI_INFO,
+		(unsigned long)ctrl->led_mask, (unsigned long)ctrl->led_mask));
 	DBG(8, ErrorF("%s  ctrl->id...............:%d\n", CI_INFO, ctrl->id));
 }
 
@@ -745,7 +747,8 @@ cit_SuperVisionTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 	cit_PrivatePtr priv = (cit_PrivatePtr) arg;
     int	sigstate;
 
-	DBG(5, ErrorF ("%scit_SuperVisionTimer called %ld\n", CI_INFO, GetTimeInMillis()));
+	DBG(5, ErrorF ("%scit_SuperVisionTimer called %ld\n", CI_INFO,
+			(unsigned long)GetTimeInMillis()));
 
     sigstate = xf86BlockSIGIO ();
 	
@@ -803,7 +806,8 @@ CitronPreInit (InputDriverPtr drv, IDevPtr dev, int flags)
 	int errmaj, errmin;
 #endif
 
-	ErrorF ("%sCitronPreInit called - xcalloc=%d\n", CI_INFO, sizeof(cit_PrivateRec));
+	ErrorF ("%sCitronPreInit called - xcalloc=%d\n", CI_INFO,
+		(int)sizeof(cit_PrivateRec));
 /*	DBG(2, ErrorF("\txf86Verbose=%d\n", xf86Verbose));*/
 	if ((!local) || (!priv))
 	{

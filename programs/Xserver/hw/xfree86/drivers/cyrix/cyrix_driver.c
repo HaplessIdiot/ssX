@@ -50,7 +50,7 @@
  *		(note that most of the data books have been released by
  *		 NatSemi and are downloadable for free as pdf files)
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.29tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_driver.c,v 1.30tsi Exp $ */
 
 #include "fb.h"
 #include "mibank.h"
@@ -549,7 +549,7 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     int videoram;
     int i;
     ClockRangePtr clockRanges;
-    CARD32 physbase, padsize;
+    unsigned int physbase, padsize;
     int device_step, device_revision;
     int vgaIOBase;
     unsigned char gcr;
@@ -617,8 +617,8 @@ CYRIXPreInit(ScrnInfoPtr pScrn, int flags)
     /*      end GGI MediaGX driver based code */
     if (padsize == 0) return (FALSE);
 
-    xf86ErrorF("%s: GX_BASE: 0x%lx\n",CYRIX_NAME, (unsigned long)physbase);
-    xf86ErrorF("%s: Scratchpad size: %ld kbytes\n",CYRIX_NAME, padsize);
+    xf86ErrorF("%s: GX_BASE: 0x%x\n", CYRIX_NAME, physbase);
+    xf86ErrorF("%s: Scratchpad size: %d kbytes\n", CYRIX_NAME, padsize);
 
     /* Probe for the MediaGX processor version details.  Older versions
      * use different op-codes for setting the organization of the

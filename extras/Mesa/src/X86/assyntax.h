@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #ifndef __ASSYNTAX_H__
 #define __ASSYNTAX_H__

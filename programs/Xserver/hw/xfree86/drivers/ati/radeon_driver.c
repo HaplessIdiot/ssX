@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.112 2003/11/03 05:11:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.113tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -5092,7 +5092,7 @@ static void RADEONRestorePLLRegisters(ScrnInfoPtr pScrn,
 	      | RADEON_PPLL_ATOMIC_UPDATE_EN
 	      | RADEON_PPLL_VGA_ATOMIC_UPDATE_EN));
 
-    xf86DrvMsg(0, X_INFO, "Wrote: rd=%ld, fd=%ld, pd=%ld\n",
+    xf86DrvMsg(0, X_INFO, "Wrote: rd=%d, fd=%d, pd=%d\n",
 	       restore->ppll_ref_div & RADEON_PPLL_REF_DIV_MASK,
 	       restore->ppll_div_3 & RADEON_PPLL_FB3_DIV_MASK,
 	       (restore->ppll_div_3 & RADEON_PPLL_POST3_DIV_MASK) >> 16);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.60tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.61tsi Exp $ */
 
 /*
  *
@@ -2464,7 +2464,7 @@ Elf_RelocateEntry(ELFModulePtr elffile, Elf_Word secn, Elf_Rel_t *rel,
 
     default:
 	ErrorF("Elf_RelocateEntry() Unsupported relocation type %d\n",
-	       ELF_R_TYPE(rel->r_info));
+	       (int)ELF_R_TYPE(rel->r_info));
 	break;
     }
     return 0;

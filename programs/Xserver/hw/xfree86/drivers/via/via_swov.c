@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.5tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_swov.c,v 1.6tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -312,7 +312,7 @@ unsigned long VIAVidCreateSurface(ScrnInfoPtr pScrn, LPDDSURFACEDESC lpDDSurface
             if ( hwDiff->dwThreeHQVBuffer )    /*CLE_C0*/
             {
                 VIDOutD(HQV_DST_STARTADDR2,pVia->swov.overlayRecordV1.dwHQVAddr[2]);
-                ErrorF("000003FC %08lx\n",VIDInD(HQV_DST_STARTADDR2) );
+                ErrorF("000003FC %08lx\n", (unsigned long)VIDInD(HQV_DST_STARTADDR2) );
             }
            
             break;
@@ -564,7 +564,7 @@ if (!(pVia->swov.gdwVideoFlagSW & SW_USE_HQV))
             if ( hwDiff->dwThreeHQVBuffer )    /*CLE_C0*/
             {
                 VIDOutD(HQV_DST_STARTADDR2,pVia->swov.overlayRecordV1.dwHQVAddr[2]);
-                ErrorF("000003FC %08lx\n",VIDInD(HQV_DST_STARTADDR2) );
+                ErrorF("000003FC %08lx\n", (unsigned long)VIDInD(HQV_DST_STARTADDR2) );
             }
              
             break;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.37 2003/09/24 02:43:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.38tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -716,8 +716,8 @@ static Bool RADEONSetAgpMode(RADEONInfoPtr info, ScreenPtr pScreen)
 {
     unsigned char *RADEONMMIO = info->MMIO;
     unsigned long mode   = drmAgpGetMode(info->drmFD);	/* Default mode */
-    unsigned long vendor = drmAgpVendorId(info->drmFD);
-    unsigned long device = drmAgpDeviceId(info->drmFD);
+    unsigned int  vendor = drmAgpVendorId(info->drmFD);
+    unsigned int  device = drmAgpDeviceId(info->drmFD);
 
     mode &= ~RADEON_AGP_MODE_MASK;
     switch (info->agpMode) {

@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.19 2003/07/16 01:39:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.20tsi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -1502,8 +1502,8 @@ char		*desc,*start;
     if ( rep->totalVModMapKeys>0 )
 	desc= XkbWriteVirtualModMap(xkb,rep,desc,client);
     if ((desc-start)!=(len)) {
-	ErrorF("BOGUS LENGTH in write keyboard desc, expected %d, got %d\n",
-					len, desc-start);
+	ErrorF("BOGUS LENGTH in write keyboard desc, expected %d, got %ld\n",
+					len, (unsigned long)(desc-start));
     }
     if (client->swapped) {
 	register int n;
@@ -3858,8 +3858,8 @@ char *			desc;
 	desc+= rep->nRadioGroups*4;
     }
     if ((desc-start)!=(length)) {
-	ErrorF("BOGUS LENGTH in write names, expected %d, got %d\n",
-					length, desc-start);
+	ErrorF("BOGUS LENGTH in write names, expected %d, got %ld\n",
+					length, (unsigned long)(desc-start));
     }
     WriteToClient(client, SIZEOF(xkbGetNamesReply), (char *)rep);
     WriteToClient(client, length, start);
@@ -4922,8 +4922,8 @@ XkbSendGeometry(client,geom,rep,freeGeom)
 	if ( rep->nKeyAliases>0 )
 	    desc = XkbWriteGeomKeyAliases(desc,geom,client->swapped);
 	if ((desc-start)!=(len)) {
-	    ErrorF("BOGUS LENGTH in XkbSendGeometry, expected %d, got %d\n",
-							len, desc-start);
+	    ErrorF("BOGUS LENGTH in XkbSendGeometry, expected %d, got %ld\n",
+			len, (unsigned long)(desc-start));
 	}
     }
     else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.56tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.57tsi Exp $ */
 
 /*
 
@@ -848,7 +848,7 @@ ProcXF86VidModeDeleteModeLine(ClientPtr client)
 	    ErrorF("req_len = %ld, sizeof(Req) = %d, privsize = %ld, "
 		   "len = %d, length = %d\n",
 		    (unsigned long)client->req_len,
-		    sizeof(xXF86VidModeDeleteModeLineReq)>>2,
+		    (int)sizeof(xXF86VidModeDeleteModeLineReq)>>2,
 		    (unsigned long)stuff->privsize, len, stuff->length);
 	}
 	return BadLength;

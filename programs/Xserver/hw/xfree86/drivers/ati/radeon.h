@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.41 2003/09/28 20:15:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.42tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -171,8 +171,8 @@ typedef struct {
     int               post_div;
 
 				/* PLL registers */
-    CARD32            ppll_ref_div;
-    CARD32            ppll_div_3;
+    unsigned          ppll_ref_div;
+    unsigned          ppll_div_3;
     CARD32            htotal_cntl;
 
 				/* Computed values for PLL2 */
@@ -675,7 +675,7 @@ do {									\
 		   "ADVANCE_RING() start: %d used: %d count: %d\n",	\
 		   info->indirectStart,					\
 		   info->indirectBuffer->used,				\
-		   __count * sizeof(CARD32));				\
+		   __count * (int)sizeof(CARD32));			\
     }									\
     info->indirectBuffer->used += __count * (int)sizeof(CARD32);	\
 } while (0)
