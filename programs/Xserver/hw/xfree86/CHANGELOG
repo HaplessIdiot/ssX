@@ -1,4 +1,6 @@
 XFree86 4.0.1e (3 November 2000)
+ 850. Fixed build problem in s3virge when XvExtension is not set (Stuart
+      Anderson)
  849. Add a message at the top of the server/log output for pre-release
       versions stating that they are unsupported (David Dawes).
  848. Fix two problems in Imake.rules: have LinkBuildBinary create the
@@ -11394,4 +11396,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1367 2000/11/02 02:51:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1368 2000/11/02 04:44:52 dawes Exp $
