@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx August 2001)
+ 261. Fix DPMS support for I128 driver (Robin Cutshaw).
  260. Add OSVErrorF for Cygwin/XFree86 (#4923, Harold Hunt).
  259. Support Trident Cyber9320 ISA chip (Alan Hourihane).
  258. Fix banked 24bpp displayWidth calculation (Marc La France).
@@ -13774,4 +13775,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1927 2001/08/30 07:56:19 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1928 2001/08/30 21:26:01 alanh Exp $
