@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.138tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.139 2002/12/23 15:37:25 tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -313,10 +313,11 @@
 #define PCI_CHIP_SIS650                 0x6325 
 #define PCI_CHIP_SIS730                 0x7300
 
-/* HP */
+/* Hewlett-Packard */
+#define PCI_CHIP_ELROY			0x1054
 #define PCI_CHIP_ZX1_SBA		0x1229
 #define PCI_CHIP_ZX1_IOC		0x122A
-#define PCI_CHIP_ZX1_LBA		0x122E
+#define PCI_CHIP_ZX1_LBA		0x122E	/* a.k.a. Mercury */
 
 /* SGS */
 #define PCI_CHIP_STG2000		0x0008
