@@ -2,7 +2,7 @@
 
                           The XFree86 Project Inc.
 
-                                1 August 1999
+                              12 December 1999
 
 1.  Supported hardware
 
@@ -11,26 +11,33 @@ tested on a miroCRYSTAL VRX (V1000), Intergraph Intense-100 3D (V1000), Dia-
 mond Stealth II S220 (V2100), Hercules Thriller3D (V2200) and Innovision War-
 rior3D (V2200).
 
-2.  Important notices
+2.  Limitations
 
 V1000 cards can only work as primary display card due to hardware limita-
 tions.
+
+V2x00 cards can work even if not primary, but primary display card will be
+disabled when server is run. This is a driver limitation.
+
+Hopefully these limitations will be workaround and fixed before final XFree86
+4.0 release.
+
+3.  Important notices
 
 Some V1000-based video cards are known to lock up the computer if you have
 write-combine activated. Disabling it removes the problem. Look for settings
 in the motherboards BIOS and disable ALL settings that has to do with write-
 combine (usually called USWC or just WC for short).
 
-The "chipset" option is now implemented and honored when used. Unfortunately
-some legacy-code in the driver is preventing it from working with any cards
-but the primary display card.
+15 bits per pixel is only supported on V1000-based cards due to hardware lim-
+itations on V2x00 chipsets.
 
 If you have problems with hardware cursor use the "sw_cursor" option to
 revert back to software cursor.
 
-3.  Features
+4.  Features
 
-   o Unaccelerated
+   o Hardware acceleration
 
    o Hardware cursor
 
@@ -45,7 +52,7 @@ revert back to software cursor.
 
         o 32 bits per pixel (true colour, sparse 24bit, 16M colors)
 
-4.  XF86Config Option
+5.  XF86Config Option
 
       Option "sw_cursor"
             Disables use of the hardware cursor.
@@ -61,21 +68,32 @@ revert back to software cursor.
             so we assume the lowest. Use this option to manually override the
             value.
 
-5.  News in this release
+      Option "FramebufferWC"
+            If writecombine is disabled in BIOS, and you add this option in
+            in configuration file, then the driver will try to request write-
+            combined access to the framebuffer. This can drasticly increase
+            the preformance on unaccelerated server. Requres that "MTRR"-sup-
+            port is compiled into the OS-kernel.
 
-   o Hardware-cursor on V2x00 cards.
+      Option "NoDDC"
+            Disable probing of DDC-information from your monitor. This infor-
+            mation is not used yet and is only there for informational pur-
+            poses. This might change before final XFree86 4.0 release. Safe
+            to disable if you experience problems during startup of X-server.
 
-6.  Major fixes in this release
+6.  News in this release
 
-   o Depth 15 works on V1000 cards.
+   o Acceleration! Disabled for the moment.
 
-   o Bandwidth limits are now included. Can be overridden with DacSpeed
-     option.
+7.  Major fixes in this release
 
-7.  Known problems in current driver
+   o To be determined before final release.
 
-   o Displays with depth 15 ("-bpp 15" or "-bpp 16 -weight 555") has problems
-     on V2x00 cards.
+8.  Known problems in current driver
+
+   o The acceleration code hangs the computer during X-server startup.
+
+   o DDC-probing does not work correclty yet. No DDC information is found.
 
    o Switching from display to VC and back to display can lock up V2x00
      cards.
@@ -85,20 +103,13 @@ revert back to software cursor.
      around. V2x00 does not exhibit this problem. Probably a bug in the
      driver rather than a limitation of the chip.
 
-   o Option "chipset" is honored. Unfortunately the driver still has problems
-     and will only work if the rendition card is the primary display card in
-     the system.
+9.  Work in progress (not finished in time for release)
 
-   o If an incorrect mode was given, the server does not restore console to
-     correct state.
+   o Acceleration is disabled for the moment. If you want to play with it
+     enable the "USE_ACCEL" define in rendition.c file! Beware as it has sev-
+     eral bugs left to clear out before if is stable for general use.
 
-8.  Work in progress (not finished in time for release)
-
-   o Acceleration for V1000 chipset. Some bugs to clear out.
-
-   o Acceleration for V2100 and V2200 chipset. Not ready for general use.
-
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.3 1999/08/28 10:43:34 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.5 2000/01/21 18:11:30 dawes Exp $
 
 
 $XFree86$

@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                       Last modified 25 November 1999
+                       Last modified 17 December 1999
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -2867,7 +2867,7 @@ sufficient survey of suitable hardware is completed.
 The XF86VideoAdaptorRec:
 
           typedef struct {
-               unsigned char type;
+               unsigned int type;
                int flags;
                char *name;
                int nEncodings;
@@ -2875,8 +2875,11 @@ The XF86VideoAdaptorRec:
                int nFormats;
                XF86VideoFormatPtr pFormats;
                int nPorts;
-               XF86AttributeListPtr pAttributes;
                DevUnion *pPortPrivates;
+               int nAttributes;
+               XF86AttributePtr pAttributes;
+               int nImages;
+               XF86ImagePtr pImages;
                PutVideoFuncPtr PutVideo;
                PutStillFuncPtr PutStill;
                GetVideoFuncPtr GetVideo;
@@ -2885,6 +2888,8 @@ The XF86VideoAdaptorRec:
                SetPortAttributeFuncPtr SetPortAttribute;
                GetPortAttributeFuncPtr GetPortAttribute;
                QueryBestSizeFuncPtr QueryBestSize;
+               PutImageFuncPtr PutImage;
+               QueryImageAttributesFuncPtr QueryImageAttributes;
           } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
 
      Each adaptor will have its own XF86VideoAdaptorRec.  The fields are
@@ -2892,11 +2897,27 @@ The XF86VideoAdaptorRec:
 
      type
 
-          This can be XvInputMask, XvOutputMask or both OR'd
-          together.  This refers to the target drawable and is sim-
-          ilar to a Window's class.  XvInputMask indicates that the
-          adaptor can put video into a drawable.  XvOutputMask
-          indicates that the adaptor can get video from a drawable.
+          This can be any of the following flags OR'd together.
+
+          XvInputMask XvOutputMask
+
+               These refer to the target drawable and are sim-
+               ilar to a Window's class. XvInputMask indicates
+               that the adaptor can put video into a drawable.
+               XvOutputMask indicates that the adaptor can get
+               video from a drawable.
+
+          XvVideoMask XvStillMask XvImageMask
+
+               These indicate that the adaptor supports video,
+               still or image primitives respectively.
+
+          XvWindowMask XvPixmapMask
+
+               These indicate the types of drawables the adap-
+               tor is capable of rendering into.  At the
+               moment, Pixmap rendering is not supported and
+               the XvPixmapMask flag is ignored.
 
      flags
 
@@ -2906,9 +2927,12 @@ The XF86VideoAdaptorRec:
 
                This indicates that the video adaptor does not
                support clipping.  The driver will never
-               receive Get/Put requests where less than the
+               receive ``Put'' requests where less than the
                entire area determined by drw_x, drw_y, drw_w
-               and drw_h is visible.
+               and drw_h is visible.  This flag does not apply
+               to ``Get'' requests.  Hardware that is inca-
+               pable of clipping ``Gets'' may punt or get the
+               extents of the clipping region passed to it.
 
           VIDEO_INVERT_CLIPLIST
 
@@ -2916,16 +2940,6 @@ The XF86VideoAdaptorRec:
                the clip list to contain the regions which are
                obscured rather than the regions which are are
                visible.
-
-          VIDEO_EXPOSE
-
-               This flag applies to GetStill and GetVideo
-               only, it indicates the clip list shall contain
-               obscured regions.  Note the source region will
-               still be clipped against the screen bounds.
-               This flag is meant for showing all the contents
-               of the [root] window, if the administrator has
-               no hesitations regarding security.
 
           VIDEO_OVERLAID_STILLS
 
@@ -2935,6 +2949,17 @@ The XF86VideoAdaptorRec:
                When this flag is set, StopVideo will be called
                whenever the destination gets clipped or moved
                so that the still can be left up until then.
+
+          VIDEO_OVERLAID_IMAGES
+
+               Same as VIDEO_OVERLAID_STILLS but for images.
+
+          VIDEO_CLIP_TO_VIEWPORT
+
+               Indicates that the clip region passed to the
+               driver functions should be clipped to the visi-
+               ble portion of the screen in the case where the
+               viewport is smaller than the virtual desktop.
 
      name
 
@@ -2946,7 +2971,10 @@ The XF86VideoAdaptorRec:
 
           The number of encodings the adaptor is capable of and
           pointer to the XF86VideoEncodingRec array.  The
-          XF86VideoEncodingRec is described later on.
+          XF86VideoEncodingRec is described later on.  For drivers
+          that only support XvImages there should be an encoding
+          named "XV_IMAGE" and the width and height should specify
+          the maximum size source image supported.
 
      nFormats
 
@@ -2971,15 +2999,28 @@ The XF86VideoAdaptorRec:
           there may be many ports, this enables the driver to know
           which port the request is intended for.  Most commonly,
           this will contain a pointer to the data structure con-
-          taining information about the port.
+          taining information about the port.  In Xv, all ports on
+          a particular adaptor are expected to be identical in
+          their functionality.
+
+     nAttributes
 
      pAttributes
 
-          There is an array of XF86AttributeListRecs with an entry
-          for each port.
+          The number of attributes recognized by the adaptor and a
+          pointer to the array of XF86AttributeRecs.  The
+          XF86AttributeRec is described later on.
+
+     nImages
+
+     pImages
+
+          The number of XF86ImageRecs supported by the adaptor and
+          a pointer to the array of XF86ImageRecs. The XF86ImageRec
+          is described later on.
 
      PutVideo PutStill GetVideo GetStill StopVideo SetPortAttribute Get-
-     PortAttribute QueryBestSize
+     PortAttribute QueryBestSize PutImage QueryImageAttributes
 
           These functions define the DDX->driver interface.  In
           each case, the pointer data is passed to the driver.
@@ -2987,34 +3028,39 @@ The XF86VideoAdaptorRec:
           above.  All fields are required except under the follow-
           ing conditions:
 
-            1.  PutVideo and PutStill are not required when the
+            1.  PutVideo, PutStill and the image routines PutImage
+                and QueryImageAttributes are not required when the
                 adaptor type does not contain XvInputMask.
 
             2.  GetVideo and GetStill are not required when the
                 adaptor type does not contain XvOutputMask.
 
-          These functions should return Success if the operation
-          was completed successfully.  They can return XvBadAlloc
-          otherwise.  Xv DDX will not call a Get/Put function while
-          video is active, rather issue a StopVideo call first.
+            3.  GetVideo and PutVideo are not required when the
+                adaptor type does not contain XvVideoMask.
 
-          Earlier versions of Xv DDX had a ReclipVideo function,
-          obsolete now.  The clip region will be passed directly by
-          the functions below.  If the VIDEO_NO_CLIPPING flag is
-          set, the RegionPtr should be ignored by the driver.
-          ClipBoxes is an X-Y banded region identical to those used
-          throughout the server.  The clipBoxes represent the visi-
-          ble portions of area determined by drw_x, drw_y, drw_w
-          and drw_h in the Get/Put function.  The boxes are in
-          screen coordinates, are guaranteed not to overlap and an
-          empty region will be passed only to GetVideo, once.  This
-          to notify the driver the primitive is totally obscured
-          now.  A StopVideo call will immediately follow neverthe-
-          less.  In the case where the VIDEO_INVERT_CLIPLIST flag
-          is set, clipBoxes will indicate the areas of the primi-
-          tive which are obscured rather than the areas visible.
-          The Region must not be altered by the driver and will be
-          deleted when the function returns.
+            4.  GetStill and PutStill are not required when the
+                adaptor type does not contain XvStillMask.
+
+            5.  PutImage and QueryImageAttributes are not required
+                when the adaptor type does not contain XvImageMask.
+
+          With the exception of QueryImageAttributes, these func-
+          tions should return Success if the operation was com-
+          pleted successfully.  They can return XvBadAlloc other-
+          wise. QueryImageAttributes returns the size of the XvIm-
+          age queried.
+
+          If the VIDEO_NO_CLIPPING flag is set, the clipBoxes may
+          be ignored by the driver.  ClipBoxes is an X-Y banded
+          region identical to those used throughout the server.
+          The clipBoxes represent the visible portions of the area
+          determined by drw_x, drw_y, drw_w and drw_h in the
+          Get/Put function.  The boxes are in screen coordinates,
+          are guaranteed not to overlap and an empty region will
+          never be passed.  If the driver has specified
+          VIDEO_INVERT_CLIPLIST, clipBoxes will indicate the areas
+          of the primitive which are obscured rather than the areas
+          visible.
 
      typedef  int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn,
                short vid_x, short vid_y, short drw_x, short drw_y,
@@ -3024,8 +3070,8 @@ The XF86VideoAdaptorRec:
                RegionPtr clipBoxes, pointer data )
 
           This indicates that the driver should take a subsection
-          vid_w × vid_h at location (vid_x,vid_y) from the video
-          stream and direct it into the rectangle rw_w × drw_h at
+          vid_w by vid_h at location (vid_x,vid_y) from the video
+          stream and direct it into the rectangle drw_w by drw_h at
           location (drw_x,drw_y) on the screen, scaling as neces-
           sary.  Due to the large variations in capabilities of the
           various hardware expected to be used with this extension,
@@ -3117,7 +3163,9 @@ The XF86VideoAdaptorRec:
           the particular port should be using (see the description
           of XF86VideoEncodingRec below).  If the requested encod-
           ing is unsupported, the driver should return XvBadEncod-
-          ing.  Success should be returned otherwise.
+          ing.  If the value lies outside the advertised range Bad-
+          Value may be returned.  Success should be returned other-
+          wise.
 
      typedef void (* QueryBestSizeFuncPtr)(ScrnInfoPtr pScrn,
 
@@ -3128,13 +3176,54 @@ The XF86VideoAdaptorRec:
 
           QueryBestSize provides the client with a way to query
           what the destination dimensions would end up being if
-          they were to request that an area vid_w × vid_h from the
-          video stream be scaled to rectangle of drw_w × drw_h on
+          they were to request that an area vid_w by vid_h from the
+          video stream be scaled to rectangle of drw_w by drw_h on
           the screen.  Since it is not expected that all hardware
           will be able to get the target dimensions exactly, it is
           important that the driver provide this function.  The
           returned dimensions must be less than or equal to the
           requested dimension.
+
+     typedef  int (* PutImageFuncPtr)( ScrnInfoPtr pScrn,
+               short src_x, short src_y, short drw_x, short drw_y,
+
+               short src_w, short src_h, short drw_w, short drw_h,
+
+               int image, char *buf, short width, short height,
+
+               Bool sync, RegionPtr clipBoxes, pointer data )
+
+          This is similar to PutStill except that the source of the
+          video is not a port but the data stored in a system mem-
+          ory buffer at buf.  The data is in the format indicated
+          by the image descriptor and represents a source of size
+          width by height.  If sync is TRUE the driver should not
+          return from this function until it is through reading the
+          data from buf.  Returning when sync is TRUE indicates
+          that it is safe for the data at buf to be replaced,
+          freed, or modified.
+
+     typedef  int (* QueryImageAttributesFuncPtr)( ScrnInfoPtr pScrn,
+
+               int image, short *width, short *height,
+
+               int *pitches, int *offsets)
+
+          This function is called to let the driver specify how
+          data for a particular image of size width by height
+          should be stored.  Sometimes only the size and corrected
+          width and height are needed.  In that case pitches and
+          offsets are NULL.  The size of the memory required for
+          the image is returned by this function.  The width and
+          height of the requested image can be altered by the
+          driver to reflect format limitations (such as component
+          sampling periods that are larger than one).  If pitches
+          and offsets are not NULL, these will be arrays with as
+          many elements in them as there are planes in the image
+          format.  The driver should specify the pitch (in bytes)
+          of each scanline in the particular plane as well as the
+          offset to that plane (in bytes) from the begining of the
+          image.
 
 The XF86VideoEncodingRec:
 
@@ -3144,6 +3233,7 @@ The XF86VideoEncodingRec:
                unsigned short width, height;
                XvRationalRec rate;
           } XF86VideoEncodingRec, *XF86VideoEncodingPtr;
+
      The XF86VideoEncodingRec specifies what encodings the adaptor can
      support.  Most of this data is just informational and for the
      client's benefit, and is what will be reported by XvQueryEncodings.
@@ -3163,25 +3253,128 @@ The XF86VideoFormatRec:
      TrueColor, DirectColor or PseudoColor.  Initialization of an adap-
      tor will fail if none of the visuals on that screen are supported.
 
-The XF86AttributeListRec:
+The XF86AttributeRec:
 
           typedef struct {
-               int   number;
-               int   *flags;
-               char  **names;
+               int   flags;
+               int   min_value;
+               int   max_value;
+               char  *name;
           } XF86AttributeListRec, *XF86AttributeListPtr;
-
-     Each port will have one of these indicating the number of
-     attributes for that port, an array of names of the attributes and
-     an array of flags associated with each attribute.  Both arrays are
-     number in size.  Currently defined flags are XvGettable and XvSet-
+     Each adaptor may have an array of these advertising the attributes
+     for its ports.  Currently defined flags are XvGettable and XvSet-
      table which may be OR'd together indicating that attribute is
-     ``gettable'' or ``settable'' by the client.  Both arrays can be
-     nulled if number is zero.  While the Xv DDX copies most data from
-     these structures and stores it internally, including adaptor and
-     encoding names, the attribute names are not copied, but only their
-     pointers.  Because of this, the strings pointed to by names[] must
-     exist as long as Xv is initialized.
+     ``gettable'' or ``settable'' by the client.  The min and max field
+     specify the valid range for the value.  Name is a text string
+     describing the attribute by name.
+
+The XF86ImageRec:
+
+          typedef struct {
+               int id;
+               int type;
+               int byte_order;
+               char guid[16];
+               int bits_per_pixel;
+               int format;
+               int num_planes;
+
+               /* for RGB formats */
+               int depth;
+               unsigned int red_mask;
+               unsigned int green_mask;
+               unsigned int blue_mask;
+
+               /* for YUV formats */
+               unsigned int y_sample_bits;
+               unsigned int u_sample_bits;
+               unsigned int v_sample_bits;
+               unsigned int horz_y_period;
+               unsigned int horz_u_period;
+               unsigned int horz_v_period;
+               unsigned int vert_y_period;
+               unsigned int vert_u_period;
+               unsigned int vert_v_period;
+               char component_order[32];
+               int scanline_order;
+          } XF86ImageRec, *XF86ImagePtr;
+
+     XF86ImageRec describes how video source data is laid out in memory.
+     The fields are as follows:
+
+     id
+
+          This is a unique descriptor for the format.  It is often
+          good to set this value to the FOURCC for the format when
+          applicable.
+
+     type
+
+          This is XvRGB or XvYUV.
+
+     byte_order
+
+          This is LSBFirst or MSBFirst.
+
+     guid
+
+          This is the Globally Unique IDentifier for the format.
+          When not applicable, all characters should be NULL.
+
+     bits_per_pixel
+
+          The number of bits taken up (but not necessarily used) by
+          each pixel.  Note that for some planar formats which have
+          fractional bits per pixel (such as IF09) this number may
+          be rounded _down_.
+
+     format
+
+          This is XvPlanar or XvPacked.
+
+     num_planes
+
+          The number of planes in planar formats.  This should be
+          set to one for packed formats.
+
+     depth
+
+          The significant bits per pixel in RGB formats (analgous
+          to the depth of a pixmap format).
+
+     red_mask green_mask blue_mask
+
+          The red, green and blue bitmasks for packed RGB formats.
+
+     y_sample_bits u_sample_bits v_sample_bits
+
+          The y, u and v sample sizes (in bits).
+
+     horz_y_period horz_u_period horz_v_period
+
+          The y, u and v sampling periods in the horizontal direc-
+          tion.
+
+     vert_y_period vert_u_period vert_v_period
+
+          The y, u and v sampling periods in the vertical direc-
+          tion.
+
+     component_order
+
+          Uppercase ascii characters representing the order that
+          samples are stored within packed formats.  For planar
+          formats this represents the ordering of the planes.
+          Unused characters in the 32 byte string should be set to
+          NULL.
+
+     scanline_order
+
+          This is XvTopToBottom or XvBottomToTop.
+
+     Since some formats (particular some planar YUV formats) may not be
+     completely defined by the parameters above, the guid, when avail-
+     able, should provide the most accurate description of the format.
 
 17.  The Loader
 
@@ -6038,7 +6231,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.16 1999/11/26 00:31:12 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.19 2000/01/21 17:46:10 dawes Exp $
 
 
 $XFree86$

@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               31 December 1999
+                               31 August 1999
 
                                   Abstract
 
@@ -28,23 +28,23 @@ series.
 
    o Xterm enhancements and fixes.
 
-   o DPS support hooks have been added.
-     Display Postscript support is being maintained outside of the
-     server tree due to licensing issues.  A web page for DPS resources
-     under XFree86 will be available shortly.
+   o DPS support hooks have been added.  Display Postscript support is being
+     maintained outside of the server tree due to licensing issues.  A web
+     page for DPS resources under XFree86 will be available shortly.
 
-   o DRI enhancements including Mesa update to version 3.2, full support
-     and fifo code for 3dfx hardware, and device driver updates for
-     Linux 2.3 kernels.
+   o DRI enhancements including Mesa update to version 3.2, full support and
+     fifo code for 3dfx hardware, and device driver updates for Linux 2.3
+     kernels.
 
-   o Significant enhancements to Xv including support for XvImages
-     (YUV XImages).
+   o Significant enhancements to Xv including support for XvImages (YUV XIm-
+     ages).
 
    o Add initial VESA VBE support including initialization and DDC.
 
    o Several PCI enhancements.
 
-   o "SilkenMouse" (asynchronous pointer handling) for smoother mouse movement.
+   o "SilkenMouse" (asynchronous pointer handling) for smoother mouse move-
+     ment.
 
    o Add GeForce/Quadro support to the NVIDIA driver.
 
@@ -52,20 +52,19 @@ series.
 
    o Resource allocation infrastructure added.
 
-   o Syntax of the layout section has changed to make multi-head
-     configuration easier.
+   o Syntax of the layout section has changed to make multi-head configura-
+     tion easier.
 
    o Some Xinerama bug fixes.
 
-   o The DGA 2.0 interface is mostly finalized and includes some
-     preliminary documentation.
+   o The DGA 2.0 interface is mostly finalized and includes some preliminary
+     documentation.
 
    o ViRGE MX Melco BIOS support has been added.
 
-   o Keyboard AutoRepeat now works correctly on Linux.  This means
-     that the AutoRepeat keyword in XF86Config is now obeyed; you may be
-     more comfortable using "250 30" rather than the default setting of
-     "500 5".
+   o Keyboard AutoRepeat now works correctly on Linux.  This means that the
+     AutoRepeat keyword in XF86Config is now obeyed; you may be more comfort-
+     able using "250 30" rather than the default setting of "500 5".
 
 2.  Summary of new features in 3.9.16 compared with 3.9.15.
 
@@ -236,15 +235,13 @@ The main changes are:
                    Driver      "mouse"
                    Option      "Protocol"   "PS/2"
                    Option      "Device"     "/dev/mouse"
-		   SampleRate  80
+                   SampleRate  80
                EndSection
 
-     Note: Additional sample rates have been added for some mice.
-           Matching the mouse sampling rate with the vertical refresh
-           rate can yield very noticeable improvements in smoothness of
-           pointer event driven operations such as window moves and
-           scrolling.
-
+     Note: Additional sample rates have been added for some mice.  Matching
+     the mouse sampling rate with the vertical refresh rate can yield very
+     noticeable improvements in smoothness of pointer event driven operations
+     such as window moves and scrolling.
 
    o The Monitor section is mostly unchanged.  The main difference is that a
      set of VESA modes is defined internally in the server, and so for most
@@ -289,8 +286,8 @@ The main changes are:
                    Option      "BlankTime"  "5"
                EndSection
 
-     See the document xc/programs/Xserver/hw/xfree86/doc/DESIGN for a
-     more detailed explanation of the new ServerLayout section syntax.
+     See the document xc/programs/Xserver/hw/xfree86/doc/DESIGN for a more
+     detailed explanation of the new ServerLayout section syntax.
 
 The config file search patch has been extended, with the directories /etc/X11
 and /usr/X11R6/etc being added.
@@ -459,11 +456,10 @@ Known problems:
 
 3.7  DGA version 2
 
-DGA 2.0 is nearly completed but still not implemented by all drivers.
-Preliminary documentation for the client libraries can be found in the
-xc/programs/Xserver/hw/xfree86/DGA document.  Some degree of backwards
-compatibility with version 1.0 is provided.
-
+DGA 2.0 is nearly completed but still not implemented by all drivers.  Pre-
+liminary documentation for the client libraries can be found in the xc/pro-
+grams/Xserver/hw/xfree86/DGA document.  Some degree of backwards compatibil-
+ity with version 1.0 is provided.
 
 3.8  DDC
 
@@ -536,13 +532,12 @@ releases will support much broader implementations of hardware accelerated
 direct rendering on a wide range of 3D capable graphics devices.
 
 3.10  X-Video Extension (Xv)
-   
-An XvQueryPortAttributes function has been added as well as
-support for XvImages.  XvImages are XImages in alternate color spaces
-such as YUV and can be passed to the server through shared memory
-segments.  This allows clients to display YUV data with high quality 
-hardware scaling and filtering.   XvImages are only supported
-by the Matrox G200/G400 cards at the moment.
+
+An XvQueryPortAttributes function has been added as well as support for XvIm-
+ages.  XvImages are XImages in alternate color spaces such as YUV and can be
+passed to the server through shared memory segments.  This allows clients to
+display YUV data with high quality hardware scaling and filtering.   XvImages
+are only supported by the Matrox G200/G400 cards at the moment.
 
 3.11  Other extensions
 
@@ -653,35 +648,32 @@ a future snapshot.
 
 3.12.7  NVIDIA
 
-The "nv" driver supports all Riva TNT accelerators as well as the
-new GeForce and Quadro accelerators.  3.9.17 adds DGA 2.0 support
-and performance improvements as well as resolving some rendering
-correctness issues.
- 
+The "nv" driver supports all Riva TNT accelerators as well as the new GeForce
+and Quadro accelerators.  3.9.17 adds DGA 2.0 support and performance
+improvements as well as resolving some rendering correctness issues.
+
 Further information can be found in the nv man page.
 
-3.12.8 Glide
+3.12.8  Glide
 
-This driver is for Voodoo 1 and Voodoo 2 boards. It runs X on top of
-the 3DFX Glide API (where this is available, like for Linux). You need
-to have Glide 2.x installed before you can run this driver. This
-driver uses no hardware acceleration (since there is no 2D
-acceleration in these boards) but is rather quick anyway since the CPU
-renders to local RAM which is then copied block-wise to the
-board. Unfortunately the Voodoo 1/2 boards are rather limited in
-resolution. The Voodoo 1 can do 800x600 and the Voodoo 2 can do
-1024x768 at best, but still it has some use as a second head in 
-Xinerama or multihead mode.
+This driver is for Voodoo 1 and Voodoo 2 boards. It runs X on top of the 3DFX
+Glide API (where this is available, like for Linux). You need to have Glide
+2.x installed before you can run this driver. This driver uses no hardware
+acceleration (since there is no 2D acceleration in these boards) but is
+rather quick anyway since the CPU renders to local RAM which is then copied
+block-wise to the board. Unfortunately the Voodoo 1/2 boards are rather lim-
+ited in resolution. The Voodoo 1 can do 800x600 and the Voodoo 2 can do
+1024x768 at best, but still it has some use as a second head in Xinerama or
+multihead mode.
 
-16 and 24 bpp modes are supported (24 bit in 32-bit sparse-packed
-mode).
+16 and 24 bpp modes are supported (24 bit in 32-bit sparse-packed mode).
 
-Further information about this driver can be found in the 'glide' driver
-manpage for XFree86. You will not get this driver running before
-reading this manpage.
+Further information about this driver can be found in the 'glide' driver man-
+page for XFree86. You will not get this driver running before reading this
+manpage.
 
-For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx
-driver which talks directly to the hardware and is much faster.
+For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx driver
+which talks directly to the hardware and is much faster.
 
 4.  X libraries and clients
 
@@ -810,6 +802,37 @@ New Features:
      for feature comparison by returning the patch number (e.g., 111) in the
      secondary DA response.
 
+   o Modify treatment of XK_Delete keysym so it transmits parameterized
+     VT220-style "<esc>[3~" if modifiers (shift, control alt) are given.
+
+   o Add ``cacheDoublesize'' resource to limit the caching of font informa-
+     tion for double-sized characters, to accommodate X terminals with lim-
+     ited font memory.
+
+   o Add ``metaSendsEscape'' resource, with corresponding control sequence
+     and menu entry.  Like ``eightBitInput'', this causes xterm to send ESC
+     prefixing the given key, but applies to all keys and is independent of
+     the 8-bit/7-bit terminal setting.
+
+   o Implement an 88-color model for systems where 256-colors cannot be allo-
+     cated.
+
+   o Add support for DEC Locator control sequences for xterm.  This allows
+     the xterm mouse to be used with applications that use the DEC Locator
+     sequences, such as VAX Tpu, or SMG$ based applications.
+
+   o Implement -hold option, allowing users to retain the window after a
+     shell has exited.
+
+   o Add an application resource, ``messages'' (and a corresponding -/+mesg
+     option) which controls the initial permission on the terminal.
+
+   o Implement UTF-8 translation for Media Copy (print) operations.
+
+   o Implement vt320 control sequences for Print Composed Main Display and
+     for Print All Pages.  The latter directs xterm to print the current
+     screen as well as the scrollback buffer.
+
 Bug fixes/improvements:
 
    o If colorMode is enabled by default, compile-in default resources to
@@ -834,6 +857,71 @@ Bug fixes/improvements:
 
    o Add test/demo scripts for double size characters, font switching, screen
      resizing and colors.
+
+   o Amend treatment of ALT key so that if ALT is used as a modifier in key
+     translations, then no parameter will be sent in escape sequences for
+     Sun/PC function keys.
+
+   o Improved the ptyInitialErase logic to make it work better with a ter-
+     minfo library.
+
+   o Modify treatment of line-drawing characters in UTF-8 mode so that Uni-
+     code values are used rather than characters 1-31 for storing the trans-
+     lated characters.
+
+   o Modify translation of UTF-8 sequences to reject ``overly long'' varia-
+     tions.
+
+   o Correct a case where colors were not rendered properly.  This happened
+     when an application inserted several lines, then changed colors.  If
+     this was done all in one write, then there would be no intervening
+     refresh, and the new color was applied to the pending scrolling opera-
+     tion which was awaiting the next refresh.
+
+   o Corrected misspelled resource name in command-line option for HP func-
+     tion keys.
+
+   o Change label on ``Sun/PC Keyboard'' popup menu entry to ``VT220 Key-
+     board'', since the checked state corresponds to VT220 rather than
+     Sun/PC.
+
+   o Two corrections to simulation of bold font via overstriking:
+
+        o use clipping to avoid leaving trash at end of the text, and
+
+        o add brackets so wide-character logic does not fall-through into the
+          overstriking logic.
+
+   o Modify checks for repeat-character control sequence to test the charac-
+     ter class against xterm's state table, rather than the isprint() macro.
+
+   o Modify terminfo entry for ``xterm-xfree86'' to reflect modifiers for
+     shift and control.
+
+   o Add several entries to termcap file to make it have the same set of
+     aliases as the terminfo file.
+
+   o Scale the color values used for xterm-256color terminfo entry to
+     0..1000, as expected by ncurses.
+
+   o Change xterm-r6 terminfo definitions for F1-F4 to match program.
+
+   o Remove obsolete documentation about modifiers which can be returned in
+     mouse tracking mode, and modify logic to ignore modifiers other than the
+     existing ones, e.g., NumLock.
+
+   o Use free bit from obsolete shift-modifier coding of mouse tracking but-
+     ton events to encode buttons 4 and 5, e.g., for a wheel mouse.  Move the
+     suggested wheel-mouse button translations into charproc.c to simplify
+     customization.
+
+   o Modify warning if change-ownership of PTY fails; some configurations may
+     not happen to have old-style PTY's.
+
+   o Add more information, i.e., with strerror for some system calls in the
+     main program which may fail due to insufficient permissions.
+
+   o Various improvements to configure script, e.g., tests for utmp.
 
 4.4  xedit
 
@@ -947,7 +1035,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 3.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.18 1999/08/31 08:39:09 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.22 2000/01/20 21:46:24 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/RELNOTES,v 3.72 2000/01/03 14:54:36 robin Exp $
+$XFree86$

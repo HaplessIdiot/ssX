@@ -13,19 +13,19 @@ DG has fix the streams bug in /usr/lib/tcpip.so . (Read below) The workaround
 in the July 25 source code has been removed.  I've been told from DG that BSD
 sockets perform better in DGUX than SVR4 native STREAMS. From R4.20MU06 DG/ux
 will have the correct tcpip.so lib (no bug in STREAMS). If you have MU05,MU04
-and you want for some reason STREAMS definitely conntact DG for an upated
+and you want for some reason STREAMS definitely contact DG for an updated
 /usr/lib/tcpip.so in /usr/lib (patch for your MU04,5).
 
 DG/ux at the moment lacks the sysi86 syscall and the definition of SYSI86IOPL
 (that is in <sys/sysi86.h> but guarded by a UNIXWARE defintion that of course
 cannot be applicable to DG/ux).  Until this header is accessible by a simple
 -DDGUX , and _sysi86, sysi86 subroutines added to libc (or some other extra
-library) we need to define the DG_NO_SYSI86 to be 1.  If DG makes the above
-modifications , you will need to manually edit the files (before building) 
-   xc/programs/Xserver/hw/xfree86/SuperProbe/OS_DGUX.c
-   xc/programs/Xserver/hw/xfree86/etc/scanpci.c
-   xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c
-and eliminate DG_NO_SYSI86 flag by changing DG_NO_SYSI86 1-->0.
+library) we need to define the DG_NO_SYSI86 to be 1. If DG makes the above
+modifications , you will need to manually edit the files (before building!)
+xc/programs/Xserver/hw/xfree86/SuperProbe/OS_DGUX.c xc/pro-
+grams/Xserver/hw/xfree86/etc/scanpci.c xc/programs/Xserver/hw/xfree86/os-sup-
+port/dgux/dgux_video.c and eliminate DG_NO_SYSI86 flag by changing
+DG_NO_SYSI86 1-->0.
 
 July 25, 1999
 
@@ -35,10 +35,10 @@ port 6000 (= 0x1770) but to 0x7017.  All binaries that you have from 3.3.3.1,
 3.3.3 they will work locally (if you run them in the same machine) but NOT
 remotely because they use an Xlib that tries to connect to port 28365.  If
 you want to run them remotely YOU MUST recompile them!  Steve thank you for
-bringing this to my attension initially but was too bussy then to look at it
+bringing this to my attention initially but was too busy then to look at it
 in detail... Perhaps I should have...
 
-We now use sockets intead of ioctls.  But I 've fix and tested the STREAMS
+We now use sockets instead of ioctls.  But I've fix and tested the STREAMS
 also.
 
 David thanks for making me realize that this was indeed a problem in DG/ux.
@@ -68,7 +68,7 @@ like).
 
 From: December 1, 1998 IMPORTANT: PLEASE READ THE FILE README-GCC-2.8.1 GCC
 VERSION 2.8.1 is recommended for the DGUX build of X11R6.3 You can ignore
-below the _old_ converstation about gcc compiler if you already run a
+below the _old_ conversation about gcc compiler if you already run a
 gcc-2.8.1 in your machine.
 
 2.  GENERAL:
@@ -89,7 +89,7 @@ Get also the contributed X software
        cd /pub/XFree86/3.3.5/source
        X335contrib.tgz
 
-If you have the source tarballs of 3.3.3 go to /pub/XfFree86/3.3.5/bina-
+If you have the source tarballs of 3.3.3 go to /pub/XFree86/3.3.5/bina-
 ries/DGUX-ix86/SOURCE get the DGUX source patch
 
        3.3.3-3.3.5-DGUX.diff.gz
@@ -97,9 +97,9 @@ ries/DGUX-ix86/SOURCE get the DGUX source patch
 
 to avoid downloading all the source code again.
 
-Sorry some DGUX changes they didnt make in time for the official release date
-of 3.3.4...  I do this for free, so some times I may be excused for something
-like this...
+Sorry some DGUX changes they didn't make in time for the official release
+date of 3.3.4...  I do this for free, so some times I may be excused for
+something like this...
 
 To build X11R6.3 you need also the tools for DG/ux (see discussion below).
 They will be in ftp dpmms.cam.ac.uk (University of Cambridge,Department of
@@ -107,7 +107,7 @@ Pure Mathematics) in /pub/takis/DGUX-Tools/BuildXtools.tar.gz (anonymous ftp)
 or in the ftp.xfree86.org ...  (pub/XFree86/3.3.5/binaries/DGUX-
 ix86/SOURCE/BUILD-TOOLS/ BuildXtools.tar.gz).
 
-Using a big filesytem (I use a virtual disk "xf86work" mounted on /xf86work
+Using a big filesystem (I use a virtual disk "xf86work" mounted on /xf86work
 of size 1400000 blocks) copy the source as:
 
        cp X335src-1.tgz  /xf86work/X335src-1.tar.gz
@@ -125,7 +125,7 @@ And maybe the contributed software:
 
 If you get the patches from DGUX-ix86, to build from source 3.3.3 your first
 problem is that in order to apply the source patch you need "patch" a very
-common GNU program that DG/ux doesnt have!?  This program is in BuildX-
+common GNU program that DG/ux doesn't have!?  This program is in BuildX-
 tools.tar.gz (or ftp prep.ai.mit.edu cd/pub/gnu get patch-2.5.tar.gz) So lets
 speak about these tools before anything else: Using "sysadm" mount a filesys-
 tem usr_local under /usr/local with size 200000 blocks. Then copy the BuildX-
@@ -133,7 +133,7 @@ tools file in /usr and give:
 
        gzip -d < BuildXtools.tar.gz | tar xvf -
 
-It will unfold in the new filesytem /usr/local.  Then go to your ".profile"
+It will unfold in the new filesystem /usr/local.  Then go to your ".profile"
 (in your Home dir , mine eg is /admin) and add the /usr/local/bin in your
 path and the  /usr/local/lib in your lib-path.
 
@@ -174,8 +174,8 @@ in /usr/local/bin (try it).
 
 **Look the discussion for gcc before you build (below)**
 
-Now untarr the source tree: In /xf86work (or whatever name you gave to the
-big filesystem for the build)
+Now untar the source tree: In /xf86work (or whatever name you gave to the big
+filesystem for the build)
 
        gzip -d < X335src-1.tar.gz | tar xvf -
        gzip -d < X335src-2.tar.gz | tar xvf -
@@ -205,12 +205,12 @@ Eliminate the #if 0 , #endif.  Then change this to whatever you prefer.  (I
 prefer the above for the precompiled binaries)
 
 The DG/ux malloc is crap and keeps bringing problems with some X software so
-I dont use it. Instead there is a port of GNU malloc in /usr/local (it came
-with the BuildXtools file).  Dont try to build with the /lib/libmalloc.a of
-DG/ux and then send me e-mails that some programs they dont work properly.
+I don't use it. Instead there is a port of GNU malloc in /usr/local (it came
+with the BuildXtools file).  Don't try to build with the /lib/libmalloc.a of
+DG/ux and then send me e-mails that some programs they don't work properly.
 In my build I use tcl8.0 and tk8.0 since the xconfig of R4.20MU03 is report-
 ing incorrect values for the monitors and XF86Setup need to be build in order
-to manage to adjust the display.  If you dont have this (or dont want this)
+to manage to adjust the display.  If you don't have this (or don't want this)
 comment out the lines about tcl,tk, (in DGUX.cf)
 
        /*******TCL TK DEFINITIONS ***********/
@@ -234,8 +234,8 @@ keeping track for the programs that fail using this compiler I will certainly
 have fill a book (conveniently for the DG of course).  But my work is not to
 correct bugs for the DG/ux compiler or anything else) , and in particular to
 collect reports for the genius of DG.  (DG:Sorry guys nothing personal. I am
-a pure Mathematician , I am doing all this work for pleasure, I dont want any
-money from DG or anybody else , I am not looking to become a employer of
+a pure Mathematician , I am doing all this work for pleasure, I don't want
+any money from DG or anybody else , I am not looking to become a employer of
 DG,and I am NOT a trouble shooter of the DG/ux in general.  But maybe some
 times if you help I may be able to help you also).
 
@@ -263,15 +263,15 @@ dgux to gcc-->gcc-2 with the command: (in both the above two dirs)
        rm gcc
        ln -s gcc-2 gcc
 
-/usr/bin/gcc -v should report the version that you have.  To build succes-
+/usr/bin/gcc -v should report the version that you have.  To build success-
 fully this version of X11 gcc is a *MUST*.
 
 Dynamic loading Servers: Edit xc/config/cf/DGUX.cf and change the entry
 
 #ifndef BuildDynamicLoading #define BuildDynamicLoading NO --->YES.  #endif
 
-Remeber when you build you will see lots of errors and the servers will NOT
-build! This is because the dynamic linker doesnt know the locatios of the
+Remember when you build you will see lots of errors and the servers will NOT
+build! This is because the dynamic linker doesn't know the locations of the
 newly created R6 libX's.  So after the (seem faulty) building do a
 
 make DESTDIR=ProjectRoot/lib install
@@ -303,7 +303,7 @@ shell)
        cd xc
        make World > Build-dg.log
 
-In that way you will get all the error meggages in your screen.  Dont worry
+In that way you will get all the error messages in your screen.  Don't worry
 with messages about -znodefs.
 
 Note: the old command
@@ -330,9 +330,9 @@ so if you give startx the new X11 will not start. Read the file README-
 X3331.DGUX in this ftp site (located in the binaries) about the whole instal-
 lation procedure of X11R6.3.  Or quickly you can do: (I remind: DG/ux mouse
 device "/dev/mouse") cd /usr/X11R6.3/bin ln -s XF86_VGA16 X Then put in your
-.profile the path /usr/X11R6.3/bin and run the XF86Setup program. Ajust first
-the mouse device then everything else.  (You need to read really the file
-README-DGUX.INSTALL-> look in the end of this file).
+.profile the path /usr/X11R6.3/bin and run the XF86Setup program. Adjust
+first the mouse device then everything else.  (You need to read really the
+file README-DGUX.INSTALL-> look in the end of this file).
 
 To build the contributed software with XFree86-3.3.5 get the X335contrib.tgz
 and do
@@ -345,7 +345,7 @@ and do
 
 Please note: You must have already install and active the X11R6.3 that you
 build so that the imake is working properly for your system.  Read below for
-how to install this Xwindow system.  After that you could do:
+how to install this X window system.  After that you could do:
 
        cd contrib
        xmkmf -a
@@ -357,20 +357,21 @@ how to install this Xwindow system.  After that you could do:
 
 NOTE:This executable has been compiled with the macro -DPENTIUM_CHANGE (that
 all the new Aviion machines support). If you have an old i486 (rather
-unlikely) the executable will NOT RUN correctly.  But we havent use
+unlikely) the executable will NOT RUN correctly.  But we haven't use
 -mcpu=pentiumpro, so the executable will work on ALL PENTIUM machines.
 
    o  About Project Root: I choose as ProjectRoot for ix86 DG/ux the location
      /usr/X11R6.3. The default (in 3.3.5 sources) is the /usr/X11R6. To cover
-     this we make a link in /usr as X11R6->X11R6.3 (read below) ;so dont for-
-     get to do this link. I dont like the location /usr/opt/X11 (default
+     this we make a link in /usr as X11R6->X11R6.3 (read below); so don't
+     forget to do this link. I don't like the location /usr/opt/X11 (default
      location of DG X11) that some of you have suggested to me, I believe it
      is a good idea to keep the original X11 as is for several reasons.
 
    o  Make a filesystem,using sysadm, mounted under "/usr/X11R6.3".  This is
      the default location of X11R6.3 , you cannot change this except if you
-     recompile the whole source of X.  (Please dont send e-mails about this).
-     The size of this filesystem should be around 175 MB(350000 blocks).
+     recompile the whole source of X.  (Please don't send e-mails about
+     this).  The size of this filesystem should be around 175 MB(350000
+     blocks).
 
      The list of files is:
 
@@ -408,7 +409,7 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
             preinst.sh    Install script
             extract        The XFree86 extract program (for ix86 DG/ux)
 
-            SUMS.md5       CheckSums for the integrity of the files
+            SUMS.md5       Checksums for the integrity of the files
 
      (Try compile the GNU textutils-1.22.tar.gz from prep.ai.mit.edu
      /pub/gnu. md5sum is there).
@@ -456,7 +457,7 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
 
      Your best bet is to use XF86Setup for correct adjustments.
 
-     Thats the reason that in this binary there is a mininum tcl,tk(version
+     Thats the reason that in this binary there is a minimum tcl,tk(version
      8.0).  Before you run XF86Setup read the relevant documents found in
      www.xfree86.org.  (Or read below for a hand-made configuration).
 
@@ -465,8 +466,8 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
      terminal"
 
      DG/ux does NOT have any virtual terminals. But XF86Setup uses a script
-     that doesnt checks for this. So it is printing this message anyway.
-     Ignore it and dont send e-mails asking how to set the virtual terminal!
+     that doesn't checks for this. So it is printing this message anyway.
+     Ignore it and don't send e-mails asking how to set the virtual terminal!
      XF86Setup WORKS for SURE (if you use it correctly) to set your configu-
      ration.  Just remember:
 
@@ -492,31 +493,31 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
      17 inch DG-26059,DA1765VA.  ONLY IF YOU HAVE THE ***EXACT SAME*** MONI-
      TOR USE THE FILE XF86Config_SVGA_DGUX that you will find in
      /usr/X11R6.3/.  IT IS IN YOUR OWN RISK IF YOU DECIDE TO USE THIS FILE
-     WHEN YOU DONT HAVE THE SAME MOTINOR AS MINE. YOU CAN DAMAGE YOUR VIDEO
+     WHEN YOU DON'T HAVE THE SAME MONITOR AS MINE. YOU CAN DAMAGE YOUR VIDEO
      MONITOR OR YOUR GRAPHICS CARD.
 
-     An examble of how to use the Accel Servers (eg ATI=XF86_Mach64) is in
+     An example of how to use the Accel Servers (eg ATI=XF86_Mach64) is in
      the file XF86Config_ATI_DGUX.  Again remember: I have an DG/ux Medium
      resolution (1280x1024) 17 inch DG-26059,DA1765VA.  ONLY IF YOU HAVE THE
      ***EXACT SAME*** MONITOR USE THE FILE XF86Config_ATI_DGUX that you will
      find in /usr/X11R6.3/.  IT IS IN YOUR OWN RISK IF YOU DECIDE TO USE THIS
-     FILE WHEN YOU DONT HAVE THE SAME MOTINOR AS MINE. YOU CAN DAMAGE YOUR
+     FILE WHEN YOU DON'T HAVE THE SAME MONITOR AS MINE. YOU CAN DAMAGE YOUR
      VIDEO MONITOR.
 
-     Start with the file XF86Config.eg as a prototype. READ the REAME.Config
+     Start with the file XF86Config.eg as a prototype. READ the README.Config
      .  In Cirrus chips you need to read the file README.cirrus located in
-     /usr/X11R6.3 There is a problem with the accelarated XAA code ,so you
+     /usr/X11R6.3 There is a problem with the accelerated XAA code ,so you
      need to try to put the following option in your XF86Config:
 
             Option "no_mmio" (in Section Screen ,subsection display).
 
      Look in the XF86Config_SVGA_DGUX to see how this can be done .  If this
-     doesnt work (it will probably) try Option "noaccel" or "no_bitblt".Again
-     READ the file README.cirrus (and README.Config).  I suggest to print (in
-     paper) the file XdgConfig and have a look in it. Then it should be quite
-     trivial to figure out what you have to do with the XF86 file ie XF86Con-
-     fig in the sections mouse, keyboard, screen ...  After you have a cor-
-     rect XF86Config in /usr/X11R6.3/lib/X11 give
+     doesn't work (it will probably) try Option "noaccel" or "no_bit-
+     blt".Again READ the file README.cirrus (and README.Config).  I suggest
+     to print (in paper) the file XdgConfig and have a look in it. Then it
+     should be quite trivial to figure out what you have to do with the XF86
+     file ie XF86Config in the sections mouse, keyboard, screen ...  After
+     you have a correct XF86Config in /usr/X11R6.3/lib/X11 give
 
             chmod 444 XF86Config.
 
@@ -525,7 +526,7 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
      gest) (DO not forget for a cirrus to put the Option "no_mmio" in section
      screen !), give startx and the new X11 will start .  Remember: You can
      shut down at any point the Xserver by pressing CONTROL+ALT+BACKSPACE (if
-     something goes wrong).  Also Xservers dont produce messages unless to
+     something goes wrong).  Also Xservers don't produce messages unless to
      want them to do so. This is because the DG/ux console driver some times
      causes corruption of the screen if you print text during the startup of
      the Xserver.  If you require messages try in bash shell to give: (bash#
@@ -634,7 +635,7 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
      /usr/opt/X11/lib.  Otherwise gcc will link these old libraries! and the
      binary will not run correctly.  Always after an R6 compilation do "ldd
      prog" to make sure that the binary loads only R6 version libraries
-     (except maybe the motif library libXm.so.2), --if you dont use the
+     (except maybe the motif library libXm.so.2), --if you don't use the
      static libXm.a
 
      b:)
@@ -665,7 +666,7 @@ unlikely) the executable will NOT RUN correctly.  But we havent use
 This new X11R6 are not simply an upgrade of the servers to the latest ones.
 It is a new programming platform in your DG/ux system to allow you to import
 all this *FREE* or not software for the X window system.  This software will
-not compile in the old (and ungly) X11 of Data General.  The imake command
+not compile in the old (and ugly) X11 of Data General.  The imake command
 that is implemented in almost all the (source) software for X11 (free or not)
 will not work with the totally broken "imake" command of /usr/opt/X11 of
 DG/ux.
@@ -676,19 +677,19 @@ all these releases the imake command...
 
 While until now DG was rather hostile to the prospect of a new X11 in DG/ux
 some new folks there they have turn their interest in X11R6 (XFree86) these
-days. That is good of cource because the ultimate target is to make XFree86
+days. That is good of course because the ultimate target is to make XFree86
 (3.3.5 or whatever version) to run in _their_ DG/ux Unix! I will be able to
 make a much better X11 in DG/ux if I could had some access to DG/ux sources
 (i.e. the original R5 sources , but not only --eg kernel driver sources as
-for examble the DG/ux kernel console driver sources).
+for example the DG/ux kernel console driver sources).
 
 I have compile almost anything that runs for Linux in DG/ux using this X11.
 In doing this work in XFree86 I would like to express my thanks to David
-Dawes that he help me all the time with several techical questions. Also D.T.
-is one of the people that offer valuable help.  Finally I want to express my
-thanks to John H. for enlight me in some syscall issues.
+Dawes that he help me all the time with several technical questions. Also
+D.T. is one of the people that offer valuable help.  Finally I want to
+express my thanks to John H. for enlightening me in some syscall issues.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DGux.sgml,v 1.1.2.2 1999/07/26 06:54:45 hohndel Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DGux.sgml,v 1.3 1999/08/28 10:43:32 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.DGux,v 1.1.2.2 1999/08/03 09:41:42 hohndel Exp $
+$XFree86$

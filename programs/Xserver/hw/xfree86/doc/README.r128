@@ -44,7 +44,8 @@ card.  The only lines you need in the "Device" section of your XF86Config
 file are:
 
             Section "Device"
-                Identifier "r128"
+             Identifier "Rage 128"
+                Driver "r128"
             EndSection
 
 or let xf86config or XF86Setup do this for you.
@@ -100,7 +101,7 @@ The XFree86 3.3 driver was funded by ATI and was donated to The XFree86 Pro-
 ject by Precision Insight, Inc.  It was based in part on an earlier driver
 that was written by:
 
-   o Alan Hourihane <alanh@fairlite.demon.co.uk<
+   o Alan Hourihane <alanh@fairlite.demon.co.uk>
 
    o Dirk Hohndel <hohndel@suse.de>
 
@@ -115,6 +116,7 @@ http://www.precisioninsight.com
 
 http://www.suse.com
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/11/19 13:54:28 hohndel Exp $
-     $PI: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/10/21 20:51:15 faith Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.3 2000/01/21 18:11:30 dawes Exp $
 
+
+$XFree86$
