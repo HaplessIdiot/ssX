@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2002 Greg Parker and Torrey T. Lyons.
+ * Copyright (c) 2001-2003 Greg Parker and Torrey T. Lyons.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.4 2002/11/20 23:51:58 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.5 2003/01/15 02:34:06 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -135,6 +135,13 @@ void QuartzInitOutput(
 
     if (serverGeneration == 0) {
         QuartzAudioInit();
+    }
+
+    if (!RegisterBlockAndWakeupHandlers(QuartzBlockHandler,
+                                        QuartzWakeupHandler,
+                                        NULL))
+    {
+        FatalError("Could not register block and wakeup handlers.");
     }
 
     if (quartzRootless) {

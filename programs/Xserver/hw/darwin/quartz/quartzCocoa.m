@@ -8,7 +8,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001 Torrey T. Lyons and Greg Parker.
+ * Copyright (c) 2001-2003 Torrey T. Lyons and Greg Parker.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -33,7 +33,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCocoa.m,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCocoa.m,v 1.2 2003/01/15 02:34:06 torrey Exp $ */
 
 #include <Cocoa/Cocoa.h>
 
@@ -45,7 +45,11 @@ extern void FatalError(const char *, ...);
 extern char *display;
 extern int noPanoramiXExtension;
 
-// Read the user preferences from the Cocoa front end
+
+/*
+ * QuartzReadPreferences
+ *  Read the user preferences from the Cocoa front end.
+ */
 void QuartzReadPreferences(void)
 {
     char *fileString;
@@ -87,7 +91,11 @@ void QuartzReadPreferences(void)
     darwinDesiredDepth = [Preferences depth] - 1;
 }
 
-// Write text to the Mac OS X pasteboard.
+
+/*
+ * QuartzWriteCocoaPasteboard
+ *  Write text to the Mac OS X pasteboard.
+ */
 void QuartzWriteCocoaPasteboard(
     char *text)
 {
@@ -107,8 +115,12 @@ void QuartzWriteCocoaPasteboard(
     [pasteboard setString:string forType:NSStringPboardType];
 }
 
-// Read text from the Mac OS X pasteboard and return it as a heap string.
-// The caller must free the string.
+
+/*
+ * QuartzReadCocoaPasteboard
+ *  Read text from the Mac OS X pasteboard and return it as a heap string.
+ *  The caller must free the string.
+ */
 char *QuartzReadCocoaPasteboard(void)
 {
     NSPasteboard *pasteboard;
@@ -135,7 +147,11 @@ char *QuartzReadCocoaPasteboard(void)
     return text;
 }
 
-// Return whether the screen should use a QuickDraw cursor
+
+/*
+ * QuartzFSUseQDCursor
+ *  Return whether the screen should use a QuickDraw cursor.
+ */
 int QuartzFSUseQDCursor(
     int depth)  // screen depth
 {
@@ -151,4 +167,32 @@ int QuartzFSUseQDCursor(
                 return FALSE;
     }
     return TRUE;
+}
+
+
+/*
+ * QuartzBlockHandler
+ *  Clean out any autoreleased objects.
+ */
+void QuartzBlockHandler(
+    void *blockData,
+    void *pTimeout,
+    void *pReadmask)
+{
+    static NSAutoreleasePool *aPool = nil;
+
+    [aPool release];
+    aPool = [[NSAutoreleasePool alloc] init];
+}
+
+
+/*
+ * QuartzWakeupHandler
+ */
+void QuartzWakeupHandler(
+    void *blockData,
+    int result,
+    void *pReadmask)
+{
+    // nothing here
 }
