@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.54 2001/12/31 15:33:08 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.55 2001/12/31 17:55:10 herrb Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1884,7 +1884,7 @@ Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, X_NOTICE,
 	"For information on using the multimedia capabilities\n of this"
-	" adapter, please see http://www.linuxvideo.org/gatos.\n");
+	" adapter, please see http://gatos.sf.net.\n");
 
     return TRUE;
 
