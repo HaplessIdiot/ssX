@@ -6,10 +6,10 @@
 
 <title>Installation Details for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>16 January 2002
+<date>20 December 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.13 2002/01/16 20:38:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.14 2002/11/09 21:41:02 dawes Exp $
 </ident>
 
 <abstract>
@@ -32,6 +32,12 @@ Solaris, etc) are packaged in a platform-independent gzipped tar format (aka
 binaries we provide a customized version of the GNU tar utility called
 "extract" and an installation script.  We recommend that these be
 used to install the binaries.
+
+<![ %snapshot [
+<p>
+Note: for snapshot releases like this one, binaries are only available for
+a small number of platforms.
+]]>
 
 
 <sect>Downloading the XFree86 &relvers; binaries
@@ -129,12 +135,12 @@ distribution.
 
 Once you're run the <tt>Xinstall.sh</tt> script and found which binary
 <![ %updaterel; [update ]]>distribution is suitable for your system,
-download the necessary files.  The <![ %fullrel [twelve (12)]]><![
+download the necessary files.  The <![ %fullbinaries [twelve (12)]]><![
 %updaterel [four (4)]]> mandatory files for all installations are listed
 below.  If you have not downloaded all of the files, the installer script
 will complain.
 
-<![ %fullrel [
+<![ %fullbinaries [
 <quote><verb>
 1.   Xinstall.sh    The installer script
 2.   extract        The utility for extracting tarballs
@@ -167,14 +173,14 @@ NOTES:
 	version called <tt>extract.exe</tt> instead.  This should fix the
 	problem.  (This is not a DOS/Windows executable.)
 
-<![ %fullrel [
+<![ %fullbinaries [
   <item>A few distributions don't have or require the <tt>Xvar.tgz</tt>
 	tarball.  If it is present in the <tt>binaries</tt> sub-directory
 	for your platform, then it is required.
 ]]>
 
   <item>The Darwin/Mac OS X distribution doesn't have or require the
-	<![ %fullrel [<tt>Xmod.tgz</tt>]]><![ %updaterel
+	<![ %fullbinaries [<tt>Xmod.tgz</tt>]]><![ %updaterel
 	[<tt>Xdrivers.tgz</tt>]]> tarball.
 
   <item>Some distributions may have additional mandatory tarballs.
@@ -182,7 +188,7 @@ NOTES:
 
 </itemize>
 
-<![ %fullrel [
+<![ %fullbinaries [
 The following eleven (11) tarballs are optional.  You should download
 the ones you want to install.
 
@@ -221,7 +227,7 @@ script to install this update.  Older versions may not be able to do it
 correctly.]]>
 There are a lot of
 steps in the manual installation process, and those steps can vary
-according to the platform and hardware setup.  <![ %fullrel [There is a description of
+according to the platform and hardware setup.  <![ %fullbinaries [There is a description of
 the manual installation process for the most common cases <ref
 id="manual-install" name="below">.]]>
 
@@ -253,7 +259,7 @@ be a problem, you should exit your X session, including stopping xdm or
 equivalent if it is running, before continuing.  If you ignore this
 warning and run into problems, well, you were warned!
 
-<![ %fullrel [If you have an existing X installation, you]]>
+<![ %fullbinaries [If you have an existing X installation, you]]>
 <![ %updaterel [You ]]>
 will be warned that proceeding
 with this installation will overwrite it.  Only those things that are
@@ -274,7 +280,7 @@ script may remove some old files or directories that would get in the
 way of the new installation.  It will list which files/directories have
 been removed.  If none are listed, then none were removed.
 
-<![ %fullrel [
+<![ %fullbinaries [
 The next step when installing over an existing version is to check for
 existing configuration files.  As of XFree86 version 3.9.18, the run-time
 configuration files are installed by default under <tt>/etc/X11</tt>
@@ -375,7 +381,7 @@ operation of the new X server, you can safely remove the old
 After the X server configuration is done, it may be advisable to reboot,
 especially if you run xdm (or equivalent) or the font server (xfs).
 
-<![ %fullrel [
+<![ %fullbinaries [
 <sect>Installing XFree86 &relvers; manually<label id="manual-install">
 <p>
 This section contains information about manually installing the XFree86
