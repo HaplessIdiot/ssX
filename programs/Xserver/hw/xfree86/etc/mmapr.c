@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapr.c,v 1.1tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -34,7 +34,11 @@
 #include <unistd.h>
 
 #ifndef MAP_FAILED
-#define MAP_FAILED ((void *)(-1))
+# define MAP_FAILED ((void *)(-1))
+#endif
+
+#if !defined(strtoull) && defined(CSRG_BASED)
+# define strtoull strtouq
 #endif
 
 static unsigned char datab;
