@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.53 2001/09/18 21:23:23 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.56 2002/11/25 14:05:05 eich Exp $ */
 
 /*
  *
@@ -1840,14 +1840,14 @@ void
 vgaHWLock(vgaHWPtr hwp)
 {
     /* Protect CRTC[0-7] */
-    hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) & ~0x80);
+    hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) | 0x80);
 }
 
 void
 vgaHWUnlock(vgaHWPtr hwp)
 {
     /* Unprotect CRTC[0-7] */
-     hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) | 0x80);
+     hwp->writeCrtc(hwp, 0x11, hwp->readCrtc(hwp, 0x11) & ~0x80);
 }
 
 
