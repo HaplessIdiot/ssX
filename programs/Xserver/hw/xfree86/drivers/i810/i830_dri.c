@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.6 2002/10/08 22:14:08 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_dri.c,v 1.7 2002/10/30 12:52:18 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -477,7 +477,6 @@ I830DRIScreenInit(ScreenPtr pScreen)
    {
       drmVersionPtr version;
 
-#if defined(XFree86LOADER)
       /* Check the DRM lib version.
        * drmGetLibVersion was not supported in version 1.0, so check for
        * symbol first to avoid possible crash or hang.
@@ -485,7 +484,6 @@ I830DRIScreenInit(ScreenPtr pScreen)
       if (xf86LoaderCheckSymbol("drmGetLibVersion")) {
 	 version = drmGetLibVersion(pI830->drmSubFD);
       } else
-#endif
       {
 	 /* drmlib version 1.0.0 didn't have the drmGetLibVersion
 	  * entry point.  Fake it by allocating a version record
