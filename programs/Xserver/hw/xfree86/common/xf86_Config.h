@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.25 1995/06/14 09:44:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.26 1995/06/14 10:36:30 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -369,7 +369,7 @@ static SymTabRec DeviceTab[] = {
   { CLOCKCHIP,	"clockchip" },
   { S3MNADJUST,	"s3mnadjust" },
   { S3MCLK,	"s3mclk" },
-  { VGABASE,    "vgabase" },
+  { VGABASEADDR,"vgabase" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
