@@ -54,7 +54,11 @@ static XF86XkbDescInfo xkb_model;
 static XF86XkbDescInfo xkb_layout;
 static XF86XkbDescInfo xkb_variant;
 static XF86XkbDescInfo xkb_option;
+#ifdef XFREE98_XKB
+static char *XkbRulesFile = "lib/X11/xkb/rules/xfree98";
+#else
 static char *XkbRulesFile = "lib/X11/xkb/rules/xfree86";
+#endif
 static XF86ConfInputPtr current_input;
 
 static char *model, *layout;

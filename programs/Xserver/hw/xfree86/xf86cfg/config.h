@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.5 2000/08/04 16:13:44 eich Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/config.h,v 1.8 2000/11/30 20:55:16 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -93,6 +93,23 @@
 
 #define	UNUSED			0
 #define	USED			1
+
+#define CONFPATH	"%A," "%R," \
+			"/etc/X11/%R," "%P/etc/X11/%R," \
+			"%E," "%F," \
+			"/etc/X11/%F," "%P/etc/X11/%F," \
+			"%D/%X," \
+			"/etc/X11/%X-%M," "/etc/X11/%X," "/etc/%X," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X," \
+			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
+			"%P/lib/X11/%X"
+#define USER_CONFPATH	"/etc/X11/%S," "%P/etc/X11/%S," \
+                        "/etc/X11/%G," "%P/etc/X11/%G," \
+			"%P/etc/X11/%X.%H," "%P/etc/X11/%X-%M," \
+			"%P/etc/X11/%X," \
+			"%P/lib/X11/%X.%H," "%P/lib/X11/%X-%M," \
+			"%P/lib/X11/%X"
 
 /*
  * Types

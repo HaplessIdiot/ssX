@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.10 2000/11/30 20:55:17 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.11 2000/12/01 18:31:07 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -101,6 +101,10 @@ extern void AccessXConfigureStart(void);
 extern void AccessXConfigureEnd(void);
 extern void CloseAccessXAction(Widget, XEvent*, String*, Cardinal*);
 
+#ifdef HAS_NCURSES
+extern void TextMode(void);
+#endif
+
 /*
  * Initialization
  */
@@ -117,6 +121,8 @@ char *XFree86Dir;
 static char XF86Config_path_static[1024];
 static char XkbConfig_path_static[1024];
 Bool xf86config_set = False;
+
+Bool textmode = False;
 
 xf86cfgComputer computer;
 xf86cfgDevice cpu_device;
@@ -219,8 +225,18 @@ main(int argc, char *argv[])
 	} else if (strcmp(argv[i], "-rgbpath") == 0) {
 	    if (i + 1 < argc)
 		XF86RGB_path = argv[++i];
-	}
+#ifdef HAS_NCURSES
+	} else if (strcmp(argv[i], "-textmode") == 0)
+	    textmode = True;
+#endif
     }
+
+#ifdef HAS_NCURSES
+    if (textmode) {
+	TextMode();
+	exit(0);
+    }
+#endif
     
     startedx = startx();
 /*    if (XF86Config_path == NULL)

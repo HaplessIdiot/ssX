@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.3 2000/09/26 15:57:22 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen-cfg.c,v 1.5 2000/12/01 18:31:07 paulo Exp $
  */
 
 #include "xf86config.h"
@@ -63,6 +63,7 @@ static char *standard_modes[] = {
     "640x480",
     "800x600",
     "1024x768",
+    "1280x960",
     "1280x1024",
     "320x200",
     "320x240",
