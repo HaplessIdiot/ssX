@@ -1,6 +1,7 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/mkfontscale/Imakefile,v 1.1 2002/06/05 19:46:04 dawes Exp $
 
 LOCAL_LIBRARIES = $(XFONTENCLIB) $(FREETYPE2LIB)
+        DEPLIBS = $(DEPXFONTENCLIB) $(DEPFREETYPE2LIB)
 
 SYS_LIBRARIES = MathLibrary GzipLibrary
 
