@@ -1,4 +1,19 @@
+XFree86 3.1.0C (15 January 1995)
+205. Preliminary programmable clock support for the Mach64 server
+     (Kevin Martin).
+204. Add accelerated line code for the P9000 server and fix/update some
+     other accelerated code (Chris Mason).
+203. Allow XF86Config Videoram to override autodetection with the P9000
+     server, and allow the "vram_128" option force recognition of
+     128kx8 VRAM (Erik Nygren).
+202. Change P9000 programmable clock operation to be consistent with other
+     servers (Erik Nygren).
+201. Allow Cirrus MMIO for the 5429, and change on of the fixed clocks
+     in the Cirrus programmable clock code (Harm Hanemaayer).
+
 XFree86 3.1.0Bf (14 January 1995)
+200. Preprocess Linux jump files, and allow libX11 to be built with XdmAuth
+     (Orest Zborowski).
 199. Fix VTSema-related problem in s3bstore.c (Henry Worth).
 198. Merge in XC's pre-fix-07 LBX code.
 

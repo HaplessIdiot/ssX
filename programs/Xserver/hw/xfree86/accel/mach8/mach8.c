@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.13 1994/12/29 10:03:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.14 1995/01/10 10:21:49 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -62,6 +62,12 @@
 
 extern int mach8MaxClock;
 extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+
+static Bool mach8ValidMode(
+#if NeedFunctionPrototypes 
+    DisplayModePtr 
+#endif
+);
 
 ScrnInfoRec mach8InfoRec = {
     FALSE,		/* Bool configured */
