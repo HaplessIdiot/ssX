@@ -1312,57 +1312,47 @@ SKeymapNotifyEvent(from, to)
 }
 
 void
-SwapConnSetupInfo(pInfo, pInfoTBase)
-    char 		*pInfo;
-    char 		*pInfoTBase;
+SwapConnSetupInfo(
+    char 	*pInfo,
+    char 	*pInfoT
+)
 {
     int		i, j, k;
-    ScreenPtr	pScreen;
-    DepthPtr	pDepth;
-    char	*pInfoT;
     xConnSetup	*pConnSetup = (xConnSetup *)pInfo;
-    int         numScreens;
+    xDepth	*depth;
+    xWindowRoot *root;
 
-    pInfoT = pInfoTBase;
     SwapConnSetup(pConnSetup, (xConnSetup *)pInfoT);
     pInfo += sizeof(xConnSetup);
     pInfoT += sizeof(xConnSetup);
 
     /* Copy the vendor string */
     i = (pConnSetup->nbytesVendor + 3) & ~3;
-    memmove(pInfoT, pInfo, i);
+    memcpy(pInfoT, pInfo, i);
     pInfo += i;
     pInfoT += i;
 
     /* The Pixmap formats don't need to be swapped, just copied. */
-    i = sizeof(xPixmapFormat) * screenInfo.numPixmapFormats;
-    memmove(pInfoT, pInfo, i);
+    i = sizeof(xPixmapFormat) * pConnSetup->numFormats;
+    memcpy(pInfoT, pInfo, i);
     pInfo += i;
     pInfoT += i;
 
-#ifndef PANORAMIX
-    numScreens = screenInfo.numScreens;
-#else
-    if (noPanoramiXExtension)
-	numScreens = screenInfo.numScreens;
-    else
-	numScreens = pConnSetup->numRoots;
-#endif
-
-    for(i = 0; i < numScreens; i++)
+    for(i = 0; i < pConnSetup->numRoots; i++)
     {
-	pScreen = screenInfo.screens[i];
-	SwapWinRoot((xWindowRoot *)pInfo, (xWindowRoot *)pInfoT);
+	root = (xWindowRoot*)pInfo;
+	SwapWinRoot(root, (xWindowRoot *)pInfoT);
 	pInfo += sizeof(xWindowRoot);
 	pInfoT += sizeof(xWindowRoot);
-	pDepth = pScreen->allowedDepths;
-	for(j = 0; j < pScreen->numDepths; j++, pDepth++)
+
+	for(j = 0; j < root->nDepths; j++)
 	{
-            ((xDepth *)pInfoT)->depth = ((xDepth *)pInfo)->depth;
-	    cpswaps(((xDepth *)pInfo)->nVisuals, ((xDepth *)pInfoT)->nVisuals);
+	    depth = (xDepth*)pInfo;
+            ((xDepth *)pInfoT)->depth = depth->depth;
+	    cpswaps(depth->nVisuals, ((xDepth *)pInfoT)->nVisuals);
 	    pInfo += sizeof(xDepth);
 	    pInfoT += sizeof(xDepth);
-	    for(k = 0; k < pDepth->numVids; k++)
+	    for(k = 0; k < depth->nVisuals; k++)
 	    {
 		SwapVisual((xVisualType *)pInfo, (xVisualType *)pInfoT);
 		pInfo += sizeof(xVisualType);
