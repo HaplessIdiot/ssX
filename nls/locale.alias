@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.48 2001/11/21 22:54:13 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.49 2001/12/10 16:08:03 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -154,6 +154,8 @@ en_US.ISO_8859-1:				en_US.ISO8859-1
 en_US.utf8:					en_US.UTF-8
 #endif
 eo:						eo_XX.ISO8859-3
+eo_EO:						eo_EO.ISO8859-3
+eo_EO.ISO8859-3:				eo_EO.ISO8859-3
 eo_XX:						eo_XX.ISO8859-3
 eo_XX.ISO8859-3:				eo_XX.ISO8859-3
 es:						es_ES.ISO8859-1
