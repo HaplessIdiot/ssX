@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.36 2001/06/03 19:47:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.37 2002/09/18 18:14:59 martin Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -315,7 +315,6 @@ typedef struct _XAAInfoRec {
 	unsigned int planemask
    );    
    int SolidLineFlags;  
-   BoxRec SolidLineLimits;
 
    void (*SubsequentSolidTwoPointLine)(
 	ScrnInfoPtr pScrn,
@@ -345,7 +344,6 @@ typedef struct _XAAInfoRec {
    );    
    int DashedLineFlags; 
    int DashPatternMaxLength; 
-   BoxRec DashedLineLimits;
 
    void (*SubsequentDashedTwoPointLine)(
 	ScrnInfoPtr pScrn,
@@ -1330,6 +1328,10 @@ typedef struct _XAAInfoRec {
 
 
 #endif
+
+   /* these were added for 4.3.0 */
+   BoxRec SolidLineLimits;
+   BoxRec DashedLineLimits;
     
 } XAAInfoRec, *XAAInfoRecPtr;
 
