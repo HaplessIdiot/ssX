@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.11 2000/11/16 19:45:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.12 2000/11/18 19:37:15 tsi Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -170,7 +170,7 @@ int setup_system_bios(unsigned long base_addr);
 void reset_int_vect(xf86Int10InfoPtr pInt);
 void set_return_trap(xf86Int10InfoPtr pInt);
 Bool int10skip(ScrnInfoPtr pScrn, int entityIndex);
-Bool int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem);
+Bool int10_check_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem);
 
 #ifdef DEBUG
 void dprint(unsigned long start, unsigned long size);

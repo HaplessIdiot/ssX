@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.11 2000/10/11 22:53:00 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/generic.c,v 1.12 2000/10/12 11:15:41 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -57,7 +57,7 @@ xf86Int10InfoPtr
 xf86InitInt10(int entityIndex)
 {
     xf86Int10InfoPtr pInt;
-    int screen;
+    int screen, cs;
     void* base = 0;
     void* vbiosMem = 0;
     legacyVGARec vga;
@@ -76,13 +76,12 @@ xf86InitInt10(int entityIndex)
     INTPriv(pInt)->alloc = 
 	(pointer)xnfcalloc(1,ALLOC_ENTRIES(getpagesize()));
     pInt->scrnIndex = screen;
-    base = INTPriv(pInt)->base = xnfalloc(0xf0000);
+    base = INTPriv(pInt)->base = xnfalloc(SYS_BIOS);
 
     /*
      * we need to map video RAM MMIO as some chipsets map mmio
      * registers into this range.
      */
-
     MapVRam(pInt);
 #ifdef _PC
     if (!sysMem)
@@ -93,17 +92,30 @@ xf86InitInt10(int entityIndex)
 	xf86DrvMsg(screen,X_ERROR,"Cannot read int vect\n");
 	goto error1;
     }
+
+    /*
+     * Retrieve everything between V_BIOS and SYS_BIOS as some system BIOSes
+     * have executable code there.  Note that xf86ReadBIOS() can only read in
+     * 64kB at a time.
+     */
+    (void)memset((char *)base + V_BIOS, 0, SYS_BIOS - V_BIOS);
+    for (cs = V_BIOS;  cs < SYS_BIOS;  cs += V_BIOS_SIZE)
+	if (xf86ReadBIOS(cs, 0, (unsigned char *)base + cs, V_BIOS_SIZE) <
+		V_BIOS_SIZE)
+	    xf86DrvMsg(screen, X_WARNING,
+		"Unable to retrieve all of segment 0x%06X.\n", cs);
+
     if (xf86IsEntityPrimary(entityIndex)) {
-	int cs = MEM_RW(pInt,((0x10<<2)+2));
+	cs = MEM_RW(pInt,((0x10<<2)+2));
 
 	vbiosMem = (unsigned char *)base + (cs << 4);
-	if (!int10_read_bios(screen,cs,vbiosMem)) {
+	if (!int10_check_bios(screen, cs, vbiosMem)) {
 	    cs = MEM_RW(pInt,((0x42<<2)+2));
 	    vbiosMem = (unsigned char *)base + (cs << 4);
-	    if (!int10_read_bios(screen,cs,vbiosMem)) {
+	    if (!int10_check_bios(screen, cs, vbiosMem)) {
 		cs = V_BIOS >> 4;
 		vbiosMem = (unsigned char *)base + (cs << 4);
-		if (!int10_read_bios(screen,cs,vbiosMem)) {
+		if (!int10_check_bios(screen, cs, vbiosMem)) {
 		    xf86DrvMsg(screen,X_ERROR,"No V_BIOS found\n");
 		    goto error1;
 		}
@@ -146,7 +158,11 @@ xf86InitInt10(int entityIndex)
 	    }
 	    break;
 	case BUS_ISA:  
-	    if (!int10_read_bios(screen,V_BIOS >> 4,vbiosMem)) {
+	    (void)memset(vbiosMem, 0, V_BIOS_SIZE);
+	    if (xf86ReadBIOS(V_BIOS, 0, vbiosMem, V_BIOS_SIZE) < V_BIOS_SIZE)
+		xf86DrvMsg(screen, X_WARNING,
+		    "Unable to retrieve all of segment 0x0C0000.\n");
+	    if (!int10_check_bios(screen, V_BIOS >> 4, vbiosMem)) {
 	        xf86DrvMsg(screen,X_ERROR,"Cannot read V_BIOS (5)\n");
 		goto error1;
 	    }

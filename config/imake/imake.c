@@ -8,7 +8,7 @@
  * be passed to the template file.                                         *
  *                                                                         *
  ***************************************************************************/
-/* $XFree86: xc/config/imake/imake.c,v 3.37 2000/10/24 18:07:35 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.38 2000/11/14 18:20:32 dawes Exp $ */
 
 /*
  * 
@@ -1190,7 +1190,7 @@ define_os_defaults(FILE *inFile)
 {
 #if !defined(WIN32) && !defined(__EMX__)
 #if (defined(DEFAULT_OS_NAME) || defined(DEFAULT_OS_MAJOR_REV) || \
-     defined(DEFAULT_OS_MINOR_REV) || defined(DEFAUL_OS_TEENY_REV))
+     defined(DEFAULT_OS_MINOR_REV) || defined(DEFAULT_OS_TEENY_REV))
 	struct utsname name;
 	char buf[SYS_NMLN * 5 + 1];
 

@@ -37,6 +37,7 @@
 *               include this header
 *
 ****************************************************************************/
+/* $XFree86$ */
 
 #ifndef __X86EMU_X86EMU_H
 #define __X86EMU_X86EMU_H
@@ -162,21 +163,22 @@ void 	X86EMU_halt_sys(void);
 
 /* Debug options */
 
-#define DEBUG_DECODE_F          0x0001  /* print decoded instruction  */
-#define DEBUG_TRACE_F           0x0002  /* dump regs before/after execution */
-#define DEBUG_STEP_F            0x0004
-#define DEBUG_DISASSEMBLE_F     0x0008
-#define DEBUG_BREAK_F           0x0010
-#define DEBUG_SVC_F             0x0020
-#define DEBUG_FS_F              0x0080
-#define DEBUG_PROC_F            0x0100
-#define DEBUG_SYSINT_F          0x0200 /* bios system interrupts. */
-#define DEBUG_TRACECALL_F       0x0400
-#define DEBUG_INSTRUMENT_F      0x0800
-#define DEBUG_MEM_TRACE_F       0x1000 
-#define DEBUG_IO_TRACE_F        0x2000 
-#define DEBUG_TRACECALL_REGS_F  0x4000
-#define DEBUG_DECODE_NOPRINT_F  0x8000 
+#define DEBUG_DECODE_F          0x000001 /* print decoded instruction  */
+#define DEBUG_TRACE_F           0x000002 /* dump regs before/after execution */
+#define DEBUG_STEP_F            0x000004
+#define DEBUG_DISASSEMBLE_F     0x000008
+#define DEBUG_BREAK_F           0x000010
+#define DEBUG_SVC_F             0x000020
+#define DEBUG_FS_F              0x000080
+#define DEBUG_PROC_F            0x000100
+#define DEBUG_SYSINT_F          0x000200 /* bios system interrupts. */
+#define DEBUG_TRACECALL_F       0x000400
+#define DEBUG_INSTRUMENT_F      0x000800
+#define DEBUG_MEM_TRACE_F       0x001000 
+#define DEBUG_IO_TRACE_F        0x002000 
+#define DEBUG_TRACECALL_REGS_F  0x004000
+#define DEBUG_DECODE_NOPRINT_F  0x008000 
+#define DEBUG_SAVE_IP_CS_F      0x010000
 #define DEBUG_SYS_F             (DEBUG_SVC_F|DEBUG_FS_F|DEBUG_PROC_F)
 
 void 	X86EMU_trace_regs(void);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.171 2000/11/14 16:54:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.172 2000/11/18 19:37:15 tsi Exp $ */
 
 /*
  *
@@ -241,6 +241,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86BindGARTMemory)
    SYMFUNC(xf86UnbindGARTMemory)
    SYMFUNC(xf86EnableAGP)
+   SYMFUNC(xf86SoundKbdBell)
    
 #ifdef XINPUT
 /* XISB routines  (Merged from Metrolink tree) */

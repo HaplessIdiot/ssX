@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.46 2000/08/23 21:06:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.47 2000/11/14 18:20:37 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -147,6 +147,7 @@ extern Bool xf86DisableInterrupts(void);
 extern void xf86EnableInterrupts(void);
 extern void xf86SetTVOut(int);
 extern void xf86SetRGBOut(void);
+extern void xf86SoundKbdBell(int, int, int);
 #if defined(QNX4)
 #pragma aux xf86BusToMem modify [eax ebx ecx edx esi edi];
 #pragma aux xf86MemToBus modify [eax ebx ecx edx esi edi];
@@ -233,7 +234,6 @@ extern Bool xf86VTSwitchTo(void);
 extern void xf86VTRequest(int sig);
 extern int xf86ProcessArgument(int, char **, int);
 extern void xf86UseMsg(void);
-extern void xf86SoundKbdBell(int, int, int);
 extern void xf86SetKbdLeds(int);
 extern int xf86GetKbdLeds(void);
 extern void xf86SetKbdRepeat(char);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.3 2000/11/09 03:24:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dri.c,v 1.4 2000/11/18 19:37:10 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -242,7 +242,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	    for (stencil = 0; stencil <= R128_USE_STENCIL; stencil++) {
 		pR128ConfigPtrs[i] = &pR128Configs[i];
 
-		pConfigs[i].vid                = -1;
+		pConfigs[i].vid                = (VisualID)(-1);
 		pConfigs[i].class              = -1;
 		pConfigs[i].rgba               = TRUE;
 		pConfigs[i].redSize            = 5;
@@ -314,7 +314,7 @@ static Bool R128InitVisualConfigs(ScreenPtr pScreen)
 	    for (stencil = 0; stencil <= R128_USE_STENCIL; stencil++) {
 		pR128ConfigPtrs[i] = &pR128Configs[i];
 
-		pConfigs[i].vid                = -1;
+		pConfigs[i].vid                = (VisualID)(-1);
 		pConfigs[i].class              = -1;
 		pConfigs[i].rgba               = TRUE;
 		pConfigs[i].redSize            = 8;
@@ -472,7 +472,7 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
     pbox = REGION_RECTS(prgn);
     nbox = REGION_NUM_RECTS(prgn);
 
-    (*info->accel->SetupForSolidFill)(pScrn, 0, GXcopy, -1);
+    (*info->accel->SetupForSolidFill)(pScrn, 0, GXcopy, (CARD32)(-1));
     for (; nbox; nbox--, pbox++) {
 	(*info->accel->SubsequentSolidFillRect)(pScrn,
 						pbox->x1 + info->fbX,
@@ -486,7 +486,7 @@ static void R128DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 indx)
 						pbox->y2 - pbox->y1);
     }
 
-    (*info->accel->SetupForSolidFill)(pScrn, depth, GXcopy, -1);
+    (*info->accel->SetupForSolidFill)(pScrn, depth, GXcopy, (CARD32)(-1));
     for (; nbox; nbox--, pbox++)
 	(*info->accel->SubsequentSolidFillRect)(pScrn,
 						pbox->x1 + info->depthX,

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.2 2000/11/09 03:24:35 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_dga.c,v 1.3 2000/11/18 19:37:10 tsi Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
@@ -292,7 +292,7 @@ R128_FillRect (
     R128InfoPtr info = R128PTR(pScrn);
 
     if(info->accel) {
-	(*info->accel->SetupForSolidFill)(pScrn, color, GXcopy, ~0);
+	(*info->accel->SetupForSolidFill)(pScrn, color, GXcopy, (CARD32)(~0));
 	(*info->accel->SubsequentSolidFillRect)(pScrn, x, y, w, h);
 	SET_SYNC_FLAG(info->accel);
     }
@@ -312,7 +312,7 @@ R128_BlitRect(
 	int ydir = (srcy < dsty) ? -1 : 1;
 
 	(*info->accel->SetupForScreenToScreenCopy)(
-		pScrn, xdir, ydir, GXcopy, ~0, -1);
+		pScrn, xdir, ydir, GXcopy, (CARD32)(~0), -1);
 	(*info->accel->SubsequentScreenToScreenCopy)(
 		pScrn, srcx, srcy, dstx, dsty, w, h);
 	SET_SYNC_FLAG(info->accel);
