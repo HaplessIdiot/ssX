@@ -177,17 +177,17 @@
 #define TVSetYPbPr525i		0x0020
 #define TVSetYPbPr525p		0x0040
 #define TVSetYPbPr750p		0x0080
-#define TVSetHiVision		0x0100
+#define TVSetHiVision		0x0100  /* = 1080i, software-wise identical */
 #define TVSetTVSimuMode		0x0800
 #define TVRPLLDIV2XO		0x1000
 #define TVSetNTSC1024		0x2000
 
 /* YPbPr flag (>=315, <661) */
-#define YPbPr750                0x0001	/* 750p (must be a single bit, checked logially) */
-#define YPbPr525                0x0002	/* 525p (must be a single bit, checked logially) */
-#define YPbPrHiVision           0x0003	/* HiVision 1080i*/
-#define YPbPrModeMask           (YPbPr750 | YPbPr525 | YPbPrHiVision)
-#define YPbPrSetSVideo     	0x0004	/* (sets SVIDEO flag) */
+#define YPbPr525p               0x0001	/* 525p */
+#define YPbPr750p               0x0002	/* 750p */
+#define YPbPr525i               0x0004	/* 525p */
+#define YPbPrHiVision           0x0008	/* HiVision or 1080i (bridge type dependent) */
+#define YPbPrModeMask           (YPbPr750p | YPbPr525p | YPbPr525i | YPbPrHiVision)
 
 /* SysFlags (to identify special versions) */
 #define SF_Is651                0x0001
@@ -227,7 +227,7 @@
           000  525i
  	  001  525p
 	  010  750p
-	  011  HiVision 1080i
+	  011  1080i (or HiVision on 301, 301B)
 
    These bits are being translated to TVMode flag.
 
@@ -281,13 +281,13 @@
 /* CR38 (315 series) */
 #define EnableDualEdge 		0x01
 #define SetToLCDA		0x02   /* LCD channel A (301C/302B/30x(E)LV and 650+LVDS only) */
-#define EnableSiSYPbPr          0x04   /* YPbPr on SiS bridge (not used; also on 661) */
 #define EnableCHScart           0x04   /* Scart on Ch7019 (unofficial definition - TW) */
 #define EnableCHYPbPr           0x08   /* YPbPr on Ch7019 (480i HDTV); only on 650/Ch7019 systems */
-#define EnableYPbPr750          0x08   /* Enable 750P YPbPr mode (30xLV/301C only) (not supported) */
-#define EnableYPbPr525          0x10   /* Enable 525P YPbPr mode (30xLV/301C only) (not supported) */
-#define EnableYPbPrHiVision     0x18   /* Enable HiVision 1080i */
-#define EnableYPbPrsetSVideo    0x20   /* Enable YPbPr and set SVideo */
+#define EnableSiSYPbPr          0x08   /* Enable YPbPr mode (30xLV/301C only) */
+#define EnableYPbPr525i         0x00   /* Enable 525i YPbPr mode (30xLV/301C only) (mask 0x30) */
+#define EnableYPbPr525p         0x10   /* Enable 525p YPbPr mode (30xLV/301C only) (mask 0x30) */
+#define EnableYPbPr750p         0x20   /* Enable 750p YPbPr mode (30xLV/301C only) (mask 0x30) */
+#define EnableYPbPr1080i        0x30   /* Enable 1080i YPbPr mode (30xLV/301C only) (mask 0x30) */
 #define EnablePALM              0x40   /* 1 = Set PALM */
 #define EnablePALN              0x80   /* 1 = Set PALN */
 #define EnableNTSCJ             EnablePALM  /* Not BIOS */
@@ -308,12 +308,17 @@
 #define LCDPass1_1		0x01   /* LVDS only; set by driver to pass 1:1 data to LVDS output  */
 #define Enable302LV_DualLink    0x04   /* 302LV only; enable dual link */
 
-/* CR39 (661 and later; not yet implemented)
+/* CR39 (661 and later)
    D[1:0] YPbPr Aspect Ratio
           00 4:3 letterbox
 	  01 4:3
 	  10 16:9
 	  11 4:3
+*/
+
+/* CR3B (651+301C)
+   D[1:0] YPbPr Aspect Ratio
+          ?
 */
 
 /* CR79 (315/330 series only; not 661 and later)

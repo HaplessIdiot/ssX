@@ -42,7 +42,7 @@
 
 #define SISDRIVERVERSIONYEAR    4
 #define SISDRIVERVERSIONMONTH   1
-#define SISDRIVERVERSIONDAY     12
+#define SISDRIVERVERSIONDAY     19
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -113,7 +113,7 @@
 #define SIS_ARGB_CURSOR
 #endif
 
-#if 1				/* Include YPbPr support on SiS bridges (661/741/760) */
+#if 1				/* Include YPbPr support on SiS bridges (315 series and 661/741/760) */
 #define ENABLE_YPBPR
 #endif
 
@@ -221,13 +221,19 @@
 /* Aliases: */
 #define CRT2_ENABLE		(CRT2_LCD | CRT2_TV | CRT2_VGA)
 #define TV_STANDARD             (TV_NTSC | TV_PAL | TV_PALM | TV_PALN | TV_NTSCJ)
-#define TV_INTERFACE            (TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR|TV_CHSCART|TV_CHYPBPR525I)
+#define TV_INTERFACE            (TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR)
 
 /* Only if TV_YPBPR is set: */
 #define TV_YPBPR525I		TV_NTSC
 #define TV_YPBPR525P		TV_PAL
 #define TV_YPBPR750P		TV_PALM
-#define TV_YPBPRALL 		(TV_YPBPR525I | TV_YPBPR525P | TV_YPBPR750P)
+#define TV_YPBPR1080I	        TV_PALN
+#define TV_YPBPRALL 		(TV_YPBPR525I | TV_YPBPR525P | TV_YPBPR750P | TV_YPBPR1080I)
+
+#define TV_YPBPR43LB		TV_CHSCART
+#define TV_YPBPR43		TV_CHYPBPR525I
+#define TV_YPBPR169 		(TV_CHSCART | TV_CHYPBPR525I)
+#define TV_YPBPRAR              (TV_CHSCART | TV_CHYPBPR525I)
 
 #define VB_SISBRIDGE            (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV|VB_302ELV)
 #define VB_SISTVBRIDGE          (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)
@@ -352,7 +358,7 @@ typedef unsigned char UChar;
 #define SiS_SD_IS315SERIES     0x00000002
 #define SiS_SD_IS330SERIES     0x00000004
 #define SiS_SD_SUPPORTPALMN    0x00000008   /* tv chip supports pal-m, pal-n */
-#define SiS_SD_SUPPORT2OVL     0x00000010   /* set = 2 overlays, 1 = support SWITCHCRT xv prop */
+#define SiS_SD_SUPPORT2OVL     0x00000010   /* set = 2 overlays, clear = support SWITCHCRT xv prop */
 #define SiS_SD_SUPPORTTVPOS    0x00000020   /* supports changing tv position */
 #define SiS_SD_ISDUALHEAD      0x00000040   /* Driver is in dual head mode */
 #define SiS_SD_ISMERGEDFB      0x00000080   /* Driver is in merged fb mode */
@@ -371,27 +377,29 @@ typedef unsigned char UChar;
 #define SiS_SD_SUPPORTOVERSCAN 0x00100000   /* Overscan flag supported */
 #define SiS_SD_SUPPORTXVGAMMA1 0x00200000   /* Xv Gamma correction for CRT1 supported */
 #define SiS_SD_SUPPORTTV       0x00400000   /* CRT2=TV supported */
-#define SiS_SD_SUPPORTYPBPR    0x00800000   /* CRT2=YPbPr (525i, 525p, 750p) is supported */
-#define SiS_SD_SUPPORTHIVISION 0x01000000   /* CRT2=HiVision (1080i) is supported */
+#define SiS_SD_SUPPORTYPBPR    0x00800000   /* CRT2=YPbPr (525i, 525p, 750p, 1080i) is supported */
+#define SiS_SD_SUPPORTHIVISION 0x01000000   /* CRT2=HiVision is supported */
+#define SiS_SD_SUPPORTYPBPRAR  0x02000000   /* YPbPr aspect ratio is supported */
 
 #define SIS_DIRECTKEY         0x03145792
 
 /* SiSCtrl: Check mode for CRT2 */
-#define SiS_CF2_LCD         0x01
-#define SiS_CF2_TV          0x02
-#define SiS_CF2_VGA2        0x04
-#define SiS_CF2_TVPAL       0x08
-#define SiS_CF2_TVNTSC      0x10  /* + NTSC-J */
-#define SiS_CF2_TVPALM      0x20
-#define SiS_CF2_TVPALN      0x40
-#define SiS_CF2_CRT1LCDA    0x80
-#define SiS_CF2_TYPEMASK    (SiS_CF2_LCD | SiS_CF2_TV | SiS_CF2_VGA2 | SiS_CF2_CRT1LCDA)
-#define SiS_CF2_TVSPECIAL   (SiS_CF2_LCD | SiS_CF2_TV)
-#define SiS_CF2_TVSPECMASK  (SiS_CF2_TVPAL | SiS_CF2_TVNTSC | SiS_CF2_TVPALM | SiS_CF2_TVPALN)
-#define SiS_CF2_TVHIVISION  SiS_CF2_TVPAL
-#define SiS_CF2_TVYPBPR525I SiS_CF2_TVNTSC
-#define SiS_CF2_TVYPBPR525P (SiS_CF2_TVPAL | SiS_CF2_TVNTSC)
-#define SiS_CF2_TVYPBPR750P SiS_CF2_TVPALM
+#define SiS_CF2_LCD          0x01
+#define SiS_CF2_TV           0x02
+#define SiS_CF2_VGA2         0x04
+#define SiS_CF2_TVPAL        0x08
+#define SiS_CF2_TVNTSC       0x10  /* + NTSC-J */
+#define SiS_CF2_TVPALM       0x20
+#define SiS_CF2_TVPALN       0x40
+#define SiS_CF2_CRT1LCDA     0x80
+#define SiS_CF2_TYPEMASK     (SiS_CF2_LCD | SiS_CF2_TV | SiS_CF2_VGA2 | SiS_CF2_CRT1LCDA)
+#define SiS_CF2_TVSPECIAL    (SiS_CF2_LCD | SiS_CF2_TV)
+#define SiS_CF2_TVSPECMASK   (SiS_CF2_TVPAL | SiS_CF2_TVNTSC | SiS_CF2_TVPALM | SiS_CF2_TVPALN)
+#define SiS_CF2_TVHIVISION   SiS_CF2_TVPAL
+#define SiS_CF2_TVYPBPR525I  SiS_CF2_TVNTSC
+#define SiS_CF2_TVYPBPR525P  (SiS_CF2_TVPAL | SiS_CF2_TVNTSC)
+#define SiS_CF2_TVYPBPR750P  SiS_CF2_TVPALM
+#define SiS_CF2_TVYPBPR1080I (SiS_CF2_TVPALM | SiS_CF2_TVPAL)
 
 /* AGP stuff for DRI */
 #define AGP_PAGE_SIZE 4096
@@ -525,7 +533,7 @@ typedef struct {
     int			tvxpos, tvypos;
     int		      	tvxscale, tvyscale;
     int			ForceTVType;
-    unsigned long	ForceYPbPrType;
+    unsigned long	ForceYPbPrType, ForceYPbPrAR;
     int			chtvtype;
     int                 NonDefaultPAL, NonDefaultNTSC;
     unsigned short	tvx, tvy;
@@ -534,7 +542,7 @@ typedef struct {
     unsigned long       sistvccbase;
     unsigned char       p2_35, p2_36, p2_37, p2_38, p2_48, p2_49, p2_4a;
     unsigned char	p2_0a, p2_2f, p2_30, p2_47;
-    unsigned char       scalingp1[9], scalingp4[9];
+    unsigned char       scalingp1[9], scalingp4[9], scalingp2[64];
     unsigned short      cursorBufferNum;
     BOOLEAN		restorebyset;
     BOOLEAN		CRT1gamma, CRT1gammaGiven, CRT2gamma, XvGamma, XvGammaGiven;
@@ -839,7 +847,7 @@ typedef struct {
     int			newFastVram;		/* Replaces FastVram */
     int			ForceTVType;
     int                 NonDefaultPAL, NonDefaultNTSC;
-    unsigned long	ForceYPbPrType;
+    unsigned long	ForceYPbPrType, ForceYPbPrAR;
     unsigned long       lockcalls;		/* Count unlock calls for debug */
     unsigned short	tvx, tvy;		/* Backup TV position registers */
     unsigned char	p2_01, p2_02, p2_1f, p2_20;    /* Backup TV position registers */
@@ -848,7 +856,7 @@ typedef struct {
     unsigned long       sistvccbase;
     unsigned char       p2_35, p2_36, p2_37, p2_38, p2_48, p2_49, p2_4a;
     unsigned char	p2_0a, p2_2f, p2_30, p2_47;
-    unsigned char       scalingp1[9], scalingp4[9];
+    unsigned char       scalingp1[9], scalingp4[9], scalingp2[64];
     BOOLEAN		ForceCursorOff;
     BOOLEAN		HaveCustomModes;
     BOOLEAN		IsCustom;

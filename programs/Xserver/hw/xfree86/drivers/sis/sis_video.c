@@ -1605,6 +1605,7 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
 #endif
         if(pSiS->xv_sisdirectunlocked) {
 	   SISSwitchCRT2Type(pScrn, (unsigned long)value);
+	   set_dispmode(pScrn, pPriv);
 	   set_allowswitchcrt(pSiS, pPriv);
 	   set_maxencoding(pSiS, pPriv);
         }
@@ -1614,6 +1615,7 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
 #endif
         if(pSiS->xv_sisdirectunlocked) {
 	   SISSwitchCRT1Status(pScrn, (unsigned long)value);
+	   set_dispmode(pScrn, pPriv);
 	   set_allowswitchcrt(pSiS, pPriv);
 	   set_maxencoding(pSiS, pPriv);
         }

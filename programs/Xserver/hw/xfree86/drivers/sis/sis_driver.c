@@ -3160,20 +3160,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		"Could not allocate memory for video BIOS image\n");
           } else {
 	     unsigned long  segstart;
-             unsigned short romptr;
+             unsigned short romptr, pciid;
 	     BOOLEAN found;
-             int  i;
-             static const char sis_rom_sig[] = "Silicon Integrated Systems";
-             static const char *sis_sig[15] = {
-                  "300", "540", "630", "730",
-		  "315", "315", "315", "5315", "6325", "6325",
-		  "Xabre", "6330", "6330", "6330", "6330"
-             };
-	     static const unsigned short sis_nums[15] = {
-	          SIS_300, SIS_540, SIS_630, SIS_730,
-		  SIS_315PRO, SIS_315H, SIS_315, SIS_550, SIS_650, SIS_740,
-		  SIS_330, SIS_661, SIS_741, SIS_660, SIS_760
-	     };
 
 	     found = FALSE;
              for(segstart=BIOS_BASE; segstart<0x000f0000; segstart+=0x00001000) {
@@ -3186,29 +3174,19 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
 		if((pSiS->BIOS[0] != 0x55) || (pSiS->BIOS[1] != 0xaa)) continue;
 
-		romptr = pSiS->BIOS[0x12] | (pSiS->BIOS[0x13] << 8);
-		if(romptr > (BIOS_SIZE - strlen(sis_rom_sig))) continue;
-                if(strncmp(sis_rom_sig, (char *)&pSiS->BIOS[romptr], strlen(sis_rom_sig)) != 0) continue;
+		romptr = pSiS->BIOS[0x18] | (pSiS->BIOS[0x19] << 8);
+		if(romptr > (BIOS_SIZE - 8)) continue;
+		if((pSiS->BIOS[romptr]   != 'P') || (pSiS->BIOS[romptr+1] != 'C') ||
+		   (pSiS->BIOS[romptr+2] != 'I') || (pSiS->BIOS[romptr+3] != 'R')) continue;
 
-		romptr = pSiS->BIOS[0x14] | (pSiS->BIOS[0x15] << 8);
-		if(romptr > (BIOS_SIZE - 5)) continue;
-		for(i = 0; (i < 15) && (!found); i++) {
-                   if(strncmp(sis_sig[i], (char *)&pSiS->BIOS[romptr], strlen(sis_sig[i])) == 0) {
-                      if(sis_nums[i] == pSiS->sishw_ext.jChipType) {
-			 found = TRUE;
-                         break;
-		      } else {
-			 if((pSiS->sishw_ext.jChipType != SIS_740) &&
-			    (pSiS->sishw_ext.jChipType != SIS_661) &&
-			    (pSiS->sishw_ext.jChipType != SIS_741) &&
-			    (pSiS->sishw_ext.jChipType != SIS_660)) {
-			    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-			   	"Ignoring BIOS for SiS %s at 0x%lx\n", sis_sig[i], segstart);
-			 }
-		      }
-                   }
-                }
-		if(found) break;
+		pciid = pSiS->BIOS[romptr+4] | (pSiS->BIOS[romptr+5] << 8);
+		if(pciid != 0x1039) continue;
+
+		pciid = pSiS->BIOS[romptr+6] | (pSiS->BIOS[romptr+7] << 8);
+		if(pciid != pSiS->Chipset) continue;
+
+		found = TRUE;
+		break;
              }
 
 	     if(!found) {
@@ -3258,6 +3236,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiSEnt->ForceCRT2Type = pSiS->ForceCRT2Type;
 	     pSiSEnt->ForceTVType = pSiS->ForceTVType;
 	     pSiSEnt->ForceYPbPrType = pSiS->ForceYPbPrType;
+	     pSiSEnt->ForceYPbPrAR = pSiS->ForceYPbPrAR;
 	     pSiSEnt->UsePanelScaler = pSiS->UsePanelScaler;
 	     pSiSEnt->DSTN = pSiS->DSTN;
 	     pSiSEnt->OptTVStand = pSiS->OptTVStand;
@@ -3338,6 +3317,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     pSiS->chtvtype = pSiSEnt->chtvtype;
 	     pSiS->ForceTVType = pSiSEnt->ForceTVType;
 	     pSiS->ForceYPbPrType = pSiSEnt->ForceYPbPrType;
+	     pSiS->ForceYPbPrAR = pSiSEnt->ForceYPbPrAR;
 	     pSiS->OptTVOver = pSiSEnt->OptTVOver;
 	     pSiS->OptTVSOver = pSiSEnt->OptTVSOver;
 	     pSiS->chtvlumabandwidthcvbs = pSiSEnt->chtvlumabandwidthcvbs;
@@ -3910,15 +3890,6 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    /* Detect CRT2-TV and PAL/NTSC mode */
-    SISTVPreInit(pScrn);
-
-    /* Detect CRT2-VGA */
-    SISCRT2PreInit(pScrn);
-
-    /* Backup detected CRT2 devices */
-    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA|TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR);
-
     /* Setup SD flags */
     pSiS->SiS_SD_Flags |= SiS_SD_ADDLSUPFLAG;
 
@@ -3928,25 +3899,42 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
 #ifdef ENABLE_YPBPR
     if((pSiS->VGAEngine == SIS_315_VGA) &&
-       (pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV))) {
+       (pSiS->VBFlags & (VB_301C|VB_301LV|VB_302LV|VB_302ELV))) {
        pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTYPBPR;
+       if((pSiS->Chipset == PCI_CHIP_SIS660) || (pSiS->VBFlags & VB_301C)) {
+          pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTYPBPRAR;
+       }
     }
-    if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_301LV|VB_302LV)) {
+    if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
        pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTHIVISION;
     }
 #endif
 
+#ifdef TWDEBUG	/* @@@ TEST @@@ */
+    pSiS->SiS_SD_Flags |= SiS_SD_SUPPORTYPBPRAR;
+    xf86DrvMsg(0, X_INFO, "TEST: Support Aspect Ratio\n");
+#endif
+
+    /* Detect CRT2-TV and PAL/NTSC mode */
+    SISTVPreInit(pScrn);
+
+    /* Detect CRT2-VGA */
+    SISCRT2PreInit(pScrn);
+
+    /* Backup detected CRT2 devices */
+    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA|TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR);
+
     if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR)) {
        if((pSiS->ForceTVType != -1) && (pSiS->ForceTVType & TV_YPBPR)) {
           pSiS->ForceTVType = -1;
-	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "YPbPr TV not supported\n");
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "YPbPr TV output not supported\n");
        }
     }
 
     if(!(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTHIVISION)) {
        if((pSiS->ForceTVType != -1) && (pSiS->ForceTVType & TV_HIVISION)) {
           pSiS->ForceTVType = -1;
-	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "HiVision TV not supported\n");
+	  xf86DrvMsg(pScrn->scrnIndex, X_WARNING, "HiVision TV output not supported\n");
        }
     }
 
@@ -3981,6 +3969,10 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     pSiS->VBFlags |= pSiS->ForceCRT1Type;
+
+#ifdef TWDEBUG
+    xf86DrvMsg(0, X_INFO, "SDFlags %lx\n", pSiS->SiS_SD_Flags);
+#endif
 
     /* Eventually overrule detected CRT2 type
      * If no type forced, use the detected devices in the order VGA2->TV->LCD
@@ -4072,10 +4064,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     if(pSiS->VBFlags & VB_SISTVBRIDGE) {
        if(pSiS->ForceTVType != -1) {
     	  pSiS->VBFlags &= ~(TV_INTERFACE);
+	  if(!(pSiS->VBFlags & VB_CHRONTEL)) {
+	     pSiS->VBFlags &= ~(TV_CHSCART | TV_CHYPBPR525I);
+	  }
 	  pSiS->VBFlags |= pSiS->ForceTVType;
 	  if(pSiS->VBFlags & TV_YPBPR) {
 	     pSiS->VBFlags &= ~(TV_STANDARD);
+	     pSiS->VBFlags &= ~(TV_YPBPRAR);
 	     pSiS->VBFlags |= pSiS->ForceYPbPrType;
+	     pSiS->VBFlags |= pSiS->ForceYPbPrAR;
 	  }
        }
     }
@@ -4185,7 +4182,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if(pSiS->OptTVStand != -1) {
        if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
-	  if(!(pSiS->VBFlags & (TV_CHSCART | TV_CHYPBPR525I | TV_HIVISION | TV_YPBPR))) {
+	  if( (!((pSiS->VBFlags & VB_CHRONTEL) && (pSiS->VBFlags & (TV_CHSCART | TV_CHYPBPR525I)))) &&
+	      (!(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR))) ) {
     	     pSiS->VBFlags &= ~(TV_PAL | TV_NTSC | TV_PALN | TV_PALM | TV_NTSCJ);
     	     if(pSiS->OptTVStand) {
 	        pSiS->VBFlags |= TV_PAL;
@@ -6044,6 +6042,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	     SiSPostSetMode(pScrn, &pSiS->ModeReg);
 
 #ifdef TWDEBUG
+	     xf86DrvMsg(pScrn->scrnIndex, X_INFO, "VBFlags %lx\n", pSiS->VBFlags);
 	     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			"REAL REGISTER CONTENTS AFTER SETMODE:\n");
              (*pSiS->ModeInit)(pScrn, mode);
@@ -7138,7 +7137,8 @@ SISSwitchCRT2Type(ScrnInfoPtr pScrn, unsigned long newvbflags)
 #endif
 
 #define SiS_NewVBMask (CRT2_ENABLE|CRT1_LCDA|TV_PAL|TV_NTSC|TV_PALM|TV_PALN|TV_NTSCJ| \
-		       TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR|TV_YPBPRALL)
+		       TV_AVIDEO|TV_SVIDEO|TV_SCART|TV_HIVISION|TV_YPBPR|TV_YPBPRALL|\
+		       TV_YPBPRAR)
 
     newvbflags &= SiS_NewVBMask;
     newvbflags |= pSiS->VBFlags & ~SiS_NewVBMask;
@@ -7248,6 +7248,8 @@ SISCheckModeIndexForCRT2Type(ScrnInfoPtr pScrn, unsigned short cond, unsigned sh
 	  	vbflags |= (TV_YPBPR | TV_YPBPR525P);
 	  else if((cond & SiS_CF2_TVSPECMASK) == SiS_CF2_TVYPBPR750P)
 	  	vbflags |= (TV_YPBPR | TV_YPBPR750P);
+	  else if((cond & SiS_CF2_TVSPECMASK) == SiS_CF2_TVYPBPR1080I)
+	  	vbflags |= (TV_YPBPR | TV_YPBPR1080I);
        } else if((cond & SiS_CF2_TYPEMASK) == SiS_CF2_VGA2) {
           vbflags |= CRT2_VGA;
        } else if((cond & SiS_CF2_TYPEMASK) == SiS_CF2_CRT1LCDA) {
@@ -8468,8 +8470,8 @@ SiSEnableTurboQueue(ScrnInfoPtr pScrn)
 void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 {
     SISPtr         pSiS = SISPTR(pScrn);
-    unsigned char  CR30, CR31;
-    unsigned char  CR32, CR33;
+    unsigned char  CR30, CR31, CR32, CR33;
+    unsigned char  CR39 = 0, CR3B = 0;
     unsigned char  CR17, CR38 = 0;
     unsigned char  CR35 = 0, CR79 = 0;
     unsigned long  vbflag;
@@ -8602,14 +8604,17 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);    /* Unlock Registers */
 #endif
 
+    inSISIDXREG(SISCR, 0x30, CR30);
+    inSISIDXREG(SISCR, 0x31, CR31);
+    CR32 = pSiS->newCR32;
+    inSISIDXREG(SISCR, 0x33, CR33);
+
     if(pSiS->Chipset == PCI_CHIP_SIS660) {
 
-       inSISIDXREG(SISCR, 0x30, CR30);
-       inSISIDXREG(SISCR, 0x31, CR31);
-       CR32 = pSiS->newCR32;
-       inSISIDXREG(SISCR, 0x33, CR33);
        inSISIDXREG(SISCR, 0x35, CR35);
        inSISIDXREG(SISCR, 0x38, CR38);
+       inSISIDXREG(SISCR, 0x39, CR39);
+
        xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 4,
 	   "Before: CR30=0x%02x,CR31=0x%02x,CR32=0x%02x,CR33=0x%02x,CR35=0x%02x,CR38=0x%02x\n",
               CR30, CR31, CR32, CR33, CR35, CR38);
@@ -8617,10 +8622,6 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 
     } else {
 
-       inSISIDXREG(SISCR, 0x30, CR30);
-       inSISIDXREG(SISCR, 0x31, CR31);
-       CR32 = pSiS->newCR32;
-       inSISIDXREG(SISCR, 0x33, CR33);
        if(pSiS->Chipset != PCI_CHIP_SIS300) {
           switch(pSiS->VGAEngine) {
              case SIS_300_VGA: temp = 0x35; break;
@@ -8630,8 +8631,9 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
        }
        if(pSiS->VGAEngine == SIS_315_VGA) {
           inSISIDXREG(SISCR, 0x79, CR79);
-          CR38 &= ~0x03;   			/* Clear LCDA/DualEdge bits */
+          CR38 &= ~0x3b;   			/* Clear LCDA/DualEdge and YPbPr bits */
        }
+       inSISIDXREG(SISCR, 0x3b, CR3B);
        xf86DrvMsgVerb(pScrn->scrnIndex, X_PROBED, 4,
 	   "Before: CR30=0x%02x, CR31=0x%02x, CR32=0x%02x, CR33=0x%02x, CR%02x=0x%02x\n",
               CR30, CR31, CR32, CR33, temp, CR38);
@@ -8666,12 +8668,14 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 
           CR38 &= ~0xC0; 	/* Clear Pal M/N bits */
 
-          if(vbflag & TV_CHSCART) {		/* Chrontel */
+          if((vbflag & VB_CHRONTEL) && (vbflag & TV_CHSCART)) {			/* Chrontel */
 	     CR30 |= 0x10;
 	     CR38 |= 0x04;
+	     CR38 &= ~0x08;
 	     CR31 |= 0x01;
-	  } else if(vbflag & TV_CHYPBPR525I) {	/* Chrontel */
+	  } else if((vbflag & VB_CHRONTEL) && (vbflag & TV_CHYPBPR525I)) {	/* Chrontel */
 	     CR38 |= 0x08;
+	     CR38 &= ~0x04;
 	     CR31 &= ~0x01;
           } else if(vbflag & TV_HIVISION) {	/* SiS bridge */
 	     if(pSiS->Chipset == PCI_CHIP_SIS660) {
@@ -8681,30 +8685,41 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 	        CR30 |= 0x80;
 		if(pSiS->VGAEngine == SIS_315_VGA) {
 		   if(vbflag & (VB_301LV | VB_302LV | VB_301C)) {
-		      CR38 &= ~0x38;
-		      CR38 |= (0x03 << 3);
+		      CR38 |= (0x08 | 0x30);
 		   }
 		}
 	     }
 	     CR31 |= 0x01;
 	     CR35 |= 0x01;
-	  } else if(vbflag & TV_YPBPR) {	/* SiS bridge */
+	  } else if(vbflag & TV_YPBPR) {					/* SiS bridge */
 	     if(pSiS->Chipset == PCI_CHIP_SIS660) {
 	        CR38 |= 0x04;
-	        if(vbflag & TV_YPBPR525P)      CR35 |= 0x20;
-		else if(vbflag & TV_YPBPR750P) CR35 |= 0x40;
+	        if(vbflag & TV_YPBPR525P)       CR35 |= 0x20;
+		else if(vbflag & TV_YPBPR750P)  CR35 |= 0x40;
+		else if(vbflag & TV_YPBPR1080I) CR35 |= 0x60;
 		CR31 &= ~0x01;
 		CR35 &= ~0x01;
-	     } else if(pSiS->VGAEngine == SIS_315_VGA) {
-	        if(vbflag & (VB_301LV | VB_302LV | VB_301C)) {
-	           CR30 |= 0x80;
-		   CR38 &= ~0x38;
-	           if(vbflag & TV_YPBPR525P)      CR38 |= (0x02 << 3);
-		   else if(vbflag & TV_YPBPR750P) CR38 |= (0x01 << 3);
-		   else 			  CR38 |= (0x06 << 3);
+		CR39 &= ~0x03;
+		if((vbflag & TV_YPBPRAR) == TV_YPBPR43LB)     CR39 |= 0x00;
+		else if((vbflag & TV_YPBPRAR) == TV_YPBPR43)  CR39 |= 0x01;
+		else if((vbflag & TV_YPBPRAR) == TV_YPBPR169) CR39 |= 0x02;
+		else					      CR39 |= 0x03;
+	     } else if(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPR) {
+	        CR30 |= 0x80;
+		CR38 |= 0x08;
+	        if(vbflag & TV_YPBPR525P)       CR38 |= 0x10;
+		else if(vbflag & TV_YPBPR750P)  CR38 |= 0x20;
+		else if(vbflag & TV_YPBPR1080I) CR38 |= 0x30;
+		CR31 &= ~0x01;
+		if(pSiS->SiS_SD_Flags & SiS_SD_SUPPORTYPBPRAR) {
+		   CR3B &= ~0x03;
+		   if((vbflag & TV_YPBPRAR) == TV_YPBPR43LB)     CR3B |= 0x00;
+		   else if((vbflag & TV_YPBPRAR) == TV_YPBPR43)  CR3B |= 0x03;
+		   else if((vbflag & TV_YPBPRAR) == TV_YPBPR169) CR3B |= 0x01;
+		   else					         CR3B |= 0x03;
 		}
 	     }
-          } else {				/* All */
+          } else {								/* All */
 	     if(vbflag & TV_SCART)  CR30 |= 0x10;
 	     if(vbflag & TV_SVIDEO) CR30 |= 0x08;
 	     if(vbflag & TV_AVIDEO) CR30 |= 0x04;
@@ -8869,6 +8884,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 	outSISIDXREG(SISCR, 0x33, CR33);
 	outSISIDXREG(SISCR, 0x35, CR35);
 	setSISIDXREG(SISCR, 0x38, 0xf8, CR38);
+	outSISIDXREG(SISCR, 0x39, CR39);
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
 		"After:  CR30=0x%02x,CR31=0x%02x,CR33=0x%02x,CR35=0x%02x,CR38=%02x\n",
 		    CR30, CR31, CR33, CR35, CR38);
@@ -8882,7 +8898,8 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
            outSISIDXREG(SISCR, temp, CR38);
         }
 	if(pSiS->VGAEngine == SIS_315_VGA) {
-           outSISIDXREG(SISCR, 0x79, CR79);
+	   outSISIDXREG(SISCR, 0x3b, CR3B);
+	   outSISIDXREG(SISCR, 0x79, CR79);
 	}
 	xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 4,
 		"After:  CR30=0x%02x,CR31=0x%02x,CR33=0x%02x,CR%02x=%02x\n",
@@ -8913,7 +8930,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
 /* Functions for adjusting various TV settings */
 
 /* These are used by the PostSetMode() functions as well as
- * the (hopefully) upcoming display properties extension/tool.
+ * the display properties tool SiSCtrl.
  *
  * There is each a Set and a Get routine. The Set functions
  * take a value of the same range as the corresponding option.
@@ -8938,7 +8955,8 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode, int viewmode)
  *
  * All the routines are dual head aware. It does not matter
  * if the function is called from the CRT1 or CRT2 session.
- * The values will be stored in pSiSEnt if we're running dual.
+ * The values will be in pSiSEnt anyway, and read from there
+ * if we're running dual head.
  */
 
 void SiS_SetCHTVlumabandwidthcvbs(ScrnInfoPtr pScrn, int val)
@@ -9467,42 +9485,39 @@ void SiS_SetSISTVedgeenhance(ScrnInfoPtr pScrn, int val)
 #ifdef SISDUALHEAD
    if(pSiSEnt) pSiSEnt->sistvedgeenhance = val;
 #endif
-   
+
+   if(!(pSiS->VBFlags & VB_301))  return;
    if(!(pSiS->VBFlags & CRT2_TV)) return;
-   if(!(pSiS->VBFlags & VB_301)) return;
-   
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
 
    val /= 2;
    if((val >= 0) && (val <= 7)) {
-       setSISIDXREG(SISPART2,0x3A, 0x1F, (val << 5));
+      setSISIDXREG(SISPART2,0x3A, 0x1F, (val << 5));
    }
 }
 
 int SiS_GetSISTVedgeenhance(ScrnInfoPtr pScrn)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   int result = pSiS->sistvedgeenhance;
+   unsigned char temp;
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode) result = pSiSEnt->sistvedgeenhance;
 #endif
 
-   if(!(pSiS->VBFlags & VB_301 && pSiS->VBFlags & CRT2_TV)) {
-#ifdef SISDUALHEAD   
-      if(pSiSEnt && pSiS->DualHeadMode) 
-           return (int)pSiSEnt->sistvedgeenhance;
-      else 
-#endif      
-           return (int)pSiS->sistvedgeenhance;
-   } else {
-      unsigned char temp;
+   if(!(pSiS->VBFlags & VB_301))  return result;
+   if(!(pSiS->VBFlags & CRT2_TV)) return result;
+
 #ifdef UNLOCK_ALWAYS
-      sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
-#endif      
-      inSISIDXREG(SISPART2, 0x3a, temp);
-      return(int)(((temp & 0xe0) >> 5) * 2);
-   }
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+   inSISIDXREG(SISPART2, 0x3a, temp);
+   return(int)(((temp & 0xe0) >> 5) * 2);
 }
 
 void SiS_SetSISTVantiflicker(ScrnInfoPtr pScrn, int val)
@@ -9517,9 +9532,12 @@ void SiS_SetSISTVantiflicker(ScrnInfoPtr pScrn, int val)
    if(pSiSEnt) pSiSEnt->sistvantiflicker = val;
 #endif
    
-   if(!(pSiS->VBFlags & CRT2_TV)) return;
+   if(!(pSiS->VBFlags & CRT2_TV))      return;
    if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
-   
+   if(pSiS->VBFlags & TV_HIVISION)     return;
+   if((pSiS->VBFlags & TV_YPBPR) &&
+      (pSiS->VBFlags & (TV_YPBPR525P | TV_YPBPR750P | TV_YPBPR1080I))) return;
+
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
@@ -9533,25 +9551,25 @@ void SiS_SetSISTVantiflicker(ScrnInfoPtr pScrn, int val)
 int SiS_GetSISTVantiflicker(ScrnInfoPtr pScrn)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   int result = pSiS->sistvantiflicker;
+   unsigned char temp;
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode) result = pSiSEnt->sistvantiflicker;
 #endif
 
-   if(!(pSiS->VBFlags & VB_SISBRIDGE && pSiS->VBFlags & CRT2_TV)) {
-#ifdef SISDUALHEAD   
-      if(pSiSEnt && pSiS->DualHeadMode) 
-           return (int)pSiSEnt->sistvantiflicker;
-      else
-#endif      
-           return (int)pSiS->sistvantiflicker;
-   } else {
-      unsigned char temp;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return result;
+   if(!(pSiS->VBFlags & CRT2_TV))      return result;
+   if(pSiS->VBFlags & TV_HIVISION)     return result;
+   if((pSiS->VBFlags & TV_YPBPR) &&
+      (pSiS->VBFlags & (TV_YPBPR525P | TV_YPBPR750P | TV_YPBPR1080I))) return result;
+
 #ifdef UNLOCK_ALWAYS
-      sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
-#endif      
-      inSISIDXREG(SISPART2, 0x0a, temp);
-      return(int)((temp & 0x70) >> 4);
-   }
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+#endif
+   inSISIDXREG(SISPART2, 0x0a, temp);
+   return(int)((temp & 0x70) >> 4);
 }
 
 void SiS_SetSISTVsaturation(ScrnInfoPtr pScrn, int val)
@@ -9583,27 +9601,23 @@ void SiS_SetSISTVsaturation(ScrnInfoPtr pScrn, int val)
 int SiS_GetSISTVsaturation(ScrnInfoPtr pScrn)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   int result = pSiS->sistvsaturation;
+   unsigned char temp;
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode)  result = pSiSEnt->sistvsaturation;
 #endif
 
-   if(!(pSiS->VBFlags & VB_SISBRIDGE &&
-        (!(pSiS->VBFlags & VB_301)) &&
-        pSiS->VBFlags & CRT2_TV)) {
-#ifdef SISDUALHEAD
-      if(pSiSEnt && pSiS->DualHeadMode)
-           return (int)pSiSEnt->sistvsaturation;
-      else
-#endif
-           return (int)pSiS->sistvsaturation;
-   } else {
-      unsigned char temp;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return result;
+   if(pSiS->VBFlags & VB_301)          return result;
+   if(!(pSiS->VBFlags & CRT2_TV))      return result;
+
 #ifdef UNLOCK_ALWAYS
-      sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
-      inSISIDXREG(SISPART4, 0x21, temp);
-      return(int)((temp & 0x07) * 2);
-   }
+   inSISIDXREG(SISPART4, 0x21, temp);
+   return(int)((temp & 0x07) * 2);
 }
 
 void SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse)
@@ -9616,7 +9630,7 @@ void SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse)
    unsigned char temp;
 
 #ifdef SISDUALHEAD
-   if(pSiSEnt) cbase = pSiSEnt->sistvccbase;
+   if(pSiSEnt && pSiS->DualHeadMode) cbase = pSiSEnt->sistvccbase;
 #endif
 
    if(coarse) {
@@ -9625,7 +9639,7 @@ void SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse)
 #ifdef SISDUALHEAD
       if(pSiSEnt) {
          pSiSEnt->sistvcolcalibc = val;
-	 cfine = pSiSEnt->sistvcolcalibf;
+	 if(pSiS->DualHeadMode) cfine = pSiSEnt->sistvcolcalibf;
       }
 #endif
    } else {
@@ -9634,14 +9648,14 @@ void SiS_SetSISTVcolcalib(ScrnInfoPtr pScrn, int val, Bool coarse)
 #ifdef SISDUALHEAD
       if(pSiSEnt) {
          pSiSEnt->sistvcolcalibf = val;
-         ccoarse = pSiSEnt->sistvcolcalibc;
+         if(pSiS->DualHeadMode) ccoarse = pSiSEnt->sistvcolcalibc;
       }
 #endif
    }
 
-   if(!(pSiS->VBFlags & CRT2_TV)) return;
-   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
-   if(pSiS->VBFlags & TV_HIVISION) return;
+   if(!(pSiS->VBFlags & CRT2_TV))               return;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE))          return;
+   if(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) return;
 
 #ifdef UNLOCK_ALWAYS
    sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
@@ -9673,16 +9687,12 @@ int SiS_GetSISTVcolcalib(ScrnInfoPtr pScrn, Bool coarse)
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
 
    if(pSiSEnt && pSiS->DualHeadMode)
-      if(coarse)
-         return (int)pSiSEnt->sistvcolcalibc;
-      else
-         return (int)pSiSEnt->sistvcolcalibf;
+      if(coarse)  return (int)pSiSEnt->sistvcolcalibc;
+      else        return (int)pSiSEnt->sistvcolcalibf;
    else
 #endif
-   if(coarse)
-      return (int)pSiS->sistvcolcalibc;
-   else
-      return (int)pSiS->sistvcolcalibf;
+   if(coarse)     return (int)pSiS->sistvcolcalibc;
+   else           return (int)pSiS->sistvcolcalibf;
 }
 
 void SiS_SetSISTVcfilter(ScrnInfoPtr pScrn, int val)
@@ -9697,8 +9707,8 @@ void SiS_SetSISTVcfilter(ScrnInfoPtr pScrn, int val)
    if(pSiSEnt) pSiSEnt->sistvcfilter = pSiS->sistvcfilter;
 #endif
 
-   if(!(pSiS->VBFlags & CRT2_TV)) return;
-   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
+   if(!(pSiS->VBFlags & CRT2_TV))               return;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE))          return;
    if(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) return;
 
 #ifdef UNLOCK_ALWAYS
@@ -9711,26 +9721,23 @@ void SiS_SetSISTVcfilter(ScrnInfoPtr pScrn, int val)
 int SiS_GetSISTVcfilter(ScrnInfoPtr pScrn)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   int result = pSiS->sistvcfilter;
+   unsigned char temp;
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
+
+   if(pSiSEnt && pSiS->DualHeadMode) result = pSiSEnt->sistvcfilter;
 #endif
 
-   if( (!((pSiS->VBFlags & VB_SISBRIDGE) && (pSiS->VBFlags & CRT2_TV))) ||
-       (pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) ) {
-#ifdef SISDUALHEAD
-      if(pSiSEnt && pSiS->DualHeadMode)
-         return (int)pSiSEnt->sistvcfilter;
-      else
-#endif
-         return (int)pSiS->sistvcfilter;
-   } else {
-      unsigned char temp;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE))          return result;
+   if(!(pSiS->VBFlags & CRT2_TV))               return result;
+   if(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) return result;
+
 #ifdef UNLOCK_ALWAYS
-      sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
+   sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 #endif
-      inSISIDXREG(SISPART2, 0x30, temp);
-      return(int)((temp & 0x10) ? 1 : 0);
-   }
+   inSISIDXREG(SISPART2, 0x30, temp);
+   return(int)((temp & 0x10) ? 1 : 0);
 }
 
 void SiS_SetSISTVyfilter(ScrnInfoPtr pScrn, int val)
@@ -9747,8 +9754,8 @@ void SiS_SetSISTVyfilter(ScrnInfoPtr pScrn, int val)
    if(pSiSEnt) pSiSEnt->sistvyfilter = pSiS->sistvyfilter;
 #endif
 
-   if(!(pSiS->VBFlags & CRT2_TV)) return;
-   if(!(pSiS->VBFlags & VB_SISBRIDGE)) return;
+   if(!(pSiS->VBFlags & CRT2_TV))               return;
+   if(!(pSiS->VBFlags & VB_SISBRIDGE))          return;
    if(pSiS->VBFlags & (TV_HIVISION | TV_YPBPR)) return;
 
    p35 = pSiS->p2_35; p36 = pSiS->p2_36;
@@ -9756,7 +9763,7 @@ void SiS_SetSISTVyfilter(ScrnInfoPtr pScrn, int val)
    p48 = pSiS->p2_48; p49 = pSiS->p2_49;
    p4a = pSiS->p2_4a; p30 = pSiS->p2_30;
 #ifdef SISDUALHEAD
-   if(pSiSEnt) {
+   if(pSiSEnt && pSiS->DualHeadMode) {
       p35 = pSiSEnt->p2_35; p36 = pSiSEnt->p2_36;
       p37 = pSiSEnt->p2_37; p38 = pSiSEnt->p2_38;
       p48 = pSiSEnt->p2_48; p49 = pSiSEnt->p2_49;
@@ -10085,13 +10092,23 @@ void SiS_SetTVxposoffset(ScrnInfoPtr pScrn, int val)
 		p2_20 = (temp & 0xf00) >> 4;
 
 		if(pSiS->MiscFlags & MISC_TVNTSC1024) {
-		   temp += 1514;
-		   myadd2 = 4;
-		   mysub = 4;
-		} else {
-		   temp += 1363;
-		   myadd2 = 3;
+		   temp += 1514; myadd2 = 4; mysub = 4;
+		} else if((pSiS->VBFlags & TV_YPBPR) && (pSiS->VBFlags & (TV_YPBPR525P | TV_YPBPR750P))) {
+		   myadd2 = -7;
+		   if(pSiS->VBFlags & TV_YPBPR525P) {
+		      temp += 1274; mysub = 15;
+		   } else {
+		      temp += 1284; mysub = 12;
+		   }
+		} else if((pSiS->VBFlags & TV_HIVISION) ||
+		          ((pSiS->VBFlags & TV_YPBPR) && (pSiS->VBFlags & TV_YPBPR1080I))) {
+		   temp += 1737; myadd2 = -4;
 		   if(pSiS->VBFlags & VB_301) myadd2 += 3;
+		   mysub = 12;
+		} else {
+		   temp += 1363; myadd2 = 3;
+		   if(pSiS->VBFlags & VB_301) myadd2 += 3;
+		   if((pSiS->VBFlags & TV_YPBPR) && (pSiS->VBFlags & TV_YPBPR525I)) myadd2 += 3;
 		   mysub = 5;
 		}
 
@@ -10375,6 +10392,7 @@ int SiS_GetTVxscale(ScrnInfoPtr pScrn)
 void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 {
    SISPtr pSiS = SISPTR(pScrn);
+   Bool usentsc = FALSE;
 #ifdef SISDUALHEAD
    SISEntPtr pSiSEnt = pSiS->entityPrivate;
 #endif
@@ -10391,16 +10409,21 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
    if(pSiSEnt) pSiSEnt->tvyscale = val;
 #endif
 
-   if(pSiS->VBFlags & (TV_HIVISION|TV_YPBPR)) return;
-
    if(pSiS->VGAEngine == SIS_315_VGA || pSiS->VGAEngine == SIS_315_VGA) {
 
       if((pSiS->VBFlags & CRT2_TV) && (pSiS->VBFlags & VB_SISBRIDGE)) {
 
-	 int srindex = -1;
-	 int newvde, i=0, j, temp;
-	 int vlimit = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 259 : 309;
+	 int srindex = -1, newvde, i = 0, j, vlimit, temp;
 	 unsigned char p3d4_34;
+
+	 if(pSiS->VBFlags & TV_HIVISION) return;
+         if((pSiS->VBFlags & TV_YPBPR) &&
+            (pSiS->VBFlags & (TV_YPBPR1080I | TV_YPBPR750P | TV_YPBPR525P))) return;
+
+	 if(pSiS->VBFlags & TV_YPBPR)                 usentsc = TRUE;
+         else if(pSiS->VBFlags & (TV_NTSC | TV_PALM)) usentsc = TRUE;
+
+	 vlimit = usentsc ? 259 : 309;
 
 	 inSISIDXREG(SISCR,0x34,p3d4_34);
 
@@ -10413,7 +10436,7 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	 case 0x2e:   /* 640x480 */
 	 case 0x44:
 	 case 0x62:
-	    srindex  = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 0 : 21;
+	    srindex  = usentsc ? 0 : 21;
 	    break;
 	 case 0x31:   /* 720x480 */
 	 case 0x33:
@@ -10425,7 +10448,7 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	 case 0x60:
 	 case 0x61:
             if(pSiS->VGAEngine == SIS_315_VGA) {
-	       srindex  = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 7 : 28;
+	       srindex  = usentsc ? 7 : 28;
 	    }
 	    break;
 #if 0
@@ -10436,7 +10459,7 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	 case 0x30:   /* 800x600 */
 	 case 0x47:
 	 case 0x63:
-	    srindex  = (pSiS->VBFlags & (TV_NTSC | TV_PALM)) ? 14 : 35;
+	    srindex  = usentsc ? 14 : 35;
 	 }
 
 	 if(srindex >= 0) {
@@ -10464,6 +10487,7 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	       unsigned char p2_46 = pSiS->p2_46;
 	       unsigned char p2_47 = pSiS->p2_47;
 	       unsigned char p1scaling[9], p4scaling[9];
+	       unsigned char *p2scaling;
 
 	       for(i=0; i<9; i++) {
 	          p1scaling[i] = pSiS->scalingp1[i];
@@ -10471,8 +10495,9 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	       for(i=0; i<9; i++) {
 	          p4scaling[i] = pSiS->scalingp4[i];
 	       }
+	       p2scaling = &pSiS->scalingp2[0];
 #ifdef SISDUALHEAD
-               if(pSiSEnt) {
+               if(pSiSEnt && pSiS->DualHeadMode) {
 	          p2_0a = pSiSEnt->p2_0a;
 		  p2_2f = pSiSEnt->p2_2f;
 	          p2_30 = pSiSEnt->p2_30;
@@ -10484,9 +10509,15 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	          for(i=0; i<9; i++) {
 	             p4scaling[i] = pSiSEnt->scalingp4[i];
 	          }
+		  p2scaling = &pSiSEnt->scalingp2[0];
 	       }
 #endif
                SISWaitRetraceCRT2(pScrn);
+	       if(pSiS->VBFlags & (VB_301C|VB_302ELV)) {
+	          for(i=0; i<64; i++) {
+	             outSISIDXREG(SISPART2,(0xc0 + i),p2scaling[i]);
+	          }
+	       }
 	       for(i=0; i<9; i++) {
 	          outSISIDXREG(SISPART1,SiSScalingP1Regs[i],p1scaling[i]);
 	       }
@@ -10505,10 +10536,11 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	    } else {
 
 	       int so = (pSiS->VGAEngine == SIS_300_VGA) ? 12 : 0;
-	       int realvde;
+	       int realvde, j, srindex301c, myypos, watchdog = 32;
 	       unsigned long calctemp;
 
 	       srindex += i;
+	       srindex301c = srindex * 64;
 	       newvde = SiSTVVScale[srindex].ScaleVDE;
 	       realvde = SiSTVVScale[srindex].RealVDE;
 
@@ -10516,10 +10548,24 @@ void SiS_SetTVyscale(ScrnInfoPtr pScrn, int val)
 	          inSISIDXREG(SISPART2,0x01,temp);
 	          temp = vlimit - (temp & 0x7f);
 	          if((temp - (((newvde >> 1) - 2) + 9)) > 0) break;
-		  SiS_SetTVyposoffset(pScrn, pSiS->tvypos - 1);
-	       } while(1);
+		  myypos = pSiS->tvypos - 1;
+#ifdef SISDUALHEAD
+		  if(pSiSEnt && pSiS->DualHeadMode) myypos = pSiSEnt->tvypos - 1;
+#endif
+		  SiS_SetTVyposoffset(pScrn, myypos);
+	       } while(watchdog--);
 
 	       SISWaitRetraceCRT2(pScrn);
+
+	       if(pSiS->VBFlags & (VB_301C|VB_302ELV)) {
+#ifdef TWDEBUG
+		  xf86DrvMsg(0, X_INFO, "301C scaler: Table index %d\n");
+#endif
+	          for(j=0; j<64; j++) {
+		     outSISIDXREG(SISPART2,(0xc0 + j), SiS301CScaling[srindex301c + j]);
+		  }
+	       }
+
 	       if(!(pSiS->VBFlags & VB_301)) {
 	          temp = (newvde >> 1) - 3;
 	          setSISIDXREG(SISPART2,0x46,0x9f,((temp & 0x0300) >> 3));
@@ -10859,7 +10905,7 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	     pSiS->tvy = SiS_GetCH700x(pSiS->SiS_Pr, 0x0b);
 	     pSiS->tvy |= ((SiS_GetCH700x(pSiS->SiS_Pr, 0x08) & 0x01) << 8);
 #ifdef SISDUALHEAD
-	     if(pSiSEnt && pSiS->DualHeadMode) {
+	     if(pSiSEnt) {
 	        pSiSEnt->tvx = pSiS->tvx;
 		pSiSEnt->tvy = pSiS->tvy;
 	     }
@@ -10923,9 +10969,9 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	  inSISIDXREG(SISPART2,0x44,pSiS->p2_44);
 	  inSISIDXREG(SISPART2,0x45,pSiS->p2_45);
 	  if(!(pSiS->VBFlags & VB_301)) {
-	    inSISIDXREG(SISPART2,0x46,pSiS->p2_46);
+	     inSISIDXREG(SISPART2,0x46,pSiS->p2_46);
 	  } else {
-	    pSiS->p2_46 = 0;
+	     pSiS->p2_46 = 0;
 	  }
 	  inSISIDXREG(SISPART2,0x0a,pSiS->p2_0a);
 	  inSISIDXREG(SISPART2,0x31,cbase);
@@ -10954,24 +11000,34 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	  for(i=0; i<9; i++) {
 	     inSISIDXREG(SISPART4,SiSScalingP4Regs[i],pSiS->scalingp4[i]);
 	  }
+	  if(pSiS->VBFlags & (VB_301C | VB_302ELV)) {
+	     for(i=0; i<64; i++) {
+	        inSISIDXREG(SISPART2,(0xc0 + i),pSiS->scalingp2[i]);
+  	     }
+	  }
 #ifdef SISDUALHEAD
-	  if(pSiSEnt && pSiS->DualHeadMode) {
-	        pSiSEnt->p2_1f = pSiS->p2_1f; pSiSEnt->p2_20 = pSiS->p2_20;
-		pSiSEnt->p2_01 = pSiS->p2_01; pSiSEnt->p2_02 = pSiS->p2_02;
-		pSiSEnt->p2_44 = pSiS->p2_44; pSiSEnt->p2_45 = pSiS->p2_45;
-		pSiSEnt->p2_46 = pSiS->p2_46; pSiSEnt->p2_0a = pSiS->p2_0a;
-		pSiSEnt->sistvccbase = pSiS->sistvccbase;
-		pSiSEnt->p2_35 = pSiS->p2_35; pSiSEnt->p2_36 = pSiS->p2_36;
-		pSiSEnt->p2_37 = pSiS->p2_37; pSiSEnt->p2_38 = pSiS->p2_38;
-		pSiSEnt->p2_48 = pSiS->p2_48; pSiSEnt->p2_49 = pSiS->p2_49;
-		pSiSEnt->p2_4a = pSiS->p2_4a; pSiSEnt->p2_2f = pSiS->p2_2f;
-		pSiSEnt->p2_30 = pSiS->p2_30; pSiSEnt->p2_47 = pSiS->p2_47;
-		for(i=0; i<9; i++) {
-	           pSiSEnt->scalingp1[i] = pSiS->scalingp1[i];
-	        }
-		for(i=0; i<9; i++) {
-	           pSiSEnt->scalingp4[i] = pSiS->scalingp4[i];
-	        }
+	  if(pSiSEnt) {
+	     pSiSEnt->p2_1f = pSiS->p2_1f; pSiSEnt->p2_20 = pSiS->p2_20;
+	     pSiSEnt->p2_01 = pSiS->p2_01; pSiSEnt->p2_02 = pSiS->p2_02;
+	     pSiSEnt->p2_44 = pSiS->p2_44; pSiSEnt->p2_45 = pSiS->p2_45;
+	     pSiSEnt->p2_46 = pSiS->p2_46; pSiSEnt->p2_0a = pSiS->p2_0a;
+	     pSiSEnt->sistvccbase = pSiS->sistvccbase;
+	     pSiSEnt->p2_35 = pSiS->p2_35; pSiSEnt->p2_36 = pSiS->p2_36;
+	     pSiSEnt->p2_37 = pSiS->p2_37; pSiSEnt->p2_38 = pSiS->p2_38;
+	     pSiSEnt->p2_48 = pSiS->p2_48; pSiSEnt->p2_49 = pSiS->p2_49;
+	     pSiSEnt->p2_4a = pSiS->p2_4a; pSiSEnt->p2_2f = pSiS->p2_2f;
+	     pSiSEnt->p2_30 = pSiS->p2_30; pSiSEnt->p2_47 = pSiS->p2_47;
+	     for(i=0; i<9; i++) {
+	        pSiSEnt->scalingp1[i] = pSiS->scalingp1[i];
+	     }
+	     for(i=0; i<9; i++) {
+	        pSiSEnt->scalingp4[i] = pSiS->scalingp4[i];
+	     }
+	     if(pSiS->VBFlags & (VB_301C | VB_302ELV)) {
+	        for(i=0; i<64; i++) {
+	           pSiSEnt->scalingp2[i] = pSiS->scalingp2[i];
+  	        }
+	     }
 	  }
 #endif
           if((val = mysistvantiflicker) != -1) {
