@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.64 2000/11/03 18:46:13 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.65 2000/11/14 16:54:53 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1798,7 +1798,7 @@ S3VSave (ScrnInfoPtr pScrn)
 
    /* Now save Memory Interface Unit registers */
    if( S3_ViRGE_GX2_SERIES(ps3v->Chipset) 
-      /* MXTESTME /* || S3_ViRGE_MX_SERIES(ps3v->Chipset) )
+      /* MXTESTME */ || S3_ViRGE_MX_SERIES(ps3v->Chipset) )
      {
      /* No MMPR regs on MX & GX2 */
      }
