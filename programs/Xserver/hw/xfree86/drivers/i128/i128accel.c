@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128accel.c,v 1.1 2000/10/04 23:34:59 robin Exp $ */
 
 /*
  * Copyright 1997-2000 by Robin Cutshaw <robin@XFree86.Org>
@@ -104,7 +104,7 @@ I128BitBlit(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2, int w, int h)
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BB %d,%d %d,%d %d,%d", x1, y1, x2, y2, w, h);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "BB %d,%d %d,%d %d,%d\n", x1, y1, x2, y2, w, h);
 #endif
 
 	ENG_PIPELINE_READY();
@@ -184,12 +184,30 @@ I128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir,
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "SFSSC %d,%d %d %d %d", xdir, ydir, rop, planemask, transparency_color);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "SFSSC %d,%d %d 0x%x %d\n", xdir, ydir, rop, planemask, transparency_color);
 #endif
 
 	ENG_PIPELINE_READY();
 
-	pI128->mem.rbase_a[MASK] = planemask;
+	if (planemask == -1)
+		pI128->mem.rbase_a[MASK] = -1;
+	else switch (pI128->bitsPerPixel) {
+		case 8:
+			pI128->mem.rbase_a[MASK] = planemask |
+					(planemask<<8) |
+					(planemask<<16) |
+					(planemask<<24);
+			break;
+		case 16:
+			pI128->mem.rbase_a[MASK] = planemask | (planemask<<16);
+			break;
+		case 24:
+		case 32:
+		default:
+			pI128->mem.rbase_a[MASK] = planemask;
+			break;
+	}
+
 
 	pI128->mem.rbase_a[CLPTL] = 0x00000000;
 	pI128->mem.rbase_a[CLPBR] = (4095<<16) | 2047;
@@ -227,7 +245,7 @@ I128SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
 
 #if 0
 	if (pI128->Debug)
-		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "SFSF color 0x%x rop 0x%x (pI128->rop 0x%x) pmask 0x%x", color, rop, i128alu[rop]>>8, planemask);
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "SFSF color 0x%x rop 0x%x (pI128->rop 0x%x) pmask 0x%x\n", color, rop, i128alu[rop]>>8, planemask);
 #endif
 
 	ENG_PIPELINE_READY();
