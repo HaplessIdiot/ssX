@@ -1,4 +1,8 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 350. Fix some incorrect mappings in the gbk-0.enc encodings file (#5313,
+      Tomohiro KUBOTA).
+ 349. Fix C precedence bug in mfb (#5309, Tassia St. Germain).
+ 348. Updates to mkfontscale (#5307, Juliusz Chroboczek).
  347. Add SharedXcursorReqs to Cygwin build (#5405, Harold Hunt).
  346. Add image transformation and subpixel order to Render (Keith Packard)
  345. Add Xcursor-def.cpp to Xcursor library (#5350, Alexander Gottwald).
@@ -15215,4 +15219,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2310 2002/09/26 02:56:49 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2311 2002/09/26 08:18:36 alanh Exp $
