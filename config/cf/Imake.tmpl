@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.47 1998/08/02 05:16:48 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.48 1998/09/06 04:46:49 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -152,10 +152,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasMakefileSafeInclude	    /* -include or sinclude in a Makefile */
 #if HasClearmake || HasBsdMake
-#define HasMakefileSafeInclude YES
+#define HasMakefileSafeInclude	YES
 #else
-#define HasMakefileSafeInclude NO   /* see also vendor-specific .cf files */
+#define HasMakefileSafeInclude	NO   /* see also vendor-specific .cf files */
 #endif
+#endif
+
+#ifndef HasVarDirectory
+#define HasVarDirectory		YES
 #endif
 
 #include <Imake.rules>

@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: sgi.cf /main/48 1997/10/14 11:56:04 kaleb $
+XCOMM platform:  $TOG: sgi.cf /main/49 1998/02/26 09:12:19 barstow $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -109,7 +109,7 @@ XCOMM operating system: OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 # if OSMajorVersion < 6
 #  define sgiCCOptions -xansi
 # else
-#  define CppCmd cc -E
+#  define CppCmd cc -E -cckr
 #  ifdef Mips64Architecture
 /* set Mips64Architecture in host.def. Usually don't need it but we
  * (the X Consortium) want a  64-bit big-endian machine to test on. */
@@ -231,3 +231,28 @@ dst::  src deplist							@@\
 clean::									@@\
 	RemoveFiles(dst)
 #endif /* CppFileTarget */
+
+#ifndef CppScriptTarget
+#if ExecableScripts		/* can use #! instead of colon */
+#define CppScriptTarget(dst,src,defs,deplist)				@@\
+dst::	src deplist							@@\
+	RemoveFile($@)							@@\
+	ClearmakeOSName \
+	$(CPP) CppNoLineInfoOption defs src | CppSedMagic >$@		@@\
+	chmod a+x $@							@@\
+									@@\
+clean::									@@\
+	RemoveFiles(dst)
+#else
+#define CppScriptTarget(dst,src,defs,deplist)				@@\
+dst::  src deplist							@@\
+	RemoveFile($@)							@@\
+	ClearmakeOSName \
+	echo \: >$@							@@\
+	sed '1d' src | $(CPP) CppNoLineInfoOption defs | CppSedMagic >>$@	@@\
+	chmod a+x $@							@@\
+									@@\
+clean::									@@\
+	RemoveFile(dst)
+#endif /* ExecableScripts */
+#endif /* CppScriptTarget */

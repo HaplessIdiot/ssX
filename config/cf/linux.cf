@@ -1,5 +1,5 @@
-XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.77 1998/09/06 04:46:51 dawes Exp $
+XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.78 1998/09/26 08:33:54 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -125,6 +125,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 /* For compatibility */
 #define SourceDefines		LinuxSourceDefines
 
+#define BuildLibPathVar		LD_LIBRARY_PATH
 #define HasGcc			YES
 #define HasGcc2			YES
 #ifndef HasGcc2ForCplusplus
@@ -244,8 +245,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #endif
 #define CppCmd			/lib/cpp
-#ifdef USE_BYACC
-#define YaccCmd			byacc
+#if OSMajorVersion >= 2
+#define YaccCmd			yacc
 #else
 #define YaccCmd			bison -y
 #endif
@@ -330,6 +331,11 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 
 #define MakeNamedTargetSubdir(dir,flags,subname)\
 	$(MAKE) -C dir $(MFLAGS) $(PARALLELMFLAGS) flags subname
+
+#define ArchitectureDefines	-DLINUX_ARCHITECTURE
+
+#define TtClientLibs $(TTLIB) $(XTOOLLIB) $(XLIB)
+#define TtClientDepLibs $(DEPTTLIB) $(DEPXTOOLLIB) $(DEPXLIB)
 
 #include <lnxLib.rules>
 #include <xfree86.cf>

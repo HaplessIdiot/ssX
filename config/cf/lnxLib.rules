@@ -1,5 +1,5 @@
-XCOMM $XConsortium: lnxLib.rules /main/13 1996/09/28 16:11:01 rws $
-XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.33 1998/06/27 12:53:23 hohndel Exp $
+XCOMM $TOG: lnxLib.rules /main/14 1998/03/16 11:15:30 mgreess $
+XCOMM $XFree86: xc/config/cf/lnxLib.rules,v 3.34 1998/07/25 05:57:16 dawes Exp $
 
 /*
  * Linux shared library rules (DLL & ELF versions)

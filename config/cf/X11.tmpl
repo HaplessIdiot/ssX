@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $TOG: X11.tmpl /main/305 1997/12/04 13:45:25 kaleb $
+XCOMM $TOG: X11.tmpl /main/308 1998/06/16 15:14:24 msr $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.28 1998/09/06 04:46:50 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
  *                                                                         *
  **************************************************************************/
 
-#define ProjectX		603	/* do *not* change this line */
+#define ProjectX		604	/* do *not* change this line */
 
 /* The following project-specific rules are defined at the end of this file:
  *
@@ -118,6 +118,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
 #endif
+#ifndef BuildEVI
+#define BuildEVI		YES
+#endif
 #ifndef BuildDBE
 #define BuildDBE		YES
 #endif
@@ -130,11 +133,22 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #ifndef BuildDPMS
 #define BuildDPMS		YES
 #endif
+#ifndef BuildLowMem
+#define BuildLowMem		NO
+#endif
 #ifndef BuildLBX
 #define BuildLBX		YES
 #endif
 #ifndef BuildXIE
+	/*
+	 * Turn off building XIE if you are building for low memory
+	 * footprint
+	 */
+#if BuildLowMem
+#define BuildXIE		NO
+#else
 #define BuildXIE		YES
+#endif
 #endif
 #ifndef BuildXIElib
 #define BuildXIElib		BuildXIE
@@ -165,11 +179,24 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #ifndef BuildRECORDlib
 #define BuildRECORDlib		BuildRECORD
 #endif
+#ifndef BuildXinerama
+#define BuildXinerama		NO
+#endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
 #endif
 #ifndef BuildAppgroup
 #define BuildAppgroup		YES
+#endif
+#ifndef BuildCup
+#define BuildCup		YES
+#endif
+	/*
+	 * Turn off building PEX if you are building for low memory
+	 * footprint
+	 */
+#if BuildLowMem
+#define BuildPexExt		NO
 #endif
 #ifndef HasPlugin
 #define HasPlugin		NO
@@ -270,10 +297,35 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #define PrimaryScreenResolution 72		/* a common resolution */
 #endif
 #ifndef DefaultFontPath
+	/*
+	 * Turn off building Speedo and Type1 fonts if you are building for
+	 * low memory footprint
+	 */
+#if BuildLowMem
+#define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#else
 #if PrimaryScreenResolution < 88		/* (75 + 100) / 2 */
 #define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
 #else
 #define DefaultFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
+#endif
+#endif
+#endif
+#ifndef DefaultFSFontPath
+	/*
+	 * Define a default fontpath for Font Server independent of that
+         * for X server if building the X server for low memory footprint
+         */
+#if BuildLowMem
+#if PrimaryScreenResolution < 88                /* (75 + 100) / 2 */
+#define DefaultFSFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,
+$(FONTDIR)/75dpi/,$(FONTDIR)/100dpi/
+#else
+#define DefaultFSFontPath $(FONTDIR)/misc/,$(FONTDIR)/Speedo/,$(FONTDIR)/Type1/,
+$(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
+#endif
+#else
+#define DefaultFSFontPath DefaultFontPath
 #endif
 #endif
 #ifndef DefaultRGBDatabase
@@ -403,6 +455,13 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #define XInputDefines /**/
 #endif
 #endif
+#ifndef XineramaDefines
+#if BuildXinerama
+#define XineramaDefines -DPANORAMIX
+#else
+#define XineramaDefines /**/
+#endif
+#endif
 #ifndef XieDefines
 #if BuildXIE
 #define XieDefines -DXIE
@@ -453,6 +512,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #define BigReqDefines -DBIGREQS
 #else
 #define BigReqDefines /**/
+#endif
+#endif
+
+#ifndef EVIDefines
+#if BuildEVI
+#define EVIDefines -DEVI
+#else
+#define EVIDefines /**/
 #endif
 #endif
 
@@ -530,6 +597,22 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #endif
 #endif
 
+#ifndef CupDefines
+#if BuildCup
+#define CupDefines -DTOGCUP
+#else
+#define CupDefines /**/
+#endif
+#endif
+
+#ifndef LowMemDefines
+#if BuildLowMem
+#define LowMemDefines -DLOWMEMFTPT
+#else
+#define LowMemDefines /**/
+#endif
+#endif
+
 #ifndef DPMSDefines
 #if BuildDPMS
 #define DPMSDefines -DDPMSExtension
@@ -544,8 +627,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #ifndef PervasiveExtensionDefines
 #define PervasiveExtensionDefines \
 	ShapeDefines XInputDefines XkbDefines LbxDefines AppgroupDefines \
-	XCSecurityDefines PervasiveDBEDefines DPMSDefines \
-	XprintDefines SitePervasiveExtensionDefines
+	XCSecurityDefines CupDefines PervasiveDBEDefines DPMSDefines \
+	LowMemDefines XprintDefines XineramaDefines \
+	SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
@@ -555,9 +639,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 	MultibufferDefines MITMiscDefines XTestDefines XSyncDefines \
 	XCMiscDefines RECORDDefines \
 	PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines \
-	XF86MiscExtensionDefines DBEDefines ScreenSaverExtensionDefines \
-	XvExtensionDefines GlxDefines \
-	DBEDefines DPMSDefines SiteExtensionDefines
+	XF86MiscExtensionDefines DBEDefines DPMSDefines EVIDefines \
+	ScreenSaverExtensionDefines XvExtensionDefines GlxDefines \
+	SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif /* ExtensionDefines */
@@ -746,11 +830,11 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 #ifndef ProxyManagerDir
 #define ProxyManagerDir $(LIBDIR)/proxymngr
 #endif
-#ifndef XPrintDir
-#define XPrintDir $(LIBDIR)
-#endif
 #ifndef ServerConfigDir
 #define ServerConfigDir $(LIBDIR)/xserver
+#endif
+#ifndef XPrintDir
+#define XPrintDir ServerConfigDir
 #endif
 #ifndef VarDirectory
 #define VarDirectory /var/X11
@@ -810,6 +894,14 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.27 1998/07/25 05:57:15 dawes Exp $
 
 #ifndef XkbComp
 #define XkbComp xkbcomp
+#endif
+
+#ifndef ResourceConfigurationManagement 
+#define ResourceConfigurationManagement YES
+#endif
+
+#ifndef XtPopdownConformance 
+#define XtPopdownConformance YES
 #endif
 
 XCOMM -----------------------------------------------------------------------
@@ -1061,7 +1153,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
       XEXTLIBSRC = $(LIBSRC)/Xext
 #if SharedLibXext
 #ifndef SharedXextRev
-#define SharedXextRev 6.3
+#define SharedXextRev 6.4
 #endif
 SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else
@@ -1543,10 +1635,10 @@ ProjectUnsharedLibReferences(XKBFILE,xkbfile,$(XKBFILELIBSRC),XBuildLibDir)
 #endif
 #endif
 #if defined(UseInstalled) || defined(OS2Architecture)
-     XKBCOMPCMD = $(BINDIR)/xkbcomp
+     XKBCOMPCMD = $(BINDIR)/XkbComp
 #else
-     XKBCOMPSRC = $(PROGRAMSRC)/xkbcomp
-     XKBCOMPCMD = $(CLIENTENVSETUP) $(XBUILDBINDIR)/xkbcomp
+     XKBCOMPSRC = $(PROGRAMSRC)/XkbComp
+     XKBCOMPCMD = $(CLIENTENVSETUP) $(XBUILDBINDIR)/XkbComp
 #endif
 #else /* !BuildXKBlib */
 #ifndef XkbClientDepLibs

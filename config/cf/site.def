@@ -1,4 +1,4 @@
-XCOMM site:  $TOG: site.def /main/178 1997/07/31 12:38:04 sekhar $
+XCOMM site:  $TOG: site.sample /main/r64_final/1 1998/02/05 16:28:49 kaleb $
 
 /***************************************************************************
  *                                                                         *
@@ -21,7 +21,7 @@ XCOMM site:  $TOG: site.def /main/178 1997/07/31 12:38:04 sekhar $
  * .cf file, not overridden in site.def.                                   *
  *                                                                         *
  ***************************************************************************/
-XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.20 1997/10/25 13:49:54 hohndel Exp $
+XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.21 1997/11/16 06:17:25 dawes Exp $
 
 /* if you want host-specific customization, this is one way to do it */
 /*
@@ -89,8 +89,6 @@ XCOMM site:  $XFree86: xc/config/cf/site.def,v 3.20 1997/10/25 13:49:54 hohndel 
 
 /* Only set HasXdmAuth to YES if you have a Wraphelp.c file. */
 /* #define HasXdmAuth YES */
-
-/* #define PreIncDir DefaultGccIncludeDir */
 
 /*
 #if defined(SunArchitecture) && defined(SparcArchitecture)

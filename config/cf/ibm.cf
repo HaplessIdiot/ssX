@@ -1,4 +1,4 @@
-XCOMM platform:  $TOG: ibm.cf /main/81 1997/10/16 11:27:45 kaleb $
+XCOMM platform:  $TOG: ibm.cf /main/82 1998/02/26 17:03:51 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -23,6 +23,7 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #if OSMajorVersion > 3 || (OSMajorVersion == 3 && OSMinorVersion >= 2)
 #define HasBSD44Sockets		YES
 #define HasPutenv		YES
+#define HasPlugin		YES
 /*
  * If you do not have threads support installed, put
  * #define HasPosixThreads	NO

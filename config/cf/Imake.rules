@@ -1,7 +1,11 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $TOG: Imake.rules /main/224 1997/08/05 09:22:53 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.45 1997/08/12 12:01:50 hohndel Exp $
+XCOMM rules:  $TOG: Imake.rules /main/227 1998/02/02 12:07:57 kaleb $
+XCOMM
+XCOMM
+XCOMM
+XCOMM
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.46 1998/07/25 05:57:13 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -1337,18 +1341,27 @@ step:: list								@@\
  * LinkVarDirectory
  *
  * Make links from $LIBDIR (<ProjectRoot>/lib/X11) to /var/X11/
- * For example /usr/X11R6/lib/X11/xdm ==> /var/X11/xdm so that X can be
- * run from a read-only volume like a CD-ROM.
+ * For example /usr/X11R6/lib/X11/xdm ==> /var/X11/xdm so that X 
+ * binaries can be mounted from a read-only volume like a CD-ROM;
+ * but files that may need to be edited can be stored locally on 
+ * read-write media. If someone has an existing installation, be
+ * careful and move existing files to the new location in /var.
  */
 #ifndef LinkVarDirectory
 #if HasVarDirectory
 #define LinkVarDirectory(mdir,cdir,rdir,ldir)				@@\
 install::								@@\
+	MakeDir(Concat($(DESTDIR)$(LIBDIR)/,cdir))			@@\
 	MakeDir(Concat($(VARDIR)/,mdir))				@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
-	cd Concat($(DESTDIR)$(LIBDIR)/,cdir) && \			@@\
-	$(RM) -r rdir && \						@@\
-	$(LN) Concat($(VARDIR)/,mdir) ldir
+	if [ -d Concat($(DESTDIR)$(LIBDIR)/,cdir) ]; then \		@@\
+	  cd Concat($(DESTDIR)$(LIBDIR)/,cdir); \			@@\
+	  if [ -d rdir -a ! -h rdir ]; then \ 				@@\
+	    (cd rdir; tar cf - . | (cd Concat($(VARDIR)/,mdir); tar xf -; exit 0); exit 0); \ @@\
+	  fi; \								@@\
+	  $(RM) -r rdir; \						@@\
+	  $(LN) Concat($(VARDIR)/,mdir) ldir; \				@@\
+	fi
 #else
 #define LinkVarDirectory(mdir,cdir,rdir,ldir)
 #endif
