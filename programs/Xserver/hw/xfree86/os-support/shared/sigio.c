@@ -25,7 +25,7 @@
  * 
  * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.10 2000/03/31 22:55:54 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/sigio.c,v 1.11 2000/06/17 00:03:43 martin Exp $
  * 
  */
 
@@ -46,6 +46,7 @@
 # include <errno.h>
 # include <stdio.h>
 # include <string.h>
+# define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 #endif
 
 /*
@@ -75,8 +76,6 @@ static Xf86SigIOFunc	xf86SigIOFuncs[MAX_FUNCS];
 static int		xf86SigIOMax;
 static int		xf86SigIOMaxFd;
 static fd_set		xf86SigIOMask;
-
-#define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
 
 /*
  * SIGIO gives no way of discovering which fd signalled, select

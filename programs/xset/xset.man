@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xset/xset.man,v 3.8 1998/10/04 09:41:57 dawes Exp $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.9 2000/08/28 16:35:04 dawes Exp $
 .\" 
 .TH XSET 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -104,7 +104,9 @@ set.  The option can take up to three numerical values, or the `force'
 flag followed by a DPMS state.  The `force' flags forces the server
 to immediately switch to the DPMS state specified.  The DPMS state can
 be one of `standby', `suspend', or `off'.  When numerical values are
-given, they set the inactivity period before the three modes are activated.
+given, they set the inactivity period
+(in units of seconds)
+before the three modes are activated.
 The first value given is for the `standby' mode, the second is for the
 `suspend' mode, and the third is for the `off' mode.  Setting these
 values implicitly enables the DPMS features.  A value of zero disables

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.11 2000/02/08 13:13:30 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_init.c,v 3.12 2000/02/25 18:28:11 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -49,6 +49,7 @@ void
 xf86OpenConsole(void)
 {
     int i, fd;
+    int result;
     struct vt_mode VT;
     char vtname[11];
     struct vt_stat vts;
@@ -158,15 +159,19 @@ xf86OpenConsole(void)
 	/*
 	 * now get the VT
 	 */
-	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+	SYSCALL(result = ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno));
+	if (result != 0)
 	{
 	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
-	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
+	SYSCALL(result =
+		  ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno));
+	if (result != 0)
 	{
 	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	}
-	if (ioctl(xf86Info.consoleFd, VT_GETMODE, &VT) < 0) 
+	SYSCALL(result = ioctl(xf86Info.consoleFd, VT_GETMODE, &VT));
+	if (result < 0) 
 	{
 	    FatalError("xf86OpenConsole: VT_GETMODE failed\n");
 	}
@@ -203,11 +208,14 @@ xf86OpenConsole(void)
 	/*
 	 * now get the VT
 	 */
-	if (ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno) != 0)
+	SYSCALL(result = ioctl(xf86Info.consoleFd, VT_ACTIVATE, xf86Info.vtno));
+	if (result != 0)
 	{
 	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_ACTIVATE failed\n");
 	}
-	if (ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno) != 0)
+	SYSCALL(result =
+		ioctl(xf86Info.consoleFd, VT_WAITACTIVE, xf86Info.vtno));
+	if (result != 0)
 	{
 	    xf86Msg(X_WARNING, "xf86OpenConsole: VT_WAITACTIVE failed\n");
 	}

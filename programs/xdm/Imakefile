@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/83 1997/10/05 20:42:43 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.35 2000/06/15 20:50:04 dawes Exp $
+XCOMM $XFree86: xc/programs/xdm/Imakefile,v 3.36 2000/06/17 00:27:34 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
 
@@ -68,16 +68,17 @@ SHADOWLIB = -lshadow
 
 XPM_DEFINES = -DXPM 
 
+/* This is correct for Linux and FreeBSD */
+#if HasPam
+PAM_LIBRARIES = -lpam DlLibrary
+PAM_DEFINES = -DUSE_PAM
+#endif
+
 #if SystemV4 || HasShadowPasswd
 #if !LinuxShadowSuite
 PWD_DEFINES = -DUSESHADOW
 #else
 PWD_DEFINES = -DUSESHADOW -DSHADOWSUITE
-#endif
-
-#if HasPam
-PAM_LIBRARIES = -lpam DlLibrary
-PAM_DEFINES = -DUSE_PAM
 #endif
 
 #if !defined(i386IscArchitecture) && !defined(i386ScoArchitecture) && !defined(LinuxArchitecture) && !defined(NTOArchitecture) && !defined(SGIArchitecture)

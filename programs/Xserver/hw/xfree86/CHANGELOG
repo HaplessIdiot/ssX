@@ -1,4 +1,20 @@
 XFree86 4.0.1f (xx November 2000)
+ 942. Fix a problem where the X server thinks it has acquired a VT at startup
+      before it has really been released.  This is due to the ioctl()
+      returning prematurely because of a pending signal (Jeff Hartmann).
+ 941. Fix a problem with the PAM support in xdm that prevents
+      pam_start_session() from ever being called (Takanori Saneto).
+ 940. Enable PAM support for xdm on FreeBSD (#A.202, Jean-Marc Zucconi, and
+      Takanori Saneto).
+ 939. Fix xf86cfg build problem when BuildXinerama is set to NO (#A.200,
+      Jean-Marc Zucconi).
+ 938. gccmakedep has a typo which affects handling the -o and -O options
+      (A.192, Ivan Zakharyaschev).
+ 937. Specify the units for the dpms and rate commands in the xset man
+      page (#A.191, John Heidemann).
+ 936. Let makedepend ignore "//" style comments on all platforms, not
+      just Win32, and fix a bug in that code that was causing the line
+      after such comments to also be ignored (#A.189, Guenther Grau).
  935. Update GNU/Hurd support (#A.188, Marcus Brinkmann).
  934. Initial port of the ark driver to 4.x (#4242, Ani Joshi).
  933. Wacom input driver update, including support for 38400 link speed
@@ -11544,4 +11560,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1392 2000/11/14 17:32:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1393 2000/11/14 18:20:33 dawes Exp $

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.8 2000/05/31 07:15:13 eich Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.9 2000/06/14 00:16:16 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -163,7 +163,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 {
 	struct passwd	*p;
 #ifdef USE_PAM
-	pam_handle_t *pamh = thepamh();
+	pam_handle_t **pamhp = thepamhp();
 #else
 #ifdef USESHADOW
 	struct spwd	*sp;
@@ -312,19 +312,19 @@ done:
 
 #else /* USE_PAM */
 #define PAM_BAIL	\
-	if (pam_error != PAM_SUCCESS) { pam_end(pamh, 0); return 0; }
+	if (pam_error != PAM_SUCCESS) { pam_end(*pamhp, 0); return 0; }
 
 	PAM_password = greet->password;
-	pam_error = pam_start("xdm", p->pw_name, &PAM_conversation, &pamh);
+	pam_error = pam_start("xdm", p->pw_name, &PAM_conversation, pamhp);
 	PAM_BAIL;
-	pam_error = pam_set_item(pamh, PAM_TTY, d->name);
+	pam_error = pam_set_item(*pamhp, PAM_TTY, d->name);
 	PAM_BAIL;
-	pam_error = pam_authenticate(pamh, 0);
+	pam_error = pam_authenticate(*pamhp, 0);
 	PAM_BAIL;
-	pam_error = pam_acct_mgmt(pamh, 0);
+	pam_error = pam_acct_mgmt(*pamhp, 0);
 	/* really should do password changing, but it doesn't fit well */
 	PAM_BAIL;
-	pam_error = pam_setcred(pamh, 0);
+	pam_error = pam_setcred(*pamhp, 0);
 	PAM_BAIL;
 #undef PAM_BAIL
 #endif /* USE_PAM */
