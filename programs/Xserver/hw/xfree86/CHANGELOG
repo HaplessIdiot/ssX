@@ -21,7 +21,7 @@ XFree86 4.2.99.1 (XX June 2002)
  156. Update for SCO OpenServer support (#5158, Kean Johnston).
  155. Add aliases for the Brazilian Portuguese locale as defined on FreeBSD
       (#5157, Carlos A M dos Santos).
- 154. Recognise the en_UK.ISO8859-15 and en_US.ISO8859-15 locales (#5156,
+ 154. Recognise the en_UK.ISO8859-15 and en_US.ISO8859-15 locales (#5156, 5186,
       Matthias Scheler).
  153. Some cleanups for the UTF-8 Compose file, including:
        - Better support for Greek
@@ -14848,4 +14848,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2235 2002/06/03 22:43:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2236 2002/06/03 22:51:13 dawes Exp $
