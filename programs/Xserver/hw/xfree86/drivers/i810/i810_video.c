@@ -23,7 +23,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR
 THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.3 2000/08/03 12:24:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_video.c,v 1.4 2000/08/26 15:11:27 dawes Exp $ */
 
 /*
  * i810_video.c: i810 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
@@ -134,6 +134,9 @@ static Atom xvBrightness, xvContrast, xvColorKey;
 #define	DOV0STA 	0x30008
 
 #define MINUV_SCALE	0x1
+
+#define RGB16ToColorKey(c) \
+	(((c & 0xF800) << 8) | ((c & 0x07E0) << 5) | ((c & 0x001F) << 3))
 
 void I810InitVideo(ScreenPtr pScreen)
 {
@@ -298,6 +301,7 @@ typedef struct {
 void I810ResetVideo(ScrnInfoPtr pScrn) 
 {
     I810Ptr pI810 = I810PTR(pScrn);
+    I810PortPrivPtr pPriv = pI810->adaptor->pPortPrivates[0].ptr;
     I810OverlayRegPtr overlay = (I810OverlayRegPtr) (pI810->FbBase + pI810->OverlayStart); 
 
     /*
@@ -324,8 +328,18 @@ void I810ResetVideo(ScrnInfoPtr pScrn)
     overlay->UVSCALE = 0x80004000; /* scale factor 1 */
     overlay->OV0CLRC0 = 0x4000; /* brightness: 0 contrast: 1.0 */
     overlay->OV0CLRC1 = 0x80; /* saturation: bypass */
-    overlay->DCLRKV = 0; /* destination color key: 0 */
-    overlay->DCLRKM = 0x80FFFFFF; /* destination color key enable */
+
+    /*
+     * Enable destination color keying
+     */
+    if (pScrn->depth == 16) {
+	overlay->DCLRKV = RGB16ToColorKey(pPriv->colorKey);
+	overlay->DCLRKM = 0x80070307;
+    } else {
+	overlay->DCLRKV = pPriv->colorKey;
+	overlay->DCLRKM = 0x80000000;
+    }
+
     overlay->SCLRKVH = 0;
     overlay->SCLRKVL = 0;
     overlay->SCLRKM = 0; /* source color key disable */
@@ -379,7 +393,8 @@ I810SetupImageVideo(ScreenPtr pScreen)
     adapt->PutImage = I810PutImage;
     adapt->QueryImageAttributes = I810QueryImageAttributes;
 
-    pPriv->colorKey = 0;
+    pPriv->colorKey = (1 << pScrn->offset.red) | (1 << pScrn->offset.green) |
+	(((pScrn->mask.blue >> pScrn->offset.blue) - 1) << pScrn->offset.blue);
     pPriv->videoStatus = 0;
     pPriv->brightness = 0;
     pPriv->contrast = 128;
@@ -583,7 +598,11 @@ I810SetPortAttribute(
   } else
   if(attribute == xvColorKey) {
 	pPriv->colorKey = value;
-	overlay->DCLRKV = value;
+	if (pScrn->depth == 16) {
+	    overlay->DCLRKV = RGB16ToColorKey(pPriv->colorKey);
+	} else {
+	    overlay->DCLRKV = pPriv->colorKey;
+	}
 	OVERLAY_UPDATE(pI810->OverlayPhysical);
 	REGION_EMPTY(pScrn->pScreen, &pPriv->clip);   
   } else return BadMatch;
