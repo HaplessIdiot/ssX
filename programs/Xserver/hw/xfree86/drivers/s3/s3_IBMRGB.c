@@ -24,7 +24,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.2 2001/09/27 08:34:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_IBMRGB.c,v 1.3 2001/10/28 03:33:44 tsi Exp $ */
 
 
 #include "xf86.h"
@@ -133,7 +133,7 @@ Bool S3ProbeIBMramdac(ScrnInfoPtr pScrn)
 		return FALSE;
 	}
 
-	pS3->RamDac = IBMramdacProbe(pScrn, IBMRamdacs);
+	pS3->RamDac = IBMramdacProbe(pScrn, S3IBMRamdacs);
 	if (pS3->RamDac)
 		return TRUE;
 
