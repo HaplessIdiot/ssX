@@ -26,7 +26,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/ICEmsg.h,v 1.5 2003/11/17 22:20:05 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/ICEmsg.h,v 1.6tsi Exp $ */
 
 #ifndef _ICEMSG_H_
 #define _ICEMSG_H_
@@ -89,17 +89,6 @@ extern void _IceErrorBadValue (
     IcePointer		/* value */
 );
 
-#if defined(SCO) || defined(__USLC__)
-#include <stdint.h>    /* For SIZE_MAX */
-#endif
-#include <limits.h>
-#ifndef SIZE_MAX
-#ifdef ULONG_MAX
-#define SIZE_MAX ULONG_MAX
-#else
-#define SIZE_MAX UINT_MAX
-#endif
-#endif
 
 /*
  * Macro to check if IO operations are valid on an ICE connection.
@@ -112,6 +101,8 @@ extern void _IceErrorBadValue (
  * Macros for writing messages.
  */
 
+#define HDRMAXSIZE (((unsigned int)(-1)) >> 3)
+
 #define IceGetHeader(_iceConn, _major, _minor, _headerSize, _msgType, _pMsg) \
     if ((_iceConn->outbufptr + _headerSize) > _iceConn->outbufmax) \
         IceFlush (_iceConn); \
@@ -123,27 +114,21 @@ extern void _IceErrorBadValue (
     _iceConn->send_sequence++
 
 #define IceGetHeaderExtra(_iceConn, _major, _minor, _headerSize, _extra, _msgType, _pMsg, _pData) \
-  do { \
-    if (((_extra) << 3) >= (SIZE_MAX - _headerSize)) { \
-	_pData = NULL; \
-	IceFlush (_iceConn); \
-    } else { \
-	if ((_iceConn->outbufmax - _iceConn->outbufptr) < \
-	    (_headerSize + ((_extra) << 3))) \
-	    IceFlush (_iceConn); \
-	_pMsg = (_msgType *) _iceConn->outbufptr; \
-	if ((_iceConn->outbufmax - _iceConn->outbufptr) >= \
-	    (_headerSize + ((_extra) << 3))) \
-	    _pData = (char *) _pMsg + _headerSize; \
-	else \
-	    _pData = NULL; \
-	_pMsg->majorOpcode = _major; \
-	_pMsg->minorOpcode = _minor; \
-	_pMsg->length = ((_headerSize - SIZEOF (iceMsg)) >> 3) + (_extra); \
-	_iceConn->outbufptr += (_headerSize + ((_extra) << 3)); \
-	_iceConn->send_sequence++; \
-    } \
-  } while (0)
+    if (((unsigned int)(_extra) > (HDRMAXSIZE - (_headerSize >> 3))) || \
+        ((_iceConn->outbufptr + _headerSize + ((_extra) << 3)) > \
+	 _iceConn->outbufmax)) \
+        IceFlush (_iceConn); \
+    _pMsg = (_msgType *) _iceConn->outbufptr; \
+    if ((_iceConn->outbufptr + \
+	_headerSize + ((_extra) << 3)) <= _iceConn->outbufmax) \
+        _pData = (char *) _pMsg + _headerSize; \
+    else \
+        _pData = NULL; \
+    _pMsg->majorOpcode = _major; \
+    _pMsg->minorOpcode = _minor; \
+    _pMsg->length = ((_headerSize - SIZEOF (iceMsg)) >> 3) + (_extra); \
+    _iceConn->outbufptr += (_headerSize + ((_extra) << 3)); \
+    _iceConn->send_sequence++
 
 #define IceSimpleMessage(_iceConn, _major, _minor) \
 { \
