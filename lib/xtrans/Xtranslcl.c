@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.21 95/01/19 18:06:04 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.8 1995/03/04 05:49:53 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.9 1995/03/18 10:51:11 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -1064,6 +1064,10 @@ char		*port;
      * is already established, and this just for compatability
      */
 #else
+#ifdef ISC40
+    /* catch SIGSYS on symlink for ISC40 compiled binaries running on ISC30 */
+    signal(SIGSYS,_dummy);
+#endif
     if( link(server_path, server_unix_path) < 0 )
 #ifdef ISC40
       if( symlink(server_path, server_unix_path) < 0 )
