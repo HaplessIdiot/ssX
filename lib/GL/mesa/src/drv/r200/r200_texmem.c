@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.2 2002/11/05 17:46:08 tsi Exp $ */
 /**************************************************************************
 
 Copyright (C) Tungsten Graphics 2002.  All Rights Reserved.  
@@ -36,6 +36,7 @@ SOFTWARE.
  *
  */
 
+#include "radeon_reg.h"
 #include "r200_context.h"
 #include "r200_state.h"
 #include "r200_ioctl.h"
@@ -49,6 +50,8 @@ SOFTWARE.
 #include "simple_list.h"
 #include "enums.h"
 #include "mem.h"
+
+#undef usleep
 
 
 
