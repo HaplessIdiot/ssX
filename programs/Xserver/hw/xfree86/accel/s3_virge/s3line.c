@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.4 1996/10/08 13:12:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.5 1996/10/10 14:03:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -134,8 +134,127 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    register int x1, x2;
    RegionPtr cclip;
    cfbPrivGCPtr devPriv;
+   int s3_clr=0, s3_rop = -1;
 
-   if (!xf86VTSema || ((pGC->planemask & s3BppPMask) != s3BppPMask)) {
+   if (!pGC->planemask)  /* for xgc "benchmarks" ;-) */
+      return;
+
+   if ((pGC->planemask & s3BppPMask) == s3BppPMask) {
+      s3_rop = s3alu_sp[pGC->alu];
+      s3_clr = pGC->fgPixel;
+   } else {
+      switch (pGC->alu) {
+      case GXclear:  /* ROP_0 */
+	 s3_rop = ROP_DPa;
+	 s3_clr = ~pGC->planemask;
+	 break;
+      case GXand:  /* ROP_DPa */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask)
+	    return;		/* NOP */
+	 s3_rop = ROP_DPa;
+	 s3_clr = pGC->fgPixel | ~pGC->planemask;
+	 break;
+      case GXandReverse:  /* ROP_PDna */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 }
+	 break;
+      case GXcopy:  /* ROP_P */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 }
+	 break;
+      case GXandInverted:  /* ROP_DPna */
+	 if ((~pGC->fgPixel & pGC->planemask) == pGC->planemask)
+	    return;		/* NOP */
+	 s3_rop = ROP_DPa;
+	 s3_clr = ~pGC->fgPixel | ~pGC->planemask;
+	 break;
+      case GXnoop:  /* ROP_D */
+	 return;		/* NOP */
+	 s3_rop = ROP_D;
+	 s3_clr = pGC->fgPixel;
+	 break;
+      case GXxor:  /* ROP_DPx */
+	 s3_rop = ROP_DPx;
+	 s3_clr = pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXor:  /* ROP_DPo */
+	 s3_rop = ROP_DPo;
+	 s3_clr = pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXnor:  /* ROP_DPon */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXequiv:  /* ROP_DPxn */
+	 s3_rop = ROP_DPx;
+	 s3_clr = ~pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXinvert:  /* ROP_Dn */
+	 s3_rop = ROP_DPx;
+	 s3_clr = pGC->planemask;
+	 break;
+      case GXorReverse:  /* ROP_PDno */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXcopyInverted:  /* ROP_Pn */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPa;
+	    s3_clr = ~pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXorInverted:  /* ROP_DPno */
+	 s3_rop = ROP_DPo;
+	 s3_clr = ~pGC->fgPixel & pGC->planemask;
+	 if (!s3_clr)
+	    return;		/* NOP */
+	 break;
+      case GXnand:  /* ROP_DPan */
+	 if ((pGC->fgPixel & pGC->planemask) == pGC->planemask) {
+	    s3_rop = ROP_DPx;
+	    s3_clr = pGC->planemask;
+	 } else if (!(pGC->fgPixel & pGC->planemask)) {
+	    s3_rop = ROP_DPo;
+	    s3_clr = pGC->planemask;
+	 }
+	 break;
+      case GXset:  /* ROP_1 */
+	 s3_rop = ROP_DPo;
+	 s3_clr = pGC->planemask;
+	 break;
+      }
+   }
+
+   if (!xf86VTSema || (s3_rop == -1)) {
       if (xf86VTSema) WaitIdleEmpty();
 #ifndef POLYSEGMENT
       switch (s3InfoRec.bitsPerPixel) {
@@ -188,8 +307,8 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
 #else
    WaitQueue(2);
 #endif
-   SETL_PAT_FG_CLR(pGC->fgPixel);
-   SETL_CMD_SET(s3_gcmd | CMD_LINE | MIX_MONO_PATT | CMD_AUTOEXEC | s3alu_sp[pGC->alu]);
+   SETL_PAT_FG_CLR(s3_clr);
+   SETL_CMD_SET(s3_gcmd | CMD_LINE | MIX_MONO_PATT | CMD_AUTOEXEC | s3_rop);
 
    xorg = pDrawable->x;
    yorg = pDrawable->y;
@@ -639,6 +758,7 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
    SETL_CMD_SET(CMD_NOP);
 
    /* avoid system hangs again :-( */
+   WaitIdle();
    SETB_PAT_FG_CLR(0);
    SETB_RDEST_XY(0,0);
    SETB_RWIDTH_HEIGHT(0,1);

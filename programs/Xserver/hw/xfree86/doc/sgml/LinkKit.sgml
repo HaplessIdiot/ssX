@@ -2,16 +2,16 @@
 
 <article>
 
-<title> Readme for the XFree86 3.1.2 LinkKit
+<title> Readme for the XFree86 3.2 LinkKit
 <author> The XFree86 Project, Inc.
-<date> 7 July 1995
+<date> 14 Oct 1996
 
-<sect> Readme for the XFree86 3.1.2 LinkKit <p>
+<sect> Readme for the XFree86 3.2 LinkKit <p>
 <enum>
 <item> For systems which don't use gcc-2, you may need to install libgcc.a if
    the binary distribution you are using was built with gcc-2.
 
-<item> Make sure that you have the XFree86 3.1.2 libraries
+<item> Make sure that you have the XFree86 3.2 libraries
    installed under <tt>/usr/X11R6</tt> if you will be linking Xnest with
    the LinkKit.  The LinkKit is now self-contained for the other servers.
 
@@ -74,8 +74,14 @@
 	set <tt>XF98PWLBServer</tt> to <tt>YES</tt>.
     <item>To build the S3 GA-968 server:
 	set <tt>XF98GA968Server</tt> to <tt>YES</tt>.
+
     <item>To build the Xnest server:
 	set <tt>XnestServer</tt> to <tt>YES</tt>.
+
+    <item>If you are building more than one Xserver, uncomment the
+        <tt>ServerToInstall</tt> line and set it to the name of the
+        Xserver you want to be the default server (i.e., the one that
+        the ``X'' sym-link points to).
 
     <item> Set <tt>XF86SvgaDrivers</tt> to the list of drivers you want to
 	include in the SVGA server.
@@ -90,6 +96,8 @@
         probing is done.  The `<tt>generic</tt>' driver should be the last one
         included in the Mono and VGA16 and SVGA servers because its probe
         always succeeds.
+    <item>To use dynamically loadable modules(e.g. PEX, XIE):
+	set <tt>ExtensionsDynamicModules</tt> to <tt>YES</tt>.
     <item>To include the PEX extension:
 	set <tt>BuildPexExt</tt> to <tt>YES</tt>.
     <item>To include the X Image Extension:
@@ -98,17 +106,13 @@
 	set <tt>BuildDBE</tt> to <tt>NO</tt>.
     <item>To exclude the Record Extension:
 	set <tt>BuildRECORD</tt> to <tt>NO</tt>.
-    <item>To include the Screen Saver extension:
-	set <tt>BuildScreenSaverExt</tt> to <tt>YES</tt>.
+    <item>To exclude the Screen Saver extension:
+	set <tt>BuildScreenSaverExt</tt> to <tt>NO</tt>.
     <item>Although it is possible to disable other extensions through this
 	mechanism, doing so is not recommended because savings in server size
 	are not appreciable, or the resulting server might even be crippled in
 	some way.
 
-    <item>If you are building more than one Xserver, uncomment the
-        <tt>ServerToInstall</tt> line and set it to the name of the
-        Xserver you want to be the default server (i.e., the one that
-        the ``X'' sym-link points to).
     </itemize>
 
 <item> If you are including a driver that it not part of the standard
@@ -144,7 +148,7 @@
 </enum>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.9 1996/10/03 08:34:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.10 1996/10/13 11:19:44 dawes Exp $
 $XConsortium: LinkKit.sgml /main/4 1995/11/12 19:59:36 kaleb $
 </verb>
 

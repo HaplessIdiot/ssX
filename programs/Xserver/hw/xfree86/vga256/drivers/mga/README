@@ -1,15 +1,30 @@
 MGA Millennium (MGA2064W) with Ti3026 RAMDAC driver v1.0
 
+NOTE: This driver is pretty new, and not everything works like you expect
+it to. It shouldn't crash your machine, but you may have video artifacts
+or missing lines. Please report any and all problems to XFree86@Xfree86.org
+using the appropiate bug report sheet. 
+
+Check the file called BUGS to see if a problem you have is already found. If
+not please report it to xfree86@xfree86.org with the subject line "bug in mga
+driver" so it gets to us quickly. 
+
+To keep your driver upto date: keep applying any post XFree86 v3.2 patches
+XFree86 publish via ftp.xfree86.org, or if you feel a little daring, try to 
+use the patches from the web site below.
+
 Features:
 
 * Basic support for the Matrox Millennium video adapter
-* basic bitblt support
 * uses linear frame buffer whenever possible
 * it should be possible to reach resolutions upto 1920x1024
-* it should be possible to use pixel depths of 8, 16, and 32 bits
-  per pixel (256 pseudo colour, "high colour", "true colour"). 
-  Sorry, 24 bpp is not supported at this time (although we will
-  look into it).
+* it should be possible to use pixel depths of 8, 16, 24, and 32 bits
+  per pixel (256 pseudo colour, "high colour", "packed true colour",
+  "true colour"). 
+* has the following accelerations:
+  - lines
+  - some bitblts
+  - filled rectangles
 
 Future Features (in order from highest to lowest priority)
 
@@ -34,49 +49,27 @@ Reference releases, which are quality tested and are known to work are in
 the base XFree86 3.2 and later source tree. If you don't like your machine
 crashing, we suggest you stick to those stable releases.
 
-Radoslaw's board is a 4 MB, 220 MHz Matrox Millennium, and we know that one
-works okay. :-)
-
 Hardware Supported:
 
 This driver only supports the MGA Storm (MGA2064W) chipset with the TI
 (TVP) 3026 RAMDAC. Matrox have only so far made 175 and 220 MHz boards with
 these two components, although 135 and 250 MHz RAMDAC parts exist.
 
-The driver assumes a 2 MB, 175 MHz DAC card. We are trying to get the
-automatic detection of WRAM and DAC Speed worked out. You can configure it
-to use the 220 MHz DAC and more WRAM, but please only do so once you are
-certain that you have the faster RAMDAC and/or more WRAM (see your card's
-technical documentation).
+This driver autodetects WRAM size and RAMDAC speed, so you don't need to 
+probe for clocks, or bother putting in a video ram size. 
 
 We will eventually provide support for the other Matrox chipsets (once the
 Millenium driver is at a far enough stage and more people with other cards
-join the effort), including the Impression, Mystique, etc. The Mystique may
-even work (depends on how much has changed, whether the RAMDAC is still the
-3026... etc). If you are a non-Millennium Matrox owner, please do not try
-this Xserver out unless you are certain that your board has the required
-RAMDAC and chipset.
+join the effort), including the Impression, Mystique, etc. 
+
+At the moment, however, only the Millennium is supported.
 
 Configuration:
 
-If you have a 220 MHz board, you must specify in the XF86Config file the
-following line (near where Videoram or Clocks is commented out).
-
-DACSpeed 	220
-
-If you have more video ram than 2 MB, you MUST specify the amount in the
-following fashion:
-
-4 mb boards:
-
-Videoram	4096
-
-8 mb boards:
-
-Videoram	8192
+* autodetects WRAM size and RAMDAC speed. Do not bother putting these in
+  your "Device" section, as they will be overridden.
 
 Other options:
-
 
 *** nolinear doesn't currently work
 "nolinear"		- disables linear frame buffer and BitBlt Engine
@@ -102,9 +95,6 @@ accesses for faster throughput. 4 MB boards can work in both interleaved
 and non-interleaved modes. We will work out how to determine this in
 future releases. 
 
-If you don't understand this discussion, don't worry, we don't either (yet)
-and once we get it sorted out, you cannot make a mistake.
-
 For now, stick to nice virtual widths, like 640 800 1024 1152 1280 and so
 on. If you can divide your proposed virtual width by 128, you'll be safe.
 
@@ -113,10 +103,19 @@ Main author:
 Radoslaw Kapitan, Tarnow, Poland
 kapitan@student.uci.agh.edu.pl
 
-Additions, corrections, etc:
+Code, Additions and Testing:
 
 Andrew Vanderstock, Melbourne, Australia
 vanderaj@mail2.svhm.org.au
+
+Angsar
+
+Michael Will
+
+Andrew Mileski
+
+Stephen Pitts
+pitts2@...
 
 Porting to XFree86-3.1.2Gg:
 

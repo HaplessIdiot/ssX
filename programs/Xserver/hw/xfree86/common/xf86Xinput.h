@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Xinput.h /main/3 1996/01/14 19:01:46 kaleb $ */
 /*
- * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
+ * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.9 1996/05/11 11:04:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.10 1996/08/13 11:30:11 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -113,6 +113,8 @@ typedef struct _DeviceAssocRec
 );
 } DeviceAssocRec, *DeviceAssocPtr;
 
+extern	int		DeviceKeyPress;
+extern	int		DeviceKeyRelease;
 extern	int		DeviceButtonPress;
 extern	int		DeviceButtonRelease;
 extern	int		DeviceMotionNotify;
@@ -209,6 +211,19 @@ xf86PostButtonEvent(
 		int		/*first_valuator*/,
 		int		/*num_valuators*/,
 		...
+#endif
+);
+
+void
+xf86PostKeyEvent(
+#if NeedVarargsPrototypes
+		 DeviceIntPtr	device,
+		 unsigned int	key_code,
+		 int		is_down,
+		 int		is_absolute,
+		 int		first_valuator,
+		 int		num_valuators,
+		 ...
 #endif
 );
 

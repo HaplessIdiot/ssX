@@ -48,7 +48,7 @@ SOFTWARE.
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
 /* $XConsortium: servermd.h /main/56 1996/01/04 17:19:24 gildea $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.13 1996/08/18 01:54:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.14 1996/10/03 08:48:50 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -132,7 +132,7 @@ SOFTWARE.
 
 #endif /* vax */
 
-#if (defined(sun) && !(defined(i386) && defined(SVR4))) || (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || (defined(__NetBSD__) && (defined(__sparc__) || defined(mc68000))) || (defined(Lynx) && defined(__sparc__))
+#if (defined(sun) && !(defined(i386) && defined(SVR4))) || (defined(AMOEBA) && (defined(sparc) || defined(mc68000))) || (defined(__NetBSD__) && (defined(__sparc__) || defined(mc68000))) || (defined(__OpenBSD__) && (defined(__sparc__) || defined(mc68000))) || (defined(Lynx) && defined(__sparc__))
 
 #if defined(sun386) || defined(sun5)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the SUN only */
@@ -305,7 +305,7 @@ SOFTWARE.
 
 #endif /* luna */
 
-#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && !defined(__mc68000__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__)))
+#if (defined(i386) && (defined(SVR4) || defined(SYSV) || (defined(sun) && defined(SVR4))) || defined(__bsdi__) || (defined(__NetBSD__) && defined(__i386__)) || (defined(__OpenBSD__) && defined(__i386__)) || defined(__FreeBSD__) || defined(MACH386) || (defined(linux) && !defined(__mc68000__)) || (defined(AMOEBA) && defined(i80386)) || defined(MINIX) || defined(__EMX__) || (defined(Lynx) && defined(__i386__)))
 
 #ifndef IMAGE_BYTE_ORDER
 #define IMAGE_BYTE_ORDER	LSBFirst

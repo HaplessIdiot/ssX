@@ -5,7 +5,7 @@
 
 <title>Information for SVR4 Users
 <author>The XFree86 Project, Inc
-<date>7 July 1995
+<date>14 Oct 1996
 
 <abstract>
 <bf>NOTE:</bf>
@@ -371,6 +371,21 @@ be installed automatically by adding the line:
 </verb></tscreen>
 to your <tt>.xinitrc</tt> file (or your <tt>Xsetup</tt> file if using xdm).
 
+<sect>106 Japanese keyboard problem on PANIX<p>
+  PANIX for PC-AT uses Japanese keycodes standardized by DICOP(Desktop
+UNIX for Intel Cooperative Promotion Group) in Japan.  Therefore keycode
+confliction occurs with 106 Japanese keyboard in XFree86.  To avoid it,
+specify the keyword "panix106" in XF86Config like this:
+<verb>
+  Section "Keyboard"
+    Protocol    "Standard"
+    Autorepeat  500 5
+    XkbModel    "jp106"
+    XkbLayout   "jp"
+    panix106
+  EndSection
+</verb>
+
 <sect>A kernel patch that is required for accelerated servers<p>
   SVR4.0 has a bug handling programs that access extended I/O registers
 (above 0x3FF).  Boards like S3 and 8514/A use these extended I/O
@@ -404,7 +419,7 @@ workaround for this problem, and giving us permission to release the
 information.<p>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.8 1996/09/29 13:36:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.9 1996/10/03 08:34:53 dawes Exp $
 
 
 

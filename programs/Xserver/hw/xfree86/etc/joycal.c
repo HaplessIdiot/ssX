@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/joycal.c,v 3.1 1995/12/31 12:03:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/joycal.c,v 3.2 1996/02/18 03:43:09 dawes Exp $ */
 
 /* A simple program to get the Joystick calibration coordinates */
 
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
-#if defined (__FreeBSD__) || defined(__NetBSD__)
+#if defined (__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <machine/joystick.h>
 #define JS_RETURN sizeof(struct joystick)
 #define JS_DATA_TYPE joystick

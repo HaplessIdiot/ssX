@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.10 1996/06/29 09:08:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl64xx/cl_driver.c,v 3.11 1996/09/14 13:11:55 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -1135,6 +1135,14 @@ int x, y;
 	outb(0x3CE, 0x7C);
 	tempin = inb(0x3CF);
 	outb(0x3CF, (tempin & 0xF0) | ((msb >> 16) & 0x0F));
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

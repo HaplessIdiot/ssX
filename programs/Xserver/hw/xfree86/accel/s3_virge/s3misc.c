@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.4 1996/10/03 08:33:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3misc.c,v 3.5 1996/10/08 13:12:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1220,6 +1220,14 @@ s3AdjustFrame(int x, int y)
          s3RepositionCursor(s3savepScreen);
       }
 #ifdef XFreeXDGA
+   }
+#endif
+
+#ifdef XFreeXDGA
+   if (s3InfoRec.directMode & XF86DGADirectGraphics) {
+      /* Wait until vertical retrace is in progress. */
+      while (inb(vgaIOBase + 0xA) & 0x08);
+      while (!(inb(vgaIOBase + 0xA) & 0x08));
    }
 #endif
 }

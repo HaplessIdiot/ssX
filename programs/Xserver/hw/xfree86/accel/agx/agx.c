@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.48 1996/08/18 01:47:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.49 1996/09/14 13:06:40 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1882,6 +1882,16 @@ agxAdjustFrame(x, y)
    outb(agxIdxReg, IR_DISP_MAP_HI);
    outb(agxByteData, byte_offset & 0x0f);
    /*agxRepositionCursor(savepScreen); */
+
+#if 0 /* Is the following correct? */
+#ifdef XFreeXDGA
+   if (agxInfoRec.directMode & XF86DGADirectGraphics) {
+      /* Wait until vertical retrace is in progress. */
+      while (inb(vgaIOBase + 0xA) & 0x08);
+      while (!(inb(vgaIOBase + 0xA) & 0x08));
+   }
+#endif
+#endif
 }
 
 /*

@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.6 1996/09/03 07:28:24 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/carddata.tcl,v 3.7 1996/09/29 12:51:08 dawes Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -215,7 +215,7 @@ set CardClockChips(S3V)	   {}
 set CardClockChips(TGA)	   {}
 set CardClockChips(W32)	   { dcs2824 et6000 icd2061a ics5341 stg1703 }
 
-set CardClockChips(SVGA-ark)		ics5341
+set CardClockChips(SVGA-ark)		ics5342
 set CardClockChips(SVGA-cirrus)		cirrus
 set CardClockChips(SVGA-et4000)		$CardClockChips(W32)
 set CardClockChips(SVGA-mga)		ti3026

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.23 1996/09/14 13:12:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.24 1996/09/29 14:02:28 dawes Exp $ */
 
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
@@ -1494,6 +1494,13 @@ OAKAdjust(x, y)
 	}
       break;
     }
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
+#endif
 }
 
 /*

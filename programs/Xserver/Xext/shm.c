@@ -28,7 +28,7 @@ in this Software without prior written authorization from the X Consortium.
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
 /* $XConsortium: shm.c,v 1.25 95/04/06 16:00:55 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.5 1996/01/05 13:17:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.6 1996/05/06 05:55:33 dawes Exp $ */
 
 #include <sys/types.h>
 #include <sys/ipc.h>
@@ -141,7 +141,7 @@ static ShmFuncs fbFuncs = {fbShmCreatePixmap, fbShmPutImage};
 }
 
 
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #include <sys/signal.h>
 
 static Bool badSysCall = FALSE;
@@ -179,7 +179,7 @@ ShmExtensionInit()
     ExtensionEntry *extEntry;
     int i;
 
-#if defined(__FreeBSD__) || defined(__NetBSD__)
+#if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
     if (!CheckForShmSyscall())
     {
 	ErrorF("MIT-SHM extension disabled due to lack of kernel support\n");

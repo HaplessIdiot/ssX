@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.26 1996/10/03 08:37:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.27 1996/10/13 11:19:58 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -1151,8 +1151,14 @@ enable_os_io()
 	perror("i386_iopl");
 	exit(1);
     }
-#endif /* NetBSD1_1 */
+#endif /* USE_I386_IOPL */
 #endif /* __NetBSD__ */
+#if defined(__OpenBSD__)
+    if (i386_iopl(1) < 0) {
+	perror("i386_iopl");
+	exit(1);
+    }
+#endif /* __OpenBSD__ */
 #if defined(MACH386)
     if ((io_fd = open("/dev/iopl", O_RDWR, 0)) < 0) {
         perror("/dev/iopl");

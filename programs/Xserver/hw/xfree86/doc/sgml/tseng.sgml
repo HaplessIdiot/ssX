@@ -4,7 +4,7 @@
  
 <title> Information for Tseng Chipset Users
 <author> The XFree86 Project, Inc.
-<date> 29 July 1996 
+<date> 14 October 1996 
 <toc>
  
 <sect> Supported chipsets <p>
@@ -13,6 +13,27 @@ ET6000. At this time, the accelerated features of the ET4000/W32 and ET6000
 are not supported by the SVGA driver; the chipset is treated as a standard
 ET4000. For details about the accelerated ET4000/W32 and ET6000 server, refer to
 <url name="README.W32" url="W32.html">.
+
+
+<sect> ET4000 driver features <p>
+
+The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors).
+hi- and truecolor modes are not supported.
+
+
+<sect> ET6000 driver features <p>
+In addition to the features in the ET4000 driver, the SVGA ET6000 server
+supports all possible color depths in the SVGA server: 8bpp, 16bpp (both at
+5-5-5 and 5-6-5 color resolutions), 24bpp and 32 bpp.
+
+Linear memory mode (as opposed to the default, banked memory layout) is
+supported. It is even required for 16/24/32 bpp modes. Put the following in
+the SVGA section of your
+<tt>XF86Config</tt>:
+<verb>
+  Option "linear"
+</verb>
+
 
 <sect> Clock selection problems with some ET4000 boards <p>
 XFree86 has some problems getting the clock selection right with some
@@ -54,7 +75,7 @@ has been removed.  Hopefully the past text-restoration problems are alleviated
 in XFree86 2.0.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.5 1996/02/04 09:08:39 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/tseng.sgml,v 3.6 1996/08/13 11:30:59 dawes Exp $ 
 
 
 

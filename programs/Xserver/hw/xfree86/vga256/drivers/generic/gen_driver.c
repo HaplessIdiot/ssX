@@ -1,5 +1,5 @@
 /* $XConsortium: gen_driver.c /main/6 1996/01/12 12:17:12 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.11 1996/06/29 09:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.12 1996/09/14 13:12:16 dawes Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -367,6 +367,14 @@ int x, y;
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   	outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

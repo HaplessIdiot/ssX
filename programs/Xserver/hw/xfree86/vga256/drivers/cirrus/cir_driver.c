@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.67 1996/10/08 12:23:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.68 1996/10/13 11:20:48 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -4195,6 +4195,14 @@ cirrusAdjust(x, y)
          outb(vgaIOBase + 4, 0x1d); CR1D = inb(vgaIOBase + 5);
          outb(vgaIOBase + 5, (CR1D & 0xE7) | ((Base & 0x180000) >> 16));
      }       
+
+#ifdef XFreeXDGA
+    if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+	/* Wait until vertical retrace is in progress. */
+	while (inb(vgaIOBase + 0xA) & 0x08);
+	while (!(inb(vgaIOBase + 0xA) & 0x08));
+    }
+#endif
 }
 
 /*

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.102 1996/10/03 08:34:08 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.103 1996/10/06 13:16:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -943,7 +943,7 @@ xf86Config (vtopen)
 #ifdef MINIX
     setuid(getuid());
 #else
-#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
     setruid(0);
 #endif
     seteuid(real_uid);
@@ -955,7 +955,7 @@ xf86Config (vtopen)
     /* no need to restore the uid to root */
 #else
     seteuid(0);
-#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__FreeBSD__)
+#if !defined(SVR4) && !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(__FreeBSD__)
     setruid(real_uid);
 #endif
 #endif /* MINIX */

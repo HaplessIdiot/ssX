@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.53tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.54 1996/09/25 14:15:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -489,25 +489,49 @@ static ATIInformationBlock *GetATIInformationBlock(BlockIO)
    }
 
    tmp = inl(ioMEM_CNTL);
-   switch (tmp & MEM_SIZE_ALIAS) {
-   case MEM_SIZE_512K:
+   if ((info.ChipType == MACH64_VT || info.ChipType == MACH64_GT) &&
+       (info.ChipRev & 0x01)) {
+     switch (tmp & MEM_SIZE_ALIAS_GTB) {
+     case MEM_SIZE_512K:
        info.Mem_Size = 512;
        break;
-   case MEM_SIZE_1M:
+     case MEM_SIZE_1M:
        info.Mem_Size = 1024;
        break;
-   case MEM_SIZE_2M:
+     case MEM_SIZE_2M_GTB:
        info.Mem_Size = 2*1024;
        break;
-   case MEM_SIZE_4M:
+     case MEM_SIZE_4M_GTB:
        info.Mem_Size = 4*1024;
        break;
-   case MEM_SIZE_6M:
+     case MEM_SIZE_6M_GTB:
        info.Mem_Size = 6*1024;
        break;
-   case MEM_SIZE_8M:
+     case MEM_SIZE_8M_GTB:
        info.Mem_Size = 8*1024;
        break;
+     }
+   } else {
+     switch (tmp & MEM_SIZE_ALIAS) {
+     case MEM_SIZE_512K:
+       info.Mem_Size = 512;
+       break;
+     case MEM_SIZE_1M:
+       info.Mem_Size = 1024;
+       break;
+     case MEM_SIZE_2M:
+       info.Mem_Size = 2*1024;
+       break;
+     case MEM_SIZE_4M:
+       info.Mem_Size = 4*1024;
+       break;
+     case MEM_SIZE_6M:
+       info.Mem_Size = 6*1024;
+       break;
+     case MEM_SIZE_8M:
+       info.Mem_Size = 8*1024;
+       break;
+     }
    }
 
    
@@ -679,19 +703,59 @@ mach64PrintCTPLL()
     M = pll[PLL_REF_DIV];
 
     N = pll[VCLK0_FB_DIV];
-    P = 1 << (pll[VCLK_POST_DIV] & VCLK0_POST);
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x10)) {
+	switch (pll[VCLK_POST_DIV] & VCLK0_POST) {
+	case 0: P = 3; break;
+	case 1: P = 2; break; /* Unknown */
+	case 2: P = 6; break;
+	case 3: P = 12; break;
+	}
+    } else {
+	P = 1 << (pll[VCLK_POST_DIV] & VCLK0_POST);
+    }
     ErrorF("VCLK0: M=%d, N=%d, P=%d, Clk=%.2f\n", M, N, P,
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[VCLK1_FB_DIV];
-    P = 1 << ((pll[VCLK_POST_DIV] & VCLK1_POST) >> 2);
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x20)) {
+	switch ((pll[VCLK_POST_DIV] & VCLK1_POST) >> 2) {
+	case 0: P = 3; break;
+	case 1: P = 2; break; /* Unknown */
+	case 2: P = 6; break;
+	case 3: P = 12; break;
+	}
+    } else {
+	P = 1 << ((pll[VCLK_POST_DIV] & VCLK1_POST) >> 2);
+    }
     ErrorF("VCLK1: M=%d, N=%d, P=%d, Clk=%.2f\n", M, N, P,
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[VCLK2_FB_DIV];
-    P = 1 << ((pll[VCLK_POST_DIV] & VCLK2_POST) >> 4);
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x40)) {
+	switch ((pll[VCLK_POST_DIV] & VCLK2_POST) >> 4) {
+	case 0: P = 3; break;
+	case 1: P = 2; break; /* Unknown */
+	case 2: P = 6; break;
+	case 3: P = 12; break;
+	}
+    } else {
+	P = 1 << ((pll[VCLK_POST_DIV] & VCLK2_POST) >> 4);
+    }
     ErrorF("VCLK2: M=%d, N=%d, P=%d, Clk=%.2f\n", M, N, P,
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[VCLK3_FB_DIV];
-    P = 1 << ((pll[VCLK_POST_DIV] & VCLK3_POST) >> 6);
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01) && (pll[PLL_XCLK_CNTL] & 0x80)) {
+	switch ((pll[VCLK_POST_DIV] & VCLK3_POST) >> 6) {
+	case 0: P = 3; break;
+	case 1: P = 2; break; /* Unknown */
+	case 2: P = 6; break;
+	case 3: P = 12; break;
+	}
+    } else {
+	P = 1 << ((pll[VCLK_POST_DIV] & VCLK3_POST) >> 6);
+    }
     ErrorF("VCLK3: M=%d, N=%d, P=%d, Clk=%.2f\n", M, N, P,
 	   (double)((2 * R * N)/(M * P)) / 100.0);
     N = pll[MCLK_FB_DIV];
@@ -1950,6 +2014,16 @@ mach64AdjustFrame(x, y)
 
     if (!OFLG_ISSET(OPTION_SW_CURSOR, &mach64InfoRec.options))
 	mach64RepositionCursor(savepScreen);
+
+#if 0 /* Will this work in accelerated mode? */
+#ifdef XFreeXDGA
+    if (mach64InfoRec.directMode & XF86DGADirectGraphics) {
+	/* Wait until vertical retrace is in progress. */
+	while (inb(vgaIOBase + 0xA) & 0x08);
+	while (!(inb(vgaIOBase + 0xA) & 0x08));
+    }
+#endif
+#endif
 }
 
 /*

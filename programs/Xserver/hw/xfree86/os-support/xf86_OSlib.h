@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.30 1996/09/14 13:10:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.31 1996/10/03 08:37:56 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -272,28 +272,28 @@ extern int errno;
 #   endif
 #   ifdef CODRV_SUPPORT
 #    define COMPAT_CO011
-#    if defined(__FreeBSD__) || defined(__NetBSD__)
+#    if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #     include <machine/ioctl_pc.h>
 #    else
 #     include <sys/ioctl_pc.h>
-#    endif /* __FreeBSD__ || __NetBSD__ */
+#    endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
 #   endif /* CODRV_SUPPORT */
 #   ifdef SYSCONS_SUPPORT
 #    define COMPAT_SYSCONS
-#    if defined(__FreeBSD__) || defined(__NetBSD__)
+#    if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #     include <machine/console.h>
 #    else
 #     include <sys/console.h>
-#    endif /* __FreeBSD__ || __NetBSD__ */
+#    endif /* __FreeBSD__ || __NetBSD__ || defined(__OpenBSD__) */
 #   endif /* SYSCONS_SUPPORT */
 #   if defined(PCVT_SUPPORT)
 #    if !defined(SYSCONS_SUPPORT)
       /* no syscons, so include pcvt specific header file */
-#     if defined(__FreeBSD__) || defined(__NetBSD__)
+#     if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #      include <machine/pcvt_ioctl.h>
 #     else
 #      include <sys/pcvt_ioctl.h>
-#     endif /* __FreeBSD__ || __NetBSD__ */
+#     endif /* __FreeBSD__ || __NetBSD__ || __OpenBSD__ */
 #    else /* pcvt and syscons: hard-code the ID magic */
 #     define VGAPCVTID _IOWR('V',113, struct pcvtid)
       struct pcvtid {

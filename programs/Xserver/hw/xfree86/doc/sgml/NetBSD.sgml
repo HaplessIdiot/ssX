@@ -346,19 +346,6 @@ XFree86 3.2 introduces a new, user-friendly configuration utility
 called <bf/XF86Setup/. It has to be run as root. Refer to its
 documentation for details about its use.
 <p>
-<bf/Important notice/
-<p>
-On NetBSD and OpenBSD, XF86Setup needs a larger stack than the system
-default limit of 512 kbytes. Be sure to raise your stack size limit by
-using the command:
-<verb>limit stacksize 2048k</verb>
-if you're running a C-shell variant or the
-<verb>ulimit -s 2048</verb>
-command with the Bourne shell variants.
-<p>
-If you don't do this, the X server will crash and probably  won't
-restore the text mode properly.
-<p>
 You'll need info on your hardware:
 <itemize>
 <item> Your mouse type, baud rate and its /dev entry.
@@ -366,11 +353,12 @@ You'll need info on your hardware:
 <item> Your monitor's sync frequencies.
 </itemize>
 
+
 The recommended way to generate an <tt/XF86Config/ file is to use the
-<tt/XF86Setup/ utility.  Also, there is a sample file installed as
-<tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>, which can be used as a
-starting point. The  xf86config text utility is still there for the
-(few) cases where XF86Setup can't be used.
+<tt/XF86Setup/ utility.  The xf86config text utility is still there
+for the (few) cases where XF86Setup can't be used. Also, there is a
+sample file installed as <tt>/usr/X11R6/lib/X11/XF86Config.eg</tt>,
+which can be used as a starting point.
 
 For details about the <tt/XF86Config/ file format, refer to the
 <em>XF86Config(5)</em> manual page.
@@ -381,9 +369,6 @@ but requires that it be in <tt>/etc/XF86Config</tt>,
 <tt>/usr/X11R6/lib/X11/XF86Config.hostname</tt> or
 <tt>/usr/X11R6/lib/X11/XF86Config</tt>.
 
-Once you've set up a XF86Config file, you can fine tune the video
-modes with the <tt>xvidtune</tt> utility. 
-
 If you have a <tt>Xconfig</tt> file for XFree86 2.x, use reconfig to
 translate part of
 it into the new format:
@@ -392,35 +377,66 @@ it into the new format:
 </verb>
 and complete the rest with the help of XF86Setup.
 
+Once you've set up a XF86Config file, you can fine tune the video
+modes with the <tt>xvidtune</tt> utility. 
 
+<sect1>About mouse configuration
+
+<p>
 If your serial mouse does not work try using <tt>kermit</tt> or
 <tt>tip</tt> to connect to the mouse serial port and verify that it
 does indeed generate characters.
+<p>
+The NetBSD pms mouse driver handles PS/2 style mice as
+Busmouse. Specify the protocol <bf/busmouse/ in the mouse section of your
+<tt/XF86Config/ file if you're using a PS/2 mouse.
+<p>
+The OpenBSD pms driver  provides both "raw" and "cooked" 
+(translated) modes.  "raw" mode does not do protocol translation, so
+XFree86 would use the <bf>PS/2</bf> protocol for talking to the device
+in that mode.  "cooked" mode is the old BusMouse translation.
+By default, the driver runs in "cooked" mode.  It can be switched using
+ioctls or by opening the first minor device which is <tt>/dev/pms0r</tt>.
 
+<sect1>Other input devices
 <p>
 XFree86 now support the dynamic loading of drivers for external
 input devices using the <tt/XInput/ extension. Currently supported
 devices are:
 <itemize>
-<item> Joystick
-<item> Wacom tablets (Wacom IV protocol only)
-<item> Elographics touchscreen
+<item> Joystick (<tt/xf86Jstk.so/)
+<item> Wacom tablets (Wacom IV protocol only, <tt/xf86Wacom.so/)
+<item> SummaSketch tablets (<tt/xf86Summa.so/)
+<item> Elographics touchscreen (<tt/xf86Elo.so/)
 </itemize>
 
+To use a specific device, add the line
+<tscreen>
+<tt/load/ <tt/"/<em/module/<tt/"/
+</tscreen>
+in the <bf/Module/ section of <tt/XF86Config/, where <em/module/ is
+the name of the <tt/.so/ file corresponding to your device.
+You also need to set up a <bf/XInput/ section in <tt/XF86Config/. 
+Refer to the <em>XF86Config(5)</em> man page for detailed
+configuration instructions.
+<p>
+You can then change the device used to drive the X pointer with the
+<em/xsetpointer(1)/ command.
+<p>
 For joystick support, you'll need to install the joystick device
 driver in the kernel. It is included in NetBSD 1.2 and OpenBSD. See
 <em/joy(4)/ for details.
+
+<sect1>Configuring PEX and XIE extensions
 <p>
-The PEX and XIE extensions are also supported as external modules
-now. If you want to have access to these exensions, add the following
+The PEX and XIE extensions are now supported as external modules.
+If you want to have access to these exensions, add the following
 lines to the <bf/Module/ section of <tt/XF86Config/:
 <tscreen><verb>
    load    "pex5.so"
    load    "xie.so"
 </verb></tscreen>
-<p>
-Refer to the <em>XF86Config(5)</em> man page for detailed
-configuration instructions.
+
 
 <sect> Running X
 
@@ -777,7 +793,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.34 1996/10/03 08:34:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.35 1996/10/06 13:16:45 dawes Exp $
 
 
 

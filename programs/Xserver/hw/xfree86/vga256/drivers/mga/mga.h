@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.1 1996/10/06 13:18:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.2 1996/10/10 14:04:45 dawes Exp $ */
 
 /*
  * MGA Millennium (MGA2064W) functions
@@ -26,6 +26,8 @@ extern int MGAScrnWidth;
 
 #define MGAWAITFIFO() while(MGAREG16(MGAREG_FIFOSTATUS) & 0x100);
 #define MGAWAITFREE() while(MGAREG8(MGAREG_Status + 2) & 0x01);
+
+#define MGAWAITFIFOSLOTS(SLOTS) while ( ((MGAREG16(MGAREG_FIFOSTATUS) & 0x3f) - SLOTS) < 0 );
 
 void
 mgaLine (

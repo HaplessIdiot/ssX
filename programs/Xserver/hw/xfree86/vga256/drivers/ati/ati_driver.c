@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.36tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.37 1996/09/25 14:18:14 dawes Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -4310,6 +4310,14 @@ ATIAdjust(const unsigned int x, const unsigned int y)
                                 SetBits(Base << 1, CRTC_OFFSET));
 #               endif
         }
+
+#if defined(XFreeXDGA) && !defined(MONOVGA)
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.7 1996/06/10 09:12:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_386BSD.c,v 3.8 1996/09/03 04:10:54 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Dawes <dawes@xfree86.org>
  *
@@ -40,7 +40,7 @@
 # define CONSOLE_X_MODE_ON PCCONIOCRAW
 # define CONSOLE_X_MODE_OFF PCCONIOCCOOK
 #else
-# if defined(__FreeBSD__) || defined(__NetBSD__)
+# if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
 #  ifdef CODRV_SUPPORT
     /* This header is part of codrv */
 #   include <machine/ioctl_pc.h>
@@ -72,6 +72,10 @@
 #  ifdef NetBSD1_1
 #    include <machine/sysarch.h>
 #  endif
+#endif
+
+#if defined(__OpenBSD__)
+#  include <machine/sysarch.h>
 #endif
 
 #if !defined(__OpenBSD__)
@@ -356,12 +360,10 @@ int EnableIOPorts(NumPorts, Ports)
 CONST int NumPorts;
 CONST Word *Ports;
 {
-#ifdef __NetBSD__ 
 #ifdef USE_I386_IOPL
     if (IOEnabled++ == 0) {
 	i386_iopl(TRUE);
     }
-#endif
 #endif
 	return(0);
 }
@@ -378,12 +380,10 @@ int DisableIOPorts(NumPorts, Port)
 CONST int NumPorts;
 CONST Word *Port;
 {
-#ifdef __NetBSD__
 #ifdef USE_I386_IOPL
     if (--IOEnabled == 0) {
 	i386_iopl(FALSE);
     }
-#endif
 #endif
 	return(0);
 }

@@ -34,7 +34,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.5 1996/06/29 09:09:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/realtek/rt_driver.c,v 3.6 1996/09/14 13:13:00 dawes Exp $ */
 
 /*************************************************************************/
 
@@ -1133,10 +1133,13 @@ int x, y;
   	outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   	outw(vgaIOBase + 4, ((Base & 0x030000) >> 8) | 0x33);
 
-	/*
-	 * Here the high-order bits are masked and shifted, and put into
-	 * the appropriate extended registers.
-	 */
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 #if 0

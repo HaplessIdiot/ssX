@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.4 1996/10/06 13:15:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.5 1996/10/08 12:21:15 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -54,6 +54,9 @@ __inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r,
 {
    int newwidth;
 
+   if (alu == GXnoop)
+      return;  /* avoid lockup with ROP_D */
+
    newwidth = s3CheckLSPN(width, 1);
    if (newwidth != width) {
       WaitQueue(5);
@@ -69,14 +72,12 @@ DBGOUT(0x56);
 DBGOUT(0x57);
    WaitIdle();
 DBGOUT(0x58);
-#if 0
-   ErrorF("s3SimpleStipple IN_SUBSYS_STAT %x cmd %x x/y %d %d w/h %d %d\n",IN_SUBSYS_STAT(),s3_gcmd | CMD_BITBLT | INC_Y | INC_X | CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT | MIX_CPUDATA | MIX_MONO_SRC | ROP_S, x,y,width,height); /* usleep(100000); */
-#endif
    SETB_CMD_SET(s3_gcmd | CMD_BITBLT | INC_Y | INC_X
 		| CMD_ITA_DWORD | MIX_MONO_TRANSP | MIX_MONO_PATT
 		| MIX_CPUDATA | MIX_MONO_SRC | s3alu[alu]);
 DBGOUT(0x59);
 
+   if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
    {				/* The stipple code */
 #define SWPBIT(s) (s3SwapBits[pb[(s)]])
 
@@ -151,18 +152,6 @@ s3PolyGlyphBlt(pDrawable, pGC, x, y, nglyph, ppci, pglyphBase, pBox)
 	pci = *ppci++;
 	gWidth = GLYPHWIDTHPIXELS(pci);
 	gHeight = GLYPHHEIGHTPIXELS(pci);
-#if 0
-ErrorF("%4d,%4d %4d,%4d %4d,%4d    %4d,%4d %4d,%4d    %4d,%4d %4d,%4d %d%d%d%d\n"
-       ,x,y,pci->metrics.leftSideBearing,pci->metrics.ascent,gWidth,gHeight
-       ,x + pci->metrics.leftSideBearing, y - pci->metrics.ascent
-       ,x + pci->metrics.leftSideBearing + gWidth-1,y - pci->metrics.ascent + gHeight-1
-       ,pBox->x1,pBox->y1,pBox->x2,pBox->y2
-       ,x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
-       ,x + pci->metrics.leftSideBearing            <  pBox->x2
-       ,y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
-       ,y - pci->metrics.ascent                     <  pBox->y2
-       );
-#endif
 	if (gWidth && gHeight) 	{
 	   if (   x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
 	       && x + pci->metrics.leftSideBearing            <  pBox->x2
@@ -190,36 +179,10 @@ ErrorF("%4d,%4d %4d,%4d %4d,%4d    %4d,%4d %4d,%4d    %4d,%4d %4d,%4d %d%d%d%d\n
 		 }
 	     
 	      if (y - pci->metrics.ascent + gHeight-1 >=  pBox->y2 ) {
-#if 0
-ErrorF("%4d,%4d %4d,%4d %4d,%4d    %4d,%4d %4d,%4d    %4d,%4d %4d,%4d %d%d%d%d\n"
-       ,x,y,pci->metrics.leftSideBearing,pci->metrics.ascent,gWidth,gHeight
-       ,x + pci->metrics.leftSideBearing, y - pci->metrics.ascent
-       ,x + pci->metrics.leftSideBearing + gWidth-1,y - pci->metrics.ascent + gHeight-1
-       ,pBox->x1,pBox->y1,pBox->x2,pBox->y2
-       ,x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
-       ,x + pci->metrics.leftSideBearing            <  pBox->x2
-       ,y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
-       ,y - pci->metrics.ascent                     <  pBox->y2
-       );
-ErrorF("gHeight %d -> %d\n",gHeight,gHeight-((y - pci->metrics.ascent + gHeight-1) - (pBox->y2-1)));
-#endif
 		 gHeight -= (y - pci->metrics.ascent + gHeight-1) - (pBox->y2-1);
 	      }
 	      if (y - pci->metrics.ascent < pBox->y1) {
 		 d = pBox->y1 - (y - pci->metrics.ascent);
-#if 0
-ErrorF("%4d,%4d %4d,%4d %4d,%4d    %4d,%4d %4d,%4d    %4d,%4d %4d,%4d %d%d%d%d\n"
-       ,x,y,pci->metrics.leftSideBearing,pci->metrics.ascent,gWidth,gHeight
-       ,x + pci->metrics.leftSideBearing, y - pci->metrics.ascent
-       ,x + pci->metrics.leftSideBearing + gWidth-1,y - pci->metrics.ascent + gHeight-1
-       ,pBox->x1,pBox->y1,pBox->x2,pBox->y2
-       ,x + pci->metrics.leftSideBearing + gWidth-1 >= pBox->x1
-       ,x + pci->metrics.leftSideBearing            <  pBox->x2
-       ,y - pci->metrics.ascent         + gHeight-1 >= pBox->y1
-       ,y - pci->metrics.ascent                     <  pBox->y2
-       );
-ErrorF("gHeight %d -> %d  %d\n",gHeight,gHeight-d,d);
-#endif
 		 pb += d * nbyPadGlyph;
 		 gHeight -= d;
 	      }
@@ -348,10 +311,6 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
       if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
          WaitQueue(2);
 DBGOUT(0x5a);
-#if 0
-         ErrorF("CLIP1 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
-                   (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
-#endif
          SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
          SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
 DBGOUT(0x5b);
@@ -488,10 +447,6 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
        */
       if( pBox->y2 >= y - maxAscent && pBox->y1 <= y + maxDescent ) {
          WaitQueue(2);
-#if 0
-         ErrorF("CLIP2 %d %d - %d %d\n",(short)pBox->x1, (short)pBox->y1,
-                   (short)(pBox->x2 - 1), (short)(pBox->y2 - 1));
-#endif
          SETB_CLIP_L_R(pBox->x1, pBox->x2 - 1);
          SETB_CLIP_T_B(pBox->y1, pBox->y2 - 1);
          s3PolyGlyphBlt(pDraw, pGC, x, y, (unsigned int)n, charinfo,

@@ -1,5 +1,5 @@
 .\" Copyright (c) 1996  The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.0 1996/08/16 12:29:59 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86DGA.man,v 3.1 1996/10/03 08:34:30 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
@@ -7,7 +7,7 @@
 ..
 .TH XF86DGA 3X11 "3.2" "XFree86" "X FUNCTIONS"
 .SH NAME
-XF86DGAQueryExtension, XF86DGAQueryVersion, XF86DGAGetVideo, XF86DGADirectVideo, XF86DGASetVidPage, XF86DGASetViewPort, XF86DGAInstallColormap, XF86DGAForkApp \- XFree86-DGA extension interface functions
+XF86DGAQueryExtension, XF86DGAQueryVersion, XF86DGAQueryDirectVideo, XF86DGAGetVideo, XF86DGADirectVideo, XF86DGASetVidPage, XF86DGASetViewPort, XF86DGAViewPortChanged, XF86DGAInstallColormap, XF86DGAForkApp \- XFree86-DGA extension interface functions
 .SH SYNTAX
 .nf
 .LP
@@ -22,6 +22,11 @@ Bool XF86DGAQueryVersion(
     Display *\fIdisplay\fP\^,
     int *\fImajor_version_return\fP\^,
     int *\fIminor_version_return\fP\^);
+.LP
+Bool XF86DGAQueryDirectVideo(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^,
+    int *\fIflags_return\fP\^);
 .LP
 Bool XF86DGAGetVideo(
     Display *\fIdisplay\fP\^,
@@ -46,6 +51,10 @@ Bool XF86DGASetViewPort(
     int \fIscreen\fP\^,
     int \fIx\fP\^,
     int \fIy\fP\^);
+.LP
+Bool XF86DGAViewPortChanged(
+    Display *\fIdisplay\fP\^,
+    int \fIscreen\fP\^);
 .LP
 Bool XF86DGAInstallColormap(
     Display *\fIdisplay\fP\^,
@@ -86,6 +95,14 @@ XF86DGADirectMouse             enable reporting of pointer movement
                                as relative motion
 XF86DGADirectKeyb              enable direct reporting of keyboard events
 .fi
+.IP \fIflags_return\fP 2i
+Reports the DirectVideo features supported by the hardware.  When zero,
+the hardware does not support direct video at all.
+\fIflags\fP may be a a bit-wise combination of the following
+values:
+.nf
+XF86DGADirectPresent           DirectVideo support is present
+.fi
 .IP \fIpage\fP 2i
 Indicates the framebuffer page (bank) to activate for read/write access.
 .IP \fIx\fP 2i
@@ -101,6 +118,10 @@ which allows a local client direct access to the video framebuffer.
 Applications that use these functions must be linked with
 .ZN -lXxf86dga
 .SS "DGA FUNCTIONS"
+The function
+.ZN XF86DGAQueryDirectVideo
+returns the DirectVideo capabilities supported by the graphics device.
+.PP
 The
 .ZN XF86DGAGetVideo
 function is used to get the parameters for the framebuffer.  The parameters
@@ -116,10 +137,20 @@ function sets the currently active framebuffer page (bank).  This is only
 required for hardware which has a banked memory layout (banksize < memsize).
 .PP
 The
-.ZN XF86SetViewPort
+.ZN XF86DGASetViewPort
 function sets the framebuffer coordinates to use for the upper-left corner
 of the view port.
 .PP
+The
+.ZN XF86DGAViewPortChanged
+function checks whether the previous XF86DGASetViewPort command has been
+completed by the hardware, that is, whether a vertical retrace has
+occurred since the previous XF86DGASetViewPort.  This can (must, in fact)
+be used with page-flipping; you can start writing to the next page only
+when this function returns TRUE.  For some devices this will be the case
+immediately after XF86DGASetViewPort, however this function must be used
+so that devices with special support for page-flipping work correctly,
+while providing better performance.
 The
 .ZN XF86DGAInstallColormap
 function is used to install a colormap.  This must be called after DirectVideo
@@ -143,6 +174,6 @@ returns the lowest numbered error and event values
 assigned to the extension.
 .SH SEE ALSO
 XFree86(1), XF86Config(4/5)
-.SH AUTHOR
-Jon Tombs
+.SH AUTHORS
+Jon Tombs, Harm Hanemaayer, Mark Vojkovich.
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.10 1996/03/31 11:48:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/regmach64.h,v 3.11 1996/05/13 06:38:53 dawes Exp $ */
 /*
  * Copyright 1992,1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -290,6 +290,7 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define VCLK1_FB_DIV		0x08
 #define VCLK2_FB_DIV		0x09
 #define VCLK3_FB_DIV		0x0A
+#define PLL_XCLK_CNTL		0x0B
 #define PLL_TEST_CTRL		0x0E
 #define PLL_TEST_COUNT		0x0F
 
@@ -375,6 +376,11 @@ extern unsigned ioCRTC_GEN_CNTL;
 #define MEM_SIZE_4M		0x00000003
 #define MEM_SIZE_6M		0x00000004
 #define MEM_SIZE_8M		0x00000005
+#define MEM_SIZE_ALIAS_GTB	0x0000000F
+#define MEM_SIZE_2M_GTB		0x00000003
+#define MEM_SIZE_4M_GTB		0x00000007
+#define MEM_SIZE_6M_GTB		0x00000009
+#define MEM_SIZE_8M_GTB		0x0000000B
 #define MEM_BNDRY               0x00030000
 #define MEM_BNDRY_0K            0x00000000
 #define MEM_BNDRY_256K          0x00010000

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.32 1996/09/29 14:02:16 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.33 1996/10/06 13:17:44 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -85,6 +85,9 @@ typedef struct {
   unsigned char AuxillaryMode;
   unsigned char Misc;           /* ATC 0x16 */
   unsigned char SegSel;
+  unsigned char HorOverflow;
+  unsigned char ET6KMMAPCtrl;    /* ET6000 -- used for linear memory mapping */
+  unsigned char ET6KVidCtrl1;    /* ET6000 -- used for 15/16 bpp modes */
 #ifdef W32_SUPPORT
   unsigned char VSConf2;        /* CRTC 0x37 */
   GenDACstate gendac;
@@ -156,24 +159,24 @@ vgaVideoChipRec ET4000 = {
   ET4000SetRead,
   ET4000SetWrite,
   ET4000SetReadWrite,
-  0x10000,
-  0x10000,
-  16,
-  0xFFFF,
-  0x00000, 0x10000,
-  0x00000, 0x10000,
-  TRUE,                                 /* Uses 2 banks */
-  VGA_NO_DIVIDE_VERT,
-  {0,},
-  8,
-  FALSE,
-  0,
-  0,
-  FALSE,
-  FALSE,
-  FALSE,
-  NULL,
-  1,
+  0x10000,			/* ChipMapSize */
+  0x10000,			/* ChipSegmentSize, 16k*/
+  16,				/* ChipSegmentShift */
+  0xFFFF,			/* ChipSegmentMask */
+  0x00000, 0x10000,		/* ChipReadBottom, ChipReadTop  */
+  0x00000, 0x10000,		/* ChipWriteBottom,ChipWriteTop */
+  TRUE,				/* ChipUse2Banks, Uses 2 bank */
+  VGA_NO_DIVIDE_VERT,		/* ChipInterlaceType -- don't divide verts */
+  {0,},				/* ChipOptionFlags */
+  8,				/* ChipRounding */
+  FALSE,			/* ChipUseLinearAddressing */
+  0,				/* ChipLinearBase */
+  0,				/* ChipLinearSize */
+  FALSE,			/* ChipHas16bpp */
+  FALSE,			/* ChipHas24bpp */
+  FALSE,			/* ChipHas32bpp */
+  NULL,				/* ChipBuiltinModes */
+  1,				/* ChipClockScaleFactor */
 };
 
 #define new ((vgaET4000Ptr)vgaNewVideoState)
@@ -462,9 +465,8 @@ ET6000Probe()
    int ramtype=0;
    pciConfigPtr pcrp, *pcrpp;
    Bool found=FALSE;
+   unsigned long ET6KMemBase=0;
    int i = 0;
-
-   
 
    /* check the PCI config for an ET6000.
     * Don't bother whether the chipset is already given or not:
@@ -472,8 +474,6 @@ ET6000Probe()
     * the full PCI probe.
     */
 
-#define USE_VGA256_PCI
-#ifdef USE_VGA256_PCI   /* this uses VGA256 specific stuff... */
    if (vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TSENG)
    {
      switch(vgaPCIInfo->ChipType)
@@ -482,6 +482,7 @@ ET6000Probe()
            found=TRUE;
            et4000_type = TYPE_ET6000;
            ET6Kbase = vgaPCIInfo->IOBase & ~0xFF;
+           ET6KMemBase = vgaPCIInfo->MemBase;
            ET6000_PCIPorts[0] = ET6Kbase+0x45;
            ET6000_PCIPorts[1] = ET6Kbase+0x47;
            ET6000_PCIPorts[2] = ET6Kbase+0x67;
@@ -490,33 +491,6 @@ ET6000Probe()
            break;
        }
    }
-
-#else
-   /* There should be no need for this now */
-   pcrpp = xf86scanpci(vga256InfoRec.scrnIndex);
-   if (!pcrpp)
-      return FALSE;
-   while (pcrp = pcrpp[i]) {
-      if (pcrp->_vendor == PCI_TSENG_VENDOR_ID) {
-         switch (pcrp->_device) {
-         case PCI_ET6000:
-           found=TRUE;
-           et4000_type = TYPE_ET6000;
-           ET6Kbase = pcrp->_base1 & ~0xFF;
-           ET6000_PCIPorts[0] = ET6Kbase+0x45;
-           ET6000_PCIPorts[1] = ET6Kbase+0x47;
-           ET6000_PCIPorts[2] = ET6Kbase+0x67;
-           ET6000_PCIPorts[3] = ET6Kbase+0x69;
-           xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_ET6000_PCIPorts, ET6000_PCIPorts);
-           break;
-         }
-       break;
-      }
-      i++;
-   }
-   xf86cleanpci();
-
-#endif  /* USE_VGA256_PCI */
 
    if (found==FALSE) return(FALSE);
    
@@ -530,25 +504,30 @@ ET6000Probe()
    */
   if (!vga256InfoRec.videoRam)
     {
-       outb(vgaIOBase+0x04, 0x34);
-       switch (inb(vgaIOBase+0x05) & 0x80)
+       ramtype = inb(0x3C2) & 0x03;
+       switch (ramtype)
        {
-         case 0x00:  /* MDRAM */
+         case 0x03:  /* MDRAM */
            ramtype=0;
            vga256InfoRec.videoRam = ((inb(ET6Kbase+0x47) & 0x07) + 1) * 8*32; /* number of 8 32kb banks  */
            if (inb(ET6Kbase+0x45) & 0x04)
            {
              vga256InfoRec.videoRam <<= 1;
            }
+           ErrorF("%s %s: ET6000: Detected %d Mb of multi-bank DRAM\n",
+               XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam);
            break;
-         case 0x80:  /* DRAM */
+         case 0x00:  /* DRAM */
            ramtype=1;
            vga256InfoRec.videoRam = 1024 << (inb(ET6Kbase+0x45) & 0x03);
+           ErrorF("%s %s: ET6000: Detected %d Mb of standard DRAM\n",
+               XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam);
            break;
+         default:    /* unknown RAM type */
+           ErrorF("%s %s: ET6000: Unknown video memory type -- assuming 1 MB (unless specified)\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
+           vga256InfoRec.videoRam = 1024;
        }
-       ErrorF("%s %s: ET6000: Detected %d Mb of %sDRAM\n",
-           XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.videoRam,
-           (ramtype==0)?"M":"");
     }
 
   /*
@@ -561,11 +540,62 @@ ET6000Probe()
       ET4000.ChipSetReadWrite = ET4000W32SetReadWrite;
   }
 
+#ifndef W32_ACCEL_SUPPORT
+  /*
+   * Linear mode handling [kmg]
+   * currently only supported for non-accelerated chips.
+   *
+   */
+
+#define DEFAULT_LINEAR_BASE 0x80000000
+
+  /* Use banked addressing by default. */
+  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+  {
+          /* VL-BUS needs special handling here ! */
+          ET4000.ChipUseLinearAddressing = TRUE;
+          if (vga256InfoRec.MemBase != 0)
+          {
+                  /* set linear address base explicitly */
+                  outb(ET6Kbase+0x13, vga256InfoRec.MemBase >> 24);
+                  ET4000.ChipLinearBase = vga256InfoRec.MemBase;
+          }
+          else
+          {
+                  /* first, see if the PCI-bus config told us */
+                  if (ET6KMemBase !=0)
+                    ET4000.ChipLinearBase = ET6KMemBase;
+                  else if (inb(ET6Kbase+0x13) != 0)
+                    ET4000.ChipLinearBase = inb(ET6Kbase+0x13) << 24;
+                  else /* Argghh... nobody set up the linear address base yet. Guess */
+                  {
+                    ErrorF("%s %s: ET6000: Could not determine linear memory base address."
+                           " Setting it to 0x%X\n",
+                           XCONFIG_PROBED, vga256InfoRec.name, DEFAULT_LINEAR_BASE);
+                    ET4000.ChipLinearBase = DEFAULT_LINEAR_BASE;
+                    outb(ET6Kbase+0x13, DEFAULT_LINEAR_BASE >> 24);
+                  }
+          }
+          ET4000.ChipLinearSize = vga256InfoRec.videoRam * 1024;
+  }
+
+  ET4000.ChipHas16bpp = TRUE;
+  ET4000.ChipHas24bpp = TRUE;
+  ET4000.ChipHas32bpp = TRUE;
+
+  OFLG_SET(OPTION_LINEAR, &ET4000.ChipOptionFlags);
+#endif
+
   ClockSelect = ET6000ClockSelect;
   OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
   OFLG_SET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions);
+
+
+  /*
+   * clock related stuff
+   */
   
-  outb(ET6Kbase+067, 0x0f);
+  outb(ET6Kbase+0x67, 0x0f);
   ErrorF("%s %s: ET6000: CLKDAC ID: 0x%X\n",
       XCONFIG_PROBED, vga256InfoRec.name, inb(ET6Kbase+0x69));
 
@@ -848,6 +878,11 @@ ET4000FbInit()
 #ifndef MONOVGA
   int useSpeedUp;
 
+  if (xf86Verbose && ET4000.ChipUseLinearAddressing)
+          ErrorF("%s %s: %s: Using linear framebuffer at 0x%08X (PCI bus)\n",
+                  XCONFIG_PROBED, vga256InfoRec.name,
+                  vga256InfoRec.chipset, ET4000.ChipLinearBase);
+
   if (vga256InfoRec.videoRam > 1024)
     useSpeedUp = vga256InfoRec.speedup & SPEEDUP_ANYCHIPSET;
   else
@@ -958,18 +993,6 @@ ET4000Restore(restore)
        outb(vgaIOBase + 4, 0x31);
        outb(vgaIOBase + 5, i | 0x40);
 
-#if EXTENDED_DEBUG
-       outb(0x3c7,2);				/* clock f2 */
-       m = inb(0x3c9);
-       n = inb(0x3c9);
-       ErrorF("--------  Old Clock f2: %9d\n",
-              14318 * (m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) );
-       outb(0x3c7,0x0e);			/* pll ctrl */
-       pllctr = inb(0x3c9);
-       ErrorF("--------  Old PLL Ctrl: 0x%2x\n",pllctr);
-       pllctr = inb(0x3c6);
-       ErrorF("--------  Old Cmd Reg: 0x%2x\n",pllctr);
-#endif
        outb(0x3c6, restore->gendac.cmd_reg);      /* Enhanced command register*/
        outb(0x3c8, 2);                            /* index to f2 reg */
        outb(0x3c9, restore->gendac.PLL_f2_M);     /* f2 PLL M divider */
@@ -980,20 +1003,6 @@ ET4000Restore(restore)
        outb(0x3c8, restore->gendac.PLL_w_idx);    /* PLL write index */
        outb(0x3c7, restore->gendac.PLL_r_idx);    /* PLL read index */
 
-#if EXTENDED_DEBUG
-       outb(0x3c7,2);				/* clock f2 */
-       m = inb(0x3c9);
-       n = inb(0x3c9);
-       ErrorF("--------  New Clock f2: %9d\n",
-              14318 * (m + 2) / ((n & 0x1f)+2) / (1 << ((n & 0x60) >> 5)) );
-       outb(0x3c7,0x0e);			/* pll ctrl */
-       pllctr = inb(0x3c9);
-       ErrorF("--------  New PLL Ctrl: 0x%2x\n",pllctr);
-       pllctr = inb(0x3c6);
-       ErrorF("--------  New Cmd Reg: 0x%2x\n\n",pllctr);
-       outb(0x3c8, restore->gendac.PLL_w_idx);    /* PLL write index */
-       outb(0x3c7, restore->gendac.PLL_r_idx);    /* PLL read index */
-#endif
        outb(vgaIOBase + 4, 0x31);
        outb(vgaIOBase + 5, i & ~0x40);
     }
@@ -1004,18 +1013,6 @@ ET4000Restore(restore)
 	* are not too good.
 	*/
 
-#if EXTENDED_DEBUG
-       m = STG1703getIndex(0x24);
-       n = inb(0x3c6);				/* use autoincrement */
-       ErrorF("--------  Old Clock f2: %9d\n",
-              14318 * ((m&0x7f) + 2) / ((n&0x1f)+2) / (1 << ((n&0x60) >> 5)) );
-       pllctr = STG1703getIndex(3);
-       ErrorF("--------  Old Pixel Mode Select: 0x%2x\n",pllctr);
-       STG1703magic(0);
-       xf86dactopel();
-       pllctr = xf86getdaccomm();
-       ErrorF("--------  Old Cmd Reg: 0x%2x\n",pllctr);
-#endif
        STG1703setIndex(0x24,restore->gendac.PLL_f2_M);
        outb(0x3c6,restore->gendac.PLL_f2_N);      /* use autoincrement */
        STG1703setIndex(0x03,restore->gendac.PLL_ctrl);/* write same value to */
@@ -1025,19 +1022,6 @@ ET4000Restore(restore)
        STG1703magic(0);
        xf86dactopel();
        xf86setdaccomm(restore->gendac.cmd_reg);   /* write enh command reg */
-
-#if EXTENDED_DEBUG
-       m = STG1703getIndex(0x24);
-       n = inb(0x3c6);				/* use autoincrement */
-       ErrorF("--------  New Clock f2: %9d\n",
-              14318 * ((m&0x7f) + 2) / ((n&0x1f)+2) / (1 << ((n&0x60) >> 5)) );
-       pllctr = STG1703getIndex(3);
-       ErrorF("--------  New Pixel Mode Select: 0x%2x\n",pllctr);
-       STG1703magic(0);
-       xf86dactopel();
-       pllctr = xf86getdaccomm();
-       ErrorF("--------  New Cmd Reg: 0x%2x\n\n",pllctr);
-#endif
     }
     if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions))
     {
@@ -1059,6 +1043,14 @@ ET4000Restore(restore)
        outb(ET6Kbase+0x67, i);
     }
   }
+
+  if (et4000_type == TYPE_ET6000)
+  {
+    outb(ET6Kbase+0x40, restore->ET6KMMAPCtrl);
+    outb(ET6Kbase+0x58, restore->ET6KVidCtrl1);
+  }
+  
+  outw(vgaIOBase + 4, (restore->HorOverflow << 8)  | 0x3F);
  
   vgaHWRestore((vgaHWPtr)restore);
 
@@ -1198,6 +1190,15 @@ ET4000Save(save)
        outb(ET6Kbase+0x67, i);
     }
   }
+
+  if (et4000_type == TYPE_ET6000)
+  {
+    save->ET6KMMAPCtrl = inb(ET6Kbase+0x40);
+    save->ET6KVidCtrl1 = inb(ET6Kbase+0x58);
+  }
+  
+  outb(vgaIOBase + 4, 0x3F); save->HorOverflow = inb(vgaIOBase + 5);
+
   return ((void *) save);
 }
 
@@ -1212,6 +1213,7 @@ static Bool
 ET4000Init(mode)
      DisplayModePtr mode;
 {
+  int row_offset;
 
 #ifdef W32_ACCEL_SUPPORT
   int pixMuxShift = 0;
@@ -1264,7 +1266,7 @@ ET4000Init(mode)
   if (et4000_type >= TYPE_ET6000) new->std.Sequencer[1] |= 0x04;
 #else
   new->std.Attribute[16] = 0x01;  /* use the FAST 256 Color Mode */
-  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3;
+  new->std.CRTC[19] = vga256InfoRec.displayWidth >> 3; /* overruled by 16/24/32 bpp code */
 #endif
   new->std.CRTC[20] = 0x60;
   new->std.CRTC[23] = 0xAB;
@@ -1362,12 +1364,9 @@ ET4000Init(mode)
          && (    (W32RamdacType == STG1703_DAC)
               || (W32RamdacType == ICS5341_DAC)) )
     { 
-      /* for pixmux: must use post-div of 4 on ICS GenDAC!
+      /* for pixmux: must use post-div of 4 on ICS GenDAC clock generator!
        */
 
-#if EXTENDED_DEBUG
-       ErrorF("--------  Requested Clock %9d\n",mode->SynthClock);
-#endif
        if (mode->Flags & V_PIXMUX)
        {
          commonCalcClock(mode->SynthClock,1,1,2,3,100000,vga256InfoRec.dacSpeed*2+1, 
@@ -1457,6 +1456,58 @@ ET4000Init(mode)
       new->Compatibility = (new->Compatibility & 0xFD) | 
       				((new->std.NoClock & 0x04) >> 1);
     }
+  
+  /*
+   * linear mode handling
+   */
+
+   if (et4000_type==TYPE_ET6000)
+   {
+      if (ET4000.ChipUseLinearAddressing)
+      {
+         new->ET6KMMAPCtrl |= 0x09;
+      }
+      else
+      {
+         new->ET6KMMAPCtrl &= ~0x09;
+      }
+   }
+  
+  /*
+   * 16/24/32 bpp handling -- currently only for ET60000
+   */
+
+   row_offset = vga256InfoRec.displayWidth >> 3;
+
+   if (et4000_type==TYPE_ET6000)
+   {
+     int BytesPerPix = vga256InfoRec.bitsPerPixel>>3;
+
+     new->Misc &= 0xCF; /* clear BPP bits -- This needs to be modified for pixel multiplexing */
+     new->Misc |= (BytesPerPix-1) << 4; /* set BPP bits for desired mode */
+     row_offset *= BytesPerPix;
+     
+     if (vga256InfoRec.bitsPerPixel == 16)
+     {
+        if (xf86weight.red == 5 && xf86weight.green == 5 && xf86weight.blue == 5)
+            new->ET6KVidCtrl1 &= ~0x02; /* 5-5-5 RGB mode */
+        if (xf86weight.red == 5 && xf86weight.green == 6 && xf86weight.blue == 5)
+            new->ET6KVidCtrl1 |=  0x02; /* 5-6-5 RGB mode */
+     }
+   }
+
+  /*
+   * Horizontal overflow settings: allow for modes with > 2048 pixels per line
+   */
+
+   new->std.CRTC[19] = row_offset;
+   new->std.Attribute[17] = 0x00; /* overscan color is set to 0xFF by main VGA code. Why? */
+   new->HorOverflow = ((((mode->CrtcHTotal>>3)-5) & 0x100) >> 8)
+     | ((((mode->CrtcHDisplay>>3)-1) & 0x100) >> 7)
+       | ((((mode->CrtcHSyncStart>>3)-1) & 0x100) >> 6)
+         | (((mode->CrtcHSyncStart>>3) & 0x100) >> 4)
+           | ((row_offset & 0x200) >> 3)
+             | ((row_offset & 0x100) >> 1);
 
   return(TRUE);
 }
@@ -1481,6 +1532,14 @@ ET4000Adjust(x, y)
   outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   outw(vgaIOBase + 4, ((Base & 0x0F0000) >> 8) | 0x33);
+
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
+#endif
 }
 
 /*

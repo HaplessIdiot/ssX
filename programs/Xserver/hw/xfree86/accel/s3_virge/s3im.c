@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.4 1996/10/06 13:15:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.5 1996/10/08 13:12:00 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -108,7 +108,7 @@ s3ImageInit ()
    s3Bpp = s3InfoRec.bitsPerPixel / 8;
 
    s3BppDisplayWidth = s3Bpp * s3DisplayWidth;
-   s3BppPMask = (1UL << s3InfoRec.bitsPerPixel) - 1;
+   s3BppPMask = (1UL << s3InfoRec.depth) - 1;
 
    for (i = 0; i < 256; i++) {
       reorder (i, s3SwapBits[i]);
@@ -410,12 +410,13 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    w *= s3Bpp;
    psrc += pwidth * py;
 
-   for ( ; h--; ) {
-      CARD32 *psrcs = (CARD32 *)(psrc + px * s3Bpp);
-      for (i = 0; i < w; i+=4)
-	 *IMG_TRANS = ldl_u(psrcs++);
-      psrc += pwidth;
-   }
+   if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
+      for ( ; h--; ) {
+	 CARD32 *psrcs = (CARD32 *)(psrc + px * s3Bpp);
+	 for (i = 0; i < w; i+=4)
+	    *IMG_TRANS = ldl_u(psrcs++);
+	 psrc += pwidth;
+      }
    WaitIdle();
    if (w != origwidth) {
       SETB_CLIP_L_R(0, s3DisplayWidth-1);
@@ -565,6 +566,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 #endif
 
 
+   if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
    for (j = 0; j < h; j++) {
       CARD32 wrapped=0, *pnext=NULL;
       CARD32 *pend;
@@ -587,7 +589,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 	 break;
       case 3:
 	 wrapped = (pline[0] << 24)
-	    | ((ldl_u(pw - 3) & 0xffffff) << 0);
+	    | ((ldl_u(pline + pw - 3) & 0xffffff) << 0);
 	 pnext = (CARD32 *)(pline + 1);
       }
 
@@ -692,6 +694,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     * When the source bitmap is properly aligned, max 32 pixels wide
     * and nonrepeating, use this faster loop instead.
     */
+   if (alu != ROP_0 && alu != ROP_1 && alu != ROP_D && alu != ROP_Dn)
    if ((x & 7) == 0 && w <= 32 && x+w <= pw && y+h <= ph) {
       CARD32 pix;
       unsigned char *pnt;

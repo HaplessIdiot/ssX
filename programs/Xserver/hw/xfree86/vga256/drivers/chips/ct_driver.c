@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c /main/6 1996/01/12 12:16:39 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.22 1996/09/29 13:39:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.23 1996/10/03 08:46:29 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -2478,6 +2478,13 @@ CHIPSAdjust(x, y)
 	tmp = inb(0x3D7);
 	outb(0x3D7, ((Base & 0x030000) >> 16) | (tmp & 0xF8));
     }
+#ifdef XFreeXDGA
+    if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+	/* Wait until vertical retrace is in progress. */
+	while (inb(vgaIOBase + 0xA) & 0x08);
+	while (!(inb(vgaIOBase + 0xA) & 0x08));
+    }
+#endif
 }
 
 static int

@@ -1,5 +1,5 @@
 /* $XConsortium: al_driver.c /main/6 1996/01/12 12:16:15 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.12 1996/09/14 13:11:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/al2101/al_driver.c,v 3.13 1996/09/29 14:01:38 dawes Exp $ */
 /*
  * Copyright 1994 by Paolo Severini, Italy.
  *
@@ -365,6 +365,13 @@ AL2101Adjust(x, y)
   outw(vgaIOBase + 4, (Base & 0x00FF00)        | 0x0C);
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8)   | 0x0D);
   outw(vgaIOBase + 4, ((Base & 0x070000) >> 8) | 0x20);
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
+#endif
 }
 
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.56 1996/09/22 05:03:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.57 1996/09/23 13:26:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1193,13 +1193,6 @@ s3AdjustFrame(int x, int y)
       }
    }
 
-#if 0
-   /* wait for vertical retrace */
-   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ;
-   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x08) ;
-   while ((inb(vgaIOBase + 0x0A) & 0x08) == 0x00) ;
-#endif
-
    outb(vgaCRIndex, 0x31);
    outb(vgaCRReg, ((Base & 0x030000) >> 12) | s3Port31);
    s3Port51 &= ~0x03;
@@ -1224,6 +1217,14 @@ s3AdjustFrame(int x, int y)
          s3RepositionCursor(s3savepScreen);
       }
 #ifdef XFreeXDGA
+   }
+#endif
+
+#ifdef XFreeXDGA
+   if (s3InfoRec.directMode & XF86DGADirectGraphics) {
+      /* Wait until vertical retrace is in progress. */
+      while (inb(vgaIOBase + 0xA) & 0x08);
+      while (!(inb(vgaIOBase + 0xA) & 0x08));
    }
 #endif
 }

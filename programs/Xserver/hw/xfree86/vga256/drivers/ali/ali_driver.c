@@ -4,7 +4,7 @@
  *
  *
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.11 1996/09/14 13:11:15 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.12 1996/09/29 14:01:42 dawes Exp $
  */
 
 #include "X.h"
@@ -585,6 +585,14 @@ ALIAdjust(x, y)
    exceeds 0xFFFF to fix the 640x480 screen scrolling back problem. */
 
   outw(vgaIOBase + 4, ((Base & 0x070000) >> 8) | 0x20);
+
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
+#endif
 }
 
 /*

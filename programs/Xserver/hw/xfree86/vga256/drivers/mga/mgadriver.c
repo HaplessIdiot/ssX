@@ -32,7 +32,7 @@
  *		RAMDAC timing, and BIOS stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.5 1996/10/10 14:04:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.6 1996/10/13 11:21:08 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -841,62 +841,17 @@ MGAProbe()
 }
 
 /*
- * MGAPitchAdjust --
+ * TestAndSetRounding
  *
- * This function adjusts the display width (pitch) once the virtual
- * width is known.  It returns the display width.
+ * used in MGAPitchAdjust (see there) - ansi
  */
+
 static int
-MGAPitchAdjust()
+TestAndSetRounding(pitch)
+	int pitch;
 {
-	int pitch = 0;
 	int size;
-	int accel;
-	
-	/* XXX ajv - 512, 576, and 1536 may not be supported
-	   virtual resolutions. see sdk pp 4-59 for more
-	   details. Why anyone would want less than 640 is 
-	   bizarre. (maybe lots of pixels tall?) */
 
-#if 0		
-	int width[] = { 512, 576, 640, 768, 800, 960, 
-			1024, 1152, 1280, 1536, 1600, 1920, 2048, 0 };
-#else
-	int width[] = { 640, 768, 800, 960, 1024, 1152, 1280,
-			1600, 1920, 2048, 0 };
-#endif
-	int i;
-
-	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
-	    !OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
-	{
-		accel = TRUE;
-		
-		for (i = 0; width[i]; i++)
-		{
-			if (width[i] >= vga256InfoRec.virtualX)
-			{
-				pitch = width[i];
-				break;
-			}
-		}
-		if (pitch != 0)
-		{
-			ErrorF("%s %s: Display width set to %d\n",
-				XCONFIG_PROBED, vga256InfoRec.name, pitch);
-		}
-		else
-		{
-			/* Need to handle this better */
-			pitch = 2048;
-		}
-	}
-	else
-	{
-		accel = FALSE;
-		pitch = vga256InfoRec.virtualX;
-	}
-	
 	if (vga256InfoRec.videoRam <= 2048)
 		size = 0;
 	else
@@ -935,7 +890,7 @@ MGAPitchAdjust()
 		else
                 {
 			MGA.ChipRounding = 128;
-			MGABppShft = 0;
+			MGABppShft = 2;
 			MGADAClong = 0x5F2C1100;    /* interleave */
 			MGAInitDAC[2] = 0x5C;       /* 64 bits */
 		}
@@ -980,17 +935,97 @@ MGAPitchAdjust()
 	}
 
 	if (pitch % MGA.ChipRounding)
+		pitch = pitch + MGA.ChipRounding - (pitch % MGA.ChipRounding);
+
+	return pitch;
+}
+
+/*
+ * MGAPitchAdjust --
+ *
+ * This function adjusts the display width (pitch) once the virtual
+ * width is known.  It returns the display width.
+ */
+static int
+MGAPitchAdjust()
+{
+	int pitch = 0;
+	int accel;
+	
+	/* XXX ajv - 512, 576, and 1536 may not be supported
+	   virtual resolutions. see sdk pp 4-59 for more
+	   details. Why anyone would want less than 640 is 
+	   bizarre. (maybe lots of pixels tall?) */
+
+#if 0		
+	int width[] = { 512, 576, 640, 768, 800, 960, 
+			1024, 1152, 1280, 1536, 1600, 1920, 2048, 0 };
+#else
+	int width[] = { 640, 768, 800, 960, 1024, 1152, 1280,
+			1600, 1920, 2048, 0 };
+#endif
+	int i;
+
+	if (!OFLG_ISSET(OPTION_NOACCEL, &vga256InfoRec.options) &&
+	    !OFLG_ISSET(OPTION_NO_BITBLT, &vga256InfoRec.options))
+	{
+		accel = TRUE;
+		
+		for (i = 0; width[i]; i++)
+		{
+			if (width[i] >= vga256InfoRec.virtualX && 
+			    TestAndSetRounding(width[i]) == width[i])
+			{
+				pitch = width[i];
+				break;
+			}
+		}
+	}
+	else
+	{
+		accel = FALSE;
+		pitch = TestAndSetRounding(vga256InfoRec.virtualX);
+	}
+
+
+	if (!pitch)
 	{
 		if(accel) 
-			FatalError("MGA: Can't display more than 2 MB with"
-				" this display width\n");
-				 
-		pitch = pitch + MGA.ChipRounding -
-			(pitch % MGA.ChipRounding);
-		ErrorF("%s %s: Display width set to %d (a multiple "
-			"of %d)\n", XCONFIG_PROBED, vga256InfoRec.name,
-			pitch, MGA.ChipRounding);
+		{
+			FatalError("MGA: Can't find pitch, try using option"
+				   "\"no_accel\"\n");
+		}
+		else
+		{
+			FatalError("MGA: Can't find pitch (Oups, should not"
+				   "happen!)\n");
+		}
 	}
+
+	if (pitch != vga256InfoRec.virtualX)
+	{
+		if (accel)
+		{
+			ErrorF("%s %s: Display pitch set to %d (a multiple "
+			       "of %d & possible for acceleration)\n",
+			       XCONFIG_PROBED, vga256InfoRec.name,
+			       pitch, MGA.ChipRounding);
+		}
+		else
+		{
+			ErrorF("%s %s: Display pitch set to %d (a multiple "
+			       "of %d)\n",
+			       XCONFIG_PROBED, vga256InfoRec.name,
+			       pitch, MGA.ChipRounding);
+		}
+	}
+#ifdef DEBUG
+	else
+	{
+		ErrorF("%s %s: pitch is %d, virtual x is %d, display width is %d\n", XCONFIG_PROBED, vga256InfoRec.name,
+		       pitch, vga256InfoRec.virtualX, vga256InfoRec.displayWidth);
+	}
+#endif
 
 	return pitch;
 }

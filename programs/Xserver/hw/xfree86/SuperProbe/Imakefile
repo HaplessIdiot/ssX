@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/26 13:30:06 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.16 1996/09/24 13:52:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.17 1996/10/06 13:12:49 dawes Exp $
 
 #if defined(SVR3Architecture) || defined(SVR4Architecture) || defined(SCOArchitecture)
 # define OSModule OS_SYSV
@@ -38,12 +38,11 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Imakefile,v 3.16 1996/
 # define OSModule OS_Os2
   CCOPTIONS = -Zmts
 #endif
-#if defined(NetBSDArchitecture) \
+#if defined(OpenBSDArchitecture) || defined(NetBSDArchitecture) \
    && ((OSMajorVersion == 1 && OSMinorVersion >= 1) || OSMajorVersion >= 2)
   IOPERMDEFINES = -DUSE_I386_IOPL
   SYS_LIBRARIES = -li386
 #endif
-
 OS_SRC = OSModule.c $(OS_IO_SRC)
 OS_OBJ = OSModule.o $(OS_IO_OBJ)
 BASE_SRC = MDA.c Herc.c CGA.c VGA.c RamDac.c MemProbe.c PCI.c

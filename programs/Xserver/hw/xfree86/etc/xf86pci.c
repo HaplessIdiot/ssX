@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.7 1996/03/29 22:17:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/xf86pci.c,v 3.8 1996/10/03 08:37:48 dawes Exp $ */
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -60,6 +60,9 @@
 #include <machine/sysarch.h>
 #endif
 #define GCCUSESGAS
+#endif
+#if defined(__OpenBSD__)
+#include <machine/sysarch.h>
 #endif
 #if defined(__bsdi__)
 #include <sys/file.h>
@@ -447,8 +450,15 @@ xf86EnableIOPorts(int dummy)
         exit(1);
     }
 #endif
+#if defined(__bsdi__)
+    if (ioctl(io_fd, PCCONENABIOPL, 0) < 0) {
+        perror("ioctl(PCCONENABIOPL)");
+        exit(1);
+    }
+#endif
+#endif
 #if defined(__NetBSD__)
-#if !defined(NetBSD1_1)
+#if !defined(USE_I386_IOPL)
     if ((io_fd = open("/dev/io", O_RDWR, 0)) < 0) {
 	perror("/dev/io");
 	exit(1);
@@ -458,15 +468,14 @@ xf86EnableIOPorts(int dummy)
 	perror("i386_iopl");
 	exit(1);
     }
-#endif /* NetBSD1_1 */
-#endif /* __NerBSD__ */
-#if defined(__bsdi__)
-    if (ioctl(io_fd, PCCONENABIOPL, 0) < 0) {
-        perror("ioctl(PCCONENABIOPL)");
-        exit(1);
+#endif /* USE_I386_IOPL */
+#endif /* __NetBSD__ */
+#if defined(__OpenBSD__)
+    if (i386_iopl(1) < 0) {
+	perror("i386_iopl");
+	exit(1);
     }
-#endif
-#endif
+#endif /* __OpenBSD__ */
 #if defined(MACH386)
     if ((io_fd = open("/dev/iopl", O_RDWR, 0)) < 0) {
         perror("/dev/iopl");

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.39 1996/08/18 01:49:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.40 1996/09/14 13:09:20 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -910,6 +910,7 @@ p9000AdjustFrame(xoff, yoff)
 	  p9000Store(SRTCTL, CtlBase, (srtctl | 0x8L));
 	}
     }
+    /* Is a retrace wait required here? */
 #endif /* XFreeXDGA */
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.18 1996/10/03 08:46:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.19 1996/10/06 13:17:19 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -2024,6 +2024,14 @@ int x, y;
 	 * the appropriate extended registers.
 	 */
 	modinx(vgaIOBase + 4, 0x40, 0x07, (Base & 0x070000) >> 16);
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

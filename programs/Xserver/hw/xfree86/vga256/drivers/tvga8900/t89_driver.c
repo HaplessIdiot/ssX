@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.44 1996/09/23 13:27:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.45 1996/09/29 14:02:45 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -1727,6 +1727,14 @@ TVGA8900Adjust(x, y)
 	temp = inb(vgaIOBase + 5) & 0xF8;
 	temp |= (base & 0xE0000) >> 17;
 	outb(vgaIOBase + 5, temp);
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

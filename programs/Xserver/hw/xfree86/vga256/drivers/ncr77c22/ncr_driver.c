@@ -1,5 +1,5 @@
 /* $XConsortium: ncr_driver.c /main/6 1996/01/12 12:18:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.14 1996/09/14 13:12:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ncr77c22/ncr_driver.c,v 3.15 1996/09/29 14:02:24 dawes Exp $ */
 /* Copyright 1992 NCR Corporation - Dayton, Ohio, USA */
 
 
@@ -615,6 +615,14 @@ NCRAdjust(x, y)
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   outb(vgaIOBase+4,0x31); temp=inb(vgaIOBase+5);	/* Extended Display Position Register */
   outb(vgaIOBase+5, ((Base&0x0F0000)>>16)|(temp&0xF0));
+
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
+#endif
 }
 
 /*

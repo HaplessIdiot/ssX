@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xconsole.c /main/22 1995/12/07 13:52:50 kaleb $
- * $XFree86: xc/programs/xconsole/xconsole.c,v 3.13 1996/06/10 09:17:57 dawes Exp $
+ * $XFree86: xc/programs/xconsole/xconsole.c,v 3.14 1996/07/08 10:36:54 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -192,7 +192,7 @@ OpenConsole ()
 	{
 	    struct stat sbuf;
 	    /* must be owner and have read/write permission */
-#if !defined(__NetBSD__) && !defined(Lynx) && !defined(__EMX__)
+#if !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(Lynx) && !defined(__EMX__)
 	    if (!stat("/dev/console", &sbuf) &&
 		(sbuf.st_uid == getuid()) &&
 		!access("/dev/console", R_OK|W_OK))

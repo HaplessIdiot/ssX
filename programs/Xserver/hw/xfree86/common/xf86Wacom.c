@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Wacom.c /main/6 1996/01/26 13:37:08 kaleb $ */
 /*
- * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
+ * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.21 1996/10/06 13:16:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.22 1996/10/13 11:19:36 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -39,6 +39,7 @@
 #include "scrnintstr.h"
 #include "XI.h"
 #include "XIproto.h"
+#include "keysym.h"
 
 #if defined(sun) && !defined(i386)
 #define POSIX_TTY
@@ -223,6 +224,52 @@ static const char * setup_string = WC_MULTI WC_UPPER_ORIGIN
  * private flags
  *****************************************************************************/
 #define TILT_FLAG	1
+
+/******************************************************************************
+ * Function/Macro keys variables
+ *****************************************************************************/
+static KeySym wacom_map[] = 
+{
+    NoSymbol,	/* 0x00 */
+    XK_F1,	/* 0x01 */
+    XK_F2,	/* 0x02 */
+    XK_F3,	/* 0x03 */
+    XK_F4,	/* 0x04 */
+    XK_F5,	/* 0x05 */
+    XK_F6,	/* 0x06 */
+    XK_F7,	/* 0x07 */
+    XK_F8,	/* 0x08 */
+    XK_F8,	/* 0x09 */
+    XK_F10,	/* 0x0a */
+    XK_F11,	/* 0x0b */
+    XK_F12,	/* 0x0c */
+    XK_F13,	/* 0x0d */
+    XK_F14,	/* 0x0e */
+    XK_F15,	/* 0x0f */
+    XK_F16,	/* 0x10 */
+    XK_F17,	/* 0x11 */
+    XK_F18,	/* 0x12 */
+    XK_F19,	/* 0x13 */
+    XK_F20,	/* 0x14 */
+    XK_F21,	/* 0x15 */
+    XK_F22,	/* 0x16 */
+    XK_F23,	/* 0x17 */
+    XK_F24,	/* 0x18 */
+    XK_F25,	/* 0x19 */
+    XK_F26,	/* 0x1a */
+    XK_F27,	/* 0x1b */
+    XK_F28,	/* 0x1c */
+    XK_F29,	/* 0x1d */
+    XK_F30,	/* 0x1e */
+    XK_F31,	/* 0x1f */
+    XK_F32	/* 0x20 */
+};
+
+/* minKeyCode = 8 because this is the min legal key code */
+static KeySymsRec wacom_keysyms = {
+  /* map	minKeyCode	maxKC	width */
+  wacom_map,	8,		0x20,	1
+};
 
 /******************************************************************************
  * external declarations
@@ -724,18 +771,30 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		}
 	
 		/*
-		* eraser is reported as button 4 and 5 of the stylus.
+	        * The eraser is reported as button 4 and 5 of the stylus.
 		* if we haven't an independent device for the eraser
 		* report the button as button 3 of the stylus.
 		*/
-		if ((buttons > 3) && (priv->wcmEraser) &&
+		if ((buttons > 3) && priv->wcmEraser &&
 		    ((is_proximity && !*pprox && buttons == 4) ||
 		     (*pprox == ERASER_PROX))) {
 		    DBG(10, ErrorF("Eraser\n"));
 		    local = priv->wcmEraser;
-		} else {  
-		    DBG(10, ErrorF("Stylus\n"));
-		    local = priv->wcmStylus;
+		} else {
+		    /*
+		    * When we are out of proximity with the eraser the
+		    * button 4 isn't reported so we must check the
+		    * previous proximity device.
+		    */
+		    if (priv->wcmEraser && !is_proximity &&
+			(*pprox == ERASER_PROX)) {
+			DBG(10, ErrorF("Eraser\n"));
+			local = priv->wcmEraser;
+		    }
+		    else {
+			DBG(10, ErrorF("Stylus\n"));
+			local = priv->wcmStylus;
+		    }
 		}
 	    }
 	    else {
@@ -856,20 +915,23 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		    *pbuttons = 0;
 		}
 		if (!is_core_pointer) {
-		    if (*pprox) {
-			xf86PostProximityEvent(device, 0, 0, 5, rx, ry, z,
-					       tx, ty);
-		    }
 		    /* macro button management */
 		    if (buttons) {
 			int	macro = z / 2;
 
-			DBG(6, ErrorF("macro=%d buttons=%d\n", macro, buttons));
+			DBG(6, ErrorF("macro=%d buttons=%d wacom_map[%d]=%x\n",
+				      macro, buttons, macro, wacom_map[macro]));
 			
-			xf86PostButtonEvent(device, is_absolute, macro, 1, 0, 5,
-					    0, 0, buttons, tx, ty);
-			xf86PostButtonEvent(device, is_absolute, macro, 0, 0, 5,
-					    0, 0, buttons, tx, ty);
+			xf86PostKeyEvent(device, macro, 1,
+					 is_absolute, 0, 5,
+					 0, 0, buttons, tx, ty);
+			xf86PostKeyEvent(device, macro, 0,
+					 is_absolute, 0, 5,
+					 0, 0, buttons, tx, ty);
+		    }
+		    if (*pprox) {
+			xf86PostProximityEvent(device, 0, 0, 5, rx, ry, z,
+					       tx, ty);
 		    }
 		}
 		*pprox = 0;
@@ -1223,6 +1285,7 @@ xf86WcmProc(DeviceIntPtr       pWcm,
     CARD8                 map[(32 << 4) + 1];
     int                   nbaxes;
     int                   nbbuttons;
+    KeySymsRec            keysyms;
     int                   loop;
     LocalDevicePtr        local = (LocalDevicePtr)pWcm->public.devicePrivate;
     WacomDevicePtr        priv = (WacomDevicePtr)PRIVATE(pWcm);
@@ -1239,11 +1302,16 @@ xf86WcmProc(DeviceIntPtr       pWcm,
       
 	    nbaxes = 5;			/* X, Y, Pressure, Tilt-X, Tilt-Y */
 	    
-	    if (DEVICE_ID(local->private_flags) == ERASER_ID) {
+	    switch(DEVICE_ID(local->private_flags)) {
+	    case ERASER_ID:
 		nbbuttons = 1;
-	    }
-	    else {
-		nbbuttons = 32;		/* 16 buttons max but 32 macro buttons max */
+		break;
+	    case STYLUS_ID:
+		nbbuttons = 4;
+		break;
+	    default:
+		nbbuttons = 16;
+		break;
 	    }
 	    
 	    for(loop=1; loop<=nbbuttons; loop++) map[loop] = loop;
@@ -1265,9 +1333,14 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 		ErrorF("unable to init ptr feedback\n");
 		return !Success;
 	    }
-          
+	    
 	    if (InitProximityClassDeviceStruct(pWcm) == FALSE) {
-		ErrorF("unable to init proximity class device\n"); 
+		ErrorF("unable to init proximity class device\n");
+		return !Success;
+	    }
+
+	    if (InitKeyClassDeviceStruct(pWcm, &wacom_keysyms, NULL) == FALSE) {
+		ErrorF("unable to init key class device\n"); 
 		return !Success;
 	    }
 

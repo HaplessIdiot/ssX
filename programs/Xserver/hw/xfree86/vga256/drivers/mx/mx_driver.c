@@ -1,5 +1,5 @@
 /* $XConsortium: mx_driver.c /main/6 1996/01/12 12:18:24 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.13 1996/09/14 13:12:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.14 1996/09/29 14:02:22 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -737,6 +737,14 @@ unsigned char temp;
 	temp &= 0xFC;
 	temp |= ((Base & 0x30000) >> 16);
 	outb(0x3C5,temp);
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

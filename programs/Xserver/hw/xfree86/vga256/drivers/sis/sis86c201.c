@@ -27,7 +27,7 @@
  *
  * Currently only works for VGA16 with Non-Interlaced modes.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.11 1996/09/14 13:13:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis86c201.c,v 3.12 1996/09/29 14:02:40 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -553,6 +553,14 @@ SISAdjust(x, y)
 	outb(0x3C4, 0x27); temp = inb(0x3C5) & 0xF0;
 	temp |= (base & 0x0F0000) >> 16;
 	outb(0x3C5, temp);
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

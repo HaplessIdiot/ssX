@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.33 1996/09/25 14:15:00 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.34 1996/10/13 11:18:37 dawes Exp $ 
 .TH XF86_SVGA 1 "Version 3.2"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -13,22 +13,22 @@ Super-VGA cards.  It is derived from
 the
 .I X386
 server provided with X11R5.
-Note: 16-bit TrueColor is currently only supported for some
-Cirrus and ARK chips, and 24-bit TrueColor is only supported for some
-Cirrus chips.
+Note: 16-bit TrueColor is currently only supported for some Cirrus and ARK
+chips and the ET6000, and 24-bit TrueColor is only supported for some Cirrus
+chips and the ET6000.
 .SH CONFIGURATIONS
 .PP
 The
 .I XF86_SVGA
 server supports the following popular SuperVGA chipsets in 256 color mode.
-Virtual resolutions up to (approximately) 1152x900 are supported, using
-(up to) 1Mb of display memory.  The Western Digital WD90C33, some of
-the Cirrus chipsets, the Oak OTI087 and the ET6000 support
-up to 2Mb of display memory and virtual resolutions of 1280x1024 and higher.
-Some of the Cirrus chipsets also support 16bpp and 32bpp (truecolor) modes
-on certain configurations.  Some of the ARK chipsets support 16bpp modes
-on certain configurations.  Generic VGA cards are also supported at 8bpp
-320x200 only.
+Virtual resolutions up to (approximately) 1152x900 are supported, using (up
+to) 1Mb of display memory. The Western Digital WD90C33, some of the Cirrus
+chipsets, the Oak OTI087 and the ET6000 support up to 2Mb of display memory
+and virtual resolutions of 1280x1024 and higher. Some of the Cirrus chipsets
+also support 16bpp and 32bpp (truecolor) modes on certain configurations.
+Some of the ARK chipsets support 16bpp modes on certain configurations. The
+ET6000 supports all color depths. Generic VGA cards are also supported at
+8bpp 320x200 only.
 .RS .5i
 .TP 4
 ATI:
@@ -260,7 +260,8 @@ Cirrus cards with 2MB of videoram which is in the form of 512kx8 DRAMs
 hardware BitBLT.
 .sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
-memory. Currently only supported for some Cirrus and oti087 configurations.
+memory. Currently only supported for some Cirrus and oti087 configurations
+and the ET6000.
 Automatically selected (and hence the option is ignored) for the clgd5462 
 and clgd5464.
 .sp

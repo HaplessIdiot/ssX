@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.19 1996/06/29 09:06:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64init.c,v 3.20 1996/08/25 14:10:52 dawes Exp $ */
 /*
  * Written by Jake Richter
  * Copyright (c) 1989, 1990 Panacea Inc., Londonderry, NH - All Rights Reserved
@@ -899,9 +899,12 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
 #ifdef DEBUG
     extern void mach64PrintCTPLL();
 #endif
-    int M, N, P, Q, R;
+    int M, N, P, R;
+    float Q;
+    int postDiv;
     int mhz100 = MHz100;
     unsigned char tmp1, tmp2;
+    int ext_div = 0;
 
     old_crtc_ext_disp = inb(ioCRTC_GEN_CNTL+3);
     outb(ioCRTC_GEN_CNTL+3, old_crtc_ext_disp | (CRTC_EXT_DISP_EN >> 24));
@@ -914,28 +917,70 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
     if (mhz100 < mach64MinFreq) mhz100 = mach64MinFreq;
     if (mhz100 > mach64MaxFreq) mhz100 = mach64MaxFreq;
 
-    Q = (mhz100 * M)/(2 * R);
-    if (Q > 255) {
-	ErrorF("mach64ProgramClkMach64CT: Warning: Q > 255\n");
-	Q = 255;
-	P = 0;
+    Q = (mhz100 * M)/(2.0 * R);
+
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01)) {
+	if (Q > 255) {
+	    ErrorF("mach64ProgramClkMach64CT: Warning: Q > 255\n");
+	    Q = 255;
+	    P = 0;
+	    postDiv = 1;
+	} else if (Q > 127.5) {
+	    P = 0;
+	    postDiv = 1;
+	} else if (Q > 85) {
+	    P = 1;
+	    postDiv = 2;
+	} else if (Q > 63.75) {
+	    P = 0;
+	    postDiv = 3;
+	    ext_div = 1;
+	} else if (Q > 42.5) {
+	    P = 2;
+	    postDiv = 4;
+	} else if (Q > 31.875) {
+	    P = 2;
+	    postDiv = 6;
+	    ext_div = 1;
+	} else if (Q > 21.25) {
+	    P = 3;
+	    postDiv = 8;
+	} else if (Q >= 10.6666666667) {
+	    P = 3;
+	    postDiv = 12;
+	    ext_div = 1;
+	} else {
+	    ErrorF("mach64ProgramClkMach64CT: Warning: Q < 10.66666667\n");
+	    P = 3;
+	    postDiv = 12;
+	    ext_div = 1;
+	}
+    } else {
+	if (Q > 255) {
+	    ErrorF("mach64ProgramClkMach64CT: Warning: Q > 255\n");
+	    Q = 255;
+	    P = 0;
+	}
+	else if (Q > 127.5)
+	    P = 0;
+	else if (Q > 63.75)
+	    P = 1;
+	else if (Q > 31.875)
+	    P = 2;
+	else if (Q >= 16)
+	    P = 3;
+	else {
+	    ErrorF("mach64ProgramClkMach64CT: Warning: Q < 16\n");
+	    P = 3;
+	}
+	postDiv = 1 << P;
     }
-    else if (Q > 127)
-	P = 0;
-    else if (Q > 63)
-	P = 1;
-    else if (Q > 31)
-	P = 2;
-    else if (Q >= 16)
-	P = 3;
-    else {
-	ErrorF("mach64ProgramClkMach64CT: Warning: Q < 16\n");
-	P = 3;
-    }
-    N = Q * (1 << P);
+    N = (int)(Q * postDiv + 0.5);
 
 #ifdef DEBUG
-    ErrorF("New freq: %.2f\n", (double)((2 * R * N)/(M * (1 << P))) / 100.0);
+    ErrorF("Q = %f N = %d P = %d, postDiv = %d R = %d M = %d\n", Q, N, P, postDiv, R, M);
+    ErrorF("New freq: %.2f\n", (double)((2 * R * N)/(M * postDiv)) / 100.0);
 #endif
 
     outb(ioCLOCK_CNTL + 1, PLL_VCLK_CNTL << 2);
@@ -951,6 +996,17 @@ void mach64ProgramClkMach64CT(clkCntl, MHz100)
 	 (tmp2 & ~(0x03 << (2 * clkCntl))) | (P << (2 * clkCntl)));
     outb(ioCLOCK_CNTL + 1, (PLL_VCLK_CNTL << 2) | PLL_WR_EN);
     outb(ioCLOCK_CNTL + 2, tmp1 & ~0x04);
+
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01)) {
+	outb(ioCLOCK_CNTL + 1, PLL_XCLK_CNTL << 2);
+	tmp1 = inb(ioCLOCK_CNTL + 2);
+	outb(ioCLOCK_CNTL + 1, (PLL_XCLK_CNTL << 2) | PLL_WR_EN);
+	if (ext_div)
+	    outb(ioCLOCK_CNTL + 2, tmp1 | (1 << (clkCntl + 4)));
+	else
+	    outb(ioCLOCK_CNTL + 2, tmp1 & ~(1 << (clkCntl + 4)));
+    }
 
     usleep(5000);
 
@@ -1102,6 +1158,74 @@ void mach64ProgramClk(clkCntl, MHz100)
 }
 
 /*
+ * mach64SetDSPRegs --
+ *	Initializes the DSP registers.
+ */
+void mach64SetDSPRegs(crtcRegs)
+     mach64CRTCRegPtr crtcRegs;
+{
+    int color_depth, t, fifo_size, page_size;
+    float x, fifo_on, fifo_off, z;
+    unsigned short loop_latency, y, temp;
+
+    switch (crtcRegs->color_depth) {
+    case CRTC_PIX_WIDTH_8BPP : color_depth = 8 ; break;
+    case CRTC_PIX_WIDTH_15BPP: color_depth = 16; break;
+    case CRTC_PIX_WIDTH_16BPP: color_depth = 16; break;
+    case CRTC_PIX_WIDTH_24BPP: color_depth = 24; break;
+    case CRTC_PIX_WIDTH_32BPP: color_depth = 32; break;
+    default                  : color_depth =  4; break;
+    }
+
+    x = ((float)mach64VRAMMemClk * 64.0) / ((float)crtcRegs->dot_clock * (float)color_depth);
+    t = 0;
+    y = (unsigned short)(x * 24.0);
+
+    while (y) {
+	y >>= 1;
+	t++;
+    }
+
+    if (t > 29) fifo_size = t - 5;
+    else        fifo_size = 24;
+
+    fifo_off = x * (fifo_size - 1) + 1;
+
+    if (mach64MemorySize > MEM_SIZE_1M) {
+	if (mach64MemType == GraphicsDRAMx16) {
+	    loop_latency = 8;
+	    page_size    = 8;
+	} else {
+	    loop_latency = 6;
+	    page_size    = 9;
+	}
+    } else {
+	if (mach64MemType == GraphicsDRAMx16) {
+	    loop_latency = 9;
+	    page_size    = 10;
+	} else {
+	    loop_latency = 8;
+	    page_size    = 10;
+	}
+    }
+
+    if (x >= page_size) fifo_on = 2 * page_size + (int)x + 1;
+    else                fifo_on = 3 * page_size;
+
+    /* DSP_ON_OFF is 0xfc24  -- from ATI's nobios code
+     * DSP_CONFIG is 0xfc20
+     * I have no programming info on these regs and I don't know how/why they
+     * use 0xfc00 as their base address.
+     */
+#if 0
+    outw(0xfc26, (unsigned short)(fifo_on  * pow(2, 6.0 - (t - 5.0))) & 0x07ff);
+    outw(0xfc24, (unsigned short)(fifo_off * pow(2, 6.0 - (t - 5.0))) & 0x07ff);
+    outw(0xfc20, (unsigned short)(x * pow(2, 11.0 - (t - 5.0))) & 0x3fff);
+    outb(0xfc22, (unsigned char)(t - 5)<<4 | loop_latency);
+#endif
+}
+
+/*
  * mach64SetCRTCRegs --
  *	Initializes the Mach64 for the currently selected CRTC parameters.
  */
@@ -1118,6 +1242,11 @@ void mach64SetCRTCRegs(crtcRegs)
     WaitIdleEmpty();
     crtcGenCntl = regr(CRTC_GEN_CNTL);
     regw(CRTC_GEN_CNTL, crtcGenCntl & ~CRTC_EXT_EN);
+
+    /* Set the DSP registers on the VT-B and GT-B */
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01))
+	mach64SetDSPRegs(crtcRegs);
 
     /* Check to see if we need to program the clock chip */
     if (mach64ClockType != 0 && mach64Ramdac != DAC_IBMRGB514 &&
@@ -1267,12 +1396,28 @@ mach64GetCTClock(i)
 {
     int M = mach64RefDivider;
     int R = mach64RefFreq;
-    int N, P;
+    int N, P, postDiv;
 
     outb(ioCLOCK_CNTL + 1, (VCLK0_FB_DIV + i) << 2);
     N = inb(ioCLOCK_CNTL + 2);
     outb(ioCLOCK_CNTL + 1, VCLK_POST_DIV << 2);
-    P = 1 << ((inb(ioCLOCK_CNTL + 2) >> (2 * i)) & 0x03);
+    postDiv = (inb(ioCLOCK_CNTL + 2) >> (2 * i)) & 0x03;
+    if ((mach64ChipType == MACH64_VT || mach64ChipType == MACH64_GT) &&
+	(mach64ChipRev & 0x01)) {
+	outb(ioCLOCK_CNTL + 1, PLL_XCLK_CNTL << 2);
+	if ((inb(ioCLOCK_CNTL + 2) >> (4 + i)) & 0x01) {
+	    switch (postDiv) {
+	    case 0: P = 3;  break;
+	    case 1: P = 2;  break; /* Unknown */
+	    case 2: P = 6;  break;
+	    case 3: P = 12; break;
+	    }
+	} else {
+	    P = 1 << postDiv;
+	}
+    } else {
+	P = 1 << postDiv;
+    }
     return (2 * R * N)/(M * P);
 }
     

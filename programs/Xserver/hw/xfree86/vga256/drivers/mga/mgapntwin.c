@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgapntwin.c,v 3.0 1996/10/10 14:04:49 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfb16.h"
@@ -36,6 +36,8 @@ mgaFillBoxSolid (pDrawable, nBox, pBox, pixel)
 		pixel |= (pixel << 8) | (pixel << 16) | (pixel << 24);
 		break;
 	}
+
+	MGAWAITFIFOSLOTS(4);
 	
 	MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */
 	MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */
@@ -47,12 +49,13 @@ mgaFillBoxSolid (pDrawable, nBox, pBox, pixel)
 	{
 		int h = pBox->y2 - pBox->y1;
 		
-		MGAWAITFIFO();
+		MGAWAITFIFOSLOTS(3);
 		MGAREG(MGAREG_FXBNDRY) = (pBox->x2 << 16) | pBox->x1;
 		MGAREG(MGAREG_YDSTLEN) = (pBox->y1 << 16) | h;
+		if(!MGAWaitForBlitter())
+			ErrorF("MGA: BitBlt Engine timeout\n");
 		MGAREG(MGAREG_DWGCTL + MGAREG_EXEC) = 0x000C7804;
 	}
-	MGAWAITFREE();
 }
 
 void

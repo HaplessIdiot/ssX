@@ -1,6 +1,6 @@
 /* $XConsortium: xf86Xinput.c /main/3 1996/01/14 19:01:42 kaleb $ */
 /*
- * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>       
+ * Copyright 1995,1996 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
  *                                                                            
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is  hereby granted without fee, provided that
@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.16 1996/08/25 14:11:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.17 1996/08/26 10:49:19 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -993,6 +993,67 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	    xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
 	    xf86eqEnqueue(xE);
 	    break;
+	}
+    }
+    va_end(var);
+}
+
+void
+xf86PostKeyEvent(DeviceIntPtr	device,
+		 unsigned int	key_code,
+		 int		is_down,
+		 int		is_absolute,
+		 int		first_valuator,
+		 int		num_valuators,
+		 ...)
+{
+    va_list			var;
+    int				loop;
+    xEvent			xE[2];
+    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv = (deviceValuator*) xev+1;
+    
+    va_start(var, num_valuators);
+
+
+    for(loop=0; loop<num_valuators; loop++) {
+	switch (loop % 6) {
+	case 0:
+	    xv->valuator0 = va_arg(var, int);
+	    break;
+	case 1:
+	    xv->valuator1 = va_arg(var, int);
+	    break;
+	case 2:
+	    xv->valuator2 = va_arg(var, int);
+	    break;
+	case 3:
+	    xv->valuator3 = va_arg(var, int);
+	    break;
+	case 4:
+	    xv->valuator4 = va_arg(var, int);
+	    break;
+	case 5:
+	    xv->valuator5 = va_arg(var, int);
+	    break;
+	}
+	if (((loop % 6 == 5) || (loop == num_valuators - 1))) {
+	    xev->type = is_down ? DeviceKeyPress : DeviceKeyRelease;
+	    xev->detail = key_code;
+	    
+	    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+	    xev->deviceid = device->id | MORE_EVENTS;
+	    
+	    xv->type = DeviceValuator;
+	    xv->deviceid = device->id;
+	    xv->device_state = 0;
+	    /* if the device is in the relative mode we don't have to send valuators */
+	    xv->num_valuators = is_absolute ? (loop % 6) + 1 : 0;
+	    xv->first_valuator = first_valuator + (loop / 6) * 6;
+	    
+	    xf86eqEnqueue(xE);
+	    /* if the device is in the relative mode only one event is needed */
+	    if (!is_absolute) break;
 	}
     }
     va_end(var);

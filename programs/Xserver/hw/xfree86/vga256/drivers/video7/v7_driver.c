@@ -1,5 +1,5 @@
 /* $XConsortium: v7_driver.c /main/5 1996/01/12 12:18:57 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.11 1996/06/29 09:09:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.12 1996/09/14 13:13:26 dawes Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -837,6 +837,14 @@ int x, y;
 	temp = inb(0x3C5);
 	temp &= 0xCF;
 	outb(0x3C5, temp | ((Base & 0x030000) >> 12));
+
+#ifdef XFreeXDGA
+	if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+		/* Wait until vertical retrace is in progress. */
+		while (inb(vgaIOBase + 0xA) & 0x08);
+		while (!(inb(vgaIOBase + 0xA) & 0x08));
+	}
+#endif
 }
 
 /*

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.15 1996/09/22 05:16:12 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.16 1996/10/03 08:50:36 dawes Exp $
  */
 
 /*
@@ -243,7 +243,7 @@ static char *strindex PROTO((char *s1, char *s2));
 #endif
 #else
 #include <curses.h>
-#endif /* __NetBSD__  */
+#endif /* ! NO_TERMCAP_H  */
 #endif
 
 /*

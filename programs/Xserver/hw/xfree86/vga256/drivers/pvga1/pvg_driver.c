@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.25 1996/09/14 13:12:54 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.26 1996/09/29 14:02:32 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1197,6 +1197,14 @@ PVGA1Adjust(x, y)
   outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
   outb(0x3CE, 0x0D); temp=inb(0x3CF); 
   outb(0x3CF, ((Base & 0x030000) >> 13) | (temp & 0xE7));
+
+#ifdef XFreeXDGA
+  if (vga256InfoRec.directMode & XF86DGADirectGraphics) {
+    /* Wait until vertical retrace is in progress. */
+    while (inb(vgaIOBase + 0xA) & 0x08);
+    while (!(inb(vgaIOBase + 0xA) & 0x08));
+  }
+#endif
 }
 
 /*

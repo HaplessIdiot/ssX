@@ -1,6 +1,6 @@
 /* This is sun.h modified for LynxOS */
 
-/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.0 1996/09/29 12:47:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sunLynx/sun.h,v 3.1 1996/10/13 11:18:27 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -57,7 +57,7 @@ extern char *getenv();
 #include <fcntl.h>
 
 #ifndef __bsdi__
-# ifndef __NetBSD__
+# if !defined(__NetBSD__) && !defined(__OpenBSD__)
 #  ifndef Lynx
 #   ifndef i386
 #    include <poll.h>
@@ -93,7 +93,7 @@ extern int errno;
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
 #else
-# if !defined(__NetBSD__) && !defined(Lynx)
+# if !defined(__NetBSD__) && !defined(__OpenBSD__) && !defined(Lynx)
 #  include <sun/fbio.h>
 #  include <sundev/kbd.h>
 #  include <sundev/kbio.h>
@@ -106,7 +106,7 @@ extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
 # else
-#  ifdef __NetBSD__
+#  if defined (__NetBSD__) || defined (__OpenBSD__)
 #   include <machine/fbio.h>
 #   include <machine/kbd.h>
 #   include <machine/kbio.h>

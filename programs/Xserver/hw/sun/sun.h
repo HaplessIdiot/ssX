@@ -1,6 +1,6 @@
 
 /* $XConsortium: sun.h /main/56 1995/10/08 11:12:03 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.2 1995/02/12 02:36:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sun.h,v 3.3 1996/01/05 13:18:43 dawes Exp $ */
 
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
@@ -53,7 +53,7 @@ extern char *getenv();
 #include <fcntl.h>
 
 #ifndef __bsdi_
-# ifndef __NetBSD__
+# if !defined(__NetBSD__) && !defined(__OpenBSD__)
 #  ifndef i386
 #   include <poll.h>
 #  else
@@ -87,7 +87,7 @@ extern int errno;
 # include <stropts.h>
 # define usleep(usec) poll((struct pollfd *) 0, (size_t) 0, usec / 1000)
 #else
-# ifndef __NetBSD__
+# if !defined( __NetBSD__) && !defined(__OpenBSD__)
 #  include <sun/fbio.h>
 #  include <sundev/kbd.h>
 #  include <sundev/kbio.h>
@@ -100,7 +100,7 @@ extern int getrlimit();
 extern int setrlimit();
 extern int getpagesize();
 # else
-#  ifdef __NetBSD__
+#  if defined(__NetBSD__) || defined(__OpenBSD__)
 #   include <machine/fbio.h>
 #   include <machine/kbd.h>
 #   include <machine/kbio.h>

@@ -1,9 +1,9 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.3 1996/05/06 05:55:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga.c,v 3.4 1996/08/10 13:03:56 dawes Exp $ */
 
 /*
 
 Copyright (c) 1995  Jon Tombs
-Copyright (c) 1995  XFree86 Inc
+Copyright (c) 1995, 1996  XFree86 Inc
 
 */
 
@@ -46,6 +46,8 @@ static DISPATCH_PROC(ProcXF86DGAGetViewPort);
 static DISPATCH_PROC(ProcXF86DGASetVidPage);
 static DISPATCH_PROC(ProcXF86DGASetViewPort);
 static DISPATCH_PROC(ProcDGAInstallColormap);
+static DISPATCH_PROC(ProcDGAQueryDirectVideo);
+static DISPATCH_PROC(ProcDGAViewPortChanged);
 
 /*
  * SProcs should probably be deleted, a local connection can never
@@ -360,6 +362,65 @@ ProcDGAInstallColormap(client)
 }
 
 static int
+ProcXF86DGAQueryDirectVideo(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86DGAQueryDirectVideoReq);
+    xXF86DGAQueryDirectVideoReply rep;
+    register int n;
+    ScrnInfoPtr vptr;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86DGAQueryDirectVideoReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    rep.flags = vptr->directMode;
+
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.flags, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86DGAQueryDirectVideoReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+static int
+ProcXF86DGAViewPortChanged(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86DGAViewPortChangedReq);
+    xXF86DGAViewPortChangedReply rep;
+    register int n;
+    ScrnInfoPtr vptr;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = (ScrnInfoPtr) screenInfo.screens[stuff->screen]->devPrivates[xf86ScreenIndex].ptr;
+
+    REQUEST_SIZE_MATCH(xXF86DGAViewPortChangedReq);
+    rep.type = X_Reply;
+    rep.length = 0;
+    rep.sequenceNumber = client->sequence;
+    /* For the moment, always return TRUE. */
+    rep.result = TRUE;
+
+    if (client->swapped) {
+    	swaps(&rep.sequenceNumber, n);
+    	swapl(&rep.length, n);
+    	swapl(&rep.result, n);
+    }
+    WriteToClient(client, SIZEOF(xXF86DGAViewPortChangedReply), (char *)&rep);
+    return (client->noClientException);
+}
+
+static int
 ProcXF86DGADispatch (client)
     register ClientPtr	client;
 {
@@ -386,6 +447,10 @@ ProcXF86DGADispatch (client)
 	return ProcXF86DGASetVidPage(client);
     case X_XF86DGAInstallColormap:
 	return ProcDGAInstallColormap(client);
+    case X_XF86DGAQueryDirectVideo:
+	return ProcXF86DGAQueryDirectVideo(client);
+    case X_XF86DGAViewPortChanged:
+	return ProcXF86DGAViewPortChanged(client);
     default:
 	return BadRequest;
     }

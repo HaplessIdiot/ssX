@@ -24,7 +24,7 @@
  *		fixed some problems with PCI probing and mapping
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.2 1996/10/06 13:18:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.3 1996/10/10 14:04:46 dawes Exp $ */
 
 #include "vga256.h"
 #include "cfb16.h"
@@ -50,7 +50,8 @@ int bpp, width;
     if (bpp == 16)
     {
         stdDoBitbltCopy = cfb16DoBitbltCopy;
-        shift = 1;
+	/* set 16 bpp, turn off dithering, turn on 5:5:5 pixels */
+        shift = 1 + (1 << 30) + (1 << 31);
     }
     if (bpp == 24)
     {
@@ -65,10 +66,11 @@ int bpp, width;
     
     MGAScrnWidth = width;
 
+    MGAWAITFIFOSLOTS(7);
+
     MGAREG(MGAREG_FCOL) = 0x00000000;
     MGAREG(MGAREG_SHIFT) = 0x00000000;
-    MGAREG(MGAREG_OPMODE) = 0x01000000;                                                        
-    
+    MGAREG(MGAREG_OPMODE) = 0x01000000;
     MGAREG(MGAREG_MACCESS) = shift;
     MGAREG(MGAREG_YDSTORG) = 0x00000000;
     MGAREG(MGAREG_PLNWT) = 0xFFFFFFFF;
@@ -105,17 +107,19 @@ int widthSrc, xsrc, ysrc, xdst, ydst, w, h, xdir, ydir;
         regSGN |= 1;
     }
     
-    MGAWAITFIFO();
+    MGAWAITFIFOSLOTS(9);
     MGAREG(MGAREG_CXBNDRY) = 0xFFFF0000;  /* (maxX << 16) | minX */
     MGAREG(MGAREG_YTOP) = 0x00000000;  /* minPixelPointer */
     MGAREG(MGAREG_YBOT) = 0x007FFFFF;  /* maxPixelPointer */
-    MGAREG(MGAREG_DWGCTL) = 0x040C4008;
     MGAREG(MGAREG_FXBNDRY) = ((xdst + w - 1) << 16) | xdst;
     MGAREG(MGAREG_AR5) = widthSrc;
     MGAREG(MGAREG_YDSTLEN) = (ydst << 16) | h;
     MGAREG(MGAREG_SGN) = regSGN;
     MGAREG(MGAREG_AR3) = srcStart;
-    MGAREG(MGAREG_AR0 + MGAREG_EXEC) = srcStop;	/* go for it */
+    MGAREG(MGAREG_AR0) = srcStop;
+    if(!MGAWaitForBlitter())
+                ErrorF("MGA: BitBlt Engine timeout\n");
+    MGAREG(MGAREG_DWGCTL + MGAREG_EXEC) = 0x040C4008;
 }
 
 /*

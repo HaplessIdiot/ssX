@@ -20,7 +20,7 @@
  * SOFTWARE.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/nv/nv_driver.c,v 3.0 1996/10/10 14:04:57 dawes Exp $ */
 
 #include <math.h>
 #include "X.h"
@@ -541,6 +541,9 @@ static void NVAdjust(int x, int y)
   int bppShift=(vgaBitsPerPixel==8)  ? 1 : 2;
 
   nvPort[NV_PFB_START]=(y * vga256InfoRec.displayWidth + x)*bppShift;
+
+  /* How do we wait until a vertical retrace is in progress? */
+
 }
 
 static int NVValidMode(DisplayModePtr mode,Bool verbose)
