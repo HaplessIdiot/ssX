@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.13 2001/01/16 05:11:10 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.14 2001/01/21 21:19:20 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1839,7 +1839,7 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 				/* DPMS setup */
 #ifdef ENABLE_FLAT_PANEL
     if (!info->HasPanelRegs || info->CRTOnly)
-#else
+#endif
 	xf86DPMSInit(pScreen, RADEONDisplayPowerManagementSet, 0);
 
     RADEONInitVideo(pScreen);
