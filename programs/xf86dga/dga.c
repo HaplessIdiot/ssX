@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.5 1995/12/28 01:40:20 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.6 1996/01/10 05:42:51 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -172,19 +172,23 @@ main(int argc, char *argv[])
 	    int start_clock,finish_clock,diff_clock;
 	    int cycle;
 	    int numcycles = 500;
+	    int size = 64;
+
+	    if (bank < 65536)
+		size = bank / 1024;
 
 	    start_clock = GetTimeInMillis();
 
 	    XF86DGASetVidPage(dis, DefaultScreen(dis), i);
 	    for (cycle = 0; cycle < numcycles; cycle++)
-	       memset(addr, (char) (cycle % 255), 65536);
+	       memset(addr, (char) (cycle % 255), size * 1024);
 
 	    finish_clock = GetTimeInMillis();
 	    diff_clock = finish_clock - start_clock;
 
 	    fprintf(stderr, "Timing: %3d.%03ds, %dK/s\n",
 		    diff_clock / 1000, (diff_clock % 1000),
-		    (64000*numcycles) / diff_clock);
+		    (size * 1000 * numcycles) / diff_clock);
 	 }
 
          for (i = 0; i < banks; i++) {
