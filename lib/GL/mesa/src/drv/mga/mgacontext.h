@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.10 2003/11/13 17:22:49 dawes Exp $*/
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgacontext.h,v 1.11 2003/12/02 13:02:38 alanh Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -264,8 +264,8 @@ struct mga_context_t {
    GLuint vbl_seq;
    GLuint vblank_flags;
 
-   u_int64_t swap_ust;
-   u_int64_t swap_missed_ust;
+   int64_t swap_ust;
+   int64_t swap_missed_ust;
 
    GLuint swap_count;
    GLuint swap_missed_count;
