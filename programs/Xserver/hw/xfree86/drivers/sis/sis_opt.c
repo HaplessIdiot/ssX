@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.5 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_opt.c,v 1.6 2001/05/04 19:05:44 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86PciInfo.h"
@@ -16,7 +16,8 @@ typedef enum {
     OPTION_SET_MEMCLOCK,
     OPTION_FORCE_CRT2TYPE,
 	OPTION_SHADOW_FB,
-    OPTION_ROTATE
+    OPTION_ROTATE,
+	OPTION_NOXVIDEO
 } SISOpts;
 
 static const OptionInfoRec SISOptions[] = {
@@ -31,6 +32,7 @@ static const OptionInfoRec SISOptions[] = {
     { OPTION_FORCE_CRT2TYPE,    "ForceCRT2Type",OPTV_ANYSTR,    {0}, FALSE },
     { OPTION_SHADOW_FB,         "ShadowFB",     OPTV_BOOLEAN,   {0}, FALSE },
     { OPTION_ROTATE,            "Rotate",       OPTV_ANYSTR,    {0}, FALSE },
+    { OPTION_NOXVIDEO,          "NoXvideo",     OPTV_BOOLEAN,   {0}, FALSE },
     { -1,                       NULL,           OPTV_NONE,      {0}, FALSE }
 };
 
@@ -61,6 +63,7 @@ SiSOptions(ScrnInfoPtr pScrn)
     pSiS->HWCursor = TRUE;
     pSiS->Rotate = FALSE;
     pSiS->ShadowFB = FALSE;
+	pSiS->NoXvideo = FALSE;
     switch(pSiS->Chipset) {
         case PCI_CHIP_SIS530:
             pSiS->TurboQueue = FALSE; /* FIXME ? */
@@ -182,6 +185,13 @@ SiSOptions(ScrnInfoPtr pScrn)
                     "Valid options are \"CW\" or \"CCW\"\n");
         }
     }
+
+    /* NOXvideo */
+    if (xf86ReturnOptValBool(pSiS->Options, OPTION_NOXVIDEO, FALSE)) {
+        pSiS->NoXvideo = TRUE;
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "XVideo Extension Disabled\n");
+    }
+
 }
 
 const OptionInfoRec *

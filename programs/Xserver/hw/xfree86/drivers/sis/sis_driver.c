@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.61 2001/04/19 14:05:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.63 2001/05/15 10:19:40 eich Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -43,10 +43,9 @@
 #include "vgaHW.h"
 #include "xf86RAC.h"
 #include "shadowfb.h"
-
-#include "sis_shadow.h"
 #include "vbe.h"
 
+#include "sis_shadow.h"
 
 #include "mipointer.h"
 #include "mibstore.h"
@@ -177,7 +176,6 @@ static PciChipsets SISPciChipsets[] = {
 };
     
 
-
 int sisReg32MMIO[]={0x8280,0x8284,0x8288,0x828C,0x8290,0x8294,0x8298,0x829C,
             0x82A0,0x82A4,0x82A8,0x82AC};
 /* Engine Register for the 2nd Generation Graphics Engine */
@@ -236,13 +234,6 @@ static const char *ddcSymbols[] = {
 static const char *i2cSymbols[] = {
     "xf86I2CBusInit",
     "xf86CreateI2CBusRec",
-    NULL
-};
-
-static const char *vbeSymbols[] = {
-    "VBEInit",
-    "vbeDoEDID",
-    "vbeFree",
     NULL
 };
 
@@ -318,7 +309,7 @@ sisSetup(pointer module, pointer opts, int *errmaj, int *errmin)
         setupDone = TRUE;
         xf86AddDriver(&SIS, module, 0);
         LoaderRefSymLists(vgahwSymbols, fbSymbols, i2cSymbols, xaaSymbols,
-                        shadowSymbols, vbeSymbols,
+                        shadowSymbols,
 #ifdef XF86DRI
                     drmSymbols, driSymbols,
 #endif
@@ -566,17 +557,18 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     char *mod = NULL;
     const char *Sym = NULL;
     int pix24flags;
+
     vbeInfoPtr pVbe;
 
     if (flags & PROBE_DETECT) {
         if (xf86LoadSubModule(pScrn, "vbe")) {
-	    int index = xf86GetEntityInfo(pScrn->entityList[0])->index;
-	    if ((pVbe = VBEInit(NULL,index))) {
-	        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
-		vbeFree(pVbe);
-	    }
-	}
-	return TRUE;
+        	int index = xf86GetEntityInfo(pScrn->entityList[0])->index;
+        	if ((pVbe = VBEInit(NULL,index))) {
+            	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
+        		vbeFree(pVbe);
+        	}
+    	}
+    	return TRUE;
     }
 
     /*
@@ -1056,21 +1048,22 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
 
-    { 
-        Bool ret;
-	if (xf86LoadSubModule(pScrn, "vbe")) {
-	    if ((pVbe = VBEInit(NULL,pSiS->pEnt->index))) {
-	        ret = xf86SetDDCproperties(pScrn,
-					  xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
-		vbeFree(pVbe);
-	    }
-	}
-#if 0
-	if (!ret && pSiS->ddc1Read) 
-  	    xf86SetDDCProperties(xf86PrintEDID(xf86DoEDID_DDC1(
-		     pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read )));
-#endif
+    {
+    Bool ret;
+    if (xf86LoadSubModule(pScrn, "vbe")) {
+        if ((pVbe = VBEInit(NULL,pSiS->pEnt->index))) {
+            ret = xf86SetDDCproperties(pScrn,
+                      xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
+        vbeFree(pVbe);
+        }
     }
+	}
+
+#if 0
+    if (!ret && pSiS->ddc1Read)
+        xf86SetDDCProperties(xf86PrintEDID(xf86DoEDID_DDC1(
+             pScrn->scrnIndex,vgaHWddc1SetSpeed,pSiS->ddc1Read )));
+#endif
 
     return TRUE;
 }
@@ -1502,14 +1495,22 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     xf86DPMSInit(pScreen, (DPMSSetProcPtr)SISDisplayPowerManagementSet, 0);
 
 #ifdef XvExtension
-    {
-        XF86VideoAdaptorPtr *ptr;
-        int n;
+	if (!pSiS->NoXvideo) {
+        /* HW Xv for SiS630 */
+        if (pSiS->Chipset == PCI_CHIP_SIS630) {
+            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using SiS630 HW Xv\n" );
+            SISInitVideo(pScreen);
+        } 
+        else { /* generic Xv */
 
-        n = xf86XVListGenericAdaptors(pScrn, &ptr);
-        if (n) {
-            xf86XVScreenInit(pScreen, ptr, n);
-            xf86DrvMsg(pScrn->scrnIndex, X_INFO, "use generic Xv\n" );
+            XF86VideoAdaptorPtr *ptr;
+            int n;
+
+            n = xf86XVListGenericAdaptors(pScrn, &ptr);
+            if (n) {
+                xf86XVScreenInit(pScreen, ptr, n);
+                xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Using generic Xv\n" );
+            }
         }
     }
 #endif
@@ -1529,10 +1530,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
     }
 #endif
-
-    if (pSiS->Chipset == PCI_CHIP_SIS630) {
-        SISInitVideo(pScreen);
-    }
 
     pSiS->CloseScreen = pScreen->CloseScreen;
     pScreen->CloseScreen = SISCloseScreen;

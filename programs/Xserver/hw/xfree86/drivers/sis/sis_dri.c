@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.12 2001/04/19 12:40:33 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.13 2001/05/02 15:06:10 dawes Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -53,8 +53,6 @@ static void SISDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 static void SISDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void SISDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
                    RegionPtr prgnSrc, CARD32 index);
-
-void SISLostContext(ScreenPtr pScreen);
 
 static Bool
 SISInitVisualConfigs(ScreenPtr pScreen)
@@ -182,7 +180,6 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
   SISPtr pSIS = SISPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   SISDRIPtr pSISDRI;
-  drmVersionPtr version;
 
    /* Check that the GLX, DRI, and DRM modules have been loaded by testing
     * for canonical symbols in each module. */
@@ -247,7 +244,8 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
    * in the SAREA header
    */
   if (sizeof(XF86DRISAREARec)+sizeof(SISSAREAPriv) > SAREA_MAX) {
-    ErrorF("Data does not fit in SAREA\n");
+    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+			"Data does not fit in SAREA\n");
     return FALSE;
   }
   pDRIInfo->SAREASize = SAREA_MAX;
@@ -331,7 +329,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
       xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpEnable failed\n");
       break;
     }
-    ErrorF("[drm] drmAgpEnabled succeeded\n");
+	xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] drmAgpEnabled succeeded\n");
 
     if (drmAgpAlloc(pSIS->drmSubFD, AGP_SIZE, 0, NULL, &pSIS->agpHandle) < 0) {
       xf86DrvMsg(pScreen->myNum, X_ERROR,
@@ -425,9 +423,9 @@ SISDRICloseScreen(ScreenPtr pScreen)
   if (pSIS->pVisualConfigsPriv) xfree(pSIS->pVisualConfigsPriv);
 
   if(pSIS->agpSize){
-     ErrorF("Freeing agp memory\n");
+	 xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Freeing agp memory\n");
      drmAgpFree(pSIS->drmSubFD, pSIS->agpHandle);
-     ErrorF("releasing agp module\n");
+	 xf86DrvMsg(pScreen->myNum, X_INFO, "[drm] Releasing agp module\n");
      drmAgpRelease(pSIS->drmSubFD);
   }
 }
