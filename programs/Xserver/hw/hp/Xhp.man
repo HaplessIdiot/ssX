@@ -1,4 +1,4 @@
-.\" $TOG: Xhp.man /main/6 1998/02/10 13:10:34 kaleb $
+.\" $Xorg: Xhp.man,v 1.3 2000/08/17 19:48:21 cpqbld Exp $
 .\" Copyright 1994  Hewlett-Packard Company
 .\" Copyright 1994, 1998  The Open Group
 .\" 

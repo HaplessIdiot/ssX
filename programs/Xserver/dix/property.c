@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.6 1998/10/04 09:38:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/property.c,v 3.7 1999/01/13 08:30:54 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $TOG: property.c /main/42 1998/02/09 14:20:24 kaleb $ */
+/* $Xorg: property.c,v 1.3 2000/08/17 19:48:18 cpqbld Exp $ */
 
 #include "X.h"
 #define NEED_REPLIES

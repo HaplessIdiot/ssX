@@ -1,4 +1,4 @@
-/* $TOG: gcstruct.h /main/19 1998/02/09 14:28:45 kaleb $ */
+/* $Xorg: gcstruct.h,v 1.3 2000/08/17 19:53:29 cpqbld Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -43,7 +43,7 @@ SOFTWARE.
 ******************************************************************/
 
 
-/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.3 1998/10/04 09:38:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/gcstruct.h,v 1.4 2001/01/06 20:58:12 tsi Exp $ */
 
 #ifndef GCSTRUCT_H
 #define GCSTRUCT_H

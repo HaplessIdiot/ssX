@@ -1,4 +1,4 @@
-/* $XConsortium: midbe.c /main/4 1995/09/25 15:19:01 dpw $ */
+/* $Xorg: midbe.c,v 1.3 2000/08/17 19:48:16 cpqbld Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -30,7 +30,7 @@
  *     Machine-independent DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/programs/Xserver/dbe/midbe.c,v 3.1 2000/04/05 18:13:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dbe/midbe.c,v 3.2 2000/04/06 14:47:46 dawes Exp $ */
 
 
 /* INCLUDES */

@@ -1,4 +1,4 @@
-.\" $TOG: Xsun.man /main/29 1998/02/10 13:17:41 kaleb $
+.\" $Xorg: Xsun.man,v 1.3 2000/08/17 19:48:29 cpqbld Exp $
 .\" Copyright 1988 Sun Microsystems, Inc.
 .\" Copyright 1993, 1994, 1998  The Open Group
 .\" 

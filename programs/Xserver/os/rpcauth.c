@@ -1,4 +1,4 @@
-/* $TOG: rpcauth.c /main/10 1998/02/09 15:12:52 kaleb $ */
+/* $Xorg: rpcauth.c,v 1.3 2000/08/17 19:53:41 cpqbld Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.1 1998/10/04 09:39:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/rpcauth.c,v 3.2 1998/12/13 07:37:48 dawes Exp $ */
 
 /*
  * SUN-DES-1 authentication mechanism

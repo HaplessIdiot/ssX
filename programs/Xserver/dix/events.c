@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.33 2000/03/26 21:47:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.35 2000/10/22 21:12:09 mvojkovi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -64,9 +64,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-
-
-/* $TOG: events.c /main/188 1998/02/09 14:19:04 kaleb $ */
+/* $Xorg: events.c,v 1.3 2000/08/17 19:48:18 cpqbld Exp $ */
 
 #include "X.h"
 #include "misc.h"

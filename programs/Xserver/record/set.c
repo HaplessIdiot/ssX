@@ -1,4 +1,4 @@
-/* $TOG: set.c /main/3 1998/02/09 15:17:17 kaleb $ */
+/* $Xorg: set.c,v 1.3 2000/08/17 19:53:45 cpqbld Exp $ */
 
 /*
 
@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/record/set.c,v 1.4 1998/10/04 09:39:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/record/set.c,v 1.5 1998/12/20 11:58:03 dawes Exp $ */
 
 /*
 

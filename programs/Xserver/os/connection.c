@@ -1,4 +1,4 @@
-/* $TOG: connection.c /main/159 1998/02/09 15:11:54 kaleb $ */
+/* $Xorg: connection.c,v 1.5 2000/08/17 19:53:40 cpqbld Exp $ */
 /***********************************************************
 
 Copyright 1987, 1989, 1998  The Open Group
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.41 2000/08/10 17:40:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.43 2000/09/19 12:46:22 eich Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -923,6 +923,14 @@ EstablishNewConnections(clientUnused, closure)
 	    continue;
 
 	newconn = _XSERVTransGetConnectionNumber (new_trans_conn);
+
+	if (newconn < lastfdesc)
+	{
+		int clientid;
+  		clientid = ConnectionTranslation[newconn];
+		if(clientid && (client = clients[clientid]))
+ 			CloseDownClient(client);
+	}
 
 	_XSERVTransSetOption(new_trans_conn, TRANS_NONBLOCKING, 1);
 

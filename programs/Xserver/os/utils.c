@@ -1,4 +1,4 @@
-/* $TOG: utils.c /main/138 1998/04/22 16:32:51 msr $ */
+/* $Xorg: utils.c,v 1.3 2000/08/17 19:53:41 cpqbld Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.66 2000/11/14 18:20:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.67 2000/11/30 23:30:06 dawes Exp $ */
 #ifdef __CYGWIN__
 #include <stdlib.h>
 #include <signal.h>

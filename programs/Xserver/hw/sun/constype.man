@@ -1,4 +1,4 @@
-.\" $TOG: constype.man /main/13 1997/11/04 21:19:39 kaleb $
+.\" $Xorg: constype.man,v 1.3 2000/08/17 19:48:29 cpqbld Exp $
 .TH CONSTYPE 1 "Release 6.4" "X Version 11"
 .SH NAME
 constype \- print type of Sun console

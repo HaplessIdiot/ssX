@@ -1,4 +1,4 @@
-/* $TOG: cfb.h /main/53 1998/02/09 14:08:27 kaleb $ */
+/* $Xorg: cfb.h,v 1.3 2000/08/17 19:48:12 cpqbld Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.24 2000/08/23 22:10:05 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.25 2000/10/23 21:16:43 tsi Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 

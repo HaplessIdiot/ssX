@@ -1,4 +1,4 @@
-/* $TOG: InitOutput.c /main/20 1998/02/10 13:23:56 kaleb $ */
+/* $Xorg: InitOutput.c,v 1.3 2000/08/17 19:48:38 cpqbld Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.12 2000/08/10 17:40:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.14 2000/11/16 19:44:52 eich Exp $ */
 
 #if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>

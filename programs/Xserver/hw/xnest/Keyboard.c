@@ -1,4 +1,4 @@
-/* $TOG: Keyboard.c /main/5 1998/04/21 09:19:15 msr $ */
+/* $Xorg: Keyboard.c,v 1.3 2000/08/17 19:53:28 cpqbld Exp $ */
 /*
 
 Copyright 1993 by Davor Matic
@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Keyboard.c,v 1.3 2000/02/27 04:52:56 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"

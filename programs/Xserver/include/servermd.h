@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.41 2000/11/02 02:51:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.42 2000/11/06 19:24:09 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -41,10 +41,10 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $Xorg: servermd.h,v 1.3 2000/08/17 19:53:31 cpqbld Exp $ */
+
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-
-/* $TOG: servermd.h /main/60 1998/02/09 14:30:08 kaleb $ */
 
 /*
  * Machine dependent values:
