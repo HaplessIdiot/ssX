@@ -845,17 +845,15 @@ static void update_rasterflags( GLcontext *ctx )
       ctx->RasterMask |= MULTI_DRAW_BIT;
       ctx->TriangleCaps |= DD_MULTIDRAW;
    }
-   else if (ctx->Visual->RGBAflag && ctx->Color.ColorMask==0) {
+   else if (ctx->Visual->RGBAflag && *((GLuint *) ctx->Color.ColorMask) == 0) {
       /* all RGBA channels disabled */
       ctx->RasterMask |= MULTI_DRAW_BIT;
       ctx->TriangleCaps |= DD_MULTIDRAW;
-      ctx->Color.DrawDestMask = 0;
    }
    else if (!ctx->Visual->RGBAflag && ctx->Color.IndexMask==0) {
       /* all color index bits disabled */
       ctx->RasterMask |= MULTI_DRAW_BIT;
       ctx->TriangleCaps |= DD_MULTIDRAW;
-      ctx->Color.DrawDestMask = 0;
    }
 }
 
@@ -1062,11 +1060,6 @@ void gl_update_state( GLcontext *ctx )
 	     ctx->Polygon.OffsetLine ||
 	     ctx->Polygon.OffsetFill)
 	    ctx->TriangleCaps |= DD_TRI_OFFSET;
-
-	 /* reset Z offsets now */
-	 ctx->PointZoffset   = 0.0;
-	 ctx->LineZoffset    = 0.0;
-	 ctx->PolygonZoffset = 0.0;
       }
    }
 
@@ -1183,14 +1176,13 @@ void gl_update_state( GLcontext *ctx )
       ctx->NeedEyeNormals = GL_FALSE;
 
       if (ctx->Light.Enabled) {
-	 if (ctx->Light.Flags & LIGHT_POSITIONAL) {
-	    /* Need length for attenuation */
-	    if (!TEST_MAT_FLAGS( &ctx->ModelView, MAT_FLAGS_LENGTH_PRESERVING))
-	       ctx->NeedEyeCoords = GL_TRUE;
-	 } else if (ctx->Light.NeedVertices) {
-	    /* Need angle for spot calculations */
-	    if (!TEST_MAT_FLAGS( &ctx->ModelView, MAT_FLAGS_ANGLE_PRESERVING))
-	       ctx->NeedEyeCoords = GL_TRUE;
+	 if ((ctx->Light.Flags & LIGHT_POSITIONAL) ||
+             ctx->Light.NeedVertices ||
+             !TEST_MAT_FLAGS( &ctx->ModelView, MAT_FLAGS_LENGTH_PRESERVING)) {
+            /* Need length for attenuation or need angle for spotlights
+             * or non-uniform scale matrix
+             */
+            ctx->NeedEyeCoords = GL_TRUE;
 	 }
 	 ctx->NeedEyeNormals = ctx->NeedEyeCoords;
       }

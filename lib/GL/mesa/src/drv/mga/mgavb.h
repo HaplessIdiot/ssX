@@ -23,14 +23,13 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.h,v 1.4 2000/08/28 02:43:13 tsi Exp $ */
 
 #ifndef MGAVB_INC
 #define MGAVB_INC
 
 #include "types.h"
 #include "vb.h"
-#include "mgacommon.h"
 
 
 /* common datatypes for the mga warp engines */
@@ -67,7 +66,7 @@ typedef struct mga_warp_vertex_t {
 union mga_vertex_t {
    mga_warp_vertex v;	
    float f[16];
-   mgaUI32 ui[16];
+   GLuint ui[16];
 };
 
 typedef union mga_vertex_t mgaVertex;
@@ -82,9 +81,9 @@ struct mga_vertex_buffer_t {
    void *vert_store;
    GLuint size;
 
-   mgaUI32 *vert_buf;
-   mgaUI32 *elt_buf;
-   mgaUI32 vert_phys_start;
+   GLuint *vert_buf;
+   GLuint *elt_buf;
+   GLuint vert_phys_start;
 };
    
 typedef struct mga_vertex_buffer_t *mgaVertexBufferPtr;

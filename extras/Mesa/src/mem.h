@@ -38,6 +38,10 @@ extern void *_mesa_malloc(size_t bytes);
 extern void *_mesa_calloc(size_t bytes);
 extern void _mesa_free(void *ptr);
 
+extern void *_mesa_align_malloc(size_t bytes, unsigned long alignment);
+extern void *_mesa_align_calloc(size_t bytes, unsigned long alignment);
+extern void _mesa_align_free(void *ptr);
+
 
 #ifdef DEBUG
 
@@ -58,6 +62,13 @@ extern void _mesa_free(void *ptr);
 #define FREE(PTR)          free(PTR)
 
 #endif
+
+/* call Mesa N-byte aligned memory functions */
+#define ALIGN_MALLOC(BYTES, N)     (void *) _mesa_align_malloc(BYTES, N)
+#define ALIGN_CALLOC(BYTES, N)     (void *) _mesa_align_calloc(BYTES, N)
+#define ALIGN_MALLOC_STRUCT(T, N)  (struct T *) _mesa_align_malloc(sizeof(struct T), N)
+#define ALIGN_CALLOC_STRUCT(T, N)  (struct T *) _mesa_align_calloc(sizeof(struct T), N)
+#define ALIGN_FREE(PTR)            _mesa_align_free(PTR)
 
 
 /* Memory copy: */

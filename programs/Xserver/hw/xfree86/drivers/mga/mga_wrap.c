@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_wrap.c,v 1.1 2000/06/17 00:03:20 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -65,6 +65,7 @@ static void MGAWakeupHandler(int screenNum,
 			     pointer pReadmask)
 {
     ScreenPtr pScreen = screenInfo.screens[screenNum];
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     /*DRIWrappedFuncsRec *pDRIWrap = DRIGetWrappedFuncs(pScreen);*/
 
     if (0) ErrorF("MGAWakeupHandler (in)\n");
@@ -73,8 +74,10 @@ static void MGAWakeupHandler(int screenNum,
      *   to restore state.  
      */
     DRILock(pScreen, 0);
-    MGASwapContext( pScreen );
-
+    if (xf86IsEntityShared(pScrn->entityList[0]))
+        MGASwapContext_shared(pScreen);
+    else
+        MGASwapContext(pScreen);
 }
 
 static void MGABlockHandler(int screenNum,
@@ -84,6 +87,8 @@ static void MGABlockHandler(int screenNum,
 
 {
    ScreenPtr pScreen = screenInfo.screens[screenNum];
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   MGAPtr pMga = MGAPTR(pScrn);
    /*DRIWrappedFuncsRec *pDRIWrap = DRIGetWrappedFuncs(pScreen);*/
    MGASAREAPtr sa = (MGASAREAPtr)DRIGetSAREAPrivate( pScreen );
 
@@ -177,6 +182,12 @@ static void MGABlockHandler(int screenNum,
    } 
 
  finished:
+   if (xf86IsEntityShared(pScrn->entityList[0])) {
+      /* Restore to first screen */
+      pMga->RestoreAccelState(pScrn);
+      xf86SetLastScrnFlag(pScrn->entityList[0], pScrn->scrnIndex);
+   }
+
    DRIUnlock(pScreen);
 }
 

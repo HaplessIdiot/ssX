@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.5 2000/02/15 07:13:27 martin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.6 2000/02/15 19:19:18 dawes Exp $ */
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -29,10 +29,10 @@
  */
 
 #include "packrender.h"
-#include <stdio.h>
 #include <Xext.h>
 #include <extutil.h>
 #include <assert.h>
+#include <stdio.h>
 #include "indirect_init.h"
 #include "glapi.h"
 #ifdef XTHREADS
@@ -72,7 +72,7 @@ static __GLapi *IndirectAPI = NULL;
 
 
 /*
- * Current context management
+ * Current context management and locking
  */
 
 #if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
@@ -106,6 +106,11 @@ void __glXSetCurrentContext(__GLXcontext *c)
    }
    xthread_set_specific(ContextTSD, c);
 }
+
+
+/* Used by the __glXLock() and __glXUnlock() macros */
+xmutex_rec __glXmutex;
+xmutex_rec __glXSwapBuffersMutex;
 
 #else
 
@@ -451,6 +456,18 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
     XEDataObject dataObj;
     int major, minor;
 
+#if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
+    {
+        static int firstCall = 1;
+        if (firstCall) {
+            /* initialize the GLX mutexes */
+            xmutex_init(&__glXmutex);
+            xmutex_init(&__glXSwapBuffersMutex);
+            firstCall = 0;
+        }
+    }
+#endif
+
     /* The one and only long long lock */
     __glXLock();
 
@@ -510,8 +527,16 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
     ** Note: This _must_ be done before calling any other DRI routines
     ** (e.g., those called in AllocAndFetchScreenConfigs).
     */
-    dpyPriv->driDisplay.private =
-	driCreateDisplay(dpy, &dpyPriv->driDisplay);
+    if (getenv("LIBGL_ALWAYS_INDIRECT")) {
+        /* Assinging zero here assures we'll never go direct */
+        dpyPriv->driDisplay.private = 0;
+        dpyPriv->driDisplay.destroyDisplay = 0;
+        dpyPriv->driDisplay.createScreen = 0;
+    }
+    else {
+        dpyPriv->driDisplay.private =
+            driCreateDisplay(dpy, &dpyPriv->driDisplay);
+    }
 #endif
 
     if (!AllocAndFetchScreenConfigs(dpy, dpyPriv)) {
@@ -533,7 +558,9 @@ __GLXdisplayPrivate *__glXInitialize(Display* dpy)
     XAddToExtensionList(privList, private);
 
     if (dpyPriv->majorVersion == 1 && dpyPriv->minorVersion >= 1) {
+#if 0
         __glXClientInfo(dpy, dpyPriv->majorOpcode);
+#endif
     }
     __glXUnlock();
 
@@ -811,6 +838,7 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 	}
     } else {
 #endif
+        _glapi_check_multithread();
 	/* Send a glXMakeCurrent request to bind the new context. */
 	LockDisplay(dpy);
 	GetReq(GLXMakeCurrent,req);
@@ -820,14 +848,15 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 	req->context = gc ? gc->xid : None;
 	req->oldContextTag = oldGC->currentContextTag;
 	bindReturnValue = _XReply(dpy, (xReply*) &reply, 0, False);
+        UnlockDisplay(dpy);
 #ifdef GLX_DIRECT_RENDERING
     }
 #endif
 
+
     if (!bindReturnValue) {
 	/* The make current failed. */
 	if (!gc->isDirect) {
-	    UnlockDisplay(dpy);
 	    SyncHandle();
 	}
 
@@ -884,6 +913,9 @@ Bool glXMakeCurrent(Display *dpy, GLXDrawable draw, GLXContext gc)
 		** request, and cannot adhere to the "no-op" behavior.
 		*/
 	    }
+            else {
+		UnlockDisplay(dpy);
+            }
 	    oldGC->currentContextTag = reply.contextTag;
 	}
 	return GL_FALSE;

@@ -26,7 +26,7 @@
  * 
  * Author: Rickard E. (Rik) Faith <faith@valinux.com>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.10 2000/08/28 16:04:51 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drm.h,v 1.11 2000/08/28 16:27:00 dawes Exp $
  * 
  */
 
@@ -203,6 +203,31 @@ typedef struct { unsigned int a[100]; } __drm_dummy_lock_t;
 			  "r" (new));                                  \
 	} while (0)
 
+#elif defined(__alpha__)
+
+#define	DRM_CAS(lock, old, new, ret) 		\
+ 	do {					\
+ 		int old32;                      \
+ 		int cur32;			\
+ 		__asm__ __volatile__(		\
+ 		"       mb\n"			\
+ 		"       zap   %4, 0xF0, %0\n"   \
+ 		"       ldl_l %1, %2\n"		\
+ 		"       zap   %1, 0xF0, %1\n"   \
+                "       cmpeq %0, %1, %1\n"	\
+                "       beq   %1, 1f\n"		\
+ 		"       bis   %5, %5, %1\n"	\
+                "       stl_c %1, %2\n"		\
+                "1:     xor   %1, 1, %1\n"	\
+                "       stl   %1, %3"		\
+                : "+r" (old32),                 \
+		  "+&r" (cur32),		\
+                   "=m" (__drm_dummy_lock(lock)),\
+                   "=m" (ret)			\
+ 		: "r" (old),			\
+ 		  "r" (new));			\
+ 	} while(0)
+ 
 #elif defined(__sparc__)
 
 #define DRM_CAS(lock,old,new,__ret)				\
@@ -261,9 +286,15 @@ do {	register unsigned int __old __asm("o0");		\
 #define DRM_CAS(lock,old,new,ret) do { ret=1; } while (0) /* FAST LOCK FAILS */
 #endif
 
+#ifdef __alpha__
+#define DRM_CAS_RESULT(_result)		int _result
+#else
+#define DRM_CAS_RESULT(_result)		char _result
+#endif
+
 #define DRM_LIGHT_LOCK(fd,lock,context)                                \
 	do {                                                           \
-                char __ret;                                            \
+                DRM_CAS_RESULT(__ret);                                 \
 		DRM_CAS(lock,context,DRM_LOCK_HELD|context,__ret);     \
                 if (__ret) drmGetLock(fd,context,0);                   \
         } while(0)
@@ -272,7 +303,7 @@ do {	register unsigned int __old __asm("o0");		\
                                    benchmarking only. */
 #define DRM_LIGHT_LOCK_COUNT(fd,lock,context,count)                    \
 	do {                                                           \
-                char __ret;                                            \
+                DRM_CAS_RESULT(__ret);                                 \
 		DRM_CAS(lock,context,DRM_LOCK_HELD|context,__ret);     \
                 if (__ret) drmGetLock(fd,context,0);                   \
                 else       ++count;                                    \
@@ -286,7 +317,7 @@ do {	register unsigned int __old __asm("o0");		\
 			      
 #define DRM_UNLOCK(fd,lock,context)                                    \
 	do {                                                           \
-                char __ret;                                            \
+                DRM_CAS_RESULT(__ret);                                 \
 		DRM_CAS(lock,DRM_LOCK_HELD|context,context,__ret);     \
                 if (__ret) drmUnlock(fd,context);                      \
         } while(0)
@@ -294,7 +325,7 @@ do {	register unsigned int __old __asm("o0");		\
 				/* Simple spin locks */
 #define DRM_SPINLOCK(spin,val)                                         \
 	do {                                                           \
-	    char __ret;                                                \
+            DRM_CAS_RESULT(__ret);                                     \
 	    do {                                                       \
 		DRM_CAS(spin,0,val,__ret);                             \
 		if (__ret) while ((spin)->lock);                       \
@@ -303,7 +334,7 @@ do {	register unsigned int __old __asm("o0");		\
 
 #define DRM_SPINLOCK_TAKE(spin,val)                                    \
 	do {                                                           \
-	    char __ret;                                                \
+            DRM_CAS_RESULT(__ret);                                     \
             int  cur;                                                  \
 	    do {                                                       \
                 cur = (*spin).lock;                                    \
@@ -323,7 +354,7 @@ do {	register unsigned int __old __asm("o0");		\
 
 #define DRM_SPINUNLOCK(spin,val)                                       \
 	do {                                                           \
-	    char __ret;                                                \
+            DRM_CAS_RESULT(__ret);                                     \
             if ((*spin).lock == val) { /* else server stole lock */    \
 	        do {                                                   \
 		    DRM_CAS(spin,val,0,__ret);                         \

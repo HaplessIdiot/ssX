@@ -693,6 +693,20 @@ _mesa_Indexubv( const GLubyte *c )
    ASSIGN_3V(normal, x,y,z);			\
 }
 
+#if defined(USE_IEEE)
+#define NORMALF( x, y, z )					\
+{								\
+   GLuint count;						\
+   GLint *normal;						\
+   GET_IMMEDIATE;						\
+   count = IM->Count;						\
+   IM->Flag[count] |= VERT_NORM;				\
+   normal = (GLint *)IM->Normal[count];				\
+   ASSIGN_3V(normal, *(int*)&(x), *(int*)&(y), *(int*)&(z));	\
+}
+#else
+#define NORMALF NORMAL
+#endif
 
 void
 _mesa_Normal3b( GLbyte nx, GLbyte ny, GLbyte nz )
@@ -711,7 +725,7 @@ _mesa_Normal3d( GLdouble nx, GLdouble ny, GLdouble nz )
 void
 _mesa_Normal3f( GLfloat nx, GLfloat ny, GLfloat nz )
 {
-   NORMAL(nx, ny, nz);
+   NORMALF(nx, ny, nz);
 }
 
 
@@ -746,7 +760,7 @@ _mesa_Normal3dv( const GLdouble *v )
 void
 _mesa_Normal3fv( const GLfloat *v )
 {
-   NORMAL( v[0], v[1], v[2] );
+   NORMALF( v[0], v[1], v[2] );
 }
 
 
@@ -811,6 +825,23 @@ _mesa_Normal3sv( const GLshort *v )
    ASSIGN_4V(tc, s,t,u,v);			\
 }
 
+#if defined(USE_IEEE)
+#define TEXCOORD2F(s,t)				\
+{						\
+   GLuint count;				\
+   GLint *tc;					\
+   GET_IMMEDIATE;				\
+   count = IM->Count;				\
+   IM->Flag[count] |= VERT_TEX0_12;		\
+   tc = (GLint *)IM->TexCoord[0][count];	\
+   *tc = *(int *)&(s);				\
+   *(tc+1) = *(int *)&(t);			\
+   *(tc+2) = 0;					\
+   *(tc+3) = IEEE_ONE;				\
+}
+#else
+#define TEXCOORD2F TEXCOORD2
+#endif
 
 void
 _mesa_TexCoord1d( GLdouble s )
@@ -850,7 +881,7 @@ _mesa_TexCoord2d( GLdouble s, GLdouble t )
 void
 _mesa_TexCoord2f( GLfloat s, GLfloat t )
 {
-   TEXCOORD2(*(&s),*&t); 
+   TEXCOORD2F(s,t); 
 }
 
 
@@ -962,7 +993,7 @@ _mesa_TexCoord2dv( const GLdouble *v )
 void
 _mesa_TexCoord2fv( const GLfloat *v )
 {
-   TEXCOORD2(v[0],v[1]);
+   TEXCOORD2F(v[0],v[1]);
 }
 
 
@@ -1072,6 +1103,22 @@ _mesa_TexCoord4sv( const GLshort *v )
       IM->maybe_transform_vb( IM );		\
 }
 
+#if defined(USE_IEEE)
+#define VERTEX3F(IM,x,y,z)			\
+{						\
+   GLuint count = IM->Count++;			\
+   GLint *dest = (GLint *)IM->Obj[count];	\
+   IM->Flag[count] |= VERT_OBJ_23;		\
+   dest[0] = *(int *)&(x);			\
+   dest[1] = *(int *)&(y);			\
+   dest[2] = *(int *)&(z);			\
+   dest[3] = IEEE_ONE;				\
+   if (dest == (GLint *)IM->Obj[VB_MAX-1])	\
+      IM->maybe_transform_vb( IM );		\
+}
+#else
+#define VERTEX3F VERTEX3
+#endif
 
 void
 _mesa_Vertex2d( GLdouble x, GLdouble y )
@@ -1127,7 +1174,7 @@ void
 _mesa_Vertex3f( GLfloat x, GLfloat y, GLfloat z )
 {
    GET_IMMEDIATE;
-   VERTEX3( IM, *(&x), *(&y), *(&z) ); 
+   VERTEX3F( IM, x, y, z ); 
 }
 
 
@@ -1159,7 +1206,7 @@ void
 _mesa_Vertex4f( GLfloat x, GLfloat y, GLfloat z, GLfloat w )
 {
    GET_IMMEDIATE;
-   VERTEX4( IM, *(&x), *(&y), *(&z), *(&w) );
+   VERTEX4( IM, x, y, z, w );
 }
 
 
@@ -1223,7 +1270,7 @@ void
 _mesa_Vertex3fv( const GLfloat *v )
 {
    GET_IMMEDIATE;
-   VERTEX3( IM, v[0], v[1], v[2] );
+   VERTEX3F( IM, v[0], v[1], v[2] );
 }
 
 
@@ -1347,6 +1394,22 @@ _mesa_Vertex4sv( const GLshort *v )
    ASSIGN_4V(tc, s,t,u,v);			\
 }
 
+#if defined(USE_IEEE)
+#define MULTI_TEXCOORD2F(s,t)			\
+{						\
+   GLuint count;				\
+   GLint *tc;					\
+   count = IM->Count;				\
+   IM->Flag[count] |= IM->TF2[texSet];		\
+   tc = (GLint *)IM->TexCoord[texSet][count];	\
+   tc[0] = *(int *)&(s);			\
+   tc[1] = *(int *)&(t);			\
+   tc[2] = 0;					\
+   tc[3] = IEEE_ONE;				\
+}
+#else
+#define MULTI_TEXCOORD2F MULTI_TEXCOORD2
+#endif
 
 void
 _mesa_MultiTexCoord1dARB(GLenum target, GLdouble s)
@@ -1444,7 +1507,7 @@ _mesa_MultiTexCoord2fARB(GLenum target, GLfloat s, GLfloat t)
    GLint texSet;
    GET_IMMEDIATE;
    CHECK_ARB
-   MULTI_TEXCOORD2( s, t );
+   MULTI_TEXCOORD2F( s, t );
 }
 
 void
@@ -1453,7 +1516,7 @@ _mesa_MultiTexCoord2fvARB(GLenum target, const GLfloat *v)
    GLint texSet;
    GET_IMMEDIATE;
    CHECK_ARB
-   MULTI_TEXCOORD2( v[0], v[1] );
+   MULTI_TEXCOORD2F( v[0], v[1] );
 }
 
 void

@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/linetemp.h,v 1.7 2000/02/18 12:18:44 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/linetemp.h,v 1.8 2000/06/17 00:02:13 martin Exp $ */
 
 /*
  * Line Rasterizer Template
@@ -223,12 +223,12 @@
      zPtr = (DEPTH_TYPE *) _mesa_zbuffer_address(ctx, x0, y0);
 #  endif
    if (depthBits <= 16) {
-      z0 = FloatToFixed(VB->Win.data[vert0][2]);
-      z1 = FloatToFixed(VB->Win.data[vert1][2]);
+      z0 = FloatToFixed(VB->Win.data[vert0][2] + ctx->LineZoffset);
+      z1 = FloatToFixed(VB->Win.data[vert1][2] + ctx->LineZoffset);
    }
    else {
-      z0 = (int) VB->Win.data[vert0][2];
-      z1 = (int) VB->Win.data[vert1][2];
+      z0 = (int) VB->Win.data[vert0][2] + ctx->LineZoffset;
+      z1 = (int) VB->Win.data[vert1][2] + ctx->LineZoffset;
    }
 #endif
 #ifdef PIXEL_ADDRESS

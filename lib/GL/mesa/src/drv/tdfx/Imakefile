@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.11 2000/08/24 22:20:08 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.12 2000/08/25 13:42:32 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -13,7 +13,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 #endif
 
 #if BuildXF86DRI
-  DRI_DEFINES = GlxDefines -DFX -DFX_GLIDE3 -DGLIDE3 -DDRIVERTS
+  DRI_DEFINES = GlxDefines -DFX_GLIDE3 -DDRIVERTS
  DRI_INCLUDES = -I../../../../dri -I../../../../glx \
 		-I../../../dri \
 		-I$(TOP)/include -I$(TOP)/include/GL \
@@ -24,32 +24,6 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 
 MESA_INCLUDES = -I. -I.. -I../../include \
 		-I../../../../dri/drm
-
-LinkSourceFile(fxclip.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxcliptmp.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxcva.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxcva.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxcvatmp.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxdd.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxddspan.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxddtex.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxdrv.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxfastpath.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxfasttmp.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxglidew.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxglidew.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxpipeline.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxrender.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxsanity.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxsdettmp.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxsetup.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxstripdet.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxtexman.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxtrifuncs.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxtritmp.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxvsetup.c, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxvsetup.h, $(MESASRCDIR)/src/FX)
-LinkSourceFile(fxvs_tmp.h, $(MESASRCDIR)/src/FX)
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) \
@@ -70,6 +44,14 @@ LinkSourceFile(fxvs_tmp.h, $(MESASRCDIR)/src/FX)
 		../../../../dri/drm/xf86drmHash.o \
 		../../../../dri/drm/xf86drmRandom.o \
 		../../../../dri/drm/xf86drmSL.o
+
+#ifdef GlxSoProf
+       HIOBJS = ../../../../highpc.o
+       LOOBJS = ../../../../lowpc.o
+#else
+       HIOBJS = 
+       LOOBJS =
+#endif
 
      TDFXSRCS = tdfx_xmesa.c tdfx_init.c tdfx_inithw.c \
 		fxclip.c fxcva.c fxdd.c fxddspan.c fxddtex.c fxfastpath.c \
@@ -246,7 +228,7 @@ LinkSourceFile(fxvs_tmp.h, $(MESASRCDIR)/src/FX)
 
      MMX_OBJS = ../../X86/mmx_blend.o
 
-#if MesaUse3DNow
+#ifdef MesaUse3DNow
    3DNOW_SRCS = ../../X86/3dnow.c \
 		../../X86/3dnow_norm_raw.S \
 		../../X86/3dnow_xform_masked1.S \
@@ -272,15 +254,41 @@ LinkSourceFile(fxvs_tmp.h, $(MESASRCDIR)/src/FX)
 		../../X86/vertex_3dnow.o
 #endif
 
+#ifdef MesaUseKatmai
+   KATMAI_SRCS = ../../X86/katmai.c \
+		../../X86/katmai_norm_raw.S \
+		../../X86/katmai_xform_masked1.S \
+		../../X86/katmai_xform_masked2.S \
+		../../X86/katmai_xform_masked3.S \
+		../../X86/katmai_xform_masked4.S \
+		../../X86/katmai_xform_raw1.S \
+		../../X86/katmai_xform_raw2.S \
+		../../X86/katmai_xform_raw3.S \
+		../../X86/katmai_xform_raw4.S \
+		../../X86/vertex_katmai.S
+
+   KATMAI_OBJS = ../../X86/katmai.o \
+		../../X86/katmai_norm_raw.o \
+		../../X86/katmai_xform_masked1.o \
+		../../X86/katmai_xform_masked2.o \
+		../../X86/katmai_xform_masked3.o \
+		../../X86/katmai_xform_masked4.o \
+		../../X86/katmai_xform_raw1.o \
+		../../X86/katmai_xform_raw2.o \
+		../../X86/katmai_xform_raw3.o \
+		../../X86/katmai_xform_raw4.o \
+		../../X86/vertex_katmai.o
 #endif
 
-      ASMSRCS = $(X86_SRCS) $(MMX_SRCS) $(3DNOW_SRCS)
-      ASMOBJS = $(X86_OBJS) $(MMX_OBJS) $(3DNOW_OBJS)
+#endif
 
-         SRCS = $(DRISRCS) $(DRMSRCS) $(TDFXSRCS) $(MESASRCS) $(ASMSRCS)
-         OBJS = $(DRIOBJS) $(DRMOBJS) $(TDFXOBJS) $(MESAOBJS) $(ASMOBJS)
+      ASMSRCS = $(X86_SRCS) $(MMX_SRCS) $(3DNOW_SRCS) $(KATMAI_SRCS)
+      ASMOBJS = $(X86_OBJS) $(MMX_OBJS) $(3DNOW_OBJS) $(KATMAI_OBJS)
 
-REQUIREDLIBS = -l$(GLIDE3LIBNAME) MathLibrary
+         SRCS = $(LOSRCS) $(DRISRCS) $(DRMSRCS) $(TDFXSRCS) $(MESASRCS) $(ASMSRCS) $(HISRCS)
+         OBJS = $(LOOBJS) $(DRIOBJS) $(DRMOBJS) $(TDFXOBJS) $(MESAOBJS) $(ASMOBJS) $(HIOBJS)
+
+REQUIREDLIBS = -lglide3x -lm
 #if !GlxBuiltInTdfx
 REQUIREDLIBS += -L../../../.. -lGL
 #endif
@@ -306,6 +314,12 @@ ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE
 SharedDepModuleTarget($(LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
 InstallDynamicModule($(LIBNAME),$(MODULEDIR),dri)
+
+#ifdef GlxSoProf
+SOPROF_LIBNAME = _tdfx_dri_p
+NormalDepLibraryTarget($(SOPROF_LIBNAME),$(ALL_DEPS),$(ALL_OBJS))
+InstallLibrary($(SOPROF_LIBNAME),$(MODULEDIR)/dri)
+#endif
 #endif
 
 DependTarget()

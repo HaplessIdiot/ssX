@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.6 2000/08/14 01:01:41 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.7 2000/08/25 13:42:37 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -34,6 +34,11 @@ static Bool MGACreateContext(ScreenPtr pScreen, VisualPtr visual,
 static void MGADestroyContext(ScreenPtr pScreen, drmContext hwContext,
 			       DRIContextType contextStore);
 static void MGADRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
+			       DRIContextType readContextType, 
+			       void *readContextStore,
+			       DRIContextType writeContextType, 
+			       void *writeContextStore);
+static void MGADRISwapContext_shared(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
 			       void *readContextStore,
 			       DRIContextType writeContextType, 
@@ -145,7 +150,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
    case 24:
       break;
    case 16:
-      numConfigs = 4;
+      numConfigs = 8;
 
       if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 						     numConfigs))) {
@@ -168,7 +173,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
       i = 0;
       depth = 1;
       for (accum = 0; accum <= 1; accum++) {
-         for (stencil = 0; stencil <= 0; stencil++) { /* no stencil for now */
+         for (stencil = 0; stencil <= 1; stencil++) { /* no stencil for now */
             for (db=1; db>=0; db--) {
                pConfigs[i].vid = -1;
                pConfigs[i].class = -1;
@@ -229,7 +234,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
       break;
 
    case 32:
-      numConfigs = 4;
+      numConfigs = 8;
 
       if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 						     numConfigs))) {
@@ -252,7 +257,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
       i = 0;
       depth = 1;
       for (accum = 0; accum <= 1; accum++) {
-         for (stencil = 0; stencil <= 0; stencil++) { /* no stencil for now */
+         for (stencil = 0; stencil <= 1; stencil++) { 
             for (db=1; db>=0; db--) {
                pConfigs[i].vid = -1;
                pConfigs[i].class = -1;
@@ -282,7 +287,10 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
                pConfigs[i].stereo = FALSE;
                pConfigs[i].bufferSize = 32;
                if (depth)
-                  pConfigs[i].depthSize = 32;
+		  if (stencil) 
+		     pConfigs[i].depthSize = 24;
+		  else
+		     pConfigs[i].depthSize = 32;
                else 
                   pConfigs[i].depthSize = 0;
                if (stencil)
@@ -291,7 +299,7 @@ MGAInitVisualConfigs(ScreenPtr pScreen)
                   pConfigs[i].stencilSize = 0;
                pConfigs[i].auxBuffers = 0;
                pConfigs[i].level = 0;
-               if (stencil || accum)
+               if (accum)
                   pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
                else
                   pConfigs[i].visualRating = GLX_NONE_EXT;
@@ -442,7 +450,10 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
 
    pDRIInfo->CreateContext = MGACreateContext;
    pDRIInfo->DestroyContext = MGADestroyContext;
-   pDRIInfo->SwapContext = MGADRISwapContext;
+   if (xf86IsEntityShared(pScrn->entityList[0]))
+      pDRIInfo->SwapContext = MGADRISwapContext_shared;
+   else
+      pDRIInfo->SwapContext = MGADRISwapContext;
   
    switch( pScrn->bitsPerPixel ) {
    case 8:
@@ -476,16 +487,17 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    {
       drmVersionPtr version = drmGetVersion(pMGA->drmSubFD);
       if (version) {
-         if (version->version_major != 1 ||
+         if (version->version_major != 2 ||
              version->version_minor != 0 ||
              version->version_patchlevel < 0) {
             /* incompatible drm version */
             xf86DrvMsg(pScreen->myNum, X_ERROR,
-                       "[drm] MGADRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
+                       "[drm] MGADRIScreenInit failed (DRM version = %d.%d.%d, expected 2.0.x).  Disabling DRI.\n",
                        version->version_major,
                        version->version_minor,
                        version->version_patchlevel);
-            MGADRICloseScreen(pScreen);
+/*              MGADRICloseScreen(pScreen); */
+	    
             drmFreeVersion(version);
             return FALSE;
          }
@@ -797,7 +809,8 @@ MGADRIFinishScreenInit(ScreenPtr pScreen)
 }
 
 
-void mgaGetQuiescence( ScrnInfoPtr pScrn )
+void
+mgaGetQuiescence( ScrnInfoPtr pScrn )
 {
    MGAPtr pMga = MGAPTR(pScrn);
 
@@ -812,13 +825,13 @@ void mgaGetQuiescence( ScrnInfoPtr pScrn )
       OUTREG(MGAREG_MACCESS, pMga->MAccess);
       OUTREG(MGAREG_PITCH, pLayout->displayWidth);
       pMga->PlaneMask = ~0;
+      OUTREG(MGAREG_PLNWT, pMga->PlaneMask);
       pMga->BgColor = 0;
       pMga->FgColor = 0;
-      OUTREG(MGAREG_PLNWT, ~0);
-      OUTREG(MGAREG_BCOL, 0);
-      OUTREG(MGAREG_FCOL, 0);
+      OUTREG(MGAREG_BCOL, pMga->BgColor);
+      OUTREG(MGAREG_FCOL, pMga->FgColor);
+      OUTREG(MGAREG_SRCORG, pMga->realSrcOrg);
       pMga->SrcOrg = 0;
-      OUTREG(MGAREG_SRCORG, 0);
       OUTREG(MGAREG_DSTORG, pMga->DstOrg);
       OUTREG(MGAREG_OPMODE, MGAOPM_DMA_BLIT);
       OUTREG(MGAREG_CXBNDRY, 0xFFFF0000); /* (maxX << 16) | minX */
@@ -829,8 +842,27 @@ void mgaGetQuiescence( ScrnInfoPtr pScrn )
 }
 
 
+void
+mgaGetQuiescence_shared( ScrnInfoPtr pScrn )
+{
+   MGAPtr pMga = MGAPTR(pScrn);
+   MGAEntPtr pMgaEnt = pMga->entityPrivate;
+   MGAPtr pMga2 = MGAPTR(pMgaEnt->pScrn_2);
 
-void MGASwapContext(ScreenPtr pScreen)
+   pMga = MGAPTR(pMgaEnt->pScrn_1);
+   pMga->have_quiescense = 1;
+   pMga2->have_quiescense = 1;
+   
+   if (pMgaEnt->directRenderingEnabled) {
+      MgaLockUpdate(pMgaEnt->pScrn_1, (DRM_LOCK_QUIESCENT | DRM_LOCK_FLUSH));
+      pMga->RestoreAccelState(pScrn);
+      xf86SetLastScrnFlag(pScrn->entityList[0], pScrn->scrnIndex);
+   }
+}
+   
+
+void
+MGASwapContext(ScreenPtr pScreen)
 {
    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
    MGAPtr pMga = MGAPTR(pScrn);
@@ -842,6 +874,20 @@ void MGASwapContext(ScreenPtr pScreen)
    pMga->AccelInfoRec->NeedToSync = TRUE;
 }
 
+void
+MGASwapContext_shared(ScreenPtr pScreen)
+{
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   MGAPtr pMga = MGAPTR(pScrn);
+   MGAEntPtr pMgaEnt = pMga->entityPrivate;
+   MGAPtr pMga2 = MGAPTR(pMgaEnt->pScrn_2);
+
+   pMga = MGAPTR(pMgaEnt->pScrn_1);
+   pMga->have_quiescense = 0;
+   pMga->AccelInfoRec->NeedToSync = TRUE;
+   pMga2->have_quiescense = 0;
+   pMga2->AccelInfoRec->NeedToSync = TRUE;
+}
 
 
 /* This is really only called from validate/postvalidate as we
@@ -874,6 +920,18 @@ MGADRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
    }
 }
 
+static void
+MGADRISwapContext_shared(ScreenPtr pScreen, DRISyncType syncType, 
+			 DRIContextType oldContextType, void *oldContext,
+			 DRIContextType newContextType, void *newContext)
+{   
+   if (syncType == DRI_3D_SYNC && 
+       oldContextType == DRI_2D_CONTEXT &&
+       newContextType == DRI_2D_CONTEXT)
+   {
+      MGASwapContext_shared(pScreen);
+   }
+}
 
 void 
 MGASelectBuffer(ScrnInfoPtr pScrn, int which)

@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -47,7 +47,9 @@ _mesa_free_texture_image( struct gl_texture_image *teximage );
 
 
 extern GLuint
-_mesa_compressed_image_size(GLenum internalFormat,
+_mesa_compressed_image_size(GLcontext *ctx,
+                            GLenum internalFormat,
+                            GLint numDimensions,
                             GLint width, GLint height, GLint depth);
 
 

@@ -36,74 +36,60 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <X11/Xlibint.h>
 #include "xf86dri.h"
 #include "tdfx_dri.h"
-#include "tdfx_init.h"
+#include "fxdrv.h"
+
 
 #ifdef DEBUG_LOCKING
-char *prevLockFile=0;
-int prevLockLine=0;
+char *prevLockFile = 0;
+int prevLockLine = 0;
 #endif
 
-static void performMagic(__DRIscreenPrivate *driScrnPriv)
+static void
+performMagic(__DRIscreenPrivate * driScrnPriv)
 {
-    tdfxScreenPrivate *gPriv = (tdfxScreenPrivate *)driScrnPriv->private;
-    TDFXDRIPtr         gDRIPriv = (TDFXDRIPtr)driScrnPriv->pDevPriv;
+    tdfxScreenPrivate *gPriv = (tdfxScreenPrivate *) driScrnPriv->private;
+    TDFXDRIPtr gDRIPriv = (TDFXDRIPtr) driScrnPriv->pDevPriv;
 
-    gPriv->regs.handle=gDRIPriv->regs;
-    gPriv->regs.size=gDRIPriv->regsSize;
-    gPriv->deviceID=gDRIPriv->deviceID;
-    gPriv->width=gDRIPriv->width;
-    gPriv->height=gDRIPriv->height;
-    gPriv->mem=gDRIPriv->mem;
-    gPriv->cpp=gDRIPriv->cpp;
-    gPriv->stride=gDRIPriv->stride;
-    gPriv->fifoOffset=gDRIPriv->fifoOffset;
-    gPriv->fifoSize=gDRIPriv->fifoSize;
-    gPriv->fbOffset=gDRIPriv->fbOffset;
-    gPriv->backOffset=gDRIPriv->backOffset;
-    gPriv->depthOffset=gDRIPriv->depthOffset;
-    gPriv->textureOffset=gDRIPriv->textureOffset;
-    gPriv->textureSize=gDRIPriv->textureSize;
+    gPriv->regs.handle = gDRIPriv->regs;
+    gPriv->regs.size = gDRIPriv->regsSize;
+    gPriv->deviceID = gDRIPriv->deviceID;
+    gPriv->width = gDRIPriv->width;
+    gPriv->height = gDRIPriv->height;
+    gPriv->mem = gDRIPriv->mem;
+    gPriv->cpp = gDRIPriv->cpp;
+    gPriv->stride = gDRIPriv->stride;
+    gPriv->fifoOffset = gDRIPriv->fifoOffset;
+    gPriv->fifoSize = gDRIPriv->fifoSize;
+    gPriv->fbOffset = gDRIPriv->fbOffset;
+    gPriv->backOffset = gDRIPriv->backOffset;
+    gPriv->depthOffset = gDRIPriv->depthOffset;
+    gPriv->textureOffset = gDRIPriv->textureOffset;
+    gPriv->textureSize = gDRIPriv->textureSize;
 }
 
-GLboolean tdfxMapAllRegions(__DRIscreenPrivate *driScrnPriv)
+GLboolean
+tdfxMapAllRegions(__DRIscreenPrivate * driScrnPriv)
 {
-    tdfxScreenPrivate *gPriv = (tdfxScreenPrivate *)driScrnPriv->private;
-    
+    tdfxScreenPrivate *gPriv = (tdfxScreenPrivate *) driScrnPriv->private;
+
     /* First, pick apart pDevPriv & friends */
     performMagic(driScrnPriv);
 
-    if (drmMap(driScrnPriv->fd, gPriv->regs.handle, gPriv->regs.size, 
-	       &gPriv->regs.map)) {
-      return GL_FALSE;
+    if (drmMap(driScrnPriv->fd, gPriv->regs.handle, gPriv->regs.size,
+               &gPriv->regs.map)) {
+        return GL_FALSE;
     }
 
     return GL_TRUE;
 }
 
-void tdfxUnmapAllRegions(__DRIscreenPrivate *driScrnPriv)
+void
+tdfxUnmapAllRegions(__DRIscreenPrivate * driScrnPriv)
 {
-    tdfxScreenPrivate *gPriv = (tdfxScreenPrivate *)driScrnPriv->private;
+    tdfxScreenPrivate *gPriv = (tdfxScreenPrivate *) driScrnPriv->private;
 
     drmUnmap(gPriv->regs.map, gPriv->regs.size);
 }
 
-/*
- * Shutdown Glide library
- */
-void fxCloseHardware(void)
-{
-  if (getenv("MESA_FX_INFO")) {
-    GrSstPerfStats_t		st;
-
-    FX_grSstPerfStats(&st);
-    fprintf(stderr,"Pixels Stats:\n");
-    fprintf(stderr,"  # pixels processed (minus buffer clears): %u\n",(unsigned)st.pixelsIn);
-    fprintf(stderr,"  # pixels not drawn due to chroma key test failure: %u\n",(unsigned)st.chromaFail);
-    fprintf(stderr,"  # pixels not drawn due to depth test failure: %u\n",(unsigned)st.zFuncFail);
-    fprintf(stderr,"  # pixels not drawn due to alpha test failure: %u\n",(unsigned)st.aFuncFail);
-    fprintf(stderr,"  # pixels drawn (including buffer clears and LFB writes): %u\n",(unsigned)st.pixelsOut);
-  }
-  FX_grGlideShutdown();
-}
 
 #endif

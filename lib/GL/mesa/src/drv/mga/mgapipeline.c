@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include "mgavb.h"
 #include "mgadd.h"
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgatris.h"
 #include "mgapipeline.h"
 #include "fog.h"

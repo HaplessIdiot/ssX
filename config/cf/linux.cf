@@ -4,7 +4,7 @@ XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.135 2000/08/26 04:30:48 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.137 2000/09/19 12:46:03 eich Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault		YES
@@ -179,6 +179,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #      define BuildXF86DRI            NO
 #    endif
 #  elif defined(SparcArchitecture)
+#    define BuildXF86DRI              YES
+#  elif defined(AlphaArchitecture)
 #    define BuildXF86DRI              YES
 #  else
 #    define BuildXF86DRI              NO

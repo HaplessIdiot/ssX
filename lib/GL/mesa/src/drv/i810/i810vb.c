@@ -22,16 +22,16 @@
  *
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.5 2000/08/28 02:43:12 tsi Exp $ */
  
+#include <stdio.h>
+#include <stdlib.h>
 #include "i810context.h"
 #include "i810vb.h"
 #include "i810log.h"
-
+#include "mem.h"
 #include "stages.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 
 
 #define TEX0 {					\
@@ -387,8 +387,8 @@ void i810DDResizeVB( struct vertex_buffer *VB, GLuint size )
       exit(1);
    }
 
-   free( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * mvb->size);
+   ALIGN_FREE( VB->ClipMask );
+   VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * mvb->size, 4);
    if (!VB->ClipMask) {
       fprintf(stderr, "i810-glx: out of memory !\n");
       exit(1);
@@ -429,8 +429,8 @@ void i810DDRegisterVB( struct vertex_buffer *VB )
       exit(1);
    }
       
-   free( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * mvb->size);
+   ALIGN_FREE( VB->ClipMask );
+   VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * mvb->size, 4);
    if (!VB->ClipMask) {
       fprintf(stderr, "i810-glx: out of memory !\n");
       exit(1);

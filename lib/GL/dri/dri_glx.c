@@ -301,6 +301,14 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
     int eventBase, errorBase;
     int major, minor, patch;
 
+    /* Initialize these fields to NULL in case we fail.
+     * If we don't do this we may later get segfaults trying to free random
+     * addresses when the display is closed.
+     */
+    pdisp->private = NULL;
+    pdisp->destroyDisplay = NULL;
+    pdisp->createScreen = NULL;
+
     if (!XF86DRIQueryExtension(dpy, &eventBase, &errorBase)) {
 	return NULL;
     }

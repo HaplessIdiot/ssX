@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.14 2000/08/25 13:42:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.15 2000/08/28 18:12:55 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -50,7 +50,6 @@ int I810AllocLow( I810MemRange *result, I810MemRange *pool, int size )
    return 1;
 }
 
-
 int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
 {
    if (size > pool->Size) return 0;
@@ -61,7 +60,6 @@ int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
    result->Start = pool->End -= size;
    return 1;
 }
-
 
 int I810AllocateGARTMemory( ScrnInfoPtr pScrn ) 
 {
@@ -93,6 +91,7 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 
    if (!xf86BindGARTMemory(pScrn->scrnIndex, key, 0))
       return FALSE;
+
 
    pI810->SysMem.Start = 0;
    pI810->SysMem.Size = size;
@@ -135,6 +134,8 @@ int I810AllocateGARTMemory( ScrnInfoPtr pScrn )
 		 size);
       pI810->DcacheKey = -1;
    }
+   
+
 
    /* Mouse cursor -- The i810 (crazy) needs a physical address in
     * system memory from which to upload the cursor.  We get this from 

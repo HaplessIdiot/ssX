@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.30 2000/09/17 01:36:27 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.32 2000/09/19 12:46:16 eich Exp $ */
 
 /*
  * Authors:
@@ -1900,12 +1900,15 @@ I810CloseScreen(int scrnIndex, ScreenPtr pScreen)
    I810Ptr pI810 = I810PTR(pScrn);
    XAAInfoRecPtr infoPtr = pI810->AccelInfoRec;
 
-   
+   if (pScrn->vtSema == TRUE) {
+       I810Restore(pScrn);
+       vgaHWLock(hwp);
+   }
 #ifdef XF86DRI
-    if (pI810->directRenderingEnabled) {
-	I810DRICloseScreen(pScreen);
-	pI810->directRenderingEnabled=FALSE;
-    }
+   if (pI810->directRenderingEnabled) {
+       I810DRICloseScreen(pScreen);
+       pI810->directRenderingEnabled=FALSE;
+   }
 #endif
 
    if(pScrn->vtSema == TRUE) {

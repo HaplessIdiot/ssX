@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.h,v 1.5 2000/08/28 02:43:12 tsi Exp $ */
 
 /*
  * Authors:
@@ -50,7 +50,7 @@ typedef struct {
    char *map;
 } mgaRegion, *mgaRegionPtr;
 
-typedef struct {
+typedef struct mga_screen_private_s {
 
    int chipset;
    int width;
@@ -88,7 +88,7 @@ typedef struct {
 } mgaScreenPrivate;
 
 
-#include "mgalib.h"
+#include "mgacontext.h"
 
 extern void mgaGetLock( mgaContextPtr mmesa, GLuint flags );
 extern void mgaEmitHwStateLocked( mgaContextPtr mmesa );

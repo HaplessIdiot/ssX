@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.7 2000/06/17 00:03:12 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/xf86dri.c,v 1.8 2000/06/25 16:03:43 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -449,6 +449,8 @@ ProcXF86DRIGetDrawableInfo(
     if (rep.numClipRects) 
        rep.length += sizeof(XF86DRIClipRectRec) * rep.numClipRects;
     
+    rep.length = ((rep.length + 3) & ~3) >> 2;
+
     WriteToClient(client, sizeof(xXF86DRIGetDrawableInfoReply), (char *)&rep);
 
     if (rep.numClipRects) {
@@ -502,7 +504,7 @@ ProcXF86DRIGetDeviceInfo(
     if (rep.devPrivateSize) {
 	rep.length = (SIZEOF(xXF86DRIGetDeviceInfoReply) - 
 		      SIZEOF(xGenericReply) +
-		      ((rep.devPrivateSize + 3) & ~3));
+		      ((rep.devPrivateSize + 3) & ~3)) >> 2;
     }
 
     WriteToClient(client, sizeof(xXF86DRIGetDeviceInfoReply), (char *)&rep);

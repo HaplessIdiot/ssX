@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -596,7 +596,7 @@ void gl_rotation_matrix( GLfloat angle, GLfloat x, GLfloat y, GLfloat z,
 
    mag = GL_SQRT( x*x + y*y + z*z );
 
-   if (mag == 0.0) {
+   if (mag <= 1.0e-4) {
       /* generate an identity matrix and return */
       MEMCPY(m, Identity, sizeof(GLfloat)*16);
       return;
@@ -1561,16 +1561,23 @@ void gl_calculate_model_project_matrix( GLcontext *ctx )
 
 void gl_matrix_ctr( GLmatrix *m )
 {
+   if ( m->m == 0 ) {
+      m->m = (GLfloat *) ALIGN_MALLOC( 16 * sizeof(GLfloat), 16 );
+   }
+   MEMCPY( m->m, Identity, sizeof(Identity) );
    m->inv = 0;
-   MEMCPY( m->m, Identity, sizeof(Identity));
    m->type = MATRIX_IDENTITY;
    m->flags = MAT_DIRTY_DEPENDENTS;
 }
 
 void gl_matrix_dtr( GLmatrix *m )
 {
-   if (m->inv != 0) {
-      FREE(m->inv);
+   if ( m->m != 0 ) {
+      ALIGN_FREE( m->m );
+      m->m = 0;
+   }
+   if ( m->inv != 0 ) {
+      ALIGN_FREE( m->inv );
       m->inv = 0;
    }
 }
@@ -1578,7 +1585,7 @@ void gl_matrix_dtr( GLmatrix *m )
 #if 0
 void gl_matrix_set_identity( GLmatrix *m )
 {
-   MEMCPY( m->m, Identity, sizeof(Identity));
+   MEMCPY( m->m, Identity, sizeof(Identity) );
    m->type = MATRIX_IDENTITY;
    m->flags = MAT_DIRTY_DEPENDENTS;
 }
@@ -1586,15 +1593,15 @@ void gl_matrix_set_identity( GLmatrix *m )
 
 void gl_matrix_alloc_inv( GLmatrix *m )
 {
-   if (m->inv == 0) {
-      m->inv = (GLfloat *)MALLOC(16*sizeof(GLfloat));
+   if ( m->inv == 0 ) {
+      m->inv = (GLfloat *) ALIGN_MALLOC( 16 * sizeof(GLfloat), 16 );
       MEMCPY( m->inv, Identity, 16 * sizeof(GLfloat) );
    }
 }
 
 void gl_matrix_copy( GLmatrix *to, const GLmatrix *from )
 {
-   MEMCPY( to->m, from->m, sizeof(Identity));
+   MEMCPY( to->m, from->m, sizeof(Identity) );
    to->flags = from->flags | MAT_DIRTY_DEPENDENTS;
    to->type = from->type;
 

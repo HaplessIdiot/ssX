@@ -32,16 +32,17 @@ glx_init_prof( void )
    fprintf(stderr, "\n\n\nIn glx_init_prof\n\n\n");
 
    if (!s) return;
+   if (profile) return;
 
    profile = 1;
    monstartup( (char *)glx_lowpc, (char *)glx_highpc );
 
-   fprintf(stderr, "Starting profiling, %x %x\n", 
-	   (unsigned int)glx_lowpc, 
-	   (unsigned int)glx_highpc);
+   fprintf(stderr, "Starting profiling, %lx %lx\n", 
+	   (unsigned long)glx_lowpc, 
+	   (unsigned long)glx_highpc);
 
    if ((fp = fopen( "glx_lowpc", "w" )) != NULL) {
-      fprintf( fp, "0x%08x ", (unsigned int)glx_lowpc );
+      fprintf( fp, "0x%08lx ", (unsigned long)glx_lowpc );
       fclose( fp );
    }
 }

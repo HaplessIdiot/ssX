@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.h,v 1.4 2000/08/28 02:43:12 tsi Exp $ */
 
 #ifndef MGA_IOCTL_H
 #define MGA_IOCTL_H
 
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mga_xmesa.h"
 
 GLbitfield mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
@@ -14,7 +14,7 @@ void mgaSwapBuffers( mgaContextPtr mmesa );
 
 
 
-mgaUI32 *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords );
+GLuint *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords );
 
 
 void mgaGetILoadBufferLocked( mgaContextPtr mmesa );
@@ -46,6 +46,7 @@ void mgaFlushElts( mgaContextPtr mmesa ) ;
 /* upload texture
  */
 
+void mgaDDFlush( GLcontext *ctx );
 void mgaDDFinish( GLcontext *ctx );
 
 void mgaDDInitIoctlFuncs( GLcontext *ctx );
@@ -60,10 +61,10 @@ void mgaDDInitIoctlFuncs( GLcontext *ctx );
 extern drmBufPtr mga_get_buffer_ioctl( mgaContextPtr mmesa );
 
 static __inline
-mgaUI32 *mgaAllocVertexDwordsInline( mgaContextPtr mmesa, int dwords )
+GLuint *mgaAllocVertexDwordsInline( mgaContextPtr mmesa, int dwords )
 {
    int bytes = dwords * 4;
-   mgaUI32 *head;
+   GLuint *head;
 
    if (!mmesa->vertex_dma_buffer) {
       LOCK_HARDWARE( mmesa );
@@ -81,12 +82,11 @@ mgaUI32 *mgaAllocVertexDwordsInline( mgaContextPtr mmesa, int dwords )
       UNLOCK_HARDWARE( mmesa );
    }
 
-   head = (mgaUI32 *)((char *)mmesa->vertex_dma_buffer->address + 
+   head = (GLuint *)((char *)mmesa->vertex_dma_buffer->address + 
 		      mmesa->vertex_dma_buffer->used);
 
    mmesa->vertex_dma_buffer->used += bytes;
    return head;
 }
-
 
 #endif

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.311 2000/08/26 16:15:51 keithp Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.314 2000/09/20 02:03:46 keithp Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -68,6 +68,15 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #define GlideDriver glide
 #else
 #define GlideDriver /**/
+#endif
+
+/* Use the binary-only library from Matrox? */
+#ifndef UseMatroxHal 
+#define UseMatroxHal NO
+#endif
+
+#ifndef BuildMatroxHal
+#define BuildMatroxHal NO
 #endif
 
 /*
@@ -610,7 +619,12 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #  if defined(SparcArchitecture)  || defined(ia64Architecture)
 #    define GlxArchDefines -D__GLX_ALIGN64
 #  else
-#    define GlxArchDefines /**/
+#    if defined(AlphaArchitecture)
+/* On the Alpha we need to ensure floating point accuracy for 3D */
+#      define GlxArchDefines -mieee
+#    else
+#      define GlxArchDefines /**/
+#    endif
 #  endif
 
 #  ifndef GlxExtraDefines

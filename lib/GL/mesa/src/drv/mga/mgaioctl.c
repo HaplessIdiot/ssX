@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.5 2000/08/28 02:43:12 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -7,11 +7,10 @@
 #include "dd.h"
 
 #include "mm.h"
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgadd.h"
 #include "mgastate.h"
 #include "mgatex.h"
-#include "mgalog.h"
 #include "mgavb.h"
 #include "mgatris.h"
 #include "mgabuffers.h"
@@ -136,10 +135,10 @@ drmBufPtr mga_get_buffer_ioctl( mgaContextPtr mmesa )
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
       fprintf(stderr, 
 	   "drmDMA (get) returns size[0] 0x%x idx[0] %d\n"
-	   "dma_buffer now: buf idx: %d size: %d used: %d\n",
+	   "dma_buffer now: buf idx: %d size: %d used: %d addr %p\n",
 	   dma.request_sizes[0], dma.request_list[0],
 	   buf->idx, buf->total,
-	   buf->used);
+	   buf->used, buf->address);
 
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
       fprintf(stderr, "finished getbuffer\n");
@@ -155,7 +154,6 @@ GLbitfield mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 {
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    __DRIdrawablePrivate *dPriv = mmesa->driDrawable;
-   const GLuint colorMask = *((GLuint *) &ctx->Color.ColorMask);
    drm_mga_clear_t clear;
    int retcode;
    int i;
@@ -165,28 +163,37 @@ GLbitfield mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 
    clear.flags = 0;
    clear.clear_color = mmesa->ClearColor;
-
-   if (mmesa->mgaScreen->cpp == 2)
-      clear.clear_depth = ctx->Depth.Clear * (GLdouble)0xffff;
-   else {
-      clear.clear_depth = ctx->Depth.Clear * (GLdouble)0xffffffff;
-   }
+   clear.clear_depth = 0;
+   clear.clear_depth_mask = 0;
 
    FLUSH_BATCH( mmesa );
 	
-   if ((mask & DD_FRONT_LEFT_BIT) && colorMask == ~0) {
+   if (mask & DD_FRONT_LEFT_BIT) {
       clear.flags |= MGA_FRONT;
+      clear.clear_color_mask = mmesa->Setup[MGA_CTXREG_PLNWT];
       mask &= ~DD_FRONT_LEFT_BIT;
    }
 
-   if ((mask & DD_BACK_LEFT_BIT) && colorMask == ~0) {
+   if (mask & DD_BACK_LEFT_BIT) {
       clear.flags |= MGA_BACK;
+      clear.clear_color_mask = mmesa->Setup[MGA_CTXREG_PLNWT];
       mask &= ~DD_BACK_LEFT_BIT;
    }
 
    if ((mask & DD_DEPTH_BIT) && ctx->Depth.Mask) {
       clear.flags |= MGA_DEPTH;
+      clear.clear_depth_mask |= mmesa->depth_clear_mask;
+      clear.clear_depth = (mmesa->ClearDepth &
+			   mmesa->depth_clear_mask);
       mask &= ~DD_DEPTH_BIT;
+   }
+
+   if ((mask & DD_STENCIL_BIT) && mmesa->hw_stencil) {
+      clear.flags |= MGA_DEPTH;
+      clear.clear_depth_mask |= mmesa->stencil_clear_mask;
+      clear.clear_depth |= (ctx->Stencil.Clear &
+			    mmesa->stencil_clear_mask);
+      mask &= ~DD_STENCIL_BIT;
    }
 
    if (!clear.flags)
@@ -267,6 +274,8 @@ GLbitfield mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 }
 
 
+int nrswaps;
+
 
 
 /*
@@ -278,7 +287,6 @@ void mgaSwapBuffers( mgaContextPtr mmesa )
    XF86DRIClipRectPtr pbox;
    int nbox;
    drm_mga_swap_t swap;
-   static int nrswaps;
    int retcode;
    int i;
    int tmp;
@@ -312,12 +320,16 @@ void mgaSwapBuffers( mgaContextPtr mmesa )
       if (0)
 	 fprintf(stderr, "DRM_IOCTL_MGA_SWAP\n"); 
 
+#if 1
       if((retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_SWAP, &swap))) {
 	 printf("send swap retcode = %d\n", retcode);
 	 exit(1);
       }
+#else
+      mgaUpdateLock( mmesa, DRM_LOCK_FLUSH );
+#endif
 
-      if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
+      if (0)
 	 fprintf(stderr, "finished swap %d\n", ++nrswaps);
    }
 
@@ -525,10 +537,10 @@ void mgaFlushElts( mgaContextPtr mmesa )
 }
 
 
-mgaUI32 *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords )
+GLuint *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords )
 {
    int bytes = dwords * 4;
-   mgaUI32 *head;
+   GLuint *head;
 
    if (!mmesa->vertex_dma_buffer) {
       LOCK_HARDWARE( mmesa );
@@ -546,7 +558,7 @@ mgaUI32 *mgaAllocVertexDwords( mgaContextPtr mmesa, int dwords )
       UNLOCK_HARDWARE( mmesa );
    }
 
-   head = (mgaUI32 *)((char *)mmesa->vertex_dma_buffer->address + 
+   head = (GLuint *)((char *)mmesa->vertex_dma_buffer->address + 
 		      mmesa->vertex_dma_buffer->used);
 
    mmesa->vertex_dma_buffer->used += bytes;
@@ -565,7 +577,10 @@ void mgaFireILoadLocked( mgaContextPtr mmesa,
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
       fprintf(stderr, "mgaFireILoad idx %d ofs 0x%x length %d\n",
 	      mmesa->iload_buffer->idx, (int)offset, (int)length );
-
+   
+   /* HACK 
+    */
+   mgaUpdateLock( mmesa, DRM_LOCK_QUIESCENT | DRM_LOCK_FLUSH);
    mga_iload_dma_ioctl( mmesa, offset, length );
 }
 

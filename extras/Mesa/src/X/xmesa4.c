@@ -1439,6 +1439,98 @@ static void setup_x_polygon_options( GLcontext *ctx )
 }
 
 
+#ifdef DEBUG
+void
+_xmesa_print_triangle_func( triangle_func triFunc )
+{
+   printf("XMesa tri func = ");
+   if (triFunc ==smooth_TRUECOLOR_z_triangle)
+      printf("smooth_TRUECOLOR_z_triangle\n");
+   else if (triFunc ==smooth_8A8B8G8R_z_triangle)
+      printf("smooth_8A8B8G8R_z_triangle\n");
+   else if (triFunc ==smooth_8R8G8B_z_triangle)
+      printf("smooth_8R8G8B_z_triangle\n");
+   else if (triFunc ==smooth_8R8G8B24_z_triangle)
+      printf("smooth_8R8G8B24_z_triangle\n");
+   else if (triFunc ==smooth_TRUEDITHER_z_triangle)
+      printf("smooth_TRUEDITHER_z_triangle\n");
+   else if (triFunc ==smooth_5R6G5B_z_triangle)
+      printf("smooth_5R6G5B_z_triangle\n");
+   else if (triFunc ==smooth_DITHER_5R6G5B_z_triangle)
+      printf("smooth_DITHER_5R6G5B_z_triangle\n");
+   else if (triFunc ==smooth_HPCR_z_triangle)
+      printf("smooth_HPCR_z_triangle\n");
+   else if (triFunc ==smooth_DITHER8_z_triangle)
+      printf("smooth_DITHER8_z_triangle\n");
+   else if (triFunc ==smooth_LOOKUP8_z_triangle)
+      printf("smooth_LOOKUP8_z_triangle\n");
+   else if (triFunc ==flat_TRUECOLOR_z_triangle)
+      printf("flat_TRUECOLOR_z_triangle\n");
+   else if (triFunc ==flat_8A8B8G8R_z_triangle)
+      printf("flat_8A8B8G8R_z_triangle\n");
+   else if (triFunc ==flat_8R8G8B_z_triangle)
+      printf("flat_8R8G8B_z_triangle\n");
+   else if (triFunc ==flat_8R8G8B24_z_triangle)
+      printf("flat_8R8G8B24_z_triangle\n");
+   else if (triFunc ==flat_TRUEDITHER_z_triangle)
+      printf("flat_TRUEDITHER_z_triangle\n");
+   else if (triFunc ==flat_5R6G5B_z_triangle)
+      printf("flat_5R6G5B_z_triangle\n");
+   else if (triFunc ==flat_DITHER_5R6G5B_z_triangle)
+      printf("flat_DITHER_5R6G5B_z_triangle\n");
+   else if (triFunc ==flat_HPCR_z_triangle)
+      printf("flat_HPCR_z_triangle\n");
+   else if (triFunc ==flat_DITHER8_z_triangle)
+      printf("flat_DITHER8_z_triangle\n");
+   else if (triFunc ==flat_LOOKUP8_z_triangle)
+      printf("flat_LOOKUP8_z_triangle\n");
+   else if (triFunc ==smooth_TRUECOLOR_triangle)
+      printf("smooth_TRUECOLOR_triangle\n");
+   else if (triFunc ==smooth_8A8B8G8R_triangle)
+      printf("smooth_8A8B8G8R_triangle\n");
+   else if (triFunc ==smooth_8R8G8B_triangle)
+      printf("smooth_8R8G8B_triangle\n");
+   else if (triFunc ==smooth_8R8G8B24_triangle)
+      printf("smooth_8R8G8B24_triangle\n");
+   else if (triFunc ==smooth_TRUEDITHER_triangle)
+      printf("smooth_TRUEDITHER_triangle\n");
+   else if (triFunc ==smooth_5R6G5B_triangle)
+      printf("smooth_5R6G5B_triangle\n");
+   else if (triFunc ==smooth_DITHER_5R6G5B_triangle)
+      printf("smooth_DITHER_5R6G5B_triangle\n");
+   else if (triFunc ==smooth_HPCR_triangle)
+      printf("smooth_HPCR_triangle\n");
+   else if (triFunc ==smooth_DITHER8_triangle)
+      printf("smooth_DITHER8_triangle\n");
+   else if (triFunc ==smooth_LOOKUP8_triangle)
+      printf("smooth_LOOKUP8_triangle\n");
+   else if (triFunc ==flat_TRUECOLOR_triangle)
+      printf("flat_TRUECOLOR_triangle\n");
+   else if (triFunc ==flat_TRUEDITHER_triangle)
+      printf("flat_TRUEDITHER_triangle\n");
+   else if (triFunc ==flat_8A8B8G8R_triangle)
+      printf("flat_8A8B8G8R_triangle\n");
+   else if (triFunc ==flat_8R8G8B_triangle)
+      printf("flat_8R8G8B_triangle\n");
+   else if (triFunc ==flat_8R8G8B24_triangle)
+      printf("flat_8R8G8B24_triangle\n");
+   else if (triFunc ==flat_5R6G5B_triangle)
+      printf("flat_5R6G5B_triangle\n");
+   else if (triFunc ==flat_DITHER_5R6G5B_triangle)
+      printf("flat_DITHER_5R6G5B_triangle\n");
+   else if (triFunc ==flat_HPCR_triangle)
+      printf("flat_HPCR_triangle\n");
+   else if (triFunc ==flat_DITHER8_triangle)
+      printf("flat_DITHER8_triangle\n");
+   else if (triFunc ==flat_LOOKUP8_triangle)
+      printf("flat_LOOKUP8_triangle\n");
+   else if (triFunc ==flat_pixmap_triangle)
+      printf("flat_pixmap_triangle\n");
+   else
+      printf("???\n");
+}
+#endif
+
 
 triangle_func xmesa_get_triangle_func( GLcontext *ctx )
 {
@@ -1578,13 +1670,20 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
       return NULL;
    }
    else {
-      /* pixmap */
+      /* draw to pixmap */
+#if 0
+      /* XXX have to disable this because X's rasterization rules
+       * don't match software Mesa's.  This causes a buffer invariance
+       * test failure in the conformance tests.
+       * In the future, we might provide a config option to enable this.
+       */
       if (ctx->Light.ShadeModel==GL_FLAT && ctx->RasterMask==0) {
          if (ctx->Color.DitherFlag && depth < 24)
             return NULL;
          setup_x_polygon_options( ctx );
          return flat_pixmap_triangle;
       }
+#endif
       return NULL;
    }
 }

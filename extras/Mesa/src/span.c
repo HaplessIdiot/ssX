@@ -151,6 +151,8 @@ static void multi_write_index_span( GLcontext *ctx, GLuint n,
             _mesa_logicop_ci_span( ctx, n, x, y, indexTmp, mask );
          }
          if (ctx->Color.SWmasking) {
+            if (ctx->Color.IndexMask == 0)
+               break;
             _mesa_mask_index_span( ctx, n, x, y, indexTmp );
          }
          (*ctx->Driver.WriteCI32Span)( ctx, n, x, y, indexTmp, mask );
@@ -241,6 +243,8 @@ void gl_write_index_span( GLcontext *ctx,
          _mesa_logicop_ci_span( ctx, n, x, y, index, mask );
       }
       if (ctx->Color.SWmasking) {
+         if (ctx->Color.IndexMask == 0)
+            return;
          _mesa_mask_index_span( ctx, n, x, y, index );
       }
 
@@ -315,10 +319,6 @@ void gl_write_monoindex_span( GLcontext *ctx,
 	 _mesa_logicop_ci_span( ctx, n, x, y, indexes, mask );
       }
 
-      if (ctx->Color.SWmasking) {
-         _mesa_mask_index_span( ctx, n, x, y, indexes );
-      }
-
       if (ctx->RasterMask & MULTI_DRAW_BIT) {
          /* draw to zero or two or more buffers */
          multi_write_index_span( ctx, n, x, y, indexes, mask );
@@ -329,6 +329,8 @@ void gl_write_monoindex_span( GLcontext *ctx,
             _mesa_logicop_ci_span( ctx, n, x, y, indexes, mask );
          }
          if (ctx->Color.SWmasking) {
+            if (ctx->Color.IndexMask == 0)
+               return;
             _mesa_mask_index_span( ctx, n, x, y, indexes );
          }
          (*ctx->Driver.WriteCI32Span)( ctx, n, x, y, indexes, mask );
@@ -399,6 +401,8 @@ static void multi_write_rgba_span( GLcontext *ctx, GLuint n,
             _mesa_blend_span( ctx, n, x, y, rgbaTmp, mask );
          }
          if (ctx->Color.SWmasking) {
+            if (*((GLuint *) ctx->Color.ColorMask) == 0)
+               break;
             _mesa_mask_rgba_span( ctx, n, x, y, rgbaTmp );
          }
 
@@ -499,9 +503,7 @@ void gl_write_rgba_span( GLcontext *ctx,
    ctx->OcclusionResult = GL_TRUE;
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
-      multi_write_rgba_span( ctx, n, x, y,
-			     (const GLubyte (*)[4]) rgba, 
-			     write_all ? Null : mask );
+      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, mask );
    }
    else {
       /* normal: write to exactly one buffer */
@@ -515,6 +517,8 @@ void gl_write_rgba_span( GLcontext *ctx,
 
       /* Color component masking */
       if (ctx->Color.SWmasking) {
+         if (*((GLuint *) ctx->Color.ColorMask) == 0)
+            return;
          _mesa_mask_rgba_span( ctx, n, x, y, rgba );
       }
 
@@ -616,8 +620,8 @@ void gl_write_monocolor_span( GLcontext *ctx,
       return;
    }
 
-   if (ctx->Color.BlendEnabled || ctx->Color.SWLogicOpEnabled
-       || ctx->Color.SWmasking) {
+   if (ctx->Color.SWLogicOpEnabled || ctx->Color.SWmasking ||
+       (ctx->RasterMask & (BLEND_BIT | FOG_BIT))) {
       /* assign same color to each pixel */
       for (i=0;i<n;i++) {
 	 if (mask[i]) {
@@ -625,9 +629,15 @@ void gl_write_monocolor_span( GLcontext *ctx,
 	 }
       }
 
+      /* Per-pixel fog */
+      if (ctx->Fog.Enabled &&
+          (primitive==GL_BITMAP || ctx->FogMode==FOG_FRAGMENT)) {
+         _mesa_fog_rgba_pixels( ctx, n, z, rgba );
+      }
+
       if (ctx->RasterMask & MULTI_DRAW_BIT) {
-         multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba,
-				mask );
+         multi_write_rgba_span( ctx, n, x, y,
+                                (const GLubyte (*)[4]) rgba, mask );
       }
       else {
          /* normal: write to exactly one buffer */
@@ -640,6 +650,8 @@ void gl_write_monocolor_span( GLcontext *ctx,
 
          /* Color component masking */
          if (ctx->Color.SWmasking) {
+            if (*((GLuint *) ctx->Color.ColorMask) == 0)
+               return;
             _mesa_mask_rgba_span( ctx, n, x, y, rgba );
          }
 
@@ -667,8 +679,7 @@ void gl_write_monocolor_span( GLcontext *ctx,
             }
          }
          multi_write_rgba_span( ctx, n, x, y, 
-				(const GLubyte (*)[4]) rgba, 
-				mask );
+				(const GLubyte (*)[4]) rgba, mask );
       }
       else {
          (*ctx->Driver.WriteMonoRGBASpan)( ctx, n, x, y, mask );
@@ -748,7 +759,7 @@ void gl_write_texture_span( GLcontext *ctx,
 
    /* Texture */
    ASSERT(ctx->Texture.ReallyEnabled);
-   gl_texture_pixels( ctx, 0, n, s, t, u, lambda, rgba );
+   gl_texture_pixels( ctx, 0, n, s, t, u, lambda, rgba, rgba );
 
    /* Add base and specular colors */
    if (spec && ctx->Light.Enabled
@@ -804,8 +815,7 @@ void gl_write_texture_span( GLcontext *ctx,
    ctx->OcclusionResult = GL_TRUE;
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
-      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4])rgba, 
-			     write_all ? Null : mask );
+      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, mask );
    }
    else {
       /* normal: write to exactly one buffer */
@@ -816,6 +826,8 @@ void gl_write_texture_span( GLcontext *ctx,
          _mesa_blend_span( ctx, n, x, y, rgba, mask );
       }
       if (ctx->Color.SWmasking) {
+         if (*((GLuint *) ctx->Color.ColorMask) == 0)
+            return;
          _mesa_mask_rgba_span( ctx, n, x, y, rgba );
       }
 
@@ -864,7 +876,8 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
    }
 
 
-   if (primitive==GL_BITMAP || (ctx->RasterMask & MULTI_DRAW_BIT)) {
+   if (primitive==GL_BITMAP || (ctx->RasterMask & MULTI_DRAW_BIT)
+                            || texUnits > 1) {
       /* must make a copy of the colors since they may be modified */
       MEMCPY(rgbaBackup, rgbaIn, 4 * n * sizeof(GLubyte));
       rgba = rgbaBackup;
@@ -876,9 +889,8 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
    /* Texture */
    ASSERT(ctx->Texture.ReallyEnabled);
    ASSERT(texUnits <= MAX_TEXTURE_UNITS);
-   for (i=0;i<texUnits;i++) {
-      gl_texture_pixels( ctx, i, n, s[i], t[i], u[i], lambda[i], rgba );
-   }
+   for (i=0;i<texUnits;i++)
+      gl_texture_pixels( ctx, i, n, s[i], t[i], u[i], lambda[i], rgbaIn, rgba );
 
    /* Add base and specular colors */
    if (spec && ctx->Light.Enabled
@@ -934,8 +946,7 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
    ctx->OcclusionResult = GL_TRUE;
 
    if (ctx->RasterMask & MULTI_DRAW_BIT) {
-      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba,
-                             write_all ? Null : mask );
+      multi_write_rgba_span( ctx, n, x, y, (const GLubyte (*)[4]) rgba, mask );
    }
    else {
       /* normal: write to exactly one buffer */
@@ -947,6 +958,8 @@ gl_write_multitexture_span( GLcontext *ctx, GLuint texUnits,
          _mesa_blend_span( ctx, n, x, y, rgba, mask );
       }
       if (ctx->Color.SWmasking) {
+         if (*((GLuint *) ctx->Color.ColorMask) == 0)
+            return;
          _mesa_mask_rgba_span( ctx, n, x, y, rgba );
       }
 

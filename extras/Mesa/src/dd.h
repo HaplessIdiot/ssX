@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -641,17 +641,20 @@ struct dd_function_table {
     */
 
    GLboolean (*CompressedTexImage1D)( GLcontext *ctx, GLenum target,
-                                      GLint level, const GLvoid *data,
+                                      GLint level, GLsizei imageSize,
+                                      const GLvoid *data,
                                       struct gl_texture_object *texObj,
                                       struct gl_texture_image *texImage,
                                       GLboolean *retainInternalCopy);
    GLboolean (*CompressedTexImage2D)( GLcontext *ctx, GLenum target,
-                                      GLint level, const GLvoid *data,
+                                      GLint level, GLsizei imageSize,
+                                      const GLvoid *data,
                                       struct gl_texture_object *texObj,
                                       struct gl_texture_image *texImage,
                                       GLboolean *retainInternalCopy);
    GLboolean (*CompressedTexImage3D)( GLcontext *ctx, GLenum target,
-                                      GLint level, const GLvoid *data,
+                                      GLint level, GLsizei imageSize,
+                                      const GLvoid *data,
                                       struct gl_texture_object *texObj,
                                       struct gl_texture_image *texImage,
                                       GLboolean *retainInternalCopy);
@@ -697,6 +700,42 @@ struct dd_function_table {
     *      width, height, depth, border and internalFormat information.
     * Return GL_TRUE if operation completed, return GL_FALSE if core Mesa
     * should do the job.
+    */
+
+   GLint (*BaseCompressedTexFormat)(GLcontext *ctx,
+                                    GLint internalFormat);
+   /* Called to compute the base format for a specific compressed
+    * format.  Return -1 if the internalFormat is not a specific
+    * compressed format that the driver recognizes.  Note the
+    * return value differences between this function and
+    * SpecificCompressedTexFormat below.
+    */
+
+   GLint (*SpecificCompressedTexFormat)(GLcontext *ctx,
+                                        GLint internalFormat,
+                                        GLint numDimensions);
+   /* Called to turn a generic texture format into a specific
+    * texture format.  For example, if a driver implements
+    * GL_3DFX_texture_compression_FXT1, this would map
+    * GL_COMPRESSED_RGBA_ARB to GL_COMPRESSED_RGBA_FXT1_3DFX.
+    *
+    * If the driver does not know how to handle the compressed
+    * format, then just return the generic format, and Mesa will
+    * do the right thing with it.
+    */
+
+   GLboolean (*IsCompressedFormat)(GLcontext *ctx, GLint internalFormat);
+   /* Called to tell if a format is a compressed format.
+    */
+
+   GLsizei (*CompressedImageSize)(GLcontext *ctx,
+                                  GLenum internalFormat,
+                                  GLuint numDimensions,
+                                  GLuint width,
+                                  GLuint height,
+                                  GLuint depth);
+   /* Calculate the size of a compressed image, given the image's
+    * format and dimensions.
     */
 
    void (*GetCompressedTexImage)( GLcontext *ctx, GLenum target,
@@ -759,7 +798,7 @@ struct dd_function_table {
 
 
    /***
-    *** Accelerated point, line, polygon, glDrawPixels and glBitmap functions:
+    *** Accelerated point, line, polygon, quad and rect functions:
     ***/
 
    points_func   PointsFunc;
@@ -906,6 +945,16 @@ struct dd_function_table {
    void (*StencilMask)(GLcontext *ctx, GLuint mask);
    void (*StencilOp)(GLcontext *ctx, GLenum fail, GLenum zfail, GLenum zpass);
    void (*Viewport)(GLcontext *ctx, GLint x, GLint y, GLsizei w, GLsizei h);
+
+   /* State-query functions
+    *
+    * Return GL_TRUE if query was completed, GL_FALSE otherwise.
+    */
+   GLboolean (*GetBooleanv)(GLcontext *ctx, GLenum pname, GLboolean *result);
+   GLboolean (*GetDoublev)(GLcontext *ctx, GLenum pname, GLdouble *result);
+   GLboolean (*GetFloatv)(GLcontext *ctx, GLenum pname, GLfloat *result);
+   GLboolean (*GetIntegerv)(GLcontext *ctx, GLenum pname, GLint *result);
+   GLboolean (*GetPointerv)(GLcontext *ctx, GLenum pname, GLvoid **result);
 };
 
 

@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810dd.c,v 1.3 2000/06/22 16:59:24 tsi Exp $ */
 
 #include "types.h"
 #include "vbrender.h"
@@ -77,8 +77,15 @@ static GLint i810GetParameteri(const GLcontext *ctx, GLint param)
 static void i810BufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);  
+
+   /* Need to lock to make sure the driDrawable is uptodate.  This
+    * information is used to resize Mesa's software buffers, so it has
+    * to be correct.
+    */
+   LOCK_HARDWARE(imesa);
    *width = imesa->driDrawable->w;
    *height = imesa->driDrawable->h;
+   UNLOCK_HARDWARE(imesa);
 }
 
 
@@ -97,17 +104,19 @@ void i810DDExtensionsInit( GLcontext *ctx )
    /* The imaging subset of 1.2 isn't supported by any mesa driver.
     */
    gl_extensions_disable( ctx, "ARB_imaging" );
+   gl_extensions_disable( ctx, "GL_ARB_texture_compression" );   
+   gl_extensions_disable( ctx, "GL_ARB_texture_cube_map" );   
    gl_extensions_disable( ctx, "GL_EXT_blend_color" );
-   gl_extensions_disable( ctx, "GL_EXT_blend_minmax" );
    gl_extensions_disable( ctx, "GL_EXT_blend_logic_op" );
+   gl_extensions_disable( ctx, "GL_EXT_blend_minmax" );
    gl_extensions_disable( ctx, "GL_EXT_blend_subtract" );
-   gl_extensions_disable( ctx, "GL_INGR_blend_func_separate" );
+   gl_extensions_disable( ctx, "GL_EXT_convolution" );   
    gl_extensions_disable( ctx, "GL_EXT_texture_lod_bias" );   
+   gl_extensions_disable( ctx, "GL_INGR_blend_func_separate" );
    gl_extensions_disable( ctx, "GL_MESA_resize_buffers" );   
-
-
-   if (0) gl_extensions_disable( ctx, "GL_ARB_multitexture" );
-
+   gl_extensions_disable( ctx, "GL_SGIX_pixel_texture" );   
+   gl_extensions_disable( ctx, "GL_SGI_color_matrix" );   
+   gl_extensions_disable( ctx, "GL_SGI_color_table" );   
 
    /* We do support tex_env_add, however
     */

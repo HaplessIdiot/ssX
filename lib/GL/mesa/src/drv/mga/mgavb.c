@@ -23,11 +23,12 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.5 2000/08/28 02:43:13 tsi Exp $ */
  
-#include "mgalib.h"
+#include "mgacontext.h"
 #include "mgavb.h"
-#include "mgalog.h"
+#include "mga_xmesa.h"
+
 #include "stages.h"
 #include "mem.h"
 
@@ -83,12 +84,13 @@
   }
 
 
-#define COORD							\
-      GLfloat *win = VB->Win.data[i];				\
+#define COORD						\
+      GLfloat *win = VB->Win.data[i];			\
       v->v.rhw =               win[3];			\
       v->v.z = depth_scale * win[2];			\
-      v->v.x =                 win[0] + xoffset;		\
-      v->v.y =          -      win[1] + yoffset; 
+      v->v.x =                 win[0] + xoffset;	\
+      v->v.y =          -      win[1] + yoffset;  
+
 
 #define NOP
 
@@ -181,7 +183,7 @@ SETUPFUNC(rs_gfst0t1,	NOP,COL,TEX0,TEX1,TEX0_4,SPC,FOG)
 
 static void rs_invalid(struct vertex_buffer *VB, GLuint start, GLuint end)
 {
-  mgaError("mgaRasterSetup(): invalid combination\n");
+   fprintf(stderr, "mgaRasterSetup(): invalid combination\n");
 }
 
 typedef void (*setupFunc)(struct vertex_buffer *,GLuint,GLuint);
@@ -256,6 +258,7 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
 {
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    int funcindex = (MGA_WIN_BIT | MGA_RGBA_BIT);
+   int multi = mmesa->multitex;
 
    mmesa->vertsize = 8;
    mmesa->tmu_source[0] = 0;
@@ -311,6 +314,19 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
 	 funcindex |= MGA_TEX0_BIT;
       }
    }
+
+/*       if (mmesa->multitex == 0) {  */
+/*          mmesa->tmu_source[1] = mmesa->tmu_source[0];  */
+/*          mmesa->tex_dest[1] = mmesa->tex_dest[0];  */
+/*          mmesa->vertsize = 10;  */
+/*          mmesa->multitex = 1;  */
+/*          funcindex |= MGA_TEX0_BIT|MGA_TEX1_BIT;  */
+/*       }  */
+
+/*     mmesa->vertsize = 10; */
+   if (multi != mmesa->multitex)
+        mmesa->new_state |= MGA_NEW_WARP; 
+
 
    /* Not really a good place to do this - need to make the mga state
     * management code more event-driven so this can be calculated for
@@ -423,11 +439,6 @@ static void FatalError( char *s )
 }
 
 
-#ifndef ALIGN_MALLOC
-#define ALIGN_MALLOC(x,y) malloc(y)
-#define ALIGN_FREE free
-#endif
-
 void mgaDDResizeVB( struct vertex_buffer *VB, GLuint size )
 {
    mgaVertexBufferPtr mvb = MGA_DRIVER_DATA(VB);
@@ -435,8 +446,8 @@ void mgaDDResizeVB( struct vertex_buffer *VB, GLuint size )
    while (mvb->size < size)
       mvb->size *= 2;
 
-   free( mvb->vert_store );
-   mvb->vert_store = malloc( sizeof(mgaVertex) * mvb->size + 31);
+   FREE( mvb->vert_store );
+   mvb->vert_store = MALLOC( sizeof(mgaVertex) * mvb->size + 31);
    if (!mvb->vert_store) 
       FatalError("mga-glx: out of memory !\n");
 
@@ -448,15 +459,15 @@ void mgaDDResizeVB( struct vertex_buffer *VB, GLuint size )
       FatalError("mga-glx: out of memory !\n");
 
    ALIGN_FREE( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)ALIGN_MALLOC(4, sizeof(GLubyte) * mvb->size);
+   VB->ClipMask = (GLubyte *)ALIGN_MALLOC(sizeof(GLubyte) * mvb->size, 32);
    if (!VB->ClipMask) 
       FatalError("mga-glx: out of memory !\n");
 
    if (VB->Type == VB_IMMEDIATE) {
-      free( mvb->primitive );
-      free( mvb->next_primitive );
-      mvb->primitive = (GLuint *)malloc( sizeof(GLuint) * mvb->size );
-      mvb->next_primitive = (GLuint *)malloc( sizeof(GLuint) * mvb->size );
+      FREE( mvb->primitive );
+      FREE( mvb->next_primitive );
+      mvb->primitive = (GLuint *)MALLOC( sizeof(GLuint) * mvb->size );
+      mvb->next_primitive = (GLuint *)MALLOC( sizeof(GLuint) * mvb->size );
       if (!mvb->primitive || !mvb->next_primitive)
 	 FatalError("mga-glx: out of memory!");
    }
@@ -467,14 +478,14 @@ void mgaDDRegisterVB( struct vertex_buffer *VB )
 {
    mgaVertexBufferPtr mvb;
 
-   mvb = (mgaVertexBufferPtr)calloc( 1, sizeof(*mvb) );
+   mvb = (mgaVertexBufferPtr)MALLOC( sizeof(*mvb) );
 
    /* This looks like it allocates a lot of memory, but it basically
     * just sets an upper limit on how much can be used - nothing like
     * this amount will ever be turned into 'real' memory.
     */
    mvb->size = VB->Size * 5;
-   mvb->vert_store = malloc( sizeof(mgaVertex) * mvb->size + 31);
+   mvb->vert_store = MALLOC( sizeof(mgaVertex) * mvb->size + 31);
    if (!mvb->vert_store) 
       FatalError("mga-glx: out of memory !\n");
    
@@ -485,12 +496,12 @@ void mgaDDRegisterVB( struct vertex_buffer *VB )
       FatalError("mga-glx: out of memory !\n");
 
    ALIGN_FREE( VB->ClipMask );
-   VB->ClipMask = (GLubyte *)ALIGN_MALLOC(4, sizeof(GLubyte) * mvb->size);
+   VB->ClipMask = (GLubyte *)ALIGN_MALLOC(sizeof(GLubyte) * mvb->size, 32);
    if (!VB->ClipMask) 
       FatalError("mga-glx: out of memory !\n");
 
-   mvb->primitive = (GLuint *)malloc( sizeof(GLuint) * mvb->size );
-   mvb->next_primitive = (GLuint *)malloc( sizeof(GLuint) * mvb->size );
+   mvb->primitive = (GLuint *)MALLOC( sizeof(GLuint) * mvb->size );
+   mvb->next_primitive = (GLuint *)MALLOC( sizeof(GLuint) * mvb->size );
    if (!mvb->primitive || !mvb->next_primitive)
       FatalError("mga-glx: out of memory!");
    
@@ -503,11 +514,11 @@ void mgaDDUnregisterVB( struct vertex_buffer *VB )
    mgaVertexBufferPtr mvb = MGA_DRIVER_DATA(VB);
    
    if (mvb) {
-      if (mvb->vert_store) free(mvb->vert_store);
-      if (mvb->primitive) free(mvb->primitive);
-      if (mvb->next_primitive) free(mvb->next_primitive);
+      if (mvb->vert_store) FREE(mvb->vert_store);
+      if (mvb->primitive) FREE(mvb->primitive);
+      if (mvb->next_primitive) FREE(mvb->next_primitive);
       gl_vector1ui_free( &mvb->clipped_elements );
-      free(mvb);
+      FREE(mvb);
       VB->driver_data = 0;
    }      
 }

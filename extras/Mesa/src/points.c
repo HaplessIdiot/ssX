@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -358,7 +358,7 @@ textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          green = VB->ColorPtr->data[i][1];
          blue  = VB->ColorPtr->data[i][2];
          alpha = VB->ColorPtr->data[i][3];
-	 
+
 	 switch (VB->TexCoordPtr[0]->size) {
 	 case 4:
 	    s = VB->TexCoordPtr[0]->data[i][0]/VB->TexCoordPtr[0]->data[i][3];
@@ -386,15 +386,13 @@ textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
             gl_problem(ctx, "unexpected texcoord size in textured_rgba_points()");
 	 }
 
-/*    don't think this is needed
-         PB_SET_COLOR( red, green, blue, alpha );
-*/
-
          for (iy = y0; iy <= y1; iy++) {
             for (ix = x0; ix <= x1; ix++) {
-               PB_WRITE_TEX_PIXEL( PB, ix, iy, z, red, green, blue, alpha, s, t, u );
+               PB_WRITE_TEX_PIXEL( PB, ix, iy, z, red, green, blue, alpha,
+                                   s, t, u );
             }
          }
+
          PB_CHECK_FLUSH(ctx, PB);
       }
    }
@@ -417,6 +415,7 @@ multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          GLint ix, iy;
          GLint radius;
          GLint red, green, blue, alpha;
+         GLint sRed, sGreen, sBlue;
          GLfloat s, t, u;
          GLfloat s1, t1, u1;
 
@@ -449,6 +448,9 @@ multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          green = VB->ColorPtr->data[i][1];
          blue  = VB->ColorPtr->data[i][2];
          alpha = VB->ColorPtr->data[i][3];
+	 sRed   = VB->Specular ? VB->Specular[i][0] : 0;
+	 sGreen = VB->Specular ? VB->Specular[i][1] : 0;
+	 sBlue  = VB->Specular ? VB->Specular[i][2] : 0;
 	 
 	 switch (VB->TexCoordPtr[0]->size) {
 	 case 4:
@@ -506,8 +508,10 @@ multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 
          for (iy=y0;iy<=y1;iy++) {
             for (ix=x0;ix<=x1;ix++) {
-               PB_WRITE_MULTITEX_PIXEL( PB, ix, iy, z, red, green, blue, alpha,
-                                        s, t, u, s1, t1, u1 );
+               PB_WRITE_MULTITEX_SPEC_PIXEL( PB, ix, iy, z,
+                                             red, green, blue, alpha,
+                                             sRed, sGreen, sBlue,
+                                             s, t, u, s1, t1, u1 );
             }
          }
          PB_CHECK_FLUSH(ctx, PB);
@@ -516,6 +520,17 @@ multitextured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 }
 
 
+/*
+ * NOTES on aa point rasterization:
+ *
+ * Let d = distance of fragment center from vertex.
+ * if d < rmin2 then
+ *    fragment has 100% coverage
+ * else if d > rmax2 then
+ *    fragment has 0% coverage
+ * else
+ *    fragement has % coverage = (d - rmin2) / (rmax2 - rmin2)
+ */
 
 
 /*
@@ -529,7 +544,7 @@ antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
    const GLfloat radius = ctx->Point.Size * 0.5F;
    const GLfloat rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
    const GLfloat rmax = radius + 0.7071F;
-   const GLfloat rmin2 = rmin * rmin;
+   const GLfloat rmin2 = MAX2(0.0, rmin * rmin);
    const GLfloat rmax2 = rmax * rmax;
    const GLfloat cscale = 256.0F / (rmax2 - rmin2);
    GLuint i;
@@ -539,13 +554,15 @@ antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          if (VB->ClipMask[i] == 0) {
             GLint x, y;
             GLint red, green, blue, alpha;
-            GLfloat s, t, u;
-            GLfloat s1, t1, u1;
+            GLfloat s = 0.0F, t = 0.0F, u = 0.0F;
+            GLfloat s1 = 0.0F, t1 = 0.0F, u1 = 0.0F;
+            GLfloat vx = VB->Win.data[i][0];
+            GLfloat vy = VB->Win.data[i][1];
 
-            GLint xmin = (GLint) (VB->Win.data[i][0] - radius);
-            GLint xmax = (GLint) (VB->Win.data[i][0] + radius);
-            GLint ymin = (GLint) (VB->Win.data[i][1] - radius);
-            GLint ymax = (GLint) (VB->Win.data[i][1] + radius);
+            GLint xmin = (GLint) (vx - radius);
+            GLint xmax = (GLint) (vx + radius);
+            GLint ymin = (GLint) (vy - radius);
+            GLint ymax = (GLint) (vy + radius);
             GLint z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
 
             red   = VB->ColorPtr->data[i][0];
@@ -616,15 +633,19 @@ antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 	       }
 	    }
 
-            for (y=ymin;y<=ymax;y++) {
-               for (x=xmin;x<=xmax;x++) {
-                  GLfloat dx = x/*+0.5F*/ - VB->Win.data[i][0];
-                  GLfloat dy = y/*+0.5F*/ - VB->Win.data[i][1];
-                  GLfloat dist2 = dx*dx + dy*dy;
-                  if (dist2<rmax2) {
+            /* translate by a half pixel to simplify math below */
+            vx -= 0.5F;
+            vx -= 0.5F;
+
+            for (y = ymin; y <= ymax; y++) {
+               for (x = xmin; x <= xmax; x++) {
+                  const GLfloat dx = x - vx;
+                  const GLfloat dy = y - vy;
+                  const GLfloat dist2 = dx*dx + dy*dy;
+                  if (dist2 < rmax2) {
                      alpha = VB->ColorPtr->data[i][3];
-                     if (dist2>=rmin2) {
-                        GLint coverage = (GLint) (256.0F-(dist2-rmin2)*cscale);
+                     if (dist2 >= rmin2) {
+                        GLint coverage = (GLint) (256.0F - (dist2 - rmin2) * cscale);
                         /* coverage is in [0,256] */
                         alpha = (alpha * coverage) >> 8;
                      }
@@ -651,25 +672,29 @@ antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
             GLint x, y, z;
             GLint red, green, blue, alpha;
 
-            xmin = (GLint) (VB->Win.data[i][0] - radius);
-            xmax = (GLint) (VB->Win.data[i][0] + radius);
-            ymin = (GLint) (VB->Win.data[i][1] - radius);
-            ymax = (GLint) (VB->Win.data[i][1] + radius);
+            xmin = (GLint) (VB->Win.data[i][0] - 0.0 - radius);
+            xmax = (GLint) (VB->Win.data[i][0] - 0.0 + radius);
+            ymin = (GLint) (VB->Win.data[i][1] - 0.0 - radius);
+            ymax = (GLint) (VB->Win.data[i][1] - 0.0 + radius);
             z = (GLint) (VB->Win.data[i][2] + ctx->PointZoffset);
 
             red   = VB->ColorPtr->data[i][0];
             green = VB->ColorPtr->data[i][1];
             blue  = VB->ColorPtr->data[i][2];
 
-            for (y=ymin;y<=ymax;y++) {
-               for (x=xmin;x<=xmax;x++) {
-                  GLfloat dx = x/*+0.5F*/ - VB->Win.data[i][0];
-                  GLfloat dy = y/*+0.5F*/ - VB->Win.data[i][1];
-                  GLfloat dist2 = dx*dx + dy*dy;
-                  if (dist2<rmax2) {
+            /*
+            printf("point %g, %g\n", VB->Win.data[i][0], VB->Win.data[i][1]);
+            printf("%d..%d X %d..%d\n", xmin, xmax, ymin, ymax);
+            */
+            for (y = ymin; y <= ymax; y++) {
+               for (x = xmin; x <= xmax; x++) {
+                  const GLfloat dx = x + 0.5F - VB->Win.data[i][0];
+                  const GLfloat dy = y + 0.5F - VB->Win.data[i][1];
+                  const GLfloat dist2 = dx*dx + dy*dy;
+                  if (dist2 < rmax2) {
                      alpha = VB->ColorPtr->data[i][3];
-                     if (dist2>=rmin2) {
-                        GLint coverage = (GLint) (256.0F-(dist2-rmin2)*cscale);
+                     if (dist2 >= rmin2) {
+                        GLint coverage = (GLint) (256.0F - (dist2 - rmin2) * cscale);
                         /* coverage is in [0,256] */
                         alpha = (alpha * coverage) >> 8;
                      }
@@ -936,8 +961,8 @@ dist_atten_textured_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
          GLint ix, iy;
          GLint isize, radius;
          GLint red, green, blue, alpha;
-         GLfloat s, t, u;
-         GLfloat s1, t1, u1;
+         GLfloat s = 0.0F, t = 0.0F, u = 0.0F;
+         GLfloat s1 = 0.0F, t1 = 0.0F, u1 = 0.0F;
 
          GLint x = (GLint)  VB->Win.data[i][0];
          GLint y = (GLint)  VB->Win.data[i][1];
@@ -1084,8 +1109,8 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
             GLint xmin, ymin, xmax, ymax;
             GLint x, y, z;
             GLint red, green, blue, alpha;
-            GLfloat s, t, u;
-            GLfloat s1, t1, u1;
+            GLfloat s = 0.0F, t = 0.0F, u = 0.0F;
+            GLfloat s1 = 0.0F, t1 = 0.0F, u1 = 0.0F;
             GLfloat dsize = psize * dist[i];
 
             if (dsize >= ctx->Point.Threshold) {
@@ -1099,9 +1124,9 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
             }
             rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
             rmax = radius + 0.7071F;
-            rmin2 = rmin*rmin;
-            rmax2 = rmax*rmax;
-            cscale = 256.0F / (rmax2-rmin2);
+            rmin2 = MAX2(0.0, rmin * rmin);
+            rmax2 = rmax * rmax;
+            cscale = 256.0F / (rmax2 - rmin2);
 
             xmin = (GLint) (VB->Win.data[i][0] - radius);
             xmax = (GLint) (VB->Win.data[i][0] + radius);
@@ -1179,9 +1204,9 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 
             for (y = ymin; y <= ymax; y++) {
                for (x = xmin; x <= xmax; x++) {
-                  GLfloat dx = x/*+0.5F*/ - VB->Win.data[i][0];
-                  GLfloat dy = y/*+0.5F*/ - VB->Win.data[i][1];
-                  GLfloat dist2 = dx*dx + dy*dy;
+                  const GLfloat dx = x + 0.5F - VB->Win.data[i][0];
+                  const GLfloat dy = y + 0.5F - VB->Win.data[i][1];
+                  const GLfloat dist2 = dx*dx + dy*dy;
                   if (dist2 < rmax2) {
                      alpha = VB->ColorPtr->data[i][3];
                      if (dist2 >= rmin2) {
@@ -1225,7 +1250,7 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
             }
             rmin = radius - 0.7071F;  /* 0.7071 = sqrt(2)/2 */
             rmax = radius + 0.7071F;
-            rmin2 = rmin * rmin;
+            rmin2 = MAX2(0.0, rmin * rmin);
             rmax2 = rmax * rmax;
             cscale = 256.0F / (rmax2 - rmin2);
 
@@ -1241,9 +1266,9 @@ dist_atten_antialiased_rgba_points( GLcontext *ctx, GLuint first, GLuint last )
 
             for (y = ymin; y <= ymax; y++) {
                for (x = xmin; x <= xmax; x++) {
-                  GLfloat dx = x/*+0.5F*/ - VB->Win.data[i][0];
-                  GLfloat dy = y/*+0.5F*/ - VB->Win.data[i][1];
-                  GLfloat dist2 = dx * dx + dy * dy;
+                  const GLfloat dx = x + 0.5F - VB->Win.data[i][0];
+                  const GLfloat dy = y + 0.5F - VB->Win.data[i][1];
+                  const GLfloat dist2 = dx * dx + dy * dy;
                   if (dist2 < rmax2) {
 		     alpha = VB->ColorPtr->data[i][3];
                      if (dist2 >= rmin2) {
@@ -1324,7 +1349,8 @@ void gl_set_point_function( GLcontext *ctx )
             ctx->Driver.PointsFunc = antialiased_rgba_points;
          }
          else if (ctx->Texture.ReallyEnabled) {
-            if (ctx->Texture.ReallyEnabled >= TEXTURE1_1D) {
+            if (ctx->Texture.ReallyEnabled >= TEXTURE1_1D ||
+                ctx->Light.Model.ColorControl==GL_SEPARATE_SPECULAR_COLOR) {
 	       ctx->Driver.PointsFunc = multitextured_rgba_points;
             }
             else {

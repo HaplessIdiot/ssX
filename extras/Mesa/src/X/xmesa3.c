@@ -731,9 +731,15 @@ line_func xmesa_get_line_func( GLcontext *ctx )
 	    return NULL;
       }
    }
+#if 0
+   /* XXX have to disable this because X's rasterization rules don't match
+    * software Mesa's.  This causes the linehv.c conformance test to fail.
+    * In the future, we might provide a config option to enable this.
+    */
    if (xmesa->xm_buffer->buffer!=XIMAGE && ctx->RasterMask==0) {
       setup_x_line_options( ctx );
       return flat_pixmap_line;
    }
+#endif
    return NULL;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.3 2000/06/25 16:03:43 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.4 2000/08/25 13:42:31 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -40,7 +40,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_cce.h"
 #include "r128_state.h"
 #include "r128_vb.h"
-
+#include "mem.h"
 #include "stages.h"
 
 #define TEX0                                                            \
@@ -423,8 +423,8 @@ void r128DDResizeVB(struct vertex_buffer *VB, GLuint size)
 	exit(1);
     }
 
-    free(VB->ClipMask);
-    VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * r128vb->size);
+    ALIGN_FREE(VB->ClipMask);
+    VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * r128vb->size, 4);
     if (!VB->ClipMask) {
 	fprintf(stderr, "Cannot allocate clipmask!  Exiting...\n");
 	exit(1);
@@ -454,8 +454,8 @@ void r128DDRegisterVB(struct vertex_buffer *VB)
 	exit(1);
     }
 
-    free(VB->ClipMask);
-    VB->ClipMask = (GLubyte *)malloc(sizeof(GLubyte) * r128vb->size);
+    ALIGN_FREE(VB->ClipMask);
+    VB->ClipMask = (GLubyte *) ALIGN_MALLOC(sizeof(GLubyte) * r128vb->size, 4);
     if (!VB->ClipMask) {
 	fprintf(stderr, "Cannot allocate clipmask!  Exiting...\n");
 	exit(1);

@@ -92,7 +92,7 @@ static GLuint gl_cull_points( struct vertex_buffer *VB,
 
    /* This is pretty pointless.  (arf arf)
     */
-   for (i=start+1;i<count;i++) {
+   for (i = start; i < count; i++) {
       if (clipmask[i] == 0) 
 	 cullmask[i] = VERT_FACE_FRONT | PRIM_FACE_FRONT;
       else {
@@ -783,6 +783,7 @@ void gl_purge_vertices( struct vertex_buffer *VB )
 
 #define VERT_NOT_CLIPPED 0x80
 
+
 static void build_clip_vert_bits( GLubyte *clipmask, const GLubyte *cullmask,
 				  GLuint count )
 {
@@ -842,7 +843,6 @@ GLuint gl_cull_vb( struct vertex_buffer *VB )
       cullcount += n;
    }
 
-
    if (VB->LastPrimitive <  VB->Count) {
       if (copy_tab_cull[lastprim]) 
 	 cullcount -= copy_tab_cull[prim]( VB, 
@@ -862,8 +862,8 @@ GLuint gl_cull_vb( struct vertex_buffer *VB )
 
       if (cullcount < VB->Count)
 	 build_clip_vert_bits( VB->ClipMask, VB->CullMask, VB->Count );
-
    }
+
    if (VB->ClipOrMask) {
       VB->CullMode |= CLIP_MASK_ACTIVE;
       VB->CullFlag[1] |= (CLIP_ALL_BITS|CLIP_USER_BIT) & ctx->AllowVertexCull; 

@@ -15,7 +15,7 @@
       <date>8 August 2000
         
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.4 2000/08/25 13:42:36 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.5 2000/08/28 18:24:15 dawes Exp $
     </ident>
 
     <toc>
@@ -459,7 +459,7 @@
           To update your X locale information do the following:
           <verb>
              cd ~/DRI-CVS/build/xc/nls
-             xmkmf -a
+             ../config/util/xmkmf -a
              make
              make install
           </verb>

@@ -68,6 +68,8 @@ static const GLubyte size_bits[5] = {
    VEC_SIZE_4,
 };
 
+
+
 void gl_vector4f_init( GLvector4f *v, GLuint flags, GLfloat (*storage)[4] )
 {
    v->stride = 4*sizeof(GLfloat);
@@ -77,7 +79,6 @@ void gl_vector4f_init( GLvector4f *v, GLuint flags, GLfloat (*storage)[4] )
    v->count = 0;
    v->flags = size_bits[4] | flags | VEC_GOOD_STRIDE;
 }
-
 
 void gl_vector3f_init( GLvector3f *v, GLuint flags, GLfloat (*storage)[3] )
 {
@@ -116,13 +117,6 @@ void gl_vector1ui_init( GLvector1ui *v, GLuint flags, GLuint *storage )
 }
 
 
-#define ALIGN_MALLOC(vec, type, bytes, alignment)			\
-do {									\
-   vec->storage = MALLOC( bytes + alignment - 1 );			\
-   vec->start = type (((unsigned long)vec->storage + alignment - 1)	\
-				 & ~(unsigned long)(alignment - 1));	\
-} while (0)
-
 
 void gl_vector4f_alloc( GLvector4f *v, GLuint sz, GLuint flags, GLuint count,
 			GLuint alignment )
@@ -130,18 +124,19 @@ void gl_vector4f_alloc( GLvector4f *v, GLuint sz, GLuint flags, GLuint count,
    (void) sz;
    v->stride = 4*sizeof(GLfloat);
    v->size = 2;
-   ALIGN_MALLOC(v, (GLfloat *), count * 4 * sizeof(GLfloat), alignment);
+   v->storage = v->start = (GLfloat *)
+      ALIGN_MALLOC( count * 4 * sizeof(GLfloat), alignment );
    v->data = (GLfloat (*)[4])v->start;
    v->count = 0;
    v->flags = size_bits[4] | flags | VEC_MALLOC | VEC_GOOD_STRIDE;
 }
 
-
 void gl_vector3f_alloc( GLvector3f *v, GLuint flags, GLuint count,
 			GLuint alignment )
 {
    v->stride = 3*sizeof(GLfloat);
-   ALIGN_MALLOC(v, (GLfloat *), count * 3 * sizeof(GLfloat), alignment);
+   v->storage = v->start = (GLfloat *)
+      ALIGN_MALLOC( count * 3 * sizeof(GLfloat), alignment );
    v->data = (GLfloat (*)[3])v->start;
    v->count = 0;
    v->flags = flags | VEC_MALLOC | VEC_GOOD_STRIDE;
@@ -151,7 +146,8 @@ void gl_vector4ub_alloc( GLvector4ub *v, GLuint flags, GLuint count,
 			 GLuint alignment )
 {
    v->stride = 4*sizeof(GLubyte);
-   ALIGN_MALLOC(v, (GLubyte *), count * 4 * sizeof(GLubyte), alignment);
+   v->storage = v->start = (GLubyte *)
+      ALIGN_MALLOC( count * 4 * sizeof(GLubyte), alignment );
    v->data = (GLubyte (*)[4])v->start;
    v->count = 0;
    v->flags = flags | VEC_MALLOC | VEC_GOOD_STRIDE;
@@ -161,7 +157,8 @@ void gl_vector1ub_alloc( GLvector1ub *v, GLuint flags, GLuint count,
 			 GLuint alignment )
 {
    v->stride = 1*sizeof(GLubyte);
-   ALIGN_MALLOC(v, (GLubyte *), count * sizeof(GLubyte), alignment);
+   v->storage = v->start = (GLubyte *)
+      ALIGN_MALLOC( count * sizeof(GLubyte), alignment );
    v->data = v->start;
    v->count = 0;
    v->flags = flags | VEC_MALLOC | VEC_GOOD_STRIDE;
@@ -171,7 +168,8 @@ void gl_vector1ui_alloc( GLvector1ui *v, GLuint flags, GLuint count,
 			 GLuint alignment )
 {
    v->stride = 1*sizeof(GLuint);
-   ALIGN_MALLOC(v, (GLuint *), count * sizeof(GLuint), alignment);
+   v->storage = v->start = (GLuint *)
+      ALIGN_MALLOC( count * sizeof(GLuint), alignment );
    v->data = v->start;
    v->count = 0;
    v->flags = flags | VEC_MALLOC | VEC_GOOD_STRIDE;
@@ -182,7 +180,7 @@ void gl_vector1ui_alloc( GLvector1ui *v, GLuint flags, GLuint count,
 void gl_vector4f_free( GLvector4f *v )
 {
    if (v->flags & VEC_MALLOC) {
-      FREE( v->storage );
+      ALIGN_FREE( v->storage );
       v->data = 0;
       v->start = 0;
       v->storage = 0;
@@ -193,7 +191,7 @@ void gl_vector4f_free( GLvector4f *v )
 void gl_vector3f_free( GLvector3f *v )
 {
    if (v->flags & VEC_MALLOC) {
-      FREE( v->storage );
+      ALIGN_FREE( v->storage );
       v->data = 0;
       v->start = 0;
       v->storage = 0;
@@ -204,7 +202,7 @@ void gl_vector3f_free( GLvector3f *v )
 void gl_vector4ub_free( GLvector4ub *v )
 {
    if (v->flags & VEC_MALLOC) {
-      FREE( v->storage );
+      ALIGN_FREE( v->storage );
       v->data = 0;
       v->start = 0;
       v->storage = 0;
@@ -215,7 +213,7 @@ void gl_vector4ub_free( GLvector4ub *v )
 void gl_vector1ub_free( GLvector1ub *v )
 {
    if (v->flags & VEC_MALLOC) {
-      FREE( v->storage );
+      ALIGN_FREE( v->storage );
       v->data = 0;
       v->start = 0;
       v->storage = 0;
@@ -226,13 +224,15 @@ void gl_vector1ub_free( GLvector1ub *v )
 void gl_vector1ui_free( GLvector1ui *v )
 {
    if (v->flags & VEC_MALLOC) {
-      FREE( v->storage );
+      ALIGN_FREE( v->storage );
       v->data = 0;
       v->start = 0;
       v->storage = 0;
       v->flags &= ~VEC_MALLOC;
    }
 }
+
+
 
 void gl_vector4f_print( GLvector4f *v, GLubyte *cullmask, GLboolean culling )
 {
@@ -281,7 +281,6 @@ void gl_vector4f_print( GLvector4f *v, GLubyte *cullmask, GLboolean culling )
       }
    }
 }
-
 
 void gl_vector3f_print( GLvector3f *v, GLubyte *cullmask, GLboolean culling )
 {

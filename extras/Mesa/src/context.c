@@ -593,12 +593,34 @@ init_texture_unit( GLcontext *ctx, GLuint unit )
    struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
 
    texUnit->EnvMode = GL_MODULATE;
+   texUnit->CombineModeRGB = GL_MODULATE;
+   texUnit->CombineModeA = GL_MODULATE;
+   texUnit->CombineSourceRGB[0] = GL_TEXTURE;
+   texUnit->CombineSourceRGB[1] = GL_PREVIOUS_EXT;
+   texUnit->CombineSourceRGB[2] = GL_CONSTANT_EXT;
+   texUnit->CombineSourceA[0] = GL_TEXTURE;
+   texUnit->CombineSourceA[1] = GL_PREVIOUS_EXT;
+   texUnit->CombineSourceA[2] = GL_CONSTANT_EXT;
+   texUnit->CombineOperandRGB[0] = GL_SRC_COLOR;
+   texUnit->CombineOperandRGB[1] = GL_SRC_COLOR;
+   texUnit->CombineOperandRGB[2] = GL_SRC_ALPHA;
+   texUnit->CombineOperandA[0] = GL_SRC_ALPHA;
+   texUnit->CombineOperandA[1] = GL_SRC_ALPHA;
+   texUnit->CombineOperandA[2] = GL_SRC_ALPHA;
+   texUnit->CombineScaleShiftRGB = 0;
+   texUnit->CombineScaleShiftA = 0;
+
    ASSIGN_4V( texUnit->EnvColor, 0.0, 0.0, 0.0, 0.0 );
    texUnit->TexGenEnabled = 0;
    texUnit->GenModeS = GL_EYE_LINEAR;
    texUnit->GenModeT = GL_EYE_LINEAR;
    texUnit->GenModeR = GL_EYE_LINEAR;
    texUnit->GenModeQ = GL_EYE_LINEAR;
+   texUnit->GenBitS = TEXGEN_EYE_LINEAR;
+   texUnit->GenBitT = TEXGEN_EYE_LINEAR;
+   texUnit->GenBitR = TEXGEN_EYE_LINEAR;
+   texUnit->GenBitQ = TEXGEN_EYE_LINEAR;
+
    /* Yes, these plane coefficients are correct! */
    ASSIGN_4V( texUnit->ObjectPlaneS, 1.0, 0.0, 0.0, 0.0 );
    ASSIGN_4V( texUnit->ObjectPlaneT, 0.0, 1.0, 0.0, 0.0 );
@@ -762,10 +784,11 @@ init_attrib_groups( GLcontext *ctx )
    }
 
    /* Texture matrix */
-   for (i=0; i<MAX_TEXTURE_UNITS; i++) {
+   for (i = 0; i < MAX_TEXTURE_UNITS; i++) {
       gl_matrix_ctr( &ctx->TextureMatrix[i] );
       ctx->TextureStackDepth[i] = 0;
       for (j = 0; j < MAX_TEXTURE_STACK_DEPTH - 1; j++) {
+         gl_matrix_ctr( &ctx->TextureStack[i][j] );
          ctx->TextureStack[i][j].inv = 0;
       }
    }
@@ -987,6 +1010,11 @@ init_attrib_groups( GLcontext *ctx )
       ctx->ShineTable[i]->refcount++;
    }
 
+   gl_compute_shine_table( ctx, 0, ctx->Light.Material[0].Shininess );
+   gl_compute_shine_table( ctx, 2, ctx->Light.Material[0].Shininess * .5 );
+   gl_compute_shine_table( ctx, 1, ctx->Light.Material[1].Shininess );
+   gl_compute_shine_table( ctx, 3, ctx->Light.Material[1].Shininess * .5 );
+
 
    /* Line group */
    ctx->Line.SmoothFlag = GL_FALSE;
@@ -1049,6 +1077,10 @@ init_attrib_groups( GLcontext *ctx )
    ASSIGN_4V(ctx->Pixel.PostColorMatrixBias, 0.0, 0.0, 0.0, 0.0);
    ASSIGN_4V(ctx->Pixel.ColorTableScale, 1.0, 1.0, 1.0, 1.0);
    ASSIGN_4V(ctx->Pixel.ColorTableBias, 0.0, 0.0, 0.0, 0.0);
+   ASSIGN_4V(ctx->Pixel.PCCTscale, 1.0, 1.0, 1.0, 1.0);
+   ASSIGN_4V(ctx->Pixel.PCCTbias, 0.0, 0.0, 0.0, 0.0);
+   ASSIGN_4V(ctx->Pixel.PCMCTscale, 1.0, 1.0, 1.0, 1.0);
+   ASSIGN_4V(ctx->Pixel.PCMCTbias, 0.0, 0.0, 0.0, 0.0);
    ctx->Pixel.ColorTableEnabled = GL_FALSE;
    ctx->Pixel.PostConvolutionColorTableEnabled = GL_FALSE;
    ctx->Pixel.PostColorMatrixColorTableEnabled = GL_FALSE;
@@ -1066,6 +1098,7 @@ init_attrib_groups( GLcontext *ctx )
 
    /* Point group */
    ctx->Point.SmoothFlag = GL_FALSE;
+   ctx->Point.UserSize = 1.0;
    ctx->Point.Size = 1.0;
    ctx->Point.Params[0] = 1.0;
    ctx->Point.Params[1] = 0.0;
@@ -1342,7 +1375,8 @@ alloc_proxy_textures( GLcontext *ctx )
 
 
 /*
- * Initialize a GLcontext struct.
+ * Initialize a GLcontext struct.  This includes allocating all the
+ * other structs and arrays which hang off of the context by pointers.
  */
 GLboolean
 _mesa_initialize_context( GLcontext *ctx,
@@ -1365,15 +1399,13 @@ _mesa_initialize_context( GLcontext *ctx,
 
    ctx->VB = gl_vb_create_for_immediate( ctx );
    if (!ctx->VB) {
-      FREE( ctx );
       return GL_FALSE;
    }
    ctx->input = ctx->VB->IM;
 
    ctx->PB = gl_alloc_pb();
    if (!ctx->PB) {
-      FREE( ctx->VB );
-      FREE( ctx );
+      ALIGN_FREE( ctx->VB );
       return GL_FALSE;
    }
 
@@ -1385,9 +1417,8 @@ _mesa_initialize_context( GLcontext *ctx,
       /* allocate new group of display lists */
       ctx->Shared = alloc_shared_state();
       if (!ctx->Shared) {
-         FREE(ctx->VB);
-         FREE(ctx->PB);
-         FREE(ctx);
+         ALIGN_FREE( ctx->VB );
+         FREE( ctx->PB );
          return GL_FALSE;
       }
    }
@@ -1417,9 +1448,8 @@ _mesa_initialize_context( GLcontext *ctx,
 
    if (!alloc_proxy_textures(ctx)) {
       free_shared_state(ctx, ctx->Shared);
-      FREE(ctx->VB);
-      FREE(ctx->PB);
-      FREE(ctx);
+      ALIGN_FREE( ctx->VB );
+      FREE( ctx->PB );
       return GL_FALSE;
    }
 
@@ -1446,11 +1476,10 @@ _mesa_initialize_context( GLcontext *ctx,
    ctx->Save = (struct _glapi_table *) CALLOC(dispatchSize * sizeof(void*));
    if (!ctx->Exec || !ctx->Save) {
       free_shared_state(ctx, ctx->Shared);
-      FREE(ctx->VB);
-      FREE(ctx->PB);
+      ALIGN_FREE( ctx->VB );
+      FREE( ctx->PB );
       if (ctx->Exec)
-         FREE(ctx->Exec);
-      FREE(ctx);
+         FREE( ctx->Exec );
    }
    _mesa_init_exec_table(ctx->Exec, dispatchSize);
    _mesa_init_dlist_table(ctx->Save, dispatchSize);
@@ -1593,7 +1622,7 @@ gl_free_context_data( GLcontext *ctx )
    /* Free cache of immediate buffers. */
    while (ctx->nr_im_queued-- > 0) {
       struct immediate * next = ctx->freed_im_queue->next;
-      FREE( ctx->freed_im_queue );
+      ALIGN_FREE( ctx->freed_im_queue );
       ctx->freed_im_queue = next;
    }
    gl_extensions_dtr(ctx);
@@ -1896,57 +1925,63 @@ void gl_compile_error( GLcontext *ctx, GLenum error, const char *s )
  * of the current error value.  If Mesa is compiled with -DDEBUG or if the
  * environment variable "MESA_DEBUG" is defined then a real error message
  * is printed to stderr.
- * Input:  error - the error value
- *         s - a diagnostic string
+ * Input:  ctx - the GL context
+ *         error - the error value
+ *         where - usually the name of function where error was detected
  */
-void gl_error( GLcontext *ctx, GLenum error, const char *s )
+void
+gl_error( GLcontext *ctx, GLenum error, const char *where )
 {
+   const char *debugEnv = getenv("MESA_DEBUG");
    GLboolean debug;
 
 #ifdef DEBUG
-   debug = GL_TRUE;
-#else
-   if (getenv("MESA_DEBUG")) {
-      debug = GL_TRUE;
-   }
-   else {
+   if (debugEnv && strstr(debugEnv, "silent"))
       debug = GL_FALSE;
-   }
+   else
+      debug = GL_TRUE;
+#else
+   if (debugEnv)
+      debug = GL_TRUE;
+   else
+      debug = GL_FALSE;
 #endif
 
    if (debug) {
-      char errstr[1000];
-
+      const char *errstr;
       switch (error) {
 	 case GL_NO_ERROR:
-	    strcpy( errstr, "GL_NO_ERROR" );
+	    errstr = "GL_NO_ERROR";
 	    break;
 	 case GL_INVALID_VALUE:
-	    strcpy( errstr, "GL_INVALID_VALUE" );
+	    errstr = "GL_INVALID_VALUE";
 	    break;
 	 case GL_INVALID_ENUM:
-	    strcpy( errstr, "GL_INVALID_ENUM" );
+	    errstr = "GL_INVALID_ENUM";
 	    break;
 	 case GL_INVALID_OPERATION:
-	    strcpy( errstr, "GL_INVALID_OPERATION" );
+	    errstr = "GL_INVALID_OPERATION";
 	    break;
 	 case GL_STACK_OVERFLOW:
-	    strcpy( errstr, "GL_STACK_OVERFLOW" );
+	    errstr = "GL_STACK_OVERFLOW";
 	    break;
 	 case GL_STACK_UNDERFLOW:
-	    strcpy( errstr, "GL_STACK_UNDERFLOW" );
+	    errstr = "GL_STACK_UNDERFLOW";
 	    break;
 	 case GL_OUT_OF_MEMORY:
-	    strcpy( errstr, "GL_OUT_OF_MEMORY" );
+	    errstr = "GL_OUT_OF_MEMORY";
 	    break;
+         case GL_TABLE_TOO_LARGE:
+            errstr = "GL_TABLE_TOO_LARGE";
+            break;
 	 default:
-	    strcpy( errstr, "unknown" );
+	    errstr = "unknown";
 	    break;
       }
-      fprintf( stderr, "Mesa user error: %s in %s\n", errstr, s );
+      fprintf(stderr, "Mesa user error: %s in %s\n", errstr, where);
    }
 
-   if (ctx->ErrorValue==GL_NO_ERROR) {
+   if (ctx->ErrorValue == GL_NO_ERROR) {
       ctx->ErrorValue = error;
    }
 

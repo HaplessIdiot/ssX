@@ -39,29 +39,39 @@
 #endif
 
 
+/* Lerp between adjacent values in the f(x) lookup table, giving a
+ * continuous function, with adequeate overall accuracy.  (Though
+ * still pretty good compared to a straight lookup). 
+ */
+#define GET_SHINE_TAB_ENTRY( table, dp, result )			\
+do {									\
+   struct gl_shine_tab *_tab = table;					\
+   if (dp>1.0)								\
+      result = pow( dp, _tab->shininess );				\
+   else {								\
+      float f = (dp * (SHINE_TABLE_SIZE-1));				\
+      int k = (int) f;							\
+      result = _tab->tab[k] + (f-k)*(_tab->tab[k+1]-_tab->tab[k]);	\
+   }									\
+} while (0)
 
-
-
-#define GET_SHINE_TAB_ENTRY( tab, dp, result )	\
-do {							\
-   int k = (int) (dp * SHINE_TABLE_SIZE);     	\
-   result = tab->tab[k];				\
-} while(0)
 
 
 /* Combinatorics:  
- *     rgba_spec/rgba/rgba_fast/ci
+ *     rgba_spec/rgba/rgba_fast/rgba_fast_single/ci
  *     one_side/two_side
  *     compacted_normals/ordinary_normals
  *     cull_mask/no_cull_mask
- *
- * We end up with an award-winning 32 seperate lighting functions.
  */
 
 
 /* Table of all the shading functions.
  */
-gl_shade_func gl_shade_func_tab[0x20];
+gl_shade_func gl_shade_tab[0x10];
+gl_shade_func gl_shade_fast_tab[0x10];
+gl_shade_func gl_shade_fast_single_tab[0x10];
+gl_shade_func gl_shade_spec_tab[0x10];
+gl_shade_func gl_shade_ci_tab[0x10];
 
 
 /* The original case where the normal for vertex[j] is normal[j],
@@ -190,28 +200,32 @@ void gl_init_shade( void )
 
 void gl_update_lighting_function( GLcontext *ctx )
 {
-   GLuint idx;
+   gl_shade_func *tab;
 
    if (ctx->Visual->RGBAflag) {
       if (ctx->Light.NeedVertices) {
 	 if (ctx->Texture.Enabled && 
 	     ctx->Light.Model.ColorControl==GL_SEPARATE_SPECULAR_COLOR) 
-	    idx = SHADE_RGBA_SPEC;
+	    tab = gl_shade_spec_tab;
 	 else
-	    idx = SHADE_RGBA_VERTICES;	 
+	    tab = gl_shade_tab;	 
       }  
-      else
-	 idx = SHADE_RGBA_NORMALS;
+      else {
+	 if (ctx->Light.EnabledList.next == ctx->Light.EnabledList.prev &&
+	     !ctx->Light.ColorMaterialEnabled) 
+	    tab = gl_shade_fast_single_tab;
+	 else
+	    tab = gl_shade_fast_tab;
+      }
    }
    else
-      idx = 0;
+      tab = gl_shade_ci_tab;
 
    if (ctx->TriangleCaps & DD_TRI_LIGHT_TWOSIDE) {
-      idx |= SHADE_TWOSIDE;
+      tab += SHADE_TWOSIDE;
    }
 
-
-   ctx->shade_func_flags = idx;
+   ctx->shade_func_tab = tab;
 }
 
 
@@ -326,13 +340,7 @@ void gl_shade_rastpos( GLcontext *ctx,
 	       shininess *= .5;
 	    }
 	    
-	    if (n_dot_h>1.0) {
-	       spec_coef = (GLfloat) pow( n_dot_h, shininess );
-	    }
-            else {
-	       struct gl_shine_tab *tab = ctx->ShineTable[0];
-	       GET_SHINE_TAB_ENTRY( tab, n_dot_h, spec_coef );
-	    }
+	    GET_SHINE_TAB_ENTRY( ctx->ShineTable[0], n_dot_h, spec_coef );
 
 	    if (spec_coef > 1.0e-10) {
 	       ACC_SCALE_SCALAR_3V( contrib, spec_coef,

@@ -353,9 +353,8 @@ _mesa_Accum( GLenum op, GLfloat value )
             static GLchan multTable[32768];
             static GLfloat prevMult = 0.0;
             GLuint j;
-            const GLint max = (GLint) (256 / mult);
+            const GLint max = MIN2((GLint) (256 / mult), 32767);
             if (mult != prevMult) {
-               assert(max <= 32768);
                for (j = 0; j < max; j++)
                   multTable[j] = (GLint) ((GLfloat) j * mult + 0.5F);
                prevMult = mult;

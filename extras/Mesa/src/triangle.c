@@ -1534,7 +1534,8 @@ void gl_set_triangle_function( GLcontext *ctx )
              && image->Border==0
              && ((format = image->Format)==GL_RGB || format==GL_RGBA)
 	     && (filter = current2Dtex->MinFilter)==current2Dtex->MagFilter
-	     && ctx->Light.Model.ColorControl==GL_SINGLE_COLOR) {
+	     && ctx->Light.Model.ColorControl==GL_SINGLE_COLOR
+	     && ctx->Texture.Unit[0].EnvMode!=GL_COMBINE_EXT) {
 
 	    if (ctx->Hint.PerspectiveCorrection==GL_FASTEST) {
 	     

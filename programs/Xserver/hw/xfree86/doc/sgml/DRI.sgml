@@ -15,7 +15,7 @@
       <date>22 August 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.6 2000/08/25 13:42:36 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.7 2000/08/28 18:24:15 dawes Exp $
     </ident>
 
     <toc>
@@ -573,7 +573,7 @@
 <p>
           The Voodoo3 DRI driver requires a special versions of
           the 3dfx Glide library.
-          It can be downloaded from the DRI web site.
+          It can be downloaded from the DRI website.
 <p>
         <sect2>Configuration
 <p>
@@ -605,7 +605,7 @@
 	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
             It will be automatically loaded by the Xserver if needed.
           <p>
-	    The DRI 3D driver for the Voodoo3 should be in
+	    The DRI 3D driver for the Voodoo3 hould be in
 	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
             This will be automatically loaded by libGL.so.
           <p>
@@ -654,7 +654,7 @@
               clipping planes.
               The office.unc Performer model also suffers from this problem.
             <item>
-              The lowest mipmap level is sometimes mis-colored in trilinear-
+              The lowest mipmap level is sometimes miscolored in trilinear-
               sampled polygons.
           </itemize>
 
@@ -666,7 +666,7 @@
           The Voodoo5 DRI driver requires a special versions of
           the 3dfx Glide library, different than that used for Voodoo3
           hardware.
-          It can be downloaded from the DRI web site.
+          It can be downloaded from the DRI website.
 <p>
         <sect2>Configuration
 <p>
@@ -703,7 +703,7 @@
 	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
             It will be automatically loaded by the Xserver if needed.
           <p>
-	    The DRI 3D driver for the Voodoo5 should be in
+	    The DRI 3D driver for the Voodoo5 hould be in
 	    <tt>/usr/X11R6/lib/modules/dri/tdfx_dri.so</tt>.
             This will be automatically loaded by libGL.so.
           <p>
@@ -725,7 +725,7 @@
               Glide on older 3dfx hardware.
            <item>
               Different versions of Glide are needed for Voodoo3 and Voodoo5.
-              See the DRI web site's resources page to download the right
+              See the DRI website's resources page to download the right
               version of Glide.
           </itemize>
 

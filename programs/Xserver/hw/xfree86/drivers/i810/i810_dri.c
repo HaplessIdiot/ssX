@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.10 2000/09/09 03:22:13 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.11 2000/09/17 01:36:27 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -135,7 +135,7 @@ I810InitVisualConfigs(ScreenPtr pScreen)
       depth = 1;
       for (accum = 0; accum <= 1; accum++) {
          for (stencil = 0; stencil <= 1; stencil++) {
-            for (db = 0; db <= 1; db++) {
+            for (db = 1; db >= 0; db--) {
                pConfigs[i].vid = -1;
                pConfigs[i].class = -1;
                pConfigs[i].rgba = TRUE;
@@ -171,7 +171,7 @@ I810InitVisualConfigs(ScreenPtr pScreen)
                   pConfigs[i].stencilSize = 0;
                pConfigs[i].auxBuffers = 0;
                pConfigs[i].level = 0;
-               if (stencil)
+               if (stencil || accum)
                   pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
                else
                   pConfigs[i].visualRating = GLX_NONE_EXT;
@@ -850,9 +850,6 @@ I810DRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index)
 
    I810SetupForSolidFill(pScrn, 0, GXcopy, -1);
    while (nbox--) {
-      I810SelectBuffer(pScrn, I810_FRONT);
-      I810SubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1, 
-				  pbox->x2-pbox->x1, pbox->y2-pbox->y1);
       I810SelectBuffer(pScrn, I810_BACK);
       I810SubsequentSolidFillRect(pScrn, pbox->x1, pbox->y1, 
 				  pbox->x2-pbox->x1, pbox->y2-pbox->y1);

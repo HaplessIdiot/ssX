@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.39 2000/06/23 23:43:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.42 2000/09/20 00:09:30 keithp Exp $ */
 
 /*
  * Authors:
@@ -643,7 +643,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
   ClockRangePtr clockRanges;
   int i;
   MessageType from;
-  char *mod=0, *reqSym=0;
   int flags24;
   rgb defaultWeight = {0, 0, 0};
   pciVideoPtr match;
@@ -668,6 +667,11 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
+  if (flags & PROBE_DETECT) {
+    TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
+    return TRUE;
+  }
+  
   /* The vgahw module should be loaded here when needed */
   if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
 
@@ -1200,7 +1204,10 @@ CalcPLL(int freq, int *f_out, int isBanshee) {
     maxm=24;
   } else {
     minm=1;
-    maxm=64;
+    maxm=57; /* This used to be 64, alas it seems the last 8 (funny that ?)
+              * values cause jittering at lower resolutions. I've not done
+              * any calculations to what the adjustment affects clock ranges,
+              * but I can still run at 1600x1200@75Hz */
   }
   for (n=1; n<256; n++) {
     f_cur=REFFREQ*(n+2);
@@ -1609,15 +1616,6 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   pTDFX = TDFXPTR(pScrn);
   pTDFX->stride = pScrn->displayWidth*pTDFX->cpp;
 
-  /* Layout the memory.  Start with all the ram */
-  memRemaining=pScrn->videoRam<<10;
-  /* Remove the cursor space */
-  memRemaining-=4096;
-  /* Remove the main screen and offscreen pixmaps */
-  memRemaining-=pTDFX->stride*(pScrn->virtualY+128);
-  /* Remove one scanline for page alignment */
-  memRemaining-=4095;
-  /* Remove the back and Z buffers */
   if (pTDFX->cpp!=3) {
     screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY,
 				     TRUE, pTDFX->cpp);
@@ -1627,41 +1625,77 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
     screenSizeInTiles=calcBufferSize(pScrn->virtualX, pScrn->virtualY,
 				     TRUE, 4);
   }
-  memRemaining-=screenSizeInTiles*2;
-
-  /* Give all the rest to textures, rounded down to a page */
-  texSize=memRemaining&~0xFFF;
-
-  /* Make sure fifo has CMDFIFO_PAGES<fifoSize<255 pages */
-  if (memRemaining-texSize<CMDFIFO_PAGES<<12)
-    texSize=(memRemaining-(CMDFIFO_PAGES<<12))&~0xFFF;
-  /* Fifo uses the remaining space up to 255 pages */
-  fifoSize = (memRemaining-texSize)&~0xFFF;
-  if (fifoSize>255<<12) fifoSize=255<<12;
-
-  /* Assign the variables */
-  /* Cursor */
-  pTDFX->cursorOffset=0; /* Size 1024 bytes */
-
-  /* Point the fifo at the first page */
+  memRemaining=((pScrn->videoRam<<10) - 1) &~ 0xFFF;
+  /* Note that a page is 4096 bytes, and a  */
+  /* tile is 32 x 128 = 4096 bytes.  So,    */
+  /* page and tile boundaries are the same  */
+  /* Place the depth offset first, forcing  */
+  /* it to be on an *odd* page boundary.    */
+  pTDFX->depthOffset = (memRemaining - screenSizeInTiles) &~ 0xFFF;
+  if ((pTDFX->depthOffset & (0x1 << 12)) == 0) {
+#if	0
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+                 "Changing depth offset from 0x%08x to 0x%08x\n",
+                 pTDFX->depthOffset,
+                 pTDFX->depthOffset - (0x1 << 12));
+#endif
+      pTDFX->depthOffset -= (0x1 << 12);
+  }
+  /* Now, place the back buffer, forcing it */
+  /* to be on an *even* page boundary.      */
+  pTDFX->backOffset = (pTDFX->depthOffset - screenSizeInTiles) &~ 0xFFF;
+  if (pTDFX->backOffset & (0x1 << 12)) {
+#if	0
+      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+                 "Changing back offset from 0x%08x to 0x%08x\n",
+                 pTDFX->backOffset,
+                 pTDFX->backOffset - (0x1 << 12));
+#endif
+      pTDFX->backOffset -= (0x1 << 12);
+  }
+  /* Now, place the front buffer, forcing   */
+  /* it to be on a page boundary too, just  */
+  /* for giggles.                           */
+  pTDFX->fbOffset
+      = (pTDFX->backOffset - (pScrn->virtualY+128)*pTDFX->stride) &~ 0xFFF;
+  /* Give the cmd fifo at least             */
+  /* CMDFIFO_PAGES pages, but no more than  */
+  /* 255.                                   */
+  fifoSize = ((255 <= CMDFIFO_PAGES) ? 255 : CMDFIFO_PAGES) << 12;
+  /* We give 4096 bytes to the cursor, fifoSize to the */
+  /* FIFO, and everything to textures.                 */
+  texSize = (pTDFX->fbOffset - fifoSize - 4096);
+  pTDFX->texOffset = pTDFX->fbOffset - texSize;
+  pTDFX->texSize = texSize;
   pTDFX->fifoOffset = 4096;
   pTDFX->fifoSize = fifoSize;
-
-  /* Textures */
-  pTDFX->texOffset = pTDFX->fifoOffset+fifoSize;
-  pTDFX->texSize = texSize;
-
-  /* Frame buffer */
-  pTDFX->fbOffset=pTDFX->texOffset+pTDFX->texSize;
-
-  /* Back buffer */
-  pTDFX->backOffset=pTDFX->fbOffset+(pScrn->virtualY+128)*pTDFX->stride;
-  /* Round off to a page */
-  pTDFX->backOffset=(pTDFX->backOffset+4095)&~0xFFF;
-
-  /* Depth buffer */
-  pTDFX->depthOffset=pTDFX->backOffset+screenSizeInTiles;
-
+  pTDFX->cursorOffset = 0;
+#if	0
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+             "Cursor Offset: [0x%08X,0x%08X)\n",
+             pTDFX->cursorOffset,
+             pTDFX->cursorOffset+1024);
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+             "Fifo Offset: [0x%08X, 0x%08X)\n",
+             pTDFX->fifoOffset,
+             pTDFX->fifoOffset+fifoSize);
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+             "Texture Offset: [0x%08X, 0x%08X)\n",
+             pTDFX->texOffset,
+             pTDFX->texOffset + texSize);
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+             "Front Buffer Offset: [0x%08X, 0x%08X)\n",
+             pTDFX->fbOffset,
+             pTDFX->fbOffset + (pScrn->virtualY+128)*pTDFX->stride);
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+             "BackOffset: [0x%08X, 0x%08X)\n",
+             pTDFX->backOffset,
+             pTDFX->backOffset+screenSizeInTiles);
+  xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+             "DepthOffset: [0x%08X, 0x%08X)\n",
+             pTDFX->depthOffset,
+             pTDFX->depthOffset+screenSizeInTiles);
+#endif	/* 0/1 */
   xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Textures Memory %0.02f MB\n",
 	     (float)texSize/1024.0/1024.0);
 }

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.6tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/sis/Imakefile,v 1.7 2000/08/24 22:20:08 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -257,7 +257,7 @@ LinkSourceFile(xdriP.h, ../../X)
 
      MMX_OBJS = ../../X86/mmx_blend.o
 
-#if MesaUse3DNow
+#ifdef MesaUse3DNow
    3DNOW_SRCS = ../../X86/3dnow.c \
 		../../X86/3dnow_norm_raw.S \
 		../../X86/3dnow_xform_masked1.S \

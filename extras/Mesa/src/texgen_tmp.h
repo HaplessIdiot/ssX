@@ -290,10 +290,10 @@ static void TAG(texgen_sphere_map)( struct vertex_buffer *VB,
    GLfloat (*f)[3], *m;
 
    if (!VB->tmp_f) 
-      VB->tmp_f = (GLfloat (*)[3])malloc(VB->Size * sizeof(GLfloat) * 3);
+      VB->tmp_f = (GLfloat (*)[3]) MALLOC(VB->Size * sizeof(GLfloat) * 3);
 
    if (!VB->tmp_m) 
-      VB->tmp_m = (GLfloat *)malloc(VB->Size * sizeof(GLfloat));
+      VB->tmp_m = (GLfloat *) MALLOC(VB->Size * sizeof(GLfloat));
    
    f = VB->tmp_f;
    m = VB->tmp_m;
@@ -349,10 +349,10 @@ static void TAG(texgen)( struct vertex_buffer *VB, GLuint textureUnit )
    LOCAL_VARS;
 
    if (!VB->tmp_f) 
-      VB->tmp_f = (GLfloat (*)[3])malloc(VB->Size * sizeof(GLfloat) * 3);
+      VB->tmp_f = (GLfloat (*)[3]) MALLOC(VB->Size * sizeof(GLfloat) * 3);
 
    if (!VB->tmp_m) 
-      VB->tmp_m = (GLfloat *)malloc(VB->Size * sizeof(GLfloat));
+      VB->tmp_m = (GLfloat *) MALLOC(VB->Size * sizeof(GLfloat));
    
    f = VB->tmp_f;
    m = VB->tmp_m;

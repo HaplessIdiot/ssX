@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.5 2000/06/17 00:02:14 martin Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mmath.h,v 1.6 2000/08/09 23:40:10 dawes Exp $ */
 
 /*
  * Faster arithmetic functions.  If the FAST_MATH preprocessor symbol is
@@ -47,7 +47,7 @@
  * In the worst case, we force the compiler to use a memory access to
  * truncate the float, by specifying the 'volatile' keyword.
  */
-#if defined(__linux__) && defined(__i386__) 
+#if defined(__linux__) && defined(__i386__)
 #include <fpu_control.h>
 
 #if !defined(_FPU_SETCW)
@@ -232,13 +232,13 @@ do {						\
  * GLubyte b = FloatToInt(CLAMP(f, 0, 1) * 255)
  */
 
-#if defined(__i386__) || defined(__sparc__)
+#if defined(__i386__) || defined(__sparc__) || ( defined(__alpha__) && \
+	      ( defined( __IEEE_FLOAT ) || !defined( VMS ) ) )
 #define USE_IEEE
+#define IEEE_ONE 0x3f7f0000
 #endif
 
 #if defined(USE_IEEE) && !defined(DEBUG)
-
-#define IEEE_ONE 0x3f7f0000
 
 #define CLAMP_FLOAT_COLOR(f)			\
 	do {					\

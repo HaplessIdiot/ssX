@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.10 2000/06/26 05:41:28 martin Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.11 2000/07/01 15:23:10 martin Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -68,8 +68,6 @@ GLXContext CreateContext(Display *dpy, XVisualInfo *vis,
     __GLXdisplayPrivate *priv;
 #endif
 
-    if (getenv("LIBGL_ALWAYS_INDIRECT"))
-	allowDirect = GL_FALSE;
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {
 	return NULL;
@@ -541,6 +539,10 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
     __GLXdisplayPrivate *priv;
     __DRIdrawable *pdraw;
 
+#if defined(XTHREADS)
+    xmutex_lock(&__glXSwapBuffersMutex);
+#endif
+
     priv = __glXInitialize(dpy);
     if (priv->driDisplay.private) {
 	__GLXscreenConfigs *psc = &priv->screenConfigs[gc->screen];
@@ -552,6 +554,9 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 	    pdraw = (*psc->driScreen.getDrawable)(dpy, drawable);
 	    if (pdraw) {
 		(*pdraw->swapBuffers)(dpy, pdraw->private);
+#if defined(XTHREADS)
+                xmutex_unlock(&__glXSwapBuffersMutex);
+#endif
 		return;
 	    }
 	}
@@ -560,6 +565,9 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
 
     opcode = __glXSetupForCommand(dpy);
     if (!opcode) {
+#if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
+        xmutex_unlock(&__glXSwapBuffersMutex);
+#endif
 	return;
     }
 
@@ -583,6 +591,9 @@ void glXSwapBuffers(Display *dpy, GLXDrawable drawable)
     UnlockDisplay(dpy);
     SyncHandle();
     XFlush(dpy);
+#if defined(GLX_DIRECT_RENDERING) && defined(XTHREADS)
+    xmutex_unlock(&__glXSwapBuffersMutex);
+#endif
 }
 
 /*

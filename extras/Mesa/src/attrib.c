@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -358,6 +358,7 @@ _mesa_PushAttrib(GLbitfield mask)
          copy_texobj_state(&attr->Unit[u].Saved1D, attr->Unit[u].CurrentD[1]);
          copy_texobj_state(&attr->Unit[u].Saved2D, attr->Unit[u].CurrentD[2]);
          copy_texobj_state(&attr->Unit[u].Saved3D, attr->Unit[u].CurrentD[3]);
+         copy_texobj_state(&attr->Unit[u].SavedCubeMap, attr->Unit[u].CurrentCubeMap);
       }
       newnode = new_attrib_node( GL_TEXTURE_BIT );
       newnode->data = attr;
@@ -473,11 +474,14 @@ _mesa_PopAttrib(void)
             break;
          case GL_DEPTH_BUFFER_BIT:
             {
+               GLboolean oldDepthTest = ctx->Depth.Test;
                GLenum oldDepthFunc = ctx->Depth.Func;
                GLboolean oldDepthMask = ctx->Depth.Mask;
                GLfloat oldDepthClear = ctx->Depth.Clear;
                MEMCPY( &ctx->Depth, attr->data,
                        sizeof(struct gl_depthbuffer_attrib) );
+               if (ctx->Depth.Test != oldDepthTest && ctx->Driver.Enable)
+                  (*ctx->Driver.Enable)( ctx, GL_DEPTH_TEST, ctx->Depth.Test);
                if (ctx->Depth.Func != oldDepthFunc && ctx->Driver.DepthFunc)
                   (*ctx->Driver.DepthFunc)( ctx, ctx->Depth.Func );
                if (ctx->Depth.Mask != oldDepthMask && ctx->Driver.DepthMask)
@@ -769,9 +773,13 @@ _mesa_PopAttrib(void)
                                      &(ctx->Texture.Unit[u].Saved2D) );
                   copy_texobj_state( ctx->Texture.Unit[u].CurrentD[3],
                                      &(ctx->Texture.Unit[u].Saved3D) );
+                  copy_texobj_state( ctx->Texture.Unit[u].CurrentCubeMap,
+                                     &(ctx->Texture.Unit[u].SavedCubeMap) );
+
                   gl_put_texobj_on_dirty_list( ctx, ctx->Texture.Unit[u].CurrentD[1] );
                   gl_put_texobj_on_dirty_list( ctx, ctx->Texture.Unit[u].CurrentD[2] );
                   gl_put_texobj_on_dirty_list( ctx, ctx->Texture.Unit[u].CurrentD[3] );
+                  gl_put_texobj_on_dirty_list( ctx, ctx->Texture.Unit[u].CurrentCubeMap );
 
                }
             }

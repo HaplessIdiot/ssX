@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.4tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/r128/Imakefile,v 1.5 2000/08/24 22:20:07 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -262,8 +262,7 @@ MESA_INCLUDES = -I. -I.. -I../../include \
 
      MMX_OBJS = ../../X86/mmx_blend.o
 
-XCOMM Disabling 3Dnow code for the time being.
-#if 0
+#ifdef MesaUse3DNow
    3DNOW_SRCS = ../../X86/3dnow.c \
 		../../X86/3dnow_norm_raw.S \
 		../../X86/3dnow_xform_masked1.S \

@@ -1,5 +1,5 @@
 /*
- * $Id: trident.c,v 1.9 2000/09/15 07:25:12 keithp Exp $
+ * $Id: trident.c,v 1.10 2000/09/24 13:51:22 alanh Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/kdrive/trident/trident.c,v 1.8 2000/09/03 05:11:20 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/kdrive/trident/trident.c,v 1.9 2000/09/15 07:25:12 keithp Exp $ */
 
 #include "trident.h"
 #define extern

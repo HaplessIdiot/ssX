@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  * 
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
@@ -65,6 +65,7 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
       obj->RefCount = 1;
       obj->Name = name;
       obj->Dimensions = dimensions;
+      obj->Priority = 1.0F;
       obj->WrapS = GL_REPEAT;
       obj->WrapT = GL_REPEAT;
       obj->MinFilter = GL_NEAREST_MIPMAP_LINEAR;
@@ -391,11 +392,13 @@ _mesa_GenTextures( GLsizei n, GLuint *texName )
    GLint i;
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glGenTextures");
-   if (n<0) {
+   if (n < 0) {
       gl_error( ctx, GL_INVALID_VALUE, "glGenTextures" );
       return;
    }
 
+   if (!texName)
+      return;
 
    /*
     * This must be atomic (generation and allocation of texture IDs)
@@ -431,6 +434,9 @@ _mesa_DeleteTextures( GLsizei n, const GLuint *texName)
    GLint i;
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glDeleteTextures");
+
+   if (!texName)
+      return;
 
    for (i=0;i<n;i++) {
       struct gl_texture_object *t;
@@ -610,19 +616,20 @@ _mesa_PrioritizeTextures( GLsizei n, const GLuint *texName,
    GLint i;
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH(ctx, "glPrioritizeTextures");
-   if (n<0) {
+   if (n < 0) {
       gl_error( ctx, GL_INVALID_VALUE, "glPrioritizeTextures" );
       return;
    }
 
-   for (i=0;i<n;i++) {
-      struct gl_texture_object *t;
-      if (texName[i]>0) {
-         t = (struct gl_texture_object *)
+   if (!priorities)
+      return;
+
+   for (i = 0; i < n; i++) {
+      if (texName[i] > 0) {
+         struct gl_texture_object *t = (struct gl_texture_object *)
             _mesa_HashLookup(ctx->Shared->TexObjects, texName[i]);
          if (t) {
             t->Priority = CLAMP( priorities[i], 0.0F, 1.0F );
-
 	    if (ctx->Driver.PrioritizeTexture)
 	       ctx->Driver.PrioritizeTexture( ctx, t, t->Priority );
          }
@@ -636,41 +643,47 @@ _mesa_PrioritizeTextures( GLsizei n, const GLuint *texName,
  * Execute glAreTexturesResident 
  */
 GLboolean
-_mesa_AreTexturesResident( GLsizei n, const GLuint *texName,
-                           GLboolean *residences )
+_mesa_AreTexturesResident(GLsizei n, const GLuint *texName,
+                          GLboolean *residences)
 {
    GET_CURRENT_CONTEXT(ctx);
-   GLboolean resident = GL_TRUE;
+   GLboolean allResident = GL_TRUE;
    GLint i;
 
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH_WITH_RETVAL(ctx, 
-						  "glAreTexturesResident",
-						  GL_FALSE);
-   if (n<0) {
-      gl_error( ctx, GL_INVALID_VALUE, "glAreTexturesResident(n)" );
+                                            "glAreTexturesResident", GL_FALSE);
+   if (n < 0) {
+      gl_error(ctx, GL_INVALID_VALUE, "glAreTexturesResident(n)");
       return GL_FALSE;
    }
 
-   for (i=0;i<n;i++) {
+   if (!texName || !residences)
+      return GL_FALSE;
+
+   for (i = 0; i < n; i++) {
       struct gl_texture_object *t;
-      if (texName[i]==0) {
-         gl_error( ctx, GL_INVALID_VALUE, "glAreTexturesResident(textures)" );
+      if (texName[i] == 0) {
+         gl_error(ctx, GL_INVALID_VALUE, "glAreTexturesResident(textures)");
          return GL_FALSE;
       }
       t = (struct gl_texture_object *)
          _mesa_HashLookup(ctx->Shared->TexObjects, texName[i]);
       if (t) {
-	 if (ctx->Driver.IsTextureResident)
-	    residences[i] = ctx->Driver.IsTextureResident( ctx, t );
-	 else 
+	 if (ctx->Driver.IsTextureResident) {
+	    residences[i] = ctx->Driver.IsTextureResident(ctx, t);
+            if (!residences[i])
+               allResident = GL_FALSE;
+         }
+	 else {
 	    residences[i] = GL_TRUE;
+         }
       }
       else {
-         gl_error( ctx, GL_INVALID_VALUE, "glAreTexturesResident(textures)" );
+         gl_error(ctx, GL_INVALID_VALUE, "glAreTexturesResident(textures)");
          return GL_FALSE;
       }
    }
-   return resident;
+   return allResident;
 }
 
 
@@ -684,7 +697,7 @@ _mesa_IsTexture( GLuint texture )
    GET_CURRENT_CONTEXT(ctx);
    ASSERT_OUTSIDE_BEGIN_END_AND_FLUSH_WITH_RETVAL(ctx, "glIsTextures",
 						  GL_FALSE);
-   if (texture>0 && _mesa_HashLookup(ctx->Shared->TexObjects, texture)) {
+   if (texture > 0 && _mesa_HashLookup(ctx->Shared->TexObjects, texture)) {
       return GL_TRUE;
    }
    else {

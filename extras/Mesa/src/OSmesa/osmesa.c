@@ -225,6 +225,7 @@ OSMesaCreateContext( GLenum format, OSMesaContext sharelist )
       }
       gl_extensions_enable(&(osmesa->gl_ctx),"GL_HP_occlusion_test");
       gl_extensions_enable(&(osmesa->gl_ctx), "GL_ARB_texture_cube_map");
+      gl_extensions_enable(&(osmesa->gl_ctx), "GL_EXT_texture_env_combine");
 
       osmesa->gl_buffer = gl_create_framebuffer( osmesa->gl_visual,
                                            osmesa->gl_visual->DepthBits > 0,

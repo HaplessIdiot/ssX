@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.15 2000/06/24 16:14:07 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.16 2000/08/01 20:28:38 dawes Exp $
 
 #include <Threads.tmpl>
 
@@ -349,13 +349,15 @@ LinkSourceFile(zoom.h, $(MESASRCDIR)/src)
      ASM_SRCS = 
      ASM_OBJS = 
 #ifdef MesaUse3DNow
-     ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM -DUSE_3DNOW_ASM
-#else
-     ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM
+     3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
+#ifdef MesaUseKatmai
+     KATMAI_DEFS = -DUSE_KATMAI_ASM
+#endif
+     ASM_DEFS = -DUSE_MMX_ASM -DUSE_X86_ASM $(3DNOW_DEFS) $(KATMAI_DEFS)
 #endif
 
-      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(ASM_DEFS)
+      DEFINES = $(ALLOC_DEFINES) GlxDefines $(TDFX_DEFS) $(ASM_DEFS) $(IEEE_DEFS)
      INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) -I../include -I../../dri -I. -I../../../../include
          SRCS = $(CORE_SRCS) $(ASM_SRCS)
          OBJS = $(CORE_OBJS) $(ASM_OBJS)

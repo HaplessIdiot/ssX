@@ -52,7 +52,9 @@
 #define MGA_CTXREG_TDUAL0    7
 #define MGA_CTXREG_TDUAL1    8
 #define MGA_CTXREG_FCOL      9
-#define MGA_CTX_SETUP_SIZE   10
+#define MGA_CTXREG_STENCIL    10
+#define MGA_CTXREG_STENCILCTL 11
+#define MGA_CTX_SETUP_SIZE   12
 
 /* 2d state
  */

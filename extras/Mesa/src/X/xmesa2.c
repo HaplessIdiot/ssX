@@ -150,8 +150,10 @@ static void get_buffer_size( GLcontext *ctx, GLuint *width, GLuint *height )
    int winx, winy;
    unsigned int bw, d;
 
+   _glthread_LOCK_MUTEX(_xmesa_lock);
    XGetGeometry( xmesa->display, xmesa->xm_buffer->frontbuffer, &root,
 		 &winx, &winy, &winwidth, &winheight, &bw, &d );
+   _glthread_UNLOCK_MUTEX(_xmesa_lock);
 #else
 
    winwidth = xmesa->xm_buffer->frontbuffer->width;
@@ -209,7 +211,9 @@ static void finish( GLcontext *ctx )
 #else
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    if (xmesa) {
+      _glthread_LOCK_MUTEX(_xmesa_lock);
       XSync( xmesa->display, False );
+      _glthread_UNLOCK_MUTEX(_xmesa_lock);
    }
 #endif
 }
@@ -222,7 +226,9 @@ static void flush( GLcontext *ctx )
 #else
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    if (xmesa) {
+      _glthread_LOCK_MUTEX(_xmesa_lock);
       XFlush( xmesa->display );
+      _glthread_UNLOCK_MUTEX(_xmesa_lock);
    }
 #endif
 }
@@ -353,8 +359,10 @@ static void clear_color( GLcontext *ctx,
    xmesa->clearcolor[3] = a;
    xmesa->clearpixel = xmesa_color_to_pixel( xmesa, r, g, b, a,
                                              xmesa->xm_visual->undithered_pf );
+   _glthread_LOCK_MUTEX(_xmesa_lock);
    XMesaSetForeground( xmesa->display, xmesa->xm_buffer->cleargc,
                        xmesa->clearpixel );
+   _glthread_UNLOCK_MUTEX(_xmesa_lock);
 }
 
 
@@ -528,8 +536,10 @@ static GLboolean logicop( GLcontext *ctx, GLenum op )
       case GL_OR_INVERTED:	func = GXorInverted;	break;
       default:  return GL_FALSE;
    }
+   _glthread_LOCK_MUTEX(_xmesa_lock);
    XMesaSetFunction( xmesa->display, xmesa->xm_buffer->gc1, func );
    XMesaSetFunction( xmesa->display, xmesa->xm_buffer->gc2, func );
+   _glthread_UNLOCK_MUTEX(_xmesa_lock);
    return GL_TRUE;
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.2 2000/08/04 03:51:46 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.3 2000/09/22 11:35:46 alanh Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -24,7 +24,7 @@
 
 #include "sis300_accel.h"
 
-#include "sis_drm_public.h"
+#include "sis_drm.h"
 #include "drm.h"
 
 extern void GlxSetVisualConfigs(

@@ -28,7 +28,7 @@
  *	Offsets for transform_func arguments
  *
  *	typedef void (*transform_func)( GLvector4f *to_vec, 
- *	                                const GLmatrix *mat, 
+ *	                                const GLfloat m[16], 
  *	                                const GLvector4f *from_vec, 
  *	                                const GLubyte *clipmask,
  *	                                const GLubyte flag );

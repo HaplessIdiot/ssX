@@ -56,6 +56,9 @@
 #endif
 
 
+extern _glthread_Mutex _xmesa_lock;
+
+
 /* for PF_8R8G8B24 pixel format */
 typedef struct {
    GLubyte b;

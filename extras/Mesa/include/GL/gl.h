@@ -1,7 +1,7 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.3
+ * Version:  3.4
  *
  * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/include/GL/gl.h,v 1.5 2000/08/09 23:40:10 dawes Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/gl.h,v 1.6 2000/08/11 16:36:41 dawes Exp $ */
 
 
 #ifndef __gl_h_
@@ -851,7 +851,7 @@ typedef double		GLclampd;	/* double precision float in [0,1] */
 
 #define GL_CLIENT_PIXEL_STORE_BIT		0x00000001
 #define GL_CLIENT_VERTEX_ARRAY_BIT		0x00000002
-#define GL_CLIENT_ALL_ATTRIB_BITS 		0xFFFFFFFF
+#define GL_ALL_CLIENT_ATTRIB_BITS 		0xFFFFFFFF
 
 
 
