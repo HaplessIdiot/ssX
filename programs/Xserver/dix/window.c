@@ -70,7 +70,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.26 2002/10/08 23:55:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.27 2002/10/30 12:52:05 alanh Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -3328,15 +3328,19 @@ SendVisibilityNotify(pWin)
 
 		pWin2 = (WindowPtr)LookupIDByType(win->info[i].id, RT_WINDOW);
 
-		if(pWin2->visibility == VisibilityPartiallyObscured)
-		    return;
+		if (pWin2) {
+		    if(pWin2->visibility == VisibilityPartiallyObscured)
+		   	return;
 
-		if(!i) pWin = pWin2;
+		    if(!i) pWin = pWin2;
+		}
 	    }
 	    break;
 	case VisibilityPartiallyObscured:
-	    if(Scrnum)
-	       pWin = (WindowPtr)LookupIDByType(win->info[0].id, RT_WINDOW);
+	    if(Scrnum) {
+	        pWin2 = (WindowPtr)LookupIDByType(win->info[0].id, RT_WINDOW);
+		if (pWin2) pWin = pWin2;
+	    }
 	    break;
 	case VisibilityFullyObscured:
 	    for(i = 0; i < PanoramiXNumScreens; i++) {
@@ -3344,10 +3348,12 @@ SendVisibilityNotify(pWin)
 
 		pWin2 = (WindowPtr)LookupIDByType(win->info[i].id, RT_WINDOW);
 		
-		if(pWin2->visibility != VisibilityFullyObscured)
-		    return;
+		if (pWin2) {
+		    if(pWin2->visibility != VisibilityFullyObscured)
+		    	return;
 
-		if(!i) pWin = pWin2;
+		    if(!i) pWin = pWin2;
+		}
 	    }
 	    break;
 	}
