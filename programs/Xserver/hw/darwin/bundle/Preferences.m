@@ -3,7 +3,7 @@
 //
 //  This class keeps track of the user preferences.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.m,v 1.5 2001/05/01 23:34:32 torrey Exp $ */
 
 #import "Preferences.h"
 #import "quartzShared.h"
@@ -21,8 +21,10 @@
                     @"YES", @"ShowStartupHelp",
                     [NSNumber numberWithInt:0], @"SwitchKeyCode",
                     [NSNumber numberWithInt:(NSCommandKeyMask | NSAlternateKeyMask)],
-                    @"SwitchModifiers", @"NO", @"UseSystemBeep", nil];
+                    @"SwitchModifiers", @"NO", @"UseSystemBeep", 
+                    @"NO", @"DockSwitch", nil];
 
+    [super initialize];
     [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 }
 
@@ -58,6 +60,7 @@
         [keyField setTitle:[Preferences switchString]];
 
     [displayNumber setIntValue:[Preferences display]];
+    [dockSwitchButton setIntValue:[Preferences dockSwitch]];
     [fakeButton setIntValue:[Preferences fakeButtons]];
     [startupHelpButton setIntValue:[Preferences startupHelp]];
     [systemBeepButton setIntValue:[Preferences systemBeep]];
@@ -99,6 +102,7 @@
     [Preferences setKeymapFile:[keymapFileField stringValue]];
     [Preferences setUseKeymapFile:[loadKeymapFileButton intValue]];
     [Preferences setDisplay:[displayNumber intValue]];
+    [Preferences setDockSwitch:[dockSwitchButton intValue]];
     [Preferences setFakeButtons:[fakeButton intValue]];
     [Preferences setStartupHelp:[startupHelpButton intValue]];
     [Preferences setSystemBeep:[systemBeepButton intValue]];
@@ -170,6 +174,10 @@
     [[NSUserDefaults standardUserDefaults] setInteger:newDisplay forKey:@"Display"];
 }
 
++ (void)setDockSwitch:(BOOL)newDockSwitch {
+    [[NSUserDefaults standardUserDefaults] setBool:newDockSwitch forKey:@"DockSwitch"];
+}
+
 + (void)setFakeButtons:(BOOL)newFakeButtons {
     [[NSUserDefaults standardUserDefaults] setBool:newFakeButtons forKey:@"FakeButtons"];
     // Update the setting used by the X server thread
@@ -212,6 +220,10 @@
 
 + (int)display {
     return [[NSUserDefaults standardUserDefaults] integerForKey:@"Display"];
+}
+
++ (BOOL)dockSwitch {
+    return [[NSUserDefaults standardUserDefaults] boolForKey:@"DockSwitch"];
 }
 
 + (BOOL)fakeButtons {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.3 2001/04/07 17:48:31 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Preferences.h,v 1.4 2001/04/25 02:23:47 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -6,6 +6,7 @@
 {
     IBOutlet NSPanel *window;
     IBOutlet id displayNumber;
+    IBOutlet id dockSwitchButton;
     IBOutlet id fakeButton;
     IBOutlet id keyField;
     IBOutlet id keymapFileField;
@@ -35,6 +36,7 @@
 + (void)setKeyCode:(int)newKeyCode;
 + (void)setModifiers:(int)newModifiers;
 + (void)setDisplay:(int)newDisplay;
++ (void)setDockSwitch:(BOOL)newDockSwitch;
 + (void)setFakeButtons:(BOOL)newFakeButtons;
 + (void)setStartupHelp:(BOOL)newStartupHelp;
 + (void)setSystemBeep:(BOOL)newSystemBeep;
@@ -46,6 +48,7 @@
 + (unsigned int)keyCode;
 + (unsigned int)modifiers;
 + (int)display;
++ (BOOL)dockSwitch;
 + (BOOL)fakeButtons;
 + (BOOL)startupHelp;
 + (BOOL)systemBeep;

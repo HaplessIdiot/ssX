@@ -3,7 +3,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.5 2001/04/09 03:32:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.h,v 1.6 2001/04/25 02:23:47 torrey Exp $ */
 
 #import <Cocoa/Cocoa.h>
 
@@ -28,6 +28,7 @@
     // Aqua interface
     IBOutlet NSPanel *helpWindow;
     IBOutlet id startupHelpButton;
+    IBOutlet NSPanel *switchWindow;
 }
 
 - (id)init;
@@ -48,7 +49,9 @@
 - (void)sendNXEvent:(NXEvent*)ev;
 - (void)sendShowHide:(BOOL)show;
 
+// Aqua interface actions
 - (IBAction)closeHelpAndShow:(id)sender;
+- (IBAction)showAction:(id)sender;
 
 // NSApplication delegate
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
