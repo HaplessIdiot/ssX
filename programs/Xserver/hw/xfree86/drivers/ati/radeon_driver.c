@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.37 2001/09/26 12:49:25 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.38 2001/10/08 13:03:23 alanh Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2172,7 +2172,7 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     if (xf86RegisterResources(info->pEnt->index, 0, ResExclusive)) 
         goto fail;
 
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP;
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR;
     pScrn->monitor     = pScrn->confScreen->monitor;
 
     if (!RADEONPreInitVisual(pScrn))    goto fail;
