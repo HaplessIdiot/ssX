@@ -23,7 +23,7 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) -I$(SERVERSRC)/Xext \
            -I$(XF86SRC)/rac -I$(XF86SRC)/int10 \
 	   -I$(XF86SRC)/ddc -I$(XF86SRC)/i2c \
            -I$(FONTINCSRC) -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
-	   -I$(XTOP)/include/extensions
+	   -I$(XTOP)/include/extensions -I$(XF86OSSRC)/vbe
 #endif
 
 #if MakeHasPosixVariableSubstitutions
