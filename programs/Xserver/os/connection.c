@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.4 1994/12/25 12:37:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.5 1995/01/14 10:49:47 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -67,9 +67,6 @@ SOFTWARE.
 #include "X.h"
 #include "Xproto.h"
 #include <X11/Xtrans.h>
-#ifndef MINIX
-#include <sys/param.h>
-#endif
 #include <errno.h>
 #ifdef X_NOT_STDC_ENV
 extern int errno;
