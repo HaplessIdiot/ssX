@@ -28,6 +28,9 @@
 #include <X11/extensions/Xrender.h>
 #include <stdarg.h>
 
+#include <X11/Xfuncproto.h>
+#include <X11/Xosdefs.h>
+
 #define XFT_FAMILY	    "family"	/* String */
 #define XFT_STYLE	    "style"	/* String */
 #define XFT_SLANT	    "slant"	/* Int */
@@ -149,6 +152,8 @@ typedef struct _XftObjectSet {
     const char	**objects;
 } XftObjectSet;
 
+_XFUNCPROTOBEGIN
+
 /* xftcfg.c */
 Bool
 XftConfigSubstitute (XftPattern *p);
@@ -249,6 +254,10 @@ XftDrawRect (XftDraw	    *d,
 	     unsigned int   width,
 	     unsigned int   height);
 
+
+Bool
+XftDrawSetClip (XftDraw	    *d,
+		Region	    r);
 
 /* xftextent.c */
 
@@ -431,5 +440,7 @@ XftXlfdParse (const char *xlfd_orig, Bool ignore_scalable, Bool complete);
     
 XFontStruct *
 XftCoreOpen (Display *dpy, XftPattern *pattern);
+
+_XFUNCPROTOEND
 
 #endif /* _XFT_H_ */

@@ -53,7 +53,7 @@ PictureDestroyWindow (WindowPtr pWindow)
     PictureScreenPtr    ps = GetPictureScreen(pScreen);
     Bool		ret;
 
-    while (pPicture = GetPictureWindow(pWindow))
+    while ((pPicture = GetPictureWindow(pWindow)))
     {
 	SetPictureWindow(pWindow, pPicture->pNext);
 	FreeResource (pPicture->id, PictureType);
@@ -210,6 +210,7 @@ PictureMatchVisual (ScreenPtr pScreen, int depth, VisualPtr pVisual)
 	type = PictTypeDirect;
 	break;
     case DirectColor:
+    default:
 	return 0;
     }
     while (nformat--)
@@ -245,7 +246,6 @@ PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 f)
     PictureScreenPtr    ps = GetPictureScreenIfSet(pScreen);
     PictFormatPtr	format;
     int			nformat;
-    int			type;
 
     if (!ps)
 	return 0;
@@ -474,7 +474,6 @@ ChangePicture (PicturePtr	pPicture,
     PictureScreenPtr	ps = GetPictureScreen(pScreen);
     BITS32		index2;
     int			error = 0;
-    PixmapPtr		pPixmap;
     BITS32		maskQ;
     
     pPicture->serialNumber |= GC_CHANGE_SERIAL_BIT;
@@ -562,6 +561,10 @@ ChangePicture (PicturePtr	pPicture,
 		if (vlist)
 		{
 		    pPixmap = NEXT_PTR(PixmapPtr);
+		    if (pPixmap)
+			clipType = CT_PIXMAP;
+		    else
+			clipType = CT_NONE;
 		}
 		else
 		{
@@ -573,6 +576,7 @@ ChangePicture (PicturePtr	pPicture,
 		    }
 		    else
 		    {
+			clipType = CT_PIXMAP;
 			pPixmap = (PixmapPtr)SecurityLookupIDByType(client,
 								    pid, 
 								    RT_PIXMAP,
@@ -681,6 +685,34 @@ ChangePicture (PicturePtr	pPicture,
     }
     (*ps->ChangePicture) (pPicture, maskQ);
     return error;
+}
+
+int
+SetPictureClipRects (PicturePtr	pPicture,
+		     int	xOrigin,
+		     int	yOrigin,
+		     int	nRect,
+		     xRectangle	*rects)
+{
+    ScreenPtr		pScreen = pPicture->pDrawable->pScreen;
+    PictureScreenPtr	ps = GetPictureScreen(pScreen);
+    RegionPtr		clientClip;
+    int			result;
+
+    clientClip = RECTS_TO_REGION(pScreen,
+				 nRect, rects, CT_UNSORTED);
+    if (!clientClip)
+	return BadAlloc;
+    result =(*ps->ChangePictureClip) (pPicture, CT_REGION, 
+				      (pointer) clientClip, 0);
+    if (result == Success)
+    {
+	pPicture->clipOrigin.x = xOrigin;
+	pPicture->clipOrigin.y = yOrigin;
+	pPicture->stateChanges |= CPClipXOrigin|CPClipYOrigin|CPClipMask;
+	pPicture->serialNumber |= GC_CHANGE_SERIAL_BIT;
+    }
+    return result;
 }
 
 void

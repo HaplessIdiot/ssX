@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.7 2000/12/01 21:32:02 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.8 2000/12/02 10:02:05 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -43,6 +43,7 @@ struct _XftDraw {
     Drawable	    drawable;
     Visual	    *visual;
     Colormap	    colormap;
+    Region	    clip;
     Bool	    core_set;
     Bool	    render_set;
     Bool	    render_able;

@@ -1,4 +1,8 @@
 XFree86 4.0.1h (4 December 2000)
+1089. Add clip rectangles support to Render extension, Xrender and Xft.
+      Make Xrender and Xft usable from c++.
+      Fix a bunch of compiler warnings in Render extension code
+      (Keith Packard)
 1088. Fix key mapping for the '\' key on GB keyboards in Solaris 8.
 1087. Status doc updates for Neomagic an NVIDIA (#4334, Andrew C. Aitchison,
       Mark Vojkovich).
@@ -11882,4 +11886,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1442 2000/12/04 19:30:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1443 2000/12/05 00:31:58 dawes Exp $

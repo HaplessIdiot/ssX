@@ -265,7 +265,9 @@ DeleteGlyph (GlyphSetPtr glyphSet, Glyph id)
 	gr->glyph = DeletedGlyph;
 	glyphSet->hash.tableEntries--;
 	FreeGlyph (glyph, glyphSet->fdepth);
+	return TRUE;
     }
+    return FALSE;
 }
 
 GlyphPtr
@@ -282,7 +284,6 @@ FindGlyph (GlyphSetPtr glyphSet, Glyph id)
 GlyphPtr
 AllocateGlyph (xGlyphInfo *gi, int fdepth)
 {
-    int		byteWidth;
     int		size;
     GlyphPtr	glyph;
 

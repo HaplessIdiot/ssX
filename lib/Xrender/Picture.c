@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrender/Picture.c,v 1.3 2000/11/20 07:13:11 keithp Exp $
+ * $XFree86: xc/lib/Xrender/Picture.c,v 1.4 2000/12/01 21:32:00 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -24,6 +24,7 @@
  */
 
 #include "Xrenderint.h"
+#include "region.h"
 
 static void
 _XRenderProcessPictureAttributes (Display		    *dpy,
@@ -119,6 +120,77 @@ XRenderChangePicture (Display                   *dpy,
     UnlockDisplay(dpy);
     SyncHandle();
 }
+
+static void
+_XRenderSetPictureClipRectangles (Display	    *dpy,
+				  XExtDisplayInfo   *info,
+				  Picture	    picture,
+				  int		    xOrigin,
+				  int		    yOrigin,
+				  XRectangle	    *rects,
+				  int		    n)
+{
+    xRenderSetPictureClipRectanglesReq	*req;
+    long				len;
+
+    GetReq (RenderSetPictureClipRectangles, req);
+    req->reqType = info->codes->major_opcode;
+    req->renderReqType = X_RenderSetPictureClipRectangles;
+    req->picture = picture;
+    len = ((long) n) << 2;
+    SetReqLen (req, len, 1);
+    len <<= 2;
+    Data16 (dpy, (short *) rects, len);
+}
+
+void
+XRenderSetPictureClipRectangles (Display	*dpy,
+				 Picture	picture,
+				 int		xOrigin,
+				 int		yOrigin,
+				 XRectangle	*rects,
+				 int		n)
+{
+    XExtDisplayInfo	    *info = XRenderFindDisplay (dpy);
+    
+    RenderSimpleCheckExtension (dpy, info);
+    LockDisplay(dpy);
+    _XRenderSetPictureClipRectangles (dpy, info, picture, 
+				      xOrigin, yOrigin, rects, n);
+    UnlockDisplay (dpy);
+    SyncHandle ();
+}
+
+void
+XRenderSetPictureClipRegion (Display	    *dpy,
+			     Picture	    picture,
+			     Region	    r)
+{
+    XExtDisplayInfo *info = XRenderFindDisplay (dpy);
+    int		    i;
+    XRectangle	    *xr, *pr;
+    BOX		    *pb;
+    unsigned long   total;
+    
+    RenderSimpleCheckExtension (dpy, info);
+    LockDisplay(dpy);
+    total = r->numRects * sizeof (XRectangle);
+    if ((xr = (XRectangle *) _XAllocTemp(dpy, total))) {
+	for (pr = xr, pb = r->rects, i = r->numRects; --i >= 0; pr++, pb++) {
+	    pr->x = pb->x1;
+	    pr->y = pb->y1;
+	    pr->width = pb->x2 - pb->x1;
+	    pr->height = pb->y2 - pb->y1;
+	}
+    }
+    if (xr || !r->numRects)
+	_XRenderSetPictureClipRectangles (dpy, info, picture, 0, 0, 
+					  xr, r->numRects);
+    if (xr)
+	_XFreeTemp(dpy, (char *)xr, total);
+    UnlockDisplay(dpy);
+    SyncHandle();
+}    
 
 void
 XRenderFreePicture (Display                   *dpy,

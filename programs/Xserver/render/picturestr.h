@@ -194,6 +194,12 @@ PictureMatchFormat (ScreenPtr pScreen, int depth, CARD32 format);
 Bool
 PictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
+void
+SetPictureToDefaults (PicturePtr pPicture);
+    
+PicturePtr
+AllocatePicture (ScreenPtr  pScreen);
+
 Bool
 miPictureInit (ScreenPtr pScreen, PictFormatPtr formats, int nformats);
 
@@ -213,6 +219,13 @@ ChangePicture (PicturePtr	pPicture,
 	       XID		*vlist,
 	       DevUnion		*ulist,
 	       ClientPtr	client);
+
+int
+SetPictureClipRects (PicturePtr	pPicture,
+		     int	xOrigin,
+		     int	yOrigin,
+		     int	nRect,
+		     xRectangle	*rects);
 
 void
 ValidatePicture(PicturePtr pPicture);
@@ -249,5 +262,12 @@ CompositeGlyphs (CARD8		op,
 		 int		nlist,
 		 GlyphListPtr	lists,
 		 GlyphPtr	*glyphs);
+
+void
+CompositeRects (CARD8		op,
+		PicturePtr	pDst,
+		xRenderColor	*color,
+		int		nRect,
+		xRectangle      *rects);
 
 #endif /* _PICTURESTR_H_ */

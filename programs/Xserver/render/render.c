@@ -69,9 +69,7 @@ static int ProcRenderFreeGlyphSet (ClientPtr pClient);
 static int ProcRenderAddGlyphs (ClientPtr pClient);
 static int ProcRenderAddGlyphsFromPicture (ClientPtr pClient);
 static int ProcRenderFreeGlyphs (ClientPtr pClient);
-static int ProcRenderCompositeGlyphs8 (ClientPtr pClient);
-static int ProcRenderCompositeGlyphs16 (ClientPtr pClient);
-static int ProcRenderCompositeGlyphs32 (ClientPtr pClient);
+static int ProcRenderCompositeGlyphs (ClientPtr pClient, int size);
 static int ProcRenderDispatch (ClientPtr pClient);
 static int SProcRenderQueryVersion (ClientPtr pClient);
 static int SProcRenderQueryPictFormats (ClientPtr pClient);
@@ -96,9 +94,6 @@ static int SProcRenderFreeGlyphSet (ClientPtr pClient);
 static int SProcRenderAddGlyphs (ClientPtr pClient);
 static int SProcRenderAddGlyphsFromPicture (ClientPtr pClient);
 static int SProcRenderFreeGlyphs (ClientPtr pClient);
-static int SProcRenderCompositeGlyphs8 (ClientPtr pClient);
-static int SProcRenderCompositeGlyphs16 (ClientPtr pClient);
-static int SProcRenderCompositeGlyphs32 (ClientPtr pClient);
 static int SProcRenderDispatch (ClientPtr pClient);
 
 static void
@@ -133,7 +128,7 @@ ProcRenderQueryVersion (ClientPtr client)
 {
     xRenderQueryVersionReply rep;
     register int n;
-    REQUEST(xRenderQueryVersionReq);
+/*    REQUEST(xRenderQueryVersionReq); */
 
     REQUEST_SIZE_MATCH(xRenderQueryVersionReq);
     rep.type = X_Reply;
@@ -151,6 +146,7 @@ ProcRenderQueryVersion (ClientPtr client)
     return (client->noClientException);
 }
 
+#if 0
 static int
 VisualDepth (ScreenPtr pScreen, VisualPtr pVisual)
 {
@@ -168,6 +164,7 @@ VisualDepth (ScreenPtr pScreen, VisualPtr pVisual)
     }
     return 0;
 }
+#endif
 
 static VisualPtr
 findVisual (ScreenPtr pScreen, VisualID vid)
@@ -192,7 +189,6 @@ ProcRenderQueryPictFormats (ClientPtr client)
     xPictDepth			    *pictDepth;
     xPictVisual			    *pictVisual;
     xPictFormInfo		    *pictForm;
-    DrawablePtr			    pDrawable;
     ScreenPtr			    pScreen;
     VisualPtr			    pVisual;
     DepthPtr			    pDepth;
@@ -205,7 +201,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
     int				    rlength;
     int				    s;
     int				    n;
-    REQUEST(xRenderQueryPictFormatsReq);
+/*    REQUEST(xRenderQueryPictFormatsReq); */
 
     REQUEST_SIZE_MATCH(xRenderQueryPictFormatsReq);
 
@@ -418,7 +414,6 @@ ProcRenderChangePicture (ClientPtr client)
     PicturePtr	    pPicture;
     REQUEST(xRenderChangePictureReq);
     int len;
-    int error;
 
     REQUEST_AT_LEAST_SIZE(xRenderChangePictureReq);
     VERIFY_PICTURE (pPicture, stuff->picture, client, SecurityWriteAccess,
@@ -434,7 +429,25 @@ ProcRenderChangePicture (ClientPtr client)
 static int
 ProcRenderSetPictureClipRectangles (ClientPtr client)
 {
-    return BadImplementation;
+    REQUEST(xRenderSetPictureClipRectanglesReq);
+    PicturePtr	    pPicture;
+    int		    nr;
+    int		    result;
+
+    REQUEST_AT_LEAST_SIZE(xRenderSetPictureClipRectanglesReq);
+    VERIFY_PICTURE (pPicture, stuff->picture, client, SecurityWriteAccess,
+		    RenderErrBase + BadPicture);
+    nr = (client->req_len << 2) - sizeof(xRenderChangePictureReq);
+    if (nr & 4)
+	return BadLength;
+    nr >>= 3;
+    result = SetPictureClipRects (pPicture, 
+				  stuff->xOrigin, stuff->yOrigin,
+				  nr, (xRectangle *) &stuff[1]);
+    if (client->noClientException != Success)
+        return(client->noClientException);
+    else
+        return(result);
 }
 
 static int
@@ -469,7 +482,7 @@ ProcRenderComposite (ClientPtr client)
     VERIFY_PICTURE (pDst, stuff->dst, client, SecurityWriteAccess, 
 		    RenderErrBase + BadPicture);
     if (pSrc->pDrawable->pScreen != pDst->pDrawable->pScreen ||
-	pMask && pSrc->pDrawable->pScreen != pMask->pDrawable->pScreen)
+	(pMask && pSrc->pDrawable->pScreen != pMask->pDrawable->pScreen))
 	return BadMatch;
     CompositePicture (stuff->op,
 		      pSrc,
@@ -886,6 +899,7 @@ ProcRenderCompositeGlyphs (ClientPtr client, int size)
 		    case 2:
 			glyph = *((CARD16 *)buffer); break;
 		    case 4:
+		    default:
 			glyph = *((CARD32 *)buffer); break;
 		    }
 		    if ((*glyphs = FindGlyph (glyphSet, glyph)))
@@ -1306,6 +1320,17 @@ SProcRenderCompositeGlyphs (ClientPtr client, int size)
 static int
 SProcRenderFillRectangles (ClientPtr client)
 {
+    register int n;
+    
+    REQUEST(xRenderFillRectanglesReq);
+    swaps(&stuff->length, n);
+    swapl(&stuff->dst, n);
+    swaps(&stuff->color.red, n);
+    swaps(&stuff->color.green, n);
+    swaps(&stuff->color.blue, n);
+    swaps(&stuff->color.alpha, n);
+    SwapRestS(stuff);
+    return ProcRenderFillRectangles (client);
 }
     
 static int

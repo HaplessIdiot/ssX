@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdraw.c,v 1.3 2000/12/01 03:27:57 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdraw.c,v 1.4 2000/12/01 21:32:01 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,6 +24,7 @@
 
 #include <stdlib.h>
 #include "xftint.h"
+#include <X11/Xutil.h>
 
 XftDraw *
 XftDrawCreate (Display   *dpy,
@@ -43,6 +44,7 @@ XftDrawCreate (Display   *dpy,
     draw->core_set = False;
     draw->render_set = False;
     draw->render_able = False;
+    draw->clip = 0;
     return draw;
 }
 
@@ -73,6 +75,8 @@ XftDrawDestroy (XftDraw	*draw)
     }
     if (draw->core_set)
 	XFreeGC (draw->dpy, draw->core.draw_gc);
+    if (draw->clip)
+	XDestroyRegion (draw->clip);
     free (draw);
 }
 
@@ -110,6 +114,9 @@ XftDrawRenderPrepare (XftDraw	*draw,
 							 pix_format,
 							 CPRepeat, &pa);
 	    draw->render.fg_color.red = ~color->color.red;
+	    if (draw->clip)
+	    XRenderSetPictureClipRegion (draw->dpy, draw->render.pict,
+					 draw->clip);
 	}
     }
     if (!draw->render_able)
@@ -138,7 +145,8 @@ XftDrawCorePrepare (XftDraw	*draw,
 	gcv.foreground = draw->core.fg;
 	draw->core.draw_gc = XCreateGC (draw->dpy, draw->drawable, 
 					GCForeground, &gcv);
-	
+	if (draw->clip)
+	    XSetRegion (draw->dpy, draw->core.draw_gc, draw->clip);
     }
     if (draw->core.fg != color->pixel)
 	XSetForeground (draw->dpy, draw->core.draw_gc, color->pixel);
@@ -246,4 +254,57 @@ XftDrawRect (XftDraw	    *draw,
 	XFillRectangle (draw->dpy, draw->drawable, draw->core.draw_gc,
 			x, y, width, height);
     }
+}
+
+Bool
+XftDrawSetClip (XftDraw	*draw,
+		Region	r)
+{
+    Region			n = 0;
+
+    if (!XEmptyRegion (r))
+    {
+	n = XCreateRegion ();
+	if (n)
+	{
+	    if (!XUnionRegion (n, r, n))
+	    {
+		XDestroyRegion (n);
+		return False;
+	    }
+	}
+    }
+    if (draw->clip)
+    {
+	XDestroyRegion (draw->clip);
+    }
+    draw->clip = n;
+    if (draw->render_able)
+    {
+	XRenderPictureAttributes	pa;
+        if (n)
+	{
+	    XRenderSetPictureClipRegion (draw->dpy, draw->render.pict, n);
+	}
+	else
+	{
+	    pa.clip_mask = None;
+	    XRenderChangePicture (draw->dpy, draw->render.pict,
+				  CPClipMask, &pa);
+	}
+    }
+    if (draw->core_set)
+    {
+	XGCValues   gv;
+	
+	if (n)
+	    XSetRegion (draw->dpy, draw->core.draw_gc, n);
+	else
+	{
+	    gv.clip_mask = None;
+	    XChangeGC (draw->dpy, draw->core.draw_gc,
+		       GCClipMask, &gv);
+	}
+    }
+    return True;
 }

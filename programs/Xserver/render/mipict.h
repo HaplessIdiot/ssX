@@ -93,12 +93,12 @@ miGlyphs (CARD8		op,
 	  GlyphPtr	*glyphs);
 
 void
-miRenderColorToPixel (PicturePtr    pPict,
+miRenderColorToPixel (PictFormatPtr pPict,
 		      xRenderColor  *color,
 		      CARD32	    *pixel);
 
 void
-miRenderPixelToColor (PicturePtr    pPict,
+miRenderPixelToColor (PictFormatPtr pPict,
 		      CARD32	    pixel,
 		      xRenderColor  *color);
 
