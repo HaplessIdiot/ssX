@@ -325,7 +325,7 @@
 			);
 			isa = PBXApplicationTarget;
 			name = XDarwin;
-			productInstallPath = /usr/X11R6/bin;
+			productInstallPath = "";
 			productName = XDarwin;
 			productReference = 0A79E19E004499A1CE6F79C2;
 			productSettingsXML = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
