@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.6 95/01/23 15:34:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.40 1995/12/21 11:44:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.41 1995/12/23 09:39:03 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -266,6 +266,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "bt482_curs",	OPTION_BT482_CURS },
   { "s3_964_bt485_vclk",OPTION_S3_964_BT485_VCLK },
   { "dac_6_bit",	OPTION_DAC_6_BIT },
+  { "no_ti3026_curs",	OPTION_NO_TI3026_CURS },
 
   { "spea_mercury",	OPTION_SPEA_MERCURY },
   { "number_nine",	OPTION_NUMBER_NINE },
