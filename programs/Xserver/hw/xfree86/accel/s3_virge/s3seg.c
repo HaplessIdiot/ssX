@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3seg.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3seg.c,v 3.2 1996/10/03 08:33:39 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -131,29 +131,46 @@ s3Segment(pDrawable, pGC, nseg, pSeg)
       return;
    }
 
-   if (0) {
+   if (0)ErrorF("%d %x %d %d %d\n",pGC->alu, pGC->fgPixel, 
+	  pGC->alu == GXxor , (pGC->fgPixel & 0xf) == 0xf,
+	  pGC->alu == GXxor && (pGC->fgPixel & 0xf) == 0xf);
+   if (0 && pGC->alu == 1) {
       int i;
+      int tmp1 = pGC->fgPixel;
+ErrorF("SS %x %x %d",pGC->fgPixel,pGC->bgPixel, nseg);
+      pGC->alu = 3;
       WaitIdleEmpty();
       for (i=0; i<nseg; i++) {
+	 pSeg[i].x1 += 20;
+	 pSeg[i].x2 += 20;
 	 pSeg[i].y1 += 20;
 	 pSeg[i].y2 += 20;
       }
       cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
       for (i=0; i<nseg; i++) {
+	 pSeg[i].x1 -= 20;
+	 pSeg[i].x2 -= 20;
 	 pSeg[i].y1 -= 20;
 	 pSeg[i].y2 -= 20;
       }
       WaitIdleEmpty();
-   } else if (0) {
+ErrorF("SS %x %x %d\n",pGC->fgPixel, pGC->bgPixel, nseg);
+      pGC->fgPixel = tmp1;
+      pGC->alu = 3;
+   } else if (0 && pGC->alu == GXxor && (pGC->fgPixel & 0xf) == 0xf) {
+      int i;
       int tmp1 = pGC->fgPixel;
       int tmp2 = pGC->alu;
-      pGC->fgPixel = 0x1a;
-      pGC->alu = 3;
+      /* pGC->fgPixel &= ~0x03; */
+      /* pGC->alu = 3; */
       WaitIdleEmpty();
       cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
       WaitIdleEmpty();
-      pGC->fgPixel = tmp1;
-      pGC->alu = tmp2;
+      /* pGC->fgPixel = 0x03; */
+      /* pGC->alu = tmp2; */
+ErrorF("%d %x %d %d %d\n",pGC->alu, pGC->fgPixel, 
+	  pGC->alu == GXxor , (pGC->fgPixel & 0xf) == 0xf,
+	  pGC->alu == GXxor && (pGC->fgPixel & 0xf) == 0xf);
    }
 
    devPriv = (cfbPrivGC *) (pGC->devPrivates[cfbGCPrivateIndex].ptr);
@@ -313,22 +330,24 @@ if(0)ErrorF("seg alu %2d %2x %2x  col %3d %8x %8x\n",pGC->alu,s3alu[pGC->alu]>>1
 	 xdelta = -((x2-x1) << 20) / (y2-y1);
 	 if (axis == Y_AXIS)
 	    if (xdelta >= 0)
-	       xfixup = 0x80000;
+	       xfixup = 0x80000-1;
 	    else
-	       xfixup = 0x7ffff;
+	       xfixup = 0x7ffff+1;
 	 else
 	    if (xdelta > 0)
-	       xfixup = xdelta >> 1;
-	    else
-	       xfixup = (xdelta >> 1) + ((1<<20) - 1);
+	       xfixup = (xdelta-1) >> 1;
+	    else {
+	       xdelta--;
+	       xfixup = ((xdelta+1) >> 1) + ((1<<20) - 1);
+	    }
 	 if ((x1 < x2) ^ (y1 < y2))
 	    xdir = 0x80000000;
 	 else
 	    xdir = 0;
 
-if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %6g %6g\n"
+if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %16.12f %16.12f\n"
        ,x1,y1, x2,y2, x2-x1, y2-y1
-       ,xdir>>28
+       ,(xdir>>28) & 0xf
        ,xdelta ,xfixup
        ,xdelta/(double)(1<<20),xfixup/(double)(1<<20)
        );
@@ -357,7 +376,8 @@ if(0)ErrorF("S %4d,%-4d  %4d,%-4d  %4d,%-4d  %x %8x %8x %6g %6g\n"
 	       ;SET_MAJ_AXIS_PCNT((short)len);
 	       ;SET_CMD(cmd2);
 
-#if 0
+#if 1
+	       if (0 && adx == 912 && ady == 570)
 	       if (y1 > y2) {
 		  if (pGC->capStyle != CapNotLast)
 		     ErrorF("LXEND0_END1 %8x %d %d\n",x1<<16|x2,x1, x2);

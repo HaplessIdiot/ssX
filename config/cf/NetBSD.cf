@@ -4,26 +4,13 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/14 1996/01/28 07:42:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.39 1996/09/03 04:09:22 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.40 1996/10/03 08:28:04 dawes Exp $
 
 #ifndef OpenBSDArchitecture
 
 #ifndef OSName
 #define OSName		NetBSD 1.2
 #endif
-
-#else
-
-#ifndef OSName
-#define OSName		OpenBSD 1.2
-#endif
-
-#endif
-
-#ifndef OSVendor
-#define	OSVendor	/**/
-#endif
-XCOMM operating system:  OSName
 #ifndef OSMajorVersion
 #define OSMajorVersion    1
 #endif
@@ -34,6 +21,29 @@ XCOMM operating system:  OSName
 #ifndef OSTeenyVersion
 #define OSTeenyVersion	  0
 #endif
+
+#else
+
+#ifndef OSName
+#define OSName		OpenBSD 2.0
+#endif
+#ifndef OSMajorVersion
+#define OSMajorVersion    2
+#endif
+#ifndef OSMinorVersion
+#define OSMinorVersion    0
+#endif
+/* 1 = A, 2 = B, 3 = C */
+#ifndef OSTeenyVersion
+#define OSTeenyVersion	  0
+#endif
+
+#endif
+
+#ifndef OSVendor
+#define	OSVendor	/**/
+#endif
+XCOMM operating system:  OSName
 
 /*
  * C library features
@@ -122,7 +132,7 @@ XCOMM operating system:  OSName
 # else
 #  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
 # endif
-# if OSMajorVersion == 1 && OSMinorVersion >= 1 
+# if OSMajorVersion == 1 && OSMinorVersion >= 1 || OSMajorVersion >= 2
 #  define ServerExtraSysLibs	-li386
 # endif
 #else
@@ -305,4 +315,15 @@ install.man:: 								@@\
 #ifndef UseRgbTxt
 #define UseRgbTxt	YES
 #endif
+#endif
+
+/*
+ * Definition for compiling on MIPS machines
+ */
+#ifdef MipsArchitecture
+#define PositionIndependentCFlags
+#define SharedLibraryLoadFlags -x -shared --whole-archive -soname `echo $@ |
+sed 's/\.[0-9]*$$//'`
+#define SharedXtReqs $(XLIBONLY) $(SMLIB) $(ICELIB)
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLONLYLIB) $(XONLYLIB) $(EXTENSIONLIB)
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.6 1996/09/29 13:35:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Dl.c,v 3.7 1996/10/03 08:34:10 dawes Exp $ */
 
 /*    
  * Copyright 1995 by Frederic Lepied, France. <fred@sugix.frmug.fr.net>
@@ -39,7 +39,7 @@
 #endif
 
 #ifdef RTLD_NOW
-#define DLOPEN_FLAGS RTLD_NOW	/* Linux */
+#define DLOPEN_FLAGS RTLD_NOW	/* Linux, SVR4 */
 #else
 #ifdef DL_LAZY
 #define DLOPEN_FLAGS DL_LAZY	/* NetBSD */
@@ -69,7 +69,7 @@ xf86LoadModule(const char *	file,
 
     /* absolute path */
     if (file[0] == '/') {
-	module = dlopen(file, DLOPEN_FLAGS);
+	module = dlopen((char *)file, DLOPEN_FLAGS);
     } else { /* look for file in path */
 	struct stat	stat_buf;
 
@@ -102,7 +102,9 @@ xf86LoadModule(const char *	file,
     }
     
     if (!module) {
-	Error((char *)file);
+	const char *err = dlerror();
+
+	ErrorF("%s: %s\n", file, err ? err : "Unknown error loading module");
     } else {
 #ifdef PREPEND_UNDERSCORE
 #ifndef DLSYM_BUG

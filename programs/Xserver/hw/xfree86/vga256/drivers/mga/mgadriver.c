@@ -32,7 +32,7 @@
  *		RAMDAC timing stuff
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.1 1996/09/29 13:40:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgadriver.c,v 3.2 1996/10/03 08:46:49 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -57,6 +57,7 @@
 #include "mga.h"
 
 extern GCOps cfb16TEOps1Rect, cfb16TEOps, cfb16NonTEOps1Rect, cfb16NonTEOps;
+extern GCOps cfb24TEOps1Rect, cfb24TEOps, cfb24NonTEOps1Rect, cfb24NonTEOps;
 extern GCOps cfb32TEOps1Rect, cfb32TEOps, cfb32NonTEOps1Rect, cfb32NonTEOps;
 extern vgaHWCursorRec vgaHWCursor;
 extern miPointerScreenFuncRec xf86PointerScreenFuncs;
@@ -85,6 +86,11 @@ static unsigned char MGADACbpp8[] = {
 
 static unsigned char MGADACbpp16[] = {
 	0x07, 0x05,    0, 0x15, 0x00, 0x00, 0x20, 0x00, 0x1E, 0xFF,
+	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
+};
+
+static unsigned char MGADACbpp24[] = {
+	0x07, 0x16,    0, 0x25, 0x00, 0x00, 0x20, 0x00, 0x1E, 0xFF,
 	0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00,	   0, 0x00
 };
 
@@ -123,6 +129,7 @@ extern void		MGASetReadWrite();
 extern void		MGABlitterInit();
 extern void		MGADoBitbltCopy();
 extern RegionPtr	MGA16CopyArea();
+extern RegionPtr	MGA24CopyArea();
 extern RegionPtr	MGA32CopyArea();
 
 /*
@@ -222,7 +229,7 @@ vgaVideoChipRec MGA = {
 	 * This is TRUE if the driver has support for 24bpp for the detected
 	 * configuration.
 	 */
-	FALSE,
+	TRUE,
 	/*
 	 * This is TRUE if the driver has support for 32bpp for the detected
 	 * configuration.
@@ -264,6 +271,8 @@ static int Num_mgaExtPorts =
  * Read/write to the DAC.  This includes both MMIO and PCI config space
  * methods of accessing the DAC.
  */
+
+#if 0      /* RK - It doesn't work with PCI config space */
 
 void
 MGADacWriteByte(reg, val)
@@ -402,6 +411,47 @@ inTi3026(reg)
 	return MGADacReadByte(TVP3026_DATA);
 }
 
+#endif 
+
+static void outTi3026(reg, val)
+unsigned char reg, val;
+{
+	if(MGAMMIOBase)
+	{
+		MGAREG8(RAMDAC_OFFSET + TVP3026_INDEX) = reg;
+		MGAREG8(RAMDAC_OFFSET + TVP3026_DATA) = val;
+	}
+	else
+	{
+		outb(0x3C8, reg);    /* RK - PCI metod doesn't work - ??? */
+		
+                pciWriteWord(MGAPciTag, PCI_MGA_INDEX, 
+	                		RAMDAC_OFFSET + TVP3026_DATA);
+                pciWriteLong(MGAPciTag, PCI_MGA_DATA, val << 16);
+	}
+}
+
+static unsigned char inTi3026(reg)
+unsigned char reg;
+{
+	unsigned char val;
+	
+	if(MGAMMIOBase)
+	{
+		MGAREG8(RAMDAC_OFFSET + TVP3026_INDEX) = reg;
+		val = MGAREG8(RAMDAC_OFFSET + TVP3026_DATA);
+	}
+	else
+	{
+		outb(0x3C8, reg);    /* RK - PCI metod doesn't work - ??? */
+		
+                pciWriteWord(MGAPciTag, PCI_MGA_INDEX, 
+	                		RAMDAC_OFFSET + TVP3026_DATA);
+                val = pciReadLong(MGAPciTag, PCI_MGA_DATA) >> 16;
+	}
+	return val;
+}
+
 /*
  * MGATi3026SetClock - Set the pixel clock PLL.
  *
@@ -439,7 +489,7 @@ inTi3026(reg)
 #define TI_REF_FREQ	14318.18
 
 static void 
-MGATi3026SetClock( f_pll, bpp )
+MGATi3026SetClock( f_pll, bpp, m24 )
 	long	f_pll;
 	int	bpp;
 {
@@ -452,7 +502,8 @@ MGATi3026SetClock( f_pll, bpp )
 	int best_n, best_m;
 
 	/* I have no idea what these are for [aem] */
-	int ln, lp, lm, lq, z;
+	int ln, lp, lm, lq;
+	long z;
 
 	/* Make sure that 13.75 MHz <= f_pll <= chip max */
 	if ( f_pll < ( TI_MIN_VCO_FREQ / 8 ))
@@ -504,31 +555,90 @@ MGATi3026SetClock( f_pll, bpp )
 	m = 65 - best_m;
 	n = 65 - best_n;
 
-	/* The following 'if' code is a mystery to me [aem] */
+	/* from DDK3.05/SRC/BIND/CLOCK.C (ansi) */
 
-	ln = 65 - 32 / bpp;
-	lm = 61;
-	z = 100 * 14040.0 * 64 / bpp / f_pll;
-	if (z > 1600)
-	{
-		lp = 3;
-		lq = (z-1600) / 1600 + 1; /* smallest q greater (z-16)/16 */
+	if (vgaBitsPerPixel == 24) {
+		ln = 61;
+		lm = 62;
+		z = (11000L * (65L - ln)) / ((f_pll / 1000L) * (65L - lm));
 	}
 	else
 	{
-		for (lp=0; z > (200 << lp); lp++) ; /* largest p less then log2(z) */
-		lq = 0;
+		ln = 65 - 32 / bpp;
+		lm = 61;
+		z = (2750L * (65 - ln)) / (f_pll / 1000L) ;
 	}
+
+	lq = 0;
+	lp = 3;
+	if (z <= 200)		lp = 0;
+	else if (z <= 400)	lp = 1;
+	else if (z <= 800)	lp = 2;
+	else if (z <=1600)	lp = 3;
+	else			lq = z/1600;
 
 	newVS->DACclk[0] = (n & 0x3f) | 0xC0;
 	newVS->DACclk[1] = (m & 0x3f);
 	newVS->DACclk[2] = (p & 0x03) | 0xB0;
 	
-	newVS->DACclk[3] = (ln & 0x3f) | 0xC0;
-	newVS->DACclk[4] = (lm & 0x3f);
-	newVS->DACclk[5] = (lp & 0x03) | 0xF0;
-	
+ 
+	if (vgaBitsPerPixel == 24) {
+		newVS->DACclk[3] = (ln & 0x3f) | 0x80;
+		newVS->DACclk[4] = (lm & 0x3f) | 0x80;
+		newVS->DACclk[5] = (lp & 0x03) | 0xF8;
+ 	}
+ 	else
+ 	{
+		newVS->DACclk[3] = (ln & 0x3f) | 0xC0;
+		newVS->DACclk[4] = (lm & 0x3f);
+		newVS->DACclk[5] = (lp & 0x03) | 0xF0;
+	}
+  	
 	newVS->DACreg[18] = lq | 0x38;
+
+#ifdef DEBUG
+	ErrorF("bpp %d  ln %2d  lm %2d  lz %4d  lp %2d  lq %2d\n",
+		bpp,ln,lm,z,lp,lq);
+#endif
+}
+
+/*
+ * MGACountRAM --
+ *
+ * Counts amount of installed RAM 
+ */
+static int
+MGACountRam()
+{
+	if(MGA.ChipLinearBase)
+	{
+		volatile unsigned char* base;
+		unsigned char tmp, tmp3, tmp5;
+	
+		base = xf86MapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION,
+			(pointer)MGA.ChipLinearBase, MGA.ChipLinearSize);
+	
+		outb(0x3DE, 3);
+		tmp = inb(0x3DF);
+		outb(0x3DF, tmp | 0x80);
+	
+		base[0x500000] = 0x55;
+		base[0x300000] = 0x33;
+		tmp5 = base[0x500000];
+		tmp3 = base[0x300000];
+
+		outb(0x3DE, 3);
+		outb(0x3DF, tmp);
+	
+		xf86UnMapVidMem(vga256InfoRec.scrnIndex, LINEAR_REGION, 
+				(pointer)base, MGA.ChipLinearSize);
+	
+		if(tmp5 == 0x55)
+			return 8192;
+		if(tmp3 == 0x33)
+			return 4096;
+	}
+	return 2048;
 }
 
 /*
@@ -607,7 +717,7 @@ MGAProbe()
 	if ( pcr->_base1 )	/* details: mgabase2 sdk pp 4-12 */
 		MGA.ChipLinearBase = pcr->_base1 & 0xff800000;
 	else
-		MGA.ChipLinearBase = NULL;
+		MGA.ChipLinearBase = 0;
 	
 	/*
 	 * Set up I/O ports to be used by this card.
@@ -618,13 +728,20 @@ MGAProbe()
 				mgaExtPorts);
 
 	MGAEnterLeave(ENTER);
+	
+#ifdef DEBUG
+	ErrorF("Config Word %lx\n",pcibusRead(MGAPciTag, 0x40));
+#if 0
+	ErrorF("RAMDACRev %x\n", MGADacReadByte(0x01));
+#endif
+#endif
 
 	/*
 	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
 	 */
 	if (!vga256InfoRec.videoRam)
-		vga256InfoRec.videoRam = 2048;
+		vga256InfoRec.videoRam = MGACountRam();
 	
 	/*
 	 * If the user has specified ramdac speed in the XF86Config
@@ -737,6 +854,25 @@ MGAPitchAdjust()
 		else
                 {
 			MGA.ChipRounding = 32;
+			MGABppShft = 2;
+			MGADAClong = 0x5F2C1100;    /* interleave */
+			MGAInitDAC[2] = 0x5C;       /* 64 bits */
+		}
+	}
+	if (vgaBitsPerPixel == 24)
+	{
+		MGAInitDAC = MGADACbpp24;
+
+		if (((pitch % 128) && (size * 3 <= 2048)) || !size)
+		{
+			MGA.ChipRounding = 64;
+			MGABppShft = 1;
+			MGADAClong = 0x5F2C0100;    /* non-interleave */
+			MGAInitDAC[2] = 0x5B;       /* 32 bits */
+		}
+		else
+                {
+			MGA.ChipRounding = 128;
 			MGABppShft = 2;
 			MGADAClong = 0x5F2C1100;    /* interleave */
 			MGAInitDAC[2] = 0x5C;       /* 64 bits */
@@ -888,6 +1024,11 @@ MGAFbInit()
 			cfb16NonTEOps.CopyArea = MGA16CopyArea;
 			cfb16TEOps1Rect.CopyArea = MGA16CopyArea;
 			cfb16NonTEOps1Rect.CopyArea = MGA16CopyArea;
+
+			cfb24TEOps.CopyArea = MGA24CopyArea;
+			cfb24NonTEOps.CopyArea = MGA24CopyArea;
+			cfb24TEOps1Rect.CopyArea = MGA24CopyArea;
+			cfb24NonTEOps1Rect.CopyArea = MGA24CopyArea;
 	
 			cfb32TEOps.CopyArea = MGA32CopyArea;
 			cfb32NonTEOps.CopyArea = MGA32CopyArea;
@@ -984,7 +1125,10 @@ DisplayModePtr mode;
 	vs = mode->CrtcVSyncStart			- 1;
 	ve = mode->CrtcVSyncEnd				- 1;
 	vt = mode->CrtcVTotal				- 2;
-	wd = vga256InfoRec.displayWidth >> (4 - MGABppShft);
+	if (vgaBitsPerPixel == 24)
+		wd = (vga256InfoRec.displayWidth * 3) >> (4 - MGABppShft);
+	else
+		wd = vga256InfoRec.displayWidth >> (4 - MGABppShft);
 
 	newVS->ExtVga[0] = 0;
 	newVS->ExtVga[5] = 0;
@@ -997,17 +1141,24 @@ DisplayModePtr mode;
 		vt &= 0xFFFE;
 	}
 
-	newVS->ExtVga[0]	 |= (wd & 0x300) >> 4;
-	newVS->ExtVga[1]		= (((ht - 4) & 0x100) >> 8) |
+	newVS->ExtVga[0]	|= (wd & 0x300) >> 4;
+	newVS->ExtVga[1]	= (((ht - 4) & 0x100) >> 8) |
 				((hd & 0x100) >> 7) |
 				((hs & 0x100) >> 6) |
 				(ht & 0x40);
-	newVS->ExtVga[2]		= ((vt & 0x400) >> 10) |
+	newVS->ExtVga[2]	= ((vt & 0x400) >> 10) |
+				((vt & 0x800) >> 10) |
 				((vd & 0x400) >> 8) |
 				((vd & 0x400) >> 7) |
-				((vs & 0x400) >> 5);
-	newVS->ExtVga[3]		= ((1 << MGABppShft) - 1) | 0x80;
-	newVS->ExtVga[4]		= 0;
+				((vd & 0x800) >> 7) |
+				((vs & 0x400) >> 5) |
+				((vs & 0x800) >> 5);
+	if (vgaBitsPerPixel == 24)
+		newVS->ExtVga[3]	= (((1 << MGABppShft) * 3) - 1) | 0x88;
+	else
+		newVS->ExtVga[3]	= ((1 << MGABppShft) - 1) | 0x88;
+
+	newVS->ExtVga[4]	= 0;
 		
 	newVS->std.CRTC[0]	= ht - 4;
 	newVS->std.CRTC[1]	= hd;
@@ -1093,7 +1244,7 @@ vgaMGAPtr restore;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		outTi3026(MGADACregs[i], restore->DACreg[i]);
 
-	outlPCI(PCI_OPTION_REG, restore->DAClong);
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, restore->DAClong);
 }
 
 /*
@@ -1140,7 +1291,7 @@ vgaMGAPtr save;
 	for (i = 0; i < sizeof(MGADACregs); i++)
 		save->DACreg[i]	 = inTi3026(MGADACregs[i]);
 	
-	save->DAClong = inlPCI(0x40);
+	save->DAClong = pciReadLong(MGAPciTag, PCI_OPTION_REG);
 	
 	return((void *) save);
 }
@@ -1166,7 +1317,7 @@ Bool enter;
 		xf86EnableIOPorts(vga256InfoRec.scrnIndex);
 		if (MGAMMIOBase)
 			xf86MapDisplay(vga256InfoRec.scrnIndex,
-					EXTENDED_REGION);
+					MMIO_REGION);
 		
 			vgaIOBase = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
 
@@ -1182,7 +1333,7 @@ Bool enter;
 		
 		if (MGAMMIOBase)
 			xf86UnMapDisplay(vga256InfoRec.scrnIndex,
-					EXTENDED_REGION);
+					MMIO_REGION);
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 	}
 }
@@ -1200,7 +1351,10 @@ int x, y;
 	int Base = (y * vga256InfoRec.displayWidth + x) >>
 			(3 - MGABppShft);
 	int tmp;
-	
+
+	if (vgaBitsPerPixel == 24)
+		Base *= 3;
+
 	/* Wait for vertical retrace */
 	while (!(inb(0x3DA) & 0x08));
 	
@@ -1220,10 +1374,16 @@ static Bool
 MGAValidMode(mode)
 DisplayModePtr mode;
 {
+	int lace = 1 + ((mode->Flags & V_INTERLACE) != 0);
+	
 	if ((mode->CrtcHDisplay <= 4096) &&
 	    (mode->CrtcHSyncStart <= 4096) && 
 	    (mode->CrtcHSyncEnd <= 4096) && 
-	    (mode->CrtcHTotal <= 4096))
+	    (mode->CrtcHTotal <= 4096) &&
+	    (mode->CrtcVDisplay <= 2048 * lace) &&
+	    (mode->CrtcVSyncStart <= 4096 * lace) &&
+	    (mode->CrtcVSyncEnd <= 4096 * lace) &&
+	    (mode->CrtcVTotal <= 4096 * lace))
 	{
 		return(MODE_OK);
 	}

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbsolid.c,v 3.2 1995/01/28 15:50:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/cfbsolid.c,v 3.3 1996/02/04 08:59:41 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -141,7 +141,7 @@ RROP_NAME(cfbFillRectSolid) (pDrawable, pGC, nBox, pBox)
 	int dst;
 
 	widthDst <<= 2;
-	W32_INIT_BOX(pGC->alu, PFILL(pGC->planemask), rrop_xor, widthDst - 1)
+	W32_INIT_BOX(pGC->alu, PFILL(pGC->planemask), PFILL(pGC->fgPixel), widthDst - 1)
 	for (; nBox; nBox--, pBox++)
 	{
 	    dst = pBox->y1 * widthDst + (pBox->x1 * (PSZ >> 3));

@@ -24,7 +24,7 @@
  *		fixed some problems with PCI probing and mapping
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.0 1996/09/26 14:00:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mgabitblt.c,v 3.1 1996/09/29 13:40:24 dawes Exp $ */
 
 #include "vga256.h"
 #include "mgareg.h"
@@ -35,14 +35,19 @@ int MGAScrnWidth;
 
 extern void cfb16DoBitbltCopy(); 
 extern void cfb32DoBitbltCopy();
+extern void cfb24DoBitbltCopy();
 extern void cfb16DoBitbltGeneral();
 extern void cfb32DoBitbltGeneral();
+extern void cfb24DoBitbltGeneral();
 extern void cfb16DoBitbltXor();
 extern void cfb32DoBitbltXor();
+extern void cfb24DoBitbltXor();
 extern void cfb16DoBitbltOr();
 extern void cfb32DoBitbltOr();
+extern void cfb24DoBitbltOr();
 extern RegionPtr cfb16BitBlt();
 extern RegionPtr cfb32BitBlt();
+extern RegionPtr cfb24BitBlt();
 
 void 
 MGABlitterInit(bpp, width)
@@ -59,6 +64,11 @@ int bpp, width;
     {
         stdDoBitbltCopy = cfb16DoBitbltCopy;
         shift = 1;
+    }
+    if (bpp == 24)
+    {
+        stdDoBitbltCopy = cfb24DoBitbltCopy;
+        shift = 3;
     }
     if (bpp == 32)
     {
@@ -321,6 +331,36 @@ int srcx, srcy, width, height, dstx, dsty;
 	}
     }
     return cfb16BitBlt(pSrcDrawable, pDstDrawable, pGC, 
+                       srcx, srcy, width, height, dstx, dsty, doBitBlt, 0L);
+}
+
+
+RegionPtr
+MGA24CopyArea(pSrcDrawable, pDstDrawable, pGC,
+                 srcx, srcy, width, height, dstx, dsty)
+DrawablePtr pSrcDrawable, pDstDrawable;
+GC *pGC;
+int srcx, srcy, width, height, dstx, dsty;
+{
+    void (*doBitBlt)();
+
+    doBitBlt = MGADoBitbltCopy;
+    if (pGC->alu != GXcopy || (pGC->planemask & 0xFFFFFF) != 0xFFFFFF)
+    {
+	doBitBlt = cfb24DoBitbltGeneral;
+	if ((pGC->planemask & 0xFFFFFF) == 0xFFFFFF)
+	{
+	    switch (pGC->alu) {
+	    case GXxor:
+		doBitBlt = cfb24DoBitbltXor;
+		break;
+	    case GXor:
+		doBitBlt = cfb24DoBitbltOr;
+		break;
+	    }
+	}
+    }
+    return cfb24BitBlt(pSrcDrawable, pDstDrawable, pGC, 
                        srcx, srcy, width, height, dstx, dsty, doBitBlt, 0L);
 }
 

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: linux.cf /main/18 1996/02/02 18:59:31 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.46 1996/09/01 04:12:52 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.47 1996/10/03 08:28:09 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -69,7 +69,9 @@ XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.46 1996/09/01 04:12:52 dawe
 #define NeedFunctionPrototypes	YES
 #define NeedNestedPrototypes	YES
 #define NeedVarargsPrototypes	YES
+#ifndef NeedWidePrototypes
 #define NeedWidePrototypes	NO
+#endif
 #define SetTtyGroup		YES
 
 #ifndef UseStaticTermcapLib

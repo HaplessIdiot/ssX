@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3fs.c,v 3.1 1996/10/03 08:33:26 dawes Exp $ */
 /************************************************************
 Copyright 1987 by Sun Microsystems, Inc. Mountain View, CA.
 
@@ -144,6 +144,7 @@ s3SolidFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))
@@ -241,6 +242,7 @@ s3TiledFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))
@@ -342,6 +344,7 @@ s3StipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))
@@ -443,6 +446,7 @@ s3OStipFSpans(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    if (!(pGC->planemask))

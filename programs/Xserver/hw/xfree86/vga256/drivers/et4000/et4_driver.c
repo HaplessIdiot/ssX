@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.31 1996/09/23 13:27:22 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.32 1996/09/29 14:02:16 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1370,7 +1370,7 @@ ET4000Init(mode)
 #endif
        if (mode->Flags & V_PIXMUX)
        {
-         commonCalcClock(mode->SynthClock,2,100000,vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock,1,1,2,3,100000,vga256InfoRec.dacSpeed*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
          if( W32RamdacType == STG1703_DAC ) {
             new->gendac.cmd_reg |= 8;
@@ -1401,7 +1401,7 @@ ET4000Init(mode)
        }
        else
        {
-         commonCalcClock(mode->SynthClock,0,100000,vga256InfoRec.dacSpeed*2+1, 
+         commonCalcClock(mode->SynthClock,1,1,0,3,100000,vga256InfoRec.dacSpeed*2+1, 
          		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
          if( W32RamdacType == STG1703_DAC ) {
             new->gendac.cmd_reg |= 8;
@@ -1441,7 +1441,7 @@ ET4000Init(mode)
 
     if (et4000_type==TYPE_ET6000)
     {
-       commonCalcClock(vga256InfoRec.clock[new->std.NoClock],0,100000,270000, 
+       commonCalcClock(vga256InfoRec.clock[new->std.NoClock],1,1,0,3,100000,270000, 
        		 &(new->gendac.PLL_f2_M), &(new->gendac.PLL_f2_N));
        /* force clock #2 */
        new->Compatibility = (new->Compatibility & 0xFD);   

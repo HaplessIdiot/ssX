@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.110 1996/10/03 08:28:15 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.111 1996/10/03 08:54:42 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -479,10 +479,6 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 
 #ifndef UseInternalMalloc
 #define UseInternalMalloc	YES
-#endif
-
-#ifndef BuildDynamicLoading
-#define BuildDynamicLoading	NO
 #endif
 
 #ifndef HasDlsymBug

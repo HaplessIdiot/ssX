@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.38 1996/09/29 12:50:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.39 1996/10/03 08:32:33 dawes Exp $ */
 
 /*
  * Includes
@@ -396,7 +396,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_ARK		23
 
 #define NUM_VENDORS	23
-#define CHPS_PER_VENDOR	32
+#define CHPS_PER_VENDOR	34
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -478,6 +478,8 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CL7543	SVGA_TYPE(V_CIRRUS,29)	/* Cirrus 7543		*/
 #define CHIP_CL5446	SVGA_TYPE(V_CIRRUS,30)	/* Cirrus 5446		*/
 #define CHIP_CL5462	SVGA_TYPE(V_CIRRUS,31)	/* Cirrus 5462		*/
+#define CHIP_CL7548	SVGA_TYPE(V_CIRRUS,32)	/* Cirrus 7548		*/
+#define CHIP_CL5464	SVGA_TYPE(V_CIRRUS,33)	/* Cirrus 5464		*/
 #define CHIP_CPQ_UNK	SVGA_TYPE(V_COMPAQ,0)	/* Compaq unknown	*/
 #define CHIP_CPQ_IVGS	SVGA_TYPE(V_COMPAQ,1)	/* Compaq Int Vid Gr Sys*/
 #define CHIP_CPQ_AVGA	SVGA_TYPE(V_COMPAQ,2)	/* Compaq Advanced VGA	*/

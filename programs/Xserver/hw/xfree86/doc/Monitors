@@ -1071,7 +1071,22 @@ Section "Monitor"
     ModeLine "640x480"  28  640  664  728  792 480 484 490 505
 EndSection
 
-# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.12 1995/12/16 08:20:28 dawes Exp $
+#From: koen.gadeyne@barco.com (Koen Gadeyne)
+#Date: Sun, 29 Sep 96 12:54:10 CET
+Section "Monitor"
+    Identifier "MAG MagicView II"
+    VendorName "MAG"
+    ModelName "PMV1448"
+    BandWidth 65.0
+    HorizSync 30-33,45-51
+    VertRefresh 45.0-90.0
+    ModeLine "640x480"  40  640  672  712  824  480 480 482 505  +hsync -vsync
+    ModeLine "800x600"  50  800  816  848 1016  600 600 606 630  -hsync +vsync
+    ModeLine "1024x768" 65 1024 1040 1064 1306  768 768 770 795
+EndSection
+
+
+# $XFree86: xc/programs/Xserver/hw/xfree86/doc/Monitors,v 3.13 1996/02/04 09:07:11 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3ss.c,v 3.1 1996/10/03 08:33:40 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -147,6 +147,7 @@ s3SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	   ErrorF("Unsupported pixmap depth\n");
 	   break;
       }
+      if (xf86VTSema) WaitIdleEmpty();
       return;
    }
    alu = pGC->alu;

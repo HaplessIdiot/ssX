@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3init.c,v 3.3 1996/10/03 08:33:34 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -36,6 +36,7 @@
 
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
+#include "xf86_HWlib.h"
 #include "vga.h"
 
 #include "s3v.h"
@@ -249,6 +250,7 @@ s3Init(mode)
    int   interlacedived = mode->Flags & V_INTERLACE ? 2 : 1;
    unsigned char tmp, tmp2;
    unsigned int itmp;
+   extern Bool s3DAC8Bit;
    int pixMuxShift = 0;
 
    s3HDisplay = mode->HDisplay;
@@ -507,36 +509,65 @@ s3Init(mode)
       outb(vgaCRIndex, 0x33);
       cr33 = inb(vgaCRReg) & ~0x28;
 
-      if (s3PixelMultiplexing)
-      {
-	 /* x64:pixmux */
-	 /* pixmux with 16/32 bpp not possible for 864 ==> only 8bit mode  */
-         pixmux = 0x10;         /* two 8bit pixels per clock */
-         invert_vclk = 2;       /* XXXX strange: reserved bit which helps! */
-	 sr15 |= 0x10;  /* XXXX 0x40? see above! */
-	 sr18 |= 0x80;
+      if (s3PixelMultiplexing) {
+         switch (s3InfoRec.bitsPerPixel)  {
+	 case 8:
+	    pixmux = 0x10;
+	    break;
+
+	 case 16:
+	    cr33 |= 0x08;
+	    if (s3Weight == RGB16_555)
+	       pixmux = 0x30;
+	    else
+	       pixmux = 0x50;
+	    break;
+         }
+	 if (!S3_ViRGE_VX_SERIES(s3ChipId)){
+	    invert_vclk = 2;   /* XXXX strange: reserved bit which helps! */
+	    sr15 |= 0x10;  /* XXXX 0x40? see above! */
+	    sr18 |= 0x80;
+	 }
       }
       else
       {
          switch (s3InfoRec.bitsPerPixel)
          {
             case 8:  /* 8-bit color, 1 VCLK/pixel */
+	       pixmux = 0;
                break;
 
             case 16: /* 15/16-bit color, 1VCLK/pixel */
 	       cr33 |= 0x08;
-               if (s3Weight == RGB16_555)
-                  pixmux = 0x30;
-               else
-                  pixmux = 0x50;
+	       if (S3_ViRGE_VX_SERIES(s3ChipId))
+		  if (s3Weight == RGB16_555)
+		     pixmux = 0x20;
+		  else
+		     pixmux = 0x40;
+	       else
+		  if (s3Weight == RGB16_555)
+		     pixmux = 0x30;
+		  else
+		     pixmux = 0x50;
                break;
 
+            case 24: /* packed 24-bit color */
             case 32: /* 32-bit color, 2VCLK/pixel */
                pixmux = 0xd0;
          }
       }
 
       outb(vgaCRReg, cr33);
+
+      if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+	 outb(vgaCRIndex, 0x55);
+	 tmp = inb(vgaCRReg) & ~0x40;
+	 if (s3DAC8Bit) {
+	    tmp |= 0x40;
+	    pixmux |= 0x02;  /* enable "gamma correction" */
+	 }
+	 outb(vgaCRReg, tmp);
+      }
 
       outb(vgaCRIndex, 0x67);
       outb(vgaCRReg, pixmux | invert_vclk);    /* set S3 mux mode */
@@ -791,9 +822,9 @@ s3Init(mode)
    outb(vgaCRIndex, 0x3b);
    itmp = (  new->CRTC[0] + ((i&0x01)<<8)
 	   + new->CRTC[4] + ((i&0x10)<<4) + 1) / 2;
-   if (itmp-(new->CRTC[4] + ((i&0x10)<<4)) < 4)
-      if (new->CRTC[4] + ((i&0x10)<<4) + 4 <= new->CRTC[0]+ ((i&0x01)<<8))
-	 itmp = new->CRTC[4] + ((i&0x10)<<4) + 4;
+   if (itmp-(new->CRTC[4] + ((i&0x10)<<4)) < 10)
+      if (new->CRTC[4] + ((i&0x10)<<4) + 10 <= new->CRTC[0]+ ((i&0x01)<<8))
+	 itmp = new->CRTC[4] + ((i&0x10)<<4) + 10;
       else
 	 itmp = new->CRTC[0]+ ((i&0x01)<<8) + 1;
    outb(vgaCRReg, itmp & 0xff);
@@ -941,16 +972,12 @@ InitLUT()
       outb(DAC_DATA, 0);
    }
 
-#if 0  /* gamma correction not possible for >8bpp with ViRGE */
-   if (s3InfoRec.bitsPerPixel > 8) {
-      int r,g,b;
-      int mr,mg,mb;
-      int nr=5, ng=5, nb=5;
+   if (s3InfoRec.bitsPerPixel > 8 && S3_ViRGE_VX_SERIES(s3ChipId)) {
       extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
       extern LUTENTRY currents3dac[];
 
       if (!LUTInited) {
-	 if (s3Weight == RGB32_888 /* || DAC_IS_TI3026 || DAC_IS_IBMRGB */ ) {
+	 if (s3Weight == RGB32_888 || S3_ViRGE_VX_SERIES(s3ChipId)) {
 	    for(i=0; i<256; i++) {
 	       currents3dac[i].r = xf86rGammaMap[i];
 	       currents3dac[i].g = xf86gGammaMap[i];
@@ -958,6 +985,10 @@ InitLUT()
 	    }
 	 }
 	 else {
+	    int r,g,b;
+	    int mr,mg,mb;
+	    int nr=5, ng=5, nb=5;
+
 	    if (s3Weight == RGB16_565) ng = 6;
 	    mr = (1<<nr)-1;
 	    mg = (1<<ng)-1;
@@ -984,7 +1015,6 @@ InitLUT()
 	 outb(DAC_DATA, currents3dac[i].b);
       }
    }
-#endif
 
    LUTInited = TRUE;
 }
@@ -999,7 +1029,7 @@ s3InitEnvironment()
 {
    /* Current mixes, src, foreground active */
 
-   if (s3MmioMem) {   /* wait until s3MmioMem is initialzied */
+   if (s3MmioMem != NULL) {   /* wait until s3MmioMem is initialzied */
       s3_gcmd = DRAW | CMD_ITA_DWORD | CMD_HWCLIP;
 
       if (s3Bpp == 1) {

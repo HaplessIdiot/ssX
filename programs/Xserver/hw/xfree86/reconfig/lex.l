@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.4 1995/01/28 16:07:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/reconfig/lex.l,v 3.5 1996/02/04 09:10:37 dawes Exp $ */
 
 
 
@@ -81,7 +81,7 @@ white		[ \t]+
 {identifier}	{ return lookup(yytext); }
 {number}	{ yylval.string = sdup(yytext); return NUMBER; }
 {string}	{ yylval.string = sdup(yytext); return STRING; }
-{comment}$	break;
+{comment}	break;
 {white}		break;
 \n		{ line++; break; }
 

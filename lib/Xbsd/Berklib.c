@@ -1,5 +1,5 @@
 /* $XConsortium: Berklib.c,v 1.25 94/11/30 16:21:19 kaleb Exp $ */
-/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.3 1995/01/28 15:43:38 dawes Exp $ */
+/* $XFree86: xc/lib/Xbsd/Berklib.c,v 3.4 1996/10/03 08:29:09 dawes Exp $ */
 /*
 
 Copyright (c) 1987 X Consortium
@@ -69,7 +69,6 @@ from the X Consortium.
 #ifndef SCO
 #define WANT_FFS
 #define WANT_MEMMOVE
-#endif
 #endif
 #endif
 #endif

@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.38 1996/09/25 14:15:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.39 1996/09/29 12:50:46 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -63,7 +63,7 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD5422", "Cirrus CL-GD5424", 
 		  "Cirrus CL-GD5426", "Cirrus CL-GD5428",
 		  "Cirrus CL-GD5429",
-		  "Cirrus CL-GD5430", "Cirrus CL-GD5434",
+		  "Cirrus CL-GD5430/40", "Cirrus CL-GD5434",
 		  "Cirrus CL-GD6205", "Cirrus CL-GD6215",
 		  "Cirrus CL-GD6225", "Cirrus CL-GD6235",
 		  "Cirrus CL-GD5410",
@@ -73,7 +73,11 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Cirrus CL-GD5436",
 		  "Cirrus CL-GD7541", "Cirrus CL-GD7542",
 		  "Cirrus CL-GD7543",
-		  "Cirrus CL-GD5446", "Cirrus CL-GD5462"},
+		  "Cirrus CL-GD5446",
+		  "Cirrus CL-GD5462",
+		  "Cirrus CL-GD7548",
+		  "Cirrus CL-GD5464",
+		},
 /* Compaq */	{ "Compaq (chipset unknown)",
 		  "Compaq Int. Vid. Graphics Sys.",
 		  "Compaq Advanced VGA", 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.2 1996/02/04 09:13:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_blt16.c,v 3.3 1996/09/29 13:39:42 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -70,6 +70,12 @@ extern void cfb16DoBitbltXor();
 extern void cfb16DoBitbltOr();
 extern void cfb16DoBitbltGeneral();
 
+extern RegionPtr cfb24BitBlt();
+extern void cfb24DoBitbltCopy();
+extern void cfb24DoBitbltXor();
+extern void cfb24DoBitbltOr();
+extern void cfb24DoBitbltGeneral();
+
 extern RegionPtr cfb32BitBlt();
 extern void cfb32DoBitbltCopy();
 extern void cfb32DoBitbltXor();
@@ -116,6 +122,49 @@ Cirrus16CopyArea(pSrcDrawable, pDstDrawable,
         doBitBlt = CirrusBppDoBitbltCopy;
 
     return cfb16BitBlt (pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, 0L);
+}
+
+
+/*
+ * This function replaces the cfb24 CopyArea function. It catches plain
+ * on-screen BitBlts in order to do them with the Cirrus BitBLT engine.
+ */
+
+RegionPtr
+Cirrus24CopyArea(pSrcDrawable, pDstDrawable,
+            pGC, srcx, srcy, width, height, dstx, dsty)
+    register DrawablePtr pSrcDrawable;
+    register DrawablePtr pDstDrawable;
+    GC *pGC;
+    int srcx, srcy;
+    int width, height;
+    int dstx, dsty;
+{
+    void (*doBitBlt) ();
+    
+    doBitBlt = cfb24DoBitbltCopy;
+    if (pGC->alu != GXcopy || (pGC->planemask & 0xFFFFFF) != 0xFFFFFF)
+    {
+	doBitBlt = cfb24DoBitbltGeneral;
+	if ((pGC->planemask & 0xFFFFFF) == 0xFFFFFF)
+	{
+	    switch (pGC->alu) {
+	    case GXxor:
+		doBitBlt = cfb24DoBitbltXor;
+		break;
+	    case GXor:
+		doBitBlt = cfb24DoBitbltOr;
+		break;
+	    }
+	}
+    }
+
+    if (doBitBlt == cfb24DoBitbltCopy && pSrcDrawable->type == DRAWABLE_WINDOW
+    && pDstDrawable->type == DRAWABLE_WINDOW)
+        doBitBlt = CirrusBppDoBitbltCopy;
+
+    return cfb24BitBlt (pSrcDrawable, pDstDrawable,
             pGC, srcx, srcy, width, height, dstx, dsty, doBitBlt, 0L);
 }
 
@@ -253,6 +302,8 @@ CirrusBppDoBitbltCopy(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
 #endif
     if (vgaBitsPerPixel == 16)
         widthSrc = widthDst = vga256InfoRec.displayWidth * 2;
+    else if (vgaBitsPerPixel == 24)
+        widthSrc = widthDst = vga256InfoRec.displayWidth * 3;
     else
         widthSrc = widthDst = vga256InfoRec.displayWidth * 4;
 
@@ -483,6 +534,12 @@ pbox, xdir, ydir)
           x *= 2;
           x1 *= 2;
           w *= 2;
+      }
+      else
+      if (vgaBitsPerPixel == 24) {
+          x *= 3;
+          x1 *= 3;
+          w *= 3;
       }
       else { /* vgaBitsPerPixel == 32 */
           x *= 4;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mga/mga.h,v 3.0 1996/09/29 13:40:22 dawes Exp $ */
 
 /*
  * MGA Millennium (MGA2064W) functions
@@ -15,10 +15,10 @@
 #ifndef MGA_H
 #define MGA_H
 
-#define outlPCI(addr, val)	pciWriteLong(MGAPciTag, addr, val)
-#define inlPCI(addr)		pciReadLong(MGAPciTag, addr)
-
-#define OUTREG(addr, val) *(volatile CARD32 *)(MGAMMIOBase + (addr)) = (val)
+#define MGAREG8(addr) *(volatile CARD8 *)(MGAMMIOBase + (addr))
+#define MGAREG16(addr) *(volatile CARD16 *)(MGAMMIOBase + (addr))
+#define MGAREG32(addr) *(volatile CARD32 *)(MGAMMIOBase + (addr))
+#define OUTREG(addr, val) MGAREG32(addr) = (val)
 
 extern unsigned char *MGAMMIOBase;
 extern int MGAScrnWidth;

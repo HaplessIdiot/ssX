@@ -1,5 +1,5 @@
 /* $XConsortium: dm.c,v 1.71 95/07/10 21:18:07 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.2 1995/11/02 00:29:40 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.3 1996/10/03 08:49:47 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -379,6 +379,9 @@ ChildNotify (n)
     int n;
 {
     ChildReady = 1;
+#ifdef ISC
+    (void) Signal (SIGCHLD, ChildNotify);
+#endif
 }
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.h,v 3.3 1996/09/25 14:16:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3v.h,v 3.0 1996/10/03 08:54:39 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -1031,7 +1031,7 @@ _XFUNCPROTOEND
 
 #endif /* !LINKKIT */
 
-static __inline__ int s3CheckLSPN(int w)
+static __inline__ int s3CheckLSPN(int w, int dir)
 {
    int lspn = (w * s3Bpp) & 63;  /* scanline width in bytes modulo 64*/
 
@@ -1051,6 +1051,11 @@ static __inline__ int s3CheckLSPN(int w)
       else if (lspn <= 6*3)
 	 w += 3;
    }
+
+   if (dir && w >= s3bltbug_width1 && w <= s3bltbug_width2) {
+      w = s3bltbug_width2 + 1;
+   }
+
    return w;
 }
 
@@ -1058,18 +1063,8 @@ static __inline__ int s3CheckLSPN(int w)
 static __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, int inc_x)
 {
    int newwidth;
-   int n1;
 
-   newwidth = s3CheckLSPN(w+1);
-   n1=newwidth;
-
-   if (((inc_x) == INC_X && (sx) > (dx)
-	&& newwidth >= s3bltbug_width1 && newwidth <= s3bltbug_width2) ||
-       ((inc_x) != INC_X && (sx) < (dx)
-	&& newwidth >= s3bltbug_width1 && newwidth <= s3bltbug_width2)) {
-      if (newwidth < s3bltbug_width2)
-	 newwidth = s3bltbug_width2;
-   }
+   newwidth = s3CheckLSPN(w+1, (inc_x == INC_X) ^ (sx < dx));
 
    if (newwidth != w+1) {
       WaitQueue(5);
@@ -1089,10 +1084,10 @@ static __inline__ void SETB_BLT(int sx, int sy, int dx, int dy, int w, int h, in
       SETB_RWIDTH_HEIGHT(w, h);
       SETB_RDEST_XY(dx, dy);
    }
-   if (0) ErrorF("wh %d,%d\ts %d,%d\td %d,%d\tix %d\tn %d %d %d\tc %d,%d\n"
+   if (0) ErrorF("wh %d,%d\ts %d,%d\td %d,%d\tix %d\tn %d %d\tc %d,%d\n"
 		 ,w+1,h ,sx,sy ,dx,dy
 		 ,inc_x==INC_X
-		 ,w+1,n1,newwidth
+		 ,w+1,newwidth
 		 ,(inc_x == INC_X) ? dx : dx-w, (inc_x == INC_X) ? dx+w : dx
 		 );
 }

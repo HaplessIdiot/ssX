@@ -51,8 +51,8 @@ url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD">
 url="ftp://ftp.laas.fr/pub/ii/NetBSD">
 
 <p>
-As of version 3.2, there is a separate binary distribution for OpenBSD.
-Binaries for OpenBSD are available from:
+As of version 3.1.2G, there is a separate binary distribution for
+OpenBSD.  Binaries for OpenBSD are available from:
 
 <htmlurl name="ftp.XFree86.org:/pub/XFree86/current/binaries/OpenBSD"
 url="ftp://ftp.XFree86.org/pub/XFree86/current/binaries/OpenBSD">
@@ -74,14 +74,16 @@ If you don't upgrade, you'll have to build XFree86 from the sources.
 XFree86 3.2 should compile cleanly under earlier versions of
 NetBSD, although this has not been tested.
 
-XFree86 3.2 also builds on NetBSD/sparc. See section <ref id="sparc"
-name="Building on NetBSD/sparc"> for details.
+XFree86 3.2 also builds on NetBSD/sparc and OpenBSD/sparc. See section
+<ref id="sparc" name="Building on NetBSD/sparc"> for details.
+
+XFree86 has also been built on OpenBSD/mips. It has been tested on an
+Acer Mips system with a S3/928 board. Contact Per Fogelstrom
+(pefo@OpenBSD.org) for details.
 
 XFree86 3.2 supports NetBSD on PC98 machines. Servers for these
 machines are available in the <tt/NetBSD-PC98/ directory on the above
 FTP servers. 
-
-This binary distribution has also been tested with OpenBSD/i386.
 
 
 <sect>Bug Reports for This Document
@@ -634,6 +636,30 @@ drivers to use in <tt/xf86site.def/:
 If you don't define <bf/XFree86ConsoleDefines/ in <tt/xf86site.def/ the
 pccons and pcvt drivers will be supported.
 
+<sect1>pcvt_ioctl.h file:
+
+<p>
+XFree86 default's config includes support for the PCVT console
+driver. Unfortunatly, NetBSD doesn't install the <tt/pcvt_ioctl.h/
+file in <tt>/usr/include/machine</tt>. If you want to build XFree86
+with PCVT support, execute the following command as root before
+starting <tt/make World/:
+<tscreen><verb>
+cp /usr/src/sys/arch/i386/isa/pcvt/pcvt_ioctl.h /usr/include/machine
+</verb></tscreen>
+
+If you don't have kernel sources, you can grab this file from
+ftp.netbsd.org or one of its mirrors. If you're not running PCVT, you
+can remove -DPCVT_SUPPORT from <bf/XFree86ConsoleDefines/ in
+<tt/xf86site.def/ too.
+
+If you have a full source tree, you may want to copy this file to
+<tt>/usr/src/sys/arch/i386/include</tt>, so that it gets reinstalled
+every time you run <tt/make includes/.
+
+This problem is documented in NetBSD PR&num;1391, which has not been
+handled yes. OpenBSD has <tt/pcvt_ioctl.h/ at the right places.
+
 <sect1>console.h and ioctl_pc.h files:
 
 <p>
@@ -644,7 +670,7 @@ install the copy that is supplied in
 <tt>xc/programs/Xserver/hw/xfree86/etc</tt>.  If you run
 NetBSD-current you probably want to install it in
 <tt>/usr/src/sys/arch/i386/include</tt> too, so that it get
-reinstalled each time you make install in <tt>/usr/src/include</tt>.
+reinstalled each time you run <tt/make includes/.
 
 If you have installed the  codrv console driver, this
 file should be taken from your installed version of the driver.
@@ -663,10 +689,10 @@ anymore. You should get it from the syscons distribution.
  #define BuildBsdSharedLibs 	NO
 </tscreen>
 
-<sect1>Building on NetBSD/sparc<label id="sparc">
+<sect1>Building on Sparc<label id="sparc">
 
 <p>
-XFree86 3.2 also compiles on NetBSD/sparc. The Sun server
+XFree86 3.2 also compiles on NetBSD/sparc and OpenBSD/sparc. The Sun server
 patches from Dennis Ferguson and Matthew Green have been integrated in
 <tt>xc/programs/Xserver/hw/sun</tt>.  Small
 modifications to <tt/xf86site.def/ are needed:
@@ -684,6 +710,8 @@ url="INSTALL.html">.
 Problems with this port should be reported to the
 <em/port-sparc@NetBSD.Org/ mailing list or directly to me
 <em/matthieu@laas.fr/ rather than to the xfree86 mailing list. 
+
+Note that the SparcStation 4 TCX framebuffer is not supported for now.
 
 <sect>Building New X Clients
 
@@ -749,7 +777,7 @@ and many others.
 </itemize>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.33 1996/09/14 13:10:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.34 1996/10/03 08:34:49 dawes Exp $
 
 
 

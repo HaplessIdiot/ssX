@@ -22,7 +22,7 @@
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.3 1996/09/29 13:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/tga/tga.c,v 3.4 1996/10/03 08:33:55 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -390,7 +390,9 @@ tgaProbe()
 	tgaDAC8Bit = TRUE;
 
 #ifdef XFreeXDGA
+#ifdef NOTYET
   tgaInfoRec.directMode = XF86DGADirectPresent;
+#endif
 #endif
 
   return(TRUE);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.24 1996/09/22 05:05:10 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/xf86_HWlib.h,v 3.25 1996/10/03 08:34:26 dawes Exp $ */ 
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -354,7 +354,7 @@ extern void s3IBMRGB_Init(
 extern int commonCalcClock(
 #if NeedFunctionPrototypes
    long,
-   int,
+   int, int, int, int,
    long, long,
    unsigned char *,
    unsigned char *

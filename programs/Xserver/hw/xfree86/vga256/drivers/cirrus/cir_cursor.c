@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.17 1996/09/25 14:18:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.18 1996/09/29 13:39:45 dawes Exp $ */
 /*
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -893,7 +893,11 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
        return;
      }
 
-   shift = 16 - pVisual->bitsPerRGBValue;
+   /*
+    * The cursor uses a palette entry with 6-bits color resolution, even
+    * in truecolor mode.
+    */
+   shift = 16 - 6;
 
    if (HAVE546X()) {
      unsigned char *pPalStateReg = (unsigned char *)(cirrusMMIOBase + 0xB0);

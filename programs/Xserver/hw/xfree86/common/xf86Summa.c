@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.2 1996/09/29 13:35:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Summa.c,v 3.3 1996/10/03 08:34:15 dawes Exp $ */
 
 #include "Xos.h"
 #include <signal.h>
@@ -992,7 +992,7 @@ init_xf86Summa(unsigned long server_version)
     xf86AddDeviceAssoc(&summasketch_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
-	ErrorF("Warning : SummaKetch module compiled for version%s\n",
+	ErrorF("Warning: SummaKetch module compiled for version%s\n",
 	       XF86_VERSION);
 	return 0;
     } else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.10 1996/02/04 08:56:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.11 1996/08/10 13:04:26 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -104,6 +104,64 @@ int Class;
 {
 	Bool result = FALSE;
 	Byte old, old1, Ver;
+        int i;
+
+	if (!NoPCI && Class == CLASS_54XX)
+	{
+	    i = 0;
+	    while ((pcrp = pci_devp[i]) != (struct pci_config_reg *)NULL) {
+		if (pcrp->_vendor == PCI_VENDOR_CIRRUS)
+		{
+			switch (pcrp->_device)
+			{
+			case PCI_CHIP_GD5430:
+				/* Note: CL-GD5440 has the same ID. */
+				*Chipset = CHIP_CL5430;
+				break;
+			case PCI_CHIP_GD5434_4:
+			case PCI_CHIP_GD5434_8:
+				*Chipset = CHIP_CL5434;
+				break;
+			case PCI_CHIP_GD5436:
+				*Chipset = CHIP_CL5436;
+				break;
+			case PCI_CHIP_GD5446:
+				*Chipset = CHIP_CL5446;
+				break;
+			case PCI_CHIP_GD5462:
+				*Chipset = CHIP_CL5462;
+				break;
+			case PCI_CHIP_GD5464:
+				*Chipset = CHIP_CL5464;
+				break;
+			case PCI_CHIP_GD7541:
+				*Chipset = CHIP_CL7541;
+				break;
+			case PCI_CHIP_GD7542:
+				*Chipset = CHIP_CL7542;
+				break;
+			case PCI_CHIP_GD7543:
+				*Chipset = CHIP_CL7543;
+				break;
+			case PCI_CHIP_GD7548:
+				*Chipset = CHIP_CL7548;
+				break;
+			default:
+			        /*
+			         * The PCI probing only recognizes VGA
+			         * devices, so we can be sure it is
+			         * a graphics chip.
+			         */
+				Chip_data = pcrp->_device;
+				*Chipset = CHIP_CL_UNKNOWN;
+				break;
+			}
+			PCIProbed = TRUE;
+			return(TRUE);
+		}
+		i++;
+	    }
+	}
 
 	/* Add CRTC to enabled ports */
 	Ports[0] = CRTC_IDX;
@@ -350,6 +408,10 @@ int Chipset;
 		break;
 	case CHIP_CL5430:
 	case CHIP_CL5434:
+	case CHIP_CL5436:
+	case CHIP_CL5446:
+	case CHIP_CL7543:
+	case CHIP_CL7548:
 		Mem = 512;
 		SRF = rdinx(SEQ_IDX, 0x0F);
 		if (SRF & 0x10)
@@ -358,6 +420,11 @@ int Chipset;
 			Mem *= 2;
 		if (Chipset != CHIP_CL5430 && (SRF & 0x80))
 			Mem *= 2;
+		break;
+	case CHIP_CL5462:
+	case CHIP_CL5464:
+		/* Read BIOS scratch register. */
+		Mem = ((rdinx(SEQ_IDX, 0x14) & 0x07) + 1) * 1024;
 		break;
 	default:
 		/* 542x, use BIOS Scratch Register value */

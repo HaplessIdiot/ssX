@@ -1,5 +1,5 @@
 /* $XConsortium: dipexExt.c,v 5.11 94/04/17 20:36:04 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.1 1996/03/29 22:10:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexExt.c,v 3.2 1996/10/03 08:30:25 dawes Exp $ */
 
 /***********************************************************
 
@@ -96,6 +96,7 @@ static int DeletePexClient();
  *
  ******************************************************************************
  */
+void
 PexExtensionInit()
 {
     ExtensionEntry *AddExtension();
@@ -340,7 +341,9 @@ unsigned long server_version;
 {
 
   PexExtensionInitPtr = PexExtensionInit;
-  ErrorF("Init module PEX 0x%x\n", PexExtensionInitPtr);
+#ifdef DEBUG
+  ErrorF("Init module PEX %p\n", PexExtensionInitPtr);
+#endif
   return 1;
 }
 #endif /* DYNAMIC_MODULE */

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: sv4Lib.rules /main/17 1995/12/01 18:31:40 kaleb $
-XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.1 1996/01/05 13:06:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/sv4Lib.rules,v 3.2 1996/01/07 03:45:14 dawes Exp $
 
 /*
  * SVR4 shared library rules
@@ -92,6 +92,23 @@ clean::									@@\
 	$(RM) Concat(lib,libname.so.rev) Concat(lib,libname.so)
 
 #endif /* SharedLibraryTarget */
+
+
+#ifndef SharedDepModuleTarget
+#define SharedDepModuleTarget(name,deps,solist)				@@\
+AllTarget(name)								@@\
+									@@\
+name: deps								@@\
+	$(RM) $@~							@@\
+	$(LD) -o $@~ $(SHLIBLDFLAGS) solist $(REQUIREDLIBS)		@@\
+	$(RM) $@							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) name
+
+#endif /* SharedDepModuleTarget */
+
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.64 1996/09/22 05:06:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.65 1996/09/29 13:39:47 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -76,6 +76,24 @@
 /* Allow optional linear addressing. */
 
 #define CIRRUS_SUPPORT_LINEAR
+
+/*
+ * If this is defined, 16bpp does not use VCLK at pixel rate mode,
+ * but rather VCLK * 2 = pixel rate, on a 1MB 5434, fixing severe
+ * screen refresh problems. This reduces the max allowed dot clock
+ * from about 45-50 MHz to 40 MHz. The only explanation seems to be
+ * a hardware problem. I don't know whether this applies for any other
+ * chips, such as the CL-GD5430.
+ */
+
+#define DOUBLE_16BPP_VCLK_FOR_1MB_5434
+
+#ifdef DOUBLE_16BPP_VCLK_FOR_1MB_5434
+#define MUST_DOUBLE_VCLK_FOR_16BPP (cirrusChip <= CLGD5424 || \
+    (cirrusChip == CLGD5434 && vga256InfoRec.videoRam == 1024))
+#else
+#define MUST_DOUBLE_VCLK_FOR_16BPP (cirrusChip <= CLGD5424)
+#endif
 
 
 #include "X.h"
@@ -700,7 +718,7 @@ cirrusClockSelect(no)
 	    return(FALSE);
 
        if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
-           if (vgaBitsPerPixel == 16 && cirrusChip <= CLGD5424)
+           if (vgaBitsPerPixel == 16 && MUST_DOUBLE_VCLK_FOR_16BPP)
            	/* Use the clocking mode whereby the programmed VCLK */
            	/* is double the pixel rate. */
                CirrusSetClock(vga256InfoRec.clock[no] * 2);
@@ -718,7 +736,7 @@ cirrusClockSelect(no)
        SR1 = cirrusClockTab[no].denom;
 
 #ifndef MONOVGA
-       if (vgaBitsPerPixel == 16 && cirrusChip <= CLGD5424) {
+       if (vgaBitsPerPixel == 16 && MUST_DOUBLE_VCLK_FOR_16BPP) {
 	   /* Use the clocking mode whereby the programmed VCLK */
 	   /* is double the pixel rate. */
 	   SR = cirrusDoubleClockTab[no].numer;
@@ -1044,6 +1062,7 @@ cirrusProbe()
              XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
 	     vgaBitsPerPixel);
          CIRRUS.ChipHas16bpp = FALSE;
+         CIRRUS.ChipHas24bpp = FALSE;
      }
 #endif
 
@@ -1367,6 +1386,11 @@ cirrusProbe()
          if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429
          && vga256InfoRec.videoRam <= 512)
                  cirrusClockLimit[cirrusChip] = 0;
+#ifdef DOUBLE_16BPP_VCLK_FOR_1MB_5434
+         if (cirrusChip == CLGD5434 && vga256InfoRec.videoRam == 1024)
+             cirrusClockLimit[cirrusChip] = 42600;
+         else
+#endif
          if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429) ||
 	      cirrusChip == CLGD5430 || 
 	     ((cirrusChip == CLGD5434 || cirrusChip == CLGD5436 || 
@@ -1400,20 +1424,45 @@ cirrusProbe()
      }
 #endif /* ndef MONOVGA */
 
+     /* 
+      * The 62x5 chips can do marvelous things, but the
+      * LCD panels connected to them don't leave much
+      * option.  The following forces the cirrus chip to
+      * use the slowest clock -- which appears to be what
+      * my LCD panel likes best.  Faster clocks seem to
+      * cause the LCD display to show noise when things are
+      * moved around on the screen.
+      *
+      * XXX For later laptop chips for which lcd_is_on is set
+      *     (e.g. 754x), this may be an artificial limit. 
+      */
+     if (lcd_is_on && vgaBitsPerPixel <= 8) {
+         cirrusClockLimit[cirrusChip] = 26000;
+     }
+
      cirrusClockNo = cirrusNumClocks(cirrusChip);
      if (!vga256InfoRec.clocks)
           if (OFLG_ISSET(OPTION_PROBE_CLKS, &vga256InfoRec.options))
 	       vgaGetClocks(cirrusClockNo, cirrusClockSelect);
-	  else
-	       {
-	       if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions))
-	           {
-	           vga256InfoRec.clocks = cirrusClockNo;
-	           for (i = 0; i < cirrusClockNo; i++)
-		       vga256InfoRec.clock[i] =
-		          CLOCKVAL(cirrusClockTab[i].numer, cirrusClockTab[i].denom);
+	  else {
+	       if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
+	       &vga256InfoRec.clockOptions)) {
+	           int last_valid_clock;
+	           last_valid_clock = -1;
+	           for (i = 0; i < NUM_CIRRUS_CLOCKS; i++) {
+	               int freq;
+	               freq = CLOCKVAL(cirrusClockTab[i].numer,
+	                   cirrusClockTab[i].denom);
+	               if (freq <= cirrusClockLimit[cirrusChip]) {
+	                   vga256InfoRec.clock[i] = freq;
+	                   last_valid_clock = i;
+	               }
+	               else
+	                   vga256InfoRec.clock[i] = 0;
 		   }
+	           vga256InfoRec.clocks = last_valid_clock + 1;
 	       }
+	  }
      else
           if (vga256InfoRec.clocks > cirrusClockNo)
 	       {
@@ -2094,6 +2143,12 @@ nolinear:
         	cfb16NonTEOps1Rect.CopyArea = Cirrus16CopyArea;
         	cfb16TEOps.CopyArea = Cirrus16CopyArea;
         	cfb16NonTEOps.CopyArea = Cirrus16CopyArea;
+	      }
+	      if (vgaBitsPerPixel == 24) {
+        	cfb24TEOps1Rect.CopyArea = Cirrus24CopyArea;
+        	cfb24NonTEOps1Rect.CopyArea = Cirrus24CopyArea;
+        	cfb24TEOps.CopyArea = Cirrus24CopyArea;
+        	cfb24NonTEOps.CopyArea = Cirrus24CopyArea;
 	      }
 	      if (vgaBitsPerPixel == 32) {
 	        if (!cirrusAvoidImageBLT) {
@@ -2972,7 +3027,7 @@ cirrusInit(mode)
       }
 
       if (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) {
-	if (vgaBitsPerPixel == 16 && cirrusChip <= CLGD5424)
+	if (vgaBitsPerPixel == 16 && MUST_DOUBLE_VCLK_FOR_16BPP)
 	  CirrusFindClock(vga256InfoRec.clock[new->std.NoClock] * 2,
 			  vga256InfoRec.maxClock, &SRE, &SR1E, &usemclk);
 	if (vgaBitsPerPixel == 24 && cirrusChip != CLGD5436
@@ -3004,7 +3059,7 @@ cirrusInit(mode)
 	  SR1E = cirrusClockTab[new->std.NoClock].denom;
 	}
 #ifndef MONOVGA
-	if (vgaBitsPerPixel == 16 && cirrusChip <= CLGD5424) {
+	if (vgaBitsPerPixel == 16 && MUST_DOUBLE_VCLK_FOR_16BPP) {
 	  /* Use the clocking mode whereby the programmed VCLK */
 	  /* is double the pixel rate. */
 	  SRE = cirrusDoubleClockTab[new->std.NoClock].numer;
@@ -3123,13 +3178,7 @@ cirrusInit(mode)
        * setting.
        */
       pixelrate = vga256InfoRec.clock[new->std.NoClock];
-      if (vgaBitsPerPixel == 32)
-	bandwidthused = pixelrate * 4;
-      else
-	if (vgaBitsPerPixel == 16)
-	  bandwidthused = pixelrate * 2;
-	else
-	  bandwidthused = pixelrate;
+      bandwidthused = pixelrate * (vgaBitsPerPixel / 8);
       bandwidthleft = cirrusDRAMBandwidth - bandwidthused;
       /* Relative amount of bandwidth left for drawing. */
       percent = bandwidthleft * 100 / cirrusDRAMBandwidth;
@@ -3137,8 +3186,7 @@ cirrusInit(mode)
       /* We have an option for conservative, or aggressive setting. */
       /* The default is something in between. */
       
-      if (cirrusChip == CLGD5434 || cirrusChip == CLGD5436 ||
-	  cirrusChip == CLGD5446) {
+      if (cirrusChip == CLGD5434) {
 	int threshold;
 	int hsyncdelay;
 	/*
@@ -3243,6 +3291,43 @@ cirrusInit(mode)
 
 #endif /* USE_OLD_FIFO_VALUES */
 	new->SR16 |= threshold;
+      }
+      else
+      if (cirrusChip == CLGD5436 || cirrusChip == CLGD5446 ||
+      cirrusChip == CLGD7548) {
+          int threshold;
+          if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
+              threshold = 8;
+              if (percent < 20)
+                  threshold = 10;
+          }
+          else {
+              if (cirrusDRAMBandwidth >= 170000) {
+                  /* 2MB, based on 5446 testing (57 MHz MCLK). */
+                  threshold = 2;
+                  if (bandwidthused >= 32000)
+                      threshold = 3;
+                  if (bandwidthused >= 75000)
+                      threshold = 4;
+                  if (bandwidthused >= 100000)
+                      threshold = 5;
+                  if (bandwidthused >= 130000)
+                      threshold = 6;
+                  if (bandwidthused >= 175000)
+                      threshold = 8;
+              }
+              else {
+                  /* 1MB; these are guesses. */
+                  threshold = 4;
+                  if (bandwidthused >= 50000)
+                      threshold = 5;
+                  if (bandwidthused >= 65000)
+                      threshold = 6;
+                  if (bandwidthused >= 85000)
+                      threshold = 8;
+              }
+          }
+          new->SR16 |= threshold;
       }
       else {
 	/* XXXX Is 0 required for interlaced modes on some chips? */
@@ -3356,7 +3441,7 @@ cirrusInit(mode)
 	  new->SR7 = 0x01;	/* Tell it to use 256 Colors */
       }
       if (vgaBitsPerPixel == 16) {
-	if (cirrusChip <= CLGD5424)
+	if (MUST_DOUBLE_VCLK_FOR_16BPP)
 	  /* Use the double VCLK mode. */
 	  new->SR7 = 0x03;
 	else if (HAVE546X())
@@ -3506,14 +3591,14 @@ cirrusInit(mode)
          if (xf86weight.red == 5 && xf86weight.green == 5
          && xf86weight.blue == 5)
              /* 5-5-5 RGB mode */
-             if (cirrusChip >= CLGD5426)
+             if (!(MUST_DOUBLE_VCLK_FOR_16BPP))
                  new->HIDDENDAC = 0xd0;	/* Double edge mode. */
              else
                  new->HIDDENDAC = 0xf0; /* Single edge mode (double VLCK). */
          if (xf86weight.red == 5 && xf86weight.green == 6
          && xf86weight.blue == 5)
              /* 5-6-5 RGB mode */
-             if (cirrusChip >= CLGD5426)
+             if (!(MUST_DOUBLE_VCLK_FOR_16BPP))
                  new->HIDDENDAC = 0xd1;
              else
                  new->HIDDENDAC = 0xe1;
@@ -4075,6 +4160,8 @@ cirrusAdjust(x, y)
          Base <<= 2;
      lsb = Base & 0x03;
      Base >>= 2;
+     if (vgaBitsPerPixel == 24 && !HAVE546X())
+         Base -= Base % 6;
 #endif
      outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
      outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
@@ -4090,14 +4177,6 @@ cirrusAdjust(x, y)
          outb(vgaIOBase + 4, 0x1d); CR1D = inb(vgaIOBase + 5);
          outb(vgaIOBase + 5, (CR1D & 0xE7) | ((Base & 0x180000) >> 16));
      }       
-
-     if (vgaBitsPerPixel == 24 && !HAVE546X()) {
-       /* Set the lowest two bits. */
-       inb(vgaIOBase + 0xA);		/* Set ATC to addressing mode */
-       outb(0x3C0, 0x13 + 0x20);	/* Select ATC reg 0x13 */
-       tmp = inb(0x3C1) & 0xF0;
-       outb(0x3C0, tmp | lsb);
-     }
 }
 
 /*

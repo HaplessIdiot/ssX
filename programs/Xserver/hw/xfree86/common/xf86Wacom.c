@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.19 1996/09/29 13:35:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.20 1996/10/03 08:34:17 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -1611,7 +1611,7 @@ init_xf86Wacom(unsigned long    server_version)
     xf86AddDeviceAssoc(&wacom_eraser_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
-	ErrorF("Warning : Wacom module compiled for version%s\n", XF86_VERSION);
+	ErrorF("Warning: Wacom module compiled for version%s\n", XF86_VERSION);
 	return 0;
     } else {
 	return 1;

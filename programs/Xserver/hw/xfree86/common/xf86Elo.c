@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.14 1996/09/29 13:35:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.15 1996/10/03 08:34:11 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1266,7 +1266,7 @@ init_xf86Elo(unsigned long      server_version)
     xf86AddDeviceAssoc(&elographics_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
-	ErrorF("Warning : Elographics module compiled for version%s\n", XF86_VERSION);
+	ErrorF("Warning: Elographics module compiled for version%s\n", XF86_VERSION);
 	return 0;
     } else {
 	return 1;

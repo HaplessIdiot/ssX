@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3frect.c,v 3.2 1996/10/03 08:33:25 dawes Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -665,7 +665,6 @@ s3PolyFillRect(pDrawable, pGC, nrectFill, prectInit)
       switch (pGC->fillStyle) {
 	case FillSolid:
 	   BLOCK_CURSOR;
-DBGOUT(0); outb(0x3bc,(IN_SUBSYS_STAT() & 0x3f00) >> 8);
 	   WaitIdle();
 #if 0  /* CMD_RECT broken :-( */
 	   WaitQueue(2);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3text.c,v 3.3 1996/10/03 08:33:41 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -53,7 +53,7 @@ __inline__ void s3SimpleStipple(x, y, width, height, pb, pwidth, clip_l, clip_r)
 {
    int newwidth;
 
-   newwidth = s3CheckLSPN(width);
+   newwidth = s3CheckLSPN(width, 1);
    if (newwidth != width) {
       WaitQueue(5);
       SETB_CLIP_L_R(max(clip_l,x), min(clip_r,x + width-1));
@@ -96,6 +96,7 @@ DBGOUT(0x80 | n++);
       }
    }
 DBGOUT(0x5f);
+   WaitIdle();
    if (newwidth != width) {
       SETB_CLIP_L_R(clip_l, clip_r);
    }

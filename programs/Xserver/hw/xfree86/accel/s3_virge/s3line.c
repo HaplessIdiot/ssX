@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3line.c,v 3.2 1996/10/03 08:33:35 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -142,6 +142,16 @@ s3Line(pDrawable, pGC, mode, npt, pptInit)
       cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
       WaitIdleEmpty();
       pGC->fgPixel = tmp1;
+      pGC->alu = tmp2;
+   } else if (pGC->alu == GXxor && (pGC->fgPixel & 0xf) == 0xf) {
+      int tmp1 = pGC->fgPixel;
+      int tmp2 = pGC->alu;
+      pGC->fgPixel = ~0x03;
+      /* pGC->alu = 3; */
+      WaitIdleEmpty();
+      cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+      WaitIdleEmpty();
+      pGC->fgPixel = 0x03;
       pGC->alu = tmp2;
    }
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.21 1996/03/10 11:47:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.22 1996/06/29 09:02:00 dawes Exp $
 /*
  * A default OS name
  */
@@ -143,6 +143,12 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.21 1996/03/10 11:47:01 dawes Exp $
 #endif
 #ifndef ServerOSDefines
 #define ServerOSDefines -DDDXTIME XFree86ServerOSDefines
+#endif
+#ifndef BuildDynamicLoading
+#define BuildDynamicLoading NO
+#endif
+#if BuildDynamicLoading
+#define ServerExtraSysLibs -ldl
 #endif
 #endif
 

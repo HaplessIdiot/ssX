@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.10 1995/04/09 14:14:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_im.c,v 3.11 1996/02/04 09:13:11 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico
@@ -440,9 +440,11 @@ skipleftedge:
 
 	base = CIRRUSBASE();
 
+#if 0	/* Disabled -- can overrun bitmap. */
 	if (bytewidth == bwidth)
 		CirrusAlignedBitmapTransfer(bytewidth * h / 4, srcp, base);
 	else
+#endif
 		CirrusBitmapTransfer(bytewidth, h, bwidth, srcp, base);
 
 	WAITUNTILFINISHED();

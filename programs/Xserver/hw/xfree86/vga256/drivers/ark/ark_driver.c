@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.17 1996/09/29 13:38:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.18 1996/10/03 08:46:07 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -446,7 +446,7 @@ ICS5342Init(reg, freq)
 vgaArkPtr reg;
 long freq;
 {
-	commonCalcClock(freq, 1, 100000, 250000, &(reg->GENDAC[3]),
+	commonCalcClock(freq, 1, 1, 1, 3, 100000, 250000, &(reg->GENDAC[3]),
 			&(reg->GENDAC[4]));
 	reg->std.MiscOutReg &= ~0xC;
 	reg->std.MiscOutReg |= 0x8;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.3 1996/10/03 08:33:13 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -685,22 +685,23 @@ s3Probe()
    /* LocalBus or EISA or PCI */
    if (S3_ViRGE_VX_SERIES(s3ChipId))
       s3Localbus = TRUE;
-   else
+   else {
       s3Localbus = ((config & 0x03) <= 2);
 
-   if (xf86Verbose) {
-      switch (config & 0x03) {
-      case 1:
-	 ErrorF("%s %s: card type: 386/486 localbus\n",
-		XCONFIG_PROBED, s3InfoRec.name);
-	 s3VLB = TRUE;
-	 break;
-      case 2:
-	 ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
-	 break;
-      default:
-	 ErrorF("%s %s: unknown bus type %d (please report)\n",
-		XCONFIG_PROBED, s3InfoRec.name, config & 0x03);
+      if (xf86Verbose) {
+	 switch (config & 0x03) {
+	 case 1:
+	    ErrorF("%s %s: card type: 386/486 localbus\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	    s3VLB = TRUE;
+	    break;
+	 case 2:
+	    ErrorF("%s %s: card type: PCI\n", XCONFIG_PROBED, s3InfoRec.name);
+	    break;
+	 default:
+	    ErrorF("%s %s: unknown bus type %d (please report)\n",
+		   XCONFIG_PROBED, s3InfoRec.name, config & 0x03);
+	 }
       }
    }
 
@@ -987,7 +988,10 @@ s3Probe()
    if (s3InfoRec.dacSpeed <= 0) {
       switch (s3RamdacType) {
       case S3_TRIO64_DAC:
-	 s3InfoRec.dacSpeed = 135000;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId))
+	    s3InfoRec.dacSpeed = 220000;
+	 else
+	    s3InfoRec.dacSpeed = 135000;
 	 break;
       default:
 	 s3InfoRec.dacSpeed = 800000;
@@ -1005,13 +1009,22 @@ s3Probe()
    /* Check when pixmux is supported */
 
    if (DAC_IS_TRIO)
-      if (xf86bpp <= 8) s3ATT498PixMux = TRUE;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+	    if (xf86bpp <= 16) s3ATT498PixMux = TRUE;
+	 }
+	 else
+	    if (xf86bpp <=  8) s3ATT498PixMux = TRUE;
 
    if (s3ATT498PixMux) {
       pixMuxPossible = TRUE;
       if (DAC_IS_TRIO) {
-	 nonMuxMaxClock = 80000;
-	 pixMuxMinClock = 80000;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+	    nonMuxMaxClock = 110000;  /* could be 135000 */
+	    pixMuxMinClock = 110000;  /* could be 135000 */
+	 } else {
+	    nonMuxMaxClock = 80000;
+	    pixMuxMinClock = 80000;
+	 }
       }
       else {
 	 nonMuxMaxClock = 67500;
@@ -1078,7 +1091,10 @@ s3Probe()
       if (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &s3InfoRec.clockOptions)) {
 	 maxRawClock = 120000;
       } else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO, &s3InfoRec.clockOptions)) {
-	 maxRawClock = 135000;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId))
+	    maxRawClock = 220000;
+	 else
+	    maxRawClock = 135000;
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;
@@ -1097,10 +1113,13 @@ s3Probe()
    case S3_TRIO64_DAC:
       if (s3ATT498PixMux)
 	 s3InfoRec.maxClock = s3InfoRec.dacSpeed;
-      else if (s3Bpp < 4)
+      else if (s3Bpp < 4 && !S3_ViRGE_VX_SERIES(s3ChipId))
 	 s3InfoRec.maxClock = 80000;
       else
-	 s3InfoRec.maxClock = 50000;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId))
+	    s3InfoRec.maxClock = 135000;
+	 else
+	    s3InfoRec.maxClock = 50000;
       break;
    default:
       /* For DACs we don't have special code for, keep this as a limit */
@@ -1481,7 +1500,15 @@ redo_mode_lookup:
       /* Set default for blank_delay */
       if (!(pMode->Private[0] & (1 << S3_BLANK_DELAY))) {
 	 pMode->Private[0] |= (1 << S3_BLANK_DELAY);
-	 pMode->Private[S3_BLANK_DELAY] = 0x00;
+	 if (S3_ViRGE_VX_SERIES(s3ChipId))
+	    if (s3Bpp == 1)
+	       pMode->Private[S3_BLANK_DELAY] = 0x20;
+	    else if (s3Bpp == 2)
+	       pMode->Private[S3_BLANK_DELAY] = 0x31;
+	    else
+	       pMode->Private[S3_BLANK_DELAY] = 0x70;
+	 else
+	    pMode->Private[S3_BLANK_DELAY] = 0x00;
       }
 
       /* Set default for early_sc */
@@ -1492,6 +1519,11 @@ redo_mode_lookup:
 
       pMode = pMode->next;
    } while (pMode != pEnd);
+
+   if (S3_ViRGE_VX_SERIES(s3ChipId)) {
+      if (!OFLG_ISSET(OPTION_DAC_6_BIT, &s3InfoRec.options) || s3Bpp > 1)
+	 s3DAC8Bit = TRUE;
+   }
 
    if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options) && !s3DAC8Bit) {
       ErrorF("%s %s: Option \"dac_8_bit\" not recognised for RAMDAC \"%s\"\n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3im.c,v 3.3 1996/10/03 08:33:33 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -386,7 +386,7 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
    ;outw (MULTIFUNC_CNTL, PIX_CNTL | 0);
 
    origwidth = w;
-   w = s3CheckLSPN(w);
+   w = s3CheckLSPN(w, 1);
    if (w != origwidth) {
       WaitQueue(6);
       SETB_CLIP_L_R(x, x + origwidth-1);
@@ -416,6 +416,7 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 	 *IMG_TRANS = ldl_u(psrcs++);
       psrc += pwidth;
    }
+   WaitIdle();
    if (w != origwidth) {
       SETB_CLIP_L_R(0, s3DisplayWidth-1);
    }
@@ -542,7 +543,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
    ;outw32 (WRT_MASK, planemask); /* SET_WRT_MASK(planemask); */
 
    origwidth = w;
-   w = s3CheckLSPN(w);
+   w = s3CheckLSPN(w, 1);
    if (w != origwidth) {
       WaitQueue(6);
       SETB_CLIP_L_R(x, x + origwidth-1);
@@ -605,6 +606,7 @@ s3ImageFillNoMem (x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 	    plines = (CARD32 *)pline;
       }
    }
+   WaitIdle();
 
    UNBLOCK_CURSOR;
 }
@@ -652,7 +654,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
    BLOCK_CURSOR;
 
    origwidth = w;
-   w = s3CheckLSPN(w);
+   w = s3CheckLSPN(w, 1);
    if (w != origwidth) {
       WaitQueue(6 + (opaque ? 1 : 0));
       SETB_CLIP_L_R(x, x + origwidth-1);
@@ -771,6 +773,7 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 	 y = 0;
       }
    }
+   WaitIdle();
 
    if (w != origwidth) {
       SETB_CLIP_L_R(0, s3DisplayWidth-1);

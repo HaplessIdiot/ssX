@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.101 1996/09/29 13:35:46 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.102 1996/10/03 08:34:08 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1566,14 +1566,14 @@ configPointerSection(MouseDevPtr	mouse_dev,
         else
   	  pushToken = i;
         mouse_dev->mseProc   = xf86OsMouseProc;
-        mouse_dev->mseEvents = xf86OsMouseEvents;
+        mouse_dev->mseEvents = (void(*)(MouseDevPtr))xf86OsMouseEvents;
 	break;
       }
 #endif
 #ifdef XQUEUE
       if ( StrCaseCmp(val.str,"xqueue") == 0 ) {
         mouse_dev->mseProc   = xf86XqueMseProc;
-        mouse_dev->mseEvents = xf86XqueEvents;
+        mouse_dev->mseEvents = (void(*)(MouseDevPtr))xf86XqueEvents;
         mouse_dev->xqueSema  = 0;
         if (xf86Verbose)
           ErrorF("%s Xqueue selected for mouse input\n",

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.7 1996/02/04 08:59:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/cfb.w32/w32rctstp8.c,v 3.8 1996/08/13 11:29:06 dawes Exp $ */
 /*
  * Fill 32 bit stippled rectangles for 8 bit frame buffers
  */
@@ -84,17 +84,10 @@ Author: Keith Packard, MIT X Consortium
   \
 	    if (W32OrW32i)  \
 		W32_STIPPLE  \
-	    else \
-	    { \
-	        if (W32et6000) \
-	        { \
-	            long W32MixPong = W32Mix + 504; \
-	            long MixDstPing = W32Mix << 3, MixDstPong = W32MixPong << 3; \
-	            ET6K_STIPPLE \
-	        } \
-	        else /* W32p */ \
-		    W32P_STIPPLE  \
-	    } \
+	    else if (W32et6000) \
+	        ET6K_STIPPLE \
+	    else /* W32p */ \
+		W32P_STIPPLE  \
 	}
 
 

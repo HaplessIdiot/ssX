@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.0tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3Cursor.c,v 3.1 1996/10/03 08:33:14 dawes Exp $
  *
  * Copyright 1991 MIPS Computer Systems, Inc.
  *
@@ -515,7 +515,7 @@ s3RecolorCursor(pScr, pCurs, displayed)
       outb(vgaCRReg, maskColor.pixel);
       break;
    case 16:
-      if (s3InfoRec.depth == 15) {
+      if (s3InfoRec.depth == 15 && !S3_ViRGE_VX_SERIES(s3ChipId)) {
 	 packedcolfg = ((pCurs->foreRed   & 0xf800) >>  1)
 	    | ((pCurs->foreGreen & 0xf800) >>  6)
 	       | ((pCurs->foreBlue  & 0xf800) >> 11);
