@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86 */
+/* $XFree86$ */
 
 #include <X11/Intrinsic.h>
 #include <X11/StringDefs.h>
