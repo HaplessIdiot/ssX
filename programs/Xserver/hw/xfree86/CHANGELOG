@@ -1,4 +1,6 @@
-XFree86 4.4.99.8 (xx June 2004)
+XFree86 4.4.99.9 (xx June 2004)
+
+XFree86 4.4.99.8 (27 June 2004)
  140. DGA client library cleanups and fixups (Marc La France).
  139. Fixes and updates for XKB keymaps:
     - Replace Latvian keymap with new one (Bugzilla #1415, Dmitry Golubev).
@@ -19016,7 +19018,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3285 2004/06/25 15:38:50 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3286 2004/06/25 17:48:39 tsi Exp $
 
 
 
