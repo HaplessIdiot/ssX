@@ -1,11 +1,11 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.500 2002/10/16 02:22:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.501 2002/10/17 01:15:50 dawes Exp $ */
 
 #ifndef XF86_VERSION_CURRENT
 
 #define XF86_VERSION_MAJOR	4
 #define XF86_VERSION_MINOR	2
 #define XF86_VERSION_PATCH	99
-#define XF86_VERSION_SNAP	1
+#define XF86_VERSION_SNAP	2
 
 /* This has five arguments for compatibilty reasons */
 #define XF86_VERSION_NUMERIC(major,minor,patch,snap,dummy) \
@@ -29,7 +29,7 @@
 			0)
 
 
-#define XF86_DATE	"16 October 2002"
+#define XF86_DATE	"21 October 2002"
 
 #endif
 
