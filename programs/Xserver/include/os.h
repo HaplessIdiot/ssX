@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.50 2003/09/24 02:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.51 2003/09/25 13:26:27 pascal Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -533,7 +533,7 @@ extern void LogPrintMarkers(void);
 
 #if defined(NEED_SNPRINTF) && !defined(IN_MODULE)
 extern int snprintf(char *str, size_t size, const char *format, ...)
-	_printf_attribute(2,3);
+	_printf_attribute(3,4);
 extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #endif
 
