@@ -29,6 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/bitmap/pcfread.c,v 1.1.1.2.4.3 1998/07/05 14:36:01 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -764,7 +765,11 @@ pmfReadFont(pFont, file, bit, byte, glyph, scan)
 	pci++;
     }
 
+#ifdef FONTMODULE
+    sizebitmaps = 1024; /* Default - we xalloc the size anyway */
+#else
     sizebitmaps = BUFSIZ;
+#endif
     /* guard against completely empty font */
     bitmaps = (char *) xalloc(sizebitmaps);
     if (!bitmaps)

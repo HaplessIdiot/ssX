@@ -51,8 +51,12 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.1.1.1.14.2 1998/07/12 13:47:45 dawes Exp $ */
 
+#ifndef FONTMODULE
 #include <ctype.h>
+#endif
+
 #include "fntfilst.h"
 #include "bitmap.h"
 #include "snfstr.h"

@@ -28,6 +28,7 @@
  * SOFTWARE.
  * Author: Carol H. Thompson  IBM Almaden Research Center
  */
+/* $XFree86: xc/lib/font/Type1/t1io.c,v 3.0.8.3 1998/07/05 14:35:57 dawes Exp $ */
 /*******************************************************************
 *  I/O package for Type 1 font reading
 ********************************************************************/
@@ -36,7 +37,13 @@
 #define STATIC static
 #endif
  
+#ifndef FONTMODULE
 #include <fcntl.h>
+#else
+#include "fontmisc.h"	/* Bool declaration */
+#include "Xmd.h"	/* INT32 declaration */
+#include "xf86_ansic.h"
+#endif
 #include "t1stdio.h"
 #include "t1hdigit.h"
 #ifdef WIN32
@@ -75,7 +82,7 @@ F_FILE *T1Open(fn, mode)
 #ifdef O_BINARY			/* VMS or DOS */
   oflags |= O_BINARY;
 #endif
-  of->fd = open(fn, oflags);
+  of->fd = open(fn, oflags, 0);
   if (of->fd < 0)
       return NULL;
  

@@ -26,14 +26,17 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.3 1998/06/27 12:53:41 hohndel Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.1.1.1.4.2 1998/07/05 14:36:04 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 /* $NCDId: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
-#include    "fntfilst.h"
+#ifdef LOADABLEFONTS
+#include "fontmod.h"
+#endif
+#include "fntfilst.h"
 
 /*
  * Map FPE functions to renderer functions
@@ -151,13 +154,26 @@ static int  font_file_check_type;
 
 FontFileCheckRegisterFpeFunctions ()
 {
+#ifndef LOADABLEFONTS
     BitmapRegisterFontFileFunctions ();
 #ifndef CRAY
     SpeedoRegisterFontFileFunctions ();
     Type1RegisterFontFileFunctions();
+#endif
 #ifdef BUILD_FREETYPE
     FreeTypeRegisterFontFileFunctions();
 #endif
+#else
+    {
+	int i = 0;
+	
+ErrorF("lets do the font\n");
+	while (FontModuleList[i].initFunc != NULL) {
+ErrorF("%s\n",FontModuleList[i].name);
+	    (*FontModuleList[i].initFunc)();
+	    i++;
+	}
+    }
 #endif
     RegisterFPEFunctions(FontFileNameCheck,
 				  FontFileInitFPE,

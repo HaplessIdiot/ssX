@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/12 1995/12/07 21:15:22 gildea $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.11 1998/06/27 12:53:25 hohndel Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.7.2.2 1998/07/05 14:35:46 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -13,17 +13,21 @@ FREETYPEDONES = FreeType/DONE FreeType/lib/DONE
 SUBDIRS = bitmap fontfile fc Speedo Type1 $(FREETYPEDIRS) util
 OBJS = bitmap/?*.o fontfile/?*.o fc/?*.o Speedo/?*.o Type1/?*.o \
        $(FREETYPEOBJS) util/?*.o
-DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE \
+DONES = bitmap/DONE fontfile/DONE fc/DONE Speedo/DONE Type1/DONE\
        $(FREETYPEDONES) util/DONE
 
-bitmap/DONE:	bitmap
-fontfile/DONE:	fontfile
-fc/DONE:	fc
-Speedo/DONE:	Speedo
-Type1/DONE:	Type1
-util/DONE:	util
-#if BuildFreeType
-$(FREETYPEDONES): $(FREETYPEDIRS)
+#if DoLoadableServer
+BASEDIRS = fontfile fc util
+BASEOBJS = fontfile/?*.o fc/?*.o util/?*.o
+BASEDONES = fontfile/DONE fc/DONE util/DONE
+#endif
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(DONES))
+#endif
+
+#if HasGnuMake || HasBsdMake
+$(DONES): $(SUBDIRS)
 #endif
 
 #undef _LinkBuildLibrary
@@ -36,6 +40,18 @@ all:: DONE
 	cp $(OBJS) .
 
 NormalDepLibraryTarget(font,$(DONES),?*.o)
+#endif
+
+#if DoLoadableServer
+#ifndef OS2Architecture
+NormalDepLibraryTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASEOBJS))
+#else
+all:: DONE
+	mkdir baseobjs
+	cp $(BASEOBJS) baseobjs
+
+NormalDepLibraryTarget(fonts,$(BASEDONES),baseobjs/?*.o)
+#endif
 #endif
 
 InstallLinkKitLibrary(font,$(LINKKITDIR)/lib)

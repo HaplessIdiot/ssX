@@ -52,8 +52,11 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.1.1.1.14.2 1998/07/12 13:47:44 dawes Exp $ */
 
+#ifndef FONTMODULE
 #include <ctype.h>
+#endif
 #include "fntfilst.h"
 /* use bitmap structure */
 #include "bitmap.h"

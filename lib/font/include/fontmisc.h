@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.0 1996/05/06 05:54:56 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.1.2.1 1998/07/05 14:36:06 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -35,7 +35,9 @@ in this Software without prior written authorization from the X Consortium.
 #ifndef _FONTMISC_H_
 #define _FONTMISC_H_
 
+#ifndef FONTMODULE
 #include <X11/Xfuncs.h>
+#endif
 
 typedef unsigned char	*pointer;
 typedef int		Bool;

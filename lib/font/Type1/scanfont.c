@@ -28,8 +28,15 @@
  * SOFTWARE.
  */
 /* Author: Katherine A. Hitchcock    IBM Almaden Research Laboratory */
+/* $XFree86: xc/lib/font/Type1/scanfont.c,v 1.3.2.3 1998/07/05 14:35:54 dawes Exp $ */
  
+#ifndef FONTMODULE
 #include <string.h>
+#else
+#include "fontmisc.h"	/* Bool declaration */
+#include "Xmd.h"	/* INT32 declaration */
+#include "xf86_ansic.h"
+#endif
 #include "t1stdio.h"
 #include "util.h"
 #include "token.h"

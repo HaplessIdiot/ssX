@@ -1,0 +1,23 @@
+XCOMM $XFree86: xc/lib/font/fontfile/module/Imakefile,v 1.1.2.1 1998/07/05 14:36:05 dawes Exp $
+#include <Server.tmpl>
+
+   INCLUDES = -I$(FONTINCSRC) -I../../include -I$(SERVERSRC)/include \
+	      -I$(XTOP)/include
+
+    DEFINES = -DLOADABLEFONTS
+
+       SRCS = ffcheck.c register.c
+       OBJS = ffcheck.o register.o
+
+AllTarget(fontbase.o)
+
+NormalRelocatableTarget(fontbase, $(OBJS))
+
+NormalLibraryObjectRule()
+NormalLintTarget($(SRCS))
+
+LinkSourceFile(ffcheck.c,..)
+LinkSourceFile(register.c,..)
+
+DependTarget()
+

@@ -26,6 +26,7 @@
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.1.1.1.14.2 1998/07/03 14:40:56 dawes Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
@@ -52,6 +53,9 @@ char *t1_ErrorMsg();          /* return last TYPE1IMAGER error message       */
 /*END SHARED*/
 /*SHARED*/
  
+#ifdef XFree86LOADER
+#undef abort
+#endif
 #define   abort(line)       FatalError(line)
 #define   Allocate(n,t,s)   t1_Allocate(n,t,s)
 #define   Free(obj)         t1_Free(obj)

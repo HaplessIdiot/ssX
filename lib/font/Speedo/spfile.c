@@ -51,9 +51,14 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/Speedo/spfile.c,v 1.2.2.2 1998/07/12 13:47:42 dawes Exp $ */
 
-#include <stdio.h>
 #include "fntfilst.h"
+#ifndef FONTMODULE
+#include <stdio.h>
+#else
+#include "xf86_ansic.h"
+#endif
 
 #include "spint.h"
 

@@ -29,6 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/include/bitmap.h,v 1.1.1.1.14.4 1998/07/11 13:52:16 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -37,8 +38,12 @@ from the X Consortium.
 #ifndef _BITMAP_H_
 #define _BITMAP_H_
 
-#include <fntfilio.h>
+#include "fntfilio.h"
+#ifndef FONTMODULE
 #include <stdio.h>  /* just for NULL */
+#else
+#include "xf86_ansic.h"
+#endif
 
 /*
  * Internal format used to store bitmap fonts

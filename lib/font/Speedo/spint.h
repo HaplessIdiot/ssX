@@ -49,12 +49,17 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/Speedo/spint.h,v 1.1.1.2.4.2 1998/07/03 14:40:54 dawes Exp $ */
 
 #ifndef _SPINT_H_
 #define _SPINT_H_
 
-#include <stdio.h>
 #include "fntfilst.h"
+#ifndef XFree86LOADER
+#include <stdio.h>
+#else
+#include <xf86_ansic.h>
+#endif
 #include <X11/Xfuncproto.h>
 #include "speedo.h"
 

@@ -1,14 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.5 93/09/04 16:43:32 rws Exp $
-XCOMM $XFree86: xc/lib/font/Type1/Imakefile,v 1.1.1.1.14.2 1998/07/05 14:35:51 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Type1/module/Imakefile,v 1.1.2.1 1998/07/05 14:36:00 dawes Exp $
 
-#if DoLoadableServer
-#define IHaveSubdirs
-#define PassCDebugFlags
-SUBDIRS = module
-#endif
+#define IHaveModules
+#include <Server.tmpl>
 
-INCLUDES = -I$(FONTINCSRC) -I../include -I$(XTOP)/include \
+INCLUDES = -I$(FONTINCSRC) -I../ -I../../include -I$(XTOP)/include \
 	   -I$(SERVERSRC)/include
+DEFINES = -DFONTMODULE
 
 SRCS =          \
        arith.c         \
@@ -29,7 +26,8 @@ SRCS =          \
        t1stub.c       \
        token.c         \
        type1.c         \
-       util.c
+       util.c          \
+       type1mod.c
 
 OBJS =          \
        arith.o         \
@@ -50,15 +48,31 @@ OBJS =          \
        t1stub.o       \
        token.o         \
        type1.o         \
-       util.o
+       util.o          \
+       type1mod.o
 
-SubdirLibraryRule($(OBJS))
-NormalLibraryObjectRule()
-NormalLintTarget($(SRCS))
+LinkSourceFile(arith.c,..)
+LinkSourceFile(curves.c,..)
+LinkSourceFile(fontfcn.c,..)
+LinkSourceFile(hints.c,..)
+LinkSourceFile(lines.c,..)
+LinkSourceFile(objects.c,..)
+LinkSourceFile(paths.c,..)
+LinkSourceFile(regions.c,..)
+LinkSourceFile(scanfont.c,..)
+LinkSourceFile(spaces.c,..)
+LinkSourceFile(t1funcs.c,..)
+LinkSourceFile(t1info.c,..)
+LinkSourceFile(t1io.c,..)
+LinkSourceFile(t1malloc.c,..)
+LinkSourceFile(t1snap.c,..)
+LinkSourceFile(t1stub.c,..)
+LinkSourceFile(token.c,..)
+LinkSourceFile(type1.c,..)
+LinkSourceFile(util.c,..)
 
-#if DoLoadableServer
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
-#endif
+ModuleObjectRule()
+LibraryModuleTarget(type1,$(OBJS))
+InstallLibraryModule(type1,$(MODULEDIR))
 
 DependTarget()

@@ -29,7 +29,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.6 1998/06/27 12:53:39 hohndel Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.5.2.1 1998/07/11 13:52:14 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -37,12 +37,14 @@ from the X Consortium.
 
 #include "fntfilst.h"
 #include "bitmap.h"
+#ifndef FONTMODULE
 #ifdef _XOPEN_SOURCE
 #include <math.h>
 #else
 #define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
 #include <math.h>
 #undef _XOPEN_SOURCE
+#endif
 #endif
 
 #ifndef MAX
