@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.8 2000/04/06 15:27:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.9 2002/07/15 20:46:02 dawes Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -34,7 +34,7 @@ $(PCIIDS): $(PCIIDSRCS)
 
 includes:: xf86PciIds.h
 
-xf86PciIds.h: $(PCIIDS) pciid2c.pl
+xf86PciIds.h: $(PCIIDS) pciid2c.pl ../common/xf86PciInfo.h
 	RemoveFile($@)
 	RunPerlScript(pciid2c.pl, ../common/xf86PciInfo.h < $(PCIIDS) > $@)
 
