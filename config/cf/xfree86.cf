@@ -1,5 +1,5 @@
 XCOMM $XConsortium: xfree86.cf,v 1.2 94/03/31 11:37:26 gildea Exp $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.0 1994/04/29 14:03:08 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -17,18 +17,16 @@ XCOMM $XFree86$
 
 #ifndef XF86VGA16Server
 # define XF86VGA16Server	NO
+# ifndef XF86VGA16DualServer
+#  define XF86VGA16DualServer	NO
+# endif
 #endif
 
 #ifndef XF86MonoServer
 # define XF86MonoServer		NO
-#endif
-
-#ifndef XF86HgaServer
-# define XF86HgaServer		NO
-#endif
-
-#ifndef XF86BdmServer
-# define XF86BdmServer		NO
+# ifndef XF86MonoDualServer
+#  define XF86MonoDualServer	NO
+# endif
 #endif
 
 #ifndef XF86S3Server
@@ -90,7 +88,7 @@ XCOMM $XFree86$
 #endif
 
 #ifndef XF86Vga16Drivers
-# define XF86Vga16Drivers	et4000 ncr77c22 tvga8900 generic
+# define XF86Vga16Drivers	et4000 ncr77c22 tvga8900 oak generic
 #endif
 
 #ifndef XF86Vga2Drivers
@@ -102,8 +100,8 @@ XCOMM $XFree86$
 # define XF86Hga2Drivers	hga6845
 #endif
 
-#ifndef XF86Bdm2Drivers
-# define XF86Bdm2Drivers	hgc1280 sigma
+#ifndef XF86MonoDrivers
+# define XF86MonoDrivers	hgc1280 sigma apollo hercules
 #endif
 
 #ifndef XF86S3Drivers
@@ -138,8 +136,7 @@ XCOMM $XFree86$
   VGADRIVERSRC = $(XF86SRC)/vga256/drivers
 VGA16DRIVERSRC = $(XF86SRC)/vga16/drivers
  VGA2DRIVERSRC = $(XF86SRC)/vga2/drivers
- HGA2DRIVERSRC = $(XF86SRC)/hga2/drivers
- BDM2DRIVERSRC = $(XF86SRC)/bdm2/drivers
+ MONODRIVERSRC = $(XF86SRC)/mono/drivers
    S3DRIVERSRC = $(XF86SRC)/accel/s3/drivers
 
 /*
