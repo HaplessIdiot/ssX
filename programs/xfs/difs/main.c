@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.6 2001/01/17 23:45:29 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.7 2001/04/01 14:00:20 tsi Exp $ */
 
 #include	<stdlib.h>
 #include	"FS.h"
@@ -171,11 +171,14 @@ main(int argc, char *argv[])
     exit(0);
 }
 
-void
+int
 NotImplemented(void)
 {
     NoopDDA();			/* dummy to get difsutils.o to link */
-    FatalError("Not implemented\n");
+    /* Getting here can become the next xfs exploit... so don't exit */
+    ErrorF("Not implemented\n");
+
+    return (FSBadImplementation);
 }
 
 static Bool
