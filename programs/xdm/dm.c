@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.c,v 3.10 2000/04/27 16:26:50 eich Exp $ */
+/* $XFree86: xc/programs/xdm/dm.c,v 3.11 2001/01/17 23:45:20 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -500,6 +500,20 @@ WaitForChild (void)
 		    StopDisplay(d);
 		else
 		    RestartDisplay (d, TRUE);
+		{
+		  Time_t Time;
+		  time(&Time);
+		  Debug("time %i %i\n",Time,d->lastCrash);
+		  if (d->lastCrash && 
+		      ((Time - d->lastCrash) < XDM_BROKEN_INTERVAL)) {
+		    Debug("Server crash frequency too high:"
+			  " removing display %s\n",d->name);
+		    LogError("Server crash rate too high:"
+			     " removing display %s\n",d->name);
+		    RemoveDisplay (d);
+		  } else 
+		    d->lastCrash = Time;
+		}
 		break;
 	    case waitCompose (SIGTERM,0,0):
 		d->startTries = 0;
@@ -538,26 +552,12 @@ WaitForChild (void)
 		d->status = notRunning;
 		break;
 	    case running:
-		Debug ("Server for display %s terminated unexpectedly, status %d\n", d->name, waitVal (status));
+		Debug ("Server for display %s terminated unexpectedly, status %d %d\n", d->name, waitVal (status), status);
 		LogError ("Server for display %s terminated unexpectedly: %d\n", d->name, waitVal (status));
 		if (d->pid != -1)
 		{
 		    Debug ("Terminating session pid %d\n", d->pid);
 		    TerminateProcess (d->pid, SIGTERM);
-		}
-		{
-		  Time_t Time;
-		  time(&Time);
-		  Debug("time %i %i\n",Time,d->lastCrash);
-		  if (d->lastCrash && 
-		      ((Time - d->lastCrash) < XDM_BROKEN_INTERVAL)) {
-		    Debug("Server crash frequency too high:"
-			  " removing display %s\n",d->name);
-		    LogError("Server crash rate too high:"
-			     " removing display %s\n",d->name);
-		    RemoveDisplay (d);
-		  } else 
-		    d->lastCrash = Time;
 		}
 		break;
 	    case notRunning:
