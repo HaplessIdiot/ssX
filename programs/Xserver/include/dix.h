@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.10 1999/08/21 13:48:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/dix.h,v 3.11 1999/09/04 09:14:22 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -895,6 +895,12 @@ extern int DeliverEvents(
     xEventPtr /*xE*/,
     int /*count*/,
     WindowPtr /*otherParent*/
+#endif
+);
+
+extern void SetCriticalEvent(
+#if NeedFunctionPrototypes
+    int /*event*/
 #endif
 );
 

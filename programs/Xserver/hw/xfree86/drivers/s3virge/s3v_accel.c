@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.12 1999/05/09 10:51:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_accel.c,v 1.13 1999/06/27 14:08:12 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -135,11 +135,7 @@ S3VAccelInit(ScreenPtr pScreen)
 	infoPtr->CPUToScreenColorExpandFillFlags |=  NO_TRANSPARENCY;
 
     infoPtr->ColorExpandRange = 0x8000;
-#ifdef __alpha__
     infoPtr->ColorExpandBase = ps3v->MapBaseDense;
-#else
-    infoPtr->ColorExpandBase = ps3v->MapBase;
-#endif /* __alpha__ */
     infoPtr->SetupForCPUToScreenColorExpandFill =
                 S3VSetupForCPUToScreenColorExpand;
     infoPtr->SubsequentCPUToScreenColorExpandFill =
@@ -154,11 +150,7 @@ S3VAccelInit(ScreenPtr pScreen)
                                   	LEFT_EDGE_CLIPPING; 
 
     infoPtr->ImageWriteRange = 0x8000;
-#ifdef __alpha__
     infoPtr->ImageWriteBase = ps3v->MapBaseDense;
-#else
-    infoPtr->ImageWriteBase = ps3v->MapBase;
-#endif /* __alpha__ */
     infoPtr->SetupForImageWrite = S3VSetupForImageWrite;
     infoPtr->SubsequentImageWriteRect = S3VSubsequentImageWriteRect;
     
@@ -463,11 +455,7 @@ S3VSubsequentSolidFillRectPlaneMask(
     WAITFIFO(2);
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
     OUTREG(RDEST_XY, (x << 16) | y);
-#ifndef __alpha__
-    S3VWriteMask((CARD32*)ps3v->MapBase, dwords);
-#else
     S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
-#endif
 }
 
 
@@ -609,11 +597,7 @@ S3VSubsequentMono8x8PatternFillRectPlaneMask(
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
     OUTREG(RDEST_XY, (x << 16) | y);
 
-#ifndef __alpha__
-    S3VWriteMask((CARD32*)ps3v->MapBase, dwords);
-#else
     S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
-#endif
 }
 
 	/*********************************\
@@ -803,11 +787,7 @@ S3VSubsequentSolidHorVertLinePlaneMask(
     OUTREG(RWIDTH_HEIGHT, ((w - 1) << 16) | h);
     OUTREG(RDEST_XY, (x << 16) | y);
 
-#ifndef __alpha__
-    S3VWriteMask((CARD32*)ps3v->MapBase, dwords);
-#else
     S3VWriteMask((CARD32*)ps3v->MapBaseDense, dwords);
-#endif
 }
 
 

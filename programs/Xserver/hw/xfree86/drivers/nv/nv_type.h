@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.4 1999/08/28 09:01:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.5 1999/09/27 06:29:54 dawes Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -62,9 +62,6 @@ typedef struct {
     CARD32              FbAddress;
     int                 FbBaseReg;
     unsigned char *     IOBase;
-#ifdef __alpha__
-    unsigned char *     IOBaseDense;
-#endif
     unsigned char *     FbBase;
     unsigned char *     FbStart;
     long                FbMapSize;

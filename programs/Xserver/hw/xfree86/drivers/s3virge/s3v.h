@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.14 1999/06/27 14:08:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.15 1999/08/21 13:48:38 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -77,34 +77,17 @@ in this Software without prior written authorization from the XFree86 Project.
 #ifndef _S3V_VGAHWMMIO_H
 #define _S3V_VGAHWMMIO_H
 
-#ifdef __alpha__
-#define VGAIN8(addr) xf86ReadSparse8(ps3v->IOBase, (addr))
-#define VGAIN16(addr) xf86ReadSparse16(ps3v->IOBase, (addr))
-#define VGAIN(addr) xf86ReadSparse32(ps3v->IOBase, (addr))
-#define VGAOUT8(addr,val) xf86WriteSparse8((val),ps3v->IOBase,(addr))
-#define VGAOUT16(addr,val) xf86WriteSparse16((val),ps3v->IOBase,(addr))
-#define VGAOUT(addr, val) xf86WriteSparse32((val),ps3v->IOBase,(addr))
+#define VGAIN8(addr) MMIO_IN8(ps3v->IOBase, addr)
+#define VGAIN16(addr) MMIO_IN16(ps3v->IOBase, addr)
+#define VGAIN(addr) MMIO_IN32(ps3v->IOBase, addr)
+#define VGAOUT8(addr,val) MMIO_OUT8(ps3v->IOBase, addr, val)
+#define VGAOUT16(addr,val) MMIO_OUT16(ps3v->IOBase, addr, val)
+#define VGAOUT(addr, val) MMIO_OUT32(ps3v->IOBase, addr, val)
 
-#define INREG(addr) xf86ReadSparse32(ps3v->MapBase, (addr))
-#define OUTREG(addr, val) xf86WriteSparse32((val),ps3v->MapBase,(addr))
-#define NEW_INREG(addr) xf86ReadSparse32(s3vMmioMem, (addr))
-#define NEW_OUTREG(addr, val) xf86WriteSparse32((val), s3vMmioMem, (addr))
-
-#else
-
-#define VGAIN8(addr) *(volatile CARD8 *)(ps3v->IOBase + (addr))
-#define VGAIN16(addr) *(volatile CARD16 *)(ps3v->IOBase + (addr))
-#define VGAIN(addr) *(volatile CARD32 *)(ps3v->IOBase + (addr))
-#define VGAOUT8(addr, val) *(volatile CARD8 *)(ps3v->IOBase + (addr)) = (val)
-#define VGAOUT16(addr, val) *(volatile CARD16 *)(ps3v->IOBase + (addr)) = (val)
-#define VGAOUT(addr, val) *(volatile CARD32 *)(ps3v->IOBase + (addr)) = (val)
-
-#define INREG(addr) *(volatile CARD32*)(ps3v->MapBase + (addr))
-#define OUTREG(addr, val) *(volatile CARD32 *)(ps3v->MapBase + (addr)) = (val)
-#define NEW_INREG(addr) INREG(addr)
-#define NEW_OUTREG(addr, val) OUTREG(addr, val)
-#endif /* __alpha__ */
-
+#define INREG(addr) MMIO_IN32(ps3v->MapBase, addr)
+#define OUTREG(addr, val) MMIO_OUT32(ps3v->MapBase, addr, val)
+#define NEW_INREG(addr) MMIO_IN32(s3vMmioMem, addr)
+#define NEW_OUTREG(addr, val) MMIO_OUT32(s3vMmioMem, addr, val)
 
 #endif /*_S3V_VGAHWMMIO_H*/
 
@@ -194,9 +177,7 @@ typedef struct {
   /* returned when the MMIO registers */
   /* are mapped with xf86MapPciMem    */
   unsigned char *	MapBase;
-#ifdef __alpha__
   unsigned char *       MapBaseDense;
-#endif
   
   /* MapBase + 0x8000 */
   unsigned char *	IOBase;
