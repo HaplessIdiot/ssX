@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.23 2002/12/20 04:32:47 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.24 2003/01/13 03:57:59 paulo Exp $
 ;;
 
 (require "syntax")
@@ -161,6 +161,7 @@
     ;; Match identifiers and numbers as an expression
     (indtoken "\\w+"		:expression)
     (indtoken ";"		:semi		:nospec t)
+    (indtoken ","		:comma		:nospec t)
     (indtoken ":"		:collon		:nospec t)
     ;;  Ignore spaces before collon, this avoids dedenting ternary
     ;; and bitfield definitions as the parser does not distinguish
@@ -326,6 +327,12 @@
 	)
     )
 
+    (indreduce :exp-comma
+	t
+	((:expression :comma)
+	)
+    )
+
     ;; A semicollon, start a statement
     (indreduce :stat
 	t
@@ -335,15 +342,15 @@
     ;; Expression following (possibly empty) statement
     (indreduce :stat
 	t
-	((:expression :stat))
+	(((or :expression :exp-comma) :stat))
     )
 
     ;; Multiline statements
     (indreduce :stat
 	t
-	((:expression :eol :indent :stat)
+	(((or :expression :exp-comma) :eol :indent :stat)
 	 ;; rule below may have removed the :indent
-	 (:expression :eol :stat)
+	 ((or :expression :exp-comma) :eol :stat)
 	)
     )
 
