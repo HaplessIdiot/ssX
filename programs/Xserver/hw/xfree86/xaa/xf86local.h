@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.9 1997/08/15 07:19:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86local.h,v 3.10 1997/08/26 10:01:45 hohndel Exp $ */
 
 
 /* Functions that are only referenced from within this directory. */
@@ -641,6 +641,10 @@ extern unsigned int byte_expand3[256], byte_reversed_expand3[256];
     (!(flag & RGB_EQUAL) || ((pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
     & 0xFF00) >> 8) && (pGC->fgPixel & 0xFF) == ((pGC->fgPixel \
     & 0xFF0000) >> 16)) && ((pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
+    & 0xFF00) >> 8) && (pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
+    & 0xFF0000) >> 16)))
+#define CHECKRGBEQUALBG(flag) \
+    (!(flag & RGB_EQUAL) || ((pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
     & 0xFF00) >> 8) && (pGC->bgPixel & 0xFF) == ((pGC->bgPixel \
     & 0xFF0000) >> 16)))
 /* Check for rops that don't access the source */

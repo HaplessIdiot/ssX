@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.17 1997/08/12 12:02:08 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.18 1997/08/26 10:01:28 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -983,8 +983,9 @@ ET4000Probe()
        TSENG.ChipHas16bpp = TRUE;
        TSENG.ChipHas24bpp = TRUE;
        break;
-    case CH8398_DAC:  /* CH8398 seems to have trouble with "hibit" (MCLK/2) clocks at 24bpp */
+    case CH8398_DAC:  
        TSENG.ChipHas16bpp = TRUE;
+       TSENG.ChipHas24bpp = TRUE;
        break;
     case STG1700_DAC: /* STG1700 can't do packed 24bpp over a 16-bit bus */
        TSENG.ChipHas16bpp = TRUE;
@@ -1005,7 +1006,7 @@ ET4000Probe()
   * 
   */  
 
-  if ( (et4000_type < TYPE_ET4000W32) && (tseng_linmem_1meg && TSENG.ChipUseLinearAddressing) )
+  if ( (et4000_type < TYPE_ET4000W32) || (tseng_linmem_1meg && TSENG.ChipUseLinearAddressing) )
   {
     tseng_use_ACL = FALSE;
   }
@@ -1151,6 +1152,11 @@ ET4000Probe()
       {
         ClockSelect = Tseng_ICD2061AClockSelect;
         numClocks = 3;
+      }
+      else if (CH8398_programmable_clock)
+      {
+	ClockSelect = Tseng_ET4000ClockSelect;
+	numClocks = 3;
       }
       else
       {
@@ -1463,6 +1469,28 @@ ET4000Restore(restore)
     xf86setdaccomm(restore->gendac.cmd_reg);
   }
 
+  if (CH8398_programmable_clock) {
+    outb(vgaIOBase + 4, 0x31);
+    i = inb(vgaIOBase + 5);
+    outb(vgaIOBase + 5, i | (1<<6)); /* Set RS2 through CS3 */
+    /* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
+    outb(0x3c7,restore->gendac.PLL_r_idx);
+    outb(0x3c8,10); /* 2|((tseng_save_divide & 0x40)>>3));  yuck */
+    outb(0x3c9,restore->gendac.PLL_f2_N);
+    outb(0x3c9,restore->gendac.PLL_f2_M);
+    outb(0x3c8,restore->gendac.PLL_w_idx);
+    xf86usleep(500);
+    inb(0x3c7); /* reset sequence */
+    inb(0x3c8); /* loop to Clock Select Register */
+    inb(0x3c8);
+    inb(0x3c8);
+    inb(0x3c8);
+    outb(0x3c8,restore->gendac.PLL_ctrl);
+    outb(vgaIOBase + 4, 0x31);
+    outb(vgaIOBase + 5, i);
+    /* If CS3 wasn't set before then we are outside ClockRAM mode */
+  }
+   
   if (ET6000_programmable_clock)
     {
        /* Restore ET6000 CLKDAC PLL registers */
@@ -1644,6 +1672,26 @@ ET4000Save(save)
     xf86dactopel();
     save->gendac.cmd_reg = xf86getdaccomm();
   }
+  if (CH8398_programmable_clock) {
+     /* Save PLL */ 
+     outb(vgaIOBase + 4, 0x31);
+     temp = inb(vgaIOBase + 5); 
+     outb(vgaIOBase + 5, temp | (1<<6)); /* set RS2 through CS3 */
+     /* We are in ClockRAM mode 0x3c7 = CRA, 0x3c8 = CWA, 0x3c9 = CDR */
+     save->gendac.PLL_r_idx = inb(0x3c7);
+     save->gendac.PLL_w_idx = inb(0x3c8);
+     outb(0x3c7,10); /* 2|((tseng_save_divide & 0x40)>>3));  yuck */
+     save->gendac.PLL_f2_N = inb(0x3c9); 
+     save->gendac.PLL_f2_M = inb(0x3c9); 
+     outb(0x3c7,save->gendac.PLL_r_idx);
+     inb(0x3c8); /* loop to Clock Select Register */
+     inb(0x3c8);
+     inb(0x3c8);
+     inb(0x3c8);
+     save->gendac.PLL_ctrl = inb(0x3c8);
+     outb(vgaIOBase + 4, 0x31);
+     outb(vgaIOBase + 5, temp);
+  }
 
   if (ET6000_programmable_clock)
   {
@@ -1692,6 +1740,7 @@ ET4000Init(mode)
 {
   int row_offset;
   int BytesPerPix = vgaBitsPerPixel>>3;
+  int temp1,temp2,temp3;
 
 
   /*
@@ -1851,6 +1900,28 @@ ET4000Init(mode)
        Tseng_ICD2061AClockSelect(mode->SynthClock);
     }
     else
+    if (CH8398_programmable_clock) {
+       /* Let's call common_hw/Ch8391clk.c ! */
+       Chrontel8391CalcClock((mode->SynthClock)*((tseng_save_divide & 0x40) ? 2L : 1L),
+	  &temp1,&temp2,&temp3);
+       new->gendac.PLL_f2_N = (unsigned char)(temp2);
+       new->gendac.PLL_f2_M = (unsigned char)(temp1 | (temp3<<6));
+       if(xf86Verbose) ErrorF("CH8398 or CH8398A PLL set to %fMhz\n",
+			      14.31818*(temp2+8.0)/(temp1+2.0)/(1<<temp3));
+       /* ok LSB=PLL_f2_N and MSB=PLL_f2_M            */
+       /* now set the Clock Select Register(CSR)      */
+       new->gendac.PLL_ctrl = (new->gendac.PLL_ctrl | 0x90) & 0xF0;
+       new->gendac.PLL_r_idx = 0;
+       new->gendac.PLL_w_idx = 0;
+       new->std.NoClock = 2;
+       /* clear CS2: we need clock #2 */
+       new->Compatibility = (new->Compatibility & 0xFD);
+       new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08;
+       /* disable MCLK/2 and MCLK/4, they don't seem to work in 24bpp 
+	  anyway */
+       new->AuxillaryMode = (new->AuxillaryMode & 0xBE);
+    }
+   
     if (Is_ET6K)
     {
        /* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */

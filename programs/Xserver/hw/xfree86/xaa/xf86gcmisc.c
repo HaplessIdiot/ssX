@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.16 1997/06/03 14:12:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86gcmisc.c,v 3.17 1997/08/26 10:01:45 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -282,7 +282,8 @@ xf86GCNewText(pGC)
 	    && CHECKPLANEMASK(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
             && CHECKROP(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
             && CHECKSOURCEROP()
-            && CHECKRGBEQUALBOTH(xf86GCInfoRec.ImageGlyphBltNonTEFlags))
+            && CHECKRGBEQUAL(xf86GCInfoRec.ImageGlyphBltNonTEFlags)
+	    && CHECKRGBEQUALBG(xf86GCInfoRec.PolyFillRectSolidFlags))
 	    ImageGlyphBltFunc = xf86GCInfoRec.ImageGlyphBltNonTE;
     } else {	/* TERMINALFONT(pGC->font) */
 	if (xf86GCInfoRec.PolyGlyphBltTE

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.13 1997/05/03 09:19:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86expblt.c,v 3.14 1997/07/29 12:08:09 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -1211,7 +1211,8 @@ static unsigned int *DrawTextScanlineWidth24(base, glyphp, line, nglyph)
  * Source data access can be unaligned.
  */
 
-static unsigned int stipplemask[33] = {
+#if defined(MSBFIRST) && !defined(FIXEDBASE)
+unsigned int stipplemask[33] = {
   0x00000000, 0x00000001, 0x00000003, 0x00000007,
   0x0000000F, 0x0000001F, 0x0000003F, 0x0000007F,
   0x000000FF, 0x000001FF, 0x000003FF, 0x000007FF,
@@ -1222,6 +1223,9 @@ static unsigned int stipplemask[33] = {
   0x0FFFFFFF, 0x1FFFFFFF, 0x3FFFFFFF, 0x7FFFFFFF,
   0xFFFFFFFF
 };
+#else
+extern unsigned int stipplemask[33];
+#endif
 
 unsigned int *xf86DrawStippleScanline(base, src, srcwidth, stipplewidth,
 srcoffset, w)

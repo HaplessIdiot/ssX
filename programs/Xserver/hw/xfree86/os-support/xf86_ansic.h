@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.1 1997/07/06 05:30:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.2 1997/07/29 12:08:06 hohndel Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -131,6 +131,13 @@ extern int xf86toupper(int);
 extern int xf86ungetc(int,XF86FILE*);
 extern int xf86vfprintf(/*XF86FILE*,const char*,...*/);
 extern int xf86vsprintf(/*char*,const char*,...*/);
+
+extern int xf86open(/*const char*, int,...*/);
+extern int xf86close(int);
+extern int xf86ioctl(int, unsigned long, char *);
+extern int xf86read(int, void *, size_t);
+extern int xf86write(int, void *, size_t);
+extern int xf86errno;
 
 /* non-ANSI C functions */
 extern XF86DIR* xf86opendir(char*);

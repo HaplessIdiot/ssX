@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.12 1997/07/10 06:36:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.13 1997/08/26 10:01:34 hohndel Exp $ */
 
 
 
@@ -209,6 +209,7 @@ typedef struct _xf86dirent XF86DIRENT;
 #define ioctl(a,b,c)    xf86ioctl(a,b,c)
 #define read(a,b,c)     xf86read(a,b,c)
 #define write(a,b,c)    xf86write(a,b,c)
+#define errno           xf86errno
 
 #endif /*DONT_DEFINE_WRAPPERS*/
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.9 1997/07/31 07:16:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.10 1997/08/15 07:19:18 hohndel Exp $ */
 
 
 #include "vga256.h"
@@ -52,7 +52,8 @@ void CTNAME(SetupForFill8x8Pattern)();
 void CTNAME(SubsequentFill8x8Pattern)();
 void CTNAME(SetupFor8x8PatternColorExpand)();
 void CTNAME(Subsequent8x8PatternColorExpand)();
-void CTNAME(ImageWrite)();
+void CTNAME(SetupForImageWrite)();
+void CTNAME(SubsequentImageWrite)();
 
 static unsigned int old_planemask;
 /* Define a Macro to replicate a planemask 64 times and write to address
@@ -117,6 +118,9 @@ void _ctAccelInit() {
 	ctColorExpandScratchAddr = 0;
 	ctColorExpandScratchSize = 0 ;
     }
+#else
+    ctColorExpandScratchAddr = 0;
+    ctColorExpandScratchSize = 0 ;
 #endif
     /*
      * Set up the main acceleration flags.
@@ -162,11 +166,6 @@ void _ctAccelInit() {
     xf86AccelInfoRec.SubsequentScreenToScreenCopy =
 	CTNAME(SubsequentScreenToScreenCopy);
 
-#ifdef CHIPS_HIQV
-    /* At 32bpp we can't use the other acceleration */
-    if (vga256InfoRec.bitsPerPixel == 32) goto chips_pixmap;
-#endif
-
     /*
      * Install the low-level functions for drawing solid filled rectangles.
      */
@@ -192,27 +191,38 @@ void _ctAccelInit() {
 	    CTNAME(SubsequentFillRectSolid);
 #else
 	/*
-	 * It is possible to use an RGB_EQUAL or a GXCOPY_ONLY
-	 * version of this routine for 24bpp fills using the 8bpp
-	 * engine. However how to set it up so that the non GXCopy
-	 * operations without RGB being equal go to the right place?
-	 * For this reason only the GXCopy version is here, as I felt
-	 * this was probably the more useful.
+	 * The version of this function here uses three different
+	 * algorithms in an attempt to maximise performance. One
+	 * for RGB_EQUAL, another for !RGB_EQUAL && GXCOPY_ONLY
+	 * and yet another for !RGB_EQUAL && !GXCOPY_ONLY. The
+	 * first two versions use the 8bpp engine for the fill,
+	 * whilst the second uses a framebuffer routine to create
+	 * one scanline of the fill in off screen memory which is
+	 * then used by a CopyArea function with a complex ROP.
 	 */
         xf86AccelInfoRec.SubsequentFillRectSolid =
 	    CTNAME(24SubsequentFillRectSolid);
-	xf86GCInfoRec.PolyFillRectSolidFlags |= GXCOPY_ONLY;
+        if (ctBLTPatternAddress < 0)
+	    xf86GCInfoRec.PolyFillRectSolidFlags |= GXCOPY_ONLY;
+	  
 #endif
         break;
 #ifdef CHIPS_HIQV
     case 32:
         xf86AccelInfoRec.SetupForFillRectSolid = 
 	    CTNAME(32SetupForFillRectSolid);
-        xf86AccelInfoRec.SubsequentFillRectSolid =
+	xf86AccelInfoRec.SubsequentFillRectSolid =
 	    CTNAME(32SubsequentFillRectSolid);      
+        if (ctBLTPatternAddress < 0)
+	    xf86GCInfoRec.PolyFillRectSolidFlags |= GXCOPY_ONLY;
         break;
 #endif
     }
+
+#ifdef CHIPS_HIQV
+    /* At 32bpp we can't use the other acceleration */
+    if (vga256InfoRec.bitsPerPixel == 32) goto chips_pixmap;
+#endif
 
     /*
      * Setup the functions that perform monochrome colour expansion
@@ -220,14 +230,14 @@ void _ctAccelInit() {
 
 #ifdef CHIPS_HIQV
     xf86AccelInfoRec.ColorExpandFlags =
-	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
+	VIDEO_SOURCE_GRANULARITY_BYTE | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
         | LEFT_EDGE_CLIPPING_NEGATIVE_X;
     if (vga256InfoRec.bitsPerPixel == 24)
         xf86AccelInfoRec.ColorExpandFlags |= NO_PLANEMASK;
 #else
     xf86AccelInfoRec.ColorExpandFlags =
-	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
+	VIDEO_SOURCE_GRANULARITY_BYTE | BIT_ORDER_IN_BYTE_MSBFIRST |
 	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_DWORD;
     if (vga256InfoRec.bitsPerPixel == 24)
 	xf86AccelInfoRec.ColorExpandFlags |= TRIPLE_BITS_24BPP |
@@ -271,9 +281,24 @@ void _ctAccelInit() {
             CTNAME(Subsequent8x8PatternColorExpand);
     }
 
-#ifndef CHIPS_HIQV
-/*    xf86AccelInfoRec.ImageWrite = CTNAME(ImageWrite); */
+    /* Setup for the Image Write functions */
+
+    xf86AccelInfoRec.SetupForImageWrite = CTNAME(SetupForImageWrite);
+    xf86AccelInfoRec.SubsequentImageWrite = CTNAME(SubsequentImageWrite);
+    xf86AccelInfoRec.ImageWriteBase = (unsigned int *)ctBltDataWindow;
+    xf86AccelInfoRec.ImageWriteRange = 64 * 1024;
+#ifdef CHIPS_HIQV
+    xf86AccelInfoRec.ImageWriteFlags =
+	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD | LEFT_EDGE_CLIPPING 
+        | LEFT_EDGE_CLIPPING_NEGATIVE_X;
+    if (!ctColorTransparency)
+	xf86AccelInfoRec.ImageWriteFlags |= NO_TRANSPARENCY;
+#else
+    xf86AccelInfoRec.ImageWriteFlags = SCANLINE_PAD_DWORD | NO_TRANSPARENCY |
+      CPU_TRANSFER_PAD_DWORD;
 #endif
+    if (vga256InfoRec.bitsPerPixel == 24)
+        xf86AccelInfoRec.ImageWriteFlags |= NO_PLANEMASK;
 
 chips_pixmap:
     xf86InitPixmapCache(&vga256InfoRec, ctCacheStart, ctCacheEnd);
@@ -327,6 +352,7 @@ void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
 
 static unsigned int width32bpp;
 static unsigned int color32bpp;
+static unsigned int rop32bpp;
 
 void CTNAME(32SetupForFillRectSolid)(color, rop, planemask)
     int color, rop;
@@ -336,8 +362,9 @@ void CTNAME(32SetupForFillRectSolid)(color, rop, planemask)
 	color32bpp = color;
 	width32bpp = 0;
     }
+    rop32bpp = rop;
+
     ctBLTWAIT;
-    ctSETSRCADDR(ctBLTPatternAddress);
     ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ctAluConv[rop & 0xF]);
     ctSETPITCH(vga256InfoRec.displayWidth  << 2,
 	       vga256InfoRec.displayWidth << 2);
@@ -346,33 +373,114 @@ void CTNAME(32SetupForFillRectSolid)(color, rop, planemask)
 void CTNAME(32SubsequentFillRectSolid)(x, y, w, h)
     int x, y, w, h;
 {
-    int destaddr, line, i;
-    unsigned int *base;
-  
-    if (width32bpp < w) {
-	/* Use the space set aside for planemask for a scanline of the fill */
-	base = (unsigned int *)vgaLinearBase + ctBLTPatternAddress;
+    int srcaddr, destaddr, line, i, dispw;
+    register unsigned char *base;
+    register int width;
+
+    if (rop32bpp == GXcopy) {
+	dispw = vga256InfoRec.displayWidth << 2;
+	destaddr = (y * vga256InfoRec.displayWidth + x) << 2;
+	srcaddr = destaddr;
+	base = (unsigned char *)vgaLinearBase + destaddr;
+	for(line = 0; (h >> line ) > 1; line++){;}
+	width = w;
+	w = w * 4;
+	
+	/* Optimised load of a single scanline into framebuffer */
 	ctBLTWAIT;
-	for (i = width32bpp; i < w; i++)
-	    *(unsigned int *)(base + 4 * i) = color32bpp;
-	width32bpp = w;
-    }
-    
-    line = 0;
-    destaddr = (y * vga256InfoRec.displayWidth + x) << 2;
-    while (line < h) {
-        ctBLTWAIT;
-	ctSETDSTADDR(destaddr);
-	ctSETHEIGHTWIDTHGO(1, w);
-	destaddr += (vga256InfoRec.displayWidth << 2);
-	line++;
+	while (width & ~0x03) {
+	    *(unsigned int *)base = color32bpp;
+	    *(unsigned int *)(base + 4) = color32bpp;
+	    *(unsigned int *)(base + 8) = color32bpp;
+	    *(unsigned int *)(base + 12) = color32bpp;
+	    base += 16;
+	    width -= 4;
+	}
+	switch (width) {
+	  case 0:
+	    break;
+	  case 1:
+	    *(unsigned int *)base = color32bpp;
+	    break;
+	  case 2:
+	    *(unsigned int *)base = color32bpp;
+	    *(unsigned int *)(base + 4) = color32bpp;
+	    break;
+	  case 3:
+	    *(unsigned int *)base = color32bpp;
+	    *(unsigned int *)(base + 4) = color32bpp;
+	    *(unsigned int *)(base + 8) = color32bpp;
+	    break;
+	}
+	
+	if(line){
+	    i = 0;
+	    ctSETSRCADDR(srcaddr);
+	    while(i < line){
+		destaddr = srcaddr + (dispw << i);
+		ctBLTWAIT;
+		ctSETDSTADDR(destaddr);
+		ctSETHEIGHTWIDTHGO((1 << i), w);
+		i++;
+	    }
+	    if((1 <<  line)  < h){
+		destaddr = srcaddr + (dispw << line);
+		ctBLTWAIT;
+		ctSETDSTADDR(destaddr);
+		ctSETHEIGHTWIDTHGO(h-(1 << line), w);
+	    }
+	}
+    } else {
+	if (width32bpp < w) {
+	    base = (unsigned char *)vgaLinearBase + ctBLTPatternAddress + 
+	        	4 * width32bpp;
+	    width = w - width32bpp;
+	    ctBLTWAIT;
+	    /* Optimised load of a single scanline into framebuffer */
+	    while (width & ~0x03) {
+	        *(unsigned int *)base = color32bpp;
+		*(unsigned int *)(base + 4) = color32bpp;
+		*(unsigned int *)(base + 8) = color32bpp;
+		*(unsigned int *)(base + 12) = color32bpp;
+		base += 16;
+		width -= 4;
+	    }
+	    switch (width) {
+	      case 0:
+		break;
+	      case 1:
+		*(unsigned int *)base = color32bpp;
+		break;
+	      case 2:
+		*(unsigned int *)base = color32bpp;
+		*(unsigned int *)(base + 4) = color32bpp;
+		break;
+	      case 3:
+		*(unsigned int *)base = color32bpp;
+		*(unsigned int *)(base + 4) = color32bpp;
+		*(unsigned int *)(base + 8) = color32bpp;
+		break;
+	    }
+	    width32bpp = w;
+	}
+	line = 0;
+	destaddr = (y * vga256InfoRec.displayWidth + x) << 2;
+	while (line < h) {
+	    ctBLTWAIT;
+	    ctSETSRCADDR(ctBLTPatternAddress);
+	    ctSETDSTADDR(destaddr);
+	    ctSETHEIGHTWIDTHGO(1, vgaBytesPerPixel * w);
+	    destaddr += (vga256InfoRec.displayWidth << 2);
+	    line++;
+	}
     }
 }
 #else
 
 static unsigned char fgpixel, bgpixel, xorpixel;
 static int fillindex;
-static Bool fastfill;
+static Bool fastfill, rgb24equal;
+static unsigned int width24bpp, color24bpp, rop24bpp;
 
 void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
     int color, rop;
@@ -380,128 +488,183 @@ void CTNAME(24SetupForFillRectSolid)(color, rop, planemask)
 {
     unsigned char pixel1, pixel2, pixel3;
 
-    pixel3 = color & 0xFF;
-    pixel2 = (color >> 8) & 0xFF;
-    pixel1 = (color >> 16) & 0xFF;
-    fgpixel = pixel1;
-    bgpixel = pixel2;
-    fillindex = 0;
-    fastfill = FALSE;
+    if (rgb24equal = (((color & 0xFF) == ((color& 0xFF00) >> 8) && 
+		       (color & 0xFF) == ((color& 0xFF0000) >> 16)))) {
+        CommandFlags = ctAluConv2[rop & 0xF] | ctTOP2BOTTOM | ctLEFT2RIGHT 
+	         | ctPATSOLID | ctPATMONO;
+        ctBLTWAIT;
+        ctSETFGCOLOR8(color&0xFF);
+        ctSETBGCOLOR8(color&0xFF);
+        ctSETPITCH(0, vga256InfoRec.displayWidth * vgaBytesPerPixel);
 
-    /* Test for the special case where two of the byte of the 
-     * 24bpp colour are the same. This can double the speed
-     */
-    if (pixel1 == pixel2) {
-	fgpixel = pixel3;
-	bgpixel = pixel1;
-	fastfill = TRUE;
-	fillindex = 1;
-    } else if (pixel1 == pixel3) { 
-	fgpixel = pixel2;
-	bgpixel = pixel1;
-	fastfill = TRUE;
-	fillindex = 2;
-    } else if (pixel2 == pixel3) { 
-	fastfill = TRUE;
     } else {
-	xorpixel = pixel2 ^ pixel3;
-    }
+        rop24bpp = rop;
+        if (rop == GXcopy) {
+	    pixel3 = color & 0xFF;
+	    pixel2 = (color >> 8) & 0xFF;
+	    pixel1 = (color >> 16) & 0xFF;
+	    fgpixel = pixel1;
+	    bgpixel = pixel2;
+	    fillindex = 0;
+	    fastfill = FALSE;
 
-    CommandFlags = ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
-    ctBLTWAIT;
-    if (fastfill) { 
-	ctSETFGCOLOR8(fgpixel);
+	    /* Test for the special case where two of the byte of the 
+	     * 24bpp colour are the same. This can double the speed
+	     */
+	    if (pixel1 == pixel2) {
+	        fgpixel = pixel3;
+		bgpixel = pixel1;
+		fastfill = TRUE;
+		fillindex = 1;
+	    } else if (pixel1 == pixel3) { 
+	        fgpixel = pixel2;
+		bgpixel = pixel1;
+		fastfill = TRUE;
+		fillindex = 2;
+	    } else if (pixel2 == pixel3) { 
+	        fastfill = TRUE;
+	    } else {
+	      xorpixel = pixel2 ^ pixel3;
+	    }
+
+	    CommandFlags = ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | 
+	             ctLEFT2RIGHT;
+	    ctBLTWAIT;
+	    if (fastfill) { 
+	        ctSETFGCOLOR8(fgpixel);
+	    }
+	    ctSETBGCOLOR8(bgpixel);
+	    ctSETSRCADDR(0);
+	    ctSETPITCH(0, vga256InfoRec.displayWidth * 3);
+	} else {
+	    if (color24bpp != color) {
+	        color24bpp = color;
+		width24bpp = 0;
+	    }
+	    rop24bpp = rop;
+	    ctBLTWAIT;
+	    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ctAluConv[rop & 0xF]);
+	    ctSETPITCH(3* vga256InfoRec.displayWidth,
+		       3* vga256InfoRec.displayWidth);
+	}
     }
-    ctSETBGCOLOR8(bgpixel);
-    ctSETSRCADDR(0);
-    ctSETPITCH(0, vga256InfoRec.displayWidth * 3);
 }
 
 void CTNAME(24SubsequentFillRectSolid)(x, y, w, h)
     int x, y, w, h;
 {
     static unsigned int dwords[3] = { 0x24499224, 0x92244992, 0x49922449};
-    int srcaddr, destaddr, line, i, width, dispw;
+    int srcaddr, destaddr, line, i, dispw;
+    register unsigned char *base;
+    register int width;
 
-    if(w == 0 || h == 0)
-      return;
+    if (rgb24equal) {
+	destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
+	ctBLTWAIT;
+	ctSETROP(CommandFlags);
+	ctSETDSTADDR(destaddr);
+	ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+    } else {
+	if (rop24bpp == GXcopy ) {
+	    dispw = vga256InfoRec.displayWidth  * 3;
+	    destaddr = y * dispw + x * 3;
+	    w *= 3;
+	    width = ((w  + 31) & ~31) >> 5;
 
-    destaddr = (y * vga256InfoRec.displayWidth + x) * 3;
-    dispw = vga256InfoRec.displayWidth  * 3;
-    destaddr = y * dispw + x * 3;
-    w *= 3;
-    width = ((w  + 31) & ~31) >> 5;
+	    ctBLTWAIT;
+	    ctSETDSTADDR(destaddr);
 
-    ctBLTWAIT;
-    ctSETDSTADDR(destaddr);
+	    if (!fastfill) ctSETFGCOLOR8(fgpixel);
+	    ctSETROP(CommandFlags | ctAluConv[GXcopy & 0xF]);
+	    ctSETDSTADDR(destaddr);
+	    if (fastfill) {
+	        ctSETHEIGHTWIDTHGO(h, w);
+		line = 0;
+		while (line < h) {
+		    for (i = 0; i < width; i++) {
+		      *(unsigned int *)ctBltDataWindow = 
+			  dwords[((fillindex + i) % 3)];
+		    }
+		    line++;
+		}
+	    } else {
+	        ctSETHEIGHTWIDTHGO(1, w);
+		i = 0;
+		while(i < width){
+		    *(unsigned int *)ctBltDataWindow = dwords[(i++ % 3)];
+		}
+		for(line = 0; (h >> line ) > 1; line++){;}
+		i = 0;
+		ctBLTWAIT;
+		ctSETFGCOLOR8(xorpixel);
+		ctSETROP(CommandFlags | ctAluConv[GXxor & 0xF] |
+			 ctBGTRANSPARENT);
+		ctSETDSTADDR(destaddr);
+		ctSETHEIGHTWIDTHGO(1, w);
+		while(i < width) {
+		    *(unsigned int *)ctBltDataWindow = dwords[((++i) % 3)];
+		}
+		srcaddr = destaddr;
+		if(line){
+		    i = 0;
+		    ctBLTWAIT;
+		    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT |
+			     ctAluConv[GXcopy & 0xF]);
+		    ctSETPITCH(dispw, dispw);
+		    ctSETSRCADDR(srcaddr);
+	    
+		    while(i < line){
+		        destaddr = srcaddr + (dispw << i);
+			ctBLTWAIT;
+			ctSETDSTADDR(destaddr);
+			ctSETHEIGHTWIDTHGO((1 << i), w);
+			i++;
+		    }
 
-    if (!fastfill) ctSETFGCOLOR8(fgpixel);
-    ctSETROP(CommandFlags | ctAluConv[GXcopy & 0xF]);
-    ctSETDSTADDR(destaddr);
-    if (fastfill) {
-	ctSETHEIGHTWIDTHGO(h, w);
-	line = 0;
-	while (line < h) {
-	    for (i = 0; i < width; i++) {
-		*(unsigned int *)ctBltDataWindow = dwords[((fillindex + i) % 3)];
+		    if((1 <<  line)  < h){
+		        destaddr = srcaddr + (dispw << line);
+			ctBLTWAIT;
+			ctSETDSTADDR(destaddr);
+			ctSETHEIGHTWIDTHGO(h-(1 << line), w);
+		    }
+
+		    ctBLTWAIT;
+		    ctSETROP(ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM |
+			     ctLEFT2RIGHT | ctAluConv[GXcopy & 0xF]);
+		    ctSETSRCADDR(0);
+		    ctSETPITCH(0, dispw);
+		}
 	    }
-	    line++;
+	} else {
+	  if (width24bpp < w) {
+	      base = (unsigned char *)vgaLinearBase + ctBLTPatternAddress +
+		   ((3 * width24bpp + 3) & ~0x3);
+	      width = w - width24bpp;
+	      ctBLTWAIT;
+	      /* Load of a single scanline into framebuffer */
+	      while (width > 0) {
+		  *(unsigned int *)base = color24bpp | (color24bpp << 24);
+		  *(unsigned int *)(base + 4) = (color24bpp >> 8) |
+		       (color24bpp << 16);
+		  *(unsigned int *)(base + 8) = (color24bpp >> 16) |
+		       (color24bpp << 8);
+		  base += 12;
+		  width -= 4;
+	      }
+	      width24bpp = w - width;
+	  }
+	  line = 0;
+	  destaddr = 3 * (y * vga256InfoRec.displayWidth + x);
+	  while (line < h) {
+	      ctBLTWAIT;
+	      ctSETSRCADDR(ctBLTPatternAddress);
+	      ctSETDSTADDR(destaddr);
+	      ctSETHEIGHTWIDTHGO(1, vgaBytesPerPixel * w);
+	      destaddr += (3 * vga256InfoRec.displayWidth);
+	      line++;
+	  }
 	}
     }
-    else {
-	ctSETHEIGHTWIDTHGO(1, w);
-	i = 0;
-	while(i < width){
-	    *(unsigned int *)ctBltDataWindow = dwords[(i++ % 3)];
-	}
-
-	for(line = 0; (h >> line ) > 1; line++){;}
-
-	i = 0;
-
-	ctBLTWAIT;
-	ctSETFGCOLOR8(xorpixel);
-	ctSETROP(CommandFlags | ctAluConv[GXxor & 0xF] | ctBGTRANSPARENT);
-	ctSETDSTADDR(destaddr);
-	ctSETHEIGHTWIDTHGO(1, w);
-
-	while(i < width) {
-	    *(unsigned int *)ctBltDataWindow = dwords[((++i) % 3)];
-	}
-
-	srcaddr = destaddr;
-
-	ctBLTWAIT;
-
-	if(line){
-	    i = 0;
-	    ctBLTWAIT;
-	    ctSETROP(ctTOP2BOTTOM | ctLEFT2RIGHT | ctAluConv[GXcopy & 0xF]);
-	    ctSETPITCH(dispw, dispw);
-	    ctSETSRCADDR(srcaddr);
-	    
-	    while(i < line){
-	      destaddr = srcaddr + (dispw << i);
-	      ctBLTWAIT;
-	      ctSETDSTADDR(destaddr);
-	      ctSETHEIGHTWIDTHGO((1 << i), w);
-	      i++;
-	    }
-
-	    if((1 <<  line)  < h){
-	      destaddr = srcaddr + (dispw << line);
-	      ctBLTWAIT;
-	      ctSETDSTADDR(destaddr);
-	      ctSETHEIGHTWIDTHGO(h-(1 << line), w);
-	    }
-
-	    ctBLTWAIT;
-	    ctSETROP(ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT |
-		     ctAluConv[GXcopy & 0xF]);
-	    ctSETSRCADDR(0);
-	    ctSETPITCH(0, dispw);
-	  }
-      }
 }
 #endif
 
@@ -1049,53 +1212,59 @@ void CTNAME(Subsequent8x8PatternColorExpand)(patternx, patterny, x, y, w, h)
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 }
 
-void CTNAME(ImageWrite)(x, y, w, h, src, srcwidth, rop, planemask)
-    int x, y, w, h, srcwidth, rop;
-    void *src;
-    unsigned int planemask;
+void CTNAME(SetupForImageWrite)(rop, planemask, transparency_color)
+   int rop;
+   unsigned int planemask;
+   int transparency_color;
 {
-    volatile unsigned int *pHOSTDATA;
-    unsigned long *pdSrc;
-    unsigned char *pbSrc;
-    int dwords, dwordTotal, line;
-  
-    if (h == 0 || w == 0)
-        return;
 
-    pbSrc = (unsigned char *)src;
-    dwordTotal = (w * vgaBytesPerPixel + 3) >> 2;
-
+    CommandFlags = ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
+#ifdef CHIPS_HIQV
+    if (transparency_color != -1) {
+	CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
+	    ctCOLORTRANSNEQUAL;
+	ctBLTWAIT;
+        switch (vga256InfoRec.bitsPerPixel) {
+        case 8:
+	    ctSETBGCOLOR8(transparency_color);
+	    break;
+        case 16:
+	    ctSETBGCOLOR16(transparency_color);
+	    break;
+        case 24:
+	    ctSETBGCOLOR24(transparency_color);
+	    break;
+        }
+    } else
+#endif
     ctBLTWAIT;
-    ctSETDSTADDR((y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel);
-    ctSETSRCADDR(0);
     if ((vga256InfoRec.bitsPerPixel == 8 && (planemask & 0xFF) == 0xFF) ||
     (vga256InfoRec.bitsPerPixel == 16 && (planemask & 0xFFFF) == 0xFFFF) ||
-    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF)) 
+    (vga256InfoRec.bitsPerPixel == 24 && (planemask & 0xFFFFFF) == 0xFFFFFF) ||
+    (vga256InfoRec.bitsPerPixel == 32))
     {
-	ctSETROP(ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	    ctAluConv[rop & 0xF] );
+	ctSETROP(CommandFlags | ctAluConv[rop & 0xF]);
     } else {
-	ctSETROP(ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT | 
-	    ctAluConv3[rop & 0xF] );
+	ctSETROP(CommandFlags | ctAluConv3[rop & 0xF]);
 	ctSETPATSRCADDR(ctBLTPatternAddress);
 	ctWRITEPLANEMASK(planemask, ctBLTPatternAddress);
     }
-    ctSETPITCH(4 * dwordTotal, vga256InfoRec.displayWidth * vgaBytesPerPixel);
-    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
+}
 
-    line = 0;
-    while (line < h) {
-	dwords = dwordTotal;
-	pdSrc = (unsigned long *)pbSrc;
-	pHOSTDATA = (unsigned int *)ctBltDataWindow;
-	while (dwords--)
-	    *pHOSTDATA++ = *pdSrc++;
-	pbSrc += srcwidth;
-	line++;
-    }
+void CTNAME(SubsequentImageWrite)(x,y,w,h,skipleft) 
+   int x,y,w,h,skipleft;
+{
+    ctBLTWAIT;
+    ctSETPITCH(((w * vgaBytesPerPixel + 3) & ~0x3),
+	       vga256InfoRec.displayWidth * vgaBytesPerPixel);
 #ifdef CHIPS_HIQV
-    /* The HiQV chips need the CPU transfers to be QWORD padded */
-    if ((dwordTotal * h) & 1)
-        *(unsigned int *)ctBltDataWindow = 0;
+    ctSETSRCADDR(skipleft);
+    ctSETDSTADDR((y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel 
+		 + skipleft);
+    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel - skipleft);
+#else
+    ctSETSRCADDR(0);
+    ctSETDSTADDR((y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel);
+    ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 #endif
 }

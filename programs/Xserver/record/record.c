@@ -44,6 +44,12 @@ and Jim Haggerty of Metheus.
 #include "X11/extensions/recordstr.h"
 #include "set.h"
 
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#include "xf86_ldext.h"
+#endif
+
 static RESTYPE RTContext;   /* internal resource type for Record contexts */
 static int RecordErrorBase; /* first Record error number */
 
@@ -3021,3 +3027,34 @@ RecordExtensionInit()
     RecordErrorBase = extentry->errorBase;
 
 } /* RecordExtensionInit */
+
+#ifdef XFree86LOADER
+extern Bool noTestExtensions;
+
+ExtensionModule recordExt = {
+    RecordExtensionInit,
+    RECORD_NAME,
+    &noTestExtensions};
+/*
+ * Entry point for the new loading code that can load .a files
+ */
+
+void
+librecordModuleInit(data,magic)
+    pointer	* data;
+    INT32	* magic;
+{
+    static int cnt = 0;
+
+    switch(cnt++)
+    {
+    case 0:
+	*magic = MAGIC_LOAD_EXTENSION;
+        * data = (pointer) &recordExt;
+	break;
+    default:
+        * magic= MAGIC_DONE;
+    }
+    return;
+}
+#endif /* XFree86LOADER */

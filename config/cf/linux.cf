@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/36 1997/06/16 22:21:03 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.70 1997/07/06 05:30:32 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.71 1997/07/06 09:43:22 hohndel Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -253,6 +253,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LinuxMachineDefines 	-D__mc68000__
 #define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
 #define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#define PositionIndependentCFlags -fpic
+#define PositionIndependentCplusplusFlags -fpic
 #endif /* Mc68020Architecture */
 
 #define StandardDefines		-Dlinux LinuxMachineDefines LinuxSourceDefines

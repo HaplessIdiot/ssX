@@ -3,7 +3,7 @@
 #
 #
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.16 1997/07/29 12:07:25 hohndel Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/setuplib.tcl,v 3.17 1997/08/26 10:00:53 hohndel Exp $
 #
 # Copyright 1996 by Joseph V. Moss <joe@XFree86.Org>
 #
@@ -220,6 +220,7 @@ proc writeXF86Config {filename args} {
 				puts $fd "   Load \"$module\""
 			}
 		}
+		puts $fd {   Load "extmod"}
 		puts $fd "EndSection"
 	}
 

@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.4 1997/06/15 07:12:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.5 1997/08/26 10:01:19 hohndel Exp $ */
 
 
 
@@ -114,6 +114,8 @@
 #define	MGAREG_Reset		0x1e40
 
 #define	MGAREG_OPMODE		0x1e54
+
+#define MGAREG_CACHEFLUSH	0x1fff		/* mystique & poss mistral */
 
 /* OPMODE register additives */
 

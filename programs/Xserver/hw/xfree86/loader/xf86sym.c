@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.25 1997/07/29 12:08:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.26 1997/08/26 10:01:33 hohndel Exp $ */
 
 
 
@@ -128,6 +128,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(SC11412SetClock)
    SYMFUNC(ICS2595SetClock)
    SYMFUNC(Att409SetClock)
+   SYMFUNC(Chrontel8391CalcClock)
    SYMFUNC(Chrontel8391SetClock)
    SYMFUNC(IBMRGBSetClock)
    SYMFUNC(ICS5342SetClock)
@@ -188,6 +189,7 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86ceil)
   SYMFUNC(xf86calloc)
   SYMFUNC(xf86clearerr)
+  SYMFUNC(xf86close)
   SYMFUNC(xf86cos)
   SYMFUNC(xf86exit)
   SYMFUNC(xf86exp)
@@ -214,6 +216,7 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86ftell)
   SYMFUNC(xf86fwrite)
   SYMFUNC(xf86getenv)
+  SYMFUNC(xf86ioctl)
   SYMFUNC(xf86isalnum)
   SYMFUNC(xf86isalpha)
   SYMFUNC(xf86iscntrl)
@@ -235,8 +238,10 @@ LOOKUP xfree86LookupTab[] = {
   SYMFUNC(xf86memmove)
   SYMFUNC(xf86memset)
   SYMFUNC(xf86modf)
+  SYMFUNC(xf86open)
   SYMFUNC(xf86perror)
   SYMFUNC(xf86pow)
+  SYMFUNC(xf86read)
   SYMFUNC(xf86realloc)
   SYMFUNC(xf86remove)
   SYMFUNC(xf86rename)
@@ -290,6 +295,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMVAR(xf86stdin)
    SYMVAR(xf86stdout)
    SYMVAR(xf86stderr)
+   SYMVAR(xf86errno)
 
 /*
  * and now some variables

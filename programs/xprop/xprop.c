@@ -611,9 +611,9 @@ _format_char(c)
 		_put_char('t');
 		break;
 	      default:
-		if (c<' ') {
+		if (!isprint (c)) {
 			_put_char('\\');
-			sprintf(_buf_ptr, "%o", (int) c);
+			sprintf(_buf_ptr, "%o", (int) c & 0xff);
 			_buf_ptr += strlen(_buf_ptr);
 			_buf_len -= strlen(_buf_ptr);
 		} else

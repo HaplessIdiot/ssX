@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.13 1997/08/12 12:02:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.14 1997/08/26 10:01:27 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -138,6 +138,11 @@ void Check_Tseng_Ramdac();
 #define ICD2061a_programmable_clock \
         ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
           (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions)) \
+        )
+
+#define CH8398_programmable_clock \
+        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
+          (OFLG_ISSET(CLOCK_OPTION_CH8398, &vga256InfoRec.clockOptions)) \
         )
 
 #define ET6000_programmable_clock \

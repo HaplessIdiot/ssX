@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/14 1997/08/11 12:02:08 sekhar $
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.5 1997/08/15 07:19:27 hohndel Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.6 1997/08/26 10:01:50 hohndel Exp $
 #define IHaveSubdirs
 
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
@@ -32,9 +32,10 @@ SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
 YaccFile(xkbparse,$(YFLAGS))
 
+LinkBuildBinary(ProgramTargetName(xkbcomp))
 
 install::
-	@echo "Creating $(LIBDIR)/xkb
+	@echo "Creating $(LIBDIR)/xkb"
 	MakeSubdirs($(SUBDIRS))
 	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
 

@@ -90,6 +90,11 @@ void *Xcalloc(size)
 
 #include "set.h"
 
+#ifdef XFree86LOADER
+#include "xf86_libc.h"
+#include "xf86_ansic.h"
+#endif
+
 static int
 maxMemberInInterval(pIntervals, nIntervals)
     RecordSetInterval *pIntervals;

@@ -23,7 +23,7 @@
 
 /* Modified for FreeBSD by David Dawes <dawes@XFree86.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.4 1997/07/29 12:08:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_jstk.c,v 3.5 1997/07/31 07:16:15 dawes Exp $ */
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -35,6 +35,7 @@
 #ifdef XFree86LOADER
 #include "misc.h"
 #include "xf86_libc.h"
+#include "xf86_ansic.h"
 #endif
 #include "xf86.h"
 #include "xf86Priv.h"

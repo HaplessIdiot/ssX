@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/trident/pc98_tgui.c,v 1.1 1997/03/17 12:13:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/drivers/trident/pc98_tgui.c,v 1.2 1997/04/17 08:17:42 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -149,7 +149,7 @@ Bool BoardInit(void)
   mmioBase = NULL;
   for(tguidb = pc98TGUidb; tguidb->TGUiType != PC98NoExist; tguidb++){
     switch(tguidb->BusType){
-    case PC98PCIBus: /* Serach mmioBase on PCI Bus */
+    case PC98PCIBus: /* Search mmioBase on PCI Bus */
       if(vgaPCIInfo && vgaPCIInfo->Vendor == PCI_VENDOR_TRIDENT)
 	for(iomap = tguidb->ioMap; iomap->mmioBase != 0; iomap++){
 	  if(vgaPCIInfo->MemBase == iomap->pciBase){
@@ -164,16 +164,14 @@ Bool BoardInit(void)
 	}
       break;
 
-    case PC98CBus:  /* Serach mmioBase on C Bus */ 
+    case PC98CBus:  /* Search mmioBase on C Bus */ 
       for(iomap = tguidb->ioMap; iomap->mmioBase != 0; iomap++){
-	if(vgaPCIInfo->MemBase == iomap->pciBase){
 	  mmioBase  = xf86MapVidMem(0, VGA_REGION,
 				    (pointer)(iomap->mmioBase), 0x10000);
 	  if(!tguidb->test()){
 	    xf86UnMapVidMem(0, VGA_REGION, mmioBase, 0x10000);
 	    mmioBase = NULL;
 	  }
-	}
 	  if(mmioBase != NULL)break; /* break IO search loop if mmio Found */
 	}
       break;
@@ -182,7 +180,7 @@ Bool BoardInit(void)
       FatalError("Server Internal DataBase Error\n");
       break;
     }
-    if(mmioBase != NULL)break; /* break borad serch loop if mmio Found */
+    if(mmioBase != NULL)break; /* break board search loop if mmio Found */
   }  
   if(tguidb->TGUiType != PC98NoExist){
     switch(tguidb->VramType){

@@ -68,8 +68,10 @@ XCOMM $TOG: X11.rules /main/4 1997/04/30 15:23:24 kaleb $
 # define TopXInclude	-I$(TOP)/imports/x11/include
 #elif !UseInstalledX11
 # define TopXInclude	-I$(TOP)/exports/include
-#else
+#elif defined(X11ProjectRoot)
 # define TopXInclude	-I$(XPROJECTROOT)/include
+#else
+# define TopXInclude	/**/
 #endif
 #ifdef TopIncludes
 # undef TopIncludes

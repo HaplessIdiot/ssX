@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.6 1997/08/12 12:02:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.7 1997/08/26 10:01:18 hohndel Exp $ */
 
 
 /*
- * Mystique RAMDAC driver v1.2
+ * Mystique RAMDAC driver v1.3
  *
  * Author:	Andrew van der Stock
  * 		ajv@greebo.svhm.org.au
@@ -33,6 +33,9 @@
  *			g.desbief@aix.pacwan.net
  *		RAMDAC timing, for MGA 1064SG integrated RAMDAC
  *
+ *		Andrew van der Stock, andrew.van.der.Stock@member.sage-au.org.au
+ * 		MGA BIOS stuff
+ *
 */
  
 #include "compiler.h"
@@ -44,6 +47,7 @@
 #include "vgaPCI.h"
 
 #include "mga_reg.h"
+#include "mga_bios.h"
 #include "mga.h"
 
 /*
@@ -114,10 +118,6 @@ typedef struct {
 	unsigned char ExtVga[6];
 } vgaMGARec, *vgaMGAPtr;
     
-/*
- * Read/write to the DAC via MMIO 
- */
-
 /*
  * Read/write to the DAC via MMIO 
  */
@@ -351,10 +351,17 @@ MGA1064SGSetPCLK( f_out, bpp )
 
 	/* The actual frequency output by the clock */
 	double f_pll;
+	long f_max;
 
-	/* Get the maximum pixel clock frequency */
-	long f_max = MGA1064_MAX_PCLK_FREQ  ;
-	if ( vga256InfoRec.maxClock < MGA1064_MAX_PCLK_FREQ   )
+	/* Get the maximum pixel clock frequency from the BIOS, 
+         * or from a reasonable default
+         */
+	if ( MGABios2.PinID && MGABios2.PclkMax != 0xff )
+		f_max = (MGABios2.PclkMax+100) * 1000; /* [ajv - scale it] */
+	else
+		f_max = MGA1064_MAX_PCLK_FREQ;
+
+	if ( vga256InfoRec.maxClock < f_max )
 		f_max = vga256InfoRec.maxClock;
 
 	/* Do the calculations for m, n, and p */
@@ -432,9 +439,17 @@ MGA1064SGSetMCLK( f_out )
 	int pclk_m, pclk_n, pclk_p,pclk_s;
 	int mclk_ctl, rfhcnt;
 	long	option_reg;
+	long	f_max;
+
+	/* ajv - get it from the bios, if it exists */
+
+	if (MGABios2.PinID)
+		f_max = MGABios2.ClkMem * 1000;
+	else
+		f_max = MGA1064_MAX_MCLK_FREQ;
 
 	f_pll = MGA1064SGCalcClock(
-		f_out, MGA1064_MAX_MCLK_FREQ,
+		f_out, f_max,
 		& mclk_m, & mclk_n, & mclk_p ,& mclk_s
 	);
 
@@ -603,6 +618,8 @@ DisplayModePtr mode;
 		newVS->ExtVga[3]	= (((1 << MGABppShft) * 3) - 1) | 0x80;
 	else
 		newVS->ExtVga[3]	= ((1 << MGABppShft) - 1) | 0x80;
+
+	newVS->ExtVga[3] &= 0xE7;	/* ajv - bits 4-5 MUST be 0 or bad karma happens */
 
 	newVS->ExtVga[4]	= 0;
 		
@@ -870,9 +887,17 @@ void
 MGA1064RamdacInit()
 {
     MGAdac.isHwCursor = FALSE;
-    
-    if (MGArev < 3)
-	MGAdac.maxPixelClock = 170000;
+
+    if ( MGABios2.PinID )
+    {
+	MGAdac.maxPixelClock = (MGABios2.RamdacSpeed+100) * 1000;
+	ErrorF("Using BIOS value for maxPixelClock: %d kHz\n", MGAdac.maxPixelClock);
+    }
     else
-	MGAdac.maxPixelClock = 220000;
+    {
+	if ( MGArev < 3 )
+	   MGAdac.maxPixelClock = 170000;
+	else
+	   MGAdac.maxPixelClock = 220000;
+    }
 }

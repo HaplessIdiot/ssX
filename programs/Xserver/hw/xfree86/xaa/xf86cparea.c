@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.2 1997/04/18 09:12:18 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86cparea.c,v 3.3 1997/08/15 07:19:23 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -473,7 +473,7 @@ xf86DoImageWrite(pSrc, pDst, alu, prgnDst, pptSrc, planemask, bitPlane)
     unsigned int    planemask;
     int		    bitPlane;
 {
-    int srcwidth, skipleft, dwords;
+    int srcwidth, skipleft, dwords, dwordsTotal;
     int x,w,h;
     unsigned char* psrcBase;			/* start of image */
     register unsigned char* srcPntr;		/* index into the image */
@@ -529,6 +529,7 @@ BAD_ALIGNMENT:
 	   default:	dwords = w;
 			break;
 	}
+	dwordsTotal = dwords * h;
 
 	xf86AccelInfoRec.SubsequentImageWrite(x,pbox->y1,w,h,skipleft);
 
@@ -562,6 +563,10 @@ BAD_ALIGNMENT:
 	}
     }
 
+    if (xf86AccelInfoRec.ImageWriteFlags & CPU_TRANSFER_PAD_QWORD)
+	if (dwordsTotal & 0x1) 
+	    *(unsigned int *)xf86AccelInfoRec.ImageWriteBase = 0;
+    
     if(!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
     	xf86AccelInfoRec.Sync();
 }

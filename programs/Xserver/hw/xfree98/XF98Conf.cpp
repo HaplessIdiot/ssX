@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.13 1997/01/19 12:51:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.14 1997/03/17 07:18:25 hohndel Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -168,16 +168,11 @@ XCOMM To customise the XKB settings to suit your keyboard, modify the
 XCOMM lines below (which are the defaults).
 
 XCOMM These are the default XKB settings for XFree98
-XCOMM Xkbkeycodes "xfree98"
-XCOMM XkbTypes    "default"
-XCOMM XkbCompat   "pc98"
-XCOMM XkbSymbols  "nec/jp(pc98)"
-XCOMM XkbGeometry "nec(pc98)"
-
-XCOMM To specify a keymap file entry to use, use XkbKeymap.  This will
-XCOMM override the other Xkb parameters described above.
-XCOMM An example is:
-XCOMM    XkbKeymap   "xfree98"
+XCOMM XkbRules    "xfree98"
+XCOMM XkbModel    "pc98"
+XCOMM XkbLayout   "nec/jp"
+XCOMM XkbVariant  ""
+XCOMM XkbOptions  ""
 
 EndSection
 
@@ -433,7 +428,7 @@ Section "Device"
     Identifier	"EGC16"
     VendorName	"Unknown"
     BoardName	"Unknown"
-    Chipset	"generic"
+    Chipset	"vga"
 XCOMM    VideoRam	256
 XCOMM    Clocks	25.2 28.3
 EndSection
@@ -543,7 +538,16 @@ Section "Device"
     BoardName	"GA-DRV/98"
 XCOMM    Option	"med_dram"
 XCOMM    Option	"hw_cursor"
+    VideoRam	4096
+XCOMM    VideoRam	2048
 Endsection
+
+Section "Device"
+    Identifier  "MGA"
+    VendorName  "Matrox"
+    BoardName   "Millennium"
+XCOMM    Option	"noaccel"
+EndSection
 
 Section "Device"
     Identifier	"PW"
@@ -693,6 +697,8 @@ Section "Device"
     Chipset	"s3_generic"
 XCOMM Chipset	"mmio_928"
 XCOMM Option	"ga968"
+    VideoRam	4096
+XCOMM    VideoRam	2048
 Endsection
 
 XCOMM **********************************************************************
@@ -705,6 +711,7 @@ Section "Screen"
     Driver	"svga"
     Device	"WAB"
 XCOMM    Device	"WABEP"
+XCOMM    Device	"EGC16"
 XCOMM    Device	"PEGC"
 XCOMM    Device	"WAP"
 XCOMM    Device	"WSNA2F"
@@ -714,7 +721,14 @@ XCOMM    Device	"GA98NB2"
 XCOMM    Device	"GA98NB4"
 XCOMM    Device	"NECTrident"
 XCOMM    Device	"GA-DRV98"
+XCOMM    Device	"MGA"
     Monitor	"Multi sync"
+    Subsection "Display"
+        Depth	    4
+        Modes	    "640x400"
+        ViewPort    0 0
+        Visual	    "PseudoColor"
+    EndSubsection
     Subsection "Display"
         Depth	    8
         Modes	    "800x600" "640x480" "1024x768"
@@ -725,19 +739,6 @@ XCOMM        Virtual     1024 1022
 XCOMM        Virtual      640 480
 XCOMM        Virtual      640 400
         Virtual     1280 816
-    EndSubsection
-EndSection
-
-XCOMM The 16-colour VGA-based PC98-EGC server
-
-Section "Screen"
-    Driver	"vga16"
-    Device	"EGC16"
-    Monitor	"Multi sync"
-    Subsection "Display"
-        Modes	    "640x400"
-        ViewPort    0 0
-    Visual	"PseudoColor"
     EndSubsection
 EndSection
 

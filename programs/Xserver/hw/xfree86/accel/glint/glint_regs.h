@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.2 1997/06/25 08:24:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/glint/glint_regs.h,v 1.3 1997/07/29 12:07:30 hohndel Exp $ */
 /*
  * glint register file 
  *
@@ -74,6 +74,12 @@
 
 /* GLINT PerMedia Region 0 additional Registers */
 #define ChipConfig	0x0070
+
+/* GLINT PerMedia VGA memory mapped access */
+#define PMmmvgaIndex    0x03C4
+#define PMmmvgaData     0x03C5
+#define PMvgaRegs       0x6000  /* Region 0 */
+
 
 /* GLINT 500TX LocalBuffer Registers */
 #define LBMemoryCtl	0x1000
@@ -375,8 +381,22 @@ typedef struct {
 	}
 #endif
 
+
+/* ### test vga */
+/* #define VGA_REGX     0x1000 */
+/* #define PMVGAControl 0x6000 */
+/* #define VGA_WRITE_REG(v,r)					\ */
+/* 	{							\ */
+/* 	  *(unsigned int *)((char*)PMIOBase0 + (PMVGAControl + r)) = v;	\ */
+/* 	} */
+/* #define VGA_READ_REG(r)					\ */
+/* 	  *(unsigned int *)((char*)PMIOBase0 + (PMVGAControl + r)) */
+
+
+
 #define GLINT_READ_REG(r)					\
 	*(unsigned int *)((char*)GLINTMMIOBase+r)
+
 
 #define GLINT_WAIT(n)						\
 	{							\
@@ -386,8 +406,7 @@ typedef struct {
 
 #define GLINT_SLOW_WRITE_REG(v,r) 				\
 	{							\
-		GLINT_WRITE_REG(v,r);				\
-		GLINT_WAIT(1);					\
+		GLINT_WAIT(1); GLINT_WRITE_REG(v,r);		\
 	}
 
 #endif

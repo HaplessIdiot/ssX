@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.4 1997/05/21 15:17:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86stip.c,v 3.5 1997/07/29 12:08:10 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -42,6 +42,52 @@
 #include "xf86expblt.h"
 
 extern unsigned char byte_reversed[256];
+extern unsigned int stipplemask[33];
+
+static __inline__ unsigned int reverse_bitorder(data) {
+#if defined(__GNUC__) && defined(__i386__)
+#if defined(Lynx) || (defined(SYSV) || defined(SVR4)) && !defined(ACK_ASSEMBLER) || (defined(linux) || defined (__OS2ELF__)) && defined(__ELF__)
+	__asm__(
+		"movl $0,%%ecx\n"
+		"movb %%al,%%cl\n"
+		"movb byte_reversed(%%ecx),%%al\n"
+		"movb %%ah,%%cl\n"
+		"movb byte_reversed(%%ecx),%%ah\n"
+		"roll $16,%%eax\n"
+		"movb %%al,%%cl\n"
+		"movb byte_reversed(%%ecx),%%al\n"
+		"movb %%ah,%%cl\n"
+		"movb byte_reversed(%%ecx),%%ah\n"
+		"roll $16,%%eax\n"
+		: "=a" (data) : "0" (data)
+		: "cx"
+		);
+#else
+	__asm__(
+		"movl $0,%%ecx\n"
+		"movb %%al,%%cl\n"
+		"movb _byte_reversed(%%ecx),%%al\n"
+		"movb %%ah,%%cl\n"
+		"movb _byte_reversed(%%ecx),%%ah\n"
+		"roll $16,%%eax\n"
+		"movb %%al,%%cl\n"
+		"movb _byte_reversed(%%ecx),%%al\n"
+		"movb %%ah,%%cl\n"
+		"movb _byte_reversed(%%ecx),%%ah\n"
+		"roll $16,%%eax\n"
+		: "=a" (data) : "0" (data)
+		: "cx"
+		);
+#endif
+#else	/* If no (gcc on i386), don't use asm. */
+	data = byte_reversed[(data & 0xFF)] |
+		(byte_reversed[((data >> 8) & 0xFF)] << 8) |
+		(byte_reversed[((data >> 16) & 0xFF)] << 16) |
+		(byte_reversed[((data >> 24) & 0xFF)] << 24);
+#endif
+	return data;
+}
+
 
 static void FillStippledCPUToScreenColorExpand(
 #if NeedFunctionPrototypes
@@ -243,6 +289,17 @@ xf86FillRectStippledScreenToScreenColorExpand(pDrawable, pGC, nBoxInit, pBoxInit
 
     pPixmap = pGC->stipple;
 
+    if ((!(xf86AccelInfoRec.ColorExpandFlags & VIDEO_SOURCE_GRANULARITY_PIXEL))
+	  && (pPixmap->drawable.width > 32)) {
+	if (pGC->fillStyle == FillStippled)
+	    xf86AccelInfoRec.FillRectStippledFallBack(pDrawable, pGC,
+						      nBoxInit, pBoxInit);
+	else
+	    xf86AccelInfoRec.FillRectOpaqueStippledFallBack(pDrawable, pGC,
+						      nBoxInit, pBoxInit);
+	return;
+    }
+    
     for (nBox = nBoxInit, pBox = pBoxInit; nBox > 0; nBox--, pBox++) {
 	rectX1 = pBox->x1;
 	rectY1 = pBox->y1;
@@ -287,7 +344,6 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
     unsigned int planemask;
 {
     int skipleft;
-    unsigned char *srcp;
     unsigned char *base;
     unsigned int *(*DrawStippleScanlineFunc)(
 #if NeedNestedPrototypes
@@ -315,116 +371,311 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
 	xf86AccelInfoRec.SetupForCPUToScreenColorExpand(
 	    bg, fg, rop, planemask);
 
-    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-	if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-		DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirstFixedBase;
-	    else
-	    	DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirst;
-	else
-	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-		DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirstFixedBase;
-	    else
-	    	DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
-     else
-	if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-		DrawStippleScanlineFunc = xf86DrawStippleScanline3FixedBase;
-	    else
-		DrawStippleScanlineFunc = xf86DrawStippleScanline3;
-	else
-	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-		DrawStippleScanlineFunc = xf86DrawStippleScanlineFixedBase;
-	    else
-		DrawStippleScanlineFunc = xf86DrawStippleScanline;
-
-    if ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING)
-    && ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X)
-    /*
-     * When LEFT_EDGE_CLIPPING_NEGATIVE_X is not defined, we can only
-     * only allow this if the x-coordinate remains on-screen.
-     */
-    || (x - (srcx & 7) >= 0))) {
-	skipleft = (srcx & 7);
-	srcx = srcx & (~7);    /* Aligned. */
-	x -= skipleft;
-	w += skipleft;
-    }
-    else {
-        /* Handle the left edge (skipleft pixels wide). */ 
-        skipleft = 8 - (srcx & 7);
-        if (skipleft == 8)
-            skipleft = 0;
-        if (skipleft) {
-	    /* Draw left edge. */
-	    int done;
-	    done = 0;
-	    if (skipleft > (stipplewidth - srcx))
-	        skipleft = stipplewidth - srcx;
-	    if (skipleft >= w) {
-	        skipleft = w;
-	        done = 1;
-	    }
-	    xf86WriteStippleLeftEdge(x, y, skipleft, h, src, srcwidth,
-	        srcx, srcy, stipplewidth, stippleheight);
-	    if (done) {
-		SET_SYNC_FLAG;
-	        return;
-	    }
-	    if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
-	        xf86AccelInfoRec.Sync();
-	}
-        x += skipleft;
-        srcx += skipleft;
-	if (srcx == stipplewidth) srcx = 0;
-        w -= skipleft;
-        skipleft = 0;
-    }
-
-    xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h, skipleft);
-
-    base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
-
-    /* Calculate pointer to scanline in bitmap. */
-    srcp = srcwidth * srcy + src;
- 
-    if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
+    if (!(xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP) &&
+	(stipplewidth < 32)) {
+      if (!(stipplewidth & (stipplewidth - 1))) {
+	int dwords;
+        unsigned int *srcp;
+	unsigned int *pattern;
 	int i;
-	for (i = 0; i < h; i++) {
-	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
-	        (*DrawStippleScanlineFunc)(
-	            (unsigned int *)base, srcp,
-	            srcwidth, stipplewidth, srcx / 8,
-	            w);
-	    else {
-	        base = (unsigned char *)(*DrawStippleScanlineFunc)(
-	            (unsigned int *)base, srcp,
-	            srcwidth, stipplewidth, srcx / 8,
-	            w);
-		if (base >= (unsigned char *)
-		    xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
-		base = (unsigned char *)
-		    xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+	pattern = (unsigned int *)ALLOCATE_LOCAL(4 * stippleheight);
+	srcp = pattern;
+	i = stippleheight;
+	dwords = (w + 31) >> 5;
+	while (i--) {
+	  switch(stipplewidth) {
+	    case 32:
+	      *srcp = *src;  
+	      break;
+	    case 16:
+	      *srcp = ((*src) & 0xFFFF);  
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    case 8:
+	      *srcp = ((*src) & 0xFF);  
+	      *srcp = (*srcp) | ((*srcp) << 8);
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    case 4:
+	      *srcp = ((*src) & 0xF);  
+	      *srcp = (*srcp) | ((*srcp) << 4);
+	      *srcp = (*srcp) | ((*srcp) << 8);
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    case 2:
+	      *srcp = ((*src) & 0x3);  
+	      *srcp = (*srcp) | ((*srcp) << 2);
+	      *srcp = (*srcp) | ((*srcp) << 4);
+	      *srcp = (*srcp) | ((*srcp) << 8);
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    default:	/* case 1: */
+	      if(src[0] & 0x01) 
+		*srcp = 0xffffffff;
+	      else
+		*srcp = 0x00000000;
+	      break;
+	  }
+	  if (srcx)
+	      *srcp = ((*srcp) >> srcx) |
+		((*srcp) << (32 - srcx));
+
+	  if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	      *srcp = reverse_bitorder((*srcp));	  
+	  srcp++;
+	  src += srcwidth;
+	}
+
+	xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h, 0);
+
+	base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+	/* Calculate pointer to scanline in bitmap. */
+	srcp = pattern + srcy;
+ 
+	if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
+	    int j;
+	    for (i = 0; i < h; i++) {
+	        if (xf86AccelInfoRec.ColorExpandFlags &
+		       CPU_TRANSFER_BASE_FIXED) {
+		    j = dwords;
+		    while (j & ~0x3) {
+		        *(unsigned int *)base = *srcp;
+			*(unsigned int *)base = *srcp;
+			*(unsigned int *)base = *srcp;
+			*(unsigned int *)base = *srcp;
+			j -= 4;
+		    }
+		    switch (j) {
+		      case 3: 
+			*(unsigned int *)base = *srcp;
+		      case 2: 
+			*(unsigned int *)base = *srcp;
+		      case 1: 
+			*(unsigned int *)base = *srcp;
+			break;
+		    }
+		} else {
+		    j = dwords;
+		    while (j & ~0x3) {
+		        *(unsigned int *)base = *srcp;
+			*(unsigned int *)(base + 4) = *srcp;
+			*(unsigned int *)(base + 8) = *srcp;
+			*(unsigned int *)(base + 12)= *srcp;
+			j -= 4;
+			base += 16;
+		    }
+		    switch (j) {
+		      case 3: 
+			*(unsigned int *)base = *srcp;
+			base += 4;
+		      case 2: 
+			*(unsigned int *)base = *srcp;
+			base += 4;
+		      case 1: 
+			*(unsigned int *)base = *srcp;
+			base += 4;
+			break;
+		    }
+		    if (base >= (unsigned char *)
+			    xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+		        base = (unsigned char *)
+			  xf86AccelInfoRec.CPUToScreenColorExpandBase;
+		}
+		srcy++;
+		srcp++;
+		if (srcy >= stippleheight) {
+		    srcy = 0;
+		    srcp = pattern;
+		}
+	    }
+	}
+	DEALLOCATE_LOCAL(pattern);
+      } else {
+	unsigned char *srcp;
+	int count, dwords;
+	register int width, shift;
+	register unsigned int pattern;
+
+	srcp = src + srcwidth * srcy;
+	dwords = (w + 31) >> 5;
+	xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h, 0);
+	base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+	while(h--) {
+	    width = stipplewidth;
+	    pattern = (*((unsigned int *)srcp)) & stipplemask[width];  
+	    while(!(width & ~15)) {
+		pattern |= (pattern << width);
+		width <<= 1;	
+	    }
+	    pattern |= (pattern << width);
+ 	    shift = srcx;
+	    count = dwords;
+
+	    if (xf86AccelInfoRec.ColorExpandFlags &
+		    BIT_ORDER_IN_BYTE_MSBFIRST) {
+	        register unsigned int pattrot;
+	      
+	        while(count--) {
+		    pattrot = (pattern >> shift) | (pattern <<
+						     (width - shift));
+		    *(unsigned int *)base = reverse_bitorder(pattrot);
+		    shift += 32;
+		    while(shift >= width) 
+		        shift -= width;
+
+		    if (!(xf86AccelInfoRec.ColorExpandFlags &
+			CPU_TRANSFER_BASE_FIXED)) {
+		        base += 4;
+			if (base >= (unsigned char *)
+			    xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+			  base = (unsigned char *)
+			    xf86AccelInfoRec.CPUToScreenColorExpandBase;
+		    }
+		}
+	    } else {
+	        while(count--) {
+		    *(unsigned int *)base = (pattern >> shift) | (pattern <<
+						     (width - shift));
+		    shift += 32;
+		    while(shift >= width) 
+		        shift -= width;
+
+		    if (!(xf86AccelInfoRec.ColorExpandFlags &
+			CPU_TRANSFER_BASE_FIXED)) {
+		        base += 4;
+			if (base >= (unsigned char *)
+			    xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+			  base = (unsigned char *)
+			    xf86AccelInfoRec.CPUToScreenColorExpandBase;
+		    }
+		}
+
 	    }
 	    srcy++;
 	    srcp += srcwidth;
 	    if (srcy >= stippleheight) {
 	        srcy = 0;
-	        srcp = src;
+		srcp = src;
 	    }
 	}
-        if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
-            if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP) {
-                if (((((w * 3 + 31) & ~31) >> 5) * h) & 0x1)
-                    *(unsigned int *)base = 0;
-            }
+      }
+    } else {
+        unsigned char *srcp;
+ 
+	if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	  if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	      DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirstFixedBase;
 	    else
-               if (((((w + 31) & ~31) >> 5) * h) & 0x1)
-	            *(unsigned int *)base = 0;
+	      DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirst;
+	  else
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	      DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirstFixedBase;
+	    else
+	      DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
+	else
+	  if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	      DrawStippleScanlineFunc = xf86DrawStippleScanline3FixedBase;
+	    else
+	      DrawStippleScanlineFunc = xf86DrawStippleScanline3;
+	  else
+	    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	      DrawStippleScanlineFunc = xf86DrawStippleScanlineFixedBase;
+	    else
+	      DrawStippleScanlineFunc = xf86DrawStippleScanline;
+	
+	if ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING) &&
+	    ((xf86AccelInfoRec.ColorExpandFlags & LEFT_EDGE_CLIPPING_NEGATIVE_X)
+	     /*
+	      * When LEFT_EDGE_CLIPPING_NEGATIVE_X is not defined, we can only
+	      * only allow this if the x-coordinate remains on-screen.
+	      */
+	     || (x - (srcx & 7) >= 0))) {
+	    skipleft = (srcx & 7);
+	    srcx = srcx & (~7);    /* Aligned. */
+	    x -= skipleft;
+	    w += skipleft;
+	}
+	else {
+	    /* Handle the left edge (skipleft pixels wide). */ 
+	  skipleft = 8 - (srcx & 7);
+	  if (skipleft == 8)
+              skipleft = 0;
+	  if (skipleft) {
+	      /* Draw left edge. */
+	      int done;
+	      done = 0;
+	      if (skipleft > (stipplewidth - srcx))
+	          skipleft = stipplewidth - srcx;
+	      if (skipleft >= w) {
+	          skipleft = w;
+	          done = 1;
+	      }
+	      xf86WriteStippleLeftEdge(x, y, skipleft, h, src, srcwidth,
+			     srcx, srcy, stipplewidth, stippleheight);
+	      if (done) {
+		  SET_SYNC_FLAG;
+		  return;
+	      }
+	      if (!(xf86AccelInfoRec.Flags & NO_SYNC_AFTER_CPU_COLOR_EXPAND))
+	          xf86AccelInfoRec.Sync();
+	  }
+	  x += skipleft;
+	  srcx += skipleft;
+	  if (srcx == stipplewidth) srcx = 0;
+	  w -= skipleft;
+	  skipleft = 0;
+	}
+
+	xf86AccelInfoRec.SubsequentCPUToScreenColorExpand(x, y, w, h,
+							  skipleft);
+
+	base = (unsigned char *)xf86AccelInfoRec.CPUToScreenColorExpandBase;
+
+	/* Calculate pointer to scanline in bitmap. */
+	srcp = srcwidth * srcy + src;
+	
+	if (xf86AccelInfoRec.ColorExpandFlags & SCANLINE_PAD_DWORD) {
+	    int i;
+	    for (i = 0; i < h; i++) {
+	      if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_BASE_FIXED)
+	          (*DrawStippleScanlineFunc)((unsigned int *)base, srcp,
+				     srcwidth, stipplewidth, srcx / 8, w);
+	      else {
+	          base = (unsigned char *)(*DrawStippleScanlineFunc)(
+				     (unsigned int *)base, srcp, srcwidth,
+				     stipplewidth, srcx / 8, w);
+		  if (base >= (unsigned char *)
+		         xf86AccelInfoRec.CPUToScreenColorExpandEndMarker)
+		      base = (unsigned char *)
+			 xf86AccelInfoRec.CPUToScreenColorExpandBase;
+	      }
+	      srcy++;
+	      srcp += srcwidth;
+	      if (srcy >= stippleheight) {
+	          srcy = 0;
+	          srcp = src;
+	      }
+	    }
 	}
     }
 
-    xf86AccelInfoRec.Sync();
+    if (xf86AccelInfoRec.ColorExpandFlags & CPU_TRANSFER_PAD_QWORD) {
+        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP) {
+	    if (((((w * 3 + 31) & ~31) >> 5) * h) & 0x1)
+	        *(unsigned int *)base = 0;
+	}
+	else
+	    if (((((w + 31) & ~31) >> 5) * h) & 0x1)
+	            *(unsigned int *)base = 0;
+    }
+
+    if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
+        SET_SYNC_FLAG;
 }
 
 /*
@@ -445,7 +696,6 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
 {
     int bytewidth;		       /* Area width in bytes. */
     int bitmapwidth;
-    unsigned char *srcp;
     unsigned char *base;
     int offset, endoffset;
     int i;
@@ -476,56 +726,251 @@ stipplewidth, stippleheight, srcx, srcy, bg, fg, rop, planemask)
         xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand(
             x, y, w, h, bg, fg, rop, planemask);
 
-    if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
-        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-	    DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirst;
-	else
-	    DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
-    else
-        if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
-	    DrawStippleScanlineFunc = xf86DrawStippleScanline3;
-	else
-	    DrawStippleScanlineFunc = xf86DrawStippleScanline;
+    if (!(xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP) &&
+	(stipplewidth < 32)) {
+      if (!(stipplewidth & (stipplewidth - 1))) {
+	int dwords;
+        unsigned int *srcp;
+	unsigned int *pattern;
+	int i;
 
-    /* Calculate pointer to scanline in bitmap. */
-    srcp = srcwidth * srcy + src;
- 
-    /* Be careful about the offset into the leftmost source byte. */
-    if ((srcx & 7) != 0)
-        w += (srcx & 7);
-    /* Number of stipple bytes to be written for each bitmap scanline. */
-    bytewidth = (w + 7) / 8;
-    /* Calculate the non-expanded bitmap width rounded up to 32-bit words, */
-    /* in units of pixels. */
-    bitmapwidth = ((bytewidth + 3) / 4) * 32;
+	pattern = (unsigned int *)ALLOCATE_LOCAL(4 * stippleheight);
+	srcp = pattern;
+	i = stippleheight;
+	dwords = (w + 31) >> 5;
+	while (i--) {
+	  switch(stipplewidth) {
+	    case 32:
+	      *srcp = *src;  
+	      break;
+	    case 16:
+	      *srcp = ((*src) & 0xFFFF);  
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    case 8:
+	      *srcp = ((*src) & 0xFF);  
+	      *srcp = (*srcp) | ((*srcp) << 8);
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    case 4:
+	      *srcp = ((*src) & 0xF);  
+	      *srcp = (*srcp) | ((*srcp) << 4);
+	      *srcp = (*srcp) | ((*srcp) << 8);
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    case 2:
+	      *srcp = ((*src) & 0x3);  
+	      *srcp = (*srcp) | ((*srcp) << 2);
+	      *srcp = (*srcp) | ((*srcp) << 4);
+	      *srcp = (*srcp) | ((*srcp) << 8);
+	      *srcp = (*srcp) | ((*srcp) << 16);
+	      break;
+	    default:	/* case 1: */
+	      if(src[0] & 0x01) 
+		*srcp = 0xffffffff;
+	      else
+		*srcp = 0x00000000;
+	      break;
+	  }
+	  if (srcx)
+	      *srcp = ((*srcp) >> srcx) |
+		((*srcp) << (32 - srcx));
 
-    endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
-    offset = 0;
-
-    for (i = 0; i < h; i++) {
-	if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
-	    xf86AccelInfoRec.Sync();
-	(*DrawStippleScanlineFunc)((unsigned int *)
-	    (xf86AccelInfoRec.ScratchBufferBase + offset),
-	    srcp, srcwidth, stipplewidth, srcx / 8, w);
-	xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
-	    (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8 + (srcx & 7));
-        srcy++;
-	srcp += srcwidth;
-	if (srcy >= stippleheight) {
-	    srcy = 0;
-	    srcp = src;
+	  if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	      *srcp = reverse_bitorder((*srcp));
+	  srcp++;
+	  src += srcwidth;
 	}
-        /*
-         * There is a number of buffers -- while the first one is being
-         * blitted, the next one is initialized, and then the next,
-         * and so on.
-         */
-	offset += bitmapwidth / 8;
-	if (offset == endoffset)
-	    offset = 0;
-    }
 
+	/* Number of stipple bytes to be written for each bitmap scanline. */
+	bytewidth = (w + 7) / 8;
+	dwords = (bytewidth + 3) >> 2;
+	/* Calculate the non-expanded bitmap width rounded up to 32-bit */
+	/* words, in units of pixels. */
+	bitmapwidth = dwords << 5;
+	endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
+	offset = 0;
+
+	/* Calculate pointer to scanline in bitmap. */
+	srcp = pattern + srcy;
+
+	for (i = 0; i < h; i++) {
+	    int j;
+	    base = xf86AccelInfoRec.ScratchBufferBase + offset;
+	    j = dwords;
+
+	    if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+	        xf86AccelInfoRec.Sync();
+
+	    while (j & ~0x3) {
+	        *(unsigned int *)base = *srcp;
+		*(unsigned int *)(base + 4) = *srcp;
+		*(unsigned int *)(base + 8) = *srcp;
+		*(unsigned int *)(base + 12)= *srcp;
+		j -= 4;
+		base += 16;
+	    }
+	    switch (j) {
+	      case 3: 
+		*(unsigned int *)base = *srcp;
+		base += 4;
+	      case 2: 
+		*(unsigned int *)base = *srcp;
+		base += 4;
+	      case 1: 
+		*(unsigned int *)base = *srcp;
+		base += 4;
+		break;
+	    }
+	    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
+	        (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
+	    srcy++;
+	    srcp++;
+	    if (srcy >= stippleheight) {
+	      srcy = 0;
+	      srcp = pattern;
+	    }
+	    /*
+	     * There is a number of buffers -- while the first one is being
+	     * blitted, the next one is initialized, and then the next,
+	     * and so on.
+	     */
+	    offset += bitmapwidth / 8;
+	    if (offset == endoffset)
+	      offset = 0;
+	}
+	DEALLOCATE_LOCAL(pattern);
+      } else {
+	unsigned char *srcp;
+	int count, dwords;
+	register int width, shift;
+	register unsigned int pattern;
+
+	/* Number of stipple bytes to be written for each bitmap scanline. */
+	bytewidth = (w + 7) / 8;
+	dwords = (bytewidth + 3) >> 2;
+	/* Calculate the non-expanded bitmap width rounded up to 32-bit */
+	/* words, in units of pixels. */
+	bitmapwidth = dwords << 5;
+	endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
+	offset = 0;
+
+	srcp = src + srcwidth * srcy;
+
+	while(h--) {
+	    width = stipplewidth;
+	    pattern = (*((unsigned int *)srcp)) & stipplemask[width];  
+	    while(!(width & ~15)) {
+		pattern |= (pattern << width);
+		width <<= 1;	
+	    }
+	    pattern |= (pattern << width);
+ 	    shift = srcx;
+	    count = dwords;
+
+	    base = xf86AccelInfoRec.ScratchBufferBase + offset;
+
+	    if (xf86AccelInfoRec.ColorExpandFlags &
+		    BIT_ORDER_IN_BYTE_MSBFIRST) {
+	        register unsigned int pattrot;
+	      
+		if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+		    xf86AccelInfoRec.Sync();
+
+	        while(count--) {
+		    pattrot = (pattern >> shift) | (pattern <<
+						     (width - shift));
+		    *(unsigned int *)base = reverse_bitorder(pattrot);
+		    shift += 32;
+		    base += 4;
+		    while(shift >= width) 
+		        shift -= width;
+		}
+	    } else {
+		if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+		    xf86AccelInfoRec.Sync();
+
+	        while(count--) {
+		    *(unsigned int *)base = (pattern >> shift) | (pattern <<
+						     (width - shift));
+		    shift += 32;
+		    base += 4;
+		    while(shift >= width) 
+		        shift -= width;
+		}
+	    }
+	    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
+	        (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8);
+	    srcy++;
+	    srcp += srcwidth;
+	    if (srcy >= stippleheight) {
+	        srcy = 0;
+		srcp = src;
+	    }
+	    /*
+	     * There is a number of buffers -- while the first one is being
+	     * blitted, the next one is initialized, and then the next,
+	     * and so on.
+	     */
+	    offset += bitmapwidth / 8;
+	    if (offset == endoffset)
+	      offset = 0;
+	}
+      }
+    } else {
+        unsigned char *srcp;
+
+	if (xf86AccelInfoRec.ColorExpandFlags & BIT_ORDER_IN_BYTE_MSBFIRST)
+	    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	        DrawStippleScanlineFunc = xf86DrawStippleScanline3MSBFirst;
+	    else
+	        DrawStippleScanlineFunc = xf86DrawStippleScanlineMSBFirst;
+	else
+	    if (xf86AccelInfoRec.ColorExpandFlags & TRIPLE_BITS_24BPP)
+	        DrawStippleScanlineFunc = xf86DrawStippleScanline3;
+	    else
+	        DrawStippleScanlineFunc = xf86DrawStippleScanline;
+
+	/* Calculate pointer to scanline in bitmap. */
+	srcp = srcwidth * srcy + src;
+ 
+	/* Be careful about the offset into the leftmost source byte. */
+	if ((srcx & 7) != 0)
+	  w += (srcx & 7);
+	/* Number of stipple bytes to be written for each bitmap scanline. */
+	bytewidth = (w + 7) / 8;
+	/* Calculate the non-expanded bitmap width rounded up to 32-bit */
+	/* words, in units of pixels. */
+	bitmapwidth = ((bytewidth + 3) / 4) * 32;
+
+	endoffset = (bitmapwidth / 8) * xf86AccelInfoRec.PingPongBuffers;
+	offset = 0;
+
+	for (i = 0; i < h; i++) {
+	    if (!(xf86AccelInfoRec.Flags & COP_FRAMEBUFFER_CONCURRENCY))
+	        xf86AccelInfoRec.Sync();
+	    (*DrawStippleScanlineFunc)((unsigned int *)
+		(xf86AccelInfoRec.ScratchBufferBase + offset),
+		 srcp, srcwidth, stipplewidth, srcx / 8, w);
+	    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand(
+	       (xf86AccelInfoRec.ScratchBufferAddr + offset) * 8 + (srcx & 7));
+	    srcy++;
+	    srcp += srcwidth;
+	    if (srcy >= stippleheight) {
+	        srcy = 0;
+		srcp = src;
+	    }
+	    /*
+	     * There is a number of buffers -- while the first one is being
+	     * blitted, the next one is initialized, and then the next,
+	     * and so on.
+	     */
+	    offset += bitmapwidth / 8;
+	    if (offset == endoffset)
+	      offset = 0;
+	}
+    }
+    
     if (xf86AccelInfoRec.Flags & BACKGROUND_OPERATIONS)
         SET_SYNC_FLAG;
 }

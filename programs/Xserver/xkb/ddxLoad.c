@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.19 1997/01/27 06:58:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.20 1997/06/29 07:54:38 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -75,8 +75,9 @@ OutputDirectory (outdir)
     char* outdir;
 {
 #ifndef WIN32
-    if (getuid() == 0 || geteuid() == 0) {
-	/* if server running as root it'll be able to write */
+    if (getuid() == 0) {
+	/* if server running as root it *may* be able to write */
+	/* FIXME: check whether directory is writable at all */
 	(void) strcpy (outdir, XKM_OUTPUT_DIR);
     } else
 #endif
