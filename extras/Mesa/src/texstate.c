@@ -1659,7 +1659,7 @@ _mesa_ClientActiveTextureARB( GLenum target )
       ctx->Array.ActiveTexture = texUnit;
    }
    else {
-      gl_error(ctx, GL_INVALID_ENUM, "glActiveTextureARB(target)");
+      gl_error(ctx, GL_INVALID_ENUM, "glClientActiveTextureARB(target)");
    }
 }
 
