@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/Bitmap.c,v 1.4 2001/12/14 20:00:40 dawes Exp $ */
+/* $XFree86: Bitmap.c,v 1.5 2001/12/26 21:39:34 paulo Exp $ */
 
 /*
  * Author:  Davor Matic, MIT X Consortium
@@ -47,9 +47,6 @@ from The Open Group.
 #include <stdio.h>
 #include <math.h>
 
-#ifndef abs
-#define abs(x)                        ((((int)(x)) > 0) ? (x) : -(x))
-#endif
 #define min(x, y)                     ((((int)(x)) < (int)(y)) ? (x) : (y))
 #define max(x, y)                     ((((int)(x)) > (int)(y)) ? (x) : (y))
 
