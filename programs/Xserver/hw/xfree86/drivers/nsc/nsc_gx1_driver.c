@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.5 2003/02/11 13:36:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.6 2003/02/12 13:08:54 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
- * $Revision: 1.6 $
+ * $Revision: 1.7 $
  * $Author: alanh $
  *
  * File Contents: This is the main module configures the interfacing 
@@ -718,6 +718,11 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
 			    pGeode->TvParam.wOutput));
 	    }
 	 }
+      }
+/* Only SC1200 can support TV modes */
+      if ((pGeode->vid_version != GFX_VID_SC1200)
+	  && (pGeode->TVSupport == TRUE)) {
+	 pGeode->TVSupport = FALSE;
       }
 
       /*TV can be turned on only in 16BPP mode */
