@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.17 2001/05/30 08:18:27 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.18 2001/06/04 13:04:40 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -56,8 +56,17 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.17 2001/05/30 08:18:27 ala
 #define HasSockets              YES
 #define GzipFontCompression	YES
 #define HasZlib			YES
-#define GzipLibrary		-lz.dll
-#define SharedLibFont           NO
+#define GzipLibrary             -lz.dll
+
+/* We don't need -lm */
+#define MathLibrary             /**/
+
+/*
+ * /lib/libtermcap.a doesn't have tgetent, which is needed for
+ * xc/programs/xterm/resize.exe
+ */
+#define TermcapLibrary -lncurses
+
 #define AvoidNullMakeCommand    YES
 #define StripInstalledPrograms  NO
 #define CompressAllFonts        YES
@@ -259,9 +268,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.17 2001/05/30 08:18:27 ala
 # define FileManDir     $(MANSOURCEPATH)5
 #endif
 
-/* we don't need -lm */
-#define MathLibrary             /**/
-#define TermcapLibrary -ltermcap
+/* Server build rules */
 #define XnestServer			YES
 #define BuildXprint			YES
 #define XprtServer			YES
