@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   12
-#define SISDRIVERVERSIONDAY     8
+#define SISDRIVERVERSIONDAY     9
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -593,7 +593,8 @@ typedef struct {
     int			forceCRT1;
     Bool		CRT1changed;
     unsigned char       oldCR17, oldCR63, oldSR1F;
-    unsigned char       oldCR32;
+    unsigned char       oldCR32, oldCR36, oldCR37;
+    unsigned char       myCR32, myCR36, myCR37;
     unsigned char       newCR32;
     unsigned long   	VBFlags;		/* Video bridge configuration */
     unsigned long       VBFlags_backup;         /* Backup for SlaveMode-modes */
