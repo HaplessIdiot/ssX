@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.47 2000/06/26 10:26:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.49 2000/08/04 16:13:33 eich Exp $ */
 
 
 #define PSZ 8
@@ -395,8 +395,20 @@ SIS1bppColorMap(ScrnInfoPtr pScrn) {
    black. I'm sure there's a better way to do that, just lazy to
    search the docs.  */
 
-   outb(0x3C8, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00);
-   outb(0x3C8, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F);
+   SISPtr pSiS = SISPTR(pScrn);
+
+   /*outb(0x3C8, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00); outb(0x3C9, 0x00);
+   outb(0x3C8, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F); outb(0x3C9, 0x3F);*/
+
+   outb(pSiS->RelIO+0x48, 0x00); 
+   outb(pSiS->RelIO+0x49, 0x00); 
+   outb(pSiS->RelIO+0x49, 0x00); 
+   outb(pSiS->RelIO+0x49, 0x00);
+   
+   outb(pSiS->RelIO+0x48, 0x3F); 
+   outb(pSiS->RelIO+0x49, 0x3F); 
+   outb(pSiS->RelIO+0x49, 0x3F); 
+   outb(pSiS->RelIO+0x49, 0x3F);
 }
 
 /* Mandatory */
@@ -811,7 +823,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
                pScrn->videoRam);
 
     pSiS->FbMapSize = pScrn->videoRam * 1024;
-
+ 
     SISVGAPreInit(pScrn);
     SISLCDPreInit(pScrn);  
     SISTVPreInit(pScrn); 
@@ -1112,7 +1124,7 @@ SISModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pScrn->vtSema = TRUE; 
 
     if (!(*pSiS->ModeInit)(pScrn, mode))
-	return FALSE;
+        return FALSE;   
 
     PDEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                 "HDisplay: %d, VDisplay: %d  \n",
@@ -1170,8 +1182,8 @@ SISRestore(ScrnInfoPtr pScrn)
 
     vgaHWProtect(pScrn, TRUE);
 
-    (*pSiS->SiSRestore)(pScrn, sisReg);
-
+    (*pSiS->SiSRestore)(pScrn, sisReg); 
+ 
     vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
     vgaHWProtect(pScrn, FALSE);
@@ -1583,7 +1595,7 @@ SISLeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
-
+    
 #ifdef XF86DRI
   ScreenPtr pScreen;
   SISPtr pSiS;
@@ -1625,11 +1637,11 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
 #endif
 
     if (pScrn->vtSema) {
-	if (pCursorInfo)
-	    pCursorInfo->HideCursor(pScrn);
-    	SISRestore(pScrn);
-    	vgaHWLock(hwp);
-    	SISUnmapMem(pScrn);
+       if (pCursorInfo)
+           pCursorInfo->HideCursor(pScrn);
+        SISRestore(pScrn); 
+        vgaHWLock(hwp);
+        SISUnmapMem(pScrn);
     }
     if(pSiS->AccelInfoPtr)
         XAADestroyInfoRec(pSiS->AccelInfoPtr);

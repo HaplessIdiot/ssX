@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.26 2000/03/05 16:59:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.27 2000/04/04 19:25:08 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -105,6 +105,7 @@ typedef struct {
 #define ChipsTMEDSupport	0x00000040
 #define ChipsGammaSupport	0x00000080
 #define ChipsVideoSupport	0x00000100
+#define ChipsDualChannelSupport	0x00000200
 
 /* Options flags for the C&T chipsets */
 #define ChipsHWCursor		0x00001000
@@ -156,6 +157,8 @@ typedef struct {
 	unsigned char CR[0x80];
 	unsigned char FR[0x80];
 	unsigned char MR[0x80];
+	unsigned char MSS;
+	unsigned char IOSS;
 	CHIPSClockReg Clock;
 } CHIPSRegRec, *CHIPSRegPtr;
 
@@ -226,6 +229,10 @@ typedef CARD8 (*chipsReadFRPtr)(CHIPSPtr cPtr, CARD8 index);
 typedef void (*chipsWriteFRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
 typedef CARD8 (*chipsReadMRPtr)(CHIPSPtr cPtr, CARD8 index);
 typedef void (*chipsWriteMRPtr)(CHIPSPtr cPtr, CARD8 index, CARD8 value);
+typedef CARD8 (*chipsReadMSSPtr)(CHIPSPtr cPtr);
+typedef void (*chipsWriteMSSPtr)(CHIPSPtr cPtr, CARD8 value);
+typedef CARD8 (*chipsReadIOSSPtr)(CHIPSPtr cPtr);
+typedef void (*chipsWriteIOSSPtr)(CHIPSPtr cPtr, CARD8 value);
 
 /* The privates of the C&T driver */
 #define CHIPSPTR(p)	((CHIPSPtr)((p)->driverPrivate))
@@ -254,6 +261,7 @@ typedef struct _CHIPSRec {
     Bool		SyncResetIgn;
     Bool		UseMMIO;
     Bool		UseFullMMIO;
+    Bool		UseDualChannel;
     int			Monitor;
     int			MinClock;
     int			MaxClock;
@@ -307,6 +315,10 @@ typedef struct _CHIPSRec {
     chipsWriteFRPtr	writeFR;
     chipsReadMRPtr	readMR;
     chipsWriteMRPtr	writeMR;
+    chipsReadMSSPtr	readMSS;
+    chipsWriteMSSPtr	writeMSS;
+    chipsReadIOSSPtr	readIOSS;
+    chipsWriteIOSSPtr	writeIOSS;
 } CHIPSRec;
 
 typedef struct _CHIPSi2c {

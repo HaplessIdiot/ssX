@@ -1,4 +1,35 @@
-/* $XFree86$ */
+/**************************************************************************
+
+Copyright 2000 Silicon Integrated Systems Corp, Inc., HsinChu, Taiwan.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a
+copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sub license, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice (including the
+next paragraph) shall be included in all copies or substantial portions
+of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.
+IN NO EVENT SHALL PRECISION INSIGHT AND/OR ITS SUPPLIERS BE LIABLE FOR
+ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+**************************************************************************/
+
+/*
+ * Authors:
+ *    Sung-Ching Lin <sclin@sis.com.tw>
+ *
+ */
 
 #include <unistd.h>
 #include <sys/mman.h>
@@ -78,6 +109,8 @@ GLboolean XMesaInitDriver (__DRIscreenPrivate * driScrnPriv)
   global_regs = priv->regs;
   global_agp = priv->agp;
   global_FbBase = driScrnPriv->pFB;
+
+  gDRMSubFD = driScrnPriv->fd;
   
   return GL_TRUE;
 }
@@ -302,7 +335,7 @@ GLframebuffer *XMesaCreatePixmapBuffer( Display *dpy,
 static void SISDestroyBuffer (XMesaBuffer b)
 {  
   if (SIS_VERBOSE&VERBOSE_SIS_BUFFER){
-    fprintf(stderr, "XMesaDestroyBuffer: b=%lu\n", (DWORD)b);
+    fprintf(stderr, "SISDestroyBuffer: b=%lu\n", (DWORD)b);
   }
   
   if (b->backimage && b->backimage->data)

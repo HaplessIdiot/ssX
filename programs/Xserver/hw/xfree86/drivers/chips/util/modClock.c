@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/modClock.c,v 1.2 1998/07/25 16:55:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/modClock.c,v 1.3 1999/04/04 08:46:14 dawes Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -197,6 +197,7 @@ int compute_clock (
 #define CT65555 0x33
 #define CT68554 0x34
 #define CT69000 0x35
+#define CT69030 0x36
 
 #define IS_Programmable(X) X&0x10
 #define IS_HiQV(X) X&0x20
@@ -333,6 +334,11 @@ unsigned int probe_chip(void) {
     }
     if (temp == 0xC0) {
       ChipType = CT69000;
+    }
+    if (temp == 0x30) {
+      outb(0x3D6, 0x03);
+      temp = inb(0x03D7);
+      if (temp == 0x0C) ChipType = CT69030;
     }
   }
  

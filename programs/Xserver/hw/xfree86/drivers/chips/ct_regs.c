@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_regs.c,v 1.2 1999/12/03 19:17:31 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_regs.c,v 1.4 2000/09/19 12:46:15 eich Exp $ */
 
 /*
  * The functions in this file are used to read/write the C&T extension register
@@ -73,6 +73,8 @@
 
 #define CHIPS_MONO_STAT_1		0x3BA
 #define CHIPS_STAT_0			0x3BA
+#define CHIPS_MSS			0x3CB
+#define CHIPS_IOSS			0x3CD
 #define CHIPS_FR_INDEX			0x3D0
 #define CHIPS_FR_DATA			0x3D1
 #define CHIPS_MR_INDEX			0x3D2
@@ -96,7 +98,9 @@
 #define CHIPS_MMIO_DAC_WRITE_ADDR	0x790
 #define CHIPS_MMIO_DAC_DATA		0x791
 #define CHIPS_MMIO_FEATURE_R		0x794
+#define CHIPS_MMIO_MSS			0x795
 #define CHIPS_MMIO_MISC_OUT_R		0x798
+#define CHIPS_MMIO_IOSS			0x799
 #define CHIPS_MMIO_GRAPH_INDEX		0x79C
 #define CHIPS_MMIO_GRAPH_DATA		0x79D
 #define CHIPS_MMIO_FR_INDEX		0x7A0
@@ -154,6 +158,30 @@ chipsStdReadMR(CHIPSPtr cPtr, CARD8 index)
     return inb(CHIPS_MR_DATA);
 }
 
+static void
+chipsStdWriteMSS(CHIPSPtr cPtr, CARD8 value)
+{
+    outb(CHIPS_MSS, value);
+}
+
+static CARD8
+chipsStdReadMSS(CHIPSPtr cPtr)
+{
+    return inb(CHIPS_MSS);
+}
+
+static void
+chipsStdWriteIOSS(CHIPSPtr cPtr, CARD8 value)
+{
+    outb(CHIPS_IOSS, value);
+}
+
+static CARD8
+chipsStdReadIOSS(CHIPSPtr cPtr)
+{
+    return inb(CHIPS_IOSS);
+}
+
 void
 CHIPSSetStdExtFuncs(CHIPSPtr cPtr)
 {
@@ -163,6 +191,10 @@ CHIPSSetStdExtFuncs(CHIPSPtr cPtr)
     cPtr->readMR		= chipsStdReadMR;
     cPtr->writeXR		= chipsStdWriteXR;
     cPtr->readXR		= chipsStdReadXR;
+    cPtr->writeMSS		= chipsStdWriteMSS;
+    cPtr->readMSS		= chipsStdReadMSS;
+    cPtr->writeIOSS		= chipsStdWriteIOSS;
+    cPtr->readIOSS		= chipsStdReadIOSS;
 }
 
 /*
@@ -214,6 +246,30 @@ chipsMmioReadMR(CHIPSPtr cPtr, CARD8 index)
     return chipsminb(CHIPS_MMIO_MR_DATA);
 }
 
+static void
+chipsMmioWriteMSS(CHIPSPtr cPtr, CARD8 value)
+{
+    chipsmoutb(CHIPS_MMIO_MSS, value);
+}
+
+static CARD8
+chipsMmioReadMSS(CHIPSPtr cPtr)
+{
+    return chipsminb(CHIPS_MMIO_MSS);
+}
+
+static void
+chipsMmioWriteIOSS(CHIPSPtr cPtr, CARD8 value)
+{
+    chipsmoutb(CHIPS_MMIO_IOSS, value);
+}
+
+static CARD8
+chipsMmioReadIOSS(CHIPSPtr cPtr)
+{
+    return chipsminb(CHIPS_MMIO_IOSS);
+}
+
 void
 CHIPSSetMmioExtFuncs(CHIPSPtr cPtr)
 {
@@ -223,6 +279,10 @@ CHIPSSetMmioExtFuncs(CHIPSPtr cPtr)
     cPtr->readMR		= chipsMmioReadMR;
     cPtr->writeXR		= chipsMmioWriteXR;
     cPtr->readXR		= chipsMmioReadXR;
+    cPtr->writeMSS		= chipsMmioWriteMSS;
+    cPtr->readMSS		= chipsMmioReadMSS;
+    cPtr->writeIOSS		= chipsMmioWriteIOSS;
+    cPtr->readIOSS		= chipsMmioReadIOSS;
 }
 
 /*

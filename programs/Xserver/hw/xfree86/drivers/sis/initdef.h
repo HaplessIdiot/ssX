@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/initdef.h,v 1.2 2000/08/03 12:24:03 dawes Exp $ */
 
 #define ModeInfoFlag      0x07
 #define MemoryInfoFlag    0x1E0
@@ -51,13 +51,15 @@
 
 #define VCLKStartFreq           25
 #define SoftDramType            0x80
+#define VCLK40                  0x04
 #define VCLK65                  0x09
 #define VCLK108_2               0x14
 #define TVSimuMode              0x02
 #define SetCRT2ToSVIDEO         0x08
 #define LCDRGB18Bit             0x01
-#define Panel1280x1024          0x01
-#define Panel1024x768           0x00
+#define Panel1280x1024          0x03
+#define Panel1024x768           0x02
+#define Panel800x600            0x01
 #define RPLLDIV2XO              0x04
 #define LoadDACFlag             0x1000
 #define AfterLockCRT2           0x4000
@@ -87,3 +89,47 @@
 #define IND_SIS_CRT2_PORT_10        0x10 - 0x30
 #define IND_SIS_CRT2_PORT_12        0x12 - 0x30
 #define IND_SIS_CRT2_PORT_14        0x14 - 0x30
+
+#define IF_DEF_TRUMPION         0
+#define LCDNonExpanding         0x10
+#define LVDSCRT1Len             15
+#define ADR_CRT2PtrData         0x20E
+#define offset_Zurac      0x210
+#define ADR_LVDSDesPtrData      0x212
+#define ADR_LVDSCRT1DataPtr     0x214
+
+#define ExtChip301              0x02
+#define ExtChipLVDS             0x04
+#define ExtChipTrumpion         0x06
+#define LCDNonExpanding         0x10
+#define LCDNonExpandingShift    4
+#define LVDSDataLen             6
+#define EnableLVDSDDA           0x10
+#define LCDSync                 0x20
+#define SyncPP                  0x0000
+#define LCDSyncBit              0xE0
+#define LVDSDesDataLen          3
+#define LVDSCRT1Len             15
+#define ActiveNonExpanding      0x40
+#define ActiveNonExpandingShift 6
+#define ModeSwitchStatus        0x0F
+#define SoftTVType              0x40
+        
+#define PanelType00             0x00    
+#define PanelType01             0x08
+#define PanelType02             0x10
+#define PanelType03             0x18
+#define PanelType04             0x20
+#define PanelType05             0x28
+#define PanelType06             0x30
+#define PanelType07             0x38
+#define PanelType08             0x40
+#define PanelType09             0x48
+#define PanelType0A             0x50
+#define PanelType0B             0x58
+#define PanelType0C             0x60
+#define PanelType0D             0x68
+#define PanelType0E             0x70
+#define PanelType0F             0x78
+
+

@@ -1,17 +1,18 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init301.h,v 1.2 2000/08/03 12:24:03 dawes Exp $ */
 
 #include "initdef.h"
 
 USHORT VBInfo,SetFlag,RVBHCFACT,RVBHCMAX,VGAVT,VGAHT,VT,HT,VGAVDE,VGAHDE;
 USHORT VDE,HDE,RVBHRS,NewFlickerMode,RY1COE,RY2COE,RY3COE,RY4COE;                
 USHORT LCDResInfo,LCDTypeInfo,LCDInfo,VCLKLen;
+USHORT LCDHDES,LCDVDES;
 
 USHORT StResInfo[5][2]={{640,400},{640,350},{720,400},{720,350},{640,480}};
-USHORT ModeResInfo[13][4]={{320,200,8,8},{320,240,8,8},{320,400,8,8},
+USHORT ModeResInfo[15][4]={{320,200,8,8},{320,240,8,8},{320,400,8,8},
                        {400,300,8,8},{512,384,8,8},{640,400,8,16},
                        {640,480,8,16},{800,600,8,16},{1024,768,8,16},
                        {1280,1024,8,16},{1600,1200,8,16},{1920,1440,8,16},
-                       {2048,1536,8,16}};
+                       {720,480,8,16},{720,576,8,16},{1280,960,8,16}};
 
 USHORT NTSCTiming[61]={0x017,0x01D,0x003,0x009,0x005,0x006,0x00C,0x00C,
                     0x094,0x049,0x001,0x00A,0x006,0x00D,0x004,0x00A,
@@ -50,6 +51,12 @@ USHORT PALGroup3Data[63]={0x000,0x01A,0x022,0x063,0x062,0x022,0x008,0x085,
                        0x030,0x030,0x000,0x0F3,0x0F3,0x000,0x0A2,0x0A2,
                        0x000,0x048,0x0FE,0x07E,0x008,0x040,0x008,0x091,
                        0x018,0x005,0x018,0x005,0x04C,0x0A8,0x001};
+USHORT Part1[41]={0x30, 0x16, 0x0b, 0x00, 0x00, 0x00, 0x00, 0x00, 
+                  0x3f, 0x30, 0x8c, 0xbc, 0x22, 0x1c, 0x05, 0xdf,
+                  0xf3, 0x16, 0x0a, 0x20, 0x89, 0x93, 0x00, 0x80,
+                  0x14, 0xf7, 0x58, 0x00, 0x00, 0x18, 0x28, 0x32,
+                  0x15, 0xff, 0xa0, 0x00, 0x01, 0x03, 0x2c, 0x11, 
+                  0x92};
 
 VOID SetDefCRT2ExtRegs(USHORT BaseAddr);
 BOOLEAN SetCRT2Group(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo, ScrnInfoPtr pScrn);
@@ -60,12 +67,17 @@ VOID DisableLockRegs(VOID);
 VOID DisableCRT2(VOID);
 VOID DisableBridge(USHORT  BaseAddr);
 VOID GetCRT2Data(ULONG ROMAddr,USHORT ModeNo);
+VOID GetCRT2DataLVDS(ULONG ROMAddr,USHORT ModeNo);
+VOID GetCRT2Data301(ULONG ROMAddr,USHORT ModeNo);
 VOID GetResInfo(ULONG ROMAddr,USHORT ModeNo);
 VOID GetRAMDAC2DATA(ULONG ROMAddr,USHORT ModeNo);
 VOID GetCRT2Ptr(ULONG ROMAddr,USHORT ModeNo);
 VOID UnLockCRT2(USHORT BaseAddr);
 VOID SetCRT2ModeRegs(USHORT BaseAddr,USHORT ModeNo);
 VOID SetGroup1(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
+VOID SetGroup1_LVDS(USHORT  BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
+VOID SetGroup1301(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
+VOID GetLVDSDesData(ULONG ROMAddr,USHORT ModeNo);
 VOID SetCRT2Offset(USHORT Part1Port,ULONG ROMAddr);
 USHORT GetOffset(ULONG ROMAddr);
 USHORT GetColorDepth(ULONG ROMAddr);
@@ -96,7 +108,7 @@ VOID EnableBridge(USHORT BaseAddr);
 VOID GetVBInfo(USHORT BaseAddr,ULONG ROMAddr);
 BOOLEAN BridgeIsEnable(USHORT BaseAddr);
 BOOLEAN BridgeInSlave(VOID);
-BOOLEAN GetLCDResInfo(USHORT P3d4);
+BOOLEAN GetLCDResInfo(ULONG ROMAddr,USHORT P3d4);
 VOID PresetScratchregister(USHORT P3d4);
 BOOLEAN GetLCDDDCInfo(ScrnInfoPtr pScrn);
 VOID SetTVSystem();
@@ -105,6 +117,15 @@ USHORT GetQueueConfig();
 VOID VBLongWait();
 USHORT GetVCLKLen(ULONG ROMAddr);
 BOOLEAN WaitVBRetrace(USHORT  BaseAddr);
+VOID ModCRT1CRTC(ULONG ROMAddr,USHORT ModeNo);
+VOID SetCRT2ECLK(ULONG ROMAddr, USHORT ModeNo);
+USHORT GetLVDSDesPtr(ULONG ROMAddr,USHORT ModeNo);
+BOOLEAN GetLVDSCRT1Ptr(ULONG ROMAddr,USHORT ModeNo);
+VOID SetGroup1_301(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
+VOID SetGroup1_LVDS(USHORT BaseAddr,ULONG ROMAddr,USHORT ModeNo,ScrnInfoPtr pScrn);
+VOID SetTPData();
+BOOLEAN GetPanelID();
+BOOLEAN GetLVDSCRT1Ptr(ULONG ROMAddr,USHORT ModeNo);
 
 extern USHORT MDA_DAC[];
 extern USHORT CGA_DAC[];
@@ -116,6 +137,8 @@ extern USHORT   flag_clearbuffer; /* 0:no clear frame buffer 1:clear frame buffe
 extern int      RAMType;
 extern int      ModeIDOffset,StandTable,CRT1Table,ScreenOffset,VCLKData,MCLKData, ECLKData;
 extern int      REFIndex,ModeType;
+extern USHORT   VBInfo,LCDResInfo,LCDTypeInfo,LCDInfo;
+extern USHORT   IF_DEF_LVDS;
 
 extern VOID     SetReg1(USHORT, USHORT, USHORT);
 extern VOID     SetReg3(USHORT, USHORT);
