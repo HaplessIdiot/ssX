@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.25 2003/08/24 17:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.26 2003/10/09 12:40:54 alanh Exp $ */
 
 /*
  * Copyright (c) 1998-2001 by The XFree86 Project, Inc.
@@ -35,7 +35,9 @@
 #include "regionstr.h"
 #include "xf86fbman.h"
 
+/* 
 #define DEBUG
+*/
 
 static int xf86FBMangerIndex = -1;
 static unsigned long xf86ManagerGeneration = 0;
