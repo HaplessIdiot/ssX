@@ -1,4 +1,4 @@
- // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.17 2002/11/25 14:05:06 eich Exp $
+ // $XFree86: xc/programs/xkbcomp/symbols/inet,v 1.18 2002/12/17 04:08:17 dawes Exp $
 
 // EAK (Easy Access, Internet, Multimedia, PDA) keyboards
 // Copyright (C) 2002 Stanislav Brabec <sbrabec@suse.cz>
@@ -80,6 +80,34 @@ xkb_symbols "scorpius" {
     key <I68>	{	[ XF86Stop		]	};
     key <I67>	{	[ XF86Reload		]	};
     key <I65>	{	[ XF86Search		]	};
+};
+
+
+// Brother
+
+partial alphanumeric_keys
+xkb_symbols "brother" {
+    name[Group1]= "Brother Internet Keyboard";
+
+    key <I21>	{	[ XF86WWW		]	};
+    key <I1E>	{	[ XF86AudioMute		]	};
+    key <I68>	{	[ XF86AudioLowerVolume	]	};
+    key <I30>	{	[ XF86AudioRaiseVolume	]	};
+    key <I18>	{	[ XF86ScrollDown	]	};
+    key <I10>	{	[ XF86ScrollUp		]	};
+    key <I17>	{	[ XF86AudioPrev		]	};
+    key <I12>	{	[ XF86AudioPlay, XF86AudioPause ] };
+    key <I2E>	{	[ XF86AudioNext		]	};
+    key <I23>	{	[ XF86AudioStop		]	};
+    key <I19>	{	[ XF86ZoomOut		]	};
+    key <I32>	{	[ XF86ZoomIn		]	};
+    key <I24>	{	[ XF86Calculator	]	};
+    key <I25>	{	[ XF86Xfer		]	};
+    key <I22>	{	[ XF86Menu		]	};
+    key <I26>	{	[ XF86Mail		]	};
+    key <I5E>	{	[ XF86PowerOff		]	};
+    key <I5F>	{	[ XF86Standby		]	};
+    key <I63>	{	[ XF86WakeUp		]	};
 };
 
 
