@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.4 2001/07/20 19:25:01 keithp Exp $
+ * $XFree86: xc/programs/Xserver/miext/layer/layerwin.c,v 1.5 2001/10/28 03:34:16 tsi Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -63,7 +63,8 @@ LayerCreatePixmap (ScreenPtr pScreen, LayerPtr pLayer)
     if (pLayer->pKind->kind == LAYER_SHADOW)
     {
 	if (!shadowAdd (pScreen, pLayer->pPixmap, pLayer->update, 
-			pLayer->window, pLayer->rotate, pLayer->closure))
+			pLayer->window, pLayer->randr, 
+			pLayer->closure))
 	    return FALSE;
     }
     return TRUE;

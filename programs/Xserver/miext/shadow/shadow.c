@@ -1400,7 +1400,7 @@ shadowAdd (ScreenPtr	    pScreen,
 	   PixmapPtr	    pPixmap,
 	   ShadowUpdateProc update,
 	   ShadowWindowProc window,
-	   int		    rotate,
+	   int		    randr,
 	   void		    *closure)
 {
     shadowScrPriv(pScreen);
@@ -1409,12 +1409,30 @@ shadowAdd (ScreenPtr	    pScreen,
     pBuf = (shadowBufPtr) xalloc (sizeof (shadowBufRec));
     if (!pBuf)
 	return FALSE;
+    /*
+     * Map simple rotation values to bitmasks; fortunately,
+     * these are all unique
+     */
+    switch (randr) {
+    case 0:
+	randr = SHADOW_ROTATE_0;
+	break;
+    case 90:
+	randr = SHADOW_ROTATE_90;
+	break;
+    case 180:
+	randr = SHADOW_ROTATE_180;
+	break;
+    case 270:
+	randr = SHADOW_ROTATE_270;
+	break;
+    }
     pBuf->pPixmap = pPixmap;
     pBuf->update = update;
     pBuf->window = window;
     REGION_INIT (pScreen, &pBuf->damage, NullBox, 0);
     pBuf->pNext = pScrPriv->pBuf;
-    pBuf->rotate = rotate;
+    pBuf->randr = randr;
     pBuf->closure = 0;
     pScrPriv->pBuf = pBuf;
     return TRUE;
@@ -1471,7 +1489,7 @@ shadowInit (ScreenPtr pScreen, ShadowUpdateProc update, ShadowWindowProc window)
     if (!shadowSetup (pScreen))
 	return FALSE;
     
-    if (!shadowAdd (pScreen, 0, update, window, 0, 0))
+    if (!shadowAdd (pScreen, 0, update, window, SHADOW_ROTATE_0, 0))
 	return FALSE;
 
     return TRUE;
