@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.27 2001/05/18 23:35:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/wacom/xf86Wacom.c,v 1.29 2001/10/01 13:44:13 eich Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV and Wacom V protocols.
@@ -90,8 +90,6 @@ static const char identification[] = "$Identification: 23 $";
 #include "xf86Module.h"
 #endif
 
-#undef sleep
-#define sleep(t) xf86WaitForInput(-1, 1000 * (t))
 #define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
 #define tcflush(fd, n) xf86FlushInput((fd))
 #undef read

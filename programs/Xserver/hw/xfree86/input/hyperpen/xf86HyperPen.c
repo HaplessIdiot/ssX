@@ -35,7 +35,7 @@
  * TORTIOUS ACTIONS, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.2 2001/10/10 20:59:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/hyperpen/xf86HyperPen.c,v 1.4 2001/11/30 12:12:03 eich Exp $ */
 
 #include <xf86Version.h>
 
@@ -68,10 +68,6 @@
 #include <xf86Module.h>
 #endif
 
-#undef memset
-#define memset xf86memset
-#undef sleep
-#define sleep(t) xf86WaitForInput(-1, 1000 * (t))
 #define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
 #define tcflush(fd, n) xf86FlushInput((fd))
 #undef read
