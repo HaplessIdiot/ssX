@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.55 1999/12/27 00:39:48 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.56 1999/12/27 01:34:00 robin Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -335,7 +335,7 @@ xf86snprintf(char *s, xf86size_t len, const char *format, ...)
 void
 xf86bzero(void* s, unsigned int n)
 {
-  bzero(s, n);
+    memset(s, 0, n);
 }
   
 #ifdef HAVE_VSSCANF
