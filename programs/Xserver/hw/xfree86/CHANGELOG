@@ -1,4 +1,5 @@
 XFree86 3.9.17d (1 February 2000)
+3621. Add Trident Cyber9540 detection (not tested) (Alan Hourihane).
 3620. Fix horizontal/vertical line drawing for r128 driver (Kevin Martin).
 3619. Update -probe option for all bus types (Alan Hourihane).
 3618. Fix primary card detection for -configure (Alan Hourihane).
