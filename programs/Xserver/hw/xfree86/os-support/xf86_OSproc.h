@@ -8,7 +8,7 @@
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  * Copyright 1994, 1996 by Holger Veit <Holger.Veit@gmd.de>
- * Copyright 1994-1998 by The XFree86 Project, Inc
+ * Copyright 1994-1999 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.22 1999/04/18 04:08:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.23 1999/04/25 15:30:26 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -130,8 +130,9 @@ extern void xf86IODelay(void);
 extern void xf86SlowBcopy(unsigned char *, unsigned char *, int);
 extern int xf86OpenSerial(pointer options);
 extern int xf86SetSerial(int fd, pointer options);
+extern int xf86SetSerialSpeed(int fd, int speed);
 extern int xf86ReadSerial(int fd, void *buf, int count);
-extern int xf86WriteSerial(int fd, void *buf, int count);
+extern int xf86WriteSerial(int fd, const void *buf, int count);
 extern int xf86CloseSerial(int fd);
 extern int xf86FlushInput(int fd);
 /* Merged from Metrolink tree for Xinput */
@@ -176,6 +177,7 @@ extern void xf86KbdInit(void);
 extern int xf86KbdOn(void);
 extern int xf86KbdOff(void);
 extern void xf86KbdEvents(void);
+#ifndef NEW_INPUT
 extern void xf86SetMouseSpeed(MouseDevPtr, int, int, unsigned);
 extern void xf86MouseInit(MouseDevPtr);
 extern int xf86MouseOn(MouseDevPtr);
@@ -187,6 +189,7 @@ extern void xf86XqueEvents(void);
 extern int  xf86OsMouseProc(DeviceIntPtr, int);
 extern void xf86OsMouseEvents(void);
 extern void xf86OsMouseOption(int, pointer);
+#endif
 
 #ifdef NEED_OS_RAC_PROTOS
 /* RAC-related privs */

@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.43 1999/04/11 13:10:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.44 1999/04/17 07:06:02 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -219,19 +219,29 @@ ReadInput(pointer	block_data,
  *
  ***********************************************************************
  */
-static void
+void
 xf86ProcessCommonOptions(LocalDevicePtr local,
 			 pointer	list)
 {
-    if (xf86SetBoolOption(list, "AlwaysCore", 0)) {
+    if (xf86SetBoolOption(list, "AlwaysCore", 0) ||
+	xf86SetBoolOption(list, "SendCoreEvents", 0)) {
 	local->flags |= XI86_ALWAYS_CORE;
 	xf86Msg(X_CONFIG, "%s always reports core events\n", local->name);
     }
 
+    if (xf86SetBoolOption(list, "CorePointer", 0)) {
+	local->flags |= XI86_CORE_POINTER;
+	xf86Msg(X_CONFIG, "%s is the Core Pointer\n", local->name);
+    }
+
+    if (xf86SetBoolOption(list, "CoreKeyboard", 0)) {
+	local->flags |= XI86_CORE_KEYBOARD;
+	xf86Msg(X_CONFIG, "%s is the Core Keyboard\n", local->name);
+    }
+
     if (xf86SetBoolOption(list, "SendDragEvents", 1)) {
 	local->flags |= XI86_SEND_DRAG_EVENTS;
-    }
-    else {
+    } else {
 	xf86Msg(X_CONFIG, "%s doesn't report drag events\n", local->name);
     }
     
@@ -242,8 +252,10 @@ xf86ProcessCommonOptions(LocalDevicePtr local,
 		local->history_size);
     }
     
+#ifndef NEW_INPUT
     /* Save the options for latter use. Serial line setup for example. */
     local->options = list;
+#endif
 }
 
 /***********************************************************************
@@ -1529,6 +1541,39 @@ xf86XInputSetScreen(LocalDevicePtr	local,
 	(miPointerCurrentScreen() != screenInfo.screens[screen_number])) {
 	miPointerSetNewScreen (screen_number, x, y);
     }
+}
+
+
+void
+xf86InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, int minval, int maxval,
+			   int resolution, int min_res, int max_res)
+{
+#ifdef XINPUT
+    if (maxval == -1) {
+	if (axnum == 0)
+	    maxval = screenInfo.screens[0]->width;
+	else if (axnum == 1)
+	    maxval = screenInfo.screens[0]->height;
+	/* else? */
+    }
+    InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res,
+			   max_res);
+#endif
+}
+
+/*
+ * Set the valuator values to be in synch with dix/event.c
+ * DefineInitialRootWindow().
+ */
+void
+xf86InitValuatorDefaults(DeviceIntPtr dev, int axnum)
+{
+#ifdef XINPUT
+    if (axnum == 0)
+	dev->valuator->axisVal[0] = screenInfo.screens[0]->width / 2;
+    else if (axnum == 1)
+	dev->valuator->axisVal[1] = screenInfo.screens[0]->height / 2;
+#endif
 }
 
 /* end of xf86Xinput.c */

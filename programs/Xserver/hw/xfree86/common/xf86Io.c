@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.30.2.5 1998/06/04 17:35:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.35 1998/07/25 16:55:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -396,6 +396,7 @@ xf86KbdProc (pKeyboard, what)
   return (Success);
 }
 
+#ifndef NEW_INPUT
 /*
  * xf86MseCtrl --
  *      Alter the control parameters for the mouse. Note that all special
@@ -541,6 +542,7 @@ xf86MseEvents(mouse)
   xf86MouseEvents(mouse);
 }
 #endif
+#endif /* !NEW_INPUT */
 
 #if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4)) && !defined(MINIX) && !defined(__mips__)
 /*

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.63 1999/04/15 08:36:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.64 1999/04/29 05:12:56 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -977,9 +977,11 @@ special:
 static CARD32
 buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 {
+#ifndef NEW_INPUT
     MouseDevPtr	priv = MOUSE_DEV((DeviceIntPtr) arg);
 
     xf86PostMseEvent(((DeviceIntPtr) arg), priv->truebuttons, 0, 0);
+#endif
     return(0);
 }
 
@@ -993,6 +995,7 @@ buttonTimer(OsTimerPtr timer, CARD32 now, pointer arg)
 void
 xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
 {
+#ifndef NEW_INPUT
   static OsTimerPtr timer = NULL;
   MouseDevPtr private = MOUSE_DEV(device);
   int         id, change;
@@ -1138,6 +1141,7 @@ xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy)
 #endif
     }
     private->lastButtons = truebuttons;
+#endif
 }
 
 
@@ -1214,7 +1218,9 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
     if (XFD_ANYSET(&devicesWithInput))
       {
 	(xf86Info.kbdEvents)();
+#ifndef NEW_INPUT
 	(xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
+#endif
       }
 #endif	/* __OSF__ */
   }

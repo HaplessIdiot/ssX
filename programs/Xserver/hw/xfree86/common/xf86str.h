@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.32 1999/04/29 05:12:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.33 1999/05/05 14:29:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -361,18 +361,6 @@ typedef struct _DriverRec {
     int			refCount;
 } DriverRec, *DriverPtr;
 
-typedef struct _InputDriverRec {
-    int			driverVersion;
-    char *		driverName;
-    void		(*Identify)(int flags);
-    pointer		(*Setup)(struct _InputDriverRec *drv, IDevPtr dev,
-				 int flags);
-    void		(*TearDown)(struct _InputDriverRec *drv, pointer arg,
-				    int flags);
-    pointer		module;
-    int			refCount;
-} InputDriverRec, *InputDriverPtr;
-
 /*
  * The IO access enabler struct. This contains the address for 
  * the IOEnable/IODisable funcs for their specific bus along
@@ -688,6 +676,7 @@ typedef enum {
     PreferConvert32to24		= 0x20	/* prefer 32bpp pixmap to 24bpp conv */
 } Depth24Flags;
 
+#ifndef NEW_INPUT
 /*
  * mouse protocol types
  */
@@ -717,6 +706,7 @@ typedef enum {
     PROT_ACECAD,			/* Acecad tablets */
     NUM_PROTOCOLS			/* MUST BE LAST */
 } MouseProtocol;
+#endif
 
 
 /* For DPMS */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.40 1999/05/05 14:29:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.41 1999/05/07 02:56:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -24,6 +24,7 @@
 #include "xf86PciInfo.h"
 #include "xf86DDC.h"
 #include "xf86Xinput.h"
+#include "xf86InPriv.h"
 
 /* For xf86GetClocks */
 #if defined(CSRG_BASED) || defined(MACH386)
@@ -211,7 +212,9 @@ xf86AllocateInput(InputDriverPtr drv, int flags)
 {
     InputInfoPtr new;
 
-    new = xnfcalloc(sizeof(InputInfoRec), 1);
+    if (!(new = xcalloc(sizeof(InputInfoRec), 1)))
+	return NULL;
+
     new->drv = drv;
     drv->refCount++;
 #ifdef XFree86LOADER
@@ -2011,14 +2014,21 @@ xf86CaughtSignal()
 Bool
 xf86GetVidModeAllowNonLocal()
 {
-  return xf86Info.vidModeAllowNonLocal;
+    return xf86Info.vidModeAllowNonLocal;
 }
 
 
 Bool
 xf86GetVidModeEnabled()
 {
-  return xf86Info.vidModeEnabled;
+    return xf86Info.vidModeEnabled;
+}
+
+
+Bool
+xf86GetAllowMouseOpenFail()
+{
+    return xf86Info.allowMouseOpenFail;
 }
 
 

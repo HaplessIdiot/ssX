@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.14 1999/01/26 10:40:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_io.c,v 3.15 1999/05/07 02:56:19 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Dawes <dawes@xfree86.org>
@@ -183,6 +183,7 @@ xf86KbdOff()
 	return(xf86Info.consoleFd);
 }
 
+#ifndef NEW_INPUT
 void
 xf86MouseInit(MouseDevPtr mouse)
 {
@@ -210,3 +211,4 @@ xf86MouseOn(MouseDevPtr mouse)
 
 	return(mouse->mseFd);
 }
+#endif

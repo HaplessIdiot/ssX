@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.10 1999/03/28 15:32:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Privstr.h,v 1.11 1999/04/29 05:12:58 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -16,6 +16,7 @@
 #ifdef XINPUT
 #endif
 
+#ifndef NEW_INPUT
 /* Mouse device private record */
 
 typedef struct _MouseDevRec {
@@ -74,6 +75,7 @@ typedef struct _MouseDevRec {
 #define MSE_MAPTOY	-2
 #define MSE_MAXBUTTONS	12
 #define MSE_DFLTBUTTONS	 3
+#endif
 
 
 /* PCI probe flags */
@@ -125,7 +127,9 @@ typedef struct {
 #ifdef XINPUT
     pointer		mouseLocal;
 #endif
+#ifndef NEW_INPUT
     MouseDevPtr		mouseDev;
+#endif
 
     /* event handler part */
     int			lastEventTime;

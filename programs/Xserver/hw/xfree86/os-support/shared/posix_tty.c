@@ -1,26 +1,29 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.16 1999/04/04 07:03:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/posix_tty.c,v 3.17 1999/05/07 02:56:23 dawes Exp $ */
 /*
- * Copyright 1993 by David Dawes <dawes@xfree86.org>
+ * Copyright 1993-1999 by The XFree86 Project, Inc.
  *
- * Permission to use, copy, modify, distribute, and sell this software and its
- * documentation for any purpose is hereby granted without fee, provided that
- * the above copyright notice appear in all copies and that both that
- * copyright notice and this permission notice appear in supporting
- * documentation, and that the name of David Dawes 
- * not be used in advertising or publicity pertaining to distribution of 
- * the software without specific, written prior permission.
- * David Dawes makes no representations about the suitability of this 
- * software for any purpose.  It is provided "as is" without express or 
- * implied warranty.
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * the rights to use, copy, modify, merge, publish, distribute, sublicense,
+ * and/or sell copies of the Software, and to permit persons to whom the
+ * Software is furnished to do so, subject to the following conditions:
  *
- * DAVID DAWES DISCLAIMS ALL WARRANTIES WITH REGARD TO 
- * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND 
- * FITNESS, IN NO EVENT SHALL DAVID DAWES BE LIABLE FOR 
- * ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF 
- * CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN 
- * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
+ * THE XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,
+ * WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF
+ * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Except as contained in this notice, the name of the XFree86 Project shall
+ * not be used in advertising or otherwise to promote the sale, use or other
+ * dealings in this Software without prior written authorization from the
+ * XFree86 Project.
  */
 /*
  *
@@ -58,6 +61,8 @@
 #include "xf86_OSlib.h"
 
 #define SYSCALL(call) while(((call) == -1) && (errno == EINTR))
+
+#ifndef NEW_INPUT
 static Bool not_a_tty = FALSE;
 
 void
@@ -189,6 +194,7 @@ xf86SetMouseSpeed(MouseDevPtr mouse, int old, int new, unsigned int cflag)
 			       strerror(errno));
 	}
 }
+#endif
 
 static int 
 GetBaud (int baudrate)
@@ -250,8 +256,7 @@ xf86OpenSerial (pointer options)
 	int fd, i;
 	char *dev;
 
-	dev = xf86FindOptionValue (options, "Device");
-	xf86MarkOptionUsedByName (options, "Device");
+	dev = xf86SetStrOption (options, "Device", NULL);
 	if (!dev)
 	{
 		xf86Msg (X_ERROR, "xf86OpenSerial: No Device specified.\n");
@@ -269,12 +274,17 @@ xf86OpenSerial (pointer options)
 
 	if (!isatty (fd))
 	{
+#if 1
+		/* Allow non-tty devices to be opened. */
+		return (fd);
+#else
 		xf86Msg (X_WARNING,
 			 "xf86OpenSerial: Specified device %s is not a tty\n",
 			 dev);
 		SYSCALL (close (fd));
 		errno = EINVAL;
 		return (-1);
+#endif
 	}
 
 #ifdef Lynx
@@ -325,15 +335,22 @@ int
 xf86SetSerial (int fd, pointer options)
 {
 	struct termios t;
-	char *s;
+	int val;
+	const char *s;
 	int baud, r;
+
+	if (fd < 0)
+		return -1;
+
+	/* Don't try to set parameters for non-tty devices. */
+	if (!isatty(fd))
+		return 0;
 
 	SYSCALL (tcgetattr (fd, &t));
 
-	if ((s = xf86FindOptionValue (options, "BaudRate")))
+	if ((val = xf86SetIntOption (options, "BaudRate", 0)))
 	{
-		xf86MarkOptionUsedByName (options, "BaudRate");
-		if ((baud = GetBaud (atoi (s))))
+		if ((baud = GetBaud (val)))
 		{
 			cfsetispeed (&t, baud);
 			cfsetospeed (&t, baud);
@@ -341,15 +358,14 @@ xf86SetSerial (int fd, pointer options)
 		else
 		{
 			xf86Msg (X_ERROR,
-				 "Invalid Option BaudRate value: %s\n", s);
+				 "Invalid Option BaudRate value: %d\n", val);
 			return (-1);
 		}
 	}
 
-	if ((s = xf86FindOptionValue (options, "StopBits")))
+	if ((val = xf86SetIntOption (options, "StopBits", 0)))
 	{
-		xf86MarkOptionUsedByName (options, "StopBits");
-		switch (atoi (s))
+		switch (val)
 		{
 		case 1:
 			t.c_cflag &= ~(CSTOPB);
@@ -359,16 +375,15 @@ xf86SetSerial (int fd, pointer options)
 			break;
 		default:
 			xf86Msg (X_ERROR,
-				 "Invalid Option StopBits value: %s\n", s);
+				 "Invalid Option StopBits value: %d\n", val);
 			return (-1);
 			break;
 		}
 	}
 
-	if ((s = xf86FindOptionValue (options, "DataBits")))
+	if ((val = xf86SetIntOption (options, "DataBits", 0)))
 	{
-		xf86MarkOptionUsedByName (options, "DataBits");
-		switch (atoi (s))
+		switch (val)
 		{
 		case 5:
 			t.c_cflag &= ~(CSIZE);
@@ -388,15 +403,14 @@ xf86SetSerial (int fd, pointer options)
 			break;
 		default:
 			xf86Msg (X_ERROR,
-				 "Invalid Option DataBits value: %s\n", s);
+				 "Invalid Option DataBits value: %d\n", val);
 			return (-1);
 			break;
 		}
 	}
 
-	if ((s = xf86FindOptionValue (options, "Parity")))
+	if ((s = xf86SetStrOption (options, "Parity", NULL)))
 	{
-		xf86MarkOptionUsedByName (options, "Parity");
 		if (xf86NameCmp (s, "Odd") == 0)
 		{
 			t.c_cflag |= PARENB | PARODD;
@@ -418,18 +432,16 @@ xf86SetSerial (int fd, pointer options)
 		}
 	}
 
-	if ((s = xf86FindOptionValue (options, "Vmin")))
+	if ((val = xf86SetIntOption (options, "Vmin", -1)) != -1)
 	{
-		xf86MarkOptionUsedByName (options, "Vmin");
-		t.c_cc[VMIN] = atoi (s);
+		t.c_cc[VMIN] = val;
 	}
-	if ((s = xf86FindOptionValue (options, "Vtime")))
+	if ((val = xf86SetIntOption (options, "Vtime", -1)) != -1)
 	{
-		xf86MarkOptionUsedByName (options, "Vtime");
-		t.c_cc[VTIME] = atoi (s);
+		t.c_cc[VTIME] = val;
 	}
 
-	if ((s = xf86FindOptionValue (options, "FlowControl")))
+	if ((s = xf86SetStrOption (options, "FlowControl", NULL)))
 	{
 		xf86MarkOptionUsedByName (options, "FlowControl");
 		if (xf86NameCmp (s, "Xon") == 0)
@@ -448,10 +460,10 @@ xf86SetSerial (int fd, pointer options)
 		}
 	}
 
-	if ((s = xf86FindOptionValue (options, "ClearDTR")))
+	if ((xf86SetBoolOption (options, "ClearDTR", FALSE)))
 	{
 #ifdef CLEARDTR_SUPPORT
-		int val = TIOCM_DTR;
+		val = TIOCM_DTR;
 		SYSCALL (ioctl(fd, TIOCMBIC, &val));
 #else
 		xf86Msg (X_WARNING,
@@ -461,10 +473,10 @@ xf86SetSerial (int fd, pointer options)
 		xf86MarkOptionUsedByName (options, "ClearDTR");
 	}
 
-	if ((s = xf86FindOptionValue (options, "ClearRTS")))
+	if ((xf86SetBoolOption (options, "ClearRTS", FALSE)))
 	{
 #ifdef CLEARRTS_SUPPORT
-		int val = TIOCM_RTS;
+		val = TIOCM_RTS;
 		SYSCALL (ioctl(fd, TIOCMBIC, &val));
 #else
 		xf86Msg (X_WARNING,
@@ -472,6 +484,37 @@ xf86SetSerial (int fd, pointer options)
 			return (-1);
 #endif
 		xf86MarkOptionUsedByName (options, "ClearRTS");
+	}
+
+	SYSCALL (r = tcsetattr (fd, TCSANOW, &t));
+	return (r);
+}
+
+int
+xf86SetSerialSpeed (int fd, int speed)
+{
+	struct termios t;
+	int baud, r;
+
+	if (fd < 0)
+		return -1;
+
+	/* Don't try to set parameters for non-tty devices. */
+	if (!isatty(fd))
+		return 0;
+
+	SYSCALL (tcgetattr (fd, &t));
+
+	if ((baud = GetBaud (speed)))
+	{
+		cfsetispeed (&t, baud);
+		cfsetospeed (&t, baud);
+	}
+	else
+	{
+		xf86Msg (X_ERROR,
+			 "Invalid Option BaudRate value: %d\n", speed);
+		return (-1);
 	}
 
 	SYSCALL (r = tcsetattr (fd, TCSANOW, &t));
@@ -488,7 +531,7 @@ xf86ReadSerial (int fd, void *buf, int count)
 }
 
 int
-xf86WriteSerial (int fd, void *buf, int count)
+xf86WriteSerial (int fd, const void *buf, int count)
 {
 	int r;
 

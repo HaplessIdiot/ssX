@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.22 1999/04/04 07:03:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.23 1999/05/07 02:56:14 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -32,8 +32,8 @@
 #endif
 #include "X.h"
 #include "Xproto.h"
-#ifdef XINPUT
 #include "inputstr.h"
+#ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
 #include "XIstubs.h"
@@ -71,10 +71,24 @@
 #endif
 #define HAS_MOTION_HISTORY(local) ((local)->dev->valuator && (local)->dev->valuator->numMotionEvents)
 
+/* This holds the input driver entry and module information. */
+typedef struct _InputDriverRec {
+    int			    driverVersion;
+    char *		    driverName;
+    void		    (*Identify)(int flags);
+    struct _LocalDeviceRec *(*PreInit)(struct _InputDriverRec *drv,
+				       IDevPtr dev, int flags);
+    void		    (*UnInit)(struct _InputDriverRec *drv,
+				      struct _LocalDeviceRec *pInfo,
+				      int flags);
+    pointer		    module;
+    int			    refCount;
+} InputDriverRec, *InputDriverPtr;
+
 
 /* This is to input devices what the ScrnInfoRec is to screens. */
 
-typedef struct _LocalDeviceRec {  
+typedef struct _LocalDeviceRec {
     struct _LocalDeviceRec *next;
     char *		    name;
     int			    flags;
@@ -90,6 +104,9 @@ typedef struct _LocalDeviceRec {
 					      int first, int num, int v0,
 					      int v1, int v2, int v3, int v4,
 					      int v5, int *x, int *y);
+    Bool		    (*reverse_conversion_proc)(
+					struct _LocalDeviceRec *local,
+					int x, int y, int *valuators);
     
     int			    fd;
     Atom		    atom;
@@ -105,9 +122,7 @@ typedef struct _LocalDeviceRec {
     int			    old_y;
     char *		    type_name;
     IntegerFeedbackPtr	    always_core_feedback;
-    Bool		    (*reverse_conversion_proc)(
-					struct _LocalDeviceRec *local,
-					int x, int y, int *valuators);
+    IDevPtr		    conf_idev;
     InputDriverPtr	    drv;
     pointer		    module;
     pointer		    options;
@@ -155,11 +170,20 @@ Bool xf86RemoveLocalDevice(LocalDevicePtr device);
 LocalDevicePtr xf86FirstLocalDevice(void);
 int xf86ScaleAxis(int Cx, int Sxhigh, int Sxlow, int Rxhigh, int Rxlow);
 void xf86XInputSetScreen(LocalDevicePtr local, int screen_number, int x, int y);
+void xf86ProcessCommonOptions(InputInfoPtr pInfo, pointer options);
+void xf86InitValuatorAxisStruct(DeviceIntPtr dev, int axnum, int minval,
+				int maxval, int resolution, int min_res,
+				int max_res);
+void xf86InitValuatorDefaults(DeviceIntPtr dev, int axnum);
 
 /* xf86Helper.c */
 void xf86AddInputDriver(InputDriverPtr driver, pointer module, int flags);
 void xf86DeleteInputDriver(int drvIndex);
 InputInfoPtr xf86AllocateInput(InputDriverPtr drv, int flags);
 void xf86DeleteInput(InputInfoPtr pInp, int flags);
+
+/* xf86Option.c */
+void xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts,
+			     pointer extraOpts);
 
 #endif /* _xf86Xinput_h */

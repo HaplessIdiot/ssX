@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.40 1999/04/28 05:36:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.41 1999/05/05 14:29:53 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -65,13 +65,10 @@ extern int xf86NumMouseTypes;
 
 #ifdef XFree86LOADER
 extern DriverPtr *xf86DriverList;
-extern InputDriverPtr *xf86InputDriverList;
 #else
 extern DriverPtr xf86DriverList[];
-extern InputDriverPtr xf86InputDriverList[];
 #endif
 extern int xf86NumDrivers;
-extern int xf86NumInputDrivers;
 extern Bool xf86Exiting;
 extern Bool xf86Resetting;
 extern Bool xf86Initialising;
@@ -138,6 +135,7 @@ void xf86KbdLeds(void);
 void xf86KbdCtrl(DevicePtr pKeyboard, KeybdCtrl *ctrl); 
 void xf86InitKBD(Bool init);  
 int xf86KbdProc(DeviceIntPtr pKeyboard, int what);
+#ifndef NEW_INPUT
 void xf86MseCtrl(DevicePtr pPointer, PtrCtrl *ctrl);
 int xf86MseProc(DeviceIntPtr pPointer, int what);
 int xf86MseProcAux(DeviceIntPtr pPointer, int what, MouseDevPtr mouse,
@@ -155,6 +153,7 @@ void xf86MouseCtrl(DeviceIntPtr device, PtrCtrl *ctrl);
 
 /* xf86PnPMouse.c */
 int xf86GetPnPMouseProtocol(MouseDevPtr mouse);
+#endif
 
 /* xf86Kbd.c */ 
 

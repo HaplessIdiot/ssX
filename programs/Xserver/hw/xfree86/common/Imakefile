@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.96 1999/04/18 04:08:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.97 1999/04/28 05:36:12 dawes Exp $
 
 
 
@@ -45,10 +45,14 @@ LOGDEFINES = -DDEFAULT_LOGPREFIX=\"$(LOGDIRECTORY)/XFree86.\"
 EXT_MODULES_DEFINES = $(GLX_DEFINES)
 #endif
 
+#ifndef NewInput
 #if !defined(LynxOSArchitecture) && !defined(OS2Architecture)
     PNPMOUSESRCS = xf86PnPMouse.c
     PNPMOUSEOBJS = xf86PnPMouse.o
  PNPMOUSEDEFINES = -DPNP_MOUSE
+#endif
+    MOUSESRCS = xf86Mouse.c
+    MOUSEOBJS = xf86Mouse.o
 #endif
 
 #if defined(LinuxArchitecture) && defined(PpcArchitecture)
@@ -91,7 +95,7 @@ SRCS =	\
 	xf86Init.c \
 	xf86Io.c \
 	xf86Mode.c \
-	xf86Mouse.c \
+	$(MOUSESRCS) \
 	$(PNPMOUSESRCS) \
 	xf86Option.c \
 	xf86VidMode.c \
@@ -118,7 +122,7 @@ OBJS = \
 	xf86Helper.o \
 	xf86Io.o \
 	xf86Mode.o \
-	xf86Mouse.o \
+	$(MOUSEOJBS) \
 	$(PNPMOUSEOBJS) \
 	xf86Option.o \
 	xf86VidMode.o \

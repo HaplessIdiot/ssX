@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.112 1999/04/28 15:04:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.113 1999/05/05 14:29:52 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -44,10 +44,11 @@ extern int atoi();
 #ifdef XINPUT
 #include "XI.h"
 #include "XIproto.h"
-#include "xf86Xinput.h"
 #else
 #include "inputstr.h"
 #endif
+#include "xf86Xinput.h"
+#include "xf86InPriv.h"
 
 #include "globals.h"
 
@@ -95,7 +96,7 @@ static int numFormats = 6;
 static Bool formatsDone = FALSE;
 
 #ifdef XFree86LOADER
-/* XXX this is here temporarily */
+#ifdef NEW_INPUT
 InputDriverRec xf86KEYBOARD = {
 	1,
 	"keyboard",
@@ -105,15 +106,7 @@ InputDriverRec xf86KEYBOARD = {
 	NULL,
 	0
 };
-InputDriverRec xf86MOUSE = {
-	1,
-	"mouse",
-	NULL,
-	NULL,
-	NULL,
-	NULL,
-	0
-};
+#endif
 #endif
 
 /*
@@ -251,9 +244,11 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     if ((modulelist = xf86DriverlistFromConfig()))
       xf86LoadModules(modulelist, NULL);
 
+#ifdef NEW_INPUT
     /* Setup the builtin input drivers */
     xf86AddInputDriver(&xf86KEYBOARD, NULL, 0);
     xf86AddInputDriver(&xf86MOUSE, NULL, 0);
+#endif
     /* Load all input driver modules specified in the config file. */
     if ((modulelist = xf86InputDriverlistFromConfig()))
       xf86LoadModules(modulelist, NULL);
@@ -713,6 +708,7 @@ InitInput(argc, argv)
 {
     IDevPtr pDev;
     InputDriverPtr pDrv;
+    InputInfoPtr pInfo, coreKeyboard = NULL, corePointer = NULL;
 
     xf86Info.vtRequestsPending = FALSE;
     xf86Info.inputPending = FALSE;
@@ -720,27 +716,57 @@ InitInput(argc, argv)
     xtest_command_key = KEY_Begin + MIN_KEYCODE;
 #endif /* XTESTEXT1 */
 
-    /* Call the Setup function for each input device instance. */
+    /* Call the PreInit function for each input device instance. */
     pDev = xf86ConfigLayout.inputs;
     while (pDev && pDev->identifier) {
 	if ((pDrv = MatchInput(pDev)) == NULL) {
 	    xf86Msg(X_ERROR, "No Input driver matching `%s'\n", pDev->driver);
-	    /* XXX for now, just continue */
+	    /* XXX For now, just continue. */
 	    continue;
 	}
-	if (!pDrv->Setup) {
+	if (!pDrv->PreInit) {
 	    xf86MsgVerb(X_WARNING, 0,
-		"Input driver `%s' has no Setup function (ignoring)\n",
+		"Input driver `%s' has no PreInit function (ignoring)\n",
 		pDrv->driverName);
 	    continue;
 	}
-	pDrv->Setup(pDrv, pDev, 0);
+	pInfo = pDrv->PreInit(pDrv, pDev, 0);
+	if (pInfo && pInfo->flags & XI86_CORE_KEYBOARD) {
+	    if (coreKeyboard) {
+		xf86Msg(X_ERROR,
+		    "Attempt to register more than one core keyboard (%s)\n",
+		    pInfo->name);
+	    } else
+		coreKeyboard = pInfo;
+	}
+	if (pInfo && pInfo->flags & XI86_CORE_POINTER) {
+	    if (corePointer) {
+		xf86Msg(X_ERROR,
+		    "Attempt to register more than one core pointer (%s)\n",
+		    pInfo->name);
+	    } else
+		corePointer = pInfo;
+	}
     }
-    
+#ifdef NEW_INPUT
+    if (!corePointer) {
+	xf86Msg(X_WARNING, "No core pointer registered\n");
+	/* XXX register a dummy core pointer */
+    }
+    if (!coreKeyboard) {
+	xf86Msg(X_WARNING, "No core keyboard registered\n");
+	/* XXX register a dummy core keyboard */
+    }
+#endif
+
   xf86Info.pKeyboard = AddInputDevice(xf86Info.kbdProc, TRUE); 
+#ifndef NEW_INPUT
   xf86Info.pMouse =  AddInputDevice(xf86Info.mouseDev->mseProc, TRUE);
+#endif
   RegisterKeyboardDevice(xf86Info.pKeyboard); 
+#ifndef NEW_INPUT
   RegisterPointerDevice(xf86Info.pMouse); 
+#endif
 
 #ifdef XINPUT
   (xf86Info.pMouse)->public.devicePrivate = xf86Info.mouseLocal;
@@ -848,8 +874,10 @@ AbortDDX()
   /*
    * try to deinitialize all input devices
    */
+#ifndef NEW_INPUT
   if (xf86Info.pMouse)
     (xf86Info.mouseDev->mseProc)(xf86Info.pMouse, DEVICE_CLOSE);
+#endif
   if (xf86Info.pKeyboard)
     (xf86Info.kbdProc)(xf86Info.pKeyboard, DEVICE_CLOSE);
 

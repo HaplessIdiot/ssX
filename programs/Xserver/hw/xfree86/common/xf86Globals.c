@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.14 1999/05/05 14:29:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.15 1999/05/07 02:56:13 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -14,6 +14,7 @@
 #include "xf86Priv.h"
 #include "xf86Parser.h"
 #include "xf86Xinput.h"
+#include "xf86InPriv.h"
 
 /* Globals that video drivers may access */
 
@@ -92,7 +93,9 @@ xf86InfoRec xf86Info = {
 #ifdef XINPUT
 	NULL,		/* mouseLocal */
 #endif
+#ifndef NEW_INPUT
 	NULL,		/* mouseDev */
+#endif
 	-1,		/* lastEventTime */
 	FALSE,		/* vtRequestsPending */
 	FALSE,		/* inputPending */

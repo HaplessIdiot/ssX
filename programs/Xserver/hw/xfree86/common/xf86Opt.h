@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.5 1999/03/20 08:59:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.6 1999/04/27 12:05:07 dawes Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
 
@@ -48,7 +48,7 @@ int xf86SetBoolOption(pointer list, const char *name, int deflt );
 pointer xf86AddNewOption(pointer head, char *name, char *val );
 pointer xf86NewOption(char *name, char *value );
 pointer xf86NextOption(pointer list );
-pointer xf86OptionListCreate(char **options, int count);
+pointer xf86OptionListCreate(const char **options, int count);
 pointer xf86OptionListMerge(pointer head, pointer tail);
 void xf86OptionListFree(pointer opt);
 char *xf86OptionName(pointer opt);

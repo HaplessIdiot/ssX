@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.9 1999/04/15 14:39:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.10 1999/04/27 12:05:07 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -14,6 +14,7 @@
 #include "X.h"
 #include "os.h"
 #include "xf86.h"
+#include "xf86Xinput.h"
 #include "xf86Optrec.h"
 
 static Bool ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p);
@@ -76,6 +77,55 @@ xf86CollectOptions(ScrnInfoPtr pScrn, pointer extraOpts)
     }
 }
 
+/*
+ * xf86CollectInputOptions collects the options for an InputDevice.
+ * This function requires that the following has been initialised:
+ *
+ *	pInfo->conf_idev
+ *
+ * The extraOpts parameter may optionally contain a list of additional options
+ * to include.
+ *
+ * The order of precedence for options is:
+ *
+ *   extraOpts, pInfo->conf_idev->extraOptions,
+ *   pInfo->conf_idev->commonOptions, defaultOpts
+ */
+
+void
+xf86CollectInputOptions(InputInfoPtr pInfo, const char **defaultOpts,
+			pointer extraOpts)
+{
+    XF86OptionPtr tmp;
+    XF86OptionPtr extras = (XF86OptionPtr)extraOpts;
+
+    pInfo->options = NULL;
+    if (defaultOpts) {
+	pInfo->options = xf86OptionListCreate(defaultOpts, -1);
+    }
+    if (pInfo->conf_idev->commonOptions) {
+	tmp = OptionListDup(pInfo->conf_idev->commonOptions);
+	if (pInfo->options)
+	    pInfo->options = OptionListMerge(pInfo->options, tmp);
+	else
+	    pInfo->options = tmp;
+    }
+    if (pInfo->conf_idev->extraOptions) {
+	tmp = OptionListDup(pInfo->conf_idev->extraOptions);
+	if (pInfo->options)
+	    pInfo->options = OptionListMerge(pInfo->options, tmp);
+	else
+	    pInfo->options = tmp;
+    }
+    if (extras) {
+	tmp = OptionListDup(extras);
+	if (pInfo->options)
+	    pInfo->options = OptionListMerge(pInfo->options, tmp);
+	else
+	    pInfo->options = tmp;
+    }
+}
+
 /* Created for new XInput stuff -- essentially extensions to the parser	*/
 
 /* These xf86Set* functions are intended for use by non-screen specific code */
@@ -102,7 +152,10 @@ xf86SetStrOption(pointer optlist, const char *name, char *deflt)
     o.type = OPTV_STRING;
     if (ParseOptionValue(-1, optlist, &o))
         deflt = o.value.str;
-    return xstrdup(deflt);
+    if (deflt)
+	return xstrdup(deflt);
+    else
+	return NULL;
 }
 
 
@@ -140,7 +193,7 @@ xf86NextOption(pointer list)
 }
 
 pointer
-xf86OptionListCreate(char **options, int count)
+xf86OptionListCreate(const char **options, int count)
 {
 	return OptionListCreate(options, count);
 }

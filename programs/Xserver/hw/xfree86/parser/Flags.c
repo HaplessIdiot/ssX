@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.4 1998/12/05 14:40:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.5 1999/01/14 13:05:14 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -310,12 +310,17 @@ FindOptionValue (XF86OptionPtr list, const char *name)
 }
 
 XF86OptionPtr
-OptionListCreate( char **options, int count )
+OptionListCreate( const char **options, int count )
 {
 	XF86OptionPtr p = NULL;
 	char *t1, *t2;
 	int i;
 
+	if (count == -1)
+	{
+		for (count = 0; options[count]; count++)
+			;
+	}
 	if( (count % 2) != 0 )
 	{
 		fprintf( stderr, "OptionListCreate: count must be an even number.\n" );

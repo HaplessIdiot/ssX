@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.172 1999/04/29 05:12:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.173 1999/05/05 14:29:50 dawes Exp $ */
 
 
 /*
@@ -791,6 +791,7 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
   return TRUE;
 }
 
+#ifndef NEW_INPUT
 static SymTabRec MouseTab[] = {
   { PROT_MS,			"microsoft" },
   { PROT_MSC,			"mousesystems" },
@@ -1094,6 +1095,7 @@ configPointer(MouseDevPtr mouse_dev, XF86ConfPointerPtr pointerconf)
   }
   return TRUE;
 }
+#endif
 
 /*
  * figure out which layout is active, which screens are used in that layout,
@@ -1719,6 +1721,7 @@ xf86HandleConfigFile(void)
 
     /* Initialise a few things. */
 
+#ifndef NEW_INPUT
 #if defined(XINPUT)
     xf86Info.mouseLocal = mouse_assoc.device_allocate();
     xf86Info.mouseDev = (MouseDevPtr)
@@ -1726,6 +1729,7 @@ xf86HandleConfigFile(void)
     xf86Info.mouseDev->mseProc = NULL;
 #else
     xf86Info.mouseDev = (MouseDevPtr)xnfcalloc(1, sizeof(MouseDevRec));
+#endif
 #endif
 
     /* Show what the marker symbols mean */
@@ -1772,8 +1776,11 @@ xf86HandleConfigFile(void)
     if (!configFiles(xf86configptr->conf_files) ||
         !configServerFlags(xf86configptr->conf_flags,
 			   xf86ConfigLayout.options) ||
-        !configKeyboard(xf86configptr->conf_keyboard) ||
-        !configPointer(xf86Info.mouseDev,xf86configptr->conf_pointer)) {
+        !configKeyboard(xf86configptr->conf_keyboard)
+#ifndef NEW_INPUT
+        || !configPointer(xf86Info.mouseDev,xf86configptr->conf_pointer)
+#endif
+       ) {
              ErrorF ("Problem when converting the config data structures\n");
              return FALSE;
     }
