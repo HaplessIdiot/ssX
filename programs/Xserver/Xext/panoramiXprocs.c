@@ -26,7 +26,7 @@ Equipment Corporation.
 
 /* Massively rewritten by Mark Vojkovich <markv@valinux.com> */
 
-/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.28 2001/01/17 22:13:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiXprocs.c,v 3.29 2001/05/24 17:59:45 mvojkovi Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -173,7 +173,7 @@ int PanoramiXCreateWindow(ClientPtr client)
 	if (cmap)
 	    *((CARD32 *) &stuff[1] + cmap_offset) = cmap->info[j].id;
 	if ( orig_visual != CopyFromParent ) 
-	    stuff->visual = PanoramiXVisualTable[orig_visual][j];
+	    stuff->visual = PanoramiXVisualTable[(orig_visual*MAXSCREENS) + j];
         result = (*SavedProcVector[X_CreateWindow])(client);
         if(result != Success) break;
     }
@@ -2105,7 +2105,7 @@ int PanoramiXCreateColormap(ClientPtr client)
     FOR_NSCREENS_BACKWARD(j){
 	stuff->mid = newCmap->info[j].id;
 	stuff->window = win->info[j].id;
-	stuff->visual = PanoramiXVisualTable[orig_visual][j];
+	stuff->visual = PanoramiXVisualTable[(orig_visual * MAXSCREENS) + j];
 	result = (* SavedProcVector[X_CreateColormap])(client);
 	if(result != Success) break;
     }

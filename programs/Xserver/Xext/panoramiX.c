@@ -23,7 +23,7 @@ shall not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.26 2001/07/17 17:26:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/panoramiX.c,v 3.27 2001/08/01 00:44:44 tsi Exp $ */
 
 #define NEED_REPLIES
 #include <stdio.h>
@@ -71,7 +71,7 @@ DepthPtr	PanoramiXDepths;
 int		PanoramiXNumVisuals;
 VisualPtr	PanoramiXVisuals;
 /* We support at most 256 visuals */
-XID		PanoramiXVisualTable[256][MAXSCREENS];
+XID		*PanoramiXVisualTable = NULL;
 
 unsigned long XRC_DRAWABLE;
 unsigned long XRT_WINDOW;
@@ -755,11 +755,8 @@ void PanoramiXConsolidate(void)
     ScreenPtr   pScreen, pScreen2;
     PanoramiXRes *root, *defmap;
 
-    /* initialize the visual table */
-    for (i = 0; i < 256; i++) {
-	for (j = 0; j < MAXSCREENS - 1; j++) 
-	 PanoramiXVisualTable[i][j] = 0;
-    }
+    if(!PanoramiXVisualTable)
+	PanoramiXVisualTable = xcalloc(256 * MAXSCREENS, sizeof(XID));
 
     pScreen = screenInfo.screens[0];
     pVisual = pScreen->visuals; 
@@ -770,7 +767,7 @@ void PanoramiXConsolidate(void)
     PanoramiXVisuals = xcalloc(pScreen->numVisuals,sizeof(VisualRec));
 
     for (i = 0; i < pScreen->numVisuals; i++, pVisual++) {
-	PanoramiXVisualTable[pVisual->vid][0] = pVisual->vid;
+	PanoramiXVisualTable[pVisual->vid * MAXSCREENS] = pVisual->vid;
 
 	/* check if the visual exists on all screens */
 	for (j = 1; j < PanoramiXNumScreens; j++) {
@@ -789,14 +786,20 @@ void PanoramiXConsolidate(void)
 		    (pVisual->offsetBlue == pVisual2->offsetBlue))
 		{
 		    Bool AlreadyUsed = FALSE;
+#if 0
+/* Open GL should do this reduction, not us */
 		    for (l = 0; l < 256; l++) {
-			if (pVisual2->vid == PanoramiXVisualTable[l][j]) {	
+			if (pVisual2->vid == 
+				PanoramiXVisualTable[(l * MAXSCREENS) + j]) 
+			{	
 			    AlreadyUsed = TRUE;
 			    break;
 			}
 		    }
+#endif
 		    if (!AlreadyUsed) {
-			PanoramiXVisualTable[pVisual->vid][j] = pVisual2->vid;
+			PanoramiXVisualTable[(pVisual->vid * MAXSCREENS) + j] =
+					 pVisual2->vid;
 			break;
 		    }
 		}
@@ -805,14 +808,14 @@ void PanoramiXConsolidate(void)
 	
 	/* if it doesn't exist on all screens we can't use it */
 	for (j = 0; j < PanoramiXNumScreens; j++) {
-	    if (!PanoramiXVisualTable[pVisual->vid][j]) {
-		PanoramiXVisualTable[pVisual->vid][0] = 0;
+	    if (!PanoramiXVisualTable[(pVisual->vid * MAXSCREENS) + j]) {
+		PanoramiXVisualTable[pVisual->vid * MAXSCREENS] = 0;
 		break;
 	    }
 	}
 
 	/* if it does, make sure it's in the list of supported depths and visuals */
-	if(PanoramiXVisualTable[pVisual->vid][0]) {
+	if(PanoramiXVisualTable[pVisual->vid * MAXSCREENS]) {
 	    Bool GotIt = FALSE;
 
 	    PanoramiXVisuals[PanoramiXNumVisuals].vid = pVisual->vid;
