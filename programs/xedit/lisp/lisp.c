@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.20 2001/10/15 15:36:50 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.21 2001/10/18 03:15:22 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -997,26 +997,29 @@ LispAllocSeg(LispMac *mac)
 void
 LispMark(LispObj *obj)
 {
-restart:
     if (obj->mark)
 	return;
 
     switch (obj->type) {
-	case LispNil_t:		/* only NIL has this value */
-	case LispTrue_t:	/* only T has this value */
-	    return;
+	case LispNil_t:
+	    if (obj == NIL)
+		return;
+	    break;
+	case LispTrue_t:
+	    if (obj == T)
+		return;
+	    break;
 	case LispLambda_t:
-	    if (obj->data.lambda.type != LispLambda)
-		obj->data.lambda.name->mark = LispTrue_t;
-	    obj = obj->data.lambda.code;
-	    goto restart;
+	    LispMark(obj->data.lambda.name);
+	    LispMark(obj->data.lambda.code);
+	    break;
 	case LispQuote_t:
 	case LispBackquote_t:
-	    obj = obj->data.quote;
-	    goto restart;
+	    LispMark(obj->data.quote);
+	    break;
 	case LispComma_t:
-	    obj = obj->data.comma.eval;
-	    goto restart;
+	    LispMark(obj->data.comma.eval);
+	    break;
 	case LispCons_t:
 	    /* circular list on car */
 	    if (CAR(obj) == obj) {
@@ -1025,33 +1028,20 @@ restart:
 	    }
 	    for (; obj->type == LispCons_t && obj->mark == LispNil_t;
 		 obj = CDR(obj)) {
-		switch (CAR(obj)->type) {
-		    case LispNil_t:
-		    case LispTrue_t:
-			break;
-		    case LispAtom_t:
-		    case LispString_t:
-		    case LispReal_t:
-		    case LispCharacter_t:
-		    case LispInteger_t:
-			CAR(obj)->mark = LispTrue_t;
-			break;
-		    default:
-			LispMark(CAR(obj));
-			break;
-		}
+		LispMark(CAR(obj));
 		obj->mark = LispTrue_t;
 	    }
 	    if (obj->type != LispCons_t)
-		goto restart;
+		LispMark(obj);
 	    return;
 	case LispArray_t:
 	    LispMark(obj->data.array.list);
-	    obj = obj->data.array.dim;
-	    goto restart;
+	    LispMark(obj->data.array.dim);
+	    break;
 	case LispStruct_t:
-	    obj = obj->data.struc.fields;
-	    goto restart;
+	    /* def is protected when protecting STR */
+	    LispMark(obj->data.struc.fields);
+	    break;
 	default:
 	    break;
     }
