@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.129 1999/06/12 15:37:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.130 1999/06/12 17:30:16 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -1025,6 +1025,17 @@ ddxProcessArgument(int argc, char **argv, int i)
    * Note: can't use xalloc/xfree here because OsInit() hasn't been called
    * yet.  Use malloc/free instead.
    */
+
+  static Bool beenHere = FALSE;
+
+  if (!beenHere) {
+    /*
+     * This initialises our hook into VErrorF() for catching log messages
+     * that are generated before OsInit() is called.
+     */
+    OsVendorVErrorFProc = OsVendorVErrorF;
+    beenHere = TRUE;
+  }
 
   /* First the options that are only allowed for root */
   if (getuid() == 0)

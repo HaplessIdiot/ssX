@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.234 1999/06/20 05:23:19 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.235 1999/06/20 15:02:44 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -528,7 +528,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #define BuildXvLibrary		YES
 #endif
 #ifndef BuildXantiLibrary
-#define BuildXantiLibrary	YES
+#define BuildXantiLibrary	NO	/* See the note for BuildXantiExt */
 #endif
 #ifndef BuildGLXLibrary
 #define BuildGLXLibrary		YES
@@ -594,10 +594,11 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 /*
- * Build the Antialiased Font Extension 
+ * Build the Antialiased Font Extension (this has been abandoned, at least
+ * temporarily)
  */
 #ifndef BuildXantiExt
-#define BuildXantiExt			YES
+#define BuildXantiExt			NO
 #endif
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.50 1999/06/20 05:23:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.51 1999/06/20 16:35:38 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1071,11 +1071,16 @@ VWrite(int verb, const char *f, va_list args)
 	if (logfile)
 	    fwrite(buffer, len, 1, logfile);
 	else {
-	    /* XXX This isn't effective yet */
+	    /*
+	     * Note, this code is used before OsInit() has been called, so
+	     * xalloc and friends can't be used.
+	     */
 	    if (len > unused) {
 		size += 1024;
-		saveBuffer = xnfrealloc(saveBuffer, size);
 		unused += 1024;
+		saveBuffer = realloc(saveBuffer, size);
+		if (!saveBuffer)
+		    FatalError("realloc() failed while saving log messages\n");
 	    }
 	    unused -= len;
 	    memcpy(saveBuffer + pos, buffer, len);
@@ -1219,7 +1224,7 @@ xf86ErrorF(const char *format, ...)
     va_end(ap);
 }
 
-static void
+void
 OsVendorVErrorF(const char *f, va_list args)
 {
     VWrite(-1, f, args);
@@ -1246,12 +1251,13 @@ xf86LogInit()
     if ((logfile = fopen(xf86LogFile, "w")) == NULL)
 	FatalError("Cannot open log file \"%s\"\n", xf86LogFile);
     setvbuf(logfile, NULL, _IONBF, 0);
-    OsVendorVErrorFProc = OsVendorVErrorF;
+    if (!OsVendorVErrorFProc)
+	OsVendorVErrorFProc = OsVendorVErrorF;
 
     /* Flush saved log information */
     if (saveBuffer && size > 0) {
-	fwrite(saveBuffer, size, 1, logfile);
-	xfree(saveBuffer);
+	fwrite(saveBuffer, pos, 1, logfile);
+	free(saveBuffer);	/* Note, must be free(), not xfree() */
 	saveBuffer = 0;
 	size = 0;
     }

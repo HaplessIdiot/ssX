@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.48 1999/06/12 17:30:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.49 1999/06/20 05:23:31 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -138,9 +138,9 @@ Bool xf86PathIsSafe(const char *path);
 
 extern DisplayModeRec xf86DefaultModes [];
 
-/* xf86Dl.c */
+/* xf86DoScanPci.c */
 
-void* xf86LoadModule(const char *file, const char *path);
+void DoScanPci(int argc, char **argv, int i);
 
 /* xf86Events.c */
 
@@ -155,6 +155,7 @@ void xf86SigHandler(int signo);
 /* xf86Helper.c */
 void xf86LogInit(void);
 void xf86CloseLog(void);
+void OsVendorVErrorF(const char *f, va_list args);
 
 /* xf86Init.c */
 Bool xf86LoadModules(char **list, pointer *optlist);

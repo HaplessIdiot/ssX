@@ -24,7 +24,7 @@
  * Permedia2OutIndReg() and Permedia2InIndReg() are used to access 
  * the indirect Permedia2 RAMDAC registers only.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.6 1999/02/07 06:18:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2ramdac.c,v 1.7 1999/06/20 08:41:34 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -92,7 +92,7 @@ unsigned char
 Permedia2ReadData (ScrnInfoPtr pScrn)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-    while(GLINT_READ_REG(InFIFOSpace)<1);
+    DACDelay(5);
     return(GLINT_READ_REG(PM2DACData));
 }
 
