@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.6 2000/02/08 17:18:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.7 2000/02/09 19:56:19 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.9 1999/05/27 03:43:46 jens Exp $
 
 #define IHaveModules
@@ -213,7 +213,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		glthread.c \
 		hash.c \
 		image.c \
-		imaging.o \
+		imaging.c \
 		light.c \
 		lines.c \
 		logic.c \
