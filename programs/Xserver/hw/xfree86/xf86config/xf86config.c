@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.64 2003/01/20 05:29:07 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.65 2003/02/07 05:46:53 paulo Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -349,7 +349,8 @@ static void
 getstring(char *s)
 {
 	char *cp;
-	fgets(s, 80, stdin);
+	if (fgets(s, 80, stdin) == NULL)
+		exit(1);
 	cp = strchr(s, '\n');
 	if (cp)
 		*cp=0;
@@ -363,88 +364,109 @@ getstring(char *s)
  * We also do the same for QNX4, since we use the OS mouse drivers.
  */
 
-static char *mousetype_identifier[] = {
+int	M_OSMOUSE,	M_WSMOUSE,		M_AUTO,
+	M_SYSMOUSE,	M_MOUSESYSTEMS, 	M_PS2,
+	M_MICROSOFT,	M_BUSMOUSE,		M_IMPS2,
+	M_EXPLORER_PS2, M_GLIDEPOINT_PS2,	M_MOUSEMANPLUS_PS2,
+	M_NETMOUSE_PS2, M_NETSCROLL_PS2,	M_THINKINGMOUSE_PS2,
+	M_ACECAD,	M_GLIDEPOINT,		M_INTELLIMOUSE,
+	M_LOGITECH,	M_MMHITTAB,		M_MMSERIES,
+	M_MOUSEMAN,	M_THINKINGMOUSE;
+
+struct {
+	char *name;
+	int *ident;
+	char *desc;
+} mouse_info[] = {
 #if defined(__UNIXOS2__) || defined(QNX4)
-# define M_OSMOUSE		0
-	"OSMOUSE",
-# define M_AUTO			(M_OSMOUSE + 1)
-#else
-# define M_AUTO			0
+#define DEF_PROTO_STRING	"OSMOUSE"
+	{"OSMOUSE",		&M_OSMOUSE,
+	 "OSMOUSE"
+	},
 #endif
-	"Auto",
 #ifdef WSCONS_SUPPORT
-# define M_WSMOUSE		(M_AUTO + 1)
-# define WS_MOUSE_STRING	"wsmouse"
-	WS_MOUSE_STRING,
-# define M_MOUSESYSTEMS		(M_WSMOUSE + 1)
-#else
-# define M_MOUSESYSTEMS		(M_AUTO + 1)
+#define WS_MOUSE_STRING		"wsmouse"
+#define DEF_PROTO_STRING	WS_MOUSE_STRING
+	{WS_MOUSE_MOUSE_STRING,	&M_WSMOUSE,
+	 "wsmouse protocol"
+	},
 #endif
+#ifndef DEF_PROTO_STRING
+#define DEF_PROTO_STRING	"Auto"
+#endif
+	{"Auto",		&M_AUTO,
+	 "Auto detect"
+	},
+	{"SysMouse",		&M_SYSMOUSE,
+	 "SysMouse"
+	},
 #define M_MOUSESYSTEMS_STRING	"MouseSystems"
-	M_MOUSESYSTEMS_STRING,
-#define M_PS2			(M_MOUSESYSTEMS + 1)
-	"PS/2",
-#define M_IMPS2			(M_PS2 + 1)
-	"IMPS/2",
-#define M_EXPLORER_PS2		(M_IMPS2 + 1)
-	"ExplorerPS/2",
-#define M_THINKINGMOUSE_PS2	(M_EXPLORER_PS2 + 1)
-	"ThinkingMousePS/2",
-#define M_MOUSEMAN_PS2		(M_THINKINGMOUSE_PS2 + 1)
-	"MouseManPlusPS/2",
-#define M_GLIDEPOINT_PS2	(M_MOUSEMAN_PS2 + 1)
-	"GlidePointPS/2",
-#define M_NETMOUSE_PS2		(M_GLIDEPOINT_PS2 + 1)
-	"NetMousePS/2",
-#define M_NETSCROLL_PS2		(M_NETMOUSE_PS2 + 1)
-	"NetScrollPS/2",
-#define M_MICROSOFT		(M_NETSCROLL_PS2 + 1)
+	{M_MOUSESYSTEMS_STRING,	&M_MOUSESYSTEMS,
+	 "Mouse Systems (3-button protocol)"
+	},
+	{"PS/2",		&M_PS2,
+	 "PS/2 Mouse"
+	},
 #define M_MICROSOFT_STRING	"Microsoft"
-	M_MICROSOFT_STRING,
-#define M_BUSMOUSE		(M_MICROSOFT + 1)
-	"Busmouse",
-#define M_LOGITECH		(M_BUSMOUSE + 1)
-	"Logitech",
-#define M_MOUSEMAN		(M_LOGITECH + 1)
-	"MouseMan",
-#define M_MMSERIES		(M_MOUSEMAN + 1)
-	"MMSeries",
-#define M_MMHITTAB		(M_MMSERIES + 1)
-	"MMHitTab",
-#define M_INTELLIMOUSE		(M_MMHITTAB + 1)
-	"IntelliMouse",
+	{M_MICROSOFT_STRING,	&M_MICROSOFT,
+	 "Microsoft compatible (2-button protocol)"
+	},
+	{"Busmouse",		&M_BUSMOUSE,
+	 "Bus Mouse"
+	},
+#ifndef __FreeBSD__
+	{"IMPS/2",		&M_IMPS2,
+	 "IntelliMouse PS/2"
+	},
+	{"ExplorerPS/2",	&M_EXPLORER_PS2,
+	 "Explorer PS/2"
+	},
+	{"GlidePointPS/2",	&M_GLIDEPOINT_PS2,
+	 "GlidePoint PS/2"
+	},
+	{"MouseManPlusPS/2",	&M_MOUSEMANPLUS_PS2,
+	 "MouseManPlus PS/2"
+	},
+	{"NetMousePS/2",	&M_NETMOUSE_PS2,
+	 "NetMouse PS/2"
+	},
+	{"NetScrollPS/2",	&M_NETSCROLL_PS2,
+	 "NetScroll PS/2"
+	},
+	{"ThinkingMousePS/2",	&M_THINKINGMOUSE_PS2,
+	 "ThinkingMouse PS/2"
+	},
+#endif
+	{"AceCad",		&M_ACECAD,
+	 "AceCad"
+	},
+	{"GlidePoint",		&M_GLIDEPOINT,
+	 "GlidePoint"
+	},
+	{"IntelliMouse",	&M_INTELLIMOUSE,
+	 "Microsoft IntelliMouse"
+	},
+	{"Logitech",		&M_LOGITECH,
+	 "Logitech Mouse (serial, old type, Logitech protocol)"
+	},
+	{"MMHitTab",		&M_MMHITTAB,
+	 "MM HitTablet"
+	},
+	{"MMSeries",		&M_MMSERIES,
+	 "MM Series"	/* XXXX These descriptions should be improved. */
+	},
+	{"MouseMan",		&M_MOUSEMAN,
+	 "Logitech MouseMan (Microsoft compatible)"
+	},
+	{"ThinkingMouse",	&M_THINKINGMOUSE,
+	 "ThinkingMouse"
+	},
 };
 
 #ifndef __UNIXOS2__
 static char *mouseintro_text =
 "First specify a mouse protocol type. Choose one from the following list:\n"
 "\n";
-
-static char *mousetype_name[] = {
-#ifdef M_OSMOUSE
-	"OSMOUSE",
-#endif
-	"Auto detect",
-#ifdef WSCONS_SUPPORT
-        "wsmouse protocol",
-#endif
-	"Mouse Systems (3-button protocol) & FreeBSD moused protocol",
-	"PS/2 Mouse",
-	"IntelliMouse PS/2",
-	"Explorer PS/2",
-	"ThinkingMouse PS/2",
-	"MouseManPlus PS/2",
-	"GlidePoint PS/2",
-	"NetMouse PS/2",
-	"NetScroll PS/2",
-	"Microsoft compatible (2-button protocol)",
-	"Bus Mouse",
-	"Logitech Mouse (serial, old type, Logitech protocol)",
-	"Logitech MouseMan (Microsoft compatible)",
-	"MM Series",	/* XXXX These descriptions should be improved. */
-	"MM HitTablet",
-	"Microsoft IntelliMouse",
-};
 
 static char *mousedev_text =
 "Now give the full device name that the mouse is connected to, for example\n"
@@ -458,9 +480,9 @@ static char *mousedev_text =
 "\n";
 
 static char *mousecomment_text =
-"If you have a two-button or three-button mouse, it is most likely of type\n"
-M_MICROSOFT_STRING ", if you have a wheel mouse, it can probably support both\n"
-"protocol " M_MICROSOFT_STRING " and " M_MOUSESYSTEMS_STRING ".\n"
+"The recommended protocol is " DEF_PROTO_STRING ". If you have a very old mouse\n"
+"or don't want OS support or auto detection, and you have a two-button\n"
+"or three-button serial mouse, it is most likely of type " M_MICROSOFT_STRING ".\n"
 #ifdef WSCONS_SUPPORT
 "\n"
 "If your system uses the wscons console driver, with a PS/2 type mouse,\n"
@@ -504,24 +526,35 @@ static void
 mouse_configuration(void) {
 
 #if !defined(__UNIXOS2__) && !defined(QNX4)
-	int i;
+	int i, j;
 	char s[80];
-	printf("%s", mouseintro_text);
 
-#define MOUSETYPE_COUNT sizeof(mousetype_name)/sizeof(char *)	
+#define MOUSETYPE_COUNT sizeof(mouse_info)/sizeof(mouse_info[0])
 	for (i = 0; i < MOUSETYPE_COUNT; i++)
-		printf("%2d.  %s\n", i + 1, mousetype_name[i]);
+		*(mouse_info[i].ident) = i;
 
-	printf("\n");
+	for (i = 0; i < MOUSETYPE_COUNT; i++)
+		printf("%2d.  %s\n", i + 1, mouse_info[i].name);
 
-	printf("%s", mousecomment_text);
-	
-	printf("Enter a protocol number: ");
-	getstring(s);
-	config_mousetype = atoi(s) - 1;
-	if (config_mousetype < 0 || config_mousetype >= MOUSETYPE_COUNT)
-		config_mousetype = M_AUTO;
-
+	for (i=0;;) {
+		emptylines();
+		printf("%s", mouseintro_text);
+		for (j = i; j < i + 14 && j < MOUSETYPE_COUNT; j++)
+			printf("%2d.  %s\n", j + 1, mouse_info[j].name);
+		printf("\n");
+		printf("%s", mousecomment_text);
+		printf("Enter a protocol number: ");
+		getstring(s);
+		if (strlen(s) == 0) {
+			i += 14;
+			if (i >= MOUSETYPE_COUNT)
+				i = 0;
+			continue;
+		}
+		config_mousetype = atoi(s) - 1;
+		if (config_mousetype >= 0 && config_mousetype < MOUSETYPE_COUNT)
+			break;
+	}
 	printf("\n");
 
 	if (config_mousetype == M_LOGITECH) {
@@ -565,20 +598,18 @@ mouse_configuration(void) {
 		printf("\n");
 	}
 
-	switch (config_mousetype) {
-	case M_MICROSOFT : /* Microsoft compatible */
+	if (config_mousetype == M_MICROSOFT) {
 		if (config_chordmiddle)
 			printf("%s", threebuttonmousecomment_text);
 		else
 			printf("%s", twobuttonmousecomment_text);
-		break;
-	case M_MOUSESYSTEMS : /* Mouse Systems. */
-	case M_INTELLIMOUSE : /* IntelliMouse */
+	}
+	else if (config_mousetype == M_MOUSESYSTEMS ||
+		 config_mousetype == M_INTELLIMOUSE) {
 		printf("%s", threebuttonmousecomment_text);
-		break;
-	default :
+	}
+	else {
 		printf("%s", unknownbuttonsmousecomment_text);
-		break;
 	}
 
 	printf("\n");
@@ -2495,7 +2526,7 @@ write_XF86Config(char *filename)
 	 */
 	fprintf(f, "%s", pointersection_text1);
 	fprintf(f, "    Option \"Protocol\"    \"%s\"\n",
-		mousetype_identifier[config_mousetype]);
+		mouse_info[config_mousetype].name);
 #if !defined(__UNIXOS2__) && !defined(QNX4)
 	fprintf(f, "    Option \"Device\"      \"%s\"\n", config_pointerdevice);
 #endif
