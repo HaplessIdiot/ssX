@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_swtcl.c,v 1.5 2003/05/06 23:52:08 daenzer Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_swtcl.c,v 1.1.1.2tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -574,9 +574,12 @@ static void *r200_alloc_elts( r200ContextPtr rmesa, int nr )
 #define EMIT_ELT(offset, x) do {                                \
         int off = offset + ( ( (GLuint)dest & 0x2 ) >> 1 );     \
         GLushort *des = (GLushort *)( (GLuint)dest & ~0x2 );    \
-        (des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x); } while (0)
+        (des)[ off + 1 - 2 * ( off & 1 ) ] = (GLushort)(x);     \
+        (void)rmesa; } while (0)
 #else
-#define EMIT_ELT(offset, x) (dest)[offset] = (GLushort) (x)
+#define EMIT_ELT(offset, x) do {                                \
+        (dest)[offset] = (GLushort) (x);                        \
+        (void)rmesa; } while (0)
 #endif
 #define EMIT_TWO_ELTS(offset, x, y)  *(GLuint *)(dest+offset) = ((y)<<16)|(x);
 #define INCR_ELTS( nr ) dest += nr
@@ -1226,7 +1229,7 @@ void r200InitSwtcl( GLcontext *ctx )
 {
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLuint size = TNL_CONTEXT(ctx)->vb.Size;
+   GLuint size = tnl->vb.Size;
    static int firsttime = 1;
 
    if (firsttime) {
