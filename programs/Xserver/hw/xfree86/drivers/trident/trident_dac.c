@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.72 2003/04/15 22:13:43 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.74 2003/10/08 15:48:42 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1091,14 +1091,15 @@ TridentLoadCursorImage(
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int vgaIOBase;
+    int programmed_offset = pTrident->CursorOffset / 1024;
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
 
-    memcpy((CARD8 *)pTrident->FbBase + (pScrn->videoRam * 1024) - 4096,
+    memcpy((CARD8 *)pTrident->FbBase + pTrident->CursorOffset,
 			src, pTrident->CursorInfoRec->MaxWidth * 
 			pTrident->CursorInfoRec->MaxHeight / 4);
 
-    OUTW(vgaIOBase + 4, (((pScrn->videoRam-4) & 0xFF) << 8) | 0x44);
-    OUTW(vgaIOBase + 4, ((pScrn->videoRam-4) & 0xFF00) | 0x45);
+    OUTW(vgaIOBase + 4, ((programmed_offset & 0xFF) << 8) | 0x44);
+    OUTW(vgaIOBase + 4, (programmed_offset & 0xFF00) | 0x45);
 }
 
 static Bool 
@@ -1114,15 +1115,47 @@ TridentUseHWCursor(ScreenPtr pScreen, CursorPtr pCurs)
     return TRUE;
 }
 
+#define CURSOR_WIDTH 64
+#define CURSOR_HEIGHT 64
+#define CURSOR_ALIGN(x,bytes) (((x) + ((bytes) - 1)) & ~((bytes) - 1))
+
 Bool 
 TridentHWCursorInit(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     xf86CursorInfoPtr infoPtr;
-    int memory = pScrn->displayWidth * pScrn->virtualY * pScrn->bitsPerPixel/8;
+    FBAreaPtr          fbarea;
+    int                width;
+    int		       width_bytes;
+    int                height;
+    int                size_bytes;
 
-    if (memory > (pScrn->videoRam * 1024 - 4096)) return FALSE;
+    size_bytes                = CURSOR_WIDTH * 4 * CURSOR_HEIGHT;
+    width                     = pScrn->displayWidth;
+    width_bytes		      = width * (pScrn->bitsPerPixel / 8);
+    height                    = (size_bytes + width_bytes - 1) / width_bytes;
+    fbarea                    = xf86AllocateOffscreenArea(pScreen,
+							  width,
+							  height,
+							  1024,
+							  NULL,
+							  NULL,
+							  NULL);
+
+    if (!fbarea) {
+	pTrident->CursorOffset = 0;
+	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		   "Hardware cursor disabled"
+		   " due to insufficient offscreen memory\n");
+	return FALSE;
+    } else {
+	pTrident->CursorOffset = CURSOR_ALIGN((fbarea->box.x1 + 
+					       fbarea->box.y1 * width) *
+					       pScrn->bitsPerPixel / 8,
+					       1024);
+    }
+
     infoPtr = xf86CreateCursorInfoRec();
     if(!infoPtr) return FALSE;
     

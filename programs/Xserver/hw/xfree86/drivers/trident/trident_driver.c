@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.182 2003/09/05 22:07:28 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.183 2003/09/24 02:43:28 dawes Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2988,6 +2988,33 @@ TRIDENTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		xf86FreeInt10(pTrident->Int10);
 	    return FALSE;
 	}
+    }
+
+    {
+    	BoxRec AvailFBArea;
+
+	AvailFBArea.x1 = 0;
+    	AvailFBArea.y1 = 0;
+    	AvailFBArea.x2 = pScrn->displayWidth;
+    	AvailFBArea.y2 = pTrident->FbMapSize / (pScrn->displayWidth *
+					    pScrn->bitsPerPixel / 8);
+
+    	if (AvailFBArea.y2 > 2047) AvailFBArea.y2 = 2047; 
+
+    	if (xf86InitFBManager(pScreen, &AvailFBArea)) {
+	    int cpp = pScrn->bitsPerPixel / 8;
+	    int area = AvailFBArea.y2 * pScrn->displayWidth;
+	    int areaoffset = area * cpp;
+
+    	    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+	       "Using %i scanlines of offscreen memory for area's \n",
+ 	       AvailFBArea.y2 - pScrn->virtualY);
+
+	    if (xf86InitFBManagerLinear(pScreen, area, ((pTrident->FbMapSize/cpp) - area))) {
+		xf86DrvMsg(scrnIndex, X_INFO, 
+			"Using %ld bytes of offscreen memory for linear (offset=0x%x)\n", (pTrident->FbMapSize - areaoffset), areaoffset);
+	    }
+    	}
     }
 
     if (Is3Dchip) {

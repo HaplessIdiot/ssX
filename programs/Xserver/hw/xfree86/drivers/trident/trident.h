@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.58 2003/04/23 21:51:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.59 2003/09/05 22:07:28 alanh Exp $ */
 /*#define VBE_INFO*/
 
 #ifndef _TRIDENT_H_
@@ -126,6 +126,7 @@ typedef struct {
     CARD32		DrawFlag;
     CARD16		LinePattern;
     RamDacRecPtr	RamDacRec;
+    int			CursorOffset;
     xf86CursorInfoPtr	CursorInfoRec;
     xf86Int10InfoPtr	Int10;
     vbeInfoPtr		pVbe;
