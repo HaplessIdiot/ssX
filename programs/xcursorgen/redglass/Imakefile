@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xcursorgen/redglass/Imakefile,v 1.8 2002/11/25 21:52:58 tsi Exp $
 
 #define CursorSources(name) name-16.png name-24.png name-32.png name-48.png name-64.png
 
@@ -51,8 +51,8 @@ install.link:: $(DESTDIR)$(THEMEDIR)/src				@@\
 
 CursorTarget(X_cursor)
 CursorLinkTarget(arrow,right_ptr)
-CursorTarget(base_arrow_down)
-CursorTarget(base_arrow_up)
+CursorTarget(based_arrow_down)
+CursorTarget(based_arrow_up)
 /* CursorTarget(boat) */
 /* CursorTarget(bogosity) */
 CursorTarget(bottom_left_corner)
@@ -68,7 +68,7 @@ CursorTarget(cross)
 CursorLinkTarget(cross_reverse,cross)
 CursorLinkTarget(crosshair,cross)
 CursorTarget(dot)
-CursorTarget(dot_box_mask)
+CursorTarget(dotbox)
 CursorTarget(double_arrow)
 CursorLinkTarget(draft_large,right_ptr)
 CursorLinkTarget(draft_small,right_ptr)
