@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.82 2000/05/10 18:55:29 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.83 2000/05/28 16:57:03 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -706,7 +706,10 @@ GLINTProbe(DriverPtr drv, int flags)
 
 		    pPci = xf86GetPciInfoForEntity(usedChips[i]);
 
-		    while (*checkusedPci != NULL) {
+		 
+		    /* Only claim other chips when GAMMA is used */
+		    if (pPci->chipType == PCI_CHIP_GAMMA) {
+		      while (*checkusedPci != NULL) {
 	    	        int eIndex;
 	    	    	/* make sure we claim all but our source device */
 	    	    	if ((pPci->bus ==    (*checkusedPci)->bus && 
@@ -726,6 +729,7 @@ GLINTProbe(DriverPtr drv, int flags)
 			    xf86AddEntityToScreen(pScrn,eIndex);
 	    	    	} 
 	    	    	checkusedPci++;
+		      }
 		    }
 
 		    /* Fill in what we can of the ScrnInfoRec */
@@ -1603,10 +1607,12 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 			pGlint->MaxClock = 300000;
 			break;
 		    case 24:
+			/* Not sure about the 24 & 32 bpp clocks, ... */
 			pGlint->MaxClock = 150000;
 			break;
 		    case 32:
-			pGlint->MaxClock = 110000;
+			/* Not sure about the 24 & 32 bpp clocks, ... */
+			pGlint->MaxClock = 150000;
 			break;
 		}
 	}
@@ -2469,8 +2475,10 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         case PCI_VENDOR_TI_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
         case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-        case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 	    Permedia2AccelInit(pScreen);
+	    break;
+	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+	    Permedia3AccelInit(pScreen);
 	    break;
 	case PCI_VENDOR_TI_CHIP_PERMEDIA:
 	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
@@ -2627,8 +2635,10 @@ GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags)
     		case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-    		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 			Permedia2InitializeEngine(pScrn);
+			break;
+    		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+			Permedia3InitializeEngine(pScrn);
 			break;
     		case PCI_VENDOR_TI_CHIP_PERMEDIA:
     		case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:
@@ -2725,8 +2735,10 @@ GLINTEnterVT(int scrnIndex, int flags)
     	case PCI_VENDOR_TI_CHIP_PERMEDIA2:
     	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2:
     	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V:
-    	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
 		Permedia2InitializeEngine(pScrn);
+		break;
+    	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA3:
+		Permedia3InitializeEngine(pScrn);
 		break;
     	case PCI_VENDOR_TI_CHIP_PERMEDIA:
     	case PCI_VENDOR_3DLABS_CHIP_PERMEDIA:

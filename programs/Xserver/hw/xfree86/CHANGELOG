@@ -1,4 +1,8 @@
 XFre86 4.0c (?? June 2000)
+ 235. Update support for Appian J2000 board with dual PM3 chips, and
+      add partial acceleration (#3977, Sven Luther).
+ 234. Only claim other devices on the same card when gamma chip is used
+      in the glint driver (Alan Hourihane).
  233. Separate offscreen memory manager API from implementation to facilitate
       driver replacement of the default manager (Mark Vojkovich).
  232. Add Option "TexturedVideo" to have the Matrox driver optionally use
@@ -10446,4 +10450,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1175 2000/06/09 22:50:53 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1176 2000/06/10 16:13:18 mvojkovi Exp $
