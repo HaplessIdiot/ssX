@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxddspan.c,v 1.2 2000/11/30 20:37:45 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -1250,7 +1250,7 @@ GetFbParams(fxMesaContext fxMesa,
 {
     FxU32 physicalStrideInBytes, bufferOffset;
     FxU32 strideInBytes = info->strideInBytes;
-    FxU32 lfbPtr = (FxU32) (info->lfbPtr);
+    char *lfbPtr = (char *) (info->lfbPtr);
 
     /*
      * These two come directly from the info structure.
@@ -1277,7 +1277,7 @@ GetFbParams(fxMesaContext fxMesa,
      *             < bufferOffset&(info->strideInBytes-1)
      * the buffer begins in the forbidden zone.  We assert for this.
      */
-    bufferOffset = lfbPtr - (FxU32) backBufferInfo->lfbPtr;
+    bufferOffset = lfbPtr - (char *) backBufferInfo->lfbPtr;
     physicalStrideInBytes
         = (fxMesa->screen_width * elementSize + TILE_WIDTH_IN_BYTES - 1)
         & ~(TILE_WIDTH_IN_BYTES - 1);
@@ -1289,7 +1289,7 @@ GetFbParams(fxMesaContext fxMesa,
      * This is the address of the next physical line.
      */
     ReadParamsp->lfbWrapPtr
-        = (void *) ((FxU32) backBufferInfo->lfbPtr
+        = (void *) ((char *) backBufferInfo->lfbPtr
                     + (bufferOffset & ~(strideInBytes - 1))
                     + (TILE_HEIGHT_IN_LINES) * strideInBytes);
 }
