@@ -18,7 +18,7 @@
 1.  Supported Cards, RAMDACs, and Bits Per Pixel
 
 The base support in the Mach32 X server is for 8 bpp, with a dot clock of up to
-80 MHz.  At present 16 bpp is supported on only three of the many RAMDACs; how­
+80 MHz.  At present 16 bpp is supported on only three of the many RAMDACs; how-
 ever those three cover the most commonly sold cards.
 
       RAMDAC	  Max Dot Clock   BPP	Max Resolution	 Video RAM Required
@@ -40,7 +40,7 @@ command line option, or can be specified in the XF86Config file.
 
 The ATI68875 (or the TLC34075) is used on the Graphics Ultra + and the Graphics
 Ultra Pro.  The Brooktree 481 is used on most Graphics Wonder cards.  The
-AT&T20C491 is used on many of the OEM cards that are built into component sys­
+AT&T20C491 is used on many of the OEM cards that are built into component sys-
 tems.
 
 The BIOS detection unfortunately lumps the BT481 and the AT&T20C49x together,
@@ -54,7 +54,7 @@ below.
 2.  XF86Config options
 
 Several options are supported in the "Device" section for the Mach32 X server.
-Most of them should be auto-detected if needed, but a few may need to be delib­
+Most of them should be auto-detected if needed, but a few may need to be delib-
 erately set.  For example, the "Clocks" entry should almost certainly be set
 after first running the server with the -probeonly option, so as to avoid the
 probe in later runs.
@@ -187,7 +187,7 @@ server.  They include:
      has been known to lose parts of characters.  While this should be fixed,
      if it occurs try running the server with Option "no_linear".
 
-Bug reports should be sent to XFree86@XFree86.org or posted to the comp.win­
+Bug reports should be sent to XFree86@XFree86.org or posted to the comp.win-
 dows.x.i386unix newsgroup.
 
 

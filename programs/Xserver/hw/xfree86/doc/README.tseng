@@ -29,7 +29,7 @@ The SVGA driver for ET4000 chipsets only supports 8bpp mode (256 colors).  hi-
 and truecolor modes are not supported.
 
 As opposed to the separate XF86_W32 server, there is no support for special
-RAMDACs in the SVGA server yet. This means that W32 cards with 16-bit RAM­
+RAMDACs in the SVGA server yet. This means that W32 cards with 16-bit RAM-
 DAC/clockchip combinations (most ET4000W32p-based cards fall in that category)
 will not be able to use the features that allow higher pixel clocks and higher
 color depths.
@@ -71,7 +71,7 @@ Acceleration does not work together with linear memory mode, and the server
 
 
 
-disables linear memory mode if acceleration isn't disabled in the Device sec­
+disables linear memory mode if acceleration isn't disabled in the Device sec-
 tion.
 
 To disable acceleration, put the following in the Device section of your
@@ -88,7 +88,7 @@ Device section of your XF86Config:
 
 3.  ET6000 driver features
 
-In addition to the features in the ET4000 driver, the SVGA ET6000 server sup­
+In addition to the features in the ET4000 driver, the SVGA ET6000 server sup-
 ports all possible color depths in the SVGA server: 8bpp, 16bpp (both at 5-5-5
 and 5-6-5 color resolutions), 24bpp and 32 bpp.
 
@@ -97,12 +97,12 @@ performance at 8bpp, linear addressing must be enabled. On some systems (mostly
 non-PCI), you may have to specify MemBase in addition to telling the server is
 has to run in "linear" mode.
 
-Linear memory mode (as opposed to the default, banked memory layout) is sup­
+Linear memory mode (as opposed to the default, banked memory layout) is sup-
 ported. It is required for the 16/24/32 bpp modes. The server will exit with an
 appropriate error message when attempting to run 16/24/32 bpp modes without
 linear memory mode enabled.
 
-To enable linear memory, put the following in the SVGA section of your XF86Con­
+To enable linear memory, put the following in the SVGA section of your XF86Con-
 fig:
 
        Option "linear"
@@ -189,7 +189,7 @@ XFree86 2.0.
 6.  Basic configuration
 
 It is recommended that you generate an XF86Config file using the XF86Setup' or
-xf86config' program, which should produce a working high-resolution 8bpp con­
+xf86config' program, which should produce a working high-resolution 8bpp con-
 figuration. You may want to include mode timings in the Monitor section that
 
 
@@ -218,7 +218,7 @@ within the Screen subsections of the depths to which they are applicable (you
 can enable options for all depths by specifying them in the Device section).
 
       Option "noaccel"
-	    (ET4000W32p, et6000) This option will disable the use of any accel­
+	    (ET4000W32p, et6000) This option will disable the use of any accel-
 	    erated functions. This is likely to help with some problems related
 	    to DRAM timing, high dot clocks, and bugs in accelerated functions,
 	    at the cost of performance (which will still be reasonable on a
@@ -231,10 +231,10 @@ can enable options for all depths by specifying them in the Device section).
 	    The "slow_dram" option is always enabled on ET4000, and ET4000W32.
 	    If enabled, it slows down DRAM timing, which may avoid some memory-
 	    related problems. If your card starts up with a black screen (and
-	    possibly a system hang), this option might be needed.  Not sup­
+	    possibly a system hang), this option might be needed.  Not sup-
 	    ported on ET6000.
 
-	    The "fast_dram" option will cause the driver to speed up DRAM tim­
+	    The "fast_dram" option will cause the driver to speed up DRAM tim-
 	    ings, which may also avoid screen-related problems (streaking,
 	    stripes, garbage, ...). It may also increase those very same
 	    effects. Not supported on ET6000.
@@ -244,7 +244,7 @@ can enable options for all depths by specifying them in the Device section).
 	    pretend the given amount of memory is present on the card. This is
 	    useful on cards with 2Mbyte of memory whose DRAM configuration is
 	    not compatible with the way the driver enables the upper megabyte
-	    of memory, or if the memory detection goes wrong. It must be speci­
+	    of memory, or if the memory detection goes wrong. It must be speci-
 	    fied in the Device section.
 
       Clockchip "et6000"  (et6000)
@@ -281,7 +281,7 @@ can enable options for all depths by specifying them in the Device section).
 	    32bpp.
 
       Membase 0xE0000000. (or a different address) (ET4000W32p, ET6000)
-	    This sets the physical memory base address of the linear frame­
+	    This sets the physical memory base address of the linear frame-
 	    buffer. It must be specified in the Device section. It is required
 	    for non-PCI linear addressing configurations, and might be useful
 	    for PCI-based systems where auto-detection fails.
@@ -293,16 +293,16 @@ The accelerated driver on ET4000W32p and ET6000 uses 1K bytes of scratch space
 in video memory. Consequently, a 1024x1024 virtual resolution should not be
 used with a 1Mbyte card.
 
-The use of a higher dot clock frequencies has a negative effect on the perfor­
+The use of a higher dot clock frequencies has a negative effect on the perfor-
 mance of graphics operations on non-et6000 cards (the effect is much less, or
-even non-existing, on ET6000 cards), especially BitBlt, when little video mem­
+even non-existing, on ET6000 cards), especially BitBlt, when little video mem-
 ory bandwidth is left for drawing. Memory bandwidth is the speed at which data
 can be pumped into the memory while the RAMDAC is pulling it out to display it
 on the screen.
 
-Higher dot-clocks (mostly related to higher resolutions) consume more band­
+Higher dot-clocks (mostly related to higher resolutions) consume more band-
 width, so that less of it is left for drawing into the framebuffer. With a
-working accelerator, things become increasingly crammed, because modern accel­
+working accelerator, things become increasingly crammed, because modern accel-
 erators can consume huge amounts of bandwidth (but they also give you high
 speeds in return). High color depths also need extra bandwidth.
 
@@ -340,15 +340,15 @@ The same goes for an ET6000: when using DRAM, it can do 4-way interleaving
 setups. Most ET6000-based cards however use MDRAM (multi-bank DRAM -- the
 server detects the type of DRAM and reports it), which is much faster than
 DRAM. Some 4 MB systems, with 4 MDRAM chips will also do interleaving, which
-should give virtually unlimited memory bandwidth: theoretically >1GB/sec, com­
-paring to the already neat 90MB/sec on a 1MB ET4000W32i/p card). Most 4MB mod­
+should give virtually unlimited memory bandwidth: theoretically >1GB/sec, com-
+paring to the already neat 90MB/sec on a 1MB ET4000W32i/p card). Most 4MB mod-
 els have only 2 MDRAM chips (as do the 2MB models).
 
 
 9.  Acceleration issues
 
 The XFree Acceleration Architecture makes extensive use of the unused video
-memory on the VGA card. If there is not enough free video memory, some acceler­
+memory on the VGA card. If there is not enough free video memory, some acceler-
 ation features will be disabled or crippled, resulting in less performance.
 
 To avoid this from happening, try to keep an absolute minimum of 16 kb of free
@@ -367,7 +367,7 @@ rate, leaving 256kb unused.
 
 Currently the 16-bit (32768 or 65536 colors), 24-bit (16M colors, packed
 pixel), and 32-bit (16M colors, sparse) pixel support in the SVGA server
-requires linear addressing. (This restriction may be removed in a future ver­
+requires linear addressing. (This restriction may be removed in a future ver-
 sion, but with nearly all new cards using the PCI bus (where linear addressing
 poses no problem), removing the linear addressing requirement presently has a
 lower priority than other features.) Option "linear" can be specified in a
@@ -382,7 +382,7 @@ decoding bugs that it isn't feasible to provide a working solution.
 
 For the most part, many of the accelerated features in the 8bpp server have
 been implemented to support 16, 24, and 32 bpp modes. So although there are now
-up to 4 times as many bits to display, the X server shouldn't feel overly slug­
+up to 4 times as many bits to display, the X server shouldn't feel overly slug-
 gish. Note also that the 24bpp and 32bpp modes are only supported on a limited
 set of cards, and with at least 2Mb of memory.
 
@@ -443,14 +443,14 @@ Example (2Mb of video memory):
 
 First of all, make sure that the default modes selected from your XF86Config is
 supported by your monitor, i.e. make sure the horizontal sync limit is correct.
-It is best to start with standard 640x480x256 with a 25.175 MHz clock (by spec­
+It is best to start with standard 640x480x256 with a 25.175 MHz clock (by spec-
 ifying a single horizontal sync of 31.5) to make sure the driver works on your
 configuration. The default mode used will always be the first mode listed in
 the modes line, with the highest dot clock listed for that resolution in the
 timing section.
 
 Note that some VESA standard mode timings may give problems on some monitors
-(try increasing the horizontal sync pulse, i.e. the difference between the mid­
+(try increasing the horizontal sync pulse, i.e. the difference between the mid-
 dle two horizontal timing values, or try multiples of 16 or 32 for all of the
 horizontal timing parameters).
 
@@ -484,8 +484,8 @@ horizontal timing parameters).
       `Wavy' screen.
 	    Horizontal waving or jittering of the whole screen, continuously
 	    (independent from drawing operations). You are probably using a dot
-	    clock that is too high; it is also possible that there is interfer­
-	    ence with a close MCLK. Try a lower dot clock (sometimes even drop­
+	    clock that is too high; it is also possible that there is interfer-
+	    ence with a close MCLK. Try a lower dot clock (sometimes even drop-
 	    ping it by 0.5 MHz may work). You can also try to tweak the mode
 	    timings; try increasing the second horizontal value somewhat.
 	    Here's a 65 MHz dot clock 1024x768 mode (about 60 Hz) that might
@@ -519,7 +519,7 @@ horizontal timing parameters).
       Textmode is not properly restored
 	    This has been reported on some configurations. Sometimes Chipset
 	    line will fix this. Normally you should be able to restore the
-	    textmode font using a utility that sets it (setfont, runx, restore­
+	    textmode font using a utility that sets it (setfont, runx, restore-
 	    font on Linux).
 
 
@@ -535,14 +535,14 @@ horizontal timing parameters).
 
       Problems with DMA hardware (floppy, tape)
 	    On some systems, the accelerated server will interfere with other
-	    hardware that uses ISA DMA. Most notably is the PC floppy con­
+	    hardware that uses ISA DMA. Most notably is the PC floppy con-
 	    troller. The floppy interface cannot cope with inordinately long
 	    bus-holds, which may occur during large accelerated operations. The
 	    Linux-ftape module for example (a floppy-tape driver) will generate
 	    lots of "write error" messages when running a backup or restore
 	    operation while the X-server is in use. These errors should not be
-	    fatal, but that all depends on how well the operating system han­
-	    dles these conditions. Linux seems to cope. There is only one solu­
+	    fatal, but that all depends on how well the operating system han-
+	    dles these conditions. Linux seems to cope. There is only one solu-
 	    tion: disable acceleration using the "noaccel" option.
 
 For other screen drawing related problems, try the "noaccel" option.
@@ -554,7 +554,7 @@ If are having driver-related problems that are not addressed by this document,
 or if you have found bugs in accelerated functions, you can try contacting the
 XFree86 team.
 
-In fact, reports (success or failure) are very welcome, especially on configu­
+In fact, reports (success or failure) are very welcome, especially on configu-
 rations that have not been tested. You can do this via the BetaReport form
 (mail it to report@XFree86.org). You may want to keep an eye on forthcoming
 beta releases at www.xfree86.org.

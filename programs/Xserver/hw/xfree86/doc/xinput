@@ -17,7 +17,7 @@
 
 1.  Introduction
 
-This document provides	some information  about  the XInput  extension imple­
+This document provides	some information  about  the XInput  extension imple-
 mented in XFree86[tm].
 
 If  you have any suggestions,  comments, fixes	or ideas regarding the XInput
@@ -37,7 +37,7 @@ comp.windows.x.i386unix
 2.  Description
 
 The XInput extension is a standard X Consortium extension. The goal of this
-extension is to allow additional input	devices management to the X Window Sys­
+extension is to allow additional input	devices management to the X Window Sys-
 tem. The documentation could  be found in the X Consortium distribution under
 xc/doc/hardcopy/Xi.
 
@@ -51,7 +51,7 @@ The XFree86 implementation contains 2 parts : the server part and two clients
 
 The server supports the following extended devices :
 
-   o Joystick (only on	supported systems ie. Linux, FreeBSD and NetBSD). Fea­
+   o Joystick (only on	supported systems ie. Linux, FreeBSD and NetBSD). Fea-
      tures :
 
 	o Relative mode.
@@ -203,7 +203,7 @@ The server supports the following extended devices :
 
 
 
-To  enable  an	 extended  device, you	must   add   en  entry	in the XF86Con­
+To  enable  an	 extended  device, you	must   add   en  entry	in the XF86Con-
 fig file.   Consult   to  the XF86Config  man pages to see the details.
 
 3.2  Clients

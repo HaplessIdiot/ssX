@@ -27,8 +27,8 @@ supported by both the color and monochrome servers.
 
 
 It must be noted that the 9000i chipset is treated as a 9000 by the server.
-Additionally the 9100B is treated as a Trident 8900CL. Therefore it is equiva­
-lent to putting `Chipset "tvga8900cl"' or `Chipset "tvga9000"' in the XF86Con­
+Additionally the 9100B is treated as a Trident 8900CL. Therefore it is equiva-
+lent to putting `Chipset "tvga8900cl"' or `Chipset "tvga9000"' in the XF86Con-
 fig file.  Also, note that the 9000i, 9100B have not been tested with the
 server, but should work in this way according to the chipset documentation.
 
@@ -36,7 +36,7 @@ server, but should work in this way according to the chipset documentation.
 
    o Acceleration is now supported for the 9320, 9440 and 96xx chips.
 
-   o The Cyber 9382/5 chips that have started to appear, have preliminary sup­
+   o The Cyber 9382/5 chips that have started to appear, have preliminary sup-
      port in XFree86 3.2 and appear to work at 800x600 on the LCD.
 
    o The TGUI9440 and TGUI96xx based cards are supported by the SVGA server.
@@ -91,17 +91,17 @@ server, but should work in this way according to the chipset documentation.
 
 	   Option "tgui_pci_write_on"
 		 Turn on PCI burst write mode.	NOTE: PCI Burst modes are now
-		 OFF by default. The reason for this is the Graphics Accelera­
+		 OFF by default. The reason for this is the Graphics Accelera-
 		 tor gets upset, but we allow you to turn it back on it may
-		 improve performance, or lock up the chip with Timeouts dis­
+		 improve performance, or lock up the chip with Timeouts dis-
 		 played.
 
 	   ClockChip "tgui"
 		 Turn on programmable clocks.  This is the default for TGUIs.
 
 	   Option "no_program_clocks"
-		 Turn off programmable clock. Use fixed VGA clocks only.  Use­
-		 ful for fixed frequency monitors - usually used for VGA moni­
+		 Turn off programmable clock. Use fixed VGA clocks only.  Use-
+		 ful for fixed frequency monitors - usually used for VGA moni-
 		 tors - not SVGA.
 
 	   Option "noaccel"
@@ -174,7 +174,7 @@ clock synthesizers, but you should have no problems on newer boards.
 Some newer Trident 8900B/C boards are apparently being built with the clock
 synthesizers used on the 9000 and 8900CL boards.  If your board has a chip
 labeled "Trident TCK900x" ("x" has been seen as 2 or 4; there may be others),
-your board may actually have a 4th clock select bit.  The 9002 has twelve dis­
+your board may actually have a 4th clock select bit.  The 9002 has twelve dis-
 tinct clocks (the other 4 are duplicates); the 9004 has 16 clocks (the same 12
 as the 9002 + 4 others).  If you see such a chip on a board with an 8900B or
 8900C, put the following line in the Device section of your XF86Config file:

@@ -21,7 +21,7 @@ The Video7 driver has only been tested on a Headland Technologies HT216-32
 chip, but should work on other Video 7/Headland Technologies chips as well.
 
 Currently this implementation of the video7 driver only supports single bank
-mode, which can cause performance degradation, and makes no attempt to distin­
+mode, which can cause performance degradation, and makes no attempt to distin-
 guish between the different video7 chips.
 
 It also does not probe for memory, so in your XF86Config file, make sure that

@@ -21,7 +21,7 @@ Since the XFree86 3.2A beta is only distributed in binary form, all comments
 about rebuilding the distribution from source in this document are worthless.
 They are left there  for reference purpose only.
 
-If you absolutely need to build a server with particular options, please con­
+If you absolutely need to build a server with particular options, please con-
 tact me (matthieu@laas.fr). I'll try to satisfy your request on my free time
 and resources.
 
@@ -32,7 +32,7 @@ XFree86 3.2A is a port of X11R6.3 that supports several versions of Intel-based
 Unix.  It is derived from X386 1.2, which was the X server distributed with
 X11R5.	This release consists of many new features and performance improvements
 as well as many bug fixes.  The release is available as source patches against
-the X Consortium X11R6.3 code, as well as binary distributions for many archi­
+the X Consortium X11R6.3 code, as well as binary distributions for many archi-
 tectures.
 
 See the Copyright Notice.
@@ -51,7 +51,7 @@ Binaries for OpenBSD are available from:
 
 ftp.XFree86.org:/pub/XFree86/current/binaries/OpenBSD
 
-Note: the OpenBSD binary distribution only support OpenBSD 2.0 and later snap­
+Note: the OpenBSD binary distribution only support OpenBSD 2.0 and later snap-
 shots  where ttyC0 is used for the console device.
 
 Other NetBSD versions:
@@ -402,7 +402,7 @@ README for XFree86 3.2A on NetBSD and OpenBSD
 
 
   2.  Create a symbolic link in ${XWINHOME}/bin named ``X'' that points to the
-      server that matches your video card: See the XF86_* man pages for hard­
+      server that matches your video card: See the XF86_* man pages for hard-
       ware details. For example, if you have an ET4000 based SVGA card:
 
 
@@ -433,7 +433,7 @@ or xdm runtime configuration scripts, omit the config archive or unpack it
 elsewhere and extract only that which you need.
 
      NOTE: you don't need to uncompress the fonts files in lib/X11/fonts.
-     If you want to uncompress them anyway, don't forget to run ``mkfont­
+     If you want to uncompress them anyway, don't forget to run ``mkfont-
      dir'' in each directory after that.
 
 
@@ -543,8 +543,8 @@ protocol busmouse in the mouse section of your XF86Config file if you're using
 a PS/2 mouse.
 
 The OpenBSD pms driver	provides both "raw" and "cooked" (translated) modes.
-"raw" mode does not do protocol translation, so XFree86 would use the PS/2 pro­
-tocol for talking to the device in that mode.  "cooked" mode is the old Bus­
+"raw" mode does not do protocol translation, so XFree86 would use the PS/2 pro-
+tocol for talking to the device in that mode.  "cooked" mode is the old Bus-
 Mouse translation.  By default, the driver runs in "cooked" mode.  It can be
 switched using ioctls or by opening the first minor device which is /dev/psm0.
 
@@ -571,7 +571,7 @@ corresponding to your device.  You also need to set up a XInput section in
 XF86Config.  Refer to the XF86Config(5) man page for detailed configuration
 instructions.
 
-You can then change the device used to drive the X pointer with the xset­
+You can then change the device used to drive the X pointer with the xset-
 pointer(1) command.
 
 For joystick support, you'll need to install the joystick device driver in the
@@ -580,7 +580,7 @@ kernel. It is included in NetBSD 1.2 and OpenBSD. See joy(4) for details.
 6.3  Configuring PEX and XIE extensions
 
 The PEX and XIE extensions are now supported as external modules.  If you want
-to have access to these extensions, add the following lines to the Module sec­
+to have access to these extensions, add the following lines to the Module sec-
 tion of XF86Config:
 
 	load	"pex5.so"
@@ -601,7 +601,7 @@ README for XFree86 3.2A on NetBSD and OpenBSD
 
 7.  Running X
 
-8mb of memory is a recommended minimum for running X.  The server, window man­
+8mb of memory is a recommended minimum for running X.  The server, window man-
 ager and an xterm take about 4 Mb of memory themselves.  On a 4Mb system that
 would leave nothing left over for other applications like gcc that expect a few
 meg free.  X will work with 4Mb of memory, but in practice compilation while
@@ -611,7 +611,7 @@ The easiest way for new users to start X windows is to type: ``startx >&
 startx.log''.  Error messages are lost unless you redirect them because the
 server takes over the screen.
 
-To get out of X windows, type: ``exit'' in the console xterm.  You can cus­
+To get out of X windows, type: ``exit'' in the console xterm.  You can cus-
 tomize your X by creating .xinitrc, .xserverrc, and .twmrc files in your home
 directory as described in the xinit and startx man pages.
 
@@ -631,7 +631,7 @@ The pccons driver is the most widely tested and is the console driver contained
 in the NetBSD binary distribution's kernels.
 
 The pcvt console driver is bundled with NetBSD. The pcvt X mode is compatible
-with the pccons driver X mode. It offers several virtual consoles and interna­
+with the pccons driver X mode. It offers several virtual consoles and interna-
 tional keyboard support. In order to use this driver, change the line:
 
      device	     pc0     at isa? port "IO_KBD" irq 1
@@ -681,7 +681,7 @@ that disable access to the /dev/mem device when in multi-users mode. But
 XFree86 servers can take advantage (or require) linear access to the display
 memory.
 
-The P9000, Mach64 and AGX servers require linear memory access, other acceler­
+The P9000, Mach64 and AGX servers require linear memory access, other acceler-
 ated servers can take advantage of it, but do not require it.
 
 There are two ways to allow XFree86 to access linear memory:
@@ -704,7 +704,7 @@ There are two ways to allow XFree86 to access linear memory:
 
 
 	    The distributed ap.o won't work with NetBSD 1.0. In this case,
-	    unpack xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar and recom­
+	    unpack xc/programs/Xserver/hw/xfree86/etc/apNetBSD.shar and recom-
 	    pile it.
 
 	2.   Reboot your system. XFree86 will auto-detect the aperture driver
@@ -774,7 +774,7 @@ amount of disk space.  Just unpack it, make the appropriate changes to the
 xf86site.def, type ``./mkmf'' and ``make'' to link the server.	See
 /usr/X11R6/lib/Server/README for more info.
 
-See INSTALL for instructions on unbundling and building the source distribu­
+See INSTALL for instructions on unbundling and building the source distribu-
 tion.
 
 You should configure the distribution by editing xc/config/cf/xf86site.def
@@ -819,7 +819,7 @@ drivers will be supported.
 
 9.2  pcvt_ioctl.h file:
 
-XFree86's defaults config includes support for the PCVT console driver. Unfor­
+XFree86's defaults config includes support for the PCVT console driver. Unfor-
 tunately, NetBSD doesn't install the pcvt_ioctl.h file in /usr/include/machine.
 If you want to build XFree86 with PCVT support, execute the following command
 as root before starting make World:
@@ -875,11 +875,11 @@ xf86site.def:
 9.5  Building on Sparc
 
 XFree86 3.2 also compiles on NetBSD/sparc and OpenBSD/sparc. The Sun server
-patches from Dennis Ferguson and Matthew Green have been integrated in xc/pro­
+patches from Dennis Ferguson and Matthew Green have been integrated in xc/pro-
 grams/Xserver/hw/sun.  Small modifications to xf86site.def are needed:
 
-   o Set all variables defining the servers to build to NO. (The variables con­
-     trolling the Sun servers to build Xsun24Server, XsunServer and Xsun­
+   o Set all variables defining the servers to build to NO. (The variables con-
+     trolling the Sun servers to build Xsun24Server, XsunServer and Xsun-
      MonoServer are defined at the end of NetBSD.cf.)
 
    o Set ServerToInstall to the sun server of your choice. (Xsun or XsunMono).
@@ -896,9 +896,9 @@ Note that the SparcStation 4 TCX framebuffer is not supported for now.
 10.  Building New X Clients
 
 The easiest way to build a new client (X application) is to use xmkmf if an
-Imakefile is included in the sources.  Type ``xmkmf -a'' to create the Make­
+Imakefile is included in the sources.  Type ``xmkmf -a'' to create the Make-
 files, check the configuration if necessary and type ``make''.	Whenever you
-install additional man pages you should update whatis.db by running ``make­
+install additional man pages you should update whatis.db by running ``make-
 whatis /usr/X11R6/man''.
 
 To avoid the ``Virtual memory exhausted'' message from cc while compiling,
@@ -908,7 +908,7 @@ increase the data and stack size limits (in csh type ``limit datasize 32M'' and
 Note: Starting with XFree86 2.1 and NetBSD 0.9A, the symbol __386BSD__ no
 longer gets defined either by the compiler or via the X config files for *BSD
 systems.  When porting clients to *BSD systems, make use of the symbol BSD for
-code which is truly BSD-specific.  The value of the symbol can be used to dis­
+code which is truly BSD-specific.  The value of the symbol can be used to dis-
 tinguish different BSD releases.  For example, code specific to the Net-2 and
 later releases can use:
 
@@ -929,7 +929,7 @@ README for XFree86 3.2A on NetBSD and OpenBSD
 
 
 
-systems in XFree86 3.1.1 and later.  This should be used to protect the inclu­
+systems in XFree86 3.1.1 and later.  This should be used to protect the inclu-
 sion of <sys/param.h>.
 
 For code that really is specific to a particular i386 BSD port, use __FreeBSD__

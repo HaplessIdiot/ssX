@@ -94,7 +94,7 @@ README for XFree86[tm] 3.2A
 
 	       o OpenBSD 2.0
 
-	       o FreeBSD 1.1.5.1, 2.0.5, 2.1, 2.1.5, 2.2-current
+	       o FreeBSD 2.0.5, 2.1, 2.1.5, 2.1.6, 2.2, 3.0-current
 
 	       o Linux (Intel x86, DEC Alpha/AXP and m68k)
 
@@ -105,7 +105,7 @@ README for XFree86[tm] 3.2A
 
       PC98:
 
-	       o FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2-current
+	       o FreeBSD(98) 2.0.5, 2.1, 2.1.5, 2.2
 
 	       o NetBSD/pc98 (based on NetBSD 1.2)
 
@@ -170,7 +170,7 @@ README for XFree86[tm] 3.2A
       Number Nine
 	    I128
 
-The Cirrus, Western Digital, Oak, ARK, Chips & Technologies and Matrox acceler­
+The Cirrus, Western Digital, Oak, ARK, Chips & Technologies and Matrox acceler-
 ators are supported in the SVGA server; the other chipsets each have their own
 server.
 
@@ -269,11 +269,11 @@ README for XFree86[tm] 3.2A
 
 
 
-Refer to the chipset-specific README files (currently for Cirrus, Tseng, West­
+Refer to the chipset-specific README files (currently for Cirrus, Tseng, West-
 ern Digital, ATI, ARK, Trident, Oak, Matrox, NVidia, and Video 7) for more
 information about using those chipsets.
 
-The monochrome server also supports generic VGA cards, using 64k of video mem­
+The monochrome server also supports generic VGA cards, using 64k of video mem-
 ory in a single bank, the Hercules monochrome card, the Hyundai HGC1280, Sigma
 LaserView, Visa and Apollo monochrome cards.
 
@@ -285,7 +285,7 @@ limited to approximately 800x600.
 Note: The Diamond SpeedStar 24 (and possibly some SpeedStar+) boards are NOT
 supported, even though they use the ET4000.
 
-The Weitek 9100 and 9130 chipsets are not supported (these are used on the Dia­
+The Weitek 9100 and 9130 chipsets are not supported (these are used on the Dia-
 mond Viper Pro and Viper SE boards). Most other Diamond boards will work with
 this release of XFree86. Diamond is actively supporting The XFree86 Project,
 Inc.
@@ -294,20 +294,20 @@ Inc.
 4.  Where to get more information
 
 Additional documentation is available in the XFree86(1), XF86Config(4/5),
-XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1), XF86_Accel(1) XF86Setup(1) and xvid­
+XF86_SVGA(1), XF86_Mono(1), XF86_VGA16(1), XF86_Accel(1) XF86Setup(1) and xvid-
 tune(1) manual pages.  In addition, several README files and tutorial documents
-are provided.  These are available in /usr/X11R6/lib/X11/doc in the binary dis­
-tributions, and in  xc/programs/Xserver/hw/xfree86/doc in the source distribu­
+are provided.  These are available in /usr/X11R6/lib/X11/doc in the binary dis-
+tributions, and in  xc/programs/Xserver/hw/xfree86/doc in the source distribu-
 tion.
 
 The files QuickStart.doc and README.Config should be consulted for information
 on how to set up the XFree86 servers.  All supplied documents, manual pages,
-and the XFree86 FAQ <URL:http://www.XFree86.org/FAQ> should be read before con­
+and the XFree86 FAQ <URL:http://www.XFree86.org/FAQ> should be read before con-
 tacting the XFree86 team for assistance.
 
 Documentation on SVGA driver development can be found in the directory
 /usr/X11R6/lib/Server/VGADriverDoc in the binary distribution, and in the
-directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the source distribu­
+directory xc/programs/Xserver/hw/xfree86/VGADriverDoc in the source distribu-
 tion.
 
 If you are totally at a loss, you can contact the XFree86 Support Team at
@@ -315,7 +315,7 @@ If you are totally at a loss, you can contact the XFree86 Support Team at
 the latest release of XFree86.	Check the versions listed on
 ftp://ftp.xfree86.org/pub/XFree86.
 
-There is a Usenet news group comp.windows.x.i386unix that contains mostly dis­
+There is a Usenet news group comp.windows.x.i386unix that contains mostly dis-
 cussions about XFree86 and related topics. Many questions can be answered
 there.
 
@@ -911,7 +911,7 @@ README for XFree86[tm] 3.2A
 		 Wacom tablet, Joystick and extended mouse devices, xsetpointer
 		 and xsetmode clients)
 
-	       o Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics touch­
+	       o Patrick Lecoanet <lecoanet@cena.dgac.fr> (Elographics touch-
 		 screen device)
 
 	       o Steven Lang <tiger@ecis.com> (Summagraphics tablet device)
@@ -933,7 +933,7 @@ README for XFree86[tm] 3.2A
 
 	       o Joerg Wunsch <joerg_wunsch@uriah.sax.de> (ET3000 banked mono),
 
-	       o Eric Raymond <esr@snark.thyrsus.com> (new video mode documen­
+	       o Eric Raymond <esr@snark.thyrsus.com> (new video mode documen-
 		 tation),
 
 	       o and an entire horde of beta-testers around the world!
@@ -1036,7 +1036,7 @@ of the corporation, all assets will be turned over to the X Consortium, Inc.
 It is hoped that by doing this, our corporation will be merely a formalization
 of what we have been doing in the past, rather than something entirely new.
 
-Here is a list of the organizations and individuals who have provided sponsor­
+Here is a list of the organizations and individuals who have provided sponsor-
 ship to The XFree86 Project, Inc, either by financial contribution or by the
 donation of equipment and resources.  The XFree86 Project, Inc gratefully
 acknowledges these contributions, and hopes that we can do justice to them by
@@ -1045,7 +1045,7 @@ Internet community as a whole.
 
    o UUNET Communications Services, Inc. <URL:http://www.uu.net/>
 
-UUNET Communications Services, Inc, deserves special mention.  This organiza­
+UUNET Communications Services, Inc, deserves special mention.  This organiza-
 tion stepped forward and contributed the entire 1994 X Consortium membership
 fee on a moment's notice.  This single act ensured XFree86's involvement in
 X11R6.
@@ -1064,7 +1064,7 @@ README for XFree86[tm] 3.2A
    o GUUG -- 1st German Linux Congress
 
 Also deserving of special mention are the organizers and attendees of the 1st
-German Linux Congress in Heidelberg.  Significant funding to The XFree86 Pro­
+German Linux Congress in Heidelberg.  Significant funding to The XFree86 Pro-
 ject has been provided from its proceeds.
 
    o AIB Software Corporation <URL:http://www.aib.com/>, Herndon, VA
@@ -1173,7 +1173,7 @@ README for XFree86[tm] 3.2A
 
 The XFree86 Project, Inc, welcomes the additional contribution of funding
 and/or equipment.  Such contributions should be tax-deductible; we will know
-for certain when the lawyers get finished with the papers.  For more informa­
+for certain when the lawyers get finished with the papers.  For more informa-
 tion, contact The XFree86 Project, Inc, at <BOD@XFree86.org>
 
 
@@ -1238,7 +1238,7 @@ and the following mirror sites:
 
 	o ftp://ftp.hk.super.net/mirror/XFree86 (source and binaries)
 
-	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina­
+	o ftp://ftp.nectec.or.th/pub/mirrors/XFree86 (source patches and bina-
 	  ries)
 
 
@@ -1259,7 +1259,7 @@ README for XFree86[tm] 3.2A
 
 
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.74 1997/01/27 11:28:18 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.75 1997/01/27 20:34:33 dawes Exp $
 
 
 

@@ -17,13 +17,13 @@
 
 				   Abstract
 
-     This document describes how to build XFree86 from the source distri­
+     This document describes how to build XFree86 from the source distri-
      bution.  It covers building from the full source distribution as well
      as from the cut-down source distribution available for building only
      the X servers.  It is designed to be used in conjunction with the OS-
      specific README files.  This document does not describe how to
-     install or upgrade a binary distribution.	That information is con­
-     tained either in the RELNOTES, OS-specific README files, or in sepa­
+     install or upgrade a binary distribution.	That information is con-
+     tained either in the RELNOTES, OS-specific README files, or in sepa-
      rate documentation accompanying the various binary distributions.
 
 
@@ -31,12 +31,12 @@
 1.  Building XFree86 From a Source Distribution
 
      NOTE:  Refer to the appropriate OS-specific README file before
-     attempting to build XFree86.  These files contain additional informa­
+     attempting to build XFree86.  These files contain additional informa-
      tion that you may need to successfully build under your OS.
 
 We highly recommend using GCC-2 to build XFree86.  Do not use version 2.6.0 or
 2.4.x versions prior to 2.4.5 due to bugs that cause either build or execution
-failures.  Use of GCC's -m486 option will yield approximately 5% better perfor­
+failures.  Use of GCC's -m486 option will yield approximately 5% better perfor-
 mance on a 486, with no degradation (other than larger binaries) on a 386.
 (gcc-2 is available from prep.ai.mit.edu and other sites archiving GNU source.)
 
@@ -49,7 +49,7 @@ mance on a 486, with no degradation (other than larger binaries) on a 386.
 
 	 o Optionally the X Consortium X11R6.1 contrib distribution.
 
-	 o contrib-3.2.diff.gz (an optional patch for some of the X Consor­
+	 o contrib-3.2.diff.gz (an optional patch for some of the X Consor-
 	   tium's ``contrib'' distribution)
 
 	 o If you want to only build the XFree86 X servers, you only need the
@@ -101,7 +101,7 @@ Installation Guide for XFree86 3.2
 	   the X Consortium's R6.1 contrib distribution.  It mostly covers
 	   those clients which were in the core distribution of X11R5 but were
 	   moved to the contrib distribution for X11R6.  To use this patch, you
-	   need to have the following files/directories from the final X Con­
+	   need to have the following files/directories from the final X Con-
 	   sortium R6.1 contrib release.
 
 
@@ -137,7 +137,7 @@ Installation Guide for XFree86 3.2
 
 
 
-  2.  If you are starting from the stock X Consortium R6.1 PL01 source distri­
+  2.  If you are starting from the stock X Consortium R6.1 PL01 source distri-
       bution, go to the directory above your xc directory, and run:
 
 
@@ -146,8 +146,8 @@ Installation Guide for XFree86 3.2
 
 
 
-      If you are installing in an unmodified tree there shouldn't be any prob­
-      lems.  Check for any patch rejections and resolve them. If you've modi­
+      If you are installing in an unmodified tree there shouldn't be any prob-
+      lems.  Check for any patch rejections and resolve them. If you've modi-
       fied some files (e.g. xf86site.def, site.def) you should rename them, and
       restore the standard versions before patching. If you don't have backups
       of the originals, individual files can be easily obtained from
@@ -250,7 +250,7 @@ Installation Guide for XFree86 3.2
       twelve hours depending on your system.  You should check World.Log to see
       if there were any problems.  If there weren't any then you can install
       the binaries.  When using the full source distribution, the installation
-      should be done from the xc directory.  When using the ServersOnly distri­
+      should be done from the xc directory.  When using the ServersOnly distri-
       bution, the install should be done from the xc/programs/Xserver directory
       To do the install, run ``make install'' and ``make install.man''.  Make
       sure you have enough space in /usr/X11R6 for the install to succeed.  If
@@ -269,7 +269,7 @@ Installation Guide for XFree86 3.2
 
 
 
-      To install the binary LinkKit (in /usr/X11R6/lib/Server), run the follow­
+      To install the binary LinkKit (in /usr/X11R6/lib/Server), run the follow-
       ing from the xc directory (when using either the full source distribution
       or the ServersOnly distribution):
 
@@ -289,7 +289,7 @@ To build a different set of servers or servers with a different set of drivers
 installed:
 
   1.  Make sure the source for any new drivers is in the correct place (e.g.,
-      driver source for the SVGA server should be in a subdirectory of xc/pro­
+      driver source for the SVGA server should be in a subdirectory of xc/pro-
       grams/Xserver/hw/xfree86/vga256/drivers).
 
   2.  Change the settings of the server defines (eg XF86SVGAServer as described

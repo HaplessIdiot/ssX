@@ -165,7 +165,7 @@ good it might work for you, too.
 
 	    8, 15/16 and 24(32) bpp
 
-	    Supports RGB with sync-on-green if "sync_on_green" option is pro­
+	    Supports RGB with sync-on-green if "sync_on_green" option is pro-
 	    vided and board jumper is set for BNC outputs.
 
 	    VLB linear addressing now occurs at 0x7FCxxxxx so that 64MB or more
@@ -536,7 +536,7 @@ good it might work for you, too.
 	    mine says  Ser.No. A-0000.000.000;)  which have an IBM RGB528A note
 	    the A;  can't be probed though)
 
-	    depending on the mode line etc there may be some display distor­
+	    depending on the mode line etc there may be some display distor-
 	    tions like:
 
 	      1.  many long horizontal lines/stripes
@@ -551,9 +551,9 @@ good it might work for you, too.
 		  pixels at the right edge.
 
 	    All of these problems can be fixed by small adjustments to the mode
-	    line (best to run `xvidtune' and make these adjustments interac­
+	    line (best to run `xvidtune' and make these adjustments interac-
 	    tively).  E.g., for the first three problems, shift the display
-	    left or right a few steps.	For the last problem, increasing HSyn­
+	    left or right a few steps.	For the last problem, increasing HSyn-
 	    cEnd (making the hsync pulse longer) solves the problem.  In some
 	    cases, a significant increase in the sync pulse width is needed,
 	    and rarely, it needs to be shortened (by decreasing HSyncEnd).
@@ -735,7 +735,7 @@ specify RAMDAC "ics5300".
 
 If you feel adventurous you could also open up your computer and have a peek at
 your RAMDAC. The RAMDAC is usually one of the larger chips (second or third
-largest chip that is NOT an EPROM) on the board.  The markings on it are usu­
+largest chip that is NOT an EPROM) on the board.  The markings on it are usu-
 ally
 
        <Company logo>
@@ -801,7 +801,7 @@ shown above.
 
 Some RAMDACs (like the Ti3025) require some mode timing consideration for their
 hardware cursor to work correctly.  The Ti3025 requires that the mode have a
-back porch of at least 80 pixel-clock cycles.  A symptom of this not being cor­
+back porch of at least 80 pixel-clock cycles.  A symptom of this not being cor-
 rect is the HW cursor being chopped off when positioned close to the right edge
 of the screen.
 
@@ -835,7 +835,7 @@ The refclock values known so far are:
 	  Hercules S3 968     16 MHz
 	  #9 Motion 771       16 MHz
 
-depending on the quartz on your card and maybe other features like an addi­
+depending on the quartz on your card and maybe other features like an addi-
 tional clock chip on the Genoa card (which as a 14.3MHz quartz).
 
 If you claim that your card has a 16MHz clock, but it really uses 50MHz, all
@@ -873,7 +873,7 @@ probing fails!
 7.  How to avoid ``snowing'' display while performing graphics operations
 
 For cards with the S3 Vision864 chip, there is an automatic correction which
-depends on the pixel clock and the memory clock MCLK at which the S3 chip oper­
+depends on the pixel clock and the memory clock MCLK at which the S3 chip oper-
 ates. For most clock chips this value can't be read (only the S3 SDAC allows
 reading the MCLK value so far), so this value has to be estimated and specified
 by the user (the default is 60 [MHz]).
@@ -887,7 +887,7 @@ for a 55 MHz MCLK which will reduce snowing. Smaller MCLK values will reduce
 performance a bit so you shouldn't use a too low value (55 or 50 should be a
 good guess in most cases).
 
-Below is a small shell script which might be useful to determine the approxi­
+Below is a small shell script which might be useful to determine the approxi-
 mate value for MCLK (about +/- 1-2 MHz error). Before running this script you
 have to add the line
 

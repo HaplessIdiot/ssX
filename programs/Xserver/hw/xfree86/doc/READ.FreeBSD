@@ -95,11 +95,11 @@ required run-time binaries only.
 			8-bit color for ATI Mach8 boards.
 
 		  X32AMono.tgz
-			1-bit monochrome for VGA, Super-VGA, Hercules, and oth­
+			1-bit monochrome for VGA, Super-VGA, Hercules, and oth-
 			ers.
 
 		  X32AP9K.tgz
-			8, 16, and 32-bit color for Weitek P9000 boards (Dia­
+			8, 16, and 32-bit color for Weitek P9000 boards (Dia-
 			mond Viper).
 
 		  X32AS3.tgz
@@ -307,7 +307,7 @@ Add /usr/X11R6/bin to the default path for sh in /etc/profile and for csh in
       # echo 'set path = ($path /usr/X11R6/bin)' >>/etc/csh.login
       # echo 'PATH=$PATH:/usr/X11R6/bin' >>/etc/profile
 
-Or make sure all who use X put /usr/X11R6/bin in their shell's ``path'' vari­
+Or make sure all who use X put /usr/X11R6/bin in their shell's ``path'' vari-
 able.
 
 Next either reboot or invoke ldconfig as root to put the shared libraries in
@@ -321,7 +321,7 @@ separately and merge in your customizations.
 
 The fscl and f100 archives are optional and can be omitted if you are short on
 space.	The optional link archive allows you to reconfigure and customize a X
-server binary.	The optional prog archive is needed only for writing or compil­
+server binary.	The optional prog archive is needed only for writing or compil-
 ing X applications.  The optional pex archive contains pex clients and
 
 
@@ -337,7 +337,7 @@ ing X applications.  The optional pex archive contains pex clients and
 
 libraries for building 3D graphics applications.
 
-     NOTE: You don't need to uncompress the font files, but if you uncom­
+     NOTE: You don't need to uncompress the font files, but if you uncom-
      press them anyway you must run mkfontdir in the corresponding font
      directory; otherwise your server will abort with the message ``could
      not open default font 'fixed'''.
@@ -345,7 +345,7 @@ libraries for building 3D graphics applications.
 
 3.  Installing The Display Manager (xdm)
 
-The display manager makes your PC look like an X terminal.  That is, it pre­
+The display manager makes your PC look like an X terminal.  That is, it pre-
 sents you with a login screen that runs under X.
 
 The easiest way to automatically start the display manager on boot is to add a
@@ -359,7 +359,7 @@ Xserver that matches your video card or edit the file Xservers in
 
 The change to /etc/ttys won't take effect until you either reboot or ``kill
 -HUP 1'' to force initd to reread /etc/ttys.  You can also test the display
-manager manually by loging in as root on the console and typing ``xdm -nodae­
+manager manually by loging in as root on the console and typing ``xdm -nodae-
 mon''.
 
 
@@ -370,7 +370,7 @@ mouse you have.  You must create it to tell the server what specific hardware
 you have.
 
 It is strongly recommended that you use either the `XF86Setup' utility (which
-requires the VGA16 server to be installed), or the `xf86config' utility to gen­
+requires the VGA16 server to be installed), or the `xf86config' utility to gen-
 erate an XF86Config file.
 
 In order to protect your hardware from damage, the server no longer will read
@@ -421,7 +421,7 @@ need the specs for sync frequencies from your monitor's manual.
 
 5.  Running X
 
-8mb of memory is a recommended minimum for running X.  The server, window man­
+8mb of memory is a recommended minimum for running X.  The server, window man-
 ager, display manager and an xterm take about 8Mb of virtual memory themselves.
 Even if their resident set size is smaller, on a 8Mb system that leaves very
 space for other applications such as gcc that expect a few meg free.  The R6 X
@@ -432,7 +432,7 @@ The easiest way for new users to start X windows is to type ``startx >&
 startx.log''.  Error messages are lost unless you redirect them because the
 server takes over the screen.
 
-To get out of X windows, type: ``exit'' in the console xterm.  You can cus­
+To get out of X windows, type: ``exit'' in the console xterm.  You can cus-
 tomize your X by creating .xinitrc, .xserverrc, and .twmrc files in your home
 directory as described in the xinit and startx man pages.
 
@@ -440,7 +440,7 @@ directory as described in the xinit and startx man pages.
 6.  Rebuilding Kernels for X
 
 The GENERIC FreeBSD kernels support XFree86 without any modifications required.
-You do not need to make any changes to the GENERIC kernel or any kernel config­
+You do not need to make any changes to the GENERIC kernel or any kernel config-
 uration which is a superset.
 
 For a general description of BSD kernel configuration get smm.02.config.ps.Z
@@ -449,7 +449,7 @@ ready-to-print postscript copy of the kernel configuration chapter from the
 system maintainers manual.
 
 If you do decide to reduce your kernel configuration file, do not remove the
-two lines below (in /sys/arch/i386/conf).  They are both required for X sup­
+two lines below (in /sys/arch/i386/conf).  They are both required for X sup-
 port:
 
       options	    XSERVER		#Xserver
@@ -478,7 +478,7 @@ The number of virtual consoles can be set using the NCONS option:
       options	    "NCONS=4"	   #4 virtual consoles
 
 Otherwise, the default without a line like this is 12.	You must have more VTs
-than gettys as described in the end of section 3, and 4 is a reasonable mini­
+than gettys as described in the end of section 3, and 4 is a reasonable mini-
 mum.
 
 The server supports several console drivers: pccons, syscons and pcvt.	The
@@ -487,7 +487,7 @@ at runtime and no configuration of the server itself is required.
 
 The XFree86 servers include support for the MIT-SHM extension.	The GENERIC
 kernel does not support this, so if you want to make use of this, you will need
-a kernel configured with SYSV shared memory support.  To do this, add the fol­
+a kernel configured with SYSV shared memory support.  To do this, add the fol-
 lowing line to your kernel config file:
 
       options	    SYSVSHM		# System V shared memory

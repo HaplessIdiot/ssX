@@ -15,7 +15,7 @@
 
 1.  XFree86 Copyright
 
-XFree86 code without an explicit copyright is covered by the following copy­
+XFree86 code without an explicit copyright is covered by the following copy-
 right:
 
 Copyright (C) 1994, 1995, 1996 The XFree86 Project, Inc.  All Rights Reserved.
@@ -31,7 +31,7 @@ The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT­
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT-
 NESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
 XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
@@ -72,7 +72,7 @@ Copyright
 
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT­
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT-
 NESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE X
 CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
 ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
@@ -88,7 +88,7 @@ X Window System is a trademark of X Consortium, Inc.
 
 2.2.1  General
 
-Redistribution and use in source and binary forms, with or without modifica­
+Redistribution and use in source and binary forms, with or without modifica-
 tion, are permitted provided that the following conditions are met:
 
   1.  Redistributions of source code must retain the above copyright notice,
@@ -102,11 +102,11 @@ tion, are permitted provided that the following conditions are met:
       derived from this software without specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MER­
+WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF MER-
 CHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO EVENT
-SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEM­
+SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEM-
 PLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
-SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTER­
+SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTER-
 RUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
 STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY
 WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
@@ -121,7 +121,7 @@ This software was developed by the Computer Systems Engineering group at
 Lawrence Berkeley Laboratory under DARPA contract BG 91-66 and contributed to
 Berkeley.
 
-All advertising materials mentioning features or use of this software must dis­
+All advertising materials mentioning features or use of this software must dis-
 play the following acknowledgement: This product includes software developed by
 the University of California, Lawrence Berkeley Laboratory.
 
@@ -137,7 +137,7 @@ Copyright
 
 
 
-Redistribution and use in source and binary forms, with or without modifica­
+Redistribution and use in source and binary forms, with or without modifica-
 tion, are permitted provided that the following conditions are met:
 
   1.  Redistributions of source code must retain the above copyright notice,
@@ -148,8 +148,8 @@ tion, are permitted provided that the following conditions are met:
       and/or other materials provided with the distribution.
 
   3.  All advertising materials mentioning features or use of this software
-      must display the following acknowledgement: This product includes soft­
-      ware developed by the University of California, Berkeley and its contrib­
+      must display the following acknowledgement: This product includes soft-
+      ware developed by the University of California, Berkeley and its contrib-
       utors.
 
   4.  Neither the name of the University nor the names of its contributors may
@@ -157,12 +157,12 @@ tion, are permitted provided that the following conditions are met:
       specific prior written permission.
 
 THIS SOFTWARE IS PROVIDED BY THE REGENTS AND CONTRIBUTORS ``AS IS'' AND ANY
-EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WAR­
+EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WAR-
 RANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDI­
+IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDI-
 RECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
 NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
-OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIA­
+OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIA-
 BILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
 OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
 OF THE POSSIBILITY OF SUCH DAMAGE.
@@ -173,23 +173,23 @@ Copyright (c) 1996 NVIDIA, Corp.  All rights reserved.
 
 NOTICE TO USER: The source code is copyrighted under U.S. and international
 laws.  NVIDIA, Corp. of Sunnyvale, California owns the copyright and as design
-patents pending on the design and interface of the NV chips.  Users and posses­
-sors of this source code are hereby granted a nonexclusive, royalty-free copy­
+patents pending on the design and interface of the NV chips.  Users and posses-
+sors of this source code are hereby granted a nonexclusive, royalty-free copy-
 right and design patent license to use this code in individual and commercial
 software.
 
-Any use of this source code must include, in the user documentation and inter­
+Any use of this source code must include, in the user documentation and inter-
 nal comments to the code, notices to the end user as follows:
 
 Copyright (c) 1996 NVIDIA, Corp.  NVIDIA design patents pending in the U.S. and
 foreign countries.
 
 NVIDIA, CORP.  MAKES NO REPRESENTATION ABOUT THE SUITABILITY OF THIS SOURCE
-CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WAR­
+CODE FOR ANY PURPOSE.  IT IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WAR-
 RANTY OF ANY KIND.  NVIDIA, CORP. DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
 SOURCE CODE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
 FOR A PARTICULAR PURPOSE.  IN NO EVENT SHALL NVIDIA, CORP.  BE LIABLE FOR ANY
-SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSO­
+SPECIAL, INDIRECT, INCIDENTAL, OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSO-
 EVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 
 

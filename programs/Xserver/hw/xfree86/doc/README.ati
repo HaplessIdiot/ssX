@@ -109,7 +109,7 @@ VGA1024XL, VGA1024DXL and VGA1024VLB adapters, among others.
 
 The chipset will be automatically detected.  The chipset name for this driver
 is "ati".  The driver also recognizes "vgawonder", "mach8", "mach32" and
-"mach64" as chipset names.  In this version of the driver, all names are equiv­
+"mach64" as chipset names.  In this version of the driver, all names are equiv-
 alent.	In some future version each name will have a different meaning to be
 documented at that time.
 
@@ -182,8 +182,8 @@ ATI adapters README
 Mach32 and Mach64 owners should only specify up to the first 32 frequencies.
 
 The oldest Mach64 adapters use one of the clock generators described above.
-The possibilities for Mach64 adapters also include programmable clock genera­
-tors.  At bootup, video BIOS initialization programmes an initial set of fre­
+The possibilities for Mach64 adapters also include programmable clock genera-
+tors.  At bootup, video BIOS initialization programmes an initial set of fre-
 quencies.  Two of these are reserved to allow the setting of modes that do not
 use a frequency from this initial set.	One of these reserved slots is used by
 the BIOS mode set routine, the other by the particular driver used (MS-Windows,
@@ -280,11 +280,11 @@ incomplete and inaccurate.
 Apparently, Per Lindqvist (pgd@compuram.bbt.se) first got an ATI driver working
 with an early ATI card under X386 1.1a.  This original driver may have actually
 been based on an non-functional ATI driver written by Roell.  Then Doug Evans
-(dje@cygnus.com) ported the driver to the ATI VGA Wonder XL, trying in the pro­
+(dje@cygnus.com) ported the driver to the ATI VGA Wonder XL, trying in the pro-
 cess to make the driver work with all other ATI cards.
 
 Rik Faith (faith@cs.unc.edu) obtained the X11R4 driver from Doug Evans in the
-summer of 1992, and ported the code to the X386 part of X11R5.	This subse­
+summer of 1992, and ported the code to the X386 part of X11R5.	This subse-
 quently became part of XFree86.
 
 I (Marc Aurele La France) took the driver over in the fall of 1993 after Rik
@@ -293,9 +293,9 @@ got rid of his VGA Wonder card.
 
 6.  Miscellaneous notes
 
-In all cases, virtual resolutions must be less than 4096 pixels wide.  For VGA­
+In all cases, virtual resolutions must be less than 4096 pixels wide.  For VGA-
 Wonder V3 adapters with 256kB of video memory, and for all 264xT adapters, the
-256-colour server will further limit virtual resolutions to less than 2048 pix­
+256-colour server will further limit virtual resolutions to less than 2048 pix-
 els wide.  These are hardware limits that cannot be circumvented.
 
 Dot clocks greater than 80MHz cannot be used on most adapters as a way still
@@ -345,10 +345,10 @@ maximum) through the DACSpeed option in XF86Config.  Be aware however that
 doing this is untested and might damage the adapter.
 
 The default mode does not work on the more recent Mach64 adapters.  This will
-be fixed in a future release by reading the programmable clock generator's reg­
+be fixed in a future release by reading the programmable clock generator's reg-
 isters.
 
-Future development plans include addressing the above problems and using accel­
+Future development plans include addressing the above problems and using accel-
 erated functionality.
 
 Please e-mail any bug reports, comments, etc. to Marc Aurele La France,

@@ -33,9 +33,9 @@ Questions or anything else should be posted to the NewsGroup
 
 comp.windows.x.i386unix
 
-There is currently no support for shared Libraries so it will be filespace con­
+There is currently no support for shared Libraries so it will be filespace con-
 suming if you want to build X11-clients with X11R6. Best you mix X11R6 Server
-with X11R5 and X11R4 clients. And only compile clients who need the new facili­
+with X11R5 and X11R4 clients. And only compile clients who need the new facili-
 ties provided in the X11R6 Libraries against them.
 
 
@@ -52,7 +52,7 @@ ties provided in the X11R6 Libraries against them.
 	    xf86site.def to overwrite the default -O2.
 
 	    With 2.7.x you must specify #define UsePosix	       YES
-	    inside xf86site.def.  This is necessary to build the sources suc­
+	    inside xf86site.def.  This is necessary to build the sources suc-
 	    cessfully.	Versions prior to 2.7.0 could define it, but don't need
 	    it for a clean build.
 
@@ -72,7 +72,7 @@ ties provided in the X11R6 Libraries against them.
 
 
       binutils-2.5.2
-	    You could use the assembler and linker the assembler is most pre­
+	    You could use the assembler and linker the assembler is most pre-
 	    ferred,and the linker is needed at least if you want to link
 	    libFresco.a within a Program.  Don't use strip and ar/ranlib, the
 	    first generates buggy binaries when stripping (at least on my
@@ -181,7 +181,7 @@ Note that this is only necessary if you want to build Fresco
 3.5  /usr/include/sys/un.h
 
 such a file does not exist on Interactive. You may like to generate it, if you
-don't like a warning from depend. It isn't needed to compile the sources suc­
+don't like a warning from depend. It isn't needed to compile the sources suc-
 cessfully.
 
 You could use the following to produce it:
@@ -221,15 +221,15 @@ You could use the following to produce it:
 	    if the build will succeed for ISC versions prior than 3.x
 
       -DISC40
-	    are only for getting the ISC version and therefore set the HasSym­
-	    Links to Yes ('cause symbolic linking were only supported from Ver­
+	    are only for getting the ISC version and therefore set the HasSym-
+	    Links to Yes ('cause symbolic linking were only supported from Ver-
 	    sion 4.x using the S5L Filesystem)
 
 	    If you could use long filenames, you could enable the installation
 	    of expanded Manual Pages by including
 	     #define ExpandManNames  YES inside xf86site.def.
 
-	    A build on ISC 4.x only needs -DISC40 defined in the BOOT­
+	    A build on ISC 4.x only needs -DISC40 defined in the BOOT-
 	    STRAPCFLAGS ( -DISC30 will be included automatically ).
 
 	    Note: if you still use Version 4.0, or you want to build binaries
@@ -250,7 +250,7 @@ You could use the following to produce it:
 
    o Compiling ...
 
-     If you want to include support for linear addressing into the server bina­
+     If you want to include support for linear addressing into the server bina-
      ries, you have to define
 
 	  #define HasSVR3mmapDrv	YES
@@ -300,15 +300,15 @@ You could use the following to produce it:
      in your XF86Config.   Check the appropriate manual pages for details.
      Maybe you need also the MemBase specified in XF86Config. Please refer to
      the appropriate README of your Card/Server, for How to use...  Note that
-     the P9000 server will not work at all unless linear addressing is avail­
+     the P9000 server will not work at all unless linear addressing is avail-
      able.
 
      I could only test these cards against the linear addressing.
 
 	o Spea/V7 Vega - clgd5428 - VLB
 
-	  with 32MB MainMemory installed I couldn't use it.  My tests with dif­
-	  ferent mappings into the address space results in no Graphics dis­
+	  with 32MB MainMemory installed I couldn't use it.  My tests with dif-
+	  ferent mappings into the address space results in no Graphics dis-
 	  played or a spontaneous reboot.
 
 	o ATI GUP      - mach32   - VLB
@@ -362,7 +362,7 @@ You could use the following to produce it:
 
    o Sample Setup ...
 
-     Here is a sample XKeyboard Definition to include inside the Keyboard Sec­
+     Here is a sample XKeyboard Definition to include inside the Keyboard Sec-
      tion of your XF86Config File.
 
 	      Xkbkeycodes "xfree86"
@@ -545,7 +545,7 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
 
    o xpcterm:
 
-     if you want to get the German 'Umlaut' inside your ISC X11R4 client xpc­
+     if you want to get the German 'Umlaut' inside your ISC X11R4 client xpc-
      term when you are using the ega/vga font. Set up the user's .Xdefaults to
      contain:
 
@@ -621,7 +621,7 @@ to install the server binary LinkKit into /usr/X11R6/lib/Server.
 11.  Acknowledgements
 
 All thanks should go to the members of the XFree86 Team for their great work
-and the X Consortium for their Public Release of X11R6, as to all who con­
+and the X Consortium for their Public Release of X11R6, as to all who con-
 tribute to this excellent piece of free software.
 
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.18 1997/01/25 03:22:23 dawes Exp $

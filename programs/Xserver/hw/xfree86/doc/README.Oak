@@ -36,7 +36,7 @@ The following chipsets for Oak Tech. Inc. are supported:
       OTI087
 	    One of the first VLB chipsets available, it has a 16-bit external
 	    data path, and a 32-bit internal memory-controller data path, it
-	    also has register-based color expansion, hardware cursor, a primi­
+	    also has register-based color expansion, hardware cursor, a primi-
 	    tive BitBlt engine, a 64 bit graphic latch and some other new (on
 	    its time) features. Maximum BIOS resolutions are 1024x768x256 Non-
 	    Interlaced and 1280x1024x256 interlaced.  Maximum Dot-Clock is
@@ -95,14 +95,14 @@ options for all depths by specifying them in the Device section).
 
       Option "fifo_conservative" (OTI087)
 	    This option will set the FIFO to a safe value of 14, slowing the
-	    board by a 50%, use this only if you experience streaks or anoma­
+	    board by a 50%, use this only if you experience streaks or anoma-
 	    lies on the screen.
 
       Option "enable_bitblt" (OTI087)
 	    This option will enable an internal cache on the board that will be
 	    used as a rudimentary bitblt engine. Performance boost is more or
 	    less 100%, (double BlitStones on xbench). Most OTI087 boards seem
-	    to have this feature broken, corrupting text from xterms and leav­
+	    to have this feature broken, corrupting text from xterms and leav-
 	    ing mouse droppings throughout the screen. As a rule of thumb,
 	    enable it, if it works badly, disable it ;).
 
@@ -110,7 +110,7 @@ options for all depths by specifying them in the Device section).
 	    This one will force the internal speed to 50 Mhz.
 
       Option "clock_66" (OTI087)
-	    This one will force the internal speed to 66 Mhz, speeding up per­
+	    This one will force the internal speed to 66 Mhz, speeding up per-
 	    formance of the chipset.
 
       Option "no_wait" (OTI087)
@@ -156,13 +156,13 @@ Information for Oak Technologies Inc. Chipset Users
 	    Sets the VLB interface to at least one wait state.
 
       Option "noaccel" (OTI087)
-	    One accelerated routine has been lately added to the driver, allow­
+	    One accelerated routine has been lately added to the driver, allow-
 	    ing it to draw solid fills quite faster. This routine only works
 	    (up to date) on segmented addressing, and only if the virtual width
 	    is 1024. This option is automatically enabled by the driver. Use
 	    this option if you want to disable it.
 
-As a rule of thumb, use the option "no_wait", and if it doesn't result in cor­
+As a rule of thumb, use the option "no_wait", and if it doesn't result in cor-
 rupting text, lucky you. If not, try "first_wwait", and downwards. ISA card
 owners should not use these options.
 
@@ -170,7 +170,7 @@ owners should not use these options.
 3.  Mode issues
 
 The use of very high dot-clocks has a REAL negative effect on the performance
-of the boards, due to its limited 80Mbit/sec, higher dot clocks limit its abil­
+of the boards, due to its limited 80Mbit/sec, higher dot clocks limit its abil-
 ity to draw data into the framebuffer. Thus expect better performance of a
 72Mhz based mode than on a 78Mhz based one (for example) where more bandwidth
 is required for screen refresh.

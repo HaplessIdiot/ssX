@@ -21,10 +21,10 @@
 The Chips and Technologies ct655xx range of chips are primarily manufactured
 for use in laptop computers, where their power conservation circuitry is of
 importance. They can however be found in a few "Green" video cards for desktop
-machines. Prior to the release of XFree 3.2, XFree contained only limited sup­
+machines. Prior to the release of XFree 3.2, XFree contained only limited sup-
 port for these chipsets. The support that was introduced in XFree3.1.1 was not
 capable of linear addressing or using the programmable clocks in the ct65540
-and later chips. In addition to these chipset the new driver gives limited sup­
+and later chips. In addition to these chipset the new driver gives limited sup-
 port to the WinGine series of chips.
 
 The driver has been almost completely rewritten, with many additional features
@@ -56,7 +56,7 @@ particularly at higher depths or for the newer chips.
 
       ct65530
 	    This is a very similar chip to the 65520. However it additionally
-	    has the ability for mixed 5V and 3.3V operation and linear address­
+	    has the ability for mixed 5V and 3.3V operation and linear address-
 	    ing of the video memory.  (Max Ram: 1Mb, Max Dclk: 56MHz@3.3V,
 	    68MHz@5V)
 
@@ -72,13 +72,13 @@ particularly at higher depths or for the newer chips.
 
 
       ct65535
-	    This is the first chip of the ct655xx series to support fully pro­
+	    This is the first chip of the ct655xx series to support fully pro-
 	    grammable clocks. Otherwise it has the the same properties as the
 	    65530.
 
       ct65540
 	    This is the first version of the of the ct655xx that was capable of
-	    supporting Hi-Color and True-Color. It also includes a fully pro­
+	    supporting Hi-Color and True-Color. It also includes a fully pro-
 	    grammable dot clock and supports all types of flat panels.	(Max
 	    Ram: 1Mb, Max Dclk: 56MHz@3.3V, 68MHz@5V)
 
@@ -90,22 +90,22 @@ particularly at higher depths or for the newer chips.
 	    Dclk: 56MHz@3.3V,68MHz@5V)
 
       ct65546
-	    This chip is specially manufactured for Toshiba, and so documenta­
+	    This chip is specially manufactured for Toshiba, and so documenta-
 	    tion is not widely available. It is believed that this is really
 	    just a 65545 with a higher maximum dot-clock of 80MHz.  (Max Ram:
 	    1Mb?, Max Dclk: 80MHz?)
 
       ct65548
-	    This chip is similar to the 65545, but it also includes XRAM sup­
+	    This chip is similar to the 65545, but it also includes XRAM sup-
 	    port and supports the higher dot clocks of the 65546.  (Max Ram:
 	    1Mb, Max Dclk: 80MHz)
 
       ct65550/ct65554
 	    These chips are a completely new architecture to previous ct655xx
 	    chips. They include many new features, including improved BitBLT
-	    support (24bpp color expansion, wider maximum pitch, etc), Multime­
-	    dia unit (video capture, zoom video port, etc) and 24bpp uncom­
-	    pressed true color (i.e 32bpp mode). Also memory mapped I/O is pos­
+	    support (24bpp color expansion, wider maximum pitch, etc), Multime-
+	    dia unit (video capture, zoom video port, etc) and 24bpp uncom-
+	    pressed true color (i.e 32bpp mode). Also memory mapped I/O is pos-
 	    sible on all bus configurations. There is only limited support for
 	    H/W acceleration at this point.  (Max Ram: 4Mb, Max Dclk:
 	    80MHz@3.3V,110MHz@5V)
@@ -119,9 +119,9 @@ particularly at higher depths or for the newer chips.
 	    this card in the driver.  (Max Ram: 2Mb, Max Dclk: 80MHz)
 
       ct64300
-	    This is a more advanced version of the WinGine chip, with specifi­
+	    This is a more advanced version of the WinGine chip, with specifi-
 	    cation very similar to the 6554x series of chips. However there are
-	    many difference at a register level. A similar level of accelera­
+	    many difference at a register level. A similar level of accelera-
 	    tion to the 65545 is included for this driver.  (Max Ram: 2Mb, Max
 	    Dclk: 80MHz)
 
@@ -153,7 +153,7 @@ Device section).
 
       Option "no_bitblt" (Chips 65545 and later)
 	    This option will disable the use of the BitBLT engine which the
-	    65545 and above have. If you can use the  "noaccel" option to cor­
+	    65545 and above have. If you can use the  "noaccel" option to cor-
 	    rect a problem, then this option might be better to use.  It still
 	    allows the use of generic speedups.
 
@@ -162,7 +162,7 @@ Device section).
 	    monochrome colour expansion. In particular this effects text and
 	    bitmaps. It is useful for problems related to image writes, and
 	    possible acceleration problems. In general this will result in a
-	    reduced performance. Note that this option replaces the "no_image­
+	    reduced performance. Note that this option replaces the "no_image-
 	    blt" option used in XFree 3.2.
 
       Option "xaa_benchmark" (Chips 65545 and later)
@@ -180,11 +180,11 @@ Device section).
 	    By default linear addressing is used on all ct655xx chips.	However
 	    this might be broken in some implementations. It is possible to
 	    turn the linear addressing off with this option. Note that H/W
-	    acceleration and 16/24bpp are only supported with linear address­
+	    acceleration and 16/24bpp are only supported with linear address-
 	    ing.
 
       MemBase 0x03b00000 (or a different address)
-	    This sets the physical memory base address of the linear frame­
+	    This sets the physical memory base address of the linear frame-
 	    buffer. Typically this is probed correctly, but if you believe it
 	    to be mis-probed, this option might help.  Also for non PCI
 	    machines specifying this force the linear base address to be this
@@ -208,7 +208,7 @@ Device section).
 	    this if the cursor seems to have problems.
 
       Option "STN"
-	    The server is unable to differentiate between SS STN and TFT dis­
+	    The server is unable to differentiate between SS STN and TFT dis-
 	    plays. This forces it to identify the display as a SS STN rather
 	    than a TFT.
 
@@ -246,7 +246,7 @@ Device section).
 
       Option "hw_clocks" (Chips 65540 and later)
 	    On chips 65540 and later, the default is to use the programmable
-	    clock for all clocks. It is possible to use the fixed clocks sup­
+	    clock for all clocks. It is possible to use the fixed clocks sup-
 	    ported by the chip instead by using this option. Typically this
 	    will give you some or all of the clocks 25.175, 28.322, 31.000 and
 	    36.000MHz. Note that many flat panels will need a dot clock that is
@@ -344,7 +344,7 @@ you'll needed to considered several points
 	    16bpp and 3 for 24bpp, allowing one modeline to be used at all
 	    depths.  The effect of this is that the maximum dot clock visible
 	    to the user is a half or a third of the value at 8bpp. The 6555x
-	    series of chips doesn't need to use additional clock cycles to dis­
+	    series of chips doesn't need to use additional clock cycles to dis-
 	    play higher depths, and so the same modeline can be used at all
 	    depths, without needing to divide the clocks.  Also 16/24 bpp modes
 	    will need 2 or 3 times respectively more video ram.
@@ -366,7 +366,7 @@ you'll needed to considered several points
 	    On the 64300 chips the H/W cursors is stored in registers and so no
 	    allowance is needed for the H/W cursor. In addition to this many
 	    graphics operations are speeded up using a "pixmap cache". Leaving
-	    too little memory available for the cache will only have a detri­
+	    too little memory available for the cache will only have a detri-
 	    mental effect on the graphics performance.
 
       * VESA like modes
@@ -475,7 +475,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	    You are using a mode that your screen cannot handle. If it is a
 	    non-standard mode, maybe you need to tweak the timings a bit. If it
 	    is a standard mode and frequency that your screen should be able to
-	    handle, try to find different timings for a similar mode and fre­
+	    handle, try to find different timings for a similar mode and fre-
 	    quency combination. For LCD modes, it is possible that your LCD
 	    panel requires different panel timings at the text console than
 	    with a graphics mode. In this case you will need the "use_modeline"
@@ -487,20 +487,20 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	    (independent from drawing operations).  You are probably using a
 	    dot clock that is too high (or too low); it is also possible that
 	    there is interference with a close MCLK. Try a lower dot clock.
-	    For CRT's you can also try to tweak the mode timings; try increas­
+	    For CRT's you can also try to tweak the mode timings; try increas-
 	    ing the second horizontal value somewhat.
 
       Crash or hang after start-up (probably with a black screen).
-	    Try the "noaccel" or "no_bitblt" options. Check that the BIOS set­
+	    Try the "noaccel" or "no_bitblt" options. Check that the BIOS set-
 	    tings are OK; in particular, disable caching of 0xa0000-0xaffff.
 	    Disabling hidden DRAM refresh may also help.
 
       Crash, hang, or trash on the screen after a graphics operation.
 	    This may be related to a bug in one of the accelerated functions,
-	    or a problem with the BitBLT engine. Try the "noaccel" or "no_bit­
+	    or a problem with the BitBLT engine. Try the "noaccel" or "no_bit-
 	    blt" options. Also check the BIOS settings. It is also possible
 	    that with a high dot clock and depth on a large screen there is
-	    very little bandwidth left for using the BitBLT engine. Try reduc­
+	    very little bandwidth left for using the BitBLT engine. Try reduc-
 	    ing the clock.
 
       Chipset is not detected.
@@ -508,7 +508,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	    have.
 
       The screen is blank when starting X
-	    One possible cause of this problem is if the kernel has been com­
+	    One possible cause of this problem is if the kernel has been com-
 	    piled with the "APM_DISPLAY_BLANK" option. It appears that this
 	    option doesn't work as specified and can cause the Xserver to blank
 	    when starting X. In all cases the kernel should be compiled without
@@ -572,7 +572,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
       The right hand edge of the mode isn't visible on the LCD
 	    This is usually due to a problem with the "lcd-center" option. If
 	    this option is removed form XF86Config, then the problem might go
-	    away. Alternatively the manufacturer could have incorrectly pro­
+	    away. Alternatively the manufacturer could have incorrectly pro-
 	    grammed the panel size in the EGA console mode. The
 	    "fix_panel_size" can be used to force the modeline values into the
 	    panel size registers. Two machines that are known to have this
@@ -600,7 +600,7 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 
 
       I can't start X-windows with 16 or 24bpp
-	    Firstly, is your machine capable of 16/24bpp with the mode speci­
+	    Firstly, is your machine capable of 16/24bpp with the mode speci-
 	    fied. Many LCD displays are incapable of using a 24bpp mode. Also
 	    you need at least a 65540 to use 16/24bpp, and the amount of memory
 	    used by the mode will be doubled/tripled. The correct options to
@@ -614,10 +614,10 @@ The NEC Versa 4080 just needs the "fix_panel_size" option.
 	    Note that there is currently no "-bpp 32" mode in the Xserver,
 	    although the 65550 is capable of this.
 
-A general problem with the server that can manifested in many way such as draw­
-ing errors, wavy screens, etc is related to the programmable clock. Many poten­
+A general problem with the server that can manifested in many way such as draw-
+ing errors, wavy screens, etc is related to the programmable clock. Many poten-
 tial programmable clock register setting are unstable.	However luckily there
-are many different clock register setting that can give the same or very simi­
+are many different clock register setting that can give the same or very simi-
 lar clocks. The clock code can be fooled into giving a different and perhaps
 more stable clock by simply changing the clock value slightly. For example
 65.00MHz might be unstable while 65.10MHz is not. So for unexplained problems
@@ -628,9 +628,9 @@ For other screen drawing related problems, try the "noaccel" or "no_bitblt"
 options. A useful trick for all laptop computers is to switch between LCD/CRT
 (usually with something like Fn-F5), if the screen is having problems.
 
-If you are having driver-related problems that are not addressed by this docu­
-ment, or if you have found bugs in accelerated functions, you can try contact­
-ing the XFree86 team (the current driver maintainer can be reached at dbate­
+If you are having driver-related problems that are not addressed by this docu-
+ment, or if you have found bugs in accelerated functions, you can try contact-
+ing the XFree86 team (the current driver maintainer can be reached at dbate-
 man@ee.uts.edu.au or Egbert.Eich@Physik.TH-Darmstadt.DE), or post in the Usenet
 newsgroup "comp.windows.x.i386unix".
 

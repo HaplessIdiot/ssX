@@ -21,7 +21,7 @@ XFree86 supports the following Western Digital SVGA chipsets: PVGA1, WD90C00,
 WD90C10, WD90C11, WD90C24, WD90C30, WD90C31, WD90C33.  Note that the rest of
 the WD90C2x series of LCD-controller chipsets are still not supported.	The
 WD90C24 family is now supported including acceleration, adjustable clocks and a
-full 1MB video ram even on dual scan systems (in CRT mode).  If you have trou­
+full 1MB video ram even on dual scan systems (in CRT mode).  If you have trou-
 ble with the new WD90C24 support (not that we expect you will), try specifying
 "wd90c30" or "wd90c31" on the `Chipset' line in your XF86Config file.  The
 WD90C24, WD90C31 and WD90C33 are supported as an accelerated chipset in the
@@ -80,7 +80,7 @@ WD90C30 and seems to resolve most of the problems people encountered when these
 chips were treated as WD90C3X.	The new code has the following features:
 
    o Locks the shadow registers at appropriate times; This should prevent
-     scrambled displays after exiting X with dual scan screens when simultane­
+     scrambled displays after exiting X with dual scan screens when simultane-
      ous or LCD display mode is selected.  The code does depend somewhat on the
      behavior of the BIOS regarding when it locks the shadow registers, etc.
 
@@ -149,7 +149,7 @@ to the Device section of the XF86Config:
 	Option	    "fast_dram"     # Set Mclk to 55.035 MHz
 
 
-The default is to leave Mclk as the BIOS sets it.  This is 44.297 on many sys­
+The default is to leave Mclk as the BIOS sets it.  This is 44.297 on many sys-
 tems.  Some systems may not work properly with any of these options.  If you
 experience ``bit errors'' on your display, reduce the Mclk speed, or don't use
 any of these options.  The Mclk is not reset on server exit.
@@ -163,7 +163,7 @@ Don't expect all the clocks the chip can provide to work properly.
 The second and fourth group of 4 clocks are adjustable.  That is, clocks 5, 6,
 7, 8 and 13, 14, 15, 16 (counting from 1).  These clocks are set by the Clocks
 line.  Be sure to adjust the 17th (last) clock to match your Mclk.  Here is a
-sample set of clocks lines with some clocks defined which are not directly pro­
+sample set of clocks lines with some clocks defined which are not directly pro-
 vided by the chip.  The NON-programmable clocks (1-4 and 9-12) MUST be set as
 indicated here.
 
@@ -182,7 +182,7 @@ to this multiple, but instead are used to provide standard clocks which are not
 a multiple by .447443 MHz.
 
 If you probe for clocks (for example to find your Mclk), do it in CRT only mode
-and then add clocks lines in your XF86Config file.  Clocks will not probe cor­
+and then add clocks lines in your XF86Config file.  Clocks will not probe cor-
 rectly in LCD mode on most systems.
 
 The BIOS on some systems may not allow switching from CRT to LCD unless the
@@ -206,7 +206,7 @@ displays.
 The following modelines have been tested with the above Clocks lines on some
 systems, and are provided here as examples. Some testers have experienced minor
 problems (snow) with the fixed 65 and 75.166 MHz dot clocks.  The modelines
-below have been reported to circumvent these problems.	Do not assume your mon­
+below have been reported to circumvent these problems.	Do not assume your mon-
 itor will not be damaged by any of these.
 
       # VESA 800x600@72Hz Non-Interlaced mode
@@ -237,7 +237,7 @@ additional information on using XFree86 with the WD90C24 family however, you
 might try Darin Ernst's home page <URL:http://www.castle.net/~darin>.  Darin
 maintains a mini-HOWTO on ``X and the WD90C24''. He was the first tester of the
 WD90C24 code and provided many good ideas and encouragement.  You can reach
-Darin at darin@castle.net or dernst@pppl.gov.  I only provided the WD90C24 spe­
+Darin at darin@castle.net or dernst@pppl.gov.  I only provided the WD90C24 spe-
 cific code.  You can reach me (Brad Bosch) at brad@Lachman.com.
 
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/WstDig.sgml,v 3.6 1997/01/24 09:32:38 dawes Exp $

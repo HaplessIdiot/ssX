@@ -29,8 +29,8 @@ XF86_W32 is basically XF86_SVGA with the drawing code completely replaced with
 one based on X11R6's mi/cfb code and modified for the ET4000/W32 series.  Even
 though it accepts the same keywords as XF86_SVGA, those not applicable to the
 ET4000/W32 series are silently ignored; e.g., the keyword "SpeedUp" is a no-op.
-The server currently supports the w32, w32i, w32p and et6000 chips.  For a com­
-plete list, see the sign-on message printed by XF86_W32.  The server only sup­
+The server currently supports the w32, w32i, w32p and et6000 chips.  For a com-
+plete list, see the sign-on message printed by XF86_W32.  The server only sup-
 ports 256 colors.
 
 Just as with XF86_SVGA, you can specify a virtual world that has a width that
@@ -40,12 +40,12 @@ RAM, but it reserves 1 K for internal use.  If you have 1 M, XF86_W32 claims
 you have 1023 K; you get to specify the virtual world as 1152x900, but not
 1152x910.
 
-For most cards the maximum clock is set to 86 MHz according to the Tseng data­
+For most cards the maximum clock is set to 86 MHz according to the Tseng data-
 books.	For a non-interlaced 1280x1024x(256 colors) at say 135-MHz, you need a
 w32p (with its 16-bit RAMDAC bus) with a multiplexing RAMDAC so that the w32p
 sees only (135/2 = 67.5) MHz, not 135 MHz.  This requires special code only
 provided for cards using the ICS5341 GENDAC or the STG1703. This code seems to
-work fine for most people, except, with the ICS5341, for a small band of fre­
+work fine for most people, except, with the ICS5341, for a small band of fre-
 quencies around 90MHz.
 
 If you have problems with the server.  Try the following:
@@ -56,7 +56,7 @@ If you have problems with the server.  Try the following:
 
    o Put Option "w32_interleave_off" in the Device Section.
 
-   o Take out the Hercules monochrome adapter, if you have one.  Many configu­
+   o Take out the Hercules monochrome adapter, if you have one.  Many configu-
      rations of the ET4000/W32 series do not allow one in the system.
 
 
@@ -79,7 +79,7 @@ If you have problems with the server.  Try the following:
      hardware, including other X servers, before running XF86_W32.
 
    o In case of an ET6000 card, try specifying chipset "et6000" in the Device
-     Section. The card normally auto-probes from the PCI bus, but on some sys­
+     Section. The card normally auto-probes from the PCI bus, but on some sys-
      tems, another on-board VGA card, although disabled, may cause the ET6000
      server to want to use the other card.
 
@@ -178,7 +178,7 @@ higher color depths with some cards. On the downside, some special RAMDACs and
 clock chips that are supported in XF86_W32 for W32 cards are not supported in
 the SVGA server at this point.
 
-If the SVGA server does not give a picture with your W32 card try the follow­
+If the SVGA server does not give a picture with your W32 card try the follow-
 ing:
 
    o Put Option "slow_dram" in the Device Section.
@@ -224,7 +224,7 @@ was partly integrated in this server and he continues to help develop it.
 Tseng Labs Europe kindly donated (KMG) an ET6000-based board (a Jazz Multimedia
 G-Force 128), which spurred the development of the ET6000 code.
 
-Numerous testers have given me feedback for X_W32 and later XF86_W32.  I apolo­
+Numerous testers have given me feedback for X_W32 and later XF86_W32.  I apolo-
 gize for my failure to keep track of the people who tested X_W32, but the names
 of the people involved with the XF86_W32 testing are listed below:
 

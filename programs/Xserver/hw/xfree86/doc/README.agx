@@ -54,7 +54,7 @@ bootstrapping this server.
 
 3.  Known Problems
 
-   o The accelerated line routines don't match lines written by the mi/cfb rou­
+   o The accelerated line routines don't match lines written by the mi/cfb rou-
      tines. This is noticeable when switching between virtual consoles while
      running routines that draw and erase lines. Seems to have been
      reduced/fixed in previous releases but need more testing.
@@ -84,9 +84,9 @@ Notes on the AGX Server
    o Address the above known problems.
 
    o Additional acceleration routines and general performance improvements.
-     Many existing acceleration routines are Q&D adaptations of existing rou­
-     tines from other servers that support graphics chips that differ signifi­
-     cantly, architecturally, from that XGA and are undoubtedly less than opti­
+     Many existing acceleration routines are Q&D adaptations of existing rou-
+     tines from other servers that support graphics chips that differ signifi-
+     cantly, architecturally, from that XGA and are undoubtedly less than opti-
      mal. In particular some of the general per-operation overhead to set-up
      the graphics context should be moved to the ValidateGC() routines.
 
@@ -102,13 +102,13 @@ Notes on the AGX Server
 
    o Implement more HW probing, this will be difficult as it appears some
      (all?) AGX-based vendors don't implement the VESA VXE POS registers,
-     although the AGX chip does support it (and some vendors claim VXE compli­
+     although the AGX chip does support it (and some vendors claim VXE compli-
      ance...).	There are a few rev/vendor registers in the AGX chip but they
      are not documented. Note: SuperProbe also does not support probing for
      AGX/XGA chips. ISA POS probing is supported for the XGA chips and some
      code for EISA POS is also included but not tested.
 
-   o Micro-optimizations, in particularly reducing processing overhead for com­
+   o Micro-optimizations, in particularly reducing processing overhead for com-
      mon special cases that don't require full generality.
 
 
@@ -118,10 +118,10 @@ Notes on the AGX Server
 Device Section Entries and Options Currently Supported:
 
 The minimum that must be specified in the XF86Config device section for the
-AGX-014, AGX-015, AGX-016, and ISA-based XGA-1 and XGA-2 is the Chipset. How­
+AGX-014, AGX-015, AGX-016, and ISA-based XGA-1 and XGA-2 is the Chipset. How-
 ever to get full capability out of the AGX-01[456] chips, the RAMDAC should be
 specified.  Other parms may select additional capabilities, or may used to
-override the defaults or reduce start-up time be suppressing probing. XGA spe­
+override the defaults or reduce start-up time be suppressing probing. XGA spe-
 cific configuration is covered at the end of this document. The XGA entries can
 generally be used to override defaults for the AGX-01[456] as well.
 
@@ -179,14 +179,14 @@ Notes on the AGX Server
 
 		  "herc_dual_dac"
 			Hercules Graphite Pro RAMDAC probe.  If the 84-pin Big-
-			RAMDAC is installed (2MB models), will use the Big RAM­
+			RAMDAC is installed (2MB models), will use the Big RAM-
 			DAC, but only clocks-doubled, pixel- multiplexed modes
-			(higher clock values only!). Lower clocks and resolu­
+			(higher clock values only!). Lower clocks and resolu-
 			tions in 8bpp mode are supported by switching to the
 			Small 44-pin RAMDAC. 15bpp and 16bpp are supported.
 
 			There has been one report of the "dac-8-bit" option not
-			working with a Graphite Pro equipped with a BT485 RAM­
+			working with a Graphite Pro equipped with a BT485 RAM-
 			DAC, puzzling since it should be identical to the
 			AT&T20C505 in this regard. No startup messages or
 			XF86Config were submitted to aid problem isolation.
@@ -213,7 +213,7 @@ Notes on the AGX Server
 			Not supported by the HG210 Graphite.
 
 		  "xga"
-			To allow overriding the default VGA style RAMDAC con­
+			To allow overriding the default VGA style RAMDAC con-
 			trol for the AGX-010.
 
 
@@ -237,7 +237,7 @@ Notes on the AGX Server
       Chipset:
 	    Must be specified, possible values: "AGX-016", "AGX-015",
 	    "AGX-014", "AGX-010", "XGA-2", or "XGA-1". Some AGX vendors place
-	    stickers over the chip, in general, if it's a VLB board it's proba­
+	    stickers over the chip, in general, if it's a VLB board it's proba-
 	    bly an AGX-015 and if it's an ISA board it may be an AGX-014. The
 	    Hercules Graphite Power Pro and Spider Black Widow Plus use the
 	    AGX-016 chipset. In general, specifying a lower revision in the
@@ -252,7 +252,7 @@ Notes on the AGX Server
 	    The limited documentation I have for the AGX-010 is that is is a
 	    clone of the XGA architecture with a few additional configuration
 	    registers. What is not clear is whether to use XGA or extended-VGA
-	    RAMDAC control registers.  The post-3.1.1 default is now VGA con­
+	    RAMDAC control registers.  The post-3.1.1 default is now VGA con-
 	    trol registers, but XGA control registers can be forced with the
 	    XGA RAMDAC parm.  Likewise the configuration parms described in the
 	    XGA section can be used to override the AGX defaults for I/O and
@@ -287,7 +287,7 @@ Notes on the AGX Server
 			      "fifo_conserv"
 				    Disable Memory I/O Buffer, AGX-015 and
 				    AGX-016.  MS-Windows driver default.
-				    Required by some VLB systems with `aggres­
+				    Required by some VLB systems with `aggres-
 				    sive timing'.  The default for this server
 				    is to disable the buffer.
 
@@ -372,7 +372,7 @@ Notes on the AGX Server
 	    The server now accepts any virtual width, however the actual usable
 	    CRTC line width is restricted when using the graphics engine and
 	    depends upon the chip revision. The CRTC line width and not the
-	    virtual width determine the amount of memory used. The server cur­
+	    virtual width determine the amount of memory used. The server cur-
 	    rently does not make use of any of the unused CRTC line's memory.
 	    CRTC line width is restricted by the following rules:
 
@@ -405,7 +405,7 @@ Notes on the AGX Server
 	    Additional memory is useful for font cache and a larger scratchpad.
 
       AGX Clocks:
-	    Probing is supported, but of course the usual warnings and dis­
+	    Probing is supported, but of course the usual warnings and dis-
 	    claimers apply. Probing may momentarily subject your monitor to
 	    sweep frequencies in excess of its rating.	The cautious may wish
 	    to turn off the monitor while the probe is running.
@@ -415,9 +415,9 @@ Notes on the AGX Server
 	    For the clock probe it is recommended that the X server be run with
 	    the -probeonly option. The values in the clocks statement are the
 	    hardware input clocks and correspond to the pixel clock only at
-	    8bpp in direct-clocking RAMDAC modes. The server will divide/multi­
+	    8bpp in direct-clocking RAMDAC modes. The server will divide/multi-
 	    ply those values as appropriate for the RAMDAC modes available at
-	    the current pixel depth. The available pixel clocks will be dis­
+	    the current pixel depth. The available pixel clocks will be dis-
 	    played in the startup messages.
 
 	    For the 2MB Hercules Graphites, with the "herc-dual-dac" RAMDAC
@@ -439,7 +439,7 @@ Notes on the AGX Server
 				70.00  75.00  80.00  85.00  90.00 95.00 100.0 108.0
 
 
-	    These are the values to be used in the clock statement if specify­
+	    These are the values to be used in the clock statement if specify-
 	    ing the "normal", "bt481", or "herc_small_dac" RAMDAC in your
 	    XF86Config and your clockchip matches that above.
 
@@ -470,8 +470,8 @@ Notes on the AGX Server
 	    XGA-1 only 8 clocks are available.	The XGA-2 uses a programmable
 	    clock and no clocks or clockchip line is required.
 
-	    The maximum pixel clock generally allowed is 85MHz, but some RAM­
-	    DACs support higher values. In any case you, should check your RAM­
+	    The maximum pixel clock generally allowed is 85MHz, but some RAM-
+	    DACs support higher values. In any case you, should check your RAM-
 	    DAC, some RAMDACs used on AGX based boards are produced in versions
 	    rated to lesser values than the server assumes. You should check
 	    the rating and limit yourself to that value.
@@ -486,7 +486,7 @@ Notes on the AGX Server
 
 	    The doublescan flag is now supported, however the minimum clock
 	    supported is generally 25MHz, so resolutions of less than 400x300
-	    are not likely to be supported by most monitors.  In creating dou­
+	    are not likely to be supported by most monitors.  In creating dou-
 	    blescan mode timings, the vertical timings will match the apparent
 	    resolutions, e.g. for 400x300 the timings should describe 300
 	    lines, not 600.
@@ -494,7 +494,7 @@ Notes on the AGX Server
       Examples:
 
 		      For the Hercules HG720 (2MB VLB AGX-015, with BT481 and
-	    AT&T20C5050 RAMDACs), I use the following XF86Config "Device" sec­
+	    AT&T20C5050 RAMDACs), I use the following XF86Config "Device" sec-
 	    tion:
 
 			      Section "Device"
@@ -556,15 +556,15 @@ may need to be done manually.
 
        By default the ISA POS register will be performed. If the XGA Instance
 number is specified the scope of probing will be narrowed a bit. To override or
-disable probing, a minimum of the Instance, COPbase, and MEMbase must be speci­
-fied in the XF86Config device section for the XGA card. MCA probing is not sup­
+disable probing, a minimum of the Instance, COPbase, and MEMbase must be speci-
+fied in the XF86Config device section for the XGA card. MCA probing is not sup-
 ported.
 
       Instance	     nn
 	    XGA instance number (0-7).
 
       IObase	    nnnn
-	    The I/O address of the the XGA general control registers. The stan­
+	    The I/O address of the the XGA general control registers. The stan-
 	    dard, and default, is 0x21i0, where i is the instance number.
 
       MEMbase	     nnnn
@@ -573,7 +573,7 @@ ported.
 	    the linear aperture on boards that support it.
 
 	    POS register 4 bits 7-1 contains bits 31-25 of the XGA's display
-	    memory address. Bits 24-22 of of the display memory address con­
+	    memory address. Bits 24-22 of of the display memory address con-
 	    tains the XGA instance number.  Bit 0 of POS register 4 is not used
 	    by this server as the XGA's linear aperture is not used.  However,
 	    the coprocessor must still be configured with this.
@@ -651,7 +651,7 @@ blanking intervals or slightly changing the clock. At pixel clock rates above
 80Mhz has been set as the default limit for XGA-2 pixel clocks. I don't have
 specs on actual limits, and as there are a number of different XGA chipsets,
 you should use the modes documented in your owner's manual as a guide to max
-refresh rates. No clocks or clockchip parm are required to specify use of pro­
+refresh rates. No clocks or clockchip parm are required to specify use of pro-
 grammable clocks for the XGA-2.
 
 

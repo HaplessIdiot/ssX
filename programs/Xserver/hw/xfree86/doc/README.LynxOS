@@ -21,7 +21,7 @@ XFree86 is a port of X11R6.3 that supports several versions of Intel-based
 Unix.  It is derived from X386 1.2, which was the X server distributed with
 X11R5.	This release consists of many new features and performance improvements
 as well as many bug fixes.  The release is available as source patches against
-the X Consortium X11R6.3 code, as well as binary distributions for many archi­
+the X Consortium X11R6.3 code, as well as binary distributions for many archi-
 tectures.
 
 See the Copyright Notice in Copyright Notice.
@@ -39,7 +39,7 @@ later `LynxOS AT 2.4.0 042696'. XFree86 versions later than 3.1.2 have not been
 tested on LynxOS versions earlier than 2.3.0. The binaries are built on `LynxOS
 AT 2.4.0 042696' (but work on 2.3.0 as well).
 
-XFree86 supports LynxOS on the AT, on the microSPARC and on the PowerPC plat­
+XFree86 supports LynxOS on the AT, on the microSPARC and on the PowerPC plat-
 form. X servers are currently available on the AT and microSPARC platform.
 Refer to section Building on microSPARC and PowerPC (section 7., page 11) for
 details on XFree86 on the non-AT platforms.
@@ -180,13 +180,13 @@ As a minimal install, you'll need doc, bin, fonts lib, config, and one X
 server.
 
 If you plan to install XF86Setup you'll have to install X32Aprog as well since
-XF86Setup checks for the existence of a certain file name pattern which is sat­
+XF86Setup checks for the existence of a certain file name pattern which is sat-
 isfied only if you install the library files from X32Aprog. This restriction
 will be fixed in future releases for LynxOS.
 
 2.1  Full Install
 
-  1.  You must be logged in as root to unpack the archives because several exe­
+  1.  You must be logged in as root to unpack the archives because several exe-
       cutables are set-user-id.  Otherwise the server may abort if you unpack
       it as an ordinary user.
 
@@ -287,7 +287,7 @@ The fscl and f100 archives are optional and can be omitted if you are short on
 space.	The optional link archive (not included in beta releases) allows you to
 reconfigure and customize a X server binary.
 
-The optional prog archive is needed only for writing or compiling X applica­
+The optional prog archive is needed only for writing or compiling X applica-
 tions. Before building programs check wether X11R6/lib/X11/config/lynx.cf has
 correct settings for OSMajorVersion, OSMinorVersion and OSTeenyVersion for your
 operating system version.
@@ -301,7 +301,7 @@ on necessary configuration steps before running XFree86 on LynxOS.
 3.1  Disk space requirements
 
 Currently there is no support for shared libraries in the LynxOS XFree86 port.
-A complete binary installation along with manual pages will require approxi­
+A complete binary installation along with manual pages will require approxi-
 mately 70-90 MBytes of disk space. To compile the system you will need at least
 230 MBytes of free disk space.
 
@@ -410,7 +410,7 @@ README for XFree86 3.2A on LynxOS
 3.3  make World
 
 Before you start compilation you must edit xc/config/cf/lynx.cf to match your
-operating system version. Change the definitions of OSMajorVersion, OSMinorVer­
+operating system version. Change the definitions of OSMajorVersion, OSMinorVer-
 sion and OSTeenyVersion accordingly.
 
 You may now issue a
@@ -435,7 +435,7 @@ With LynxOS 2.2.1 programs will not be stripped during installation. This is
 due to a problem with the strip program which shows up when installing across
 file system boundaries.
 
-Refer to section Installing XFree86 manual pages (section 5., page 9) for man­
+Refer to section Installing XFree86 manual pages (section 5., page 9) for man-
 ual page installation.
 
 
@@ -475,7 +475,7 @@ README for XFree86 3.2A on LynxOS
        QUANTUM	     clock ticks until preemption	  64	  20
        CACHEBLKS     number of cache memory blocks	 202	  >= 4096
 
-The new values are those suggested by the LynxOS documentation for their X Win­
+The new values are those suggested by the LynxOS documentation for their X Win-
 dow package.
 
 4.2.2  Increase number of ptys
@@ -506,7 +506,7 @@ the Linux bus mouse drivers. To install the drivers unpack the shar archive
 	 # bash /usr/X11R6/lib/X11/etc/BM-Lynx.shar
 
 
-and follow the notes in /BMOUSE.Readme for further installation and configura­
+and follow the notes in /BMOUSE.Readme for further installation and configura-
 tion notes.
 
 The XFree86 PS/2 mouse driver works also with MetroLink X 2.3.3.1 as shipped
@@ -559,7 +559,7 @@ what one would expect (i.e. random).
 
 5.  Installing XFree86 manual pages
 
-LynxOS uses cat-able manual pages, and because a doc preparation system is def­
+LynxOS uses cat-able manual pages, and because a doc preparation system is def-
 initely not a vital component of a real-time operating system you must first
 install groff-1.09. Starting with LynxOS 2.3.0 it compiles right out of the box
 (or better tar archive).
@@ -570,8 +570,8 @@ XFree86 manual pages may be installed using
 
 
 The index and whatis database for the XFree86 manual pages will be created
-automatically. If you already have a whatis database or index file in the des­
-tination directories you should perform a sort/uniq operation to remove dupli­
+automatically. If you already have a whatis database or index file in the des-
+tination directories you should perform a sort/uniq operation to remove dupli-
 cate entries:
 
 	  for i in 1 3 5
@@ -763,7 +763,7 @@ to
 7.2  Known Bug of the microSPARC server
 
 On the first start of the X server on the microSPARC you will notice that the
-pointer follows mouse movements with a certain delay (especially if you're mov­
+pointer follows mouse movements with a certain delay (especially if you're mov-
 ing the mouse real fast). You will also notice that moving windows with certain
 window managers (eg mwm) is not working correctly.  These effects should go
 away on the next server start.

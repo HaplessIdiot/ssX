@@ -22,7 +22,7 @@ The current MGA driver in the SVGA server supports the Matrox Millennium
 cards with 2MB, 4MB and 8MB WRAM.
 
 NOTE: This driver is pretty new, and not everything works like you expect it
-to. It shouldn't crash your machine, but you may have video artifacts or miss­
+to. It shouldn't crash your machine, but you may have video artifacts or miss-
 ing lines. Please report any and all problems to XFree86@Xfree86.org using the
 appropriate bug report sheet.
 
@@ -86,7 +86,7 @@ This driver only supports the MGA Storm (MGA2064W) chipset with the TI (TVP)
 3026 RAMDAC. Matrox have only so far made 175, 220 and 250 MHz boards with
 these two components, although a 135 MHz RAMDAC part exists.
 
-We will eventually provide support for the other Matrox chipsets (once the Mil­
+We will eventually provide support for the other Matrox chipsets (once the Mil-
 lennium driver is at a far enough stage and more people with other cards join
 the effort), including the Impression, Atlas, Genesis, Mystique, etc.
 
@@ -96,13 +96,13 @@ At the moment, however, only the Millennium is supported.
 5.  Configuration:
 
 The server auto-detects WRAM size and RAMDAC speed. Do not bother putting these
-in your "Device" section, as they will be overridden. The TVP3026 has a pro­
+in your "Device" section, as they will be overridden. The TVP3026 has a pro-
 grammable clock generator, so probing and setting clocks is unnecessary as
 well.
 
 The "nolinear" option is currently unsupported - do not use this
 
-The options "noaccel" or "no_bitblt" turn off BitBlt Engine and other acceler­
+The options "noaccel" or "no_bitblt" turn off BitBlt Engine and other acceler-
 ated functions.
 
 

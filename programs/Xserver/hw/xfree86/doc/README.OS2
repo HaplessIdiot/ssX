@@ -30,15 +30,15 @@ XFree86/OS2 WWW pages:
 before you claim to have found any problems.
 
 This version of the code is called XFree86/OS2 3.2A. This means it is a beta
-version with limited life time, in contrast to 3.2 which is public and unre­
+version with limited life time, in contrast to 3.2 which is public and unre-
 stricted. There is no source code publicly available for a beta version.  If
-your hardware works well with 3.2, you better shouldn't upgrade to this ver­
+your hardware works well with 3.2, you better shouldn't upgrade to this ver-
 sion. If, on the other hand, you have hardware which is not supported or
 behaves wrong in 3.2, you are invited to test this version and report the
 results.
 
 Previous beta versions have been tested in a large number of configurations and
-have been found to be working, with some bugs left, rather flawlessly.	Never­
+have been found to be working, with some bugs left, rather flawlessly.	Never-
 theless, this code is not really recommended for public use by an end user.
 There may be still numerous bugs and problems.
 
@@ -54,10 +54,10 @@ operate the video hardware out of specs.
 
 However,
 
-   o there is no explicit or implicit warranty that certain code works cor­
+   o there is no explicit or implicit warranty that certain code works cor-
      rectly or works at all
 
-   o although no damage reports are known, it does not mean that it is impossi­
+   o although no damage reports are known, it does not mean that it is impossi-
      ble to damage hardware with this code; some deeply hidden bugs may still
 
 
@@ -79,7 +79,7 @@ ANY installation. No reports exist that a crashing X server itself actively
 destroys or modifies data, but it is possible in rare cases that the system is
 left in an unusable state (video display mode garbled or system unresponsive,
 not reacting to mouse or keyboard actions).  If you then hard reset or switch
-off the system, file caches of the operating system might not be written cor­
+off the system, file caches of the operating system might not be written cor-
 rectly back to disk, thus causing data loss.
 
 
@@ -105,11 +105,11 @@ Other versions:
 
 XFree86/OS2 will run on all dialects of Warp 3, including Warp "red spine box",
 Warp "blue spine box", Warp Connect, Warp Server, and Warp 4.  For Warp fixpack
-level 17 is mandatory, a later fixpack level (e.g. FP22 or FP26) is recom­
+level 17 is mandatory, a later fixpack level (e.g. FP22 or FP26) is recom-
 mended. In some future, a more recent fixpack might be necessary.  Please check
 a LATEST.OS2 file.
 
-OS/2 2.11 is not supported any longer with this release, due to lack of a work­
+OS/2 2.11 is not supported any longer with this release, due to lack of a work-
 ing test environment. Consequently, OS/2 SMP is not supported either, because
 this is currently based on OS/2 2.11. Warp Server SMP is supported, but SMP
 does not give significant advantage, other than the general speedup because of
@@ -177,7 +177,7 @@ README for XFree86 3.2A on OS/2
 	   Please ensure that you have the latest CSDs installed.
 
      Other versions of TCP/IP, such as FTP's, DEC's, or Hummingbird's TCP/IP
-     versions, as well as IBM TCP/IP 1.X are not supported. Nor does any net­
+     versions, as well as IBM TCP/IP 1.X are not supported. Nor does any net-
      working support from DOS (packet drivers, winsock), Netware, or NetBIOS
      work, and I won't to provide support for that in the future.
 
@@ -341,13 +341,13 @@ README for XFree86 3.2A on OS/2
 		  X32Aprt
 			the experimental X11R6.3 Print Server
 
-In order to save space on your disk and reduce net bandwidth, choose the soft­
-ware to obtain carefully. Each X server is an archive of about 1.2MB and occu­
+In order to save space on your disk and reduce net bandwidth, choose the soft-
+ware to obtain carefully. Each X server is an archive of about 1.2MB and occu-
 pies 3.0MB on the disk. You won't normally need more than the single Xserver
 tailored to your video card.
 
 If it is your first time install, get the X32Abase archive before any of the
-other packages. This package contains a driver and a test program, which ana­
+other packages. This package contains a driver and a test program, which ana-
 lyzes your video hardware. If this program fails or reports an incompatible
 hardware, it makes no sense to obtain the other packages in the hope that they
 would magically work.
@@ -412,7 +412,7 @@ README for XFree86 3.2A on OS/2
 
   7.  SuperProbe can identify many more video cards than are supported by
       XFree86. In some cases, SuperProbe unfortunately detects a wrong card,
-      often it claims to have seen a MCGA card which is some sort of a fall­
+      often it claims to have seen a MCGA card which is some sort of a fall-
       back. Generally, if it is approximately right, there are only few reasons
       for doubts; if it is totally off (e.g. saying it has seen a ET4000, and
       you have a Cirrus card), you should report a mis-detection as a bug to
@@ -443,7 +443,7 @@ can be changed, but is strictly discouraged.
 
 8.  Adding Variables to CONFIG.SYS
 
-XFree86/OS2 requires a number of settings in the CONFIG.SYS file to work cor­
+XFree86/OS2 requires a number of settings in the CONFIG.SYS file to work cor-
 rectly. Please add the following settings:
 
       TERM
@@ -608,7 +608,7 @@ README for XFree86 3.2A on OS/2
 
 The recent version of XFree86/OS2 has a REXX script named checkinstall.cmd
 which you can (and should) use to check whether you have entered most things
-correctly. This is not bullet-proof, but prevents the most obvious setup prob­
+correctly. This is not bullet-proof, but prevents the most obvious setup prob-
 lems.
 
 
@@ -673,20 +673,20 @@ Y:\XFree86\lib\X11\XConfig from a windowed or full screen OS/2 text session:
 
      [C:\] xf86config
 
-The xf86config program will ask a number of questions. You will need the infor­
+The xf86config program will ask a number of questions. You will need the infor-
 mation obtained from the SuperProbe program here. The program should be self
-explanatory; if you have problems to understand something though, seek assis­
+explanatory; if you have problems to understand something though, seek assis-
 tance in the newsgroups.
 
 Alternatively, but not recommended for the non-expert, you can edit the XConfig
-file manually with a text editor. A sample file is in Y:\XFree86\lib\X11\XCon­
+file manually with a text editor. A sample file is in Y:\XFree86\lib\X11\XCon-
 fig.eg, which can be used as a starting point.
 
-For details about the XF86Config file format, refer to the XF86Config(4/5) man­
+For details about the XF86Config file format, refer to the XF86Config(4/5) man-
 ual page.
 
 By the time this README file is written, a more sophisticated and user friendly
-setup program named XF86Setup, which is the now preferred configuration soft­
+setup program named XF86Setup, which is the now preferred configuration soft-
 ware for XFree86, was not yet functioning, but this might change in the final
 version. Please check the LATEST.OS2 file.
 
@@ -710,7 +710,7 @@ will encounter a few differences:
      use for Linux. The server is compiled with the XKEYBOARD option, so this
      might be an alternative. At the time of this documentation, unfortunately,
      some subtle bug in the OS/2 implementation is still waiting for a fix, so
-     this might not yet work. Read the LATEST.OS2 file with the binary distri­
+     this might not yet work. Read the LATEST.OS2 file with the binary distri-
      bution.
 
    o There is no support for the Wacom and Elographics input devices yet.
@@ -750,7 +750,7 @@ the xvidtune utility.
 the presentation manager in parallel.  The server, window manager and an xterm
 take about 4-6 Mb of memory themselves.  X will start up on a system with 8MB
 or less, but the performance will severely suffer from heavy disk swapping.
-Your mileage may vary, though, so some people might consider this still tolera­
+Your mileage may vary, though, so some people might consider this still tolera-
 ble.
 
 The easiest way for new users to start X windows is to type:
@@ -759,8 +759,8 @@ The easiest way for new users to start X windows is to type:
 
 .
 
-To get out of X windows, type: ``exit'' in the console xterm.  You can cus­
-tomize your X by creating .xinitrc, .xserverrc, and .twmrc files in the direc­
+To get out of X windows, type: ``exit'' in the console xterm.  You can cus-
+tomize your X by creating .xinitrc, .xserverrc, and .twmrc files in the direc-
 tory that the HOME environment variable points to. These files are described in
 the xinit and startx man pages.
 
@@ -774,9 +774,9 @@ on details to recompile XFree86/OS2 from scratch.
 13.  Building New X Clients
 
 The easiest way to build a new client (X application) is to use xmkmf if an
-Imakefile is included in the sources.  Type ``xmkmf -a'' to create the Make­
+Imakefile is included in the sources.  Type ``xmkmf -a'' to create the Make-
 files, check the configuration if necessary and type ``xmake''. ``xmake'' is a
-wrapper for the GNU make program which defeats the improper SHELL setting typi­
+wrapper for the GNU make program which defeats the improper SHELL setting typi-
 cally found in a Makefile generated from an Imakefile. Also see the XFree86/OS2
 FAQ for more hints about porting X clients.
 
@@ -799,7 +799,7 @@ README for XFree86 3.2A on OS/2
 
    o Sebastien Marineau for his great work on getting the server code debugged
 
-   o Eberhard Mattes for the wonderful base platform EMX which this port heav­
+   o Eberhard Mattes for the wonderful base platform EMX which this port heav-
      ily relies on
 
    o ME - no, no, forget this: I won't praise myself :-)

@@ -101,7 +101,7 @@ Readme for the XFree86 3.2 LinkKit
 
 	 o To build the Xnest server: set XnestServer to YES.
 
-	 o If you are building more than one Xserver, uncomment the ServerToIn­
+	 o If you are building more than one Xserver, uncomment the ServerToIn-
 	   stall line and set it to the name of the Xserver you want to be the
 	   default server (i.e., the one that the ``X'' sym-link points to).
 
@@ -123,7 +123,7 @@ Readme for the XFree86 3.2 LinkKit
 	   included in the Mono and VGA16 and SVGA servers because its probe
 	   always succeeds.
 
-	 o To use dynamically loadable modules(e.g. PEX, XIE): set Extensions­
+	 o To use dynamically loadable modules(e.g. PEX, XIE): set Extensions-
 	   DynamicModules to YES.
 
 
@@ -154,7 +154,7 @@ Readme for the XFree86 3.2 LinkKit
 	   crippled in some way.
 
 
-  4.  If you are including a driver that it not part of the standard distribu­
+  4.  If you are including a driver that it not part of the standard distribu-
       tion, make a directory in drivers/vga256 (drivers/vga2 if it is for the
       VGA2 part of the Mono server, drivers/vga16 if it is for the 16 colour
       server, or drivers/mono non-VGA part of the Mono and VGA16 servers) and
@@ -175,10 +175,10 @@ Readme for the XFree86 3.2 LinkKit
 
   9.  If you edit the xf86site.def file and change the selection of servers
       being built or the drivers included in them, repeat the above procedure.
-      If changing the selection of Xserver extensions being included it is suf­
+      If changing the selection of Xserver extensions being included it is suf-
       ficient to run `make Makefile' instead of `./mkmf'.
 
- 10.  It is possible to see which drivers are included in the Xserver by run­
+ 10.  It is possible to see which drivers are included in the Xserver by run-
       ning it with the `-showconfig' flag.  To check which extensions are
       included, start the Xserver and run `xdpyinfo'.
 

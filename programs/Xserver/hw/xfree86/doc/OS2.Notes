@@ -29,7 +29,7 @@ environment variables described there.
 
 At the current time, the most recent version available is XFree86-3.2A.  This
 is a beta version for which principally no source code is released.  The last
-available source code is XFree86-3.2.  If you want to join the XFree86 devel­
+available source code is XFree86-3.2.  If you want to join the XFree86 devel-
 oper team, e.g. to add support for certain hardware, please send a request to
 XFree86@XFree86.org. Please think about such a step carefully before, though,
 since much work is involved. Please use the XFree86-3.2 source code as a test
@@ -104,11 +104,11 @@ You need about 300MB of free HPFS space for the whole system. This does not
 include space for the postscript and troff documentation files. I have never
 installed them. Nor did I install the test subtree.
 
-  1.  Install all the above utilities. Refer to the corresponding documenta­
+  1.  Install all the above utilities. Refer to the corresponding documenta-
       tion.  Verify that everything works well, particularly EMX.
 
   2.  It is a good idea to use the same or a similar structure I have.	I have
-      made a directory \x11 on the partition for compiling and have put every­
+      made a directory \x11 on the partition for compiling and have put every-
       thing below this tree. I found that a clean tree occupies less than the
       half space of the disk, this gives me the opportunity to rename this tree
       to \x11old and copy a new version to the same disk to produce diffs. Last
@@ -151,7 +151,7 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 	   xc\config\util\added added-XXX
 
 
-      If there is no added-XXX file available, you can make one with the fol­
+      If there is no added-XXX file available, you can make one with the fol-
       lowing instructions:
 
 		 grep "\*\*\* xc/" patchfile >added-file
@@ -181,8 +181,8 @@ Notes on Rebuilding XFree86/OS2 from Scratch
 
 
       to find any rejects and unapplied patches (attention: yet another OS/2
-      program with wrong functionality). Normally there shouldn't be any prob­
-      lems of this kind, else you have made a mistake. Finally remove the orig­
+      program with wrong functionality). Normally there shouldn't be any prob-
+      lems of this kind, else you have made a mistake. Finally remove the orig-
       inal files with
 
 		 find \x11 -name *.orig -print -exec rm {} ;
@@ -218,8 +218,8 @@ Notes on Rebuilding XFree86/OS2 from Scratch
   8.  Go to the directory xc\util\compress and make compress.exe there. Install
       the program produced there in your path. I stumbled more than once on
       half-ported compress programs on OS/2 ftp servers that are defective
-      w.r.t.  reading and writing stdin/stdout. In some stage (font compres­
-      sion) otherwise you will get a core dump of mkfontdir, because all com­
+      w.r.t.  reading and writing stdin/stdout. In some stage (font compres-
+      sion) otherwise you will get a core dump of mkfontdir, because all com-
       pressed fonts are corrupt.
 
   9.  Set the environment variable X11ROOT to something different than it is;

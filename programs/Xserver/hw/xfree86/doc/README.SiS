@@ -96,7 +96,7 @@ can enable options for all depths by specifying them in the Device section).
 
 4.  Modelines
 
-When constructing a modeline for use with the Sis driver you'll need to con­
+When constructing a modeline for use with the Sis driver you'll need to con-
 sider several points:
 
    o H/W Acceleration.	The H/W cursor, and fill operations currently allocate

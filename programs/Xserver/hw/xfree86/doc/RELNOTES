@@ -29,14 +29,14 @@ Release Notes for XFree86[tm] 3.2A
 1.  General Information about Beta Releases
 
 This is a beta release of XFree86.  XFree86 beta releases are available to the
-public in binary form only.  Source code is available only to registered mem­
+public in binary form only.  Source code is available only to registered mem-
 bers of the XFree86 beta team.	The main reason for this is that XFree86 beta
-versions often contain source code from other sources (such as the X Consor­
+versions often contain source code from other sources (such as the X Consor-
 tium) which is not yet available for public release.  If you want to test or
 work on these releases at the source code level, you can apply for membership
 of the XFree86 beta team by sending email to XFree86@XFree86.org.
 
-The X servers included in beta releases have a built-in expiry date.  The rea­
+The X servers included in beta releases have a built-in expiry date.  The rea-
 son for this is to try to prevent them from persisting beyond the date of the
 next release, and to encourage people to test new beta releases.  The expiry
 date for 3.2A is 15 June 1997.
@@ -89,7 +89,7 @@ but for people who have a basic knowledge of the OS so that they don't require
 much support for issues like upgrading system libraries and obtaining necessary
 packages.
 
-If you are going to test this software, you should be prepared for the follow­
+If you are going to test this software, you should be prepared for the follow-
 ing:
 
    o Installation problems.  The installation procedure for beta releases gets
@@ -103,10 +103,10 @@ ing:
      release testing, it is likely that a new version will contain new bugs.
      This is unavoidable, because any code change, be it fixing previous bugs
      or adding new features, brings with it the chance that new bugs have been
-     introduced.  You should be prepared for the possibility that the new ver­
+     introduced.  You should be prepared for the possibility that the new ver-
      sion will have problems with your hardware.  In this situation, you should
      first check the XFree86 FAQ <URL:http://www.xfree86.org/FAQ> to see if it
-     is a known problem (possibly with a workaround), and then report the prob­
+     is a known problem (possibly with a workaround), and then report the prob-
      lem in detail.
 
    o Expiry date.  The XFree86 beta servers have a limited lifetime.  Before
@@ -121,7 +121,7 @@ ing:
 
 3.  XFree86 and X11R6.3
 
-XFree86 releases starting with the this 3.2A beta are based on the X Consor­
+XFree86 releases starting with the this 3.2A beta are based on the X Consor-
 tium's X11R6.3 (the final release from the X Consortium).
 
 R6.3 is an update to R6.1, and is intended to be compatible with R6.1 and R6 at
@@ -140,7 +140,7 @@ Release Notes for XFree86[tm] 3.2A
 the source and protocol levels.  Binaries should be upward-compatible.	X11R6.3
 includes some new Xserver extensions: SECURITY, XC-APPGROUP, XpExtension (print
 extension), and an updated, and standardised version of LBX.  X11R6.3 also has
-new standards, including RX (X Remote Execution MIME type), and a proxy manage­
+new standards, including RX (X Remote Execution MIME type), and a proxy manage-
 ment protocol.	X11R6.3 includes support for gzipped fonts.
 
 R6.1 is an update to R6, and is intended to be compatible with R6 at the source
@@ -225,7 +225,7 @@ Release Notes for XFree86[tm] 3.2A
 
 5.7  SVGA server
 
-   o A new general graphics acceleration interface (XFree86 Acceleration Archi­
+   o A new general graphics acceleration interface (XFree86 Acceleration Archi-
      tecture - XAA) has been implemented.  It is used to provide relatively
      complete acceleration, at different colour depths, for several chips in
      the SVGA server.  Chips currently making use of this include the Matrox
@@ -414,7 +414,7 @@ Release Notes for XFree86[tm] 3.2A
    o Problems relating to blank screen at start-up and text mode restoration
      with the 65550 and 65554 should now be fixed
 
-   o Acceleration support for all chips has improved due to the new XAA archi­
+   o Acceleration support for all chips has improved due to the new XAA archi-
      tecture.
 
    o Many additional minor fixes and documentation updates (see README.chips
@@ -438,7 +438,7 @@ Release Notes for XFree86[tm] 3.2A
    o VT52 emulation has been added to xterm.
 
    o Some xterm bugs have been fixed, including coloured background exposure
-     while selection is active, and missing state changes in the VT100 emula­
+     while selection is active, and missing state changes in the VT100 emula-
      tion.
 
    o Xterm's memory requirements for colour have been reduced.
@@ -481,7 +481,7 @@ Release Notes for XFree86[tm] 3.2A
 The XFree86 3.2A binary release is distributed as a full release, not as an
 upgrade.
 
-What follows is a list of the XFree86 3.2A components.	There may be some vari­
+What follows is a list of the XFree86 3.2A components.	There may be some vari-
 ations in this for some OSs.
 
 The following are required for all installations:
@@ -505,7 +505,7 @@ installations:
 	  X32Acfg.tgz	  sample config files for xinit, xdm
 
 
-NOTE: Be very careful about installing X32Acfg.tgz over an existing installa­
+NOTE: Be very careful about installing X32Acfg.tgz over an existing installa-
 tion if you have customised your xinit and/or xdm config files.  Installing
 X32Acfg.tgz will overwrite any existing files.	If you do have customised
 files, there is no need to install X32Acfg.tgz.
@@ -629,7 +629,7 @@ you create a directory in /home:
 The next step is to run the pre-installation script.  This script makes some
 preliminary checks of your system.  For some OSs, it may tell you to install
 new versions of some system components before proceeding with the installation.
-This script may also remove some outdated files and symbolic links from a pre­
+This script may also remove some outdated files and symbolic links from a pre-
 vious installation that could cause problems.
 
 Copy the preinst.sh script to /var/tmp, then go to /usr/X11R6 and run it:

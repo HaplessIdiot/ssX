@@ -44,8 +44,8 @@
 
 	   MemBase "0x???????"
 		 If the server does not detect the base address of the 21030,
-		 then Check /proc/pci for the 21030 and look for the "Prefetch­
-		 able 32 bit memory at 0x???????" and enter this as your Mem­
+		 then Check /proc/pci for the 21030 and look for the "Prefetch-
+		 able 32 bit memory at 0x???????" and enter this as your Mem-
 		 Base setting.
 
    o No acceleration features of the 21030 have been taken advantage of yet!

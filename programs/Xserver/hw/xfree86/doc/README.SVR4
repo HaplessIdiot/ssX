@@ -18,7 +18,7 @@
 				   Abstract
 
      NOTE:
-	    If you intend to use any of the accelerated servers, read sec­
+	    If you intend to use any of the accelerated servers, read sec-
      tion
 	   10 and follow the instructions.  Otherwise the X server will
      crash
@@ -77,16 +77,16 @@ list, please let us know about it.
 2.  How to cope with VT-switching hotkeys
 
 Some versions of SVR4 (Esix and Microport) have mechanisms for enabling two-key
-sequences for VT switching (Alt-Fn).  The standard SVR4 mechanism is Alt-Sys­
+sequences for VT switching (Alt-Fn).  The standard SVR4 mechanism is Alt-Sys-
 Req-Fn, which all versions we know use.  Running under X, the Alt-Fn sequences
 are stolen by the driver before the server can see them, so you can't use them
 for X applications.  So you want to switch back to the standard 3-key sequences
 while you are running X.  Here's how to do it:
 
       Microport
-	    Microport makes this very simple.  The 2-key mode is called "Micro­
+	    Microport makes this very simple.  The 2-key mode is called "Micro-
 	    port Mode", and the 3-key mode is called "Compatible Mode".  You
-	    enter Microport Mode by pressing Alt-SysReq-m.  You enter Compati­
+	    enter Microport Mode by pressing Alt-SysReq-m.  You enter Compati-
 	    ble Mode by pressing Alt-SysReq-c.	So all you need to do is press
 	    Alt-SysReq-c after starting the X server to allow X clients access
 	    to the Alt-Fn sequences.
@@ -102,7 +102,7 @@ while you are running X.  Here's how to do it:
 
 	      2.  The mode can be changed for individual VTs programatically by
 		  an ioctl().  To make life easier for XFree86 users, a program
-		  called `2key' is provided (in xc/pro­
+		  called `2key' is provided (in xc/pro-
 		  grams/Xserver/hw/xfree86/etc/ in the source tree, and in
 		  /usr/X11R6/lib/X11/etc/ in the binary kit).  You can compile
 		  and install this program.  Then to make use of it, add the
@@ -119,7 +119,7 @@ while you are running X.  Here's how to do it:
 
 3.  Running SVR3 binaries on SVR4.0.4 and SVR4.2
 
-SVR4.0.4 added the `Advanced Compatibility Package', which provides iBCS-2 com­
+SVR4.0.4 added the `Advanced Compatibility Package', which provides iBCS-2 com-
 pliance for running SVR3 binaries.  These facilities are also present in
 SVR4.2.  XFree86 makes use of this to accept local connections from SVR3
 clients.  The XFree86 binary distribution is built to use these capabilities.
@@ -139,7 +139,7 @@ Information for SVR4 Users
 
 We have found that SVR4.0.4 is not able to run all SCO, and perhaps not many
 ISC SVR3 binaries.  This is not a failing of XFree86, but of SVR4 itself.  One
-particular example is that many SVR3 programs are ignorant of the UFS filesys­
+particular example is that many SVR3 programs are ignorant of the UFS filesys-
 tem, and attempt to read directories as files, rather than using the system
 call that is defined for the purpose.  This will fail for obvious reasons.  The
 SVR4.0.4 release notes from USL (which you should have gotten from your vendor)
@@ -148,7 +148,7 @@ have lots of suggestions for how to improve compatibility.
 That said, we have had luck with several SCO binaries right out of the box.  No
 changes are needed - just go to an xterm window and run the program.
 
-ISC users will need a binary editor before they can attempt to run their bina­
+ISC users will need a binary editor before they can attempt to run their bina-
 ries.  ISC, for whatever reason, put the pipe for local connections in
 /tmp/.X11-unix/Xn.  This unfortunately is the same place as the X Consortium X
 server puts the Unix-domain socket normally used for local connections.  The
@@ -228,7 +228,7 @@ Information for SVR4 Users
       To use Xqueue, set the Protocol to Xqueue in both the Keyboard and
       Pointer sections of your XF86Config file, and You must have the mouse
       driver package installed, and must run mouseadmin to set it up for your
-      mouse.  If mouseadmin won't work try doing `touch /dev/gmse' before run­
+      mouse.  If mouseadmin won't work try doing `touch /dev/gmse' before run-
       ning it.	(Note that mouseadmin will need to be rerun after rebuilding a
       kernel unless you add an appropriate entry to /etc/conf/node.d/gmse.)
 
@@ -253,7 +253,7 @@ Information for SVR4 Users
 
       - The installation instructions omit the following:
 
-	   3a) Disable the asy driver by either running `kconfig' or edit­
+	   3a) Disable the asy driver by either running `kconfig' or edit-
 	   ing /etc/conf/sdevice.d/asy.
 
 	   3b) Rebuild the kernel by running /etc/conf/bin/idbuild
@@ -275,7 +275,7 @@ Information for SVR4 Users
       sure to read through each file and make any site-specific changes that
       you need.
 
-      NOTE: Some SVR4 versions (one example is Esix 4.0.3) have a default init­
+      NOTE: Some SVR4 versions (one example is Esix 4.0.3) have a default init-
       tab which runs `vtgetty' on the console. This does not work well when
       starting xdm at boot time.  The problem is that when you logout from a
       vtgetty session it wants to close all the VTs -- including the one xdm is
@@ -296,7 +296,7 @@ Information for SVR4 Users
       The local connection types available are "NAMED" (named streams pipe),
       "PTS" (old-stype USL streams pipe), "SCO" (SCO Xsight streams pipe), and
       "ISC" (ISC streams pipe).  The XLOCAL environment variable can be used to
-      set which types of local connection should be used in order of prefer­
+      set which types of local connection should be used in order of prefer-
       ence.  The default setting is PTS:NAMED:ISC:SCO.	It is recommended that
       NAMED be used in most cases because it is faster than the default PTS,
       and because using PTS can cause you to run out of /dev/pts/ devices (each
@@ -311,7 +311,7 @@ Information for SVR4 Users
 In addition to the notes for SVR4.0, you need to be aware of a few problems
 with SVR4.2.  Basically, the base SVR4.2 code has broken Unix-domain sockets in
 such a way that making local connections via UNIXCONN does not work properly
-(this bug is known to exist on Consensys SVR4.2 and Novell UnixWare).  The man­
+(this bug is known to exist on Consensys SVR4.2 and Novell UnixWare).  The man-
 ifestation of this bug is that windows remain on the screen after the client
 program exits, until you move the mouse into the window, or otherwise cause the
 server to try to write to the client.
@@ -339,7 +339,7 @@ Information for SVR4 Users
 
   1.  A lot of clients (even some which have explicit SVR4 support) require
       -DSYSV when building under SVR4.	This will not be set when using the
-      default configuration.  A quick fix is to add something like the follow­
+      default configuration.  A quick fix is to add something like the follow-
       ing to the client's Imakefile:
 
 		 #if SystemV4
@@ -358,7 +358,7 @@ to do a couple of things for this to work, though.  One change is a generic
 problem with the X client and X11R5/6; the others are to work with some things
 that are specific to the XFree86 servers.  Here are the things you need to do:
 
-  1.  Set and export $XMERGE in your .xinitrc and/or .xsession files.  In gen­
+  1.  Set and export $XMERGE in your .xinitrc and/or .xsession files.  In gen-
       eral, you should set XMERGE=vga.
 
   2.  You MUST use the "xqueue" driver instead of the server's native keyboard
@@ -368,7 +368,7 @@ that are specific to the XFree86 servers.  Here are the things you need to do:
       server will not be able to access the mouse after the zoom ends).  The
       only other alternative is to use separate mice on separate devices.
 
-  3.  You need to install the `dos' client fonts in the XFree86 font directo­
+  3.  You need to install the `dos' client fonts in the XFree86 font directo-
       ries.  Locate the BDF files (search for files with names matching the
       pattern `*pc???.bdf').  These will likely be /usr/lib/X11/fonts/misc.  Go
       to the directory where these files are located, and execute the following
@@ -401,7 +401,7 @@ Information for SVR4 Users
 
 
 
-      following resource to the `dos' client's application-defaults file (usu­
+      following resource to the `dos' client's application-defaults file (usu-
       ally in /usr/lib/X11/app-defaults/DOS):
 
 		dos*xcodetable: /usr/lib/merge/xc/xcode.xfree86
@@ -411,9 +411,9 @@ Information for SVR4 Users
       the keypad will fail to function in the `dos' client if the wrong table
       is installed.
 
-  5.  For the "zoom" feature to work correctly, you must run `dos' with $DIS­
+  5.  For the "zoom" feature to work correctly, you must run `dos' with $DIS-
       PLAY set to "unix:N" or "host_name:N".  If you use just ":0", the client
-      will not function properly.  `dos' does not accept a `-display' parame­
+      will not function properly.  `dos' does not accept a `-display' parame-
       ter.  Hence it is probably a good idea to replace the `dos' program with
       something like this:
 

@@ -108,7 +108,7 @@ Information for SCO Users
 
 To obtain a minimum XFree86 installation you will require the archives marked
 with a `*' above, the server binary best suited to your machine and optionally
-"gunzip.Z".  All the files are compressed with "gzip" except of course "gun­
+"gunzip.Z".  All the files are compressed with "gzip" except of course "gun-
 zip.Z" which is compressed using the conventional compress program.
 
 To install the XFree86 binaries just follow these steps.
@@ -146,7 +146,7 @@ Information for SCO Users
   5.  if you have installed man pages see the later section on setting up man
       pages.
 
-  6.  Look through /usr/X11R6/lib/X11/doc/INSTALL, especially section 2 on con­
+  6.  Look through /usr/X11R6/lib/X11/doc/INSTALL, especially section 2 on con-
       figuring and using XFree86.   This should allow you to get a server up
       and running.  Before starting the server check in the later section
       Before Running XFree86 (section 3., page 3), in this document, to see if
@@ -247,7 +247,7 @@ Information for SCO Users
 
      Once you are running configure,  choose the ``Streams Data'' option and
      step through the entries.	Just press <ENTER> at each prompt unless you
-     want to change a value.  The values to look for,  and their minimum val­
+     want to change a value.  The values to look for,  and their minimum val-
      ues, are:
 
 
@@ -300,14 +300,14 @@ on.  If this is the last console it will take you to console 1. Ctrl-Alt-FXX,
 where XX is a function key between F1 and F12 will switch you to the console
 number assigned to that function key. F1 corresponds to tty01 (or console 1),
 F2 corresponds to tty02 (or console 2) etc.  Those interested in modifying the
-console switching should look in xc/programs/Xserver/hw/xfree86/com­
+console switching should look in xc/programs/Xserver/hw/xfree86/com-
 mon/xf86Events.c.
 
 
 5.  Setting up Man Pages
 
 After compiling the tree, or after installing the binary distribution you can
-get man to recognise the XFree86 man pages by adding /usr/X11R6/man to the MAN­
+get man to recognise the XFree86 man pages by adding /usr/X11R6/man to the MAN-
 PATH in /etc/default/man, the line should look similar to:
 
 	 MANPATH=/usr/man:/usr/X11R6/man
@@ -370,7 +370,7 @@ World.
 
   3.  You may want to disable dynamic loading support. Several users have
       reported trouble with this. XIE and PEX5 definitely do not work. If you
-      want to experiment, try enabling this. Please report successes or fail­
+      want to experiment, try enabling this. Please report successes or fail-
       ures to me.
 
   4.  Do not enable the HasSVR3mmapDrv as you may have done in older versions
@@ -409,14 +409,14 @@ Information for SCO Users
 	    proportion is still relevant.
 
       All of the VGA/Config documentation.
-	    /usr/X11R6/lib/X11/doc/VideoModes.doc and the README files for par­
+	    /usr/X11R6/lib/X11/doc/VideoModes.doc and the README files for par-
 	    ticular video cards.
 
 
 9.  Known Problems
 
    o After running the server you may see some strange characters in your input
-     to the shell.  This is due to some unprocessed scancodes and is of no con­
+     to the shell.  This is due to some unprocessed scancodes and is of no con-
      cern.  This will be fixed in a future release.
 
    o Not all of the applications in /usr/X11R6/bin have been debugged.
@@ -469,7 +469,7 @@ Information for SCO Users
 
 		 Again this can have many causes.  Most likely your
 		 XF86Config is wrong.  You should be able to kill the
-		 server by typing Ctrl-Alt-BackSpace,  if it is still run­
+		 server by typing Ctrl-Alt-BackSpace,  if it is still run-
 		 ning.	If this does not restore your display then you may
 		 have to drive your system blind.  Always keep another
 		 login running at the shell prompt so that you may switch
@@ -496,7 +496,7 @@ Information for SCO Users
 		 some strain off your monitor during XFree86 startup where
 		 it usually probes the various clock frequencies.  Getting
 		 the ``X'' screen to appear can be a painfully slow task.
-		 Be patient and read as much of the doco as you can han­
+		 Be patient and read as much of the doco as you can han-
 		 dle.  You will get it to work.
 
       Problem:
@@ -578,7 +578,7 @@ Information for SCO Users
 	      2.  You have resized the window and not ran "eval `resize`"
 		  before using your application.  The SCO operating system does
 		  not support dynamic resizing of xterms fully so this command
-		  must be run after resizing an xterm in order for curses/term­
+		  must be run after resizing an xterm in order for curses/term-
 		  cap applications to operate correctly.
 
       Problem:
@@ -603,26 +603,26 @@ Information for SCO Users
 
       Causes:
 
-	      1.  You do not have the binaries installed in the correct direc­
+	      1.  You do not have the binaries installed in the correct direc-
 		  tory.  Check that they are in /usr/X11R6
 
 	      2.  You have upgraded to a new binary distribution which has a
 		  new version of the shared libraries which are not compatible
 		  with your old binaries.  To fix this you will need to re-
-		  install the old shared libraries or recompile your applica­
+		  install the old shared libraries or recompile your applica-
 		  tion against the new libraries.
 
       Problem:
 
 
-		 When linking against the SCO motif library I get an unre­
+		 When linking against the SCO motif library I get an unre-
 		 solved external for "XtDisplayStringConversionWarning"
 		 when using gcc.
 
       Causes:
 
 
-		 The SCO library is compiled with limited length identi­
+		 The SCO library is compiled with limited length identi-
 		 fiers.  To work around this add the following code to
 		 your application when compiling under XFree86 with gcc
 		 and SCO motif.

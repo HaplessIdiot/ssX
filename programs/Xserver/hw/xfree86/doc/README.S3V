@@ -18,7 +18,7 @@
 1.  Supported hardware
 
 The current XF86_S3V server supports S3 ViRGE (86C325) and S3 ViRGE/VX (86C988)
-chips.	32bpp TrueColor and External RAMDACs for ViRGE/VX are not yet sup­
+chips.	32bpp TrueColor and External RAMDACs for ViRGE/VX are not yet sup-
 ported.  It has been tested with ViRGE cards with 2 and 4MB DRAM and with a
 220MHz ViRGE/VX card with 2MB VRAM up to 1600x1200 with 8/15/16bpp.
 
@@ -26,7 +26,7 @@ For 3.2A, the server supports 24 bpp.  It is reported to lock video on ViRGE/VX
 chipsets when run twice, and dump core with some setups.  It appears stable on
 ViRGE chipsets.  There are known problems, but you should be able to run xterms
 and applications that support 24 bpp or Truecolor.  Known exceptions include
-xanim (reported patch fixes this), netscape, xfig, and xfishtank.  (and oth­
+xanim (reported patch fixes this), netscape, xfig, and xfishtank.  (and oth-
 ers...)
 
 NOTE: This driver is pretty new, and not everything might work like you expect
