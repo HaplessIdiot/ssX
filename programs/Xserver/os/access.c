@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.54 2004/01/03 17:38:39 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.55 2004/04/03 22:26:25 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -1598,7 +1598,7 @@ CheckAddr (
 
     switch (family)
     {
-#if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN) || defined(MNX_TCPCONN)
+#if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
       case FamilyInternet:
 	if (length == sizeof (struct in_addr))
 	    len = length;
