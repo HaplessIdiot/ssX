@@ -1,19 +1,19 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.47 2002/11/14 21:01:14 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.48 2002/11/28 16:50:58 alanh Exp $
 
 #ifndef OSName
-#define OSName                  Cygwin
+# define OSName                 Cygwin
 #endif
 #ifndef OSVendor
-#define OSVendor                Red Hat Inc.
+# define OSVendor               Red Hat Inc.
 #endif
 #ifndef OSMajorVersion
-#define OSMajorVersion          1
+# define OSMajorVersion		DefaultOSMajorVersion
 #endif
 #ifndef OSMinorVersion
-#define OSMinorVersion          3
+# define OSMinorVersion		DefaultOSMinorVersion
 #endif
 #ifndef OSTeenyVersion
-#define OSTeenyVersion		16
+# define OSTeenyVersion		DefaultOSTeenyVersion
 #endif
 
 #define ProjectRoot 		/usr/X11R6
