@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.37 2001/03/23 20:56:28 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.38 2002/02/22 21:32:51 dawes Exp $
 
 XCOMM
 XCOMM Imake tokens which are significant to building libGL:
@@ -61,7 +61,7 @@ LIBGLBUILDDIR = GL
 
 #if BuildXF86DRI && !GlxUseSGISI && \
 	(!GlxBuiltInMesa || !defined(GlxDriverUsesMesa))
-     MESADIRS = mesa/src mesa/src/X
+     MESADIRS = mesa/src
    OSMESADIRS = mesa/src/OSmesa
 #endif
 
