@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.31 2001/10/26 06:13:59 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.32 2001/11/12 19:22:17 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -164,24 +164,26 @@ static NSRect aquaMenuBarBox;
     ev.type  = [anEvent type];
     ev.flags = [anEvent modifierFlags];
 
-    // Check for switch keypress
-    if ((ev.type == NSKeyDown) && (![anEvent isARepeat]) &&
-        ([anEvent keyCode] == [Preferences keyCode]))
-    {
-        unsigned int switchFlags = [Preferences modifiers];
-
-        // Switch if all the switch modifiers are pressed, while none are
-        // pressed that should not be, except for caps lock.
-        if (((ev.flags & switchFlags) == switchFlags) &&
-            ((ev.flags & ~(switchFlags | NSAlphaShiftKeyMask)) == 0))
+    if (!quartzRootless) {
+        // Check for switch keypress
+        if ((ev.type == NSKeyDown) && (![anEvent isARepeat]) &&
+            ([anEvent keyCode] == [Preferences keyCode]))
         {
-            [self toggle];
-            return YES;
-        }
-    }
+            unsigned int switchFlags = [Preferences modifiers];
 
-    if (!serverVisible && !quartzRootless)
-        return NO;
+            // Switch if all the switch modifiers are pressed, while none are
+            // pressed that should not be, except for caps lock.
+            if (((ev.flags & switchFlags) == switchFlags) &&
+                ((ev.flags & ~(switchFlags | NSAlphaShiftKeyMask)) == 0))
+            {
+                [self toggle];
+                return YES;
+            }
+        }
+
+        if (!serverVisible)
+            return NO;
+    }
 
     // If the mouse is not on the valid X display area,
     // we don't send the X server key events.
@@ -553,20 +555,21 @@ static NSRect aquaMenuBarBox;
 // Show or hide the X server or menu bar in rootless mode
 - (void)toggle
 {
-/* FIXME: Remove or add option to not dodge menubar
     if (quartzRootless) {
+#if 0
+        // FIXME: Remove or add option to not dodge menubar
         if (rootlessMenuBarVisible)
             HideMenuBar();
         else
             ShowMenuBar();
         rootlessMenuBarVisible = !rootlessMenuBarVisible;
+#endif
     } else {
-*/
         if (serverVisible)
             [self hide];
         else
             [self show];
-//    }
+    }
 }
 
 // Show the X server on screen
