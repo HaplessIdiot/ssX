@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.59 2000/10/27 18:31:15 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.60 2000/11/01 01:12:44 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A>
 <LI><A HREF="#xterm_148">Patch #148 - 2000/10/31 - XFree86 4.0.1d</A>
 <LI><A HREF="#xterm_147">Patch #147 - 2000/10/26 - XFree86 4.0.1c</A>
 <LI><A HREF="#xterm_146">Patch #146 - 2000/9/12 - XFree86 4.0.1c</A>
@@ -192,6 +193,25 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A></H1>
+<ul>
+	<li>expanded description of environment variables in manual-page.
+
+	<li>modify OPT_TCAP_QUERY feature to always return the termcap or
+	  terminfo capability string in the response, and to read/write the
+	  names in hexadecimal form to allow for the special case of termcap's
+	  <code>k;</code> name (patch by Bram Moolenaar).
+
+	<li>add OPT_SAME_NAME and OPT_TCAP_QUERY to xtermcfg.hin, so the
+	  corresponding configure options work (patch by Bram Moolenaar).
+
+	<li>resync with XFree86 4.0.1g:
+	<ul>
+	  <li>Rewrite Xft library for Render extension/core text and font management
+	    Change xterm to use new interface (Keith Packard).
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_148">Patch #148 - 2000/10/31 - XFree86 4.0.1d</A></H1>
 <ul>
