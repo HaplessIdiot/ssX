@@ -28,6 +28,7 @@
  * in this Software without prior written authorization from Holger Veit.
  *
  */
+/* $XFree86$ */
 
 #define I_NEED_OS2_H
 #include "X.h"
