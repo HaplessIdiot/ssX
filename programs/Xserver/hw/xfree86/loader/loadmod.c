@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.62 2001/02/10 00:24:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.63 2001/02/16 01:43:07 dawes Exp $ */
 
 /*
  *
@@ -553,7 +553,7 @@ CheckVersion (const char *module, XF86ModuleVersionInfo *data,
 			data->modname ? data->modname : "UNKNOWN!",
 			data->vendor ? data->vendor : "UNKNOWN!");
 
-	if (ver < 40000000) {
+	if (ver > (4 << 24)) {
 		/* 4.0.x and earlier */
 		verstr[1] = verstr[3] = 0;
 		verstr[2] = (ver & 0x1f) ? (ver & 0x1f) + 'a' - 1 : 0;
