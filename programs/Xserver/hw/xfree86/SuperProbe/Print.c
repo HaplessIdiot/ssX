@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.64 1999/03/21 07:34:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.65 1999/06/06 08:48:43 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -61,7 +61,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 		  "Chips & Tech F65548", "Chips & Tech F65546",
 		  "Chips & Tech F65550", "Chips & Tech F65554",
 		  "Chips & Tech F65555", "Chips & Tech F68554",
-		  "Chips & Tech F69000", "Chips & Tech 64200 WinGine",
+		  "Chips & Tech F69000", "Chips & Tech F69030",
+		  "Chips & Tech F64200 WinGine",
 		  "Chips & Tech F64300 WinGine" },
 /* Cirrus */	{ "Cirrus (chipset unknown)",
 		  "Cirrus CL-GD 510/520", "Cirrus CL-GD 610/620",

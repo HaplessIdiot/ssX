@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.35 1999/07/04 06:38:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.36 1999/07/06 11:38:15 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -299,6 +299,7 @@
 #define PCI_CHIP_65555		0x00E5
 #define PCI_CHIP_68554		0x00F4
 #define PCI_CHIP_69000		0x00C0
+#define PCI_CHIP_69030		0x0C30
 
 /* Miro */
 #define PCI_CHIP_ZR36050	0x5601
@@ -778,6 +779,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_65555,	"65555"},
 				{PCI_CHIP_68554,	"68554"},
 				{PCI_CHIP_69000,	"69000"},
+				{PCI_CHIP_69030,	"69030"},
 				{0x0000,		NULL}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_MIRO, {

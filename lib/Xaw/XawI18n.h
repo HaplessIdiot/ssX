@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.7 1998/10/03 08:42:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.8 1999/05/03 12:15:47 dawes Exp $ */
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
@@ -104,4 +104,12 @@ wchar_t _Xaw_atowc
 #ifndef iswspace
 #define iswspace(c) (isascii(c) && isspace(toascii(c)))
 #endif
+#endif
+
+#ifndef iswalnum
+#define iswalnum(c) _Xaw_iswalnum(c)
+int _Xaw_iswalnum
+(
+ wchar_t		c
+ );
 #endif

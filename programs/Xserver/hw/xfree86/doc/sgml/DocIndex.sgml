@@ -1,43 +1,57 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN"[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
  
 <article>
 
 <!-- Title information -->
-<title>List of XFree86 documentation
+<title>Documentation for XFree86&trade; version &relvers;
 <author>The XFree86 Project, Inc
-<date>22 January 1997
+<date>19 July 1999
 
-<sect> Available Documentation <p>
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.31 1999/05/30 14:27:31 dawes Exp $ 
+</ident>
 
+<p>
 <itemize>
-<item><htmlurl name="Release Notes for XFree86&trade; 3.2A"
-	url="RELNOTES.html">
-<item><htmlurl name="README for XFree86&tm; 3.2A"
+<item><htmlurl name="README for XFree86&tm; &relvers;"
 	url="README.html">
-<item><htmlurl name="Copyright"
-	url="COPYRIGHT.html">
+<item><htmlurl name="Release Notes for XFree86&trade; &relvers;"
+	url="RELNOTES.html">
+<item><htmlurl name="Licenses"
+	url="LICENSE.html">
+<!--
 <item><htmlurl name="Quick Start Guide for XFree86"
 	url="QuickStart.html">
 <item><htmlurl name="The XInput extension in XFree86"
 	url="xinput.html">
+-->
+<item><htmlurl name="Mouse Support in XFree86"
+	url="mouse.html">
 <item><htmlurl name="Fonts in XFree86"
 	url="fonts.html">
 <!--
 <item><htmlurl name="README for XFree86 3.1.2 on BSD/OS 2.0"
 	url="Bsdi.html">
 -->
+<!--
 <item><htmlurl name="README for XFree86 on FreeBSD"
 	url="FreeBSD.html">
+-->
 <item><htmlurl name="Information for ISC Users"
 	url="isc.html">
+<!--
 <item><htmlurl name="Information for Linux Users"
 	url="Linux.html">
 <item><htmlurl name="README for XFree86 3.2A on LynxOS"
 	url="LynxOS.html">
+-->
 <!--
 <item><htmlurl name="README for XFree86 3.1 on Mach"
 	url="Mach.html">
 -->
+<!--
 <item><htmlurl name="README for XFree86 3.2 on NetBSD and OpenBSD"
 	url="NetBSD.html">
 <item><htmlurl name="README for XFree86 3.2 on OS/2"
@@ -54,12 +68,14 @@
 	url="Config.html">
 <item><htmlurl name="Building XFre86"
 	url="BUILD.html">
+-->
 <!--
 <item><htmlurl name="The Hitchhiker's Guide to X386/XFree86 Video Timing"
 	url="VideoModes.html">
 <item><htmlurl name="Readme for the XFree86 3.1.2 LinkKit"
 	url="LinkKit.html">
 -->
+<!--
 <item><htmlurl name="How to add an (S)VGA driver to XFree86"
 	url="VGADriver.html">
 <item><htmlurl name="Information for using/developing external clock setting programs"
@@ -68,14 +84,18 @@
 	url="agx.html">
 <item><htmlurl name="Information for ARK Logic Chipset Users"
 	url="ark.html">
-<item><htmlurl name="ATI boards README"
+-->
+<item><htmlurl name="ATI Adapters README file"
 	url="ati.html">
 <item><htmlurl name="Information for Chips and Technologies Users"
 	url="chips.html">
+<!--
 <item><htmlurl name="Information for Cirrus Chipset Users"
 	url="cirrus.html">
+-->
 <item><htmlurl name="Information for DEC 21030 Users (aka TGA)"
 	url="DECtga.html">
+<!--
 <item><htmlurl name="Notes for Mach32 X Server"
 	url="Mach32.html">
 <item><htmlurl name="Notes for Mach64 X Server"
@@ -90,10 +110,12 @@
 	url="P9000.html">
 <item><htmlurl name="Information for S3 Chipset Users"
 	url="S3.html">
+-->
 <item><htmlurl name="Information for S3 ViRGE Users"
 	url="s3virge.html">
 <item><htmlurl name="Information for SiS Users"
 	url="SiS.html">
+<!--
 <item><htmlurl name="Information for Trident Chipset Users"
 	url="trident.html">
 <item><htmlurl name="Information for Tseng Chipset Users"
@@ -104,16 +126,7 @@
 	url="WstDig.html">
 <item><htmlurl name="The Linux/m68k Frame Buffer Device"
 	url="fbdev.html">
+-->
 </itemize>
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DocIndex.sgml,v 3.30 1999/05/29 09:54:48 dawes Exp $ 
-
-
-
-
-
-$XConsortium: DocIndex.sgml /main/15 1996/10/28 05:12:53 kaleb $
-</verb>
 
 </article>

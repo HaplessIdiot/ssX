@@ -1,4 +1,6 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN"[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
  
 <article>
 
@@ -6,10 +8,10 @@
 <title> Information for Chips and Technologies Users
 <author> David Bateman (<it>dbateman@eng.uts.edu.au</it>),
          Egbert Eich (<it>Egbert.Eich@Physik.TH-Darmstadt.DE</it>)
-<date> 19th March 1999
+<date> 19th July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.24 1999/06/12 07:18:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.25 1999/07/07 12:05:52 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -17,7 +19,7 @@ $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.24 1999/06/12 0
 
 <sect> Introduction <p>
 
-With the release of XFree86 version 4.0, the Chips and Technologies
+With the release of XFree86 version &relvers;, the Chips and Technologies
 driver has been extensively rewritten and contains many new features.
 This driver must be considered work in progress, and those users
 wanting stability and encouraged to use the older XFree86 3.3.x
@@ -137,7 +139,12 @@ HiQV architecture.
 	Similar to the 65555 but incorporates 2Mbytes of SGRAM on chip. It is
 	the first Chips and Technologies chipset where all of the registers
 	are accessible through MMIO, rather than just the BitBlt registers.
-	(Max Ram: 2Mb Only, Max Dclk: 220MHz@3.3V)
+	(Max Ram: 2Mb Only, Max Dclk: 130MHz@3.3V)
+<tag>ct69030</tag>
+	Similar to the 69000 but incorporates 4Mbytes of SGRAM on chip and has
+	faster memory and pixel clock limits. Also includes a second display
+	channel so that the CRT can display independently of the LCD.
+	(Max Ram: 4Mb Only, Max Dclk: 170MHz@3.3V)
 </descrip>
 
 
@@ -295,11 +302,11 @@ Option "MMIO"
 	by default for 65545 machines since the blitter	can not be used
 	otherwise. The HiQV series of chipsets must use MMIO with their
 	BitBLT engines, and so this is enabled by default. However the
-	69000 chipset can use MMIO for all communications with the video
-	processor. So using this option on a 69000 chipset forces them
+	690xx chipsets can use MMIO for all communications with the video
+	processor. So using this option on a 690xx chipset forces them
 	to use MMIO for all communications. This only makes sense when
-	the 69000 is on a PCI bus so that normal PIO can be disabled.
-	(WARNING!! 69000 MMIO is untested)
+	the 690xx is on a PCI bus so that normal PIO can be disabled.
+	(WARNING!! 690xx MMIO is untested)
 <tag>
 Option "SuspendHack"
 </tag>
@@ -589,6 +596,7 @@ specifications are
 65555                    110                55
 68554                    110                55
 69000                    135                83
+69030                    170               100
 </verb>
 
 Note that all of the chips except the 65550 rev A are 3.3v only. Which
@@ -609,6 +617,7 @@ clocks for the chips are
 65555                   110     77      51.33   77      51.33   38.5
 68554                   110     77      51.33   77      51.33   38.5
 69000                   135    116.2    77.47  116.2    77.47   58.1
+69030                   170    140      93.33  140      93.33   70
 </verb>
 
 If you exceed the maximum set by the memory clock, you'll get corruption
@@ -760,8 +769,8 @@ video processor beyond it capabilities won't cause damage.
 	require the "<tt>-no_bios</tt>" option for SuperProbe to correctly
 	detect the chipset with the factory default BIOS settings. The server
 	itself can correctly detect the chip in the same situation.
-<tag> My 69000 machine lockups when using the "<tt>MMIO</tt>" option</tag>
-	The 69000 MMIO mode has been implemented entirely from the manual
+<tag> My 690xx machine lockups when using the "<tt>MMIO</tt>" option</tag>
+	The 690xx MMIO mode has been implemented entirely from the manual
 	as I don't have the hardware to test it on. At this point no testing
 	has been done and it is entirely possible that the "<tt>MMIO</tt>
 	option will lockup your machine. You have been warned! However if
@@ -784,12 +793,12 @@ video processor beyond it capabilities won't cause damage.
 <verb>
 	  startx -- -depth 24 -fbbpp 32   8-8-8 RGB truecolor
 </verb>
-	however as XFree86 version 4.0 allows 32bpp pixmaps to be used with
-	framebuffers operating in 24bpp, this mode of operating will cost
-	performance for no gain in functionality.
+	however as XFree86 version &relvers; allows 32bpp pixmaps to be
+	used with framebuffers operating in 24bpp, this mode of operating
+	will cost performance for no gain in functionality.
 
-	Note that the "<tt>-bpp</tt>" option has been removed from XFree86
-	version 4.0 and replaced with a "<tt>-depth</tt>" and "<tt>-fbbpp</tt>"
+	Note that the "<tt>-bpp</tt>" option has been removed
+	and replaced with a "<tt>-depth</tt>" and "<tt>-fbbpp</tt>"
 	option because of the confusion between the depth and number of
         bits per pixel used to represent to framebuffer and the pixmaps
         in the screens memory.

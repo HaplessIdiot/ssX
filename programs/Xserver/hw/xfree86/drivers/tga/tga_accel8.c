@@ -24,7 +24,7 @@
  * DEC TGA accelerated options.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel8.c,v 1.2 1999/07/10 12:17:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel8.c,v 1.3 1999/07/11 08:49:28 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -226,28 +226,27 @@ TGASetupForScanlineCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
     pTga->current_rop = rop | BPP8PACKED;
     if(bg == -1) {
 	pTga->transparent_pattern_p = 1;
-	if(rop == MIX_SRC)
+	if(rop == MIX_SRC) {
 	  pTga->block_or_opaque_p = USE_BLOCK_FILL;
-	else
+	  TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR0_REG);
+	  TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR1_REG);
+	}
+	else {
 	  pTga->block_or_opaque_p = USE_OPAQUE_FILL;
-	/* actually we are using transparent fill or block fill */
+	  TGA_FAST_WRITE_REG(color, TGA_FOREGROUND_REG);
+	}
     }
-    else
+    else {
 	pTga->transparent_pattern_p = 0;
+	TGA_FAST_WRITE_REG((bg | (bg << 8) | (bg << 16) |
+			    (bg << 24)), TGA_BACKGROUND_REG);
+	TGA_FAST_WRITE_REG(color, TGA_FOREGROUND_REG);
+    }
 
     TGA_FAST_WRITE_REG((planemask | (planemask << 8) | (planemask << 16) |
 			(planemask << 24)), TGA_PLANEMASK_REG);
     TGA_FAST_WRITE_REG(pTga->current_rop, TGA_RASTEROP_REG);
-    if(pTga->transparent_pattern_p == 0) {
-	TGA_FAST_WRITE_REG((bg | (bg << 8) | (bg << 16) |
-			    (bg << 24)), TGA_BACKGROUND_REG);
-    }
-    if(pTga->block_or_opaque_p == USE_BLOCK_FILL) {
-	TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR0_REG);
-	TGA_FAST_WRITE_REG(color, TGA_BLOCK_COLOR1_REG);
-    }
-    else
-	TGA_FAST_WRITE_REG(color, TGA_FOREGROUND_REG);
+
     TGA_SAVE_OFFSET();
     
     return;

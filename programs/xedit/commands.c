@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.16 1999/05/16 10:13:07 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.17 1999/06/20 08:41:41 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -318,6 +318,9 @@ DoSave(Widget w, XtPointer client_data, XtPointer call_data)
 	  if (item && item->source != scratch) {
 	      XtSetArg(args[0], XtNlabel, filename);
 	      XtSetValues(item->sme, args, 1);
+
+	      XtSetArg(args[0], XtNeditType, XawtextEdit);
+	      XtSetValues(item->source, args, 1);
 
 	      XtFree(item->name);
 	      XtFree(item->filename);

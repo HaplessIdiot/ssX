@@ -1,10 +1,18 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
 <article>
  
 <!-- made up title -->
 <title> Information for ISC Users
 <author> Michael Rohleder
 <date> 06 March 1999
+
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.20 1999/03/28 15:32:33 dawes Exp $
+</ident>
+
 <toc>
 
 <sect> X11R6/XFree86 on Interactive Unix <p>
@@ -16,12 +24,11 @@ Interactive Unix, also referred to as ISC.
 If you have any suggestions, comments, fixes or ideas regarding
 X11R6/XFree86 on Interactive Unix, send e-mail to
 
-<htmlurl url="mailto:michael.rohleder@stadt-frankfurt.de" 
-    name="michael.rohleder@stadt-frankfurt.de"><p>
+<email>michael.rohleder@stadt-frankfurt.de</email><p>
 Bug Reports should be sent to<p>
-<em>XFree86@XFree86.Org</em><p>
+<email>XFree86@XFree86.Org</email><p>
 Questions or anything else should be posted to the NewsGroup<p>
-<em>comp.windows.x.i386unix</em><p>
+<htmlurl name="comp.windows.x.i386unix" url="news:comp.windows.x.i386unix"<p>
 
 There is currently no support for shared Libraries so it will be filespace
 consuming if you want to build X11-clients with X11R6. Best you mix X11R6
@@ -596,15 +603,5 @@ All thanks should go to the members of the
 and the <bf>X Consortium</bf> for their Public Release of X11R6, 
 as to all who contribute to this excellent piece of free software.
 
-
-<verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.19 1998/04/05 00:45:56 robin Exp $
-
-
-
-
-
-$XConsortium: isc.sgml /main/8 1996/10/23 11:45:58 kaleb $
-</verb>
 
 </article>

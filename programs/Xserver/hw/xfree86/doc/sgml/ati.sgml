@@ -1,4 +1,7 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN"[
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
+
 <article>
 
 <!-- Title information -->
@@ -8,7 +11,7 @@
 <date>1999 June 23
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.20 1999/07/06 11:38:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.21 1999/07/07 12:05:51 dawes Exp $
 </ident>
 
 <abstract>

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 1999 by The XFree86 Project, Inc.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.3 1999/03/14 11:17:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86VidMode.c,v 1.4 1999/06/12 07:18:44 dawes Exp $ */
 
 /*
  * This file contains the VidMode functions required by the extension.
@@ -30,8 +30,6 @@ static Bool VidModeClose(int i, ScreenPtr pScreen);
 
 #endif
 
-
-#define DEBUG
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.45 1999/03/14 11:17:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.46 1999/04/11 13:10:38 dawes Exp $ */
 
 /*
 
@@ -149,7 +149,6 @@ static int ScreenPrivateIndex;
 #define New(t)  (xalloc (sizeof (t)))
 #endif
 
-#define DEBUG
 #ifdef DEBUG
 # define DEBUG_P(x) ErrorF(x"\n");
 #else

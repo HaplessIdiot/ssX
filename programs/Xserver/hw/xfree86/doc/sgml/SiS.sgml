@@ -1,4 +1,6 @@
-<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN">
+<!DOCTYPE linuxdoc PUBLIC "-//XFree86//DTD linuxdoc//EN" [
+<!ENTITY % defs SYSTEM "defs.ent"> %defs;
+]>
  
 <article>
 
@@ -6,6 +8,10 @@
 <title>Information for SiS Users
 <author>Juanjo Santamarta (<it>santamarta@ctv.es</it>)
 <date>17 April 1999
+
+<ident>
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SiS.sgml,v 3.4 1999/04/18 13:49:09 dawes Exp $
+</ident>
 
 <!-- Table of contents -->
 <toc>
@@ -105,11 +111,6 @@ for this card. Please use xf86config instead.
 Some video modes with high dot-clocks don't work at all, resulting on black 
 screen. Lowering dotclock in that case could solve the problem. 
 
-<verb>
 Document based on 3.3 version written by Xavier Ducoin.
-</verb>
 
-<verb>
-$XFree86$
-</verb>
 </article>

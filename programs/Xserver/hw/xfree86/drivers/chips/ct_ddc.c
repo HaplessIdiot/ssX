@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.2 1998/12/20 11:57:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_ddc.c,v 1.3 1999/01/14 13:04:16 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -63,6 +63,7 @@ chips_ddc1(ScrnInfoPtr pScrn)
 	cPtr->ddc_mask = 0x0F;        /* GPIO 0-3 */
 	break;
     case CHIPS_CT69000:
+    case CHIPS_CT69030:
 	cPtr->ddc_mask = 0x9F;        /* GPIO 0-4,7? */
 	break;
     default:
@@ -199,6 +200,7 @@ chips_setI2CBits(I2CBusPtr b, ScrnInfoPtr pScrn)
 	pI2C_c->i2cClockBit = 0x08;
 	break;
     case CHIPS_CT69000:
+    case CHIPS_CT69030:
 	bits = 0x9F;        /* GPIO 0-4,7? */
 	pI2C_c->i2cDataBit = 0x04;
 	pI2C_c->i2cClockBit = 0x08;

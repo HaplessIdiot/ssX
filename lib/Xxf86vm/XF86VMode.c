@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.25 1999/03/14 11:17:41 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.26 1999/04/11 13:10:35 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -224,13 +224,14 @@ XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     int majorVersion, minorVersion;
 
     XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
 
     LockDisplay(dpy);
     GetReq(XF86VidModeGetModeLine, req);
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetModeLine;
     req->screen = screen;
-    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
+    
     if (majorVersion < 2) {
 	if (!_XReply(dpy, (xReply *)&oldrep, 
             (SIZEOF(xXF86OldVidModeGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {

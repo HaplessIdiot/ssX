@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.64 1999/03/28 15:33:06 dawes Exp $
 
 # VGA
 
@@ -119,6 +119,10 @@ SEE Chips & Technologies CT65550
 
 NAME Chips & Technologies CT69000
 CHIPSET ct69000
+SEE Chips & Technologies CT65550
+
+NAME Chips & Technologies CT69030
+CHIPSET ct69030
 SEE Chips & Technologies CT65550
 
 NAME Chips & Technologies CT64200

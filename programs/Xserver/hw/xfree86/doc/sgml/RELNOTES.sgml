@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>18 July 1999 (this document needs work!)
+<date>19 July 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.8 1999/07/17 05:30:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.9 1999/07/18 15:47:54 dawes Exp $
 </ident>
 
 <abstract>
@@ -20,9 +20,6 @@ in XFree86 &relvers; and their status.
 </abstract>
 
 <toc>
-
-<p>
-<em>Many of the sections below are currently empty.</em>
 
 <sect>X server
 <p>
@@ -392,8 +389,10 @@ The following new X server command line options have been changed since 3.3.x:
 </quote>
 
 
+<!--
 <sect1>XAA
 <p>
+-->
 
 <sect1>Multi-head
 <p>
@@ -444,11 +443,13 @@ Known problems:
 
 </itemize>
 
+<!--
 <sect1>XVideo extension
 <p>
 
 <sect1>DGA version 2
 <p>
+-->
 
 <sect1>DDC
 <p>
@@ -475,7 +476,7 @@ DDC is enabled by default, but can be disabled
 with a "Device" section entry:
 <tt>Option "NoDDC"</tt>.
 We have support for DDC versions 1 and 2; these can be disabled independently
-with <tt>Option "NoDDC1"</tt> and <tt>Option "NoDDC1"</tt>.
+with <tt>Option "NoDDC1"</tt> and <tt>Option "NoDDC2"</tt>.
 
 At startup the server prints out DDC information from the display,
 but it does not yet use it the determine modelines.
@@ -503,21 +504,203 @@ Gamma 1.0 1.0 1.0
 
 </itemize>
 
-<sect1>GLX
+<sect1>GLX and the Direct Rendering Infrastructure (DRI)
 <p>
 
+<url name="Precision Insight" url="http://www.precisioninsight.com">
+has been provided with funding and support from <url name="Red Hat"
+url="http://www.redhat.com"> and <url name="SGI" url="http://www.sgi.com">
+to integrate the GLX extension for 3D rendering in an X11 window.  The
+3D core rendering component is the <url name="Mesa"
+url="http://www.mesa3d.org"> library.  SGI has released the sources to
+the extension framework under an open license, which essentially provides
+the glue between the 3D library and this windowing system.  Precision
+Insight has integrated these components into this XFree86 X Server and
+added a Direct Rendering Infrastructure.  Direct Rendering provides a
+highly optimized path for sending 3D data directly to the graphics
+hardware.  This release <url name="demonstrates a sample implementation
+of direct rendering" url="http://www.precisioninsight.com/demo.html">
+by providing a single path of 3D hardware accellerated rendering for
+the GMX2000 graphics card.  Future releases will support much broader
+implementations of hardware accellerated direct rendering on a wide
+range of 3D capable graphics devices.
+
+
+<!--
 <sect1>Other extensions
 <p>
+-->
 
-<sect1>Sections for specific drivers go here
+<sect1>Drivers
 <p>
 
+XFree86 &relvers; includes the following drivers:
+
+<table border=1 align="center">
+<tabular ca="|l|l|">
+   <tabrow>Driver Name<colsep>Description</tabrow>
+   <hline>
+   <tabrow><tt>apm</tt><colsep>Alliance Pro Motion</tabrow>
+   <tabrow><tt>ati</tt><colsep>ATI</tabrow>
+   <tabrow><tt>chips</tt><colsep>Chips &amp; Technologies</tabrow>
+   <tabrow><tt>cirrus</tt><colsep>Cirrus Logic</tabrow>
+   <tabrow><tt>fbdev</tt><colsep>Linux fbdev</tabrow>
+   <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)</tabrow>
+   <tabrow><tt>glint</tt><colsep>3Dlabs</tabrow>
+   <tabrow><tt>mga</tt><colsep>Matrox</tabrow>
+   <tabrow><tt>neomagic</tt><colsep>NeoMagic</tabrow>
+   <tabrow><tt>rendition</tt><colsep>Rendition</tabrow>
+   <tabrow><tt>s3virge</tt><colsep>S3 ViRGE</tabrow>
+   <tabrow><tt>sis</tt><colsep>SiS</tabrow>
+   <tabrow><tt>tga</tt><colsep>DEC TGA</tabrow>
+   <tabrow><tt>trident</tt><colsep>Trident</tabrow>
+   <tabrow><tt>tseng</tt><colsep>Tseng Labs</tabrow>
+   <tabrow><tt>vga</tt><colsep>Generic VGA</tabrow>
+</tabular>
+</table>
+
+<sect2>APM
+<p>
+
+The driver apm is for Alliance AT3D/AT25 based boards. It's still buggy,
+but it works at least with the Hercules 128/3D board.  Please send as
+many bug-report (but success stories as well) as possible to
+<email>grenie@lami.univ-evry.fr</email>
+
+<sect2>Chips &amp; Technologies
+<p>
+
+Information about the C&amp;T driver can be found in <htmlurl
+name="README.chips" url="chips.html">.
+
+<sect2>s3virge
+<p>
+
+The s3virge driver is a port of the 3.3.3.1 SVGA S3 ViRGE driver.  As
+such it should be as stable and functional as previous XFree86
+releases.  There are a couple additional benefits included primarily due
+to common enhancements:
+
+<itemize>
+  <item>Depth 24 problems resolved with clients using 24/32 bpp pixmaps.
+  <item>Our common acceleration architecture (XAA) has been re-written,
+	as has the ViRGE acceleration code.  You should find this version
+	has better performance than prior releases.
+
+  <item>Multi-head is reported to work.
+  <item>The <tt>s3virge</tt> man page lists options and has configuration
+	notes for this release of the driver.
+
+</itemize>
+
+Outstanding items not implemented or fully tested:
+
+<itemize>
+  <item>DGA support is implemented, but preliminary and untested.
+  <item>ViRGE MX Melco BIOS support has not been ported yet.
+</itemize>
+
+<sect2>TGA
+<p>
+
+The TGA driver is now accelerated and supports both 8 and 32 plane
+framebuffers.  It is known to work under Linux/Alpha.  Please see the
+<htmlurl name="README.DECtga" url="DECtga.html"> file for further
+information.
+
+<sect2>Matrox
+<p>
+
+The MGA driver supports the same range or hardware as XFree86 3.3.4,
+but has a number of enhancements including multi-head support and
+support for overlays (8-bit + 24-bit).  Further information can be found
+in the <tt>mga</tt> man page.
 
 <sect>X libraries and clients
 <p>
 
 <sect1>Xaw
 <p>
+
+Two versions of the Xaw library are provided in this release. A version with
+bug fixes and a few binary compatible improvements and a new version with
+several new features.
+
+New features:
+
+<itemize>
+
+  <item>A <tt>displayList</tt> resource is available to all Xaw widgets. It
+	basically consists of a list of drawing commands, fully described in
+	the <tt>Xaw(3)</tt> manual page, that enables a integration of Xaw
+	programs with the new window/desktop managers that allows for
+	configurable themes.
+
+  <item>Some new actions were added to all Xaw widgets, to allow more
+	configurable control of the widgets, and to allow setting resources
+	at run time.
+
+  <item>Since Xpm is integrated in XFree86 &relvers;, programs linked with the
+	new Xaw library	will also link with Xpm. This allows for color
+	background pixmaps, and also for shaped widgets.
+
+  <item>The text widget is the widget that will present more changes. These
+	include:
+
+	<itemize>
+
+	  <item>Block cursor.
+
+	  <item>Compile time limit of 16384 undo/redo levels (that will
+		automatically grow if the text is not saved when this mark is
+		reached).
+
+	  <item>Overwrite mode.
+
+	  <item>Text killed is inserted in a kill ring list, this text is not
+		forgotten, pressing <tt>M-y</tt> allows traversing the kill
+		ring list.
+
+	  <item>International support for latin languages is available even
+		if the <tt>international</tt> resource is not set. Users will
+		need to properly set the <it>locale</it> environment to make
+		complete use of this feature.
+
+	  <item>A better <tt>multiply</tt> interface is provided. Pressing
+		<tt>C-u,&lt;number&gt;</tt> (where number can be negative)
+		allows passing parameters for text actions.
+
+	  <item>Text can be formatted to have left, right, center or full
+		justification.
+
+	  <item>Text indentation support is also available.
+
+	</itemize>
+
+</itemize>
+
+Bug fixes:
+
+<itemize>
+
+  <item>The simple menu widget geometry management code was improved to solve
+	problems with menu entries not visible in the screen.
+
+  <item>The form widget geometry code was changed to solve problems with integer
+	round problems in the child widgets geometry when resizing the parent
+	form widget.
+
+  <item>Several bugs were fixed in the text code, while some code was rewritten
+	from scratch.
+
+</itemize>
+
+<p>
+
+<sect1>Xpm
+<p>
+
+Version 3.4k of the Xpm (X pixmap) library is now integrated into XFree86.
 
 <sect1>xterm
 <p>
@@ -618,6 +801,48 @@ Bug fixes/improvements:
 </itemize>
 
 <sect1>xedit
+<p>
+
+Xedit have been changed to use most of the new features added to the new
+version of the Xaw library, and some xedit only features were added. Emacs
+users will find that several of the emacs key bindings work with the new
+version of xedit. These include:
+
+<itemize>
+
+  <item>File name tab completion. Including a <it>Emacs dired</it> like window,
+	that will be shown when there are more than one match, when
+	<tt>C-x,d</tt> is pressed, or when a directory name is specified.
+
+  <item>An unlimited number of files can be edited at the same time. Including
+	multiple views of the same or different files.
+
+  <item>The line number of the cursor position is always visible. It can also
+	be customized to show the column number, the position offset and the
+	current size of the file.
+
+  <item>There is an <tt>autoReplace</tt> resource, that enables automatic text
+	replacement at the time text is typed. This feature is useful to create
+	simple macros, or to correct common spelling errors.
+
+  <item>A fully featured ispell interface is also available. This interface
+	is expected to provide most of the features of the terminal interface
+	of the ispell program, with some extra features that include:
+
+	<itemize>
+
+	  <item>A compile time limit of 16 undo levels.
+
+	  <item>Terse mode switch.
+
+	  <item>Dictionary change.
+
+	  <item>The interface also checks for repeated words.
+
+	</itemize>
+
+</itemize>
+
 <p>
 
 

@@ -2069,9 +2069,6 @@ DoFormatText(TextWidget ctx, XawTextPosition left, Bool force, int level,
     Bool done, force2 = force, recurse = False;
 
     position = XawTextSourceRead(ctx->text.source, left, &block, right - left);
-#ifndef iswalnum
-#define iswalnum(c)	isalnum(c & 0xff)
-#endif
     if (block.length == 0 || left >= right ||
 	(level == 1 && ((XawTextFormat(ctx, XawFmt8Bit) &&
 	 block.ptr[0] != ' ' &&
@@ -4161,8 +4158,8 @@ CaseProc(Widget w, XEvent *event, int cmd)
 	}
     else
 	for (i = 0; i < block.length; i++) {
-	    wctomb((char *)mb, ((wchar_t*)block.ptr)[i]);
-	    if (!isalnum(*mb))
+	    wctomb((char*)mb, ((wchar_t*)block.ptr)[i]);
+	    if (!IsAlnum(*mb))
 		count = 0;
 	    else if (++count == 1 || cmd != CAPITALIZE) {
 		ch = cmd == DOWNCASE ? ToLower(*mb) : ToUpper(*mb);
