@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.19 2001/01/22 21:32:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_type.h,v 1.20 2001/02/17 23:20:17 mvojkovi Exp $ */
 
 #ifndef __NV_STRUCT_H__
 #define __NV_STRUCT_H__
@@ -143,9 +143,9 @@ void NVPointerMoved(int index, int x, int y);
 #define NV_CHIP_GEFORCE2GTS_1   ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_GEFORCE2GTS_1)
 #define NV_CHIP_GEFORCE2ULTRA   ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_GEFORCE2ULTRA)
 #define NV_CHIP_QUADRO2PRO      ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_QUADRO2PRO)
-#define NV_CHIP_0200     ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_0200)
-#define NV_CHIP_0201     ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_0201)
-#define NV_CHIP_0202     ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_0202)
-#define NV_CHIP_0203     ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_0203)
+#define NV_CHIP_GEFORCE3     ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_GEFORCE3)
+#define NV_CHIP_GEFORCE3_1   ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_GEFORCE3_1)
+#define NV_CHIP_GEFORCE3_2   ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_GEFORCE3_2)
+#define NV_CHIP_GEFORCE3_3   ((PCI_VENDOR_NVIDIA  << 16) | PCI_CHIP_GEFORCE3_3)
 
 #endif /* __NV_STRUCT_H__ */
