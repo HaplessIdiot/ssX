@@ -6,7 +6,7 @@
 char rcsId_vmwarecurs[] =
     "Id: vmwarecurs.c,v 1.5 2001/01/30 23:33:02 bennett Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.9 2002/12/11 17:07:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.10 2003/02/04 01:39:53 dawes Exp $ */
 
 #include "vmware.h"
 #include "bits2pixels.h"
@@ -30,7 +30,9 @@ RedefineCursor(VMWAREPtr pVMWARE)
     int i;
 
     VmwareLog(("RedefineCursor\n"));
-    
+
+    pVMWARE->cursorDefined = FALSE;
+
     /* Define cursor */
     vmwareWriteWordToFIFO(pVMWARE, SVGA_CMD_DEFINE_CURSOR);
     vmwareWriteWordToFIFO(pVMWARE, MOUSE_ID);
@@ -137,6 +139,8 @@ vmwareLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
     CARD32* image = pCurs->bits->argb;
     CARD32* imageEnd = image + (width * height);
 
+    pVMWARE->cursorDefined = FALSE;
+
     vmwareWriteWordToFIFO(pVMWARE, SVGA_CMD_DEFINE_ALPHA_CURSOR);
     vmwareWriteWordToFIFO(pVMWARE, MOUSE_ID);
     vmwareWriteWordToFIFO(pVMWARE, 0);
@@ -147,6 +151,10 @@ vmwareLoadCursorARGB(ScrnInfoPtr pScrn, CursorPtr pCurs)
     while (image != imageEnd) {
         vmwareWriteWordToFIFO(pVMWARE, *image++);
     }
+
+    vmwareWaitForFB(pVMWARE);
+
+    pVMWARE->cursorDefined = TRUE;
 }
 #endif
 
