@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.7 2000/08/09 17:50:52 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbwindow.c,v 1.8 2001/05/29 04:54:09 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -65,8 +65,6 @@ fbUnmapWindow(WindowPtr pWindow)
 {
     return TRUE;
 }
-
-extern WindowPtr    *WindowTable;
 
 void
 fbCopyWindowProc (DrawablePtr	pSrcDrawable,
@@ -225,6 +223,11 @@ fbFillRegionSolid (DrawablePtr	pDrawable,
     }
 }
 
+#ifdef PANORAMIX
+#include "panoramiX.h"
+#include "panoramiXsrv.h"
+#endif
+
 void
 fbFillRegionTiled (DrawablePtr	pDrawable,
 		   RegionPtr	pRegion,
@@ -241,7 +244,20 @@ fbFillRegionTiled (DrawablePtr	pDrawable,
     int		tileWidth, tileHeight;
     int		n = REGION_NUM_RECTS(pRegion);
     BoxPtr	pbox = REGION_RECTS(pRegion);
-
+    int		xRot = pDrawable->x;
+    int		yRot = pDrawable->y;
+    
+#ifdef PANORAMIX
+    if(!noPanoramiXExtension) 
+    {
+	int index = pDrawable->pScreen->myNum;
+	if(&WindowTable[index]->drawable == pDrawable) 
+	{
+	    xRot -= panoramiXdataPtr[index].x;
+	    yRot -= panoramiXdataPtr[index].y;
+	}
+    }
+#endif
     fbGetDrawable (pDrawable, dst, dstStride, dstBpp, dstXoff, dstYoff);
     fbGetDrawable (&pTile->drawable, tile, tileStride, tileBpp, tileXoff, tileYoff);
     tileWidth = pTile->drawable.width;
@@ -261,8 +277,8 @@ fbFillRegionTiled (DrawablePtr	pDrawable,
 		GXcopy,
 		FB_ALLONES,
 		dstBpp,
-		pDrawable->x * dstBpp,
-		pDrawable->y - pbox->y1);
+		xRot * dstBpp,
+		yRot - pbox->y1);
 	pbox++;
     }
 }
