@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.67 2000/11/08 05:03:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.68 2000/12/01 14:28:57 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -80,8 +80,8 @@ typedef struct {
 } MGARegRec, *MGARegPtr;
 
 typedef struct {
-   unsigned char brightness;
-   unsigned char contrast;
+   int          brightness;
+   int          contrast;
    FBLinearPtr	linear;
    RegionRec	clip;
    CARD32	colorKey;
