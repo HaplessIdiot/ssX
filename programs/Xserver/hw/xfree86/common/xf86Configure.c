@@ -157,6 +157,9 @@ configureScreenSection (char *driver)
 	}
 	xf86PciCard++;
     }
+    if (xf86IsPrimaryIsa())
+	ptr->scrn_device_str = "ISA Card";
+
     /* Make sure we use depth 4 for vga driver and depth 8 for direct */
     /* Just to get a usable 640x480 display */
     if ((driver == NULL) && (haveVGA != -1))
@@ -298,6 +301,10 @@ configureDeviceSection (char *driver, OptionInfoPtr devoptions)
 	}
 	xf86PciCard++;
     }
+    if (xf86IsPrimaryIsa()) {
+    	    ptr->dev_identifier = "ISA Card";
+	    ptr->dev_busid = "ISA";
+    }
 
     /* Crude mechanism to auto-detect fbdev (os dependent) */
     /* Skip it for now. Options list it anyway, and we can't
@@ -346,6 +353,8 @@ configureLayoutSection (void)
 	}
 	xf86PciCard++;
     }
+    if (xf86IsPrimaryIsa())
+	ptr->lay_identifier = "ISA Card";
 
     { 
 	XF86ConfAdjacencyPtr aptr;
@@ -481,7 +490,8 @@ void
 DoConfigure()
 {
     int i;
-    Bool probeResult = FALSE;
+    Bool probeResultPci = FALSE;
+    Bool probeResultIsa = FALSE;
     char *foundDriver = NULL;
     OptionInfoPtr options = NULL;
     XF86ConfigPtr xf86config = NULL;
@@ -527,21 +537,26 @@ DoConfigure()
     vl = vlist;
     /* Call all of the probe functions, reporting the results. */
     for (i = 0; i < xf86NumDrivers; i++) {
-	probeResult = FALSE;
+	probeResultPci = FALSE;
+	probeResultIsa = FALSE;
 	
 	/* We don't allow vga as we want direct support */
 	/* Then fallback later if no driver found */
 	if (strcmp(*vl,"vga")) {
 	    if (xf86DriverList[i]->Probe != NULL)
-	    	probeResult = xf86DriverList[i]->Probe(xf86DriverList[i],
+	    	probeResultPci = xf86DriverList[i]->Probe(xf86DriverList[i],
 						   PROBE_DETECTPCI);
+		if (!probeResultPci)
+	    	    probeResultIsa = xf86DriverList[i]->Probe(xf86DriverList[i],
+						   PROBE_DETECTISA);
+		
 	} else {
 	    haveVGA = i;
 	}
 	
 	/* Bail when we find the primary card ! */
-	if (probeResult) {
-	    ErrorF("We have found a %s driver\n",*vl);
+	if (probeResultPci) {
+	    ErrorF("We have found a PCI %s driver\n",*vl);
 	    if (foundDriver == NULL) {
 	        foundDriver = *vl;
 	        if (xf86DriverList[i]->Identify != NULL)
@@ -551,6 +566,17 @@ DoConfigure()
 				(ConfiguredPciCard->vendor << 16) | 
 				 ConfiguredPciCard->chipType, BUS_PCI);
 	    }
+	} else
+	if (probeResultIsa)  {
+	    ErrorF("We have found an ISA %s driver\n",*vl);
+	    if (foundDriver == NULL) {
+	        foundDriver = *vl;
+	        if (xf86DriverList[i]->Identify != NULL)
+	    	    xf86DriverList[i]->Identify(0);
+		if (xf86DriverList[i]->AvailableOptions != NULL)
+		    options = xf86DriverList[i]->AvailableOptions(
+				 ConfiguredIsaCard, BUS_ISA);
+	    }
 	}
 
 	vl++;
@@ -558,17 +584,22 @@ DoConfigure()
 
     /* Try vga driver if we haven't found any direct modules */
     if ((haveVGA != -1) && (foundDriver == NULL)) {
-	probeResult = FALSE;
+	probeResultPci = FALSE;
+	probeResultIsa = FALSE;
 	
-	if (xf86DriverList[haveVGA]->Probe != NULL)
-	    	probeResult = 
+	if (xf86DriverList[haveVGA]->Probe != NULL) {
+	    	probeResultPci = 
 			xf86DriverList[haveVGA]->Probe(xf86DriverList[haveVGA],
 						   PROBE_DETECTPCI);
+		if (!probeResultPci)
+			xf86DriverList[haveVGA]->Probe(xf86DriverList[haveVGA],
+						   PROBE_DETECTISA);
+	} 
 	
 	/* Bail when we find the primary card ! */
-	if (probeResult) {
+	if (probeResultPci) {
 	    ErrorF("Failed to find a direct driver but....\n");
-	    ErrorF("We have found a vga driver\n");
+	    ErrorF("We have found a PCI vga driver\n");
 	    foundDriver = "vga";
 	    if (xf86DriverList[haveVGA]->Identify != NULL)
 	        xf86DriverList[haveVGA]->Identify(0);
@@ -576,6 +607,16 @@ DoConfigure()
 		options = xf86DriverList[i]->AvailableOptions((
 				ConfiguredPciCard->vendor << 16) | 
 				ConfiguredPciCard->chipType, BUS_PCI);
+	}
+	if (probeResultIsa) {
+	    ErrorF("Failed to find a direct driver but....\n");
+	    ErrorF("We have found an ISA vga driver\n");
+	    foundDriver = "vga";
+	    if (xf86DriverList[haveVGA]->Identify != NULL)
+	        xf86DriverList[haveVGA]->Identify(0);
+	    if (xf86DriverList[haveVGA]->AvailableOptions != NULL)
+		options = xf86DriverList[i]->AvailableOptions(
+				ConfiguredIsaCard, BUS_ISA);
 	}
     }
 

@@ -1857,15 +1857,9 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
 	return 0;
 
     if (xf86DoConfigure) {
-	GDevPtr dev = NULL;
-    	for (i = 0; i < numDevs; i++) {
-	    if (xf86IsPrimaryIsa()) {
-	    	dev = devList[i];
-	    	if (FindIsaDevice) ConfiguredIsaCard = (*FindIsaDevice)(dev);
- 		return 1;
-	    }
-	}
-	return 0;
+	if (FindIsaDevice) ConfiguredIsaCard = (*FindIsaDevice)(NULL);
+	if (ConfiguredIsaCard != -1) return 1;
+	else return 0;
     }
 
     for (i = 0; i < numDevs; i++) {
