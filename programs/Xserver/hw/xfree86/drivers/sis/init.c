@@ -1,11 +1,17 @@
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/init.c,v 1.3 2002/24/04 01:16:16 dawes Exp $ */
 /*
- * Mode switching code (CRT1 section) for SiS 300/540/630/730/315/550/650/740/330/660
+ * Mode switching code (CRT1 section) for
+ * SiS 300/540/630/730/315/550/650/M650/651/M652/740/330/660/M660/760
  * (Universal module for Linux kernel framebuffer and XFree86 4.x)
  *
  * Assembler-To-C translation
  * Copyright 2002, 2003 by Thomas Winischhofer <thomas@winischhofer.net>
  * Formerly based on non-functional code-fragements by SiS, Inc.
+ *
+ * If distributed as part of the linux kernel, the contents of this file
+ * is entirely covered by the GPL.
+ *
+ * Otherwise, the following terms apply:
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -458,8 +464,8 @@ InitTo310Pointer(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    SiS_Pr->SiS_CRT1Table     = (SiS_CRT1TableStruct *)SiS310_CRT1Table;
    /* TW: MCLK is different */
 #ifdef LINUXBIOS
-   if(HwDeviceExtension->jChipType == SIS_660) {
-      SiS_Pr->SiS_MCLKData_0 = (SiS_MCLKDataStruct *)SiS310_MCLKData_0_660;  /* 660 */
+   if(HwDeviceExtension->jChipType >= SIS_660) {
+      SiS_Pr->SiS_MCLKData_0 = (SiS_MCLKDataStruct *)SiS310_MCLKData_0_660;  /* 660/760 */
    } else if(HwDeviceExtension->jChipType == SIS_330) {
 #endif
       SiS_Pr->SiS_MCLKData_0 = (SiS_MCLKDataStruct *)SiS310_MCLKData_0_330;  /* 330 */
@@ -720,7 +726,8 @@ SiSInit(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
       (HwDeviceExtension->jChipType == SIS_650) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660))
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760))
      InitTo310Pointer(SiS_Pr, HwDeviceExtension);
 #endif
 
@@ -890,7 +897,8 @@ SiSInit(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
       (HwDeviceExtension->jChipType == SIS_650) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660)) {
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760)) {
    	for(i=0x12; i<=0x1B; i++) SiS_SetReg1(SiS_Pr->SiS_P3c4,i,0);
    	for(i=0x79; i<=0x7C; i++) SiS_SetReg1(SiS_Pr->SiS_P3d4,i,0);
    }
@@ -955,7 +963,8 @@ SiSInit(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
    if((HwDeviceExtension->jChipType == SIS_550) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_650) ||
-      (HwDeviceExtension->jChipType == SIS_660)) {
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760)) {
         if((*SiS_Pr->pSiS_SoftSetting & SoftDRAMType) == 0) {
           	temp = (UCHAR)SiS_GetReg1(SiS_Pr->SiS_P3c4,0x13) & 0x07;
         }
@@ -1019,7 +1028,8 @@ SiSInit(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
       (HwDeviceExtension->jChipType == SIS_650) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660))
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760))
      	SiS_SetReg1(SiS_Pr->SiS_Part1Port,0x2E,0x08);    /* use VB */
 #endif
 
@@ -1177,7 +1187,8 @@ SiS_Set_LVDS_TRUMPION(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension
   if((HwDeviceExtension->jChipType == SIS_650) ||
      (HwDeviceExtension->jChipType == SIS_740) ||
      (HwDeviceExtension->jChipType == SIS_330) ||
-     (HwDeviceExtension->jChipType == SIS_660)) {
+     (HwDeviceExtension->jChipType == SIS_660) ||
+     (HwDeviceExtension->jChipType == SIS_760)) {
 #if 0 /* TW: This is not required */
         /* TW: Read POWER_ON_TRAP and copy to CR37 */
     	temp = (UCHAR)SiS_GetReg1(SiS_Pr->SiS_P3c4,0x1A);
@@ -1966,7 +1977,8 @@ SiSInitPCIetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
       (HwDeviceExtension->jChipType == SIS_650) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660)) {
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760)) {
       /* TW: This seems to be done the same way on these chipsets */
       SiS_SetReg1(SiS_Pr->SiS_P3c4,0x20,0xa1);
       SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x1E,0xFF,0x5A);
@@ -2021,7 +2033,8 @@ SiSSetLVDSetc(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT 
       (HwDeviceExtension->jChipType == SIS_650) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660))
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760))
     {
         /* TW: CR37 is different on 315 series */
 #if 0
@@ -2053,7 +2066,8 @@ SiSInitPtr(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
       (HwDeviceExtension->jChipType == SIS_650) ||
       (HwDeviceExtension->jChipType == SIS_740) ||
       (HwDeviceExtension->jChipType == SIS_330) ||
-      (HwDeviceExtension->jChipType == SIS_660))
+      (HwDeviceExtension->jChipType == SIS_660) ||
+      (HwDeviceExtension->jChipType == SIS_760))
      InitTo310Pointer(SiS_Pr, HwDeviceExtension);
 #endif
 
@@ -4168,7 +4182,8 @@ GetDRAMSize(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension)
   } else if((HwDeviceExtension->jChipType == SIS_550) ||
             (HwDeviceExtension->jChipType == SIS_740) ||
             (HwDeviceExtension->jChipType == SIS_650) ||
-	    (HwDeviceExtension->jChipType == SIS_660)) {
+	    (HwDeviceExtension->jChipType == SIS_660) ||
+	    (HwDeviceExtension->jChipType == SIS_760)) {
 
   	counter = SiS_GetReg1(SiS_Pr->SiS_P3c4,0x14) & 0x3F;
       	counter++;

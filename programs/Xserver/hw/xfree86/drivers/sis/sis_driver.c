@@ -213,10 +213,10 @@ static SymTabRec SISChipsets[] = {
     { PCI_CHIP_SIS315H,     "SIS315H" },
     { PCI_CHIP_SIS315PRO,   "SIS315PRO" },
     { PCI_CHIP_SIS550,	    "SIS550" },
-    { PCI_CHIP_SIS650,      "SIS650/M650/651/652/M652/M653/740" },
+    { PCI_CHIP_SIS650,      "SIS650/M650/651/652/M652/740" },
 #ifdef INCL_SIS330
     { PCI_CHIP_SIS330,      "SIS330(Xabre)" },
-    { PCI_CHIP_SIS660,      "SIS660" },
+    { PCI_CHIP_SIS660,      "SIS660/M660/760/M760" },
 #endif
     { -1,                   NULL }
 };
@@ -1442,7 +1442,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     xf86LoaderReqSymLists(vgahwSymbols, NULL);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-        "SiS driver (2003/06/08-1) by "
+        "SiS driver (2003/06/18-1) by "
 	"Thomas Winischhofer <thomas@winischhofer.net>\n");
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
         "See http://www.winischhofer.net/linuxsisvga.shtml "
@@ -1703,8 +1703,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->sishw_ext.jChipType = SIS_330;
 		pSiS->VGAEngine = SIS_315_VGA;
 		break;
-	case PCI_CHIP_SIS660:
+	case PCI_CHIP_SIS660: /* 660 + 760 */
 		pSiS->sishw_ext.jChipType = SIS_660;
+		if(pciReadLong(0x00000000, 0x00) == 0x07601039) {
+			pSiS->sishw_ext.jChipType = SIS_760;
+		}
 		pSiS->VGAEngine = SIS_315_VGA;
 		break;
 	case PCI_CHIP_SIS530:
@@ -2173,15 +2176,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     BOOLEAN found;
              int  i;
              static const char sis_rom_sig[] = "Silicon Integrated Systems";
-             static const char *sis_sig[12] = {
+             static const char *sis_sig[13] = {
                   "300", "540", "630", "730",
 		  "315", "315", "315", "5315", "6325", "6325",
-		  "Xabre", "6330"  /* 6330 is a guess */
+		  "Xabre", "6330", "6330"  /* 6330 is a guess */
              };
-	     static const unsigned short sis_nums[12] = {
+	     static const unsigned short sis_nums[13] = {
 	          SIS_300, SIS_540, SIS_630, SIS_730,
 		  SIS_315PRO, SIS_315H, SIS_315, SIS_550, SIS_650, SIS_740,
-		  SIS_330, SIS_660
+		  SIS_330, SIS_660, SIS_760
 	     };
 
 	     found = FALSE;
@@ -2201,13 +2204,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
 		romptr = pSiS->BIOS[0x14] | (pSiS->BIOS[0x15] << 8);
 		if(romptr > (BIOS_SIZE - 5)) continue;
-		for(i = 0; (i < 12) && (!found); i++) {
+		for(i = 0; (i < 13) && (!found); i++) {
                     if(strncmp(sis_sig[i], (char *)&pSiS->BIOS[romptr], strlen(sis_sig[i])) == 0) {
                         if(sis_nums[i] == pSiS->sishw_ext.jChipType) {
 			   found = TRUE;
                            break;
 			} else {
-			   if(pSiS->sishw_ext.jChipType != SIS_740) {
+			   if((pSiS->sishw_ext.jChipType != SIS_740) && (pSiS->sishw_ext.jChipType != SIS_760)) {
 			      xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 			   	"Ignoring BIOS for SiS %s at %p\n", sis_sig[i], segstart);
 			   }
@@ -2616,10 +2619,24 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	   pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
 	   break;
 	 case PCI_CHIP_SIS660:
-	   pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
-	   /* This is a wild guess */
-	   pSiS->hasTwoOverlays = TRUE;
-	   break;
+	   {
+	     static const char *id660str[] = {
+	   	"660 ?", "660 ?", "660 ?", "660 ?",
+		"660 ?", "660 ?", "660 ?", "660 ?",
+		"660 ?", "660 ?", "660 ?", "660 ?",
+		"660 ?", "660 ?", "660 ?", "660 ?"
+	     };
+	     pSiS->ChipFlags |= SiSCF_LARGEOVERLAY;
+	     /* This is a wild guess */
+	     pSiS->hasTwoOverlays = TRUE;
+	     if(pSiS->sishw_ext.jChipType == SIS_660) {
+		inSISIDXREG(SISCR, 0x5f, CR5F);
+	        CR5F &= 0xf0;
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
+	   	      "SiS660 revision ID %x (%s)\n", CR5F, id660str[CR5F >> 4]);
+             }
+	     break;
+	   }
          case PCI_CHIP_SIS650:
 	   {
 	     unsigned char tempreg1, tempreg2;
@@ -2752,10 +2769,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        BOOLEAN footprint;
        do {
 	  if( (mycustomttable[i].chipID == pSiS->sishw_ext.jChipType)                 &&
-	      (!strncmp(mycustomttable[i].biosversion, (char *)&pSiS->BIOS[bversptr],
-	                strlen(mycustomttable[i].biosversion)))                       &&
-	      (!strncmp(mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
-	                strlen(mycustomttable[i].biosdate))) ) {
+	      ((!strlen(mycustomttable[i].biosversion)) ||
+	       (!strncmp(mycustomttable[i].biosversion, (char *)&pSiS->BIOS[bversptr],
+	                strlen(mycustomttable[i].biosversion))))                      &&
+	      ((!strlen(mycustomttable[i].biosdate)) ||
+	       (!strncmp(mycustomttable[i].biosdate, (char *)&pSiS->BIOS[0x2c],
+	                strlen(mycustomttable[i].biosdate))))			      &&
+	      (mycustomttable[i].pcisubsysvendor == pSiS->PciInfo->subsysVendor)      &&
+	      (mycustomttable[i].pcisubsyscard == pSiS->PciInfo->subsysCard) ) {
 	     footprint = TRUE;
 	     for(j=0; j<5; j++) {
 	        if(mycustomttable[i].biosFootprintAddr[j]) {
@@ -2765,9 +2786,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     }
 	     if(footprint) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
-	           "BIOS version/date/footprint identified, special timing applies\n");
-	        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
-		   "Vendor: %s, Product: %s\n",
+	           "Identified %s %s, special timing applies\n",
 		   mycustomttable[i].vendorName, mycustomttable[i].cardName);
 	        pSiS->SiS_Pr->SiS_CustomT = mycustomttable[i].SpecialID;
 	        break;
