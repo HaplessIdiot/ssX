@@ -660,7 +660,7 @@ GLINTProbe(DriverPtr drv, int flags)
  		    
  		    entity = xf86ClaimIsaSlot(drv, 0,
  					      devSections[i], TRUE);
- 		    xf86ConfigIsaEntity(pScrn,0,entity,
+ 		    pScrn = xf86ConfigIsaEntity(pScrn,0,entity,
  					      NULL,RES_SHARED_VGA,
  					      NULL,NULL,NULL,NULL);
  		}
