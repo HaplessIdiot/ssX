@@ -485,7 +485,7 @@ xf86InitOrigins(void)
     int x1, x2, y1, y2, left, right, top, bottom;
     int i, j, ref, minX, minY, min, max;
     xf86ScreenLayoutPtr pLayout;
-    Bool OldStyleConfig = TRUE;
+    Bool OldStyleConfig = FALSE;
 
     /* need to have this set up with a config file option */
     HardEdges = FALSE;
@@ -500,12 +500,9 @@ xf86InitOrigins(void)
 
 	    screen = &xf86ConfigLayout.screens[i];
 
-	    if(screen->where != PosObsolete)
-		OldStyleConfig = FALSE;
-
 	    switch(screen->where) {
 	    case PosObsolete:
-#if 1
+		OldStyleConfig = TRUE;
 		pLayout = &xf86ScreenLayout[i];
 		/* force edge lists */
 		if(screen->left) {
@@ -534,7 +531,6 @@ xf86InitOrigins(void)
 		}
 	        /* we could also try to place it based on those
 		   relative locations if we wanted to */
-#endif
 		screen->x = screen->y = 0;
 		/* FALLTHROUGH */
 	    case PosAbsolute:
@@ -629,7 +625,8 @@ xf86InitOrigins(void)
 
     /* Create the edge lists */
 
-    for(i = 0; i < xf86NumScreens; i++) {
+    if(!OldStyleConfig) {
+      for(i = 0; i < xf86NumScreens; i++) {
 	pLayout = &xf86ScreenLayout[i];
 
 	pScreen = xf86Screens[i]->pScreen;
@@ -682,9 +679,10 @@ xf86InitOrigins(void)
 			dixScreenOrigins[i].y - dixScreenOrigins[j].y, j);
 	    }
 	}
+      }
     }
 
-    if(!HardEdges) {
+    if(!HardEdges && !OldStyleConfig) {
 	for(i = 0; i < xf86NumScreens; i++) {
 	    pLayout = &xf86ScreenLayout[i];
 	    pScreen = xf86Screens[i]->pScreen;
