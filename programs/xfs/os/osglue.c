@@ -1,5 +1,5 @@
 /* $XConsortium: osglue.c,v 1.10 94/04/17 19:56:07 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.0 1994/10/20 06:15:34 dawes Exp $ */
 /*
 Copyright (c) 1987  X Consortium
 
@@ -306,11 +306,15 @@ CloneMyself()
 
     old_listen_arg[0] = '\0';
 
-#if defined(hpux) || defined(SVR4) || defined(__EMX__)
+#ifdef _SC_OPEN_MAX
+    lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
+#else
+#if defined(hpux) || defined(__EMX__)
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;
 #endif				/* hpux */
+#endif
 
     NoticeF("attempting clone...\n");
     child = fork();

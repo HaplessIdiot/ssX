@@ -1,5 +1,5 @@
 /* $XConsortium: connection.c,v 1.190 94/11/08 20:47:43 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.6 1995/01/25 10:56:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.7 1995/03/04 06:24:03 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -251,10 +251,10 @@ CreateWellKnownSockets()
 #ifdef LBX
     for (i=0; i<MAXSOCKS; i++) ConnectionOutputTranslation[i] = 0;
 #endif
-#if !defined(X_NOT_POSIX) && !defined(__FreeBSD__) && !defined(__386BSD__) && !defined(__NetBSD__)
+#ifdef _SC_OPEN_MAX
     lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
 #else
-#ifdef hpux
+#ifdef hpux /* || defined(__EMX__) ? */
     lastfdesc = _NFILE - 1;
 #else
     lastfdesc = getdtablesize() - 1;
