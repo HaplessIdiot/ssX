@@ -1275,15 +1275,6 @@ fbImageGlyphBlt (DrawablePtr	pDrawable,
 		 CharInfoPtr	*ppci,
 		 pointer	pglyphBase);
 
-void
-fbGlyph24 (FbBits   *dstBits,
-	   FbStride dstStride,
-	   int	    dstBpp,
-	   FbStip   *stipple,
-	   FbBits   fg,
-	   int	    x,
-	   int	    height);
-
 /*
  * fbimage.c
  */
