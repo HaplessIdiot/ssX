@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.19 2003/09/29 20:25:53 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.20 2003/10/17 20:20:02 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -437,6 +437,7 @@ GenerateAuthData (char *auth, int len)
 		auth[i] |= bit;
 	}
     }
+    return 1;
 #else /* !XDMAUTH */
 #ifdef ARC4_RANDOM
     unsigned int *rnd = (unsigned*)auth;
