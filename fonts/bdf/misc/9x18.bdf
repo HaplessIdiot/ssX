@@ -1,5 +1,6 @@
 STARTFONT 2.1
-COMMENT "$Id: 9x18.bdf,v 1.1 1999/08/29 12:10:48 dawes Exp $"
+COMMENT "From: Id: 9x18.bdf,v 1.6 1999-08-28 15:06:27+01 mgk25 Exp mgk25 $"
+COMMENT "$XFree86$"
 COMMENT "Send bug reports to Markus Kuhn <mkuhn@acm.org>"
 FONT -Misc-Fixed-Medium-R-Normal--18-120-100-100-C-90-ISO10646-1
 SIZE 12 100 100
