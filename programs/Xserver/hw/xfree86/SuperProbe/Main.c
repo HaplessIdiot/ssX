@@ -28,7 +28,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.27tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Main.c,v 3.28 1999/03/14 03:21:41 dawes Exp $ */
 
 #include "Probe.h"
 #include "PatchLevel.h"
@@ -350,7 +350,7 @@ static Byte *FindBios()
     {
 	if (score[i] != 0)
 	{
-	    base = (Byte *)(0xC0000+(i<<15));
+	    base = (Byte *)(unsigned long)(0x0C0000+(i<<15));
 	}
     }
     return(base);
@@ -601,7 +601,7 @@ char *argv[];
 	}
 	else
 	{
-	    printf("BIOS Base address = 0x%X\n\n", (int)Bios_Base);
+	    printf("BIOS Base address = 0x%lX\n\n", (long)Bios_Base);
 	}
 	fflush(stdout);
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.13 1999/03/28 15:32:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.15 2000/09/19 12:46:12 eich Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -345,8 +345,8 @@ int Len;
 		if (tmp != (Word)0xAA55)
 		{
 			fprintf(stderr,
-				"%s: BIOS sanity check failed, addr=%x\n",
-				MyName, (int)Base);
+				"%s: BIOS sanity check failed, addr=%lx\n",
+				MyName, (long)Base);
 			return(-1);
 		}
 	}
