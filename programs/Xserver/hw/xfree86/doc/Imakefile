@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/33 1996/10/28 05:12:24 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.64 2000/03/03 23:12:33 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.65 2000/03/04 00:47:36 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -78,7 +78,7 @@ MAINDOCS = LICENSE README /*ReadmeFile(Config)*/ /*BUILD*/ RELNOTES \
 	   Install Status DESIGN
 
 OTHERDOCS = /*VideoModes.doc*/ /*QuickStart.doc*/ /*xinput*/ \
-	    ReadmeFile(fonts) ReadmeFile(mouse)
+	    ReadmeFile(fonts) ReadmeFile(mouse) ReadmeFile(DRI)
 #endif
 
 MISCDOCS = ServersOnly /*LbxproxyOnly*/ $(REPORTFORM) ReadmeFile(DGA) \
