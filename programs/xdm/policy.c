@@ -29,23 +29,16 @@ from The Open Group.
  *
  * policy.c.  Implement site-dependent policy for XDMCP connections
  */
-/* $XFree86: xc/programs/xdm/policy.c,v 3.1 1997/01/18 07:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/policy.c,v 3.2 1998/10/04 09:40:56 dawes Exp $ */
 
 # include "dm.h"
+# include "dm_auth.h"
 
 #ifdef XDMCP
 
 # include <X11/X.h>
-#ifndef MINIX
-# ifndef Lynx
-#  include <sys/socket.h>
-# else
-#  include <socket.h>
-# endif
-#ifdef AF_INET
-# include <netinet/in.h>
-#endif
-#endif
+
+# include "dm_socket.h"
 
 static ARRAY8 noAuthentication = { (CARD16) 0, (CARD8Ptr) 0 };
 
@@ -68,8 +61,7 @@ static XdmAuthRec auth[] = {
 #define NumAuth	(sizeof auth / sizeof auth[0])
 
 ARRAY8Ptr
-ChooseAuthentication (authenticationNames)
-    ARRAYofARRAY8Ptr	authenticationNames;
+ChooseAuthentication (ARRAYofARRAY8Ptr authenticationNames)
 {
     int	i, j;
 
@@ -81,9 +73,12 @@ ChooseAuthentication (authenticationNames)
     return &noAuthentication;
 }
 
-CheckAuthentication (pdpy, displayID, name, data)
-    struct protoDisplay	*pdpy;
-    ARRAY8Ptr		displayID, name, data;
+int
+CheckAuthentication (
+    struct protoDisplay	*pdpy,
+    ARRAY8Ptr		displayID,
+    ARRAY8Ptr		name,
+    ARRAY8Ptr		data)
 {
 #ifdef HASXDMAUTH
     if (name->length && !strncmp ((char *)name->data, "XDM-AUTHENTICATION-1", 20))
@@ -93,9 +88,9 @@ CheckAuthentication (pdpy, displayID, name, data)
 }
 
 int
-SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
-    ARRAY8Ptr		authenticationName;
-    ARRAYofARRAY8Ptr	authorizationNames;
+SelectAuthorizationTypeIndex (
+    ARRAY8Ptr		authenticationName,
+    ARRAYofARRAY8Ptr	authorizationNames)
 {
     int	i, j;
 
@@ -119,12 +114,12 @@ SelectAuthorizationTypeIndex (authenticationName, authorizationNames)
 
 /*ARGSUSED*/
 int
-Willing (addr, connectionType, authenticationName, status, type)
-    ARRAY8Ptr	    addr;
-    CARD16	    connectionType;
-    ARRAY8Ptr	    authenticationName;
-    ARRAY8Ptr	    status;
-    xdmOpCode	    type;
+Willing (
+    ARRAY8Ptr	    addr,
+    CARD16	    connectionType,
+    ARRAY8Ptr	    authenticationName,
+    ARRAY8Ptr	    status,
+    xdmOpCode	    type)
 {
     char	statusBuf[256];
     int		ret;
@@ -145,19 +140,19 @@ Willing (addr, connectionType, authenticationName, status, type)
 
 /*ARGSUSED*/
 ARRAY8Ptr
-Accept (from, fromlen, displayNumber)
-    struct sockaddr *from;
-    int		    fromlen;
-    CARD16	    displayNumber;
+Accept (
+    struct sockaddr *from,
+    int		    fromlen,
+    CARD16	    displayNumber)
 {
     return 0;
 }
 
 /*ARGSUSED*/
 int
-SelectConnectionTypeIndex (connectionTypes, connectionAddresses)
-    ARRAY16Ptr	     connectionTypes;
-    ARRAYofARRAY8Ptr connectionAddresses;
+SelectConnectionTypeIndex (
+    ARRAY16Ptr	     connectionTypes,
+    ARRAYofARRAY8Ptr connectionAddresses)
 {
     return 0;
 }

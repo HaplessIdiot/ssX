@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.15 1998/08/16 10:25:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.16 1998/10/04 09:40:57 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -32,13 +32,18 @@ from The Open Group.
  */
 
 #include "dm.h"
+#include "dm_auth.h"
+#include "dm_error.h"
 #include "greet.h"
+
 #include <X11/Xlib.h>
 #include <signal.h>
 #include <X11/Xatom.h>
+#include <X11/Xmu/Error.h>
 #include <errno.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <grp.h>	/* for initgroups */
 #ifdef AIXV3
 # include <usersec.h>
 #endif
@@ -65,33 +70,29 @@ from The Open Group.
 #endif
 #endif
 
-extern	int	PingServer();
-extern	int	SessionPingFailed();
-extern	int	Debug();
-extern	int	RegisterCloseOnFork();
-extern	int	SecureDisplay();
-extern	int	UnsecureDisplay();
-extern	int	ClearCloseOnFork();
-extern	int	SetupDisplay();
-extern	int	LogError();
-extern	int	SessionExit();
-extern	int	DeleteXloginResources();
-extern	int	source();
-extern	char	**defaultEnv();
-extern	char	**setEnv();
-extern	char	**parseArgs();
-extern	int	printEnv();
-extern	char	**systemEnv();
-extern	int	LogOutOfMem();
-extern	void	setgrent();
-extern	struct group	*getgrent();
-extern	void	endgrent();
-#ifdef USESHADOW
-extern	struct spwd	*getspnam();
-extern	void	endspent();
+static	int	runAndWait (char **args, char **environ);
+
+#if defined(CSRG_BASED)
+#include <sys/types.h>
+#include <grp.h>
+#else
+/* should be in <grp.h> */
+extern	void	setgrent(void);
+extern	struct group	*getgrent(void);
+extern	void	endgrent(void);
 #endif
-extern	struct passwd	*getpwnam();
-extern	char	*crypt();
+
+#ifdef USESHADOW
+extern	struct spwd	*getspnam(GETSPNAM_ARGS);
+extern	void	endspent(void);
+#endif
+#if defined(CSRG_BASED)
+#include <pwd.h>
+#include <unistd.h>
+#else
+extern	struct passwd	*getpwnam(GETPWNAM_ARGS);
+extern	char	*crypt(CRYPT_ARGS);
+#endif
 
 static	struct dlfuncs	dlfuncs = {
 	PingServer,
@@ -127,7 +128,12 @@ static	struct dlfuncs	dlfuncs = {
 extern int errno;
 #endif
 
-static Bool StartClient();
+static Bool StartClient(
+    struct verify_info	*verify,
+    struct display	*d,
+    int			*pidp,
+    char		*name,
+    char		*passwd);
 
 static int			clientPid;
 static struct greet_info	greet;
@@ -137,8 +143,7 @@ static Jmp_buf	abortSession;
 
 /* ARGSUSED */
 static SIGVAL
-catchTerm (n)
-    int n;
+catchTerm (int n)
 {
     Longjmp (abortSession, 1);
 }
@@ -147,8 +152,7 @@ static Jmp_buf	pingTime;
 
 /* ARGSUSED */
 static SIGVAL
-catchAlrm (n)
-    int n;
+catchAlrm (int n)
 {
     Longjmp (pingTime, 1);
 }
@@ -157,8 +161,7 @@ static Jmp_buf	tenaciousClient;
 
 /* ARGSUSED */
 static SIGVAL
-waitAbort (n)
-    int n;
+waitAbort (int n)
 {
 	Longjmp (tenaciousClient, 1);
 }
@@ -168,8 +171,7 @@ waitAbort (n)
 #endif
 
 static void
-AbortClient (pid)
-    int pid;
+AbortClient (int pid)
 {
     int	sig = SIGTERM;
 #ifdef __STDC__
@@ -202,8 +204,8 @@ AbortClient (pid)
     }
 }
 
-SessionPingFailed (d)
-    struct display  *d;
+void
+SessionPingFailed (struct display *d)
 {
     if (clientPid > 1)
     {
@@ -222,18 +224,15 @@ SessionPingFailed (d)
  */
 
 /*ARGSUSED*/
-static
-IOErrorHandler (dpy)
-    Display *dpy;
+static int
+IOErrorHandler (Display *dpy)
 {
     LogError("fatal IO error %d (%s)\n", errno, _SysErrorMsg(errno));
     exit(RESERVER_DISPLAY);
 }
 
 static int
-ErrorHandler(dpy, event)
-    Display *dpy;
-    XErrorEvent *event;
+ErrorHandler(Display *dpy, XErrorEvent *event)
 {
     LogError("X error\n");
     if (XmuPrintDefaultErrorMessage (dpy, event, stderr) == 0) return 0;
@@ -241,14 +240,16 @@ ErrorHandler(dpy, event)
     /*NOTREACHED*/
 }
 
-ManageSession (d)
-struct display	*d;
+void
+ManageSession (struct display *d)
 {
-    int			pid, code;
+    int			pid = 0;
     Display		*dpy;
     greet_user_rtn	greet_stat; 
     static GreetUserProc greet_user_proc = NULL;
+#ifndef GREET_USER_STATIC
     void		*greet_lib_handle;
+#endif
 
     Debug ("ManageSession %s\n", d->name);
     (void)XSetIOErrorHandler(IOErrorHandler);
@@ -337,11 +338,11 @@ struct display	*d;
     SessionExit (d, OBEYSESS_DISPLAY, TRUE);
 }
 
-LoadXloginResources (d)
-struct display	*d;
+void
+LoadXloginResources (struct display *d)
 {
-    char	**args, **parseArgs();
-    char	**env = 0, **setEnv(), **systemEnv();
+    char	**args;
+    char	**env = 0;
 
     if (d->resources[0] && access (d->resources, 4) == 0) {
 	env = systemEnv (d, (char *) 0, (char *) 0);
@@ -354,10 +355,10 @@ struct display	*d;
     }
 }
 
-SetupDisplay (d)
-struct display	*d;
+void
+SetupDisplay (struct display *d)
 {
-    char	**env = 0, **setEnv(), **systemEnv();
+    char	**env = 0;
 
     if (d->setup && d->setup[0])
     {
@@ -368,9 +369,8 @@ struct display	*d;
 }
 
 /*ARGSUSED*/
-DeleteXloginResources (d, dpy)
-struct display	*d;
-Display		*dpy;
+void
+DeleteXloginResources (struct display *d, Display *dpy)
 {
     int i;
     Atom prop = XInternAtom(dpy, "SCREEN_RESOURCES", True);
@@ -386,15 +386,13 @@ static Jmp_buf syncJump;
 
 /* ARGSUSED */
 static SIGVAL
-syncTimeout (n)
-    int n;
+syncTimeout (int n)
 {
     Longjmp (syncJump, 1);
 }
 
-SecureDisplay (d, dpy)
-struct display	*d;
-Display		*dpy;
+void
+SecureDisplay (struct display *d, Display *dpy)
 {
     Debug ("SecureDisplay %s\n", d->name);
     (void) Signal (SIGALRM, syncTimeout);
@@ -427,9 +425,8 @@ Display		*dpy;
     Debug ("done secure %s\n", d->name);
 }
 
-UnsecureDisplay (d, dpy)
-struct display	*d;
-Display		*dpy;
+void
+UnsecureDisplay (struct display *d, Display *dpy)
 {
     Debug ("Unsecure display %s\n", d->name);
     if (d->grabServer)
@@ -439,8 +436,8 @@ Display		*dpy;
     }
 }
 
-SessionExit (d, status, removeAuth)
-    struct display  *d;
+void
+SessionExit (struct display *d, int status, int removeAuth)
 {
     /* make sure the server gets reset after the session is over */
     if (d->serverPid >= 2 && d->resetSignal)
@@ -482,14 +479,14 @@ SessionExit (d, status, removeAuth)
 }
 
 static Bool
-StartClient (verify, d, pidp, name, passwd)
-    struct verify_info	*verify;
-    struct display	*d;
-    int			*pidp;
-    char		*name;
-    char		*passwd;
+StartClient (
+    struct verify_info	*verify,
+    struct display	*d,
+    int			*pidp,
+    char		*name,
+    char		*passwd)
 {
-    char	**f, *home, *getEnv ();
+    char	**f, *home;
     char	*failsafeArgv[2];
     int	pid;
 #ifdef HAS_SETUSERCONTEXT
@@ -700,12 +697,9 @@ StartClient (verify, d, pidp, name, passwd)
 }
 
 int
-source (environ, file)
-char			**environ;
-char			*file;
+source (char **environ, char *file)
 {
     char	**args, *args_safe[2];
-    extern char	**parseArgs ();
     int		ret;
 
     if (file && file[0]) {
@@ -724,10 +718,8 @@ char			*file;
     return 0;
 }
 
-int
-runAndWait (args, environ)
-    char	**args;
-    char	**environ;
+static int
+runAndWait (char **args, char **environ)
 {
     int	pid;
     waitType	result;
@@ -752,9 +744,7 @@ runAndWait (args, environ)
 }
 
 void
-execute (argv, environ)
-    char **argv;
-    char **environ;
+execute (char **argv, char **environ)
 {
     /* give /dev/null as stdin */
     (void) close (0);
@@ -823,17 +813,15 @@ execute (argv, environ)
 	if (optarg)
 	    *av++ = optarg;
 	/* SUPPRESS 560 */
-	while (*av++ = *argv++)
+	while ((*av++ = *argv++) != 0)
 	    /* SUPPRESS 530 */
 	    ;
 	execve (newargv[0], newargv, environ);
     }
 }
 
-extern char **setEnv ();
-
 char **
-defaultEnv ()
+defaultEnv (void)
 {
     char    **env, **exp, *value;
 
@@ -848,9 +836,7 @@ defaultEnv ()
 }
 
 char **
-systemEnv (d, user, home)
-struct display	*d;
-char	*user, *home;
+systemEnv (struct display *d, char *user, char *home)
 {
     char	**env;
     
@@ -871,8 +857,7 @@ char	*user, *home;
 }
 
 #if defined(Lynx) || defined(SCO) && !defined(SCO_USA) && !defined(_SCO_DS)
-char *crypt(s1, s2)
-	char	*s1, *s2;
+char *crypt(char *s1, char *s2)
 {
 	return(s2);
 }

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.4 1996/12/23 07:11:02 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.5 1998/10/04 09:41:04 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -34,6 +34,8 @@ from The Open Group.
  */
 
 # include	"dm.h"
+# include	"dm_error.h"
+
 # include	<pwd.h>
 #ifdef USESHADOW
 # include	<shadow.h>
@@ -69,16 +71,12 @@ static char *envvars[] = {
 };
 
 static char **
-userEnv (d, useSystemPath, user, home, shell)
-struct display	*d;
-int	useSystemPath;
-char	*user, *home, *shell;
+userEnv (struct display *d, int useSystemPath, char *user, char *home, char *shell)
 {
     char	**env;
     char	**envvar;
     char	*str;
-    extern char **defaultEnv (), **setEnv ();
-    
+
     env = defaultEnv ();
     env = setEnv (env, "DISPLAY", d->name);
     env = setEnv (env, "HOME", home);
@@ -96,20 +94,13 @@ char	*user, *home, *shell;
 }
 
 int
-Verify (d, greet, verify)
-struct display		*d;
-struct greet_info	*greet;
-struct verify_info	*verify;
+Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 {
 	struct passwd	*p;
 #ifdef USESHADOW
 	struct spwd	*sp;
 #endif
 	char		*user_pass;
-#if !defined(SVR4) || !defined(GREET_LIB) /* shared lib decls handle this */
-	char		*crypt ();
-	char		**systemEnv (), **parseArgs ();
-#endif
 	char		*shell, *home;
 	char		**argv;
 

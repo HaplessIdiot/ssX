@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.12 1996/12/09 11:57:14 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.13 1998/10/04 09:40:55 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -32,6 +32,9 @@ from The Open Group.
  *
  * public interfaces for greet/verify functionality
  */
+
+#ifndef _DM_H_
+#define _DM_H_ 1
 
 #ifdef MINIX
 #ifdef MNX_TCPCONN
@@ -145,7 +148,7 @@ typedef struct displayType {
 # define FromFile	1
 # define FromXDMCP	0
 
-extern DisplayType parseDisplayType ();
+extern DisplayType parseDisplayType (char *string, int *usedDefault);
 
 typedef enum fileState { NewEntry, OldEntry, MissingEntry } FileState;
 
@@ -262,6 +265,8 @@ struct greet_info {
 #define GID_T int
 #endif
 
+typedef void (*ChooserFunc)(CARD16 connectionType, ARRAY8Ptr addr, char *closure);
+
 struct verify_info {
 	int		uid;		/* user id */
 	int		gid;		/* group id */
@@ -304,36 +309,143 @@ extern char	*randomFile;
 extern char	*greeterLib;
 extern int	choiceTimeout;	/* chooser choice timeout */
 
-extern struct display	*FindDisplayByName (),
-			*FindDisplayBySessionID (),
-			*FindDisplayByAddress (),
-			*FindDisplayByPid (),
-			*FindDisplayByServerPid (),
-			*NewDisplay ();
+extern struct display	*FindDisplayByName (char *name),
+			*FindDisplayBySessionID (CARD32 sessionID),
+			*FindDisplayByAddress (XdmcpNetaddr addr, int addrlen, CARD16 displayNumber),
+			*FindDisplayByPid (int pid),
+			*FindDisplayByServerPid (int serverPid),
+			*NewDisplay (char *name, char *class);
 
-extern struct protoDisplay	*FindProtoDisplay (),
-				*NewProtoDisplay ();
+extern struct protoDisplay	*FindProtoDisplay (
+					XdmcpNetaddr address,
+					int          addrlen,
+					CARD16       displayNumber);
+extern struct protoDisplay	*NewProtoDisplay (
+					XdmcpNetaddr address,
+					int	     addrlen,
+					CARD16	     displayNumber,
+					CARD16	     connectionType,
+					ARRAY8Ptr    connectionAddress,
+					CARD32	     sessionID);
 
-extern char		*localHostname ();
+/* in Login.c */
+extern void DrawFail (Widget ctx);
 
-/* in xdmcp.c */
-extern void init_session_id();
-extern void registerHostname();
+/* in access.c */
+extern ARRAY8Ptr getLocalAddress (void);
+extern int AcceptableDisplayAddress (ARRAY8Ptr clientAddress, CARD16 connectionType, xdmOpCode type);
+extern int ForEachMatchingIndirectHost (ARRAY8Ptr clientAddress, CARD16 connectionType, ChooserFunc function, char *closure);
+extern int ScanAccessDatabase (void);
+extern int UseChooser (ARRAY8Ptr clientAddress, CARD16 connectionType);
+extern void ForEachChooserHost (ARRAY8Ptr clientAddress, CARD16 connectionType, ChooserFunc function, char *closure);
+
+/* in choose.c */
+extern ARRAY8Ptr IndirectChoice (ARRAY8Ptr clientAddress, CARD16 connectionType);
+extern int IsIndirectClient (ARRAY8Ptr clientAddress, CARD16 connectionType);
+extern int RememberIndirectClient (ARRAY8Ptr clientAddress, CARD16 connectionType);
+extern void ForgetIndirectClient ( ARRAY8Ptr clientAddress, CARD16 connectionType);
+extern void ProcessChooserSocket (int fd);
+
+/* in chooser.c */
+extern void RunChooser (struct display *d);
+
+/* in daemon.c */
+extern void BecomeDaemon (void);
+extern void BecomeOrphan (void);
 
 /* in dm.c */
-extern void StartDisplay();
+extern void CloseOnFork (void);
+extern void RegisterCloseOnFork (int fd);
+extern void StartDisplay (struct display *d);
+extern void SetTitle (char *name, ...);
 
-/* in session.c */
-extern void execute();
+/* in dpylist.c */
+extern int AnyDisplaysLeft (void);
+extern void ForEachDisplay (void (*f)(struct display *));
+extern void RemoveDisplay (struct display *old);
 
-/* in auth.c */
-extern void SetLocalAuthorization();
-extern void SetUserAuthorization();
-extern void RemoveUserAuthorization();
-extern void CleanUpFileName();
+/* in file.c */
+extern void ParseDisplay (char *source, DisplayType *acceptableTypes, int numAcceptable);
+
+/* in netaddr.c */
+extern char *NetaddrAddress(XdmcpNetaddr netaddrp, int *lenp);
+extern char *NetaddrPort(XdmcpNetaddr netaddrp, int *lenp);
+extern int ConvertAddr (XdmcpNetaddr saddr, int *len, char **addr);
+extern int NetaddrFamily (XdmcpNetaddr netaddrp);
+extern int addressEqual (XdmcpNetaddr a1, int len1, XdmcpNetaddr a2, int len2);
+
+/* in policy.c */
+#if 0
+extern ARRAY8Ptr Accept (/* struct sockaddr *from, int fromlen, CARD16 displayNumber */);
+#endif
+extern ARRAY8Ptr ChooseAuthentication (ARRAYofARRAY8Ptr authenticationNames);
+extern int CheckAuthentication (struct protoDisplay *pdpy, ARRAY8Ptr displayID, ARRAY8Ptr name, ARRAY8Ptr data);
+extern int SelectAuthorizationTypeIndex (ARRAY8Ptr authenticationName, ARRAYofARRAY8Ptr authorizationNames);
+extern int SelectConnectionTypeIndex (ARRAY16Ptr connectionTypes, ARRAYofARRAY8Ptr connectionAddresses);
+extern int Willing (ARRAY8Ptr addr, CARD16 connectionType, ARRAY8Ptr authenticationName, ARRAY8Ptr status, xdmOpCode type);
 
 /* in protodpy.c */
-extern void DisposeProtoDisplay();
+extern void DisposeProtoDisplay(struct protoDisplay *pdpy);
+
+/* in reset.c */
+extern void pseudoReset (Display *dpy);
+
+/* in resource.c */
+extern void InitResources (int argc, char **argv);
+extern void LoadDMResources (void);
+extern void LoadServerResources (struct display *d);
+extern void LoadSessionResources (struct display *d);
+extern void ReinitResources (void);
+
+/* in session.c */
+extern char **defaultEnv (void);
+extern char **systemEnv (struct display *d, char *user, char *home);
+extern int PingServer(struct display *d, Display *alternateDpy);
+extern int source (char **environ, char *file);
+extern void ClearCloseOnFork (int fd);
+extern void DeleteXloginResources (struct display *d, Display *dpy);
+extern void LoadXloginResources (struct display *d);
+extern void ManageSession (struct display *d);
+extern void SecureDisplay (struct display *d, Display *dpy);
+extern void SessionExit (struct display *d, int status, int removeAuth);
+extern void SessionPingFailed (struct display *d);
+extern void SetupDisplay (struct display *d);
+extern void UnsecureDisplay (struct display *d, Display *dpy);
+extern void execute(char **argv, char **environ);
+
+/* server.c */
+extern char *_SysErrorMsg (int n);
+extern int StartServer (struct display *d);
+extern int WaitForServer (struct display *d);
+extern void ResetServer (struct display *d);
+
+/* socket.c */
+extern int GetChooserAddr (char *addr, int *lenp);
+extern void CreateWellKnownSockets (void);
+
+/* in util.c */
+extern char *localHostname (void);
+extern char **parseArgs (char **argv, char *string);
+extern char **setEnv (char **e, char *name, char *value);
+extern char *getEnv (char **e, char *name);
+extern void CleanUpChild (void);
+extern void freeArgs (char **argv);
+extern void freeEnv (char **env);
+extern void printEnv (char **e);
+
+/* in verify.c */
+extern int Verify (struct display *d, struct greet_info *greet, struct verify_info *verify);
+
+/* in xdmcp.c */
+extern char *NetworkAddressToHostname (CARD16 connectionType, ARRAY8Ptr connectionAddress);
+extern int AnyWellKnownSockets (void);
+extern void DestroyWellKnownSockets (void);
+extern void SendFailed (struct display *d, char *reason);
+extern void StopDisplay (struct display *d);
+extern void WaitForChild (void);
+extern void WaitForSomething (void);
+extern void init_session_id(void);
+extern void registerHostname(char *name, int namelen);
 
 /*
  * CloseOnFork flags
@@ -368,10 +480,14 @@ char *malloc(), *realloc();
 #define Jmp_buf		sigjmp_buf
 #endif
 
-SIGVAL (*Signal())();
+typedef SIGVAL (*SIGFUNC)(int);
+
+SIGVAL (*Signal(int, SIGFUNC Handler))(int);
 
 #ifdef MINIX
 #include <sys/nbio.h>
 void udp_read_cb(nbio_ref_t ref, int res, int err);
 void tcp_listen_cb(nbio_ref_t ref, int res, int err);
 #endif
+
+#endif /* _DM_H_ */

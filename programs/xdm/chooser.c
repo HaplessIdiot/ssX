@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/chooser.c,v 3.16 1998/09/05 06:37:09 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/chooser.c,v 3.17 1998/10/04 09:40:54 dawes Exp $ */
 
 /*
  * Chooser - display a menu of names and let the user select one
@@ -79,13 +79,10 @@ in this Software without prior written authorization from The Open Group.
 #include    <sys/stropts.h>
 #endif
 #endif
+
+#include    "dm_socket.h"
+
 #ifndef MINIX
-#ifndef Lynx
-#include    <sys/socket.h>
-#else
-#include    <socket.h>
-#endif
-#include    <netinet/in.h>
 #include    <arpa/inet.h>
 #else /* MINIX */
 #include <net/hton.h>
@@ -98,6 +95,7 @@ in this Software without prior written authorization from The Open Group.
 #include <net/gen/udp_io.h>
 #include <sys/nbio.h>
 #endif /* !MINIX */
+
 #include    <sys/ioctl.h>
 #ifdef STREAMSCONN
 #ifdef WINTCP /* NCR with Wollongong TCP */
@@ -123,7 +121,7 @@ in this Software without prior written authorization from The Open Group.
 #define BROADCAST_HOSTNAME  "BROADCAST"
 
 #ifndef ishexdigit
-#define ishexdigit(c)	(isdigit(c) || 'a' <= (c) && (c) <= 'f')
+#define ishexdigit(c)	(isdigit(c) || ('a' <= (c) && (c) <= 'f'))
 #endif
 
 #ifdef hpux
@@ -154,9 +152,15 @@ static int read_size;
 static void read_cb(nbio_ref_t ref, int res, int err);
 #endif
 
+static int FromHex (char *s, char *d, int len);
+
 Widget	    toplevel, label, viewport, paned, list, box, cancel, acceptit, ping;
 
-static void	CvtStringToARRAY8();
+static void	CvtStringToARRAY8(
+    XrmValuePtr	args,
+    Cardinal	*num_args,
+    XrmValuePtr	fromVal,
+    XrmValuePtr	toVal);
 
 static struct _app_resources {
     ARRAY8Ptr   xdmAddress;
@@ -179,9 +183,9 @@ static XtResource  resources[] = {
 #undef offset
 
 static XrmOptionDescRec options[] = {
-    "-xdmaddress",	"*xdmAddress",	    XrmoptionSepArg,	NULL,
-    "-clientaddress",	"*clientAddress",   XrmoptionSepArg,	NULL,
-    "-connectionType",	"*connectionType",  XrmoptionSepArg,	NULL,
+    { "-xdmaddress",	"*xdmAddress",	    XrmoptionSepArg,	NULL },
+    { "-clientaddress",	"*clientAddress",   XrmoptionSepArg,	NULL },
+    { "-connectionType","*connectionType",  XrmoptionSepArg,	NULL },
 };
 
 typedef struct _hostAddr {
@@ -219,10 +223,7 @@ static XdmcpBuffer	buffer;
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
 static int
-ifioctl (fd, cmd, arg)
-    int fd;
-    int cmd;
-    char *arg;
+ifioctl (int fd, int cmd, char *arg)
 {
     struct strioctl ioc;
     int ret;
@@ -273,18 +274,16 @@ ifioctl (fd, cmd, arg)
 
 /* ARGSUSED */
 static void
-PingHosts (closure, id)
-    XtPointer closure;
-    XtIntervalId *id;
+PingHosts (XtPointer closure, XtIntervalId *id)
 {
     HostAddr	*hosts;
 
     for (hosts = hostAddrdb; hosts; hosts = hosts->next)
     {
 	if (hosts->type == QUERY)
-	    XdmcpFlush (socketFD, &directBuffer, hosts->addr, hosts->addrlen);
+	    XdmcpFlush (socketFD, &directBuffer, (XdmcpNetaddr) hosts->addr, hosts->addrlen);
 	else
-	    XdmcpFlush (socketFD, &broadcastBuffer, hosts->addr, hosts->addrlen);
+	    XdmcpFlush (socketFD, &broadcastBuffer, (XdmcpNetaddr) hosts->addr, hosts->addrlen);
     }
     if (++pingTry < TRIES)
 	XtAddTimeOut (PING_INTERVAL, PingHosts, (XtPointer) 0);
@@ -294,19 +293,13 @@ char	**NameTable;
 int	NameTableSize;
 
 static int
-HostnameCompare (a, b)
-#ifdef __STDC__
-    const void *a, *b;
-#else
-    char *a, *b;
-#endif
+HostnameCompare (const void *a, const void *b)
 {
     return strcmp (*(char **)a, *(char **)b);
 }
 
 static void
-RebuildTable (size)
-    int size;
+RebuildTable (int size)
 {
     char	**newTable = 0;
     HostName	*names;
@@ -329,10 +322,7 @@ RebuildTable (size)
 }
 
 static int
-AddHostname (hostname, status, addr, willing)
-    ARRAY8Ptr	    hostname, status;
-    struct sockaddr *addr;
-    int		    willing;
+AddHostname (ARRAY8Ptr hostname, ARRAY8Ptr status, struct sockaddr *addr, int willing)
 {
     HostName	*new, **names, *name;
     ARRAY8	hostAddr;
@@ -434,8 +424,7 @@ AddHostname (hostname, status, addr, willing)
 }
 
 static void
-DisposeHostname (host)
-    HostName	*host;
+DisposeHostname (HostName *host)
 {
     XdmcpDisposeARRAY8 (&host->hostname);
     XdmcpDisposeARRAY8 (&host->hostaddr);
@@ -444,9 +433,9 @@ DisposeHostname (host)
     free ((char *) host);
 }
 
+#if 0
 static void
-RemoveHostname (host)
-    HostName	*host;
+RemoveHostname (HostName *host)
 {
     HostName	**prev, *hosts;
 
@@ -464,9 +453,10 @@ RemoveHostname (host)
     NameTableSize--;
     RebuildTable (NameTableSize);
 }
+#endif
 
 static void
-EmptyHostnames ()
+EmptyHostnames (void)
 {
     HostName	*hosts, *next;
 
@@ -482,10 +472,7 @@ EmptyHostnames ()
 
 /* ARGSUSED */
 static void
-ReceivePacket (closure, source, id)
-    XtPointer	closure;
-    int		*source;
-    XtInputId	*id;
+ReceivePacket (XtPointer closure, int *source, XtInputId *id)
 {
     XdmcpHeader	    header;
     ARRAY8	    authenticationName;
@@ -527,7 +514,7 @@ ReceivePacket (closure, source, id)
     }
     read_size= 0;
 #else
-    if (!XdmcpFill (socketFD, &buffer, &addr, &addrlen))
+    if (!XdmcpFill (socketFD, &buffer, (XdmcpNetaddr) &addr, &addrlen))
 	return;
 #endif
     if (!XdmcpReadHeader (&buffer, &header))
@@ -575,10 +562,7 @@ ReceivePacket (closure, source, id)
 }
 
 static void
-RegisterHostaddr (addr, len, type)
-    struct sockaddr *addr;
-    int		    len;
-    xdmOpCode	    type;
+RegisterHostaddr (struct sockaddr *addr, int len, xdmOpCode type)
 {
     HostAddr		*host, **prev;
 
@@ -619,8 +603,7 @@ RegisterHostaddr (addr, len, type)
 #endif
 
 static void
-RegisterHostname (name)
-    char    *name;
+RegisterHostname (char *name)
 {
     struct hostent	*hostent;
     struct sockaddr_in	in_addr;
@@ -628,7 +611,6 @@ RegisterHostname (name)
     register struct ifreq *ifr;
     struct sockaddr	broad_addr;
     char		buf[2048], *cp, *cplim;
-    int			n;
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
@@ -636,6 +618,7 @@ RegisterHostname (name)
     int                 ipfd;
     struct ifconf       *ifcp;
     struct strioctl     ioc;
+    int			n;
 
 	ifcp = (struct ifconf *)buf;
 	ifcp->ifc_buf = buf+4;
@@ -768,8 +751,8 @@ RegisterHostname (name)
 
 #else /* MINIX */
 
-RegisterHostname (name)
-    char    *name;
+static void
+RegisterHostname (char *name)
 {
     struct hostent	*hostent;
     struct sockaddr_in	in_addr;
@@ -812,10 +795,9 @@ RegisterHostname (name)
 
 static ARRAYofARRAY8	AuthenticationNames;
 
+#if 0
 static void
-RegisterAuthenticationName (name, namelen)
-    char    *name;
-    int	    namelen;
+RegisterAuthenticationName (char *name, int namelen)
 {
     ARRAY8Ptr	authName;
     if (!XdmcpReallocARRAYofARRAY8 (&AuthenticationNames,
@@ -826,10 +808,10 @@ RegisterAuthenticationName (name, namelen)
 	return;
     memmove( authName->data, name, namelen);
 }
+#endif
 
-int
-InitXDMCP (argv)
-    char    **argv;
+static int
+InitXDMCP (char **argv)
 {
     int	soopts = 1;
     XdmcpHeader	header;
@@ -944,15 +926,14 @@ InitXDMCP (argv)
 }
 
 static void
-Choose (h)
-    HostName	*h;
+Choose (HostName *h)
 {
     if (app_resources.xdmAddress)
     {
 	struct sockaddr_in  in_addr;
-	struct sockaddr	*addr;
+	struct sockaddr	*addr = NULL;
 	int		family;
-	int		len;
+	int		len = 0;
 	int		fd;
 	char		buf[1024];
 	XdmcpBuffer	buffer;
@@ -1086,11 +1067,7 @@ Choose (h)
 
 /* ARGSUSED */
 static void
-DoAccept (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoAccept (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     XawListReturnStruct	*r;
     HostName		*h;
@@ -1115,11 +1092,7 @@ DoAccept (w, event, params, num_params)
 
 /* ARGSUSED */
 static void
-DoCheckWilling (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoCheckWilling (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     XawListReturnStruct	*r;
     HostName		*h;
@@ -1135,22 +1108,14 @@ DoCheckWilling (w, event, params, num_params)
 
 /* ARGSUSED */
 static void
-DoCancel (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoCancel (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     exit (OBEYSESS_DISPLAY);
 }
 
 /* ARGSUSED */
 static void
-DoPing (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+DoPing (Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     EmptyHostnames ();
     pingTry = 0;
@@ -1158,15 +1123,14 @@ DoPing (w, event, params, num_params)
 }
 
 static XtActionsRec app_actions[] = {
-    "Accept",	    DoAccept,
-    "Cancel",	    DoCancel,
-    "CheckWilling", DoCheckWilling,
-    "Ping",	    DoPing,
+    { "Accept",	      DoAccept },
+    { "Cancel",	      DoCancel },
+    { "CheckWilling", DoCheckWilling },
+    { "Ping",	      DoPing },
 };
 
-main (argc, argv)
-    int     argc;
-    char    **argv;
+int
+main (int argc, char **argv)
 {
     Arg		position[3];
     Dimension   width, height;
@@ -1217,10 +1181,8 @@ main (argc, argv)
 /* Converts the hex string s of length len into the byte array d.
    Returns 0 if s was a legal hex string, 1 otherwise.
    */
-int
-FromHex (s, d, len)
-    char    *s, *d;
-    int	    len;
+static int
+FromHex (char *s, char *d, int len)
 {
     int	t;
     int ret = len&1;		/* odd-length hex strings are illegal */
@@ -1244,11 +1206,7 @@ FromHex (s, d, len)
 
 /*ARGSUSED*/
 static void
-CvtStringToARRAY8 (args, num_args, fromVal, toVal)
-    XrmValuePtr	args;
-    Cardinal	*num_args;
-    XrmValuePtr	fromVal;
-    XrmValuePtr	toVal;
+CvtStringToARRAY8 (XrmValuePtr args, Cardinal *num_args, XrmValuePtr fromVal, XrmValuePtr toVal)
 {
     static ARRAY8Ptr	dest;
     char	*s;

@@ -1,15 +1,9 @@
-/* $XConsortium: mitauth.c,v 1.8 94/04/17 20:27:03 gildea Exp $ */
+/* $TOG: mitauth.c /main/12 1998/02/09 15:12:34 kaleb $ */
 /*
 
-Copyright (c) 1988  X Consortium
+Copyright 1988, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,15 +11,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -36,6 +30,7 @@ from the X Consortium.
 
 #include "X.h"
 #include "os.h"
+#include "osdep.h"
 #include "dixstruct.h"
 
 static struct auth {
@@ -46,10 +41,10 @@ static struct auth {
 } *mit_auth;
 
 int
-MitAddCookie (data_length, data, id)
-unsigned short	data_length;
-char	*data;
-XID	id;
+MitAddCookie (
+    unsigned short	data_length,
+    char		*data,
+    XID			id)
 {
     struct auth	*new;
 
@@ -70,11 +65,11 @@ XID	id;
 }
 
 XID
-MitCheckCookie (data_length, data, client, reason)
-    unsigned short	data_length;
-    char	*data;
-    ClientPtr client;
-    char	**reason;
+MitCheckCookie (
+    unsigned short	data_length,
+    char		*data,
+    ClientPtr		client,
+    char		**reason)
 {
     struct auth	*auth;
 
@@ -88,7 +83,7 @@ MitCheckCookie (data_length, data, client, reason)
 }
 
 int
-MitResetCookie ()
+MitResetCookie (void)
 {
     struct auth	*auth, *next;
 
@@ -102,9 +97,9 @@ MitResetCookie ()
 }
 
 XID
-MitToID (data_length, data)
-unsigned short	data_length;
-char	*data;
+MitToID (
+	unsigned short	data_length,
+	char		*data)
 {
     struct auth	*auth;
 
@@ -116,10 +111,11 @@ char	*data;
     return (XID) -1;
 }
 
-MitFromID (id, data_lenp, datap)
-XID id;
-unsigned short	*data_lenp;
-char	**datap;
+int
+MitFromID (
+	XID		id,
+	unsigned short	*data_lenp,
+	char		**datap)
 {
     struct auth	*auth;
 
@@ -133,14 +129,15 @@ char	**datap;
     return 0;
 }
 
-MitRemoveCookie (data_length, data)
-unsigned short	data_length;
-char	*data;
+int
+MitRemoveCookie (
+	unsigned short	data_length,
+	char		*data)
 {
     struct auth	*auth, *prev;
 
     prev = 0;
-    for (auth = mit_auth; auth; auth=auth->next) {
+    for (auth = mit_auth; auth; prev = auth, auth=auth->next) {
 	if (data_length == auth->len &&
 	    memcmp (data, auth->data, data_length) == 0)
  	{
@@ -155,3 +152,39 @@ char	*data;
     }
     return 0;
 }
+
+#ifdef XCSECURITY
+
+static char cookie[16]; /* 128 bits */
+
+XID
+MitGenerateCookie (
+    unsigned	data_length,
+    char	*data,
+    XID		id,
+    unsigned	*data_length_return,
+    char	**data_return)
+{
+    int i = 0;
+    int status;
+
+    while (data_length--)
+    {
+	cookie[i++] += *data++;
+	if (i >= sizeof (cookie)) i = 0;
+    }
+    GenerateRandomData(sizeof (cookie), cookie);
+    status = MitAddCookie(sizeof (cookie), cookie, id);
+    if (!status)
+    {
+	id = -1;
+    }
+    else
+    {
+	*data_return = cookie;
+	*data_length_return = sizeof (cookie);
+    }
+    return id;
+}
+
+#endif /* XCSECURITY */

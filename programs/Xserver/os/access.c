@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.26 1998/08/16 10:25:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.27 1998/10/04 09:39:42 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -50,8 +50,8 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/Xtrans.h>
 #include <X11/Xauth.h>
-#include "X.h"
-#include "Xproto.h"
+#include <X.h>
+#include <Xproto.h>
 #include "misc.h"
 #include "site.h"
 #include <errno.h>
@@ -248,7 +248,7 @@ static int UsingXdmcp = FALSE;
  */
 
 void
-EnableLocalHost ()
+EnableLocalHost (void)
 {
     if (!UsingXdmcp)
     {
@@ -261,7 +261,7 @@ EnableLocalHost ()
  * called when authorization is enabled to keep us secure
  */
 void
-DisableLocalHost ()
+DisableLocalHost (void)
 {
     HOST *self;
 
@@ -276,7 +276,7 @@ DisableLocalHost ()
  */
 
 void
-AccessUsingXdmcp ()
+AccessUsingXdmcp (void)
 {
     UsingXdmcp = TRUE;
     LocalHostEnabled = FALSE;
@@ -288,10 +288,7 @@ AccessUsingXdmcp ()
 /* Deal with different SIOCGIFCONF ioctl semantics on these OSs */
 
 static int
-ifioctl (fd, cmd, arg)
-    int fd;
-    int cmd;
-    char *arg;
+ifioctl (int fd, int cmd, char *arg)
 {
     struct strioctl ioc;
     int ret;
@@ -360,8 +357,7 @@ ifioctl (fd, cmd, arg)
 #include <netinet/in_var.h>
 
 void
-DefineSelf (fd)
-    int fd;
+DefineSelf (int fd)
 {
     /*
      * The Wolongong drivers used by NCR SVR4/MP-RAS don't understand the
@@ -485,8 +481,7 @@ DefineSelf (fd)
 
 #if !defined(SIOCGIFCONF) || (defined (hpux) && ! defined (HAS_IFREQ))
 void
-DefineSelf (fd)
-    int fd;
+DefineSelf (int fd)
 {
 #if !defined(TCPCONN) && !defined(STREAMSCONN) && !defined(UNIXCONN) && !defined(MNX_TCPCONN)
     return;
@@ -594,12 +589,10 @@ DefineSelf (fd)
 #endif
 
 void
-DefineSelf (fd)
-    int fd;
+DefineSelf (int fd)
 {
     char		buf[2048], *cp, *cplim;
     struct ifconf	ifc;
-    register int	n;
     int 		len;
     unsigned char *	addr;
     int 		family;
@@ -758,9 +751,7 @@ DefineSelf (fd)
 
 #ifdef XDMCP
 void
-AugmentSelf(from, len)
-    pointer from;
-    int	    len;
+AugmentSelf(pointer from, int len)
 {
     int family;
     pointer addr;
@@ -786,7 +777,7 @@ AugmentSelf(from, len)
 #endif
 
 void
-AddLocalHosts ()
+AddLocalHosts (void)
 {
     HOST    *self;
 
@@ -796,8 +787,7 @@ AddLocalHosts ()
 
 /* Reset access control list to initial hosts */
 void
-ResetHosts (display)
-    char *display;
+ResetHosts (char *display)
 {
     register HOST	*host;
     char                lhostname[120], ohostname[120];
@@ -826,14 +816,14 @@ ResetHosts (display)
     krb5_principal      princ;
     krb5_data		kbuf;
 #endif
-    int			family;
+    int			family = 0;
     pointer		addr;
     int 		len;
     register struct hostent *hp;
 
     AccessEnabled = defeatAccessControl ? FALSE : DEFAULT_ACCESS_CONTROL;
     LocalHostEnabled = FALSE;
-    while (host = validhosts)
+    while ((host = validhosts) != 0)
     {
         validhosts = host->next;
         FreeHost (host);
@@ -854,16 +844,16 @@ ResetHosts (display)
     strcpy(fname, (char*)__XOS2RedirRoot(fname));
 #endif /* __EMX__ */
 
-    if (fd = fopen (fname, "r")) 
+    if ((fd = fopen (fname, "r")) != 0)
     {
         while (fgets (ohostname, sizeof (ohostname), fd))
 	{
 	if (*ohostname == '#')
 	    continue;
-    	if (ptr = strchr(ohostname, '\n'))
+    	if ((ptr = strchr(ohostname, '\n')) != 0)
     	    *ptr = 0;
 #ifdef __EMX__
-    	if (ptr = strchr(ohostname, '\r'))
+    	if ((ptr = strchr(ohostname, '\r')) != 0)
     	    *ptr = 0;
 #endif
         hostlen = strlen(ohostname) + 1;
@@ -950,8 +940,9 @@ ResetHosts (display)
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(MNX_TCPCONN)
 	{
     	    /* host name */
-    	    if (family == FamilyInternet && (hp = gethostbyname (hostname)) ||
-		 (hp = gethostbyname (hostname)))
+    	    if ((family == FamilyInternet
+	     && ((hp = gethostbyname (hostname)) != 0))
+	     || ((hp = gethostbyname (hostname)) != 0))
 	    {
     		saddr.sa.sa_family = hp->h_addrtype;
 		len = sizeof(saddr.sa);
@@ -977,8 +968,7 @@ ResetHosts (display)
 }
 
 /* Is client on the local host */
-Bool LocalClient(client)
-    ClientPtr client;
+Bool LocalClient(ClientPtr client)
 {
     int    		alen, family, notused;
     Xtransaddr		*from = NULL;
@@ -1024,8 +1014,7 @@ Bool LocalClient(client)
 }
 
 static Bool
-AuthorizedClient(client)
-    ClientPtr client;
+AuthorizedClient(ClientPtr client)
 {
     if (!client || defeatAccessControl)
 	return TRUE;
@@ -1036,11 +1025,11 @@ AuthorizedClient(client)
  * called from the dispatcher */
 
 int
-AddHost (client, family, length, pAddr)
-    ClientPtr		client;
-    int                 family;
-    unsigned            length;        /* of bytes in pAddr */
-    pointer             pAddr;
+AddHost (
+    ClientPtr		client,
+    int                 family,
+    unsigned            length,        /* of bytes in pAddr */
+    pointer             pAddr)
 {
     int			len;
 
@@ -1111,10 +1100,10 @@ ForEachHostInFamily (family, func, closure)
 /* Add a host to the access control list. This is the internal interface 
  * called when starting or resetting the server */
 static Bool
-NewHost (family, addr, len)
-    int		family;
-    pointer	addr;
-    int		len;
+NewHost (
+    int		family,
+    pointer	addr,
+    int		len)
 {
     register HOST *host;
 
@@ -1137,11 +1126,11 @@ NewHost (family, addr, len)
 /* Remove a host from the access control list */
 
 int
-RemoveHost (client, family, length, pAddr)
-    ClientPtr		client;
-    int                 family;
-    unsigned            length;        /* of bytes in pAddr */
-    pointer             pAddr;
+RemoveHost (
+    ClientPtr		client,
+    int                 family,
+    unsigned            length,        /* of bytes in pAddr */
+    pointer             pAddr)
 {
     int			len;
     register HOST	*host, **prev;
@@ -1191,11 +1180,11 @@ RemoveHost (client, family, length, pAddr)
 
 /* Get all hosts in the access control list */
 int
-GetHosts (data, pnHosts, pLen, pEnabled)
-    pointer		*data;
-    int			*pnHosts;
-    int			*pLen;
-    BOOL		*pEnabled;
+GetHosts (
+    pointer		*data,
+    int			*pnHosts,
+    int			*pLen,
+    BOOL		*pEnabled)
 {
     int			len;
     register int 	n = 0;
@@ -1237,10 +1226,10 @@ GetHosts (data, pnHosts, pLen, pEnabled)
 
 /*ARGSUSED*/
 static int
-CheckAddr (family, pAddr, length)
-    int			family;
-    pointer		pAddr;
-    unsigned		length;
+CheckAddr (
+    int			family,
+    pointer		pAddr,
+    unsigned		length)
 {
     int	len;
 
@@ -1282,13 +1271,14 @@ CheckAddr (family, pAddr, length)
 /* Check if a host is not in the access control list. 
  * Returns 1 if host is invalid, 0 if we've found it. */
 
-InvalidHost (saddr, len)
+int
+InvalidHost (
 #ifndef AMOEBA_ORIG
-    register struct sockaddr	*saddr;
+    register struct sockaddr	*saddr,
 #else
-    register ipaddr_t		*saddr;
+    register ipaddr_t		*saddr,
 #endif
-    int				len;
+    int				len)
 {
     int 			family;
     pointer			addr;
@@ -1329,14 +1319,14 @@ InvalidHost (saddr, len)
 }
 
 static int
-ConvertAddr (saddr, len, addr)
+ConvertAddr (
 #ifndef AMOEBA_ORIG
-    register struct sockaddr	*saddr;
+    register struct sockaddr	*saddr,
 #else
-    register ipaddr_t		*saddr;
+    register ipaddr_t		*saddr,
 #endif
-    int				*len;
-    pointer			*addr;
+    int				*len,
+    pointer			*addr)
 {
 #ifndef AMOEBA
     if (*len == 0)
@@ -1382,9 +1372,9 @@ ConvertAddr (saddr, len, addr)
 }
 
 int
-ChangeAccessControl(client, fEnabled)
-    ClientPtr client;
-    int fEnabled;
+ChangeAccessControl(
+    ClientPtr client,
+    int fEnabled)
 {
     if (!AuthorizedClient(client))
 	return BadAccess;
@@ -1394,8 +1384,7 @@ ChangeAccessControl(client, fEnabled)
 
 /* returns FALSE if xhost + in effect, else TRUE */
 int
-GetAccessControl()
+GetAccessControl(void)
 {
     return AccessEnabled;
 }
-

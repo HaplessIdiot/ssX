@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/streams.c,v 3.1 1994/06/09 10:56:15 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/streams.c,v 3.2 1998/10/04 09:40:58 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -32,6 +32,7 @@ from The Open Group.
  */
 
 #include "dm.h"
+#include "dm_error.h"
 
 #ifdef XDMCP
 #ifdef STREAMSCONN

@@ -23,16 +23,15 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.1 1996/10/23 13:08:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.2 1998/10/03 08:42:51 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/X.h>
 #include <X11/Xmd.h>
 #include <X11/Xdmcp.h>
 
-static getbits (data, dst)
-    long	    data;
-    unsigned char   *dst;
+static void
+getbits (long data, unsigned char *dst)
 {
     dst[0] = (data      ) & 0xff;
     dst[1] = (data >>  8) & 0xff;
@@ -53,15 +52,14 @@ extern Time_t time ();
 #define random lrand48
 #endif
 
-#ifdef linux
+#if defined(linux) || defined(CSRG_BASED) || (defined(sun) && defined(SVR4))
 #include <stdlib.h>
 #else
 long random();
 #endif
 
 void
-XdmcpGenerateKey (key)
-    XdmAuthKeyPtr   key;
+XdmcpGenerateKey (XdmAuthKeyPtr key)
 {
     long    lowbits, highbits;
 

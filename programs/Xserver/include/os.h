@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.20 1998/07/26 02:33:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.21 1998/10/04 09:38:59 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -364,38 +364,38 @@ extern void ProcessCommandLine(
 #endif
 );
 
-extern unsigned long *Xalloc(
+extern pointer Xalloc(
 #if NeedFunctionPrototypes
     unsigned long /*amount*/
 #endif
 );
 
-extern unsigned long *XNFalloc(
+extern pointer XNFalloc(
 #if NeedFunctionPrototypes
     unsigned long /*amount*/
 #endif
 );
 
-extern unsigned long *Xcalloc(
+extern pointer Xcalloc(
 #if NeedFunctionPrototypes
     unsigned long /*amount*/
 #endif
 );
 
-extern unsigned long *XNFcalloc(
+extern pointer XNFcalloc(
 #if NeedFunctionPrototypes
     unsigned long /*amount*/
 #endif
 );
 
-extern unsigned long *Xrealloc(
+extern pointer Xrealloc(
 #if NeedFunctionPrototypes
     pointer /*ptr*/,
     unsigned long /*amount*/
 #endif
 );
 
-extern unsigned long *XNFrealloc(
+extern pointer XNFrealloc(
 #if NeedFunctionPrototypes
     pointer /*ptr*/,
     unsigned long /*amount*/
@@ -656,6 +656,19 @@ extern void RegisterAuthorizations(
 #endif
 );
 
+extern XID AuthorizationToID (
+	unsigned short	name_length,
+	char		*name,
+	unsigned short	data_length,
+	char		*data);
+
+extern int AuthorizationFromID (
+	XID 		id,
+	unsigned short	*name_lenp,
+	char		**namep,
+	unsigned short	*data_lenp,
+	char		**datap);
+
 extern XID CheckAuthorization(
 #if NeedFunctionPrototypes
     unsigned int /*namelength*/,
@@ -673,12 +686,18 @@ extern void ResetAuthorization(
 #endif
 );
 
+extern int RemoveAuthorization (
+    unsigned short	name_length,
+    char		*name,
+    unsigned short	data_length,
+    char		*data);
+
 extern int AddAuthorization(
 #if NeedFunctionPrototypes
-    unsigned int /*name_length*/,
-    char * /*name*/,
-    unsigned int /*data_length*/,
-    char * /*data*/
+    unsigned int	/*name_length*/,
+    char *		/*name*/,
+    unsigned int	/*data_length*/,
+    char *		/*data*/
 #endif
 );
 

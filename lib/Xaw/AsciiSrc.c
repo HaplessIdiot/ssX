@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.9 1998/09/05 06:36:05 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.10 1998/10/03 08:42:00 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -350,6 +350,7 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
   text->ptr = piece->text + (pos - start);
   count = piece->used - (pos - start);
   text->length = (length > count) ? count : length;
+  text->format = XawFmt8Bit;
 
   return (pos + text->length);
 }

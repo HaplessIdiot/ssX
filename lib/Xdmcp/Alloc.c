@@ -23,36 +23,41 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xdmcp/Alloc.c,v 3.0 1995/07/07 15:32:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/Alloc.c,v 3.1 1998/10/03 08:42:50 dawes Exp $ */
 
 /* stubs for use when Xalloc, Xrealloc and Xfree are not defined */
 
-extern char	*malloc (), *realloc ();
+#include <X11/Xos.h>
+#include <X11/X.h>
+#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
-unsigned long *
-Xalloc (amount)
-    unsigned	amount;
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#else
+char *malloc(size_t), *realloc(char *, size_t);
+#endif
+
+void *
+Xalloc (unsigned long amount)
 {
     if (amount == 0)
 	amount = 1;
-    return (unsigned long *) malloc (amount);
+    return malloc (amount);
 }
 
-unsigned long *
-Xrealloc (old, amount)
-    unsigned long	*old;
-    unsigned		amount;
+void *
+Xrealloc (void *old, unsigned long amount)
 {
     if (amount == 0)
 	amount = 1;
     if (!old)
-	return (unsigned long *) malloc (amount);
-    return (unsigned long *) realloc ((char *) old, amount);
+	return malloc (amount);
+    return realloc ((char *) old, amount);
 }
 
 void
-Xfree (old)
-    unsigned long    *old;
+Xfree (void *old)
 {
     if (old)
 	free ((char *) old);

@@ -1,15 +1,9 @@
-/* $XConsortium: greet.h,v 1.3 94/04/17 20:03:39 gildea Exp $ */
+/* $TOG: greet.h /main/5 1998/02/09 13:55:28 kaleb $ */
 /*
 
-Copyright (c) 1994  X Consortium
+Copyright 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -17,17 +11,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * greet.h - interface to xdm's dynamically-loadable modular greeter
@@ -35,34 +30,53 @@ from the X Consortium.
 
 #include <X11/Xlib.h>
 
-struct dlfuncs {
-    int (*_PingServer)();
-    int (*_SessionPingFailed)();
-    int (*_Debug)();
-    int (*_RegisterCloseOnFork)();
-    int (*_SecureDisplay)();
-    int (*_UnsecureDisplay)();
-    int (*_ClearCloseOnFork)();
-    int (*_SetupDisplay)();
-    int (*_LogError)();
-    int (*_SessionExit)();
-    int (*_DeleteXloginResources)();
-    int (*_source)();
-    char **(*_defaultEnv)();
-    char **(*_setEnv)();
-    char **(*_parseArgs)();
-    int (*_printEnv)();
-    char **(*_systemEnv)();
-    int (*_LogOutOfMem)();
-    void (*_setgrent)();
-    struct group *(*_getgrent)();
-    void (*_endgrent)();
-#ifdef USESHADOW
-    struct spwd *(*_getspnam)();
-    void (*_endspent)();
+/*
+ * Do this rather than break a build over a const-mismatch
+ */
+#if defined(__linux__) || defined(CSRG_BASED)
+#define CRYPT_ARGS    const char *s1, const char *s2
+#define GETSPNAM_ARGS const char *name
+#define GETPWNAM_ARGS const char *name
+#else
+#define CRYPT_ARGS    /*unknown*/
+#define GETSPNAM_ARGS /*unknown*/
+#define GETPWNAM_ARGS /*unknown*/
 #endif
-    struct passwd *(*_getpwnam)();
-    char *(*_crypt)();
+
+#if defined(CSRG_BASED)
+#define SETGRENT_TYPE int
+#else
+#define SETGRENT_TYPE void
+#endif
+
+struct dlfuncs {
+    int (*_PingServer)(struct display *d, Display *alternateDpy);
+    void (*_SessionPingFailed)(struct display *d);
+    void (*_Debug)(char * fmt, ...);
+    void (*_RegisterCloseOnFork)(int fd);
+    void (*_SecureDisplay)(struct display *d, Display *dpy);
+    void (*_UnsecureDisplay)(struct display *d, Display *dpy);
+    void (*_ClearCloseOnFork)(int fd);
+    void (*_SetupDisplay)(struct display *d);
+    void (*_LogError)(char * fmt, ...);
+    void (*_SessionExit)(struct display *d, int status, int removeAuth);
+    void (*_DeleteXloginResources)(struct display *d, Display *dpy);
+    int (*_source)(char **environ, char *file);
+    char **(*_defaultEnv)(void);
+    char **(*_setEnv)(char **e, char *name, char *value);
+    char **(*_parseArgs)(char **argv, char *string);
+    void (*_printEnv)(char **e);
+    char **(*_systemEnv)(struct display *d, char *user, char *home);
+    void (*_LogOutOfMem)(char * fmt, ...);
+    SETGRENT_TYPE (*_setgrent)(void);		/* no longer used */
+    struct group *(*_getgrent)(void);	/* no longer used */
+    void (*_endgrent)(void);		/* no longer used */
+#ifdef USESHADOW
+    struct spwd *(*_getspnam)(GETSPNAM_ARGS);
+    void (*_endspent)(void);
+#endif
+    struct passwd *(*_getpwnam)(GETPWNAM_ARGS);
+    char *(*_crypt)(CRYPT_ARGS);
 };
 
 /*

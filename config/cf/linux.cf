@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.79 1998/10/02 06:15:04 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.80 1998/10/06 09:55:47 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -153,9 +153,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #if UseElfFormat || defined(AlphaArchitecture)
 #define HasSnprintf		YES
 #define HasMkstemp		YES
-#endif
-#if (LinuxDistribution == LinuxRedHat)
-#define HasZlib			YES
 #endif
 #if OSMajorVersion >= 2
 #define HasUsableFileMmap	YES

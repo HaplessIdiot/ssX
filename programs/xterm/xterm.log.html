@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.9 1998/07/17 12:05:27 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.10 1998/08/29 05:44:18 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,8 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_84">Patch #84 - 1998/10/9 - XFree86 3.9Ni and 3.3.2e</A>
+<LI><A HREF="#sync_83">Resync #83 - 1998/10/7 - XFree86 3.3.2e</A>
 <LI><A HREF="#xterm_83">Patch #83 - 1998/8/25 - XFree86 3.9Nb</A>
 <LI><A HREF="#xterm_82">Patch #82 - 1998/7/15 - XFree86 3.9Aj</A>
 <LI><A HREF="#xterm_81">Patch #81 - 1998/7/14 - XFree86 3.9Aj</A>
@@ -125,6 +127,48 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_84">Patch #84 - 1998/10/9 - XFree86 3.9Ni</A> and 3.3.2e</H1>
+Several small fixes and enhancements, including a patch from
+Bjorn Helgaas:
+<ul>
+	<li>correct initialization of TERMCAP environment variable, which 
+	  was frequently set to garbage on non-Linux systems because 
+	  "termcap" and "newtc" contained random data from the stack. 
+ 
+	<li>remove the LINEWRAPPED attribute from lines as they are cleared. 
+	  Previously, the attribute was set but never cleared. 
+ 
+	<li>make word and line selections work even when lines are wrapped 
+	  by xterm.  Previously, selections were limited to one screen line. 
+</ul>
+as well as
+<ul>
+	<li>modify logic for line-wrapping to reset the associated flag if
+	  the application deletes a character. This fixes a problem reported
+	  by Bjorn Helgaas where word/line selection would still wrap even
+	  after deleting characters from the first line.
+	<li>add kll/kH capabilities to xterm-xfree86 entries in termcap and
+	  terminfo (request by Michael Schroeder).
+	<li>shorten descriptions in termcap to make resolved entries all
+	  shorter than 1023 character limit.
+	<li>use DECSTR control sequence to shorten initialization and reset
+	  strings in xterm-xfree86 termcap and terminfo.
+	<li>use rmul/smul and rmir/smir in xterm-r5 terminfo to match termcap.
+	<li>correct typos in initialization and reset strings in xterm-r5
+	  termcap and terminfo.
+	<li>disable special translations of key symbols (the backarrow key,
+	  the editing keypad and the keypad "+") when a modifier other than
+	  shift, control or numlock is used.  This makes xterm handle the meta
+	  key as expected by people using emacs (reported by Pete Harlan
+	  &lt;harlan@pointofchoice.com&gt; in linux.debian.user newsgroup).
+</ul>
+
+<H1><A NAME="sync_83">Resync #83 - 1998/10/7 - XFree86 3.3.2e</A></H1>
+
+Merge changes through patch #83 with the 3.3.2e version.  This follows a
+patch by Matthieu Herrb &lt;matthieu@laas.fr&gt; to add checks for nonnull
+return from malloc.
 
 <H1><A NAME="xterm_83">Patch #83 - 1998/8/25 - XFree86 3.9Nb</A></H1>
 Several small fixes and enhancements:

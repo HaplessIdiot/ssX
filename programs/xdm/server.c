@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/server.c,v 3.3 1998/07/11 14:06:08 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.4 1998/10/04 09:40:56 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -32,6 +32,9 @@ from The Open Group.
  */
 
 # include	"dm.h"
+# include	"dm_error.h"
+# include 	"dm_socket.h"
+
 # include	<X11/Xlib.h>
 # include	<X11/Xos.h>
 # include	<stdio.h>
@@ -51,14 +54,13 @@ static receivedUsr1;
 extern int errno;
 #endif
 
-static serverPause ();
+static serverPause (unsigned t, int serverPid);
 
 static Display	*dpy;
 
 /* ARGSUSED */
 static SIGVAL
-CatchUsr1 (n)
-    int n;
+CatchUsr1 (int n)
 {
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
     (void) Signal (SIGUSR1, CatchUsr1);
@@ -67,20 +69,18 @@ CatchUsr1 (n)
     ++receivedUsr1;
 }
 
-char *_SysErrorMsg (n)
-    int n;
+char *_SysErrorMsg (int n)
 {
     char *s = strerror(n);
     return (s ? s : "unknown error");
 }
 
-StartServerOnce (d)
-struct display	*d;
+static int
+StartServerOnce (struct display *d)
 {
     char	**f;
     char	**argv;
     char	arg[1024];
-    char	**parseArgs ();
     int		pid;
 
     Debug ("StartServer for %s\n", d->name);
@@ -130,8 +130,8 @@ struct display	*d;
     return TRUE;
 }
 
-StartServer (d)
-struct display *d;
+int
+StartServer (struct display *d)
 {
     int	i;
     int	ret = FALSE;
@@ -157,26 +157,22 @@ static int	serverPauseRet;
 
 /* ARGSUSED */
 static SIGVAL
-serverPauseAbort (n)
-    int n;
+serverPauseAbort (int n)
 {
     Longjmp (pauseAbort, 1);
 }
 
 /* ARGSUSED */
 static SIGVAL
-serverPauseUsr1 (n)
-    int n;
+serverPauseUsr1 (int n)
 {
     Debug ("display manager paused til SIGUSR1\n");
     ++receivedUsr1;
     Longjmp (pauseAbort, 1);
 }
 
-static
-serverPause (t, serverPid)
-unsigned    t;
-int	    serverPid;
+static int
+serverPause (unsigned t, int serverPid)
 {
     int		pid;
 
@@ -210,7 +206,7 @@ int	    serverPid;
 #endif /* X_NOT_POSIX */
 #endif /* SYSV */
 	    if (pid == serverPid ||
-		pid == -1 && errno == ECHILD)
+	       (pid == -1 && errno == ECHILD))
 	    {
 		Debug ("Server dead\n");
 		serverPauseRet = 1;
@@ -247,8 +243,7 @@ static Jmp_buf	openAbort;
 
 /* ARGSUSED */
 static SIGVAL
-abortOpen (n)
-    int n;
+abortOpen (int n)
 {
 	Longjmp (openAbort, 1);
 }
@@ -259,10 +254,8 @@ abortOpen (n)
 #include <tiuser.h>
 #endif
 
-static
-GetRemoteAddress (d, fd)
-    struct display  *d;
-    int		    fd;
+static void
+GetRemoteAddress (struct display *d, int fd)
 {
     char    buf[512];
     int	    len = sizeof (buf);
@@ -318,16 +311,14 @@ GetRemoteAddress (d, fd)
 #endif /* XDMCP */
 
 static int
-openErrorHandler (dpy)
-    Display *dpy;
+openErrorHandler (Display *dpy)
 {
     LogError ("IO Error in XOpenDisplay\n");
     exit (OPENFAILED_DISPLAY);
 }
 
 int
-WaitForServer (d)
-    struct display  *d;
+WaitForServer (struct display *d)
 {
     int	    i;
 
@@ -352,7 +343,7 @@ WaitForServer (d)
 #endif
 	    (void) alarm ((unsigned) 0);
 	    (void) Signal (SIGALRM, SIG_DFL);
-	    (void) XSetIOErrorHandler ((int (*)()) 0);
+	    (void) XSetIOErrorHandler ((int (*)(Display *)) 0);
 	    Debug ("After XOpenDisplay(%s)\n", d->name);
 	    if (dpy) {
 #ifdef XDMCP
@@ -380,8 +371,8 @@ WaitForServer (d)
     return 0;
 }
 
-ResetServer (d)
-    struct display  *d;
+void
+ResetServer (struct display *d)
 {
     if (dpy && d->displayType.origin != FromXDMCP)
 	pseudoReset (dpy);
@@ -390,33 +381,31 @@ ResetServer (d)
 static Jmp_buf	pingTime;
 
 static void
-PingLost ()
+PingLost (void)
 {
     Longjmp (pingTime, 1);
 }
 
 /* ARGSUSED */
 static int
-PingLostIOErr (dpy)
-    Display *dpy;
+PingLostIOErr (Display *dpy)
 {
     PingLost();
+    return 0;
 }
 
 /* ARGSUSED */
 static SIGVAL
-PingLostSig (n)
-    int n;
+PingLostSig (int n)
 {
     PingLost();
 }
 
-PingServer (d, alternateDpy)
-    struct display  *d;
-    Display	    *alternateDpy;
+int
+PingServer (struct display *d, Display *alternateDpy)
 {
-    int	    (*oldError)();
-    SIGVAL  (*oldSig)();
+    int	    (*oldError)(Display *);
+    SIGVAL  (*oldSig)(int);
     int	    oldAlarm;
 
     if (!alternateDpy)

@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * xdm - display manager daemon
@@ -31,10 +32,12 @@ from The Open Group.
  */
 
 # include	"dm.h"
+# include	"dm_error.h"
+
 # include	<ctype.h>
 
-DisplayTypeMatch (d1, d2)
-DisplayType	d1, d2;
+static int
+DisplayTypeMatch (DisplayType d1, DisplayType d2)
 {
 	return d1.location == d2.location &&
 	       d1.lifetime == d2.lifetime &&
@@ -42,8 +45,7 @@ DisplayType	d1, d2;
 }
 
 static void
-freeArgs (args)
-    char    **args;
+freeFileArgs (char **args)
 {
     char    **a;
 
@@ -53,8 +55,7 @@ freeArgs (args)
 }
 
 static char **
-splitIntoWords (s)
-    char    *s;
+splitIntoWords (char *s)
 {
     char    **args, **newargs;
     char    *wordStart;
@@ -83,7 +84,7 @@ splitIntoWords (s)
 					 (nargs+2)*sizeof (char *));
 	    if (!newargs)
 	    {
-	    	freeArgs (args);
+	    	freeFileArgs (args);
 	    	return NULL;
 	    }
 	    args = newargs;
@@ -91,7 +92,7 @@ splitIntoWords (s)
 	args[nargs] = malloc (s - wordStart + 1);
 	if (!args[nargs])
 	{
-	    freeArgs (args);
+	    freeFileArgs (args);
 	    return NULL;
 	}
 	strncpy (args[nargs], wordStart, s - wordStart);
@@ -103,8 +104,7 @@ splitIntoWords (s)
 }
 
 static char **
-copyArgs (args)
-    char    **args;
+copyArgs (char **args)
 {
     char    **a, **new, **n;
 
@@ -117,15 +117,14 @@ copyArgs (args)
     n = new;
     a = args;
     /* SUPPRESS 560 */
-    while (*n++ = *a++)
+    while ((*n++ = *a++) != 0)
 	/* SUPPRESS 530 */
 	;
     return new;
 }
 
-freeSomeArgs (args, n)
-    char    **args;
-    int	    n;
+static void
+freeSomeArgs (char **args, int n)
 {
     char    **a;
 
@@ -135,10 +134,8 @@ freeSomeArgs (args, n)
     free ((char *) args);
 }
 
-ParseDisplay (source, acceptableTypes, numAcceptable)
-char		*source;
-DisplayType	*acceptableTypes;
-int		numAcceptable;
+void
+ParseDisplay (char *source, DisplayType *acceptableTypes, int numAcceptable)
 {
     char		**args, **argv, **a;
     char		*name, *class, *type;
@@ -152,14 +149,14 @@ int		numAcceptable;
     if (!args[0])
     {
 	LogError ("Missing display name in servers file\n");
-	freeArgs (args);
+	freeFileArgs (args);
 	return;
     }
     name = args[0];
     if (!args[1])
     {
 	LogError ("Missing display type for %s\n", args[0]);
-	freeArgs (args);
+	freeFileArgs (args);
 	return;
     }
     displayType = parseDisplayType (args[1], &usedDefault);
@@ -211,7 +208,7 @@ int		numAcceptable;
 	    }
 	}
 	Debug ("Found existing display:  %s %s %s", d->name, d->class , type);
-	freeArgs (d->argv);
+	freeFileArgs (d->argv);
     }
     else
     {
@@ -231,15 +228,13 @@ static struct displayMatch {
 	char		*name;
 	DisplayType	type;
 } displayTypes[] = {
-	"local",		{ Local, Permanent, FromFile },
-	"foreign",		{ Foreign, Permanent, FromFile },
-	0,			{ Local, Permanent, FromFile },
+	{ "local",		{ Local, Permanent, FromFile } },
+	{ "foreign",		{ Foreign, Permanent, FromFile } },
+	{ 0,			{ Local, Permanent, FromFile } },
 };
 
 DisplayType
-parseDisplayType (string, usedDefault)
-	char	*string;
-	int	*usedDefault;
+parseDisplayType (char *string, int *usedDefault)
 {
 	struct displayMatch	*d;
 

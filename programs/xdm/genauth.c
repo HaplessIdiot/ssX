@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/genauth.c,v 3.5 1998/08/16 10:25:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/genauth.c,v 3.6 1998/10/04 09:40:55 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -31,7 +31,10 @@ from The Open Group.
 
 # include   <X11/Xauth.h>
 # include   <X11/Xos.h>
+
 # include   "dm.h"
+# include   "dm_auth.h"
+# include   "dm_error.h"
 
 #include <errno.h>
 
@@ -55,9 +58,7 @@ typedef struct auth_ks_struct { auth_cblock _; } auth_wrapper_schedule[16];
 extern void _XdmcpWrapperToOddParity();
 
 static
-longtochars (l, c)
-    long	    l;
-    unsigned char    *c;
+longtochars (long l, unsigned char *c)
 {
     c[0] = (l >> 24) & 0xff;
     c[1] = (l >> 16) & 0xff;
@@ -69,9 +70,7 @@ longtochars (l, c)
 # define FILE_LIMIT	1024	/* no more than this many buffers */
 
 static
-sumFile (name, sum)
-char	*name;
-long	sum[2];
+sumFile (char *name, long sum[2])
 {
     long    buf[1024*2];
     int	    cnt;
@@ -107,7 +106,7 @@ long	sum[2];
 }
 
 static
-InitXdmcpWrapper ()
+InitXdmcpWrapper (void)
 {
     long	    sum[2];
     unsigned char   tmpkey[8];
@@ -132,23 +131,21 @@ InitXdmcpWrapper ()
 static unsigned long int next = 1;
 
 static int
-xdm_rand()
+xdm_rand(void)
 {
     next = next * 1103515245 + 12345;
     return (unsigned int)(next/65536) % 32768;
 }
 
 static void
-xdm_srand(seed)
-    unsigned int seed;
+xdm_srand(unsigned int seed)
 {
     next = seed;
 }
 #endif /* no HASXDMAUTH */
 
-GenerateAuthData (auth, len)
-char	*auth;
-int	len;
+void
+GenerateAuthData (char *auth, int len)
 {
     long	    ldata[2];
 

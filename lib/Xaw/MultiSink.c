@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.8 1998/08/20 13:59:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.9 1998/10/03 08:42:09 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -465,7 +465,8 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
       fheight = ext->max_logical_extent.height;
       fdiff = fheight - abs(ext->max_logical_extent.y);
 
-      if (sink->multi_sink.laststate != XawisOff)
+      if ((sink->multi_sink.cursor_position != position || state == XawisOff)
+	  && !has_selection && sink->multi_sink.laststate != XawisOff)
 	{
 	  wchar_t *ochar;
 

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.3 1998/08/20 13:59:16 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextTr.c,v 3.4 1998/10/03 08:42:28 dawes Exp $ */
 
 /* INTERNATIONALIZATION:
 
@@ -46,7 +46,7 @@ char _XawDefaultTextTranslations[] =
 "c<Key>D:"		"delete-next-character()\n"
 "c<Key>E:"		"end-of-line()\n"
 "c<Key>F:"		"forward-character()\n"
-"c<Key>G:"		"multiply(Reset)\n"
+"c<Key>G:"		"keyboard-reset()\n"
 "c<Key>H:"		"delete-previous-character()\n"
 "c<Key>J:"		"newline-and-indent()\n"
 "c<Key>K:"		"kill-to-end-of-line()\n"
@@ -58,7 +58,11 @@ char _XawDefaultTextTranslations[] =
 "c<Key>R:"		"search(backward)\n"
 "c<Key>S:"		"search(forward)\n"
 "c<Key>T:"		"transpose-characters()\n"
+#ifndef NO_NUMERIC_HACK
+"c<Key>U:"		"multiply(Start)\n"
+#else
 "c<Key>U:"		"multiply(4)\n"
+#endif
 "c<Key>V:"		"next-page()\n"
 "c<Key>W:"		"kill-selection()\n"
 "c<Key>Y:"		"insert-selection(SECONDARY)\n"
@@ -85,6 +89,8 @@ char _XawDefaultTextTranslations[] =
 "s m<Key>BackSpace:"	"backward-kill-word()\n"
 "c<Key>Left:"		"backward-word()\n"
 "c<Key>Right:"		"forward-word()\n"
+"c<Key>Up:"		"backward-paragraph()\n"
+"c<Key>Down:"		"forward-paragraph()\n"
 "<Key>Home:"		"beginning-of-file()\n"
 ":<Key>KP_Home:"	"beginning-of-file()\n"
 "<Key>End:"		"end-of-file()\n"
@@ -101,14 +107,28 @@ char _XawDefaultTextTranslations[] =
 ":<Key>KP_Down:"	"next-line()\n"
 "<Key>Up:"		"previous-line()\n"
 ":<Key>KP_Up:"		"previous-line()\n"
-"<Key>Delete:"		"delete-previous-character()\n"
-":<Key>KP_Delete:"	"delete-previous-character()\n"
+"<Key>Delete:"		"delete()\n"
+":<Key>KP_Delete:"	"delete()\n"
 "<Key>BackSpace:"	"delete-previous-character()\n"
 "<Key>Linefeed:"	"newline-and-indent()\n"
 "<Key>Return:"		"newline()\n"
 ":<Key>KP_Enter:"	"newline()\n"
 "c<Key>backslash:"	"reconnect-im()\n"
 "<Key>Kanji:"		"reconnect-im()\n"
+#ifndef NO_NUMERIC_HACK
+":<Key>0:"		"numeric(0)\n"
+":<Key>1:"		"numeric(1)\n"
+":<Key>2:"		"numeric(2)\n"
+":<Key>3:"		"numeric(3)\n"
+":<Key>4:"		"numeric(4)\n"
+":<Key>5:"		"numeric(5)\n"
+":<Key>6:"		"numeric(6)\n"
+":<Key>7:"		"numeric(7)\n"
+":<Key>8:"		"numeric(8)\n"
+":<Key>9:"		"numeric(9)\n"
+":c<Key>_:"		"undo()\n"
+#endif
+"<Ctrl>Q,<Key>:"	"insert-char()\n"
 "<Key>:"		"insert-char()\n"
 "<Enter>:"		"enter-window()\n"
 "<Leave>:"		"leave-window()\n"

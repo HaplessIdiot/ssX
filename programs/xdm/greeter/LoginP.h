@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/LoginP.h,v 3.1 1995/10/21 12:52:34 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/LoginP.h,v 3.2 1998/10/04 09:41:03 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -38,6 +38,8 @@ from The Open Group.
 #define GET_NAME	0
 #define GET_PASSWD	1
 #define DONE		2
+
+typedef void (*LoginFunc)(LoginWidget, LoginData *, int);
 
 /* New fields for the login widget instance record */
 typedef struct {
@@ -65,7 +67,7 @@ typedef struct {
 	int		failUp;		/* failure message displayed */
 	LoginData	data;		/* name/passwd */
 	char		*sessionArg;	/* argument passed to session */
-	void		(*notify_done)();/* proc to call when done */
+	LoginFunc	notify_done;	/* proc to call when done */
 	int		failTimeout;	/* seconds til drop fail msg */
 	XtIntervalId	interval_id;	/* drop fail message note */
 	Boolean		secure_session;	/* session is secured */

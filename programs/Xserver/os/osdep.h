@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.7 1998/09/06 04:47:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.8 1998/10/04 09:39:45 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -43,6 +43,9 @@ SOFTWARE.
 ******************************************************************/
 /* $TOG: osdep.h /main/43 1998/02/09 15:12:43 kaleb $ */
 
+#ifndef _OSDEP_H_
+#define _OSDEP_H_ 1
+
 #ifdef AMOEBA
 #include <stddef.h>
 #define port am_port_t
@@ -66,7 +69,7 @@ SOFTWARE.
 #define MAXBUFSIZE (1 << 22)
 #endif
 
-#include <X11/Xmd.h>
+#include <X11/Xdmcp.h>
 
 #ifndef sgi	    /* SGI defines OPEN_MAX in a useless way */
 #ifndef X_NOT_POSIX
@@ -141,6 +144,10 @@ extern int              maxClient;              /* Highest client# */
 extern int              nNewConns;              /* # of new clients */
 #endif /* AMOEBA */
 
+typedef Bool (*ValidatorFunc)(ARRAY8Ptr Auth, ARRAY8Ptr Data, int packet_type);
+typedef Bool (*GeneratorFunc)(ARRAY8Ptr Auth, ARRAY8Ptr Data, int packet_type);
+typedef Bool (*AddAuthorFunc)(unsigned name_length, char *name, unsigned data_length, char *data);
+
 typedef struct _connectionInput {
     struct _connectionInput *next;
     char *buffer;               /* contains current client input */
@@ -174,6 +181,33 @@ typedef struct _k5_state {
 typedef struct _LbxProxy *OsProxyPtr;
 #endif
 
+struct _osComm;
+
+#define AuthAddCArgs unsigned short data_length, char *data, XID id
+typedef int (*AuthAddCFunc) (AuthAddCArgs);
+
+#define AuthCheckArgs unsigned short data_length, char *data, ClientPtr client, char **reason
+typedef XID (*AuthCheckFunc) (AuthCheckArgs);
+
+#define AuthFromIDArgs XID id, unsigned short *data_lenp, char **datap
+typedef int (*AuthFromIDFunc) (AuthFromIDArgs);
+
+#define AuthGenCArgs unsigned data_length, char *data, XID id, unsigned *data_length_return, char **data_return
+typedef XID (*AuthGenCFunc) (AuthGenCArgs);
+
+#define AuthRemCArgs unsigned short data_length, char *data
+typedef int (*AuthRemCFunc) (AuthRemCArgs);
+
+#define AuthRstCArgs void
+typedef int (*AuthRstCFunc) (AuthRstCArgs);
+
+#define AuthToIDArgs unsigned short data_length, char *data
+typedef XID (*AuthToIDFunc) (AuthToIDArgs);
+
+typedef void (*OsCloseFunc)(ClientPtr);
+
+typedef int (*OsFlushFunc)(ClientPtr who, struct _osComm * oc, char* extraBuf, int extraCount);
+
 typedef struct _osComm {
     int fd;
     ConnectionInputPtr input;
@@ -187,8 +221,8 @@ typedef struct _osComm {
 #ifdef LBX
     OsProxyPtr proxy;
     ConnectionInputPtr largereq;
-    void (*Close) ();
-    int  (*Flush) ();
+    OsCloseFunc Close;
+    OsFlushFunc Flush;
 #endif
 } OsCommRec, *OsCommPtr;
 
@@ -247,3 +281,79 @@ extern WorkQueuePtr workQueue;
 #define ffs mffs
 extern int mffs(fd_mask);
 
+/* in auth.c */
+extern void GenerateRandomData (int len, char *buf);
+
+/* in mitauth.c */
+extern XID  MitCheckCookie    (AuthCheckArgs);
+extern XID  MitGenerateCookie (AuthGenCArgs);
+extern XID  MitToID           (AuthToIDArgs);
+extern int  MitAddCookie      (AuthAddCArgs);
+extern int  MitFromID         (AuthFromIDArgs);
+extern int  MitRemoveCookie   (AuthRemCArgs);
+extern int  MitResetCookie    (AuthRstCArgs);
+
+/* in xdmauth.c */
+#ifdef HASXDMAUTH
+extern XID  XdmCheckCookie    (AuthCheckArgs);
+extern XID  XdmToID           (AuthToIDArgs);
+extern int  XdmAddCookie      (AuthAddCArgs);
+extern int  XdmFromID         (AuthFromIDArgs);
+extern int  XdmRemoveCookie   (AuthRemCArgs);
+extern int  XdmResetCookie    (AuthRstCArgs);
+#endif
+
+/* in rpcauth.c */
+#ifdef SECURE_RPC
+extern XID  SecureRPCCheck    (AuthCheckArgs);
+extern XID  SecureRPCToID     (AuthToIDArgs);
+extern int  SecureRPCAdd      (AuthAddCArgs);
+extern int  SecureRPCFromID   (AuthFromIDArgs);
+extern int  SecureRPCRemove   (AuthRemCArgs);
+extern int  SecureRPCReset    (AuthRstCArgs);
+#endif
+
+/* in k5auth.c */
+#ifdef K5AUTH
+extern XID  K5Check           (AuthCheckArgs);
+extern XID  K5ToID            (AuthToIDArgs);
+extern int  K5Add             (AuthAddCArgs);
+extern int  K5FromID          (AuthFromIDArgs);
+extern int  K5Remove          (AuthRemCArgs);
+extern int  K5Reset           (AuthRstCArgs);
+#endif
+
+/* in secauth.c */
+extern XID AuthSecurityCheck (AuthCheckArgs);
+
+/* in xdmcp.c */
+extern void XdmcpUseMsg (void);
+extern int XdmcpOptions(int argc, char **argv, int i);
+extern void XdmcpSetAuthentication (ARRAY8Ptr name);
+extern void XdmcpRegisterConnection (
+    int	    type,
+    char    *address,
+    int	    addrlen);
+extern void XdmcpRegisterAuthorizations (void);
+extern void XdmcpRegisterAuthorization (char *name, int namelen);
+extern void XdmcpRegisterDisplayClass (char *name, int length);
+extern void XdmcpInit (void);
+extern void XdmcpReset (void);
+extern void XdmcpOpenDisplay(int sock);
+extern void XdmcpCloseDisplay(int sock);
+extern void XdmcpRegisterAuthentication (
+    char    *name,
+    int	    namelen,
+    char    *data,
+    int	    datalen,
+    ValidatorFunc Validator,
+    GeneratorFunc Generator,
+    AddAuthorFunc AddAuth);
+extern int XdmcpCheckAuthentication (ARRAY8Ptr Name, ARRAY8Ptr Data, int packet_type);
+extern int XdmcpAddAuthorization (ARRAY8Ptr name, ARRAY8Ptr data);
+
+#if 0
+extern void XdmcpRegisterBroadcastAddress (struct sockaddr_in *addr);
+#endif
+
+#endif /* _OSDEP_H_ */

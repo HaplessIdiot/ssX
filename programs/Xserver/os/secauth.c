@@ -35,11 +35,11 @@ static char InvalidPolicyReason[] = "invalid policy specification";
 static char PolicyViolationReason[] = "policy violation";
 
 static Bool
-AuthCheckSitePolicy(data_lengthP, dataP, client, reason)
-    unsigned short *data_lengthP;
-    char	**dataP;
-    ClientPtr	client;
-    char	**reason;
+AuthCheckSitePolicy(
+    unsigned short *data_lengthP,
+    char	**dataP,
+    ClientPtr	client,
+    char	**reason)
 {
     char	*policy = *dataP;
     int		length;
@@ -106,15 +106,13 @@ AuthCheckSitePolicy(data_lengthP, dataP, client, reason)
 }
 
 XID
-AuthSecurityCheck (data_length, data, client, reason)
-    unsigned short	data_length;
-    char	*data;
-    ClientPtr client;
-    char	**reason;
+AuthSecurityCheck (
+    unsigned short	data_length,
+    char		*data,
+    ClientPtr		client,
+    char		**reason)
 {
 #ifdef XCSECURITY
-    OsCommPtr oc = (OsCommPtr)client->osPrivate;
-    register ConnectionInputPtr oci = oc->input;
     xConnSetupPrefix csp;
     xReq freq;
 
