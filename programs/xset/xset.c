@@ -27,7 +27,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.25 2001/12/14 20:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.26 2002/05/31 18:46:14 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
@@ -1467,6 +1467,7 @@ usage(char *fmt, ...)
     fprintf (stderr, "\t      force standby \n");
     fprintf (stderr, "\t      force suspend \n");
     fprintf (stderr, "\t      force off \n");
+    fprintf (stderr, "\t      force on \n");
     fprintf (stderr, "\t      (also implicitly enables DPMS features) \n");
     fprintf (stderr, "\t      a timeout value of zero disables the mode \n");
 #endif
