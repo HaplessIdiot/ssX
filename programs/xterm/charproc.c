@@ -2,7 +2,7 @@
  * $Xorg: charproc.c,v 1.6 2001/02/09 02:06:02 xorgcvs Exp $
  */
 
-/* $XFree86: xc/programs/xterm/charproc.c,v 3.147 2003/10/13 00:58:21 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/charproc.c,v 3.148 2003/10/20 00:58:54 dickey Exp $ */
 
 /*
 
@@ -340,6 +340,9 @@ static XtActionsRec actionsList[] = {
 #if OPT_HP_FUNC_KEYS
     { "set-hp-function-keys",	HandleHpFunctionKeys },
 #endif
+#if OPT_LOAD_VTFONTS
+    { "load-vt-fonts",		HandleLoadVTFonts },
+#endif
 #if OPT_MAXIMIZE
     { "deiconify",		HandleDeIconify },
     { "iconify",		HandleIconify },
@@ -395,11 +398,7 @@ static XtResource resources[] =
     Bres(XtNcutNewline, XtCCutNewline, screen.cutNewline, TRUE),
     Bres(XtNcutToBeginningOfLine, XtCCutToBeginningOfLine,
 	 screen.cutToBeginningOfLine, TRUE),
-#ifdef SCO
-    Bres(XtNdeleteIsDEL, XtCDeleteIsDEL, screen.delete_is_del, TRUE),
-#else
-    Bres(XtNdeleteIsDEL, XtCDeleteIsDEL, screen.delete_is_del, 2),
-#endif
+    Bres(XtNdeleteIsDEL, XtCDeleteIsDEL, screen.delete_is_del, DEFDELETE_DEL),
     Bres(XtNdynamicColors, XtCDynamicColors, misc.dynamicColors, TRUE),
     Bres(XtNeightBitControl, XtCEightBitControl, screen.control_eight_bits, FALSE),
     Bres(XtNeightBitInput, XtCEightBitInput, screen.input_eight_bits, TRUE),
@@ -444,17 +443,17 @@ static XtResource resources[] =
     Ires(XtNvisualBellDelay, XtCVisualBellDelay, screen.visualBellDelay, 100),
     Ires(XtNsaveLines, XtCSaveLines, screen.savelines, SAVELINES),
     Ires(XtNscrollLines, XtCScrollLines, screen.scrolllines, SCROLLLINES),
-    Sres("font1", "Font1", screen.menu_font_names[fontMenu_font1], NULL),
-    Sres("font2", "Font2", screen.menu_font_names[fontMenu_font2], NULL),
-    Sres("font3", "Font3", screen.menu_font_names[fontMenu_font3], NULL),
-    Sres("font4", "Font4", screen.menu_font_names[fontMenu_font4], NULL),
-    Sres("font5", "Font5", screen.menu_font_names[fontMenu_font5], NULL),
-    Sres("font6", "Font6", screen.menu_font_names[fontMenu_font6], NULL),
+    Sres(XtNfont1, XtCFont1, screen.menu_font_names[fontMenu_font1], NULL),
+    Sres(XtNfont2, XtCFont2, screen.menu_font_names[fontMenu_font2], NULL),
+    Sres(XtNfont3, XtCFont3, screen.menu_font_names[fontMenu_font3], NULL),
+    Sres(XtNfont4, XtCFont4, screen.menu_font_names[fontMenu_font4], NULL),
+    Sres(XtNfont5, XtCFont5, screen.menu_font_names[fontMenu_font5], NULL),
+    Sres(XtNfont6, XtCFont6, screen.menu_font_names[fontMenu_font6], NULL),
     Sres(XtNanswerbackString, XtCAnswerbackString, screen.answer_back, ""),
-    Sres(XtNboldFont, XtCBoldFont, misc.f_b, DEFBOLDFONT),
+    Sres(XtNboldFont, XtCBoldFont, misc.default_font.f_b, DEFBOLDFONT),
     Sres(XtNcharClass, XtCCharClass, screen.charClass, NULL),
     Sres(XtNdecTerminalID, XtCDecTerminalID, screen.term_id, DFT_DECID),
-    Sres(XtNfont, XtCFont, misc.f_n, DEFFONT),
+    Sres(XtNfont, XtCFont, misc.default_font.f_n, DEFFONT),
     Sres(XtNgeometry, XtCGeometry, misc.geo_metry, NULL),
     Sres(XtNkeyboardDialect, XtCKeyboardDialect, screen.keyboard_dialect, DFT_KBD_DIALECT),
     Sres(XtNprinterCommand, XtCPrinterCommand, screen.printer_command, OS_DEPENDENT_PRINT_COMMAND),
@@ -599,8 +598,8 @@ static XtResource resources[] =
     Bres(XtNwideChars, XtCWideChars, screen.wide_chars, FALSE),
     Bres(XtNcjkWidth, XtCCjkWidth, misc.cjk_width, FALSE),
     Bres(XtNvt100Graphics, XtCVT100Graphics, screen.vt100_graphics, TRUE),
-    Sres(XtNwideBoldFont, XtCWideBoldFont, misc.f_wb, DEFWIDEBOLDFONT),
-    Sres(XtNwideFont, XtCWideFont, misc.f_w, DEFWIDEFONT),
+    Sres(XtNwideBoldFont, XtCWideBoldFont, misc.default_font.f_wb, DEFWIDEBOLDFONT),
+    Sres(XtNwideFont, XtCWideFont, misc.default_font.f_w, DEFWIDEFONT),
 #endif
 
 #if OPT_LUIT_PROG
@@ -712,6 +711,9 @@ WidgetClass xtermWidgetClass = (WidgetClass) & xtermClassRec;
 void
 xtermAddInput(Widget w)
 {
+#if OPT_TOOLBAR
+    XtAppAddActions(app_con, actionsList, XtNumber(actionsList));
+#endif
     XtAugmentTranslations(w, XtParseTranslationTable(defaultTranslations));
 }
 
@@ -4626,6 +4628,8 @@ VTInitialize(Widget wrequest,
 #endif
     char *s;
 
+    TRACE(("VTInitialize\n"));
+
     /* Zero out the entire "screen" component of "wnew" widget, then do
      * field-by-field assignment of "screen" fields that are named in the
      * resource list.
@@ -4921,6 +4925,7 @@ VTInitialize(Widget wrequest,
     if (request->screen.utf8_mode) {
 	wnew->screen.wide_chars = True;
 	wnew->screen.utf8_mode = 2;	/* disable further change */
+	xtermLoadVTFonts(wnew, "utf8Fonts", "Utf8Fonts");
     } else {
 	wnew->screen.utf8_mode = 0;
     }
@@ -4928,7 +4933,7 @@ VTInitialize(Widget wrequest,
 
     if (wnew->screen.wide_chars != False)
 	wnew->num_ptrs = (OFF_COM2H + 1);
-#endif
+#endif /* OPT_WIDE_CHARS */
 
     init_Bres(screen.bold_mode);
     init_Bres(screen.underline);
@@ -5047,9 +5052,11 @@ VTRealize(Widget w,
     XSizeHints sizehints;
     int scrollbar_width;
 
+    TRACE(("VTRealize\n"));
+
     TabReset(term->tabs);
 
-    screen->menu_font_names[fontMenu_fontdefault] = term->misc.f_n;
+    screen->menu_font_names[fontMenu_fontdefault] = term->misc.default_font.f_n;
     screen->fnt_norm = NULL;
     screen->fnt_bold = NULL;
 #if OPT_WIDE_CHARS
@@ -5057,17 +5064,14 @@ VTRealize(Widget w,
     screen->fnt_dwdb = NULL;
 #endif
     if (!xtermLoadFont(screen,
-		       VT_FONTSET(term->misc.f_n,
-				  term->misc.f_b,
-				  term->misc.f_w,
-				  term->misc.f_wb),
+		       &(term->misc.default_font),
 		       False, 0)) {
-	if (XmuCompareISOLatin1(term->misc.f_n, "fixed") != 0) {
+	if (XmuCompareISOLatin1(term->misc.default_font.f_n, "fixed") != 0) {
 	    fprintf(stderr,
 		    "%s:  unable to open font \"%s\", trying \"fixed\"....\n",
-		    xterm_name, term->misc.f_n);
+		    xterm_name, term->misc.default_font.f_n);
 	    (void) xtermLoadFont(screen,
-				 VT_FONTSET("fixed", NULL, NULL, NULL),
+				 xtermFontName("fixed"),
 				 False, 0);
 	    screen->menu_font_names[fontMenu_fontdefault] = "fixed";
 	}
@@ -5556,20 +5560,17 @@ VTSetValues(Widget cur,
 	|| curvt->screen.foreground != newvt->screen.foreground
 	|| curvt->screen.menu_font_names[curvt->screen.menu_font_number]
 	!= newvt->screen.menu_font_names[newvt->screen.menu_font_number]
-	|| curvt->misc.f_n != newvt->misc.f_n) {
-	if (curvt->misc.f_n != newvt->misc.f_n)
-	    newvt->screen.menu_font_names[fontMenu_fontdefault] = newvt->misc.f_n;
+	|| curvt->misc.default_font.f_n != newvt->misc.default_font.f_n) {
+	if (curvt->misc.default_font.f_n != newvt->misc.default_font.f_n)
+	    newvt->screen.menu_font_names[fontMenu_fontdefault] = newvt->misc.default_font.f_n;
 	if (xtermLoadFont(&newvt->screen,
-			  VT_FONTSET(newvt->screen.menu_font_names[curvt->screen.menu_font_number],
-				     newvt->screen.menu_font_names[curvt->screen.menu_font_number],
-				     NULL,
-				     NULL),
+			  xtermFontName(newvt->screen.menu_font_names[curvt->screen.menu_font_number]),
 			  TRUE, newvt->screen.menu_font_number)) {
 	    /* resizing does the redisplay, so don't ask for it here */
 	    refresh_needed = TRUE;
 	    fonts_redone = TRUE;
-	} else if (curvt->misc.f_n != newvt->misc.f_n)
-	    newvt->screen.menu_font_names[fontMenu_fontdefault] = curvt->misc.f_n;
+	} else if (curvt->misc.default_font.f_n != newvt->misc.default_font.f_n)
+	    newvt->screen.menu_font_names[fontMenu_fontdefault] = curvt->misc.default_font.f_n;
     }
     if (!fonts_redone
 	&& curvt->screen.cursorcolor != newvt->screen.cursorcolor) {
@@ -6304,10 +6305,7 @@ DoSetSelectedFont(Widget w GCC_UNUSED,
 	if (len > 1000 || strchr(val, '\n'))
 	    return;
 	if (!xtermLoadFont(&term->screen,
-			   VT_FONTSET(val,
-				      NULL,
-				      NULL,
-				      NULL),
+			   xtermFontName(val),
 			   True,
 			   fontMenu_fontsel))
 	    Bell(XkbBI_MinorError, 0);

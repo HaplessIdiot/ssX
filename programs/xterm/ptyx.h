@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.108 2003/10/13 00:58:22 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.109 2003/10/20 00:58:54 dickey Exp $ */
 
 /*
  * Copyright 1999-2002,2003 by Thomas E. Dickey
@@ -521,6 +521,10 @@ typedef struct {
 #define OPT_HIGHLIGHT_COLOR 1 /* true if xterm supports color highlighting */
 #endif
 
+#ifndef OPT_LOAD_VTFONTS
+#define OPT_LOAD_VTFONTS 0 /* true if xterm has load-vt-fonts() action */
+#endif
+
 #ifndef OPT_LUIT_PROG
 #define OPT_LUIT_PROG   0 /* true if xterm supports luit */
 #endif
@@ -558,11 +562,7 @@ typedef struct {
 #endif
 
 #ifndef OPT_SCO_FUNC_KEYS
-#ifdef SCO
-#define OPT_SCO_FUNC_KEYS 1 /* true if xterm supports SCO-style function keys */
-#else
 #define OPT_SCO_FUNC_KEYS 0 /* true if xterm supports SCO-style function keys */
-#endif
 #endif
 
 #ifndef OPT_SESSION_MGT
@@ -1431,14 +1431,20 @@ typedef struct
     int modify_cursor_keys;	/* how to handle modifiers */
 } TKeyboard;
 
+typedef struct {
+    char *f_n;			/* the normal font */
+    char *f_b;			/* the bold font */
+#if OPT_WIDE_CHARS
+    char *f_w;			/* the normal wide font */
+    char *f_wb;			/* the bold wide font */
+#endif
+} VTFontNames;
+
 typedef struct _Misc {
+    VTFontNames default_font;
     char *geo_metry;
     char *T_geometry;
-    char *f_n;
-    char *f_b;
 #if OPT_WIDE_CHARS
-    char *f_w;
-    char *f_wb;
     Boolean	cjk_width;	/* true when CJK width convention is turned on */
 #endif
 #if OPT_LUIT_PROG
@@ -1448,7 +1454,7 @@ typedef struct _Misc {
     char *localefilter;		/* path for luit */
 #endif
 #if OPT_INPUT_METHOD
-    char *f_x;
+    char *f_x;			/* font for XIM */
 #endif
     int limit_resize;
 #ifdef ALLOWLOGGING
@@ -1456,7 +1462,7 @@ typedef struct _Misc {
 #endif
     Boolean login_shell;
     Boolean re_verse;
-    Boolean re_verse0;	/* initial value of "-rv" */
+    Boolean re_verse0;		/* initial value of "-rv" */
     XtGravity resizeGravity;
     Boolean reverseWrap;
     Boolean autoWrap;
@@ -1464,7 +1470,7 @@ typedef struct _Misc {
     Boolean signalInhibit;
 #if OPT_TEK4014
     Boolean tekInhibit;
-    Boolean tekSmall;	/* start tek window in small size */
+    Boolean tekSmall;		/* start tek window in small size */
 #endif
     Boolean scrollbar;
 #ifdef SCROLLBAR_RIGHT

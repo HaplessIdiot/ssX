@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.99 2003/10/13 00:58:23 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.100 2003/10/20 00:58:55 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,7 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_dev">Development - 2003/10/19 - XFree86 4.3.99.15</A>
+<LI><A HREF="#xterm_181">Patch #181 - 2003/10/26 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
 <LI><A HREF="#xterm_178">Patch #178 - 2003/5/18 - XFree86 4.3.99.5</A>
@@ -227,8 +227,39 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_dev">Development - 2003/10/19 - XFree86 4.3.99.15</A></H1>
+<H1><A NAME="xterm_181">Patch #181 - 2003/10/26 - XFree86 4.3.99.15</A></H1>
 <ul>
+	<li>implement <code>boldMode</code> for wide-character logic in
+	    <code>drawXtermText()</code> (report by Michael Schroeder).
+
+	<li>modify <code>UXTerm.ad</code> resource file to include
+	    "XTerm-color" rather than "XTerm", in case the latter file contains
+	    no color resource definitions, e.g., after <a
+	    href="#xterm_180">patch #180</a>.
+
+	<li>add action <code>load-vt-fonts()</code> and configure option
+	    <code>--enable-load-vt-fonts</code> which allows users to define
+	    additional sets of VT-fonts which can be loaded at runtime.
+
+	<li>add logic to wide-character support which attempts to load fonts
+	    specified by <code>utf8Fonts</code> subresources at startup.  The
+	    subresources have the same names as the fonts which they replace,
+	    e.g., <code>font</code>, <code>font1</code>, etc., so that the
+	    ISO-10646-1 fonts can be specified in the <code>XTerm</code>
+	    app-defaults file (this is an adaptation of a patch by Tomohiro
+	    KUBOTA).
+
+	<li>improve Set Font escape string handling by making the relative
+	    settings apply to the size of the font, as in shift keypad
+	    plus/minus rather than the menu index.
+
+	<li>simplify parameter passing for the <code>set-vt-font</code> action
+	    and related code.
+
+	<li>cleanup some include-ordering, moving some recently-added hardcoded
+	    stuff into xterm.h where it will not interfere with the configure
+	    script.
+
 	<li>modify <code>xtermAddInput()</code> (see note on augmentation in <a
 	    href="#xterm_158">patch #158</a>) to use the complete set of
 	    default keyboard translations so that one can use shifted pageup,
