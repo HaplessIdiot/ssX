@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.10 1999/06/27 16:17:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.12 2000/01/27 01:05:12 alanh Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -72,7 +72,7 @@ DriverRec FBDEV = {
 #endif
 	FBDevIdentify,
 	FBDevProbe,
-	FBAvailableOptions,
+	FBDevAvailableOptions,
 	NULL,
 	0
 };
@@ -223,8 +223,8 @@ FBDevFreeRec(ScrnInfoPtr pScrn)
 
 /* -------------------------------------------------------------------- */
 
-static
-OptionInfoPtr(int chipid)
+static OptionInfoPtr
+FBDevAvailableOptions(int chipid)
 {
 	return FBDevOptions;
 }
