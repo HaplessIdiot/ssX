@@ -20,7 +20,7 @@
  *   of the high-level interface.  See also 'freetype.h'.
  *
  ******************************************************************/
-/* $XFree86: xc/extras/FreeType/lib/tttypes.h,v 1.2 1998/09/06 04:29:54 dawes Exp $ */
+/* $XFree86: xc/extras/FreeType/lib/tttypes.h,v 1.3 1998/09/06 07:31:56 dawes Exp $ */
 
 #ifndef TTTYPES_H
 #define TTTYPES_H
@@ -46,9 +46,7 @@
   typedef unsigned long   ULong;
   typedef signed   long   Long;
 
-/* Xserver-specific change */
-
-  typedef INT32           Fixed;    /* signed fixed 16.16 float */
+  typedef TT_Int32        Fixed;
 
   typedef int             Int;
 

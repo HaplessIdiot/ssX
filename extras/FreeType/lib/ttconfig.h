@@ -1,6 +1,6 @@
 /* This is an Xserver-specific version */
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/ttconfig.h,v 1.2 1998/09/06 04:29:54 dawes Exp $ */
 
 /*******************************************************************
  *
@@ -149,6 +149,7 @@ typedef CARD32          TT_Word32;
 /* This is only used by the "ttdebug" component, which should be     */
 /* linked to the engine only in debug mode.                          */
 
+#ifdef DEBUG
 #ifndef HAVE_PRINT_FUNCTION
 #define Print( format, ap )  vfprintf( stderr, (format), (ap) )
 #endif
@@ -160,6 +161,7 @@ typedef CARD32          TT_Word32;
 #define FT_BYTE_ORDER  FT_BIG_ENDIAN
 #else
 #define FT_BYTE_ORDER  FT_LITTLE_ENDIAN
+#endif
 #endif
 
 
@@ -187,12 +189,12 @@ typedef CARD32          TT_Word32;
 /*  renaming macros hack unnecessary. Moreover, the stripped        */
 /*  single object file (freetype.o) is 52 Kb, instead of the        */
 /*  previous 57 Kb (size of all combined .o files), and gives       */
-/*  a beter idea of the engine's real code size.                    */
+/*  a better idea of the engine's real code size.                   */
 /*                                                                  */
 /*  It is called a "MAKE_OPTION" because the macro must be          */
 /*  defined in the Makefile, rather than this one. It allows        */
 /*  any developer to quickly switch from one mode to the other      */
-/*  without mesing with "ttconfig.h" each time.                     */
+/*  without messing with "ttconfig.h" each time.                    */
 /*                                                                  */
 #ifndef TT_MAKE_OPTION_SINGLE_OBJECT
 #define LOCAL_FUNC  /* void */

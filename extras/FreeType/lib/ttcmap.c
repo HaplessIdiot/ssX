@@ -15,7 +15,7 @@
  *
  ******************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/extras/FreeType/lib/ttcmap.c,v 1.2 1998/09/06 05:05:29 dawes Exp $ */
 
 #include "ttobjs.h"
 #include "ttdebug.h"
@@ -105,7 +105,8 @@
 
       /* load subheaders */
 
-      l = cmap->length - sizeof ( UShort ) * (256 + 3) - num_SH * 8;
+      cmap2->numGlyphId = l =
+        ( ( cmap->length - 2L * (256 + 3) - num_SH * 8L ) & 0xffff) / 2;
 
       if ( ALLOC_ARRAY( cmap2->subHeaders,
                         num_SH + 1,
@@ -129,8 +130,6 @@
       FORGET_Frame();
 
       /* load glyph ids */
-
-      l /= 2;
 
       if ( ALLOC_ARRAY( cmap2->glyphIdArray, l, UShort ) ||
            ACCESS_Frame( l * 2L ) )
@@ -178,22 +177,23 @@
         segments[i].startCount    = GET_UShort();
 
       for ( i = 0; i < num_Seg; i++ )
-        segments[i].idDelta       = GET_UShort();
+        segments[i].idDelta       = GET_Short();
 
       for ( i = 0; i < num_Seg; i++ )
         segments[i].idRangeOffset = GET_UShort();
 
       FORGET_Frame();
 
-      l = ( cmap->length - ( 16L + 8L * num_Seg ) ) & 0xffff;
+      cmap4->numGlyphId = l =
+        ( ( cmap->length - ( 16L + 8L * num_Seg ) ) & 0xffff ) / 2;
 
       /* load ids */
 
-      if ( ALLOC( cmap4->glyphIdArray, l ) ||
-           ACCESS_Frame( l ) )
+      if ( ALLOC_ARRAY( cmap4->glyphIdArray, l , UShort ) ||
+           ACCESS_Frame( l * 2L ) )
         goto Fail;
 
-      for ( i = 0; i < l / 2; i++ )
+      for ( i = 0; i < l; i++ )
         cmap4->glyphIdArray[i] = GET_UShort();
 
       FORGET_Frame();
@@ -370,7 +370,7 @@
   static UShort  code_to_index2( UShort  charCode,
                                  PCMap2  cmap2 )
   {
-    UShort           index1, idx;
+    UShort           index1, idx, offset;
     TCMap2SubHeader  sh2;
 
 
@@ -397,9 +397,11 @@
       if ( (charCode & 0xFF) >= (sh2.firstCode + sh2.entryCount) )
         return 0;
 
-      idx = cmap2->glyphIdArray[sh2.idRangeOffset / 2 +
-                                   (charCode & 0xFF) -
-                                   sh2.firstCode];
+      offset = sh2.idRangeOffset / 2 + (charCode & 0xFF) - sh2.firstCode;
+      if ( offset < cmap2->numGlyphId )
+        idx = cmap2->glyphIdArray[offset];
+      else
+        return 0;
 
       if ( idx )
         return (idx + sh2.idDelta) & 0xFFFF;
@@ -458,10 +460,15 @@
       index1 = seg4.idRangeOffset / 2 + (charCode - seg4.startCount) -
                (segCount - i);
 
-      if ( cmap4->glyphIdArray[index1] == 0 )
-        return 0;
+      if ( index1 < cmap4->numGlyphId )
+      {
+        if ( cmap4->glyphIdArray[index1] == 0 )
+          return 0;
+        else
+          return ( cmap4->glyphIdArray[index1] + seg4.idDelta ) & 0xFFFF;
+      }
       else
-        return ( cmap4->glyphIdArray[index1] + seg4.idDelta ) & 0xFFFF;
+        return 0;
     }
   }
 
