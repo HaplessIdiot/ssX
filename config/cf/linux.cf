@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.128 2000/06/24 04:38:11 mvojkovi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.129 2000/06/24 17:43:44 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -239,11 +239,6 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define SourceDefines		LinuxSourceDefines
 
 #define BuildLibPathVar		LD_LIBRARY_PATH
-#define HasGcc			YES
-#define HasGcc2			YES
-#ifndef HasGcc2ForCplusplus
-# define HasGcc2ForCplusplus	YES
-#endif
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES

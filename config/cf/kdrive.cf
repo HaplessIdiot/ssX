@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.2 1999/12/30 03:56:16 robin Exp $
+XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.3 2000/03/31 22:55:14 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -173,13 +173,13 @@ XF86COMSRC=.
 #define OtherIConfigFile $(IRULESRC)/kdrive.cf
 #endif
 
-#if HasGcc2 && defined(i386Architecture)
+#if defined(HasGcc2) && defined(i386Architecture)
 #ifndef DefaultGcc2i386Opt
 #define DefaultGcc2i386Opt -O2 -fno-strength-reduce
 #endif
 #endif
 
-#if HasGcc2 && defined(AlphaArchitecture)
+#if defined(HasGcc2) && defined(AlphaArchitecture)
 #ifndef DefaultGcc2AxpOpt
 #define DefaultGcc2AxpOpt -O2
 #endif

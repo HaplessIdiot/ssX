@@ -2,7 +2,7 @@ XCOMM $TOG: os2.cf /main/2 1997/08/05 08:51:25 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.28 1999/04/29 09:13:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.29 2000/04/05 18:13:08 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -127,10 +127,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.28 1999/04/29 09:13:20 dawes 
 /*
  * Compiler Features
  */
-#define HasGcc			YES
-#define HasGcc2			YES
 #define HasCplusplus		YES
-#define HasGcc2ForCplusplus	YES
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/QNX4.cf,v 1.1 1999/12/27 00:45:43 robin Exp $
+XCOMM platform:  $XFree86: xc/config/cf/QNX4.cf,v 1.2 2000/01/21 02:29:34 dawes Exp $
 
 #define StripInstalledPrograms	NO
 #define BuildServer 		YES
@@ -30,8 +30,6 @@ XCOMM in the generated Makefile
 #define OSDefines		-DQNX4 -DQNX -D__QNX__ -DNO_REGEX -DSTRINGS_ALIGNED -D__i386__
 
 #define SourceDefines		-D_POSIX_SOURCE
-#define HasGcc			NO
-#define HasGcc2			NO
 #define DoRanlibCmd 		NO
 #undef ArCmd
 #define ArCmd			wlib -b -c -p=256

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.5 2000/02/29 03:08:56 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.6 2000/02/29 15:24:13 tsi Exp $
 
 #ifndef OSName
 #define OSName			GNU
@@ -17,8 +17,6 @@ XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.5 2000/02/29 03:08:56 dawes E
 #endif
 XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
-#define HasGcc 			YES
-#define HasGcc2			YES
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
@@ -50,7 +48,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #define GccGasOption 		-DGCCUSESGAS
 #define DefaultGcc2i386Opt 	-O2
-#if HasGcc2 && defined(i386Architecture)
+#if defined(HasGcc2) && defined(i386Architecture)
 #define OptimizedCDebugFlags	DefaultGcc2i386Opt
 #else
 #define OptimizedCDebugFlags	

@@ -1,4 +1,4 @@
-/* $XFree86: xc/config/cf/nto.cf,v 1.1.2.3 1999/11/18 15:37:13 hohndel Exp $ */
+/* $XFree86: xc/config/cf/nto.cf,v 1.2 1999/12/27 00:45:43 robin Exp $ */
 /* Get X to build using the gcc toolchain, from QNX4 */
 /* Let us try to separate the x86 stuff out of here as well... */ 
 
@@ -32,8 +32,6 @@
 
 #define SourceDefines		-D_POSIX_SOURCE
 #define CrossCompiling		YES
-#define HasGcc			YES
-#define HasGcc2			YES
 #define DoRanlibCmd 		YES
 #define GccUsesGas		YES
 #define MkdirHierCmd		mkdir -p

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.36 2000/06/17 00:27:29 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.37 2000/06/20 20:07:56 dawes Exp $
 
 
 #ifndef OSName
@@ -18,15 +18,13 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.36 2000/06/17 00:27:29 dawes
 #endif
 XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
-
-#define HasGcc			YES
+#ifndef HasGcc2
+#define HasGcc2			NO
+#endif
 #if  OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 2)
-# define HasGcc2		YES
 # ifndef HasGcc2ForCplusplus
 #  define HasGcc2ForCplusplus	YES
 # endif
-#else
-# define HasGcc2		NO
 #endif
 #ifndef HasGcc2ForCplusplus
 # define HasGcc2ForCplusplus	YES

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.3 1999/07/06 11:38:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.4 2000/02/18 12:19:23 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atichip.h"
 #include "atiio.h"
 

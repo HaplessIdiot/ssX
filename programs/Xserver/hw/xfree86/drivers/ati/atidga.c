@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.1 2000/06/19 15:02:24 tsi Exp $ */
 /*
  * Copyright 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,8 +24,10 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atiadjust.h"
+#include "atichip.h"
 #include "atidac.h"
 #include "atidga.h"
+#include "atiident.h"
 #include "dgaproc.h"
 
 /*
@@ -233,10 +235,14 @@ ATIDGAAddModes
 
                 /* Fill in the mode structure */
                 pDGAMode->mode = pMode;
+                pDGAMode->flags = DGA_CONCURRENT_ACCESS;
                 if (bitsPerPixel == pScreenInfo->bitsPerPixel)
                 {
                     pDGAMode->flags |= DGA_PIXMAP_AVAILABLE;
                     pDGAMode->address = pATI->pMemory;
+
+                    if (pATI->OptionAccel)
+                        pDGAMode->flags &= ~DGA_CONCURRENT_ACCESS;
                 }
                 if ((pMode->Flags & V_DBLSCAN) || (pMode->VScan > 1))
                     pDGAMode->flags |= DGA_DOUBLESCAN;
@@ -310,31 +316,35 @@ ATIDGAInit
         ATIDGAAddModes(pScreenInfo, pATI,
             8, 8, 0, 0, 0, PseudoColor);
 
-        ATIDGAAddModes(pScreenInfo, pATI,
-            15, 16, 0x7C00U, 0x03E0U, 0x001FU, TrueColor);
-
-        ATIDGAAddModes(pScreenInfo, pATI,
-            16, 16, 0xF800U, 0x07E0U, 0x001FU, TrueColor);
-
-        ATIDGAAddModes(pScreenInfo, pATI,
-            24, 24, 0x00FF0000U, 0x0000FF00U, 0x000000FFU, TrueColor);
-
-        ATIDGAAddModes(pScreenInfo, pATI,
-            24, 32, 0x00FF0000U, 0x0000FF00U, 0x000000FFU, TrueColor);
-
-        if (pATI->DAC != ATI_DAC_INTERNAL)      /* Not first revision */
+        if ((pATI->Chip >= ATI_CHIP_264CT) &&
+            (pATI->Chipset == ATI_CHIPSET_ATI))
         {
-            ATIDGAAddModes(pScreenInfo, pATI,
-                15, 16, 0x7C00U, 0x03E0U, 0x001FU, DirectColor);
+            ATIDGAAddModes(pScreenInfo, pATI, 15, 16,
+                0x7C00U, 0x03E0U, 0x001FU, TrueColor);
 
-            ATIDGAAddModes(pScreenInfo, pATI,
-                16, 16, 0xF800U, 0x07E0U, 0x001FU, DirectColor);
+            ATIDGAAddModes(pScreenInfo, pATI, 16, 16,
+                0xF800U, 0x07E0U, 0x001FU, TrueColor);
 
-            ATIDGAAddModes(pScreenInfo, pATI,
-                24, 24, 0x00FF0000U, 0x0000FF00U, 0x000000FFU, DirectColor);
+            ATIDGAAddModes(pScreenInfo, pATI, 24, 24,
+                0x00FF0000U, 0x0000FF00U, 0x000000FFU, TrueColor);
 
-            ATIDGAAddModes(pScreenInfo, pATI,
-                24, 32, 0x00FF0000U, 0x0000FF00U, 0x000000FFU, DirectColor);
+            ATIDGAAddModes(pScreenInfo, pATI, 24, 32,
+                0x00FF0000U, 0x0000FF00U, 0x000000FFU, TrueColor);
+
+            if (pATI->DAC != ATI_DAC_INTERNAL)      /* Not first revision */
+            {
+                ATIDGAAddModes(pScreenInfo, pATI, 15, 16,
+                    0x7C00U, 0x03E0U, 0x001FU, DirectColor);
+
+                ATIDGAAddModes(pScreenInfo, pATI, 16, 16,
+                    0xF800U, 0x07E0U, 0x001FU, DirectColor);
+
+                ATIDGAAddModes(pScreenInfo, pATI, 24, 24,
+                    0x00FF0000U, 0x0000FF00U, 0x000000FFU, DirectColor);
+
+                ATIDGAAddModes(pScreenInfo, pATI, 24, 32,
+                    0x00FF0000U, 0x0000FF00U, 0x000000FFU, DirectColor);
+            }
         }
     }
 

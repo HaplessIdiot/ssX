@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.5 2000/02/18 12:19:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibank.c,v 1.6 2000/03/22 03:08:09 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -21,9 +21,9 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "ati.h"
 #include "atibank.h"
 #include "atiio.h"
-#include "xf86.h"
 
 /*
  * ATI VGA Wonder V3 adapters use an ATI 18800 chip and are single-banked.
