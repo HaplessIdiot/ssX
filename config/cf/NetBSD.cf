@@ -2,7 +2,7 @@ XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.48 1997/01/03 07:58:01 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.49 1997/01/05 11:49:32 dawes Exp $
 
 
 #ifndef OSName
@@ -153,9 +153,16 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if ((OSMajorVersion > 0) && \
      !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
     UseElfFormat
-# ifndef BuildDynamicLoading
-# define BuildDynamicLoading	YES
-# endif
+#ifndef DoLoadableServer
+#define DoLoadableServer	YES
+#endif
+#ifndef BuildDynamicLoading
+#if DoLoadableServer
+#define BuildDynamicLoading	NO
+#else
+#define BuildDynamicLoading	YES
+#endif
+#endif
 #endif
 
 #ifndef ExtraLibraries
@@ -171,8 +178,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #if ((OSMajorVersion > 1) || \
      (OSMajorVersion == 1 && OSMinorVersion > 2) || \
      (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion > 1))
-#ifndef HasGzipLibrary
-#define HasGzipLibrary  YES
+#ifndef HasZlib
+#define HasZlib			  YES
 #endif
 #endif 
 

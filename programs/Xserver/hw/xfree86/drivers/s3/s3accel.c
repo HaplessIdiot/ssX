@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3accel.c,v 1.3 1997/02/27 13:59:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3accel.c,v 1.1 1997/03/06 23:16:32 hohndel Exp $ */
 
 /*
  *
@@ -6,10 +6,6 @@
  *
  */
 
-/*
- * This is a sample driver implementation template for the new acceleration
- * interface.
- */
 
 #define PSZ 8
 
@@ -30,12 +26,17 @@ void S3SubsequentFillRectSolid();
 void S3SubsequentBresenhamLine();
 void S3SetupForFill8x8Pattern();
 void S3SubsequentFill8x8Pattern();
-void S3SubsequentFillTrapezoidSolid();
+
+
+static Bool Transfer32 = FALSE;
 
 void S3AccelInit() {
 
-    /* PIXMAP_CACHE is broken */
-    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | PIXMAP_CACHE; 
+    if(S3_x64_SERIES(s3ChipId))
+	Transfer32 = TRUE;
+
+    xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS  | PIXMAP_CACHE  |
+				 HARDWARE_PATTERN_NOT_LINEAR; 
 	
     xf86AccelInfoRec.Sync = S3Sync;
 
@@ -64,12 +65,6 @@ void S3AccelInit() {
        xf86AccelInfoRec.SubsequentFill8x8Pattern = S3SubsequentFill8x8Pattern;
     }
 
-#if 0   
-    /* Trapezoidal fills */
-    if(S3_x68_SERIES(s3ChipId) || S3_TRIO64V_SERIES(s3ChipId)) 
-    	xf86AccelInfoRec.SubsequentFillTrapezoidSolid =
-		 		S3SubsequentFillTrapezoidSolid; 
-#endif
 
     /* pixmap cache */    
     xf86AccelInfoRec.PixmapCacheMemoryStart =
@@ -208,7 +203,7 @@ void S3SubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 	| 	8x8 Fill Patterns	|
 	\*******************************/
 
-/* not really working */
+
 void S3SetupForFill8x8Pattern(patternx, patterny, rop, planemask, trans_col)
     int patternx, patterny, rop, planemask, trans_col;
 {
@@ -229,17 +224,4 @@ void S3SubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
     SET_CMD(CMD_PFILL | DRAW | INC_Y | INC_X | WRTDATA);
 }
 
-
-	/*******************************\
-	|	Trapezoidal fills	|
-	\*******************************/
-
-void S3SubsequentFillTrapezoidSolid(ytop, h, left, dxL, dyL, eL,
-					     right, dxR, dyR, eR)
-   int ytop, h, left, dxL, dyL, eL, right, dxR, dyR, eR;
-{
-
-
-
-}
 

@@ -1,3 +1,23 @@
+XFree86 3.2Am (10 March 1997)
+ 561. Add hardware cursor to MGA driver (#149, Xavier Ducoin).
+ 560. Make tseng driver handle 1/4/8bpp at runtime (#145, Koen Gadeyne).
+ 559. Make apm driver loadable (#146, Joe Moss).
+ 558. Fix some cross compilation problem for XAA on OS/2 (#144, Sebastien
+      Marineau).
+ 557. Fix some 24bpp problems for ViRGE and cfb (#144, Sebastien Marineau).
+ 556. Move cursor area to top of vidmem for ViRGE (#144, Sebastien Marineau).
+ 555. Really fix mono/Imakefile and fix PEX struct dirent problem (#143,
+      Matthieu Herrb).
+ 554. Add handling for S3-style 8x8 pattern fill to XAA; fix s3/svga
+      accordingly (#141, Mark Vojkovich).
+ 553. Fix OS/2 problems; disable cross compiling Xprt, Xvfb, Xnest (#140,
+      Holger Veit).
+ 552. Include some fix trackers, fixing problems with sunLib.tmpl, hp.cf,
+      memory leak in xdm: xdmcp.c manage(), Imake.rules, zlib 1.0.4, AltGR
+      not working in Xlib (#131,132,135-139).
+ 551. Reapply change 536 for the new drivers (#130, Mark Vojkovich).
+ 550. Enable loader for NetBSD and fix a few typos (#127-129, Takaaki Nomura).
+
 XFree86 3.2Al ( 7 March 1997)
  549. Fix a.out loader for FreeBSD (#126, Takaaki Nomura).
  548. Add the BT-848 to scanpci (#121, Dejan Ilic).
@@ -4133,4 +4153,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.424 1997/03/07 00:28:41 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.425 1997/03/07 07:44:38 hohndel Exp $

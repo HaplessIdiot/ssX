@@ -1,4 +1,4 @@
-/* $XConsortium: adler32.c /main/2 1996/03/07 13:52:52 mor $ */
+/* $TOG: adler32.c /main/3 1997/02/26 17:42:20 kaleb $ */
 
 /* adler32.c -- compute the Adler-32 checksum of a data stream
  * Copyright (C) 1995-1996 Mark Adler
@@ -13,11 +13,11 @@
 #define NMAX 5552
 /* NMAX is the largest n such that 255n(n+1)/2 + (n+1)(BASE-1) <= 2^32-1 */
 
-#define DO1(buf)  {s1 += *buf++; s2 += s1;}
-#define DO2(buf)  DO1(buf); DO1(buf);
-#define DO4(buf)  DO2(buf); DO2(buf);
-#define DO8(buf)  DO4(buf); DO4(buf);
-#define DO16(buf) DO8(buf); DO8(buf);
+#define DO1(buf,i)  {s1 += buf[i]; s2 += s1;}
+#define DO2(buf,i)  DO1(buf,i); DO1(buf,i+1);
+#define DO4(buf,i)  DO2(buf,i); DO2(buf,i+2);
+#define DO8(buf,i)  DO4(buf,i); DO4(buf,i+4);
+#define DO16(buf)   DO8(buf,0); DO8(buf,8);
 
 /* ========================================================================= */
 uLong adler32(adler, buf, len)
@@ -36,10 +36,12 @@ uLong adler32(adler, buf, len)
         len -= k;
         while (k >= 16) {
             DO16(buf);
+	    buf += 16;
             k -= 16;
         }
         if (k != 0) do {
-            DO1(buf);
+            s1 += *buf++;
+	    s2 += s1;
         } while (--k);
         s1 %= BASE;
         s2 %= BASE;

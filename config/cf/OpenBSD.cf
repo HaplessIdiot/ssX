@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86$
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.1 1997/01/05 11:49:33 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -122,7 +122,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #define UseGnuMalloc		NO
 
-#define HasGzipLibrary  YES
+#define HasZlib			YES
 
 
 /*

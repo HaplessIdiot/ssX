@@ -29,7 +29,7 @@ in this Software without prior written authorization from the X Consortium.
 */
 
 /* $XConsortium: cfbfillrct.c,v 5.18 94/04/17 20:28:47 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.0 1995/05/07 11:46:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbfillrct.c,v 3.1 1996/06/29 09:05:30 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -75,7 +75,11 @@ cfbFillRectTileOdd (pDrawable, pGC, nBox, pBox)
 
     xrot = pDrawable->x + pGC->patOrg.x;
     yrot = pDrawable->y + pGC->patOrg.y;
+#if PSZ == 24
+    if (pGC->tile.pixmap->drawable.width & 3)
+#else
     if (pGC->tile.pixmap->drawable.width & PIM)
+#endif
     {
     	fill = cfbFillBoxTileOddGeneral;
     	if ((pGC->planemask & PMSK) == PMSK)

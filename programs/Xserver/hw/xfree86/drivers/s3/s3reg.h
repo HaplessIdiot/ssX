@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/s3reg.h,v 1.2 1997/02/27 13:59:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.1 1997/03/06 23:16:40 hohndel Exp $ */
 /*
  * regs3.h
  * 
@@ -509,6 +509,8 @@ typedef struct {
 
   #define SET_CUR_X(cur_x) 	S3_OUTW(CUR_X, cur_x)
   #define SET_CUR_Y(cur_y) 	S3_OUTW(CUR_Y, cur_y)
+  #define SET_CUR_X2(cur_x) 	S3_OUTW(CUR_X2, cur_x)
+  #define SET_CUR_Y2(cur_y) 	S3_OUTW(CUR_Y2, cur_y)
   #define SET_CURPT(cur_x, cur_y) { 	\
 	SET_CUR_X(cur_x); 		\
 	SET_CUR_Y(cur_y); 		\

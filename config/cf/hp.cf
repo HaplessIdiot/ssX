@@ -1,4 +1,4 @@
-XCOMM platform:  $XConsortium: hp.cf /main/83 1996/12/26 08:52:54 kaleb $
+XCOMM platform:  $TOG: hp.cf /main/84 1997/02/28 09:52:49 kaleb $
 
 #ifndef OSName
 # define OSName		DefaultOSName
@@ -146,10 +146,11 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 # endif
 #endif
 
-#if OSMajorVersion == 10
+#if OSMajorVersion > 9
 # if ThreadedX
 #  define MTSafeAPIDefines	-DXUSE_MTSAFE_API -DXUSE_NETDB_R_API
 # endif
+# define CppCmd			/opt/langtools/lbin/cpp
 #endif
 
 /* CC does not recognize -Ae, and has a different meaning for +e. */
@@ -172,9 +173,15 @@ XCOMM operating system:  OSName (OSMajorVersion.OSMinorVersion.OSTeenyVersion)
 #define DtSearchDefines		-DI18N_MSG DtSvcDefines
 #define DtWidgetDefines		DtSearchDefines
 #define DtPrintDefines		DtSearchDefines
+#if OSMajorVersion > 9
+#define DtMailDefines		\
+  -DBIG_ENDIAN -DDO_ANONYMOUS_MAP -DNEED_MMAP_WRAPPER -DSENDMAIL_LOCKS \
+  -DMAILGROUP_REQUIRED -DMAIL_SPOOL_PATH=\"/var/mail/%s\"
+#else
 #define DtMailDefines		\
   -DBIG_ENDIAN -DDO_ANONYMOUS_MAP -DNEED_MMAP_WRAPPER -DSENDMAIL_LOCKS \
   -DMAILGROUP_REQUIRED -DMAIL_SPOOL_PATH=\"/usr/mail/%s\"
+#endif
 
 #define ArchitectureDefines	-DHP_ARCHITECTURE
 

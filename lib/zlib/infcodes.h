@@ -1,4 +1,4 @@
-/* $XConsortium: infcodes.h /main/2 1996/03/07 13:53:18 mor $ */
+/* $TOG: infcodes.h /main/3 1997/02/26 17:43:02 kaleb $ */
 
 /* infcodes.h -- header to use infcodes.c
  * Copyright (C) 1995-1996 Mark Adler
@@ -16,14 +16,14 @@ typedef struct inflate_codes_state FAR inflate_codes_statef;
 extern inflate_codes_statef *inflate_codes_new OF((
     uInt, uInt,
     inflate_huft *, inflate_huft *,
-    z_stream *));
+    z_streamp ));
 
 extern int inflate_codes OF((
     inflate_blocks_statef *,
-    z_stream *,
+    z_streamp ,
     int));
 
 extern void inflate_codes_free OF((
     inflate_codes_statef *,
-    z_stream *));
+    z_streamp ));
 

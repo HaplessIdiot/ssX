@@ -1,4 +1,4 @@
-/* $XConsortium: deflate.h /main/2 1996/03/07 13:53:04 mor $ */
+/* $TOG: deflate.h /main/3 1997/02/26 17:42:35 kaleb $ */
 
 /* deflate.h -- internal compression state
  * Copyright (C) 1995-1996 Jean-loup Gailly
@@ -82,7 +82,7 @@ typedef unsigned IPos;
  */
 
 typedef struct internal_state {
-    z_stream *strm;      /* pointer back to this zlib stream */
+    z_streamp strm;      /* pointer back to this zlib stream */
     int   status;        /* as the name implies */
     Bytef *pending_buf;  /* output still pending */
     Bytef *pending_out;  /* next pending byte to output to the stream */

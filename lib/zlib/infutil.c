@@ -1,4 +1,4 @@
-/* $XConsortium: infutil.c /main/2 1996/03/07 13:53:39 mor $ */
+/* $TOG: infutil.c /main/3 1997/02/26 17:43:42 kaleb $ */
 
 /* inflate_util.c -- data and routines common to blocks and codes
  * Copyright (C) 1995-1996 Mark Adler
@@ -24,11 +24,12 @@ uInt inflate_mask[17] = {
 /* copy as much as possible from the sliding window to the output area */
 int inflate_flush(s, z, r)
 inflate_blocks_statef *s;
-z_stream *z;
+z_streamp z;
 int r;
 {
   uInt n;
-  Bytef *p, *q;
+  Bytef *p;
+  Bytef *q;
 
   /* local copies of source and destination pointers */
   p = z->next_out;

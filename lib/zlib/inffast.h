@@ -1,4 +1,4 @@
-/* $XConsortium: inffast.h /main/2 1996/03/07 13:53:25 mor $ */
+/* $TOG: inffast.h /main/3 1997/02/26 17:43:15 kaleb $ */
 
 /* inffast.h -- header to use inffast.c
  * Copyright (C) 1995-1996 Mark Adler
@@ -16,4 +16,4 @@ extern int inflate_fast OF((
     inflate_huft *,
     inflate_huft *,
     inflate_blocks_statef *,
-    z_stream *));
+    z_streamp ));

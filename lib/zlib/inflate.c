@@ -1,4 +1,4 @@
-/* $XConsortium: inflate.c /main/2 1996/03/07 13:53:28 mor $ */
+/* $TOG: inflate.c /main/3 1997/02/26 17:43:22 kaleb $ */
 
 /* inflate.c -- zlib interface to inflate modules
  * Copyright (C) 1995-1996 Mark Adler
@@ -51,7 +51,7 @@ struct internal_state {
 
 
 int inflateReset(z)
-z_stream *z;
+z_streamp z;
 {
   uLong c;
 
@@ -67,7 +67,7 @@ z_stream *z;
 
 
 int inflateEnd(z)
-z_stream *z;
+z_streamp z;
 {
   uLong c;
 
@@ -83,7 +83,7 @@ z_stream *z;
 
 
 int inflateInit2_(z, w, version, stream_size)
-z_stream *z;
+z_streamp z;
 int w;
 const char *version;
 int stream_size;
@@ -140,7 +140,7 @@ int stream_size;
 
 
 int inflateInit_(z, version, stream_size)
-z_stream *z;
+z_streamp z;
 const char *version;
 int stream_size;
 {
@@ -152,13 +152,13 @@ int stream_size;
 #define NEXTBYTE (z->avail_in--,z->total_in++,*z->next_in++)
 
 int inflate(z, f)
-z_stream *z;
+z_streamp z;
 int f;
 {
-  int r = f;    /* to avoid warning about unused f */
+  int r;
   uInt b;
 
-  if (z == Z_NULL || z->state == Z_NULL || z->next_in == Z_NULL)
+  if (z == Z_NULL || z->state == Z_NULL || z->next_in == Z_NULL || f < 0)
     return Z_STREAM_ERROR;
   r = Z_BUF_ERROR;
   while (1) switch (z->state->mode)
@@ -274,7 +274,7 @@ int f;
 
 
 int inflateSetDictionary(z, dictionary, dictLength)
-z_stream *z;
+z_streamp z;
 const Bytef *dictionary;
 uInt  dictLength;
 {
@@ -282,22 +282,23 @@ uInt  dictLength;
 
   if (z == Z_NULL || z->state == Z_NULL || z->state->mode != DICT0)
     return Z_STREAM_ERROR;
+
   if (adler32(1L, dictionary, dictLength) != z->adler) return Z_DATA_ERROR;
   z->adler = 1L;
 
-  if (length >= (1<<z->state->wbits))
+  if (length >= ((uInt)1<<z->state->wbits))
   {
     length = (1<<z->state->wbits)-1;
     dictionary += dictLength - length;
   }
-  inflate_set_dictionary(z->state->blocks, z, dictionary, length);
+  inflate_set_dictionary(z->state->blocks, dictionary, length);
   z->state->mode = BLOCKS;
   return Z_OK;
 }
 
 
 int inflateSync(z)
-z_stream *z;
+z_streamp z;
 {
   uInt n;       /* number of bytes to look at */
   Bytef *p;     /* pointer to bytes */

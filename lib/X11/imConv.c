@@ -1,4 +1,4 @@
-/* $XConsortium: imConv.c /main/9 1996/12/29 10:23:02 kaleb $ */
+/* $TOG: imConv.c /main/11 1997/02/11 17:48:36 kaleb $ */
 /******************************************************************
 
               Copyright 1991, 1992 by Fuji Xerox Co.,Ltd.
@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.4 1997/01/18 07:17:39 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.5 1997/01/22 10:57:12 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -39,14 +39,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "Xlcint.h"
 #include "Ximint.h"
 #include "XlcPubI.h"
-
+#include "XlcPubI.h"
+  
 #ifdef XKB
-/*
- * Disable this as a temporary solution for Mode_switch problems.
- */
-#if 0
-#define	XLookupString		_XLookupString
-#endif
+#include "XKBlib.h"
+#define	XLOOKUPSTRING lookup_string
 extern unsigned char _Xcyrillic[];
 #define cyrillic _Xcyrillic
 extern unsigned char _Xkoi8[];
@@ -54,6 +51,7 @@ extern unsigned char _Xkoi8[];
 extern unsigned char _Xgreek[];
 #define greek _Xgreek
 #else
+#define	XLOOKUPSTRING XLookupString
 /* maps Cyrillic keysyms to 8859-5 */
 static unsigned char cyrillic[128] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, /* 0x80 - */
@@ -73,6 +71,26 @@ static unsigned char cyrillic[128] = {
     0xbf, 0xcf, 0xc0, 0xc1, 0xc2, 0xc3, 0xb6, 0xb2, /* 0xf0 - */
     0xcc, 0xcb, 0xb7, 0xc8, 0xcd, 0xc9, 0xc7, 0xca
 };
+
+/* maps Cyrillic keysyms to KOI8-R */
+unsigned char Const koi8[128] =
+   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0xa3, 0x00, 0x00, 0x00, 0x00, /* 10 */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0xb3, 0x00, 0x00, 0x00, 0x00, /* 11 */
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+    0xc0, 0xc1, 0xc2, 0xc3, 0xc4, 0xc5, 0xc6, 0xc7, /* 12 */
+    0xc8, 0xc9, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf,
+    0xd0, 0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, /* 13 */
+    0xd8, 0xd9, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf,
+    0xe0, 0xe1, 0xe2, 0xe3, 0xe4, 0xe5, 0xe6, 0xe7, /* 14 */
+    0xe8, 0xe9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,
+    0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, /* 15 */
+    0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff};
+
 
 /* maps Cyrillic keysyms to KOI8-R */
 unsigned char Const koi8[128] =
@@ -143,6 +161,11 @@ static struct CodesetRec koi8codeset = {
     0x06l, "\033%/1\200\210koi8-r\002", get_koi8  /* KIO8-R (Cyrillic) */
 };
 
+#define sCyrillic 6
+static struct CodesetRec koi8codeset = {
+    0x06l, "\033%/1\200\210koi8-r\002", get_koi8  /* KIO8-R (Cyrillic) */
+};
+
 static unsigned char
 get_code(keysym)
 KeySym keysym;
@@ -171,6 +194,24 @@ KeySym keysym;
     return greek[keysym & 0x7f];
 }
 
+#ifdef XKB
+static int lookup_string (event, buffer, nbytes, keysym, status)
+    XKeyEvent		*event;
+    unsigned char	*buffer;
+    int			 nbytes;
+    KeySym		*keysym;
+    XComposeStatus	*status;
+{
+    int ret;
+    unsigned ctrls = XkbGetXlibControls (event->display);
+    XkbSetXlibControls (event->display, 
+			XkbLC_ForceLatin1Lookup, XkbLC_ForceLatin1Lookup);
+    ret = XLookupString(event, buffer, nbytes, keysym, status);
+    XkbSetXlibControls (event->display, ctrls, ctrls);
+    return ret;
+}
+#endif
+
 #define BUF_SIZE (20)
 
 int
@@ -194,7 +235,7 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     char local_buf[BUF_SIZE];
     unsigned char look[BUF_SIZE];
 
-    count = XLookupString(event, (char *)buffer, nbytes, &symbol, status);
+    count = XLOOKUPSTRING(event, (char *)buffer, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	return(count);
@@ -206,6 +247,10 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
 		cset = &codeset[i];
 		break;
 	    }
+	}
+	if (kset == sCyrillic &&
+	    (strcmp (XLC_PUBLIC(lcd,encoding_name),"KOI8-R") == 0)) {
+	    cset = &koi8codeset;
 	}
 	if (kset == sCyrillic &&
 	    (strcmp (XLC_PUBLIC(lcd,encoding_name),"KOI8-R") == 0)) {
@@ -256,7 +301,7 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     char local_buf[BUF_SIZE];
     unsigned char look[BUF_SIZE];
 
-    count = XLookupString(event, (char *)look, nbytes, &symbol, status);
+    count = XLOOKUPSTRING(event, (char *)look, nbytes, &symbol, status);
     if (keysym) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) {
 	return(count);
@@ -269,6 +314,10 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
 		cset = &codeset[i];
 		break;
 	    }
+	}
+	if (kset == sCyrillic &&
+	    (strcmp (XLC_PUBLIC(lcd,encoding_name),"KOI8-R") == 0)) {
+	    cset = &koi8codeset;
 	}
 	if (kset == sCyrillic &&
 	    (strcmp (XLC_PUBLIC(lcd,encoding_name),"KOI8-R") == 0)) {

@@ -1,4 +1,4 @@
-/* $XConsortium: infutil.h /main/2 1996/03/07 13:53:43 mor $ */
+/* $TOG: infutil.h /main/3 1997/02/26 17:43:49 kaleb $ */
 
 /* infutil.h -- types and macros common to blocks and codes
  * Copyright (C) 1995-1996 Mark Adler
@@ -43,7 +43,8 @@ struct inflate_blocks_state {
       inflate_huft *tb;         /* bit length decoding tree */
     } trees;            /* if DTREE, decoding info for trees */
     struct {
-      inflate_huft *tl, *td;    /* trees to free */
+      inflate_huft *tl;
+      inflate_huft *td;         /* trees to free */
       inflate_codes_statef 
          *codes;
     } decode;           /* if CODES, current state */
@@ -92,7 +93,7 @@ extern uInt inflate_mask[17];
 /* copy as much as possible from the sliding window to the output area */
 extern int inflate_flush OF((
     inflate_blocks_statef *,
-    z_stream *,
+    z_streamp ,
     int));
 
 struct internal_state      {int dummy;}; /* for buggy compilers */
