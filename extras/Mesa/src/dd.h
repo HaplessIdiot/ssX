@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/dd.h,v 1.11 2001/10/28 03:32:06 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/dd.h,v 1.12 2002/02/22 19:25:26 dawes Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.5
@@ -468,9 +468,9 @@ struct dd_function_table {
    void (*BlendColor)(GLcontext *ctx, const GLfloat color[4]);
    void (*BlendEquation)(GLcontext *ctx, GLenum mode);
    void (*BlendFunc)(GLcontext *ctx, GLenum sfactor, GLenum dfactor);
-   void (*BlendFuncSeparate)( GLcontext *ctx, GLenum sfactorRGB, 
-			      GLenum dfactorRGB, GLenum sfactorA,
-			      GLenum dfactorA );
+   void (*BlendFuncSeparate)( GLcontext *ctx,
+			      GLenum sfactorRGB, GLenum dfactorRGB,
+			      GLenum sfactorA, GLenum dfactorA);
    void (*BlendConstColor)(GLcontext *ctx, GLfloat red, GLfloat green,
 			   GLfloat blue, GLfloat alpha);
    void (*ClearColor)(GLcontext *ctx, const GLchan color[4]);
