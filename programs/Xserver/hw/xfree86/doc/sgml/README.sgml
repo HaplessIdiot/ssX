@@ -688,16 +688,26 @@ UUNET Communications Services, Inc, deserves special mention.  This
 organization stepped forward and contributed the entire 1994 X Consortium
 membership fee on a moment's notice.  This single act ensured XFree86's
 involvement in X11R6.
+
+<itemize>
+	<item> GUUG -- 1st German Linux Congress
+</itemize>
+Also deserving of special mention are the organizers and attendees of the
+1st German Linux Congress in Heidelberg.  Significant funding to The
+XFree86 Project has bee provided from its proceeds.
+
 <itemize>
   <item>  <url url="ftp://ftp.uu.net/vendor/AIB/" 
 	name="AIB Software Corporation">, Dulles, VA
   <item>  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
   <item>  American Micro Group
-  <item>  <url url="http://www.ncr.com/"  
+  <item>  <url url="http://www.attgis.com/"  
 	name="AT&amp;T Global Information Services"> (formerly NCR)
   <item>  Andrew Burgess
   <item>  <url url="http://www.bsdi.com/"  
 	name="Berkeley Software Design, Inc">, Falls Church, VA
+  <item>  <url url="http://www.delix.de/"
+	name="Delix Computer GmbH">, Stuttgart, Germany
   <item>  <url url="http://www.destek.net/Destek/"  
 	name="The Destek Group, Inc.">, Pelham, NH (formerly Synergytics)
   <item>  <url url="http://www.diamondmm.com/"  
@@ -709,6 +719,7 @@ involvement in X11R6.
   <item>  <url url="http://www.hercules.com/"
 	name="Hercules Computer Technology, Inc.">
   <item>  Dirk Hohndel
+  <item>  Daniel Kraemer
   <item>  Frank &amp; Paige McCormick
   <item>  <url url="http://www.infomagic.com/"  
 	name="InfoMagic">, Flagstaff, AZ
@@ -875,7 +886,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.24 1995/07/21 14:40:51 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.25 1995/07/22 09:42:56 dawes Exp $
 </verb>
 
 </article>
