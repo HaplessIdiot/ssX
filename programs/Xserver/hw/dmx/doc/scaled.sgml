@@ -5,6 +5,11 @@
     <title>Scaled Window Support in DMX</title>
     <author>Rickard E. Faith and Kevin E. Martin</author>
     <date>15 October 2003 (created 19 September 2003)</date>
+
+    <ident>
+    $XFree86:$
+    </ident>
+
     <abstract>
       This document investigates the possibility of adding scaled window
       support to the DMX X server, thereby allowing a window or some
@@ -12,7 +17,7 @@
       scaling factor.  For example, this might allow the contents of a
       window to be magnified for easier viewing.  In particular, scaling
       for the VNC client is explored.  <it>Copyright 2003
-        by Red Hat, Inc., Raleigh, North Carolina</it>
+      by Red Hat, Inc., Raleigh, North Carolina</it>
     </abstract>
 
     <!-- Table of contents -->

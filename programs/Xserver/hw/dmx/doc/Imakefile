@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/doc/Imakefile,v 1.1 2004/06/30 20:21:40 martin Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -6,3 +6,9 @@ XCOMM $XFree86$
 all::
 
 LinuxDocTarget(dmx)
+LinuxDocTarget(scaled)
+UpdateFormattedDocLong(dmx,.,dmx.txt)
+UpdateFormattedDocLong(scaled,.,scaled.txt)
+
+FORMATTEDDIR = .
+
