@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $TOG: Imake.rules /main/218 1997/02/13 13:54:11 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.39 1997/05/03 09:14:26 dawes Exp $
+XCOMM rules:  $TOG: Imake.rules /main/220 1997/06/05 18:05:16 kaleb $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.40 1997/06/11 12:24:17 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY

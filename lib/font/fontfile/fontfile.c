@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.3 1996/02/09 08:19:39 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontfile.c,v 3.4 1997/06/11 12:24:29 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -95,14 +95,14 @@ FontFileResetFPE (fpe)
 	/* can't do it, so tell the caller to close and re-open */
 	return FPEResetFailed;	
     }
-    else
+    else 
     {
 	if (dir->nonScalable.used > 0)
 	    if (!FontFileRegisterBitmapSource (fpe))
 	    {
-		return FPEResetFailed;
+	        return FPEResetFailed;	
 	    }
-	return Successful;
+        return Successful;
     }
 }
 
