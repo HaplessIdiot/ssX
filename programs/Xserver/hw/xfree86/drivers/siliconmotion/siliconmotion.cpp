@@ -1,14 +1,16 @@
 .\" Header:   //Mercury/Projects/archives/XFree86/4.0/siliconmotion.cpp-arc   1.4   29 Nov 2000 14:12:56   Frido  $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/siliconmotion.cpp,v 1.1 2000/11/28 20:59:19 dawes Exp $
-.TH siliconmotion __drivermansuffix__ "Version 4.0"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/siliconmotion.cpp,v 1.2 2000/12/05 21:18:37 dawes Exp $
+.\" shorthand for double quote that works everywhere.
+.ds q \N'34'
+.TH siliconmotion __drivermansuffix__ "Version 4.0.2"  "XFree86"
 .SH NAME
 siliconmotion \- Silicon Motion video driver
 .SH SYNOPSIS
-.B "Section ""Device"""
+.B "Section \*qDevice\*q"
 .br
-.BI "  Identifier """  devname """"
+.BI "  Identifier \*q"  devname \*q
 .br
-.B  "  Driver ""siliconmotion"""
+.B  "  Driver \*qsiliconmotion\*q"
 .br
 \ \ ...
 .br
@@ -55,7 +57,7 @@ parsed by the server, for exmaple,  "lynxe" and "LynxE" are equivalent.
 The driver auto-detects the chipset type, but the following
 .B ChipSet
 names may optionally be specified in the config file
-.B """Device"""
+.B \*qDevice\*q
 section, and will override the auto-detection:
 .PP
 .RS 4
@@ -67,10 +69,10 @@ The following Cursor
 .B Options
 are supported:
 .TP
-.BI "Option ""HWCursor"" [""" boolean """]
+.BI "Option \*qHWCursor\*q \*q" boolean \*q
 Enable or disable the HW cursor.  Default: on.
 .TP
-.BI "Option ""SWCursor"" [""" boolean """]
+.BI "Option \*qSWCursor\*q \*q" boolean \*q
 Inverse of "HWCursor".  Default: off.
 
 .PP
@@ -78,20 +80,22 @@ The following display
 .B Options
 are supported:
 .TP
-.BI "Option ""ShadowFB"" [""" boolean """]
+.BI "Option \*qShadowFB\*q \*q" boolean \*q
 Use shadow framebuffer.  Default: off.
 .TP
-.BI "Option ""Rotate"" """ cw " | " ccw """
+.BI "Option \*qRotate\*q \*qCW\*q"
+.TP
+.BI "Option \*qRotate\*q \*qCCW\*q"
 Rotate the screen CW - clockwise or CCW - counter clockwise.
 Uses ShadowFB.  Default: no rotation.
 .TP
-.BI "Option ""VideoKey"" [""" integer """]
+.BI "Option \*qVideoKey\*q \*q" integer \*q
 Set the video colorkey.  Default: a little off full blue.
 .TP
-.BI "Option ""ByteSwap"" [""" boolean """]
+.BI "Option \*qByteSwap\*q \*q" boolean \*q
 Turn on byte swapping for capturing using SMI demo board.  Default: off.
 .TP
-.BI "Option ""UseBIOS"" [""" boolean """]
+.BI "Option \*qUseBIOS\*q \*q" boolean \*q
 Use the BIOS to set the modes. This is used for custom panel timings.
 Default: on.
 
@@ -100,7 +104,7 @@ The following video memory
 .B Options
 are supported:
 .TP
-.BI "Option ""set_mclk"" """ integer """
+.BI "Option \*qset_mclk\*q \*q" integer \*q
 sets the memory clock, where
 .I integer
 is in kHz, and
@@ -114,7 +118,7 @@ The following acceleration and graphics engine
 .B Options
 are supported:
 .TP
-.B "Option ""NoAccel""
+.B "Option \*qNoAccel\*q"
 Disable acceleration.  Very useful for determining if the
 driver has problems with drawing and acceleration routines.  This is the first
 option to try if your server runs but you see graphic corruption on the screen.
@@ -122,7 +126,11 @@ Using it decreases performance, as it uses software emulation for drawing
 operations the video driver can accelerate with hardware.
 Default: acceleration is enabled.
 .TP
-.BR "Option ""fifo_aggressive " | " fifo_moderate " | " fifo_conservative"""
+.B "Option \*qfifo_aggressive\*q"
+.TP
+.B "Option \*qfifo_moderate\*q"
+.TP
+.B "Option \*qfifo_conservative\*q"
 alter the settings
 for the threshold at which the pixel FIFO takes over the internal 
 memory bus to refill itself. The smaller this threshold, the better
@@ -143,11 +151,11 @@ The following PCI bus
 .B Options
 are supported:
 .TP
-.BI "Option ""pci_burst"" [""" boolean """]
+.BI "Option \*qpci_burst\*q \*q" boolean \*q
 will enable PCI burst mode. This should work on all but a
 few broken PCI chipsets, and will increase performance.  Default: off.
 .TP
-.BI "Option ""pci_retry"" [""" boolean """]
+.BI "Option \*qpci_retry\*q \*q" boolean \*q
 will allow the driver to rely on PCI Retry to program the 
 ViRGE registers. 
 .B "pci_burst"
@@ -162,12 +170,12 @@ The following additional
 .B Options
 are supported:
 .TP
-.BI "Option ""ShowCache"" [""" boolean """]
+.BI "Option \*qShowCache\*q \*q" boolean \*q
 Enable or disable viewing offscreen cache memory.  A
 development debug option.  Default: off.
 
 .SH SEE ALSO
-XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(1)
+XFree86(1), XF86Config(__filemansuffix__), xf86config(1), Xserver(1), X(__miscmansuffix__)
 
 .SH SUPPORT
 For assistance with this driver, or XFree86 in general, check the XFree86 web
