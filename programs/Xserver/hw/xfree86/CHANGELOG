@@ -1,3 +1,20 @@
+XFree86 3.1.0Ad (26 December 1994)
+153. Fix problems with DBLSCAN code introduced in 3.1.0Aa (Harm Hanemaayer).
+152. Support for adding LBX via the LinkKit.
+151. Fix some LinkKit config problems.
+150. Fix LinkKit Imakefile bug introduced in 3.1.0A.
+149. Support for SPEA Mercury P64 (Bt485 + 964) (Norbert Distler).
+148. Enable ICD2061A clockchip by default for S3 server when a BT485 is
+     detected (doesn't happen if an XF86Config for either ramdac or
+     clockchip is present) (Norbert Distler).
+147. Fix for PCI Type 2 probe for I128 SuperProbe code (Robin Cutshaw).
+146. Major Cirrus update.  Includes new acceleration using mmio (lines
+     tilefill and rectangles), and more acceleration for 16/32bpp
+     (Harm Hanemaayer).
+145. Fixes for AGX dashed line code (Henry Worth).
+144. Allow S3 server to put the cache in the area to the right of the screen
+     when it is larger than the area below it (Leonard N. Zubkoff).
+
 XFree86 3.1.0Ac (20 December 1994)
 143. Imake template and rules for LinuxDoc-SGML formatting.
 142. Documentation converted to LinuxDoc-SGML (Gertjan Akkerman,

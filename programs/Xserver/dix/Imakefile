@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.46 94/02/04 10:51:26 rws Exp $
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.0 1994/05/08 05:18:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.1 1994/05/30 08:22:05 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -69,6 +69,34 @@ SpecialCObjectRule(tables,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(dispatch,$(ICONFIGFILES),$(K5DEFS))
 SpecialCObjectRule(main,$(ICONFIGFILES),$(VENDOR_DEFINES))
 
+#ifndef LinkDirectory
 InstallLinkKitLibrary(dix,$(LINKKITDIR)/lib)
+#endif
+
+#ifdef LinkDirectory
+LinkSourceFile(atom.c,LinkDirectory)
+LinkSourceFile(colormap.c,LinkDirectory)
+LinkSourceFile(cursor.c,LinkDirectory)
+LinkSourceFile(devices.c,LinkDirectory)
+LinkSourceFile(dispatch.c,LinkDirectory)
+LinkSourceFile(dixfonts.c,LinkDirectory)
+LinkSourceFile(dixutils.c,LinkDirectory)
+LinkSourceFile(events.c,LinkDirectory)
+LinkSourceFile(extension.c,LinkDirectory)
+LinkSourceFile(gc.c,LinkDirectory)
+LinkSourceFile(globals.c,LinkDirectory)
+LinkSourceFile(glyphcurs.c,LinkDirectory)
+LinkSourceFile(grabs.c,LinkDirectory)
+LinkSourceFile(initatoms.c,LinkDirectory)
+LinkSourceFile(main.c,LinkDirectory)
+LinkSourceFile(pixmap.c,LinkDirectory)
+LinkSourceFile(privates.c,LinkDirectory)
+LinkSourceFile(property.c,LinkDirectory)
+LinkSourceFile(resource.c,LinkDirectory)
+LinkSourceFile(swaprep.c,LinkDirectory)
+LinkSourceFile(swapreq.c,LinkDirectory)
+LinkSourceFile(tables.c,LinkDirectory)
+LinkSourceFile(window.c,LinkDirectory)
+#endif
 
 DependTarget()
