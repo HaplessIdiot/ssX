@@ -341,6 +341,9 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(miGlyphs)
   SYMFUNC(miCompositeRects)
   SYMVAR(PictureScreenPrivateIndex)
+  SYMFUNC(PictureTransformPoint)
+  SYMFUNC(PictureAddFilter)
+  SYMFUNC(PictureSetFilterAlias)
 #endif
 
   /* os/utils.c */

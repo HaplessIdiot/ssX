@@ -35,6 +35,43 @@
 #include "Xrender.h"
 #include "renderproto.h"
 
+typedef struct {
+    Visual		*visual;
+    XRenderPictFormat	*format;
+} XRenderVisual;
+
+typedef struct {
+    int			depth;
+    int			nvisuals;
+    XRenderVisual	*visuals;
+} XRenderDepth;
+
+typedef struct {
+    XRenderDepth	*depths;
+    int			ndepths;
+    XRenderPictFormat	*fallback;
+    int			subpixel;
+} XRenderScreen;
+
+typedef struct _XRenderInfo {
+    int			major_version;
+    int			minor_version;
+    XRenderPictFormat	*format;
+    int			nformat;
+    XRenderScreen	*screen;
+    int			nscreen;
+    XRenderDepth	*depth;
+    int			ndepth;
+    XRenderVisual	*visual;
+    int			nvisual;
+    int			*subpixel;
+    int			nsubpixel;
+    char		**filter;
+    int			nfilter;
+    short    		*filter_alias;
+    int			nfilter_alias;
+} XRenderInfo;
+
 extern XExtensionInfo XRenderExtensionInfo;
 extern char XRenderExtensionName[];
 

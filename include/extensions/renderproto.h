@@ -213,7 +213,7 @@ typedef struct {
     CARD32  numScreens B32;
     CARD32  numDepths B32;
     CARD32  numVisuals B32;
-    CARD32  pad4 B32;
+    CARD32  numSubpixel B32;	    /* Version 0.6 */
     CARD32  pad5 B32;
 } xRenderQueryPictFormatsReply;
 
@@ -486,6 +486,70 @@ typedef struct {
 
 #define sz_xRenderCreateCursorReq		    16
 
+/* 0.6 and higher */
+
+/*
+ * This can't use an array because 32-bit values may be in bitfields
+ */
+typedef struct {
+    Fixed	matrix11 B32;
+    Fixed	matrix12 B32;
+    Fixed	matrix13 B32;
+    Fixed	matrix21 B32;
+    Fixed	matrix22 B32;
+    Fixed	matrix23 B32;
+    Fixed	matrix31 B32;
+    Fixed	matrix32 B32;
+    Fixed	matrix33 B32;
+} xRenderTransform;
+
+#define sz_xRenderTransform 36
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		renderReqType;
+    CARD16		length B16;
+    Picture		picture B32;
+    xRenderTransform	transform;
+} xRenderSetPictureTransformReq;
+
+#define sz_xRenderSetPictureTransformReq	    44
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		renderReqType;
+    CARD16		length B16;
+    Drawable		drawable B32;
+} xRenderQueryFiltersReq;
+
+#define sz_xRenderQueryFiltersReq		    8
+
+typedef struct {
+    BYTE    type;   /* X_Reply */
+    BYTE    pad1;
+    CARD16  sequenceNumber B16;
+    CARD32  length B32;
+    CARD32  numAliases B32;	/* LISTofCARD16 */
+    CARD32  numFilters B32;	/* LISTofSTRING8 */
+    CARD32  pad2 B32;
+    CARD32  pad3 B32;
+    CARD32  pad4 B32;
+    CARD32  pad5 B32;
+} xRenderQueryFiltersReply;
+
+#define sz_xRenderQueryFiltersReply		    32
+
+typedef struct {
+    CARD8		reqType;
+    CARD8		renderReqType;
+    CARD16		length B16;
+    Picture		picture B32;
+    CARD16		nbytes B16; /* number of bytes in name */
+    CARD16		pad B16;
+} xRenderSetPictureFilterReq;
+
+#define sz_xRenderSetPictureFilterReq		    12
+    
 #undef Window
 #undef Drawable
 #undef Font

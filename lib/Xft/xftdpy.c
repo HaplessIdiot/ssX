@@ -481,9 +481,18 @@ XftDefaultSubstitute (Display *dpy, int screen, FcPattern *pattern)
     }
     if (FcPatternGet (pattern, FC_RGBA, 0, &v) == FcResultNoMatch)
     {
+	int	subpixel;
+#if RENDER_MAJOR > 0 || RENDER_MINOR >= 6
+	subpixel = XRenderQuerySubpixelOrder (dpy, screen);
+	if (subpixel == SubPixelNone)
+#endif
+	{
+	    subpixel = FC_RGBA_NONE;
+	}
+
 	FcPatternAddInteger (pattern, FC_RGBA,
 			      XftDefaultGetInteger (dpy, FC_RGBA, screen, 
-						    FC_RGBA_NONE));
+						    subpixel));
     }
     if (FcPatternGet (pattern, FC_MINSPACE, 0, &v) == FcResultNoMatch)
     {

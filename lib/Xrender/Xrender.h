@@ -64,34 +64,6 @@ typedef struct {
 #define PictFormatAlphaMask (1 << 10)
 #define PictFormatColormap  (1 << 11)
 
-typedef struct {
-    Visual		*visual;
-    XRenderPictFormat	*format;
-} XRenderVisual;
-
-typedef struct {
-    int			depth;
-    int			nvisuals;
-    XRenderVisual	*visuals;
-} XRenderDepth;
-
-typedef struct {
-    XRenderDepth	*depths;
-    int			ndepths;
-    XRenderPictFormat	*fallback;
-} XRenderScreen;
-
-typedef struct _XRenderInfo {
-    XRenderPictFormat	*format;
-    int			nformat;
-    XRenderScreen	*screen;
-    int			nscreen;
-    XRenderDepth	*depth;
-    int			ndepth;
-    XRenderVisual	*visual;
-    int			nvisual;
-} XRenderInfo;
-
 typedef struct _XRenderPictureAttributes {
     Bool		repeat;
     Picture		alpha_map;
@@ -176,6 +148,17 @@ typedef struct _XTrapezoid {
     XLineFixed	left, right;
 } XTrapezoid;
 
+typedef struct _XTransform {
+    XFixed  matrix[3][3];
+} XTransform;
+
+typedef struct _XFilters {
+    int	    nfilter;
+    char    **filter;
+    int	    nalias;
+    short   *alias;
+} XFilters;
+
 _XFUNCPROTOBEGIN
 
 Bool XRenderQueryExtension (Display *dpy, int *event_basep, int *error_basep);
@@ -185,6 +168,8 @@ Status XRenderQueryVersion (Display *dpy,
 			    int     *minor_versionp);
 
 Status XRenderQueryFormats (Display *dpy);
+
+int XRenderQuerySubpixelOrder (Display *dpy, int screen);
 
 XRenderPictFormat *
 XRenderFindVisualFormat (Display *dpy, _Xconst Visual *visual);
@@ -231,6 +216,11 @@ void
 XRenderSetPictureClipRegion (Display	    *dpy,
 			     Picture	    picture,
 			     Region	    r);
+
+void
+XRenderSetPictureTransform (Display	    *dpy,
+			    Picture	    picture,
+			    XTransform	    *transform);
 
 void
 XRenderFreePicture (Display                   *dpy,
@@ -441,6 +431,16 @@ XRenderCreateCursor (Display	    *dpy,
 		     Picture	    source,
 		     unsigned int   x,
 		     unsigned int   y);
+
+XFilters *
+XRenderQueryFilters (Display *dpy, Drawable drawable);
+
+void
+XRenderSetPictureFilter (Display    *dpy,
+			 Picture    picture,
+			 char	    *filter,
+			 XFixed	    *params,
+			 int	    nparams);
 
 _XFUNCPROTOEND
 

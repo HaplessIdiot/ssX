@@ -73,6 +73,9 @@ static int ProcRenderFreeGlyphs (ClientPtr pClient);
 static int ProcRenderCompositeGlyphs (ClientPtr pClient);
 static int ProcRenderFillRectangles (ClientPtr pClient);
 static int ProcRenderCreateCursor (ClientPtr pClient);
+static int ProcRenderSetPictureTransform (ClientPtr pClient);
+static int ProcRenderQueryFilters (ClientPtr pClient);
+static int ProcRenderSetPictureFilter (ClientPtr pClient);
 
 static int ProcRenderDispatch (ClientPtr pClient);
 
@@ -102,12 +105,13 @@ static int SProcRenderFreeGlyphs (ClientPtr pClient);
 static int SProcRenderCompositeGlyphs (ClientPtr pClient);
 static int SProcRenderFillRectangles (ClientPtr pClient);
 static int SProcRenderCreateCursor (ClientPtr pClient);
+static int SProcRenderSetPictureTransform (ClientPtr pClient);
+static int SProcRenderQueryFilters (ClientPtr pClient);
+static int SProcRenderSetPictureFilter (ClientPtr pClient);
 
 static int SProcRenderDispatch (ClientPtr pClient);
 
-#define	RenderNumRequests   (X_RenderCreateCursor+1)
-
-int	(*ProcRenderVector[RenderNumRequests])(ClientPtr) = {
+int	(*ProcRenderVector[RenderNumberRequests])(ClientPtr) = {
     ProcRenderQueryVersion,
     ProcRenderQueryPictFormats,
     ProcRenderQueryPictIndexValues,
@@ -136,9 +140,12 @@ int	(*ProcRenderVector[RenderNumRequests])(ClientPtr) = {
     ProcRenderCompositeGlyphs,
     ProcRenderFillRectangles,
     ProcRenderCreateCursor,
+    ProcRenderSetPictureTransform,
+    ProcRenderQueryFilters,
+    ProcRenderSetPictureFilter,
 };
 
-int	(*SProcRenderVector[RenderNumRequests])(ClientPtr) = {
+int	(*SProcRenderVector[RenderNumberRequests])(ClientPtr) = {
     SProcRenderQueryVersion,
     SProcRenderQueryPictFormats,
     SProcRenderQueryPictIndexValues,
@@ -167,6 +174,9 @@ int	(*SProcRenderVector[RenderNumRequests])(ClientPtr) = {
     SProcRenderCompositeGlyphs,
     SProcRenderFillRectangles,
     SProcRenderCreateCursor,
+    SProcRenderSetPictureTransform,
+    SProcRenderQueryFilters,
+    SProcRenderSetPictureFilter,
 };
 
 static void
@@ -174,6 +184,27 @@ RenderResetProc (ExtensionEntry *extEntry);
     
 static CARD8	RenderReqCode;
 int	RenderErrBase;
+int	RenderClientPrivateIndex;
+
+typedef struct _RenderClient {
+    int	    major_version;
+    int	    minor_version;
+} RenderClientRec, *RenderClientPtr;
+
+#define GetRenderClient(pClient)    ((RenderClientPtr) (pClient)->devPrivates[RenderClientPrivateIndex].ptr)
+
+static void
+RenderClientCallback (CallbackListPtr	*list,
+		      pointer		closure,
+		      pointer		data)
+{
+    NewClientInfoRec	*clientinfo = (NewClientInfoRec *) data;
+    ClientPtr		pClient = clientinfo->client;
+    RenderClientPtr	pRenderClient = GetRenderClient (pClient);
+
+    pRenderClient->major_version = 0;
+    pRenderClient->minor_version = 0;
+}
 
 void
 RenderExtensionInit (void)
@@ -184,13 +215,20 @@ RenderExtensionInit (void)
 	return;
     if (!PictureFinishInit ())
 	return;
+    RenderClientPrivateIndex = AllocateClientPrivateIndex ();
+    if (!AllocateClientPrivate (RenderClientPrivateIndex, 
+				sizeof (RenderClientRec)))
+	return;
+    if (!AddCallback (&ClientStateCallback, RenderClientCallback, 0))
+	return;
+
     extEntry = AddExtension (RENDER_NAME, 0, RenderNumberErrors,
 			     ProcRenderDispatch, SProcRenderDispatch,
 			     RenderResetProc, StandardMinorOpcode);
     if (!extEntry)
 	return;
     RenderReqCode = (CARD8) extEntry->base;
-    RenderErrBase = extEntry->errorBase;							
+    RenderErrBase = extEntry->errorBase;
 }
 
 static void
@@ -201,9 +239,13 @@ RenderResetProc (ExtensionEntry *extEntry)
 static int
 ProcRenderQueryVersion (ClientPtr client)
 {
+    RenderClientPtr pRenderClient = GetRenderClient (client);
     xRenderQueryVersionReply rep;
     register int n;
-/*    REQUEST(xRenderQueryVersionReq); */
+    REQUEST(xRenderQueryVersionReq);
+
+    pRenderClient->major_version = stuff->majorVersion;
+    pRenderClient->minor_version = stuff->minorVersion;
 
     REQUEST_SIZE_MATCH(xRenderQueryVersionReq);
     rep.type = X_Reply;
@@ -261,11 +303,13 @@ extern char *ConnectionInfo;
 static int
 ProcRenderQueryPictFormats (ClientPtr client)
 {
+    RenderClientPtr		    pRenderClient = GetRenderClient (client);
     xRenderQueryPictFormatsReply    *reply;
     xPictScreen			    *pictScreen;
     xPictDepth			    *pictDepth;
     xPictVisual			    *pictVisual;
     xPictFormInfo		    *pictForm;
+    CARD32			    *pictSubpixel;
     ScreenPtr			    pScreen;
     VisualPtr			    pVisual;
     DepthPtr			    pDepth;
@@ -279,6 +323,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
     int				    s;
     int				    n;
     int				    numScreens;
+    int				    numSubpixel;
 /*    REQUEST(xRenderQueryPictFormatsReq); */
 
     REQUEST_SIZE_MATCH(xRenderQueryPictFormatsReq);
@@ -311,11 +356,17 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	if (ps)
 	    nformat += ps->nformats;
     }
+    if (pRenderClient->major_version == 0 && pRenderClient->minor_version < 6)
+	numSubpixel = 0;
+    else
+	numSubpixel = numScreens;
+    
     rlength = (sizeof (xRenderQueryPictFormatsReply) +
 	       nformat * sizeof (xPictFormInfo) +
 	       numScreens * sizeof (xPictScreen) +
 	       ndepth * sizeof (xPictDepth) +
-	       nvisual * sizeof (xPictVisual));
+	       nvisual * sizeof (xPictVisual) +
+	       numSubpixel * sizeof (CARD32));
     reply = (xRenderQueryPictFormatsReply *) xalloc (rlength);
     if (!reply)
 	return BadAlloc;
@@ -326,6 +377,7 @@ ProcRenderQueryPictFormats (ClientPtr client)
     reply->numScreens = numScreens;
     reply->numDepths = ndepth;
     reply->numVisuals = nvisual;
+    reply->numSubpixel = numSubpixel;
     
     pictForm = (xPictFormInfo *) (reply + 1);
     
@@ -424,6 +476,23 @@ ProcRenderQueryPictFormats (ClientPtr client)
 	}
 	pictScreen = (xPictScreen *) pictDepth;
     }
+    pictSubpixel = (CARD32 *) pictScreen;
+    
+    for (s = 0; s < numSubpixel; s++)
+    {
+	pScreen = screenInfo.screens[s];
+	ps = GetPictureScreenIfSet(pScreen);
+	if (ps)
+	    *pictSubpixel = ps->subpixel;
+	else
+	    *pictSubpixel = SubPixelUnknown;
+	if (client->swapped)
+	{
+	    swapl (pictSubpixel, n);
+	}
+	++pictSubpixel;
+    }
+    
     if (client->swapped)
     {
 	swaps (&reply->sequenceNumber, n);
@@ -1406,11 +1475,157 @@ ProcRenderCreateCursor (ClientPtr client)
 }
 
 static int
+ProcRenderSetPictureTransform (ClientPtr client)
+{
+    REQUEST(xRenderSetPictureTransformReq);
+    PicturePtr	pPicture;
+    int		result;
+
+    REQUEST_SIZE_MATCH(xRenderSetPictureTransformReq);
+    VERIFY_PICTURE (pPicture, stuff->picture, client, SecurityWriteAccess,
+		    RenderErrBase + BadPicture);
+    result = SetPictureTransform (pPicture, (PictTransform *) &stuff->transform);
+    if (client->noClientException != Success)
+        return(client->noClientException);
+    else
+        return(result);
+}
+
+static int
+ProcRenderQueryFilters (ClientPtr client)
+{
+    REQUEST (xRenderQueryFiltersReq);
+    DrawablePtr			pDrawable;
+    xRenderQueryFiltersReply	*reply;
+    int				nbytesName;
+    int				nnames;
+    ScreenPtr			pScreen;
+    PictureScreenPtr		ps;
+    int				i, j;
+    int				len;
+    int				total_bytes;
+    INT16			*aliases;
+    char			*names;
+
+    REQUEST_SIZE_MATCH(xRenderQueryFiltersReq);
+    SECURITY_VERIFY_DRAWABLE(pDrawable, stuff->drawable, client, SecurityReadAccess);
+    
+    pScreen = pDrawable->pScreen;
+    nbytesName = 0;
+    nnames = 0;
+    ps = GetPictureScreenIfSet(pScreen);
+    if (ps)
+    {
+	for (i = 0; i < ps->nfilters; i++)
+	    nbytesName += 1 + strlen (ps->filters[i].name);
+	for (i = 0; i < ps->nfilterAliases; i++)
+	    nbytesName += 1 + strlen (ps->filterAliases[i].alias);
+	nnames = ps->nfilters + ps->nfilterAliases;
+    }
+    len = ((nnames + 1) >> 1) + ((nbytesName + 3) >> 2);
+    total_bytes = sizeof (xRenderQueryFiltersReply) + (len << 2);
+    reply = (xRenderQueryFiltersReply *) xalloc (total_bytes);
+    if (!reply)
+	return BadAlloc;
+    aliases = (INT16 *) (reply + 1);
+    names = (char *) (aliases + ((nnames + 1) & ~1));
+    
+    reply->type = X_Reply;
+    reply->sequenceNumber = client->sequence;
+    reply->length = len;
+    reply->numAliases = nnames;
+    reply->numFilters = nnames;
+    if (ps)
+    {
+
+	/* fill in alias values */
+	for (i = 0; i < ps->nfilters; i++)
+	    aliases[i] = FilterAliasNone;
+	for (i = 0; i < ps->nfilterAliases; i++)
+	{
+	    for (j = 0; j < ps->nfilters; j++)
+		if (ps->filterAliases[i].filter_id == ps->filters[j].id)
+		    break;
+	    if (j == ps->nfilters)
+	    {
+		for (j = 0; j < ps->nfilterAliases; j++)
+		    if (ps->filterAliases[i].filter_id == 
+			ps->filterAliases[j].alias_id)
+		    {
+			break;
+		    }
+		if (j == ps->nfilterAliases)
+		    j = FilterAliasNone;
+		else
+		    j = j + ps->nfilters;
+	    }
+	    aliases[i + ps->nfilters] = j;
+	}
+
+	/* fill in filter names */
+	for (i = 0; i < ps->nfilters; i++)
+	{
+	    j = strlen (ps->filters[i].name);
+	    *names++ = j;
+	    strncpy (names, ps->filters[i].name, j);
+	    names += j;
+	}
+	
+	/* fill in filter alias names */
+	for (i = 0; i < ps->nfilterAliases; i++)
+	{
+	    j = strlen (ps->filterAliases[i].alias);
+	    *names++ = j;
+	    strncpy (names, ps->filterAliases[i].alias, j);
+	    names += j;
+	}
+    }
+
+    if (client->swapped)
+    {
+	register int n;
+
+	for (i = 0; i < reply->numAliases; i++)
+	{
+	    swaps (&aliases[i], n);
+	}
+    	swaps(&reply->sequenceNumber, n);
+    	swapl(&reply->length, n);
+	swapl(&reply->numAliases, n);
+	swapl(&reply->numFilters, n);
+    }
+    WriteToClient(client, total_bytes, (char *) reply);
+    xfree (reply);
+    
+    return(client->noClientException);
+}
+
+static int
+ProcRenderSetPictureFilter (ClientPtr client)
+{
+    REQUEST (xRenderSetPictureFilterReq);
+    PicturePtr	pPicture;
+    int		result;
+    xFixed	*params;
+    int		nparams;
+    char	*name;
+    
+    REQUEST_AT_LEAST_SIZE (xRenderSetPictureFilterReq);
+    VERIFY_PICTURE (pPicture, stuff->picture, client, SecurityWriteAccess,
+		    RenderErrBase + BadPicture);
+    name = (char *) (stuff + 1);
+    params = (xFixed *) (name + ((stuff->nbytes + 3) & ~3));
+    nparams = ((xFixed *) stuff + stuff->length) - params;
+    result = SetPictureFilter (pPicture, name, stuff->nbytes, params, nparams);
+    return result;
+}
+
+static int
 ProcRenderDispatch (ClientPtr client)
 {
     REQUEST(xReq);
     
-    if (stuff->data < RenderNumRequests)
+    if (stuff->data < RenderNumberRequests)
 	return (*ProcRenderVector[stuff->data]) (client);
     else
 	return BadRequest;
@@ -1764,11 +1979,57 @@ SProcRenderCreateCursor (ClientPtr client)
 }
     
 static int
+SProcRenderSetPictureTransform (ClientPtr client)
+{
+    register int n;
+    REQUEST(xRenderSetPictureTransformReq);
+    REQUEST_SIZE_MATCH(xRenderSetPictureTransformReq);
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->picture, n);
+    swapl(&stuff->transform.matrix11, n);
+    swapl(&stuff->transform.matrix12, n);
+    swapl(&stuff->transform.matrix13, n);
+    swapl(&stuff->transform.matrix21, n);
+    swapl(&stuff->transform.matrix22, n);
+    swapl(&stuff->transform.matrix23, n);
+    swapl(&stuff->transform.matrix31, n);
+    swapl(&stuff->transform.matrix32, n);
+    swapl(&stuff->transform.matrix33, n);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
+}
+
+static int
+SProcRenderQueryFilters (ClientPtr client)
+{
+    register int n;
+    REQUEST (xRenderQueryFiltersReq);
+    REQUEST_SIZE_MATCH (xRenderQueryFiltersReq);
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->drawable, n);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
+}
+    
+static int
+SProcRenderSetPictureFilter (ClientPtr client)
+{
+    register int n;
+    REQUEST (xRenderSetPictureFilterReq);
+    REQUEST_AT_LEAST_SIZE (xRenderSetPictureFilterReq);
+
+    swaps(&stuff->length, n);
+    swapl(&stuff->picture, n);
+    swaps(&stuff->nbytes, n);
+    return (*ProcRenderVector[stuff->renderReqType]) (client);
+}
+    
+static int
 SProcRenderDispatch (ClientPtr client)
 {
     REQUEST(xReq);
     
-    if (stuff->data < RenderNumRequests)
+    if (stuff->data < RenderNumberRequests)
 	return (*SProcRenderVector[stuff->data]) (client);
     else
 	return BadRequest;
@@ -1794,7 +2055,7 @@ SProcRenderDispatch (ClientPtr client)
     } \
 } \
 
-int	    (*PanoramiXSaveRenderVector[RenderNumRequests])(ClientPtr);
+int	    (*PanoramiXSaveRenderVector[RenderNumberRequests])(ClientPtr);
 
 unsigned long	XRT_PICTURE;
 
@@ -2052,7 +2313,7 @@ PanoramiXRenderInit (void)
     int	    i;
     
     XRT_PICTURE = CreateNewResourceType (XineramaDeleteResource);
-    for (i = 0; i < RenderNumRequests; i++)
+    for (i = 0; i < RenderNumberRequests; i++)
 	PanoramiXSaveRenderVector[i] = ProcRenderVector[i];
     /*
      * Stuff in Xinerama aware request processing hooks
@@ -2072,7 +2333,7 @@ void
 PanoramiXRenderReset (void)
 {
     int	    i;
-    for (i = 0; i < RenderNumRequests; i++)
+    for (i = 0; i < RenderNumberRequests; i++)
 	ProcRenderVector[i] = PanoramiXSaveRenderVector[i];
 }
 

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.10 2001/07/19 04:42:10 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mipict.c,v 1.11 2002/05/13 05:25:11 keithp Exp $
  *
  * Copyright © 1999 Keith Packard
  *
@@ -290,6 +290,9 @@ miClipPictureSrc (RegionPtr	pRegion,
 		  int		dx,
 		  int		dy)
 {
+    /* XXX what to do with clipping from transformed pictures? */
+    if (pPicture->transform)
+	return TRUE;
     if (pPicture->repeat)
     {
 	if (pPicture->clientClipType != CT_NONE)

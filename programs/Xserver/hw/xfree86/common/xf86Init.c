@@ -43,8 +43,12 @@
 #else
 #include "inputstr.h"
 #endif
+#include "xf86DDC.h"
 #include "xf86Xinput.h"
 #include "xf86InPriv.h"
+#ifdef RENDER
+#include "picturestr.h"
+#endif
 
 #include "globals.h"
 
@@ -845,6 +849,16 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
 	= (void*)(xf86Screens[i]->pScreen->CreateWindow);
       xf86Screens[i]->pScreen->CreateWindow = xf86CreateRootWindow;
 
+#ifdef RENDER
+    {
+	xf86MonPtr DDC = (xf86MonPtr)(xf86Screens[i]->monitor->DDC); 
+	PictureSetSubpixelOrder (xf86Screens[i]->pScreen,
+				 DDC ?
+				 (DDC->features.input_type ?
+				  SubPixelHorizontalRGB : SubPixelNone) :
+				 SubPixelUnknown);;
+    }
+#endif
 #ifdef NOT_USED
       /*
        * Here we have to let the driver getting access of the VT. Note that

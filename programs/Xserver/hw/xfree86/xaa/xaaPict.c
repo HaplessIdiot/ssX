@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.13 2001/06/02 21:30:31 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.14 2001/06/03 19:47:59 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -207,6 +207,12 @@ XAADoComposite (
         IS_OFFSCREEN_PIXMAP(pSrc->pDrawable))
 	return FALSE;
 
+    if (pSrc->transform || (pMask && pMask->transform))
+	return FALSE;
+
+    if (pDst->alphaMap || pSrc->alphaMap || (pMask && pMask->alphaMap))
+	return FALSE;
+	
     xDst += pDst->pDrawable->x;
     yDst += pDst->pDrawable->y;
     xSrc += pSrc->pDrawable->x;

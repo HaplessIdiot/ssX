@@ -75,17 +75,43 @@ typedef struct _FbCompositeOperand FbCompositeOperand;
 typedef CARD32 (*FbCompositeFetch)(FbCompositeOperand *op);
 typedef void (*FbCompositeStore) (FbCompositeOperand *op, CARD32 value);
 
+typedef void (*FbCompositeStep) (FbCompositeOperand *op);
+typedef void (*FbCompositeSet) (FbCompositeOperand *op, int x, int y);
+
 struct _FbCompositeOperand {
-    FbBits		*line;
-    CARD32		offset;
-    FbStride		stride;
-    int			xoff;
-    int			yoff;
-    int			bpp;
+    union {
+	struct {
+	    FbBits		*top_line;
+	    int			left_offset;
+	    
+	    int			start_offset;
+	    FbBits		*line;
+	    CARD32		offset;
+	    FbStride		stride;
+	    int			bpp;
+	} drawable;
+	struct {
+	    int			alpha_dx;
+	    int			alpha_dy;
+	} external;
+	struct {
+	    int			top_y;
+	    int			left_x;
+	    int			start_x;
+	    int			x;
+	    int			y;
+	    PictTransformPtr	transform;
+	    int			filter;
+	} transform;
+    } u;
     FbCompositeFetch	fetch;
     FbCompositeFetch	fetcha;
     FbCompositeStore	store;
+    FbCompositeStep	over;
+    FbCompositeStep	down;
+    FbCompositeSet	set;
     miIndexedPtr	indexed;
+    RegionPtr		clip;
 };
 
 typedef void (*FbCombineFunc) (FbCompositeOperand	*src,
@@ -695,6 +721,12 @@ CARD32
 fbFetch_external (FbCompositeOperand *op);
 
 CARD32
+fbFetch_transform (FbCompositeOperand *op);
+
+CARD32
+fbFetcha_transform (FbCompositeOperand *op);
+
+CARD32
 fbFetcha_external (FbCompositeOperand *op);
 
 void
@@ -710,7 +742,9 @@ Bool
 fbBuildCompositeOperand (PicturePtr	    pPict,
 			 FbCompositeOperand *op,
 			 INT16		    x,
-			 INT16		    y);
+			 INT16		    y,
+			 Bool		    transform,
+			 Bool		    alpha);
 void
 fbCompositeGeneral (CARD8	op,
 		    PicturePtr	pSrc,
