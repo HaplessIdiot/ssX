@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.39 2002/04/10 09:11:56 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.40 2002/05/27 16:52:58 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -217,7 +217,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.39 2002/04/10 09:11:56 ala
 #define BuildXvExt		YES
 #define BuildXF86MiscExt	NO
 #define BuildRender		YES
-#define BuildRandR		YES
+#define BuildRandR		NO
 #define BuildXF86DRI		NO	/* No direct access to hardware */
 #define BuildXF86DRM		NO	/* No direct access to hardware */
 #define BuildXKB		YES

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.26 2001/11/21 08:51:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/InitOutput.c,v 1.27 2001/12/14 19:59:53 dawes Exp $ */
 
 #include "win.h"
 
@@ -46,10 +46,10 @@ extern void OsVendorVErrorF (const char *pszFormat, va_list va_args);
 
 static PixmapFormatRec g_PixmapFormats[] = {
         { 1,    1,      BITMAP_SCANLINE_PAD },
-        { 4,    8,      BITMAP_SCANLINE_PAD },
-        { 8,    8,      BITMAP_SCANLINE_PAD },
-        { 15,   16,     BITMAP_SCANLINE_PAD },
-        { 16,   16,     BITMAP_SCANLINE_PAD },
+	{ 4,    8,      BITMAP_SCANLINE_PAD },
+	{ 8,    8,      BITMAP_SCANLINE_PAD },
+	{ 15,   16,     BITMAP_SCANLINE_PAD },
+	{ 16,   16,     BITMAP_SCANLINE_PAD },
         { 24,   24,     BITMAP_SCANLINE_PAD },
 	{ 32,	32,	BITMAP_SCANLINE_PAD }
 };
@@ -74,7 +74,7 @@ winInitializeDefaultScreens (void)
   dwWidth = GetSystemMetrics (SM_CXSCREEN);
   dwHeight = GetSystemMetrics (SM_CYSCREEN);
 
-  ErrorF ("winInitializeDefaultScreens () - w %d h %d\n", dwWidth, dwHeight);
+  ErrorF ("winInitializeDefaultScreens - w %d h %d\n", dwWidth, dwHeight);
 
   /* Set a default DPI, if no parameter was passed */
   if (monitorResolution == 0)
@@ -89,6 +89,8 @@ winInitializeDefaultScreens (void)
       g_ScreenInfo[i].dwRefreshRate = WIN_DEFAULT_REFRESH;
       g_ScreenInfo[i].pfb = NULL;
       g_ScreenInfo[i].fFullScreen = FALSE;
+      g_ScreenInfo[i].fDecoration = TRUE;
+      g_ScreenInfo[i].fLessPointer = FALSE;
       g_ScreenInfo[i].iE3BTimeout = WIN_E3B_OFF;
       g_ScreenInfo[i].dwWidth_mm = (dwWidth / WIN_DEFAULT_DPI)
 	* 25.4;
@@ -220,6 +222,15 @@ ddxUseMsg (void)
   ErrorF ("-screen scr_num width height\n"
 	  "\tSet screen scr_num's width and height\n");
 
+  ErrorF ("-nodecoration\n"
+          "\tDo not draw a window border, title bar, etc.  Windowed\n"
+	  "\tmode only.\n");
+
+  ErrorF ("-lesspointer\n"
+	  "\tHide the windows mouse pointer when it is over an inactive "
+          "\tXFree86 window.  This prevents ghost cursors appearing where the "
+          "\tWindows cursor is drawn overtop of the X cursor\n");
+
   ErrorF ("-[no]unixkill\n"
           "\tCtrl+Alt+Backspace exits the X Server\n");
 
@@ -250,10 +261,10 @@ ddxUseMsg (void)
 int
 ddxProcessArgument (int argc, char *argv[], int i)
 {
-  static Bool		beenHere = FALSE;
+  static Bool		s_fBeenHere = FALSE;
 
   /* Initialize once */
-  if (!beenHere)
+  if (!s_fBeenHere)
     {
 #ifdef DDXOSVERRORF
       /*
@@ -267,22 +278,19 @@ ddxProcessArgument (int argc, char *argv[], int i)
 	g_pfLog = fopen (WIN_LOG_FNAME, "w");
 #endif
 
-      beenHere = TRUE;
-
-      /* Detach from any console we are connected to */
-      FreeConsole ();
+      s_fBeenHere = TRUE;
 
       /*
        * Initialize default screen settings.  We have to do this before
        * OsVendorInit () gets called, otherwise we will overwrite
        * settings changed by parameters such as -fullscreen, etc.
        */
-      ErrorF ("ddxProcessArgument () - Initializing default screens\n");
+      ErrorF ("ddxProcessArgument - Initializing default screens\n");
       winInitializeDefaultScreens ();
-  }
+    }
 
 #if CYGDEBUG
-  ErrorF ("ddxProcessArgument ()\n");
+  ErrorF ("ddxProcessArgument - arg: %s\n", argv[i]);
 #endif
   
   /*
@@ -293,8 +301,10 @@ ddxProcessArgument (int argc, char *argv[], int i)
       int		iArgsProcessed = 1;
       int		nScreenNum;
 
-      ErrorF ("ddxProcessArgument () - screen - argc: %d i: %d\n",
+#if CYGDEBUG
+      ErrorF ("ddxProcessArgument - screen - argc: %d i: %d\n",
 	      argc, i);
+#endif
 
       /* Display the usage message if the argument is malformed */
       if (i + 2 >= argc)
@@ -308,7 +318,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
       /* Validate the specified screen number */
       if (nScreenNum < 0 || nScreenNum >= MAXSCREENS)
         {
-          ErrorF ("ddxProcessArgument () - Invalid screen number %d\n",
+          ErrorF ("ddxProcessArgument - Invalid screen number %d\n",
 		  nScreenNum);
           UseMsg ();
 	  return 0;
@@ -436,6 +446,58 @@ ddxProcessArgument (int argc, char *argv[], int i)
     }
 
   /*
+   * Look for the '-lesspointer' argument
+   */
+  if (strcmp(argv[i], "-lesspointer") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fLessPointer = TRUE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+          g_ScreenInfo[g_iLastScreen].fLessPointer = TRUE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
+   * Look for the '-nodecoration' argument
+   */
+  if (strcmp(argv[i], "-nodecoration") == 0)
+    {
+      /* Is this parameter attached to a screen or is it global? */
+      if (-1 == g_iLastScreen)
+	{
+	  int			j;
+
+	  /* Parameter is for all screens */
+	  for (j = 0; j < MAXSCREENS; j++)
+	    {
+	      g_ScreenInfo[j].fDecoration = FALSE;
+	    }
+	}
+      else
+	{
+	  /* Parameter is for a single screen */
+	  g_ScreenInfo[g_iLastScreen].fDecoration = FALSE;
+	}
+
+      /* Indicate that we have processed this argument */
+      return 1;
+    }
+
+  /*
    * Look for the '-ignoreinput' argument
    */
   if (strcmp(argv[i], "-ignoreinput") == 0)
@@ -502,7 +564,7 @@ ddxProcessArgument (int argc, char *argv[], int i)
       else
 	{
 	  /* Parameter is for a single screen */
-	  g_ScreenInfo[g_iLastScreen].iE3BTimeout = TRUE;
+	  g_ScreenInfo[g_iLastScreen].iE3BTimeout = iE3BTimeout;
 	}
 
       /* Indicate that we have processed this argument */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.25 2001/12/14 20:00:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osinit.c,v 3.26 2002/05/31 18:46:06 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -110,7 +110,7 @@ OsInit()
 #ifdef XFree86LOADER
 	xf86WrapperInit();
 #endif
-#if !defined(SCO)
+#if !defined(SCO) && !defined(__CYGWIN__)
 	fclose(stdin);
 	fclose(stdout);
 #endif

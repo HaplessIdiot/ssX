@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.27 2001/11/21 08:51:24 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.28 2002/04/11 08:25:17 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -47,7 +47,7 @@
  * Build toggles for experimental features
  */
 #define WIN_NATIVE_GDI_SUPPORT	YES
-#define WIN_LAYER_SUPPORT	YES
+#define WIN_LAYER_SUPPORT	NO
 
 /* Turn debug messages on or off */
 #define CYGDEBUG		NO
@@ -315,6 +315,8 @@ typedef struct
   DWORD			dwEnginePreferred;
   DWORD			dwEnginesSupported;
   Bool			fFullScreen;
+  Bool			fDecoration;
+  Bool			fLessPointer;
   int			iE3BTimeout;
   /* Windows (Alt+F4) and Unix (Ctrl+Alt+Backspace) Killkey */
   Bool                  fUseWinKillKey;
@@ -329,7 +331,6 @@ typedef struct
   Bool			fEnabled;
   Bool			fClosed;
   Bool			fActive;
-  Bool			fCursor;
     
   int			iDeltaZ;
 
@@ -751,7 +752,7 @@ Bool
 winIsFakeCtrl_L (UINT message, WPARAM wParam, LPARAM lParam);
 
 void
-winKeybdReleaseModifierKeys ();
+winKeybdReleaseKeys ();
 
 void
 winSendKeyEvent (DWORD dwKey, Bool fDown);
@@ -770,6 +771,7 @@ winLayerAdd (WindowPtr pWindow, pointer value);
 int
 winLayerRemove (WindowPtr pWindow, pointer value);
 
+#ifdef RANDR
 Bool
 winRandRGetInfo (ScreenPtr pScreen, Rotation *pRotations);
 
@@ -781,6 +783,7 @@ winRandRSetConfig (ScreenPtr		pScreen,
 
 Bool
 winRandRInit (ScreenPtr pScreen);
+#endif
 
 
 /*

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincreatewnd.c,v 1.1 2001/11/11 23:07:40 alanh Exp $ */
 
 #include "win.h"
 #include "shellapi.h"
@@ -92,11 +92,11 @@ winCreateBoundingWindowFullScreen (ScreenPtr pScreen)
     case WIN_SERVER_SHADOW_GDI:
       /* Show the window */
       ShowWindow (*phwnd, SW_SHOWMAXIMIZED);
-      break;
+      return 0;
 
     default:
       /* Hide the window */
-      ShowWindow (*phwnd, SW_HIDE);
+      ShowWindow (*phwnd, SW_SHOWNORMAL);
       break;
     }
   
@@ -124,6 +124,16 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   HWND			*phwnd = &pScreenPriv->hwndScreen;
   WNDCLASS		wc;
   RECT			rcClient, rcWorkArea;
+  DWORD			dwWindowStyle;
+
+  /* Initialize window style */
+  dwWindowStyle = WS_OVERLAPPED | WS_SYSMENU | WS_MINIMIZEBOX;
+  
+  /* Decorated or undecorated window */
+  if (pScreenInfo->fDecoration)
+    dwWindowStyle |= WS_CAPTION;
+  else
+    dwWindowStyle |= WS_POPUP;
 
   /* Setup our window class */
   wc.style = CS_HREDRAW | CS_VREDRAW;
@@ -151,20 +161,11 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   
   /* Trim window width to fit work area */
   if (iWidth > (rcWorkArea.right - rcWorkArea.left))
-    {
-      iWidth = rcWorkArea.right - rcWorkArea.left;
-      pScreenInfo->dwWidth = iWidth -
-	2 * GetSystemMetrics (SM_CXFIXEDFRAME);
-    }
+    iWidth = rcWorkArea.right - rcWorkArea.left;
   
   /* Trim window height to fit work area */
   if (iHeight >= (rcWorkArea.bottom - rcWorkArea.top))
-    {
-      iHeight = rcWorkArea.bottom - rcWorkArea.top;
-      pScreenInfo->dwHeight = iHeight
-	- 2 * GetSystemMetrics (SM_CYFIXEDFRAME)
-	- GetSystemMetrics (SM_CYCAPTION);
-    }
+    iHeight = rcWorkArea.bottom - rcWorkArea.top;
   
 #if CYGDEBUG
   ErrorF ("winCreateBoundingWindowWindowed () - Adjusted width: %d "\
@@ -176,10 +177,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
   *phwnd = CreateWindowExA (0,			/* Extended styles */
 			    WINDOW_CLASS,	/* Class name */
 			    WINDOW_TITLE,	/* Window name */
-			    WS_OVERLAPPED
-			    | WS_CAPTION
-			    | WS_SYSMENU
-			    | WS_MINIMIZEBOX,	/* Almost OverlappedWindow */
+			    dwWindowStyle,
 			    rcWorkArea.left,	/* Horizontal position */
 			    rcWorkArea.top,	/* Vertical position */
 			    iWidth,		/* Right edge */
@@ -205,12 +203,16 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 	      "failed\n");
       return FALSE;
     }
-  ErrorF ("winCreateBoundingWindowWindowed () - WindowClient "\
-	  "w %d h %d r %d l %d b %d t %d\n",
+  ErrorF ("winCreateBoundingWindowWindowed () - WindowClient "
+	  "w %ld h %ld r %ld l %ld b %ld t %ld\n",
 	  rcClient.right - rcClient.left,
 	  rcClient.bottom - rcClient.top,
 	  rcClient.right, rcClient.left,
 	  rcClient.bottom, rcClient.top);
+
+  /* Store the actual height and width of the client area that we got */
+  pScreenInfo->dwWidth = rcClient.right - rcClient.left;
+  pScreenInfo->dwHeight = rcClient.bottom - rcClient.top;
 
   /*
    * Transform the client relative coords to screen relative coords.
@@ -225,7 +227,7 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 		   2);
 
   /* Show the window */
-  ShowWindow (*phwnd, SW_SHOW);
+  ShowWindow (*phwnd, SW_SHOWNORMAL);
   if (!UpdateWindow (*phwnd))
     {
       ErrorF ("winCreateBoundingWindowWindowed () - UpdateWindow () failed\n");

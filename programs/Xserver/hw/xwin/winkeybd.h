@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winkeybd.h,v 1.1 2001/09/26 13:00:34 alanh Exp $ */
 
 /*
  * We need symbols for the scan codes of keys.
@@ -63,7 +63,7 @@ g_iKeyMap [] = {
   /* 13 */	VK_RETURN,	0,		KEY_KP_Enter,
   /* 14 */	0,		0,		0,
   /* 15 */	0,		0,		0,
-  /* 16 */	VK_SHIFT,	0,		KEY_ShiftR,
+  /* 16 */	VK_SHIFT,	KEY_ShiftL,	KEY_ShiftR,
   /* 17 */	VK_CONTROL,	0,		KEY_RCtrl,
   /* 18 */	VK_MENU,	0,		KEY_AltLang,
   /* 19 */	VK_PAUSE,	KEY_Pause,	0,
