@@ -1,10 +1,34 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xsetpointer/xsetpointer.c,v 3.1 1995/12/23 10:12:32 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Xproto.h>
 #include <X11/extensions/XInput.h>
 
 int           event_type;
+
+int StrCaseCmp(s1, s2)
+char *s1, *s2;
+{
+	char c1, c2;
+
+	if (*s1 == 0)
+		if (*s2 == 0)
+			return(0);
+		else
+			return(1);
+
+	c1 = (isupper(*s1) ? tolower(*s1) : *s1);
+	c2 = (isupper(*s2) ? tolower(*s2) : *s2);
+	while (c1 == c2)
+	{
+		if (c1 == '\0')
+			return(0);
+		s1++; s2++;
+		c1 = (isupper(*s1) ? tolower(*s1) : *s1);
+		c2 = (isupper(*s2) ? tolower(*s2) : *s2);
+	}
+	return(c1 - c2);
+}
 
 int
 main(int argc, char * argv[])
@@ -56,7 +80,7 @@ main(int argc, char * argv[])
 	  }
 	  else {
           if ((argc == 2) && devices[loop].name &&
-              (strcasecmp(devices[loop].name, argv[1]) == 0))
+              (StrCaseCmp(devices[loop].name, argv[1]) == 0))
             if (devices[loop].use == IsXExtensionDevice)
               {
                 XDevice *device;
