@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: imakemdep.h,v 3.56 2001/12/14 19:53:19 dawes Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.58 2002/04/04 14:05:34 eich Exp $ */
 
 
 /* 
@@ -175,8 +175,8 @@ in this Software without prior written authorization from The Open Group.
 #define imake_ccflags "-DNOSTDHDRS"
 #endif
 
-/* this is for OS/2 under EMX. This won't work with DOS */
-#if defined(__EMX__)
+/* this is for OS/2 under UNIXOS2. This won't work with DOS */
+#if defined(__UNIXOS2__)
 #define imake_ccflags "-DBSD43"
 #endif
 
@@ -211,7 +211,7 @@ in this Software without prior written authorization from The Open Group.
  *     all colons).  One way to tell if you need this is to see whether or not
  *     your Makefiles have no tabs in them and lots of @@ strings.
  */
-#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__) || defined(__sgi)
+#if defined(sun) || defined(SYSV) || defined(SVR4) || defined(hcx) || defined(WIN32) || defined(sco) || (defined(AMOEBA) && defined(CROSS_COMPILE)) || defined(__QNX__) || defined(__sgi) || defined(__UNIXOS2__)
 #define FIXUP_CPP_WHITESPACE
 #endif
 #ifdef WIN32
@@ -293,7 +293,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef __minix_vmd
 #define DEFAULT_CPP "/usr/lib/cpp"
 #endif
-#if defined(__EMX__)
+#if defined(__UNIXOS2__)
 /* expects cpp in PATH */
 #define DEFAULT_CPP "cpp"
 #endif
@@ -649,7 +649,7 @@ char *cpp_argv[ARGUMENTS] = {
 	"-Dminix",
 #endif
 
-#if defined(__EMX__)
+#if defined(__UNIXOS2__)
 	"-traditional",
 	"-Demxos2",
 #endif
@@ -1189,8 +1189,8 @@ struct symtab	predefs[] = {
 #ifdef __ELF__
 	{"__ELF__", "1"},
 #endif
-#ifdef __EMX__
-	{"__EMX__", "1"},
+#ifdef __UNIXOS2__
+	{"__UNIXOS2__", "1"},
 #endif
 #if defined(__QNX__)
         {"__QNX__", "1"},

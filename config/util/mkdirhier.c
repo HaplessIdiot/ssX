@@ -32,7 +32,11 @@ from The Open Group.
  */
 #include <sys/types.h>
 #include <sys/stat.h>
+#ifndef __UNIXOS2__
 #include <direct.h>
+#else
+#include <dirent.h>
+#endif
 #include <stdlib.h>
 #include <string.h>
 
