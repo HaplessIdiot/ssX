@@ -44,7 +44,7 @@ copyright holders.
 **    *********************************************************
 ** 
 ********************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.3 1996/12/30 13:58:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/attributes.c,v 1.4 1996/12/31 07:05:28 dawes Exp $ */
 
 #include <Xproto.h>
 #include <string.h>
@@ -1234,7 +1234,7 @@ ReplaceAllKeywords(
     return command;
 }
 
-#if defined(CSRG_BASED) || defined(linux) || (defined(sun) && !defined(SVR4)) || (defined(SVR4) && !defined(sun) && !defined(USL))
+#if defined(CSRG_BASED) || defined(linux) || (defined(sun) && !defined(SVR4)) || (defined(SVR4) && !defined(sun) && !defined(USL)) || defined(__EMX__)
 #define iswspace(c) (isascii(c) && isspace(toascii(c)))
 #endif
 

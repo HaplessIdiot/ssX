@@ -1,12 +1,32 @@
-XFree86 3.2o (4 January 1997)
- 176. Add DPMS support for the MGA driver (Leonard N. Zubkoff).
- 175. Add sync-on-green support to the MGA driver (Leonard N. Zubkoff).
- 174. Add support for display modes that require more than 4MB on
+XFree86 3.2o (5 January 1997)
+ 188. Add MIPS/Arc support to build the S3 server on OpenBSD (Per Fogelstrom).
+ 187. Split OpenBSD config support out into a new OpenBSD.cf file
+      (Matthieu Herrb).
+ 186. Split the retrace wait out into a separate function in the S3
+      server (Mark Vojkovich).
+ 185. Fix a problem with FIFO setting for Mach64 chips with an
+      integrated DAC (Kevin Martin).
+ 184. Fix a pixmap corruption problem that shows up on Mach64 [CVG]T chips
+      (Kevin Martin).
+ 183. Disallow block write mode for [CVG]T Mach64 chips (Kevin Martin).
+ 182. Fix a problem for Mach64 CT-D cards where the server writes to the
+      wrong I/O address, possibly that of another PCI device (Kevin Martin).
+ 181. Fix Rage II support in the Mach64 server (Kevin Martin).
+ 180. Add preliminary XAA support for the TGA server, but currently
+      disabled (Alan Hourihane).
+ 179. Don't compile Xprint/Xrm.c because it is already included in
+      attributes.c (Holger Veit).
+ 178. Various updates for OS/2 (Holger Veit).
+ 177. Fix some typing problems in xf86expblt.c (Alan Hourihane).
+ 176. Fix XAA crash for drivers that don't fill in the ServerInfoRec
+      (Harm Hanemaayer).
+ 175. Add DPMS support for the MGA driver (Leonard N. Zubkoff).
+ 174. Add sync-on-green support to the MGA driver (Leonard N. Zubkoff).
+ 173. Add support for display modes that require more than 4MB on
       Millennium cards (Leonard N. Zubkoff).
- 173. Enable acceleration support for the Trident 9320LCD chips
+ 172. Enable acceleration support for the Trident 9320LCD chips
       (Alan Hourihane).
- 172. Add parallel make support for the lbxutil Imakefile (Robin Cutshaw).
- 171. Fix XAA crash for drivers that don't fill in the ServerInfoRec
+ 171. Add parallel make support for the lbxutil Imakefile (Robin Cutshaw).
       field (Alan Hourihane).
  170. Fix a problem with the Xmark script (Andrew E. Mileski).
 

@@ -1,9 +1,4 @@
-XCOMM platform:  $XConsortium: NetBSD.cf /main/16 1996/10/31 14:47:14 kaleb $
-
-
-
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.48 1997/01/03 07:58:01 dawes Exp $
-
+XCOMM platform:  $XFree86$
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -18,7 +13,6 @@ XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.48 1997/01/03 07:58:01 daw
 #define OSTeenyVersion		DefaultOSTeenyVersion
 #endif
 
-
 #ifndef OSVendor
 #define	OSVendor	/**/
 #endif
@@ -27,11 +21,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 /*
  * C library features
  */
-#if ((OSMajorVersion > 1) || \
-     (OSMajorVersion == 1 && OSMinorVersion > 2) || \
-     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion > 1))
-#  define HasPoll			YES
-#endif
+#define HasPoll			YES
 #define HasNdbm         	YES
 #define HasPutenv       	YES
 #define HasSnprintf		YES
@@ -39,28 +29,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define Malloc0ReturnsNull	NO
 #define SetTtyGroup     	YES
 #define DBMLibrary		/**/
-#ifndef HasLibCrypt
-# define HasLibCrypt		YES
-#endif
-#ifndef HasShm
-# if OSMajorVersion == 0 && OSMinorVersion == 9 && OSTeenyVersion == 2
-/*
- * Shm memory was removed in 0.9B because it was encumbered.
- * A free version was added in 0.9C
- */
-#  define HasShm          	NO
-# else
-#  define HasShm          	YES
-# endif
-#endif
+#define HasLibCrypt		NO
+#define HasShm          	YES
 #define HasWChar32		YES
-/*
- * There's a bug in NetBSD 1.0, 1.1 and 1.2 dlsym()
- */
-#if ((OSMajorVersion == 1 && OSMinorVersion < 2) || \
-     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion < 2))
-#  define HasDlsymBug		YES
-#endif
 
 /*
  * Compiler Features
@@ -75,6 +46,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define UseGas			YES
 #define GnuCpp			YES
 
+
 #define NeedConstPrototypes	YES
 #define NeedFunctionPrototypes	YES
 #define NeedNestedPrototypes	YES
@@ -86,7 +58,8 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define CppCmd          	/usr/libexec/cpp
 #define StandardCppDefines	-traditional
 #define PreProcessCmd   	CppCmd
-#define PreIncDir		/usr/include
+#define PreIncDir /usr/lib/gcc-lib/i386-unknown-openbsd1.2/2.7.2.1/include
+
 
 #undef CcCmd
 #define CcCmd 			gcc
@@ -99,26 +72,11 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define GccGasOption 		-DGCCUSESGAS
 #define AsmDefines 		-DUSE_GAS
 
-/* UseElfFormat defaults to YES if __ELF__ set */
-#ifndef UseElfFormat
-# ifdef __ELF__
-#  undef __ELF__			/* other imake files shouldn't care */
-#  define UseElfFormat YES
-# else
-#  define UseElfFormat NO
-# endif
-#endif
 
 #ifdef i386Architecture
 # define OptimizedCDebugFlags 	-m486 DefaultGcc2i386Opt
-# if OSMajorVersion < 1
-#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DXNO_SYSCONF
-# else
-#  define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
-# endif
-# if OSMajorVersion == 1 && OSMinorVersion >= 1 || OSMajorVersion >= 2
-#  define ServerExtraSysLibs	-li386
-# endif
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME
+# define ServerExtraSysLibs	-li386
 #else
 # define OptimizedCDebugFlags 	-O2
 # if defined(SparcArchitecture) || defined(AlphaArchitecture)
@@ -127,10 +85,14 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #  define ServerOSDefines 	/**/
 # endif
 #endif
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(ArcArchitecture)
 # define ServerExtraDefines GccGasOption XFree86ServerDefines
 # ifndef XFree86ConsoleDefines
-#  define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+#  if defined(ArcArchitecture)
+#   define XFree86ConsoleDefines -DPCCONS_SUPPORT
+#  else
+#   define XFree86ConsoleDefines -DPCCONS_SUPPORT -DPCVT_SUPPORT
+#  endif
 # endif
 #else
 # if defined(AlphaArchitecture)
@@ -143,43 +105,31 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
-/*
- * Dynamic loading supported starting in 1.0 on a.out platforms,
- * and on all ELF platforms.
- *
- * XXX May not be correct on NetBSD/pmax (ELF, but might not have
- * working shared libs).
- */
-#if ((OSMajorVersion > 0) && \
-     !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
-    UseElfFormat
+/* Dynamic loading supported starting in 1.0, but not yet on the Alpha. */
+#if (!defined(AlphaArchitecture) && (OSMajorVersion > 0)) || \
+    (defined(AlphaArchitecture) && 0) /* NOT YET */
 # ifndef BuildDynamicLoading
-# define BuildDynamicLoading	YES
+#  ifdef ArcArchitecture
+#   define BuildDynamicLoading        NO
+#  else
+#   define BuildDynamicLoading        YES
+#  endif
 # endif
 #endif
 
 #ifndef ExtraLibraries
 #define ExtraLibraries		/**/
 #endif
-#ifndef UseGnuMalloc
-#  define UseGnuMalloc		YES
-#endif
-#ifndef GnuMallocLibrary
-#define GnuMallocLibrary	-lgnumalloc
-#endif
+#define UseGnuMalloc		NO
 
-#if ((OSMajorVersion > 1) || \
-     (OSMajorVersion == 1 && OSMinorVersion > 2) || \
-     (OSMajorVersion == 1 && OSMinorVersion == 2 && OSTeenyVersion > 1))
-#ifndef HasGzipLibrary
 #define HasGzipLibrary  YES
-#endif
-#endif 
+
 
 /*
  * Make & install Features
  */
 
+#define MakeHasPosixVariableSubstitutions	YES
 #define HasMakefileSafeInclude	YES
 #define IncludeMakefile(file) @@# dependencies are in .depend
 #define DependFileName .depend
@@ -216,7 +166,6 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #endif
 
-#define MakeHasPosixVariableSubstitutions	YES
 
 /*
  * ForceSubdirs - force make to build subdirectories
@@ -286,19 +235,44 @@ install.man:: 								@@\
 	InstallManPageAliases(file,destdir,aliases)
 
 /*
- * Shared libraries supported starting in 1.0 on a.out platforms,
- * and on all ELF platforms.
- *
- * XXX May not be correct on NetBSD/pmax (ELF, but might not have
- * working shared libs).
+ * Shared libraries supported for most ports starting in 1.0, but not
+ * (quite) yet on the Alpha.
  */
-#if ((OSMajorVersion > 0) && \
-     !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
-    UseElfFormat
+#if (!defined(AlphaArchitecture) && (OSMajorVersion > 0)) || \
+    (defined(AlphaArchitecture) && 0) /* NOT YET */
 # ifndef HasSharedLibraries
 # define HasSharedLibraries	YES
 # endif
 #endif
+
+/*
+ * Mips ELF shared libs on Arc's need some special handling.
+ */
+#ifdef ArcArchitecture
+#define PositionIndependentCFlags
+#define SharedLibraryLoadFlags -x -shared --whole-archive -soname `echo $@ | sed 's/\.[0-9]*$$//'`
+#define SharedXtReqs -L$(BUILDLIBDIR) $(XLIBONLY) $(SMLIB) $(ICELIB)
+#define SharedXmuReqs $(LDPRELIB) $(XTOOLONLYLIB) $(XONLYLIB) $(EXTENSIONLIB)
+#endif
+
+
+/*
+ * ELF supported on the Alpha starting (not quite yet), not yet on other
+ * architectures.
+ */
+#if (defined(AlphaArchitecture) && 0) /* NOT YET */
+# ifndef UseElfFormat
+# define UseElfFormat	YES
+# endif
+#endif
+
+/*
+ * Default to non-ELF without shared library support if nothing else
+ * set above.
+ */
+#ifndef UseElfFormat
+#define UseElfFormat    NO
+#endif 
 
 #ifndef OSBinaryType
 #if UseElfFormat
@@ -316,12 +290,12 @@ install.man:: 								@@\
 #include <bsdLib.rules>
 #endif /* HasSharedLibraries */
 
-#ifdef i386Architecture
+#if defined(i386Architecture) || defined(ArcArchitecture)
 # include <xfree86.cf>
 #endif
 
 /*
- * Definitions for the SUN server on NetBSD/sparc
+ * Definitions for the SUN server on sparc
  */
 #ifdef SparcArchitecture
 #ifndef Xsun24Server
@@ -336,6 +310,7 @@ install.man:: 								@@\
 #ifndef BuildScreenSaverLibrary
 #define BuildScreenSaverLibrary	YES
 #endif
+
 /*
  * XFree86 uses its own (more portable) database routines to speed up 
  * the RGB database lookups
@@ -345,17 +320,6 @@ install.man:: 								@@\
 #ifndef UseRgbTxt
 #define UseRgbTxt	YES
 #endif
-#endif
-
-/*
- * Definition for compiling on MIPS machines
- */
-#ifdef MipsArchitecture
-#define PositionIndependentCFlags
-#define SharedLibraryLoadFlags -x -shared --whole-archive -soname `echo $@ |
-sed 's/\.[0-9]*$$//'`
-#define SharedXtReqs $(XLIBONLY) $(SMLIB) $(ICELIB)
-#define SharedXmuReqs $(LDPRELIB) $(XTOOLONLYLIB) $(XONLYLIB) $(EXTENSIONLIB)
 #endif
 
 /*
