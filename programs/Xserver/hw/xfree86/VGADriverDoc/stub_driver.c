@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.0 1994/05/30 08:23:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.1 1994/05/31 08:03:35 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -483,12 +483,13 @@ Bool enter;
 		/*
 		 * Here undo what was done above.
 		 */
-		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
 
-      		/* Protect CRTC[0-7] */
-      		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
-      		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
-    	}
+		/* Protect CRTC[0-7] */
+		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
+		outb(vgaIOBase + 5, (temp & 0x7F) | 0x80);
+
+		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+	}
 }
 
 /*

@@ -1,6 +1,6 @@
 This is the README for the XFree86 ATI SVGA driver.
 
-Last Revised: Wed March 23 1994 by tsi@gpu.srv.ualberta.ca
+Last Revised: Mon May 16 1994 by tsi@gpu.srv.ualberta.ca
 
 NOTE: Users of boards with the ATI Mach8 or Mach32 chipsets should be
       using the accelerated servers (XF86_Mach8 or XF86_Mach32).  The
@@ -55,10 +55,10 @@ list of ATI VGA WONDER cards.
 
 Adapter version     Dot clock       Chip version
 
-VGA WONDER V3       Crystals        ATI18800        Might work
-VGA WONDER V4       Crystals        ATI18800-1      Might work
-VGA WONDER V5       ATI18810        ATI18800-1      Might work
-VGA WONDER + (V6)   ATI18810        ATI28800-2      Might work
+VGA WONDER V3       Crystals        ATI18800        Supported
+VGA WONDER V4       Crystals        ATI18800-1      Supported
+VGA WONDER V5       ATI18810        ATI18800-1      Supported
+VGA WONDER + (V6)   ATI18810        ATI28800-2      Supported
 VGA WONDER (1 MB)   ATI18810        ATI28800-4      Supported
 VGA WONDER (1 MB)   ATI18810        ATI28800-5      Supported
 VGA WONDER XL       ATI18810        ATI28800-5      Supported
@@ -136,6 +136,18 @@ above.  The probed values are approximate and the above are "spec'ed"
 values.  If your probe shows a large discrepancy from the above, please
 e-mail me the stderr output.
 
+If you have an Xconfig for XFree86 versions earlier than 2.1.1, you will
+need to change it to use it for this version.  Specifically, you should run
+the server with the -probeonly flag and the Xconfig you used with the older
+XFree86.  This will cause the clocks to be probed.  You should replace the
+Xconfig clocks with the set above that is closest to the clocks reported by
+the probe.  You can then change the chipset specification to "vgawonder".
+
+Note that probed clock values should not be used for "production" purposes,
+as they are approximate and will vary depending on system load and other
+factors.  Clock frequencies taken from the clock generator's specification
+will always provide more consistent (and predictable) results.
+
 
 Q. What is the history of the driver?
 
@@ -173,4 +185,4 @@ Q. What is the future of the driver?
 Please e-mail me any bug reports, comments, etc...
 
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.ati,v 3.0 1994/05/29 02:06:24 dawes Exp $

@@ -789,7 +789,7 @@ development/beta-testing team if you need to be working in these areas.
    ISBN 0-201-57025-4
    (This is the bible of SVGA programming - it has a few errors, so watch out).
 
-2) vgadoc2.zip
+2) vgadoc3.zip
    Finn Thoegersen
    (This is a collection of SVGA and other chipset documentation.  It is
    available on most MS-DOS/Windows related FTP archives, including wuarchive.
@@ -799,13 +799,13 @@ development/beta-testing team if you need to be working in these areas.
 12 - Vendor Contact Information
 -------------------------------
 ATI Technologies (VGA-Wonder, Mach8, Mach32)
-3761 Victoria Park Ave
-Scarborough, Ontario
-Canada M1W 3S2
-(416) 756-0718 (sales)
-(416) 756-0711 (tech support)
-(416) 756-4951 (BBS)
-(416) 756-0720 (fax)
+33 Commerce Valley Drive East
+Thornhill, Ontario
+Canada L3T 7N6
+(905) 882-2600 (sales)
+(905) 882-2626 (tech support)
+(905) 764-9404 (BBS)
+(905) 882-0546 (fax)
 
 Chips & Technologies
 ???
@@ -851,4 +851,4 @@ Sunnyvale, CA  94086
 Western Digital
 (714) 932-4900
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.0 1994/05/30 08:23:04 dawes Exp $

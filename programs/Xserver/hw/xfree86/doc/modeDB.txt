@@ -1,4 +1,4 @@
-#  $XFree86$
+#  $XFree86: xc/programs/Xserver/hw/xfree86/doc/modeDB.txt,v 3.0 1994/05/29 02:06:33 dawes Exp $
 #
 # X386 Mode database
 # Compiled by David Wexelblat [dwex@goblin.org, dwex@aib.com]
@@ -155,21 +155,11 @@
 		      67.5 16 55   40 19.955 22.45 37.5 32.5
 
 ###############################################################################
-# Card: 		ATI VGA-Wondercard
-# Contributor: 		Per Lindqvist [pgd@compuram.bbt.se]
-# Last Edit Date:	9/12/91
+# Card:			ATI VGAWonder series
+# Contributor:		Marc Aurele La France [tsi@gpu.srv.ualberta.ca]
+# Last Edit Date:       1994.06.07
 #
-# chip    ram   virtual   clocks                           default-mode  flags
- ATI       512   800 655   25  28   0  22  36  52   0  62  "640x480"
-
-###############################################################################
-# Card: 		ATI VGA-Wonder (ATI28800-x chipsets)
-# Contributor: 		Rik Faith [faith@cs.unc.edu]
-# Last Edit Date:	3/27/93
-#
-# chip    ram   virtual   clocks                           default-mode  flags
- ATI      1024  1024 768   18  22  25  28  36  44  50  56  "1024x768"
-                           30  32  37  39  40   0  75  65
+# See file README.ati for clock information for these cards.
 
 ###############################################################################
 # Card: 		BOCA Research with 1M for interlaced monitor 
