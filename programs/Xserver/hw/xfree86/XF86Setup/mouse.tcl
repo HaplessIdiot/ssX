@@ -1,10 +1,18 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.3 1996/07/08 10:23:26 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mouse.tcl,v 3.4 1996/08/13 11:28:27 dawes Exp $
 
 #
 #
 
 set mseTypeList { Microsoft MouseSystems MMSeries Logitech BusMouse
 		MouseMan PS/2 MMHitTab GlidePoint Xqueue OSMouse }
+
+set msePatterns { tty?* *bm *mse* *mouse* ps*x }
+set mseDevices ""
+foreach pat $msePatterns {
+	if ![catch {glob /dev/$pat}] {
+		eval lappend mseDevices [glob /dev/$pat]
+	}
+}
 
 proc Mouse_proto_select { win } {
 	global mseType baudRate chordMiddle clearDTR clearRTS sampleRate
@@ -60,8 +68,8 @@ proc Mouse_proto_select { win } {
 		$w.mouse.chdmid configure -state normal
 	}
 	if { ![info exists Pointer_realdevice] } {
-		$w.mouse.device.entry delete 0 end
-		$w.mouse.device.entry insert 0 \
+		$w.mouse.device.cbox edelete 0 end
+		$w.mouse.device.cbox einsert 0 \
 			[Mouse_defaultdevice $mseType]
 	}
 }
@@ -69,6 +77,7 @@ proc Mouse_proto_select { win } {
 proc Mouse_create_widgets { win } {
 	global mseType mseDev baudRate sampleRate mseTypeList clearDTR
 	global emulate3Buttons emulate3Timeout chordMiddle clearRTS
+	global mseDevices
 
 	set w [winpathprefix $win]
 	frame $w.mouse -width 640 -height 420 \
@@ -98,10 +107,12 @@ proc Mouse_create_widgets { win } {
 	pack $w.mouse.device -in $w.mouse.mid.left -side top \
 		-pady 3m -padx 3m
 	label $w.mouse.device.title -text "Mouse Device"
-	entry $w.mouse.device.entry
-	pack $w.mouse.device.title $w.mouse.device.entry -side top -fill x
-	bind $w.mouse.device.entry <Return> "focus $w.mouse.em3but; \
-		set Pointer_realdevice \[$w.mouse.device.entry get\]"
+	combobox $w.mouse.device.cbox -bd 2 -width 30
+	eval [list $w.mouse.device.cbox linsert end] $mseDevices
+
+	pack $w.mouse.device.title $w.mouse.device.cbox -side top -fill x
+	bind $w.mouse.device.cbox.entry <Return> "focus $w.mouse.em3but; \
+		set Pointer_realdevice \[$w.mouse.device.cbox eget\]"
 
 	frame $w.mouse.mid.left.buttons
 	pack $w.mouse.mid.left.buttons -in $w.mouse.mid.left \
@@ -195,7 +206,7 @@ proc Mouse_activate { win } {
 	$canv itemconfigure mbut  -fill white
 	$canv itemconfigure coord -fill black
 
-	set ifcmd {if { [string compare [focus] %s.mouse.device.entry]
+	set ifcmd {if { [string compare [focus] %s.mouse.device.cbox.entry]
 			!= 0 } { %s %s } }
 			
 	bind $win a [format $ifcmd $w Mouse_setsettings $win ]
@@ -238,8 +249,8 @@ proc Mouse_popup_help { win } {
 	wm geometry .mousehelp +30+30
         text .mousehelp.text -takefocus 0 -width 90 -height 27
         .mousehelp.text insert end \
-{   First select the protocol for your mouse, then if needed, change the device name.  If
- applicable, also set the baud rate (1200 should work).  Press 'a' to apply the changes
+{   First select the protocol for your mouse using 'p', then if needed, change the device name.
+ If applicable, also set the baud rate (1200 should work).  Press 'a' to apply the changes
  and try moving your mouse around.  If the mouse pointer does not move properly, try a
  different protocol or device name.
 
@@ -274,8 +285,8 @@ proc Mouse_popup_help { win } {
 
 proc Mouse_selectentry { win } {
 	set w [winpathprefix $win]
-	if { [ $w.mouse.device.entry cget -state] != "disabled" } {
-		focus $w.mouse.device.entry
+	if { [ $w.mouse.device.cbox.entry cget -state] != "disabled" } {
+		focus $w.mouse.device.cbox.entry
 	}
 }
 
@@ -376,7 +387,7 @@ proc Mouse_setsettings { win } {
 	$w.mouse.bot.wait configure -foreground black
 	$win configure -cursor watch
 	update idletasks
-	set mseDev [$w.mouse.device.entry get]
+	set mseDev [$w.mouse.device.cbox eget]
 	set em3but off
 	set chdmid off
 	if $emulate3Buttons {set em3but on}
@@ -438,9 +449,9 @@ proc Mouse_getsettings { win } {
 	set initflags	[lrange $initlist 7 end]
 
 	if { [info exists Pointer_realdevice] } {
-		$w.mouse.device.entry insert 0 $Pointer_realdevice
+		$w.mouse.device.cbox einsert 0 $Pointer_realdevice
 	} else {
-		$w.mouse.device.entry insert 0 \
+		$w.mouse.device.cbox einsert 0 \
 			[Mouse_defaultdevice $inittype]
 	}
 	$w.mouse.brate.$initbrate invoke
@@ -459,7 +470,7 @@ proc Mouse_getsettings { win } {
 				configure -state disabled
 		}
 		$w.mouse.type.$mtype  configure -state normal
-		$w.mouse.device.entry configure -state disabled
+		$w.mouse.device.cbox.entry configure -state disabled
 	} else {
 		$w.mouse.type.osmouse configure -state disabled
 		$w.mouse.type.xqueue  configure -state disabled
@@ -468,10 +479,15 @@ proc Mouse_getsettings { win } {
 }
 
 proc Mouse_defaultdevice { mousetype } {
+	global mseDevices
 	switch $mousetype {
-		PS/2		{ return /dev/ps2aux }
-		BusMouse	{ return /dev/bmse }
-		default		{ return /dev/tty00 }
+		PS/2	 { set idx [lsearch $mseDevices ps*x] }
+		BusMouse { set idx [lsearch $mseDevices *bm]  }
+		default	 { set idx [lsearch $mseDevices tty*] }
 	}
+	if { $idx == -1 } {
+		set idx 0
+	}
+	return [lindex $mseDevices $idx]
 }
 

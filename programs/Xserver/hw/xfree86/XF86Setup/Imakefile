@@ -1,5 +1,6 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.4 1996/08/13 11:28:17 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.5 1996/08/16 12:29:36 dawes Exp $
 #include <Server.tmpl>
+#define IHaveSubdirs
 
 #if !BuildXKB || !BuildXF86MiscExt || !BuildXF86VidModeExt
 all::
@@ -20,7 +21,7 @@ includes::
             OBJS = main.o tclmisc.o tclvidmode.o tclcards.o tclother.o \
 		   tclkbd.o tclxfconf.o xf86Config.o cards.o tclxkbui.o
        TCL_FILES = phase1.tcl phase2.tcl phase3.tcl phase4.tcl phase5.tcl \
-		   setuplib.tcl srvflags.tcl mseconfig.tcl carddata.tcl \
+		   setuplib.tcl srvflags.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
 		   mondata.tcl monitor.tcl mouse.tcl
     TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl tcllib/misc.tcl \
@@ -32,6 +33,7 @@ includes::
 		   tcllib/tkerror.tcl tcllib/uparrow.xbm
       PICS_FILES = pics/vidcard.xbm pics/vidcard.msk \
 		   pics/XFree86.xbm pics/XFree86.msk
+         SUBDIRS = scripts
 
 #if XF86SetupUsesStaticTkTcl
        TKLIBRARY = StaticLibrary($(TKLIBDIR),$(TKLIBNAME))
@@ -70,15 +72,17 @@ LinkSourceFile(cards.c,../xf86config)
 LinkSourceFile(xf86Config.c,../common)
 LinkSourceFile(xf86_Config.h,../common)
 
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
 NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES),NullParameter)
 InstallProgram(XF86Setup,$(BINDIR))
-InstallNamedProg(xmseconfig,xmseconfig,$(BINDIR))
 DependTarget()
 
 InstallMultiple($(TCL_FILES),$(XF86SETUPLIBDIR))
 InstallMultiple($(TCLLIB_FILES),$(XF86SETUPLIBDIR)/tcllib)
 InstallMultiple($(PICS_FILES),$(XF86SETUPLIBDIR)/pics)
 InstallManPage(XF86Setup,$(MANDIR))
-InstallManPage(xmseconfig,$(MANDIR))
 
 #endif
+

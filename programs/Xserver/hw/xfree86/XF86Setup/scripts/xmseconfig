@@ -1,0 +1,5 @@
+#! /bin/sh
+#
+#
+
+exec XF86Setup -script mseconfig.tcl "$@"

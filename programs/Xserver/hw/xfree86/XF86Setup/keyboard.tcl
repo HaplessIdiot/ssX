@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.3 1996/06/30 10:44:03 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/keyboard.tcl,v 3.4 1996/08/13 11:28:24 dawes Exp $
 #
 # Keyboard configuration
 #
@@ -53,6 +53,8 @@ proc Keyboard_create_widgets { win } {
 		-command "Keyboard_loadsettings $win load"
 	    pack $w.keyboard.xkb.apply -side top -expand yes -fill both
 	}
+	label $w.keyboard.xkb.message -text ""
+	pack $w.keyboard.xkb.message  -side top -expand yes -fill x
 
 	frame $w.keyboard.options -relief groove -bd 4
 	Keyboard_create_options_widgets $win
@@ -200,8 +202,14 @@ proc Keyboard_deactivate { win } {
 proc Keyboard_loadsettings { win loadflag } {
 	global XKBComponents XKBrules Keyboard XKBhandle keyboardXkbOpts
 
-	update
 	set w [winpathprefix $win]
+	if { $loadflag == "load" } {
+		$w.keyboard.xkb.message configure -text "Applying..."
+	}
+	if { $loadflag == "noload" } {
+		$w.keyboard.xkb.message configure -text "Please wait..."
+	}
+	update
 	set geom_idx [$w.keyboard.xkb.geom.cbox curselection]
 	set lang_idx [$w.keyboard.xkb.lang.cbox curselection]
 	set vari_idx [$w.keyboard.xkb.vari.cbox curselection]
@@ -230,7 +238,10 @@ proc Keyboard_loadsettings { win loadflag } {
 			$XKBrules $geom $lang $vari $opts]
 		set notloaded [catch {eval xkb_load $comp $loadflag} kbd]
 		if { $notloaded } {
+			$w.keyboard.xkb.message configure \
+				-text "Failed! Try again"
 			bell
+			after 1000
 		} else {
 			xkb_free $XKBhandle
 			set XKBhandle $kbd
@@ -251,6 +262,7 @@ proc Keyboard_loadsettings { win loadflag } {
 		set Keyboard(XkbOptions)	$opts
 	}
 	focus $w
+	$w.keyboard.xkb.message configure -text ""
 }
 
 proc Keyboard_popup_help { win } {

@@ -264,3 +264,20 @@
 			  the existing config file is read
 			Output "Aborted" message when abort is pressed
 
+0.15	17 Aug 1996	Added -script option to look for a file in
+			  the scripts directory, otherwise the PATH
+			  is searched
+			Fix typo in Mach64 RamDacs (David Dawes)
+			Fix typo in writing Virtual size (Harald Koenig)
+			Workaround bug in Tk 4.0 canvases that left
+			  stray red lines in the monitor sync range
+			  bars in certain cases
+			Use new -bestRefresh server option (David Dawes)
+			Add message line to keyboard config for
+			  "Please wait..." type messages
+			Changed mouse device entry to a combobox w/
+			  list of devices from the /dev directory
+			Use list of devices to pick a default mouse
+			  device
+
+

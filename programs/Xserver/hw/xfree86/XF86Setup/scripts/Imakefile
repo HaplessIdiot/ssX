@@ -1,0 +1,13 @@
+XCOMM $XFree86$
+
+ XF86SETUPLIBDIR = $(LIBDIR)/XF86Setup
+      SCRIPTSDIR = $(XF86SETUPLIBDIR)/scripts
+
+     SCRIPTFILES = mseconfig.tcl
+   
+
+InstallNamedProg(xmseconfig,xmseconfig,$(BINDIR))
+InstallMultiple($(SCRIPTFILES),$(SCRIPTSDIR))
+
+InstallManPage(xmseconfig,$(MANDIR))
+

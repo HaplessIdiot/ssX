@@ -9,6 +9,14 @@ Write documentation (modify the QuickStart guide)
 Clean up temp files (but leave final temp config file if they did
    a reconfig without root privileges)
 
+fix stack handling: -ls option doesn't work on ISC
+
+When reading symlinks, resolve relative paths
+
+Check for symlink loops
+
+Update man page
+
 
 ITEMS THAT WOULD BE NICE TO HAVE BEFORE FIRST PUBLIC RELEASE:
 ----------------------------------------------------------------------
@@ -16,14 +24,29 @@ ITEMS THAT WOULD BE NICE TO HAVE BEFORE FIRST PUBLIC RELEASE:
 When using the SVGA server, further restrict the list of available
    RAMDACs, clock chips, and READMEs once the chipset has been selected.
 
-Improve default mouse devices names (e.g. OS specific)
-
-Fix problem with monitor range canvases leaving stray red lines in
-   some cases  (16-Aug-96 I can't reproduce this anymore - maybe it's
-   already fixed?)
-
 Add keybindings to enter and/or space in listboxes to match the
    button-up binding
+
+Sort items in listboxes
+
+Check that mouse device link can only be changed by root
+
+Change behaviour (with a 'u' for David :-) of "Probed" buttons as per
+Harald's request:
+
+> the functionality of "RAMDAC max speed" and "Video RAM" is somewhat different.
+> while it's possible to just select the memory size if wanted/needed I can't
+> change the ramdac speed without "unlocking" the slider first (not too intuitiv
+e).
+>
+> would it be possible to change the text of those "Probed" buttons if not in
+> probed state (either show "User defined" or the actual value).
+
+Reset clocks when a programmable clock chip is selected or when
+  changing servers or whenever else would be appropriate
+
+More reasonable default Device and Monitor identifiers
+
 
 
 (POSSIBLE) ITEMS FOR SOME TIME IN THE FUTURE:
@@ -42,6 +65,8 @@ More fine-grained control of what is read from the existing XF86Config
 Add support for XInput
 
 Add support for Modules
+
+Add ability to select modes and their order
 
 
 RELATED CHANGES TO OTHER PARTS OF THE X SOURCE TREE:

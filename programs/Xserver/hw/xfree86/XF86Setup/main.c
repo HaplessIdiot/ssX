@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.3 1996/08/16 12:29:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.4 1996/08/18 01:47:19 dawes Exp $ */
 
 /*
  * Main procedure for XF86Setup, by Joe Moss
@@ -28,6 +28,7 @@ static int  rest = 0;			/* arg after options */
 static int  synchronize = 0;		/* sync X connection */
 static int  nodialog = 0;		/* Don't use Dialog */
 static int  notk = 0;			/* Don't add Tk to interp */
+static int  usescriptdir = 0;		/* Use script dir, not PATH */
 
 #define PHASE1	"phase1.tcl"
 #define PHASE2	"phase2.tcl"
@@ -92,6 +93,7 @@ static char usage_msg[] =
 	"   -display <disp>	Display to use\n"
 	"   -geometry <geom>	Initial geometry for window\n"
 	"   -notk		Don't open a connection to the X server\n"
+	"   -script		Look for filename in script directory\n"
 	"\n"
 	"Options available only when a filename is not specified:\n"
 	"   -nodialog      	Don't use Dialog for user interaction\n"
@@ -111,6 +113,8 @@ static Tk_ArgvInfo argTable[] = {
         "Don't use the Dialog program for interaction with user"},
     {"-notk", TK_ARGV_CONSTANT, (char *) 1, (char *) &notk,
         "Don't open a connection to the X server or load Tk widgets"},
+    {"-script", TK_ARGV_CONSTANT, (char *) 1, (char *) &usescriptdir,
+        "Look for filename in the scripts directory"},
     {"--", TK_ARGV_REST, (char *) 1, (char *) &rest,
         "Pass all remaining arguments through to script"},
     /* This one is undocumented - it's used when execing a 2nd copy */
@@ -162,6 +166,13 @@ static void	XF86Setup_TclEvalFile(
 #endif
 );
 
+static void	XF86Setup_TclRunScript(
+#if NeedFunctionProtoTypes
+	Tcl_Interp *interp,
+	char *filename
+#endif
+);
+
 static void	XF86Setup_TkInit(
 #if NeedFunctionProtoTypes
 	Tcl_Interp *interp
@@ -190,6 +201,55 @@ XF86Setup_TclEvalFile(interp, filename)
 
     retval = Tcl_VarEval(interp, "source ",
 			    LibDir, "/", filename, (char *) NULL);
+    if (retval != TCL_OK) {
+	msg = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
+	if (msg == NULL) {
+	    msg = interp->result;
+	}
+	fprintf(stderr, "%s\n", msg);
+	Tcl_Eval(interp, "exit 1");
+    }
+    fflush(stdout);
+    Tcl_ResetResult(interp);
+}
+
+/*
+  Runs the commands in the specified file - search PATH, if needed
+
+  If an error occurs while processing, the error message is printed
+     and the program exits
+*/
+static void
+XF86Setup_TclRunScript(interp, filename)
+    Tcl_Interp	*interp;
+    char	*filename;
+{
+    int retval;
+    char *msg;
+
+    if (!usescriptdir) {
+	retval = Tcl_VarEval(interp,
+	    "if {[string first ", filename, " /] != -1} {",
+		"source ", filename,
+	    "} else {",
+		"foreach dir [split $env(PATH) :] {",
+		    "if [file executable $dir/", filename, "] {",
+			"source $dir/", filename, "; return 0",
+		    "}",
+		"}\n",
+		"error {File not found: ", filename, "}\n",
+	    "}",
+	    (char *) NULL);
+    } else {
+	retval = Tcl_VarEval(interp,
+	    "if {[string first ", filename, " /] != -1} {",
+		"source ", filename,
+	    "} else {",
+		"source $XF86Setup_library/scripts/", filename,
+	    "}",
+	    (char *) NULL);
+    }
+
     if (retval != TCL_OK) {
 	msg = Tcl_GetVar(interp, "errorInfo", TCL_GLOBAL_ONLY);
 	if (msg == NULL) {
@@ -319,12 +379,7 @@ main(argc, argv)
 	    strcpy(buf, "source $tk_library/init.tcl");
 	    if (Tcl_Eval(interp, buf) != TCL_OK)
 		print_result_and_exit;
-	    if (strchr(filename, '/') != NULL) {
-		if (Tcl_EvalFile(interp, filename) != TCL_OK)
-			print_result_and_exit;
-	    } else {
-		XF86Setup_TclEvalFile(interp, filename);
-	    }
+	    XF86Setup_TclRunScript(interp, filename);
 	    Tcl_Eval(interp, "exit 0");
 	    exit(1);
 	}
@@ -396,12 +451,7 @@ main(argc, argv)
 	strcpy(buf, "source $tk_library/tk.tcl");
 	if (Tcl_Eval(interp, buf) != TCL_OK)
 		print_result_and_exit;
-	if (strchr(filename, '/') != NULL) {
-		if (Tcl_EvalFile(interp, filename) != TCL_OK)
-			print_result_and_exit;
-	} else {
-		XF86Setup_TclEvalFile(interp, filename);
-	}
+	XF86Setup_TclRunScript(interp, filename);
         Tk_MainLoop();
     } else {
 	if (statefile == NULL || Phase2FallBack) {
