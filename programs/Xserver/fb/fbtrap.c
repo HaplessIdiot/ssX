@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.6 2002/05/17 18:16:33 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbtrap.c,v 1.7 2002/05/22 19:53:09 keithp Exp $
  *
  * Copyright © 2000 University of Southern California
  *
@@ -63,10 +63,10 @@
  * indicating that the position error is held in the other.
  */
 typedef struct {
-    Fixed x;
-    Fixed ex_dy;
-    Fixed y;
-    Fixed ey_dx;
+    xFixed x;
+    xFixed ex_dy;
+    xFixed y;
+    xFixed ey_dx;
 } RationalPoint;
 
 /*
@@ -160,27 +160,27 @@ typedef enum _departure {
  * (decreasing y).
  */
 typedef struct {
-    Fixed dx;
-    Fixed ey_thresh;
-    Fixed dy;
-    Fixed ex_thresh;
+    xFixed dx;
+    xFixed ey_thresh;
+    xFixed dy;
+    xFixed ex_thresh;
 
     Departure depart;
 
     /* slope */
-    Fixed m;
-    Fixed em_dx;
-    Fixed y_correct;
-    Fixed ey_correct;
+    xFixed m;
+    xFixed em_dx;
+    xFixed y_correct;
+    xFixed ey_correct;
 
     /* Inverse slope. Does this have a standard symbol? */
-    Fixed p;
-    Fixed ep_dy;
-    Fixed x_correct;
-    Fixed ex_correct;
+    xFixed p;
+    xFixed ep_dy;
+    xFixed x_correct;
+    xFixed ex_correct;
 
     /* Trapezoid bottom, used to limit walking to the last row */
-    Fixed bottom;
+    xFixed bottom;
 
     /*
      * Current edge positions along pixel rows and columns
@@ -211,13 +211,13 @@ typedef struct {
  * Step 'pt' vertically to 'newy'.
  */
 static INLINE void
-pixelWalkMovePointToRow (PixelWalk *pw, RationalPoint *pt, Fixed newy)
+pixelWalkMovePointToRow (PixelWalk *pw, RationalPoint *pt, xFixed newy)
 {
-    Fixed_32_32	oex;
-    Fixed	xoff;
+    xFixed_32_32    oex;
+    xFixed	    xoff;
 
     /* X error of old X position and new Y position */
-    oex = (Fixed_32_32) pw->dx * (newy - pt->y) - pt->ey_dx + pt->ex_dy;
+    oex = (xFixed_32_32) pw->dx * (newy - pt->y) - pt->ey_dx + pt->ex_dy;
     
     /* amount to step X by */
     xoff = oex / pw->dy;
@@ -226,7 +226,7 @@ pixelWalkMovePointToRow (PixelWalk *pw, RationalPoint *pt, Fixed newy)
     pt->x = pt->x + xoff;
     
     /* set new X error value for new X position and new Y positition */
-    pt->ex_dy = oex - (Fixed_32_32) pw->dy * xoff;
+    pt->ex_dy = oex - (xFixed_32_32) pw->dy * xoff;
 
     /* set new Y position, set Y error to zero */
     pt->y = newy;
@@ -237,10 +237,10 @@ pixelWalkMovePointToRow (PixelWalk *pw, RationalPoint *pt, Fixed newy)
  * Step 'pt' horizontally to 'newx' 
  */
 static INLINE void
-pixelWalkMovePointToCol (PixelWalk *pw, RationalPoint *pt, Fixed newx)
+pixelWalkMovePointToCol (PixelWalk *pw, RationalPoint *pt, xFixed newx)
 {
-    Fixed_32_32 oey;
-    Fixed	yoff;
+    xFixed_32_32    oey;
+    xFixed	    yoff;
 
     /* Special case vertical lines to arbitrary y */
     if (pw->dx == 0) 
@@ -253,7 +253,7 @@ pixelWalkMovePointToCol (PixelWalk *pw, RationalPoint *pt, Fixed newx)
     else 
     {
 	/* Y error of old Y position and new X position */
-	oey = (Fixed_32_32) pw->dy * (newx - pt->x) - pt->ex_dy + pt->ey_dx;
+	oey = (xFixed_32_32) pw->dy * (newx - pt->x) - pt->ex_dy + pt->ey_dx;
 
 	/* amount to step Y by */
 	yoff = oey / pw->dx;
@@ -262,7 +262,7 @@ pixelWalkMovePointToCol (PixelWalk *pw, RationalPoint *pt, Fixed newx)
 	pt->y = pt->y + yoff;
 
 	/* set new Y error value for new Y position and new X position */
-	pt->ey_dx = oey - (Fixed_32_32) pw->dx * yoff;
+	pt->ey_dx = oey - (xFixed_32_32) pw->dx * yoff;
 
 	/* set new X position, set X error to zero */
 	pt->x = newx;
@@ -277,7 +277,7 @@ pixelWalkMovePointToCol (PixelWalk *pw, RationalPoint *pt, Fixed newx)
 static INLINE void
 pixelWalkStepRow (PixelWalk *pw)
 {
-    Fixed   y_next = FixedFloor (pw->row.bottom.y) + Fixed1;
+    xFixed  y_next = xFixedFloor (pw->row.bottom.y) + xFixed1;
     
     if (y_next > pw->bottom)
 	y_next = pw->bottom;
@@ -285,10 +285,10 @@ pixelWalkStepRow (PixelWalk *pw)
     /* pw.row.top.y < pw.row.bottom.y */
     pw->row.top = pw->row.bottom;
 
-    if (y_next - pw->row.bottom.y == Fixed1)
+    if (y_next - pw->row.bottom.y == xFixed1)
     {
 	pw->row.pixel_top = pw->row.bottom;
-	pw->row.bottom.y += Fixed1;
+	pw->row.bottom.y += xFixed1;
 	pw->row.bottom.x += pw->p;
 	pw->row.bottom.ex_dy += pw->ep_dy;
 	if (abs (pw->row.bottom.ex_dy) > pw->ex_thresh) 
@@ -300,7 +300,7 @@ pixelWalkStepRow (PixelWalk *pw)
     else
     {
 	pixelWalkMovePointToRow (pw, &pw->row.pixel_top, 
-				 FixedCeil (y_next) - Fixed1);
+				 xFixedCeil (y_next) - xFixed1);
 	pixelWalkMovePointToRow (pw, &pw->row.bottom, y_next);
     }
 }
@@ -321,7 +321,7 @@ pixelWalkStepCol (PixelWalk *pw)
     /*
      * Now incrementally walk across the pixel
      */
-    pw->col.right.x += Fixed1;
+    pw->col.right.x += xFixed1;
     pw->col.right.y += pw->m;
     pw->col.right.ey_dx += pw->em_dx;
     if (pw->col.right.ey_dx > pw->ey_thresh) 
@@ -387,7 +387,7 @@ pixelWalkNextPixel (PixelWalk *pw)
 	    /*
 	     * Set column exit pixel
 	     */
-	    pixelWalkMovePointToCol(pw, &pw->col.right, FixedFloor(pw->row.bottom.x));
+	    pixelWalkMovePointToCol(pw, &pw->col.right, xFixedFloor(pw->row.bottom.x));
 	    /*
 	     * This moves the exit pixel to the entry pixel
 	     * and computes the next exit pixel
@@ -638,14 +638,14 @@ pixelWalkFirstPixel (PixelWalk *pw)
 }
 
 static void 
-pixelWalkInit (PixelWalk *pw, xLineFixed *line, Fixed top_y, Fixed bottom_y)
+pixelWalkInit (PixelWalk *pw, xLineFixed *line, xFixed top_y, xFixed bottom_y)
 {
-    Fixed_32_32	    dy_inc, dx_inc;
-    Fixed	    next_y;
-    Fixed	    left_x;
+    xFixed_32_32    dy_inc, dx_inc;
+    xFixed	    next_y;
+    xFixed	    left_x;
     xPointFixed	    *top, *bot;
 
-    next_y = FixedFloor (top_y) + Fixed1;
+    next_y = xFixedFloor (top_y) + xFixed1;
     if (next_y > bottom_y)
 	next_y = bottom_y;
 
@@ -691,11 +691,11 @@ pixelWalkInit (PixelWalk *pw, xLineFixed *line, Fixed top_y, Fixed bottom_y)
     /*
      * Compute Bresenham values for walking edges incrementally
      */
-    dy_inc = (Fixed_32_32) Fixed1 * pw->dy;			/* > 0 */
+    dy_inc = (xFixed_32_32) xFixed1 * pw->dy;			/* > 0 */
     if (pw->dx != 0) 
     {
 	pw->m = dy_inc / pw->dx;				/* sign(dx) */
-	pw->em_dx = dy_inc - (Fixed_32_32) pw->m * pw->dx;	/* > 0 */
+	pw->em_dx = dy_inc - (xFixed_32_32) pw->m * pw->dx;	/* > 0 */
     }
     else 
     {
@@ -705,9 +705,9 @@ pixelWalkInit (PixelWalk *pw, xLineFixed *line, Fixed top_y, Fixed bottom_y)
 	pw->em_dx = 0;
     }
 
-    dx_inc = (Fixed_32_32) Fixed1 * (Fixed_32_32) pw->dx;	/* sign(dx) */
+    dx_inc = (xFixed_32_32) xFixed1 * (xFixed_32_32) pw->dx;	/* sign(dx) */
     pw->p = dx_inc / pw->dy;					/* sign(dx) */
-    pw->ep_dy = dx_inc - (Fixed_32_32) pw->p * pw->dy;		/* sign(dx) */
+    pw->ep_dy = dx_inc - (xFixed_32_32) pw->p * pw->dy;		/* sign(dx) */
 
     /*
      * Initialize 'row' for walking down rows
@@ -747,7 +747,7 @@ pixelWalkInit (PixelWalk *pw, xLineFixed *line, Fixed top_y, Fixed bottom_y)
     else
 	left_x = pw->row.top.x;
     
-    pixelWalkMovePointToCol(pw, &pw->col.right, FixedFloor (left_x));
+    pixelWalkMovePointToCol(pw, &pw->col.right, xFixedFloor (left_x));
     pixelWalkStepCol(pw);
     
     /*
@@ -803,29 +803,29 @@ slower. So, we'll use the non-optimized general equation.
 */
 
 /* 1.16 * 1.16 -> 1.31 */
-#define AREA_MULT(w, h) ( (Fixed_1_31) (((((Fixed_1_16)w)*((Fixed_1_16)h) + 1) >> 1) | (((Fixed_1_16)w)&((Fixed_1_16)h)&0x10000) << 15))
+#define AREA_MULT(w, h) ( (xFixed_1_31) (((((xFixed_1_16)w)*((xFixed_1_16)h) + 1) >> 1) | (((xFixed_1_16)w)&((xFixed_1_16)h)&0x10000) << 15))
 
 /* (1.16 + 1.16) / 2 -> 1.16 */
 #define WIDTH_AVG(x1,x2) (((x1) + (x2) + 1) >> 1)
 
 #define SubPixelArea(x1, y1, x2, y2, bottom)	\
-(Fixed_1_31) ( 						\
+(xFixed_1_31) ( 						\
    AREA_MULT((x1), (y1))			\
  + AREA_MULT(WIDTH_AVG((x1), (x2)), (y2) - (y1))\
  + AREA_MULT((x2), (bottom) - (y2))		\
 )
 
 /*
-static Fixed_1_31
-SubPixelArea (Fixed_1_16        x1,
-              Fixed_1_16        y1,
-              Fixed_1_16        x2,
-              Fixed_1_16        y2,
-              Fixed_1_16        bottom)
+static xFixed_1_31
+SubPixelArea (xFixed_1_16	x1,
+              xFixed_1_16       y1,
+              xFixed_1_16       x2,
+              xFixed_1_16       y2,
+              xFixed_1_16       bottom)
 {
-    Fixed_1_16      x_trap;
-    Fixed_1_16      h_top, h_trap, h_bot;
-    Fixed_1_31      area;
+    xFixed_1_16	    x_trap;
+    xFixed_1_16     h_top, h_trap, h_bot;
+    xFixed_1_31     area;
     
     x_trap = WIDTH_AVG(x1,x2);
     h_top = y1;
@@ -850,14 +850,14 @@ SubPixelArea (Fixed_1_16        x1,
 
 /*
 static int
-SubPixelAlpha (Fixed_1_16	x1,
-	       Fixed_1_16	y1,
-	       Fixed_1_16	x2,
-	       Fixed_1_16	y2,
-	       Fixed_1_16	bottom,
+SubPixelAlpha (xFixed_1_16	x1,
+	       xFixed_1_16	y1,
+	       xFixed_1_16	x2,
+	       xFixed_1_16	y2,
+	       xFixed_1_16	bottom,
 	       int		depth)
 {
-    Fixed_1_31 area;
+    xFixed_1_31	area;
 
     area = SubPixelArea(x1, y1, x2, y2, bottom);
     
@@ -868,11 +868,11 @@ SubPixelAlpha (Fixed_1_16	x1,
 /* Alpha of a pixel above a given horizontal line */
 #define AlphaAbove(pixel_y, line_y, depth)			\
 (								\
-    AreaAlpha(AREA_MULT((line_y) - (pixel_y), Fixed1), depth)	\
+    AreaAlpha(AREA_MULT((line_y) - (pixel_y), xFixed1), depth)	\
 )
 
 static int
-RectAlpha(Fixed pixel_y, Fixed top, Fixed bottom, int depth)
+RectAlpha(xFixed pixel_y, xFixed top, xFixed bottom, int depth)
 {
     if (depth == 1)
 	return top == pixel_y ? 1 : 0;
@@ -889,9 +889,9 @@ RectAlpha(Fixed pixel_y, Fixed top, Fixed bottom, int depth)
 static int
 AlphaAboveLeft(RationalPoint	*upper,
 	       RationalPoint	*lower,
-	       Fixed		bottom,
-	       Fixed		pixel_x,
-	       Fixed		pixel_y,
+	       xFixed		bottom,
+	       xFixed		pixel_x,
+	       xFixed		pixel_y,
 	       int		depth)
 {
     return SubPixelAlpha(upper->x - pixel_x,
@@ -929,10 +929,10 @@ AlphaAboveLeft(RationalPoint	*upper,
 */
 
 static int
-PixelAlpha(Fixed	pixel_x,
-	   Fixed	pixel_y,
-	   Fixed	top,
-	   Fixed	bottom,
+PixelAlpha(xFixed	pixel_x,
+	   xFixed	pixel_y,
+	   xFixed	top,
+	   xFixed	bottom,
 	   PixelWalk	*pw,
 	   int		depth)
 {
@@ -978,7 +978,7 @@ PixelAlpha(Fixed	pixel_x,
 
 #define INCREMENT_X_AND_PIXEL		\
 {					\
-    pixel_x += Fixed1;			\
+    pixel_x += xFixed1;			\
     mask.offset += mask.bpp;		\
 }
 
@@ -1011,14 +1011,14 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
     int max_alpha = (1 << depth) - 1;
     int buf_width = pMask->pDrawable->width;
 
-    Fixed x_off_fixed = IntToFixed(x_off);
-    Fixed y_off_fixed = IntToFixed(y_off);
-    Fixed buf_width_fixed = IntToFixed(buf_width);
+    xFixed x_off_fixed = IntToxFixed(x_off);
+    xFixed y_off_fixed = IntToxFixed(y_off);
+    xFixed buf_width_fixed = IntToxFixed(buf_width);
 
     PixelWalk left, right;
-    Fixed pixel_x, pixel_y;
-    Fixed first_right_x;
-    Fixed y, y_next;
+    xFixed pixel_x, pixel_y;
+    xFixed first_right_x;
+    xFixed y, y_next;
 
     /* trap.left and trap.right must be non-horizontal */
     if (trap.left.p1.y == trap.left.p2.y
@@ -1055,13 +1055,13 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
        of the loop). So, for sake of maintenance, I'm putting off this
        optimization at least until this code is more stable.. */
 
-    if (!fbBuildCompositeOperand (pMask, &mask, 0, FixedToInt (trap.top)))
+    if (!fbBuildCompositeOperand (pMask, &mask, 0, xFixedToInt (trap.top)))
 	return;
     
     for (y = trap.top; y < trap.bottom; y = y_next)
     {
-	pixel_y = FixedFloor (y);
-	y_next = pixel_y + Fixed1;
+	pixel_y = xFixedFloor (y);
+	y_next = pixel_y + xFixed1;
 	if (y_next > trap.bottom)
 	    y_next = trap.bottom;
 	
@@ -1070,7 +1070,7 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	ASSERT (right.row.top.y == y);
 	ASSERT (right.row.bottom.y == y_next);
 	
-	pixel_x = FixedFloor(left.col.left.x);
+	pixel_x = xFixedFloor(left.col.left.x);
 	
 	/*
 	 * Walk pixels on this row that are left of the
@@ -1081,16 +1081,16 @@ fbRasterizeTrapezoid (PicturePtr    pMask,
 	 * is passed
 	 */
 
-	first_right_x = FixedFloor(right.col.left.x);
+	first_right_x = xFixedFloor(right.col.left.x);
 	while (right.row.top.y == y && first_right_x < pixel_x)
 	{
 	    /* these are empty */
 	    pixelWalkNextPixel (&right);
 	    /* step over */
-	    first_right_x += Fixed1;
+	    first_right_x += xFixed1;
 	}
 
-	mask.offset = FixedToInt (pixel_x) * mask.bpp;
+	mask.offset = xFixedToInt (pixel_x) * mask.bpp;
 	
 	/* 
 	 * Walk pixels on this row intersected by only trap.left
@@ -1338,16 +1338,16 @@ void large_bresenham_x_major(x1, y1, x2, y2, x_inc)
 *** (1.16 + 1.16) / 2 -> 1.16 ***
 #define WIDTH_AVG(x1,x2) (((x1) + (x2) + 1) >> 1)
 
-Fixed_1_31
-SubpixelArea (Fixed_1_16        x1,
-              Fixed_1_16        x2,
-              Fixed_1_16        y1,
-              Fixed_1_16        y2,
-              Fixed_1_16        bottom)
+xFixed_1_31
+SubpixelArea (xFixed_1_16        x1,
+              xFixed_1_16        x2,
+              xFixed_1_16        y1,
+              xFixed_1_16        y2,
+              xFixed_1_16        bottom)
     {
-        Fixed_1_16      x_trap;
-        Fixed_1_16      h_top, h_trap, h_bot;
-        Fixed_1_31      area;
+        xFixed_1_16      x_trap;
+        xFixed_1_16      h_top, h_trap, h_bot;
+        xFixed_1_31      area;
 
         x_trap = WIDTH_AVG(x1,x2);
         h_top = y1;
@@ -1361,10 +1361,10 @@ SubpixelArea (Fixed_1_16        x1,
         return area;
     }
 
-To convert this Fixed_1_31 value to alpha using 32 bit arithmetic:
+To convert this xFixed_1_31 value to alpha using 32 bit arithmetic:
 
 int
-AreaAlpha (Fixed_1_31 area, int depth)
+AreaAlpha (xFixed_1_31 area, int depth)
     {
         return ((area >> bits) * ((1 << depth) - 1)) >> (31 - depth);
     }
