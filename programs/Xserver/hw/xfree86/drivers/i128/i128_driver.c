@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.15 2000/12/02 15:30:40 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.16 2000/12/06 01:07:34 robin Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1514,6 +1514,9 @@ I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			  pScrn->rgbBits, pScrn->defaultVisual))
 	return FALSE;
 
+    if (!miSetPixmapDepths())
+	return FALSE;
+
 
     /*
      * Call the framebuffer layer's ScreenInit function, and fill in other
@@ -1553,6 +1556,9 @@ I128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     xf86SetBlackWhitePixels(pScreen);
+
+    if (!pI128->NoAccel)
+	I128DGAInit(pScreen);
 
     if (!pI128->NoAccel)
 	I128AccelInit(pScreen);
@@ -1710,6 +1716,8 @@ I128CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	XAADestroyInfoRec(pI128->AccelInfoRec);
     if (pI128->CursorInfoRec)
     	xf86DestroyCursorInfoRec(pI128->CursorInfoRec);
+    if (pI128->DGAModes)
+    	xfree(pI128->DGAModes);
     pScrn->vtSema = FALSE;
 
     pScreen->CloseScreen = pI128->CloseScreen;
