@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.30 2001/10/28 03:34:01 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.32 2002/04/04 14:05:54 eich Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -455,7 +455,7 @@ typedef struct pci_cfg_regs {
 	    CARD8  latency_timer;    /* 0x1b */	
 	    CARD8  subordinate_bus_number;   /* 0x1a */
 	    CARD8  cardbus_bus_number;  /* 0x19 */
-	    CARD8  pci_bus_number;  /* 0x18 */
+	    CARD8  primary_bus_number;  /* 0x18 */
 #else
 	    CARD16 cg_rsrvd2;    /* 0x14 */
 	    CARD16 secondary_status;  /* 0x16 */
