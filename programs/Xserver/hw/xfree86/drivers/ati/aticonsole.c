@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.8 2000/02/16 14:43:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.9 2000/02/17 15:34:44 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include "atiadapter.h"
 #include "aticonsole.h"
 #include "aticrtc.h"
 #include "atilock.h"
@@ -33,7 +34,7 @@
 /*
  * ATISaveScreen --
  *
- * DIX calls this function to blank the screen.
+ * This function is a screen saver hook for DIX.
  */
 Bool
 ATISaveScreen
@@ -44,11 +45,8 @@ ATISaveScreen
 {
     ScrnInfoPtr pScreenInfo;
     ATIPtr      pATI;
-    Bool	On;
 
-    On = xf86IsUnblank(Mode);
-
-    if (On)
+    if ((Mode != SCREEN_SAVER_ON) && (Mode != SCREEN_SAVER_CYCLE))
         SetTimeSinceLastInputEvent();
 
     if (!pScreen)
@@ -62,11 +60,11 @@ ATISaveScreen
     switch (pATI->NewHW.crtc)
     {
         case ATI_CRTC_VGA:
-            ATIVGASaveScreen(pATI, On);
+            ATIVGASaveScreen(pATI, Mode);
             break;
 
         case ATI_CRTC_MACH64:
-            ATIMach64SaveScreen(pATI, On);
+            ATIMach64SaveScreen(pATI, Mode);
             break;
 
         default:
@@ -98,17 +96,17 @@ ATIEnterGraphics
 
     /* Calculate hardware data */
     if (pScreen &&
-        !ATICRTCCalculate(pScreenInfo, pATI, &pATI->NewHW,
-                          pScreenInfo->currentMode))
+        !ATIAdapterCalculate(pScreenInfo, pATI, &pATI->NewHW,
+            pScreenInfo->currentMode))
         return FALSE;
 
     pScreenInfo->vtSema = TRUE;
 
     /* Save current state */
-    ATICRTCSave(pScreenInfo, pATI, &pATI->OldHW);
+    ATIAdapterSave(pScreenInfo, pATI, &pATI->OldHW);
 
     /* Set graphics state */
-    ATICRTCSet(pScreenInfo, pATI, &pATI->NewHW);
+    ATIAdapterSet(pScreenInfo, pATI, &pATI->NewHW);
 
     /* Possibly blank the screen */
     if (pScreen)
@@ -139,10 +137,10 @@ ATILeaveGraphics
     {
         /* If not exiting, save graphics video state */
         if (!xf86ServerIsExiting())
-            ATICRTCSave(pScreenInfo, pATI, &pATI->NewHW);
+            ATIAdapterSave(pScreenInfo, pATI, &pATI->NewHW);
 
         /* Restore mode in effect on server entry */
-        ATICRTCSet(pScreenInfo, pATI, &pATI->OldHW);
+        ATIAdapterSet(pScreenInfo, pATI, &pATI->OldHW);
 
         pScreenInfo->vtSema = FALSE;
     }
@@ -173,12 +171,12 @@ ATISwitchMode
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
 
     /* Calculate new hardware data */
-    if (!ATICRTCCalculate(pScreenInfo, pATI, &pATI->NewHW, pMode))
+    if (!ATIAdapterCalculate(pScreenInfo, pATI, &pATI->NewHW, pMode))
         return FALSE;
 
     /* Set new hardware state */
     if (pScreenInfo->vtSema)
-        ATICRTCSet(pScreenInfo, pATI, &pATI->NewHW);
+        ATIAdapterSet(pScreenInfo, pATI, &pATI->NewHW);
 
     SetTimeSinceLastInputEvent();
 
@@ -200,35 +198,37 @@ ATIEnterVT
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
     ScreenPtr   pScreen     = pScreenInfo->pScreen;
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
-    PixmapPtr	pPixmap	    = (*pScreen->GetScreenPixmap) (pScreen);
-    Bool	ret;
-    Bool	enabled;
+    PixmapPtr   pScreenPixmap;
+    DevUnion    PixmapPrivate;
+    Bool        Entered;
 
     if (!ATIEnterGraphics(NULL, pScreenInfo, pATI))
         return FALSE;
 
     /* The rest of this isn't needed for shadowfb */
     if (pATI->OptionShadowFB)
-	return TRUE;
+        return TRUE;
 
     /* If used, modify banking interface */
     if (!miModifyBanking(pScreen, &pATI->BankInfo))
         return FALSE;
 
-    enabled = pPixmap->devPrivate.ptr != NULL;
-    if (!enabled)
-	pPixmap->devPrivate = pScreenInfo->pixmapPrivate;
-    
-    /* Tell framebuffer about remapped aperture */
-    ret = (*pScreen->ModifyPixmapHeader)(pPixmap, 
-					 -1, -1, -1, -1, -1, pATI->pMemory);
+    pScreenPixmap = (*pScreen->GetScreenPixmap)(pScreen);
+    PixmapPrivate = pScreenPixmap->devPrivate;
+    if (!PixmapPrivate.ptr)
+        pScreenPixmap->devPrivate = pScreenInfo->pixmapPrivate;
 
-    if (!enabled)
+    /* Tell framebuffer about remapped aperture */
+    Entered = (*pScreen->ModifyPixmapHeader)(pScreenPixmap,
+        -1, -1, -1, -1, -1, pATI->pMemory);
+
+    if (!PixmapPrivate.ptr)
     {
-	pScreenInfo->pixmapPrivate = pPixmap->devPrivate;
-	pPixmap->devPrivate.ptr = NULL;
+        pScreenInfo->pixmapPrivate = pScreenPixmap->devPrivate;
+        pScreenPixmap->devPrivate.ptr = NULL;
     }
-    return ret;
+
+    return Entered;
 }
 
 /*

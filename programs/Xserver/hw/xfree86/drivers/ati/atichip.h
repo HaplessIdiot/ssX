@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.7 1999/10/13 04:21:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atichip.h,v 1.8 1999/10/13 20:33:01 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -87,7 +87,7 @@ typedef enum
     ATI_FOUNDRY_NEC,    /* NEC */
     ATI_FOUNDRY_KSC,    /* KSC (?) */
     ATI_FOUNDRY_UMC,    /* United Microelectronics Corporation */
-    ATI_FOUNDRY_TSMC,   /* TSMC (?) */
+    ATI_FOUNDRY_TSMC,   /* Taiwan Semiconductor Manufacturing Company */
     ATI_FOUNDRY_5,
     ATI_FOUNDRY_6,
     ATI_FOUNDRY_UMCA    /* UMC alternate */

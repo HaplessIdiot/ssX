@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiutil.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiutil.h,v 1.3 1999/07/06 11:38:38 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,10 +44,13 @@
     }
 
 /*
- * Macros to get/set a contiguous bit field.  '_Mask' should not be
+ * Macros to get/set a contiguous bit field.  Arguments should not be
  * self-modifying.
  */
-#define UnitOf(___Value)        ((((___Value) ^ ((___Value) - 1)) + 1) >> 1)
+#define UnitOf(___Value)                                \
+        (((((___Value) ^ ((___Value) - 1)) + 1) >> 1) | \
+         ((((___Value) ^ ((___Value) - 1)) >> 1) + 1))
+
 #define GetBits(__Value, _Mask) (((__Value) & (_Mask)) / UnitOf(_Mask))
 #define SetBits(__Value, _Mask) (((__Value) * UnitOf(_Mask)) & (_Mask))
 
@@ -56,6 +59,10 @@
 #define _ByteMask(__Byte)       ((CARD8)(-1) << (8 * (__Byte)))
 #define GetByte(_Value, _Byte)  GetBits(_Value, _ByteMask(_Byte))
 #define SetByte(_Value, _Byte)  SetBits(_Value, _ByteMask(_Byte))
+
+#define _WordMask(__Word)       ((CARD16)(-1) << (16 * (__Word)))
+#define GetWord(_Value, _Word)  GetBits(_Value, _WordMask(_Word))
+#define SetWord(_Value, _Word)  SetBits(_Value, _WordMask(_Word))
 
 extern int ATIDivide FunctionPrototype((int, int, int, const int));
 

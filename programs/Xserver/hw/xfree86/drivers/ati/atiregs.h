@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.6 1999/09/27 06:29:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiregs.h,v 1.7 1999/10/13 04:21:10 dawes Exp $ */
 /*
- * Copyright 1994 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1994 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -44,6 +44,9 @@
 #define BLOCK_IO_BASE		0xff00u
 #define BLOCK_IO_SELECT		0x00fcu
 
+#define MM_IO_SELECT		0x03fcu
+#define BLOCK_SELECT		0x0400u
+
 #define IO_BYTE_SELECT		0x0003u
 
 #define SPARSE_IO_PORT		(SPARSE_IO_BASE | IO_BYTE_SELECT)
@@ -54,9 +57,9 @@
 
 #define IOPortTag(_SparseIOSelect, _BlockIOSelect)	\
 	(SetBits(_SparseIOSelect, SPARSE_IO_SELECT) |	\
-	 SetBits(_BlockIOSelect, BLOCK_IO_SELECT))
-#define SparseIOTag(_IOSelect)	IOPortTag(_IOSelect, (unsigned)(-1))
-#define BlockIOTag(_IOSelect)	IOPortTag((unsigned)(-1), _IOSelect)
+	 SetBits(_BlockIOSelect, BLOCK_SELECT | MM_IO_SELECT))
+#define SparseIOTag(_IOSelect)	IOPortTag(_IOSelect, 0)
+#define BlockIOTag(_IOSelect)	IOPortTag(0, _IOSelect)
 
 /* MDA/CGA/EGA/VGA I/O ports */
 #define GENVS			0x0102u		/* Write (and Read on uC only) */
@@ -464,7 +467,6 @@
 #define BGR24				0x0400u			/* Mach32 */
 #define xBGR24				0x0600u			/* Mach32 */
 #define DAC_8_BIT_EN			0x4000u			/* Mach32 */
-#define PIX_WIDTH_16BPP			PIXEL_WIDTH_16		/* Mach32 */
 #define ORDER_16BPP_565			RGB16_565		/* Mach32 */
 #define BOUNDS_BOTTOM		0x7eeeu		/* Read */
 #define MISC_CNTL		0x7eeeu		/* Write */	/* Mach32 */
@@ -488,7 +490,7 @@
 #define DEST_X_END		0xaaeeu		/* Write */
 #define DEST_Y_END		0xaeeeu		/* Write */
 #define R_H_TOTAL_DISP		0xb2eeu		/* Read */	/* Mach32 */
-#define SRC_X_START		0xb2eeu		/* Write */
+#define SRC_X_STRT		0xb2eeu		/* Write */
 #define R_H_SYNC_STRT		0xb6eeu		/* Read */	/* Mach32 */
 #define ALU_BG_FN		0xb6eeu		/* Write */
 #define R_H_SYNC_WID		0xbaeeu		/* Read */	/* Mach32 */
@@ -572,10 +574,10 @@
 #define CRTC_VLINE_INT			0x00000010ul
 #define CRTC_VLINE_SYNC			0x00000020ul
 #define CRTC_FRAME			0x00000040ul
-#define CRTC_SNAPSHOT_INT_EN		0x00000080ul	/* GT3 */
-#define CRTC_SNAPSHOT_INT		0x00000100ul	/* GT3 */
-#define CRTC_I2C_INT_EN			0x00000200ul	/* GT3 */
-#define CRTC_I2C_INT			0x00000400ul	/* GT3 */
+#define CRTC_SNAPSHOT_INT_EN		0x00000080ul	/* GTPro */
+#define CRTC_SNAPSHOT_INT		0x00000100ul	/* GTPro */
+#define CRTC_I2C_INT_EN			0x00000200ul	/* GTPro */
+#define CRTC_I2C_INT			0x00000400ul	/* GTPro */
 #define CRTC2_VBLANK			0x00000800ul	/* LTPro */
 #define CRTC2_VBLANK_INT_EN		0x00001000ul	/* LTPro */
 #define CRTC2_VBLANK_INT		0x00002000ul	/* LTPro */
@@ -596,7 +598,7 @@
 #define CRTC2_VLINE_SYNC		0x10000000ul	/* LTPro */
 #define CRTC_SNAPSHOT2_INT_EN		0x20000000ul	/* LTPro */
 #define CRTC_SNAPSHOT2_INT		0x40000000ul	/* LTPro */
-#define CRTC_VBLANK_BIT2_INT		0x80000000ul	/* GT3/LTPro */
+#define CRTC_VBLANK_BIT2_INT		0x80000000ul	/* GTPro */
 #define CRTC_INT_ENS	/* *** UPDATE ME *** */		\
 		(					\
 			CRTC_VBLANK_INT_EN |		\
@@ -643,14 +645,6 @@
 #define CRTC_DISPLAY_DIS		0x00000040ul
 #define CRTC_VGA_XOVERSCAN		0x00000080ul
 #define CRTC_PIX_WIDTH			0x00000700ul
-#define CRTC_PIX_WIDTH_1BPP			0x00000000ul
-#define CRTC_PIX_WIDTH_4BPP			0x00000100ul
-#define CRTC_PIX_WIDTH_8BPP			0x00000200ul
-#define CRTC_PIX_WIDTH_15BPP			0x00000300ul
-#define CRTC_PIX_WIDTH_16BPP			0x00000400ul
-#define CRTC_PIX_WIDTH_24BPP			0x00000500ul
-#define CRTC_PIX_WIDTH_32BPP			0x00000600ul
-/*	?					0x00000700ul */
 #define CRTC_BYTE_PIX_ORDER		0x00000800ul
 #define CRTC_VSYNC_INT_EN		0x00001000ul	/* XC/XL */
 #define CRTC_VSYNC_INT			0x00002000ul	/* XC/XL */
@@ -660,14 +654,6 @@
 #define CRTC_FIFO_LWM			0x000f0000ul
 #define CRTC_HVSYNC_IO_DRIVE		0x00010000ul	/* XC/XL */
 #define CRTC2_PIX_WIDTH			0x000e0000ul	/* LTPro */
-#define CRTC2_PIX_WIDTH_NONE			0x00000000ul
-#define CRTC2_PIX_WIDTH_8BPP			0x00020000ul
-/*	?					0x00040000ul */
-#define CRTC2_PIX_WIDTH_15BPP			0x00060000ul
-#define CRTC2_PIX_WIDTH_16BPP			0x00080000ul
-#define CRTC2_PIX_WIDTH_24BPP			0x000a0000ul
-#define CRTC2_PIX_WIDTH_32BPP			0x000c0000ul
-#define CRTC2_PIX_WIDTH_YUV422			0x000e0000ul
 #define CRTC_VGA_128KAP_PAGING		0x00100000ul	/* VT/GT */
 #define CRTC_DISPREQ_ONLY		0x00200000ul	/* VT/GT */
 #define CRTC_VFC_SYNC_TRISTATE		0x00200000ul	/* VTB/GTB/LT */
@@ -710,14 +696,14 @@
 #define MEM_BUF_CNTL		BlockIOTag(0x0bu)	/* VTB/GTB/LT */
 #define SHARED_CNTL		BlockIOTag(0x0cu)	/* VTB/GTB/LT */
 #define SHARED_MEM_CONFIG	BlockIOTag(0x0du)	/* VTB/GTB/LT */
-#define MEM_ADDR_CONFIG		BlockIOTag(0x0du)	/* GT3/LTPro */
+#define MEM_ADDR_CONFIG		BlockIOTag(0x0du)	/* GTPro */
 #define SHARED_CNTL_CTD		BlockIOTag(0x0eu)	/* CTD */
 /*	?				0x00fffffful */
 #define CTD_FIFO5			0x01000000ul
 /*	?				0xfe000000ul */
 #define CRT_TRAP		BlockIOTag(0x0eu)	/* VTB/GTB/LT */
 #define DSTN_CONTROL		BlockIOTag(0x0fu)	/* LT */
-#define I2C_CNTL_0		BlockIOTag(0x0fu)	/* GT3/LTPro */
+#define I2C_CNTL_0		BlockIOTag(0x0fu)	/* GTPro */
 #define OVR_CLR			IOPortTag(0x08u, 0x10u)
 #define OVR_CLR_8			0x000000fful
 #define OVR_CLR_B			0x0000ff00ul
@@ -747,7 +733,7 @@
 /*	?				0xf8000000ul */
 #define DSP2_CONFIG		BlockIOTag(0x15u)	/* LTPro */
 #define DSP2_ON_OFF		BlockIOTag(0x16u)	/* LTPro */
-#define EXT_CRTC_GEN_CNTL	BlockIOTag(0x17u)	/* VT-A4 */
+#define EXT_CRTC_GEN_CNTL	BlockIOTag(0x17u)	/* VT-A4 (W) */
 #define CRTC2_OFF_PITCH		BlockIOTag(0x17u)	/* LTPro */
 #define CUR_CLR0		IOPortTag(0x0bu, 0x18u)
 #define CUR_CLR1		IOPortTag(0x0cu, 0x19u)
@@ -785,6 +771,63 @@
 #define GP_IO			IOPortTag(0x1eu, 0x1eu)	/* VT/GT */
 #define GP_IO_CNTL		BlockIOTag(0x1fu)	/* VT/GT */
 #define HW_DEBUG		BlockIOTag(0x1fu)	/* VTB/GTB/LT */
+#define FAST_SRCCOPY_DIS		0x00000001ul
+#define BYPASS_SUBPIC_DBF		0x00000001ul	/* XL/XC */
+#define SRC_AUTONA_FIX_DIS		0x00000002ul
+#define SYNC_PD_EN			0x00000002ul	/* Mobility */
+#define DISP_QW_FIX_DIS			0x00000004ul
+#define GUIDST_WB_EXP_DIS		0x00000008ul
+#define CYC_ALL_FIX_DIS			0x00000008ul	/* GTPro */
+#define AGPPLL_FIX_EN			0x00000008ul	/* Mobility */
+#define SRC_AUTONA_ALWAYS_EN		0x00000010ul
+#define GUI_BEATS_HOST_P		0x00000010ul	/* GTPro */
+#define DRV_CNTL_DQMB_WEB		0x00000020ul
+#define FAST_FILL_SCISSOR_DIS		0x00000020ul	/* GT2c/VT4 */
+#define INTER_BLIT_FIX_DIS		0x00000020ul	/* GTPro */
+#define DRV_CNTL_MA			0x00000040ul
+#define AUTO_BLKWRT_COLOR_DIS		0x00000040ul	/* GT2c/VT4 */
+#define INTER_PRIM_DIS			0x00000040ul	/* GTPro */
+#define DRV_CNTL_MD			0x00000080ul
+#define CHG_DEV_ID			0x00000100ul
+#define SRC_TRACK_DST_FIX_DIS		0x00000200ul
+#define HCLK_FB_SKEW			0x00000380ul	/* GT2c/VT4 */
+#define SRC_TRACK_DST_FIX_DIS_P		0x00000080ul	/* GTPro */
+#define AUTO_BLKWRT_COLOR_DIS_P		0x00000100ul	/* GTPro */
+#define INTER_LINE_OVERLAP_DIS		0x00000200ul	/* GTPro */
+#define MEM_OE_PULLBACK			0x00000400ul
+#define DBL_BUFFER_EN			0x00000400ul	/* GTPro */
+#define MEM_WE_FIX_DIS			0x00000800ul
+#define MEM_OE_PULLBACK_B		0x00000800ul	/* GT2c/VT4 */
+#define CMDFIFO_SIZE_DIS_P		0x00000800ul	/* GTPro */
+#define RD_EN_FIX_DIS			0x00001000ul
+#define MEM_WE_FIX_DIS_B		0x00001000ul
+#define AUTO_FF_DIS			0x00001000ul	/* GTPro */
+#define CMDFIFO_SIZE_DIS		0x00002000ul	/* GT2c/VT4 */
+#define AUTO_BLKWRT_DIS			0x00002000ul	/* GTPro */
+#define GUI_BEATS_HOST			0x00004000ul	/* GT2c/VT4 */
+#define ORED_INVLD_RB_CACHE		0x00004000ul	/* GTPro */
+#define BLOCK_DBL_BUF			0x00008000ul	/* GTPro */
+#define R2W_TURNAROUND_DELAY		0x00020000ul	/* GT2c/VT4 */
+#define ENA_32BIT_DATA_BUS		0x00040000ul	/* GT2c/VT4 */
+#define HCLK_FB_SKEW_P			0x00070000ul	/* GTPro */
+#define ENA_FLASH_ROM			0x00080000ul	/* GT2c/VT4 */
+#define DISABLE_SWITCH_FIX		0x00080000ul	/* GTPro */
+#define MCLK_START_EN			0x00080000ul	/* LTPro */
+#define SEL_VBLANK_BDL_BUF		0x00100000ul	/* GTPro */
+#define CMDFIFO_64EN			0x00200000ul	/* GTPro */
+#define BM_FIX_DIS			0x00400000ul	/* GTPro */
+#define Z_SWITCH_EN			0x00800000ul	/* LTPro */
+#define FLUSH_HOST_WB			0x01000000ul	/* GTPro */
+#define HW_DEBUG_WRITE_MSK_FIX_DIS	0x02000000ul	/* LTPro */
+#define Z_NO_WRITE_EN			0x04000000ul	/* LTPro */
+#define DISABLE_PCLK_RESET_P		0x08000000ul	/* LTPro */
+#define PM_D3_SUPPORT_ENABLE_P		0x10000000ul	/* LTPro */
+#define STARTCYCLE_FIX_ENABLE		0x20000000ul	/* LTPro */
+#define DONT_RST_CHAREN			0x20000000ul	/* XL/XC */
+#define C3_FIX_ENABLE			0x40000000ul	/* LTPro */
+#define BM_HOSTRA_EN			0x40000000ul	/* XL/XC */
+#define PKGBGAb				0x80000000ul	/* XL/XC */
+#define AUTOEXP_HORZ_FIX		0x80000000ul	/* Mobility */
 #define SCRATCH_REG0		IOPortTag(0x10u, 0x20u)
 #define SCRATCH_REG1		IOPortTag(0x11u, 0x21u)
 /*	BIOS_BASE_SEGMENT		0x0000007ful */	/* As above */
@@ -792,7 +835,7 @@
 #define BIOS_INIT_DAC_SUBTYPE		0x0000f000ul
 /*	?				0xffff0000ul */
 #define SCRATCH_REG2		BlockIOTag(0x22u)	/* LT */
-#define SCRATCH_REG3		BlockIOTag(0x23u)	/* GT3/LTPro */
+#define SCRATCH_REG3		BlockIOTag(0x23u)	/* GTPro */
 #define CLOCK_CNTL		IOPortTag(0x12u, 0x24u)
 #define CLOCK_BIT			0x00000004ul	/* For ICS2595 */
 #define CLOCK_PULSE			0x00000008ul	/* For ICS2595 */
@@ -805,14 +848,14 @@
 #define PLL_ADDR			0x0000fc00ul	/* For internal PLL */
 #define PLL_DATA			0x00ff0000ul	/* For internal PLL */
 /*	?				0xff000000ul */
-#define CONFIG_STAT64_1		BlockIOTag(0x25u)	/* GT3/LTPro */
+#define CONFIG_STAT64_1		BlockIOTag(0x25u)	/* GTPro */
 #define CFG_SUBSYS_DEV_ID		0x000000fful
 #define CFG_SUBSYS_VEN_ID		0x00ffff00ul
 /*	?				0x1f000000ul */
 #define CFG_DIMM_TYPE			0xe0000000ul
 #define CFG_PCI_SUBSYS_DEV_ID		0x0000fffful	/* XC/XL */
 #define CFG_PCI_SUBSYS_VEN_ID		0xffff0000ul	/* XC/XL */
-#define CONFIG_STAT64_2		BlockIOTag(0x26u)	/* GT3/LTPro */
+#define CONFIG_STAT64_2		BlockIOTag(0x26u)	/* GTPro */
 #define CFG_DIMM_TYPE_3			0x00000001ul
 /*	?				0x0000001eul */
 #define CFG_ROMWRTEN			0x00000020ul
@@ -844,7 +887,7 @@
 #define BUS_APER_REG_DIS		0x00000010ul	/* VTB/GTB/LT */
 #define BUS_EXTRA_PIPE_DIS		0x00000020ul	/* VTB/GTB/LT */
 #define BUS_MASTER_DIS			0x00000040ul	/* VTB/GTB/LT */
-#define BUS_ROM_WRT_EN			0x00000080ul	/* GT3/LTPro */
+#define BUS_ROM_WRT_EN			0x00000080ul	/* GTPro */
 #define BUS_ROM_PAGE			0x00000f00ul
 #define BUS_MINOR_REV_ID		0x00000700ul	/* LTPro */
 /*		First silicom - Prototype (A11)	0x00000000ul */
@@ -868,9 +911,9 @@
 #define BUS_FIFO_ERR_INT		0x00200000ul
 #define BUS_MSTR_RD_LINE		0x00200000ul	/* VTB/GTB/LT */
 #define BUS_HOST_ERR_INT_EN		0x00400000ul
-#define BUS_SUSPEND			0x00400000ul	/* GT3/LTPro */
+#define BUS_SUSPEND			0x00400000ul	/* GTPro */
 #define BUS_HOST_ERR_INT		0x00800000ul
-#define BUS_LAT16X			0x00800000ul	/* GT3/LTPro */
+#define BUS_LAT16X			0x00800000ul	/* GTPro */
 #define BUS_PCI_DAC_WS			0x07000000ul
 #define BUS_RD_DISCARD_EN		0x01000000ul	/* VTB/GTB/LT */
 #define BUS_RD_ABORT_EN			0x02000000ul	/* VTB/GTB/LT */
@@ -927,10 +970,10 @@
 #define CTL_MEM_EXT_RMW_CYC_EN		0x00001000ul	/* GX/CX */
 #define CTL_MEM_TCRD			0x00001000ul	/* VTB/GTB/LT */
 #define CTL_MEM_DLL_RESET		0x00002000ul	/* VT/GT */
-#define CTL_MEM_TR2W			0x00002000ul	/* GT3/LTPro */
+#define CTL_MEM_TR2W			0x00002000ul	/* GTPro */
 #define CTL_MEM_ACTV_PRE		0x0000c000ul	/* VT/GT */
-#define CTL_MEM_CAS_PHASE		0x00004000ul	/* GT3/LTPro */
-#define CTL_MEM_OE_PULLBACK		0x00008000ul	/* GT3/LTPro */
+#define CTL_MEM_CAS_PHASE		0x00004000ul	/* GTPro */
+#define CTL_MEM_OE_PULLBACK		0x00008000ul	/* GTPro */
 #define CTL_MEM_TWR			0x0000c000ul	/* XC/XL */
 #define CTL_MEM_BNDRY			0x00030000ul
 #define CTL_MEM_BNDRY_0K			0x00000000ul
@@ -959,7 +1002,7 @@
 #define MEM_VGA_RPS0			0x0000fffful
 #define MEM_VGA_RPS1			0xffff0000ul
 #define LT_GIO			BlockIOTag(0x2fu)	/* LT */
-#define I2C_CNTL_1		BlockIOTag(0x2fu)	/* GT3/LTPro */
+#define I2C_CNTL_1		BlockIOTag(0x2fu)	/* GTPro */
 #define DAC_REGS		IOPortTag(0x17u, 0x30u)	/* 4 separate bytes */
 #define DAC_CNTL		IOPortTag(0x18u, 0x31u)
 #define DAC_EXT_SEL			0x00000003ul
@@ -1016,7 +1059,7 @@
 #define AUTO_HORZ_RATIO			0x20000000ul	/* XC/XL */
 #define HORZ_STRETCH_MODE		0x40000000ul
 #define HORZ_STRETCH_EN			0x80000000ul
-#define EXT_DAC_REGS		BlockIOTag(0x32u)	/* GT3 */
+#define EXT_DAC_REGS		BlockIOTag(0x32u)	/* GTPro */
 #define VERT_STRETCHING		BlockIOTag(0x33u)	/* LT */
 #define VERT_STRETCH_RATIO0		0x000003fful
 #define VERT_STRETCH_RATIO1		0x000ffc00ul
@@ -1046,7 +1089,7 @@
 #define GEN_BLOCK_WR_EN			0x00000200ul	/* GX */
 /*	?				0x00000200ul */	/* CX/264xT */
 #define GEN_SOFT_RESET			0x00000200ul	/* VTB/GTB/LT */
-#define GEN_MEM_TRISTATE		0x00000400ul	/* GT3/LTPro */
+#define GEN_MEM_TRISTATE		0x00000400ul	/* GTPro */
 /*	?				0x00000800ul */
 #define GEN_TEST_VECT_MODE		0x00003000ul	/* VT/GT */
 /*	?				0x0000c000ul */
@@ -1101,7 +1144,7 @@
 #define USE_SHADOWED_ROWCUR		0x20000000ul
 #define SHADOW_EN			0x40000000ul
 #define SHADOW_RW_EN			0x80000000ul
-#define CUSTOM_MACRO_CNTL	BlockIOTag(0x35u)	/* GT3/LTPro */
+#define CUSTOM_MACRO_CNTL	BlockIOTag(0x35u)	/* GTPro */
 #define POWER_MANAGEMENT	BlockIOTag(0x36u)	/* LT */
 #define PWR_MGT_ON			0x00000001ul
 #define PWR_MGT_MODE			0x00000006ul
@@ -1151,7 +1194,7 @@
 #define CFG_MEM_TYPE			0x00000038ul	/* GX/CX */
 #define CFG_DUAL_CAS_EN_T		0x00000008ul	/* 264xT */
 #define CFG_ROM_128K_EN			0x00000008ul	/* VTB/GTB/LT */
-#define CFG_ROM_REMAP			0x00000008ul	/* GT3/LTPro */
+#define CFG_ROM_REMAP			0x00000008ul	/* GTPro */
 #define CFG_VGA_EN_T			0x00000010ul	/* VT/GT */
 #define CFG_CLOCK_EN			0x00000020ul	/* 264xT */
 #define CFG_DUAL_CAS_EN			0x00000040ul	/* GX/CX */
@@ -1169,11 +1212,11 @@
 #define CFG_BOARD_ID			0x0000ff00ul	/* VT/GT */
 #define CFG_EXT_RAM_ADDR		0x003f0000ul	/* GX/CX */
 #define CFG_PANEL_ID			0x001f0000ul	/* LT */
-#define CFG_MACROVISION_EN		0x00200000ul	/* GT3/LTPro */
+#define CFG_MACROVISION_EN		0x00200000ul	/* GTPro */
 #define CFG_ROM_DIS			0x00400000ul	/* GX/CX */
-#define CFG_PCI33EN			0x00400000ul	/* GT3/LTPro */
+#define CFG_PCI33EN			0x00400000ul	/* GTPro */
 #define CFG_VGA_EN			0x00800000ul	/* GX/CX */
-#define CFG_FULLAGP			0x00800000ul	/* GT3/LTPro */
+#define CFG_FULLAGP			0x00800000ul	/* GTPro */
 #define CFG_ARITHMOS_ENABLE		0x00800000ul	/* XC/XL */
 #define CFG_LOCAL_BUS_CFG		0x01000000ul	/* GX/CX */
 #define CFG_CHIP_EN			0x02000000ul	/* GX/CX */
@@ -1196,6 +1239,656 @@
 #define TVO_CNTL		BlockIOTag(0x3fu)	/* VTB/GTB/LT */
 /*	GP_IO			IOPortTag(0x1eu, 0x1eu) */	/* See above */
 /*	CRTC_H_TOTAL_DISP	IOPortTag(0x1fu, 0x00u) */	/* Duplicate */
+#define DST_OFF_PITCH		BlockIOTag(0x40u)
+#define DST_OFFSET			0x000ffffful
+/*	?				0x00300000ul */
+#define DST_PITCH			0xffc00000ul
+#define DST_X			BlockIOTag(0x41u)
+#define DST_Y			BlockIOTag(0x42u)
+#define DST_Y_X			BlockIOTag(0x43u)
+#define DST_y				0x00007ffful
+#define DST_Y_LSB			0x00008000ul	/* GTPro */
+#define DST_x				0x7fff0000ul
+#define DST_Y_SECONDARY_LSB		0x80000000ul	/* GTPro */
+#define DST_WIDTH		BlockIOTag(0x44u)
+#define DST_HEIGHT		BlockIOTag(0x45u)
+#define DST_HEIGHT_WIDTH	BlockIOTag(0x46u)
+#define DST_height			0x0000fffful
+#define DST_width			0xffff0000ul
+#define DST_X_WIDTH		BlockIOTag(0x47u)
+#define DST_BRES_LNTH		BlockIOTag(0x48u)
+#define DST_BRES_ERR		BlockIOTag(0x49u)
+#define DST_BRES_INC		BlockIOTag(0x4au)
+#define DST_BRES_DEC		BlockIOTag(0x4bu)
+#define DST_CNTL		BlockIOTag(0x4cu)
+#define DST_X_DIR			0x00000001ul
+#define DST_Y_DIR			0x00000002ul
+#define DST_Y_MAJOR			0x00000004ul
+#define DST_X_TILE			0x00000008ul
+#define DST_Y_TILE			0x00000010ul
+#define DST_LAST_PEL			0x00000020ul
+#define DST_POLYGON_EN			0x00000040ul
+#define DST_24_ROT_EN			0x00000080ul
+#define DST_24_ROT			0x00000700ul
+#define DST_BRES_SIGN			0x00000800ul	/* GX/CX */
+#define DST_BRES_ZERO			0x00000800ul	/* CT */
+#define DST_POLYGON_RTEDGE_DIS		0x00001000ul	/* CT */
+#define TRAIL_X_DIR			0x00002000ul	/* GT */
+#define TRAP_FILL_DIR			0x00004000ul	/* GT */
+#define TRAIL_BRES_SIGN			0x00008000ul	/* GT */
+/*	?				0x00010000ul */
+#define BRES_SIGN_AUTO			0x00020000ul	/* GT */
+/*	?				0x00040000ul */
+#define ALPHA_OVERLAP_ENB		0x00080000ul	/* GTPro */
+#define SUB_PIX_ON			0x00100000ul	/* GTPro */
+/*	?				0xffe00000ul */
+/*	DST_Y_X			BlockIOTag(0x4du) */	/* Duplicate */
+#define TRAIL_BRES_ERR		BlockIOTag(0x4eu)	/* GT */
+#define TRAIL_BRES_INC		BlockIOTag(0x4fu)	/* GT */
+#define	TRAIL_BRES_DEC		BlockIOTag(0x50u)	/* GT */
+#define LEAD_BRES_LNTH		BlockIOTag(0x51u)	/* GT */
+#define Z_OFF_PITCH		BlockIOTag(0x52u)	/* GT */
+#define Z_CNTL			BlockIOTag(0x53u)	/* GT */
+#define ALPHA_TST_CNTL		BlockIOTag(0x54u)	/* GTPro */
+/*	?			BlockIOTag(0x55u) */
+#define SECONDARY_STW_EXP	BlockIOTag(0x56u)	/* GTPro */
+#define SECONDARY_S_X_INC	BlockIOTag(0x57u)	/* GTPro */
+#define SECONDARY_S_Y_INC	BlockIOTag(0x58u)	/* GTPro */
+#define SECONDARY_S_START	BlockIOTag(0x59u)	/* GTPro */
+#define SECONDARY_W_X_INC	BlockIOTag(0x5au)	/* GTPro */
+#define SECONDARY_W_Y_INC	BlockIOTag(0x5bu)	/* GTPro */
+#define SECONDARY_W_START	BlockIOTag(0x5cu)	/* GTPro */
+#define SECONDARY_T_X_INC	BlockIOTag(0x5du)	/* GTPro */
+#define SECONDARY_T_Y_INC	BlockIOTag(0x5eu)	/* GTPro */
+#define SECONDARY_T_START	BlockIOTag(0x5fu)	/* GTPro */
+#define SRC_OFF_PITCH		BlockIOTag(0x60u)
+#define SRC_OFFSET			0x000ffffful
+/*	?				0x00300000ul */
+#define SRC_PITCH			0xffc00000ul
+#define SRC_X			BlockIOTag(0x61u)
+#define SRC_Y			BlockIOTag(0x62u)
+#define SRC_Y_X			BlockIOTag(0x63u)
+#define SRC_y				0x00007ffful
+/*	?				0x00008000ul */
+#define SRC_x				0x3fff0000ul
+/*	?				0xc0000000ul */
+#define SRC_WIDTH1		BlockIOTag(0x64u)
+#define SRC_HEIGHT1		BlockIOTag(0x65u)
+#define SRC_HEIGHT1_WIDTH1	BlockIOTag(0x66u)
+#define SRC_height1			0x00007ffful
+/*	?				0x00008000ul */
+#define SRC_width1			0x3fff0000ul
+/*	?				0xc0000000ul */
+#define SRC_X_START		BlockIOTag(0x67u)
+#define SRC_Y_START		BlockIOTag(0x68u)
+#define SRC_Y_X_START		BlockIOTag(0x69u)
+#define SRC_y_start			0x00007ffful
+/*	?				0x00008000ul */
+#define SRC_x_start			0x3fff0000ul
+/*	?				0xc0000000ul */
+#define SRC_WIDTH2		BlockIOTag(0x6au)
+#define SRC_HEIGHT2		BlockIOTag(0x6bu)
+#define SRC_HEIGHT2_WIDTH2	BlockIOTag(0x6cu)
+#define SRC_height2			0x00007ffful
+/*	?				0x00008000ul */
+#define SRC_width2			0x3fff0000ul
+/*	?				0xc0000000ul */
+#define SRC_CNTL		BlockIOTag(0x6du)
+#define SRC_PATT_EN			0x00000001ul
+#define SRC_PATT_ROT_EN			0x00000002ul
+#define SRC_LINEAR_EN			0x00000004ul
+#define SRC_BYTE_ALIGN			0x00000008ul
+#define SRC_LINE_X_DIR			0x00000010ul
+#define SRC_8X8X8_BRUSH			0x00000020ul	/* VTB/GTB */
+#define FAST_FILL_EN			0x00000040ul	/* VTB/GTB */
+#define SRC_TRACK_DST			0x00000080ul	/* VTB/GTB */
+#define BUS_MASTER_EN			0x00000100ul	/* VTB/GTB */
+#define BUS_MASTER_SYNC			0x00000200ul	/* VTB/GTB */
+#define BUS_MASTER_OP			0x00000c00ul	/* VTB/GTB */
+#define SRC_8X8X8_BRUSH_LOADED		0x00001000ul	/* VTB/GTB */
+#define COLOR_REG_WRITE_EN		0x00002000ul	/* VTB/GTB */
+#define BLOCK_WRITE_EN			0x00004000ul	/* VTB/GTB */
+/*	?				0xffff8000ul */
+/*	?			BlockIOTag(0x6eu) */
+/*	?			BlockIOTag(0x6fu) */
+#define SCALE_Y_OFF		BlockIOTag(0x70u)	/* GT */
+#define SCALE_OFF		BlockIOTag(0x70u)	/* GTPro */
+#define SECONDARY_SCALE_OFF	BlockIOTag(0x70u)	/* GTPro */
+#define TEX_0_OFF		BlockIOTag(0x70u)	/* GT */
+#define TEX_1_OFF		BlockIOTag(0x71u)	/* GT */
+#define TEX_2_OFF		BlockIOTag(0x72u)	/* GT */
+#define TEX_3_OFF		BlockIOTag(0x73u)	/* GT */
+#define TEX_4_OFF		BlockIOTag(0x74u)	/* GT */
+#define TEX_5_OFF		BlockIOTag(0x75u)	/* GT */
+#define TEX_6_OFF		BlockIOTag(0x76u)	/* GT */
+#define SCALE_WIDTH		BlockIOTag(0x77u)	/* GT */
+#define TEX_7_OFF		BlockIOTag(0x77u)	/* GT */
+#define SCALE_HEIGHT		BlockIOTag(0x78u)	/* GT */
+#define TEX_8_OFF		BlockIOTag(0x78u)	/* GT */
+#define TEX_9_OFF		BlockIOTag(0x79u)	/* GT */
+#define TEX_10_OFF		BlockIOTag(0x7au)	/* GT */
+#define S_Y_INC			BlockIOTag(0x7bu)	/* GT */
+#define SCALE_Y_PITCH		BlockIOTag(0x7bu)	/* GT */
+#define SCALE_X_INC		BlockIOTag(0x7cu)	/* GT */
+#define RED_X_INC		BlockIOTag(0x7cu)	/* GT */
+#define GREEN_X_INC		BlockIOTag(0x7du)	/* GT */
+#define SCALE_Y_INC		BlockIOTag(0x7du)	/* GT */
+#define SCALE_VACC		BlockIOTag(0x7eu)	/* GT */
+#define SCALE_3D_CNTL		BlockIOTag(0x7fu)	/* GT */
+#define HOST_DATA_0		BlockIOTag(0x80u)
+#define HOST_DATA_1		BlockIOTag(0x81u)
+#define HOST_DATA_2		BlockIOTag(0x82u)
+#define HOST_DATA_3		BlockIOTag(0x83u)
+#define HOST_DATA_4		BlockIOTag(0x84u)
+#define HOST_DATA_5		BlockIOTag(0x85u)
+#define HOST_DATA_6		BlockIOTag(0x86u)
+#define HOST_DATA_7		BlockIOTag(0x87u)
+#define HOST_DATA_8		BlockIOTag(0x88u)
+#define HOST_DATA_9		BlockIOTag(0x89u)
+#define HOST_DATA_A		BlockIOTag(0x8au)
+#define HOST_DATA_B		BlockIOTag(0x8bu)
+#define HOST_DATA_C		BlockIOTag(0x8cu)
+#define HOST_DATA_D		BlockIOTag(0x8du)
+#define HOST_DATA_E		BlockIOTag(0x8eu)
+#define HOST_DATA_F		BlockIOTag(0x8fu)
+#define HOST_CNTL		BlockIOTag(0x90u)
+#define HOST_BYTE_ALIGN			0x00000001ul
+#define HOST_BIG_ENDIAN_EN		0x00000002ul	/* GX-E/CT */
+/*	?				0xfffffffcul */
+#define BM_HOSTDATA		BlockIOTag(0x91u)	/* VTB/GTB */
+#define BM_ADDR			BlockIOTag(0x92u)	/* VTB/GTB */
+#define BM_DATA			BlockIOTag(0x92u)	/* VTB/GTB */
+#define BM_GUI_TABLE_CMD	BlockIOTag(0x93u)	/* GTPro */
+/*	?			BlockIOTag(0x94u) */
+/*	?			BlockIOTag(0x95u) */
+/*	?			BlockIOTag(0x96u) */
+/*	?			BlockIOTag(0x97u) */
+/*	?			BlockIOTag(0x98u) */
+/*	?			BlockIOTag(0x99u) */
+/*	?			BlockIOTag(0x9au) */
+/*	?			BlockIOTag(0x9bu) */
+/*	?			BlockIOTag(0x9cu) */
+/*	?			BlockIOTag(0x9du) */
+/*	?			BlockIOTag(0x9eu) */
+/*	?			BlockIOTag(0x9fu) */
+#define PAT_REG0		BlockIOTag(0xa0u)
+#define PAT_REG1		BlockIOTag(0xa1u)
+#define PAT_CNTL		BlockIOTag(0xa2u)
+#define PAT_MONO_EN			0x00000001ul
+#define PAT_CLR_4x2_EN			0x00000002ul
+#define PAT_CLR_8x1_EN			0x00000004ul
+/*	?				0xfffffff8ul */
+/*	?			BlockIOTag(0xa3u) */
+/*	?			BlockIOTag(0xa4u) */
+/*	?			BlockIOTag(0xa5u) */
+/*	?			BlockIOTag(0xa6u) */
+/*	?			BlockIOTag(0xa7u) */
+#define SC_LEFT			BlockIOTag(0xa8u)
+#define SC_RIGHT		BlockIOTag(0xa9u)
+#define SC_LEFT_RIGHT		BlockIOTag(0xaau)
+#define SC_left				0x00003ffful
+/*	?				0x0000c000ul */
+#define SC_right			0x3fff0000ul
+/*	?				0xc0000000ul */
+#define SC_TOP			BlockIOTag(0xabu)
+#define SC_BOTTOM		BlockIOTag(0xacu)
+#define SC_TOP_BOTTOM		BlockIOTag(0xadu)
+#define SC_top				0x00007ffful
+/*	?				0x00008000ul */
+#define SC_bottom			0x7fff0000ul
+/*	?				0x80000000ul */
+#define USR1_DST_OFF_PITCH	BlockIOTag(0xaeu)	/* LTPro */
+#define USR2_DST_OFF_PITCH	BlockIOTag(0xafu)	/* LTPro */
+#define DP_BKGD_CLR		BlockIOTag(0xb0u)
+#define DP_FRGD_CLR		BlockIOTag(0xb1u)
+#define DP_WRITE_MASK		BlockIOTag(0xb2u)
+#define DP_CHAIN_MASK		BlockIOTag(0xb3u)
+#define DP_CHAIN_1BPP			0x00000000ul	/* Irrelevant */
+#define DP_CHAIN_4BPP			0x00008888ul
+#define DP_CHAIN_8BPP			0x00008080ul
+#define DP_CHAIN_8BPP_332		0x00009292ul
+#define DP_CHAIN_15BPP_1555		0x00004210ul
+#define DP_CHAIN_16BPP_565		0x00008410ul
+#define DP_CHAIN_24BPP_888		0x00008080ul
+#define DP_CHAIN_32BPP_8888		0x00008080ul
+/*	?				0xffff0000ul */
+#define DP_PIX_WIDTH		BlockIOTag(0xb4u)
+#define DP_DST_PIX_WIDTH		0x0000000ful
+#define COMPOSITE_PIX_WIDTH		0x000000f0ul	/* GTPro */
+#define DP_SRC_PIX_WIDTH		0x00000f00ul
+/*	?				0x00001000ul */
+#define DP_HOST_TRIPLE_EN		0x00002000ul	/* GT2c/VT4 */
+#define DP_SRC_AUTONA_FIX_DIS		0x00004000ul	/* GTB */
+#define DP_FAST_SRCCOPY_DIS		0x00008000ul	/* GTB */
+#define DP_HOST_PIX_WIDTH		0x000f0000ul
+#define DP_CI4_RGB_INDEX		0x00f00000ul	/* GTB */
+#define DP_BYTE_PIX_ORDER		0x01000000ul
+#define DP_CONVERSION_TEMP		0x02000000ul	/* GTB */
+#define DP_CI4_RGB_LOW_NIBBLE		0x04000000ul	/* GTB */
+#define DP_C14_RGB_HIGH_NIBBLE		0x08000000ul	/* GTB */
+#define DP_SCALE_PIX_WIDTH		0xf0000000ul	/* GTB */
+#define DP_MIX			BlockIOTag(0xb5u)
+#define DP_BKGD_MIX			0x0000001ful
+/*	?				0x0000ffe0ul */
+#define DP_FRGD_MIX			0x001f0000ul
+/*	?				0xffe00000ul */
+#define DP_SRC			BlockIOTag(0xb6u)
+#define DP_BKGD_SRC			0x00000007ul
+/*	?				0x000000feul */
+#define DP_FRGD_SRC			0x00000700ul
+/*	?				0x0000fe00ul */
+#define DP_MONO_SRC			0x00030000ul
+#define DP_MONO_SRC_ALLONES			0x00000000ul
+#define DP_MONO_SRC_PATTERN			0x00010000ul
+#define DP_MONO_SRC_HOST			0x00020000ul
+#define DP_MONO_SRC_BLIT			0x00030000ul
+/*	?				0xfffc0000ul */
+#define DP_FRGD_CLR_MIX		BlockIOTag(0xb7u)	/* VTB/GTB */
+#define DP_FRGD_BKGD_CLR	BlockIOTag(0xb8u)	/* VTB/GTB */
+/*	?			BlockIOTag(0xb9u) */
+#define DST_X_Y			BlockIOTag(0xbau)	/* VTB/GTB */
+#define DST_WIDTH_HEIGHT	BlockIOTag(0xbbu)	/* VTB/GTB */
+#define USR_DST_PITCH		BlockIOTag(0xbcu)	/* GTPro */
+/*	?			BlockIOTag(0xbdu) */
+#define DP_SET_GUI_ENGINE2	BlockIOTag(0xbeu)	/* GTPro */
+#define DP_SET_GUI_ENGINE	BlockIOTag(0xbfu)	/* VTB/GTB */
+#define CLR_CMP_CLR		BlockIOTag(0xc0u)
+#define CLR_CMP_MSK		BlockIOTag(0xc1u)
+#define CLR_CMP_CNTL		BlockIOTag(0xc2u)
+#define CLR_CMP_FN			0x00000007ul
+#define CLR_CMP_FN_FALSE			0x00000000ul
+#define CLR_CMP_FN_TRUE				0x00000001ul
+/*	?					0x00000002ul */
+/*	?					0x00000003ul */
+#define CLR_CMP_FN_EQUAL			0x00000004ul
+#define CLR_CMP_FN_NOT_EQUAL			0x00000005ul
+/*	?					0x00000006ul */
+/*	?					0x00000007ul */
+/*	?				0x00fffff8ul */
+#define CLR_CMP_SRC			0x03000000ul
+#define CLR_CMP_SRC_DST				0x00000000ul
+#define CLR_CMP_SRC_2D				0x01000000ul
+#define CLR_CMP_SRC_TEXEL			0x02000000ul
+/*	?					0x03000000ul */
+/*	?				0xfc000000ul */
+/*	?			BlockIOTag(0xc3u) */
+#define FIFO_STAT		BlockIOTag(0xc4u)
+#define FIFO_STAT_BITS			0x0000fffful
+/*	?				0x7fff0000ul */
+#define FIFO_ERR			0x80000000ul
+/*	?			BlockIOTag(0xc5u) */
+/*	?			BlockIOTag(0xc6u) */
+/*	?			BlockIOTag(0xc7u) */
+#define CONTEXT_MASK		BlockIOTag(0xc8u)
+/*	?			BlockIOTag(0xc9u) */
+/*	?			BlockIOTag(0xcau) */
+#define CONTEXT_LOAD_CNTL	BlockIOTag(0xcbu)
+#define CONTEXT_LOAD_PTR		0x00007ffful
+/*	?				0x00008000ul */
+#define CONTEXT_LOAD_CMD		0x00030000ul
+#define CONTEXT_LOAD_NONE			0x00000000ul
+#define CONTEXT_LOAD_ONLY			0x00010000ul
+#define CONTEXT_LOAD_FILL			0x00020000ul
+#define CONTEXT_LOAD_LINE			0x00030000ul
+/*	?				0x7ffc0000ul */
+#define CONTEXT_LOAD_DIS		0x80000000ul
+#define GUI_TRAJ_CNTL		BlockIOTag(0xccu)
+/*	?			BlockIOTag(0xcdu) */
+#define GUI_STAT		BlockIOTag(0xceu)
+#define GUI_ACTIVE			0x00000001ul
+/*	?				0x000000feul */
+#define DSTX_LT_SCISSOR_LEFT		0x00000100ul
+#define DSTX_GT_SCISSOR_RIGHT		0x00000200ul
+#define DSTY_LT_SCISSOR_TOP		0x00000400ul
+#define DSTY_GT_SCISSOR_BOTTOM		0x00000800ul
+/*	?				0x0000f000ul */
+#define GUI_FIFO			0x03ff0000ul	/* VTB/GTB */
+/*	?				0xfc000000ul */
+/*	?			BlockIOTag(0xcfu) */
+#define S_X_INC2		BlockIOTag(0xd0u)	/* GTB */
+#define TEX_PALETTE_INDEX	BlockIOTag(0xd0u)	/* GTPro */
+#define S_Y_INC2		BlockIOTag(0xd1u)	/* GTB */
+#define STW_EXP			BlockIOTag(0xd1u)	/* GTPro */
+#define S_XY_INC2		BlockIOTag(0xd2u)	/* GTB */
+#define LOG_MAX_INC		BlockIOTag(0xd2u)	/* GTPro */
+#define S_XINC_START		BlockIOTag(0xd3u)	/* GTB */
+/*	S_Y_INC			BlockIOTag(0xd4u) */	/* Duplicate */
+/*	SCALE_Y_PITCH		BlockIOTag(0xd4u) */	/* Duplicate */
+#define S_START			BlockIOTag(0xd5u)	/* GTB */
+#define T_X_INC2		BlockIOTag(0xd6u)	/* GTB */
+#define W_X_INC			BlockIOTag(0xd6u)	/* GTPro */
+#define T_Y_INC2		BlockIOTag(0xd7u)	/* GTB */
+#define W_Y_INC			BlockIOTag(0xd7u)	/* GTPro */
+#define T_XY_INC2		BlockIOTag(0xd8u)	/* GTB */
+#define W_START			BlockIOTag(0xd8u)	/* GTPro */
+#define T_XINC_START		BlockIOTag(0xd9u)	/* GTB */
+#define T_Y_INC			BlockIOTag(0xdau)	/* GTB */
+#define SECONDARY_SCALE_PITCH	BlockIOTag(0xdau)	/* GTPro */
+#define T_START			BlockIOTag(0xdbu)	/* GTB */
+#define TEX_SIZE_PITCH		BlockIOTag(0xdcu)	/* GTB */
+#define TEX_CNTL		BlockIOTag(0xddu)	/* GTPro */
+#define SECONDARY_TEX_OFFSET	BlockIOTag(0xdeu)	/* GTPro */
+#define TEX_PAL_WR		BlockIOTag(0xdfu)	/* GTB */
+#define TEX_PALETTE		BlockIOTag(0xdfu)	/* GTPro */
+#define SCALE_PITCH_BOTH	BlockIOTag(0xe0u)	/* GTPro */
+#define SECONDARY_SCALE_OFF_ACC	BlockIOTag(0xe1u)	/* GTPro */
+#define SCALE_OFF_ACC		BlockIOTag(0xe2u)	/* GTPro */
+#define SCALE_DST_Y_X		BlockIOTag(0xe3u)	/* GTPro */
+/*	?			BlockIOTag(0xe4u) */
+/*	?			BlockIOTag(0xe5u) */
+#define COMPOSITE_SHADOW_ID	BlockIOTag(0xe6u)	/* GTPro */
+#define SECONDARY_SCALE_X_INC	BlockIOTag(0xe7u)	/* GTPro */
+#define SPECULAR_RED_X_INC	BlockIOTag(0xe7u)	/* GTPro */
+#define SPECULAR_RED_Y_INC	BlockIOTag(0xe8u)	/* GTPro */
+#define SPECULAR_RED_START	BlockIOTag(0xe9u)	/* GTPro */
+#define SECONDARY_SCALE_HACC	BlockIOTag(0xe9u)	/* GTPro */
+#define SPECULAR_GREEN_X_INC	BlockIOTag(0xeau)	/* GTPro */
+#define SPECULAR_GREEN_Y_INC	BlockIOTag(0xebu)	/* GTPro */
+#define SPECULAR_GREEN_START	BlockIOTag(0xecu)	/* GTPro */
+#define SPECULAR_BLUE_X_INC	BlockIOTag(0xedu)	/* GTPro */
+#define SPECULAR_BLUE_Y_INC	BlockIOTag(0xeeu)	/* GTPro */
+#define SPECULAR_BLUE_START	BlockIOTag(0xefu)	/* GTPro */
+/*	SCALE_X_INC		BlockIOTag(0xf0u) */	/* Duplicate */
+/*	RED_X_INC		BlockIOTag(0xf0u) */	/* Duplicate */
+#define RED_Y_INC		BlockIOTag(0xf1u)	/* GTB */
+#define SCALE_HACC		BlockIOTag(0xf2u)	/* GTB */
+#define RED_START		BlockIOTag(0xf2u)	/* GTB */
+/*	GREEN_X_INC		BlockIOTag(0xf3u) */	/* Duplicate */
+/*	SCALE_Y_INC		BlockIOTag(0xf3u) */	/* Duplicate */
+#define GREEN_Y_INC		BlockIOTag(0xf4u)	/* GTB */
+#define SECONDARY_SCALE_Y_INC	BlockIOTag(0xf4u)	/* GTPro */
+#define SECONDARY_SCALE_VACC	BlockIOTag(0xf5u)	/* GTPro */
+#define GREEN_START		BlockIOTag(0xf5u)	/* GTB */
+#define BLUE_X_INC		BlockIOTag(0xf6u)	/* GTB */
+#define SCALE_XUV_INC		BlockIOTag(0xf6u)	/* GTB */
+#define BLUE_Y_INC		BlockIOTag(0xf7u)	/* GTB */
+#define BLUE_START		BlockIOTag(0xf8u)	/* GTB */
+#define SCALE_UV_HACC		BlockIOTag(0xf8u)	/* GTB */
+#define Z_X_INC			BlockIOTag(0xf9u)	/* GTB */
+#define Z_Y_INC			BlockIOTag(0xfau)	/* GTB */
+#define Z_START			BlockIOTag(0xfbu)	/* GTB */
+#define ALPHA_FOG_X_INC		BlockIOTag(0xfcu)	/* GTB */
+#define ALPHA_FOG_Y_INC		BlockIOTag(0xfdu)	/* GTB */
+#define ALPHA_FOG_START		BlockIOTag(0xfeu)	/* GTB */
+/*	?			BlockIOTag(0xffu) */
+#define OVERLAY_Y_X_START	BlockIOTag(0x100u)
+#define OVERLAY_Y_X_END		BlockIOTag(0x101u)
+#define OVERLAY_VIDEO_KEY_CLR	BlockIOTag(0x102u)
+#define OVERLAY_VIDEO_KEY_MSK	BlockIOTag(0x103u)
+#define OVERLAY_GRAPHICS_KEY_CLR BlockIOTag(0x104u)
+#define OVERLAY_GRAPHICS_KEY_MSK BlockIOTag(0x105u)
+#define OVERLAY_KEY_CNTL	BlockIOTag(0x106u)
+/*	?			BlockIOTag(0x107u) */
+#define OVERLAY_SCALE_INC	BlockIOTag(0x108u)
+#define OVERLAY_SCALE_CNTL	BlockIOTag(0x109u)
+#define SCALER_HEIGHT_WIDTH	BlockIOTag(0x10au)
+#define OVERLAY_TEST		BlockIOTag(0x10bu)
+#define SCALER_THRESHOLD	BlockIOTag(0x10cu)
+#define SCALER_BUF0_OFFSET	BlockIOTag(0x10du)	/* VTB/GTB */
+#define SCALER_BUF1_OFFSET	BlockIOTag(0x10eu)	/* VTB/GTB */
+#define SCALER_BUF_PITCH	BlockIOTag(0x10fu)	/* VTB/GTB */
+#define CAPTURE_Y_X		BlockIOTag(0x110u)
+#define CAPTURE_START_END	BlockIOTag(0x110u)	/* VTB/GTB */
+#define CAPTURE_HEIGHT_WIDTH	BlockIOTag(0x111u)
+#define CAPTURE_X_WIDTH		BlockIOTag(0x111u)	/* VTB/GTB */
+#define VIDEO_FORMAT		BlockIOTag(0x112u)
+#define VIDEO_CONFIG		BlockIOTag(0x113u)
+#define VBI_START_END		BlockIOTag(0x113u)	/* VTB/GTB */
+#define CAPTURE_CONFIG		BlockIOTag(0x114u)
+#define TRIG_CNTL		BlockIOTag(0x115u)
+#define VIDEO_SYNC_TEST		BlockIOTag(0x116u)
+#define OVERLAY_EXCLUSIVE_HORZ	BlockIOTag(0x116u)	/* VTB/GTB */
+#define EXT_CRTC_GEN_CNTL_R	BlockIOTag(0x117u)	/* VT-A4 (R) */
+#define OVERLAY_EXCLUSIVE_VERT	BlockIOTag(0x117u)	/* VTB/GTB */
+#define VMC_CONFIG		BlockIOTag(0x118u)
+#define VBI_WIDTH		BlockIOTag(0x118u)	/* VTB/GTB */
+#define VMC_STATUS		BlockIOTag(0x119u)
+#define CAPTURE_DEBUG		BlockIOTag(0x119u)	/* VTB/GTB */
+#define VMC_CMD			BlockIOTag(0x11au)
+#define VIDEO_SYNC_TEST_B	BlockIOTag(0x11au)	/* VTB/GTB */
+#define VMC_ARG0		BlockIOTag(0x11bu)
+#define VMC_ARG1		BlockIOTag(0x11cu)
+#define SNAPSHOT_VH_COUNTS	BlockIOTag(0x11cu)	/* GTPro */
+#define VMC_SNOOP_ARG0		BlockIOTag(0x11du)
+#define SNAPSHOT_F_COUNT	BlockIOTag(0x11du)	/* GTPro */
+#define VMC_SNOOP_ARG1		BlockIOTag(0x11eu)
+#define N_VIF_COUNT		BlockIOTag(0x11eu)	/* GTPro */
+#define SNAPSHOT_VIF_COUNT	BlockIOTag(0x11fu)	/* GTPro */
+#define BUF0_OFFSET		BlockIOTag(0x120u)
+#define CAPTURE_BUF0_OFFSET	BlockIOTag(0x120u)	/* VTB/GTB */
+#define CAPTURE_BUF1_OFFSET	BlockIOTag(0x121u)	/* VTB/GTB */
+#define ONESHOT_BUF_OFFSET	BlockIOTag(0x122u)	/* VTB/GTB */
+#define BUF0_PITCH		BlockIOTag(0x123u)
+/*	?			BlockIOTag(0x124u) */
+/*	?			BlockIOTag(0x125u) */
+#define BUF1_OFFSET		BlockIOTag(0x126u)
+/*	?			BlockIOTag(0x127u) */
+/*	?			BlockIOTag(0x128u) */
+#define BUF1_PITCH		BlockIOTag(0x129u)
+/*	?			BlockIOTag(0x12au) */
+#define BUF0_CAP_ODD_OFFSET	BlockIOTag(0x12bu)
+#define BUF1_CAP_ODD_OFFSET	BlockIOTag(0x12cu)
+#define SNAPSHOT2_VH_COUNTS	BlockIOTag(0x12cu)	/* LTPro */
+#define SNAPSHOT2_F_COUNT	BlockIOTag(0x12du)	/* LTPro */
+#define N_VIF2_COUNT		BlockIOTag(0x12eu)	/* LTPro */
+#define SNAPSHOT2_VIF_COUNT	BlockIOTag(0x12fu)	/* LTPro */
+#define VMC_STRM_DATA_0		BlockIOTag(0x130u)
+/*	MPP_CONFIG		BlockIOTag(0x130u) */	/* See 0x3bu */
+#define VMC_STRM_DATA_1		BlockIOTag(0x131u)
+/*	MPP_STROBE_SEQ		BlockIOTag(0x131u) */	/* See 0x3cu */
+#define VMC_STRM_DATA_2		BlockIOTag(0x132u)
+/*	MPP_ADDR		BlockIOTag(0x132u) */	/* See 0x3du */
+#define VMC_STRM_DATA_3		BlockIOTag(0x133u)
+/*	MPP_DATA		BlockIOTag(0x133u) */	/* See 0x3eu */
+#define VMC_STRM_DATA_4		BlockIOTag(0x134u)
+#define VMC_STRM_DATA_5		BlockIOTag(0x135u)
+#define VMC_STRM_DATA_6		BlockIOTag(0x136u)
+#define VMC_STRM_DATA_7		BlockIOTag(0x137u)
+#define VMC_STRM_DATA_8		BlockIOTag(0x138u)
+#define VMC_STRM_DATA_9		BlockIOTag(0x139u)
+#define VMC_STRM_DATA_A		BlockIOTag(0x13au)
+#define VMC_STRM_DATA_B		BlockIOTag(0x13bu)
+#define VMC_STRM_DATA_C		BlockIOTag(0x13cu)
+#define VMC_STRM_DATA_D		BlockIOTag(0x13du)
+#define VMC_STRM_DATA_E		BlockIOTag(0x13eu)
+#define VMC_STRM_DATA_F		BlockIOTag(0x13fu)
+/*	TVO_CNTL		BlockIOTag(0x140u) */	/* See 0x3fu */
+/*	?			BlockIOTag(0x141u) */
+/*	?			BlockIOTag(0x142u) */
+/*	?			BlockIOTag(0x143u) */
+/*	?			BlockIOTag(0x144u) */
+/*	?			BlockIOTag(0x145u) */
+/*	?			BlockIOTag(0x146u) */
+/*	?			BlockIOTag(0x147u) */
+/*	?			BlockIOTag(0x148u) */
+/*	?			BlockIOTag(0x149u) */
+/*	?			BlockIOTag(0x14au) */
+/*	?			BlockIOTag(0x14bu) */
+/*	?			BlockIOTag(0x14cu) */
+/*	?			BlockIOTag(0x14du) */
+/*	?			BlockIOTag(0x14eu) */
+/*	?			BlockIOTag(0x14fu) */
+/*	?			BlockIOTag(0x150u) */
+#define CRT_HORZ_VERT_LOAD	BlockIOTag(0x151u)	/* VTB/GTB */
+#define AGP_BASE		BlockIOTag(0x152u)	/* GTPro */
+#define AGP_CNTL		BlockIOTag(0x153u)	/* GTPro */
+#define SCALER_COLOUR_CNTL	BlockIOTag(0x154u)	/* GTPro */
+#define SCALER_H_COEFF0		BlockIOTag(0x155u)	/* GTPro */
+#define SCALER_H_COEFF1		BlockIOTag(0x156u)	/* GTPro */
+#define SCALER_H_COEFF2		BlockIOTag(0x157u)	/* GTPro */
+#define SCALER_H_COEFF3		BlockIOTag(0x158u)	/* GTPro */
+#define SCALER_H_COEFF4		BlockIOTag(0x159u)	/* GTPro */
+/*	?			BlockIOTag(0x15au) */
+/*	?			BlockIOTag(0x15bu) */
+#define GUI_CMDFIFO_DEBUG	BlockIOTag(0x15cu)	/* GT2c/VT4 */
+#define GUI_CMDFIFO_DATA	BlockIOTag(0x15du)	/* GT2c/VT4 */
+#define GUI_CNTL		BlockIOTag(0x15eu)	/* GT2c/VT4 */
+#define CMDFIFO_SIZE_MODE		0x00000003ul
+/*	?				0x0000fffcul */
+#define IDCT_PRSR_MODE			0x00010000ul	/* XL/XC */
+#define IDCT_BLOCK_GUI_INITIATOR	0x00020000ul	/* XL/XC */
+/*	?				0xfffc0000ul */
+/*	?			BlockIOTag(0x15fu) */
+#define BM_FRAME_BUF_OFFSET	BlockIOTag(0x160u)	/* VTB/GTB */
+#define BM_SYSTEM_MEM_ADDR	BlockIOTag(0x161u)	/* VTB/GTB */
+#define BM_COMMAND		BlockIOTag(0x162u)	/* VTB/GTB */
+#define BM_STATUS		BlockIOTag(0x163u)	/* VTB/GTB */
+/*	?			BlockIOTag(0x164u) */
+/*	?			BlockIOTag(0x165u) */
+/*	?			BlockIOTag(0x166u) */
+/*	?			BlockIOTag(0x167u) */
+/*	?			BlockIOTag(0x168u) */
+/*	?			BlockIOTag(0x169u) */
+/*	?			BlockIOTag(0x16au) */
+/*	?			BlockIOTag(0x16bu) */
+/*	?			BlockIOTag(0x16cu) */
+/*	?			BlockIOTag(0x16du) */
+#define BM_GUI_TABLE		BlockIOTag(0x16eu)	/* VTB/GTB */
+#define BM_SYSTEM_TABLE		BlockIOTag(0x16fu)	/* VTB/GTB */
+/*	?			BlockIOTag(0x170u) */
+/*	?			BlockIOTag(0x171u) */
+/*	?			BlockIOTag(0x172u) */
+/*	?			BlockIOTag(0x173u) */
+/*	?			BlockIOTag(0x174u) */
+#define SCALER_BUF0_OFFSET_U	BlockIOTag(0x175u)	/* GTPro */
+#define SCALER_BUF0_OFFSET_V	BlockIOTag(0x176u)	/* GTPro */
+#define SCALER_BUF1_OFFSET_U	BlockIOTag(0x177u)	/* GTPro */
+#define SCALER_BUF1_OFFSET_V	BlockIOTag(0x178u)	/* GTPro */
+/*	?			BlockIOTag(0x179u) */
+/*	?			BlockIOTag(0x17au) */
+/*	?			BlockIOTag(0x17bu) */
+/*	?			BlockIOTag(0x17cu) */
+/*	?			BlockIOTag(0x17du) */
+/*	?			BlockIOTag(0x17eu) */
+/*	?			BlockIOTag(0x17fu) */
+/*	?			BlockIOTag(0x180u) */
+/*	?			BlockIOTag(0x181u) */
+/*	?			BlockIOTag(0x182u) */
+/*	?			BlockIOTag(0x183u) */
+/*	?			BlockIOTag(0x184u) */
+/*	?			BlockIOTag(0x185u) */
+/*	?			BlockIOTag(0x186u) */
+/*	?			BlockIOTag(0x187u) */
+/*	?			BlockIOTag(0x188u) */
+/*	?			BlockIOTag(0x189u) */
+/*	?			BlockIOTag(0x18au) */
+/*	?			BlockIOTag(0x18bu) */
+/*	?			BlockIOTag(0x18cu) */
+/*	?			BlockIOTag(0x18du) */
+/*	?			BlockIOTag(0x18eu) */
+/*	?			BlockIOTag(0x18fu) */
+#define VERTEX_1_S		BlockIOTag(0x190u)	/* GTPro */
+#define VERTEX_1_T		BlockIOTag(0x191u)	/* GTPro */
+#define VERTEX_1_W		BlockIOTag(0x192u)	/* GTPro */
+#define VERTEX_1_SPEC_ARGB	BlockIOTag(0x193u)	/* GTPro */
+#define VERTEX_1_Z		BlockIOTag(0x194u)	/* GTPro */
+#define VERTEX_1_ARGB		BlockIOTag(0x195u)	/* GTPro */
+#define VERTEX_1_X_Y		BlockIOTag(0x196u)	/* GTPro */
+#define ONE_OVER_AREA		BlockIOTag(0x197u)	/* GTPro */
+#define VERTEX_2_S		BlockIOTag(0x198u)	/* GTPro */
+#define VERTEX_2_T		BlockIOTag(0x199u)	/* GTPro */
+#define VERTEX_2_W		BlockIOTag(0x19au)	/* GTPro */
+#define VERTEX_2_SPEC_ARGB	BlockIOTag(0x19bu)	/* GTPro */
+#define VERTEX_2_Z		BlockIOTag(0x19cu)	/* GTPro */
+#define VERTEX_2_ARGB		BlockIOTag(0x19du)	/* GTPro */
+#define VERTEX_2_X_Y		BlockIOTag(0x19eu)	/* GTPro */
+/*	ONE_OVER_AREA		BlockIOTag(0x19fu) */	/* Duplicate */
+#define VERTEX_3_S		BlockIOTag(0x1a0u)	/* GTPro */
+#define VERTEX_3_T		BlockIOTag(0x1a1u)	/* GTPro */
+#define VERTEX_3_W		BlockIOTag(0x1a2u)	/* GTPro */
+#define VERTEX_3_SPEC_ARGB	BlockIOTag(0x1a3u)	/* GTPro */
+#define VERTEX_3_Z		BlockIOTag(0x1a4u)	/* GTPro */
+#define VERTEX_3_ARGB		BlockIOTag(0x1a5u)	/* GTPro */
+#define VERTEX_3_X_Y		BlockIOTag(0x1a6u)	/* GTPro */
+/*	ONE_OVER_AREA		BlockIOTag(0x1a7u) */	/* Duplicate */
+#define VERTEX_3_SECONDARY_S	BlockIOTag(0x1a8u)	/* GTPro */
+#define VERTEX_3_SECONDARY_T	BlockIOTag(0x1a9u)	/* GTPro */
+#define VERTEX_3_SECONDARY_W	BlockIOTag(0x1aau)	/* GTPro */
+/*	VERTEX_1_S		BlockIOTag(0x1abu) */	/* Duplicate */
+/*	VERTEX_1_T		BlockIOTag(0x1acu) */	/* Duplicate */
+/*	VERTEX_1_W		BlockIOTag(0x1adu) */	/* Duplicate */
+/*	VERTEX_2_S		BlockIOTag(0x1aeu) */	/* Duplicate */
+/*	VERTEX_2_T		BlockIOTag(0x1afu) */	/* Duplicate */
+/*	VERTEX_2_W		BlockIOTag(0x1b0u) */	/* Duplicate */
+/*	VERTEX_3_S		BlockIOTag(0x1b1u) */	/* Duplicate */
+/*	VERTEX_3_T		BlockIOTag(0x1b2u) */	/* Duplicate */
+/*	VERTEX_3_W		BlockIOTag(0x1b3u) */	/* Duplicate */
+/*	VERTEX_1_SPEC_ARGB	BlockIOTag(0x1b4u) */	/* Duplicate */
+/*	VERTEX_2_SPEC_ARGB	BlockIOTag(0x1b5u) */	/* Duplicate */
+/*	VERTEX_3_SPEC_ARGB	BlockIOTag(0x1b6u) */	/* Duplicate */
+/*	VERTEX_1_Z		BlockIOTag(0x1b7u) */	/* Duplicate */
+/*	VERTEX_2_Z		BlockIOTag(0x1b8u) */	/* Duplicate */
+/*	VERTEX_3_Z		BlockIOTag(0x1b9u) */	/* Duplicate */
+/*	VERTEX_1_ARGB		BlockIOTag(0x1bau) */	/* Duplicate */
+/*	VERTEX_2_ARGB		BlockIOTag(0x1bbu) */	/* Duplicate */
+/*	VERTEX_3_ARGB		BlockIOTag(0x1bcu) */	/* Duplicate */
+/*	VERTEX_1_X_Y		BlockIOTag(0x1bdu) */	/* Duplicate */
+/*	VERTEX_2_X_Y		BlockIOTag(0x1beu) */	/* Duplicate */
+/*	VERTEX_3_X_Y		BlockIOTag(0x1bfu) */	/* Duplicate */
+#define ONE_OVER_AREA_UC	BlockIOTag(0x1c0u)	/* GTPro */
+#define SETUP_CNTL		BlockIOTag(0x1c1u)	/* GTPro */
+/*	?			BlockIOTag(0x1c2u) */
+/*	?			BlockIOTag(0x1c3u) */
+/*	?			BlockIOTag(0x1c4u) */
+/*	?			BlockIOTag(0x1c5u) */
+/*	?			BlockIOTag(0x1c6u) */
+/*	?			BlockIOTag(0x1c7u) */
+/*	?			BlockIOTag(0x1c8u) */
+/*	?			BlockIOTag(0x1c9u) */
+#define VERTEX_1_SECONDARY_S	BlockIOTag(0x1cau)	/* GTPro */
+#define VERTEX_1_SECONDARY_T	BlockIOTag(0x1cbu)	/* GTPro */
+#define VERTEX_1_SECONDARY_W	BlockIOTag(0x1ccu)	/* GTPro */
+#define VERTEX_2_SECONDARY_S	BlockIOTag(0x1cdu)	/* GTPro */
+#define VERTEX_2_SECONDARY_T	BlockIOTag(0x1ceu)	/* GTPro */
+#define VERTEX_2_SECONDARY_W	BlockIOTag(0x1cfu)	/* GTPro */
+/*	?			BlockIOTag(0x1d0u) */
+/*	?			BlockIOTag(0x1d1u) */
+/*	?			BlockIOTag(0x1d2u) */
+/*	?			BlockIOTag(0x1d3u) */
+/*	?			BlockIOTag(0x1d4u) */
+/*	?			BlockIOTag(0x1d5u) */
+/*	?			BlockIOTag(0x1d6u) */
+/*	?			BlockIOTag(0x1d7u) */
+/*	?			BlockIOTag(0x1d8u) */
+/*	?			BlockIOTag(0x1d9u) */
+/*	?			BlockIOTag(0x1dau) */
+/*	?			BlockIOTag(0x1dbu) */
+/*	?			BlockIOTag(0x1dcu) */
+/*	?			BlockIOTag(0x1ddu) */
+/*	?			BlockIOTag(0x1deu) */
+/*	?			BlockIOTag(0x1dfu) */
+/*	?			BlockIOTag(0x1e0u) */
+/*	?			BlockIOTag(0x1e1u) */
+/*	?			BlockIOTag(0x1e2u) */
+/*	?			BlockIOTag(0x1e3u) */
+/*	?			BlockIOTag(0x1e4u) */
+/*	?			BlockIOTag(0x1e5u) */
+/*	?			BlockIOTag(0x1e6u) */
+/*	?			BlockIOTag(0x1e7u) */
+/*	?			BlockIOTag(0x1e8u) */
+/*	?			BlockIOTag(0x1e9u) */
+/*	?			BlockIOTag(0x1eau) */
+/*	?			BlockIOTag(0x1ebu) */
+/*	?			BlockIOTag(0x1ecu) */
+/*	?			BlockIOTag(0x1edu) */
+/*	?			BlockIOTag(0x1eeu) */
+/*	?			BlockIOTag(0x1efu) */
+/*	?			BlockIOTag(0x1f0u) */
+/*	?			BlockIOTag(0x1f1u) */
+/*	?			BlockIOTag(0x1f2u) */
+/*	?			BlockIOTag(0x1f3u) */
+/*	?			BlockIOTag(0x1f4u) */
+/*	?			BlockIOTag(0x1f5u) */
+/*	?			BlockIOTag(0x1f6u) */
+/*	?			BlockIOTag(0x1f7u) */
+/*	?			BlockIOTag(0x1f8u) */
+/*	?			BlockIOTag(0x1f9u) */
+/*	?			BlockIOTag(0x1fau) */
+/*	?			BlockIOTag(0x1fbu) */
+/*	?			BlockIOTag(0x1fcu) */
+/*	?			BlockIOTag(0x1fdu) */
+/*	?			BlockIOTag(0x1feu) */
+/*	?			BlockIOTag(0x1ffu) */
 
 /* Definitions for an ICS2595's programme word */
 #define ICS2595_CLOCK		0x000001f0ul
@@ -1218,7 +1911,7 @@
 #define PLL_REF_DIV		0x02u
 #define PLL_GEN_CNTL		0x03u
 #define PLL_OVERRIDE			0x01u
-#define PLL_SLEEP			0x01u	/* GT3/LTPro */
+#define PLL_SLEEP			0x01u	/* GTPro */
 #define PLL_MCLK_RESET			0x02u
 #define PLL_OSC_EN			0x04u
 #define PLL_EXT_CLK_EN			0x08u
@@ -1283,25 +1976,25 @@
 #define PLL_LPLL_DUTY			0x06u
 #define PLL_LPLL_VC_GAIN		0x18u
 #define PLL_LPLL_CP_GAIN		0xe0u
-#define PLL_AGP1_CNTL		0x12u		/* GT3/LTPro */
-#define PLL_AGP2_CNTL		0x13u		/* GT3/LTPro */
-#define PLL_DLL2_CNTL		0x14u		/* GT3/LTPro */
-#define PLL_SCLK_FB_DIV		0x15u		/* GT3/LTPro */
-#define PLL_SPLL_CNTL1		0x16u		/* GT3/LTPro */
-#define PLL_SPLL_CNTL2		0x17u		/* GT3/LTPro */
-#define PLL_APLL_STRAPS		0x18u		/* GT3/LTPro */
-#define PLL_EXT_VPLL_CNTL	0x19u		/* GT3/LTPro */
+#define PLL_AGP1_CNTL		0x12u		/* GTPro */
+#define PLL_AGP2_CNTL		0x13u		/* GTPro */
+#define PLL_DLL2_CNTL		0x14u		/* GTPro */
+#define PLL_SCLK_FB_DIV		0x15u		/* GTPro */
+#define PLL_SPLL_CNTL1		0x16u		/* GTPro */
+#define PLL_SPLL_CNTL2		0x17u		/* GTPro */
+#define PLL_APLL_STRAPS		0x18u		/* GTPro */
+#define PLL_EXT_VPLL_CNTL	0x19u		/* GTPro */
 #define PLL_EXT_VPLL_REF_SRC		0x03u
 #define PLL_EXT_VPLL_EN			0x04u
 #define PLL_EXT_VPLL_VGA_EN		0x08u
 #define PLL_EXT_VPLL_INSYNC		0x10u
 /*	?				0x60u */
 #define PLL_EXT_V2PLL_EN		0x80u
-#define PLL_EXT_VPLL_REF_DIV	0x1au		/* GT3/LTPro */
-#define PLL_EXT_VPLL_FB_DIV	0x1bu		/* GT3/LTPro */
-#define PLL_EXT_VPLL_MSB	0x1cu		/* GT3/LTPro */
-#define PLL_HTOTAL_CNTL		0x1du		/* GT3/LTPro */
-#define PLL_BYTE_CLK_CNTL	0x1eu		/* GT3/LTPro */
+#define PLL_EXT_VPLL_REF_DIV	0x1au		/* GTPro */
+#define PLL_EXT_VPLL_FB_DIV	0x1bu		/* GTPro */
+#define PLL_EXT_VPLL_MSB	0x1cu		/* GTPro */
+#define PLL_HTOTAL_CNTL		0x1du		/* GTPro */
+#define PLL_BYTE_CLK_CNTL	0x1eu		/* GTPro */
 #define PLL_TV_REF_DIV		0x1fu		/* LTPro */
 #define PLL_TV_FB_DIV		0x20u		/* LTPro */
 #define PLL_TV_CNTL		0x21u		/* LTPro */
@@ -1710,6 +2403,26 @@
 
 /* Current X, Y & Dest X, Y mask */
 #define COORD_MASK	0x07ffu
+
+/* Pixel widths */
+#define PIX_WIDTH_1BPP			0x00u
+#define PIX_WIDTH_4BPP			0x01u	/* CRTC2: 8bpp */
+#define PIX_WIDTH_8BPP			0x02u	/* CRTC2: Undefined */
+#define PIX_WIDTH_15BPP			0x03u
+#define PIX_WIDTH_16BPP			0x04u
+#define PIX_WIDTH_24BPP			0x05u
+#define PIX_WIDTH_32BPP			0x06u
+#define PIX_WIDTH_YUV422		0x07u	/* CRTC2 only */
+
+/* Source definitions */
+#define SRC_BKGD			0x00u
+#define SRC_FRGD			0x01u
+#define SRC_HOST			0x02u
+#define SRC_BLIT			0x03u
+#define SRC_PATTERN			0x04u
+#define SRC_SCALER_3D			0x05u
+/*	?				0x06u */
+/*	?				0x07u */
 
 /* The Mixes */
 #define MIX_MASK			0x001fu

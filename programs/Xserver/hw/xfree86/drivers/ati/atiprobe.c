@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.15 2000/02/11 21:16:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprobe.c,v 1.16 2000/02/12 05:57:48 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -831,15 +831,15 @@ ATIProbe
         ATIPtrs = (ATIPtr *)xnfrealloc(ATIPtrs, SizeOf(ATIPtr) * nATIPtr); \
         ATIPtrs[nATIPtr - 1] = (_p);                                       \
         (_p)->iEntity = -2;                                                \
-    } while(0)
+    } while (0)
 
-    if (flags & PROBE_DETECTFBDEV) return FALSE; /* we don't do fbdev */
-
-    /* As the ATI driver doesn't call xf86Match???Instances we need to
-     * manually add support for xf86DoConfigure to the driver
-     * TEMPORARY for 3.9.18 */
-    if (flags & PROBE_DETECTPCI) return FALSE;
-    if (flags & PROBE_DETECTISA) return FALSE;
+    /*
+     * This driver doesn't invoke, nor depend on, any support for fbdev.  Also,
+     * temporarily disable -configure support until it gets fixed to not depend
+     * on optional driver behaviour.
+     */
+    if (flags & (PROBE_DETECTFBDEV | PROBE_DETECTPCI | PROBE_DETECTISA))
+        return FALSE;
 
     if (!(flags & PROBE_DETECT))
     {
@@ -847,7 +847,7 @@ ATIProbe
          * Get a list of XF86Config device sections whose "Driver" is either
          * not specified, or specified as this driver.  From this list,
          * eliminate those device sections that specify a "Chipset" or a
-         * "ChipID" not recognized by the driver.  Those device sections that
+         * "ChipID" not recognised by the driver.  Those device sections that
          * specify a "ChipRev" without a "ChipID" are also weeded out.
          */
         if ((nGDev = xf86MatchDevice(ATI_NAME, &GDevs)) <= 0)
@@ -1076,15 +1076,7 @@ ATIProbe
             /* For now, ignore Rage128's */
             Chip = ATIChipID(pVideo->chipType, pVideo->chipRev);
             if (Chip > ATI_CHIP_Mach64)
-            {
-                xf86Msg(X_WARNING,
-                        ATI_NAME ":  PCI/AGP ATI Rage 128 detected in slot"
-                        " %d:%d:%d is not yet supported\n by this driver.  Use"
-                        " separate (upcoming) driver from Precision Insight"
-                        " Inc\n instead.\n",
-                        pVideo->bus, pVideo->device, pVideo->func);
                 continue;
-            }
 
             pATI = ATIMach64Probe(pVideo->ioBase[1], BLOCK_IO,
                 pVideo->chipType, Chip);
@@ -1104,7 +1096,7 @@ ATIProbe
          * unlikely to occur in practice.
          *
          * First, look for non-ATI shareable VGA's.  For now, these must have
-         * been previously initialized by their BIOS.
+         * been previously initialised by their BIOS.
          */
         if (ATICheckSparseIOBases(ProbeFlags, ATTRX, 16, TRUE) == DoProbe)
         {
@@ -1513,7 +1505,7 @@ NoVGAWonder:;
         return FALSE;
     }
 
-    if ((flags & PROBE_DETECTISA) || (flags & PROBE_DETECTPCI))
+    if (flags & PROBE_DETECT)
     {
         /*
          * No XF86Config information available, so use the default Chipset of
@@ -1610,7 +1602,7 @@ NoVGAWonder:;
              * for Mach32's.  ChipID is optional for for Mach32's, and both
              * specifications are optional for Mach64's.  Lastly, allow both
              * specifications to override their detected value in the case of
-             * Mach64 adapters whose ChipID is unrecognized.
+             * Mach64 adapters whose ChipID is unrecognised.
              */
             if (pGDev->chipID >= 0)
             {

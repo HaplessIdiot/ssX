@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.4 1999/07/18 03:26:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidac.c,v 1.5 1999/09/27 06:29:41 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -116,7 +116,7 @@ ATIGetDACCmdReg
 /*
  * ATIDACPreInit --
  *
- * This function initializes the fields in an ATIHWRec that relate to DACs.
+ * This function initialises the fields in an ATIHWRec that relate to DACs.
  */
 void
 ATIDACPreInit
@@ -145,7 +145,7 @@ ATIDACPreInit
     else
     {
         /*
-         * Initialize hardware colour map so that use of uninitialized
+         * Initialise hardware colour map so that use of uninitialised
          * software colour map entries can easily be seen.  For 256-colour
          * modes, this doesn't remain effective for very long...
          */
@@ -179,7 +179,7 @@ ATIDACPreInit
 
         if (pATIHW->crtc == ATI_CRTC_VGA)
         {
-            /* Initialize overscan to black */
+            /* Initialise overscan to black */
             Index = pATIHW->attr[17] * 3;
             pATIHW->lut[Index + 0] =
                 pATIHW->lut[Index + 1] =

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticlock.h,v 1.3 1999/07/06 11:38:26 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -39,6 +39,7 @@ typedef enum
     ATI_CLOCK_18810,
     ATI_CLOCK_18811_0,
     ATI_CLOCK_18811_1,
+    ATI_CLOCK_2494AM,
     ATI_CLOCK_MACH64A,
     ATI_CLOCK_MACH64B,
     ATI_CLOCK_MACH64C

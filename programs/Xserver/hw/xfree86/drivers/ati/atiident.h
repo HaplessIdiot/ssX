@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.3 1999/07/06 11:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiident.h,v 1.5 2000/01/27 01:01:03 alanh Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -25,8 +25,6 @@
 #define ___ATIIDENT_H___ 1
 
 #include "atiproto.h"
-#include "xf86str.h"
-#include "xf86Opt.h"
 
 typedef enum
 {
@@ -46,6 +44,5 @@ extern const char *ATIChipsetNames[];
 
 extern void ATIIdentify   FunctionPrototype((int));
 extern int  ATIIdentProbe FunctionPrototype((const char *));
-extern OptionInfoPtr ATIAvailableOptions FunctionPrototype((int));
 
 #endif /* ___ATIIDENT_H___ */

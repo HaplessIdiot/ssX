@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/viewres/viewres.c,v 1.3 2000/02/17 14:00:33 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -149,10 +149,15 @@ static const char *fallback_resources[] = {
     NULL
 };
 
-static void ActionQuit(), ActionSetLableType(), ActionSetOrientation();
-static void ActionSelect(), ActionResources();
-static void set_labeltype_menu(Boolean, Boolean), set_orientation_menu();
-static void build_tree(), set_node_labels();
+static void ActionQuit(Widget, XEvent *, String *, Cardinal *);
+static void ActionSetLableType(Widget, XEvent *, String *, Cardinal *);
+static void ActionSetOrientation(Widget, XEvent *, String *, Cardinal *);
+static void ActionSelect(Widget, XEvent *, String *, Cardinal *);
+static void ActionResources(Widget, XEvent *, String *, Cardinal *);
+static void set_labeltype_menu(Boolean, Boolean);
+static void set_orientation_menu(XtGravity, Boolean);
+static void build_tree(XmuWidgetNode *, Widget, Widget);
+static void set_node_labels(XmuWidgetNode *, int);
 
 static XtActionsRec viewres_actions[] = {
     { "Quit", ActionQuit },
@@ -826,9 +831,7 @@ static void oneof_sensitive (choosea, a, b)
     XtSetValues (choosea ? b : a, args, ONE);
 }
 
-static void set_labeltype_menu (isvar, doall)
-    Boolean isvar;
-    Boolean doall;
+static void set_labeltype_menu (Boolean isvar, Boolean doall)
 {
     options.show_variable = isvar;
     oneof_sensitive (isvar, view_widgets[VIEW_CLASSES],
@@ -842,9 +845,7 @@ static void set_labeltype_menu (isvar, doall)
     }
 }
 
-static void set_orientation_menu (grav, dosetvalues)
-    XtGravity grav;
-    Boolean dosetvalues;
+static void set_orientation_menu (XtGravity grav, Boolean dosetvalues)
 {
 #define CHOOSE(val) (sensitiveargs + (grav != (val)))
     XtSetValues (view_widgets[VIEW_HORIZONTAL], CHOOSE(WestGravity), ONE);

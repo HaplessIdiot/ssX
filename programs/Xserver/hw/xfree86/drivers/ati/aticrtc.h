@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.h,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticrtc.h,v 1.3 1999/07/06 11:38:27 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -24,10 +24,6 @@
 #ifndef ___ATICRTC_H___
 #define ___ATICRTC_H___ 1
 
-#include "atipriv.h"
-#include "atiproto.h"
-#include "xf86str.h"
-
 /*
  * CRTC related definitions.
  */
@@ -37,14 +33,5 @@ typedef enum
     ATI_CRTC_8514,      /* Use 8514/Mach8/Mach32 accelerator CRTC */
     ATI_CRTC_MACH64     /* Use Mach64 accelerator CRTC */
 } ATICRTCType;
-
-extern void ATICRTCPreInit   FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                ATIHWPtr));
-extern void ATICRTCSave      FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                ATIHWPtr));
-extern Bool ATICRTCCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                ATIHWPtr, DisplayModePtr));
-extern void ATICRTCSet       FunctionPrototype((ScrnInfoPtr, ATIPtr,
-                                                ATIHWPtr));
 
 #endif /* ___ATICRTC_H___ */

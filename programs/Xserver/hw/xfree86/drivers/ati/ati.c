@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.6 1999/09/27 06:29:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ati.c,v 1.8 2000/01/27 01:01:03 alanh Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -46,7 +46,7 @@
  * David Dawes, dawes@xfree86.org
  * Mark Weaver, Mark_Weaver@brown.edu
  * Hans Nasten, nasten@everyware.se
- * Kevin Martin, martin@cs.unc.edu
+ * Kevin Martin, martin@precisioninsight.com
  * Frederic Rienthaler, root@mojo.synapse.com
  * Marc Bolduc, bolduc@cim.mcgill.ca
  * Reuben Sumner, rasumner@undergrad.math.uwaterloo.ca
@@ -56,6 +56,8 @@
  * W. Marcus Miller, marcus@llnl.gov
  * Henrik Harmsen, ervhch@erv.ericsson.se (ShadowFB support)
  * Christian Lupien <lupien@physics.utoronto.ca>
+ * Precision Insight Incorporated
+ * Mark Vojkovich, mvojkovich@valinux.com
  *
  * ... and, many, many others from around the world.
  *
@@ -69,6 +71,7 @@
  */
 
 #include "atiident.h"
+#include "atioption.h"
 #include "atiprobe.h"
 #include "ativersion.h"
 

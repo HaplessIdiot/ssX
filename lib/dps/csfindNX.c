@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/dps/csfindNX.c,v 1.2 2000/02/15 14:51:22 dawes Exp $ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
@@ -479,10 +479,6 @@ static char *
 getHomeDir(dest)
      char *dest;
 {
-#ifndef sgi
-  extern int getuid();
-  extern struct passwd *getpwuid();
-#endif
   register char *ptr;
 
   if ((ptr = getenv("HOME")) != NULL) {

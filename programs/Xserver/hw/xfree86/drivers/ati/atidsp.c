@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.6 1999/09/25 14:37:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.7 1999/09/27 06:29:41 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -31,7 +31,7 @@
 /*
  * ATIDSPPreInit --
  *
- * This function initializes global variables used to set DSP registers on a
+ * This function initialises global variables used to set DSP registers on a
  * VT-B or later.
  */
 Bool
@@ -41,12 +41,15 @@ ATIDSPPreInit
     ATIPtr      pATI
 )
 {
-    CARD32 IOValue;
+    CARD32 IOValue, dsp_config, dsp_on_off, vga_dsp_config, vga_dsp_on_off;
+    CARD16 CPIO_VGA_DSP_CONFIG, CPIO_VGA_DSP_ON_OFF;
     int trp;
 
     /* Set DSP register port numbers */
     pATI->CPIO_DSP_CONFIG = ATIIOPort(DSP_CONFIG);
     pATI->CPIO_DSP_ON_OFF = ATIIOPort(DSP_ON_OFF);
+    CPIO_VGA_DSP_CONFIG = ATIIOPort(VGA_DSP_CONFIG);
+    CPIO_VGA_DSP_ON_OFF = ATIIOPort(VGA_DSP_ON_OFF);
 
     /*
      * VT-B's and later have additional post-dividers that are not powers of
@@ -139,6 +142,25 @@ ATIDSPPreInit
     if (pATI->XCLKMaxRASDelay <= pATI->XCLKPageFaultDelay)
         pATI->XCLKMaxRASDelay = pATI->XCLKPageFaultDelay + 1;
 
+    /* Allow BIOS to override */
+    dsp_config = inl(pATI->CPIO_DSP_CONFIG);
+    dsp_on_off = inl(pATI->CPIO_DSP_ON_OFF);
+    vga_dsp_config = inl(CPIO_VGA_DSP_CONFIG);
+    vga_dsp_on_off = inl(CPIO_VGA_DSP_ON_OFF);
+
+    if (dsp_config)
+        pATI->DisplayLoopLatency = GetBits(dsp_config, DSP_LOOP_LATENCY);
+
+    if ((dsp_on_off == vga_dsp_on_off) &&
+        (!dsp_config || !((dsp_config ^ vga_dsp_config) & DSP_XCLKS_PER_QW)))
+    {
+        if (ATIDivide(GetBits(vga_dsp_on_off, VGA_DSP_OFF),
+                      GetBits(vga_dsp_config, VGA_DSP_XCLKS_PER_QW), 5, 1) > 23)
+            pATI->DisplayFIFODepth = 32;
+        else
+            pATI->DisplayFIFODepth = 24;
+    }
+
     return TRUE;
 }
 
@@ -201,10 +223,10 @@ ATIDSPCalculate
     {
         /* Compensate for horizontal stretching */
         Multiplier *= pATI->LCDHorizontal;
-        Divider *= pMode->HDisplay;
+        Divider *= pMode->HDisplay & ~7;
 
         RASMultiplier *= pATI->LCDHorizontal;
-        RASDivider *= pMode->HTotal;
+        RASDivider *= pMode->HDisplay & ~7;
     }
 
     /* Determine dsp_precision first */

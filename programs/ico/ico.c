@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/ico/ico.c,v 1.1 2000/02/13 03:26:12 dawes Exp $ */
+/* $XFree86: xc/programs/ico/ico.c,v 1.2 2000/02/14 19:20:54 dawes Exp $ */
 
 /******************************************************************************
  * Description
@@ -937,11 +937,11 @@ do_ico_window(closure)
 		len = sprintf(buf, "Ico: thread %d", closure->thread_num);
 		XChangeProperty(dpy, closure->draw_window,
 				XA_WM_NAME, XA_STRING, 8, 
-				PropModeReplace, buf, len);
+				PropModeReplace, (unsigned char *)buf, len);
 #else
 		XChangeProperty(dpy, closure->draw_window,
 				XA_WM_NAME, XA_STRING, 8, 
-				PropModeReplace, "Ico", 3);
+				PropModeReplace, (unsigned char *)"Ico", 3);
 #endif
 		(void) XSetWMProtocols (dpy, closure->draw_window,
 					&wm_delete_window, 1);

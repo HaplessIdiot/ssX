@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.7 1999/11/02 16:16:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiprint.c,v 1.8 1999/11/18 22:27:04 tsi Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -137,7 +137,7 @@ ATIPrintMach64Registers
     CARD32 IOValue;
     CARD8 dac_read, dac_mask, dac_data, dac_write;
 
-    xf86ErrorFVerb(4, "\n\n Mach64 %s registers:", Description);
+    xf86ErrorFVerb(4, "\n\n Mach64 %s register values:", Description);
     Limit = ATIIOPort(IOPortTag(0x1FU, 0x3FU));
     Step = ATIIOPort(IOPortTag(0x01U, 0x01U)) - pATI->CPIOBase;
     for (Index = pATI->CPIOBase;  Index <= Limit;  Index += Step)
@@ -190,7 +190,7 @@ ATIPrintMach64PLLRegisters
 {
     int Index;
 
-    xf86ErrorFVerb(4, "\n\n Mach64 PLL registers:");
+    xf86ErrorFVerb(4, "\n\n Mach64 PLL register values:");
     for (Index = 0;  Index < 64;  Index++)
     {
         if (!(Index & 3))
@@ -327,7 +327,7 @@ ATIPrintRegisters
 
     if (pATI->ChipHasSUBSYS_CNTL)
     {
-        xf86ErrorFVerb(4, "\n\n 8514/A registers:");
+        xf86ErrorFVerb(4, "\n\n 8514/A register values:");
         for (Index = 0x02E8U;  Index <= 0x0FEE8;  Index += 0x0400U)
         {
             if (!((Index - 0x02E8U) & 0x0C00U))
@@ -337,7 +337,7 @@ ATIPrintRegisters
 
         if (pATI->Adapter >= ATI_ADAPTER_MACH8)
         {
-            xf86ErrorFVerb(4, "\n\n Mach8/Mach32 registers:");
+            xf86ErrorFVerb(4, "\n\n Mach8/Mach32 register values:");
             for (Index = 0x02EEU;  Index <= 0x0FEEE;  Index += 0x0400U)
             {
                 if (!((Index - 0x02EEU) & 0x0C00U))
@@ -384,7 +384,7 @@ ATIPrintRegisters
 
         ATIPrintMach64PLLRegisters(pATI);
 
-        xf86ErrorFVerb(4, "\n\n LCD registers:");
+        xf86ErrorFVerb(4, "\n\n LCD register values:");
         for (Index = 0;  Index < 64;  Index++)
         {
             if (!(Index & 3))
@@ -396,7 +396,7 @@ ATIPrintRegisters
 
         tv_out_index = inl(pATI->CPIO_TV_OUT_INDEX);
 
-        xf86ErrorFVerb(4, "\n\n TV_OUT registers:");
+        xf86ErrorFVerb(4, "\n\n TV_OUT register values:");
         for (Index = 0;  Index < 256;  Index++)
         {
             if (!(Index & 3))
@@ -467,7 +467,7 @@ ATIPrintRegisters
     if ((pVideo = pATI->PCIInfo))
     {
         pPCI = (pciConfigPtr)(pVideo->thisCard);
-        xf86ErrorFVerb(4, "\n\n PCI configuration registers:");
+        xf86ErrorFVerb(4, "\n\n PCI configuration register values:");
         for (Index = 0;  Index < 256;  Index+= 4)
         {
             if (!(Index & 15))

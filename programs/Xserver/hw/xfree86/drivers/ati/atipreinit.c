@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.10 1999/11/04 02:12:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.11 1999/11/18 16:52:11 tsi Exp $ */
 /*
- * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -213,7 +213,7 @@ ATIMach32videoRam
      * need to mess with the CRT because the results of this test are not
      * intended to be seen.
      */
-    outw(EXT_GE_CONFIG, PIX_WIDTH_16BPP | ORDER_16BPP_565 | MONITOR_8514 |
+    outw(EXT_GE_CONFIG, PIXEL_WIDTH_16 | ORDER_16BPP_565 | MONITOR_8514 |
         ALIAS_ENA);
     outw(GE_PITCH, 1024 >> 3);
     outw(GE_OFFSET_HI, 0);
@@ -420,7 +420,7 @@ ATIPreInit
         }
     }
 
-    /* Finish private area initialization */
+    /* Finish private area initialisation */
     pATI->DAC = ATI_DAC_GENERIC;
     pATI->NewHW.SetBank = ATIx8800SetBank;
     pATI->BankInfo.SetSourceBank = ATIx8800SetRead;
@@ -430,6 +430,7 @@ ATIPreInit
     pATI->ApertureBase = 0x000A0000U;
     pATI->ApertureSize = 0x00010000U;
     pATI->LCDPanelID = -1;
+    pATI->nFIFOEntries = 16;                    /* For now */
 
     /* Finish probing the adapter */
     switch (pATI->Adapter)
@@ -517,6 +518,9 @@ ATIPreInit
                     videoRamSizes[GetBits(IOValue1, CTL_MEM_SIZE) + 2];
             else
             {
+                pATI->nFIFOEntries =            /* Don't care */
+                    (unsigned int)(-1) >> 1;
+
                 IOValue1 = GetBits(IOValue1, CTL_MEM_SIZEB);
                 if (IOValue1 < 8)
                     pATI->VideoRAM = (IOValue1 + 1) * 512;
@@ -578,7 +582,7 @@ ATIPreInit
                 {
                     /*
                      * Don't bother with panel support if it's not enabled by
-                     * BIOS initialization.  Also, remember if the BIOS knows
+                     * BIOS initialisation.  Also, remember if the BIOS knows
                      * about the CRT.
                      */
                     if (!(IOValue2 & LCD_ON))
@@ -709,13 +713,13 @@ ATIPreInit
             case ATI_CLOCK_INTERNAL:
                 /*
                  * The reference divider has already been programmed by BIOS
-                 * initialization.  Because, there is only one reference
+                 * initialisation.  Because, there is only one reference
                  * divider for all generated frequencies (including MCLK), it
                  * cannot be changed without reprogramming all clocks every
                  * time one of them needs a different reference divider.
                  *
                  * Besides, it's not a good idea to change the reference
-                 * divider.  BIOS initialization sets it to a value that
+                 * divider.  BIOS initialisation sets it to a value that
                  * effectively prevents generating frequencies beyond the
                  * graphics controller's tolerance.
                  */
@@ -991,7 +995,7 @@ ATIPreInit
             "BIOS bus address:  0x%08X.\n", pATI->BIOSBase);
     else
         xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-            "BIOS not mapped by BIOS initialization.\n");
+            "BIOS not mapped by BIOS initialisation.\n");
 
     /* Promote chipset specification */
     switch (pATI->Chipset)
@@ -1193,7 +1197,7 @@ ATIPreInit
     {
         /*
          * XXX There's an assumption here that the values retrieved are those
-         * set by BIOS initialization.
+         * set by BIOS initialisation.
          */
         if (pATI->Chip <= ATI_CHIP_18800_1)
         {
@@ -1248,127 +1252,133 @@ ATIPreInit
     else if ((pATI->NewHW.crtc == ATI_CRTC_MACH64) ||
              (pATI->Chip >= ATI_CHIP_264CT))
     {
-        /* Set MMIO address from PCI configuration space, if available */
-        if (pATI->PCIInfo &&
-            (pATI->Block0Base = pATI->PCIInfo->memBase[2]))
-            pATI->Block0Base += 0x0400U;
-
-        /* Possibly set up for linear aperture */
-        if ((pScreenInfo->depth >= 8) && pATI->OptionLinear)
+        if (pScreenInfo->depth >= 8)
         {
-            /* Get adapter's linear aperture configuration */
-            IOValue1 = inl(pATI->CPIO_CONFIG_CNTL);
-            pATI->LinearBase = GetBits(IOValue1, CFG_MEM_AP_LOC) << 22;
-            if ((IOValue1 & CFG_MEM_AP_SIZE) != CFG_MEM_AP_SIZE)
-                pATI->LinearSize = GetBits(IOValue1, CFG_MEM_AP_SIZE) << 22;
+            /* Set MMIO address from PCI configuration space, if available */
+            if (pATI->PCIInfo &&
+                (pATI->Block0Base = pATI->PCIInfo->memBase[2]))
+                pATI->Block0Base += 0x0400U;
 
-            /* Except for PCI & AGP, allow for user override */
-            if ((pATI->BusType != ATI_BUS_PCI) &&
-                (pATI->BusType != ATI_BUS_AGP))
+            /* Possibly set up for linear aperture */
+            if (pATI->OptionLinear)
             {
-                if (pATI->Chip == ATI_CHIP_88800CX)
-                    IOValue2 = ~((unsigned long)((1 << 23) - 1));
-                else if (pATI->Chip >= ATI_CHIP_88800GXE)
-                    IOValue2 = ~((unsigned long)((1 << 24) - 1));
-                else if (pATI->VideoRAM >= 4096)
-                    IOValue2 = ~((unsigned long)((1 << 23) - 1));
-                else
-                    IOValue2 = ~((unsigned long)((1 << 22) - 1));
+                /* Get adapter's linear aperture configuration */
+                IOValue1 = inl(pATI->CPIO_CONFIG_CNTL);
+                pATI->LinearBase = GetBits(IOValue1, CFG_MEM_AP_LOC) << 22;
+                if ((IOValue1 & CFG_MEM_AP_SIZE) != CFG_MEM_AP_SIZE)
+                    pATI->LinearSize =
+                        GetBits(IOValue1, CFG_MEM_AP_SIZE) << 22;
 
-                if ((IOValue2 &= pGDev->MemBase) &&
-                    (IOValue2 <= (MaxBits(CFG_MEM_AP_LOC) << 22)))
-                    pATI->LinearBase = IOValue2;
-            }
-
-            if (pATI->LinearBase)
-            {
-                if (pATI->VideoRAM < 4096)
-                    pATI->LinearSize = 4 * 1024 * 1024;
-                else
-                    pATI->LinearSize = 8 * 1024 * 1024;
-
+                /* Except for PCI & AGP, allow for user override */
                 if ((pATI->BusType != ATI_BUS_PCI) &&
                     (pATI->BusType != ATI_BUS_AGP))
                 {
-                    Resources[0].type = ResExcMemBlock;
-                    Resources[0].rBegin = pATI->LinearBase;
-                    Resources[0].rEnd = pATI->LinearBase +
-                        pATI->LinearSize - 1;
-                    if (xf86RegisterResources(pATI->iEntity, Resources,
-                                              ResNone))
-                    {
-                        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                            "Unable to register %d MB linear aperture at"
-                            " 0x%08X.\n", pATI->LinearSize >> 10,
-                            pATI->LinearBase);
-
-                        pATI->LinearSize = 0;
-                    }
-                }
-            }
-
-            if (!pATI->LinearBase || !pATI->LinearSize)
-            {
-                if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
-                {
-                    xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-                        "A linear aperture is not available through this"
-                        " adapter.\n");
-                    ATILock(pATI);
-                    return FALSE;
-                }
-
-                /* Insurance */
-                pATI->LinearBase = pATI->LinearSize = 0;
-            }
-            else
-            {
-                /*
-                 * Unless specified in PCI configuration space, set MMIO
-                 * address to tail end of linear aperture.
-                 */
-                if (!pATI->Block0Base)
-                    pATI->Block0Base =
-                        pATI->LinearBase + pATI->LinearSize - 0x00000400U;
-
-                AcceleratorVideoRAM = (pATI->LinearSize >> 10) - 2; /* 4? */
-                if (AcceleratorVideoRAM < pATI->VideoRAM)
-                {
-                    if (pATI->Chip < ATI_CHIP_264VTB)
-                    {
-                        /*
-                         * Don't allow virtual resolution to overlay register
-                         * aperture(s).
-                         */
-                        pScreenInfo->videoRam = AcceleratorVideoRAM;
-                        xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
-                            "Virtual resolutions will be limited to %d kB to"
-                            " account for\n accelerator register aperture.\n",
-                            AcceleratorVideoRAM);
-                    }
+                    if (pATI->Chip == ATI_CHIP_88800CX)
+                        IOValue2 = ~((unsigned long)((1 << 23) - 1));
+                    else if (pATI->Chip >= ATI_CHIP_88800GXE)
+                        IOValue2 = ~((unsigned long)((1 << 24) - 1));
+                    else if (pATI->VideoRAM >= 4096)
+                        IOValue2 = ~((unsigned long)((1 << 23) - 1));
                     else
+                        IOValue2 = ~((unsigned long)((1 << 22) - 1));
+
+                    if ((IOValue2 &= pGDev->MemBase) &&
+                        (IOValue2 <= (MaxBits(CFG_MEM_AP_LOC) << 22)))
+                        pATI->LinearBase = IOValue2;
+                }
+
+                if (pATI->LinearBase)
+                {
+                    if ((pATI->BusType != ATI_BUS_PCI) &&
+                        (pATI->BusType != ATI_BUS_AGP))
                     {
-                        /*
-                         * On VTB's and later, ATIInit disables the primary
-                         * register aperture.  This is done so the driver can
-                         * get at the frame buffer memory behind it.  For MMIO
-                         * purposes, the auxillary register aperture will be
-                         * used instead.  Also, ignore the CONFIG_CNTL
-                         * register's indication of linear aperture size, as it
-                         * is insufficient for adapters with more than 8MB of
-                         * video memory.
-                         */
-                        if (pATI->VideoRAM > (8 * 1024))
-                            pATI->LinearSize = 16 * 1024 * 1024;
+                        if (pATI->VideoRAM < 4096)
+                            pATI->LinearSize = 4 * 1024 * 1024;
+                        else
+                            pATI->LinearSize = 8 * 1024 * 1024;
+
+                        Resources[0].type = ResExcMemBlock;
+                        Resources[0].rBegin = pATI->LinearBase;
+                        Resources[0].rEnd = pATI->LinearBase +
+                            pATI->LinearSize - 1;
+                        if (xf86RegisterResources(pATI->iEntity, Resources,
+                                                  ResNone))
+                        {
+                            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                                "Unable to register %d MB linear aperture at"
+                                " 0x%08X.\n", pATI->LinearSize >> 10,
+                                pATI->LinearBase);
+
+                            pATI->LinearSize = 0;
+                        }
                     }
                 }
 
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-                    "Using %d MB linear aperture at 0x%08X.\n",
-                    pATI->LinearSize >> 20, pATI->LinearBase);
+                if (!pATI->LinearBase || !pATI->LinearSize)
+                {
+                    if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
+                    {
+                        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                            "A linear aperture is not available through this"
+                            " adapter.\n");
+                        ATILock(pATI);
+                        return FALSE;
+                    }
 
-                /* Only mmap what is needed */
-                pATI->ApertureSize = pATI->LinearSize = pATI->VideoRAM * 1024;
+                    /* Insurance */
+                    pATI->LinearBase = pATI->LinearSize = 0;
+                }
+                else
+                {
+                    /*
+                     * Unless specified in PCI configuration space, set MMIO
+                     * address to tail end of linear aperture.
+                     */
+                    if (!pATI->Block0Base)
+                        pATI->Block0Base =
+                            pATI->LinearBase + pATI->LinearSize - 0x00000400U;
+
+                    AcceleratorVideoRAM = (pATI->LinearSize >> 10) - 2; /* 4? */
+                    if (AcceleratorVideoRAM < pATI->VideoRAM)
+                    {
+                        if (pATI->Chip < ATI_CHIP_264VTB)
+                        {
+                            /*
+                             * Don't allow virtual resolution to overlay
+                             * register aperture(s).
+                             */
+                            pScreenInfo->videoRam = AcceleratorVideoRAM;
+                            xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+                                "Virtual resolutions will be limited to %d kB"
+                                " to account for\n accelerator register"
+                                " aperture.\n",
+                                AcceleratorVideoRAM);
+                        }
+                        else
+                        {
+                            /*
+                             * On VTB's and later, ATIInit disables the primary
+                             * register aperture.  This is done so the driver
+                             * can get at the frame buffer memory behind it.
+                             * For MMIO purposes, the auxillary register
+                             * aperture will be used instead.  Also, ignore the
+                             * CONFIG_CNTL register's indication of linear
+                             * aperture size, as it is insufficient for
+                             * adapters with more than 8MB of video memory.
+                             */
+                            if (pATI->VideoRAM > (8 * 1024))
+                                pATI->LinearSize = 16 * 1024 * 1024;
+                        }
+                    }
+
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
+                        "Using %d MB linear aperture at 0x%08X.\n",
+                        pATI->LinearSize >> 20, pATI->LinearBase);
+
+                    /* Only mmap what is needed */
+                    pATI->ApertureSize = pATI->LinearSize =
+                        pATI->VideoRAM * 1024;
+                }
             }
         }
 
@@ -1431,7 +1441,7 @@ ATIPreInit
     }
     else
     /*
-     * After BIOS initialization, the accelerator (if any) and the VGA won't
+     * After BIOS initialisation, the accelerator (if any) and the VGA won't
      * necessarily agree on the amount of video memory, depending on whether or
      * where the memory boundary is configured.  Any discrepancy will be
      * resolved by ATIInit.
@@ -1460,6 +1470,20 @@ ATIPreInit
 
             pScreenInfo->videoRam = AcceleratorVideoRAM;
         }
+    }
+
+    if (pATI->OptionLinear && !pATI->LinearBase)
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "Linear aperture not supported in this configuration.\n");
+        pATI->OptionLinear = FALSE;
+    }
+
+    if (pATI->OptionAccel && !pATI->Block0Base)
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "Acceleration not supported in this configuration.\n");
+        pATI->OptionAccel = FALSE;
     }
 
     if (pATI->Adapter >= ATI_ADAPTER_MACH32)
@@ -1564,14 +1588,12 @@ ATIPreInit
                 "Cannot shadow a planar frame buffer.\n");
             pATI->OptionShadowFB = FALSE;
         }
-#if 0
         else if (pATI->OptionAccel)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Cannot shadow an accelerated frame buffer.\n");
             pATI->OptionShadowFB = FALSE;
         }
-#endif
         else
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
                 "Using shadow frame buffer.\n");
@@ -1609,7 +1631,7 @@ ATIPreInit
 
     /*
      * Assume an internal DAC can handle whatever frequency the internal PLL
-     * can produce (with the reference divider set by BIOS initialization), but
+     * can produce (with the reference divider set by BIOS initialisation), but
      * default maxClock to a lower chip-specific default.
      */
     if ((pATI->DAC & ~0x0FU) == ATI_DAC_INTERNAL)
@@ -1718,6 +1740,20 @@ ATIPreInit
     if (pScreenInfo->depth >= 8)
         pitchInc *= pScreenInfo->bitsPerPixel;
 
+    /*
+     * For SGRAM & WRAM adapters, the display engine limits the pitch to
+     * multiples of 64 bytes.
+     */
+    if (pATI->OptionAccel && (pATI->Chip >= ATI_CHIP_264CT) &&
+        ((pATI->Chip >= ATI_CHIP_264VTB) ||
+         (pATI->MemoryType >= MEM_264_SGRAM)))
+    {
+        if (pScreenInfo->bitsPerPixel == 24)
+            pitchInc = 64 * 24;
+        else
+            pitchInc = 64 * 8;
+    }
+
     switch (pATI->NewHW.crtc)
     {
         case ATI_CRTC_VGA:
@@ -1811,6 +1847,10 @@ ATIPreInit
         return FALSE;
     }
 
+    /* Map MMIO areas */
+    if (!ATIMapApertures(pScreenInfo, pATI))
+        return FALSE;
+
     /* Remove invalid modes */
     xf86PruneDriverModes(pScreenInfo);
 
@@ -1827,18 +1867,20 @@ ATIPreInit
     /* Load required modules */
     if (!ATILoadModules(pScreenInfo, pATI))
     {
+        ATIUnmapApertures(pScreenInfo, pATI);
         ATILock(pATI);
         return FALSE;
     }
 #endif
 
-    /* Initialize for panning */
+    /* Initialise for panning */
     ATIAdjustPreInit(pScreenInfo, pATI);
 
-    /* Initialize CRTC code */
-    ATICRTCPreInit(pScreenInfo, pATI, &pATI->NewHW);
+    /* Initialise CRTC code */
+    ATIAdapterPreInit(pScreenInfo, pATI, &pATI->NewHW);
 
     /* Relock registers */
+    ATIUnmapApertures(pScreenInfo, pATI);
     ATILock(pATI);
 
     if (!pScreenInfo->chipset || !*pScreenInfo->chipset)

@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.4 2000/01/27 01:01:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.5 2000/01/30 17:52:27 dawes Exp $ */
 /*
- * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -22,43 +22,55 @@
  */
 
 #include "ati.h"
+#include "atiadapter.h"
 #include "atibus.h"
 #include "atioption.h"
 #include "atistruct.h"
+#include "atiutil.h"
 
 /*
- * Recognized XF86Config options.
+ * Recognised XF86Config options.
  */
 typedef enum
 {
     ATI_OPTION_ACCEL,
     ATI_OPTION_CRT,
     ATI_OPTION_CSYNC,
-    ATI_OPTION_DEVEL,   /* Intentionally undocumented */
     ATI_OPTION_LINEAR,
     ATI_OPTION_PROBE_CLOCKS,
-    ATI_OPTION_SHADOW_FB,
-    ATI_OPTION_SYNC,    /* Temporary and undocumented */
-    ATI_OPTION_MAX      /* Must be last */
-} ATIOptionType;
+    ATI_OPTION_SHADOW_FB
+} ATIPublicOptionType;
 
-OptionInfoRec  Option[] =
+typedef enum
 {
-        {ATI_OPTION_ACCEL,        "accel",          OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_DEVEL,        "tsi",            OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_SYNC,         "lcdsync",        OPTV_BOOLEAN, {0, }, FALSE},
-        {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
+    ATI_OPTION_DEVEL,   /* Intentionally undocumented */
+    ATI_OPTION_SYNC     /* Temporary and undocumented */
+} ATIPrivateOptionType;
+
+static OptionInfoRec ATIPublicOptions[] =
+{
+    {ATI_OPTION_ACCEL,        "accel",          OPTV_BOOLEAN, {0, }, FALSE},
+    {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
+    {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
+    {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
+    {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
+    {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
+    {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
 };
 
+/*
+ * ATIAvailableOptions --
+ *
+ * Return recognised options that are intended for public consumption.
+ */
 OptionInfoPtr
-ATIAvailableOptions(int chipid)
+ATIAvailableOptions
+(
+    int ChipId,          /* Ignored */
+    int BusId            /* Ignored */
+)
 {
-    return Option;
+    return ATIPublicOptions;
 }
 
 /*
@@ -74,30 +86,44 @@ ATIProcessOptions
     ATIPtr      pATI
 )
 {
-#   define Accel       Option[ATI_OPTION_ACCEL].value.bool
-#   define CRTScreen   Option[ATI_OPTION_CRT].value.bool
-#   define CSync       Option[ATI_OPTION_CSYNC].value.bool
-#   define Devel       Option[ATI_OPTION_DEVEL].value.bool
-#   define Linear      Option[ATI_OPTION_LINEAR].value.bool
-#   define ProbeClocks Option[ATI_OPTION_PROBE_CLOCKS].value.bool
-#   define ShadowFB    Option[ATI_OPTION_SHADOW_FB].value.bool
-#   define Sync        Option[ATI_OPTION_SYNC].value.bool
+    OptionInfoRec PublicOption[NumberOf(ATIPublicOptions)];
+    OptionInfoRec PrivateOption[] =
+    {
+        {ATI_OPTION_DEVEL,        "tsi",            OPTV_BOOLEAN, {0, }, FALSE},
+        {ATI_OPTION_SYNC,         "lcdsync",        OPTV_BOOLEAN, {0, }, FALSE},
+        {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
+    };
+
+    memcpy(PublicOption, ATIPublicOptions, SizeOf(ATIPublicOptions));
+
+#   define Accel       PublicOption[ATI_OPTION_ACCEL].value.bool
+#   define CRTScreen   PublicOption[ATI_OPTION_CRT].value.bool
+#   define CSync       PublicOption[ATI_OPTION_CSYNC].value.bool
+#   define Devel       PrivateOption[ATI_OPTION_DEVEL].value.bool
+#   define Linear      PublicOption[ATI_OPTION_LINEAR].value.bool
+#   define ProbeClocks PublicOption[ATI_OPTION_PROBE_CLOCKS].value.bool
+#   define ShadowFB    PublicOption[ATI_OPTION_SHADOW_FB].value.bool
+#   define Sync        PrivateOption[ATI_OPTION_SYNC].value.bool
 
     /* Pick up XF86Config options */
     xf86CollectOptions(pScreenInfo, NULL);
 
     /* Set non-zero defaults */
-    Linear = TRUE;
+    if (pATI->Adapter >= ATI_ADAPTER_MACH64)
+        Accel = Linear = TRUE;
     if (pATI->BusType >= ATI_BUS_PCI)
         ShadowFB = TRUE;
     Sync = TRUE;
 
-    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options, Option);
+    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
+        PublicOption);
+    xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
+        PrivateOption);
 
     /* Disable linear apertures if the OS doesn't support them */
     if (!xf86LinearVidMem() && Linear)
     {
-        if (Option[ATI_OPTION_LINEAR].found)
+        if (PublicOption[ATI_OPTION_LINEAR].found)
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "OS does not support linear apertures.\n");
         Linear = FALSE;

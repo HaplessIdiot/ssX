@@ -1,5 +1,5 @@
 /* $XConsortium: vendor.h,v 1.12 94/04/17 20:44:00 rws Exp $ */
-/* $XFree86: contrib/programs/xman/vendor.h,v 3.5 1999/08/30 13:07:08 dawes Exp $ */
+/* $XFree86: xc/programs/xman/vendor.h,v 1.1 2000/02/12 03:55:19 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -55,11 +55,11 @@ from the X Consortium.
 #  define SEARCHDIR  MAN
 #endif
 
-#if ( defined(sgi) || (defined(i386) && (defined(SYSV) || defined(SVR4))) || (BSD >= 199103) || defined(linux) )
+#if ( defined(sgi) || (defined(i386) && (defined(SYSV) || defined(SVR4))) || (defined(BSD) && (BSD >= 199103)) || defined(linux) )
 # define SEARCHOTHER CAT
 #endif
 
-#if (BSD >= 199103) || defined(linux)
+#if (defined(BSD) && (BSD >= 199103)) || defined(linux)
 # define MANCONF "/etc/man.conf"
 #endif
 
@@ -74,7 +74,7 @@ from the X Consortium.
 #ifdef macII
 #  define SYSMANPATH "/usr/catman/u_man:/usr/catman/a_man"
 #endif /* macII */
-#if defined(SVR4) || defined(__osf__) || (BSD >= 199103)
+#if defined(SVR4) || defined(__osf__) || (defined(BSD) && (BSD >= 199103))
 #  define SYSMANPATH "/usr/share/man"
 #endif /* SVR4 || __osf__ || (BSD >= 199103) */
 #ifdef hcx
@@ -159,7 +159,7 @@ from the X Consortium.
 #ifdef ultrix
 #  define FORMAT "| nroff -man"             /* The format command. */
 #else
-#  if (BSD >= 199103)
+#  if defined(BSD) && (BSD >= 199103)
 #    define FORMAT "| eqn | tbl | nroff -man"
 #  else
 #    ifdef linux

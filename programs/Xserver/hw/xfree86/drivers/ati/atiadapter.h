@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.3 1999/07/06 11:38:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiadapter.h,v 1.4 1999/10/13 20:33:00 dawes Exp $ */
 /*
- * Copyright 1997 through 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -23,6 +23,10 @@
 
 #ifndef ___ATIADAPTER_H___
 #define ___ATIADAPTER_H___ 1
+
+#include "atipriv.h"
+#include "atiproto.h"
+#include "xf86str.h"
 
 /*
  * Adapter-related definitions.
@@ -49,5 +53,17 @@ typedef enum
 } ATIAdapterType;
 
 extern const char *ATIAdapterNames[];
+
+extern void ATIAdapterPreInit   FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                   ATIHWPtr));
+extern void ATIAdapterSave      FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                   ATIHWPtr));
+extern Bool ATIAdapterCalculate FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                   ATIHWPtr, DisplayModePtr));
+extern void ATIAdapterSet       FunctionPrototype((ScrnInfoPtr, ATIPtr,
+                                                   ATIHWPtr));
+
+extern Bool ATIAdapterAccelInit FunctionPrototype((ScrnInfoPtr, ScreenPtr,
+                                                   ATIPtr));
 
 #endif /* ___ATIADAPTER_H___ */

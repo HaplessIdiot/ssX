@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.9 1999/11/04 02:12:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atistruct.h,v 1.10 1999/11/18 16:52:12 tsi Exp $ */
 /*
- * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -26,6 +26,7 @@
 
 #include "atibank.h"
 #include "aticlock.h"
+#include "xaa.h"
 
 /*
  * This is probably as good a place as any to put this note, as it applies to
@@ -59,7 +60,7 @@ typedef struct _ATIHWRec
     /* Mach64 PLL registers */
     CARD8 pll_vclk_cntl, pll_ext_vpll_cntl;
 
-    /* Mach64 registers */
+    /* Mach64 CPIO registers */
     CARD32 crtc_h_total_disp, crtc_h_sync_strt_wid,
            crtc_v_total_disp, crtc_v_sync_strt_wid,
            crtc_off_pitch, crtc_gen_cntl, dsp_config, dsp_on_off,
@@ -77,6 +78,25 @@ typedef struct _ATIHWRec
     /* Shadow Mach64 CRTC registers */
     CARD32 shadow_h_total_disp, shadow_h_sync_strt_wid,
            shadow_v_total_disp, shadow_v_sync_strt_wid;
+
+    /* Mach64 MMIO Block 0 registers */
+    CARD32 dst_off_pitch;
+    CARD16 dst_x, dst_y, dst_height;
+    CARD32 dst_bres_err, dst_bres_inc, dst_bres_dec, dst_cntl;
+    CARD32 src_off_pitch;
+    CARD16 src_x, src_y, src_width1, src_height1,
+           src_x_start, src_y_start, src_width2, src_height2;
+    CARD32 src_cntl;
+    CARD32 host_cntl;
+    CARD32 pat_reg0, pat_reg1, pat_cntl;
+    CARD16 sc_left, sc_right, sc_top, sc_bottom;
+    CARD32 dp_bkgd_clr, dp_frgd_clr, dp_write_mask, dp_chain_mask,
+           dp_pix_width, dp_mix, dp_src;
+    CARD32 clr_cmp_clr, clr_cmp_msk, clr_cmp_cntl;
+    CARD32 context_mask, context_load_cntl;
+
+    /* Mach64 MMIO Block 1 registers */
+    CARD32 gui_cntl;
 
     /* Clock map pointers */
     const CARD8 *ClockMap, *ClockUnmap;
@@ -136,7 +156,7 @@ typedef struct _ATIRec
      */
     CARD16 CPIO_CRTC_H_TOTAL_DISP, CPIO_CRTC_H_SYNC_STRT_WID,
            CPIO_CRTC_V_TOTAL_DISP, CPIO_CRTC_V_SYNC_STRT_WID,
-           CPIO_CRTC_OFF_PITCH,CPIO_CRTC_INT_CNTL, CPIO_CRTC_GEN_CNTL,
+           CPIO_CRTC_OFF_PITCH, CPIO_CRTC_INT_CNTL, CPIO_CRTC_GEN_CNTL,
            CPIO_DSP_CONFIG, CPIO_DSP_ON_OFF, CPIO_OVR_CLR,
            CPIO_OVR_WID_LEFT_RIGHT, CPIO_OVR_WID_TOP_BOTTOM,
            CPIO_TV_OUT_INDEX, CPIO_CLOCK_CNTL, CPIO_TV_OUT_DATA,
@@ -191,6 +211,13 @@ typedef struct _ATIRec
     miBankInfoRec BankInfo;
 
     /*
+     * XAA interface.
+     */
+    XAAInfoRecPtr pXAAInfo;
+    int nAvailableFIFOEntries, nFIFOEntries;
+    CARD8 EngineIsBusy, EngineIsLocked, PitchModifier;
+
+    /*
      * Clock-related definitions.
      */
     int ClockNumberToProgramme, ReferenceNumerator, ReferenceDenominator;
@@ -226,6 +253,9 @@ typedef struct _ATIRec
     {
         /* VGA registers */
         CARD8 crt03, crt11;
+
+        /* VGA shadow registers */
+        CARD8 shadow_crt03, shadow_crt11;
 
         /* VGA Wonder registers */
         CARD8 a6, ab, b1, b4, b5, b6, b8, b9, be;

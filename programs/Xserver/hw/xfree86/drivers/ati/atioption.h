@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.0tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.1 1999/07/06 11:38:33 dawes Exp $ */
 /*
- * Copyright 1999 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
+ * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -28,6 +28,8 @@
 #include "atiproto.h"
 #include "xf86str.h"
 
-extern void ATIProcessOptions FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern OptionInfoPtr ATIAvailableOptions FunctionPrototype((int, int));
+extern void          ATIProcessOptions   FunctionPrototype((ScrnInfoPtr,
+                                                            ATIPtr));
 
 #endif /* ___ATIOPTION_H___ */

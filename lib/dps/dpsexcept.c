@@ -35,12 +35,13 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86: $ */
 
 /*
 Original version: Jeffrey Mogul, Stanford, 18 February 1983
 */
 
-#if VMS
+#ifdef VMS
 /* Add publictype.h to get a lowercase definition of "false" */
 #include "publictypes.h"
 #endif /* VMS */

@@ -47,6 +47,7 @@
  *  
  * Author:  Adobe Systems Incorporated and MIT X Consortium
  */
+/* $XFree86: $ */
 
 /*
  *	XlibInternal.c - Internal support routines for the C subroutine
@@ -497,11 +498,11 @@ N_XReadPad (dpy, data, size)
 		size -= bytes_read;
 	    	if ((iov[0].iov_len -= bytes_read) < 0) {
 		    iov[1].iov_len += iov[0].iov_len;
-		    iov[1].iov_base -= iov[0].iov_len;
+		    iov[1].iov_base = (char *)iov[1].iov_base - iov[0].iov_len;
 		    iov[0].iov_len = 0;
 		    }
 	    	else
-	    	    iov[0].iov_base += bytes_read;
+	    	    iov[0].iov_base = (char *)iov[0].iov_base + bytes_read;
 	    	}
 	    else if (ETEST(errno)) {
 		N_XWaitForReadable(dpy);

@@ -35,6 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86: $ */
 
 #include <stdio.h>
 
@@ -157,7 +158,7 @@ static void ScanArgs(argc, argv)
 	    case 'b':
 		bigFile++;
 		break;
-#if PSWDEBUG
+#ifdef PSWDEBUG
 	    case 'd':
 	    	lexdebug++;
 		break;
