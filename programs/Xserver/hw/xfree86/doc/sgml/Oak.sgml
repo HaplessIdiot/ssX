@@ -164,7 +164,7 @@ downwards. ISA card owners should not use these options.
     The use of very high dot-clocks has a REAL negative effect on the
     performance of the boards, due to its limited 80Mbit/sec, higher
     dot clocks limit its ability to draw data into the
-    frambuffer. Thus expect better performance of a 72Mhz based mode
+    framebuffer. Thus expect better performance of a 72Mhz based mode
     than on a 78Mhz based one (for example) where more bandwidth is
     required for screen refresh.
   
@@ -192,7 +192,7 @@ downwards. ISA card owners should not use these options.
     GOOD LUCK!!!!
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.7 1996/02/24 05:59:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Oak.sgml,v 3.8 1996/05/10 06:58:29 dawes Exp $
 
 
 

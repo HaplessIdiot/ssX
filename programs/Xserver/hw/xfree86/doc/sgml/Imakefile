@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/6 1996/01/16 15:35:18 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.13 1996/02/19 09:50:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.14 1996/02/24 05:59:06 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -83,6 +83,7 @@ LinuxDocTarget(DocIndex)
 /* Other docs */
 LinuxDocReadmeTarget(LinkKit)
 LinuxDocReadmeTarget(clkprog)
+LinuxDocTarget(xinput)
 #if 0
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
 #endif

@@ -90,12 +90,16 @@ It is expected that it will reappear in some form in a future release.
 	clocks line divided by 2.  This presents the server with twice as
 	many clocks to choose from.  Add the option "clkdiv2" to the "Device"
 	section of XF86Config to enable this.
-  <item>Some bugs have been fixed in the XInput support.  Motion history
-	support has been addeded for the Wacom driver.  It is now possible
-	to use a mouse as an extended input device.
   <item>Some cursor colouring bugs have been fixed for servers that use
 	hardware cursors.
   <item>Autorepeating modifier keys when using XKB have been fixed.
+</itemize>
+<sect1> XInput Extension
+<p>
+<itemize>
+  <item>A new device supporting mouse protocols has been added.
+  <item>The wacom device has been enhanced to support tilt valuators
+	and to have a motion history.
 </itemize>
 <sect1> PC98 Support
 <p>
@@ -118,7 +122,7 @@ It is expected that it will reappear in some form in a future release.
 	been fixed.
   <item>The Mach64 server will detect the new VT and GT cards, but hasn't
 	yet been tested with them.
-  <item>A problem that caused the server to incorrrectly use block I/O
+  <item>A problem that caused the server to incorrectly use block I/O
 	mode on some cards has been fixed.
 </itemize>
 <sect1> W32 server
@@ -890,7 +894,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.25 1996/05/11 11:04:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.26 1996/05/12 11:58:05 dawes Exp $
 </verb>
 
 </article>
