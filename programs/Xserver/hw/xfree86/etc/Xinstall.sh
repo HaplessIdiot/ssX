@@ -3,14 +3,17 @@
 #
 # $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.3 2000/02/26 04:56:02 dawes Exp $
 #
-# Copyright © 1995-2000 by The XFree86 Project, Inc
-# Portions Copyright © 2000 by Precision Insight, Inc
-#
-# Xinstall.sh  (for XFree86 4.0)
+# Copyright © 2000 by Precision Insight, Inc.
+# Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
 #
 # This script should be used to install XFree86 4.0.
 #
-# Set tabs to 4 spaces to view/edit this file
+# Parts of this script are based on the old preinst.sh and postinst.sh
+# scripts.
+#
+# Set tabs to 4 spaces to view/edit this file.
+#
+# Authors:	David Dawes <dawes@xfree86.org>
 #
 
 VERSION=4.0
@@ -69,14 +72,6 @@ OPTDIST=" \
 	Xps.tgz \
 	"
 
-REQUIREDFILES=" \
-	extract \
-	$BASEDIST \
-	$ETCDIST \
-	$VARDIST \
-	$SERVDIST \
-	"
-
 ETCLINKS=" \
 	app-defaults \
 	fs \
@@ -89,8 +84,20 @@ ETCLINKS=" \
 	xsm \
 	xserver \
 	"
+
+FONTDIRS=" \
+	local \
+	misc
+	"
+
+WDIR=`pwd`
+
 # Check how to suppress newlines with echo (from perl's Configure)
-(echo "xxx\c"; echo " ") > .echotmp
+((echo "xxx\c"; echo " ") > .echotmp) 2> /dev/null
+if [ ! -f .echotmp ]; then
+	echo "Can't write to the current directory.  Aborting";
+	exit 1
+fi
 if grep c .echotmp >/dev/null 2>&1; then
 	n='-n'
 	c=''
@@ -169,9 +176,16 @@ Description()
 	esac
 }
 
+ReadLink()
+{
+	rltmp="`ls -l $1`"
+	rl=`expr "$rltmp" : '.*-> \([^ 	]*\)'`
+	echo $rl
+}
+
 GetOsInfo()
 {
-	echo "Checking which OS your running..."
+	echo "Checking which OS you're running..."
 
 	OsName="`uname`"
 	OsVersion="`uname -r`"
@@ -189,7 +203,7 @@ GetOsInfo()
 	if [ "$OsName" = "`uname -n`" -a -f /stand/unix ]; then
 		OsName=UNIX_SV
 	fi
-	echo "uname reports '$OsName' version '$OsVersion', architecture '$OsArch'"
+	echo "uname reports '$OsName' version '$OsVersion', architecture '$OsArch'."
 
 	# Find the object type, where needed
 
@@ -204,35 +218,10 @@ GetOsInfo()
 	esac
 
 	if [ X"$OsObjFormat" != X ]; then
-		Echo "Object format is '$OsObjFormat' "
+		Echo "Object format is '$OsObjFormat'.  "
+		needNL=YES
 	fi
 
-	# Find the libc version, where needed
-	case "$OsName" in
-	Linux)
-		tmp="`ldd /bin/sh | grep libc.so 2> /dev/null`"
-		OsLibcMajor=`expr "$tmp" : '.*libc.so.\([0-9]*\)'`
-		case "$OsLibcMajor" in
-		6)
-			LibcPath=`expr "$tmp" : '[^/]*\(/[^ ]*\)'`
-			tmp="`ls -l $LibcPath 2> /dev/null`"
-			OsLibcMinor=`expr "$tmp" : '.*libc-2.\([0-9]*\)'`
-			;;
-		esac
-		;;
-	esac
-
-	if [ X"$OsLibcMajor" != X ]; then
-		Echo "libc version is '$OsLibcMajor"
-		if [ X"$OsLibcMinor" != X ]; then
-			Echo ".$OsLibcMinor'"
-		else
-			Echo "'"
-		fi
-	fi
-	echo ""
-	echo ""
-	
 	# test's flag for symlinks
 	#
 	# For OSs that don't support symlinks, choose a type that is guaranteed to
@@ -248,10 +237,57 @@ GetOsInfo()
 			L="-L"
 		esac
 		;;
+	OS-with-no-symlinks)	# Need to set this correctly
+		L="-b"
+		NoSymlinks=YES
+		;;
 	*)
 		L="-L"
 		;;
 	esac
+
+	# Find the libc version, where needed
+	LinkLevels=3	# Max symlink recursion level
+	case "$OsName" in
+	Linux)
+		tmp="`ldd /bin/sh | grep libc.so 2> /dev/null`"
+		OsLibcMajor=`expr "$tmp" : '.*libc.so.\([0-9]*\)'`
+echo ""
+		case "$OsLibcMajor" in
+		6)
+			LibcPath=`expr "$tmp" : '[^/]*\(/[^ ]*\)'`
+			i=0;
+			while [ $L $LibcPath -a $i -lt $LinkLevels ]; do
+				d=`dirname $LibcPath`
+				f=`basename $LibcPath`
+				cd $d
+				LibcPath=`ReadLink $f`
+				i=`expr $i + 1`
+			done
+			OsLibcMinor=`expr "$LibcPath" : '.*libc-2.\([0-9]*\)'`
+			if [ X"$OsLibcMinor" = X ]; then
+				# Default to minor version 0
+				OsLibcMinor=0
+			fi
+			cd $WDIR
+			;;
+		esac
+		;;
+	esac
+
+	if [ X"$OsLibcMajor" != X ]; then
+		Echo "libc version is '$OsLibcMajor"
+		if [ X"$OsLibcMinor" != X ]; then
+			Echo ".$OsLibcMinor'."
+		else
+			Echo "'."
+		fi
+		needNL=YES
+	fi
+	if [ X"$needNL" = XYES ]; then
+		echo ""
+	fi
+	echo ""
 }
 
 DoOsChecks()
@@ -503,7 +539,7 @@ echo ""
 echo "		Welcome to the XFree86 $VERSION installer"
 echo ""
 echo "You are strongly advised to backup your existing XFree86 installation"
-echo "Before proceeding.  This includes the /usr/X11R6 and /etc/X11"
+echo "before proceeding.  This includes the /usr/X11R6 and /etc/X11"
 echo "directories.  The installation process will overwrite existing files"
 echo "in those directories, and this may include some configuration files"
 echo "that may have been customised."
@@ -526,10 +562,36 @@ fi
 
 GetOsInfo
 
+# Make OS-specific adjustments to the distribution file lists
+
+case "$OsName" in
+Interactive)	# Need the correct name for this
+	VARDIST=""
+	EXTRADIST="Xbin1.tgz"
+	EXTRAOPTDIST="Xxdm.tgz"
+	;;
+LynxOS)
+	VARDIST=""
+	;;
+esac
+
+REQUIREDFILES=" \
+	extract \
+	$BASEDIST \
+	$ETCDIST \
+	$VARDIST \
+	$SERVDIST \
+	$EXTRADIST \
+	"
+
 echo "Checking for required files ..."
 Needed=""
 
 # Check for extract and extract.exe, and check that they are usable.
+#
+# This test may not be fool-proof.  A FreeBSD/ELF binary downloaded in
+# ASCII mode passed it :-(.
+#
 if [ -f extract ]; then
 	ExtractExists=YES
 	chmod +x extract
@@ -610,14 +672,6 @@ if [ X"$Needed" != X ]; then
 	exit 1
 fi
 
-# Link extract to gnu-tar so it can also be used as a regular tar
-rm -f gnu-tar
-ln extract gnu-tar
-
-WDIR=`pwd`
-EXTRACT=$WDIR/extract
-TAR=$WDIR/gnu-tar
-
 DoOsChecks
 
 if [ X"$NEEDSOMETHING" != X ]; then
@@ -626,6 +680,42 @@ if [ X"$NEEDSOMETHING" != X ]; then
 	echo "have made the required updates."
 	echo ""
 	exit 1
+fi
+
+# Link extract to gnu-tar so it can also be used as a regular tar
+rm -f gnu-tar
+ln extract gnu-tar
+
+EXTRACT=$WDIR/extract
+TAR=$WDIR/gnu-tar
+
+# Create $RUNDIR and $ETCDIR if they don't already exist
+
+if [ ! -d $RUNDIR ]; then
+	NewRunDir=YES
+	echo "Creating $RUNDIR"
+	mkdir $RUNDIR
+fi
+if [ ! -d $RUNDIR/lib ]; then
+	echo "Creating $RUNDIR/lib"
+	mkdir $RUNDIR/lib
+fi
+if [ ! -d $RUNDIR/lib/X11 ]; then
+	echo "Creating $RUNDIR/lib/X11"
+	mkdir $RUNDIR/lib/X11
+fi
+if [ ! -d $ETCDIR ]; then
+	NewEtcDir=YES
+	echo "Creating $ETCDIR"
+	mkdir $ETCDIR
+fi
+
+if [ -d $RUNDIR -a -d $RUNDIR/bin -a -d $RUNDIR/lib ]; then
+	echo ""
+	echo "You appear to have an existing installation of X.  Continuing will"
+	echo "overwrite it.  You will, however, have the option of being prompted"
+	echo "before most configuration files are overwritten."
+	ContinueYes
 fi
 
 if [ X"$OLDFILES" != X ]; then
@@ -652,42 +742,16 @@ if [ X"$OLDDIRS" != X ]; then
 	echo ""
 fi
 
-# Create $RUNDIR and $ETCDIR if they don't already exist
-
-if [ ! -d $RUNDIR ]; then
-	NewRunDir=YES
-	echo "Creating $RUNDIR"
-	mkdir $RUNDIR
-fi
-if [ ! -d $RUNDIR/lib ]; then
-	echo "Creating $RUNDIR/lib"
-	mkdir $RUNDIR/lib
-fi
-if [ ! -d $RUNDIR/lib/X11 ]; then
-	echo "Creating $RUNDIR/lib/X11"
-	mkdir $RUNDIR/lib/X11
-fi
-if [ ! -d $ETCDIR ]; then
-	NewEtcDir=YES
-	echo "Creating $ETCDIR"
-	mkdir $ETCDIR
-fi
-
-if [ -d $RUNDIR -a -d $RUNDIR/bin -a -d $RUNDIR/lib ]; then
-	echo "You appear to have an existing installation of X.  Continuing will"
-	echo "overwrite it.  You will, however, have the option of being prompted"
-	echo "before most configuration files are overwritten."
-	ContinueYes
-fi
-
 # Check for config file directories that may need to be moved.
 
 EtcToMove=
-for i in $ETCLINKS; do
-	if [ -d $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
-		EtcToMove="$EtcToMove $i"
-	fi
-done
+if [ X"$NoSymLinks" != XYES ]; then
+	for i in $ETCLINKS; do
+		if [ -d $RUNDIR/lib/X11/$i -a ! $L $RUNDIR/lib/X11/$i ]; then
+			EtcToMove="$EtcToMove $i"
+		fi
+	done
+fi
 
 if [ X"$EtcToMove" != X ]; then
 	echo "XFree86 now installs most customisable configuration files under"
@@ -702,11 +766,14 @@ if [ X"$EtcToMove" != X ]; then
 	read response
 	case "$response" in
 	[nN]*)
+		echo ""
+		echo "Note: this means that your run-time config files will remain"
+		echo "in the old $RUNDIR/lib/X11 location."
 		NoSymLinks=YES;
 		;;
 	esac
 	echo ""
-	if [ X"NoSymlinks" != YES ]; then
+	if [ X"NoSymlinks" != XYES ]; then
 		for i in $EtcToMove; do
 			echo "Moving $RUNDIR/lib/X11/$i to $ETCDIR/$i ..."
 			if [ ! -d $ETCDIR/$i ]; then
@@ -745,11 +812,17 @@ for i in $ETCLINKS; do
 	fi
 	if [ $DoCopy = YES ]; then
 		echo "Installing the $i config files ..."
-		if [ ! -d $ETCDIR/$i ]; then
-			mkdir $ETCDIR/$i
-		fi
-		if [ ! -d $RUNDIR/lib/X11/$i ]; then
-			ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+		if [ X"$NoSymLinks" != XYES ]; then
+			if [ ! -d $ETCDIR/$i ]; then
+				mkdir $ETCDIR/$i
+			fi
+			if [ ! -d $RUNDIR/lib/X11/$i ]; then
+				ln -s $ETCDIR/$i $RUNDIR/lib/X11/$i
+			fi
+		else
+			if [ ! -d $RUNDIR/lib/X11/$i ]; then
+				mkdir $RUNDIR/lib/X11/$i
+			fi
 		fi
 		$TAR -C .etctmp/$i -c -f - . | $TAR -C $RUNDIR/lib/X11/$i -v -x -p -f -
 	fi
@@ -761,10 +834,12 @@ echo ""
 for i in $BASEDIST $SERVDIST; do
 	(cd $RUNDIR; $EXTRACT $WDIR/$i)
 done
-(cd $VARDIR; $EXTRACT $WDIR/$VARDIST)
+if [ X"$VARDIST" != X ]; then
+	(cd $VARDIR; $EXTRACT $WDIR/$VARDIST)
+fi
 
 echo "Checking for optional components to install ..."
-for i in $OPTDIST; do
+for i in $OPTDIST $EXTRAOPTDIST; do
 	if [ -f $i ]; then
 		Echo "Do you want to install $i (`Description $i`)? (y/n) [y] "
 		read response
@@ -778,6 +853,142 @@ for i in $OPTDIST; do
 		esac
 	fi
 done
+
+# Need to run ldconfig on some OSs
+case "$OsName" in
+FreeBSD|NetBSD|OpenBSD)
+	echo ""
+	echo "Running ldconfig"
+	/sbin/ldconfig -m $RUNDIR/lib
+	;;
+Linux)
+	echo ""
+	echo "Running ldconfig"
+	/sbin/ldconfig $RUNDIR/lib
+	;;
+esac
+
+# Run mkfontdir in the local and misc directories to make sure that
+# the fonts.dir files are up to date after the installation.
+echo ""
+for i in $FONTDIRS $EXTRAFONTDIRS; do
+	if [ -d $RUNDIR/lib/X11/fonts/$i ]; then
+		Echo "Updating the fonts.dir file in $RUNDIR/lib/X11/fonts/$i..."
+		$RUNDIR/bin/mkfontdir $RUNDIR/lib/X11/fonts/$i
+		echo ""
+	fi
+done
+		
+# Check if the system has a termcap file
+TERMCAP1DIR=/usr/share
+TERMCAP2=/etc/termcap
+if [ -d $TERMCAP1DIR ]; then
+	TERMCAP1=`find $TERMCAP1DIR -type f -name termcap -print 2> /dev/null`
+	if [ x"$TERMCAP1" != x ]; then
+		TERMCAPFILE="$TERMCAP1"
+	fi
+fi
+if [ x"$TERMCAPFILE" = x ]; then
+	if [ -f $TERMCAP2 ]; then
+		TERMCAPFILE="$TERMCAP2"
+	fi
+fi
+
+# Override this for some OSs
+
+case "$OsName" in
+OpenBSD)
+	TERMCAPFILE=""
+	;;
+esac
+
+if [ X"$TERMCAPFILE" != X ]; then
+	echo ""
+	echo "You appear to have a termcap file: $TERMCAPFILE"
+	echo "This should be edited manually to replace the xterm entries"
+	echo "with those in $RUNDIR/lib/X11/etc/xterm.termcap"
+	echo ""
+	echo "Note: the new xterm entries are required to take full advantage"
+	echo "of new features, but they may cause problems when used with"
+	echo "older versions of xterm.  A terminal type 'xterm-r6' is included"
+	echo "for compatibility with the standard X11R6 version of xterm."
+fi
+
+# Check for terminfo, and update the xterm entry
+TINFODIR=/usr/lib/terminfo
+# Does this list need to be updated?
+OLDTINFO=" \
+	x/xterm \
+	x/xterms \
+	x/xterm-24 \
+	x/xterm-vi \
+	x/xterm-65 \
+	x/xterm-bold \
+	x/xtermm \
+	x/xterm-boldso \
+	x/xterm-ic \
+	x/xterm-r6 \
+	x/xterm-old \
+	x/xterm-r5 \
+	v/vs100"
+	
+if [ -d $TINFODIR ]; then
+	echo ""
+	echo "You appear to have a terminfo directory: $TINFODIR"
+	echo "New xterm terminfo entries can be installed now."
+	echo ""
+	echo "Note: the new xterm entries are required to take full advantage"
+	echo "of new features, but they may cause problems when used with"
+	echo "older versions of xterm.  A terminal type 'xterm-r6' is included"
+	echo "for compatibility with the standard X11R6 version of xterm."
+	echo ""
+	echo "Do you wish to have the new xterm terminfo entries installed"
+	Echo "now (y/n)? [n] "
+	read response
+	case "$response" in
+	[yY]*)
+		echo ""
+		for t in $OLDTINFO; do
+			if [ -f $TINFODIR/$t ]; then
+				echo "Moving old terminfo file $TINFODIR/$t to $TINFODIR/$t.bak"
+				rm -f $TINFODIR/$t.bak
+				mv -f $TINFODIR/$t $TINFODIR/$t.bak
+			fi
+		done
+		echo ""
+		echo "Installing new terminfo entries for xterm."
+		echo ""
+		echo "On some systems you may get warnings from tic about 'meml'"
+		echo "and 'memu'.  These warnings can safely be ignored."
+		echo ""
+		tic $RUNDIR/lib/X11/etc/xterm.terminfo
+		;;
+	*)
+		echo ""
+		echo "Not installing new terminfo entries for xterm."
+		echo "They can be installed later by running:"
+		echo ""
+		echo "  tic $RUNDIR/lib/X11/etc/xterm.terminfo"
+		;;
+	esac
+fi
+
+if [ -f $RUNDIR/bin/rstartd ]; then
+	echo ""
+	echo "If you are going to use rstart and $RUNDIR/bin isn't in the"
+	echo "default path for commands run remotely via rsh, you will need"
+	echo "a link to rstartd installed in /usr/bin."
+	echo ""
+	Echo "Do you wish to have this link installed (y/n)? [n] "
+	read response
+	case "$response" in
+	[yY]*)
+		echo "Creating link from $RUNDIR/bin/rstartd to /usr/bin/rstartd"
+		rm -f /usr/bin/rstartd
+		ln -s $RUNDIR/bin/rstartd /usr/bin/rstartd
+		;;
+	esac
+fi
 
 echo ""
 echo "Installation complete."

@@ -1,5 +1,10 @@
-XFree86 3.9.18a (25 February 2000)
+XFree86 3.9.18b (28 February 2000)
+3871. Fix a malloc/free problem in Xnest on 64-bit platforms (David Dawes).
+3870. Update bindist definition files (David Dawes).
+3869. More installer updates (David Dawes).
 3868. Make -configure generate multihead configs (Alan Hourihane).
+
+XFree86 3.9.18a (25 February 2000)
 3867. Add a preliminary Install document (David Dawes).
 3866. Remove obsolete XF98 and XF68 definitions from xfree86.cf (David Dawes).
 3865. Fix some rendition driver problems (#3746, Dejan Ilic).
@@ -9844,4 +9849,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1037 2000/02/25 21:25:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1039 2000/02/27 02:43:48 alanh Exp $
