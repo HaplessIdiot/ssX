@@ -24,13 +24,29 @@ THE SOFTWARE.
 #include <string.h>
 #include <errno.h>
 #include <stdlib.h>
-#include <math.h>
+#ifndef __UNIXOS2__
+# include <math.h>
+#else
+# include <float.h>
+#endif
 #include <stdarg.h>
 
 #include "freetype/freetype.h"
 #include "freetype/internal/ftobjs.h"
 #include "freetype/ftbdf.h"
 #include "fonttosfnt.h"
+
+#ifdef __GLIBC__
+#define HAVE_TIMEGM
+#define HAVE_TM_GMTOFF
+#endif
+
+#ifdef BSD
+#define HAVE_TM_GMTOFF
+#endif
+
+/* That's in POSIX */
+#define HAVE_TZSET
 
 char*
 sprintf_reliable(char *f, ...)
@@ -89,6 +105,51 @@ makeName(char *s)
     return s[0] << 24 | s[1] << 16 | s[2] << 8 | s[3];
 }
 
+/* Like mktime(3), but UTC rather than local time */
+#if defined(HAVE_TIMEGM)
+time_t
+mktime_gmt(struct tm *tm)
+{
+    return timegm(tm);
+}
+#elif defined(HAVE_TM_GMTOFF)
+time_t
+mktime_gmt(struct tm *tm)
+{
+    time_t t;
+    struct tm *ltm;
+
+    t = mktime(tm);
+    if(t < 0)
+        return -1;
+    ltm = localtime(&t);
+    if(ltm == NULL)
+        return -1;
+    return t + ltm->tm_gmtoff;
+}
+#elif defined(HAVE_TZSET)
+/* Taken from the Linux timegm(3) man page */
+time_t
+mktime_gmt(struct tm *tm)
+{
+    time_t t;
+    char *tz;
+
+    tz = getenv("TZ");
+    setenv("TZ", "", 1);
+    tzset();
+    t = mktime(tm);
+    if(tz)
+        setenv("TZ", tz, 1);
+    else
+        unsetenv("TZ");
+    tzset();
+    return t;
+}
+#else
+#error no mktime_gmt implementation on this platform
+#endif
+
 /* Return the current time as a signed 64-bit number of seconds since
    midnight, 1 January 1904.  This is apparently when the Macintosh
    was designed. */
@@ -96,7 +157,7 @@ int
 macTime(int *hi, unsigned *lo)
 {
     time_t macEpoch, current;
-    struct tm tm, *ltime;
+    struct tm tm;
     tm.tm_sec = 0;
     tm.tm_min = 0;
     tm.tm_hour = 0;
@@ -105,12 +166,8 @@ macTime(int *hi, unsigned *lo)
     tm.tm_year = 4;
     tm.tm_isdst = -1;
 
-    macEpoch = mktime(&tm);
+    macEpoch = mktime_gmt(&tm);
     if(macEpoch < 0) return -1;
-
-    /* For some reason, mktime spits out local time */
-    ltime = localtime(&macEpoch);
-    macEpoch += ltime->tm_gmtoff;
 
     current = time(NULL);
     if(current < 0)

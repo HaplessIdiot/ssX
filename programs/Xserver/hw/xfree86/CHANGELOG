@@ -1,4 +1,6 @@
 XFree86 4.3.99.8 (xx June 2003)
+ 248. Fixed fontstosfnt to build on OS/2 (Bugzilla #415, Frank Giessler
+      Juliusz Chroboczek).
  247. Fixed DMC touchscreen driver: button press events are properly
       recognized now, made sure device is still recognized after a restart,
       fixed misleading error messages (Bugzilla #418, Andreas Kies).
@@ -17158,7 +17160,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2748 2003/06/25 11:07:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2749 2003/06/25 18:06:23 eich Exp $
 
 
 
