@@ -26,7 +26,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.29 2001/12/08 16:01:52 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.30 2001/12/10 21:11:00 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -439,7 +439,7 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	    STOREREG(PM3ByAperture1Mode, PM3ByApertureMode_PIXELSIZE_32BIT);
 	    STOREREG(PM3ByAperture2Mode, PM3ByApertureMode_PIXELSIZE_32BIT);
 #else
-	    STOREREG(PM3ByAperture2Mode, PM3ByApertureMode_PIXELSIZE_32BIT |
+	    STOREREG(PM3ByAperture1Mode, PM3ByApertureMode_PIXELSIZE_32BIT |
 					 PM3ByApertureMode_BYTESWAP_DCBA);
 	    STOREREG(PM3ByAperture2Mode, PM3ByApertureMode_PIXELSIZE_32BIT |
 					 PM3ByApertureMode_BYTESWAP_DCBA);
