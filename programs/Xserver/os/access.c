@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $Id$ */
+/* $XFree86$ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
