@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.7 2000/11/28 16:10:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.8 2000/12/20 11:13:03 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -460,13 +460,10 @@ Permedia3AccelInit(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = pGlint->FbMapSize / (pScrn->displayWidth * 
-					  pScrn->bitsPerPixel / 8);
-    /* Alan does this ???
+    /* X coords are short's so we have to do this to make sure we dont wrap*/
     AvailFBArea.y2 = ((pGlint->FbMapSize > 16384*1024) ? 16384*1024 :
-	pGlint->FbMapSize)  / (pScrn->displayWidth 
+	pGlint->FbMapSize)  / (pScrn->displayWidth *
 	pScrn->bitsPerPixel / 8);
-    */
 
     /* Permedia3 has a maximum 4096x4096 framebuffer */
     if (AvailFBArea.y2 > 4095) AvailFBArea.y2 = 4095;

@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.103 2000/12/08 13:42:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.104 2000/12/20 11:13:01 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -1062,7 +1062,7 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Default to 8bits per RGB */
     if (pScrn->depth == 30)  pScrn->rgbBits = 10;	
-    			else pScrn->rgbBits = 8;
+    else if (pScrn->depth == 8) pScrn->rgbBits = 8;
     if (xf86GetOptValInteger(GLINTOptions, OPTION_RGB_BITS, &pScrn->rgbBits)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
