@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.20 2001/01/17 22:36:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.21 2001/03/04 17:40:13 herrb Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -35,15 +35,6 @@ is" without express or implied warranty.
 #include "Drawable.h"
 #include "XNGC.h"
 #include "XNFont.h"
-
-#ifdef XFree86Server
-/*
- * when building the loader, we add some code that tries to 
- * switch bit ordering based on xf86bpp; since Xnest doesn't
- * use that, we have to add this dummy here
- */
-int xf86bpp = 8;
-#endif
 
 Bool xnestDoFullGeneration = True;
 
