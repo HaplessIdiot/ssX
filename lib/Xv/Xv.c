@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.15 2001/05/11 08:23:22 alanh Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.16 2002/10/16 00:37:33 dawes Exp $ */
 /*
 ** File: 
 **
@@ -267,6 +267,7 @@ XvQueryAdaptors(
   *p_nAdaptors = rep.num_adaptors;
   *p_pAdaptors = pas;
 
+  Xfree(buffer);
   UnlockDisplay(dpy);
   SyncHandle();
 
