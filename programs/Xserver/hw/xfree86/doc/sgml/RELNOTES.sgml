@@ -9,7 +9,7 @@
 <date>17 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.60.2.2 2001/06/04 18:55:38 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.61 2001/06/04 19:01:21 herrb Exp $
 </ident>
 
 <abstract>
@@ -93,12 +93,12 @@ don't have enough space to cover them all here.
 
 <p>
 <itemize>
-<item> more drivers converted to use the 'fb' layer and render extension
-  (and thus supporting anti-aliased TT fonts)
-<item> big endian support for the mga and tdfx drivers
-<item> ATI Radeon on alpha (Linux)
+<item> more drivers converted from the cfb to fb framebuffer layer
+<item> more drivers support the RENDER extension
+<item> big-endian support for the mga and tdfx drivers
+<item> support for ATI Radeon on Linux/Alpha
 <item> vmware driver for use by X servers running under a VMWare guest OS
-<item> matrox G450 support
+<item> Matrox G450 support
 <item> support for Trident CyberBladeXP and CyberBladeXPm
 <item> support for NVidia GeForce 3
 <item> XvImage support for GeForce 3 chips
@@ -106,7 +106,7 @@ don't have enough space to cover them all here.
 <item> savage driver updates
 <item> GLINT driver updates, including support for the SGI 1600SW flat panel
 <item> cirrus driver updates
-<item> DRI driver for Radeon 
+<item> DRI driver for Radeon
 <item> acceleration for Trident Cyber9388
 
 </itemize>
@@ -124,7 +124,7 @@ don't have enough space to cover them all here.
 <item> X11R6.5.1 merge
 <item> lots of int10 support bug fixes
 <item> add XvMC extension (an experimental, not yet finished video
-  acceleration extension) 
+  acceleration extension)
 <item> fix a crash in Shape extension
 <item> XFree86-VidModeExtension now allows setting of gamma ramps rather
   than just gamma values
@@ -135,7 +135,7 @@ don't have enough space to cover them all here.
 <p>
 <itemize>
 <item> add glxgears
-<item> add libXmuu (Xmu version that don't rely on Xt/Xaw)
+<item> add libXmuu (Xmu version that does not rely on Xt/Xaw)
 <item> add libGLU
 <item> security problem in XAsyncReply
 <item> make xdm xinerama-aware (avoid the split login widget)

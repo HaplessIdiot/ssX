@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.20 2001/06/15 21:22:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.21 2001/08/07 07:04:50 keithp Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -2109,7 +2109,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
 	psav->ShadowPhysical = 
 	    psav->FrameBufferBase + psav->CursorKByte*1024 + 4096 - 32;
 	
-	psav->ShadowVirtual = (unsigned long*)
+	psav->ShadowVirtual = (CARD32 *)
 	    (psav->FBBase + psav->CursorKByte*1024 + 4096 - 32);
 	
 	xf86DrvMsg( pScrn->scrnIndex, X_PROBED,

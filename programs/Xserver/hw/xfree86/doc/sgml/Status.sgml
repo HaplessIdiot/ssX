@@ -9,7 +9,7 @@
 <date>1 June 2001
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.30 2001/05/29 16:12:18 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.31 2001/06/01 18:26:04 dawes Exp $
 </ident>
 
 <abstract>
@@ -60,16 +60,17 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	cards is provided by the XF86_SVGA server with the tdfx driver.
 
 <tag>&relvers;:</tag>
-	Support for Voodoo Graphics and Voodoo 2 chips is available on
-	platforms where Glide is available (Linux and FreeBSD(?)) and is
-	provided by the "glide" driver (requires version 2.x of the Glide
-	library, which is not part of the XFree86 distribution).
+	Support for Voodoo Graphics and Voodoo2 chips is provided by the
+	"glide" driver (requires version 2.x of the Glide library, which is
+	not part of the XFree86 distribution).
 
 	Support (including acceleration) for Voodoo Banshee, Voodoo3,
 	Voodoo4, and Voodoo5 is provided by the "tdfx" driver.
 
 <tag>Summary:</tag>
-	All hardware supported in &legacyvers; is also supported in &relvers;.
+	All hardware supported in &legacyvers; is also supported in
+	&relvers;.  The Voodoo Graphics, Voodoo2, Voodoo4, and Voodoo5 are
+	supported only in &relvers;.
 
 </descrip>
 
@@ -78,19 +79,18 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 <descrip>
 <tag>&legacyvers;:</tag>
 	Support (including acceleration) for GLINT 500TX (with IBM RGB526
-	ramdac), GLINT MX plus Delta or Gamma (with IBM RGB526 and RGB640
-	ramdacs), Permedia with IBM RGB526 RAMDAC, and Permedia 2, 2a, 2v
+	RAMDAC), GLINT MX plus Delta or Gamma (with IBM RGB526 and RGB640
+	RAMDACs), Permedia with IBM RGB526 RAMDAC, and Permedia 2, 2a, 2v
 	is provided by the XF86_3DLabs server.
 
-
 <tag>&relvers;:</tag>
-	Support (including acceleration) for Permedia, Permedia 2, 2v, (and
-	2a?), Permedia 3, GLINT 500TX, GLINT MX, GLINT Gamma, and GLINT
-	Delta coproc is provided by the "glint" driver.
+	Support (including acceleration) for Permedia, Permedia 2, 2a, 2v,
+	Permedia 3, GLINT 500TX, and GLINT MX with the Gamma or Delta
+	coprocessor is provided by the "glint" driver.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
-	The Permedia 3 is only supported in &relvers;.
+	The Permedia 3 is supported only in &relvers;.
 
 </descrip>
 
@@ -102,14 +102,14 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	Support is provided by the XF86_SVGA server with the apm driver.
 
 <tag>&relvers;:</tag>
-	Support (including acceleration?) for the AT24, AT25 and AT3D.
+	Support (including acceleration) for the AT24, AT25 and AT3D.
 	This support is provided by the "apm" driver.  This driver
 	currently has only incomplete support for the AP6422.
 
 <tag>Summary:</tag>
-	The AP6422 is supported in &legacyvers; but not fully in
-	&relvers;.  The AT25 is supported in &relvers; but not in
-	&legacyvers;.
+	The AP6422 is supported in &legacyvers; but not fully in &relvers;.
+	All other hardware supported in &legacyvers; is also supported in
+	&relvers;.  The AT25 is supported only in &relvers;.
 
 </descrip>
 
@@ -117,9 +117,9 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support (including acceleration) for the ARK1000PV, ARK2000PV,
-	and ARK2000MT.
-	Support is provided by the XF86_SVGA server with the ark driver.
+	Support (including acceleration) for the ARK1000PV, ARK2000PV, and
+	ARK2000MT.  Support is provided by the XF86_SVGA server with the
+	ark driver.
 
 <tag>&relvers;:</tag>
 	Support (including acceleration) for the ARK1000PV, ARK2000PV,
@@ -154,10 +154,8 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	driver.
 
 <tag>Summary:</tag>
-	All chips supported in &legacyvers; are supported in &relvers;
-	except for Mach8 and some old Mach32 chips.  The support in
-	&relvers; is, however, unaccelerated for all chips except the
-	Mach64, Rage, Rage 128 and Radeon variants.
+	All hardware supported in &legacyvers; is also supported in
+	&relvers; except for Mach8 and some old Mach32 chips.
 
 </descrip>
 
@@ -195,7 +193,8 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	and 64300.  This support is provided by the "chips" driver.
 
 <tag>Summary:</tag>
-	All hardware supported in &legacyvers; is also supported in &relvers;.
+	All hardware supported in &legacyvers; is also supported in
+	&relvers;.
 
 </descrip>
 
@@ -236,15 +235,16 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	XF86_TGA server.
 
 <tag>&relvers;:</tag>
-	No support for the Compaq AVGA (driver hasn't been ported).
+	No support exists for the Compaq AVGA (its driver hasn't been
+	ported).
 
 	Support (accelerated) for the DEC 21030 TGA 8 plane, 24 plane
 	and 24 plane 3D chips (only tested on Alpha platforms) is provided
 	by the "tga" driver.
 
 <tag>Summary:</tag>
-	No Compaq AVGA support in &relvers;.  DEC TGA support is equivalent
-	in both &legacyvers; and &relvers;.
+	No Compaq AVGA chips are supported in &relvers;.  DEC TGA support
+	is equivalent in both &legacyvers; and &relvers;.
 
 </descrip>
 
@@ -345,12 +345,12 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
-	Support (accelerated) for the IMS Twin Turbo 128 is provided by the
-	XF86_SVGA server with the imstt driver.
+	Support (accelerated) for the IMS Twin Turbo 128 and Twin Turbo 3D
+	is provided by the XF86_SVGA server with the imstt driver.
 
 <tag>&relvers;:</tag>
-	Support (accelerated) for the IMS Twin Turbo 128 is provided by the
-	"imstt" driver.
+	Support (accelerated) for the IMS Twin Turbo 128 and Twin Turbo 3D
+	is provided by the "imstt" driver.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
@@ -362,22 +362,21 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 <descrip>
 <tag>&legacyvers;:</tag>
 	Support (accelerated) for the Intel i740 is provided by the
-	XF86_SVGA server with the i740 driver, and for the Intel i810
-	with the i810 driver.  The i810 is currently only supported on
-	Linux, and requires the agpgart.o kernel module in order to use
-	modes that require more than 1MB of video memory.
+	XF86_SVGA server with the i740 driver, and for the Intel i810 with
+	the i810 driver.  The i810 is supported only on Linux, and requires
+	the agpgart.o kernel module in order to use modes that require more
+	than 1MB of video memory.
 
 <tag>&relvers;:</tag> Support (accelerated) for the Intel i740 is
 	provided by the "i740" driver, and support for the Intel i810
-	(including i810-dc100 and i810e) and i815 is provided by the
-	"i810" driver.  The "i810" driver is currently supported only on
-	Linux and FreeBSD (4.1 and later), and requires the agpgart
-	kernel support.
+	(including i810-dc100 and i810e) and i815 is provided by the "i810"
+	driver.  The "i810" driver is currently supported only on Linux and
+	FreeBSD (4.1 and later), and requires AGP GART kernel support.
 
 <tag>Summary:</tag>
-	The i740 and i810 are supported in both versions, but the i810
-	is only supported on Linux/x86 and recent FreeBSD/i386 platforms
-	at present.
+	The i740 and i810 are supported in both versions, but the i810 is
+	supported only on Linux/x86 and recent FreeBSD/i386 platforms at
+	present.
 
 </descrip>
 
@@ -391,15 +390,16 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the MGA2064W (Millennium I), MGA1064SG
-	(Mystique), MGA2164W (Millennium II) (PCI and AGP), G100, G200
-	and G400 is provided by the "mga" driver.
+	(Mystique), MGA2164W (Millennium II) (PCI and AGP), G100, G200,
+	G400, and G450 is provided by the "mga" driver.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
+	The G450 is supported only in &relvers;.
 
 </descrip>
 
-<sect>MX (???)
+<sect>Micronix, Inc. (MX)
 <p>
 <descrip>
 <tag>&legacyvers;:</tag>
@@ -413,7 +413,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	has not been ported.
 
 <tag>Summary:</tag>
-	No MX (???) chips are supported in &relvers;.
+	No MX chips are supported in &relvers;.
 
 </descrip>
 
@@ -450,7 +450,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
-	The NM2230 and later chips are only supported in &relvers;.
+	The NM2230 and later chips are supported only in &relvers;.
 
 </descrip>
 
@@ -464,8 +464,8 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>&relvers;:</tag>
 	Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
-	Vanta, M64), GeForce (DDR, 256), GeForce2 (GTS, Ultra, MX), Quadro,
-	and Quadro2 is provided by the "nv" driver.
+	Vanta, M64), GeForce (DDR, 256), GeForce 2 (GTS, Ultra, MX),
+	GeForce 3, Quadro, and Quadro2 is provided by the "nv" driver.
 
 <tag>Summary:</tag>
 	All chipsets supported in &legacyvers; except the NV1 are also
@@ -586,7 +586,7 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 
 <tag>Summary:</tag>
 	Only the ViRGE, Trio3D and Savage chipsets are supported in &relvers;.
-	All of the other chipsets are only supported in &legacyvers;.
+	All of the other chipsets are supported only in &legacyvers;.
 
 </descrip>
 
@@ -670,27 +670,36 @@ other architectures known to work on (e.g., Alpha, PPC), etc.
 	TVGA8200LX, TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL,
 	TVGA8900D, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
 	TGUI9400CXi, TGUI9420, TGUI9420DGi, TGUI9430DGi, TGUI9440AGi,
-	TGUI9660, TGUI9680, ProVidia 9682, ProVidia 9685, Cyber9320,
-	Cyber9382, Cyber9385, Cyber9388, Cyber9397, Cyber9520, Cyber9525,
-	3DImage975, 3DImage985, Cyber9397/DVD, Blade3D, CyberBlade/i7,
-	CyberBlade/DSTN/i7 and CyberBlade/i1 is provided by the XF86_SVGA
+	TGUI9660, TGUI9680, ProVidia 9682, ProVidia 9685, 3DImage975,
+	3DImage985, Blade3D, Cyber9320, Cyber9382, Cyber9385, Cyber9388,
+	Cyber9397, Cyber9397/DVD, Cyber9520, Cyber9525, CyberBlade/DSTN/i7,
+	CyberBlade/i1, and CyberBlade/i7 is provided by the XF86_SVGA
 	server with the tvga8900 driver.
 
 <tag>&relvers;:</tag>
 	Support (accelerated where the chip supports it) for the TVGA8900D,
 	TGUI9440AGi, TGUI9660, TGUI9680, ProVidia 9682, ProVidia 9685,
-	Cyber9320, Cyber9382, Cyber9385, Cyber9388, Cyber9397, Cyber9397/DVD,
-	Cyber9520, Cyber9525/DVD, 3DImage975, 3DImage985, Blade3D,
-	CyberBlade/i7, CyberBlade/DSTN/i7, CyberBlade/i1, CyberBlade/DSTN/i1,
-	CyberBlade/Ai1, CyberBlade/DSTN/Ai1 and CyberBlade/e4 is provided
-        by the "trident" driver.
+	3DImage975, 3DImage985, Blade3D, Cyber9320, Cyber9382, Cyber9385,
+	Cyber9388, Cyber9397, Cyber9397/DVD, Cyber9520, Cyber9525/DVD,
+	CyberBlade/Ai1, CyberBlade/DSTN/Ai1, CyberBlade/DSTN/i1,
+	CyberBlade/DSTN/i7, CyberBlade/e4, CyberBlade/i1, CyberBlade/i7,
+	CyberBladeXP, and CyberBladeXPm is provided by the "trident"
+	driver.
 
 <tag>Summary:</tag>
-	The following (older) chipsets that are supported in &legacyvers;
-	are not supported in &relvers;: TVGA8200LX, TVGA8800CS, TVGA8900B,
-	TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
-	TGUI9400CXi, TGUI9420, TGUI9430DGi.  The remaining listed chipsets
-	are supported in &relvers;.
+	The following (older) chipsets are supported in &legacyvers; and
+	not in &relvers;: TVGA8200LX, TVGA8800CS, TVGA8900B, TVGA8900C,
+	TVGA8900CL, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
+	TGUI9400CXi, TGUI9420, and TGUI9430DGi.
+
+	The TVGA8900D, TGUI9440AGi, TGUI9660, TGUI9680, ProVidia 9682,
+	ProVidia 9685, 3DImage975, 3DImage985, Blade3D, Cyber9320,
+	Cyber9382, Cyber9385, Cyber9388, Cyber9397, Cyber9397/DVD,
+	CyberBlade/DSTN/i1 CyberBlade/DSTN/i7, CyberBlade/i1, and
+	CyberBlade/i7 are supported in both &legacyvers; and &relvers;.
+
+	The CyberBlade/Ai1, CyberBlade/DSTN/Ai1, CyberBlade/e4,
+	CyberBladeXP, and CyberBladeXPm are supported only in &relvers;.
 
 </descrip>
 

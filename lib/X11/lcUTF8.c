@@ -24,7 +24,7 @@ ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
 OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.11 2000/12/07 20:26:11 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcUTF8.c,v 1.12 2001/02/09 00:02:53 dawes Exp $ */
 
 /*
  * This file contains:
@@ -331,9 +331,12 @@ static Utf8ConvRec all_charsets[] = {
 	cp1256_mbtowc, cp1256_wctomb
     },
     { "BIG5-0", NULLQUARK,
+    big5_mbtowc, big5_wctomb
+	},
+    { "BIG5-E0", NULLQUARK,
 	big5_0_mbtowc, big5_0_wctomb
     },
-    { "BIG5-1", NULLQUARK,
+    { "BIG5-E1", NULLQUARK,
 	big5_1_mbtowc, big5_1_wctomb
     },
 

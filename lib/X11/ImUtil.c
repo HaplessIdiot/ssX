@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ImUtil.c,v 3.7 2001/01/17 19:41:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.c,v 3.8 2001/07/25 15:04:43 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
@@ -518,7 +518,7 @@ static unsigned long _XGetPixel (ximage, x, y)
 }
 
 #ifndef WORD64
-static unsigned long const byteorderpixel = MSBFirst << 24;
+static CARD32 const byteorderpixel = MSBFirst << 24;
 #endif
 
 static unsigned long _XGetPixel32 (ximage, x, y)

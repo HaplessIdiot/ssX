@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.9 2001/05/15 10:19:39 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.10 2001/05/18 23:35:32 dawes Exp $ */
 
 /*
  *
@@ -1163,6 +1163,7 @@ static void SavageDisableClipping( ScrnInfoPtr pScrn )
 
 /* Routines for debugging. */
 
+
 unsigned long
 writedw( unsigned long addr, unsigned long value )
 {
@@ -1208,11 +1209,11 @@ writescan( unsigned long scan, unsigned long color )
 		*videobuffer++ = color; 
 		break;
 	    case 16: 
-		*(unsigned short*)videobuffer = color;
+		*(CARD16 *)videobuffer = color;
 		videobuffer += 2;
 		break;
 	    case 32:
-		*(unsigned long*)videobuffer = color;
+		*(CARD32 *)videobuffer = color;
 		videobuffer += 4;
 		break;
 	}
