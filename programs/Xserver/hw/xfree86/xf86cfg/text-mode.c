@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.3 2000/12/11 17:31:42 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.5 2000/12/11 20:57:00 paulo Exp $
  */
 
 #include <stdio.h>
@@ -446,7 +446,7 @@ MouseConfig(void)
     def = 0;
     option = xf86findOption(input->inp_option_lst, "Protocol");
     if (option)
-	for (i = 0; i < sizeof(protocols); i++)
+	for (i = 0; i < sizeof(protocols)/sizeof(protocols[0]); i++)
 	    if (strcasecmp(option->opt_val, protocols[i]) == 0) {
 		def = i;
 		break;
