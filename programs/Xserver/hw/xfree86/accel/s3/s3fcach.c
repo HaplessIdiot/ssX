@@ -1,4 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -230,6 +231,8 @@ s3loadFontBlock(fentry, block)
     * demand load makes more sense.
     */
       ERROR_F(("Time to write new font cache management\n"));
+
+      if (pbits) DEALLOCATE_LOCAL(pbits);
 
       for (fptr = s3HeadFont; fptr == NULL; fptr= fptr->next)
 	 if (fptr != fentry) {

@@ -1,4 +1,5 @@
 /* $XConsortium: s3text.c,v 1.1 94/03/28 21:16:59 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -345,6 +346,7 @@ s3NoCPolyText(pDraw, pGC, x, y, count, chars, is8bit)
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_R | (s3DisplayWidth-1));
    S3_OUTW(MULTIFUNC_CNTL, SCISSORS_B | s3ScissB);
    UNBLOCK_CURSOR;
+   DEALLOCATE_LOCAL(charinfo);
 
    return ret_x;
 }
@@ -488,5 +490,6 @@ s3NoCImageText(pDraw, pGC, x, y, count, chars, is8bit)
    gcvals[1] = oldFG;
    gcvals[2] = oldFS;
    DoChangeGC(pGC, GCFunction | GCForeground | GCFillStyle, gcvals, 0);
+   DEALLOCATE_LOCAL(charinfo);
    return 0;
 }

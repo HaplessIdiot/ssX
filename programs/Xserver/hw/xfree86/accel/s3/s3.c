@@ -1,4 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -135,6 +136,7 @@ Bool  s3Localbus = FALSE;
 Bool  s3LinearAperture = FALSE;
 Bool  s3Mmio928 = FALSE;
 Bool  s3DAC8Bit = FALSE;
+Bool  s3DACSyncOnGreen = FALSE;
 unsigned char s3LinApOpt;
 int s3BankSize;
 int s3DisplayWidth;
@@ -163,6 +165,7 @@ int s3CursorStartX, s3CursorStartY, s3CursorLines;
 int s3RamdacType = UNKNOWN_DAC;
 Bool s3UsingPixMux = FALSE;
 Bool s3Bt485PixMux = FALSE;
+Bool s3ClockDouble = FALSE;
 
 
 /*
@@ -332,10 +335,10 @@ s3Probe()
    OFLG_SET(OPTION_SLOW_DRAM, &validOptions);
    OFLG_SET(OPTION_ATT490_1, &validOptions);
    OFLG_SET(OPTION_SC15025, &validOptions);
+   OFLG_SET(OPTION_SYNC_ON_GREEN, &validOptions);
    OFLG_SET(OPTION_SPEA_MERCURY, &validOptions);
-#ifdef NUMNINETEST
    OFLG_SET(OPTION_NUMBER_NINE, &validOptions);
-#endif
+   OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
    if (OFLG_ISSET(OPTION_MEM_ACCESS, &s3InfoRec.options)) {
       ErrorF("%s: Warning: the \"memaccess\" option is now redundant\n",
@@ -343,13 +346,17 @@ s3Probe()
       ErrorF("\tIt will be removed in the next release\n");
    }
 
-   s3Localbus = ((config & 0x03) <= 1);		/* LocalBus or EISA */
+   s3Localbus = ((config & 0x03) <= 1);		/* LocalBus or EISA or PCI */
 
    if (xf86Verbose) {
       switch (config & 0x03) {
       case 0:
-         ErrorF("%s %s: card type: EISA\n",
-        	XCONFIG_PROBED, s3InfoRec.name);
+	 if (S3_928_P(config)) 
+	    ErrorF("%s %s: card type: PCI\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
+	 else
+	    ErrorF("%s %s: card type: EISA\n",
+		   XCONFIG_PROBED, s3InfoRec.name);
 	 break;
       case 1:
          ErrorF("%s %s: card type: 386/486 localbus\n",
@@ -382,7 +389,10 @@ s3Probe()
 	    else
 	       ErrorF("rev A or B\n");
 	 } else if (S3_928_SERIES(s3ChipId)) {
-	    if (S3_928_REV_E(s3ChipId))
+	    if (S3_928_P(s3ChipId))
+		ErrorF("%s %s: chipset:   928-P\n",
+                   XCONFIG_PROBED, s3InfoRec.name);
+	    else if (S3_928_REV_E(s3ChipId))
 		ErrorF("%s %s: chipset:   928, rev E or above\n",
                    XCONFIG_PROBED, s3InfoRec.name);
 	    else
@@ -598,12 +608,10 @@ s3Probe()
       }
    }
 
-   /* So far pixmux is only supported on the SPEA Mercury */
    if (DAC_IS_BT485_SERIES &&
        (
-#ifdef NUMNINETEST
+        OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
         OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
-#endif
         OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)))
       s3Bt485PixMux = TRUE;
 
@@ -647,8 +655,19 @@ s3Probe()
       if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
 	 nonMuxMaxClock = 67500;	/* Doubling only works in mux mode */
 	 nonMuxMaxMemory = 1024;	/* Can't access more without mux */
+	 allowPixMuxSwitching = TRUE;
 	 pixMuxLimitedWidths = FALSE;
-	 /* pixMuxMinWidth = 800;	   Not sure if this is OK */
+	 pixMuxMinWidth = 1024;
+      } else if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
+	 nonMuxMaxClock = 67500;
+	 allowPixMuxSwitching = TRUE;
+	 pixMuxLimitedWidths = TRUE;
+	 pixMuxMinWidth = 800;
+      } else if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)) {
+	 nonMuxMaxClock = 67500;
+	 allowPixMuxSwitching = TRUE;
+	 pixMuxLimitedWidths = FALSE;
+	 pixMuxMinWidth = 1024;
       } else {
 	 nonMuxMaxClock = 85000;
       }
@@ -826,33 +845,36 @@ s3Probe()
       } while (pMode != pEnd);
    }
 
-   if (DAC_IS_TI3020 &&
-       OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
-      s3DAC8Bit = TRUE;
+   if (DAC_IS_BT485_SERIES || DAC_IS_TI3020) {
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
+	 s3DAC8Bit = TRUE;
+      if (OFLG_ISSET(OPTION_SYNC_ON_GREEN, &s3InfoRec.options)) {
+	 s3DACSyncOnGreen = TRUE;
+	 if (xf86Verbose)
+	    ErrorF("%s %s: Putting RAMDAC into sync-on-green mode\n",
+		   XCONFIG_GIVEN, s3InfoRec.name);
+      }
+   }
 
    if (OFLG_ISSET(OPTION_ATT490_1, &s3InfoRec.options)) {
       if (xf86Verbose)
          ErrorF("%s %s: Using AT&T 20C490/1 RAMDAC\n",
             XCONFIG_GIVEN, s3InfoRec.name);
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
          s3DAC8Bit = TRUE;
-         if (xf86Verbose)
-            ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
-               XCONFIG_GIVEN, s3InfoRec.name);
-      }
    }
      
    if (OFLG_ISSET(OPTION_SC15025, &s3InfoRec.options)) {
       if (xf86Verbose)
          ErrorF("%s %s: Using Sierra SC 15025/6 RAMDAC\n",
             XCONFIG_GIVEN, s3InfoRec.name);
-      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options)) {
+      if (OFLG_ISSET(OPTION_DAC_8_BIT, &s3InfoRec.options))
          s3DAC8Bit = TRUE;
-         if (xf86Verbose)
-            ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
-               XCONFIG_GIVEN, s3InfoRec.name);
-      }
    }
+
+   if (s3DAC8Bit && xf86Verbose)
+      ErrorF("%s %s: Putting RAMDAC into 8-bit mode\n",
+         XCONFIG_GIVEN, s3InfoRec.name);
 
    if (S3_911_SERIES(s3ChipId)) {
       maxDisplayWidth = 1024;
@@ -916,10 +938,15 @@ s3Probe()
       
    /*
     * Work out where to locate S3's HW cursor storage.  It must be on a
-    * 1k boundary.
+    * 1k boundary.  When using a RAMDAC cursor, set s3CursorStartY
+    * and s3CursorLines appropriately for the memory usage calculation below
     */
 
-   {
+   if (OFLG_ISSET(OPTION_BT485_CURS, &s3InfoRec.options) ||
+       OFLG_ISSET(OPTION_TI3020_CURS, &s3InfoRec.options)) {
+      s3CursorStartY = s3InfoRec.virtualY;
+      s3CursorLines = 0;
+   } else {
       int st_addr = (s3InfoRec.virtualY * s3DisplayWidth + 1023) / 1024 * 1024;
       s3CursorStartX = st_addr % s3DisplayWidth;
       s3CursorStartY = st_addr / s3DisplayWidth;
@@ -1083,53 +1110,48 @@ icd2061ClockSelect(no)
 	     OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions) &&
 	     freq > MAX_SC11412_FREQ) {
 	    /* SC11412 limit as there is no clockdoubling yet */
-	    ErrorF("%s %s: Specified dot clock (%7.3f) too high for SC11412",
+	    ErrorF("%s %s: Specified dot clock (%.3f) too high for SC11412",
 		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    ErrorF("\tUsing %7.3fMHz\n", MAX_SC11412_FREQ / 1000.0);
+	    ErrorF("\tUsing %.3fMHz\n", MAX_SC11412_FREQ / 1000.0);
 	    freq = MAX_SC11412_FREQ;
 	 }
 	 if (freq > s3InfoRec.maxClock) {
-	    ErrorF("%s %s: Specified dot clock (%7.3f) too high for RAMDAC.",
+	    ErrorF("%s %s: Specified dot clock (%.3f) too high for RAMDAC.",
 		   XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
-	    ErrorF("\tUsing %7.3fMHz\n", s3InfoRec.maxClock / 1000.0);
+	    ErrorF("\tUsing %.3fMHz\n", s3InfoRec.maxClock / 1000.0);
 	    freq = s3InfoRec.maxClock;
 	 }
 	 if (DAC_IS_BT485_SERIES &&
-	     (
-	      OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
+	     (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
 	      !OFLG_ISSET(CLOCK_OPTION_SC11412, &s3InfoRec.clockOptions))) {
 	    if (freq > ((s3RamdacType == ATT20C505_DAC) ? 90000 : 67500)) {
-	       /* Use Bt485 clock doubler - Bit 3 of Command Reg 3 */
+	       s3ClockDouble = TRUE;
 	       freq /= 2;
-	       if (s3Bt485PixMux) {
-		  s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x01); /* sleep mode */
-		  s3OutBtReg(BT_COMMAND_REG_2, 0xEF, 0x10); /* pclock 1   */
-	       }
-	       s3OutBtRegCom3(0xF7, 0x08);
-	       if (s3Bt485PixMux) {
-	          s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x00); /* wake up    */
-	       }
 	    } else {
-	       /* No doubler */
-	       if (s3Bt485PixMux) {
-	          s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x01); /* sleep mode */
-	          s3OutBtReg(BT_COMMAND_REG_2, 0xEF, 0x10); /* pclock 1   */
-	       }
-	       s3OutBtRegCom3(0xF7, 0x00);
-	       if (s3Bt485PixMux) {
-	          s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x00); /* wake up    */
-	       }
+	       s3ClockDouble = FALSE;
 	    }
+#if 0
+	    /* Set the clock doubler here when not using pixmux */
+	    if (!s3Bt485PixMux) {
+	       ErrorF("Setting clock doubler in ClockSelect(), freq = %.3f\n",
+		      freq / 500.0);
+	       s3OutBtRegCom3(0xF7, s3ClockDouble ? 0x08 : 0x00);
+	    }
+#endif
 	 } else if (DAC_IS_TI3020) {
 	    if (freq > 100000) {
+	       s3ClockDouble = TRUE;
 	       /* Use Ti3020 clock doubler */
-	       ErrorF("%s %s: Specified dot clock (%7.3f) requires clock doubling.\n",
-		      XCONFIG_PROBED, s3InfoRec.name, freq / 1000.0);
 	       freq /= 2;
+#if 0
 	       s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1_DOUBLE);
+#endif
 	    } else {
+	       s3ClockDouble = FALSE;
 	       /* No doubler */
+#if 0
 	       s3OutTiIndReg(TI_INPUT_CLOCK_SELECT, 0x00, TI_ICLK_CLK1);
+#endif
 	    }
 	 }
 	 /* Convert freq to Hz */
@@ -1149,6 +1171,16 @@ icd2061ClockSelect(no)
          outb(vgaCRIndex, 0x42);/* select the clock */
          outb(vgaCRReg, 0x02);
 	 usleep(150000);
+	 /* Do the clock doubler selection in s3Init() */
+#if 0
+	 if (s3Bt485PixMux) {
+	    s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x01); /* sleep mode */
+	    s3OutBtReg(BT_COMMAND_REG_2, 0xEF, 0x10); /* pclock 1   */
+	    /* Use Bt485 clock doubler - Bit 3 of Command Reg 3 */
+	    s3OutBtRegCom3(0xF7, (s3ClockDouble ? 0x08 : 0x00));
+	    s3OutBtReg(BT_COMMAND_REG_0, 0xFE, 0x00); /* wake up    */
+	 }
+#endif
       }
    }
    LOCK_SYS_REGS;
