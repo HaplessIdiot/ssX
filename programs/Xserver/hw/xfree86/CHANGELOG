@@ -1,4 +1,7 @@
-XFree86 3.0Ca (27 June 1994)
+XFree86 3.0Ca (28 June 1994)
+118. NetBSD updates (Christos Zoulas).
+117. Various updates for Minix (Philip Homburg).
+116. Support for including the MIT-SCREEN-SAVER extension (David Holland).
 115. Fixes for AGX font cache code (Henry Worth).
 114. Banking support for P9000 (doesn't seem to work yet) (David Moews).
 113. Text resotration code for P9000 (Chris Mason).
