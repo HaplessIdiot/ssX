@@ -1,5 +1,3 @@
-/* $Xorg: FSOpenServ.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /* @(#)FSOpenServ.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSOpenServ.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSOpenServ.c,v 1.10 2004/12/31 02:56:03 tsi Exp $ */
 
 /*
 
@@ -70,8 +68,8 @@ static void OutOfMemory ( FSServer *svr, char *setup );
 
 FSServer   *_FSHeadOfServerList = NULL;
 
-void _FSFreeServerStructure(svr)
-    FSServer   *svr;
+void
+_FSFreeServerStructure(FSServer *svr)
 {
     if (svr->server_name)
 	FSfree(svr->server_name);
@@ -84,10 +82,8 @@ void _FSFreeServerStructure(svr)
     FSfree((char *) svr);
 }
 
-static
-void OutOfMemory(svr, setup)
-    FSServer   *svr;
-    char       *setup;
+static void
+OutOfMemory(FSServer *svr, char *setup)
 {
 
     _FSDisconnectServer(svr->trans_conn);
@@ -101,9 +97,8 @@ void OutOfMemory(svr, setup)
  * to it
  */
 
-FSServer   *
-FSOpenServer(server)
-    char       *server;
+FSServer *
+FSOpenServer(char *server)
 {
     FSServer   *svr;
     int         i;

@@ -1,4 +1,3 @@
-/* $Xorg: authutil.c,v 1.5 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: authutil.c,v 3.9 2002/05/31 18:45:41 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/authutil.c,v 3.10 2003/11/26 21:48:18 herrb Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -51,15 +50,16 @@ extern unsigned	sleep ();
 #endif
 #endif
 
-static Status read_short ();
-static Status read_string ();
-static Status read_counted_string ();
-static Status write_short ();
-static Status write_string ();
-static Status write_counted_string ();
+static Status read_short (FILE *file, unsigned short *shortp);
+static Status read_string(FILE *file, char **stringp);
+static Status read_counted_string(FILE *file, unsigned short *countp,
+				  char **stringp);
+static Status write_short(FILE *file, unsigned short s);
+static Status write_string(FILE *file, char *string);
+static Status write_counted_string(FILE *file, unsigned short count,
+				   char *string);
 
 
-
 /*
  * The following routines are for manipulating the .ICEauthority file
  * These are utility functions - they are not part of the standard
@@ -67,8 +67,7 @@ static Status write_counted_string ();
  */
 
 char *
-IceAuthFileName ()
-
+IceAuthFileName()
 {
     static char slashDotICEauthority[] = "/.ICEauthority";
     char    	*name;
@@ -134,15 +133,8 @@ IceAuthFileName ()
 }
 
 
-
 int
-IceLockAuthFile (file_name, retries, timeout, dead)
-
-char	*file_name;
-int	retries;
-int	timeout;
-long	dead;
-
+IceLockAuthFile(char *file_name, int retries, int timeout, long dead)
 {
     char	creat_name[1025], link_name[1025];
     struct stat	statb;
@@ -211,12 +203,8 @@ long	dead;
 }
 
 
-
 void
-IceUnlockAuthFile (file_name)
-
-char	*file_name;
-
+IceUnlockAuthFile(char *file_name)
 {
 #ifndef WIN32
     char	creat_name[1025];
@@ -240,12 +228,8 @@ char	*file_name;
 }
 
 
-
 IceAuthFileEntry *
-IceReadAuthFileEntry (auth_file)
-
-FILE	*auth_file;
-
+IceReadAuthFileEntry(FILE *auth_file)
 {
     IceAuthFileEntry   	local;
     IceAuthFileEntry   	*ret;
@@ -292,12 +276,8 @@ FILE	*auth_file;
 }
 
 
-
 void
-IceFreeAuthFileEntry (auth)
-
-IceAuthFileEntry	*auth;
-
+IceFreeAuthFileEntry(IceAuthFileEntry *auth)
 {
     if (auth)
     {
@@ -311,13 +291,8 @@ IceAuthFileEntry	*auth;
 }
 
 
-
 Status
-IceWriteAuthFileEntry (auth_file, auth)
-
-FILE			*auth_file;
-IceAuthFileEntry	*auth;
-
+IceWriteAuthFileEntry(FILE *auth_file, IceAuthFileEntry *auth)
 {
     if (!write_string (auth_file, auth->protocol_name))
 	return (0);
@@ -340,14 +315,8 @@ IceAuthFileEntry	*auth;
 }
 
 
-
 IceAuthFileEntry *
-IceGetAuthFileEntry (protocol_name, network_id, auth_name)
-
-char	*protocol_name;
-char	*network_id;
-char	*auth_name;
-
+IceGetAuthFileEntry(char *protocol_name, char *network_id, char *auth_name)
 {
     FILE    		*auth_file;
     char    		*filename;
@@ -383,17 +352,12 @@ char	*auth_name;
 }
 
 
-
 /*
  * local routines
  */
 
 static Status
-read_short (file, shortp)
-
-FILE		*file;
-unsigned short	*shortp;
-
+read_short (FILE *file, unsigned short *shortp)
 {
     unsigned char   file_short[2];
 
@@ -406,11 +370,7 @@ unsigned short	*shortp;
 
 
 static Status
-read_string (file, stringp)
-
-FILE	*file;
-char	**stringp;
-
+read_string(FILE *file, char **stringp)
 {
     unsigned short  len;
     char	    *data;
@@ -441,12 +401,7 @@ char	**stringp;
 
 
 static Status
-read_counted_string (file, countp, stringp)
-
-FILE	*file;
-unsigned short	*countp;
-char	**stringp;
-
+read_counted_string(FILE *file, unsigned short *countp, char **stringp)
 {
     unsigned short  len;
     char	    *data;
@@ -480,11 +435,7 @@ char	**stringp;
 
 
 static Status
-write_short (file, s)
-
-FILE		*file;
-unsigned short	s;
-
+write_short(FILE *file, unsigned short s)
 {
     unsigned char   file_short[2];
 
@@ -499,11 +450,7 @@ unsigned short	s;
 
 
 static Status
-write_string (file, string)
-
-FILE		*file;
-char		*string;
-
+write_string(FILE *file, char *string)
 {
     unsigned short count = strlen (string);
 
@@ -518,12 +465,7 @@ char		*string;
 
 
 static Status
-write_counted_string (file, count, string)
-
-FILE		*file;
-unsigned short	count;
-char		*string;
-
+write_counted_string(FILE *file, unsigned short count, char *string)
 {
     if (!write_short (file, count))
 	return (0);

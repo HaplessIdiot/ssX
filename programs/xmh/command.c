@@ -1,5 +1,5 @@
 /* $XConsortium: command.c,v 2.49 95/04/05 19:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/xmh/command.c,v 3.9 2002/04/05 21:06:28 dickey Exp $ */
+/* $XFree86: xc/programs/xmh/command.c,v 3.10 2004/04/03 22:26:26 dawes Exp $ */
 
 /*
  *			  COPYRIGHT 1987, 1989
@@ -129,16 +129,16 @@ ChildDone(int n)
 static int _DoCommandToFileOrPipe(
   char **argv,			/* The command to execute, and its args. */
   int inputfd,			/* Input stream for command. */
-  int outputfd,			/* Output stream; /dev/null if == -1 */
+  volatile int outputfd,	/* Output stream; /dev/null if == -1 */
   char **bufP,			/* output buffer ptr if outputfd == -2 */
   int *lenP)			/* output length ptr if outputfd == -2 */
 {
     XtAppContext appCtx = XtWidgetToApplicationContext(toplevel);
     int return_status;
-    int old_stdin = 0, old_stdout = 0, old_stderr = 0;
+    volatile int old_stdin = 0, old_stdout = 0, old_stderr = 0;
     int pid;
     fd_set readfds, fds;
-    Boolean output_to_pipe = False;
+    volatile Boolean output_to_pipe = False;
     CommandStatus status = XtNew(CommandStatusRec);
     FD_ZERO(&fds);
     FD_SET(ConnectionNumber(theDisplay), &fds);

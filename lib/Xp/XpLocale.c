@@ -1,4 +1,3 @@
-/* $Xorg: XpLocale.c,v 1.3 2000/08/17 19:46:07 cpqbld Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,11 +33,12 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpLocale.c,v 1.4 2001/01/17 19:43:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpLocale.c,v 1.5 2002/10/16 00:37:32 dawes Exp $ */
 
 #include <X11/extensions/Printstr.h>
 #include <X11/Xlibint.h>
 #include "XpExtUtil.h"
+#include "Xpint.h"
 
 #include <X11/Xlocale.h>
 
@@ -50,17 +50,14 @@ XPHinterProc  _xp_hinter_proc = NULL;
 char         *_xp_hinter_desc = NULL;
 int           _xp_hinter_init = 1;	/* need to init */
 
-
-extern char *_xpstrdup();
-
-
 /******************************************************************************
  *
  * THE DEFAULT LOCALE HINTER
  *
  * Make changes here only.
  */
-static char *_XpLocaleHinter()
+static char *
+_XpLocaleHinter(void)
 {
 #ifdef hpux
     char lbuf[ LC_BUFSIZ ];
@@ -177,7 +174,8 @@ XpGetLocaleHinter (
  *
  * If neither a hint or description exists, a NULL is returned.
  */
-char *XpGetLocaleNetString()
+char *
+XpGetLocaleNetString()
 {
     XPHinterProc  locale_hinter;
 

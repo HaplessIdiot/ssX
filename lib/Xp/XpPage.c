@@ -1,4 +1,3 @@
-/* $Xorg: XpPage.c,v 1.4 2001/03/06 13:59:02 pookie Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +33,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpPage.c,v 1.4 2001/12/19 21:28:44 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpPage.c,v 1.5 2002/10/16 00:37:32 dawes Exp $ */
 
 #include <X11/extensions/Printstr.h>
 #include <X11/Xlibint.h>
@@ -46,7 +45,8 @@ typedef struct {
     XPContext context;
 } _XpDiscardPageRec;
 
-static Bool _XpDiscardPage(Display *dpy, XEvent *event, XPointer arg)
+static Bool
+_XpDiscardPage(Display *dpy, XEvent *event, XPointer arg)
 {
     _XpDiscardPageRec *disrec = (_XpDiscardPageRec *) arg;
 

@@ -1,4 +1,3 @@
-/* $Xorg: globals.h,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,15 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/globals.h,v 1.4 2001/12/14 19:53:35 dawes Exp $ */
-
-extern void _IceDefaultErrorHandler ();
-extern void _IceDefaultIOErrorHandler ();
-
-extern IcePoAuthStatus _IcePoMagicCookie1Proc ();
-extern IcePaAuthStatus _IcePaMagicCookie1Proc ();
-
-extern void _IceProcessCoreMessage ();
+/* $XFree86: xc/lib/ICE/globals.h,v 1.5 2002/05/31 18:45:41 dawes Exp $ */
 
 #ifndef __UNIXOS2__
 IceConn     	_IceConnectionObjs[256];

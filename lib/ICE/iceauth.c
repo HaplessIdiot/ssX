@@ -1,4 +1,3 @@
-/* $Xorg: iceauth.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,7 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/iceauth.c,v 3.5 2001/12/14 19:53:36 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/iceauth.c,v 3.6 2002/05/31 18:45:41 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -35,7 +34,7 @@ Author: Ralph Mor, X Consortium
 #include <time.h>
 #define Time_t time_t
 
-static int binaryEqual ();
+static int binaryEqual(char *a, char *b, unsigned len);
 
 static int was_called_state;
 
@@ -44,12 +43,8 @@ static int was_called_state;
  * the SI.  It is not part of standard ICElib.
  */
 
-
 char *
-IceGenerateMagicCookie (len)
-
-int len;
-
+IceGenerateMagicCookie(int len)
 {
     char    *auth;
     long    ldata[2];
@@ -89,21 +84,11 @@ int len;
 }
 
 
-
 IcePoAuthStatus
-_IcePoMagicCookie1Proc (iceConn, authStatePtr, cleanUp, swap,
-    authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
-
-IceConn		iceConn;
-IcePointer	*authStatePtr;
-Bool 		cleanUp;
-Bool		swap;
-int     	authDataLen;
-IcePointer	authData;
-int 		*replyDataLenRet;
-IcePointer	*replyDataRet;
-char    	**errorStringRet;
-
+_IcePoMagicCookie1Proc(IceConn iceConn, IcePointer *authStatePtr, Bool cleanUp,
+		       Bool swap, int authDataLen, IcePointer authData,
+		       int *replyDataLenRet, IcePointer *replyDataRet,
+		       char **errorStringRet)
 {
     if (cleanUp)
     {
@@ -171,18 +156,10 @@ char    	**errorStringRet;
 
 
 IcePaAuthStatus
-_IcePaMagicCookie1Proc (iceConn, authStatePtr, swap,
-    authDataLen, authData, replyDataLenRet, replyDataRet, errorStringRet)
-
-IceConn		iceConn;
-IcePointer	*authStatePtr;
-Bool		swap;
-int     	authDataLen;
-IcePointer	authData;
-int 		*replyDataLenRet;
-IcePointer	*replyDataRet;
-char    	**errorStringRet;
-
+_IcePaMagicCookie1Proc(IceConn iceConn, IcePointer *authStatePtr, Bool swap,
+		       int authDataLen, IcePointer authData,
+		       int *replyDataLenRet, IcePointer *replyDataRet,
+		       char **errorStringRet)
 {
     *errorStringRet = NULL;
     *replyDataLenRet = 0;
@@ -256,17 +233,12 @@ char    	**errorStringRet;
 }
 
 
-
 /*
  * local routines
  */
 
 static int
-binaryEqual (a, b, len)
-
-register char		*a, *b;
-register unsigned	len;
-
+binaryEqual(char *a, char *b, unsigned len)
 {
     while (len--)
 	if (*a++ != *b++)

@@ -1,4 +1,3 @@
-/* $Xorg: locking.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,6 +25,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
+/* $XFree86$ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -37,28 +37,21 @@ Author: Ralph Mor, X Consortium
 
 
 Status
-IceInitThreads ()
-
+IceInitThreads()
 {
     return (0);
 }
 
 
 void
-IceAppLockConn (iceConn)
-
-IceConn iceConn;
-
+IceAppLockConn(IceConn iceConn)
 {
     IceLockConn (iceConn);
 }
 
 
 void
-IceAppUnlockConn (iceConn)
-
-IceConn iceConn;
-
+IceAppUnlockConn(IceConn iceConn)
 {
     IceUnlockConn (iceConn);
 }

@@ -1,4 +1,3 @@
-/* $Xorg: setauth.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,13 +25,12 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/setauth.c,v 1.4 2001/12/14 19:53:36 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/setauth.c,v 1.5 2002/05/31 18:45:41 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 
-
 /*
  * IceSetPaAuthData is not a standard part of ICElib, it is specific
  * to the sample implementation.
@@ -57,11 +55,7 @@ IceAuthDataEntry _IcePaAuthDataEntries[ICE_MAX_AUTH_DATA_ENTRIES] = {0};
 
 
 void
-IceSetPaAuthData (numEntries, entries)
-
-int			numEntries;
-IceAuthDataEntry	*entries;
-
+IceSetPaAuthData(int numEntries, IceAuthDataEntry *entries)
 {
     /*
      * _IcePaAuthDataEntries should really be a linked list.

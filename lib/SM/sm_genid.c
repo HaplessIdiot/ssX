@@ -1,4 +1,3 @@
-/* $Xorg: sm_genid.c,v 1.4 2001/02/09 02:03:30 xorgcvs Exp $ */
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -25,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.17 2003/07/09 15:27:28 tsi Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.18 2004/01/20 03:36:27 dawes Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -113,10 +112,8 @@ static char *hex_table[] = {	/* for generating client IDs */
 };
 
 
-
 char *
-SmsGenerateClientID (smsConn)
-    SmsConn smsConn;
+SmsGenerateClientID(SmsConn smsConn)
 {
 #if defined(TCPCONN) || defined(STREAMSCONN)
     char hostname[256];

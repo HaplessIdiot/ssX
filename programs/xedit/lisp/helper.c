@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.51 2003/09/17 22:28:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.52 2004/10/23 15:29:33 dawes Exp $ */
 
 #include "lisp/helper.h"
 #include "lisp/pathname.h"
@@ -690,8 +690,8 @@ LispDo(LispBuiltin *builtin, int refs)
  do* init test &rest body
  */
 {
-    int jumped;
-    LispObj *result;
+    volatile int jumped;
+    LispObj * volatile result;
     LispBlock *block;
 
     jumped = 1;

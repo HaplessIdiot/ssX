@@ -1,5 +1,3 @@
-/* $Xorg: FSSetCats.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
-
 /* @(#)FSFlush.c	4.1	91/05/02
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -24,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSSetCats.c,v 1.4 2001/01/17 19:41:28 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSSetCats.c,v 1.5 2001/12/14 19:53:33 dawes Exp $ */
 
 /*
 
@@ -55,10 +53,7 @@ in this Software without prior written authorization from The Open Group.
 #include	"FSlibint.h"
 
 int
-FSSetCatalogues(svr, num, cats)
-    FSServer   *svr;
-    int         num;
-    char      **cats;
+FSSetCatalogues(FSServer *svr, int num, char **cats)
 {
     int         nbytes;
     fsSetCataloguesReq *req;

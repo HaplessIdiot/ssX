@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.18 2003/05/28 14:13:11 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.19 2004/03/14 00:05:05 tsi Exp $ */
 
 
 /*
@@ -375,7 +375,7 @@ Lisp_Compile(LispBuiltin *builtin)
  */
 {
     GC_ENTER();
-    LispObj *result, *warnings_p, *failure_p;
+    LispObj * volatile result, * volatile warnings_p, * volatile failure_p;
 
     LispObj *name, *definition;
 
@@ -395,10 +395,10 @@ Lisp_Compile(LispBuiltin *builtin)
 	    goto finished_compilation;
 	else if (atom->a_function) {
 	    LispCom com;
-	    int failed;
-	    int lex = 0, base;
+	    volatile int failed;
+	    volatile int lex = 0, base;
 	    LispArgList *alist;
-	    LispObj *lambda, *form, *arguments;
+	    LispObj *lambda, * volatile form, * volatile arguments;
 
 	    lambda = atom->property->fun.function;
 	    if (definition != UNSPEC || lambda->funtype != LispFunction)
@@ -1186,10 +1186,10 @@ predicate:
 
 
 LispObj *
-LispCompileForm(LispObj *form)
+LispCompileForm(LispObj * volatile form)
 {
     GC_ENTER();
-    int failed;
+    volatile int failed;
     LispCom com;
 
     if (!CONSP(form))

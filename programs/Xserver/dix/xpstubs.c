@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/xpstubs.c,v 1.4 2001/12/20 19:41:00 tsi Exp $ */
 /*
 Copyright 1996, 1998  The Open Group
 
@@ -25,30 +25,25 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 */
 
-/* $Xorg: xpstubs.c,v 1.5 2001/03/08 17:52:08 pookie Exp $ */
-
 #include "misc.h"
 #include "font.h"
+#include "fontstruct.h"
+#include "DiPrint.h"
 
 Bool
-XpClientIsBitmapClient(client)
-    ClientPtr client;
+XpClientIsBitmapClient(ClientPtr client)
 {
     return TRUE;
 }
 
 Bool
-XpClientIsPrintClient(client, fpe)
-    ClientPtr client;
-    FontPathElementPtr fpe;
+XpClientIsPrintClient(ClientPtr client, FontPathElementPtr fpe)
 {
     return FALSE;
 }
+
 int
-XprintOptions(argc, argv, i)
-    int argc;
-    char **argv;
-    int i;
+XprintOptions(int argc, char **argv, int i)
 {
     return i;
 }

@@ -1,4 +1,3 @@
-/* $Xorg: listen.c,v 1.5 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,21 +25,16 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor,  X Consortium
 ******************************************************************************/
+/* $XFree86$ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <X11/Xtrans.h>
 #include <stdio.h>
 
-
 Status
-IceListenForConnections (countRet, listenObjsRet, errorLength, errorStringRet)
-
-int		*countRet;
-IceListenObj	**listenObjsRet;
-int		errorLength;
-char		*errorStringRet;
-
+IceListenForConnections(int *countRet, IceListenObj **listenObjsRet,
+			int errorLength, char *errorStringRet)
 {
     struct _IceListenObj	*listenObjs;
     char			*networkId;
@@ -154,23 +148,15 @@ char		*errorStringRet;
 }
 
 
-
 int
-IceGetListenConnectionNumber (listenObj)
-
-IceListenObj listenObj;
-
+IceGetListenConnectionNumber(IceListenObj listenObj)
 {
     return (_IceTransGetConnectionNumber (listenObj->trans_conn));
 }
 
 
-
 char *
-IceGetListenConnectionString (listenObj)
-
-IceListenObj listenObj;
-
+IceGetListenConnectionString(IceListenObj listenObj)
 {
     char *networkId;
 
@@ -183,13 +169,8 @@ IceListenObj listenObj;
 }
 
 
-
 char *
-IceComposeNetworkIdList (count, listenObjs)
-
-int		count;
-IceListenObj	*listenObjs;
-
+IceComposeNetworkIdList(int count, IceListenObj *listenObjs)
 {
     char *list;
     int len = 0;
@@ -241,13 +222,8 @@ IceListenObj	*listenObjs;
 }
 
 
-
 void
-IceFreeListenObjs (count, listenObjs)
-
-int	     count;
-IceListenObj *listenObjs;
-
+IceFreeListenObjs(int count, IceListenObj *listenObjs)
 {
     int i;
 
@@ -262,7 +238,6 @@ IceListenObj *listenObjs;
 }
 
 
-
 /*
  * Allow host based authentication for the ICE Connection Setup.
  * Do not confuse with the host based authentication callbacks that
@@ -270,11 +245,8 @@ IceListenObj *listenObjs;
  */
 
 void
-IceSetHostBasedAuthProc (listenObj, hostBasedAuthProc)
-
-IceListenObj		listenObj;
-IceHostBasedAuthProc	hostBasedAuthProc;
-
+IceSetHostBasedAuthProc(IceListenObj listenObj,
+			IceHostBasedAuthProc hostBasedAuthProc)
 {
     listenObj->host_based_auth_proc = hostBasedAuthProc;
 }

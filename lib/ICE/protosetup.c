@@ -1,4 +1,3 @@
-/* $Xorg: protosetup.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,28 +25,17 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/protosetup.c,v 1.2 2001/10/28 03:32:28 tsi Exp $ */
+/* $XFree86: xc/lib/ICE/protosetup.c,v 1.3 2001/12/14 19:53:36 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 
 
 IceProtocolSetupStatus
-IceProtocolSetup (iceConn, myOpcode, clientData, mustAuthenticate,
-    majorVersionRet, minorVersionRet, vendorRet, releaseRet,
-    errorLength, errorStringRet)
-
-IceConn	   iceConn;
-int 	   myOpcode;
-IcePointer clientData;
-Bool       mustAuthenticate;
-int	   *majorVersionRet;
-int	   *minorVersionRet;
-char	   **vendorRet;
-char	   **releaseRet;
-int  	   errorLength;
-char 	   *errorStringRet;
-
+IceProtocolSetup(IceConn iceConn, int myOpcode, IcePointer clientData,
+		 Bool mustAuthenticate, int *majorVersionRet,
+		 int *minorVersionRet, char **vendorRet, char **releaseRet,
+		 int errorLength, char *errorStringRet)
 {
     iceProtocolSetupMsg	*pMsg;
     char		*pData;

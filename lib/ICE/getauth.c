@@ -1,4 +1,3 @@
-/* $Xorg: getauth.c,v 1.4 2001/02/09 02:03:26 xorgcvs Exp $ */
 /******************************************************************************
 
 
@@ -26,18 +25,15 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/getauth.c,v 1.2 2001/10/28 03:32:28 tsi Exp $ */
+/* $XFree86: xc/lib/ICE/getauth.c,v 1.3 2001/12/14 19:53:35 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 
-static Bool auth_valid ();
+static Bool auth_valid(char *auth_name, int num_auth_names, char **auth_names,
+		       int *index_ret);
 
-extern int		_IcePaAuthDataEntryCount;
-extern IceAuthDataEntry _IcePaAuthDataEntries[];
-
-
 /*
  * The functions in this file are not a standard part of ICElib.
  *
@@ -56,15 +52,8 @@ extern IceAuthDataEntry _IcePaAuthDataEntries[];
  */
 
 void
-_IceGetPoAuthData (protocolName, networkId, authName,
-    authDataLenRet, authDataRet)
-
-char		*protocolName;
-char		*networkId;
-char		*authName;
-unsigned short	*authDataLenRet;
-char		**authDataRet;
-
+_IceGetPoAuthData(char *protocolName, char *networkId, char *authName,
+		  unsigned short *authDataLenRet, char **authDataRet)
 {
     IceAuthFileEntry    *entry;
 
@@ -87,17 +76,9 @@ char		**authDataRet;
 }
 
 
-
 void
-_IceGetPaAuthData (protocolName, networkId, authName,
-    authDataLenRet, authDataRet)
-
-char		*protocolName;
-char		*networkId;
-char		*authName;
-unsigned short	*authDataLenRet;
-char		**authDataRet;
-
+_IceGetPaAuthData(char *protocolName, char *networkId, char *authName,
+		  unsigned short *authDataLenRet, char **authDataRet)
 {
     IceAuthDataEntry	*entry = NULL;
     int			found = 0;
@@ -128,18 +109,10 @@ char		**authDataRet;
 }
 
 
-
 void
-_IceGetPoValidAuthIndices (protocol_name, network_id,
-    num_auth_names, auth_names, num_indices_ret, indices_ret)
-
-char	*protocol_name;
-char	*network_id;
-int	num_auth_names;
-char	**auth_names;
-int	*num_indices_ret;
-int	*indices_ret;		/* in/out arg */
-
+_IceGetPoValidAuthIndices(char *protocol_name, char *network_id,
+			  int num_auth_names, char **auth_names,
+			  int *num_indices_ret, int *indices_ret)
 {
     FILE    		*auth_file;
     char    		*filename;
@@ -189,18 +162,10 @@ int	*indices_ret;		/* in/out arg */
 }
 
 
-
 void
-_IceGetPaValidAuthIndices (protocol_name, network_id,
-    num_auth_names, auth_names, num_indices_ret, indices_ret)
-
-char	*protocol_name;
-char	*network_id;
-int	num_auth_names;
-char	**auth_names;
-int	*num_indices_ret;
-int	*indices_ret;		/* in/out arg */
-
+_IceGetPaValidAuthIndices(char *protocol_name, char *network_id,
+			  int num_auth_names, char **auth_names,
+			  int *num_indices_ret, int *indices_ret)
 {
     int			index_ret;
     int			i, j;
@@ -235,19 +200,13 @@ int	*indices_ret;		/* in/out arg */
 }
 
 
-
 /*
  * local routines
  */
 
 static Bool
-auth_valid (auth_name, num_auth_names, auth_names, index_ret)
-
-char	*auth_name;
-int	num_auth_names;
-char	**auth_names;
-int	*index_ret;
-
+auth_valid(char *auth_name, int num_auth_names, char **auth_names,
+	   int *index_ret)
 {
     /*
      * Check if auth_name is in auth_names.  Return index.

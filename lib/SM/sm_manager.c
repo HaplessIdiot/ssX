@@ -1,5 +1,3 @@
-/* $Xorg: sm_manager.c,v 1.4 2001/02/09 02:03:30 xorgcvs Exp $ */
-
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -25,6 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -38,19 +37,15 @@ in this Software without prior written authorization from The Open Group.
 #undef shutdown
 #endif
 
-
+static Status _SmsProtocolSetupProc(IceConn iceConn, int majorVersion,
+				    int minorVersion, char *vendor,
+				    char *release, IcePointer *clientDataRet,
+				    char **failureReasonRet);
+
 Status
-SmsInitialize (vendor, release, newClientProc, managerData,
-    hostBasedAuthProc, errorLength, errorStringRet)
-
-char 		 		*vendor;
-char 		 		*release;
-SmsNewClientProc 		newClientProc;
-SmPointer	 		managerData;
-IceHostBasedAuthProc		hostBasedAuthProc;
-int  		 		errorLength;
-char 		 		*errorStringRet;
-
+SmsInitialize(char *vendor, char *release, SmsNewClientProc newClientProc,
+	      SmPointer managerData, IceHostBasedAuthProc hostBasedAuthProc,
+	      int errorLength, char *errorStringRet)
 {
     if (errorStringRet && errorLength > 0)
 	*errorStringRet = '\0';
@@ -65,8 +60,6 @@ char 		 		*errorStringRet;
 
     if (!_SmsOpcode)
     {
-	Status _SmsProtocolSetupProc ();
-
 	if ((_SmsOpcode = IceRegisterForProtocolReply ("XSMP",
 	    vendor, release, _SmVersionCount, _SmsVersions,
 	    _SmAuthCount, _SmAuthNames, _SmsAuthProcs, hostBasedAuthProc,
@@ -92,20 +85,10 @@ char 		 		*errorStringRet;
 }
 
 
-
-Status
-_SmsProtocolSetupProc (iceConn,
-    majorVersion, minorVersion, vendor, release,
-    clientDataRet, failureReasonRet)
-
-IceConn    iceConn;
-int	   majorVersion;
-int	   minorVersion;
-char  	   *vendor;
-char 	   *release;
-IcePointer *clientDataRet;
-char	   **failureReasonRet;
-
+static Status
+_SmsProtocolSetupProc(IceConn iceConn, int majorVersion, int minorVersion,
+		      char *vendor, char *release, IcePointer *clientDataRet,
+		      char **failureReasonRet)
 {
     SmsConn  		smsConn;
     unsigned long 	mask;
@@ -165,24 +148,15 @@ char	   **failureReasonRet;
 }
 
 
-
 char *
-SmsClientHostName (smsConn)
-
-SmsConn smsConn;
-
+SmsClientHostName(SmsConn smsConn)
 {
     return (_IceTransGetPeerNetworkId (smsConn->iceConn->trans_conn));
 }
 
 
-
 Status
-SmsRegisterClientReply (smsConn, clientId)
-
-SmsConn smsConn;
-char	*clientId;
-
+SmsRegisterClientReply(SmsConn smsConn, char *clientId)
 {
     IceConn			iceConn = smsConn->iceConn;
     int				extra;
@@ -210,16 +184,9 @@ char	*clientId;
 }
 
 
-
 void
-SmsSaveYourself (smsConn, saveType, shutdown, interactStyle, fast)
-
-SmsConn smsConn;
-int	saveType;
-Bool 	shutdown;
-int	interactStyle;
-Bool	fast;
-
+SmsSaveYourself(SmsConn smsConn, int saveType, Bool shutdown,
+		int interactStyle, Bool fast)
 {
     IceConn		iceConn = smsConn->iceConn;
     smSaveYourselfMsg	*pMsg;
@@ -253,12 +220,8 @@ Bool	fast;
 }
 
 
-
 void
-SmsSaveYourselfPhase2 (smsConn)
-
-SmsConn smsConn;
-
+SmsSaveYourselfPhase2(SmsConn smsConn)
 {
     IceConn	iceConn = smsConn->iceConn;
 
@@ -267,12 +230,8 @@ SmsConn smsConn;
 }
 
 
-
 void
-SmsInteract (smsConn)
-
-SmsConn smsConn;
-
+SmsInteract(SmsConn smsConn)
 {
     IceConn	iceConn = smsConn->iceConn;
 
@@ -283,12 +242,8 @@ SmsConn smsConn;
 }
 
 
-
 void
-SmsDie (smsConn)
-
-SmsConn smsConn;
-
+SmsDie(SmsConn smsConn)
 {
     IceConn	iceConn = smsConn->iceConn;
 
@@ -297,12 +252,8 @@ SmsConn smsConn;
 }
 
 
-
 void
-SmsSaveComplete (smsConn)
-
-SmsConn smsConn;
-
+SmsSaveComplete(SmsConn smsConn)
 {
     IceConn	iceConn = smsConn->iceConn;
 
@@ -311,12 +262,8 @@ SmsConn smsConn;
 }
 
 
-
 void
-SmsShutdownCancelled (smsConn)
-
-SmsConn smsConn;
-
+SmsShutdownCancelled(SmsConn smsConn)
 {
     IceConn	iceConn = smsConn->iceConn;
 
@@ -327,14 +274,8 @@ SmsConn smsConn;
 }
 
 
-
 void
-SmsReturnProperties (smsConn, numProps, props)
-
-SmsConn	smsConn;
-int	numProps;
-SmProp  **props;
-
+SmsReturnProperties(SmsConn smsConn, int numProps, SmProp **props)
 {
     IceConn			iceConn = smsConn->iceConn;
     int 			bytes;
@@ -357,12 +298,8 @@ SmProp  **props;
 }
 
 
-
 void
-SmsCleanUp (smsConn)
-
-SmsConn smsConn;
-
+SmsCleanUp(SmsConn smsConn)
 {
     IceProtocolShutdown (smsConn->iceConn, _SmsOpcode);
 

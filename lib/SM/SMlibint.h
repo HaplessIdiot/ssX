@@ -1,5 +1,3 @@
-/* $Xorg: SMlibint.h,v 1.4 2001/02/09 02:03:30 xorgcvs Exp $ */
-
 /*
 
 Copyright 1993, 1998  The Open Group
@@ -25,7 +23,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/SMlibint.h,v 1.4tsi Exp $ */
+/* $XFree86: xc/lib/SM/SMlibint.h,v 1.5 2004/12/31 02:56:03 tsi Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -515,5 +513,21 @@ extern SmPointer	_SmsNewClientData;
 
 extern SmcErrorHandler _SmcErrorHandler;
 extern SmsErrorHandler _SmsErrorHandler;
+
+extern void _SmcDefaultErrorHandler(SmcConn smcConn, Bool swap,
+	int offendingMinorOpcode, unsigned long offendingSequence,
+	int errorClass, int severity, SmPointer values);
+
+extern void _SmsDefaultErrorHandler(SmsConn smsConn, Bool swap,
+	int offendingMinorOpcode, unsigned long offendingSequence,
+	int errorClass, int severity, SmPointer values);
+
+extern void _SmcProcessMessage(IceConn iceConn, IcePointer clientData,
+	int opcode, unsigned long length, Bool swap,
+	IceReplyWaitInfo *replyWait, Bool *replyReadyRet);
+
+extern void _SmsProcessMessage(IceConn iceConn, IcePointer clientData,
+	int opcode, unsigned long length, Bool swap);
+
 
 #endif /* _SMLIBINT_H_ */

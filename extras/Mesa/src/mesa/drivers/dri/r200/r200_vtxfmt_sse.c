@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxfmt_sse.c,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_vtxfmt_sse.c,v 1.1.1.2 2004/12/10 15:05:59 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,6 +38,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "simple_list.h" 
 #include "r200_vtxfmt.h"
 
+/* Temporarily disabled as it is broken w/the new cubemap code. - idr */
+#ifndef TEXCOORD_BROKEN
+#define TEXCOORD_BROKEN 1
+#endif
+
 #if defined(USE_SSE_ASM)
 #include "x86/common_x86_asm.h"
 
@@ -49,15 +54,18 @@ EXTERN( _sse_Attribute2fv );
 EXTERN( _sse_Attribute2f );
 EXTERN( _sse_Attribute3fv );
 EXTERN( _sse_Attribute3f );
+#if !TEXCOORD_BROKEN
 EXTERN( _sse_MultiTexCoord2fv );
 EXTERN( _sse_MultiTexCoord2f );
 EXTERN( _sse_MultiTexCoord2fv_2 );
 EXTERN( _sse_MultiTexCoord2f_2 );
+#endif
 
 /* Build specialized versions of the immediate calls on the fly for
  * the current state.
  */
 
+#if !TEXCOORD_BROKEN
 static struct dynfn *r200_makeSSEAttribute2fv( struct dynfn * cache, const int * key,
 					       const char * name, void * dest)
 {
@@ -83,6 +91,7 @@ static struct dynfn *r200_makeSSEAttribute2f( struct dynfn * cache, const int * 
    FIXUP(dfn->code, 8, 0x0, (int)dest); 
    return dfn;
 }
+#endif
 
 static struct dynfn *r200_makeSSEAttribute3fv( struct dynfn * cache, const int * key,
 					       const char * name, void * dest)
@@ -154,6 +163,7 @@ static struct dynfn *r200_makeSSEColor3f( GLcontext *ctx, const int * key )
    }
 }
 
+#if !TEXCOORD_BROKEN
 static struct dynfn *r200_makeSSETexCoord2fv( GLcontext *ctx, const int * key )
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
@@ -205,6 +215,7 @@ static struct dynfn *r200_makeSSEMultiTexCoord2f( GLcontext *ctx, const int * ke
    }
    return dfn;
 }
+#endif
 
 void r200InitSSECodegen( struct dfn_generators *gen )
 {
@@ -213,10 +224,12 @@ void r200InitSSECodegen( struct dfn_generators *gen )
       gen->Normal3f = (void *) r200_makeSSENormal3f;
       gen->Color3fv = (void *) r200_makeSSEColor3fv;
       gen->Color3f = (void *) r200_makeSSEColor3f;
+#if !TEXCOORD_BROKEN
       gen->TexCoord2fv = (void *) r200_makeSSETexCoord2fv;
       gen->TexCoord2f = (void *) r200_makeSSETexCoord2f;
       gen->MultiTexCoord2fvARB = (void *) r200_makeSSEMultiTexCoord2fv;
       gen->MultiTexCoord2fARB = (void *) r200_makeSSEMultiTexCoord2f;
+#endif
    }
 }
 

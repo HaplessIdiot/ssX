@@ -1,4 +1,3 @@
-/* $Xorg: FSGetCats.c,v 1.4 2001/02/09 02:03:25 xorgcvs Exp $ */
 /*
  * Copyright 1990 Network Computing Devices;
  * Portions Copyright 1987 by Digital Equipment Corporation
@@ -23,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSGetCats.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/lib/FS/FSGetCats.c,v 1.8 2004/12/31 02:56:03 tsi Exp $ */
 
 /*
 
@@ -53,10 +52,8 @@ in this Software without prior written authorization from The Open Group.
 
 #include	"FSlibint.h"
 
-char      **
-FSGetCatalogues(svr, num)
-    FSServer   *svr;
-    int        *num;
+char **
+FSGetCatalogues(FSServer *svr, int *num)
 {
     fsGetCataloguesReply rep;
     char      **list;
