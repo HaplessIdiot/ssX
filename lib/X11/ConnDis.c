@@ -1,5 +1,5 @@
-/* $XConsortium: ConnDis.c,v 11.122 94/05/05 13:13:24 mor Exp $ */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.3 1994/05/22 06:44:38 dawes Exp $ */
+/* $XConsortium: ConnDis.c,v 11.123 94/05/19 11:00:27 mor Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.4 1994/05/22 08:50:59 dawes Exp $ */
 /*
  
 Copyright (c) 1989  X Consortium
@@ -320,7 +320,7 @@ _X11TransConnectDisplay (display_name, fullnamep, dpynump, screenp,
 	 * X protocol (ie FamilyInternet).
 	 */
 
-	if( _X11TransConvertAddress(&family, &saddrlen, saddr) < 0 )
+	if( _X11TransConvertAddress(&family, &saddrlen, &saddr) < 0 )
 	    {
 	    _X11TransClose(trans_conn);
 	    trans_conn = NULL;

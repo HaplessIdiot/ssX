@@ -1,5 +1,5 @@
-/* $XConsortium: auth.c,v 1.54 94/04/17 20:03:33 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/auth.c,v 3.0 1994/05/04 15:06:18 dawes Exp $ */
+/* $XConsortium: auth.c,v 1.55 94/06/03 16:34:12 mor Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.1 1994/05/22 00:02:03 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -56,10 +56,6 @@ from the X Consortium.
 # include <netdnet/dnetdb.h>
 #endif
 
-#if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
-#define SYSV_SIOCGIFCONF
-#endif
-
 #if (defined(_POSIX_SOURCE) && !defined(AIXV3)) || defined(hpux) || defined(USG) || defined(SVR4) || (defined(SYSV) && defined(i386))
 #define NEED_UTSNAME
 #include <sys/utsname.h>
@@ -86,6 +82,10 @@ from the X Consortium.
 # include <sync/sema.h>
 #endif
 #include <net/if.h>
+
+#if ((defined(SVR4) && !defined(sun)) || defined(ISC)) && defined(SIOCGIFCONF)
+#define SYSV_SIOCGIFCONF
+#endif
 
 extern int	MitInitAuth ();
 extern Xauth	*MitGetAuth ();
@@ -786,10 +786,10 @@ DefineSelf (fd, file, auth)
     struct in_ifaddr ifaddr;
     struct strioctl str;
     unsigned char *addr;
-    int	family, len, ipfd;
+    int	len, ipfd;
 
     if ((ipfd = open ("/dev/ip", O_RDWR, 0 )) < 0)
-        Error ("Getting interface configuration");
+        LogError ("Getting interface configuration");
 
     /* Indicate that we want to start at the begining */
     ifnet.ib_next = (struct ipb *) 1;
@@ -804,7 +804,7 @@ DefineSelf (fd, file, auth)
 	if (ioctl (ipfd, (int) I_STR, (char *) &str) < 0)
 	{
 	    close (ipfd);
-	    Error ("Getting interface configuration");
+	    LogError ("Getting interface configuration");
 	}
 
 	ifaddr.ia_next = (struct in_ifaddr *) ifnet.if_addrlist;
@@ -816,34 +816,16 @@ DefineSelf (fd, file, auth)
 	if (ioctl (ipfd, (int) I_STR, (char *) &str) < 0)
 	{
 	    close (ipfd);
-	    Error ("Getting interface configuration");
+	    LogError ("Getting interface configuration");
 	}
 
-	len = sizeof(struct sockaddr_in);
-	if (ConvertAddr (IA_SIN(&ifaddr), &len, &addr) < 0)
-	    continue;
-	if (len == 0)
-	{
-	    Debug ("Skipping zero length address\n");
-	    continue;
-	}
 	/*
-	 * don't write out 'localhost' entries, as
-	 * they may conflict with other local entries.
-	 * DefineLocal will always be called to add
-	 * the local entry anyway, so this one can
-	 * be tossed.
+	 * Ignore the 127.0.0.1 entry.
 	 */
-	if (len == 4 &&
-	    addr[0] == 127 && addr[1] == 0 &&
-	    addr[2] == 0 && addr[3] == 1)
-	{
-		Debug ("Skipping localhost address\n");
+	if (IA_SIN(&ifaddr)->sin_addr.s_addr == htonl(0x7f000001) )
 		continue;
-	}
-	family = FamilyInternet;
-	Debug ("DefineSelf: write network address, length %d\n", len);
-	writeAddr (family, len, addr, file, auth);
+
+	writeAddr (FamilyInternet, 4, &(IA_SIN(&ifaddr)->sin_addr), file, auth);
     }
     close(ipfd);
 }
@@ -1022,7 +1004,14 @@ writeLocalAuth (file, auth, name)
 
     Debug ("writeLocalAuth: %s %.*s\n", name, auth->name_length, auth->name);
     setAuthNumber (auth, name);
-#if defined(TCPCONN) || defined(STREAMSCONN)
+#ifdef STREAMSCONN
+    fd = t_open ("/dev/tcp", O_RDWR, 0);
+    t_bind(fd, NULL, NULL);
+    DefineSelf (fd, file, auth);
+    t_unbind (fd);
+    t_close (fd);
+#endif
+#ifdef TCPCONN
     fd = socket (AF_INET, SOCK_STREAM, 0);
     DefineSelf (fd, file, auth);
     close (fd);

@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c,v 1.27 94/05/02 11:44:22 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.0 1994/05/21 23:53:03 dawes Exp $ */
+/* $XConsortium: Xtranssock.c,v 1.29 94/06/02 10:51:53 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.1 1994/05/22 06:45:51 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -114,6 +114,7 @@ from the X Consortium.
 #undef close
 #define close closesocket
 #define ECONNREFUSED WSAECONNREFUSED
+#define EADDRINUSE WSAEADDRINUSE
 #define EPROTOTYPE WSAEPROTOTYPE
 #undef EWOULDBLOCK
 #define EWOULDBLOCK WSAEWOULDBLOCK
@@ -717,11 +718,14 @@ int		socknamelen;
 
     while (bind (fd, (struct sockaddr *) sockname, namelen) < 0)
     {
+	if (errno == EADDRINUSE)
+	    return TRANS_ADDR_IN_USE;
+
 	if (retry-- == 0) {
 	    PRMSG (1, "TRANS(SocketCreateListener): failed to bind listener\n",
 		0, 0, 0);
 	    close (fd);
-	    return -1;
+	    return TRANS_CREATE_LISTENER_FAILED;
 	}
 #ifdef SO_REUSEADDR
 	sleep (1);
@@ -748,7 +752,7 @@ int		socknamelen;
     {
 	PRMSG (1, "TRANS(SocketCreateListener): listen() failed\n", 0, 0, 0);
 	close (fd);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
 	
     /* Set a flag to indicate that this connection is a listener */
@@ -769,7 +773,7 @@ char 		*port;
 {
     struct sockaddr_in	sockname;
     int		namelen = sizeof(sockname);
-    int		ret;
+    int		status;
     short	tmpport;
     struct	servent	*servp;
 
@@ -812,7 +816,7 @@ char 		*port;
 		PRMSG (1,
 	     "TRANS(SocketINETCreateListener): Unable to get service for %s\n",
 		      port, 0, 0);
-		return -1;
+		return TRANS_CREATE_LISTENER_FAILED;
 	    }
 	    
 	    sockname.sin_port = servp->s_port;
@@ -832,13 +836,13 @@ char 		*port;
     sockname.sin_family = AF_INET;
     sockname.sin_addr.s_addr = htonl (INADDR_ANY);
 
-    if (TRANS(SocketCreateListener) (ciptr,
-	(struct sockaddr *) &sockname, namelen) < 0)
+    if ((status = TRANS(SocketCreateListener) (ciptr,
+	(struct sockaddr *) &sockname, namelen)) < 0)
     {
 	PRMSG (1,
     "TRANS(SocketINETCreateListener): TRANS(SocketCreateListener) () failed\n",
 	    0, 0, 0);
-	return -1;
+	return status;
     }
 
     if (TRANS(SocketINETGetAddr) (ciptr) < 0)
@@ -846,7 +850,7 @@ char 		*port;
 	PRMSG (1,
        "TRANS(SocketINETCreateListener): TRANS(SocketINETGetAddr) () failed\n",
 	    0, 0, 0);
-	return -1;
+	return TRANS_CREATE_LISTENER_FAILED;
     }
 
     return 0;
@@ -867,6 +871,7 @@ char *port;
     struct sockaddr_un	sockname;
     int			namelen;
     int			oldUmask;
+    int			status;
 
     PRMSG (2, "TRANS(SocketUNIXCreateListener) (%s)\n",
 	port ? port : "NULL", 0, 0);
@@ -901,13 +906,13 @@ char *port;
 
     unlink (sockname.sun_path);
 
-    if (TRANS(SocketCreateListener) (ciptr,
-	(struct sockaddr *) &sockname, namelen) < 0)
+    if ((status = TRANS(SocketCreateListener) (ciptr,
+	(struct sockaddr *) &sockname, namelen)) < 0)
     {
 	PRMSG (1,
     "TRANS(SocketUNIXCreateListener): TRANS(SocketCreateListener) () failed\n",
 	    0, 0, 0);
-	return -1;
+	return status;
     }
 
     /*
@@ -924,7 +929,7 @@ char *port;
         PRMSG (1,
         "TRANS(SocketUNIXCreateListener): Can't allocate space for the addr\n",
 	    0, 0, 0);
-        return -1;
+        return TRANS_CREATE_LISTENER_FAILED;
     }
 
     ciptr->family = sockname.sun_family;

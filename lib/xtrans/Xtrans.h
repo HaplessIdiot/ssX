@@ -1,5 +1,5 @@
-/* $XConsortium: Xtrans.h,v 1.24 94/05/02 10:45:32 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.0 1994/05/08 05:16:34 dawes Exp $ */
+/* $XConsortium: Xtrans.h,v 1.27 94/06/02 10:49:08 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.1 1994/05/22 06:45:48 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -187,6 +187,14 @@ typedef struct _XtransConnInfo *XtransConnInfo;
 
 #define TRANS_CONNECT_FAILED 	-1
 #define TRANS_TRY_CONNECT_AGAIN -2
+
+
+/*
+ * Return values of CreateListener (0 is success)
+ */
+
+#define TRANS_CREATE_LISTENER_FAILED 	-1
+#define TRANS_ADDR_IN_USE		-2
 
 
 /*
@@ -444,7 +452,7 @@ int TRANS(ConvertAddress)(
 #if NeedFunctionPrototypes
     int *,		/* familyp */
     int *,		/* addrlenp */
-    Xtransaddr *	/* addrp */
+    Xtransaddr **	/* addrp */
 #endif
 );
 

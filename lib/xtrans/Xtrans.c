@@ -1,5 +1,5 @@
-/* $XConsortium: Xtrans.c,v 1.24 94/05/10 11:32:27 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.1 1994/05/21 23:52:57 dawes Exp $ */
+/* $XConsortium: Xtrans.c,v 1.25 94/06/02 10:59:43 mor Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.c,v 3.2 1994/05/22 06:45:47 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -92,12 +92,6 @@ Xtransport_table Xtransports[] = {
     &TRANS(TLIINETFuncs),	TRANS_TLI_INET_INDEX,
     &TRANS(TLITLIFuncs),	TRANS_TLI_TLI_INDEX,
 #endif /* STREAMSCONN */
-#if defined(UNIXCONN)
-#if !defined(LOCALCONN)
-    &TRANS(SocketLocalFuncs),	TRANS_SOCKET_LOCAL_INDEX,
-#endif /* !LOCALCONN */
-    &TRANS(SocketUNIXFuncs),	TRANS_SOCKET_UNIX_INDEX,
-#endif /* UNIXCONN */
 #if defined(TCPCONN)
     &TRANS(SocketTCPFuncs),	TRANS_SOCKET_TCP_INDEX,
     &TRANS(SocketINETFuncs),	TRANS_SOCKET_INET_INDEX,
@@ -105,6 +99,12 @@ Xtransport_table Xtransports[] = {
 #if defined(DNETCONN)
     &TRANS(DNETFuncs),		TRANS_DNET_INDEX,
 #endif /* DNETCONN */
+#if defined(UNIXCONN)
+#if !defined(LOCALCONN)
+    &TRANS(SocketLocalFuncs),	TRANS_SOCKET_LOCAL_INDEX,
+#endif /* !LOCALCONN */
+    &TRANS(SocketUNIXFuncs),	TRANS_SOCKET_UNIX_INDEX,
+#endif /* UNIXCONN */
 #if defined(LOCALCONN)
     &TRANS(LocalFuncs),		TRANS_LOCAL_LOCAL_INDEX,
     &TRANS(PTSFuncs),		TRANS_LOCAL_PTS_INDEX,
@@ -1038,7 +1038,7 @@ XtransConnInfo 	**ciptrs_ret;
 {
     char		buffer[256]; /* ??? What size ?? */
     XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
-    int			i;
+    int			status, i, j;
 
     PRMSG (2,"TRANS(MakeAllCOTSServerListeners) (%s,%x)\n",
 	   port ? port : "NULL", ciptrs_ret, 0);
@@ -1065,12 +1065,36 @@ XtransConnInfo 	**ciptrs_ret;
 	    continue;
 	}
 
-	if (TRANS(CreateListener (ciptr, port)) < 0)
+	if ((status = TRANS(CreateListener (ciptr, port))) < 0)
 	{
-	    PRMSG (1,
+	    if (status == TRANS_ADDR_IN_USE)
+	    {
+		/*
+		 * We failed to bind to the specified address because the
+		 * address is in use.  It must be that a server is already
+		 * running at this address, and this function should fail.
+		 */
+
+		PRMSG (1,
+		"TRANS(MakeAllCOTSServerListeners) server already running\n",
+		  0, 0, 0);
+
+		for (j = 0; j < *count_ret; j++)
+		    TRANS(Close) (temp_ciptrs[j]);
+
+		*count_ret = 0;
+		*ciptrs_ret = NULL;
+		*partial = 0;
+		return -1;
+	    }
+	    else
+	    {
+		PRMSG (1,
 	"TRANS(MakeAllCOTSServerListeners) failed to create listener for %s\n",
 		  trans->TransName, 0, 0);
-	    continue;
+
+		continue;
+	    }
 	}
 
 	PRMSG (5,
@@ -1117,7 +1141,7 @@ XtransConnInfo 	**ciptrs_ret;
 {
     char		buffer[256]; /* ??? What size ?? */
     XtransConnInfo	ciptr, temp_ciptrs[NUMTRANS];
-    int			i;
+    int			status, i, j;
 
     PRMSG (2,"TRANS(MakeAllCLTSServerListeners) (%s,%x)\n",
 	port ? port : "NULL", ciptrs_ret, 0);
@@ -1144,12 +1168,36 @@ XtransConnInfo 	**ciptrs_ret;
 	    continue;
 	}
 
-	if (TRANS(CreateListener (ciptr, port)) < 0)
+	if ((status = TRANS(CreateListener (ciptr, port))) < 0)
 	{
-	    PRMSG (1,
+	    if (status == TRANS_ADDR_IN_USE)
+	    {
+		/*
+		 * We failed to bind to the specified address because the
+		 * address is in use.  It must be that a server is already
+		 * running at this address, and this function should fail.
+		 */
+
+		PRMSG (1,
+		"TRANS(MakeAllCLTSServerListeners) server already running\n",
+		  0, 0, 0);
+
+		for (j = 0; j < *count_ret; j++)
+		    TRANS(Close) (temp_ciptrs[j]);
+
+		*count_ret = 0;
+		*ciptrs_ret = NULL;
+		*partial = 0;
+		return -1;
+	    }
+	    else
+	    {
+		PRMSG (1,
 	"TRANS(MakeAllCLTSServerListeners) failed to create listener for %s\n",
 		  trans->TransName, 0, 0);
-	    continue;
+
+		continue;
+	    }
 	}
 
 	PRMSG (5,

@@ -1,6 +1,6 @@
 /*
- * $XConsortium: choose.c,v 1.15 94/04/17 20:03:34 rws Exp $
- * $XFree86$
+ * $XConsortium: choose.c,v 1.16 94/06/03 16:34:38 mor Exp $
+ * $XFree86: xc/programs/xdm/choose.c,v 3.0 1994/05/22 00:02:05 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
