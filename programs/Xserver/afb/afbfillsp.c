@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afbfillsp.c,v 3.1 1998/03/20 21:04:54 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afbfillsp.c,v 3.2 2000/10/29 14:24:10 tsi Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -58,7 +58,6 @@ SOFTWARE.
 #include "windowstr.h"
 #include "afb.h"
 
-#define STRICT_ANSI_SHIFT
 #include "maskbits.h"
 
 #include "mergerop.h"
