@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.79 2002/01/05 22:05:03 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.80 2002/03/26 01:46:40 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_167">Patch #167 - development - XFree86 4.2.0</A>
 <LI><A HREF="#xterm_166">Patch #166 - 2002/3/25 - XFree86 4.2.0</A>
 <LI><A HREF="#xterm_165">Patch #165 - 2002/1/5 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_164">Patch #164 - 2001/11/13 - XFree86 4.1.0</A>
@@ -210,6 +211,23 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_167">Patch #167 - development - XFree86 4.2.0</A></H1>
+<ul>
+	<li>modify OS/2 version to use <code>__UNIXOS2__</code> definition
+	  rather than <code>__EMX__</code>, related cleanup (patch by Holger
+	  Veit).
+
+	<li>used modified indent 2.0
+	  (patch <a href="ftp://invisible-island.net/gnu-patches/">20020428</a>)
+	  to reformat most of the C source files, to simplify maintenance.
+
+	<li>fix a couple of places where there were leading tabs on
+	  symbol-definition lines in Imakefile (Marc La France)
+
+	<li>add imake variable (TraceXTerm) to allow building debug version
+	  (Egbert Eich).
+</ul>
 
 <H1><A NAME="xterm_166">Patch #166 - 2002/03/25 - XFree86 4.2.0</A></H1>
 <ul>

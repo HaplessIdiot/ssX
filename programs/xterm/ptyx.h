@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.91 2002/01/05 22:05:03 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.93 2002/05/24 20:14:23 keithp Exp $ */
 
 /*
  * Copyright 1999,2000,2001,2002 by Thomas E. Dickey
@@ -176,11 +176,11 @@
 #ifdef __hpux
 #define PTYCHAR1	"zyxwvutsrqp"
 #else	/* !__hpux */
-#ifdef __EMX__
+#ifdef __UNIXOS2__
 #define PTYCHAR1	"pq"
 #else
 #define	PTYCHAR1	"pqrstuvwxyzPQRSTUVWXYZ"
-#endif  /* !__EMX__ */
+#endif  /* !__UNIXOS2__ */
 #endif	/* !__hpux */
 #endif	/* !PTYCHAR1 */
 
