@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: tabs.c,v 1.4 91/05/06 17:12:18 gildea Exp $
- *	$XFree86: xc/programs/xterm/tabs.c,v 3.1 1996/01/10 05:51:44 dawes Exp $
+ *	$XFree86: xc/programs/xterm/tabs.c,v 3.2 1996/08/13 11:37:09 dawes Exp $
  */
 
 /*
@@ -27,6 +27,10 @@
  */
 
 /* tabs.c */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 

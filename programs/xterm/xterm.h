@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.8 1996/12/24 02:28:12 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.9 1997/01/08 20:52:41 dawes Exp $ */
 /*
  * Common/useful definitions for XTERM application
  */
@@ -223,6 +223,7 @@ extern void useCurBackground PROTO((Bool flag));
 		/* FIXME: Reverse-Video? */
 #define getXtermBackground(flags, color) term->core.background_pixel
 #define getXtermForeground(flags, color) term->screen.foreground
+#define xtermColorPair() 0
 
 #define useCurBackground(flag) /*nothing*/
 

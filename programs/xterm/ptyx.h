@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/67 1996/11/29 10:34:19 swick $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.18 1996/12/23 07:14:37 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.19 1997/01/08 20:52:36 dawes Exp $
  */
 
 /*
@@ -189,8 +189,11 @@ typedef Char **ScrnBuf;
 #define	RDEL	0xFF
 
 #define MIN_DECID  52			/* can emulate VT52 */
-#define DFT_DECID 100			/* default VT100 */
 #define MAX_DECID 420			/* ...through VT420 */
+
+#ifndef DFT_DECID
+#define DFT_DECID 100			/* default VT100 */
+#endif
 
 #define NMENUFONTS 9			/* entries in fontMenu */
 
@@ -285,9 +288,15 @@ typedef struct {
 
 /***====================================================================***/
 
+#ifndef OPT_ISO_COLORS
 #define OPT_ISO_COLORS  1 /* true if xterm is configured with ISO colors */
+#endif
+
 #define OPT_BLINK_CURS  0 /* FIXME: do this later (96/7/31) */
+
+#ifndef OPT_VT52_MODE
 #define OPT_VT52_MODE   1 /* true if xterm supports VT52 emulation */
+#endif
 
 /***====================================================================***/
 

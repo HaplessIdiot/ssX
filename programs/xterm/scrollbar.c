@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.6 1996/12/23 07:14:39 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.7 1997/05/18 12:12:14 dawes Exp $
  */
 
 /*
@@ -25,6 +25,10 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"		/* gets Xt headers, too */
 

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: resize.c,v 1.34 95/05/24 22:12:04 gildea Exp $
- *	$XFree86: xc/programs/xterm/resize.c,v 3.17 1996/10/16 14:45:16 dawes Exp $
+ *	$XFree86: xc/programs/xterm/resize.c,v 3.18 1997/01/18 07:03:22 dawes Exp $
  */
 
 /*
@@ -29,6 +29,10 @@
 
 /* resize.c */
 
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
+
 #include <X11/Xos.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -43,6 +47,7 @@
 #endif
 
 #ifdef SVR4
+#undef  SYSV			/* predefined on Solaris 2.4 */
 #define SYSV
 #define ATT
 #endif

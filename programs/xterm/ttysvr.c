@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/ttysvr.c,v 3.0 1994/04/28 12:46:44 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/ttysvr.c,v 3.1 1994/08/31 04:57:22 dawes Exp $ */
 /*
  *
  * ttysvr.c
@@ -8,6 +8,10 @@
  * Author:
  *	Leendert van Doorn, 1992
  */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 #include "data.h"

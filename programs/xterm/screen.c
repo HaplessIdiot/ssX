@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: screen.c /main/35 1996/12/01 23:47:05 swick $
- *	$XFree86: xc/programs/xterm/screen.c,v 3.11 1997/01/08 20:52:37 dawes Exp $
+ *	$XFree86: xc/programs/xterm/screen.c,v 3.12 1997/01/18 07:03:23 dawes Exp $
  */
 
 /*
@@ -27,6 +27,10 @@
  */
 
 /* screen.c */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 #include "error.h"

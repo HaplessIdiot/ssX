@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Tekproc.c /main/120 1996/11/29 10:33:20 swick $
- * $XFree86: xc/programs/xterm/Tekproc.c,v 3.12 1996/08/13 11:36:43 dawes Exp $
+ * $XFree86: xc/programs/xterm/Tekproc.c,v 3.13 1996/12/23 07:14:19 dawes Exp $
  *
  * Warning, there be crufty dragons here.
  */
@@ -55,6 +55,10 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 /* Tekproc.c */
+
+#ifdef HAVE_CONFIG_H
+#include <xtermcfg.h>
+#endif
 
 #include "ptyx.h"
 #include <X11/Xos.h>
