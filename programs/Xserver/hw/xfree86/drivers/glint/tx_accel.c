@@ -285,7 +285,7 @@ static void TXLoadCoord(
 ){
     GLINTPtr pGlint = GLINTPTR(pScrn);
     
-#if 0
+#ifndef XF86DRI
     if (w != pGlint->startxsub) {
     	GLINT_WRITE_REG(w<<16, StartXSub);
 	pGlint->startxsub = w;
@@ -310,7 +310,7 @@ static void TXLoadCoord(
     	GLINT_WRITE_REG(d<<16,dY);
 	pGlint->dy = d;
     }
-#endif
+#else
     	GLINT_WRITE_REG(w<<16, StartXSub);
 	pGlint->startxsub = w;
     	GLINT_WRITE_REG(x<<16,StartXDom);
@@ -323,6 +323,7 @@ static void TXLoadCoord(
 	pGlint->dxdom = a;
     	GLINT_WRITE_REG(d<<16,dY);
 	pGlint->dy = d;
+#endif
 }
 
 static void MoveDWORDS(

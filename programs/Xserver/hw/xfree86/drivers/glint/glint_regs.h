@@ -1216,14 +1216,21 @@ do{									\
 	}							\
 }
 
+#ifndef XF86DRI
 #define LOADROP(rop)						\
 {								\
-	if (pGlint->ROP != rop) {				\
+	if (pGlint->ROP != rop)	{				\
 		GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);	\
 		pGlint->ROP = rop;				\
 	}							\
 }
-
+#else
+#define LOADROP(rop) \
+	{				\
+		GLINT_WRITE_REG(rop<<1|UNIT_ENABLE, LogicalOpMode);	\
+		pGlint->ROP = rop;				\
+	}
+#endif
 	
 #define CHECKCLIPPING						\
 {								\
@@ -1234,6 +1241,7 @@ do{									\
 	}							\
 }
 
+#ifndef XF86DRI
 #define DO_PLANEMASK(planemask)					\
 { 								\
 	if (planemask != pGlint->planemask) {			\
@@ -1242,4 +1250,12 @@ do{									\
 		GLINT_WRITE_REG(planemask, FBHardwareWriteMask);\
 	}							\
 } 
+#else
+#define DO_PLANEMASK(planemask)					\
+	{							\
+		pGlint->planemask = planemask;			\
+		REPLICATE(planemask); 				\
+		GLINT_WRITE_REG(planemask, FBHardwareWriteMask);\
+	}
+#endif
 #endif

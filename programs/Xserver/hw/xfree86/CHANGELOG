@@ -1,8 +1,10 @@
 XFree86 4.0b (?? May 2000)
- 157. Fix DRM for gamma for single and dual MX chips (Alan Hourihane).
- 156. Fix Mesa for single and dual MX chips (Alan Hourihane).
+ 158. Fix DRM for gamma for single and dual MX chips (Alan Hourihane).
+ 157. Fix Mesa for single and dual MX chips (Alan Hourihane).
+ 156. Fix Mesa for multiple screen widths (Alan Hourihane).
  155. Add DGA support to the glint driver.
       - Fix initialization of DRI when using single or dual MX's.
+      - Fix register resources.
       - Turn on more acceleration for DualMX boards.
       - Fix DualMX boards displaywidth problems at >640 widths.
       - Fix depth15/16 for PM2v and PM3 chipsets (Alan Hourihane).
