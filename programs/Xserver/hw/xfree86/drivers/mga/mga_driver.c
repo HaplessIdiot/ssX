@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.191 2001/03/06 18:20:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.192 2001/03/21 17:02:24 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1156,6 +1156,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     Bool digital = FALSE;
     Bool tv = FALSE;
     Bool swap_head = FALSE;
+    ULONG status;
 #endif
 
     /*
@@ -2079,9 +2080,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         pMga->pClientStruct = pMgaEnt->pClientStruct;
         pMga->pMgaHwInfo = pMga->pMgaHwInfo;
     }
-    if(MGAValidateMode(pMga->pBoard,&mgaModeInfo) != 0) {
+    if((status = MGAValidateMode(pMga->pBoard,&mgaModeInfo)) != 0) {
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "MGAValidateMode from HALlib found the mode to be invalid\n");
+		   "MGAValidateMode from HALlib found the mode to be invalid: 0x%lx\n", status);
         return FALSE;
     }
     pScrn->displayWidth = mgaModeInfo.ulFBPitch;
@@ -2472,6 +2473,10 @@ MGASave(ScrnInfoPtr pScrn)
     MGA_HAL(if (pMga->pBoard != NULL) MGASaveVgaState(pMga->pBoard));
 #endif
 
+    /* I need to save the registers for the second head also */
+    /* Save the register for 0x80 to 0xa0 */
+    /* Could call it dac2Saved */
+
     /* Only save text mode fonts/text for the primary card */
     (*pMga->Save)(pScrn, vgaReg, mgaReg, pMga->Primary);
 }
@@ -2651,9 +2656,6 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	return FALSE;
     }
     );	/* MGA_HAL */
-
-#define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
-#define outMGAdac(reg, val) (outMGAdreg(MGA1064_INDEX, reg), outMGAdreg(MGA1064_DATA, val))
 
     MGA_HAL(
     if(pMga->SecondCrtc == FALSE && pMga->HWCursor == TRUE) {
@@ -3105,6 +3107,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* For the second head, work around display problem. */
     if (pMga->SecondCrtc) {
 	MGACrtc2FillStrip(pScrn);
+    } else {
+	/* shut second head */
+	outMGAdac(0xa0,0x08);
     }
 
     /* Done */
@@ -3219,6 +3224,10 @@ MGAEnterVT(int scrnIndex, int flags)
     }
 #endif
 
+    if (!pMga->SecondCrtc) {
+	outMGAdac(0xa0,0x08);
+    }  
+
     if (!MGAModeInit(pScrn, pScrn->currentMode))
 	return FALSE;
     MGAAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -3264,10 +3273,13 @@ MGALeaveVT(int scrnIndex, int flags)
 {
     ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
     vgaHWPtr hwp = VGAHWPTR(pScrn);
+    MGAPtr pMga = MGAPTR(pScrn);
 #ifdef XF86DRI
     ScreenPtr pScreen;
-    MGAPtr pMga;
 #endif
+
+    /* Close second Crtc */
+    outMGAdac(0xa0, 0x08);
 
     MGARestore(pScrn);
     vgaHWLock(hwp);
@@ -3275,7 +3287,6 @@ MGALeaveVT(int scrnIndex, int flags)
     if (xf86IsPc98())
 	outb(0xfac, 0x00);
 #ifdef XF86DRI
-    pMga = MGAPTR(pScrn);
     if (pMga->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
         DRILock(pScreen, 0);
@@ -3300,6 +3311,8 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
     vgaHWPtr hwp = VGAHWPTR(pScrn);
     MGAPtr pMga = MGAPTR(pScrn);
     MGAEntPtr pMgaEnt = NULL;
+
+    MGA_NOT_HAL(outMGAdac(0xa0, 0x08));
 
     if (pScrn->vtSema) {
 	if (pMga->FBDev) {

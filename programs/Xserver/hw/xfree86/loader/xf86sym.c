@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.188 2001/03/13 16:03:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.189 2001/03/21 16:55:07 dawes Exp $ */
 
 /*
  *
@@ -53,7 +53,6 @@
 #define DONT_DEFINE_WRAPPERS
 #include "xf86_ansic.h"
 #include "xisb.h"
-#include "xf86Priv.h"
 #include "vbe.h"
 #include "xf86sbusBus.h"
 #include "compiler.h"

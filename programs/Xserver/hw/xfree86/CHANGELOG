@@ -1,4 +1,32 @@
 XFree86 4.0.99.2 (?? April 2001)
+ 338. Updates to the "citron" input driver.  It includes compatibility
+      with the Winbond SIO chip (83977EF), and some new commands to
+      communicate to the touch driver from an application program
+      (via XChangeFeedbackControl) (#4526, Peter Kunzmann, Citron).
+ 337. Updates to the "summa" input driver, including:
+       - "Resolution" replaces "LPI" as option for setting resolution.
+       - Fixed device reporting to give the actual tablet area size and
+         resolution.
+       - Tested and working with: SummaSketch3, Hitachi_1217D, a couple of
+         others emulating the Summa protocol.
+       - Reduce debug message verbosity.
+       - Various cleanups.
+      (#4525, Huver).
+ 336. SunFFB driver bug fixes, including:
+       - Be smarter about restoring Kernel framebuffer state.
+       - Cure build errors when debug defines are enabled.
+       - Do not enable DRI or DGA acceleration if NoAccel option is specified.
+      (#4524, David S. Miller).
+ 335. Mga G450 dual head support, (#4523, Luugi Marsan (Matrox) and
+      David Woodhouse).
+ 334. Fix missing xfree -> Xfree mapping in the Type1 font library code (#4521,
+      Juliusz Chroboczek).
+ 333. Make sure that an initialization assumption in parse_fontdata() in
+      lib/X11/omGeneric.c is met (#4520, Jonathan Kamens).
+ 332. Add checksum verification to detect monitors that give incorrect EDID
+      data (#4517, Andrew C Aitchison).
+ 331. Fix checking of LD_ELFDLOBJECT on big-endian systems (#4514,
+      Guido Guenter).
  330. Add an update.fonts target/rule for maintainer use to update
       the latin1 fonts in the source tree that are derived from the
       ISO10646-1 masters (David Dawes).
@@ -12807,4 +12835,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1663 2001/04/04 22:57:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1664 2001/04/05 02:43:49 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.71 2001/02/13 19:19:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.72 2001/03/21 17:02:24 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -74,6 +74,32 @@ void dbg_outreg32(ScrnInfoPtr,int,int);
 #define OUTREG(addr,val) dbg_outreg32(pScrn,addr,val)
 #endif /* EXTRADEBUG */
 
+/*
+ * Read/write to the DAC via MMIO 
+ */
+
+/*
+ * These were functions.  Use macros instead to avoid the need to
+ * pass pMga to them.
+ */
+
+#define inMGAdreg(reg) INREG8(RAMDAC_OFFSET + (reg))
+
+#define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
+
+#define inMGAdac(reg) \
+	(outMGAdreg(MGA1064_INDEX, reg), inMGAdreg(MGA1064_DATA))
+
+#define outMGAdac(reg, val) \
+	(outMGAdreg(MGA1064_INDEX, reg), outMGAdreg(MGA1064_DATA, val))
+
+#define outMGAdacmsk(reg, mask, val) \
+	do { /* note: mask and reg may get evaluated twice */ \
+	    unsigned char tmp = (mask) ? (inMGAdac(reg) & (mask)) : 0; \
+	    outMGAdreg(MGA1064_INDEX, reg); \
+	    outMGAdreg(MGA1064_DATA, tmp | (val)); \
+	} while (0)
+
 #define PORT_OFFSET 	(0x1F00 - 0x300)
 
 #define MGA_VERSION 4000
@@ -89,10 +115,29 @@ typedef struct {
     unsigned char	ExtVga[6];
     unsigned char 	DacClk[6];
     unsigned char *     DacRegs;
+    unsigned long	crtc2[0x58];
+    unsigned char	dac2[0x21];
     CARD32		Option;
     CARD32		Option2;
     CARD32		Option3;
 } MGARegRec, *MGARegPtr;
+
+/* For programming the second CRTC */
+typedef struct {
+   CARD32   ulDispWidth;        /* Display Width in pixels*/
+   CARD32   ulDispHeight;       /* Display Height in pixels*/
+   CARD32   ulBpp;              /* Bits Per Pixels / input format*/
+   CARD32   ulPixClock;         /* Pixel Clock in kHz*/
+   CARD32   ulHFPorch;          /* Horizontal front porch in pixels*/
+   CARD32   ulHSync;            /* Horizontal Sync in pixels*/
+   CARD32   ulHBPorch;          /* Horizontal back porch in pixels*/
+   CARD32   ulVFPorch;          /* Vertical front porch in lines*/
+   CARD32   ulVSync;            /* Vertical Sync in lines*/
+   CARD32   ulVBPorch;          /* Vertical back Porch in lines*/
+   CARD32   ulFBPitch;          /* Pitch*/
+   CARD32   flSignalMode;       /* Signal Mode*/
+} xMODEINFO;
+
 
 typedef struct {
    int          brightness;
@@ -405,7 +450,6 @@ void MGAPointerMoved(int index, int x, int y);
 void MGAInitVideo(ScreenPtr pScreen);
 void MGAResetVideo(ScrnInfoPtr pScrn);
 
-
 #ifdef XF86DRI
 
 #define MGA_FRONT	0x1
@@ -432,5 +476,15 @@ Bool MgaInitDma(ScrnInfoPtr pScrn, int prim_size);
 
 #endif
 
+void CRTC2Set(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
+void EnableSecondOutPut(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
+void CRTC2SetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
+void CRTC2SetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
+
+void CRTC2Get(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo);
+void CRTC2GetPitch(ScrnInfoPtr pSrcn, xMODEINFO *pModeInfo);
+void CRTC2GetDisplayStart(ScrnInfoPtr pScrn, xMODEINFO *pModeInfo, CARD32 base, CARD32 ulX, CARD32 ulY);
+ 
 double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
+void printDac(ScrnInfoPtr pScrn);
 #endif

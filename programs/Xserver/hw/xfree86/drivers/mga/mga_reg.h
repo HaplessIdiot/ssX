@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.14 2000/11/08 05:03:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.15 2001/03/21 17:02:24 dawes Exp $ */
 
 
 
@@ -386,6 +386,44 @@
 #define MGA1064_PIX_PLLC_P	0x4e
 
 #define MGA1064_PIX_PLL_STAT	0x4f
+
+/*Added for G450 dual head*/
+/* Supported PLL*/
+#define __PIXEL_PLL                 1
+#define __SYSTEM_PLL                2
+#define __VIDEO_PLL                 3
+
+#define MGA1064_VID_PLL_P       0x8D
+#define MGA1064_VID_PLL_M       0x8E
+#define MGA1064_VID_PLL_N       0x8F
+
+#define MGA1064_DISP_CTL        0x8a
+#define MGA1064_SYNC_CTL        0x8b
+#define MGA1064_PWR_CTL         0xa0
+/* Using crtc2 */
+#define MGAREG2_C2CTL            0x10
+#define MGAREG2_C2HPARAM         0x14
+#define MGAREG2_C2HSYNC          0x18
+#define MGAREG2_C2VPARAM         0x1c
+#define MGAREG2_C2VSYNC          0x20
+#define MGAREG2_C2STARTADD0      0x28
+
+#define MGAREG2_C2OFFSET         0x40
+#define MGAREG2_C2DATACTL        0x4c
+
+#define MGAREG_C2CTL            0x3c10
+#define MGAREG_C2HPARAM         0x3c14
+#define MGAREG_C2HSYNC          0x3c18
+#define MGAREG_C2VPARAM         0x3c1c
+#define MGAREG_C2VSYNC          0x3c20
+#define MGAREG_C2STARTADD0      0x3c28
+
+#define MGAREG_C2OFFSET         0x3c40
+#define MGAREG_C2DATACTL        0x3c4c
+
+#define MGA1064_DISP_CTL        0x8a
+#define MGA1064_SYNC_CTL        0x8b
+#define MGA1064_PWR_CTL         0xa0
 
 /* video register */
 

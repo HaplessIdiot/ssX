@@ -24,7 +24,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSlib.h,v 1.3 1999/02/20 15:07:14 hohndel Exp $ */
+/* $XFree86: xc/lib/FS/FSlib.h,v 1.4 2001/01/17 19:41:28 dawes Exp $ */
 
 /*
 
@@ -297,7 +297,6 @@ extern int FSQueryXInfo ( FSServer *svr, Font fid, FSXFontInfoHeader *info,
 			  FSPropInfo *props, FSPropOffset **offsets,
 			  unsigned char **prop_data );
 extern int FSSetCatalogues ( FSServer *svr, int num, char **cats );
-extern int FSSync ( FSServer *svr, int discard );
 extern int FSFree ( char *data );
 extern unsigned char * FSMalloc ( unsigned size );
 

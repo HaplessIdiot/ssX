@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_g450pll.c,v 1.1 2001/02/13 19:19:16 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -15,16 +15,9 @@
 #include "mga_reg.h"
 #include "mga.h"
 
-#define DEBUG
-
 #define MNP_TABLE_SIZE 64
 #define CLKSEL_MGA     0x0c
 #define PLLLOCK        0x40
-
-#define outMGAdreg(reg, val) OUTREG8(RAMDAC_OFFSET + (reg), val)
-
-#define outMGAdac(reg, val) \
-	(outMGAdreg(MGA1064_INDEX, reg), outMGAdreg(MGA1064_DATA, val))
 
 static CARD32 G450ApplyPFactor(ScrnInfoPtr pScrn, CARD8 ucP, CARD32 *pulFIn)
 {
@@ -143,7 +136,10 @@ static CARD32 G450FindNextPLLParam(ScrnInfoPtr pScrn, CARD32 ulFout,
       *pulPLLMNP |= (CARD32)ucM << 16;
       *pulPLLMNP |= (CARD32)ucN << 8;
       *pulPLLMNP |= (CARD32)ucP;
-   }
+#ifdef DEBUG
+      ErrorF("FINS_S: VCO = %d, S = %02X, *pulPLLMNP = %08X\n", ulVCO, (ULONG)ucS, *pulPLLMNP);
+#endif
+  }
 
    return TRUE;
 }
@@ -196,12 +192,19 @@ static CARD32 G450FindFirstPLLParam(ScrnInfoPtr pScrn, CARD32 ulFout,
 static CARD32 G450WriteMNP(ScrnInfoPtr pScrn, CARD32 ulMNP)
 {
    MGAPtr pMga = MGAPTR(pScrn);
+   MGARegPtr pReg;
 
-   /* Pixel Pll */
-   outMGAdac(MGA1064_PIX_PLLC_M, (CARD8)(ulMNP >> 16));   
-   outMGAdac(MGA1064_PIX_PLLC_N, (CARD8)(ulMNP >>  8));   
-   outMGAdac(MGA1064_PIX_PLLC_P, (CARD8) ulMNP);   
-   OUTREG8(0x3c00, 0x4f);    
+   pReg = &pMga->ModeReg;
+
+   if (!pMga->SecondCrtc) {
+      outMGAdac(MGA1064_PIX_PLLC_M, (CARD8)(ulMNP >> 16));   
+      outMGAdac(MGA1064_PIX_PLLC_N, (CARD8)(ulMNP >>  8));   
+      outMGAdac(MGA1064_PIX_PLLC_P, (CARD8) ulMNP);   
+   } else {
+      outMGAdac(MGA1064_VID_PLL_M, (CARD8)(ulMNP >> 16));
+      outMGAdac(MGA1064_VID_PLL_N, (CARD8)(ulMNP >> 8)); 
+      outMGAdac(MGA1064_VID_PLL_P, (CARD8) ulMNP);
+   }
    return TRUE;
 }
 
@@ -256,7 +259,10 @@ static CARD32 G450IsPllLocked(ScrnInfoPtr pScrn, Bool *lpbLocked)
    MGAPtr pMga = MGAPTR(pScrn);
 
    /* Pixel PLL */
-   OUTREG8(0x3c00, 0x4f);    
+   if (!pMga->SecondCrtc)
+      OUTREG8(0x3c00, 0x4f);    
+   else
+      OUTREG8(0x3c00, 0x8f);
 
    ulFallBackCounter = 0;
 
@@ -290,7 +296,6 @@ double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
    Bool bFoundValidPLL;
    Bool bLocked;
    CARD8  ucMisc;
-   CARD8  ucS;
    CARD32 ulMaxIndex;
    CARD32 ulMNP;
    CARD32 ulMNPTable[MNP_TABLE_SIZE];
@@ -359,10 +364,10 @@ double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out)
    {
       ulTryMNP = ulMNPTable[ulIndex];
 
-      for(ucS = 0; !bFoundValidPLL && (ucS < 0x40); ucS += 8)
+/*    for(ucS = 0; !bFoundValidPLL && (ucS < 0x40); ucS += 8)*/
       {
-         ulTryMNP &= 0xffffffc7;
-         ulTryMNP |= (CARD32)ucS;
+/*         ulTryMNP &= 0xffffffc7;*/
+/*         ulTryMNP |= (CARD32)ucS;*/
          
          bLocked = TRUE;
          if((ulMNPTable[ulIndex] & 0xff00) < 0x300 ||

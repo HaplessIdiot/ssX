@@ -20,7 +20,7 @@
  * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.6 2000/12/01 00:24:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_driver.c,v 1.7 2000/12/02 15:30:54 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -818,7 +818,8 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
 
 #ifdef XF86DRI
-    if (pFfb->ffb_type != afb_m3 && pFfb->ffb_type != afb_m6) {
+    if (pFfb->ffb_type != afb_m3 && pFfb->ffb_type != afb_m6 &&
+	pFfb->NoAccel == FALSE) {
 	    pFfb->dri_enabled = FFBDRIScreenInit(pScreen);
 	    if (pFfb->dri_enabled == TRUE)
 		    xf86Msg(X_INFO, "%s: DRM initialized\n",
@@ -912,7 +913,8 @@ FFBScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	return FALSE;
 
     /* Setup DGA support. */
-    FFB_InitDGA(pScreen);
+    if (!pFfb->NoAccel)
+	    FFB_InitDGA(pScreen);
 
 #ifdef XF86DRI
     if (pFfb->dri_enabled) {
