@@ -1,4 +1,4 @@
-XFree86 3.9s (13 October 1997)
+XFree86 3.9s (15 October 1997)
 1315. Fix segmentation fault in glint driver when server is started with a
       card without GLINT/PERMEDIA chip (Stefan Dirsch).
 1314. Lots of fixes and additions to glint acceleration (Helmut Fahrion).
@@ -5438,4 +5438,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.536 1997/10/01 05:51:28 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.537 1997/10/13 17:16:31 hohndel Exp $
