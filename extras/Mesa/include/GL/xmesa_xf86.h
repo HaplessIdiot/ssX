@@ -25,6 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -127,12 +128,12 @@ do { \
 do { \
     xRectangle __r[1]; \
     (void) __d; \
-    ValidateGC(__b, __gc); \
+    ValidateGC((DrawablePtr)__b, __gc); \
     __r[0].x = __x; \
     __r[0].y = __y; \
     __r[0].width = __w; \
     __r[0].height = __h; \
-    (*__gc->ops->PolyFillRect)(__b, __gc, 1, __r); \
+    (*__gc->ops->PolyFillRect)((DrawablePtr)__b, __gc, 1, __r); \
 } while (0)
 
 #define XMesaPutImage(__d,__b,__gc,__i,__sx,__sy,__x,__y,__w,__h) \
