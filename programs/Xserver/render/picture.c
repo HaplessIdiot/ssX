@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picture.c,v 1.20 2001/12/13 04:35:41 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/picture.c,v 1.22 2002/05/24 20:07:51 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -225,12 +225,12 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	    break;
 	case StaticColor:
 	case PseudoColor:
-	    format = PICT_FORMAT (bpp, PICT_TYPE_COLOR, v, 0, 0, 0);
+	    format = PICT_VISFORMAT (bpp, PICT_TYPE_COLOR, v);
 	    nformats = addFormat (formats, nformats, format, depth);
 	    break;
 	case StaticGray:
 	case GrayScale:
-	    format = PICT_FORMAT (bpp, PICT_TYPE_GRAY, v, 0, 0, 0);
+	    format = PICT_VISFORMAT (bpp, PICT_TYPE_GRAY, v);
 	    nformats = addFormat (formats, nformats, format, depth);
 	    break;
 	}
@@ -363,10 +363,7 @@ PictureCreateDefaultFormats (ScreenPtr pScreen, int *nformatp)
 	case PICT_TYPE_COLOR:
 	case PICT_TYPE_GRAY:
 	    pFormats[f].type = PictTypeIndexed;
-	    pFormats[f].format = PICT_FORMAT(PICT_FORMAT_BPP(format),
-					     PICT_FORMAT_TYPE(format),
-					     0, 0, 0, 0);
-	    pFormats[f].pVisual = &pScreen->visuals[PICT_FORMAT_A(format)];
+	    pFormats[f].pVisual = &pScreen->visuals[PICT_FORMAT_VIS(format)];
 	    break;
 	}
     }
