@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.16 2001/01/06 20:19:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/stdResource.c,v 1.17 2001/02/12 01:25:24 tsi Exp $ */
 
 /* Standard resource information code */
 
@@ -71,6 +71,7 @@ xf86StdIsaBusAccWindowsFromOS(void)
 resPtr
 xf86StdAccResFromOS(resPtr ret)
 {
+    resPtr ret = NULL;
     resRange range;
 
     /*
