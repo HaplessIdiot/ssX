@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.5 1999/03/12 02:28:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.6 1999/03/14 14:10:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -169,7 +169,9 @@ ImageAccelInit(ScreenPtr pScreen)
     infoPtr->SetupForSolidFill = ImageSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = ImageSubsequentFillRectSolid;
     
-    infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK|ONLY_TWO_BITBLT_DIRECTIONS;
+    infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK |
+				       ONLY_TWO_BITBLT_DIRECTIONS |
+				       NO_TRANSPARENCY;
 
     infoPtr->SetupForScreenToScreenCopy = 	
 				ImageSetupForScreenToScreenCopy;
