@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 274. Exclude the Mac OS X menu bar from the X11 screen while running XDarwin
+      in rootless mode (Yannick Bessette and Torrey T. Lyons).
  273. Add support for builtin MTRR and AGP support in NetBSD 1.5Y.
       (Matthias Drochner and Frank van der Linden).
  272. Rework XDarwin front end to start X clients in the user's normal
@@ -13804,4 +13806,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1941 2001/09/17 03:08:38 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1942 2001/09/18 20:52:50 herrb Exp $

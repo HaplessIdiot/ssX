@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.22 2001/08/07 02:40:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.23 2001/09/17 03:08:40 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -142,6 +142,7 @@ static Xserver *oneXserver;
 {
     NXEvent ev;
     static BOOL mouse1Pressed = NO;
+    BOOL onScreen;
 
     if (!sendServerEvents) {
         return NO;
@@ -169,7 +170,10 @@ static Xserver *oneXserver;
     if (!serverVisible && !quartzRootless)
         return NO;
 
-    [self getNXMouse:&ev];
+    // If the mouse is not on the valid X display area,
+    // we don't send the X server key events.
+    onScreen = [self getNXMouse:&ev];
+
     switch (ev.type) {
         case NSLeftMouseUp:
             if (quartzRootless && !mouse1Pressed) {
@@ -209,6 +213,8 @@ static Xserver *oneXserver;
             break;
         case NSKeyDown:
         case NSKeyUp:
+            if (!onScreen)
+                return NO;
             ev.data.key.keyCode = [anEvent keyCode];
             ev.data.key.repeat = [anEvent isARepeat];
             break;
@@ -240,13 +246,38 @@ static Xserver *oneXserver;
     return YES;
 }
 
-// Fill in NXEvent with mouse coordinates, inverting y coordinate
-- (void)getNXMouse:(NXEvent*)ev
+// Fill in NXEvent with mouse coordinates, inverting y coordinate.
+// For rootless mode, the menu bar is treated as not part of the usable
+// X display area and the cursor position is adjusted accordingly.
+// Returns YES if the cursor is not in the menu bar.
+- (BOOL)getNXMouse:(NXEvent*)ev
 {
-    NSPoint pt=[NSEvent mouseLocation];
+    NSPoint pt = [NSEvent mouseLocation];
 
-    ev->location.x=(int)(pt.x);
-    ev->location.y=[[NSScreen mainScreen] frame].size.height - (int)(pt.y);
+    ev->location.x = (int)(pt.x);
+
+    if (quartzRootless) {
+        NSRect mainFrame = [[NSScreen mainScreen] frame];
+
+        if (pt.y < NSHeight(mainFrame) - aquaMenuBarHeight) {
+            // below the menu bar
+            ev->location.y = NSHeight(mainFrame) - aquaMenuBarHeight -
+                             (int)(pt.y);
+            return YES;
+        } else if (NSMouseInRect(pt, [[NSScreen mainScreen] frame], NO)) {
+            // in the menu bar
+            ev->location.y = aquaMenuBarHeight;
+            return NO;
+        } else {
+            // above the bottom of the menu bar, but not in it
+            ev->location.y = NSHeight([[NSScreen mainScreen] frame]) -
+                                (int)(pt.y);
+            return YES;
+        }
+    } else {
+        ev->location.y = NSHeight([[NSScreen mainScreen] frame]) - (int)(pt.y);
+        return YES;
+    }
 }
 
 // Append a string to the given enviroment variable
@@ -292,6 +323,12 @@ static Xserver *oneXserver;
 - (void)startX
 {
     [modeWindow close];
+
+    // Calculate the height of the menu bar so rootless mode can avoid it
+    if (quartzRootless) {
+        aquaMenuBarHeight = NSHeight([[NSScreen mainScreen] frame]) -
+                            NSMaxY([[NSScreen mainScreen] visibleFrame]);
+    }
 
     // Start the X server thread
     [NSThread detachNewThreadSelector:@selector(run) toTarget:self
