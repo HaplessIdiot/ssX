@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.21 2001/10/04 20:02:36 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.22 2001/10/22 15:21:11 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -57,7 +57,7 @@
 #define WINDOW_TITLE		"Cygwin/XFree86"
 #define WIN_SCR_PROP		"cyg_screen_prop"
 #define WIN_MSG_QUEUE_FNAME	"/dev/windows"
-#define WIN_LOG_FNAME		"/var/log/XWin.log"
+#define WIN_LOG_FNAME		"/tmp/XWin.log"
 
 #define NEED_EVENTS
 
