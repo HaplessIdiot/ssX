@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.3 2003/10/09 22:43:18 herrb Exp $
+XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.4tsi Exp $
 
 /*
  * BSDI shared library rules (converted from SVr4/Linux rules)
@@ -50,8 +50,9 @@ XCOMM $XFree86: xc/config/cf/bsdiLib.rules,v 3.3 2003/10/09 22:43:18 herrb Exp $
 install:: Concat(lib,libname.so.rev) 					@@\
 	MakeDir($(DESTDIR)dest)						@@\
 	$(INSTALL) $(INSTALLFLAGS) $(INSTBINFLAGS) Concat(lib,libname.so.rev) $(DESTDIR)dest @@\
-	$(RM) Concat($(DESTDIR)dest/lib,libname.so)			@@\
-	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)
+	@if $(SOSYMLINK); then (set -x; \				@@\
+	$(RM) Concat($(DESTDIR)dest/lib,libname.so); \			@@\
+	$(LN) Concat(lib,libname.so.rev) Concat($(DESTDIR)dest/lib,libname.so)); fi
 #endif /* InstallSharedLibrary */
 
 /*
@@ -80,10 +81,11 @@ Concat(lib,libname.so.rev):  solist					@@\
 	LinkBuildSonameLibrary($$SONAME)				@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
-	$(RM) Concat(lib,libname.so)					@@\
-	$(LN) $@ Concat(lib,libname.so)					@@\
+	@if $(SOSYMLINK); then (set -x; \				@@\
+	$(RM) Concat(lib,libname.so); \					@@\
+	$(LN) $@ Concat(lib,libname.so)); fi				@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibrary(Concat(lib,libname.so))			@@\
+	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
 	@SONAME=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`; \ @@\
@@ -110,10 +112,11 @@ Concat(lib,libname.so.rev):  deplist					@@\
 	LinkBuildSonameLibrary($$SONAME)				@@\
 	$(RM) $@ 							@@\
 	$(MV) $@~ $@							@@\
-	$(RM) Concat(lib,libname.so)					@@\
-	$(LN) $@ Concat(lib,libname.so)					@@\
+	@if $(SOSYMLINK); then (set -x; \				@@\
+	$(RM) Concat(lib,libname.so); \					@@\
+	$(LN) $@ Concat(lib,libname.so)); fi				@@\
 	LinkBuildLibrary($@)						@@\
-	LinkBuildLibrary(Concat(lib,libname.so))			@@\
+	LinkBuildLibraryMaybe(Concat(lib,libname.so),$(SOSYMLINK))	@@\
 									@@\
 clean::									@@\
 	@SONAME=`echo Concat(lib,libname.so.rev) | sed 's/\.[^\.]*$$//'`; \ @@\
