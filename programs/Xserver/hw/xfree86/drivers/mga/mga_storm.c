@@ -209,12 +209,10 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     /* clipping */
     infoPtr->SetClippingRectangle = MGASetClippingRectangle;
     infoPtr->DisableClipping = MGADisableClipping;
-    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE |
+    infoPtr->ClippingFlags = 	HARDWARE_CLIP_SOLID_LINE  |
 				HARDWARE_CLIP_DASHED_LINE |
-				HARDWARE_CLIP_SOLID_FILL |
-				HARDWARE_CLIP_MONO_8x8_FILL |
-				HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY |
-				HARDWARE_CLIP_SCREEN_TO_SCREEN_COLOR_EXPAND;
+				HARDWARE_CLIP_SOLID_FILL  |
+				HARDWARE_CLIP_MONO_8x8_FILL; 
 
     /* dashed lines */
     infoPtr->DashedLineFlags = LINE_PATTERN_MSBFIRST_LSBJUSTIFIED;
@@ -357,7 +355,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    AvailFBArea.y2 = pMga->FbUsableSize / (pScrn->displayWidth * PSZ / 8);
+    AvailFBArea.y2 = (min(pMga->FbUsableSize, 16*1024*1024)) / 
+			(pScrn->displayWidth * PSZ / 8);
     xf86InitFBManager(pScreen, &AvailFBArea); 
 
     return(XAAInit(pScreen, infoPtr));

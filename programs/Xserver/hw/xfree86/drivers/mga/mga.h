@@ -85,6 +85,7 @@ typedef struct {
     int displayWidth;
     rgb weight;
     Bool Overlay8Plus24;
+    DisplayModePtr mode;
 } MGAFBLayout;
 
 

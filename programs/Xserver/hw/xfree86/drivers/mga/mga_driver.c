@@ -1187,17 +1187,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    if (!xf86SetDefaultVisual(pScrn, -1)) {
+    if (!xf86SetDefaultVisual(pScrn, -1))
 	return FALSE;
-    } else {
-	/* We don't currently support DirectColor at > 8bpp */
-	if (pScrn->depth > 8 && pScrn->defaultVisual != TrueColor) {
-	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "Given default visual"
-		       " (%s) is not supported at depth %d\n",
-		       xf86GetVisualName(pScrn->defaultVisual), pScrn->depth);
-	    return FALSE;
-	}
-    }
 
     bytesPerPixel = pScrn->bitsPerPixel / 8;
 
@@ -1915,6 +1906,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     pMga->CurrentLayout.weight.green = pScrn->weight.green;
     pMga->CurrentLayout.weight.blue = pScrn->weight.blue;
     pMga->CurrentLayout.Overlay8Plus24 = pMga->Overlay8Plus24;
+    pMga->CurrentLayout.mode = pScrn->currentMode;
 
     return TRUE;
 }
@@ -2100,6 +2092,8 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	else
 	    outb(0xfac, 0x02);
     }
+
+    pMga->CurrentLayout.mode = mode;
 
     return TRUE;
 }
@@ -2434,14 +2428,8 @@ MGAAdjustFrame(int scrnIndex, int x, int y, int flags)
     pLayout = &pMga->CurrentLayout;
 
 
-    if(pMga->ShowCache && y && pScrn->vtSema) {
-	int lastline = pMga->FbUsableSize / 
-		(pScrn->displayWidth * pScrn->bitsPerPixel/8);
-
-	lastline -= pScrn->currentMode->VDisplay;
+    if(pMga->ShowCache && y && pScrn->vtSema)
 	y += pScrn->virtualY - 1;
-        if(y > lastline) y = lastline;
-    }
 
     Base = (y * pLayout->displayWidth + x + pMga->YDstOrg) >>
 		(3 - pMga->BppShifts[(pLayout->bitsPerPixel >> 3) - 1]);
