@@ -40,8 +40,12 @@ getStackTrace(unsigned long *results, int max)
 
 	while (ret_addr > CRT0_ADDRESS && max-- > 1) {
 	  *results++ = ret_addr;
+	  if (fp < (unsigned long) &first_local)
+	    break;
 	  fp = prev_fp_from_fp(fp);
 	  if (!fp)
+	    break;
+	  if (fp < (unsigned long) &first_local)
 	    break;
 	  ret_addr = ret_addr_from_fp(fp);
 	}
