@@ -1,4 +1,10 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 217. Experimental change to default behaviour of ATI panel support to override
+      the horizontal and vertical porches of all modes to that found in the
+      mode on entry (Marc La France).
+ 216. Fix detection of a panel's mode on entry in the ATI driver
+      (Marc La France).
+ 215. Fix for Option "CRTScreen" in ATI driver (Marc La France).
  214. Patch for the Thai glyphs in Mark Leisher's ClearlyU font (#4846,
       Theppitak Karoonboonyanan).
  213. Add a font encoding file for tis620-2 (#4845, Theppitak Karoonboonyanan).
@@ -13696,4 +13702,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1910 2001/08/13 19:34:54 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1911 2001/08/13 21:46:48 dawes Exp $

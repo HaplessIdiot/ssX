@@ -31,7 +31,7 @@
  * authorization  from Martin Kroeker or Daveg GmbH.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 0.9 2001/08/08 12:00:00 mk Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/calcomp/xf86Calcomp.c,v 1.1 2001/08/12 22:48:43 alanh Exp $ */
 
 #define _CALCOMP_C_
 /*****************************************************************************
@@ -162,130 +162,6 @@ CalcompSetupProc(       pointer module,
 
                                                                                                 
                                                                                                 
-static InputInfoPtr
-CalcompPreInit(       InputDriverPtr drv,
-                        IDevPtr dev, int flags)
-                        {
-
-	InputInfoPtr local;
-	CALCOMPPrivatePtr priv = xcalloc (1, sizeof (CALCOMPPrivateRec));
-	char *s;
-
-	    if (!(local = xf86AllocateInput(drv, 0)))
-	            return NULL;
-	            
-	xf86Msg (X_INFO,"Calcomp SetupProc called\n");
-	if ((!local) || (!priv))
-		goto SetupProc_fail;
-
-
-        xf86CollectInputOptions(local, default_options, NULL);
-        
-                xf86OptionListReport( local->options );
-                        local->fd = xf86OpenSerial (local->options);
-                        
-
-
-
-
-
-
-	if (local->fd == -1)
-	{
-		xf86Msg (X_ERROR,"CALCOMP driver unable to open device\n");
-		goto SetupProc_fail;
-	} else {
-		xf86Msg( X_INFO,"CALCOMP driver: Serial device opened\n");
-		}
-
-	priv->min_x = xf86SetIntOption( local->options, "MinX", 0 );
-	priv->max_x = xf86SetIntOption( local->options, "MaxX", 1000 );
-	priv->min_y = xf86SetIntOption( local->options, "MinY", 0 );
-	priv->max_y = xf86SetIntOption( local->options, "MaxY", 1000 );
-	priv->min_z = xf86SetIntOption( local->options, "MinZ", 0 );
-	priv->max_z = xf86SetIntOption( local->options, "MaxZ", 32 );
-	priv->button_threshold = xf86SetIntOption (local->options, "ButtonThreshold", 16 );
-	priv->pressure = xf86SetIntOption (local->options, "Pressure", 0);
-	priv->untouch_delay = xf86SetIntOption( local->options, "UntouchDelay", 10 );
-	priv->report_delay = xf86SetIntOption( local->options, "ReportDelay", 40 );
-	priv->screen_num = xf86SetIntOption( local->options, "ScreenNumber", 0 );
-	priv->button_number = xf86SetIntOption( local->options, "ButtonNumber", 1 );
-
-	xf86Msg(X_INFO,"options read MaxX=%d, MaxY=%d\n",priv->max_x,priv->max_y);
-	
-	s = xf86FindOptionValue (local->options, "ReportingMode");
-	if ((s) && (xf86NameCmp (s, "raw") == 0))
-	        
-		priv->reporting_mode = TS_Raw;
-	else
-		priv->reporting_mode = TS_Scaled;
-
-	priv->checksum = 0;
-	priv->buffer = XisbNew (local->fd, 200);
-
-	DBG (9, XisbTrace (priv->buffer, 1));
-
-	/* 
-	 * Verify that your hardware is attached and fuctional if you can
-	 */
-	if (QueryHardware (local->fd, priv) != Success)
-	{
-		xf86Msg (X_ERROR,"Unable to query/initialize CALCOMP hardware.\n");
-		goto SetupProc_fail;
-	}else
-		xf86Msg (X_INFO,"Calcomp tablet queried OK\n");
-	
-	local->name = xf86SetStrOption( local->options, "DeviceName", "CALCOMP XInput Device");
-	xf86Msg(X_CONFIG," Calcomp device name  is  %s\n",local->name);	
-	/* Set the type that's appropriate for your device
-	 * XI_KEYBOARD
-	 * XI_MOUSE
-	 * XI_TABLET
-	 * XI_TOUCHSCREEN
-	 * XI_TOUCHPAD
-	 * XI_BARCODE
-	 * XI_BUTTONBOX
-	 * XI_KNOB_BOX
-	 * XI_ONE_KNOB
-	 * XI_NINE_KNOB
-	 * XI_TRACKBALL
-	 * XI_QUADRATURE
-	 * XI_ID_MODULE
-	 * XI_SPACEBALL
-	 * XI_DATAGLOVE
-	 * XI_EYETRACKER
-	 * XI_CURSORKEYS
-	 * XI_FOOTMOUSE
-	 */
-	local->type_name = XI_TABLET;
-	/* 
-	 * Standard setup for the local device record
-	 */
-	local->device_control = DeviceControl;
-	local->read_input = ReadInput;
-	local->control_proc = ChangeControlProc;
-	local->close_proc = CloseProc;
-	local->switch_mode = SwitchMode;
-	local->conversion_proc = ConvertProc;
-	local->dev = NULL;
-	local->private = priv;
-	local->private_flags = 0;
-	local->history_size = xf86SetIntOption( local->options, "HistorySize", 0 );
-	        local->flags |= XI86_CONFIGURED;
-	                
-                        xf86Msg(X_INFO,"Calcomp base setup finished\n");
-                        return (local);
-SetupProc_fail:
-	xf86Msg (X_ERROR,"Calcomp setup failed, unloading tablet driver\n");
-/* taken from xf86Wacom*/
-	xfree (priv);
-	xf86DeleteInput(local, 0);
-/*         *          */	    
-	return (NULL);
-
-
-                        }
-                                                                                                
 XF86ModuleData calcompModuleData = { &VersionRec, CalcompSetupProc, NULL };
                                                                                                 
                                                                                                 
@@ -294,9 +170,6 @@ XF86ModuleData calcompModuleData = { &VersionRec, CalcompSetupProc, NULL };
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              
                                                         
 
-/*
-XF86ModuleData calcompModuleData = { &VersionRec, CalcompSetupProc, TearDownProc };
-*/
 /*****************************************************************************
  *	Function Definitions
  ****************************************************************************/
@@ -739,6 +612,130 @@ int err;
 	
 }
 
+static InputInfoPtr
+CalcompPreInit(       InputDriverPtr drv,
+                        IDevPtr dev, int flags)
+                        {
+
+	InputInfoPtr local;
+	CALCOMPPrivatePtr priv = xcalloc (1, sizeof (CALCOMPPrivateRec));
+	char *s;
+
+	    if (!(local = xf86AllocateInput(drv, 0)))
+	            return NULL;
+	            
+	xf86Msg (X_INFO,"Calcomp SetupProc called\n");
+	if ((!local) || (!priv))
+		goto SetupProc_fail;
+
+
+        xf86CollectInputOptions(local, default_options, NULL);
+        
+                xf86OptionListReport( local->options );
+                        local->fd = xf86OpenSerial (local->options);
+                        
+
+
+
+
+
+
+	if (local->fd == -1)
+	{
+		xf86Msg (X_ERROR,"CALCOMP driver unable to open device\n");
+		goto SetupProc_fail;
+	} else {
+		xf86Msg( X_INFO,"CALCOMP driver: Serial device opened\n");
+		}
+
+	priv->min_x = xf86SetIntOption( local->options, "MinX", 0 );
+	priv->max_x = xf86SetIntOption( local->options, "MaxX", 1000 );
+	priv->min_y = xf86SetIntOption( local->options, "MinY", 0 );
+	priv->max_y = xf86SetIntOption( local->options, "MaxY", 1000 );
+	priv->min_z = xf86SetIntOption( local->options, "MinZ", 0 );
+	priv->max_z = xf86SetIntOption( local->options, "MaxZ", 32 );
+	priv->button_threshold = xf86SetIntOption (local->options, "ButtonThreshold", 16 );
+	priv->pressure = xf86SetIntOption (local->options, "Pressure", 0);
+	priv->untouch_delay = xf86SetIntOption( local->options, "UntouchDelay", 10 );
+	priv->report_delay = xf86SetIntOption( local->options, "ReportDelay", 40 );
+	priv->screen_num = xf86SetIntOption( local->options, "ScreenNumber", 0 );
+	priv->button_number = xf86SetIntOption( local->options, "ButtonNumber", 1 );
+
+	xf86Msg(X_INFO,"options read MaxX=%d, MaxY=%d\n",priv->max_x,priv->max_y);
+	
+	s = xf86FindOptionValue (local->options, "ReportingMode");
+	if ((s) && (xf86NameCmp (s, "raw") == 0))
+	        
+		priv->reporting_mode = TS_Raw;
+	else
+		priv->reporting_mode = TS_Scaled;
+
+	priv->checksum = 0;
+	priv->buffer = XisbNew (local->fd, 200);
+
+	DBG (9, XisbTrace (priv->buffer, 1));
+
+	/* 
+	 * Verify that your hardware is attached and fuctional if you can
+	 */
+	if (QueryHardware (local->fd, priv) != Success)
+	{
+		xf86Msg (X_ERROR,"Unable to query/initialize CALCOMP hardware.\n");
+		goto SetupProc_fail;
+	}else
+		xf86Msg (X_INFO,"Calcomp tablet queried OK\n");
+	
+	local->name = xf86SetStrOption( local->options, "DeviceName", "CALCOMP XInput Device");
+	xf86Msg(X_CONFIG," Calcomp device name  is  %s\n",local->name);	
+	/* Set the type that's appropriate for your device
+	 * XI_KEYBOARD
+	 * XI_MOUSE
+	 * XI_TABLET
+	 * XI_TOUCHSCREEN
+	 * XI_TOUCHPAD
+	 * XI_BARCODE
+	 * XI_BUTTONBOX
+	 * XI_KNOB_BOX
+	 * XI_ONE_KNOB
+	 * XI_NINE_KNOB
+	 * XI_TRACKBALL
+	 * XI_QUADRATURE
+	 * XI_ID_MODULE
+	 * XI_SPACEBALL
+	 * XI_DATAGLOVE
+	 * XI_EYETRACKER
+	 * XI_CURSORKEYS
+	 * XI_FOOTMOUSE
+	 */
+	local->type_name = XI_TABLET;
+	/* 
+	 * Standard setup for the local device record
+	 */
+	local->device_control = DeviceControl;
+	local->read_input = ReadInput;
+	local->control_proc = ChangeControlProc;
+	local->close_proc = CloseProc;
+	local->switch_mode = SwitchMode;
+	local->conversion_proc = ConvertProc;
+	local->dev = NULL;
+	local->private = priv;
+	local->private_flags = 0;
+	local->history_size = xf86SetIntOption( local->options, "HistorySize", 0 );
+	        local->flags |= XI86_CONFIGURED;
+	                
+                        xf86Msg(X_INFO,"Calcomp base setup finished\n");
+                        return (local);
+SetupProc_fail:
+	xf86Msg (X_ERROR,"Calcomp setup failed, unloading tablet driver\n");
+/* taken from xf86Wacom*/
+	xfree (priv);
+	xf86DeleteInput(local, 0);
+/*         *          */	    
+	return (NULL);
+
+
+                        }
+                                                                                                
 /* 
  * This function should be renamed for your device and tailored to handle
  * your device's protocol.

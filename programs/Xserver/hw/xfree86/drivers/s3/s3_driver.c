@@ -34,7 +34,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.1 2001/07/02 10:46:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3_driver.c,v 1.2 2001/07/02 21:50:07 paulo Exp $ */
 
 
 #include "xf86.h"
@@ -86,7 +86,7 @@ short s3alu[16] =
 /*
  * Prototypes
  */
-static OptionInfoPtr S3AvailableOptions(int chipid, int busid);
+static const OptionInfoRec * S3AvailableOptions(int chipid, int busid);
 static void S3Identify(int flags);
 static Bool S3Probe(DriverPtr drv, int flags);
 static Bool S3PreInit(ScrnInfoPtr pScrn, int flags);
@@ -99,7 +99,6 @@ static Bool S3MapMem(ScrnInfoPtr pScrn);
 static void S3UnmapMem(ScrnInfoPtr pScrn);
 static Bool S3ModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static void S3AdjustFrame(int scrnIndex, int x, int y, int flags);
-Bool S3SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 Bool S3CloseScreen(int scrnIndex, ScreenPtr pScreen);
 Bool S3SaveScreen(ScreenPtr pScreen, int mode);
 static void S3FreeScreen(int scrnIndex, int flags);
@@ -297,7 +296,7 @@ static void S3FreeRec(ScrnInfoPtr pScrn)
         pScrn->driverPrivate = NULL;
 }
 
-static OptionInfoPtr S3AvailableOptions(int chipid, int busid)
+static const OptionInfoRec * S3AvailableOptions(int chipid, int busid)
 {
         return S3Options;
 }

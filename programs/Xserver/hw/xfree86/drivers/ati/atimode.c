@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.5 2001/04/16 15:02:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.6 2001/07/19 02:22:50 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -300,6 +300,8 @@ ATIModePreInit
                     pATIHW->lcd_index = lcd_index &
                         ~(LCD_REG_INDEX | LCD_DISPLAY_DIS | LCD_SRC_SEL |
                           LCD_CRTC2_DISPLAY_DIS);
+                    if (pATI->Chip != ATI_CHIP_264XL)
+                        pATIHW->lcd_index |= LCD_CRTC2_DISPLAY_DIS;
                     pATIHW->config_panel =
                         ATIGetMach64LCDReg(LCD_CONFIG_PANEL) |
                         DONT_SHADOW_HEND;
@@ -436,37 +438,34 @@ ATIModeSave
 
             if (pATI->LCDPanelID >= 0)
             {
-                if (!pATI->OptionCRT)
-                {
-                    /* Switch to shadow registers */
-                    if (pATI->Chip == ATI_CHIP_264LT)
-                        outr(LCD_GEN_CTRL,
-                            (pATIHW->lcd_gen_ctrl & ~CRTC_RW_SELECT) |
-                            (SHADOW_EN | SHADOW_RW_EN));
-                    else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                                (pATI->Chip == ATI_CHIP_264XL) ||
-                                (pATI->Chip == ATI_CHIP_MOBILITY)) */
-                        ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                            (pATIHW->lcd_gen_ctrl & ~CRTC_RW_SELECT) |
-                            (SHADOW_EN | SHADOW_RW_EN));
+                /* Switch to shadow registers */
+                if (pATI->Chip == ATI_CHIP_264LT)
+                    outr(LCD_GEN_CTRL,
+                        (pATIHW->lcd_gen_ctrl & ~CRTC_RW_SELECT) |
+                        (SHADOW_EN | SHADOW_RW_EN));
+                else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                            (pATI->Chip == ATI_CHIP_264XL) ||
+                            (pATI->Chip == ATI_CHIP_MOBILITY)) */
+                    ATIPutMach64LCDReg(LCD_GEN_CNTL,
+                        (pATIHW->lcd_gen_ctrl & ~CRTC_RW_SELECT) |
+                        (SHADOW_EN | SHADOW_RW_EN));
 
 #ifndef AVOID_CPIO
 
-                    /* Save shadow VGA CRTC registers */
-                    for (Index = 0;
-                         Index < NumberOf(pATIHW->shadow_vga);
-                         Index++)
-                        pATIHW->shadow_vga[Index] =
-                            GetReg(CRTX(pATI->CPIO_VGABase), Index);
+                /* Save shadow VGA CRTC registers */
+                for (Index = 0;
+                     Index < NumberOf(pATIHW->shadow_vga);
+                     Index++)
+                    pATIHW->shadow_vga[Index] =
+                        GetReg(CRTX(pATI->CPIO_VGABase), Index);
 
 #endif /* AVOID_CPIO */
 
-                    /* Save shadow Mach64 CRTC registers */
-                    pATIHW->shadow_h_total_disp = inr(CRTC_H_TOTAL_DISP);
-                    pATIHW->shadow_h_sync_strt_wid = inr(CRTC_H_SYNC_STRT_WID);
-                    pATIHW->shadow_v_total_disp = inr(CRTC_V_TOTAL_DISP);
-                    pATIHW->shadow_v_sync_strt_wid = inr(CRTC_V_SYNC_STRT_WID);
-                }
+                /* Save shadow Mach64 CRTC registers */
+                pATIHW->shadow_h_total_disp = inr(CRTC_H_TOTAL_DISP);
+                pATIHW->shadow_h_sync_strt_wid = inr(CRTC_H_SYNC_STRT_WID);
+                pATIHW->shadow_v_total_disp = inr(CRTC_V_TOTAL_DISP);
+                pATIHW->shadow_v_sync_strt_wid = inr(CRTC_V_SYNC_STRT_WID);
 
                 /* Restore CRTC selection and shadow state */
                 if (pATI->Chip == ATI_CHIP_264LT)
@@ -811,22 +810,18 @@ ATIModeCalculate
                         pATI->LCDVertical, VERT_STRETCH_RATIO0);
         }
 
-        if (!pATI->OptionCRT)
-        {
-
 #ifndef AVOID_CPIO
 
-            /* Copy non-shadow CRTC register values to the shadow set */
-            for (Index = 0;  Index < NumberOf(pATIHW->shadow_vga);  Index++)
-                pATIHW->shadow_vga[Index] = pATIHW->crt[Index];
+        /* Copy non-shadow CRTC register values to the shadow set */
+        for (Index = 0;  Index < NumberOf(pATIHW->shadow_vga);  Index++)
+            pATIHW->shadow_vga[Index] = pATIHW->crt[Index];
 
 #endif /* AVOID_CPIO */
 
-            pATIHW->shadow_h_total_disp = pATIHW->crtc_h_total_disp;
-            pATIHW->shadow_h_sync_strt_wid = pATIHW->crtc_h_sync_strt_wid;
-            pATIHW->shadow_v_total_disp = pATIHW->crtc_v_total_disp;
-            pATIHW->shadow_v_sync_strt_wid = pATIHW->crtc_v_sync_strt_wid;
-        }
+        pATIHW->shadow_h_total_disp = pATIHW->crtc_h_total_disp;
+        pATIHW->shadow_h_sync_strt_wid = pATIHW->crtc_h_sync_strt_wid;
+        pATIHW->shadow_v_total_disp = pATIHW->crtc_v_total_disp;
+        pATIHW->shadow_v_sync_strt_wid = pATIHW->crtc_v_sync_strt_wid;
     }
 
     /* Fill in clock data */
@@ -1022,48 +1017,44 @@ ATIModeSet
 
     if (pATI->LCDPanelID >= 0)
     {
-        if (!pATI->OptionCRT &&
-            (!pATI->OptionDevel || (pATIHW == &pATI->OldHW)))
-        {
-            /* Switch to shadow registers */
-            if (pATI->Chip == ATI_CHIP_264LT)
-                outr(LCD_GEN_CTRL, (pATIHW->lcd_gen_ctrl &
-                     ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT)) |
-                    (SHADOW_EN | SHADOW_RW_EN));
-            else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
-                        (pATI->Chip == ATI_CHIP_264XL) ||
-                        (pATI->Chip == ATI_CHIP_MOBILITY)) */
-                ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                    (pATIHW->lcd_gen_ctrl &
-                     ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT)) |
-                    (SHADOW_EN | SHADOW_RW_EN));
+        /* Switch to shadow registers */
+        if (pATI->Chip == ATI_CHIP_264LT)
+            outr(LCD_GEN_CTRL, (pATIHW->lcd_gen_ctrl &
+                 ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT)) |
+                (SHADOW_EN | SHADOW_RW_EN));
+        else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
+                    (pATI->Chip == ATI_CHIP_264XL) ||
+                    (pATI->Chip == ATI_CHIP_MOBILITY)) */
+            ATIPutMach64LCDReg(LCD_GEN_CNTL,
+                (pATIHW->lcd_gen_ctrl &
+                 ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT)) |
+                (SHADOW_EN | SHADOW_RW_EN));
 
-            /* Restore shadow registers */
-            switch (pATIHW->crtc)
-            {
+        /* Restore shadow registers */
+        switch (pATIHW->crtc)
+        {
 
 #ifndef AVOID_CPIO
 
-                case ATI_CRTC_VGA:
-                    for (Index = 0;
-                         Index < NumberOf(pATIHW->shadow_vga);
-                         Index++)
-                        PutReg(CRTX(pATI->CPIO_VGABase), Index,
-                            pATIHW->shadow_vga[Index]);
-                    /* Fall through */
+            case ATI_CRTC_VGA:
+                for (Index = 0;
+                     Index < NumberOf(pATIHW->shadow_vga);
+                     Index++)
+                    PutReg(CRTX(pATI->CPIO_VGABase), Index,
+                        pATIHW->shadow_vga[Index]);
+                /* Fall through */
 
 #endif /* AVOID_CPIO */
 
-                case ATI_CRTC_MACH64:
-                    outr(CRTC_H_TOTAL_DISP, pATIHW->shadow_h_total_disp);
-                    outr(CRTC_H_SYNC_STRT_WID, pATIHW->shadow_h_sync_strt_wid);
-                    outr(CRTC_V_TOTAL_DISP, pATIHW->shadow_v_total_disp);
-                    outr(CRTC_V_SYNC_STRT_WID, pATIHW->shadow_v_sync_strt_wid);
-                    break;
+            case ATI_CRTC_MACH64:
+                outr(CRTC_H_TOTAL_DISP, pATIHW->shadow_h_total_disp);
+                outr(CRTC_H_SYNC_STRT_WID, pATIHW->shadow_h_sync_strt_wid);
+                outr(CRTC_V_TOTAL_DISP, pATIHW->shadow_v_total_disp);
+                outr(CRTC_V_SYNC_STRT_WID, pATIHW->shadow_v_sync_strt_wid);
+                break;
 
-                default:
-                    break;
-            }
+            default:
+                break;
         }
 
         /* Restore CRTC selection & shadow state and enable stretching */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.47 2001/05/18 20:22:28 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.48 2001/05/22 15:55:49 tsi Exp $ */
 /*
  * Copyright 1999 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -1602,7 +1602,7 @@ ATIPreInit
                 pATI->LCDVSyncWidth =
                     (pATIHW->crt[17] - pATIHW->crt[16]) & 0x0FU;
                 pATI->LCDVBlankWidth =
-                    (pATIHW->crt[22] - pATIHW->crt[21]) & 0xFFU;
+                    ((pATIHW->crt[22] - pATIHW->crt[21]) & 0xFFU) + 1;
 
                 HDisplay = pATIHW->crt[0] + 5 - pATI->LCDHBlankWidth;
                 VDisplay = (((pATIHW->crt[7] << 4) & 0x0200U) |
