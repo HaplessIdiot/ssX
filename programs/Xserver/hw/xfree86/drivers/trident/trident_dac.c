@@ -54,6 +54,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     OUTB(0x3CE, MiscExtFunc);
     pReg->tridentRegs3CE[MiscExtFunc] = INB(0x3CF) & 0xF0;
     pReg->tridentRegs3x4[GraphEngReg] = 0x00; 
+    OUTB(vgaIOBase+ 4, AddColReg);
+    pReg->tridentRegs3x4[AddColReg] = INB(vgaIOBase + 5);
 
     /* Enable Chipset specific options */
     switch (pTrident->Chipset) {
@@ -97,6 +99,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    	pReg->tridentRegs3C4[NewMode2] |= 0x02; /* half clock */
     		pReg->tridentRegsDAC[0x00] |= 0x20;	/* mux mode */
 	    }	
+    	    pReg->tridentRegs3x4[AddColReg] = INB(vgaIOBase + 5) & 0xCF;
     }
 
     if (pTrident->IsCyber) {
@@ -198,8 +201,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     OUTB(vgaIOBase+ 4, DRAMControl);
     pReg->tridentRegs3x4[DRAMControl] = INB(vgaIOBase + 5) | 0x10;
     OUTB(vgaIOBase+ 4, AddColReg);
-    pReg->tridentRegs3x4[AddColReg] = (INB(vgaIOBase + 5) & 0xCF) |
-				      ((offset & 0x300) >> 4);
+    pReg->tridentRegs3x4[AddColReg] &= 0xEF;
+    pReg->tridentRegs3x4[AddColReg] |= (offset & 0x100) >> 4;
+
+    if (pTrident->Chipset >= TGUI9660)
+    	pReg->tridentRegs3x4[AddColReg] |= (offset & 0x200) >> 4;
    
     if (IsPciCard && UseMMIO) {
     	if (!pTrident->NoAccel)
