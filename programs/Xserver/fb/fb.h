@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.13 2000/03/01 00:25:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.14 2000/03/31 22:55:21 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -1385,6 +1385,9 @@ fbPolySegment (DrawablePtr  pDrawable,
 /*
  * fbpixmap.c
  */
+
+PixmapPtr
+fbCreatePixmapBpp (ScreenPtr pScreen, int width, int height, int depth, int bpp);
 
 PixmapPtr
 fbCreatePixmap (ScreenPtr pScreen, int width, int height, int depth);

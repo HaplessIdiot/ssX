@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.c,v 1.2 2000/02/08 13:13:26 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.c,v 1.4 2000/02/15 02:00:13 eich Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -7,6 +7,7 @@
 
 #include "xf86.h"
 #include "xf86str.h"
+#include "xf86_ansic.h"
 #include "compiler.h"
 #include "xf86Pci.h"
 #define _INT10_PRIVATE

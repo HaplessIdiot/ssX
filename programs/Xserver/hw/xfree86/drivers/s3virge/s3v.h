@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.20 2000/02/08 17:19:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.21 2000/03/31 22:55:46 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -28,15 +28,15 @@ in this Software without prior written authorization from the XFree86 Project.
 #ifndef _S3V_H
 #define _S3V_H
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 
 /* All drivers need this */
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"

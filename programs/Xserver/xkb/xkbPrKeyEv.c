@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbPrKeyEv.c,v 3.6 1997/07/12 12:09:42 hohndel Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -54,6 +54,7 @@ KeyClassPtr	keyc = keybd->key;
 XkbSrvInfoPtr	xkbi;
 int		key;
 XkbBehavior	behavior;
+unsigned        ndx;
 
     xkbi= keyc->xkbInfo;
     key= xE->u.u.detail;
@@ -107,34 +108,33 @@ XkbBehavior	behavior;
 		}
 		break;
 	    case XkbKB_RadioGroup:
-		if ( xE->u.u.type == KeyRelease )
-		    return;
-		else {
-		    unsigned	ndx= (behavior.data&(~XkbKB_RGAllowNone));
-		    if ( ndx<xkbi->nRadioGroups ) {
-			XkbRadioGroupPtr	rg;
+		ndx= (behavior.data&(~XkbKB_RGAllowNone));
+		if ( ndx<xkbi->nRadioGroups ) {
+		    XkbRadioGroupPtr	rg;
 
-			rg = &xkbi->radioGroups[ndx];
-			if ( rg->currentDown == xE->u.u.detail ) {
-			    if (behavior.data&XkbKB_RGAllowNone) {
-				xE->u.u.type = KeyRelease;
-				XkbHandleActions(keybd,keybd,xE,count);
-				rg->currentDown= 0;
-			    }
-			    return;
-			}
-			if ( rg->currentDown!=0 ) {
-			    int key = xE->u.u.detail;
-			    xE->u.u.type= KeyRelease;
-			    xE->u.u.detail= rg->currentDown;
+		    if ( xE->u.u.type == KeyRelease )
+		        return;
+
+		    rg = &xkbi->radioGroups[ndx];
+		    if ( rg->currentDown == xE->u.u.detail ) {
+		        if (behavior.data&XkbKB_RGAllowNone) {
+		            xE->u.u.type = KeyRelease;
 			    XkbHandleActions(keybd,keybd,xE,count);
-			    xE->u.u.type= KeyPress;
-			    xE->u.u.detail= key;
-			}
-			rg->currentDown= key;
+			    rg->currentDown= 0;
+		        }
+		        return;
 		    }
-		    else ErrorF("InternalError! Illegal radio group %d\n",ndx);
+		    if ( rg->currentDown!=0 ) {
+			int key = xE->u.u.detail;
+			xE->u.u.type= KeyRelease;
+			xE->u.u.detail= rg->currentDown;
+		        XkbHandleActions(keybd,keybd,xE,count);
+		        xE->u.u.type= KeyPress;
+		        xE->u.u.detail= key;
+		    }
+		    rg->currentDown= key;
 		}
+		else ErrorF("InternalError! Illegal radio group %d\n",ndx);
 		break;
 	    case XkbKB_Overlay1: case XkbKB_Overlay2:
 		{

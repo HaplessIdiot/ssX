@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.84 2000/03/06 23:54:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.85 2000/03/31 22:55:37 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -70,13 +70,13 @@
  *    advised of the possibility of such damage. 
  */
 
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
-
 /* All drivers should typically include these */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
@@ -553,6 +553,7 @@ typedef enum {
     OPTION_SHADOW_FB,
     OPTION_OVERLAY,
     OPTION_COLOR_KEY,
+    OPTION_VIDEO_KEY,
     OPTION_FP_CLOCK_8,
     OPTION_FP_CLOCK_16,
     OPTION_FP_CLOCK_24,
@@ -622,6 +623,7 @@ static OptionInfoRec ChipsHiQVOptions[] = {
     { OPTION_ROTATE, 	        "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_OVERLAY,		"Overlay",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_COLOR_KEY,		"ColorKey",	OPTV_INTEGER,	{0}, FALSE },
+    { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_FP_CLOCK_8,	"FPClock8",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_16,	"FPClock16",	OPTV_FREQ,      {0}, FALSE },
     { OPTION_FP_CLOCK_24,	"FPClock24",	OPTV_FREQ,      {0}, FALSE },
@@ -1066,6 +1068,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
     case CHIPS_CT65554:
     case CHIPS_CT65550:
 	cPtr->Flags |= ChipsGammaSupport;
+	cPtr->Flags |= ChipsVideoSupport;
 	/* Fall through */
     case CHIPS_CT65548:
     case CHIPS_CT65546:
@@ -1559,6 +1562,19 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	} else {
 	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
 		"\"%s\" is not a valid value for Option \"Overlay\"\n", s); 
+	}
+    }
+
+    if (!(cPtr->Flags & ChipsOverlay8plus16)) {
+	if(xf86GetOptValInteger(cPtr->Options, OPTION_VIDEO_KEY,
+		&(cPtr->videoKey))) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "video key set to 0x%x\n",
+		cPtr->videoKey);
+	} else {
+	    cPtr->videoKey =  (1 << pScrn->offset.red) | 
+			(1 << pScrn->offset.green) |
+			(((pScrn->mask.blue >> pScrn->offset.blue) - 1)
+			<< pScrn->offset.blue); 
 	}
     }
 
@@ -3933,6 +3949,11 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef ENABLE_SILKEN_MOUSE
 	xf86SetSilkenMouse(pScreen);
 #endif
+
+    if ((!(cPtr->Flags & ChipsOverlay8plus16)) &&
+		(cPtr->Flags & ChipsVideoSupport)) {
+	CHIPSInitVideo(pScreen);
+    }
     
     pScreen->SaveScreen = CHIPSSaveScreen;
 
@@ -4795,7 +4816,6 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
     CHIPSRegPtr ChipsNew;
     vgaRegPtr ChipsStd;
     unsigned int tmp;
-    int OverlaySkewX, OverlaySkewY;
     
     ChipsNew = &cPtr->ModeReg;
     ChipsStd = &hwp->ModeReg;
@@ -4824,18 +4844,18 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
    
     /* get C&T Specific Registers */
     for (i = 0; i < 0xFF; i++) {
-	ChipsNew->XR[i] = cPtr->readXR(cPtr, i);
+	/* Save SAR04 multimedia register correctly */
+	if (i == 0x4F) {
+	    cPtr->writeXR(cPtr, 0x4E, 0x04);
+	    ChipsNew->XR[i] = cPtr->readXR(cPtr, i);
+	} else
+	    ChipsNew->XR[i] = cPtr->readXR(cPtr, i);
     }
     for (i = 0; i < 0x80; i++) {
 	ChipsNew->FR[i] = cPtr->readFR(cPtr, i);
     }
     for (i = 0; i < 0x80; i++) {
-	/* Save SAR04 multimedia register correctly */
-	if (i == 0x4F) {
-	    cPtr->writeXR(cPtr, 0x4E, 0x04);
-	    ChipsNew->MR[i] = cPtr->readMR(cPtr, i);
-	} else
-	    ChipsNew->MR[i] = cPtr->readMR(cPtr, i);
+	ChipsNew->MR[i] = cPtr->readMR(cPtr, i);
     }
     for (i = 0x30; i < 0x80; i++) {    /* These are the CT extended CRT regs */
 	ChipsNew->CR[i] = hwp->readCrtc(hwp, i);
@@ -5117,7 +5137,46 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ChipsNew->FR[0x12] |= 0x4;	/* rid of line in DSTN screens  */
     }
 
-    /* Setup the overlay */
+    /*
+     * The zero position of the overlay does not align with the zero
+     * position of the display. The skew is dependent on the depth,
+     * display type and refresh rate. Calculate the skew before setting
+     * the X and Y dimensions of the overlay. These values are needed
+     * both by the overlay and XvImages. So calculate and store them
+     */
+    if (cPtr->PanelType & ChipsLCD) {
+	cPtr->OverlaySkewX = (((ChipsNew->FR[0x23] & 0xFF) 
+			    - (ChipsNew->FR[0x20] & 0xFF) + 3) << 3) 
+			    - 1;
+	cPtr->OverlaySkewY = (ChipsNew->FR[0x33]
+			    + ((ChipsNew->FR[0x36] & 0xF) << 8)
+			    - (ChipsNew->FR[0x31] & 0xF0)
+			    - (ChipsNew->FR[0x32] & 0x0F)
+			    - ((ChipsNew->FR[0x35] & 0xF0) << 4));
+	if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay)
+	    cPtr->OverlaySkewX += (cPtr->PanelSize.HDisplay - 
+						mode->CrtcHDisplay) / 2;
+	if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
+	    cPtr->OverlaySkewY += (cPtr->PanelSize.VDisplay - 
+						mode->CrtcVDisplay) / 2;
+    } else {
+	cPtr->OverlaySkewX = mode->CrtcHTotal - mode->CrtcHBlankStart - 1;
+	cPtr->OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd;
+	    
+	if (mode->Flags & V_INTERLACE) {
+	    /*
+	     * This handles 1024 and 1280 interlaced modes only. Its 
+	     * pretty arbitrary, but its what C&T recommends
+	     */
+	    if (mode->CrtcHDisplay == 1024)
+		cPtr->OverlaySkewY += 5;
+	    if (mode->CrtcHDisplay == 1280)
+		cPtr->OverlaySkewY *= 2;
+	    
+	}
+    }
+    
+    /* Setup the video/overlay */
     if (cPtr->Flags & ChipsOverlay8plus16) {
 	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
 	ChipsNew->XR[0x4F] = 0x2A;	/* SAR04 >352 pixel overlay width */
@@ -5140,58 +5199,23 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->MR[0x28] = (pScrn->displayWidth >> 2) - 1; /* Width */ 
 	ChipsNew->MR[0x34] = (pScrn->displayWidth >> 2) - 1;
 
-	/*
-	 * The zero position of the overlay does not align with the zero
-         * position of the display. The skew is dependent on the depth,
-	 * display type and refresh rate. Calculate the skew before setting
-	 * the X and Y dimensions of the overlay
-         */
-	if (cPtr->PanelType & ChipsLCD) {
-	    OverlaySkewX = (((ChipsNew->FR[0x23] & 0xFF) 
-			    - (ChipsNew->FR[0x20] & 0xFF) + 3) << 3) 
-			    - 1;
-	    OverlaySkewY = (ChipsNew->FR[0x33]
-			    + ((ChipsNew->FR[0x36] & 0xF) << 8)
-			    - (ChipsNew->FR[0x31] & 0xF0)
-			    - (ChipsNew->FR[0x32] & 0x0F)
-			    - ((ChipsNew->FR[0x35] & 0xF0) << 4));
-	    if (cPtr->PanelSize.HDisplay > mode->CrtcHDisplay)
-		OverlaySkewX += (cPtr->PanelSize.HDisplay - mode->CrtcHDisplay)
-							/ 2;
-	    if (cPtr->PanelSize.VDisplay > mode->CrtcVDisplay)
-		OverlaySkewY += (cPtr->PanelSize.VDisplay - mode->CrtcVDisplay)
-							/ 2;
-	} else {
-	    OverlaySkewX = mode->CrtcHTotal - mode->CrtcHBlankStart - 1;
-	    OverlaySkewY = mode->CrtcVTotal - mode->CrtcVSyncEnd;
-	    
-	    if (mode->Flags & V_INTERLACE) {
-		/*
-		 * This handles 1024 and 1280 interlaced modes only. Its 
-		 * pretty arbitrary, but its what C&T recommends
-		 */
-		if (mode->CrtcHDisplay == 1024)
-		    OverlaySkewY += 5;
-		if (mode->CrtcHDisplay == 1280)
-		    OverlaySkewY *= 2;
-		
-	    }
-	}
-
 	/* Left Edge of Overlay */
-	ChipsNew->MR[0x2A] = OverlaySkewX;
+	ChipsNew->MR[0x2A] = cPtr->OverlaySkewX;
 	ChipsNew->MR[0x2B] &= 0xF8;
 	/* Right Edge of Overlay */
-	ChipsNew->MR[0x2C] = (OverlaySkewX + pScrn->displayWidth - 1) & 0xFF;
+	ChipsNew->MR[0x2C] = (cPtr->OverlaySkewX + pScrn->displayWidth - 
+							1) & 0xFF;
 	ChipsNew->MR[0x2D] &= 0xF8;	/* Mask reserved bits */
-	ChipsNew->MR[0x2D] = ((OverlaySkewX + pScrn->displayWidth - 1) >> 8) & 0x07;
+	ChipsNew->MR[0x2D] = ((cPtr->OverlaySkewX + pScrn->displayWidth -
+							1) >> 8) & 0x07;
 	/* Top Edge of Overlay */
-	ChipsNew->MR[0x2E] = OverlaySkewY;
+	ChipsNew->MR[0x2E] = cPtr->OverlaySkewY;
 	ChipsNew->MR[0x2F] &= 0xF8;
 	/* Bottom Edge of Overlay*/
-	ChipsNew->MR[0x30] = (OverlaySkewY + pScrn->virtualY - 1 )& 0xFF;
+	ChipsNew->MR[0x30] = (cPtr->OverlaySkewY + pScrn->virtualY - 1 )& 0xFF;
 	ChipsNew->MR[0x31] &= 0xF8;	/* Mask reserved bits */
-	ChipsNew->MR[0x31] = ((OverlaySkewY + pScrn->virtualY - 1 ) >> 8) & 0x07;
+	ChipsNew->MR[0x31] = ((cPtr->OverlaySkewY + pScrn->virtualY - 
+							1 ) >> 8) & 0x07;
 
 	ChipsNew->MR[0x3C] &= 0x18;	/* Mask reserved bits */
 	ChipsNew->MR[0x3C] |= 0x07;	/* Enable keyed overlay window */
@@ -5201,6 +5225,17 @@ chipsModeInitHiQV(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	ChipsNew->MR[0x40] = 0xFF;
 	ChipsNew->MR[0x41] = 0xFF;
 	ChipsNew->MR[0x42] = 0x00;
+    } else if (cPtr->Flags & ChipsVideoSupport) {
+	ChipsNew->XR[0xD0] |= 0x10;	/* Force the Multimedia engine on */
+	ChipsNew->XR[0x4F] = 0x2A;	/* SAR04 >352 pixel overlay width */
+	ChipsNew->MR[0x3C] &= 0x18;	/* Ensure that the overlay is off */
+	cPtr->VideoZoomMax = 0x100;
+
+	if (cPtr->Chipset == CHIPS_CT65550) {
+	    tmp = cPtr->readXR(cPtr, 0x04);
+	    if (tmp < 0x02)				/* 65550 ES0 has */ 
+		cPtr->VideoZoomMax = 0x40;		/* 0x40 max zoom */
+	}
     }
 
     /* Program the registers */

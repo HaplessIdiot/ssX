@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.4 2000/03/20 15:57:52 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/chips.cpp,v 1.5 2000/03/21 19:57:12 dawes Exp $
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH CHIPS __drivermansuffix__ "Version 4.0"  "XFree86"
@@ -170,6 +170,10 @@ Enable 8+24 overlay mode.  Only appropriate for depth 24.  Default: off.
 Set the colormap index used for the transparency key for the depth 8 plane
 when operating in 8+16 overlay mode.  The value must be in the range
 2\-255.  Default: 255.
+.TP
+.BI "Option \*qVideoKey\*q \*q" integer \*q
+This sets the default pixel value for the YUV video overlay key.
+Default: undefined.
 .TP
 .BI "Option \*qShadowFB\*q \*q" boolean \*q
 Enable or disable use of the shadow framebuffer layer.  See

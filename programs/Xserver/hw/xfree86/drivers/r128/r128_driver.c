@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.25 2000/03/01 20:12:55 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.26 2000/03/06 23:17:44 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -70,9 +70,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mipointer.h"
 #include "micmap.h"
 
-#undef USE_FB			/* not until overlays and 24->32 code added */
+#define USE_FB			/* not until overlays and 24->32 code added */
 #ifdef USE_FB
 #include "fb.h"
+#include "fb24_32.h"
 #else
 				/* CFB support */
 #define PSZ 8
@@ -263,6 +264,7 @@ static const char *i2cSymbols[] = {
 #ifdef USE_FB
 static const char *fbSymbols[] = {
     "fbScreenInit",
+    "fb24_32ScreenInit",
     NULL
 };
 #else
@@ -691,9 +693,7 @@ static Bool R128PreInitVisual(ScrnInfoPtr pScrn)
     
     if (!xf86SetDepthBpp(pScrn, 8, 8, 8, (Support24bppFb
 					  | Support32bppFb
-#ifndef USE_FB
 					  | SupportConvert32to24
-#endif
 					  )))
 	return FALSE;
 
@@ -1000,7 +1000,11 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 
 				/* Get ScreenInit function */
 #ifdef USE_FB
-    mod = "fb"; Sym = "fbScreenInit";
+    mod = "fb";
+    if (pScrn->bitsPerPixel == 24 && info->pix24bpp != 24)
+	Sym = "fb24_32ScreenInit";
+    else
+	 Sym = "fbScreenInit";
 #else
     switch (pScrn->bitsPerPixel) {
     case  8: mod = "cfb";   Sym = "cfbScreenInit";   break;
@@ -1252,11 +1256,22 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 			  pScrn->defaultVisual)) return FALSE;
 
 #ifdef USE_FB
-    if (!fbScreenInit (pScreen, info->FB,
-		       pScrn->virtualX, pScrn->virtualY,
-		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
-		       pScrn->bitsPerPixel))
-	return FALSE;
+    if (pScrn->bitsPerPixel == 24 && info->pix24bpp != 24)
+    {
+	if (!fb24_32ScreenInit (pScreen, info->FB,
+				pScrn->virtualX, pScrn->virtualY,
+				pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
+				pScrn->bitsPerPixel))
+	    return FALSE;
+    }
+    else
+    {
+	if (!fbScreenInit (pScreen, info->FB,
+			   pScrn->virtualX, pScrn->virtualY,
+			   pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
+			   pScrn->bitsPerPixel))
+	    return FALSE;
+    }
 #else
     switch (pScrn->bitsPerPixel) {
     case 8:

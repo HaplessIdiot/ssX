@@ -1,8 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.12 2000/02/14 19:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.13 2000/02/29 03:09:17 dawes Exp $ */
 
-
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -10,6 +7,9 @@
 
 /* All drivers need this */
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* This is used for module versioning */
 #include "xf86Version.h"

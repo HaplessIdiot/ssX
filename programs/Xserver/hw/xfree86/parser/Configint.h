@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.13 1999/06/06 15:23:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Configint.h,v 1.14 1999/09/06 11:27:37 dawes Exp $ */
 /*
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -147,7 +147,8 @@ else\
 #define WHITE_MSG \
 "The White keyword must be followed by red, green and blue values."
 #define SCREEN_MSG \
-"The Screen keyword must be followed by an optional number and 1 or 5 \n\tscreen names in quotes."
+"The Screen keyword must be followed by an optional number, a screen name\n" \
+"\tin quotes, and optional position/layout information."
 #define INVALID_SCR_MSG \
 "Invalid Screen line."
 #define INPUTDEV_MSG \
@@ -180,6 +181,9 @@ else\
 "InputDevice section \"%s\" must have a Driver line."
 #define INVALID_GAMMA_MSG \
 "gamma correction value(s) expected\n either one value or three r/g/b values."
+#define GROUP_MSG \
+"The Group keyword must be followed by either a group name in quotes or\n" \
+"\ta numerical group id."
 
 /* Warning messages */
 #define OBSOLETE_MSG \

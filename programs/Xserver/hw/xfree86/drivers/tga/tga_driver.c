@@ -22,9 +22,8 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.41 2000/03/01 16:01:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.42 2000/03/06 22:59:32 dawes Exp $ */
 
-/*  #include "compiler.h" */
 /* everybody includes these */
 #include "xf86.h"
 #include "xf86_OSproc.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.11 2000/02/11 22:35:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_cursor.c,v 1.12 2000/02/14 19:20:45 dawes Exp $ */
 
 
 #include "X.h"
@@ -11,11 +11,7 @@
 #include "servermd.h"
 #include "windowstr.h"
 #include "mfb.h"
-#include "compiler.h"
-#include "xf86.h"
 #include "mipointer.h"
-#include "xf86Priv.h"
-#include "xf86_ansic.h"
 
 #include "apm.h"
 

@@ -9,10 +9,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.5 2000/02/15 18:01:02 dawes Exp $ */
-
-/* Everything using inb/outb, etc needs "compiler.h" */
-#include "compiler.h"
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.8 2000/02/27 02:45:26 alanh Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -20,6 +17,9 @@
 
 /* All drivers need this */
 #include "xf86_ansic.h"
+
+/* Everything using inb/outb, etc needs "compiler.h" */
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"

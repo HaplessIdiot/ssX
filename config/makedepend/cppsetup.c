@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.3 1998/10/02 06:15:21 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.4 1998/10/05 13:21:48 dawes Exp $ */
 
 #include "def.h"
 
@@ -188,7 +188,7 @@ my_eval_variable (IfParser *ip, const char *var, int len)
 	return 0;
     do {
 	var = (*s)->s_value;
-	if (!isvarfirstletter(*var))
+	if (!isvarfirstletter(*var) || !strcmp((*s)->s_name, var))
 	    break;
 	s = lookup_variable (ip, var, strlen(var));
     } while (s);

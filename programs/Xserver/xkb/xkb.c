@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.11 1996/12/23 07:10:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.12 1997/06/22 10:16:59 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -2397,13 +2397,13 @@ unsigned	 first,last;
 	    server->behaviors[wire->key].type= wire->type;
 	    server->behaviors[wire->key].data= wire->data;
 	    if ((wire->type==XkbKB_RadioGroup)&&(((int)wire->data)>maxRG))
-		maxRG= wire->data;
+		maxRG= wire->data + 1;
 	}
 	wire++;
     }
 
     if (maxRG>(int)xkbi->nRadioGroups) {
-        int sz = (maxRG+1)*sizeof(XkbRadioGroupRec);
+        int sz = maxRG*sizeof(XkbRadioGroupRec);
         if (xkbi->radioGroups)
              xkbi->radioGroups=(XkbRadioGroupPtr)_XkbRealloc(xkbi->radioGroups,sz);
         else xkbi->radioGroups= (XkbRadioGroupPtr)_XkbCalloc(1, sz);
@@ -2411,7 +2411,7 @@ unsigned	 first,last;
              if (xkbi->nRadioGroups)
                 bzero(&xkbi->radioGroups[xkbi->nRadioGroups],
                         (maxRG-xkbi->nRadioGroups)*sizeof(XkbRadioGroupRec));
-             xkbi->nRadioGroups= maxRG+1;
+             xkbi->nRadioGroups= maxRG;
         }
         else xkbi->nRadioGroups= 0;
         /* should compute members here */

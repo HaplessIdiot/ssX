@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.21 2000/01/22 01:59:56 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.22 2000/02/08 17:18:54 dawes Exp $ */
 /************************************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -1732,12 +1732,13 @@ find_existing_fpe(list, num, name, len)
 
 static int
 #if NeedFunctionPrototypes
-SetFontPathElements(int npaths, unsigned char *paths, int *bad)
+SetFontPathElements(int npaths, unsigned char *paths, int *bad, Bool persist)
 #else
-SetFontPathElements(npaths, paths, bad)
+SetFontPathElements(npaths, paths, bad, persist)
     int         npaths;
     unsigned char *paths;
     int        *bad;
+    Bool	persist;
 #endif
 {
     int         i,
@@ -1758,71 +1759,83 @@ SetFontPathElements(npaths, paths, bad)
 	if (fpe_functions[i].set_path_hook)
 	    (*fpe_functions[i].set_path_hook) ();
     }
-    for (i = 0; i < npaths; i++) {
+    for (i = 0; i < npaths; i++) 
+    {
 	len = (unsigned int) (*cp++);
 
-	if (len) {
+	if (len == 0) 
+	{
+	    if (persist)
+		ErrorF ("Removing empty element from the valid list of fontpaths\n");
+	    err = BadValue;
+	}
+	else
+	{
 	    /* if it's already in our active list, just reset it */
 	    /*
 	     * note that this can miss FPE's in limbo -- may be worth catching
 	     * them, though it'd muck up refcounting
 	     */
 	    fpe = find_existing_fpe(font_path_elements, num_fpes, cp, len);
-	    if (fpe) {
+	    if (fpe) 
+	    {
 		err = (*fpe_functions[fpe->type].reset_fpe) (fpe);
-		if (err == Successful) {
+		if (err == Successful) 
+		{
 		    UseFPE(fpe);/* since it'll be decref'd later when freed
 				 * from the old list */
-		    fplist[valid_paths++] = fpe;
-		    cp += len;
-		    continue;
 		}
-		/* if error or can't do it, act like it's a new one */
+		else
+		    fpe = 0;
 	    }
-	    fpe = (FontPathElementPtr) xalloc(sizeof(FontPathElementRec));
-	    if (!fpe) {
-		err = BadAlloc;
-		goto bail;
-	    }
-	    fpe->name = (char *) xalloc(len + 1);
-	    if (!fpe->name) {
-		xfree(fpe);
-		err = BadAlloc;
-		goto bail;
-	    }
-	    fpe->refcount = 1;
-
-	    strncpy(fpe->name, (char *) cp, (int) len);
-	    cp += len;
-	    fpe->name[len] = '\0';
-	    fpe->name_length = len;
-	    fpe->type = DetermineFPEType(fpe->name);
-	    if (fpe->type == -1) {
-		xfree(fpe->name);
-		xfree(fpe);
-		err = BadValue;
-		goto bail;
-	    }
-	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
-	    if (!loadableFonts) {
-		if (err != Successful) {
-		    xfree(fpe->name);
-		    xfree(fpe);
-		    err = BadValue;
+	    /* if error or can't do it, act like it's a new one */
+	    if (!fpe)
+	    {
+		fpe = (FontPathElementPtr) xalloc(sizeof(FontPathElementRec));
+		if (!fpe) 
+		{
+		    err = BadAlloc;
 		    goto bail;
 		}
-		fplist[valid_paths++] = fpe;
-	    } else {
-		if (err == Successful) /* a successful font, add it to list */
-		    fplist[valid_paths++] = fpe;
+		fpe->name = (char *) xalloc(len + 1);
+		if (!fpe->name) 
+		{
+		    xfree(fpe);
+		    err = BadAlloc;
+		    goto bail;
+		}
+		fpe->refcount = 1;
+    
+		strncpy(fpe->name, (char *) cp, (int) len);
+		fpe->name[len] = '\0';
+		fpe->name_length = len;
+		fpe->type = DetermineFPEType(fpe->name);
+		if (fpe->type == -1)
+		    err = BadValue;
 		else
-		    ErrorF("Removing %s from the valid list of fontpaths\n",
-			   fpe->name);
+		    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
+		if (err != Successful)
+		{
+		    if (persist)
+		    {
+			ErrorF("Could not init font path element %s, removing from list!\n",
+			       fpe->name);
+		    }
+		    xfree (fpe->name);
+		    xfree (fpe);
+		}
 	    }
-	} else {
-	    err = BadValue;
-	    goto bail;
 	}
+	if (err != Successful)
+	{
+	    if (!persist)
+		goto bail;
+	}
+	else
+	{
+	    fplist[valid_paths++] = fpe;
+	}
+	cp += len;
     }
 
     FreeFontPath(font_path_elements, num_fpes, FALSE);
@@ -1834,8 +1847,8 @@ SetFontPathElements(npaths, paths, bad)
     return Success;
 bail:
     *bad = i;
-    while (--i >= 0)
-	FreeFPE(fplist[i]);
+    while (--valid_paths >= 0)
+	FreeFPE(fplist[valid_paths]);
     xfree(fplist);
     return err;
 }
@@ -1854,7 +1867,7 @@ SetFontPath(client, npaths, paths, error)
 	if (SetDefaultFontPath(defaultFontPath) != Success)
 	    return BadName;
     } else {
-	err = SetFontPathElements(npaths, paths, error);
+	err = SetFontPathElements(npaths, paths, error, FALSE);
     }
     return err;
 }
@@ -1894,7 +1907,7 @@ SetDefaultFontPath(path)
     }
     *nump = (unsigned char) size;
 
-    err = SetFontPathElements(num, newpath, &bad);
+    err = SetFontPathElements(num, newpath, &bad, TRUE);
 
     DEALLOCATE_LOCAL(newpath);
 

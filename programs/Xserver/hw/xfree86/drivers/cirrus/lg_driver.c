@@ -13,11 +13,9 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.21 2000/02/15 18:01:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.24 2000/02/27 02:45:26 alanh Exp $ */
 
 #define EXPERIMENTAL
-
-#include "compiler.h"
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -25,6 +23,8 @@
 
 /* All drivers need this */
 #include "xf86_ansic.h"
+
+#include "compiler.h"
 
 /* Drivers for PCI hardware need this */
 #include "xf86PciInfo.h"
