@@ -646,6 +646,8 @@
 
         o  Craig Groeschel <craig@metrolink.com>
 
+        o  Bryan Feir <jenora@istar.ca>
+
      Mach64 accelerated code by:
 
         o  Kevin Martin <martin@cs.unc.edu>,
@@ -654,9 +656,9 @@
 
         o  Kevin Martin <martin@cs.unc.edu>,
 
+
+
         o  Rik Faith <faith@cs.unc.edu>,
-
-
 
         o  Tiago Gons <tiago@comosjn.hobby.nl>,
 
@@ -720,9 +722,9 @@
         o  Per Lindqvist <pgd@compuram.bbt.se> and Doug Evans
            <dje@cygnus.com>.
 
+
+
         o  Ported to X11R5 by Rik Faith <faith@cs.unc.edu>.
-
-
 
         o  Rewritten by Marc La France <Marc.La-France@ualberta.ca>
 
@@ -787,8 +789,8 @@
 
         o  Regis Cridlig <cridlig@dmi.ens.fr>
 
-        o  Jon Block <block@frc.com>
 
+        o  Jon Block <block@frc.com>
 
         o  Mike Hollick <hollick@graphics.cis.upenn.edu>
 
@@ -850,6 +852,9 @@
 
   Mail sent to <Core@XFree86.org> will reach the core team.  Please note
   that support questions should be sent to <XFree86@XFree86.org>.
+
+
+
 
   9.  The XFree86 Project, Inc.
 
@@ -916,12 +921,12 @@
   what we have been doing in the past, rather than something entirely
   new.
 
+
   Here is a list of the organizations and individuals who have provided
   sponsorship to The XFree86 Project, Inc, either by financial
   contribution or by the donation of equipment and resources.  The
   XFree86 Project, Inc gratefully acknowledges these contributions, and
   hopes that we can do justice to them by continuing to release high-
-
   quality free software for the betterment of the Internet community as
   a whole.
 
@@ -981,12 +986,13 @@
 
      o  Daniel Kraemer
 
+
+
      o  Frank & Paige McCormick
 
      o  Linux International
 
      o  Linux Support Team, Erlangen, Germany
-
 
      o  LunetIX Softfair <http://www.lunetix.de>, Berlin, Germany
 
@@ -1046,13 +1052,13 @@
   available via anonymous FTP from:
 
 
+
+
      o  ftp://ftp.XFree86.org/pub/XFree86
 
   and the following mirror sites:
 
      o  North America:
-
-
 
         +  ftp://XFree86.cdrom.com/pub/XFree86 (source and binaries)
 
@@ -1118,8 +1124,6 @@
 
         +  ftp://x.physics.usyd.edu.au/pub/XFree86 (source and binaries)
 
-
-
         +  ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86 (source and
            binaries)
 
@@ -1141,17 +1145,13 @@
   building the distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.54 1996/09/14 13:10:27 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.55 1996/09/25 14:17:34 dawes Exp $
 
 
 
 
 
   $XConsortium: README.sgml /main/15 1996/01/30 15:13:03 kaleb $
-
-
-
-
 
 
 
