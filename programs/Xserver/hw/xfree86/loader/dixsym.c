@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.44 2001/11/16 16:47:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.45 2001/11/17 16:05:59 dawes Exp $ */
 
 
 /*
@@ -259,6 +259,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(ErrorF)
   SYMFUNC(FatalError)
   SYMFUNC(Xstrdup)
+  SYMFUNC(XNFstrdup)
   SYMVAR(Must_have_memory)
   /* xalloc.c */
   SYMFUNC(XNFalloc)
