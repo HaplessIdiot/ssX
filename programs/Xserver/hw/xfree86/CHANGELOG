@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 173. In XDarwin, add ability to change modifiers to use when faking multiple
+      mouse buttons (Gregory Parker).
  172. Do not build Cygwin/XFree86 with -ansi as Cygwin's library (newlib) lacks
       some prototype definitions that cause runtime failures (hypot being one
       of them) (Alan Hourihane).
@@ -13611,4 +13613,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1895 2001/08/03 08:33:57 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1896 2001/08/03 23:43:38 alanh Exp $

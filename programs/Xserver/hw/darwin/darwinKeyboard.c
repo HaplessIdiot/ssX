@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.6 2001/07/15 03:12:23 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.7 2001/08/01 05:34:05 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -73,13 +73,16 @@
 #include "keysym.h"
 
 #define GLYPHS_PER_KEY  4
-#define NUM_KEYCODES    248		// NX_NUMKEYCODES might be better
+#define NUM_KEYCODES    248	// NX_NUMKEYCODES might be better
 #define MAX_KEYCODE     NUM_KEYCODES + MIN_KEYCODE - 1
 
-#define AltMask	        Mod1Mask
+#define AltMask         Mod1Mask
 #define NumLockMask     Mod2Mask
 #define MetaMask        Mod3Mask
-#define ScrollLockMask  Mod4Mask
+#define FunctionMask    Mod4Mask
+
+// FIXME: It would be nice to support some of the extra keys in XF86keysym.h, 
+// at least the volume controls that now ship on every Apple keyboard.
 
 static KeySym const ascii_to_x[256] = {
 	NoSymbol,	NoSymbol,	NoSymbol,	XK_KP_Enter,
@@ -199,16 +202,16 @@ static void DarwinChangeKeyboardControl( DeviceIntPtr device, KeybdCtrl *ctrl ) 
     // keyclick, bell volume / pitch, autorepead, LED's
 }
 
-static	CARD8 modMap[MAP_LENGTH];
-static	KeySym map[256 * GLYPHS_PER_KEY];
+static  CARD8 modMap[MAP_LENGTH];
+static  KeySym map[MAP_LENGTH * GLYPHS_PER_KEY];
 static  unsigned char modifierKeycodes[NX_NUMMODIFIERS][2];
 static  FILE *fref = NULL;
 static  char *inBuffer = NULL;
 
 //-----------------------------------------------------------------------------
 // Data Stream Object
-//	Can be configured to treat embedded "numbers" as being composed of
-//	either 1, 2, or 4 bytes, apiece.
+//      Can be configured to treat embedded "numbers" as being composed of
+//      either 1, 2, or 4 bytes, apiece.
 //-----------------------------------------------------------------------------
 typedef struct _DataStream
 {
@@ -260,9 +263,9 @@ static int get_dword( DataStream* s )
 static int get_number( DataStream* s )
 {
     switch (s->number_size) {
-	case 4:  return get_dword(s);
-	case 2:  return get_word(s);
-	default: return get_byte(s);
+        case 4:  return get_dword(s);
+        case 2:  return get_word(s);
+        default: return get_byte(s);
     }
 }
 
@@ -279,8 +282,8 @@ static short bits_set( short mask )
     short n = 0;
 
     for ( ; mask != 0; mask >>= 1)
-	if ((mask & 0x01) != 0)
-	    n++;
+        if ((mask & 0x01) != 0)
+            n++;
     return n;
 }
 
@@ -468,46 +471,56 @@ void DarwinKeyboardInit(
     // Store modifier keycodes in modifierKeycodes.
     numMods = get_number(keyMapStream);
     while (numMods-- > 0) {
-        int	            left = 1;                   // first keycode is left
+        int             left = 1;               // first keycode is left
         short const     charCode = get_number(keyMapStream);
         short           numKeyCodes = get_number(keyMapStream);
+
+        // This is just a marker, not a real modifier.
+        // Store numeric keypad keys for later.
         if (charCode == NX_MODIFIERKEY_NUMERICPAD) {
             numPadStart = keyMapStream->data;
             numPadKeys = numKeyCodes;
         }
+
         while (numKeyCodes-- > 0) {
             const short keyCode = get_number(keyMapStream);
-            if (charCode == NX_MODIFIERKEY_ALPHALOCK) {
-                modMap[keyCode + MIN_KEYCODE] = LockMask;
-                map[keyCode * GLYPHS_PER_KEY] = XK_Caps_Lock;
-                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
-            } else if (charCode == NX_MODIFIERKEY_SHIFT) {
-                modMap[keyCode + MIN_KEYCODE] = ShiftMask;
-                map[keyCode * GLYPHS_PER_KEY] =
-                        (left ? XK_Shift_L : XK_Shift_R);
-                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
-            } else if (charCode == NX_MODIFIERKEY_CONTROL) {
-                modMap[keyCode + MIN_KEYCODE] = ControlMask;
-                map[keyCode * GLYPHS_PER_KEY] =
-                        (left ? XK_Control_L : XK_Control_R);
-                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
-            } else if (charCode == NX_MODIFIERKEY_ALTERNATE) {
-                modMap[keyCode + MIN_KEYCODE] = AltMask;
-                map[keyCode * GLYPHS_PER_KEY] =
-                        (left ? XK_Alt_L : XK_Alt_R);
-                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
-            } else if (charCode == NX_MODIFIERKEY_COMMAND) {
-                modMap[keyCode + MIN_KEYCODE] = MetaMask;
-                map[keyCode * GLYPHS_PER_KEY] =
-                        (left ? XK_Meta_L : XK_Meta_R);
-                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
-            } else if (charCode == NX_MODIFIERKEY_NUMERICPAD) {
-                continue;
-            } else if (charCode == NX_MODIFIERKEY_HELP) {
-                map[keyCode * GLYPHS_PER_KEY] = XK_Help;
-                modifierKeycodes[charCode][1-left] = keyCode + MIN_KEYCODE;
-            } else {
-                continue;
+            if (charCode != NX_MODIFIERKEY_NUMERICPAD) {
+                modifierKeycodes[charCode][1-left] = keyCode;
+                switch (charCode) {
+                    case NX_MODIFIERKEY_ALPHALOCK:
+                        modMap[keyCode + MIN_KEYCODE] = LockMask;
+                        map[keyCode * GLYPHS_PER_KEY] = XK_Caps_Lock;
+                        break;
+                    case NX_MODIFIERKEY_SHIFT:
+                        modMap[keyCode + MIN_KEYCODE] = ShiftMask;
+                        map[keyCode * GLYPHS_PER_KEY] =
+                                (left ? XK_Shift_L : XK_Shift_R);
+                        break;
+                    case NX_MODIFIERKEY_CONTROL:
+                        modMap[keyCode + MIN_KEYCODE] = ControlMask;
+                        map[keyCode * GLYPHS_PER_KEY] =
+                                (left ? XK_Control_L : XK_Control_R);
+                        break;
+                    case NX_MODIFIERKEY_ALTERNATE:
+                        modMap[keyCode + MIN_KEYCODE] = AltMask;
+                        map[keyCode * GLYPHS_PER_KEY] =
+                                (left ? XK_Alt_L : XK_Alt_R);
+                        break;
+                    case NX_MODIFIERKEY_COMMAND:
+                        modMap[keyCode + MIN_KEYCODE] = MetaMask;
+                        map[keyCode * GLYPHS_PER_KEY] =
+                                (left ? XK_Meta_L : XK_Meta_R);
+                        break;
+                    case NX_MODIFIERKEY_SECONDARYFN:
+                        modMap[keyCode + MIN_KEYCODE] = FunctionMask;
+                        map[keyCode * GLYPHS_PER_KEY] =
+                                (left ? XK_Control_L : XK_Control_R);
+                        break;
+                    case NX_MODIFIERKEY_HELP:
+                        // Help is not an X11 modifier; treat as normal key
+                        map[keyCode * GLYPHS_PER_KEY] = XK_Help;
+                        break;
+                }
             }
             left = 0;
         }
@@ -615,21 +628,104 @@ void DarwinKeyboardInit(
                                       DarwinChangeKeyboardControl ));
 }
 
+//-----------------------------------------------------------------------------
+// Modifier translation functions
+//
+// There are three different ways to specify a Mac modifier key:
+// keycode - specifies hardware key, read from keymapping
+// key     - NX_MODIFIERKEY_*, really an index
+// mask    - NX_*MASK, mask for modifier flags in event record
+// Left and right side have different keycodes but the same key and mask.
+//-----------------------------------------------------------------------------
+
 /*
- * DarwinModifierKeycode
- * Return the keycode + MIN_KEYCODE for an NX_MODIFIERKEY_* modifier.
- * side = 0 for left or 1 for right.
+ * DarwinModifierNXKeyToNXKeycode
+ *      Return the keycode for an NX_MODIFIERKEY_* modifier.
+ *      side = 0 for left or 1 for right.
+ *      Returns 0 if key+side is not a known modifier.
  */
-int DarwinModifierKeycode(int modifier, int side)
+int DarwinModifierNXKeyToNXKeycode(int key, int side)
 {
-    return modifierKeycodes[modifier][side];
+    return modifierKeycodes[key][side];
+}
+
+/*
+ * DarwinModifierNXKeycodeToNXKey
+ *      Returns -1 if keycode+side is not a modifier key
+ *      outSide may be NULL, else it gets 0 for left and 1 for right.
+ */
+int DarwinModifierNXKeycodeToNXKey(unsigned char keycode, int *outSide)
+{
+    int key, side;
+
+    keycode += MIN_KEYCODE;
+    // search modifierKeycodes for this keycode+side
+    for (key = 0; key < NX_NUMMODIFIERS; key++) {
+        for (side = 0; side <= 1; side++) {
+            if (modifierKeycodes[key][side] == keycode) break;
+        }
+    }
+    if (key == NX_NUMMODIFIERS) return -1;
+    if (outSide) *outSide = side;
+    return key;
+}
+
+/*
+ * DarwinModifierNXMaskToNXKey
+ *      Returns -1 if mask is not a known modifier mask.
+ */
+int DarwinModifierNXMaskToNXKey(int mask)
+{
+    switch (mask) {
+        case NX_ALPHASHIFTMASK:  return NX_MODIFIERKEY_ALPHALOCK;
+        case NX_SHIFTMASK:       return NX_MODIFIERKEY_SHIFT;
+        case NX_CONTROLMASK:     return NX_MODIFIERKEY_CONTROL;
+        case NX_ALTERNATEMASK:   return NX_MODIFIERKEY_ALTERNATE;
+        case NX_COMMANDMASK:     return NX_MODIFIERKEY_COMMAND;
+        case NX_NUMERICPADMASK:  return NX_MODIFIERKEY_NUMERICPAD;
+        case NX_HELPMASK:        return NX_MODIFIERKEY_HELP;
+        case NX_SECONDARYFNMASK: return NX_MODIFIERKEY_SECONDARYFN;
+    }
+    return -1;
+}
+
+/*
+ * DarwinModifierNXKeyToNXMask
+ *      Returns 0 if key is not a known modifier key.
+ */
+int DarwinModifierNXKeyToNXMask(int key) 
+{
+    switch (key) {
+        case NX_MODIFIERKEY_ALPHALOCK:   return NX_ALPHASHIFTMASK;
+        case NX_MODIFIERKEY_SHIFT:       return NX_SHIFTMASK;
+        case NX_MODIFIERKEY_CONTROL:     return NX_CONTROLMASK;
+        case NX_MODIFIERKEY_ALTERNATE:   return NX_ALTERNATEMASK;
+        case NX_MODIFIERKEY_COMMAND:     return NX_COMMANDMASK;
+        case NX_MODIFIERKEY_NUMERICPAD:  return NX_NUMERICPADMASK;
+        case NX_MODIFIERKEY_HELP:        return NX_HELPMASK;
+        case NX_MODIFIERKEY_SECONDARYFN: return NX_SECONDARYFNMASK;
+    }
+    return 0;
+}
+
+/*
+ * DarwinModifierStringToNXKey
+ *      Returns -1 if string is not a known modifier.
+ */
+int DarwinModifierStringToNXKey(const char *str)
+{
+    if      (!strcasecmp(str, "shift"))   return NX_MODIFIERKEY_SHIFT;
+    else if (!strcasecmp(str, "control")) return NX_MODIFIERKEY_CONTROL;
+    else if (!strcasecmp(str, "option"))  return NX_MODIFIERKEY_ALTERNATE;
+    else if (!strcasecmp(str, "command")) return NX_MODIFIERKEY_COMMAND;
+    else if (!strcasecmp(str, "fn"))      return NX_MODIFIERKEY_SECONDARYFN;
+    else return -1;
 }
 
 /*
  * LegalModifier
- * This allows the driver level to prevent some keys from being remapped
- * as modifier keys.
- * I have no idea why this is useful.
+ *      This allows the ddx layer to prevent some keys from being remapped
+ *      as modifier keys.
  */
 Bool LegalModifier(unsigned int key, DevicePtr pDev)
 {
