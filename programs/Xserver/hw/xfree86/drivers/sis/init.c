@@ -1301,6 +1301,15 @@ SiS_GetSysFlags(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 {
    unsigned char cr5f, temp1, temp2;
 
+   /* 661 and newer: NEVER write non-zero to SR11[7:4] */
+   /* (SR11 is used for DDC and in enable/disablebridge) */
+   SiS_Pr->SiS_SensibleSR11 = FALSE;
+   SiS_Pr->SiS_MyCR63 = 0x63;
+   if(HwInfo->jChipType >= SIS_661) {
+      SiS_Pr->SiS_SensibleSR11 = TRUE;
+      SiS_Pr->SiS_MyCR63 = 0x53;
+   }
+
    /* You should use the macros, not these flags directly */
 
    SiS_Pr->SiS_SysFlags = 0;
@@ -3476,12 +3485,12 @@ SiS_SetCRT1Group(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo,
 static void
 SiS_HandleCRT1(SiS_Private *SiS_Pr)
 {
-  SiS_SetRegAND(SiS_Pr->SiS_P3d4,0x63,0xbf);
+  SiS_SetRegAND(SiS_Pr->SiS_P3d4,SiS_Pr->SiS_MyCR63,0xbf);
 #if 0
   if(!(SiS_GetReg(SiS_Pr->SiS_P3c4,0x15) & 0x01)) {
      if((SiS_GetReg(SiS_Pr->SiS_P3c4,0x15) & 0x0a) ||
         (SiS_GetReg(SiS_Pr->SiS_P3c4,0x16) & 0x01)) {
-        SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x63,0x40);
+        SiS_SetRegOR(SiS_Pr->SiS_P3d4,SiS_Pr->SiS_MyCR63,0x40);
      }
   }
 #endif

@@ -135,9 +135,9 @@ SiS_SISDetectCRT1(ScrnInfoPtr pScrn)
     if(SR1F & 0xc0) mustwait = TRUE;
 
     if(pSiS->VGAEngine == SIS_315_VGA) {
-       inSISIDXREG(SISCR,0x63,CR63);
+       inSISIDXREG(SISCR,pSiS->myCR63,CR63);
        CR63 &= 0x40;
-       andSISIDXREG(SISCR,0x63,0xBF);
+       andSISIDXREG(SISCR,pSiS->myCR63,0xBF);
     }
 
     inSISIDXREG(SISCR,0x17,CR17);
@@ -168,7 +168,7 @@ SiS_SISDetectCRT1(ScrnInfoPtr pScrn)
     }
 
     if(pSiS->VGAEngine == SIS_315_VGA) {
-       setSISIDXREG(SISCR,0x63,0xBF,CR63);
+       setSISIDXREG(SISCR,pSiS->myCR63,0xBF,CR63);
     }
 
     setSISIDXREG(SISCR,0x17,0x7F,CR17);

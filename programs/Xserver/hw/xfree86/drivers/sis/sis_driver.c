@@ -486,10 +486,16 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
              ((pSiS->VBFlags & (VB_LVDS | VB_CHRONTEL)) == VB_LVDS))) {
 #ifdef SISDUALHEAD
              if(pSiS->DualHeadMode) {
-	        if(!pSiS->BlankCRT2) inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+	        if(!pSiS->BlankCRT2) {
+		   inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+		   if(pSiS->sishw_ext.jChipType >= SIS_661) pSiS->LCDon &= 0x0f;
+		}
 	     } else
 #endif
-	     if(!pSiS->Blank) inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+	     if(!pSiS->Blank) {
+	        inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+		if(pSiS->sishw_ext.jChipType >= SIS_661) pSiS->LCDon &= 0x0f;
+	     }
           }
        }
     }
@@ -599,7 +605,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 	    break;
        case SIS_315_VGA:
             if((!pSiS->CRT1off) && ((!(pSiS->VBFlags & CRT1_LCDA)) || (pSiS->VBFlags & VB_301C))) {
-               setSISIDXREG(SISCR, 0x63, 0xbf, cr63);
+               setSISIDXREG(SISCR, pSiS->myCR63, 0xbf, cr63);
 	       setSISIDXREG(SISSR, 0x07, 0xef, sr7);
 	    }
 	    /* fall through */
@@ -623,7 +629,11 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
               (pSiS->VBFlags & (VB_301|VB_30xBDH|VB_LVDS))) ||
              ((pSiS->VGAEngine == SIS_315_VGA) &&
               ((pSiS->VBFlags & (VB_LVDS | VB_CHRONTEL)) == VB_LVDS))) {
-             setSISIDXREG(SISSR, 0x11, ~0x0c, sr11);
+	     if(pSiS->sishw_ext.jChipType >= SIS_661) {
+	        setSISIDXREG(SISSR, 0x11, ~0xfc, sr11);
+	     } else {
+                setSISIDXREG(SISSR, 0x11, ~0x0c, sr11);
+	     }
           }
           if(pSiS->VGAEngine == SIS_300_VGA) {
              if((pSiS->VBFlags & (VB_301B|VB_301C|VB_302B)) &&
@@ -855,6 +865,7 @@ SISProbe(DriverPtr drv, int flags)
 	       pSiSEnt->FbBase = pSiSEnt->IOBase = NULL;
   	       pSiSEnt->forceUnmapIOBase = FALSE;
 	       pSiSEnt->forceUnmapFbBase = FALSE;
+	       pSiSEnt->HWCursorCBufNum = pSiSEnt->HWCursorMBufNum = 0;
 #ifdef __alpha__
 	       pSiSEnt->MapCountIOBaseDense = 0;
 	       pSiSEnt->IOBaseDense = NULL;
@@ -2552,6 +2563,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     /* Determine chipset and VGA engine type */
     pSiS->ChipFlags = 0;
     pSiS->SiS_SD_Flags = 0;
+    pSiS->HWCursorMBufNum = pSiS->HWCursorCBufNum = 0;
 
     switch(pSiS->Chipset) {
 	case PCI_CHIP_SIS300:
@@ -2577,6 +2589,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_315Core;
 		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
+		pSiS->myCR63 = 0x63;
 		break;
 	case PCI_CHIP_SIS315:
 		/* Override for simplicity */
@@ -2585,6 +2598,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->ChipFlags |= SiSCF_315Core;
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
+		pSiS->myCR63 = 0x63;
 		break;
 	case PCI_CHIP_SIS315PRO:
 		/* Override for simplicity */
@@ -2593,12 +2607,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->ChipFlags |= SiSCF_315Core;
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
+		pSiS->myCR63 = 0x63;
 		break;
 	case PCI_CHIP_SIS550:
 		pSiS->sishw_ext.jChipType = SIS_550;
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_Integrated;
 		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
+		pSiS->myCR63 = 0x63;
 		break;
 	case PCI_CHIP_SIS650: /* 650 + 740 */
 		pSiS->sishw_ext.jChipType = SIS_650;
@@ -2608,12 +2624,14 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= (SiSCF_Integrated | SiSCF_Real256ECore);
 		pSiS->SiS_SD_Flags |= SiS_SD_IS315SERIES;
+		pSiS->myCR63 = 0x63;
 		break;
 	case PCI_CHIP_SIS330:
 		pSiS->sishw_ext.jChipType = SIS_330;
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_XabreCore;
 		pSiS->SiS_SD_Flags |= SiS_SD_IS330SERIES;
+		pSiS->myCR63 = 0x63;
 		break;
 	case PCI_CHIP_SIS660: /* 660, 661, 741, 760 */
 	        {
@@ -2645,6 +2663,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 		pSiS->VGAEngine = SIS_315_VGA;
 		pSiS->ChipFlags |= SiSCF_Integrated;
 		pSiS->SiS_SD_Flags |= SiS_SD_IS330SERIES;
+		pSiS->myCR63 = 0x53; /* Yes, 0x53 */
 		}
 		break;
 	case PCI_CHIP_SIS530:
@@ -2887,6 +2906,11 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        pSiS->SiS_Pr->HaveEMI = FALSE;
        pSiS->SiS_Pr->HaveEMILCD = FALSE;
        pSiS->SiS_Pr->OverruleEMI = FALSE;
+       pSiS->SiS_Pr->SiS_SensibleSR11 = FALSE;
+       if(pSiS->sishw_ext.jChipType >= SIS_661) {
+          pSiS->SiS_Pr->SiS_SensibleSR11 = TRUE;
+       }
+       pSiS->SiS_Pr->SiS_MyCR63 = pSiS->myCR63;
     }
 
     /* Get our relocated IO registers */
@@ -3522,8 +3546,8 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 #endif
 	if(pSiS->HWCursor) {
-           pSiS->availMem -= pSiS->CursorSize;
-	   if(pSiS->OptUseColorCursor) pSiS->availMem -= pSiS->CursorSize;
+           pSiS->availMem -= (pSiS->CursorSize * 2);
+	   if(pSiS->OptUseColorCursor) pSiS->availMem -= (pSiS->CursorSize * 2);
 	}
 	pSiS->cursorBufferNum = 0;
 #ifdef SISDUALHEAD
@@ -3769,7 +3793,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        inSISIDXREG(SISCR, 0x36, pSiS->oldCR36);
        inSISIDXREG(SISCR, 0x37, pSiS->oldCR37);
        if(pSiS->VGAEngine == SIS_315_VGA) {
-          inSISIDXREG(SISCR, 0x63, pSiS->oldCR63);
+          inSISIDXREG(SISCR, pSiS->myCR63, pSiS->oldCR63);
        }
 
        pSiS->postVBCR32 = pSiS->oldCR32;
@@ -4105,7 +4129,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	      */
 	     outSISIDXREG(SISCR, 0x17, usScratchCR17);
 	     if(pSiS->VGAEngine == SIS_315_VGA) {
-	        outSISIDXREG(SISCR, 0x63, usScratchCR63);
+	        outSISIDXREG(SISCR, pSiS->myCR63, usScratchCR63);
 	     }
 	     outSISIDXREG(SISCR, 0x32, usScratchCR32);
 	     if(pSiS->CRT1changed) {
@@ -5628,7 +5652,7 @@ SISSave(ScrnInfoPtr pScrn)
        sisReg->sisRegs3D4[0x36] = pSiS->oldCR36;
        sisReg->sisRegs3D4[0x37] = pSiS->oldCR37;
        if(pSiS->VGAEngine == SIS_315_VGA) {
-	  sisReg->sisRegs3D4[0x63] = pSiS->oldCR63;
+	  sisReg->sisRegs3D4[pSiS->myCR63] = pSiS->oldCR63;
        }
     }
 }
@@ -6236,7 +6260,7 @@ SISRestore(ScrnInfoPtr pScrn)
           outSISIDXREG(SISCR, 0x17, pSiS->oldCR17);
        }
        if(pSiS->VGAEngine == SIS_315_VGA) {
-          outSISIDXREG(SISCR, 0x63, pSiS->oldCR63);
+          outSISIDXREG(SISCR, pSiS->myCR63, pSiS->oldCR63);
        }
 
        outSISIDXREG(SISSR, 0x1f, pSiS->oldSR1F);
@@ -6314,7 +6338,7 @@ SISRestore(ScrnInfoPtr pScrn)
 
 	   /* Restore CRT1 status */
 	   if(pSiS->VGAEngine == SIS_315_VGA) {
-              outSISIDXREG(SISCR, 0x63, pSiS->oldCR63);
+              outSISIDXREG(SISCR, pSiS->myCR63, pSiS->oldCR63);
            }
            outSISIDXREG(SISSR, 0x1f, pSiS->oldSR1F);
 
@@ -8142,6 +8166,7 @@ SISSaveScreen(ScreenPtr pScreen, int mode)
 
 	      if(!pSiS->Blank) {
 		 inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+		 if(pSiS->sishw_ext.jChipType >= SIS_661) pSiS->LCDon &= 0x0f;
 	      }
 
 	      if(pSiS->VBFlags & VB_CHRONTEL) {
@@ -8236,6 +8261,7 @@ SISSaveScreenDH(ScreenPtr pScreen, int mode)
 
  	     if(!pSiS->BlankCRT2) {
 	 	inSISIDXREG(SISSR, 0x11, pSiS->LCDon);
+		if(pSiS->sishw_ext.jChipType >= SIS_661) pSiS->LCDon &= 0x0f;
 	     }
 
 	     if(pSiS->VBFlags & VB_CHRONTEL) {
@@ -10602,10 +10628,10 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 	if(pSiS->VGAEngine == SIS_315_VGA) {
 
 	   if((pSiS->CRT1off) && (doit)) {
-	      orSISIDXREG(SISCR,0x63,0x40);
+	      orSISIDXREG(SISCR,pSiS->myCR63,0x40);
 	      orSISIDXREG(SISSR,0x1f,0xc0);
 	   } else {
-	      andSISIDXREG(SISCR,0x63,0xBF);
+	      andSISIDXREG(SISCR,pSiS->myCR63,0xBF);
 	      andSISIDXREG(SISSR,0x1f,0x3f);
 	   }
 
@@ -10729,8 +10755,17 @@ SiSPostSetMode(ScrnInfoPtr pScrn, SISRegPtr sisReg)
 
 #ifdef SISVRAMQ
     if(pSiS->VGAEngine == SIS_315_VGA) {
+       int i;
        /* Re-Enable command queue */
        SiSEnableTurboQueue(pScrn);
+       /* Get HWCursor register contents for backup */
+       for(i = 0; i < 16; i++) {
+          pSiS->HWCursorBackup[i] = MMIO_IN32(pSiS->IOBase, 0x8500 + (i << 2));
+       }
+       if(pSiS->sishw_ext.jChipType >= SIS_330) {
+          /* Enable HWCursor protection (Y pos as trigger) */
+          andSISIDXREG(SISCR, 0x5b, ~0x30);
+       }
     }
 #endif
 

@@ -124,6 +124,17 @@ SiS_EnableCRT2(SiS_Private *SiS_Pr)
 }
 
 /*********************************************/
+/*            HELPER: Write SR11             */
+/*********************************************/
+
+static void
+SiS_SetRegSR11ANDOR(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT DataAND, USHORT DataOR)
+{
+   if(HwInfo->jChipType >= SIS_661) DataAND &= 0x0f;
+   SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,DataAND,DataOR);
+}
+
+/*********************************************/
 /*    HELPER: Get Pointer to LCD structure   */
 /*********************************************/
 
@@ -3617,7 +3628,6 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 #endif
   USHORT temp=0;
 
-
   if(SiS_Pr->SiS_VBType & VB_SISVB) {
 
       if(SiS_Pr->SiS_VBType & VB_SIS301BLV302BLV) {   /* ===== For 30xB/LV ===== */
@@ -3651,7 +3661,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	   } else {
 
 	      if(!(SiS_CR36BIOSWord23b(SiS_Pr,HwInfo))) {
-	         SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xF7,0x08);
+	         SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x08);
 	         SiS_PanelDelay(SiS_Pr, HwInfo, 3);
 	      }
 	      if(SiS_Is301B(SiS_Pr)) {
@@ -3668,7 +3678,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	      if( (!(SiS_CRT2IsLCD(SiS_Pr, HwInfo))) ||
 	          (!(SiS_CR36BIOSWord23d(SiS_Pr, HwInfo))) ) {
 	         SiS_PanelDelay(SiS_Pr, HwInfo, 2);
-                 SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xFB,0x04);
+                 SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x04);
 	      }
 	   }
 
@@ -3917,7 +3927,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
         if(HwInfo->jChipType < SIS_315H) {
            if(!(SiS_CR36BIOSWord23b(SiS_Pr,HwInfo))) {
-	      SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xF7,0x08);
+	      SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x08);
 	      SiS_PanelDelay(SiS_Pr, HwInfo, 3);
 	   }
 	}
@@ -3941,7 +3951,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	    if( (!(SiS_CRT2IsLCD(SiS_Pr, HwInfo))) ||
 	        (!(SiS_CR36BIOSWord23d(SiS_Pr,HwInfo))) ) {
 		SiS_PanelDelay(SiS_Pr, HwInfo, 2);
-		SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xFB,0x04);
+		SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x04);
 	    }
 	}
 
@@ -3962,7 +3972,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	      SiS_WaitVBRetrace(SiS_Pr,HwInfo);
 	   }
 	   if(!(SiS_CR36BIOSWord23b(SiS_Pr,HwInfo))) {
-	      SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xF7,0x08);
+	      SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x08);
 	      SiS_PanelDelay(SiS_Pr, HwInfo, 3);
 	   }
 	} else {
@@ -3973,7 +3983,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		    if(!(SiS_GetReg(SiS_Pr->SiS_P3c4,0x06) & 0x1c)) {
 		       SiS_DisplayOff(SiS_Pr);
 	            }
-	            SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xF7,0x08);
+	            SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x08);
 	            SiS_PanelDelay(SiS_Pr, HwInfo, 3);
                  }
               }
@@ -3992,7 +4002,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	if( (!(SiS_CRT2IsLCD(SiS_Pr, HwInfo))) ||
 	    (!(SiS_CR36BIOSWord23d(SiS_Pr,HwInfo))) ) {
 	   SiS_PanelDelay(SiS_Pr, HwInfo, 2);
-	   SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xFB,0x04);
+	   SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x04);
 	}
 
 #endif  /* SIS300 */
@@ -4032,7 +4042,7 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	}
 
 	if(SiS_Pr->SiS_IF_DEF_CH70xx == 0) {
-	   SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xF7,0x08);
+	   SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x08);
 	   SiS_PanelDelay(SiS_Pr, HwInfo, 3);
 	}
 
@@ -4101,14 +4111,14 @@ SiS_DisableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	   if(SiS_CRT2IsLCD(SiS_Pr, HwInfo)) {
 	      if(!(SiS_WeHaveBacklightCtrl(SiS_Pr,HwInfo))) {
 	 	 SiS_PanelDelay(SiS_Pr, HwInfo, 2);
-		 SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xFB,0x04);
+		 SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x04);
 	      }
 	   }
         }
 
 #endif  /* SIS315H */
 
-    }  /* 310 series */
+    }  /* 315 series */
 
   }  /* LVDS */
 
@@ -4176,7 +4186,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	    if((SiS_Pr->SiS_VBType & VB_NoLCD) &&
 	       (SiS_CRT2IsLCD(SiS_Pr, HwInfo))) {
 	       /* This is only for LCD output on 301B-DH via LVDS */
-	       SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xFB);
+	       SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x00);
 	       if(!(SiS_CR36BIOSWord23d(SiS_Pr,HwInfo))) {
 	          SiS_PanelDelay(SiS_Pr, HwInfo, 0);
 	       }
@@ -4195,7 +4205,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 		           SiS_PanelDelay(SiS_Pr, HwInfo, 1);
                        }
 		       SiS_WaitVBRetrace(SiS_Pr,HwInfo);
-                       SiS_SetRegANDOR(SiS_Pr->SiS_P3c4,0x11,0xF7,0x00);
+                       SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x00);
                    }
 	       }
             } else {
@@ -4630,7 +4640,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
        if(HwInfo->jChipType < SIS_315H) {
           if(SiS_CRT2IsLCD(SiS_Pr, HwInfo)) {
-             SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xFB);
+             SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x00);
 	     SiS_PanelDelay(SiS_Pr, HwInfo, 0);
 	  }
        }
@@ -4663,7 +4673,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
        if(HwInfo->jChipType < SIS_315H) {
           if(SiS_CRT2IsLCD(SiS_Pr, HwInfo)) {
 	     SiS_PanelDelay(SiS_Pr, HwInfo, 1);
-             SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xF7);
+             SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x00);
 	  }
        }
 
@@ -4681,7 +4691,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 	     SiS_PanelDelay(SiS_Pr, HwInfo, 1);
 	     SiS_PanelDelay(SiS_Pr, HwInfo, 1);
 	  }
-          SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xFB);
+          SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x00);
 	  if(!(SiS_CR36BIOSWord23d(SiS_Pr,HwInfo))) {
 	     SiS_PanelDelay(SiS_Pr, HwInfo, 0);
 	  }
@@ -4712,7 +4722,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
         	   SiS_PanelDelay(SiS_Pr, HwInfo, 1);
 	        }
 	        SiS_WaitVBRetrace(SiS_Pr, HwInfo);
-                SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xF7);
+                SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x00);
              }
 	  }
        }
@@ -4725,7 +4735,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 
        if(SiS_Pr->SiS_IF_DEF_CH70xx == 0) {
 	  if(SiS_CRT2IsLCD(SiS_Pr, HwInfo)) {
-	     SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xFB);
+	     SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFB,0x00);
 	     SiS_PanelDelay(SiS_Pr, HwInfo, 0);
           }
        }
@@ -4804,7 +4814,7 @@ SiS_EnableBridge(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
        	  if(!(SiS_WeHaveBacklightCtrl(SiS_Pr,HwInfo))) {
 	     if(SiS_CRT2IsLCD(SiS_Pr, HwInfo)) {
 		SiS_PanelDelay(SiS_Pr, HwInfo, 1);
-		SiS_SetRegAND(SiS_Pr->SiS_P3c4,0x11,0xF7);
+		SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xF7,0x00);
 	     }
 	  }
        }
@@ -9625,7 +9635,7 @@ SiS_SetCRT2Group(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo, USHORT ModeNo)
    if(SiS_Pr->SiS_IF_DEF_CH70xx == 1) {
       if(SiS_Pr->SiS_VBInfo & SetCRT2ToTV) {
 	 /* Disable LCD panel when using TV */
-	 SiS_SetRegOR(SiS_Pr->SiS_P3c4,0x11,0x0C);
+	 SiS_SetRegSR11ANDOR(SiS_Pr,HwInfo,0xFF,0x0C);
       } else {
 	 /* Disable TV when using LCD */
 	 SiS_SetCH70xxANDOR(SiS_Pr,0x010E,0xF8);
@@ -9669,6 +9679,17 @@ SiS_SiS30xBLOff(SiS_Private *SiS_Pr, PSIS_HW_INFO HwInfo)
 /*          DDC RELATED FUNCTIONS            */
 /*********************************************/
 
+static void
+SiS_SetupDDCN(SiS_Private *SiS_Pr)
+{
+  SiS_Pr->SiS_DDC_NData = ~SiS_Pr->SiS_DDC_Data;
+  SiS_Pr->SiS_DDC_NClk  = ~SiS_Pr->SiS_DDC_Clk;
+  if((SiS_Pr->SiS_DDC_Index == 0x11) && (SiS_Pr->SiS_SensibleSR11)) {
+     SiS_Pr->SiS_DDC_NData &= 0x0f;
+     SiS_Pr->SiS_DDC_NClk  &= 0x0f;
+  }
+}
+
 /* The Chrontel 700x is connected to the 630/730 via
  * the 630/730's DDC/I2C port.
  *
@@ -9709,13 +9730,13 @@ SiS_SetChReg(SiS_Private *SiS_Pr, USHORT tempbx, USHORT myor)
 void
 SiS_SetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
 {
-  SiS_Pr->SiS_DDC_DataShift = 0x00;
   SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;  		/* DAB (Device Address Byte) */
 
   if(!(SiS_Pr->SiS_ChrontelInit)) {
      SiS_Pr->SiS_DDC_Index = 0x11;		/* Bit 0 = SC;  Bit 1 = SD */
      SiS_Pr->SiS_DDC_Data  = 0x02;              /* Bitmask in IndexReg for Data */
      SiS_Pr->SiS_DDC_Clk   = 0x01;              /* Bitmask in IndexReg for Clk */
+     SiS_SetupDDCN(SiS_Pr);
   }
 
   if( (!(SiS_SetChReg(SiS_Pr, tempbx, 0x80))) &&
@@ -9723,6 +9744,7 @@ SiS_SetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
      SiS_Pr->SiS_DDC_Index = 0x0a;		/* Bit 7 = SC;  Bit 6 = SD */
      SiS_Pr->SiS_DDC_Data  = 0x80;              /* Bitmask in IndexReg for Data */
      SiS_Pr->SiS_DDC_Clk   = 0x40;              /* Bitmask in IndexReg for Clk */
+     SiS_SetupDDCN(SiS_Pr);
 
      SiS_SetChReg(SiS_Pr, tempbx, 0x80);
   }
@@ -9736,7 +9758,7 @@ SiS_SetCH701x(SiS_Private *SiS_Pr, USHORT tempbx)
   SiS_Pr->SiS_DDC_Index = 0x11;			/* Bit 0 = SC;  Bit 1 = SD */
   SiS_Pr->SiS_DDC_Data  = 0x08;                 /* Bitmask in IndexReg for Data */
   SiS_Pr->SiS_DDC_Clk   = 0x04;                 /* Bitmask in IndexReg for Clk */
-  SiS_Pr->SiS_DDC_DataShift = 0x00;
+  SiS_SetupDDCN(SiS_Pr);
   SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;  		/* DAB (Device Address Byte) */
 
   SiS_SetChReg(SiS_Pr, tempbx, 0);
@@ -9787,13 +9809,13 @@ SiS_GetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
 {
   USHORT result;
 
-  SiS_Pr->SiS_DDC_DataShift = 0x00;
   SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;		/* DAB */
 
   if(!(SiS_Pr->SiS_ChrontelInit)) {
      SiS_Pr->SiS_DDC_Index = 0x11;		/* Bit 0 = SC;  Bit 1 = SD */
      SiS_Pr->SiS_DDC_Data  = 0x02;              /* Bitmask in IndexReg for Data */
      SiS_Pr->SiS_DDC_Clk   = 0x01;              /* Bitmask in IndexReg for Clk */
+     SiS_SetupDDCN(SiS_Pr);
   }
 
   SiS_Pr->SiS_DDC_ReadAddr = tempbx;
@@ -9804,6 +9826,7 @@ SiS_GetCH700x(SiS_Private *SiS_Pr, USHORT tempbx)
      SiS_Pr->SiS_DDC_Index = 0x0a;
      SiS_Pr->SiS_DDC_Data  = 0x80;
      SiS_Pr->SiS_DDC_Clk   = 0x40;
+     SiS_SetupDDCN(SiS_Pr);
 
      result = SiS_GetChReg(SiS_Pr,0x80);
   }
@@ -9818,7 +9841,7 @@ SiS_GetCH701x(SiS_Private *SiS_Pr, USHORT tempbx)
   SiS_Pr->SiS_DDC_Index = 0x11;			/* Bit 0 = SC;  Bit 1 = SD */
   SiS_Pr->SiS_DDC_Data  = 0x08;                 /* Bitmask in IndexReg for Data */
   SiS_Pr->SiS_DDC_Clk   = 0x04;                 /* Bitmask in IndexReg for Clk */
-  SiS_Pr->SiS_DDC_DataShift = 0x00;
+  SiS_SetupDDCN(SiS_Pr);
   SiS_Pr->SiS_DDC_DeviceAddr = 0xEA;		/* DAB */
 
   SiS_Pr->SiS_DDC_ReadAddr = tempbx;
@@ -9942,6 +9965,8 @@ SiS_InitDDCRegs(SiS_Private *SiS_Pr, unsigned long VBFlags, int VGAEngine,
     SiS_Pr->SiS_DDC_Data = 0x02 << temp;
     SiS_Pr->SiS_DDC_Clk  = 0x01 << temp;
 
+    SiS_SetupDDCN(SiS_Pr);
+
 #ifdef TWDEBUG
     xf86DrvMsg(0, X_INFO, "DDC Port %x Index %x Shift %d\n",
     		SiS_Pr->SiS_DDC_Port, SiS_Pr->SiS_DDC_Index, temp);
@@ -9986,11 +10011,15 @@ SiS_SendACK(SiS_Private *SiS_Pr, USHORT yesno)
 {
    SiS_SetSCLKLow(SiS_Pr);
    if(yesno) {
-      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port, SiS_Pr->SiS_DDC_Index,
-                      ~SiS_Pr->SiS_DDC_Data, SiS_Pr->SiS_DDC_Data);
+      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+      		      SiS_Pr->SiS_DDC_Index,
+                      SiS_Pr->SiS_DDC_NData,
+		      SiS_Pr->SiS_DDC_Data);
    } else {
-      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port, SiS_Pr->SiS_DDC_Index,
-                      ~SiS_Pr->SiS_DDC_Data, 0);
+      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+      		      SiS_Pr->SiS_DDC_Index,
+                      SiS_Pr->SiS_DDC_NData,
+		      0);
    }
    SiS_SetSCLKHigh(SiS_Pr);
 }
@@ -10861,7 +10890,7 @@ SiS_SenseVGA2DDC(SiS_Private *SiS_Pr, SISPtr pSiS)
    }
 
    if(foundcrt) {
-       SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x32,0x10);
+      SiS_SetRegOR(SiS_Pr->SiS_P3d4,0x32,0x10);
    }
    return(0);
 }
@@ -10903,11 +10932,15 @@ USHORT
 SiS_SetStart(SiS_Private *SiS_Pr)
 {
   if(SiS_SetSCLKLow(SiS_Pr)) return 0xFFFF;			           /* (SC->low)  */
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Data,SiS_Pr->SiS_DDC_Data);             /* SD->high */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+    		  SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NData,
+		  SiS_Pr->SiS_DDC_Data);             			   /* SD->high */
   if(SiS_SetSCLKHigh(SiS_Pr)) return 0xFFFF;			           /* SC->high */
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Data,0x00);                             /* SD->low = start condition */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+  		  SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NData,
+		  0x00);                             			   /* SD->low = start condition */
   if(SiS_SetSCLKHigh(SiS_Pr)) return 0xFFFF;			           /* (SC->low) */
   return 0;
 }
@@ -10918,11 +10951,15 @@ USHORT
 SiS_SetStop(SiS_Private *SiS_Pr)
 {
   if(SiS_SetSCLKLow(SiS_Pr)) return 0xFFFF;			           /* (SC->low) */
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Data,0x00);          		   /* SD->low   */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+  	          SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NData,
+		  0x00);          		   			   /* SD->low   */
   if(SiS_SetSCLKHigh(SiS_Pr)) return 0xFFFF;			           /* SC->high  */
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Data,SiS_Pr->SiS_DDC_Data);  	   /* SD->high = stop condition */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+  		  SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NData,
+		  SiS_Pr->SiS_DDC_Data);  	   			   /* SD->high = stop condition */
   if(SiS_SetSCLKHigh(SiS_Pr)) return 0xFFFF;			           /* (SC->high) */
   return 0;
 }
@@ -10937,11 +10974,15 @@ SiS_WriteDDC2Data(SiS_Private *SiS_Pr, USHORT tempax)
   for(i=0; i<8; i++) {
     SiS_SetSCLKLow(SiS_Pr);				                      /* SC->low */
     if(tempax & flag) {
-      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                      ~SiS_Pr->SiS_DDC_Data,SiS_Pr->SiS_DDC_Data);            /* Write bit (1) to SD */
+      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+      		      SiS_Pr->SiS_DDC_Index,
+                      SiS_Pr->SiS_DDC_NData,
+		      SiS_Pr->SiS_DDC_Data);            		      /* Write bit (1) to SD */
     } else {
-      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                      ~SiS_Pr->SiS_DDC_Data,0x00);                            /* Write bit (0) to SD */
+      SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+      		      SiS_Pr->SiS_DDC_Index,
+                      SiS_Pr->SiS_DDC_NData,
+		      0x00);                            		      /* Write bit (0) to SD */
     }
     SiS_SetSCLKHigh(SiS_Pr);				                      /* SC->high */
     flag >>= 1;
@@ -10959,8 +11000,10 @@ SiS_ReadDDC2Data(SiS_Private *SiS_Pr, USHORT tempax)
   for(i=0; i<8; i++) {
     getdata <<= 1;
     SiS_SetSCLKLow(SiS_Pr);
-    SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                    ~SiS_Pr->SiS_DDC_Data,SiS_Pr->SiS_DDC_Data);
+    SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+    		    SiS_Pr->SiS_DDC_Index,
+                    SiS_Pr->SiS_DDC_NData,
+		    SiS_Pr->SiS_DDC_Data);
     SiS_SetSCLKHigh(SiS_Pr);
     temp = SiS_GetReg(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index);
     if(temp & SiS_Pr->SiS_DDC_Data) getdata |= 0x01;
@@ -10971,8 +11014,10 @@ SiS_ReadDDC2Data(SiS_Private *SiS_Pr, USHORT tempax)
 USHORT
 SiS_SetSCLKLow(SiS_Private *SiS_Pr)
 {
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Clk,0x00);      		/* SetSCLKLow()  */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+  		  SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NClk,
+		  0x00);      					/* SetSCLKLow()  */
   SiS_DDC2Delay(SiS_Pr,SiS_I2CDELAYSHORT);
   return 0;
 }
@@ -10982,8 +11027,10 @@ SiS_SetSCLKHigh(SiS_Private *SiS_Pr)
 {
   USHORT temp, watchdog=1000;
 
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Clk,SiS_Pr->SiS_DDC_Clk);  	/* SetSCLKHigh()  */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+  		  SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NClk,
+		  SiS_Pr->SiS_DDC_Clk);  			/* SetSCLKHigh()  */
   do {
     temp = SiS_GetReg(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index);
   } while((!(temp & SiS_Pr->SiS_DDC_Clk)) && --watchdog);
@@ -11005,10 +11052,12 @@ SiS_CheckACK(SiS_Private *SiS_Pr)
   USHORT tempah;
 
   SiS_SetSCLKLow(SiS_Pr);				           /* (SC->low) */
-  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index,
-                  ~SiS_Pr->SiS_DDC_Data,SiS_Pr->SiS_DDC_Data);     /* (SD->high) */
+  SiS_SetRegANDOR(SiS_Pr->SiS_DDC_Port,
+  		  SiS_Pr->SiS_DDC_Index,
+                  SiS_Pr->SiS_DDC_NData,
+		  SiS_Pr->SiS_DDC_Data);     			   /* (SD->high) */
   SiS_SetSCLKHigh(SiS_Pr);				           /* SC->high = clock impulse for ack */
-  tempah = SiS_GetReg(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index);/* Read SD */
+  tempah = SiS_GetReg(SiS_Pr->SiS_DDC_Port,SiS_Pr->SiS_DDC_Index); /* Read SD */
   SiS_SetSCLKLow(SiS_Pr);				           /* SC->low = end of clock impulse */
   if(tempah & SiS_Pr->SiS_DDC_Data) return(1);			   /* Ack OK if bit = 0 */
   else return(0);
