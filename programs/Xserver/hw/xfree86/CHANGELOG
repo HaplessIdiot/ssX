@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 776. Fix build failures on Mac OS X 10.1.x (Torrey T. Lyons).
  775. Fix a timing problem in the nsc driver that prevents the display from
       working in some cases (Bugzilla #840, Hansruedi Glauser, Alan Hourihane).
  774. Via driver workaround to handle setting WC for the video memory when
@@ -18591,7 +18592,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3117 2004/01/27 17:01:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3118 2004/01/27 17:31:54 dawes Exp $
 
 
 
