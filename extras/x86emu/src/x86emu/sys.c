@@ -42,6 +42,7 @@
 /* $XFree86: xc/extras/x86emu/src/x86emu/sys.c,v 1.4 2000/04/17 16:29:46 eich Exp $ */
 
 #include "x86emu.h"
+#include "x86emu/x86emui.h"
 #include "x86emu/regs.h"
 #include "x86emu/debug.h"
 #include "x86emu/prim_ops.h"
@@ -522,7 +523,7 @@ and hook them out as necessary for their application.
 void X86EMU_setupMemFuncs(
 	X86EMU_memFuncs *funcs)
 {
-	sys_rdb = funcs->rdb;
+    sys_rdb = funcs->rdb;
     sys_rdw = funcs->rdw;
     sys_rdl = funcs->rdl;
     sys_wrb = funcs->wrb;

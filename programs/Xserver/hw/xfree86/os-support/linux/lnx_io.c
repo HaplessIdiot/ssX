@@ -51,15 +51,15 @@ xf86SoundKbdBell(int loudness, int pitch, int duration)
 void
 xf86SetKbdLeds(int leds)
 {
-	ioctl(xf86Info.consoleFd, KDSETLED, leds);
+ 	ioctl(xf86Info.consoleFd, KDSETLED, leds);
 }
 
 int
 xf86GetKbdLeds()
 {
-	int leds;
+	int leds = 0;
 
-	ioctl(xf86Info.consoleFd, KDGETLED, &leds);
+ 	ioctl(xf86Info.consoleFd, KDGETLED, &leds);
 	return(leds);
 }
 

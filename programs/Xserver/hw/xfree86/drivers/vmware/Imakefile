@@ -9,12 +9,12 @@ XCOMM
 SRCS = vmware.c vmwaregc.c vmwarefs.c vmwarepolypnt.c vmwarepush.c \
 	vmwareglblt.c vmwaretext.c vmwarerect.c vmwarefillarc.c \
 	vmwareply1rct.c vmwarezerarc.c vmwareline.c vmwareblt.c vmwareimage.c \
-	vmwarewindow.c vmwarecurs.c vmwarebstor.c bits2pixels.c
+	vmwarewindow.c vmwarecurs.c vmwarebstor.c bits2pixels.c vmwarepicture.c
 
 OBJS = vmware.o vmwaregc.o vmwarefs.o vmwarepolypnt.o vmwarepush.o \
 	vmwareglblt.o vmwaretext.o vmwarerect.o vmwarefillarc.o \
 	vmwareply1rct.o vmwarezerarc.o vmwareline.o vmwareblt.o vmwareimage.o \
-	vmwarewindow.o vmwarecurs.o vmwarebstor.o bits2pixels.o
+	vmwarewindow.o vmwarecurs.o vmwarebstor.o bits2pixels.o vmwarepicture.o
 
 #if defined(XF86DriverSDK)
 INCLUDES = -I. -I../../include

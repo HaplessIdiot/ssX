@@ -58,7 +58,7 @@ void radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
       return;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
+      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)t, (void*)t->tObj );
    }
 
    if ( t->memBlock ) {
@@ -93,7 +93,7 @@ void radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
 void radeonSwapOutTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
 {
    if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
+      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)t, (void*)t->tObj );
    }
 
    /* Bump the performace counter */
@@ -139,7 +139,7 @@ void radeonPrintGlobalLRU( radeonContextPtr rmesa, int heap )
    radeon_tex_region_t *list = rmesa->sarea->texList[heap];
    int i, j;
 
-   fprintf( stderr, "\nGlobal LRU, heap %d list %p:\n", heap, list );
+   fprintf( stderr, "\nGlobal LRU, heap %d list %p:\n", heap, (void*)list );
 
    for ( i = 0, j = RADEON_NR_TEX_REGIONS ; i < RADEON_NR_TEX_REGIONS ; i++ ) {
       fprintf( stderr, "list[%d] age %d next %d prev %d\n",
@@ -331,7 +331,7 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
    GLint ret;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
+      fprintf( stderr, "%s( %p, %p )\n",__FUNCTION__, (void*)t, (void*)t->tObj );
    }
 
    /* Ensure we have a valid texture to upload */
@@ -344,12 +344,12 @@ static void radeonUploadSubImage( radeonContextPtr rmesa,
    texImage = t->tObj->Image[level];
    if ( !texImage ) {
       if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE )
-	 fprintf( stderr, __FUNCTION__ ": texImage %d is NULL!\n", level );
+	 fprintf( stderr,  "%s: texImage %d is NULL!\n",__FUNCTION__, level );
       return;
    }
    if ( !texImage->Data ) {
       if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE )
-	 fprintf( stderr, __FUNCTION__ ": image data is NULL!\n" );
+	 fprintf( stderr,  "%s: image data is NULL!\n",__FUNCTION__ );
       return;
    }
 
@@ -427,8 +427,8 @@ int radeonUploadTexImages( radeonContextPtr rmesa, radeonTexObjPtr t )
    int heap;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p ) sz=%d lvls=%d-%d\n",
-	       rmesa->glCtx, t->tObj, t->totalSize,
+       fprintf( stderr, "%s( %p, %p ) sz=%d lvls=%d-%d\n",__FUNCTION__,
+	       (void*)rmesa->glCtx, (void*)t->tObj, t->totalSize,
 	       t->firstLevel, t->lastLevel );
    }
 

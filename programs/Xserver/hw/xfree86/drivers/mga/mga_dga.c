@@ -101,6 +101,7 @@ SECOND_PASS:
 
    while(1) {
 
+        
 	pitch = FindSmallestPitch(pMga, Bpp, pMode->HDisplay);
 	size = pitch * Bpp * pMode->VDisplay;
 
@@ -118,8 +119,7 @@ SECOND_PASS:
 
 	    mode->mode = pMode;
 	    mode->flags = DGA_CONCURRENT_ACCESS;
-
-	    if(pixmap)
+            if(pixmap)
 		mode->flags |= DGA_PIXMAP_AVAILABLE;
 	    if(!pMga->NoAccel) {
 		mode->flags |= DGA_FILL_RECT | DGA_BLIT_RECT;
@@ -140,7 +140,8 @@ SECOND_PASS:
 	    mode->viewportWidth = pMode->HDisplay;
 	    mode->viewportHeight = pMode->VDisplay;
 	    mode->xViewportStep = (3 - pMga->BppShifts[Bpp - 1]);
-	    if((Bpp == 3) && (pMga->Chipset == PCI_CHIP_MGAG400))
+	    if((Bpp == 3) && 
+		    (pMga->Chipset == PCI_CHIP_MGAG400 || pMga->Chipset == PCI_CHIP_MGAG550))
 		mode->xViewportStep <<= 1;
 	    mode->yViewportStep = 1;
 	    mode->viewportFlags = DGA_FLIP_RETRACE;

@@ -2422,7 +2422,7 @@ Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     else {
 	if (!info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_CRT)
 	    xf86DPMSInit(pScreen, R128DisplayPowerManagementSet, 0);
-	if (info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_FP)
+	else if (info->HasPanelRegs || info->BIOSDisplay == R128_BIOS_DISPLAY_FP)
 	    xf86DPMSInit(pScreen, R128DisplayPowerManagementSetLCD, 0);
     }
 
@@ -3463,7 +3463,15 @@ void R128LeaveVT(int scrnIndex, int flags)
 
     R128TRACE(("R128LeaveVT\n"));
 #ifdef XF86DRI
-    if (R128PTR(pScrn)->directRenderingEnabled) {
+    if (info->directRenderingEnabled) {
+	/*
+	 *This seems to fix that !@#$ irritating switch to VT and back X-freeze
+	 * that has been plaguing some DRI users.  It seems that bus mastering
+	 * is turned off on the video card when one switches to a VT and this
+	 * needs to be reactivated when we get back, else things just stop. :)
+	 * Charl P. Botha <http://cpbotha.net/>
+	 */
+	xf86EnablePciBusMaster(info->PciInfo, TRUE);
 	DRILock(pScrn->pScreen, 0);
 	R128CCE_STOP(pScrn, info);
     }

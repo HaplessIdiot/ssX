@@ -118,6 +118,7 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.104 2002/05/31 17:33:04 daw
  * ObjectCompile		(options)
  * NormalLibObjCompile		(options)
  * NormalSharedLibObjCompile	(options)
+ * NormalRelocLibObjCompile	(options)
  * LibObjCompile		(dir,options)
  * DebuggedLibObjCompile	(options)
  * ProfiledLibObjCompile	(options)
@@ -2127,6 +2128,14 @@ LintLibReferences(varname,libname,libsource)
  */
 #ifndef NormalLibObjCompile
 #define NormalLibObjCompile(options) ObjectCompile(options)
+#endif
+
+#ifndef NormalRelocLibObjCompile
+# if !StaticNeedsPicForShared
+#  define NormalRelocLibObjCompile(options) NormalLibObjCompile(options)
+# else 
+#  define NormalRelocLibObjCompile(options) NormalLibObjCompile(options $(PICFLAGS))
+# endif
 #endif
 
 #ifndef NormalLibObjCplusplusCompile

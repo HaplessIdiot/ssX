@@ -69,6 +69,7 @@ typedef enum {
     FONTPATH,
     RGBPATH,
     MODULEPATH,
+    INPUTDEVICES,
     LOGFILEPATH,
 
     /* Server Flag tokens.  These are deprecated in favour of generic Options */

@@ -56,15 +56,16 @@ authorization from the XFree86 Project and silicon Motion.
  * Attributes
  */
 
-#define N_ATTRS                 7
+#define N_ATTRS                 8
 
 #define XV_ENCODING             0
 #define XV_BRIGHTNESS           1
-#define XV_CONTRAST             2
-#define XV_SATURATION           3
-#define XV_HUE                  4
-#define XV_COLORKEY             5
-#define XV_INTERLACED           6
+#define XV_CAPTURE_BRIGHTNESS	2
+#define XV_CONTRAST             3
+#define XV_SATURATION           4
+#define XV_HUE                  5
+#define XV_COLORKEY             6
+#define XV_INTERLACED           7
 
 typedef struct
 {

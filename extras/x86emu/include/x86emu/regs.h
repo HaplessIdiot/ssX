@@ -320,7 +320,7 @@ extern "C" {            			/* Use "C" linkage when in C++ mode */
 
 extern    X86EMU_sysEnv	_X86EMU_env;
 #define   M             _X86EMU_env
-		
+
 /*-------------------------- Function Prototypes --------------------------*/
 
 /* Function to log information at runtime */

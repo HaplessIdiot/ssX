@@ -517,7 +517,8 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 	int mclk;
 	vgaHWPtr hwp;
 	int vgaCRIndex, vgaCRReg, vgaIOBase;
-
+	vbeInfoPtr pVbe = NULL;
+	
 	ENTER_PROC("SMI_PreInit");
 
 	if (flags & PROBE_DETECT)
@@ -858,11 +859,16 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 		LEAVE_PROC("SMI_PreInit");
 		return(FALSE);
 	}
+
+	if (xf86LoadSubModule(pScrn,"int10")) {
+	    xf86LoaderReqSymLists(int10Symbols,NULL);
+	    pSmi->pInt10 = xf86InitInt10(pEnt->index);
+	}
 	
-	if (xf86LoadSubModule(pScrn, "vbe"))
+	if (pSmi->pInt10 && xf86LoadSubModule(pScrn, "vbe"))
 	{
-		xf86LoaderReqSymLists(vbeSymbols, NULL);
-		pSmi->pVbe = VBEInit(NULL, pEnt->index);
+	    xf86LoaderReqSymLists(vbeSymbols, NULL);
+	    pVbe = VBEInit(pSmi->pInt10, pEnt->index);
 	}
 
 	pSmi->PciInfo = xf86GetPciInfoForEntity(pEnt->index);
@@ -957,9 +963,9 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 
 		xf86LoaderReqSymLists(ddcSymbols, NULL);
 #if 1 /* PDR#579 */
-		if (pSmi->pVbe)
+		if (pVbe)
 		{
-			pMon = vbeDoEDID(pSmi->pVbe, NULL);
+			pMon = vbeDoEDID(pVbe, NULL);
 			if (pMon != NULL)
 			{
 				if (   (pMon->rawData[0] == 0x00)
@@ -981,8 +987,8 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 			}
 		}
 #else
-		if (   (pSmi->pVbe)
-			&& ((pMon = xf86PrintEDID(vbeDoEDID(pSmi->pVbe, NULL))) != NULL)
+		if (   (pVbe)
+			&& ((pMon = xf86PrintEDID(vbeDoEDID(pVbe, NULL))) != NULL)
 		)
 		{
 			xf86SetDDCproperties(pScrn, pMon);
@@ -998,11 +1004,10 @@ SMI_PreInit(ScrnInfoPtr pScrn, int flags)
 			}
 		}
 	}
-	if (pSmi->pVbe)
-	{
-		vbeFree(pSmi->pVbe);
-		pSmi->pVbe = NULL;
-	}
+
+	vbeFree(pVbe);
+	xf86FreeInt10(pSmi->pInt10);
+	pSmi->pInt10 = NULL;
 
 	/*
 	 * If the driver can do gamma correction, it should call xf86SetGamma()
@@ -1509,12 +1514,12 @@ SMI_Save(ScrnInfoPtr pScrn)
 		pSmi->ModeStructInit = TRUE;
 	}
 
-	if (pSmi->useBIOS && (pSmi->pVbe != NULL))
+	if (pSmi->useBIOS && (pSmi->pInt10 != NULL))
 	{
-		pSmi->pVbe->pInt10->num = 0x10;
-		pSmi->pVbe->pInt10->ax = 0x0F00;
-		xf86ExecX86int10(pSmi->pVbe->pInt10);
-		save->mode = pSmi->pVbe->pInt10->ax & 0x007F;
+		pSmi->pInt10->num = 0x10;
+		pSmi->pInt10->ax = 0x0F00;
+		xf86ExecX86int10(pSmi->pInt10);
+		save->mode = pSmi->pInt10->ax & 0x007F;
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Current mode 0x%02X.\n",
 				save->mode);
 	}
@@ -1554,14 +1559,14 @@ SMI_WriteMode(ScrnInfoPtr pScrn, vgaRegPtr vgaSavePtr, SMIRegPtr restore)
 	/* Wait for engine to become idle */
 	WaitIdle();
 
-	if (pSmi->useBIOS && (pSmi->pVbe->pInt10 != NULL)
+	if (pSmi->useBIOS && (pSmi->pInt10 != NULL)
 	    && (restore->mode != 0))
 	{
-		pSmi->pVbe->pInt10->num = 0x10;
-		pSmi->pVbe->pInt10->ax = restore->mode | 0x80;
+		pSmi->pInt10->num = 0x10;
+		pSmi->pInt10->ax = restore->mode | 0x80;
 		xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Setting mode 0x%02X\n",
 				restore->mode);
-		xf86ExecX86int10(pSmi->pVbe->pInt10);
+		xf86ExecX86int10(pSmi->pInt10);
 
 		/* Enable linear mode. */
 		outb(pSmi->PIOBase + VGA_SEQ_INDEX, 0x18);
@@ -1980,8 +1985,8 @@ SMI_ScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 	pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
 	
-	if (!pSmi->pVbe) {
-	    pSmi->pVbe = VBEInit(NULL, pEnt->index);
+	if (!pSmi->pInt10) {
+	    pSmi->pInt10 = xf86InitInt10(pEnt->index);
 	}
 
 	/* Save the chip/graphics state */
@@ -2777,10 +2782,10 @@ SMI_CloseScreen(int scrnIndex, ScreenPtr pScreen)
 	{
 		xfree(pSmi->DGAModes);
 	}
-	if (pSmi->pVbe != NULL)
+	if (pSmi->pInt10 != NULL)
 	{
-		vbeFree(pSmi->pVbe);
-		pSmi->pVbe = NULL;
+		xf86FreeInt10(pSmi->pInt10);
+		pSmi->pInt10 = NULL;
 	}
 #ifdef XvExtension
 	if (pSmi->ptrAdaptor != NULL)
@@ -3094,31 +3099,31 @@ SMI_DisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	}
 
 	#if 1 /* PDR#735 */
-	if (pSmi->pVbe->pInt10 != NULL)
+	if (pSmi->pInt10 != NULL)
 	{
-		pSmi->pVbe->pInt10->ax = 0x4F10;
+		pSmi->pInt10->ax = 0x4F10;
 		switch (PowerManagementMode)
 		{
 			case DPMSModeOn:
-				pSmi->pVbe->pInt10->bx = 0x0001;
+				pSmi->pInt10->bx = 0x0001;
 				break;
 
 			case DPMSModeStandby:
-				pSmi->pVbe->pInt10->bx = 0x0101;
+				pSmi->pInt10->bx = 0x0101;
 				break;
 
 			case DPMSModeSuspend:
-				pSmi->pVbe->pInt10->bx = 0x0201;
+				pSmi->pInt10->bx = 0x0201;
 				break;
 
 			case DPMSModeOff:
-				pSmi->pVbe->pInt10->bx = 0x0401;
+				pSmi->pInt10->bx = 0x0401;
 				break;
 		}
-		pSmi->pVbe->pInt10->cx = 0x0000;
-		pSmi->pVbe->pInt10->num = 0x10;
-		xf86ExecX86int10(pSmi->pVbe->pInt10);
-		if (pSmi->pVbe->pInt10->ax == 0x004F)
+		pSmi->pInt10->cx = 0x0000;
+		pSmi->pInt10->num = 0x10;
+		xf86ExecX86int10(pSmi->pInt10);
+		if (pSmi->pInt10->ax == 0x004F)
 		{
 			pSmi->CurrentDPMS = PowerManagementMode;
 			#if 1 /* PDR#835 */

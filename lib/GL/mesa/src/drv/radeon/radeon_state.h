@@ -53,7 +53,7 @@ extern void radeonPrintDirty( const char *msg, GLuint state );
 
 extern void radeonFallback( GLcontext *ctx, GLuint bit, GLboolean mode );
 #define FALLBACK( rmesa, bit, mode ) do {				\
-   if ( 0 ) fprintf( stderr, "FALLBACK in "__FUNCTION__": #%d=%d\n",	\
+   if ( 0 ) fprintf( stderr, "FALLBACK in %s: #%d=%d\n",__FUNCTION__,	\
 		     bit, mode );					\
    radeonFallback( rmesa->glCtx, bit, mode );				\
 } while (0)

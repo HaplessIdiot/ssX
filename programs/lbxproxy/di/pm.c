@@ -190,7 +190,7 @@ _ConnectToProxyManager (pmAddr, errorString)
     if ((PM_iceConn = IceOpenConnection (
 	pmAddr,	NULL, 0, 0, sizeof(iceError), iceError)) == NULL)
     {
-	sprintf (errorString,
+	snprintf (errorString, sizeof(errorString),
 	    "Could not open ICE connection to proxy manager: %s", iceError);
 	return 0;
     }
@@ -203,7 +203,7 @@ _ConnectToProxyManager (pmAddr, errorString)
     if (setupstat != IceProtocolSetupSuccess)
     {
 	IceCloseConnection (PM_iceConn);
-	sprintf (errorString,
+	snprintf (errorString,sizeof(errorString),
 	    "Could not initialize proxy management protocol: %s",
 	    iceError);
 	return 0;

@@ -171,7 +171,7 @@ static void emit_state( radeonContextPtr rmesa,
    }
 }
 
-
+#if 0
 static void print_values( const char *name, const void *vals, int sz )
 {
    const int *ivals = (const int *)vals;
@@ -180,7 +180,7 @@ static void print_values( const char *name, const void *vals, int sz )
    for (i = 0; i < sz/4 ; i++)
       fprintf(stderr, "%s %d: 0x%x\n", name, i, ivals[i]);
 }
-
+#endif
 /*
 static void print_state( drmRadeonState *state )
 {
@@ -521,7 +521,7 @@ void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
    rmesa = (radeonContextPtr) dPriv->driContextPriv->driverPrivate;
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
-      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, rmesa->glCtx );
+      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, (void*)rmesa->glCtx );
    }
 
    RADEON_FIREVERTICES( rmesa );
@@ -590,7 +590,7 @@ void radeonPageFlip( const __DRIdrawablePrivate *dPriv )
 
    if ( RADEON_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "\n%s( %p ): page=%d\n\n",
-	       __FUNCTION__, rmesa->glCtx, rmesa->currentPage );
+	       __FUNCTION__, (void*)rmesa->glCtx, rmesa->currentPage );
    }
 
    RADEON_FIREVERTICES( rmesa );

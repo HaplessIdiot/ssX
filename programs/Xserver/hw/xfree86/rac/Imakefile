@@ -12,7 +12,8 @@ SRCS = xf86RAC.c $(MODSRC)
 OBJS = xf86RAC.o $(MODOBJ)
 
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86OSSRC) \
-           -I$(SERVERSRC)/include -I$(SERVERSRC)/mi -I$(XINCLUDESRC)
+           -I$(SERVERSRC)/include -I$(SERVERSRC)/mi -I$(SERVERSRC)/render \
+	   -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
 ModuleObjectRule()
 

@@ -436,7 +436,12 @@ FFBPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-#ifdef XF86DRI
+#if 0
+/*#ifdef XF86DRI*/
+/*
+ * Loading this automatically isn't compatible
+ * to the behavior of other drivers
+ */
     if (xf86LoadSubModule(pScrn, "drm") == NULL) {
 	FFBFreeRec(pScrn);
 	return FALSE;

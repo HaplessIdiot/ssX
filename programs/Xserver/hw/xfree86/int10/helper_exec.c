@@ -14,6 +14,7 @@
  * in xf86EnableIO(). Otherwise we won't trap
  * on PIO.
  */
+
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -509,11 +510,15 @@ LockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga)
     xf86SetCurrentAccess(FALSE, xf86Screens[pInt->scrnIndex]);
     vga->save_msr    = inb(pInt->ioBase + 0x03CC);
     vga->save_vse    = inb(pInt->ioBase + 0x03C3);
+#ifndef __ia64__
     vga->save_46e8   = inb(pInt->ioBase + 0x46E8);
+#endif
     vga->save_pos102 = inb(pInt->ioBase + 0x0102);
     outb(pInt->ioBase + 0x03C2, ~(CARD8)0x03 & vga->save_msr);
     outb(pInt->ioBase + 0x03C3, ~(CARD8)0x01 & vga->save_vse);
+#ifndef __ia64__
     outb(pInt->ioBase + 0x46E8, ~(CARD8)0x08 & vga->save_46e8);
+#endif
     outb(pInt->ioBase + 0x0102, ~(CARD8)0x01 & vga->save_pos102);
     xf86SetCurrentAccess(TRUE, xf86Screens[pInt->scrnIndex]);
 }
@@ -523,7 +528,9 @@ UnlockLegacyVGA(xf86Int10InfoPtr pInt, legacyVGAPtr vga)
 {
     xf86SetCurrentAccess(FALSE, xf86Screens[pInt->scrnIndex]);
     outb(pInt->ioBase + 0x0102, vga->save_pos102);
+#ifndef __ia64__
     outb(pInt->ioBase + 0x46E8, vga->save_46e8);
+#endif
     outb(pInt->ioBase + 0x03C3, vga->save_vse);
     outb(pInt->ioBase + 0x03C2, vga->save_msr);
     xf86SetCurrentAccess(TRUE, xf86Screens[pInt->scrnIndex]);

@@ -27,6 +27,8 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
          OBJS = $(VIDMODEOBJS)
      LINTLIBS = $(LINTXLIB)
 
+#define IncludeNormalLibInSharedObject
+
 #include <Library.tmpl>
 
 DependTarget()

@@ -36,6 +36,7 @@ typedef void (*SetResProc)(InputInfoPtr pInfo, const char* protocol, int rate,
 typedef void (*checkMovementsProc)(InputInfoPtr,int, int);
 typedef void (*autoProbeProc)(InputInfoPtr, Bool, Bool);
 typedef Bool (*collectDataProc)(struct _MouseDevRec *, unsigned char);
+typedef Bool (*dataGoodProc)(struct _MouseDevRec *);
 
 /*
  * OSMouseInfoRec is used to pass information from the OSMouse layer to the
@@ -159,6 +160,7 @@ typedef struct _MouseDevRec {
     checkMovementsProc  checkMovements;
     autoProbeProc	autoProbeMouse;
     collectDataProc	collectData;
+    dataGoodProc	dataGood;
 } MouseDevRec, *MouseDevPtr;
 
 /* Z axis mapping */

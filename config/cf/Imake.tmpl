@@ -1252,18 +1252,18 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 #ifndef LdPreLib
-#if !defined(UseInstalled)
-#if !BuildLibraries && AlternateUsrLibDir
-#define LdPreLib -L$(BUILDLIBDIR) -L$(USRLIBDIR)
-#else
-#define LdPreLib -L$(BUILDLIBDIR)
-#endif
-#else
-#if AlternateUsrLibDir
-#define LdPreLib -L$(USRLIBDIR)
-#else
-#define LdPreLib /**/
-#endif
+# if !defined(UseInstalled)
+#  if !BuildLibraries && AlternateUsrLibDir
+#   define LdPreLib -L$(BUILDLIBDIR) -L$(USRLIBDIR)
+#  else
+#   define LdPreLib -L$(BUILDLIBDIR)
+#  endif
+# else
+# if AlternateUsrLibDir
+#  define LdPreLib -L$(USRLIBDIR)
+# else
+# define LdPreLib /**/
+# endif
 #endif
 #endif
 #ifndef LdPostLib
@@ -1613,6 +1613,8 @@ TCLIBDIR = TclLibDir
 #else
                AR = ArCmd
 #endif
+XCOMM Nice try but useless: make will inherit BOOTSTRAPCFLAGS 
+XCOMM from  top Makefile
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */
 #ifdef CrossCompileDir
                CC = CrossCcCmd
@@ -1651,11 +1653,6 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
        CXXDEFINES = $(CXXINCLUDES) $(CXXSTD_DEFINES) $(THREADS_CXXDEFINES) $(DEFINES) $(CXXEXTRA_DEFINES)
          CXXFLAGS = $(CXXDEBUGFLAGS) $(CXXOPTIONS) $(THREADS_CXXFLAGS) $(CXXDEFINES)
 #endif
-
-#if !BuildLibraries && AlternateIncRoot
-INSTALLED_INCLUDES = -I$(INCROOT)
-#endif
-
          COMPRESS = CompressCmd
           GZIPCMD = GzipCmd
 #ifdef CrossCompileDir
@@ -1967,6 +1964,11 @@ XCOMM Not sure this belongs here
 #define LocalTmplFile <noop.rules>
 #endif
 #include LocalTmplFile
+
+#if !BuildLibraries && AlternateIncRoot
+INSTALLED_INCLUDES = -I$(INCROOT)
+#endif
+
 
 #ifdef FixupLibReferences
 FixupLibReferences()

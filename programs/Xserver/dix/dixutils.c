@@ -398,7 +398,7 @@ DeleteWindowFromAnySaveSet(pWin)
  * procedure to call than to check if there's a procedure 
  */
 void
-NoopDDA(void* f, ...)
+NoopDDA(void)
 {
 }
 

@@ -461,7 +461,7 @@ Window_Dump(window, out)
     if (*(char *) &swaptest) {
 	_swaplong((char *) &header, sizeof(header));
 	for (i = 0; i < ncolors; i++) {
-	    _swaplong((char *) &colors[i].pixel, sizeof(long));
+	    _swaplong((char *) &colors[i].pixel, sizeof(CARD32));
 	    _swapshort((char *) &colors[i].red, 3 * sizeof(short));
 	}
     }

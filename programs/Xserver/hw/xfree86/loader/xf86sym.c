@@ -237,6 +237,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86SetPciVideo)
    SYMFUNC(xf86ClaimIsaSlot)
    SYMFUNC(xf86ClaimFbSlot)
+   SYMFUNC(xf86ClaimNoSlot)
    SYMFUNC(xf86ParsePciBusString)
    SYMFUNC(xf86ComparePciBusString)
    SYMFUNC(xf86FormatPciBusNumber)

@@ -5218,7 +5218,14 @@ Bool RADEONEnterVT(int scrnIndex, int flags)
 	RADEONEngineRestore(pScrn);
 
 #ifdef XF86DRI
-    if (RADEONPTR(pScrn)->directRenderingEnabled) {
+    if (info->directRenderingEnabled) {
+       /* This seems to fix that !@#$ irritating switch to VT and back X-freeze
+        * that has been plaguing some DRI users.  It seems that bus mastering
+        * is turned off on the video card when one switches to a VT and this
+        * needs to be reactivated when we get back, else things just stop. :)
+        * Charl P. Botha <http://cpbotha.net/> */
+       xf86EnablePciBusMaster(info->PciInfo, TRUE);
+
 	RADEONCP_START(pScrn, info);
 	DRIUnlock(pScrn->pScreen);
     }

@@ -35,7 +35,7 @@ typedef struct {
     MouseProtocolID	id;
 } MouseProtocolRec, *MouseProtocolPtr;
 
-#define NUM_MSE_AUTOPROBE_BYTES 16
+#define NUM_MSE_AUTOPROBE_BYTES 24  /* multiple of 3,4 and 6 byte packages */
 #define NUM_MSE_AUTOPROBE_TOTAL 64
 #define NUM_AUTOPROBE_PROTOS 17
 
@@ -57,6 +57,8 @@ typedef struct {
     int		prevDx, prevDy;
     int		accDx, accDy;
     int		acc;
+    CARD32	pnpLast;
+    Bool	disablePnPauto;
 } mousePrivRec, *mousePrivPtr;
 
 /* mouse proto flags */
@@ -65,5 +67,8 @@ typedef struct {
 
 /* pnp.c */
 int MouseGetPnpProtocol(InputInfoPtr pInfo);
+Bool ps2Reset(InputInfoPtr pInfo);
+Bool ps2EnableDataReporting(InputInfoPtr pInfo);
+Bool ps2SendPacket(InputInfoPtr pInfo, unsigned char *bytes, int len);
 
 #endif /* _X_MOUSE_H */

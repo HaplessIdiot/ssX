@@ -90,6 +90,7 @@ Imake.tmpl provides defaults for the following variables:
 	HasVFork		boolean for system has vfork()
 	HasVoidSignalReturn	boolean for POSIX signal() procs
 	HasZlib			boolean for system has libz
+	IncludeNormalLibInSharedObject define for libs to be included in slibs
 	IncRoot			parent of X11 include directory
 	InstBinFlags		install flags for binaries
 	InstDatFlags		install flags for data files

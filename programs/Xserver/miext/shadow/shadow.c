@@ -67,7 +67,7 @@ shadowRedisplay (ScreenPtr pScreen)
 	if (REGION_NOTEMPTY (pScreen, &pBuf->damage))
 	{
 	    REGION_INTERSECT (pScreen, &pBuf->damage, &pBuf->damage,
-			      &WindowTable[pScreen->myNum]->borderSize);
+			      &WindowTable[pScreen->myNum]->borderClip);
 	    (*pBuf->update) (pScreen, pBuf);
 	    REGION_EMPTY (pScreen, &pBuf->damage);
 	}
@@ -96,7 +96,8 @@ shadowDamageRegion (WindowPtr pWindow, RegionPtr pRegion)
 
     if (!pBuf)
 	abort ();
-    
+
+    REGION_INTERSECT(pWindow->drawable.pScree,pRegion,pRegion,&pWindow->borderClip);
     REGION_UNION (pWindow->drawable.pScreen, &pBuf->damage, &pBuf->damage, pRegion);
 #ifdef ALWAYS_DISPLAY
     shadowRedisplay (pWindow->drawable.pScreen);

@@ -22,6 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
 /* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.54 2002/04/04 14:05:49 eich Exp $ */
+/*#define VBE_INFO*/
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -37,6 +38,7 @@
 #include "shadow.h"
 #include "xf86xv.h"
 #include "xf86Pci.h"
+#include "vbe.h"
 
 typedef struct {
 	unsigned char tridentRegs3x4[0x100];
@@ -125,6 +127,10 @@ typedef struct {
     RamDacRecPtr	RamDacRec;
     xf86CursorInfoPtr	CursorInfoRec;
     xf86Int10InfoPtr	Int10;
+    vbeInfoPtr		pVbe;
+#ifdef VBE_INFO
+    vbeModeInfoPtr	vbeModes;
+#endif
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     ScreenBlockHandlerProcPtr BlockHandler;
@@ -153,6 +159,10 @@ typedef struct {
     Bool		shadowNew;
     int			displaySize;
     int			dspOverride;
+    Bool		GammaBrightnessOn;
+    int			brightness;
+    double		gamma;
+    int			FPDelay;	/* just for debugging - will go away */
 } TRIDENTRec, *TRIDENTPtr;
 
 typedef struct {
@@ -330,6 +340,7 @@ typedef enum {
 #define VID_ZOOM_INV 0x1
 #define VID_ZOOM_MINI 0x2
 #define VID_OFF_SHIFT_4 0x4
-
+#define VID_ZOOM_NOMINI 0x8
+#define VID_DOUBLE_LINEBUFFER_FOR_WIDE_SRC 0x10
 #endif /* _TRIDENT_H_ */
 

@@ -1532,9 +1532,10 @@ ConnectToServer(dpy_name)
 	return FALSE;
     }
     bzero(server, sizeof(XServerRec));
+    
     if (!InitServer (dpy_name, i, server, &sequence)) {
 	if (proxyMngr) {
-	    (void) sprintf (proxy_address, 
+	    (void) snprintf (proxy_address, sizeof(proxy_address),
 			    "could not connect to server '%s'",
 			    dpy_name);
 	    SendGetProxyAddrReply( PM_iceConn, PM_Failure, NULL, proxy_address);
@@ -1560,13 +1561,19 @@ ConnectToServer(dpy_name)
 
 #ifdef NEED_UTSNAME
 	uname (&name);
-	(void) strcpy (my_host, name.nodename);
+	(void) snprintf(my_host,sizeof(my_host),"%s",name.nodename);
 #else
-        (void) gethostname (my_host, 250);
+        (void) gethostname (my_host,sizeof(my_host));
 #endif
     }
-    (void) sprintf (proxy_address, "%s:%s", my_host, display);
-
+    if (snprintf (proxy_address, sizeof(proxy_address) ,"%s:%s", my_host,
+		  display) >= sizeof(proxy_address)) {
+	(void) snprintf (proxy_address, sizeof(proxy_address),
+			 "display name too long",display);
+	SendGetProxyAddrReply( PM_iceConn, PM_Failure, NULL, proxy_address);
+	return FALSE;
+    }
+    
     servers[i] = server;
 
     sc = AllocNewConnection(server->fd, -1, TRUE, NULL);

@@ -22,6 +22,7 @@ typedef enum {
     PROT_THINKING,
     PROT_ACECAD,
     PROT_PS2,
+    PROT_GENPS2,
     PROT_IMPS2,
     PROT_EXPPS2,
     PROT_THINKPS2,

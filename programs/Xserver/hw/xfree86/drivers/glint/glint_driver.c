@@ -3332,6 +3332,11 @@ GLINTEnterVT(int scrnIndex, int flags)
 
     TRACE_ENTER("GLINTEnterVT");
 
+#ifdef XF86DRI
+    if (pGlint->directRenderingEnabled)
+	xf86EnablePciBusMaster(pGlint->PciInfo, TRUE);
+#endif
+    
     if (pGlint->FBDev)
     	fbdevHWEnterVT(scrnIndex, flags);
     else

@@ -211,7 +211,9 @@ Neo2200AccelInit(ScreenPtr pScreen)
         nAcl->PixelWidth = 2;
 	break;
     case 24:
-	if (nPtr->NeoChipset == NM2360) {
+	if (nPtr->noAccelSet || nPtr->NeoChipset == NM2230
+	    || nPtr->NeoChipset == NM2360
+	    || nPtr->NeoChipset == NM2380) {
 	    nAcl->BltModeFlags = NEO_MODE1_DEPTH24;
             nAcl->PixelWidth = 3;
 	} else

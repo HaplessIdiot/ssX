@@ -40,6 +40,9 @@
 #include "resource.h"
 #include "panoramiX.h"
 #endif
+#ifdef RENDER
+#include "mipict.h"
+#endif
 
 /* mi things */
 
@@ -169,7 +172,9 @@ LOOKUP miLookupTab[] = {
    SYMVAR(miPointerScreenIndex)
    SYMVAR(miInstalledMaps)
    SYMVAR(miInitVisualsProc)
-
+#ifdef RENDER
+   SYMVAR(miGlyphExtents)
+#endif
   { 0, 0 },
 
 };

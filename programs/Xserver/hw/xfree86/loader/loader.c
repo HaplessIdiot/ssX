@@ -34,7 +34,8 @@
 #include <fcntl.h>
 #include <string.h>
 #if defined(linux) && \
-    (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__))
+    (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
+    || defined(__x86_64__))
 #include <malloc.h>
 #endif
 #include <stdarg.h>
@@ -328,7 +329,8 @@ LoaderInit(void)
 	xf86MsgVerb(X_INFO, 2, "Loader running on %s\n", osname);
 
 #if defined(linux) && \
-    (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__))
+    (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
+     || ( defined __x86_64__ && ! defined UseMMAP))
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks
      * some relocation types because the offset overflow. See loader.h for more
@@ -455,7 +457,11 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 	FatalError("mmap() failed: %s\n", strerror(errno) );
     return (void *)(ret + new_off_bias);
 # else
-    ret = (unsigned long) mmap(0,size,MMAP_PROT,MAP_PRIVATE,
+    ret = (unsigned long) mmap(0,size,MMAP_PROT,MAP_PRIVATE
+#ifdef __x86_64__
+			       | MAP_32BIT
+#endif
+			       ,
 			       fd,offset + offsetbias);
     if(ret == -1)
 	FatalError("mmap() failed: %s\n", strerror(errno) );
