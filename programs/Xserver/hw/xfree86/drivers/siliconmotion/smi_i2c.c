@@ -38,6 +38,17 @@ authorization from the XFree86 Project and Silicon Motion.
 
 #include "smi.h"
 
+#undef VERBLEV
+#undef ENTER_PROC
+#undef DEBUG_PROC
+#undef LEAVE_PROC
+#undef DEBUG
+#define VERBLEV 2
+#define ENTER_PROC(PROCNAME)
+#define DEBUG_PROC(PROCNAME)
+#define LEAVE_PROC(PROCNAME)
+#define DEBUG(arg)
+
 static void
 SMI_I2CPutBits(I2CBusPtr b, int clock,  int data)
 {

@@ -782,8 +782,10 @@ xf86DestroyI2CBusRec(I2CBusPtr b, Bool unalloc, Bool devs_too)
 	    if (devs_too) {
 		I2CDevPtr d;
 
-		while ((d = b->FirstDev) != NULL)
-		    xf86DestroyI2CDevRec(d, unalloc); 
+		while ((d = b->FirstDev) != NULL) {
+		    b->FirstDev = d->NextDev;
+		    xf86DestroyI2CDevRec(d, unalloc);
+		}
 	    } else {
 		if (unalloc) {
 		    xf86Msg(X_ERROR, "i2c bug: Attempt to remove I2C bus \"%s\", "
