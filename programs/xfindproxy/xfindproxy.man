@@ -1,4 +1,4 @@
-.\" $TOG: xfindproxy.man /main/2 1997/11/04 20:56:47 kaleb $
+.\" $XConsortium: xfindproxy.man /main/1 1996/10/14 12:44:59 mor $
 .\" Copyright (c) 1996  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -25,7 +25,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\" 
-.TH XFINDPROXY 1 "Release 6.4" "X Version 11"
+.TH XFINDPROXY 1 "Release 6.3" "X Version 11"
 .SH NAME
 xfindproxy - locate proxy services
 .SH SYNOPSIS

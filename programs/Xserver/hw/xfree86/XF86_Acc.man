@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.61 1997/11/16 06:18:43 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.62 1997/12/05 22:01:22 hohndel Exp $ 
 .TH XF86_Accel 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -859,4 +859,4 @@ if the cursor changed while you were in the VT.
 \fIXFree86\fP source is available from the FTP server
 \fIftp.XFree86.Org\fP and mirrors.  Send email to
 \fIXFree86@XFree86.Org\fP for details.
-.\" $TOG: XF86_Acc.man /main/29 1997/11/04 21:19:59 kaleb $
+.\" $TOG: XF86_Acc.man /main/28 1997/08/10 12:56:20 kaleb $

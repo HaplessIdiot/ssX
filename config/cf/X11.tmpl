@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.23 1997/12/14 02:55:25 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -16,7 +16,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
  *                                                                         *
  **************************************************************************/
 
-#define ProjectX		604	/* do *not* change this line */
+#define ProjectX		603	/* do *not* change this line */
 
 /* The following project-specific rules are defined at the end of this file:
  *
@@ -115,9 +115,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #ifndef BuildXInputExt
 #define BuildXInputExt		NO
 #endif
-#ifndef BuildEVI
-#define BuildEVI		YES
-#endif
 #ifndef BuildDBE
 #define BuildDBE		YES
 #endif
@@ -165,17 +162,11 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #ifndef BuildRECORDlib
 #define BuildRECORDlib		BuildRECORD
 #endif
-#ifndef BuildXinerama
-#define BuildXinerama		NO
-#endif
 #ifndef BuildXCSecurity
 #define BuildXCSecurity		YES
 #endif
 #ifndef BuildAppgroup
 #define BuildAppgroup		YES
-#endif
-#ifndef BuildCup
-#define BuildCup		YES
 #endif
 #ifndef HasPlugin
 #define HasPlugin		NO
@@ -393,13 +384,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #define XInputDefines /**/
 #endif
 #endif
-#ifndef XineramaDefines
-#if BuildXinerama
-#define XineramaDefines -DPANORAMIX
-#else
-#define XineramaDefines /**/
-#endif
-#endif
 #ifndef XieDefines
 #if BuildXIE
 #define XieDefines -DXIE
@@ -450,14 +434,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #define BigReqDefines -DBIGREQS
 #else
 #define BigReqDefines /**/
-#endif
-#endif
-
-#ifndef EVIDefines
-#if BuildEVI
-#define EVIDefines -DEVI
-#else
-#define EVIDefines /**/
 #endif
 #endif
 
@@ -527,14 +503,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #endif
 #endif
 
-#ifndef CupDefines
-#if BuildCup
-#define CupDefines -DTOGCUP
-#else
-#define CupDefines /**/
-#endif
-#endif
-
 #ifndef DPMSDefines
 #if BuildDPMS
 #define DPMSDefines -DDPMSExtension
@@ -549,8 +517,8 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #ifndef PervasiveExtensionDefines
 #define PervasiveExtensionDefines \
 	ShapeDefines XInputDefines XkbDefines LbxDefines AppgroupDefines \
-	XCSecurityDefines CupDefines PervasiveDBEDefines DPMSDefines \
-	XprintDefines XineramaDefines SitePervasiveExtensionDefines
+	XCSecurityDefines PervasiveDBEDefines DPMSDefines \
+	XprintDefines SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/
@@ -562,7 +530,7 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 	PexDefines ShmDefines XieDefines BigReqDefines VidTuneExtensionDefines \
 	XF86MiscExtensionDefines DBEDefines ScreenSaverExtensionDefines \
 	GlxDefines \
-	DBEDefines DPMSDefines EVIDefines SiteExtensionDefines
+	DBEDefines DPMSDefines SiteExtensionDefines
 #endif
 #define ExtensionDefines BaseExtensionDefines ExtensionOSDefines
 #endif /* ExtensionDefines */
@@ -813,10 +781,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.22 1997/11/22 08:17:31 dawes Exp $
 #define ForceNormalLib (HasGcc && !HasGcc2)
 #endif
 
-#ifndef ResourceConfigurationManagement 
-#define ResourceConfigurationManagement YES
-#endif
-
 #ifndef XkbComp
 #define XkbComp xkbcomp
 #endif
@@ -1054,7 +1018,7 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
       XEXTLIBSRC = $(LIBSRC)/Xext
 #if SharedLibXext
 #ifndef SharedXextRev
-#define SharedXextRev 6.4
+#define SharedXextRev 6.3
 #endif
 SharedLibReferences(EXTENSION,Xext,$(XEXTLIBSRC),SOXEXTREV,SharedXextRev)
 #else

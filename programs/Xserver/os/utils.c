@@ -1,4 +1,4 @@
-/* $TOG: utils.c /main/133 1997/11/11 13:05:44 kaleb $ */
+/* $TOG: utils.c /main/129 1997/09/19 09:30:56 kaleb $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.35 1998/01/25 04:00:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.36 1998/03/20 21:08:24 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -140,14 +140,6 @@ extern char* protNoListen;
 
 Bool CoreDump;
 Bool noTestExtensions;
-
-Bool noPanoramiXExtension = TRUE;
-#ifdef PANORAMIX
-Bool PanoramiXVisibilityNotifySent = FALSE;
-Bool PanoramiXMapped = FALSE;
-Bool PanoramiXWindowExposureSent = FALSE;
-Bool PanoramiXOneExposeRequest = FALSE;
-#endif
 
 int auditTrailLevel = 1;
 
@@ -596,10 +588,6 @@ void UseMsg()
     ErrorF("v                      video blanking for screen-saver\n");
     ErrorF("-v                     screen-saver without video blanking\n");
     ErrorF("-wm                    WhenMapped default backing-store\n");
-#ifdef PANORAMIX
-    ErrorF("+xinerama              Enable XINERAMA extension\n");
-    ErrorF("-xinerama              Disable XINERAMA extension\n");
-#endif
     ErrorF("-x string              loads named extension at init time \n");
 #ifdef AMOEBA
     ErrorF("-tcp capability        specify TCP/IP server capability\n");
@@ -911,14 +899,6 @@ char	*argv[];
 	    defaultScreenSaverBlanking = DontPreferBlanking;
 	else if ( strcmp( argv[i], "-wm") == 0)
 	    defaultBackingStore = WhenMapped;
-#ifdef PANORAMIX
-	else if ( strcmp( argv[i], "+xinerama") == 0){
-	    noPanoramiXExtension = FALSE;
-	}
-	else if ( strcmp( argv[i], "-xinerama") == 0){
-	    noPanoramiXExtension = TRUE;
-	}
-#endif
 	else if ( strcmp( argv[i], "-x") == 0)
 	{
 	    if(++i >= argc)

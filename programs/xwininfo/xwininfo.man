@@ -1,4 +1,4 @@
-.\" $TOG: xwininfo.man /main/25 1997/11/04 20:58:38 kaleb $
+.\" $XConsortium: xwininfo.man /main/24 1996/12/09 17:11:13 kaleb $
 .\" Copyright (c) 1988  X Consortium
 .\" 
 .\" Permission is hereby granted, free of charge, to any person obtaining
@@ -24,7 +24,7 @@
 .\" not be used in advertising or otherwise to promote the sale, use or
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
-.TH XWININFO 1 "Release 6.4" "X Version 11"
+.TH XWININFO 1 "Release 6.3" "X Version 11"
 .SH NAME
 xwininfo \- window information utility for X
 .SH SYNOPSIS
@@ -178,7 +178,7 @@ xwininfo: Window id: 0x60000f "xterm"
   Save Under State: no
   Map State: IsViewable
   Override Redirect State: no
-  Corners:  +2+85  -699+85  -699-6.4  +2-623
+  Corners:  +2+85  -699+85  -699-623  +2-623
   -geometry 80x24+0+58
 
 .SH ENVIRONMENT

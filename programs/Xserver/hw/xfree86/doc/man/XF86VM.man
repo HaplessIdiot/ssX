@@ -1,10 +1,10 @@
-.\" $TOG: XF86VM.man /main/7 1997/11/04 21:20:48 kaleb $
+.\" $TOG: XF86VM.man /main/6 1997/07/19 10:30:39 kaleb $
 .\"
 .\"
 .\"
 .\"
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.6 1997/01/20 12:36:20 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.7 1997/11/16 06:42:13 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2

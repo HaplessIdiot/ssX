@@ -1,4 +1,4 @@
-/* $TOG: Create.c /main/82 1997/10/13 12:25:25 barstow $ */
+/* $TOG: Create.c /main/81 1997/05/15 17:28:48 kaleb $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Create.c,v 3.2 1997/05/17 12:52:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Create.c,v 3.3 1997/11/16 06:17:42 dawes Exp $ */
 
 /*
 
@@ -64,9 +64,6 @@ in this Software without prior written authorization from the X Consortium.
 #include "IntrinsicI.h"
 #include "VarargsI.h"
 #include "ShellP.h"
-#ifndef X_NO_RESOURCE_CONFIGURATION_MANAGEMENT
-#include "ResConfigP.h"
-#endif
 #include <stdio.h>
 
 static String XtNxtCreateWidget = "xtCreateWidget";
@@ -667,11 +664,6 @@ _XtCreatePopupShell(name, widget_class, parent, args, num_args,
 		default_screen, args, num_args, typed_args,
 		num_typed_args, (ConstraintWidgetClass)NULL,
 		popupPostProc);
-
-#ifndef X_NO_RESOURCE_CONFIGURATION_MANAGEMENT
-    XtAddEventHandler (widget, (EventMask) PropertyChangeMask, FALSE,
-		(XtEventHandler) _XtResourceConfigurationEH, NULL);
-#endif
     return(widget);
 }
 
@@ -729,12 +721,6 @@ _XtAppCreateShell(name, class, widget_class, display, args, num_args,
 		(Screen*)DefaultScreenOfDisplay(display),
 		args, num_args, typed_args, num_typed_args,
 		(ConstraintWidgetClass) NULL, _XtAddShellToHookObj);
-
-#ifndef X_NO_RESOURCE_CONFIGURATION_MANAGEMENT
-    XtAddEventHandler (shell, (EventMask) PropertyChangeMask, FALSE,
-		(XtEventHandler) _XtResourceConfigurationEH, NULL);
-#endif
-
     return shell;
 }
 

@@ -1,9 +1,9 @@
-XCOMM $TOG: Imakefile /main/120 1997/10/13 12:25:39 barstow $
+XCOMM $TOG: Imakefile /main/119 1997/05/20 10:06:20 kaleb $
 
 
 
 
-XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.9 1997/05/21 15:17:00 dawes Exp $
+XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.10 1997/11/16 06:17:42 dawes Exp $
 #define DoNormalLib NormalLibXt
 #define DoSharedLib SharedLibXt
 #define DoDebugLib DebugLibXt
@@ -14,13 +14,6 @@ XCOMM $XFree86: xc/lib/Xt/Imakefile,v 3.9 1997/05/21 15:17:00 dawes Exp $
 #define IncSubdir X11
 
 #include <Threads.tmpl>
-
-#if ResourceConfigurationManagement
-RCMOBJS = ResConfig.o
-RCMSRCS = ResConfig.c
-#else 
-RCM_DEFINES = -DX_NO_RESOURCE_CONFIGURATION_MANAGEMENT
-#endif
 
 #ifndef MotifBC
 #define MotifBC NO
@@ -57,7 +50,7 @@ XTWARNINGPREFIX = XtWarningPrefix
 #if HasSnprintf
    MISC_DEFINES = -DUSE_SNPRINTF -DLIBXT
 #endif
-        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) $(MISC_DEFINES) XtExtraDefines $(RCM_DEFINES)
+        DEFINES = AllocateLocalDefines $(ALIGN_DEFINES) $(POLL_DEFINES) $(MISC_DEFINES) XtExtraDefines
 
      DB_DEFINES = -DERRORDB=\"$(LIBDIR)/XtErrorDB\" \
 		  -DXTERROR_PREFIX=\"$(XTERRORPREFIX)\" \
@@ -154,8 +147,7 @@ SRCS = \
 	VarGet.c \
 	Varargs.c \
 	Vendor.c \
-	sharedlib.c \
-	$(RCMSRCS)
+	sharedlib.c
 
 OBJS = \
 	$(MISCOBJS) \
@@ -211,8 +203,7 @@ OBJS = \
 	VarCreate.o \
 	VarGet.o \
 	Varargs.o \
-	Vendor.o \
-	$(RCMOBJS)
+	Vendor.o
 
 #if SharedDataSeparation
 UNSHAREDOBJS = StringDefs.o sharedlib.o
