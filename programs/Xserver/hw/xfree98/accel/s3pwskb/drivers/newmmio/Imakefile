@@ -4,15 +4,15 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/25 21:24:12 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/drivers/newmmio/Imakefile,v 3.5 1997/03/11 13:09:22 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3pwskb/drivers/newmmio/Imakefile,v 3.6 1997/03/24 13:14:14 hohndel Exp $
 
 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = newmmio.c
+SRCS = s3pwskb_newmmio.c
 
-OBJS = newmmio.o
+OBJS = s3pwskb_newmmio.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -28,18 +28,18 @@ DEFINES = -DPC98 -DPC98_XKB
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-all:: newmmio.o
+all:: s3pwskb_newmmio.o
 
 #if !XF86LinkKit
-LinkSourceFile(newmmio.c,$(XF86SRC)/accel/s3/drivers/newmmio)
+LinkFile(s3pwskb_newmmio.c,$(XF86SRC)/accel/s3/drivers/newmmio/newmmio.c)
 #endif
 
 InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/s3pwskb/newmmio)
-InstallLinkKitNonExecFile(newmmio.c,$(XF98LINKKITDIR)/drivers98/s3pwskb/newmmio)
+InstallLinkKitNonExecFile(s3pwskb_newmmio.c,$(XF98LINKKITDIR)/drivers98/s3pwskb/newmmio)
 
 #if DoLoadableServer
 #ifndef DontInstallPC98Version
-InstallDynamicModule(newmmio.o,$(MODULEDIR))
+InstallDynamicModule(s3pwskb_newmmio.o,$(MODULEDIR))
 #endif
 #endif
 

@@ -1,4 +1,5 @@
 XFree86 3.2Ar (26 March 1997)
+ 602. Recognize 1MB on ViRGE (using an illegal setting) (Alan Hourihane).
  601. Fix and enhance handling of unresolved symbols in loader (#196, Harald
       Koenig).
  600. Fixes and Additions for XF86Setup (#194,195, Joe Moss).
@@ -4220,4 +4221,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.436 1997/03/23 07:58:02 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.437 1997/03/24 13:06:02 hohndel Exp $

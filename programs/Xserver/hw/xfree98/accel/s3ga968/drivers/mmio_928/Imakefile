@@ -4,15 +4,15 @@ XCOMM $XConsortium: Imakefile /main/4 1996/10/25 21:22:52 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/drivers/mmio_928/Imakefile,v 3.5 1997/03/11 13:08:22 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/accel/s3ga968/drivers/mmio_928/Imakefile,v 3.6 1997/03/24 13:10:43 hohndel Exp $
 
 
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = mmio_928.c
+SRCS = s3ga968_mmio_928.c
 
-OBJS = mmio_928.o
+OBJS = s3ga968_mmio_928.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
@@ -28,18 +28,18 @@ DEFINES = -DPC98 -DPC98_GA968
 NormalLibraryObjectRule()
 NormalAsmObjectRule()
 
-all:: mmio_928.o
+all:: s3ga968_mmio_928.o
 
 #if !XF86LinkKit
-LinkSourceFile(mmio_928.c,$(XF86SRC)/accel/s3/drivers/mmio_928)
+LinkFile(s3ga968_mmio_928.c,$(XF86SRC)/accel/s3/drivers/mmio_928/mmio_928.c)
 #endif
 
 InstallLinkKitNonExecFile(Imakefile,$(XF98LINKKITDIR)/drivers98/s3ga968/mmio_928)
-InstallLinkKitNonExecFile(mmio_928.c,$(XF98LINKKITDIR)/drivers98/s3ga968/mmio_928)
+InstallLinkKitNonExecFile(s3ga968_mmio_928.c,$(XF98LINKKITDIR)/drivers98/s3ga968/mmio_928)
 
 #if DoLoadableServer
 #ifndef DontInstallPC98Version
-InstallDynamicModule(mmio_928.o,$(MODULEDIR))
+InstallDynamicModule(s3ga968_mmio_928.o,$(MODULEDIR))
 #endif
 #endif
 

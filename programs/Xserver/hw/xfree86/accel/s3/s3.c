@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.162 1997/03/22 09:34:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.163 1997/03/23 07:58:36 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -257,15 +257,60 @@ ModuleInit(data,magic)
         * magic= MAGIC_LOAD;
         break;
     case 3:
+#ifndef PC98
         * data = (pointer) "s3_generic.o";
+#else
+#ifdef PC98_NEC
+        * data = (pointer) "s3nec_s3_generic.o";
+#endif
+#ifdef PC98_XKB
+        * data = (pointer) "s3pwskb_s3_generic.o";
+#endif
+#ifdef PC98_PWLB
+        * data = (pointer) "s3pwlb_s3_generic.o";
+#endif
+#ifdef PC98_GA968
+        * data = (pointer) "s3ga968_s3_generic.o";
+#endif
+#endif
         * magic= MAGIC_LOAD;
         break;
     case 4:
+#ifndef PC98
         * data = (pointer) "mmio_928.o";
+#else
+#ifdef PC98_NEC
+        * data = (pointer) "s3nec_mmio_928.o";
+#endif
+#ifdef PC98_XKB
+        * data = (pointer) "s3pwskb_mmio_928.o";
+#endif
+#ifdef PC98_PWLB
+        * data = (pointer) "s3pwlb_mmio_928.o";
+#endif
+#ifdef PC98_GA968
+        * data = (pointer) "s3ga968_mmio_928.o";
+#endif
+#endif
         * magic= MAGIC_LOAD;
         break;
     case 5:
+#ifndef PC98
         * data = (pointer) "newmmio.o";
+#else
+#ifdef PC98_NEC
+        * data = (pointer) "s3nec_newmmio.o";
+#endif
+#ifdef PC98_XKB
+        * data = (pointer) "s3pwskb_newmmio.o";
+#endif
+#ifdef PC98_PWLB
+        * data = (pointer) "s3pwlb_newmmio.o";
+#endif
+#ifdef PC98_GA968
+        * data = (pointer) "s3ga968_newmmio.o";
+#endif
+#endif
         * magic= MAGIC_LOAD;
         break;
     case 6:

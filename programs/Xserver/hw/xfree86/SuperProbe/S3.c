@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.17 1997/03/07 00:29:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/S3.c,v 3.18 1997/03/22 09:34:46 hohndel Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -399,6 +399,9 @@ int Chipset;
 			      break;
 			   case 4:
 			      Mem = 2 * 1024;
+			      break;
+			   case 6:
+			      Mem = 1 * 1024;
 			      break;
 			   }
 			}

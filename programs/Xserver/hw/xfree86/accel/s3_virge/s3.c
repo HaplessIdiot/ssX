@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.23 1997/03/10 10:11:43 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3_virge/s3.c,v 3.24 1997/03/22 09:35:14 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -889,6 +889,9 @@ s3Probe()
 	    break;
 	 case 4:
 	    s3InfoRec.videoRam = 2 * 1024;
+	    break;
+	 case 6:
+	    s3InfoRec.videoRam = 1 * 1024;
 	    break;
 	 }
       }
