@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.4 1999/03/07 11:40:53 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/fonts.c,v 3.5 1999/08/21 13:48:48 dawes Exp $ */
 
 #include        "FS.h"
 #include        "FSproto.h"
@@ -576,7 +576,7 @@ CloseClientFont(
 }
 
 /*
- * search all the knwon FPE prefixes looking for one to match the given
+ * search all the known FPE prefixes looking for one to match the given
  * FPE name
  */
 static int
@@ -613,7 +613,7 @@ find_existing_fpe(
 
     for (i = 0; i < num; i++) {
 	fpe = list[i];
-	if (fpe->name_length == len &&  memcmp(name, fpe->name, len) == 0)
+	if (fpe->name_length == len && memcmp(name, fpe->name, len) == 0)
 	    return fpe;
     }
     return (FontPathElementPtr) 0;
@@ -631,10 +631,12 @@ set_font_path_elements(
     int        *bad)
 {
     int         i,
+		j,
                 err;
     int		len;
     int		type;
     char       *cp = paths;
+    char       *name;
     FontPathElementPtr fpe,
                *fplist;
 
@@ -648,10 +650,9 @@ set_font_path_elements(
 	if (fpe_functions[i].set_path_hook)
 	    (*fpe_functions[i].set_path_hook) ();
     }
-    for (i = 0; i < npaths; i++) {
+    for (i = 0, j = 0; i < npaths; i++) {
 	len = *cp++;
 	if (len) {
-	    char *name;
 	    /* if it's already in our active list, just reset it */
 	    /*
 	     * note that this can miss FPE's in limbo -- may be worth catching
@@ -679,9 +680,9 @@ set_font_path_elements(
 	    type = determine_fpe_type(name);
 	    if (type == -1)
 	    {
+		NoticeF("ignoring font path element %s (bad font path descriptor)\n", name);
 		fsfree(name);
-		err = FSBadName;
-		goto bail;
+		continue;
 	    }
 	    /* must be new -- make it */
 	    fpe = (FontPathElementPtr) fsalloc(sizeof(FontPathElementRec));
@@ -693,18 +694,27 @@ set_font_path_elements(
 	    fpe->type = type;
 	    fpe->name = name;
 	    fpe->refcount = 1;
-	    fplist[i] = fpe;
 
 	    cp += len;
 	    fpe->name_length = len;
 	    err = (*fpe_functions[fpe->type].init_fpe) (fpe);
 	    if (err != Successful) {
+		NoticeF("ignoring font path element %s (unreadable)\n", fpe->name);
 		fsfree(fpe->name);
 		fsfree(fpe);
-		err = FontToFSError(err);
-		goto bail;
+		continue;
 	    }
+	    fplist[j++] = fpe;
 	}
+    }
+    if (j < npaths) {
+	fplist = (FontPathElementPtr *)
+	    fsrealloc(fplist, sizeof(FontPathElementPtr) * j);
+	npaths = j;
+    }
+    if (j == 0) {
+	err = FontToFSError(err);
+	goto bail;
     }
     free_font_path(font_path_elements, num_fpes);
     font_path_elements = fplist;

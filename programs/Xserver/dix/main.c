@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.29 2000/06/16 01:50:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.30 2000/11/27 00:10:02 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -267,6 +267,8 @@ main(argc, argv, envp)
 	restart = 1;
 
     CheckUserParameters(argc, argv, envp);
+
+    CheckUserAuthorization();
 
 #ifdef COMMANDLINE_CHALLENGED_OPERATING_SYSTEMS
     ExpandCommandLine(&argc, &argv);

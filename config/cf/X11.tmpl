@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.82 2000/11/28 16:10:21 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.83 2000/11/30 01:02:23 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -319,6 +319,10 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.82 2000/11/28 16:10:21 dawes Exp $
 #endif
 #ifndef BuildAllSpecsDocs
 #define BuildAllSpecsDocs	NO
+#endif
+
+#ifndef FSUseSyslog
+#define FSUseSyslog		NO
 #endif
 
 #ifndef InstallLibManPages

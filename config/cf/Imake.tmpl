@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.83 2000/11/09 01:35:05 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.84 2000/11/28 16:10:21 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -347,6 +347,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #ifndef HasFchown
 #define HasFchown		YES
+#endif
+#ifndef HasPam
+#define HasPam			NO
+#endif
+#ifndef HasPamMisc
+#define HasPamMisc		NO
 #endif
 /* byte-order defaults */
 #ifndef ByteOrder
@@ -981,6 +987,9 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef LexLib
 #define LexLib -ll
+#endif
+#ifndef HasFlex
+#define HasFlex NO
 #endif
 #ifndef YaccCmd
 #define YaccCmd yacc

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.202 2000/11/16 19:44:51 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.203 2000/11/18 19:37:05 tsi Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -263,12 +263,14 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #ifdef ServerExtraSysLibs
    EXTRASYSLIBS = ServerExtraSysLibs
 #endif
-#if SystemV4 || defined(SGIArchitecture) || UseRgbTxt
-        SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(USB) $(EXTRASYSLIBS)
-#else
-        SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries DBMLibrary $(USB) \
-	$(EXTRASYSLIBS)
+#if HasPam && HasPamMisc
+        PAMLIBS = PamLibraries PamMiscLibraries
 #endif
+#if !(SystemV4 || defined(SGIArchitecture) || UseRgbTxt)
+       DBMLIBS = DBMLibrary
+#endif
+        SYSLIBS = $(ZLIB) MathLibrary Krb5Libraries $(DBMLIBS) $(USB) \
+	$(PAMLIBS) $(EXTRASYSLIBS)
            CBRT = mi/LibraryTargetName(cbrt)
         STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
 

@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDId: @(#)config.c,v 4.6 1991/07/09 14:08:09 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/config.c,v 3.7 1999/03/07 11:41:05 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/config.c,v 3.8 2000/02/13 06:15:46 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -57,6 +57,8 @@ in this Software without prior written authorization from The Open Group.
 #ifdef FONTCACHE
 #include	"fontcacheP.h"
 #endif
+
+extern int portFromCmdline;
 
 static char *font_catalogue = NULL;
 
@@ -450,7 +452,7 @@ config_set_int(
 	return val;
 
     /* now do individual attribute checks */
-    if (!strcmp(parm->parm_name, "port")) {
+    if (!strcmp(parm->parm_name, "port") && !portFromCmdline) {
 	ListenPort = ival;
     } else if (!strcmp(parm->parm_name, "client-limit")) {
 	AccessSetConnectionLimit(ival);

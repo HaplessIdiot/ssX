@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.9 1999/03/07 11:41:08 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.10 2000/11/14 18:20:39 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -56,6 +56,10 @@ in this Software without prior written authorization from The Open Group.
 #include	<util/memleak/memleak.h>
 #endif
 #include	<sys/wait.h>
+#include	<unistd.h>
+#include	<pwd.h>
+#include	<grp.h>
+#include	<sys/types.h>
 
 #ifndef X_NOT_POSIX
 #ifdef _POSIX_SOURCE
@@ -91,8 +95,16 @@ char *realloc();
 #endif
 
 extern char *configfilename;
+static Bool dropPriv = FALSE; /* whether or not to drop root privileges */
+#ifdef DEFAULT_DAEMON
+static Bool becomeDaemon = TRUE; /* whether to become a daemon or not */
+#else
+static Bool becomeDaemon = FALSE; /* whether to become a daemon or not */
+#endif
+static const char *userId = NULL;
 char       *progname;
 Bool        CloneSelf;
+Bool        portFromCmdline = FALSE;
 
 OldListenRec *OldListen = NULL;
 int 	     OldListenCount = 0;
@@ -189,7 +201,7 @@ GetTimeInMillis(void)
 static void
 usage(void)
 {
-    fprintf(stderr, "usage: %s [-config config_file] [-port tcp_port]\n",
+    fprintf(stderr, "usage: %s [-config config_file] [-port tcp_port] [-droppriv] [-daemon] [-nodaemon] [-user user_name]\n",
 	    progname);
     exit(1);
 }
@@ -284,13 +296,25 @@ ProcessCmdLine(int argc, char **argv)
     progname = argv[0];
     for (i = 1; i < argc; i++) {
 	if (!strcmp(argv[i], "-port")) {
-	    if (argv[i + 1])
+	    if (argv[i + 1]) {
 		ListenPort = atoi(argv[++i]);
-	    else
+		portFromCmdline = TRUE;
+	    } else
 		usage();
 	} else if (!strcmp(argv[i], "-ls")) {
 	    if (argv[i + 1])
 		ProcessLSoption (argv[++i]);
+	    else
+		usage();
+	} else if (!strcmp(argv[i], "-droppriv")) {
+	        dropPriv = TRUE;
+	} else if (!strcmp(argv[i], "-daemon")) {
+	        becomeDaemon = TRUE;
+	} else if (!strcmp(argv[i], "-nodaemon")) {
+	        becomeDaemon = FALSE;
+	} else if (!strcmp(argv[i], "-user")) {
+	    if (argv[i + 1])
+		userId = argv[++i];
 	    else
 		usage();
 	} else if (!strcmp(argv[i], "-cf") || !strcmp(argv[i], "-config")) {
@@ -430,3 +454,61 @@ FSfree(pointer ptr)
 }
 
 #endif /* SPECIAL_MALLOC */
+
+
+void
+SetUserId(void)
+{
+    /* become xfs user (or other specified on command line) if possible */
+    if ((geteuid() == 0) && (dropPriv || userId)) {
+	const char *user;
+	struct passwd *pwent;
+
+	if (!userId)
+	    user = "xfs";
+	else
+	    user = userId;
+	pwent = getpwnam(user);
+	if (pwent) {
+	    if (setgid(pwent->pw_gid)) {
+		ErrorF("fatal: couldn't set groupid to xfs user's group\n");
+		exit(1);
+	    }
+	    if (setgroups(0, NULL)) {
+		ErrorF("fatal: couldn't drop supplementary groups\n");
+		exit(1);
+	    }
+	    if (initgroups(user, pwent->pw_gid)) {
+		ErrorF("fatal: couldn't init supplementary groups\n");
+		exit(1);
+	    }
+	    if (setuid(pwent->pw_uid)) {
+		ErrorF("fatal: couldn't set userid to %s user\n", user);
+		exit(1);
+	    }
+	}
+    } else if (dropPriv || userId) {
+	ErrorF("fatal: -droppriv or -user flag specified, but xfs not run as root\n");
+	exit(1);
+    }
+}
+
+
+void
+SetDaemonState(void)
+{
+    int oldpid;
+
+    if (becomeDaemon) {
+	BecomeOrphan();
+	BecomeDaemon();
+	if ((oldpid = StorePid())) {
+	    if (oldpid == -1)
+		ErrorF ("can't create/lock pid file\n");
+	    else
+		ErrorF ("can't lock pid file, another xfs is running (pid %s)\n",
+			oldpid);
+	    exit(1);
+	}
+    }
+}

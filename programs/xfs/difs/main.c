@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/main.c,v 3.2 1998/12/20 11:58:17 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/main.c,v 3.3 1999/03/07 11:40:54 dawes Exp $ */
 
 #include	"FS.h"
 #include	"FSproto.h"
@@ -79,7 +79,8 @@ extern int 	     OldListenCount;
 int
 main(int argc, char *argv[])
 {
-    int         i;
+    int         i, oldumask;
+    struct passwd *pwent;
 
     argcGlobal = argc;
     argvGlobal = argv;
@@ -89,14 +90,22 @@ main(int argc, char *argv[])
     /* init stuff */
     ProcessCmdLine(argc, argv);
     InitErrors();
+
+    SetUserId();
     /*
      * do this first thing, to get any options that only take effect at
-     * startup time.  it is erad again each time the server resets
+     * startup time.  it is read again each time the server resets
      */
     if (ReadConfigFile(configfilename) != FSSuccess) {
 	ErrorF("fatal: couldn't read config file\n");
 	exit(1);
     }
+
+    /* make sure at least world write access is disabled */
+    if (((oldumask = umask(022)) & 002) == 002)
+	(void)umask(oldumask);
+
+    SetDaemonState();
 
     while (1) {
 	serverGeneration++;
