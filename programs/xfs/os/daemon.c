@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.8 2001/11/16 16:47:58 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.9 2002/05/31 18:46:12 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -60,6 +60,7 @@ BecomeOrphan ()
     Pid_t child_id;
     int stat;
 
+    chdir("/");
     /*
      * fork so that the process goes into the background automatically. Also
      * has a nice side effect of having the child process get inherited by

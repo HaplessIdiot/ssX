@@ -47,7 +47,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)osglue.c,v 4.6 1991/07/09 14:07:30 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.15 2001/12/14 20:01:41 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/osglue.c,v 3.16 2002/05/31 18:46:12 dawes Exp $ */
 
 /*
  * this is miscellaneous OS specific stuff.
@@ -315,6 +315,7 @@ CloneMyself(void)
 #endif
 
     NoticeF("attempting clone...\n");
+    chdir("/");
     child = fork();
     if (child == -1) {
 	/* failed to fork */
