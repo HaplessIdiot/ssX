@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/xterm_io.h,v 1.2 2000/12/30 19:15:48 dickey Exp $
+ * $XFree86: xc/programs/xterm/xterm_io.h,v 1.3 2001/02/13 19:19:19 dawes Exp $
  */
 
 /*
@@ -54,7 +54,6 @@
 
 #ifdef __CYGWIN__
 #define ATT
-#define SVR4
 #define SYSV
 #define USE_SYSV_TERMIO
 #endif

@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+  90. Don't define SVR4 on Cygwin/XFree86 (#4751, Suhaib Siddiqi,  
+      Alan Hourihane).
   89. Don't override system commands specified in host.def on Cygwin/XFree86
       (#4753, Alexander Gottwald).
   88. Fix cursor problem in server respawn's on Cygwin/XFree86 
@@ -13469,4 +13471,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1837 2001/06/08 08:06:51 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1838 2001/06/08 08:37:36 alanh Exp $
