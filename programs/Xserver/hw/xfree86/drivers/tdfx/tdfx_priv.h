@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.8 2001/03/21 17:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.9 2001/04/05 21:29:17 dawes Exp $ */
 
 
 #ifndef _TDFX_FIFO_H_
@@ -82,6 +82,7 @@ typedef volatile struct _H3CmdFifo
 Bool TDFXInitFifo(ScreenPtr pScreen);
 void TDFXShutdownFifo(ScreenPtr pScreen);
 void TDFXAllocateSlots(TDFXPtr pTDFX, int slots);
+void TDFXSendNOPFifo2D(ScrnInfoPtr pScreen);
 
 #define CHECK_FOR_ROOM(_n) \
 	if ((pTDFX->fifoSlots -= (_n)) < 0) \

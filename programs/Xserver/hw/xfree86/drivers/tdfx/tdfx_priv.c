@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.14 2001/03/21 17:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.15 2001/04/05 21:29:17 dawes Exp $ */
 
 
 #include "xf86.h"
@@ -51,7 +51,7 @@ static void TDFXSendNOPFifo3D(ScrnInfoPtr pScrn)
   WRITE_FIFO(pTDFX, 0, 0);
 }
 
-static void TDFXSendNOPFifo2D(ScrnInfoPtr pScrn)
+void TDFXSendNOPFifo2D(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.2 2001/01/16 05:10:59 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.3 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -90,10 +90,10 @@ static void radeonSetTexFilter( radeonTexObjPtr t, GLenum minf, GLenum magf )
    case GL_NEAREST_MIPMAP_NEAREST:
       t->pp_txfilter |= RADEON_MIN_FILTER_NEAREST_MIP_NEAREST;
       break;
-   case GL_LINEAR_MIPMAP_NEAREST:
+   case GL_NEAREST_MIPMAP_LINEAR:
       t->pp_txfilter |= RADEON_MIN_FILTER_LINEAR_MIP_NEAREST;
       break;
-   case GL_NEAREST_MIPMAP_LINEAR:
+   case GL_LINEAR_MIPMAP_NEAREST:
       t->pp_txfilter |= RADEON_MIN_FILTER_NEAREST_MIP_LINEAR;
       break;
    case GL_LINEAR_MIPMAP_LINEAR:

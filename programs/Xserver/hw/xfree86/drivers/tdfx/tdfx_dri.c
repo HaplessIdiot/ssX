@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.21 2001/04/19 19:54:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.22 2001/05/02 15:06:10 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -283,13 +283,12 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
             (pScrn->bitsPerPixel));
     if (pTDFX->ChipType <= PCI_CHIP_VOODOO3) {
       xf86DrvMsg(pScreen->myNum, X_INFO,
-              "[dri] To use DRI, invoke the server using 16 bpp "
-	      "(-depth 15 or -depth 16).\n");
+              "[dri] To use DRI, invoke the server using 16 bpp\n"
+	      "\t(-depth 15 or -depth 16).\n");
     } else {
       xf86DrvMsg(pScreen->myNum, X_INFO,
-              "[dri] To use DRI, invoke the server using 16 bpp "
-	      "(-depth 15 or -depth 16)\n"
-	      "\tor 32 bpp (-depth 24 -fbbpp 32).\n");
+              "[dri] To use DRI, invoke the server using 16 bpp\n"
+	      "\t(-depth 15 or -depth 16) or 32 bpp (-depth 24 -fbbpp 32).\n");
     }
     return FALSE;
   }
@@ -625,7 +624,6 @@ TDFXDRITransitionTo2d(ScreenPtr pScreen)
   xf86FreeOffscreenArea(pTDFX->reservedArea); 
 }
 
-
 static void
 TDFXDRITransitionTo3d(ScreenPtr pScreen)
 {
@@ -633,8 +631,15 @@ TDFXDRITransitionTo3d(ScreenPtr pScreen)
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   FBAreaPtr pArea;
 
-  if(pTDFX->videoScratch) 
-	xf86FreeOffscreenLinear(pTDFX->videoScratch);
+  if(pTDFX->overlayBuffer) {
+	xf86FreeOffscreenLinear(pTDFX->overlayBuffer);
+	pTDFX->overlayBuffer = NULL;
+  }
+
+  if(pTDFX->textureBuffer) {
+	xf86FreeOffscreenArea(pTDFX->textureBuffer);
+	pTDFX->textureBuffer = NULL;
+  }
 
   xf86PurgeUnlockedOffscreenAreas(pScreen);
   

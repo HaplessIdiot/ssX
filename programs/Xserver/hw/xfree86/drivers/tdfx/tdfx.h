@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.22 2001/04/19 19:54:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.23 2001/05/04 19:05:46 dawes Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -213,13 +213,25 @@ typedef struct _TDFXRec {
   int pixmapCacheLinesMax;
   FBAreaPtr reservedArea;
   Bool ShowCache;
-  FBLinearPtr videoScratch;
   int videoKey;
   void (*VideoTimerCallback)(ScrnInfoPtr, Time);
-  XF86VideoAdaptorPtr adaptor;
+  FBLinearPtr overlayBuffer;
+  FBAreaPtr textureBuffer;
+  Bool TextureXvideo;
+  XF86VideoAdaptorPtr overlayAdaptor;
+  XF86VideoAdaptorPtr textureAdaptor;
   ScreenBlockHandlerProcPtr BlockHandler;
   OptionInfoPtr Options;
 } TDFXRec;
+
+typedef struct {
+  RegionRec	clip;
+  CARD32	colorKey;
+  int		filterQuality;
+  CARD32	videoStatus;
+  Time		offTime;
+  Time		freeTime;
+} TDFXPortPrivRec, *TDFXPortPrivPtr;
 
 typedef struct {
   PROPSAREADATA
@@ -279,5 +291,6 @@ extern void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 extern void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
 
 extern void TDFXInitVideo(ScreenPtr pScreen);
+extern void TDFXCloseVideo(ScreenPtr pScreen);
 
 #endif
