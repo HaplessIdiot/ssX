@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.1 1998/11/28 10:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.2 1998/12/06 06:08:27 dawes Exp $ */
 
 /* edid.h: defines to parse an EDID block 
  *
@@ -307,7 +307,7 @@ struct vendor {
   int year;
 };
 
-struct version {
+struct edid_version {
   int version;
   int revision;
 };
@@ -404,7 +404,7 @@ struct detailed_monitor_section {
 
 typedef struct {
   struct vendor vendor;
-  struct version ver;
+  struct edid_version ver;
   struct disp_features features;
   struct established_timings timings1;
   struct std_timings timings2[8];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.1 1998/11/28 10:43:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_edid.c,v 1.2 1999/01/14 13:04:14 dawes Exp $ */
 
 /* interpret_edid.c: interpret a primary EDID block
  * 
@@ -12,11 +12,11 @@
 #include "xf86DDC.h"
 
 static void get_vendor_section(Uchar*, struct vendor *);
-static void get_version_section(Uchar*, struct version *);
+static void get_version_section(Uchar*, struct edid_version *);
 static void get_display_section(Uchar*, struct disp_features *);
 static void get_established_timing_section(Uchar*, struct established_timings *);
 static void get_std_timing_section(Uchar*, struct std_timings *);
-static void get_dt_md_section(Uchar *, struct version *,
+static void get_dt_md_section(Uchar *, struct edid_version *,
 			      struct detailed_monitor_section *det_mon);
 static void copy_string(Uchar *, Uchar *);
 static void get_dst_timing_section(Uchar *, struct std_timings *);
@@ -57,7 +57,7 @@ get_vendor_section(Uchar *c, struct vendor *r)
 }
 
 static void 
-get_version_section(Uchar *c, struct version *r)
+get_version_section(Uchar *c, struct edid_version *r)
 {
     r->version  = VERSION;
     r->revision = REVISION;
@@ -109,7 +109,7 @@ get_std_timing_section(Uchar *c, struct std_timings *r)
 }
 
 static void
-get_dt_md_section(Uchar *c, struct version *ver, 
+get_dt_md_section(Uchar *c, struct edid_version *ver, 
 		  struct detailed_monitor_section *det_mon)
 {
   int i;
