@@ -51,8 +51,9 @@ typedef struct {
     CARD32         colorKey;
     Time           offTime;
     Time           freeTime;
-    VIACAPINFO     CapInfo;
-    VIAAUDCTRL     AudCtrl;
+    VIACapRec      CapInfo;
+    CARD32	   AudioMode;
+    int		   Volume;
 
     /* Surface structure */
     DDSURFACEDESC SurfaceDesc;

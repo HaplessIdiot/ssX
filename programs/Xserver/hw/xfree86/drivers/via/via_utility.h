@@ -27,17 +27,17 @@
  */
 
 /* Primary ID */
-#define	UT_XV_FUNC_BIOS			0x11   /* Primary ID */
-#define	UT_XV_FUNC_DRIVER		0x12
-#define	UT_XV_FUNC_DEVICE		0x13
-#define	UT_XV_FUNC_PANEL		0x14
-#define	UT_XV_FUNC_TV			0x15
-#define	UT_XV_FUNC_GAMMA		0x16
+#define	UT_XV_FUNC_BIOS				0x11   /* Primary ID */
+#define	UT_XV_FUNC_DRIVER			0x12
+#define	UT_XV_FUNC_DEVICE			0x13
+#define	UT_XV_FUNC_PANEL			0x14
+#define	UT_XV_FUNC_TV				0x15
+#define	UT_XV_FUNC_GAMMA			0x16
 
 /* Secondary ID */
-#define	UT_XV_FUNC_BIOS_GetChipID			0x01    /* Get Chip ID */
-#define UT_XV_FUNC_BIOS_GetVersion			0x02    /* Get the version of the BIOS */
-#define	UT_XV_FUNC_BIOS_GetDate				0x03    /* Get the date (year, month, day) of the BIOS. */
+#define	UT_XV_FUNC_BIOS_GetChipID		0x01    /* Get Chip ID */
+#define UT_XV_FUNC_BIOS_GetVersion		0x02    /* Get the version of the BIOS */
+#define	UT_XV_FUNC_BIOS_GetDate			0x03    /* Get the date (year, month, day) of the BIOS. */
 #define	UT_XV_FUNC_BIOS_GetVideoMemSizeMB	0x04    /* Get the video memory size, in MB */
 
 #define	UT_XV_FUNC_DRIVER_GetFileName		0x01
@@ -57,34 +57,34 @@
 #define	UT_XV_FUNC_DEVICE_SetExpandState	4
 #define	UT_XV_FUNC_DEVICE_GetSupportExpand	5
 
-#define	UT_XV_FUNC_TV_GetSupportStandardState		1
-#define	UT_XV_FUNC_TV_GetStandard					2
-#define	UT_XV_FUNC_TV_SetStandard					3
-#define	UT_XV_FUNC_TV_GetSupportSignalTypeState		4
-#define	UT_XV_FUNC_TV_GetSignalType                 5
-#define	UT_XV_FUNC_TV_SetSignalType                 6
-#define	UT_XV_FUNC_TV_GetMaxViewSizeValue           7
-#define	UT_XV_FUNC_TV_GetViewSizeValue              8
-#define	UT_XV_FUNC_TV_SetViewSizeValue              9
-#define	UT_XV_FUNC_TV_GetMaxViewPositionValue		10
-#define	UT_XV_FUNC_TV_GetViewPositionValue			11
-#define	UT_XV_FUNC_TV_SetViewPositionValue			12
-#define	UT_XV_FUNC_TV_GetSupportTuningState         13
-#define	UT_XV_FUNC_TV_GetTuningItemMaxValue         14
-#define	UT_XV_FUNC_TV_GetTuningItemValue			15
-#define	UT_XV_FUNC_TV_SetTuningItemValue			16
-#define	UT_XV_FUNC_TV_GetSupportSettingState		17
-#define	UT_XV_FUNC_TV_GetSettingItemState			18
-#define	UT_XV_FUNC_TV_SetSettingItemState			19
+#define	UT_XV_FUNC_TV_GetSupportStandardState	1
+#define	UT_XV_FUNC_TV_GetStandard		2
+#define	UT_XV_FUNC_TV_SetStandard		3
+#define	UT_XV_FUNC_TV_GetSupportSignalTypeState	4
+#define	UT_XV_FUNC_TV_GetSignalType             5
+#define	UT_XV_FUNC_TV_SetSignalType             6
+#define	UT_XV_FUNC_TV_GetMaxViewSizeValue       7
+#define	UT_XV_FUNC_TV_GetViewSizeValue          8
+#define	UT_XV_FUNC_TV_SetViewSizeValue          9
+#define	UT_XV_FUNC_TV_GetMaxViewPositionValue	10
+#define	UT_XV_FUNC_TV_GetViewPositionValue	11
+#define	UT_XV_FUNC_TV_SetViewPositionValue	12
+#define	UT_XV_FUNC_TV_GetSupportTuningState     13
+#define	UT_XV_FUNC_TV_GetTuningItemMaxValue     14
+#define	UT_XV_FUNC_TV_GetTuningItemValue	15
+#define	UT_XV_FUNC_TV_SetTuningItemValue	16
+#define	UT_XV_FUNC_TV_GetSupportSettingState	17
+#define	UT_XV_FUNC_TV_GetSettingItemState	18
+#define	UT_XV_FUNC_TV_SetSettingItemState	19
 
-#define	UT_ESC_FUNC_GAMMA_GetDeviceSupportState		1
-#define	UT_ESC_FUNC_GAMMA_GetLookUpTable			2
-#define	UT_ESC_FUNC_GAMMA_SetLookUpTable			3
-#define	UT_ESC_FUNC_GAMMA_GetDefaultLookUpTable		4
+#define	UT_ESC_FUNC_GAMMA_GetDeviceSupportState	1
+#define	UT_ESC_FUNC_GAMMA_GetLookUpTable	2
+#define	UT_ESC_FUNC_GAMMA_SetLookUpTable	3
+#define	UT_ESC_FUNC_GAMMA_GetDefaultLookUpTable	4
 
 /* Input & Output Data */
 #define	DISPLAY_DRIVER  			1
-#define	VIDEO_CAPTURE_DRIVER		2
+#define	VIDEO_CAPTURE_DRIVER			2
 #define	HWOVERLAY_DRIVER			3
 #define UT_DEVICE_NONE				0x00
 #define	UT_DEVICE_CRT1				0x01
@@ -92,40 +92,40 @@
 #define	UT_DEVICE_TV				0x04
 #define	UT_DEVICE_DFP				0x08
 #define	UT_DEVICE_CRT2				0x16
-#define	UT_STATE_SAMM_OFF   		0       /* Not in SAMM mode. */
-#define	UT_STATE_SAMM_ON    		1       /* In SAMM mode. */
-#define	UT_ROTATE_NONE      		0       /* Normal. */
-#define	UT_ROTATE_90_DEG    		1       /* Rotate 90 deg. clockwise. */
-#define	UT_ROTATE_180_DEG   		2       /* Rotate 180 deg. clockwise. */
-#define	UT_ROTATE_270_DEG   		3       /* Rotate 270 deg. clockwise. */
-#define UT_PANEL_TYPE_STN   		0       /* STN. */
-#define UT_PANEL_TYPE_TFT   		1       /* TFT. */
+#define	UT_STATE_SAMM_OFF   			0       /* Not in SAMM mode. */
+#define	UT_STATE_SAMM_ON    			1       /* In SAMM mode. */
+#define	UT_ROTATE_NONE      			0       /* Normal. */
+#define	UT_ROTATE_90_DEG    			1       /* Rotate 90 deg. clockwise. */
+#define	UT_ROTATE_180_DEG   			2       /* Rotate 180 deg. clockwise. */
+#define	UT_ROTATE_270_DEG   			3       /* Rotate 270 deg. clockwise. */
+#define UT_PANEL_TYPE_STN   			0       /* STN. */
+#define UT_PANEL_TYPE_TFT   			1       /* TFT. */
 #define UT_STATE_EXPAND_OFF			0       /* Not expanded; centered. */
 #define UT_STATE_EXPAND_ON 			1       /* Expanded. */
-#define UT_PANEL_SUPPORT_EXPAND_OFF	0
-#define UT_PANEL_SUPPORT_EXPAND_ON	1
+#define UT_PANEL_SUPPORT_EXPAND_OFF		0
+#define UT_PANEL_SUPPORT_EXPAND_ON		1
 #define	UT_TV_STD_NTSC 				0x0001  /* NTSC. */
 #define	UT_TV_STD_PAL				0x0002  /* PAL. */
 #define	UT_TV_STD_PAL_M 			0x0004  /* PAL M. */
 #define	UT_TV_STD_PAL_N 			0x0008  /* PAL N. */
 #define	UT_TV_STD_PAL_NC			0x0010  /* PAL N combination. */
-#define	UT_TV_SGNL_COMPOSITE		0x0001  /* Composite. */
+#define	UT_TV_SGNL_COMPOSITE			0x0001  /* Composite. */
 #define	UT_TV_SGNL_S_VIDEO			0x0002  /* S-Video. */
 #define	UT_TV_SGNL_SCART			0x0004  /* SCART. */
-#define	UT_TV_SGNL_COMP_OUTPUT      0x0008  /* Component Output. */
-#define	UT_TV_TUNING_FFILTER		    0x0001  /* Flicker Filter. */
-#define	UT_TV_TUNING_ADAPTIVE_FFILTER	0x0002  /* Adaptive Flicker Filter. */
-#define	UT_TV_TUNING_BRIGHTNESS         0x0004  /* Brightness. */
+#define	UT_TV_SGNL_COMP_OUTPUT      		0x0008  /* Component Output. */
+#define	UT_TV_TUNING_FFILTER			0x0001  /* Flicker Filter. */
+#define	UT_TV_TUNING_ADAPTIVE_FFILTER		0x0002  /* Adaptive Flicker Filter. */
+#define	UT_TV_TUNING_BRIGHTNESS         	0x0004  /* Brightness. */
 #define	UT_TV_TUNING_CONTRAST   		0x0008  /* Contrast. */
-#define	UT_TV_TUNING_SATURATION      	0x0010  /* Saturation. */
+#define	UT_TV_TUNING_SATURATION      		0x0010  /* Saturation. */
 #define	UT_TV_TUNING_TINT       		0x0020  /* Tint. */
 #define	UT_TV_SETTING_FFILTER			0x0001
-#define	UT_TV_SETTING_ADAPTIVE_FFILTER	0x0002
+#define	UT_TV_SETTING_ADAPTIVE_FFILTER		0x0002
 #define	UT_TV_SETTING_DOT_CRAWL			0x0004
-#define	UT_TV_SETTING_LOCK_ASPECT_RATIO	0x0008
-#define	UT_STATE_OFF                0
-#define	UT_STATE_ON                 1
-#define	UT_STATE_DEFAULT            0xFFFF
+#define	UT_TV_SETTING_LOCK_ASPECT_RATIO		0x0008
+#define	UT_STATE_OFF                		0
+#define	UT_STATE_ON                 		1
+#define	UT_STATE_DEFAULT            		0xFFFF
 
 
 typedef struct _UTBIOSVERSION

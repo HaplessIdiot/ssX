@@ -23,8 +23,8 @@
  */
 
 /* Definition of APs Distribution */
-#ifndef __COMPOSE_H
-#define __COMPOSE_H
+#ifndef __VIA_COMPOSE_H
+#define __VIA_COMPOSE_H
 
   /* Video Control definition */
 #define VW_DVD_ONLY              0x00000001  /* ????????????????? */
@@ -63,5 +63,5 @@
 #define AUDIO_SVIDEO       0x00000400        /* not available now    */
 #define AUDIO_COMPOSE      0x00000800        /* 		               */	
                                                 
-#endif  /*end of __COMPOSE_H*/
+#endif  /*end of __VIA_COMPOSE_H*/
 

@@ -21,41 +21,36 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/regrec.c,v 1.3 2003/08/04 10:32:26 eich Exp $ */
 /*#include <stdlib.h>
 #include <string.h>*/
 #include "xf86.h"
 
 #include "via.h"
-#include "regrec.h"
+#include "via_driver.h"
+#include "via_regrec.h"
 
-extern volatile unsigned char  * lpVidMEMIO;
-/*extern unsigned long gdwVideoOn;*/
-extern Bool MPEG_ON;
 
 static VIDEOREGISTER VidReg[VIDEO_REG_NUM];
 static unsigned long gdwVidRegCounter;
 
-
-/* I N L I N E --------------------------------------------------------------*/
-
-__inline void viaWaitHQVIdle(void)
+void viaWaitHQVIdle(VIAPtr pVia)
 {
     while (!IN_HQV_FIRE);
 }
 
-__inline void viaWaitVideoCommandFire(void)
+void viaWaitVideoCommandFire(VIAPtr pVia)
 {
     /*while (IN_VIDEO_FIRE);*/
-    CARD32 volatile *pdwState = (CARD32 volatile *) (lpVidMEMIO+V_COMPOSE_MODE);
-    /*pdwState = (CARD32 volatile *) (lpVidMEMIO+V_COMPOSE_MODE);*/
+    CARD32 volatile *pdwState = (CARD32 volatile *) (pVia->VidMapBase+V_COMPOSE_MODE);
+    /*pdwState = (CARD32 volatile *) (pVia->VidMapBase+V_COMPOSE_MODE);*/
     while ((*pdwState & V1_COMMAND_FIRE)||(*pdwState & V3_COMMAND_FIRE));
 }
 
-__inline void viaWaitHQVFlip(void)
+void viaWaitHQVFlip(VIAPtr pVia)
 {
-    CARD32 volatile *pdwState = (CARD32 volatile *) lpVidMEMIO;
-    pdwState = (CARD32 volatile *) (lpVidMEMIO+HQV_CONTROL);
+    CARD32 volatile *pdwState = (CARD32 volatile *) pVia->VidMapBase;
+    pdwState = (CARD32 volatile *) (pVia->VidMapBase+HQV_CONTROL);
     while (!(*pdwState & HQV_FLIP_STATUS) );
 /*
     while (!((*pdwState & 0xc0)== 0xc0) );
@@ -63,9 +58,9 @@ __inline void viaWaitHQVFlip(void)
 */    
 }
 
-__inline void viaWaitHQVFlipClear(unsigned long dwData)
+void viaWaitHQVFlipClear(VIAPtr pVia, unsigned long dwData)
 {
-    CARD32 volatile *pdwState = (CARD32 volatile *) (lpVidMEMIO+HQV_CONTROL);
+    CARD32 volatile *pdwState = (CARD32 volatile *) (pVia->VidMapBase+HQV_CONTROL);
     *pdwState =dwData;
 
     while ((*pdwState & HQV_FLIP_STATUS) )
@@ -74,28 +69,28 @@ __inline void viaWaitHQVFlipClear(unsigned long dwData)
     }
 }
 
-__inline void viaWaitVBI()
+void viaWaitVBI(VIAPtr pVia)
 {
     while (IN_VIDEO_DISPLAY);
 }
 
-__inline void viaWaitHQVDone()
+void viaWaitHQVDone(VIAPtr pVia)
 {
-    CARD32 volatile *pdwState = (CARD32 volatile *) (lpVidMEMIO+HQV_CONTROL);
+    CARD32 volatile *pdwState = (CARD32 volatile *) (pVia->VidMapBase+HQV_CONTROL);
     /*pdwState = (CARD32 volatile *) (GEAddr+HQV_CONTROL);*/
 
     /*if (*pdwState & HQV_ENABLE)*/
-    if (MPEG_ON)
+    if (pVia->swov.MPEG_ON)
     {
         while ((*pdwState & HQV_SW_FLIP) );
     }
 }
 
-__inline void viaMacro_VidREGFlush(void)
+void viaMacro_VidREGFlush(VIAPtr pVia)
 {
     unsigned long i;
     
-    viaWaitVideoCommandFire();
+    viaWaitVideoCommandFire(pVia);
 
     for (i=0; i< gdwVidRegCounter; i++ )
     {
@@ -105,7 +100,7 @@ __inline void viaMacro_VidREGFlush(void)
     }
 }
 
-__inline void viaMacro_VidREGRec(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)
+void viaMacro_VidREGRec(VIAPtr pVia, unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)
 {
 
   switch (dwAction)
@@ -132,12 +127,11 @@ __inline void viaMacro_VidREGRec(unsigned long dwAction, unsigned long dwIndex, 
   }
 }
 
-__inline void viaMacro_VidREGFlushVPE(void)
-/*void viaMacro_VidREGFlushVPE(LPVIATHKINFO sData)*/
+void viaMacro_VidREGFlushVPE(VIAPtr pVia)
 {
     unsigned long i;
-    CARD32 volatile *pdwState = (CARD32 volatile *) lpVidMEMIO;
-    pdwState = (CARD32 volatile *) (lpVidMEMIO+V_COMPOSE_MODE);
+    CARD32 volatile *pdwState = (CARD32 volatile *) pVia->VidMapBase;
+    pdwState = (CARD32 volatile *) (pVia->VidMapBase+V_COMPOSE_MODE);
 
     while ((*pdwState & V1_COMMAND_FIRE)||(*pdwState & V3_COMMAND_FIRE));
 
@@ -149,8 +143,7 @@ __inline void viaMacro_VidREGFlushVPE(void)
     }
 }
 
-__inline void viaMacro_VidREGRecVPE(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)
-/*void viaMacro_VidREGRecVPE(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)*/
+void viaMacro_VidREGRecVPE(VIAPtr pVia, unsigned long dwAction, unsigned long dwIndex, unsigned long dwData)
 {
 
   switch (dwAction)

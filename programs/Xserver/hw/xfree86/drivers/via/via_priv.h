@@ -3,7 +3,6 @@
 
 #include "ddmpeg.h"
 #include "via_common.h"
-#include "HWDiff.h"
 
 typedef struct  {
     unsigned long   gdwVideoFlagTV1;
@@ -43,6 +42,7 @@ typedef struct  {
     SUBDEVICE   SUBDevice;
     MPGDEVICE   MPGDevice;
     OVERLAYRECORD   overlayRecordV1;
+    OVERLAYRECORD   overlayRecordV3;
 
     BoxRec  AvailFBArea;
     FBLinearPtr   SWOVlinear;
@@ -64,7 +64,6 @@ typedef struct  {
     unsigned char Save_3C4_17;
     unsigned char Save_3C4_18;
 
-    VIDHWDIFFERENCE VideoHWDifference;
 } swovRec, *swovPtr;
 
 #endif

@@ -22,9 +22,6 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-#ifndef __via_privIoctl_h
-#define __via_privIoctl_h
-
 typedef struct {
     CARD32 dwWidth;          /* On screen Width                  */
     CARD32 dwHeight;         /* On screen Height                 */
@@ -47,6 +44,5 @@ typedef struct {
     BOOL  Screen1IsLeft;            /* True: Screen1 LeftOf Screen0 ; False: Screen1 RightOf Screen0 */
     BOOL  Screen1IsAbove;           /* True: Screen1 Above Screen0 ; False: Screen1 Below Screen0 */
     CARD32 RevisionID;               /* The chip revision ID */
-}VIAGRAPHICINFO, * LPVIAGRAPHICINFO;
+} ViaGraphicRec;
 
-#endif  /* end of __via_privIoctl_h */

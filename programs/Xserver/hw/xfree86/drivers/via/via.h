@@ -553,12 +553,12 @@
  *      Macros for Video MMIO
  */
 #ifndef V4L2
-#define VIDInB(port)            *((volatile CARD8 *)(lpVidMEMIO + (port)))
-#define VIDInW(port)            *((volatile CARD16 *)(lpVidMEMIO + (port)))
-#define VIDInD(port)            *((volatile CARD32 *)(lpVidMEMIO + (port)))
-#define VIDOutB(port, data)     *((volatile CARD8 *)(lpVidMEMIO + (port))) = (data)
-#define VIDOutW(port, data)     *((volatile CARD16 *)(lpVidMEMIO + (port))) = (data)
-#define VIDOutD(port, data)     *((volatile CARD32 *)(lpVidMEMIO + (port))) = (data)
+#define VIDInB(port)            *((volatile CARD8 *)(pVia->VidMapBase + (port)))
+#define VIDInW(port)            *((volatile CARD16 *)(pVia->VidMapBase + (port)))
+#define VIDInD(port)            *((volatile CARD32 *)(pVia->VidMapBase + (port)))
+#define VIDOutB(port, data)     *((volatile CARD8 *)(pVia->VidMapBase + (port))) = (data)
+#define VIDOutW(port, data)     *((volatile CARD16 *)(pVia->VidMapBase + (port))) = (data)
+#define VIDOutD(port, data)     *((volatile CARD32 *)(pVia->VidMapBase + (port))) = (data)
 #define MPGOutD(port, data)     *((volatile CARD32 *)(lpMPEGMMIO +(port))) = (data)
 #define MPGInD(port)            *((volatile CARD32 *)(lpMPEGMMIO +(port)))
 #endif 

@@ -21,9 +21,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-
-#ifndef __REGREC
-#define __REGREC
+ 
+#ifndef __VIA_OVERLAY
+#define __VIA_OVERLAY
 
 /*#define   XV_DEBUG      1*/     /* write log msg to /var/log/XFree86.0.log */
 
@@ -33,33 +33,15 @@
 # define DBG_DD(x)
 #endif
 
-#define VIDREGREC_RESET_COUNTER   0
-#define VIDREGREC_SAVE_REGISTER   VIDREGREC_RESET_COUNTER +1
-#define VIDREGREC_FLUSH_REGISTER  VIDREGREC_RESET_COUNTER +2
-#define VIDEO_REG_NUM  100
+#define PLUS_HEIGHT 1 /*V003*/
 
-#define IN_HQV_FIRE     (*((unsigned long volatile *)(lpVidMEMIO+HQV_CONTROL))&HQV_IDLE)
-#define IN_VIDEO_FIRE   (*((unsigned long volatile *)(lpVidMEMIO+V_COMPOSE_MODE))&V1_COMMAND_FIRE)
-#define IN_HQV_FLIP     (*((unsigned long volatile *)(lpVidMEMIO+HQV_CONTROL))&HQV_FLIP_STATUS) 
-#define IN_VIDEO_DISPLAY     (*((unsigned long volatile *)(lpVidMEMIO+V_FLAGS))&VBI_STATUS) 
+typedef struct _YCBCRREC  {
+  CARD32  dwY ;
+  CARD32  dwCB;
+  CARD32  dwCR;
+} YCBCRREC;
 
-/*#define IN_DISPLAY      (VIDInD(V_FLAGS) & 0x200)
-//#define IN_VBLANK       (!IN_DISPLAY)
-*/
-typedef struct
-{
-  unsigned long dwIndex;
-  unsigned long dwData;
-}VIDEOREGISTER;
-
-__inline void viaWaitHQVIdle(void);
-__inline void viaWaitVideoCommandFire(void);
-__inline void viaWaitHQVFlip(void);
-__inline void viaWaitHQVFlipClear(unsigned long dwData);
-__inline void viaWaitVBI(void);
-__inline void viaWaitHQVDone(void);
-__inline void viaMacro_VidREGFlush(void);
-__inline void viaMacro_VidREGRec(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData);
-__inline void viaMacro_VidREGFlushVPE(void);
-__inline void viaMacro_VidREGRecVPE(unsigned long dwAction, unsigned long dwIndex, unsigned long dwData);
-#endif /*end of __REGREC*/
+unsigned long viaOverlayHQVGetFormat(LPDDPIXELFORMAT lpDPF, unsigned long dwVidCtl,unsigned long * lpdwHQVCtl );
+YCBCRREC viaOverlayGetYCbCrStartAddress(unsigned long dwVideoFlag,unsigned long dwStartAddr, unsigned long dwOffset,unsigned long dwUVoffset,unsigned long dwSrcPitch/*lpGbl->lPitch*/,unsigned long dwSrcHeight/*lpGbl->wHeight*/);
+unsigned long viaOverlayGetFetch(unsigned long dwVideoFlag,LPDDPIXELFORMAT lpDPF,unsigned long dwSrcWidth,unsigned long dwDstWidth,unsigned long dwOriSrcWidth,unsigned long * lpHQVsrcFetch);
+#endif /*End of  __DDOVER*/

@@ -29,7 +29,7 @@
  *
  ************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.7 2003/08/23 15:03:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_driver.c,v 1.8 2003/08/23 16:09:23 dawes Exp $ */
 #include "xf86RAC.h"
 #include "shadowfb.h"
 
@@ -42,12 +42,10 @@
 #include "via_video.h"
 #include "videodev.h"
 #include "via_swov.h"
-#include "HWDiff.h"
 
 #include "ddmpeg.h"
-#include "capture.h"
+#include "via_capture.h"
 #include "via.h"
-#include "ginfo.h" /* for VIAGRAPHICINFO */
 #ifdef XF86DRI
 #include "dri.h"
 #endif
@@ -87,17 +85,10 @@ static int  VIAGetMemSize(void);
 Bool VIADeviceSelection(ScrnInfoPtr pScrn);
 Bool VIADeviceDispatch(ScrnInfoPtr pScrn);
 
-extern unsigned char Save_3C4_16;
-extern unsigned char Save_3C4_17;
-extern unsigned char Save_3C4_18;
-
 #ifdef XF86DRI
 void VIAInitialize3DEngine(ScrnInfoPtr pScrn);
 static Bool b3DRegsInitialized = 0;
 #endif
-
-extern VIAGRAPHICINFO gVIAGraphicInfo;
-extern LPVIAVIDCTRL lpVideoControl;
 
 DriverRec VIA =
 {
@@ -358,39 +349,6 @@ static XF86ModuleVersionInfo VIAVersRec = {
 
 XF86ModuleData viaModuleData = {&VIAVersRec, VIASetup, NULL};
 
-static void FillGraphicInfo(ScrnInfoPtr pScrn)
-{
-	VIAPtr pVia = VIAPTR(pScrn);
-	VIABIOSInfoPtr pBIOSInfo = pVia->pBIOSInfo;
-
-        gVIAGraphicInfo.TotalVRAM = pVia->videoRambytes;
-        gVIAGraphicInfo.VideoHeapBase = (unsigned long) pVia->FBFreeStart;
-        gVIAGraphicInfo.VideoHeapEnd = (unsigned long) (pVia->FBFreeEnd - 1);
-        gVIAGraphicInfo.dwWidth = pBIOSInfo->CrtcHDisplay;
-        gVIAGraphicInfo.dwHeight = pBIOSInfo->CrtcVDisplay;
-        gVIAGraphicInfo.dwBPP = pScrn->bitsPerPixel;
-        gVIAGraphicInfo.dwPitch = (((pScrn->virtualX) + 15) & ~15) * (pScrn->bitsPerPixel) / 8;
-        gVIAGraphicInfo.dwRefreshRate = (unsigned long)pBIOSInfo->FoundRefresh;
-        gVIAGraphicInfo.dwDVIOn = pBIOSInfo->DVIAttach;
-        gVIAGraphicInfo.dwExpand = pBIOSInfo->scaleY;
-        gVIAGraphicInfo.dwPanelWidth = pBIOSInfo->panelX;
-        gVIAGraphicInfo.dwPanelHeight = pBIOSInfo->panelY;
-        gVIAGraphicInfo.Cap0_Deinterlace = pVia->Cap0_Deinterlace;
-        gVIAGraphicInfo.Cap1_Deinterlace = pVia->Cap1_Deinterlace;
-        gVIAGraphicInfo.Cap0_FieldSwap = pVia->Cap0_FieldSwap;
-        gVIAGraphicInfo.RevisionID = pVia->ChipRev;
-
-        /* for SAMM mode passing screen info */
-        gVIAGraphicInfo.HasSecondary = pBIOSInfo->HasSecondary;
-        gVIAGraphicInfo.IsSecondary = pBIOSInfo->IsSecondary;
-
-        /* Added to pass DRM info to V4L */
-#ifdef XF86DRI
-        gVIAGraphicInfo.DRMEnabled = pVia->directRenderingEnabled;
-#else
-        gVIAGraphicInfo.DRMEnabled = 0;
-#endif
-}
 
 static pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
@@ -432,6 +390,39 @@ static pointer VIASetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 #endif /* XFree86LOADER */
 
+static void viaFillGraphicInfo(ScrnInfoPtr pScrn)
+{
+	VIAPtr pVia = VIAPTR(pScrn);
+	VIABIOSInfoPtr pBIOSInfo = pVia->pBIOSInfo;
+
+        pVia->graphicInfo.TotalVRAM = pVia->videoRambytes;
+        pVia->graphicInfo.VideoHeapBase = (unsigned long) pVia->FBFreeStart;
+        pVia->graphicInfo.VideoHeapEnd = (unsigned long) (pVia->FBFreeEnd - 1);
+        pVia->graphicInfo.dwWidth = pBIOSInfo->CrtcHDisplay;
+        pVia->graphicInfo.dwHeight = pBIOSInfo->CrtcVDisplay;
+        pVia->graphicInfo.dwBPP = pScrn->bitsPerPixel;
+        pVia->graphicInfo.dwPitch = (((pScrn->virtualX) + 15) & ~15) * (pScrn->bitsPerPixel) / 8;
+        pVia->graphicInfo.dwRefreshRate = (unsigned long)pBIOSInfo->FoundRefresh;
+        pVia->graphicInfo.dwDVIOn = pBIOSInfo->DVIAttach;
+        pVia->graphicInfo.dwExpand = pBIOSInfo->scaleY;
+        pVia->graphicInfo.dwPanelWidth = pBIOSInfo->panelX;
+        pVia->graphicInfo.dwPanelHeight = pBIOSInfo->panelY;
+        pVia->graphicInfo.Cap0_Deinterlace = pVia->Cap0_Deinterlace;
+        pVia->graphicInfo.Cap1_Deinterlace = pVia->Cap1_Deinterlace;
+        pVia->graphicInfo.Cap0_FieldSwap = pVia->Cap0_FieldSwap;
+        pVia->graphicInfo.RevisionID = pVia->ChipRev;
+
+        /* for SAMM mode passing screen info */
+        pVia->graphicInfo.HasSecondary = pBIOSInfo->HasSecondary;
+        pVia->graphicInfo.IsSecondary = pBIOSInfo->IsSecondary;
+
+        /* Added to pass DRM info to V4L */
+#ifdef XF86DRI
+        pVia->graphicInfo.DRMEnabled = pVia->directRenderingEnabled;
+#else
+        pVia->graphicInfo.DRMEnabled = 0;
+#endif
+}
 
 static int
 WaitIdleCLE266(VIAPtr pVia)
@@ -2441,7 +2432,7 @@ static Bool VIAScreenInit(int scrnIndex, ScreenPtr pScreen,
 #endif
 
     if (VIA_SERIES(pVia->Chipset) && !pVia->IsSecondary) {
-        FillGraphicInfo(pScrn);
+        viaFillGraphicInfo(pScrn);
         /* There is alas not enough bandwidth to do 1600x1200x16 with video overlay */
 /*        if(pScrn->bitsPerPixel * pScrn->virtualX *pScrn->virtualY  <= 1400 * 1050 * 16)  */
         	viaInitVideo(pScreen);
@@ -2623,19 +2614,19 @@ static Bool VIAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     VIAWriteMode(pScrn, vganew, new);
 
     /* pass graphic info to via_v4l kernel module */
-    /* Coz mode changes, some member in gVIAGraphicInfo need to modify */
+    /* Coz mode changes, some member in pVia->graphicInfo need to modify */
     if (VIA_SERIES(pVia->Chipset) && !pVia->IsSecondary)
     {
-        FillGraphicInfo(pScrn);
+        viaFillGraphicInfo(pScrn);
 
         DBG_DD(ErrorF("SWOV:  VIAVidSet2DInfo\n"));
 
         /* Save MCLK value*/
-        VGAOUT8(0x3C4, 0x16); Save_3C4_16 = VGAIN8(0x3C5);
+        VGAOUT8(0x3C4, 0x16); pVia->swov.Save_3C4_16 = VGAIN8(0x3C5);
         DBG_DD(ErrorF("        3c4.16 : %08x \n",VGAIN8(0x3C5)));
-        VGAOUT8(0x3C4, 0x17); Save_3C4_17 = VGAIN8(0x3C5);
+        VGAOUT8(0x3C4, 0x17); pVia->swov.Save_3C4_17 = VGAIN8(0x3C5);
         DBG_DD(ErrorF("        3c4.17 : %08x \n",VGAIN8(0x3C5)));
-        VGAOUT8(0x3C4, 0x18); Save_3C4_18 = VGAIN8(0x3C5);
+        VGAOUT8(0x3C4, 0x18); pVia->swov.Save_3C4_18 = VGAIN8(0x3C5);
         DBG_DD(ErrorF("        3c4.18 : %08x \n",VGAIN8(0x3C5)));
     }
     VIAAdjustFrame(pScrn->scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
@@ -2733,7 +2724,6 @@ void VIAAdjustFrame(int scrnIndex, int x, int y, int flags)
     VIAPtr      pVia = VIAPTR(pScrn);
     int         Base, tmp;
     int         vgaCRIndex, vgaCRReg, vgaIOBase;
-    static int  old_x=0, old_y=0;
     DDLOCK      ddLock;
     LPDDLOCK    lpddLock = &ddLock;
     DDUPDATEOVERLAY UpdateOverlay;
@@ -2774,7 +2764,7 @@ void VIAAdjustFrame(int scrnIndex, int x, int y, int flags)
     VIAVidAdjustFrame(pScrn,&AdjustFrame);
 
     /* Check if HW mpeg engine active */
-    if (lpVideoControl->VideoStatus & SW_VIDEO_ON) /* SW video case */
+    if (pVia->Video.VideoStatus & SW_VIDEO_ON) /* SW video case */
     {
         xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
                       " Call SW MPEG UpdateOverlay at panning mode.\n");
@@ -2826,9 +2816,6 @@ void VIAAdjustFrame(int scrnIndex, int x, int y, int flags)
         ov_win_v1.chromakey  = 0x080408;
         ov_win_v1.clipcount  = 0;
     }
-
-    old_x = x;
-    old_y = y;
 
     return;
 }
