@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.12 2000/11/18 19:37:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/xf86int10.h,v 1.14 2000/12/06 15:35:26 eich Exp $ */
 
 /*
  *                   XFree86 int10 module
@@ -66,7 +66,7 @@ void xf86ExecX86int10(xf86Int10InfoPtr pInt);
 #define I_S_DEFAULT_INT_VECT 0xFF065
 #define SYS_SIZE 0x100000
 #define SYS_BIOS 0xF0000
-#if 0
+#if 1
 #define BIOS_SIZE 0x10000
 #else /* a bug in DGUX requires this - let's try it */
 #define BIOS_SIZE (0x10000 - 1)

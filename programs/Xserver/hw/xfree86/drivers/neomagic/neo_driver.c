@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.43 2000/12/02 15:30:45 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.45 2000/12/06 15:35:22 eich Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -2400,21 +2400,19 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     NeoNew->PanelDispCntlReg3 = 0x00;
     nAcl->NoCursorMode = FALSE;
 
-    if ((!nPtr->noLcdStretch) &&
+    if ((!noLcdStretch) &&
 	(NeoNew->PanelDispCntlReg1 & 0x02)) {
 	if (mode->HDisplay == nPtr->NeoPanelWidth) {
 	    /*
 	     * Don't disable the flag.  It will be needed if another mode
 	     * is selected.
 	     */
-#if 0
 	    /*
 	     * No stretching required when the requested display width
 	     * equals the panel width.
 	     */
 	    xf86DrvMsg(pScrn->scrnIndex,X_INFO,"Stretching disabled\n");
-	    nPtr->noLcdStretch = TRUE;
-#endif
+	        noLcdStretch = TRUE;
 	} else {
 
 	    switch (mode->HDisplay) {
@@ -2430,7 +2428,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		/* No stretching in these modes. */
 		xf86DrvMsg(pScrn->scrnIndex,X_INFO,
 			   "Stretching disabled not supported in this mode\n");
-		nPtr->noLcdStretch = TRUE;
+		noLcdStretch = TRUE;
 		break;
 	    }
 	}
@@ -2465,7 +2463,7 @@ neoModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    NeoNew->PanelDispCntlReg3 |= 0x10;
 
 	    /* Calculate the horizontal and vertical offsets. */
-	    if (nPtr->noLcdStretch) {
+	    if (noLcdStretch) {
 		hoffset = ((nPtr->NeoPanelWidth - mode->HDisplay) >> 4) - 1;
 		voffset = ((nPtr->NeoPanelHeight - mode->VDisplay) >> 1) - 2;
 	    } else {
