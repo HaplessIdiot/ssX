@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.22 1998/07/25 16:56:29 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/Imakefile,v 3.23 1998/08/16 10:25:45 dawes Exp $
 
 
 
@@ -33,6 +33,8 @@ OS_SUBDIR = sysv
 OS_SUBDIR = solx86
 # elif defined(PmaxOSArchitecture)
 OS_SUBDIR = pmax
+# elif defined(DguxArchitecture)
+OS_SUBDIR = dgux
 # else
 OS_SUBDIR = sysv
 # endif

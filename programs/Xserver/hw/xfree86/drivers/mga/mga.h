@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.27 1998/11/15 04:30:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.28 1998/12/13 05:32:48 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -153,6 +153,7 @@ typedef struct {
     void		(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     Bool		(*ModeInit)(ScrnInfoPtr, DisplayModePtr);
     CloseScreenProcPtr	CloseScreen;
+    unsigned int	(*ddc1Read)(ScrnInfoPtr);
 } MGARec, *MGAPtr;
 
 extern CARD32 MGAAtype[16];

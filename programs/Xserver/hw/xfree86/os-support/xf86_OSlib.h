@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.56 1998/09/13 05:23:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.57 1998/12/05 14:40:24 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -9,6 +9,7 @@
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  * Copyright 1994, 1996 by Holger Veit <Holger.Veit@gmd.de>
+ * Copyright 1997 by Takis Psarogiannakopoulos <takis@dpmms.cam.ac.uk>
  * Copyright 1994-1998 by The XFree86 Project, Inc
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
@@ -104,7 +105,7 @@ extern int xf86GetErrno(void);
 /**************************************************************************/
 /* SYSV386 (SVR3, SVR4)                                                   */
 /**************************************************************************/
-#if defined(SYSV) || defined(SVR4)
+#if defined(SYSV) || defined(SVR4) && !defined(DGUX)
 # ifdef SCO325
 #  ifndef _SVID3
 #   define _SVID3
@@ -238,6 +239,76 @@ extern int xf86_solx86usleep(unsigned long);
 #endif
 
 #endif /* SYSV || SVR4 */
+
+
+/**************************************************************************/
+/* DG/ux R4.20MU03 Intel AViion Machines                                  */
+/**************************************************************************/
+#if defined(DGUX) && defined(SVR4)
+#include <sys/ioctl.h>
+#include <signal.h>
+#include <ctype.h>
+#include <termios.h>      /* Use termios for BSD Flavor ttys */
+#include <sys/termios.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <sys/param.h>
+#include <errno.h>
+#include <sys/sysi86.h>
+#include <unistd.h>
+#include <sys/proc.h>
+#include <sys/map.h>
+#include <sys/sysmacros.h>
+#include <sys/mman.h>       /* Memory handling */
+#include <sys/kd.h>       /* definitios for KDENABIO KDDISABIO needed for IOPL s */
+#include <sys/kbd.h>
+#include <fcntl.h>
+#include <time.h>
+#include <sys/stream.h>
+#include <sys/ptms.h>
+
+#include <sys/socket.h>
+#include <sys/utsname.h>
+#include <sys/stropts.h>
+#include <sys/sockio.h>
+
+
+#define POSIX_TTY
+
+#undef HAS_USL_VTS
+#undef USE_VT_SYSREQ
+#undef VT_ACKACQ
+
+#define LED_CAP KBD_LED_CAPS_LOCK
+#define LED_NUM KBD_LED_NUM_LOCK
+#define LED_SCR KBD_LED_SCROLL_LOCK
+
+#define KDGKBTYPE KBD_GET_LANGUAGE
+
+
+/* General keyboard types */
+# define KB_84          2
+# define KB_101         1  /* Because ioctl(dgkeybdFd,KBD_GET_LANGUAGE,&type) gives 1=US keyboard */
+# define KB_OTHER       3
+
+#define KDSETLED KBD_SET_LED
+#define KDGETLED KBD_GET_STATE
+#undef KDMKTONE
+#define KDMKTONE KBD_TONE_HIGH
+
+
+#undef DEV_MEM
+#define DEV_MEM "/dev/mem"
+#define CLEARDTR_SUPPORT
+
+#undef  VT_SYSREQ_DEFAULT
+#define VT_SYSREQ_DEFAULT FALSE        /* Make sure that we dont define any VTs since DG/ux has none */
+
+#ifndef NULL
+# define NULL 0
+#endif
+
+#endif /* DGUX && SVR4 */
 
 /**************************************************************************/
 /* Linux                                                                  */
