@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile,v 1.6 2002/11/25 12:58:55 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile,v 1.7 2002/11/25 14:04:53 eich Exp $
 
 #include <Threads.tmpl>
 
@@ -26,6 +26,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/tnl_dd/Imakefile,v 1.6 2002/11/25 12:58:55 ts
 #define DoProfileLib NO
 #endif
 
+#define LargePICTable YES
 
 #define MesaTnlDdBuildDir /**/
 #define NeedToLinkMesaSrc

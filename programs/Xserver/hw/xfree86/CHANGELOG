@@ -1,4 +1,5 @@
 XFree86 4.4.99.1 (XX March 2004)
+  11. Fixes for building on Solaris/sparc with Sun's compiler (Mark Kandianis).
   10. Add support for specifying the screen origins for Xvfb, which is
       useful when Xinerama is enabled (David Dawes).
    9. Fix X-Resource extension server crash when the client and server hosts
@@ -18706,7 +18707,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3166 2004/03/04 19:39:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3167 2004/03/05 03:20:48 dawes Exp $
 
 
 

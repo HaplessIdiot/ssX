@@ -23,10 +23,14 @@
  * IN THE SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_loops.h,v 1.1 2000/05/18 23:21:37 dawes Exp $ */
 
 #ifndef FFBLOOPS_H
 #define FFBLOOPS_H
+
+#ifndef __GNUC__
+#define __inline__
+#endif
 
 #ifdef USE_VIS
 extern void FFB_STIPPLE_LOAD(volatile unsigned int *d,
