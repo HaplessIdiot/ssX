@@ -254,7 +254,7 @@ GenericProbe(DriverPtr drv, int flags)
 					devSections,numDevSections,
 					drv, &usedChips);
 	if (numUsed > 0){
-	    if (flags & PROBE_DETECT)
+	    if (flags & PROBE_DETECTPCI)
 		return TRUE;
 	    for (i = 0; i < numUsed; i++) {
 		/* Allocate a ScrnInfoRec  */
@@ -283,7 +283,7 @@ GenericProbe(DriverPtr drv, int flags)
 				     VGAFindIsaDevice,devSections,
 				     numDevSections,&usedChips);
     if(numUsed >= 0)
-	if (flags & PROBE_DETECT)
+	if (flags & PROBE_DETECTISA)
 	    return TRUE;
 	for (i = 0; i < numUsed; i++) {
 	    ScrnInfoPtr pScrn = xf86AllocateScreen(drv,0);

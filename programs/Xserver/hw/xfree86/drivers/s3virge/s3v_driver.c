@@ -478,7 +478,7 @@ S3VProbe(DriverPtr drv, int flags)
     if (numUsed <= 0)
 	return FALSE;
 
-    if (flags & PROBE_DETECT)
+    if (flags & PROBE_DETECTPCI)
 	return TRUE;
 
     for (i = 0; i < numUsed; i++) {

@@ -294,7 +294,7 @@ renditionProbe(DriverPtr drv, int flags)
                     renditionChipsets, renditionPCIchipsets, 
                     devSections, numDevSections, drv, &usedChips);
 
-	if (numUsed > 0 && (flags & PROBE_DETECT))
+	if (numUsed > 0 && (flags & PROBE_DETECTPCI))
 	    return TRUE;
 
         for (c=0; c<numUsed; c++) {

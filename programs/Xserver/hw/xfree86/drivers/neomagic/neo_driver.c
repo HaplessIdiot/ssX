@@ -458,7 +458,7 @@ NEOProbe(DriverPtr drv, int flags)
 					devSections,numDevSections,
 					drv, &usedChips);
 
-	if (numUsed > 0 && (flags & PROBE_DETECT))
+	if (numUsed > 0 && (flags & PROBE_DETECTPCI))
 	    return TRUE;
 
 	for (i = 0; i < numUsed; i++) {
@@ -492,7 +492,7 @@ NEOProbe(DriverPtr drv, int flags)
     for (i = 0; i < numUsed; i++) {
 	ScrnInfoPtr pScrn;
 
-	if (numUsed > 0 && (flags & PROBE_DETECT))
+	if (numUsed > 0 && (flags & PROBE_DETECTISA))
 	    return TRUE;
 
 	pScrn = xf86AllocateScreen(drv,0);
