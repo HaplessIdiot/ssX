@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.51 2003/04/07 16:23:37 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/elfloader.c,v 1.52tsi Exp $ */
 
 /*
  *
@@ -2693,7 +2693,7 @@ int		*maxalign;
 	    break;
 	default:
 #ifdef ELFDEBUG
-	    if (pass)
+	    if (pass && strncmp(name,".debug",6))
 		ELFDEBUG("ELF: Not loading %s\n",name);
 #endif
 	    continue;
