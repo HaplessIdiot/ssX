@@ -1,4 +1,4 @@
-/* $XConsortium: lbxdix.c,v 1.9 95/05/30 19:56:33 mor Exp $ */
+/* $XConsortium: lbxdix.c,v 1.8 95/05/02 19:39:39 mor Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -521,7 +521,7 @@ squish_font_info(qfr, rlen, sqrep)
     t += _lbx_fi_junklen;
 
     /* copy all but the char infos */
-    memcpy((char *) new, (char *) t, hlen);
+    bcopy((char *) t, (char *) new, hlen);
 
     t = (char *) new;
     t += hlen;
@@ -674,7 +674,7 @@ LbxQueryFont(client)
 	sreply = (xLbxFontInfo *) ALLOCATE_LOCAL(sqlen);
 	if (!sreply)
 	    return BadAlloc;
-	memcpy((char *) sreply, (char *) sqrep, sqlen);
+	bcopy((char *) sqrep, (char *) sreply, sqlen);
 	LbxSwapFontInfo(sreply, lbxrep.compression);
 	sqrep = sreply;
     }
@@ -745,7 +745,7 @@ LbxQueryTag(client, tag)
 	sdata = (pointer) ALLOCATE_LOCAL(rep.real_length);
 	if (!sdata)
 	    return BadAlloc;
-	memcpy((char *) sdata, (char *) data, rep.real_length);
+	bcopy((char *) data, (char *) sdata, rep.real_length);
 	switch (td->data_type) {
 	case LbxTagTypeModmap:
 	    /* no swapping necessary */
@@ -1099,7 +1099,7 @@ LbxTagData(client, tag, len, data)
 			break;
 		    }
 		}
-		memmove((char *) td->tdata, (char *) data, len);
+		bcopy((char *) data, (char *) td->tdata, len);
 	    }
 	    break;
 	default:

@@ -1,4 +1,4 @@
-/* $XConsortium: gfx.c,v 1.16 95/05/30 19:52:01 mor Exp $ */
+/* $XConsortium: gfx.c,v 1.14 95/04/04 21:12:01 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -27,14 +27,20 @@
  */
 
 #include	<stdio.h>
+#define NEED_REPLIES
+#define NEED_EVENTS
+#include	<X11/X.h>	/* for KeymapNotify */
+#include	<X11/Xproto.h>
 #include	"assert.h"
 #include	"misc.h"
-#include	"lbx.h"
+#include	"lbxdata.h"
 #include	"util.h"
+#include	"lbx.h"		/* gets dixstruct.h */
 #include	"resource.h"
 #include	"wire.h"
+#define _XLBX_SERVER_
+#include	"lbxstr.h"	/* gets dixstruct.h */
 #include        "lbximage.h"
-#include	"swap.h"
 
 static int  pad[4] = {0, 3, 2, 1};
 
@@ -105,7 +111,7 @@ push(cache, xid)
     XID         cache[GFX_CACHE_SIZE];
     XID         xid;
 {
-    memmove(cache + 1, cache, (GFX_CACHE_SIZE - 1) * sizeof(cache[0]));
+    bcopy(cache, cache + 1, (GFX_CACHE_SIZE - 1) * sizeof(cache[0]));
     cache[0] = xid;
 }
 
@@ -119,7 +125,7 @@ use(cache, i)
     if (i == 0)
 	return;
     tmp = cache[i];
-    memmove(cache + 1, cache, i * sizeof(cache[0]));
+    bcopy(cache, cache + 1, i * sizeof(cache[0]));
     cache[0] = tmp;
 }
 
@@ -159,20 +165,20 @@ match(cache, xid)
     _dcache = match (LBXDrawableCache(client), _drawable); \
     if (_dcache == GFXCacheNone) \
     { \
-	memcpy (after, &stuff->drawable, 4); \
+	bcopy (&stuff->drawable, after, 4); \
 	after += 4; \
     } \
     _gcache = match (LBXGContextCache(client), _gcontext); \
     if (_gcache == GFXCacheNone) \
     { \
-	memcpy (after, &stuff->gc, 4); \
+	bcopy (&stuff->gc, after, 4); \
 	after += 4; \
     } \
 }
 
 #define GFX_SETUP_SRC_DST_DRAWABLE_AND_GC(after) {\
     Drawable	tmpDrawableCache[GFX_CACHE_SIZE]; \
-    memcpy (tmpDrawableCache, LBXDrawableCache(client), sizeof (LBXDrawableCache(client))); \
+    bcopy (LBXDrawableCache(client), tmpDrawableCache, sizeof (LBXDrawableCache(client))); \
     _srcDrawable = stuff->srcDrawable; \
     _dstDrawable = stuff->dstDrawable; \
     _gcontext = stuff->gc; \
@@ -185,7 +191,7 @@ match(cache, xid)
     _srcDcache = match (LBXDrawableCache(client), _srcDrawable); \
     if (_srcDcache == GFXCacheNone) \
     { \
-	memcpy (after, &stuff->srcDrawable, 4); \
+	bcopy (&stuff->srcDrawable, after, 4); \
 	after += 4; \
 	push (tmpDrawableCache, _srcDrawable); \
     } else \
@@ -193,13 +199,13 @@ match(cache, xid)
     _dstDcache = match (tmpDrawableCache, _dstDrawable); \
     if (_dstDcache == GFXCacheNone) \
     { \
-	memcpy (after, &stuff->dstDrawable, 4); \
+	bcopy (&stuff->dstDrawable, after, 4); \
 	after += 4; \
     } \
     _gcache = match (LBXGContextCache(client), _gcontext); \
     if (_gcache == GFXCacheNone) \
     { \
-	memcpy (after, &stuff->gc, 4); \
+	bcopy (&stuff->gc, after, 4); \
 	after += 4; \
     } \
 }
@@ -658,7 +664,6 @@ bail:
     return ProcStandardRequest(client);
 }
 
-static int
 reencode_text_pos(client, in, out)
     ClientPtr   client;
     xPolyTextReq *in;
@@ -698,7 +703,7 @@ ProcLBXPolyText(client)
     if (bytes == 0)
 	goto bail;
     /* copy the text elements */
-    memcpy(after + bytes, (char *) &stuff[1], len - sz_xPolyTextReq);
+    bcopy((char *) &stuff[1], after + bytes, len - sz_xPolyTextReq);
     bytes += len - sz_xPolyTextReq;
     FinishLBXRequest(client, REQ_PASSTHROUGH);
     newreq->reqType = server->lbxReq;
@@ -744,7 +749,7 @@ ProcLBXImageText(client)
     if (bytes == 0)
 	goto bail;
     /* copy the text elements */
-    memcpy(after + bytes, (char *) &stuff[1], len - sz_xImageTextReq);
+    bcopy((char *) &stuff[1], after + bytes, len - sz_xImageTextReq);
     bytes += len - sz_xImageTextReq;
     FinishLBXRequest(client, REQ_PASSTHROUGH);
     newreq->reqType = server->lbxReq;
@@ -792,9 +797,7 @@ ProcLBXPutImage(client)
                 method,
                 compBytes,
                 status;
-#ifdef LBX_STATS
     float       percentCompression;
-#endif
 
     if (client->swapped)
 	SwapXPutImage(stuff);
@@ -974,6 +977,7 @@ GetLbxImageReply(client, data)
 {
     xLbxGetImageReply *rep;
     xGetImageReply reply;
+    int         len;
     pointer     imageData;
     ReplyStuffPtr nr;
     int         freeIt = 1;

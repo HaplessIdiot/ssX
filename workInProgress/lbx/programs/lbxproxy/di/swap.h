@@ -1,6 +1,6 @@
 /*
- * $XConsortium: swap.h,v 1.3 94/12/01 20:41:41 mor Exp $
- * $XFree86$
+ * $XConsortium: swap.h,v 1.5 95/05/02 19:07:49 mor Exp $
+ * $XFree86: xc/workInProgress/lbx/programs/lbxproxy/include/swap.h,v 3.1 1995/06/20 14:44:50 dawes Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -57,6 +57,7 @@ extern void SwapAllocNamedColorReply();
 extern void SwapModmapReply();
 extern void SwapKeymapReply();
 extern void SwapFont();
+extern void LbxSwapFontInfo();
 extern void SwapGetImageReply();
 extern void SwapQueryExtensionReply();
 

@@ -1,4 +1,4 @@
-/* $XConsortium: reqtype.c,v 1.6 95/05/17 18:26:41 dpw Exp $ */
+/* $XConsortium: reqtype.c,v 1.5 94/12/01 20:48:07 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -24,7 +24,7 @@
  */
 
 /* decides what tupe of request it is */
-#include	"misc.h"
+#include	<X11/Xproto.h>
 #include        "os.h"		/* in server/include */
 #include	"reqtype.h"
 #include	"lbxext.h"

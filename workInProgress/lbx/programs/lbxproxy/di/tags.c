@@ -1,4 +1,4 @@
-/* $XConsortium: tags.c,v 1.7 95/05/30 18:36:48 mor Exp $ */
+/* $XConsortium: tags.c,v 1.5 94/03/27 13:57:43 dpw Exp $ */
 /*
  * Copyright 1993 Network Computing Devices, Inc.
  *
@@ -23,12 +23,9 @@
  * $NCDId: @(#)tags.c,v 1.10 1994/03/24 17:55:03 lemke Exp $
  */
 
-#include	"misc.h"
-#include	"util.h"
 #include	"cache.h"
 #include	"tags.h"
 #include	"assert.h"
-#include	"wire.h"
 
 Cache       global_cache;
 Cache       prop_cache;
@@ -90,7 +87,7 @@ TagStoreData(cache, id, size, dtype, data)
 	xfree(tag);
 	return FALSE;
     }
-    memcpy((char *) tag->tdata, (char *) data, size);
+    bcopy((char *) data, (char *) tag->tdata, size);
     tag->tid = id;
     tag->data_type = dtype;
     tag->size = size;

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: WaitFor.c,v 1.6 95/05/17 18:25:37 dpw Exp $ */
+/* $XConsortium: WaitFor.c,v 1.5 95/04/04 20:53:10 dpw Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -64,16 +64,19 @@ extern int errno;
 #endif
 
 #include <stdio.h>
+#include "X.h"
 #include "misc.h"
-#include "util.h"
+
 #include <sys/param.h>
 #include "osdep.h"
-#include "os.h"
+#include "dixstruct.h"
+#include "opaque.h"
 
 extern FdSet AllSockets;
 extern FdSet AllClients;
 extern FdSet LastSelectMask;
 extern FdMask WellKnownConnections;
+extern FdSet EnabledDevices;
 extern FdSet ClientsWithInput;
 extern FdSet ClientsWriteBlocked;
 extern FdSet OutputPending;
@@ -84,6 +87,10 @@ extern Bool NewOutputPending;
 extern Bool AnyClientsWriteBlocked;
 
 extern WorkQueuePtr workQueue;
+
+extern void ProcessInputEvents();
+extern void BlockHandler();
+extern void WakeupHandler();
 
 /*****************
  * WaitForSomething:
@@ -100,12 +107,15 @@ WaitForSomething(pClientsReady)
     int *pClientsReady;
 {
     int i;
-    struct timeval *wt;
+    struct timeval waittime, *wt;
+    INT32 timeout;
     FdSet clientsReadable;
     FdSet clientsWritable;
     int curclient;
     int selecterr;
     int nready;
+    FdSet devicesReadable;
+    CARD32 now;
 
     CLEARBITS(clientsReadable);
 
@@ -124,6 +134,7 @@ WaitForSomething(pClientsReady)
 	}
 	wt = NULL;
 	COPYBITS(AllSockets, LastSelectMask);
+	BlockHandler((pointer)&wt, (pointer)LastSelectMask);
 	if (NewOutputPending)
 	    FlushAllOutput();
 	/* keep this check close to select() call to minimize race */
@@ -139,6 +150,7 @@ WaitForSomething(pClientsReady)
 	    i = select (MAXSOCKS, (int *)LastSelectMask,
 			(int *) NULL, (int *) NULL, wt);
 	selecterr = errno;
+	WakeupHandler(i, (pointer)LastSelectMask);
 	if (i <= 0) /* An error or timeout occurred */
 	{
 
@@ -167,11 +179,12 @@ WaitForSomething(pClientsReady)
 		    AnyClientsWriteBlocked = FALSE;
 	    }
 
+	    MASKANDSETBITS(devicesReadable, LastSelectMask, EnabledDevices);
 	    MASKANDSETBITS(clientsReadable, LastSelectMask, AllClients); 
 	    if (LastSelectMask[0] & WellKnownConnections) 
 		QueueWorkProc(EstablishNewConnections, NULL,
 			      (pointer)LastSelectMask[0]);
-	    if (ANYSET (clientsReadable))
+	    if (ANYSET (devicesReadable) || ANYSET (clientsReadable))
 		break;
 	}
     }

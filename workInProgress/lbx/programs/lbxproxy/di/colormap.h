@@ -1,4 +1,4 @@
-/* $XConsortium: colormap.h,v 1.5 94/03/27 13:36:38 dpw Exp $ */
+/* $XConsortium: colormap.h,v 1.6 95/04/25 20:35:13 dpw Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *

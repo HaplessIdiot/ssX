@@ -1,12 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.5 95/05/17 18:25:37 dpw Exp $
+XCOMM $XConsortium: Imakefile,v 1.4 95/04/07 19:42:59 kaleb Exp $
 
 #include <Server.tmpl>
 
-EXTRA_DEFINES = ConnectionFlags $(RPC_DEFINES) \
-                AllocateLocalDefines ServerOSDefines $(SIGNAL_DEFINES)
-INCLUDES = -I../include -I$(TOP)/include -I$(EXTINCSRC) \
-           -I../../../include/extensions
-
+EXTRA_DEFINES = -DLBX ConnectionFlags $(XDMAUTH_DEFINES) $(RPC_DEFINES) \
+                $(KRB5_DEFINES)  AllocateLocalDefines ServerOSDefines
+INCLUDES = -I$(TOP)/include -I$(SERVERSRC)/include -I$(EXTINCSRC) \
+           -I$(LIBSRC)/Xau $(KRB5_INCLUDES) $(XDMAUTH_INCLUDES)
     SRCS = connection.c io.c WaitFor.c osinit.c access.c
 
     OBJS = connection.o io.o WaitFor.o osinit.o access.o

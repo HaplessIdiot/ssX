@@ -1,6 +1,6 @@
 /*
  * $XConsortium: swaprep.c,v 1.5 95/05/02 19:26:01 mor Exp $
- * $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/swaprep.c,v 3.1 1995/06/20 14:42:16 dawes Exp $
+ * $XFree86: xc/workInProgress/lbx/programs/lbxproxy/di/swaprep.c,v 3.2 1995/06/24 10:38:12 dawes Exp $
  *
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -26,10 +26,16 @@
  */
 
 #include	<stdio.h>
-#include	"misc.h"
+#define NEED_REPLIES
+#define NEED_EVENTS
+#include	<X11/X.h>	/* for KeymapNotify */
+#include	<X11/Xproto.h>
 #include	"assert.h"
-#include	"lbx.h"
-#include	"swap.h"
+#include	"dixstruct.h"
+#include	"lbxdata.h"
+#define _XLBX_SERVER_
+#include	"lbxstr.h"	/* gets dixstruct.h */
+#include	"swap.h"	/* gets dixstruct.h */
 
 extern int  (*InitialVector[3]) ();
 extern int  (*ProcVector[256]) ();

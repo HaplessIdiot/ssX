@@ -1,4 +1,4 @@
-/* $XConsortium: lbxexts.c,v 1.2 95/05/30 20:00:21 mor Exp $ */
+/* $XConsortium: lbxexts.c,v 1.1 94/12/01 20:27:29 mor Exp $ */
 /*
  * Copyright 1994 Network Computing Devices, Inc.
  *
@@ -135,8 +135,8 @@ LbxRegisterExtensionGenerationMasks(idx, num_reqs, rep_mask, ev_mask)
 	xfree(nem);
 	return FALSE;
     }
-    memcpy((char *) nrm, (char *) rep_mask, mlen);
-    memcpy((char *) nem, (char *) ev_mask, mlen);
+    bcopy((char *) rep_mask, (char *) nrm, mlen);
+    bcopy((char *) ev_mask, (char *) nem, mlen);
     ext->rep_mask = nrm;
     ext->ev_mask = nem;
     ext->num_reqs = num_reqs;

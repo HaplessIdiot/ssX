@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: osdep.h,v 1.6 95/05/17 18:25:37 dpw Exp $ */
+/* $XConsortium: osdep.h,v 1.5 95/04/04 20:53:46 dpw Exp $ */
 
 #define BOTIMEOUT 200 /* in milliseconds */
 #define BUFSIZE 4096
@@ -256,22 +256,3 @@ extern void FreeOsBuffers(
     OsCommPtr /*oc*/
 #endif
 );
-
-extern int StandardFlushClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*who*/,
-    OsCommPtr /*oc*/,
-    char * /*extraBuf*/,
-    int /*extraCount*/
-#endif
-);
-
-extern int LbxFlushClient(
-#if NeedFunctionPrototypes
-    ClientPtr /*who*/,
-    OsCommPtr /*oc*/,
-    char * /*extraBuf*/,
-    int /*extraCount*/
-#endif
-);
-

@@ -1,4 +1,4 @@
-/* $XConsortium: lbxstr.h,v 1.10 95/05/17 17:28:15 dpw Exp $ */
+/* $XConsortium: lbxstr.h,v 1.9 95/05/02 18:58:59 mor Exp $ */
 /*
  * $NCDId: @(#)lbxstr.h,v 1.25 1994/11/18 20:29:52 lemke Exp $
  *
@@ -548,7 +548,7 @@ typedef struct _LbxQueryExtension {
 } xLbxQueryExtensionReq;
 #define	sz_xLbxQueryExtensionReq	8
 
-typedef struct _LbxQueryExtensionReply {
+typedef struct {
     BYTE	type;			/* X_Reply */
     CARD8	numReqs;
     CARD16	sequenceNumber B16;
