@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.27 1997/07/06 06:33:55 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.28 1997/07/06 09:02:36 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -295,10 +295,10 @@ XtransConnInfo ciptr;
 
 {
     struct sockaddr_in 	sockname;
-#ifndef SCO325
-    int namelen = sizeof sockname;
+#if defined(SVR4) || defined(SCO325)
+    size_t namelen = sizeof sockname;
 #else
-    unsigned int namelen = sizeof sockname;
+    int namelen = sizeof sockname;
 #endif
 
     PRMSG (3,"SocketINETGetAddr(%x)\n", ciptr, 0, 0);
@@ -342,10 +342,10 @@ XtransConnInfo ciptr;
 
 {
     struct sockaddr_in 	sockname;
-#ifndef SCO325
-    int namelen = sizeof sockname;
+#if defined(SVR4) || defined(SCO325)
+    size_t namelen = sizeof sockname;
 #else
-    unsigned int namelen = sizeof sockname;
+    int namelen = sizeof sockname;
 #endif
 
     PRMSG (3,"SocketINETGetPeerAddr(%x)\n", ciptr, 0, 0);
@@ -1157,10 +1157,10 @@ int	       *status;
 {
     XtransConnInfo	newciptr;
     struct sockaddr_un	sockname;
-#ifndef SCO325
-    int namelen = sizeof(sockname);
+#if defined(SVR4) || defined(SCO325)
+    size_t namelen = sizeof sockname;
 #else
-    unsigned int namelen = sizeof(sockname);
+    int namelen = sizeof sockname;
 #endif
 
     PRMSG (2, "SocketUNIXAccept(%x,%d)\n", ciptr, ciptr->fd, 0);
@@ -1241,10 +1241,10 @@ char 		*port;
 
 {
     struct sockaddr_in	sockname;
-#ifndef SCO325
-    int namelen = sizeof(sockname);
+#if defined(SVR4) || defined(SCO325)
+    size_t namelen = sizeof sockname;
 #else
-    unsigned int namelen = sizeof(sockname);
+    int namelen = sizeof sockname;
 #endif
     _Xgethostbynameparams hparams;
     _Xgetservbynameparams sparams;
