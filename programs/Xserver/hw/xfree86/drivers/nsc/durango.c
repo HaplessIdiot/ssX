@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/durango.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
 /*
  * $Workfile: durango.c $
- * $Revision: 1.1 $
- * $Author: alanh $
+ * $Revision: 1.2 $
+ * $Author: dawes $
  *
  * This is the main file used to add Durango graphics support to a software 
  * project.  The main reason to have a single file include the other files
@@ -201,6 +201,12 @@
  */
 #define GFX_READ_ROUTINES			1	/* add routines to read values */
 
+/* HEADER FILE FOR DURANGO ROUTINE DEFINITIONS
+ * Needed since some of the Durango routines call other Durango routines.
+ * Also defines the size of chipset array (GFX_CSPTR_SIZE).
+ */
+#include "gfx_rtns.h"			/* routine definitions */
+
 /* VARIABLES USED FOR RUNTIME SELECTION
  * If part of the graphics subsystem is declared as dynamic, then the 
  * following variables are used to specify which platform has been detected.
@@ -247,12 +253,6 @@ int gfx_i2c_type = 0;
 #if GFX_VGA_DYNAMIC
 int gfx_vga_type = 0;
 #endif
-
-/* HEADER FILE FOR DURANGO ROUTINE DEFINITIONS
- * Needed since some of the Durango routines call other Durango routines.
- * Also defines the size of chipset array (GFX_CSPTR_SIZE).
- */
-#include "gfx_rtns.h"			/* routine definitions */
 
 /* DEFINE POINTERS TO MEMORY MAPPED REGIONS
  * These pointers are used by the Durango routines to access the hardware. 

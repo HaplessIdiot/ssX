@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/gfx_defs.h,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: gfx_defs.h $
  *
@@ -131,6 +131,9 @@
  * Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  *
  * END_NSC_LIC_GPL */
+
+#ifndef _gfx_defs_h
+#define _gfx_defs_h
 
 /* ACCESS TO THE CPU REGISTERS */
 
@@ -427,5 +430,6 @@ void gfx_msr_asm_read(unsigned short msrReg, unsigned long msrAddr,
 		WRITE_GP32 (regoffset, temp2);                                                      \
 	}                                                                                       \
 }
+#endif /* _gfx_defs_h */
 
 /* END OF FILE */

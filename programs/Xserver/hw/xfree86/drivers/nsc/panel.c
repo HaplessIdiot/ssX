@@ -1,8 +1,8 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel.c,v 1.1 2002/12/10 15:12:25 alanh Exp $ */
 /*
  * $Workfile: panel.c $
- * $Revision: 1.1 $
- * $Author: alanh $
+ * $Revision: 1.2 $
+ * $Author: dawes $
  *
  * File Contents: This file contailns the panel include files and 
  *                external pointer to the hardware.
@@ -147,7 +147,7 @@
 #include <linux/string.h>
 #include <asm/io.h>
 
-#else
+#elif !defined(XFree86Server)
 
 #include <linux/fs.h>
 #include <asm/mman.h>
@@ -161,11 +161,7 @@
 
 #include "panel.h"
 #include "gfx_defs.h"
-extern unsigned char *gfx_virt_regptr;
-extern unsigned char *gfx_virt_fbptr;
-extern unsigned char *gfx_virt_vidptr;
-extern unsigned char *gfx_virt_vipptr;
-extern unsigned long gfx_detect_video(void);
+#include "nsc.h"
 
 #define PLATFORM_DYNAMIC		1	/* runtime selection */
 #define PLATFORM_DRACO			0	/* Draco + 9210 */

@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/panel/panel.c,v 1.1 2002/12/10 15:12:28 alanh Exp $ */
 /*
  * $Workfile: panel.c $
- * $Revision: 1.1 $
+ * $Revision: 1.2 $
  *
  * File Contents: This file contains the file inclusions, macro definitions      
  *                for the panel. 
@@ -146,7 +146,7 @@
 #include <linux/string.h>
 #include <asm/io.h>
 
-#else
+#elif !defined(XFree86Server)
 
 #include <linux/fs.h>
 #include <asm/mman.h>
@@ -160,6 +160,7 @@
 
 #include "panel.h"
 #include "gfx_defs.h"
+
 extern unsigned char *gfx_virt_regptr;
 extern unsigned char *gfx_virt_fbptr;
 extern unsigned char *gfx_virt_vidptr;
