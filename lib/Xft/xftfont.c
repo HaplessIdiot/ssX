@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfont.c,v 1.8 2000/12/20 00:20:48 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfont.c,v 1.9 2002/02/15 07:36:11 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -150,7 +150,11 @@ XftFontOpenName (Display *dpy, int screen, const char *name)
     
     font = XftFontOpenPattern (dpy, match);
     if (!font)
+    {
+	if (XftDebug () & XFT_DBG_OPEN)
+	    printf ("No Font\n");
 	FcPatternDestroy (match);
+    }
     
     return font;
 }
@@ -192,7 +196,11 @@ XftFontOpenXlfd (Display *dpy, int screen, const char *xlfd)
     
     font = XftFontOpenPattern (dpy, match);
     if (!font)
+    {
+	if (XftDebug () & XFT_DBG_OPEN)
+	    printf ("No Font\n");
 	FcPatternDestroy (match);
+    }
     
     return font;
 }
