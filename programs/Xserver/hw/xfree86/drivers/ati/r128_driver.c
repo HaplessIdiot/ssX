@@ -1645,7 +1645,6 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
                 R128SetSyncRangeFromEdid(pScrn, 0);
         }
 
-
         modesFound = xf86ValidateModes(pScrn,
 				   pScrn->monitor->Modes,
 				   pScrn->display->modes,
@@ -3449,6 +3448,11 @@ int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 
 	    if (mode->CrtcHDisplay == R128_BIOS16(j) &&
 		mode->CrtcVDisplay == R128_BIOS16(j+2)) {
+		xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+			   "Modifying mode according to VBIOS: %ix%i [pclk %.1f MHz] for FP to: ",
+			   mode->CrtcHDisplay,mode->CrtcVDisplay,
+			   (float)mode->Clock/1000);
+		
 		/* Assume we are using expanded mode */
 		if (R128_BIOS16(j+5)) j  = R128_BIOS16(j+5);
 		else                  j += 9;
@@ -3472,10 +3476,18 @@ int R128ValidMode(int scrnIndex, DisplayModePtr mode,
 		    mode->CrtcVSyncStart + ((R128_BIOS16(j+19) >> 11) & 0x1f);
 		mode->VTotal     = mode->CrtcVTotal     =
 		    (R128_BIOS16(j+15) & 0x07ff)+1;
-
+		xf86ErrorF("%ix%i [pclk %.1f MHz]\n",
+			   mode->CrtcHDisplay,mode->CrtcVDisplay,
+			   (float)mode->Clock/1000);
+		
 		return MODE_OK;
 	    }
 	}
+	xf86DrvMsgVerb(5,pScrn->scrnIndex, X_INFO,
+		       "Mode rejected for FP %ix%i [pclk: %.1f] "
+		       "(not listed in VBIOS)\n",
+		       mode->CrtcHDisplay, mode->CrtcVDisplay,
+		       mode->Clock / 1000);
 	return MODE_NOMODE;
     }
 

@@ -45,6 +45,7 @@
 #define SST_DESKTOP_EN                  BIT(7)
 #define SST_DESKTOP_PIXEL_FORMAT_SHIFT  18
 #define SST_DESKTOP_CLUT_BYPASS         BIT(10)
+#define SST_INTERLACE                   BIT(3)
 #define SST_HALF_MODE                   BIT(4)
 #define SST_CURSOR_EN                   BIT(27)
 #define SST_FBI_BUSY                    BIT(7)

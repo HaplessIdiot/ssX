@@ -622,9 +622,12 @@ static Bool SavageProbe(DriverPtr drv, int flags)
 
     /* sanity checks */
     if ((numDevSections = xf86MatchDevice("savage", &devSections)) <= 0)
-	return FALSE;
-    if (xf86GetPciVideoInfo() == NULL)
-	return FALSE;
+        return FALSE;
+    if (xf86GetPciVideoInfo() == NULL) {
+        if (devSections)
+	    xfree(devSections);
+        return FALSE;
+    }
 
     numUsed = xf86MatchPciInstances("SAVAGE", PCI_VENDOR_S3,
 				    SavageChipsets, SavagePciChipsets,
@@ -995,6 +998,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
 
     if (!SavageMapMMIO(pScrn)) {
+	SavageFreeRec(pScrn);
         vbeFree(psav->pVbe);
 	return FALSE;
     }
@@ -1026,6 +1030,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
 	if (!xf86SetGamma(pScrn, zeros)) {
 	    vbeFree(psav->pVbe);
+	    SavageFreeRec(pScrn);
 	    return FALSE;
 	}
     }
@@ -1245,10 +1250,9 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 	    psav->dacSpeedBpp = pScrn->clock[3];
 	else if (pScrn->bitsPerPixel >= 24)
 	    psav->dacSpeedBpp = pScrn->clock[2];
-	else if ((pScrn->bitsPerPixel > 8) && (pScrn->bitsPerPixel < 24))
+	else if (pScrn->bitsPerPixel > 8)
 	    psav->dacSpeedBpp = pScrn->clock[1];
-	else if (pScrn->bitsPerPixel <= 8)
-	    psav->dacSpeedBpp = pScrn->clock[0];
+	else psav->dacSpeedBpp = pScrn->clock[0];
     }
 
     /* Set ramdac limits */
@@ -2492,22 +2496,7 @@ static Bool SavageModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 
 
-    if (pScrn->bitsPerPixel == 8)
-	psav->HorizScaleFactor = 1;
-    else if (pScrn->bitsPerPixel == 16)
-	psav->HorizScaleFactor = 1;	/* I don't think we ever want 2 */
-    else
-	psav->HorizScaleFactor = 1;
-
-    if (psav->HorizScaleFactor == 2)
-	if (!mode->CrtcHAdjusted) {
-	    mode->CrtcHDisplay *= 2;
-	    mode->CrtcHSyncStart *= 2;
-	    mode->CrtcHSyncEnd *= 2;
-	    mode->CrtcHTotal *= 2;
-	    mode->CrtcHSkew *= 2;
-	    mode->CrtcHAdjusted = TRUE;
-	}
+    psav->HorizScaleFactor = 1;
 
     if (!vgaHWInit(pScrn, mode))
 	return FALSE;

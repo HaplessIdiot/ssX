@@ -150,6 +150,7 @@ SavageFreeBIOSModeTable( SavagePtr psav, SavageModeTablePtr* ppTable )
 	    xfree( pMode->RefreshRate );
 	    pMode->RefreshRate = NULL;
 	}
+	pMode++;
     }
 
     xfree( *ppTable );

@@ -4760,6 +4760,7 @@ Xft	XftInitFtLibrary	38
 Xft	XftDrawPicture	39
 Xft	XftDrawSrcPicture	40
 Xft	XftCharExists	41
+Xft	XftDrawCharSpec	42
 LIBRARY Xmuu Xmuu
 Xmuu	XmuClientWindow	1
 Xmuu	XmuCursorNameToIndex	2

@@ -129,7 +129,7 @@ static const OptionInfoRec CirOptions[] = {
 	{ OPTION_HW_CURSOR,	"HWcursor",	OPTV_BOOLEAN,	{0}, FALSE },
 	{ OPTION_NOACCEL,	"NoAccel",	OPTV_BOOLEAN,	{0}, FALSE },
 	{ OPTION_MMIO,		"MMIO",		OPTV_BOOLEAN,	{0}, FALSE },
-	{ OPTION_SHADOW_FB,   "ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+	{ OPTION_SHADOW_FB,	"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
 	{ OPTION_ROTATE, 	 "Rotate",	OPTV_ANYSTR,	{0}, FALSE },
 	{ OPTION_MEMCFG1,	"MemCFG1",	OPTV_INTEGER,	{0}, -1 },
 	{ OPTION_MEMCFG2,	"MemCFG2",	OPTV_INTEGER,	{0}, -1 },
@@ -440,7 +440,15 @@ AlpCountRam(ScrnInfoPtr pScrn)
 	break;
 	
     case PCI_CHIP_GD7548:
-	videoram = 1024; /* TODO: actual size */
+	videoram = 1024;
+	switch (pCir->chip.alp->sr0f & 0x90) {
+		case 0x10:
+			/* TODO: 2 256K X 16 DRAMs (1024) or 4 512K X 8 DRAMs (2048)? */
+			break;
+		case 0x90:
+			videoram <<= 1;
+			break;
+	}
 	break;
     }
 
@@ -544,8 +552,10 @@ AlpPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Get the entity, and make sure it is PCI. */
 	pCir->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
-	if (pCir->pEnt->location.type != BUS_PCI)
+	if (pCir->pEnt->location.type != BUS_PCI) {
+		xfree(pCir->pEnt);
 		return FALSE;
+	}
 
 	pCir->Chipset = pCir->pEnt->chipset;
 	/* Find the PCI info for this screen */

@@ -1,4 +1,25 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 230. Added eariy failure and warning message when not sufficient memory
+      available for DRI in i8xx driver (Egbert Eich).
+ 229. Fix bug in original patch which added support for two new relocation
+      types for IA64 (Bugzilla #195, John Dennis).
+ 228. Fix scaling calculus in savage driver (Bugzilla #274, Emmanuel).
+ 227. Clearifying if conditions, fixing memory leaks in error path, removing
+      useless code in savage driver (Bugzilla #278+279, Emmanuel).
+ 226. Adding message to R128 driver which informs about modified modes for LCD
+      according to VBIOS (Bugzilla #23, Egbert Eich).
+ 225. Fixed chipset ID for v2100/v2200 for overrides (Egbert Eich).
+ 224. Added interlaced support for Voodoo 3,4,5 to TDFX driver (Bugzilla #383,
+      Jakub Bogusz).
+ 223. Fixed typo in getPciBiosTypes() (Bugzilla #382,  Jakub Bogusz).
+ 222. Restore previous mode if mode switch fails (Bugzilla #381, Jakub Bogusz).
+ 221. Fixed typo that prevented lubB19 fonts with different maps from being
+      generated (Bugzilla #380, Jakub Bogusz).
+ 220. Sync entrypoints for OS/2 with recent changes in fontconfig and Xft
+      (Bugzilla #374, Frank Giessler).
+ 219. Added detection of 2Mb memory for CLGD7548, fixed a possible memory 
+      leak and did minor cleanups (Bugzilla #369, Lucas Correia Villa Real). 
+      (PLEASE TEST!)
  218. Recode single-byte keyboard scancodes that clash with recoded
       double-byte scancodes (David Dawes).
  217. Fixes and updates for XKB keyboard maps:

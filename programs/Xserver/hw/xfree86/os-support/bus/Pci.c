@@ -1276,7 +1276,7 @@ getPciBIOSTypes(PCITAG Tag, CARD8* tmp, ADDRESS hostbase, pointer arg)
   /* We found a PCI BIOS Image. Now we collect the types type */
   do {
     unsigned short data_off = tmp[0x18] | (tmp[0x19] << 8);
-    unsigned char data[16];
+    unsigned char data[0x16];
     unsigned int i_length;
 
     if ((xf86ReadDomainMemory(Tag, hostbase + data_off, sizeof(data), data)

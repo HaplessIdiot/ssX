@@ -251,7 +251,7 @@ enum renditionTypes {
 /* supported chipsets */
 static SymTabRec renditionChipsets[] = {
     {CHIP_RENDITION_V1000, "V1000"},
-    {CHIP_RENDITION_V2x00, "V2100/V2200"},
+    {CHIP_RENDITION_V2x00, "V2x00"},
     {-1,                   NULL}
 };
 

@@ -186,9 +186,11 @@ sbit_metrics_fields
 sfnt_module_class
 ft_grays_raster
 ft_smooth_renderer_class
+#ifndef __UNIXOS2__
 TT_New_Context
 TT_RunIns
 tt_default_graphics_state
+#endif
 tt_driver_class
 t1_driver_class
 t1cid_driver_class

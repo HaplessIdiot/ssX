@@ -330,6 +330,8 @@ Bool
 VidModeSwitchMode(int scrnIndex, pointer mode)
 {
     ScrnInfoPtr pScrn;
+    DisplayModePtr pTmpMode;
+    Bool retval;
 
     DEBUG_P("VidModeSwitchMode");
 
@@ -337,9 +339,15 @@ VidModeSwitchMode(int scrnIndex, pointer mode)
 	return FALSE;
 
     pScrn = xf86Screens[scrnIndex];
+    /* save in case we fail */
+    pTmpMode = pScrn->currentMode;
     /* Force a mode switch */
     pScrn->currentMode = NULL;
-    return xf86SwitchMode(pScrn->pScreen, mode);
+    retval = xf86SwitchMode(pScrn->pScreen, mode);
+    /* we failed: restore it */
+    if (retval == FALSE)
+	pScrn->currentMode = pTmpMode;
+    return retval;
 }
 
 Bool

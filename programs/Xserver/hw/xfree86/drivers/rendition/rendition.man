@@ -43,7 +43,7 @@ names may optionally be specified in the config file
 section, and will override the auto-detection:
 .PP
 .RS 4
-"v1000", "v2100", "v2200".
+"v1000", "v2x00".
 .RE
 .PP
 The driver will auto-detect the amount of video memory present for all
