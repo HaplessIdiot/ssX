@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.59 2003/02/26 18:59:49 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.60 2003/08/25 18:30:15 dawes Exp $ 
 .TH XFree86 1 __vendorversion__
 .SH NAME
 XFree86 - X11R6 X server
@@ -587,20 +587,14 @@ The current XFree86 core team consists of:
 .PP
 .RS 4
 .nf
-Stuart Anderson    \fIanderson@netsweng.com\fP
-Robin Cutshaw      \fIrobin@xfree86.org\fP
 David Dawes        \fIdawes@xfree86.org\fP
 Egbert Eich        \fIeich@xfree86.org\fP
 Marc Evans         \fImarc@xfree86.org\fP
-Dirk Hohndel       \fIhohndel@xfree86.org\fP
+Matthieu Herrb     \fIherrb@xfree86.org\fP
 Alan Hourihane     \fIalanh@xfree86.org\fP
-Harald Koenig      \fIkoenig@xfree86.org\fP
 Marc La France     \fItsi@xfree86.org\fP
 Kevin Martin       \fImartin@xfree86.org\fP
 Rich Murphey       \fIrich@xfree86.org\fP
-Takaaki Nomura     \fIamadeus@yk.rim.or.jp\fP
-Keith Packard      \fIkeithp@xfree86.org\fP
-Jon Tombs          \fIjon@gtex02.us.es\fP
 Mark Vojkovich     \fImarkv@xfree86.org\fP
 David Wexelblat    \fIdwex@xfree86.org\fP
 .fi
