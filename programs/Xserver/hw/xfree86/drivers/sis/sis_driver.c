@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.187tsi Exp $ */
 /*
  * SiS driver main code
  *
@@ -178,10 +178,6 @@ static const char *xaaSymbols[] = {
     "XAACopyROP",
     "XAACreateInfoRec",
     "XAADestroyInfoRec",
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
-    "XAAFillSolidRects",
-#endif
-    "XAAFillMono8x8PatternRects",
     "XAAHelpPatternROP",
     "XAAInit",
     NULL

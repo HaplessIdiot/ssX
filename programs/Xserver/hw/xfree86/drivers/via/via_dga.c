@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_dga.c,v 1.4tsi Exp $ */
 /*
  * Copyright 1998-2003 VIA Technologies, Inc. All Rights Reserved.
  * Copyright 2001-2003 S3 Graphics, Inc. All Rights Reserved.
@@ -24,7 +24,6 @@
  */
 
 
-#include "xaalocal.h"
 #include "via_driver.h"
 #include "dgaproc.h"
 

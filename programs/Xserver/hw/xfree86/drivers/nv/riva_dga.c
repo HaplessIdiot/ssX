@@ -1,10 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/riva/riva_dga.c $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_dga.c,v 1.1tsi Exp $ */
 
 #include "riva_local.h"
 #include "riva_include.h"
 #include "riva_type.h"
 #include "riva_proto.h"
-#include "xaalocal.h"
 #include "dgaproc.h"
 
 

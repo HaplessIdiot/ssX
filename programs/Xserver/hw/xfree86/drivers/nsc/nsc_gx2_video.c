@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_video.c,v 1.7tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_video.c $
- * $Revision: 1.7 $
+ * $Revision: 1.8 $
  * $Author: tsi $
  *
  * File Contents: This file consists of main Xfree video supported routines.
@@ -157,7 +157,6 @@
 #include "nsc.h"
 #include "Xv.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "dixstruct.h"
 #include "fourcc.h"
 #include "nsc_fourcc.h"

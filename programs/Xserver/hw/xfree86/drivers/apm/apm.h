@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.19tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm.h,v 1.20tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -37,7 +37,6 @@
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
-#include "xaalocal.h"
 #include "xf86Cursor.h"
 #include "xf86fbman.h"
 

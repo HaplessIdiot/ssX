@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.9 2001/01/06 21:29:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.10tsi Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
@@ -11,7 +11,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "apm.h"
 #include "dgaproc.h"
 

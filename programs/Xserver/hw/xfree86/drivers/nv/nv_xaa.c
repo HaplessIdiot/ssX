@@ -37,10 +37,9 @@
 |*                                                                           *|
  \***************************************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.34 2003/10/15 20:28:31 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.35tsi Exp $ */
 
 #include "nv_include.h"
-#include "xaalocal.h"
 #include "miline.h"
 #include "nv_dma.h"
 

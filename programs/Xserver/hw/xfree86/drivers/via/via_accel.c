@@ -21,7 +21,7 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.10 2004/01/27 02:38:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/via/via_accel.c,v 1.11tsi Exp $ */
 
 /*************************************************************************
  *
@@ -31,7 +31,6 @@
  ************************************************************************/
 
 #include "Xarch.h"
-#include "xaalocal.h"
 #include "xaarop.h"
 #include "miline.h"
 

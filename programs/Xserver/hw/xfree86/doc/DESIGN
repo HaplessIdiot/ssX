@@ -2294,11 +2294,9 @@ The following include files are typically required by video drivers:
 
           "cfb32.h"
 
-     If a driver uses XAA, it needs these:
+     If a driver uses XAA, it needs this:
 
           "xaa.h"
-
-          "xaalocal.h"
 
      If a driver uses the fb manager, it needs this:
 
@@ -2879,12 +2877,12 @@ DGAInit.
 
      void FillRect (pScrn, x, y, w, h, color)
 
-          This optional function should fill a rectangle w × h
+          This optional function should fill a rectangle w x h
           located at (x,y) in the given color.
 
      void BlitRect (pScrn, srcx, srcy, w, h, dstx, dsty)
 
-          This optional function should copy an area w × h located
+          This optional function should copy an area w x h located
           at (srcx,srcy) to location (dstx,dsty).  This function
           will need to handle copy directions as appropriate.
 
@@ -6366,7 +6364,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.54 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.55 tsi Exp $
 
 
-$XFree86: $
+$XFree86$

@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.30 2002/05/21 14:38:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.31tsi Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -43,8 +43,6 @@
 #include "glint_regs.h"
 #include "pm3_regs.h"
 #include "glint.h"
-
-#include "xaalocal.h"		/* For replacements */
 
 #define DEBUG 0
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dga.c,v 1.7 2002/01/14 18:02:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_dga.c,v 1.8tsi Exp $ */
 
 /*
  * Copyright (C) 1994-2000 The XFree86 Project, Inc.
@@ -60,7 +60,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "s3v.h"
 #if 0
 #include "mga_bios.h"

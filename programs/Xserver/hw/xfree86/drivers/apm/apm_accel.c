@@ -1,7 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.20tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_accel.c,v 1.21tsi Exp $ */
 
 #include "apm.h"
 #include "miline.h"
+#include "xaalocal.h"
 
 /* Defines */
 #define MAXLOOP 1000000

@@ -32,7 +32,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_hwmc.c,v 1.3 2001/12/04 21:17:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_hwmc.c,v 1.4tsi Exp $ */
 
 
 #include "xf86.h"
@@ -53,7 +53,6 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "Xv.h"
 #include "XvMC.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "dixstruct.h"
 #include "fourcc.h"
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dga.c,v 1.13tsi Exp $ */
 /*
  * SiS DGA handling
  *
@@ -39,7 +39,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "sis.h"
 #include "sis_regs.h"
 #include "dgaproc.h"

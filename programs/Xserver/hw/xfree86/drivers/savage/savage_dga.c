@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.6 2003/01/18 15:22:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_dga.c,v 1.7tsi Exp $ */
 
 /*
  * Copyright (C) 1994-2000 The XFree86 Project, Inc.
@@ -55,7 +55,6 @@
  */
 
 
-#include "xaalocal.h"
 #include "savage_driver.h"
 #include "dgaproc.h"
 

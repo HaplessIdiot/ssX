@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.53 2003/08/23 14:10:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.54tsi Exp $
 </ident>
 
 
@@ -2771,10 +2771,9 @@ The following include files are typically required by video drivers:
     "cfb32.h"&e.code;
   </quote>
 
-  If a driver uses XAA, it needs these:
+  If a driver uses XAA, it needs this:
   <quote>
-    &s.code;"xaa.h"&nl;
-    "xaalocal.h"&e.code;
+    &s.code;"xaa.h"&e.code;
   </quote>
 
   If a driver uses the fb manager, it needs this:
@@ -3463,7 +3462,7 @@ typedef struct {
     &s.code;void FillRect (pScrn, x, y, w, h, color)&e.code;
     <quote><p>
       This optional function should fill a rectangle
-      &s.code;w&nbsp;&times;&nbsp;h&e.code; located at
+      &s.code;w x h&e.code; located at
       &s.code;(x,y)&e.code; in the given color.
 
     </quote>
@@ -3471,7 +3470,7 @@ typedef struct {
     &s.code;void BlitRect (pScrn, srcx, srcy, w, h, dstx, dsty)&e.code;
     <quote><p>
       This optional function should copy an area
-      &s.code;w&nbsp;&times;&nbsp;h&e.code; located at
+      &s.code;w x h&e.code; located at
       &s.code;(srcx,srcy)&e.code; to location &s.code;(dstx,dsty)&e.code;.
       This function will need to handle copy directions as appropriate.
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis300_accel.c,v 1.29tsi Exp $ */
 /*
  * 2D Acceleration for SiS 530, 620, 300, 540, 630, 730.
  *
@@ -42,7 +42,6 @@
 #include "xf86Pci.h"
 #include "compiler.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "xaarop.h"
 
 #include "sis.h"
@@ -248,9 +247,7 @@ SiS300AccelInit(ScreenPtr pScreen)
 	   infoPtr->CPUToScreenColorExpandFillFlags = NO_PLANEMASK |
 	   					      BIT_ORDER_IN_BYTE_MSBFIRST |
 	    					      NO_TRANSPARENCY |
-	    					      SYNC_AFTER_COLOR_EXPAND |
-	    					      HARDWARE_PATTERN_SCREEN_ORIGIN |
-	    					      HARDWARE_PATTERN_PROGRAMMED_BITS ;
+	    					      SYNC_AFTER_COLOR_EXPAND ;
 #endif
 
 	   /* per-scanline color expansion (using indirect method) */

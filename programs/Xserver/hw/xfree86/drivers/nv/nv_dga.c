@@ -1,10 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.11 2002/01/25 21:56:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.12tsi Exp $ */
 
 #include "nv_local.h"
 #include "nv_include.h"
 #include "nv_type.h"
 #include "nv_proto.h"
-#include "xaalocal.h"
 #include "dgaproc.h"
 
 
