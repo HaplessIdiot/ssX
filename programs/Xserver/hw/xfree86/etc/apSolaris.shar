@@ -4,8 +4,8 @@
 # To extract the files from this archive, save it to some FILE, remove
 # everything before the `!/bin/sh' line above, then type `sh FILE'.
 #
-# Made on 2002-10-02 08:44 MDT by <root@abcyxhiz>.
-# Source directory was `/Local/src'.
+# Made on 2002-10-04 13:41 MDT by <root@abcyxhiz>.
+# Source directory was `/archives'.
 #
 # Existing files will *not* be overwritten unless `-c' is specified.
 # This format requires very little intelligence at unshar time.
@@ -14,17 +14,17 @@
 # This shar contains:
 # length mode       name
 # ------ ---------- ------------------------------------------
-#   1611 -rw-r--r-- aperture/Makefile
+#   1521 -rw-r--r-- aperture/Makefile
 #   1659 -rw-r--r-- aperture/README
-#   7514 -rw-r--r-- aperture/aperture.c
+#   7557 -rw-r--r-- aperture/aperture.c
 #    450 -rw-r--r-- aperture/aperture.conf
 #     87 -rw-r--r-- aperture/devlink.tab
-#   1518 -rw-r--r-- aperture/Makefile.sun4u
+#   1062 -rw-r--r-- aperture/Makefile.sun4u
 #
 echo=echo
 shar_tty= shar_n= shar_c='
 '
-mkdir _sh00523 || ( echo 'failed to create locking directory' '_sh00523'; exit 1 )
+mkdir _sh09806 || ( echo 'failed to create locking directory' '_sh09806'; exit 1 )
 # ============= aperture/Makefile ==============
 if test ! -d 'aperture'; then
   $echo $echo_n 'x -' 'aperture: '$echo_c
@@ -49,18 +49,13 @@ X#
 X# >>NOTE<< Have a look at Makefile.sun4u for sun4u specifics.
 X#
 X# GNU gcc compiler
-X#CC=gcc
-X#CFLGS=-fno-builtin -W -Waggregate-return -Wbad-function-cast -Wcast-align \
-X#	-Wcast-qual -Wchar-subscripts -Wcomment -Wconversion -Wformat \
-X#	-Wimplicit -Wimport -Wmissing-declarations -Wmissing-prototypes \
-X#	-Wnested_externs -Wparentheses -Wpointer-arith -Wredundant-decls \
-X#	-Wreturn-type -Wshadow -Wstrict-prototypes -Wswitch -Wtraditional \
-X#	-Wtrigraphs -Wuninitialized
+XCC=gcc
+XCFLGS=-fno-builtin -Wall -O3
 X
 X#
 X# Proworks compiler
-XCC=/opt/SUNWspro/bin/cc
-XCFLGS=-Xa -xarch=v9 -xnolib -xO3
+X#CC=/opt/SUNWspro/bin/cc
+X#CFLGS=-Xa -xnolib -xO3
 X
 X#
 X# Debug error reporting
@@ -80,10 +75,15 @@ X# Make rules
 Xall: $(DRIVER)
 X
 X$(DRIVER): $(OBJS)
-X	ld -r -o $(DRIVER) $(OBJS)
+X	@if [ -f "Makefile.`uname -m`" ]; then \
+X		make -f Makefile.`uname -m` $(DRIVER); \
+X	else \
+X		rm -f $(DRIVER); \
+X		ld -r -o $(DRIVER) $(OBJS); \
+X	fi
 X
 Xinstall: $(DRIVER)
-X	if [ -f "Makefile.`uname -m`" ]; then \
+X	@if [ -f "Makefile.`uname -m`" ]; then \
 X		make -f Makefile.`uname -m` install; \
 X	else \
 X		cp aperture.conf /kernel/drv; \
@@ -91,7 +91,7 @@ X		cp $(DRIVER) /kernel/drv; \
 X	fi
 X
 Xadd_drv:
-X	if [ -f "Makefile.`uname -m`" ]; then \
+X	@if [ -f "Makefile.`uname -m`" ]; then \
 X		make -f Makefile.`uname -m` add_drv; \
 X	else \
 X		add_drv /kernel/drv/aperture; \
@@ -104,6 +104,14 @@ X.SUFFIXES: .i
 X
 X.c.i:
 X	$(CC) -E $(CFLAGS) $*.c > $@
+X
+X.c.o:
+X	@if [ -f "Makefile.`uname -m`" ]; then \
+X		make -f Makefile.`uname -m` $@; \
+X	else \
+X		rm -f $@; \
+X		$(CC) -c $(CFLAGS) $*.c -o $@; \
+X	fi
 SHAR_EOF
   : || $echo 'restore of' 'aperture/Makefile' 'failed'
 fi
@@ -291,7 +299,7 @@ X	cmn_err(CE_CONT, DEV_IDENT ":  entering mmap(0x%016lx)\n", off);
 X
 X#endif
 X
-X	pf = btop(off);
+X	pf = btop((unsigned long)off);
 X
 X	/* Deal with mmap(9E) interface limits */
 X	error = (int)pf;
@@ -456,7 +464,8 @@ X	}
 X	else
 X	{
 X		error = ddi_create_minor_node(dip, ddi_get_name(dip), S_IFCHR,
-X			ddi_get_instance(dip), NULL, NODESPECIFIC_DEV);
+X					      (minor_t)ddi_get_instance(dip),
+X					      NULL, NODESPECIFIC_DEV);
 X
 X		if (error == DDI_SUCCESS)
 X		{
@@ -702,22 +711,15 @@ X#   - SPARC support, cleanup and turf aptest.
 X#
 X
 X#
-X# GNU gcc compiler, for when it can generate 64-bit binaries.  Apparently
-X# GCC 3.0 can, but it has not been tried...
+X# GNU gcc compiler, version 3.2 or later
 X#
-X#CC=gcc
-X#CFLGS=-fno-builtin -W -Waggregate-return -Wbad-function-cast -Wcast-align \
-X#	-Wcast-qual -Wchar-subscripts -Wcomment -Wconversion -Wformat \
-X#	-Wimplicit -Wimport -Wmissing-declarations -Wmissing-prototypes \
-X#	-Wnested_externs -Wparentheses -Wpointer-arith -Wredundant-decls \
-X#	-Wreturn-type -Wshadow -Wstrict-prototypes -Wswitch -Wtraditional \
-X#	-Wtrigraphs -Wuninitialized
-X#	(+ whatever is needed to generate 64-bit object)
+XCC=gcc
+XCFLGS=-fno-builtin -Wall -O3 -m64
 X
 X#
 X# Proworks compiler
-XCC=/opt/SUNWspro/bin/cc
-XCFLGS=-Xa -xarch=v9 -xnolib -xO3
+X#CC=/opt/SUNWspro/bin/cc
+X#CFLGS=-Xa -xarch=v9 -xnolib -xO3
 X
 X#
 X# Debug error reporting
@@ -737,6 +739,7 @@ X# Make rules
 Xall: $(DRIVER)
 X
 X$(DRIVER): $(OBJS)
+X	rm -f $(DRIVER)
 X	ld -r -o $(DRIVER) $(OBJS)
 X
 Xinstall: $(DRIVER)
@@ -756,8 +759,8 @@ X	$(CC) -E $(CFLAGS) $*.c > $@
 SHAR_EOF
   : || $echo 'restore of' 'aperture/Makefile.sun4u' 'failed'
 fi
-$echo $shar_n 'x -' 'lock directory' "\`_sh00523': " $shar_c
-if rm -fr _sh00523; then
+$echo $shar_n 'x -' 'lock directory' "\`_sh09806': " $shar_c
+if rm -fr _sh09806; then
   $echo 'removed'
 else
   $echo 'failed to remove'
