@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.28 2001/09/21 16:24:15 herrb Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.29 2001/10/08 17:52:58 alanh Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -165,6 +165,9 @@ union wait	status;
 #endif /* SYSV */
 int serverpid = -1;
 int clientpid = -1;
+#ifndef X_NOT_POSIX
+volatile int gotSignal = 0;
+#endif
 
 static void Execute ( char **vec, char **envp );
 static Bool waitforserver ( void );
@@ -184,16 +187,34 @@ static void Error ( char *fmt, ... );
 #define SIGVAL void
 #endif
 
+#ifdef X_NOT_POSIX
+/* Can't use Error() in signal handlers */
+#ifndef STDERR_FILENO
+#define WRITES(s) write(STDERR_FILENO, (s), strlen(s))
+#else
+#define WRITES(s) write(fileno(stderr), (s), strlen(s))
+#endif
+#endif
+
 static SIGVAL 
 sigCatch(int sig)
 {
+#ifdef X_NOT_POSIX
+	char buf[1024];
+
 	signal(SIGQUIT, SIG_IGN);
 	signal(SIGINT, SIG_IGN);
 	signal(SIGHUP, SIG_IGN);
 	signal(SIGPIPE, SIG_IGN);
-	Error("unexpected signal %d\r\n", sig);
+	snprintf(buf, sizeof buf, "%s: unexpected signal %d\r\n", 
+		 program, sig);
+	WRITES(buf);
 	shutdown();
-	exit(1);
+	_exit(ERR_EXIT);
+#else
+	/* On system with POSIX signals, just interrupt the system call */
+	gotSignal = sig;
+#endif
 }
 
 static SIGVAL 
@@ -242,6 +263,10 @@ main(int argc, char *argv[], char *envp[])
 	int client_given = 0, server_given = 0;
 	int client_args_given = 0, server_args_given = 0;
 	int start_of_client_args, start_of_server_args;
+#ifndef X_NOT_POSIX
+	struct sigaction sa;
+#endif
+
 #ifdef __EMX__
 	envsave = envp;	/* circumvent an EMX problem */
 
@@ -401,16 +426,33 @@ main(int argc, char *argv[], char *envp[])
 #ifdef SIGCHLD
 	signal(SIGCHLD, SIG_DFL);	/* Insurance */
 #endif
+#ifdef X_NOT_POSIX
 	signal(SIGQUIT, sigCatch);
 	signal(SIGINT, sigCatch);
 	signal(SIGHUP, sigCatch);
 	signal(SIGPIPE, sigCatch);
+#else
+	/* Let those signal interrupt the wait() call in the main loop */
+	memset(&sa, 0, sizeof sa);
+	sa.sa_handler = sigCatch;
+	sigemptyset(&sa.sa_mask);
+	sa.sa_flags = 0;	/* do not set SA_RESTART */
+	
+	sigaction(SIGQUIT, &sa, NULL);
+	sigaction(SIGINT, &sa, NULL);
+	sigaction(SIGHUP, &sa, NULL);
+	sigaction(SIGPIPE, &sa, NULL);
+#endif
 	signal(SIGALRM, sigAlarm);
 	signal(SIGUSR1, sigUsr1);
 	if (startServer(server) > 0
 	 && startClient(client) > 0) {
 		pid = -1;
-		while (pid != clientpid && pid != serverpid)
+		while (pid != clientpid && pid != serverpid
+#ifndef X_NOT_POSIX
+		       && gotSignal == 0
+#endif
+			)
 			pid = wait(NULL);
 	}
 	signal(SIGQUIT, SIG_IGN);
@@ -419,7 +461,12 @@ main(int argc, char *argv[], char *envp[])
 	signal(SIGPIPE, SIG_IGN);
 
 	shutdown();
-
+#ifndef X_NOT_POSIX
+	if (gotSignal != 0) {
+		Error("unexpected signal %d.\n", gotSignal);
+		exit(ERR_EXIT);
+	}
+#endif
 	if (serverpid < 0 )
 		Fatal("Server error.\n");
 	if (clientpid < 0)
