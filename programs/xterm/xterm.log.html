@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.101 2003/10/27 01:07:58 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.102 2003/10/28 23:11:58 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -43,7 +43,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
-<LI><A HREF="#xterm_dev">Development - 2003/10/28 - XFree86 4.3.99.15</A>
+<LI><A HREF="#xterm_dev">Development - 2003/11/1 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_181">Patch #181 - 2003/10/26 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_180">Patch #180 - 2003/10/12 - XFree86 4.3.99.15</A>
 <LI><A HREF="#xterm_179">Patch #179 - 2003/5/21 - XFree86 4.3.99.5</A>
@@ -228,8 +228,11 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
-<H1><A NAME="xterm_dev">Development - 2003/10/28 - XFree86 4.3.99.15</A></H1>
+<H1><A NAME="xterm_dev">Development - 2003/11/1 - XFree86 4.3.99.15</A></H1>
 <ul>
+	<li>document in xterm's manpage how to use XFree86 ":unscaled" keyword
+	    to suppress scaling of bold fonts.
+
 	<li>when deriving bold fontname from normal fontname, use the normal
 	    font's average width to avoid for example selecting 7x13bold
 	    from an 8x13 normal font (Debian #107769).
