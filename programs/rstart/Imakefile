@@ -3,7 +3,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/programs/rstart/Imakefile,v 3.11 2002/05/31 18:46:08 dawes Exp $
+XCOMM $XFree86: xc/programs/rstart/Imakefile,v 3.12 2003/05/23 14:54:01 tsi Exp $
 XCOMM
 XCOMM Copyright (c) 1993 Quarterdeck Office Systems
 XCOMM
@@ -72,7 +72,7 @@ InstallProgram($(RSERVERNAME),$(MYLIBDIR))
 SpecialCObjectRule(server,NullParameter,$(SRVDEFS) $(PEDEFS))
 
 AllTarget($(SSERVERNAME))
-CppScriptTarget($(SSERVERNAME),$(SSERVERSRC),$(OS) -DLIBDIR=$(MYLIBDIR) -DSERVERNAME=$(SERVERNAME),NullParameter)
+CppScriptTarget($(SSERVERNAME),$(SSERVERSRC),$(OS) -DLIBDIR=$(MYLIBDIR) -DSERVERNAME=$(SERVERNAME) -DBINDIR=$(MYLIBDIR),NullParameter)
 InstallNamedProg($(SSERVERNAME),$(SSERVERNAME),$(BINDIR))
 
 AllTarget($(CLIENTNAME))
