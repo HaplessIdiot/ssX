@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/darwinLib.tmpl,v 1.16 2003/08/12 23:47:09 torrey Exp $
+XCOMM $XFree86: xc/config/cf/darwinLib.tmpl,v 1.17 2003/08/25 04:05:57 dawes Exp $
 /*
  * Darwin/Mac OS X shared library template
  */
@@ -36,7 +36,6 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXpmReqs       $(LDPRELIB) $(XLIB)
 #define SharedXrandrReqs    $(LDPRELIB) $(XRENDERLIB) $(XLIB)
 #define SharedXrenderReqs   $(LDPRELIB) $(XLIB)
-#define SharedXssReqs       $(LDPRELIB) $(XLIB) $(XTOOLLIB)
 #define SharedXtReqs        $(LDPRELIB) $(XONLYLIB) $(SMLIB) $(ICELIB) -flat_namespace
 #define SharedXtstReqs      $(LDPRELIB) $(XLIB)
 #define SharedXvReqs        $(LDPRELIB) $(XLIB)
@@ -44,4 +43,12 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedDPSTKReqs     $(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(DPSLIB) $(XLIB)
 #define SharedOldXReqs      $(LDPRELIB) $(XONLYLIB)
 #define SharedpsresReqs     $(LDPRELIB) $(SMLIB) $(ICELIB) $(XTOOLLIB) $(XLIB)
-
+#define SharedXResReqs	    $(LDPRELIB) $(XLIB)
+#define SharedXfontcacheReqs $(LDPRELIB) $(XLIB)
+#define SharedXineramaReqs  $(LDPRELIB) $(XLIB)
+#define SharedXssReqs	    $(LDPRELIB) $(XLIB)
+#define SharedXvMCReqs	    $(LDPRELIB) $(XLIB)
+#define SharedXxf86miscReqs $(LDPRELIB) $(XLIB)
+#define SharedXxf86vmReqs   $(LDPRELIB) $(XLIB)
+#define SharedxkbfileReqs   $(LDPRELIB) $(XONLYLIB)
+#define SharedxkbuiReqs	    $(LDPRELIB) $(XKBFILELIB) $(XONLYLIB)
