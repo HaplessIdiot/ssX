@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.43 2001/05/18 19:59:17 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.44 2001/05/19 00:40:30 dawes Exp $
 </ident>
 
 
@@ -2986,9 +2986,8 @@ To use the colormap layer, a driver calls the
       initialised.  The &s.code;pScrn-&gt;gamma&e.code; field must also
       be initialised, preferably by calling &s.code;xf86SetGamma()&e.code;.
       &s.code;maxColors&e.code; is the number of entries in the palette.
-      &s.code;sigRGBbits&e.code; is the number of significant bits in
-      each colour component.  This would normally be the same as
-      &s.code;pScrn-&gt;rgbBits&e.code;.  &s.code;loadPalette&e.code;
+      &s.code;sigRGBbits&e.code; is the size in bits of each color
+      component in the DAC's palette.  &s.code;loadPalette&e.code;
       is a driver-provided function for loading a colormap into the
       hardware, and is described below.  &s.code;setOverscan&e.code; is
       an optional function that may be provided when the overscan color
