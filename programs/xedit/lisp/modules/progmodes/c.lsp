@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.12 2002/10/21 04:18:36 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.13 2002/11/02 22:58:10 paulo Exp $
 ;;
 
 (require "syntax")
@@ -505,6 +505,9 @@
 	;; If the opening { is the first non blank char in the line
 	((:indent :obrace))
 	(setq *indent* (offset-indentation (+ *ind-offset* *ind-length*)))
+
+	;; XXX This may be the starting brace of a switch
+	(setq c-case-flag nil)
 	(indent-macro-reject-left)
     )
     (indreduce :stat
@@ -619,14 +622,17 @@
 	)
 	(indent-macro-reject-left)
     )
-    (indreduce nil
+    (indreduce :obrace
 	(and
 	    (<= c-braces 0)
 	    (> *ind-start* *ind-offset*)
 	)
 	((:indent :switch :eol :indent :obrace)
 	)
-	(setq *indent* (offset-indentation *ind-offset* :resolve t))
+	(setq
+	    *indent* (- (offset-indentation *ind-offset* :resolve t) *base-indent*)
+	    c-case-flag nil
+	)
 	(and *brace-indent* (incf *indent* *base-indent*))
 	(indent-macro-reject-left)
     )
@@ -708,7 +714,10 @@
 	 ;; Just set initial indentation
 	((:indent (or :for :while :if :else-if :else :do) :eol :indent :obrace)
 	)
-	(setq *indent* (offset-indentation *ind-offset* :resolve t))
+	(setq
+	    *indent*
+	    (- (offset-indentation *ind-offset* :resolve t) *base-indent*)
+	)
 	(and *brace-indent* (incf *indent* *base-indent*))
 	(indent-macro-reject-left)
     )
