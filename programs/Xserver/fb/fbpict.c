@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.10 2001/06/04 09:43:27 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbpict.c,v 1.11 2001/06/08 19:36:35 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -419,7 +419,7 @@ fbCompositeSolidMask_nx8888x0565C (CARD8      op,
     CARD32	*maskLine, *mask, ma;
     FbStride	dstStride, maskStride;
     CARD16	w;
-    CARD32	m, n, o, p;
+    CARD32	m, n, o;
 
     fbComposeGetSolid(pSrc, src);
     
@@ -810,10 +810,10 @@ fbCompositeSolidMask_nx1xn (CARD8      op,
 			    CARD16     width,
 			    CARD16     height)
 {
-    FbBits	*dstBits, *srcBits;
+    FbBits	*dstBits;
     FbStip	*maskBits;
-    FbStride	dstStride, maskStride, srcStride;
-    int		dstBpp, maskBpp, srcBpp;
+    FbStride	dstStride, maskStride;
+    int		dstBpp, maskBpp;
     int		dstXoff, dstYoff;
     int		maskXoff, maskYoff;
     FbBits	src;

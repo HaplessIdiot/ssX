@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.27 2001/05/29 04:54:08 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fb.h,v 1.28 2001/05/30 03:29:18 keithp Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -1555,23 +1555,6 @@ fbPolySegment (DrawablePtr  pDrawable,
  * fbpict.c
  */
 
-#ifdef RENDER
-void
-fbComposite (CARD8      op,
-	     PicturePtr pSrc,
-	     PicturePtr pMask,
-	     PicturePtr pDst,
-	     INT16      xSrc,
-	     INT16      ySrc,
-	     INT16      xMask,
-	     INT16      yMask,
-	     INT16      xDst,
-	     INT16      yDst,
-	     CARD16     width,
-	     CARD16     height);
-
-#endif
-
 Bool
 fbPictureInit (ScreenPtr pScreen,
 	       PictFormatPtr formats,
@@ -1699,6 +1682,14 @@ void
 fbQueryBestSize (int class, 
 		 unsigned short *width, unsigned short *height,
 		 ScreenPtr pScreen);
+
+#ifndef FB_OLD_SCREEN
+PixmapPtr
+_fbGetWindowPixmap (WindowPtr pWindow);
+
+void
+_fbSetWindowPixmap (WindowPtr pWindow, PixmapPtr pPixmap);
+#endif
 
 Bool
 fbSetupScreen(ScreenPtr	pScreen, 

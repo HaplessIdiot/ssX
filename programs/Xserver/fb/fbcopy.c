@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.10 2001/06/14 00:36:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.11 2001/07/11 16:32:41 keithp Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -391,7 +391,7 @@ fbDoCopy (DrawablePtr	pSrcDrawable,
 	  Pixel		bitPlane,
 	  void		*closure)
 {
-    RegionPtr	prgnSrcClip;	    /* may be a new region, or just a copy */
+    RegionPtr	prgnSrcClip = NULL; /* may be a new region, or just a copy */
     Bool	freeSrcClip = FALSE;
     RegionPtr	prgnExposed = NULL;
     RegionRec	rgnDst;
