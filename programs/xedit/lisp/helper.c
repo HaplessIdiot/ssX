@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.9 2001/10/03 07:46:02 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.10 2001/10/10 07:02:51 paulo Exp $ */
 
 #include "helper.h"
 #include <ctype.h>
@@ -56,6 +56,11 @@ _LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		break;
 	    case LispReal_t:
 		if (left->data.real == right->data.real)
+		    res = T;
+		break;
+	    case LispCharacter_t:
+	    case LispInteger_t:
+		if (left->data.integer == right->data.integer)
 		    res = T;
 		break;
 	    case LispAtom_t:
@@ -423,22 +428,22 @@ _LispReallyDo(LispMac *mac, LispObj *list, char *fname, int refs)
 LispObj *
 _LispDo(LispMac *mac, LispObj *list, char *fname, int refs)
 {
-    int did_jump;
-    LispObj *res;
+    int did_jump, *pdid_jump = &did_jump;
+    LispObj *res, **pres = &res;
     LispBlock *block;
 
-    res = NIL;
-    did_jump = 1;
+    *pres = NIL;
+    *pdid_jump = 1;
     block = LispBeginBlock(mac, NIL, 0);
     if (setjmp(block->jmp) == 0) {
-	res = _LispReallyDo(mac, list, fname, refs);
-	did_jump = 0;
+	*pres = _LispReallyDo(mac, list, fname, refs);
+	*pdid_jump = 0;
     }
     LispEndBlock(mac, block);
-    if (did_jump)
-	res = mac->block.block_ret;
+    if (*pdid_jump)
+	*pres = mac->block.block_ret;
 
-    return (res);
+    return (*pres);
 }
 
 static LispObj *
@@ -538,22 +543,22 @@ _LispReallyDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 LispObj *
 _LispDoListTimes(LispMac *mac, LispObj *list, char *fname, int times)
 {
-    int did_jump;
-    LispObj *res;
+    int did_jump, *pdid_jump = &did_jump;
+    LispObj *res, **pres = &res;
     LispBlock *block;
 
-    res = NIL;
-    did_jump = 1;
+    *pres = NIL;
+    *pdid_jump = 1;
     block = LispBeginBlock(mac, NIL, 0);
     if (setjmp(block->jmp) == 0) {
-	res = _LispReallyDoListTimes(mac, list, fname, times);
-	did_jump = 0;
+	*pres = _LispReallyDoListTimes(mac, list, fname, times);
+	*pdid_jump = 0;
     }
     LispEndBlock(mac, block);
-    if (did_jump)
-	res = mac->block.block_ret;
+    if (*pdid_jump)
+	*pres = mac->block.block_ret;
 
-    return (res);
+    return (*pres);
 }
 
 LispObj *

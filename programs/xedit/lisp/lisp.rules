@@ -5,8 +5,6 @@ file.c: file.gperf							@@\
 	RemoveFile($@)							@@\
 	$(GPERF) flags $? > $@						@@\
 									@@\
-depend::								@@\
-									@@\
 clean::									@@\
 	RemoveFile(file.c)
 

@@ -42,39 +42,16 @@ static char *BadArgumentAt = "bad argument %s, at %s";
 LispObj *
 Lisp_Load(LispMac *mac, LispObj *list, char *fname)
 {
-    LispObj *file = CAR(list);
-    int verbose = 0;
-    int print = 0;
-    int ifdoesnotexist = 0;
+    LispObj *file = CAR(list), *verbose, *print, *ifdoesnotexist;
 
     if (file->type != LispString_t)
 	LispDestroy(mac, BadArgumentAt, LispStrObj(mac, file), fname);
 
-    for (list = CDR(list); list != NIL; list = CDR(list)) {
-	if (CAR(list)->type != LispAtom_t)
-	    LispDestroy(mac, BadArgumentAt, LispStrObj(mac, CAR(list)), fname);
-	else {
-	    if (strcmp(CAR(list)->data.atom, ":VERBOSE") == 0) {
-		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :VERBOSE, at %s", fname);
-		verbose = CAR(list) != NIL;
-	    }
-	    else if (strcmp(CAR(list)->data.atom, ":PRINT") == 0) {
-		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :PRINT, at %s", fname);
-		print = CAR(list) != NIL;
-	    }
-	    else if (strcmp(CAR(list)->data.atom, ":IF-DOES-NOT-EXIST") == 0) {
-		if ((list = CDR(list)) == NIL)
-		    LispDestroy(mac, "expecting :IF-DOES-NOT-EXIST, at %s",
-				fname);
-		ifdoesnotexist = CAR(list) != NIL;
-	    }
-	}
-    }
+    LispGetKeys(mac, fname, "VERBOSE:PRINT:IF-DOES-NOT-EXIST", CDR(list),
+		&verbose, &print, &ifdoesnotexist);
 
     return (_LispLoadFile(mac, file->data.atom, fname,
-			  verbose, print, ifdoesnotexist));
+			  verbose != NIL, print != NIL, ifdoesnotexist != NIL));
 }
 
 LispObj *

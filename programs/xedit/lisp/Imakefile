@@ -6,7 +6,7 @@
 #define DoExtraLib	NO
 #define DoDebugLib	NO
 #define DoProfileLib	NO
-#define LibName lisp
+#define LibName		lisp
 #define LibInstall	NO
 #define LibHeaders	NO
 
@@ -21,6 +21,7 @@ SNPRINTF_DEFS  = -DNEED_SNPRINTF
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
+LIB		= LibName
 SAMP		= lsp
 SAMPSRC		= lsp.c
 SAMPOBJ		= lsp.o
@@ -50,7 +51,7 @@ OBJS		=\
 
 INC		= table.c
 TBL		= table.gperf
-GPERFFLAGS	= -T -n -a -c -p -j1 -g -o -t -N LispFindBuiltin -k 1,2,4,$$
+GPERFFLAGS	= -T -n -a -c -p -j1 -o -t -N LispFindBuiltin -k 1,2,4,$$
 
 AllTarget(ProgramTargetName($(SAMP)))
 
@@ -69,6 +70,8 @@ LOCAL_LIBRARIES = -L. -llisp -lm $(DLLIB)
 GperfLispFile(lisp,table,$(GPERFFLAGS))
 
 NormalProgramTarget($(SAMP),$(SAMPOBJ),,$(LOCAL_LIBRARIES),)
+
+DependTarget()
 
 #ifdef IHaveSubdirs
 MakeSubdirs($(SUBDIRS))

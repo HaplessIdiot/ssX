@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.6 2001/10/02 06:38:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.7 2001/10/10 07:02:51 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -47,6 +47,7 @@
 #define QUOTE(quote)		LispNewQuote(mac, quote)
 #define REAL(num)		LispNewReal(mac, num)
 #define STRING(str)		LispNewString(mac, str)
+#define CHAR(c)			LispNewCharacter(mac, c)
 #define OPAQUE(data, type)	LispNewOpaque(mac, (void*)((long)data), type)
 #define CHECKO(obj, typ)						\
 	obj->type == LispOpaque_t && 					\
@@ -70,9 +71,11 @@ typedef enum _LispType {
     LispNil_t,
     LispTrue_t,
     LispAtom_t,
+    LispInteger_t,
     LispReal_t,
     LispCons_t,
     LispQuote_t,
+    LispCharacter_t,
     LispString_t,
     LispSymbol_t,
     LispLambda_t,
@@ -95,6 +98,7 @@ struct _LispObj {
     unsigned int prot: 1;	/* protection for constant/unamed variables */
     union {
 	char *atom;
+	long integer;
 	double real;
 	LispObj *quote;
 	struct {
@@ -174,6 +178,7 @@ LispObj *LispNewTrue(LispMac*);
 LispObj *LispNewAtom(LispMac*, char*);
 LispObj *LispNewReal(LispMac*, double);
 LispObj *LispNewString(LispMac*, char*);
+LispObj *LispNewCharacter(LispMac*, long);
 LispObj *LispNewQuote(LispMac*, LispObj*);
 LispObj *LispNewCons(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewSymbol(LispMac*, char*, LispObj*);
@@ -213,6 +218,14 @@ int LispPrintObj(LispMac*, LispObj*, LispObj*, int);
 
 void LispProtect(LispMac*, LispObj*, LispObj*);
 void LispUProtect(LispMac*, LispObj*, LispObj*);
+
+/* search argument list for the specified keys.
+ * example: LispGetKeys(mac, fname, "START:END", list, &start, &end);
+ * note that the separator for key names is the ':' character.
+ * values not present in the argument list get the default value of NIL,
+ * values specified more than once get only the first specification,
+ * and if an unknown is on the argument list, a fatal error happens. */
+void LispGetKeys(LispMac*, char*, char*, LispObj*, ...);
 
 /*
  * Initialization

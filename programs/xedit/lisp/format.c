@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.5 2001/09/28 04:38:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/format.c,v 1.7 2001/10/10 07:02:51 paulo Exp $ */
 
 #include "format.h"
 #include <ctype.h>
@@ -1311,9 +1311,9 @@ print_number_args:
 			*stk = val < 10 ? val + '0' : (val - 10) + 'A';
 			++len;
 		    } while (num);
-		    if (sign) {
+		    if (sign || atsign) {
 			memmove(stk + 1, stk, len);
-			*stk = '-';
+			*stk = sign ? '-' : '+';
 			++len;
 		    }
 		}
