@@ -55,7 +55,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.104 2004/04/28 00:41:00 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.105tsi Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996 - April 2004.
 .TH XTERM 1 __vendorversion__
@@ -3009,9 +3009,9 @@ The current font size is checked in the modes section of the menu.
 .TP
 Large Characters (tektextlarge)
 .TP
-#2 Size Characters (tektext2)
+\&#2 Size Characters (tektext2)
 .TP
-#3 Size Characters (tektext3)
+\&#3 Size Characters (tektext3)
 .TP
 Small Characters (tektextsmall)
 .RE
