@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.92 2001/01/24 17:28:54 tsi Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.93 2001/01/27 18:19:53 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -233,6 +233,14 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifdef BootStrap
 #undef BuildHtmlManPages
 #define BuildHtmlManPages NO
+#endif
+
+#ifndef DontPreprocessManPages
+#ifdef UseInstalled
+#define DontPreprocessManPages YES
+#else
+#define DontPreprocessManPages NO
+#endif
 #endif
 
 #ifndef HasCookieMaker
