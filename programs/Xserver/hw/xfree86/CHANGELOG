@@ -1,4 +1,7 @@
 XFree86 4.4.99.4 (xx April 2004)
+  75. Update freetype2 and the freetype XFree86 server module to eliminate
+      the need to use private interfaces for embedded bitmap metrics
+      (Chisato Yamauchi).
   74. Fix kdrive build with REGION_* fixes (#Bugzilla #1338,
       Bernhard RosenKraenzer)
   73. Build fixes and updates for OS/2 (Bugzilla #1340, Frank Giessler)
@@ -18856,7 +18859,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3225 2004/04/14 11:19:52 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3226 2004/04/14 11:23:27 alanh Exp $
 
 
 
