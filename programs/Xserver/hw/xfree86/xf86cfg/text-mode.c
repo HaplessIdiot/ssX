@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.6 2000/12/11 22:52:07 herrb Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/text-mode.c,v 1.7 2000/12/13 12:58:20 tsi Exp $
  */
 
 #include <stdio.h>
@@ -43,6 +43,10 @@
 
 #define XKB_RULES_DIR "/usr/X11R6/lib/X11/xkb/rules"
 
+#define CONTROL_A	1
+#define CONTROL_D	4
+#define CONTROL_E	5
+#define CONTROL_K	11
 #define TAB	9
 #define	MIN(a, b)	((a) < (b) ? (a) : (b))
 #define	MAX(a, b)	((a) > (b) ? (a) : (b))
@@ -1648,7 +1652,7 @@ ScreenConfig(void)
     XtFree((XtPointer)list);
 
     if (disp_allocated) {
-	display->list.next = screen->scrn_display_lst;
+	display->list.next = NULL;
 	if (screen->scrn_display_lst == NULL)
 	    screen->scrn_display_lst = display;
 	else
@@ -3117,17 +3121,19 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 		    }
 		    continue;
 		case KEY_RIGHT:
-		    if (input_x == box_width - 1) {
-			++scroll;
-			wmove(dialog, box_y, box_x);
-			for (i = scroll; i < scroll + box_width; i++)
-			    waddch(dialog, instr[scroll + i] ? instr[scroll + i] : ' ');
-			wmove(dialog, box_y, input_x + box_x);
-			wrefresh(dialog);
-		    }
-		    else if (input_x + scroll < len) {
-			wmove(dialog, box_y, ++input_x + box_x);
-			wrefresh(dialog);
+		    if (input_x + scroll < len) {
+			if (input_x == box_width - 1) {
+			    ++scroll;
+			    wmove(dialog, box_y, box_x);
+			    for (i = scroll; i < scroll + box_width; i++)
+				waddch(dialog, instr[i] ? instr[i] : ' ');
+			    wmove(dialog, box_y, input_x + box_x);
+			    wrefresh(dialog);
+			}
+			else {
+			    wmove(dialog, box_y, ++input_x + box_x);
+			    wrefresh(dialog);
+			}
 		    }
 		    continue;
 		case KEY_BACKSPACE:
@@ -3153,12 +3159,68 @@ DialogInput(char *title, char *prompt, int height, int width, char *init,
 			    for (i = scroll + input_x; i < len &&
 				 i < scroll + box_width; i++)
 				waddch(dialog, instr[i]);
-			    waddch(dialog, ' ');
+			    if (i < scroll + box_width)
+				waddch(dialog, ' ');
 			}
 			wmove(dialog, box_y, input_x + box_x);
 			wrefresh(dialog);
 		    }
 		    continue;
+		case KEY_HOME:
+		case CONTROL_A:
+		    wmove(dialog, box_y, box_x);
+		    if (scroll != 0) {
+			scroll = 0;
+			for (i = 0; i < box_width; i++)
+			    waddch(dialog, instr[i] ? instr[i] : ' ');
+		    }
+		    input_x = 0;
+		    wmove(dialog, box_y, box_x);
+		    wrefresh(dialog);
+		    break;
+		case CONTROL_D:
+		    if (input_x + scroll < len) {
+			memmove(instr + scroll + input_x,
+				    instr + scroll + input_x + 1,
+				    len - (scroll + input_x));
+			instr[--len] = '\0';
+			for (i = scroll + input_x; i < len &&
+			     i < scroll + box_width; i++)
+			    waddch(dialog, instr[i]);
+			if (i < scroll + box_width)
+			    waddch(dialog, ' ');
+			wmove(dialog, box_y, input_x + box_x);
+			wrefresh(dialog);
+		    }
+		    break;
+		case CONTROL_E:
+		case KEY_END:
+		    if (box_width + scroll < len) {
+			input_x = box_width - 1;
+			scroll = len - box_width + 1;
+			wmove(dialog, box_y, box_x);
+			for (i = scroll; i < scroll + box_width; i++)
+			    waddch(dialog, instr[i] ? instr[i] : ' ');
+			wmove(dialog, box_y, input_x + box_x);
+			wrefresh(dialog);
+		    }
+		    else {
+			input_x = len - scroll;
+			wmove(dialog, box_y, input_x + box_x);
+			wrefresh(dialog);
+		    }
+		    break;
+		case CONTROL_K:
+		    if (len) {
+			for (i = input_x; i < box_width; i++)
+			    waddch(dialog, ' ');
+			for (i = scroll + input_x; i < len; i++)
+			    instr[i] = '\0';
+			len = scroll + input_x;
+			wmove(dialog, box_y, box_x + input_x);
+			wrefresh(dialog);
+		    }
+		    break;
 		default:
 		    if (key < 0x100 && isprint(key)) {
 			if (scroll + input_x < sizeof(instr) - 1) {
