@@ -1,8 +1,8 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.268tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.269 2004/12/31 14:55:35 tsi Exp $
 /*
- * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
+ * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -4403,9 +4403,13 @@ file.html: srcs								@@\
 #ifdef HTMLroffCmd
 #define MakeEqnHtmlDoc(file,srcs)					@@\
 file.html: srcs								@@\
-	$(TBL) $(XDOCMACROS) srcs | $(EQN) | $(HTMLROFF) $(MSMACROS) Concat(-P-I,file) \ @@\
+	@if [ X$(NOHTML) = X ]; then \					@@\
+	  (set -x; \							@@\
+	    $(TBL) $(XDOCMACROS) srcs | \				@@\
+		$(EQN) | $(HTMLROFF) $(MSMACROS) Concat(-P-I,file) \	@@\
 		2> index.raw > file.nhtml \				@@\
-	  && PostProcessTroffHTML(file.nhtml,$@)
+	      && PostProcessTroffHTML(file.nhtml,$@)); else \		@@\
+		: > file.html; fi
 #else
 #define MakeEqnHtmlDoc(file,srcs) /**/
 #endif

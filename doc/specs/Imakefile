@@ -1,9 +1,4 @@
-XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:06 cpqbld Exp $
-
-
-
-
-XCOMM $XFree86: xc/doc/specs/Imakefile,v 1.10 2003/04/14 20:36:07 herrb Exp $
+XCOMM $XFree86: xc/doc/specs/Imakefile,v 1.11 2003/12/06 19:11:52 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
@@ -20,6 +15,12 @@ all::
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
+
+#if defined(AvoidGroffHtmlBug) && AvoidGroffHtmlBug
+SPECINDEXDEFS = -DICE_PDF_ONLY -DICCCM_PDF_ONLY
+#endif
+
+CppRawFileTarget(specindex.html,specindex.cpp,$(SPECINDEXDEFS),NullParameter)
 
 InstallDoc(specindex,specindex.html)
 

@@ -60,9 +60,18 @@
     <li><a href="fsproto.html">Font Server Protocol</a> <a href="../PDF/fsproto.pdf">[PDF]</a></li>
     <li><a href="xim.html">XIM (X Input Method) Protocol</a> <a href="../PDF/xim.pdf">[PDF]</a></li>
     <li><a href="XIMTransport.html">XIM Transport</a> <a href="../PDF/XIMTransport.pdf">[PDF]</a></li>
+#ifdef ICE_PDF_ONLY
+    <li>ICE (Inter-Client Exchange) Protocol <a href="../PDF/ice.pdf">[PDF]</a></li>
+    <li>ICE (Inter-Client Exchange) Library API <a href="../PDF/ICElib.pdf">[PDF]</a></li>
+#else
     <li><a href="ice.html">ICE (Inter-Client Exchange) Protocol</a> <a href="../PDF/ice.pdf">[PDF]</a></li>
     <li><a href="ICElib.html">ICE (Inter-Client Exchange) Library API</a> <a href="../PDF/ICElib.pdf">[PDF]</a></li>
+#endif
+#ifdef ICCCM_PDF_ONLY
+    <li>ICCCM (Inter-Client Communcations Conventions Manual) <a href="../PDF/icccm.pdf">[PDF]</a></li>
+#else
     <li><a href="icccm.html">ICCCM (Inter-Client Communcations Conventions Manual)</a> <a href="../PDF/icccm.pdf">[PDF]</a></li>
+#endif
     <li><a href="xsmp.html">SM (X Session Managemenet) Protocol</a> <a href="../PDF/xsmp.pdf">[PDF]</a></li>
     <li><a href="SMlib.html">SM (X Session Management) Library API</a> <a href="../PDF/SMlib.pdf">[PDF]</a></li>
   </ul>
@@ -115,7 +124,7 @@
     <li><a href="ctlseqs.html">Xterm control sequences</a> <a href="../PDF/ctlseqs.pdf">[PDF]</a></li>
   </ul>
 
-  <!-- $XFree86: xc/doc/specs/specindex.html,v 1.4 2003/12/06 19:11:52 dawes Exp $ -->
+  <!-- $XFree86: xc/doc/specs/specindex.html,v 1.5 2003/12/06 19:24:38 dawes Exp $ -->
 </body>
 </html>
  
