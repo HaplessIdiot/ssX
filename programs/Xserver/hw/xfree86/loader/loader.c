@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.64 2003/06/12 14:12:34 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.65 2003/08/24 17:37:01 dawes Exp $ */
 
 /*
  * Copyright 1995-1998 by Metro Link, Inc.
@@ -963,7 +963,7 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
     while( read(arfd,&hdr,sizeof(struct ar_hdr)) ) {
 
 	longname = NULL;
-	sscanf(hdr.ar_size,"%d",&size);
+	sscanf(hdr.ar_size,"%u",&size);
 #if defined(__powerpc__) && defined(Lynx)
 	sscanf(hdr.ar_namlen,"%d",&namlen);
 	name[0]=hdr.ar_name[0];
