@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.h,v 1.2 1999/12/16 02:26:29 robin Exp $ */
 
 
 #ifndef _TDFX_FIFO_H_
@@ -15,7 +15,7 @@ typedef char  int8;
 
 #define PROPSAREADATA \
   volatile int fifoPtr; \
-  volatile int fifoRead
+  volatile int fifoRead;
 
 #define PROPDATASTD \
   volatile unsigned int *fifoPtr; \
@@ -34,7 +34,7 @@ typedef char  int8;
 #define PROPDATA PROPDATASTD; \
 	PROPDATADBG
 #else
-#define PROPDATA PROPDATASTD
+#define PROPDATA PROPDATASTD;
 #endif
 
 #ifdef TDFX_DEBUG_CMDS
