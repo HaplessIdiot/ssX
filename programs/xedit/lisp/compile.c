@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.1 2002/08/25 02:48:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.2 2002/09/15 21:32:16 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 
@@ -178,27 +178,16 @@ Com_Cond(LispCom *com, LispBuiltin *builtin)
     count = 0;
     group = NULL;
     if (CONS_P(body)) {
-	int constant;
-
 	for (; CONS_P(body); body = CDR(body)) {
 	    code = CAR(body);
 	    ERROR_CHECK_LIST(code);
-	    /* If a constant NIL test condition. This does not prevent
-	     * things like (OR) or (AND NIL), etc. Should really try
-	     * to remove this sort of things here? */
-	    if (CAR(code) == NIL)
-		continue;
 	    ++count;
-	    /* If test known to be true */
-	    constant = ComConstantp(com, CAR(code));
-	    if (!constant) {
-		ComEval(com, CAR(code));
-		tree = NEW_TREE(CodeTreeCond);
-		if (group)
-		    group->group = tree;
-		tree->code = XBC_JUMPNIL;
-		group = tree;
-	    }
+	    ComEval(com, CAR(code));
+	    tree = NEW_TREE(CodeTreeCond);
+	    if (group)
+		group->group = tree;
+	    tree->code = XBC_JUMPNIL;
+	    group = tree;
 	    /* The code to execute if the test is true */
 	    ComProgn(com, CDR(code));
 	    /* Add a node signaling the end of the PROGN code */
@@ -207,9 +196,6 @@ Com_Cond(LispCom *com, LispBuiltin *builtin)
 	    if (group)
 		group->group = tree;
 	    group = tree;
-	    /* If test known to be true */
-	    if (constant)
-		break;
 	}
     }
     if (!count)
@@ -331,6 +317,9 @@ Com_Dolist(LispCom *com, LispBuiltin *builtin)
     com->block->bind += 2;
     mac->env.head += 2;
 
+    /* Remember that iteration variable is used even if it not referenced */
+    ComVariableUsed(com, symbol->data.atom);
+
     /* Initialize the TAGBODY */
     FORM_ENTER();
     CompileIniBlock(com, LispBlockBody, NIL);
@@ -444,16 +433,29 @@ Com_Go(LispCom *com, LispBuiltin *builtin)
  */
 {
     LispMac *mac = com->mac;
+    int bind;
     LispObj *tag;
     CodeTree *tree;
+    CodeBlock *block;
 
     tag = ARGUMENT(0);
 
-    if (com->block->type != LispBlockBody)
+    block = com->block;
+    bind = block->bind;
+
+    while (block) {
+	if (block->type == LispBlockClosure || block->type == LispBlockBody)
+	    break;
+	block = block->prev;
+	if (block)
+	    bind += block->bind;
+    }
+
+    if (!block || block->type != LispBlockBody)
 	LispDestroy(com->mac, "%s called not within a block", STRFUN(builtin));
 
-    /* If inside a LET block */
-    com_Unbind(com, com->block->bind);
+    /* Unbind any local variables */
+    com_Unbind(com, bind);
     tree = NEW_TREE(CodeTreeGo);
     tree->data.object = tag;
 }
@@ -1087,7 +1089,8 @@ ComReturnFrom(LispCom *com, LispBuiltin *builtin, int from)
 	else if (block->type == LispBlockTag && block->tag == name)
 	    break;
 	block = block->prev;
-	bind += block->bind;
+	if (block)
+	    bind += block->bind;
     }
 
     if (!block || block->tag != name)
@@ -1198,6 +1201,13 @@ ComAddVariable(LispCom *com, LispObj *symbol, LispObj *value)
 	    com->block->variables.flags =
 		LispRealloc(com->mac, com->block->variables.flags,
 			    com->block->variables.length * sizeof(int));
+
+	    /* Variable was inserted in the middle of the list */
+	    if (i < length)
+		memmove(com->block->variables.flags + i + 1,
+			com->block->variables.flags + i,
+			(length - i) * sizeof(int));
+
 	    com->block->variables.flags[i] = 0;
 	}
     }
@@ -1813,12 +1823,17 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		    ComMacroCall(com, alist, function, lambda, arguments);
 
 		else {
-		    if (com->block->type == LispBlockClosure &&
-			com->block->tag == function)
+		    if (com->toplevel->type == LispBlockClosure &&
+			com->toplevel->tag == function)
 			ComRecursiveCall(com, alist, function, arguments);
-		    else
+		    else {
+#if 0
 			ComInlineCall(com, alist, function, arguments,
 				      lambda->data.lambda.code);
+#else
+			com_Funcall(com, function, arguments);
+#endif
+		    }
 		}
 	    }
 	    else if (atom->a_defstruct &&
