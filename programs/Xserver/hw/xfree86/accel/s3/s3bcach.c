@@ -1,4 +1,5 @@
 /* $XConsortium: s3bcach.c,v 1.1 94/03/28 21:14:19 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * 

@@ -1,4 +1,5 @@
 /* $XConsortium: s3name.h,v 1.1 94/03/28 21:16:17 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
