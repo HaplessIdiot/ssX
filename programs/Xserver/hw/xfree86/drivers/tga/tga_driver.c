@@ -84,7 +84,7 @@
 #include "Xv.h"
 #endif
 
-static OptionInfoPtr TGAAvailableOptions(int chipid);
+static OptionInfoPtr TGAAvailableOptions(int chipid, int busid);
 static void	TGAIdentify(int flags);
 static Bool	TGAProbe(DriverPtr drv, int flags);
 static Bool	TGAPreInit(ScrnInfoPtr pScrn, int flags);
@@ -286,7 +286,7 @@ TGAFreeRec(ScrnInfoPtr pScrn)
 
 static 
 OptionInfoPtr
-TGAAvailableOptions(int chipid)
+TGAAvailableOptions(int chipid, int busid)
 {
     return TGAOptions;
 }

@@ -87,7 +87,7 @@
 # define TRACE(str)
 #endif
 
-static OptionInfoPtr	GLINTAvailableOptions(int chipid);
+static OptionInfoPtr	GLINTAvailableOptions(int chipid, int busid);
 static void	GLINTIdentify(int flags);
 static Bool	GLINTProbe(DriverPtr drv, int flags);
 static Bool	GLINTPreInit(ScrnInfoPtr pScrn, int flags);
@@ -573,7 +573,7 @@ GLINTIdentify(int flags)
 
 static
 OptionInfoPtr
-GLINTAvailableOptions(int chipid)
+GLINTAvailableOptions(int chipid, int busid)
 {
     return GLINTOptions;
 }

@@ -69,7 +69,7 @@
 #include "extensions/dpms.h"
 #endif
 
-static OptionInfoPtr SISAvailableOptions(int chipid);
+static OptionInfoPtr SISAvailableOptions(int chipid, int busid);
 static void	SISIdentify(int flags);
 static Bool	SISProbe(DriverPtr drv, int flags);
 static Bool	SISPreInit(ScrnInfoPtr pScrn, int flags);
@@ -359,7 +359,7 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
 
 static 
 OptionInfoPtr
-SISAvailableOptions(int chipid)
+SISAvailableOptions(int chipid, int busid)
 {
     return SISOptions;
 }

@@ -69,7 +69,7 @@ static void S3VDisableMmio(ScrnInfoPtr pScrn);
  */
 
 /* Mandatory functions */
-static OptionInfoPtr S3VAvailableOptions(int chipid);
+static OptionInfoPtr S3VAvailableOptions(int chipid, int busid);
 static void S3VIdentify(int flags);
 static Bool S3VProbe(DriverPtr drv, int flags);
 static Bool S3VPreInit(ScrnInfoPtr pScrn, int flags);
@@ -429,7 +429,7 @@ S3VFreeRec(ScrnInfoPtr pScrn)
 
 static 
 OptionInfoPtr
-S3VAvailableOptions(int chipid)
+S3VAvailableOptions(int chipid, int busid)
 {
     return S3VOptions;
 }

@@ -111,7 +111,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Required Functions: */
 
-static OptionInfoPtr TDFXAvailableOptions(int chipid);
+static OptionInfoPtr TDFXAvailableOptions(int chipid, int busid);
 
 /* Print a driver identifying message. */
 static void TDFXIdentify(int flags);
@@ -370,7 +370,7 @@ TDFXFreeRec(ScrnInfoPtr pScrn) {
 
 static
 OptionInfoPtr
-TDFXAvailableOptions(int chipid)
+TDFXAvailableOptions(int chipid, int busid)
 {
    return TDFXOptions;
 }

@@ -27,7 +27,7 @@
 #define TEXT_AMOUNT 32768
 
 /* Mandatory functions */
-static OptionInfoPtr	ApmAvailableOptions(int chipid);
+static OptionInfoPtr	ApmAvailableOptions(int chipid, int busid);
 static void     ApmIdentify(int flags);
 static Bool     ApmProbe(DriverPtr drv, int flags);
 static Bool     ApmPreInit(ScrnInfoPtr pScrn, int flags);
@@ -315,7 +315,7 @@ ApmIdentify(int flags)
 
 static
 OptionInfoPtr
-ApmAvailableOptions(int chipid)
+ApmAvailableOptions(int chipid, int busid)
 {
     return ApmOptions;
 }

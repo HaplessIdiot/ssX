@@ -108,7 +108,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #endif
 
 /* Mandatory functions */
-static OptionInfoPtr	NEOAvailableOptions(int chipid);
+static OptionInfoPtr	NEOAvailableOptions(int chipid, int busid);
 static void     NEOIdentify(int flags);
 static Bool     NEOProbe(DriverPtr drv, int flags);
 static Bool     NEOPreInit(ScrnInfoPtr pScrn, int flags);
@@ -413,7 +413,7 @@ NEOFreeRec(ScrnInfoPtr pScrn)
 
 static
 OptionInfoPtr
-NEOAvailableOptions(int chipid)
+NEOAvailableOptions(int chipid, int busid)
 {
     int vendor = ((chipid & 0xffff0000) >> 16);
     int chip = (chip & 0x0000ffff);

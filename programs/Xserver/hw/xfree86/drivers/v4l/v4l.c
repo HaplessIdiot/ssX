@@ -29,7 +29,7 @@ typedef unsigned long ulong;
 
 static void     V4LIdentify(int flags);
 static Bool     V4LProbe(DriverPtr drv, int flags);
-static OptionInfoPtr V4LAvailableOptions(int chipid);
+static OptionInfoPtr V4LAvailableOptions(int chipid, int busid);
 
 DriverRec V4L = {
         40000,
@@ -453,7 +453,7 @@ V4lQueryBestSize(ScrnInfoPtr pScrn, Bool motion,
 
 static
 OptionInfoPtr
-V4LAvailableOptions(int chipid)
+V4LAvailableOptions(int chipid, int busid)
 {
     return NULL;
 }

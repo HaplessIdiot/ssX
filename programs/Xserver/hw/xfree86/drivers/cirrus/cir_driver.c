@@ -34,7 +34,7 @@
 
 /* Mandatory functions */
 
-static OptionInfoPtr	CIRAvailableOptions(int chipid);
+static OptionInfoPtr	CIRAvailableOptions(int chipid, int busid);
 static void	CIRIdentify(int flags);
 static Bool	CIRProbe(DriverPtr drv, int flags);
 
@@ -190,7 +190,7 @@ CIRIdentify(int flags)
 
 static
 OptionInfoPtr
-CIRAvailableOptions(int chipid)
+CIRAvailableOptions(int chipid, int busid)
 {
 	int vendor = (chipid & 0xffff0000) >> 16;
 	int chip = chipid & 0xffff;
