@@ -40,3 +40,6 @@ SpecialCObjectRule(restart,$(_NOOP_),'-DSYSTEM_INIT_FILE="'$(XSMDIR)'/system.xsm
 SpecialCObjectRule(signals,NullParameter,$(SIGNAL_DEFINES))
 InstallNonExecFile(system.xsm,$(XSMDIR))
 InstallAppDefaults(XSm)
+
+LinkConfDirectory(xsm,.,xsm,.)
+

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.63 1999/07/05 04:23:12 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.64 1999/08/14 10:48:58 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -105,6 +105,12 @@ XCOMM the platform-specific parameters - edit site.def to change
 #ifndef HasVarDirectory
 #define HasVarDirectory		YES
 #endif
+#ifndef UseEtcX11
+#define UseEtcX11		YES
+#endif
+#ifndef UseSeparateConfDir
+#define UseSeparateConfDir	(UseEtcX11 || HasVarDirectory)
+#endif
 #ifndef SystemV
 #define SystemV			NO	/* SYSV (R3) */
 #endif
@@ -158,8 +164,8 @@ XCOMM the platform-specific parameters - edit site.def to change
 #endif
 #endif
 
-#ifndef HasVarDirectory
-#define HasVarDirectory		YES
+#ifndef HasSymLinks
+#define HasSymLinks YES
 #endif
 
 #include <Imake.rules>
@@ -615,6 +621,26 @@ TCLIBDIR = TclLibDir
 #endif
 #endif
 
+#ifndef HasVarRun
+#define HasVarRun NO
+#endif
+
+#ifndef VarRunDirectory
+#if HasVarRun
+#define VarRunDirectory /var/run
+#endif
+#endif
+
+#ifndef HasVarDb
+#define HasVarDb NO
+#endif
+
+#ifndef VarDbDirectory
+#if HasVarDb
+#define VarDbDirectory /var/db
+#endif
+#endif
+
 #ifndef ConfigSrc
 #define ConfigSrc $(TOP)/config
 #endif
@@ -859,9 +885,6 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef CpCmd
 #define CpCmd cp
-#endif
-#ifndef HasSymLinks
-#define HasSymLinks YES
 #endif
 #ifndef LnCmd /* can use cp instead of ln if necessary */
 #if HasSymLinks
@@ -1228,6 +1251,12 @@ TCLIBDIR = TclLibDir
        MISCMANDIR = MiscManDir		/* man pages for miscellaneous files */
      DRIVERMANDIR = DriverManDir	/* man pages for drivers */
      LOGDIRECTORY = LogDirectory	/* OS location of log files */
+#ifdef VarRunDirectory
+        VARRUNDIR = VarRunDirectory	/* OS location of PID files */
+#endif
+#ifdef VarDbDirectory
+         VARDBDIR = VarDbDirectory	/* OS location of db/state files */
+#endif
 
                AR = ArCmd
   BOOTSTRAPCFLAGS = BootstrapCFlags	/* set if cpp does not have uniq sym */

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/31 1998/06/16 15:16:14 msr $
-XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.17 1999/04/29 09:13:59 dawes Exp $
+XCOMM $XFree86: xc/programs/xfs/Imakefile,v 3.18 1999/12/27 00:40:11 robin Exp $
 #undef ServerDefines
 #include <Server.tmpl>
 #define	IHaveSubdirs
@@ -30,7 +30,7 @@ FSSYSLIBS = $(LDPRELIBS) $(FONTLIB) $(SYSLIBS) $(ZLIB)
 SUBDIRS = $(FSDIRS)
 
 FSLIBDIR = $(LIBDIR)/fs
-FSERRORS = $(FSLIBDIR)/fs-errors
+FSERRORS = $(LOGDIRECTORY)/fs-errors
 DEFAULTFONTPATH = DefaultFSFontPath
 SITE_CONFIG = -DDEFAULTFONTPATH=$(DEFAULTFONTPATH) -DFSERRORS=$(FSERRORS)
 
@@ -46,7 +46,7 @@ ServerTarget(xfs,$(FSDIRS),NullParameter,$(FSLIBS),$(FSSYSLIBS) $(EXTRA_LIBRARIE
 ServerTarget(xfs,$(FSDIRS),difs/main.o,$(FSLIBS),$(FSSYSLIBS) $(EXTRA_LIBRARIES))
 #endif
 
-LinkVarDirectory(fs,.,fs,.)
+LinkConfDirectory(fs,.,fs,.)
 
 CppFileTarget(config,config.cpp,$(SITE_CONFIG),$(ICONFIGFILES))
 

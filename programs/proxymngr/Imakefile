@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/12 1997/08/05 09:00:09 kaleb $
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/proxymngr/Imakefile,v 1.5 1999/05/03 15:31:50 dawes Exp $
 
          DEFINES = StrcasecmpDefines
 
@@ -22,7 +22,7 @@ XCOMM $XFree86$
 
 AllTarget(pmconfig ProgramTargetName(proxymngr))
 
-LinkVarDirectory(proxymngr,.,proxymngr,.)
+LinkConfDirectory(proxymngr,.,proxymngr,.)
 
 CppFileTarget(pmconfig,pmconfig.cpp,$(SITE_CONFIG),NullParameter)
 

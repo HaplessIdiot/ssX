@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.52 1999/09/27 06:29:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.54 1999/11/19 13:53:21 hohndel Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -896,6 +896,13 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #ifndef ModuleDir
 #define ModuleDir $(USRLIBDIR)/modules
 #endif
+#ifndef LibexecDir
+#ifdef ProjectRoot
+#define LibexecDir Concat(ProjectRoot,/libexec)
+#else
+#define LibexecDir /usr/X11/libexec
+#endif
+#endif
 #ifndef ConfigDir
 #define ConfigDir $(LIBDIR)/config
 #endif
@@ -961,6 +968,9 @@ FCHOWN_DEFINES = -DHAS_FCHOWN
 #endif
 #ifndef VarDirectory
 #define VarDirectory /var/X11
+#endif
+#ifndef EtcX11Directory
+#define EtcX11Directory /etc/X11
 #endif
 #ifndef InstallSecurityConfig
 #define InstallSecurityConfig YES	/* Install sample security policy */
@@ -1052,11 +1062,20 @@ XCOMM X Window System make variables; these need to be coordinated with rules
            INCDIR = $(INCROOT)		/* header files */
            ADMDIR = AdmDir		/* server log files */
            LIBDIR = LibDir		/* rgb, XErrorDB, etc. */
+       LIBEXECDIR = LibexecDir
         MODULEDIR = ModuleDir
    TOP_X_INCLUDES = TopXInclude
 
 #ifdef VarDirectory
            VARDIR = VarDirectory
+#endif
+#ifdef EtcX11Directory
+        ETCX11DIR = EtcX11Directory
+#endif
+#if UseEtcX11
+          CONFDIR = $(ETCX11DIR)
+#elif HasVarDirectory
+          CONFDIR = $(VARDIR)
 #endif
            DOCDIR = DocDir
        DOCHTMLDIR = DocHtmlDir
@@ -1991,11 +2010,11 @@ ProjectUnsharedLibReferences(XKBUI,xkbui,$(XKBUILIBSRC),XBuildLibDir)
 #ifndef InstallAppDefaultsLong
 #if InstallAppDefFiles
 #define InstallAppDefaultsLong(file,class)				@@\
-LinkVarDirectory(app-defaults,.,app-defaults,.)				@@\
+LinkConfDirectory(app-defaults,.,app-defaults,.)			@@\
 InstallNamedTarget(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #else
 #define InstallAppDefaultsLong(file,class)				@@\
-LinkVarDirectory(app-defaults,.,app-defaults,.)				@@\
+LinkConfDirectory(app-defaults,.,app-defaults,.)			@@\
 InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class)
 #endif /* InstallAppDefFiles */
 #endif /* InstallAppDefaultsLong */
