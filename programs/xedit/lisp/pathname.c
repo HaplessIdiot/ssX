@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.2 2002/01/31 04:33:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.3 2002/02/12 16:07:55 paulo Exp $ */
 
 #include <dirent.h>
 #include <errno.h>
@@ -41,7 +41,7 @@
 /*
  * Initialization
  */
-LispObj *Oparse_namestring, *Oerror, *Oabsolute, *Orelative;
+LispObj *Oparse_namestring, *Kerror, *Kabsolute, *Krelative;
 
 Atom_id Serror, Sabsolute, Srelative, Sskip;
 
@@ -51,14 +51,14 @@ Atom_id Serror, Sabsolute, Srelative, Sskip;
 void
 LispPathnameInit(LispMac *mac)
 {
-    Oerror		= STATIC_ATOM("ERROR");
+    Kerror		= KEYWORD("ERROR");
     Oparse_namestring	= STATIC_ATOM("PARSE-NAMESTRING");
-    Oabsolute		= STATIC_ATOM("ABSOLUTE");
-    Orelative		= STATIC_ATOM("RELATIVE");
+    Kabsolute		= KEYWORD("ABSOLUTE");
+    Krelative		= KEYWORD("RELATIVE");
 
-    Serror		= ATOMID(Oerror);
-    Sabsolute		= ATOMID(Oabsolute);
-    Srelative		= ATOMID(Orelative);
+    Serror		= ATOMID(Kerror);
+    Sabsolute		= ATOMID(Kabsolute);
+    Srelative		= ATOMID(Krelative);
 
     Sskip		= GETATOMID("SKIP");
 }
@@ -187,15 +187,15 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
     pathname = ARGUMENT(0);
     result = NIL;
 
-    cons = NIL;		/* fix gcc warning */
+    cons = NIL;
 
     if (if_cannot_read != NIL) {
 	if (!KEYWORD_P(if_cannot_read) ||
-	    (ATOMID(if_cannot_read->data.quote) != Sskip &&
-	     ATOMID(if_cannot_read->data.quote) != Serror))
+	    (ATOMID(if_cannot_read) != Sskip &&
+	     ATOMID(if_cannot_read) != Serror))
 	    LispDestroy(mac, "%s: bad :IF-CANNOT-READ %s",
 			STRFUN(builtin), STROBJ(if_cannot_read));
-	if (ATOMID(if_cannot_read->data.quote) != Sskip)
+	if (ATOMID(if_cannot_read) != Sskip)
 	    cannot_read = NOREAD_SKIP;
 	else
 	    cannot_read = NOREAD_ERROR;
@@ -204,9 +204,9 @@ Lisp_Directory(LispMac *mac, LispBuiltin *builtin)
 	cannot_read = NOREAD_SKIP;
 
     if (PATHNAME_P(pathname))
-	pathname = CAR(pathname->data.quote);
+	pathname = CAR(pathname->data.pathname);
     else if (STREAM_P(pathname) && pathname->data.stream.type == LispStreamFile)
-	pathname = CAR(pathname->data.stream.pathname->data.quote);
+	pathname = CAR(pathname->data.stream.pathname->data.pathname);
     else if (!STRING_P(pathname))
 	LispDestroy(mac, "%s: %s is not a pathname",
 		    STRFUN(builtin), STROBJ(pathname));
@@ -452,7 +452,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
     else if (PATHNAME_P(object)) {
 	if (defaults == NIL)
 	    return (object);
-	object = CAR(object->data.quote);
+	object = CAR(object->data.pathname);
     }
 
     if (STRING_P(object)) {
@@ -493,7 +493,7 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	strcpy(string, data);
 
 	if (PATHNAME_P(defaults))
-	    defaults = defaults->data.quote;
+	    defaults = defaults->data.pathname;
 
 	GCProtect();
 	/* string name */
@@ -517,9 +517,9 @@ Lisp_ParseNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (defaults != NIL)
 	    defaults = CDR(defaults);	/* don't use defaults for directory */
 	if (*data == PATH_SEP)
-	    cdr = CONS(KEYWORD(Oabsolute), NIL);
+	    cdr = CONS(Kabsolute, NIL);
 	else
-	    cdr = CONS(KEYWORD(Orelative), NIL);
+	    cdr = CONS(Krelative, NIL);
 	CDR(cons) = CONS(cdr, NIL);
 	cons = CDR(cons);
 	/* directory components */
@@ -653,7 +653,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 	if (!KEYWORD_P(CAR(directory)))
 	    LispDestroy(mac, "%s: bad directory type %s",
 			STRFUN(builtin), STROBJ(CAR(directory)));
-	atom = ATOMID(CAR(directory)->data.quote);
+	atom = ATOMID(CAR(directory));
 	if (atom != Sabsolute && atom != Srelative)
 	    LispDestroy(mac, "%s: bad directory type %s",
 			STRFUN(builtin), STROBJ(CAR(directory)));
@@ -702,7 +702,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
     /* string representation */
     length = 0;
     if (directory != NIL) {
-	if (ATOMID(CAR(directory)->data.quote) == Sabsolute)
+	if (ATOMID(CAR(directory)) == Sabsolute)
 	    pathname[length++] = PATH_SEP;
 
 	for (cdr = CDR(directory); CONS_P(cdr); cdr = CDR(cdr)) {
@@ -761,7 +761,7 @@ Lisp_MakePathname(LispMac *mac, LispBuiltin *builtin)
 
     /* directory */
     if (directory == NIL)
-	cdr = CONS(Orelative, NIL);
+	cdr = CONS(Krelative, NIL);
     else
 	cdr = directory;
     CDR(cons) = CONS(cdr, NIL);
@@ -871,10 +871,10 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 
 	if (!STRING_P(pathname)) {
 	    if (PATHNAME_P(pathname))
-		pathname  = CAR(pathname->data.quote);
+		pathname  = CAR(pathname->data.pathname);
 	    else if (STREAM_P(pathname) &&
 		     pathname->data.stream.type == LispStreamFile)
-		pathname  = CAR(pathname->data.stream.pathname->data.quote);
+		pathname  = CAR(pathname->data.stream.pathname->data.pathname);
 	    else
 		LispDestroy(mac, "%s: bad PATHNAME %s",
 			    STRFUN(builtin), STROBJ(pathname));
@@ -882,10 +882,10 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 
 	if (!STRING_P(defaults)) {
 	    if (PATHNAME_P(defaults))
-		defaults  = CAR(defaults->data.quote);
+		defaults  = CAR(defaults->data.pathname);
 	    else if (STREAM_P(defaults) &&
 		     defaults->data.stream.type == LispStreamFile)
-		defaults  = CAR(defaults->data.stream.pathname->data.quote);
+		defaults  = CAR(defaults->data.stream.pathname->data.pathname);
 	    else
 		LispDestroy(mac, "%s: bad DEFAULTS %s",
 			    STRFUN(builtin), STROBJ(defaults));
@@ -913,10 +913,10 @@ Lisp_EnoughNamestring(LispMac *mac, LispBuiltin *builtin)
 	if (STRING_P(pathname))
 	    return (pathname);
 	else if (PATHNAME_P(pathname))
-	    return (CAR(pathname->data.quote));
+	    return (CAR(pathname->data.pathname));
 	else if (STREAM_P(pathname)) {
 	    if (pathname->data.stream.type == LispStreamFile)
-		return (CAR(pathname->data.stream.pathname->data.quote));
+		return (CAR(pathname->data.stream.pathname->data.pathname));
 	}
     }
     LispDestroy(mac, "%s: bad PATHNAME %s", STRFUN(builtin), STROBJ(pathname));

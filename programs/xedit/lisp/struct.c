@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.7 2002/01/31 04:33:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.8 2002/02/12 16:07:55 paulo Exp $ */
 
 #include "struct.h"
 
@@ -221,7 +221,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
 	for (object = init; CONS_P(object); object = CDR(object)) {
 	    /* field is a keyword, test above checked it */
 	    field = CAR(object);
-	    if (id == ATOMID(field->data.quote)) {
+	    if (id == ATOMID(field)) {
 		/* value provided */
 		value = CAR(CDR(object));
 		ncvt++;
@@ -256,7 +256,7 @@ Lisp_XeditMakeStruct(LispMac *mac, LispBuiltin *builtin)
      * only the first value will be used. */
     if (nfld > ncvt) {
 	for (list = init; CONS_P(list); list = CDR(list)) {
-	    Atom_id id = ATOMID(CAR(list)->data.quote);
+	    Atom_id id = ATOMID(CAR(list));
 
 	    for (object = CDR(definition); CONS_P(object);
 		 object = CDR(object)) {

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.13 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.14 2002/02/12 16:07:54 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -151,7 +151,7 @@
 #define CHAR_P(obj)		((obj)->type == LispCharacter_t)
 #define COMPLEX_P(obj)		((obj)->type == LispComplex_t)
 #define CONS_P(obj)		((obj)->type == LispCons_t)
-#define KEYWORD_P(obj)		((obj)->type == LispKeyword_t)
+#define KEYWORD_P(obj)		((obj)->data.atom->package == mac->keyword)
 #define PATHNAME_P(obj)		((obj)->type == LispPathname_t)
 
 #define STREAM_P(obj)		((obj)->type == LispStream_t)
@@ -247,9 +247,6 @@ typedef enum _LispType {
 	/* self contained for GC, but not for eval */
     LispAtom_t,
 
-	/* almost a simple object, holds a pointer to an atom */
-    LispKeyword_t,
-
 	/* not a simple object, but name field is either nil or an atom */
     LispLambda_t,
 
@@ -298,6 +295,8 @@ struct _LispObj {
 	long integer;
 	double real;
 	LispObj *quote;
+	LispObj *pathname;	/* don't use quote generic name,
+				 * to avoid confusing code */
 	struct {
 	    long numerator;
 	    long denominator;
@@ -410,7 +409,7 @@ LispObj *LispNewLambda(LispMac*, LispObj*, LispObj*, LispObj*, LispFunType);
 LispObj *LispNewStruct(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewComplex(LispMac*, LispObj*, LispObj*);
 LispObj *LispNewOpaque(LispMac*, void*, int);
-LispObj *LispNewKeyword(LispMac*, LispObj*);
+LispObj *LispNewKeyword(LispMac*, char*);
 LispObj *LispNewPathname(LispMac*, LispObj*);
 LispObj *LispNewStringStream(LispMac*, unsigned char*, int);
 LispObj *LispNewFileStream(LispMac*, LispFile*, LispObj*, int);
@@ -463,23 +462,24 @@ void LispAddBuiltinFunction(LispMac*, LispBuiltin*);
 extern LispObj *NIL, *T, *DOT, *UNBOUND;
 extern int gcpro;
 
+extern LispObj *Okey, *Orest, *Ooptional, *Oaux;
 extern Atom_id Snil, St, Slambda, Skey, Srest, Soptional, Saux;
 extern Atom_id Sand, Sor, Snot;
 extern Atom_id Satom, Ssymbol, Sinteger, Scharacter, Sreal, Sstring, Slist,
 	       Scons, Svector, Sarray, Sstruct, Skeyword, Sfunction, Spathname,
 	       Srational, Sfloat, Scomplex, Sopaque, Sdefault;
 
-extern LispObj *Ocomplex, *Oformat, *Ounspecific;
+extern LispObj *Ocomplex, *Oformat, *Kunspecific;
 
-extern LispObj *Omake_array, *Oinitial_contents, *Osetf;
+extern LispObj *Omake_array, *Kinitial_contents, *Osetf;
 extern Atom_id Sotherwise, Svariable, Sstructure, Stype, Ssetf;
 
 extern Atom_id Smake_struct, Sstruct_access, Sstruct_store, Sstruct_type;
 extern LispObj *Omake_struct, *Ostruct_access, *Ostruct_store, *Ostruct_type;
 
 extern Atom_id Serror, Sabsolute, Srelative, Sskip;
-extern LispObj *Oparse_namestring, *Oerror, *Oabsolute, *Orelative, *Oopen,
-	       *Oclose, *Oif_does_not_exist;
+extern LispObj *Oparse_namestring, *Kerror, *Kabsolute, *Krelative, *Oopen,
+	       *Oclose, *Kif_does_not_exist;
 
 extern LispFile *Stdout, *Stdin, *Stderr;
 

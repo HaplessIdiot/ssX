@@ -27,10 +27,11 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.19 2002/02/10 02:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.20 2002/02/12 16:07:54 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
+#include "package.h"
 #include "read.h"
 #include "stream.h"
 #include "write.h"
@@ -86,10 +87,9 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
 		    result = T;
 		break;
 	    case LispQuote_t:
-	    case LispKeyword_t:
 	    case LispBackquote_t:
 	    case LispPathname_t:
-		result = LispEqual(mac, left->data.quote, right->data.quote);
+		result = LispEqual(mac, left->data.pathname, right->data.pathname);
 		break;
 	    case LispLambda_t:
 		result = LispEqual(mac, CAR(left->data.lambda.name),
@@ -157,8 +157,6 @@ LispStringCoerce(LispMac *mac, LispBuiltin *builtin, LispObj *object)
 	return (STRING("NIL"));
     else if (object == T)
 	return (STRING("T"));
-    else if (KEYWORD_P(object))
-	return (STRING(STRPTR(object->data.quote)));
     else
 	LispDestroy(mac, "%s: cannot convert %s to string",
 		    STRFUN(builtin), STROBJ(object));
@@ -619,14 +617,17 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     LispObj *stream, *eval, *ext, *obj, *result = NIL;
     int ch, eof = mac->eof, length = mac->protect.length;
 
+    LispObj *savepackage;
+    LispPackage *savepack;
+
     if (verbose)
 	LispMessage(mac, "; Loading %s", THESTR(filename));
 
     GCProtect();
-    ext = ifdoesnotexist ? KEYWORD(Oerror) : NIL;
+    ext = ifdoesnotexist ? Kerror : NIL;
     eval = CONS(Oopen,
 	        CONS(filename,
-		     CONS(KEYWORD(Oif_does_not_exist), CONS(ext, NIL))));
+		     CONS(Kif_does_not_exist, CONS(ext, NIL))));
     stream = EVAL(eval);
     GCUProtect();
 
@@ -652,6 +653,11 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     if (mac->protect.length + 1 >= mac->protect.space)
 	LispMoreProtects(mac);
     mac->protect.objects[mac->protect.length++] = NIL;
+
+    /* Save package environment */
+    savepackage = PACKAGE;
+    savepack = mac->pack;
+
     /*CONSTCOND*/
     while (1) {
 	if ((obj = LispRead(mac)) != NULL) {
@@ -670,6 +676,10 @@ LispLoadFile(LispMac *mac, LispObj *filename,
     LispPopInput(mac, stream);
     mac->eof = eof;
     mac->protect.length = length;
+
+    /* Restore package environment */
+    PACKAGE = savepackage;
+    mac->pack = savepack;
 
     GCProtect();
     eval = CONS(Oclose, CONS(stream, NIL));
@@ -910,7 +920,7 @@ LispPathnameField(LispMac *mac, int field, int string)
     if (!PATHNAME_P(pathname))
 	pathname = EXECUTE("(parse-namestring pathname)");
 
-    result = pathname->data.quote;
+    result = pathname->data.pathname;
     while (offset) {
 	result = CDR(result);
 	--offset;
@@ -923,7 +933,7 @@ LispPathnameField(LispMac *mac, int field, int string)
 	    if (result == NIL)
 		result = STRING("");
 	    else if (field == PATH_DIRECTORY) {
-		char *name = THESTR(CAR(pathname->data.quote)), *ptr;
+		char *name = THESTR(CAR(pathname->data.pathname)), *ptr;
 
 		ptr = strrchr(name, PATH_SEP);
 		if (ptr) {
@@ -940,7 +950,7 @@ LispPathnameField(LispMac *mac, int field, int string)
 		    result = STRING("");
 	    }
 	    else
-		result = KEYWORD(Ounspecific);
+		result = Kunspecific;
 	}
 	else if (field == PATH_NAME) {
 	    object = CAR(CDR(object));
@@ -981,12 +991,12 @@ LispProbeFile(LispMac *mac, LispBuiltin *builtin, int probe)
 	goto probeit;
     }
     else if (PATHNAME_P(pathname)) {
-	name = THESTR(CAR(pathname->data.quote));
+	name = THESTR(CAR(pathname->data.pathname));
 	goto probeit;
     }
     else if (STREAM_P(pathname) &&
 	     pathname->data.stream.type == LispStreamFile) {
-	name = THESTR(CAR(pathname->data.stream.pathname->data.quote));
+	name = THESTR(CAR(pathname->data.stream.pathname->data.pathname));
 	goto probeit;
     }
     else

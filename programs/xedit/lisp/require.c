@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.8 2002/01/30 21:00:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.9 2002/02/12 16:07:55 paulo Exp $ */
 
 #include "require.h"
 
@@ -48,7 +48,7 @@ Lisp_Load(LispMac *mac, LispBuiltin *builtin)
     filename = ARGUMENT(0);
 
     if (PATHNAME_P(filename))
-	filename = CAR(filename->data.quote);
+	filename = CAR(filename->data.pathname);
     else if (!STRING_P(filename))
 	LispDestroy(mac, "%s: %s is not a string",
 		    STRFUN(builtin), STROBJ(filename));
@@ -77,7 +77,7 @@ Lisp_Require(LispMac *mac, LispBuiltin *builtin)
 
     if (pathname != NIL) {
 	if (PATHNAME_P(pathname))
-	    pathname = CAR(pathname->data.quote);
+	    pathname = CAR(pathname->data.pathname);
 	else if (!STRING_P(pathname))
 	    LispDestroy(mac, "%s: %s is not a string",
 			STRFUN(builtin), STROBJ(pathname));

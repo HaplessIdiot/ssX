@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.17 2002/02/08 02:59:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.18 2002/02/12 16:07:55 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -118,11 +118,6 @@ struct _LispProperty {
 };
 
 struct _LispAtom {
-    /* Gc protected */
-    unsigned int mark : 1;
-    /* Never released, note that this is not the same as the prot field
-     * of LispObj, that is used to mark objects as immutable */
-    unsigned int prot : 1;
     /* hint: dynamically binded variable */
     unsigned int dyn : 1;
 
@@ -236,10 +231,14 @@ struct _LispMac {
     LispObj *package_name;	/* atom *PACKAGE* */
     LispObj *package;		/* current package object */
     LispPackage *pack;		/* pointer to mac->package->data.package.package */
-    LispPackage *keyword;	/* fast access to the KEYWORD package */
+
+    /* fast access to the KEYWORD package */
+    LispObj *keyword;
+    LispPackage *key;
 
     /* only used if the package was changed, but an error generated
      * before returning to the toplevel */
+    LispObj *savepackage;
     LispPackage *savepack;
 
     struct {
@@ -361,7 +360,7 @@ void LispBlockUnwind(LispMac*, LispBlock*);
 void LispUpdateResults(LispMac*, LispObj*, LispObj*);
 void LispTopLevel(LispMac*);
 
-LispAtom *LispDoGetAtom(LispMac*, char *str, int, int);
+LispAtom *LispDoGetAtom(LispMac*, char *str, int);
 	/* get value from atom's property list */
 LispObj *LispGetAtomProperty(LispMac*, LispAtom*, LispObj*);
 	/* put value in atom's property list */

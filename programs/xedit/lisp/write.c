@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.3 2002/02/10 02:50:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.4 2002/02/12 16:07:55 paulo Exp $ */
 
 #include "write.h"
 #include <math.h>
@@ -151,9 +151,9 @@ format_integer(char *buffer, long value, int radix)
     if (radix == 10)
 	sprintf(buffer, "%ld", value);
     else if (radix == 16)
-	sprintf(buffer, "%x", value);
+	sprintf(buffer, "%lx", value);
     else if (radix == 8)
-	sprintf(buffer, "%o", value);
+	sprintf(buffer, "%lo", value);
     else {
 	/* use bignum routine to convert number to string */
 	mpi integer;
@@ -170,7 +170,7 @@ LispWriteCPointer(LispMac *mac, LispObj *stream, void *data)
 {
     char stk[32];
 
-    sprintf(stk, "0x%08x", (long)data);
+    sprintf(stk, "0x%08lx", (long)data);
     return (LispWriteStr(mac, stream, stk));
 }
 
@@ -263,11 +263,7 @@ write_again:
 			        LispIntToOpaqueType(mac, object->data.opaque.type));
 	    break;
 	case LispAtom_t:
-	    if (object->data.atom->unreadable)
-		length += LispWriteChar(mac, stream, '|');
-	    length += LispWriteStr(mac, stream, STRPTR(object));
-	    if (object->data.atom->unreadable)
-		length += LispWriteChar(mac, stream, '|');
+	    length += LispWriteAtom(mac, stream, object);
 	    break;
 	case LispString_t:
 	    length += LispWriteString(mac, stream, object);
@@ -321,10 +317,6 @@ write_again:
 	    paren = 1;
 	    object = object->data.quote;
 	    goto write_again;
-	case LispKeyword_t:
-	    length += LispWriteChar(mac, stream, ':');
-	    object = object->data.quote;
-	    goto write_again;
 	case LispBackquote_t:
 	    length += LispWriteChar(mac, stream, '`');
 	    paren = 1;
@@ -365,7 +357,7 @@ write_again:
 				       STRPTR(object->data.lambda.name));
 		length += LispWriteChar(mac, stream, ' ');
 	    }
-	    length += LispDoWriteObject(mac, stream, object->data.lambda.code, 1);
+	    length += LispDoWriteObject(mac, stream, object->data.lambda.code, 0);
 	    length += LispWriteChar(mac, stream, '>');
 	    break;
 	case LispStream_t:
@@ -517,6 +509,30 @@ LispWriteStr(LispMac *mac, LispObj *stream, char *buffer)
     if (file != NULL)
 	return (LispFputs(file, buffer));
     return (LispSputs(string, buffer));
+}
+
+int
+LispWriteAtom(LispMac *mac, LispObj *stream, LispObj *object)
+{
+    int length = 0;
+    LispAtom *atom = object->data.atom;
+
+    if (atom->package != PACKAGE) {
+	if (atom->package == mac->keyword)
+	    length += LispWriteChar(mac, stream, ':');
+	else if (!atom->ext) {
+	    length += LispWriteStr(mac, stream,
+				   THESTR(atom->package->data.package.name));
+	    length += LispWriteStr(mac, stream, "::");
+	}
+    }
+    if (atom->unreadable)
+	length += LispWriteChar(mac, stream, '|');
+    length += LispWriteStr(mac, stream, STRPTR(object));
+    if (atom->unreadable)
+	length += LispWriteChar(mac, stream, '|');
+
+    return (length);
 }
 
 int
