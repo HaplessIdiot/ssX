@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.9 1999/07/18 08:14:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.12 2000/02/12 23:53:21 eich Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -206,4 +206,6 @@ parsePciBusString(const char *busID, int *bus, int *device, int *func)
 	return FALSE;
     return TRUE;
 }
+
+#include "xf86getpagesize.c"
 

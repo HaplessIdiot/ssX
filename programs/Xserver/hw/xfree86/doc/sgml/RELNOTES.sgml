@@ -9,7 +9,7 @@
 <date>12 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.25 2000/02/12 20:45:20 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.26 2000/02/12 23:07:50 dawes Exp $
 </ident>
 
 <abstract>
@@ -55,6 +55,11 @@ that are new to the pre-4.0 snapshot series.
 	is distributed separately.  For more information, please consult
 	the
 	<url name="DPS site at SourceForge" url="http://dps.sourceforge.net">.
+
+  <item>The "apm" driver (Alliance Pro Motion) has been updated.  Support
+	for the AT24 has been added in this release, and acceleration has
+	been improved.  Further details can be found in the
+	<ref id="apm" name="APM section"> below.
 
 </itemize>
 
@@ -678,10 +683,12 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>ati</tt><colsep>ATI</tabrow>
    <tabrow><tt>chips</tt><colsep>Chips &amp; Technologies</tabrow>
    <tabrow><tt>cirrus</tt><colsep>Cirrus Logic</tabrow>
+   <tabrow><tt>cyrix</tt> (*)<colsep>Cyrix MediaGX</tabrow>
    <tabrow><tt>fbdev</tt><colsep>Linux fbdev</tabrow>
    <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)</tabrow>
    <tabrow><tt>glint</tt><colsep>3Dlabs</tabrow>
    <tabrow><tt>i740</tt><colsep>Intel i740</tabrow>
+   <tabrow><tt>i810</tt><colsep>Intel i810</tabrow>
    <tabrow><tt>mga</tt><colsep>Matrox</tabrow>
    <tabrow><tt>neomagic</tt><colsep>NeoMagic</tabrow>
    <tabrow><tt>nv</tt><colsep>NVIDIA</tabrow>
@@ -697,14 +704,34 @@ XFree86 &relvers; includes the following drivers:
 </tabular>
 </table>
 
+Drivers marked with (*) are present in a preliminary form in this release,
+but are not complete and/or stable yet.
+
 <sect2>APM <label id="apm">
 <p>
 
-The driver apm is for Alliance AT3D/AT25 based boards.  The driver is
-still in development. I hope to be able to correct the errors I find.
-The Rush extension should be ready for the next snapshot; I can do better
-memory management, but I'll need time. If someone can help me, feel free
-to drop an email to <email>grenie@lami.univ-evry.fr</email>
+It's the driver for Alliance AT3D/AT25 and AT24 chips. There is a rather
+complete support for the functions with acceleration at 8,15,16,24 and 32 bits
+(limited by the chip at 24bpp). There is preliminary, still buggy, support
+for the AP6422 chip, which is still supported in 3.3.x servers. The Xv driver
+is almost ok. The Rush extension for glide2x works, with some additions,
+including overlay of the result. DGA and DGA2 have been tested ok.
+
+Main useful options:
+<descrip>
+<tag>SetMclk</tag>
+	to set the memory clock (default should be OK).
+<tag>SWCursor</tag>
+	to force the software cursor.
+<tag>HWCursor</tag>
+	to force the hardware cursor.
+<tag>NoAccel</tag>
+	to disable (XAA) acceleration.
+<tag>ShadowFB</tag>
+	to enable shadow framebuffer operation (the rendering is done in
+	system memory and then copied to the framebuffer, useful when
+	acceleration is disabled).
+</descrip>
 
 <sect2>Chips &amp; Technologies
 <p>

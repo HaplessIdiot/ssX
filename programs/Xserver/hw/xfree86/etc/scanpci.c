@@ -493,3 +493,5 @@ print_pcibridge(pciConfigPtr pcr)
             pcr->pci_max_lat, pcr->pci_min_gnt, pcr->pci_int_pin, pcr->pci_int_line);
 }
 
+#include "xf86getpagesize.c"
+
