@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# $XFree86: xc/config/util/mkhtmlindex.sh,v 1.1 2000/03/21 21:08:09 dawes Exp $
+# $XFree86: xc/config/util/mkhtmlindex.sh,v 1.2 2000/03/22 21:23:34 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 #
@@ -25,7 +25,7 @@ fi
 cd $1
 
 for s in $VOLLIST; do
-	list="`ls *.$s.html 2> /dev/null`" 
+	list="`ls *.$s.html 2> /dev/null`" || : # ignore failed glob expansion
 	if [ X"$list" != X ]; then
 		file=$INDEX$s.html
 		rm -f $file

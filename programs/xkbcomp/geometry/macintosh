@@ -1,4 +1,4 @@
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/geometry/macintosh,v 1.1 1999/05/23 05:27:50 dawes Exp $
 default xkb_geometry "macintosh" {
 
     description= "Apple Extended Keyboard II";
@@ -19,7 +19,7 @@ default xkb_geometry "macintosh" {
     shape "RCTL" { { [ 28,18] }, { [2,1], [ 26,17] } };
     shape "RALT" { { [ 28,18] }, { [2,1], [ 26,17] } };
     shape "RMTA" { { [ 28,18] }, { [2,1], [ 26,17] } };
-    shape "RFSH" { { [ 42,18] }, { [2,1], [ 40,17] } };
+    shape "RTSH" { { [ 42,18] }, { [2,1], [ 40,17] } };
     shape "SPCE" { { [112,18] }, { [2,1], [110,17] } };
     shape "KP0"  { { [ 37,18] }, { [2,1], [ 35,17] } };
     shape "KPEN" { { [ 18,37] }, { [2,1], [ 16,36] } };
@@ -57,8 +57,8 @@ default xkb_geometry "macintosh" {
 	    top= 1;
 	    keys {  <ESC>,  <FK01>, <FK02>, <FK03>, <FK04>,
                     <FK05>, <FK06>, <FK07>, <FK08>, <FK09>,
-		    <FK10>, <FK11>, <FK12>, <FK13>, <FK14>,
-                    <FK15> 
+                    <FK10>, <FK11>, <FK12>, <PRSC>, <SCLK>,
+                    <PAUS>
 	    };
 	};
     }; // End of "Function" section
@@ -90,7 +90,7 @@ default xkb_geometry "macintosh" {
 	    top= 58;
 	    keys { { <LFSH>, "LFSH" }, <AB01>, <AB02>, <AB03>,
                    <AB04>, <AB05>, <AB06>, <AB07>, <AB08>, <AB09>,
-                   <AB10>, { <RFSH>, "RFSH" }
+                   <AB10>, { <RTSH>, "RTSH" }
 	    };
 	};
 	row {
@@ -132,7 +132,7 @@ default xkb_geometry "macintosh" {
 	left= 375;
 	row {
 	    top= 1;
-	    keys { <KPCL>, <KPEQ>, <KPDV>, <KPMU> };
+            keys { <NMLK>, <KPEQ>, <KPDV>, <KPMU> };
 	};
 	row {
 	    top= 20;

@@ -23,7 +23,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/agpgart.h,v 1.2 2000/05/11 18:14:39 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/agpgart.h,v 1.3 2000/06/17 00:03:33 martin Exp $ */
 
 #ifndef _AGP_H
 #define _AGP_H 1
@@ -53,6 +53,7 @@
 #ifndef __KERNEL__
 #include <linux/types.h>
 #include <asm/types.h>
+#include <sys/types.h>
 
 typedef struct _agp_version {
 	__u16 major;

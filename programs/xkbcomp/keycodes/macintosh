@@ -26,7 +26,7 @@
 //other dealings in this Software without prior written authorization
 //from the X Consortium.
 //
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/keycodes/macintosh,v 1.1 1999/05/23 05:27:51 dawes Exp $
 //
 default xkb_keycodes "macintosh" {
 
@@ -92,10 +92,10 @@ default xkb_keycodes "macintosh" {
     <SPCE> = 57;
 
     <LCTL> = 62;
-    <LMTA> = 63;
+    <LMTA> = 66;
     <LFSH> = 64;
-    <LALT> = 66;
-    <RFSH> = 131;
+    <LALT> = 63;
+    <RTSH> = 131;
     <RALT> = 132;
     <RCTL> = 133;
     <RMTA> = 134;
@@ -112,9 +112,10 @@ default xkb_keycodes "macintosh" {
     <FK10> = 117;
     <FK11> = 111;
     <FK12> = 119;
-    <FK13> = 113;
-    <FK14> = 115;
-    <FK15> = 121;
+
+    <PRSC> = 113;
+    <SCLK> = 115;
+    <PAUS> = 121;
 
     <INS>  = 122;
     <HOME> = 123;
@@ -128,7 +129,7 @@ default xkb_keycodes "macintosh" {
     <DOWN> = 69;
     <RGHT> = 68;
 
-    <KPCL> = 79;
+    <NMLK> = 79;
     <KPEQ> = 89;
     <KPDV> = 83;
     <KPMU> = 75;
@@ -151,9 +152,6 @@ default xkb_keycodes "macintosh" {
     <KP0>  = 90;
     <KPDL> = 73;
 
-//    indicator 3 = "Caps Lock";
-//    indicator 2 = "Scroll Lock";
-//    indicator 1 = "Num Lock";
     indicator 3 = "Scroll Lock";
     indicator 2 = "Num Lock";
     indicator 1 = "Caps Lock";
