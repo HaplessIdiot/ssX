@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.6 2000/09/24 13:51:06 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.7 2000/09/26 15:56:47 tsi Exp $ */
 
 #include <stdio.h>
 
@@ -54,6 +54,7 @@ static void mga_iload_dma_ioctl(mgaContextPtr mmesa,
 int mgaUpdateLock( mgaContextPtr mmesa, drmLockFlags flags )
 {
    drm_lock_t lock;
+   int retcode;
    
    lock.flags = 0;
 
@@ -66,13 +67,15 @@ int mgaUpdateLock( mgaContextPtr mmesa, drmLockFlags flags )
    
    if (flags & DRM_LOCK_FLUSH)      lock.flags |= _DRM_LOCK_FLUSH;
    if (flags & DRM_LOCK_FLUSH_ALL)  lock.flags |= _DRM_LOCK_FLUSH_ALL;
- 
+
    if (!lock.flags)
       return 0;
 
-   if(ioctl(mmesa->driFd, DRM_IOCTL_MGA_FLUSH, &lock)) {
+   retcode = ioctl(mmesa->driFd, DRM_IOCTL_MGA_FLUSH, &lock);
+   if(retcode != 0) {
       fprintf(stderr, "Lockupdate failed\n");
-      return -1;
+      if(retcode == EACCES) exit(1);
+      else return -1;
    }
    
    if(flags & DRM_LOCK_QUIESCENT)

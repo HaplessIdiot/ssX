@@ -25,7 +25,7 @@
  *	9/20/99 rewrite by John Carmack <johnc@idsoftware.com>
  *      13/1/00 port to DRI by Keith Whitwell <keithw@precisioninsight.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.5 2000/08/25 13:42:25 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatex.c,v 1.6 2000/09/24 13:51:07 alanh Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -359,7 +359,10 @@ static void mgaUpdateTextureEnvG400( GLcontext *ctx, int unit )
 		  TD0_alpha_sel_mul);
       break;
    case GL_DECAL:
-      if (unit == 0) 
+      if (tObj->Image[0]->Format == GL_RGB) 
+	 *reg = (TD0_color_sel_arg1 |
+		 TD0_alpha_sel_arg1 );
+      else if (unit == 0) 
 	 *reg = (TD0_color_arg2_diffuse | 
 		 TD0_color_alpha_currtex |
 		 TD0_color_alpha2inv_enable |
@@ -442,7 +445,7 @@ static void mgaUpdateTextureObject( GLcontext *ctx, int unit )
    GLuint source = mmesa->tmu_source[unit];
 
 
-   enabled = (ctx->Texture.Enabled>>(source*4))&TEXTURE0_ANY;
+   enabled = (ctx->Texture.ReallyEnabled>>(source*4))&TEXTURE0_ANY;
    tObj = ctx->Texture.Unit[source].Current;
 
    if (enabled != TEXTURE0_2D) {
@@ -535,7 +538,7 @@ void mgaUpdateTextureState( GLcontext *ctx )
    mmesa->dirty |= MGA_UPLOAD_CTX | MGA_UPLOAD_TEX0;
 
    mmesa->Setup[MGA_CTXREG_DWGCTL] &= DC_opcod_MASK;
-   mmesa->Setup[MGA_CTXREG_DWGCTL] |= (ctx->Texture.Enabled 
+   mmesa->Setup[MGA_CTXREG_DWGCTL] |= (ctx->Texture.ReallyEnabled 
 				       ? DC_opcod_texture_trap 
 				       : DC_opcod_trap);
 }

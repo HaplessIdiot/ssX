@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.4 2000/08/25 13:42:25 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.5 2000/09/24 13:51:07 alanh Exp $ */
 
 #include <stdio.h>
 
@@ -348,7 +348,7 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
    int a = 0;
 
    /* determine source of alpha for blending and testing */
-   if ( !ctx->Texture.Enabled ) 
+   if ( !ctx->Texture.ReallyEnabled ) 
       a |= AC_alphasel_diffused;
    else {
       switch (ctx->Texture.Unit[0].EnvMode) {

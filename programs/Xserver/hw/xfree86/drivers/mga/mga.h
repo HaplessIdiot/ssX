@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.65 2000/10/24 22:45:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.66 2000/11/08 00:51:10 mvojkovi Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -270,6 +270,7 @@ typedef struct {
     int			expandHeight;
     int			expandY;
 #ifdef XF86DRI
+    int 		agp_mode;
     Bool		have_quiescense;
     Bool 		directRenderingEnabled;
     DRIInfoPtr 		pDRIInfo;

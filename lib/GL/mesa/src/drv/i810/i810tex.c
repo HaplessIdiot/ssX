@@ -734,7 +734,7 @@ static void i810UpdateTex0State( GLcontext *ctx )
 				     MA_OP_ARG1 );
     
 
-   if (!(ctx->Texture.Enabled & 0xf) || !tObj || !tObj->Complete) {
+   if (!(ctx->Texture.ReallyEnabled & 0xf) || !tObj || !tObj->Complete) {
       return;
    }
 
@@ -977,7 +977,7 @@ static void i810UpdateTex1State( GLcontext *ctx )
 				     MA_UPDATE_OP |
 				     MA_OP_ARG1 );
 
-   if (!(ctx->Texture.Enabled & 0xf0) || !tObj || !tObj->Complete) {
+   if (!(ctx->Texture.ReallyEnabled & 0xf0) || !tObj || !tObj->Complete) {
       return;
    }
 

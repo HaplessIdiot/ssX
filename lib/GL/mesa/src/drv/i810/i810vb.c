@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.5 2000/08/28 02:43:12 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.6 2000/09/24 13:51:04 alanh Exp $ */
  
 #include <stdio.h>
 #include <stdlib.h>
@@ -265,10 +265,10 @@ void i810ChooseRasterSetupFunc(GLcontext *ctx)
   imesa->vertsize = 8;
   imesa->Setup[I810_CTXREG_VF] = I810_VFMT_T0;
 
-  if (ctx->Texture.Enabled & 0xf) 
+  if (ctx->Texture.ReallyEnabled & 0xf) 
      funcindex |= I810_TEX0_BIT;
   
-  if (ctx->Texture.Enabled & 0xf0) {
+  if (ctx->Texture.ReallyEnabled & 0xf0) {
      funcindex |= I810_TEX1_BIT;
      imesa->vertsize = 10;
      imesa->Setup[I810_CTXREG_VF] = I810_VFMT_T0T1;

@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.4 2000/08/25 13:42:23 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgadd.c,v 1.5 2000/09/24 13:51:06 alanh Exp $ */
 
 
 
@@ -104,10 +104,8 @@ void mgaDDExtensionsInit( GLcontext *ctx )
 
    /* Support multitexture only on the g400.
     */
-   if (1 || !MGA_IS_G400(MGA_CONTEXT(ctx))) 
+   if (!MGA_IS_G400(MGA_CONTEXT(ctx))) 
    {
-      gl_extensions_disable( ctx, "GL_EXT_multitexture" );
-      gl_extensions_disable( ctx, "GL_SGIS_multitexture" );
       gl_extensions_disable( ctx, "GL_ARB_multitexture" );
    }
 

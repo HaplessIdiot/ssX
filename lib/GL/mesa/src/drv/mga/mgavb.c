@@ -23,7 +23,7 @@
  *
  *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.5 2000/08/28 02:43:13 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgavb.c,v 1.6 2000/09/24 13:51:09 alanh Exp $ */
  
 #include "mgacontext.h"
 #include "mgavb.h"
@@ -268,7 +268,7 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
    mmesa->multitex = 0;
    mmesa->blend_flags &= ~MGA_BLEND_MULTITEX;
 
-   if (ctx->Texture.Enabled & 0xf) {
+   if (ctx->Texture.ReallyEnabled & 0xf) {
       /* This doesn't work for non-RGBA textures
       if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	 funcindex &= ~MGA_RGBA_BIT;
@@ -285,8 +285,8 @@ void mgaChooseRasterSetupFunc(GLcontext *ctx)
       funcindex |= MGA_TEX0_BIT;
    }
 
-   if (ctx->Texture.Enabled & 0xf0) {     
-      if (ctx->Texture.Enabled & 0xf) {
+   if (ctx->Texture.ReallyEnabled & 0xf0) {     
+      if (ctx->Texture.ReallyEnabled & 0xf) {
 	 mmesa->multitex = 1;
 	 mmesa->vertsize = 10;
 	 mmesa->blend_flags |= MGA_BLEND_MULTITEX;

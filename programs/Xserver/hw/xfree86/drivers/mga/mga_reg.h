@@ -2,7 +2,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.12 2000/06/09 22:43:38 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_reg.h,v 1.13 2000/11/01 21:55:09 mvojkovi Exp $ */
 
 
 
@@ -431,6 +431,9 @@
 #define MGAREG_ALPHACTRL	0x2c7c
 #define MGAREG_DWGSYNC		0x2c4c
 
+#define MGAREG_AGP_PLL			0x1e4c
+#define AGP_PLL_agp2xpllen_enable	0x1
+#define AGP_PLL_agp2xpllen_disable	0x0
 
 #endif
 
