@@ -1,4 +1,7 @@
 XFree86 3.9.17c (27 January 2000)
+3595. Add '###' (Comment) line capability to the parser (Alan Hourihane).
+3594. Fix the laguna driver to return MOD_CLASS_NONE (Alan Hourihane).
+3593. Add the 'extmod' module to the -configure option (Alan Hourihane).
 3592. Modify the extension loading code so that he core server no longer
       needs to be aware of all extensions that can be loaded (David Dawes).
 3591. Remove XExtensionVersion from XPrint headers (Dirk Hohndel, from 3.3.5).
