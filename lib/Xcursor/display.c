@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xcursor/display.c,v 1.4 2002/11/23 02:34:45 keithp Exp $
+ * $XFree86: xc/lib/Xcursor/display.c,v 1.5 2002/11/27 05:35:10 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -45,6 +45,8 @@ _XcursorCloseDisplay (Display *dpy, XExtCodes *codes)
 	}
     _XUnlockMutex (_Xglobal_lock);
     
+    if (info->theme)
+	free (info->theme);
     free (info);
     return 0;
 }
@@ -77,7 +79,7 @@ _XcursorDefaultParseBool (char *v)
 XcursorDisplayInfo *
 _XcursorGetDisplayInfo (Display *dpy)
 {
-    XcursorDisplayInfo	*info, **prev;
+    XcursorDisplayInfo	*info, **prev, *old;
     int			event_base, error_base;
     int			major, minor;
     char		*v;
@@ -241,11 +243,26 @@ _XcursorGetDisplayInfo (Display *dpy)
 	info->bitmaps[i].bitmap = None;
 
     /*
-     * Link new info info list
+     * Link new info info list, making sure another
+     * thread hasn't inserted something into the list while
+     * this one was busy setting up the data
      */
     _XLockMutex (_Xglobal_lock);
-    info->next = _XcursorDisplayInfo;
-    _XcursorDisplayInfo = info;
+    for (old = _XcursorDisplayInfo; old; old = old->next)
+	if (old->display == dpy)
+	    break;
+    if (old)
+    {
+	if (info->theme)
+	    free (info->theme);
+	free (info);
+	info = old;
+    }
+    else
+    {
+	info->next = _XcursorDisplayInfo;
+	_XcursorDisplayInfo = info;
+    }
     _XUnlockMutex (_Xglobal_lock);
     
     return info;
