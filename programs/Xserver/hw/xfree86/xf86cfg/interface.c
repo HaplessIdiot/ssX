@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.25 2001/06/22 23:22:20 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.26 2001/06/23 01:45:56 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -132,7 +132,11 @@ static char XF86Config_path_static[1024];
 static char XkbConfig_path_static[1024];
 Bool xf86config_set = False;
 
-Bool textmode = False, nomodules = False;
+int textmode = False;
+#ifdef USE_MODULES
+int nomodules = False;
+#endif
+int  noverify = False;
 
 xf86cfgComputer computer;
 xf86cfgDevice cpu_device;
@@ -218,7 +222,9 @@ Usage(void)
 #endif
 #ifdef USE_MODULES
 "   -nomodules                 Use this option if xf86cfg is slow to start.\n"
+"   -verbose <number>          Verbosity used in the loader (default 0).\n"
 #endif
+"   -noverify                  Do not verify modules/options integrity.\n"
 );
 
     exit(1);
@@ -240,14 +246,14 @@ main(int argc, char *argv[])
     char *menuPixmapPath = NULL;
     XrmValue from, to;
 
-#ifdef USE_MODULES
-    xf86Verbose = 1;
-#endif
-
     if ((XFree86Dir = getenv("XWINHOME")) == NULL)
 	XFree86Dir = DefaultXFree86Dir;
 
     chdir(XFree86Dir);
+
+#ifdef USE_MODULES
+    xf86Verbose = 0;
+#endif
 
     for (i = 1; i < argc; i++) {
 	if (strcmp(argv[i], "-xf86config") == 0) {
@@ -272,8 +278,16 @@ main(int argc, char *argv[])
 	else if (strcmp(argv[i], "-textmode") == 0)
 	    textmode = True;
 #endif
+#ifdef USE_MODULES
 	else if (strcmp(argv[i], "-nomodules") == 0)
 	    nomodules = True;
+	else if (strcmp(argv[i], "-verbose") == 0) {
+	    if (i + 1 < argc)
+		xf86Verbose = atoi(argv[++i]);
+	}
+#endif
+	else if (strcmp(argv[i], "-noverify") == 0)
+	    noverify = True;
 	else
 	    Usage();
     }
@@ -467,7 +481,6 @@ main(int argc, char *argv[])
     UpdateMenuDeviceList(CARD);
     UpdateMenuDeviceList(MONITOR);
     XtSetSensitive(smemodeline, VideoModeInitialize());
-    ReadCardsDatabase();
 
     lay = XF86Config->conf_layout_lst;
     while (lay != NULL) {
@@ -508,6 +521,9 @@ main(int argc, char *argv[])
     if (!nomodules)
 	LoaderInitializeOptions();
 #endif
+
+    /* ReadCardsDatabase() must be called after LoaderInitializeOptions() */
+    ReadCardsDatabase();
 
     if (!config_set && startedx) {
 	XtFree(XF86Config_path);

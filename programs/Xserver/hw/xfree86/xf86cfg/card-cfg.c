@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.7 2001/05/21 22:21:57 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/card-cfg.c,v 1.8 2001/05/23 14:44:13 tsi Exp $
  */
 
 #include "xf86config.h"
@@ -307,11 +307,9 @@ CardModelCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	first = 0;
 
 #ifndef USE_MODULES
-    if (!nomodules) {
-	XtSetArg(args[0], XtNstring,
-		 card_entry->driver ? card_entry->driver : "vga");
-	XtSetValues(driver, args, 1);
-    }
+    XtSetArg(args[0], XtNstring,
+	     card_entry->driver ? card_entry->driver : "vga");
+    XtSetValues(driver, args, 1);
 #endif
 
     str = XtNewString(tip);

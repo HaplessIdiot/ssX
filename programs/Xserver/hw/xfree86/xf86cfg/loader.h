@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.3 2001/05/18 16:03:14 tsi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.4 2001/05/18 20:22:31 tsi Exp $
  */
 #ifdef USE_MODULES
 #include "config.h"
@@ -34,6 +34,11 @@
 
 #ifndef _xf86cfg_loader_h
 #define _xf86cfg_loader_h
+
+void xf86cfgLoaderInit(void);
+void xf86cfgLoaderInitList(int);
+void xf86cfgLoaderFreeList(void);
+int xf86cfgCheckModule(void);
 
 #ifdef LOADER_PRIVATE
 #include <sym.h>
@@ -139,6 +144,8 @@ typedef struct {
 } OptionInfoRec, *OptionInfoPtr;
 
 #ifdef LOADER_PRIVATE
+#define PROBE_DETECT	0x01
+
 /* common/xf86str.h */
 typedef struct _DriverRec {
     int			driverVersion;
@@ -192,9 +199,90 @@ typedef struct _ModuleInfoRec {
     OptionInfoRec *	(*AvailableOptions)(void *unused);
     pointer		unused[2];	/* leave some space for more fields */
 } ModuleInfoRec, *ModuleInfoPtr;
+
+typedef unsigned long memType;
+
+typedef struct {
+    long type;     /* shared, exclusive, unused etc. */
+    memType a;
+    memType b;
+} resRange, *resList;
+
+typedef struct { 
+    int numChipset;
+    int PCIid;
+    resRange *resList;
+} PciChipsets;
+
+typedef struct {
+    int			vendor;
+    int			chipType;
+    int			chipRev;
+    int			subsysVendor;
+    int			subsysCard;
+    int			bus;
+    int			device;
+    int			func;
+    int			class;
+    int			subclass;
+    int			interface;
+    memType  	        memBase[6];
+    memType  	        ioBase[6];
+    int			size[6];
+    unsigned char	type[6];
+    memType   	        biosBase;
+    int			biosSize;
+    pointer		thisCard;
+    Bool                validSize;
+    Bool                validate;
+    CARD32              listed_class;
+} pciVideoRec, *pciVideoPtr;
+
+#define MAXCLOCKS   128
+typedef enum {
+    DAC_BPP8 = 0,
+    DAC_BPP16,
+    DAC_BPP24,
+    DAC_BPP32,
+    MAXDACSPEEDS
+} DacSpeedIndex;
+
+typedef struct {
+   char *			identifier;
+   char *			vendor;
+   char *			board;
+   char *			chipset;
+   char *			ramdac;
+   char *			driver;
+   struct _confscreenrec *	myScreenSection;
+   Bool				claimed;
+   int				dacSpeeds[MAXDACSPEEDS];
+   int				numclocks;
+   int				clock[MAXCLOCKS];
+   char *			clockchip;
+   char *			busID;
+   Bool				active;
+   Bool				inUse;
+   int				videoRam;
+   int				textClockFreq;
+   unsigned long		BiosBase;	/* Base address of video BIOS */
+   unsigned long		MemBase;	/* Frame buffer base address */
+   unsigned long		IOBase;
+   int				chipID;
+   int				chipRev;
+   pointer			options;
+   int                          irq;
+   int                          screen;         /* For multi-CRTC cards */
+} GDevRec, *GDevPtr;
 #endif /* LOADER_PRIVATE */
 
+typedef struct {
+    int                 token;          /* id of the token */
+    const char *        name;           /* token name */
+} SymTabRec, *SymTabPtr;
+
 typedef enum {
+    NullModule = 0,
     VideoModule,
     InputModule,
     GenericModule
@@ -204,12 +292,16 @@ typedef struct _xf86cfgModuleOptions {
     char *name;
     ModuleType type;
     OptionInfoPtr option;
+    int vendor;
+    SymTabPtr chipsets;
     struct _xf86cfgModuleOptions *next;
 } xf86cfgModuleOptions;
 
 extern xf86cfgModuleOptions *module_options;
 
-Bool LoaderInitializeOptions(void);
+#ifndef LOADER_PRIVATE
+int LoaderInitializeOptions(void);
+#endif
 #endif /* USE_MODULES */
 
 #endif /* _xf86cfg_loader_h */
