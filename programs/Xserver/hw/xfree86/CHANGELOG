@@ -1,3 +1,8 @@
+3289. Fix XAA scanline color expansion routines to check the buffer address
+      after the Subsequent function is called.  This allows the driver to
+      change buffers on-the-fly (Mark Vojkovich).
+3288. Update PCI device IDs for newer NVidia chipsets (Mark Vojkovich).
+3287. Add an 80 Hz sample rate option for PS/2 mice (Mark Vojkovich).
 3286. Remove ATI driver's meddling with LCD power management facilities
       (Marc La France).
 3285. Ensure miInitializeBanking() fails when a bank clip region cannot be
