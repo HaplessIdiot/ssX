@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.5tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,36 +21,50 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATILOAD_H___
-#define ___ATILOAD_H___ 1
-
-#ifdef XFree86LOADER
-
-#include "atipriv.h"
-#include "atiproto.h"
+#ifndef ___ATITUNER_H___
+#define ___ATITUNER_H___ 1
 
 #include "xf86str.h"
 
-extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
+/*
+ * TV Tuner definitions.  Most of these are from Philips.
+ */
+typedef enum
+{
+    ATI_TUNER_NONE,
+    ATI_TUNER_FI1236MK1NA,
+    ATI_TUNER_FI1236MK2J,
+    ATI_TUNER_FI1216MK2BG,
+    ATI_TUNER_FI1246MK2I,
+    ATI_TUNER_FI1216MFMK2,
+    ATI_TUNER_FI1236MK2NA,
+    ATI_TUNER_FI1256MK2DK,
+    ATI_TUNER_FM1236MK2NA,
+    ATI_TUNER_FI1216MK2BGEXT,
+    ATI_TUNER_FI1246MK2IEXT,
+    ATI_TUNER_FI1216MFMK2EXT,
+    ATI_TUNER_FI1236MK2NAEXT,
+    ATI_TUNER_TEMIC_FN5AL,
+    ATI_TUNER_FQ1216MEP,
+    ATI_TUNER_15,
+    ATI_TUNER_ALPS_TSBH5,
+    ATI_TUNER_ALPS_TSCXX,
+    ATI_TUNER_ALPS_TSCH5,
+    ATI_TUNER_19,
+    ATI_TUNER_20,
+    ATI_TUNER_21,
+    ATI_TUNER_22,
+    ATI_TUNER_23,
+    ATI_TUNER_24,
+    ATI_TUNER_25,
+    ATI_TUNER_26,
+    ATI_TUNER_27,
+    ATI_TUNER_28,
+    ATI_TUNER_MT2032,
+    ATI_TUNER_30,
+    ATI_TUNER_31
+} ATITunerType;
 
-#ifndef AVOID_CPIO
+extern const SymTabRec ATITuners[];
 
-                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[],
-
-#endif /* AVOID_CPIO */
-
-                  *ATIfbSymbols[], *ATIshadowfbSymbols[], *ATIxaaSymbols[],
-                  *ATIramdacSymbols[], *ATIi2cSymbols[];
-
-extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                 const char **));
-extern pointer ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
-
-#else /* XFree86LOADER */
-
-#define ATILoadModule(pScreenInfo, Module, SymboList) ((pointer)1)
-#define ATILoadModules(pScreenInfo, pATI)             ((pointer)1)
-
-#endif /* XFree86LOADER */
-
-#endif /* ___ATILOAD_H___ */
+#endif /* ___ATITUNER_H___ */

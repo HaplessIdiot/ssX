@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.5tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,36 +21,30 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATILOAD_H___
-#define ___ATILOAD_H___ 1
-
-#ifdef XFree86LOADER
+#ifndef ___ATII2C_H___
+#define ___ATII2C_H___ 1
 
 #include "atipriv.h"
 #include "atiproto.h"
 
 #include "xf86str.h"
 
-extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
+#include "xf86i2c.h"
 
-#ifndef AVOID_CPIO
+typedef struct _ATII2CRec ATII2CRec, *ATII2CPtr;
 
-                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[],
+struct _ATII2CRec
+{
+    ATIPtr pATI;
+    void   (*I2CSetBits) FunctionPrototype((ATII2CPtr, ATIPtr, CARD32));
+    CARD32 (*I2CGetBits) FunctionPrototype((ATIPtr));
+    CARD32 SCLDir, SCLGet, SCLSet;
+    CARD32 SDADir, SDAGet, SDASet;
+    CARD32 I2CCur;
+};
 
-#endif /* AVOID_CPIO */
+extern void      ATII2CPreInit       FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern I2CBusPtr ATICreateI2CBusRec  FunctionPrototype((int, ATIPtr, char *));
+extern void      ATII2CFreeScreen    FunctionPrototype((int));
 
-                  *ATIfbSymbols[], *ATIshadowfbSymbols[], *ATIxaaSymbols[],
-                  *ATIramdacSymbols[], *ATIi2cSymbols[];
-
-extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                 const char **));
-extern pointer ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
-
-#else /* XFree86LOADER */
-
-#define ATILoadModule(pScreenInfo, Module, SymboList) ((pointer)1)
-#define ATILoadModules(pScreenInfo, pATI)             ((pointer)1)
-
-#endif /* XFree86LOADER */
-
-#endif /* ___ATILOAD_H___ */
+#endif /* ___ATII2C_H___ */

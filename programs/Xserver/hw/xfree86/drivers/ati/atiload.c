@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.c,v 1.13tsi Exp $ */
 /*
  * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -98,6 +98,17 @@ const char *ATIramdacSymbols[] =
     "xf86CreateCursorInfoRec",
     "xf86DestroyCursorInfoRec",
     "xf86InitCursor",
+    NULL
+};
+
+const char *ATIi2cSymbols[] =
+{
+    "xf86CreateI2CBusRec",
+    "xf86DestroyI2CBusRec",
+    "xf86I2CBusInit",
+    "xf86I2CDevInit",
+    "xf86I2CFindDev",
+    "xf86I2CGetScreenBusses",
     NULL
 };
 

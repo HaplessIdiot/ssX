@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiload.h,v 1.5tsi Exp $ */
+/* $XFree86$ */
 /*
- * Copyright 2000 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
+ * Copyright 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -21,36 +21,32 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#ifndef ___ATILOAD_H___
-#define ___ATILOAD_H___ 1
+#ifndef ___ATIAUDIO_H___
+#define ___ATIAUDIO_H___ 1
 
-#ifdef XFree86LOADER
+/*
+ * Audio chip definitions.
+ */
+typedef enum
+{
+    ATI_AUDIO_TEA5582,
+    ATI_AUDIO_MONO,
+    ATI_AUDIO_TDA9850,
+    ATI_AUDIO_CXA2020S,
+    ATI_AUDIO_MSP3410D,
+    ATI_AUDIO_CS4236B,
+    ATI_AUDIO_TDA9851,
+    ATI_AUDIO_MSP3415,
+    ATI_AUDIO_MSP3430,
+    ATI_AUDIO_9,
+    ATI_AUDIO_10,
+    ATI_AUDIO_11,
+    ATI_AUDIO_12,
+    ATI_AUDIO_13,
+    ATI_AUDIO_14,
+    ATI_AUDIO_NONE
+} ATIAudioType;
 
-#include "atipriv.h"
-#include "atiproto.h"
+extern const char *ATIAudioNames[];
 
-#include "xf86str.h"
-
-extern const char *ATIint10Symbols[], *ATIddcSymbols[], *ATIvbeSymbols[],
-
-#ifndef AVOID_CPIO
-
-                  *ATIxf1bppSymbols[], *ATIxf4bppSymbols[],
-
-#endif /* AVOID_CPIO */
-
-                  *ATIfbSymbols[], *ATIshadowfbSymbols[], *ATIxaaSymbols[],
-                  *ATIramdacSymbols[], *ATIi2cSymbols[];
-
-extern pointer ATILoadModule  FunctionPrototype((ScrnInfoPtr, const char *,
-                                                 const char **));
-extern pointer ATILoadModules FunctionPrototype((ScrnInfoPtr, ATIPtr));
-
-#else /* XFree86LOADER */
-
-#define ATILoadModule(pScreenInfo, Module, SymboList) ((pointer)1)
-#define ATILoadModules(pScreenInfo, pATI)             ((pointer)1)
-
-#endif /* XFree86LOADER */
-
-#endif /* ___ATILOAD_H___ */
+#endif /* ___ATIAUDIO_H___ */

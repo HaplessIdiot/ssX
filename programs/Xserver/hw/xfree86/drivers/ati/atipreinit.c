@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.65tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.66tsi Exp $ */
 /*
  * Copyright 1999 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -24,12 +24,14 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atiadjust.h"
+#include "atiaudio.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "aticonfig.h"
 #include "aticursor.h"
 #include "atidac.h"
 #include "atidsp.h"
+#include "atii2c.h"
 #include "atiident.h"
 #include "atiload.h"
 #include "atilock.h"
@@ -400,7 +402,8 @@ ATIPreInit
                                                (BIOS[(_n) + 3] << 24)))
     unsigned int     BIOSSize = 0;
     unsigned int     ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
-    unsigned int     LCDTable = 0, LCDPanelInfo = 0;
+    unsigned int     LCDTable = 0, LCDPanelInfo = 0, VideoTable = 0;
+    unsigned int     HardwareTable = 0;
 
     char             Buffer[128], *Message;
     ATIPtr           pATI;
@@ -741,6 +744,7 @@ ATIPreInit
 
     pATI->LCDPanelID = -1;
     pATI->nFIFOEntries = 16;                    /* For now */
+    pATI->Audio = ATI_AUDIO_NONE;
 
     /* Finish probing the adapter */
     switch (pATI->Adapter)
@@ -1014,7 +1018,9 @@ ATIPreInit
         pATI->ClockNumberToProgramme = -1;
 
         ROMTable = BIOSWord(0x48U);
-        if ((ROMTable + 0x12U) > BIOSSize)
+        if ((ROMTable < 0x0002U) ||
+            (BIOSWord(ROMTable - 0x02U) < 0x0012U) ||
+            ((ROMTable + BIOSWord(ROMTable - 0x02U)) > BIOSSize))
             ROMTable = 0;
 
         if (ROMTable > 0)
@@ -1022,6 +1028,26 @@ ATIPreInit
             ClockTable = BIOSWord(ROMTable + 0x10U);
             if ((ClockTable + 0x20U) > BIOSSize)
                 ClockTable = 0;
+
+            if (BIOSWord(ROMTable - 0x02U) >= 0x0048U)
+            {
+                VideoTable = BIOSWord(ROMTable + 0x46U);
+                if ((VideoTable < 0x08U) ||
+                    (BIOSByte(VideoTable - 0x01U) < 0x08U) ||
+                    (BIOSByte(VideoTable - 0x02U) > 0x01U) ||
+                    ((VideoTable + BIOSByte(VideoTable - 0x01U)) > BIOSSize))
+                    VideoTable = 0;
+            }
+
+            if (BIOSWord(ROMTable - 0x02U) >= 0x004AU)
+            {
+                HardwareTable = BIOSWord(ROMTable + 0x48U);
+                if (((HardwareTable + 0x08U) <= BIOSSize) &&
+                    !memcmp(BIOS + HardwareTable, "$ATI", 4))
+                    pATI->I2CType = BIOSByte(HardwareTable + 0x06U) & 0x0FU;
+                else
+                    HardwareTable = 0;
+            }
         }
 
         if (ClockTable > 0)
@@ -1206,6 +1232,52 @@ ATIPreInit
             }
         }
 
+        /*
+         * Pick up multimedia information, which will be at different
+         * displacements depending on table revision.
+         */
+        if (VideoTable > 0)
+        {
+            switch (BIOSByte(VideoTable - 0x02U))
+            {
+                case 0x00U:
+                    pATI->Tuner = BIOSByte(VideoTable) & 0x1FU;
+
+                    /*
+                     * XXX  The VideoTable[1] byte is known to have been
+                     *      omitted in LTPro and Mobility BIOS'es.  Any others?
+                     */
+                    switch (pATI->Chip)
+                    {
+                        case ATI_CHIP_264LTPRO:
+                        case ATI_CHIP_MOBILITY:
+                            pATI->Decoder =
+                                BIOSByte(VideoTable + 0x01U) & 0x07U;
+                            pATI->Audio =
+                                BIOSByte(VideoTable + 0x02U) & 0x0FU;
+                            break;
+
+                        default:
+                            pATI->Decoder =
+                                BIOSByte(VideoTable + 0x02U) & 0x07U;
+                            pATI->Audio =
+                                BIOSByte(VideoTable + 0x03U) & 0x0FU;
+                            break;
+                    }
+
+                    break;
+
+                case 0x01U:
+                    pATI->Tuner = BIOSByte(VideoTable) & 0x1FU;
+                    pATI->Audio = BIOSByte(VideoTable + 0x01U) & 0x0FU;
+                    pATI->Decoder = BIOSByte(VideoTable + 0x05U) & 0x0FU;
+                    break;
+
+                default:
+                    break;
+            }
+        }
+
         /* Determine panel dimensions */
         if (pATI->LCDPanelID >= 0)
         {
@@ -1289,6 +1361,23 @@ ATIPreInit
                 pATI->LCDVertical = BIOSWord(LCDPanelInfo + 0x1BU);
             }
         }
+
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 3,
+            "BIOS Data:  BIOSSize=0x%04X, ROMTable=0x%04X.\n",
+            BIOSSize, ROMTable);
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 3,
+            "BIOS Data:  ClockTable=0x%04X, FrequencyTable=0x%04X.\n",
+            ClockTable, FrequencyTable);
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 3,
+            "BIOS Data:  LCDTable=0x%04X, LCDPanelInfo=0x%04X.\n",
+            LCDTable, LCDPanelInfo);
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 3,
+            "BIOS Data:  VideoTable=0x%04X, HardwareTable=0x%04X.\n",
+            VideoTable, HardwareTable);
+        xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_INFO, 3,
+            "BIOS Data:  I2CType=0x%02X, Tuner=0x%02X, Decoder=0x%02X,"
+            " Audio=0x%02X.\n",
+            pATI->I2CType, pATI->Tuner, pATI->Decoder, pATI->Audio);
     }
 
     ATIUnlock(pATI);            /* Unlock registers */
@@ -2574,23 +2663,20 @@ ATIPreInit
                 "Linear aperture not supported in this configuration.\n");
             pATI->OptionLinear = FALSE;
         }
-        else
+        else if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
         {
-            if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
+            /*
+             * Free VGA memory aperture during operating state (but it is still
+             * decoded).
+             */
+            pResources = xf86SetOperatingState(resVgaMem, pATI->iEntity,
+                ResUnusedOpr);
+            if (pResources)
             {
-                /*
-                 * Free VGA memory aperture during operating state (but it is
-                 * still decoded).
-                 */
-                pResources = xf86SetOperatingState(resVgaMem,
-                    pATI->iEntity, ResUnusedOpr);
-                if (pResources)
-                {
-                    xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-                        "Logic error setting operating state for VGA memory"
-                        " aperture.\n");
-                    xf86FreeResList(pResources);
-                }
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Logic error setting operating state for VGA memory"
+                    " aperture.\n");
+                xf86FreeResList(pResources);
             }
         }
     }
@@ -3334,6 +3420,9 @@ ATIPreInit
 
     /* Initialise CRTC code */
     ATIModePreInit(pScreenInfo, pATI, &pATI->NewHW);
+
+    /* Set up for I2C */
+    ATII2CPreInit(pScreenInfo, pATI);
 
     if (!pScreenInfo->chipset || !*pScreenInfo->chipset)
         pScreenInfo->chipset = (char *)ATIChipsetNames[0];
