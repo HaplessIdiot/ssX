@@ -1,4 +1,5 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.1 1994/07/24 11:55:59 dawes Exp $ */
+/* $XConsortium: bank.s,v 1.5 95/06/19 18:59:11 kaleb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/bank.s,v 3.2 1994/10/29 22:45:42 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *

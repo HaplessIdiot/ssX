@@ -1,5 +1,5 @@
-! $XConsortium: XErrorDB /main/33 1995/12/09 15:44:40 kaleb $
-! $XFree86: xc/lib/X11/XErrorDB,v 3.7 1996/01/17 12:45:31 dawes Exp $
+! $XConsortium: XErrorDB /main/37 1996/02/02 16:08:31 kaleb $
+! $XFree86: xc/lib/X11/XErrorDB,v 3.8 1996/01/21 08:42:28 dawes Exp $
 ! Copyright (c) 1993, 1995  X Consortium
 ! 
 ! Permission is hereby granted, free of charge, to any person obtaining
@@ -503,7 +503,7 @@ XRequest.GLX.102: X_GLXEndList
 XRequest.GLX.105: X_GLXFeedbackBuffer
 XRequest.GLX.108: X_GLXFinish
 XRequest.GLX.142: X_GLXFlush
-XRequest.GLX.104: X_GLXGenList
+XRequest.GLX.104: X_GLXGenLists
 XRequest.GLX.112: X_GLXGetBooleanv
 XRequest.GLX.113: X_GLXGetClipPlane
 XRequest.GLX.114: X_GLXGetDoublev

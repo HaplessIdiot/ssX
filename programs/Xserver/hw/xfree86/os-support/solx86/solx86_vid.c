@@ -1,5 +1,4 @@
-/* $XConsortium: solx86_vid.c,v 1.2 94/10/12 20:50:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.0 1994/06/28 12:30:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.2 1995/01/28 17:05:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -24,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: solx86_vid.c /main/3 1995/11/13 06:18:39 kaleb $ */
 
 #include "X.h"
 #include "input.h"

@@ -1,5 +1,4 @@
-/* $XConsortium: mach8win.c,v 1.3 94/10/12 20:01:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8win.c,v 3.0 1994/05/31 08:04:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8win.c,v 3.2 1995/01/28 17:01:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,8 +54,7 @@ Modified for the Mach-8 by Rickard E. Faith (faith@cs.unc.edu)
 Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 
 */
-
-
+/* $XConsortium: mach8win.c /main/4 1995/11/12 18:01:10 kaleb $ */
 
 #include "X.h"
 #include "input.h"

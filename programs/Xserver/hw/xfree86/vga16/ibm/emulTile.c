@@ -1,5 +1,4 @@
-/* $XConsortium: emulTile.c,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.1 1994/05/31 08:12:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/emulTile.c,v 3.3 1995/01/28 17:05:55 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -22,9 +21,7 @@
  * SOFTWARE.
  *
 */
-
-/* Header: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/emulTile.c,v 30.0 89/01/23 19:28:31 paul Exp */
-/* Source: /andrew/X11/r3src/release/server/ddx/ibm/ppc/RCS/emulTile.c,v */
+/* $XConsortium: emulTile.c /main/3 1995/11/13 07:04:12 kaleb $ */
 
 /* ppc Tile
  * P. Shupak 11/87

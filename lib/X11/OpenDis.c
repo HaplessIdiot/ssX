@@ -1,5 +1,5 @@
-/* $XConsortium: OpenDis.c /main/109 1995/11/30 19:02:39 kaleb $ */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.1 1995/06/14 07:06:52 dawes Exp $ */
+/* $XConsortium: OpenDis.c /main/110 1996/02/02 14:09:01 kaleb $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.2 1996/01/05 13:11:05 dawes Exp $ */
 /*
 
 Copyright (c) 1985, 1986  X Consortium
@@ -593,7 +593,7 @@ Display *XOpenDisplay (display)
 	}
 #endif
 #ifdef XKB
-	XkbUseExtension(dpy,NULL, NULL);
+	XkbUseExtension(dpy,NULL,NULL);
 #endif
 /*
  * and return successfully

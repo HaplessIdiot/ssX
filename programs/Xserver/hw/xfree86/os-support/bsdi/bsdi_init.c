@@ -1,5 +1,4 @@
-/* $XConsortium: bsdi_init.c,v 1.2 94/10/12 20:46:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.2 1995/01/28 17:04:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/bsdi_init.c,v 3.3 1995/06/17 12:17:56 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -24,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: bsdi_init.c /main/4 1995/11/13 05:55:38 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

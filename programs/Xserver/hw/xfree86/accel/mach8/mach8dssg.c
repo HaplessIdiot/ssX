@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8dssg.c,v 1.1.1.2 1996/01/03 07:13:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8dssg.c,v 3.0 1996/01/11 10:37:03 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -54,7 +54,7 @@ Further modifications by Tiago Gons (tiago@comosjn.hobby.nl)
 */
 
 /* 18-sep-93 TCG: mach8dssg.c from ibm8514dssg.c */
-/* $XConsortium: mach8dssg.c /main/3 1995/11/12 18:00:13 kaleb $ */
+/* $XConsortium: mach8dssg.c /main/4 1996/01/11 12:26:59 kaleb $ */
 
 #include "X.h"
 

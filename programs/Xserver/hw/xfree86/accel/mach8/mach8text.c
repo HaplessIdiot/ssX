@@ -1,5 +1,4 @@
-/* $XConsortium: mach8text.c,v 1.3 95/01/05 20:28:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.1 1994/11/27 08:22:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8text.c,v 3.3 1995/01/28 17:01:00 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -27,6 +26,7 @@
  * Extracted from s3text.c
  * Modified for Mach8, Hans Nasten. (nasten@everyware.se)
  */
+/* $XConsortium: mach8text.c /main/4 1995/11/12 18:01:08 kaleb $ */
 
 #include	"X.h"
 #include	"Xmd.h"

@@ -1,6 +1,5 @@
 /*
- * $XConsortium: pvg_driver.c,v 1.5 95/01/16 13:18:21 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.20 1995/09/23 06:54:13 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/pvga1/pvg_driver.c,v 3.21 1996/01/12 14:38:33 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,6 +23,7 @@
  *
  * Author:  Thomas Roell, roell@informatik.tu-muenchen.de
  */
+/* $XConsortium: pvg_driver.c /main/8 1996/01/12 12:18:37 kaleb $ */
 
 /*
  * Accelerated support for 90C31 added by Mike Tierney <floyd@eng.umd.edu>

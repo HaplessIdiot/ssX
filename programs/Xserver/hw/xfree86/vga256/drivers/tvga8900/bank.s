@@ -1,5 +1,5 @@
-/* $XConsortium: bank.s,v 1.2 94/03/29 11:03:31 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.1 1995/03/11 14:50:27 dawes Exp $ */
+/* $XConsortium: bank.s /main/4 1995/12/17 08:39:48 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/bank.s,v 3.2 1995/12/16 08:21:14 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *

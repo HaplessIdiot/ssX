@@ -1,5 +1,5 @@
-/* $XConsortium: xkb.c /main/16 1996/01/14 16:46:03 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.3 1996/01/07 10:00:38 dawes Exp $ */
+/* $XConsortium: xkb.c /main/18 1996/02/02 14:39:27 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkb.c,v 3.4 1996/01/16 15:08:16 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -46,7 +46,8 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Atom	xkbONE_LEVEL;
 Atom	xkbTWO_LEVEL;
 Atom	xkbKEYPAD;
-CARD16	xkbDebugFlags = 0;
+CARD32	xkbDebugFlags = 0;
+CARD32	xkbDebugCtrls = 0;
 
 #ifndef XKB_SRV_UNSUPPORTED_XI_FEATURES
 #define	XKB_SRV_UNSUPPORTED_XI_FEATURES	XkbXI_KeyboardsMask
@@ -154,12 +155,11 @@ ProcXkbUseExtension(client)
     int	supported;
 
     REQUEST_SIZE_MATCH(xkbUseExtensionReq);
-    if (stuff->wantedMajor != XkbMajorVersion)
-	supported = 0;
-#if XkbMajorVersion==0
-    else if (stuff->wantedMinor!=XkbMinorVersion)
-	supported = 0;
-#endif
+    if (stuff->wantedMajor != XkbMajorVersion) {
+	/* pre-release version 0.65 is compatible with 1.00 */
+	supported= ((XkbMajorVersion==1)&&
+		    (stuff->wantedMajor==0)&&(stuff->wantedMinor==65));
+    }
     else supported = 1;
 
 #ifdef XKB_SWAPPING_BUSTED
@@ -172,14 +172,12 @@ ProcXkbUseExtension(client)
 	client->vMajor= stuff->wantedMajor;
 	client->vMinor= stuff->wantedMinor;
     }
-#if XkbMajorVersion==0
-    else if (xkbDebugFlags) {
+    else if (xkbDebugFlags&0x1) {
 	ErrorF("Rejecting client %d (0x%x) (wants %d.%02d, have %d.%02d)\n",
-		client->index, client->clientAsMask,
-		stuff->wantedMajor,stuff->wantedMinor,
-		XkbMajorVersion,XkbMinorVersion);
+					client->index, client->clientAsMask,
+					stuff->wantedMajor,stuff->wantedMinor,
+					XkbMajorVersion,XkbMinorVersion);
     }
-#endif
     rep.type = X_Reply;
     rep.supported = supported;
     rep.length = 0;
@@ -4932,6 +4930,465 @@ ProcXkbGetGeometry(client)
     else return XkbSendGeometry(client,geom,&rep,shouldFree);
 }
 
+/***====================================================================***/
+
+static char *
+#if NeedFunctionPrototypes
+_GetCountedString(char **wire_inout,Bool swap)
+#else
+_GetCountedString(wire_inout,swap)
+    char **	wire_inout;
+    Bool	swap;
+#endif
+{
+char *	wire,*str;
+CARD16	len,*plen;
+
+    wire= *wire_inout;
+    plen= (CARD16 *)wire;
+    if (swap) {
+	register int n;
+	swaps(plen,n);
+    }
+    len= *plen;
+    str= (char *)_XkbAlloc(len+1);
+    if (str) {
+	memcpy(str,&wire[2],len);
+	str[len]= '\0';
+    }
+    wire+= XkbPaddedSize(len+2);
+    *wire_inout= wire;
+    return str;
+}
+
+static Status
+#if NeedFunctionPrototypes
+_CheckSetDoodad(	char **		wire_inout,
+			XkbGeometryPtr	geom,
+			XkbSectionPtr	section,
+			ClientPtr	client)
+#else
+_CheckSetDoodad(wire_inout,geom,section,client)
+    char **		wire_inout;
+    XkbGeometryPtr	geom;
+    XkbSectionPtr	section;
+    ClientPtr		client;
+#endif
+{
+char *			wire;
+xkbDoodadWireDesc *	dWire;
+XkbDoodadPtr		doodad;
+
+    dWire= (xkbDoodadWireDesc *)(*wire_inout);
+    wire= (char *)&dWire[1];
+    if (client->swapped) {
+	register int n;
+	swapl(&dWire->any.name,n);
+	swaps(&dWire->any.top,n);
+	swaps(&dWire->any.left,n);
+	swaps(&dWire->any.angle,n);
+    }
+    CHK_ATOM_ONLY(dWire->any.name);
+    doodad= XkbAddGeomDoodad(geom,section,dWire->any.name);
+    if (!doodad)
+	return BadAlloc;
+    doodad->any.type= dWire->any.type;
+    doodad->any.priority= dWire->any.priority;
+    doodad->any.top= dWire->any.top;
+    doodad->any.left= dWire->any.left;
+    doodad->any.angle= dWire->any.angle;
+    switch (doodad->any.type) {
+	case XkbOutlineDoodad:
+	case XkbSolidDoodad:
+	    if (dWire->shape.colorNdx>=geom->num_colors) {
+		client->errorValue= _XkbErrCode3(0x40,geom->num_colors,
+							dWire->shape.colorNdx);
+		return BadMatch;
+	    }
+	    if (dWire->shape.shapeNdx>=geom->num_shapes) {
+		client->errorValue= _XkbErrCode3(0x41,geom->num_shapes,
+							dWire->shape.shapeNdx);
+		return BadMatch;
+	    }
+	    doodad->shape.color_ndx= dWire->shape.colorNdx;
+	    doodad->shape.shape_ndx= dWire->shape.shapeNdx;
+	    break;
+	case XkbTextDoodad:
+	    if (dWire->text.colorNdx>=geom->num_colors) {
+		client->errorValue= _XkbErrCode3(0x42,geom->num_colors,
+							dWire->text.colorNdx);
+		return BadMatch;
+	    }
+	    if (client->swapped) {
+		register int n;
+		swaps(&dWire->text.width,n);
+		swaps(&dWire->text.height,n);
+	    }
+	    doodad->text.width= dWire->text.width;
+	    doodad->text.height= dWire->text.height;
+	    doodad->text.color_ndx= dWire->text.colorNdx;
+	    doodad->text.text= _GetCountedString(&wire,client->swapped);
+	    doodad->text.font= _GetCountedString(&wire,client->swapped);
+	    break;
+	case XkbIndicatorDoodad:
+	    if (dWire->indicator.onColorNdx>=geom->num_colors) {
+		client->errorValue= _XkbErrCode3(0x43,geom->num_colors,
+						dWire->indicator.onColorNdx);
+		return BadMatch;
+	    }
+	    if (dWire->indicator.offColorNdx>=geom->num_colors) {
+		client->errorValue= _XkbErrCode3(0x44,geom->num_colors,
+						dWire->indicator.offColorNdx);
+		return BadMatch;
+	    }
+	    if (dWire->indicator.shapeNdx>=geom->num_shapes) {
+		client->errorValue= _XkbErrCode3(0x45,geom->num_shapes,
+						dWire->indicator.shapeNdx);
+		return BadMatch;
+	    }
+	    doodad->indicator.shape_ndx= dWire->indicator.shapeNdx;
+	    doodad->indicator.on_color_ndx= dWire->indicator.onColorNdx;
+	    doodad->indicator.off_color_ndx= dWire->indicator.offColorNdx;
+	    break;
+	case XkbLogoDoodad:
+	    if (dWire->logo.colorNdx>=geom->num_colors) {
+		client->errorValue= _XkbErrCode3(0x46,geom->num_colors,
+							dWire->logo.colorNdx);
+		return BadMatch;
+	    }
+	    if (dWire->logo.shapeNdx>=geom->num_shapes) {
+		client->errorValue= _XkbErrCode3(0x47,geom->num_shapes,
+							dWire->logo.shapeNdx);
+		return BadMatch;
+	    }
+	    doodad->logo.color_ndx= dWire->logo.colorNdx;
+	    doodad->logo.shape_ndx= dWire->logo.shapeNdx;
+	    doodad->logo.logo_name= _GetCountedString(&wire,client->swapped);
+	    break;
+	default:
+	    client->errorValue= _XkbErrCode2(0x4F,dWire->any.type);
+	    return BadValue;
+    }
+    *wire_inout= wire;
+    return Success;
+}
+
+static Status
+#if NeedFunctionPrototypes
+_CheckSetOverlay(	char **		wire_inout,
+			XkbGeometryPtr	geom,
+			XkbSectionPtr	section,
+			ClientPtr	client)
+#else
+_CheckSetOverlay(wire_inout,geom,section,client)
+    char **		wire_inout;
+    XkbGeometryPtr	geom;
+    XkbSectionPtr	section;
+    ClientPtr		client;
+#endif
+{
+register int		r;
+char *			wire;
+XkbOverlayPtr		ol;
+xkbOverlayWireDesc *	olWire;
+xkbOverlayRowWireDesc *	rWire;
+
+    wire= *wire_inout;
+    olWire= (xkbOverlayWireDesc *)wire;
+    if (client->swapped) {
+	register int n;
+	swapl(&olWire->name,n);
+    }
+    CHK_ATOM_ONLY(olWire->name);
+    ol= XkbAddGeomOverlay(section,olWire->name,olWire->nRows);
+    rWire= (xkbOverlayRowWireDesc *)&olWire[1];
+    for (r=0;r<olWire->nRows;r++) {
+	register int		k;
+	xkbOverlayKeyWireDesc *	kWire;
+	XkbOverlayRowPtr	row;
+
+	if (rWire->rowUnder>section->num_rows) {
+	    client->errorValue= _XkbErrCode4(0x20,r,section->num_rows,
+							rWire->rowUnder);
+	    return BadMatch;
+	}
+	row= XkbAddGeomOverlayRow(ol,rWire->rowUnder,rWire->nKeys);
+	kWire= (xkbOverlayKeyWireDesc *)&rWire[1];
+	for (k=0;k<rWire->nKeys;k++,kWire++) {
+	    if (XkbAddGeomOverlayKey(ol,row,kWire->over,kWire->under)==NULL) {
+		client->errorValue= _XkbErrCode3(0x21,r,k);
+		return BadMatch;
+	    }	
+	}
+	rWire= (xkbOverlayRowWireDesc *)kWire;
+    }
+    olWire= (xkbOverlayWireDesc *)rWire;
+    wire= (char *)olWire;
+    *wire_inout= wire;
+    return Success;
+}
+
+static Status
+#if NeedFunctionPrototypes
+_CheckSetSections( 	XkbGeometryPtr		geom,
+			xkbSetGeometryReq *	req,
+			char **			wire_inout,
+			ClientPtr		client)
+#else
+_CheckSetSections(geom,req,wire_inout,client)
+    XkbGeometryPtr	geom;
+    xkbSetGeometryReq *	req;
+    char **		wire_inout;
+    ClientPtr		client;
+#endif
+{
+Status			status;
+register int		s;
+char *			wire;
+xkbSectionWireDesc *	sWire;
+XkbSectionPtr		section;
+
+    wire= *wire_inout;
+    if (req->nSections<1)
+	return Success;
+    sWire= (xkbSectionWireDesc *)wire;
+    for (s=0;s<req->nSections;s++) {
+	register int		r;
+	xkbRowWireDesc *	rWire;
+	if (client->swapped) {
+	    register int n;
+	    swapl(&sWire->name,n);
+	    swaps(&sWire->top,n);
+	    swaps(&sWire->left,n);
+	    swaps(&sWire->width,n);
+	    swaps(&sWire->height,n);
+	    swaps(&sWire->angle,n);
+	}
+	CHK_ATOM_ONLY(sWire->name);
+	section= XkbAddGeomSection(geom,sWire->name,sWire->nRows,
+					sWire->nDoodads,sWire->nOverlays);
+	if (!section)
+	    return BadAlloc;
+	section->priority=	sWire->priority;
+	section->top=		sWire->top;
+	section->left=		sWire->left;
+	section->width=		sWire->width;
+	section->height=	sWire->height;
+	section->angle=		sWire->angle;
+	rWire= (xkbRowWireDesc *)&sWire[1];
+	for (r=0;r<sWire->nRows;r++) {
+	    register int	k;
+	    XkbRowPtr		row;
+	    xkbKeyWireDesc *	kWire;
+	    if (client->swapped) {
+		register int n;
+		swaps(&rWire->top,n);
+		swaps(&rWire->left,n);
+	    }
+	    row= XkbAddGeomRow(section,rWire->nKeys);
+	    if (!row)
+		return BadAlloc;
+	    row->top= rWire->top;
+	    row->left= rWire->left;
+	    row->vertical= rWire->vertical;
+	    kWire= (xkbKeyWireDesc *)&rWire[1];
+	    for (k=0;k<rWire->nKeys;k++) {
+		XkbKeyPtr	key;
+		key= XkbAddGeomKey(row);
+		if (!key)
+		    return BadAlloc;
+		memcpy(key->name.name,kWire[k].name,XkbKeyNameLength);
+		key->gap= kWire[k].gap;
+		key->shape_ndx= kWire[k].shapeNdx;
+		key->color_ndx= kWire[k].colorNdx;
+		if (key->shape_ndx>=geom->num_shapes) {
+		    client->errorValue= _XkbErrCode3(0x10,key->shape_ndx,
+							  geom->num_shapes);
+		    return BadMatch;
+		}
+		if (key->color_ndx>=geom->num_colors) {
+		    client->errorValue= _XkbErrCode3(0x11,key->color_ndx,
+							  geom->num_colors);
+		    return BadMatch;
+		}
+	    }
+	    rWire= (xkbRowWireDesc *)&kWire[rWire->nKeys];
+	}
+	wire= (char *)rWire;
+	if (sWire->nDoodads>0) {
+	    register int d;
+	    for (d=0;d<sWire->nDoodads;d++) {
+		status=_CheckSetDoodad(&wire,geom,section,client);
+		if (status!=Success)
+		    return status;
+	    }
+	}
+	if (sWire->nOverlays>0) {
+	    register int o;
+	    for (o=0;o<sWire->nOverlays;o++) {
+		status= _CheckSetOverlay(&wire,geom,section,client);
+		if (status!=Success)
+		    return status;
+	    }
+	}
+	sWire= (xkbSectionWireDesc *)wire;
+    }
+    wire= (char *)sWire;
+    *wire_inout= wire;
+    return Success;
+}
+
+static Status
+#if NeedFunctionPrototypes
+_CheckSetShapes( 	XkbGeometryPtr		geom,
+			xkbSetGeometryReq *	req,
+			char **			wire_inout,
+			ClientPtr		client)
+#else
+_CheckSetShapes(geom,req,wire_inout,client)
+    XkbGeometryPtr	geom;
+    xkbSetGeometryReq *	req;
+    char **		wire_inout;
+    ClientPtr		client;
+#endif
+{
+register int	i;
+char *		wire;
+
+    wire= *wire_inout;
+    if (req->nShapes<1) {
+	client->errorValue= _XkbErrCode2(0x06,req->nShapes);
+	return BadValue;
+    }
+    else {
+	xkbShapeWireDesc *	shapeWire;
+	XkbShapePtr		shape;
+	register int		o;
+	shapeWire= (xkbShapeWireDesc *)wire;
+	for (i=0;i<req->nShapes;i++) {
+	    xkbOutlineWireDesc *	olWire;
+	    XkbOutlinePtr		ol;
+	    shape= XkbAddGeomShape(geom,shapeWire->name,shapeWire->nOutlines);
+	    if (!shape)
+		return BadAlloc;
+	    olWire= (xkbOutlineWireDesc *)(&shapeWire[1]);
+	    for (o=0;o<shapeWire->nOutlines;o++) {
+		register int		p;
+		XkbPointPtr		pt;
+		xkbPointWireDesc *	ptWire;
+
+		ol= XkbAddGeomOutline(shape,olWire->nPoints);
+		if (!ol)
+		    return BadAlloc;
+		ol->corner_radius=	olWire->cornerRadius;
+		ptWire= (xkbPointWireDesc *)&olWire[1];
+		for (p=0,pt=ol->points;p<olWire->nPoints;p++,pt++) {
+		    pt->x= ptWire[p].x;
+		    pt->y= ptWire[p].y;
+		    if (client->swapped) {
+			register int n;
+			swaps(&pt->x,n);
+			swaps(&pt->y,n);
+		    }
+		}
+		ol->num_points= olWire->nPoints;
+		olWire= (xkbOutlineWireDesc *)(&ptWire[olWire->nPoints]);
+	    }
+	    if (shapeWire->primaryNdx!=XkbNoShape)
+		shape->primary= &shape->outlines[shapeWire->primaryNdx];
+	    if (shapeWire->approxNdx!=XkbNoShape)
+		shape->approx= &shape->outlines[shapeWire->approxNdx];
+	    shapeWire= (xkbShapeWireDesc *)olWire;
+	}
+	wire= (char *)shapeWire;
+    }
+    if (geom->num_shapes!=req->nShapes) {
+	client->errorValue= _XkbErrCode3(0x07,geom->num_shapes,req->nShapes);
+	return BadMatch;
+    }
+
+    *wire_inout= wire;
+    return Success;
+}
+
+static Status
+#if NeedFunctionPrototypes
+_CheckSetGeom(	XkbGeometryPtr		geom,
+		xkbSetGeometryReq *	req,
+		ClientPtr 		client)
+#else
+_CheckSetGeom(geom,req,client)
+    XkbGeometryPtr	geom;
+    xkbSetGeometryReq *	req;
+    ClientPtr		client;
+#endif
+{
+register int	i;
+Status		status;
+char *		wire;
+
+    wire= (char *)&req[1];
+    geom->label_font= _GetCountedString(&wire,client->swapped);
+
+    for (i=0;i<req->nProperties;i++) {
+	char *name,*val;
+	name= _GetCountedString(&wire,client->swapped);
+	val= _GetCountedString(&wire,client->swapped);
+	if ((!name)||(!val)||(XkbAddGeomProperty(geom,name,val)==NULL))
+	    return BadAlloc;
+    }
+
+    if (req->nColors<2) {
+	client->errorValue= _XkbErrCode3(0x01,2,req->nColors);
+	return BadValue;
+    }
+    if (req->baseColorNdx>req->nColors) {
+	client->errorValue=_XkbErrCode3(0x03,req->nColors,req->baseColorNdx);
+	return BadMatch;
+    }
+    if (req->labelColorNdx>req->nColors) {
+	client->errorValue= _XkbErrCode3(0x03,req->nColors,req->labelColorNdx);
+	return BadMatch;
+    }
+    if (req->labelColorNdx==req->baseColorNdx) {
+	client->errorValue= _XkbErrCode3(0x04,req->baseColorNdx,
+							req->labelColorNdx);
+	return BadMatch;
+    }
+
+    for (i=0;i<req->nColors;i++) {
+	char *name;
+	name= _GetCountedString(&wire,client->swapped);
+	if ((!name)||(!XkbAddGeomColor(geom,name,geom->num_colors)))
+	    return BadAlloc;
+    }
+    if (req->nColors!=geom->num_colors) {
+	client->errorValue= _XkbErrCode3(0x05,req->nColors,geom->num_colors);
+	return BadMatch;
+    }
+    geom->label_color= &geom->colors[req->labelColorNdx];
+    geom->base_color= &geom->colors[req->baseColorNdx];
+
+    if ((status=_CheckSetShapes(geom,req,&wire,client))!=Success)
+	return status;
+
+    if ((status=_CheckSetSections(geom,req,&wire,client))!=Success)
+	return status;
+
+    for (i=0;i<req->nDoodads;i++) {
+	status=_CheckSetDoodad(&wire,geom,NULL,client);
+	if (status!=Success)
+	    return status;
+    }
+
+    for (i=0;i<req->nKeyAliases;i++) {
+	if (XkbAddGeomKeyAlias(geom,&wire[XkbKeyNameLength],wire)==NULL)
+	    return BadAlloc;
+	wire+= 2*XkbKeyNameLength;
+    }
+    return Success;
+}
+
 int
 #if NeedFunctionPrototypes
 ProcXkbSetGeometry(ClientPtr client)
@@ -4941,6 +5398,11 @@ ProcXkbSetGeometry(client)
 #endif
 {
     DeviceIntPtr 	dev;
+    XkbGeometryPtr	geom,old;
+    XkbGeometrySizesRec	sizes;
+    Status		status;
+    XkbDescPtr		xkb;
+
 
     REQUEST(xkbSetGeometryReq);
     REQUEST_AT_LEAST_SIZE(xkbSetGeometryReq);
@@ -4951,7 +5413,36 @@ ProcXkbSetGeometry(client)
     CHK_KBD_DEVICE(dev,stuff->deviceSpec);
     CHK_ATOM_OR_NONE(stuff->name);
 
-    return BadImplementation;
+    xkb= dev->key->xkbInfo->desc;
+    old= xkb->geom;
+    xkb->geom= NULL;
+
+    sizes.which= 		XkbGeomAllMask;
+    sizes.num_properties=	stuff->nProperties;
+    sizes.num_colors=	  	stuff->nColors;
+    sizes.num_shapes=	  	stuff->nShapes;
+    sizes.num_sections=	  	stuff->nSections;
+    sizes.num_doodads=	  	stuff->nDoodads;
+    sizes.num_key_aliases=	stuff->nKeyAliases;
+    if ((status= XkbAllocGeometry(xkb,&sizes))!=Success) {
+	xkb->geom= old;
+	return status;
+    }
+    geom= xkb->geom;
+    geom->name= stuff->name;
+    geom->width_mm= stuff->widthMM;
+    geom->height_mm= stuff->heightMM;
+    if ((status= _CheckSetGeom(geom,stuff,client))!=Success) {
+	XkbFreeGeometry(geom,XkbGeomAllMask,True);
+	xkb->geom= old;
+	return status;
+    }
+    xkb->names->geometry= geom->name;
+    if (old)
+    	XkbFreeGeometry(old,XkbGeomAllMask,True);
+    /* 1/30/96 (ef) -- XXX!  Generate NewKeyboard events here */
+    /* 1/30/96 (ef) -- XXX!  Generate NamesNotify event here */
+    return Success;
 }
 
 /***====================================================================***/
@@ -5233,7 +5724,7 @@ ProcXkbGetKbdByName(client)
     CHK_MASK_LEGAL(0x01,stuff->want,XkbGBN_AllComponentsMask);
     CHK_MASK_LEGAL(0x02,stuff->need,XkbGBN_AllComponentsMask);
     
-    fwant= stuff->want|stuff->need;
+   fwant= stuff->want|stuff->need;
    if ((!names.compat)&&(fwant&(XkbGBN_CompatMapMask|XkbGBN_IndicatorMapMask)))
 	names.compat= _XkbDupString("%");
     if ((!names.symbols)&&(fwant&XkbGBN_SymbolsMask))
@@ -5241,9 +5732,6 @@ ProcXkbGetKbdByName(client)
     if ((!names.geometry)&&(fwant&XkbGBN_GeometryMask))
 	names.geometry= _XkbDupString("%");
 
-    if (stuff->load)
-	 fwant|= (XkbGBN_AllComponentsMask&(~XkbGBN_GeometryMask));
-    
     bzero(mapFile,PATH_MAX);
     rep.type= X_Reply;
     rep.deviceID = dev->id;
@@ -6131,16 +6619,20 @@ ProcXkbSetDebuggingFlags(client)
     ClientPtr client;
 #endif
 {
-    extern int XkbDisableLockActions;
-    CARD16 newFlags,extraLength;
-    xkbSetDebuggingFlagsReply rep;
+CARD32 				newFlags,newCtrls,extraLength;
+xkbSetDebuggingFlagsReply 	rep;
 
     REQUEST(xkbSetDebuggingFlagsReq);
     REQUEST_AT_LEAST_SIZE(xkbSetDebuggingFlagsReq);
 
-    newFlags= (xkbDebugFlags&(~stuff->mask))|(stuff->flags&stuff->mask);
+    newFlags=  xkbDebugFlags&(~stuff->affectFlags);
+    newFlags|= (stuff->flags&stuff->affectFlags);
+    newCtrls=  xkbDebugCtrls&(~stuff->affectCtrls);
+    newCtrls|= (stuff->ctrls&stuff->affectCtrls);
     if (xkbDebugFlags || newFlags || stuff->msgLength) {
-	ErrorF("XkbDebug: Setting debug flags to %d\n",newFlags);
+	ErrorF("XkbDebug: Setting debug flags to 0x%x\n",newFlags);
+	if (newCtrls!=xkbDebugCtrls)
+	    ErrorF("XkbDebug: Setting debug controls to 0x%x\n",newCtrls);
     }
     extraLength= (stuff->length<<2)-sz_xkbSetDebuggingFlagsReq;
     if (stuff->msgLength>0) {
@@ -6159,17 +6651,24 @@ ProcXkbSetDebuggingFlags(client)
 	ErrorF("XkbDebug: %s\n",msg);
     }
     xkbDebugFlags = newFlags;
-    if (stuff->disableLocks!=XkbLeaveLocks)
-	XkbDisableLockActions = stuff->disableLocks;
+    xkbDebugCtrls = newCtrls;
+
+    XkbDisableLockActions= (xkbDebugCtrls&XkbDF_DisableLocks);
+
     rep.type= X_Reply;
     rep.length = 0;
     rep.sequenceNumber = client->sequence;
     rep.currentFlags = newFlags;
-    rep.disableLocks = XkbDisableLockActions;
+    rep.currentCtrls = newCtrls;
+    rep.supportedFlags = ~0;
+    rep.supportedCtrls = ~0;
     if ( client->swapped ) {
 	register int n;
 	swaps(&rep.sequenceNumber, n);
-	swaps(&rep.currentFlags, n);
+	swapl(&rep.currentFlags, n);
+	swapl(&rep.currentCtrls, n);
+	swapl(&rep.supportedFlags, n);
+	swapl(&rep.supportedCtrls, n);
     }
     WriteToClient(client,SIZEOF(xkbSetDebuggingFlagsReply), (char *)&rep);
     return client->noClientException;

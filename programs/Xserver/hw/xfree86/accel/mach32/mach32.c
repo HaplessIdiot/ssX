@@ -1,5 +1,4 @@
-/* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.45 1995/12/26 06:07:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.46 1996/01/13 12:21:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -29,9 +28,8 @@
  * Rewritten for the Mach32 by Kevin E. Martin (martin@cs.unc.edu)
  * Modified for 16 bpp and VTSema-independence by Craig E. Groeschel
  *
- * Header: /proj/X11/mit/server/ddx/xf86/vga/RCS/vga.c,v 1.2 1991/06/27 00:02:49 root Exp
  */
-
+/* $XConsortium: mach32.c /main/13 1996/01/13 13:13:11 kaleb $ */
 
 #include "X.h"
 #include "Xmd.h"

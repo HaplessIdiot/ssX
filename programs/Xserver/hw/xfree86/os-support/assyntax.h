@@ -1,5 +1,5 @@
-/* $XConsortium: assyntax.h,v 1.2 95/01/05 20:43:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.4 1995/06/02 10:17:30 dawes Exp $ */
+/* $XConsortium: assyntax.h /main/4 1996/01/26 14:27:41 kaleb $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/assyntax.h,v 3.5 1996/01/24 22:02:04 dawes Exp $ */
 #ifndef __ASSYNTAX_H__
 #define	__ASSYNTAX_H__
 

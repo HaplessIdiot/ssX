@@ -1,5 +1,5 @@
-/* $XConsortium: ddxBeep.c /main/3 1996/01/01 10:54:41 kaleb $ */
-/* $XFree86$ */
+/* $XConsortium: ddxBeep.c /main/4 1996/02/02 14:39:20 kaleb $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxBeep.c,v 3.0 1996/01/14 13:41:53 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -42,8 +42,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include <alpha/hal_sysinfo.h>
 #include <alpha/prom.h>
 #endif
-
-extern	CARD16	xkbDebugFlags;
 
 #define FALLING_TONE	1
 #define RISING_TONE	1

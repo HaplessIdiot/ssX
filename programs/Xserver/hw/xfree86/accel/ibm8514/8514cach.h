@@ -1,5 +1,11 @@
-/* $XConsortium: 8514cach.h,v 1.1 95/01/26 15:29:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/8514cach.h,v 3.1 1994/09/07 15:48:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/8514cach.h,v 3.2 1995/01/28 15:51:27 dawes Exp $ */
+
+
+
+
+
+/* $XConsortium: 8514cach.h /main/2 1995/11/12 16:53:40 kaleb $ */
+
 void ibm8514GlyphWrite(
 #if NeedFunctionPrototypes
     int /*x*/,

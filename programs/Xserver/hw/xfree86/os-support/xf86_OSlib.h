@@ -1,5 +1,4 @@
-/* $XConsortium: xf86_OSlib.h,v 1.7 95/01/16 13:17:55 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.20 1995/12/26 06:08:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.21 1996/01/10 05:39:47 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -32,6 +31,7 @@
  * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
+/* $XConsortium: xf86_OSlib.h /main/13 1996/01/10 11:12:07 kaleb $ */
 
 #ifndef _XF86_OSLIB_H
 #define _XF86_OSLIB_H

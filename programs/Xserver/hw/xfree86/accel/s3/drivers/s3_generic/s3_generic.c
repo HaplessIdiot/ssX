@@ -1,5 +1,4 @@
-/* $XConsortium: s3_generic.c,v 1.3 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.2 1995/01/10 10:55:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.4 1995/01/28 17:02:55 dawes Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -23,7 +22,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: s3_generic.c /main/4 1995/11/12 18:23:53 kaleb $ */
 
 #include "s3.h"
 

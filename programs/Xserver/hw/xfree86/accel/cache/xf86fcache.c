@@ -1,5 +1,4 @@
-/* $XConsortium: xf86fcache.c,v 1.4 95/01/05 20:25:04 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.7 1995/01/28 16:57:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/cache/xf86fcache.c,v 3.8 1995/07/07 15:38:25 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -22,6 +21,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  * 
  */
+/* $XConsortium: xf86fcache.c /main/7 1995/11/13 10:11:05 kaleb $ */
 
 /*
  * Extracted from s3fcach.c and adapted to XFree86 in X11R6 by

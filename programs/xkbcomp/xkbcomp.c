@@ -1,5 +1,5 @@
-/* $XConsortium: xkbcomp.c /main/7 1996/01/14 16:48:34 kaleb $ */
-/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.0 1996/01/10 05:42:59 dawes Exp $ */
+/* $XConsortium: xkbcomp.c /main/8 1996/02/02 14:17:40 kaleb $ */
+/* $XFree86: xc/programs/xkbcomp/xkbcomp.c,v 3.1 1996/01/16 15:09:04 dawes Exp $ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
@@ -41,7 +41,7 @@
 #include <stdlib.h>
 #endif
 #include "xkbpath.h"
-#include "xkbparse.h"
+#include "parseutils.h"
 #include "misc.h"
 #include "tokens.h"
 #include <X11/extensions/XKBgeom.h>
@@ -520,7 +520,30 @@ register int i,tmp;
 	inputFormat= INPUT_XKB;
     }
     else if (strchr(inputFile,':')==0) {
-	int	len= strlen(inputFile);
+	int	len;
+	len= strlen(inputFile);
+	if (inputFile[len-1]==')') {
+	    char *tmp;
+	    if ((tmp=strchr(inputFile,'('))!=0) {
+		*tmp= '\0';  inputFile[len-1]= '\0';
+		tmp++;
+		if (*tmp=='\0') {
+		     WARN("Empty map in filename\n");
+		     ACTION("Ignored\n");
+		}
+		else if (inputMap==NULL) {
+		    inputMap= uStringDup(tmp);
+		}
+		else {
+		    WARN("Map specified in filename and with -m flag\n");
+		    ACTION1("map from name (\"%s\") ignored\n",tmp);
+		}
+	    }
+	    else {
+		ERROR1("Illegal name \"%s\" for input file\n",inputFile);
+		return False;
+	    }
+	}
 	if ((len>4)&&(strcmp(&inputFile[len-4],".xkm")==0)) {
 	    inputFormat= INPUT_XKM;
 	}
@@ -920,6 +943,8 @@ Status		status;
 		    break;
 		case XkmGeometryFile:
 		case XkmGeometryIndex:
+		    /* if it's just a geometry, invent key names */
+		    result.xkb->flags|= AutoKeyNames;
 		    ok= CompileGeometry(mapToUse,&result,MergeReplace);
 		    break;
 		default:

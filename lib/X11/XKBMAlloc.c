@@ -1,5 +1,5 @@
-/* $XConsortium: XKBMAlloc.c /main/5 1996/01/14 16:43:37 kaleb $ */
-/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.0 1996/01/11 10:33:13 dawes Exp $ */
+/* $XConsortium: XKBMAlloc.c /main/6 1996/02/02 14:09:43 kaleb $ */
+/* $XFree86: xc/lib/X11/XKBMAlloc.c,v 3.1 1996/01/16 15:01:07 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -33,6 +33,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #define NEED_EVENTS
 #include "Xlibint.h"
 #include <X11/extensions/XKBproto.h>
+#include <X11/keysym.h>
 #include "XKBlibint.h"
 
 #else 
@@ -44,111 +45,11 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "Xproto.h"
 #include "misc.h"
 #include "inputstr.h"
+#include <X11/keysym.h>
+#define	XKBSRV_NEED_FILE_FUNCS
 #include "XKBsrv.h"
 
 #endif /* XKB_IN_SERVER */
-
-/***====================================================================***/
-
-#define	mapSize(m)	(sizeof(m)/sizeof(XkbKTMapEntryRec))
-static  XkbKTMapEntryRec map2Level[]= { 
-	{ True, ShiftMask, 1, ShiftMask, 0 }
-};
-
-static  XkbKTMapEntryRec mapAlpha[]= { 
-	{ True, ShiftMask, 1, ShiftMask, 0 },
-	{ True,	LockMask,  0,  LockMask, 0 }
-};
-
-static	XkbModsRec preAlpha[]= {
-	{        0,        0, 0 },
-	{ LockMask, LockMask, 0 }
-};
-
-#define	NL_VMOD_MASK	0
-static  XkbKTMapEntryRec mapKeypad[]= { 
-	{ True,	ShiftMask, 1, ShiftMask,            0 },
-	{ False,        0, 1,         0, NL_VMOD_MASK }
-};
-
-static	XkbKeyTypeRec	canonicalTypes[XkbNumRequiredTypes] = {
-	{ { 0, 0, 0 }, 
-	  1,	/* num_levels */
-	  0,	/* map_count */
-	  NULL,		NULL,
-	  None,		NULL
-	},
-	{ { ShiftMask, ShiftMask, 0 }, 
-	  2,	/* num_levels */
-	  mapSize(map2Level),	/* map_count */
-	  map2Level,	NULL,
-	  None,		NULL
-	},
-	{ { ShiftMask|LockMask, ShiftMask|LockMask, 0 }, 
-	  2,				/* num_levels */
-	  mapSize(mapAlpha),		/* map_count */
-	  mapAlpha,	preAlpha,
-	  None,		NULL
-	},
-	{ { ShiftMask, ShiftMask, NL_VMOD_MASK },
-	  2,				/* num_levels */
-	  mapSize(mapKeypad),		/* map_count */
-	  mapKeypad,	NULL,
-	  None,		NULL
-	}
-};
-
-Status
-#if NeedFunctionPrototypes
-XkbInitCanonicalKeyTypes(XkbDescPtr xkb,unsigned which,int keypadVMod)
-#else
-XkbInitCanonicalKeyTypes(xkb,which,keypadVMod)
-    XkbDescPtr		xkb;
-    unsigned		which;
-    int			keypadVMod;
-#endif
-{
-XkbClientMapPtr	map;
-XkbKeyTypePtr	from,to;
-Status		rtrn;
-
-    if (!xkb)
-	return BadMatch;
-    rtrn= XkbAllocClientMap(xkb,XkbKeyTypesMask,XkbNumRequiredTypes);
-    if (rtrn!=Success)
-	return rtrn;
-    map= xkb->map;
-    if ((which&XkbAllRequiredTypes)==0)
-	return Success;
-    rtrn= Success;
-    from= canonicalTypes;
-    to= map->types;
-    if (which&XkbOneLevelMask)
-	rtrn= XkbCopyKeyType(&from[XkbOneLevelIndex],&to[XkbOneLevelIndex]);
-    if ((which&XkbTwoLevelMask)&&(rtrn==Success))
-	rtrn= XkbCopyKeyType(&from[XkbTwoLevelIndex],&to[XkbTwoLevelIndex]);
-    if ((which&XkbAlphabeticMask)&&(rtrn==Success))
-	rtrn= XkbCopyKeyType(&from[XkbAlphabeticIndex],&to[XkbAlphabeticIndex]);
-    if ((which&XkbKeypadMask)&&(rtrn==Success)) {
-	XkbKeyTypePtr type;
-	rtrn= XkbCopyKeyType(&from[XkbKeypadIndex],&to[XkbKeypadIndex]);
-	type= &to[XkbKeypadIndex];
-	if ((keypadVMod>=0)&&(keypadVMod<XkbNumVirtualMods)&&(rtrn==Success)) {
-	    type->mods.vmods= (1<<keypadVMod);
-	    type->map[0].active= True;
-	    type->map[0].mods.mask= ShiftMask;
-	    type->map[0].mods.real_mods= ShiftMask;
-	    type->map[0].mods.vmods= 0;
-	    type->map[0].level= 1;
-	    type->map[1].active= False;
-	    type->map[1].mods.mask= 0;
-	    type->map[1].mods.real_mods= 0;
-	    type->map[1].mods.vmods= (1<<keypadVMod);
-	    type->map[1].level= 1;
-	}
-    }
-    return Success;
-}
 
 /***====================================================================***/
 
@@ -435,7 +336,7 @@ XkbClientMapPtr	map;
 	    if (map->types[i].name==name) {
 		Status status;
 		status=XkbResizeKeyType(xkb,i,map_count,want_preserve,num_lvls);
-		return (status==Success?type:NULL);
+		return (status==Success?&map->types[i]:NULL);
 	    }
 	}
     }
@@ -458,7 +359,7 @@ XkbClientMapPtr	map;
 		if (map->types[i].name!=name)
 		    continue;
 		status=XkbResizeKeyType(xkb,i,map_count,want_preserve,num_lvls);
-		return (status==Success?type:NULL);
+		return (status==Success?&map->types[i]:NULL);
 	    }
 	}
     }
@@ -799,123 +700,6 @@ XkbAction *newActs;
     xkb->server->acts = newActs;
     xkb->server->num_acts= nActs;
     return &xkb->server->acts[xkb->server->key_acts[key]];
-}
-
-Status
-#if NeedFunctionPrototypes
-XkbChangeTypesOfKey(	XkbDescPtr		 xkb,
-			int		 	 key,
-			int			 nGroups,
-			unsigned	 	 groups,
-			int	* 	 	 newTypesIn,
-			XkbMapChangesPtr	 pChanges)
-#else
-XkbChangeTypesOfKey(xkb,key,nGroups,groups,newTypesIn,pChanges)
-    XkbDescPtr		 xkb;
-    int		 	 key;
-    int			 nGroups;
-    unsigned	 	 groups;
-    int	* 	 	 newTypesIn;
-    XkbMapChangesPtr	 pChanges;
-#endif
-{
-XkbKeyTypePtr	pOldType,pNewType;
-register int	i;
-int		width,nOldGroups,oldWidth,newTypes[XkbNumKbdGroups];
-
-    if ((!xkb) || (!XkbKeycodeInRange(xkb,key)) || (!xkb->map) ||
-	(!xkb->map->types)||(!newTypes)||
-	(nGroups>XkbNumKbdGroups)||((groups&XkbAllGroupsMask)==0)) {
-	return BadMatch;
-    }
-    if (nGroups==0) {
-	for (i=0;i<XkbNumKbdGroups;i++) {
-	    xkb->map->key_sym_map[key].kt_index[i]= XkbOneLevelIndex;
-	}
-	i= xkb->map->key_sym_map[key].group_info;
-	i= XkbSetNumGroups(i,0);
-	xkb->map->key_sym_map[key].group_info= i;
-	XkbResizeKeySyms(xkb,key,0);
-	return Success;
-    }
-
-    nOldGroups= XkbKeyNumGroups(xkb,key);
-    oldWidth= XkbKeyGroupsWidth(xkb,key);
-    for (width=i=0;i<nGroups;i++) {
-	if (groups&(1<<i))
-	     newTypes[i]=  newTypesIn[i];
-	else if (i<nOldGroups)
-	     newTypes[i]= XkbKeyKeyTypeIndex(xkb,key,i);
-	else if (nOldGroups>0)
-	     newTypes[i]= XkbKeyKeyTypeIndex(xkb,key,XkbGroup1Index);
-	else newTypes[i]= XkbTwoLevelIndex;
-	if (newTypes[i]>xkb->map->num_types)
-	    return BadMatch;
-	pNewType= &xkb->map->types[newTypes[i]];
-	if (pNewType->num_levels>width)
-	    width= pNewType->num_levels;
-    }
-    if ((width!=oldWidth)||(nGroups!=nOldGroups)) {
-	KeySym		oldSyms[XkbMaxSymsPerKey],*pSyms;
-	int		nCopy;
-
-	if (nOldGroups==0) {
-	    pSyms= XkbResizeKeySyms(xkb,key,width*nGroups);
-	    return ((pSyms!=NULL)?Success:BadAlloc);
-	}
-	pSyms= XkbKeySymsPtr(xkb,key);
-	memcpy(oldSyms,pSyms,XkbKeyNumSyms(xkb,key)*sizeof(KeySym));
-	pSyms= XkbResizeKeySyms(xkb,key,width*nGroups);
-	if (pSyms==NULL)
-	    return BadAlloc;
-	bzero(pSyms,width*nGroups*sizeof(KeySym));
-	for (i=0;(i<nGroups)&&(i<nOldGroups);i++) {
-	    pOldType= XkbKeyKeyType(xkb,key,i);
-	    pNewType= &xkb->map->types[newTypes[i]];
-	    if (pNewType->num_levels>pOldType->num_levels)
-		 nCopy= pOldType->num_levels;
-	    else nCopy= pNewType->num_levels;
-	    memcpy(&pSyms[i*width],&oldSyms[i*oldWidth],nCopy*sizeof(KeySym));
-	}
-	if (XkbKeyHasActions(xkb,key)) {
-	    XkbAction	oldActs[XkbMaxSymsPerKey],*pActs;
-	    pActs= XkbKeyActionsPtr(xkb,key);
-	    memcpy(oldActs,pActs,XkbKeyNumSyms(xkb,key)*sizeof(XkbAction));
-	    pActs= XkbResizeKeyActions(xkb,key,width*nGroups);
-	    if (pActs==NULL)
-		return BadAlloc;
-	    bzero(pActs,width*nGroups*sizeof(XkbAction));
-	    for (i=0;(i<nGroups)&&(i<nOldGroups);i++) {
-		pOldType= XkbKeyKeyType(xkb,key,i);
-		pNewType= &xkb->map->types[newTypes[i]];
-		if (pNewType->num_levels>pOldType->num_levels)
-		     nCopy= pOldType->num_levels;
-		else nCopy= pNewType->num_levels;
-		memcpy(&pActs[i*width],&oldActs[i*oldWidth],
-						nCopy*sizeof(XkbAction));
-	    }
-	}
-    }
-    for (i=0;i<nGroups;i++) {
-	xkb->map->key_sym_map[key].kt_index[i]= newTypes[i];
-    }
-    if (pChanges!=NULL) {
-	if (pChanges->changed&XkbKeySymsMask) {
-	    int first,last;
-	    first= pChanges->first_key_sym;
-	    last= pChanges->first_key_sym+pChanges->num_key_syms-1;
-	    if (key<first)	first= key;
-	    if (key>last)	last= key;
-	    pChanges->first_key_sym = first;
-	    pChanges->num_key_syms = (last-first)+1;
-	}
-	else {
-	    pChanges->changed|= XkbKeySymsMask;
-	    pChanges->first_key_sym= key;
-	    pChanges->num_key_syms= 1;
-	}
-    }
-    return Success;
 }
 
 void

@@ -1,5 +1,4 @@
-/* $XConsortium: fFillSet.s,v 1.3 94/10/13 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFillSet.s,v 3.1 1994/09/08 14:40:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFillSet.s,v 3.3 1995/01/28 17:09:35 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -27,8 +26,8 @@
  * (X386 1.2) by James Tsillas.  This file was further derived to its current
  * form by David Wexelblat (dwex@goblin.org).
  *
- * /usr/X386/mit/server/ddx/x386/cfb.banked/RCS/fFillSet.s,v 1.0 92/05/01 16:44:22 root Exp
  */
+/* $XConsortium: fFillSet.s /main/4 1995/11/13 08:45:58 kaleb $ */
 
 #include "assyntax.h"
 

@@ -1,5 +1,4 @@
-/* $XConsortium: sysv_video.c,v 1.2 95/03/01 16:11:01 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.4 1995/12/16 08:20:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.5 1995/12/17 05:03:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -24,7 +23,7 @@
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-
+/* $XConsortium: sysv_video.c /main/5 1995/12/17 08:30:55 kaleb $ */
 
 #include "X.h"
 #include "input.h"

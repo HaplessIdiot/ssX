@@ -1,5 +1,11 @@
-XCOMM $XConsortium: Imakefile,v 1.2 94/10/12 20:50:38 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.0 1994/06/28 12:58:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.2 1995/01/28 17:05:09 dawes Exp $
+
+
+
+
+
+XCOMM $XConsortium: Imakefile /main/3 1995/11/13 06:18:28 kaleb $
+
 #include <Server.tmpl>
 
 BIOS_MOD = solx86_mmap

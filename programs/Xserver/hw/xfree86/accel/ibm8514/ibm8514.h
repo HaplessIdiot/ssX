@@ -1,5 +1,4 @@
-/* $XConsortium: ibm8514.h,v 1.6 95/01/16 13:16:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.4 1995/01/15 10:30:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.h,v 3.6 1995/01/28 16:58:06 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -23,6 +22,7 @@
  *
  * Modified by Tiago Gons (tiago@comosjn.hobby.nl)
  */
+/* $XConsortium: ibm8514.h /main/9 1995/11/13 11:17:39 kaleb $ */
 
 
 #ifndef IBM8514_H

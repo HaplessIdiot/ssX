@@ -1,5 +1,4 @@
-/* $XConsortium: mach8.c,v 1.7 95/01/16 13:16:36 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.25 1995/12/09 11:07:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.26 1995/12/17 05:03:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -29,8 +28,8 @@
  * Further modifications by Scott Laird (lair@kimbark.uchicago.edu)
  * and Tiago Gons (tiago@comosjn.hobby.nl)
  *
- * Header: /proj/X11/mit/server/ddx/xf86/vga/RCS/vga.c,v 1.2 1991/06/27 00:02:49 root Exp
  */
+/* $XConsortium: mach8.c /main/13 1995/12/17 08:19:59 kaleb $ */
 
 
 #include "X.h"

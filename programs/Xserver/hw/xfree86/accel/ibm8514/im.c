@@ -1,5 +1,4 @@
-/* $XConsortium: im.c,v 1.1 95/01/26 15:30:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.4 1995/01/26 02:17:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/im.c,v 3.5 1995/01/28 15:51:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -23,6 +22,7 @@
  *
  * Modified by Tiago Gons (tiago@comosjn.hobby.nl)
  */
+/* $XConsortium: im.c /main/3 1995/11/12 17:03:10 kaleb $ */
 
 
 #include "os.h"

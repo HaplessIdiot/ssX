@@ -1,5 +1,4 @@
-/* $XConsortium: fFill.s,v 1.4 95/01/05 20:50:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.2 1994/10/21 11:24:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/fFill.s,v 3.4 1995/01/28 17:09:34 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -27,8 +26,8 @@
  * (X386 1.2) by James Tsillas.  This file was further derived to its current
  * form by David Wexelblat (dwex@goblin.org).
  *
- * /usr/X386/mit/server/ddx/x386/cfb.banked/RCS/fFill.s,v 1.0 92/05/01 16:44:22 root Exp
  */
+/* $XConsortium: fFill.s /main/5 1995/11/13 08:45:56 kaleb $ */
 
 #include "assyntax.h"
 

@@ -1,10 +1,12 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.26 1996/01/14 13:35:06 dawes Exp $
+XCOMM $XConsortium: Imakefile /main/18 1996/01/16 16:08:36 kaleb $
 
 
 
 
 
-XCOMM $XConsortium: Imakefile /main/12 1995/12/02 08:52:06 kaleb $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.27 1996/01/16 11:00:57 dawes Exp $
+
+
 
 #include <Server.tmpl>
 
@@ -57,7 +59,6 @@ SERVERSRCS = \
 	XF86_Mach32.c \
 	XF86_Mach64.c \
 	XF86_P9000.c \
-	$(XKBDDXSRC) \
 	XF86_AGX.c \
 	XF86_W32.c \
 	XF86_I128.c
@@ -67,7 +68,6 @@ SRCS =	\
 	xf86IniExt.c \
 	xf86MIniExt.c \
 	xf86Cursor.c \
-	$(XKBDDXSRC) \
 	xf86Events.c \
 	xf86Init.c \
 	xf86Init_m.c \
@@ -80,12 +80,12 @@ SRCS =	\
 	$(JOYSTICK_SRC) \
 	$(WACOM_SRC) \
 	$(ELOGRAPHICS_SRC) \
+	$(XKBDDXSRC) \
 	$(SERVERSRCS)
 
 OBJS = \
 	$(XCONFIGSRC).o \
 	xf86Cursor.o \
-       	$(XKBDDXOBJ) \
 	xf86Events.o \
 	xf86Io.o \
 	xf86Lock.o \
@@ -94,6 +94,7 @@ OBJS = \
 	$(JOYSTICK_OBJ) \
 	$(WACOM_OBJ) \
 	$(ELOGRAPHICS_OBJ) \
+	$(XKBDDXOBJ) \
 	$(KBD).o
 
 OFILES = \

@@ -1,5 +1,5 @@
-/* $XConsortium: Xlibint.h /main/110 1995/11/14 22:55:49 gildea $ */
-/* $XFree86: xc/lib/X11/Xlibint.h,v 3.2 1995/07/08 10:23:58 dawes Exp $ */
+/* $XConsortium: Xlibint.h /main/111 1996/02/02 14:10:09 kaleb $ */
+/* $XFree86: xc/lib/X11/Xlibint.h,v 3.3 1996/01/05 13:11:12 dawes Exp $ */
 
 /*
 
@@ -195,6 +195,9 @@ typedef struct _XSQEvent
 #define NEED_REPLIES
 #endif
 #include <X11/Xproto.h>
+#ifdef __sgi
+#define _SGI_MP_SOURCE  /* turn this on to get MP safe errno */
+#endif
 #include <errno.h>
 #define _XBCOPYFUNC _Xbcopy
 #include <X11/Xfuncs.h>

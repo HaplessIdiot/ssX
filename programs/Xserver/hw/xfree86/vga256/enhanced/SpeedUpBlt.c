@@ -1,5 +1,4 @@
-/* $XConsortium: SpeedUpBlt.c,v 1.2 94/10/13 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/SpeedUpBlt.c,v 3.0 1994/07/24 11:58:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/enhanced/SpeedUpBlt.c,v 3.2 1995/01/28 17:09:32 dawes Exp $ */
 /*******************************************************************************
                         Copyr 1992 by Glenn G. Lai
 
@@ -27,6 +26,7 @@ Austin, Tx 78765
 glenn@cs.utexas.edu)
 8/17/92
 *******************************************************************************/
+/* $XConsortium: SpeedUpBlt.c /main/3 1995/11/13 08:45:48 kaleb $ */
 
 #include "vga256.h"
 

@@ -1,3 +1,4 @@
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbbitblt.c,v 3.2 1995/01/28 17:07:36 dawes Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -46,8 +47,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XConsortium: mfbbitblt.c,v 1.3 94/10/12 21:20:46 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga2/mfb.banked/mfbbitblt.c,v 3.0 1994/05/31 08:13:32 dawes Exp $ */
+/* $XConsortium: mfbbitblt.c /main/4 1995/11/13 07:15:03 kaleb $ */
+
 #include "X.h"
 #include "Xprotostr.h"
 

@@ -1,6 +1,6 @@
 /*
- *	$XConsortium: misc.c /main/105 1996/01/14 16:53:00 kaleb $
- *	$XFree86: xc/programs/xterm/misc.c,v 3.8 1996/01/24 22:05:01 dawes Exp $
+ *	$XConsortium: misc.c /main/106 1996/02/02 14:27:57 kaleb $
+ *	$XFree86: xc/programs/xterm/misc.c,v 3.9 1996/01/30 15:28:30 dawes Exp $
  */
 
 /*
@@ -638,8 +638,8 @@ register TScreen *screen;
 		screen->logfd = p[1];
 		signal(SIGPIPE, logpipe);
 #else
-		Bell();
-		Bell();
+		Bell(XkbBI_Info,0);
+		Bell(XkbBI_Info,0);
 		return;
 #endif
 	} else {
@@ -762,8 +762,8 @@ int (*func) PROTO((void));
 			free(term->screen.logfile);
 		term->screen.logfile = cp;
 #else
-		Bell();
-		Bell();
+		Bell(XkbBI_Info,0);
+		Bell(XkbBI_Info,0);
 #endif
 		break;
 #endif /* ALLOWLOGGING */

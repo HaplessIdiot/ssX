@@ -1,14 +1,16 @@
-XCOMM $XConsortium: bsdLib.rules,v 1.1 94/03/29 15:34:45 gildea Exp $
+XCOMM $XConsortium: bsdLib.rules /main/2 1996/01/24 06:38:15 kaleb $
 
+
+
+
+
+XCOMM $XFree86$
 /*
  * NetBSD/FreeBSD shared library rules
  */
 
 #ifndef HasSharedLibraries
 #define HasSharedLibraries YES
-#endif
-#ifndef ForceNormalLib
-#define ForceNormalLib NO
 #endif
 #ifndef SharedDataSeparation
 #define SharedDataSeparation NO
