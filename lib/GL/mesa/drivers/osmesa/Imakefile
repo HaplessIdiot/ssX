@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.3tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.4 2004/04/22 13:58:40 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -26,6 +26,8 @@ XCOMM $XFree86: xc/lib/GL/mesa/drivers/osmesa/Imakefile,v 1.3tsi Exp $
 #endif
 
 LinkSourceFile(osmesa.c, $(MESASRCDIR)/src/mesa/drivers/osmesa)
+LinkSourceFile(driverfuncs.c, $(MESASRCDIR)/src/mesa/drivers/common)
+LinkSourceFile(driverfuncs.h, $(MESASRCDIR)/src/mesa/drivers/common)
 
 #if Malloc0ReturnsNull
 ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
@@ -46,16 +48,16 @@ MESA_INCLUDES = -I$(MESASRCDIR)/src/mesa \
     MESADOBJS = $(COREMESADOBJS) $(MESA_ASM_DOBJS)
     MESAPOBJS = $(COREMESAPOBJS) $(MESA_ASM_POBJS)
 
-         SRCS = osmesa.c
-         OBJS = osmesa.o $(MESAOBJS)
-        EOBJS = $(EXTRASUBDIR)/osmesa.o $(MESAEOBJS)
+         SRCS = osmesa.c driverfuncs.c
+         OBJS = osmesa.o driverfuncs.o $(MESAOBJS)
+        EOBJS = $(EXTRASUBDIR)/osmesa.o $(EXTRASUBDIR)/driverfuncs.o $(MESAEOBJS)
 #if DoSharedLib
-        UOBJS = unshared/osmesa.o $(MESAUOBJS)
+        UOBJS = unshared/osmesa.o unshared/driverfuncs.o $(MESAUOBJS)
 #else
         UOBJS = $(OBJS)
 #endif
-        DOBJS = debugger/osmesa.o $(MESADOBJS)
-        POBJS = profiled/osmesa.o $(MESAPOBJS)
+        DOBJS = debugger/osmesa.o debugger/driverfuncs.o $(MESADOBJS)
+        POBJS = profiled/osmesa.o profiled/driverfuncs.o $(MESAPOBJS)
 
 #if LocalThreads
   THREADOBJS = $(THREADS_LIBS)
