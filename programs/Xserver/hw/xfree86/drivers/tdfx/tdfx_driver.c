@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.38 2000/06/22 17:41:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.39 2000/06/23 23:43:45 alanh Exp $ */
 
 /*
  * Authors:
@@ -661,11 +661,6 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 
   if (pTDFX->pEnt->location.type != BUS_PCI) return FALSE;
 
-  if (flags & PROBE_DETECT) {
-    TDFXProbeDDC(pScrn, pTDFX->pEnt->index);
-    return FALSE;
-  }
-  
   /* The vgahw module should be loaded here when needed */
   if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
 
@@ -805,7 +800,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
     }
   }
   xf86DrvMsg(pScrn->scrnIndex, from, "MMIO registers at addr 0x%lX\n",
-	     (unsigned long)pTDFX->MMIOAddr);
+	     (unsigned long)pTDFX->MMIOAddr[0]);
 
   if (match->ioBase[2]) {
     pTDFX->PIOBase[0] = match->ioBase[2]&0xFFFFFFFC;

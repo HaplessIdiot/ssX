@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.12 2000/06/17 17:44:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.13 2000/08/25 13:42:39 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -229,7 +229,7 @@ TDFXAccelInit(ScreenPtr pScreen)
     TDFXSetupForCPUToScreenColorExpandFill;
   infoPtr->SubsequentCPUToScreenColorExpandFill =
     TDFXSubsequentCPUToScreenColorExpandFill;
-  infoPtr->ColorExpandBase = pTDFX->MMIOBase+SST_2D_LAUNCH;
+  infoPtr->ColorExpandBase = pTDFX->MMIOBase[0]+SST_2D_LAUNCH;
   infoPtr->ColorExpandRange = 128;
   infoPtr->CPUToScreenColorExpandFillFlags = commonFlags |
     CPU_TRANSFER_PAD_DWORD | SCANLINE_PAD_DWORD |
