@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.28 2002/05/07 12:57:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.30 2002/11/25 14:05:00 eich Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -462,7 +462,7 @@ fbdevHWSetVideoModes(ScrnInfoPtr pScrn)
 	int virtY = pScrn->display->virtualY;
 	struct fb_var_screeninfo var;
 	char **modename;
-	DisplayModePtr mode,this,last = NULL;
+	DisplayModePtr mode,this,last = pScrn->modes;
 
 	TRACE_ENTER("VerifyModes");
 	if (NULL == pScrn->display->modes)
