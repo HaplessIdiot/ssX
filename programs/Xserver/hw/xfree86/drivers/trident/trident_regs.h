@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.19 2001/05/15 11:08:40 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_regs.h,v 1.21 2001/11/30 12:12:02 eich Exp $ */
 
 #define DEBUG 1
 
@@ -61,6 +61,7 @@
 #define CRTHiOrd 0x27
 #define AddColReg 0x29
 #define InterfaceSel 0x2A
+#define HorizOverflow 0x2B
 #define GETest 0x2D
 #define Performance 0x2F
 #define GraphEngReg 0x36

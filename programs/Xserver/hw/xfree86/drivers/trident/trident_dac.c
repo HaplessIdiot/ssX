@@ -22,7 +22,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.61 2001/12/19 18:55:16 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.62 2002/01/08 10:48:53 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -215,6 +215,9 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
  				     ((mode->CrtcVSyncStart & 0x400) >> 5) |
  				     (((mode->CrtcVDisplay - 1) & 0x400) >> 6)|
  				     0x08;
+
+    pReg->tridentRegs3x4[HorizOverflow] = ((mode->CrtcHTotal & 0x800) >> 11) |
+	    				  ((mode->CrtcHBlankStart & 0x800)>>7);
 
     if (pTrident->IsCyber) {
 	Bool LCDActive;
@@ -669,6 +672,7 @@ TridentRestore(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     OUTW_3C4(NewMode2);
     OUTW_3x4(CursorControl);
     OUTW_3x4(CRTHiOrd);
+    OUTW_3x4(HorizOverflow);
     OUTW_3x4(AddColReg);
     OUTW_3x4(GraphEngReg);
     OUTW_3x4(Performance);
@@ -788,6 +792,7 @@ TridentSave(ScrnInfoPtr pScrn, TRIDENTRegPtr tridentReg)
     INB_3x4(LinearAddReg);
     INB_3x4(CRTCModuleTest);
     INB_3x4(CRTHiOrd);
+    INB_3x4(HorizOverflow);
     INB_3x4(Performance);
     INB_3x4(InterfaceSel);
     INB_3x4(DRAMControl);
