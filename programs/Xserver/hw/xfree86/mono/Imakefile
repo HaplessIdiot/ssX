@@ -1,0 +1,31 @@
+#include <Server.tmpl>
+
+#define IHaveSubdirs
+
+SUBDIRS = mono drivers mfb.banked
+
+SRCS = mono/?*.c mfb.banked/?*.c
+
+OBJS = mono/?*.o mfb.banked/?*.o
+
+DONES = mono/DONE mfb.banked/DONE
+
+INCLUDES = -Imono -I../common -I../os-support -I$(SERVERSRC)/include \
+           -I$(SERVERSRC)/mfb -I$(SERVERSRC)/mi -I$(INCLUDESRC)
+
+MONODRIVERS = XF86MonoDrivers
+
+ConfigTargetNoDepend(monoConf,$(ICONFIGFILES),confmono.sh,$(MONODRIVERS))
+
+all:: subdirs libmono.a
+
+NormalLibraryObjectRule()
+
+NamedMakeSubdirs(subdirs,$(SUBDIRS))
+
+InstallLinkKitLibrary(mono,$(LINKKITDIR)/drivers)
+InstallLinkKitNonExecFile(confmono.sh,$(LINKKITDIR))
+
+NormalDepLibraryTarget(mono,$(SUBDIRS) $(DONES),$(OBJS))
+
+DependSubdirs($(SUBDIRS))
