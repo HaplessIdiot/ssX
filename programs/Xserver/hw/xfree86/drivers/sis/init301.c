@@ -726,6 +726,8 @@ SiS_WaitRetrace1(SiS_Private *SiS_Pr)
 
   if(SiS_GetReg(SiS_Pr->SiS_P3c4,0x1f) & 0xc0) return;
 
+  if(!(SiS_GetReg(SiS_Pr->SiS_P3d4,0x17) & 0x80)) return;
+
   watchdog = 65535;
   while((SiS_GetRegByte(SiS_Pr->SiS_P3da) & 0x08) && --watchdog);
   watchdog = 65535;
@@ -10781,7 +10783,7 @@ SiS_SetCH70xxANDOR(SiS_Private *SiS_Pr, USHORT tempax,USHORT tempbh)
   SiS_SetCH70xx(SiS_Pr,tempbl);
 }
 
-/* Generic I2C functions for Chrontel --------- */
+/* Generic I2C functions for Chrontel & DDC --------- */
 
 void
 SiS_SetSwitchDDC2(SiS_Private *SiS_Pr)
@@ -10791,6 +10793,13 @@ SiS_SetSwitchDDC2(SiS_Private *SiS_Pr)
 
   SiS_SetSCLKLow(SiS_Pr);
   SiS_WaitRetrace1(SiS_Pr);
+}
+
+USHORT
+SiS_ReadDDC1Bit(SiS_Private *SiS_Pr)
+{
+   SiS_WaitRetrace1(SiS_Pr);
+   return((SiS_GetReg(SiS_Pr->SiS_P3c4,0x11) & 0x02) >> 1);
 }
 
 /* Set I2C start condition */
