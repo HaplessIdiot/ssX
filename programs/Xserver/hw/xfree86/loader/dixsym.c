@@ -193,6 +193,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(AllocateWindowPrivate)
   SYMFUNC(AllocateWindowPrivateIndex)
   SYMFUNC(AllocateScreenPrivateIndex)
+  SYMFUNC(AllocateColormapPrivateIndex)
   /* resource.c */
   SYMFUNC(AddResource)
   SYMFUNC(ChangeResourceValue)
