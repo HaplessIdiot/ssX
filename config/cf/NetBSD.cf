@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: NetBSD.cf /main/12 1996/01/11 17:33:03 gildea $
-XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.27 1996/01/13 12:17:52 dawes Exp $
+XCOMM platform:  $XConsortium: NetBSD.cf /main/13 1996/01/22 17:35:44 gildea $
+XCOMM platform:  $XFree86: xc/config/cf/NetBSD.cf,v 3.28 1996/01/24 21:51:50 dawes Exp $
 
 #ifndef OSName
 #define OSName		NetBSD 1.1
