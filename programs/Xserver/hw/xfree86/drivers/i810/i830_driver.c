@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.33 2003/04/23 21:51:38 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -43,7 +43,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors: Jeff Hartmann <jhartmann@valinux.com>
  *          Abraham van der Merwe <abraham@2d3d.co.za>
- *          David Dawes <dawes@tungstengraphics.com>
+ *          David Dawes <dawes@xfree86.org>
  */
 
 /*
