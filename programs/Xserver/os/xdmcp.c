@@ -1,4 +1,4 @@
-/* $Xorg: xdmcp.c,v 1.3 2000/08/17 19:53:42 cpqbld Exp $ */
+/* $Xorg: xdmcp.c,v 1.4 2001/01/31 13:37:19 pookie Exp $ */
 /*
  * Copyright 1989 Network Computing Devices, Inc., Mountain View, California.
  *
@@ -13,7 +13,7 @@
  * without express or implied warranty.
  *
  */
-/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.17 2001/08/23 15:26:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xdmcp.c,v 3.18 2001/08/27 17:41:00 dawes Exp $ */
 
 #ifdef WIN32
 /* avoid conflicting definitions */
@@ -66,6 +66,9 @@
 #ifdef XDMCP
 #undef REQUEST
 #include <X11/Xdmcp.h>
+
+#define X_INCLUDE_NETDB_H
+#include <X11/Xos_r.h>
 
 extern char *defaultDisplayClass;
 
@@ -1360,13 +1363,14 @@ get_manager_by_name(
     int	    i)
 {
     struct hostent *hep;
+    _Xgethostbynameparams hparams;
 
     if (i == argc)
     {
 	ErrorF("Xserver: missing host name in command line\n");
 	exit(1);
     }
-    if (!(hep = gethostbyname(argv[i])))
+    if (!(hep = _XGethostbyname(argv[i], hparams)))
     {
 	ErrorF("Xserver: unknown host: %s\n", argv[i]);
 	exit(1);
@@ -1394,13 +1398,14 @@ get_fromaddr_by_name(
     int	    i)
 {
     struct hostent *hep;
+    _Xgethostbynameparams hparams;
 
     if (i == argc)
     {
 	ErrorF("Xserver: missing -from host name in command line\n");
 	exit(1);
     }
-    if (!(hep = gethostbyname(argv[i])))
+    if (!(hep = _XGethostbyname(argv[i], hparams)))
     {
 	ErrorF("Xserver: unknown host: %s\n", argv[i]);
 	exit(1);

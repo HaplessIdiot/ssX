@@ -1,4 +1,4 @@
-/* $Xorg: utils.c,v 1.3 2000/08/17 19:53:41 cpqbld Exp $ */
+/* $Xorg: utils.c,v 1.4 2001/01/31 13:31:50 pookie Exp $ */
 /*
 
 Copyright 1987, 1998  The Open Group
@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.74 2001/08/23 15:26:05 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.75 2001/10/28 03:34:17 tsi Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -110,6 +110,9 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #define _SECURITY_SERVER
 #include "security.h"
 #endif
+
+#define X_INCLUDE_NETDB_H
+#include <X11/Xos_r.h>
 
 #include <errno.h>
 extern int errno;
@@ -1093,9 +1096,10 @@ pointer client;
 	char hname[1024], *hnameptr;
 	struct hostent *host;
 	int len;
+	_Xgethostbynameparams hparams;
 
 	gethostname(hname, 1024);
-	host = gethostbyname(hname);
+	host = _XGethostbyname(hname, hparams);
 	if (host == NULL)
 	    hnameptr = hname;
 	else

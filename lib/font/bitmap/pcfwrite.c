@@ -1,4 +1,4 @@
-/* $Xorg: pcfwrite.c,v 1.3 2000/08/17 19:46:35 cpqbld Exp $ */
+/* $Xorg: pcfwrite.c,v 1.4 2001/10/30 09:58:43 pookie Exp $ */
 
 /*
 
@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.5 2001/01/17 19:43:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.6 2001/04/05 17:42:27 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -33,6 +33,12 @@ from The Open Group.
 #include "fntfilst.h"
 #include "bitmap.h"
 #include "pcf.h"
+
+extern void pcfError(
+              #if NeedVarargsPrototypes
+                  char* message, ...
+              #endif
+              );
 
 /* Write PCF font files */
 
@@ -231,8 +237,10 @@ pcfWriteFont(FontPtr pFont, FontFilePtr file)
 	ink_maxbounds = &pFont->info.ink_maxbounds;
     }
     offsetProps = (FontPropPtr) xalloc(pFont->info.nprops * sizeof(FontPropRec));
-    if (!offsetProps)
+    if (!offsetProps) {
+      pcfError("pcfWriteFont(): Couldn't allocate offsetProps (%d*%d)", pFont->info.nprops, sizeof(FontPropRec));
 	return AllocError;
+    }
     prop_string_size = 0;
     for (i = 0; i < pFont->info.nprops; i++) {
 	offsetProps[i].name = prop_string_size;
