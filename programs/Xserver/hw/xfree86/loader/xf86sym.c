@@ -472,8 +472,9 @@ LOOKUP xfree86LookupTab[] = {
 
    /* xf86xv.c */
    SYMFUNC(xf86XVScreenInit)
-   SYMFUNC(xf86XVRegisterGenericAdaptor)
+   SYMFUNC(xf86XVRegisterGenericAdaptorDriver)
    SYMFUNC(xf86XVListGenericAdaptors)
+   SYMFUNC(xf86XVRegisterOffscreenImages)
 
    /* xf86VidMode.c */
    SYMFUNC(VidModeExtensionInit)
