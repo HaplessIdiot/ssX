@@ -3,15 +3,15 @@
  
 <!-- made up title -->
 <title> Information for ISC Users
-<author> The XFree86 Project, Inc.
+<author> Michael Rohleder
 <date> 16 December 1994
 <toc>
 
 <sect> Information for ISC Users <p>
-<!-- very freely translated from the german -->
-Changes to the system configuration files:
+Changes to the system:
 <tt>/usr/local/lib/gcc-lib/i386-isc4.0/2.6.0/include/sys/limits.h</tt>
-(even better: <tt>/usr/include/sys/limits.h</tt> -- will remain with a new gcc.)
+(better: do it also in <tt>/usr/include/sys/limits.h</tt> --
+will remain with a new gcc.)
 <verb>
 #ifndef OPEN_MAX
 #ifdef ISC
@@ -21,7 +21,7 @@ Changes to the system configuration files:
 #endif
 #endif
 </verb>
-<tt>OPEN_MAX</tt> had to be increased to avoid too early 
+<tt>OPEN_MAX</tt> had to be increased to prevent
 Xlib Errors (max no. of clients reached).
 
 <tt>/usr/include/sys/ioctl.h</tt>
@@ -29,7 +29,7 @@ surrounded by <tt>ifdef _IOCTL_H endif</tt>
 to prevent multiple includes.
 
 <tt>
-BOOTSTRAPCFLAGS="-DISC -DISC40 -DISC30 -DSYSV -Di386"
+BOOTSTRAPCFLAGS="-DISC [-DISC40 | -DISC30] -DSYSV"
 </tt>
 
 <descrip>
@@ -43,12 +43,19 @@ BOOTSTRAPCFLAGS="-DISC -DISC40 -DISC30 -DSYSV -Di386"
                    set the HasSymLinks to Yes ('cause symbolic linking
                    were only supported from Version 4.x using the S5L 
                    Filesystem)
+		   A build on ISC 4.x only needs -DISC40 defines in
+		   the BOOTSRAPCFLAGS -- the -DISC30 will be included
+		   automatically.
 
-<tag>-DSYSV -Di386</tag>
-	standard defines for SystemV Release3 on x86 Platform
+<tag>-DSYSV [-Di386]</tag>
+	standard defines for SystemV Release3 on x86 Platform.
+		  You don't need to explicitly define -Di386 because
+		  this is pre-defined in /lib/cpp.
 
 <tag>GCC-Versions</tag>
-	I'd tried gcc Version 2.5.8 ,2.6.0 and 2.6.2
+	I'd tried gcc Version 2.5.8, 2.6.0, 2.6.2 and 2.6.3.  2.6.2 and
+		  2.6.3 had some problems compiling 3.1.  2.6.3 builds
+		  3.1.0A (beta) without problem.
 
 <tag>Optimization</tag>
 	using gcc-2.6.0 you got only 1 Problem using -O3
@@ -57,7 +64,7 @@ BOOTSTRAPCFLAGS="-DISC -DISC40 -DISC30 -DSYSV -Di386"
 </descrip>
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.isc,v 3.1 1994/12/02 05:46:55 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.0 1994/12/20 11:33:46 dawes Exp $
 </verb>
 
 </article>
