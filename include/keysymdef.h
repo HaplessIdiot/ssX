@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/include/keysymdef.h,v 1.6 1999/05/30 15:28:18 dawes Exp $ */
+/* $XFree86: xc/include/keysymdef.h,v 1.7 1999/06/06 14:05:51 dawes Exp $ */
 
 #define XK_VoidSymbol		0xFFFFFF	/* void symbol */
 
@@ -910,7 +910,6 @@ SOFTWARE.
  * Byte 3 = 6
  */
 #ifdef XK_CYRILLIC
-#define XK_Ukrainian_ghe_with_upturn                   0x681
 #define XK_Ukrainian_GHE_with_upturn                   0x682
 #define XK_Serbian_dje                                 0x6a1
 #define XK_Macedonia_gje                               0x6a2

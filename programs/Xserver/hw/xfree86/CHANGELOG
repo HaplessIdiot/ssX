@@ -1,3 +1,11 @@
+XFree86 3.9Pr (xx June 1999)
+2722. Re-enable screen->screen blts for the Trident Image3D, and fix a problem
+      with mapping/unmapping memory with VT switching (David Dawes).
+2721. Fix a problem linking with libXfont when building the shared version
+      is disabled (David Dawes).
+2720. Fix an Xlib problem introduced in 3.9Pq that shows up when X_LOCALE
+      is defined (David Dawes).
+
 XFree86 3.9Pq (6 June 1999)
 2719. Change the parser's error message printing so that they will end
       up in the log file (David Dawes).
@@ -8121,4 +8129,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.767 1999/06/06 14:06:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.768 1999/06/06 15:23:00 dawes Exp $

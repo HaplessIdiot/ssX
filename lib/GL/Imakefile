@@ -1,9 +1,15 @@
 
 XCOMM Header: /p0/cvs/X39-3D/xc/lib/GL/Imakefile,v 1.3 1999/02/26 08:35:31 martin Exp $
-XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.4 1999/05/03 15:31:48 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/Imakefile,v 1.5 1999/06/06 09:55:45 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags
+
+#define DoNormalLib NormalLibGlx
+#define DoSharedLib SharedLibGlx
+#define DoExtraLib SharedLibGlx
+#define DoDebugLib DebugLibGlx
+#define DoProfileLib ProfileLibGlx
 
 #if BuildXF86DRI
 DRIDIRS = dri
@@ -54,12 +60,7 @@ DependSubdirs($(SUBDIRS))
        POBJS = $(GLXPOBJS) $(DRIPOBJS) $(DRMPOBJS)
        DONES = $(GLXDONES) $(DRIDONES) $(DRMDONES)
 
-#if 1
 #include <Library.tmpl>
-#else
-#undef _LinkBuildLibrary
-#define _LinkBuildLibrary(lib) LinkBuildLibrary(lib)
-#endif
 
 #if NormalLibGlx
 NormalDepLibraryTarget($(LIBNAME),$(SUBDIRS) $(DONES),$(UOBJS))
