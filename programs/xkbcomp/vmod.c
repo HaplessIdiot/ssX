@@ -1,4 +1,5 @@
 /* $XConsortium: vmod.c /main/6 1996/01/14 16:48:30 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

@@ -1,4 +1,5 @@
 /* $XConsortium: misc.c /main/7 1996/02/02 14:17:22 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 

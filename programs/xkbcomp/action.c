@@ -1,4 +1,5 @@
 /* $XConsortium: action.c /main/10 1996/03/01 14:31:49 kaleb $ */
+/* $XFree86$ */
 /************************************************************
  Copyright (c) 1994 by Silicon Graphics Computer Systems, Inc.
 
