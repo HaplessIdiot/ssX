@@ -28,7 +28,7 @@
  * 
  * Permedia accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.17 2000/01/21 01:12:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm_accel.c,v 1.18 2000/03/31 22:55:43 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1242,6 +1242,7 @@ PermediaPolySegmentThinSolidWrapper(
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
     GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
     pGlint->CurrentGC = pGC;
+    pGlint->CurrentDrawable = pDraw;
     if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
     XAAPolySegment(pDraw, pGC, nseg, pSeg);
 }
