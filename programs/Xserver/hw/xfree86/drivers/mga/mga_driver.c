@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.222 2002/10/08 22:14:09 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.224 2002/12/09 11:32:48 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -287,6 +287,7 @@ static const char *ramdacSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 #ifdef XF86DRI
 static const char *drmSymbols[] = {
     "drmAddBufs",
@@ -328,6 +329,7 @@ static const char *driSymbols[] = {
     NULL
 };
 #endif
+#endif
 
 #define MGAuseI2C 1
 
@@ -352,12 +354,14 @@ static const char *shadowSymbols[] = {
     NULL
 };
 
+#ifdef XFree86LOADER
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
     "vbeFree",
     NULL
 };
+#endif
 
 static const char *int10Symbols[] = {
     "xf86FreeInt10",
