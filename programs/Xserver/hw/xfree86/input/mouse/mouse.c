@@ -902,7 +902,9 @@ SetupMouse(InputInfoPtr pInfo)
  		    c2[1] = 200;
  		else if (pMse->sampleRate >= 100)
  		    c2[1] = 100;
- 		else if (pMse->sampleRate >= 60)
+  		else if (pMse->sampleRate >= 80)
+ 		    c2[1] = 80;
+		else if (pMse->sampleRate >= 60)
  		    c2[1] = 60;
  		else if (pMse->sampleRate >= 40)
  		    c2[1] = 40;
