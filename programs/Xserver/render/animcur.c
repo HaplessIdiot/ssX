@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.3 2002/11/30 06:21:35 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/animcur.c,v 1.4tsi Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -248,6 +248,7 @@ AnimCurSetCursorPosition (ScreenPtr pScreen,
 	animCurState.pScreen = pScreen;
     ret = (*pScreen->SetCursorPosition) (pScreen, x, y, generateEvent);
     Wrap (as, pScreen, SetCursorPosition, AnimCurSetCursorPosition);
+    return ret;
 }
 
 static Bool 
