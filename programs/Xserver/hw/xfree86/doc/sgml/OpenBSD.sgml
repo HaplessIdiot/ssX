@@ -57,7 +57,7 @@ this file and we'll revise it.
 <itemize>
 <item><em>Silken mouse</em> is supported for serial mices, and, under
 post 2.6 OpenBSD-current for PS/2 mices.
-<item>MTRR Write Combining is enabled uner post 2.6 OpenBSD-current. 
+<item>MTRR Write Combining is enabled under post 2.6 OpenBSD-current. 
 </itemize>
 <p>
 See the <htmlurl url="RELNOTES.html" name="Release Notes"> for
@@ -250,7 +250,7 @@ to your kernel config file.
 <sect> Rebuilding the XFree86 Distribution
 
 <p>
-The server developper's kit allow you to rebuild just the X server with a
+The server developer's kit allow you to rebuild just the X server with a
 minimum amount of disk space.  Just unpack it, make the appropriate
 changes to the <tt/xf86site.def/, type ``<tt>./mkmf</tt>'' and
 ``<tt/make/'' to link the server.  See <tt>/usr/X11R6/lib/Server/README</tt>
@@ -332,7 +332,7 @@ Many thanks to all people who contributed to make XFree86 work on
 <bf/Nate Williams/, <bf/Rod Grimes/, <bf/Jack Velte/ and <bf/Michael Smith/.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.4 1999/11/19 13:54:28 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.5 1999/11/26 00:51:51 dawes Exp $
 
 
 

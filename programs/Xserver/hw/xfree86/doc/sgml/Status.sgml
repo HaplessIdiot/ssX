@@ -6,10 +6,10 @@
 
 <title>Driver Status for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>23 January 2000
+<date>24 January 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.2 2000/01/23 21:34:37 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.4 2000/01/24 19:15:59 dawes Exp $
 </ident>
 
 <abstract>
@@ -657,7 +657,7 @@ dependencies/limitations, other architectures known to work on
 	provided by the "tseng" driver.
 
 <tag>Summary:</tag>
-	All cards supporte by &legacyvers; are also supported by &relvers;
+	All cards supported by &legacyvers; are also supported by &relvers;
 	except for the old ET3000.
 
 </descrip>

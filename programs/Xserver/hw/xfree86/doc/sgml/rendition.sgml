@@ -8,7 +8,7 @@
 <date>12 December 1999
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.5 2000/01/21 18:11:30 dawes Exp $
 </ident>
 
 <toc>
@@ -53,7 +53,7 @@ caution.
 <tag>DacSpeed "MHz"</tag>
 Set custom ramdac limit. We have currently no way of knowing if the v2x00 chip is a v2100 (170MHz) or v2200 (203MHz and 230MHz) so we assume the lowest. Use this option to manually override the value.
 <tag>Option "FramebufferWC"</tag>
-If writecombine is disabled in BIOS, and you add this option in in configuration file, then the driver will try to request writecombined access to the framebuffer. This can drasticly increase the preformance on unaccelerated server. Requres that "MTRR"-support is compiled into the OS-kernel.
+If writecombine is disabled in BIOS, and you add this option in in configuration file, then the driver will try to request writecombined access to the framebuffer. This can drastically increase the performance on unaccelerated server. Requires that "MTRR"-support is compiled into the OS-kernel.
 <tag>Option "NoDDC"</tag>
 Disable probing of DDC-information from your monitor. This information is not used yet and is only there for informational purposes. This might change before final XFree86 4.0 release. Safe to disable if you experience problems during startup of X-server.
 </descrip>
@@ -71,7 +71,7 @@ Disable probing of DDC-information from your monitor. This information is not us
 <sect>Known problems in current driver<p>
 <itemize>
 <item>The acceleration code hangs the computer during X-server startup.
-<item>DDC-probing does not work correclty yet. No DDC information is found.
+<item>DDC-probing does not work correctly yet. No DDC information is found.
 <item>Switching from display to VC and back to display can lock up V2x00 cards.
 <item>When scrolling the virtual display on a V1000 card parts of the screen will become distorted. Problem disappears when you continue moving around. V2x00 does not exhibit this problem. Probably a bug in the driver rather than a limitation of the chip.
 </itemize>

@@ -50,7 +50,7 @@ July 25, 1999<p>
   David thanks for making me realize that this was indeed a problem
   in DG/ux.
 <p>
-  I 've also take the trouble to port gdb-4.17/8 and ddd (X inter)
+  I've also take the trouble to port gdb-4.17/8 and ddd (X inter)
   in pub/XFree86/3.3.5/binaries/DGUX-ix86/GDB_BETA (both binaries
   and source code) in order to be able to send me traces of core
   files produced by Xservers. Try
@@ -238,7 +238,7 @@ July 25, 1999<p>
 </verb>
   Eliminate the #if 0 , #endif.
   Then change this to whatever you prefer.
-  (I prefer the above for the precompiled binaries)
+  (I prefer the above for the pre-compiled binaries)
 <p>
   The DG/ux malloc is crap and keeps bringing problems with some
   X software so I don't use it. Instead there is a port of GNU
@@ -783,7 +783,7 @@ July 25, 1999<p>
 
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DGux.sgml,v 1.2 1999/08/23 06:18:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DGux.sgml,v 1.3 1999/08/28 10:43:32 dawes Exp $
 </verb>
 
 </article>

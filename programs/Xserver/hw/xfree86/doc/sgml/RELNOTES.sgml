@@ -9,7 +9,7 @@
 <date>31 August 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.21 2000/01/03 15:19:08 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.22 2000/01/20 21:46:24 dawes Exp $
 </ident>
 
 <abstract>
@@ -772,8 +772,8 @@ Xinerama or multihead mode.
 mode).
 
 Further information about this driver can be found in the 'glide' driver
-manpage for XFree86. You will not get this driver running before
-reading this manpage.
+man page for XFree86. You will not get this driver running before
+reading this man page.
 
 For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx
 driver which talks directly to the hardware and is much faster.

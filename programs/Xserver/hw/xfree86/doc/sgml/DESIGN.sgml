@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.18 1999/12/17 03:02:26 mvojkovi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.19 2000/01/21 17:46:10 dawes Exp $
 </ident>
 
 
@@ -3848,7 +3848,7 @@ typedef struct {
 	  are planes in the &s.code;image&e.code; format.  The driver
 	  should specify the pitch (in bytes) of each scanline in the
 	  particular plane as well as the offset to that plane (in bytes)
-	  from the begining of the image.
+	  from the beginning of the image.
 	
     </quote>
 

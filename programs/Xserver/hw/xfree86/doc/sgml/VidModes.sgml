@@ -940,7 +940,7 @@ multisync monitor which you should be aware of.
 
 Having a pixel clock higher than the monitor's maximum bandwidth is
 rather harmless, in contrast.  (Note: the theoretical limit of
-discernable features is reached when the pixel clock reaches double
+discernible features is reached when the pixel clock reaches double
 the monitor's bandwidth.  This is a straightforward application of
 Nyquist's Theorem: consider the pixels as a spatially distributed
 series of samples of the drive signals and you'll see why.) 
@@ -1196,7 +1196,7 @@ Here is a copy of modeplot:
 #
 # Do `modeplot -?' to see the control options.
 #
-# ($Id: VidModes.sgml,v 3.14 1997/11/16 10:52:47 dawes Exp $)
+# ($Id: VidModes.sgml,v 3.15 2000/01/24 19:38:29 dawes Exp $)
 
 # Monitor description. Bandwidth in MHz, horizontal frequencies in kHz
 # and vertical frequencies in Hz.
@@ -1235,7 +1235,7 @@ output can be redirected to a printer.  See gnuplot(1) for  details.
 The modeplot tool was created by Eric S. Raymond <esr@thyrsus.com> based on
 analysis and scratch code by Martin Lottermoser <Martin.Lottermoser@mch.sni.de>
 
-This is modeplot $Revision: 3.14 $
+This is modeplot $Revision: 3.15 $
 EOF
 		exit;;
 	esac
@@ -1408,7 +1408,7 @@ mathematical analysis behind <TT>modeplot</TT>.  The distributed
 <TT>modeplot</TT> was redesigned and generalized by ESR from
 Martin's original gnuplot code for one case.
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.13 1997/10/26 13:25:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.14 1997/11/16 10:52:47 dawes Exp $
   
   
   

@@ -4,11 +4,11 @@
 
 <article>
 <title>Information for ATI Rage 128 Users
-<author>Precision Insight, Inc., SuSE GmBH
+<author>Precision Insight, Inc., SuSE GmbH
 <date>12 November 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/11/19 13:54:28 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.3 2000/01/21 18:11:30 dawes Exp $
 </ident>
 <!--
 $PI: xc/programs/Xserver/hw/xfree86/doc/sgml/r128.sgml,v 1.2 1999/10/21 20:51:15 faith Exp $
