@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.24tsi Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.25 2003/07/09 15:27:40 tsi Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -79,6 +79,10 @@ static char *envvars[] = {
 #ifdef KERBEROS
 #include <sys/param.h>
 #include <kerberosIV/krb.h>
+/* OpenBSD 2.8 needs this. */
+#ifdef OpenBSD && OpenBSD <= 200012
+#include <kerberosIV/kafs.h>
+#endif
 static char krbtkfile[MAXPATHLEN];
 #endif
 

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: Login.h,v 3.6 2001/12/14 20:01:28 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/Login.h,v 3.7 2002/10/06 20:42:16 herrb Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -114,7 +114,15 @@ from The Open Group.
 
 /* notifyDone interface definition */
 
-#ifndef __OpenBSD__
+#ifdef __OpenBSD__
+#include <sys/param.h>
+/* 2.8 (200012) doesn't have _PW_NAME_LEN */
+#if OpenBSD > 200012
+#define HAVE_PW_NAME_LEN
+#endif
+#endif
+
+#ifndef HAVE_PW_NAME_LEN
 #define NAME_LEN	32
 #define PASSWORD_LEN	32
 #else
