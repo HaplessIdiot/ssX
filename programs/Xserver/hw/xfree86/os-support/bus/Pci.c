@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.69tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.70 2003/01/10 22:05:45 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -952,7 +952,7 @@ xf86scanpci(int flags)
 #endif
 
     while (idx < MAX_PCI_DEVICES && tag != PCI_NOT_FOUND) {
-	devp = xalloc(sizeof(pciDevice));
+	devp = xcalloc(1, sizeof(pciDevice));
 	if (!devp) {
 	    xf86Msg(X_ERROR,
 		"xf86scanpci: Out of memory after %d devices!!\n", idx);
@@ -989,8 +989,6 @@ xf86scanpci(int flags)
 	default:
 	    break;
 	}
-
-	devp->listed_class = 0;
 
 #ifdef OLD_FORMAT
 	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
