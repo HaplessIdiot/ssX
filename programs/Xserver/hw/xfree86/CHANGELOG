@@ -1,4 +1,6 @@
 XFree86 4.2.99.2 (xx September 2002)
+ 356. Add new FreeType2 backend which fixes a bug with -c- fonts
+      (#5347, #5348, Juliusz Chroboczek).
  355. Add new command line options to glxinfo for more detailed output
       (#5354, Brian Paul).
  354. Support for 24bpp, fix screen blanking and bug fixes for newport driver
@@ -15228,4 +15230,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2316 2002/09/30 22:17:53 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2317 2002/09/30 22:27:59 alanh Exp $
