@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_ctx.c,v 1.3 2000/09/26 15:56:48 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_dd.c,v 1.1tsi Exp $ */
 
 /*
  * Authors:
@@ -151,8 +151,8 @@ sisUpdateBufferSize( sisContextPtr smesa )
 
    current->hwZ &= ~MASK_ZBufferPitch;
    current->hwZ |= smesa->width * z_depth >> 2;
-   current->hwOffsetZ = ( (GLint)smesa->depthbuffer -
-			  (GLint)GET_FbBase(smesa) ) >> 2;
+   current->hwOffsetZ = ( (unsigned long)smesa->depthbuffer -
+			  (unsigned long)GET_FbBase(smesa) ) >> 2;
 
    if ((current->hwOffsetZ != prev->hwOffsetZ) || (current->hwZ != prev->hwZ)) {
       prev->hwOffsetZ = current->hwOffsetZ;
