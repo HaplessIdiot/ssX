@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.7 2003/01/02 07:05:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.8 2003/01/23 00:34:26 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -45,7 +45,6 @@
     BOOL rootlessMenuBarVisible;
     BOOL queueShowServer;
     UInt32 mouseState;
-    Class windowClass;
 
     // server event queue
     BOOL sendServerEvents;

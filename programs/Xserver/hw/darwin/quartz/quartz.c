@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.6 2003/01/19 06:52:54 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.7 2003/01/23 00:34:26 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -59,9 +59,9 @@ int                     quartzUseAGL = 1;
 int                     quartzServerVisible = TRUE;
 int                     quartzServerQuitting = FALSE;
 int                     quartzScreenIndex = 0;
+int                     quartzUsesNSWindow = TRUE;
 int                     aquaMenuBarHeight = 0;
 int                     noPseudoramiXExtension = TRUE;
-int                     aquaNumScreens = 0;
 
 
 /*
@@ -171,6 +171,10 @@ void QuartzInitInput(
     char **argv )
 {
     QuartzMessageMainThread(kQuartzServerStarted, NULL, 0);
+
+    if (quartzRootless) {
+        AquaInitInput(argc, argv);
+    }
 }
 
 

@@ -5,7 +5,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2003 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.49 2002/12/15 06:10:15 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.50 2003/02/26 09:21:33 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -540,6 +540,57 @@ void InitInput( int argc, char **argv )
 
 
 /*
+ * DarwinAdjustScreenOrigins
+ *  Shift all screens so the X11 (0, 0) coordinate is at the top
+ *  left of the global screen coordinates.
+ *
+ *  Screens can be arranged so the top left isn't on any screen, so
+ *  instead use the top left of the leftmost screen as (0,0). This
+ *  may mean some screen space is in -y, but it's better that (0,0)
+ *  be onscreen, or else default xterms disappear. It's better that
+ *  -y be used than -x, because when popup menus are forced
+ *  "onscreen" by dumb window managers like twm, they'll shift the
+ *  menus down instead of left, which still looks funny but is an
+ *  easier target to hit.
+ */
+void
+DarwinAdjustScreenOrigins(ScreenInfo *pScreenInfo)
+{
+    int i, left, top;
+
+    left = dixScreenOrigins[0].x;
+    top  = dixScreenOrigins[0].y;
+
+    /* Find leftmost screen. If there's a tie, take the topmost of the two. */
+    for (i = 1; i < pScreenInfo->numScreens; i++) {
+        if (dixScreenOrigins[i].x < left  ||
+            (dixScreenOrigins[i].x == left &&
+             dixScreenOrigins[i].y < top))
+        {
+            left = dixScreenOrigins[i].x;
+            top = dixScreenOrigins[i].y;
+        }
+    }
+
+    darwinMainScreenX = left;
+    darwinMainScreenY = top;
+
+    /* Shift all screens so that there is a screen whose top left
+       is at X11 (0,0) and at global screen coordinate
+       (darwinMainScreenX, darwinMainScreenY). */
+
+    if (darwinMainScreenX != 0 || darwinMainScreenY != 0) {
+        for (i = 0; i < pScreenInfo->numScreens; i++) {
+            dixScreenOrigins[i].x -= darwinMainScreenX;
+            dixScreenOrigins[i].y -= darwinMainScreenY;
+            ErrorF("Screen %d placed at X11 coordinate (%d,%d).\n",
+                   i, dixScreenOrigins[i].x, dixScreenOrigins[i].y);
+        }
+    }
+}
+
+
+/*
  * InitOutput
  *  Initialize screenInfo for all actually accessible framebuffers.
  *
@@ -554,7 +605,7 @@ void InitInput( int argc, char **argv )
  */
 void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
 {
-    int i, left, top;
+    int i;
     static unsigned long generation = 0;
 
     pScreenInfo->imageByteOrder = IMAGE_BYTE_ORDER;
@@ -585,44 +636,7 @@ void InitOutput( ScreenInfo *pScreenInfo, int argc, char **argv )
         AddScreen( DarwinAddScreen, argc, argv );
     }
 
-    // Shift all screens so the X11 (0, 0) coordinate is at the top left
-    // of the global screen coordinates.
-    // Screens can be arranged so the top left isn't on any screen,
-    // so instead use the top left of the leftmost screen as (0,0).
-    // This may mean some screen space is in -y, but it's better
-    // that (0,0) be onscreen, or else default xterms disappear.
-    // It's better that -y be used than -x, because when popup
-    // menus are forced "onscreen" by dumb window managers like twm,
-    // they'll shift the menus down instead of left, which still looks
-    // funny but is an easier target to hit.
-    left = dixScreenOrigins[0].x;
-    top  = dixScreenOrigins[0].y;
-
-    // Find leftmost screen. If there's a tie, take the topmost of the two.
-    for (i = 1; i < pScreenInfo->numScreens; i++) {
-        if (dixScreenOrigins[i].x < left  ||
-            (dixScreenOrigins[i].x == left &&
-             dixScreenOrigins[i].y < top))
-        {
-            left = dixScreenOrigins[i].x;
-            top = dixScreenOrigins[i].y;
-        }
-    }
-
-    darwinMainScreenX = left;
-    darwinMainScreenY = top;
-
-    // Shift all screens so that there is a screen whose top left
-    // is at X11 (0,0) and at global screen coordinate
-    // (darwinMainScreenX, darwinMainScreenY).
-    if (darwinMainScreenX != 0 || darwinMainScreenY != 0) {
-        for (i = 0; i < pScreenInfo->numScreens; i++) {
-            dixScreenOrigins[i].x -= darwinMainScreenX;
-            dixScreenOrigins[i].y -= darwinMainScreenY;
-            ErrorF("Screen %d placed at X11 coordinate (%d,%d).\n",
-                   i, dixScreenOrigins[i].x, dixScreenOrigins[i].y);
-        }
-    }
+    DarwinAdjustScreenOrigins(pScreenInfo);
 }
 
 

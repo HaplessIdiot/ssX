@@ -371,7 +371,7 @@
 	<key>CFBundleExecutable</key>
 	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XDarwin 1.2b4, ©2001-2003 XFree86 Project, Inc.</string>
+	<string>XDarwin 1.3a1, ©2001-2003 XFree86 Project, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -383,7 +383,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XDarwin 1.2b4</string>
+	<string>XDarwin 1.3a1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -780,7 +780,9 @@
 				170DFB0000729C86416877C2,
 				43B962CE00617089416877C2,
 				F5614B3D025112D901000114,
+				6EC4A64C042A9597006877C2,
 				32FEE13C00E07C3E7F000001,
+				6EC4A66D042A97FC006877C2,
 				29B97315FDCFA39411CA2CEA,
 				29B97317FDCFA39411CA2CEA,
 				29B97323FDCFA39411CA2CEA,
@@ -895,7 +897,7 @@
 				32FEE14900E07D317F000001,
 			);
 			isa = PBXGroup;
-			name = Rootless;
+			name = "Cocoa Imp";
 			path = "";
 			refType = 4;
 		};
@@ -1051,6 +1053,111 @@
 //6E2
 //6E3
 //6E4
+		6EA8EEC80445E25C006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessConfig.h;
+			refType = 4;
+		};
+		6EC4A64C042A9597006877C2 = {
+			children = (
+				6EC4A65D042A9654006877C2,
+				6EC4A65E042A9654006877C2,
+				6EC4A65F042A9654006877C2,
+				6EA8EEC80445E25C006877C2,
+				6EC4A661042A9654006877C2,
+				6EC4A662042A9654006877C2,
+				6EC4A660042A9654006877C2,
+				6EC4A663042A9654006877C2,
+				6EC4A664042A9654006877C2,
+			);
+			isa = PBXGroup;
+			name = Rootless;
+			path = ../../../miext/rootless;
+			refType = 2;
+		};
+		6EC4A65D042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootless.h;
+			refType = 4;
+		};
+		6EC4A65E042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessCommon.c;
+			refType = 4;
+		};
+		6EC4A65F042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessCommon.h;
+			refType = 4;
+		};
+		6EC4A660042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessWindow.h;
+			refType = 4;
+		};
+		6EC4A661042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessScreen.c;
+			refType = 4;
+		};
+		6EC4A662042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessWindow.c;
+			refType = 4;
+		};
+		6EC4A663042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessGC.c;
+			refType = 4;
+		};
+		6EC4A664042A9654006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = rootlessValTree.c;
+			refType = 4;
+		};
+		6EC4A66D042A97FC006877C2 = {
+			children = (
+				6EF471A004478DE0006877C2,
+				6ECF218404589E4D006877C2,
+				6ECF218604589F40006877C2,
+				6EF4719E04478B08006877C2,
+				6EDDB2DF04508B2C006877C2,
+				6EF471A204479263006877C2,
+				6EF471A404479263006877C2,
+				6EF471A504479263006877C2,
+				6EF471A304479263006877C2,
+			);
+			isa = PBXGroup;
+			path = xpr;
+			refType = 4;
+		};
+		6ECF218404589E4D006877C2 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = xpr.h;
+			refType = 4;
+		};
+		6ECF218604589F40006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = xprCursor.c;
+			refType = 4;
+		};
+		6EDDB2DF04508B2C006877C2 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = xprScreen.c;
+			refType = 4;
+		};
 		6EF065C003D4EE19006877C2 = {
 			buildActionMask = 2147483647;
 			files = (
@@ -1152,6 +1259,42 @@
 		6EF065C903D4F0CA006877C2 = {
 			isa = PBXTargetDependency;
 			target = 6EF7C58603D3BC6D00000104;
+		};
+		6EF4719E04478B08006877C2 = {
+			fileEncoding = 4;
+			isa = PBXFileReference;
+			path = xprFrame.c;
+			refType = 4;
+		};
+		6EF471A004478DE0006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = Xplugin.h;
+			refType = 4;
+		};
+		6EF471A204479263006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = "x-hash.c";
+			refType = 4;
+		};
+		6EF471A304479263006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = "x-list.h";
+			refType = 4;
+		};
+		6EF471A404479263006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = "x-hash.h";
+			refType = 4;
+		};
+		6EF471A504479263006877C2 = {
+			fileEncoding = 30;
+			isa = PBXFileReference;
+			path = "x-list.c";
+			refType = 4;
 		};
 		6EF7C58103D3BC6D00000104 = {
 			buildActionMask = 2147483647;

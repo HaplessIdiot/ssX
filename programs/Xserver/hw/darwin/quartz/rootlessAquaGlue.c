@@ -7,7 +7,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.4 2002/07/24 05:58:33 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaGlue.c,v 1.5 2002/12/10 00:00:39 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "darwin.h"
@@ -239,4 +239,14 @@ AquaSetupScreen(int index, ScreenPtr pScreen)
 
     // Initialize generic rootless code
     return RootlessInit(pScreen, &aquaRootlessProcs);
+}
+
+
+/*
+ * AquaInitInput
+ */
+void
+AquaInitInput(int argc, char **argv)
+{
+    // Nothing here
 }

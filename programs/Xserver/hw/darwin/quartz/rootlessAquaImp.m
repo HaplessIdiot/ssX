@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.5 2003/01/20 05:42:52 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessAquaImp.m,v 1.6 2003/01/24 00:11:39 torrey Exp $ */
 
 #include "rootlessAquaImp.h"
 #include "fakeBoxRec.h"
@@ -50,7 +50,7 @@ extern void ErrorF(const char *, ...);
  */
 int AquaDisplayCount()
 {
-    aquaNumScreens = [[NSScreen screens] count];
+    int aquaNumScreens = [[NSScreen screens] count];
 
     if (noPseudoramiXExtension) {
         return aquaNumScreens;

@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.7 2003/01/02 07:05:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.8 2003/01/23 00:34:26 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -130,7 +130,6 @@ static io_connect_t root_port;
     quartzServerQuitting = NO;
     mouseState = 0;
     eventWriteFD = quartzEventWriteFD;
-    windowClass = [NSWindow class];
 
     // set up a port to safely send messages to main thread from server thread
     signalPort = [[NSPort port] retain];
@@ -270,11 +269,13 @@ static io_connect_t root_port;
             break;
         case NSLeftMouseDown:
             [self getMousePosition:&xe fromEvent:anEvent];
-            if (quartzRootless &&
-                ! ([anEvent window] &&
-                   [[anEvent window] isKindOfClass:windowClass])) {
-                // Click in non X window - ignore
-                return NO;
+            if (quartzRootless) {
+                NSWindow *theWindow = [anEvent window];
+                if ((quartzUsesNSWindow && !theWindow) ||
+                    (!quartzUsesNSWindow && theWindow)) {
+                    // Click in non X window - ignore
+                    return NO;
+                }
             }
             mouse1Pressed = YES;
             xe.u.u.type = ButtonPress;
@@ -335,14 +336,13 @@ static io_connect_t root_port;
 
     [self sendXEvent:&xe];
 
-    // Rootless: Send first NSLeftMouseDown to windows and views so window
-    // ordering can be suppressed.
+    // Rootless: Send first NSLeftMouseDown to Cocoa windows and views so
+    // window ordering can be suppressed.
     // Don't pass further events - they (incorrectly?) bring the window
     // forward no matter what.
     if (quartzRootless  &&
         (type == NSLeftMouseDown || type == NSLeftMouseUp) &&
-        [anEvent clickCount] == 1 &&
-        [[anEvent window] isKindOfClass:windowClass])
+        [anEvent clickCount] == 1 && [anEvent window])
     {
         return NO;
     }

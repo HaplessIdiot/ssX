@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2001/03/14 18:42:02 pookie Exp $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.281 2003/04/15 01:05:41 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.282 2003/04/15 03:59:05 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -1272,8 +1272,20 @@ QUARTZEXTLIBS = $(DARWINEXTLIBS)
 
 #endif /* GlxUseAqua */
 
+#if HasXplugin
+QUARTZDIRS = $(DARWINDIRS) $(ROOTLESSDIR)
+XPRLIB = $(DARWINDDXDIR)/quartz/xpr/LibraryTargetName(xpr) \
+         $(ROOTLESSDIR)/LibraryTargetName(rootless)
+AQUALIB = $(DARWINDDXDIR)/quartz/aquaWindow.o \
+          $(DARWINDDXDIR)/quartz/aquaPicture.o
+#else
+QUARTZDIRS = $(DARWINDIRS)
+#endif
+
+QUARTZLIB = $(DARWINDDXDIR)/quartz/LibraryTargetName(XQuartz)
 QUARTZSYSLIBS = -framework ApplicationServices -framework Cocoa \
-                -framework CoreAudio -framework Carbon -ObjC
+                -framework CoreAudio -framework Carbon -ObjC \
+                XpluginLibrary
 QUARTZOBJS = $(DARWINDDXDIR)/quartz/quartzStartup.o
 #if NothingOutsideProjectRoot
 XDARWINAPPDIR = $(BINDIR)/XDarwin.app/Contents
@@ -1286,8 +1298,8 @@ MESABUNDLEDIR = $(XDARWINAPPDIR)/Resources/glxMesa.bundle/Contents/MacOS
 /*
  * Quartz X server (installed in its application bundle)
  */
-SetUIDServerTarget(XDarwinApp,$(DARWINDIRS),$(QUARTZOBJS), \
-	$(DARWINLIBS) $(DARWINDDXDIR)/quartz/LibraryTargetName(XQuartz) \
+SetUIDServerTarget(XDarwinApp,$(QUARTZDIRS),$(QUARTZOBJS), \
+	$(DARWINLIBS) $(QUARTZLIB) $(XPRLIB) $(AQUALIB) \
 	$(QUARTZEXTLIBS),$(DARWINSYSLIBS) $(QUARTZSYSLIBS))
 
 install::

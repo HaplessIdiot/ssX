@@ -28,10 +28,17 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.7 2003/01/29 01:11:05 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessCommon.c,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
+unsigned int rootless_CopyBytes_threshold = 0;
+unsigned int rootless_FillBytes_threshold = 0;
+unsigned int rootless_CopyWindow_threshold = 0;
+#ifdef ROOTLESS_GLOBAL_COORDS
+int rootlessGlobalOffsetX = 0;
+int rootlessGlobalOffsetY = 0;
+#endif
 
 RegionRec rootlessHugeRoot = {{-32767, -32767, 32767, 32767}, NULL};
 
@@ -155,6 +162,11 @@ void RootlessStopDrawing(WindowPtr pWindow, Bool flush)
     else if (flush) {
         SCREENREC(pScreen)->imp->UpdateRegion(winRec->wid, NULL);
     }
+
+    if (flush && winRec->is_reorder_pending) {
+	winRec->is_reorder_pending = FALSE;
+	RootlessReorderWindow(pWindow);
+    }
 }
 
 
@@ -193,12 +205,10 @@ RootlessDamageRegion(WindowPtr pWindow, RegionPtr pRegion)
     b1 = REGION_EXTENTS(pScreen, &pWindow->borderClip);
     b2 = REGION_EXTENTS(pScreen, pRegion);
 
-    if (EXTENTCHECK(b1, b2))
-    {
+    if (EXTENTCHECK(b1, b2)) {
 	/* Regions may overlap. */
 
-	if (REGION_NUM_RECTS(pRegion) == 1)
-	{
+	if (REGION_NUM_RECTS(pRegion) == 1) {
 	    int in;
 
 	    /* Damaged region only has a single rect, so we can
@@ -206,8 +216,7 @@ RootlessDamageRegion(WindowPtr pWindow, RegionPtr pRegion)
 
 	    in = RECT_IN_REGION(pScreen, &pWindow->borderClip,
                                 REGION_RECTS (pRegion));
-	    if (in == rgnIN)
-	    {
+	    if (in == rgnIN) {
 		/* clip totally contains pRegion */
 
 #ifdef ROOTLESS_TRACK_DAMAGE
@@ -223,8 +232,7 @@ RootlessDamageRegion(WindowPtr pWindow, RegionPtr pRegion)
 		RootlessQueueRedisplay(pTop->drawable.pScreen);
 		goto out;
 	    }
-	    else if (in == rgnOUT)
-	    {
+	    else if (in == rgnOUT) {
 		/* clip doesn't contain pRegion */
 
 		goto out;

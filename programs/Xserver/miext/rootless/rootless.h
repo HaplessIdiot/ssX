@@ -27,7 +27,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootless.h,v 1.2 2002/08/28 06:41:26 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootless.h,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 #ifndef _ROOTLESS_H
 #define _ROOTLESS_H
@@ -70,9 +70,15 @@ typedef struct _RootlessWindowRec {
 #endif
 
     unsigned int is_drawing :1;	// Currently drawing?
-    unsigned int is_root :1;	// Is this the root window?
+    unsigned int is_reorder_pending :1;
 } RootlessWindowRec, *RootlessWindowPtr;
 
+
+/* Offset for screen-local to global coordinate transforms */
+#ifdef ROOTLESS_GLOBAL_COORDS
+extern int rootlessGlobalOffsetX;
+extern int rootlessGlobalOffsetY;
+#endif
 
 /* The minimum number of bytes or pixels for which to use the
    implementation's accelerated functions. Set to zero if not
@@ -96,7 +102,8 @@ enum rl_gravity_enum {
   ------------------------------------------*/
 
 /*
- * Create and display a new frame.
+ * Create a new frame.
+ *  The frame is created unmapped.
  *
  *  pFrame      RootlessWindowPtr for this frame should be completely
  *              initialized before calling except for pFrame->wid, which
@@ -149,11 +156,12 @@ typedef void (*RootlessResizeFrameProc)
 
 /*
  * Change frame ordering (AKA stacking, layering).
- *  Drawing is stopped before this is called.
+ *  Drawing is stopped before this is called. Unmapped frames are mapped by
+ *  setting their ordering.
  *
  *  wid         Frame id
- *  nextWid     Frame id of frame that is now below this one or NULL if this
- *              frame is at the bottom.
+ *  nextWid     Frame id of frame that is now above this one or NULL if this
+ *              frame is at the top.
  */
 typedef void (*RootlessRestackFrameProc)
     (RootlessFrameID wid, RootlessFrameID nextWid);
