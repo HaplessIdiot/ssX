@@ -25,8 +25,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  *
- *	$Id: fontcache.c,v 1.3 2000/02/18 00:44:22 dawes Exp $
+ *	$Id: fontcache.c,v 1.4 2000/02/18 16:16:51 tsi Exp $
  */
+/* $XFree86: $ */
 
 /* THIS IS NOT AN X CONSORTIUM STANDARD */
 
