@@ -1,8 +1,9 @@
 #!/usr/bin/perl
 #
-# $XFree86: xc/config/util/mkhtmlindex.pl,v 1.2 2001/03/15 19:02:31 dawes Exp $
+# $XFree86: xc/config/util/mkhtmlindex.pl,v 1.3 2001/03/18 14:49:01 dawes Exp $
 #
 # Copyright © 2000,2001 by VA Linux Systems, Inc.
+# Copyright © 2004 by David H. Dawes.
 #
 # Generate index files for HTML man pages.
 #
@@ -53,19 +54,19 @@ foreach $vol (@vollist) {
 EOF
 
 	foreach $file (sort readdir dir) {
-		if ($file =~ "\.$vol\.html") {
+		if ($file =~ /\.$vol\.html/) {
 			open(file, "<$dir/$file") || die "Can't open $dir/$file";
 			while (<file>) {
 				chop;
-				if (/^<H2>/) {
-					if (! /<\/H2>$/) {
-						while (<file> && ! /<\/H2>$/) {
+				if (/^<H2>/i) {
+					if (! /<\/H2>$/i) {
+						while (<file> && ! /<\/H2>$/i) {
 							;
 						}
 					}
 					$heading = "";
 					while (<file>) {
-						if (/^<H2>/) {
+						if (/^<H2>/i) {
 							last;
 						}
 						$heading = "$heading" . "$_";
@@ -76,7 +77,7 @@ EOF
 						($name, $descr) = split(/-/, $heading, 2);
 						$file =~ /(.*)\.$vol\.html/;
 						$fname = $1;
-						$descr =~ s/<[P]>//g;
+						$descr =~ s/<[Pp]>//g;
 						print mindex
 							"<LI><A href=\"$file\">$fname</A> - $descr</LI>";
 					}
