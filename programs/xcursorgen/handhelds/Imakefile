@@ -33,8 +33,8 @@ install.link:: $(DESTDIR)$(THEMEDIR)/src				@@\
 
 CursorTarget(X_cursor)
 CursorLinkTarget(arrow,right_ptr)
-CursorTarget(base_arrow_down)
-CursorTarget(base_arrow_up)
+CursorTarget(based_arrow_down)
+CursorTarget(based_arrow_up)
 /* CursorTarget(boat) */
 /* CursorTarget(bogosity) */
 CursorTarget(bottom_left_corner)
@@ -50,7 +50,7 @@ CursorTarget(cross)
 CursorLinkTarget(cross_reverse,cross)
 CursorLinkTarget(crosshair,cross)
 CursorTarget(dot)
-CursorTarget(dot_box_mask)
+CursorTarget(dotbox)
 CursorTarget(double_arrow)
 CursorLinkTarget(draft_large,right_ptr)
 CursorLinkTarget(draft_small,right_ptr)
