@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.32 2000/08/28 18:24:14 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.33 2000/12/01 19:34:11 dawes Exp $
 </ident>
 
 
@@ -591,7 +591,7 @@ is what &s.code;InitOutput()&e.code; does:
     <quote><p>
       The purpose of this is to identify all instances of hardware
       supported by the driver.  The flags value is currently either
-      &s.code;PROBE_DEFAULT$e.code; or &s.code;PROBE_DETECT&e.code;.
+      &s.code;PROBE_DEFAULT&e.code; or &s.code;PROBE_DETECT&e.code;.
       &s.code;PROBE_DETECT&e.code; is used if "-configure" or "-probe"
       command line arguments are given and indicates to the
       &s.code;Probe()&e.code; function that it should not configure the
