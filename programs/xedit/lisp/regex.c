@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.7 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.8 2002/11/23 08:26:50 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -121,11 +121,10 @@ Lisp_Reexec(LispBuiltin *builtin)
  re-exec regex string &key count start end notbol noteol
  */
 {
-    GC_ENTER();
     size_t nmatch;
     re_mat match[10];
     long start, end, length;
-    int code, cflags, eflags = 0;
+    int code, cflags, eflags;
     char *string;
     LispObj *result;
     re_cod *regexp;
@@ -161,6 +160,7 @@ Lisp_Reexec(LispBuiltin *builtin)
     if (nmatch & (cflags & RE_NOSUB))
 	nmatch = 1;
 
+    eflags = RE_STARTEND;
     if (notbol != UNSPEC && notbol != NIL)
 	eflags |= RE_NOTBOL;
     if (noteol != UNSPEC && noteol != NIL)
@@ -170,30 +170,33 @@ Lisp_Reexec(LispBuiltin *builtin)
     LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
 			      &start, &end, &length);
 
-    eflags |= RE_STARTEND;
     match[0].rm_so = start;
     match[0].rm_eo = end;
     code = reexec(regexp, string, nmatch, &match[0], eflags);
 
     if (code == 0) {
-	result = NIL;
 	if (nmatch && match[0].rm_eo >= match[0].rm_so) {
-	    result = CONS(CONS(NIL, NIL), NIL);
-	    GC_PROTECT(result);
-	    RPLACA(CAR(result), FIXNUM(match[0].rm_so));
-	    RPLACD(CAR(result), FIXNUM(match[0].rm_eo));
-	    if (nmatch > 1 && match[1].rm_eo >= match[1].rm_so) {
+	    result = CONS(CONS(FIXNUM(match[0].rm_so),
+			       FIXNUM(match[0].rm_eo)), NIL);
+	    if (nmatch > 1 && !(cflags & RE_NOSUB) &&
+		match[1].rm_eo >= match[1].rm_so) {
 		int i;
+		GC_ENTER();
 		LispObj *cons = result;
 
-		for (i = 1; i < nmatch && match[i].rm_eo > match[i].rm_so; i++) {
-		    RPLACD(cons, CONS(CONS(NIL, NIL), NIL));
+		GC_PROTECT(result);
+		for (i = 1;
+		     i < nmatch && match[i].rm_eo >= match[i].rm_so;
+		     i++) {
+		    RPLACD(cons, CONS(CONS(FIXNUM(match[i].rm_so),
+					   FIXNUM(match[i].rm_eo)), NIL));
 		    cons = CDR(cons);
-		    RPLACA(CAR(cons), FIXNUM(match[i].rm_so));
-		    RPLACD(CAR(cons), FIXNUM(match[i].rm_eo));
 		}
+		GC_LEAVE();
 	    }
 	}
+	else
+	    result = NIL;
     }
     else
 	result = Knomatch;
@@ -203,8 +206,6 @@ Lisp_Reexec(LispBuiltin *builtin)
 	refree(regexp);
 	LispFree(regexp);
     }
-
-    GC_LEAVE();
 
     return (result);
 }

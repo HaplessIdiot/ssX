@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/test/stream.lsp,v 1.2 2002/12/04 05:28:01 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/test/stream.lsp,v 1.3 2002/12/06 03:25:29 paulo Exp $
 ;;
 
 ;; most format tests from the cltl second edition samples
@@ -165,8 +165,7 @@
     )
 )
 
-(defun bool-eval (expect form &rest arguments
-		  &aux result (error t) unused error-value)
+(defun bool-eval (expect form &aux result (error t) unused error-value)
     (multiple-value-setq
 	(unused error-value)
 	(ignore-errors
@@ -721,13 +720,57 @@ more text" #'get-output-stream-string os)
 ;; Clisp returns the pathname if the file exists
 #+xedit (eq-test t #'delete-file name)
 #+clisp (bool-test t #'delete-file name)
-#+xedit (eq-test t #'delete-file "delete-me.text~")
-#+clisp (bool-test t #'delete-file "delete-me.text%")
-(equal-test nil #'delete-file name)
-(equal-test nil #'directory name)
-(equal-test nil #'directory
-    #+xedit "delete-me.text~"
-    #+clisp "delete-me.text%")
+(setq backup
+	#+xedit "delete-me.text~"
+	#+clisp "delete-me.text%"
+	#+cmu "delete-me.text.BAK")
+(bool-test t #'delete-file backup)
+(eq-test nil #'delete-file name)
+(eq-test nil #'directory name)
+(eq-test nil #'directory backup)
+;; test append
+(with-open-file (s name :direction :output :if-exists :error)
+    (write-line "line 1" s))
+(with-open-file (s name :direction :output :if-exists :append)
+    (write-line "line 2" s))
+(with-open-file (s name :direction :input)
+    (equal-test "line 1" #'read-line s)
+    (equal-test "line 2" #'read-line s)
+    (eq-test 'eof #'read-line s nil 'eof)
+)
+(bool-test t #'delete-file name)
+;; test overwrite
+(with-open-file (s name :direction :output :if-exists :error)
+    (write-line "overwrite-me" s))
+(with-open-file (s name :direction :output :if-exists :overwrite)
+    (write-line "some-text" s))
+(with-open-file (s name :direction :input)
+    (equal-test "some-text" #'read-line s)
+    (eq-test 'eof #'read-line s nil 'eof))
+;; test check for file existence
+(eq-test nil #'open name :direction :output :if-exists nil)
+(error-test #'open name :direction :output :if-exists :error)
+(bool-test t #'delete-file name)
+;; test check for no file existence
+(eq-test nil #'open name :direction :output :if-does-not-exist nil)
+(error-test #'open name :direction :output :if-does-not-exist :error)
+#+xedit	;; test io -- not sure if this is the expected behaviour
+(progn
+    (with-open-file (s name :direction :io)
+	(write-line "foo" s)
+	(write-line "bar" s))
+    (with-open-file (s name :direction :io :if-exists :append)
+	(equal-test "foo" #'read-line s)
+	(equal-test "bar" #'read-line s)
+	(eq-test 'eof #'read-line s nil 'eof)
+	(write-line "baz" s))
+    (with-open-file (s name :direction :io :if-exists :append)
+	(equal-test "foo" #'read-line s)
+	(equal-test "bar" #'read-line s)
+	(equal-test "baz" #'read-line s)
+	(eq-test 'eof #'read-line s nil 'eof))
+    (bool-test t #'delete-file name)
+)
 
 ;; delete-file				- function
 (eq-eval nil

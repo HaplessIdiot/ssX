@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.19 2002/12/04 05:27:58 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.20 2002/12/06 03:25:27 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -60,6 +60,7 @@
 #define NOEXT_NIL		0
 #define NOEXT_ERROR		1
 #define NOEXT_CREATE		2
+#define NOEXT_NOTHING		3
 
 extern char **environ;
 
@@ -246,7 +247,7 @@ Lisp_Open(LispBuiltin *builtin)
     GC_ENTER();
     char *string;
     LispObj *stream = NIL;
-    int mode, flags, direction, exist, noexist;
+    int mode, flags, direction, exist, noexist, file_exist;
     LispFile *file;
 
     LispObj *filename, *odirection, *element_type, *if_exists,
@@ -307,7 +308,9 @@ Lisp_Open(LispBuiltin *builtin)
 
     if (if_exists != UNSPEC) {
 	exist = -1;
-	if (KEYWORDP(if_exists)) {
+	if (if_exists == NIL)
+	    exist = EXT_NIL;
+	else if (KEYWORDP(if_exists)) {
 	    if (if_exists == Kerror)
 		exist = EXT_ERROR;
 	    else if (if_exists == Knew_version)
@@ -332,6 +335,8 @@ Lisp_Open(LispBuiltin *builtin)
 
     if (if_does_not_exist != UNSPEC) {
 	noexist = -1;
+	if (if_does_not_exist == NIL)
+	    noexist = NOEXT_NIL;
 	if (KEYWORDP(if_does_not_exist)) {
 	    if (if_does_not_exist == Kerror)
 		noexist = NOEXT_ERROR;
@@ -343,7 +348,7 @@ Lisp_Open(LispBuiltin *builtin)
 			STRFUN(builtin), STROBJ(if_does_not_exist));
     }
     else
-	noexist = NOEXT_NIL;
+	noexist = direction != DIR_INPUT ? NOEXT_NOTHING : NOEXT_ERROR;
 
     if (external_format != UNSPEC) {
 	/* just check argument... */
@@ -362,18 +367,39 @@ Lisp_Open(LispBuiltin *builtin)
     string = THESTR(CAR(filename->data.pathname));
     mode = 0;
 
-    /* check what to do, if file already exist */
-    if (direction == DIR_OUTPUT || direction == DIR_IO) {
-	if (access(string, F_OK) == 0) {
-	    if (exist == EXT_NIL) {
-		GC_LEAVE();
+    file_exist = access(string, F_OK) == 0;
+    if (file_exist) {
+	if (exist == EXT_NIL) {
+	    GC_LEAVE();
+	    return (NIL);
+	}
+    }
+    else {
+	if (noexist == NOEXT_NIL) {
+	    GC_LEAVE();
+	    return (NIL);
+	}
+	if (noexist == NOEXT_ERROR)
+	    LispDestroy("%s: file %s does not exist",
+			STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
+	else if (noexist == NOEXT_CREATE) {
+	    LispFile *tmp = LispFopen(string, FILE_WRITE);
 
-		return (NIL);
-	    }
-	    else if (exist == EXT_ERROR)
+	    if (tmp)
+		LispFclose(tmp);
+	    else
+		LispDestroy("%s: cannot create file %s",
+			    STRFUN(builtin),
+			    STROBJ(CAR(filename->data.quote)));
+	}
+    }
+
+    if (direction == DIR_OUTPUT || direction == DIR_IO) {
+	if (file_exist) {
+	    if (exist == EXT_ERROR)
 		LispDestroy("%s: file %s already exists",
 			    STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
-	    else if (exist == EXT_RENAME) {
+	    if (exist == EXT_RENAME) {
 		/* Add an ending '~' at the end of the backup file */
 		char tmp[PATH_MAX + 1];
 
@@ -392,46 +418,18 @@ Lisp_Open(LispBuiltin *builtin)
 		mode |= FILE_WRITE;
 	    else if (exist == EXT_APPEND)
 		mode |= FILE_APPEND;
-	    else
-		LispDestroy("%s: unsupported :IF-EXISTS %s",
-		    STRFUN(builtin), STROBJ(if_exists));
 	}
 	else
 	    mode |= FILE_WRITE;
 	if (direction == DIR_IO)
 	    mode |= FILE_IO;
     }
-    else {
-	if (access(string, F_OK) != 0) {
-	    if (noexist == NOEXT_NIL) {
-		GC_LEAVE();
-
-		return (NIL);
-	    }
-	    else if (noexist == NOEXT_ERROR)
-		LispDestroy("%s: file %s does not exist",
-			    STRFUN(builtin), STROBJ(CAR(filename->data.quote)));
-	    else if (noexist == NOEXT_CREATE) {
-		LispFile *tmp = LispFopen(string, FILE_WRITE);
-
-		if (tmp)
-		    LispFclose(tmp);
-		else
-		    LispDestroy("%s: cannot create file %s",
-				STRFUN(builtin),
-				STROBJ(CAR(filename->data.quote)));
-	    }
-	    else
-		LispDestroy("%s: unsupported :IF-DOES-NOT-EXIST %s",
-			    STRFUN(builtin), STROBJ(if_does_not_exist));
-	}
+    else
 	mode |= FILE_READ;
-    }
 
     file = LispFopen(string, mode);
     if (file == NULL)
-	LispDestroy("%s: open: %s",
-		    STRFUN(builtin), strerror(errno));
+	LispDestroy("%s: open: %s", STRFUN(builtin), strerror(errno));
 
     flags = 0;
     if (direction == DIR_PROBE) {
