@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.32 2000/11/18 19:37:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.33 2001/02/04 03:19:28 mvojkovi Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1592,6 +1592,27 @@ XAA_888_plus_PICT_a8_to_8888 (
     int    dstPitch,	/* in dwords */
     int    width,
     int    height
+);
+
+Bool
+XAAGetRGBAFromPixel(
+    CARD32 pixel,
+    CARD16 *red,
+    CARD16 *green,
+    CARD16 *blue,
+    CARD16 *alpha,
+    CARD32 format
+);
+
+
+Bool
+XAAGetPixelFromRGBA (
+    CARD32 *pixel,
+    CARD16 red,
+    CARD16 green,
+    CARD16 blue,
+    CARD16 alpha,
+    CARD32 format
 );
 
 #endif

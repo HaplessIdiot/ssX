@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.9 2001/02/04 03:19:28 mvojkovi Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPict.c,v 1.10 2001/04/07 20:34:04 mvojkovi Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -44,7 +44,7 @@
 #include "xf86fbman.h"
 #include "servermd.h"
 
-static Bool
+Bool
 XAAGetPixelFromRGBA (
     CARD32 *pixel,
     CARD16 red,
@@ -87,7 +87,7 @@ XAAGetPixelFromRGBA (
 }
 
 
-static Bool
+Bool
 XAAGetRGBAFromPixel(
     CARD32 pixel,
     CARD16 *red,
