@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.19 1999/05/30 02:27:58 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.20 1999/06/06 14:05:52 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -107,6 +107,7 @@ static unsigned long	WantLatin3 = sLatin3;
 static unsigned long	WantLatin4 = sLatin4;
 static unsigned long	WantLatin5 = sLatin5;
 static unsigned long	WantLatin6 = sLatin6;
+static unsigned long	WantLatin9 = sLatin9;
 static unsigned long	WantKana = sKana;
 static unsigned long	WantX0201 = sX0201;
 static unsigned long	WantArabic = sArabic;
@@ -430,23 +431,27 @@ static XkbConverters RConst cvt_latin1 = {
 };
 
 static XkbConverters RConst cvt_latin2 = {
-	_XkbKSToKnownSet,(XPointer)&WantLatin2,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin2,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
 static XkbConverters RConst cvt_latin3 = {
-	_XkbKSToKnownSet,(XPointer)&WantLatin3,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin3,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
 static XkbConverters RConst cvt_latin4 = {
-	_XkbKSToKnownSet,(XPointer)&WantLatin4,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin4,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
 static XkbConverters RConst cvt_latin5 = {
-	_XkbKSToKnownSet,(XPointer)&WantLatin5,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin5,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
 static XkbConverters RConst cvt_latin6 = {
-	_XkbKSToKnownSet,(XPointer)&WantLatin6,_XkbKnownSetToKS,NULL,NULL
+	_XkbKSToKnownSet,(XPointer)&WantLatin6,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
+};
+
+static XkbConverters RConst cvt_latin9 = {
+        _XkbKSToKnownSet,(XPointer)&WantLatin9,_XkbKnownSetToKS,NULL,__XkbDefaultToUpper
 };
 
 static XkbConverters RConst cvt_kana = {
@@ -550,6 +555,8 @@ _XkbGetConverters(encoding_name, cvt_rtrn)
 	     *cvt_rtrn = cvt_latin5;
 	else if (Strcmp(encoding_name, "iso8859-10")==0)
 	     *cvt_rtrn = cvt_latin6;
+	else if (Strcmp(encoding_name, "iso8859-15")==0)
+	     *cvt_rtrn = cvt_latin9;
 	else if (Strcmp(encoding_name, "apl")==0)
 	     *cvt_rtrn = cvt_APL;
 #if 0

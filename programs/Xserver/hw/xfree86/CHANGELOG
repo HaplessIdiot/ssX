@@ -1,4 +1,12 @@
 XFree86 3.9.17b (24 January 2000)
+3586. Change the default charset for et_EE from ISO8859-4 to ISO8859-15,
+      which conforms with the upcoming standard EVS8:1999
+      (http://www.eki.ee/itstandard/) (#3595, Ville Hallik).
+3585. Fix a bug in XKB's CapsLock handling for some non-Latin1 locales,
+      and add support for ISO8859-15.  Without this, CapsLock only affects
+      Latin1 keysyms and has no effect on scaron and zcaron, for example
+      (#3595, Ville Hallik).
+3584. Add Estonian keyboard support to XKB (#3595, Ville Hallik).
 3583. Hack to disable optimisation when building Xext/xf86vmode.c on FreeBSD
       4.0 to avoid a compiler bug (David Dawes).
 3582. Disable the hardware cursor in the tdfx driver when the screen is
@@ -9338,4 +9346,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.952 2000/01/24 22:21:41 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.953 2000/01/24 23:22:32 dawes Exp $
