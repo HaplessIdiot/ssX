@@ -46,7 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.28 1997/11/16 06:42:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.29 1998/08/13 14:46:15 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -165,10 +165,6 @@ extern __const__ int _nfiles;
 #include <netdnet/dn.h>
 #endif /* DNETCONN */
 
-/* added by raphael */
-#define ffs mffs
-extern int mffs(long);
-
 extern char *display;		/* The display number */
 int lastfdesc;			/* maximum file descriptor */
 
@@ -180,11 +176,7 @@ fd_set LastSelectMask;		/* mask returned from last select call */
 fd_set ClientsWithInput;	/* clients with FULL requests in buffer */
 fd_set ClientsWriteBlocked;	/* clients who cannot receive output */
 fd_set OutputPending;		/* clients with reply/event data ready to go */
-#ifndef _SC_OPEN_MAX
-int MaxClients = MAXSOCKS;      /* use MAXSOCKS if sysconf(_SC_OPEN_MAX) is not supported */
-#else
 int MaxClients = 0;
-#endif
 Bool NewOutputPending;		/* not yet attempted to write some new output */
 Bool AnyClientsWriteBlocked;	/* true if some client blocked on write */
 
@@ -202,9 +194,8 @@ static fd_set SavedAllSockets;
 static fd_set SavedClientsWithInput;
 int GrabInProgress = 0;
 
-#ifndef WIN32
-int ConnectionTranslation[MAXSOCKS];
-#else
+int *ConnectionTranslation = NULL;
+#ifdef WIN32
 /* SPAM ALERT !!!
  * On NT fds are not between 0 and MAXSOCKS, they are unrelated, and there is
  * not even a known maximum value, so use something quite arbitrary for now.
@@ -212,7 +203,6 @@ int ConnectionTranslation[MAXSOCKS];
  * as a direct index should really be implemented for NT.
  */
 #define MAXFD 500
-int ConnectionTranslation[MAXFD];
 #endif
 
 XtransConnInfo 	*ListenTransConns = NULL;
@@ -264,6 +254,59 @@ lookup_trans_conn (fd)
 void XdmcpOpenDisplay(), XdmcpInit(), XdmcpReset(), XdmcpCloseDisplay();
 #endif
 
+/* Set MaxClients and lastfdesc, and allocate ConnectionTranslation */
+
+void
+InitConnectionLimits()
+{
+    lastfdesc = -1;
+
+#ifndef __EMX__
+
+#if !defined(XNO_SYSCONF) && defined(_SC_OPEN_MAX)
+    lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
+#endif
+
+#ifdef HAS_GETDTABLESIZE
+    if (lastfdesc < 0)
+	lastfdesc = getdtablesize() - 1;
+#endif
+
+#ifdef _NFILE
+    if (lastfdesc < 0)
+	lastfdesc = _NFILE - 1;
+#endif
+
+#else /* __EMX__ */
+    lastfdesc = _nfiles - 1;
+#endif
+
+    /* This is the fallback */
+    if (lastfdesc < 0)
+	lastfdesc = MAXSOCKS;
+
+    if (lastfdesc > MAXSELECT)
+	lastfdesc = MAXSELECT;
+
+    if (lastfdesc > MAXCLIENTS)
+    {
+	lastfdesc = MAXCLIENTS;
+	if (debug_conns)
+	    ErrorF( "REACHED MAXIMUM CLIENTS LIMIT %d\n", MAXCLIENTS);
+    }
+    MaxClients = lastfdesc;
+
+    /* For debugging only */
+    ErrorF("InitConnectionLimits: MaxClients = %d\n", MaxClients);
+
+#ifndef WIN32
+    ConnectionTranslation = (int *)xnfalloc(lastfdesc + 1);
+#else
+    ConnectionTranslation = (int *)xnfalloc(MAXFD);
+#endif
+}
+
+
 /*****************
  * CreateWellKnownSockets
  *    At initialization, create the sockets to listen on for new clients.
@@ -282,33 +325,10 @@ CreateWellKnownSockets()
     FD_ZERO(&ClientsWithInput);
 
 #ifndef WIN32
-    for (i=0; i<MAXSOCKS; i++) ConnectionTranslation[i] = 0;
+    for (i=0; i<MaxClients; i++) ConnectionTranslation[i] = 0;
 #else
     for (i=0; i<MAXFD; i++) ConnectionTranslation[i] = 0;
 #endif
-#ifdef XNO_SYSCONF      /* should only be on FreeBSD 1.x and NetBSD 0.x */
-#undef _SC_OPEN_MAX
-#endif
-#ifndef __EMX__
-#ifdef _SC_OPEN_MAX
-    lastfdesc = sysconf(_SC_OPEN_MAX) - 1;
-#else
-#ifdef hpux /* || defined(__EMX__) ? */
-    lastfdesc = _NFILE - 1;
-#else
-    lastfdesc = getdtablesize() - 1;
-#endif
-#endif
-#else
-    lastfdesc = _nfiles - 1;
-#endif
-
-    if (lastfdesc > MAXCLIENTS) 
-    {
-	lastfdesc = MAXCLIENTS;
-	if (debug_conns)
-	    ErrorF( "REACHED MAXIMUM CLIENTS LIMIT %d\n", MAXCLIENTS);
-    }
 
     FD_ZERO (&WellKnownConnections);
 
@@ -767,6 +787,11 @@ AllocNewConnection (trans_conn, fd, conn_time)
 	    FD_SET(fd, &AllSockets);
 	}
     }
+
+    /* For debugging */
+    ErrorF("AllocNewConnection: client index = %d, socket fd = %d\n",
+	   client->index, fd);
+
     return client;
 }
 

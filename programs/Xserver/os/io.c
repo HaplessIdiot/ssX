@@ -53,7 +53,7 @@ SOFTWARE.
  *   InsertFakeRequest, ResetCurrentRequest
  *
  *****************************************************************/
-/* $XFree86: xc/programs/Xserver/os/io.c,v 3.16 1997/11/16 06:42:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/io.c,v 3.17 1998/08/13 14:46:15 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -85,10 +85,6 @@ extern int errno;
 #include "lbxserve.h"
 #endif
 
-/* added by raphael */
-#define ffs mffs
-extern int mffs(long);
-
 CallbackListPtr       ReplyCallback;
 CallbackListPtr       FlushCallback;
 
@@ -108,13 +104,6 @@ CallbackListPtr       FlushCallback;
 #else /* __EMX__  Writing to full pipes may return ENOSPC */
 #define ETEST(err) (err == EAGAIN || err == EWOULDBLOCK || err == ENOSPC)
 #endif
-
-extern fd_set ClientsWithInput, IgnoredClientsWithInput, AllClients;
-extern fd_set ClientsWriteBlocked;
-extern fd_set OutputPending;
-extern int ConnectionTranslation[];
-extern Bool NewOutputPending;
-extern Bool AnyClientsWriteBlocked;
 
 Bool CriticalOutputPending;
 int timesThisConnection = 0;

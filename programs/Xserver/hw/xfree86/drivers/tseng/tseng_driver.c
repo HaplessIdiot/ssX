@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.31 1998/08/02 05:17:01 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.32 1998/08/13 14:46:03 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -2542,6 +2542,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		&(new->pll.MClkM), &(new->pll.MClkN));
 	}
     } else if (ICD2061a_programmable_clock) {
+#if 0
 	/* the programmed clock will be on clock index 2 */
 	/* disable MCLK/2 and MCLK/4 */
 	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
@@ -2552,7 +2553,9 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* FIXME: icd2061_dwv not used anywhere ... */
 	pTseng->icd2061_dwv = AltICD2061CalcClock(mode->Clock * 1000);
 	/* Tseng_ICD2061AClockSelect(mode->Clock); */
+#endif
     } else if (CH8398_programmable_clock) {
+#if 0
 	/* Let's call common_hw/Ch8391clk.c ! */
 	if (mode->Flags & V_PIXMUX)
 	    Chrontel8391CalcClock(mode->Clock / 2, &temp1, &temp2, &temp3);
@@ -2577,6 +2580,7 @@ TsengModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	/* disable MCLK/2 and MCLK/4, they don't seem to work in 24bpp 
 	 * anyway */
 	new->ExtTS[7] = (new->ExtTS[7] & 0xBE);
+#endif
     } else if (Is_ET6K) {
 	/* setting min_n2 to "1" will ensure a more stable clock ("0" is allowed though) */
 	commonCalcClock(mode->SynthClock, 1, 1, 31, 1, 3, 100000,
@@ -2887,6 +2891,7 @@ TsengSave(ScrnInfoPtr pScrn)
     }
     if ((pTseng->DacInfo.DacType == STG1702_DAC) || (pTseng->DacInfo.DacType == STG1703_DAC)
 	|| (pTseng->DacInfo.DacType == STG1700_DAC)) {
+#if 0
 	/* Save STG 1703 GenDAC Command and PLL registers 
 	 * unfortunately we reuse the gendac data structure, so the 
 	 * field names are not really good.
@@ -2900,6 +2905,7 @@ TsengSave(ScrnInfoPtr pScrn)
 	}
 	tsengReg->pll.ctrl = STG1703getIndex(0x03);	/* pixel mode select control */
 	tsengReg->pll.timingctrl = STG1703getIndex(0x05);	/* pll timing control */
+#endif
     }
     if (pTseng->DacInfo.DacType == CH8398_DAC) {
 	tseng_dactopel();
@@ -3017,6 +3023,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	outb(iobase + 5, tmp & ~0x40);
     }
     if (DAC_is_STG170x) {
+#if 0
 	/* Restore STG 170x GenDAC Command and PLL registers 
 	 * we share one data structure with the gendac code, so the names
 	 * are not too good.
@@ -3034,6 +3041,7 @@ TsengRestore(ScrnInfoPtr pScrn, vgaRegPtr vgaReg, TsengRegPtr tsengReg)
 	STG1703magic(0);
 	tseng_dactopel();
 	tseng_setdaccomm(tsengReg->pll.cmd_reg);	/* write enh command reg */
+#endif
     }
     if (pTseng->DacInfo.DacType == CH8398_DAC) {
 	tseng_dactopel();

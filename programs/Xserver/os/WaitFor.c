@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $TOG: WaitFor.c /main/57 1997/11/25 14:35:28 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.16 1997/12/14 04:21:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.17 1998/08/13 14:46:14 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -84,7 +84,6 @@ extern int errno;
 #include "opaque.h"
 
 /* modifications by raphael */
-#define ffs mffs
 int mffs(fd_mask mask) {
     register i;
     if ( ! mask ) return 0;
@@ -100,23 +99,6 @@ int mffs(fd_mask mask) {
 #include "dpms.h"
 extern void DPMSSet();
 #endif
-
-extern fd_set AllSockets;
-extern fd_set AllClients;
-extern fd_set LastSelectMask;
-extern fd_set WellKnownConnections;
-extern fd_set EnabledDevices;
-extern fd_set ClientsWithInput;
-extern fd_set ClientsWriteBlocked;
-extern fd_set OutputPending;
-
-extern int ConnectionTranslation[];
-
-extern Bool NewOutputPending;
-extern Bool AnyClientsWriteBlocked;
-
-extern WorkQueuePtr workQueue;
-
 
 #ifdef XTESTEXT1
 /*
@@ -336,10 +318,10 @@ WaitForSomething(pClientsReady)
 	else if (AnyClientsWriteBlocked)
 	{
 	    XFD_COPYSET(&ClientsWriteBlocked, &clientsWritable);
-	    i = Select (MAXSOCKS, &LastSelectMask, &clientsWritable, NULL, wt);
+	    i = Select (MaxClients, &LastSelectMask, &clientsWritable, NULL, wt);
 	}
 	else
-	    i = Select (MAXSOCKS, &LastSelectMask, NULL, NULL, wt);
+	    i = Select (MaxClients, &LastSelectMask, NULL, NULL, wt);
 	selecterr = errno;
 	WakeupHandler(i, (pointer)&LastSelectMask);
 #ifdef XTESTEXT1
