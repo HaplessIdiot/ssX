@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.17 2001/01/26 20:51:14 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.18 2001/03/30 18:50:18 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -58,6 +58,7 @@ typedef unsigned int	XftChar32;
 #define XFT_SCALE	    "scale"	/* double */
 #define XFT_RENDER	    "render"	/* Bool */
 #define XFT_MINSPACE	    "minspace"	/* Bool use minimum line spacing */
+#define XFT_DPI		    "dpi"	/* double */
 
 /* specific to FreeType rasterizer */
 #define XFT_CHAR_WIDTH	    "charwidth"	/* Int */

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftdpy.c,v 1.5 2000/12/20 00:20:48 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftdpy.c,v 1.6 2001/01/26 20:51:15 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -236,6 +236,8 @@ _XftDefaultInit (Display *dpy)
 	goto bail1;
     if (!_XftDefaultInitDouble (dpy, pat, XFT_SCALE))
 	goto bail1;
+    if (!_XftDefaultInitDouble (dpy, pat, XFT_DPI))
+	goto bail1;
     if (!_XftDefaultInitBool (dpy, pat, XFT_RENDER))
 	goto bail1;
     if (!_XftDefaultInitInteger (dpy, pat, XFT_RGBA))
@@ -388,6 +390,7 @@ XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern)
     if (XftPatternGet (pattern, XFT_PIXEL_SIZE, 0, &v) == XftResultNoMatch)
     {
 	int	pixels, mm;
+	double	dpi;
 
 	if (XftPatternGet (pattern, XFT_SIZE, 0, &v) != XftResultMatch)
 	{
@@ -412,9 +415,10 @@ XftDefaultSubstitute (Display *dpy, int screen, XftPattern *pattern)
 	size *= scale;
 	pixels = DisplayHeight (dpy, screen);
 	mm = DisplayHeightMM (dpy, screen);
-	size = size / 72.0;
-	size = size * 25.4;
-	size = size * pixels / mm;
+	dpi = (((double) DisplayHeight (dpy, screen) * 25.4) / 
+	       (double) DisplayHeightMM (dpy, screen));
+	dpi = XftDefaultGetDouble (dpy, XFT_DPI, screen, dpi);
+	size = size * dpi / 72.0;
 	XftPatternAddDouble (pattern, XFT_PIXEL_SIZE, size);
     }
 }
