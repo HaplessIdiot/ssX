@@ -1,4 +1,5 @@
 /* $XConsortium: cir_im.c,v 1.1 94/03/28 21:49:31 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1993 by Bill Reynolds, Santa Fe, New Mexico

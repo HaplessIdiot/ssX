@@ -1,4 +1,5 @@
 /* $XConsortium: cir_blitter.h,v 1.1 94/03/28 21:48:17 dpw Exp $ */
+/* $XFree86$ */
 
 /* Definitions for BitBLT engine communication. */
 
