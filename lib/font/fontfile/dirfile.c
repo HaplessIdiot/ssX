@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.11 2001/01/17 19:43:30 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/dirfile.c,v 3.12 2001/07/25 15:04:56 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -383,6 +383,8 @@ lexAlias(FILE *file, char **lexToken)
 		break;
 	    case Comment:
 		continue;
+	    default:
+		break;
 	    }
 	    *t++ = c;
 	    ++count;

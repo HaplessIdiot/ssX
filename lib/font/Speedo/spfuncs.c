@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/Speedo/spfuncs.c,v 1.5 1999/03/14 11:17:43 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfuncs.c,v 1.6 2001/01/17 19:43:20 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <X11/Xos.h>
@@ -146,8 +146,8 @@ SpeedoGetInfoScaleable(
 }
 
 static FontRendererRec renderer = {
-    ".spd", 4, (int (*)()) 0, SpeedoOpenScalable,
-	(int (*)()) 0, SpeedoGetInfoScaleable, 0
+    ".spd", 4, NULL, SpeedoOpenScalable,
+	NULL, SpeedoGetInfoScaleable, 0
     , CAP_MATRIX | CAP_CHARSUBSETTING
 };
     

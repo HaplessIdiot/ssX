@@ -21,7 +21,7 @@
  *
  * Author: Dave Lemke, Network Computing Devices Inc
  */
-/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.9 1999/06/13 13:47:29 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.10 2001/01/17 19:43:20 dawes Exp $ */
 
 /*
 
@@ -80,7 +80,7 @@ from The Open Group.
 
 #endif
 
-extern void SpeedoCloseFont();
+static void SpeedoCloseFont(FontPtr pfont);
 
 static int
 sp_get_glyphs(
@@ -195,13 +195,13 @@ sp_get_glyphs(
 static CharInfoRec nonExistantChar;
 
 static int
-sp_get_metrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;	/* RETURN */
-    xCharInfo **glyphs;		/* RETURN */
+sp_get_metrics(
+    FontPtr     pFont,
+    unsigned long count,
+    register unsigned char *chars,
+    FontEncoding charEncoding,
+    unsigned long *glyphCount,	/* RETURN */
+    xCharInfo **glyphs)		/* RETURN */
 {
     int         ret;
     SpeedoFontPtr spf;
@@ -233,7 +233,6 @@ sp_open_font(
     int         ret;
     specs_t     specs;
     int		xx8, xy8, yx8, yy8;
-    double	sxmult;
 
     /* find a master (create it if necessary) */
     spmf = (SpeedoMasterFontPtr) entry->u.scalable.extra->private;
@@ -431,7 +430,7 @@ sp_close_font(SpeedoFontPtr spf)
     xfree(spf);
 }
 
-void
+static void
 SpeedoCloseFont(FontPtr pfont)
 {
     SpeedoFontPtr spf;

@@ -43,7 +43,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.10 2001/08/01 00:44:43 tsi Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.11 2001/08/01 04:57:49 tsi Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
@@ -95,6 +95,7 @@ extern char *xiMalloc ( unsigned Size );
 extern void addmemory ( long *addr, long size );
 extern void delmemory ( void );
 
+#ifndef OS_H
 extern void FatalError(const char *f, ...)
 #if __GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ > 4)
 __attribute((noreturn))
@@ -102,6 +103,7 @@ __attribute((noreturn))
 ;
 
 extern void ErrorF(const char *f, ...);
+#endif
 
 #undef abort
 #define   abort(line)       FatalError(line)

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.7 1999/12/13 03:00:51 robin Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.8 2001/01/17 19:43:30 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -360,13 +360,13 @@ MatchScalable (FontScalablePtr a, FontScalablePtr b)
 	  a->y == b->y &&
 	  (a->width == b->width || a->width == 0 || b->width == 0 || b->width == -1) &&
 	  (!(b->values_supplied & PIXELSIZE_MASK) ||
-	    (a->values_supplied & PIXELSIZE_MASK) ==
-	    (b->values_supplied & PIXELSIZE_MASK) &&
-	    EQUAL(a->pixel_matrix, b->pixel_matrix)) &&
+	    ((a->values_supplied & PIXELSIZE_MASK) ==
+	     (b->values_supplied & PIXELSIZE_MASK) &&
+	    EQUAL(a->pixel_matrix, b->pixel_matrix))) &&
 	  (!(b->values_supplied & POINTSIZE_MASK) ||
-	    (a->values_supplied & POINTSIZE_MASK) ==
-	    (b->values_supplied & POINTSIZE_MASK) &&
-	    EQUAL(a->point_matrix, b->point_matrix)) &&
+	    ((a->values_supplied & POINTSIZE_MASK) ==
+	     (b->values_supplied & POINTSIZE_MASK) &&
+	    EQUAL(a->point_matrix, b->point_matrix))) &&
 	  (a->nranges == 0 || a->nranges == b->nranges)))
       return FALSE;
 
