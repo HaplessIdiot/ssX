@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.38 2003/08/11 17:41:29 eich Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.39 2003/08/27 21:43:19 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -133,31 +133,32 @@ from The Open Group.
 #  endif
 #  ifndef OPEN_MAX
 #   if defined(_SC_OPEN_MAX)
-#    undef OPEN_MAX
 #    define OPEN_MAX (sysconf(_SC_OPEN_MAX))
-#   endif
-#   ifdef SVR4
-#    define OPEN_MAX 256
 #   else
-#    include <sys/param.h>
-#    ifndef OPEN_MAX
-#     ifdef __OSF1__
-#      define OPEN_MAX 256
-#     else
-#      ifdef NOFILE
-#       define OPEN_MAX NOFILE
+#    ifdef SVR4
+#     define OPEN_MAX 256
+#    else
+#     include <sys/param.h>
+#     ifndef OPEN_MAX
+#      ifdef __OSF1__
+#       define OPEN_MAX 256
 #      else
-#       if !defined(__UNIXOS2__) && !defined(__QNX__)
-#        define OPEN_MAX NOFILES_MAX
+#       ifdef NOFILE
+#        define OPEN_MAX NOFILE
 #       else
-#        define OPEN_MAX 256
+#        if !defined(__UNIXOS2__) && !defined(__QNX__)
+#         define OPEN_MAX NOFILES_MAX
+#        else
+#         define OPEN_MAX 256
+#        endif
 #       endif
 #      endif
 #     endif
 #    endif
 #   endif
 #  endif
-#  if defined __GNU__ || _POSIX_VERSION >= 199309
+#  if defined(__GNU__) || \
+      (defined(_POSIX_VERSION) || (_POSIX_VERSION >= 199309))
 #   define TRANS_OPEN_MAX OPEN_MAX
 #  else /* !__GNU__ */
 #   if OPEN_MAX > 256
