@@ -2,6 +2,7 @@
 /*
 
 Copyright 1987, 1998  The Open Group
+Copyright 1999 Sun Microsystems, Inc.
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -14,19 +15,21 @@ in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
-OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
-ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
-OTHER DEALINGS IN THE SOFTWARE.
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT
+OF THIRD PARTY RIGHTS. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
+HOLDERS INCLUDED IN THIS NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL
+INDIRECT OR CONSEQUENTIAL DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING
+FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT,
+NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION
+WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-Except as contained in this notice, the name of The Open Group shall
-not be used in advertising or otherwise to promote the sale, use or
-other dealings in this Software without prior written authorization
-from The Open Group.
+Except as contained in this notice, the name of a copyright holder
+shall not be used in advertising or otherwise to promote the sale, use
+or other dealings in this Software without prior written authorization
+of the copyright holder.
 
 */
-/* $XFree86: xwininfo.c,v 1.8 2001/12/14 20:02:35 dawes Exp $ */
+/* $XFree86: xc/programs/xwininfo/xwininfo.c,v 1.9 2003/09/09 22:08:25 herrb Exp $ */
 
 
 /*
@@ -47,6 +50,9 @@ from The Open Group.
 #include <X11/Xos.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xmu/WinUtil.h>
+#ifndef NO_I18N
+#include <X11/Xlocale.h>
+#endif
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -275,6 +281,15 @@ main(int argc, char **argv)
 
   INIT_NAME;
 
+#ifndef NO_I18N
+  {
+     char *lc;
+     lc = setlocale(LC_ALL, "");
+     if(!lc)
+        fprintf(stderr, "can not set locale properly\n");
+  }
+#endif
+
   /* Open display, handle command line arguments */
   Setup_Display_And_Screen(&argc, argv);
 
@@ -438,7 +453,11 @@ Lookup(int code, binding *table)
 void
 Display_Window_Id(Window window, Bool newline_wanted)
 {
+#ifdef NO_I18N
     char *win_name;
+#else
+    XTextProperty tp;
+#endif
     
     printf(window_id_format, window);         /* print id # in hex/dec */
 
@@ -448,12 +467,34 @@ Display_Window_Id(Window window, Bool newline_wanted)
 	if (window == RootWindow(dpy, screen)) {
 	    printf(" (the root window)");
 	}
+#ifdef NO_I18N
 	if (!XFetchName(dpy, window, &win_name)) { /* Get window name if any */
 	    printf(" (has no name)");
 	} else if (win_name) {
 	    printf(" \"%s\"", win_name);
 	    XFree(win_name);
-	} else
+	}
+#else
+	if (!XGetWMName(dpy, window, &tp)) { /* Get window name if any */
+	    printf(" (has no name)");
+        } else if (tp.nitems > 0) {
+            printf(" \"");
+            {
+                int count = 0, i, ret;
+                char **list = NULL;
+                ret = XmbTextPropertyToTextList(dpy, &tp, &list, &count);
+                if((ret == Success || ret > 0) && list != NULL){
+                    for(i=0; i<count; i++)
+                        printf("%s", list[i]);
+                    XFreeStringList(list);
+                } else {
+                    printf("%s", tp.value);
+                }
+            }
+            printf("\"");
+	}
+#endif
+	else
 	    printf(" (has no name)");
     }
 
