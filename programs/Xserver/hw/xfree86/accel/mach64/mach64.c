@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.74 1997/05/03 09:16:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.75 1997/05/16 11:11:55 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994,1995,1996 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1630,8 +1630,8 @@ mach64Probe()
 	}
     }
 
-    if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
 #ifdef DPMSExtension
+    if (OFLG_ISSET(OPTION_POWER_SAVER, &mach64InfoRec.options))
 	DPMSEnabled = TRUE;
 #endif
 
