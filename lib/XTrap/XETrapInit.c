@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/XTrap/XETrapInit.c,v 1.1 2001/11/02 23:29:27 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991, 1992 by Digital Equipment Corp., 
 Maynard, MA
@@ -28,6 +28,10 @@ SOFTWARE.
 #include <X11/extensions/xtraplibp.h>
 #include <X11/extensions/Xext.h>
 #include <extensions/extutil.h>
+
+#ifndef XETrapNumberErrors
+#define XETrapNumberErrors 0
+#endif
 
 #ifdef UWS40
 #define _XSetLastRequestRead _SetLastRequestRead

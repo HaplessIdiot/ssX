@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.121 2001/10/01 13:44:01 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.122 2001/10/28 00:16:26 mvojkovi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -31,11 +31,11 @@
 
 #include "compiler.h"
 
-#include "Xpoll.h"
 #include "xf86.h"
 #include "xf86Priv.h"
 #define XF86_OS_PRIVS
 #include "xf86_OSlib.h"
+#include "Xpoll.h"
 #include "atKeynames.h"
 
 

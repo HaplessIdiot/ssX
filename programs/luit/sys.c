@@ -19,6 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -424,9 +425,7 @@ droppriv()
     rc = setuid(getuid());
     if(rc < 0)
         return rc;
-    rc = setgid(getgid());
-    if(rc < 0)
-        return rc;
+    return setgid(getgid());
 }
 #else
 int
@@ -441,5 +440,6 @@ droppriv()
         errno = ENOSYS;
         return -1;
     }
+    return 0;
 }
 #endif    

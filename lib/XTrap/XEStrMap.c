@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/XTrap/XEStrMap.c,v 1.1 2001/11/02 23:29:27 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991, 1992, 1994 by Digital Equipment Corp., 
 Maynard, MA
@@ -214,7 +214,7 @@ CARD32 XEPlatformStringToID(register char *string)
 char *XEEventIDToString(register CARD8 id, XETC *tc)
 {
     int i;
-    if (id >= 0 && id < ASize(eventName))
+    if (id < ASize(eventName))
         return(eventName[id]);
     /* either erroneous or an extension event */
     if (numExtension < 0)
@@ -265,7 +265,7 @@ char *XERequestIDToExtString(register CARD8 id, XETC *tc)
 
 char *XERequestIDToString(register CARD8 id, XETC *tc)
 {
-    return((id >= 0 && id < ASize(requestName)) ? requestName[id] :
+    return((id < ASize(requestName)) ? requestName[id] :
         XERequestIDToExtString(id,tc));
 }
 

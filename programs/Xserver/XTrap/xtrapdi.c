@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/XTrap/xtrapdi.c,v 1.1 2001/11/02 23:29:29 dawes Exp $ */
 /*****************************************************************************
 Copyright 1987, 1988, 1989, 1990, 1991 by Digital Equipment Corp., Maynard, MA
 X11R6 Changes Copyright (c) 1994 by Robert Chesler of Absol-Puter, Hudson, NH.
@@ -547,8 +547,7 @@ int XETrapDispatch(ClientPtr client)
     /* Do we have a valid request? */
     if (status == Success)
     {
-        if (stuff->minor_opcode >= 0L && stuff->minor_opcode < 
-            ASIZE(XETrapDispatchVector))
+        if (stuff->minor_opcode < ASIZE(XETrapDispatchVector))
         {
             /* Then vector to the pointed to function */
             status = 
@@ -590,8 +589,7 @@ int sXETrapDispatch(ClientPtr client)
     /* Do we have a valid request? */
     if (status == Success)
     {
-        if (stuff->minor_opcode >= 0L && stuff->minor_opcode < 
-            ASIZE(XETSwDispatchVector))
+        if (stuff->minor_opcode < ASIZE(XETSwDispatchVector))
         {
             /* Then vector to the pointed to function */
             status = 
