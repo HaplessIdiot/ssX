@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.425 2002/11/26 02:32:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.426 2002/11/26 02:34:20 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -84,14 +84,14 @@ XCOMM $Xorg: xfree86.cf,v 1.4 2000/08/17 19:41:49 cpqbld Exp $
  */
 
 #ifndef XFree86Devel
-# if !defined(PatheticCpp) || !(PatheticCpp)
+# if !defined(PatheticCpp) || !PatheticCpp
 #  if (XFree86Version % 1000)
 #   define XFree86Devel		YES
 #  else
 #   define XFree86Devel		NO
 #  endif
 # else
-#  define Xfree86DEVEL		NO	/* Assume the worst */
+#  define XFree86Devel		NO	/* Assume the worst */
 # endif
 #endif
 
