@@ -3,8 +3,12 @@ Copyright (c) 1998, 1999 Thai Open Source Software Center Ltd
 See the file COPYING for copying permission.
 */
 
+#if 0
 static char RCSId[]
-  = "$Header: /vol1/history/xf86/xc/extras/expat/lib/xmlrole.c,v 1.1 2002/02/18 21:44:22 keithp Exp $";
+  = "$Header: /vol1/history/xf86/xc/extras/expat/lib/xmlrole.c,v 1.2 2002/04/07 04:03:19 tsi Exp $";
+#endif
+
+/* $XFree86$ */
 
 #ifdef COMPILED_FROM_DSP
 #  include "winconfig.h"
