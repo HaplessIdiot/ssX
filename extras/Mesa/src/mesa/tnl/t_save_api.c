@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/tnl/t_save_api.c,v 1.1.1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/tnl/t_save_api.c,v 1.1.1.3 2004/06/10 14:24:11 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2002 Tungsten Graphics Inc., Cedar Park, Texas.
@@ -475,7 +475,7 @@ static void _save_upgrade_vertex( GLcontext *ctx,
 
       /* Need to note this and fix up at runtime (or loopback):
        */
-      if (tnl->save.currentsz[attr] == 0) {
+      if (tnl->save.currentsz[attr][0] == 0) {
 	 assert(oldsz == 0);
 	 tnl->save.dangling_attr_ref = GL_TRUE;
 	 _mesa_debug(0, "_save_upgrade_vertex: dangling reference attr %d\n", 
@@ -498,10 +498,15 @@ static void _save_upgrade_vertex( GLcontext *ctx,
 	 for (j = 0 ; j < _TNL_ATTRIB_MAX ; j++) {
 	    if (tnl->save.attrsz[j]) {
 	       if (j == attr) {
-		  ASSIGN_4V( dest, 0, 0, 0, 1 );
-		  COPY_SZ_4V( dest, oldsz, data );
-		  data += oldsz;
-		  dest += newsz;
+		  if (oldsz) {
+		     ASSIGN_4V( dest, 0, 0, 0, 1 );
+		     COPY_SZ_4V( dest, oldsz, data );
+		     data += oldsz;
+		     dest += newsz;
+		  } else {
+		     COPY_SZ_4V( dest, newsz, tnl->save.current[attr] );
+		     dest += newsz;
+		  }
 	       }
 	       else {
 		  GLint sz = tnl->save.attrsz[j];
@@ -1523,16 +1528,14 @@ static void _save_current_init( GLcontext *ctx )
    GLint i;
 
    for (i = 0; i < _TNL_ATTRIB_MAT_FRONT_AMBIENT; i++) {
-      ASSERT(i < VERT_ATTRIB_MAX);
       tnl->save.currentsz[i] = &ctx->ListState.ActiveAttribSize[i];
       tnl->save.current[i] = ctx->ListState.CurrentAttrib[i];
    }
 
    for (i = _TNL_ATTRIB_MAT_FRONT_AMBIENT; i < _TNL_ATTRIB_INDEX; i++) {
-      const GLuint j = i - _TNL_ATTRIB_MAT_FRONT_AMBIENT;
-      ASSERT(j < MAT_ATTRIB_MAX);
-      tnl->save.currentsz[i] = &ctx->ListState.ActiveMaterialSize[j];
-      tnl->save.current[i] = ctx->ListState.CurrentMaterial[j];
+      GLint m = i - _TNL_ATTRIB_MAT_FRONT_AMBIENT;
+      tnl->save.currentsz[i] = &ctx->ListState.ActiveMaterialSize[m];
+      tnl->save.current[i] = ctx->ListState.CurrentMaterial[m];
    }
 
    tnl->save.currentsz[_TNL_ATTRIB_INDEX] = &ctx->ListState.ActiveIndex;

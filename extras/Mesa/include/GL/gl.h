@@ -1,6 +1,6 @@
 /*
  * Mesa 3-D graphics library
- * Version:  6.0.1
+ * Version:  6.1
  *
  * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
@@ -2210,6 +2210,17 @@ glGetProgramRegisterfvMESA(GLenum target, GLsizei len, const GLubyte *name,
                            GLfloat *v);
 
 #endif /* GL_MESA_program_debug */
+
+
+#ifndef GL_ATI_blend_equation_separate
+#define GL_ATI_blend_equation_separate 1
+
+#define GL_ALPHA_BLEND_EQUATION_ATI	        0x883D
+
+GLAPI void GLAPIENTRY glBlendEquationSeparateATI( GLenum modeRGB, GLenum modeA );
+typedef void (APIENTRYP PFNGLBLENDEQUATIONSEPARATEATIPROC) (GLenum modeRGB, GLenum modeA);
+
+#endif /* GL_ATI_blend_equation_separate */
 
 
 /**

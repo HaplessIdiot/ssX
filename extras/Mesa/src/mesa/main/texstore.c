@@ -1,9 +1,9 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/texstore.c,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
- * Version:  5.1
+ * Version:  6.1
  *
- * Copyright (C) 1999-2003  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -360,10 +360,9 @@ transfer_teximage(GLcontext *ctx, GLuint dimensions,
                const GLvoid *src = _mesa_image_address(srcPacking,
                                               srcAddr, srcWidth, srcHeight,
                                               srcFormat, srcType, img, row, 0);
-               _mesa_unpack_float_color_span(ctx, srcWidth, GL_RGBA, dstf,
-                         srcFormat, srcType, src, srcPacking,
-                         transferOps & IMAGE_PRE_CONVOLUTION_BITS,
-                         GL_TRUE);
+               _mesa_unpack_color_span_float(ctx, srcWidth, GL_RGBA, dstf,
+                 srcFormat, srcType, src, srcPacking,
+                 (transferOps & IMAGE_PRE_CONVOLUTION_BITS) | IMAGE_CLAMP_BIT);
                dstf += srcWidth * 4;
             }
 
@@ -390,7 +389,7 @@ transfer_teximage(GLcontext *ctx, GLuint dimensions,
                  + (dstZoffset + img) * (dstImageStride / sizeof(GLchan))
                  + dstYoffset * (dstRowStride / sizeof(GLchan));
             for (row = 0; row < convHeight; row++) {
-               _mesa_pack_float_rgba_span(ctx, convWidth,
+               _mesa_pack_rgba_span_float(ctx, convWidth,
                                           (const GLfloat (*)[4]) srcf,
                                           texDestFormat, CHAN_TYPE,
                                           dest, &_mesa_native_packing,
@@ -419,7 +418,7 @@ transfer_teximage(GLcontext *ctx, GLuint dimensions,
                const GLvoid *srcRow = _mesa_image_address(srcPacking,
                                               srcAddr, srcWidth, srcHeight,
                                               srcFormat, srcType, img, row, 0);
-               _mesa_unpack_chan_color_span(ctx, srcWidth, texDestFormat,
+               _mesa_unpack_color_span_chan(ctx, srcWidth, texDestFormat,
                                        destRow, srcFormat, srcType, srcRow,
                                        srcPacking, transferOps);
                destRow += (dstRowStride / sizeof(GLchan));
@@ -771,7 +770,8 @@ _mesa_store_teximage1d(GLcontext *ctx, GLenum target, GLint level,
    texImage->TexFormat = (*ctx->Driver.ChooseTextureFormat)(ctx,
                                           internalFormat, format, type);
    assert(texImage->TexFormat);
-   texImage->FetchTexel = texImage->TexFormat->FetchTexel1D;
+   texImage->FetchTexelc = texImage->TexFormat->FetchTexel1D;
+   texImage->FetchTexelf = texImage->TexFormat->FetchTexel1Df;
 
    texelBytes = texImage->TexFormat->TexelBytes;
 
@@ -847,7 +847,8 @@ _mesa_store_teximage2d(GLcontext *ctx, GLenum target, GLint level,
    texImage->TexFormat = (*ctx->Driver.ChooseTextureFormat)(ctx,
                                           internalFormat, format, type);
    assert(texImage->TexFormat);
-   texImage->FetchTexel = texImage->TexFormat->FetchTexel2D;
+   texImage->FetchTexelc = texImage->TexFormat->FetchTexel2D;
+   texImage->FetchTexelf = texImage->TexFormat->FetchTexel2Df;
 
    texelBytes = texImage->TexFormat->TexelBytes;
 
@@ -918,7 +919,8 @@ _mesa_store_teximage3d(GLcontext *ctx, GLenum target, GLint level,
    texImage->TexFormat = (*ctx->Driver.ChooseTextureFormat)(ctx,
                                           internalFormat, format, type);
    assert(texImage->TexFormat);
-   texImage->FetchTexel = texImage->TexFormat->FetchTexel3D;
+   texImage->FetchTexelc = texImage->TexFormat->FetchTexel3D;
+   texImage->FetchTexelf = texImage->TexFormat->FetchTexel3Df;
 
    texelBytes = texImage->TexFormat->TexelBytes;
 
@@ -1156,7 +1158,8 @@ _mesa_store_compressed_teximage2d(GLcontext *ctx, GLenum target, GLint level,
    texImage->TexFormat = (*ctx->Driver.ChooseTextureFormat)(ctx,
                                           internalFormat, 0, 0);
    assert(texImage->TexFormat);
-   texImage->FetchTexel = texImage->TexFormat->FetchTexel2D;
+   texImage->FetchTexelc = texImage->TexFormat->FetchTexel2D;
+   texImage->FetchTexelf = texImage->TexFormat->FetchTexel2Df;
 
    /* allocate storage */
    texImage->Data = MESA_PBUFFER_ALLOC(imageSize);
@@ -1422,9 +1425,9 @@ do_row(const struct gl_texture_format *format, GLint srcWidth,
             const GLint rowAb1 = (rowA[k] >> 11) & 0x1f;
             const GLint rowBb0 = (rowB[j] >> 11) & 0x1f;
             const GLint rowBb1 = (rowB[k] >> 11) & 0x1f;
-            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 4;
-            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 4;
-            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 4;
+            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 2;
+            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 2;
+            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 2;
             dst[i] = (blue << 11) | (green << 5) | red;
          }
       }
@@ -1453,10 +1456,10 @@ do_row(const struct gl_texture_format *format, GLint srcWidth,
             const GLint rowAa1 = (rowA[k] >> 12) & 0xf;
             const GLint rowBa0 = (rowB[j] >> 12) & 0xf;
             const GLint rowBa1 = (rowB[k] >> 12) & 0xf;
-            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 4;
-            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 4;
-            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 4;
-            const GLint alpha = (rowAa0 + rowAa1 + rowBa0 + rowBa1) >> 4;
+            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 2;
+            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 2;
+            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 2;
+            const GLint alpha = (rowAa0 + rowAa1 + rowBa0 + rowBa1) >> 2;
             dst[i] = (alpha << 12) | (blue << 8) | (green << 4) | red;
          }
       }
@@ -1485,10 +1488,10 @@ do_row(const struct gl_texture_format *format, GLint srcWidth,
             const GLint rowAa1 = (rowA[k] >> 15) & 0x1;
             const GLint rowBa0 = (rowB[j] >> 15) & 0x1;
             const GLint rowBa1 = (rowB[k] >> 15) & 0x1;
-            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 4;
-            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 4;
-            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 4;
-            const GLint alpha = (rowAa0 + rowAa1 + rowBa0 + rowBa1) >> 4;
+            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 2;
+            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 2;
+            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 2;
+            const GLint alpha = (rowAa0 + rowAa1 + rowBa0 + rowBa1) >> 2;
             dst[i] = (alpha << 15) | (blue << 10) | (green << 5) | red;
          }
       }
@@ -1528,9 +1531,9 @@ do_row(const struct gl_texture_format *format, GLint srcWidth,
             const GLint rowAb1 = (rowA[k] >> 5) & 0x7;
             const GLint rowBb0 = (rowB[j] >> 5) & 0x7;
             const GLint rowBb1 = (rowB[k] >> 5) & 0x7;
-            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 4;
-            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 4;
-            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 4;
+            const GLint red   = (rowAr0 + rowAr1 + rowBr0 + rowBr1) >> 2;
+            const GLint green = (rowAg0 + rowAg1 + rowBg0 + rowBg1) >> 2;
+            const GLint blue  = (rowAb0 + rowAb1 + rowBb0 + rowBb1) >> 2;
             dst[i] = (blue << 5) | (green << 2) | red;
          }
       }
@@ -1869,7 +1872,7 @@ _mesa_generate_mipmap(GLcontext *ctx, GLenum target,
    GLint level, maxLevels;
 
    ASSERT(texObj);
-   srcImage = texObj->Image[texObj->BaseLevel];
+   srcImage = texObj->Image[0][texObj->BaseLevel];
    ASSERT(srcImage);
 
    maxLevels = _mesa_max_texture_levels(ctx, texObj->Target);
@@ -1918,7 +1921,7 @@ _mesa_generate_mipmap(GLcontext *ctx, GLenum target,
       for (row = 0; row < srcImage->Height; row++) {
          GLuint col;
          for (col = 0; col < srcImage->Width; col++) {
-            (*srcImage->FetchTexel)(srcImage, col, row, 0, (GLvoid *) dst);
+            srcImage->FetchTexelc(srcImage, col, row, 0, dst);
             dst += components;
          }
       }
@@ -1992,9 +1995,11 @@ _mesa_generate_mipmap(GLcontext *ctx, GLenum target,
                                  dstDepth, border, srcImage->IntFormat);
       dstImage->DriverData = NULL;
       dstImage->TexFormat = srcImage->TexFormat;
-      dstImage->FetchTexel = srcImage->FetchTexel;
+      dstImage->FetchTexelc = srcImage->FetchTexelc;
+      dstImage->FetchTexelf = srcImage->FetchTexelf;
       ASSERT(dstImage->TexFormat);
-      ASSERT(dstImage->FetchTexel);
+      ASSERT(dstImage->FetchTexelc);
+      ASSERT(dstImage->FetchTexelf);
 
       /* Alloc new teximage data buffer.
        * Setup src and dest data pointers.

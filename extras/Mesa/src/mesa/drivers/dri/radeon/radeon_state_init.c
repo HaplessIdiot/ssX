@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_state_init.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_state_init.c,v 1.1.1.2 2004/06/10 14:23:08 alanh Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -504,10 +504,10 @@ void radeonInitState( radeonContextPtr rmesa )
       (RADEON_SPECULAR_LIGHTS |
        RADEON_DIFFUSE_SPECULAR_COMBINE |
        RADEON_LOCAL_LIGHT_VEC_GL |
-       (RADEON_LM_SOURCE_STATE_PREMULT << RADEON_EMISSIVE_SOURCE_SHIFT) |
-       (RADEON_LM_SOURCE_STATE_PREMULT << RADEON_AMBIENT_SOURCE_SHIFT) |
-       (RADEON_LM_SOURCE_STATE_PREMULT << RADEON_DIFFUSE_SOURCE_SHIFT) |
-       (RADEON_LM_SOURCE_STATE_PREMULT << RADEON_SPECULAR_SOURCE_SHIFT)); 
+       (RADEON_LM_SOURCE_STATE_MULT << RADEON_EMISSIVE_SOURCE_SHIFT) |
+       (RADEON_LM_SOURCE_STATE_MULT << RADEON_AMBIENT_SOURCE_SHIFT) |
+       (RADEON_LM_SOURCE_STATE_MULT << RADEON_DIFFUSE_SOURCE_SHIFT) |
+       (RADEON_LM_SOURCE_STATE_MULT << RADEON_SPECULAR_SOURCE_SHIFT));
 
    for (i = 0 ; i < 8; i++) {
       struct gl_light *l = &ctx->Light.Light[i];
@@ -527,6 +527,7 @@ void radeonInitState( radeonContextPtr rmesa )
 			   &l->LinearAttenuation );
       ctx->Driver.Lightfv( ctx, p, GL_QUADRATIC_ATTENUATION, 
 		     &l->QuadraticAttenuation );
+      *(float *)&(rmesa->hw.lit[i].cmd[LIT_ATTEN_XXX]) = 0.0;
    }
 
    ctx->Driver.LightModelfv( ctx, GL_LIGHT_MODEL_AMBIENT, 

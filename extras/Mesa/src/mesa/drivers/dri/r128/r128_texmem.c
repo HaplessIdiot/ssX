@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texmem.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texmem.c,v 1.1.1.2 2004/06/10 14:22:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -93,7 +93,7 @@ static void uploadSubImage( r128ContextPtr rmesa, r128TexObjPtr t,
    if ( ( level < 0 ) || ( level > R128_MAX_TEXTURE_LEVELS ) )
       return;
 
-   image = t->base.tObj->Image[level];
+   image = t->base.tObj->Image[0][level];
    if ( !image )
       return;
 
@@ -245,7 +245,7 @@ void r128UploadTexImages( r128ContextPtr rmesa, r128TexObjPtr t )
 
    if ( R128_DEBUG & DEBUG_VERBOSE_API ) {
       fprintf( stderr, "%s( %p, %p )\n",
-	       __FUNCTION__, (void *)rmesa->glCtx, (void *)t );
+	       __FUNCTION__, (void *) rmesa->glCtx, (void *) t );
    }
 
    assert(t);

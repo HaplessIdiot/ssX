@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/x86/assyntax.h,v 1.2 2004/04/22 13:58:38 tsi Exp $ */
 
 #ifndef __ASSYNTAX_H__
 #define __ASSYNTAX_H__
@@ -1231,11 +1231,11 @@ SECTION _DATA public align=16 class=DATA use32 flat
 #define LEAVE			leave
 #define LGDT(a)			lgdt a
 #define LIDT(a)			lidt a
-#define LDS(a, b)		lds b, a
-#define LES(a, b)		les b, a
-#define LFS(a, b)		lfs b, a
-#define LGS(a, b)		lgs b, a
-#define LSS(a, b)		lss b, a
+#define LDS(a, b)		lds b, P_(a)
+#define LES(a, b)		les b, P_(a)
+#define LFS(a, b)		lfs b, P_(a)
+#define LGS(a, b)		lgs b, P_(a)
+#define LSS(a, b)		lss b, P_(a)
 #define LLDT(a)			lldt a
 #define LMSW(a)			lmsw a
 #define LOCK			lock

@@ -29,7 +29,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.3 2004/04/22 13:58:37 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.4 2004/04/22 14:37:48 tsi Exp $ */
 
 #ifndef IMPORTS_H
 #define IMPORTS_H
@@ -309,7 +309,7 @@ static INLINE int IS_INF_OR_NAN( float x )
 #define IS_INF_OR_NAN(x)        (!isfinite(x))
 #elif defined(finite)
 #define IS_INF_OR_NAN(x)        (!finite(x))
-#elif defined(__VMS)
+#elif __VMS
 #define IS_INF_OR_NAN(x)        (!finite(x))
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #define IS_INF_OR_NAN(x)        (!isfinite(x))
