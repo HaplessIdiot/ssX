@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.31tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.32tsi Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -112,7 +112,7 @@ boolean		printed = FALSE;
 boolean		verbose = FALSE;
 boolean		show_where_not = FALSE;
 /* Warn on multiple includes of same file */
-boolean 	warn_multiple = FALSE;
+boolean		warn_multiple = FALSE;
 
 static void setfile_cmdinc(struct filepointer *filep, long count, char **list);
 static void redirect(char *line, char *makefile);
@@ -162,7 +162,7 @@ main(int argc, char *argv[])
 
 	while (psymp->s_name)
 	{
-	    define2(psymp->s_name, psymp->s_value, &maininclist);
+	    define2(psymp->s_name, NULL, psymp->s_value, &maininclist);
 	    psymp++;
 	}
 	if (argc == 2 && argv[1][0] == '@') {
@@ -213,7 +213,7 @@ main(int argc, char *argv[])
 	    argv = nargv;
 	}
 	for(argc--, argv++; argc; argc--, argv++) {
-	    	/* if looking for endmarker then check before parsing */
+		/* if looking for endmarker then check before parsing */
 		if (endmarker && strcmp (endmarker, *argv) == 0) {
 		    endmarker = NULL;
 		    continue;
@@ -331,7 +331,7 @@ main(int argc, char *argv[])
 		case 'm':
 			warn_multiple = TRUE;
 			break;
-			
+
 		/* Ignore -O, -g so we can just pass ${CFLAGS} to
 		   makedepend
 		 */
@@ -351,7 +351,7 @@ main(int argc, char *argv[])
 				buf = malloc(strlen(DASH_INC_PRE) +
 					     strlen(argv[0]) +
 					     strlen(DASH_INC_POST) + 1);
-                		if(!buf)
+				if (!buf)
 					fatalerr("out of memory at "
 						 "-include string\n");
 				cmdinc_list[2 * cmdinc_count + 0] = argv[0];
@@ -388,7 +388,7 @@ main(int argc, char *argv[])
 		    for (;;) {
 			end = (char*)strchr(beg,';');
 			if (end) *end = 0;
-		    	if (incp >= includedirs + MAXDIRS)
+			if (incp >= includedirs + MAXDIRS)
 				fatalerr("Too many include dirs\n");
 			*incp++ = beg;
 			if (!end) break;
@@ -509,7 +509,7 @@ main(int argc, char *argv[])
 /*
  * eliminate \r chars from file
  */
-static int 
+static int
 elim_cr(char *buf, int sz)
 {
 	int i,wp;
@@ -633,7 +633,7 @@ char *getnextline(struct filepointer *filep)
 			}
 			whitespace = TRUE;
 		}
-        
+
 		if (*p == '/' && (p+1) < eof && *(p+1) == '*') {
 			/* Consume C comments */
 			*(p++) = ' ';
@@ -661,7 +661,7 @@ char *getnextline(struct filepointer *filep)
 					lineno++;
 				}
 				else if (*p == '?' && (p+3) < eof &&
-					 *(p+1) == '?' && 
+					 *(p+1) == '?' &&
 					 *(p+2) == '/' &&
 					 *(p+3) == '\n') {
 					*(p++) = ' ';
@@ -697,7 +697,7 @@ char *getnextline(struct filepointer *filep)
 
 				*(p++) = '\0';
 				/* punt lines with just # (yacc generated) */
-				for (cp = bol+1; 
+				for (cp = bol+1;
 				     *cp && (*cp == ' ' || *cp == '\t'); cp++);
 				if (*cp) goto done;
 				--p;
@@ -817,7 +817,7 @@ redirect(char *line, char *makefile)
 #if defined(USGISH) || defined(_SEQUENT_) || defined(USE_CHMOD)
 	chmod(makefile, st.st_mode);
 #else
-        fchmod(fileno(fdout), st.st_mode);
+	fchmod(fileno(fdout), st.st_mode);
 #endif /* USGISH */
 }
 

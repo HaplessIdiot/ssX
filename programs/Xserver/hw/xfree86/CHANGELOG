@@ -1,4 +1,8 @@
 XFree86 4.4.99.1 (XX March 2004)
+  13. Experimental changes to recognise parameterised macros in makedepend
+      (From #6003, Alexander Stohr).
+  12. Change scanpci utility to optionally display PCI bus linkages
+      (Marc La France).
   11. Fixes for building on Solaris/sparc with Sun's compiler (Mark Kandianis).
   10. Add support for specifying the screen origins for Xvfb, which is
       useful when Xinerama is enabled (David Dawes).
@@ -18707,7 +18711,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3167 2004/03/05 03:20:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3168 2004/03/05 04:02:11 dawes Exp $
 
 
 
