@@ -26,7 +26,7 @@
  * 
  * Permedia 3 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.11 2001/01/30 10:06:35 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_accel.c,v 1.12 2001/01/30 14:31:50 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -110,7 +110,7 @@ Permedia3InitializeEngine(ScrnInfoPtr pScrn)
 
     /* Host out PreInit */
     /* Set filter mode to enable sync tag & data output */
-    GLINT_SLOW_WRITE_REG(0xc00,		FilterMode);
+    GLINT_SLOW_WRITE_REG(0x400,		FilterMode);
     GLINT_SLOW_WRITE_REG(UNIT_DISABLE, StatisticMode);
     Permedia3Sync(pScrn);
 
@@ -469,7 +469,8 @@ Permedia3Sync(ScrnInfoPtr pScrn)
     CHECKCLIPPING;
 
     while (GLINT_READ_REG(DMACount) != 0);
-    GLINT_WAIT(1);
+    GLINT_WAIT(2);
+    GLINT_WRITE_REG(0x400, FilterMode);
     GLINT_WRITE_REG(0, GlintSync);
     do {
    	while(GLINT_READ_REG(OutFIFOWords) == 0);
