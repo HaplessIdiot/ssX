@@ -139,6 +139,7 @@ static SymTabRec TRIDENTChipsets[] = {
     { CYBER9397DVD,		"cyber9397dvd" },
     { CYBER9520,		"cyber9520" },
     { CYBER9525DVD,		"cyber9525dvd" },
+    { CYBER9540,		"cyber9540" },
     { TGUI9420DGi,		"tgui9420dgi" },
     { TGUI9440AGi,		"tgui9440agi" },
     { TGUI9660,			"tgui9660" },
@@ -168,6 +169,7 @@ static PciChipsets TRIDENTPciChipsets[] = {
     { CYBER9397DVD,	PCI_CHIP_939A,	RES_SHARED_VGA },
     { CYBER9520,	PCI_CHIP_9520,	RES_SHARED_VGA },
     { CYBER9525DVD,	PCI_CHIP_9525,	RES_SHARED_VGA },
+    { CYBER9540,	PCI_CHIP_9540,	RES_SHARED_VGA },
     { TGUI9420DGi,	PCI_CHIP_9420,	RES_SHARED_VGA },
     { TGUI9440AGi,	PCI_CHIP_9440,	RES_SHARED_VGA },
     { TGUI9660,		PCI_CHIP_9660,	RES_SHARED_VGA },
@@ -275,6 +277,7 @@ static int ClockLimit[] = {
 	230000,
 	230000,
 	230000,
+	230000,
 };
 
 static int ClockLimit16bpp[] = {
@@ -302,6 +305,7 @@ static int ClockLimit16bpp[] = {
 	135000,
 	170000,
 	170000,
+	230000,
 	230000,
 	230000,
 	230000,
@@ -341,6 +345,7 @@ static int ClockLimit24bpp[] = {
 	115000,
 	115000,
 	115000,
+	115000,
 };
 
 static int ClockLimit32bpp[] = {
@@ -368,6 +373,7 @@ static int ClockLimit32bpp[] = {
 	70000,
 	85000,
 	85000,
+	115000,
 	115000,
 	115000,
 	115000,
@@ -1441,6 +1447,21 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    chipset = "Cyber 9525/DVD";
 	    pTrident->NewClockCode = TRUE;
 	    break;
+	case CYBER9540:
+    	    pTrident->ddc1Read = Tridentddc1Read;
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x04)
+		ramtype = "EDO Ram";
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
+		ramtype = "SDRAM";
+    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
+		pTrident->HasSGRAM = TRUE;
+		ramtype = "SGRAM";
+	    }
+	    pTrident->IsCyber = TRUE;
+	    Support24bpp = TRUE;
+	    chipset = "Cyber 9540";
+	    pTrident->NewClockCode = TRUE;
+	    break;
 	case IMAGE975:
     	    pTrident->ddc1Read = Tridentddc1Read;
     	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x04)
@@ -1995,6 +2016,7 @@ TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	case CYBERBLADEI1:
 	case CYBER9520:
 	case CYBER9525DVD:
+	case CYBER9540:
 	case CYBER9397:
 	case CYBER9397DVD:
 	    /* Get ready for MUX mode */

@@ -186,6 +186,7 @@ typedef enum {
     CYBER9397DVD,
     CYBER9520,
     CYBER9525DVD,
+    CYBER9540,
     IMAGE975,
     IMAGE985,
     BLADE3D,
