@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.13 2002/03/10 04:57:46 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.14 2002/05/17 20:24:11 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -63,11 +63,13 @@ LispObj *Lisp_Documentation(LispMac*, LispBuiltin*);	/* documentation */
 LispObj *Lisp_DoList(LispMac*, LispBuiltin*);		/* dolist */
 LispObj *Lisp_DoTimes(LispMac*, LispBuiltin*);		/* dotimes */
 LispObj *Lisp_Elt(LispMac*, LispBuiltin*);		/* elt */
+LispObj *Lisp_Endp(LispMac*, LispBuiltin*);		/* endp */
 LispObj *Lisp_Eq(LispMac*, LispBuiltin*);		/* eq */
 LispObj *Lisp_Eql(LispMac*, LispBuiltin*);		/* eql */
 LispObj *Lisp_Equal(LispMac*, LispBuiltin*);		/* equal */
 LispObj *Lisp_Error(LispMac*, LispBuiltin*);		/* error */
 LispObj *Lisp_Eval(LispMac*, LispBuiltin*);		/* eval */
+LispObj *Lisp_Fill(LispMac*, LispBuiltin*);		/* fill */
 LispObj *Lisp_Fmakunbound(LispMac*, LispBuiltin*);	/* fmakunbound */
 LispObj *Lisp_Funcall(LispMac*, LispBuiltin*);		/* funcall */
 LispObj *Lisp_Gc(LispMac*, LispBuiltin*);		/* gc */
@@ -91,6 +93,8 @@ LispObj *Lisp_Makunbound(LispMac*, LispBuiltin*);	/* makunbound */
 LispObj *Lisp_Mapcar(LispMac*, LispBuiltin*);		/* mapcar */
 LispObj *Lisp_Maplist(LispMac*, LispBuiltin*);		/* maplist */
 LispObj *Lisp_Member(LispMac*, LispBuiltin*);		/* member */
+LispObj *Lisp_MemberIf(LispMac*, LispBuiltin*);		/* member-if */
+LispObj *Lisp_MemberIfNot(LispMac*, LispBuiltin*);	/* member-if-not */
 LispObj *Lisp_MultipleValueList(LispMac*, LispBuiltin*);/* multiple-value-list */
 LispObj *Lisp_Nconc(LispMac*, LispBuiltin*);		/* nconc */
 LispObj *Lisp_Nth(LispMac*, LispBuiltin*);		/* nth */
@@ -109,6 +113,9 @@ LispObj *Lisp_Provide(LispMac*, LispBuiltin*);		/* provide */
 LispObj *Lisp_Quit(LispMac*, LispBuiltin*);		/* quit */
 LispObj *Lisp_Quote(LispMac*, LispBuiltin*);		/* quote */
 LispObj *Lisp_Remove(LispMac*, LispBuiltin*);		/* remove */
+LispObj *Lisp_RemoveDuplicates(LispMac*, LispBuiltin*);	/* remove-duplicates */
+LispObj *Lisp_RemoveIf(LispMac*, LispBuiltin*);		/* remove-if */
+LispObj *Lisp_RemoveIfNot(LispMac*, LispBuiltin*);	/* remove-if-not */
 LispObj *Lisp_Replace(LispMac*, LispBuiltin*);		/* replace */
 LispObj *Lisp_Return(LispMac*, LispBuiltin*);		/* return */
 LispObj *Lisp_ReturnFrom(LispMac*, LispBuiltin*);	/* return-from */
@@ -129,6 +136,7 @@ LispObj *Lisp_Terpri(LispMac*, LispBuiltin*);		/* terpri */
 LispObj *Lisp_Throw(LispMac*, LispBuiltin*);		/* throw */
 LispObj *Lisp_The(LispMac*, LispBuiltin*);		/* the */
 LispObj *Lisp_Typep(LispMac*, LispBuiltin*);		/* typep */
+LispObj *Lisp_Union(LispMac*, LispBuiltin*);		/* union */
 LispObj *Lisp_Unless(LispMac*, LispBuiltin*);		/* unless */
 LispObj *Lisp_Until(LispMac*, LispBuiltin*);		/* unless */
 LispObj *Lisp_Unsetenv(LispMac*, LispBuiltin*);		/* unsetenv */

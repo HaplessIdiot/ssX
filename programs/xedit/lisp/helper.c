@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.25 2002/03/19 20:03:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.26 2002/05/17 20:24:11 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -126,6 +126,41 @@ LispEqual(LispMac *mac, LispObj *left, LispObj *right)
     }
 
     return (result);
+}
+
+void
+LispCheckSequenceStartEnd(LispMac *mac, LispBuiltin *builtin,
+			  LispObj *sequence, LispObj *start, LispObj *end,
+			  long *pstart, long *pend, long *plength)
+{
+    /* Calculate length of sequence and check it's type */
+    *plength = LispLength(mac, sequence);
+
+    /* Check start argument */
+    if (start == NIL)
+	*pstart = 0;
+    else {
+	ERROR_CHECK_INDEX(start);
+	*pstart = start->data.integer;
+    }
+
+    /* Check end argument */
+    if (end == NIL)
+	*pend = *plength;
+    else {
+	ERROR_CHECK_INDEX(end);
+	*pend = end->data.integer;
+    }
+
+    /* Check start argument */
+    if (*pstart > *pend)
+	LispDestroy(mac, "%s: :START %d is larger than :END %d",
+		    *pstart, *pend);
+
+    /* Check end argument */
+    if (*pend > *plength)
+	LispDestroy(mac, "%s: :END %d is larger then sequence length %d",
+		    STRFUN(builtin), *pend, *plength);
 }
 
 long

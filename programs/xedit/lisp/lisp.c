@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.48 2002/05/16 15:43:29 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.49 2002/05/17 20:24:12 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -286,7 +286,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_DoExternalSymbols, "do-external-symbols init &rest body"},
     {LispMacro, Lisp_DoSymbols, "do-symbols init &rest body"},
     {LispFunction, Lisp_Elt, "elt sequence index &aux (length (length sequence))"},
-    {LispFunction, Lisp_Null, "endp list"},
+    {LispFunction, Lisp_Endp, "endp object"},
     {LispFunction, Lisp_EnoughNamestring, "enough-namestring pathname &optional defaults"},
     {LispFunction, Lisp_Eq, "eq left right"},
     {LispFunction, Lisp_Eql, "eql left right"},
@@ -297,6 +297,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Export, "export symbols &optional package"},
     {LispFunction, Lisp_FileNamestring, "file-namestring pathname"},
     {LispFunction, Lisp_Car, "first list"},
+    {LispFunction, Lisp_Fill, "fill sequence item &key start end"},
     {LispFunction, Lisp_FindAllSymbols, "find-all-symbols string-or-symbol"},
     {LispFunction, Lisp_FindPackage, "find-package name"},
     {LispFunction, Lisp_Float, "float number &optional (other 1.0)"},
@@ -349,6 +350,8 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_Mapcar, "mapcar function list &rest more-lists"},
     {LispFunction, Lisp_Maplist, "maplist function list &rest more-lists"},
     {LispFunction, Lisp_Member, "member item list &key test test-not key"},
+    {LispFunction, Lisp_MemberIf, "member-if predicate list &key key"},
+    {LispFunction, Lisp_MemberIfNot, "member-if-not predicate list &key key"},
     {LispFunction, Lisp_Minusp, "minusp number"},
     {LispMacro, Lisp_MultipleValueList, "multiple-value-list form"},
     {LispFunction, Lisp_Nconc, "nconc &rest lists"},
@@ -397,10 +400,13 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_ReadCharNoHang, "read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p"},
     {LispFunction, Lisp_ReadLine, "read-line &optional input-stream (eof-error-p t) eof-value recursive-p", 1},
     {LispFunction, Lisp_Realpart, "realpart number"},
-    {LispFunction, Lisp_Replace, "replace sequence1 sequence2 &key start1 end1 start2 end2 &aux (length1 (length sequence1)) (length2 (length sequence2))"},
+    {LispFunction, Lisp_Replace, "replace sequence1 sequence2 &key start1 end1 start2 end2"},
     {LispFunction, Lisp_ReadFromString, "read-from-string string &optional eof-error-p eof-value &key start end preserve-whitespace", 1},
     {LispFunction, Lisp_Require, "require module &optional pathname"},
     {LispFunction, Lisp_Remove, "remove item sequence &key from-end test test-not start end count key"},
+    {LispFunction, Lisp_RemoveDuplicates, "remove-duplicates sequence &key from-end test test-not start end key"},
+    {LispFunction, Lisp_RemoveIf, "remove-if predicate sequence &key from-end start end count key"},
+    {LispFunction, Lisp_RemoveIfNot, "remove-if-not predicate sequence &key from-end test test-not start end count key"},
     {LispFunction, Lisp_Cdr, "rest list"},
     {LispMacro, Lisp_Return, "return &optional result"},
     {LispMacro, Lisp_ReturnFrom, "return-from name &optional result"},
@@ -435,7 +441,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_StringUpcase, "string-upcase string &key start end"},
     {LispFunction, Lisp_StringDowncase, "string-downcase string &key start end"},
     {LispFunction, Lisp_StringCapitalize, "string-capitalize string &key start end"},
-    {LispFunction, Lisp_Subseq, "subseq sequence start &optional end &aux (length (length sequence))"},
+    {LispFunction, Lisp_Subseq, "subseq sequence start &optional end"},
     {LispFunction, Lisp_Symbolp, "symbolp object"},
     {LispFunction, Lisp_SymbolPlist, "symbol-plist symbol"},
     {LispMacro, Lisp_Tagbody, "tagbody &rest body"},
@@ -446,6 +452,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Time, "time form"},
     {LispFunction, Lisp_Truename, "truename pathname"},
     {LispFunction, Lisp_Unexport, "unexport symbols &optional package"},
+    {LispFunction, Lisp_Union, "union list1 list2 &key test test-not key"},
     {LispMacro, Lisp_Unless, "unless test &rest body"},
     {LispFunction, Lisp_UserHomedirPathname, "user-homedir-pathname &optional host"},
     {LispMacro, Lisp_UnwindProtect, "unwind-protect protect &rest cleanup"},
