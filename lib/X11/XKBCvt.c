@@ -1,5 +1,5 @@
 /* $XConsortium $ */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.1 1995/06/14 07:06:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.2 1996/01/05 13:11:07 dawes Exp $ */
 /*
 
 Copyright (c) 1988, 1989  X Consortium
@@ -547,16 +547,13 @@ _XkbGetCharset(locale)
     } else {
 	struct stat sbuf;
 	FILE *file;
-<<<<<<< XKBCvt.c
-#ifdef __EMX__
-        char *cf = __XOS2RedirRoot(CHARSET_FILE);
-#else
+#ifndef __EMX__
 	char *cf = CHARSET_FILE;
+#else
+        char *cf = __XOS2RedirRoot(CHARSET_FILE);
+#endif
 	if ( (stat(cf,&sbuf)==0) && (sbuf.st_mode&S_IFREG) &&
 	    (file = fopen(cf,"r")) ) {
-	    tmp = Xmalloc(sbuf.st_size+1);
-	if ( (stat(CHARSET_FILE,&sbuf)==0) && (sbuf.st_mode&S_IFREG) &&
-	    (file = fopen(CHARSET_FILE,"r")) ) {
 	    tmp = _XkbAlloc(sbuf.st_size+1);
 	    if (tmp!=NULL) {
 		sbuf.st_size = (long)fread(tmp,1,sbuf.st_size,file);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xdm/auth.c,v 3.11 1995/11/02 00:29:38 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.12 1996/01/05 13:20:57 dawes Exp $ */
 /* $XConsortium: auth.c /main/62 1995/12/19 16:44:07 mor $ */
 /*
 
@@ -1030,8 +1030,6 @@ DefineSelf (fd, file, auth)
 #endif /* SIOCGIFCONF else */
 #endif /* WINTCP else */
 #endif /* STREAMSCONN && !SYSV_SIOCGIFCONF else */
-
-#endif /* WINTCP */
 
 
 static

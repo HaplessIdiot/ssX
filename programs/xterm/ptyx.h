@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: ptyx.h /main/66 1995/12/09 08:58:41 kaleb $
- *	$XFree86: xc/programs/xterm/ptyx.h,v 3.4 1995/09/17 06:33:19 dawes Exp $
+ *	$XFree86: xc/programs/xterm/ptyx.h,v 3.5 1996/01/05 13:23:12 dawes Exp $
  */
 
 /*
@@ -516,6 +516,7 @@ typedef struct _Misc {
     char* preedit_type;
     Boolean open_im;
     Boolean shared_ic;
+    Boolean dynamicColors;
 } Misc;
 
 typedef struct {int foo;} XtermClassPart, TekClassPart;
