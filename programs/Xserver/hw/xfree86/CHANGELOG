@@ -1,4 +1,5 @@
 XFree86 4.0a (xx March 2000)
+  23. Support for the Trident CyberBlade/DSTN/i1 (Alan Hourihane).
   22. Fix Xinerama problems that occured when screen zero was not at (0,0)
       (Mark Vojkovich).
   21. Add untested support for Matrox SDRAM G400s (Mark Vojkovich).
