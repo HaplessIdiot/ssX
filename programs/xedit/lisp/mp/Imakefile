@@ -1,3 +1,5 @@
+XCOMM $XFree86$
+
 #define DoNormalLib	YES
 #define DoSharedLib	NO
 #define DoExtraLib	NO

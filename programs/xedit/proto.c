@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "xedit.h"
 #include <stdlib.h>
 #include <limits.h>		/* LONG_MIN and LONG_MAX */
