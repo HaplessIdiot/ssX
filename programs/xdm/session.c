@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.16 1998/10/04 09:40:57 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.17 1998/10/10 15:25:38 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -72,7 +72,7 @@ from The Open Group.
 
 static	int	runAndWait (char **args, char **environ);
 
-#if defined(CSRG_BASED)
+#if defined(CSRG_BASED) || defined(__osf__)
 #include <sys/types.h>
 #include <grp.h>
 #else
@@ -229,6 +229,8 @@ IOErrorHandler (Display *dpy)
 {
     LogError("fatal IO error %d (%s)\n", errno, _SysErrorMsg(errno));
     exit(RESERVER_DISPLAY);
+    /*NOTREACHED*/
+    return 0;
 }
 
 static int

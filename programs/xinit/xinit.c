@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.17 1997/01/18 07:03:01 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.18 1998/10/04 09:41:24 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -605,12 +605,14 @@ startClient(client)
 
 static jmp_buf close_env;
 
-static int ignorexio (dpy)
+static int
+ignorexio (dpy)
     Display *dpy;
 {
     fprintf (stderr, "%s:  connection to X server lost.\r\n", program);
     longjmp (close_env, 1);
     /*NOTREACHED*/
+    return 0;
 }
 
 static

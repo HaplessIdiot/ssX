@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/twm/util.h,v 1.3 1999/02/20 15:07:26 hohndel Exp $ */
 
 
 /***********************************************************************
@@ -76,7 +76,6 @@ extern void GetColor ( int kind, Pixel *what, char *name );
 extern void GetColorValue ( int kind, XColor *what, char *name );
 extern void GetFont ( MyFont *font );
 extern void SetFocus ( TwmWindow *tmp_win, Time time );
-extern Pixmap CreateMenuIcon ( int height, int *widthp, int *heightp );
 extern void Bell ( int type, int percent, Window win );
 
 extern int HotX, HotY;

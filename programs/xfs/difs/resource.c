@@ -43,7 +43,7 @@ in this Software without prior written authorization from The Open Group.
  * %W%	%G%
  *
  */
-/* $XFree86: xc/programs/xfs/difs/resource.c,v 3.1 1998/10/04 09:41:10 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/difs/resource.c,v 3.2 1998/10/25 07:12:24 dawes Exp $ */
 /*
  *      a resource is a 32 bit quantity.  the upper 12 bits are client id.
  *      client provides a 19 bit resource id. this is "hashed" by me by
@@ -148,6 +148,7 @@ ClientResourceRec clientTable[MAXCLIENTS];
 int
 NoneDeleteFunc (void)
 {
+    return FSSuccess;
 }
 
 Bool

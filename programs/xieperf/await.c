@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/await.c,v 3.0 1996/08/25 14:14:39 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/await.c,v 3.1 1998/10/04 09:41:19 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xthreads.h>
@@ -83,6 +83,8 @@ static unsigned char *lut;
 static int lutSize;
 static int AwaitHandlerSeen;
 static XParms xplocal;		/* we can't pass args to signal handler */
+
+static void FreeAwaitStuff(XParms xp, Parms p);
 
 extern Display *Open_Display (
 #if NeedFunctionPrototypes
@@ -389,14 +391,15 @@ void DoAwait(xp, p, reps)
     	}
 }
 
-void EndAwait(xp, p)
+void
+EndAwait(xp, p)
     XParms  xp;
     Parms   p;
 {
 	FreeAwaitStuff( xp, p );
 }
 
-int
+static void
 FreeAwaitStuff( xp, p )
 XParms	xp;
 Parms	p;

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/server.c,v 3.4 1998/10/04 09:40:56 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.5 1998/10/10 15:25:38 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -315,6 +315,8 @@ openErrorHandler (Display *dpy)
 {
     LogError ("IO Error in XOpenDisplay\n");
     exit (OPENFAILED_DISPLAY);
+    /*NOTREACHED*/
+    return(0);
 }
 
 int

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author:  Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: $ */
+/* $XFree86: xc/programs/smproxy/save.c,v 1.5 1999/02/20 15:07:20 hohndel Exp $ */
 
 #include "smproxy.h"
 #ifdef HAS_MKSTEMP
@@ -47,11 +47,7 @@ static char * unique_filename ( char *path, char *prefix, int *pFd );
 
 
 static int
-write_byte (file, b)
-
-FILE		*file;
-unsigned char   b;
-
+write_byte (FILE *file, unsigned char b)
 {
     if (fwrite ((char *) &b, 1, 1, file) != 1)
 	return 0;
@@ -60,11 +56,7 @@ unsigned char   b;
 
 
 static int
-write_short (file, s)
-
-FILE		*file;
-unsigned short	s;
-
+write_short (FILE *file, unsigned short s)
 {
     unsigned char   file_short[2];
 
@@ -225,7 +217,7 @@ ProxyFileEntry **pentry;
 
 {
     ProxyFileEntry *entry;
-    char byte;
+    unsigned char byte;
     int i;
 
     *pentry = entry = (ProxyFileEntry *) malloc (

@@ -259,6 +259,7 @@ bad_window_handler(disp, err)
     sprintf(badid, window_id_format, err->resourceid);
     Fatal_Error("No such window with id %s.", badid);
     exit (1);
+    return 0;
 }
 
 

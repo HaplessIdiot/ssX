@@ -39,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/fstobdf/props.c,v 1.3 1999/02/20 15:07:15 hohndel Exp $ */
 
 #include	<stdio.h>
 #include	<string.h>
@@ -82,10 +82,10 @@ EmitProperties(FILE *outFile,
 
     nProperties = propInfo->num_offsets;
     for (property = &propOffsets[0]; nProperties--; property++) {
-	unsigned char *name;
+	char       *name;
 	int         length;
 
-	name = propData + property->name.position;
+	name = (char *)propData + property->name.position;
 	length = property->name.length;
 
 	if ((length == 12) && (!strncmp(name, "DEFAULT_CHAR", 12)))

@@ -27,7 +27,7 @@
  * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.4 1998/07/25 06:56:59 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1stdio.h,v 1.5 1998/10/03 09:07:18 dawes Exp $ */
 /* T1IO FILE structure and related stuff */
 #ifdef XFree86LOADER
 #undef FILE
@@ -70,7 +70,6 @@ typedef struct F_FILE {
 extern FILE *T1Open(), *T1eexec();
 extern int T1Close(), T1Ungetc(), T1Read();
  
-#ifdef XFree86LOADER
 #undef fclose
 #undef fopen
 #undef ungetc
@@ -78,7 +77,6 @@ extern int T1Close(), T1Ungetc(), T1Read();
 #undef fread
 #undef feof
 #undef ferror
-#endif
 #define  fclose(f)          T1Close(f)
 #define  fopen(name,mode)   T1Open(name,mode)
 #define  ungetc(c,f)        T1Ungetc(c,f)

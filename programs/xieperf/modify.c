@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/modify.c,v 3.3 1998/08/16 10:25:58 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/modify.c,v 3.4 1998/10/04 09:41:22 dawes Exp $ */
 
 #include "xieperf.h"
 #include <stdio.h>
@@ -89,6 +89,11 @@ static XieLut XIELut;
 static int monoflag = 0;
 static XieRectangle *rects;
 static unsigned char *lut; 
+
+static void FreeModifyROIStuff(XParms xp, Parms p);
+static void FreeModifyPointStuff(XParms xp, Parms p);
+static void FreeModifySimpleStuff(XParms xp, Parms p);
+static void FreeModifyLongStuff(XParms xp, Parms p);
 
 int InitModifyROI(xp, p, reps)
     XParms  xp;
@@ -267,14 +272,15 @@ void DoModifyROI(xp, p, reps)
     	}
 }
 
-int EndModifyROI(xp, p)
+void
+EndModifyROI(xp, p)
     XParms  xp;
     Parms   p;
 {
 	FreeModifyROIStuff( xp, p );
 }
 
-int
+static void
 FreeModifyROIStuff( xp, p )
 XParms	xp;
 Parms	p;
@@ -470,14 +476,15 @@ void DoModifyPoint(xp, p, reps)
     	}
 }
 
-int EndModifyPoint(xp, p)
+void
+EndModifyPoint(xp, p)
     XParms  xp;
     Parms   p;
 {
 	FreeModifyPointStuff( xp, p );
 }
 
-int
+static void
 FreeModifyPointStuff( xp, p )
 XParms	xp;
 Parms	p;
@@ -656,14 +663,15 @@ void DoModifySimple(xp, p, reps)
     	}
 }
 
-int EndModifySimple(xp, p)
+void
+EndModifySimple(xp, p)
     XParms  xp;
     Parms   p;
 {
 	FreeModifySimpleStuff( xp, p );
 }
 
-int
+static void
 FreeModifySimpleStuff( xp, p )
 XParms	xp;
 Parms	p;
@@ -861,14 +869,15 @@ void DoModifyLong1(xp, p, reps)
     	}
 }
 
-int EndModifyLong(xp, p)
+void
+EndModifyLong(xp, p)
     XParms  xp;
     Parms   p;
 {
 	FreeModifyLongStuff( xp, p );
 }
 
-int
+static void
 FreeModifyLongStuff( xp, p )
 XParms	xp;
 Parms	p;

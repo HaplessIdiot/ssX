@@ -66,7 +66,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/events.c,v 3.2 1996/01/05 13:21:42 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/events.c,v 3.3 1998/10/04 09:41:21 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -98,6 +98,11 @@ extern Bool dontClear;
 extern Bool showErrors;
 extern Window drawableWindow;
 
+static void FreePhotofloDoneEventStuff(XParms xp, Parms p);
+static void FreeImportObscuredEventStuff(XParms xp, Parms p);
+static void FreeExportAvailableEventStuff(XParms xp, Parms p);
+static void FreeDecodeNotifyEventStuff(XParms xp, Parms p);
+
 /* general event stuff */
 
 int
@@ -106,7 +111,7 @@ GetTimeout()
         return( timeout );
 }
 
-int
+void
 SetTimeout( time )
 int	time;
 {
@@ -706,7 +711,7 @@ Parms	p;
 	}
 }
 
-int
+static void
 FreePhotofloDoneEventStuff( xp, p )
 XParms	xp;
 Parms	p;
@@ -741,7 +746,7 @@ Parms	p;
         }
 }
 
-int
+static void
 FreeImportObscuredEventStuff( xp, p )
 XParms	xp;
 Parms	p;
@@ -758,7 +763,7 @@ Parms	p;
         }
 }
 
-int
+static void
 FreeExportAvailableEventStuff( xp, p )
 XParms	xp;
 Parms	p;
@@ -788,7 +793,7 @@ Parms	p;
 	}
 }
 
-int
+static void
 FreeDecodeNotifyEventStuff( xp, p )
 XParms	xp;
 Parms	p;

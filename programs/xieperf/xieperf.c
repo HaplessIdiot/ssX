@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/xieperf.c,v 3.0 1996/08/25 14:14:42 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/xieperf.c,v 3.1 1998/10/04 09:41:22 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -157,6 +157,12 @@ Window	CreateXIEParent();
 void	AllocateGrayMapColors();
 void	AllocateColorMapColors();
 XieLut CreatePointLut();
+
+static void SetDirectTrueColorStuff(XParms xp, int *n_colors);
+static void ListAllTechs(XParms xp);
+void PumpTheClientData(XParms xp, Parms p, int flo_id,
+		XiePhotospace photospace, int element, char *data, int size,
+		int band_number);
 
 /* ScreenSaver state */
 static XParmRec    xparms;
@@ -1735,7 +1741,7 @@ XParms	xp;
 		free( gray );
 }
 
-int
+static void
 SetDirectTrueColorStuff( xp, n_colors )
 XParms	xp;
 int	*n_colors;
@@ -1838,7 +1844,7 @@ int GetNumbers (argi, argc, argv, intsp, nump)
     return count;
 }
 
-int	
+void	
 SendTripleBandPlaneDataSequential( xp, p, flo_id, photospace, element, data, 
 	size, pixel_stride, left_pad, scanline_pad, width, height )
 XParms	xp;
@@ -1904,7 +1910,7 @@ int	pad;
 	}
 }
 
-int	
+void	
 PumpTheClientData( xp, p, flo_id, photospace, element, data, size, band_number )
 XParms	xp;
 Parms	p;
@@ -4329,7 +4335,7 @@ static struct _class classes[] = {
   	{ "WhiteAdjust", True, xieValWhiteAdjust, WhiteAdjustTechs, 
 		sizeof( WhiteAdjustTechs ) / sizeof( struct _tech )  } };
 		  
-int
+static void
 ListAllTechs( xp )
 XParms	xp;
 {

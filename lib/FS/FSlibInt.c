@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.4 1998/10/03 08:41:07 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.5 1999/02/19 21:26:51 hohndel Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -969,6 +969,7 @@ _FSDefaultIOError(svr)
 	"      The connection was probably broken by a server shutdown.\r\n");
     }
     exit(1);
+    return 0;
 }
 
 /*
@@ -1069,8 +1070,9 @@ _FSDefaultError(svr, event)
     /* NOTREACHED */
 }
 
-int         (*_FSIOErrorFunction) (FSServer *) = _FSDefaultIOError;
-int         (*_FSErrorFunction) (FSServer *, FSErrorEvent *) = _FSDefaultError;
+
+FSIOErrorHandler _FSIOErrorFunction = _FSDefaultIOError;
+FSErrorHandler _FSErrorFunction = _FSDefaultError;
 
 /*
  * This routine can be used to (cheaply) get some memory within a single
