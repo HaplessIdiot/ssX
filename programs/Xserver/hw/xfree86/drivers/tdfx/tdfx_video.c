@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.5 2000/12/08 21:53:37 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_video.c,v 1.6 2000/12/20 01:30:47 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "tdfx.h"
@@ -548,6 +548,7 @@ TDFXDisplayVideo(
     if(drw_h != src_h) pTDFX->ModeReg.vidcfg |= (1 << 15);
     if(id == FOURCC_UYVY) pTDFX->ModeReg.vidcfg |= (6 << 21);
     else                  pTDFX->ModeReg.vidcfg |= (5 << 21);
+    if(pScrn->depth == 8) pTDFX->ModeReg.vidcfg |= (1 << 11);
     pTDFX->writeLong(pTDFX, VIDPROCCFG, pTDFX->ModeReg.vidcfg);
 
     pTDFX->writeLong(pTDFX, VIDOVERLAYSTARTCOORDS, 
