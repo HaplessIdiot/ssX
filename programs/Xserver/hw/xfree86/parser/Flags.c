@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.8 1999/05/30 14:04:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Flags.c,v 1.9 1999/06/05 15:55:32 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -52,6 +52,7 @@ static xf86ConfigSymTabRec ServerFlagsTab[] =
 	{STANDBYTIME, "standbytime"},
 	{SUSPENDTIME, "suspendtime"},
 	{OFFTIME, "offtime"},
+	{DEFAULTLAYOUT, "defaultserverlayout"},
 	{-1, ""},
 };
 
@@ -65,12 +66,16 @@ parseFlagsSection (void)
 	while ((token = xf86GetToken (ServerFlagsTab)) != ENDSECTION)
 	{
 		int hasvalue = FALSE;
+		int strvalue = FALSE;
+		int tokentype;
 		switch (token)
 		{
 			/* 
 			 * these old keywords are turned into standard generic options.
 			 * we fall through here on purpose
 			 */
+		case DEFAULTLAYOUT:
+			strvalue = TRUE;
 		case BLANKTIME:
 		case STANDBYTIME:
 		case SUSPENDTIME:
@@ -97,11 +102,18 @@ parseFlagsSection (void)
 						tmp = ConfigStrdup (ServerFlagsTab[i].name);
 						if (hasvalue)
 						{
-							if (xf86GetToken (NULL) != NUMBER)
+							tokentype = xf86GetToken(NULL);
+							if (strvalue) {
+							    if (tokentype != STRING)
+								Error (QUOTE_MSG, tmp);
+							    valstr = val.str;
+							} else {
+							    if (tokentype != NUMBER)
 								Error (NUMBER_MSG, tmp);
-							valstr = xf86confmalloc(16);
-							if (valstr)
+							    valstr = xf86confmalloc(16);
+							    if (valstr)
 								sprintf(valstr, "%d", val.num);
+							}
 						}
 						ptr->flg_option_lst = addNewOption
 							(ptr->flg_option_lst, tmp, valstr);
