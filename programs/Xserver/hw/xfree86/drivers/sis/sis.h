@@ -36,7 +36,7 @@
 
 #define SISDRIVERVERSIONYEAR    3
 #define SISDRIVERVERSIONMONTH   11
-#define SISDRIVERVERSIONDAY     7
+#define SISDRIVERVERSIONDAY     11
 #define SISDRIVERREVISION       1
 
 #define SISDRIVERIVERSION (SISDRIVERVERSIONYEAR << 16) | (SISDRIVERVERSIONMONTH << 8) \
@@ -245,6 +245,7 @@
 /* pSiS->MiscFlags */
 #define MISC_CRT1OVERLAY	0x00000001  /* Current display mode supports overlay */
 #define MISC_PANELLINKSCALER    0x00000002  /* Panel link is currently scaling */
+#define MISC_CRT1OVERLAYGAMMA	0x00000004  /* Current display mode supports overlay gamma corr on CRT1 */
 
 /* SiS6326Flags */
 #define SIS6326_HASTV		0x00000001
@@ -341,6 +342,7 @@ typedef unsigned char UChar;
 #define SiS_SD_SUPPORTVGA2     0x00040000   /* CRT2=VGA supported */
 #define SiS_SD_SUPPORTSCART    0x00080000   /* CRT2=SCART supported */
 #define SiS_SD_SUPPORTOVERSCAN 0x00100000   /* Overscan flag supported */
+#define SiS_SD_SUPPORTXVGAMMA1 0x00200000   /* Xv Gamma correction for CRT1 supported */
 
 #define SIS_DIRECTKEY         0x03145792
 
@@ -497,7 +499,10 @@ typedef struct {
     unsigned char       scalingp1[9], scalingp4[9];
     unsigned short      cursorBufferNum;
     BOOLEAN		restorebyset;
-    BOOLEAN		CRT1gamma, CRT2gamma;
+    BOOLEAN		CRT1gamma, CRT1gammaGiven, CRT2gamma, XvGamma, XvGammaGiven;
+    int			XvGammaRed, XvGammaGreen, XvGammaBlue;
+    int			GammaBriR, GammaBriG, GammaBriB;	/* strictly for Xinerama */
+    int			GammaPBriR, GammaPBriG, GammaPBriB;	/* strictly for Xinerama */
     int			curxvcrtnum;
     int			UsePanelScaler;
     int			AllowHotkey;
@@ -706,6 +711,7 @@ typedef struct {
     ScreenBlockHandlerProcPtr BlockHandler;
     void                (*VideoTimerCallback)(ScrnInfoPtr, Time);
     void		(*ResetXv)(ScrnInfoPtr);
+    void		(*ResetXvGamma)(ScrnInfoPtr);
 
     OptionInfoPtr 	Options;
     unsigned char 	LCDon;
@@ -806,10 +812,12 @@ typedef struct {
     Atom		xvDisableGfx, xvDisableGfxLR, xvTVXPosition, xvTVYPosition;
     Atom		xvDisableColorkey, xvUseChromakey, xvChromaMin, xvChromaMax;
     Atom		xvInsideChromakey, xvYUVChromakey;
+    Atom		xvGammaRed, xvGammaGreen, xvGammaBlue;
     Atom		xv_QVF, xv_QVV, xv_USD, xv_SVF, xv_QDD, xv_TAF, xv_TSA, xv_TEE, xv_GSF;
     Atom		xv_TTE, xv_TCO, xv_TCC, xv_TCF, xv_TLF, xv_CMD, xv_CMDR, xv_CT1, xv_SGA;
     Atom		xv_GDV, xv_GHI, xv_OVR, xv_GBI, xv_TXS, xv_TYS, xv_CFI, xv_COC, xv_COF;
     Atom		xv_YFI, xv_GSS, xv_BRR, xv_BRG, xv_BRB, xv_PBR, xv_PBG, xv_PBB, xv_SHC;
+    Atom		xv_BRR2, xv_BRG2, xv_BRB2, xv_PBR2, xv_PBG2, xv_PBB2;
 #ifdef TWDEBUG
     Atom		xv_STR;
 #endif        
@@ -830,13 +838,16 @@ typedef struct {
     BOOLEAN		restorebyset;
     BOOLEAN		nocrt2ddcdetection;
     BOOLEAN		forcecrt2redetection;
-    BOOLEAN		CRT1gamma, CRT2gamma;
+    BOOLEAN		CRT1gamma, CRT1gammaGiven, CRT2gamma, XvGamma, XvGammaGiven;
     int			XvDefCon, XvDefBri, XvDefHue, XvDefSat;
     BOOLEAN		XvDefDisableGfx, XvDefDisableGfxLR;
     BOOLEAN		XvUseMemcpy;
     BOOLEAN		XvUseChromaKey, XvDisableColorKey;
     BOOLEAN		XvInsideChromaKey, XvYUVChromaKey;
     int			XvChromaMin, XvChromaMax;
+    int			XvGammaRed, XvGammaGreen, XvGammaBlue;
+    int			XvGammaRedDef, XvGammaGreenDef, XvGammaBlueDef;
+    CARD8		XvGammaRampRed[256], XvGammaRampGreen[256], XvGammaRampBlue[256];
     BOOLEAN		disablecolorkeycurrent;
     CARD32		colorKey;
     CARD32		MiscFlags;

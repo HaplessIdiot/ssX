@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_video.c,v 1.37tsi Exp $ */
+/* $XFree86$ */
 /*
  * Xv driver for SiS 300, 315 and 330 series.
  *
@@ -151,6 +151,9 @@ extern BOOLEAN  SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
 #define HEADOFFSET (pSiS->dhmOffset)
 #endif
 
+#define GET_PORT_PRIVATE(pScrn) \
+   (SISPortPrivPtr)((SISPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
+
 /* Note on "MIRROR":
  * When using VESA on machines with an enabled video bridge, this means
  * a real mirror. CRT1 and CRT2 have the exact same resolution and
@@ -189,6 +192,9 @@ static char sisxvsetdefaults[] 				= "XV_SET_DEFAULTS";
 static char sisxvswitchcrt[] 				= "XV_SWITCHCRT";
 static char sisxvtvxposition[] 				= "XV_TVXPOSITION";
 static char sisxvtvyposition[] 				= "XV_TVYPOSITION";
+static char sisxvgammared[] 				= "XV_GAMMA_RED";
+static char sisxvgammagreen[] 				= "XV_GAMMA_GREEN";
+static char sisxvgammablue[] 				= "XV_GAMMA_BLUE";
 static char sisxvdisablegfx[] 				= "XV_DISABLE_GRAPHICS";
 static char sisxvdisablegfxlr[] 			= "XV_DISABLE_GRAPHICS_LR";
 static char sisxvdisablecolorkey[] 			= "XV_DISABLE_COLORKEY";
@@ -232,17 +238,23 @@ static char sisxvsdstorebrib[] 				= "XV_SD_STOREDGAMMABRIB";
 static char sisxvsdstorepbrir[] 			= "XV_SD_STOREDGAMMAPBRIR";
 static char sisxvsdstorepbrig[] 			= "XV_SD_STOREDGAMMAPBRIG";
 static char sisxvsdstorepbrib[] 			= "XV_SD_STOREDGAMMAPBRIB";
+static char sisxvsdstorebrir2[]				= "XV_SD_STOREDGAMMABRIR2";
+static char sisxvsdstorebrig2[]				= "XV_SD_STOREDGAMMABRIG2";
+static char sisxvsdstorebrib2[]				= "XV_SD_STOREDGAMMABRIB2";
+static char sisxvsdstorepbrir2[] 			= "XV_SD_STOREDGAMMAPBRIR2";
+static char sisxvsdstorepbrig2[] 			= "XV_SD_STOREDGAMMAPBRIG2";
+static char sisxvsdstorepbrib2[] 			= "XV_SD_STOREDGAMMAPBRIB2";
 static char sisxvsdhidehwcursor[] 			= "XV_SD_HIDEHWCURSOR";
 #ifdef TWDEBUG
 static char sisxvsetreg[]				= "XV_SD_SETREG";
 #endif
 
 #ifndef SIS_CP
-#define NUM_ATTRIBUTES_300 50
+#define NUM_ATTRIBUTES_300 56
 #ifdef TWDEBUG
-#define NUM_ATTRIBUTES_315 54
+#define NUM_ATTRIBUTES_315 63
 #else
-#define NUM_ATTRIBUTES_315 53
+#define NUM_ATTRIBUTES_315 62
 #endif
 #endif
 
@@ -298,6 +310,12 @@ static XF86AttributeRec SISAttributes_300[NUM_ATTRIBUTES_300] =
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrir},
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig},
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrir2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrig2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrib2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrir2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib2},
 #ifdef SIS_CP
    SIS_CP_VIDEO_ATTRIBUTES
 #endif
@@ -314,6 +332,9 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable             , 0, 0,             sisxvsetdefaults},
    {XvSettable | XvGettable, -32, 32,          sisxvtvxposition},
    {XvSettable | XvGettable, -32, 32,          sisxvtvyposition},
+   {XvSettable | XvGettable, 100, 10000,       sisxvgammared},
+   {XvSettable | XvGettable, 100, 10000,       sisxvgammagreen},
+   {XvSettable | XvGettable, 100, 10000,       sisxvgammablue},
    {XvSettable | XvGettable, 0, 1,             sisxvdisablegfx},
    {XvSettable | XvGettable, 0, 1,             sisxvdisablegfxlr},
    {XvSettable | XvGettable, 0, 1,             sisxvdisablecolorkey},
@@ -346,7 +367,7 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 0, 15,            sisxvsdchlumaflickerfilter},
    {XvSettable | XvGettable, 0, 1,             sisxvsdchcvbscolor},
    {XvSettable | XvGettable, 0, 3,             sisxvsdchoverscan},
-   {XvSettable | XvGettable, 0, 3,             sisxvsdenablegamma},
+   {XvSettable | XvGettable, 0, 7,             sisxvsdenablegamma},
    {XvSettable | XvGettable, -16, 16,          sisxvsdtvxscale},
    {XvSettable | XvGettable, -4, 3,            sisxvsdtvyscale},
    {             XvGettable, 0, 0xffffffff,    sisxvsdgetscreensize},
@@ -356,6 +377,12 @@ static XF86AttributeRec SISAttributes_315[NUM_ATTRIBUTES_315] =
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrir},
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig},
    {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrir2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrig2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorebrib2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrir2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrig2},
+   {XvSettable | XvGettable, 100, 10000,       sisxvsdstorepbrib2},
    {XvSettable | XvGettable, 0, 1,             sisxvsdhidehwcursor},
 #ifdef TWDEBUG
    {XvSettable             , 0, 0xffffffff,    sisxvsetreg},
@@ -723,6 +750,69 @@ static CARD32 get_scanline_CRT2(SISPtr pSiS)
 }
 #endif
 
+static void
+SiSComputeXvGamma(SISPtr pSiS)
+{
+    int num = 255, i;
+    double red = 1.0 / (double)(pSiS->XvGammaRed / 1000);
+    double green = 1.0 / (double)(pSiS->XvGammaGreen / 1000);
+    double blue = 1.0 / (double)(pSiS->XvGammaBlue / 1000);
+
+    for(i = 0; i <= num; i++) {
+        pSiS->XvGammaRampRed[i] =
+	    (red == 1.0) ? i : (CARD8)(pow((double)i / (double)num, red) * (double)num + 0.5);
+
+	pSiS->XvGammaRampGreen[i] =
+	    (green == 1.0) ? i : (CARD8)(pow((double)i / (double)num, green) * (double)num + 0.5);
+
+	pSiS->XvGammaRampBlue[i] =
+	    (blue == 1.0) ? i : (CARD8)(pow((double)i / (double)num, blue) * (double)num + 0.5);
+    }
+}
+
+static void
+SiSSetXvGamma(SISPtr pSiS)
+{
+    int i;
+    unsigned char backup = getsrreg(pSiS, 0x1f);
+    setsrregmask(pSiS, 0x1f, 0x08, 0x18);
+    for(i = 0; i <= 255; i++) {
+       MMIO_OUT32(pSiS->IOBase, 0x8570,
+       			(i << 24)     |
+			(pSiS->XvGammaRampBlue[i] << 16) |
+			(pSiS->XvGammaRampGreen[i] << 8) |
+			pSiS->XvGammaRampRed[i]);
+    }
+    setsrregmask(pSiS, 0x1f, backup, 0xff);
+}
+
+static void
+SiSUpdateXvGamma(SISPtr pSiS, SISPortPrivPtr pPriv)
+{
+    unsigned char sr7 = getsrreg(pSiS, 0x07);
+
+    if(!pSiS->XvGamma) return;
+    if(!(pSiS->MiscFlags & MISC_CRT1OVERLAYGAMMA)) return;
+
+#ifdef SISDUALHEAD
+    if((pPriv->dualHeadMode) && (!pSiS->SecondHead)) return;
+#endif
+
+    if(!(sr7 & 0x04)) return;
+
+    SiSComputeXvGamma(pSiS);
+    SiSSetXvGamma(pSiS);
+}
+
+static void
+SISResetXvGamma(ScrnInfoPtr pScrn)
+{
+    SISPtr pSiS = SISPTR(pScrn);
+    SISPortPrivPtr pPriv = GET_PORT_PRIVATE(pScrn);
+
+    SiSUpdateXvGamma(pSiS, pPriv);
+}
+
 void SISInitVideo(ScreenPtr pScreen)
 {
     ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
@@ -737,32 +827,27 @@ void SISInitVideo(ScreenPtr pScreen)
     num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
 
     if(newAdaptor) {
-    	if(!num_adaptors) {
-        	num_adaptors = 1;
-        	adaptors = &newAdaptor;
-    	} else {
-        	/* need to free this someplace */
-        	newAdaptors = xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
-        	if(newAdaptors) {
-        		memcpy(newAdaptors, adaptors, num_adaptors *
-                    		sizeof(XF86VideoAdaptorPtr));
-        		newAdaptors[num_adaptors] = newAdaptor;
-        		adaptors = newAdaptors;
-        		num_adaptors++;
-        	}
-    	}
+       if(!num_adaptors) {
+          num_adaptors = 1;
+          adaptors = &newAdaptor;
+       } else {
+          /* need to free this someplace */
+          newAdaptors = xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
+          if(newAdaptors) {
+             memcpy(newAdaptors, adaptors, num_adaptors * sizeof(XF86VideoAdaptorPtr));
+             newAdaptors[num_adaptors] = newAdaptor;
+             adaptors = newAdaptors;
+             num_adaptors++;
+          }
+       }
     }
 
     if(num_adaptors)
-        xf86XVScreenInit(pScreen, adaptors, num_adaptors);
+       xf86XVScreenInit(pScreen, adaptors, num_adaptors);
 
     if(newAdaptors)
-    	xfree(newAdaptors);
+       xfree(newAdaptors);
 }
-
-
-#define GET_PORT_PRIVATE(pScrn) \
-   (SISPortPrivPtr)((SISPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
 
 static void
 SISSetPortDefaults(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
@@ -811,6 +896,11 @@ SISSetPortDefaults(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 	     pSiSEnt->XvOnCRT2 ? 1 : 0;
     else
        pPriv->crtnum = pSiS->XvOnCRT2 ? 1 : 0;
+
+    pSiS->XvGammaRed = pSiS->XvGammaRedDef;
+    pSiS->XvGammaGreen = pSiS->XvGammaGreenDef;
+    pSiS->XvGammaBlue = pSiS->XvGammaBlueDef;
+    SiSUpdateXvGamma(pSiS, pPriv);
 }
 
 static void
@@ -942,6 +1032,11 @@ SISResetVideo(ScrnInfoPtr pScrn)
           setvideoreg(pSiS, Index_VI_Hue,                 0x00);
           setvideoreg(pSiS, Index_VI_Saturation,    	  0x00);
        }
+    }
+
+    /* Reset Xv gamma correction */
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       SiSUpdateXvGamma(pSiS, pPriv);
     }
 }
 
@@ -1241,6 +1336,9 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xvDisableGfxLR      = MAKE_ATOM(sisxvdisablegfxlr);
     pSiS->xvTVXPosition       = MAKE_ATOM(sisxvtvxposition);
     pSiS->xvTVYPosition       = MAKE_ATOM(sisxvtvyposition);
+    pSiS->xvGammaRed  	      = MAKE_ATOM(sisxvgammared);
+    pSiS->xvGammaGreen 	      = MAKE_ATOM(sisxvgammagreen);
+    pSiS->xvGammaBlue  	      = MAKE_ATOM(sisxvgammablue);
     pSiS->xvDisableColorkey   = MAKE_ATOM(sisxvdisablecolorkey);
     pSiS->xvUseChromakey      = MAKE_ATOM(sisxvusechromakey);
     pSiS->xvInsideChromakey   = MAKE_ATOM(sisxvinsidechromakey);
@@ -1282,6 +1380,12 @@ SISSetupImageVideo(ScreenPtr pScreen)
     pSiS->xv_PBR	      = MAKE_ATOM(sisxvsdstorepbrir);
     pSiS->xv_PBG	      = MAKE_ATOM(sisxvsdstorepbrig);
     pSiS->xv_PBB	      = MAKE_ATOM(sisxvsdstorepbrib);
+    pSiS->xv_BRR2	      = MAKE_ATOM(sisxvsdstorebrir2);
+    pSiS->xv_BRG2	      = MAKE_ATOM(sisxvsdstorebrig2);
+    pSiS->xv_BRB2	      = MAKE_ATOM(sisxvsdstorebrib2);
+    pSiS->xv_PBR2	      = MAKE_ATOM(sisxvsdstorepbrir2);
+    pSiS->xv_PBG2	      = MAKE_ATOM(sisxvsdstorepbrig2);
+    pSiS->xv_PBB2	      = MAKE_ATOM(sisxvsdstorepbrib2);
     pSiS->xv_SHC	      = MAKE_ATOM(sisxvsdhidehwcursor);
 #ifdef TWDEBUG
     pSiS->xv_STR	      = MAKE_ATOM(sisxvsetreg);
@@ -1359,6 +1463,9 @@ SISSetupImageVideo(ScreenPtr pScreen)
 
     SISResetVideo(pScrn);
     pSiS->ResetXv = SISResetVideo;
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       pSiS->ResetXvGamma = SISResetXvGamma;
+    }
 
     return adapt;
 }
@@ -1576,17 +1683,21 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
      }
   } else if(attribute == pSiS->xv_SGA) {
      if(pSiS->xv_sisdirectunlocked) {
+        Bool backup = pSiS->XvGamma;
+        pSiS->CRT1gamma = (value & 0x01) ? TRUE : FALSE;
+	pSiS->CRT2gamma = (value & 0x02) ? TRUE : FALSE;
+	pSiS->XvGamma   = (value & 0x04) ? TRUE : FALSE;
 #ifdef SISDUALHEAD
         if(pPriv->dualHeadMode) {
-           pSiSEnt->CRT1gamma = (value & 0x01) ? TRUE : FALSE;
-	   pSiSEnt->CRT2gamma = (value & 0x02) ? TRUE : FALSE;
-        } else {
-#endif
-           pSiS->CRT1gamma = (value & 0x01) ? TRUE : FALSE;
-	   pSiS->CRT2gamma = (value & 0x02) ? TRUE : FALSE;
-#ifdef SISDUALHEAD
+           pSiSEnt->CRT1gamma = pSiS->CRT1gamma;
+	   pSiSEnt->CRT2gamma = pSiS->CRT2gamma;
         }
 #endif
+        if(pSiS->VGAEngine == SIS_315_VGA) {
+           if(backup != pSiS->XvGamma) {
+	      SiSUpdateXvGamma(pSiS, pPriv);
+	   }
+	}
      }
   } else if(attribute == pSiS->xv_TXS) {
      if((value < -16) || (value > 16))
@@ -1636,6 +1747,54 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
      if(pSiS->xv_sisdirectunlocked) {
         pSiS->GammaPBriB = value;
      }
+  } else if(attribute == pSiS->xv_BRR2) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) pSiSEnt->GammaBriR = value;
+#endif
+     }
+  } else if(attribute == pSiS->xv_BRG2) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) pSiSEnt->GammaBriG = value;
+#endif
+     }
+  } else if(attribute == pSiS->xv_BRB2) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) pSiSEnt->GammaBriB = value;
+#endif
+     }
+  } else if(attribute == pSiS->xv_PBR2) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) pSiSEnt->GammaPBriR = value;
+#endif
+     }
+  } else if(attribute == pSiS->xv_PBG2) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) pSiSEnt->GammaPBriG = value;
+#endif
+     }
+  } else if(attribute == pSiS->xv_PBB2) {
+     if((value < 100) || (value > 10000))
+        return BadValue;
+     if(pSiS->xv_sisdirectunlocked) {
+#ifdef SISDUALHEAD
+        if(pPriv->dualHeadMode) pSiSEnt->GammaPBriB = value;
+#endif
+     }
   } else if(attribute == pSiS->xv_SHC) {
      if(pSiS->xv_sisdirectunlocked) {
         Bool VisibleBackup = pSiS->HWCursorIsVisible;
@@ -1681,20 +1840,35 @@ SISSetPortAttribute(ScrnInfoPtr pScrn, Atom attribute,
         }
      } else if(attribute == pSiS->xvHue) {
        if((value < -8) || (value > 7))
-         return BadValue;
+          return BadValue;
        pPriv->hue = value;
      } else if(attribute == pSiS->xvSaturation) {
        if((value < -7) || (value > 7))
-         return BadValue;
+          return BadValue;
        pPriv->saturation = value;
+     } else if(attribute == pSiS->xvGammaRed) {
+       if((value < 100) || (value > 10000))
+          return BadValue;
+       pSiS->XvGammaRed = value;
+       SiSUpdateXvGamma(pSiS, pPriv);
+     } else if(attribute == pSiS->xvGammaGreen) {
+       if((value < 100) || (value > 10000))
+          return BadValue;
+       pSiS->XvGammaGreen = value;
+       SiSUpdateXvGamma(pSiS, pPriv);
+     } else if(attribute == pSiS->xvGammaBlue) {
+       if((value < 100) || (value > 10000))
+          return BadValue;
+       pSiS->XvGammaBlue = value;
+       SiSUpdateXvGamma(pSiS, pPriv);
      } else return BadMatch;
   } else return BadMatch;
   return Success;
 }
 
-static int 
+static int
 SISGetPortAttribute(
-  ScrnInfoPtr pScrn, 
+  ScrnInfoPtr pScrn,
   Atom attribute,
   INT32 *value, 
   pointer data
@@ -1794,6 +1968,7 @@ SISGetPortAttribute(
 	if(pSiS->CRT2gamma) *value |= 0x02;
 #ifdef SISDUALHEAD
      }
+     if(pSiS->XvGamma) *value |= 0x04;
 #endif
   } else if(attribute == pSiS->xv_TXS) {
      *value = SiS_GetTVxscale(pScrn);
@@ -1813,6 +1988,42 @@ SISGetPortAttribute(
      *value = pSiS->GammaPBriG;
   } else if(attribute == pSiS->xv_PBB) {
      *value = pSiS->GammaPBriB;
+  } else if(attribute == pSiS->xv_BRR2) {
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) *value = pSiSEnt->GammaBriR;
+     else
+#endif
+          *value = pSiS->GammaBriR;
+  } else if(attribute == pSiS->xv_BRG2) {
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) *value = pSiSEnt->GammaBriG;
+     else
+#endif
+          *value = pSiS->GammaBriG;
+  } else if(attribute == pSiS->xv_BRB2) {
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) *value = pSiSEnt->GammaBriB;
+     else
+#endif
+          *value = pSiS->GammaBriB;
+  } else if(attribute == pSiS->xv_PBR2) {
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) *value = pSiSEnt->GammaPBriR;
+     else
+#endif
+          *value = pSiS->GammaPBriR;
+  } else if(attribute == pSiS->xv_PBG2) {
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) *value = pSiSEnt->GammaPBriG;
+     else
+#endif
+          *value = pSiS->GammaPBriG;
+  } else if(attribute == pSiS->xv_PBB2) {
+#ifdef SISDUALHEAD
+     if(pPriv->dualHeadMode) *value = pSiSEnt->GammaPBriB;
+     else
+#endif
+          *value = pSiS->GammaPBriB;
   } else if(attribute == pSiS->xv_SHC) {
      *value = pSiS->HideHWCursor ? 1 : 0;
 #ifdef SIS_CP
@@ -1830,6 +2041,12 @@ SISGetPortAttribute(
         *value = pPriv->hue;
      } else if(attribute == pSiS->xvSaturation) {
         *value = pPriv->saturation;
+     } else if(attribute == pSiS->xvGammaRed) {
+        *value = pSiS->XvGammaRed;
+     } else if(attribute == pSiS->xvGammaGreen) {
+        *value = pSiS->XvGammaGreen;
+     } else if(attribute == pSiS->xvGammaBlue) {
+        *value = pSiS->XvGammaBlue;
      } else return BadMatch;
   } else return BadMatch;
   return Success;

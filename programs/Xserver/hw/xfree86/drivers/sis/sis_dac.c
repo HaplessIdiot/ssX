@@ -1669,7 +1669,9 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 {
      SISPtr  pSiS = SISPTR(pScrn);
      int     i, j, index;
+     unsigned char backup = 0;
      Bool    dogamma1 = pSiS->CRT1gamma;
+     Bool    resetxvgamma = FALSE;
 #ifdef SISDUALHEAD
      SISEntPtr pSiSEnt = pSiS->entityPrivate;
 
@@ -1679,9 +1681,20 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
      PDEBUG(ErrorF("SiSLoadPalette(%d)\n", numColors));
 
 #ifdef SISDUALHEAD
-     if( ((pSiS->DualHeadMode) && (pSiS->SecondHead)) ||
-         (!pSiS->DualHeadMode) ) {
+     if((!pSiS->DualHeadMode) || (pSiS->SecondHead)) {
 #endif
+
+        if(pSiS->VGAEngine == SIS_315_VGA) {
+	   inSISIDXREG(SISSR, 0x1f, backup);
+	   andSISIDXREG(SISSR, 0x1f, 0xe7);
+	   if( (pSiS->XvGamma) &&
+	       (pSiS->MiscFlags & MISC_CRT1OVERLAYGAMMA) &&
+	       ((pSiS->CurrentLayout.depth == 16) ||
+	        (pSiS->CurrentLayout.depth == 24)) ) {
+	      orSISIDXREG(SISSR, 0x1f, 0x10);
+	      resetxvgamma = TRUE;
+	   }
+        }
 
         switch(pSiS->CurrentLayout.depth) {
 #ifdef SISGAMMA
@@ -1752,25 +1765,30 @@ SISLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
              }
 	}
 
+	if(pSiS->VGAEngine == SIS_315_VGA) {
+	   outSISIDXREG(SISSR, 0x1f, backup);
+	   inSISIDXREG(SISSR, 0x07, backup);
+	   if((backup & 0x04) && (resetxvgamma) && (pSiS->ResetXvGamma)) {
+	      (pSiS->ResetXvGamma)(pScrn);
+	   }
+	}
+
 #ifdef SISDUALHEAD		
     }	
 
-    if( ((pSiS->DualHeadMode) && (!pSiS->SecondHead)) ||
-         (!pSiS->DualHeadMode) ) {
+    if((!pSiS->DualHeadMode) || (!pSiS->SecondHead)) {
 #endif
 
-        switch(pSiS->VGAEngine) {
-            case SIS_300_VGA:
-            case SIS_315_VGA:
-                if(pSiS->VBFlags & CRT2_ENABLE) {
-		    /* TW: Only the SiS bridges support a CRT2 palette */
-		    if(pSiS->VBFlags & VB_SISBRIDGE) {
-                        (*pSiS->LoadCRT2Palette)(pScrn, numColors, indices,
-                                                 colors, pVisual);
-		    }  
-                }
-                break;
-        }
+       switch(pSiS->VGAEngine) {
+       case SIS_300_VGA:
+       case SIS_315_VGA:
+          if(pSiS->VBFlags & CRT2_ENABLE) {
+	     /* Only the SiS bridges support a CRT2 palette */
+	     if(pSiS->VBFlags & VB_SISBRIDGE) {
+                (*pSiS->LoadCRT2Palette)(pScrn, numColors, indices, colors, pVisual);
+	     }
+          }
+       }
 	
 #ifdef SISDUALHEAD		
     }
