@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.97 2003/11/19 04:43:59 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.98 2003/11/23 15:28:36 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -875,7 +875,7 @@ install:: fonts.alias							@@\
 /*
  * Multi-thread safe libs 
  */	
-#if HasSharedLibraries == YES && HasWeakSymbols == YES && (OSMajorVersion == 2 && OSMinorVersion >= 6 || OSMajorVersion >= 3)
+#if HasWeakSymbols == YES && (OSMajorVersion == 2 && OSMinorVersion >= 6 || OSMajorVersion >= 3)
 #  define HasPosixThreads		YES
 #  define ThreadedX			YES
 #  define SystemMTDefines		/**/
