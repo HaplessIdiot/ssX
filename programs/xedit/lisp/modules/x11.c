@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.2 2001/09/28 04:38:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.3 2001/09/30 20:32:01 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -56,10 +56,23 @@ LispObj *Lisp_XDrawLine(LispMac*, LispObj*, char*);
 /*
  * Initialization
  */
-#include "x11table.c"
+static LispBuiltin lispbuiltins[] = {
+    {"X-OPEN-DISPLAY",			Lisp_XOpenDisplay,		1,0,1,},
+    {"X-CLOSE-DISPLAY",			Lisp_XCloseDisplay,		1,1,1,},
+    {"X-DEFAULT-ROOT-WINDOW",		Lisp_XDefaultRootWindow,	1,1,1,},
+    {"X-DEFAULT-SCREEN-OF-DISPLAY",	Lisp_XDefaultScreenOfDisplay,	1,1,1,},
+    {"X-BLACK-PIXEL-OF-SCREEN",		Lisp_XBlackPixelOfScreen,	1,1,1,},
+    {"X-WHITE-PIXEL-OF-SCREEN",		Lisp_XWhitePixelOfScreen,	1,1,1,},
+    {"X-DEFAULT-GC-OF-SCREEN",		Lisp_XDefaultGCOfScreen,	1,1,1,},
+    {"X-CREATE-SIMPLE-WINDOW",		Lisp_XCreateSimpleWindow,	1,9,9,},
+    {"X-MAP-WINDOW",			Lisp_XMapWindow,		1,2,2,},
+    {"X-DESTROY-WINDOW",		Lisp_XDestroyWindow,		1,2,2,},
+    {"X-FLUSH",				Lisp_XFlush,			1,1,1,},
+    {"X-DRAW-LINE",			Lisp_XDrawLine,			1,7,7,},
+};
 
 LispModuleData x11LispModuleData = {
-    x11FindFun,
+    LISP_MODULE_VERSION,
     x11LoadModule
 };
 
@@ -71,10 +84,15 @@ static int x11Display_t, x11Screen_t, x11Window_t, x11GC_t;
 int
 x11LoadModule(LispMac *mac)
 {
+    int i;
+
     x11Display_t = LispRegisterOpaqueType(mac, "Display*");
     x11Screen_t = LispRegisterOpaqueType(mac, "Screen*");
     x11Window_t = LispRegisterOpaqueType(mac, "Window");
     x11GC_t = LispRegisterOpaqueType(mac, "GC");
+
+    for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
+	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
     return (1);
 }
@@ -88,7 +106,7 @@ Lisp_XOpenDisplay(LispMac *mac, LispObj *list, char *fname)
     if (list == NIL)
 	dname = NULL;
     else if ((nam = CAR(list))->type == LispString_t)
-	dname = nam->data.atom;
+	dname = STRPTR(nam);
     else
 	LispDestroy(mac, "%s is not a valid display name, at %s",
 		    LispStrObj(mac, nam), fname);

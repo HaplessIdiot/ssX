@@ -10,13 +10,4 @@
 #define BuildSharedLispModules	NO
 #endif
 
-#if HasGperf
-GPERF		= GperfCmd
-#else
-#ifdef UseInstalled
-GPERF		= /bin/sh $(TOP)/fake-gperf.sh
-#else
-GPERF		= /bin/sh $(TOP)/programs/xedit/lisp/fake-gperf.sh
-#endif
-#endif
 LISPDIR		= $(LIBDIR)/xedit/lisp

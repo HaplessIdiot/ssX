@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.6 2001/10/10 07:02:51 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/debugger.c,v 1.7 2001/10/11 06:34:50 paulo Exp $ */
 
 #include <ctype.h>
 #include "debugger.h"
@@ -139,13 +139,12 @@ Subcommands may be abbreviated.\n";
  *	is a macro for mac->dbglist
  *	is a NIL terminated list
  *	every element is a list in the format (NOT NIL terminated):
- *	(list* NAM ARG ENV SYM LEX)
+ *	(list* NAM ARG ENV LEX)
  *	where
  *		NAM is an ATOM for the function/macro name
  *		    or NIL for lambda expressions
  *		ARG is NAM arguments (a LIST)
  *		ENV is the contents of the global ENV (a LIST)
- *		SYM is the contents of the global SYM (a LIST)
  *		LEX is the contents of the global LEX (a LIST)
  *	new elements are added to the beggining of the list
  *
@@ -182,10 +181,10 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 	case LispDebugCallBegin:
 	    ++mac->debug_level;
 	    GCProtect();
-	    DBG = CONS(CONS(name, CONS(arg, CONS(ENV, CONS(SYM, LEX)))), DBG);
+	    DBG = CONS(CONS(name, CONS(arg, CONS(ENV, LEX))), DBG);
 	    GCUProtect();
 	    for (obj = BRK; obj != NIL; obj = CDR(obj))
-		if (CAR(CAR(obj))->data.atom == name->data.atom &&
+		if (STRPTR(CAR(CAR(obj))) == STRPTR(name) &&
 		    CAR(CDR(CDR(CAR(obj))))->data.real == LispDebugBreakFunction)
 		    break;
 	    if (obj != NIL) {
@@ -210,7 +209,6 @@ LispDebugger(LispMac *mac, LispDebugCall call, LispObj *name, LispObj *arg)
 	    --mac->debug_level;
 	    break;
 	case LispDebugCallFatal:
-	    DBG = NIL;
 	    LispDebuggerCommand(mac, NIL);
 	    mac->debug = LispDebugUnspec;
 	    return;
@@ -230,8 +228,7 @@ watch_again:
 	    if (CAR(CDR(CDR(CAR(obj))))->data.real == LispDebugBreakVariable) {
 		/* the variable */
 		LispObj *wat = CAR(CDR(CDR(CDR(CDR(CAR(obj))))));
-		LispObj *sym = LispGetVar(mac, LispGetString(mac,
-					  CAR(CAR(obj))->data.atom), 1);
+		LispObj *sym = LispGetVarCons(mac, CAAR(obj));
 		LispObj *frm = CAR(CDR(CDR(CDR(CDR(CDR(CDR(CAR(obj))))))));
 
 		if ((sym == NULL && mac->debug_level <= 0) ||
@@ -239,7 +236,7 @@ watch_again:
 		    fprintf(lisp_stdout, "WATCH #%g> %s deleted. Variable does "
 			    "not exist anymore.\n",
 			    CAR(CDR(CAR(obj)))->data.real,
-			    CAR(CAR(obj))->data.atom);
+			    STRPTR(CAR(CAR(obj))));
 		    /* force debugger to stop */
 		    force = 1;
 		    if (obj == prev) {
@@ -252,13 +249,13 @@ watch_again:
 		}
 		else {
 		    /* current value */
-		    LispObj *cur = wat->data.symbol.obj;
+		    LispObj *cur = CDR(wat);
 		    /* last value */
 		    LispObj *val = CAR(CDR(CDR(CDR(CDR(CDR(CAR(obj)))))));
 		    if (_LispEqual(mac, val, cur) == NIL) {
 			fprintf(lisp_stdout, "WATCH #%g> %s\n",
 				CAR(CDR(CAR(obj)))->data.real,
-				CAR(CAR(obj))->data.atom);
+				STRPTR(CAR(CAR(obj))));
 			fprintf(lisp_stdout, "OLD: ");
 			LispPrintObj(mac, NIL, val, 1);
 			fprintf(lisp_stdout, "\nNEW: ");
@@ -372,7 +369,7 @@ static void
 LispDebuggerCommand(LispMac *mac, LispObj *args)
 {
     LispObj *obj, *frm, *curframe,
-	    *old_frm = FRM, *old_env = ENV, *old_sym = SYM, *old_lex = LEX;
+	    *old_frm = FRM, *old_env = ENV, *old_lex = LEX;
     int i, frame, matches, action = -1, subaction;
     char *cmd, *arg, *ptr, line[256];
 
@@ -585,7 +582,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		break;
 	    case DebuggerWatch: {
 		int vframe;
-		LispObj *sym, *val;
+		LispObj *sym, *val, *atom;
 
 		/* make variable name uppercase, an ATOM */
 		ptr = arg;
@@ -593,7 +590,8 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    *ptr = toupper(*ptr);
 		    ++ptr;
 		}
-		val = LispGetVar(mac, LispGetString(mac, arg), 0);
+		atom = ATOM2(arg);
+		val = LispGetVar(mac, atom);
 		if (val == NULL) {
 		    fprintf(lisp_stdout, "* No variable named '%s' "
 			    "in the selected frame.\n", arg);
@@ -601,7 +599,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		}
 
 		/* variable is available at the current frame */
-		sym = LispGetVar(mac, LispGetString(mac, arg), 1);
+		sym = LispGetVarCons(mac, atom);
 
 		/* find the lowest frame where the variable is visible */
 		vframe = 0;
@@ -614,15 +612,13 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			if (FRM == old_frm) {
 			    /* if first time selecting a new frame */
 			    GCProtect();
-			    FRM = CONS(CONS(ENV, SYM), old_frm);
+			    FRM = CONS(ENV, old_frm);
 			    GCUProtect();
 			}
 			ENV = CAR(CDR(CDR(obj)));
-			SYM = CAR(CDR(CDR(CDR(obj))));
-			LEX = CDR(CDR(CDR(CDR(obj))));
+			LEX = CDR(CDR(CDR(obj)));
 
-			if (LispGetVar(mac,
-				       LispGetString(mac, arg), 1) == sym)
+			if (LispGetVarCons(mac, atom) == sym)
 			    /* got variable initial frame */
 			    break;
 		    }
@@ -634,8 +630,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 			    ;
 			obj = CAR(frm);
 			ENV = CAR(CDR(CDR(obj)));
-			SYM = CAR(CDR(CDR(CDR(obj))));
-			LEX = CDR(CDR(CDR(CDR(obj))));
+			LEX = CDR(CDR(CDR(obj)));
 		    }
 		}
 
@@ -645,7 +640,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    ;
 
 		GCProtect();
-		obj = CONS(ATOM2(arg),				      /* NAM */
+		obj = CONS(atom,				      /* NAM */
 			   CONS(REAL(i),			      /* IDX */
 				CONS(REAL(LispDebugBreakVariable),    /* TYP */
 				     CONS(REAL(0),		      /* HIT */
@@ -757,7 +752,7 @@ LispDebuggerCommand(LispMac *mac, LispObj *args)
 		    *ptr = toupper(*ptr);
 		    ++ptr;
 		}
-		obj = LispGetVar(mac, LispGetString(mac, arg), 0);
+		obj = LispGetVar(mac, ATOM2(arg));
 		if (obj) {
 		    LispPrintObj(mac, NIL, obj, 1);
 		    fputc('\n', lisp_stdout);
@@ -834,12 +829,11 @@ debugger_new_frame:
 	    if (FRM == old_frm) {
 		/* if first time selecting a new frame */
 		GCProtect();
-		FRM = CONS(CONS(ENV, SYM), old_frm);
+		FRM = CONS(ENV, old_frm);
 		GCUProtect();
 	    }
 	    ENV = CAR(CDR(CDR(curframe)));
-	    SYM = CAR(CDR(CDR(CDR(curframe))));
-	    LEX = CDR(CDR(CDR(CDR(curframe))));
+	    LEX = CDR(CDR(CDR(curframe)));
 	}
 debugger_print_frame:
 	fprintf(lisp_stdout, "#%d> (", frame);
@@ -854,6 +848,5 @@ debugger_print_frame:
 debugger_command_done:
     FRM = old_frm;
     ENV = old_env;
-    SYM = old_sym;
     LEX = old_lex;
 }

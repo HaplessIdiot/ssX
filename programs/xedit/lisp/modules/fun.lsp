@@ -60,7 +60,6 @@
 (defun cdddar (a)	(cdr (cdr (cdr (car a)))))
 (defun cddddr (a)	(nthcdr 4 a))
 
-(defun first (a)	(nth 0 a))
 (defun second (a)	(nth 1 a))
 (defun third (a)	(nth 2 a))
 (defun fourth (a)	(nth 3 a))
@@ -70,8 +69,6 @@
 (defun eighth (a)	(nth 7 a))
 (defun ninth (a)	(nth 8 a))
 (defun tenth (a)	(nth 9 a))
-
-(defun rest (a)		(cdr a))
 
 (defmacro push (object place)
     (list 'setf place (list 'cons object place)))

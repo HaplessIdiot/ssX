@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.5 2001/09/30 20:32:01 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.6 2001/10/10 07:02:52 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -70,6 +70,8 @@ int xtLoadModule(LispMac*);
 void _LispXtCleanupCallback(Widget, XtPointer, XtPointer);
 
 void _LispXtCallback(Widget, XtPointer, XtPointer);
+
+LispObj *Lisp_XtCoerceToWidgetList(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAddCallback(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAppInitialize(LispMac*, LispObj*, char*);
 LispObj *Lisp_XtAppMainLoop(LispMac*, LispObj*, char*);
@@ -107,23 +109,40 @@ static void QuitAction(Widget, XEvent*, String*, Cardinal*);
 /*
  * Initialization
  */
-#include "xttable.c"
+static LispBuiltin lispbuiltins[] = {
+    {"XT-COERCE-TO-WIDGET-LIST",	Lisp_XtCoerceToWidgetList,	1,2,2,},
+    {"XT-ADD-CALLBACK",			Lisp_XtAddCallback,		1,3,4,},
+    {"XT-APP-INITIALIZE",		Lisp_XtAppInitialize,		1,2,4,},
+    {"XT-APP-MAIN-LOOP",		Lisp_XtAppMainLoop,		1,1,1,},
+    {"XT-CREATE-MANAGED-WIDGET",	Lisp_XtCreateManagedWidget,	1,3,4,},
+    {"XT-CREATE-WIDGET",		Lisp_XtCreateWidget,		1,3,4,},
+    {"XT-CREATE-POPUP-SHELL",		Lisp_XtCreatePopupShell,	1,3,4,},
+    {"XT-DESTROY-WIDGET",		Lisp_XtDestroyWidget,		1,1,1,},
+    {"XT-GET-VALUES",			Lisp_XtGetValues,		1,2,2,},
+    {"XT-POPUP",			Lisp_XtPopup,			1,2,2,},
+    {"XT-POPDOWN",			Lisp_XtPopdown,			1,1,1,},
+    {"XT-REALIZE-WIDGET",		Lisp_XtRealizeWidget,		1,1,1,},
+    {"XT-SET-SENSITIVE",		Lisp_XtSetSensitive,		1,2,2,},
+    {"XT-SET-VALUES",			Lisp_XtSetValues,		1,2,2,},
+};
 
 LispModuleData xtLispModuleData = {
-    xtFindFun,
-    xtLoadModule
+    LISP_MODULE_VERSION,
+    xtLoadModule,
 };
 
 static ResourceList **resource_list;
 static Cardinal num_resource_list;
 
 static Atom delete_window;
-static int xtAppContext_t, xtWidget_t, xtWidgetClass_t;
+static int xtAppContext_t, xtWidget_t, xtWidgetClass_t, xtWidgetList_t;
 
 static XtActionsRec actions[] = {
     {"xt-popdown",	PopdownAction},
     {"xt-quit",		QuitAction},
 };
+
+static XrmQuark qCardinal, qInt, qString, qWidget;
 
 /*
  * Implementation
@@ -131,12 +150,17 @@ static XtActionsRec actions[] = {
 int
 xtLoadModule(LispMac *mac)
 {
+    int i;
     char *fname = "INTERNAL:XT-LOAD-MODULE";
 
     xtAppContext_t = LispRegisterOpaqueType(mac, "XtAppContext");
     xtWidget_t = LispRegisterOpaqueType(mac, "Widget");
     xtWidgetClass_t = LispRegisterOpaqueType(mac, "WidgetClass");
-    GCPRO();
+    xtWidgetList_t = LispRegisterOpaqueType(mac, "WidgetList");
+
+    LispExecute(mac, "(DEFSTRUCT XT-WIDGET-LIST NUM-CHILDREN CHILDREN)\n");
+
+    GCProtect();
     (void)LispSetVariable(mac, ATOM2("CORE-WIDGET-CLASS"),
 			  OPAQUE(coreWidgetClass, xtWidgetClass_t),
 			  fname, 0);
@@ -152,7 +176,15 @@ xtLoadModule(LispMac *mac)
     (void)LispSetVariable(mac, ATOM2("XT-GRAB-NONE-EXCLUSIVE"),
 			  REAL(XtGrabNonexclusive), fname, 0);
 
-    GCUPRO();
+    GCUProtect();
+
+    qCardinal = XrmPermStringToQuark(XtRCardinal);
+    qInt = XrmPermStringToQuark(XtRInt);
+    qString = XrmPermStringToQuark(XtRString);
+    qWidget = XrmPermStringToQuark(XtRWidget);
+
+    for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
+	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
     return (1);
 }
@@ -164,13 +196,13 @@ _LispXtCallback(Widget w, XtPointer user_data, XtPointer call_data)
     LispMac *mac = args->mac;
     LispObj *code;
 
-    GCPRO();
+    GCProtect();
 
 		/* callback name */               /* reall caller */
     code = CONS(QUOTE(CDR(CDR(args->data))), CONS(OPAQUE(w, xtWidget_t),
 		CONS(CAR(CDR(args->data)), CONS(OPAQUE(call_data, 0), NIL))));
 		     /* user arguments */
-    GCUPRO();
+    GCUProtect();
 
     (void)Lisp_Funcall(mac, code, "FUNCALL");
 }
@@ -182,6 +214,45 @@ _LispXtCleanupCallback(Widget w, XtPointer user_data, XtPointer call_data)
     LispMac *mac = args->mac;
 
     UPROTECT(CAR(args->data), args->data);
+}
+
+LispObj *
+Lisp_XtCoerceToWidgetList(LispMac *mac, LispObj *list, char *fname)
+{
+    int i;
+    WidgetList children;
+    Cardinal num_children;
+    LispObj *obj, *cdr, *wid;
+
+    if (CAR(list)->type != LispReal_t)
+	LispDestroy(mac, "expecting number, at %s", fname);
+    if (!CHECKO(CAR(CDR(list)), xtWidgetList_t))
+	LispDestroy(mac, "cannot convert %s to XawListReturnStruct, at %s",
+		    LispStrObj(mac, CAR(list)), fname);
+
+    num_children = CAR(list)->data.real;
+    children = (WidgetList)(CAR(CDR(list))->data.opaque.data);
+
+    GCProtect();
+    wid = cdr = NIL;
+    for (i = 0; i < num_children; i++) {
+	obj = CONS(OPAQUE(children[i], xtWidget_t), NIL);
+	if (wid == NIL)
+	    wid = cdr = CONS(OPAQUE(children[i], xtWidget_t), NIL);
+	else {
+	    CDR(cdr) = CONS(OPAQUE(children[i], xtWidget_t), NIL);
+	    cdr = CDR(cdr);
+	}
+    }
+
+    obj = EVAL(CONS(ATOM("MAKE-XT-WIDGET-LIST"),
+		    CONS(ATOM(":NUM-CHILDREN"),
+			 CONS(REAL(num_children),
+			      CONS(ATOM(":CHILDREN"),
+				   CONS(QUOTE(wid), NIL))))));
+    GCUProtect();
+
+    return (obj);
 }
 
 LispObj *
@@ -221,7 +292,7 @@ Lisp_XtAddCallback(LispMac *mac, LispObj *list, char *fname)
     arguments->mac = mac;
     arguments->data = data;
 
-    XtAddCallback((Widget)(widget->data.opaque.data), name->data.atom,
+    XtAddCallback((Widget)(widget->data.opaque.data), STRPTR(name),
 		  _LispXtCallback, (XtPointer)arguments);
     XtAddCallback((Widget)(widget->data.opaque.data), XtNdestroyCallback,
 		  _LispXtCleanupCallback, (XtPointer)arguments);
@@ -241,14 +312,14 @@ Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
 
     if (CAR(list)->type != LispAtom_t)
 	LispDestroy(mac, "expecting atom, at %s", fname);
-    app = CAR(list)->data.atom;
+    app = STRPTR(CAR(list));
     list = CDR(list);
 
     if (CAR(list)->type != LispString_t) {
 	LispDestroy(mac, "cannot convert %s to string, at %s",
 		    LispStrObj(mac, CAR(list)), fname);
     }
-    cname = CAR(list)->data.atom;
+    cname = STRPTR(CAR(list));
 
     /* check if fallback resources given */
     if (list != NIL && CDR(list)->type == LispCons_t &&
@@ -269,7 +340,7 @@ Lisp_XtAppInitialize(LispMac *mac, LispObj *list, char *fname)
 	fallback = LispMalloc(mac, sizeof(String) * (count + 1));
 	for (ptr = obj, count = 0; ptr->type == LispCons_t;
 	     ptr = CDR(ptr), count++)
-	    fallback[count] = CAR(ptr)->data.atom;
+	    fallback[count] = STRPTR(CAR(ptr));
 	fallback[count] = NULL;
     }
 
@@ -387,7 +458,7 @@ _LispXtCreateWidget(LispMac *mac, LispObj *list, char *fname, int options)
     if (CAR(list)->type != LispString_t)
 	LispDestroy(mac, "cannot convert %s to char*, at %s",
 		    LispStrObj(mac, CAR(list)), fname);
-    name = CAR(list)->data.atom;
+    name = STRPTR(CAR(list));
     list = CDR(list);
 
     if (!CHECKO(CAR(list), xtWidgetClass_t))
@@ -457,22 +528,20 @@ Lisp_XtGetValues(LispMac *mac, LispObj *list, char *fname)
 	if (CAR(list)->type != LispString_t)
 	    LispDestroy(mac, "%s is not a string, at %s",
 			LispStrObj(mac, CAR(list)), fname);
-	if ((resource = GetResourceInfo(CAR(list)->data.atom, rlist, plist))
+	if ((resource = GetResourceInfo(STRPTR(CAR(list)), rlist, plist))
 	     == NULL) {
 	    int i;
 	    Widget child;
-	    XrmQuark qwidget;
 
-	    qwidget = XrmPermStringToQuark(XtRWidget);
 	    for (i = 0; i < rlist->num_resources; i++) {
-		if (rlist->resources[i]->qtype == qwidget) {
+		if (rlist->resources[i]->qtype == qWidget) {
 		    XtSetArg(args[0],
 			     XrmQuarkToString(rlist->resources[i]->qname),
 			     &child);
 		    XtGetValues(widget, args, 1);
 		    if (child && XtParent(child) == widget) {
 			resource =
-			    GetResourceInfo(CAR(list)->data.atom,
+			    GetResourceInfo(STRPTR(CAR(list)),
 					    GetResourceList(XtClass(child)),
 					    NULL);
 			if (resource)
@@ -482,43 +551,63 @@ Lisp_XtGetValues(LispMac *mac, LispObj *list, char *fname)
 	    }
 	    if (resource == NULL) {
 		fprintf(stderr, "resource %s not available.\n",
-			CAR(list)->data.atom);
+			STRPTR(CAR(list)));
 		continue;
 	    }
 	}
 	switch (resource->size) {
 	    case 1:
-		XtSetArg(args[0], CAR(list)->data.atom, &c1);
+		XtSetArg(args[0], STRPTR(CAR(list)), &c1);
 		break;
 	    case 2:
-		XtSetArg(args[0], CAR(list)->data.atom, &c2);
+		XtSetArg(args[0], STRPTR(CAR(list)), &c2);
 		break;
 	    case 4:
-		XtSetArg(args[0], CAR(list)->data.atom, &c4);
+		XtSetArg(args[0], STRPTR(CAR(list)), &c4);
 		break;
 #ifdef LONG64
 	    case 1:
-		XtSetArg(args[0], CAR(list)->data.atom, &c8);
+		XtSetArg(args[0], STRPTR(CAR(list)), &c8);
 		break;
 #endif
 	}
 	XtGetValues(widget, args, 1);
-	switch (resource->size) {
-	    case 1:
-		obj = CONS(CAR(list), OPAQUE(c1, 0));
-		break;
-	    case 2:
-		obj = CONS(CAR(list), OPAQUE(c2, 0));
-		break;
-	    case 4:
-		obj = CONS(CAR(list), OPAQUE(c4, 0));
-		break;
+
+	/* special resources */
+	if (resource->qtype == qString) {
 #ifdef LONG64
-	    case 8:
-		obj = CONS(CAR(list), OPAQUE(c8, 0));
-		break;
+	    obj = CONS(CAR(list), STRING((char*)c8));
+#else
+	    obj = CONS(CAR(list), STRING((char*)c4));
 #endif
 	}
+	else if (resource->qtype == qCardinal || resource->qtype == qInt) {
+#ifdef LONG64
+	    if (sizeof(int) == 8)
+		obj = CONS(CAR(list), REAL(c8));
+	    else
+#endif
+	    obj = CONS(CAR(list), REAL(c4));
+	}
+	else {
+	    switch (resource->size) {
+		case 1:
+		    obj = CONS(CAR(list), OPAQUE(c1, 0));
+		    break;
+		case 2:
+		    obj = CONS(CAR(list), OPAQUE(c2, 0));
+		    break;
+		case 4:
+		    obj = CONS(CAR(list), OPAQUE(c4, 0));
+		    break;
+#ifdef LONG64
+		case 8:
+		    obj = CONS(CAR(list), OPAQUE(c8, 0));
+		    break;
+#endif
+	    }
+	}
+
 	if (res == NIL)
 	    res = ptr = CONS(obj, NIL);
 	else {
@@ -629,22 +718,20 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 	    LispDestroy(mac, "resource name must be a string, at %s", fname);
 	}
 
-	if ((resource = GetResourceInfo(arg->data.atom, rlist, plist)) == NULL) {
+	if ((resource = GetResourceInfo(STRPTR(arg), rlist, plist)) == NULL) {
 	    int i;
 	    Arg args[1];
 	    Widget child;
-	    XrmQuark qwidget;
 
-	    qwidget = XrmPermStringToQuark(XtRWidget);
 	    for (i = 0; i < rlist->num_resources; i++) {
-		if (rlist->resources[i]->qtype == qwidget) {
+		if (rlist->resources[i]->qtype == qWidget) {
 		    XtSetArg(args[0],
 			     XrmQuarkToString(rlist->resources[i]->qname),
 			     &child);
 		    XtGetValues(widget, args, 1);
 		    if (child && XtParent(child) == widget) {
 			resource =
-			    GetResourceInfo(arg->data.atom,
+			    GetResourceInfo(STRPTR(arg),
 					    GetResourceList(XtClass(child)),
 					    NULL);
 			if (resource)
@@ -653,7 +740,7 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 		}
 	    }
 	    if (resource == NULL) {
-		fprintf(stderr, "resource %s not available.\n", arg->data.atom);
+		fprintf(stderr, "resource %s not available.\n", STRPTR(arg));
 		continue;
 	    }
 	}
@@ -678,8 +765,8 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 			LispStrObj(mac, val), fname);
 	}
 
-	from.size = val == NIL ? 1 : strlen(val->data.atom) + 1;
-	from.addr = val == NIL ? "" : val->data.atom;
+	from.size = val == NIL ? 1 : strlen(STRPTR(val)) + 1;
+	from.addr = val == NIL ? "" : STRPTR(val);
 	switch (to.size = resource->size) {
 	    case 1:
 		to.addr = (XtPointer)&c1;
@@ -697,11 +784,11 @@ LispConvertResources(LispMac *mac, LispObj *list, Widget widget,
 #endif
 	    default:
 		fprintf(stderr, "bad resource size %d, for %s.\n",
-			to.size, arg->data.atom);
+			to.size, STRPTR(arg));
 		continue;
 	}
 
-	if (strcmp(XtRString, XrmQuarkToString(resource->qtype)) == 0)
+	if (qString == resource->qtype)
 #ifdef LONG64
 	    c8 = (long)from.addr;
 #else

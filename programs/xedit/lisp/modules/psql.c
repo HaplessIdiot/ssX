@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.1 2001/10/10 07:02:52 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -71,10 +71,38 @@ LispObj *Lisp_PQuser(LispMac*, LispObj*, char*);
 /*
  * Initialization
  */
-#include "psqltable.c"
+static LispBuiltin lispbuiltins[] = {
+    {"PQ-BACKEND-PID",		Lisp_PQbackendPID,	1, 1, 1,},
+    {"PQ-CLEAR",		Lisp_PQclear,		1, 1, 1,},
+    {"PQ-CONSUME-INPUT",	Lisp_PQconsumeInput,	1, 1, 1,},
+    {"PQ-DB",			Lisp_PQdb,		1, 1, 1,},
+    {"PQ-ERROR-MESSAGE",	Lisp_PQerrorMessage,	1, 1, 1,},
+    {"PQ-EXEC",			Lisp_PQexec,		1, 2, 2,},
+    {"PQ-FINISH",		Lisp_PQfinish,		1, 1, 1,},
+    {"PQ-FNAME",		Lisp_PQfname,		1, 2, 2,},
+    {"PQ-FNUMBER",		Lisp_PQfnumber,		1, 2, 2,},
+    {"PQ-FSIZE",		Lisp_PQfsize,		1, 2, 2,},
+    {"PQ-FTYPE",		Lisp_PQftype,		1, 2, 2,},
+    {"PQ-GETLENGTH",		Lisp_PQgetlength,	1, 3, 3,},
+    {"PQ-GETVALUE",		Lisp_PQgetvalue,	1, 3, 4,},
+    {"PQ-HOST",			Lisp_PQhost,		1, 1, 1,},
+    {"PQ-NFIELDS",		Lisp_PQnfields,		1, 1, 1,},
+    {"PQ-NOTIFIES",		Lisp_PQnotifies,	1, 1, 1,},
+    {"PQ-NTUPLES",		Lisp_PQntuples,		1, 1, 1,},
+    {"PQ-OPTIONS",		Lisp_PQoptions,		1, 1, 1,},
+    {"PQ-PASS",			Lisp_PQpass,		1, 1, 1,},
+    {"PQ-PORT",			Lisp_PQport,		1, 1, 1,},
+    {"PQ-RESULT-STATUS",	Lisp_PQresultStatus,	1, 1, 1,},
+    {"PQ-SETDB",		Lisp_PQsetdb,		1, 5, 5,},
+    {"PQ-SETDB-LOGIN",		Lisp_PQsetdb,		1, 7, 7,},
+    {"PQ-SOCKET",		Lisp_PQsocket,		1, 1, 1,},
+    {"PQ-STATUS",		Lisp_PQstatus,		1, 1, 1,},
+    {"PQ-TTY",			Lisp_PQtty,		1, 1, 1,},
+    {"PQ-USER",			Lisp_PQuser,		1, 1, 1,},
+};
 
 LispModuleData psqlLispModuleData = {
-    psqlFindFun,
+    LISP_MODULE_VERSION,
     psqlLoadModule
 };
 
@@ -86,11 +114,12 @@ static int PGconn_t, PGresult_t;
 int
 psqlLoadModule(LispMac *mac)
 {
+    int i;
     char *fname = "INTERNAL:PSQL-LOAD-MODULE";
 
     PGconn_t = LispRegisterOpaqueType(mac, "PGconn*");
     PGresult_t = LispRegisterOpaqueType(mac, "PGresult*");
-    GCPRO();
+    GCProtect();
 
     /* NOTE: Implemented just enough to make programming examples
      * (and my needs) work.
@@ -137,7 +166,10 @@ psqlLoadModule(LispMac *mac)
 			  REAL(PGRES_NONFATAL_ERROR), fname, 0);
     (void)LispSetVariable(mac, ATOM2("PGRES-FATAL-ERROR"),
 			  REAL(PGRES_FATAL_ERROR), fname, 0);
-    GCUPRO();
+    GCUProtect();
+
+    for (i = 0; i < sizeof(lispbuiltins) / sizeof(lispbuiltins[0]); i++)
+	LispAddBuiltinFunction(mac, &lispbuiltins[i]);
 
     return (1);
 }
@@ -236,7 +268,7 @@ Lisp_PQexec(LispMac *mac, LispObj *list, char *fname)
     if (CAR(list)->type != LispString_t)
 	LispDestroy(mac, "expecting string, at %s", fname);
 
-    res = PQexec(conn, CAR(list)->data.atom);
+    res = PQexec(conn, STRPTR(CAR(list)));
 
     return (res ? OPAQUE(res, PGresult_t) : NIL);
 }
@@ -293,7 +325,7 @@ Lisp_PQfnumber(LispMac *mac, LispObj *list, char *fname)
 	LispDestroy(mac, "expecting string, at %s",
 		    LispStrObj(mac, CAR(list)), fname);
 
-    num = PQfnumber(res, CAR(list)->data.atom);
+    num = PQfnumber(res, STRPTR(CAR(list)));
 
     return (REAL(num));
 }
@@ -397,31 +429,31 @@ Lisp_PQgetvalue(LispMac *mac, LispObj *list, char *fname)
     if (list != NIL) {
 	if (CAR(list)->type != LispAtom_t)
 	    LispDestroy(mac, "expecting atom, at %s");
-	if (strcmp(CAR(list)->data.atom, "INT16") == 0) {
+	if (strcmp(STRPTR(CAR(list)), "INT16") == 0) {
 	    real = *(short*)str;
 	    isreal = 1;
 	    goto simple_type;
 	}
-	else if (strcmp(CAR(list)->data.atom, "INT32") == 0) {
+	else if (strcmp(STRPTR(CAR(list)), "INT32") == 0) {
 	    real = *(int*)str;
 	    isreal = 1;
 	    goto simple_type;
 	}
-	else if (strcmp(CAR(list)->data.atom, "FLOAT") == 0) {
+	else if (strcmp(STRPTR(CAR(list)), "FLOAT") == 0) {
 	    real = *(float*)str;
 	    isreal = 1;
 	    goto simple_type;
 	}
-	else if (strcmp(CAR(list)->data.atom, "REAL") == 0) {
+	else if (strcmp(STRPTR(CAR(list)), "REAL") == 0) {
 	    real = *(double*)str;
 	    isreal = 1;
 	    goto simple_type;
 	}
-	else if (strcmp(CAR(list)->data.atom, "PG-POLYGON") == 0)
+	else if (strcmp(STRPTR(CAR(list)), "PG-POLYGON") == 0)
 	    goto polygon_type;
-	else if (strcmp(CAR(list)->data.atom, "STRING") != 0)
-	    LispDestroy(mac, "unknown type specifier %s, at fname",
-			CAR(list)->data.atom);
+	else if (strcmp(STRPTR(CAR(list)), "STRING") != 0)
+	    LispDestroy(mac, "unknown type specifier %s, at %s",
+			STRPTR(CAR(list)), fname);
     }
 
 simple_type:
@@ -617,20 +649,20 @@ Lisp_PQsetdb(LispMac *mac, LispObj *list, char *fname)
 	if (CAR(obj) != NIL && CAR(obj)->type != LispString_t)
 	    LispDestroy(mac, "expecting string, at %s", fname);
 
-    host = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+    host = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
     list = CDR(list);
-    port = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+    port = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
     list = CDR(list);
-    options = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+    options = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
     list = CDR(list);
-    tty = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+    tty = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
     list = CDR(list);
-    dbname = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+    dbname = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
     list = CDR(list);
     if (list != NIL) {
-	login = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+	login = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
 	list = CDR(list);
-	pass = CAR(list) == NIL ? NULL : CAR(list)->data.atom;
+	pass = CAR(list) == NIL ? NULL : STRPTR(CAR(list));
     }
     else
 	login = pass = NULL;

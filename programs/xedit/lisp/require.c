@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.3 2001/09/21 05:08:43 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.5 2001/10/11 06:34:50 paulo Exp $ */
 
 #include "require.h"
 
@@ -50,7 +50,7 @@ Lisp_Load(LispMac *mac, LispObj *list, char *fname)
     LispGetKeys(mac, fname, "VERBOSE:PRINT:IF-DOES-NOT-EXIST", CDR(list),
 		&verbose, &print, &ifdoesnotexist);
 
-    return (_LispLoadFile(mac, file->data.atom, fname,
+    return (_LispLoadFile(mac, STRPTR(file), fname,
 			  verbose != NIL, print != NIL, ifdoesnotexist != NIL));
 }
 
@@ -61,7 +61,7 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
     char filename[1024], *ext;
     int len;
 
-    if (feat->type != LispString_t)
+    if (feat->type != LispString_t && feat->type != LispAtom_t)
 	LispDestroy(mac, BadArgumentAt, LispStrObj(mac, feat), fname);
 
     if (CDR(list) != NIL) {
@@ -75,11 +75,11 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
 	nam = feat;
 
     for (obj = MOD; obj != NIL; obj = CDR(obj)) {
-	if (CAR(obj)->data.atom == feat->data.atom)
+	if (STRPTR(CAR(obj)) == STRPTR(feat))
 	    return (feat);
     }
 
-    if (nam->data.atom[0] != '/') {
+    if (STRPTR(nam)[0] != '/') {
 #ifdef LISPDIR
 	snprintf(filename, sizeof(filename), "%s", LISPDIR);
 #else
@@ -95,7 +95,7 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
 	++len;
     }
 
-    snprintf(filename + len, sizeof(filename) - len - 5, "%s", nam->data.atom);
+    snprintf(filename + len, sizeof(filename) - len - 5, "%s", STRPTR(nam));
 
     ext = filename + strlen(filename);
 
@@ -119,7 +119,7 @@ Lisp_Require(LispMac *mac, LispObj *list, char *fname)
 	module = (LispModule*)LispMalloc(mac, sizeof(LispModule));
 	if ((module->handle = dlopen(filename, RTLD_LAZY | RTLD_GLOBAL)) == NULL)
 	    LispDestroy(mac, dlerror());
-	snprintf(data, sizeof(data), "%sLispModuleData", nam->data.atom);
+	snprintf(data, sizeof(data), "%sLispModuleData", STRPTR(nam));
 	if ((module->data = (LispModuleData*)dlsym(module->handle, data)) == NULL) {
 	    dlclose(module->handle);
 	    LispDestroy(mac, "cannot find LispModuleData for %s",

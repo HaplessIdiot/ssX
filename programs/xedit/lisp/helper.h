@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.1 2001/08/31 15:00:14 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.h,v 1.2 2001/10/02 06:38:38 paulo Exp $ */
 
 #ifndef Lisp_helper_h
 #define Lisp_helper_h
@@ -42,6 +42,7 @@
 #define EQUAL		2
 #define GREATER		3
 #define GREATER_EQUAL	4
+#define NOT_EQUAL	5
 
 /*
  * Prototypes
@@ -94,6 +95,22 @@ LispObj *_LispMinMax(LispMac*, LispObj*, char*, int);
 LispObj *_LispBoolCond(LispMac*, LispObj*, char*, int);
 
 /*
+ (char< character &rest more-characters)
+ (char<= character &rest more-characters)
+ (char= character &rest more-characters)
+ (char> character &rest more-characters)
+ (char>= character &rest more-characters)
+ (char/= character &rest more-characters)
+ (char-equal character &rest more-characters)
+ (char-not-equal character &rest more-characters)
+ (char-lessp character &rest more-characters)
+ (char-greaterp character &rest more-characters)
+ (char-not-lessp character &rest more-characters)
+ (char-not-greaterp character &rest more-characters)
+ */
+LispObj *_LispCharBoolCond(LispMac*, LispObj*, char*, int, int);
+
+/*
  (defmacro name lambda-list [[ {declaration}* | doc-string ]] {form}*)
  (defun name lambda-list [[ {declaration}* | doc-string ]] {form}*)
  (lambda lambda-list {declaration | doc-string}* {form}*)
@@ -127,6 +144,42 @@ LispObj *_LispWhileUntil(LispMac*, LispObj*, int);
  * Load and execute a file. Used by (load) and (require)
  */
 LispObj *_LispLoadFile(LispMac*, char*, char*, int, int, int);
+
+/*
+ (string= string1 string2 &key :start1 :end1 :start2 :end2)
+ (string< string1 string2 &key :start1 :end1 :start2 :end2)
+ (string> string1 string2 &key :start1 :end1 :start2 :end2)
+ (string<= string1 string2 &key :start1 :end1 :start2 :end2)
+ (string>= string1 string2 &key :start1 :end1 :start2 :end2)
+ (string/= string1 string2 &key :start1 :end1 :start2 :end2)
+ (string-equal string1 string2 &key :start1 :end1 :start2 :end2)
+ (string-lessp string1 string2 &key :start1 :end1 :start2 :end2)
+ (string-greaterp string1 string2 &key :start1 :end1 :start2 :end2)
+ (string-not-lessp string1 string2 &key :start1 :end1 :start2 :end2)
+ (string-not-greaterp string1 string2 &key :start1 :end1 :start2 :end2)
+ (string-not-equal string1 string2 &key :start1 :end1 :start2 :end2)
+*/
+void _LispGetStringArgs(LispMac*, LispObj*, char*,
+			char**,	/* string1 */
+			char**,	/* string2 */
+			int*,	/* start1 */
+			int*,	/* end1 */
+			int*,	/* start2 */
+			int*);	/* end2 */
+
+/*
+ (string-trim character-bag string)
+ (string-left-trim character-bag string)
+ (string-right-trim character-bag string)
+*/
+LispObj *_LispStringDoTrim(LispMac*, LispObj*, char*, int, int);
+
+/*
+ (string-upcase string &key :start :end)
+ (string-downcase string &key :start :end)
+ (string-capitalize string &key :start :end)
+*/
+void _LispGetStringCaseArgs(LispMac*, LispObj*, char*, char**, int*, int*);
 
 /*
  * Initialization
