@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 271. Move Section DRI/Endsection into the DRI function to be consistant with 
+      all of the other sections. (Quentin Neill)
  270. Made xf4bpp code moer 64bit clean (still doesn't work on Alphas)
       (Egbert Eich).
  269. Removed disable/enable interrupt call on ia64 platforms.
@@ -12704,4 +12706,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1625 2001/03/07 19:53:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1626 2001/03/08 17:12:08 eich Exp $
