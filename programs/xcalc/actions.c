@@ -1,4 +1,3 @@
-/* $XConsortium: actions.c,v 1.9 94/04/17 20:43:30 converse Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -28,6 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86$ */
 
 /*
  * actions.c - externally available procedures for xcalc
@@ -38,26 +38,14 @@ from the X Consortium.
 #include <X11/Intrinsic.h>
 #include <setjmp.h>
 #include "xcalc.h"
-extern int rpn;
-extern Atom wm_delete_window;
-extern int pre_op();
-extern void post_op(), Quit(), ringbell(), do_select();
+#include "actions.h"
+#include "xcmath.h"
 
-#ifndef IEEE
-extern    jmp_buf env;
-extern void fail_op();
-#define XCALC_PRE_OP(keynum) { if (pre_op(keynum)) return; \
-		       if (setjmp (env)) {fail_op(); return;}}
-#else
 #define XCALC_PRE_OP(keynum) if (pre_op(keynum)) return;
-#endif
 
 /*ARGSUSED*/
-void add(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+add(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kADD);
     rpn ? twof(kADD) : twoop(kADD);
@@ -65,11 +53,8 @@ void add(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void back(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+back(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kBKSP);
     bkspf();
@@ -77,21 +62,15 @@ void back(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void bell(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+bell(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     ringbell();
 }
 
 /*ARGSUSED*/
-void clearit(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+clearit(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kCLR);
     clearf();
@@ -99,11 +78,8 @@ void clearit(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void cosine(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+cosine(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kCOS);
     oneop(kCOS);
@@ -111,11 +87,8 @@ void cosine(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void decimal(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+decimal(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kDEC);
     decf();
@@ -123,11 +96,8 @@ void decimal(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void degree(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+degree(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kDRG);
     drgf();
@@ -135,11 +105,8 @@ void degree(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void digit(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+digit(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     switch (vector[0][0])
     {
@@ -158,11 +125,8 @@ void digit(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void divide(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+divide(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kDIV);
     rpn  ? twof(kDIV) : twoop(kDIV);
@@ -170,11 +134,8 @@ void divide(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void e(w, ev, vector, count)
-    Widget	w;
-    XEvent	*ev;
-    String	*vector;
-    Cardinal	*count;
+void
+e(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kE);
     oneop(kE);
@@ -182,11 +143,8 @@ void e(w, ev, vector, count)
 }
 
 /*ARGSUSED*/
-void enter(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+enter(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kENTR);
     entrf();
@@ -194,11 +152,8 @@ void enter(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void epower(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+epower(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kEXP);
     oneop(kEXP);
@@ -206,11 +161,8 @@ void epower(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void equal(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+equal(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kEQU);
     equf();
@@ -218,11 +170,8 @@ void equal(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void exchange(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+exchange(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kEXC);
     oneop(kEXC);
@@ -230,11 +179,8 @@ void exchange(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void factorial(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+factorial(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kFACT);
     oneop(kFACT);
@@ -242,11 +188,8 @@ void factorial(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void inverse(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+inverse(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kINV);
     invf();
@@ -254,11 +197,8 @@ void inverse(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void leftParen(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+leftParen(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kLPAR);
     lparf();
@@ -266,11 +206,8 @@ void leftParen(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void logarithm(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+logarithm(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kLOG);
     oneop(kLOG);
@@ -278,11 +215,8 @@ void logarithm(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void multiply(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+multiply(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kMUL);
     rpn ? twof(kMUL) : twoop(kMUL);
@@ -290,11 +224,8 @@ void multiply(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void naturalLog(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+naturalLog(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kLN);
     oneop(kLN);
@@ -302,11 +233,8 @@ void naturalLog(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void negate(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+negate(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kNEG);
     negf();
@@ -314,21 +242,15 @@ void negate(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void nop(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+nop(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     ringbell();
 }
 
 /*ARGSUSED*/
-void off(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+off(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kOFF);
     offf();
@@ -336,11 +258,8 @@ void off(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void pi(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+pi(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kPI);
     oneop(kPI);
@@ -348,11 +267,8 @@ void pi(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void power(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+power(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kPOW);
     rpn ? twof(kPOW) : twoop(kPOW);
@@ -360,11 +276,8 @@ void power(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void quit(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+quit(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     if (e->type == ClientMessage && e->xclient.data.l[0] != wm_delete_window)
 	ringbell();
@@ -373,11 +286,8 @@ void quit(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void recall(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+recall(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kRCL);
     rpn ? memf(kRCL) : oneop(kRCL);
@@ -385,11 +295,8 @@ void recall(w, e, vector, count)
 }
 	
 /*ARGSUSED*/
-void reciprocal(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+reciprocal(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kRECIP);
     oneop(kRECIP);
@@ -397,11 +304,8 @@ void reciprocal(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void rightParen(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+rightParen(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kRPAR);
     rparf();
@@ -409,11 +313,8 @@ void rightParen(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void roll(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+roll(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kROLL);
     rollf();
@@ -421,11 +322,8 @@ void roll(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void scientific(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+scientific(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kEE);
     eef();
@@ -433,21 +331,15 @@ void scientific(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void selection(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+selection(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     do_select(((XButtonReleasedEvent *)e)->time);
 }
 
 /*ARGSUSED*/
-void sine(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+sine(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kSIN);
     oneop(kSIN);
@@ -455,11 +347,8 @@ void sine(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void square(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+square(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kSQR);
     oneop(kSQR);
@@ -467,11 +356,8 @@ void square(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void squareRoot(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+squareRoot(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kSQRT);
     oneop(kSQRT);
@@ -479,11 +365,8 @@ void squareRoot(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void store(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+store(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kSTO);
     rpn ? memf(kSTO) : oneop(kSTO);
@@ -491,11 +374,8 @@ void store(w, e, vector, count)
 }
 
 /*ARGSUSED*/
-void subtract(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+subtract(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kSUB);
     rpn ? twof(kSUB) : twoop(kSUB);
@@ -503,11 +383,8 @@ void subtract(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void sum(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+sum(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kSUM);
     rpn ? memf(kSUM) : oneop(kSUM);
@@ -515,11 +392,8 @@ void sum(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void tangent(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+tangent(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kTAN);
     oneop(kTAN);
@@ -527,11 +401,8 @@ void tangent(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void tenpower(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+tenpower(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(k10X);
     oneop(k10X);
@@ -539,11 +410,8 @@ void tenpower(w, e, vector, count)
 }
    
 /*ARGSUSED*/
-void XexchangeY(w, e, vector, count)
-    Widget	w;
-    XEvent	*e;
-    String	*vector;
-    Cardinal	*count;
+void
+XexchangeY(Widget w, XEvent *e, String *vector, Cardinal *count)
 {
     XCALC_PRE_OP(kXXY);
     twof(kXXY);

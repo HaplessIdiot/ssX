@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Arnaud LE HORS.
  */
-/* $XFree86: xc/extras/Xpm/cxpm/cxpm.c,v 1.2 2001/08/01 00:44:34 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/cxpm/cxpm.c,v 1.3 2003/05/27 16:45:41 tsi Exp $ */
 
 /*****************************************************************************\
 * cxpm.c:                                                                     *
@@ -47,9 +47,7 @@
  * note that 's' could stand both for "special" and "slow" ;-)
  */
 static int
-sGetc(data, file)
-    xpmData *data;
-    FILE *file;
+sGetc(xpmData *data, FILE *file)
 {
     int c = getc(data->stream.file);
     if (c == '\n') {
@@ -62,10 +60,7 @@ sGetc(data, file)
 }
 
 static void
-sUngetc(data, c, file)
-    xpmData *data;
-    int c;
-    FILE *file;
+sUngetc(xpmData *data, int c, FILE *file)
 {
     ungetc(c, data->stream.file);
     if (c == '\n') {
@@ -85,11 +80,8 @@ sUngetc(data, c, file)
 #include "../lib/Attrib.c"
 #include "../lib/Image.c"
 
-void
-ErrorMessage(ErrorStatus, data)
-    int ErrorStatus;
-    xpmData *data;
-
+static void
+ErrorMessage(int ErrorStatus, xpmData *data)
 {
     char *error = NULL;
 
@@ -121,9 +113,7 @@ ErrorMessage(ErrorStatus, data)
 }
 
 int
-main(argc, argv)
-    int argc;
-    char **argv;
+main(int argc, char **argv)
 {
     XpmImage image;
     char *filename;

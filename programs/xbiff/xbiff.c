@@ -1,4 +1,3 @@
-/* $XConsortium: xbiff.c,v 1.19 94/04/17 20:43:28 rws Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xbiff/xbiff.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/xbiff/xbiff.c,v 1.4 2003/05/27 22:26:59 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,11 +48,8 @@ static XrmOptionDescRec options[] = {
 
 static Atom wm_delete_window;
 
-static void quit (w, event, params, num_params)
-    Widget w;
-    XEvent *event;
-    String *params;
-    Cardinal *num_params;
+static void
+quit(Widget w, XEvent *event, String *params, Cardinal *num_params)
 {
     if (event->type == ClientMessage &&
         event->xclient.data.l[0] != wm_delete_window) {
@@ -68,7 +64,8 @@ static XtActionsRec xbiff_actions[] = {
     { "quit", quit },
 };
 
-static void Usage ()
+static void
+Usage(void)
 {
     static const char *help_message[] = {
 "where options include:",
@@ -93,9 +90,7 @@ NULL};
 
 
 int
-main (argc, argv)
-    int argc;
-    char **argv;
+main(int argc, char **argv)
 {
     XtAppContext xtcontext;
     Widget toplevel;

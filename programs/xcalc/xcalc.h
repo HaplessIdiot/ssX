@@ -1,4 +1,3 @@
-/* $XConsortium: xcalc.h,v 1.4 94/04/17 20:43:32 converse Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -28,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xcalc/xcalc.h,v 1.2 2001/08/01 00:45:02 tsi Exp $ */
 
 /*
  * xcalc.h - symbolic constants for xcalc
@@ -38,12 +37,6 @@ from the X Consortium.
 
 #ifndef _XCALC_H_
 #define _XCALC_H_
-
-#ifdef SIGNALRETURNSINT
-#define signal_t int
-#else
-#define signal_t void
-#endif
 
 #define kRECIP 0	/* reciprocal */
 #define kSQR   1	/* square */
@@ -119,5 +112,17 @@ extern void memf(int keynum);
 extern void oneop(int keynum);
 extern void offf(void);
 extern void ResetCalc(void);
+
+extern int rpn;
+#define LCD_STR_LEN     32
+extern char dispstr[LCD_STR_LEN];
+extern Atom wm_delete_window;
+
+extern void ringbell(void);
+extern void Quit(void);
+extern void do_select(Time time);
+extern void draw(char *string);
+extern void setflag(int indicator, Boolean on);
+
 
 #endif

@@ -38,12 +38,13 @@
  *
  */
 
-/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glw/GLwDAUtil.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/extras/ogl-sample/main/gfx/lib/glw/GLwDAUtil.c,v 1.4 2003/11/06 18:37:54 tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <GL/glx.h>
 #include <GL/gl.h>
+#include "GLwDrawA.h"
 
 /*
  * By default only a static library is created because most of the UNIX

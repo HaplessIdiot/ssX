@@ -31,7 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/WrFFrI.c,v 1.3 2004/09/15 16:00:37 herrb Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/WrFFrI.c,v 1.4 2004/11/18 21:30:51 herrb Exp $ */
 
 /*
  * The code related to AMIGA has been added by
@@ -305,9 +305,9 @@ WriteExtensions(file, ext, num)
  * open the given file to be written as an xpmData which is returned
  */
 #ifndef NO_ZPIPE
-	FILE *s_popen(char *cmd, const char *type);
+#	define safe_popen s_popen
 #else
-#	define s_popen popen
+#	define safe_popen popen
 #endif
 static int
 OpenWriteFile(filename, mdata)
@@ -334,13 +334,13 @@ OpenWriteFile(filename, mdata)
 
 	if (len > 2 && !strcmp(".Z", filename + (len - 2))) {
 	    snprintf(buf, sizeof(buf), "compress > \"%s\"", filename);
-	    if (!(mdata->stream.file = s_popen(buf, "w")))
+	    if (!(mdata->stream.file = safe_popen(buf, "w")))
 		return (XpmOpenFailed);
 
 	    mdata->type = XPMPIPE;
 	} else if (len > 3 && !strcmp(".gz", filename + (len - 3))) {
 	    snprintf(buf, sizeof(buf), "gzip -q > \"%s\"", filename);
-	    if (!(mdata->stream.file = s_popen(buf, "w")))
+	    if (!(mdata->stream.file = safe_popen(buf, "w")))
 		return (XpmOpenFailed);
 
 	    mdata->type = XPMPIPE;

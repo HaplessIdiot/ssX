@@ -31,7 +31,7 @@
 *                                                                             *
 *  Developed by Arnaud Le Hors                                                *
 \*****************************************************************************/
-/* $XFree86: xc/extras/Xpm/lib/RdFToI.c,v 1.2 2001/10/28 03:32:09 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/lib/RdFToI.c,v 1.3 2004/11/18 21:30:51 herrb Exp $ */
 
 /* October 2004, source code review by Thomas Biege <thomas@suse.de> */
 
@@ -126,9 +126,9 @@ XpmReadFileToXpmImage(filename, image, info)
  * open the given file to be read as an xpmData which is returned.
  */
 #ifndef NO_ZPIPE
-	FILE *s_popen(char *cmd, const char *type);
+#	define safe_popen s_popen
 #else
-#	define s_popen popen
+#	define safe_popen popen
 #endif
 
 static int
@@ -157,13 +157,13 @@ OpenReadFile(filename, mdata)
 	if ((len > 2) && !strcmp(".Z", filename + (len - 2))) {
 	    mdata->type = XPMPIPE;
 	    snprintf(buf, sizeof(buf), "uncompress -c \"%s\"", filename);
-	    if (!(mdata->stream.file = s_popen(buf, "r")))
+	    if (!(mdata->stream.file = safe_popen(buf, "r")))
 		return (XpmOpenFailed);
 
 	} else if ((len > 3) && !strcmp(".gz", filename + (len - 3))) {
 	    mdata->type = XPMPIPE;
 	    snprintf(buf, sizeof(buf), "gunzip -qc \"%s\"", filename);
-	    if (!(mdata->stream.file = s_popen(buf, "r")))
+	    if (!(mdata->stream.file = safe_popen(buf, "r")))
 		return (XpmOpenFailed);
 
 	} else {
@@ -174,7 +174,7 @@ OpenReadFile(filename, mdata)
 	    snprintf(compressfile, len+4, "%s.Z", filename);
 	    if (!stat(compressfile, &status)) {
 		snprintf(buf, sizeof(buf), "uncompress -c \"%s\"", compressfile);
-		if (!(mdata->stream.file = s_popen(buf, "r"))) {
+		if (!(mdata->stream.file = safe_popen(buf, "r"))) {
 		    XpmFree(compressfile);
 		    return (XpmOpenFailed);
 		}
@@ -183,7 +183,7 @@ OpenReadFile(filename, mdata)
 		snprintf(compressfile, len+4, "%s.gz", filename);
 		if (!stat(compressfile, &status)) {
 		    snprintf(buf, sizeof(buf), "gunzip -c \"%s\"", compressfile);
-		    if (!(mdata->stream.file = s_popen(buf, "r"))) {
+		    if (!(mdata->stream.file = safe_popen(buf, "r"))) {
 			XpmFree(compressfile);
 			return (XpmOpenFailed);
 		    }

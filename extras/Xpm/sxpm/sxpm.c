@@ -22,7 +22,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from GROUPE BULL.
  */
-/* $XFree86: xc/extras/Xpm/sxpm/sxpm.c,v 1.2 2001/08/01 00:44:34 tsi Exp $ */
+/* $XFree86: xc/extras/Xpm/sxpm/sxpm.c,v 1.3 2001/10/28 03:32:13 tsi Exp $ */
 
 /*****************************************************************************\
 * sxpm.c:                                                                     *
@@ -99,16 +99,11 @@ static char *plaid[] = {
 #define xrdb XtDatabase(dpy)
 static Colormap colormap;
 
-void Usage();
-void ErrorMessage();
-void Punt();
-void VersionInfo();
-
-#ifdef __STDC__
-void kinput(Widget widget, char *tag, XEvent *xe, Boolean *b);
-#else
-void kinput();
-#endif
+static void Usage(void);
+static void ErrorMessage(int ErrorStatus, char *tag);
+static void Punt(int i);
+static void VersionInfo(void);
+static void kinput(Widget widget, char *tag, XEvent *xe, Boolean *b);
 
 #define IWIDTH      50
 #define IHEIGHT     50
@@ -128,9 +123,7 @@ static XrmOptionDescRec options[] = {
 };
 
 int
-main(argc, argv)
-    int argc;
-    char **argv;
+main(int argc, char **argv)
 {
     int ErrorStatus;
     unsigned int verbose = 0;		/* performs verbose output */
@@ -556,8 +549,8 @@ main(argc, argv)
     return 0;
 }
 
-void
-Usage()
+static void
+Usage(void)
 {
     fprintf(stderr, "\nUsage:  %s [options...]\n", command[0]);
     fprintf(stderr, "Where options are:\n\
@@ -592,10 +585,8 @@ if no input is specified sxpm reads from standard input.\n\
 }
 
 
-void
-ErrorMessage(ErrorStatus, tag)
-    int ErrorStatus;
-    char *tag;
+static void
+ErrorMessage(int ErrorStatus, char *tag)
 {
     char *error = NULL;
     char *warning = NULL;
@@ -629,9 +620,8 @@ ErrorMessage(ErrorStatus, tag)
     }
 }
 
-void
-Punt(i)
-    int i;
+static void
+Punt(int i)
 {
     if (icon.pixmap) {
 	XFreePixmap(dpy, icon.pixmap);
@@ -658,12 +648,8 @@ Punt(i)
     exit(i);
 }
 
-void
-kinput(widget, tag, xe, b)
-    Widget widget;
-    char *tag;
-    XEvent *xe;
-    Boolean *b;
+static void
+kinput(Widget widget, char *tag, XEvent *xe, Boolean *b)
 {
     char c = '\0';
 
@@ -676,20 +662,17 @@ kinput(widget, tag, xe, b)
  * small function to extract various version numbers from the given global
  * number (following the rule described in xpm.h).
  */
-void
-GetNumbers(num, format_return, libmajor_return, libminor_return)
-    int num;
-    int *format_return;
-    int *libmajor_return;
-    char *libminor_return;
+static void
+GetNumbers(int num, int *format_return, int *libmajor_return,
+	   char *libminor_return)
 {
     *format_return = num / 10000;
     *libmajor_return = (num % 10000) / 100;
     *libminor_return = 'a' + (num % 10000) % 100 - 1;
 }
 
-void
-VersionInfo()
+static void
+VersionInfo(void)
 {
     int format, libmajor;
     char libminor;

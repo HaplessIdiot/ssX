@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_tex.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_tex.c,v 1.3 2004/12/15 15:40:28 tsi Exp $ */
 
 /*
  * New fixes:
@@ -50,7 +50,7 @@
 
 
 /* no borders! can't halve 1x1! (stride > width * comp) not allowed */
-void
+static void
 _mesa_halve2x2_teximage2d ( GLcontext *ctx,
 			    struct gl_texture_image *texImage,
 			    GLuint bytesPerPixel,

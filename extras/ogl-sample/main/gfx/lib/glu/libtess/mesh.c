@@ -48,12 +48,12 @@
 #define TRUE 1
 #define FALSE 0
 
-static GLUvertex *allocVertex()
+static GLUvertex *allocVertex(void)
 {
    return (GLUvertex *)memAlloc( sizeof( GLUvertex ));
 }
 
-static GLUface *allocFace()
+static GLUface *allocFace(void)
 {
    return (GLUface *)memAlloc( sizeof( GLUface ));
 }

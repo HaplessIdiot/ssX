@@ -35,18 +35,18 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #ifndef DPSASSERT_H
 #define DPSASSERT_H
 
 #include "DPS/dpsclient.h"
 
-#define DPSAssertWarn(cndtn, cntxt, mssg)\
-	if (!(cndtn)) DPSWarnProc((DPSContext)(cntxt),(mssg))
-
 extern void DPSWarnProc(DPSContext ctxt, char *msg);
 extern void DPSFatalProc(DPSContext ctxt, char *msg);
-extern void DPSCantHappen(void);
+
+#define DPSAssertWarn(cndtn, cntxt, mssg)\
+	if (!(cndtn)) DPSWarnProc((DPSContext)(cntxt),(mssg))
 
 #define DPSAssert(condition) \
   if (! (condition)) DPSCantHappen();

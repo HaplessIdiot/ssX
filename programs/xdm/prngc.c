@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xdm/prngc.c,v 1.3 2003/10/17 21:23:07 herrb Exp $ */
+/* $XFree86: xc/programs/xdm/prngc.c,v 1.4 2003/11/04 20:17:04 dawes Exp $ */
 /*
  * Copyright (c) 1995,1999 Theo de Raadt.  All rights reserved.
  * Copyright (c) 2001-2002 Damien Miller.  All rights reserved.
@@ -48,7 +48,8 @@
 #define INADDR_LOOPBACK 0x7F000001U
 #endif
 
-static ssize_t atomicio(ssize_t (*)(), int, void *, size_t);
+typedef ssize_t (*ioproc)(int, void *, size_t);
+static ssize_t atomicio(ioproc, int, void *, size_t);
 
 #ifndef offsetof
 #  define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
@@ -135,7 +136,7 @@ reopen:
 	msg[0] = 0x02;
 	msg[1] = len;
 
-	if (atomicio(write, fd, msg, sizeof(msg)) != sizeof(msg)) {
+	if (atomicio((ioproc)write, fd, msg, sizeof(msg)) != sizeof(msg)) {
 		if (errno == EPIPE && errors < 10) {
 			close(fd);
 			errors++;
@@ -169,7 +170,7 @@ done:
  * ensure all of data on socket comes through. f==read || f==write
  */
 static ssize_t
-atomicio(ssize_t (*f)(), int fd, void *_s, size_t n)
+atomicio(ioproc f, int fd, void *_s, size_t n)
 {
 	char *s = _s;
 	ssize_t res, pos = 0;

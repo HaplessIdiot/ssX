@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Xpm/lib/s_popen.c,v 1.2 2004/12/17 16:38:03 tsi Exp $ */
 /*
  * Copyright (C) 2004 The X.Org fundation
  * 
@@ -44,6 +44,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
+#include "XpmI.h"
 
 #define __SEC_POPEN_TOKEN " "
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.68 2003/01/15 02:34:14 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miinitext.c,v 3.69 2004/06/30 20:21:46 martin Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -115,6 +115,13 @@ typedef void (*InitExtension)(INITARGS);
 #ifdef RES
 #include "XResproto.h"
 #endif
+#ifdef XRECORD
+#include "recordproc.h"
+#endif
+#ifdef DBE
+#define DBE_EXT_INIT_ONLY
+#include "dbeproc.h"
+#endif
 
 /* FIXME: this whole block of externs should be from the appropriate headers */
 #ifdef BEZIER
@@ -178,14 +185,8 @@ extern void XkbExtensionInit(INITARGS);
 #ifdef XCMISC
 extern void XCMiscExtensionInit(INITARGS);
 #endif
-#ifdef XRECORD
-extern void RecordExtensionInit(INITARGS);
-#endif
 #ifdef LBX
 extern void LbxExtensionInit(INITARGS);
-#endif
-#ifdef DBE
-extern void DbeExtensionInit(INITARGS);
 #endif
 #ifdef XAPPGROUP
 extern void XagExtensionInit(INITARGS);

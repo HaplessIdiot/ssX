@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.2 2005/01/30 17:48:44 tsi Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -53,7 +53,6 @@
 #include "dmxprint.h"
 #include "dmxlog.h"
 
-extern int                 yyparse(void);
 extern FILE                *yyin;
 
 #define DMX_INFO "xdmxconfig v0.9\nCopyright 2002 Red Hat Inc.\n$Id$"
@@ -65,7 +64,6 @@ extern FILE                *yyin;
 #define DMX_CANVAS_WIDTH  400
 #define DMX_CANVAS_HEIGHT 500
 
-extern DMXConfigEntryPtr   dmxConfigEntry;
 static DMXConfigVirtualPtr dmxConfigCurrent, dmxConfigNewVirtual;
 static DMXConfigDisplayPtr dmxConfigCurrentDisplay, dmxConfigNewDisplay;
 static int                 dmxConfigGrabbed, dmxConfigGrabbedFine;

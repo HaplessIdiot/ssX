@@ -18,7 +18,7 @@
 /***************************************************************************/
 
 /* Modified for XFree86 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/FreeType/ftsystem.c,v 1.3 2002/10/01 00:02:10 alanh Exp $ */
 
   /*************************************************************************/
   /*                                                                       */
@@ -36,6 +36,8 @@
 #include FT_SYSTEM_H
 #include FT_ERRORS_H
 #include FT_TYPES_H
+#include FT_INTERNAL_OBJECTS_H
+#include FT_INTERNAL_STREAM_H
 
 #ifndef FONTMODULE
 #include <stdio.h>

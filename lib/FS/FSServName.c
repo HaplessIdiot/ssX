@@ -22,7 +22,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS 
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/FS/FSServName.c,v 1.4 2001/12/14 19:53:33 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSServName.c,v 1.5 2005/03/23 03:11:23 dawes Exp $ */
 
 /*
 
@@ -53,6 +53,7 @@ in this Software without prior written authorization from The Open Group.
 #include	<stdio.h>
 #include	<X11/Xosdefs.h>
 #include	<stdlib.h>
+#include	"FSlib.h"
 
 char *
 FSServerName(char *server)

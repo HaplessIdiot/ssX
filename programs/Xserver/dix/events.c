@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.53tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/events.c,v 3.54 2004/08/04 16:33:34 tsi Exp $ */
 /************************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -2034,7 +2034,8 @@ WindowsRestructured()
  * other than 0,0, the information in the private sprite structure must
  * be updated accordingly, or XYToWindow (and other routines) will not
  * compute correctly. */
-void ReinitializeRootWindow(WindowPtr win, int xoff, int yoff)
+void
+ReinitializeRootWindow(WindowPtr win, int xoff, int yoff)
 {
     GrabPtr   grab;
 

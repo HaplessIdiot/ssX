@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxparse.h,v 1.1 2004/06/30 20:21:39 martin Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -294,5 +294,7 @@ extern DMXConfigEntryPtr   dmxConfigAddEntry(DMXConfigEntryPtr head,
                                              DMXConfigVirtualPtr virtual);
 extern DMXConfigEntryPtr   dmxConfigEntryComment(DMXConfigCommentPtr comment);
 extern DMXConfigEntryPtr   dmxConfigEntryVirtual(DMXConfigVirtualPtr virtual);
+
+extern int yyparse(void);
 
 #endif

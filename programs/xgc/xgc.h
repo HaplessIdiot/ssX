@@ -3,9 +3,11 @@
 **
 ** xgc.h
 */
-/* $XFree86: xc/programs/xgc/xgc.h,v 1.5 2003/05/07 21:17:06 herrb Exp $ */
+/* $XFree86: xc/programs/xgc/xgc.h,v 1.6 2003/09/13 21:33:11 dawes Exp $ */
 
 #include "constants.h"
+#define NEED_YYIN
+#include "lexstuff.h"
 
 typedef struct {
   Display  *dpy;		/* the display! */
@@ -100,7 +102,6 @@ extern Widget filename_text_widget, recordbutton;
 
 extern int fildes[2];
 extern FILE *outend;
-extern FILE *yyin;
 
 /************/
 
@@ -159,10 +160,5 @@ extern void toggle_recordbutton(Widget, caddr_t, caddr_t);
 extern void update_dashlist(int);
 extern void update_planemask(long);
 extern void update_slider(int);
-extern void yyerror(const char *);
-extern int yylex(void);
-extern int yyparse(void);
-extern void yyrestart(FILE *);
-extern int yywrap(void);
 
 

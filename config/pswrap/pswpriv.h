@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/pswpriv.h,v 1.6 2000/06/07 21:58:25 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/pswpriv.h,v 1.7 2001/08/18 02:47:10 dawes Exp $ */
 
 #ifndef PSWPRIV_H
 #define PSWPRIV_H
@@ -147,7 +147,9 @@ extern int outlineno;		/* line number in output file */
 extern int pad;			/* -p flag */
 extern int reentrant;
 extern int reportedPSWName;
+#if !defined(YY_FLEX_LEX_COMPAT)
 extern int yylineno;		/* current line number in pswrap source file */
+#endif
 
 /* lexer.l */
 extern int yylex(void);
