@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_texman.c,v 1.1.1.2 2004/06/10 14:23:19 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/tdfx/tdfx_texman.c,v 1.1.1.3 2004/12/10 15:06:04 alanh Exp $ */
 
 /*
  * Original rewrite:
@@ -852,8 +852,8 @@ tdfxTMMoveInTM_NoLock( tdfxContextPtr fxMesa, struct gl_texture_object *tObj,
         if (ti->tm[TDFX_TMU0])
            fxMesa->stats.memTexUpload += texmemsize;
 
-        texmemsize = fxMesa->Glide.grTexTextureMemRequired(GR_MIPMAPLEVELMASK_BOTH,
-                                                       &(ti->info));
+        /*texmemsize = fxMesa->Glide.grTexTextureMemRequired(GR_MIPMAPLEVELMASK_BOTH,
+                                                       &(ti->info));*/
         ti->tm[TDFX_TMU1] = AllocTexMem(fxMesa, TDFX_TMU1, texmemsize);
         break;
     default:

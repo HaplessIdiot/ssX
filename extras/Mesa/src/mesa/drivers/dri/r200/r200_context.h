@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_context.h,v 1.1.1.2 2004/06/10 14:23:00 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_context.h,v 1.1.1.3 2004/12/10 15:05:57 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -38,8 +38,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
+#include "tnl/t_vertex.h"
+#include "drm.h"
+#include "radeon_drm.h"
 #include "dri_util.h"
-#include "radeon_common.h"
 #include "texmem.h"
 
 #include "macros.h"
@@ -47,7 +49,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "colormac.h"
 #include "r200_reg.h"
 
-#define ENABLE_HW_3D_TEXTURE 0  /* XXX this is temporary! */
+#define ENABLE_HW_3D_TEXTURE 1  /* XXX this is temporary! */
 
 struct r200_context;
 typedef struct r200_context r200ContextRec;
@@ -108,12 +110,12 @@ struct r200_pixel_state {
 };
 
 struct r200_scissor_state {
-   XF86DRIClipRectRec rect;
+   drm_clip_rect_t rect;
    GLboolean enabled;
 
    GLuint numClipRects;			/* Cliprects active */
    GLuint numAllocedClipRects;		/* Cliprects available */
-   XF86DRIClipRectPtr pClipRects;
+   drm_clip_rect_t *pClipRects;
 };
 
 struct r200_stencilbuffer_state {
@@ -129,7 +131,11 @@ struct r200_stipple_state {
 
 #define TEX_0   0x1
 #define TEX_1   0x2
-#define TEX_ALL 0x3
+#define TEX_2	0x4
+#define TEX_3	0x8
+#define TEX_4	0x10
+#define TEX_5	0x20
+#define TEX_ALL 0x3f
 
 typedef struct r200_tex_obj r200TexObj, *r200TexObjPtr;
 
@@ -148,7 +154,7 @@ struct r200_tex_obj {
 					   brought into the
 					   texunit. */
 
-   drmRadeonTexImage image[6][RADEON_MAX_TEXTURE_LEVELS];
+   drm_radeon_tex_image_t image[6][RADEON_MAX_TEXTURE_LEVELS];
 					/* Six, for the cube faces */
 
    GLuint pp_txfilter;		        /* hardware register values */
@@ -171,7 +177,7 @@ struct r200_texture_env_state {
    GLenum envMode;
 };
 
-#define R200_MAX_TEXTURE_UNITS 3
+#define R200_MAX_TEXTURE_UNITS 6
 
 struct r200_texture_state {
    struct r200_texture_env_state unit[R200_MAX_TEXTURE_UNITS];
@@ -211,7 +217,12 @@ struct r200_state_atom {
 #define CTX_RB3D_COLOROFFSET  11
 #define CTX_CMD_2             12 /* why */
 #define CTX_RB3D_COLORPITCH   13 /* why */
-#define CTX_STATE_SIZE        14
+#define CTX_STATE_SIZE_OLDDRM 14
+#define CTX_CMD_3             14
+#define CTX_RB3D_BLENDCOLOR   15
+#define CTX_RB3D_ABLENDCNTL   16
+#define CTX_RB3D_CBLENDCNTL   17
+#define CTX_STATE_SIZE_NEWDRM 18
 
 #define SET_CMD_0               0
 #define SET_SE_CNTL             1
@@ -363,6 +374,12 @@ struct r200_state_atom {
 #define VTX_COLOR(v,n)   (((v)>>(R200_VTX_COLOR_0_SHIFT+(n)*2))&\
                          R200_VTX_COLOR_MASK)
 
+/**
+ * Given the \c R200_SE_VTX_FMT_1 for the current vertex state, determine
+ * how many components are in texture coordinate \c n.
+ */
+#define VTX_TEXn_COUNT(v,n)   (((v) >> (3 * n)) & 0x07)
+
 #define MAT_CMD_0              0
 #define MAT_ELT_0              1
 #define MAT_STATE_SIZE         17
@@ -474,10 +491,8 @@ struct r200_state_atom {
 
 
 struct r200_hw_state {
-   /* All state should be on one of these lists:
-    */
-   struct r200_state_atom dirty; /* dirty list head placeholder */
-   struct r200_state_atom clean; /* clean list head placeholder */
+   /* Head of the linked list of state atoms. */
+   struct r200_state_atom atomlist;
 
    /* Hardware state, stored as cmdbuf commands:  
     *   -- Need to doublebuffer for
@@ -499,11 +514,11 @@ struct r200_hw_state {
    struct r200_state_atom cst;
    struct r200_state_atom tam;
    struct r200_state_atom tf;
-   struct r200_state_atom tex[2];
-   struct r200_state_atom cube[2];
+   struct r200_state_atom tex[6];
+   struct r200_state_atom cube[6];
    struct r200_state_atom zbs;
    struct r200_state_atom mtl[2]; 
-   struct r200_state_atom mat[5]; 
+   struct r200_state_atom mat[9]; 
    struct r200_state_atom lit[8]; /* includes vec, scl commands */
    struct r200_state_atom ucp[6];
    struct r200_state_atom pix[6]; /* pixshader stages */
@@ -511,6 +526,9 @@ struct r200_hw_state {
    struct r200_state_atom grd; /* guard band clipping */
    struct r200_state_atom fog; 
    struct r200_state_atom glt; 
+
+   int max_state_size;	/* Number of bytes necessary for a full state emit. */
+   GLboolean is_dirty, all_dirty;
 };
 
 struct r200_state {
@@ -566,8 +584,8 @@ struct r200_dri_mirror {
    __DRIscreenPrivate	*screen;	/* DRI screen */
    __DRIdrawablePrivate	*drawable;	/* DRI drawable bound to this ctx */
 
-   drmContext hwContext;
-   drmLock *hwLock;
+   drm_context_t hwContext;
+   drm_hw_lock_t *hwLock;
    int fd;
    int drmMinor;
 };
@@ -609,12 +627,28 @@ struct r200_tcl_info {
 /* r200_swtcl.c
  */
 struct r200_swtcl_info {
-   GLuint SetupIndex;
-   GLuint SetupNewInputs;
    GLuint RenderIndex;
+   
+   /**
+    * Size of a hardware vertex.  This is calculated when \c ::vertex_attrs is
+    * installed in the Mesa state vector.
+    */
    GLuint vertex_size;
-   GLuint vertex_stride_shift;
-   GLuint vertex_format;
+
+   /**
+    * Attributes instructing the Mesa TCL pipeline where / how to put vertex
+    * data in the hardware buffer.
+    */
+   struct tnl_attr_map vertex_attrs[VERT_ATTRIB_MAX];
+
+   /**
+    * Number of elements of \c ::vertex_attrs that are actually used.
+    */
+   GLuint vertex_attr_count;
+
+   /**
+    * Cached pointer to the buffer where Mesa will store vertex data.
+    */
    GLubyte *verts;
 
    /* Fallback rasterization functions
@@ -626,6 +660,21 @@ struct r200_swtcl_info {
    GLuint hw_primitive;
    GLenum render_primitive;
    GLuint numverts;
+
+   /**
+    * Offset of the 4UB color data within a hardware (swtcl) vertex.
+    */
+   GLuint coloroffset;
+
+   /**
+    * Offset of the 3UB specular color data within a hardware (swtcl) vertex.
+    */
+   GLuint specoffset;
+
+   /**
+    * Should Mesa project vertex data or will the hardware do it?
+    */
+   GLboolean needproj;
 
    struct r200_dma_region indexed_verts;
 };
@@ -670,10 +719,14 @@ struct dfn_lists {
    struct dynfn SecondaryColor3fvEXT;
    struct dynfn Normal3f;
    struct dynfn Normal3fv;
+   struct dynfn TexCoord3f;
+   struct dynfn TexCoord3fv;
    struct dynfn TexCoord2f;
    struct dynfn TexCoord2fv;
    struct dynfn TexCoord1f;
    struct dynfn TexCoord1fv;
+   struct dynfn MultiTexCoord3fARB;
+   struct dynfn MultiTexCoord3fvARB;
    struct dynfn MultiTexCoord2fARB;
    struct dynfn MultiTexCoord2fvARB;
    struct dynfn MultiTexCoord1fARB;
@@ -699,10 +752,14 @@ struct dfn_generators {
    struct dynfn *(*SecondaryColor3fvEXT)( GLcontext *, const int * );
    struct dynfn *(*Normal3f)( GLcontext *, const int * );
    struct dynfn *(*Normal3fv)( GLcontext *, const int * );
+   struct dynfn *(*TexCoord3f)( GLcontext *, const int * );
+   struct dynfn *(*TexCoord3fv)( GLcontext *, const int * );
    struct dynfn *(*TexCoord2f)( GLcontext *, const int * );
    struct dynfn *(*TexCoord2fv)( GLcontext *, const int * );
    struct dynfn *(*TexCoord1f)( GLcontext *, const int * );
    struct dynfn *(*TexCoord1fv)( GLcontext *, const int * );
+   struct dynfn *(*MultiTexCoord3fARB)( GLcontext *, const int * );
+   struct dynfn *(*MultiTexCoord3fvARB)( GLcontext *, const int * );
    struct dynfn *(*MultiTexCoord2fARB)( GLcontext *, const int * );
    struct dynfn *(*MultiTexCoord2fvARB)( GLcontext *, const int * );
    struct dynfn *(*MultiTexCoord1fARB)( GLcontext *, const int * );
@@ -717,30 +774,33 @@ struct r200_prim {
    GLuint prim;
 };
 
+   /* A maximum total of 29 elements per vertex:  3 floats for position, 3
+    * floats for normal, 4 floats for color, 4 bytes for secondary color,
+    * 3 floats for each texture unit (18 floats total).
+    * 
+    * we maybe need add. 4 to prevent segfault if someone specifies
+    * GL_TEXTURE6/GL_TEXTURE7 (esp. for the codegen-path) (FIXME: )
+    * 
+    * The position data is never actually stored here, so 3 elements could be
+    * trimmed out of the buffer.
+    */
+
+#define R200_MAX_VERTEX_SIZE ((3*6)+11)
+
 struct r200_vbinfo {
    GLint counter, initial_counter;
    GLint *dmaptr;
    void (*notify)( void );
    GLint vertex_size;
 
-   /* A maximum total of 15 elements per vertex:  3 floats for position, 3
-    * floats for normal, 4 floats for color, 4 bytes for secondary color,
-    * 2 floats for each texture unit (4 floats total).
-    * 
-    * As soon as the 3rd TMU is supported or cube maps (or 3D textures) are
-    * supported, this value will grow.
-    * 
-    * The position data is never actually stored here, so 3 elements could be
-    * trimmed out of the buffer.
-    */
-   union { float f; int i; r200_color_t color; } vertex[15];
+   union { float f; int i; r200_color_t color; } vertex[R200_MAX_VERTEX_SIZE];
 
    GLfloat *normalptr;
    GLfloat *floatcolorptr;
    r200_color_t *colorptr;
    GLfloat *floatspecptr;
    r200_color_t *specptr;
-   GLfloat *texcoordptr[2];
+   GLfloat *texcoordptr[8];	/* 6 (TMU) + 2 for r200_vtxfmt_c.c when GL_TEXTURE6/7 */
 
 
    GLenum *prim;		/* &ctx->Driver.CurrentExecPrimitive */
@@ -762,8 +822,6 @@ struct r200_vbinfo {
    struct dfn_generators codegen;
    GLvertexformat vtxfmt;
 };
-
-
 
 
 struct r200_context {
@@ -793,6 +851,10 @@ struct r200_context {
    struct r200_ioctl ioctl;
    struct r200_dma dma;
    struct r200_store store;
+   /* A full state emit as of the first state emit in the main store, in case
+    * the context is lost.
+    */
+   struct r200_store backup_store;
 
    /* Page flipping
     */
@@ -803,7 +865,7 @@ struct r200_context {
    GLuint do_usleeps;
    GLuint do_irqs;
    GLuint irqsEmitted;
-   drmRadeonIrqWait iw;
+   drm_radeon_irq_wait_t iw;
 
    /* Clientdata textures;
     */
@@ -812,11 +874,12 @@ struct r200_context {
    /* Drawable, cliprect and scissor information
     */
    GLuint numClipRects;			/* Cliprects for the draw buffer */
-   XF86DRIClipRectPtr pClipRects;
+   drm_clip_rect_t *pClipRects;
    unsigned int lastStamp;
    GLboolean lost_context;
+   GLboolean save_on_next_emit;
    r200ScreenPtr r200Screen;	/* Screen private DRI data */
-   RADEONSAREAPrivPtr sarea;		/* Private SAREA data */
+   drm_radeon_sarea_t *sarea;		/* Private SAREA data */
 
    /* TCL stuff
     */
@@ -880,8 +943,6 @@ static __inline GLuint r200PackColor( GLuint cpp,
       return 0;
    }
 }
-
-#define R200_OLD_PACKETS 0
 
 
 extern void r200DestroyContext( __DRIcontextPrivate *driContextPriv );

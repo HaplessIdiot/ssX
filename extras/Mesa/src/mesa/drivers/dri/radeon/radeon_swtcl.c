@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.1.1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_swtcl.c,v 1.1.1.3 2004/12/10 15:06:18 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -70,8 +70,8 @@ static void flush_last_swtcl_prim( radeonContextPtr rmesa  );
 
 static struct {
    void                (*emit)( GLcontext *, GLuint, GLuint, void *, GLuint );
-   interp_func		interp;
-   copy_pv_func	        copy_pv;
+   tnl_interp_func		interp;
+   tnl_copy_pv_func	        copy_pv;
    GLboolean           (*check_tex_sizes)( GLcontext *ctx );
    GLuint               vertex_size;
    GLuint               vertex_format;
@@ -380,6 +380,8 @@ static void flush_last_swtcl_prim( radeonContextPtr rmesa  )
 	      current->ptr);
 
       if (rmesa->dma.current.start != rmesa->dma.current.ptr) {
+	 radeonEnsureCmdBufSpace( rmesa, VERT_AOS_BUFSZ +
+			          rmesa->hw.max_state_size + VBUF_BUFSZ );
 	 radeonEmitVertexAOS( rmesa,
 			      rmesa->swtcl.vertex_size,
 			      current_offset);
@@ -506,7 +508,7 @@ static __inline void radeonEltPrimitive( radeonContextPtr rmesa, GLenum prim )
 
 
 
-#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx)
+#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx); (void)rmesa
 #define ELTS_VARS( buf )  GLushort *dest = buf
 #define INIT( prim ) radeonDmaPrimitive( rmesa, prim )
 #define ELT_INIT(prim) radeonEltPrimitive( rmesa, prim )
@@ -598,7 +600,7 @@ static GLboolean radeon_run_render( GLcontext *ctx,
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
    TNLcontext *tnl = TNL_CONTEXT(ctx);
    struct vertex_buffer *VB = &tnl->vb;
-   render_func *tab = TAG(render_tab_verts);
+   tnl_render_func *tab = TAG(render_tab_verts);
    GLuint i;
 
    if (rmesa->swtcl.indexed_verts.buf && (!VB->Elts || stage->changed_inputs)) 
@@ -862,10 +864,10 @@ static void radeonResetLineStipple( GLcontext *ctx );
 
 
 static struct {
-   points_func	        points;
-   line_func		line;
-   triangle_func	triangle;
-   quad_func		quad;
+   tnl_points_func	        points;
+   tnl_line_func		line;
+   tnl_triangle_func	triangle;
+   tnl_quad_func		quad;
 } rast_tab[RADEON_MAX_TRIFUNC];
 
 
@@ -882,7 +884,6 @@ static struct {
 
 #define HAVE_RGBA   1
 #define HAVE_SPEC   1
-#define HAVE_INDEX  0
 #define HAVE_BACK_COLORS  0
 #define HAVE_HW_FLATSHADE 1
 #define TAB rast_tab

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.1.1.3 2004/06/10 14:23:02 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_screen.c,v 1.1.1.4 2004/12/10 15:05:58 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -50,9 +50,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "utils.h"
 #include "vblank.h"
-#ifndef _SOLO
-#include "glxextensions.h"
-#endif
+#include "GL/internal/dri_interface.h"
 
 /* R200 configuration
  */
@@ -64,6 +62,7 @@ DRI_CONF_BEGIN
         DRI_CONF_TCL_MODE(DRI_CONF_TCL_CODEGEN)
         DRI_CONF_FTHROTTLE_MODE(DRI_CONF_FTHROTTLE_IRQS)
         DRI_CONF_VBLANK_MODE(DRI_CONF_VBLANK_DEF_INTERVAL_0)
+        DRI_CONF_MAX_TEXTURE_UNITS(4,2,6)
     DRI_CONF_SECTION_END
     DRI_CONF_SECTION_QUALITY
         DRI_CONF_TEXTURE_DEPTH(DRI_CONF_TEXTURE_DEPTH_FB)
@@ -76,14 +75,18 @@ DRI_CONF_BEGIN
     DRI_CONF_SECTION_DEBUG
         DRI_CONF_NO_RAST(false)
     DRI_CONF_SECTION_END
+    DRI_CONF_SECTION_SOFTWARE
+        DRI_CONF_ARB_VERTEX_PROGRAM(true)
+        DRI_CONF_NV_VERTEX_PROGRAM(false)
+    DRI_CONF_SECTION_END
 DRI_CONF_END;
-static const GLuint __driNConfigOptions = 10;
+static const GLuint __driNConfigOptions = 13;
 
 #if 1
 /* Including xf86PciInfo.h introduces a bunch of errors...
  */
-#define PCI_CHIP_R200_QD	0x5144
-#define PCI_CHIP_R200_QE	0x5145
+#define PCI_CHIP_R200_QD	0x5144 /* why do they have r200 names? */
+#define PCI_CHIP_R200_QE	0x5145 /* Those are all standard radeons */
 #define PCI_CHIP_R200_QF	0x5146
 #define PCI_CHIP_R200_QG	0x5147
 #define PCI_CHIP_R200_QY	0x5159
@@ -92,6 +95,7 @@ static const GLuint __driNConfigOptions = 10;
 #define PCI_CHIP_R200_LY	0x4C59
 #define PCI_CHIP_R200_LZ	0x4C5A
 #define PCI_CHIP_RV200_QW	0x5157 /* Radeon 7500 - not an R200 at all */
+#define PCI_CHIP_RV200_QX       0x5158
 #define PCI_CHIP_RS100_4136     0x4136 /* IGP RS100, RS200, RS250 are not R200 */
 #define PCI_CHIP_RS200_4137     0x4137
 #define PCI_CHIP_RS250_4237     0x4237
@@ -102,6 +106,19 @@ static const GLuint __driNConfigOptions = 10;
 #define PCI_CHIP_RS300_5835     0x5835
 #define PCI_CHIP_RS300_5836     0x5836
 #define PCI_CHIP_RS300_5837     0x5837
+#define PCI_CHIP_R200_BB        0x4242 /* r200 (non-derived) start */
+#define PCI_CHIP_R200_BC        0x4243
+#define PCI_CHIP_R200_QH        0x5148
+#define PCI_CHIP_R200_QI        0x5149
+#define PCI_CHIP_R200_QJ        0x514A
+#define PCI_CHIP_R200_QK        0x514B
+#define PCI_CHIP_R200_QL        0x514C
+#define PCI_CHIP_R200_QM        0x514D
+#define PCI_CHIP_R200_QN        0x514E
+#define PCI_CHIP_R200_QO        0x514F /* r200 (non-derived) end */
+/* are the R200 Qh (0x5168) and following needed too? They are not in xf86PciInfo.h
+   but in the pci database. Maybe just secondary ports or something ? */
+
 #endif
 
 #ifdef USE_NEW_INTERFACE
@@ -113,74 +130,6 @@ static r200ScreenPtr __r200Screen;
 static int getSwapInfo( __DRIdrawablePrivate *dPriv, __DRIswapInfo * sInfo );
 
 #ifdef USE_NEW_INTERFACE
-static __GLcontextModes * fill_in_modes( __GLcontextModes * modes,
-					 unsigned pixel_bits, 
-					 unsigned depth_bits,
-					 unsigned stencil_bits,
-					 const GLenum * db_modes,
-					 unsigned num_db_modes,
-					 int visType )
-{
-    static const uint8_t bits[2][4] = {
-	{          5,          6,          5,          0 },
-	{          8,          8,          8,          8 }
-    };
-
-    static const uint32_t masks[2][4] = {
-	{ 0x0000F800, 0x000007E0, 0x0000001F, 0x00000000 },
-	{ 0x00FF0000, 0x0000FF00, 0x000000FF, 0xFF000000 }
-    };
-
-    unsigned   i;
-    unsigned   j;
-    const unsigned index = ((pixel_bits + 15) / 16) - 1;
-
-    for ( i = 0 ; i < num_db_modes ; i++ ) {
-	for ( j = 0 ; j < 2 ; j++ ) {
-
-	    modes->redBits   = bits[index][0];
-	    modes->greenBits = bits[index][1];
-	    modes->blueBits  = bits[index][2];
-	    modes->alphaBits = bits[index][3];
-	    modes->redMask   = masks[index][0];
-	    modes->greenMask = masks[index][1];
-	    modes->blueMask  = masks[index][2];
-	    modes->alphaMask = masks[index][3];
-	    modes->rgbBits   = modes->redBits + modes->greenBits
-		+ modes->blueBits + modes->alphaBits;
-
-	    modes->accumRedBits   = 16 * j;
-	    modes->accumGreenBits = 16 * j;
-	    modes->accumBlueBits  = 16 * j;
-	    modes->accumAlphaBits = (masks[index][3] != 0) ? 16 * j : 0;
-	    modes->visualRating = (j == 0) ? GLX_NONE : GLX_SLOW_CONFIG;
-
-	    modes->stencilBits = stencil_bits;
-	    modes->depthBits = depth_bits;
-
-	    modes->visualType = visType;
-	    modes->renderType = GLX_RGBA_BIT;
-	    modes->drawableType = GLX_WINDOW_BIT;
-	    modes->rgbMode = GL_TRUE;
-
-	    if ( db_modes[i] == GLX_NONE ) {
-		modes->doubleBufferMode = GL_FALSE;
-	    }
-	    else {
-		modes->doubleBufferMode = GL_TRUE;
-		modes->swapMethod = db_modes[i];
-	    }
-
-	    modes = modes->next;
-	}
-    }
-    
-    return modes;
-}
-#endif /* USE_NEW_INTERFACE */
-
-
-#ifdef USE_NEW_INTERFACE
 static __GLcontextModes *
 r200FillInModes( unsigned pixel_bits, unsigned depth_bits,
 		 unsigned stencil_bits, GLboolean have_back_buffer )
@@ -190,7 +139,8 @@ r200FillInModes( unsigned pixel_bits, unsigned depth_bits,
     unsigned num_modes;
     unsigned depth_buffer_factor;
     unsigned back_buffer_factor;
-    unsigned i;
+    GLenum fb_format;
+    GLenum fb_type;
 
     /* Right now GLX_SWAP_COPY_OML isn't supported, but it would be easy
      * enough to add support.  Basically, if a context is created with an
@@ -201,38 +151,52 @@ r200FillInModes( unsigned pixel_bits, unsigned depth_bits,
 	GLX_NONE, GLX_SWAP_UNDEFINED_OML /*, GLX_SWAP_COPY_OML */
     };
 
-    int depth_buffer_modes[2][2];
+    uint8_t depth_bits_array[2];
+    uint8_t stencil_bits_array[2];
 
 
-    depth_buffer_modes[0][0] = depth_bits;
-    depth_buffer_modes[1][0] = depth_bits;
+    depth_bits_array[0] = depth_bits;
+    depth_bits_array[1] = depth_bits;
     
     /* Just like with the accumulation buffer, always provide some modes
      * with a stencil buffer.  It will be a sw fallback, but some apps won't
      * care about that.
      */
-    depth_buffer_modes[0][1] = 0;
-    depth_buffer_modes[1][1] = (stencil_bits == 0) ? 8 : stencil_bits;
+    stencil_bits_array[0] = 0;
+    stencil_bits_array[1] = (stencil_bits == 0) ? 8 : stencil_bits;
 
     depth_buffer_factor = ((depth_bits != 0) || (stencil_bits != 0)) ? 2 : 1;
     back_buffer_factor  = (have_back_buffer) ? 2 : 1;
 
     num_modes = depth_buffer_factor * back_buffer_factor * 4;
 
-    modes = (*create_context_modes)( num_modes, sizeof( __GLcontextModes ) );
-    m = modes;
-    for ( i = 0 ; i < depth_buffer_factor ; i++ ) {
-	m = fill_in_modes( m, pixel_bits, 
-			   depth_buffer_modes[i][0], depth_buffer_modes[i][1],
-			   back_buffer_modes, back_buffer_factor,
-			   GLX_TRUE_COLOR );
+    if ( pixel_bits == 16 ) {
+        fb_format = GL_RGB;
+        fb_type = GL_UNSIGNED_SHORT_5_6_5;
+    }
+    else {
+        fb_format = GL_BGRA;
+        fb_type = GL_UNSIGNED_INT_8_8_8_8_REV;
     }
 
-    for ( i = 0 ; i < depth_buffer_factor ; i++ ) {
-	m = fill_in_modes( m, pixel_bits, 
-			   depth_buffer_modes[i][0], depth_buffer_modes[i][1],
+    modes = (*create_context_modes)( num_modes, sizeof( __GLcontextModes ) );
+    m = modes;
+    if ( ! driFillInModes( & m, fb_format, fb_type,
+			   depth_bits_array, stencil_bits_array, depth_buffer_factor,
 			   back_buffer_modes, back_buffer_factor,
-			   GLX_DIRECT_COLOR );
+			   GLX_TRUE_COLOR ) ) {
+	fprintf( stderr, "[%s:%u] Error creating FBConfig!\n",
+		 __func__, __LINE__ );
+	return NULL;
+    }
+
+    if ( ! driFillInModes( & m, fb_format, fb_type,
+			   depth_bits_array, stencil_bits_array, depth_buffer_factor,
+			   back_buffer_modes, back_buffer_factor,
+			   GLX_DIRECT_COLOR ) ) {
+	fprintf( stderr, "[%s:%u] Error creating FBConfig!\n",
+		 __func__, __LINE__ );
+	return NULL;
     }
 
     /* Mark the visual as slow if there are "fake" stencil bits.
@@ -257,8 +221,6 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    RADEONDRIPtr dri_priv = (RADEONDRIPtr)sPriv->pDevPriv;
    unsigned char *RADEONMMIO;
 
-   if ( ! driCheckDriDdxDrmVersions( sPriv, "R200", 4, 0, 4, 0, 1, 5 ) )
-      return NULL;
 
    /* Allocate the private area */
    screen = (r200ScreenPtr) CALLOC( sizeof(*screen) );
@@ -277,6 +239,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    case PCI_CHIP_R200_QY:
    case PCI_CHIP_R200_QZ:
    case PCI_CHIP_RV200_QW:
+   case PCI_CHIP_RV200_QX:
    case PCI_CHIP_R200_LW:
    case PCI_CHIP_R200_LY:
    case PCI_CHIP_R200_LZ:
@@ -296,6 +259,18 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    case PCI_CHIP_RS300_5837:
       break;
 
+   case PCI_CHIP_R200_BB:
+   case PCI_CHIP_R200_BC:
+   case PCI_CHIP_R200_QH:
+   case PCI_CHIP_R200_QI:
+   case PCI_CHIP_R200_QJ:
+   case PCI_CHIP_R200_QK:
+   case PCI_CHIP_R200_QL:
+   case PCI_CHIP_R200_QM:
+   case PCI_CHIP_R200_QN:
+   case PCI_CHIP_R200_QO:
+      screen->chipset |= R200_CHIPSET_REAL_R200;
+   /* fallthrough */
    default:
       screen->chipset |= R200_CHIPSET_TCL;
       break;
@@ -312,7 +287,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 
    {
       int ret;
-      drmRadeonGetParam gp;
+      drm_radeon_getparam_t gp;
 
       gp.param = RADEON_PARAM_GART_BUFFER_OFFSET;
       gp.value = &screen->gart_buffer_offset;
@@ -351,6 +326,10 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 
 	 /* Check if kernel module is new enough to support cube maps */
 	 screen->drmSupportsCubeMaps = (sPriv->drmMinor >= 7);
+	 /* Check if kernel module is new enough to support blend color and
+            separate blend functions/equations */
+         screen->drmSupportsBlendColor = (sPriv->drmMinor >= 11);
+
       }
    }
 
@@ -378,7 +357,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
       __driUtilMessage("%s: drmMap (2) failed\n", __FUNCTION__ );
       return NULL;
    }
-   screen->scratch = (__volatile__ CARD32 *)
+   screen->scratch = (__volatile__ uint32_t *)
       ((GLubyte *)screen->status.map + RADEON_SCRATCH_REG_OFFSET);
 
    screen->buffers = drmMapBufs( sPriv->fd );
@@ -419,7 +398,7 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    screen->fbLocation	= ( INREG( RADEON_MC_FB_LOCATION ) & 0xffff ) << 16;
 
    if ( sPriv->drmMinor >= 10 ) {
-      drmRadeonSetParam sp;
+      drm_radeon_setparam_t sp;
 
       sp.param = RADEON_SETPARAM_FB_LOCATION;
       sp.value = screen->fbLocation;
@@ -435,28 +414,28 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
    screen->depthOffset	= dri_priv->depthOffset;
    screen->depthPitch	= dri_priv->depthPitch;
 
-   screen->texOffset[RADEON_CARD_HEAP] = dri_priv->textureOffset
+   screen->texOffset[RADEON_LOCAL_TEX_HEAP] = dri_priv->textureOffset
 				       + screen->fbLocation;
-   screen->texSize[RADEON_CARD_HEAP] = dri_priv->textureSize;
-   screen->logTexGranularity[RADEON_CARD_HEAP] =
+   screen->texSize[RADEON_LOCAL_TEX_HEAP] = dri_priv->textureSize;
+   screen->logTexGranularity[RADEON_LOCAL_TEX_HEAP] =
       dri_priv->log2TexGran;
 
    if ( !screen->gartTextures.map ) {
       screen->numTexHeaps = RADEON_NR_TEX_HEAPS - 1;
-      screen->texOffset[RADEON_GART_HEAP] = 0;
-      screen->texSize[RADEON_GART_HEAP] = 0;
-      screen->logTexGranularity[RADEON_GART_HEAP] = 0;
+      screen->texOffset[RADEON_GART_TEX_HEAP] = 0;
+      screen->texSize[RADEON_GART_TEX_HEAP] = 0;
+      screen->logTexGranularity[RADEON_GART_TEX_HEAP] = 0;
    } else {
       screen->numTexHeaps = RADEON_NR_TEX_HEAPS;
-      screen->texOffset[RADEON_GART_HEAP] = screen->gart_texture_offset;
-      screen->texSize[RADEON_GART_HEAP] = dri_priv->gartTexMapSize;
-      screen->logTexGranularity[RADEON_GART_HEAP] =
+      screen->texOffset[RADEON_GART_TEX_HEAP] = screen->gart_texture_offset;
+      screen->texSize[RADEON_GART_TEX_HEAP] = dri_priv->gartTexMapSize;
+      screen->logTexGranularity[RADEON_GART_TEX_HEAP] =
 	 dri_priv->log2GARTTexGran;
    }
 
    screen->driScreen = sPriv;
    screen->sarea_priv_offset = dri_priv->sarea_priv_offset;
-#ifndef _SOLO
+
    if ( driCompareGLXAPIVersion( 20030813 ) >= 0 ) {
       PFNGLXSCRENABLEEXTENSIONPROC glx_enable_extension =
           (PFNGLXSCRENABLEEXTENSIONPROC) glXGetProcAddress( (const GLubyte *) "__glXScrEnableExtension" );
@@ -485,7 +464,6 @@ r200CreateScreen( __DRIscreenPrivate *sPriv )
 	 }
       }
    }
-#endif
    return screen;
 }
 
@@ -580,8 +558,6 @@ static const struct __DriverAPIRec r200API = {
    .SwapBuffers     = r200SwapBuffers,
    .MakeCurrent     = r200MakeCurrent,
    .UnbindContext   = r200UnbindContext,
-   .OpenFullScreen  = NULL,
-   .CloseFullScreen = NULL,
    .GetSwapInfo     = getSwapInfo,
    .GetMSC          = driGetMSC32,
    .WaitForMSC      = driWaitForMSC32,
@@ -596,7 +572,7 @@ static const struct __DriverAPIRec r200API = {
  * Return:  pointer to a __DRIscreenPrivate.
  *
  */
-#ifndef _SOLO 
+#if !defined(DRI_NEW_INTERFACE_ONLY)
 void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
                         int numConfigs, __GLXvisualConfig *config)
 {
@@ -604,15 +580,7 @@ void *__driCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
    psp = __driUtilCreateScreen(dpy, scrn, psc, numConfigs, config, &r200API);
    return (void *) psp;
 }
-#else
-void *__driCreateScreen(struct DRIDriverRec *driver,
-                        struct DRIDriverContextRec *driverContext)
-{
-   __DRIscreenPrivate *psp;
-   psp = __driUtilCreateScreen(driver, driverContext, &r200API);
-   return (void *) psp;
-}
-#endif
+#endif /* !defined(DRI_NEW_INTERFACE_ONLY) */
 
 
 /**
@@ -626,7 +594,7 @@ void *__driCreateScreen(struct DRIDriverRec *driver,
  *         failure.
  */
 #ifdef USE_NEW_INTERFACE
-void * __driCreateNewScreen( Display *dpy, int scrn, __DRIscreen *psc,
+void * __driCreateNewScreen( __DRInativeDisplay *dpy, int scrn, __DRIscreen *psc,
 			     const __GLcontextModes * modes,
 			     const __DRIversion * ddx_version,
 			     const __DRIversion * dri_version,
@@ -638,21 +606,31 @@ void * __driCreateNewScreen( Display *dpy, int scrn, __DRIscreen *psc,
 			     
 {
    __DRIscreenPrivate *psp;
+   static const __DRIversion ddx_expected = { 4, 0, 0 };
+   static const __DRIversion dri_expected = { 4, 0, 0 };
+   static const __DRIversion drm_expected = { 1, 5, 0 };
 
+   if ( ! driCheckDriDdxDrmVersions2( "R200",
+				      dri_version, & dri_expected,
+				      ddx_version, & ddx_expected,
+				      drm_version, & drm_expected ) ) {
+      return NULL;
+   }
+      
    psp = __driUtilCreateNewScreen(dpy, scrn, psc, NULL,
 				  ddx_version, dri_version, drm_version,
 				  frame_buffer, pSAREA, fd,
 				  internal_api_version, &r200API);
-
-
-   create_context_modes = 
-       (PFNGLXCREATECONTEXTMODES) glXGetProcAddress( (const GLubyte *) "__glXCreateContextModes" );
-   if ( create_context_modes != NULL ) {
-      RADEONDRIPtr dri_priv = (RADEONDRIPtr) psp->pDevPriv;
-      *driver_modes = r200FillInModes( dri_priv->bpp,
-				       (dri_priv->bpp == 16) ? 16 : 24,
-				       (dri_priv->bpp == 16) ? 0  : 8,
-				       (dri_priv->backOffset != dri_priv->depthOffset) );
+   if ( psp != NULL ) {
+      create_context_modes = (PFNGLXCREATECONTEXTMODES)
+	  glXGetProcAddress( (const GLubyte *) "__glXCreateContextModes" );
+      if ( create_context_modes != NULL ) {
+	 RADEONDRIPtr dri_priv = (RADEONDRIPtr) psp->pDevPriv;
+	 *driver_modes = r200FillInModes( dri_priv->bpp,
+					  (dri_priv->bpp == 16) ? 16 : 24,
+					  (dri_priv->bpp == 16) ? 0  : 8,
+					  (dri_priv->backOffset != dri_priv->depthOffset) );
+      }
    }
 
    return (void *) psp;

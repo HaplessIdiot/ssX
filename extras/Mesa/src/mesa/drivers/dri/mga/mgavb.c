@@ -24,8 +24,9 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgavb.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgavb.c,v 1.1.1.2 2004/12/10 15:05:40 alanh Exp $ */
 
+#include <stdlib.h>
 #include "mgacontext.h"
 #include "mgavb.h"
 #include "mgatris.h"
@@ -54,8 +55,8 @@
 
 static struct {
    void                (*emit)( GLcontext *, GLuint, GLuint, void *, GLuint );
-   interp_func		interp;
-   copy_pv_func	        copy_pv;
+   tnl_interp_func		interp;
+   tnl_copy_pv_func	        copy_pv;
    GLboolean           (*check_tex_sizes)( GLcontext *ctx );
    GLuint               vertex_size;
    GLuint               vertex_format;

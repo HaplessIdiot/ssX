@@ -25,7 +25,7 @@
  *    Keith Whitwell <keith@tungstengraphics.com>
  *    Gareth Hughes <gareth@valinux.com>
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgaioctl.c,v 1.1.1.2 2004/06/10 14:22:55 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgaioctl.c,v 1.1.1.3 2004/12/10 15:05:39 alanh Exp $ */
 
 #include <errno.h>
 #include "mtypes.h"
@@ -34,6 +34,8 @@
 #include "swrast/swrast.h"
 
 #include "mm.h"
+#include "drm.h"
+#include "mga_drm.h"
 #include "mgacontext.h"
 #include "mgadd.h"
 #include "mgastate.h"
@@ -41,7 +43,6 @@
 #include "mgavb.h"
 #include "mgaioctl.h"
 #include "mgatris.h"
-#include "mga_common.h"
 
 #include "vblank.h"
 
@@ -51,7 +52,7 @@ static void mga_iload_dma_ioctl(mgaContextPtr mmesa,
 				int length)
 {
    drmBufPtr buf = mmesa->iload_buffer;
-   drmMGAIload iload;
+   drm_mga_iload_t iload;
    int ret, i;
 
    if (MGA_DEBUG&DEBUG_VERBOSE_IOCTL)
@@ -72,7 +73,7 @@ static void mga_iload_dma_ioctl(mgaContextPtr mmesa,
    i = 0;
    do {
       ret = drmCommandWrite( mmesa->driFd, DRM_MGA_ILOAD, 
-                             &iload, sizeof(drmMGAIload) );
+                             &iload, sizeof(iload) );
    } while ( ret == -EBUSY && i++ < DRM_MGA_IDLE_RETRY );
 
    if ( ret < 0 ) {
@@ -170,7 +171,7 @@ mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    int ret;
    int i;
    static int nrclears;
-   drmMGAClearRec clear;
+   drm_mga_clear_t clear;
 
    FLUSH_BATCH( mmesa );
 
@@ -218,8 +219,8 @@ mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       for (i = 0 ; i < mmesa->numClipRects ; )
       {
 	 int nr = MIN2(i + MGA_NR_SAREA_CLIPRECTS, mmesa->numClipRects);
-	 XF86DRIClipRectPtr box = mmesa->pClipRects;
-	 XF86DRIClipRectPtr b = mmesa->sarea->boxes;
+	 drm_clip_rect_t *box = mmesa->pClipRects;
+	 drm_clip_rect_t *b = mmesa->sarea->boxes;
 	 int n = 0;
 
 	 if (!all) {
@@ -245,7 +246,7 @@ mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	    }
 	 } else {
 	    for ( ; i < nr ; i++) {
-	       *b++ = *(XF86DRIClipRectPtr)&box[i];
+	       *b++ = box[i];
 	       n++;
 	    }
 	 }
@@ -264,7 +265,7 @@ mgaClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
          clear.color_mask = color_mask;
          clear.depth_mask = depth_mask;
          ret = drmCommandWrite( mmesa->driFd, DRM_MGA_CLEAR,
-                                 &clear, sizeof(drmMGAClearRec));
+                                 &clear, sizeof(clear));
 	 if ( ret ) {
 	    fprintf( stderr, "send clear retcode = %d\n", ret );
 	    exit( 1 );
@@ -325,7 +326,7 @@ static void mgaWaitForFrameCompletion( mgaContextPtr mmesa )
 void mgaCopyBuffer( const __DRIdrawablePrivate *dPriv )
 {
    mgaContextPtr mmesa;
-   XF86DRIClipRectPtr pbox;
+   drm_clip_rect_t *pbox;
    GLint nbox;
    GLint ret;
    GLint i;
@@ -363,7 +364,7 @@ void mgaCopyBuffer( const __DRIdrawablePrivate *dPriv )
    for (i = 0 ; i < nbox ; )
    {
       int nr = MIN2(i + MGA_NR_SAREA_CLIPRECTS, dPriv->numClipRects);
-      XF86DRIClipRectPtr b = mmesa->sarea->boxes;
+      drm_clip_rect_t *b = mmesa->sarea->boxes;
 
       mmesa->sarea->nbox = nr - i;
 
@@ -428,9 +429,9 @@ void mgaWaitAge( mgaContextPtr mmesa, int age  )
 }
 
 
-static GLboolean intersect_rect( XF86DRIClipRectPtr out,
-				 const XF86DRIClipRectPtr a,
-				 const XF86DRIClipRectPtr b )
+static GLboolean intersect_rect( drm_clip_rect_t *out,
+				 const drm_clip_rect_t *a,
+				 const drm_clip_rect_t *b )
 {
    *out = *a;
    if (b->x1 > out->x1) out->x1 = b->x1;
@@ -456,10 +457,10 @@ static int __break_vertex = 0;
 
 void mgaFlushVerticesLocked( mgaContextPtr mmesa )
 {
-   XF86DRIClipRectPtr pbox = mmesa->pClipRects;
+   drm_clip_rect_t *pbox = mmesa->pClipRects;
    int nbox = mmesa->numClipRects;
    drmBufPtr buffer = mmesa->vertex_dma_buffer;
-   drmMGAVertex vertex;
+   drm_mga_vertex_t vertex;
    int i;
 
    mmesa->vertex_dma_buffer = 0;
@@ -508,7 +509,7 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
       for (i = 0 ; i < nbox ; )
       {
 	 int nr = MIN2(i + MGA_NR_SAREA_CLIPRECTS, nbox);
-	 XF86DRIClipRectPtr b = mmesa->sarea->boxes;
+	 drm_clip_rect_t *b = mmesa->sarea->boxes;
 	 int discard = 0;
 
 	 if (mmesa->scissor) {
@@ -545,7 +546,7 @@ void mgaFlushVerticesLocked( mgaContextPtr mmesa )
          vertex.used = buffer->used;
          vertex.discard = discard;
          drmCommandWrite( mmesa->driFd, DRM_MGA_VERTEX,
-                          &vertex, sizeof(drmMGAVertex) );
+                          &vertex, sizeof(vertex) );
 
 	 age_mmesa(mmesa, mmesa->sarea->last_enqueue);
       }
@@ -622,7 +623,7 @@ static void mgaFlush( GLcontext *ctx )
 
 void mgaReleaseBufLocked( mgaContextPtr mmesa, drmBufPtr buffer )
 {
-   drmMGAVertex vertex;
+   drm_mga_vertex_t vertex;
 
    if (!buffer) return;
 
@@ -630,22 +631,22 @@ void mgaReleaseBufLocked( mgaContextPtr mmesa, drmBufPtr buffer )
    vertex.used = 0;
    vertex.discard = 1;
    drmCommandWrite( mmesa->driFd, DRM_MGA_VERTEX, 
-                    &vertex, sizeof(drmMGAVertex) );
+                    &vertex, sizeof(vertex) );
 }
 
 int mgaFlushDMA( int fd, drmLockFlags flags )
 {
-   drmMGALock lock;
+   drm_lock_t lock;
    int ret, i = 0;
 
-   memset( &lock, 0, sizeof(drmMGALock) );
+   memset( &lock, 0, sizeof(lock) );
 
    if ( flags & DRM_LOCK_QUIESCENT )    lock.flags |= DRM_LOCK_QUIESCENT;
    if ( flags & DRM_LOCK_FLUSH )        lock.flags |= DRM_LOCK_FLUSH;
    if ( flags & DRM_LOCK_FLUSH_ALL )    lock.flags |= DRM_LOCK_FLUSH_ALL;
 
    do {
-      ret = drmCommandWrite( fd, DRM_MGA_FLUSH, &lock, sizeof(drmMGALock) );
+      ret = drmCommandWrite( fd, DRM_MGA_FLUSH, &lock, sizeof(lock) );
    } while ( ret && errno == EBUSY && i++ < DRM_MGA_IDLE_RETRY );
 
    if ( ret == 0 )
@@ -659,7 +660,7 @@ int mgaFlushDMA( int fd, drmLockFlags flags )
       lock.flags &= ~(DRM_LOCK_FLUSH | DRM_LOCK_FLUSH_ALL);
 
       do {
-         ret = drmCommandWrite( fd, DRM_MGA_FLUSH, &lock, sizeof(drmMGALock) );
+         ret = drmCommandWrite( fd, DRM_MGA_FLUSH, &lock, sizeof(lock) );
       } while ( ret && errno == EBUSY && i++ < DRM_MGA_IDLE_RETRY );
    }
 

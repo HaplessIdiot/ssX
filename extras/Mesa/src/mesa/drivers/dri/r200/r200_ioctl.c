@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.1.1.2 2004/06/10 14:23:01 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_ioctl.c,v 1.1.1.3 2004/12/10 15:05:57 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -59,10 +59,40 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 static void r200WaitForIdle( r200ContextPtr rmesa );
 
 
+/* At this point we were in FlushCmdBufLocked but we had lost our context, so
+ * we need to unwire our current cmdbuf, hook the one with the saved state in
+ * it, flush it, and then put the current one back.  This is so commands at the
+ * start of a cmdbuf can rely on the state being kept from the previous one.
+ */
+static void r200BackUpAndEmitLostStateLocked( r200ContextPtr rmesa )
+{
+   GLuint nr_released_bufs;
+   struct r200_store saved_store;
+
+   if (rmesa->backup_store.cmd_used == 0)
+      return;
+
+   if (R200_DEBUG & DEBUG_STATE)
+      fprintf(stderr, "Emitting backup state on lost context\n");
+
+   rmesa->lost_context = GL_FALSE;
+
+   nr_released_bufs = rmesa->dma.nr_released_bufs;
+   saved_store = rmesa->store;
+   rmesa->dma.nr_released_bufs = 0;
+   rmesa->store = rmesa->backup_store;
+   r200FlushCmdBufLocked( rmesa, __FUNCTION__ );
+   rmesa->dma.nr_released_bufs = nr_released_bufs;
+   rmesa->store = saved_store;
+}
+
 int r200FlushCmdBufLocked( r200ContextPtr rmesa, const char * caller )
 {
    int ret, i;
-   drmRadeonCmdBuffer cmd;
+   drm_radeon_cmd_buffer_t cmd;
+
+   if (rmesa->lost_context)
+      r200BackUpAndEmitLostStateLocked( rmesa );
 
    if (R200_DEBUG & DEBUG_IOCTL) {
       fprintf(stderr, "%s from %s\n", __FUNCTION__, caller); 
@@ -108,10 +138,10 @@ int r200FlushCmdBufLocked( r200ContextPtr rmesa, const char * caller )
 
    if (rmesa->state.scissor.enabled) {
       cmd.nbox = rmesa->state.scissor.numClipRects;
-      cmd.boxes = (drmClipRect *)rmesa->state.scissor.pClipRects;
+      cmd.boxes = (drm_clip_rect_t *)rmesa->state.scissor.pClipRects;
    } else {
       cmd.nbox = rmesa->numClipRects;
-      cmd.boxes = (drmClipRect *)rmesa->pClipRects;
+      cmd.boxes = (drm_clip_rect_t *)rmesa->pClipRects;
    }
 
    ret = drmCommandWrite( rmesa->dri.fd,
@@ -132,7 +162,8 @@ int r200FlushCmdBufLocked( r200ContextPtr rmesa, const char * caller )
    rmesa->store.statenr = 0;
    rmesa->store.cmd_used = 0;
    rmesa->dma.nr_released_bufs = 0;
-   rmesa->lost_context = 1;	
+   rmesa->save_on_next_emit = 1;
+
    return ret;
 }
 
@@ -243,13 +274,13 @@ void r200ReleaseDmaRegion( r200ContextPtr rmesa,
       rmesa->dma.flush( rmesa );
 
    if (--region->buf->refcount == 0) {
-      drmRadeonCmdHeader *cmd;
+      drm_radeon_cmd_header_t *cmd;
 
       if (R200_DEBUG & (DEBUG_IOCTL|DEBUG_DMA))
 	 fprintf(stderr, "%s -- DISCARD BUF %d\n", __FUNCTION__,
 		 region->buf->buf->idx);  
       
-      cmd = (drmRadeonCmdHeader *)r200AllocCmdBuf( rmesa, sizeof(*cmd), 
+      cmd = (drm_radeon_cmd_header_t *)r200AllocCmdBuf( rmesa, sizeof(*cmd), 
 						     __FUNCTION__ );
       cmd->dma.cmd_type = RADEON_CMD_DMA_DISCARD;
       cmd->dma.buf_idx = region->buf->buf->idx;
@@ -312,11 +343,11 @@ void r200AllocDmaRegionVerts( r200ContextPtr rmesa,
  * SwapBuffers with client-side throttling
  */
 
-static CARD32 r200GetLastFrame(r200ContextPtr rmesa)
+static uint32_t r200GetLastFrame(r200ContextPtr rmesa)
 {
-   drmRadeonGetParam gp;
+   drm_radeon_getparam_t gp;
    int ret;
-   CARD32 frame;
+   uint32_t frame;
 
    gp.param = RADEON_PARAM_LAST_FRAME;
    gp.value = (int *)&frame;
@@ -332,7 +363,7 @@ static CARD32 r200GetLastFrame(r200ContextPtr rmesa)
 
 static void r200EmitIrqLocked( r200ContextPtr rmesa )
 {
-   drmRadeonIrqEmit ie;
+   drm_radeon_irq_emit_t ie;
    int ret;
 
    ie.irq_seq = &rmesa->iw.irq_seq;
@@ -363,7 +394,7 @@ static void r200WaitIrq( r200ContextPtr rmesa )
 
 static void r200WaitForFrameCompletion( r200ContextPtr rmesa )
 {
-   RADEONSAREAPrivPtr sarea = rmesa->sarea;
+   drm_radeon_sarea_t *sarea = rmesa->sarea;
 
    if (rmesa->do_irqs) {
       if (r200GetLastFrame(rmesa) < sarea->last_frame) {
@@ -432,8 +463,8 @@ void r200CopyBuffer( const __DRIdrawablePrivate *dPriv )
 
    for ( i = 0 ; i < nbox ; ) {
       GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS , nbox );
-      XF86DRIClipRectPtr box = dPriv->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
+      drm_clip_rect_t *box = dPriv->pClipRects;
+      drm_clip_rect_t *b = rmesa->sarea->boxes;
       GLint n = 0;
 
       for ( ; i < nr ; i++ ) {
@@ -452,7 +483,7 @@ void r200CopyBuffer( const __DRIdrawablePrivate *dPriv )
    }
 
    UNLOCK_HARDWARE( rmesa );
-   rmesa->lost_context = 1;
+   rmesa->hw.all_dirty = GL_TRUE;
 
    rmesa->swap_count++;
    (*rmesa->get_ust)( & ust );
@@ -495,8 +526,8 @@ void r200PageFlip( const __DRIdrawablePrivate *dPriv )
    /* Need to do this for the perf box placement:
     */
    {
-      XF86DRIClipRectPtr box = dPriv->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
+      drm_clip_rect_t *box = dPriv->pClipRects;
+      drm_clip_rect_t *b = rmesa->sarea->boxes;
       b[0] = box[0];
       rmesa->sarea->nbox = 1;
    }
@@ -564,12 +595,7 @@ static void r200Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	 return;
    }
 
-   r200EmitState( rmesa );
-
-   /* Need to cope with lostcontext here as kernel relies on
-    * some residual state:
-    */
-   R200_FIREVERTICES( rmesa ); 
+   r200Flush( ctx );
 
    if ( mask & DD_FRONT_LEFT_BIT ) {
       flags |= RADEON_FRONT;
@@ -611,7 +637,7 @@ static void r200Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    /* Throttle the number of clear ioctls we do.
     */
    while ( 1 ) {
-      drmRadeonGetParam gp;
+      drm_radeon_getparam_t gp;
       int ret;
       int clear;
 
@@ -638,13 +664,15 @@ static void r200Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       }
    }
 
+   /* Send current state to the hardware */
+   r200FlushCmdBufLocked( rmesa, __FUNCTION__ );
 
    for ( i = 0 ; i < dPriv->numClipRects ; ) {
       GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, dPriv->numClipRects );
-      XF86DRIClipRectPtr box = dPriv->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
-      drmRadeonClearType clear;
-      drmRadeonClearRect depth_boxes[RADEON_NR_SAREA_CLIPRECTS];
+      drm_clip_rect_t *box = dPriv->pClipRects;
+      drm_clip_rect_t *b = rmesa->sarea->boxes;
+      drm_radeon_clear_t clear;
+      drm_radeon_clear_rect_t depth_boxes[RADEON_NR_SAREA_CLIPRECTS];
       GLint n = 0;
 
       if ( !all ) {
@@ -687,15 +715,15 @@ static void r200Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       n--;
       b = rmesa->sarea->boxes;
       for ( ; n >= 0 ; n-- ) {
-	 depth_boxes[n].f[RADEON_CLEAR_X1] = (float)b[n].x1;
-	 depth_boxes[n].f[RADEON_CLEAR_Y1] = (float)b[n].y1;
-	 depth_boxes[n].f[RADEON_CLEAR_X2] = (float)b[n].x2;
-	 depth_boxes[n].f[RADEON_CLEAR_Y2] = (float)b[n].y2;
-	 depth_boxes[n].f[RADEON_CLEAR_DEPTH] = ctx->Depth.Clear;
+	 depth_boxes[n].f[CLEAR_X1] = (float)b[n].x1;
+	 depth_boxes[n].f[CLEAR_Y1] = (float)b[n].y1;
+	 depth_boxes[n].f[CLEAR_X2] = (float)b[n].x2;
+	 depth_boxes[n].f[CLEAR_Y2] = (float)b[n].y2;
+	 depth_boxes[n].f[CLEAR_DEPTH] = ctx->Depth.Clear;
       }
 
       ret = drmCommandWrite( rmesa->dri.fd, DRM_RADEON_CLEAR,
-			     &clear, sizeof(drmRadeonClearType));
+			     &clear, sizeof(clear));
 
 
       if ( ret ) {
@@ -706,7 +734,7 @@ static void r200Clear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    }
 
    UNLOCK_HARDWARE( rmesa );
-   rmesa->lost_context = 1;
+   rmesa->hw.all_dirty = GL_TRUE;
 }
 
 
@@ -747,8 +775,7 @@ void r200Flush( GLcontext *ctx )
    if (rmesa->dma.flush)
       rmesa->dma.flush( rmesa );
 
-   if (!is_empty_list(&rmesa->hw.dirty)) 
-      r200EmitState( rmesa );
+   r200EmitState( rmesa );
    
    if (rmesa->store.cmd_used)
       r200FlushCmdBuf( rmesa, __FUNCTION__ );
@@ -782,14 +809,14 @@ void r200Finish( GLcontext *ctx )
  * the kernel data structures, and the current context to get the
  * device fd.
  */
-void *r200AllocateMemoryMESA(GLsizei size,
+void *r200AllocateMemoryMESA(__DRInativeDisplay *dpy, int scrn, GLsizei size,
 			     GLfloat readfreq, GLfloat writefreq, 
 			     GLfloat priority)
 {
    GET_CURRENT_CONTEXT(ctx);
    r200ContextPtr rmesa;
    int region_offset;
-   drmRadeonMemAlloc alloc;
+   drm_radeon_mem_alloc_t alloc;
    int ret;
 
    if (R200_DEBUG & DEBUG_IOCTL)
@@ -827,12 +854,12 @@ void *r200AllocateMemoryMESA(GLsizei size,
 
 
 /* Called via glXFreeMemoryMESA() */
-void r200FreeMemoryMESA(GLvoid *pointer)
+void r200FreeMemoryMESA(__DRInativeDisplay *dpy, int scrn, GLvoid *pointer)
 {
    GET_CURRENT_CONTEXT(ctx);
    r200ContextPtr rmesa;
-   int region_offset;
-   drmRadeonMemFree memfree;
+   ptrdiff_t region_offset;
+   drm_radeon_mem_free_t memfree;
    int ret;
 
    if (R200_DEBUG & DEBUG_IOCTL)
@@ -867,7 +894,7 @@ void r200FreeMemoryMESA(GLvoid *pointer)
 }
 
 /* Called via glXGetMemoryOffsetMESA() */
-GLuint r200GetMemoryOffsetMESA(const GLvoid *pointer)
+GLuint r200GetMemoryOffsetMESA(__DRInativeDisplay *dpy, int scrn, const GLvoid *pointer)
 {
    GET_CURRENT_CONTEXT(ctx);
    r200ContextPtr rmesa;
@@ -889,11 +916,10 @@ GLuint r200GetMemoryOffsetMESA(const GLvoid *pointer)
    return card_offset - rmesa->r200Screen->gart_base;
 }
 
-
 GLboolean r200IsGartMemory( r200ContextPtr rmesa, const GLvoid *pointer,
 			   GLint size )
 {
-   int offset = (char *)pointer - (char *)rmesa->r200Screen->gartTextures.map;
+   ptrdiff_t offset = (char *)pointer - (char *)rmesa->r200Screen->gartTextures.map;
    int valid = (size >= 0 &&
 		offset >= 0 &&
 		offset + size < rmesa->r200Screen->gartTextures.size);
@@ -907,7 +933,7 @@ GLboolean r200IsGartMemory( r200ContextPtr rmesa, const GLvoid *pointer,
 
 GLuint r200GartOffsetFromVirtual( r200ContextPtr rmesa, const GLvoid *pointer )
 {
-   int offset = (char *)pointer - (char *)rmesa->r200Screen->gartTextures.map;
+   ptrdiff_t offset = (char *)pointer - (char *)rmesa->r200Screen->gartTextures.map;
 
    if (offset < 0 || offset > rmesa->r200Screen->gartTextures.size)
       return ~0;

@@ -1,14 +1,6 @@
-/**
- * \file imports.h
- * Standard C library function wrappers.
- *
- * This file provides wrappers for all the standard C library functions
- * like malloc(), free(), printf(), getenv(), etc.
- */
-
 /*
  * Mesa 3-D graphics library
- * Version:  6.0
+ * Version:  6.2
  *
  * Copyright (C) 1999-2004  Brian Paul   All Rights Reserved.
  *
@@ -29,7 +21,16 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.4 2004/04/22 14:37:48 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/imports.h,v 1.5 2004/06/10 14:43:40 alanh Exp $ */
+
+/**
+ * \file imports.h
+ * Standard C library function wrappers.
+ *
+ * This file provides wrappers for all the standard C library functions
+ * like malloc(), free(), printf(), getenv(), etc.
+ */
+
 
 #ifndef IMPORTS_H
 #define IMPORTS_H
@@ -222,9 +223,12 @@ extern void _ext_mesa_free_pixelbuffer( void *pb );
  *** USE_IEEE: Determine if we're using IEEE floating point
  ***/
 #if defined(__i386__) || defined(__386__) || defined(__sparc__) || \
-    defined(__s390x__) || defined(__powerpc__) || defined(__mips__) || \
-    defined(__AMD64__) || defined(__amd64__) || \
+    defined(__s390x__) || defined(__powerpc__) || \
+    defined(__AMD64__) || \
     defined(ia64) || defined(__ia64__) || \
+    defined(__hppa__) || defined(hpux) || \
+    defined(__mips) || defined(_MIPS_ARCH) || \
+    defined(__arm__) || \
     (defined(__alpha__) && (defined(__IEEE_FLOAT) || !defined(VMS)))
 #define USE_IEEE
 #define IEEE_ONE 0x3f800000
@@ -309,7 +313,7 @@ static INLINE int IS_INF_OR_NAN( float x )
 #define IS_INF_OR_NAN(x)        (!isfinite(x))
 #elif defined(finite)
 #define IS_INF_OR_NAN(x)        (!finite(x))
-#elif __VMS
+#elif defined(__VMS)
 #define IS_INF_OR_NAN(x)        (!finite(x))
 #elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
 #define IS_INF_OR_NAN(x)        (!isfinite(x))
@@ -374,7 +378,8 @@ static INLINE int iround(float f)
    return r;
 }
 #define IROUND(x)  iround(x)
-#elif defined(USE_X86_ASM) && defined(__GNUC__) && defined(__i386__)
+#elif defined(USE_X86_ASM) && defined(__GNUC__) && defined(__i386__) && \
+			(!defined(__BEOS__) || (__GNUC__ > 2 || (__GNUC__ == 2 && __GNUC_MINOR__ >= 95)))
 static INLINE int iround(float f)
 {
    int r;
@@ -552,7 +557,7 @@ static INLINE int iceil(float f)
  ***/
 #if defined(USE_IEEE) && !defined(DEBUG)
 #define COPY_FLOAT( dst, src )					\
-	((fi_type *) &(dst))->i = ((fi_type *) &(src))->i
+	((fi_type *) &(dst))->i = ((fi_type *) (void *) &(src))->i
 #else
 #define COPY_FLOAT( dst, src )		(dst) = (src)
 #endif
@@ -706,11 +711,11 @@ _mesa_log2(float x);
 extern unsigned int
 _mesa_bitcount(unsigned int n);
 
-extern GLhalfNV
+extern GLhalfARB
 _mesa_float_to_half(float f);
 
 extern float
-_mesa_half_to_float(GLhalfNV h);
+_mesa_half_to_float(GLhalfARB h);
 
 
 extern char *

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_state_init.c,v 1.1.1.2 2004/06/10 14:23:08 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_state_init.c,v 1.1.1.3 2004/12/10 15:06:19 alanh Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -64,8 +64,9 @@ void radeonPrintDirty( radeonContextPtr rmesa, const char *msg )
    fprintf(stderr, msg);
    fprintf(stderr, ": ");
 
-   foreach(l, &(rmesa->hw.dirty)) {
-      fprintf(stderr, "%s, ", l->name);
+   foreach(l, &rmesa->hw.atomlist) {
+      if (l->dirty || rmesa->hw.all_dirty)
+	 fprintf(stderr, "%s, ", l->name);
    }
 
    fprintf(stderr, "\n");
@@ -73,7 +74,7 @@ void radeonPrintDirty( radeonContextPtr rmesa, const char *msg )
 
 static int cmdpkt( int id ) 
 {
-   drmRadeonCmdHeader h;
+   drm_radeon_cmd_header_t h;
    h.i = 0;
    h.packet.cmd_type = RADEON_CMD_PACKET;
    h.packet.packet_id = id;
@@ -82,7 +83,7 @@ static int cmdpkt( int id )
 
 static int cmdvec( int offset, int stride, int count ) 
 {
-   drmRadeonCmdHeader h;
+   drm_radeon_cmd_header_t h;
    h.i = 0;
    h.vectors.cmd_type = RADEON_CMD_VECTORS;
    h.vectors.offset = offset;
@@ -93,7 +94,7 @@ static int cmdvec( int offset, int stride, int count )
 
 static int cmdscl( int offset, int stride, int count ) 
 {
-   drmRadeonCmdHeader h;
+   drm_radeon_cmd_header_t h;
    h.i = 0;
    h.scalars.cmd_type = RADEON_CMD_SCALARS;
    h.scalars.offset = offset;
@@ -202,11 +203,7 @@ void radeonInitState( radeonContextPtr rmesa )
    rmesa->state.pixel.readOffset = rmesa->state.color.drawOffset;
    rmesa->state.pixel.readPitch  = rmesa->state.color.drawPitch;
 
-   /* Initialize lists:
-    */
-   make_empty_list(&(rmesa->hw.dirty));
-   make_empty_list(&(rmesa->hw.clean));
-
+   rmesa->hw.max_state_size = 0;
 
 #define ALLOC_STATE( ATOM, CHK, SZ, NM, FLAG )				\
    do {								\
@@ -216,7 +213,8 @@ void radeonInitState( radeonContextPtr rmesa )
       rmesa->hw.ATOM.name = NM;					\
       rmesa->hw.ATOM.is_tcl = FLAG;					\
       rmesa->hw.ATOM.check = check_##CHK;				\
-      insert_at_head(&(rmesa->hw.dirty), &(rmesa->hw.ATOM));	\
+      rmesa->hw.ATOM.dirty = GL_TRUE;				\
+      rmesa->hw.max_state_size += SZ * sizeof(int);		\
    } while (0)
       
       
@@ -259,6 +257,7 @@ void radeonInitState( radeonContextPtr rmesa )
    ALLOC_STATE( txr[0], txr0, TXR_STATE_SIZE, "TXR/txr-0", 0 );
    ALLOC_STATE( txr[1], txr1, TXR_STATE_SIZE, "TXR/txr-1", 0 );
 
+   radeonSetUpAtomList( rmesa );
 
    /* Fill in the packet headers:
     */
@@ -448,7 +447,7 @@ void radeonInitState( radeonContextPtr rmesa )
 
       /* Initialize the texture offset to the start of the card texture heap */
       rmesa->hw.tex[i].cmd[TEX_PP_TXOFFSET] =
-	  rmesa->radeonScreen->texOffset[RADEON_CARD_HEAP];
+	  rmesa->radeonScreen->texOffset[RADEON_LOCAL_TEX_HEAP];
 
       rmesa->hw.tex[i].cmd[TEX_PP_BORDER_COLOR] = 0;
       rmesa->hw.tex[i].cmd[TEX_PP_TXCBLEND] =  
@@ -555,4 +554,6 @@ void radeonInitState( radeonContextPtr rmesa )
    rmesa->hw.eye.cmd[EYE_Y] = 0;
    rmesa->hw.eye.cmd[EYE_Z] = IEEE_ONE;
    rmesa->hw.eye.cmd[EYE_RESCALE_FACTOR] = IEEE_ONE;
+   
+   rmesa->hw.all_dirty = GL_TRUE;
 }

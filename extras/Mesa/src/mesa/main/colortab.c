@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/colortab.c,v 1.2 2004/06/24 02:21:15 tsi Exp $ */
 
 #include "glheader.h"
 #include "imports.h"
@@ -175,11 +175,11 @@ set_component_sizes( struct gl_color_table *table )
  * Update/replace all or part of a color table.  Helper function
  * used by _mesa_ColorTable() and _mesa_ColorSubTable().
  * The table->Table buffer should already be allocated.
- * \param start - first entry to update
- * \param count - number of entries to update
- * \param format - format of user-provided table data
- * \param type - datatype of user-provided table data
- * \param data - user-provided table data
+ * \param start first entry to update
+ * \param count number of entries to update
+ * \param format format of user-provided table data
+ * \param type datatype of user-provided table data
+ * \param data user-provided table data
  * \param [rgba]Scale - RGBA scale factors
  * \param [rgba]Bias - RGBA bias factors
  */
@@ -414,7 +414,7 @@ _mesa_ColorTable( GLenum target, GLenum internalFormat,
 
    assert(table);
 
-   if (!_mesa_is_legal_format_and_type(format, type) ||
+   if (!_mesa_is_legal_format_and_type(ctx, format, type) ||
        format == GL_INTENSITY) {
       _mesa_error(ctx, GL_INVALID_OPERATION, "glColorTable(format or type)");
       return;
@@ -595,7 +595,7 @@ _mesa_ColorSubTable( GLenum target, GLsizei start,
 
    assert(table);
 
-   if (!_mesa_is_legal_format_and_type(format, type) ||
+   if (!_mesa_is_legal_format_and_type(ctx, format, type) ||
        format == GL_INTENSITY) {
       _mesa_error(ctx, GL_INVALID_OPERATION, "glColorSubTable(format or type)");
       return;

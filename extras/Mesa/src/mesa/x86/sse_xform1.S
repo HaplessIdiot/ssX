@@ -1,5 +1,5 @@
 /* $Id$ */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/x86/sse_xform1.S,v 1.2 2004/04/22 13:58:38 tsi Exp $ */
 
 /*
  * Mesa 3-D graphics library

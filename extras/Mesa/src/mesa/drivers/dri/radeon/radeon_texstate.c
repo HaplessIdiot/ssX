@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texstate.c,v 1.1.1.2 2004/06/10 14:23:10 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texstate.c,v 1.1.1.3 2004/12/10 15:06:19 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -50,14 +50,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_tcl.h"
 
 
+#define RADEON_TXFORMAT_A8        RADEON_TXFORMAT_I8
+#define RADEON_TXFORMAT_L8        RADEON_TXFORMAT_I8
 #define RADEON_TXFORMAT_AL88      RADEON_TXFORMAT_AI88
 #define RADEON_TXFORMAT_YCBCR     RADEON_TXFORMAT_YVYU422
 #define RADEON_TXFORMAT_YCBCR_REV RADEON_TXFORMAT_VYUY422
 
 #define _COLOR(f) \
     [ MESA_FORMAT_ ## f ] = { RADEON_TXFORMAT_ ## f, 0 }
+#define _COLOR_REV(f) \
+    [ MESA_FORMAT_ ## f ## _REV ] = { RADEON_TXFORMAT_ ## f, 0 }
 #define _ALPHA(f) \
     [ MESA_FORMAT_ ## f ] = { RADEON_TXFORMAT_ ## f | RADEON_TXFORMAT_ALPHA_IN_MAP, 0 }
+#define _ALPHA_REV(f) \
+    [ MESA_FORMAT_ ## f ## _REV ] = { RADEON_TXFORMAT_ ## f | RADEON_TXFORMAT_ALPHA_IN_MAP, 0 }
 #define _YUV(f) \
    [ MESA_FORMAT_ ## f ] = { RADEON_TXFORMAT_ ## f, RADEON_YUV_TO_RGB }
 #define _INVALID(f) \
@@ -71,15 +77,21 @@ static const struct {
 tx_table[] =
 {
    _ALPHA(RGBA8888),
+   _ALPHA_REV(RGBA8888),
    _ALPHA(ARGB8888),
+   _ALPHA_REV(ARGB8888),
    _INVALID(RGB888),
    _COLOR(RGB565),
+   _COLOR_REV(RGB565),
    _ALPHA(ARGB4444),
+   _ALPHA_REV(ARGB4444),
    _ALPHA(ARGB1555),
+   _ALPHA_REV(ARGB1555),
    _ALPHA(AL88),
-   _INVALID(A8),
-   _INVALID(L8),
-   _COLOR(I8),
+   _ALPHA_REV(AL88),
+   _ALPHA(A8),
+   _COLOR(L8),
+   _ALPHA(I8),
    _INVALID(CI8),
    _YUV(YCBCR),
    _YUV(YCBCR_REV),
@@ -383,6 +395,13 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
    const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
    GLuint color_combine, alpha_combine;
+   const GLuint color_combine0 = RADEON_COLOR_ARG_A_ZERO | RADEON_COLOR_ARG_B_ZERO
+         | RADEON_COLOR_ARG_C_CURRENT_COLOR | RADEON_BLEND_CTL_ADD
+         | RADEON_SCALE_1X | RADEON_CLAMP_TX;
+   const GLuint alpha_combine0 = RADEON_ALPHA_ARG_A_ZERO | RADEON_ALPHA_ARG_B_ZERO
+         | RADEON_ALPHA_ARG_C_CURRENT_ALPHA | RADEON_BLEND_CTL_ADD
+         | RADEON_SCALE_1X | RADEON_CLAMP_TX;
+
 
    /* texUnit->_Current can be NULL if and only if the texture unit is
     * not actually enabled.
@@ -400,17 +419,14 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
     * reduces the amount of special-casing we have to do, alpha-only
     * textures being a notable exception.
     */
+    /* Don't cache these results.
+    */
+   rmesa->state.texture.unit[unit].format = 0;
+   rmesa->state.texture.unit[unit].envMode = 0;
+
    if ( !texUnit->_ReallyEnabled ) {
-      /* Don't cache these results.
-       */
-      rmesa->state.texture.unit[unit].format = 0;
-      rmesa->state.texture.unit[unit].envMode = 0;
-      color_combine = RADEON_COLOR_ARG_A_ZERO | RADEON_COLOR_ARG_B_ZERO
-         | RADEON_COLOR_ARG_C_CURRENT_COLOR | RADEON_BLEND_CTL_ADD
-         | RADEON_SCALE_1X | RADEON_CLAMP_TX;
-      alpha_combine = RADEON_ALPHA_ARG_A_ZERO | RADEON_ALPHA_ARG_B_ZERO
-         | RADEON_ALPHA_ARG_C_CURRENT_ALPHA | RADEON_BLEND_CTL_ADD
-         | RADEON_SCALE_1X | RADEON_CLAMP_TX;
+      color_combine = color_combine0;
+      alpha_combine = alpha_combine0;
    }
    else {
       GLuint color_arg[3], alpha_arg[3];
@@ -420,20 +436,16 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
       GLuint RGBshift = texUnit->_CurrentCombine->ScaleShiftRGB;
       GLuint Ashift = texUnit->_CurrentCombine->ScaleShiftA;
 
-      /* Don't cache these results.
-       */
-      rmesa->state.texture.unit[unit].format = 0;
-      rmesa->state.texture.unit[unit].envMode = 0;
-
 
       /* Step 1:
        * Extract the color and alpha combine function arguments.
        */
       for ( i = 0 ; i < numColorArgs ; i++ ) {
-	 const GLuint op = texUnit->_CurrentCombine->OperandRGB[i] - GL_SRC_COLOR;
+	 const GLint op = texUnit->_CurrentCombine->OperandRGB[i] - GL_SRC_COLOR;
+	 const GLuint srcRGBi = texUnit->_CurrentCombine->SourceRGB[i];
 	 assert(op >= 0);
 	 assert(op <= 3);
-	 switch ( texUnit->_CurrentCombine->SourceRGB[i] ) {
+	 switch ( srcRGBi ) {
 	 case GL_TEXTURE:
 	    color_arg[i] = radeon_texture_color[op][unit];
 	    break;
@@ -452,16 +464,25 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	 case GL_ONE:
 	    color_arg[i] = radeon_zero_color[op+1];
 	    break;
+	 case GL_TEXTURE0:
+	 case GL_TEXTURE1:
+	 case GL_TEXTURE2:
+	 /* implement ogl 1.4/1.5 core spec here, not specification of
+	  * GL_ARB_texture_env_crossbar (which would require disabling blending
+	  * instead of undefined results when referencing not enabled texunit) */
+	   color_arg[i] = radeon_texture_color[op][srcRGBi - GL_TEXTURE0];
+	   break;
 	 default:
 	    return GL_FALSE;
 	 }
       }
 
       for ( i = 0 ; i < numAlphaArgs ; i++ ) {
-	 const GLuint op = texUnit->_CurrentCombine->OperandA[i] - GL_SRC_ALPHA;
+	 const GLint op = texUnit->_CurrentCombine->OperandA[i] - GL_SRC_ALPHA;
+	 const GLuint srcAi = texUnit->_CurrentCombine->SourceA[i];
 	 assert(op >= 0);
 	 assert(op <= 1);
-	 switch ( texUnit->_CurrentCombine->SourceA[i] ) {
+	 switch ( srcAi ) {
 	 case GL_TEXTURE:
 	    alpha_arg[i] = radeon_texture_alpha[op][unit];
 	    break;
@@ -480,6 +501,11 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	 case GL_ONE:
 	    alpha_arg[i] = radeon_zero_alpha[op+1];
 	    break;
+	 case GL_TEXTURE0:
+	 case GL_TEXTURE1:
+	 case GL_TEXTURE2:
+	   alpha_arg[i] = radeon_texture_alpha[op][srcAi - GL_TEXTURE0];
+	   break;
 	 default:
 	    return GL_FALSE;
 	 }
@@ -542,7 +568,6 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	  * 1.3) does.
 	  */
 	 RGBshift = 0;
-	 Ashift = 0;
 	 /* FALLTHROUGH */
 
       case GL_DOT3_RGB:
@@ -555,7 +580,11 @@ static GLboolean radeonUpdateTextureEnv( GLcontext *ctx, int unit )
 	 }
 
 	 RGBshift += 2;
-	 Ashift = RGBshift;
+	 if ( (texUnit->_CurrentCombine->ModeRGB == GL_DOT3_RGBA_EXT)
+	    || (texUnit->_CurrentCombine->ModeRGB == GL_DOT3_RGBA) ) {
+            /* is it necessary to set this or will it be ignored anyway? */
+	    Ashift = RGBshift;
+	 }
 
 	 color_combine = (RADEON_COLOR_ARG_C_ZERO |
 			  RADEON_BLEND_CTL_DOT3 |

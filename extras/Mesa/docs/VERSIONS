@@ -1205,17 +1205,93 @@ Mesa Version History
 	- updated files for building on Windows
 
 
-6.1  Month day, 2004
+6.0.1  April 2, 2004
     New:
+	- upgraded glext.h to version 22
+	- new build targets (Dan Schikore)
+	- new linux-x86-opteron build target (Heath Feather)
+    Bug fixes:
+	- glBindProgramARB didn't update all necessary state
+	- fixed build problems on OpenBSD
+	- omit CVS directories from tarballs
+	- glGetTexImage(GL_COLOR_INDEX) was broken
+	- fixed an infinite loop in t&l module
+	- silenced some valgrind warnings about using unitialized memory
+	- fixed some compilation/link glitches on IRIX (Mike Stephens)
+	- glBindProgram wasn't getting compiled into display lists
+	- GLX_FBCONFIG_ID wasn't recognized in glXChooseFBConfig() (bug 888079)
+	- two-sided lighting and vertex program didn't work (bug 887330)
+	- stores to program parameter registers in vertex state programs
+	  didn't work.
+	- fixed glOrtho bug found with gcc 3.2.2 (RH9)
+	- glXCreateWindow() wasn't fully implemented (bug 890894)
+	- generic vertex attribute arrays didn't work in display lists
+	- vertex buffer objects' default usage and access fields were wrong
+	- glDrawArrays with start!=0 was broken
+	- fragment program PK2H, UP2H, UP4B and UP4UB instructions were broken
+	- linux-osmesa16-static config didn't work
+	- fixed a few color index rendering problems (bug 910687)
+	- glInterleavedArrays didn't respect GL_CLIENT_ACTIVE_TEXTURE
+	- OSMesa RGB and BGR modes were broken
+	- glProgramStringARB mistakenly required a null-terminated string
+	- fragment program XPD instruction was incorrect
+	- glGetMaterial() didn't work reliably
+	- ARB_fragment_program KIL instruction was incorrect
+
+
+6.1  August 18, 2004
+    New:
+	- Revamped Makefile system
 	- glXUseRotatedXFont() utility (see xdemos/xuserotfont.c)
 	- internal driver interface changes related to texture object
 	  allocation, vertex/fragment programs, BlendEquationSeparate, etc.
 	- option to walk triangle edges with double-precision floats
 	  (Justin Novosad of Discreet) (see config.h file)
+	- support for AUX buffers in software GLX driver
+	- updated glext.h to version 24 and glxext.h to version 6
+	- new MESA_GLX_FORCE_ALPHA and MESA_GLX_DEPTH_BITS env vars
+	- updated BeOS support (Philippe Houdoin)
     Changes:
 	- fragment fog interpolation is perspective corrected now
+	- new glTexImage code, much cleaner, may be a bit faster
     Bug fixes:
-	- everything in 6.0.1 plus TBD
 	- glArrayElement in display lists didn't handle generic vertex attribs
 	- glFogCoord didn't always work properly
 	- ARB_fragment_program fog options didn't work
+	- frag prog TEX instruction no longer incorrectly divides s,t,r by q
+	- ARB frag prog TEX and TEXP instructions now use LOD=0
+	- glTexEnviv in display lists didn't work
+	- glRasterPos didn't do texgen or apply texture matrix
+	- GL_DOUBLE-valued vertex arrays were broken in some cases
+	- fixed texture rectangle edge/border sampling bugs
+	- sampling an incomplete texture in a fragment program would segfault
+	- glTexImage was missing a few error checks
+	- fixed some minor glGetTexParameter glitches
+	- GL_INTENSITY was mistakenly accepted as a <format> to glTexImage
+	- fragment program writes to RC/HC register were broken
+	- fixed a few glitches in GL_HP_occlusion_test extension
+	- glBeginQueryARB and glEndQueryARB didn't work inside display lists
+	- vertex program state references were broken
+	- fixed triangle color interpolation bug on AIX (Shane Blackett)
+	- fixed a number of minor memory leaks (bug #1002030)
+
+
+6.2  October 2, 2004
+    New:
+	- enabled GL_ARB_texture_rectangle (same as GL_NV_texture_rectangle)
+	- updated Doxygen support (Jose Fonseca)
+    Changes:
+	- some GGI driver updates (Christoph Egger, bug 1025977)
+    Bug fixes:
+	- Omit GL_ARB_texture_non_power_of_two from list of OpenGL 1.5 features
+	- fixed a few compilation issues on IRIX
+	- fixed a matrix classification bug (reported by Wes Bethel)
+	- we weren't reseting the vertex/fragment program error state
+	  before parsing (Dave Reveman)
+	- adjust texcoords for sampling texture rectangles (Dave Reveman)
+	- glGet*(GL_MAX_VERTEX_ATTRIBS_ARB) wasn't implemented
+	- repeated calls to glDeleteTexture(t) could lead to a crash
+	- fixed potential ref count bugs in VBOs and vertex/fragment programs
+	- spriteblast demo didn't handle window size changes correctly
+	- glTexSubImage didn't handle pixels=NULL correctly for PBOs
+	- fixed color index mode glDrawPixels bug (Karl Schultz)

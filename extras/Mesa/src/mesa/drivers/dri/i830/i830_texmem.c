@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texmem.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texmem.c,v 1.1.1.2 2004/12/10 15:05:46 alanh Exp $ */
 
 /*
  * Author:
@@ -62,7 +62,7 @@ void i830DestroyTexObj(i830ContextPtr imesa, i830TextureObjectPtr t)
       for ( i = 0 ; i < imesa->glCtx->Const.MaxTextureUnits ; i++ ) {
 	 if ( t == imesa->CurrentTexObj[ i ] ) {
 	    imesa->CurrentTexObj[ i ] = NULL;
-	    imesa->dirty &= ~(I830_UPLOAD_TEX0 << i);
+	    imesa->dirty &= ~I830_UPLOAD_TEX_N( i );
 	 }
       }
    }
@@ -105,7 +105,19 @@ static void i830UploadTexLevel( i830ContextPtr imesa,
    if (!image || !image->Data)
       return;
 
-   if (image->Width * image->TexFormat->TexelBytes == t->Pitch) {
+   if (image->IsCompressed) {
+	 GLubyte *dst = (GLubyte *)(t->BufAddr + t->image[0][hwlevel].offset);
+	 GLubyte *src = (GLubyte *)image->Data;
+
+	 if ((t->Setup[I830_TEXREG_TM0S1] & TM0S1_MT_FORMAT_MASK)==MT_COMPRESS_FXT1)
+	   {
+	     for (j = 0 ; j < image->Height/4 ; j++, dst += (t->Pitch)) {
+	       __memcpy(dst, src, (image->Width*2) );
+	       src += image->Width*2;
+	     }
+	   }
+   }
+   else if (image->Width * image->TexFormat->TexelBytes == t->Pitch) {
 	 GLubyte *dst = (GLubyte *)(t->BufAddr + t->image[0][hwlevel].offset);
 	 GLubyte *src = (GLubyte *)image->Data;
 	 
@@ -162,6 +174,7 @@ static void i830UploadTexLevel( i830ContextPtr imesa,
 int i830UploadTexImagesLocked( i830ContextPtr imesa, i830TextureObjectPtr t )
 {
    int ofs;
+   int i;
 
    if ( t->base.memBlock == NULL ) {
       int heap;
@@ -178,18 +191,11 @@ int i830UploadTexImagesLocked( i830ContextPtr imesa, i830TextureObjectPtr t )
       t->Setup[I830_TEXREG_TM0S0] = (TM0S0_USE_FENCE |
 				     (imesa->i830Screen->textureOffset + ofs));
 
-      if (t == imesa->CurrentTexObj[0])
-	 imesa->dirty |= I830_UPLOAD_TEX0;
-
-      if (t == imesa->CurrentTexObj[1])
-	 imesa->dirty |= I830_UPLOAD_TEX1;
-#if 0
-      if (t == imesa->CurrentTexObj[2])
-	 I830_STATECHANGE(imesa, I830_UPLOAD_TEX2);
-
-      if (t == imesa->CurrentTexObj[3])
-	 I830_STATECHANGE(imesa, I830_UPLOAD_TEX3);
-#endif
+      for ( i = 0 ; i < imesa->glCtx->Const.MaxTextureUnits ; i++ ) {
+	 if (t == imesa->CurrentTexObj[i]) {
+	     imesa->dirty |= I830_UPLOAD_TEX_N( i );
+	 }
+      }
    }
 
 
@@ -202,7 +208,6 @@ int i830UploadTexImagesLocked( i830ContextPtr imesa, i830TextureObjectPtr t )
 
    /* Upload any images that are new */
    if (t->base.dirty_images[0]) {
-      int i;
       const int numLevels = t->base.lastLevel - t->base.firstLevel + 1;
 
       for (i = 0 ; i < numLevels ; i++) { 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgacontext.h,v 1.1.1.2 2004/06/10 14:22:55 alanh Exp $*/
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/mga/mgacontext.h,v 1.1.1.3 2004/12/10 15:05:39 alanh Exp $*/
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -29,11 +29,12 @@
 #ifndef MGALIB_INC
 #define MGALIB_INC
 
+#include "drm.h"
+#include "mga_drm.h"
 #include "dri_util.h"
 #include "mtypes.h"
 #include "xf86drm.h"
 #include "mm.h"
-#include "mga_sarea.h"
 #include "colormac.h"
 #include "texmem.h"
 #include "macros.h"
@@ -146,7 +147,7 @@ typedef struct mga_texture_object_s
    int                texelBytes;
    GLuint             age;
 
-   mga_texture_regs_t setup;
+   drm_mga_texture_regs_t setup;
 
    /* If one texture dimension wraps with GL_CLAMP and the other with
     * GL_CLAMP_TO_EDGE, we have to fallback to software.  We would also have
@@ -237,7 +238,7 @@ struct mga_context_t {
    GLuint        NewGLState; 
    GLuint        dirty;
 
-   mga_context_regs_t setup;
+   drm_mga_context_regs_t setup;
 
    GLuint        ClearColor;
    GLuint        ClearDepth;
@@ -277,12 +278,12 @@ struct mga_context_t {
    int drawX, drawY;		/* origin of drawable in draw buffer */
    int lastX, lastY;		/* detect DSTORG bug */
    GLuint numClipRects;		/* cliprects for the draw buffer */
-   XF86DRIClipRectPtr pClipRects;
-   XF86DRIClipRectRec draw_rect;
-   XF86DRIClipRectRec scissor_rect;
+   drm_clip_rect_t *pClipRects;
+   drm_clip_rect_t draw_rect;
+   drm_clip_rect_t scissor_rect;
    int scissor;
 
-   XF86DRIClipRectRec tmp_boxes[2][MGA_NR_SAREA_CLIPRECTS];
+   drm_clip_rect_t tmp_boxes[2][MGA_NR_SAREA_CLIPRECTS];
 
 
    /* Texture aging and DMA based aging.
@@ -294,8 +295,8 @@ struct mga_context_t {
 
    /* Mirrors of some DRI state.
     */
-   drmContext hHWContext;
-   drmLock *driHwLock;
+   drm_context_t hHWContext;
+   drm_hw_lock_t *driHwLock;
    int driFd;
    __DRIdrawablePrivate *driDrawable;
    __DRIdrawablePrivate *driReadable;
@@ -309,7 +310,7 @@ struct mga_context_t {
 
    __DRIscreenPrivate *driScreen;
    struct mga_screen_private_s *mgaScreen;
-   MGASAREAPrivPtr sarea;
+   drm_mga_sarea_t *sarea;
 
    /* Configuration cache
     */

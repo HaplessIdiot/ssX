@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.h,v 1.1.1.2 2004/06/10 14:23:06 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.h,v 1.1.1.3 2004/12/10 15:06:17 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -41,7 +41,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef GLX_DIRECT_RENDERING
 
 #include "dri_util.h"
-#include "radeon_common.h"
+#include "drm.h"
+#include "radeon_drm.h"
 #include "texmem.h"
 
 #include "macros.h"
@@ -110,12 +111,12 @@ struct radeon_pixel_state {
 };
 
 struct radeon_scissor_state {
-   XF86DRIClipRectRec rect;
+   drm_clip_rect_t rect;
    GLboolean enabled;
 
    GLuint numClipRects;			/* Cliprects active */
    GLuint numAllocedClipRects;		/* Cliprects available */
-   XF86DRIClipRectPtr pClipRects;
+   drm_clip_rect_t *pClipRects;
 };
 
 struct radeon_stencilbuffer_state {
@@ -150,7 +151,7 @@ struct radeon_tex_obj {
 					   brought into the
 					   texunit. */
 
-   drmRadeonTexImage image[6][RADEON_MAX_TEXTURE_LEVELS];
+   drm_radeon_tex_image_t image[6][RADEON_MAX_TEXTURE_LEVELS];
 					/* Six, for the cube faces */
 
    GLuint pp_txfilter;		        /* hardware register values */
@@ -397,14 +398,11 @@ struct radeon_state_atom {
 
 
 struct radeon_hw_state {
-   /* All state should be on one of these lists:
-    */
-   struct radeon_state_atom dirty; /* dirty list head placeholder */
-   struct radeon_state_atom clean; /* clean list head placeholder */
+   /* Head of the linked list of state atoms. */
+   struct radeon_state_atom atomlist;
 
    /* Hardware state, stored as cmdbuf commands:  
     *   -- Need to doublebuffer for
-    *           - reviving state after loss of context
     *           - eliding noop statechange loops? (except line stipple count)
     */
    struct radeon_state_atom ctx;
@@ -425,6 +423,9 @@ struct radeon_hw_state {
    struct radeon_state_atom fog; 
    struct radeon_state_atom glt; 
    struct radeon_state_atom txr[2]; /* for NPOT */
+
+   int max_state_size;	/* Number of bytes necessary for a full state emit. */
+   GLboolean is_dirty, all_dirty;
 };
 
 struct radeon_state {
@@ -481,8 +482,8 @@ struct radeon_dri_mirror {
    __DRIscreenPrivate	*screen;	/* DRI screen */
    __DRIdrawablePrivate	*drawable;	/* DRI drawable bound to this ctx */
 
-   drmContext hwContext;
-   drmLock *hwLock;
+   drm_context_t hwContext;
+   drm_hw_lock_t *hwLock;
    int fd;
    int drmMinor;
 };
@@ -712,6 +713,10 @@ struct radeon_context {
    struct radeon_ioctl ioctl;
    struct radeon_dma dma;
    struct radeon_store store;
+   /* A full state emit as of the first state emit in the main store, in case
+    * the context is lost.
+    */
+   struct radeon_store backup_store;
 
    /* Page flipping
     */
@@ -722,16 +727,17 @@ struct radeon_context {
    GLuint do_usleeps;
    GLuint do_irqs;
    GLuint irqsEmitted;
-   drmRadeonIrqWait iw;
+   drm_radeon_irq_wait_t iw;
 
    /* Drawable, cliprect and scissor information
     */
    GLuint numClipRects;			/* Cliprects for the draw buffer */
-   XF86DRIClipRectPtr pClipRects;
+   drm_clip_rect_t *pClipRects;
    unsigned int lastStamp;
    GLboolean lost_context;
+   GLboolean save_on_next_emit;
    radeonScreenPtr radeonScreen;	/* Screen private DRI data */
-   RADEONSAREAPrivPtr sarea;		/* Private SAREA data */
+   drm_radeon_sarea_t *sarea;		/* Private SAREA data */
 
    /* TCL stuff
     */

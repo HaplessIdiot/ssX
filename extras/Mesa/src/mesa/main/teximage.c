@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/main/teximage.c,v 1.3 2004/10/26 22:07:39 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -200,116 +200,137 @@ _mesa_base_tex_format( GLcontext *ctx, GLint internalFormat )
       case GL_RGBA12:
       case GL_RGBA16:
          return GL_RGBA;
-      case GL_COLOR_INDEX:
-      case GL_COLOR_INDEX1_EXT:
-      case GL_COLOR_INDEX2_EXT:
-      case GL_COLOR_INDEX4_EXT:
-      case GL_COLOR_INDEX8_EXT:
-      case GL_COLOR_INDEX12_EXT:
-      case GL_COLOR_INDEX16_EXT:
-         if (ctx->Extensions.EXT_paletted_texture)
-            return GL_COLOR_INDEX;
-         else
-            return -1;
-      case GL_DEPTH_COMPONENT:
-      case GL_DEPTH_COMPONENT16_SGIX:
-      case GL_DEPTH_COMPONENT24_SGIX:
-      case GL_DEPTH_COMPONENT32_SGIX:
-         if (ctx->Extensions.SGIX_depth_texture)
-            return GL_DEPTH_COMPONENT;
-         else
-            return -1;
-
-      /* GL_ARB_texture_compression */
-      case GL_COMPRESSED_ALPHA:
-         if (ctx->Extensions.ARB_texture_compression)
-            return GL_ALPHA;
-         else
-            return -1;
-      case GL_COMPRESSED_LUMINANCE:
-         if (ctx->Extensions.ARB_texture_compression)
-            return GL_LUMINANCE;
-         else
-            return -1;
-      case GL_COMPRESSED_LUMINANCE_ALPHA:
-         if (ctx->Extensions.ARB_texture_compression)
-            return GL_LUMINANCE_ALPHA;
-         else
-            return -1;
-      case GL_COMPRESSED_INTENSITY:
-         if (ctx->Extensions.ARB_texture_compression)
-            return GL_INTENSITY;
-         else
-            return -1;
-      case GL_COMPRESSED_RGB:
-         if (ctx->Extensions.ARB_texture_compression)
-            return GL_RGB;
-         else
-            return -1;
-      case GL_COMPRESSED_RGBA:
-         if (ctx->Extensions.ARB_texture_compression)
-            return GL_RGBA;
-         else
-            return -1;
-      case GL_COMPRESSED_RGB_FXT1_3DFX:
-         if (ctx->Extensions.TDFX_texture_compression_FXT1)
-            return GL_RGB;
-         else
-            return -1;
-      case GL_COMPRESSED_RGBA_FXT1_3DFX:
-         if (ctx->Extensions.TDFX_texture_compression_FXT1)
-            return GL_RGBA;
-         else
-            return -1;
-      case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
-         if (ctx->Extensions.EXT_texture_compression_s3tc)
-            return GL_RGB;
-         else
-            return -1;
-      case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
-      case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
-      case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
-         if (ctx->Extensions.EXT_texture_compression_s3tc)
-            return GL_RGBA;
-         else
-            return -1;
-      case GL_RGB_S3TC:
-      case GL_RGB4_S3TC:
-         if (ctx->Extensions.S3_s3tc)
-            return GL_RGB;
-         else
-            return -1;
-      case GL_RGBA_S3TC:
-      case GL_RGBA4_S3TC:
-         if (ctx->Extensions.S3_s3tc)
-            return GL_RGBA;
-         else
-            return -1;
-
-      case GL_YCBCR_MESA:
-         if (ctx->Extensions.MESA_ycbcr_texture)
-            return GL_YCBCR_MESA;
-         else
-            return -1;
-
-      /* XXX add float texture formats here */
-
       default:
-         return -1;  /* error */
+         ; /* fallthrough */
    }
+
+   if (ctx->Extensions.EXT_paletted_texture) {
+      switch (internalFormat) {
+         case GL_COLOR_INDEX:
+         case GL_COLOR_INDEX1_EXT:
+         case GL_COLOR_INDEX2_EXT:
+         case GL_COLOR_INDEX4_EXT:
+         case GL_COLOR_INDEX8_EXT:
+         case GL_COLOR_INDEX12_EXT:
+         case GL_COLOR_INDEX16_EXT:
+            return GL_COLOR_INDEX;
+         default:
+            ; /* fallthrough */
+      }
+   }
+
+   if (ctx->Extensions.SGIX_depth_texture) {
+      switch (internalFormat) {
+         case GL_DEPTH_COMPONENT:
+         case GL_DEPTH_COMPONENT16_SGIX:
+         case GL_DEPTH_COMPONENT24_SGIX:
+         case GL_DEPTH_COMPONENT32_SGIX:
+            return GL_DEPTH_COMPONENT;
+         default:
+            ; /* fallthrough */
+      }
+   }
+
+   if (ctx->Extensions.ARB_texture_compression) {
+      switch (internalFormat) {
+         case GL_COMPRESSED_ALPHA:
+            return GL_ALPHA;
+         case GL_COMPRESSED_LUMINANCE:
+            return GL_LUMINANCE;
+         case GL_COMPRESSED_LUMINANCE_ALPHA:
+            return GL_LUMINANCE_ALPHA;
+         case GL_COMPRESSED_INTENSITY:
+            return GL_INTENSITY;
+         case GL_COMPRESSED_RGB:
+            return GL_RGB;
+         case GL_COMPRESSED_RGBA:
+            return GL_RGBA;
+         default:
+            ; /* fallthrough */
+      }
+   }
+         
+   if (ctx->Extensions.TDFX_texture_compression_FXT1) {
+      switch (internalFormat) {
+         case GL_COMPRESSED_RGB_FXT1_3DFX:
+            return GL_RGB;
+         case GL_COMPRESSED_RGBA_FXT1_3DFX:
+            return GL_RGBA;
+         default:
+            ; /* fallthrough */
+      }
+   }
+
+   if (ctx->Extensions.EXT_texture_compression_s3tc) {
+      switch (internalFormat) {
+         case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+            return GL_RGB;
+         case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+         case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+         case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+            return GL_RGBA;
+         default:
+            ; /* fallthrough */
+      }
+   }
+
+   if (ctx->Extensions.S3_s3tc) {
+      switch (internalFormat) {
+         case GL_RGB_S3TC:
+         case GL_RGB4_S3TC:
+            return GL_RGB;
+         case GL_RGBA_S3TC:
+         case GL_RGBA4_S3TC:
+            return GL_RGBA;
+         default:
+            ; /* fallthrough */
+      }
+   }
+
+   if (ctx->Extensions.MESA_ycbcr_texture) {
+      if (internalFormat == GL_YCBCR_MESA)
+         return GL_YCBCR_MESA;
+   }
+
+   if (ctx->Extensions.ARB_texture_float) {
+      switch (internalFormat) {
+         case GL_ALPHA16F_ARB:
+         case GL_ALPHA32F_ARB:
+            return GL_ALPHA;
+         case GL_RGBA16F_ARB:
+         case GL_RGBA32F_ARB:
+            return GL_RGBA;
+         case GL_RGB16F_ARB:
+         case GL_RGB32F_ARB:
+            return GL_RGB;
+         case GL_INTENSITY16F_ARB:
+         case GL_INTENSITY32F_ARB:
+            return GL_INTENSITY;
+         case GL_LUMINANCE16F_ARB:
+         case GL_LUMINANCE32F_ARB:
+            return GL_LUMINANCE;
+         case GL_LUMINANCE_ALPHA16F_ARB:
+         case GL_LUMINANCE_ALPHA32F_ARB:
+            return GL_LUMINANCE_ALPHA;
+         default:
+            ; /* fallthrough */
+      }
+   }
+
+   return -1; /* error */
 }
 
 
 /**
- * Test if the given internal texture format is a color/RGBA format
- * (i.e., not color index, depth, stencil, etc).
- * \param internalFormat an internal texture format token (or 1, 2, 3, or 4)
+ * Test if the given image format is a color/RGBA format (i.e., not color
+ * index, depth, stencil, etc).
+ * \param format  the image format value (may by an internal texture format)
  * \return GL_TRUE if its a color/RGBA format, GL_FALSE otherwise.
  */
 static GLboolean
-is_color_format(GLenum internalFormat)
+is_color_format(GLenum format)
 {
-   switch (internalFormat) {
+   switch (format) {
       case GL_ALPHA:
       case GL_ALPHA4:
       case GL_ALPHA8:
@@ -336,6 +357,7 @@ is_color_format(GLenum internalFormat)
       case GL_INTENSITY16:
       case 3:
       case GL_RGB:
+      case GL_BGR:
       case GL_R3_G3_B2:
       case GL_RGB4:
       case GL_RGB5:
@@ -344,7 +366,9 @@ is_color_format(GLenum internalFormat)
       case GL_RGB12:
       case GL_RGB16:
       case 4:
+      case GL_ABGR_EXT:
       case GL_RGBA:
+      case GL_BGRA:
       case GL_RGBA2:
       case GL_RGBA4:
       case GL_RGB5_A1:
@@ -352,7 +376,36 @@ is_color_format(GLenum internalFormat)
       case GL_RGB10_A2:
       case GL_RGBA12:
       case GL_RGBA16:
-      /* XXX add float texture formats here */
+      /* float texture formats */
+      case GL_ALPHA16F_ARB:
+      case GL_ALPHA32F_ARB:
+      case GL_LUMINANCE16F_ARB:
+      case GL_LUMINANCE32F_ARB:
+      case GL_LUMINANCE_ALPHA16F_ARB:
+      case GL_LUMINANCE_ALPHA32F_ARB:
+      case GL_INTENSITY16F_ARB:
+      case GL_INTENSITY32F_ARB:
+      case GL_RGB16F_ARB:
+      case GL_RGB32F_ARB:
+      case GL_RGBA16F_ARB:
+      case GL_RGBA32F_ARB:
+      /* compressed formats */
+      case GL_COMPRESSED_ALPHA:
+      case GL_COMPRESSED_LUMINANCE:
+      case GL_COMPRESSED_LUMINANCE_ALPHA:
+      case GL_COMPRESSED_INTENSITY:
+      case GL_COMPRESSED_RGB:
+      case GL_COMPRESSED_RGBA:
+      case GL_RGB_S3TC:
+      case GL_RGB4_S3TC:
+      case GL_RGBA_S3TC:
+      case GL_RGBA4_S3TC:
+      case GL_COMPRESSED_RGB_S3TC_DXT1_EXT:
+      case GL_COMPRESSED_RGBA_S3TC_DXT1_EXT:
+      case GL_COMPRESSED_RGBA_S3TC_DXT3_EXT:
+      case GL_COMPRESSED_RGBA_S3TC_DXT5_EXT:
+      case GL_COMPRESSED_RGB_FXT1_3DFX:
+      case GL_COMPRESSED_RGBA_FXT1_3DFX:
          return GL_TRUE;
       case GL_YCBCR_MESA:  /* not considered to be RGB */
       default:
@@ -362,12 +415,12 @@ is_color_format(GLenum internalFormat)
 
 
 /**
- * Test if the given internal texture format is a color index format.
+ * Test if the given image format is a color index format.
  */
 static GLboolean
-is_index_format(GLenum internalFormat)
+is_index_format(GLenum format)
 {
-   switch (internalFormat) {
+   switch (format) {
       case GL_COLOR_INDEX:
       case GL_COLOR_INDEX1_EXT:
       case GL_COLOR_INDEX2_EXT:
@@ -383,12 +436,12 @@ is_index_format(GLenum internalFormat)
 
 
 /**
- * Test if the given internal texture format is a depth component format.
+ * Test if the given image format is a depth component format.
  */
 static GLboolean
-is_depth_format(GLenum internalFormat)
+is_depth_format(GLenum format)
 {
-   switch (internalFormat) {
+   switch (format) {
       case GL_DEPTH_COMPONENT16_ARB:
       case GL_DEPTH_COMPONENT24_ARB:
       case GL_DEPTH_COMPONENT32_ARB:
@@ -401,12 +454,12 @@ is_depth_format(GLenum internalFormat)
 
 
 /**
- * Test if the given internal texture format is a YCbCr format.
+ * Test if the given image format is a YCbCr format.
  */
 static GLboolean
-is_ycbcr_format(GLenum internalFormat)
+is_ycbcr_format(GLenum format)
 {
-   switch (internalFormat) {
+   switch (format) {
       case GL_YCBCR_MESA:
          return GL_TRUE;
       default:
@@ -429,6 +482,7 @@ is_ycbcr_format(GLenum internalFormat)
 static GLboolean
 is_compressed_format(GLcontext *ctx, GLenum internalFormat)
 {
+   (void) ctx;
    switch (internalFormat) {
       case GL_COMPRESSED_RGB_FXT1_3DFX:
       case GL_COMPRESSED_RGBA_FXT1_3DFX:
@@ -442,9 +496,6 @@ is_compressed_format(GLcontext *ctx, GLenum internalFormat)
       case GL_RGBA4_S3TC:
          return GL_TRUE;
       default:
-         if (ctx->Driver.IsCompressedFormat) {
-            return ctx->Driver.IsCompressedFormat(ctx, internalFormat);
-         }
          return GL_FALSE;
    }
 }
@@ -473,7 +524,7 @@ _mesa_set_tex_image(struct gl_texture_object *tObj,
       case GL_TEXTURE_2D:
       case GL_TEXTURE_3D:
          tObj->Image[0][level] = texImage;
-         return;
+         break;
       case GL_TEXTURE_CUBE_MAP_POSITIVE_X_ARB:
       case GL_TEXTURE_CUBE_MAP_NEGATIVE_X_ARB:
       case GL_TEXTURE_CUBE_MAP_POSITIVE_Y_ARB:
@@ -488,11 +539,13 @@ _mesa_set_tex_image(struct gl_texture_object *tObj,
       case GL_TEXTURE_RECTANGLE_NV:
          ASSERT(level == 0);
          tObj->Image[0][level] = texImage;
-         return;
+         break;
       default:
          _mesa_problem(NULL, "bad target in _mesa_set_tex_image()");
          return;
    }
+   /* Set the 'back' pointer */
+   texImage->TexObject = tObj;
 }
 
 
@@ -728,6 +781,8 @@ _mesa_get_proxy_tex_image(GLcontext *ctx, GLenum target, GLint level)
             return NULL;
          }
          ctx->Texture.Proxy1D->Image[0][level] = texImage;
+         /* Set the 'back' pointer */
+         texImage->TexObject = ctx->Texture.Proxy1D;
       }
       return texImage;
    case GL_PROXY_TEXTURE_2D:
@@ -741,6 +796,8 @@ _mesa_get_proxy_tex_image(GLcontext *ctx, GLenum target, GLint level)
             return NULL;
          }
          ctx->Texture.Proxy2D->Image[0][level] = texImage;
+         /* Set the 'back' pointer */
+         texImage->TexObject = ctx->Texture.Proxy2D;
       }
       return texImage;
    case GL_PROXY_TEXTURE_3D:
@@ -754,6 +811,8 @@ _mesa_get_proxy_tex_image(GLcontext *ctx, GLenum target, GLint level)
             return NULL;
          }
          ctx->Texture.Proxy3D->Image[0][level] = texImage;
+         /* Set the 'back' pointer */
+         texImage->TexObject = ctx->Texture.Proxy3D;
       }
       return texImage;
    case GL_PROXY_TEXTURE_CUBE_MAP:
@@ -767,6 +826,8 @@ _mesa_get_proxy_tex_image(GLcontext *ctx, GLenum target, GLint level)
             return NULL;
          }
          ctx->Texture.ProxyCubeMap->Image[0][level] = texImage;
+         /* Set the 'back' pointer */
+         texImage->TexObject = ctx->Texture.ProxyCubeMap;
       }
       return texImage;
    case GL_PROXY_TEXTURE_RECTANGLE_NV:
@@ -780,6 +841,8 @@ _mesa_get_proxy_tex_image(GLcontext *ctx, GLenum target, GLint level)
             return NULL;
          }
          ctx->Texture.ProxyRect->Image[0][level] = texImage;
+         /* Set the 'back' pointer */
+         texImage->TexObject = ctx->Texture.ProxyRect;
       }
       return texImage;
    default:
@@ -966,8 +1029,8 @@ _mesa_init_teximage_fields(GLcontext *ctx, GLenum target,
    img->MaxLog2 = MAX2(img->WidthLog2, img->HeightLog2);
    img->IsCompressed = is_compressed_format(ctx, internalFormat);
    if (img->IsCompressed)
-      img->CompressedSize = _mesa_compressed_texture_size(ctx, width, height,
-                                                       depth, internalFormat);
+      img->CompressedSize = ctx->Driver.CompressedTextureSize(ctx, width,
+                                               height, depth, internalFormat);
    else
       img->CompressedSize = 0;
 
@@ -1240,7 +1303,7 @@ texture_error_check( GLcontext *ctx, GLenum target,
    }
 
    /* Check incoming image format and type */
-   if (!_mesa_is_legal_format_and_type(format, type)) {
+   if (!_mesa_is_legal_format_and_type(ctx, format, type)) {
       /* Yes, generate GL_INVALID_OPERATION, not GL_INVALID_ENUM, if there
        * is a type/format mismatch.  See 1.2 spec page 94, sec 3.6.4.
        */
@@ -1251,16 +1314,25 @@ texture_error_check( GLcontext *ctx, GLenum target,
       return GL_TRUE;
    }
 
-   if (format == GL_YCBCR_MESA || internalFormat == GL_YCBCR_MESA) {
+   /* make sure internal format and format basically agree */
+   if ((is_color_format(internalFormat) != is_color_format(format)) ||
+       (is_index_format(internalFormat) != is_index_format(format)) ||
+       (is_depth_format(internalFormat) != is_depth_format(format)) ||
+       (is_ycbcr_format(internalFormat) != is_ycbcr_format(format))) {
+      if (!isProxy)
+         _mesa_error(ctx, GL_INVALID_OPERATION,
+                     "glTexImage(internalFormat/format)");
+      return GL_TRUE;
+   }
+
+   /* additional checks for ycbcr textures */
+   if (internalFormat == GL_YCBCR_MESA) {
       ASSERT(ctx->Extensions.MESA_ycbcr_texture);
-      if (format != GL_YCBCR_MESA ||
-          internalFormat != GL_YCBCR_MESA ||
-          (type != GL_UNSIGNED_SHORT_8_8_MESA &&
-          type != GL_UNSIGNED_SHORT_8_8_REV_MESA)) {
+      if (type != GL_UNSIGNED_SHORT_8_8_MESA &&
+          type != GL_UNSIGNED_SHORT_8_8_REV_MESA) {
          char message[100];
          _mesa_sprintf(message,
-                 "glTexImage%d(format/type/internalFormat YCBCR mismatch",
-                 dimensions);
+                 "glTexImage%d(format/type YCBCR mismatch", dimensions);
          _mesa_error(ctx, GL_INVALID_ENUM, message);
          return GL_TRUE; /* error */
       }
@@ -1284,6 +1356,21 @@ texture_error_check( GLcontext *ctx, GLenum target,
       }
    }
 
+   /* additional checks for depth textures */
+   if (_mesa_base_tex_format(ctx, internalFormat) == GL_DEPTH_COMPONENT) {
+      /* Only 1D and 2D textures supported */
+      if (target != GL_TEXTURE_1D &&
+          target != GL_PROXY_TEXTURE_1D &&
+          target != GL_TEXTURE_2D &&
+          target != GL_PROXY_TEXTURE_2D) {
+         if (!isProxy)
+            _mesa_error(ctx, GL_INVALID_ENUM,
+                        "glTexImage(target/internalFormat)");
+         return GL_TRUE;
+      }
+   }
+
+   /* additional checks for compressed textures */
    if (is_compressed_format(ctx, internalFormat)) {
       if (target == GL_TEXTURE_2D || target == GL_PROXY_TEXTURE_2D) {
          /* OK */
@@ -1448,7 +1535,7 @@ subtexture_error_check( GLcontext *ctx, GLuint dimensions,
       }
    }
 
-   if (!_mesa_is_legal_format_and_type(format, type)) {
+   if (!_mesa_is_legal_format_and_type(ctx, format, type)) {
       _mesa_error(ctx, GL_INVALID_ENUM,
                   "glTexSubImage%dD(format or type)", dimensions);
       return GL_TRUE;
@@ -1891,8 +1978,9 @@ _mesa_GetTexImage( GLenum target, GLint level, GLenum format,
       return;
    }
 
-
-
+   /*
+    * XXX Move this code into a new driver fall-back function
+    */
    {
       const GLint width = texImage->Width;
       const GLint height = texImage->Height;
@@ -1909,10 +1997,25 @@ _mesa_GetTexImage( GLenum target, GLint level, GLenum format,
             if (format == GL_COLOR_INDEX) {
                GLuint indexRow[MAX_WIDTH];
                GLint col;
-               for (col = 0; col < width; col++) {
-                  GLchan indx;
-                  (*texImage->FetchTexelc)(texImage, col, row, img, &indx);
-                  indexRow[col] = indx;
+               /* Can't use FetchTexel here because that returns RGBA */
+               if (texImage->TexFormat->IndexBits == 8) {
+                  const GLubyte *src = (const GLubyte *) texImage->Data;
+                  for (col = 0; col < width; col++) {
+                     indexRow[col] = src[texImage->Width *
+                                        (img * texImage->Height + row) + col];
+                  }
+               }
+               else if (texImage->TexFormat->IndexBits == 16) {
+                  const GLushort *src = (const GLushort *) texImage->Data;
+                  for (col = 0; col < width; col++) {
+                     indexRow[col] = src[texImage->Width *
+                                        (img * texImage->Height + row) + col];
+                  }
+               }
+               else {
+                  _mesa_problem(ctx,
+                                "Color index problem in _mesa_GetTexImage");
+                  return;
                }
                _mesa_pack_index_span(ctx, width, type, dest,
                                      indexRow, &ctx->Pack,
@@ -1923,7 +2026,7 @@ _mesa_GetTexImage( GLenum target, GLint level, GLenum format,
                GLint col;
                for (col = 0; col < width; col++) {
                   (*texImage->FetchTexelf)(texImage, col, row, img,
-                                           (GLvoid *) &depthRow[col]);
+                                           depthRow + col);
                }
                _mesa_pack_depth_span(ctx, width, dest, type,
                                      depthRow, &ctx->Pack);
@@ -1948,14 +2051,15 @@ _mesa_GetTexImage( GLenum target, GLint level, GLenum format,
             }
             else {
                /* general case:  convert row to RGBA format */
-               GLchan rgba[MAX_WIDTH][4];
+               GLfloat rgba[MAX_WIDTH][4];
                GLint col;
                for (col = 0; col < width; col++) {
-                  (*texImage->FetchTexelc)(texImage, col, row, img, rgba[col]);
+                  (*texImage->FetchTexelf)(texImage, col, row, img, rgba[col]);
                }
-               _mesa_pack_rgba_span_chan(ctx, width, (const GLchan (*)[4])rgba,
-                                    format, type, dest, &ctx->Pack,
-                                    0 /* no image transfer */);
+               _mesa_pack_rgba_span_float(ctx, width,
+                                          (const GLfloat (*)[4]) rgba,
+                                          format, type, dest, &ctx->Pack,
+                                          0 /* no image transfer */);
             } /* format */
          } /* row */
       } /* img */
@@ -2294,7 +2398,7 @@ _mesa_TexSubImage1D( GLenum target, GLint level,
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
    assert(texImage);
 
-   if (width == 0 || !pixels)
+   if (width == 0)
       return;  /* no-op, not an error */
 
    /* If we have a border, xoffset=-1 is legal.  Bias by border width */
@@ -2341,7 +2445,7 @@ _mesa_TexSubImage2D( GLenum target, GLint level,
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
    assert(texImage);
 
-   if (width == 0 || height == 0 || !pixels)
+   if (width == 0 || height == 0)
       return;  /* no-op, not an error */
 
    /* If we have a border, xoffset=-1 is legal.  Bias by border width */
@@ -2383,7 +2487,7 @@ _mesa_TexSubImage3D( GLenum target, GLint level,
    texImage = _mesa_select_tex_image(ctx, texUnit, target, level);
    assert(texImage);
 
-   if (width == 0 || height == 0 || height == 0 || !pixels)
+   if (width == 0 || height == 0 || height == 0)
       return;  /* no-op, not an error */
 
    /* If we have a border, xoffset=-1 is legal.  Bias by border width */
@@ -2721,8 +2825,8 @@ compressed_texture_error_check(GLcontext *ctx, GLint dimensions,
    if (level < 0 || level >= maxLevels)
       return GL_INVALID_VALUE;
 
-   expectedSize = _mesa_compressed_texture_size(ctx, width, height, depth,
-                                                internalFormat);
+   expectedSize = ctx->Driver.CompressedTextureSize(ctx, width, height, depth,
+                                                    internalFormat);
    if (expectedSize != imageSize)
       return GL_INVALID_VALUE;
 
@@ -2732,6 +2836,9 @@ compressed_texture_error_check(GLcontext *ctx, GLint dimensions,
 
 /**
  * Error checking for glCompressedTexSubImage[123]D().
+ * \warning  There are some bad assumptions here about the size of compressed
+ *           texture tiles (multiple of 4) used to test the validity of the
+ *           offset and size parameters.
  * \return error code or GL_NO_ERROR.
  */
 static GLenum
@@ -2742,6 +2849,7 @@ compressed_subtexture_error_check(GLcontext *ctx, GLint dimensions,
                                   GLenum format, GLsizei imageSize)
 {
    GLint expectedSize, maxLevels = 0, maxTextureSize;
+   (void) zoffset;
 
    if (dimensions == 1) {
       /* 1D compressed textures not allowed */
@@ -2789,6 +2897,9 @@ compressed_subtexture_error_check(GLcontext *ctx, GLint dimensions,
    if (level < 0 || level >= maxLevels)
       return GL_INVALID_VALUE;
 
+   /* XXX these tests are specific to the compressed format.
+    * this code should be generalized in some way.
+    */
    if ((xoffset & 3) != 0 || (yoffset & 3) != 0)
       return GL_INVALID_VALUE;
 
@@ -2798,8 +2909,8 @@ compressed_subtexture_error_check(GLcontext *ctx, GLint dimensions,
    if ((height & 3) != 0 && height != 2 && height != 1)
       return GL_INVALID_VALUE;
 
-   expectedSize = _mesa_compressed_texture_size(ctx, width, height, depth,
-                                                format);
+   expectedSize = ctx->Driver.CompressedTextureSize(ctx, width, height, depth,
+                                                    format);
    if (expectedSize != imageSize)
       return GL_INVALID_VALUE;
 
@@ -3086,7 +3197,7 @@ _mesa_CompressedTexSubImage1DARB(GLenum target, GLint level, GLint xoffset,
       return;
    }
       
-   if (width == 0 || !data)
+   if (width == 0)
       return;  /* no-op, not an error */
 
    if (ctx->Driver.CompressedTexSubImage1D) {
@@ -3137,7 +3248,7 @@ _mesa_CompressedTexSubImage2DARB(GLenum target, GLint level, GLint xoffset,
       return;
    }
       
-   if (width == 0 || height == 0 || !data)
+   if (width == 0 || height == 0)
       return;  /* no-op, not an error */
 
    if (ctx->Driver.CompressedTexSubImage2D) {
@@ -3188,7 +3299,7 @@ _mesa_CompressedTexSubImage3DARB(GLenum target, GLint level, GLint xoffset,
       return;
    }
       
-   if (width == 0 || height == 0 || depth == 0 || !data)
+   if (width == 0 || height == 0 || depth == 0)
       return;  /* no-op, not an error */
 
    if (ctx->Driver.CompressedTexSubImage3D) {
