@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.114 2003/03/19 01:49:23 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.115 2003/05/20 23:35:46 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -535,6 +535,17 @@ clean cleantc::								@@\
 		(set -x; $(MKDIRHIER) dir); \				@@\
 	fi
 #endif /* MakeDir */
+
+#ifndef MakeDirInline(dir)
+#define MakeDirInline(dir) if [ -d dir ]; then \			@@\
+		:; \							@@\
+	else \								@@\
+		if [ -h dir ]; then \					@@\
+			(set -x; rm -f dir); \				@@\
+		fi; \							@@\
+		(set -x; $(MKDIRHIER) dir); \				@@\
+	fi
+#endif /* MakeDirInline */
 
 #ifndef InstallDirectory
 #define InstallDirectory(dir)						@@\
@@ -2493,6 +2504,16 @@ clean::									@@\
 	cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .
 #endif
 #endif /* LinkBuildLibrary */
+
+#ifndef LinkBuildLibraryInline
+#ifdef UseInstalled
+#define LinkBuildLibraryInline(lib) true
+#else
+#define LinkBuildLibraryInline(lib) MakeDirInline($(BUILDLIBDIR)); \	@@\
+	RemoveFile($(BUILDLIBDIR)/lib); \				@@\
+	(cd $(BUILDLIBDIR) && $(LN) $(BUILDLIBTOP)/$(CURRENT_DIR)/lib .)
+#endif
+#endif /* LinkBuildLibraryInline */
 
 #ifndef LinkBuildLibraryMaybe
 #ifdef UseInstalled
