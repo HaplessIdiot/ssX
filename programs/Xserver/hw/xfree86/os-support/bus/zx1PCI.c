@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.1tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -97,6 +97,8 @@
 #define LBA_PORT5_CNTRL		0x1228U
 #define LBA_PORT6_CNTRL		0x1230U
 #define LBA_PORT7_CNTRL		0x1238U
+#define LBA_ROPE_RESET		  0x01UL
+#define LBA_CLEAR_ERROR		  0x10UL
 #define LBA_HARD_FAIL		  0x40UL
 
 #define ROPE_PAGE_CONTROL	0x1418U
@@ -326,7 +328,8 @@ ControlZX1Bridge(int bus, CARD16 mask, CARD16 value)
 	}
 
 	/* Move on to master abort failure enablement */
-	tmp1 = MIO_QUAD((ropenum << 3) + LBA_PORT0_CNTRL);
+	tmp1 = MIO_QUAD((ropenum << 3) + LBA_PORT0_CNTRL) &
+	       ~(LBA_ROPE_RESET | LBA_CLEAR_ERROR);
 	if ((tmp1 & LBA_HARD_FAIL) || (tmp2 & IOA_HARD_FAIL)) {
 	    current |= PCI_PCI_BRIDGE_MASTER_ABORT_EN;
 	    if ((mask & PCI_PCI_BRIDGE_MASTER_ABORT_EN) &&
@@ -513,7 +516,8 @@ xf86PreScanZX1(void)
 	if (zx1_ropemap[i] == i) {
 
 	    /* Prevent hard-fails */
-	    zx1_lbacntl[i] = MIO_QUAD((i << 3) + LBA_PORT0_CNTRL);
+	    zx1_lbacntl[i] = MIO_QUAD((i << 3) + LBA_PORT0_CNTRL) &
+		~(LBA_ROPE_RESET | LBA_CLEAR_ERROR);
 	    if (zx1_lbacntl[i] & LBA_HARD_FAIL)
 		MIO_QUAD((i << 3) + LBA_PORT0_CNTRL) =
 		    zx1_lbacntl[i] & ~LBA_HARD_FAIL;
