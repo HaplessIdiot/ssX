@@ -1,7 +1,7 @@
 #ifndef __GLX_glxint_h__
 #define __GLX_glxint_h__
 
-/* $XFree86: xc/include/GL/glxint.h,v 1.7 2004/12/10 16:06:55 alanh Exp $ */
+/* $XFree86: xc/include/GL/glxint.h,v 1.8 2004/12/10 19:07:44 alanh Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -55,7 +55,7 @@ struct __GLXvisualConfigRec {
 #define __GLX_MIN_CONFIG_PROPS	18
 #define __GLX_MAX_CONFIG_PROPS	500
 
-#define __GLX_EXT_CONFIG_PROPS 	10
+#define __GLX_EXT_CONFIG_PROPS 	7
 
 /*
 ** Since we send all non-core visual properties as token, value pairs,
