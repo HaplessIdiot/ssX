@@ -1,5 +1,5 @@
 /* $XConsortium: bsd_video.c,v 1.1 94/03/28 21:28:12 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.0 1994/04/29 14:09:06 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -58,6 +58,7 @@ static int MapCount = 0;
 
 static Bool devMemChecked = FALSE;
 static Bool useDevMem = FALSE;
+static int  devMemFd = -1;
 
 /*
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
@@ -84,7 +85,8 @@ Bool warn;
 	/* Try to map a page at the VGA address */
 	base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
 			     MAP_FILE, fd, (off_t)0xA0000);
-	close(fd);
+	devMemFd = fd;
+
 	if (base == (pointer)-1)
 	{
 	    if (warn)
@@ -115,16 +117,13 @@ unsigned long Size;
 
 	if (useDevMem)
 	{
-	    int memFd;
-
-	    if ((memFd = open("/dev/mem", O_RDWR)) < 0)
+	    if (devMemFd < 0) 
 	    {
 		FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
 			   strerror(errno));
 	    }
 	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FILE, memFd, (off_t)Base);
-	    close(memFd);
+				 MAP_FILE, devMemFd, (off_t)Base);
 	    if (base == (pointer)-1)
 	    {
 		FatalError("%s: could not mmap /dev/mem [s=%x,a=%x] (%s)\n",
