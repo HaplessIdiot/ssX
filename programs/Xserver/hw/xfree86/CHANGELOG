@@ -1,4 +1,9 @@
 XFree86 4.0.99.3 (xx April 2001)
+ 416. xf86config build fix for non-GNU make (Marc La France).
+ 415. Build fix for Summa driver on SunOS/Sparc (Marc La France).
+ 414. compiler.h cleanup (Marc La France).
+ 413. More DependDefines, OS_DEFINES and EXT_DEFINES build fixes
+      (Marc La France).
  412. Fix installation of specs docs (#4575, Branden Robinson).
  411. Make Cygwin/XFree86 call miSetPixmapDepth for RENDER extension
       (Alan Hourihane).
@@ -13031,4 +13036,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1708 2001/04/22 19:52:33 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1709 2001/04/23 15:54:00 dawes Exp $

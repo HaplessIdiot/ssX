@@ -24,7 +24,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.7 2001/04/01 14:00:13 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.8 2001/04/05 17:42:34 dawes Exp $ */
 
 static const char identification[] = "$Identification: 18 $";
 
@@ -1090,10 +1090,14 @@ xf86SumOpenDevice(DeviceIntPtr pSum)
 static void
 xf86SumInitPrivate (SummaDevicePtr priv)
 {
+#if defined (sun) && !defined(i386)
+    char *dev_name;
+#endif
+
     if (priv == NULL) return;
 
 #if defined(sun) && !defined(i386)
-    if (dev_name) {
+    if ((dev_name = getenv("SUMMASKETCH_DEV"))) {
 	priv->sumDevice = xalloc(strlen(dev_name) + 1);
 	strcpy(priv->sumDevice, dev_name);
 	ErrorF("xf86SumOpen port changed to '%s'\n", priv->sumDevice);
@@ -1333,9 +1337,6 @@ xf86SumAllocate(void)
 {
     LocalDevicePtr	local;
     SummaDevicePtr	priv;
-#if defined (sun) && !defined(i386)
-    char		*dev_name = getenv("SUMMASKETCH_DEV");
-#endif
 
     priv = xalloc(sizeof(SummaDeviceRec));
     if (!priv)
