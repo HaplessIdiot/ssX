@@ -19,7 +19,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/fontconfig/src/fccache.c,v 1.2tsi Exp $ */
 
 #include "fcint.h"
 
@@ -530,8 +530,9 @@ FcGlobalCacheScanDir (FcFontSet		*set,
 	}
     for (subdir = d->subdirs; subdir; subdir = subdir->next)
     {
-	FcFilePathInfo	info = FcFilePathInfoGet (subdir->ent->info.file);
+	FcFilePathInfo info;
 	
+	info = FcFilePathInfoGet (subdir->ent->info.file);
 	if (!FcCacheFontSetAdd (set, dirs, dir, dir_len,
 				info.base, FC_FONT_FILE_DIR))
 	{

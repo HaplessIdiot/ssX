@@ -26,7 +26,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.33 2003/10/24 16:32:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.34tsi Exp $ */
 
 #include "fontmisc.h"
 
@@ -1248,7 +1248,6 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
     char *sp, *ep, val[MAXFONTNAMELEN], *vp;
     FTFacePtr face;
     FTInstancePtr instance;
-    FT_Size_Metrics smetrics;
     FTNormalisedTransformationPtr trans;
     int upm;
     TT_OS2 *os2;
@@ -1259,7 +1258,6 @@ FreeTypeAddProperties(FTFontPtr font, FontScalablePtr vals, FontInfoPtr info,
 
     instance = font->instance;
     face = instance->face;
-    smetrics = instance->size->metrics;
     trans = &instance->transformation;
     upm = face->face->units_per_EM;
     if(upm == 0) {
@@ -2756,7 +2754,7 @@ FreeTypeLoadXFont(char *fileName,
     FTInstancePtr instance;
     FT_Size_Metrics *smetrics;
     int xrc=Successful;
-    int charcell, constantWidth;
+    int charcell;
     long rawWidth = 0, rawAverageWidth = 0;
     int upm, minLsb, maxRsb, ascent, descent, width, averageWidth;
     double scale, base_width, base_height;
@@ -2812,8 +2810,9 @@ FreeTypeLoadXFont(char *fileName,
 	    vals->point_matrix[1] * tmp_ttcap.autoItalic;
     }
 
-    if(MAX((base_width=hypot(vals->pixel_matrix[0], vals->pixel_matrix[1])),
-           (base_height=hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]))) < 1.0 ) {
+    base_width=hypot(vals->pixel_matrix[0], vals->pixel_matrix[1]);
+    base_height=hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]);
+    if(MAX(base_width, base_height) < 1.0 ) {
         xrc = BadFontName;
 	goto quit;
     }
@@ -2837,8 +2836,6 @@ FreeTypeLoadXFont(char *fileName,
     scale = 1.0 / upm;
 
     charcell = (instance->spacing == FT_CHARCELL);
-    constantWidth = ( charcell
-	|| (instance->spacing == FT_MONOSPACED) );
 
     if( instance->charcellMetrics == NULL ) {
 
