@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.443 2000/08/09 23:40:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Version.h,v 3.444 2000/08/25 13:42:35 dawes Exp $ */
 
 #define XF86_VERSION " 4.0.1c "
 
@@ -7,7 +7,7 @@
 #define XF86_VERSION_MINOR	0
 #define XF86_VERSION_SUBMINOR	1
 #define XF86_VERSION_BETA	0	/* 0="", 1="A", 2="B", etc... */
-#define XF86_VERSION_ALPHA	c	/* 0="", 1="a", 2="b", etc... */
+#define XF86_VERSION_ALPHA	3	/* 0="", 1="a", 2="b", etc... */
 
 #define XF86_VERSION_NUMERIC(major,minor,subminor,beta,alpha)	\
    ((((((((major << 7) | minor) << 7) | subminor) << 5) | beta) << 5) | alpha)
