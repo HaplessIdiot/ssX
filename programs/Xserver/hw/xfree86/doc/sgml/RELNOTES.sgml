@@ -6,10 +6,10 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>21 February 2000
+<date>1 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.30 2000/02/29 03:09:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.31 2000/02/29 18:01:18 dawes Exp $
 </ident>
 
 <abstract>
@@ -21,9 +21,12 @@ in XFree86 &relvers; and their status.
 
 <toc>
 
+<sect>Summary of what is new in XFree86 4.
+
 <sect>Summary of new features in &relvers; compared with &prevrelvers;.
 <p>
 
+<!--
 <sect>Summary of new features in 3.9.18 compared with 3.9.17.
 <p>
 This section contains a brief summary of what has changed since the
@@ -126,6 +129,7 @@ that are new to the pre-4.0 snapshot series.
   <item>Some work on adding WYSIWYG capabilities to the Xaw text widget.
   <item>Some preliminary support for programming modes has been added to xedit.
 </itemize>
+-->
 
 <sect>X server
 <p>

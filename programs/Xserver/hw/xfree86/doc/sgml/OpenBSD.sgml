@@ -9,7 +9,7 @@ Matthieu Herrb
 <Date>Last modified on: 20 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.8 2000/02/29 03:09:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.9 2000/03/03 20:02:15 dawes Exp $
 </ident>
 
 <toc>
@@ -48,8 +48,8 @@ XFree86 also builds on other OpenBSD architectures. See section
 <sect>Bug Reports for This Document
 
 <p>
-Send email to <em/herrb@xfree86.org/ (Matthieu Herrb) or
-<em/XFree86@XFree86.org/ if you have comments or suggestions about
+Send email to <email>herrb@xfree86.org</email> (Matthieu Herrb) or
+<email>XFree86@XFree86.org</email> if you have comments or suggestions about
 this file and we'll revise it.
 
 <sect>New OS dependent features
@@ -84,8 +84,8 @@ post 2.6 OpenBSD-current for PS/2 mices.
 <sect>Installing the Binaries
 
 <p>
-Refer to section 5 of the <htmlurl url="RELNOTES.html" name="Release
-Notes">  for detailed installation instructions.
+Refer to the <htmlurl url="Install.html" name="Installation Document">
+for detailed installation instructions.
 
 <sect>Configuring X for Your Hardware
 <p>
@@ -251,8 +251,10 @@ changes to the <tt/xf86site.def/, type ``<tt>./mkmf</tt>'' and
 ``<tt/make/'' to link the server.  See <tt>/usr/X11R6/lib/Server/README</tt>
 for more info.
 
+<!-- out of date
 See <htmlurl url="INSTALL.html" name="INSTALL"> for instructions on
 unbundling and building the source distribution.
+-->
 
 You should configure the distribution by editing
 <tt>xc/config/cf/host.def</tt>  before compiling.  To compile the

@@ -10,7 +10,7 @@
 <date> 06 March 1999
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.21 1999/07/19 13:36:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/isc.sgml,v 3.22 1999/08/28 10:43:33 dawes Exp $
 </ident>
 
 <toc>
@@ -336,24 +336,13 @@ I could only test these cards on Interactive UNIX
 
 </itemize>
 
+<!-- this is out of date
 <sect>XKeyboard Extension<p>
 
 <itemize>
 <item>Sample Setup &hellip; <p>
 Here is a sample XKeyboard Definition to include inside the Keyboard Section
 of your XF86Config File.
-<verb>
-    Xkbkeycodes "xfree86"
-/*    XkbSymbols  "us(pc101)+de_nodead"  */
-/*    This has changed between 3.1.2E and 3.1.2F */
-/*    it is now:                                 */
-    XkbSymbols  "us(pc102)+de(nodeadkeys)"
-    XkbTypes    "default"
-    XkbCompat   "default"
-    XkbGeometry "pc"
-</verb>
-
-or you could use this one with the new Options:
 <verb>
    XkbRules        "xfree86"
    XkbModel        "pc102"
@@ -362,6 +351,7 @@ or you could use this one with the new Options:
 </verb>
 
 </itemize>
+-->
 
 <sect> Multibuffer Extension <p>
 
@@ -456,10 +446,12 @@ make install.man
 </verb>
 to install the compressed nroff versions of the manual pages into 
 /usr/X11R6/man. This directory will be generated if it doesn't exist.
+<!--
 <verb>
 make install.linkkit
 </verb>
 to install the server binary LinkKit into /usr/X11R6/lib/Server.
+-->
 
 <code>
        You should tune the Kernel using the command-file
@@ -517,6 +509,7 @@ You could do this automatically with menu entry no. 5.
        The new Xprint Server is configured to use lpr as its print helper
        so you have to install and configure lpr to use Xprt.<p>
 
+<!-- out of date
 <item>Keyboard:<p>
        You don't need any modmap-File to get your keyboard
        working with any iso-8859-1 Font. Simply enable 
@@ -530,6 +523,7 @@ You could do this automatically with menu entry no. 5.
    </itemize>
 
         in your XF86Config - Section "Keyboard"
+-->
 
 <item>xpcterm: <p>
         if you want to get the German 'Umlaut' inside your ISC X11R4 client

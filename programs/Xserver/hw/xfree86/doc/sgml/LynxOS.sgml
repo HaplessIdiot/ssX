@@ -8,7 +8,7 @@
 <date>25 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.17 1999/08/23 06:38:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LynxOS.sgml,v 3.18 2000/03/03 20:02:14 dawes Exp $
 </ident>
 
 <toc>
@@ -51,14 +51,12 @@ supported by LynxOS though this has not (yet) been thoroughly tested.
 
 If you need binaries for other platforms than the one on the
 XFree86 FTP server or if you have comments or suggestions about this
-document contact me (<htmlurl name="tmueller@sysgo.de"
-url="mailto:tmueller@sysgo.de">).
+document contact me (<email>tmueller@sysgo.de</email>).
 
 <sect>Installing the Binaries
 <p>
-Please refer to section "Installing the XFree86 &relvers;" of the 
-<htmlurl url="RELNOTES.html" name="Release Notes"> for detailed 
-installation instructions.
+Please refer to the <htmlurl name="Installation Document"
+url="Install.html"> for detailed installation instructions.
 
 It may be necessary to increase the process stack limit in order to
 run XFree86 on your system. Edit <tt>/etc/startab</tt> and reboot your
@@ -72,7 +70,7 @@ further information on necessary configuration steps before running
 XFree86 on LynxOS. 
 
 <sect1>Accessing XFree86 manual pages
-
+<p>
 Include <tt>/usr/X11R6/man</tt> in the MANPATH environment variable or add 
 the directory <tt>/usr/X11R6/man</tt> to <tt>/usr/Lib/man.config</tt>
 
@@ -82,9 +80,11 @@ the directory <tt>/usr/X11R6/man</tt> to <tt>/usr/Lib/man.config</tt>
 This section describes the changes to the LynxOS environment 
 which may be necessary to successfully run XFree86.
 
+<!--
 Read <htmlurl url="QuickStart.html" name="Quick-Start Guide 
 to XFree86 Setup"> to learn more about how to configure XFree86 for
 your hardware.
+-->
 
 <sect1>System tuning<p>
 <sect2>Tunable parameters<p>
@@ -97,7 +97,7 @@ On LynxOS 2.5.x and 3.0.x include a line
 
 in <tt>/sys/lynx.os/uparam.h</tt>.
 
-<sect2>Adjustment for "nv" driver for NVidia graphics cards
+<sect2>Adjustment for "nv" driver for NVidia graphics cards<p>
 
 If you're using the "nv" driver (Riva 128, nVidia TNT, TNT2, GeForce),
 you will have to increase the value of the SMEMS parameter in
@@ -130,7 +130,7 @@ Then add a line
 <tscreen><verb>
   I:../drivers/mtrr/mtrr.cfg
 </verb></tscreen>
-to <tt>/sys/lynx.os/CONFIG.TBL</tt> and rebuil the kernel (see next section).
+to <tt>/sys/lynx.os/CONFIG.TBL</tt> and rebuild the kernel (see next section).
 
 <sect2>Kernel build<p>
 
@@ -161,7 +161,7 @@ contained code to translate the PS/2 mouse protocol to the format of a
 serial mouse, thus you'll have to specify "Microsoft" as the mouse
 protocol format. The mouse driver contained in LynxOS x86 patchlevel
 015 (and higher) does no longer perform the protocol translation an
-therfore can be defined as "PS/2" protocol format.
+therefore can be defined as "PS/2" protocol format.
   
 
 <sect1> ATC console driver and VT switching<p>
@@ -190,7 +190,7 @@ terminals in <tt>/etc/ttys</tt>, e.g. <tt>/dev/atc3</tt>:
 
 Output made by the XFree86 X on its stdout or stderr will be lost
 after the server switches to graphics mode. The XFree86 &relvers;
-server stores its ouput in <tt>/usr/adm/XFree86.n.log</tt> (where
+server stores its output in <tt>/usr/adm/XFree86.n.log</tt> (where
 <tt>n</tt> is the screen number).
 
 When the X server is running output made to other consoles will be
@@ -279,9 +279,10 @@ modified to work with XFree86. In every reference to
 
 <sect>Compiling the XFree86 Distribution<p>
 
+<!-- out of date
 Before trying to rebuild XFree86 from source read <htmlurl url="BUILD.html"
 name="Building XFree86"> for a detailed description of the build
-process. The next sections contain LynxOS specific notes with
+process. -->The next sections contain LynxOS specific notes with
 respect to the build process.
 
 <sect1>Disk space requirements<p>
@@ -331,8 +332,10 @@ calls in <tt>libc</tt>. To reduce confusion you should modify
 
 <sect1> make World<p>
 
+<!-- out of date
 Read <htmlurl url="BUILD.html" name="Building XFree86"> before trying
 to rebuild XFree86 from the source distribution.
+-->
 
 If you have the MTRR device driver installed, add a line
 
