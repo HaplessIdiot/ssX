@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.19 1996/12/09 11:48:57 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.20 1996/12/23 05:58:20 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -51,6 +51,9 @@ from Kaleb S. KEITHLEY
 #define X_XF86VidModeSwitchToMode	10
 #define X_XF86VidModeGetViewPort	11
 #define X_XF86VidModeSetViewPort	12
+#define X_XF86VidModeGetDotClocks	13
+
+#define CLKFLAG_PROGRAMABLE		1
 
 #ifdef XF86VIDMODE_EVENTS
 #define XF86VidModeNotify		0
@@ -80,6 +83,7 @@ typedef struct {
     unsigned short	hsyncstart;
     unsigned short	hsyncend;
     unsigned short	htotal;
+    unsigned short	hskew;
     unsigned short	vdisplay;
     unsigned short	vsyncstart;
     unsigned short	vsyncend;
@@ -95,6 +99,7 @@ typedef struct {
     unsigned short	hsyncstart;
     unsigned short	hsyncend;
     unsigned short	htotal;
+    unsigned short	hskew;
     unsigned short	vdisplay;
     unsigned short	vsyncstart;
     unsigned short	vsyncend;
@@ -252,6 +257,17 @@ Bool XF86VidModeSetViewPort(
     int			/* screen */,
     int			/* x */,
     int			/* y */
+#endif
+);
+
+Bool XF86VidModeGetDotClocks(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    int*		/* flags return */,
+    int*		/* number of clocks return */,
+    int*		/* max dot clock return */,
+    int**		/* clocks return */
 #endif
 );
 
