@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.8 2002/11/08 08:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/x11.c,v 1.9 2002/11/10 16:29:11 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -125,7 +125,7 @@ x-open-display &optional display-name
 
     display_name = ARGUMENT(0);
 
-    if (display_name == NIL)
+    if (display_name == UNSPEC)
 	dname = NULL;
     else {
 	CHECK_STRING(display_name);
@@ -226,9 +226,12 @@ Lisp_XBlackPixel(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (oscreen == NIL)	screen = DefaultScreen(display);
-    else		CHECK_INDEX(oscreen);
-    else		screen = FIXNUM_VALUE(oscreen);
+    if (oscreen == UNSPEC)
+	screen = DefaultScreen(display);
+    else
+	CHECK_INDEX(oscreen);
+    else
+	screen = FIXNUM_VALUE(oscreen);
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -273,9 +276,12 @@ Lisp_XWhitePixel(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (oscreen == NIL)	screen = DefaultScreen(display);
-    else		CHECK_FIXNUM(oscreen);
-    else		screen = FIXNUM_VALUE(oscreen);
+    if (oscreen == UNSPEC)
+	screen = DefaultScreen(display);
+    else
+	CHECK_FIXNUM(oscreen);
+    else
+	screen = FIXNUM_VALUE(oscreen);
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -320,9 +326,12 @@ Lisp_XDefaultGC(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (oscreen == NIL)	screen = DefaultScreen(display);
-    else		CHECK_FIXNUM(oscreen);
-    else		screen = FIXNUM_VALUE(oscreen);
+    if (oscreen == UNSPEC)
+	screen = DefaultScreen(display);
+    else
+	CHECK_FIXNUM(oscreen);
+    else
+	screen = FIXNUM_VALUE(oscreen);
 
     if (screen >= ScreenCount(display))
 	LispDestroy("%s: screen index %d too large, %d screens available",
@@ -397,15 +406,21 @@ Lisp_XCreateSimpleWindow(LispBuiltin *builtin)
     height = FIXNUM_VALUE(oheight);
 
     /* check &OPTIONAL parameters */
-    if (oborder_width == NIL)	border_width = 1;
-    else			CHECK_INDEX(oborder_width);
-    else			border_width = FIXNUM_VALUE(oborder_width);
+    if (oborder_width == UNSPEC)
+	border_width = 1;
+    else
+	CHECK_INDEX(oborder_width);
+    else
+	border_width = FIXNUM_VALUE(oborder_width);
 
-    if (oborder == NIL)	border = BlackPixel(display, DefaultScreen(display));
-    else		CHECK_LONGINT(oborder);
-    else		border = LONGINT_VALUE(oborder);
+    if (oborder == UNSPEC)
+	border = BlackPixel(display, DefaultScreen(display));
+    else
+	CHECK_LONGINT(oborder);
+    else
+	border = LONGINT_VALUE(oborder);
 
-    if (obackground == NIL)
+    if (obackground == UNSPEC)
 	background = WhitePixel(display, DefaultScreen(display));
     else
 	CHECK_LONGINT(obackground);
@@ -571,9 +586,12 @@ Lisp_XBell(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(odisplay));
     display = (Display*)(odisplay->data.opaque.data);
 
-    if (opercent == NIL)	percent = 0;
-    else			CHECK_LONGINT(opercent);
-    else			percent = LONGINT_VALUE(opercent);
+    if (opercent == UNSPEC)
+	percent = 0;
+    else
+	CHECK_FIXNUM(opercent);
+    else
+	percent = FIXNUM_VALUE(opercent);
 
     if (percent < -100 || percent > 100)
 	LispDestroy("%s: percent value %d out of range -100 to 100",

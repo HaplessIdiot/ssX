@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.5 2002/09/18 17:11:54 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lsp.c,v 1.6 2002/11/08 08:00:57 paulo Exp $ */
 
 #include <stdio.h>
 #include <string.h>
@@ -64,7 +64,9 @@ main(int argc, char *argv[])
 	char buffer[2048];
 
 	for (; i < argc; i++) {
-	    snprintf(buffer, sizeof(buffer), "(load \"%s\")", argv[i]);
+	    snprintf(buffer, sizeof(buffer),
+		     "(load \"%s\" :if-does-not-exist :error)",
+		     argv[i]);
 	    LispExecute(buffer);
 	}
     }

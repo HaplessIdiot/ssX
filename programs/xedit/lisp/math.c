@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.19 2002/11/20 07:44:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.20 2002/11/21 07:25:10 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -533,7 +533,7 @@ Lisp_Complex(LispBuiltin *builtin)
 
     CHECK_REAL(realpart);
 
-    if (imagpart == NIL)
+    if (imagpart == UNSPEC)
 	return (realpart);
     else {
 	CHECK_REAL(imagpart);
@@ -603,7 +603,7 @@ Lisp_Decf(LispBuiltin *builtin)
     else
 	number = EVAL(place);
 
-    if (delta != NIL) {
+    if (delta != UNSPEC) {
 	LispObj *operand;
 
 	operand = EVAL(delta);
@@ -707,7 +707,7 @@ Lisp_Evenp(LispBuiltin *builtin)
 LispObj *
 Lisp_Float(LispBuiltin *builtin)
 /*
- float number &optional (other 1.0)
+ float number &optional other
  */
 {
     LispObj *number, *other;
@@ -836,7 +836,7 @@ Lisp_Incf(LispBuiltin *builtin)
     else
 	number = EVAL(place);
 
-    if (delta != NIL) {
+    if (delta != UNSPEC) {
 	LispObj *operand;
 
 	operand = EVAL(delta);
@@ -1385,7 +1385,7 @@ LispDivide(LispBuiltin *builtin, int fun, int flo)
 	return (RETURN(0) = obj_zero);
     }
 
-    if (divisor == NIL)
+    if (divisor == UNSPEC)
 	divisor = obj_one;
 
     set_number_object(&num, number);

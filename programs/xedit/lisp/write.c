@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.24 2002/11/20 07:44:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.c,v 1.25 2002/11/21 07:25:11 paulo Exp $ */
 
 #include "write.h"
 #include "hash.h"
@@ -170,6 +170,8 @@ Lisp_Princ(LispBuiltin *builtin)
     output_stream = ARGUMENT(1);
     object = ARGUMENT(0);
 
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
     head = lisp__data.env.length;
     LispAddVar(Oprint_escape, NIL);
     ++lisp__data.env.head;
@@ -190,6 +192,8 @@ Lisp_Print(LispBuiltin *builtin)
     output_stream = ARGUMENT(1);
     object = ARGUMENT(0);
 
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
     LispPrint(object, output_stream, 1);
 
     return (object);
@@ -198,50 +202,42 @@ Lisp_Print(LispBuiltin *builtin)
 LispObj *
 Lisp_Write(LispBuiltin *builtin)
 /*
- write object &key (case nil do-case) (circle nil do-circle) (escape nil do-escape) (length nil do-length) (level nil do-level) lines pretty readably right-margin stream
+ write object &key case circle escape length level lines pretty readably right-margin stream
  */
 {
     int head = lisp__data.env.length;
 
-    LispObj *object,
-	    *ocase, *do_case,
-	    *circle, *do_circle,
-	    *escape, *do_escape,
-	    *length, *do_length,
-	    *level, *do_level,
+    LispObj *object, *ocase, *circle, *escape, *length, *level,
 	    *lines, *pretty, *readably, *right_margin, *stream;
 
-    stream = ARGUMENT(15);
-    right_margin = ARGUMENT(14);	/* yet unused */
-    readably = ARGUMENT(13);		/* yet unused */
-    pretty = ARGUMENT(12);		/* yet unused */
-    lines = ARGUMENT(11);		/* yet unused */
-    do_level = ARGUMENT(10);
-    level = ARGUMENT(9);
-    do_length = ARGUMENT(8);
-    length = ARGUMENT(7);
-    do_escape = ARGUMENT(6);
-    escape = ARGUMENT(5);
-    do_circle = ARGUMENT(4);
-    circle = ARGUMENT(3);
-    do_case = ARGUMENT(2);
+    stream = ARGUMENT(10);
+    right_margin = ARGUMENT(9);		/* yet unused */
+    readably = ARGUMENT(8);		/* yet unused */
+    pretty = ARGUMENT(7);		/* yet unused */
+    lines = ARGUMENT(6);		/* yet unused */
+    level = ARGUMENT(5);
+    length = ARGUMENT(4);
+    escape = ARGUMENT(3);
+    circle = ARGUMENT(2);
     ocase = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    if (stream != NIL) {
+    if (stream == UNSPEC)
+	stream = NIL;
+    else if (stream != NIL) {
 	CHECK_STREAM(stream);
     }
 
     /* prepare the printer environment */
-    if (do_circle != NIL)
+    if (circle != UNSPEC)
 	LispAddVar(Oprint_circle, circle);
-    if (do_length != NIL)
+    if (length != UNSPEC)
 	LispAddVar(Oprint_length, length);
-    if (do_level != NIL)
+    if (level != UNSPEC)
 	LispAddVar(Oprint_level, level);
-    if (do_case != NIL)
+    if (ocase != UNSPEC)
 	LispAddVar(Oprint_case, ocase);
-    if (do_escape != NIL)
+    if (escape != UNSPEC)
 	LispAddVar(Oprint_escape, escape);
 
     lisp__data.env.head = lisp__data.env.length;
@@ -788,6 +784,8 @@ write_again:
 		string = St;
 	    else if (object == DOT)
 		string = "#<DOT>";
+	    else if (object == UNSPEC)
+		string = "#<UNSPEC>";
 	    else if (object == UNBOUND)
 		string = "#<UNBOUND>";
 	    else

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.6 2002/11/10 16:29:03 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.7 2002/11/21 07:25:08 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -480,7 +480,7 @@ Com_If(LispCom *com, LispBuiltin *builtin)
     /* Build T code */
     ComEval(com, then);
 
-    if (oelse != NIL) {
+    if (oelse != UNSPEC) {
 	/* Remember start of NIL code */
 	tree = NEW_TREE(CodeTreeJump);
 	tree->code = XBC_JUMP;
@@ -510,6 +510,8 @@ Com_Last(LispCom *com, LispBuiltin *builtin)
     ComEval(com, list);
     CompileStackEnter(com, 1, 1);
     com_Bytecode(com, XBC_PUSH);
+    if (count == UNSPEC)
+	count = FIXNUM(1);
     ComEval(com, count);
     CompileStackLeave(com, 1, 1);
     com_Bytecode(com, XBC_LAST);
@@ -1062,6 +1064,8 @@ ComReturnFrom(LispCom *com, LispBuiltin *builtin, int from)
 	result = ARGUMENT(0);
 	name = NIL;
     }
+    if (result == UNSPEC)
+	result = NIL;
 
     bind = block->bind;
     while (block) {
@@ -1076,8 +1080,7 @@ ComReturnFrom(LispCom *com, LispBuiltin *builtin, int from)
     }
 
     if (!block || block->tag != name)
-	LispDestroy("%s: no visible %s block",
-		    STRFUN(builtin), STROBJ(name));
+	LispDestroy("%s: no visible %s block", STRFUN(builtin), STROBJ(name));
 
     /* Generate code to load result */
     ComEval(com, result);
@@ -1269,7 +1272,7 @@ ComLabel(LispCom *com, LispObj *label)
     CodeTree *tree;
 
     for (i = 0; i < com->block->tagbody.length; i++)
-	if (XEQ(label, com->block->tagbody.labels[i]) == T)
+	if (label == com->block->tagbody.labels[i])
 	    LispDestroy("TAGBODY: tag %s specified more than once",
 			STROBJ(label));
 
@@ -1623,15 +1626,17 @@ rest_label:
 	ComPush(com, alist->rest, values, eval, builtin, compile);
     else {
 	char *string;
-	LispObj *list;
+	LispObj *list, *car = NIL;
 	int count, constantp;
 
 	/* Count number of arguments and check if it is a list of constants */
 	for (count = 0, constantp = 1, list = values;
 	     CONSP(list);
-	     list = CDR(list), count++)
-	    if (constantp && !ComConstantp(com, CAR(values)))
+	     list = CDR(list), count++) {
+	    car = CAR(list);
+	    if (constantp && !ComConstantp(com, car))
 		constantp = 0;
+	}
 
 	string = builtin ? ATOMID(name) : NULL;
 	/* XXX FIXME should have a flag indicating if function call
@@ -1640,7 +1645,9 @@ rest_label:
 	if (string && (count < MAX_BCONS || constantp) &&
 	    strcmp(string, "LIST") &&
 	    strcmp(string, "APPLY") &&	/* XXX depends on function argument */
-	    strcmp(string, "VECTOR")) {
+	    strcmp(string, "VECTOR") &&
+	    /* Append does not copy the last/single list */
+	    (!strcmp(string, "APPEND") || !CONSP(car))) {
 	    if (constantp) {
 		/* If the builtin function changes the &REST parameters, must
 		 * define a Com_XXX function for it. */
@@ -1664,7 +1671,7 @@ rest_label:
 	else {
 	    /* Allocate a fresh list of cons */
 
-	    /* Generate code to evaluate object */
+	    /* Generate code to load object */
 	    ComEval(com, CAR(values));
 
 	    com->stack.cpstack += 2;
@@ -1673,9 +1680,8 @@ rest_label:
 	    /* Start building a gc protected list, with the loaded value */
 	    com_Bytecode(com, XBC_LSTAR);
 
-	    values = CDR(values);
-	    for (; CONSP(values); values = CDR(values)) {
-		/* Generate code to evaluate object */
+	    for (values = CDR(values); CONSP(values); values = CDR(values)) {
+		/* Generate code to load object */
 		ComEval(com, CAR(values));
 
 		/* Add loaded value to gc protected list */
@@ -1753,8 +1759,9 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
     LispObj *lambda;
 
     switch (OBJECT_TYPE(function)) {
-	case LispAtom_t:
 	case LispFunction_t:
+	    function = function->data.atom->object;
+	case LispAtom_t:
 	    atom = function->data.atom;
 	    alist = atom->property->alist;
 
@@ -1944,16 +1951,8 @@ ComEval(LispCom *com, LispObj *object)
 
 	case LispFunctionQuote_t:
 	    object = object->data.quote;
-	    if (SYMBOLP(object) &&
-		((object->data.atom->a_builtin &&
-		  object->data.atom->property->fun.builtin->type ==
-		  LispFunction) ||
-		 (object->data.atom->a_function &&
-		  object->data.atom->property->fun.function->funtype ==
-		  LispFunction) ||
-		 /* XXX currently bytecode is only generated for functions */
-		 object->data.atom->a_compiled))
-		object = FUNCTION(object);
+	    if (SYMBOLP(object))
+		object = LispSymbolFunction(object);
 	    else if (CONSP(object) && CAR(object) == Olambda) {
 		/* object will only be associated with bytecode later,
 		 * so, make sure it is protected until compilation finishes */

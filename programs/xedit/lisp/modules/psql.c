@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.10 2002/11/08 08:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/psql.c,v 1.11 2002/11/10 16:29:11 paulo Exp $ */
 
 #include <stdlib.h>
 #include <libpq-fe.h>
@@ -501,7 +501,7 @@ Lisp_PQgetvalue(LispBuiltin *builtin)
 
     string = PQgetvalue(res, tuple, field);
 
-    if (type != NIL) {
+    if (type != UNSPEC) {
 	char *typestring;
 
 	CHECK_SYMBOL(type);

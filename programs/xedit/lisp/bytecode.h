@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.3 2002/11/02 22:58:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.h,v 1.4 2002/11/08 08:00:56 paulo Exp $ */
 
 #include "private.h"
 
@@ -84,8 +84,10 @@ typedef enum {
 
     XBC_PUSH,		/* Push argument in builtin stack */
     XBC_PUSH_NIL,	/* Pushes NIL in builtin stack */
+    XBC_PUSH_UNSPEC,	/* Pushes #<UNSPEC> in builtin stack */
     XBC_PUSH_T,		/* Pushes T in builtin stack */
     XBC_PUSH_NIL_N,	/* Pushes NIL in the builtin stack N times */
+    XBC_PUSH_UNSPEC_N,	/* Pushes #<UNSPEC> in the builtin stack N times */
 
 
 	/* The builtin stack base is saved when entering the bytecode

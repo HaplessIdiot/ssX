@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.34 2002/11/15 07:01:30 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/private.h,v 1.35 2002/11/21 07:25:10 paulo Exp $ */
 
 #ifndef Lisp_private_h
 #define Lisp_private_h
@@ -211,6 +211,7 @@ struct _LispAtom {
     int offset;			/* in the environment list */
     LispObj *package;		/* package home of symbol */
     LispObj *function;		/* symbol function */
+    LispObj *name;		/* symbol string */
     LispProperty *property;
     struct _LispAtom *next;
 };
@@ -310,6 +311,9 @@ struct _LispMac {
     LispObj *keyword;
     LispPackage *key;
 
+    /* the LISP package */
+    LispObj *lisp;
+
     /* only used if the package was changed, but an error generated
      * before returning to the toplevel */
     LispObj *savepackage;
@@ -406,7 +410,7 @@ struct _LispCharInfo {
  */
 void LispUseArgList(LispArgList*);
 void LispFreeArgList(LispArgList*);
-LispArgList *LispCheckArguments(LispFunType, LispObj*, char*);
+LispArgList *LispCheckArguments(LispFunType, LispObj*, char*, int);
 LispObj *LispListProtectedArguments(LispArgList*);
 
 LispObj *LispGetDoc(LispObj*);
@@ -458,6 +462,11 @@ LispAtom *LispDoGetAtom(char *str, int);
 LispObj *LispGetAtomProperty(LispAtom*, LispObj*);
 	/* put value in atom's property list */
 LispObj *LispPutAtomProperty(LispAtom*, LispObj*, LispObj*);
+
+	/* returns function associated with symbol */
+LispObj *LispSymbolFunction(LispObj*);
+	/* returns symbol string name */
+LispObj *LispSymbolName(LispObj*);
 
 	/* define byte compiled function, or replace definition */
 void LispSetAtomCompiledProperty(LispAtom*, LispObj*);

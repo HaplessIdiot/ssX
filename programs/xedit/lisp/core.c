@@ -27,12 +27,13 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.59 2002/11/20 07:44:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.60 2002/11/21 07:25:08 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
 #include "format.h"
 #include "helper.h"
+#include "package.h"
 #include "private.h"
 #include "write.h"
 
@@ -78,21 +79,46 @@ extern void unsetenv(const char *name);
 	    predicate == Oeq ? FEQ :				\
 		predicate == Oequalp ? FEQUALP : 0
 #define FCOMPARE(predicate, left, right, code)			\
-    code == FEQ ? (left == right ? T : NIL) :			\
-	code ? LispObjectCompare(left, right, code) :	\
-	       APPLY2(predicate, left, right)
+    code == FEQ ? left == right :				\
+	code ? LispObjectCompare(left, right, code) != NIL :	\
+	       APPLY2(predicate, left, right) != NIL
 
-LispObj *LispAdjoin(LispBuiltin*,
-		    LispObj*, LispObj*, LispObj*, LispObj*, LispObj*);
-LispObj *LispAssocOrMember(LispBuiltin*, int, int);
-LispObj *LispFindOrPosition(LispBuiltin*, int, int);
-LispObj *LispDeleteOrRemoveDuplicates(LispBuiltin*, int);
-LispObj *LispDeleteRemoveXSubstitute(LispBuiltin*, int, int);
-LispObj *LispListSet(LispBuiltin*, int);
+#define CHECK_TEST_0()						\
+    if (test != UNSPEC && test_not != UNSPEC)			\
+	LispDestroy("%s: specify either :TEST or :TEST-NOT",	\
+		    STRFUN(builtin))
+
+#define CHECK_TEST()						\
+    CHECK_TEST_0();						\
+    if (test_not == UNSPEC) {					\
+	if (test == UNSPEC)					\
+	    lambda = Oeql;					\
+	else							\
+	    lambda = test;					\
+	expect = 1;						\
+    }								\
+    else {							\
+	lambda = test_not;					\
+	expect = 0;						\
+    }								\
+    code = FCODE(lambda)
+
+
+static LispObj *LispAdjoin(LispBuiltin*,
+			   LispObj*, LispObj*, LispObj*, LispObj*, LispObj*);
+static LispObj *LispAssocOrMember(LispBuiltin*, int, int);
+static LispObj *LispFindOrPosition(LispBuiltin*, int, int);
+static LispObj *LispDeleteOrRemoveDuplicates(LispBuiltin*, int);
+static LispObj *LispDeleteRemoveXSubstitute(LispBuiltin*, int, int);
+static LispObj *LispListSet(LispBuiltin*, int);
+static LispObj *LispMapc(LispBuiltin*, int);
+static LispObj *LispMapl(LispBuiltin*, int);
 extern LispObj *LispRunSetf(LispArgList*, LispObj*, LispObj*, LispObj*);
 static LispObj *LispMergeSort(LispObj*, LispObj*, LispObj*, int);
-LispObj *LispXReverse(LispBuiltin*, int);
+static LispObj *LispXReverse(LispBuiltin*, int);
 static LispObj *LispCopyList(LispBuiltin*, LispObj*, int);
+
+extern void LispSetAtomObjectProperty(LispAtom*, LispObj*);
 
 /*
  * Initialization
@@ -117,6 +143,7 @@ LispCoreInit(void)
     Kinitial_contents	= KEYWORD("INITIAL-CONTENTS");
     Osetf		= STATIC_ATOM("SETF");
     Ootherwise		= STATIC_ATOM("OTHERWISE");
+    LispExportSymbol(Ootherwise);
     Oquote		= STATIC_ATOM("QUOTE");
 
     Svariable		= GETATOMID("VARIABLE");
@@ -146,32 +173,18 @@ Lisp_Acons(LispBuiltin *builtin)
     return (CONS(CONS(key, datum), alist));
 }
 
-LispObj *
+static LispObj *
 LispAdjoin(LispBuiltin*builtin, LispObj *item, LispObj *list,
 	   LispObj *key, LispObj *test, LispObj *test_not)
 {
     GC_ENTER();
-    int code;
-    LispObj *lambda, *compare, *expect, *value, *object;
+    int code, expect, value;
+    LispObj *lambda, *compare, *object;
 
     CHECK_LIST(list);
-    if (test != NIL && test_not != NIL)
-	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
+    CHECK_TEST();
 
-    if (test_not == NIL) {
-	if (test == NIL)
-	    lambda = Oeql;
-	else
-	    lambda = test;
-	expect = T;
-    }
-    else {
-	lambda = test_not;
-	expect = NIL;
-    }
-    code = FCODE(lambda);
- 
-    if (key != NIL) {
+    if (key != UNSPEC) {
 	item = APPLY1(key, item);
 	/* Result is not guaranteed to be gc protected */
 	GC_PROTECT(item);
@@ -180,7 +193,7 @@ LispAdjoin(LispBuiltin*builtin, LispObj *item, LispObj *list,
     /* Check if item is not already in place */
     for (object = list; CONSP(object); object = CDR(object)) {
 	compare = CAR(object);
-	if (key != NIL) {
+	if (key != UNSPEC) {
 	    compare = APPLY1(key, compare);
 	    GC_PROTECT(compare);
 	    value = FCOMPARE(lambda, item, compare, code);
@@ -190,8 +203,6 @@ LispAdjoin(LispBuiltin*builtin, LispObj *item, LispObj *list,
 	else
 	    value = FCOMPARE(lambda, item, compare, code);
 
-	if (value != NIL)
-	    value = T;
 	if (value == expect) {
 	    /* Item is already in list */
 	    GC_LEAVE();
@@ -337,7 +348,7 @@ Lisp_Aref(LispBuiltin *builtin)
     return (CAR(array));
 }
 
-LispObj *
+static LispObj *
 LispAssocOrMember(LispBuiltin *builtin, int function, int comparison)
 /*
  assoc item list &key test test-not key
@@ -348,8 +359,8 @@ LispAssocOrMember(LispBuiltin *builtin, int function, int comparison)
  member-if-not predicate list &key key
  */
 {
-    int code = 0;
-    LispObj *predicate, *expect, *result, *compare;
+    int code = 0, expect, value;
+    LispObj *lambda, *result, *compare;
 
     LispObj *item, *list, *test, *test_not, *key;
 
@@ -359,42 +370,26 @@ LispAssocOrMember(LispBuiltin *builtin, int function, int comparison)
 	test = ARGUMENT(2);
 	list = ARGUMENT(1);
 	item = ARGUMENT(0);
-	predicate = NIL;
+	lambda = NIL;
     }
     else {
 	key = ARGUMENT(2);
 	list = ARGUMENT(1);
-	predicate = ARGUMENT(0);
-	test = test_not = item = NIL;
+	lambda = ARGUMENT(0);
+	test = test_not = UNSPEC;
+	item = NIL;
     }
 
     if (list == NIL)
 	return (NIL);
-    else {
-	CHECK_CONS(list);
-    }
-
-    /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
-	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
+    CHECK_CONS(list);
 
     /* Resolve compare function, and expected result of comparison */
     if (comparison == NONE) {
-	if (test_not == NIL) {
-	    if (test == NIL)
-		predicate = Oeql;
-	    else
-		predicate = test;
-	    expect = T;
-	}
-	else {
-	    predicate = test_not;
-	    expect = NIL;
-	}
-	code = FCODE(predicate);
+	CHECK_TEST();
     }
     else
-	expect = comparison == IFNOT ? NIL : T;
+	expect = comparison == IFNOT ? 0 : 1;
 
     result = NIL;
     for (; CONSP(list); list = CDR(list)) {
@@ -404,16 +399,14 @@ LispAssocOrMember(LispBuiltin *builtin, int function, int comparison)
 		continue;
 	    compare = CAR(compare);
 	}
-	if (key != NIL)
+	if (key != UNSPEC)
 	    compare = APPLY1(key, compare);
 
 	if (comparison == NONE)
-	    compare = FCOMPARE(predicate, item, compare, code);
+	    value = FCOMPARE(lambda, item, compare, code);
 	else
-	    compare = APPLY1(predicate, compare);
-	if (compare != NIL)
-	    compare = T;
-	if (compare == expect) {
+	    value = APPLY1(lambda, compare) != NIL;
+	if (value == expect) {
 	    result = list;
 	    if (function == ASSOC)
 		result = CAR(result);
@@ -581,9 +574,6 @@ Lisp_Boundp(LispBuiltin *builtin)
 
     LispObj *symbol = ARGUMENT(0);
 
-    if (symbol == NIL || symbol == T)
-	return (T);
-
     CHECK_SYMBOL(symbol);
 
     atom = symbol->data.atom;
@@ -608,7 +598,7 @@ Lisp_Butlast(LispBuiltin *builtin)
     list = ARGUMENT(0);
 
     CHECK_LIST(list);
-    if (ocount == NIL)
+    if (ocount == UNSPEC)
 	count = 1;
     else {
 	CHECK_INDEX(ocount);
@@ -646,7 +636,7 @@ Lisp_Nbutlast(LispBuiltin *builtin)
     list = ARGUMENT(0);
 
     CHECK_LIST(list);
-    if (ocount == NIL)
+    if (ocount == UNSPEC)
 	count = 1;
     else {
 	CHECK_INDEX(ocount);
@@ -1009,9 +999,11 @@ Lisp_Defconstant(LispBuiltin *builtin)
     name = ARGUMENT(0);
 
     CHECK_SYMBOL(name);
-    if (documentation != NIL) {
+    if (documentation != UNSPEC) {
 	CHECK_STRING(documentation);
     }
+    else
+	documentation = NIL;
     LispDefconstant(name, EVAL(initial_value), documentation);
 
     return (name);
@@ -1032,7 +1024,7 @@ Lisp_Defmacro(LispBuiltin *builtin)
     name = ARGUMENT(0);
 
     CHECK_SYMBOL(name);
-    alist = LispCheckArguments(LispMacro, lambda_list, ATOMID(name));
+    alist = LispCheckArguments(LispMacro, lambda_list, ATOMID(name), 0);
 
     if (CONSP(body) && STRINGP(CAR(body))) {
 	LispAddDocumentation(name, CAR(body), LispDocFunction);
@@ -1074,7 +1066,7 @@ Lisp_Defun(LispBuiltin *builtin)
     name = ARGUMENT(0);
 
     CHECK_SYMBOL(name);
-    alist = LispCheckArguments(LispFunction, lambda_list, ATOMID(name));
+    alist = LispCheckArguments(LispFunction, lambda_list, ATOMID(name), 0);
 
     if (CONSP(body) && STRINGP(CAR(body))) {
 	LispAddDocumentation(name, CAR(body), LispDocFunction);
@@ -1128,7 +1120,7 @@ Lisp_Defsetf(LispBuiltin *builtin)
 	return (function);
     }
 
-    alist = LispCheckArguments(LispSetf, lambda_list, ATOMID(function));
+    alist = LispCheckArguments(LispSetf, lambda_list, ATOMID(function), 0);
 
     store = CAR(body);
     if (!CONSP(store))
@@ -1154,22 +1146,24 @@ Lisp_Defsetf(LispBuiltin *builtin)
 LispObj *
 Lisp_Defvar(LispBuiltin *builtin)
 /*
- defvar name &optional (initial-value nil bound) documentation
+ defvar name &optional initial-value documentation
  */
 {
-    LispObj *name, *initial_value, *bound, *documentation;
+    LispObj *name, *initial_value, *documentation;
 
-    documentation = ARGUMENT(3);
-    bound = ARGUMENT(2);
+    documentation = ARGUMENT(2);
     initial_value = ARGUMENT(1);
     name = ARGUMENT(0);
 
     CHECK_SYMBOL(name);
-    if (documentation != NIL) {
+    if (documentation != UNSPEC) {
 	CHECK_STRING(documentation);
     }
+    else
+	documentation = NIL;
 
-    LispProclaimSpecial(name, bound == T ? EVAL(initial_value) : NULL,
+    LispProclaimSpecial(name,
+			initial_value != UNSPEC ? EVAL(initial_value) : NULL,
 			documentation);
 
     return (name);
@@ -1491,6 +1485,7 @@ Lisp_Fill(LispBuiltin *builtin)
 	int ch;
 	char *string = THESTR(sequence);
 
+	CHECK_STRING_WRITABLE(sequence);
 	CHECK_SCHAR(item);
 	ch = SCHAR_VALUE(item);
 	for (i = start; i < end; i++)
@@ -1551,6 +1546,19 @@ Lisp_Funcall(LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Functionp(LispBuiltin *builtin)
+/*
+ functionp object
+ */
+{
+    LispObj *object;
+
+    object = ARGUMENT(0);
+
+    return (FUNCTIONP(object) || LAMBDAP(object) ? T : NIL);
+}
+
+LispObj *
 Lisp_Get(LispBuiltin *builtin)
 /*
  get symbol indicator &optional default
@@ -1564,22 +1572,14 @@ Lisp_Get(LispBuiltin *builtin)
     indicator = ARGUMENT(1);
     symbol = ARGUMENT(0);
 
-    if (!SYMBOLP(symbol)) {
-	if (symbol == NIL)
-	    symbol = ATOM(Snil);
-	else if (symbol == T)
-	    symbol = ATOM(St);
-	else
-	    LispDestroy("%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(symbol));
-    }
+    CHECK_SYMBOL(symbol);
 
     result = LispGetAtomProperty(symbol->data.atom, indicator);
 
     if (result != NIL)
 	result = CAR(result);
     else
-	result = defalt;
+	result = defalt == UNSPEC ? NIL : defalt;
 
     return (result);
 }
@@ -1618,7 +1618,7 @@ Lisp_Gc(LispBuiltin *builtin)
 
     LispGC(car, cdr);
 
-    return (car == NIL && cdr == NIL ? NIL : T);
+    return (NIL);
 }
 
 LispObj *
@@ -1627,40 +1627,28 @@ Lisp_Gensym(LispBuiltin *builtin)
  gensym &optional arg
  */
 {
-    int inc = 1, unreadable = 0;
-    char *ptr, *preffix = "G", name[132];
+    char *preffix = "G", name[132];
     long counter = LONGINT_VALUE(Ogensym_counter->data.atom->property->value);
     LispObj *symbol;
 
     LispObj *arg;
 
     arg = ARGUMENT(0);
-    if (arg != NIL) {
+    if (arg != UNSPEC) {
 	if (STRINGP(arg))
 	    preffix = THESTR(arg);
 	else {
 	    CHECK_INDEX(arg);
 	    counter = FIXNUM_VALUE(arg);
-	    inc = 0;
 	}
     }
     snprintf(name, sizeof(name), "%s%ld", preffix, counter);
     if (strlen(name) >= 128)
 	LispDestroy("%s: name %s too long", STRFUN(builtin), name);
-    Ogensym_counter->data.atom->property->value = INTEGER(counter + inc);
-
-    /* Check if string can be safely read back */
-    for (ptr = name; *ptr; ptr++)
-	if (islower(*ptr) || *ptr == '"' || *ptr == '\\' || *ptr == ';' ||
-	    *ptr == '#' || *ptr == ',' || *ptr == '@' || *ptr == '(' ||
-	    *ptr == ')' || *ptr == '`' || *ptr == '\'' || *ptr == '|' ||
-	    *ptr == ':') {
-	    unreadable = 1;
-	    break;
-	}
+    Ogensym_counter->data.atom->property->value = INTEGER(counter + 1);
 
     symbol = UNINTERNED_ATOM(name);
-    symbol->data.atom->unreadable = unreadable;
+    symbol->data.atom->unreadable = !LispCheckAtomString(name);
 
     return (symbol);
 }
@@ -1711,8 +1699,10 @@ Lisp_If(LispBuiltin *builtin)
     test = EVAL(test);
     if (test != NIL)
 	result = EVAL(then);
-    else
+    else if (oelse != UNSPEC)
 	result = EVAL(oelse);
+    else
+	result = NIL;
 
     return (result);
 }
@@ -1797,7 +1787,7 @@ Lisp_Lambda(LispBuiltin *builtin)
     body = ARGUMENT(1);
     lambda_list = ARGUMENT(0);
 
-    alist = LispCheckArguments(LispLambda, lambda_list, Snil);
+    alist = LispCheckArguments(LispLambda, lambda_list, Snil, 0);
 
     name = OPAQUE(alist, LispArgList_t);
     lambda_list = LispListProtectedArguments(alist);
@@ -1827,7 +1817,7 @@ Lisp_Last(LispBuiltin *builtin)
 
     length = LispLength(list);
 
-    if (ocount == NIL)
+    if (ocount == UNSPEC)
 	count = 1;
     else {
 	CHECK_INDEX(ocount);
@@ -2030,7 +2020,7 @@ Lisp_Listp(LispBuiltin *builtin)
     return (object == NIL || CONSP(object) ? T : NIL);
 }
 
-LispObj *
+static LispObj *
 LispListSet(LispBuiltin *builtin, int function)
 /*
  intersection list1 list2 &key test test-not key
@@ -2042,9 +2032,9 @@ LispListSet(LispBuiltin *builtin, int function)
  */
 {
     GC_ENTER();
-    int code, inplace, setdifference;
-    LispObj *lambda, *expect, *result, *cmp, *cmp1, *cmp2,
-	    *item, *value, *clist1, *clist2, *cons, *cdr;
+    int code, expect, value, inplace, setdifference;
+    LispObj *lambda, *result, *cmp, *cmp1, *cmp2,
+	    *item, *clist1, *clist2, *cons, *cdr;
 
     LispObj *list1, *list2, *test, *test_not, *key;
 
@@ -2069,28 +2059,12 @@ LispListSet(LispBuiltin *builtin, int function)
 		function == SUBSETP ?
 		NIL : list1);
 
-    /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
-	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
-
-    /* Resolve comparison function, and expected result of comparison */
-    if (test_not == NIL) {
-	if (test == NIL)
-	    lambda = Oeql;
-	else
-	    lambda = test;
-	expect = T;
-    }
-    else {
-	lambda = test_not;
-	expect = NIL;
-    }
-    code = FCODE(lambda);
+    CHECK_TEST();
     inplace = function == NSETDIFFERENCE; 
     clist1 = cdr = NIL;
 
     /* Make a copy of list2 with the key predicate applied */
-    if (key != NIL) {
+    if (key != UNSPEC) {
 	result = cons = CONS(APPLY1(key, CAR(list2)), NIL);
 	GC_PROTECT(result);
 	for (cmp2 = CDR(list2); CONSP(cmp2); cmp2 = CDR(cmp2)) {
@@ -2122,12 +2096,12 @@ LispListSet(LispBuiltin *builtin, int function)
      *		1) Walk list1 and if CAR(list1) not in list2, return NIL
      *		2) Return T
      */
-    value = NIL;
+    value = 0;
     for (cmp1 = list1; CONSP(cmp1); cmp1 = CDR(cmp1)) {
 	item = CAR(cmp1);
 
 	/* Apply key predicate if required */
-	if (key != NIL) {
+	if (key != UNSPEC) {
 	    cmp = APPLY1(key, item);
 	    if (function == SETEXCLUSIVEOR) {
 		if (clist1 == NIL) {
@@ -2146,8 +2120,6 @@ LispListSet(LispBuiltin *builtin, int function)
 	/* Compare against list2 */
 	for (cmp2 = clist2; CONSP(cmp2); cmp2 = CDR(cmp2)) {
 	    value = FCOMPARE(lambda, cmp, CAR(cmp2), code);
-	    if (value != NIL)
-		value = T;
 	    if (value == expect)
 		break;
 	}
@@ -2206,7 +2178,7 @@ LispListSet(LispBuiltin *builtin, int function)
 	for (cmp2 = list2; CONSP(cmp2); cmp2 = CDR(cmp2)) {
 	    item = CAR(cmp2);
 
-	    if (key != NIL) {
+	    if (key != UNSPEC) {
 		cmp = CAR(clist2);
 		/* XXX changing clist2 */
 		clist2 = CDR(clist2);
@@ -2220,8 +2192,6 @@ LispListSet(LispBuiltin *builtin, int function)
 	    /* Compare against list1 */
 	    for (; CONSP(cmp1); cmp1 = CDR(cmp1)) {
 		value = FCOMPARE(lambda, cmp, CAR(cmp1), code);
-		if (value != NIL)
-		    value = T;
 		if (value == expect)
 		    break;
 	    }
@@ -2328,7 +2298,7 @@ Lisp_MakeArray(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(dimensions));
 
     /* check element-type */
-    if (element_type != NIL) {
+    if (element_type != UNSPEC) {
 	if (element_type == T)
 	    type = LispNil_t;
 	else if (!SYMBOLP(element_type))
@@ -2361,30 +2331,33 @@ Lisp_MakeArray(LispBuiltin *builtin)
     }
 
     /* check displaced-to */
-    if (displaced_to != NIL) {
+    if (displaced_to != UNSPEC) {
 	CHECK_ARRAY(displaced_to);
     }
 
     /* check displaced-index-offset */
     offset = -1;
-    if (displaced_index_offset != NIL) {
+    if (displaced_index_offset != UNSPEC) {
 	CHECK_INDEX(displaced_index_offset);
 	offset = FIXNUM_VALUE(displaced_index_offset);
     }
 
     c = 0;
-    if (initial_element != NIL)
+    if (initial_element != UNSPEC)
 	++c;
-    if (initial_contents != NIL)
+    if (initial_contents != UNSPEC)
 	++c;
-    if (displaced_to != NIL || offset >= 0)
+    if (displaced_to != UNSPEC || offset >= 0)
 	++c;
     if (c > 1)
 	LispDestroy("%s: more than one initialization specified",
 		    STRFUN(builtin));
+    if (initial_element == UNSPEC)
+	initial_element = NIL;
 
     zero = count == 0;
-    if (displaced_to != NIL) {
+    if (displaced_to != UNSPEC) {
+	CHECK_ARRAY(displaced_to);
 	if (offset < 0)
 	    offset = 0;
 	for (c = 1, obj = displaced_to->data.array.dim; obj != NIL;
@@ -2396,7 +2369,8 @@ Lisp_MakeArray(LispBuiltin *builtin)
 	for (c = 0, array = displaced_to->data.array.list; c < offset; c++)
 	    array = CDR(array);
     }
-    else if (initial_contents != NIL) {
+    else if (initial_contents != UNSPEC) {
+	CHECK_CONS(initial_contents);
 	if (rank == 0)
 	    array = initial_contents;
 	else if (rank == 1) {
@@ -2537,6 +2511,8 @@ Lisp_MakeList(LispBuiltin *builtin)
 
     if (count == 0)
 	return (NIL);
+    if (initial_element == UNSPEC)
+	initial_element = NIL;
 
     result = cons = CONS(initial_element, NIL);
     GC_PROTECT(result);
@@ -2547,6 +2523,23 @@ Lisp_MakeList(LispBuiltin *builtin)
     GC_LEAVE();
 
     return (result);
+}
+
+LispObj *
+Lisp_MakeSymbol(LispBuiltin *builtin)
+/*
+ make-symbol string
+ */
+{
+    LispObj *string, *symbol;
+
+    string = ARGUMENT(0);
+    CHECK_STRING(string);
+
+    symbol = UNINTERNED_ATOM(THESTR(string));
+    symbol->data.atom->unreadable = !LispCheckAtomString(THESTR(string));
+
+    return (symbol);
 }
 
 LispObj *
@@ -2566,14 +2559,29 @@ Lisp_Makunbound(LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_Mapc(LispBuiltin *builtin)
+/*
+ mapc function list &rest more-lists
+ */
+{
+    return (LispMapc(builtin, 0));
+}
+
+LispObj *
 Lisp_Mapcar(LispBuiltin *builtin)
 /*
  mapcar function list &rest more-lists
  */
 {
+    return (LispMapc(builtin, 1));
+}
+
+static LispObj *
+LispMapc(LispBuiltin *builtin, int mapcar)
+{
     GC_ENTER();
     long i, offset, count, length;
-    LispObj *result = NIL, *cons, *arguments, *acons, *rest, *alist;
+    LispObj *result = NIL, *cons, *arguments, *acons, *rest, *alist, *value;
 
     LispObj *function, *list, *more_lists;
 
@@ -2610,9 +2618,13 @@ Lisp_Mapcar(LispBuiltin *builtin)
 	    length = i;
     }
 
-    /* Initialize gc protected object cells for resulting list */
-    result = cons = CONS(NIL, NIL);
-    GC_PROTECT(result);
+    if (mapcar) {
+	/* Initialize gc protected object cells for resulting list */
+	result = cons = CONS(NIL, NIL);
+	GC_PROTECT(result);
+    }
+    else
+	result = cons = list;
 
     /* Initialize gc protected object cells for argument list */
     arguments = acons = CONS(NIL, NIL);
@@ -2625,7 +2637,7 @@ Lisp_Mapcar(LispBuiltin *builtin)
     }
 
     /* For every element of the list that will be used */
-    for (offset = 0; ; list = CDR(list)) {
+    for (offset = 0;; list = CDR(list)) {
 	acons = arguments;
 
 	/* Add first argument */
@@ -2646,15 +2658,21 @@ Lisp_Mapcar(LispBuiltin *builtin)
 	    acons = CDR(acons);
 	}
 
-	/* Store result */
-	RPLACA(cons, APPLY(function, arguments));
+	value = APPLY(function, arguments);
 
-	/* Allocate new result cell if required */
-	if (++offset < length) {
-	    RPLACD(cons, CONS(NIL, NIL));
-	    cons = CDR(cons);
+	if (mapcar) {
+	    /* Store result */
+	    RPLACA(cons, value);
+
+	    /* Allocate new result cell */
+	    if (++offset < length) {
+		RPLACD(cons, CONS(NIL, NIL));
+		cons = CDR(cons);
+	    }
+	    else
+		break;
 	}
-	else
+	else if (++offset >= length)
 	    break;
     }
 
@@ -2664,16 +2682,12 @@ Lisp_Mapcar(LispBuiltin *builtin)
     return (result);
 }
 
-/* XXX maplist and extra map* functions need to be rewritten in the
- * format of the new mapcar version. */
-LispObj *
-Lisp_Maplist(LispBuiltin *builtin)
-/*
- maplist function list &rest more-lists
- */
+static LispObj *
+LispMapl(LispBuiltin *builtin, int maplist)
 {
-    int i, count, length;
-    LispObj *code, *cons, *acons, *object, *result;
+    GC_ENTER();
+    long i, offset, count, length;
+    LispObj *result = NIL, *cons, *arguments, *acons, *rest, *alist, *value;
 
     LispObj *function, *list, *more_lists;
 
@@ -2681,43 +2695,103 @@ Lisp_Maplist(LispBuiltin *builtin)
     list = ARGUMENT(1);
     function = ARGUMENT(0);
 
-    length = lisp__data.protect.length;
-    if (length + 2 >= lisp__data.protect.space)
-	LispMoreProtects();
-    lisp__data.protect.objects[lisp__data.protect.length++] = NIL;
-    lisp__data.protect.objects[lisp__data.protect.length++] = NIL;
+    /* count is the number of lists, length is the length of the result */
+    for (length = 0, alist = list; CONSP(alist); length++, alist = CDR(alist))
+	;
 
-    result = acons = NIL;
-    for (count = 0; CONSP(list); count++, list = CDR(list)) {
-	cons = CONS(QUOTE(list), NIL);
-	code = CONS(function, cons);
-	lisp__data.protect.objects[length] = code;
-	for (object = more_lists; CONSP(object); object = CDR(object)) {
-	    LispObj *arglist = CAR(object);
+    /* first argument is not a list */
+    if (length == 0)
+	return (NIL);
 
-	    if (!CONSP(arglist))
-		goto maplist_done;
-	    for (i = count; i > 0; i--) {
-		if (!CONSP(arglist = CDR(arglist)))
-		    goto maplist_done;
-	    }
-	    RPLACD(cons, CONS(QUOTE(arglist), NIL));
-	}
-	cons = EVAL(code);
-	if (result == NIL) {
-	    result = acons = CONS(cons, NIL);
-	    lisp__data.protect.objects[length + 1] = result;
-	}
-	else {
-	    RPLACD(acons, CONS(cons, NIL));
-	    acons = CDR(acons);
-	}
+    /* check remaining arguments */
+    for (count = 0, rest = more_lists; CONSP(rest); rest = CDR(rest), count++) {
+	for (i = 0, alist = CAR(rest);
+	     i < length && CONSP(alist);
+	     i++, alist = CDR(alist))
+	    ;
+	/* argument is not a list */
+	if (i == 0)
+	    return (NIL);
+	/* result will have the length of the smallest list */
+	if (i < length)
+	    length = i;
     }
 
-maplist_done:
-    lisp__data.protect.length = length;
+    /* result will be a list */
+    if (maplist) {
+	result = cons = CONS(NIL, NIL);
+	GC_PROTECT(result);
+    }
+    else
+	result = cons = list;
+
+    /* initialize argument list */
+    arguments = acons = CONS(NIL, NIL);
+    GC_PROTECT(arguments);
+    for (; count > 0; count--) {
+	RPLACD(acons, CONS(NIL, NIL));
+	acons = CDR(acons);
+    }
+
+    /* for every used list element */
+    for (offset = 0;; list = CDR(list)) {
+	acons = arguments;
+
+	/* first argument */
+	RPLACA(acons, list);
+	acons = CDR(acons);
+
+	/* for every extra list */
+	for (rest = more_lists; CONSP(rest); rest = CDR(rest)) {
+	    for (alist = CAR(rest), count = 0;
+		 count < offset;
+		 alist = CDR(alist), count++)
+		;
+
+	    /* extra argument */
+	    RPLACA(acons, alist);
+	    acons = CDR(acons);
+	}
+
+	value = APPLY(function, arguments);
+
+	if (maplist) {
+	    /* store result */
+	    RPLACA(cons, value);
+
+	    /* allocate new cell */
+	    if (++offset < length) {
+		RPLACD(cons, CONS(NIL, NIL));
+		cons = CDR(cons);
+	    }
+	    else
+		break;
+	}
+	else if (++offset >= length)
+	    break;
+    }
+
+    GC_LEAVE();
 
     return (result);
+}
+
+LispObj *
+Lisp_Mapl(LispBuiltin *builtin)
+/*
+ mapl function list &rest more-lists
+ */
+{
+    return (LispMapl(builtin, 0));
+}
+
+LispObj *
+Lisp_Maplist(LispBuiltin *builtin)
+/*
+ maplist function list &rest more-lists
+ */
+{
+    return (LispMapl(builtin, 1));
 }
 
 LispObj *
@@ -2726,7 +2800,45 @@ Lisp_Member(LispBuiltin *builtin)
  member item list &key test test-not key
  */
 {
-    return (LispAssocOrMember(builtin, MEMBER, NONE));
+    int code, expect;
+    LispObj *compare, *lambda;
+    LispObj *item, *list, *test, *test_not, *key;
+
+    key = ARGUMENT(4);
+    test_not = ARGUMENT(3);
+    test = ARGUMENT(2);
+    list = ARGUMENT(1);
+    item = ARGUMENT(0);
+
+    if (list == NIL)
+	return (NIL);
+    CHECK_CONS(list);
+
+    CHECK_TEST();
+    if (key == UNSPEC) {
+	if (code == FEQ) {
+	    for (; CONSP(list); list = CDR(list))
+		if (item == CAR(list))
+		    return (list);
+	}
+	for (; CONSP(list); list = CDR(list))
+	    if (FCOMPARE(lambda, item, CAR(list), code) == expect)
+		return (list);
+    }
+    else {
+	if (code == FEQ) {
+	    for (; CONSP(list); list = CDR(list))
+		if (item == APPLY1(key, CAR(list)))
+		    return (list);
+	}
+	for (; CONSP(list); list = CDR(list)) {
+	    compare = APPLY1(key, CAR(list));
+	    if (FCOMPARE(lambda, item, compare, code) == expect)
+		return (list);
+	}
+    }
+
+    return (NIL);
 }
 
 LispObj *
@@ -3024,7 +3136,7 @@ Lisp_Or(LispBuiltin *builtin)
     return (result);
 }
 
-LispObj *
+static LispObj *
 LispFindOrPosition(LispBuiltin *builtin,
 		   int function, int comparison)
 /*
@@ -3037,10 +3149,10 @@ LispFindOrPosition(LispBuiltin *builtin,
  */
 {
     GC_ENTER();
-    int code = 0, istring;
+    int code = 0, istring, expect, value;
     char *string = NULL;
     long offset = -1, start, end, length, i = comparison == NONE ? 7 : 5;
-    LispObj *cmp, *element, *result, **objects = NULL;
+    LispObj *cmp, *element, **objects = NULL;
 
     LispObj *item, *predicate, *sequence, *from_end,
 	    *test, *test_not, *ostart, *oend, *key;
@@ -3053,8 +3165,10 @@ LispFindOrPosition(LispBuiltin *builtin,
 	test = ARGUMENT(i);	--i;
     }
     else
-	test_not = test = NIL;
+	test_not = test = UNSPEC;
     from_end = ARGUMENT(i);	--i;
+    if (from_end == UNSPEC)
+	from_end = NIL;
     sequence = ARGUMENT(i);	--i;
     if (comparison == NONE) {
 	item = ARGUMENT(i);
@@ -3069,14 +3183,17 @@ LispFindOrPosition(LispBuiltin *builtin,
 			      &start, &end, &length);
 
     /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
+    if (test != UNSPEC && test_not != UNSPEC)
 	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
 
+    expect = 1;
     if (comparison == NONE) {
-	if (test != NIL)
+	if (test != UNSPEC)
 	    predicate = test;
-	else if (test_not != NIL)
+	else if (test_not != UNSPEC) {
 	    predicate = test_not;
+	    expect = 0;
+	}
 	code = FCODE(predicate);
     }
 
@@ -3109,7 +3226,7 @@ LispFindOrPosition(LispBuiltin *builtin,
 	else
 	    element = from_end == NIL ? CAR(sequence) : objects[i];
 
-	if (key != NIL) {
+	if (key != UNSPEC) {
 	    cmp = APPLY1(key, element);
 	    GC_PROTECT(cmp);
 	}
@@ -3121,19 +3238,19 @@ LispFindOrPosition(LispBuiltin *builtin,
 	    sequence = CDR(sequence);
 
 	if (comparison == NONE)
-	    result = FCOMPARE(predicate, item, cmp, code);
+	    value = FCOMPARE(predicate, item, cmp, code);
 	else
-	    result = APPLY1(predicate, cmp);
+	    value = APPLY1(predicate, cmp) != NIL;
 
 	/* Unprotect cmp */
 	GC_LEAVE();
 
-	if ((result == NIL &&
+	if ((!value &&
 	     (comparison == IFNOT ||
-	      (comparison == NONE && test_not != NIL))) ||
-	    (result != NIL &&
+	      (comparison == NONE && !expect))) ||
+	    (value &&
 	     (comparison == IF ||
-	      (comparison == NONE && test_not == NIL)))) {
+	      (comparison == NONE && expect)))) {
 	    offset = from_end == NIL ? i + start : end - i - 1;
 	    break;
 	}
@@ -3477,15 +3594,15 @@ Lisp_Pushnew(LispBuiltin *builtin)
  
     item = EVAL(item);
     GC_PROTECT(item);
-    if (key != NIL) {
+    if (key != UNSPEC) {
 	key = EVAL(key);
 	GC_PROTECT(key);
     }
-    if (test != NIL) {
+    if (test != UNSPEC) {
 	test = EVAL(test);
 	GC_PROTECT(test);
     }
-    else if (test_not != NIL) {
+    else if (test_not != UNSPEC) {
 	test_not = EVAL(test_not);
 	GC_PROTECT(test_not);
     }
@@ -3529,7 +3646,7 @@ Lisp_Quit(LispBuiltin *builtin)
 
     if (FIXNUMP(ostatus))
 	status = (int)FIXNUM_VALUE(ostatus);
-    else if (ostatus != NIL)
+    else if (ostatus != UNSPEC)
 	LispDestroy("%s: bad exit status argument %s",
 		    STRFUN(builtin), STROBJ(ostatus));
 
@@ -3578,6 +3695,7 @@ Lisp_Replace(LispBuiltin *builtin)
 	length = end2 - start2;
 
     if (STRINGP(sequence1)) {
+	CHECK_STRING_WRITABLE(sequence1);
 	if (!STRINGP(sequence2))
 	    LispDestroy("%s: cannot store %s in %s",
 			STRFUN(builtin), STROBJ(sequence2), THESTR(sequence1));
@@ -3607,7 +3725,7 @@ Lisp_Replace(LispBuiltin *builtin)
     return (sequence1);
 }
 
-LispObj *
+static LispObj *
 LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 /*
  delete-duplicates sequence &key from-end test test-not start end key
@@ -3615,9 +3733,9 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
  */
 {
     GC_ENTER();
-    int code;
+    int code, expect, value = 0;
     long i, j, start, end, length, count;
-    LispObj *lambda, *expect, *result, *cons, *value, *compare;
+    LispObj *lambda, *result, *cons, *compare;
 
     LispObj *sequence, *from_end, *test, *test_not, *ostart, *oend, *key;
 
@@ -3627,6 +3745,8 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
     test_not = ARGUMENT(3);
     test = ARGUMENT(2);
     from_end = ARGUMENT(1);
+    if (from_end == UNSPEC)
+	from_end = NIL;
     sequence = ARGUMENT(0);
 
     LispCheckSequenceStartEnd(builtin, sequence, ostart, oend,
@@ -3636,23 +3756,7 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
     if (start == end)
 	return (sequence);
 
-    /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
-	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
-
-    /* Resolve comparison function, and expected result of comparison */
-    if (test_not == NIL) {
-	if (test == NIL)
-	    lambda = Oeql;
-	else
-	    lambda = test;
-	expect = T;
-    }
-    else {
-	lambda = test_not;
-	expect = NIL;
-    }
-    code = FCODE(lambda);
+    CHECK_TEST();
 
     /* Initialize */
     count = 0;
@@ -3683,16 +3787,16 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 	for (i = 0; i < start; i++)
 	    *ptr++ = string[i];
 
-	value = SCHAR(string[i]);
-	if (key != NIL)
-	    value = APPLY1(key, value);
-	result = cons = CONS(value, NIL);
+	compare = SCHAR(string[i]);
+	if (key != UNSPEC)
+	    compare = APPLY1(key, compare);
+	result = cons = CONS(compare, NIL);
 	GC_PROTECT(result);
 	for (++i; i < end; i++) {
-	    value = SCHAR(string[i]);
-	    if (key != NIL)
-		value = APPLY1(key, value);
-	    RPLACD(cons, CONS(value, NIL));
+	    compare = SCHAR(string[i]);
+	    if (key != UNSPEC)
+		compare = APPLY1(key, compare);
+	    RPLACD(cons, CONS(compare, NIL));
 	    cons = CDR(cons);
 	}
 
@@ -3700,8 +3804,6 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 	    compare = CAR(result);
 	    for (j = i + 1, cons = CDR(result); j < end; j++, cons = CDR(cons)) {
 		value = FCOMPARE(lambda, compare, CAR(cons), code);
-		if (value != NIL)
-		    value = T;
 		if (value == expect)
 		    break;
 	    }
@@ -3729,6 +3831,7 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 	    if (function == REMOVE)
 		result = STRING2(ptr);
 	    else {
+		CHECK_STRING_WRITABLE(sequence);
 		result = sequence;
 		free(THESTR(result));
 		THESTR(result) = ptr;
@@ -3768,7 +3871,7 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 	}
 
 	/* Apply key predicate if required */
-	if (key != NIL) {
+	if (key != UNSPEC) {
 	    kobjects = LispMalloc(sizeof(LispObj*) * xlength);
 	    for (i = 0; i < xlength; i++) {
 		kobjects[i] = APPLY1(key, objects[i]);
@@ -3784,8 +3887,6 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 	    compare = xobjects[i];
 	    for (j = i + 1; j < xlength; j++) {
 		value = FCOMPARE(lambda, compare, xobjects[j], code);
-		if (value != NIL)
-		    value = T;
 		if (value == expect) {
 		    objects[i] = NULL;
 		    ++count;
@@ -3903,7 +4004,7 @@ LispDeleteOrRemoveDuplicates(LispBuiltin *builtin, int function)
 	else
 	    result = sequence;
 	LispFree(objects);
-	if (key != NIL)
+	if (key != UNSPEC)
 	    LispFree(kobjects);
 
 	if (count && !CONSP(sequence)) {
@@ -3930,9 +4031,7 @@ Lisp_RemoveDuplicates(LispBuiltin *builtin)
     return (LispDeleteOrRemoveDuplicates(builtin, REMOVE));
 }
 
-
-
-LispObj *
+static LispObj *
 LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 			    int function, int comparison)
 /*
@@ -3951,12 +4050,12 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
  */
 {
     GC_ENTER();
-    int code, inplace, substitute;
+    int code, expect, value, inplace, substitute;
     long i, j, start, end, length, copy, count, xstart, xend, xinc, xlength;
 
-    LispObj *result, *expect, *compare, *value;
+    LispObj *result, *compare;
 
-    LispObj *item, *newitem, *predicate, *sequence, *from_end,
+    LispObj *item, *newitem, *lambda, *sequence, *from_end,
 	    *test, *test_not, *ostart, *oend, *ocount, *key;
 
     substitute = function == SUBSTITUTE || function == NSUBSTITUTE;
@@ -3975,11 +4074,13 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 	test = ARGUMENT(i);		--i;
     }
     else
-	test_not = test = NIL;
+	test_not = test = UNSPEC;
     from_end = ARGUMENT(i);		--i;
+    if (from_end == UNSPEC)
+	from_end = NIL;
     sequence = ARGUMENT(i);		--i;
     if (comparison != NONE) {
-	predicate = ARGUMENT(i);	--i;
+	lambda = ARGUMENT(i);	--i;
 	if (substitute)
 	    newitem = ARGUMENT(0);
 	else
@@ -3987,7 +4088,7 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 	item = NIL;
     }
     else {
-	predicate = NIL;
+	lambda = NIL;
 	if (substitute) {
 	    item = ARGUMENT(1);
 	    newitem = ARGUMENT(0);
@@ -4004,7 +4105,7 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 			      &start, &end, &length);
 
     /* Check count argument */
-    if (ocount == NIL) {
+    if (ocount == UNSPEC) {
 	count = length;
 	/* Doesn't matter, but left to right should be slightly faster */
 	from_end = NIL;
@@ -4018,29 +4119,27 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
     if (start == end || count == 0)
 	return (sequence);
 
-    /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
-	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
+    CHECK_TEST_0();
 
     /* Resolve comparison function, and expected result of comparison */
     if (comparison == NONE) {
-	if (test_not == NIL) {
-	    if (test == NIL)
-		predicate = Oeql;
+	if (test_not == UNSPEC) {
+	    if (test == UNSPEC)
+		lambda = Oeql;
 	    else
-		predicate = test;
-	    expect = T;
+		lambda = test;
+	    expect = 1;
 	}
 	else {
-	    predicate = test_not;
-	    expect = NIL;
+	    lambda = test_not;
+	    expect = 0;
 	}
     }
     else
-	expect = comparison == IFNOT ? NIL : T;
+	expect = comparison == IFNOT ? 0 : 1;
 
     /* Check for fast path to comparison function */
-    code = FCODE(predicate);
+    code = FCODE(lambda);
 
     /* Initialize for loop */
     copy = count;
@@ -4079,25 +4178,23 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 
 	for (j = xstart; i != xend && count > 0; i += xinc) {
 	    compare = SCHAR(string[i]);
-	    if (key != NIL) {
+	    if (key != UNSPEC) {
 		compare = APPLY1(key, compare);
 		/* Value returned by the key predicate may not be protected */
 		GC_PROTECT(compare);
 		if (comparison == NONE)
-		    value = FCOMPARE(predicate, item, compare, code);
+		    value = FCOMPARE(lambda, item, compare, code);
 		else
-		    value = APPLY1(predicate, compare);
+		    value = APPLY1(lambda, compare) != NIL;
 		/* Unprotect value returned by the key predicate */
 		GC_LEAVE();
 	    }
 	    else {
 		if (comparison == NONE)
-		    value = FCOMPARE(predicate, item, compare, code);
+		    value = FCOMPARE(lambda, item, compare, code);
 		else
-		    value = APPLY1(predicate, compare);
+		    value = APPLY1(lambda, compare) != NIL;
 	    }
-	    if (value != NIL)
-		value = T;
 
 	    if (value != expect) {
 		buffer[j] = string[i];
@@ -4123,6 +4220,7 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 
 	xlength = length - (copy - count);
 	if (inplace) {
+	    CHECK_STRING_WRITABLE(sequence);
 	    /* result is a pointer to sequence */
 	    LispFree(THESTR(sequence));
 	    LispMused(buffer);
@@ -4164,23 +4262,21 @@ LispDeleteRemoveXSubstitute(LispBuiltin *builtin,
 	/* Check if needs to remove something */
 	for (i = xstart; i != xend && count > 0; i += xinc) {
 	    compare = objects[i];
-	    if (key != NIL) {
+	    if (key != UNSPEC) {
 		compare = APPLY1(key, compare);
 		GC_PROTECT(compare);
 		if (comparison == NONE)
-		    value = FCOMPARE(predicate, item, compare, code);
+		    value = FCOMPARE(lambda, item, compare, code);
 		else
-		    value = APPLY1(predicate, compare);
+		    value = APPLY1(lambda, compare) != NIL;
 		GC_LEAVE();
 	    }
 	    else {
 		if (comparison == NONE)
-		    value = FCOMPARE(predicate, item, compare, code);
+		    value = FCOMPARE(lambda, item, compare, code);
 		else
-		    value = APPLY1(predicate, compare);
+		    value = APPLY1(lambda, compare) != NIL;
 	    }
-	    if (value != NIL)
-		value = T;
 	    if (value == expect) {
 		if (substitute)
 		    objects[i] = newitem;
@@ -4331,7 +4427,7 @@ Lisp_Return(LispBuiltin *builtin)
 	    break;
 	if (block->type == LispBlockTag && block->tag == NIL) {
 	    RETURN_COUNT = 0;
-	    lisp__data.block.block_ret = EVAL(result);
+	    lisp__data.block.block_ret = result == UNSPEC ? NIL : EVAL(result);
 	    LispBlockUnwind(block);
 	    BLOCKJUMP(block);
 	}
@@ -4360,32 +4456,18 @@ Lisp_ReturnFrom(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(name));
 
     while (blevel) {
-	int jmp = 1;
 	LispBlock *block = lisp__data.block.block[--blevel];
 
-	if (name == block->tag) {
-	    switch (OBJECT_TYPE(name)) {
-		case LispNil_t:
-		case LispAtom_t:
-		    jmp = name == block->tag;
-		    break;
-		default:
-		    /* only atom, nil or t can be used */
-		    jmp = 0;
-		    break;
-	    }
-	    if (jmp &&
-		(block->type == LispBlockTag ||
-		 block->type == LispBlockClosure)) {
-		RETURN_COUNT = 0;
-		lisp__data.block.block_ret = EVAL(result);
-		LispBlockUnwind(block);
-		BLOCKJUMP(block);
-	    }
-	    if (block->type == LispBlockClosure)
-		/* can use return-from only in the current function */
-		break;
+	if (name == block->tag &&
+	    (block->type == LispBlockTag || block->type == LispBlockClosure)) {
+	    RETURN_COUNT = 0;
+	    lisp__data.block.block_ret = result == UNSPEC ? NIL : EVAL(result);
+	    LispBlockUnwind(block);
+	    BLOCKJUMP(block);
 	}
+	if (block->type == LispBlockClosure)
+	    /* can use return-from only in the current function */
+	    break;
     }
     LispDestroy("%s: no visible block named %s",
 		STRFUN(builtin), STROBJ(name));
@@ -4394,7 +4476,7 @@ Lisp_ReturnFrom(LispBuiltin *builtin)
     return (NIL);
 }
 
-LispObj *
+static LispObj *
 LispXReverse(LispBuiltin *builtin, int inplace)
 /*
  nreverse sequence
@@ -4422,6 +4504,7 @@ LispXReverse(LispBuiltin *builtin, int inplace)
 	    if (inplace) {
 		char temp;
 
+		CHECK_STRING_WRITABLE(sequence);
 		to = THESTR(sequence);
 		for (i = 0; i < length / 2; i++) {
 		    temp = to[i];
@@ -4557,11 +4640,11 @@ Lisp_Search(LispBuiltin *builtin)
  search sequence1 sequence2 &key from-end test test-not key start1 start2 end1 end2
  */
 {
-    int istring, code = 0;
+    int istring, code = 0, expect, value;
     long start1, start2, end1, end2, length1, length2, offset = -1;
     char *string1 = NULL, *string2 = NULL;
     LispObj *list1 = NIL, *list2 = NIL;
-    LispObj *cmp1, *cmp2, *lambda, *value, *expect;
+    LispObj *cmp1, *cmp2, *lambda;
 
     LispObj *sequence1, *sequence2, *from_end, *test, *test_not,
 	    *key, *ostart1, *ostart2, *oend1, *oend2;
@@ -4574,6 +4657,8 @@ Lisp_Search(LispBuiltin *builtin)
     test_not = ARGUMENT(4);
     test = ARGUMENT(3);
     from_end = ARGUMENT(2);
+    if (from_end == UNSPEC)
+	from_end = NIL;
     sequence2 = ARGUMENT(1);
     sequence1 = ARGUMENT(0);
 
@@ -4586,29 +4671,13 @@ Lisp_Search(LispBuiltin *builtin)
     if ((STRINGP(sequence1)) ^ (STRINGP(sequence2)))
 	return (NIL);
 
-    /* Cannot specify both :test and :test-not */
-    if (test != NIL && test_not != NIL)
-	LispDestroy("%s: specify either :TEST or :TEST-NOT", STRFUN(builtin));
-
     /* Check for special conditions */
     if (start1 == end1)
 	return (FIXNUM(end2));
     else if (start2 == end2)
 	return (start1 == end1 ? FIXNUM(start2) : NIL);
 
-    /* Resolve comparison function, and expected result of comparison */
-    if (test_not == NIL) {
-	if (test == NIL)
-	    lambda = Oeql;
-	else
-	    lambda = test;
-	expect = T;
-    }
-    else {
-	lambda = test_not;
-	expect = NIL;
-    }
-    code = FCODE(lambda);
+    CHECK_TEST();
 
     /* Searching a substring? */
     istring = STRINGP(sequence1);
@@ -4650,14 +4719,13 @@ Lisp_Search(LispBuiltin *builtin)
 		    cmp1 = CAR(list1);
 		    cmp2 = CAR(list2);
 		}
-		if (key != NIL) {
+		if (key != UNSPEC) {
 		    cmp1 = APPLY1(key, cmp1);
 		    cmp2 = APPLY1(key, cmp2);
 		}
 
 		/* Compare elements */
-		if ((value = FCOMPARE(lambda, cmp1, cmp2, code)) != NIL)
-		    value = T;
+		value = FCOMPARE(lambda, cmp1, cmp2, code);
 		if (value != expect)
 		    break;
 
@@ -4710,14 +4778,13 @@ Lisp_Search(LispBuiltin *builtin)
 		    cmp1 = plist1[coff1 - start1];
 		    cmp2 = plist2[coff2 - start2];
 		}
-		if (key != NIL) {
+		if (key != UNSPEC) {
 		    cmp1 = APPLY1(key, cmp1);
 		    cmp2 = APPLY1(key, cmp2);
 		}
 
 		/* Compare elements */
-		if ((value = FCOMPARE(lambda, cmp1, cmp2, code)) != NIL)
-		    value = T;
+		value = FCOMPARE(lambda, cmp1, cmp2, code);
 		if (value != expect)
 		    break;
 
@@ -4768,7 +4835,7 @@ Lisp_Setenv(LispBuiltin *builtin)
     CHECK_STRING(ovalue);
     value = THESTR(ovalue);
 
-    setenv(name, value, overwrite != NIL);
+    setenv(name, value, overwrite != UNSPEC && overwrite != NIL);
     value = getenv(name);
 
     return (value ? STRING(value) : NIL);
@@ -4946,9 +5013,6 @@ Lisp_Sleep(LispBuiltin *builtin)
 	case LispFixnum_t:
 	    value = FIXNUM_VALUE(seconds);
 	    break;
-	case LispInteger_t:
-	    value = INT_VALUE(seconds);
-	    break;
 	case LispDFloat_t:
 	    value = DFLOAT_VALUE(seconds);
 	    break;
@@ -4956,7 +5020,7 @@ Lisp_Sleep(LispBuiltin *builtin)
 	    break;
     }
 
-    if (value < 0.0 || !finite(value) || value > INT_MAX)
+    if (value < 0.0 || value > MOST_POSITIVE_FIXNUM)
 	LispDestroy("%s: %s is not a positive fixnum",
 		    STRFUN(builtin), STROBJ(seconds));
 
@@ -4978,8 +5042,7 @@ Lisp_Sleep(LispBuiltin *builtin)
  * of the c pointer.
  */
 static LispObj *
-LispMergeSort(LispObj *list, LispObj *predicate,
-	      LispObj *key, int code)
+LispMergeSort(LispObj *list, LispObj *predicate, LispObj *key, int code)
 {
     int protect;
     LispObj *list1, *list2, *left, *right, *result, *cons;
@@ -5011,7 +5074,7 @@ LispMergeSort(LispObj *list, LispObj *predicate,
 
     left = CAR(list1);
     right = CAR(list2);
-    if (key != NIL) {
+    if (key != UNSPEC) {
 	protect = lisp__data.protect.length;
 	left = APPLY1(key, left);
 	lisp__data.protect.objects[protect] = left;
@@ -5021,8 +5084,8 @@ LispMergeSort(LispObj *list, LispObj *predicate,
 
     result = NIL;
     for (;;) {
-	if ((FCOMPARE(predicate, left, right, code)) == NIL &&
-	    (FCOMPARE(predicate, right, left, code)) != NIL) {
+	if ((FCOMPARE(predicate, left, right, code)) == 0 &&
+	    (FCOMPARE(predicate, right, left, code)) == 1) {
 	    /* right is "smaller" */
 	    if (result == NIL)
 		result = list2;
@@ -5035,7 +5098,7 @@ LispMergeSort(LispObj *list, LispObj *predicate,
 		break;
 	    }
 	    right = CAR(list2);
-	    if (key != NIL) {
+	    if (key != UNSPEC) {
 		right = APPLY1(key, right);
 		lisp__data.protect.objects[protect + 1] = right;
 	    }
@@ -5053,13 +5116,13 @@ LispMergeSort(LispObj *list, LispObj *predicate,
 		break;
 	    }
 	    left = CAR(list1);
-	    if (key != NIL) {
+	    if (key != UNSPEC) {
 		left = APPLY1(key, left);
 		lisp__data.protect.objects[protect] = left;
 	    }
 	}
     }
-    if (key != NIL)
+    if (key != UNSPEC)
 	lisp__data.protect.length = protect;
 
     return (result);
@@ -5097,6 +5160,7 @@ Lisp_Sort(LispBuiltin *builtin)
     list = sequence;
     istring = XSTRINGP(sequence);
     if (istring) {
+	CHECK_STRING_WRITABLE(sequence);
 	/* Convert string to list */
 	string = THESTR(sequence);
 	work = cons = CONS(SCHAR(string[0]), NIL);
@@ -5248,15 +5312,51 @@ Lisp_Symbolp(LispBuiltin *builtin)
 
     object = ARGUMENT(0);
 
-    switch (OBJECT_TYPE(object)) {
-	case LispNil_t:
-	case LispAtom_t:
-	case LispLambda_t:
-	    return (T);
-	default:
-	    break;
-    }
-    return (NIL);
+    return (SYMBOLP(object) ? T : NIL);
+}
+
+LispObj *
+Lisp_SymbolFunction(LispBuiltin *builtin)
+/*
+ symbol-function symbol
+ */
+{
+    LispObj *symbol;
+
+    symbol = ARGUMENT(0);
+    CHECK_SYMBOL(symbol);
+
+    return (LispSymbolFunction(symbol));
+}
+
+LispObj *
+Lisp_SymbolName(LispBuiltin *builtin)
+/*
+ symbol-name symbol
+ */
+{
+    LispObj *symbol;
+
+    symbol = ARGUMENT(0);
+    CHECK_SYMBOL(symbol);
+
+    return (LispSymbolName(symbol));
+}
+
+LispObj *
+Lisp_SymbolPackage(LispBuiltin *builtin)
+/*
+ symbol-package symbol
+ */
+{
+    LispObj *symbol;
+
+    symbol = ARGUMENT(0);
+    CHECK_SYMBOL(symbol);
+
+    symbol = symbol->data.atom->package;
+
+    return (symbol ? symbol : NIL);
 }
 
 LispObj *
@@ -5269,15 +5369,7 @@ Lisp_SymbolPlist(LispBuiltin *builtin)
 
     symbol = ARGUMENT(0);
 
-    if (!SYMBOLP(symbol)) {
-	if (symbol == NIL)
-	    symbol = ATOM(Snil);
-	else if (symbol == T)
-	    symbol = ATOM(St);
-	else
-	    LispDestroy("%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(symbol));
-    }
+    CHECK_SYMBOL(symbol);
 
     return (symbol->data.atom->a_property ?
 	    symbol->data.atom->property->properties : NIL);
@@ -5294,12 +5386,7 @@ Lisp_SymbolValue(LispBuiltin *builtin)
 
     symbol = ARGUMENT(0);
 
-    if (!SYMBOLP(symbol)) {
-	if (symbol == NIL || symbol == T)
-	    return (symbol);
-	LispDestroy("%s: %s is not a symbol",
-		    STRFUN(builtin), STROBJ(symbol));
-    }
+    CHECK_SYMBOL(symbol);
     atom = symbol->data.atom;
     if (!atom->a_object)
 	LispDestroy("%s: the symbol %s has no value",
@@ -5428,9 +5515,11 @@ Lisp_Terpri(LispBuiltin *builtin)
 
     output_stream = ARGUMENT(0);
 
-    if (output_stream != NIL) {
+    if (output_stream != UNSPEC) {
 	CHECK_STREAM(output_stream);
     }
+    else
+	output_stream = NIL;
     LispWriteChar(output_stream, '\n');
     if (output_stream == NIL ||
 	(output_stream->data.stream.type == LispStreamStandard &&
@@ -5796,6 +5885,7 @@ Lisp_XeditEltStore(LispBuiltin *builtin)
     if (STRINGP(sequence)) {
 	int ch;
 
+	CHECK_STRING_WRITABLE(sequence);
 	CHECK_SCHAR(value);
 	ch = SCHAR_VALUE(value);
 	if (ch < 0 || ch > 255)
@@ -5827,17 +5917,35 @@ Lisp_XeditPut(LispBuiltin *builtin)
     indicator = ARGUMENT(1);
     symbol = ARGUMENT(0);
 
-    if (!SYMBOLP(symbol)) {
-	if (symbol == NIL)
-	    symbol = ATOM(Snil);
-	else if (symbol == T)
-	    symbol = ATOM(St);
-	else
-	    LispDestroy("%s: %s is not a symbol",
-			STRFUN(builtin), STROBJ(symbol));
-    }
+    CHECK_SYMBOL(symbol);
 
     return (CAR(LispPutAtomProperty(symbol->data.atom, indicator, value)));
+}
+
+LispObj *
+Lisp_XeditSetSymbolValue(LispBuiltin *builtin)
+/*
+ lisp::set-symbol-value symbol value
+ */
+{
+    LispAtom *atom;
+    LispObj *symbol, *value;
+
+    value = ARGUMENT(1);
+    symbol = ARGUMENT(0);
+
+    CHECK_SYMBOL(symbol);
+    atom = symbol->data.atom;
+    if (atom->dyn)
+	LispSetVar(symbol, value);
+    else if (atom->watch || !atom->a_object)
+	LispSetAtomObjectProperty(atom, value);
+    else {
+	CHECK_CONSTANT(symbol);
+	SETVALUE(atom, value);
+    }
+
+    return (value);
 }
 
 LispObj *
@@ -5871,6 +5979,7 @@ Lisp_XeditVectorStore(LispBuiltin *builtin)
 	long offset = FIXNUM_VALUE(CAR(values));
 
 	CHECK_SCHAR(value);
+	CHECK_STRING_WRITABLE(array);
 	ch = SCHAR_VALUE(value);
 	if (offset >= length)
 	    LispDestroy("%s: index %ld too large for sequence length %ld",

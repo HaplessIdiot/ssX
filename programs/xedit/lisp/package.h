@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.3 2002/03/08 04:33:18 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.h,v 1.4 2002/11/08 08:00:57 paulo Exp $ */
 
 #ifndef Lisp_package_h
 #define Lisp_package_h
@@ -37,6 +37,8 @@
 void LispPackageInit(void);
 LispObj *LispFindPackage(LispObj*);
 LispObj *LispFindPackageFromString(char*);
+/* returns 1 if string can safely be read back */
+int LispCheckAtomString(char*);
 
 LispObj *Lisp_DoAllSymbols(LispBuiltin*);
 LispObj *Lisp_DoExternalSymbols(LispBuiltin*);

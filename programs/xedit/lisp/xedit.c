@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.16 2002/11/20 07:44:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.17 2002/11/21 07:25:11 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -123,31 +123,31 @@ extern int pagesize;
 
 static LispBuiltin xeditbuiltins[] = {
     {LispFunction, Xedit_AddEntity, "add-entity offset length identifier"},
-    {LispFunction, Xedit_AutoFill, "auto-fill &optional (value nil specified)"},
-    {LispFunction, Xedit_Background, "background &optional (color nil specified)"},
+    {LispFunction, Xedit_AutoFill, "auto-fill &optional value"},
+    {LispFunction, Xedit_Background, "background &optional color"},
     {LispFunction, Xedit_CharAfter, "char-after &optional offset"},
     {LispFunction, Xedit_CharBefore, "char-before &optional offset"},
     {LispFunction, Xedit_ClearEntities, "clear-entities left right"},
     {LispFunction, Xedit_ConvertPropertyList, "convert-property-list name definition"},
-    {LispFunction, Xedit_Font, "font &optional (font nil specified)"},
-    {LispFunction, Xedit_Foreground, "foreground &optional (color nil specified)"},
+    {LispFunction, Xedit_Font, "font &optional font"},
+    {LispFunction, Xedit_Foreground, "foreground &optional color"},
     {LispFunction, Xedit_GotoChar, "goto-char offset"},
-    {LispFunction, Xedit_HorizontalScrollbar, "horizontal-scrollbar &optional (state nil specified)"},
+    {LispFunction, Xedit_HorizontalScrollbar, "horizontal-scrollbar &optional state"},
     {LispFunction, Xedit_Insert, "insert text"},
-    {LispFunction, Xedit_Justification, "justification &optional (value nil specified)"},
-    {LispFunction, Xedit_LeftColumn, "left-column &optional (left nil specified)"},
+    {LispFunction, Xedit_Justification, "justification &optional value"},
+    {LispFunction, Xedit_LeftColumn, "left-column &optional left"},
     {LispFunction, Xedit_Point, "point"},
     {LispFunction, Xedit_PointMax, "point-max"},
     {LispFunction, Xedit_PointMin, "point-min"},
-    {LispFunction, Xedit_PropertyList, "property-list &optional (value nil specified)"},
+    {LispFunction, Xedit_PropertyList, "property-list &optional value"},
     {LispFunction, Xedit_ReadText, "read-text offset length"},
     {LispFunction, Xedit_ReplaceText, "replace-text left right text"},
-    {LispFunction, Xedit_RightColumn, "right-column &optional (left nil specified)"},
-    {LispFunction, Xedit_Scan, "scan offset type direction &key (count 1) include"},
+    {LispFunction, Xedit_RightColumn, "right-column &optional right"},
+    {LispFunction, Xedit_Scan, "scan offset type direction &key count include"},
     {LispFunction, Xedit_SearchBackward, "search-backward string &optional offset ignore-case"},
     {LispFunction, Xedit_SearchForward, "search-forward string &optional offset ignore-case"},
-    {LispFunction, Xedit_VerticalScrollbar, "vertical-scrollbar &optional (state nil specified)"},
-    {LispFunction, Xedit_WrapMode, "wrap-mode &optional (value nil specified)"},
+    {LispFunction, Xedit_VerticalScrollbar, "vertical-scrollbar &optional state"},
+    {LispFunction, Xedit_WrapMode, "wrap-mode &optional value"},
 
 	/* This should be available from elsewhere at some time... */
     {LispFunction, Xedit_XrmStringToQuark, "xrm-string-to-quark string"},
@@ -773,18 +773,17 @@ Xedit_AddEntity(LispBuiltin *builtin)
 LispObj *
 Xedit_AutoFill(LispBuiltin *builtin)
 /*
- auto-fill &optional (value NIL specified)
+ auto-fill &optional value
  */
 {
     Arg arg[1];
     Boolean state;
 
-    LispObj *value, *specified;
+    LispObj *value;
 
-    specified = ARGUMENT(1);
     value = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (value != UNSPEC) {
 	XtSetArg(arg[0], XtNautoFill, value == NIL ? False : True);
 	XtSetValues(textwindow, arg, 1);
     }
@@ -800,19 +799,18 @@ Xedit_AutoFill(LispBuiltin *builtin)
 LispObj *
 Xedit_Background(LispBuiltin *builtin)
 /*
- background &optional (color NIL specified)
+ background &optional color
  */
 {
     Pixel pixel;
     Arg arg[1];
     XrmValue from, to;
 
-    LispObj *color, *specified;
+    LispObj *color;
 
-    specified = ARGUMENT(1);
     color = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (color != UNSPEC) {
 	CHECK_STRING(color);
 
 	from.size = STRLEN(color);
@@ -854,7 +852,7 @@ XeditCharAt(LispBuiltin *builtin, int before)
     LispObj *offset;
 
     offset = ARGUMENT(0);
-    if (offset != NIL) {
+    if (offset != UNSPEC) {
 	CHECK_INDEX(offset);
     }
 
@@ -969,19 +967,18 @@ Xedit_ConvertPropertyList(LispBuiltin *builtin)
 LispObj *
 Xedit_Font(LispBuiltin *builtin)
 /*
- font &optional (font NIL specified)
+ font &optional font
  */
 {
     XFontStruct *font_struct;
     Arg arg[1];
     XrmValue from, to;
 
-    LispObj *font, *specified;
+    LispObj *font;
 
-    specified = ARGUMENT(1);
     font = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (font != UNSPEC) {
 	CHECK_STRING(font);
 
 	from.size = STRLEN(font);
@@ -1015,19 +1012,18 @@ Xedit_Font(LispBuiltin *builtin)
 LispObj *
 Xedit_Foreground(LispBuiltin *builtin)
 /*
- foreground &optional (color NIL specified)
+ foreground &optional color
  */
 {
     Pixel pixel;
     Arg arg[1];
     XrmValue from, to;
 
-    LispObj *color, *specified;
+    LispObj *color;
 
-    specified = ARGUMENT(1);
     color = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (color != UNSPEC) {
 	CHECK_STRING(color);
 
 	from.size = STRLEN(color);
@@ -1082,18 +1078,17 @@ Xedit_GotoChar(LispBuiltin *builtin)
 LispObj *
 Xedit_HorizontalScrollbar(LispBuiltin *builtin)
 /*
- horizontal-scrollbar &optional (state NIL specified)
+ horizontal-scrollbar &optional state
  */
 {
     Arg arg[1];
     XawTextScrollMode scroll;
 
-    LispObj *state, *specified;
+    LispObj *state;
 
-    specified = ARGUMENT(1);
     state = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (state != UNSPEC) {
 	scroll = state == NIL ? XawtextScrollNever : XawtextScrollAlways;
 	XtSetArg(arg[0], XtNscrollHorizontal, scroll);
 	XtSetValues(textwindow, arg, 1);
@@ -1135,19 +1130,18 @@ Xedit_Insert(LispBuiltin *builtin)
 LispObj *
 Xedit_Justification(LispBuiltin *builtin)
 /*
- justification &optional (value NIL specified)
+ justification &optional value
  */
 {
     int i;
     Arg arg[1];
     XawTextJustifyMode justify;
 
-    LispObj *value, *specified;
+    LispObj *value;
 
-    specified = ARGUMENT(1);
     value = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (value != UNSPEC) {
 	for (i = 0; i < 4; i++)
 	    if (value == justify_modes[i])
 		break;
@@ -1173,18 +1167,17 @@ Xedit_Justification(LispBuiltin *builtin)
 LispObj *
 Xedit_LeftColumn(LispBuiltin *builtin)
 /*
- left-column &optional (left NIL specified)
+ left-column &optional left
  */
 {
     short left;
     Arg arg[1];
 
-    LispObj *oleft, *specified;
+    LispObj *oleft;
 
-    specified = ARGUMENT(1);
     oleft = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (oleft != UNSPEC) {
 	CHECK_INDEX(oleft);
 	if (FIXNUM_VALUE(oleft) >= 32767)
 	    left = 32767;
@@ -1236,18 +1229,17 @@ Xedit_PointMin(LispBuiltin *builtin)
 LispObj *
 Xedit_PropertyList(LispBuiltin *builtin)
 /*
- property-list &optional (value NIL specified)
+ property-list &optional value
  */
 {
     Arg arg[1];
     XawTextPropertyList *property_list;
 
-    LispObj *value, *specified;
+    LispObj *value;
 
-    specified = ARGUMENT(1);
     value = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (value != UNSPEC) {
 	Cardinal i;
 	XrmQuark quark;
 
@@ -1363,18 +1355,17 @@ Xedit_ReplaceText(LispBuiltin *builtin)
 LispObj *
 Xedit_RightColumn(LispBuiltin *builtin)
 /*
- right-column &optional (right NIL specified)
+ right-column &optional right
  */
 {
     short right;
     Arg arg[1];
 
-    LispObj *oright, *specified;
+    LispObj *oright;
 
-    specified = ARGUMENT(1);
     oright = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (oright != UNSPEC) {
 	CHECK_INDEX(oright);
 	if (FIXNUM_VALUE(oright) >= 32767)
 	    right = 32767;
@@ -1397,7 +1388,7 @@ Xedit_RightColumn(LispBuiltin *builtin)
 LispObj *
 Xedit_Scan(LispBuiltin *builtin)
 /*
- scan offset type direction &key (count 1) include
+ scan offset type direction &key count include
  */
 {
     int i;
@@ -1436,11 +1427,16 @@ Xedit_Scan(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(otype));
     type = (XawTextScanType)i;
 
-    CHECK_INDEX(ocount);
-    count = FIXNUM_VALUE(ocount);
+    if (ocount == UNSPEC)
+	count = 1;
+    else {
+	CHECK_INDEX(ocount);
+	count = FIXNUM_VALUE(ocount);
+    }
 
     offset = XawTextSourceScan(XawTextGetSource(textwindow),
-			       offset, type, direction, count, include != NIL);
+			       offset, type, direction, count,
+			       include != UNSPEC && include != NIL);
 
     return (FIXNUM(offset));
 }
@@ -1458,14 +1454,14 @@ XeditSearch(LispBuiltin *builtin, XawTextScanDirection direction)
     string = ARGUMENT(0);
 
     CHECK_STRING(string);
-    if (offset != NIL) {
+    if (offset != UNSPEC) {
 	CHECK_INDEX(offset);
 	position = FIXNUM_VALUE(offset);
     }
     else
 	position = XawTextGetInsertionPoint(textwindow);
 
-    block.firstPos = (ignore_case != NIL) ? 1 : 0;
+    block.firstPos = (ignore_case != UNSPEC && ignore_case != NIL) ? 1 : 0;
     block.format = FMT8BIT;
     block.length = STRLEN(string);
     block.ptr = THESTR(string);
@@ -1497,18 +1493,17 @@ Xedit_SearchForward(LispBuiltin *builtin)
 LispObj *
 Xedit_VerticalScrollbar(LispBuiltin *builtin)
 /*
- vertical-scrollbar &optional (state NIL specified)
+ vertical-scrollbar &optional state
  */
 {
     Arg arg[1];
     XawTextScrollMode scroll;
 
-    LispObj *state, *specified;
+    LispObj *state;
 
-    specified = ARGUMENT(1);
     state = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (state != UNSPEC) {
 	scroll = state == NIL ? XawtextScrollNever : XawtextScrollAlways;
 	XtSetArg(arg[0], XtNscrollVertical, scroll);
 	XtSetValues(textwindow, arg, 1);
@@ -1525,19 +1520,18 @@ Xedit_VerticalScrollbar(LispBuiltin *builtin)
 LispObj *
 Xedit_WrapMode(LispBuiltin *builtin)
 /*
- wrap-mode &optional (value NIL specified)
+ wrap-mode &optional value
  */
 {
     int i;
     Arg arg[1];
     XawTextWrapMode wrap;
 
-    LispObj *value, *specified;
+    LispObj *value;
 
-    specified = ARGUMENT(1);
     value = ARGUMENT(0);
 
-    if (specified != NIL) {
+    if (value != UNSPEC) {
 	for (i = 0; i < 3; i++)
 	    if (value == wrap_modes[i])
 		break;

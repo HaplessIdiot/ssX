@@ -1,4 +1,4 @@
-$XFree86: xc/programs/xedit/lisp/README,v 1.10 2002/11/08 08:00:55 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/README,v 1.11 2002/11/10 16:29:03 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -22,10 +22,7 @@ run "./lsp test/hello.lsp" or "./lsp test/widgets.lsp".
 
   Currently, it should be used as an helper and/or a small calculator embedded
 in xedit. For the future it should be possible to write entire interfaces
-in the xedit text buffers. The code is expected to be very stable, and by
-using it, xedit should not crash in any way (actually, it can't, as the
-lisp is running in a separate process). The lisp process is started once the
-first eval is called.
+in the xedit text buffers.
 
 
     USAGE SUMMARY

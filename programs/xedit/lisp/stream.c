@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.15 2002/11/10 16:29:06 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.16 2002/11/15 07:01:30 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -187,7 +187,7 @@ Lisp_Open(LispBuiltin *builtin)
     else if (!PATHNAMEP(filename))
 	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(filename));
 
-    if (odirection != NIL) {
+    if (odirection != UNSPEC) {
 	direction = -1;
 	if (KEYWORDP(odirection)) {
 	    atom = ATOMID(odirection);
@@ -208,7 +208,7 @@ Lisp_Open(LispBuiltin *builtin)
     else
 	direction = DIR_INPUT;
 
-    if (element_type != NIL) {
+    if (element_type != UNSPEC) {
 	/* just check argument... */
 	if (SYMBOLP(element_type) &&
 	    ATOMID(element_type) == Scharacter)
@@ -221,7 +221,7 @@ Lisp_Open(LispBuiltin *builtin)
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
-    if (if_exists != NIL) {
+    if (if_exists != UNSPEC) {
 	exist = -1;
 	if (KEYWORDP(if_exists)) {
 	    atom = ATOMID(if_exists);
@@ -248,7 +248,7 @@ Lisp_Open(LispBuiltin *builtin)
     else
 	exist = EXT_ERROR;
 
-    if (if_does_not_exist != NIL) {
+    if (if_does_not_exist != UNSPEC) {
 	noexist = -1;
 	if (KEYWORDP(if_does_not_exist)) {
 	    atom = ATOMID(if_does_not_exist);
@@ -265,7 +265,7 @@ Lisp_Open(LispBuiltin *builtin)
     else
 	noexist = NOEXT_NIL;
 
-    if (external_format != NIL) {
+    if (external_format != UNSPEC) {
 	/* just check argument... */
 	if (SYMBOLP(external_format) &&
 	    ATOMID(external_format) == Scharacter)
@@ -403,7 +403,8 @@ Lisp_Close(LispBuiltin *builtin)
 		EPSTREAMP(stream) = NULL;
 	    }
 	    if (PIDPSTREAMP(stream) > 0) {
-		kill(PIDPSTREAMP(stream), oabort == NIL ? SIGTERM : SIGKILL);
+		kill(PIDPSTREAMP(stream),
+		     oabort == UNSPEC || oabort == NIL ? SIGTERM : SIGKILL);
 		waitpid(PIDPSTREAMP(stream), NULL, 0);
 	    }
 	}
@@ -426,7 +427,9 @@ Lisp_Listen(LispBuiltin *builtin)
 
     stream = ARGUMENT(0);
 
-    if (stream != NIL) {
+    if (stream == UNSPEC)
+	stream = NIL;
+    else if (stream != NIL) {
 	CHECK_STREAM(stream);
     }
     else
@@ -549,7 +552,7 @@ Lisp_MakeStringOutputStream(LispBuiltin *builtin)
 
     element_type = ARGUMENT(0);
 
-    if (element_type != NIL) {
+    if (element_type != UNSPEC) {
 	/* just check argument... */
 	if (SYMBOLP(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
@@ -626,7 +629,7 @@ Lisp_MakePipe(LispBuiltin *builtin)
 	LispDestroy("%s: %s is a bad pathname",
 		    STRFUN(builtin), STROBJ(command_line));
 
-    if (odirection != NIL) {
+    if (odirection != UNSPEC) {
 	direction = -1;
 	if (KEYWORDP(odirection)) {
 	    atom = ATOMID(odirection);
@@ -647,7 +650,7 @@ Lisp_MakePipe(LispBuiltin *builtin)
     else
 	direction = DIR_INPUT;
 
-    if (element_type != NIL) {
+    if (element_type != UNSPEC) {
 	/* just check argument... */
 	if (SYMBOLP(element_type) && ATOMID(element_type) == Scharacter)
 	    ;	/* do nothing */
@@ -658,7 +661,7 @@ Lisp_MakePipe(LispBuiltin *builtin)
 			STRFUN(builtin), Sdefault, Scharacter, STROBJ(element_type));
     }
 
-    if (external_format != NIL) {
+    if (external_format != UNSPEC) {
 	/* just check argument... */
 	if (SYMBOLP(external_format) && ATOMID(external_format) == Scharacter)
 	    ;	/* do nothing */

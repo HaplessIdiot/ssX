@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.12 2002/11/08 08:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xaw.c,v 1.13 2002/11/10 16:29:11 paulo Exp $ */
 
 #include <stdlib.h>
 #include <X11/Intrinsic.h>
@@ -542,13 +542,13 @@ Lisp_XawListChange(LispBuiltin *builtin)
 	 ++nitems, object = CDR(object))
 	CHECK_STRING(CAR(object));
 
-    if (olongest != NIL) {
+    if (olongest != UNSPEC) {
 	CHECK_INDEX(olongest);
 	longest = FIXNUM_VALUE(olongest);
     }
     else
 	XtVaGetValues(widget, XtNlongest, &longest, NULL, 0);
-    resize = oresize != NIL;
+    resize = oresize != UNSPEC && oresize != NIL;
 
     /* No errors in arguments, build string list */
     list = (String*)XtMalloc(sizeof(String) * nitems);
@@ -652,7 +652,7 @@ Lisp_XawScrollbarSetThumb(LispBuiltin *builtin)
     CHECK_DFLOAT(otop);
     top = DFLOAT_VALUE(otop);
 
-    if (oshown == NIL)
+    if (oshown == UNSPEC)
 	shown = 1.0;
     else {
 	CHECK_DFLOAT(oshown);
@@ -661,5 +661,5 @@ Lisp_XawScrollbarSetThumb(LispBuiltin *builtin)
 
     XawScrollbarSetThumb(widget, top, shown);
 
-    return (oshown == NIL ? DFLOAT(shown) : oshown);
+    return (oshown == UNSPEC ? DFLOAT(shown) : oshown);
 }

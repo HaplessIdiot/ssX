@@ -1,4 +1,4 @@
-$XFree86: xc/programs/xedit/lisp/TODO,v 1.6 2002/11/02 22:58:08 paulo Exp $
+$XFree86: xc/programs/xedit/lisp/TODO,v 1.7 2002/11/08 08:00:55 paulo Exp $
 
 LAST UPDATED:	$Date$
 
@@ -58,16 +58,9 @@ o Write more functions and optimization for bignums. Try to make the code
 o Instead of using mathimp.c for a large amount of functions, implement a
   "generic number" type and implement the calculations directly in the
   mp library.
-o Finish the interface/protocol with xedit. It is taking a bit long to have
-  have programable text buffers, easily implementable color-syntax modes, etc.
-o Make more optimizations to get faster execution. Implement byte-code
-  compilation? Implement a simple optimizer, not very effective for common
-  code, but almost mandatory for loops.
 o Add more missing Common Lisp features, like &allow-other-keys for function
   definitions, the missing structure features, CLOS etc.
 o Fix the Postgresql module, make it compile everywhere.
-o Readd support for gmp as the math library. This must be optional, gmp is
-  not present in all systems.
 o Add support for multi-threaded applications?
 o Make it possible to know if a object has only one reference, this is
   required to make "inplace" changes of variables. Very useful for things
@@ -84,7 +77,7 @@ o Write some type of "hyperlinks", this is the only feature missing to even
   allow writting a web browser inside xedit.
 o Write some "demos" (maybe a file manager or a simple mail reader) using the
   Xt/Xaw bindings (needs modules working in all systems).
-o Remove all calls to the macros GCProtect and GCUProtect. This is unsafe
+o Remove all calls to the macros GCDisable and GCEnable. This is unsafe
   and should be removed.
 o Write a set of tests. The interpreter is expected to be only a subset of
   Common Lisp, but what it understand should generate the expected/acceptable

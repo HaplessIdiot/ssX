@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.17tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/string.c,v 1.18 2002/11/22 22:56:04 tsi Exp $ */
 
 #include "helper.h"
 #include "read.h"
@@ -49,6 +49,7 @@
 #define CHAR_BOTHP		5
 #define CHAR_UPPERP		6
 #define CHAR_LOWERP		7
+#define CHAR_GRAPHICP		8
 
 /*
  * Prototypes
@@ -267,6 +268,9 @@ LispCharOp(LispBuiltin *builtin, int operation)
 	case CHAR_LOWERP:
 	    result = islower(value) ? T : NIL;
 	    break;
+	case CHAR_GRAPHICP:
+	    result = value == ' ' || isgraph(value) ? T : NIL;
+	    break;
 	default:
 	    result = NIL;
 	    break;
@@ -340,6 +344,15 @@ Lisp_LowerCaseP(LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_GraphicCharP(LispBuiltin *builtin)
+/*
+ graphic-char-p char
+ */
+{
+    return (LispCharOp(builtin, CHAR_GRAPHICP));
+}
+
+LispObj *
 Lisp_Char(LispBuiltin *builtin)
 /*
  char string index
@@ -392,6 +405,7 @@ Lisp_XeditCharStore(LispBuiltin *builtin)
 	LispDestroy("%s: index %ld too large for string length %ld",
 		    STRFUN(builtin), offset, length);
     CHECK_SCHAR(ovalue);
+    CHECK_STRING_WRITABLE(ostring);
 
     character = SCHAR_VALUE(ovalue);
 
@@ -445,7 +459,7 @@ Lisp_DigitChar(LispBuiltin *builtin)
     CHECK_FIXNUM(oweight);
     weight = FIXNUM_VALUE(oweight);
 
-    if (oradix != NIL) {
+    if (oradix != UNSPEC) {
 	CHECK_INDEX(oradix);
 	radix = FIXNUM_VALUE(oradix);
     }
@@ -478,7 +492,7 @@ Lisp_DigitCharP(LispBuiltin *builtin)
 
     CHECK_SCHAR(ochar);
     character = SCHAR_VALUE(ochar);
-    if (oradix != NIL) {
+    if (oradix != UNSPEC) {
 	CHECK_INDEX(oradix);
 	radix = FIXNUM_VALUE(oradix);
     }
@@ -534,7 +548,7 @@ Lisp_MakeString(LispBuiltin *builtin)
 
     CHECK_INDEX(size);
     length = FIXNUM_VALUE(size);
-    if (initial_element != NIL) {
+    if (initial_element != UNSPEC) {
 	CHECK_SCHAR(initial_element);
 	initial = SCHAR_VALUE(initial_element);
     }
@@ -633,7 +647,8 @@ Lisp_ParseInteger(LispBuiltin *builtin)
 	for (; i < end && *ptr && isspace(*ptr); ptr++, i++)
 	    ;
 
-    if ((junk || ptr == string) && junk_allowed == NIL)
+    if ((junk || ptr == string) &&
+	(junk_allowed == UNSPEC || junk_allowed == NIL))
 	LispDestroy("%s: %s has a bad integer representation",
 		    STRFUN(builtin), STROBJ(ostring));
     else if (ptr == string)

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.14 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/require.c,v 1.15 2002/11/10 16:29:06 paulo Exp $ */
 
 #include "require.h"
 
@@ -53,7 +53,10 @@ Lisp_Load(LispBuiltin *builtin)
 	CHECK_STRING(filename);
     }
 
-    return (LispLoadFile(filename, verbose != NIL, print != NIL,
+    return (LispLoadFile(filename,
+			 verbose != UNSPEC && verbose != NIL,
+			 print != UNSPEC && print != NIL,
+			 if_does_not_exist != UNSPEC &&
 			 if_does_not_exist != NIL));
 }
 
@@ -72,7 +75,7 @@ Lisp_Require(LispBuiltin *builtin)
     module = ARGUMENT(0);
 
     CHECK_STRING(module);
-    if (pathname != NIL) {
+    if (pathname != UNSPEC) {
 	if (PATHNAMEP(pathname))
 	    pathname = CAR(pathname->data.pathname);
 	else {

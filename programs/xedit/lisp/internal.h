@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.42 2002/11/21 07:25:09 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.43 2002/11/21 08:04:06 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -153,6 +153,8 @@ typedef struct _LispMac LispMac;
 /* unmatched ')' */
 #define	EOLIST			(LispObj*)0x00000031
 #define READLABEL_MASK		0x00000041
+/* unspecified argument */
+#define UNSPEC			(LispObj*)0x00000051
 #define INVALIDP(object)						\
     ((object) == NULL || (object) == EOLIST || (object) == DOT)
 
@@ -330,6 +332,10 @@ typedef struct _LispMac LispMac;
 #define CHECK_STRING(object)						\
     if (!STRINGP(object))						\
 	LispDestroy("%s: %s is not a string",				\
+		    STRFUN(builtin), STROBJ(object))
+#define CHECK_STRING_WRITABLE(object)					\
+    if (!object->data.string.writable)					\
+	LispDestroy("%s: %s is readonly",				\
 		    STRFUN(builtin), STROBJ(object))
 
 
@@ -547,6 +553,7 @@ struct _LispObj {
 	struct {
 	    char *string;
 	    long length;
+	    int writable : 1;
 	} string;
 	long integer;
 	double dfloat;
