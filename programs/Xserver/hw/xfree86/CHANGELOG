@@ -1,4 +1,5 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 687. Enable Freetype Mac FOND support on Mac OS X (Torrey T. Lyons).
  686. Add an "lswitch" option to the group xkb map, allowing the left Alt
       key to be used for AltGr (#A.1463, Andreas Tobler).
  685. Add some locales for OpenI18N1.2 (LI18NUX2000) level.1 conformance,
@@ -15918,4 +15919,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2461 2002/12/27 21:09:46 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2462 2002/12/31 02:44:50 dawes Exp $
