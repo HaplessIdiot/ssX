@@ -27,7 +27,7 @@
  * this work is sponsored by Appian Graphics.
  * 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.12 1999/07/04 06:39:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_dac.c,v 1.2 2000/05/10 18:55:30 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -55,18 +55,28 @@ void
 Permedia3PreInit(ScrnInfoPtr pScrn, GLINTPtr pGlint)
 {
     TRACE_ENTER("Permedia3PreInit");
-    /* Memory timings for the Appian J2000 board */
-    /* Need to adapt this to the board being used. */
-    GLINT_SLOW_WRITE_REG(0xffffffff, PM3MemBypassWriteMask);
-    GLINT_SLOW_WRITE_REG(0x02e311B8, PM3LocalMemCaps);
-    GLINT_SLOW_WRITE_REG(0x07424905, PM3LocalMemTimings);
-    GLINT_SLOW_WRITE_REG(0x0c000003, PM3LocalMemControl);
-    GLINT_SLOW_WRITE_REG(0x00000069, PM3LocalMemRefresh);
-    /*
-    GLINT_SLOW_WRITE_REG(0x00000000, PM3LocalMemPowerDown);
-    GLINT_SLOW_WRITE_REG(0x00000000, PM3ByAperture1Mode);
-    GLINT_SLOW_WRITE_REG(0x00000000, PM3ByAperture2Mode);
-    */
+    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
+	(pGlint->PciInfo->subsysCard == 0x3d32)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "Appian Jeronimo 2000 board detected and initialized.\n\t"
+	    "subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
+	    pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
+	/* Memory timings for the Appian J2000 board.
+	 * This is needed for the second head which is left unitilialized
+	 * by the bios, thus freezing the machine.
+	 */
+	GLINT_SLOW_WRITE_REG(0xffffffff, PM3MemBypassWriteMask);
+	GLINT_SLOW_WRITE_REG(0x02e311B8, PM3LocalMemCaps);
+	GLINT_SLOW_WRITE_REG(0x07424905, PM3LocalMemTimings);
+	GLINT_SLOW_WRITE_REG(0x0c000003, PM3LocalMemControl);
+	GLINT_SLOW_WRITE_REG(0x00000069, PM3LocalMemRefresh);
+    }
+    else {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+	    "Unknown Glint Permedia3 board detected.\n\t"
+	    "subsysVendor = 0x%04x, subsysCard = 0x%04x.\n",
+	    pGlint->PciInfo->subsysVendor, pGlint->PciInfo->subsysCard);
+    }
     TRACE_EXIT("Permedia3PreInit");
 }
 
@@ -209,16 +219,21 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
     GLINTRegPtr pReg = &pGlint->ModeReg;
     CARD32 temp1, temp2, temp3, temp4;
 
-    /* Memory timings for the Appian J2000 board */
-    /* Need to adapt this to the board being used. */
-    pReg->glintRegs[PM3MemBypassWriteMask >> 3] = 0xffffffff;
-    pReg->glintRegs[PM3LocalMemCaps >> 3] = 0x02e311B8;
-    pReg->glintRegs[PM3LocalMemTimings >> 3] = 0x07424905;
-    pReg->glintRegs[PM3LocalMemControl >> 3] = 0x0c000003;
-    pReg->glintRegs[PM3LocalMemRefresh >> 3] = 0x00000069;
-    pReg->glintRegs[PM3LocalMemPowerDown >> 3] = 0x00000000;
-    pReg->glintRegs[PM3ByAperture1Mode >> 3] = 0x00000000;
-    pReg->glintRegs[PM3ByAperture2Mode >> 3] = 0x00000000;
+    /* Memory timings for the Appian J2000 board
+     * This is not ideal, since the work here is duplicated 
+     * in the Permedia3PreInit function :(((
+     */
+    if ((pGlint->PciInfo->subsysVendor == 0x1097) &&
+	(pGlint->PciInfo->subsysCard == 0x3d32)) {
+	pReg->glintRegs[PM3MemBypassWriteMask >> 3] = 0xffffffff;
+	pReg->glintRegs[PM3LocalMemCaps >> 3] = 0x02e311B8;
+	pReg->glintRegs[PM3LocalMemTimings >> 3] = 0x07424905;
+	pReg->glintRegs[PM3LocalMemControl >> 3] = 0x0c000003;
+	pReg->glintRegs[PM3LocalMemRefresh >> 3] = 0x00000069;
+	pReg->glintRegs[PM3LocalMemPowerDown >> 3] = 0x00000000;
+	pReg->glintRegs[PM3ByAperture1Mode >> 3] = 0x00000000;
+	pReg->glintRegs[PM3ByAperture2Mode >> 3] = 0x00000000;
+    }
 
     pReg->glintRegs[Aperture0 >> 3] = 0;
     pReg->glintRegs[Aperture1 >> 3] = 0;
