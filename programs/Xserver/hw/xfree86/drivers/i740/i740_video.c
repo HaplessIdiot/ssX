@@ -44,7 +44,7 @@
  *   13 January 2003 - Fixed a minor bug where the video would occasionally stop updating,
  *     which was worked around just by re-sizing the window.
  */
-
+/* $XFree86$ */
 
 /*
  * i740_video.c: i740 Xv driver. Based on the mga Xv driver by Mark Vojkovich.
