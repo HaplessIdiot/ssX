@@ -1,4 +1,6 @@
 XFree86 4.2.99.901 (4 February 2003)
+ 838. Add a check to xset for a NULL return from XkbGetKeyboard()
+      (Tapani Utriainen).
  837. Resync with DRI mesa-4-0-4 branch:
        - radeon DRM: only acknowledge interrupts we handle -- others could
          be used outside the DRM (Michel Dänzer).
@@ -16245,4 +16247,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2518 2003/02/04 23:04:59 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2519 2003/02/05 00:23:06 dawes Exp $
