@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.10 2003/09/28 20:15:27 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.c,v 1.11 2003/12/08 22:45:30 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -102,7 +102,7 @@ static const GLubyte *radeonGetString( GLcontext *ctx, GLenum name )
       offset = driGetRendererString( buffer, "Radeon", DRIVER_DATE,
 				     agp_mode );
 
-      sprintf( & buffer[ offset ], "%sTCL",
+      sprintf( & buffer[ offset ], " %sTCL",
 	       !(rmesa->TclFallback & RADEON_TCL_FALLBACK_TCL_DISABLE)
 	       ? "" : "NO-" );
 
