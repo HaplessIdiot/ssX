@@ -26,7 +26,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 */
-/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.0 1996/08/25 14:13:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/misprite.c,v 3.3 2000/10/02 22:54:36 keithp Exp $ */
 
 # include   "X.h"
 # include   "Xproto.h"
@@ -388,8 +388,11 @@ miSpriteCloseScreen (i, pScreen)
     pScreen->SaveDoomedAreas = pScreenPriv->SaveDoomedAreas;
     pScreen->RestoreAreas = pScreenPriv->RestoreAreas;
 #ifdef RENDER
-    ps->Composite = pScreenPriv->Composite;
-    ps->Glyphs = pScreenPriv->Glyphs;
+    if (ps)
+    {
+	ps->Composite = pScreenPriv->Composite;
+	ps->Glyphs = pScreenPriv->Glyphs;
+    }
 #endif
     xfree ((pointer) pScreenPriv);
 
