@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.20 2003/11/27 01:59:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.21 2004/04/01 00:17:04 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -311,7 +311,8 @@ static io_connect_t root_port;
         case NSScrollWheel:
             [self getMousePosition:&xe fromEvent:anEvent];
             xe.u.u.type = kXDarwinScrollWheel;
-            xe.u.clientMessage.u.s.shorts0 = [anEvent deltaY];
+            xe.u.clientMessage.u.s.shorts0 = [anEvent deltaX] +
+                                             [anEvent deltaY];
             break;
         case NSKeyDown:
         case NSKeyUp:
