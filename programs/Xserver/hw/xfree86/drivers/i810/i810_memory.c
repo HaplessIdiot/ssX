@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.5 2000/04/19 15:48:34 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_memory.c,v 1.6 2000/05/11 18:14:34 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -32,22 +32,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
 
-#ifdef XFree86LOADER
-/*
- * Must #include <linux/types.h> before "xf86_ansic.h", but perhaps it would
- * be a better idea to #include <linux/agpgart.h> instead.
- */
-#include <linux/types.h>
-#endif
-
-#include "X.h"
-#include "input.h"
-#include "screenint.h"
-#include "compiler.h"
+#include "Xos.h"
 #include "xf86.h"
 
-#include "xf86_OSproc.h"
-#include "xf86_ansic.h" 
+#include "xf86_ansic.h"
 
 #include "i810.h"
 #include "i810_reg.h"
@@ -76,10 +64,6 @@ int I810AllocHigh( I810MemRange *result, I810MemRange *pool, int size )
    result->Start = pool->End -= size;
    return 1;
 }
-
-
-#define XCONFIG_PROBED "()"
-#define NAME "i810"
 
 
 int I810AllocateGARTMemory( ScrnInfoPtr pScrn ) 
