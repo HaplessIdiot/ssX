@@ -51,7 +51,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.2 1998/06/28 08:59:58 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/StrToCurs.c,v 1.3 1998/06/28 12:32:31 dawes Exp $ */
 
 #include	<X11/Intrinsic.h>
 #include	<X11/StringDefs.h>
@@ -59,10 +59,6 @@ SOFTWARE.
 #include	<X11/Xmu/Drawing.h>
 #include	<X11/Xmu/CurUtil.h>
 #include	<X11/Xmu/CharSet.h>
-
-#ifdef __EMX__
-#define strcasecmp stricmp
-#endif
 
 #ifndef X_NOT_POSIX
 #include <stdlib.h>
@@ -152,7 +148,7 @@ void XmuCvtStringToCursor(args, num_args, fromVal, toVal)
              "String to cursor conversion needs screen argument",
               (String *)NULL, (Cardinal *)NULL);
 
-    if (strcasecmp(name, "None") == 0)
+    if (XmuCompareISOLatin1(name, "None") == 0)
       {
 	cursor = None;
 	done(&cursor, Cursor);
