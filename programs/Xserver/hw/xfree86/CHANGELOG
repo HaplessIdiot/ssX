@@ -1,4 +1,6 @@
 XFree86 4.4.99.23 (xx January 2005)
+ 297. Choose a better default videoram amount for i810 video when DRI is not
+      disabled (David Dawes).
  296. Set the vmware driver fallback monitor parameters to allow modes
       one size smaller than the maximum reported screen size.  This allows
       it to work much better when using automatic configuration (David Dawes).
@@ -19329,7 +19331,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3407 2005/01/30 02:46:08 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3408 2005/01/30 21:31:25 dawes Exp $
 
 
 

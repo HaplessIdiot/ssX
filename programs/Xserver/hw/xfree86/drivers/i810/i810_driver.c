@@ -72,7 +72,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.109 2005/01/09 20:47:19 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.110 2005/01/29 03:42:48 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -924,14 +924,21 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 	 pI810->LmFreqSel = 100;
    }
 
-   /* Default to 4MB framebuffer, which is sufficient for all
-    * supported 2d resolutions.  If the user has specified a different
-    * size in the XF86Config, use that amount instead.
-    *
-    *  Changed to 8 Meg so we can have acceleration by default (Mark).
+   pI810->directRenderingDisabled =
+     !xf86ReturnOptValBool(pI810->Options, OPTION_DRI, TRUE);
+
+   /*
+    * Default to 8MB framebuffer when DRI is disabled, and to 16MB
+    * when DRI is enabled.
     */
-   pScrn->videoRam = 8192;
+#ifdef XF86DRI
+   if (!pI810->directRenderingDisabled)
+      pScrn->videoRam = I810_DEFAULT_VIDEOMEM_3D;
+   else
+#endif
+      pScrn->videoRam = I810_DEFAULT_VIDEOMEM_2D;
    from = X_DEFAULT;
+
    if (pI810->pEnt->device->videoRam) {
       pScrn->videoRam = pI810->pEnt->device->videoRam;
       from = X_CONFIG;
@@ -1098,9 +1105,6 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
 	    (((pScrn->mask.blue >> pScrn->offset.blue) -
 	      1) << pScrn->offset.blue);
    }
-
-   pI810->directRenderingDisabled =
-     !xf86ReturnOptValBool(pI810->Options, OPTION_DRI, TRUE);
 
 #ifdef XF86DRI
    if (!pI810->directRenderingDisabled) {
