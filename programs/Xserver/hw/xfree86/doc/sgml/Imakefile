@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.65 2000/11/06 22:03:28 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.66 2000/12/01 19:47:55 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -13,7 +13,8 @@ MANSGMLDEPENDS = mdefs.ent
   INDEXLIST = README.sgml RELNOTES.sgml Status.sgml LICENSE.sgml Install.sgml \
 	      DESIGN.sgml \
 	      mouse.sgml fonts.sgml DRI.sgml DRIcomp.sgml \
-	      isc.sgml LynxOS.sgml NetBSD.sgml OpenBSD.sgml OS2note.sgml \
+	      isc.sgml LynxOS.sgml NetBSD.sgml OpenBSD.sgml \
+	      Darwin.sgml OS2note.sgml \
               apm.sgml ati.sgml chips.sgml cyrix.sgml DECtga.sgml \
 	      I128.sgml i740.sgml i810.sgml newport.sgml \
 	      r128.sgml rendition.sgml s3virge.sgml SiS.sgml
@@ -32,6 +33,7 @@ LinuxDocReadmeTarget(Linux)
 LinuxDocReadmeTarget(LynxOS)
 LinuxDocReadmeTarget(NetBSD)
 LinuxDocReadmeTarget(OpenBSD)
+LinuxDocReadmeTarget(Darwin)
 #ifdef OUTOFDATE
 LinuxDocReadmeTarget(OS2)
 #endif
