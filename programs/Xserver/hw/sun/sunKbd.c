@@ -1,4 +1,4 @@
-/* $XConsortium: sunKbd.c,v 5.44 94/04/17 20:29:41 erik Exp $ */
+/* $TOG: sunKbd.c /main/77 1997/03/26 16:50:17 kaleb $ */
 /*-
  * Copyright (c) 1987 by the Regents of the University of California
  *
@@ -45,17 +45,21 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "keysym.h"
 #include "Sunkeysym.h"
 
+#ifdef XKB
+#include <X11/extensions/XKB.h>
+#include <X11/extensions/XKBstr.h>
+#include <X11/extensions/XKBsrv.h>
+#endif
+
 #define SUN_LED_MASK	0x0f
-#define MIN_KEYCODE	8	/* necessary to avoid the mouse buttons */
+#define MIN_KEYCODE	7	/* necessary to avoid the mouse buttons */
 #define MAX_KEYCODE	255	/* limited by the protocol */
 #ifndef KB_SUN4 
 #define KB_SUN4		4
 #endif
 
-#ifndef XKB
-#define AUTOREPEAT_INITIATE	200
+#define AUTOREPEAT_INITIATE	400
 #define AUTOREPEAT_DELAY	50
-#endif
 
 #define tvminus(tv, tv1, tv2)   /* tv = tv1 - tv2 */ \
 		if ((tv1).tv_usec < (tv2).tv_usec) { \
@@ -76,25 +80,21 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 extern KeySymsRec sunKeySyms[];
 extern SunModmapRec* sunModMaps[];
 
-#ifndef XKB
 long	  	  sunAutoRepeatInitiate = 1000 * AUTOREPEAT_INITIATE;
 long	  	  sunAutoRepeatDelay = 1000 * AUTOREPEAT_DELAY;
-#endif
 
-#ifndef XKB
 static int		autoRepeatKeyDown = 0;
 static int		autoRepeatReady;
 static int		autoRepeatFirst;
 static struct timeval	autoRepeatLastKeyDownTv;
 static struct timeval	autoRepeatDeltaTv;
-#endif
 
 void sunKbdWait()
 {
     static struct timeval lastChngKbdTransTv;
     struct timeval tv;
     struct timeval lastChngKbdDeltaTv;
-    int lastChngKbdDelta;
+    unsigned int lastChngKbdDelta;
 
     X_GETTIMEOFDAY(&tv);
     if (!lastChngKbdTransTv.tv_sec)
@@ -201,6 +201,29 @@ static void ModLight (device, on, led)
  */
 
 #if NeedFunctionPrototypes
+static void bell (
+    int fd,
+    int duration)
+#else
+static void bell (fd, duration)
+    int fd;
+    int duration;
+#endif
+{
+    int		    kbdCmd;   	    /* Command to give keyboard */
+
+    kbdCmd = KBD_CMD_BELL;
+    if (ioctl (fd, KIOCCMD, &kbdCmd) == -1) {
+ 	Error("Failed to activate bell");
+	return;
+    }
+    if (duration) usleep (duration);
+    kbdCmd = KBD_CMD_NOBELL;
+    if (ioctl (fd, KIOCCMD, &kbdCmd) == -1)
+	Error ("Failed to deactivate bell");
+}
+
+#if NeedFunctionPrototypes
 static void sunBell (
     int		    percent,
     DeviceIntPtr    device,
@@ -214,25 +237,16 @@ static void sunBell (percent, device, ctrl, unused)
     int		    unused;
 #endif
 {
-    int		    kbdCmd;   	    /* Command to give keyboard */
     KeybdCtrl*      kctrl = (KeybdCtrl*) ctrl;
     sunKbdPrivPtr   pPriv = (sunKbdPrivPtr) device->public.devicePrivate;
  
     if (percent == 0 || kctrl->bell == 0)
  	return;
 
-    kbdCmd = KBD_CMD_BELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1) {
- 	Error("Failed to activate bell");
-	return;
-    }
-    usleep (kctrl->bell_duration * 1000);
-    kbdCmd = KBD_CMD_NOBELL;
-    if (ioctl (pPriv->fd, KIOCCMD, &kbdCmd) == -1)
-	Error ("Failed to deactivate bell");
+    bell (pPriv->fd, kctrl->bell_duration * 1000);
 }
 
-static void EnqueueEvent (xE)
+static void sunEnqueueEvent (xE)
     xEvent* xE;
 {
 #ifndef i386
@@ -254,7 +268,6 @@ static void EnqueueEvent (xE)
 #endif
 }
 
-#ifndef XKB
 
 #define XLED_NUM_LOCK    0x1
 #define XLED_COMPOSE     0x4
@@ -315,14 +328,15 @@ static void pseudoKey(device, down, keycode)
 	}
     }
 }
-#endif
 
 static void DoLEDs(device, ctrl, pPriv)
     DeviceIntPtr    device;	    /* Keyboard to alter */
     KeybdCtrl* ctrl;
     sunKbdPrivPtr pPriv; 
 {
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     if ((ctrl->leds & XLED_CAPS_LOCK) && !(pPriv->leds & XLED_CAPS_LOCK))
 	    pseudoKey(device, TRUE,
 		LookupKeyCode(XK_Caps_Lock, &device->key->curKeySyms));
@@ -354,6 +368,8 @@ static void DoLEDs(device, ctrl, pPriv)
     if (!(ctrl->leds & XLED_COMPOSE) && (pPriv->leds & XLED_COMPOSE))
 	    pseudoKey(device, FALSE,
 		LookupKeyCode(SunXK_Compose, &device->key->curKeySyms));
+#ifdef XKB
+    }
 #endif
     pPriv->leds = ctrl->leds & 0x0f;
     SetLights (ctrl, pPriv->fd);
@@ -401,6 +417,181 @@ static void sunKbdCtrl (device, ctrl)
 
 /*-
  *-----------------------------------------------------------------------
+ * sunInitKbdNames --
+ *	Handle the XKB initialization
+ *
+ * Results:
+ *	None.
+ *
+ * Comments: 
+ *     This function needs considerable work, in conjunctions with
+ *     the need to add geometry descriptions of Sun Keyboards.
+ *     It would also be nice to have #defines for all the keyboard
+ *     layouts so that we don't have to have these hard-coded
+ *     numbers.
+ *
+ *-----------------------------------------------------------------------
+ */
+#ifdef XKB
+#if NeedFunctionPrototypes
+static void sunInitKbdNames (
+    XkbComponentNamesRec* names,
+    sunKbdPrivPtr pKbd)
+#else
+static void sunInitKbdNames (names, pKbd)
+    XkbComponentNamesRec* names;
+    sunKbdPrivPtr pKbd;
+#endif
+{
+#ifndef XKBBUFSIZE
+#define XKBBUFSIZE 64
+#endif
+    static char keycodesbuf[XKBBUFSIZE];
+    static char geometrybuf[XKBBUFSIZE];
+    static char  symbolsbuf[XKBBUFSIZE];
+
+    names->keymap = NULL;
+    names->compat = "compat/complete";
+    names->types  = "types/complete";
+    names->keycodes = keycodesbuf;
+    names->geometry = geometrybuf;
+    names->symbols = symbolsbuf;
+    (void) strcpy (keycodesbuf, "keycodes/");
+    (void) strcpy (geometrybuf, "geometry/");
+    (void) strcpy (symbolsbuf, "symbols/");
+
+    /* keycodes & geometry */
+    switch (pKbd->type) {
+    case KB_SUN2:
+	(void) strcat (names->keycodes, "sun(type2)");
+	(void) strcat (names->geometry, "sun(type2)");
+	(void) strcat (names->symbols, "us(sun2)");
+	break;
+    case KB_SUN3:
+	(void) strcat (names->keycodes, "sun(type3)");
+	(void) strcat (names->geometry, "sun(type3)");
+	(void) strcat (names->symbols, "us(sun3)");
+	break;
+    case KB_SUN4:
+	if (pKbd->layout == 19) {
+	    (void) strcat (names->keycodes, "sun(US101A)");
+	    (void) strcat (names->geometry, "pc101-NG"); /* XXX */
+	    (void) strcat (names->symbols, "us(pc101)");
+	} else if (pKbd->layout < 33) {
+	    (void) strcat (names->keycodes, "sun(type4)");
+	    (void) strcat (names->geometry, "sun(type4)");
+	    if (sunSwapLkeys)
+		(void) strcat (names->symbols, "sun/us(sun4ol)");
+	    else
+		(void) strcat (names->symbols, "sun/us(sun4)");
+	} else {
+	    (void) strcat (names->keycodes, "sun(type5)");
+
+	    switch (pKbd->layout) {
+	    case 33: case 80: /* U.S. */
+	    case 47: case 94: /* Korea */
+	    case 48: case 95: /* Taiwan */
+	    case 49: case 96: /* Japan */
+		(void) strcat (names->geometry, "sun(type5)");
+		break;
+	    case 34: case 81: /* U.S. Unix */
+		(void) strcat (names->geometry, "sun(type5unix)");
+		break;
+	    default:
+		(void) strcat (names->geometry, "sun(type5euro)");
+	    }
+
+	    if (sunSwapLkeys)
+		(void) strcat (names->symbols, "sun/us(sun5ol)");
+	    else
+		(void) strcat (names->symbols, "sun/us(sun5)");
+	}
+	break;
+    default:
+	names->keycodes = names->geometry = NULL;
+	break;
+    }
+
+    /* extra symbols */
+
+    if (pKbd->type == KB_SUN4) {
+	switch (pKbd->layout) {
+	case  4: case 36: case 83: 
+	case  5: case 37: case 84: 
+	case  6: case 38: case 85: 
+	case  8: case 40: case 87: 
+	case  9: case 41: case 88: 
+	case 10: case 42: case 89: 
+	case 11: case 43: case 90: 
+	case 12: case 44: case 91: 
+	case 13: case 45: case 92: 
+	case 14: case 46: case 93: 
+	    (void) strcat (names->symbols, "+iso9995-3(basic)"); break;
+	}
+    }
+
+    if (pKbd->type == KB_SUN4) {
+	switch (pKbd->layout) {
+	case  0: case  1: case 33: case 34: case 80: case 81: 
+	    break;
+	case  3:
+	    (void) strcat (names->symbols, "+ca"); break;
+	case  4: case 36: case 83: 
+	    (void) strcat (names->symbols, "+dk"); break;
+	case  5: case 37: case 84: 
+	    (void) strcat (names->symbols, "+de"); break;
+	case  6: case 38: case 85: 
+	    (void) strcat (names->symbols, "+it"); break;
+	case  8: case 40: case 87: 
+	    (void) strcat (names->symbols, "+no"); break;
+	case  9: case 41: case 88: 
+	    (void) strcat (names->symbols, "+pt"); break;
+	case 10: case 42: case 89: 
+	    (void) strcat (names->symbols, "+es"); break;
+	case 11: case 43: case 90: 
+	    (void) strcat (names->symbols, "+se"); break;
+	case 12: case 44: case 91: 
+	    (void) strcat (names->symbols, "+fr_CH"); break;
+	case 13: case 45: case 92: 
+	    (void) strcat (names->symbols, "+de_CH"); break;
+	case 14: case 46: case 93: 
+	    (void) strcat (names->symbols, "+gb"); break; /* s/b en_UK */
+	case 52:
+	    (void) strcat (names->symbols, "+pl"); break;
+	case 53:
+	    (void) strcat (names->symbols, "+cs"); break;
+	case 54:
+	    (void) strcat (names->symbols, "+ru"); break;
+#if 0
+	/* don't have symbols defined for these yet, let them default */
+	case  2:
+	    (void) strcat (names->symbols, "+fr_BE"); break;
+	case  7: case 39: case 86: 
+	    (void) strcat (names->symbols, "+nl"); break;
+	case 50: case 97:
+	    (void) strcat (names->symbols, "+fr_CA"); break;
+	case 16: case 47: case 94: 
+	    (void) strcat (names->symbols, "+ko"); break;
+	case 17: case 48: case 95: 
+	    (void) strcat (names->symbols, "+tw"); break;
+	case 32: case 49: case 96: 
+	    (void) strcat (names->symbols, "+jp"); break;
+	case 51:
+	    (void) strcat (names->symbols, "+hu"); break;
+#endif
+	/* 
+	 * by setting the symbols to NULL XKB will use the symbols in
+	 * the "default" keymap.
+	 */
+	default: 
+	    names->symbols = NULL; return; break;
+	}
+    }
+}
+#endif /* XKB */
+
+/*-
+ *-----------------------------------------------------------------------
  * sunKbdProc --
  *	Handle the initialization, etc. of a keyboard.
  *
@@ -424,6 +615,7 @@ int sunKbdProc (device, what)
     DevicePtr pKeyboard = (DevicePtr) device;
     sunKbdPrivPtr pPriv;
     KeybdCtrl*	ctrl = &device->kbdfeed->ctrl;
+    extern int XkbDfltRepeatDelay, XkbDfltRepeatInterval;
 
     static CARD8 *workingModMap = NULL;
     static KeySymsRec *workingKeySyms;
@@ -460,16 +652,33 @@ int sunKbdProc (device, what)
 	(void) memset ((void *) defaultKeyboardControl.autoRepeats,
 			~0, sizeof defaultKeyboardControl.autoRepeats);
 
-#ifndef XKB
-	autoRepeatKeyDown = 0;
+#ifdef XKB
+	if (noXkbExtension) {
+	    sunAutoRepeatInitiate = XkbDfltRepeatDelay * 1000;
+	    sunAutoRepeatDelay = XkbDfltRepeatInterval * 1000;
 #endif
-
+	autoRepeatKeyDown = 0;
+#ifdef XKB
+	}
+#endif
 	pKeyboard->devicePrivate = (pointer)&sunKbdPriv;
 	pKeyboard->on = FALSE;
 
+#ifdef XKB
+	if (noXkbExtension) {
+#endif
 	InitKeyboardDeviceStruct(pKeyboard, 
 				 workingKeySyms, workingModMap,
 				 sunBell, sunKbdCtrl);
+#ifdef XKB
+	} else {
+	    XkbComponentNamesRec names;
+	    sunInitKbdNames (&names, &sunKbdPriv);
+	    XkbInitKeyboardDeviceStruct((DeviceIntPtr) pKeyboard, &names,
+					workingKeySyms, workingModMap,
+					sunBell, sunKbdCtrl);
+	}
+#endif
 	break;
 
     case DEVICE_ON:
@@ -525,11 +734,13 @@ int sunKbdProc (device, what)
 #if NeedFunctionPrototypes
 Firm_event* sunKbdGetEvents (
     int		fd,
+    Bool	on,
     int*	pNumEvents,
     Bool*	pAgain)
 #else
-Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
+Firm_event* sunKbdGetEvents (fd, on, pNumEvents, pAgain)
     int		fd;
+    Bool	on;
     int*	pNumEvents;
     Bool*	pAgain;
 #endif
@@ -546,8 +757,13 @@ Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
 	    FatalError ("Could not read the keyboard");
 	}
     } else {
-	*pNumEvents = nBytes / sizeof (Firm_event);
-	*pAgain = (nBytes == sizeof (evBuf));
+	if (on) {
+	    *pNumEvents = nBytes / sizeof (Firm_event);
+	    *pAgain = (nBytes == sizeof (evBuf));
+	} else {
+	    *pNumEvents = 0;
+	    *pAgain = FALSE;
+	}
     }
     return evBuf;
 }
@@ -558,7 +774,6 @@ Firm_event* sunKbdGetEvents (fd, pNumEvents, pAgain)
  *
  *-----------------------------------------------------------------------
  */
-#ifndef XKB
 static xEvent	autoRepeatEvent;
 static int	composeCount;
 
@@ -635,8 +850,6 @@ static Bool DoSpecialKeys(device, xE, fe)
     return FALSE;
 }
 
-#endif
-
 #if NeedFunctionPrototypes
 void sunKbdEnqueueEvent (
     DeviceIntPtr  device,
@@ -654,7 +867,9 @@ void sunKbdEnqueueEvent (device, fe)
     keycode = (fe->id & 0x7f) + MIN_KEYCODE;
 
     keyModifiers = device->key->modifierMap[keycode];
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     if (autoRepeatKeyDown && (keyModifiers == 0) &&
 	((fe->value == VKEY_DOWN) || (keycode == autoRepeatEvent.u.u.detail))) {
 	/*
@@ -662,23 +877,30 @@ void sunKbdEnqueueEvent (device, fe)
 	 */
 	autoRepeatKeyDown = 0;
     }
+#ifdef XKB
+    }
 #endif
     xE.u.keyButtonPointer.time = TVTOMILLI(fe->time);
     xE.u.u.type = ((fe->value == VKEY_UP) ? KeyRelease : KeyPress);
     xE.u.u.detail = keycode;
-#ifndef XKB
+#ifdef XKB
+    if (noXkbExtension) {
+#endif
     if (DoSpecialKeys(device, &xE, fe))
 	return;
+#ifdef XKB
+    }
 #endif /* ! XKB */
     mieqEnqueue (&xE);
 }
 
-#ifndef XKB
 void sunEnqueueAutoRepeat ()
 {
     int	delta;
     int	i, mask;
-    KeybdCtrl* ctrl = &((DeviceIntPtr)LookupKeyboardDevice())->kbdfeed->ctrl;
+    DeviceIntPtr device = (DeviceIntPtr)LookupKeyboardDevice();
+    KeybdCtrl* ctrl = &device->kbdfeed->ctrl;
+    sunKbdPrivPtr   pPriv = (sunKbdPrivPtr) device->public.devicePrivate;
 
     if (ctrl->autoRepeat != AutoRepeatModeOn) {
 	autoRepeatKeyDown = 0;
@@ -710,15 +932,15 @@ void sunEnqueueAutoRepeat ()
      * hold off any more inputs while we get these safely queued up
      * further SIGIO are 
      */
-    EnqueueEvent (&autoRepeatEvent);
+    sunEnqueueEvent (&autoRepeatEvent);
     autoRepeatEvent.u.u.type = KeyPress;
-    EnqueueEvent (&autoRepeatEvent);
+    sunEnqueueEvent (&autoRepeatEvent);
+    if (ctrl->click) bell (pPriv->fd, 0);
 
     /* Update time of last key down */
     tvplus(autoRepeatLastKeyDownTv, autoRepeatLastKeyDownTv, 
 		    autoRepeatDeltaTv);
 }
-#endif /* ! XKB */
 
 /*-
  *-----------------------------------------------------------------------
@@ -813,7 +1035,6 @@ Bool LegalModifier(key, pDev)
     return TRUE;
 }
 
-#ifndef XKB
 /*ARGSUSED*/
 void sunBlockHandler(nscreen, pbdata, pptv, pReadmask)
     int nscreen;
@@ -868,5 +1089,3 @@ void sunWakeupHandler(nscreen, pbdata, err, pReadmask)
 	autoRepeatReady = 0;
     }
 }
-#endif /* ! XKB */
-

@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: FreeBSD.cf /main/13 1996/09/29 20:13:31 kaleb $
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.66 1997/05/17 12:52:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.67 1997/05/24 13:46:26 dawes Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName
@@ -40,8 +40,7 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define AvoidNullMakeCommand	YES
 #define StripInstalledPrograms	YES
 #define CompressAllFonts	YES
-/* Even when using GNU malloc supplied with FreeBSD 2.1.x, this is true */
-#define Malloc0ReturnsNull	NO
+#define Malloc0ReturnsNull	YES
 #define NeedConstPrototypes	YES
 #define NeedFunctionPrototypes	YES
 #define NeedNestedPrototypes	YES
@@ -68,6 +67,12 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define UseGnuMalloc		YES
 #else
 #define UseGnuMalloc		NO
+#endif
+#endif
+
+#if OSMajorVersion > 2 || (OsMajorVersion == 2 && OSMinorVersion >= 2)
+#ifndef ExtraLoadFlags
+#define ExtraLoadFlags		-Wl,-R,$(USRLIBDIRPATH)
 #endif
 #endif
 

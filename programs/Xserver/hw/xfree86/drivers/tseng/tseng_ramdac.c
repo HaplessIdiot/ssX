@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.7 1997/06/03 14:12:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_ramdac.c,v 1.8 1997/06/06 06:07:20 hohndel Exp $ */
 
 /*
  *
@@ -621,16 +621,15 @@ void tseng_set_dacspeed(int bytesperpixel)
     }
 #endif
 
-#ifndef MONOVGA  /* cosmetic: vgaBitsPerPixel is "0" in VGA16 and MONO mode */
-#ifndef XF86VGA16
+    if (vga256InfoRec.dacSpeeds[bytesperpixel-1] > 0)
+      vga256InfoRec.maxClock = vga256InfoRec.dacSpeeds[bytesperpixel-1];
+
     if (xf86Verbose) {
       ErrorF("%s %s: Ramdac speed at %dbpp: %3.3f MHz\n",
              OFLG_ISSET(XCONFIG_DACSPEED, &vga256InfoRec.xconfigFlag) ?
              XCONFIG_GIVEN : XCONFIG_PROBED, vga256InfoRec.name,
              vgaBitsPerPixel, vga256InfoRec.dacSpeeds[0] / 1000.0);
     }
-#endif
-#endif
 
     /* Check that maxClock is not higher than dacSpeed */
     if (vga256InfoRec.maxClock > vga256InfoRec.dacSpeeds[0])
@@ -663,7 +662,7 @@ void tseng_validate_mode(DisplayModePtr mode, int bytesperpixel, Bool verbose)
          mode->SynthClock = (pixel_clock * TSENG.ChipClockMulFactor) / TSENG.ChipClockDivFactor;
    }
 
-   /* nothing more to do for MONO/VGA16 (pixmux doesn't work anyway) */
+   /* nothing more to do for 1 or 4 bpp (pixmux doesn't work anyway) */
    if (bytesperpixel < 1) return;
 
    /*

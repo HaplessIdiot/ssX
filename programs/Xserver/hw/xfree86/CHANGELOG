@@ -1,9 +1,32 @@
+XFree86 3.9e (12 June 1997)
+1002. Fix some DPMS problems, including problems when the DPMS timeouts  
+      are smaller than the screensaver cycle time, and problems with the
+      various DPMS setting not being re-initialised at server reset.
+1001. Fix an InfoRec initialisation problem in xfree68/fbdev (#652,
+      Andreas Schwab).
+1000. Fix incorrect links created from nls/XLC_LOCALE to xc/exports
+      (#652, Andreas Schwab).
+ 999. Fix a flaw in a libX11 security fix (#652, Andreas Schwab).
+ 998. Add libc 6 config for Linux/m68k to Linux.cf (#652, Andreas Schwab).
+ 997. Allow depth-specific Dacspeeds to work for the tseng driver
+      (#651, Koen Gadeyne).
+ 996. Tseng driver cleanups (#650, Koen Gadeyne).
+ 995. Allow xterm to start when /etc/termcap is missing, and fix some
+      configure script nits (#649, Thomas E. Dickey).
+ 994. Fix twm crash if interrupted during startup (#644, Wolfram Gloger).
+ 993. Fontlib fixes (#636-640, 642, 646, 648, Arthur Barstow).
+ 992. Add audit logging to xfwp (#623, Kaleb Keithley).
+ 991. Sun/XKB keyboard fix (#621, Kaleb Keithley).
+ 990. Update xrx defaults (#620, Kaleb Keithley).
+ 989. Fontserver fixes (#613, 643, Arthur Barstow).
+ 988. Imake config updates (#610-612, 614-617, 619, 624, Kaleb Keithley).
+
 XFree86 3.9d (10 June 1997)
  987. Fix "xaa_no_color_exp" option for scanline-screen-to-screen color
       expansion (#629, Koen Gadeyne).
  986. Add hint how to disable building Xprt to xf86site.def (#627, Koen
       Gadeyne).
- 985. Change Linux to use -DREENTRANT (#644, Wolfram Gloger).
+ 985. Change Linux to use -D_REENTRANT (#644, Wolfram Gloger).
  984. Fix C&T driver to be more strict about DClk and MClk limits for HiQV
       chips (#645, David Bateman).
  983. Fix I128 server (#635, Robin Cutshaw).
@@ -4886,4 +4909,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.485 1997/06/08 15:31:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.486 1997/06/10 12:30:22 hohndel Exp $

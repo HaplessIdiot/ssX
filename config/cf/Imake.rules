@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.38 1997/03/10 10:09:19 hohndel Exp $
+XCOMM rules:  $TOG: Imake.rules /main/218 1997/02/13 13:54:11 kaleb $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.39 1997/05/03 09:14:26 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -139,6 +139,9 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.38 1997/03/10 10:09:19 hohn
  * LinkSourceFile		(src,dir)
  * LinkFile			(tofile,fromfile)
  * MakeSubincludesForBuild	(step,dir,srclist)
+ * LangNamedTargetSubdirs	(lang,name,dirs,verb,flags,subname)
+ * LangNamedMakeSubdirs		(lang,name,dirs)
+ * LangMakeSubdirs		(lang,dirs)
  * NamedTargetSubdirs		(name,dirs,verb,flags,subname)
  * NamedMakeSubdirs		(name,dirs)
  * MakeSubdirs			(dirs)
@@ -2248,6 +2251,40 @@ clean::									@@\
 
 
 /*
+ * LangNamedTargetSubdirs - recursively make a series of steps
+ */
+#ifndef LangNamedTargetSubdirs
+#define LangNamedTargetSubdirs(lang,name,dirs,verb,flags,subname)	@@\
+name::									@@\
+	@MakeFlagsToShellFlags(ik,set +e); \				@@\
+	for i in dirs ;\						@@\
+	do \								@@\
+		echo verb "in $(CURRENT_DIR)/$$i..."; \			@@\
+		(cd $$i && LANG=lang $(MAKE) $(MFLAGS) flags subname);\ @@\
+	done
+#endif
+
+
+/*
+ * NamedMakeSubdirs - generate rules to do makes in the given subdirectories.
+ * If you want CDEBUGFLAGS passed along to subdirectories, provide a line like
+ * the following in the appropriate Imakefile
+ * 
+ *         #define PassCDebugFlags 'CDEBUGFLAGS=$(CDEBUGFLAGS)'
+ */
+#ifndef LangNamedMakeSubdirs
+#define LangNamedMakeSubdirs(lang,name,dirs) \
+LangNamedTargetSubdirs(lang,name,dirs,"making" name,PassCDebugFlags,all)
+#endif /* LangNamedMakeSubdirs */
+
+#ifndef LangMakeSubdirs
+#define LangMakeSubdirs(lang,dirs)					@@\
+LangNamedMakeSubdirs(lang,all,dirs)
+#endif /* LangMakeSubdirs */
+
+
+
+/*
  * NamedTargetSubdirs - recursively make a series of steps
  */
 #ifndef NamedTargetSubdirs
@@ -2534,7 +2571,7 @@ clean::									@@\
 #define CppScriptTarget(dst,src,defs,deplist)				@@\
 	CppFileTarget(dst,src,defs,deplist)				@@\
 									@@\
-dst::									@@\
+dst::	src deplist							@@\
 	chmod a+x $@
 #else
 #define CppScriptTarget(dst,src,defs,deplist)				@@\

@@ -47,7 +47,7 @@ SOFTWARE.
 ******************************************************************/
 
 /* $XConsortium: WaitFor.c /main/55 1996/12/02 10:22:24 lehors $ */
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.11 1997/01/19 12:52:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.12 1997/05/18 12:12:13 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -254,19 +254,19 @@ WaitForSomething(pClientsReady)
 	    {
 		if (ScreenSaverTime > 0 && timeout > ScreenSaverTime)
 		    timeout = ScreenSaverTime;
-#ifdef DPMSExtension
-		if (DPMSEnabled)
-		{
-		    if (standbyTimeout > 0 && timeout > standbyTimeout)
-			timeout = standbyTimeout;
-		    if (suspendTimeout > 0 && timeout > suspendTimeout)
-			timeout = suspendTimeout;
-		    if (offTimeout > 0 && timeout > offTimeout)
-			timeout = offTimeout;
-		}
-#endif
 		timeTilFrob = 0;
 	    }
+#ifdef DPMSExtension
+	    if (DPMSEnabled)
+	    {
+		if (standbyTimeout > 0 && timeout > standbyTimeout)
+		    timeout = standbyTimeout;
+		if (suspendTimeout > 0 && timeout > suspendTimeout)
+		    timeout = suspendTimeout;
+		if (offTimeout > 0 && timeout > offTimeout)
+		    timeout = offTimeout;
+	    }
+#endif
 	    if (timeout > 0 && (!wt || timeout < (timers->expires - now)))
 	    {
 		waittime.tv_sec = timeout / MILLI_PER_SECOND;

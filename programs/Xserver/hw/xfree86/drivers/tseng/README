@@ -45,28 +45,6 @@ could have been due to a bug in XAA that also caused problems on other chips
 when using non-TE fonts. Since this bug is now fixed, CPU-to-screen color
 expansion may even work now.
 
-* linear mode support for cards BEFORE the ET4000W32p rev C. There are
-some subtle differences with the newer cards here, and someone with such a
-card needs to look into that. Again, the code is already present, but
-disabled because it is still untested. We need this for >8bpp modes.
-
-* linear mode support for ET4000W32i cards. This is more difficult. W32i
-cards are on ISA or VLB busses, and there's a few problems with several
-revisions of the chips as well. I have the Tseng Labs Tech notes (over 50
-of them) describing many of those problems (mainly address decoding bugs
-either in the W32i itself, or on some mainboards). The code for this is
-present, and works on at least one such card (W32i rev b).
-
-* acceleration and linear memory mode in 8bpp don't seem to work together in
-the current code: you can have either, but not both. Again, it _is_
-possible, and probably simple to fix. Strangely enough this only manifests
-itself in 8bpp mode. Hi/truecolor modes are not affected. All accelerated
-operations _run_ (they consume the appropriate amount of time), but they
-don't _render_ anything. It seems like they either can't reach (or didn't
-get) the source data, or can't write to the destination memory. Try it out,
-disabling all acceleration except for one (e.g. only SolidFill), and you'll
-see what I mean. See also appendix B.
-
 * There is a fundamental limitation in the W32 chips regarding color
 expansion: it _always_ expands colors from 1 to 8 bit. That means
 "out-of-the-box" for 8bpp, but trouble in 16/24/32 bpp modes. Maybe XAA
@@ -78,9 +56,8 @@ There is already support in XAA for doing acceleration in 24bpp using the
 Another option is to expand the bitmap in the Tseng acceleration code
 before rendering it. That's a lot easier to do.
 
-* The W32i doesn't work accelerated in the current Tseng driver. It does
-however work in the XF86_W32 server. This is a bug. It doesn't even work in
-banked mode. WARNING: trying it may cause a complete system hang. Prepare.
+* The W32i doesn't work accelerated in the current Tseng driver. At least
+not correct. WARNING: trying it may cause a complete system hang. Prepare.
 
 * Hardware cursor support for the W32 is still lacking color support. We
 need to reserve color cells #0 and #255 to make this work. From discussions
@@ -95,8 +72,6 @@ cause cursor color problems when someone uses a local color map.
 
 All cards:
 
-Cleanup tseng_driver.c. There's mucho rubbish left from the MONO/VGA16 days.
-
 * The accelerator on the Tseng devices is capable of much more. Especially
 the pattern support if not used most of the time: It can render a pattern in
 just about every accelerated operation. This means patterned lines, bitblts,
@@ -107,12 +82,11 @@ ET4000:
 
 * support needs to be added for several clockchips and RAMDACs:
 	- CH8398 clockchip support (doesn't support programmable clockchip yet)
-	- 8-bit RAMDAC support for >8bpp modes: ATT20Cxxx and Sierra DACs
+        - 8-bit RAMDAC support for >8bpp modes: Sierra DACs and possibly others
 
 * SuperProbe could use an update. It doesn't detect some of the RAMDACs that
-are detected by the driver (e.g. ICS5341)
-
-* 24bpp modes on 16-bit RAMDACs show wrong colors, depending on Sync position.
+are detected by the driver. It also doesn't have the enhanced ET6000 memory
+detection code that is in the driver (the 2.25 MB problem).
 
 
 ET-6000:
@@ -125,7 +99,7 @@ extensions to the MIX hardware compared to the ET4000).
 * Apart from the things mentionned above, I think the ET6000 server is
 pretty complete. SOme optimisations could possibly be added. Like for
 example some assembler code for calculating a framebuffer address from X/Y
-coordinates.
+coordinates. That would help to speed up small blits.
 
 * SuperProbe doesn't detect the amount of MDRAM on an ET6000 yet. The same
 code that does this in the Tseng driver needs to be included in SuperProbe.
@@ -290,112 +264,6 @@ the off-screen scanline buffers and calling the Subsequent() function.
 
 
 
-=======================================================================
-APPENDIX B: linear mode, 8bpp, acceleration and ET4000W32
-----------------------------------------------------------
-
-Previously, accelerated XFree86 servers (XF86_W32) were using the ET4000W32
-in "banked" mode only, because it only supported 8bpp (256 color) mode
-anyway (the servers can run in banked _and_ linear memory mode in 8bpp, but
-they _require_ linear mode for 16/24/32 bpp modes).
-
-We also want to use acceleration in these modes, of course.
-
-But there is still one weird problem remaining: the combination of 8bpp,
-linear memory mode and acceleration doesn't seem to work THE FIRST TIME
-ROUND.
-
-Funnily enough, starting up the server in 8bpp mode, with linear memory
-enabled will yield a mostly black screen the first time the server is
-started. As soon as the mode is switched to a different size, everything is
-just fine (you need to invoke a screen refresh, of course). Even switching
-back to the mode that was "bad" when it had just started is now OK.
-
-What seems to be happening is that all accelerated operations don't have any
-effect on the screen. The operations _do_ "run" (they consume the same
-amount of time as if they would have worked), but they have no effect.
-
-I have been able to narrow down the cause of this to the physical mapping of
-video memory, as the CPU sees it.
-
-It looks (!) like only the first megabyte of video memory is accessible to
-the host CPU when the server is first started. That would explain that all
-accelerated operations result in black output, since the source, pattern and
-mix data is stored in off-screen memory, just below the 2MB memory limit.
-The CPU _tries_ to store it there, but it never ends up there, resulting in
-the accelerator reading the wrong (black) data. The accelerator of course
-always sees the full 2MB of display memory.
-
-Another funny phenomenon, which is most likely due to the same problem, is
-that when you _start_ in a mode that uses > 1MB of video memory, like
-1280x1024, only the first 1MB of video memory is accessed by the CPU. In
-fact, data that should have been written obove the 1MB limit (the last 204
-lines in this particular case) "wrap" around into the first 204 lines of
-video memory. You can even see the data the CPU wanted to write into
-off-screen memory for the accelerator being written on-screen (due to the
-"wrapping" around the 1MB limit).
-
-The funny thing happens when switching modes (this reprograms all registers
-to the new viewport size, and also re-initializes the accelerator and all
-other stuff that is set when the server would be started for the first time
--- in short: it does the same stuff that is done the first time when the
-server is started). When switching modes, everything suddenly works: data is
-written in the right place in video memory, the accelerator starts
-displaying _real_ data, etc.
-
-However, to switch modes, the EXACT same sequence of events takes place,
-except for different CRTC timing parameters (the virtual screen size even
-remains the same).
-
-The same thing also happens upon a "server reset". This happens when the
-last client exits, leaving the server "alone". The server then "restarts",
-reprogramming all registers just as with a screen resize (mode switching).
-But this time not even a single register changes (it resets to the same
-mode, but doesn't exit to textmode first: just reprogram everything, and
-restart the accelerator, etc).
-
-I also tried dumping ALL registers, including the accelerator registers,
-"before" and "after", but they were EXACTLY the same (except for of course
-the Input Status Registers, where H/V retraces are flagged in real-time, and
-some undocumented registers that change continuously). This is weird, since
-there is certainly a difference in BEHAVIOUR.
 
 
-Also, upon returning to text mode (this restores _all_ registers to their
-contents before the X-server was started), restarting the X-server will run
-into the same problems again. Thus, this happens EACH time the X-server is
-started anew.
-
-
-Does anyone have any idea why the CPU would only be able to access the first
-MB of memory when the server is running for the first time?
-
-In my case, I am testing things on an ET4000W32p rev D with 2MB DRAM. I use
-the following MMU config registers:
-
-	MMU memory base pointer 0 = 0x0L;      /* first MB */
-	MMU memory base pointer 1 = 0x100000L; /* second MB */
-	MMU control register      = 0x74;
-
-As far as I understood from the data book (which isn't particularly clear
-about this whole linear memory thing), the W32 chips don't have any
-"linearly mapped memory", but you have to use the apertures (which are 1 MB
-long in that case) to access linear memory. Quite a kludge. Still, we need
-linear memory.
-
-Please also note that the SAME code supports banked memory layout. Only a
-few things are done differently in that case, and everything works fine
-in banked mode immediately.
-
-Also, not using the accelerator in linear memory mode works straight away as
-well, even for modes that use >1MB of video memory. The only difference
-between non-accelerated and accelerated linear memory modes is that the MMU
-isn't needed, and thus the aperture kludge isn't needed also.
-
-This really feels like some problem with these apertures when used in linear
-mode.
-
-
-
-
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.5 1997/04/14 07:05:24 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/README,v 1.6 1997/05/03 09:18:49 dawes Exp $
