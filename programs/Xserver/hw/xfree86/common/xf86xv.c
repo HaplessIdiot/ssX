@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.33tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.34tsi Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1852,65 +1852,68 @@ xf86XVClipVideoHelper(
     INT32 width,
     INT32 height
 ){
-    INT32 vscale, hscale, delta;
+    double xsw, xdw, ysw, ydw;
+    INT32 delta;
     BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
     int diff;
 
-    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
+    xsw = (*xb - *xa) << 16;
+    xdw = dst->x2 - dst->x1;
+    ysw = (*yb - *ya) << 16;
+    ydw = dst->y2 - dst->y1;
 
     *xa <<= 16; *xb <<= 16;
     *ya <<= 16; *yb <<= 16;
 
     diff = extents->x1 - dst->x1;
-    if(diff > 0) {
+    if (diff > 0) {
 	dst->x1 = extents->x1;
-	*xa += diff * hscale;
+	*xa += (diff * xsw) / xdw;
     }
     diff = dst->x2 - extents->x2;
-    if(diff > 0) {
+    if (diff > 0) {
 	dst->x2 = extents->x2;
-	*xb -= diff * hscale;
+	*xb -= (diff * xsw) / xdw;
     }
     diff = extents->y1 - dst->y1;
-    if(diff > 0) {
+    if (diff > 0) {
 	dst->y1 = extents->y1;
-	*ya += diff * vscale;
+	*ya += (diff * ysw) / ydw;
     }
     diff = dst->y2 - extents->y2;
-    if(diff > 0) {
+    if (diff > 0) {
 	dst->y2 = extents->y2;
-	*yb -= diff * vscale;
+	*yb -= (diff * ysw) / ydw;
     }
 
-    if(*xa < 0) {
-	diff =  (- *xa + hscale - 1)/ hscale;
+    if (*xa < 0) {
+	diff = (((-*xa) * xdw) + xsw - 1) / xsw;
 	dst->x1 += diff;
-	*xa += diff * hscale;
+	*xa += (diff * xsw) / xdw;
     }
     delta = *xb - (width << 16);
-    if(delta > 0) {
-	diff = (delta + hscale - 1)/ hscale;
+    if (delta > 0) {
+	diff = ((delta * xdw) + xsw - 1) / xsw;
 	dst->x2 -= diff;
-	*xb -= diff * hscale;
+	*xb -= (diff * xsw) / xdw;
     }
-    if(*xa >= *xb) return FALSE;
+    if (*xa >= *xb) return FALSE;
 
-    if(*ya < 0) {
-	diff =  (- *ya + vscale - 1)/ vscale;
+    if (*ya < 0) {
+	diff = (((-*ya) * ydw) + ysw - 1) / ysw;
 	dst->y1 += diff;
-	*ya += diff * vscale;
+	*ya += (diff * ysw) / ydw;
     }
     delta = *yb - (height << 16);
-    if(delta > 0) {
-	diff = (delta + vscale - 1)/ vscale;
+    if (delta > 0) {
+	diff = ((delta * ydw) + ysw - 1) / ysw;
 	dst->y2 -= diff;
-	*yb -= diff * vscale;
+	*yb -= (diff * ysw) / ydw;
     }
-    if(*ya >= *yb) return FALSE;
+    if (*ya >= *yb) return FALSE;
 
-    if((dst->x1 > extents->x1) || (dst->x2 < extents->x2) ||
-       (dst->y1 > extents->y1) || (dst->y2 < extents->y2))
+    if ((dst->x1 > extents->x1) || (dst->x2 < extents->x2) ||
+	(dst->y1 > extents->y1) || (dst->y2 < extents->y2))
     {
 	RegionRec clipReg;
 	REGION_INIT(DummyScreen, &clipReg, dst, 1);
