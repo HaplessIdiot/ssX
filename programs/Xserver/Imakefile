@@ -1,7 +1,7 @@
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.299 2004/06/02 22:42:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.300tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -68,11 +68,7 @@ INSTPGMFLAGS =
 #define BarePostFbLibs $(MFB) $(XPFBLIBS) $(MI)
 #define PostFbLibs BarePostFbLibs $(EXTENSIONS)
 #define NoMfbBarePostFbLibs $(XPFBLIBS) $(MI)
-#if !BuildXinerama
 #define NoMfbPostFbLibs NoMfbBarePostFbLibs $(EXTENSIONS)
-#else
-#define NoMfbPostFbLibs $(EXTENSIONS) NoMfbBarePostFbLibs $(EXTENSIONS)
-#endif
 
 #define MFBBareLibs PreFbLibs BarePostFbLibs
 #define NoMFBBareLibs PreFbLibs NoMfbBarePostFbLibs
@@ -229,7 +225,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 		  $(RENDERLIB)
         MISCEXT = Xext/LibraryTargetName(ext)
    LOADABLEEXTS = $(MISCEXT) $(DBEEXT) $(RECORDEXT) $(GLXEXT) $(XTRAPEXT)
-     EXTENSIONS = $(STATICEXTS) $(LOADABLEEXTS)
+     EXTENSIONS = $(LOADABLEEXTS) $(STATICEXTS) 
 #if BuildSeparateTinyDIX
 TINY_STATICEXTS = $(XKBEXT) $(XINPUTEXT) $(LBXEXT) $(SITEEXTS) \
 	$(TINY_RANDRLIB) $(TINY_RENDERLIB)
@@ -502,7 +498,7 @@ SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o hw/sun/stubs.o
 #else
 SUNMOBJS = hw/sun/sunInitMono.o hw/sun/sunInExMono.o
 #endif
-SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBBareLibs $(EXTENSIONS)
+SUNMLIBS = hw/sun/LibraryTargetName(sun) MFBLibs
 SetUIDServerTarget(XsunMono,$(SUNMDIRS),$(SUNMOBJS), \
 	$(SUNMLIBS),$(FONTLIBS) $(SYSLIBS))
 #ifndef ServerToInstall
