@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texstate.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r128/r128_texstate.c,v 1.1.1.3 2004/12/10 15:05:54 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -42,7 +42,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_context.h"
 #include "r128_state.h"
 #include "r128_ioctl.h"
-#include "r128_vb.h"
 #include "r128_tris.h"
 #include "r128_tex.h"
 
@@ -65,12 +64,15 @@ static void r128SetTexImages( r128ContextPtr rmesa,
 
    switch (baseImage->TexFormat->MesaFormat) {
    case MESA_FORMAT_ARGB8888:
+   case MESA_FORMAT_ARGB8888_REV:
       t->textureFormat = R128_DATATYPE_ARGB8888;
       break;
    case MESA_FORMAT_ARGB4444:
+   case MESA_FORMAT_ARGB4444_REV:
       t->textureFormat = R128_DATATYPE_ARGB4444;
       break;
    case MESA_FORMAT_RGB565:
+   case MESA_FORMAT_RGB565_REV:
       t->textureFormat = R128_DATATYPE_RGB565;
       break;
    case MESA_FORMAT_RGB332:

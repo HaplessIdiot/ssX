@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_vtxfmt_c.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_vtxfmt_c.c,v 1.1.1.2 2004/12/10 15:05:56 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -122,6 +122,7 @@ static void r200_Vertex2fv( const GLfloat *v )
 #if 0
 /* Color for ubyte (packed) color formats:
  */
+#if 0
 static void r200_Color3ub_ub( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -161,7 +162,7 @@ static void r200_Color4ubv_ub( const GLubyte *v )
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
    *(GLuint *)rmesa->vb.colorptr = LE32_TO_CPU(*(GLuint *)v);
 }
-#endif
+#endif /* 0 */
 
 static void r200_Color3f_ub( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -210,6 +211,7 @@ static void r200_Color4fv_ub( const GLfloat *v )
 #if 0
 /* Color for float color+alpha formats:
  */
+#if 0
 static void r200_Color3ub_4f( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -253,7 +255,8 @@ static void r200_Color4ubv_4f( const GLubyte *v )
    dest[2] = UBYTE_TO_FLOAT(v[2]);
    dest[3] = UBYTE_TO_FLOAT(v[3]);
 }
-#endif
+#endif /* 0 */
+
 
 static void r200_Color3f_4f( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -302,6 +305,7 @@ static void r200_Color4fv_4f( const GLfloat *v )
 #if 0
 /* Color for float color formats:
  */
+#if 0
 static void r200_Color3ub_3f( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -343,7 +347,8 @@ static void r200_Color4ubv_3f( const GLubyte *v )
    dest[2] = UBYTE_TO_FLOAT(v[2]);
    ctx->Current.Attrib[VERT_ATTRIB_COLOR0][3] = UBYTE_TO_FLOAT(v[3]);
 }
-#endif
+#endif /* 0 */
+
 
 static void r200_Color3f_3f( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -390,6 +395,7 @@ static void r200_Color4fv_3f( const GLfloat *v )
 #if 0
 /* Secondary Color:
  */
+#if 0
 static void r200_SecondaryColor3ubEXT_ub( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -411,7 +417,7 @@ static void r200_SecondaryColor3ubvEXT_ub( const GLubyte *v )
    dest->blue	= v[2];
    dest->alpha	= 0xff;
 }
-#endif
+#endif /* 0 */
 
 static void r200_SecondaryColor3fEXT_ub( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -457,7 +463,7 @@ static void r200_SecondaryColor3ubvEXT_3f( const GLubyte *v )
    dest[2] = UBYTE_TO_FLOAT(v[2]);
    dest[3] = 1.0;
 }
-#endif
+#endif /* 0 */
 
 static void r200_SecondaryColor3fEXT_3f( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -508,41 +514,30 @@ static void r200_Normal3fv( const GLfloat *v )
 
 /* TexCoord
  */
-static void r200_TexCoord1f( GLfloat s )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[0];
-   dest[0] = s;
-   dest[1] = 0;
-}
 
-static void r200_TexCoord1fv( const GLfloat *v )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[0];
-   dest[0] = v[0];
-   dest[1] = 0;
-}
+#define TEX_to_nF(N, P, S, T, R)					\
+   static void r200_TexCoord ## N P					\
+   { 									\
+      GET_CURRENT_CONTEXT(ctx); r200ContextPtr rmesa = R200_CONTEXT(ctx); \
+      GLfloat * const dest = rmesa->vb.texcoordptr[0];			\
+      switch( ctx->Texture.Unit[0]._ReallyEnabled ) {			\
+      case TEXTURE_CUBE_BIT:						\
+      case TEXTURE_3D_BIT:						\
+	 dest[2] = R; 							\
+      case TEXTURE_2D_BIT:						\
+      case TEXTURE_RECT_BIT:						\
+	 dest[1] = T; 							\
+      case TEXTURE_1D_BIT:						\
+	 dest[0] = S; 							\
+      }									\
+   }
 
-static void r200_TexCoord2f( GLfloat s, GLfloat t )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[0];
-   dest[0] = s;
-   dest[1] = t;
-}
-
-static void r200_TexCoord2fv( const GLfloat *v )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[0];
-   dest[0] = v[0];
-   dest[1] = v[1];
-}
+TEX_to_nF( 1f,  (GLfloat s),                       s,    0.0,  0.0 )
+TEX_to_nF( 2f,  (GLfloat s, GLfloat t),            s,    t,    0.0 )
+TEX_to_nF( 3f,  (GLfloat s, GLfloat t, GLfloat r), s,    t,    r )
+TEX_to_nF( 1fv, (const GLfloat * v),               v[0], 0.0,  0.0 )
+TEX_to_nF( 2fv, (const GLfloat * v),               v[0], v[1], 0.0 )
+TEX_to_nF( 3fv, (const GLfloat * v),               v[0], v[1], v[2] )
 
 
 /* MultiTexcoord
@@ -551,45 +546,35 @@ static void r200_TexCoord2fv( const GLfloat *v )
  * \c target before masking and using it.  The value of GL_TEXTURE0 is 0x84C0,
  * which has the low-order 5 bits 0.  For all possible valid values of 
  * \c target.  Subtracting GL_TEXTURE0 has the net effect of masking \c target
- * with 0x1F.  Masking with 0x1F and then masking with 0x01 is redundant, so
+ * with 0x1F.  Masking with 0x1F and then masking with 0x07 is redundant, so
  * the subtraction has been omitted.
  */
 
-static void r200_MultiTexCoord1fARB( GLenum target, GLfloat s  )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[target & 1];
-   dest[0] = s;
-   dest[1] = 0;
-}
+#define MTEX_to_nF(N, P, U, S, T, R)					\
+   static void r200_MultiTexCoord ## N ## ARB P				\
+   { 									\
+      GET_CURRENT_CONTEXT(ctx); r200ContextPtr rmesa = R200_CONTEXT(ctx); \
+      GLfloat * const dest = rmesa->vb.texcoordptr[U];			\
+      switch( ctx->Texture.Unit[U]._ReallyEnabled ) {			\
+      case TEXTURE_CUBE_BIT:						\
+      case TEXTURE_3D_BIT:						\
+	 dest[2] = R; 							\
+      case TEXTURE_2D_BIT:						\
+      case TEXTURE_RECT_BIT:						\
+	 dest[1] = T; 							\
+      case TEXTURE_1D_BIT:						\
+	 dest[0] = S; 							\
+      }									\
+   }
 
-static void r200_MultiTexCoord1fvARB( GLenum target, const GLfloat *v )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[target & 1];
-   dest[0] = v[0];
-   dest[1] = 0;
-}
+/* \todo maybe (target & 4 ? target & 5 : target & 3) is more save than (target & 7) */
+MTEX_to_nF( 1f, (GLenum target, GLfloat s), (target & 7), s, 0.0, 0.0 )
+MTEX_to_nF( 2f, (GLenum target, GLfloat s, GLfloat t), (target & 7), s, t, 0.0 )
+MTEX_to_nF( 3f, (GLenum target, GLfloat s, GLfloat t, GLfloat r), (target & 7), s, t, r )
 
-static void r200_MultiTexCoord2fARB( GLenum target, GLfloat s, GLfloat t )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[target & 1];
-   dest[0] = s;
-   dest[1] = t;
-}
-
-static void r200_MultiTexCoord2fvARB( GLenum target, const GLfloat *v )
-{
-   GET_CURRENT_CONTEXT(ctx);
-   r200ContextPtr rmesa = R200_CONTEXT(ctx);
-   GLfloat *dest = rmesa->vb.texcoordptr[target & 1];
-   dest[0] = v[0];
-   dest[1] = v[1];
-}
+MTEX_to_nF( 1fv, (GLenum target, const GLfloat *v), (target & 7), v[0], 0.0, 0.0 )
+MTEX_to_nF( 2fv, (GLenum target, const GLfloat *v), (target & 7), v[0], v[1], 0.0 )
+MTEX_to_nF( 3fv, (GLenum target, const GLfloat *v), (target & 7), v[0], v[1], v[2] )
 
 static struct dynfn *lookup( struct dynfn *l, const int *key )
 {
@@ -735,6 +720,8 @@ static void choose_##FN ARGS1						\
 
 
 
+
+
 /* VTXFMT_0
  */
 #define MASK_XYZW  (R200_VTX_W0|R200_VTX_Z0)
@@ -745,13 +732,14 @@ static void choose_##FN ARGS1						\
 /* VTXFMT_1
  */
 #define MASK_ST0 (0x7 << R200_VTX_TEX0_COMP_CNT_SHIFT)
-
+/* FIXME: maybe something like in the radeon driver is needed here? */
 
 
 typedef void (*p4f)( GLfloat, GLfloat, GLfloat, GLfloat );
 typedef void (*p3f)( GLfloat, GLfloat, GLfloat );
 typedef void (*p2f)( GLfloat, GLfloat );
 typedef void (*p1f)( GLfloat );
+typedef void (*pe3f)( GLenum, GLfloat, GLfloat, GLfloat );
 typedef void (*pe2f)( GLenum, GLfloat, GLfloat );
 typedef void (*pe1f)( GLenum, GLfloat );
 typedef void (*p4ub)( GLubyte, GLubyte, GLubyte, GLubyte );
@@ -796,6 +784,10 @@ CHOOSE_SECONDARY_COLOR(SecondaryColor3fEXT, p3f, MASK_SPEC, 0,
 CHOOSE_SECONDARY_COLOR(SecondaryColor3fvEXT, pfv, MASK_SPEC, 0,
 	(const GLfloat *v), (v))
 
+CHOOSE(TexCoord3f, p3f, ~0, MASK_ST0, 
+       (GLfloat a,GLfloat b,GLfloat c), (a,b,c))
+CHOOSE(TexCoord3fv, pfv, ~0, MASK_ST0, 
+       (const GLfloat *v), (v))
 CHOOSE(TexCoord2f, p2f, ~0, MASK_ST0, 
        (GLfloat a,GLfloat b), (a,b))
 CHOOSE(TexCoord2fv, pfv, ~0, MASK_ST0, 
@@ -805,6 +797,10 @@ CHOOSE(TexCoord1f, p1f, ~0, MASK_ST0,
 CHOOSE(TexCoord1fv, pfv, ~0, MASK_ST0, 
        (const GLfloat *v), (v))
 
+CHOOSE(MultiTexCoord3fARB, pe3f, ~0, ~0,
+	 (GLenum u,GLfloat a,GLfloat b,GLfloat c), (u,a,b,c))
+CHOOSE(MultiTexCoord3fvARB, pefv, ~0, ~0,
+	(GLenum u,const GLfloat *v), (u,v))
 CHOOSE(MultiTexCoord2fARB, pe2f, ~0, ~0,
 	 (GLenum u,GLfloat a,GLfloat b), (u,a,b))
 CHOOSE(MultiTexCoord2fvARB, pefv, ~0, ~0,
@@ -839,12 +835,16 @@ void r200VtxfmtInitChoosers( GLvertexformat *vfmt )
    vfmt->MultiTexCoord1fvARB = choose_MultiTexCoord1fvARB;
    vfmt->MultiTexCoord2fARB = choose_MultiTexCoord2fARB;
    vfmt->MultiTexCoord2fvARB = choose_MultiTexCoord2fvARB;
+   vfmt->MultiTexCoord3fARB = choose_MultiTexCoord3fARB;
+   vfmt->MultiTexCoord3fvARB = choose_MultiTexCoord3fvARB;
    vfmt->Normal3f = choose_Normal3f;
    vfmt->Normal3fv = choose_Normal3fv;
    vfmt->TexCoord1f = choose_TexCoord1f;
    vfmt->TexCoord1fv = choose_TexCoord1fv;
    vfmt->TexCoord2f = choose_TexCoord2f;
    vfmt->TexCoord2fv = choose_TexCoord2fv;
+   vfmt->TexCoord3f = choose_TexCoord3f;
+   vfmt->TexCoord3fv = choose_TexCoord3fv;
    vfmt->Vertex2f = choose_Vertex2f;
    vfmt->Vertex2fv = choose_Vertex2fv;
    vfmt->Vertex3f = choose_Vertex3f;
@@ -877,10 +877,21 @@ void r200InitCodegen( struct dfn_generators *gen, GLboolean useCodegen )
    gen->Color4ubv = codegen_noop;
    gen->Normal3f = codegen_noop;
    gen->Normal3fv = codegen_noop;
+
+   gen->TexCoord3f = codegen_noop;
+   gen->TexCoord3fv = codegen_noop;
    gen->TexCoord2f = codegen_noop;
    gen->TexCoord2fv = codegen_noop;
+   gen->TexCoord1f = codegen_noop;
+   gen->TexCoord1fv = codegen_noop;
+
+   gen->MultiTexCoord3fARB = codegen_noop;
+   gen->MultiTexCoord3fvARB = codegen_noop;
    gen->MultiTexCoord2fARB = codegen_noop;
    gen->MultiTexCoord2fvARB = codegen_noop;
+   gen->MultiTexCoord1fARB = codegen_noop;
+   gen->MultiTexCoord1fvARB = codegen_noop;
+
    gen->Vertex2f = codegen_noop;
    gen->Vertex2fv = codegen_noop;
    gen->Color3ub = codegen_noop;
@@ -893,10 +904,6 @@ void r200InitCodegen( struct dfn_generators *gen, GLboolean useCodegen )
    gen->SecondaryColor3fvEXT = codegen_noop;
    gen->SecondaryColor3ubEXT = codegen_noop;
    gen->SecondaryColor3ubvEXT = codegen_noop;
-   gen->TexCoord1f = codegen_noop;
-   gen->TexCoord1fv = codegen_noop;
-   gen->MultiTexCoord1fARB = codegen_noop;
-   gen->MultiTexCoord1fvARB = codegen_noop;
 
    if (useCodegen) {
 #if defined(USE_X86_ASM)

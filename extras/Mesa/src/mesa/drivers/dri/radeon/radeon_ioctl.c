@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.3 2004/06/10 14:43:39 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_ioctl.c,v 1.1.1.3 2004/12/10 15:06:21 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -59,6 +59,56 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 static void radeonWaitForIdle( radeonContextPtr rmesa );
+static int radeonFlushCmdBufLocked( radeonContextPtr rmesa, 
+				    const char * caller );
+
+static void radeonSaveHwState( radeonContextPtr rmesa )
+{
+   struct radeon_state_atom *atom;
+   char * dest = rmesa->backup_store.cmd_buf;
+
+   rmesa->backup_store.cmd_used = 0;
+
+   foreach( atom, &rmesa->hw.atomlist ) {
+      if ( atom->check( rmesa->glCtx ) ) {
+	 int size = atom->cmd_size * 4;
+	 memcpy( dest, atom->cmd, size);
+	 dest += size;
+	 rmesa->backup_store.cmd_used += size;
+      }
+   }
+
+   assert( rmesa->backup_store.cmd_used <= RADEON_CMD_BUF_SZ );
+}
+
+/* At this point we were in FlushCmdBufLocked but we had lost our context, so
+ * we need to unwire our current cmdbuf, hook the one with the saved state in
+ * it, flush it, and then put the current one back.  This is so commands at the
+ * start of a cmdbuf can rely on the state being kept from the previous one.
+ */
+static void radeonBackUpAndEmitLostStateLocked( radeonContextPtr rmesa )
+{
+   GLuint nr_released_bufs, saved_cmd_used;
+   struct radeon_store saved_store;
+
+   if (rmesa->backup_store.cmd_used == 0)
+      return;
+
+   if (RADEON_DEBUG & DEBUG_STATE)
+      fprintf(stderr, "Emitting backup state on lost context\n");
+
+   rmesa->lost_context = GL_FALSE;
+
+   nr_released_bufs = rmesa->dma.nr_released_bufs;
+   saved_store = rmesa->store;
+   rmesa->dma.nr_released_bufs = 0;
+   rmesa->store = rmesa->backup_store;
+   saved_cmd_used = rmesa->backup_store.cmd_used;
+   radeonFlushCmdBufLocked( rmesa, __FUNCTION__ );
+   rmesa->backup_store.cmd_used = saved_cmd_used;
+   rmesa->dma.nr_released_bufs = nr_released_bufs;
+   rmesa->store = saved_store;
+}
 
 /* =============================================================
  * Kernel command buffer handling
@@ -76,114 +126,97 @@ static void print_state_atom( struct radeon_state_atom *state )
 
 }
 
-static void radeon_emit_state_list( radeonContextPtr rmesa, 
-				    struct radeon_state_atom *list )
+/* The state atoms will be emitted in the order they appear in the atom list,
+ * so this step is important.
+ */
+void radeonSetUpAtomList( radeonContextPtr rmesa )
 {
-   struct radeon_state_atom *state, *tmp;
-   char *dest;
-   int i, size, texunits;
+   int i, mtu = rmesa->glCtx->Const.MaxTextureUnits;
 
-   /* It appears that some permutations of state atoms lock up the
-    * chip.  Therefore we make sure that state atoms are emitted in a
-    * fixed order. First mark all dirty state atoms and then go
-    * through all state atoms in a well defined order and emit only
-    * the marked ones.
-    * FIXME: This requires knowledge of which state atoms exist.
-    * FIXME: Is the zbs hack below still needed?
-    */
-   size = 0;
-   foreach_s( state, tmp, list ) {
-      if (state->check( rmesa->glCtx )) {
-	 size += state->cmd_size;
-	 state->dirty = GL_TRUE;
-	 move_to_head( &(rmesa->hw.clean), state );
-	 if (RADEON_DEBUG & DEBUG_STATE) 
-	    print_state_atom( state );
-      }
-      else if (RADEON_DEBUG & DEBUG_STATE)
-	 fprintf(stderr, "skip state %s\n", state->name);
+   make_empty_list(&rmesa->hw.atomlist);
+   rmesa->hw.atomlist.name = "atom-list";
+
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.ctx);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.set);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.lin);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.msk);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.vpt);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.tcl);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.msc);
+   for (i = 0; i < mtu; ++i) {
+       insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.tex[i]);
+       insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.txr[i]);
    }
-   /* short cut */
-   if (!size)
-       return;
-
-   dest = radeonAllocCmdBuf( rmesa, size * 4, __FUNCTION__);
-   texunits = rmesa->glCtx->Const.MaxTextureUnits;
-
-#define EMIT_ATOM(ATOM) \
-do { \
-   if (rmesa->hw.ATOM.dirty) { \
-      rmesa->hw.ATOM.dirty = GL_FALSE; \
-      memcpy( dest, rmesa->hw.ATOM.cmd, rmesa->hw.ATOM.cmd_size * 4); \
-      dest += rmesa->hw.ATOM.cmd_size * 4; \
-   } \
-} while (0)
-
-   EMIT_ATOM (ctx);
-   EMIT_ATOM (set);
-   EMIT_ATOM (lin);
-   EMIT_ATOM (msk);
-   EMIT_ATOM (vpt);
-   EMIT_ATOM (tcl);
-   EMIT_ATOM (msc);
-   for (i = 0; i < texunits; ++i) {
-       EMIT_ATOM (tex[i]);
-       EMIT_ATOM (txr[i]);
-   }
-   EMIT_ATOM (zbs);
-   EMIT_ATOM (mtl);
-   for (i = 0; i < 3 + texunits; ++i)
-       EMIT_ATOM (mat[i]);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.zbs);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.mtl);
+   for (i = 0; i < 3 + mtu; ++i)
+      insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.mat[i]);
    for (i = 0; i < 8; ++i)
-       EMIT_ATOM (lit[i]);
+      insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.lit[i]);
    for (i = 0; i < 6; ++i)
-       EMIT_ATOM (ucp[i]);
-   EMIT_ATOM (eye);
-   EMIT_ATOM (grd);
-   EMIT_ATOM (fog);
-   EMIT_ATOM (glt);
-
-#undef EMIT_ATOM
+      insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.ucp[i]);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.eye);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.grd);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.fog);
+   insert_at_tail(&rmesa->hw.atomlist, &rmesa->hw.glt);
 }
-
 
 void radeonEmitState( radeonContextPtr rmesa )
 {
-   struct radeon_state_atom *state, *tmp;
+   struct radeon_state_atom *atom;
+   char *dest;
 
    if (RADEON_DEBUG & (DEBUG_STATE|DEBUG_PRIMS))
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-   /* Somewhat overkill:
+   if (rmesa->save_on_next_emit) {
+      radeonSaveHwState(rmesa);
+      rmesa->save_on_next_emit = GL_FALSE;
+   }
+
+   if (!rmesa->hw.is_dirty && !rmesa->hw.all_dirty)
+      return;
+
+   /* To avoid going across the entire set of states multiple times, just check
+    * for enough space for the case of emitting all state, and inline the
+    * radeonAllocCmdBuf code here without all the checks.
     */
-   if (rmesa->lost_context) {
-      if (RADEON_DEBUG & (DEBUG_STATE|DEBUG_PRIMS|DEBUG_IOCTL))
-	 fprintf(stderr, "%s - lost context\n", __FUNCTION__); 
+   radeonEnsureCmdBufSpace(rmesa, rmesa->hw.max_state_size);
+   dest = rmesa->store.cmd_buf + rmesa->store.cmd_used;
 
-      foreach_s( state, tmp, &(rmesa->hw.clean) ) 
-	 move_to_tail(&(rmesa->hw.dirty), state );
-
-      rmesa->lost_context = 0;
-   }
-   else if (1) {
-      /* This is a darstardly kludge to work around a lockup that I
-       * haven't otherwise figured out.
-       */
-      move_to_tail(&(rmesa->hw.dirty), &(rmesa->hw.zbs) );
+   if (RADEON_DEBUG & DEBUG_STATE) {
+      foreach(atom, &rmesa->hw.atomlist) {
+	 if (atom->dirty || rmesa->hw.all_dirty) {
+	    if (atom->check(rmesa->glCtx))
+	       print_state_atom(atom);
+	    else
+	       fprintf(stderr, "skip state %s\n", atom->name);
+	 }
+      }
    }
 
-   if (!(rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL)) {
-     foreach_s( state, tmp, &(rmesa->hw.dirty) ) {
-       if (state->is_tcl) {
-	 move_to_head( &(rmesa->hw.clean), state );
-       }
-     }
+   foreach(atom, &rmesa->hw.atomlist) {
+      if (rmesa->hw.all_dirty)
+	 atom->dirty = GL_TRUE;
+      if (!(rmesa->radeonScreen->chipset & RADEON_CHIPSET_TCL) &&
+	   atom->is_tcl)
+	 atom->dirty = GL_FALSE;
+      if (atom->dirty) {
+	 if (atom->check(rmesa->glCtx)) {
+	    int size = atom->cmd_size * 4;
+	    memcpy(dest, atom->cmd, size);
+	    dest += size;
+	    rmesa->store.cmd_used += size;
+	    atom->dirty = GL_FALSE;
+	 }
+      }
    }
 
-   radeon_emit_state_list( rmesa, &rmesa->hw.dirty );
+   assert(rmesa->store.cmd_used <= RADEON_CMD_BUF_SZ);
+ 
+   rmesa->hw.is_dirty = GL_FALSE;
+   rmesa->hw.all_dirty = GL_FALSE;
 }
-
-
 
 /* Fire a section of the retained (indexed_verts) buffer as a regular
  * primtive.  
@@ -193,7 +226,7 @@ extern void radeonEmitVbufPrim( radeonContextPtr rmesa,
 				GLuint primitive,
 				GLuint vertex_nr )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
 
 
    assert(!(primitive & RADEON_CP_VC_CNTL_PRIM_WALK_IND));
@@ -204,9 +237,10 @@ extern void radeonEmitVbufPrim( radeonContextPtr rmesa,
       fprintf(stderr, "%s cmd_used/4: %d\n", __FUNCTION__,
 	      rmesa->store.cmd_used/4);
    
+   cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa, VBUF_BUFSZ,
+						       __FUNCTION__ );
 #if RADEON_OLD_PACKETS
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 6 * sizeof(*cmd),
-						  __FUNCTION__ );
+   cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3_CLIP;
    cmd[1].i = RADEON_CP_PACKET3_3D_RNDR_GEN_INDX_PRIM | (3 << 16);
    cmd[2].i = rmesa->ioctl.vertex_offset;
@@ -223,8 +257,6 @@ extern void radeonEmitVbufPrim( radeonContextPtr rmesa,
 	      __FUNCTION__,
 	      cmd[1].i, cmd[2].i, cmd[4].i, cmd[5].i);
 #else
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 4 * sizeof(*cmd),
-						  __FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3_CLIP;
    cmd[1].i = RADEON_CP_PACKET3_3D_DRAW_VBUF | (1 << 16);
@@ -281,7 +313,7 @@ GLushort *radeonAllocEltsOpenEnded( radeonContextPtr rmesa,
 				    GLuint primitive,
 				    GLuint min_nr )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
    GLushort *retval;
 
    if (RADEON_DEBUG & DEBUG_IOCTL)
@@ -291,10 +323,10 @@ GLushort *radeonAllocEltsOpenEnded( radeonContextPtr rmesa,
    
    radeonEmitState( rmesa );
    
+   cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa,
+						       ELTS_BUFSZ(min_nr),
+						       __FUNCTION__ );
 #if RADEON_OLD_PACKETS
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 
-						  24 + min_nr*2,
-						  __FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3_CLIP;
    cmd[1].i = RADEON_CP_PACKET3_3D_RNDR_GEN_INDX_PRIM;
@@ -308,9 +340,6 @@ GLushort *radeonAllocEltsOpenEnded( radeonContextPtr rmesa,
 
    retval = (GLushort *)(cmd+6);
 #else   
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 
-						  16 + min_nr*2,
-						  __FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3_CLIP;
    cmd[1].i = RADEON_CP_PACKET3_3D_DRAW_INDX;
@@ -348,13 +377,13 @@ void radeonEmitVertexAOS( radeonContextPtr rmesa,
    rmesa->ioctl.vertex_size = vertex_size;
    rmesa->ioctl.vertex_offset = offset;
 #else
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
 
    if (RADEON_DEBUG & (DEBUG_PRIMS|DEBUG_IOCTL))
       fprintf(stderr, "%s:  vertex_size 0x%x offset 0x%x \n",
 	      __FUNCTION__, vertex_size, offset);
 
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 5 * sizeof(int),
+   cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa, VERT_AOS_BUFSZ,
 						  __FUNCTION__ );
 
    cmd[0].i = 0;
@@ -379,8 +408,8 @@ void radeonEmitAOS( radeonContextPtr rmesa,
    rmesa->ioctl.vertex_offset = 
       (component[0]->aos_start + offset * component[0]->aos_stride * 4);
 #else
-   drmRadeonCmdHeader *cmd;
-   int sz = 3 + (nr/2 * 3) + (nr & 1) * 2;
+   drm_radeon_cmd_header_t *cmd;
+   int sz = AOS_BUFSZ(nr);
    int i;
    int *tmp;
 
@@ -388,11 +417,11 @@ void radeonEmitAOS( radeonContextPtr rmesa,
       fprintf(stderr, "%s\n", __FUNCTION__);
 
 
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, sz * sizeof(int),
+   cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa, sz,
 						  __FUNCTION__ );
    cmd[0].i = 0;
    cmd[0].header.cmd_type = RADEON_CMD_PACKET3;
-   cmd[1].i = RADEON_CP_PACKET3_3D_LOAD_VBPNTR | ((sz-3) << 16);
+   cmd[1].i = RADEON_CP_PACKET3_3D_LOAD_VBPNTR | (((sz / sizeof(int))-3) << 16);
    cmd[2].i = nr;
    tmp = &cmd[0].i;
    cmd += 3;
@@ -432,7 +461,7 @@ void radeonEmitBlit( radeonContextPtr rmesa, /* FIXME: which drmMinor is require
 		   GLint dstx, GLint dsty,
 		   GLuint w, GLuint h )
 {
-   drmRadeonCmdHeader *cmd;
+   drm_radeon_cmd_header_t *cmd;
 
    if (RADEON_DEBUG & DEBUG_IOCTL)
       fprintf(stderr, "%s src %x/%x %d,%d dst: %x/%x %d,%d sz: %dx%d\n",
@@ -448,7 +477,7 @@ void radeonEmitBlit( radeonContextPtr rmesa, /* FIXME: which drmMinor is require
    assert( w < (1<<16) );
    assert( h < (1<<16) );
 
-   cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 8 * sizeof(int),
+   cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa, 8 * sizeof(int),
 						  __FUNCTION__ );
 
 
@@ -476,11 +505,11 @@ void radeonEmitBlit( radeonContextPtr rmesa, /* FIXME: which drmMinor is require
 void radeonEmitWait( radeonContextPtr rmesa, GLuint flags )
 {
    if (rmesa->dri.drmMinor >= 6) {
-      drmRadeonCmdHeader *cmd;
+      drm_radeon_cmd_header_t *cmd;
 
       assert( !(flags & ~(RADEON_WAIT_2D|RADEON_WAIT_3D)) );
       
-      cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, 1 * sizeof(int),
+      cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa, 1 * sizeof(int),
 						   __FUNCTION__ );
       cmd[0].i = 0;
       cmd[0].wait.cmd_type = RADEON_CMD_WAIT;
@@ -493,7 +522,10 @@ static int radeonFlushCmdBufLocked( radeonContextPtr rmesa,
 				    const char * caller )
 {
    int ret, i;
-   drmRadeonCmdBuffer cmd;
+   drm_radeon_cmd_buffer_t cmd;
+
+   if (rmesa->lost_context)
+      radeonBackUpAndEmitLostStateLocked(rmesa);
 
    if (RADEON_DEBUG & DEBUG_IOCTL) {
       fprintf(stderr, "%s from %s\n", __FUNCTION__, caller); 
@@ -530,10 +562,10 @@ static int radeonFlushCmdBufLocked( radeonContextPtr rmesa,
 
    if (rmesa->state.scissor.enabled) {
       cmd.nbox = rmesa->state.scissor.numClipRects;
-      cmd.boxes = (drmClipRect *)rmesa->state.scissor.pClipRects;
+      cmd.boxes = rmesa->state.scissor.pClipRects;
    } else {
       cmd.nbox = rmesa->numClipRects;
-      cmd.boxes = (drmClipRect *)rmesa->pClipRects;
+      cmd.boxes = rmesa->pClipRects;
    }
 
    ret = drmCommandWrite( rmesa->dri.fd,
@@ -548,7 +580,8 @@ static int radeonFlushCmdBufLocked( radeonContextPtr rmesa,
    rmesa->store.statenr = 0;
    rmesa->store.cmd_used = 0;
    rmesa->dma.nr_released_bufs = 0;
-   rmesa->lost_context = 1;	
+   rmesa->save_on_next_emit = 1;
+
    return ret;
 }
 
@@ -568,7 +601,7 @@ void radeonFlushCmdBuf( radeonContextPtr rmesa, const char *caller )
    UNLOCK_HARDWARE( rmesa );
 
    if (ret) {
-      fprintf(stderr, "drmRadeonCmdBuffer: %d (exiting)\n", ret);
+      fprintf(stderr, "drm_radeon_cmd_buffer_t: %d (exiting)\n", ret);
       exit(ret);
    }
 }
@@ -667,13 +700,13 @@ void radeonReleaseDmaRegion( radeonContextPtr rmesa,
       rmesa->dma.flush( rmesa );
 
    if (--region->buf->refcount == 0) {
-      drmRadeonCmdHeader *cmd;
+      drm_radeon_cmd_header_t *cmd;
 
       if (RADEON_DEBUG & (DEBUG_IOCTL|DEBUG_DMA))
 	 fprintf(stderr, "%s -- DISCARD BUF %d\n", __FUNCTION__,
 		 region->buf->buf->idx);  
       
-      cmd = (drmRadeonCmdHeader *)radeonAllocCmdBuf( rmesa, sizeof(*cmd), 
+      cmd = (drm_radeon_cmd_header_t *)radeonAllocCmdBuf( rmesa, sizeof(*cmd), 
 						     __FUNCTION__ );
       cmd->dma.cmd_type = RADEON_CMD_DMA_DISCARD;
       cmd->dma.buf_idx = region->buf->buf->idx;
@@ -734,14 +767,14 @@ void radeonAllocDmaRegionVerts( radeonContextPtr rmesa,
  * SwapBuffers with client-side throttling
  */
 
-static CARD32 radeonGetLastFrame (radeonContextPtr rmesa) 
+static uint32_t radeonGetLastFrame (radeonContextPtr rmesa) 
 {
    unsigned char *RADEONMMIO = rmesa->radeonScreen->mmio.map;
    int ret;
-   CARD32 frame;
+   uint32_t frame;
 
    if (rmesa->dri.screen->drmMinor >= 4) {
-      drmRadeonGetParam gp;
+      drm_radeon_getparam_t gp;
 
       gp.param = RADEON_PARAM_LAST_FRAME;
       gp.value = (int *)&frame;
@@ -756,7 +789,7 @@ static CARD32 radeonGetLastFrame (radeonContextPtr rmesa)
       ret = 0;
    } 
    if ( ret ) {
-      fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
+      fprintf( stderr, "%s: drm_radeon_getparam_t: %d\n", __FUNCTION__, ret );
       exit(1);
    }
 
@@ -765,14 +798,14 @@ static CARD32 radeonGetLastFrame (radeonContextPtr rmesa)
 
 static void radeonEmitIrqLocked( radeonContextPtr rmesa )
 {
-   drmRadeonIrqEmit ie;
+   drm_radeon_irq_emit_t ie;
    int ret;
 
    ie.irq_seq = &rmesa->iw.irq_seq;
    ret = drmCommandWriteRead( rmesa->dri.fd, DRM_RADEON_IRQ_EMIT, 
 			      &ie, sizeof(ie) );
    if ( ret ) {
-      fprintf( stderr, "%s: drmRadeonIrqEmit: %d\n", __FUNCTION__, ret );
+      fprintf( stderr, "%s: drm_radeon_irq_emit_t: %d\n", __FUNCTION__, ret );
       exit(1);
    }
 }
@@ -796,7 +829,7 @@ static void radeonWaitIrq( radeonContextPtr rmesa )
 
 static void radeonWaitForFrameCompletion( radeonContextPtr rmesa )
 {
-   RADEONSAREAPrivPtr sarea = rmesa->sarea;
+   drm_radeon_sarea_t *sarea = rmesa->sarea;
 
    if (rmesa->do_irqs) {
       if (radeonGetLastFrame(rmesa) < sarea->last_frame) {
@@ -843,7 +876,7 @@ void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
    rmesa = (radeonContextPtr) dPriv->driContextPriv->driverPrivate;
 
    if ( RADEON_DEBUG & DEBUG_IOCTL ) {
-      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, (void *)rmesa->glCtx );
+      fprintf( stderr, "\n%s( %p )\n\n", __FUNCTION__, (void *) rmesa->glCtx );
    }
 
    RADEON_FIREVERTICES( rmesa );
@@ -861,8 +894,8 @@ void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
 
    for ( i = 0 ; i < nbox ; ) {
       GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS , nbox );
-      XF86DRIClipRectPtr box = dPriv->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
+      drm_clip_rect_t *box = dPriv->pClipRects;
+      drm_clip_rect_t *b = rmesa->sarea->boxes;
       GLint n = 0;
 
       for ( ; i < nr ; i++ ) {
@@ -889,6 +922,7 @@ void radeonCopyBuffer( const __DRIdrawablePrivate *dPriv )
    }
 
    rmesa->swap_ust = ust;
+   rmesa->hw.all_dirty = GL_TRUE;
 }
 
 void radeonPageFlip( const __DRIdrawablePrivate *dPriv )
@@ -915,8 +949,8 @@ void radeonPageFlip( const __DRIdrawablePrivate *dPriv )
     */
    if (dPriv->numClipRects)
    {
-      XF86DRIClipRectPtr box = dPriv->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
+      drm_clip_rect_t *box = dPriv->pClipRects;
+      drm_clip_rect_t *b = rmesa->sarea->boxes;
       b[0] = box[0];
       rmesa->sarea->nbox = 1;
    }
@@ -970,9 +1004,9 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 {
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
    __DRIdrawablePrivate *dPriv = rmesa->dri.drawable;
-   RADEONSAREAPrivPtr sarea = rmesa->sarea;
+   drm_radeon_sarea_t *sarea = rmesa->sarea;
    unsigned char *RADEONMMIO = rmesa->radeonScreen->mmio.map;
-   CARD32 clear;
+   uint32_t clear;
    GLuint flags = 0;
    GLuint color_mask = 0;
    GLint ret, i;
@@ -982,11 +1016,6 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	       __FUNCTION__, all, cx, cy, cw, ch );
    }
 
-   radeonEmitState( rmesa );
-
-   /* Need to cope with lostcontext here as kernel relies on
-    * some residual state:
-    */
    RADEON_FIREVERTICES( rmesa ); 
 
    if ( mask & DD_FRONT_LEFT_BIT ) {
@@ -1033,7 +1062,7 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       int ret;
 
       if (rmesa->dri.screen->drmMinor >= 4) {
-	drmRadeonGetParam gp;
+	drm_radeon_getparam_t gp;
 
 	gp.param = RADEON_PARAM_LAST_CLEAR;
 	gp.value = (int *)&clear;
@@ -1047,7 +1076,7 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
 	 ret = 0;
       }
       if ( ret ) {
-	 fprintf( stderr, "%s: drmRadeonGetParam: %d\n", __FUNCTION__, ret );
+	 fprintf( stderr, "%s: drm_radeon_getparam_t: %d\n", __FUNCTION__, ret );
 	 exit(1);
       }
       if ( RADEON_DEBUG & DEBUG_IOCTL ) {
@@ -1066,12 +1095,15 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       }
    }
 
+   /* Send current state to the hardware */
+   radeonFlushCmdBufLocked( rmesa, __FUNCTION__ );
+
    for ( i = 0 ; i < dPriv->numClipRects ; ) {
       GLint nr = MIN2( i + RADEON_NR_SAREA_CLIPRECTS, dPriv->numClipRects );
-      XF86DRIClipRectPtr box = dPriv->pClipRects;
-      XF86DRIClipRectPtr b = rmesa->sarea->boxes;
-      drmRadeonClearType clear;
-      drmRadeonClearRect depth_boxes[RADEON_NR_SAREA_CLIPRECTS];
+      drm_clip_rect_t *box = dPriv->pClipRects;
+      drm_clip_rect_t *b = rmesa->sarea->boxes;
+      drm_radeon_clear_t clear;
+      drm_radeon_clear_rect_t depth_boxes[RADEON_NR_SAREA_CLIPRECTS];
       GLint n = 0;
 
       if ( !all ) {
@@ -1114,16 +1146,16 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
       n--;
       b = rmesa->sarea->boxes;
       for ( ; n >= 0 ; n-- ) {
-	 depth_boxes[n].f[RADEON_CLEAR_X1] = (float)b[n].x1;
-	 depth_boxes[n].f[RADEON_CLEAR_Y1] = (float)b[n].y1;
-	 depth_boxes[n].f[RADEON_CLEAR_X2] = (float)b[n].x2;
-	 depth_boxes[n].f[RADEON_CLEAR_Y2] = (float)b[n].y2;
-	 depth_boxes[n].f[RADEON_CLEAR_DEPTH] = 
+	 depth_boxes[n].f[CLEAR_X1] = (float)b[n].x1;
+	 depth_boxes[n].f[CLEAR_Y1] = (float)b[n].y1;
+	 depth_boxes[n].f[CLEAR_X2] = (float)b[n].x2;
+	 depth_boxes[n].f[CLEAR_Y2] = (float)b[n].y2;
+	 depth_boxes[n].f[CLEAR_DEPTH] = 
 	    (float)rmesa->state.depth.clear;
       }
 
       ret = drmCommandWrite( rmesa->dri.fd, DRM_RADEON_CLEAR,
-			     &clear, sizeof(drmRadeonClearType));
+			     &clear, sizeof(drm_radeon_clear_t));
 
       if ( ret ) {
 	 UNLOCK_HARDWARE( rmesa );
@@ -1133,6 +1165,7 @@ static void radeonClear( GLcontext *ctx, GLbitfield mask, GLboolean all,
    }
 
    UNLOCK_HARDWARE( rmesa );
+   rmesa->hw.all_dirty = GL_TRUE;
 }
 
 
@@ -1176,8 +1209,7 @@ void radeonFlush( GLcontext *ctx )
    if (rmesa->dma.flush)
       rmesa->dma.flush( rmesa );
 
-   if (!is_empty_list(&rmesa->hw.dirty)) 
-      radeonEmitState( rmesa );
+   radeonEmitState( rmesa );
    
    if (rmesa->store.cmd_used)
       radeonFlushCmdBuf( rmesa, __FUNCTION__ );

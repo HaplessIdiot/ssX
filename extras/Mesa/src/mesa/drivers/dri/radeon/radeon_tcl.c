@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_tcl.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_tcl.c,v 1.1.1.4 2004/12/10 15:06:19 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -105,7 +105,7 @@ static GLboolean discrete_prim[0x10] = {
 };
    
 
-#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx)
+#define LOCAL_VARS radeonContextPtr rmesa = RADEON_CONTEXT(ctx); (void)rmesa
 #define ELT_TYPE  GLushort
 
 #define ELT_INIT(prim, hw_prim) \
@@ -149,6 +149,9 @@ static GLushort *radeonAllocElts( radeonContextPtr rmesa, GLuint nr )
    if (rmesa->dma.flush)
       rmesa->dma.flush( rmesa );
 
+   radeonEnsureCmdBufSpace(rmesa, AOS_BUFSZ(rmesa->tcl.nr_aos_components) +
+			   rmesa->hw.max_state_size + ELTS_BUFSZ(nr));
+
    radeonEmitAOS( rmesa,
 		rmesa->tcl.aos_components,
 		rmesa->tcl.nr_aos_components, 0 );
@@ -175,6 +178,9 @@ static void radeonEmitPrim( GLcontext *ctx,
    radeonContextPtr rmesa = RADEON_CONTEXT( ctx );
    radeonTclPrimitive( ctx, prim, hwprim );
    
+   radeonEnsureCmdBufSpace( rmesa, AOS_BUFSZ(rmesa->tcl.nr_aos_components) +
+			    rmesa->hw.max_state_size + VBUF_BUFSZ );
+
    radeonEmitAOS( rmesa,
 		  rmesa->tcl.aos_components,
 		  rmesa->tcl.nr_aos_components,

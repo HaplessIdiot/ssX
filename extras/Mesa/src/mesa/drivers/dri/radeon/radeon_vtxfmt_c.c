@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_vtxfmt_c.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_vtxfmt_c.c,v 1.1.1.2 2004/12/10 15:06:20 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2002 ATI Technologies Inc., Ontario, Canada, and
@@ -159,7 +159,7 @@ static void radeon_Color4ubv_ub( const GLubyte *v )
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);
    *(GLuint *)rmesa->vb.colorptr = LE32_TO_CPU(*(GLuint *)v);
 }
-#endif
+#endif /* 0 */
 
 static void radeon_Color3f_ub( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -208,6 +208,7 @@ static void radeon_Color4fv_ub( const GLfloat *v )
 #if 0
 /* Color for float color+alpha formats:
  */
+#if 0
 static void radeon_Color3ub_4f( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -251,7 +252,8 @@ static void radeon_Color4ubv_4f( const GLubyte *v )
    dest[2] = UBYTE_TO_FLOAT(v[2]);
    dest[3] = UBYTE_TO_FLOAT(v[3]);
 }
-#endif
+#endif /* 0 */
+
 
 static void radeon_Color3f_4f( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -300,6 +302,7 @@ static void radeon_Color4fv_4f( const GLfloat *v )
 #if 0
 /* Color for float color formats:
  */
+#if 0
 static void radeon_Color3ub_3f( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -341,7 +344,8 @@ static void radeon_Color4ubv_3f( const GLubyte *v )
    dest[2] = UBYTE_TO_FLOAT(v[2]);
    ctx->Current.Attrib[VERT_ATTRIB_COLOR0][3] = UBYTE_TO_FLOAT(v[3]);
 }
-#endif
+#endif /* 0 */
+
 
 static void radeon_Color3f_3f( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -388,6 +392,7 @@ static void radeon_Color4fv_3f( const GLfloat *v )
 #if 0
 /* Secondary Color:
  */
+#if 0
 static void radeon_SecondaryColor3ubEXT_ub( GLubyte r, GLubyte g, GLubyte b )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -409,7 +414,7 @@ static void radeon_SecondaryColor3ubvEXT_ub( const GLubyte *v )
    dest->blue	= v[2];
    dest->alpha	= 0xff;
 }
-#endif
+#endif /* 0 */
 
 static void radeon_SecondaryColor3fEXT_ub( GLfloat r, GLfloat g, GLfloat b )
 {
@@ -455,7 +460,7 @@ static void radeon_SecondaryColor3ubvEXT_3f( const GLubyte *v )
    dest[2] = UBYTE_TO_FLOAT(v[2]);
    dest[3] = 1.0;
 }
-#endif
+#endif /* 0 */
 
 static void radeon_SecondaryColor3fEXT_3f( GLfloat r, GLfloat g, GLfloat b )
 {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/ffb/ffb_vbtmp.h,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/ffb/ffb_vbtmp.h,v 1.1.1.2 2004/12/10 15:05:37 alanh Exp $ */
 
 static void TAG(emit)(GLcontext *ctx, GLuint start, GLuint end)
 {

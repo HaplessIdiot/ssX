@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texmem.c,v 1.1.1.2 2004/06/10 14:23:10 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_texmem.c,v 1.1.1.3 2004/12/10 15:06:20 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -41,7 +41,6 @@ SOFTWARE.
 #include "imports.h"
 #include "context.h"
 #include "macros.h"
-#include "simple_list.h"
 
 #include "radeon_context.h"
 #include "radeon_ioctl.h"
@@ -66,8 +65,7 @@ radeonDestroyTexObj( radeonContextPtr rmesa, radeonTexObjPtr t )
       for ( i = 0 ; i < rmesa->glCtx->Const.MaxTextureUnits ; i++ ) {
 	 if ( t == rmesa->state.texture.unit[i].texobj ) {
 	    rmesa->state.texture.unit[i].texobj = NULL;
-	    remove_from_list( &rmesa->hw.tex[i] );
-	    make_empty_list( &rmesa->hw.tex[i] );
+	    rmesa->hw.tex[i].dirty = GL_FALSE;
 	 }
       }
    }
@@ -183,8 +181,8 @@ static void uploadSubImage( radeonContextPtr rmesa, radeonTexObjPtr t,
    GLuint offset;
    GLint imageWidth, imageHeight;
    GLint ret;
-   drmRadeonTexture tex;
-   drmRadeonTexImage tmp;
+   drm_radeon_texture_t tex;
+   drm_radeon_tex_image_t tmp;
    const int level = hwlevel + t->base.firstLevel;
 
    if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
@@ -245,7 +243,7 @@ static void uploadSubImage( radeonContextPtr rmesa, radeonTexObjPtr t,
 
    t->image[face][hwlevel].data = texImage->Data;
 
-   /* Init the DRM_RADEON_TEXTURE command / drmRadeonTexture struct.
+   /* Init the DRM_RADEON_TEXTURE command / drm_radeon_texture_t struct.
     * NOTE: we're always use a 1KB-wide blit and I8 texture format.
     * We used to use 1, 2 and 4-byte texels and used to use the texture
     * width to dictate the blit width - but that won't work for compressed
@@ -267,12 +265,12 @@ static void uploadSubImage( radeonContextPtr rmesa, radeonTexObjPtr t,
    tex.image = &tmp;
 
    /* copy (x,y,width,height,data) */
-   memcpy( &tmp, &t->image[face][hwlevel], sizeof(drmRadeonTexImage) );
+   memcpy( &tmp, &t->image[face][hwlevel], sizeof(drm_radeon_tex_image_t) );
 
    LOCK_HARDWARE( rmesa );
    do {
       ret = drmCommandWriteRead( rmesa->dri.fd, DRM_RADEON_TEXTURE,
-                                 &tex, sizeof(drmRadeonTexture) );
+                                 &tex, sizeof(drm_radeon_texture_t) );
    } while ( ret && errno == EAGAIN );
 
    UNLOCK_HARDWARE( rmesa );

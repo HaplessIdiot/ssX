@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.3 2004/06/10 14:43:40 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.4 2004/06/11 08:04:20 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -1342,6 +1342,8 @@ static GLboolean initialize_visual_and_buffer( int client,
                                   32,                   /*bitmap_pad*/
                                   0                     /*bytes_per_line*/ );
 #endif
+      if (!b->rowimage)
+         return GL_FALSE;
    }
 
    return GL_TRUE;
@@ -1603,6 +1605,7 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
                             accum_blue_size, accum_alpha_size,
                             0 );
 
+   /* XXX minor hack */
    v->mesa_visual.level = level;
    return v;
 }
@@ -1677,10 +1680,14 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
 
    /* Initialize the software rasterizer and helper modules.
     */
-   _swrast_CreateContext( mesaCtx );
-   _ac_CreateContext( mesaCtx );
-   _tnl_CreateContext( mesaCtx );
-   _swsetup_CreateContext( mesaCtx );
+   if (!_swrast_CreateContext( mesaCtx ) ||
+       !_ac_CreateContext( mesaCtx ) ||
+       !_tnl_CreateContext( mesaCtx ) ||
+       !_swsetup_CreateContext( mesaCtx )) {
+      _mesa_free_context_data(&c->mesa);
+      _mesa_free(c);
+      return NULL;
+   }
 
    /* tnl setup */
    tnl = TNL_CONTEXT(mesaCtx);
@@ -1790,6 +1797,8 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v, XMesaWindow w,
                                 v->mesa_visual.stencilBits > 0,
                                 v->mesa_visual.accumRedBits > 0,
                                 v->mesa_visual.alphaBits > 0 );
+   /* XXX hack */
+   b->mesa_buffer.UseSoftwareAuxBuffers = GL_TRUE;
 
    if (!initialize_visual_and_buffer( client, v, b, v->mesa_visual.rgbMode,
                                       (XMesaDrawable)w, b->cmap )) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_tcl.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/r200/r200_tcl.c,v 1.1.1.2 2004/12/10 15:06:00 alanh Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -101,7 +101,7 @@ static GLboolean discrete_prim[0x10] = {
 };
    
 
-#define LOCAL_VARS r200ContextPtr rmesa = R200_CONTEXT(ctx)
+#define LOCAL_VARS r200ContextPtr rmesa = R200_CONTEXT(ctx); (void)rmesa
 #define ELT_TYPE  GLushort
 
 #define ELT_INIT(prim, hw_prim) \
@@ -140,18 +140,37 @@ static GLboolean discrete_prim[0x10] = {
 
 static GLushort *r200AllocElts( r200ContextPtr rmesa, GLuint nr ) 
 {
-   if (rmesa->dma.flush)
-      rmesa->dma.flush( rmesa );
+   if (rmesa->dma.flush == r200FlushElts &&
+       rmesa->store.cmd_used + nr*2 < R200_CMD_BUF_SZ) {
 
-   r200EmitAOS( rmesa,
-		rmesa->tcl.aos_components,
-		rmesa->tcl.nr_aos_components, 0 );
+      GLushort *dest = (GLushort *)(rmesa->store.cmd_buf +
+				    rmesa->store.cmd_used);
 
-   return r200AllocEltsOpenEnded( rmesa, rmesa->tcl.hw_primitive, nr );
+      rmesa->store.cmd_used += nr*2;
+
+      return dest;
+   }
+   else {
+      if (rmesa->dma.flush)
+	 rmesa->dma.flush( rmesa );
+
+      r200EnsureCmdBufSpace( rmesa, AOS_BUFSZ(rmesa->tcl.nr_aos_components) +
+			     rmesa->hw.max_state_size + ELTS_BUFSZ(nr) );
+
+      r200EmitAOS( rmesa,
+		   rmesa->tcl.aos_components,
+		   rmesa->tcl.nr_aos_components, 0 );
+
+      return r200AllocEltsOpenEnded( rmesa, rmesa->tcl.hw_primitive, nr );
+   }
 }
 
 
-#define CLOSE_ELTS()  R200_NEWPRIM( rmesa )
+#define CLOSE_ELTS() 				\
+do {						\
+   if (0) R200_NEWPRIM( rmesa );		\
+}						\
+while (0)
 
 
 /* TODO: Try to extend existing primitive if both are identical,
@@ -167,6 +186,9 @@ static void r200EmitPrim( GLcontext *ctx,
    r200ContextPtr rmesa = R200_CONTEXT( ctx );
    r200TclPrimitive( ctx, prim, hwprim );
    
+   r200EnsureCmdBufSpace( rmesa, AOS_BUFSZ(rmesa->tcl.nr_aos_components) +
+			  rmesa->hw.max_state_size + VBUF_BUFSZ );
+
    r200EmitAOS( rmesa,
 		  rmesa->tcl.aos_components,
 		  rmesa->tcl.nr_aos_components,
@@ -308,6 +330,7 @@ static void r200_check_tcl_render( GLcontext *ctx,
 {
    r200ContextPtr rmesa = R200_CONTEXT(ctx);
    GLuint inputs = VERT_BIT_POS;
+   GLuint unit;
 
    /* Validate state:
     */
@@ -332,23 +355,15 @@ static void r200_check_tcl_render( GLcontext *ctx,
 	 }
       }
 
-      if (ctx->Texture.Unit[0]._ReallyEnabled) {
-	 if (ctx->Texture.Unit[0].TexGenEnabled) {
-	    if (rmesa->TexGenNeedNormals[0]) {
-	       inputs |= VERT_BIT_NORMAL;
+      for (unit = 0 ; unit < ctx->Const.MaxTextureUnits; unit++) {
+	 if (ctx->Texture.Unit[unit]._ReallyEnabled) {
+	    if (ctx->Texture.Unit[unit].TexGenEnabled) {
+	       if (rmesa->TexGenNeedNormals[unit]) {
+		  inputs |= VERT_BIT_NORMAL;
+	       }
+	    } else {
+	       inputs |= VERT_BIT_TEX(unit);
 	    }
-	 } else {
-	    inputs |= VERT_BIT_TEX0;
-	 }
-      }
-
-      if (ctx->Texture.Unit[1]._ReallyEnabled) {
-	 if (ctx->Texture.Unit[1].TexGenEnabled) {
-	    if (rmesa->TexGenNeedNormals[1]) {
-	       inputs |= VERT_BIT_NORMAL;
-	    }
-	 } else {
-	    inputs |= VERT_BIT_TEX1;
 	 }
       }
 
@@ -409,7 +424,6 @@ static void transition_to_swtnl( GLcontext *ctx )
    TNLcontext *tnl = TNL_CONTEXT(ctx);
 
    R200_NEWPRIM( rmesa );
-   rmesa->swtcl.vertex_format = 0;
 
    r200ChooseVertexState( ctx );
    r200ChooseRenderState( ctx );
@@ -433,9 +447,12 @@ static void transition_to_swtnl( GLcontext *ctx )
 
    R200_STATECHANGE( rmesa, set );
    rmesa->hw.set.cmd[SET_RE_CNTL] |= (R200_VTX_STQ0_D3D |
-				      R200_VTX_STQ1_D3D);
+				      R200_VTX_STQ1_D3D |
+				      R200_VTX_STQ2_D3D |
+				      R200_VTX_STQ3_D3D |
+				      R200_VTX_STQ4_D3D |
+				      R200_VTX_STQ5_D3D);
 }
-
 
 static void transition_to_hwtnl( GLcontext *ctx )
 {
@@ -452,7 +469,6 @@ static void transition_to_hwtnl( GLcontext *ctx )
       rmesa->dma.flush( rmesa );	
 
    rmesa->dma.flush = 0;
-   rmesa->swtcl.vertex_format = 0;
    
    if (rmesa->swtcl.indexed_verts.buf) 
       r200ReleaseDmaRegion( rmesa, &rmesa->swtcl.indexed_verts, 
@@ -469,7 +485,11 @@ static void transition_to_hwtnl( GLcontext *ctx )
 
    R200_STATECHANGE( rmesa, set );
    rmesa->hw.set.cmd[SET_RE_CNTL] &= ~(R200_VTX_STQ0_D3D |
-				       R200_VTX_STQ1_D3D);
+				       R200_VTX_STQ1_D3D |
+				       R200_VTX_STQ2_D3D |
+				       R200_VTX_STQ3_D3D |
+				       R200_VTX_STQ4_D3D |
+				       R200_VTX_STQ5_D3D);
 
 
    if (R200_DEBUG & DEBUG_FALLBACKS) 
@@ -485,7 +505,11 @@ static char *fallbackStrings[] = {
    "Texgen unit 0",
    "Texgen unit 1",
    "Texgen unit 2",
-   "User disable"
+   "Texgen unit 3",
+   "Texgen unit 4",
+   "Texgen unit 5",
+   "User disable",
+   "Bitmap as points"
 };
 
 

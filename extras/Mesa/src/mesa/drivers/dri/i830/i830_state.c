@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_state.c,v 1.1.1.2 2004/06/10 14:22:50 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_state.c,v 1.1.1.3 2004/12/10 15:05:47 alanh Exp $ */
 
 /*
  * Author:
@@ -316,30 +316,32 @@ static void i830EvalLogicOpBlendState(GLcontext *ctx)
 
    I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
 
+   imesa->Setup[I830_CTXREG_ENABLES_1] &= ~(ENABLE_COLOR_BLEND |
+					    ENABLE_LOGIC_OP_MASK);
+   imesa->Setup[I830_CTXREG_IALPHAB] &= ~ENABLE_INDPT_ALPHA_BLEND;
+
    if (ctx->Color.ColorLogicOpEnabled) {
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~(ENABLE_COLOR_BLEND |
-					       ENABLE_LOGIC_OP_MASK);
       imesa->Setup[I830_CTXREG_ENABLES_1] |= (DISABLE_COLOR_BLEND |
 					      ENABLE_LOGIC_OP);
-      imesa->Setup[I830_CTXREG_IALPHAB] &= ~ENABLE_INDPT_ALPHA_BLEND;
       imesa->Setup[I830_CTXREG_IALPHAB] |= DISABLE_INDPT_ALPHA_BLEND;
    } else if (ctx->Color.BlendEnabled) {
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~(ENABLE_COLOR_BLEND |
-					       ENABLE_LOGIC_OP_MASK);
       imesa->Setup[I830_CTXREG_ENABLES_1] |= (ENABLE_COLOR_BLEND |
 					      DISABLE_LOGIC_OP);
-      imesa->Setup[I830_CTXREG_IALPHAB] &= ~ENABLE_INDPT_ALPHA_BLEND;
-      if (imesa->Setup[I830_CTXREG_IALPHAB] & SRC_DST_ABLEND_MASK) {
+
+      /* If the alpha blend state does not match the color blend state,
+       * enable independent alpha blending.  Otherwise, leave it disabled
+       * and the hardware will use the color blend state for both.
+       */
+
+      if ( 0 && (imesa->Setup[I830_CTXREG_IALPHAB] & BLEND_STATE_MASK)
+	   != (imesa->Setup[I830_CTXREG_STATE1] & BLEND_STATE_MASK) ) {
 	 imesa->Setup[I830_CTXREG_IALPHAB] |= ENABLE_INDPT_ALPHA_BLEND;
       } else {
 	 imesa->Setup[I830_CTXREG_IALPHAB] |= DISABLE_INDPT_ALPHA_BLEND;
       }
    } else {
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~(ENABLE_COLOR_BLEND |
-					       ENABLE_LOGIC_OP_MASK);
       imesa->Setup[I830_CTXREG_ENABLES_1] |= (DISABLE_COLOR_BLEND |
 					      DISABLE_LOGIC_OP);
-      imesa->Setup[I830_CTXREG_IALPHAB] &= ~ENABLE_INDPT_ALPHA_BLEND;
       imesa->Setup[I830_CTXREG_IALPHAB] |= DISABLE_INDPT_ALPHA_BLEND;
    }
 }
@@ -364,238 +366,209 @@ static void i830BlendColor(GLcontext *ctx, const GLfloat color[4])
 					  b);
 }
 
-static void i830BlendEquationSeparate(GLcontext *ctx,
-				      GLenum modeRGB, GLenum modeA)
+/**
+ * Calculate the hardware blend factor setting.  This same function is used
+ * for source and destination of both alpha and RGB.  
+ *
+ * \returns
+ * The hardware register value for the specified blend factor.  This value
+ * will need to be shifted into the correct position for either source or
+ * destination factor.
+ *
+ * \todo
+ * Since the two cases where source and destination are handled differently
+ * are essentially error cases, they should never happen.  Determine if these
+ * cases can be removed.
+ */
+static int blend_factor( GLenum factor, GLboolean is_src )
+{
+   int func;
+
+   switch( factor ) {
+   case GL_ZERO:
+      func = BLENDFACT_ZERO;
+      break;
+   case GL_ONE: 
+      func = BLENDFACT_ONE;
+      break;
+   case GL_SRC_COLOR:
+      func = BLENDFACT_SRC_COLR;
+      break;
+   case GL_ONE_MINUS_SRC_COLOR:
+      func = BLENDFACT_INV_SRC_COLR;
+      break;
+   case GL_SRC_ALPHA: 
+      func = BLENDFACT_SRC_ALPHA;
+      break;
+   case GL_ONE_MINUS_SRC_ALPHA:
+      func = BLENDFACT_INV_SRC_ALPHA;
+      break;
+   case GL_DST_ALPHA: 
+      func = BLENDFACT_DST_ALPHA;
+      break;
+   case GL_ONE_MINUS_DST_ALPHA:
+      func = BLENDFACT_INV_DST_ALPHA;
+      break;
+   case GL_DST_COLOR: 
+      func = BLENDFACT_DST_COLR;
+      break;
+   case GL_ONE_MINUS_DST_COLOR: 
+      func = BLENDFACT_INV_DST_COLR;
+      break;
+   case GL_SRC_ALPHA_SATURATE: 
+      func = (is_src) ? BLENDFACT_SRC_ALPHA_SATURATE : BLENDFACT_ZERO;
+      break;
+   case GL_CONSTANT_COLOR:
+      func = BLENDFACT_CONST_COLOR;
+      break;
+   case GL_ONE_MINUS_CONSTANT_COLOR:
+      func = BLENDFACT_INV_CONST_COLOR;
+      break;
+   case GL_CONSTANT_ALPHA:
+      func = BLENDFACT_CONST_ALPHA;
+      break;
+   case GL_ONE_MINUS_CONSTANT_ALPHA:
+      func = BLENDFACT_INV_CONST_ALPHA;
+      break;
+   default:
+      func = (is_src) ? BLENDFACT_ONE : BLENDFACT_ZERO;
+   }
+
+   return func;
+}
+
+
+/**
+ * Sets both the blend equation (called "function" in i830 docs) and the
+ * blend function (called "factor" in i830 docs).  This is done in a single
+ * function because some blend equations (i.e., \c GL_MIN and \c GL_MAX)
+ * change the interpretation of the blend function.
+ */
+
+static void i830_set_blend_state( GLcontext * ctx )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
-   int func = ENABLE_ALPHA_BLENDFUNC;
+   int funcA;
+   int funcRGB;
+   int eqnA;
+   int eqnRGB;
 
-   if (I830_DEBUG&DEBUG_DRI)
-     fprintf(stderr, "%s %s\n", __FUNCTION__,
-	     _mesa_lookup_enum_by_nr(modeRGB));
 
-   assert( modeRGB == modeA );
+   funcRGB = SRC_BLND_FACT( blend_factor( ctx->Color.BlendSrcRGB, GL_TRUE ) )
+       | DST_BLND_FACT( blend_factor( ctx->Color.BlendDstRGB, GL_FALSE ) );
 
-   /* This will catch a logicop blend equation */
-   i830EvalLogicOpBlendState(ctx);
+   switch(ctx->Color.BlendEquationRGB) {
+   case GL_FUNC_ADD:
+      eqnRGB = BLENDFUNC_ADD; 
+      break;
+   case GL_MIN:
+      eqnRGB = BLENDFUNC_MIN;
+      funcRGB = SRC_BLND_FACT(BLENDFACT_ONE) | DST_BLND_FACT(BLENDFACT_ONE);
+      break;
+   case GL_MAX: 
+      eqnRGB = BLENDFUNC_MAX;
+      funcRGB = SRC_BLND_FACT(BLENDFACT_ONE) | DST_BLND_FACT(BLENDFACT_ONE);
+      break;
+   case GL_FUNC_SUBTRACT: 
+      eqnRGB = BLENDFUNC_SUB; 
+      break;
+   case GL_FUNC_REVERSE_SUBTRACT:
+      eqnRGB = BLENDFUNC_RVRSE_SUB; 
+      break;
+   default:
+      fprintf( stderr, "[%s:%u] Invalid RGB blend equation (0x%04x).\n",
+	       __func__, __LINE__, ctx->Color.BlendEquationRGB );
+      return;
+   }
 
-   switch(modeRGB) {
-   case GL_FUNC_ADD_EXT: 
-      func |= BLENDFUNC_ADD; 
+
+   funcA = SRC_ABLEND_FACT( blend_factor( ctx->Color.BlendSrcA, GL_TRUE ) )
+       | DST_ABLEND_FACT( blend_factor( ctx->Color.BlendDstA, GL_FALSE ) );
+
+   switch(ctx->Color.BlendEquationA) {
+   case GL_FUNC_ADD:
+      eqnA = BLENDFUNC_ADD; 
       break;
-   case GL_MIN_EXT: 
-      func |= BLENDFUNC_MIN; 
+   case GL_MIN: 
+      eqnA = BLENDFUNC_MIN;
+      funcA = SRC_BLND_FACT(BLENDFACT_ONE) | DST_BLND_FACT(BLENDFACT_ONE);
       break;
-   case GL_MAX_EXT: 
-      func |= BLENDFUNC_MAX; 
+   case GL_MAX: 
+      eqnA = BLENDFUNC_MAX;
+      funcA = SRC_BLND_FACT(BLENDFACT_ONE) | DST_BLND_FACT(BLENDFACT_ONE);
       break;
-   case GL_FUNC_SUBTRACT_EXT: 
-      func |= BLENDFUNC_SUB; 
+   case GL_FUNC_SUBTRACT: 
+      eqnA = BLENDFUNC_SUB; 
       break;
-   case GL_FUNC_REVERSE_SUBTRACT_EXT: 
-      func |= BLENDFUNC_RVRSE_SUB; 
+   case GL_FUNC_REVERSE_SUBTRACT:
+      eqnA = BLENDFUNC_RVRSE_SUB; 
       break;
-   default: return;
+   default:
+      fprintf( stderr, "[%s:%u] Invalid alpha blend equation (0x%04x).\n",
+	       __func__, __LINE__, ctx->Color.BlendEquationA );
+      return;
    }
 
    I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
-   imesa->Setup[I830_CTXREG_STATE1] &= ~BLENDFUNC_MASK;
-   imesa->Setup[I830_CTXREG_STATE1] |= func;
-   if (0) fprintf(stderr, "%s : STATE1 : 0x%08x\n",
-		  __FUNCTION__,
-		  imesa->Setup[I830_CTXREG_STATE1]);
+
+   imesa->Setup[I830_CTXREG_STATE1] = eqnRGB | funcRGB
+       | STATE3D_MODES_1_CMD
+       | ENABLE_SRC_BLND_FACTOR | ENABLE_DST_BLND_FACTOR
+       | ENABLE_COLR_BLND_FUNC;
+
+   imesa->Setup[I830_CTXREG_IALPHAB] = eqnA | funcA
+       | STATE3D_INDPT_ALPHA_BLEND_CMD
+       | ENABLE_SRC_ABLEND_FACTOR | ENABLE_DST_ABLEND_FACTOR
+       | ENABLE_ALPHA_BLENDFUNC;
+
+
+   /* This will catch a logicop blend equation.  It will also ensure
+    * independant alpha blend is really in the correct state (either enabled
+    * or disabled) if blending is already enabled.
+    */
+
+   i830EvalLogicOpBlendState(ctx);
+
+   if (0) {
+      fprintf(stderr, "[%s:%u] STATE1: 0x%08x IALPHAB: 0x%08x blend is %sabled\n",
+	      __func__, __LINE__,
+	      imesa->Setup[I830_CTXREG_STATE1],
+	      imesa->Setup[I830_CTXREG_IALPHAB],
+	      (ctx->Color.BlendEnabled) ? "en" : "dis");
+   }
 }
+
+static void i830BlendEquationSeparate(GLcontext *ctx,
+				      GLenum modeRGB, GLenum modeA)
+{
+   if (I830_DEBUG&DEBUG_DRI)
+     fprintf(stderr, "%s -> %s, %s\n", __FUNCTION__,
+	     _mesa_lookup_enum_by_nr(modeRGB),
+	     _mesa_lookup_enum_by_nr(modeA));
+
+   (void) modeRGB;
+   (void) modeA;
+   i830_set_blend_state( ctx );
+}
+
+
 
 static void i830BlendFuncSeparate(GLcontext *ctx, GLenum sfactorRGB, 
 				  GLenum dfactorRGB, GLenum sfactorA,
 				  GLenum dfactorA )
 {
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-   int funcA = (ENABLE_SRC_ABLEND_FACTOR|ENABLE_DST_ABLEND_FACTOR);
-   int funcRGB = (ENABLE_SRC_BLND_FACTOR|ENABLE_DST_BLND_FACTOR);
-
    if (I830_DEBUG&DEBUG_DRI)
-      fprintf(stderr, "%s\n", __FUNCTION__);
+     fprintf(stderr, "%s -> RGB(%s, %s) A(%s, %s)\n", __FUNCTION__,
+	     _mesa_lookup_enum_by_nr(sfactorRGB),
+	     _mesa_lookup_enum_by_nr(dfactorRGB),
+	     _mesa_lookup_enum_by_nr(sfactorA),
+	     _mesa_lookup_enum_by_nr(dfactorA));
 
-   switch(sfactorA) {
-   case GL_ZERO: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_ZERO); 
-      break;
-   case GL_SRC_ALPHA: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_SRC_ALPHA); 
-      break;
-   case GL_ONE: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_ONE); 
-      break;
-   case GL_DST_COLOR: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_DST_COLR); 
-      break;
-   case GL_ONE_MINUS_DST_COLOR: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_INV_DST_COLR); 
-      break;
-   case GL_ONE_MINUS_SRC_ALPHA:
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_INV_SRC_ALPHA); 
-      break;
-   case GL_DST_ALPHA: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_DST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_DST_ALPHA:
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_INV_DST_ALPHA); 
-      break;
-   case GL_SRC_ALPHA_SATURATE: 
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_SRC_ALPHA_SATURATE);
-      break;
-   case GL_CONSTANT_COLOR_EXT:
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_CONST_COLOR); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_INV_CONST_COLOR); 
-      break;
-   case GL_CONSTANT_ALPHA_EXT:
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_CONST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
-      funcA |= SRC_ABLEND_FACT(BLENDFACT_INV_CONST_ALPHA);
-      break;
-   default: return;
-   }
-
-   switch(dfactorA) {
-   case GL_SRC_ALPHA: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_SRC_ALPHA); 
-      break;
-   case GL_ONE_MINUS_SRC_ALPHA: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_INV_SRC_ALPHA); 
-      break;
-   case GL_ZERO: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_ZERO); 
-      break;
-   case GL_ONE: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_ONE); 
-      break;
-   case GL_SRC_COLOR: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_SRC_COLR); 
-      break;
-   case GL_ONE_MINUS_SRC_COLOR: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_INV_SRC_COLR); 
-      break;
-   case GL_DST_ALPHA: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_DST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_DST_ALPHA: 
-      funcA |= DST_ABLEND_FACT(BLENDFACT_INV_DST_ALPHA); 
-      break;
-   case GL_CONSTANT_COLOR_EXT:
-      funcA |= DST_ABLEND_FACT(BLENDFACT_CONST_COLOR); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
-      funcA |= DST_ABLEND_FACT(BLENDFACT_INV_CONST_COLOR);
-      break;
-   case GL_CONSTANT_ALPHA_EXT:
-      funcA |= DST_ABLEND_FACT(BLENDFACT_CONST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
-      funcA |= DST_ABLEND_FACT(BLENDFACT_INV_CONST_ALPHA); 
-      break;
-   default: return;
-   }
-   
-   switch(sfactorRGB) {
-   case GL_ZERO: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_ZERO); 
-      break;
-   case GL_SRC_ALPHA: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_SRC_ALPHA); 
-      break;
-   case GL_ONE: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_ONE); 
-      break;
-   case GL_DST_COLOR: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_DST_COLR); 
-      break;
-   case GL_ONE_MINUS_DST_COLOR: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_INV_DST_COLR); 
-      break;
-   case GL_ONE_MINUS_SRC_ALPHA:
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_INV_SRC_ALPHA); 
-      break;
-   case GL_DST_ALPHA: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_DST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_DST_ALPHA:
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_INV_DST_ALPHA); 
-      break;
-   case GL_SRC_ALPHA_SATURATE: 
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_SRC_ALPHA_SATURATE);
-      break;
-   case GL_CONSTANT_COLOR_EXT:
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_CONST_COLOR); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_INV_CONST_COLOR);
-      break;
-   case GL_CONSTANT_ALPHA_EXT:
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_CONST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
-      funcRGB |= SRC_BLND_FACT(BLENDFACT_INV_CONST_ALPHA);
-      break;
-   default: return;
-   }
-   
-   switch(dfactorRGB) {
-   case GL_SRC_ALPHA: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_SRC_ALPHA); 
-      break;
-   case GL_ONE_MINUS_SRC_ALPHA: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_INV_SRC_ALPHA); 
-      break;
-   case GL_ZERO: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_ZERO); 
-      break;
-   case GL_ONE: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_ONE); 
-      break;
-   case GL_SRC_COLOR: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_SRC_COLR); 
-      break;
-   case GL_ONE_MINUS_SRC_COLOR: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_INV_SRC_COLR); 
-      break;
-   case GL_DST_ALPHA: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_DST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_DST_ALPHA: 
-      funcRGB |= DST_BLND_FACT(BLENDFACT_INV_DST_ALPHA); 
-      break;
-   case GL_CONSTANT_COLOR_EXT:
-      funcRGB |= DST_BLND_FACT(BLENDFACT_CONST_COLOR); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
-      funcRGB |= DST_BLND_FACT(BLENDFACT_INV_CONST_COLOR);
-      break;
-   case GL_CONSTANT_ALPHA_EXT:
-      funcRGB |= DST_BLND_FACT(BLENDFACT_CONST_ALPHA); 
-      break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
-      funcRGB |= DST_BLND_FACT(BLENDFACT_INV_CONST_ALPHA); 
-      break;
-   default: return;
-   }
-
-   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
-   imesa->Setup[I830_CTXREG_IALPHAB] &= ~SRC_DST_ABLEND_MASK;
-   imesa->Setup[I830_CTXREG_STATE1] &= ~SRC_DST_BLND_MASK;
-   imesa->Setup[I830_CTXREG_STATE1] |= funcRGB;
-
-   if ( (dfactorRGB != dfactorA) || (sfactorRGB != sfactorA) ) {
-      imesa->Setup[I830_CTXREG_IALPHAB] |= funcA;
-   }
-
-   /* Ensure Independant Alpha Blend is really in the correct state (either
-    * enabled or disabled) if blending is already enabled.
-    */
-   i830EvalLogicOpBlendState(ctx);
+   (void) sfactorRGB;
+   (void) dfactorRGB;
+   (void) sfactorA;
+   (void) dfactorA;
+   i830_set_blend_state( ctx );
 }
 
 static void i830DepthFunc(GLcontext *ctx, GLenum func)
@@ -836,14 +809,14 @@ static void i830DrawBuffer(GLcontext *ctx, GLenum mode )
     * _DrawDestMask is easier to cope with than <mode>.
     */
    switch ( ctx->Color._DrawDestMask ) {
-   case FRONT_LEFT_BIT:
+   case DD_FRONT_LEFT_BIT:
       I830_FIREVERTICES(imesa);
       I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
       imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->fbOffset;
       i830XMesaSetFrontClipRects( imesa );
       FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
       break;
-   case BACK_LEFT_BIT:
+   case DD_BACK_LEFT_BIT:
       I830_FIREVERTICES(imesa);
       I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
       imesa->BufferSetup[I830_DESTREG_CBUFADDR] = 
@@ -1271,15 +1244,19 @@ static void i830DepthRange( GLcontext *ctx,
 
 void i830PrintDirty( const char *msg, GLuint state )
 {
-   fprintf(stderr, "%s (0x%x): %s%s%s%s%s%s%s\n",
+   fprintf(stderr, "%s (0x%x): %s%s%s%s%s%s%s%s%s%s%s\n",
 	   msg,
 	   (unsigned int) state,
 	   (state & I830_UPLOAD_TEX0)  ? "upload-tex0, " : "",
 	   (state & I830_UPLOAD_TEX1)  ? "upload-tex1, " : "",
+	   (state & I830_UPLOAD_TEX2)  ? "upload-tex2, " : "",
+	   (state & I830_UPLOAD_TEX3)  ? "upload-tex3, " : "",
 	   (state & I830_UPLOAD_CTX)        ? "upload-ctx, " : "",
 	   (state & I830_UPLOAD_BUFFERS)    ? "upload-bufs, " : "",
 	   (state & I830_UPLOAD_TEXBLEND0)  ? "upload-blend0, " : "",
 	   (state & I830_UPLOAD_TEXBLEND1)  ? "upload-blend1, " : "",
+	   (state & I830_UPLOAD_TEXBLEND2)  ? "upload-blend2, " : "",
+	   (state & I830_UPLOAD_TEXBLEND3)  ? "upload-blend3, " : "",
 	   (state & I830_UPLOAD_STIPPLE)  ? "stipple, " : ""
 	   );
 }
@@ -1293,24 +1270,44 @@ void i830EmitHwStateLocked( i830ContextPtr imesa )
    if (I830_DEBUG & DEBUG_STATE)
       i830PrintDirty( __FUNCTION__, imesa->dirty );
 
-   if ((imesa->dirty & I830_UPLOAD_TEX0_IMAGE) && imesa->CurrentTexObj[0])
-      i830UploadTexImagesLocked(imesa, imesa->CurrentTexObj[0]);
-   if ((imesa->dirty & I830_UPLOAD_TEX1_IMAGE) && imesa->CurrentTexObj[1])
-      i830UploadTexImagesLocked(imesa, imesa->CurrentTexObj[1]);
+   for ( i = 0 ; i < imesa->glCtx->Const.MaxTextureUnits ; i++ ) {
+      if ( ((imesa->dirty & I830_UPLOAD_TEX_N_IMAGE( i )) != 0)
+	  && (imesa->CurrentTexObj[i] != NULL) ) {
+	 i830UploadTexImagesLocked(imesa, imesa->CurrentTexObj[i]);
+      }
+   }
+
    if (imesa->dirty & I830_UPLOAD_CTX) {
       memcpy( imesa->sarea->ContextState,
 	     imesa->Setup, sizeof(imesa->Setup) );
    }
 
-   for (i = 0; i < I830_TEXTURE_COUNT; i++) {
+   for ( i = 0 ; i < imesa->glCtx->Const.MaxTextureUnits ; i++ ) {
       if ((imesa->dirty & I830_UPLOAD_TEX_N(i)) && imesa->CurrentTexObj[i]) {
+	 unsigned * TexState;
+	 
 	 imesa->sarea->dirty |= I830_UPLOAD_TEX_N(i);
-	 memcpy(imesa->sarea->TexState[i],
-		imesa->CurrentTexObj[i]->Setup,
+	 
+	 switch( i ) {
+	 case 0:
+	 case 1:
+	    TexState = imesa->sarea->TexState[i];
+	    break;
+
+	 case 2:
+	    TexState = imesa->sarea->TexState2;
+	    break;
+
+	 case 3:
+	    TexState = imesa->sarea->TexState3;
+	    break;
+	 }
+
+	 memcpy(TexState, imesa->CurrentTexObj[i]->Setup,
 		sizeof(imesa->sarea->TexState[i]));
 	  
-	 imesa->sarea->TexState[i][I830_TEXREG_TM0S3] &= ~TM0S3_LOD_BIAS_MASK;
-	 imesa->sarea->TexState[i][I830_TEXREG_TM0S3] |= imesa->LodBias[i];
+	 TexState[I830_TEXREG_TM0S3] &= ~TM0S3_LOD_BIAS_MASK;
+	 TexState[I830_TEXREG_TM0S3] |= imesa->LodBias[i];
 
 	 /* Update the LRU usage */
 	 if (imesa->CurrentTexObj[i]->base.memBlock)
@@ -1320,13 +1317,34 @@ void i830EmitHwStateLocked( i830ContextPtr imesa )
    }
    /* Need to figure out if texturing state, or enable changed. */
 
-   for (i = 0; i < I830_TEXBLEND_COUNT; i++) {
+   for ( i = 0 ; i < imesa->glCtx->Const.MaxTextureUnits ; i++ ) {
       if (imesa->dirty & I830_UPLOAD_TEXBLEND_N(i)) {
+	 unsigned * TexBlendState;
+	 unsigned * words_used;
+	 
 	 imesa->sarea->dirty |= I830_UPLOAD_TEXBLEND_N(i);
-	 memcpy(imesa->sarea->TexBlendState[i],imesa->TexBlend[i],
+
+	 switch( i ) {
+	 case 0:
+	 case 1:
+	    TexBlendState = imesa->sarea->TexBlendState[i];
+	    words_used = & imesa->sarea->TexBlendStateWordsUsed[i];
+	    break;
+
+	 case 2:
+	    TexBlendState = imesa->sarea->TexBlendState2;
+	    words_used = & imesa->sarea->TexBlendStateWordsUsed2;
+	    break;
+
+	 case 3:
+	    TexBlendState = imesa->sarea->TexBlendState3;
+	    words_used = & imesa->sarea->TexBlendStateWordsUsed3;
+	    break;
+	 }
+
+	 memcpy(TexBlendState, imesa->TexBlend[i],
 		imesa->TexBlendWordsUsed[i] * 4);
-	 imesa->sarea->TexBlendStateWordsUsed[i] =
-	   imesa->TexBlendWordsUsed[i];
+	 *words_used = imesa->TexBlendWordsUsed[i];
       }
    }
 
@@ -1370,7 +1388,7 @@ void i830DDInitState( GLcontext *ctx )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);   
    i830ScreenPrivate *i830Screen = imesa->i830Screen;
-   int i, j;
+   int i;
 
    imesa->clear_red = 0;
    imesa->clear_green = 0;
@@ -1383,15 +1401,12 @@ void i830DDInitState( GLcontext *ctx )
    imesa->mask_alpha = GL_FALSE;
 
    /* Zero all texture state */
-   for (i = 0; i < I830_TEXBLEND_COUNT; i++) {
-      for (j = 0; j < I830_TEXBLEND_SIZE; j++) {
-	 imesa->TexBlend[i][j] = 0;
-	 imesa->Init_TexBlend[i][j] = 0;
-      }
+   for (i = 0; i < I830_MAX_TEXTURE_UNITS; i++) {
+      (void) memset( imesa->TexBlend[i], 0, sizeof( imesa->TexBlend[i] ) );
+      (void) memset( imesa->Init_TexBlend[i], 0, sizeof( imesa->Init_TexBlend[i] ) );
+
       imesa->TexBlendWordsUsed[i] = 0;
       imesa->Init_TexBlendWordsUsed[i] = 0;
-      imesa->TexBlendColorPipeNum[i] = 0;
-      imesa->Init_TexBlendColorPipeNum[i] = 0;
    }
 
    /* Set default blend state */
@@ -1423,7 +1438,6 @@ void i830DDInitState( GLcontext *ctx )
 			    TEXBLENDARG_DIFFUSE);
 
    imesa->TexBlendWordsUsed[0] = 4;
-   imesa->TexBlendColorPipeNum[0] = 0;
 
    imesa->Init_TexBlend[0][0] = (STATE3D_MAP_BLEND_OP_CMD(0) |
 			    TEXPIPE_COLOR |
@@ -1452,7 +1466,6 @@ void i830DDInitState( GLcontext *ctx )
 			    TEXBLENDARG_MODIFY_PARMS |
 			    TEXBLENDARG_CURRENT);
    imesa->Init_TexBlendWordsUsed[0] = 4;
-   imesa->Init_TexBlendColorPipeNum[0] = 0;
 
    memset(imesa->Setup, 0, sizeof(imesa->Setup));
 

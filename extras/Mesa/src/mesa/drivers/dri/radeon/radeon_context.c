@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.c,v 1.1.1.2 2004/06/10 14:23:06 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/radeon/radeon_context.c,v 1.1.1.3 2004/12/10 15:06:17 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -62,7 +62,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "radeon_vtxfmt.h"
 #include "radeon_maos.h"
 
-#define DRIVER_DATE	"20030328"
+#define DRIVER_DATE	"20040929"
 
 #include "vblank.h"
 #include "utils.h"
@@ -126,6 +126,7 @@ static const char * const card_extensions[] =
     "GL_ARB_texture_compression",
     "GL_ARB_texture_env_add",
     "GL_ARB_texture_env_combine",
+    "GL_ARB_texture_env_crossbar",
     "GL_ARB_texture_env_dot3",
     "GL_ARB_texture_mirrored_repeat",
     "GL_EXT_blend_logic_op",
@@ -274,7 +275,7 @@ radeonCreateContext( const __GLcontextModes *glVisual,
    rmesa->dri.drmMinor = sPriv->drmMinor;
 
    rmesa->radeonScreen = screen;
-   rmesa->sarea = (RADEONSAREAPrivPtr)((GLubyte *)sPriv->pSAREA +
+   rmesa->sarea = (drm_radeon_sarea_t *)((GLubyte *)sPriv->pSAREA +
 				       screen->sarea_priv_offset);
 
 
@@ -289,8 +290,8 @@ radeonCreateContext( const __GLcontextModes *glVisual,
 	    screen->texSize[i],
 	    12,
 	    RADEON_NR_TEX_REGIONS,
-	    rmesa->sarea->texList[i],
-	    & rmesa->sarea->texAge[i],
+	    (drmTextureRegionPtr)rmesa->sarea->tex_list[i],
+	    & rmesa->sarea->tex_age[i],
 	    & rmesa->swapped,
 	    sizeof( radeonTexObj ),
 	    (destroy_texture_object_t *) radeonDestroyTexObj );
@@ -305,7 +306,7 @@ radeonCreateContext( const __GLcontextModes *glVisual,
 	 DRI_CONF_TEXTURE_DEPTH_32 : DRI_CONF_TEXTURE_DEPTH_16;
 
    rmesa->swtcl.RenderIndex = ~0;
-   rmesa->lost_context = 1;
+   rmesa->hw.all_dirty = GL_TRUE;
 
    /* Set the maximum texture size small enough that we can guarentee that
     * all texture units can bind a maximal texture and have them both in
@@ -420,15 +421,11 @@ radeonCreateContext( const __GLcontextModes *glVisual,
 
    rmesa->vblank_flags = (rmesa->radeonScreen->irq != 0)
        ? driGetDefaultVBlankFlags(&rmesa->optionCache) : VBLANK_FLAG_NO_IRQ;
-#ifndef _SOLO
+
    rmesa->get_ust = (PFNGLXGETUSTPROC) glXGetProcAddress( (const GLubyte *) "__glXGetUST" );
    if ( rmesa->get_ust == NULL ) {
       rmesa->get_ust = get_ust_nop;
    }
-#else
-   rmesa->get_ust = get_ust_nop;
-#endif   
-
    (*rmesa->get_ust)( & rmesa->swap_ust );
 
 

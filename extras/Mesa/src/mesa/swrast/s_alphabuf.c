@@ -21,7 +21,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/swrast/s_alphabuf.c,v 1.3 2004/10/26 22:07:40 tsi Exp $ */
 
 /*
  * Software alpha planes.  Many frame buffers don't have alpha bits so
@@ -114,13 +114,13 @@ _swrast_clear_alpha_buffers( GLcontext *ctx )
    for (bufferBit = 1; bufferBit <= 8; bufferBit = bufferBit << 1) {
       if (bufferBit & ctx->Color._DrawDestMask) {
          GLchan *buffer;
-         if (bufferBit == FRONT_LEFT_BIT) {
+         if (bufferBit == DD_FRONT_LEFT_BIT) {
             buffer = ctx->DrawBuffer->FrontLeftAlpha;
          }
-         else if (bufferBit == FRONT_RIGHT_BIT) {
+         else if (bufferBit == DD_FRONT_RIGHT_BIT) {
             buffer = ctx->DrawBuffer->FrontRightAlpha;
          }
-         else if (bufferBit == BACK_LEFT_BIT) {
+         else if (bufferBit == DD_BACK_LEFT_BIT) {
             buffer = ctx->DrawBuffer->BackLeftAlpha;
          }
          else {
@@ -175,14 +175,17 @@ GLchan *get_alpha_buffer( GLcontext *ctx )
 {
    SWcontext *swrast = SWRAST_CONTEXT(ctx);
 
-   switch (swrast->CurrentBuffer) {
-   case FRONT_LEFT_BIT:
+   switch (swrast->CurrentBufferBit) {
+   case DD_FRONT_LEFT_BIT:
       return ctx->DrawBuffer->FrontLeftAlpha;
-   case BACK_LEFT_BIT:
+      break;
+   case DD_BACK_LEFT_BIT:
       return ctx->DrawBuffer->BackLeftAlpha;
-   case FRONT_RIGHT_BIT:
+      break;
+   case DD_FRONT_RIGHT_BIT:
       return ctx->DrawBuffer->FrontRightAlpha;
-   case BACK_RIGHT_BIT:
+      break;
+   case DD_BACK_RIGHT_BIT:
       return ctx->DrawBuffer->BackRightAlpha;
    default:
       _mesa_problem(ctx, "Bad CurrentBuffer in get_alpha_buffer()");

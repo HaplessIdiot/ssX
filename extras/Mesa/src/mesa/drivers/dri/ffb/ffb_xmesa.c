@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/ffb/ffb_xmesa.c,v 1.1.1.3tsi Exp $
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/ffb/ffb_xmesa.c,v 1.1.1.4 2004/12/10 15:05:38 alanh Exp $
  *
  * GLX Hardware Device Driver for Sun Creator/Creator3D
  * Copyright (C) 2000, 2001 David S. Miller
@@ -56,6 +56,8 @@
 #include "ffb_vtxfmt.h"
 #include "ffb_bitmap.h"
 
+#include "drm_sarea.h"
+
 static GLboolean
 ffbInitDriver(__DRIscreenPrivate *sPriv)
 {
@@ -66,7 +68,7 @@ ffbInitDriver(__DRIscreenPrivate *sPriv)
 		return GL_FALSE;
 
 	/* Allocate the private area. */
-	ffbScreen = (ffbScreenPrivate *) Xmalloc(sizeof(ffbScreenPrivate));
+	ffbScreen = (ffbScreenPrivate *) MALLOC(sizeof(ffbScreenPrivate));
 	if (!ffbScreen)
 		return GL_FALSE;
 
@@ -75,7 +77,7 @@ ffbInitDriver(__DRIscreenPrivate *sPriv)
 		   gDRIPriv->hFbcRegs,
 		   gDRIPriv->sFbcRegs,
 		   &gDRIPriv->mFbcRegs)) {
-		Xfree(ffbScreen);
+	        FREE(ffbScreen);
 		return GL_FALSE;
 	}
 	ffbScreen->regs = (ffb_fbcPtr) gDRIPriv->mFbcRegs;
@@ -86,7 +88,7 @@ ffbInitDriver(__DRIscreenPrivate *sPriv)
 		   gDRIPriv->sDacRegs,
 		   &gDRIPriv->mDacRegs)) {
 		drmUnmap(gDRIPriv->mFbcRegs, gDRIPriv->sFbcRegs);
-		Xfree(ffbScreen);
+		FREE(ffbScreen);
 		return GL_FALSE;
 	}
 	ffbScreen->dac = (ffb_dacPtr) gDRIPriv->mDacRegs;
@@ -98,7 +100,7 @@ ffbInitDriver(__DRIscreenPrivate *sPriv)
 		   &gDRIPriv->mSfb8r)) {
 		drmUnmap(gDRIPriv->mFbcRegs, gDRIPriv->sFbcRegs);
 		drmUnmap(gDRIPriv->mDacRegs, gDRIPriv->sDacRegs);
-		Xfree(ffbScreen);
+		FREE(ffbScreen);
 		return GL_FALSE;
 	}
 	ffbScreen->sfb8r = (volatile char *) gDRIPriv->mSfb8r;
@@ -110,7 +112,7 @@ ffbInitDriver(__DRIscreenPrivate *sPriv)
 		drmUnmap(gDRIPriv->mFbcRegs, gDRIPriv->sFbcRegs);
 		drmUnmap(gDRIPriv->mDacRegs, gDRIPriv->sDacRegs);
 		drmUnmap(gDRIPriv->mSfb8r, gDRIPriv->sSfb8r);
-		Xfree(ffbScreen);
+		FREE(ffbScreen);
 		return GL_FALSE;
 	}
 	ffbScreen->sfb32 = (volatile char *) gDRIPriv->mSfb32;
@@ -123,7 +125,7 @@ ffbInitDriver(__DRIscreenPrivate *sPriv)
 		drmUnmap(gDRIPriv->mDacRegs, gDRIPriv->sDacRegs);
 		drmUnmap(gDRIPriv->mSfb8r, gDRIPriv->sSfb8r);
 		drmUnmap(gDRIPriv->mSfb32, gDRIPriv->sSfb32);
-		Xfree(ffbScreen);
+		FREE(ffbScreen);
 		return GL_FALSE;
 	}
 	ffbScreen->sfb64 = (volatile char *) gDRIPriv->mSfb64;
@@ -153,7 +155,7 @@ ffbDestroyScreen(__DRIscreenPrivate *sPriv)
 	drmUnmap(gDRIPriv->mSfb32, gDRIPriv->sSfb32);
 	drmUnmap(gDRIPriv->mSfb64, gDRIPriv->sSfb64);
 
-	Xfree(ffbScreen);
+	FREE(ffbScreen);
 }
 
 static const struct tnl_pipeline_stage *ffb_pipeline[] = {
@@ -284,7 +286,9 @@ ffbCreateContext(const __GLcontextModes *mesaVis,
 	ffbDDInitBitmapFuncs(ctx);
 	ffbInitVB(ctx);
 
+#if 0
 	ffbInitTnlModule(ctx);
+#endif
 
 	_tnl_destroy_pipeline(ctx);
 	_tnl_install_pipeline(ctx, ffb_pipeline);
@@ -537,18 +541,6 @@ ffbUnbindContext(__DRIcontextPrivate *driContextPriv)
 	return GL_TRUE;
 }
 
-static GLboolean
-ffbOpenFullScreen(__DRIcontextPrivate *driContextPriv)
-{
-    return GL_TRUE;
-}
-
-static GLboolean
-ffbCloseFullScreen(__DRIcontextPrivate *driContextPriv)
-{
-    return GL_TRUE;
-}
-
 void ffbXMesaUpdateState(ffbContextPtr fmesa)
 {
 	__DRIdrawablePrivate *dPriv = fmesa->driDrawable;
@@ -577,9 +569,7 @@ static struct __DriverAPIRec ffbAPI = {
    ffbDestroyBuffer,
    ffbSwapBuffers,
    ffbMakeCurrent,
-   ffbUnbindContext,
-   ffbOpenFullScreen,
-   ffbCloseFullScreen
+   ffbUnbindContext
 };
 
 

@@ -24,7 +24,7 @@ OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
 USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/sis/sis_alloc.c,v 1.1.1.1tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/sis/sis_alloc.c,v 1.1.1.2 2004/12/10 15:05:43 alanh Exp $ */
 
 /*
  * Authors:
@@ -151,10 +151,7 @@ sisAllocZStencilBuffer( sisContextPtr smesa )
 
    addr = sisAllocFB( smesa, totalBytes, &smesa->zbFree );
    if (addr == NULL)
-   {
-      fprintf (stderr, "SIS driver : out of video memory\n");
-      sis_fatal_error ();
-   }
+      sis_fatal_error("Failure to allocate Z buffer.\n");
 
    if (SIS_VERBOSE & VERBOSE_SIS_BUFFER) {
       fprintf(stderr, "sis_alloc_z_stencil_buffer: addr=%p\n", addr);
@@ -210,10 +207,7 @@ sisAllocBackbuffer( sisContextPtr smesa )
    /* Fixme: unique context alloc/free back-buffer? */
    addr = sisAllocFB( smesa, size, &smesa->bbFree );
    if (addr == NULL)
-   {
-      fprintf (stderr, "SIS driver : out of video memory\n");
-      sis_fatal_error ();
-   }
+      sis_fatal_error("Failure to allocate back buffer.\n");
 
    addr = (char *)ALIGNMENT( (unsigned long)addr, DRAW_BUFFER_HW_ALIGNMENT );
 

@@ -25,14 +25,15 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texstate.c,v 1.1.1.2 2004/06/10 14:22:51 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i830/i830_texstate.c,v 1.1.1.3 2004/12/10 15:05:48 alanh Exp $ */
 
-/*
- * Author:
- *   Jeff Hartmann <jhartmann@2d3d.com>
+/**
+ * \file i830_texstate.c
+ * 
+ * Heavily based on the I810 driver, which was written by Keith Whitwell.
  *
- * Heavily based on the I810 driver, which was written by:
- *   Keith Whitwell <keithw@tungstengraphics.com>
+ * \author Jeff Hartmann <jhartmann@2d3d.com>
+ * \author Keith Whitwell <keithw@tungstengraphics.com>
  */
 
 #include "glheader.h"
@@ -42,7 +43,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "enums.h"
 #include "texformat.h"
 #include "texstore.h"
-#include "texutil.h"
 
 #include "mm.h"
 
@@ -116,6 +116,12 @@ static void i830SetTexImages( i830ContextPtr imesa,
       textureFormat = (MAPSURF_422 | MT_422_YCRCB_SWAPY | /* ??? */
 		       TM0S1_COLORSPACE_CONVERSION);
       break;
+      
+   case MESA_FORMAT_RGB_FXT1:
+   case MESA_FORMAT_RGBA_FXT1:
+     t->texelBytes = 2;
+     textureFormat = (MAPSURF_COMPRESSED | MT_COMPRESS_FXT1);
+     break;
 
    default:
       fprintf(stderr, "%s: bad image format\n", __FUNCTION__);
@@ -158,8 +164,16 @@ static void i830SetTexImages( i830ContextPtr imesa,
 	 break;
       
       t->image[0][i].offset = total_height * pitch;
+      if (t->image[0][i].image->IsCompressed)
+	{
+	  if (t->image[0][i].image->Height > 4)
+	    total_height += t->image[0][i].image->Height/4;
+	  else
+	    total_height += 1;
+	}
+      else
+	total_height += t->image[0][i].image->Height;
       t->image[0][i].internalFormat = baseImage->Format;
-      total_height += t->image[0][i].image->Height;
    }
 
    t->Pitch = pitch;
@@ -173,7 +187,8 @@ static void i830SetTexImages( i830ContextPtr imesa,
    t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MAX_MIP_MASK;
    t->Setup[I830_TEXREG_TM0S3] &= ~TM0S3_MIN_MIP_MASK;
    t->Setup[I830_TEXREG_TM0S3] |= ((numLevels - 1)*4) << TM0S3_MIN_MIP_SHIFT;
-   t->dirty = I830_UPLOAD_TEX0 | I830_UPLOAD_TEX1;
+   t->dirty = I830_UPLOAD_TEX0 | I830_UPLOAD_TEX1 
+	| I830_UPLOAD_TEX2 | I830_UPLOAD_TEX3;
 
    LOCK_HARDWARE( imesa );
    i830UploadTexImagesLocked( imesa, t );
@@ -183,1123 +198,311 @@ static void i830SetTexImages( i830ContextPtr imesa,
 /* ================================================================
  * Texture combine functions
  */
-static __inline__ GLuint GetTexelOp(GLint unit)
-{
-   switch(unit) {
-    case 0: return TEXBLENDARG_TEXEL0;
-    case 1: return TEXBLENDARG_TEXEL1;
-    case 2: return TEXBLENDARG_TEXEL2;
-    case 3: return TEXBLENDARG_TEXEL3;
-    default: return TEXBLENDARG_TEXEL0;
-   }
-}
-
-static void i830SetBlend_GL1_2(i830ContextPtr imesa, int curTex, 
-			       GLenum envMode, GLenum format)
-{
-   GLuint texel_op = GetTexelOp(curTex);
-
-   if(I830_DEBUG&DEBUG_TEXTURE)
-     fprintf(stderr, "%s %s %s unit (%d) texel_op(0x%x)\n",
-	     __FUNCTION__,
-	     _mesa_lookup_enum_by_nr(format),
-	     _mesa_lookup_enum_by_nr(envMode),
-	     curTex,
-	     texel_op);
-
-   switch(envMode) {
-   case GL_REPLACE:
-      switch(format) {
-      case GL_ALPHA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      case GL_LUMINANCE:
-      case GL_RGB:
-      case GL_YCBCR_MESA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-
-      case GL_INTENSITY:
-      case GL_LUMINANCE_ALPHA:
-      case GL_RGBA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      default:
-	 /* Always set to passthru if something is funny */
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      }
-      break;
-
-   case GL_MODULATE:
-      switch(format) {
-      case GL_ALPHA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 5;
-	 break;
-
-      case GL_LUMINANCE:
-      case GL_RGB:
-      case GL_YCBCR_MESA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 5;
-	 break;
-
-      case GL_INTENSITY:
-      case GL_LUMINANCE_ALPHA:
-      case GL_RGBA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 6;
-	 break;
-      default:
-	 /* Always set to passthru if something is funny */
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      }
-      break;
-
-   case GL_DECAL:
-      switch(format) {
-      case GL_RGB:
-      case GL_YCBCR_MESA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-
-      case GL_RGBA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_BLEND);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG0 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_REPLICATE_ALPHA |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 6;
-	 break;
-      default:
-	 /* Always set to passthru if something is funny */
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      }
-      break;
-
-   case GL_BLEND:
-      switch(format) {
-      case GL_ALPHA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 5;
-	 break;
-
-      case GL_LUMINANCE:
-      case GL_RGB:
-      case GL_YCBCR_MESA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_BLEND);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG0 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_FACTOR_N);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 6;
-	 break;
-
-      case GL_INTENSITY:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_BLEND);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_BLEND);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG0 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_FACTOR_N);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG0 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][6] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_FACTOR_N);
-	 imesa->TexBlend[curTex][7] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 8;
-	 break;
-
-      case GL_LUMINANCE_ALPHA:
-      case GL_RGBA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_BLEND);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG0 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_FACTOR_N);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][6] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 7;
-	 break;
-      default:
-	 /* Always set to passthru if something is funny */
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      }
-      break;
-
-   case GL_ADD:
-      switch(format) {
-      case GL_ALPHA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 5;
-	 break;
-      case GL_LUMINANCE:
-      case GL_RGB:
-      case GL_YCBCR_MESA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ADD);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 5;
-	 break;
-
-      case GL_INTENSITY:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ADD);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ADD);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 6;
-	 break;
-
-      case GL_LUMINANCE_ALPHA:
-      case GL_RGBA:
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ADD);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_MODULATE);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][4] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       texel_op);
-	 imesa->TexBlend[curTex][5] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG2 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 6;
-	 break;
-      default:
-	 /* Always set to passthru if something is funny */
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-      }
-      break;
-   default:
-	 /* Always set to passthru if something is funny */
-	 imesa->TexBlend[curTex][0] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       DISABLE_TEX_CNTRL_STAGE |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][1] = (STATE3D_MAP_BLEND_OP_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       ENABLE_TEXOUTPUT_WRT_SEL |
-				       TEXOP_OUTPUT_CURRENT |
-				       TEXOP_SCALE_1X |
-				       TEXOP_MODIFY_PARMS |
-				       TEXBLENDOP_ARG1);
-	 imesa->TexBlend[curTex][2] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_COLOR |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlend[curTex][3] = (STATE3D_MAP_BLEND_ARG_CMD(curTex) |
-				       TEXPIPE_ALPHA |
-				       TEXBLEND_ARG1 |
-				       TEXBLENDARG_MODIFY_PARMS |
-				       TEXBLENDARG_CURRENT);
-	 imesa->TexBlendColorPipeNum[curTex] = 0;
-	 imesa->TexBlendWordsUsed[curTex] = 4;
-	 break;
-   }
-
-   if (I830_DEBUG&DEBUG_TEXTURE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
-}
-
-static void i830SetTexEnvCombine(i830ContextPtr imesa,
-				 const struct gl_texture_unit *texUnit, 
-				 GLint unit)
-{
-   GLuint blendop;
-   GLuint ablendop;
-   GLuint args_RGB[3];
-   GLuint args_A[3];
-   GLuint texel_op = GetTexelOp(unit);
-   GLuint rgb_shift = texUnit->Combine.ScaleShiftRGB;
-   GLuint alpha_shift = texUnit->Combine.ScaleShiftA;
-   int i;
-
-   if(I830_DEBUG&DEBUG_TEXTURE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
-
-   switch(texUnit->Combine.ModeRGB) {
-   case GL_REPLACE: 
-      blendop = TEXBLENDOP_ARG1;
-      break;
-   case GL_MODULATE: 
-      blendop = TEXBLENDOP_MODULATE;
-      break;
-   case GL_ADD: 
-      blendop = TEXBLENDOP_ADD;
-      break;
-   case GL_ADD_SIGNED:
-      blendop = TEXBLENDOP_ADDSIGNED; 
-      break;
-   case GL_INTERPOLATE:
-      blendop = TEXBLENDOP_BLEND; 
-      break;
-   case GL_SUBTRACT: 
-      blendop = TEXBLENDOP_SUBTRACT;
-      break;
-   case GL_DOT3_RGB_EXT:
-   case GL_DOT3_RGBA_EXT:
-      /* The EXT version of the DOT3 extension does not support the
-       * scale factor, but the ARB version (and the version in OpenGL
-       * 1.3) does.
-       */
-      rgb_shift = 0;
-      alpha_shift = 0;
-      /* FALLTHROUGH */
-
-   case GL_DOT3_RGB:
-   case GL_DOT3_RGBA:
-      blendop = TEXBLENDOP_DOT3;
-      break;
-   default: 
-      return;
-   }
-
-   blendop |= (rgb_shift << TEXOP_SCALE_SHIFT);
-
-   switch(texUnit->Combine.ModeA) {
-   case GL_REPLACE: 
-      ablendop = TEXBLENDOP_ARG1;
-      break;
-   case GL_MODULATE: 
-      ablendop = TEXBLENDOP_MODULATE;
-      break;
-   case GL_ADD: 
-      ablendop = TEXBLENDOP_ADD;
-      break;
-   case GL_ADD_SIGNED:
-      ablendop = TEXBLENDOP_ADDSIGNED; 
-      break;
-   case GL_INTERPOLATE:
-      ablendop = TEXBLENDOP_BLEND; 
-      break;
-   case GL_SUBTRACT: 
-      ablendop = TEXBLENDOP_SUBTRACT;
-      break;
-   default:
-      return;
-   }
-
-   if ( (texUnit->Combine.ModeRGB == GL_DOT3_RGBA_EXT)
-	|| (texUnit->Combine.ModeRGB == GL_DOT3_RGBA) ) {
-      ablendop = TEXBLENDOP_DOT3;
-   }
-
-   ablendop |= (alpha_shift << TEXOP_SCALE_SHIFT);
-
-   /* Handle RGB args */
-   for(i = 0; i < 3; i++) {
-      switch(texUnit->Combine.SourceRGB[i]) {
-      case GL_TEXTURE: 
-	 args_RGB[i] = texel_op;
-	 break;
-      case GL_CONSTANT:
-	 args_RGB[i] = TEXBLENDARG_FACTOR_N; 
-	 break;
-      case GL_PRIMARY_COLOR:
-	 args_RGB[i] = TEXBLENDARG_DIFFUSE;
-	 break;
-      case GL_PREVIOUS:
-	 args_RGB[i] = TEXBLENDARG_CURRENT; 
-	 break;
-      default: 
-	 return;
-	 
-      }
-
-      switch(texUnit->Combine.OperandRGB[i]) {
-      case GL_SRC_COLOR: 
-	 args_RGB[i] |= 0;
-	 break;
-      case GL_ONE_MINUS_SRC_COLOR: 
-	 args_RGB[i] |= TEXBLENDARG_INV_ARG;
-	 break;
-      case GL_SRC_ALPHA: 
-	 args_RGB[i] |= TEXBLENDARG_REPLICATE_ALPHA;
-	 break;
-      case GL_ONE_MINUS_SRC_ALPHA: 
-	 args_RGB[i] |= (TEXBLENDARG_REPLICATE_ALPHA | 
-			 TEXBLENDARG_INV_ARG);
-	 break;
-      default: 
-	 return;
-      }
-   }
-
-   /* Handle A args */
-   for(i = 0; i < 3; i++) {
-      switch(texUnit->Combine.SourceA[i]) {
-      case GL_TEXTURE: 
-	 args_A[i] = texel_op;
-	 break;
-      case GL_CONSTANT:
-	 args_A[i] = TEXBLENDARG_FACTOR_N; 
-	 break;
-      case GL_PRIMARY_COLOR:
-	 args_A[i] = TEXBLENDARG_DIFFUSE; 
-	 break;
-      case GL_PREVIOUS:
-	 args_A[i] = TEXBLENDARG_CURRENT; 
-	 break;
-      default: 
-	 return;
-	 
-      }
-
-      switch(texUnit->Combine.OperandA[i]) {
-      case GL_SRC_ALPHA: 
-	 args_A[i] |= 0;
-	 break;
-      case GL_ONE_MINUS_SRC_ALPHA: 
-	 args_A[i] |= TEXBLENDARG_INV_ARG;
-	 break;
-      default: 
-	 return;
-      }
-   }
-
-   /* Native Arg1 == Arg0 in GL_EXT_texture_env_combine spec */
-   /* Native Arg2 == Arg1 in GL_EXT_texture_env_combine spec */
-   /* Native Arg0 == Arg2 in GL_EXT_texture_env_combine spec */
-
-   /* When we render we need to figure out which is the last really enabled
-    * tex unit, and put last stage on it
-    */
-
-   imesa->TexBlendColorPipeNum[unit] = 0;
-
-   /* Build color pipeline */
-
-   imesa->TexBlend[unit][0] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
-			       TEXPIPE_COLOR |
-			       ENABLE_TEXOUTPUT_WRT_SEL |
-			       TEXOP_OUTPUT_CURRENT |
-			       DISABLE_TEX_CNTRL_STAGE |
-			       TEXOP_MODIFY_PARMS |
-			       blendop);
-   imesa->TexBlend[unit][1] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_COLOR |
-			       TEXBLEND_ARG1 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       args_RGB[0]);
-   imesa->TexBlend[unit][2] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_COLOR |
-			       TEXBLEND_ARG2 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       args_RGB[1]);
-   imesa->TexBlend[unit][3] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_COLOR |
-			       TEXBLEND_ARG0 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       args_RGB[2]);
-
-   /* Build Alpha pipeline */
-   imesa->TexBlend[unit][4] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
-			       TEXPIPE_ALPHA |
-			       ENABLE_TEXOUTPUT_WRT_SEL |
-			       TEXOP_OUTPUT_CURRENT |
-			       TEXOP_MODIFY_PARMS |
-			       ablendop);
-   imesa->TexBlend[unit][5] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_ALPHA |
-			       TEXBLEND_ARG1 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       args_A[0]);
-   imesa->TexBlend[unit][6] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_ALPHA |
-			       TEXBLEND_ARG2 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       args_A[1]);
-   imesa->TexBlend[unit][7] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_ALPHA |
-			       TEXBLEND_ARG0 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       args_A[2]);
-
-   {
-      GLubyte r, g, b, a;
-      GLfloat *fc = texUnit->EnvColor;
-
-      FLOAT_COLOR_TO_UBYTE_COLOR(r, fc[RCOMP]);
-      FLOAT_COLOR_TO_UBYTE_COLOR(g, fc[GCOMP]);
-      FLOAT_COLOR_TO_UBYTE_COLOR(b, fc[BCOMP]);
-      FLOAT_COLOR_TO_UBYTE_COLOR(a, fc[ACOMP]);
-
-      imesa->TexBlend[unit][8] = STATE3D_COLOR_FACTOR_CMD(unit);
-      imesa->TexBlend[unit][9] =  ((a << 24) |
-				   (r << 16) |
-				   (g << 8) |
-				   b);
-   }
-   imesa->TexBlendWordsUsed[unit] = 10;
-}
 
 
-
+/**
+ * Calculate the hardware instuctions to setup the current texture enviromnemt
+ * settings.  Since \c gl_texture_unit::_CurrentCombine is used, both
+ * "classic" texture enviroments and GL_ARB_texture_env_combine type texture
+ * environments are treated identically.
+ *
+ * \todo
+ * This function should return \c GLboolean.  When \c GL_FALSE is returned,
+ * it means that an environment is selected that the hardware cannot do.  This
+ * is the way the Radeon and R200 drivers work.
+ * 
+ * \todo
+ * Looking at i830_3d_regs.h, it seems the i830 can do part of
+ * GL_ATI_texture_env_combine3.  It can handle using \c GL_ONE and
+ * \c GL_ZERO as combine inputs (which the code already supports).  It can
+ * also handle the \c GL_MODULATE_ADD_ATI mode.  Is it worth investigating
+ * partial support for the extension?
+ * 
+ * \todo
+ * Some thought needs to be put into the way combiners work.  The driver
+ * treats the hardware as if there's a specific combine unit tied to each
+ * texture unit.  That's why there's the special case for a disabled texture
+ * unit.  That's not the way the hardware works.  In reality, there are 4
+ * texture units and four general instruction slots.  Each instruction slot
+ * can use any texture as an input.  There's no need for this wierd "no-op"
+ * stuff.  If texture units 0 and 3 are enabled, the  instructions to combine
+ * them should be in slots 0 and 1, not 0 and 3 with two no-ops inbetween.
+ */
 
 static void i830UpdateTexEnv( GLcontext *ctx, GLuint unit )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
-   const struct gl_texture_object *tObj = texUnit->_Current;
-   i830TextureObjectPtr t = (i830TextureObjectPtr)tObj->DriverData;
-   GLuint col;
+   const GLuint numColorArgs = texUnit->_CurrentCombine->_NumArgsRGB;
+   const GLuint numAlphaArgs = texUnit->_CurrentCombine->_NumArgsA;
+
+   GLboolean need_constant_color = GL_FALSE;
+   GLuint blendop;
+   GLuint ablendop;
+   GLuint args_RGB[3];
+   GLuint args_A[3];
+   GLuint rgb_shift = texUnit->Combine.ScaleShiftRGB;
+   GLuint alpha_shift = texUnit->Combine.ScaleShiftA;
+   int i;
+   unsigned used;
+   static const GLuint tex_blend_rgb[3] = {
+      TEXPIPE_COLOR | TEXBLEND_ARG1 | TEXBLENDARG_MODIFY_PARMS,
+      TEXPIPE_COLOR | TEXBLEND_ARG2 | TEXBLENDARG_MODIFY_PARMS,
+      TEXPIPE_COLOR | TEXBLEND_ARG0 | TEXBLENDARG_MODIFY_PARMS,
+   };
+   static const GLuint tex_blend_a[3] = {
+      TEXPIPE_ALPHA | TEXBLEND_ARG1 | TEXBLENDARG_MODIFY_PARMS,
+      TEXPIPE_ALPHA | TEXBLEND_ARG2 | TEXBLENDARG_MODIFY_PARMS,
+      TEXPIPE_ALPHA | TEXBLEND_ARG0 | TEXBLENDARG_MODIFY_PARMS,
+   };
+   static const GLuint op_rgb[4] = {
+      0,
+      TEXBLENDARG_INV_ARG,
+      TEXBLENDARG_REPLICATE_ALPHA,
+      TEXBLENDARG_REPLICATE_ALPHA | TEXBLENDARG_INV_ARG,
+   };
+
+
 
    imesa->TexBlendWordsUsed[unit] = 0;
 
-   if (0) fprintf(stderr, "i830UpdateTexEnv called : %s\n",
-		  _mesa_lookup_enum_by_nr(texUnit->EnvMode));
+   if(I830_DEBUG&DEBUG_TEXTURE)
+       fprintf(stderr, "[%s:%u] env. mode = %s\n",  __FUNCTION__, __LINE__, 
+	       _mesa_lookup_enum_by_nr(texUnit->EnvMode));
 
-   if(texUnit->EnvMode == GL_COMBINE) {
-      i830SetTexEnvCombine(imesa,
-			   texUnit,
-			   unit);
-   } else {
-      i830SetBlend_GL1_2(imesa,
-			 unit,
-			 texUnit->EnvMode,
-			 t->image[0][0].internalFormat);
 
-      /* add blend color */
-      {
+   if ( !texUnit->_ReallyEnabled ) {
+      imesa->TexBlend[unit][0] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
+				  TEXPIPE_COLOR |
+				  ENABLE_TEXOUTPUT_WRT_SEL |
+				  TEXOP_OUTPUT_CURRENT |
+				  DISABLE_TEX_CNTRL_STAGE |
+				  TEXOP_SCALE_1X |
+				  TEXOP_MODIFY_PARMS |
+				  TEXBLENDOP_ARG1);
+      imesa->TexBlend[unit][1] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
+				  TEXPIPE_ALPHA |
+				  ENABLE_TEXOUTPUT_WRT_SEL |
+				  TEXOP_OUTPUT_CURRENT |
+				  TEXOP_SCALE_1X |
+				  TEXOP_MODIFY_PARMS |
+				  TEXBLENDOP_ARG1);
+      imesa->TexBlend[unit][2] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
+				  TEXPIPE_COLOR |
+				  TEXBLEND_ARG1 |
+				  TEXBLENDARG_MODIFY_PARMS |
+				  TEXBLENDARG_CURRENT);
+      imesa->TexBlend[unit][3] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
+				  TEXPIPE_ALPHA |
+				  TEXBLEND_ARG1 |
+				  TEXBLENDARG_MODIFY_PARMS |
+				  TEXBLENDARG_CURRENT);
+      imesa->TexBlendWordsUsed[unit] = 4;
+   }
+   else {
+      switch(texUnit->_CurrentCombine->ModeRGB) {
+	  case GL_REPLACE: 
+	 blendop = TEXBLENDOP_ARG1;
+      break;
+	  case GL_MODULATE: 
+	 blendop = TEXBLENDOP_MODULATE;
+	 break;
+	  case GL_ADD: 
+	 blendop = TEXBLENDOP_ADD;
+	 break;
+	  case GL_ADD_SIGNED:
+	 blendop = TEXBLENDOP_ADDSIGNED; 
+	 break;
+	  case GL_INTERPOLATE:
+	 blendop = TEXBLENDOP_BLEND; 
+	 break;
+	  case GL_SUBTRACT: 
+	 blendop = TEXBLENDOP_SUBTRACT;
+	 break;
+	  case GL_DOT3_RGB_EXT:
+	  case GL_DOT3_RGBA_EXT:
+	 /* The EXT version of the DOT3 extension does not support the
+	  * scale factor, but the ARB version (and the version in OpenGL
+	  * 1.3) does.
+	  */
+	 rgb_shift = 0;
+	 alpha_shift = 0;
+	 /* FALLTHROUGH */
+
+	  case GL_DOT3_RGB:
+	  case GL_DOT3_RGBA:
+	 blendop = TEXBLENDOP_DOT3;
+	 break;
+	  default: 
+	 return;
+      }
+
+      blendop |= (rgb_shift << TEXOP_SCALE_SHIFT);
+
+      switch(texUnit->_CurrentCombine->ModeA) {
+	  case GL_REPLACE: 
+	 ablendop = TEXBLENDOP_ARG1;
+	 break;
+	  case GL_MODULATE: 
+	 ablendop = TEXBLENDOP_MODULATE;
+	 break;
+	  case GL_ADD: 
+	 ablendop = TEXBLENDOP_ADD;
+	 break;
+	  case GL_ADD_SIGNED:
+	 ablendop = TEXBLENDOP_ADDSIGNED; 
+	 break;
+	  case GL_INTERPOLATE:
+	 ablendop = TEXBLENDOP_BLEND; 
+	 break;
+	  case GL_SUBTRACT: 
+	 ablendop = TEXBLENDOP_SUBTRACT;
+	 break;
+	  default:
+	 return;
+      }
+
+      if ( (texUnit->_CurrentCombine->ModeRGB == GL_DOT3_RGBA_EXT)
+	   || (texUnit->_CurrentCombine->ModeRGB == GL_DOT3_RGBA) ) {
+	 ablendop = TEXBLENDOP_DOT3;
+      }
+
+      ablendop |= (alpha_shift << TEXOP_SCALE_SHIFT);
+
+      /* Handle RGB args */
+      for( i = 0 ; i < numColorArgs ; i++ ) {
+	 const int op = texUnit->_CurrentCombine->OperandRGB[i] - GL_SRC_COLOR;
+
+	 assert( (op >= 0) && (op <= 3) );
+	 switch(texUnit->_CurrentCombine->SourceRGB[i]) {
+	     case GL_TEXTURE: 
+	    args_RGB[i] = TEXBLENDARG_TEXEL0 + unit;
+	    break;
+	     case GL_TEXTURE0:
+	     case GL_TEXTURE1: 
+	     case GL_TEXTURE2: 
+	     case GL_TEXTURE3:
+	    args_RGB[i] = TEXBLENDARG_TEXEL0
+		+ (texUnit->_CurrentCombine->SourceRGB[i] & 0x03);
+	    break;
+	     case GL_CONSTANT:
+	    args_RGB[i] = TEXBLENDARG_FACTOR_N; 
+	    need_constant_color = GL_TRUE;
+	    break;
+	     case GL_PRIMARY_COLOR:
+	    args_RGB[i] = TEXBLENDARG_DIFFUSE;
+	    break;
+	     case GL_PREVIOUS:
+	    args_RGB[i] = TEXBLENDARG_CURRENT; 
+	    break;
+	     case GL_ONE:
+	    args_RGB[i] = TEXBLENDARG_ONE;
+	    break;
+	     case GL_ZERO:
+	    args_RGB[i] = TEXBLENDARG_ONE | TEXBLENDARG_INV_ARG;
+	    break;
+	     default: 
+	    return;
+	 }
+
+	 /* Xor is used so that GL_ONE_MINUS_SRC_COLOR with GL_ZERO
+	  * works correctly.
+	  */
+	 args_RGB[i] ^= op_rgb[op];
+      }
+
+      /* Handle A args */
+      for( i = 0 ; i < numAlphaArgs ; i++ ) {
+	 const int op = texUnit->_CurrentCombine->OperandA[i] - GL_SRC_ALPHA;
+
+	 assert( (op >= 0) && (op <= 1) );
+	 switch(texUnit->_CurrentCombine->SourceA[i]) {
+	     case GL_TEXTURE: 
+	    args_A[i] = TEXBLENDARG_TEXEL0 + unit;
+	    break;
+	     case GL_TEXTURE0:
+	     case GL_TEXTURE1: 
+	     case GL_TEXTURE2: 
+	     case GL_TEXTURE3:
+	    args_A[i] = TEXBLENDARG_TEXEL0 
+		+ (texUnit->_CurrentCombine->SourceA[i] & 0x03);
+	    break;
+	     case GL_CONSTANT:
+	    args_A[i] = TEXBLENDARG_FACTOR_N; 
+	    need_constant_color = GL_TRUE;
+	    break;
+	     case GL_PRIMARY_COLOR:
+	    args_A[i] = TEXBLENDARG_DIFFUSE; 
+	    break;
+	     case GL_PREVIOUS:
+	    args_A[i] = TEXBLENDARG_CURRENT; 
+	    break;
+	     case GL_ONE:
+	    args_A[i] = TEXBLENDARG_ONE;
+	    break;
+	     case GL_ZERO:
+	    args_A[i] = TEXBLENDARG_ONE | TEXBLENDARG_INV_ARG;
+	    break;
+	     default: 
+	    return;
+	 }
+
+	 /* We cheat. :) The register values for this are the same as for
+	  * RGB.  Xor is used so that GL_ONE_MINUS_SRC_ALPHA with GL_ZERO
+	  * works correctly.
+	  */
+	 args_A[i] ^= op_rgb[op];
+      }
+
+      /* Native Arg1 == Arg0 in GL_EXT_texture_env_combine spec */
+      /* Native Arg2 == Arg1 in GL_EXT_texture_env_combine spec */
+      /* Native Arg0 == Arg2 in GL_EXT_texture_env_combine spec */
+
+      /* Build color pipeline */
+
+      used = 0;
+      imesa->TexBlend[unit][used++] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
+				       TEXPIPE_COLOR |
+				       ENABLE_TEXOUTPUT_WRT_SEL |
+				       TEXOP_OUTPUT_CURRENT |
+				       DISABLE_TEX_CNTRL_STAGE |
+				       TEXOP_MODIFY_PARMS |
+				       blendop);
+
+      imesa->TexBlend[unit][used++] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
+				       TEXPIPE_ALPHA |
+				       ENABLE_TEXOUTPUT_WRT_SEL |
+				       TEXOP_OUTPUT_CURRENT |
+				       TEXOP_MODIFY_PARMS |
+				       ablendop);
+
+      for ( i = 0 ; i < numColorArgs ; i++ ) {
+	 imesa->TexBlend[unit][used++] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
+					  tex_blend_rgb[i] |
+					  args_RGB[i]);
+      }
+
+      for ( i = 0 ; i < numAlphaArgs ; i++ ) {
+	 imesa->TexBlend[unit][used++] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
+					  tex_blend_a[i] |
+					  args_A[i]);
+      }
+
+
+      if ( need_constant_color ) {
 	 GLubyte r, g, b, a;
-	 GLfloat *fc = texUnit->EnvColor;
+	 const GLfloat * const fc = texUnit->EnvColor;
 
 	 FLOAT_COLOR_TO_UBYTE_COLOR(r, fc[RCOMP]);
 	 FLOAT_COLOR_TO_UBYTE_COLOR(g, fc[GCOMP]);
 	 FLOAT_COLOR_TO_UBYTE_COLOR(b, fc[BCOMP]);
 	 FLOAT_COLOR_TO_UBYTE_COLOR(a, fc[ACOMP]);
 
-	 col = ((a << 24) |
-		(r << 16) |
-		(g << 8) |
-		b);
-      }       
-
-      {
-	 int i;
-
-	 i = imesa->TexBlendWordsUsed[unit];
-	 imesa->TexBlend[unit][i++] = STATE3D_COLOR_FACTOR_CMD(unit);	  
-	 imesa->TexBlend[unit][i++] = col;
-
-	 imesa->TexBlendWordsUsed[unit] = i;
+	 imesa->TexBlend[unit][used++] = STATE3D_COLOR_FACTOR_CMD(unit);
+	 imesa->TexBlend[unit][used++] = ((a << 24) | (r << 16) | (g << 8) | b);
       }
+
+      imesa->TexBlendWordsUsed[unit] = used;
    }
 
    I830_STATECHANGE( imesa, I830_UPLOAD_TEXBLEND_N(unit) );
@@ -1359,7 +562,7 @@ static GLboolean enable_tex_common( GLcontext *ctx, GLuint unit )
 	 imesa->CurrentTexObj[unit]->base.bound &= ~(1U << unit);
       }
 
-      I830_STATECHANGE(imesa, (I830_UPLOAD_TEX0<<unit));
+      I830_STATECHANGE( imesa, I830_UPLOAD_TEX_N(unit) );
       imesa->CurrentTexObj[unit] = t;
       i830TexSetUnit(t, unit);
    }
@@ -1393,7 +596,7 @@ static GLboolean enable_tex_rect( GLcontext *ctx, GLuint unit )
    mcs |= TEXCOORDS_ARE_IN_TEXELUNITS;
 
    if (mcs != t->Setup[I830_TEXREG_MCS]) {
-      I830_STATECHANGE(imesa, (I830_UPLOAD_TEX0<<unit));
+      I830_STATECHANGE( imesa, I830_UPLOAD_TEX_N(unit) );
       t->Setup[I830_TEXREG_MCS] = mcs;
    }
 
@@ -1413,7 +616,7 @@ static GLboolean enable_tex_2d( GLcontext *ctx, GLuint unit )
    mcs |= TEXCOORDS_ARE_NORMAL;
 
    if (mcs != t->Setup[I830_TEXREG_MCS]) {
-      I830_STATECHANGE(imesa, (I830_UPLOAD_TEX0<<unit));
+      I830_STATECHANGE( imesa, I830_UPLOAD_TEX_N(unit) );
       t->Setup[I830_TEXREG_MCS] = mcs;
    }
 
@@ -1421,9 +624,8 @@ static GLboolean enable_tex_2d( GLcontext *ctx, GLuint unit )
 }
 
  
-static GLboolean disable_tex0( GLcontext *ctx )
+static GLboolean disable_tex( GLcontext *ctx, int unit )
 {
-   const int unit = 0;
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
    /* This is happening too often.  I need to conditionally send diffuse
@@ -1445,34 +647,7 @@ static GLboolean disable_tex0( GLcontext *ctx )
    imesa->TexEnvImageFmt[unit] = 0;
    imesa->dirty &= ~(I830_UPLOAD_TEX_N(unit));
    
-   imesa->TexBlend[unit][0] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
-			       TEXPIPE_COLOR |
-			       ENABLE_TEXOUTPUT_WRT_SEL |
-			       TEXOP_OUTPUT_CURRENT |
-			       DISABLE_TEX_CNTRL_STAGE |
-			       TEXOP_SCALE_1X |
-			       TEXOP_MODIFY_PARMS |
-			       TEXBLENDOP_ARG1);
-   imesa->TexBlend[unit][1] = (STATE3D_MAP_BLEND_OP_CMD(unit) |
-			       TEXPIPE_ALPHA |
-			       ENABLE_TEXOUTPUT_WRT_SEL |
-			       TEXOP_OUTPUT_CURRENT |
-			       TEXOP_SCALE_1X |
-			       TEXOP_MODIFY_PARMS |
-			       TEXBLENDOP_ARG1);
-   imesa->TexBlend[unit][2] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_COLOR |
-			       TEXBLEND_ARG1 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       TEXBLENDARG_CURRENT);
-   imesa->TexBlend[unit][3] = (STATE3D_MAP_BLEND_ARG_CMD(unit) |
-			       TEXPIPE_ALPHA |
-			       TEXBLEND_ARG1 |
-			       TEXBLENDARG_MODIFY_PARMS |
-			       TEXBLENDARG_CURRENT);
-   imesa->TexBlendColorPipeNum[unit] = 0;
-   imesa->TexBlendWordsUsed[unit] = 4;
-   I830_STATECHANGE(imesa, (I830_UPLOAD_TEXBLEND_N(unit)));
+   i830UpdateTexEnv( ctx, unit );
 
    return GL_TRUE;
 }
@@ -1495,46 +670,35 @@ static GLboolean i830UpdateTexUnit( GLcontext *ctx, GLuint unit )
    else if (texUnit->_ReallyEnabled) {
       return GL_FALSE;
    }
-   else if (unit == 0) {
-      return disable_tex0( ctx );
-   }
    else {
-      return GL_TRUE;
+      return disable_tex( ctx, unit );
    }
 }
 
 
 
-/* Only deal with unit 0 and 1 for right now */
 void i830UpdateTextureState( GLcontext *ctx )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
-   int pipe_num = 0;
+   int i;
+   int last_stage = 0;
    GLboolean ok;
 
-   ok = (i830UpdateTexUnit( ctx, 0 ) &&
-	 i830UpdateTexUnit( ctx, 1 ) &&
-	 i830UpdateTexUnit( ctx, 2 ) &&
-	 i830UpdateTexUnit( ctx, 3 ));
+   for ( i = 0 ; i < ctx->Const.MaxTextureUnits ; i++ ) {
+      if ( (ctx->Texture.Unit[i]._ReallyEnabled == TEXTURE_2D_BIT)
+	   || (ctx->Texture.Unit[i]._ReallyEnabled == TEXTURE_RECT_BIT) ) {
+	 last_stage = i;
+      }
+   }
+
+   ok = GL_TRUE;
+   for ( i = 0 ; i <= last_stage ; i++ ) {
+      ok = ok && i830UpdateTexUnit( ctx, i );
+   }
 
    FALLBACK( imesa, I830_FALLBACK_TEXTURE, !ok );
 
 
    /* Make sure last stage is set correctly */
-   if(imesa->TexEnabledMask & I830_TEX_UNIT_ENABLED(3)) {
-      pipe_num = imesa->TexBlendColorPipeNum[3];
-      imesa->TexBlend[3][pipe_num] |= TEXOP_LAST_STAGE;
-   } else if(imesa->TexEnabledMask & I830_TEX_UNIT_ENABLED(2)) {
-      pipe_num = imesa->TexBlendColorPipeNum[2];
-      imesa->TexBlend[2][pipe_num] |= TEXOP_LAST_STAGE;
-   } else if(imesa->TexEnabledMask & I830_TEX_UNIT_ENABLED(1)) {
-      pipe_num = imesa->TexBlendColorPipeNum[1];
-      imesa->TexBlend[1][pipe_num] |= TEXOP_LAST_STAGE;
-   } else {
-      pipe_num = imesa->TexBlendColorPipeNum[0];
-      imesa->TexBlend[0][pipe_num] |= TEXOP_LAST_STAGE;
-   }
+   imesa->TexBlend[last_stage][0] |= TEXOP_LAST_STAGE;
 }
-
-
-

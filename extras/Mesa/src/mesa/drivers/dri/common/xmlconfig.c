@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  */
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/xmlconfig.c,v 1.2 2004/04/23 20:45:21 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/common/xmlconfig.c,v 1.3 2004/06/10 14:43:38 alanh Exp $ */
 /**
  * \file xmlconfig.c
  * \brief Driver-independent client-side part of the XML configuration
@@ -49,11 +49,7 @@
 
 #undef GET_PROGRAM_NAME
 
-#if defined(__GNU_LIBRARY__) || defined(__GLIBC__)
-#    if !defined(__GLIBC__) || (__GLIBC__ < 2)
-/* These aren't declared in any libc5 header */
-extern char *program_invocation_name, *program_invocation_short_name;
-#    endif
+#if (defined(__GNU_LIBRARY__) || defined(__GLIBC__)) && !defined(__UCLIBC__)
 #    define GET_PROGRAM_NAME() program_invocation_short_name
 #elif defined(__FreeBSD__) && (__FreeBSD__ >= 2)
 #    include <osreldate.h>
@@ -67,17 +63,22 @@ extern char *program_invocation_name, *program_invocation_short_name;
 #endif
 
 #if !defined(GET_PROGRAM_NAME)
-#    if defined(OpenBSD) || defined(NetBSD)
-/* This is a hack. It's said to work on OpenBSD, NetBSD and GNU. It's
+#    if defined(OpenBSD) || defined(NetBSD) || defined(__UCLIBC__)
+/* This is a hack. It's said to work on OpenBSD, NetBSD and GNU.
+ * Rogelio M.Serrano Jr. reported it's also working with UCLIBC. It's
  * used as a last resort, if there is no documented facility available. */
 static const char *__getProgramName () {
     extern const char *__progname;
-    return progname;
+    char * arg = strrchr(__progname, '/');
+    if (arg)
+        return arg+1;
+    else
+        return __progname;
 }
 #        define GET_PROGRAM_NAME() __getProgramName()
 #    else
 #        define GET_PROGRAM_NAME() ""
-#        warning "Per application configuration won't with your OS version work."
+#        warning "Per application configuration won't work with your OS version."
 #    endif
 #endif
 
@@ -647,13 +648,17 @@ void driParseOptionInfo (driOptionCache *info,
     struct OptInfoData *data = &userData;
     GLuint realNoptions;
 
-  /* determine hash table size and allocate memory */
+  /* determine hash table size and allocate memory:
+   * 3/2 of the number of options, rounded up, so there remains always
+   * at least one free entry. This is needed for detecting undefined
+   * options in configuration files without getting a hash table overflow.
+   * Round this up to a power of two. */
+    GLuint minSize = (nConfigOptions*3 + 1) / 2;
     GLuint size, log2size;
-    for (size = 1, log2size = 0; size < nConfigOptions*3/2;
-	 size <<= 1, ++log2size);
+    for (size = 1, log2size = 0; size < minSize; size <<= 1, ++log2size);
     info->tableSize = log2size;
     info->info = CALLOC (size * sizeof (driOptionInfo));
-    info->values = CALLOC (size * sizeof (driOptionInfo));
+    info->values = CALLOC (size * sizeof (driOptionValue));
     if (info->info == NULL || info->values == NULL) {
 	fprintf (stderr, "%s: %d: out of memory.\n", __FILE__, __LINE__);
 	abort();
@@ -905,11 +910,7 @@ void driParseConfigFiles (driOptionCache *cache, const driOptionCache *info,
     userData.cache = cache;
     userData.screenNum = screenNum;
     userData.driverName = driverName;
-#ifndef _SOLO    
     userData.execName = GET_PROGRAM_NAME();
-#else
-    userData.execName = "Solo";
-#endif    
 
     if ((home = getenv ("HOME"))) {
 	GLuint len = strlen (home);
