@@ -891,7 +891,7 @@ static Bool MGADRIKernelInit( ScreenPtr pScreen )
    init.texture_offset[0] = pMGADRIServer->textureOffset;
    init.texture_size[0] = pMGADRIServer->textureSize;
 
-   init.fb_offset = pMga->FbAddress;
+   init.fb_offset = pMGADRIServer->fb.handle;
    init.mmio_offset = pMGADRIServer->registers.handle;
    init.status_offset = pMGADRIServer->status.handle;
 
@@ -1200,6 +1200,15 @@ Bool MGADRIScreenInit( ScreenPtr pScreen )
    if ( !MGADRIMapInit( pScreen ) ) {
       DRICloseScreen( pScreen );
       return FALSE;
+   }
+   {
+       void *scratch_ptr;
+       int scratch_int;
+
+       DRIGetDeviceInfo(pScreen, &pMGADRIServer->fb.handle,
+			&scratch_int, &scratch_int, 
+			&scratch_int, &scratch_int,
+			&scratch_ptr);
    }
 
    if ( !MGAInitVisualConfigs( pScreen ) ) {

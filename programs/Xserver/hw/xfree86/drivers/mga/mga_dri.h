@@ -66,6 +66,7 @@ typedef struct {
    drmRegion agp;
 
    /* PCI mappings */
+   drmRegion fb;
    drmRegion registers;
    drmRegion status;
 
