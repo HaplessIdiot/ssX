@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.6 1995/07/15 14:57:31 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.7 1995/07/15 16:15:44 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -155,12 +155,12 @@ Bool XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     modeline->vtotal     = rep.vtotal;
     modeline->flags      = rep.flags;
     modeline->privsize   = rep.privsize;
-    if (!(modeline->private = Xcalloc(rep.privsize, sizeof(CARD32)))) {
-	_XEatData(dpy, (rep.privsize) * sizeof(CARD32));
+    if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
+	_XEatData(dpy, (rep.privsize) * sizeof(INT32));
 	Xfree(modeline->private);
 	return False;
     }
-    _XRead32(dpy, modeline->private, rep.privsize * sizeof(CARD32));
+    _XRead32(dpy, modeline->private, rep.privsize * sizeof(INT32));
     UnlockDisplay(dpy);
     SyncHandle();
     return True;
@@ -194,7 +194,7 @@ Bool XF86VidModeModModeLine (dpy, screen, modeline)
     if (modeline->privsize) {
 	req->length += modeline->privsize;
 	Data32(dpy, (long *) modeline->private,
-	       modeline->privsize * sizeof(CARD32));
+	       modeline->privsize * sizeof(INT32));
     }
     UnlockDisplay(dpy);
     SyncHandle();
