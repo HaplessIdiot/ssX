@@ -1,4 +1,6 @@
 XFree86 4.4.99.2 (xx March 2004)
+  25. Small tweak to fixed-clock line matching in the atimisc driver
+      (Marc La France).
   24. Add ExtraLoadFlags (a.k.a. $(EXTRA_LOAD_FLAGS) to shared library links
       (Requested by Paul Jarc).
   23. The pre-generated -L1 bitmap fonts are no longer needed (David Dawes).
@@ -18729,7 +18731,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3178 2004/03/14 02:54:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3179 2004/03/14 22:36:15 tsi Exp $
 
 
 
