@@ -28,41 +28,38 @@
 
 typedef struct i810_context_t i810Context;
 typedef struct i810_context_t *i810ContextPtr;
+typedef struct i810_texture_object_t *i810TextureObjectPtr;
 
 #include <X11/Xlibint.h>
 #include "dri_tmm.h"
 #include "dri_mesaint.h"
 #include "dri_mesa.h"
-#include "xmesaP.h"
 
 #include "types.h"
 #include "i810_init.h"
-#include "i810_sarea.h"
+#include "drm.h"
+#include "mm.h"
+#include "i810log.h"
 
 #include "i810tex.h"
 #include "i810vb.h"
 
 
-
-#define I810_FALLBACK_TEXTURE   0x1
-#define I810_FALLBACK_BUFFER    0x2
+/* Reasons to fallback on all primitives.  (see also
+ * imesa->IndirectTriangles).  
+ */
+#define I810_FALLBACK_TEXTURE        0x1
+#define I810_FALLBACK_DRAW_BUFFER    0x2
+#define I810_FALLBACK_READ_BUFFER    0x4
+#define I810_FALLBACK_COLORMASK      0x8  
+#define I810_FALLBACK_STIPPLE        0x10  
+#define I810_FALLBACK_SPECULAR       0x20 
 
 
 
 /* for i810ctx.new_state - manage GL->driver state changes
  */
 #define I810_NEW_TEXTURE 0x1
-
-/* for i810ctx.dirty - manage driver->hw state changes, including
- * lost contexts.
- */
-#define I810_REQUIRE_QUIESCENT 0x1
-#define I810_UPLOAD_TEX0IMAGE  0x2
-#define I810_UPLOAD_TEX1IMAGE  0x4
-#define I810_UPLOAD_CTX        0x8
-#define I810_UPLOAD_BUFFERS    0x10
-#define I810_REFRESH_RING      0x20
-#define I810_EMIT_CLIPRECT     0x40
 
 
 typedef void (*i810_interp_func)( GLfloat t, 
@@ -88,7 +85,6 @@ struct i810_context_t {
     */
    GLuint Setup[I810_CTX_SETUP_SIZE];
    GLuint BufferSetup[I810_DEST_SETUP_SIZE];
-   GLuint ClipSetup[I810_CLIP_SETUP_SIZE];
    
 
    /* Support for CVA and the fast paths.
@@ -125,24 +121,38 @@ struct i810_context_t {
 
    /* DRI stuff
     */
+   drmBufPtr  vertex_dma_buffer;
+   GLuint vertex_prim;
+
    GLframebuffer *glBuffer;
    
+   /* Two flags to keep track of fallbacks.
+    */
+   GLuint IndirectTriangles;
    GLuint Fallback;
+
+
    GLuint needClip;
 
    /* These refer to the current draw (front vs. back) buffer:
     */
-   int drawOffset;		/* draw buffer address in agp space */
+   char *drawMap;		/* draw buffer address in virtual mem */
+   char *readMap;	
    int drawX;			/* origin of drawable in draw buffer */
    int drawY;
    GLuint numClipRects;		/* cliprects for that buffer */
    XF86DRIClipRectPtr pClipRects;
 
-
    int lastSwap;
+   int secondLastSwap;
    int texAge;
+   int ctxAge;
+   int dirtyAge;
+   int any_contend;		/* throttle me harder */
 
-   XF86DRIClipRectRec draw_rect;
+   int scissor;
+   drm_clip_rect_t draw_rect;
+   drm_clip_rect_t scissor_rect;
 
    drmContext hHWContext;
    drmLock *driHwLock;
@@ -152,7 +162,7 @@ struct i810_context_t {
    __DRIdrawablePrivate *driDrawable;
    __DRIscreenPrivate *driScreen;
    i810ScreenPrivate *i810Screen; 
-   I810SAREAPriv *sarea;
+   drm_i810_sarea_t *sarea;
 };
 
 
@@ -161,7 +171,7 @@ struct i810_context_t {
  */
 #define I810_DEBUG 0   
 #ifndef I810_DEBUG
-/*  #warning "Debugging enabled - expect reduced performance" */
+#warning "Debugging enabled - expect reduced performance"
 extern int I810_DEBUG;
 #endif
 
@@ -176,6 +186,7 @@ extern int I810_DEBUG;
 #define DEBUG_VALIDATE_RING  0x800
 #define DEBUG_VERBOSE_LRU    0x1000
 #define DEBUG_VERBOSE_DRI    0x2000
+#define DEBUG_VERBOSE_IOCTL  0x4000
 
 
 

@@ -39,7 +39,6 @@ static void TAG(mga_setup_full)( struct vertex_buffer *VB, GLuint do_cliptest )
    const GLfloat * const m = ctx->ModelProjectMatrix.m;
    GLuint start = VB->CopyStart;
    GLuint count = VB->Count;
-   GLuint i;
 
    gl_xform_points3_v16_general(MGA_DRIVER_DATA(VB)->verts[start].f,
 				m, 
@@ -71,26 +70,63 @@ static void TAG(mga_setup_full)( struct vertex_buffer *VB, GLuint do_cliptest )
       GLuint tex1_stride = VB->TexCoordPtr[1]->stride;
 
       GLfloat *f = MGA_DRIVER_DATA(VB)->verts[start].f;
-
-      for (i = start ; i < count ; i++, f += 16) {
+      GLfloat *end = f+(16*(count-start));
+      while (f != end) {
 	 if (TYPE & MGA_RGBA_BIT) {
+#if defined(USE_X86_ASM)
+	    __asm__ (
+	    "movl (%%edx),%%eax   \n"
+	    "bswap %%eax          \n"
+	    "rorl $8,%%eax        \n"
+	    "movl %%eax,16(%%edi) \n"
+	    :
+	    : "d" (color), "D" (f)
+	    : "%eax" );
+#else
+	    GLubyte *col = color;
 	    GLubyte *b = (GLubyte *)&f[CLIP_UBYTE_COLOR];
-	    GLubyte *col = color; color += color_stride;
-	    b[CLIP_UBYTE_R] = col[0];
-	    b[CLIP_UBYTE_G] = col[1];
 	    b[CLIP_UBYTE_B] = col[2];
+	    b[CLIP_UBYTE_G] = col[1];
+	    b[CLIP_UBYTE_R] = col[0];
 	    b[CLIP_UBYTE_A] = col[3];
+#endif
 	 }
 	 if (TYPE & MGA_TEX0_BIT) {
-	    f[CLIP_S0] = tex0_data[0];
-	    f[CLIP_T0] = tex0_data[1];
-	    STRIDE_F(tex0_data, tex0_stride);
+#if defined (USE_X86_ASM)
+	    __asm__ (
+	    "movl (%%ecx), %%eax    \n"
+	    "movl %%eax, 24(%%edi)  \n"
+	    "movl 4(%%ecx), %%eax   \n"
+	    "movl %%eax, 28(%%edi)"
+	    :
+	    : "c" (tex0_data), "D" (f)
+	    : "%eax");
+#else
+	    *(unsigned int *)(f+CLIP_S0) = *(unsigned int *)tex0_data;
+	    *(unsigned int *)(f+CLIP_T0) = *(unsigned int *)(tex0_data+1);
+#endif
 	 }
 	 if (TYPE & MGA_TEX1_BIT) {
-	    f[CLIP_S1] = tex1_data[0];
-	    f[CLIP_T1] = tex1_data[1];
-	    STRIDE_F(tex1_data, tex1_stride);
+	    /* Hits a second cache line.
+	     */
+#if defined (USE_X86_ASM)
+	    __asm__ (
+	    "movl (%%esi), %%eax    \n"
+	    "movl %%eax, 32(%%edi)  \n"
+	    "movl 4(%%esi), %%eax   \n"
+	    "movl %%eax, 36(%%edi)"
+	    :
+	    : "S" (tex1_data), "D" (f)
+	    : "%eax");
+#else
+	    *(unsigned int *)(f+CLIP_S1) = *(unsigned int *)tex1_data;
+	    *(unsigned int *)(f+CLIP_T1) = *(unsigned int *)(tex1_data+1);
+#endif	      
 	 }
+	 if(TYPE & MGA_RGBA_BIT)color += color_stride;
+	 if(TYPE & MGA_TEX0_BIT)STRIDE_F(tex0_data, tex0_stride);
+	 if(TYPE & MGA_TEX1_BIT)STRIDE_F(tex1_data, tex1_stride);
+	 f += 16;
       }
    }
 

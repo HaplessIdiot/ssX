@@ -46,10 +46,9 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "i810state.h"
 #include "i810tex.h"
 #include "i810span.h"
-#include "i810depth.h"
 #include "i810tris.h"
-#include "i810swap.h"
 #include "i810pipeline.h"
+#include "i810ioctl.h"
 
 #include "i810_dri.h"
 
@@ -57,36 +56,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifndef I810_DEBUG
 int I810_DEBUG = (0
-   		  | DEBUG_ALWAYS_SYNC 
-		  | DEBUG_VERBOSE_RING   
-		  | DEBUG_VERBOSE_OUTREG 
+/*     		  | DEBUG_ALWAYS_SYNC  */
+/*  		  | DEBUG_VERBOSE_RING    */
+/*  		  | DEBUG_VERBOSE_OUTREG  */
 /*  		  | DEBUG_VERBOSE_MSG */
 /*  		  | DEBUG_NO_OUTRING */
 /*  		  | DEBUG_NO_OUTREG */
 /*  		  | DEBUG_VERBOSE_API */
 /*  		  | DEBUG_VERBOSE_2D */
 /*  		  | DEBUG_VERBOSE_DRI */
-		  | DEBUG_VALIDATE_RING
+/*  		  | DEBUG_VALIDATE_RING */
+/*  		  | DEBUG_VERBOSE_IOCTL */
 		  );
 #endif
 
 
 static i810ContextPtr      i810Ctx = 0;
 
-i810Glx_t	i810glx;
 
-static int count_bits(unsigned int n)
-{
-   int bits = 0;
-
-   while (n > 0) {
-      if (n & 1) bits++;
-      n >>= 1;
-   }
-   return bits;
-}
-
-/* These functions are accessed by dlsym from dri_mesa_init.c:
+/* These functions are accessed externally to the driver:
  *
  * XMesaInitDriver
  * XMesaResetDriver
@@ -100,28 +88,74 @@ static int count_bits(unsigned int n)
  * XMesaSwapBuffers
  * XMesaMakeCurrent
  *
- * So this is kind of the public interface to the driver.  The driver
- * uses the X11 mesa driver context as a kind of wrapper around its
- * own driver context - but there isn't much justificiation for doing
- * it that way - the DRI might as well use a (void *) to refer to the
- * driver contexts.  Nothing in the X context really gets used.
  */
 
+
+static drmBufMapPtr i810_create_empty_buffers(void)
+{
+   drmBufMapPtr retval;
+   
+   retval = (drmBufMapPtr)Xmalloc(sizeof(drmBufMap));
+   if(retval == NULL) return NULL;
+   memset(retval, 0, sizeof(drmBufMap));
+   retval->list = (drmBufPtr)Xmalloc(sizeof(drmBuf) * I810_DMA_BUF_NR);
+   if(retval->list == NULL) {
+      Xfree(retval);
+      return NULL;
+   }
+   memset(retval->list, 0, sizeof(drmBuf) * I810_DMA_BUF_NR);
+   /*
+   fprintf(stderr, "retval : %p, retval->list : %p\n", retval, retval->list);
+   */
+   return retval;
+}
 
 GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 {
    i810ScreenPrivate *i810Screen;
    I810DRIPtr         gDRIPriv = (I810DRIPtr)sPriv->pDevPriv;
 
+   /* Check the DRI version */
+   {
+      int major, minor, patch;
+      if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
+         if (major != 3 || minor != 0 || patch < 0) {
+            char msg[1000];
+            sprintf(msg, "i810 DRI driver expected DRI version 3.0.x but got version %d.%d.%d", major, minor, patch);
+            __driMesaMessage(msg);
+            return GL_FALSE;
+         }
+      }
+   }
+
+   /* Check that the DDX driver version is compatible */
+   if (sPriv->ddxMajor != 1 ||
+       sPriv->ddxMinor != 0 ||
+       sPriv->ddxPatch < 0) {
+      char msg[1000];
+      sprintf(msg, "i810 DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
+      __driMesaMessage(msg);
+      return GL_FALSE;
+   }
+
+   /* Check that the DRM driver version is compatible */
+   if (sPriv->drmMajor != 1 ||
+       sPriv->drmMinor != 0 ||
+       sPriv->drmPatch < 0) {
+      char msg[1000];
+      sprintf(msg, "i810 DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
+      __driMesaMessage(msg);
+      return GL_FALSE;
+   }
+
    /* Allocate the private area */
    i810Screen = (i810ScreenPrivate *)Xmalloc(sizeof(i810ScreenPrivate));
-   if (!i810Screen) return GL_FALSE;
+   if (!i810Screen)
+      return GL_FALSE;
 
    i810Screen->driScrnPriv = sPriv;
    sPriv->private = (void *)i810Screen;
 
-   i810Screen->regs.handle=gDRIPriv->regs;
-   i810Screen->regs.size=gDRIPriv->regsSize;
    i810Screen->deviceID=gDRIPriv->deviceID;
    i810Screen->width=gDRIPriv->width;
    i810Screen->height=gDRIPriv->height;
@@ -137,39 +171,66 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
    i810Screen->backOffset=gDRIPriv->backOffset; 
    i810Screen->depthOffset=gDRIPriv->depthOffset;
-   i810Screen->auxPitch = gDRIPriv->auxPitch;
-   i810Screen->auxPitchBits = gDRIPriv->auxPitchBits;
+   i810Screen->backPitch = gDRIPriv->auxPitch;
+   i810Screen->backPitchBits = gDRIPriv->auxPitchBits;
    i810Screen->textureOffset=gDRIPriv->textureOffset;
    i810Screen->textureSize=gDRIPriv->textureSize;
    i810Screen->logTextureGranularity = gDRIPriv->logTextureGranularity;
 
-
    if (0)
       fprintf(stderr, "Tex heap size %x, granularity %x bytes\n",
 	      i810Screen->textureSize, 1<<(i810Screen->logTextureGranularity));
-    
-   if (drmMap(sPriv->fd, 
-	      i810Screen->regs.handle, 
-	      i810Screen->regs.size, 
-	      &i810Screen->regs.map) != 0) 
+
+   i810Screen->bufs = i810_create_empty_buffers();
+   if(i810Screen->bufs == NULL)
    {
       Xfree(i810Screen);
       return GL_FALSE;
    }
+    
+   i810Screen->back.handle = gDRIPriv->backbuffer;
+   i810Screen->back.size = gDRIPriv->backbufferSize;
 
-   /* Ditch i810glx in favor of i810Screen?
-    */
-   memset(&i810glx, 0, sizeof(i810glx));
+   if (drmMap(sPriv->fd, 
+	      i810Screen->back.handle, 
+	      i810Screen->back.size, 
+	      (drmAddress *)&i810Screen->back.map) != 0) 
+   {
+      Xfree(i810Screen);
+      sPriv->private = NULL;
+      return GL_FALSE;
+   }
 
-   i810glx.LpRing.mem.Start = gDRIPriv->ringOffset;
-   i810glx.LpRing.mem.Size = gDRIPriv->ringSize;
-   i810glx.LpRing.mem.End = gDRIPriv->ringOffset + gDRIPriv->ringSize;
-   i810glx.LpRing.virtual_start = sPriv->pFB + i810glx.LpRing.mem.Start;
-   i810glx.LpRing.tail_mask = i810glx.LpRing.mem.Size - 1;
-   i810glx.MMIOBase = i810Screen->regs.map;
-   i810glx.texVirtual = sPriv->pFB + i810Screen->textureOffset;
+   i810Screen->depth.handle = gDRIPriv->depthbuffer;
+   i810Screen->depth.size = gDRIPriv->depthbufferSize;
 
-   
+   if (drmMap(sPriv->fd, 
+	      i810Screen->depth.handle, 
+	      i810Screen->depth.size, 
+	      (drmAddress *)&i810Screen->depth.map) != 0) 
+   {
+      Xfree(i810Screen);
+      drmUnmap(i810Screen->back.map, i810Screen->back.size);
+      sPriv->private = NULL;
+      return GL_FALSE;
+   }
+
+   i810Screen->tex.handle = gDRIPriv->textures;
+   i810Screen->tex.size = gDRIPriv->textureSize;
+
+   if (drmMap(sPriv->fd, 
+	      i810Screen->tex.handle, 
+	      i810Screen->tex.size, 
+	      (drmAddress *)&i810Screen->tex.map) != 0) 
+   {
+      Xfree(i810Screen);
+      drmUnmap(i810Screen->back.map, i810Screen->back.size);
+      drmUnmap(i810Screen->depth.map, i810Screen->depth.size);
+      sPriv->private = NULL;
+      return GL_FALSE;
+   }
+
+
    i810DDFastPathInit();
    i810DDTrifuncInit();
    i810DDSetupInit();
@@ -183,111 +244,78 @@ void XMesaResetDriver(__DRIscreenPrivate *sPriv)
 {
    i810ScreenPrivate *i810Screen = (i810ScreenPrivate *)sPriv->private;
 
-   drmUnmap(i810Screen->regs.map, i810Screen->regs.size);
+   /* Need to unmap all the bufs and maps here:
+    */
+   drmUnmap(i810Screen->back.map, i810Screen->back.size);
+   drmUnmap(i810Screen->depth.map, i810Screen->depth.size);
+   drmUnmap(i810Screen->tex.map, i810Screen->tex.size);
+
    Xfree(i810Screen);
+   sPriv->private = NULL;
 }
 
-/* Accessed by dlsym from dri_mesa_init.c
- */
-XMesaVisual XMesaCreateVisual(XMesaDisplay *display,
-			      XMesaVisualInfo visinfo,
-			      GLboolean rgb_flag,
-			      GLboolean alpha_flag,
-			      GLboolean db_flag,
-			      GLboolean stereo_flag,
-			      GLboolean ximage_flag,
-			      GLint depth_size,
-			      GLint stencil_size,
-			      GLint accum_size,
-			      GLint level)
+
+GLvisual *XMesaCreateVisual(Display *dpy,
+                            __DRIscreenPrivate *driScrnPriv,
+                            const XVisualInfo *visinfo,
+                            const __GLXvisualConfig *config)
 {
-   XMesaVisual v;
-
-   /* Only RGB visuals are supported on the I810 boards */
-   if (!rgb_flag) return 0;
-
-   v = (XMesaVisual)Xmalloc(sizeof(struct xmesa_visual));
-   if (!v) return 0;
-
-   v->visinfo = (XVisualInfo *)Xmalloc(sizeof(*visinfo));
-   if(!v->visinfo) {
-      Xfree(v);
-      return 0;
-   }
-   memcpy(v->visinfo, visinfo, sizeof(*visinfo));
-
-   v->display = display;
-   v->level = level;
-  
-   v->gl_visual = (GLvisual *)Xmalloc(sizeof(GLvisual));
-   if (!v->gl_visual) {
-      Xfree(v->visinfo);
-      XFree(v);
-      return 0;
-   }
-
-   v->gl_visual->RGBAflag   = rgb_flag;
-   v->gl_visual->DBflag     = db_flag;
-   v->gl_visual->StereoFlag = stereo_flag;
-
-   v->gl_visual->RedBits   = count_bits(visinfo->red_mask);
-   v->gl_visual->GreenBits = count_bits(visinfo->green_mask);
-   v->gl_visual->BlueBits  = count_bits(visinfo->blue_mask);
-   v->gl_visual->AlphaBits = 0; /* Not currently supported */
-
-   v->gl_visual->AccumBits   = accum_size;
-   v->gl_visual->DepthBits   = depth_size;
-   v->gl_visual->StencilBits = stencil_size;
-
-   return v;
+   /* Drivers may change the args to _mesa_create_visual() in order to
+    * setup special visuals.
+    */
+   return _mesa_create_visual( config->rgba,
+                               config->doubleBuffer,
+                               config->stereo,
+                               _mesa_bitcount(visinfo->red_mask),
+                               _mesa_bitcount(visinfo->green_mask),
+                               _mesa_bitcount(visinfo->blue_mask),
+                               config->alphaSize,
+                               0, /* index bits */
+                               config->depthSize,
+                               config->stencilSize,
+                               config->accumRedSize,
+                               config->accumGreenSize,
+                               config->accumBlueSize,
+                               config->accumAlphaSize,
+                               0 /* num samples */ );
 }
 
-void XMesaDestroyVisual(XMesaVisual v)
-{
-   Xfree(v->gl_visual);
-   Xfree(v->visinfo);
-   Xfree(v);
-}
 
-XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
-				__DRIcontextPrivate *driContextPriv)
+GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
+                              __DRIcontextPrivate *driContextPriv )
 {
-   GLcontext *ctx;
-   XMesaContext c;
+   GLcontext *ctx = driContextPriv->mesaContext;
    i810ContextPtr imesa;
    __DRIscreenPrivate *sPriv = driContextPriv->driScreenPriv;
    i810ScreenPrivate *i810Screen = (i810ScreenPrivate *)sPriv->private;
-   I810SAREAPriv *saPriv=(I810SAREAPriv*)(((char*)sPriv->pSAREA)+
-					  sizeof(XF86DRISAREARec));
+   drm_i810_sarea_t *saPriv=(drm_i810_sarea_t *)(((char*)sPriv->pSAREA)+
+						 sizeof(XF86DRISAREARec));
 
-   GLcontext *shareCtx = 0;
-
-   c = (XMesaContext)Xmalloc(sizeof(struct xmesa_context));
-   if (!c) {
-      return 0;
-   }
-
-   imesa = (i810ContextPtr)Xmalloc(sizeof(i810Context));
+   imesa = (i810ContextPtr)Xcalloc(sizeof(i810Context), 1);
    if (!imesa) {
-      Xfree(c);
-      return 0;
+      return GL_FALSE;
    }
 
-   c->driContextPriv = driContextPriv;
-   c->xm_visual = v;
-   c->xm_buffer = 0; /* Set by MakeCurrent */
-   c->display = v->display;
-   c->private = (void *)imesa;
 
-   if (share_list)
-      shareCtx=((i810ContextPtr)(share_list->private))->glCtx;
+   /* Set the maximum texture size small enough that we can guarentee
+    * that both texture units can bind a maximal texture and have them
+    * in memory at once.
+    */
+   if (i810Screen->textureSize < 2*1024*1024) {
+      ctx->Const.MaxTextureLevels = 9;
+      ctx->Const.MaxTextureSize = 1<<8;
+   } else if (i810Screen->textureSize < 8*1024*1024) {
+      ctx->Const.MaxTextureLevels = 10;
+      ctx->Const.MaxTextureSize = 1<<9;     
+   } else {
+      ctx->Const.MaxTextureLevels = 11;
+      ctx->Const.MaxTextureSize = 1<<10;
+   }      
 
-   ctx = imesa->glCtx = gl_create_context(v->gl_visual, shareCtx, 
-					  (void*)imesa, GL_TRUE);
 
    /* Dri stuff
     */
-   imesa->display = v->display;
+   imesa->display = dpy;
    imesa->hHWContext = driContextPriv->hHWContext;
    imesa->driFd = sPriv->fd;
    imesa->driHwLock = &sPriv->pSAREA->lock;
@@ -295,10 +323,7 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
    imesa->i810Screen = i810Screen;
    imesa->driScreen = sPriv;
    imesa->sarea = saPriv;
-
-   imesa->glBuffer = gl_create_framebuffer(v->gl_visual);
-
-   imesa->needClip=1;
+   imesa->glBuffer = NULL;
 
    imesa->texHeap = mmInit( 0, i810Screen->textureSize );
 
@@ -315,17 +340,21 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
    imesa->TextureMode = ctx->Texture.Unit[0].EnvMode;
    imesa->CurrentTexObj[0] = 0;
    imesa->CurrentTexObj[1] = 0;
+
+   ctx->DriverCtx = (void *) imesa;
+   imesa->glCtx = ctx;
    
    i810DDExtensionsInit( ctx );
 
    i810DDInitStateFuncs( ctx );
    i810DDInitTextureFuncs( ctx );
    i810DDInitSpanFuncs( ctx );
-   i810DDInitDepthFuncs( ctx );
    i810DDInitDriverFuncs( ctx );
+   i810DDInitIoctlFuncs( ctx );
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
 			       DD_TRI_LIGHT_TWOSIDE|
+			       DD_TRI_STIPPLE|
 			       DD_TRI_OFFSET);
 
    /* Ask mesa to clip fog coordinates for us.
@@ -346,18 +375,17 @@ XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
 
    i810DDInitState( imesa );
 
-   return c;
+   driContextPriv->driverPrivate = (void *) imesa;
+
+   return GL_TRUE;
 }
 
-void XMesaDestroyContext(XMesaContext c)
+void XMesaDestroyContext(__DRIcontextPrivate *driContextPriv)
 {
-   i810ContextPtr imesa = (i810ContextPtr) c->private;
+   i810ContextPtr imesa = (i810ContextPtr) driContextPriv->driverPrivate;
 
    if (imesa) {
       i810TextureObjectPtr next_t, t;
-
-      gl_destroy_context(imesa->glCtx);
-      gl_destroy_framebuffer(imesa->glBuffer);
 
       foreach_s (t, next_t, &(imesa->TexObjList))
 	 i810DestroyTexObj(imesa, t);
@@ -366,56 +394,51 @@ void XMesaDestroyContext(XMesaContext c)
 	 i810DestroyTexObj(imesa, t);
 
       Xfree(imesa);
-
-      c->private = 0;
    }
 }
 
-XMesaBuffer XMesaCreateWindowBuffer(XMesaVisual v, XMesaWindow w,
-				    __DRIdrawablePrivate *driDrawPriv)
+GLframebuffer *XMesaCreateWindowBuffer( Display *dpy,
+                                        __DRIscreenPrivate *driScrnPriv,
+                                        __DRIdrawablePrivate *driDrawPriv,
+                                        GLvisual *mesaVis)
 {
-  return (XMesaBuffer)1;
+   return gl_create_framebuffer(mesaVis,
+                                GL_FALSE,  /* software depth buffer? */
+                                mesaVis->StencilBits > 0,
+                                mesaVis->AccumRedBits > 0,
+                                mesaVis->AlphaBits > 0
+                                );
 }
 
-XMesaBuffer XMesaCreatePixmapBuffer(XMesaVisual v, XMesaPixmap p,
-				    XMesaColormap c, 
-				    __DRIdrawablePrivate *driDrawPriv)
+
+GLframebuffer *XMesaCreatePixmapBuffer( Display *dpy,
+                                        __DRIscreenPrivate *driScrnPriv,
+                                        __DRIdrawablePrivate *driDrawPriv,
+                                        GLvisual *mesaVis)
 {
-  return (XMesaBuffer)1;
+#if 0
+   /* Different drivers may have different combinations of hardware and
+    * software ancillary buffers.
+    */
+   return gl_create_framebuffer(mesaVis,
+                                GL_FALSE,  /* software depth buffer? */
+                                mesaVis->StencilBits > 0,
+                                mesaVis->AccumRedBits > 0,
+                                mesaVis->AlphaBits > 0
+                                );
+#else
+   return NULL;  /* not implemented yet */
+#endif
 }
 
-void XMesaDestroyBuffer(XMesaBuffer b)
-{
-}
 
-void XMesaSwapBuffers(XMesaBuffer bogus)
+void XMesaSwapBuffers(__DRIdrawablePrivate *driDrawPriv)
 {
+   /* XXX should do swap according to the buffer, not the context! */
    i810ContextPtr imesa = i810Ctx; 
 
    FLUSH_VB( imesa->glCtx, "swap buffers" );
    i810SwapBuffers(imesa);
-}
-
-static void i810InitClipRects( i810ContextPtr imesa )
-{
-   switch (imesa->numClipRects) {
-   case 0:
-      imesa->ClipSetup[I810_CLIPREG_SC] = ( GFX_OP_SCISSOR |
-					    SC_UPDATE_SCISSOR );
-      imesa->ClipSetup[I810_CLIPREG_SCI1] = 0;
-      imesa->ClipSetup[I810_CLIPREG_SCI2] = 0;
-      imesa->needClip = 0;
-      imesa->dirty |= I810_EMIT_CLIPRECT;
-      break;
-   case 1:
-      imesa->needClip = 0;
-      i810EmitScissorValues( imesa, 0, 0 );
-      imesa->dirty |= I810_EMIT_CLIPRECT;
-      break;
-   default:
-      imesa->needClip=1;
-      break;
-   }
 }
 
 
@@ -426,12 +449,12 @@ void i810XMesaSetFrontClipRects( i810ContextPtr imesa )
 
    imesa->numClipRects = dPriv->numClipRects;
    imesa->pClipRects = dPriv->pClipRects;
+   imesa->dirty |= I810_UPLOAD_CLIPRECTS;
    imesa->drawX = dPriv->x;
    imesa->drawY = dPriv->y;
 
-   imesa->drawOffset = imesa->i810Screen->fbOffset;
+   imesa->drawMap = imesa->driScreen->pFB;
    i810EmitDrawingRectangle( imesa );
-   i810InitClipRects( imesa );
 }
 
 
@@ -440,7 +463,7 @@ void i810XMesaSetBackClipRects( i810ContextPtr imesa )
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;
    int i;
 
-   if (dPriv->numAuxClipRects == 0) 
+   if (dPriv->numBackClipRects == 0) 
    {
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
 	 fprintf(stderr, "FRONT_CLIPRECTS, %d rects\n", 
@@ -452,18 +475,18 @@ void i810XMesaSetBackClipRects( i810ContextPtr imesa )
       imesa->drawY = dPriv->y;
    } else {
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
-	 fprintf(stderr, "AUX_RECTS, %d rects\n", 
-		 dPriv->numAuxClipRects);
+	 fprintf(stderr, "BACK_RECTS, %d rects\n", 
+		 dPriv->numBackClipRects);
 
-      imesa->numClipRects = dPriv->numAuxClipRects;
-      imesa->pClipRects = dPriv->pAuxClipRects;
-      imesa->drawX = dPriv->auxX;
-      imesa->drawY = dPriv->auxY;
+      imesa->numClipRects = dPriv->numBackClipRects;
+      imesa->pClipRects = dPriv->pBackClipRects;
+      imesa->drawX = dPriv->backX;
+      imesa->drawY = dPriv->backY;
    }
 
-   imesa->drawOffset = imesa->i810Screen->backOffset;
+   imesa->drawMap = imesa->i810Screen->back.map;
    i810EmitDrawingRectangle( imesa );
-   i810InitClipRects( imesa );
+   imesa->dirty |= I810_UPLOAD_CLIPRECTS;
 
    if (I810_DEBUG & DEBUG_VERBOSE_DRI)
       for (i = 0 ; i < imesa->numClipRects ; i++) 
@@ -478,6 +501,9 @@ void i810XMesaSetBackClipRects( i810ContextPtr imesa )
 
 static void i810XMesaWindowMoved( i810ContextPtr imesa ) 
 {
+   if (0)
+      fprintf(stderr, "i810XMesaWindowMoved\n\n");
+
    switch (imesa->glCtx->Color.DriverDrawBuffer) {
    case GL_FRONT_LEFT:
       i810XMesaSetFrontClipRects( imesa );
@@ -486,38 +512,43 @@ static void i810XMesaWindowMoved( i810ContextPtr imesa )
       i810XMesaSetBackClipRects( imesa );
       break;
    default:
-      fprintf(stderr, "fallback buffer\n");
+      /*fprintf(stderr, "fallback buffer\n");*/
       break;
    }
-
 }
 
 
-/* This looks buggy to me - the 'b' variable isn't used anywhere...
- * Hmm - It seems that the drawable is already hooked in to
- * driDrawablePriv.  
- */
-GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
+GLboolean XMesaUnbindContext(__DRIcontextPrivate *driContextPriv)
 {
+   i810ContextPtr i810 = (i810ContextPtr) driContextPriv->driverPrivate;
+   if (i810)
+      i810->dirty = ~0;
 
-   if (c->private==(void *)i810Ctx) return GL_TRUE;
+   return GL_TRUE;
+}
 
-   if (c) {
-      __DRIdrawablePrivate *dPriv = c->driContextPriv->driDrawablePriv;
 
-      i810Ctx = (i810ContextPtr)c->private;
-
-      gl_make_current(i810Ctx->glCtx, i810Ctx->glBuffer);
-
-      i810Ctx->driDrawable = dPriv;
+GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
+			   __DRIdrawablePrivate *driDrawPriv,
+			   __DRIdrawablePrivate *driReadPriv)
+{
+   if (driContextPriv) {
+      i810Ctx = (i810ContextPtr) driContextPriv->driverPrivate;
+      
+      gl_make_current2(i810Ctx->glCtx, driDrawPriv->mesaBuffer, 
+		       driReadPriv->mesaBuffer);
+      
+      
+      i810Ctx->driDrawable = driDrawPriv;
       i810Ctx->dirty = ~0;
-   
+      
       i810XMesaWindowMoved( i810Ctx );
-
+      
       if (!i810Ctx->glCtx->Viewport.Width)
-	 gl_Viewport(i810Ctx->glCtx, 0, 0, dPriv->w, dPriv->h);
-
-   } else {
+	 gl_Viewport(i810Ctx->glCtx, 0, 0, driDrawPriv->w, driDrawPriv->h);
+   }
+   else 
+   {
       gl_make_current(0,0);
       i810Ctx = NULL;
    }
@@ -525,14 +556,25 @@ GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
 }
 
 
-void i810XMesaUpdateState( i810ContextPtr imesa ) 
+void i810GetLock( i810ContextPtr imesa, GLuint flags ) 
 {
    __DRIdrawablePrivate *dPriv = imesa->driDrawable;
    __DRIscreenPrivate *sPriv = imesa->driScreen;
-   I810SAREAPriv *sarea = imesa->sarea;
+   drm_i810_sarea_t *sarea = imesa->sarea;
    int me = imesa->hHWContext;
    int stamp = dPriv->lastStamp; 
 
+
+   if (0) fprintf(stderr, ".\n");
+
+   /* We know there has been contention.
+    */
+   drmGetLock(imesa->driFd, imesa->hHWContext, flags);	
+
+
+   /* Note contention for throttling hint
+    */
+   imesa->any_contend = 1;
 
    /* If the window moved, may need to set a new cliprect now.
     *
@@ -541,26 +583,24 @@ void i810XMesaUpdateState( i810ContextPtr imesa )
     */
    XMESA_VALIDATE_DRAWABLE_INFO(imesa->display, sPriv, dPriv);		
 
-   i810glx.LpRing.synced = 0;
 
-   /* If another client has touched the ringbuffer, need to update 
-    * where we think the pointers are:
-    */
-   if (sarea->ringOwner != me) {
-      i810glx.c_ringlost++;
-      imesa->dirty |= I810_REFRESH_RING;
-   }
-      
+   if (0)
+   fprintf(stderr, "i810GetLock, last enque: %d last dispatch: %d\n",
+	   sarea->last_enqueue, 
+	   sarea->last_dispatch);
+
    /* If we lost context, need to dump all registers to hardware.
     * Note that we don't care about 2d contexts, even if they perform
     * accelerated commands, so the DRI locking in the X server is even
     * more broken than usual.
     */
    if (sarea->ctxOwner != me) {
-      i810glx.c_ctxlost++;
-      imesa->dirty |= I810_UPLOAD_CTX;
-      imesa->dirty |= I810_EMIT_CLIPRECT;
-      imesa->dirty |= I810_UPLOAD_BUFFERS;
+      imesa->dirty |= (I810_UPLOAD_CTX |
+		       I810_UPLOAD_CLIPRECTS |
+		       I810_UPLOAD_BUFFERS |
+		       I810_UPLOAD_TEX0 |
+		       I810_UPLOAD_TEX1);
+      sarea->ctxOwner = me;
    }
 
    /* Shared texture managment - if another client has played with
@@ -587,23 +627,18 @@ void i810XMesaUpdateState( i810ContextPtr imesa )
 	 i810ResetGlobalLRU( imesa );
       }
 
+      if (0) fprintf(stderr, "imesa %d sarea %d\n", imesa->texAge, sarea->texAge);
+      imesa->dirty |= I810_UPLOAD_TEX0IMAGE;
+      imesa->dirty |= I810_UPLOAD_TEX1IMAGE;
       imesa->texAge = sarea->texAge;
-      imesa->dirty |= I810_UPLOAD_TEX0IMAGE | I810_UPLOAD_TEX1IMAGE;
    }
 
    
    if (dPriv->lastStamp != stamp)
       i810XMesaWindowMoved( imesa );
 
-   sarea->ctxOwner=me;
-   sarea->ringOwner=me;
-
-
-   _I810RefreshLpRing(imesa, 0);  
-
-   if (imesa->dirty) 
-       i810EmitHwStateLocked( imesa );  
-
+   
+   sarea->last_quiescent = -1;	/* just kill it for now */
 }
 
 

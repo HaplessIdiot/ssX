@@ -51,6 +51,9 @@
 /* Maximum texture matrix stack depth: */
 #define MAX_TEXTURE_STACK_DEPTH 10
 
+/* Maximum color matrix stack depth: */
+#define MAX_COLOR_STACK_DEPTH 4
+
 /* Maximum attribute stack depth: */
 #define MAX_ATTRIB_STACK_DEPTH 16
 
@@ -92,8 +95,8 @@
 #define MAX_LINE_WIDTH 10.0
 #define LINE_WIDTH_GRANULARITY 0.1
 
-/* Max texture palette size */
-#define MAX_TEXTURE_PALETTE_SIZE 256
+/* Max texture palette / color table size */
+#define MAX_COLOR_TABLE_SIZE 256
 
 /* Number of texture levels */
 #define MAX_TEXTURE_LEVELS 12
@@ -111,6 +114,16 @@
 /* Subpixel precision for antialiasing, window coordinate snapping */
 #define SUB_PIXEL_BITS 4
 
+/* Size of histogram tables */
+#define HISTOGRAM_TABLE_SIZE 256
+
+/* Max convolution filter sizes */
+#define MAX_CONVOLUTION_WIDTH 5
+#define MAX_CONVOLUTION_HEIGHT 5
+
+/* GL_ARB_texture_compression */
+#define MAX_COMPRESSED_TEXTURE_FORMATS 25
+
 
 
 /*
@@ -125,26 +138,12 @@
 
 
 /*
- * Bits per depth buffer value:  16 or 32
+ * Bits per depth buffer value:  16 or 32 (GLushort or GLuint)
+ * gl_create_visual() can select any depth in [0, 32].
  */
-#ifdef MESAD3D
-   /* Mesa / Direct3D driver only */
-   extern float g_DepthScale, g_MaxDepth;
-#  define DEPTH_BITS 	32
-#  define DEPTH_SCALE 	g_DepthScale
-#  define MAX_DEPTH 	g_MaxDepth
-#else
-#  define DEPTH_BITS 16
-#  if DEPTH_BITS==16
-#     define MAX_DEPTH 0xffff
-#     define DEPTH_SCALE 65535.0F
-#  elif DEPTH_BITS==32
-#     define MAX_DEPTH 0x3fffffff
-#     define DEPTH_SCALE ((GLfloat) MAX_DEPTH)
-#  else
-#     error "illegal number of depth bits"
-#  endif
-#endif
+#define DEFAULT_SOFTWARE_DEPTH_BITS 16
+#define DEFAULT_SOFTWARE_DEPTH_TYPE GLushort
+
 
 
 /*
@@ -190,7 +189,7 @@
  * VB_MAX vertices.  (This only happens when mixed primitives are
  * sharing the vb).  
  */
-#define VB_MAX_CLIPPED_VERTS (2 * (6 + MAX_CLIP_PLANES))
+#define VB_MAX_CLIPPED_VERTS ((2 * (6 + MAX_CLIP_PLANES))+1)
 #define VB_SIZE  (VB_MAX + VB_MAX_CLIPPED_VERTS)
 
 

@@ -36,8 +36,12 @@
 #include "drawpix.h"
 #include "mem.h"
 #include "state.h"
+#include "depth.h"
+#include "macros.h"
+#include "vb.h"
 #include "types.h"
 #include "xmesaP.h"
+#include "extensions.h"
 
 
 
@@ -347,7 +351,8 @@ static void clear_color( GLcontext *ctx,
    xmesa->clearcolor[1] = g;
    xmesa->clearcolor[2] = b;
    xmesa->clearcolor[3] = a;
-   xmesa->clearpixel = xmesa_color_to_pixel( xmesa, r, g, b, a );
+   xmesa->clearpixel = xmesa_color_to_pixel( xmesa, r, g, b, a,
+                                             xmesa->xm_visual->undithered_pf );
    XMesaSetForeground( xmesa->display, xmesa->xm_buffer->cleargc,
                        xmesa->clearpixel );
 }
@@ -430,7 +435,7 @@ static void set_color( GLcontext *ctx,
    xmesa->green = g;
    xmesa->blue  = b;
    xmesa->alpha = a;
-   xmesa->pixel = xmesa_color_to_pixel( xmesa, r, g, b, a );;
+   xmesa->pixel = xmesa_color_to_pixel( xmesa, r, g, b, a, xmesa->pixelformat );;
    XMesaSetForeground( xmesa->display, xmesa->xm_buffer->gc1, xmesa->pixel );
 }
 
@@ -713,7 +718,7 @@ clear_16bit_ximage( GLcontext *ctx, GLboolean all,
 }
 
 
-/* Optimized code provided by Nozomi Ytow <nozomi@biol.tsukuba.ac.jp> */
+/* Optimized code provided by Nozomi Ytow <noz@xfree86.org> */
 static void
 clear_24bit_ximage( GLcontext *ctx, GLboolean all,
                     GLint x, GLint y, GLint width, GLint height )
@@ -731,14 +736,31 @@ clear_24bit_ximage( GLcontext *ctx, GLboolean all,
    }
 
    if (all) {
-      register GLint n = xmesa->xm_buffer->width * xmesa->xm_buffer->height;
-      register bgr_t *ptr3 = (bgr_t *) xmesa->xm_buffer->backimage->data;
       if (r==g && g==b) {
          /* same value for all three components (gray) */
-         MEMSET(ptr3, r, 3 * n);
+         const GLint w3 = xmesa->xm_buffer->width * 3;
+         const GLint h = xmesa->xm_buffer->height;
+         GLint i;
+         for (i = 0; i < h; i++) {
+            bgr_t *ptr3 = PIXELADDR3(xmesa->xm_buffer, 0, i);
+            MEMSET(ptr3, r, w3);
+         }
       }
       else {
          /* the usual case */
+         const GLint w = xmesa->xm_buffer->width;
+         const GLint h = xmesa->xm_buffer->height;
+         GLint i, j;
+         for (i = 0; i < h; i++) {
+            bgr_t *ptr3 = PIXELADDR3(xmesa->xm_buffer, 0, i);
+            for (j = 0; j < w; j++) {
+               ptr3->r = r;
+               ptr3->g = g;
+               ptr3->b = b;
+               ptr3++;
+            }
+         }
+#if 0 /* this code doesn't work for all window widths */
          register GLuint *ptr4 = (GLuint *) ptr3;
          register GLuint px;
          GLuint pixel4[3];
@@ -805,6 +827,7 @@ clear_24bit_ximage( GLcontext *ctx, GLboolean all,
             case 0:
                break;
          }
+#endif
       }
    }
    else {
@@ -819,6 +842,17 @@ clear_24bit_ximage( GLcontext *ctx, GLboolean all,
       }
       else {
          /* non-gray clear color */
+         GLint i, j;
+         for (j = 0; j < height; j++) {
+            bgr_t *ptr3 = PIXELADDR3( xmesa->xm_buffer, x, y+j );
+            for (i = 0; i < width; i++) {
+               ptr3->r = r;
+               ptr3->g = g;
+               ptr3->b = b;
+               ptr3++;
+            }
+         }
+#if 0 /* this code might not always (seems ptr3 always == ptr4) */
          GLint j;
          GLuint pixel4[3];
          pixel4[0] = clearPixel | (clearPixel << 24);
@@ -889,6 +923,7 @@ clear_24bit_ximage( GLcontext *ctx, GLboolean all,
                   break;
             }
          }
+#endif
       }
    }
 }
@@ -2342,9 +2377,24 @@ static void write_span_5R6G5B_ximage( RGBA_SPAN_ARGS )
    }
    else {
       /* draw all pixels */
-      for (i=0;i<n;i++) {
-         ptr[i] = PACK_5R6G5B( rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
+#if defined(__i386__) /* word stores don't have to be on 4-byte boundaries */
+      GLuint *ptr32 = (GLuint *) ptr;
+      GLuint extraPixel = (n & 1);
+      n -= extraPixel;
+      for (i = 0; i < n; i += 2) {
+         GLuint p0, p1;
+         p0 = PACK_5R6G5B(rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]);
+         p1 = PACK_5R6G5B(rgba[i+1][RCOMP], rgba[i+1][GCOMP], rgba[i+1][BCOMP]);
+         *ptr32++ = (p1 << 16) | p0;
       }
+      if (extraPixel) {
+         ptr[n] = PACK_5R6G5B(rgba[n][RCOMP], rgba[n][GCOMP], rgba[n][BCOMP]);
+      }
+#else
+      for (i = 0; i < n; i++) {
+         ptr[i] = PACK_5R6G5B(rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]);
+      }
+#endif
    }
 }
 
@@ -2366,9 +2416,24 @@ static void write_span_DITHER_5R6G5B_ximage( RGBA_SPAN_ARGS )
    }
    else {
       /* draw all pixels */
-      for (i=0;i<n;i++,x++) {
-         PACK_TRUEDITHER( ptr[i], x, y, rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
+#if defined(__i386__) /* word stores don't have to be on 4-byte boundaries */
+      GLuint *ptr32 = (GLuint *) ptr;
+      GLuint extraPixel = (n & 1);
+      n -= extraPixel;
+      for (i = 0; i < n; i += 2, x += 2) {
+         GLuint p0, p1;
+         PACK_TRUEDITHER( p0, x, y, rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP] );
+         PACK_TRUEDITHER( p1, x+1, y, rgba[i+1][RCOMP], rgba[i+1][GCOMP], rgba[i+1][BCOMP] );
+         *ptr32++ = (p1 << 16) | p0;
       }
+      if (extraPixel) {
+         PACK_TRUEDITHER( ptr[n], x+n, y, rgba[n][RCOMP], rgba[n][GCOMP], rgba[n][BCOMP]);
+      }
+#else
+      for (i = 0; i < n; i++, x++) {
+         PACK_TRUEDITHER( ptr[i], x, y, rgba[i][RCOMP], rgba[i][GCOMP], rgba[i][BCOMP]);
+      }
+#endif
    }
 }
 
@@ -2390,9 +2455,24 @@ static void write_span_rgb_5R6G5B_ximage( RGB_SPAN_ARGS )
    }
    else {
       /* draw all pixels */
+#if defined(__i386__) /* word stores don't have to be on 4-byte boundaries */
+      GLuint *ptr32 = (GLuint *) ptr;
+      GLuint extraPixel = (n & 1);
+      n -= extraPixel;
+      for (i = 0; i < n; i += 2) {
+         GLuint p0, p1;
+         p0 = PACK_5R6G5B(rgb[i][RCOMP], rgb[i][GCOMP], rgb[i][BCOMP]);
+         p1 = PACK_5R6G5B(rgb[i+1][RCOMP], rgb[i+1][GCOMP], rgb[i+1][BCOMP]);
+         *ptr32++ = (p1 << 16) | p0;
+      }
+      if (extraPixel) {
+         ptr[n] = PACK_5R6G5B(rgb[n][RCOMP], rgb[n][GCOMP], rgb[n][BCOMP]);
+      }
+#else
       for (i=0;i<n;i++) {
          ptr[i] = PACK_5R6G5B( rgb[i][RCOMP], rgb[i][GCOMP], rgb[i][BCOMP] );
       }
+#endif
    }
 }
 
@@ -2414,9 +2494,24 @@ static void write_span_rgb_DITHER_5R6G5B_ximage( RGB_SPAN_ARGS )
    }
    else {
       /* draw all pixels */
+#if defined(__i386__) /* word stores don't have to be on 4-byte boundaries */
+      GLuint *ptr32 = (GLuint *) ptr;
+      GLuint extraPixel = (n & 1);
+      n -= extraPixel;
+      for (i = 0; i < n; i += 2, x += 2) {
+         GLuint p0, p1;
+         PACK_TRUEDITHER( p0, x, y, rgb[i][RCOMP], rgb[i][GCOMP], rgb[i][BCOMP] );
+         PACK_TRUEDITHER( p1, x+1, y, rgb[i+1][RCOMP], rgb[i+1][GCOMP], rgb[i+1][BCOMP] );
+         *ptr32++ = (p1 << 16) | p0;
+      }
+      if (extraPixel) {
+         PACK_TRUEDITHER( ptr[n], x+n, y, rgb[n][RCOMP], rgb[n][GCOMP], rgb[n][BCOMP]);
+      }
+#else
       for (i=0;i<n;i++,x++) {
          PACK_TRUEDITHER( ptr[i], x, y, rgb[i][RCOMP], rgb[i][GCOMP], rgb[i][BCOMP] );
       }
+#endif
    }
 }
 
@@ -4280,7 +4375,6 @@ static void read_color_span( const GLcontext *ctx,
 {
    const XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaBuffer source;
-   register GLuint i;
 
    if (xmesa->use_read_buffer)
       source = xmesa->xm_read_buffer;
@@ -4288,10 +4382,11 @@ static void read_color_span( const GLcontext *ctx,
       source = xmesa->xm_buffer;
 
    if (source->buffer) {
+      /* Read from Pixmap or Window */
       XMesaImage *span = NULL;
       int error;
 #ifdef XFree86Server
-      span = XMesaCreateImage(GET_VISUAL_DEPTH(xmesa->xm_visual), n, 1, NULL);
+      span = XMesaCreateImage(xmesa->xm_visual->BitsPerPixel, n, 1, NULL);
       span->data = (char *)MALLOC(span->height * span->bytes_per_line);
       error = (!span->data);
       (*xmesa->display->GetImage)(source->buffer,
@@ -4307,18 +4402,17 @@ static void read_color_span( const GLcontext *ctx,
 	 switch (xmesa->pixelformat) {
 	    case PF_TRUECOLOR:
 	    case PF_TRUEDITHER:
-            case PF_5R6G5B:
-            case PF_DITHER_5R6G5B:
                {
+                  const GLubyte *pixelToR = xmesa->xm_visual->PixelToR;
+                  const GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
+                  const GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
                   unsigned long rMask = GET_REDMASK(xmesa->xm_visual);
                   unsigned long gMask = GET_GREENMASK(xmesa->xm_visual);
                   unsigned long bMask = GET_BLUEMASK(xmesa->xm_visual);
-                  GLubyte *pixelToR = xmesa->xm_visual->PixelToR;
-                  GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
-                  GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
                   GLint rShift = xmesa->xm_visual->rshift;
                   GLint gShift = xmesa->xm_visual->gshift;
                   GLint bShift = xmesa->xm_visual->bshift;
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      unsigned long p;
                      p = XMesaGetPixel( span, i, 0 );
@@ -4329,9 +4423,31 @@ static void read_color_span( const GLcontext *ctx,
                   }
                }
 	       break;
+            case PF_5R6G5B:
+            case PF_DITHER_5R6G5B:
+               {
+                  const GLubyte *pixelToR = xmesa->xm_visual->PixelToR;
+                  const GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
+                  const GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
+                  GLuint i;
+                  for (i=0;i<n;i++) {
+                     unsigned long p = XMesaGetPixel( span, i, 0 );
+                     /* fast, but not quite accurate
+                     rgba[i][RCOMP] = ((p >> 8) & 0xf8);
+                     rgba[i][GCOMP] = ((p >> 3) & 0xfc);
+                     rgba[i][BCOMP] = ((p << 3) & 0xff);
+                     */
+                     rgba[i][RCOMP] = pixelToR[p >> 11];
+                     rgba[i][GCOMP] = pixelToG[(p >> 5) & 0x3f];
+                     rgba[i][BCOMP] = pixelToB[p & 0x1f];
+                     rgba[i][ACOMP] = 255;
+                  }
+               }
+	       break;
 	    case PF_8A8B8G8R:
                {
-                  GLuint *ptr4 = (GLuint *) span->data;
+                  const GLuint *ptr4 = (GLuint *) span->data;
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      GLuint p4 = *ptr4++;
                      rgba[i][RCOMP] = (GLubyte) ( p4        & 0xff);
@@ -4343,7 +4459,8 @@ static void read_color_span( const GLcontext *ctx,
 	       break;
             case PF_8R8G8B:
                {
-                  GLuint *ptr4 = (GLuint *) span->data;
+                  const GLuint *ptr4 = (GLuint *) span->data;
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      GLuint p4 = *ptr4++;
                      rgba[i][RCOMP] = (GLubyte) ((p4 >> 16) & 0xff);
@@ -4355,7 +4472,8 @@ static void read_color_span( const GLcontext *ctx,
 	       break;
             case PF_8R8G8B24:
                {
-                  bgr_t *ptr3 = (bgr_t *) span->data;
+                  const bgr_t *ptr3 = (bgr_t *) span->data;
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      rgba[i][RCOMP] = ptr3[i].r;
                      rgba[i][GCOMP] = ptr3[i].g;
@@ -4367,6 +4485,7 @@ static void read_color_span( const GLcontext *ctx,
             case PF_HPCR:
                {
                   GLubyte *ptr1 = (GLubyte *) span->data;
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      GLubyte p = *ptr1++;
                      rgba[i][RCOMP] =  p & 0xE0;
@@ -4384,7 +4503,8 @@ static void read_color_span( const GLcontext *ctx,
                   GLubyte *gTable = source->pixel_to_g;
                   GLubyte *bTable = source->pixel_to_b;
                   if (GET_VISUAL_DEPTH(xmesa->xm_visual)==8) {
-                     GLubyte *ptr1 = (GLubyte *) span->data;
+                     const GLubyte *ptr1 = (GLubyte *) span->data;
+                     GLuint i;
                      for (i=0;i<n;i++) {
                         unsigned long p = *ptr1++;
                         rgba[i][RCOMP] = rTable[p];
@@ -4394,9 +4514,9 @@ static void read_color_span( const GLcontext *ctx,
                      }
                   }
                   else {
+                     GLuint i;
                      for (i=0;i<n;i++) {
-                     unsigned long p;
-		     p = XMesaGetPixel( span, i, 0 );
+                        unsigned long p = XMesaGetPixel( span, i, 0 );
                         rgba[i][RCOMP] = rTable[p];
                         rgba[i][GCOMP] = gTable[p];
                         rgba[i][BCOMP] = bTable[p];
@@ -4408,6 +4528,7 @@ static void read_color_span( const GLcontext *ctx,
 	    case PF_1BIT:
                {
                   int bitFlip = xmesa->xm_visual->bitFlip;
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      unsigned long p;
                      p = XMesaGetPixel( span, i, 0 ) ^ bitFlip;
@@ -4425,6 +4546,7 @@ static void read_color_span( const GLcontext *ctx,
       }
       else {
 	 /* return black pixels */
+         GLuint i;
 	 for (i=0;i<n;i++) {
 	    rgba[i][RCOMP] = rgba[i][GCOMP] = rgba[i][BCOMP] = rgba[i][ACOMP] = 0;
 	 }
@@ -4434,22 +4556,22 @@ static void read_color_span( const GLcontext *ctx,
       }
    }
    else if (source->backimage) {
+      /* Read from XImage back buffer */
       switch (xmesa->pixelformat) {
          case PF_TRUECOLOR:
          case PF_TRUEDITHER:
-         case PF_5R6G5B:
-         case PF_DITHER_5R6G5B:
             {
+               const GLubyte *pixelToR = xmesa->xm_visual->PixelToR;
+               const GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
+               const GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
                unsigned long rMask = GET_REDMASK(xmesa->xm_visual);
                unsigned long gMask = GET_GREENMASK(xmesa->xm_visual);
                unsigned long bMask = GET_BLUEMASK(xmesa->xm_visual);
-               GLubyte *pixelToR = xmesa->xm_visual->PixelToR;
-               GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
-               GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
                GLint rShift = xmesa->xm_visual->rshift;
                GLint gShift = xmesa->xm_visual->gshift;
                GLint bShift = xmesa->xm_visual->bshift;
                XMesaImage *img = source->backimage;
+               GLuint i;
                y = FLIP(source, y);
                for (i=0;i<n;i++) {
                   unsigned long p;
@@ -4461,9 +4583,58 @@ static void read_color_span( const GLcontext *ctx,
                }
             }
             break;
+         case PF_5R6G5B:
+         case PF_DITHER_5R6G5B:
+            {
+               const GLubyte *pixelToR = xmesa->xm_visual->PixelToR;
+               const GLubyte *pixelToG = xmesa->xm_visual->PixelToG;
+               const GLubyte *pixelToB = xmesa->xm_visual->PixelToB;
+               const GLushort *ptr2 = PIXELADDR2( source, x, y );
+               const GLuint *ptr4 = (const GLuint *) ptr2;
+               GLuint i;
+#if defined(__i386__) /* word stores don't have to be on 4-byte boundaries */
+               GLuint extraPixel = (n & 1);
+               n -= extraPixel;
+               for (i = 0; i < n; i += 2) {
+                  const GLuint p = *ptr4++;
+                  const GLuint p0 = p & 0xffff;
+                  const GLuint p1 = p >> 16;
+                  /* fast, but not quite accurate
+                  rgba[i][RCOMP] = ((p >> 8) & 0xf8);
+                  rgba[i][GCOMP] = ((p >> 3) & 0xfc);
+                  rgba[i][BCOMP] = ((p << 3) & 0xff);
+                  */
+                  rgba[i][RCOMP] = pixelToR[p0 >> 11];
+                  rgba[i][GCOMP] = pixelToG[(p0 >> 5) & 0x3f];
+                  rgba[i][BCOMP] = pixelToB[p0 & 0x1f];
+                  rgba[i][ACOMP] = 255;
+                  rgba[i+1][RCOMP] = pixelToR[p1 >> 11];
+                  rgba[i+1][GCOMP] = pixelToG[(p1 >> 5) & 0x3f];
+                  rgba[i+1][BCOMP] = pixelToB[p1 & 0x1f];
+                  rgba[i+1][ACOMP] = 255;
+               }
+               if (extraPixel) {
+                  GLushort p = ptr2[n];
+                  rgba[n][RCOMP] = pixelToR[p >> 11];
+                  rgba[n][GCOMP] = pixelToG[(p >> 5) & 0x3f];
+                  rgba[n][BCOMP] = pixelToB[p & 0x1f];
+                  rgba[n][ACOMP] = 255;
+               }
+#else
+               for (i = 0; i < n; i++) {
+                  const GLushort p = ptr2[i];
+                  rgba[i][RCOMP] = pixelToR[p >> 11];
+                  rgba[i][GCOMP] = pixelToG[(p >> 5) & 0x3f];
+                  rgba[i][BCOMP] = pixelToB[p & 0x1f];
+                  rgba[i][ACOMP] = 255;
+               }
+#endif
+            }
+            break;
 	 case PF_8A8B8G8R:
             {
-               GLuint *ptr4 = PIXELADDR4( source, x, y );
+               const GLuint *ptr4 = PIXELADDR4( source, x, y );
+               GLuint i;
                for (i=0;i<n;i++) {
                   GLuint p4 = *ptr4++;
                   rgba[i][RCOMP] = (GLubyte) ( p4        & 0xff);
@@ -4475,7 +4646,8 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
 	 case PF_8R8G8B:
             {
-               GLuint *ptr4 = PIXELADDR4( source, x, y );
+               const GLuint *ptr4 = PIXELADDR4( source, x, y );
+               GLuint i;
                for (i=0;i<n;i++) {
                   GLuint p4 = *ptr4++;
                   rgba[i][RCOMP] = (GLubyte) ((p4 >> 16) & 0xff);
@@ -4487,7 +4659,8 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
 	 case PF_8R8G8B24:
             {
-               bgr_t *ptr3 = PIXELADDR3( source, x, y );
+               const bgr_t *ptr3 = PIXELADDR3( source, x, y );
+               GLuint i;
                for (i=0;i<n;i++) {
                   rgba[i][RCOMP] = ptr3[i].r;
                   rgba[i][GCOMP] = ptr3[i].g;
@@ -4498,7 +4671,8 @@ static void read_color_span( const GLcontext *ctx,
 	    break;
          case PF_HPCR:
             {
-               GLubyte *ptr1 = PIXELADDR1( source, x, y );
+               const GLubyte *ptr1 = PIXELADDR1( source, x, y );
+               GLuint i;
                for (i=0;i<n;i++) {
                   GLubyte p = *ptr1++;
                   rgba[i][RCOMP] =  p & 0xE0;
@@ -4512,11 +4686,12 @@ static void read_color_span( const GLcontext *ctx,
 	 case PF_LOOKUP:
 	 case PF_GRAYSCALE:
             {
-               GLubyte *rTable = source->pixel_to_r;
-               GLubyte *gTable = source->pixel_to_g;
-               GLubyte *bTable = source->pixel_to_b;
+               const GLubyte *rTable = source->pixel_to_r;
+               const GLubyte *gTable = source->pixel_to_g;
+               const GLubyte *bTable = source->pixel_to_b;
                if (GET_VISUAL_DEPTH(xmesa->xm_visual)==8) {
                   GLubyte *ptr1 = PIXELADDR1( source, x, y );
+                  GLuint i;
                   for (i=0;i<n;i++) {
                      unsigned long p = *ptr1++;
                      rgba[i][RCOMP] = rTable[p];
@@ -4527,10 +4702,10 @@ static void read_color_span( const GLcontext *ctx,
                }
                else {
                   XMesaImage *img = source->backimage;
+                  GLuint i;
                   y = FLIP(source, y);
                   for (i=0;i<n;i++,x++) {
-                     unsigned long p;
-		     p = XMesaGetPixel( img, x, y );
+                     unsigned long p = XMesaGetPixel( img, x, y );
                      rgba[i][RCOMP] = rTable[p];
                      rgba[i][GCOMP] = gTable[p];
                      rgba[i][BCOMP] = bTable[p];
@@ -4543,6 +4718,7 @@ static void read_color_span( const GLcontext *ctx,
             {
                XMesaImage *img = source->backimage;
                int bitFlip = xmesa->xm_visual->bitFlip;
+               GLuint i;
                y = FLIP(source, y);
                for (i=0;i<n;i++,x++) {
                   unsigned long p;
@@ -4934,7 +5110,6 @@ static const GLubyte *get_string( GLcontext *ctx, GLenum name )
          return NULL;
    }
 }
-
 
 
 static void update_span_funcs( GLcontext *ctx )

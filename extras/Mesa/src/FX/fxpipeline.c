@@ -104,7 +104,7 @@ static void fxDDRenderVB( struct vertex_buffer *VB )
    GLcontext *ctx = VB->ctx;
    fxMesaContext fxMesa = (fxMesaContext)ctx->DriverCtx;
 
-   if ((fxMesa->render_index & ~FX_FLAT) ||
+   if ((fxMesa->render_index != 0) ||
        ((ctx->Texture.ReallyEnabled & 0xf) && VB->TexCoordPtr[0]->size>2) ||
        ((ctx->Texture.ReallyEnabled & 0xf0) && VB->TexCoordPtr[1]->size>2))
       gl_render_vb( VB );
@@ -281,12 +281,13 @@ void fxDDOptimizePrecalcPipeline( GLcontext *ctx, struct gl_pipeline *pipe )
 
 
 
+/* unused?
 void fxDDOptimizeEltPipeline( GLcontext *ctx, struct gl_pipeline *pipe )
 {
    (void) ctx;
    (void) pipe;
 }
-
+*/
 
 #else
 

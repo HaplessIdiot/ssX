@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.3 1999/06/14 07:31:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxcmds.c,v 1.4 1999/07/18 08:34:22 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -139,8 +139,13 @@ int __glXCreateContext(__GLXclientState *cl, GLbyte *pc)
 	    ** NOTE: no support for sharing display lists between direct
 	    ** contexts, even if they are in the same address space.
 	    */
+#if 0
+            /* Disabling this code seems to allow shared display lists
+             * and texture objects to work.  We'll leave it disabled for now.
+             */
 	    client->errorValue = shareList;
 	    return BadMatch;
+#endif
 	} else {
 	    /*
 	    ** Create an indirect context regardless of what the client asked

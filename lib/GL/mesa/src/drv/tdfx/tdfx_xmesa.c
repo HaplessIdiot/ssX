@@ -28,7 +28,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Daryll Strauss <daryll@precisioninsight.com>
- *
+ *   Brian E. Paul <brian@precisioninsight.com>
  */
 
 #ifdef GLX_DIRECT_RENDERING
@@ -37,201 +37,199 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include <glide.h>
 #include "tdfx_init.h"
 #include "context.h"
-#include "vbxform.h"
 #include "matrix.h"
+#include "mmath.h"
+#include "vbxform.h"
 
-XMesaContext        nullCC  = 0;
-XMesaContext        gCC     = 0;
-tdfxContextPrivate *gCCPriv = 0;
 
-static int count_bits(unsigned int n)
+__DRIcontextPrivate *gCC = 0;
+
+
+GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 {
-  int bits = 0;
+   tdfxScreenPrivate *gsp;
 
-  while (n > 0) {
-    if (n & 1) bits++;
-    n >>= 1;
-  }
-  return bits;
+   /* Check the DRI version */
+   {
+      int major, minor, patch;
+      if (XF86DRIQueryVersion(sPriv->display, &major, &minor, &patch)) {
+         if (major != 3 || minor != 0 || patch < 0) {
+            char msg[1000];
+            sprintf(msg, "3dfx DRI driver expected DRI version 3.0.x but got version %d.%d.%d", major, minor, patch);
+            __driMesaMessage(msg);
+            return GL_FALSE;
+         }
+      }
+   }
+
+   /* Check that the DDX driver version is compatible */
+   if (sPriv->ddxMajor != 1 ||
+       sPriv->ddxMinor != 0 ||
+       sPriv->ddxPatch < 0) {
+      char msg[1000];
+      sprintf(msg, "3dfx DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", sPriv->ddxMajor, sPriv->ddxMinor, sPriv->ddxPatch);
+      __driMesaMessage(msg);
+      return GL_FALSE;
+   }
+
+   /* Check that the DRM driver version is compatible */
+   if (sPriv->drmMajor != 1 ||
+       sPriv->drmMinor != 0 ||
+       sPriv->drmPatch < 0) {
+      char msg[1000];
+      sprintf(msg, "3dfx DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch);
+      __driMesaMessage(msg);
+      return GL_FALSE;
+   }
+
+   /* Allocate the private area */
+   gsp = (tdfxScreenPrivate *)Xmalloc(sizeof(tdfxScreenPrivate));
+   if (!gsp)
+      return GL_FALSE;
+
+   gsp->driScrnPriv = sPriv;
+
+   sPriv->private = (void *) gsp;
+
+   if (!tdfxMapAllRegions(sPriv)) {
+      Xfree(gsp);
+      sPriv->private = NULL;
+      return GL_FALSE;
+   }
+
+   return GL_TRUE;
 }
 
-GLboolean XMesaInitDriver(__DRIscreenPrivate *driScrnPriv)
+void XMesaResetDriver(__DRIscreenPrivate *sPriv)
 {
-  tdfxScreenPrivate *gsp;
-
-  /* Allocate the private area */
-  gsp = (tdfxScreenPrivate *)Xmalloc(sizeof(tdfxScreenPrivate));
-  if (!gsp) return GL_FALSE;
-
-  gsp->driScrnPriv = driScrnPriv;
-
-  driScrnPriv->private = (void *)gsp;
-
-  if (!tdfxMapAllRegions(driScrnPriv)) {
-    Xfree(driScrnPriv->private);
-    return GL_FALSE;
-  }
-
-  return GL_TRUE;
+  tdfxUnmapAllRegions(sPriv);
+  Xfree(sPriv->private);
+  sPriv->private = NULL;
 }
 
-void XMesaResetDriver(__DRIscreenPrivate *driScrnPriv)
+GLvisual *XMesaCreateVisual(Display *dpy,
+                            __DRIscreenPrivate *driScrnPriv,
+                            const XVisualInfo *visinfo,
+                            const __GLXvisualConfig *config)
 {
-  tdfxUnmapAllRegions(driScrnPriv);
-  Xfree(driScrnPriv->private);
+   /* Drivers may change the args to _mesa_create_visual() in order to
+    * setup special visuals.
+    */
+   return _mesa_create_visual( config->rgba,
+                               config->doubleBuffer,
+                               config->stereo,
+                               _mesa_bitcount(visinfo->red_mask),
+                               _mesa_bitcount(visinfo->green_mask),
+                               _mesa_bitcount(visinfo->blue_mask),
+                               config->alphaSize,
+                               0, /* index bits */
+                               config->depthSize,
+                               config->stencilSize,
+                               config->accumRedSize,
+                               config->accumGreenSize,
+                               config->accumBlueSize,
+                               config->accumAlphaSize,
+                               0 /* num samples */ );
 }
 
-XMesaVisual XMesaCreateVisual(XMesaDisplay *display,
-			      XMesaVisualInfo visinfo,
-			      GLboolean rgb_flag,
-			      GLboolean alpha_flag,
-			      GLboolean db_flag,
-			      GLboolean stereo_flag,
-			      GLboolean ximage_flag,
-			      GLint depth_size,
-			      GLint stencil_size,
-			      GLint accum_size,
-			      GLint level)
+
+GLboolean XMesaCreateContext(Display *dpy, GLvisual *mesaVis,
+                             __DRIcontextPrivate *driContextPriv)
 {
-  XMesaVisual v;
-
-  /* Only RGB visuals are supported on the TDFX boards */
-  if (!rgb_flag) return 0;
-
-  v = (XMesaVisual)Xmalloc(sizeof(struct xmesa_visual));
-  if (!v) return 0;
-
-  v->visinfo = (XVisualInfo *)Xmalloc(sizeof(*visinfo));
-  if(!v->visinfo) {
-    Xfree(v);
-    return 0;
-  }
-  memcpy(v->visinfo, visinfo, sizeof(*visinfo));
-
-  v->display = display;
-  v->level = level;
-  
-  v->gl_visual = (GLvisual *)Xmalloc(sizeof(GLvisual));
-  if (!v->gl_visual) {
-    Xfree(v->visinfo);
-    XFree(v);
-    return 0;
-  }
-
-  v->gl_visual->RGBAflag   = rgb_flag;
-  v->gl_visual->DBflag     = db_flag;
-  v->gl_visual->StereoFlag = stereo_flag;
-
-  v->gl_visual->RedBits   = count_bits(visinfo->red_mask);
-  v->gl_visual->GreenBits = count_bits(visinfo->green_mask);
-  v->gl_visual->BlueBits  = count_bits(visinfo->blue_mask);
-  v->gl_visual->AlphaBits = 0; /* Not currently supported */
-
-  v->gl_visual->AccumBits   = accum_size;
-  v->gl_visual->DepthBits   = depth_size;
-  v->gl_visual->StencilBits = stencil_size;
-
-  return v;
-}
-
-void XMesaDestroyVisual(XMesaVisual v)
-{
-  Xfree(v->gl_visual);
-  Xfree(v->visinfo);
-  Xfree(v);
-}
-
-XMesaContext XMesaCreateContext(XMesaVisual v, XMesaContext share_list,
-					__DRIcontextPrivate *driContextPriv)
-{
-  XMesaContext c;
   tdfxContextPrivate *cPriv;
   __DRIscreenPrivate *driScrnPriv = driContextPriv->driScreenPriv;
   tdfxScreenPrivate *sPriv = (tdfxScreenPrivate *)driScrnPriv->private;
   TDFXSAREAPriv *saPriv;
-  GLcontext *shareCtx;
-  int **fifoPtr;
-
-  c = (XMesaContext)Xmalloc(sizeof(struct xmesa_context));
-  if (!c) return 0;
-
-  c->driContextPriv = driContextPriv;
-  c->xm_visual = v;
-  c->xm_buffer = 0; /* Set by MakeCurrent */
-  c->display = v->display;
+  /*int **fifoPtr;*/
 
   cPriv = (tdfxContextPrivate *)Xmalloc(sizeof(tdfxContextPrivate));
   if (!cPriv) {
-    Xfree(c);
-    return NULL;
+    return GL_FALSE;
   }
 
   cPriv->hHWContext = driContextPriv->hHWContext;
   cPriv->tdfxScrnPriv = sPriv;
-  c->private = (void *)cPriv;
+  /* deviceID = 0x05 = Voodoo3 */
+  /* deviceID = 0x09 = Voodoo5 (and Voodoo5?) */
+  cPriv->haveHwStencil = sPriv->deviceID == 0x9 && sPriv->cpp == 4;
 
-  cPriv->glVis=v->gl_visual;
-  cPriv->glBuffer=gl_create_framebuffer(v->gl_visual,
-                                        GL_FALSE,  /* software depth buffer? */
-                                        v->gl_visual->StencilBits > 0,
-                                        v->gl_visual->AccumBits > 0,
-                                        v->gl_visual->AlphaBits > 0
-                                        );
+  cPriv->glVis=mesaVis;
+  cPriv->glBuffer=gl_create_framebuffer(mesaVis,
+                        GL_FALSE,  /* software depth buffer? */
+                        mesaVis->StencilBits > 0 && !cPriv->haveHwStencil,
+                        mesaVis->AccumRedBits > 0,
+                        GL_FALSE   /* software alpha channel */
+                      );
 
   cPriv->screen_width=sPriv->width;
   cPriv->screen_height=sPriv->height;
-
   cPriv->new_state = ~0;
 
-  if (share_list)
-    shareCtx=((tdfxContextPrivate*)(share_list->private))->glCtx;
-  else
-    shareCtx=0;
-  cPriv->glCtx=gl_create_context(v->gl_visual, shareCtx, (void*)cPriv, GL_TRUE);
+  cPriv->glCtx = driContextPriv->mesaContext;
   cPriv->initDone=GL_FALSE;
 
-  saPriv=(TDFXSAREAPriv*)((void*)driScrnPriv->pSAREA+sizeof(XF86DRISAREARec));
+  saPriv=(TDFXSAREAPriv*)((char*)driScrnPriv->pSAREA+sizeof(XF86DRISAREARec));
   grDRIOpen(driScrnPriv->pFB, sPriv->regs.map, sPriv->deviceID, 
 	    sPriv->width, sPriv->height, sPriv->mem, sPriv->cpp, sPriv->stride,
 	    sPriv->fifoOffset, sPriv->fifoSize, sPriv->fbOffset,
 	    sPriv->backOffset, sPriv->depthOffset, sPriv->textureOffset, 
 	    sPriv->textureSize, &saPriv->fifoPtr, &saPriv->fifoRead);
 
-  return c;
+  driContextPriv->driverPrivate = (void *) cPriv;
+
+  return GL_TRUE;
 }
 
-void XMesaDestroyContext(XMesaContext c)
+void XMesaDestroyContext(__DRIcontextPrivate *driContextPriv)
 {
-  tdfxContextPrivate *cPriv;
-
-  cPriv=(tdfxContextPrivate*)c->private;
+  tdfxContextPrivate *cPriv = (tdfxContextPrivate *) driContextPriv->driverPrivate;
   if (cPriv) {
-    gl_destroy_context(cPriv->glCtx);
-    gl_destroy_framebuffer(cPriv->glBuffer);
+    XFree(cPriv);
+    driContextPriv->driverPrivate = NULL;
   }
-  if (c==gCC) {
-    gCC=0;
-    gCCPriv=0;
+
+  if (driContextPriv == gCC) {
+    gCC = 0;
   }
 }
 
-XMesaBuffer XMesaCreateWindowBuffer(XMesaVisual v, XMesaWindow w,
-				    __DRIdrawablePrivate *driDrawPriv)
+
+GLframebuffer *XMesaCreateWindowBuffer( Display *dpy,
+                                        __DRIscreenPrivate *driScrnPriv,
+                                        __DRIdrawablePrivate *driDrawPriv,
+                                        GLvisual *mesaVis)
 {
-  return (XMesaBuffer)1;
+   return gl_create_framebuffer(mesaVis,
+                                GL_FALSE,  /* software depth buffer? */
+                                mesaVis->StencilBits > 0,
+                                mesaVis->AccumRedBits > 0,
+                                GL_FALSE   /* software alpha channel? */
+                                );
 }
 
-XMesaBuffer XMesaCreatePixmapBuffer(XMesaVisual v, XMesaPixmap p,
-				    XMesaColormap c, __DRIdrawablePrivate *driDrawPriv)
+
+GLframebuffer *XMesaCreatePixmapBuffer( Display *dpy,
+                                        __DRIscreenPrivate *driScrnPriv,
+                                        __DRIdrawablePrivate *driDrawPriv,
+                                        GLvisual *mesaVis)
 {
-  return (XMesaBuffer)1;
+#if 0
+   /* Different drivers may have different combinations of hardware and
+    * software ancillary buffers.
+    */
+   return gl_create_framebuffer(mesaVis,
+                                GL_FALSE,  /* software depth buffer? */
+                                mesaVis->StencilBits > 0,
+                                mesaVis->AccumRedBits > 0,
+                                mesaVis->AlphaBits > 0
+                                );
+#else
+   return NULL;  /* not implemented yet */
+#endif
 }
 
-void XMesaDestroyBuffer(XMesaBuffer b)
-{
-}
 
-void XMesaSwapBuffers(XMesaBuffer b)
+void XMesaSwapBuffers(__DRIdrawablePrivate *driDrawPriv)
 {
   FxI32 result;
 #ifdef STATS
@@ -239,15 +237,20 @@ void XMesaSwapBuffers(XMesaBuffer b)
   extern int texSwaps;
   static int prevStalls=0;
 #endif
+  tdfxContextPrivate *gCCPriv;
+
   /*
   ** NOT_DONE: This assumes buffer is currently bound to a context.
   ** This needs to be able to swap buffers when not currently bound.
   */
-  if (gCC == NULL || gCCPriv == NULL) return;
+  if (gCC == NULL)
+     return;
+
+  gCCPriv = (tdfxContextPrivate *) gCC->driverPrivate;
 
   FLUSH_VB( gCCPriv->glCtx, "swap buffers" );
 
-  if (gCCPriv->haveDoubleBuffer) {
+  if (gCC->mesaContext->Visual->DBflag) {
 #ifdef STATS
     stalls=grFifoGetStalls();
     if (stalls!=prevStalls) {
@@ -261,59 +264,65 @@ void XMesaSwapBuffers(XMesaBuffer b)
 #endif
     FX_grDRIBufferSwap(gCCPriv->swapInterval);
     do {
-      result=FX_grGetInteger(FX_PENDING_BUFFERSWAPS);
-    } while (result>gCCPriv->maxPendingSwapBuffers);
+      result = FX_grGetInteger(FX_PENDING_BUFFERSWAPS);
+    } while (result > gCCPriv->maxPendingSwapBuffers);
     gCCPriv->stats.swapBuffer++;
-  } else {
-    fprintf(stderr, "No double buffer\n");
   }
 }
 
-GLboolean XMesaUnbindContext(XMesaContext c)
+GLboolean XMesaUnbindContext(__DRIcontextPrivate *driContextPriv)
 {
-  if (c && c==gCC && gCCPriv) FX_grGlideGetState((GrState*)gCCPriv->state);
-  return GL_TRUE;
+   if (driContextPriv && driContextPriv == gCC) {
+      tdfxContextPrivate *gCCPriv;
+      gCCPriv = (tdfxContextPrivate *) gCC->driverPrivate;
+      FX_grGlideGetState((GrState*)gCCPriv->state);
+   }
+   return GL_TRUE;
 }
 
-GLboolean XMesaMakeCurrent(XMesaContext c, XMesaBuffer b)
+GLboolean XMesaMakeCurrent(__DRIcontextPrivate *driContextPriv,
+                           __DRIdrawablePrivate *driDrawPriv,
+                           __DRIdrawablePrivate *driReadPriv)
 {
-  __DRIdrawablePrivate *driDrawPriv;
+  if (driContextPriv) {
+    tdfxContextPrivate *gCCPriv;
 
-  if (c) {
-    if (c==gCC) return GL_TRUE;
-    gCC     = c;
-    gCCPriv = (tdfxContextPrivate *)c->private;
+    gCC = driContextPriv;
+    gCCPriv = (tdfxContextPrivate *)driContextPriv->driverPrivate;
 
-    driDrawPriv = gCC->driContextPriv->driDrawablePriv;
     if (!gCCPriv->initDone) {
-      if (!tdfxInitHW(c)) return GL_FALSE;
+      if (!tdfxInitHW(driDrawPriv, gCCPriv))
+        return GL_FALSE;
       gCCPriv->width=0;
       XMesaWindowMoved();
       FX_grGlideGetState((GrState*)gCCPriv->state);
-    } else {
+    }
+    else {
       FX_grSstSelect(gCCPriv->board);
       FX_grGlideSetState((GrState*)gCCPriv->state);
       XMesaWindowMoved();
     }
 
-    gl_make_current(gCCPriv->glCtx, gCCPriv->glBuffer);
+    gl_make_current2(gCCPriv->glCtx, driDrawPriv->mesaBuffer, driReadPriv->mesaBuffer);
+
     fxSetupDDPointers(gCCPriv->glCtx);
     if (!gCCPriv->glCtx->Viewport.Width)
       gl_Viewport(gCCPriv->glCtx, 0, 0, driDrawPriv->w, driDrawPriv->h);
-  } else {
+  }
+  else {
     gl_make_current(0,0);
-    gCC     = NULL;
-    gCCPriv = NULL;
+    gCC = NULL;
   }
   return GL_TRUE;
 }
 
-void
-XMesaWindowMoved() {
-  __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv;
-  GLcontext *ctx;
-  
-  ctx=gCCPriv->glCtx;
+
+void XMesaWindowMoved(void)
+{
+  __DRIdrawablePrivate *dPriv = gCC->driDrawablePriv;
+  tdfxContextPrivate *gCCPriv = (tdfxContextPrivate *) gCC->driverPrivate;
+  GLcontext *ctx = gCCPriv->glCtx;
+
   grDRIPosition(dPriv->x, dPriv->y, dPriv->w, dPriv->h,
 		dPriv->numClipRects, dPriv->pClipRects);
   gCCPriv->numClipRects=dPriv->numClipRects;
@@ -326,6 +335,7 @@ XMesaWindowMoved() {
     gCCPriv->height=dPriv->h;
     gCCPriv->y_delta=gCCPriv->screen_height-gCCPriv->y_offset-gCCPriv->height;
   }
+  gCCPriv->needClip=1;
   switch (dPriv->numClipRects) {
   case 0:
     gCCPriv->clipMinX=dPriv->x;
@@ -344,14 +354,15 @@ XMesaWindowMoved() {
     gCCPriv->needClip=0;
     break;
   default:
-    gCCPriv->needClip=1;
   }
 }
 
 /* This is called from within the LOCK_HARDWARE routine */
-void XMesaUpdateState(int windowMoved) {
-  __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv;
+void XMesaUpdateState(int windowMoved)
+{
+  __DRIdrawablePrivate *dPriv = gCC->driDrawablePriv;
   __DRIscreenPrivate *sPriv = dPriv->driScreenPriv;
+  tdfxContextPrivate *gCCPriv = (tdfxContextPrivate *) gCC->driverPrivate;
   TDFXSAREAPriv *saPriv=(TDFXSAREAPriv*)(((char*)sPriv->pSAREA)+sizeof(XF86DRISAREARec));
 
   /* fprintf(stderr, "In FifoPtr=%d FifoRead=%d\n", saPriv->fifoPtr, saPriv->fifoRead); */
@@ -376,8 +387,9 @@ void XMesaUpdateState(int windowMoved) {
     XMesaWindowMoved();
 }
 
-void XMesaSetSAREA() {
-  __DRIdrawablePrivate *dPriv = gCC->driContextPriv->driDrawablePriv;
+void XMesaSetSAREA(void)
+{
+  __DRIdrawablePrivate *dPriv = gCC->driDrawablePriv;
   __DRIscreenPrivate *sPriv = dPriv->driScreenPriv;
   TDFXSAREAPriv *saPriv=(TDFXSAREAPriv*)(((char*)sPriv->pSAREA)+sizeof(XF86DRISAREARec));
 

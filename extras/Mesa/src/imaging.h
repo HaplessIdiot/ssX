@@ -32,23 +32,9 @@
 #include "all.h"
 #else
 #include "glheader.h"
+#include "types.h"
 #endif
 
-
-
-#if 0
-extern void _mesa_BlendColor(GLclampf r, GLclampf g, GLclampf b, GLclampf a);
-
-extern void _mesa_BlendEquation(GLenum eq);
-
-extern void _mesa_ColorSubTable(GLenum target, GLsizei start, GLsizei count, GLenum format, GLenum type, const GLvoid *data);
-
-extern void _mesa_ColorTable(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *table);
-#endif
-
-extern void _mesa_ColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params);
-
-extern void _mesa_ColorTableParameteriv(GLenum target, GLenum pname, const GLint *params);
 
 
 extern void _mesa_ConvolutionFilter1D(GLenum target, GLenum internalformat, GLsizei width, GLenum format, GLenum type, const GLvoid *image);
@@ -63,21 +49,9 @@ extern void _mesa_ConvolutionParameteri(GLenum target, GLenum pname, GLint param
 
 extern void _mesa_ConvolutionParameteriv(GLenum target, GLenum pname, const GLint *params);
 
-extern void _mesa_CopyColorSubTable(GLenum target, GLsizei start, GLint x, GLint y, GLsizei width);
-
-extern void _mesa_CopyColorTable(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
-
 extern void _mesa_CopyConvolutionFilter1D(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width);
 
 extern void _mesa_CopyConvolutionFilter2D(GLenum target, GLenum internalformat, GLint x, GLint y, GLsizei width, GLsizei height);
-
-#if 0
-extern void _mesa_GetColorTable(GLenum target, GLenum format, GLenum type, GLvoid *table);
-
-extern void _mesa_GetColorTableParameterfv(GLenum target, GLenum pname, GLfloat *params);
-
-extern void _mesa_GetColorTableParameteriv(GLenum target, GLenum pname, GLint *params);
-#endif
 
 extern void _mesa_GetConvolutionFilter(GLenum target, GLenum format, GLenum type, GLvoid *image);
 
@@ -108,5 +82,13 @@ extern void _mesa_ResetHistogram(GLenum target);
 extern void _mesa_ResetMinmax(GLenum target);
 
 extern void _mesa_SeparableFilter2D(GLenum target, GLenum internalformat, GLsizei width, GLsizei height, GLenum format, GLenum type, const GLvoid *row, const GLvoid *column);
+
+
+extern void
+_mesa_update_minmax(GLcontext *ctx, GLuint n, const GLfloat rgba[][4]);
+
+extern void
+_mesa_update_histogram(GLcontext *ctx, GLuint n, const GLfloat rgba[][4]);
+
 
 #endif

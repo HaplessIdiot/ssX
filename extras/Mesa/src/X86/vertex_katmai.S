@@ -9,12 +9,6 @@
 	
 	SEG_TEXT
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L##a
-#else
-#define LLBL(a) a
-#endif
-
 
 /*
  * void gl_v16_katmai_general_xform (GLfloat *dest,
@@ -44,7 +38,7 @@ GLNAME( gl_v16_katmai_general_xform ):
  	MOVUPS( REGOFF(48, ESI), XMM7 )	/* x44, x43, x42, x41 => xmm7 */
 
 ALIGNTEXT32
-LLBL( loop1 ):	
+LLBL(loop1):	
 
  	MOVSS( REGOFF(0, EDX), XMM0 )	/* s1 => xmm0 */
  	SHUFPS( CONST(0x0), XMM0, XMM0 )	/* xmm0 shuffle to other 96 bits */
@@ -104,7 +98,7 @@ ALIGNTEXT32
 
 	SUB_L( ECX, EDX )			/* last -= first */
 
-LLBL( v16_katmai_pv_loop_start ):
+LLBL(v16_katmai_pv_loop_start):
 	MOVUPS( REGOFF(0, ECX), XMM3 )		/* f[3], f[2], f[1], f[0] */
 
 	MOVSS( REGOFF(12, ECX), XMM2 )		/* -, -, -, f[3] */
@@ -121,7 +115,7 @@ LLBL( v16_katmai_pv_loop_start ):
 
 	ADD_L( EAX, ECX )			/* f += stride */
 	SUB_L( EAX, EDX )			/* (last-first)-stride */
-	JA ( LLBL( v16_katmai_pv_loop_start ) )
+	JA ( LLBL(v16_katmai_pv_loop_start) )
 
 	POP_L( EBP )
 	RET
@@ -159,9 +153,9 @@ ALIGNTEXT32
 	SHUFPS( CONST(0x44), REGOFF(MAT_SZ, EBP), XMM1 )
 						/* -, x33, x22, x11 => xmm1 */
 
-LLBL( v16_katmai_pcv_loop_start ):
+LLBL(v16_katmai_pcv_loop_start):
 	CMP_B ( CONST(0), REGIND(ESI) )		/* clip_mask == 0 ? */
-	JNE( LLBL( v16_katmai_pcv_skip ) )	/* no -> skip ! */
+	JNE( LLBL(v16_katmai_pcv_skip) )	/* no -> skip ! */
 
 	MOVUPS( REGOFF(0, ECX), XMM3 )		/* f[3], f[2], f[1], f[0] */
 
@@ -176,12 +170,12 @@ LLBL( v16_katmai_pcv_loop_start ):
 	MOVUPS( XMM1, REGOFF(0, ECX) )		/* back to f */
 	MOVSS( XMM2, REGOFF(12, ECX) )		/* 1/f[3] into f[3] ! */
 
-LLBL( v16_katmai_pcv_skip ):
+LLBL(v16_katmai_pcv_skip):
 	ADD_L( EAX, ECX )			/* f += stride */
 	INC_L( ESI )				/* nect ClipMask */
 
 	CMP_L( ECX, EDX )			/* p_first_vertex == p_last_vertex */
-	JNE( LLBL( v16_katmai_pcv_loop_start ) )
+	JNE( LLBL(v16_katmai_pcv_loop_start) )
 						/* no -> go on with next vertex */
 
 	POP_L( ESI )	

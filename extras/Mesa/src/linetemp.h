@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-/* $XFree86: $ */
+/* $XFree86: xc/extras/Mesa/src/linetemp.h,v 1.7 2000/02/18 12:18:44 tsi Exp $ */
 
 /*
  * Line Rasterizer Template
@@ -50,6 +50,10 @@
  *    BYTES_PER_ROW       - number of bytes per row in the color buffer
  *    PIXEL_ADDRESS(X,Y)  - returns the address of pixel at (X,Y) where
  *                          Y==0 at bottom of screen and increases upward.
+ *
+ * Similarly, for direct depth buffer access, this type is used for depth
+ * buffer addressing:
+ *    DEPTH_TYPE          - either GLushort or GLuint
  *
  * Optionally, one may provide one-time setup code
  *    SETUP_CODE    - code which is to be executed once per line
@@ -84,8 +88,14 @@
    GLint xstep, ystep;
 #endif
 #ifdef INTERP_Z
-   GLint z0, z1, dz, zPtrXstep, zPtrYstep;
-   GLdepth *zPtr;
+   GLint z0, z1, dz;
+   const GLint depthBits = ctx->Visual->DepthBits;
+   const GLint fixedToDepthShift = depthBits <= 16 ? FIXED_SHIFT : 0;
+#  define FixedToDepth(F)  ((F) >> fixedToDepthShift)
+#  ifdef DEPTH_TYPE
+     GLint zPtrXstep, zPtrYstep;
+     DEPTH_TYPE *zPtr;
+#  endif
 #endif
 #ifdef INTERP_RGB
    GLfixed r0 = IntToFixed(VB->ColorPtr->data[vert0][0]);
@@ -109,7 +119,7 @@
 #endif
 #ifdef INTERP_INDEX
    GLint i0 = VB->IndexPtr->data[vert0] << 8;
-   GLint di = (GLint) (VB->IndexPtr->data[vert1] << 8)-i0;
+   GLint di = (GLint) (VB->IndexPtr->data[vert1] << 8) - i0;
 #endif
 #ifdef INTERP_ST
    GLfixed s0 = FloatToFixed(VB->TexCoord[vert0][0] * S_SCALE);
@@ -209,14 +219,17 @@
 #endif
 
 #ifdef INTERP_Z
-   zPtr = Z_ADDRESS(ctx,x0,y0);
-#  if DEPTH_BITS==16
+#  ifdef DEPTH_TYPE
+     zPtr = (DEPTH_TYPE *) _mesa_zbuffer_address(ctx, x0, y0);
+#  endif
+   if (depthBits <= 16) {
       z0 = FloatToFixed(VB->Win.data[vert0][2]);
       z1 = FloatToFixed(VB->Win.data[vert1][2]);
-#  else
+   }
+   else {
       z0 = (int) VB->Win.data[vert0][2];
       z1 = (int) VB->Win.data[vert1][2];
-#  endif
+   }
 #endif
 #ifdef PIXEL_ADDRESS
    pixelPtr = (PIXEL_TYPE *) PIXEL_ADDRESS(x0,y0);
@@ -227,8 +240,8 @@
 #ifdef INTERP_XY
       xstep = -1;
 #endif
-#ifdef INTERP_Z
-      zPtrXstep = -((GLint)sizeof(GLdepth));
+#if defined(INTERP_Z) && defined(DEPTH_TYPE)
+      zPtrXstep = -((GLint)sizeof(DEPTH_TYPE));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelXstep = -((GLint)sizeof(PIXEL_TYPE));
@@ -238,8 +251,8 @@
 #ifdef INTERP_XY
       xstep = 1;
 #endif
-#ifdef INTERP_Z
-      zPtrXstep = ((GLint)sizeof(GLdepth));
+#if defined(INTERP_Z) && defined(DEPTH_TYPE)
+      zPtrXstep = ((GLint)sizeof(DEPTH_TYPE));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelXstep = ((GLint)sizeof(PIXEL_TYPE));
@@ -251,8 +264,8 @@
 #ifdef INTERP_XY
       ystep = -1;
 #endif
-#ifdef INTERP_Z
-      zPtrYstep = -ctx->DrawBuffer->Width * ((GLint)sizeof(GLdepth));
+#if defined(INTERP_Z) && defined(DEPTH_TYPE)
+      zPtrYstep = -ctx->DrawBuffer->Width * ((GLint)sizeof(DEPTH_TYPE));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelYstep = BYTES_PER_ROW;
@@ -262,8 +275,8 @@
 #ifdef INTERP_XY
       ystep = 1;
 #endif
-#ifdef INTERP_Z
-      zPtrYstep = ctx->DrawBuffer->Width * ((GLint)sizeof(GLdepth));
+#if defined(INTERP_Z) && defined(DEPTH_TYPE)
+      zPtrYstep = ctx->DrawBuffer->Width * ((GLint)sizeof(DEPTH_TYPE));
 #endif
 #ifdef PIXEL_ADDRESS
       pixelYstep = -(BYTES_PER_ROW);
@@ -328,11 +341,7 @@
          if (ctx->Line.StipplePattern & m) {
 #endif
 #ifdef INTERP_Z
-#  if DEPTH_BITS==16
-            GLdepth Z = FixedToInt(z0);
-#  else
-            GLdepth Z = z0;
-#  endif
+            GLdepth Z = FixedToDepth(z0);
 #endif
 #ifdef INTERP_INDEX
             GLint I = i0 >> 8;
@@ -371,7 +380,9 @@
          x0 += xstep;
 #endif
 #ifdef INTERP_Z
-         zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrXstep);
+#  ifdef DEPTH_TYPE
+         zPtr = (DEPTH_TYPE *) ((GLubyte*) zPtr + zPtrXstep);
+#  endif
          z0 += dz;
 #endif
 #ifdef INTERP_RGB
@@ -417,8 +428,8 @@
 #ifdef INTERP_XY
             y0 += ystep;
 #endif
-#ifdef INTERP_Z
-            zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrYstep);
+#if defined(INTERP_Z) && defined(DEPTH_TYPE)
+            zPtr = (DEPTH_TYPE *) ((GLubyte*) zPtr + zPtrYstep);
 #endif
 #ifdef PIXEL_ADDRESS
             pixelPtr = (PIXEL_TYPE*) ((GLubyte*) pixelPtr + pixelYstep);
@@ -480,11 +491,7 @@
          if (ctx->Line.StipplePattern & m) {
 #endif
 #ifdef INTERP_Z
-#  if DEPTH_BITS==16
-            GLdepth Z = FixedToInt(z0);
-#  else
-            GLdepth Z = z0;
-#  endif
+            GLdepth Z = FixedToDepth(z0);
 #endif
 #ifdef INTERP_INDEX
             GLint I = i0 >> 8;
@@ -523,7 +530,9 @@
          y0 += ystep;
 #endif
 #ifdef INTERP_Z
-         zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrYstep);
+#  ifdef DEPTH_TYPE
+         zPtr = (DEPTH_TYPE *) ((GLubyte*) zPtr + zPtrYstep);
+#  endif
          z0 += dz;
 #endif
 #ifdef INTERP_RGB
@@ -569,8 +578,8 @@
 #ifdef INTERP_XY
             x0 += xstep;
 #endif
-#ifdef INTERP_Z
-            zPtr = (GLdepth *) ((GLubyte*) zPtr + zPtrXstep);
+#if defined(INTERP_Z) && defined(DEPTH_TYPE)
+            zPtr = (DEPTH_TYPE *) ((GLubyte*) zPtr + zPtrXstep);
 #endif
 #ifdef PIXEL_ADDRESS
             pixelPtr = (PIXEL_TYPE*) ((GLubyte*) pixelPtr + pixelXstep);
@@ -592,6 +601,7 @@
 #undef INTERP_INDEX
 #undef PIXEL_ADDRESS
 #undef PIXEL_TYPE
+#undef DEPTH_TYPE
 #undef BYTES_PER_ROW
 #undef SETUP_CODE
 #undef PLOT
@@ -600,3 +610,4 @@
 #undef CLIP_HACK
 #undef STIPPLE
 #undef WIDE
+#undef FixedToDepth

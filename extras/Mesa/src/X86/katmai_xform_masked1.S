@@ -9,12 +9,6 @@
    SEG_TEXT
 
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
-
 #define S(i) 	REGOFF(i * 4, ESI)
 #define D(i) 	REGOFF(i * 4, EDI)
 #define M(i) 	REGOFF(i * 4, EDX)
@@ -76,7 +70,7 @@ GLNAME( gl_katmai_transform_points1_general_masked ):
     MOV_B( ARG_FLAG, BL )			/* clip mask flags */
 
     TEST_L( ECX, ECX )				/* count was zero ? */
-    JZ( LLBL( K_GTP1GM_finish ) )		/* yes -> nothing to do. */
+    JZ( LLBL(K_GTP1GM_finish) )			/* yes -> nothing to do. */
 
     MOV_L( REGOFF(V4F_STRIDE, ESI), EAX ) 	/* stride */
     OR_L( CONST(VEC_SIZE_4), REGOFF(V4F_FLAGS, EDI) ) 	/* set dest flags */
@@ -96,7 +90,7 @@ ALIGNTEXT32
     MOVUPS( M(12), XMM1 )			/* m15 | m14 | m13 | m12 */
 
 ALIGNTEXT32
-LLBL( K_GTP1GM_top ):
+LLBL(K_GTP1GM_top):
     TEST_B( BL, REGIND(EBP) )
     JNZ( LLBL(K_GTP1GM_skip) )
 	
@@ -160,7 +154,7 @@ GLNAME( gl_katmai_transform_points1_identity_masked ):
     JE( LLBL(K_GTP1IM_finish) )
 
 ALIGNTEXT32
-LLBL( K_GTP1IM_top ):
+LLBL(K_GTP1IM_top):
     TEST_B( BL, REGIND(EBP) )
     JNZ( LLBL(K_GTP1IM_skip) )
 

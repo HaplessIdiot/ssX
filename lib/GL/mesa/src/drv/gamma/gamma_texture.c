@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texture.c,v 1.1 1999/06/14 07:31:16 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texture.c,v 1.2 2000/02/23 04:46:45 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -34,6 +34,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
+#include <Xarch.h>
 #include <X11/Xlibint.h>
 #include "gamma_init.h"
 #include <string.h>
@@ -74,7 +75,11 @@ void gammaTOInit(gammaTexObj *t)
 
     t->TextureFilterMode = (TextureFilterModeDisable);
 
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
     t->TextureFormat = (TF_LittleEndian |
+#else
+    t->TextureFormat = (TF_BigEndian |
+#endif
 			TF_16Bit_565 |
 			TF_ColorOrder_RGB |
 			TF_Compnents_4 |

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.12 2000/02/23 04:46:55 martin Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.13 2000/03/02 16:07:38 martin Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -7,6 +7,9 @@ XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/Imakefile,v 1.12 2000/02/23 04:4
 
       SUBDIRS = X
 
+LinkSourceFile(aatriangle.c,../../../../../extras/Mesa/src)
+LinkSourceFile(aatriangle.h,../../../../../extras/Mesa/src)
+LinkSourceFile(aatritemp.h,../../../../../extras/Mesa/src)
 LinkSourceFile(accum.c,../../../../../extras/Mesa/src)
 LinkSourceFile(accum.h,../../../../../extras/Mesa/src)
 LinkSourceFile(all.h,../../../../../extras/Mesa/src)
@@ -115,6 +118,8 @@ LinkSourceFile(pipeline.c,../../../../../extras/Mesa/src)
 LinkSourceFile(pipeline.h,../../../../../extras/Mesa/src)
 LinkSourceFile(pixel.c,../../../../../extras/Mesa/src)
 LinkSourceFile(pixel.h,../../../../../extras/Mesa/src)
+LinkSourceFile(pixeltex.c,../../../../../extras/Mesa/src)
+LinkSourceFile(pixeltex.h,../../../../../extras/Mesa/src)
 LinkSourceFile(points.c,../../../../../extras/Mesa/src)
 LinkSourceFile(points.h,../../../../../extras/Mesa/src)
 LinkSourceFile(polygon.c,../../../../../extras/Mesa/src)
@@ -184,7 +189,8 @@ LinkSourceFile(xform_tmp.h,../../../../../extras/Mesa/src)
 LinkSourceFile(zoom.c,../../../../../extras/Mesa/src)
 LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 
-    CORE_SRCS = accum.c \
+    CORE_SRCS = aatriangle.c \
+		accum.c \
 		alpha.c \
 		alphabuf.c \
                 attrib.c \
@@ -226,6 +232,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		pb.c \
 		pipeline.c \
 		pixel.c \
+		pixeltex.c \
 		points.c \
 		polygon.c \
 		quads.c \
@@ -257,7 +264,8 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		xform.c \
 		zoom.c
 
-    CORE_OBJS = accum.o \
+    CORE_OBJS = aatriangle.o \
+		accum.o \
 		alpha.o \
 		alphabuf.o \
                 attrib.o \
@@ -300,6 +308,7 @@ LinkSourceFile(zoom.h,../../../../../extras/Mesa/src)
 		pb.o \
 		pipeline.o \
 		pixel.o \
+		pixeltex.o \
 		points.o \
 		polygon.o \
 		quads.o \

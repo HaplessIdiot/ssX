@@ -12,4 +12,7 @@ extern GLboolean mgaDDBuildPrecalcPipeline( GLcontext *ctx );
 extern void mgaDDFastPath( struct vertex_buffer *VB );
 extern void mgaDDFastPathInit( void );
 
+extern void mgaDDEltPath( struct vertex_buffer *VB );
+extern void mgaDDEltPathInit( void );
+
 #endif

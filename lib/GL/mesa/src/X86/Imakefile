@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.7 2000/05/04 20:21:11 alanh Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.8 2000/05/11 18:14:09 tsi Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -13,10 +13,9 @@ LinkSourceFile(common_x86asm.h, ../../../../../extras/Mesa/src/X86)
 LinkSourceFile(glapi_x86.S, ../../../../../extras/Mesa/src/X86)
 LinkSourceFile(x86.c, ../../../../../extras/Mesa/src/X86)
 LinkSourceFile(x86.h, ../../../../../extras/Mesa/src/X86)
-XCOMM (L)inkSourceFile(x86a.S, ../../../../../extras/Mesa/src/X86)
+LinkSourceFile(x86a.S, ../../../../../extras/Mesa/src/X86)
 LinkSourceFile(vertex.S, ../../../../../extras/Mesa/src/X86)
 LinkSourceFile(x86flatregs.m4, ../../../../../extras/Mesa/src/X86)
-LinkSourceFile(x86a.S.m4, ../../../../../extras/Mesa/src/X86)
 
 LinkSourceFile(mmx.h, ../../../../../extras/Mesa/src/X86)
 LinkSourceFile(mmx_blend.S, ../../../../../extras/Mesa/src/X86)
@@ -55,9 +54,7 @@ XCOMM We'll learn at runtime whether 3dNow, MMX, etc are really present.
 
       MMX_DEFS = -DUSE_MMX_ASM
 
-
-XCOMM Disabling 3DNow code for the time being
-#if 0
+#ifdef MesaUse3DNow
     3DNOW_SRCS = 3dnow.c 3dnow_norm_raw.S 3dnow_xform_masked1.S \
 		 3dnow_xform_masked2.S 3dnow_xform_masked3.S \
 		 3dnow_xform_masked4.S 3dnow_xform_raw1.S \
@@ -72,6 +69,7 @@ XCOMM Disabling 3DNow code for the time being
 
     3DNOW_DEFS = -DUSE_3DNOW_ASM
 #endif
+
 
 #endif
 
@@ -91,14 +89,12 @@ XCOMM Disabling 3DNow code for the time being
 
 LibraryObjectRule()
 
-M4File(x86a.S,x86flatregs.m4)
-
 STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
-#ifdef HAVE_3DNOW
+#ifdef MesaUse3DNow
 ObjectFromAsmSource(3dnow_norm_raw, NullParameter)
 ObjectFromAsmSource(3dnow_xform_masked1, NullParameter)
 ObjectFromAsmSource(3dnow_xform_masked2, NullParameter)
@@ -111,9 +107,7 @@ ObjectFromAsmSource(3dnow_xform_raw4, NullParameter)
 ObjectFromAsmSource(vertex_3dnow, NullParameter)
 #endif
 
-#ifdef HAVE_MMX
 ObjectFromAsmSource(mmx_blend, NullParameter)
-#endif
 
 ObjectFromAsmSource(common_x86asm, NullParameter)
 ObjectFromAsmSource(vertex, NullParameter)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.4 2000/02/14 06:27:11 martin Exp $ */
+/* $XFree86: xc/lib/GL/dri/xf86dristr.h,v 1.5 2000/02/23 04:46:34 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -40,7 +40,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #define XF86DRINAME "XFree86-DRI"
 
-#define XF86DRI_MAJOR_VERSION	1	/* current version numbers */
+#define XF86DRI_MAJOR_VERSION	3	/* current version numbers */
 #define XF86DRI_MINOR_VERSION	0
 #define XF86DRI_PATCH_VERSION	0
 
@@ -121,6 +121,20 @@ typedef struct _XF86DRIAuthConnection {
     CARD32      magic B32;
 } xXF86DRIAuthConnectionReq;
 #define sz_xXF86DRIAuthConnectionReq	12
+
+typedef struct {
+    BYTE        type;
+    BOOL        pad1;
+    CARD16      sequenceNumber B16;
+    CARD32      length B32;
+    CARD32      authenticated B32;
+    CARD32      pad2 B32;
+    CARD32      pad3 B32;
+    CARD32      pad4 B32;
+    CARD32      pad5 B32;
+    CARD32      pad6 B32;
+} xXF86DRIAuthConnectionReply;
+#define zx_xXF86DRIAuthConnectionReply  32
 
 typedef struct _XF86DRICloseConnection {
     CARD8	reqType;		/* always DRIReqCode */
@@ -238,9 +252,13 @@ typedef struct {
     INT16	drawableWidth B16;
     INT16	drawableHeight B16;
     CARD32	numClipRects B32;
-    CARD32	pad6 B32;
+    INT16       backX B16;
+    INT16       backY B16;
+    CARD32      numBackClipRects B32;
 } xXF86DRIGetDrawableInfoReply;
-#define sz_xXF86DRIGetDrawableInfoReply	32
+
+#define sz_xXF86DRIGetDrawableInfoReply	36
+
 
 typedef struct _XF86DRIGetDeviceInfo {
     CARD8	reqType;		/* always DRIReqCode */

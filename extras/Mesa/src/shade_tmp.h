@@ -553,8 +553,7 @@ static void TAG(shade_fast_rgba)( struct vertex_buffer *VB )
 	    COPY_3V(sum[0], base[0]);
 	    if (NR_SIDES == 2)  COPY_3V(sum[1], base[1]);
 
-	    if (0)
-/*  	       if (ctx->Light.ShadeModel == GL_SMOOTH) */
+	    if (MESA_VERBOSE&VERBOSE_LIGHTING)
 	       fprintf(stderr, "light normal %d/%d, %f %f %f\n",
 		       j, VB->Start, normal[0], normal[1], normal[2]);
 

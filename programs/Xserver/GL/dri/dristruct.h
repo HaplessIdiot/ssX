@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.6 2000/02/23 04:46:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dristruct.h,v 1.7 2000/03/02 16:07:38 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -87,6 +87,8 @@ typedef struct _DRIScreenPrivRec
     void**		hiddenContextStore;    /* hidden X context          */
     void**		partial3DContextStore; /* parital 3D context        */
     DRIInfoPtr		pDriverInfo;
+    int                 nrWindows;
+    XF86DRIClipRectRec  private_buffer_rect; /* management of private buffers */
     DRIWrappedFuncsRec	wrap;
     DrawablePtr		DRIDrawables[SAREA_MAX_DRAWABLES];
 } DRIScreenPrivRec, *DRIScreenPrivPtr;

@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <math.h>
 
+#include "types.h"
 #include "vb.h"
 #include "pipeline.h"
 
@@ -122,34 +123,14 @@ void mgaDDTrifuncInit()
    init_twoside_offset();
    init_twoside_offset_flat();
 
-   /* Hmmm...
-    */
-   for (i = 0 ; i < 0x20 ; i++) {
-      if (i & ~MGA_FLAT_BIT) {
-	 points_tab[i] = points_tab[i&MGA_FLAT_BIT];
-	 line_tab[i] = line_tab[i&MGA_FLAT_BIT];
-      }
-   }
-
    for (i = 0 ; i < 0x20 ; i++) 
-      if ((i & (MGA_NODRAW_BIT|MGA_FALLBACK_BIT)) == MGA_NODRAW_BIT ||
-	  mgaglx.nullprims) 
+      if ((i & (MGA_NODRAW_BIT|MGA_FALLBACK_BIT)) == MGA_NODRAW_BIT)
       {
 	 quad_tab[i] = mga_null_quad; 
 	 tri_tab[i] = mga_null_triangle; 
 	 line_tab[i] = mga_null_line;
 	 points_tab[i] = mga_null_points;
       }
-
-   if (mgaglx.noFallback) {
-      for (i = 0 ; i < 0x10 ; i++) {
-	 points_tab[i|MGA_FALLBACK_BIT] = points_tab[i];
-	 line_tab[i|MGA_FALLBACK_BIT] = line_tab[i];
-	 tri_tab[i|MGA_FALLBACK_BIT] = tri_tab[i];
-	 quad_tab[i|MGA_FALLBACK_BIT] = quad_tab[i];
-      }
-   }
-
 }
 
 
@@ -162,50 +143,61 @@ void mgaDDChooseRenderState( GLcontext *ctx )
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    GLuint flags = ctx->TriangleCaps;
 
-   ctx->IndirectTriangles &= ~DD_SW_RASTERIZE;
+   if (mmesa->Fallback)
+      return;
+
+   mmesa->IndirectTriangles = 0;
 
    if (flags) {
       GLuint ind = 0;
       GLuint shared = 0;
-      GLuint fallback = MGA_FALLBACK_BIT;
-
-      if (mgaglx.noFallback) fallback = 0;
 
       if (flags & DD_Z_NEVER)                      shared |= MGA_NODRAW_BIT;
       if (flags & DD_FLATSHADE)                    shared |= MGA_FLAT_BIT;
-      if (flags & DD_MULTIDRAW)                    shared |= fallback;
-      if (flags & (DD_SELECT|DD_FEEDBACK))         shared |= MGA_FALLBACK_BIT;
+      if (flags & (DD_MULTIDRAW|
+		   DD_SELECT|
+		   DD_FEEDBACK))                   shared |= MGA_FALLBACK_BIT;
       if (flags & DD_STENCIL)                      shared |= MGA_FALLBACK_BIT;
 
       ind = shared;
+#if 0
       if (flags & DD_POINT_SMOOTH)                 ind |= MGA_ANTIALIAS_BIT;
-      if (flags & DD_POINT_ATTEN)                  ind |= fallback;
+#else
+      if (flags & DD_POINT_SMOOTH)                 ind |= MGA_FALLBACK_BIT;
+#endif
 
       mmesa->renderindex = ind;
       mmesa->PointsFunc = points_tab[ind];
       if (ind & MGA_FALLBACK_BIT) 
-	 ctx->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
+	 mmesa->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
 
       ind = shared;
+#if 0
       if (flags & DD_LINE_SMOOTH)                   ind |= MGA_ANTIALIAS_BIT;
-      if (flags & DD_LINE_STIPPLE)                  ind |= fallback;
+#else
+      if (flags & DD_LINE_SMOOTH)                   ind |= MGA_FALLBACK_BIT;
+#endif
+      if (flags & DD_LINE_STIPPLE)                  ind |= MGA_FALLBACK_BIT;
 
       mmesa->renderindex |= ind;
       mmesa->LineFunc = line_tab[ind];
       if (ind & MGA_FALLBACK_BIT) 
-	 ctx->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
+	 mmesa->IndirectTriangles |= DD_LINE_SW_RASTERIZE;
 
       ind = shared;
       if (flags & DD_TRI_SMOOTH)                    ind |= MGA_ANTIALIAS_BIT;
       if (flags & DD_TRI_OFFSET)                    ind |= MGA_OFFSET_BIT;
       if (flags & DD_TRI_LIGHT_TWOSIDE)             ind |= MGA_TWOSIDE_BIT;
-      if (flags & (DD_TRI_UNFILLED|DD_TRI_STIPPLE)) ind |= fallback;	
+      if (flags & DD_TRI_UNFILLED)                  ind |= MGA_FALLBACK_BIT;
+      if ((flags & DD_TRI_STIPPLE) &&
+	  (ctx->IndirectTriangles & DD_TRI_STIPPLE)) ind |= MGA_FALLBACK_BIT;	
 
       mmesa->renderindex |= ind;
       mmesa->TriangleFunc = tri_tab[ind];
       mmesa->QuadFunc = quad_tab[ind];
       if (ind & MGA_FALLBACK_BIT)
-	 ctx->IndirectTriangles |= (DD_TRI_SW_RASTERIZE | DD_QUAD_SW_RASTERIZE);
+	 mmesa->IndirectTriangles |= (DD_TRI_SW_RASTERIZE | 
+				      DD_QUAD_SW_RASTERIZE);
    } 
    else if (mmesa->renderindex)
    {

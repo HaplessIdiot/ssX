@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_init.h,v 1.1 1999/06/14 07:31:15 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_init.h,v 1.2 2000/02/23 04:46:43 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -43,7 +43,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "gamma_regs.h"
 #include "gamma_macros.h"
 #include "gamma_texture.h"
-#include "xmesaP.h"
 
 typedef struct {
     int           regionCount;       /* Count of register regions */
@@ -109,6 +108,12 @@ typedef struct {
     int                 AB_FBReadMode;
     int                 AB_FBReadMode_Save;
     int                 DeltaMode;
+    int			ColorMaterialMode;
+    int			MaterialMode;
+    int			LightingMode;
+    int			Light0Mode;
+    int			Light1Mode;
+    int			ScissorMode;
     int                 Window; /* GID part probably should be in draw priv */
 
     gammaTexObj        *curTexObj;
@@ -140,8 +145,8 @@ extern void       gammaLoadHWMatrix(void);
 extern void       gammaInitHW(gammaContextPrivate *gcp);
 
 extern float                IdentityMatrix[16];
-extern XMesaContext         nullCC;
-extern XMesaContext         gCC;
+extern __DRIcontextPrivate *nullCC;
+extern __DRIcontextPrivate *gCC;
 extern gammaContextPrivate *gCCPriv;
 
 #endif

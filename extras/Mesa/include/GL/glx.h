@@ -29,12 +29,21 @@
 #define GLX_H
 
 
+#ifdef __VMS
+# ifdef __cplusplus
+/* VMS Xlib.h gives problems with C++.
+ * this avoids a bunch of trivial warnings */
+#pragma message disable nosimpint
+#endif
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
-#include "GL/gl.h"
-#ifdef MESA
-#include "GL/xmesa.h"
+#ifdef __VMS
+# ifdef __cplusplus
+#pragma message enable nosimpint
 #endif
+#endif
+#include "GL/gl.h"
 
 
 #if defined(USE_MGL_NAMESPACE)
@@ -49,7 +58,6 @@ extern "C" {
 
 #define GLX_VERSION_1_1		1
 #define GLX_VERSION_1_2		1
-#define GLX_VERSION_1_3		1
 
 #define GLX_EXTENSION_NAME   "GLX"
 
@@ -99,13 +107,11 @@ extern "C" {
 
 /*
  * GLX 1.3 and later:
- * XXX don't know the values of some of these enums!
- * XXX some 1.3 enums may be missing!
  */
-#define GLX_CONFIG_CAVEAT		?
-#define GLX_DONT_CARE			?
-#define GLX_SLOW_CONFIG			?
-#define GLX_NON_CONFORMANT_CONFIG	?
+#define GLX_CONFIG_CAVEAT		0x20
+#define GLX_DONT_CARE			0xFFFFFFFF
+#define GLX_SLOW_CONFIG			0x8001
+#define GLX_NON_CONFORMANT_CONFIG	0x800D
 #define GLX_X_VISUAL_TYPE		0x22
 #define GLX_TRANSPARENT_TYPE		0x23
 #define GLX_TRANSPARENT_INDEX_VALUE	0x24
@@ -113,29 +119,29 @@ extern "C" {
 #define GLX_TRANSPARENT_GREEN_VALUE	0x26
 #define GLX_TRANSPARENT_BLUE_VALUE	0x27
 #define GLX_TRANSPARENT_ALPHA_VALUE	0x28
-#define GLX_MAX_PBUFFER_WIDTH		?
-#define GLX_MAX_PBUFFER_HEIGHT		?
-#define GLX_MAX_PBUFFER_PIXELS		?
-#define GLX_PRESERVED_CONTENTS		?
-#define GLX_LARGEST_BUFFER		?
-#define GLX_DRAWABLE_TYPE		?
-#define GLX_FBCONFIG_ID			?
-#define GLX_VISUAL_ID			?
-#define GLX_WINDOW_BIT			?
-#define GLX_PIXMAP_BIT			?
-#define GLX_PBUFFER_BIT			?
-#define GLX_AUX_BUFFERS_BIT		?
-#define GLX_FRONT_LEFT_BUFFER_BIT	?
-#define GLX_FRONT_RIGHT_BUFFER_BIT	?
-#define GLX_BACK_LEFT_BUFFER_BIT	?
-#define GLX_BACK_RIGHT_BUFFER_BIT	?
-#define GLX_AUX_BUFFERS_BIT		?
-#define GLX_DEPTH_BUFFER_BIT		?
-#define GLX_STENCIL_BUFFER_BIT		?
-#define GLX_ACCUM_BUFFER_BIT		?
-#define GLX_RENDER_TYPE			?
-#define GLX_DRAWABLE_TYPE		?
-#define GLX_X_RENDERABLE		?
+#define GLX_MAX_PBUFFER_WIDTH		0x8016
+#define GLX_MAX_PBUFFER_HEIGHT		0x8017
+#define GLX_MAX_PBUFFER_PIXELS		0x8018
+#define GLX_PRESERVED_CONTENTS		0x801B
+#define GLX_LARGEST_BUFFER		0x801C
+#define GLX_DRAWABLE_TYPE		0x8010
+#define GLX_FBCONFIG_ID			0x8013
+#define GLX_VISUAL_ID			0x800B
+#define GLX_WINDOW_BIT			0x00000001
+#define GLX_PIXMAP_BIT			0x00000002
+#define GLX_PBUFFER_BIT			0x00000004
+#define GLX_AUX_BUFFERS_BIT		0x00000010
+#define GLX_FRONT_LEFT_BUFFER_BIT	0x00000001
+#define GLX_FRONT_RIGHT_BUFFER_BIT	0x00000002
+#define GLX_BACK_LEFT_BUFFER_BIT	0x00000004
+#define GLX_BACK_RIGHT_BUFFER_BIT	0x00000008
+#define GLX_AUX_BUFFERS_BIT		0x00000010
+#define GLX_DEPTH_BUFFER_BIT		0x00000020
+#define GLX_STENCIL_BUFFER_BIT		0x00000040
+#define GLX_ACCUM_BUFFER_BIT		0x00000080
+#define GLX_DRAWABLE_TYPE		0x8010
+#define GLX_RENDER_TYPE			0x8011
+#define GLX_X_RENDERABLE		0x8012
 #define GLX_NONE			0x8000
 #define GLX_TRUE_COLOR			0x8002
 #define GLX_DIRECT_COLOR		0x8003
@@ -144,18 +150,18 @@ extern "C" {
 #define GLX_GRAY_SCALE			0x8006
 #define GLX_STATIC_GRAY			0x8007
 #define GLX_TRANSPARENT_INDEX		0x8009
-#define GLX_COLOR_INDEX_TYPE		?
-#define GLX_COLOR_INDEX_BIT		?
-#define GLX_SCREEN			?
-#define GLX_PBUFFER_CLOBBER_MASK	?
-#define GLX_DAMAGED			?
-#define GLX_SAVED			?
-#define GLX_WINDOW			?
-#define GLX_PBUFFER			?
+#define GLX_COLOR_INDEX_TYPE		0x8015
+#define GLX_COLOR_INDEX_BIT		0x00000002
+#define GLX_SCREEN			0x800C
+#define GLX_PBUFFER_CLOBBER_MASK	0x08000000
+#define GLX_DAMAGED			0x8020
+#define GLX_SAVED			0x8021
+#define GLX_WINDOW			0x8022
+#define GLX_PBUFFER			0x8033
 
 
 /*
- * GLX_EXT_visual_info extension
+ * 28. GLX_EXT_visual_info extension
  */
 #define GLX_X_VISUAL_TYPE_EXT		0x22
 #define GLX_TRANSPARENT_TYPE_EXT	0x23
@@ -164,11 +170,6 @@ extern "C" {
 #define GLX_TRANSPARENT_GREEN_VALUE_EXT	0x26
 #define GLX_TRANSPARENT_BLUE_VALUE_EXT	0x27
 #define GLX_TRANSPARENT_ALPHA_VALUE_EXT	0x28
-
-
-/*
- * GLX_visual_info extension
- */
 #define GLX_TRUE_COLOR_EXT		0x8002
 #define GLX_DIRECT_COLOR_EXT		0x8003
 #define GLX_PSEUDO_COLOR_EXT		0x8004
@@ -181,9 +182,28 @@ extern "C" {
 
 
 /*
+ * 42. GLX_EXT_visual_rating
+ */
+#define GLX_VISUAL_CAVEAT_EXT		0x20
+/*#define GLX_NONE_EXT			0x8000*/
+#define GLX_SLOW_VISUAL_EXT		0x8001
+#define GLX_NON_CONFORMANT_VISUAL_EXT	0x800D
+
+
+/*
+ * 47. GLX_EXT_import_context
+ */
+#define GLX_SHARE_CONTEXT_EXT		0x800A
+#define GLX_VISUAL_ID_EXT		0x800B
+#define GLX_SCREEN_EXT			0x800C
+
+
+/*
  * Compile-time extension tests
  */
 #define GLX_EXT_visual_info		1
+#define GLX_EXT_visual_rating		1
+#define GLX_EXT_import_context		1
 #define GLX_MESA_pixmap_colormap	1
 #define GLX_MESA_release_buffers	1
 #define GLX_MESA_copy_sub_buffer	1
@@ -267,11 +287,14 @@ extern Display *glXGetCurrentDisplay( void );
 
 
 /* GLX 1.3 and later */
-extern GLXFBConfig glXChooseFBConfig( Display *dpy, int screen,
-                                      const int *attribList, int *nitems );
+extern GLXFBConfig *glXChooseFBConfig( Display *dpy, int screen,
+                                       const int *attribList, int *nitems );
 
 extern int glXGetFBConfigAttrib( Display *dpy, GLXFBConfig config,
                                  int attribute, int *value );
+
+extern GLXFBConfig *glXGetFBConfigs( Display *dpy, int screen,
+                                     int *nelements );
 
 extern XVisualInfo *glXGetVisualFromFBConfig( Display *dpy,
                                               GLXFBConfig config );
@@ -336,6 +359,21 @@ extern GLboolean glXSet3DfxModeMESA( GLint mode );
 extern int glXGetVideoSyncSGI(unsigned int *count);
 extern int glXWaitVideoSyncSGI(int divisor, int remainder,
                                unsigned int *count);
+
+
+
+/* GLX_EXT_import_context */
+extern void glXFreeContextEXT(Display *dpy, GLXContext context);
+
+extern GLXContextID glXGetContextIDEXT(const GLXContext context);
+
+extern Display *glXGetCurrentDisplayEXT(void);
+
+extern GLXContext glXImportContextEXT(Display *dpy, GLXContextID contextID);
+
+extern int glXQueryContextInfoEXT(Display *dpy, GLXContext context,
+                                  int attribute,int *value);
+
 
 
 /* GLX_ARB_get_proc_address */

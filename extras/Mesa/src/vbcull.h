@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -24,8 +24,6 @@
  */
 
 
-
-
 #ifndef VCULL_H
 #define VCULL_H
 
@@ -38,6 +36,7 @@ extern const char *gl_prim_name[GL_POLYGON+2];
 extern GLuint gl_cull_vb( struct vertex_buffer *VB );
 
 extern void gl_dont_cull_vb( struct vertex_buffer *VB );
+
 extern void gl_fast_copy_vb( struct vertex_buffer *VB );
 
 extern void gl_make_normal_cullmask( struct vertex_buffer *VB );

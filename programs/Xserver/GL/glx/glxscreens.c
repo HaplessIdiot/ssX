@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.2 1999/06/14 07:31:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/glx/glxscreens.c,v 1.3 2000/04/05 18:13:28 dawes Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -251,9 +251,14 @@ void __glXScreenInit(GLint numscreens)
 	    if ((*__glXScreens[j]->screenProbe)(i)) {
 		__glXActiveScreens[i] = *__glXScreens[j];
 
+#if 0
+                /* we don't use this since matchVisuals doesn't allow alpha */
 		__glXActiveScreens[i].numUsableVisuals =
 		    matchVisuals(__glXActiveScreens[i].pGlxVisual,
 			         __glXActiveScreens[i].numVisuals, i); 
+#else
+		__glXActiveScreens[i].numUsableVisuals = __glXActiveScreens[i].numVisuals;
+#endif
 		__glXActiveScreens[i].GLXvendor = __glXStrdup(GLXServerVendorName);
 		__glXActiveScreens[i].GLXversion = __glXStrdup(GLXServerVersion);
 		__glXActiveScreens[i].GLXextensions = __glXStrdup(GLXServerExtensions);

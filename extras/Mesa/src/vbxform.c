@@ -359,13 +359,23 @@ fixup_4ub( GLubyte data[][4], GLuint flag[], GLuint start, GLuint match )
 static void
 find_last_3f( float data[][3], GLuint flag[], GLuint match, GLuint count )
 {
-   GLuint i = count;
+   int i = count;
 
-   for (;;) 
+   do {
       if ((flag[--i] & match) != 0) {
 	 COPY_3V(data[count], data[i]);	 
 	 return;      
       }
+   } while (i >= 0);
+
+   /* To reach this point excercises a bug that seems only to exist on
+    * dec alpha installations.  I want to leave this print statement
+    * enabled on the 3.3 branch so that we are reminded to track down
+    * the problem.
+    */
+   fprintf(stderr, 
+	   "didn't find VERT_NORM in find_last_3f"
+	   "(Dec alpha problem?)\n");
 }
 
 static void
@@ -599,10 +609,17 @@ void gl_fixup_input( GLcontext *ctx, struct immediate *IM )
       }
 
       if (fixup & VERT_NORM) {
+	 /* Only eval cannot use the Flag member to find valid normals:
+	  */
 	 if (IM->OrFlag & VERT_EVAL_ANY)
 	    fixup_3f( IM->Normal, IM->Flag, start, VERT_NORM );
-	 else if (!(IM->Flag[IM->LastData] & VERT_NORM)) 
- 	    find_last_3f( IM->Normal, IM->Flag, VERT_NORM, IM->LastData );
+	 else {
+	    /* Copy-to-current requires a valid normal in the last slot:
+	     */
+	    if ((IM->OrFlag & VERT_NORM) &&
+		!(IM->Flag[IM->LastData] & VERT_NORM)) 
+	       find_last_3f( IM->Normal, IM->Flag, VERT_NORM, IM->LastData );
+	 }
       }
    }
 

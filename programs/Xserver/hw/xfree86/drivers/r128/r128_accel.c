@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.9 2000/05/06 21:09:37 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_accel.c,v 1.10 2000/06/14 00:16:12 dawes Exp $ */
 /**************************************************************************
 
-Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
-                                         Cedar Park, Texas. 
+Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
+                                               Cedar Park, Texas. 
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -95,6 +95,19 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 				/* DDC support */
 #include "xf86DDC.h"
 
+				/* DRI support */
+#ifdef XF86DRI
+#include "GL/glxint.h"
+#include "xf86drm.h"
+#include "sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "r128_dri.h"
+#include "r128_dripriv.h"
+#include "r128_sarea.h"
+#endif
+
 				/* Driver data structures */
 #include "r128.h"
 #include "r128_reg.h"
@@ -122,7 +135,7 @@ static struct {
 };
 
 /* Flush all dirty data in the Pixel Cache to memory. */
-static void R128EngineFlush(ScrnInfoPtr pScrn)
+void R128EngineFlush(ScrnInfoPtr pScrn)
 {
     int i;
     R128MMIO_VARS();
@@ -134,11 +147,12 @@ static void R128EngineFlush(ScrnInfoPtr pScrn)
 }
 
 /* Reset graphics card to known state. */
-static void R128EngineReset(ScrnInfoPtr pScrn)
+void R128EngineReset(ScrnInfoPtr pScrn)
 {
-    CARD32 clock_cntl_index;
-    CARD32 mclk_cntl;
-    CARD32 gen_reset_cntl;
+    R128InfoPtr info = R128PTR(pScrn);
+    CARD32      clock_cntl_index;
+    CARD32      mclk_cntl;
+    CARD32      gen_reset_cntl;
     R128MMIO_VARS();
 	
     R128EngineFlush(pScrn);
@@ -158,17 +172,15 @@ static void R128EngineReset(ScrnInfoPtr pScrn)
     OUTPLL(R128_MCLK_CNTL,        mclk_cntl);
     OUTREG(R128_CLOCK_CNTL_INDEX, clock_cntl_index);
     OUTREG(R128_GEN_RESET_CNTL,   gen_reset_cntl);
-}
 
-#define R128WaitForFifo(pScrn, entries)                                      \
-do {                                                                         \
-    if (info->fifo_slots < entries) R128WaitForFifoFunction(pScrn, entries); \
-    info->fifo_slots -= entries;                                             \
-} while (0)
+#ifdef XF86DRI
+    if (R128CCE_USE_RING_BUFFER(info->CCEMode)) R128CCEResetRing(pScrn);
+#endif
+}
 
 /* The FIFO has 64 slots.  This routines waits until at least `entries' of
    these slots are empty. */
-static void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
+void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 {
     R128InfoPtr info = R128PTR(pScrn);
     int         i;
@@ -186,6 +198,9 @@ static void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "FIFO timed out, resetting engine...\n");
 	R128EngineReset(pScrn);
+#if XF86DRI
+	if (info->CCE2D) R128CCEStart(pScrn);
+#endif
     }
 }
 
@@ -194,7 +209,8 @@ static void R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries)
    standard "sync" function that will make the hardware "quiescent". */
 void R128WaitForIdle(ScrnInfoPtr pScrn)
 {
-    int i;
+    R128InfoPtr info = R128PTR(pScrn);
+    int         i;
     R128MMIO_VARS();
 
     R128WaitForFifoFunction(pScrn, 64);
@@ -213,6 +229,9 @@ void R128WaitForIdle(ScrnInfoPtr pScrn)
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		   "Idle timed out, resetting engine...\n");
 	R128EngineReset(pScrn);
+#if XF86DRI
+	if (info->CCE2D) R128CCEStart(pScrn);
+#endif
     }
 }
 
@@ -528,7 +547,7 @@ static void R128SetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
     if (trans_color != -1) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
-	OUTREG(R128_CLR_CMP_CLR_DST, trans_color);
+	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);
 	OUTREG(R128_CLR_CMP_MASK,    R128_CLR_CMP_MSK);
 	OUTREG(R128_CLR_CMP_CNTL,    (R128_SRC_CMP_NEQ_COLOR
 				      | R128_CLR_CMP_SRC_SOURCE));
@@ -628,7 +647,7 @@ static void R128SetupForColor8x8PatternFill(ScrnInfoPtr pScrn,
     if (trans_color != -1) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
-	OUTREG(R128_CLR_CMP_CLR_DST, trans_color);
+	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);
 	OUTREG(R128_CLR_CMP_MASK,    R128_CLR_CMP_MSK);
 	OUTREG(R128_CLR_CMP_CNTL,    (R128_SRC_CMP_NEQ_COLOR
 				      | R128_CLR_CMP_SRC_SOURCE));
@@ -826,7 +845,7 @@ static void R128SetupForScanlineImageWrite(ScrnInfoPtr pScrn,
     if (trans_color != -1) {
 				/* Set up for transparency */
 	R128WaitForFifo(pScrn, 3);
-	OUTREG(R128_CLR_CMP_CLR_DST, trans_color);
+	OUTREG(R128_CLR_CMP_CLR_SRC, trans_color);
 	OUTREG(R128_CLR_CMP_MASK,    R128_CLR_CMP_MSK);
 	OUTREG(R128_CLR_CMP_CNTL,    (R128_SRC_CMP_NEQ_COLOR
 				      | R128_CLR_CMP_SRC_SOURCE));
@@ -967,19 +986,33 @@ void R128EngineInit(ScrnInfoPtr pScrn)
     OUTREG(R128_DP_SRC_BKGD_CLR,   0x00000000);
     OUTREG(R128_DP_WRITE_MASK,     0xffffffff);
 
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    OUTREGP(R128_DP_DATATYPE,
+	    R128_HOST_BIG_ENDIAN_EN, ~R128_HOST_BIG_ENDIAN_EN);
+#else
+    OUTREGP(R128_DP_DATATYPE, 0, ~R128_HOST_BIG_ENDIAN_EN);
+#endif
+
     R128WaitForIdle(pScrn);
 }
 
-/* Initialize XAA for supported acceleration and also initialize the
-   graphics hardware for acceleration. */
-Bool R128AccelInit(ScreenPtr pScreen)
+#ifdef XF86DRI
+    /* FIXME: When direct rendering is enabled, we should use the CCE to
+       draw 2D commands */
+static void R128CCEAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
 {
-    ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
-    R128InfoPtr   info  = R128PTR(pScrn);
-    XAAInfoRecPtr a;
+    a->Flags                            = 0;
 
-    if (!(a = info->accel = XAACreateInfoRec())) return FALSE;
-    
+				/* Sync */
+    a->Sync                             = R128CCEWaitForIdle;
+
+}
+#endif
+
+static void R128MMIOAccelInit(ScrnInfoPtr pScrn, XAAInfoRecPtr a)
+{
+    R128InfoPtr info = R128PTR(pScrn);
+
     a->Flags                            = (PIXMAP_CACHE
 					   | OFFSCREEN_PIXMAPS
 					   | LINEAR_FRAMEBUFFER);
@@ -993,7 +1026,15 @@ Bool R128AccelInit(ScreenPtr pScreen)
     a->SubsequentSolidFillRect          = R128SubsequentSolidFillRect;
 
 				/* Screen-to-screen Copy */
-    a->ScreenToScreenCopyFlags          = 0;
+				/* Transparency uses the wrong colors for
+                                   24 bpp mode -- the transparent part is
+                                   correct, but the opaque color is wrong.
+                                   This can be seen with netscape's I-bar
+                                   cursor when editing in the URL location
+                                   box. */
+    a->ScreenToScreenCopyFlags          = ((pScrn->bitsPerPixel == 24)
+					   ? NO_TRANSPARENCY
+					   : 0);
     a->SetupForScreenToScreenCopy       = R128SetupForScreenToScreenCopy;
     a->SubsequentScreenToScreenCopy     = R128SubsequentScreenToScreenCopy;
 
@@ -1066,7 +1107,26 @@ Bool R128AccelInit(ScreenPtr pScreen)
 					  | SCANLINE_PAD_DWORD
 					  | SYNC_AFTER_IMAGE_WRITE);
 #endif
-    
+}
+
+/* Initialize XAA for supported acceleration and also initialize the
+   graphics hardware for acceleration. */
+Bool R128AccelInit(ScreenPtr pScreen)
+{
+    ScrnInfoPtr   pScrn = xf86Screens[pScreen->myNum];
+    R128InfoPtr   info  = R128PTR(pScrn);
+    XAAInfoRecPtr a;
+
+    if (!(a = info->accel = XAACreateInfoRec())) return FALSE;
+
+#ifdef XF86DRI
+    /* FIXME: When direct rendering is enabled, we should use the CCE to
+       draw 2D commands */
+    if (info->CCE2D) R128CCEAccelInit(pScrn, a);
+    else
+#endif
+	R128MMIOAccelInit(pScrn, a);
+
     R128EngineInit(pScrn);
     return XAAInit(pScreen, a);
 }

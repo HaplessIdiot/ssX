@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.7 1999/12/30 21:40:50 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_video.c,v 1.14 2000/06/09 22:43:39 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -179,6 +179,8 @@ MGAResetVideoOverlay(ScrnInfoPtr pScrn)
     MGAPtr pMga = MGAPTR(pScrn);
     MGAPortPrivPtr pPriv = pMga->portPrivate;
 
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
+   
     outMGAdac(0x51, 0x01); /* keying on */
     outMGAdac(0x52, 0xff); /* full mask */
     outMGAdac(0x53, 0xff);
@@ -477,6 +479,8 @@ MGASetPortAttributeOverlay(
   MGAPtr pMga = MGAPTR(pScrn);
   MGAPortPrivPtr pPriv = pMga->portPrivate;
 
+  CHECK_DMA_QUIESCENT(pMga, pScrn);
+
   if(attribute == xvBrightness) {
 	if((value < -128) || (value > 127))
 	   return BadValue;
@@ -670,6 +674,8 @@ MGADisplayVideoOverlay(
     MGAPtr pMga = MGAPTR(pScrn);
     int tmp;
 
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
+
     /* got 64 scanlines to do it in */
     tmp = INREG(MGAREG_VCOUNT) + 64;
     if(tmp > pScrn->currentMode->VDisplay)
@@ -756,6 +762,8 @@ MGADisplayVideoTexture(
     padh = 1 << log2h;
     incx = (src_w << 20)/(drw_w * padw);
     incy = (src_h << 20)/(drw_h * padh);
+   
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
 
     if(pMga->Overlay8Plus24) {
 	i = 0x00ffffff;

@@ -63,6 +63,7 @@
 #include "mmath.h"
 #include "pipeline.h"
 #include "pixel.h"
+#include "pixeltex.h"
 #include "points.h"
 #include "polygon.h"
 #include "quads.h"
@@ -97,20 +98,17 @@ generic_noop(void)
 }
 
 
+/*
+ * Set all pointers in the given dispatch table to point to a
+ * generic no-op function.
+ */
 void
-_mesa_init_no_op_table(struct _glapi_table *table)
+_mesa_init_no_op_table(struct _glapi_table *table, GLuint tableSize)
 {
-   /* Check to be sure the dispatcher's table is at least as big as Mesa's. */
-   const GLuint size = sizeof(struct _glapi_table) / sizeof(void *);
-   assert(_glapi_get_dispatch_table_size() >= size);
-
-   {
-      const GLuint n = _glapi_get_dispatch_table_size();
-      GLuint i;
-      void **dispatch = (void **) table;
-      for (i = 0; i < n; i++) {
-         dispatch[i] = (void *) generic_noop;
-      }
+   GLuint i;
+   void **dispatch = (void **) table;
+   for (i = 0; i < tableSize; i++) {
+      dispatch[i] = (void *) generic_noop;
    }
 }
 
@@ -120,10 +118,10 @@ _mesa_init_no_op_table(struct _glapi_table *table)
  * immediate-mode commands.
  */
 void
-_mesa_init_exec_table(struct _glapi_table *exec)
+_mesa_init_exec_table(struct _glapi_table *exec, GLuint tableSize)
 {
    /* first initialize all dispatch slots to no-op */
-   _mesa_init_no_op_table(exec);
+   _mesa_init_no_op_table(exec, tableSize);
 
    /* load the dispatch slots we understand */
    exec->Accum = _mesa_Accum;
@@ -471,7 +469,6 @@ _mesa_init_exec_table(struct _glapi_table *exec)
    exec->TexImage3D = _mesa_TexImage3D;
    exec->TexSubImage3D = _mesa_TexSubImage3D;
 
-
    /* OpenGL 1.2  GL_ARB_imaging */
    exec->BlendColor = _mesa_BlendColor;
    exec->BlendEquation = _mesa_BlendEquation;
@@ -508,14 +505,61 @@ _mesa_init_exec_table(struct _glapi_table *exec)
    exec->ResetMinmax = _mesa_ResetMinmax;
    exec->SeparableFilter2D = _mesa_SeparableFilter2D;
 
-   /* GL_EXT_texture3d */
+   /* 2. GL_EXT_blend_color */
+#if 0
+   exec->BlendColorEXT = _mesa_BlendColorEXT;
+#endif
+
+   /* 3. GL_EXT_polygon_offset */
+   exec->PolygonOffsetEXT = _mesa_PolygonOffsetEXT;
+
+   /* 6. GL_EXT_texture3d */
 #if 0
    exec->CopyTexSubImage3DEXT = _mesa_CopyTexSubImage3D;
    exec->TexImage3DEXT = _mesa_TexImage3DEXT;
    exec->TexSubImage3DEXT = _mesa_TexSubImage3D;
 #endif
 
-   /* GL_EXT_paletted_texture */
+   /* 11. GL_EXT_histogram */
+   exec->GetHistogramEXT = _mesa_GetHistogram;
+   exec->GetHistogramParameterfvEXT = _mesa_GetHistogramParameterfv;
+   exec->GetHistogramParameterivEXT = _mesa_GetHistogramParameteriv;
+   exec->GetMinmaxEXT = _mesa_GetMinmax;
+   exec->GetMinmaxParameterfvEXT = _mesa_GetMinmaxParameterfv;
+   exec->GetMinmaxParameterivEXT = _mesa_GetMinmaxParameteriv;
+
+   /* ?. GL_SGIX_pixel_texture */
+   exec->PixelTexGenSGIX = _mesa_PixelTexGenSGIX;
+
+   /* 15. GL_SGIS_pixel_texture */
+   exec->PixelTexGenParameteriSGIS = _mesa_PixelTexGenParameteriSGIS;
+   exec->PixelTexGenParameterivSGIS = _mesa_PixelTexGenParameterivSGIS;
+   exec->PixelTexGenParameterfSGIS = _mesa_PixelTexGenParameterfSGIS;
+   exec->PixelTexGenParameterfvSGIS = _mesa_PixelTexGenParameterfvSGIS;
+   exec->GetPixelTexGenParameterivSGIS = _mesa_GetPixelTexGenParameterivSGIS;
+   exec->GetPixelTexGenParameterfvSGIS = _mesa_GetPixelTexGenParameterfvSGIS;
+
+   /* 30. GL_EXT_vertex_array */
+   exec->ColorPointerEXT = _mesa_ColorPointerEXT;
+   exec->EdgeFlagPointerEXT = _mesa_EdgeFlagPointerEXT;
+   exec->IndexPointerEXT = _mesa_IndexPointerEXT;
+   exec->NormalPointerEXT = _mesa_NormalPointerEXT;
+   exec->TexCoordPointerEXT = _mesa_TexCoordPointerEXT;
+   exec->VertexPointerEXT = _mesa_VertexPointerEXT;
+
+   /* 37. GL_EXT_blend_minmax */
+#if 0
+   exec->BlendEquationEXT = _mesa_BlendEquationEXT;
+#endif
+
+   /* 54. GL_EXT_point_parameters */
+   exec->PointParameterfEXT = _mesa_PointParameterfEXT;
+   exec->PointParameterfvEXT = _mesa_PointParameterfvEXT;
+
+   /* 77. GL_PGI_misc_hints */
+   exec->HintPGI = _mesa_HintPGI;
+
+   /* 78. GL_EXT_paletted_texture */
 #if 0
    exec->ColorTableEXT = _mesa_ColorTableEXT;
    exec->ColorSubTableEXT = _mesa_ColorSubTableEXT;
@@ -524,31 +568,43 @@ _mesa_init_exec_table(struct _glapi_table *exec)
    exec->GetColorTableParameterfvEXT = _mesa_GetColorTableParameterfv;
    exec->GetColorTableParameterivEXT = _mesa_GetColorTableParameteriv;
 
-   /* GL_EXT_compiled_vertex_array */
+   /* 97. GL_EXT_compiled_vertex_array */
    exec->LockArraysEXT = _mesa_LockArraysEXT;
    exec->UnlockArraysEXT = _mesa_UnlockArraysEXT;
 
-   /* GL_EXT_point_parameters */
-   exec->PointParameterfEXT = _mesa_PointParameterfEXT;
-   exec->PointParameterfvEXT = _mesa_PointParameterfvEXT;
+   /* 173. GL_INGR_blend_func_separate */
+   exec->BlendFuncSeparateEXT = _mesa_BlendFuncSeparateEXT;
 
-   /* GL_PGI_misc_hints */
-   exec->HintPGI = _mesa_HintPGI;
+   /* 196. GL_MESA_resize_buffers */
+   exec->ResizeBuffersMESA = _mesa_ResizeBuffersMESA;
 
-   /* GL_EXT_polygon_offset */
-   exec->PolygonOffsetEXT = _mesa_PolygonOffsetEXT;
+   /* 197. GL_MESA_window_pos */
+   exec->WindowPos2dMESA = _mesa_WindowPos2dMESA;
+   exec->WindowPos2dvMESA = _mesa_WindowPos2dvMESA;
+   exec->WindowPos2fMESA = _mesa_WindowPos2fMESA;
+   exec->WindowPos2fvMESA = _mesa_WindowPos2fvMESA;
+   exec->WindowPos2iMESA = _mesa_WindowPos2iMESA;
+   exec->WindowPos2ivMESA = _mesa_WindowPos2ivMESA;
+   exec->WindowPos2sMESA = _mesa_WindowPos2sMESA;
+   exec->WindowPos2svMESA = _mesa_WindowPos2svMESA;
+   exec->WindowPos3dMESA = _mesa_WindowPos3dMESA;
+   exec->WindowPos3dvMESA = _mesa_WindowPos3dvMESA;
+   exec->WindowPos3fMESA = _mesa_WindowPos3fMESA;
+   exec->WindowPos3fvMESA = _mesa_WindowPos3fvMESA;
+   exec->WindowPos3iMESA = _mesa_WindowPos3iMESA;
+   exec->WindowPos3ivMESA = _mesa_WindowPos3ivMESA;
+   exec->WindowPos3sMESA = _mesa_WindowPos3sMESA;
+   exec->WindowPos3svMESA = _mesa_WindowPos3svMESA;
+   exec->WindowPos4dMESA = _mesa_WindowPos4dMESA;
+   exec->WindowPos4dvMESA = _mesa_WindowPos4dvMESA;
+   exec->WindowPos4fMESA = _mesa_WindowPos4fMESA;
+   exec->WindowPos4fvMESA = _mesa_WindowPos4fvMESA;
+   exec->WindowPos4iMESA = _mesa_WindowPos4iMESA;
+   exec->WindowPos4ivMESA = _mesa_WindowPos4ivMESA;
+   exec->WindowPos4sMESA = _mesa_WindowPos4sMESA;
+   exec->WindowPos4svMESA = _mesa_WindowPos4svMESA;
 
-   /* GL_EXT_blend_minmax */
-#if 0
-   exec->BlendEquationEXT = _mesa_BlendEquationEXT;
-#endif
-
-   /* GL_EXT_blend_color */
-#if 0
-   exec->BlendColorEXT = _mesa_BlendColorEXT;
-#endif
-
-   /* GL_ARB_multitexture */
+   /* ARB 1. GL_ARB_multitexture */
    exec->ActiveTextureARB = _mesa_ActiveTextureARB;
    exec->ClientActiveTextureARB = _mesa_ClientActiveTextureARB;
    exec->MultiTexCoord1dARB = _mesa_MultiTexCoord1dARB;
@@ -584,44 +640,23 @@ _mesa_init_exec_table(struct _glapi_table *exec)
    exec->MultiTexCoord4sARB = _mesa_MultiTexCoord4sARB;
    exec->MultiTexCoord4svARB = _mesa_MultiTexCoord4svARB;
 
-   /* GL_INGR_blend_func_separate */
-   exec->BlendFuncSeparateEXT = _mesa_BlendFuncSeparateEXT;
-
-   /* GL_MESA_window_pos */
-   exec->WindowPos2dMESA = _mesa_WindowPos2dMESA;
-   exec->WindowPos2dvMESA = _mesa_WindowPos2dvMESA;
-   exec->WindowPos2fMESA = _mesa_WindowPos2fMESA;
-   exec->WindowPos2fvMESA = _mesa_WindowPos2fvMESA;
-   exec->WindowPos2iMESA = _mesa_WindowPos2iMESA;
-   exec->WindowPos2ivMESA = _mesa_WindowPos2ivMESA;
-   exec->WindowPos2sMESA = _mesa_WindowPos2sMESA;
-   exec->WindowPos2svMESA = _mesa_WindowPos2svMESA;
-   exec->WindowPos3dMESA = _mesa_WindowPos3dMESA;
-   exec->WindowPos3dvMESA = _mesa_WindowPos3dvMESA;
-   exec->WindowPos3fMESA = _mesa_WindowPos3fMESA;
-   exec->WindowPos3fvMESA = _mesa_WindowPos3fvMESA;
-   exec->WindowPos3iMESA = _mesa_WindowPos3iMESA;
-   exec->WindowPos3ivMESA = _mesa_WindowPos3ivMESA;
-   exec->WindowPos3sMESA = _mesa_WindowPos3sMESA;
-   exec->WindowPos3svMESA = _mesa_WindowPos3svMESA;
-   exec->WindowPos4dMESA = _mesa_WindowPos4dMESA;
-   exec->WindowPos4dvMESA = _mesa_WindowPos4dvMESA;
-   exec->WindowPos4fMESA = _mesa_WindowPos4fMESA;
-   exec->WindowPos4fvMESA = _mesa_WindowPos4fvMESA;
-   exec->WindowPos4iMESA = _mesa_WindowPos4iMESA;
-   exec->WindowPos4ivMESA = _mesa_WindowPos4ivMESA;
-   exec->WindowPos4sMESA = _mesa_WindowPos4sMESA;
-   exec->WindowPos4svMESA = _mesa_WindowPos4svMESA;
-
-   /* GL_MESA_resize_buffers */
-   exec->ResizeBuffersMESA = _mesa_ResizeBuffersMESA;
-
-   /* GL_ARB_transpose_matrix */
+   /* ARB 3. GL_ARB_transpose_matrix */
    exec->LoadTransposeMatrixdARB = _mesa_LoadTransposeMatrixdARB;
    exec->LoadTransposeMatrixfARB = _mesa_LoadTransposeMatrixfARB;
    exec->MultTransposeMatrixdARB = _mesa_MultTransposeMatrixdARB;
    exec->MultTransposeMatrixfARB = _mesa_MultTransposeMatrixfARB;
+
+   /* ARB 12. GL_ARB_texture_compression */
+   exec->CompressedTexImage3DARB = _mesa_CompressedTexImage3DARB;
+   exec->CompressedTexImage2DARB = _mesa_CompressedTexImage2DARB;
+   exec->CompressedTexImage1DARB = _mesa_CompressedTexImage1DARB;
+   exec->CompressedTexSubImage3DARB = _mesa_CompressedTexSubImage3DARB;
+   exec->CompressedTexSubImage2DARB = _mesa_CompressedTexSubImage2DARB;
+   exec->CompressedTexSubImage1DARB = _mesa_CompressedTexSubImage1DARB;
+   exec->GetCompressedTexImageARB = _mesa_GetCompressedTexImageARB;
+
 }
+
 
 
 /**********************************************************************/
@@ -778,8 +813,10 @@ static void update_rasterflags( GLcontext *ctx )
    if (ctx->Scissor.Enabled)		ctx->RasterMask |= SCISSOR_BIT;
    if (ctx->Stencil.Enabled)		ctx->RasterMask |= STENCIL_BIT;
    if (ctx->Color.SWmasking)		ctx->RasterMask |= MASKING_BIT;
+   if (ctx->Texture.ReallyEnabled)	ctx->RasterMask |= TEXTURE_BIT;
 
-   if (ctx->Visual->SoftwareAlpha && ctx->Color.ColorMask[ACOMP]
+   if (ctx->DrawBuffer->UseSoftwareAlphaBuffers
+       && ctx->Color.ColorMask[ACOMP]
        && ctx->Color.DrawBuffer != GL_NONE)
       ctx->RasterMask |= ALPHABUF_BIT;
 
@@ -790,11 +827,14 @@ static void update_rasterflags( GLcontext *ctx )
       ctx->RasterMask |= WINCLIP_BIT;
    }
 
+   if (ctx->Depth.OcclusionTest)
+      ctx->RasterMask |= OCCLUSION_BIT;
+
+
    /* If we're not drawing to exactly one color buffer set the
     * MULTI_DRAW_BIT flag.  Also set it if we're drawing to no
     * buffers or the RGBA or CI mask disables all writes.
     */
-
    ctx->TriangleCaps &= ~DD_MULTIDRAW;
 
    if (ctx->Color.MultiDrawBuffer) {
@@ -898,8 +938,7 @@ void gl_update_state( GLcontext *ctx )
       ctx->Enabled &= ~(ENABLE_TEXMAT0|ENABLE_TEXMAT1);
 
       for (i=0; i < MAX_TEXTURE_UNITS; i++) {
-	 if (ctx->TextureMatrix[i].flags & MAT_DIRTY_ALL_OVER)
-	 {
+	 if (ctx->TextureMatrix[i].flags & MAT_DIRTY_ALL_OVER) {
 	    gl_matrix_analyze( &ctx->TextureMatrix[i] );
 	    ctx->TextureMatrix[i].flags &= ~MAT_DIRTY_DEPENDENTS;
 
@@ -913,7 +952,7 @@ void gl_update_state( GLcontext *ctx )
    if (ctx->NewState & (NEW_TEXTURING | NEW_TEXTURE_ENABLE)) {
       ctx->Texture.NeedNormals = GL_FALSE;
       gl_update_dirty_texobjs(ctx);
-      ctx->Enabled &= ~(ENABLE_TEXGEN0|ENABLE_TEXGEN1);
+      ctx->Enabled &= ~(ENABLE_TEXGEN0 | ENABLE_TEXGEN1);
       ctx->Texture.ReallyEnabled = 0;
 
       for (i=0; i < MAX_TEXTURE_UNITS; i++) {
@@ -921,19 +960,17 @@ void gl_update_state( GLcontext *ctx )
 	    gl_update_texture_unit( ctx, &ctx->Texture.Unit[i] );
 
 	    ctx->Texture.ReallyEnabled |=
-	       ctx->Texture.Unit[i].ReallyEnabled<<(i*4);
+	       ctx->Texture.Unit[i].ReallyEnabled << (i * 4);
 
 	    if (ctx->Texture.Unit[i].GenFlags != 0) {
 	       ctx->Enabled |= ENABLE_TEXGEN0 << i;
 
-	       if (ctx->Texture.Unit[i].GenFlags & TEXGEN_NEED_NORMALS)
-	       {
+	       if (ctx->Texture.Unit[i].GenFlags & TEXGEN_NEED_NORMALS) {
 		  ctx->Texture.NeedNormals = GL_TRUE;
 		  ctx->Texture.NeedEyeCoords = GL_TRUE;
 	       }
 
-	       if (ctx->Texture.Unit[i].GenFlags & TEXGEN_NEED_EYE_COORD)
-	       {
+	       if (ctx->Texture.Unit[i].GenFlags & TEXGEN_NEED_EYE_COORD) {
 		  ctx->Texture.NeedEyeCoords = GL_TRUE;
 	       }
 	    }
@@ -944,10 +981,9 @@ void gl_update_state( GLcontext *ctx )
       ctx->NeedNormals = (ctx->Light.Enabled || ctx->Texture.NeedNormals);
    }
 
-   if (ctx->NewState & (NEW_RASTER_OPS | NEW_LIGHTING | NEW_FOG)) {
+   if (ctx->NewState & (NEW_RASTER_OPS | NEW_LIGHTING | NEW_FOG | NEW_TEXTURE_ENABLE)) {
 
-
-      if (ctx->NewState & NEW_RASTER_OPS) {
+      if (ctx->NewState & (NEW_RASTER_OPS | NEW_TEXTURE_ENABLE)) {
 	 update_pixel_logic(ctx);
 	 update_pixel_masking(ctx);
 	 update_fog_mode(ctx);
@@ -956,20 +992,7 @@ void gl_update_state( GLcontext *ctx )
 	    (*ctx->Driver.Dither)( ctx, ctx->Color.DitherFlag );
 	 }
 
-	 /* Check if incoming colors can be modified during rasterization */
-	 if (ctx->Fog.Enabled ||
-	     ctx->Texture.Enabled ||
-	     ctx->Color.BlendEnabled ||
-	     ctx->Color.SWmasking ||
-	     ctx->Color.SWLogicOpEnabled) {
-	    ctx->MutablePixels = GL_TRUE;
-	 }
-	 else {
-	    ctx->MutablePixels = GL_FALSE;
-	 }
-
 	 /* update scissor region */
-
 	 ctx->DrawBuffer->Xmin = 0;
 	 ctx->DrawBuffer->Ymin = 0;
 	 ctx->DrawBuffer->Xmax = ctx->DrawBuffer->Width-1;
@@ -1130,6 +1153,10 @@ void gl_update_state( GLcontext *ctx )
 
       gl_calculate_model_project_matrix( ctx );
       ctx->ModelProjectWinMatrixUptodate = 0;
+   }
+
+   if (ctx->NewState & NEW_COLOR_MATRIX) {
+      gl_matrix_analyze( &ctx->ColorMatrix );
    }
 
    /* Figure out whether we can light in object space or not.  If we

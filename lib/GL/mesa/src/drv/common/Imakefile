@@ -22,13 +22,12 @@ MESA_INCLUDES = -I. -I.. -I../../include
 
 
       DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES)
-     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES) \
-		-I/usr/include/glide
+     INCLUDES = -I$(XLIBSRC) -I$(EXTINCSRC) $(MESA_INCLUDES) $(DRI_INCLUDES)
       DRISRCS = hwlog.c mm.c
       DRIOBJS = hwlog.o mm.o
 
-	 SRCS = $(DRISRCS) 
-	 OBJS = $(DRIOBJS) 
+         SRCS = $(DRISRCS) 
+         OBJS = $(DRIOBJS) 
 
 #if !GlxUseBuiltInDRIDriver
 #undef DoNormalLib NormalLibGlx
@@ -44,7 +43,8 @@ LibraryObjectRule()
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
-#if !GlxUseBuiltInDRIDriver
+XCOMM #if !GlxUseBuiltInDRIDriver
+#if 0
 LIBNAME = i810_dri.so
 ALL_OBJS = $(OBJS)
 ALL_DEPS = DONE

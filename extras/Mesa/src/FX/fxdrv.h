@@ -50,14 +50,10 @@
  * you turn debugging on/off from the debugger.
  */
 
-#ifndef XFree86Server
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <limits.h>
-#include <assert.h>
-#else 
+#ifdef XFree86Server
 #include "GL/xf86glx.h"
+#else 
+#include "glheader.h"
 #endif
 
 
@@ -87,8 +83,8 @@ typedef struct tfxMesaContext *fxMesaContext;
 
 
 
-#if defined(MESA_DEBUG) && 0
 extern void fx_sanity_triangle( GrVertex *, GrVertex *, GrVertex * );
+#if defined(MESA_DEBUG) && 0
 #define grDrawTriangle fx_sanity_triangle
 #endif
 
@@ -166,6 +162,7 @@ typedef struct {
 #endif
 #endif
 
+
 #define FX_VB_COLOR(fxm, color)				\
   do {							\
     if (sizeof(GLint) == 4*sizeof(GLubyte)) {		\
@@ -187,9 +184,9 @@ typedef struct {
 }
 
 #if FX_USE_PARGB
-#define GOURAUD2(v, c) {																\
-  GLubyte *col = c;  																	\
-  v->argb=MESACOLOR2PARGB(col);															\
+#define GOURAUD2(v, c) {			\
+  GLubyte *col = c;  				\
+  v->argb=MESACOLOR2PARGB(col);			\
 }
 #else
 #define GOURAUD2(v, c) {			\
@@ -230,13 +227,13 @@ typedef struct {
 #define FX_UM_E0_MODULATE           0x00000002
 #define FX_UM_E0_DECAL              0x00000004
 #define FX_UM_E0_BLEND              0x00000008
-#define FX_UM_E0_ADD				0x00000010
+#define FX_UM_E0_ADD		    0x00000010
 
 #define FX_UM_E1_REPLACE            0x00000020
 #define FX_UM_E1_MODULATE           0x00000040
 #define FX_UM_E1_DECAL              0x00000080
 #define FX_UM_E1_BLEND              0x00000100
-#define FX_UM_E1_ADD				0x00000200
+#define FX_UM_E1_ADD		    0x00000200
 
 #define FX_UM_E_ENVMODE             0x000003ff
 
@@ -261,6 +258,20 @@ typedef struct {
 #define FX_UM_ALPHA_ITERATED        0x04000000
 #define FX_UM_ALPHA_CONSTANT        0x08000000
 
+
+#define PACK_BGRA32(R, G, B, A)  \
+    ( (((GLuint) (R)) << 16) | \
+      (((GLuint) (G)) <<  8) | \
+      (((GLuint) (B))      ) | \
+      (((GLuint) (A)) << 24) )
+
+#define PACK_RGBA32(R, G, B, A)  \
+    ( (((GLuint) (R))      ) | \
+      (((GLuint) (G)) <<  8) | \
+      (((GLuint) (B)) << 16) | \
+      (((GLuint) (A)) << 24) )
+
+
 typedef void (*tfxRenderVBFunc)(GLcontext *);
 
 /*
@@ -272,11 +283,10 @@ typedef struct MemRange_t {
 } MemRange;
 
 typedef struct {
-  GLsizei width, height;
-  GLint glideFormat;
-
-  unsigned short *data;
-  GLboolean translated, used;
+  GLsizei width, height;              /* image size */
+  GLint texelSize;		      /* How many bytes to a texel */
+  GrTextureFormat_t glideFormat;      /* Glide image format */
+  unsigned short *data;               /* Glide-formated texture image */
 } tfxMipMapLevel;
 
 typedef struct tfxTexInfo_t {
@@ -345,25 +355,18 @@ extern tfxLineClipFunc fxLineClipTab[0x8];
 
 typedef struct {
   /* Alpha test */
-
   GLboolean alphaTestEnabled;
   GrCmpFnc_t alphaTestFunc;
   GrAlpha_t alphaTestRefValue;
 
   /* Blend function */
-
   GLboolean blendEnabled;
   GrAlphaBlendFnc_t blendSrcFuncRGB;
   GrAlphaBlendFnc_t blendDstFuncRGB;
   GrAlphaBlendFnc_t blendSrcFuncAlpha;
   GrAlphaBlendFnc_t blendDstFuncAlpha;
-
-  /* Depth test */
-
-  GLboolean depthTestEnabled;
-  GLboolean depthMask;
-  GrCmpFnc_t depthTestFunc;
 } tfxUnitsState;
+
 
 
 /* Flags for render_index.
@@ -386,6 +389,7 @@ typedef struct {
 #define FX_NEW_SCISSOR        0x20
 #define FX_NEW_COLOR_MASK     0x40
 #define FX_NEW_CULL           0x80
+#define FX_NEW_STENCIL        0x100
 
 /* FX struct stored in VB->driver_data.
  */
@@ -427,8 +431,6 @@ extern GLubyte FX_PixelToB[0x10000];
 
 
 struct tfxMesaContext {
-  GuTexPalette glbPalette;
-
   GLcontext *glCtx;              /* the core Mesa context */
   GLvisual *glVis;               /* describes the color buffer */
   GLframebuffer *glBuffer;       /* the ancillary buffers */
@@ -439,6 +441,7 @@ struct tfxMesaContext {
   GrBuffer_t currentFB;
 
   GLboolean bgrOrder;
+  GLuint depthClear;
   GrColor_t color;
   GrColor_t clearC;
   GrAlpha_t clearA;
@@ -447,6 +450,8 @@ struct tfxMesaContext {
 
   tfxUnitsState unitsState;
   tfxUnitsState restoreUnitsState; /* saved during multipass */
+
+  GuTexPalette glbPalette;
 
   GLuint tmu_source[FX_NUM_TMU];
   GLuint tex_dest[MAX_TEXTURE_UNITS];
@@ -471,7 +476,6 @@ struct tfxMesaContext {
 
   GLuint texBindNumber;
   GLint tmuSrc;
-  GLuint lastUnitsMode;
   GLuint freeTexMem[FX_NUM_TMU];
   MemRange *tmPool;
   MemRange *tmFree[FX_NUM_TMU];
@@ -506,8 +510,7 @@ struct tfxMesaContext {
   GLboolean haveTwoTMUs;	/* True if we really have 2 tmu's  */
   GLboolean emulateTwoTMUs;	/* True if we present 2 tmu's to mesa.  */
   GLboolean haveAlphaBuffer;
-  GLboolean haveZBuffer;
-  GLboolean haveDoubleBuffer;
+  GLboolean haveHwStencil;
   GLboolean haveGlobalPaletteTexture;
   GLint swapInterval;
   GLint maxPendingSwapBuffers;
@@ -534,6 +537,7 @@ typedef void (*tfxSetupFunc)(struct vertex_buffer *, GLuint, GLuint);
 extern GrHwConfiguration glbHWConfig;
 extern int glbCurrentBoard;
 
+extern void fxPrintSetupFlags( const char *msg, GLuint flags );
 extern void fxSetupFXUnits(GLcontext *);
 extern void fxSetupDDPointers(GLcontext *);
 extern void fxDDSetNearFar(GLcontext *, GLfloat, GLfloat);
@@ -567,24 +571,34 @@ extern void fxUpdateDDSpanPointers(GLcontext *);
 extern void fxSetupDDSpanPointers(GLcontext *);
 
 extern void fxPrintTextureData(tfxTexInfo *ti);
-extern void fxDDTexEnv(GLcontext *, GLenum, const GLfloat *);
-extern void fxDDTexImg(GLcontext *, GLenum, struct gl_texture_object *,
-		       GLint, GLint, const struct gl_texture_image *);
+extern GLboolean fxDDTexImage2D(GLcontext *ctx, GLenum target, GLint level,
+                              GLenum format, GLenum type, const GLvoid *pixels,
+                              const struct gl_pixelstore_attrib *packing,
+                              struct gl_texture_object *texObj,
+                              struct gl_texture_image *texImage,
+                              GLboolean *retainInternalCopy);
+extern GLboolean fxDDTexSubImage2D(GLcontext *ctx, GLenum target, GLint level,
+                              GLint xoffset, GLint yoffset,
+                              GLsizei width, GLsizei height,
+                              GLenum format, GLenum type, const GLvoid *pixels,
+                              const struct gl_pixelstore_attrib *packing,
+                              struct gl_texture_object *texObj,
+                              struct gl_texture_image *texImage);
+extern GLvoid *fxDDGetTexImage(GLcontext *ctx, GLenum target, GLint level,
+                               const struct gl_texture_object *texObj,
+                               GLenum *formatOut, GLenum *typeOut,
+                               GLboolean *freeImageOut );
+extern void fxDDTexEnv(GLcontext *, GLenum, GLenum, const GLfloat *);
 extern void fxDDTexParam(GLcontext *, GLenum, struct gl_texture_object *,
 			 GLenum, const GLfloat *);
 extern void fxDDTexBind(GLcontext *, GLenum, struct gl_texture_object *);
 extern void fxDDTexDel(GLcontext *, struct gl_texture_object *);
 extern void fxDDTexPalette(GLcontext *, struct gl_texture_object *);
-extern void fxDDTexuseGlbPalette(GLcontext *, GLboolean);
-extern void fxDDTexSubImg(GLcontext *, GLenum, struct gl_texture_object *, GLint,
-			  GLint, GLint, GLint, GLint, GLint, const struct gl_texture_image *);
 extern void fxDDTexUseGlbPalette(GLcontext *, GLboolean);
 
 extern void fxDDEnable(GLcontext *, GLenum, GLboolean);
 extern void fxDDAlphaFunc(GLcontext *, GLenum, GLclampf);
 extern void fxDDBlendFunc(GLcontext *, GLenum, GLenum);
-extern void fxDDDepthMask(GLcontext *, GLboolean);
-extern void fxDDDepthFunc(GLcontext *, GLenum);
 
 extern void fxDDRegisterVB( struct vertex_buffer *VB );
 extern void fxDDUnregisterVB( struct vertex_buffer *VB );
@@ -619,6 +633,7 @@ extern void fxDDInitExtensions( GLcontext *ctx );
 #define fxTMGetTexInfo(o) ((tfxTexInfo*)((o)->DriverData))
 extern void fxTMInit(fxMesaContext ctx);
 extern void fxTMClose(fxMesaContext ctx);
+extern void fxTMRestoreTextures_NoLock(fxMesaContext ctx);
 extern void fxTMMoveInTM(fxMesaContext, struct gl_texture_object *, GLint);
 extern void fxTMMoveOutTM(fxMesaContext, struct gl_texture_object *);
 #define fxTMMoveOutTM_NoLock fxTMMoveOutTM

@@ -116,14 +116,10 @@ static void i810_render_elements_direct( struct vertex_buffer *VB )
    if (imesa->new_state)
       i810DDUpdateHwState( ctx );
 
-   BEGIN_CLIP_LOOP(imesa) 
-      {
-	 do {
-	    func( VB, 0, nr, 0 );
-	 } while (ctx->Driver.MultipassFunc &&
-		  ctx->Driver.MultipassFunc( VB, ++p ));
-      }
-   END_CLIP_LOOP(imesa);
+   do {
+      func( VB, 0, nr, 0 );
+   } while (ctx->Driver.MultipassFunc &&
+	    ctx->Driver.MultipassFunc( VB, ++p ));
 }
 
 

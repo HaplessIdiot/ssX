@@ -1,6 +1,5 @@
 /* drmmodule.c -- Module initialization
  * Created: Fri Jun  4 09:05:48 1999 by faith@precisioninsight.com
- * Revised: Fri Jun  4 09:09:22 1999 by faith@precisioninsight.com
  *
  * Copyright 1999 Precision Insight, Inc., Cedar Park, Texas.
  * All Rights Reserved.
@@ -24,7 +23,9 @@
  * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
  * DEALINGS IN THE SOFTWARE.
  * 
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/drmmodule.c,v 1.1 1999/06/14 07:32:01 dawes Exp $
+ * Authors: Rickard E. (Rik) Faith <faith@valinux.com>
+ *
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/drmmodule.c,v 1.2 2000/02/23 04:47:22 martin Exp $
  * 
  */
 

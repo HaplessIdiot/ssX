@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.154 2000/06/09 22:43:38 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.155 2000/06/14 22:46:59 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -148,12 +148,6 @@ static void	MGASave(ScrnInfoPtr pScrn);
 static void	MGARestore(ScrnInfoPtr pScrn);
 static Bool	MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
-#define VERSION 4000
-#define MGA_NAME "MGA"
-#define MGA_DRIVER_NAME "mga"
-#define MGA_MAJOR_VERSION 1
-#define MGA_MINOR_VERSION 0
-#define MGA_PATCHLEVEL 0
 
 /* 
  * This contains the functions needed by the server after loading the
@@ -164,7 +158,7 @@ static Bool	MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
  */
 
 DriverRec MGA = {
-    VERSION,
+    MGA_VERSION,
     MGA_DRIVER_NAME,
 #if 0
     "accelerated driver for Matrox Millennium and Mystique cards",
@@ -217,7 +211,8 @@ typedef enum {
     OPTION_OVERCLOCK_MEM,
     OPTION_VIDEO_KEY,
     OPTION_ROTATE,
-    OPTION_TEXTURED_VIDEO
+    OPTION_TEXTURED_VIDEO,
+    OPTION_XAALINES
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -237,6 +232,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_VIDEO_KEY,		"VideoKey",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_ROTATE,		"Rotate",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_TEXTURED_VIDEO,	"TexturedVideo",OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_XAALINES,		"XAALines",	OPTV_INTEGER,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -300,31 +296,23 @@ static const char *ramdacSymbols[] = {
 
 #ifdef XF86DRI 
 static const char *drmSymbols[] = {
+    "drmAvailable",
     "drmAddBufs",
     "drmAddMap",
-    "drmAvailable",
-    "drmCtlAddCommand",
     "drmCtlInstHandler",
     "drmGetInterruptFromBusID",
-    "drmMapBufs",
-    "drmMarkBufs",
-    "drmUnmapBufs",
     "drmAgpAcquire",
     "drmAgpRelease",
     "drmAgpEnable",
     "drmAgpAlloc",
     "drmAgpFree",
     "drmAgpBind",
-    "drmAgpUnbind",
-    "drmAgpVersionMajor",
-    "drmAgpVersionMinor",
     "drmAgpGetMode",
     "drmAgpBase",
     "drmAgpSize",
-    "drmAgpMemoryUsed",
-    "drmAgpMemoryAvail",
-    "drmAgpVendorId",
-    "drmAgpDeviceId",
+    "drmMgaCleanupDma",
+    "drmMgaLockUpdate",
+    "drmMgaInitDma",
     NULL
 };
 
@@ -616,7 +604,7 @@ MGAProbe(DriverPtr drv, int flags)
 	    {
 		
 	/* Fill in what we can of the ScrnInfoRec */
-		pScrn->driverVersion	= VERSION;
+		pScrn->driverVersion	= MGA_VERSION;
 		pScrn->driverName	= MGA_DRIVER_NAME;
 		pScrn->name		= MGA_NAME;
 		pScrn->Probe		= MGAProbe;
@@ -1312,6 +1300,26 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 
+
+    if(xf86GetOptValInteger(MGAOptions, OPTION_XAALINES, 
+			    &(pMga->numXAALines))) {
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Will Use %d lines for "
+		   "offscreen memory if the DRI is enabled.\n",
+		   pMga->numXAALines);
+    } else {
+        /* The default is to use 512 lines on a G400, 128 on a G200 */
+        switch (pMga->Chipset) {
+	  case PCI_CHIP_MGAG200:
+	    pMga->numXAALines = 128;
+	  case PCI_CHIP_MGAG400:
+	    pMga->numXAALines = 512;
+	  default:
+	    pMga->numXAALines = 512;
+	}
+        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Will Use %d lines for "
+		   "offscreen memory if the DRI is enabled.\n",
+		   pMga->numXAALines);
+    }
 
     from = X_DEFAULT;
     pMga->HWCursor = TRUE;
@@ -2151,13 +2159,13 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 #ifdef XF86DRI
    if (pMga->directRenderingEnabled) {
-       DRILock(screenInfo.screens[pScrn->scrnIndex]);
-       MGASwapContext(screenInfo.screens[pScrn->scrnIndex]);
+       DRILock(screenInfo.screens[pScrn->scrnIndex], 0);
    }
 #endif
      
     (*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE);
 
+    MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
     vgaHWProtect(pScrn, FALSE);
 
@@ -2330,11 +2338,13 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       * Setup DRI after visuals have been established, but before cfbScreenInit
       * is called.   cfbScreenInit will eventually call into the drivers
       * InitGLXVisuals call back.
+      * The DRI does not work when textured video is enabled at this time.
       */
 
-   pMga->directRenderingEnabled = MGADRIScreenInit(pScreen);
-   /* Force the initialization of the context */
-   MGALostContext(pScreen);
+    if (!pMga->NoAccel && pMga->TexturedVideo != TRUE)
+       pMga->directRenderingEnabled = MGADRIScreenInit(pScreen);
+    else
+       pMga->directRenderingEnabled = FALSE;
 #endif
      
    
@@ -2467,20 +2477,20 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
    
 #ifdef XF86DRI
     /* Initialize the Warp engine */
-   if (pMga->directRenderingEnabled) {
-    pMga->directRenderingEnabled = mgaConfigureWarp(pScrn);
-   }
-   if (pMga->directRenderingEnabled) {
-      /* Now that mi, cfb, drm and others have done their thing, 
-       * complete the DRI setup.
-       */
-       pMga->directRenderingEnabled = MGADRIFinishScreenInit(pScreen);
-   }
-   if (pMga->directRenderingEnabled) {
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
-   } else {
-       xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
-   }
+    if (pMga->directRenderingEnabled) {
+        pMga->directRenderingEnabled = mgaConfigureWarp(pScrn);
+    }
+    if (pMga->directRenderingEnabled) {
+       /* Now that mi, cfb, drm and others have done their thing, 
+	* complete the DRI setup.
+	*/
+        pMga->directRenderingEnabled = MGADRIFinishScreenInit(pScreen);
+    }
+    if (pMga->directRenderingEnabled) {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
+    } else {
+        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
+    }
 #endif
      
     pScrn->memPhysBase = pMga->FbAddress;
@@ -2634,7 +2644,7 @@ MGALeaveVT(int scrnIndex, int flags)
     pMGA = MGAPTR(pScrn);
     if (pMGA->directRenderingEnabled) {
         pScreen = screenInfo.screens[scrnIndex];
-        DRILock(pScreen);
+        DRILock(pScreen, 0);
     }
 #endif
      

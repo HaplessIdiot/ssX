@@ -1,13 +1,15 @@
 /*  #include "i810pipeline.h" */
 
 #include <stdio.h>
+
+#include "types.h"
+#include "fog.h"
+
 #include "i810vb.h"
 #include "i810dd.h"
-#include "i810lib.h"
 #include "i810tris.h"
 #include "i810pipeline.h"
 
-#include "fog.h"
 
 static struct gl_pipeline_stage i810_fast_stage = {
    "I810 fast path",

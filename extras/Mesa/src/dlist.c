@@ -58,6 +58,7 @@
 #include "mem.h"
 #include "pipeline.h"
 #include "pixel.h"
+#include "pixeltex.h"
 #include "points.h"
 #include "polygon.h"
 #include "readpix.h"
@@ -140,7 +141,17 @@ typedef enum {
 	OPCODE_COLOR_MASK,
 	OPCODE_COLOR_MATERIAL,
 	OPCODE_COLOR_TABLE,
+	OPCODE_COLOR_TABLE_PARAMETER_FV,
+	OPCODE_COLOR_TABLE_PARAMETER_IV,
 	OPCODE_COLOR_SUB_TABLE,
+        OPCODE_CONVOLUTION_FILTER_1D,
+        OPCODE_CONVOLUTION_FILTER_2D,
+        OPCODE_CONVOLUTION_PARAMETER_I,
+        OPCODE_CONVOLUTION_PARAMETER_IV,
+        OPCODE_CONVOLUTION_PARAMETER_F,
+        OPCODE_CONVOLUTION_PARAMETER_FV,
+        OPCODE_COPY_COLOR_SUB_TABLE,
+        OPCODE_COPY_COLOR_TABLE,
 	OPCODE_COPY_PIXELS,
         OPCODE_COPY_TEX_IMAGE1D,
         OPCODE_COPY_TEX_IMAGE2D,
@@ -166,6 +177,7 @@ typedef enum {
 	OPCODE_FRUSTUM,
 	OPCODE_HINT,
 	OPCODE_HINT_PGI,
+	OPCODE_HISTOGRAM,
 	OPCODE_INDEX_MASK,
 	OPCODE_INIT_NAMES,
 	OPCODE_LIGHT,
@@ -182,6 +194,7 @@ typedef enum {
 	OPCODE_MAPGRID1,
 	OPCODE_MAPGRID2,
 	OPCODE_MATRIX_MODE,
+        OPCODE_MIN_MAX,
 	OPCODE_MULT_MATRIX,
 	OPCODE_ORTHO,
 	OPCODE_PASSTHROUGH,
@@ -203,6 +216,8 @@ typedef enum {
 	OPCODE_RASTER_POS,
 	OPCODE_RECTF,
 	OPCODE_READ_BUFFER,
+        OPCODE_RESET_HISTOGRAM,
+        OPCODE_RESET_MIN_MAX,
         OPCODE_SCALE,
 	OPCODE_SCISSOR,
 	OPCODE_SELECT_TEXTURE_SGIS,
@@ -226,6 +241,16 @@ typedef enum {
         /* GL_ARB_multitexture */
         OPCODE_ACTIVE_TEXTURE,
         OPCODE_CLIENT_ACTIVE_TEXTURE,
+        /* GL_SGIX/SGIS_pixel_texture */
+        OPCODE_PIXEL_TEXGEN_SGIX,
+        OPCODE_PIXEL_TEXGEN_PARAMETER_SGIS,
+        /* GL_ARB_texture_compression */
+        OPCODE_COMPRESSED_TEX_IMAGE_1D,
+        OPCODE_COMPRESSED_TEX_IMAGE_2D,
+        OPCODE_COMPRESSED_TEX_IMAGE_3D,
+        OPCODE_COMPRESSED_TEX_SUB_IMAGE_1D,
+        OPCODE_COMPRESSED_TEX_SUB_IMAGE_2D,
+        OPCODE_COMPRESSED_TEX_SUB_IMAGE_3D,
 	/* The following three are meta instructions */
 	OPCODE_ERROR,	        /* raise compiled-in error */
 	OPCODE_VERTEX_CASSETTE,	/* render prebuilt vertex buffer */
@@ -365,6 +390,14 @@ void gl_destroy_list( GLcontext *ctx, GLuint list )
             FREE( n[6].data );
             n += InstSize[n[0].opcode];
             break;
+         case OPCODE_CONVOLUTION_FILTER_1D:
+            FREE( n[6].data );
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_CONVOLUTION_FILTER_2D:
+            FREE( n[7].data );
+            n += InstSize[n[0].opcode];
+            break;
          case OPCODE_POLYGON_STIPPLE:
             FREE( n[1].data );
 	    n += InstSize[n[0].opcode];
@@ -390,6 +423,30 @@ void gl_destroy_list( GLcontext *ctx, GLuint list )
             n += InstSize[n[0].opcode];
             break;
          case OPCODE_TEX_SUB_IMAGE3D:
+            FREE(n[11].data);
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_COMPRESSED_TEX_IMAGE_1D:
+            FREE(n[7].data);
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_COMPRESSED_TEX_IMAGE_2D:
+            FREE(n[8].data);
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_COMPRESSED_TEX_IMAGE_3D:
+            FREE(n[9].data);
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_COMPRESSED_TEX_SUB_IMAGE_1D:
+            FREE(n[7].data);
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_COMPRESSED_TEX_SUB_IMAGE_2D:
+            FREE(n[9].data);
+            n += InstSize[n[0].opcode];
+            break;
+         case OPCODE_COMPRESSED_TEX_SUB_IMAGE_3D:
             FREE(n[11].data);
             n += InstSize[n[0].opcode];
             break;
@@ -500,8 +557,18 @@ void gl_init_lists( void )
       InstSize[OPCODE_COLOR_MASK] = 5;
       InstSize[OPCODE_COLOR_MATERIAL] = 3;
       InstSize[OPCODE_COLOR_TABLE] = 7;
+      InstSize[OPCODE_COLOR_TABLE_PARAMETER_FV] = 7;
+      InstSize[OPCODE_COLOR_TABLE_PARAMETER_IV] = 7;
       InstSize[OPCODE_COLOR_SUB_TABLE] = 7;
+      InstSize[OPCODE_CONVOLUTION_FILTER_1D] = 7;
+      InstSize[OPCODE_CONVOLUTION_FILTER_2D] = 8;
+      InstSize[OPCODE_CONVOLUTION_PARAMETER_I] = 4;
+      InstSize[OPCODE_CONVOLUTION_PARAMETER_IV] = 7;
+      InstSize[OPCODE_CONVOLUTION_PARAMETER_F] = 4;
+      InstSize[OPCODE_CONVOLUTION_PARAMETER_FV] = 7;
       InstSize[OPCODE_COPY_PIXELS] = 6;
+      InstSize[OPCODE_COPY_COLOR_SUB_TABLE] = 6;
+      InstSize[OPCODE_COPY_COLOR_TABLE] = 6;
       InstSize[OPCODE_COPY_TEX_IMAGE1D] = 8;
       InstSize[OPCODE_COPY_TEX_IMAGE2D] = 9;
       InstSize[OPCODE_COPY_TEX_SUB_IMAGE1D] = 7;
@@ -526,6 +593,7 @@ void gl_init_lists( void )
       InstSize[OPCODE_FRUSTUM] = 7;
       InstSize[OPCODE_HINT] = 3;
       InstSize[OPCODE_HINT_PGI] = 3;
+      InstSize[OPCODE_HISTOGRAM] = 5;
       InstSize[OPCODE_INDEX_MASK] = 2;
       InstSize[OPCODE_INIT_NAMES] = 1;
       InstSize[OPCODE_LIGHT] = 7;
@@ -542,6 +610,7 @@ void gl_init_lists( void )
       InstSize[OPCODE_MAPGRID1] = 4;
       InstSize[OPCODE_MAPGRID2] = 7;
       InstSize[OPCODE_MATRIX_MODE] = 2;
+      InstSize[OPCODE_MIN_MAX] = 4;
       InstSize[OPCODE_MULT_MATRIX] = 17;
       InstSize[OPCODE_ORTHO] = 7;
       InstSize[OPCODE_PASSTHROUGH] = 2;
@@ -563,6 +632,8 @@ void gl_init_lists( void )
       InstSize[OPCODE_RASTER_POS] = 5;
       InstSize[OPCODE_RECTF] = 5;
       InstSize[OPCODE_READ_BUFFER] = 2;
+      InstSize[OPCODE_RESET_HISTOGRAM] = 2;
+      InstSize[OPCODE_RESET_MIN_MAX] = 2;
       InstSize[OPCODE_SCALE] = 4;
       InstSize[OPCODE_SCISSOR] = 5;
       InstSize[OPCODE_STENCIL_FUNC] = 4;
@@ -585,6 +656,16 @@ void gl_init_lists( void )
       InstSize[OPCODE_ERROR] = 3;
       InstSize[OPCODE_VERTEX_CASSETTE] = 9;
       InstSize[OPCODE_END_OF_LIST] = 1;
+      /* GL_SGIX/SGIS_pixel_texture */
+      InstSize[OPCODE_PIXEL_TEXGEN_SGIX] = 2;
+      InstSize[OPCODE_PIXEL_TEXGEN_PARAMETER_SGIS] = 3;
+      /* GL_ARB_texture_compression */
+      InstSize[OPCODE_COMPRESSED_TEX_IMAGE_1D] = 8;
+      InstSize[OPCODE_COMPRESSED_TEX_IMAGE_2D] = 9;
+      InstSize[OPCODE_COMPRESSED_TEX_IMAGE_3D] = 10;
+      InstSize[OPCODE_COMPRESSED_TEX_SUB_IMAGE_1D] = 8;
+      InstSize[OPCODE_COMPRESSED_TEX_SUB_IMAGE_2D] = 10;
+      InstSize[OPCODE_COMPRESSED_TEX_SUB_IMAGE_3D] = 12;
       /* GL_ARB_multitexture */
       InstSize[OPCODE_ACTIVE_TEXTURE] = 2;
       InstSize[OPCODE_CLIENT_ACTIVE_TEXTURE] = 2;
@@ -976,6 +1057,66 @@ static void save_ColorTable( GLenum target, GLenum internalFormat,
 }
 
 
+
+static void
+save_ColorTableParameterfv(GLenum target, GLenum pname, const GLfloat *params)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+
+   ASSERT_OUTSIDE_BEGIN_END(ctx, "glColorTableParameterfv");
+   FLUSH_VB(ctx, "dlist");
+
+   n = alloc_instruction( ctx, OPCODE_COLOR_TABLE_PARAMETER_FV, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = pname;
+      n[3].f = params[0];
+      if (pname == GL_COLOR_TABLE_SGI ||
+          pname == GL_POST_CONVOLUTION_COLOR_TABLE_SGI ||
+          pname == GL_POST_COLOR_MATRIX_COLOR_TABLE_SGI) {
+         n[4].f = params[1];
+         n[5].f = params[2];
+         n[6].f = params[3];
+      }
+   }
+
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ColorTableParameterfv)( target, pname, params );
+   }
+}
+
+
+static void
+save_ColorTableParameteriv(GLenum target, GLenum pname, const GLint *params)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+
+   ASSERT_OUTSIDE_BEGIN_END(ctx, "glColorTableParameterfv");
+   FLUSH_VB(ctx, "dlist");
+
+   n = alloc_instruction( ctx, OPCODE_COLOR_TABLE_PARAMETER_IV, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = pname;
+      n[3].i = params[0];
+      if (pname == GL_COLOR_TABLE_SGI ||
+          pname == GL_POST_CONVOLUTION_COLOR_TABLE_SGI ||
+          pname == GL_POST_COLOR_MATRIX_COLOR_TABLE_SGI) {
+         n[4].i = params[1];
+         n[5].i = params[2];
+         n[6].i = params[3];
+      }
+   }
+
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ColorTableParameteriv)( target, pname, params );
+   }
+}
+
+
+
 static void save_ColorSubTable( GLenum target, GLsizei start, GLsizei count,
                                 GLenum format, GLenum type,
                                 const GLvoid *table)
@@ -1002,6 +1143,199 @@ static void save_ColorSubTable( GLenum target, GLsizei start, GLsizei count,
    }
 }
 
+
+static void
+save_CopyColorSubTable(GLenum target, GLsizei start,
+                       GLint x, GLint y, GLsizei width)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_COPY_COLOR_SUB_TABLE, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].i = start;
+      n[3].i = x;
+      n[4].i = y;
+      n[5].i = width;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->CopyColorSubTable)(target, start, x, y, width);
+   }
+}
+
+
+static void
+save_CopyColorTable(GLenum target, GLenum internalformat,
+                    GLint x, GLint y, GLsizei width)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_COPY_COLOR_TABLE, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = internalformat;
+      n[3].i = x;
+      n[4].i = y;
+      n[5].i = width;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->CopyColorTable)(target, internalformat, x, y, width);
+   }
+}
+
+
+static void
+save_ConvolutionFilter1D(GLenum target, GLenum internalFormat, GLsizei width,
+                         GLenum format, GLenum type, const GLvoid *filter)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   GLvoid *image = _mesa_unpack_image(width, 1, 1, format, type, filter,
+                                      &ctx->Unpack);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_CONVOLUTION_FILTER_1D, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = internalFormat;
+      n[3].i = width;
+      n[4].e = format;
+      n[5].e = type;
+      n[6].data = image;
+   }
+   else if (image) {
+      FREE(image);
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ConvolutionFilter1D)( target, internalFormat, width,
+                                         format, type, filter );
+   }
+}
+
+
+static void
+save_ConvolutionFilter2D(GLenum target, GLenum internalFormat,
+                         GLsizei width, GLsizei height, GLenum format,
+                         GLenum type, const GLvoid *filter)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   GLvoid *image = _mesa_unpack_image(width, height, 1, format, type, filter,
+                                      &ctx->Unpack);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_CONVOLUTION_FILTER_2D, 7 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = internalFormat;
+      n[3].i = width;
+      n[4].i = height;
+      n[5].e = format;
+      n[6].e = type;
+      n[7].data = image;
+   }
+   else if (image) {
+      FREE(image);
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ConvolutionFilter2D)( target, internalFormat, width, height,
+                                         format, type, filter );
+   }
+}
+
+
+static void
+save_ConvolutionParameteri(GLenum target, GLenum pname, GLint param)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_CONVOLUTION_PARAMETER_I, 3 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = pname;
+      n[3].i = param;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ConvolutionParameteri)( target, pname, param );
+   }
+}
+
+
+static void
+save_ConvolutionParameteriv(GLenum target, GLenum pname, const GLint *params)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_CONVOLUTION_PARAMETER_IV, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = pname;
+      n[3].i = params[0];
+      if (pname == GL_CONVOLUTION_BORDER_COLOR ||
+          pname == GL_CONVOLUTION_FILTER_SCALE ||
+          pname == GL_CONVOLUTION_FILTER_BIAS) {
+         n[4].i = params[1];
+         n[5].i = params[2];
+         n[6].i = params[3];
+      }
+      else {
+         n[4].i = n[5].i = n[6].i = 0;
+      }
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ConvolutionParameteriv)( target, pname, params );
+   }
+}
+
+
+static void
+save_ConvolutionParameterf(GLenum target, GLenum pname, GLfloat param)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_CONVOLUTION_PARAMETER_F, 3 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = pname;
+      n[3].f = param;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ConvolutionParameterf)( target, pname, param );
+   }
+}
+
+
+static void
+save_ConvolutionParameterfv(GLenum target, GLenum pname, const GLfloat *params)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_CONVOLUTION_PARAMETER_IV, 6 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = pname;
+      n[3].f = params[0];
+      if (pname == GL_CONVOLUTION_BORDER_COLOR ||
+          pname == GL_CONVOLUTION_FILTER_SCALE ||
+          pname == GL_CONVOLUTION_FILTER_BIAS) {
+         n[4].f = params[1];
+         n[5].f = params[2];
+         n[6].f = params[3];
+      }
+      else {
+         n[4].f = n[5].f = n[6].f = 0.0F;
+      }
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ConvolutionParameterfv)( target, pname, params );
+   }
+}
 
 
 static void save_CopyPixels( GLint x, GLint y,
@@ -1451,6 +1785,26 @@ static void save_HintPGI( GLenum target, GLint mode )
    }
    if (ctx->ExecuteFlag) {
       (*ctx->Exec->HintPGI)( target, mode );
+   }
+}
+
+
+static void
+save_Histogram(GLenum target, GLsizei width, GLenum internalFormat, GLboolean sink)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_HISTOGRAM, 4 );
+   if (n) {
+      n[1].e = target;
+      n[2].i = width;
+      n[3].e = internalFormat;
+      n[4].b = sink;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->Histogram)( target, width, internalFormat, sink );
    }
 }
 
@@ -1928,6 +2282,25 @@ static void save_MatrixMode( GLenum mode )
 }
 
 
+static void
+save_Minmax(GLenum target, GLenum internalFormat, GLboolean sink)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_MIN_MAX, 3 );
+   if (n) {
+      n[1].e = target;
+      n[2].e = internalFormat;
+      n[3].b = sink;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->Minmax)( target, internalFormat, sink );
+   }
+}
+
+
 static void save_MultMatrixf( const GLfloat *m )
 {
    GET_CURRENT_CONTEXT(ctx);
@@ -2176,7 +2549,8 @@ static void save_PolygonOffset( GLfloat factor, GLfloat units )
 
 static void save_PolygonOffsetEXT( GLfloat factor, GLfloat bias )
 {
-   save_PolygonOffset(factor, DEPTH_SCALE * bias);
+   GET_CURRENT_CONTEXT(ctx);
+   save_PolygonOffset(factor, ctx->Visual->DepthMaxF * bias);
 }
 
 
@@ -2488,6 +2862,38 @@ static void save_Rects(GLshort x1, GLshort y1, GLshort x2, GLshort y2)
 static void save_Rectsv(const GLshort *v1, const GLshort *v2)
 {
    save_Rectf(v1[0], v1[1], v2[0], v2[1]);
+}
+
+
+static void
+save_ResetHistogram(GLenum target)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_RESET_HISTOGRAM, 1 );
+   if (n) {
+      n[1].e = target;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ResetHistogram)( target );
+   }
+}
+
+
+static void
+save_ResetMinmax(GLenum target)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_RESET_MIN_MAX, 1 );
+   if (n) {
+      n[1].e = target;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->ResetMinmax)( target );
+   }
 }
 
 
@@ -2842,7 +3248,7 @@ static void save_TexImage2D( GLenum target,
 
 
 static void save_TexImage3D( GLenum target,
-                             GLint level, GLint components,
+                             GLint level, GLint internalFormat,
                              GLsizei width, GLsizei height, GLsizei depth,
                              GLint border,
                              GLenum format, GLenum type,
@@ -2851,7 +3257,7 @@ static void save_TexImage3D( GLenum target,
    GET_CURRENT_CONTEXT(ctx);
    if (target == GL_PROXY_TEXTURE_3D) {
       /* don't compile, execute immediately */
-      (*ctx->Exec->TexImage3D)( target, level, components, width,
+      (*ctx->Exec->TexImage3D)( target, level, internalFormat, width,
                                height, depth, border, format, type, pixels );
    }
    else {
@@ -2863,7 +3269,7 @@ static void save_TexImage3D( GLenum target,
       if (n) {
          n[1].e = target;
          n[2].i = level;
-         n[3].i = components;
+         n[3].i = internalFormat;
          n[4].i = (GLint) width;
          n[5].i = (GLint) height;
          n[6].i = (GLint) depth; 
@@ -2876,7 +3282,7 @@ static void save_TexImage3D( GLenum target,
          FREE(image);
       }
       if (ctx->ExecuteFlag) {
-         (*ctx->Exec->TexImage3D)( target, level, components, width,
+         (*ctx->Exec->TexImage3D)( target, level, internalFormat, width,
                                 height, depth, border, format, type, pixels );
       }
    }
@@ -3190,6 +3596,8 @@ static void save_ClientActiveTextureARB( GLenum target )
 
 
 
+/* GL_ARB_transpose_matrix */
+
 static void save_LoadTransposeMatrixdARB( const GLdouble m[16] )
 {
    GLdouble tm[16];
@@ -3222,6 +3630,313 @@ static void save_MultTransposeMatrixfARB( const GLfloat m[16] )
 }
 
 
+static void save_PixelTexGenSGIX(GLenum mode)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_PIXEL_TEXGEN_SGIX, 1 );
+   if (n) {
+      n[1].e = mode;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->PixelTexGenSGIX)( mode );
+   }
+}
+
+
+/* GL_ARB_texture_compression */
+static void
+save_CompressedTexImage1DARB(GLenum target, GLint level,
+                             GLenum internalFormat, GLsizei width,
+                             GLint border, GLsizei imageSize,
+                             const GLvoid *data)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   if (target == GL_PROXY_TEXTURE_1D) {
+      /* don't compile, execute immediately */
+      (*ctx->Exec->CompressedTexImage1DARB)(target, level, internalFormat,
+                                            width, border, imageSize, data);
+   }
+   else {
+      Node *n;
+      GLvoid *image;
+      FLUSH_VB(ctx, "dlist");
+      /* make copy of image */
+      image = MALLOC(imageSize);
+      if (!image) {
+         gl_error(ctx, GL_OUT_OF_MEMORY, "glCompressedTexImage1DARB");
+         return;
+      }
+      MEMCPY(image, data, imageSize);
+      n = alloc_instruction( ctx, OPCODE_COMPRESSED_TEX_IMAGE_1D, 8 );
+      if (n) {
+         n[1].e = target;
+         n[2].i = level;
+         n[3].e = internalFormat;
+         n[4].i = (GLint) width;
+         n[5].i = border;
+         n[6].i = imageSize;
+         n[7].data = image;
+      }
+      else if (image) {
+         FREE(image);
+      }
+      if (ctx->ExecuteFlag) {
+         (*ctx->Exec->CompressedTexImage1DARB)(target, level, internalFormat,
+                                               width, border, imageSize, data);
+      }
+   }
+}
+
+
+static void
+save_CompressedTexImage2DARB(GLenum target, GLint level,
+                             GLenum internalFormat, GLsizei width,
+                             GLsizei height, GLint border, GLsizei imageSize,
+                             const GLvoid *data)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   if (target == GL_PROXY_TEXTURE_2D) {
+      /* don't compile, execute immediately */
+      (*ctx->Exec->CompressedTexImage2DARB)(target, level, internalFormat,
+                                       width, height, border, imageSize, data);
+   }
+   else {
+      Node *n;
+      GLvoid *image;
+      FLUSH_VB(ctx, "dlist");
+      /* make copy of image */
+      image = MALLOC(imageSize);
+      if (!image) {
+         gl_error(ctx, GL_OUT_OF_MEMORY, "glCompressedTexImage2DARB");
+         return;
+      }
+      MEMCPY(image, data, imageSize);
+      n = alloc_instruction( ctx, OPCODE_COMPRESSED_TEX_IMAGE_2D, 9 );
+      if (n) {
+         n[1].e = target;
+         n[2].i = level;
+         n[3].e = internalFormat;
+         n[4].i = (GLint) width;
+         n[5].i = (GLint) height;
+         n[6].i = border;
+         n[7].i = imageSize;
+         n[8].data = image;
+      }
+      else if (image) {
+         FREE(image);
+      }
+      if (ctx->ExecuteFlag) {
+         (*ctx->Exec->CompressedTexImage2DARB)(target, level, internalFormat,
+                                      width, height, border, imageSize, data);
+      }
+   }
+}
+
+
+static void
+save_CompressedTexImage3DARB(GLenum target, GLint level,
+                             GLenum internalFormat, GLsizei width,
+                             GLsizei height, GLsizei depth, GLint border,
+                             GLsizei imageSize, const GLvoid *data)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   if (target == GL_PROXY_TEXTURE_3D) {
+      /* don't compile, execute immediately */
+      (*ctx->Exec->CompressedTexImage3DARB)(target, level, internalFormat,
+                                width, height, depth, border, imageSize, data);
+   }
+   else {
+      Node *n;
+      GLvoid *image;
+      FLUSH_VB(ctx, "dlist");
+      /* make copy of image */
+      image = MALLOC(imageSize);
+      if (!image) {
+         gl_error(ctx, GL_OUT_OF_MEMORY, "glCompressedTexImage3DARB");
+         return;
+      }
+      MEMCPY(image, data, imageSize);
+      n = alloc_instruction( ctx, OPCODE_COMPRESSED_TEX_IMAGE_3D, 10 );
+      if (n) {
+         n[1].e = target;
+         n[2].i = level;
+         n[3].e = internalFormat;
+         n[4].i = (GLint) width;
+         n[5].i = (GLint) height;
+         n[6].i = (GLint) depth;
+         n[7].i = border;
+         n[8].i = imageSize;
+         n[9].data = image;
+      }
+      else if (image) {
+         FREE(image);
+      }
+      if (ctx->ExecuteFlag) {
+         (*ctx->Exec->CompressedTexImage3DARB)(target, level, internalFormat,
+                                width, height, depth, border, imageSize, data);
+      }
+   }
+}
+
+
+static void
+save_CompressedTexSubImage1DARB(GLenum target, GLint level, GLint xoffset,
+                                GLsizei width, GLenum format,
+                                GLsizei imageSize, const GLvoid *data)
+{
+   Node *n;
+   GLvoid *image;
+
+   GET_CURRENT_CONTEXT(ctx);
+   FLUSH_VB(ctx, "dlist");
+
+   /* make copy of image */
+   image = MALLOC(imageSize);
+   if (!image) {
+      gl_error(ctx, GL_OUT_OF_MEMORY, "glCompressedTexSubImage1DARB");
+      return;
+   }
+   MEMCPY(image, data, imageSize);
+   n = alloc_instruction( ctx, OPCODE_COMPRESSED_TEX_SUB_IMAGE_1D, 8 );
+   if (n) {
+      n[1].e = target;
+      n[2].i = level;
+      n[3].i = xoffset;
+      n[4].i = (GLint) width;
+      n[5].e = format;
+      n[6].i = imageSize;
+      n[7].data = image;
+   }
+   else if (image) {
+      FREE(image);
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->CompressedTexSubImage1DARB)(target, level, xoffset,
+                                               width, format, imageSize, data);
+   }
+}
+
+
+static void
+save_CompressedTexSubImage2DARB(GLenum target, GLint level, GLint xoffset,
+                                GLint yoffset, GLsizei width, GLsizei height,
+                                GLenum format, GLsizei imageSize,
+                                const GLvoid *data)
+{
+   Node *n;
+   GLvoid *image;
+
+   GET_CURRENT_CONTEXT(ctx);
+   FLUSH_VB(ctx, "dlist");
+
+   /* make copy of image */
+   image = MALLOC(imageSize);
+   if (!image) {
+      gl_error(ctx, GL_OUT_OF_MEMORY, "glCompressedTexSubImage2DARB");
+      return;
+   }
+   MEMCPY(image, data, imageSize);
+   n = alloc_instruction( ctx, OPCODE_COMPRESSED_TEX_SUB_IMAGE_2D, 10 );
+   if (n) {
+      n[1].e = target;
+      n[2].i = level;
+      n[3].i = xoffset;
+      n[4].i = yoffset;
+      n[5].i = (GLint) width;
+      n[6].i = (GLint) height;
+      n[7].e = format;
+      n[8].i = imageSize;
+      n[9].data = image;
+   }
+   else if (image) {
+      FREE(image);
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->CompressedTexSubImage2DARB)(target, level, xoffset, yoffset,
+                                       width, height, format, imageSize, data);
+   }
+}
+
+
+static void
+save_CompressedTexSubImage3DARB(GLenum target, GLint level, GLint xoffset,
+                                GLint yoffset, GLint zoffset, GLsizei width,
+                                GLsizei height, GLsizei depth, GLenum format,
+                                GLsizei imageSize, const GLvoid *data)
+{
+   Node *n;
+   GLvoid *image;
+
+   GET_CURRENT_CONTEXT(ctx);
+   FLUSH_VB(ctx, "dlist");
+
+   /* make copy of image */
+   image = MALLOC(imageSize);
+   if (!image) {
+      gl_error(ctx, GL_OUT_OF_MEMORY, "glCompressedTexSubImage3DARB");
+      return;
+   }
+   MEMCPY(image, data, imageSize);
+   n = alloc_instruction( ctx, OPCODE_COMPRESSED_TEX_SUB_IMAGE_3D, 12 );
+   if (n) {
+      n[1].e = target;
+      n[2].i = level;
+      n[3].i = xoffset;
+      n[4].i = yoffset;
+      n[5].i = zoffset;
+      n[6].i = (GLint) width;
+      n[7].i = (GLint) height;
+      n[8].i = (GLint) depth;
+      n[9].e = format;
+      n[10].i = imageSize;
+      n[11].data = image;
+   }
+   else if (image) {
+      FREE(image);
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->CompressedTexSubImage3DARB)(target, level, xoffset, yoffset,
+                       zoffset, width, height, depth, format, imageSize, data);
+   }
+}
+
+
+/* GL_SGIS_pixel_texture */
+
+static void save_PixelTexGenParameteriSGIS(GLenum target, GLint value)
+{
+   GET_CURRENT_CONTEXT(ctx);
+   Node *n;
+   FLUSH_VB(ctx, "dlist");
+   n = alloc_instruction( ctx, OPCODE_PIXEL_TEXGEN_PARAMETER_SGIS, 2 );
+   if (n) {
+      n[1].e = target;
+      n[2].i = value;
+   }
+   if (ctx->ExecuteFlag) {
+      (*ctx->Exec->PixelTexGenParameteriSGIS)( target, value );
+   }
+}
+
+
+static void save_PixelTexGenParameterfSGIS(GLenum target, GLfloat value)
+{
+   save_PixelTexGenParameteriSGIS(target, (GLint) value);
+}
+
+
+static void save_PixelTexGenParameterivSGIS(GLenum target, const GLint *value)
+{
+   save_PixelTexGenParameteriSGIS(target, *value);
+}
+
+
+static void save_PixelTexGenParameterfvSGIS(GLenum target, const GLfloat *value)
+{
+   save_PixelTexGenParameteriSGIS(target, (GLint) *value);
+}
 
 void gl_compile_cassette( GLcontext *ctx )
 {
@@ -3364,10 +4079,12 @@ static void execute_list( GLcontext *ctx, GLuint list )
 		(MESA_VERBOSE & VERBOSE_IMMEDIATE))
 	       gl_print_cassette( (struct immediate *) n[1].data );
 
-	    if (0)
-	       fprintf(stderr, "Run cassette %d, rows %d..%d, beginstate %x\n",
+	    if (MESA_VERBOSE & VERBOSE_DISPLAY_LIST) {
+	       fprintf(stderr, "Run cassette %d, rows %d..%d, beginstate %x ",
 		       IM->id,
 		       IM->Start, IM->Count, IM->BeginState);
+	       gl_print_vert_flags("orflag", IM->OrFlag);
+	    }
 
 	    gl_fixup_cassette( ctx, (struct immediate *) n[1].data ); 
 	    gl_execute_cassette( ctx, (struct immediate *) n[1].data ); 
@@ -3387,7 +4104,7 @@ static void execute_list( GLcontext *ctx, GLuint list )
                struct gl_pixelstore_attrib save = ctx->Unpack;
                ctx->Unpack = _mesa_native_packing;
                (*ctx->Exec->Bitmap)( (GLsizei) n[1].i, (GLsizei) n[2].i,
-                                n[3].f, n[4].f, n[5].f, n[6].f, n[7].data );
+                 n[3].f, n[4].f, n[5].f, n[6].f, (const GLubyte *) n[7].data );
                ctx->Unpack = save;  /* restore */
             }
 	    break;
@@ -3458,6 +4175,26 @@ static void execute_list( GLcontext *ctx, GLuint list )
                ctx->Unpack = save;  /* restore */
             }
             break;
+         case OPCODE_COLOR_TABLE_PARAMETER_FV:
+            {
+               GLfloat params[4];
+               params[0] = n[3].f;
+               params[1] = n[4].f;
+               params[2] = n[5].f;
+               params[3] = n[6].f;
+               (*ctx->Exec->ColorTableParameterfv)( n[1].e, n[2].e, params );
+            }
+            break;
+         case OPCODE_COLOR_TABLE_PARAMETER_IV:
+            {
+               GLint params[4];
+               params[0] = n[3].i;
+               params[1] = n[4].i;
+               params[2] = n[5].i;
+               params[3] = n[6].i;
+               (*ctx->Exec->ColorTableParameteriv)( n[1].e, n[2].e, params );
+            }
+            break;
          case OPCODE_COLOR_SUB_TABLE:
             {
                struct gl_pixelstore_attrib save = ctx->Unpack;
@@ -3466,6 +4203,58 @@ static void execute_list( GLcontext *ctx, GLuint list )
                                             n[4].e, n[5].e, n[6].data );
                ctx->Unpack = save;  /* restore */
             }
+            break;
+         case OPCODE_CONVOLUTION_FILTER_1D:
+            {
+               struct gl_pixelstore_attrib save = ctx->Unpack;
+               ctx->Unpack = _mesa_native_packing;
+               (*ctx->Exec->ConvolutionFilter1D)( n[1].e, n[2].i, n[3].i,
+                                                  n[4].e, n[5].e, n[6].data );
+               ctx->Unpack = save;  /* restore */
+            }
+            break;
+         case OPCODE_CONVOLUTION_FILTER_2D:
+            {
+               struct gl_pixelstore_attrib save = ctx->Unpack;
+               ctx->Unpack = _mesa_native_packing;
+               (*ctx->Exec->ConvolutionFilter2D)( n[1].e, n[2].i, n[3].i,
+                                       n[4].i, n[5].e, n[6].e, n[7].data );
+               ctx->Unpack = save;  /* restore */
+            }
+            break;
+         case OPCODE_CONVOLUTION_PARAMETER_I:
+            (*ctx->Exec->ConvolutionParameteri)( n[1].e, n[2].e, n[3].i );
+            break;
+         case OPCODE_CONVOLUTION_PARAMETER_IV:
+            {
+               GLint params[4];
+               params[0] = n[3].i;
+               params[1] = n[4].i;
+               params[2] = n[5].i;
+               params[3] = n[6].i;
+               (*ctx->Exec->ConvolutionParameteriv)( n[1].e, n[2].e, params );
+            }
+            break;
+         case OPCODE_CONVOLUTION_PARAMETER_F:
+            (*ctx->Exec->ConvolutionParameterf)( n[1].e, n[2].e, n[3].f );
+            break;
+         case OPCODE_CONVOLUTION_PARAMETER_FV:
+            {
+               GLfloat params[4];
+               params[0] = n[3].f;
+               params[1] = n[4].f;
+               params[2] = n[5].f;
+               params[3] = n[6].f;
+               (*ctx->Exec->ConvolutionParameterfv)( n[1].e, n[2].e, params );
+            }
+            break;
+         case OPCODE_COPY_COLOR_SUB_TABLE:
+            (*ctx->Exec->CopyColorSubTable)( n[1].e, n[2].i,
+                                             n[3].i, n[4].i, n[5].i );
+            break;
+         case OPCODE_COPY_COLOR_TABLE:
+            (*ctx->Exec->CopyColorSubTable)( n[1].e, n[2].i,
+                                             n[3].i, n[4].i, n[5].i );
             break;
 	 case OPCODE_COPY_PIXELS:
 	    (*ctx->Exec->CopyPixels)( n[1].i, n[2].i,
@@ -3548,6 +4337,9 @@ static void execute_list( GLcontext *ctx, GLuint list )
 	    break;
 	 case OPCODE_HINT_PGI:
 	    (*ctx->Exec->HintPGI)( n[1].e, n[2].i );
+	    break;
+	 case OPCODE_HISTOGRAM:
+	    (*ctx->Exec->Histogram)( n[1].e, n[2].i, n[3].e, n[4].b );
 	    break;
 	 case OPCODE_INDEX_MASK:
 	    (*ctx->Exec->IndexMask)( n[1].ui );
@@ -3642,6 +4434,9 @@ static void execute_list( GLcontext *ctx, GLuint list )
          case OPCODE_MATRIX_MODE:
             (*ctx->Exec->MatrixMode)( n[1].e );
             break;
+         case OPCODE_MIN_MAX:
+            (*ctx->Exec->Minmax)(n[1].e, n[2].e, n[3].b);
+            break;
 	 case OPCODE_MULT_MATRIX:
 	    if (sizeof(Node)==sizeof(GLfloat)) {
 	       (*ctx->Exec->MultMatrixf)( &n[1].f );
@@ -3720,6 +4515,12 @@ static void execute_list( GLcontext *ctx, GLuint list )
 	    break;
          case OPCODE_RECTF:
             (*ctx->Exec->Rectf)( n[1].f, n[2].f, n[3].f, n[4].f );
+            break;
+         case OPCODE_RESET_HISTOGRAM:
+            (*ctx->Exec->ResetHistogram)( n[1].e );
+            break;
+         case OPCODE_RESET_MIN_MAX:
+            (*ctx->Exec->ResetMinmax)( n[1].e );
             break;
          case OPCODE_SCALE:
             (*ctx->Exec->Scalef)( n[1].f, n[2].f, n[3].f );
@@ -3867,6 +4668,37 @@ static void execute_list( GLcontext *ctx, GLuint list )
          case OPCODE_CLIENT_ACTIVE_TEXTURE:  /* GL_ARB_multitexture */
             (*ctx->Exec->ClientActiveTextureARB)( n[1].e );
             break;
+         case OPCODE_PIXEL_TEXGEN_SGIX:  /* GL_SGIX_pixel_texture */
+            (*ctx->Exec->PixelTexGenSGIX)( n[1].e );
+            break;
+         case OPCODE_PIXEL_TEXGEN_PARAMETER_SGIS:  /* GL_SGIS_pixel_texture */
+            (*ctx->Exec->PixelTexGenParameteriSGIS)( n[1].e, n[2].i );
+            break;
+         case OPCODE_COMPRESSED_TEX_IMAGE_1D: /* GL_ARB_texture_compression */
+            (*ctx->Exec->CompressedTexImage1DARB)(n[1].e, n[2].i, n[3].e,
+                                            n[4].i, n[5].i, n[6].i, n[7].data);
+            break;
+         case OPCODE_COMPRESSED_TEX_IMAGE_2D: /* GL_ARB_texture_compression */
+            (*ctx->Exec->CompressedTexImage2DARB)(n[1].e, n[2].i, n[3].e,
+                                    n[4].i, n[5].i, n[6].i, n[7].i, n[8].data);
+            break;
+         case OPCODE_COMPRESSED_TEX_IMAGE_3D: /* GL_ARB_texture_compression */
+            (*ctx->Exec->CompressedTexImage3DARB)(n[1].e, n[2].i, n[3].e,
+                            n[4].i, n[5].i, n[6].i, n[7].i, n[8].i, n[9].data);
+            break;
+         case OPCODE_COMPRESSED_TEX_SUB_IMAGE_1D: /* GL_ARB_texture_compress */
+            (*ctx->Exec->CompressedTexSubImage1DARB)(n[1].e, n[2].i, n[3].i,
+                                            n[4].i, n[5].e, n[6].i, n[7].data);
+            break;
+         case OPCODE_COMPRESSED_TEX_SUB_IMAGE_2D: /* GL_ARB_texture_compress */
+            (*ctx->Exec->CompressedTexSubImage2DARB)(n[1].e, n[2].i, n[3].i,
+                            n[4].i, n[5].i, n[6].i, n[7].e, n[8].i, n[9].data);
+            break;
+         case OPCODE_COMPRESSED_TEX_SUB_IMAGE_3D: /* GL_ARB_texture_compress */
+            (*ctx->Exec->CompressedTexSubImage3DARB)(n[1].e, n[2].i, n[3].i,
+                                        n[4].i, n[5].i, n[6].i, n[7].i, n[8].i,
+                                        n[9].e, n[10].i, n[11].data);
+            break;
 	 case OPCODE_CONTINUE:
 	    n = (Node *) n[1].next;
 	    break;
@@ -3953,6 +4785,11 @@ _mesa_GenLists(GLsizei range )
       return 0;
    }
 
+   /*
+    * Make this an atomic operation
+    */
+   _glthread_LOCK_MUTEX(ctx->Shared->Mutex);
+
    base = _mesa_HashFindFreeKeyBlock(ctx->Shared->DisplayList, range);
    if (base) {
       /* reserve the list IDs by with empty/dummy lists */
@@ -3961,6 +4798,9 @@ _mesa_GenLists(GLsizei range )
          _mesa_HashInsert(ctx->Shared->DisplayList, base+i, make_empty_list());
       }
    }
+
+   _glthread_UNLOCK_MUTEX(ctx->Shared->Mutex);
+
    return base;
 }
 
@@ -4149,13 +4989,13 @@ _mesa_ListBase( GLuint base )
 
 
 /*
- * Assign all the pointers in 'table' to point to Mesa's display list
+ * Assign all the pointers in <table> to point to Mesa's display list
  * building functions.
  */
 void
-_mesa_init_dlist_table( struct _glapi_table *table )
+_mesa_init_dlist_table( struct _glapi_table *table, GLuint tableSize )
 {
-   _mesa_init_no_op_table(table);
+   _mesa_init_no_op_table(table, tableSize);
 
    /* GL 1.0 */
    table->Accum = save_Accum;
@@ -4507,18 +5347,18 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    /* Not all are supported */
    table->BlendColor = save_BlendColor;
    table->BlendEquation = save_BlendEquation;
-   table->ColorSubTable = _mesa_ColorSubTable;
-   table->ColorTable = _mesa_ColorTable;
-   table->ColorTableParameterfv = _mesa_ColorTableParameterfv;
-   table->ColorTableParameteriv = _mesa_ColorTableParameteriv;
-   table->ConvolutionFilter1D = _mesa_ConvolutionFilter1D;
-   table->ConvolutionFilter2D = _mesa_ConvolutionFilter2D;
-   table->ConvolutionParameterf = _mesa_ConvolutionParameterf;
-   table->ConvolutionParameterfv = _mesa_ConvolutionParameterfv;
-   table->ConvolutionParameteri = _mesa_ConvolutionParameteri;
-   table->ConvolutionParameteriv = _mesa_ConvolutionParameteriv;
-   table->CopyColorSubTable = _mesa_CopyColorSubTable;
-   table->CopyColorTable = _mesa_CopyColorTable;
+   table->ColorSubTable = save_ColorSubTable;
+   table->ColorTable = save_ColorTable;
+   table->ColorTableParameterfv = save_ColorTableParameterfv;
+   table->ColorTableParameteriv = save_ColorTableParameteriv;
+   table->ConvolutionFilter1D = save_ConvolutionFilter1D;
+   table->ConvolutionFilter2D = save_ConvolutionFilter2D;
+   table->ConvolutionParameterf = save_ConvolutionParameterf;
+   table->ConvolutionParameterfv = save_ConvolutionParameterfv;
+   table->ConvolutionParameteri = save_ConvolutionParameteri;
+   table->ConvolutionParameteriv = save_ConvolutionParameteriv;
+   table->CopyColorSubTable = save_CopyColorSubTable;
+   table->CopyColorTable = save_CopyColorTable;
    table->CopyConvolutionFilter1D = _mesa_CopyConvolutionFilter1D;
    table->CopyConvolutionFilter2D = _mesa_CopyConvolutionFilter2D;
    table->GetColorTable = _mesa_GetColorTable;
@@ -4534,20 +5374,59 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->GetMinmaxParameterfv = _mesa_GetMinmaxParameterfv;
    table->GetMinmaxParameteriv = _mesa_GetMinmaxParameteriv;
    table->GetSeparableFilter = _mesa_GetSeparableFilter;
-   table->Histogram = _mesa_Histogram;
-   table->Minmax = _mesa_Minmax;
-   table->ResetHistogram = _mesa_ResetHistogram;
-   table->ResetMinmax = _mesa_ResetMinmax;
+   table->Histogram = save_Histogram;
+   table->Minmax = save_Minmax;
+   table->ResetHistogram = save_ResetHistogram;
+   table->ResetMinmax = save_ResetMinmax;
    table->SeparableFilter2D = _mesa_SeparableFilter2D;
 
-   /* GL_EXT_texture3d */
+   /* 2. GL_EXT_blend_color */
+#if 0 
+   table->BlendColorEXT = save_BlendColorEXT;
+#endif
+
+   /* 3. GL_EXT_polygon_offset */
+   table->PolygonOffsetEXT = save_PolygonOffsetEXT;
+
+   /* 6. GL_EXT_texture3d */
 #if 0
    table->CopyTexSubImage3DEXT = save_CopyTexSubImage3D;
    table->TexImage3DEXT = save_TexImage3DEXT;
    table->TexSubImage3DEXT = save_TexSubImage3D;
 #endif
 
-   /* GL_EXT_paletted_texture */
+   /* 15. GL_SGIX_pixel_texture */
+   table->PixelTexGenSGIX = save_PixelTexGenSGIX;
+
+   /* 15. GL_SGIS_pixel_texture */
+   table->PixelTexGenParameteriSGIS = save_PixelTexGenParameteriSGIS;
+   table->PixelTexGenParameterfSGIS = save_PixelTexGenParameterfSGIS;
+   table->PixelTexGenParameterivSGIS = save_PixelTexGenParameterivSGIS;
+   table->PixelTexGenParameterfvSGIS = save_PixelTexGenParameterfvSGIS;
+   table->GetPixelTexGenParameterivSGIS = _mesa_GetPixelTexGenParameterivSGIS;
+   table->GetPixelTexGenParameterfvSGIS = _mesa_GetPixelTexGenParameterfvSGIS;
+
+   /* 30. GL_EXT_vertex_array */
+   table->ColorPointerEXT = _mesa_ColorPointerEXT;
+   table->EdgeFlagPointerEXT = _mesa_EdgeFlagPointerEXT;
+   table->IndexPointerEXT = _mesa_IndexPointerEXT;
+   table->NormalPointerEXT = _mesa_NormalPointerEXT;
+   table->TexCoordPointerEXT = _mesa_TexCoordPointerEXT;
+   table->VertexPointerEXT = _mesa_VertexPointerEXT;
+
+   /* 37. GL_EXT_blend_minmax */
+#if 0
+   table->BlendEquationEXT = save_BlendEquationEXT;
+#endif
+
+   /* 54. GL_EXT_point_parameters */
+   table->PointParameterfEXT = save_PointParameterfEXT;
+   table->PointParameterfvEXT = save_PointParameterfvEXT;
+
+   /* 77. GL_PGI_misc_hints */
+   table->HintPGI = save_HintPGI;
+
+   /* 78. GL_EXT_paletted_texture */
 #if 0
    table->ColorTableEXT = save_ColorTable;
    table->ColorSubTableEXT = save_ColorSubTable;
@@ -4556,29 +5435,9 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->GetColorTableParameterfvEXT = _mesa_GetColorTableParameterfv;
    table->GetColorTableParameterivEXT = _mesa_GetColorTableParameteriv;
 
-   /* GL_EXT_compiled_vertex_array */
+   /* 97. GL_EXT_compiled_vertex_array */
    table->LockArraysEXT = _mesa_LockArraysEXT;
    table->UnlockArraysEXT = _mesa_UnlockArraysEXT;
-
-   /* GL_EXT_point_parameters */
-   table->PointParameterfEXT = save_PointParameterfEXT;
-   table->PointParameterfvEXT = save_PointParameterfvEXT;
-
-   /* GL_PGI_misc_hints */
-   table->HintPGI = save_HintPGI;
-
-   /* GL_EXT_polygon_offset */
-   table->PolygonOffsetEXT = save_PolygonOffsetEXT;
-
-   /* GL_EXT_blend_minmax */
-#if 0
-   table->BlendEquationEXT = save_BlendEquationEXT;
-#endif
-
-   /* GL_EXT_blend_color */
-#if 0 
-   table->BlendColorEXT = save_BlendColorEXT;
-#endif
 
    /* GL_ARB_multitexture */
    table->ActiveTextureARB = save_ActiveTextureARB;
@@ -4654,6 +5513,14 @@ _mesa_init_dlist_table( struct _glapi_table *table )
    table->MultTransposeMatrixdARB = save_MultTransposeMatrixdARB;
    table->MultTransposeMatrixfARB = save_MultTransposeMatrixfARB;
 
+   /* ARB 12. GL_ARB_texture_compression */
+   table->CompressedTexImage3DARB = save_CompressedTexImage3DARB;
+   table->CompressedTexImage2DARB = save_CompressedTexImage2DARB;
+   table->CompressedTexImage1DARB = save_CompressedTexImage1DARB;
+   table->CompressedTexSubImage3DARB = save_CompressedTexSubImage3DARB;
+   table->CompressedTexSubImage2DARB = save_CompressedTexSubImage2DARB;
+   table->CompressedTexSubImage1DARB = save_CompressedTexSubImage1DARB;
+   table->GetCompressedTexImageARB = _mesa_GetCompressedTexImageARB;
 }
 
 
@@ -4704,6 +5571,16 @@ static void print_list( GLcontext *ctx, FILE *f, GLuint list )
          case OPCODE_CALL_LIST_OFFSET:
             fprintf(f,"CallList %d + offset %u = %u\n", (int) n[1].ui,
                     ctx->List.ListBase, ctx->List.ListBase + n[1].ui );
+            break;
+         case OPCODE_COLOR_TABLE_PARAMETER_FV:
+            fprintf(f,"ColorTableParameterfv %s %s %f %f %f %f\n",
+                    enum_string(n[1].e), enum_string(n[2].e),
+                    n[3].f, n[4].f, n[5].f, n[6].f);
+            break;
+         case OPCODE_COLOR_TABLE_PARAMETER_IV:
+            fprintf(f,"ColorTableParameteriv %s %s %d %d %d %d\n",
+                    enum_string(n[1].e), enum_string(n[2].e),
+                    n[3].i, n[4].i, n[5].i, n[6].i);
             break;
 	 case OPCODE_DISABLE:
             fprintf(f,"Disable %s\n", enum_string(n[1].e));
@@ -4788,6 +5665,7 @@ static void print_list( GLcontext *ctx, FILE *f, GLuint list )
 		    ((struct immediate *) n[1].data)->id,
 		    n[2].ui,
 		    n[3].ui);
+	    gl_print_cassette( (struct immediate *) n[1].data );
 	    break;
 	 case OPCODE_CONTINUE:
             fprintf(f,"DISPLAY-LIST-CONTINUE\n");

@@ -9,12 +9,6 @@
    SEG_TEXT
 
 
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
-
 #define S(i) 	REGOFF(i * 4, ESI)
 #define D(i) 	REGOFF(i * 4, EDI)
 #define M(i) 	REGOFF(i * 4, EDX)
@@ -71,7 +65,7 @@ GLNAME( gl_katmai_transform_points3_general_raw ):
     MOV_L( REGOFF(V4F_COUNT, ESI), ECX ) 	/* source count */
 
     CMP_L     ( CONST(0), ECX )			/* count == 0 ? */
-    JE        ( LLBL( K_GTPGR_finish ) )	/* yes -> nothing to do. */
+    JE        ( LLBL(K_GTPGR_finish) )		/* yes -> nothing to do. */
 
     MOV_L( REGOFF(V4F_STRIDE, ESI), EAX ) 	/* stride */
     OR_L( CONST(VEC_SIZE_4), REGOFF(V4F_FLAGS, EDI) ) 	/* set dest flags */
@@ -94,7 +88,7 @@ ALIGNTEXT32
 
 
 ALIGNTEXT32
-LLBL( K_GTPGR_top ):
+LLBL(K_GTPGR_top):
     MOVSS     ( REGOFF(0, ESI), XMM4 )		/*    |    |    | ox */
     SHUFPS    ( CONST(0x0), XMM4, XMM4 )	/* ox | ox | ox | ox */
     MOVSS     ( REGOFF(4, ESI), XMM5 )		/*    |    |    | oy */
@@ -158,7 +152,7 @@ GLNAME( gl_katmai_transform_points3_identity_raw ):
 
 
 ALIGNTEXT32
-LLBL( K_GTPIR_top ):
+LLBL(K_GTPIR_top):
     MOVLPS    ( S(0), XMM0 )
     MOVLPS    ( XMM0, D(0) )
     MOVSS     ( S(2), XMM0 )

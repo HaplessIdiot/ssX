@@ -57,6 +57,8 @@ _mesa_LineWidth( GLfloat width )
       ctx->TriangleCaps &= ~DD_LINE_WIDTH;
       if (width != 1.0) ctx->TriangleCaps |= DD_LINE_WIDTH;
       ctx->NewState |= NEW_RASTER_OPS;
+      if (ctx->Driver.LineWidth)
+         (*ctx->Driver.LineWidth)(ctx, width);
    }
 }
 
@@ -70,6 +72,9 @@ _mesa_LineStipple( GLint factor, GLushort pattern )
    ctx->Line.StippleFactor = CLAMP( factor, 1, 256 );
    ctx->Line.StipplePattern = pattern;
    ctx->NewState |= NEW_RASTER_OPS;
+
+   if (ctx->Driver.LineStipple)
+      ctx->Driver.LineStipple( ctx, factor, pattern );
 }
 
 
@@ -110,22 +115,13 @@ _mesa_LineStipple( GLint factor, GLushort pattern )
 static void flat_ci_line( GLcontext *ctx,
                           GLuint vert0, GLuint vert1, GLuint pvert )
 {
-   GLint count;
-   GLint *pbx = ctx->PB->x;
-   GLint *pby = ctx->PB->y;
-   PB_SET_INDEX( ctx, ctx->PB, ctx->VB->IndexPtr->data[pvert] );
-   count = ctx->PB->count;
+   PB_SET_INDEX( ctx->PB, ctx->VB->IndexPtr->data[pvert] );
 
 #define INTERP_XY 1
-
-#define PLOT(X,Y)		\
-	pbx[count] = X;		\
-	pby[count] = Y;		\
-	count++;
+#define PLOT(X,Y)  PB_WRITE_PIXEL(ctx->PB, X, Y, 0);
 
 #include "linetemp.h"
 
-   ctx->PB->count = count;
    gl_flush_pb(ctx);
 }
 
@@ -135,25 +131,14 @@ static void flat_ci_line( GLcontext *ctx,
 static void flat_ci_z_line( GLcontext *ctx,
                             GLuint vert0, GLuint vert1, GLuint pvert )
 {
-   GLint count;
-   GLint *pbx = ctx->PB->x;
-   GLint *pby = ctx->PB->y;
-   GLdepth *pbz = ctx->PB->z;
-   PB_SET_INDEX( ctx, ctx->PB, ctx->VB->IndexPtr->data[pvert] );
-   count = ctx->PB->count;
+   PB_SET_INDEX( ctx->PB, ctx->VB->IndexPtr->data[pvert] );
 
 #define INTERP_XY 1
 #define INTERP_Z 1
-
-#define PLOT(X,Y)		\
-	pbx[count] = X;		\
-	pby[count] = Y;		\
-	pbz[count] = Z;		\
-	count++;
+#define PLOT(X,Y)  PB_WRITE_PIXEL(ctx->PB, X, Y, Z);
 
 #include "linetemp.h"
 
-   ctx->PB->count = count;
    gl_flush_pb(ctx);
 }
 
@@ -163,23 +148,14 @@ static void flat_ci_z_line( GLcontext *ctx,
 static void flat_rgba_line( GLcontext *ctx,
                             GLuint vert0, GLuint vert1, GLuint pvert )
 {
-   GLint count;
-   GLint *pbx = ctx->PB->x;
-   GLint *pby = ctx->PB->y;
-   GLubyte *color = ctx->VB->ColorPtr->data[pvert];
-   PB_SET_COLOR( ctx, ctx->PB, color[0], color[1], color[2], color[3] );
-   count = ctx->PB->count;
+   const GLubyte *color = ctx->VB->ColorPtr->data[pvert];
+   PB_SET_COLOR( ctx->PB, color[0], color[1], color[2], color[3] );
 
 #define INTERP_XY 1
-
-#define PLOT(X,Y)		\
-	pbx[count] = X;		\
-	pby[count] = Y;		\
-	count++;
+#define PLOT(X,Y)   PB_WRITE_PIXEL(ctx->PB, X, Y, 0);
 
 #include "linetemp.h"
 
-   ctx->PB->count = count;
    gl_flush_pb(ctx);
 }
 
@@ -189,26 +165,15 @@ static void flat_rgba_line( GLcontext *ctx,
 static void flat_rgba_z_line( GLcontext *ctx,
                               GLuint vert0, GLuint vert1, GLuint pvert )
 {
-   GLint count;
-   GLint *pbx = ctx->PB->x;
-   GLint *pby = ctx->PB->y;
-   GLdepth *pbz = ctx->PB->z;
-   GLubyte *color = ctx->VB->ColorPtr->data[pvert];
-   PB_SET_COLOR( ctx, ctx->PB, color[0], color[1], color[2], color[3] );
-   count = ctx->PB->count;
+   const GLubyte *color = ctx->VB->ColorPtr->data[pvert];
+   PB_SET_COLOR( ctx->PB, color[0], color[1], color[2], color[3] );
 
 #define INTERP_XY 1
 #define INTERP_Z 1
-
-#define PLOT(X,Y)	\
-	pbx[count] = X;	\
-	pby[count] = Y;	\
-	pbz[count] = Z;	\
-	count++;
+#define PLOT(X,Y)   PB_WRITE_PIXEL(ctx->PB, X, Y, Z);
 
 #include "linetemp.h"
 
-   ctx->PB->count = count;
    gl_flush_pb(ctx);
 }
 
@@ -221,8 +186,10 @@ static void smooth_ci_line( GLcontext *ctx,
    GLint count = ctx->PB->count;
    GLint *pbx = ctx->PB->x;
    GLint *pby = ctx->PB->y;
-   GLuint *pbi = ctx->PB->i;
+   GLuint *pbi = ctx->PB->index;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
 #define INTERP_XY 1
 #define INTERP_INDEX 1
@@ -249,8 +216,10 @@ static void smooth_ci_z_line( GLcontext *ctx,
    GLint *pbx = ctx->PB->x;
    GLint *pby = ctx->PB->y;
    GLdepth *pbz = ctx->PB->z;
-   GLuint *pbi = ctx->PB->i;
+   GLuint *pbi = ctx->PB->index;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
 #define INTERP_XY 1
 #define INTERP_Z 1
@@ -280,6 +249,8 @@ static void smooth_rgba_line( GLcontext *ctx,
    GLint *pby = ctx->PB->y;
    GLubyte (*pbrgba)[4] = ctx->PB->rgba;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
 #define INTERP_XY 1
 #define INTERP_RGB 1
@@ -312,6 +283,8 @@ static void smooth_rgba_z_line( GLcontext *ctx,
    GLdepth *pbz = ctx->PB->z;
    GLubyte (*pbrgba)[4] = ctx->PB->rgba;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
 #define INTERP_XY 1
 #define INTERP_Z 1
@@ -352,8 +325,10 @@ static void general_smooth_ci_line( GLcontext *ctx,
    GLint *pbx = ctx->PB->x;
    GLint *pby = ctx->PB->y;
    GLdepth *pbz = ctx->PB->z;
-   GLuint *pbi = ctx->PB->i;
+   GLuint *pbi = ctx->PB->index;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
    if (ctx->Line.StippleFlag) {
       /* stippled */
@@ -424,7 +399,7 @@ static void general_flat_ci_line( GLcontext *ctx,
    GLint *pbx = ctx->PB->x;
    GLint *pby = ctx->PB->y;
    GLdepth *pbz = ctx->PB->z;
-   PB_SET_INDEX( ctx, ctx->PB, ctx->VB->IndexPtr->data[pvert] );
+   PB_SET_INDEX( ctx->PB, ctx->VB->IndexPtr->data[pvert] );
    count = ctx->PB->count;
 
    if (ctx->Line.StippleFlag) {
@@ -491,6 +466,8 @@ static void general_smooth_rgba_line( GLcontext *ctx,
    GLdepth *pbz = ctx->PB->z;
    GLubyte (*pbrgba)[4] = ctx->PB->rgba;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
    if (ctx->Line.StippleFlag) {
       /* stippled */
@@ -584,7 +561,7 @@ static void general_flat_rgba_line( GLcontext *ctx,
    GLint *pby = ctx->PB->y;
    GLdepth *pbz = ctx->PB->z;
    GLubyte *color = ctx->VB->ColorPtr->data[pvert];
-   PB_SET_COLOR( ctx, ctx->PB, color[0], color[1], color[2], color[3] );
+   PB_SET_COLOR( ctx->PB, color[0], color[1], color[2], color[3] );
    count = ctx->PB->count;
 
    if (ctx->Line.StippleFlag) {
@@ -653,7 +630,7 @@ static void flat_textured_line( GLcontext *ctx,
    GLfloat *pbt = ctx->PB->t[0];
    GLfloat *pbu = ctx->PB->u[0];
    GLubyte *color = ctx->VB->ColorPtr->data[pv];
-   PB_SET_COLOR( ctx, ctx->PB, color[0], color[1], color[2], color[3] );
+   PB_SET_COLOR( ctx->PB, color[0], color[1], color[2], color[3] );
    count = ctx->PB->count;
 
    if (ctx->Line.StippleFlag) {
@@ -715,6 +692,8 @@ static void smooth_textured_line( GLcontext *ctx,
    GLfloat *pbu = ctx->PB->u[0];
    GLubyte (*pbrgba)[4] = ctx->PB->rgba;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
    if (ctx->Line.StippleFlag) {
       /* stippled */
@@ -792,6 +771,8 @@ static void smooth_multitextured_line( GLcontext *ctx,
    GLubyte (*pbrgba)[4] = ctx->PB->rgba;
    GLubyte (*pbspec)[3] = ctx->PB->spec;
    (void) pvert;
+
+   ctx->PB->mono = GL_FALSE;
 
    if (ctx->Line.StippleFlag) {
       /* stippled */
@@ -1023,8 +1004,7 @@ void gl_set_line_function( GLcontext *ctx )
       else {
 	 if (ctx->Light.ShadeModel==GL_SMOOTH) {
 	    /* Width==1, non-stippled, smooth-shaded */
-            if (ctx->Depth.Test
-	        || (ctx->Fog.Enabled && ctx->Hint.Fog==GL_NICEST)) {
+            if (ctx->Depth.Test || ctx->FogMode == FOG_FRAGMENT) {
                if (rgbmode)
                   ctx->Driver.LineFunc = smooth_rgba_z_line;
                else
@@ -1039,8 +1019,7 @@ void gl_set_line_function( GLcontext *ctx )
 	 }
          else {
 	    /* Width==1, non-stippled, flat-shaded */
-            if (ctx->Depth.Test
-                || (ctx->Fog.Enabled && ctx->Hint.Fog==GL_NICEST)) {
+            if (ctx->Depth.Test || ctx->FogMode == FOG_FRAGMENT) {
                if (rgbmode)
                   ctx->Driver.LineFunc = flat_rgba_z_line;
                else

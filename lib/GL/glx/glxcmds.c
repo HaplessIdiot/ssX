@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.7 2000/02/21 18:05:33 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxcmds.c,v 1.8 2000/03/02 16:07:32 martin Exp $ */
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
@@ -49,7 +49,8 @@ static const char GLXClientVersion[] = "1.2";
 static const char GLXClientExtensions[] = 
 		    "GLX_EXT_visual_info "
 		    "GLX_EXT_visual_rating "
-		    "GLX_EXT_import_context ";
+		    "GLX_EXT_import_context "
+		    "GLX_ARB_get_proc_address ";
 
 /*
 ** Create a new context.
@@ -1191,7 +1192,7 @@ static char *combine_strings( const char *cext_string, const char *sext_string )
 	s1 = (char *) malloc( slen + 2 ); strcpy( s1, sext_string );
         s2 = cext_string;
    } else {
-        combo_string = (char *) malloc( clen + 2 );
+        combo_string = (char *) Xmalloc( clen + 2 );
 	s1 = (char *) Xmalloc( clen + 2 ); strcpy( s1, cext_string);
         s2 = sext_string;
    }
@@ -1498,7 +1499,7 @@ void glXFreeContextEXT(Display *dpy, GLXContext ctx)
  * GLX 1.3 functions - these are just stubs for now!
  */
 
-GLXFBConfig glXChooseFBConfig(Display *dpy, int screen, const int *attribList, int *nitems)
+GLXFBConfig *glXChooseFBConfig(Display *dpy, int screen, const int *attribList, int *nitems)
 {
     (void) dpy;
     (void) screen;
@@ -1575,6 +1576,15 @@ GLXDrawable glXGetCurrentReadDrawable(void)
 }
 
 
+GLXFBConfig *glXGetFBConfigs(Display *dpy, int screen, int *nelements)
+{
+   (void) dpy;
+   (void) screen;
+   (void) nelements;
+   return 0;
+}
+
+
 int glXGetFBConfigAttrib(Display *dpy, GLXFBConfig config, int attribute, int *value)
 {
     (void) dpy;
@@ -1640,6 +1650,48 @@ void glXSelectEvent(Display *dpy, GLXDrawable drawable, unsigned long mask)
 
 
 /*
+** Mesa extension stubs.  These will help reduce portability problems.
+*/
+
+void glXReleaseBuffersMESA( Display *dpy, GLXDrawable d )
+{
+   (void) dpy;
+   (void) d;
+   /* no-op stub */
+}
+
+
+GLXPixmap glXCreateGLXPixmapMESA( Display *dpy, XVisualInfo *visual,
+                                  Pixmap pixmap, Colormap cmap )
+{
+   (void) dpy;
+   (void) visual;
+   (void) pixmap;
+   (void) cmap;
+   return 0;
+}
+
+
+void glXCopySubBufferMESA( Display *dpy, GLXDrawable drawable,
+                           int x, int y, int width, int height )
+{
+   (void) dpy;
+   (void) drawable;
+   (void) x;
+   (void) y;
+   (void) width;
+   (void) height;
+}
+
+
+GLboolean glXSet3DfxModeMESA( GLint mode )
+{
+   (void) mode;
+   return GL_FALSE;
+}
+
+
+/*
 ** glXGetProcAddress support
 */
 
@@ -1683,6 +1735,7 @@ static struct name_address_pair GLX_functions[] = {
    { "glXDestroyWindow", (GLvoid *) glXDestroyWindow },
    { "glXGetCurrentReadDrawable", (GLvoid *) glXGetCurrentReadDrawable },
    { "glXGetFBConfigAttrib", (GLvoid *) glXGetFBConfigAttrib },
+   { "glXGetFBConfigs", (GLvoid *) glXGetFBConfigs },
    { "glXGetSelectedEvent", (GLvoid *) glXGetSelectedEvent },
    { "glXGetVisualFromFBConfig", (GLvoid *) glXGetVisualFromFBConfig },
    { "glXMakeContextCurrent", (GLvoid *) glXMakeContextCurrent },
@@ -1697,6 +1750,12 @@ static struct name_address_pair GLX_functions[] = {
    { "glXFreeContextEXT", (GLvoid *) glXFreeContextEXT },
    { "glXQueryContextInfoEXT", (GLvoid *) glXQueryContextInfoEXT },
    { "glXGetProcAddressARB", (GLvoid *) glXGetProcAddressARB },
+
+   /* Mesa extensions */
+   { "glXReleaseBuffersMESA", (GLvoid *) glXReleaseBuffersMESA },
+   { "glXCreateGLXPixmapMESA", (GLvoid *) glXCreateGLXPixmapMESA },
+   { "glXCopySubBufferMESA", (GLvoid *) glXCopySubBufferMESA },
+   { "glXSet3DfxModeMESA", (GLvoid *) glXSet3DfxModeMESA },
 
    { NULL, NULL }   /* end of list */
 };

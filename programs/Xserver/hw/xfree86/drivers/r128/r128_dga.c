@@ -1,20 +1,44 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_dga.c,v 1.1 2000/06/14 00:16:12 dawes Exp $ */
 /*
  * Authors:
  *   Ove Kåven <ovek@transgaming.com>,
  *    borrowing some code from the Chips and MGA drivers.
  */
 
+				/* X and server generic header files */
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
+
+				/* PCI support */
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
-#include "xf86Cursor.h" /* to get xf86CursorInfoPtr for r128.h */
-#include "xf86DDC.h"    /* to get I2CBusPtr for r128.h */
+
+				/* DDC support */
+#include "xf86DDC.h"
+
+				/* XAA and Cursor Support */
 #include "xaa.h"
 #include "xaalocal.h"
+#include "xf86Cursor.h"
+
+				/* DRI support */
+#ifdef XF86DRI
+#include "GL/glxint.h"
+#include "xf86drm.h"
+#include "sarea.h"
+#define _XF86DRI_SERVER_
+#include "xf86dri.h"
+#include "dri.h"
+#include "r128_dri.h"
+#include "r128_dripriv.h"
+#include "r128_sarea.h"
+#endif
+
+				/* Driver data structures */
 #include "r128.h"
+
+				/* DGA support */
 #include "dgaproc.h"
 
 

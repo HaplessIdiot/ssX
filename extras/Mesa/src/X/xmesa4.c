@@ -66,8 +66,9 @@ static void flat_pixmap_triangle( GLcontext *ctx,
       unsigned long pixel;
       if (xmesa->xm_visual->gl_visual->RGBAflag) {
          pixel = xmesa_color_to_pixel( xmesa,
-                                       VB->ColorPtr->data[pv][0], VB->ColorPtr->data[pv][1],
-                                       VB->ColorPtr->data[pv][2], VB->ColorPtr->data[pv][3] );
+                         VB->ColorPtr->data[pv][0], VB->ColorPtr->data[pv][1],
+                         VB->ColorPtr->data[pv][2], VB->ColorPtr->data[pv][3],
+                         xmesa->pixelformat );
       }
       else {
          pixel = VB->IndexPtr->data[pv];
@@ -97,6 +98,7 @@ static void smooth_TRUECOLOR_z_triangle( GLcontext *ctx,
    XMesaImage *img = xmesa->xm_buffer->backimage;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
@@ -129,6 +131,7 @@ static void smooth_8A8B8G8R_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
@@ -161,6 +164,7 @@ static void smooth_8R8G8B_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
@@ -193,6 +197,7 @@ static void smooth_8R8G8B24_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE bgr_t
@@ -228,6 +233,7 @@ static void smooth_TRUEDITHER_z_triangle( GLcontext *ctx,
    XMesaImage *img = xmesa->xm_buffer->backimage;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
@@ -259,6 +265,7 @@ static void smooth_5R6G5B_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
@@ -267,7 +274,7 @@ static void smooth_5R6G5B_z_triangle( GLcontext *ctx,
 {									\
    GLint i, len = RIGHT-LEFT;						\
    for (i=0;i<len;i++) {						\
-      GLdepth z = FixedToDepth(ffz);					\
+      DEPTH_TYPE z = FixedToDepth(ffz);					\
       if (z < zRow[i]) {						\
          pRow[i] = PACK_5R6G5B( FixedToInt(ffr), FixedToInt(ffg),	\
 				 FixedToInt(ffb) );			\
@@ -291,6 +298,7 @@ static void smooth_DITHER_5R6G5B_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
@@ -323,6 +331,7 @@ static void smooth_DITHER8_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
@@ -357,6 +366,7 @@ static void smooth_DITHER_z_triangle( GLcontext *ctx,
    XMesaImage *img = xmesa->xm_buffer->backimage;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
@@ -390,6 +400,7 @@ static void smooth_LOOKUP8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
@@ -423,6 +434,7 @@ static void smooth_HPCR_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    (void) pv;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INTERP_RGB 1
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
@@ -455,6 +467,7 @@ static void flat_TRUECOLOR_z_triangle( GLcontext *ctx,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define SETUP_CODE						\
    unsigned long pixel;						\
    PACK_TRUECOLOR(pixel, VB->ColorPtr->data[pv][0], VB->ColorPtr->data[pv][1], VB->ColorPtr->data[pv][2]);
@@ -483,6 +496,7 @@ static void flat_8A8B8G8R_z_triangle( GLcontext *ctx, GLuint v0,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -513,6 +527,7 @@ static void flat_8R8G8B_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR4(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLuint
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -544,6 +559,7 @@ static void flat_8R8G8B24_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR3(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE bgr_t
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -575,6 +591,7 @@ static void flat_TRUEDITHER_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define INNER_LOOP( LEFT, RIGHT, Y )					\
 {									\
    GLint i, xx = LEFT, yy = FLIP(xmesa->xm_buffer,Y), len = RIGHT-LEFT;	\
@@ -602,6 +619,7 @@ static void flat_5R6G5B_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -612,7 +630,7 @@ static void flat_5R6G5B_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {							\
    GLint i, len = RIGHT-LEFT;				\
    for (i=0;i<len;i++) {				\
-      GLdepth z = FixedToDepth(ffz);			\
+      DEPTH_TYPE z = FixedToDepth(ffz);			\
       if (z < zRow[i]) {				\
 	 pRow[i] = (PIXEL_TYPE) p;			\
          zRow[i] = z;					\
@@ -633,6 +651,7 @@ static void flat_DITHER_5R6G5B_z_triangle( GLcontext *ctx, GLuint v0,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    const GLubyte *color = ctx->VB->ColorPtr->data[pv];
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR2(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLushort
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -640,7 +659,7 @@ static void flat_DITHER_5R6G5B_z_triangle( GLcontext *ctx, GLuint v0,
 {								\
    GLint i, len = RIGHT-LEFT;					\
    for (i=0;i<len;i++) {					\
-      GLdepth z = FixedToDepth(ffz);				\
+      DEPTH_TYPE z = FixedToDepth(ffz);				\
       if (z < zRow[i]) {					\
 	 PACK_TRUEDITHER(pRow[i], LEFT+i, Y, color[RCOMP],	\
 			 color[GCOMP], color[BCOMP]);		\
@@ -661,6 +680,7 @@ static void flat_DITHER8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -693,6 +713,7 @@ static void flat_DITHER_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
    XMesaImage *img = xmesa->xm_buffer->backimage;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define SETUP_CODE	\
    FLAT_DITHER_SETUP( VB->ColorPtr->data[pv][0], VB->ColorPtr->data[pv][1], VB->ColorPtr->data[pv][2] );
 
@@ -722,6 +743,7 @@ static void flat_HPCR_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -753,6 +775,7 @@ static void flat_LOOKUP8_z_triangle( GLcontext *ctx, GLuint v0, GLuint v1,
 {
    XMesaContext xmesa = (XMesaContext) ctx->DriverCtx;
 #define INTERP_Z 1
+#define DEPTH_TYPE DEFAULT_SOFTWARE_DEPTH_TYPE
 #define PIXEL_ADDRESS(X,Y) PIXELADDR1(xmesa->xm_buffer,X,Y)
 #define PIXEL_TYPE GLubyte
 #define BYTES_PER_ROW (xmesa->xm_buffer->backimage->bytes_per_line)
@@ -1432,6 +1455,7 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
           && ctx->RasterMask==DEPTH_BIT
           && ctx->Depth.Func==GL_LESS
           && ctx->Depth.Mask==GL_TRUE
+          && ctx->Visual->DepthBits == DEFAULT_SOFTWARE_DEPTH_BITS
           && ctx->Polygon.StippleFlag==GL_FALSE) {
          switch (xmesa->pixelformat) {
             case PF_TRUECOLOR:
@@ -1463,6 +1487,7 @@ triangle_func xmesa_get_triangle_func( GLcontext *ctx )
           && ctx->RasterMask==DEPTH_BIT
           && ctx->Depth.Func==GL_LESS
           && ctx->Depth.Mask==GL_TRUE
+          && ctx->Visual->DepthBits == DEFAULT_SOFTWARE_DEPTH_BITS
           && ctx->Polygon.StippleFlag==GL_FALSE) {
          switch (xmesa->pixelformat) {
             case PF_TRUECOLOR:

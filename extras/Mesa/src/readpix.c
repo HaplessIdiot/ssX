@@ -75,14 +75,14 @@ static void read_index_pixels( GLcontext *ctx,
       (*ctx->Driver.ReadCI32Span)( ctx, readWidth, x, y, index );
 
       if (ctx->Pixel.IndexShift!=0 || ctx->Pixel.IndexOffset!=0) {
-         gl_shift_and_offset_ci( ctx, readWidth, index);
+         _mesa_shift_and_offset_ci( ctx, readWidth, index);
       }
 
       if (ctx->Pixel.MapColorFlag) {
-         gl_map_ci(ctx, readWidth, index);
+         _mesa_map_ci(ctx, readWidth, index);
       }
 
-      dest = gl_pixel_addr_in_image(packing, pixels,
+      dest = _mesa_image_address(packing, pixels,
                          width, height, GL_COLOR_INDEX, type, 0, j, 0);
 
       switch (type) {
@@ -109,7 +109,7 @@ static void read_index_pixels( GLcontext *ctx,
 		  dst[i] = (GLushort) index[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap2( (GLushort *) dst, readWidth );
+		  _mesa_swap2( (GLushort *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -120,7 +120,7 @@ static void read_index_pixels( GLcontext *ctx,
 		  dst[i] = (GLshort) index[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap2( (GLushort *) dst, readWidth );
+		  _mesa_swap2( (GLushort *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -131,7 +131,7 @@ static void read_index_pixels( GLcontext *ctx,
 		  dst[i] = (GLuint) index[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap4( (GLuint *) dst, readWidth );
+		  _mesa_swap4( (GLuint *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -142,7 +142,7 @@ static void read_index_pixels( GLcontext *ctx,
 		  dst[i] = (GLint) index[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap4( (GLuint *) dst, readWidth );
+		  _mesa_swap4( (GLuint *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -153,7 +153,7 @@ static void read_index_pixels( GLcontext *ctx,
 		  dst[i] = (GLfloat) index[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap4( (GLuint *) dst, readWidth );
+		  _mesa_swap4( (GLuint *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -199,36 +199,30 @@ static void read_depth_pixels( GLcontext *ctx,
 
    bias_or_scale = ctx->Pixel.DepthBias!=0.0 || ctx->Pixel.DepthScale!=1.0;
 
-   if (type==GL_UNSIGNED_SHORT && sizeof(GLdepth)==sizeof(GLushort)
+   if (type==GL_UNSIGNED_SHORT && ctx->Visual->DepthBits == 16
        && !bias_or_scale && !packing->SwapBytes) {
       /* Special case: directly read 16-bit unsigned depth values. */
       for (j=0;j<height;j++,y++) {
-         GLushort *dst = (GLushort*) gl_pixel_addr_in_image( packing, pixels,
+         GLdepth depth[MAX_WIDTH];
+         GLushort *dst = (GLushort*) _mesa_image_address( packing, pixels,
                          width, height, GL_DEPTH_COMPONENT, type, 0, j, 0 );
-         (*ctx->Driver.ReadDepthSpan)( ctx, width, x, y, (GLdepth*) dst);
+         GLint i;
+         _mesa_read_depth_span(ctx, width, x, y, depth);
+         for (i = 0; i < width; i++)
+            dst[i] = depth[i];
       }
    }
-   else if (type==GL_UNSIGNED_INT && sizeof(GLdepth)==sizeof(GLuint)
+   else if (type==GL_UNSIGNED_INT && ctx->Visual->DepthBits == 32
             && !bias_or_scale && !packing->SwapBytes) {
       /* Special case: directly read 32-bit unsigned depth values. */
-      /* Compute shift value to scale depth values up to 32-bit uints. */
-      GLuint shift = 0;
-      GLuint max = MAX_DEPTH;
-      while ((max&0x80000000)==0) {
-         max = max << 1;
-         shift++;
-      }
       for (j=0;j<height;j++,y++) {
-         GLuint *dst = (GLuint *) gl_pixel_addr_in_image( packing, pixels,
+         GLdepth *dst = (GLdepth *) _mesa_image_address( packing, pixels,
                          width, height, GL_DEPTH_COMPONENT, type, 0, j, 0 );
-         (*ctx->Driver.ReadDepthSpan)( ctx, width, x, y, (GLdepth*) dst);
-         for (i=0;i<width;i++) {
-            dst[i] = dst[i] << shift;
-         }
+         _mesa_read_depth_span(ctx, width, x, y, dst);
       }
    }
    else {
-      /* General case (slow) */
+      /* General case (slower) */
       for (j=0;j<height;j++,y++) {
          GLfloat depth[MAX_WIDTH];
          GLvoid *dest;
@@ -243,7 +237,7 @@ static void read_depth_pixels( GLcontext *ctx,
             }
          }
 
-         dest = gl_pixel_addr_in_image(packing, pixels,
+         dest = _mesa_image_address(packing, pixels,
                          width, height, GL_DEPTH_COMPONENT, type, 0, j, 0);
 
          switch (type) {
@@ -270,7 +264,7 @@ static void read_depth_pixels( GLcontext *ctx,
                      dst[i] = FLOAT_TO_USHORT( depth[i] );
                   }
                   if (packing->SwapBytes) {
-                     gl_swap2( (GLushort *) dst, readWidth );
+                     _mesa_swap2( (GLushort *) dst, readWidth );
                   }
                }
                break;
@@ -281,7 +275,7 @@ static void read_depth_pixels( GLcontext *ctx,
                      dst[i] = FLOAT_TO_SHORT( depth[i] );
                   }
                   if (packing->SwapBytes) {
-                     gl_swap2( (GLushort *) dst, readWidth );
+                     _mesa_swap2( (GLushort *) dst, readWidth );
                   }
                }
                break;
@@ -292,7 +286,7 @@ static void read_depth_pixels( GLcontext *ctx,
                      dst[i] = FLOAT_TO_UINT( depth[i] );
                   }
                   if (packing->SwapBytes) {
-                     gl_swap4( (GLuint *) dst, readWidth );
+                     _mesa_swap4( (GLuint *) dst, readWidth );
                   }
                }
                break;
@@ -303,7 +297,7 @@ static void read_depth_pixels( GLcontext *ctx,
                      dst[i] = FLOAT_TO_INT( depth[i] );
                   }
                   if (packing->SwapBytes) {
-                     gl_swap4( (GLuint *) dst, readWidth );
+                     _mesa_swap4( (GLuint *) dst, readWidth );
                   }
                }
                break;
@@ -314,7 +308,7 @@ static void read_depth_pixels( GLcontext *ctx,
                      dst[i] = depth[i];
                   }
                   if (packing->SwapBytes) {
-                     gl_swap4( (GLuint *) dst, readWidth );
+                     _mesa_swap4( (GLuint *) dst, readWidth );
                   }
                }
                break;
@@ -364,17 +358,17 @@ static void read_stencil_pixels( GLcontext *ctx,
       GLvoid *dest;
       GLstencil stencil[MAX_WIDTH];
 
-      gl_read_stencil_span( ctx, readWidth, x, y, stencil );
+      _mesa_read_stencil_span( ctx, readWidth, x, y, stencil );
 
       if (shift_or_offset) {
-         gl_shift_and_offset_stencil( ctx, readWidth, stencil );
+         _mesa_shift_and_offset_stencil( ctx, readWidth, stencil );
       }
 
       if (ctx->Pixel.MapStencilFlag) {
-         gl_map_stencil( ctx, readWidth, stencil );
+         _mesa_map_stencil( ctx, readWidth, stencil );
       }
 
-      dest = gl_pixel_addr_in_image( packing, pixels,
+      dest = _mesa_image_address( packing, pixels,
                           width, height, GL_STENCIL_INDEX, type, 0, j, 0 );
 
       switch (type) {
@@ -407,7 +401,7 @@ static void read_stencil_pixels( GLcontext *ctx,
 		  dst[i] = (GLushort) stencil[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap2( (GLushort *) dst, readWidth );
+		  _mesa_swap2( (GLushort *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -418,7 +412,7 @@ static void read_stencil_pixels( GLcontext *ctx,
 		  dst[i] = (GLshort) stencil[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap2( (GLushort *) dst, readWidth );
+		  _mesa_swap2( (GLushort *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -429,7 +423,7 @@ static void read_stencil_pixels( GLcontext *ctx,
 		  dst[i] = (GLuint) stencil[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap4( (GLuint *) dst, readWidth );
+		  _mesa_swap4( (GLuint *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -440,7 +434,7 @@ static void read_stencil_pixels( GLcontext *ctx,
 		  *dst++ = (GLint) stencil[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap4( (GLuint *) dst, readWidth );
+		  _mesa_swap4( (GLuint *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -451,7 +445,7 @@ static void read_stencil_pixels( GLcontext *ctx,
 		  dst[i] = (GLfloat) stencil[i];
 	       }
 	       if (packing->SwapBytes) {
-		  gl_swap4( (GLuint *) dst, readWidth );
+		  _mesa_swap4( (GLuint *) dst, readWidth );
 	       }
 	    }
 	    break;
@@ -506,8 +500,19 @@ read_fast_rgba_pixels( GLcontext *ctx,
                        GLvoid *pixels,
                        const struct gl_pixelstore_attrib *packing )
 {
-   /* can't do scale, bias or mapping */
-   if (ctx->Pixel.ScaleOrBiasRGBA || ctx->Pixel.MapColorFlag)
+   GLboolean applyTransferOps;
+
+   applyTransferOps = ctx->Pixel.ScaleOrBiasRGBA ||
+                      ctx->Pixel.MapColorFlag ||
+                      ctx->ColorMatrix.type != MATRIX_IDENTITY ||
+                      ctx->Pixel.ScaleOrBiasRGBApcm ||
+                      ctx->Pixel.ColorTableEnabled ||
+                      ctx->Pixel.PostColorMatrixColorTableEnabled ||
+                      ctx->Pixel.MinMaxEnabled ||
+                      ctx->Pixel.HistogramEnabled;
+
+   /* can't do scale, bias, mapping, etc */
+   if (applyTransferOps)
        return GL_FALSE;
 
    /* can't do fancy pixel packing */
@@ -564,9 +569,9 @@ read_fast_rgba_pixels( GLcontext *ctx,
          for (row=0; row<readHeight; row++) {
             (*ctx->Driver.ReadRGBASpan)(ctx, readWidth, srcX, srcY,
                                         (GLubyte (*)[4]) dest);
-            if (ctx->Visual->SoftwareAlpha) {
-               gl_read_alpha_span(ctx, readWidth, srcX, srcY,
-                                  (GLubyte (*)[4]) dest);
+            if (ctx->DrawBuffer->UseSoftwareAlphaBuffers) {
+               _mesa_read_alpha_span(ctx, readWidth, srcX, srcY,
+                                     (GLubyte (*)[4]) dest);
             }
             dest += rowLength * 4;
             srcY++;
@@ -633,7 +638,7 @@ static void read_rgba_pixels( GLcontext *ctx,
          return;
    }
 
-   if (!gl_is_legal_format_and_type(format, type)) {
+   if (!_mesa_is_legal_format_and_type(format, type)) {
       gl_error(ctx, GL_INVALID_OPERATION, "glReadPixels(format or type)");
       return;
    }
@@ -646,14 +651,15 @@ static void read_rgba_pixels( GLcontext *ctx,
 
          gl_read_rgba_span( ctx, ctx->ReadBuffer, readWidth, x, y, rgba );
 
-         dest = gl_pixel_addr_in_image( packing, pixels, width, height,
-                                        format, type, 0, j, 0);
+         dest = _mesa_image_address( packing, pixels, width, height,
+                                     format, type, 0, j, 0);
 
-         gl_pack_rgba_span( ctx, readWidth, (const GLubyte (*)[4]) rgba,
-                            format, type, dest, packing, GL_TRUE );
+         _mesa_pack_rgba_span( ctx, readWidth, (const GLubyte (*)[4]) rgba,
+                               format, type, dest, packing, GL_TRUE );
       }
    }
    else {
+      /* Convert color index pixels to RGBA */
       GLint j;
       for (j=0;j<height;j++,y++) {
          GLubyte rgba[MAX_WIDTH][4];
@@ -663,16 +669,16 @@ static void read_rgba_pixels( GLcontext *ctx,
 	 (*ctx->Driver.ReadCI32Span)( ctx, readWidth, x, y, index );
 
 	 if (ctx->Pixel.IndexShift!=0 || ctx->Pixel.IndexOffset!=0) {
-            gl_map_ci( ctx, readWidth, index );
+            _mesa_map_ci( ctx, readWidth, index );
 	 }
 
-         gl_map_ci_to_rgba(ctx, readWidth, index, rgba );
+         _mesa_map_ci_to_rgba_ubyte(ctx, readWidth, index, rgba );
 
-         dest = gl_pixel_addr_in_image( packing, pixels, width, height,
-                                        format, type, 0, j, 0);
+         dest = _mesa_image_address( packing, pixels, width, height,
+                                     format, type, 0, j, 0);
 
-         gl_pack_rgba_span( ctx, readWidth, (const GLubyte (*)[4]) rgba,
-                            format, type, dest, packing, GL_TRUE );
+         _mesa_pack_rgba_span( ctx, readWidth, (const GLubyte (*)[4]) rgba,
+                               format, type, dest, packing, GL_TRUE );
       }
    }
 
@@ -693,15 +699,20 @@ _mesa_ReadPixels( GLint x, GLint y, GLsizei width, GLsizei height,
       return;
    }
 
+   if (ctx->Driver.ReadPixels &&
+       (*ctx->Driver.ReadPixels)(ctx, x, y, width, height,
+                                 format, type, &ctx->Pack, pixels))
+      return;
+
    switch (format) {
       case GL_COLOR_INDEX:
-         read_index_pixels( ctx, x, y, width, height, type, pixels, &ctx->Pack );
+         read_index_pixels(ctx, x, y, width, height, type, pixels, &ctx->Pack);
 	 break;
       case GL_STENCIL_INDEX:
-	 read_stencil_pixels( ctx, x, y, width, height, type, pixels, &ctx->Pack );
+	 read_stencil_pixels(ctx, x,y, width,height, type, pixels, &ctx->Pack);
          break;
       case GL_DEPTH_COMPONENT:
-	 read_depth_pixels( ctx, x, y, width, height, type, pixels, &ctx->Pack );
+	 read_depth_pixels(ctx, x, y, width, height, type, pixels, &ctx->Pack);
 	 break;
       case GL_RED:
       case GL_GREEN:
@@ -714,7 +725,8 @@ _mesa_ReadPixels( GLint x, GLint y, GLsizei width, GLsizei height,
       case GL_BGR:
       case GL_BGRA:
       case GL_ABGR_EXT:
-         read_rgba_pixels( ctx, x, y, width, height, format, type, pixels, &ctx->Pack );
+         read_rgba_pixels(ctx, x, y, width, height,
+                          format, type, pixels, &ctx->Pack);
 	 break;
       default:
 	 gl_error( ctx, GL_INVALID_ENUM, "glReadPixels(format)" );

@@ -57,7 +57,7 @@
 
 
 void
-_mesa_Begin(GLenum mode )
+_mesa_Begin( GLenum mode )
 {
    GET_CURRENT_CONTEXT(ctx);
 
@@ -70,7 +70,8 @@ _mesa_Begin(GLenum mode )
 }
 
 
-void gl_Begin( GLcontext *ctx, GLenum p )
+void
+gl_Begin( GLcontext *ctx, GLenum p )
 {
    struct immediate *IM = ctx->input;
    GLuint inflags, state;
@@ -172,7 +173,8 @@ _mesa_End(void)
 }
 
 
-void gl_End( GLcontext *ctx )
+void
+gl_End( GLcontext *ctx )
 {
    struct immediate *IM = ctx->input;
    GLuint state = IM->BeginState;
@@ -221,7 +223,7 @@ void gl_End( GLcontext *ctx )
  * to implement that mechanism to get good performance from
  * color-material and vertex arrays.  
  */
-#define COLOR( IM, r,g,b,a )			\
+#define COLOR( IM, r, g, b, a )			\
 {						\
    GLuint count = IM->Count;			\
    IM->Flag[count] |= VERT_RGBA;		\
@@ -230,28 +232,6 @@ void gl_End( GLcontext *ctx )
    IM->Color[count][2] = b;			\
    IM->Color[count][3] = a;			\
 }
-
-#if 0
-#define COLOR4F( IM, r,g,b,a )				\
-{							\
-   GLuint count = IM->Count;				\
-   IM->Flag[count] |= VERT_RGBA | VERT_FLOAT_RGBA;	\
-   IM->FloatColor[count][0] = r;			\
-   IM->FloatColor[count][1] = g;			\
-   IM->FloatColor[count][2] = b;			\
-   IM->FloatColor[count][3] = a;			\
-}
-#else
-#define COLOR4F(IM, r, g, b, a)			\
-{						\
-   GLubyte col[4];				\
-   FLOAT_COLOR_TO_UBYTE_COLOR(col[0], r);	\
-   FLOAT_COLOR_TO_UBYTE_COLOR(col[1], g);	\
-   FLOAT_COLOR_TO_UBYTE_COLOR(col[2], b);	\
-   FLOAT_COLOR_TO_UBYTE_COLOR(col[3], a);	\
-   COLORV( IM, col );				\
-}
-#endif
 
 #define COLORV( IM, v )				\
 {						\
@@ -262,19 +242,16 @@ void gl_End( GLcontext *ctx )
 
 
 void
-_mesa_Color3b(GLbyte red, GLbyte green, GLbyte blue )
+_mesa_Color3b( GLbyte red, GLbyte green, GLbyte blue )
 {
    GET_IMMEDIATE;
-   COLOR( IM, 
-	  BYTE_TO_UBYTE(red), 
-	  BYTE_TO_UBYTE(green),
-	  BYTE_TO_UBYTE(blue),
-	  255 );
+   COLOR( IM, BYTE_TO_UBYTE(red), BYTE_TO_UBYTE(green),
+          BYTE_TO_UBYTE(blue), 255 );
 }
 
 
 void
-_mesa_Color3d(GLdouble red, GLdouble green, GLdouble blue )
+_mesa_Color3d( GLdouble red, GLdouble green, GLdouble blue )
 {
    GLubyte col[4];
    GLfloat r = red;
@@ -286,13 +263,11 @@ _mesa_Color3d(GLdouble red, GLdouble green, GLdouble blue )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], b);
    col[3] = 255;
    COLORV( IM, col );
-
-/*     COLOR4F( IM, red, green, blue, 1.0 ); */
 }
 
 
 void
-_mesa_Color3f(GLfloat red, GLfloat green, GLfloat blue )
+_mesa_Color3f( GLfloat red, GLfloat green, GLfloat blue )
 {
    GLubyte col[4];
    GET_IMMEDIATE;
@@ -301,35 +276,29 @@ _mesa_Color3f(GLfloat red, GLfloat green, GLfloat blue )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], blue);
    col[3] = 255;
    COLORV( IM, col );
-
-/*     COLOR4F( IM, red, green, blue, 1.0 ); */
 }
 
 
 void
-_mesa_Color3i(GLint red, GLint green, GLint blue )
+_mesa_Color3i( GLint red, GLint green, GLint blue )
 {
    GET_IMMEDIATE;
-   COLOR( IM, INT_TO_UBYTE(red), 
-	  INT_TO_UBYTE(green),
-	  INT_TO_UBYTE(blue),
-	  255);
+   COLOR( IM, INT_TO_UBYTE(red), INT_TO_UBYTE(green),
+	  INT_TO_UBYTE(blue), 255);
 }
 
 
 void
-_mesa_Color3s(GLshort red, GLshort green, GLshort blue )
+_mesa_Color3s( GLshort red, GLshort green, GLshort blue )
 {
    GET_IMMEDIATE;
-   COLOR( IM, SHORT_TO_UBYTE(red), 
-	  SHORT_TO_UBYTE(green),
-	  SHORT_TO_UBYTE(blue),
-	  255);
+   COLOR( IM, SHORT_TO_UBYTE(red), SHORT_TO_UBYTE(green),
+	  SHORT_TO_UBYTE(blue), 255);
 }
 
 
 void
-_mesa_Color3ub(GLubyte red, GLubyte green, GLubyte blue )
+_mesa_Color3ub( GLubyte red, GLubyte green, GLubyte blue )
 {
    GET_IMMEDIATE;
    COLOR( IM, red, green, blue, 255 );
@@ -337,28 +306,25 @@ _mesa_Color3ub(GLubyte red, GLubyte green, GLubyte blue )
 
 
 void
-_mesa_Color3ui(GLuint red, GLuint green, GLuint blue )
+_mesa_Color3ui( GLuint red, GLuint green, GLuint blue )
 {
    GET_IMMEDIATE;
-   COLOR( IM, UINT_TO_UBYTE(red),
-	  UINT_TO_UBYTE(green),
-	  UINT_TO_UBYTE(blue),
-	  255 );
+   COLOR( IM, UINT_TO_UBYTE(red), UINT_TO_UBYTE(green),
+	  UINT_TO_UBYTE(blue), 255 );
 }
 
 
 void
-_mesa_Color3us(GLushort red, GLushort green, GLushort blue )
+_mesa_Color3us( GLushort red, GLushort green, GLushort blue )
 {
    GET_IMMEDIATE;
    COLOR( IM, USHORT_TO_UBYTE(red), USHORT_TO_UBYTE(green),
-	  USHORT_TO_UBYTE(blue),
-	  255 );
+	  USHORT_TO_UBYTE(blue), 255 );
 }
 
 
 void
-_mesa_Color4b(GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha )
+_mesa_Color4b( GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha )
 {
    GET_IMMEDIATE;
    COLOR( IM, BYTE_TO_UBYTE(red), BYTE_TO_UBYTE(green),
@@ -367,7 +333,7 @@ _mesa_Color4b(GLbyte red, GLbyte green, GLbyte blue, GLbyte alpha )
 
 
 void
-_mesa_Color4d(GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha )
+_mesa_Color4d( GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha )
 {
    GLubyte col[4];
    GLfloat r = red;
@@ -380,13 +346,11 @@ _mesa_Color4d(GLdouble red, GLdouble green, GLdouble blue, GLdouble alpha )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], b);
    FLOAT_COLOR_TO_UBYTE_COLOR(col[3], a);
    COLORV( IM, col );
-
-/*     COLOR4F( IM, red, green, blue, alpha ); */
 }
 
 
 void
-_mesa_Color4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha )
+_mesa_Color4f( GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha )
 {
    GLubyte col[4];
    GET_IMMEDIATE;
@@ -395,13 +359,11 @@ _mesa_Color4f(GLfloat red, GLfloat green, GLfloat blue, GLfloat alpha )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], blue);
    FLOAT_COLOR_TO_UBYTE_COLOR(col[3], alpha);
    COLORV( IM, col );
-
-/*     COLOR4F( IM, red, green, blue, alpha ); */
 }
 
 
 void
-_mesa_Color4i(GLint red, GLint green, GLint blue, GLint alpha )
+_mesa_Color4i( GLint red, GLint green, GLint blue, GLint alpha )
 {
    GET_IMMEDIATE;
    COLOR( IM, INT_TO_UBYTE(red), INT_TO_UBYTE(green),
@@ -410,7 +372,7 @@ _mesa_Color4i(GLint red, GLint green, GLint blue, GLint alpha )
 
 
 void
-_mesa_Color4s(GLshort red, GLshort green, GLshort blue, GLshort alpha )
+_mesa_Color4s( GLshort red, GLshort green, GLshort blue, GLshort alpha )
 {
    GET_IMMEDIATE;
    COLOR( IM, SHORT_TO_UBYTE(red), SHORT_TO_UBYTE(green),
@@ -418,14 +380,14 @@ _mesa_Color4s(GLshort red, GLshort green, GLshort blue, GLshort alpha )
 }
 
 void
-_mesa_Color4ub(GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha )
+_mesa_Color4ub( GLubyte red, GLubyte green, GLubyte blue, GLubyte alpha )
 {
    GET_IMMEDIATE;
    COLOR( IM, red, green, blue, alpha );
 }
 
 void
-_mesa_Color4ui(GLuint red, GLuint green, GLuint blue, GLuint alpha )
+_mesa_Color4ui( GLuint red, GLuint green, GLuint blue, GLuint alpha )
 {
    GET_IMMEDIATE;
    COLOR( IM, UINT_TO_UBYTE(red), UINT_TO_UBYTE(green),
@@ -433,7 +395,7 @@ _mesa_Color4ui(GLuint red, GLuint green, GLuint blue, GLuint alpha )
 }
 
 void
-_mesa_Color4us(GLushort red, GLushort green, GLushort blue, GLushort alpha )
+_mesa_Color4us( GLushort red, GLushort green, GLushort blue, GLushort alpha )
 {
    GET_IMMEDIATE;
    COLOR( IM, USHORT_TO_UBYTE(red), USHORT_TO_UBYTE(green),
@@ -442,7 +404,7 @@ _mesa_Color4us(GLushort red, GLushort green, GLushort blue, GLushort alpha )
 
 
 void
-_mesa_Color3bv(const GLbyte *v )
+_mesa_Color3bv( const GLbyte *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, BYTE_TO_UBYTE(v[0]), BYTE_TO_UBYTE(v[1]),
@@ -451,7 +413,7 @@ _mesa_Color3bv(const GLbyte *v )
 
 
 void
-_mesa_Color3dv(const GLdouble *v )
+_mesa_Color3dv( const GLdouble *v )
 {
    GLubyte col[4];
    GLfloat r = v[0];
@@ -463,13 +425,11 @@ _mesa_Color3dv(const GLdouble *v )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], b);
    col[3]= 255;
    COLORV( IM, col );
-
-/*     COLOR4F( IM, v[0], v[1], v[2], v[3] ); */
 }
 
 
 void
-_mesa_Color3fv(const GLfloat *v )
+_mesa_Color3fv( const GLfloat *v )
 {
    GLubyte col[4];
    GET_IMMEDIATE;
@@ -478,13 +438,11 @@ _mesa_Color3fv(const GLfloat *v )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], v[2]);
    col[3] = 255;
    COLORV( IM, col );
-
-/*     COLOR4F( IM, v[0], v[1], v[2], v[3] ); */
 }
 
 
 void
-_mesa_Color3iv(const GLint *v )
+_mesa_Color3iv( const GLint *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, INT_TO_UBYTE(v[0]), INT_TO_UBYTE(v[1]),
@@ -493,7 +451,7 @@ _mesa_Color3iv(const GLint *v )
 
 
 void
-_mesa_Color3sv(const GLshort *v )
+_mesa_Color3sv( const GLshort *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, SHORT_TO_UBYTE(v[0]), SHORT_TO_UBYTE(v[1]),
@@ -502,7 +460,7 @@ _mesa_Color3sv(const GLshort *v )
 
 
 void
-_mesa_Color3ubv(const GLubyte *v )
+_mesa_Color3ubv( const GLubyte *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, v[0], v[1], v[2], 255 );
@@ -510,7 +468,7 @@ _mesa_Color3ubv(const GLubyte *v )
 
 
 void
-_mesa_Color3uiv(const GLuint *v )
+_mesa_Color3uiv( const GLuint *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, UINT_TO_UBYTE(v[0]), UINT_TO_UBYTE(v[1]),
@@ -519,7 +477,7 @@ _mesa_Color3uiv(const GLuint *v )
 
 
 void
-_mesa_Color3usv(const GLushort *v )
+_mesa_Color3usv( const GLushort *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, USHORT_TO_UBYTE(v[0]), USHORT_TO_UBYTE(v[1]),
@@ -529,7 +487,7 @@ _mesa_Color3usv(const GLushort *v )
 
 
 void
-_mesa_Color4bv(const GLbyte *v )
+_mesa_Color4bv( const GLbyte *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, BYTE_TO_UBYTE(v[0]), BYTE_TO_UBYTE(v[1]),
@@ -538,7 +496,7 @@ _mesa_Color4bv(const GLbyte *v )
 
 
 void
-_mesa_Color4dv(const GLdouble *v )
+_mesa_Color4dv( const GLdouble *v )
 {
    GLubyte col[4];
    GLfloat r = v[0];
@@ -551,13 +509,11 @@ _mesa_Color4dv(const GLdouble *v )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], b);
    FLOAT_COLOR_TO_UBYTE_COLOR(col[3], a);
    COLORV( IM, col );
-
-/*     COLOR4F( IM, v[0], v[1], v[2], v[3] ); */
 }
 
 
 void
-_mesa_Color4fv(const GLfloat *v )
+_mesa_Color4fv( const GLfloat *v )
 {
    GLubyte col[4];
    GET_IMMEDIATE;
@@ -566,13 +522,11 @@ _mesa_Color4fv(const GLfloat *v )
    FLOAT_COLOR_TO_UBYTE_COLOR(col[2], v[2]);
    FLOAT_COLOR_TO_UBYTE_COLOR(col[3], v[3]);
    COLORV( IM, col );
-
-/*     COLOR4F( IM, v[0], v[1], v[2], v[3] ); */
 }
 
 
 void
-_mesa_Color4iv(const GLint *v )
+_mesa_Color4iv( const GLint *v )
 {
    GET_IMMEDIATE;
    COLOR( IM, INT_TO_UBYTE(v[0]), INT_TO_UBYTE(v[1]),
@@ -581,7 +535,7 @@ _mesa_Color4iv(const GLint *v )
 
 
 void
-_mesa_Color4sv(const GLshort *v)
+_mesa_Color4sv( const GLshort *v)
 {
    GET_IMMEDIATE;
    COLOR( IM, SHORT_TO_UBYTE(v[0]), SHORT_TO_UBYTE(v[1]),
@@ -590,7 +544,7 @@ _mesa_Color4sv(const GLshort *v)
 
 
 void
-_mesa_Color4ubv(const GLubyte *v)
+_mesa_Color4ubv( const GLubyte *v)
 {
    GET_IMMEDIATE;
    COLORV( IM, v );
@@ -598,7 +552,7 @@ _mesa_Color4ubv(const GLubyte *v)
 
 
 void
-_mesa_Color4uiv(const GLuint *v)
+_mesa_Color4uiv( const GLuint *v)
 {
    GET_IMMEDIATE;
    COLOR( IM, UINT_TO_UBYTE(v[0]), UINT_TO_UBYTE(v[1]),
@@ -607,7 +561,7 @@ _mesa_Color4uiv(const GLuint *v)
 
 
 void
-_mesa_Color4usv(const GLushort *v)
+_mesa_Color4usv( const GLushort *v)
 {
    GET_IMMEDIATE;
    COLOR( IM, USHORT_TO_UBYTE(v[0]), USHORT_TO_UBYTE(v[1]),
@@ -653,7 +607,7 @@ _mesa_EdgeFlagv( const GLboolean *flag )
 void
 _mesa_Indexd( GLdouble c )
 {
-   INDEX( (GLuint) (GLint) c );
+   INDEX( ( GLuint) (GLint) c );
 }
 
 
@@ -728,7 +682,7 @@ _mesa_Indexubv( const GLubyte *c )
  *     call.  The Flag member allows the identification of missing
  *     (ie shared) normals.
  */
-#define NORMAL( x,y,z )				\
+#define NORMAL( x, y, z )			\
 {						\
    GLuint count;				\
    GLfloat *normal;				\
@@ -1137,7 +1091,8 @@ _mesa_Vertex2f( GLfloat x, GLfloat y )
 
 /* Internal use:
  */
-void gl_Vertex2f( GLcontext *ctx, GLfloat x, GLfloat y )
+void
+gl_Vertex2f( GLcontext *ctx, GLfloat x, GLfloat y )
 {
    struct immediate *im = ctx->input;
    VERTEX2( im, x, y );
@@ -1329,9 +1284,10 @@ _mesa_Vertex4sv( const GLshort *v )
 
 
 /* KW: Do the check here so that we only have to do a single range
- *     test.  The possible compliance problem with this is that 
- *     we will throw out error-producing calls when compiling
- *     display lists.  There are ways around this if need be.
+ *     test.  The possible compliance problem with this is that we
+ *     will throw out error-producing calls when compiling display
+ *     lists.  The solution is to do dispatch on gl_error to call
+ *     gl_save_error if compiling.
  */
 
 
@@ -1344,7 +1300,8 @@ _mesa_Vertex4sv( const GLshort *v )
       texSet = target - GL_TEXTURE0_ARB;				\
    }									\
    else {								\
-      gl_error(IM->backref, GL_INVALID_ENUM, "glMultiTexCoord(target)");	\
+      gl_error(IM->backref, GL_INVALID_ENUM, 				\
+               "glMultiTexCoord(target)");				\
       return;								\
    }
 

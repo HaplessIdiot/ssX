@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -83,8 +83,9 @@ _mesa_ColorMask( GLboolean red, GLboolean green,
 /*
  * Apply glColorMask to a span of RGBA pixels.
  */
-void gl_mask_rgba_span( GLcontext *ctx,
-                        GLuint n, GLint x, GLint y, GLubyte rgba[][4] )
+void
+_mesa_mask_rgba_span( GLcontext *ctx,
+                      GLuint n, GLint x, GLint y, GLubyte rgba[][4] )
 {
    GLubyte dest[MAX_WIDTH][4];
    GLuint srcMask = *((GLuint*)ctx->Color.ColorMask);
@@ -105,9 +106,10 @@ void gl_mask_rgba_span( GLcontext *ctx,
 /*
  * Apply glColorMask to an array of RGBA pixels.
  */
-void gl_mask_rgba_pixels( GLcontext *ctx,
-                          GLuint n, const GLint x[], const GLint y[],
-                          GLubyte rgba[][4], const GLubyte mask[] )
+void
+_mesa_mask_rgba_pixels( GLcontext *ctx,
+                        GLuint n, const GLint x[], const GLint y[],
+                        GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLubyte dest[PB_SIZE][4];
    GLuint srcMask = *((GLuint*)ctx->Color.ColorMask);
@@ -118,7 +120,7 @@ void gl_mask_rgba_pixels( GLcontext *ctx,
 
    (*ctx->Driver.ReadRGBAPixels)( ctx, n, x, y, dest, mask );
    if (ctx->RasterMask & ALPHABUF_BIT) {
-      gl_read_alpha_pixels( ctx, n, x, y, dest, mask );
+      _mesa_read_alpha_pixels( ctx, n, x, y, dest, mask );
    }
 
    for (i=0; i<n; i++) {
@@ -131,8 +133,9 @@ void gl_mask_rgba_pixels( GLcontext *ctx,
 /*
  * Apply glIndexMask to a span of CI pixels.
  */
-void gl_mask_index_span( GLcontext *ctx,
-                         GLuint n, GLint x, GLint y, GLuint index[] )
+void
+_mesa_mask_index_span( GLcontext *ctx,
+                       GLuint n, GLint x, GLint y, GLuint index[] )
 {
    GLuint i;
    GLuint fbindexes[MAX_WIDTH];
@@ -153,9 +156,10 @@ void gl_mask_index_span( GLcontext *ctx,
 /*
  * Apply glIndexMask to an array of CI pixels.
  */
-void gl_mask_index_pixels( GLcontext *ctx,
-                           GLuint n, const GLint x[], const GLint y[],
-                           GLuint index[], const GLubyte mask[] )
+void
+_mesa_mask_index_pixels( GLcontext *ctx,
+                         GLuint n, const GLint x[], const GLint y[],
+                         GLuint index[], const GLubyte mask[] )
 {
    GLuint i;
    GLuint fbindexes[PB_SIZE];

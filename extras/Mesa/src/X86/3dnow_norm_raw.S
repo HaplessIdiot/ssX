@@ -1,8 +1,8 @@
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  *
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -30,12 +30,6 @@
 #include "assyntax.h"
 
         SEG_TEXT
-
-#if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
-#define LLBL(a) .L ## a
-#else
-#define LLBL(a) a
-#endif
 
 
 

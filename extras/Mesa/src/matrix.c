@@ -930,6 +930,10 @@ do {									\
 	 mat = &ctx->TextureMatrix[ctx->Texture.CurrentTransformUnit];	\
 	 flags |= NEW_TEXTURE_MATRIX;					\
 	 break;								\
+      case GL_COLOR:							\
+	 mat = &ctx->ColorMatrix;					\
+	 flags |= NEW_COLOR_MATRIX;					\
+	 break;								\
       default:								\
          gl_problem(ctx, where);					\
    }									\
@@ -1036,6 +1040,7 @@ _mesa_MatrixMode( GLenum mode )
       case GL_MODELVIEW:
       case GL_PROJECTION:
       case GL_TEXTURE:
+      case GL_COLOR:
          ctx->Transform.MatrixMode = mode;
          break;
       default:
@@ -1088,6 +1093,14 @@ _mesa_PushMatrix( void )
 	    gl_matrix_copy( &ctx->TextureStack[t][ctx->TextureStackDepth[t]++],
 			    &ctx->TextureMatrix[t] );
          }
+         break;
+      case GL_COLOR:
+         if (ctx->ColorStackDepth >= MAX_COLOR_STACK_DEPTH - 1) {
+            gl_error( ctx,  GL_STACK_OVERFLOW, "glPushMatrix");
+            return;
+         }
+         gl_matrix_copy( &ctx->ColorStack[ctx->ColorStackDepth++],
+                         &ctx->ColorMatrix );
          break;
       default:
          gl_problem(ctx, "Bad matrix mode in gl_PushMatrix");
@@ -1145,6 +1158,14 @@ _mesa_PopMatrix( void )
 	    gl_matrix_copy(&ctx->TextureMatrix[t],
 			   &ctx->TextureStack[t][--ctx->TextureStackDepth[t]]);
          }
+         break;
+      case GL_COLOR:
+         if (ctx->ColorStackDepth==0) {
+            gl_error( ctx,  GL_STACK_UNDERFLOW, "glPopMatrix");
+            return;
+         }
+         gl_matrix_copy(&ctx->ColorMatrix,
+                        &ctx->ColorStack[--ctx->ColorStackDepth]);
          break;
       default:
          gl_problem(ctx, "Bad matrix mode in gl_PopMatrix");
@@ -1459,8 +1480,8 @@ gl_Viewport( GLcontext *ctx, GLint x, GLint y, GLsizei width, GLsizei height )
    ctx->Viewport.WindowMap.m[MAT_TX] = ctx->Viewport.WindowMap.m[MAT_SX] + x;
    ctx->Viewport.WindowMap.m[MAT_SY] = (GLfloat) height / 2.0F;
    ctx->Viewport.WindowMap.m[MAT_TY] = ctx->Viewport.WindowMap.m[MAT_SY] + y;
-   ctx->Viewport.WindowMap.m[MAT_SZ] = 0.5 * DEPTH_SCALE;
-   ctx->Viewport.WindowMap.m[MAT_TZ] = 0.5 * DEPTH_SCALE;
+   ctx->Viewport.WindowMap.m[MAT_SZ] = 0.5 * ctx->Visual->DepthMaxF;
+   ctx->Viewport.WindowMap.m[MAT_TZ] = 0.5 * ctx->Visual->DepthMaxF;
 
    ctx->Viewport.WindowMap.flags = MAT_FLAG_GENERAL_SCALE|MAT_FLAG_TRANSLATION;
    ctx->Viewport.WindowMap.type = MATRIX_3D_NO_ROT;
@@ -1517,8 +1538,8 @@ _mesa_DepthRange( GLclampd nearval, GLclampd farval )
 
    ctx->Viewport.Near = n;
    ctx->Viewport.Far = f;
-   ctx->Viewport.WindowMap.m[MAT_SZ] = DEPTH_SCALE * ((f - n) / 2.0);
-   ctx->Viewport.WindowMap.m[MAT_TZ] = DEPTH_SCALE * ((f - n) / 2.0 + n);
+   ctx->Viewport.WindowMap.m[MAT_SZ] = ctx->Visual->DepthMaxF * ((f - n) / 2.0);
+   ctx->Viewport.WindowMap.m[MAT_TZ] = ctx->Visual->DepthMaxF * ((f - n) / 2.0 + n);
 
    ctx->ModelProjectWinMatrixUptodate = GL_FALSE;
 

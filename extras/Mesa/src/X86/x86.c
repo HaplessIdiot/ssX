@@ -28,17 +28,14 @@
  */
 
 
-#include <limits.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
+#include "glheader.h"
 #include "context.h"
 #include "types.h"
 #include "vertices.h"
 #include "xform.h"
 #include "x86.h"
 
+#ifdef USE_X86_ASM
 extern void _ASMAPI gl_v16_x86_cliptest_points4(GLfloat *first_vert,
 					GLfloat *last_vert,
 					GLubyte *or_mask,
@@ -51,7 +48,7 @@ extern void _ASMAPI gl_v16_x86_general_xform(GLfloat *dest,
 				     const GLfloat *src,
 				     GLuint src_stride,
 				     GLuint count);
-
+#endif
 
 
 #define XFORM_ARGS 	GLvector4f *to_vec, 		\
@@ -85,8 +82,7 @@ extern void _ASMAPI gl_v16_x86_general_xform(GLfloat *dest,
  gl_transform_tab[cma][vsize][MATRIX_3D] 			\
   = gl_##pfx##_transform_points##vsize##_3d_##masked;
 
-void gl_init_x86_asm_transforms( void )
-{
+
 #ifdef USE_X86_ASM
    DECLARE_XFORM_GROUP( x86, 2, raw )
    DECLARE_XFORM_GROUP( x86, 3, raw )
@@ -100,8 +96,12 @@ void gl_init_x86_asm_transforms( void )
                                                GLubyte clipMask[],
                                                GLubyte *orMask, 
                                                GLubyte *andMask );
+#endif
 
-   
+
+void gl_init_x86_asm_transforms( void )
+{
+#ifdef USE_X86_ASM
    ASSIGN_XFORM_GROUP( x86, 0, 2, raw )
    ASSIGN_XFORM_GROUP( x86, 0, 3, raw )
    ASSIGN_XFORM_GROUP( x86, 0, 4, raw )
@@ -110,6 +110,7 @@ void gl_init_x86_asm_transforms( void )
    ASSIGN_XFORM_GROUP( x86, CULL_MASK_ACTIVE, 3, masked )
    ASSIGN_XFORM_GROUP( x86, CULL_MASK_ACTIVE, 4, masked )
 
+   /* XXX this function has been found to cause FP overflow exceptions */
    gl_clip_tab[4] = gl_x86_cliptest_points4;
 
 #ifdef DEBUG

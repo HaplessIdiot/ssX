@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -140,7 +140,8 @@ init_ubyte_color_tab(void)
 /*
  * Initialize tables, etc for fast math functions.
  */
-void gl_init_math(void)
+void
+_mesa_init_math(void)
 {
    static GLboolean initialized = GL_FALSE;
 
@@ -150,5 +151,37 @@ void gl_init_math(void)
 
       initialized = GL_TRUE;
       in_fast_math = 0;
+
+#if defined(_FPU_GETCW) && defined(_FPU_SETCW)
+      {
+         const char *debug = getenv("MESA_DEBUG");
+         if (debug && strcmp(debug, "FP")==0) {
+            /* die on FP exceptions */
+            fpu_control_t mask;
+            _FPU_GETCW(mask);
+            mask &= ~(_FPU_MASK_IM | _FPU_MASK_DM | _FPU_MASK_ZM
+                      | _FPU_MASK_OM | _FPU_MASK_UM);
+            _FPU_SETCW(mask);
+         }
+      }
+#endif
    }
 }
+
+
+
+/*
+ * Return number of bits set in given GLuint.
+ */
+GLuint
+_mesa_bitcount(GLuint n)
+{
+   GLuint bits;
+   for (bits = 0; n > 0; n = n >> 1) {
+      if (n & 1) {
+         bits++;
+      }
+   }
+   return bits;
+}
+

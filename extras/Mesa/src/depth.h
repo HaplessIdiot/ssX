@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -48,14 +48,12 @@ _mesa_DepthMask( GLboolean flag );
 
 
 
-
 /*
- * Return the address of the Z-buffer value for window coordinate (x,y):
+ * Internal functions
  */
-#define Z_ADDRESS( CTX, X, Y )  \
-            ((CTX)->DrawBuffer->Depth + (CTX)->DrawBuffer->Width * (Y) + (X))
 
-
+extern GLvoid *
+_mesa_zbuffer_address(GLcontext *ctx, GLint x, GLint y);
 
 
 extern GLuint
@@ -69,7 +67,12 @@ _mesa_depth_test_pixels( GLcontext *ctx,
 
 
 extern void
-_mesa_read_depth_span_float( GLcontext *ctx, GLuint n, GLint x, GLint y,
+_mesa_read_depth_span( GLcontext *ctx,
+                       GLint n, GLint x, GLint y, GLdepth depth[] );
+
+
+extern void
+_mesa_read_depth_span_float( GLcontext *ctx, GLint n, GLint x, GLint y,
                              GLfloat depth[] );
 
 

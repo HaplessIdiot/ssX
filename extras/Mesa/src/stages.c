@@ -419,15 +419,17 @@ static void do_normal_transform( struct vertex_buffer *VB )
       gl_make_normal_cullmask( VB );
    }
 
-   (ctx->NormalTransform[tmp])(&ctx->ModelView,
-			       ctx->vb_rescale_factor,
-			       VB->NormalPtr,
-			       (VB->NormalLengthPtr ?
-				VB->NormalLengthPtr + VB->Start : 0),
-			       VB->NormCullStart,
-			       VB->store.Normal);
+   if (ctx->NormalTransform) {
+      (ctx->NormalTransform[tmp])(&ctx->ModelView,
+				  ctx->vb_rescale_factor,
+				  VB->NormalPtr,
+				  (VB->NormalLengthPtr ?
+				   VB->NormalLengthPtr + VB->Start : 0),
+				  VB->NormCullStart,
+				  VB->store.Normal);
 
-   VB->NormalPtr = VB->store.Normal;
+      VB->NormalPtr = VB->store.Normal;
+   }
 }
 
 
@@ -511,7 +513,7 @@ static void check_fog( GLcontext *ctx, struct gl_pipeline_stage *d )
 {
    d->type = 0;
 
-   if (ctx->Fog.Enabled && ctx->FogMode==FOG_VERTEX)
+   if (ctx->FogMode==FOG_VERTEX)
    {
       GLuint flags;
 
@@ -705,7 +707,7 @@ CONST struct gl_pipeline_stage gl_default_pipeline[] = {
      PIPE_OP_NORM_XFORM,
      PIPE_PRECALC|PIPE_IMMEDIATE,
      0,
-     NEW_LIGHTING|NEW_FOG|NEW_TEXTURING,	/* state change (recheck) */
+     NEW_LIGHTING|NEW_FOG|NEW_TEXTURING|NEW_NORMAL_TRANSFORM,	/* state change (recheck) */
      NEW_NORMAL_TRANSFORM,	/* cva state change (recalc) */
      0, 0,
      DYN_STATE,
@@ -784,8 +786,8 @@ CONST struct gl_pipeline_stage gl_default_pipeline[] = {
      PIPE_OP_RAST_SETUP_0|PIPE_OP_RAST_SETUP_1,
      PIPE_PRECALC|PIPE_IMMEDIATE,
      0,
-     NEW_LIGHTING|NEW_TEXTURING|NEW_RASTER_OPS|NEW_POLYGON,
-     NEW_LIGHTING|NEW_TEXTURING|NEW_RASTER_OPS|NEW_POLYGON,
+     NEW_LIGHTING|NEW_TEXTURING|NEW_RASTER_OPS|NEW_POLYGON|NEW_TEXTURE_ENV,
+     NEW_LIGHTING|NEW_TEXTURING|NEW_RASTER_OPS|NEW_POLYGON|NEW_TEXTURE_ENV,
      0, 0,
      DYN_STATE,
      check_full_setup,

@@ -28,7 +28,6 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 /*
  * Authors:
  *   Keith Whitwell <keithw@precisioninsight.com>
- *   Daryll Strauss <daryll@precisioninsight.com> (Origninal tdfx driver).
  *
  */
 
@@ -42,16 +41,18 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "dri_mesaint.h"
 #include "dri_mesa.h"
 #include "types.h"
-#include "xmesaP.h"
 
 typedef struct {
-  drmHandle handle;
-  drmSize size;
-  drmAddress map;
+   drmHandle handle;
+   drmSize size;
+   char *map;
 } i810Region, *i810RegionPtr;
 
 typedef struct {
-   i810Region regs;
+   i810Region front;
+   i810Region back;
+   i810Region depth;
+   i810Region tex;
 
    int deviceID;
    int width;
@@ -68,26 +69,31 @@ typedef struct {
    int backOffset;
    int depthOffset;
 
-   int auxPitch;
-   int auxPitchBits;
+   int backPitch;
+   int backPitchBits;
 
    int textureOffset;
    int textureSize;
    int logTextureGranularity;
 
    __DRIscreenPrivate *driScrnPriv;
+   drmBufMapPtr  bufs;
 
 } i810ScreenPrivate;
 
 
 #include "i810context.h"
 
-extern void i810XMesaUpdateState( i810ContextPtr imesa );
+extern void i810GetLock( i810ContextPtr imesa, GLuint flags );
 extern void i810EmitHwStateLocked( i810ContextPtr imesa );
 extern void i810EmitScissorValues( i810ContextPtr imesa, int box_nr, int emit );
 extern void i810EmitDrawingRectangle( i810ContextPtr imesa );
 extern void i810XMesaSetBackClipRects( i810ContextPtr imesa );
 extern void i810XMesaSetFrontClipRects( i810ContextPtr imesa );
+
+
+#define GET_DISPATCH_AGE( imesa ) imesa->sarea->last_dispatch
+#define GET_ENQUEUE_AGE( imesa ) imesa->sarea->last_enqueue
 
 
 /* Lock the hardware and validate our state.  
@@ -97,11 +103,10 @@ extern void i810XMesaSetFrontClipRects( i810ContextPtr imesa );
     char __ret=0;					\
     DRM_CAS(imesa->driHwLock, imesa->hHWContext,	\
 	    (DRM_LOCK_HELD|imesa->hHWContext), __ret);	\
-    if (__ret) {					\
-        drmGetLock(imesa->driFd, imesa->hHWContext, 0);	\
-        i810XMesaUpdateState( imesa );			\
-    }							\
+    if (__ret)						\
+        i810GetLock( imesa, 0 );			\
   } while (0)
+
 
 
 /* Unlock the hardware using the global current context 
@@ -110,25 +115,16 @@ extern void i810XMesaSetFrontClipRects( i810ContextPtr imesa );
     DRM_UNLOCK(imesa->driFd, imesa->driHwLock, imesa->hHWContext);	
 
 
-/*
-  This pair of macros makes a loop over the drawing operations
-  so it is not self contained and doesn't have the nice single 
-  statement semantics of most macros
-*/
-#define BEGIN_CLIP_LOOP(imesa)						\
-  do {									\
-    int _nc;								\
-    LOCK_HARDWARE( imesa );						\
-    for (_nc = imesa->numClipRects; _nc ; _nc--) {			\
-      if (imesa->needClip)						\
-        i810EmitScissorValues(imesa, _nc-1, 1);
-
-
-
-#define END_CLIP_LOOP(imesa)			\
-    }						\
-    UNLOCK_HARDWARE(imesa);			\
-  } while (0)
+/* This is the wrong way to do it, I'm sure.  Otherwise the drm
+ * bitches that I've already got the heavyweight lock.  At worst,
+ * this is 3 ioctls.  The best solution probably only gets me down 
+ * to 2 ioctls in the worst case.
+ */
+#define LOCK_HARDWARE_QUIESCENT( imesa ) do {	\
+   LOCK_HARDWARE( imesa );			\
+   i810RegetLockQuiescent( imesa );		\
+} while(0)
+     
 
 #endif
 #endif

@@ -341,16 +341,19 @@ void fxDDDoRasterSetup( struct vertex_buffer *VB )
    GLcontext *ctx = VB->ctx;
    FX_DRIVER_DATA(VB)->last_vert = FX_DRIVER_DATA(VB)->verts + VB->Count;
 
+#if 0 /* leaving this out fixes the Heretic2 stray polygon bug */
    if ((ctx->IndirectTriangles & DD_SW_RASTERIZE) == DD_SW_RASTERIZE) {
       fxMesaContext fxMesa = (fxMesaContext)ctx->DriverCtx;
       fxMesa->setupdone = 0;
       return;
    }
-      
+#endif
+
    if (VB->Type == VB_CVA_PRECALC) 
       fxDDPartialRasterSetup( VB );
-   else 
+   else if (ctx->Driver.RasterSetup) /* NULL if in feedback/selection mode */
       ctx->Driver.RasterSetup( VB, VB->CopyStart, VB->Count );
+
 }
 
 

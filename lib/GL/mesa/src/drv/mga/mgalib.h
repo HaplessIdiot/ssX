@@ -32,10 +32,10 @@
 #include "dri_tmm.h"
 #include "dri_mesaint.h"
 #include "dri_mesa.h"
-#include "xmesaP.h"
 
 #include "types.h"
 
+#include "drm.h"
 #include "mgacommon.h"
 #include "mm.h"
 #include "mgalog.h"
@@ -43,7 +43,6 @@
 #include "mgatex.h"
 #include "mgavb.h"
 
-#include "mga_drm_public.h"
 #include "mga_xmesa.h"
 
 
@@ -51,11 +50,8 @@
 #define MGA_FIELD(field,val) (((val) << (field ## _SHIFT)) & ~(field ## _MASK))
 #define MGA_GET_FIELD(field, val) ((val & ~(field ## _MASK)) >> (field ## _SHIFT))
 
-#define MGA_CHIP_MGAG200 0
-#define MGA_CHIP_MGAG400 1
-
-#define MGA_IS_G200(mmesa) (mmesa->mgaScreen->chipset == MGA_CHIP_MGAG200)
-#define MGA_IS_G400(mmesa) (mmesa->mgaScreen->chipset == MGA_CHIP_MGAG400)
+#define MGA_IS_G200(mmesa) (mmesa->mgaScreen->chipset == MGA_CARD_TYPE_G200)
+#define MGA_IS_G400(mmesa) (mmesa->mgaScreen->chipset == MGA_CARD_TYPE_G400)
 
 
 /* SoftwareFallback 
@@ -65,6 +61,7 @@
  */
 #define MGA_FALLBACK_TEXTURE   0x1
 #define MGA_FALLBACK_BUFFER    0x2
+#define MGA_FALLBACK_STIPPLE   0x3
 
 
 /* For mgaCtx->new_state.
@@ -97,17 +94,45 @@ typedef void (*mga_interp_func)( GLfloat t,
 #define MGA_PF_8888  (10 << 4)
 #define MGA_PF_HASALPHA (8 << 4)
 
+
+
+/* Reasons why the GL_BLEND fallback mightn't work:
+ */
+#define MGA_BLEND_ENV_COLOR 0x1
+#define MGA_BLEND_MULTITEX  0x2
+
+struct mga_elt_tab {
+   void (*emit_unclipped_verts)( struct vertex_buffer *VB );
+
+   void (*build_tri_verts)( mgaContextPtr mmesa, 
+			    struct vertex_buffer *VB, 
+			    GLfloat *O, GLuint *elt );
+
+   void (*interp)( GLfloat t, GLfloat *O, 
+		   const GLfloat *I, const GLfloat *J );
+
+   void (*project_and_emit_verts)( mgaContextPtr mmesa,
+				   const GLfloat *verts,
+				   GLuint *elts,
+				   int nr );
+};
+
 struct mga_context_t {
 
    GLcontext *glCtx;
 
-   /* Hardware state - moved from mgabuf.h
-    */
-   mgaUI32 Setup[MGA_CTX_SETUP_SIZE];
 
-   /* Variable sized vertices
+   /* Bookkeeping for texturing 
     */
-   mgaUI32 vertsize;
+   int lastTexHeap;
+   struct mga_texture_object_s TexObjList[MGA_NR_TEX_HEAPS];
+   struct mga_texture_object_s SwappedOut;
+   struct mga_texture_object_s *CurrentTexObj[2];
+   memHeap_t *texHeap[MGA_NR_TEX_HEAPS];
+   int c_texupload;
+   int c_texusage;
+   int tex_thrash;
+
 
    /* Map GL texture units onto hardware.
     */
@@ -116,72 +141,99 @@ struct mga_context_t {
    mgaUI32 tex_dest[2];
 
 
+   /* Manage fallbacks 
+    */
+   mgaUI32 IndirectTriangles;
+   int Fallback;  
 
-   /* bookkeeping for textureing */
-   struct mga_texture_object_s TexObjList;
-   struct mga_texture_object_s SwappedOut;
-   struct mga_texture_object_s *CurrentTexObj[2];
 
-
-   /* shared texture palette */
-   mgaUI16	GlobalPalette[256];
-  
-   int Fallback;  /* or'ed values of FALLBACK_* */
-
-   /* Support for CVA and the fast paths */
+   /* Support for CVA and the fastpath 
+    */
    unsigned int setupdone;
    unsigned int setupindex;
    unsigned int renderindex;
    unsigned int using_fast_path;
-   unsigned int using_immediate_fast_path;
    mga_interp_func interp;
 
-   /* Shortcircuit some state changes */
+
+   /* Support for limited GL_BLEND fallback
+    */
+   unsigned int blend_flags;
+   unsigned int envcolor;
+
+
+   /* Shortcircuit some state changes 
+    */
    points_func   PointsFunc;
    line_func     LineFunc;
    triangle_func TriangleFunc;
    quad_func     QuadFunc;
 
-   /* Manage our own state */
+
+   /* Manage driver and hardware state 
+    */
    GLuint        new_state; 
    GLuint        dirty;
-
-   GLubyte       clearcolor[4];
-   GLushort MonoColor;
-   GLushort ClearColor;
+   GLuint        Setup[MGA_CTX_SETUP_SIZE];
+   GLuint        warp_pipe;
+   GLuint        vertsize;
+   GLushort      MonoColor;
+   GLushort      ClearColor;
+   GLuint        poly_stipple;
 
    
-   /* DRI stuff
+   /* Dma buffers
     */
-   drmBufPtr  dma_buffer;
+   drmBufPtr  vertex_dma_buffer;
+   drmBufPtr  iload_buffer;
 
-   GLframebuffer *glBuffer;
-   memHeap_t *texHeap;
-
-   GLuint needClip;
-   GLuint warp_pipe;
-
-   /* These refer to the current draw (front vs. back) buffer:
+   
+   /* Drawable, cliprect and scissor information
     */
-   int drawOffset;		/* draw buffer address in agp space */
-   int drawX;			/* origin of drawable in draw buffer */
-   int drawY;
-   GLuint numClipRects;		/* cliprects for that buffer */
+   int dirty_cliprects;		/* which sets of cliprects are uptodate? */
+   int draw_buffer;		/* which buffer are we rendering to */
+   unsigned int drawOffset;		/* draw buffer address in  space */
+   int read_buffer;	
+   int readOffset;	
+   int drawX, drawY;		/* origin of drawable in draw buffer */
+   int lastX, lastY;		/* detect DSTORG bug */
+   GLuint numClipRects;		/* cliprects for the draw buffer */
    XF86DRIClipRectPtr pClipRects;
-
-   int texAge;
-
    XF86DRIClipRectRec draw_rect;
+   drm_clip_rect_t scissor_rect;
+   int scissor;
 
+
+   /* Texture aging and DMA based aging.
+    */
+   unsigned int texAge[MGA_NR_TEX_HEAPS];/* texture LRU age  */
+   unsigned int dirtyAge;		/* buffer age for synchronization */
+   unsigned int lastSwap;		/* throttling runaway apps */
+
+
+
+   /* Mirrors of some DRI state.
+    */
+   GLframebuffer *glBuffer;
    drmContext hHWContext;
    drmLock *driHwLock;
    int driFd;
    Display *display;
-
    __DRIdrawablePrivate *driDrawable;
    __DRIscreenPrivate *driScreen;
    mgaScreenPrivate *mgaScreen; 
    drm_mga_sarea_t *sarea;
+
+
+   /* New setupdma path
+    */
+   drmBufPtr elt_buf, retained_buf;
+   GLuint *first_elt, *next_elt;
+   GLfloat *next_vert;
+   GLuint next_vert_phys;
+   GLuint first_vert_phys;
+   struct mga_elt_tab *elt_tab;
+   GLfloat device_matrix[16];
 };
 
 
@@ -191,16 +243,12 @@ typedef struct {
 
 	/* dma stuff */
         mgaUI32         systemTexture;
-        mgaUI32         noSetupDma;
 
         mgaUI32         default32BitTextures;
-        mgaUI32         swapBuffersCount;
         
 	/* options */
 	mgaUI32		nullprims;  /* skip all primitive generation */
-	mgaUI32		noFallback; /* don't fall back to software, do
-                                       best-effort rendering */
- 	mgaUI32		skipDma;    /* don't send anything to the hardware */
+        mgaUI32         noFallback;
  	
 	/* performance counters */	
 	mgaUI32		c_textureUtilization;
@@ -240,10 +288,12 @@ extern mgaGlx_t	mgaglx;
 extern int MGA_DEBUG;
 #endif
 
-#define MGA_DEBUG_ALWAYS_SYNC    0x1
-#define MGA_DEBUG_VERBOSE_MSG    0x2
-#define MGA_DEBUG_VERBOSE_LRU    0x4
-#define MGA_DEBUG_VERBOSE_DRI    0x8
+#define DEBUG_ALWAYS_SYNC    0x1
+#define DEBUG_VERBOSE_MSG    0x2
+#define DEBUG_VERBOSE_LRU    0x4
+#define DEBUG_VERBOSE_DRI    0x8
+#define DEBUG_VERBOSE_IOCTL  0x10
+#define DEBUG_VERBOSE_2D     0x20
 
 static __inline__ mgaUI32 mgaPackColor(mgaUI32 format,
 				       mgaUI8 r, mgaUI8 g, 
@@ -262,5 +312,13 @@ static __inline__ mgaUI32 mgaPackColor(mgaUI32 format,
     return 0;
   }
 }
+
+
+/*
+ * Subpixel offsets for window coordinates:
+ */
+#define SUBPIXEL_X (-0.5F)
+#define SUBPIXEL_Y (-0.5F + 0.125)
+
 
 #endif

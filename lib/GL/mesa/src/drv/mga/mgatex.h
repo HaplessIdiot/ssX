@@ -28,7 +28,6 @@
 #ifndef MGATEX_INC
 #define MGATEX_INC
 
-#include "mga_drm_public.h"
 #include "types.h"
 #include "mgacommon.h"
 #include "mm.h"
@@ -48,7 +47,9 @@ typedef struct mga_texture_object_s {
         mgaUI32         dirty_images;
 	mgaUI32		totalSize;		
 	int		texelBytes;
-	mgaUI32 	age;   			
+	mgaUI32 	age;
+        int             bound;
+        int             heap;	/* agp or card */
         mgaUI32         Setup[MGA_TEX_SETUP_SIZE];
 } mgaTextureObject_t;
 
@@ -96,7 +97,7 @@ void mgaUpdateTexturePalette( GLcontext *ctx, struct gl_texture_object *tObj );
 
 GLboolean mgaIsTextureResident( GLcontext *ctx, struct gl_texture_object *t );
 
-void mgaConvertTexture( mgaUI32 *destPtr, int texelBytes,
+void mgaConvertTexture( mgaUI32 *dest, int texelBytes,
 			struct gl_texture_image *image,
 			int x, int y, int width, int height );
 
@@ -107,9 +108,7 @@ int mgaUploadTexImages( mgaContextPtr mmesa, mgaTextureObjectPtr t );
 
 
 
-void mgaResetGlobalLRU( mgaContextPtr mmesa );
-void mgaTexturesGone( mgaContextPtr mmesa, GLuint offset, 
-		      GLuint size, GLuint in_use );
+void mgaAgeTextures( mgaContextPtr mmesa, int heap );
 
 void mgaDDInitTextureFuncs( GLcontext *ctx );
 

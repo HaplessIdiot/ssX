@@ -271,6 +271,7 @@ I810WaitLpRing( ScrnInfoPtr pScrn, int n, int timeout_millis )
 	    DRICloseScreen(screenInfo.screens[pScrn->scrnIndex]);
 	 }
 #endif
+ 	 pI810->AccelInfoRec = NULL; /* Stops recursive behavior */
 	 FatalError("lockup\n"); 
       }
 
@@ -301,13 +302,9 @@ I810Sync( ScrnInfoPtr pScrn )
 #ifdef XF86DRI
    /* VT switching tries to do this.  
     */
-   if (!pI810->LockHeld) {
+   if (!pI810->LockHeld && pI810->directRenderingEnabled) {
       return;   
    }
-
-
-/*     if (pI810->directRenderingEnabled)  */
-/*        DRIUnlockLockQueiscent( pScrn->pScreen ); */
 #endif
 
    /* Send a flush instruction and then wait till the ring is empty.
@@ -635,12 +632,13 @@ I810RefreshRing(ScrnInfoPtr pScrn)
 }
 
 
-
+/* Emit on gaining VT?
+ */
 void 
 I810EmitInvarientState(ScrnInfoPtr pScrn)
 {
    I810Ptr pI810 = I810PTR(pScrn);
-   BEGIN_LP_RING( 8 );
+   BEGIN_LP_RING( 10 );
 
    OUT_RING( INST_PARSER_CLIENT | INST_OP_FLUSH | INST_FLUSH_MAP_CACHE );
    OUT_RING( GFX_CMD_CONTEXT_SEL | CS_UPDATE_USE | CS_USE_CTX0 );
@@ -657,6 +655,9 @@ I810EmitInvarientState(ScrnInfoPtr pScrn)
              0);
    OUT_RING( 0 );
    OUT_RING( 0 );
+
+/*     OUT_RING( CMD_OP_Z_BUFFER_INFO ); */
+/*     OUT_RING( pI810->DepthBuffer.Start | pI810->auxPitchBits); */
 
    ADVANCE_LP_RING();      
 }

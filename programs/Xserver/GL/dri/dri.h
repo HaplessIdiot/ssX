@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.9 2000/03/04 01:53:02 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.h,v 1.10 2000/05/11 18:14:12 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -69,6 +69,10 @@ typedef int DRIWindowRequests;
 #define DRI_3D_WINDOWS_ONLY  1
 #define DRI_ALL_WINDOWS      2
 
+
+typedef void (*ClipNotifyPtr)( WindowPtr, int, int );
+
+
 /*
  * These functions can be wrapped by the DRI.  Each of these have
  * generic default funcs (initialized in DRICreateInfoRec) and can be
@@ -82,7 +86,11 @@ typedef struct {
     CopyWindowProcPtr            CopyWindow;
     ValidateTreeProcPtr          ValidateTree;
     PostValidateTreeProcPtr      PostValidateTree;
+    ClipNotifyPtr                ClipNotify;
 } DRIWrappedFuncsRec, *DRIWrappedFuncsPtr;
+
+
+
 
 typedef struct {
     /* driver call back functions */
@@ -90,10 +98,10 @@ typedef struct {
 				 VisualPtr visual,
 				 drmContext hHWContext,
 				 void* pVisualConfigPriv,
-				 void* contextStore);
+				 DRIContextType context);
     void        (*DestroyContext)(ScreenPtr pScreen,
 				  drmContext hHWContext,
-                                  void* contextStore);
+                                  DRIContextType context);
     void	(*SwapContext)(ScreenPtr pScreen,
 			       DRISyncType syncType,
 			       DRIContextType readContextType,
@@ -107,6 +115,8 @@ typedef struct {
 			       DDXPointRec ptOldOrg,
 			       RegionPtr prgnSrc,
 			       CARD32 index);
+    void        (*TransitionTo3d)(ScreenPtr pScreen);
+    void        (*TransitionTo2d)(ScreenPtr pScreen);
 
     /* wrapped functions */
     DRIWrappedFuncsRec  wrap;
@@ -131,131 +141,158 @@ typedef struct {
     void*		devPrivate;
 } DRIInfoRec, *DRIInfoPtr;
 
-extern Bool DRIScreenInit(
-    ScreenPtr pScreen,
-    DRIInfoPtr pDRIInfo,
-    int* pDRMFD);
-void DRICloseScreen(ScreenPtr pScreen);
-Bool DRIExtensionInit(void);
-void DRIReset(void);
-Bool DRIQueryDirectRenderingCapable( ScreenPtr pScreen, Bool* isCapable);
-Bool DRIOpenConnection(
-    ScreenPtr pScreen,
-    drmHandlePtr hSAREA,
-    char **busIdString
-);
-Bool DRIAuthConnection(ScreenPtr pScreen, drmMagic magic);
-Bool DRICloseConnection( ScreenPtr pScreen);
-Bool DRIGetClientDriverName(
-    ScreenPtr pScreen,
-    int* ddxDriverMajorVersion,
-    int* ddxDriverMinorVersion,
-    int* ddxDriverPatchVersion,
-    char** clientDriverName
-);
-Bool DRICreateContext(
-    ScreenPtr pScreen,
-    VisualPtr visual,
-    XID context,
-    drmContextPtr pHWContext
-);
-Bool DRIDestroyContext( ScreenPtr pScreen, XID context);
-Bool DRIContextPrivDelete(
-    pointer pResource,
-    XID id);
-Bool DRICreateDrawable(
-    ScreenPtr pScreen,
-    Drawable id,
-    DrawablePtr pDrawable,
-    drmDrawablePtr hHWDrawable
-);
-Bool DRIDestroyDrawable( ScreenPtr pScreen, 
-    Drawable id,
-    DrawablePtr pDrawable);
-Bool DRIDrawablePrivDelete(
-    pointer pResource,
-    XID id);
-Bool DRIGetDrawableInfo(
-    ScreenPtr pScreen,
-    DrawablePtr pDrawable,
-    unsigned int* index,
-    unsigned int* stamp,
-    int* X,
-    int* Y,
-    int* W,
-    int* H,
-    int* numClipRects,
-    XF86DRIClipRectPtr* pClipRects
-);
-Bool DRIGetDeviceInfo(
-    ScreenPtr pScreen,
-    drmHandlePtr hFrameBuffer,
-    int* fbOrigin,
-    int* fbSize,
-    int* fbStride,
-    int* devPrivateSize,
-    void** pDevPrivate
-);
-DRIInfoPtr DRICreateInfoRec(void);
-void DRIDestroyInfoRec(DRIInfoPtr DRIInfo);
-Bool DRIFinishScreenInit(ScreenPtr pScreen);
-void DRIWakeupHandler(
-    pointer wakeupData,
-    int result,
-    pointer pReadmask);
-void DRIBlockHandler(
-    pointer blockData,
-    OSTimePtr pTimeout,
-    pointer pReadmask);
-void DRIDoWakeupHandler(
-    int screenNum,
-    pointer wakeupData,
-    unsigned long result,
-    pointer pReadmask);
-void DRIDoBlockHandler(
-    int screenNum,
-    pointer blockData,
-    pointer pTimeout,
-    pointer pReadmask);
-void DRISwapContext(
-    int drmFD,
-    void *oldctx,
-    void *newctx);
-void* DRIGetContextStore(DRIContextPrivPtr context);
-void DRIPaintWindow(
-    WindowPtr pWin,
-    RegionPtr prgn,
-    int what);
-void DRICopyWindow(
-    WindowPtr pWin,
-    DDXPointRec ptOldOrg,
-    RegionPtr prgnSrc);
-int DRIValidateTree(
-    WindowPtr pParent,
-    WindowPtr pChild,
-    VTKind    kind);
-void DRIPostValidateTree(
-    WindowPtr pParent,
-    WindowPtr pChild,
-    VTKind    kind);
-void DRIClipNotify(
-    WindowPtr pWin,
-    int dx,
-    int dy);
-CARD32 DRIGetDrawableIndex(
-    WindowPtr pWin);
-void DRILock(ScreenPtr pScreen, int flags);
-void DRIUnlock(ScreenPtr pScreen);
-void *DRIGetSAREAPrivate(ScreenPtr pScreen);
-DRIContextPrivPtr
-DRICreateContextPriv(ScreenPtr pScreen,
-		     drmContextPtr pHWContext,
-		     DRIContextFlags flags);
-DRIContextPrivPtr
-DRICreateContextPrivFromHandle(ScreenPtr pScreen,
-			       drmContext hHWContext,
-			       DRIContextFlags flags);
-Bool DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv);
+
+extern Bool DRIScreenInit(ScreenPtr pScreen,
+                          DRIInfoPtr pDRIInfo,
+                          int *pDRMFD);
+
+extern void DRICloseScreen(ScreenPtr pScreen);
+
+extern Bool DRIExtensionInit(void);
+
+extern void DRIReset(void);
+
+extern Bool DRIQueryDirectRenderingCapable(ScreenPtr pScreen,
+                                           Bool *isCapable);
+
+extern Bool DRIOpenConnection(ScreenPtr pScreen,
+                              drmHandlePtr hSAREA,
+                              char **busIdString);
+
+extern Bool DRIAuthConnection(ScreenPtr pScreen, drmMagic magic);
+
+extern Bool DRICloseConnection(ScreenPtr pScreen);
+
+extern Bool DRIGetClientDriverName(ScreenPtr pScreen,
+                                   int* ddxDriverMajorVersion,
+                                   int* ddxDriverMinorVersion,
+                                   int* ddxDriverPatchVersion,
+                                   char** clientDriverName);
+
+extern Bool DRICreateContext(ScreenPtr pScreen,
+                             VisualPtr visual,
+                             XID context,
+                             drmContextPtr pHWContext);
+
+extern Bool DRIDestroyContext(ScreenPtr pScreen, XID context);
+
+extern Bool DRIContextPrivDelete(pointer pResource, XID id);
+
+extern Bool DRICreateDrawable(ScreenPtr pScreen,
+                              Drawable id,
+                              DrawablePtr pDrawable,
+                              drmDrawablePtr hHWDrawable);
+
+extern Bool DRIDestroyDrawable(ScreenPtr pScreen, 
+                               Drawable id,
+                               DrawablePtr pDrawable);
+
+extern Bool DRIDrawablePrivDelete(pointer pResource,
+                                  XID id);
+
+extern Bool DRIGetDrawableInfo(ScreenPtr pScreen,
+                               DrawablePtr pDrawable,
+                               unsigned int* index,
+                               unsigned int* stamp,
+                               int* X,
+                               int* Y,
+                               int* W,
+                               int* H,
+                               int* numClipRects,
+                               XF86DRIClipRectPtr* pClipRects,
+                               int* backX,
+                               int* backY,
+                               int* numBackClipRects,
+                               XF86DRIClipRectPtr* pBackClipRects);
+
+extern Bool DRIGetDeviceInfo(ScreenPtr pScreen,
+                             drmHandlePtr hFrameBuffer,
+                             int* fbOrigin,
+                             int* fbSize,
+                             int* fbStride,
+                             int* devPrivateSize,
+                             void** pDevPrivate);
+
+extern DRIInfoPtr DRICreateInfoRec(void);
+
+extern void DRIDestroyInfoRec(DRIInfoPtr DRIInfo);
+
+extern Bool DRIFinishScreenInit(ScreenPtr pScreen);
+
+extern void DRIWakeupHandler(pointer wakeupData,
+                             int result,
+                             pointer pReadmask);
+
+extern void DRIBlockHandler(pointer blockData,
+                            OSTimePtr pTimeout,
+                            pointer pReadmask);
+
+extern void DRIDoWakeupHandler(int screenNum,
+                               pointer wakeupData,
+                               unsigned long result,
+                               pointer pReadmask);
+
+extern void DRIDoBlockHandler(int screenNum,
+                              pointer blockData,
+                              pointer pTimeout,
+                              pointer pReadmask);
+
+extern void DRISwapContext(int drmFD,
+                           void *oldctx,
+                           void *newctx);
+
+extern void *DRIGetContextStore(DRIContextPrivPtr context);
+
+extern void DRIPaintWindow(WindowPtr pWin,
+                           RegionPtr prgn,
+                           int what);
+
+extern void DRICopyWindow(WindowPtr pWin,
+                          DDXPointRec ptOldOrg,
+                          RegionPtr prgnSrc);
+
+extern int DRIValidateTree(WindowPtr pParent,
+                           WindowPtr pChild,
+                           VTKind    kind);
+
+extern void DRIPostValidateTree(WindowPtr pParent,
+                                WindowPtr pChild,
+                                VTKind    kind);
+
+extern void DRIClipNotify(WindowPtr pWin,
+                          int dx,
+                          int dy);
+
+extern CARD32 DRIGetDrawableIndex(WindowPtr pWin);
+
+extern void DRIPrintDrawableLock(ScreenPtr pScreen, char *msg);
+
+extern void DRILock(ScreenPtr pScreen, int flags);
+
+extern void DRIUnlock(ScreenPtr pScreen);
+
+extern DRIWrappedFuncsRec *DRIGetWrappedFuncs(ScreenPtr pScreen);
+
+extern void *DRIGetSAREAPrivate(ScreenPtr pScreen);
+
+extern unsigned int DRIGetDrawableStamp(ScreenPtr pScreen,
+                                        CARD32 drawable_index);
+
+extern DRIContextPrivPtr DRICreateContextPriv(ScreenPtr pScreen,
+                                              drmContextPtr pHWContext,
+                                              DRIContextFlags flags);
+
+extern DRIContextPrivPtr DRICreateContextPrivFromHandle(ScreenPtr pScreen,
+                                                        drmContext hHWContext,
+                                                        DRIContextFlags flags);
+
+extern Bool DRIDestroyContextPriv(DRIContextPrivPtr pDRIContextPriv);
+
+extern drmContext DRIGetContext(ScreenPtr pScreen);
+
+extern void DRIQueryVersion(int *majorVersion,
+                            int *minorVersion,
+                            int *patchVersion);
 
 #define _DRI_H_
 

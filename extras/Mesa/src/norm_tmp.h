@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,12 +28,13 @@
  */
 
 
-static void _XFORMAPI TAG(transform_normalize_normals)( const GLmatrix *mat,
-					      GLfloat scale,
-					      const GLvector3f *in,
-					      const GLfloat *lengths,
-					      const GLubyte mask[],
-					      GLvector3f *dest )
+static void _XFORMAPI
+TAG(transform_normalize_normals)( const GLmatrix *mat,
+                                  GLfloat scale,
+                                  const GLvector3f *in,
+                                  const GLfloat *lengths,
+                                  const GLubyte mask[],
+                                  GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -71,8 +72,8 @@ static void _XFORMAPI TAG(transform_normalize_normals)( const GLmatrix *mat,
 	    }
 	 }
       }
-   } else {
-      
+   }
+   else {
       /* scale has been snapped to 1.0 if it is close.
        */
       if (scale != 1.0) {
@@ -102,12 +103,14 @@ static void _XFORMAPI TAG(transform_normalize_normals)( const GLmatrix *mat,
    dest->count = in->count;
 }
 
-static void _XFORMAPI TAG(transform_normalize_normals_no_rot)( const GLmatrix *mat,
-						     GLfloat scale,
-						     const GLvector3f *in,
-						     const GLfloat *lengths,
-						     const GLubyte mask[],
-						     GLvector3f *dest )
+
+static void _XFORMAPI
+TAG(transform_normalize_normals_no_rot)( const GLmatrix *mat,
+                                         GLfloat scale,
+                                         const GLvector3f *in,
+                                         const GLfloat *lengths,
+                                         const GLubyte mask[],
+                                         GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -144,7 +147,8 @@ static void _XFORMAPI TAG(transform_normalize_normals_no_rot)( const GLmatrix *m
 	    }
 	 }
       }
-   } else {
+   }
+   else {
       /* scale has been snapped to 1.0 if it is close.
        */
       if (scale != 1.0) {
@@ -175,12 +179,13 @@ static void _XFORMAPI TAG(transform_normalize_normals_no_rot)( const GLmatrix *m
 }
 
 
-static void _XFORMAPI TAG(transform_rescale_normals_no_rot)( const GLmatrix *mat,
-						   GLfloat scale,
-						   const GLvector3f *in,
-						   const GLfloat *lengths,
-						   const GLubyte mask[],
-						   GLvector3f *dest )
+static void _XFORMAPI
+TAG(transform_rescale_normals_no_rot)( const GLmatrix *mat,
+                                       GLfloat scale,
+                                       const GLvector3f *in,
+                                       const GLfloat *lengths,
+                                       const GLubyte mask[],
+                                       GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -204,12 +209,13 @@ static void _XFORMAPI TAG(transform_rescale_normals_no_rot)( const GLmatrix *mat
    dest->count = in->count;
 }
 
-static void _XFORMAPI TAG(transform_rescale_normals)( const GLmatrix *mat,
-					    GLfloat scale,
-					    const GLvector3f *in,
-					    const GLfloat *lengths,
-					    const GLubyte mask[],
-					    GLvector3f *dest )
+static void _XFORMAPI
+TAG(transform_rescale_normals)( const GLmatrix *mat,
+                                GLfloat scale,
+                                const GLvector3f *in,
+                                const GLfloat *lengths,
+                                const GLubyte mask[],
+                                GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -237,12 +243,13 @@ static void _XFORMAPI TAG(transform_rescale_normals)( const GLmatrix *mat,
 }
 
 
-static void _XFORMAPI TAG(transform_normals_no_rot)(const GLmatrix *mat,
-					  GLfloat scale,
-					  const GLvector3f *in,
-					  const GLfloat *lengths,
-					  const GLubyte mask[],
-					  GLvector3f *dest )
+static void _XFORMAPI
+TAG(transform_normals_no_rot)(const GLmatrix *mat,
+                              GLfloat scale,
+                              const GLvector3f *in,
+                              const GLfloat *lengths,
+                              const GLubyte mask[],
+                              GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -267,12 +274,14 @@ static void _XFORMAPI TAG(transform_normals_no_rot)(const GLmatrix *mat,
    dest->count = in->count;
 }
 
-static void _XFORMAPI TAG(transform_normals)( const GLmatrix *mat,
-				    GLfloat scale,
-				    const GLvector3f *in,
-				    const GLfloat *lengths,
-				    const GLubyte mask[],
-				    GLvector3f *dest )
+
+static void _XFORMAPI
+TAG(transform_normals)( const GLmatrix *mat,
+                        GLfloat scale,
+                        const GLvector3f *in,
+                        const GLfloat *lengths,
+                        const GLubyte mask[],
+                        GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -298,12 +307,13 @@ static void _XFORMAPI TAG(transform_normals)( const GLmatrix *mat,
 }
 
 
-static void _XFORMAPI TAG(normalize_normals)( const GLmatrix *mat,
-				    GLfloat scale,
-				    const GLvector3f *in,
-				    const GLfloat *lengths,
-				    const GLubyte mask[],
-				    GLvector3f *dest )
+static void _XFORMAPI
+TAG(normalize_normals)( const GLmatrix *mat,
+                        GLfloat scale,
+                        const GLvector3f *in,
+                        const GLfloat *lengths,
+                        const GLubyte mask[],
+                        GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -347,12 +357,13 @@ static void _XFORMAPI TAG(normalize_normals)( const GLmatrix *mat,
 }
 
 
-static void _XFORMAPI TAG(rescale_normals)( const GLmatrix *mat,
-				  GLfloat scale,
-				  const GLvector3f *in,
-				  const GLfloat *lengths,
-				  const GLubyte mask[],
-				  GLvector3f *dest )
+static void _XFORMAPI
+TAG(rescale_normals)( const GLmatrix *mat,
+                      GLfloat scale,
+                      const GLvector3f *in,
+                      const GLfloat *lengths,
+                      const GLubyte mask[],
+                      GLvector3f *dest )
 {
    GLuint i;  
    const GLfloat *from = in->start;
@@ -372,7 +383,8 @@ static void _XFORMAPI TAG(rescale_normals)( const GLmatrix *mat,
 }
 
 
-static void _XFORMAPI TAG(init_c_norm_transform)( void )
+static void _XFORMAPI
+TAG(init_c_norm_transform)( void )
 {
    gl_normal_tab[NORM_TRANSFORM_NO_ROT][IDX] = 
       TAG(transform_normals_no_rot);
@@ -397,5 +409,4 @@ static void _XFORMAPI TAG(init_c_norm_transform)( void )
 
    gl_normal_tab[NORM_NORMALIZE][IDX] = 
       TAG(normalize_normals);
-
 }

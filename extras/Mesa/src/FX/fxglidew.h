@@ -47,7 +47,51 @@
 #define __FX_GLIDE_WARPER__
 
 #include <glide.h>
+#include <g3ext.h>
 
+/*
+ * These are glide extension definitions.  These are not
+ * defined in glide.h.  They should really be defined in
+ * g3ext.h, but they are not.
+ */
+#if 0
+FX_ENTRY void FX_CALL 
+grStencilFunc(GrCmpFnc_t fnc, GrStencil_t ref, GrStencil_t mask);
+
+FX_ENTRY void FX_CALL 
+grStencilMask(GrStencil_t write_mask);
+
+FX_ENTRY void FX_CALL 
+grStencilOp(
+            GrStencilOp_t stencil_fail,
+            GrStencilOp_t depth_fail,
+            GrStencilOp_t depth_pass);
+
+FX_ENTRY void FX_CALL 
+grBufferClearExt(
+              GrColor_t color,
+              GrAlpha_t alpha,
+              FxU32     depth,
+              GrStencil_t stencil);
+#endif
+
+
+typedef void (*grStencilFunc_t)(GrCmpFnc_t fnc, GrStencil_t ref, GrStencil_t mask);
+typedef void (*grStencilMask_t)(GrStencil_t write_mask);
+typedef void (*grStencilOp_t)(GrStencilOp_t stencil_fail, GrStencilOp_t depth_fail, GrStencilOp_t depth_pass);
+typedef void (*grBufferClearExt_t)(GrColor_t color, GrAlpha_t alpha, FxU32 depth, GrStencil_t stencil);
+
+extern grStencilFunc_t grStencilFuncPtr;
+extern grStencilMask_t grStencilMaskPtr;
+extern grStencilOp_t grStencilOpPtr;
+extern grBufferClearExt_t grBufferClearExtPtr;
+
+
+FX_ENTRY void FX_CALL
+grEnable(GrEnableMode_t mode);
+
+FX_ENTRY void FX_CALL
+grEnable(GrEnableMode_t mode);
 /* 
  * General context: 
  */
@@ -74,12 +118,13 @@
 	#define FX_PENDING_BUFFERSWAPS          GR_PENDING_BUFFERSWAPS
 	#define FX_TEXTURE_ALIGN		GR_TEXTURE_ALIGN
 #endif
+#define FX_ZDEPTH_MAX 0x100
 
 /*
  * Genral warper functions for Glide2/Glide3:
  */ 
-extern FxI32 FX_grGetInteger(FxU32 pname);
 extern FxI32 FX_grGetInteger_NoLock(FxU32 pname);
+extern FxI32 FX_grGetInteger(FxU32 pname);
 
 /*
  * Glide2 emulation on Glide3:
@@ -252,7 +297,6 @@ typedef struct
 #endif /* FX_USE_PARGB */
 
 #endif
-
 
 /*
  * Glide2 functions for Glide3
@@ -567,6 +611,55 @@ extern void FX_grDrawPolygonVertexList(int n, GrVertex *v);
     END_CLIP_LOOP();			\
   } while (0)
 
+#define FX_grBufferClearExt(c, a, d, s)	\
+  do {					\
+    BEGIN_CLIP_LOOP();			\
+    (*grBufferClearExtPtr)(c, a, d, s);	\
+    END_CLIP_LOOP();			\
+  } while (0)
+
+/*
+ * Enable/Disable
+ */
+#define FX_grEnable(m)                   \
+  do {				         \
+    BEGIN_BOARD_LOCK();		         \
+    grEnable(m);                         \
+    END_BOARD_LOCK();		         \
+  } while (0)
+
+#define FX_grDisable(m)                  \
+  do {				         \
+    BEGIN_BOARD_LOCK();		         \
+    grDisable(m);                        \
+    END_BOARD_LOCK();		         \
+  } while (0)
+
+/*
+ * Stencil operations.
+ */
+#define FX_grStencilFunc(fnc, ref, mask) \
+  do {				         \
+    BEGIN_BOARD_LOCK();		         \
+    (*grStencilFuncPtr)((fnc), (ref), (mask)); \
+    END_BOARD_LOCK();		         \
+  } while (0)
+
+#define FX_grStencilMask(write_mask)     \
+  do {				         \
+    BEGIN_BOARD_LOCK();		         \
+    (*grStencilMaskPtr)(write_mask);           \
+    END_BOARD_LOCK();		         \
+  } while (0)
+
+
+#define FX_grStencilOp(stencil_fail, depth_fail, depth_pass) \
+  do {				                             \
+    BEGIN_BOARD_LOCK();		                             \
+    (*grStencilOpPtr)((stencil_fail), (depth_fail), (depth_pass)); \
+    END_BOARD_LOCK();		                             \
+  } while (0)
+
 #define FX_grDepthMask(m)	\
   do {				\
     BEGIN_BOARD_LOCK();		\
@@ -821,9 +914,18 @@ extern FxU32 FX_grTexTextureMemRequired(FxU32 evenOdd, GrTexInfo *info);
 
 #define FX_grGlideShutdown()		\
   do {					\
-    BEGIN_CLIP_LOOP();			\
+    BEGIN_BOARD_LOCK();			\
     grGlideShutdown();			\
-    END_CLIP_LOOP();			\
+    END_BOARD_LOCK();			\
+  } while (0)
+
+#define FX_grTexLodBiasValue_NoLock(t, v) grTexLodBiasValue(t, v)
+
+#define FX_grTexLodBiasValue(t, v)	\
+  do {					\
+    BEGIN_BOARD_LOCK();			\
+    grTexLodBiasValue(t, v);	\
+    END_BOARD_LOCK();			\
   } while (0)
 
 #define FX_grGlideInit_NoLock grGlideInit

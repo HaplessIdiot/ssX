@@ -32,13 +32,16 @@
 #include "copypix.h"
 #include "depth.h"
 #include "feedback.h"
+#include "imaging.h"
 #include "macros.h"
 #include "mem.h"
 #include "mmath.h"
 #include "pixel.h"
+#include "pixeltex.h"
 #include "span.h"
 #include "state.h"
 #include "stencil.h"
+#include "texture.h"
 #include "types.h"
 #include "zoom.h"
 #endif
@@ -83,6 +86,7 @@ static void copy_rgba_pixels( GLcontext *ctx,
    GLubyte *saveReadAlpha;
    const GLboolean zoom = ctx->Pixel.ZoomX != 1.0F || ctx->Pixel.ZoomY != 1.0F;
    GLint overlapping;
+   GLboolean applyTransferOps;
 
    /* Determine if copy should be done bottom-to-top or top-to-bottom */
    if (srcy < desty) {
@@ -103,7 +107,7 @@ static void copy_rgba_pixels( GLcontext *ctx,
 
    if (ctx->Depth.Test || ctx->Fog.Enabled) {
       /* fill in array of z values */
-      GLint z = (GLint) (ctx->Current.RasterPos[2] * DEPTH_SCALE);
+      GLdepth z = (GLdepth) (ctx->Current.RasterPos[2] * ctx->Visual->DepthMax);
       for (i=0;i<width;i++) {
          zspan[i] = z;
       }
@@ -156,6 +160,15 @@ static void copy_rgba_pixels( GLcontext *ctx,
       p = NULL;
    }
 
+   applyTransferOps = ctx->Pixel.ScaleOrBiasRGBA ||
+                      ctx->Pixel.MapColorFlag ||
+                      ctx->ColorMatrix.type != MATRIX_IDENTITY ||
+                      ctx->Pixel.ScaleOrBiasRGBApcm ||
+                      ctx->Pixel.ColorTableEnabled ||
+                      ctx->Pixel.PostColorMatrixColorTableEnabled ||
+                      ctx->Pixel.MinMaxEnabled ||
+                      ctx->Pixel.HistogramEnabled;
+
    for (j = 0; j < height; j++, sy += stepy, dy += stepy) {
       if (overlapping) {
          MEMCPY(rgba, p, width * sizeof(GLubyte) * 4);
@@ -188,12 +201,70 @@ static void copy_rgba_pixels( GLcontext *ctx,
          ctx->ReadBuffer->Alpha = saveReadAlpha;
       }
 
-      if (ctx->Pixel.ScaleOrBiasRGBA) {
-         gl_scale_and_bias_rgba( ctx, width, rgba );
+      if (applyTransferOps) {
+         const GLfloat scale = (1.0F / 255.0F);
+         GLfloat rgbaFloat[MAX_WIDTH][4];
+         GLuint k;
+         /* convert ubyte to float */
+         for (k = 0; k < width; k++) {
+            rgbaFloat[k][RCOMP] = (GLfloat) rgba[k][RCOMP] * scale;
+            rgbaFloat[k][GCOMP] = (GLfloat) rgba[k][GCOMP] * scale;
+            rgbaFloat[k][BCOMP] = (GLfloat) rgba[k][BCOMP] * scale;
+            rgbaFloat[k][ACOMP] = (GLfloat) rgba[k][ACOMP] * scale;
+         }
+         /* scale & bias */
+         if (ctx->Pixel.ScaleOrBiasRGBA) {
+            _mesa_scale_and_bias_rgba(ctx, width, rgbaFloat);
+         }
+         /* color map lookup */
+         if (ctx->Pixel.MapColorFlag) {
+            _mesa_map_rgba(ctx, width, rgbaFloat);
+         }
+         /* GL_COLOR_TABLE lookup */
+         if (ctx->Pixel.ColorTableEnabled) {
+            _mesa_lookup_rgba(&ctx->ColorTable, width, rgbaFloat);
+         }
+         /* color matrix */
+         if (ctx->ColorMatrix.type != MATRIX_IDENTITY ||
+             ctx->Pixel.ScaleOrBiasRGBApcm) {
+            _mesa_transform_rgba(ctx, width, rgbaFloat);
+         }
+         /* GL_POST_COLOR_MATRIX_COLOR_TABLE lookup */
+         if (ctx->Pixel.PostColorMatrixColorTableEnabled) {
+            _mesa_lookup_rgba(&ctx->PostColorMatrixColorTable, width, rgbaFloat);
+         }
+         /* update histogram count */
+         if (ctx->Pixel.HistogramEnabled) {
+            _mesa_update_histogram(ctx, width, (CONST GLfloat (*)[4]) rgbaFloat);
+         }
+         /* update min/max */
+         if (ctx->Pixel.MinMaxEnabled) {
+            _mesa_update_minmax(ctx, width, (CONST GLfloat (*)[4]) rgbaFloat);
+         }
+         /* clamp to [0,1] and convert float back to ubyte */
+         for (k = 0; k < width; k++) {
+            GLint r = (GLint) (rgbaFloat[k][RCOMP] * 255.0F);
+            GLint g = (GLint) (rgbaFloat[k][GCOMP] * 255.0F);
+            GLint b = (GLint) (rgbaFloat[k][BCOMP] * 255.0F);
+            GLint a = (GLint) (rgbaFloat[k][ACOMP] * 255.0F);
+            rgba[k][RCOMP] = (GLubyte) CLAMP(r, 0, 255);
+            rgba[k][GCOMP] = (GLubyte) CLAMP(g, 0, 255);
+            rgba[k][BCOMP] = (GLubyte) CLAMP(b, 0, 255);
+            rgba[k][ACOMP] = (GLubyte) CLAMP(a, 0, 255);
+         }
       }
-      if (ctx->Pixel.MapColorFlag) {
-         gl_map_rgba( ctx, width, rgba );
+
+      if (ctx->Texture.ReallyEnabled && ctx->Pixel.PixelTextureEnabled) {
+         GLfloat s[MAX_WIDTH], t[MAX_WIDTH], r[MAX_WIDTH], q[MAX_WIDTH];
+         GLuint unit;
+         /* XXX not sure how multitexture is supposed to work here */
+         for (unit = 0; unit < MAX_TEXTURE_UNITS; unit++) {
+            _mesa_pixeltexgen(ctx, width, (const GLubyte (*)[4]) rgba,
+                              s, t, r, q);
+            gl_texture_pixels(ctx, unit, width, s, t, r, NULL, rgba);
+         }
       }
+
       if (quick_draw && dy >= 0 && dy < ctx->DrawBuffer->Height) {
          (*ctx->Driver.WriteRGBASpan)( ctx, width, destx, dy, 
 				       (const GLubyte (*)[4])rgba, NULL );
@@ -244,7 +315,7 @@ static void copy_ci_pixels( GLcontext *ctx,
 
    if (ctx->Depth.Test || ctx->Fog.Enabled) {
       /* fill in array of z values */
-      GLint z = (GLint) (ctx->Current.RasterPos[2] * DEPTH_SCALE);
+      GLdepth z = (GLdepth) (ctx->Current.RasterPos[2] * ctx->Visual->DepthMax);
       for (i=0;i<width;i++) {
          zspan[i] = z;
       }
@@ -298,10 +369,10 @@ static void copy_ci_pixels( GLcontext *ctx,
       }
 
       if (shift_or_offset) {
-         gl_shift_and_offset_ci( ctx, width, indexes );
+         _mesa_shift_and_offset_ci( ctx, width, indexes );
       }
       if (ctx->Pixel.MapColorFlag) {
-         gl_map_ci( ctx, width, indexes );
+         _mesa_map_ci( ctx, width, indexes );
       }
 
       if (zoom) {
@@ -335,7 +406,7 @@ static void copy_depth_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
    const GLboolean zoom = ctx->Pixel.ZoomX != 1.0F || ctx->Pixel.ZoomY != 1.0F;
    GLint overlapping;
 
-   if (!ctx->ReadBuffer->Depth || !ctx->DrawBuffer->Depth) {
+   if (!ctx->ReadBuffer->DepthBuffer || !ctx->DrawBuffer->DepthBuffer) {
       gl_error( ctx, GL_INVALID_OPERATION, "glCopyPixels" );
       return;
    }
@@ -401,7 +472,7 @@ static void copy_depth_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
 
       for (i = 0; i < width; i++) {
          GLfloat d = depth[i] * ctx->Pixel.DepthScale + ctx->Pixel.DepthBias;
-         zspan[i] = (GLint) (CLAMP( d, 0.0F, 1.0F ) * DEPTH_SCALE);
+         zspan[i] = (GLdepth) (CLAMP(d, 0.0F, 1.0F) * ctx->Visual->DepthMax);
       }
 
       if (ctx->Visual->RGBAflag) {
@@ -473,7 +544,7 @@ static void copy_stencil_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
       }
       p = psten;
       for (j = 0; j < height; j++, ssy += stepy) {
-         gl_read_stencil_span( ctx, width, srcx, ssy, p );
+         _mesa_read_stencil_span( ctx, width, srcx, ssy, p );
          p += width;
       }
       p = psten;
@@ -491,21 +562,21 @@ static void copy_stencil_pixels( GLcontext *ctx, GLint srcx, GLint srcy,
          p += width;
       }
       else {
-         gl_read_stencil_span( ctx, width, srcx, sy, stencil );
+         _mesa_read_stencil_span( ctx, width, srcx, sy, stencil );
       }
 
       if (shift_or_offset) {
-         gl_shift_and_offset_stencil( ctx, width, stencil );
+         _mesa_shift_and_offset_stencil( ctx, width, stencil );
       }
       if (ctx->Pixel.MapStencilFlag) {
-         gl_map_stencil( ctx, width, stencil );
+         _mesa_map_stencil( ctx, width, stencil );
       }
 
       if (zoom) {
          gl_write_zoomed_stencil_span( ctx, width, destx, dy, stencil, desty );
       }
       else {
-         gl_write_stencil_span( ctx, width, destx, dy, stencil );
+         _mesa_write_stencil_span( ctx, width, destx, dy, stencil );
       }
    }
 
@@ -541,6 +612,14 @@ _mesa_CopyPixels( GLint srcx, GLint srcy, GLsizei width, GLsizei height,
       }
       destx = (GLint) (ctx->Current.RasterPos[0] + 0.5F);
       desty = (GLint) (ctx->Current.RasterPos[1] + 0.5F);
+
+      ctx->OcclusionResult = GL_TRUE;
+
+      if (ctx->Driver.CopyPixels &&
+          (*ctx->Driver.CopyPixels)( ctx, srcx, srcy, width, height,
+                                     destx, desty, type )) {
+         return;
+      }
 
       if (type == GL_COLOR && ctx->Visual->RGBAflag) {
          copy_rgba_pixels( ctx, srcx, srcy, width, height, destx, desty );

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.9 1999/12/03 19:17:39 eich Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsdi/Imakefile,v 3.10 2000/02/13 03:36:06 dawes Exp $
 
 
 
@@ -12,11 +12,13 @@ MOUSEOBJ = bsdi_mouse.o
 
 SRCS = bsdi_init.c bsdi_video.c bsdi_io.c bios_devmem.c \
        mapVT_noop.c VTsw_noop.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
-       libc_wrapper.c stdResource.c stdPci.c sigiostubs.c pm_noop.c
+       libc_wrapper.c stdResource.c stdPci.c sigiostubs.c pm_noop.c \
+       kmod_noop.c
 
 OBJS = bsdi_init.o bsdi_video.o bsdi_io.o bios_devmem.o \
        mapVT_noop.o VTsw_noop.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
-       libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o
+       libc_wrapper.o stdResource.o stdPci.o sigiostubs.o pm_noop.o \
+       kmod_noop.o
 
 INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(EXTINCSRC)
@@ -38,6 +40,7 @@ LinkSourceFile(stdResource.c,../shared)
 LinkSourceFile(stdPci.c,../shared)
 LinkSourceFile(sigiostubs.c,../shared)
 LinkSourceFile(pm_noop.c,../shared)
+LinkSourceFile(kmod_noop.c,../shared)
 
 DependTarget()
 

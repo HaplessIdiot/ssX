@@ -363,6 +363,7 @@ void fxDDChooseRenderState( GLcontext *ctx )
  * Need this to provide at least one external definition.
  */
 
+extern int gl_fx_dummy_function_tris(void);
 int gl_fx_dummy_function_tris(void)
 {
   return 0;

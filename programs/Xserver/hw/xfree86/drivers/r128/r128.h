@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.8 2000/02/23 04:47:18 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128.h,v 1.9 2000/06/14 00:16:11 dawes Exp $ */
 /**************************************************************************
 
-Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
-                                         Cedar Park, Texas. 
+Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
+                                               Cedar Park, Texas.
 All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a
@@ -40,10 +40,13 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define R128_TIMEOUT  2000000	/* Fall out of wait loops after this count */
 #define R128_MMIOSIZE 0x80000
 
+				/* R128_NAME is used for the server-side
+                                   ddx driver, the client-side DRI driver,
+                                   and the kernel-level DRM driver. */
 #define R128_NAME "r128"
 #define R128_VERSION_MAJOR 3
-#define R128_VERSION_MINOR 0
-#define R128_VERSION_PATCH 0
+#define R128_VERSION_MINOR 1
+#define R128_VERSION_PATCH 1
 #define R128_VERSION ((R128_VERSION_MAJOR << 16)  \
 		      | (R128_VERSION_MINOR << 8) \
 		      | R128_VERSION_PATCH)
@@ -100,7 +103,7 @@ typedef struct {
     CARD32     amcgpio_en_reg;
     CARD32     amcgpio_mask;
 
-				/* Crtc registers */
+				/* CRTC registers */
     CARD32     crtc_gen_cntl;
     CARD32     crtc_ext_cntl;
     CARD32     dac_cntl;
@@ -111,6 +114,21 @@ typedef struct {
     CARD32     crtc_offset;
     CARD32     crtc_offset_cntl;
     CARD32     crtc_pitch;
+
+				/* CRTC2 registers */
+    CARD32     crtc2_gen_cntl;
+
+				/* Flat panel registers */
+    CARD32     fp_crtc_h_total_disp;
+    CARD32     fp_crtc_v_total_disp;
+    CARD32     fp_gen_cntl;
+    CARD32     fp_h_sync_strt_wid;
+    CARD32     fp_horz_stretch;
+    CARD32     fp_panel_cntl;
+    CARD32     fp_v_sync_strt_wid;
+    CARD32     fp_vert_stretch;
+    CARD32     lvds_gen_cntl;
+    CARD32     tmds_crc;
 
 				/* Computed values for PLL */
     int        dot_clock_freq;
@@ -166,16 +184,32 @@ typedef struct {
     unsigned char     *FB;	  /* Map of frame buffer                     */
 
     CARD32            MemCntl;
-    CARD32	      BusCntl;
+    CARD32            BusCntl;
     unsigned long     FbMapSize;  /* Size of frame buffer, in bytes          */
     int               Flags;	  /* Saved copy of mode flags                */
     
+    Bool              EnableFP;     /* Enable use of FP registers            */
+    Bool              CRTOnly;      /* Only use External CRT instead of FP   */
+    Bool              HasPanelRegs; /* Current chip can connect to a FP      */
+
+				/* Computed values for FPs */
+    int               PanelXRes;
+    int               PanelYRes;
+    int               PanelHNonVis;
+    int               PanelHOverPlus;
+    int               PanelHSyncWidth;
+    int               PanelVNonVis;
+    int               PanelVOverPlus;
+    int               PanelVSyncWidth;
+
     R128PLLRec        pll;
     R128RAMPtr        ram;
 
     R128SaveRec       SavedReg;	  /* Original (text) mode                    */
     R128SaveRec       ModeReg;	  /* Current mode                            */
     Bool              (*CloseScreen)(int, ScreenPtr);
+
+    Bool              PaletteSavedOnVT; /* Palette saved on last VT switch   */
 
     I2CBusPtr         i2c;
     XAAInfoRecPtr     accel;
@@ -213,7 +247,96 @@ typedef struct {
     int               DGAViewportStatus;
 
     R128FBLayout      CurrentLayout;
+#ifdef XF86DRI
+    Bool              directRenderingEnabled;
+    DRIInfoPtr        pDRIInfo;
+    int               drmFD;
+    int               numVisualConfigs;
+    __GLXvisualConfig *pVisualConfigs;
+    R128ConfigPrivPtr pVisualConfigsPriv;
+
+    drmHandle         fbHandle;
+
+    drmSize           registerSize;
+    drmHandle         registerHandle;
+    
+    Bool              IsPCI;		/* Current card is a PCI card */
+    
+    drmSize           agpSize;
+    drmHandle         agpMemHandle;     /* Handle from drmAgpAlloc */
+    unsigned long     agpOffset;
+    unsigned char     *AGP;	        /* Map */
+    int               agpMode;
+
+    Bool              CCEInUse;		/* CCE is currently active */
+    int               CCEMode;		/* CCE mode that server/clients use */
+    int               CCEFifoSize;	/* Size of the CCE command FIFO */
+    Bool              CCESecure;	/* CCE security enabled */
+    int               CCEusecTimeout;	/* CCE timeout in usecs */
+    Bool              CCE2D;            /* CCE is used for X server 2D prims */
+
+				/* CCE ring buffer data */
+    unsigned long     ringStart;	/* Offset into AGP space */
+    drmHandle         ringHandle;	/* Handle from drmAddMap */
+    drmSize           ringMapSize;	/* Size of map */
+    int               ringSize;		/* Size of ring (in MB) */
+    unsigned char     *ring;		/* Map */
+    int               ringSizeLog2QW;
+
+    unsigned long     ringReadOffset;	/* Offset into AGP space */
+    drmHandle         ringReadPtrHandle; /* Handle from drmAddMap */
+    drmSize           ringReadMapSize;	/* Size of map */
+    unsigned char     *ringReadPtr;	/* Map */
+
+				/* CCE vertex buffer data */
+    unsigned long     vbStart;		/* Offset into AGP space */
+    drmHandle         vbHandle;		/* Handle from drmAddMap */
+    drmSize           vbMapSize;	/* Size of map */
+    int               vbSize;		/* Size of vert bufs (in MB) */
+    unsigned char     *vb;		/* Map */
+    int               vbBufSize;	/* Size of individual vert buf */
+    int               vbNumBufs;	/* Number of vert bufs */
+    drmBufMapPtr      vbBufs;		/* Buffer map */
+
+				/* CCE indirect buffer data */
+    unsigned long     indStart;		/* Offset into AGP space */
+    drmHandle         indHandle;	/* Handle from drmAddMap */
+    drmSize           indMapSize;	/* Size of map */
+    int               indSize;		/* Size of indirect bufs (in MB) */
+    unsigned char     *ind;		/* Map */
+
+				/* CCE AGP Texture data */
+    unsigned long     agpTexStart;	/* Offset into AGP space */
+    drmHandle         agpTexHandle;	/* Handle from drmAddMap */
+    drmSize           agpTexMapSize;	/* Size of map */
+    int               agpTexSize;	/* Size of AGP tex space (in MB) */
+    unsigned char     *agpTex;		/* Map */
+    int               log2AGPTexGran;
+
+				/* DRI screen private data */
+    int               fbX;
+    int               fbY;
+    int               backX;
+    int               backY;
+    int               depthX;
+    int               depthY;
+    int               textureX;
+    int               textureY;
+    int               textureSize;
+    int               log2TexGran;
+#endif
 } R128InfoRec, *R128InfoPtr;
+
+#define R128WaitForFifo(pScrn, entries)                                      \
+do {                                                                         \
+    if (info->fifo_slots < entries) R128WaitForFifoFunction(pScrn, entries); \
+    info->fifo_slots -= entries;                                             \
+} while (0)
+
+extern void        R128WaitForFifoFunction(ScrnInfoPtr pScrn, int entries);
+extern void        R128WaitForIdle(ScrnInfoPtr pScrn);
+extern void        R128EngineReset(ScrnInfoPtr pScrn);
+extern void        R128EngineFlush(ScrnInfoPtr pScrn);
 
 extern int         INPLL(ScrnInfoPtr pScrn, int addr);
 extern void        R128WaitForVerticalSync(ScrnInfoPtr pScrn);
@@ -225,7 +348,16 @@ extern void        R128EngineInit(ScrnInfoPtr pScrn);
 extern Bool        R128CursorInit(ScreenPtr pScreen);
 extern Bool        R128DGAInit(ScreenPtr pScreen);
 
-/* accel */
-extern void        R128WaitForIdle(ScrnInfoPtr pScrn);
+extern int         R128MinBits(int val);
+
+#ifdef XF86DRI
+extern Bool        R128DRIScreenInit(ScreenPtr pScreen);
+extern void        R128DRICloseScreen(ScreenPtr pScreen);
+extern Bool        R128DRIFinishScreenInit(ScreenPtr pScreen);
+extern void        R128CCEStart(ScrnInfoPtr pScrn);
+extern void        R128CCEStop(ScrnInfoPtr pScrn);
+extern void        R128CCEResetRing(ScrnInfoPtr pScrn);
+extern void        R128CCEWaitForIdle(ScrnInfoPtr pScrn);
+#endif
 
 #endif

@@ -31,42 +31,49 @@
 #include "types.h"
 
 
-extern void gl_alloc_alpha_buffers( GLcontext *ctx );
+extern void
+_mesa_alloc_alpha_buffers( GLcontext *ctx );
 
 
-extern void gl_clear_alpha_buffers( GLcontext *ctx );
+extern void
+_mesa_clear_alpha_buffers( GLcontext *ctx );
 
 
-extern void gl_write_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
-                                 CONST GLubyte rgba[][4], const GLubyte mask[] );
+extern void
+_mesa_write_alpha_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                        CONST GLubyte rgba[][4], const GLubyte mask[] );
 
 
-extern void gl_write_mono_alpha_span( GLcontext *ctx,
-                                      GLuint n, GLint x, GLint y,
-                                      GLubyte alpha, const GLubyte mask[] );
+extern void
+_mesa_write_mono_alpha_span( GLcontext *ctx,
+                             GLuint n, GLint x, GLint y,
+                             GLubyte alpha, const GLubyte mask[] );
 
 
 
-extern void gl_write_alpha_pixels( GLcontext* ctx,
-                                   GLuint n, const GLint x[], const GLint y[],
-                                   CONST GLubyte rgba[][4],
-                                   const GLubyte mask[] );
+extern void
+_mesa_write_alpha_pixels( GLcontext* ctx,
+                          GLuint n, const GLint x[], const GLint y[],
+                          CONST GLubyte rgba[][4],
+                          const GLubyte mask[] );
 
 
-extern void gl_write_mono_alpha_pixels( GLcontext* ctx,
-                                        GLuint n, const GLint x[],
-                                        const GLint y[], GLubyte alpha,
-                                        const GLubyte mask[] );
+extern void
+_mesa_write_mono_alpha_pixels( GLcontext* ctx,
+                               GLuint n, const GLint x[],
+                               const GLint y[], GLubyte alpha,
+                               const GLubyte mask[] );
 
 
-extern void gl_read_alpha_span( GLcontext* ctx,
-                                GLuint n, GLint x, GLint y,
-                                GLubyte rgba[][4] );
+extern void
+_mesa_read_alpha_span( GLcontext* ctx,
+                       GLuint n, GLint x, GLint y, GLubyte rgba[][4] );
 
 
-extern void gl_read_alpha_pixels( GLcontext* ctx,
-                                  GLuint n, const GLint x[], const GLint y[],
-                                  GLubyte rgba[][4], const GLubyte mask[] );
+extern void
+_mesa_read_alpha_pixels( GLcontext* ctx,
+                         GLuint n, const GLint x[], const GLint y[],
+                         GLubyte rgba[][4], const GLubyte mask[] );
 
 
 #endif

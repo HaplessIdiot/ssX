@@ -1,11 +1,12 @@
 
-XCOMM $XFree86: xc/include/GL/Imakefile,v 1.7 2000/02/23 04:46:33 martin Exp $
+XCOMM $XFree86: xc/include/GL/Imakefile,v 1.8 2000/03/02 16:07:29 martin Exp $
 
 LinkSourceFile(gl.h, ../../extras/Mesa/include/GL)
 LinkSourceFile(glext.h, ../../extras/Mesa/include/GL)
+LinkSourceFile(osmesa.h, ../../extras/Mesa/include/GL)
 
 #if BuildGLXLibrary
-GLXHEADERS = gl.h glext.h glx.h glxint.h glxmd.h glxproto.h glxtokens.h
+GLXHEADERS = gl.h glext.h glx.h glxtokens.h osmesa.h
 #endif
 
 HEADERS = $(GLXHEADERS)

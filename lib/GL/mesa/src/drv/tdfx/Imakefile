@@ -79,7 +79,8 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		fxglidew.o fxpipeline.o fxrender.o fxsanity.o fxsetup.o \
 		fxtexman.o fxtrifuncs.o fxvsetup.o
 
-     MESASRCS = ../../accum.c \
+     MESASRCS = ../../aatriangle.c \
+		../../accum.c \
 		../../alpha.c \
 		../../alphabuf.c \
 		../../attrib.c \
@@ -109,7 +110,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../glthread.c \
 		../../hash.c \
 		../../image.c \
-		../../imaging.o \
+		../../imaging.c \
 		../../light.c \
 		../../lines.c \
 		../../logic.c \
@@ -120,6 +121,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../pb.c \
 		../../pipeline.c \
 		../../pixel.c \
+		../../pixeltex.c \
 		../../points.c \
 		../../polygon.c \
 		../../quads.c \
@@ -136,6 +138,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../texobj.c \
 		../../texstate.c \
 		../../texture.c \
+		../../texutil.c \
 		../../translate.c \
 		../../triangle.c \
 		../../varray.c \
@@ -152,7 +155,8 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../zoom.c \
 		../../X86/common_x86.c
 
-     MESAOBJS = ../../accum.o \
+     MESAOBJS = ../../aatriangle.o \
+		../../accum.o \
 		../../alpha.o \
 		../../alphabuf.o \
 		../../attrib.o \
@@ -191,6 +195,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../pb.o \
 		../../pipeline.o \
 		../../pixel.o \
+		../../pixeltex.o \
 		../../points.o \
 		../../polygon.o \
 		../../quads.o \
@@ -207,6 +212,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 		../../texobj.o \
 		../../texstate.o \
 		../../texture.o \
+		../../texutil.o \
 		../../translate.o \
 		../../triangle.o \
 		../../varray.o \
@@ -239,8 +245,7 @@ LinkSourceFile(fxvs_tmp.h, ../../../../../../extras/Mesa/src/FX)
 
      MMX_OBJS = ../../X86/mmx_blend.o
 
-XCOMM Disabling 3Dnow code for the time being.
-#if 0
+#if MesaUse3DNow
    3DNOW_SRCS = ../../X86/3dnow.c \
 		../../X86/3dnow_norm_raw.S \
 		../../X86/3dnow_xform_masked1.S \
@@ -271,10 +276,14 @@ XCOMM Disabling 3Dnow code for the time being.
       ASMSRCS = $(X86_SRCS) $(MMX_SRCS) $(3DNOW_SRCS)
       ASMOBJS = $(X86_OBJS) $(MMX_OBJS) $(3DNOW_OBJS)
 
-	 SRCS = $(DRISRCS) $(DRMSRCS) $(TDFXSRCS) $(MESASRCS) $(ASMSRCS)
-	 OBJS = $(DRIOBJS) $(DRMOBJS) $(TDFXOBJS) $(MESAOBJS) $(ASMOBJS)
+         SRCS = $(DRISRCS) $(DRMSRCS) $(TDFXSRCS) $(MESASRCS) $(ASMSRCS)
+         OBJS = $(DRIOBJS) $(DRMOBJS) $(TDFXOBJS) $(MESAOBJS) $(ASMOBJS)
 
-REQUIREDLIBS += -lglide3x
+REQUIREDLIBS = -lglide3x -lm
+#if !GlxBuiltInTdfx
+REQUIREDLIBS += -L../../../.. -lGL
+#endif
+
 
 #if !GlxUseBuiltInDRIDriver
 #undef DoNormalLib NormalLibGlx

@@ -1,10 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.6 2000/02/15 07:13:42 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.7 2000/05/11 18:14:36 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "xf86Priv.h"
-
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
 #define PSZ 8
@@ -12,11 +11,8 @@
 #undef PSZ
 #include "cfb16.h"
 #include "cfb32.h"
-
 #include "miline.h"
-
 #include "GL/glxtokens.h"
-
 #include "tdfx.h"
 #include "tdfx_dri.h"
 #include "tdfx_dripriv.h"
@@ -24,12 +20,11 @@
 static char TDFXKernelDriverName[] = "tdfx";
 static char TDFXClientDriverName[] = "tdfx";
 
-static Bool TDFXInitVisualConfigs(ScreenPtr pScreen);
 static Bool TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
 			      drmContext hwContext, void *pVisualConfigPriv,
-			      void *contextStore);
+			      DRIContextType contextStore);
 static void TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext,
-			       void *contextStore);
+			       DRIContextType contextStore);
 static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType, 
 			       DRIContextType readContextType, 
 			       void *readContextStore,
@@ -48,15 +43,12 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
   __GLXvisualConfig *pConfigs = 0;
   TDFXConfigPrivPtr pTDFXConfigs = 0;
   TDFXConfigPrivPtr *pTDFXConfigPtrs = 0;
-  int i;
+  int i, db, stencil, accum, depth;
 
   switch (pScrn->bitsPerPixel) {
   case 8:
-  case 24:
-  case 32:
-    break;
   case 16:
-    numConfigs = 2;
+    numConfigs = 16;
 
     if (!(pConfigs = (__GLXvisualConfig*)xnfcalloc(sizeof(__GLXvisualConfig),
 						   numConfigs))) {
@@ -76,64 +68,167 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
     for (i=0; i<numConfigs; i++) 
       pTDFXConfigPtrs[i] = &pTDFXConfigs[i];
 
-    pConfigs[0].vid = -1;
-    pConfigs[0].class = -1;
-    pConfigs[0].rgba = TRUE;
-    pConfigs[0].redSize = 5;
-    pConfigs[0].greenSize = 6;
-    pConfigs[0].blueSize = 5;
-    pConfigs[0].redMask = 0x0000F800;
-    pConfigs[0].greenMask = 0x000007E0;
-    pConfigs[0].blueMask = 0x0000001F;
-    pConfigs[0].alphaMask = 0;
-    pConfigs[0].accumRedSize = 0;
-    pConfigs[0].accumGreenSize = 0;
-    pConfigs[0].accumBlueSize = 0;
-    pConfigs[0].accumAlphaSize = 0;
-    pConfigs[0].doubleBuffer = TRUE;
-    pConfigs[0].stereo = FALSE;
-    pConfigs[0].bufferSize = 16;
-    pConfigs[0].depthSize = 16;
-    pConfigs[0].stencilSize = 0;
-    pConfigs[0].auxBuffers = 0;
-    pConfigs[0].level = 0;
-    pConfigs[0].visualRating = 0;
-    pConfigs[0].transparentPixel = 0;
-    pConfigs[0].transparentRed = 0;
-    pConfigs[0].transparentGreen = 0;
-    pConfigs[0].transparentBlue = 0;
-    pConfigs[0].transparentAlpha = 0;
-    pConfigs[0].transparentIndex = 0;
+    i=0;
+    depth=1;
+    for (db = 0; db <=1; db++) {
+      for (depth = 0; depth<=1; depth++) {
+	for (accum = 0; accum <= 1; accum++) {
+	  for (stencil = 0; stencil <= 1; stencil++) {
+	    pConfigs[i].vid = -1;
+	    pConfigs[i].class = -1;
+	    pConfigs[i].rgba = TRUE;
+	    pConfigs[i].redSize = 5;
+	    pConfigs[i].greenSize = 6;
+	    pConfigs[i].blueSize = 5;
+	    pConfigs[i].redMask = 0x0000F800;
+	    pConfigs[i].greenMask = 0x000007E0;
+	    pConfigs[i].blueMask = 0x0000001F;
+	    pConfigs[i].alphaMask = 0;
+	    if (accum) {
+	      pConfigs[i].accumRedSize = 16;
+	      pConfigs[i].accumGreenSize = 16;
+	      pConfigs[i].accumBlueSize = 16;
+	      pConfigs[i].accumAlphaSize = 0;
+	    } else {
+	      pConfigs[i].accumRedSize = 0;
+	      pConfigs[i].accumGreenSize = 0;
+	      pConfigs[i].accumBlueSize = 0;
+	      pConfigs[i].accumAlphaSize = 0;
+	    }
+	    if (db)
+	      pConfigs[i].doubleBuffer = TRUE;
+	    else
+	      pConfigs[i].doubleBuffer = FALSE;
+	    pConfigs[i].stereo = FALSE;
+	    pConfigs[i].bufferSize = 16;
+	    if (depth) {
+	      if (pTDFX->cpp>2)
+		pConfigs[i].depthSize = 24;
+	      else 
+		pConfigs[i].depthSize = 16;
+	    } else {
+	      pConfigs[i].depthSize = 0;
+	    }
+	    if (stencil)
+	      pConfigs[i].stencilSize = 8;
+	    else
+	      pConfigs[i].stencilSize = 0;
+	    pConfigs[i].auxBuffers = 0;
+	    pConfigs[i].level = 0;
+	    if (stencil || accum)
+	      pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
+	    else
+	      pConfigs[i].visualRating = GLX_NONE_EXT;
+	    pConfigs[i].transparentPixel = 0;
+	    pConfigs[i].transparentRed = 0;
+	    pConfigs[i].transparentGreen = 0;
+	    pConfigs[i].transparentBlue = 0;
+	    pConfigs[i].transparentAlpha = 0;
+	    pConfigs[i].transparentIndex = 0;
+	    i++;
+	  }
+	}
+      }
+    }
+    if (i!=numConfigs) {
+      ErrorF("Incorrect initialization of visuals\n");
+      return FALSE;
+    } else ErrorF("Created %d visuals\n", numConfigs);
+    break; /* 16bpp */
 
-    pConfigs[1].vid = -1;
-    pConfigs[1].class = -1;
-    pConfigs[1].rgba = TRUE;
-    pConfigs[1].redSize = 5;
-    pConfigs[1].greenSize = 6;
-    pConfigs[1].blueSize = 5;
-    pConfigs[1].redMask = 0x0000F800;
-    pConfigs[1].greenMask = 0x000007E0;
-    pConfigs[1].blueMask = 0x0000001F;
-    pConfigs[1].alphaMask = 0;
-    pConfigs[1].accumRedSize = 0;
-    pConfigs[1].accumGreenSize = 0;
-    pConfigs[1].accumBlueSize = 0;
-    pConfigs[1].accumAlphaSize = 0;
-    pConfigs[1].doubleBuffer = FALSE;
-    pConfigs[1].stereo = FALSE;
-    pConfigs[1].bufferSize = 16;
-    pConfigs[1].depthSize = 16;
-    pConfigs[1].stencilSize = 0;
-    pConfigs[1].auxBuffers = 0;
-    pConfigs[1].level = 0;
-    pConfigs[1].visualRating = 0;
-    pConfigs[1].transparentPixel = 0;
-    pConfigs[1].transparentRed = 0;
-    pConfigs[1].transparentGreen = 0;
-    pConfigs[1].transparentBlue = 0;
-    pConfigs[1].transparentAlpha = 0;
-    pConfigs[1].transparentIndex = 0;
+  case 24:
+  case 32:
+    numConfigs = 8;
 
+    pConfigs = (__GLXvisualConfig*) xnfcalloc(sizeof(__GLXvisualConfig), numConfigs);
+    if (!pConfigs)
+      return FALSE;
+
+    pTDFXConfigs = (TDFXConfigPrivPtr) xnfcalloc(sizeof(TDFXConfigPrivRec), numConfigs);
+    if (!pTDFXConfigs) {
+      xfree(pConfigs);
+      return FALSE;
+    }
+
+    pTDFXConfigPtrs = (TDFXConfigPrivPtr *) xnfcalloc(sizeof(TDFXConfigPrivPtr), numConfigs);
+    if (!pTDFXConfigPtrs) {
+      xfree(pConfigs);
+      xfree(pTDFXConfigs);
+      return FALSE;
+    }
+
+    for (i = 0; i < numConfigs; i++) 
+      pTDFXConfigPtrs[i] = &pTDFXConfigs[i];
+
+    i=0;
+    for (db = 0; db <=1; db++) {
+      for (depth = 0; depth<=1; depth++) {
+         /*stencil = depth;*/  /* Z and stencil share the same memory */
+	for (accum = 0; accum <= 1; accum++) {
+           /*for (stencil = 0; stencil <=1; stencil++) {*/
+           stencil = depth;
+	    pConfigs[i].vid = -1;
+	    pConfigs[i].class = -1;
+	    pConfigs[i].rgba = TRUE;
+	    pConfigs[i].redSize = 8;
+	    pConfigs[i].greenSize = 8;
+	    pConfigs[i].blueSize = 8;
+	    pConfigs[i].alphaSize = (pScrn->bitsPerPixel==32) ? 8 : 0;
+	    pConfigs[i].redMask   = 0x00ff0000;
+	    pConfigs[i].greenMask = 0x0000ff00;
+	    pConfigs[i].blueMask  = 0x000000ff;
+	    pConfigs[i].alphaMask = (pScrn->bitsPerPixel==32) ? 0xff000000 : 0;
+	    if (accum) {
+	      pConfigs[i].accumRedSize = 16;
+	      pConfigs[i].accumGreenSize = 16;
+	      pConfigs[i].accumBlueSize = 16;
+	      pConfigs[i].accumAlphaSize = (pScrn->bitsPerPixel==32) ? 16 : 0;
+	    } else {
+	      pConfigs[i].accumRedSize = 0;
+	      pConfigs[i].accumGreenSize = 0;
+	      pConfigs[i].accumBlueSize = 0;
+	      pConfigs[i].accumAlphaSize = 0;
+	    }
+	    if (db)
+	      pConfigs[i].doubleBuffer = TRUE;
+	    else
+	      pConfigs[i].doubleBuffer = FALSE;
+	    pConfigs[i].stereo = FALSE;
+	    pConfigs[i].bufferSize = 16;
+	    if (depth) {
+	      if (pTDFX->cpp > 2)
+		pConfigs[i].depthSize = 24;
+	      else 
+		pConfigs[i].depthSize = 16;
+	    } else {
+	      pConfigs[i].depthSize = 0;
+	    }
+	    if (stencil)
+	      pConfigs[i].stencilSize = 8;
+	    else
+	      pConfigs[i].stencilSize = 0;
+	    pConfigs[i].auxBuffers = 0;
+	    pConfigs[i].level = 0;
+	    if (accum)
+	      pConfigs[i].visualRating = GLX_SLOW_VISUAL_EXT;
+	    else
+	      pConfigs[i].visualRating = GLX_NONE_EXT;
+	    pConfigs[i].transparentPixel = 0;
+	    pConfigs[i].transparentRed = 0;
+	    pConfigs[i].transparentGreen = 0;
+	    pConfigs[i].transparentBlue = 0;
+	    pConfigs[i].transparentAlpha = 0;
+	    pConfigs[i].transparentIndex = 0;
+	    i++;
+         /*}*/
+	}
+      }
+    }
+    if (i!=numConfigs) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "Incorrect initialization of visuals\n");
+      return FALSE;
+    } else ErrorF("Created %d visuals\n", numConfigs);
     break;
   }
   pTDFX->numVisualConfigs = numConfigs;
@@ -143,12 +238,42 @@ TDFXInitVisualConfigs(ScreenPtr pScreen)
   return TRUE;
 }
 
+static void
+TDFXDoWakeupHandler(int screenNum, pointer wakeupData, unsigned long result,
+		    pointer pReadmask)
+{
+  ScreenPtr pScreen = screenInfo.screens[screenNum];
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+  TDFXNeedSync(pScrn);
+}
+
+static void 
+TDFXDoBlockHandler(int screenNum, pointer blockData, pointer pTimeout,
+		  pointer pReadmask)
+{
+  ScreenPtr pScreen = screenInfo.screens[screenNum];
+  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+
+  TDFXCheckSync(pScrn);
+}
+
 Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   DRIInfoPtr pDRIInfo;
   TDFXDRIPtr pTDFXDRI;
+
+  switch (pScrn->bitsPerPixel) {
+  case 8:
+    return FALSE;
+  case 16:
+    break;
+  case 24:
+  case 32:
+    if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) return FALSE;
+  }
 
 #if XFree86LOADER
     /* Check that the GLX, DRI, and DRM modules have been loaded by testing
@@ -158,8 +283,21 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     if (!LoaderSymbol("drmAvailable"))        return FALSE;
 #endif
 
+  /* Check the DRI version */
+  {
+    int major, minor, patch;
+    DRIQueryVersion(&major, &minor, &patch);
+    if (major != 3 || minor != 0 || patch < 0) {
+      xf86DrvMsg(pScreen->myNum, X_ERROR,
+                 "TDFXDRIScreenInit failed (DRI version = %d.%d.%d, expected 3.0.x).  Disabling DRI.\n",
+                 major, minor, patch);
+      return FALSE;
+    }
+  }
+
   pDRIInfo = DRICreateInfoRec();
-  if (!pDRIInfo) return FALSE;
+  if (!pDRIInfo)
+     return FALSE;
   pTDFX->pDRIInfo = pDRIInfo;
 
   pDRIInfo->drmDriverName = TDFXKernelDriverName;
@@ -169,13 +307,18 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
 	  ((pciConfigPtr)pTDFX->PciInfo->thisCard)->busnum,
 	  ((pciConfigPtr)pTDFX->PciInfo->thisCard)->devnum,
 	  ((pciConfigPtr)pTDFX->PciInfo->thisCard)->funcnum);
-  pDRIInfo->ddxDriverMajorVersion = 0;
-  pDRIInfo->ddxDriverMinorVersion = 1;
-  pDRIInfo->ddxDriverPatchVersion = 0;
-  pDRIInfo->frameBufferPhysicalAddress = pTDFX->LinearAddr;
+  pDRIInfo->ddxDriverMajorVersion = TDFX_MAJOR_VERSION;
+  pDRIInfo->ddxDriverMinorVersion = TDFX_MINOR_VERSION;
+  pDRIInfo->ddxDriverPatchVersion = TDFX_PATCHLEVEL;
+  pDRIInfo->frameBufferPhysicalAddress = pTDFX->LinearAddr[0];
   pDRIInfo->frameBufferSize = pTDFX->FbMapSize;
   pDRIInfo->frameBufferStride = pTDFX->stride;
   pDRIInfo->ddxDrawableTableEntry = TDFX_MAX_DRAWABLES;
+
+  pDRIInfo->wrap.ValidateTree = 0;
+  pDRIInfo->wrap.PostValidateTree = 0;
+  pDRIInfo->wrap.BlockHandler = TDFXDoBlockHandler;
+  pDRIInfo->wrap.WakeupHandler = TDFXDoWakeupHandler;
 
   if (SAREA_MAX_DRAWABLES < TDFX_MAX_DRAWABLES)
     pDRIInfo->maxDrawableTableEntry = SAREA_MAX_DRAWABLES;
@@ -194,7 +337,7 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
    * in the SAREA header
    */
   if (sizeof(XF86DRISAREARec)+sizeof(TDFXSAREAPriv)>SAREA_MAX) {
-    ErrorF("Data does not fit in SAREA\n");
+     xf86DrvMsg(pScreen->myNum, X_ERROR, "Data does not fit in SAREA\n");
     return FALSE;
   }
   pDRIInfo->SAREASize = SAREA_MAX;
@@ -224,8 +367,29 @@ Bool TDFXDRIScreenInit(ScreenPtr pScreen)
     return FALSE;
   }
 
+  /* Check the TDFX DRM version */
+  {
+     drmVersionPtr version = drmGetVersion(pTDFX->drmSubFD);
+     if (version) {
+        if (version->version_major != 1 ||
+            version->version_minor != 0 ||
+            version->version_patchlevel < 0) {
+           /* incompatible drm version */
+           xf86DrvMsg(pScreen->myNum, X_ERROR,
+                      "TDFXDRIScreenInit failed (DRM version = %d.%d.%d, expected 1.0.x).  Disabling DRI.\n",
+                      version->version_major,
+                      version->version_minor,
+                      version->version_patchlevel);
+           TDFXDRICloseScreen(pScreen);
+           drmFreeVersion(version);
+           return FALSE;
+        }
+        drmFreeVersion(version);
+     }
+  }
+
   pTDFXDRI->regsSize=TDFXIOMAPSIZE;
-  if (drmAddMap(pTDFX->drmSubFD, (drmHandle)pTDFX->MMIOAddr, 
+  if (drmAddMap(pTDFX->drmSubFD, (drmHandle)pTDFX->MMIOAddr[0], 
 		pTDFXDRI->regsSize, DRM_REGISTERS, 0, &pTDFXDRI->regs)<0) {
     TDFXDRICloseScreen(pScreen);
     return FALSE;
@@ -265,19 +429,21 @@ TDFXDRICloseScreen(ScreenPtr pScreen)
 static Bool
 TDFXCreateContext(ScreenPtr pScreen, VisualPtr visual, 
 		  drmContext hwContext, void *pVisualConfigPriv,
-		  void *contextStore)
+		  DRIContextType contextStore)
 {
-  ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-  TDFXPtr pTDFX = TDFXPTR(pScrn);
   TDFXConfigPrivPtr pTDFXConfig = (TDFXConfigPrivPtr)pVisualConfigPriv;
+  TDFXDRIContextPtr ctx;
 
+  ctx=(TDFXDRIContextPtr)contextStore;
   return TRUE;
 }
 
 static void
 TDFXDestroyContext(ScreenPtr pScreen, drmContext hwContext, 
-		   void *contextStore)
+		   DRIContextType contextStore)
 {
+  TDFXDRIContextPtr ctx;
+  ctx=(TDFXDRIContextPtr)contextStore;
 }
 
 Bool
@@ -311,14 +477,21 @@ TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 		   DRIContextType oldContextType, void *oldContext,
 		   DRIContextType newContextType, void *newContext)
 {
+#if 0
+  ScrnInfoPtr pScrn;
+
+  pScrn = xf86Screens[pScreen->myNum];
+  if ((syncType==DRI_2D_SYNC) && (oldContextType==DRI_NO_CONTEXT) &&
+      (newContextType==DRI_2D_CONTEXT)) { /* Exiting from Block Handler */
+    TDFXCheckSync(pScrn);
+    TDFXLostContext(pScreen);
+  }
   if ((syncType==DRI_3D_SYNC) && (oldContextType==DRI_2D_CONTEXT) &&
       (newContextType==DRI_2D_CONTEXT)) { /* Entering from Wakeup */
     TDFXSwapContextPrivate(pScreen);
+    TDFXNeedSync(pScrn);
   }
-  if ((syncType==DRI_2D_SYNC) && (oldContextType==DRI_NO_CONTEXT) &&
-      (newContextType==DRI_2D_CONTEXT)) { /* Exiting from Block Handler */
-    TDFXLostContext(pScreen);
-  }
+#endif
 }
 
 static void

@@ -47,22 +47,25 @@
  * to it.
  */
 static void mgaDestroyTexObj( mgaContextPtr mmesa, mgaTextureObjectPtr t ) {
-	int	i;
 
  	if ( !t ) return;
   	  	
 	/* free the texture memory */
-	mmFreeMem( t->MemBlock );
+	if (t->MemBlock) {
+		mmFreeMem( t->MemBlock );
+		t->MemBlock = 0;
+
+		if (t->age > mmesa->dirtyAge)
+			mmesa->dirtyAge = t->age;
+	}
  
  	/* free mesa's link */   
-	t->tObj->DriverData = NULL;
+	if (t->tObj) 
+		t->tObj->DriverData = NULL;
 
 	/* see if it was the driver's current object */
-	for ( i = 0 ; i < 2 ; i++ ) {
-		if ( mmesa->CurrentTexObj[i] == t ) {
-			mmesa->CurrentTexObj[i] = NULL;
-		}  
-	}
+	if (t->bound)
+		mmesa->CurrentTexObj[t->bound - 1] = 0; 
 	
 	remove_from_list(t);
 	free( t );
@@ -73,6 +76,9 @@ static void mgaSwapOutTexObj(mgaContextPtr mmesa, mgaTextureObjectPtr t)
 	if (t->MemBlock) {
 		mmFreeMem(t->MemBlock);
 		t->MemBlock = 0;      
+
+		if (t->age > mmesa->dirtyAge)
+			mmesa->dirtyAge = t->age;
 	}
 
 	t->dirty_images = ~0;
@@ -80,11 +86,65 @@ static void mgaSwapOutTexObj(mgaContextPtr mmesa, mgaTextureObjectPtr t)
 }
 
 
-void mgaResetGlobalLRU( mgaContextPtr mmesa )
+static void mgaPrintLocalLRU( mgaContextPtr mmesa, int heap ) 
 {
-   mgaTexRegion *list = mmesa->sarea->texList;
-   int sz = 1 << mmesa->mgaScreen->logTextureGranularity;
+   mgaTextureObjectPtr t;
+   int sz = 1 << (mmesa->mgaScreen->logTextureGranularity[heap]);
+
+   fprintf(stderr, "\nLocal LRU, heap %d:\n", heap);
+
+   foreach( t, &(mmesa->TexObjList[heap]) ) {
+      if (!t->tObj)
+	 fprintf(stderr, "Placeholder %d at %x sz %x\n", 
+		 t->MemBlock->ofs / sz,
+		 t->MemBlock->ofs,
+		 t->MemBlock->size);      
+      else
+	 fprintf(stderr, "Texture (bound %d) at %x sz %x\n", 
+		 t->bound,
+		 t->MemBlock->ofs,
+		 t->MemBlock->size);      
+
+   }
+
+   fprintf(stderr, "\n\n");
+}
+
+static void mgaPrintGlobalLRU( mgaContextPtr mmesa, int heap )
+{
+   int i, j;
+   drm_mga_tex_region_t *list = mmesa->sarea->texList[heap];
+
+   fprintf(stderr, "\nGlobal LRU, heap %d list %p:\n", heap, list);
+
+   for (i = 0, j = MGA_NR_TEX_REGIONS ; i < MGA_NR_TEX_REGIONS ; i++) {
+      fprintf(stderr, "list[%d] age %d next %d prev %d\n",
+	      j, list[j].age, list[j].next, list[j].prev);
+      j = list[j].next;
+      if (j == MGA_NR_TEX_REGIONS) break;
+   }
+   
+   if (j != MGA_NR_TEX_REGIONS) {
+      fprintf(stderr, "Loop detected in global LRU\n\n\n");
+      for (i = 0 ; i < MGA_NR_TEX_REGIONS ; i++) {
+	      fprintf(stderr, "list[%d] age %d next %d prev %d\n",
+		      i, list[i].age, list[i].next, list[i].prev);
+      }
+   }
+   
+   fprintf(stderr, "\n\n");
+}
+
+
+static void mgaResetGlobalLRU( mgaContextPtr mmesa, GLuint heap )
+{
+   drm_mga_tex_region_t *list = mmesa->sarea->texList[heap];
+   int sz = 1 << mmesa->mgaScreen->logTextureGranularity[heap];
    int i;
+
+   mmesa->texAge[heap] = ++mmesa->sarea->texAge[heap];
+
+   if (0) fprintf(stderr, "mgaResetGlobalLRU %d\n", (int)heap);
 
    /* (Re)initialize the global circular LRU list.  The last element
     * in the array (MGA_NR_TEX_REGIONS) is the sentinal.  Keeping it
@@ -92,10 +152,10 @@ void mgaResetGlobalLRU( mgaContextPtr mmesa )
     * when looking up objects at a particular location in texture
     * memory.  
     */
-   for (i = 0 ; (i+1) * sz < mmesa->mgaScreen->textureSize ; i++) {
+   for (i = 0 ; (i+1) * sz <= mmesa->mgaScreen->textureSize[heap] ; i++) {
       list[i].prev = i-1;
       list[i].next = i+1;
-      list[i].age = 0;
+      list[i].age = mmesa->sarea->texAge[heap];   
    }
 
    i--;
@@ -104,30 +164,41 @@ void mgaResetGlobalLRU( mgaContextPtr mmesa )
    list[i].next = MGA_NR_TEX_REGIONS;
    list[MGA_NR_TEX_REGIONS].prev = i;
    list[MGA_NR_TEX_REGIONS].next = 0;
-   mmesa->sarea->texAge = 0;
+
 }
 
 
 static void mgaUpdateTexLRU( mgaContextPtr mmesa, mgaTextureObjectPtr t ) 
 {
    int i;
-   int logsz = mmesa->mgaScreen->logTextureGranularity;
+   int heap = t->heap;
+   int logsz = mmesa->mgaScreen->logTextureGranularity[heap];
    int start = t->MemBlock->ofs >> logsz;
    int end = (t->MemBlock->ofs + t->MemBlock->size - 1) >> logsz;
-   mgaTexRegion *list = mmesa->sarea->texList;
+   drm_mga_tex_region_t *list = mmesa->sarea->texList[heap];
    
-   mmesa->texAge = ++mmesa->sarea->texAge;
+   mmesa->texAge[heap] = ++mmesa->sarea->texAge[heap];
+
+   if (!t->MemBlock) {
+	   fprintf(stderr, "no memblock\n\n");
+	   return;
+   }
 
    /* Update our local LRU
     */
-   move_to_head( &(mmesa->TexObjList), t );
+   move_to_head( &(mmesa->TexObjList[heap]), t );
+
+
+   if (0)
+	   fprintf(stderr, "mgaUpdateTexLRU heap %d list %p\n", heap, list);
+
 
    /* Update the global LRU
     */
    for (i = start ; i <= end ; i++) {
 
       list[i].in_use = 1;
-      list[i].age = mmesa->texAge;
+      list[i].age = mmesa->texAge[heap];
 
       /* remove_from_list(i)
        */
@@ -141,8 +212,12 @@ static void mgaUpdateTexLRU( mgaContextPtr mmesa, mgaTextureObjectPtr t )
       list[(unsigned)list[MGA_NR_TEX_REGIONS].next].prev = i;
       list[MGA_NR_TEX_REGIONS].next = i;
    }
-}
 
+   if (0) {
+	   mgaPrintGlobalLRU(mmesa, t->heap);
+	   mgaPrintLocalLRU(mmesa, t->heap);
+   }
+}
 
 /* Called for every shared texture region which has increased in age
  * since we last held the lock.
@@ -151,23 +226,29 @@ static void mgaUpdateTexLRU( mgaContextPtr mmesa, mgaTextureObjectPtr t )
  * and pushes a placeholder texture onto the LRU list to represent 
  * the other client's textures.  
  */
-void mgaTexturesGone( mgaContextPtr mmesa,
-		       GLuint offset, 
-		       GLuint size,
-		       GLuint in_use ) 
+static void mgaTexturesGone( mgaContextPtr mmesa,
+			     GLuint heap,
+			     GLuint offset, 
+			     GLuint size,
+			     GLuint in_use ) 
 {
    mgaTextureObjectPtr t, tmp;
-   
-   foreach_s ( t, tmp, &mmesa->TexObjList ) {
+
+
+
+   foreach_s ( t, tmp, &(mmesa->TexObjList[heap]) ) {
 
       if (t->MemBlock->ofs >= offset + size ||
 	  t->MemBlock->ofs + t->MemBlock->size <= offset)
 	 continue;
 
+
+
+
       /* It overlaps - kick it off.  Need to hold onto the currently bound
        * objects, however.
        */
-      if (t == mmesa->CurrentTexObj[0] || t == mmesa->CurrentTexObj[1]) 
+      if (t->bound) 
 	 mgaSwapOutTexObj( mmesa, t );
       else
 	 mgaDestroyTexObj( mmesa, t );
@@ -178,9 +259,51 @@ void mgaTexturesGone( mgaContextPtr mmesa,
       t = (mgaTextureObjectPtr) calloc(1,sizeof(*t));
       if (!t) return;
 
-      t->MemBlock = mmAllocMem( mmesa->texHeap, size, 0, offset);      
-      insert_at_head( &mmesa->TexObjList, t );
+      t->heap = heap;
+      t->MemBlock = mmAllocMem( mmesa->texHeap[heap], size, 0, offset);      
+      if (!t->MemBlock) {
+	      fprintf(stderr, "Couldn't alloc placeholder sz %x ofs %x\n",
+		      (int)size, (int)offset);
+	      mmDumpMemInfo( mmesa->texHeap[heap]);
+	      return;
+      }
+      insert_at_head( &(mmesa->TexObjList[heap]), t );
    }
+}
+
+
+void mgaAgeTextures( mgaContextPtr mmesa, int heap )
+{
+	drm_mga_sarea_t *sarea = mmesa->sarea;
+	int sz = 1 << (mmesa->mgaScreen->logTextureGranularity[heap]);
+	int idx, nr = 0;
+
+	/* Have to go right round from the back to ensure stuff ends up
+	 * LRU in our local list...  Fix with a cursor pointer.
+	 */
+	for (idx = sarea->texList[heap][MGA_NR_TEX_REGIONS].prev ; 
+	     idx != MGA_NR_TEX_REGIONS && nr < MGA_NR_TEX_REGIONS ; 
+	     idx = sarea->texList[heap][idx].prev, nr++)
+	{
+		if (sarea->texList[heap][idx].age > mmesa->texAge[heap]) {
+			mgaTexturesGone(mmesa, heap, idx * sz, sz, 1);
+		}
+	}
+
+	if (nr == MGA_NR_TEX_REGIONS) {
+		mgaTexturesGone(mmesa, heap, 0,
+				mmesa->mgaScreen->textureSize[heap], 0);
+		mgaResetGlobalLRU( mmesa, heap );
+	}
+
+	
+	if (0) {
+		mgaPrintGlobalLRU( mmesa, heap );
+		mgaPrintLocalLRU( mmesa, heap );
+	}
+
+	mmesa->texAge[heap] = sarea->texAge[heap];
+	mmesa->dirty |= MGA_UPLOAD_TEX0IMAGE | MGA_UPLOAD_TEX1IMAGE;
 }
 
 
@@ -281,22 +404,22 @@ static void mgaSetTexBorderColor(mgaTextureObjectPtr t, GLubyte color[4]) {
 
 
 /*
- * mgaUploadSubImage
+ * mgaUploadSubImageLocked
  *
  * Perform an iload based update of a resident buffer.  This is used for
  * both initial loading of the entire image, and texSubImage updates.
  *
  * Performed with the hardware lock held.
  */
-static void mgaUploadSubImage( mgaContextPtr mmesa,
-			       mgaTextureObjectPtr t,
-			       int level,	     
-			       int x, int y, int width, int height ) {
+static void mgaUploadSubImageLocked( mgaContextPtr mmesa,
+				     mgaTextureObjectPtr t,
+				     int level,	     
+				     int x, int y, int width, int height ) {
 	int		x2;
 	int		dwords;
-        int		dstorg;
+        int		offset;
 	struct gl_texture_image *image;
-	int		texelBytes, texelsPerDword, texelMaccess;
+	int		texelBytes, texelsPerDword, texelMaccess, length;
 
 	if ( level < 0 || level >= MGA_TEX_MAXLEVELS ) {
 		mgaMsg( 1, "mgaUploadSubImage: bad level: %i\n", level );
@@ -310,14 +433,8 @@ static void mgaUploadSubImage( mgaContextPtr mmesa,
 	}
 	
 	/* find the proper destination offset for this level */
-   	dstorg = (mmesa->mgaScreen->textureOffset + t->MemBlock->ofs + 
+   	offset = (t->MemBlock->ofs + 
 		  t->offsets[level]);
-
-    	/* turn on PCI/AGP if needed 
-    	if ( textureHeapPhysical ) {
-    		dstorg |= 1 | mgaglx.use_agp;
-    	}
-	*/
 
 	texelBytes = t->texelBytes;	
 	switch( texelBytes ) {
@@ -363,7 +480,7 @@ static void mgaUploadSubImage( mgaContextPtr mmesa,
 		x = (x + (texelsPerDword-1)) & ~(texelsPerDword-1);
 		width = x2 - x;
 	}
-    
+
 	/* we may not be able to upload the entire texture in one
 	   batch due to register limits or dma buffer limits.
 	   Recursively split it up. */
@@ -374,7 +491,8 @@ static void mgaUploadSubImage( mgaContextPtr mmesa,
 		}
 		mgaMsg(10, "mgaUploadSubImage: recursively subdividing\n" );
 
-		mgaUploadSubImage( mmesa, t, level, x, y, width, height >> 1 );
+		mgaUploadSubImageLocked( mmesa, t, level, x, y, 
+					 width, height >> 1 );
 		y += ( height >> 1 );
 		height -= ( height >> 1 );
 	}
@@ -385,31 +503,50 @@ static void mgaUploadSubImage( mgaContextPtr mmesa,
 	/* bump the performance counter */
 	mgaglx.c_textureSwaps += ( dwords << 2 );
 	
-	
-#if 0
+   	length = dwords * 4;
 
-	/* fill in the secondary buffer with properly converted texels
-	from the mesa buffer */
-	mgaConvertTexture( dest, texelBytes, image, x, y, width, height );
-		
-	/* send the secondary data */	
-	mgaSecondaryDma( TT_BLIT, dest, dwords );
-#endif
-
+	/* Fill in the secondary buffer with properly converted texels
+	 * from the mesa buffer. */
+   	if(t->heap == MGA_CARD_HEAP) {
+	   mgaGetILoadBufferLocked( mmesa );
+	   mgaConvertTexture( (mgaUI32 *)mmesa->iload_buffer->address, 
+			     texelBytes, image, x, y, width, height ); 
+	   if(length < 64) length = 64;
+	   mgaMsg(10, "TexelBytes : %d, offset: %d, length : %d\n",
+		  texelBytes,
+		  mmesa->mgaScreen->textureOffset[t->heap] +
+		  offset + 
+		  y * width * 4/texelsPerDword,
+		  length);
+	   
+	   mgaFireILoadLocked( mmesa, 
+			      mmesa->mgaScreen->textureOffset[t->heap] +
+			      offset + 
+			      y * width * 4/texelsPerDword,
+			      length);
+	} else {
+ 	/* This works, is slower for uploads to card space and needs
+	 * additional synchronization with the dma stream.
+	 */
+	   mgaConvertTexture( (mgaUI32 *)
+			      (mmesa->mgaScreen->texVirtual[t->heap] + 
+					  offset + 
+					  y * width * 4/texelsPerDword), 
+			     texelBytes, image, x, y, width, height ); 
+	}
 }
 
 
-
 static void mgaUploadTexLevel( mgaContextPtr mmesa, 
-			       mgaTextureObjectPtr t,
-			       int l )
+				     mgaTextureObjectPtr t,
+				     int l )
 {
-	mgaUploadSubImage( mmesa,
-			   t,
-			   l,
-			   0, 0,
-			   t->tObj->Image[l]->Width,
-			   t->tObj->Image[l]->Height);
+	mgaUploadSubImageLocked( mmesa,
+				 t,
+				 l,
+				 0, 0,
+				 t->tObj->Image[l]->Width,
+				 t->tObj->Image[l]->Height);
 }
 
 
@@ -527,9 +664,11 @@ static void mgaCreateTexObj(mgaContextPtr mmesa, struct gl_texture_object *tObj)
 	/* fill in our mga texture object */
 	t->tObj = tObj;
 	t->ctx = mmesa;
+	t->age = 0;
+	t->bound = 0;
 
 	
-	insert_at_tail(&(mmesa->TexObjList), t);
+	insert_at_tail(&(mmesa->SwappedOut), t);
 	
 	t->MemBlock = 0;
 
@@ -596,34 +735,61 @@ static void mgaCreateTexObj(mgaContextPtr mmesa, struct gl_texture_object *tObj)
   	tObj->DriverData = t;
 }
 
+static void mgaMigrateTexture( mgaContextPtr mmesa, mgaTextureObjectPtr t )
+{
+	/* NOT DONE */
+}
+
+
+static int mgaChooseTexHeap( mgaContextPtr mmesa, mgaTextureObjectPtr t )
+{
+	return 0;
+}
 
 
 int mgaUploadTexImages( mgaContextPtr mmesa, mgaTextureObjectPtr t )
 {
-
+	int heap;
 	int i;
 	int ofs;
 	mgaglx.c_textureSwaps++;
+
+	heap = t->heap = mgaChooseTexHeap( mmesa, t );
 
 	/* Do we need to eject LRU texture objects?
 	 */
 	if (!t->MemBlock) {
 		while (1)
 		{
-			t->MemBlock = mmAllocMem( mmesa->texHeap, t->totalSize, 12, 0 ); 
+			mgaTextureObjectPtr tmp = mmesa->TexObjList[heap].prev;
+
+			t->MemBlock = mmAllocMem( mmesa->texHeap[heap], 
+						  t->totalSize,
+						  6, 0 ); 
 			if (t->MemBlock)
 				break;
 
-			if (mmesa->TexObjList.prev == &(mmesa->TexObjList)) {
-				fprintf(stderr, "Failed to upload texture, sz %d\n", t->totalSize);
-				mmDumpMemInfo( mmesa->texHeap );
+			if (mmesa->TexObjList[heap].prev->bound) {
+				fprintf(stderr, 
+					"Hit bound texture in upload\n"); 
 				return -1;
 			}
 
-			mgaDestroyTexObj( mmesa, mmesa->TexObjList.prev );
+			if (mmesa->TexObjList[heap].prev == 
+			    &(mmesa->TexObjList[heap])) 
+			{
+				fprintf(stderr, "Failed to upload texture, "
+					"sz %d\n", t->totalSize);
+				mmDumpMemInfo( mmesa->texHeap[heap] );
+				return -1;
+			}
+	 
+			mgaDestroyTexObj( mmesa, tmp );
 		}
  
-		ofs = t->MemBlock->ofs;
+		ofs = t->MemBlock->ofs 
+			+ mmesa->mgaScreen->textureOffset[heap]
+			;
 
 		t->Setup[MGA_TEXREG_ORG]  = ofs;
 		t->Setup[MGA_TEXREG_ORG1] = ofs + t->offsets[1];
@@ -638,8 +804,16 @@ int mgaUploadTexImages( mgaContextPtr mmesa, mgaTextureObjectPtr t )
 	 */
 	mgaUpdateTexLRU( mmesa, t );
 
+	
+	if (MGA_DEBUG&DEBUG_VERBOSE_LRU)
+		fprintf(stderr, "dispatch age: %d age freed memory: %d\n",
+			GET_DISPATCH_AGE(mmesa), mmesa->dirtyAge);
+
+	if (mmesa->dirtyAge >= GET_DISPATCH_AGE(mmesa)) 
+		mgaWaitAgeLocked( mmesa, mmesa->dirtyAge );
+
 	if (t->dirty_images) {
-		if (MGA_DEBUG & MGA_DEBUG_VERBOSE_MSG)
+  		if (MGA_DEBUG&DEBUG_VERBOSE_LRU)
 			fprintf(stderr, "*");
 
 		for (i = 0 ; i <= t->lastLevel ; i++)
@@ -692,12 +866,10 @@ static void mgaUpdateTextureEnvG200( GLcontext *ctx )
 	}
 }
 
-/* I don't have the alpha values correct yet:
- */
 static void mgaUpdateTextureStage( GLcontext *ctx, int unit )
 {
 	mgaContextPtr mmesa = MGA_CONTEXT( ctx );
-	mgaUI32 *reg = &mmesa->Setup[MGA_CTXREG_TDUAL0 + unit];
+	GLuint *reg = &mmesa->Setup[MGA_CTXREG_TDUAL0 + unit];
 	GLuint source = mmesa->tmu_source[unit];
 	struct gl_texture_object *tObj = ctx->Texture.Unit[source].Current;
 
@@ -725,13 +897,13 @@ static void mgaUpdateTextureStage( GLcontext *ctx, int unit )
 			*reg = ( TD0_color_arg2_diffuse |
 				 TD0_color_sel_mul | 
 				 TD0_alpha_arg2_diffuse |
-				 TD0_alpha_sel_arg1);
+				 TD0_alpha_sel_mul);
 		else
 			*reg = ( TD0_color_arg2_prevstage |
 				 TD0_color_alpha_prevstage |
 				 TD0_color_sel_mul | 
 				 TD0_alpha_arg2_prevstage |
-				 TD0_alpha_sel_arg1);
+				 TD0_alpha_sel_mul);
 		break;
 	case GL_DECAL:
 		*reg = (TD0_color_arg2_fcol | 
@@ -751,20 +923,49 @@ static void mgaUpdateTextureStage( GLcontext *ctx, int unit )
 				 TD0_color_add_add |
 				 TD0_color_sel_add | 
 				 TD0_alpha_arg2_diffuse |
-				 TD0_alpha_sel_arg1);
+				 TD0_alpha_sel_add);
 		else
 			*reg = ( TD0_color_arg2_prevstage |
 				 TD0_color_alpha_prevstage |
 				 TD0_color_add_add |
 				 TD0_color_sel_add | 
 				 TD0_alpha_arg2_prevstage |
-				 TD0_alpha_sel_arg1);
+				 TD0_alpha_sel_add);
 		break;
 
 	case GL_BLEND:
-		/* Use a multipass mechanism to do this:
+		if (0)
+			fprintf(stderr, "GL_BLEND unit %d flags %x\n", unit,
+				mmesa->blend_flags);
+
+		if (mmesa->blend_flags) 
+			mmesa->Fallback |= MGA_FALLBACK_TEXTURE;
+			return;
+
+		/* Do singletexture GL_BLEND with 'all ones' env-color
+		 * by using both texture units.  Multitexture gl_blend
+		 * is a fallback.  
 		 */
-		mmesa->Fallback |= MGA_FALLBACK_TEXTURE;
+		if (unit == 0) {
+			/* Part 1: R1 = Rf ( 1 - Rt )
+			 *         A1 = Af At
+			 */
+			*reg = ( TD0_color_arg2_diffuse |
+				 TD0_color_arg1_inv_enable |
+				 TD0_color_sel_mul | 
+				 TD0_alpha_arg2_diffuse |
+				 TD0_alpha_sel_arg1);
+		} else {
+			/* Part 2: R2 = R1 + Rt
+			 *         A2 = A1
+			 */
+			*reg = ( TD0_color_arg2_prevstage |
+				 TD0_color_add_add | 
+				 TD0_color_sel_add | 
+				 TD0_alpha_arg2_prevstage |
+				 TD0_alpha_sel_arg2);		
+		}	
+
 		break;
 	default:
 	}
@@ -782,9 +983,8 @@ static void mgaUpdateTextureObject( GLcontext *ctx, int unit ) {
 	mgaMsg(15,"mgaUpdateTextureState %d\n", unit);
 	
 	/* disable texturing until it is known to be good */
-	mmesa->Setup[MGA_CTXREG_DWGCTL] = 
-		(( mmesa->Setup[MGA_CTXREG_DWGCTL] & DC_opcod_MASK ) | 
-		 DC_opcod_trap);
+	mmesa->Setup[MGA_CTXREG_DWGCTL] &= DC_opcod_MASK;
+	mmesa->Setup[MGA_CTXREG_DWGCTL] |= DC_opcod_trap;
 
 	enabled = (ctx->Texture.Enabled>>(source*4))&TEXTURE0_ANY;
 	if (enabled != TEXTURE0_2D) {
@@ -797,6 +997,8 @@ static void mgaUpdateTextureObject( GLcontext *ctx, int unit ) {
 
 	if ( !tObj || tObj != ctx->Texture.Unit[source].CurrentD[2] ) 
 		return;
+
+/*  	fprintf(stderr, "unit %d: %d\n", unit, tObj->Name); */
 	
 	/* if the texture object doesn't exist at all (never used or
 	   swapped out), create it now, uploading all texture images */
@@ -804,7 +1006,6 @@ static void mgaUpdateTextureObject( GLcontext *ctx, int unit ) {
 	if ( !tObj->DriverData ) {
 		/* clear the current pointer so that texture object can be
 		   swapped out if necessary to make room */
-		mmesa->CurrentTexObj[source] = NULL;
 		mgaCreateTexObj( mmesa, tObj );
 
 		if ( !tObj->DriverData ) {
@@ -815,9 +1016,8 @@ static void mgaUpdateTextureObject( GLcontext *ctx, int unit ) {
 	}
 
 	/* we definately have a valid texture now */
-	mmesa->Setup[MGA_CTXREG_DWGCTL] = 
-		(( mmesa->Setup[MGA_CTXREG_DWGCTL] & DC_opcod_MASK ) | 
-		 DC_opcod_texture_trap);
+	mmesa->Setup[MGA_CTXREG_DWGCTL] &= DC_opcod_MASK;
+	mmesa->Setup[MGA_CTXREG_DWGCTL] |= DC_opcod_texture_trap;
 
 	t = (mgaTextureObjectPtr)tObj->DriverData;
 
@@ -825,6 +1025,11 @@ static void mgaUpdateTextureObject( GLcontext *ctx, int unit ) {
 		mmesa->dirty |= (MGA_UPLOAD_TEX0IMAGE << unit);
 
 	mmesa->CurrentTexObj[unit] = t;
+	t->bound = unit+1;
+
+	if (t->MemBlock)
+		mgaUpdateTexLRU( mmesa, t );
+
 
 	t->Setup[MGA_TEXREG_CTL2] &= ~TMC_dualtex_enable;
 	if (ctx->Texture.Enabled == (TEXTURE0_2D|TEXTURE1_2D))
@@ -848,23 +1053,31 @@ void mgaUpdateTextureState( GLcontext *ctx )
 	mgaContextPtr mmesa = MGA_CONTEXT( ctx );
 	mmesa->Fallback &= ~MGA_FALLBACK_TEXTURE;
 
+	if (mmesa->CurrentTexObj[0]) mmesa->CurrentTexObj[0]->bound = 0;
+	if (mmesa->CurrentTexObj[1]) mmesa->CurrentTexObj[1]->bound = 0;
+	mmesa->CurrentTexObj[0] = 0;
+	mmesa->CurrentTexObj[1] = 0;   
+
 	if (MGA_IS_G400(mmesa)) {
 		mgaUpdateTextureObject( ctx, 0 );		
 		mgaUpdateTextureStage( ctx, 0 );
 
-		mmesa->Setup[MGA_CTXREG_TDUAL1] = mmesa->Setup[MGA_CTXREG_TDUAL0];
+		mmesa->Setup[MGA_CTXREG_TDUAL1] = 
+			mmesa->Setup[MGA_CTXREG_TDUAL0];
 
 		if (mmesa->multitex) {
 			mgaUpdateTextureObject( ctx, 1 );	
 			mgaUpdateTextureStage( ctx, 1 );
 		}
+		
+		mmesa->dirty |= MGA_UPLOAD_TEX0 | MGA_UPLOAD_TEX1;
 	} else {
 		mgaUpdateTextureObject( ctx, 0 );
-		mgaUpdateTextureEnvG200( ctx );
+		mgaUpdateTextureEnvG200( ctx );		
 	}
 
 	/* schedule the register writes */
-	mmesa->dirty |= MGA_UPLOAD_CTX;
+	mmesa->dirty |= MGA_UPLOAD_CTX | MGA_UPLOAD_TEX0;
 }
 
 
@@ -880,14 +1093,57 @@ Driver functions called directly from mesa
 /*
  * mgaTexEnv
  */      
-void mgaTexEnv( GLcontext *ctx, GLenum pname, const GLfloat *param ) {
+void mgaTexEnv( GLcontext *ctx, GLenum pname, const GLfloat *param ) 
+{
+	mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 	mgaMsg( 10, "mgaTexEnv( %i )\n", pname );
+
 
 	if (pname == GL_TEXTURE_ENV_MODE) {
 		/* force the texture state to be updated */
-		MGA_CONTEXT(ctx)->CurrentTexObj[0] = 0;  
+		FLUSH_BATCH( MGA_CONTEXT(ctx) );
 		MGA_CONTEXT(ctx)->new_state |= MGA_NEW_TEXTURE;
 	}
+	else if (pname == GL_TEXTURE_ENV_COLOR)
+	{
+		struct gl_texture_unit *texUnit = 
+			&ctx->Texture.Unit[ctx->Texture.CurrentUnit];
+		GLfloat *fc = texUnit->EnvColor;
+		GLubyte c[4];
+		GLuint col;
+
+		
+		c[0] = fc[0];
+		c[1] = fc[1];
+		c[2] = fc[2];
+		c[3] = fc[3];
+
+		/* No alpha at 16bpp?
+		 */
+		col = mgaPackColor( mmesa->mgaScreen->Attrib,
+				    c[0], c[1], c[2], c[3] );
+
+  		mmesa->envcolor = (c[3]<<24) | (c[0]<<16) | (c[1]<<8) | (c[2]); 
+    
+		if (mmesa->Setup[MGA_CTXREG_FCOL] != col) {
+			FLUSH_BATCH(mmesa);	
+			mmesa->Setup[MGA_CTXREG_FCOL] = col;      
+			mmesa->dirty |= MGA_UPLOAD_CTX;
+
+			mmesa->blend_flags &= ~MGA_BLEND_ENV_COLOR;
+
+			/* Actually just require all four components to be
+			 * equal.  This permits a single-pass GL_BLEND.
+			 * 
+			 * More complex multitexture/multipass fallbacks
+			 * for blend can be done later.
+			 */
+			if (mmesa->envcolor != 0x0 &&
+			    mmesa->envcolor != 0xffffffff)
+				mmesa->blend_flags |= MGA_BLEND_ENV_COLOR;
+		}
+	}
+
 }
 
 /*
@@ -907,6 +1163,7 @@ void mgaTexImage( GLcontext *ctx, GLenum target,
 	mgaUpdateTextureState time. */  
 	t = (mgaTextureObjectPtr) tObj->DriverData;
 	if ( t ) {
+		if (t->bound) FLUSH_BATCH(mmesa);
 		/* if this is the current object, it will force an update */
  	 	mgaDestroyTexObj( mmesa, t );
 		mmesa->new_state |= MGA_NEW_TEXTURE;
@@ -936,6 +1193,7 @@ void mgaTexSubImage( GLcontext *ctx, GLenum target,
 	mgaUpdateTextureState time. */  
 	t = (mgaTextureObjectPtr) tObj->DriverData;
 	if ( t ) {
+		if (t->bound) FLUSH_BATCH(mmesa);
 		/* if this is the current object, it will force an update */
  	 	mgaDestroyTexObj( mmesa, t );
 		mmesa->new_state |= MGA_NEW_TEXTURE;
@@ -956,7 +1214,9 @@ void mgaTexSubImage( GLcontext *ctx, GLenum target,
  */
 void mgaTexParameter( GLcontext *ctx, GLenum target,
 		      struct gl_texture_object *tObj,
-		      GLenum pname, const GLfloat *params ) {
+		      GLenum pname, const GLfloat *params )
+{
+	mgaContextPtr mmesa = MGA_CONTEXT( ctx );
 	mgaTextureObjectPtr t;
 
 	mgaMsg( 10, "mgaTexParameter( %p, %i )\n", tObj, pname );
@@ -973,52 +1233,68 @@ void mgaTexParameter( GLcontext *ctx, GLenum target,
 	switch (pname) {
 	case GL_TEXTURE_MIN_FILTER:
 	case GL_TEXTURE_MAG_FILTER:
+		if (t->bound) FLUSH_BATCH(mmesa);
 		mgaSetTexFilter( t, tObj->MinFilter, tObj->MagFilter );
 		break;
 
 	case GL_TEXTURE_WRAP_S:
 	case GL_TEXTURE_WRAP_T:
+		if (t->bound) FLUSH_BATCH(mmesa);
 		mgaSetTexWrapping(t,tObj->WrapS,tObj->WrapT);
 		break;
   
 	case GL_TEXTURE_BORDER_COLOR:
+		if (t->bound) FLUSH_BATCH(mmesa);
 		mgaSetTexBorderColor(t,tObj->BorderColor);
 		break;
 
 	default:
 		return;
 	}
-	/* force the texture state to be updated */
-	MGA_CONTEXT(ctx)->CurrentTexObj[0] = NULL;  
-	MGA_CONTEXT(ctx)->new_state |= MGA_NEW_TEXTURE;
+
+	mmesa->new_state |= MGA_NEW_TEXTURE;
 }
 
 /*
  * mgaBindTexture
  */      
 void mgaBindTexture( GLcontext *ctx, GLenum target,
-		     struct gl_texture_object *tObj ) {
+		     struct gl_texture_object *tObj ) 
+{
+	mgaContextPtr mmesa = MGA_CONTEXT( ctx );
 
 	mgaMsg( 10, "mgaBindTexture( %p )\n", tObj );
-		
+
+	FLUSH_BATCH(mmesa);
+
+	if (mmesa->CurrentTexObj[ctx->Texture.CurrentUnit]) {
+		mmesa->CurrentTexObj[ctx->Texture.CurrentUnit]->bound = 0;
+		mmesa->CurrentTexObj[ctx->Texture.CurrentUnit] = 0;  
+	}
+
 	/* force the texture state to be updated 
 	 */
-	MGA_CONTEXT(ctx)->CurrentTexObj[0] = NULL;  
 	MGA_CONTEXT(ctx)->new_state |= MGA_NEW_TEXTURE;
 }
 
 /*
  * mgaDeleteTexture
  */      
-void mgaDeleteTexture( GLcontext *ctx, struct gl_texture_object *tObj ) {
+void mgaDeleteTexture( GLcontext *ctx, struct gl_texture_object *tObj ) 
+{
+	mgaContextPtr mmesa = MGA_CONTEXT( ctx );
+	mgaTextureObjectPtr t = (mgaTextureObjectPtr)tObj->DriverData;
 
 	mgaMsg( 10, "mgaDeleteTexture( %p )\n", tObj );
 	
-	/* delete our driver data */
-	if ( tObj->DriverData ) {
-		mgaContextPtr mmesa = MGA_CONTEXT( ctx );
-		mgaDestroyTexObj( mmesa,
-				  (mgaTextureObjectPtr)(tObj->DriverData) );
+	if ( t ) {
+		if (t->bound) {
+			FLUSH_BATCH(mmesa);
+			mmesa->CurrentTexObj[t->bound-1] = 0;
+			mmesa->new_state |= MGA_NEW_TEXTURE;
+		}
+
+		mgaDestroyTexObj( mmesa, t );
 		mmesa->new_state |= MGA_NEW_TEXTURE;
 	}
 }

@@ -50,6 +50,9 @@
 #if defined(FX)
 
 #include "fxdrv.h"
+#include "image.h"
+#include "texutil.h"
+
 
 void fxPrintTextureData(tfxTexInfo *ti)
 {
@@ -63,17 +66,18 @@ void fxPrintTextureData(tfxTexInfo *ti)
   } else
     fprintf(stderr, "\tName: UNNAMED\n");
   fprintf(stderr, "\tLast used: %d\n", ti->lastTimeUsed);
-  fprintf(stderr, "\tTMU: %d\n", ti->whichTMU);
+  fprintf(stderr, "\tTMU: %ld\n", ti->whichTMU);
   fprintf(stderr, "\t%s\n", (ti->isInTM)?"In TMU":"Not in TMU");
   if (ti->tm[0]) 
-    fprintf(stderr, "\tMem0: %x-%x\n", ti->tm[0]->startAddr, 
-	    ti->tm[0]->endAddr);
+    fprintf(stderr, "\tMem0: %x-%x\n", (unsigned) ti->tm[0]->startAddr, 
+	    (unsigned) ti->tm[0]->endAddr);
   if (ti->tm[1]) 
-    fprintf(stderr, "\tMem1: %x-%x\n", ti->tm[1]->startAddr, 
-	    ti->tm[1]->endAddr);
+    fprintf(stderr, "\tMem1: %x-%x\n", (unsigned) ti->tm[1]->startAddr, 
+	    (unsigned) ti->tm[1]->endAddr);
   fprintf(stderr, "\tMipmaps: %d-%d\n", ti->minLevel, ti->maxLevel);
-  fprintf(stderr, "\tFilters: min %d min %d\n", ti->minFilt, ti->maxFilt);
-  fprintf(stderr, "\tClamps: s %d t %d\n", ti->sClamp, ti->tClamp);
+  fprintf(stderr, "\tFilters: min %d min %d\n",
+          (int) ti->minFilt, (int) ti->maxFilt);
+  fprintf(stderr, "\tClamps: s %d t %d\n", (int) ti->sClamp, (int) ti->tClamp);
   fprintf(stderr, "\tScales: s %f t %f\n", ti->sScale, ti->tScale);
   fprintf(stderr, "\tInt Scales: s %d t %d\n", 
 	  ti->int_sScale/0x800000, ti->int_tScale/0x800000);
@@ -86,14 +90,14 @@ void fxPrintTextureData(tfxTexInfo *ti)
 /*************************** Texture Mapping ****************************/
 /************************************************************************/
 
-void fxTexInvalidate(GLcontext *ctx, struct gl_texture_object *tObj)
+static void fxTexInvalidate(GLcontext *ctx, struct gl_texture_object *tObj)
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
   tfxTexInfo *ti;
 
-  fxTMMoveOutTM(fxMesa,tObj); /* TO DO: SLOW but easy to write */
-
   ti=fxTMGetTexInfo(tObj);
+  if (ti->isInTM)   fxTMMoveOutTM(fxMesa,tObj); /* TO DO: SLOW but easy to write */
+
   ti->validated=GL_FALSE;
   fxMesa->new_state|=FX_NEW_TEXTURING;
   ctx->Driver.RenderStart = fxSetupFXUnits;
@@ -128,7 +132,6 @@ static tfxTexInfo *fxAllocTexObjData(fxMesaContext fxMesa)
   ti->LODblend=FXFALSE;
 
   for(i=0;i<MAX_TEXTURE_LEVELS;i++) {
-    ti->mipmapLevel[i].used=GL_FALSE;
     ti->mipmapLevel[i].data=NULL;
   }
 
@@ -160,7 +163,7 @@ void fxDDTexBind(GLcontext *ctx, GLenum target, struct gl_texture_object *tObj)
   ctx->Driver.RenderStart = fxSetupFXUnits;
 }
 
-void fxDDTexEnv(GLcontext *ctx, GLenum pname, const GLfloat *param)
+void fxDDTexEnv(GLcontext *ctx, GLenum target, GLenum pname, const GLfloat *param)
 {
   fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
 
@@ -169,6 +172,16 @@ void fxDDTexEnv(GLcontext *ctx, GLenum pname, const GLfloat *param)
 	 fprintf(stderr,"fxmesa: texenv(%x,%x)\n",pname,(GLint)(*param));
       else
 	 fprintf(stderr,"fxmesa: texenv(%x)\n",pname);
+   }
+
+   /* apply any lod biasing right now */
+   if (pname==GL_TEXTURE_LOD_BIAS_EXT) {
+     FX_grTexLodBiasValue(GR_TMU0,*param);
+
+     if(fxMesa->haveTwoTMUs) {
+       FX_grTexLodBiasValue(GR_TMU1,*param);
+     }
+
    }
 
    fxMesa->new_state|=FX_NEW_TEXTURING;
@@ -312,123 +325,153 @@ void fxDDTexParam(GLcontext *ctx, GLenum target, struct gl_texture_object *tObj,
 
 void fxDDTexDel(GLcontext *ctx, struct gl_texture_object *tObj)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxTexInfo *ti=fxTMGetTexInfo(tObj);
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
+  tfxTexInfo *ti = fxTMGetTexInfo(tObj);
 
-  if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,"fxmesa: fxDDTexDel(%d,%x)\n",tObj->Name,(GLuint)ti);
+  if (MESA_VERBOSE & VERBOSE_DRIVER) {
+     fprintf(stderr, "fxmesa: fxDDTexDel(%d,%p)\n", tObj->Name, ti);
   }
 
-  if(!ti)
+  if (!ti)
     return;
 
-  fxTMFreeTexture(fxMesa,tObj);
+  fxTMFreeTexture(fxMesa, tObj);
 
   FREE(ti);
-  tObj->DriverData=NULL;
+  tObj->DriverData = NULL;
 
-  ctx->NewState|=NEW_TEXTURING;
+  ctx->NewState |= NEW_TEXTURING;
 }
+
+
+
+/*
+ * Convert a gl_color_table texture palette to Glide's format.
+ */
+static void
+convertPalette(FxU32 data[256], const struct gl_color_table *table)
+{
+  const GLubyte *tableUB = (const GLubyte *) table->Table;
+  GLint width = table->Size;
+  FxU32 r, g, b, a;
+  GLint i;
+
+  ASSERT(table->TableType == GL_UNSIGNED_BYTE);
+
+  switch (table->Format) {
+    case GL_INTENSITY:
+      for (i = 0; i < width; i++) {
+        r = tableUB[i];
+        g = tableUB[i];
+        b = tableUB[i];
+        a = tableUB[i];
+        data[i] = (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      break;
+    case GL_LUMINANCE:
+      for (i = 0; i < width; i++) {
+        r = tableUB[i];
+        g = tableUB[i];
+        b = tableUB[i];
+        a = 255;
+        data[i] = (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      break;
+    case GL_ALPHA:
+      for (i = 0; i < width; i++) {
+        r = g = b = 255;
+        a = tableUB[i];
+        data[i] = (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      break;
+    case GL_LUMINANCE_ALPHA:
+      for (i = 0; i < width; i++) {
+        r = g = b = tableUB[i*2+0];
+        a = tableUB[i*2+1];
+        data[i] = (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      break;
+    case GL_RGB:
+      for (i = 0; i < width; i++) {
+        r = tableUB[i*3+0];
+        g = tableUB[i*3+1];
+        b = tableUB[i*3+2];
+        a = 255;
+        data[i] = (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      break;
+    case GL_RGBA:
+      for (i = 0; i < width; i++) {
+        r = tableUB[i*4+0];
+        g = tableUB[i*4+1];
+        b = tableUB[i*4+2];
+        a = tableUB[i*4+3];
+        data[i] = (a << 24) | (r << 16) | (g << 8) | b;
+      }
+      break;
+  }
+}
+
 
 void fxDDTexPalette(GLcontext *ctx, struct gl_texture_object *tObj)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  int i;
-  FxU32 r,g,b,a;
-  tfxTexInfo *ti;
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
 
-  if(tObj) {  
-     if (MESA_VERBOSE&VERBOSE_DRIVER) {
-	fprintf(stderr,"fxmesa: fxDDTexPalette(%d,%x)\n",tObj->Name,(GLuint)tObj->DriverData);
-     }
-
-    if(tObj->Palette.Format!=GL_RGBA) {
-#ifndef FX_SILENT
-      fprintf(stderr,"fx Driver: unsupported palette format in texpalette()\n");
-#endif
-      return;
+  if (tObj) {
+    /* per-texture palette */
+    tfxTexInfo *ti;
+    if (MESA_VERBOSE & VERBOSE_DRIVER) {
+      fprintf(stderr, "fxmesa: fxDDTexPalette(%d,%x)\n",
+              tObj->Name, (GLuint) tObj->DriverData);
     }
-
-    if(tObj->Palette.Size>256) {
-#ifndef FX_SILENT
-      fprintf(stderr,"fx Driver: unsupported palette size in texpalette()\n");
-#endif
-      return;
-    }
-
     if (!tObj->DriverData)
-      tObj->DriverData=fxAllocTexObjData(fxMesa);
-  
-    ti=fxTMGetTexInfo(tObj);
-
-    for(i=0;i<tObj->Palette.Size;i++) {
-      r=tObj->Palette.Table[i*4];
-      g=tObj->Palette.Table[i*4+1];
-      b=tObj->Palette.Table[i*4+2];
-      a=tObj->Palette.Table[i*4+3];
-      ti->palette.data[i]=(a<<24)|(r<<16)|(g<<8)|b;
+      tObj->DriverData = fxAllocTexObjData(fxMesa);
+    ti = fxTMGetTexInfo(tObj);
+    convertPalette(ti->palette.data, &tObj->Palette);
+    fxTexInvalidate(ctx, tObj);
+  }
+  else {
+    /* global texture palette */
+    if (MESA_VERBOSE & VERBOSE_DRIVER) {
+      fprintf(stderr, "fxmesa: fxDDTexPalette(global)\n");
     }
-
-    fxTexInvalidate(ctx,tObj);
-  } else {
-     if (MESA_VERBOSE&VERBOSE_DRIVER) {
-	fprintf(stderr,"fxmesa: fxDDTexPalette(global)\n");
-     }
-    if(ctx->Texture.Palette.Format!=GL_RGBA) {
-#ifndef FX_SILENT
-      fprintf(stderr,"fx Driver: unsupported palette format in texpalette()\n");
-#endif
-      return;
-    }
-
-    if(ctx->Texture.Palette.Size>256) {
-#ifndef FX_SILENT
-      fprintf(stderr,"fx Driver: unsupported palette size in texpalette()\n");
-#endif
-      return;
-    }
-
-    for(i=0;i<ctx->Texture.Palette.Size;i++) {
-      r=ctx->Texture.Palette.Table[i*4];
-      g=ctx->Texture.Palette.Table[i*4+1];
-      b=ctx->Texture.Palette.Table[i*4+2];
-      a=ctx->Texture.Palette.Table[i*4+3];
-      fxMesa->glbPalette.data[i]=(a<<24)|(r<<16)|(g<<8)|b;
-    }
-
-    fxMesa->new_state|=FX_NEW_TEXTURING;
+    convertPalette(fxMesa->glbPalette.data, &ctx->Texture.Palette);
+    fxMesa->new_state |= FX_NEW_TEXTURING;
     ctx->Driver.RenderStart = fxSetupFXUnits;
   }
 }
 
+
 void fxDDTexUseGlbPalette(GLcontext *ctx, GLboolean state)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
+  fxMesaContext fxMesa = FX_CONTEXT(ctx);
 
   if (MESA_VERBOSE&VERBOSE_DRIVER) {
      fprintf(stderr,"fxmesa: fxDDTexUseGlbPalette(%d)\n",state);
   }
 
-  if(state) {
-    fxMesa->haveGlobalPaletteTexture=1;
+  if (state) {
+    fxMesa->haveGlobalPaletteTexture = 1;
 
-    FX_grTexDownloadTable(GR_TMU0,GR_TEXTABLE_PALETTE,&(fxMesa->glbPalette));
+    FX_grTexDownloadTable(GR_TMU0,GR_TEXTABLE_PALETTE, &(fxMesa->glbPalette));
     if (fxMesa->haveTwoTMUs)
-       FX_grTexDownloadTable(GR_TMU1,GR_TEXTABLE_PALETTE,&(fxMesa->glbPalette));
-  } else {
-    fxMesa->haveGlobalPaletteTexture=0;
+       FX_grTexDownloadTable(GR_TMU1, GR_TEXTABLE_PALETTE, &(fxMesa->glbPalette));
+  }
+  else {
+    fxMesa->haveGlobalPaletteTexture = 0;
 
-    if((ctx->Texture.Unit[0].Current==ctx->Texture.Unit[0].CurrentD[2]) &&
-       (ctx->Texture.Unit[0].Current!=NULL)) {
-      struct gl_texture_object *tObj=ctx->Texture.Unit[0].Current;
+    if ((ctx->Texture.Unit[0].Current == ctx->Texture.Unit[0].CurrentD[2]) &&
+        (ctx->Texture.Unit[0].Current != NULL)) {
+      struct gl_texture_object *tObj = ctx->Texture.Unit[0].Current;
 
       if (!tObj->DriverData)
-        tObj->DriverData=fxAllocTexObjData(fxMesa);
+        tObj->DriverData = fxAllocTexObjData(fxMesa);
   
-      fxTexInvalidate(ctx,tObj);
+      fxTexInvalidate(ctx, tObj);
     }
   }
 }
+
 
 static int logbase2(int n)
 {
@@ -453,209 +496,68 @@ static int logbase2(int n)
 
 /* Need different versions for different cpus.
  */
-#define INT_TRICK(l2) (0x800000 * l2)
-
-
-int fxTexGetInfo(int w, int h, GrLOD_t *lodlevel, GrAspectRatio_t *ar,
+#define INT_TRICK(l2) (0x800000 * (l2))
+int fxTexGetInfo(int w, int h, GrLOD_t *lodlevel, 
+		 GrAspectRatio_t *aspectratio,
                  float *sscale, float *tscale,
                  int *i_sscale, int *i_tscale,
                  int *wscale, int *hscale)
 {
-
-  static GrLOD_t lod[9]={GR_LOD_256,GR_LOD_128,GR_LOD_64,GR_LOD_32,
-                         GR_LOD_16,GR_LOD_8,GR_LOD_4,GR_LOD_2,GR_LOD_1};
-
-  int logw,logh,ws,hs;
-  GrLOD_t l;
-  GrAspectRatio_t aspectratio;
-  float s,t;
-  int is,it;
+  int logw, logh, ar, l, is, it, ws, hs;
+  float s, t;
 
   logw=logbase2(w);
   logh=logbase2(h);
-
-  switch(logw-logh) {
-  case 0:
-    aspectratio=GR_ASPECT_1x1;
-    l=lod[8-logw];
-    s=t=256.0f;
-    is=it=INT_TRICK(8);
-    ws=hs=1;
-    break;
-  case 1:
-    aspectratio=GR_ASPECT_2x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=128.0f;
-    is=INT_TRICK(8);it=INT_TRICK(7);
+  ar=logw-logh;
+  /* Hardware only allows a maximum aspect ratio of 8x1, so handle
+     |ar|>3 by scaling the image and using an 8x1 aspect ratio */
+  if (ar>=0) {
+    l=logw;
+    s=256.0;
+    is=INT_TRICK(8);
     ws=1;
+    if (ar<3) {
+      t=256>>ar;
+      it=INT_TRICK(8-ar);
+      hs=1;
+    } else {
+      t=32.0;
+      it=INT_TRICK(5);
+      hs=1<<(ar-3);
+    }
+  } else {
+    l=logh;
+    t=256.0;
+    it=INT_TRICK(8);
     hs=1;
-    break;
-  case 2:
-    aspectratio=GR_ASPECT_4x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=64.0f;
-    is=INT_TRICK(8);it=INT_TRICK(6);
-    ws=1;
-    hs=1;
-    break;
-  case 3:
-    aspectratio=GR_ASPECT_8x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=32.0f;
-    is=INT_TRICK(8);it=INT_TRICK(5);
-    ws=1;
-    hs=1;
-    break;
-  case 4:
-    aspectratio=GR_ASPECT_8x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=32.0f;
-    is=INT_TRICK(8);it=INT_TRICK(5);
-    ws=1;
-    hs=2;
-    break;
-  case 5:
-    aspectratio=GR_ASPECT_8x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=32.0f;
-    is=INT_TRICK(8);it=INT_TRICK(5);
-    ws=1;
-    hs=4;
-    break;
-  case 6:
-    aspectratio=GR_ASPECT_8x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=32.0f;
-    is=INT_TRICK(8);it=INT_TRICK(5);
-    ws=1;
-    hs=8;
-    break;
-  case 7:
-    aspectratio=GR_ASPECT_8x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=32.0f;
-    is=INT_TRICK(8);it=INT_TRICK(5);
-    ws=1;
-    hs=16;
-    break;
-  case 8:
-    aspectratio=GR_ASPECT_8x1;
-    l=lod[8-logw];
-    s=256.0f;
-    t=32.0f;
-    is=INT_TRICK(8);it=INT_TRICK(5);
-    ws=1;
-    hs=32;
-    break;
-  case -1:
-    aspectratio=GR_ASPECT_1x2;
-    l=lod[8-logh];
-    s=128.0f;
-    t=256.0f;
-    is=INT_TRICK(7);it=INT_TRICK(8);
-    ws=1;
-    hs=1;
-    break;
-  case -2:
-    aspectratio=GR_ASPECT_1x4;
-    l=lod[8-logh];
-    s=64.0f;
-    t=256.0f;
-    is=INT_TRICK(6);it=INT_TRICK(8);
-    ws=1;
-    hs=1;
-    break;
-  case -3:
-    aspectratio=GR_ASPECT_1x8;
-    l=lod[8-logh];
-    s=32.0f;
-    t=256.0f;
-    is=INT_TRICK(5);it=INT_TRICK(8);
-    ws=1;
-    hs=1;
-    break;
-  case -4:
-    aspectratio=GR_ASPECT_1x8;
-    l=lod[8-logh];
-    s=32.0f;
-    t=256.0f;
-    is=INT_TRICK(5);it=INT_TRICK(8);
-    ws=2;
-    hs=1;
-    break;
-  case -5:
-    aspectratio=GR_ASPECT_1x8;
-    l=lod[8-logh];
-    s=32.0f;
-    t=256.0f;
-    is=INT_TRICK(5);it=INT_TRICK(8);
-    ws=4;
-    hs=1;
-    break;
-  case -6:
-    aspectratio=GR_ASPECT_1x8;
-    l=lod[8-logh];
-    s=32.0f;
-    t=256.0f;
-    is=INT_TRICK(5);it=INT_TRICK(8);
-    ws=8;
-    hs=1;
-    break;
-  case -7:
-    aspectratio=GR_ASPECT_1x8;
-    l=lod[8-logh];
-    s=32.0f;
-    t=256.0f;
-    is=INT_TRICK(5);it=INT_TRICK(8);
-    ws=16;
-    hs=1;
-    break;
-  case -8:
-    aspectratio=GR_ASPECT_1x8;
-    l=lod[8-logh];
-    s=32.0f;
-    t=256.0f;
-    is=INT_TRICK(5);it=INT_TRICK(8);
-    ws=32;
-    hs=1;
-    break;
-  default:
-    return 0;
-    break;
+    if (-ar<3) {
+      s=256>>-ar;
+      is=INT_TRICK(8+ar);
+      ws=1;
+    } else {
+      s=32.0;
+      is=INT_TRICK(5);
+      ws=1<<(-ar-3);
+    }
   }
+  if (ar<-3) ar=-3;
+  if (ar>3) ar=3;
 
-  if(lodlevel)
-    (*lodlevel)=l;
-
-  if(ar)
-    (*ar)=aspectratio;
-
-  if(sscale)
-    (*sscale)=s;
-
-  if(tscale)
-    (*tscale)=t;
-
-  if(wscale)
-    (*wscale)=ws;
-
-  if(hscale)
-    (*hscale)=hs;
-
-  if (i_sscale)
-     *i_sscale = is;
-
-  if (i_tscale)
-     *i_tscale = it;
-
-
+  /* The above numbers are calculated sensibly and work for Glide3, but
+     we change them to the whacky glide2 values if needed. */
+#ifdef FX_GLIDE3
+  if (lodlevel) *lodlevel=l;
+  if (aspectratio) *aspectratio=ar;
+#else
+  if (lodlevel) *lodlevel=8-l;
+  if (aspectratio) *aspectratio=3-ar;
+#endif
+  if (sscale) *sscale=s;
+  if (tscale) *tscale=t;
+  if (wscale) *wscale=ws;
+  if (hscale) *hscale=hs;
+  if (i_sscale) *i_sscale = is;
+  if (i_tscale) *i_tscale = it;
   return 1;
 }
 
@@ -666,752 +568,506 @@ int fxTexGetInfo(int w, int h, GrLOD_t *lodlevel, GrAspectRatio_t *ar,
 void fxTexGetFormat(GLenum glformat, GrTextureFormat_t *tfmt, GLint *ifmt)
 {
   switch(glformat) {
-  case 1:
-  case GL_LUMINANCE:
-  case GL_LUMINANCE4:
-  case GL_LUMINANCE8:
-  case GL_LUMINANCE12:
-  case GL_LUMINANCE16:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_INTENSITY_8;
-    if(ifmt)
-      (*ifmt)=GL_LUMINANCE;
-    break;
-  case 2:
-  case GL_LUMINANCE_ALPHA:
-  case GL_LUMINANCE4_ALPHA4:
-  case GL_LUMINANCE6_ALPHA2:
-  case GL_LUMINANCE8_ALPHA8:
-  case GL_LUMINANCE12_ALPHA4:
-  case GL_LUMINANCE12_ALPHA12:
-  case GL_LUMINANCE16_ALPHA16:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_ALPHA_INTENSITY_88;
-    if(ifmt)
-      (*ifmt)=GL_LUMINANCE_ALPHA;
-    break;
-  case GL_INTENSITY:
-  case GL_INTENSITY4:
-  case GL_INTENSITY8:
-  case GL_INTENSITY12:
-  case GL_INTENSITY16:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_ALPHA_8;
-    if(ifmt)
-      (*ifmt)=GL_INTENSITY;
-    break;
-  case GL_ALPHA:
-  case GL_ALPHA4:
-  case GL_ALPHA8:
-  case GL_ALPHA12:
-  case GL_ALPHA16:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_ALPHA_8;
-    if(ifmt)
-      (*ifmt)=GL_ALPHA;
-    break;
-  case 3:
-  case GL_RGB:
-  case GL_R3_G3_B2:
-  case GL_RGB4:
-  case GL_RGB5:
-  case GL_RGB8:
-  case GL_RGB10:
-  case GL_RGB12:
-  case GL_RGB16:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_RGB_565;
-    if(ifmt)
-      (*ifmt)=GL_RGB;
-    break;
-  case 4:
-  case GL_RGBA:
-  case GL_RGBA2:
-  case GL_RGBA4:
-  case GL_RGBA8:
-  case GL_RGB10_A2:
-  case GL_RGBA12:
-  case GL_RGBA16:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_ARGB_4444;
-    if(ifmt)
-      (*ifmt)=GL_RGBA;
-    break;
-  case GL_RGB5_A1:
-     if(tfmt)
-       (*tfmt)=GR_TEXFMT_ARGB_1555;
-     if(ifmt)
-       (*ifmt)=GL_RGBA;
-     break;
-  case GL_COLOR_INDEX:
-  case GL_COLOR_INDEX1_EXT:
-  case GL_COLOR_INDEX2_EXT:
-  case GL_COLOR_INDEX4_EXT:
-  case GL_COLOR_INDEX8_EXT:
-  case GL_COLOR_INDEX12_EXT:
-  case GL_COLOR_INDEX16_EXT:
-    if(tfmt)
-      (*tfmt)=GR_TEXFMT_P_8;
-    if(ifmt)
-      (*ifmt)=GL_RGBA;
-    break;
-  default:
-    fprintf(stderr,"fx Driver: unsupported internalFormat in fxTexGetFormat()\n");
-    fxCloseHardware();
-    exit(-1);
-    break;
+    case 1:
+    case GL_LUMINANCE:
+    case GL_LUMINANCE4:
+    case GL_LUMINANCE8:
+    case GL_LUMINANCE12:
+    case GL_LUMINANCE16:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_INTENSITY_8;
+      if(ifmt)
+        (*ifmt)=GL_LUMINANCE;
+      break;
+    case 2:
+    case GL_LUMINANCE_ALPHA:
+    case GL_LUMINANCE4_ALPHA4:
+    case GL_LUMINANCE6_ALPHA2:
+    case GL_LUMINANCE8_ALPHA8:
+    case GL_LUMINANCE12_ALPHA4:
+    case GL_LUMINANCE12_ALPHA12:
+    case GL_LUMINANCE16_ALPHA16:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_ALPHA_INTENSITY_88;
+      if(ifmt)
+        (*ifmt)=GL_LUMINANCE_ALPHA;
+      break;
+    case GL_INTENSITY:
+    case GL_INTENSITY4:
+    case GL_INTENSITY8:
+    case GL_INTENSITY12:
+    case GL_INTENSITY16:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_ALPHA_8;
+      if(ifmt)
+        (*ifmt)=GL_INTENSITY;
+      break;
+    case GL_ALPHA:
+    case GL_ALPHA4:
+    case GL_ALPHA8:
+    case GL_ALPHA12:
+    case GL_ALPHA16:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_ALPHA_8;
+      if(ifmt)
+        (*ifmt)=GL_ALPHA;
+      break;
+    case 3:
+    case GL_RGB:
+    case GL_R3_G3_B2:
+    case GL_RGB4:
+    case GL_RGB5:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_RGB_565;
+      if(ifmt)
+        (*ifmt)=GL_RGB;
+      break;
+    case GL_RGB8:
+    case GL_RGB10:
+    case GL_RGB12:
+    case GL_RGB16:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_ARGB_8888;
+      if(ifmt)
+        (*ifmt)=GL_RGB;
+      break;
+    case 4:
+    case GL_RGBA:
+    case GL_RGBA2:
+    case GL_RGBA4:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_ARGB_4444;
+      if(ifmt)
+        (*ifmt)=GL_RGBA;
+      break;
+    case GL_RGBA8:
+    case GL_RGB10_A2:
+    case GL_RGBA12:
+    case GL_RGBA16:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_ARGB_8888;
+      if(ifmt)
+        (*ifmt)=GL_RGBA;
+      break;
+    case GL_RGB5_A1:
+       if(tfmt)
+         (*tfmt)=GR_TEXFMT_ARGB_1555;
+       if(ifmt)
+         (*ifmt)=GL_RGBA;
+       break;
+    case GL_COLOR_INDEX:
+    case GL_COLOR_INDEX1_EXT:
+    case GL_COLOR_INDEX2_EXT:
+    case GL_COLOR_INDEX4_EXT:
+    case GL_COLOR_INDEX8_EXT:
+    case GL_COLOR_INDEX12_EXT:
+    case GL_COLOR_INDEX16_EXT:
+      if(tfmt)
+        (*tfmt)=GR_TEXFMT_P_8;
+      if(ifmt)
+        (*ifmt)=GL_RGBA;   /* XXX why is this RGBA? */
+      break;
+    default:
+      fprintf(stderr,
+              "fx Driver: unsupported internalFormat in fxTexGetFormat()\n");
+      fxCloseHardware();
+      exit(-1);
+      break;
   }
 }
 
-static int fxIsTexSupported(GLenum target, GLint internalFormat,
-                            const struct gl_texture_image *image)
+static GLboolean fxIsTexSupported(GLenum target, GLint internalFormat,
+                                  const struct gl_texture_image *image)
 {
-  if(target!=GL_TEXTURE_2D)
-    return GL_FALSE;
-
-  switch(internalFormat) {
-  case GL_INTENSITY:
-  case GL_INTENSITY4:
-  case GL_INTENSITY8:
-  case GL_INTENSITY12:
-  case GL_INTENSITY16:
-  case 1:
-  case GL_LUMINANCE:
-  case GL_LUMINANCE4:
-  case GL_LUMINANCE8:
-  case GL_LUMINANCE12:
-  case GL_LUMINANCE16:
-  case 2:
-  case GL_LUMINANCE_ALPHA:
-  case GL_LUMINANCE4_ALPHA4:
-  case GL_LUMINANCE6_ALPHA2:
-  case GL_LUMINANCE8_ALPHA8:
-  case GL_LUMINANCE12_ALPHA4:
-  case GL_LUMINANCE12_ALPHA12:
-  case GL_LUMINANCE16_ALPHA16:
-  case GL_ALPHA:
-  case GL_ALPHA4:
-  case GL_ALPHA8:
-  case GL_ALPHA12:
-  case GL_ALPHA16:
-  case 3:
-  case GL_RGB:
-  case GL_R3_G3_B2:
-  case GL_RGB4:
-  case GL_RGB5:
-  case GL_RGB8:
-  case GL_RGB10:
-  case GL_RGB12:
-  case GL_RGB16:
-  case 4:
-  case GL_RGBA:
-  case GL_RGBA2:
-  case GL_RGBA4:
-  case GL_RGB5_A1:
-  case GL_RGBA8:
-  case GL_RGB10_A2:
-  case GL_RGBA12:
-  case GL_RGBA16:
-  case GL_COLOR_INDEX:
-  case GL_COLOR_INDEX1_EXT:
-  case GL_COLOR_INDEX2_EXT:
-  case GL_COLOR_INDEX4_EXT:
-  case GL_COLOR_INDEX8_EXT:
-  case GL_COLOR_INDEX12_EXT:
-  case GL_COLOR_INDEX16_EXT:
-    break;
-  default:
-    return GL_FALSE;
-  }
-
-  if(image->Width>256)
-    return GL_FALSE;
-
-  if(image->Height>256)
+  if(target != GL_TEXTURE_2D)
     return GL_FALSE;
 
   if(!fxTexGetInfo(image->Width,image->Height,NULL,NULL,NULL,NULL,NULL,NULL,
 		   NULL,NULL))
     return GL_FALSE;
 
+  if (image->Border > 0)
+    return GL_FALSE;
+
   return GL_TRUE;
 }
 
-static void fxTexBuildImageMap(const struct gl_texture_image *image,
-                               GLint internalFormat, unsigned short **dest,
-                               GLboolean *istranslate)
+
+/**********************************************************************/
+/**** NEW TEXTURE IMAGE FUNCTIONS                                  ****/
+/**********************************************************************/
+
+GLboolean fxDDTexImage2D(GLcontext *ctx, GLenum target, GLint level,
+                         GLenum format, GLenum type, const GLvoid *pixels,
+                         const struct gl_pixelstore_attrib *packing,
+                         struct gl_texture_object *texObj,
+                         struct gl_texture_image *texImage,
+                         GLboolean *retainInternalCopy)
 {
-  unsigned short *src;
-  unsigned char *data;
-  int x,y,w,h,wscale,hscale,idx;
+  fxMesaContext fxMesa = (fxMesaContext)ctx->DriverCtx;
 
-  fxTexGetInfo(image->Width,image->Height,NULL,NULL,NULL,NULL,NULL,NULL,
-	       &wscale,&hscale);
-  w=image->Width*wscale;
-  h=image->Height*hscale;
+  if (target != GL_TEXTURE_2D)
+    return GL_FALSE;
 
-  data=image->Data;
-  switch(internalFormat) {
-  case GL_INTENSITY:
-  case GL_INTENSITY4:
-  case GL_INTENSITY8:
-  case GL_INTENSITY12:
-  case GL_INTENSITY16:
-  case 1:
-  case GL_LUMINANCE:
-  case GL_LUMINANCE4:
-  case GL_LUMINANCE8:
-  case GL_LUMINANCE12:
-  case GL_LUMINANCE16:
-  case GL_ALPHA:
-  case GL_ALPHA4:
-  case GL_ALPHA8:
-  case GL_ALPHA12:
-  case GL_ALPHA16:
-  case GL_COLOR_INDEX:
-  case GL_COLOR_INDEX1_EXT:
-  case GL_COLOR_INDEX2_EXT:
-  case GL_COLOR_INDEX4_EXT:
-  case GL_COLOR_INDEX8_EXT:
-  case GL_COLOR_INDEX12_EXT:
-  case GL_COLOR_INDEX16_EXT:
-    /* Optimized for GLQuake */
+  if (!texObj->DriverData)
+    texObj->DriverData = fxAllocTexObjData(fxMesa);
 
-    if(wscale==hscale==1) {
-      (*istranslate)=GL_FALSE;
-
-      (*dest)=(unsigned short *)data;
-    } else {
-      unsigned char *srcb;
-
-      (*istranslate)=GL_TRUE;
-
-      if(!(*dest)) {
-        if(!((*dest)=src=(unsigned short *)MALLOC(sizeof(unsigned char)*w*h))) {
-          fprintf(stderr,"fx Driver: out of memory !\n");
-          fxCloseHardware();
-          exit(-1);
-        }
-      } else
-        src=(*dest);
-
-      srcb=(unsigned char *)src;
-
-      for(y=0;y<h;y++)
-        for(x=0;x<w;x++) {
-          idx=(x/wscale+(y/hscale)*(w/wscale));
-          srcb[x+y*w]=data[idx];
-        }
-    }
-    break;
-  case 2:
-  case GL_LUMINANCE_ALPHA:
-  case GL_LUMINANCE4_ALPHA4:
-  case GL_LUMINANCE6_ALPHA2:
-  case GL_LUMINANCE8_ALPHA8:
-  case GL_LUMINANCE12_ALPHA4:
-  case GL_LUMINANCE12_ALPHA12:
-  case GL_LUMINANCE16_ALPHA16:
-    (*istranslate)=GL_TRUE;
-
-    if(!(*dest)) {
-      if(!((*dest)=src=(unsigned short *)MALLOC(sizeof(unsigned short)*w*h))) {
-        fprintf(stderr,"fx Driver: out of memory !\n");
-        fxCloseHardware();
-        exit(-1);
-      }
-    } else
-      src=(*dest);
-
-    if(wscale==hscale==1) {
-      int i=0;
-      int lenght=h*w;
-      unsigned short a,l;
-
-      while(i++<lenght) {
-        l=*data++;
-        a=*data++;
-
-        *src++=(a << 8) | l;
-      }
-    } else {
-      unsigned short a,l;
-
-      for(y=0;y<h;y++)
-        for(x=0;x<w;x++) {
-          idx=(x/wscale+(y/hscale)*(w/wscale))*2;
-          l=data[idx];
-          a=data[idx+1];
-
-          src[x+y*w]=(a << 8) | l;
-        }
-    }
-    break;
-  case 3:
-  case GL_RGB:
-  case GL_R3_G3_B2:
-  case GL_RGB4:
-  case GL_RGB5:
-  case GL_RGB8:
-  case GL_RGB10:
-  case GL_RGB12:
-  case GL_RGB16:
-    (*istranslate)=GL_TRUE;
-
-    if(!(*dest)) {
-      if(!((*dest)=src=(unsigned short *)MALLOC(sizeof(unsigned short)*w*h))) {
-        fprintf(stderr,"fx Driver: out of memory !\n");
-        fxCloseHardware();
-        exit(-1);
-      }
-    } else
-      src=(*dest);
-
-    if(wscale==hscale==1) {
-      int i=0;
-      int lenght=h*w;
-      unsigned int r,g,b;
-
-      while(i++<lenght) {
-        r=*data++;
-        g=*data++;
-        b=*data++;
-
-        *src++=((0xf8 & r) << (11-3))  |
-          ((0xfc & g) << (5-3+1))      |
-          ((0xf8 & b) >> 3); 
-      }
-    } else {
-      unsigned int r,g,b;
-
-      for(y=0;y<h;y++)
-        for(x=0;x<w;x++) {
-          idx=(x/wscale+(y/hscale)*(w/wscale))*3;
-          r=data[idx];
-          g=data[idx+1];
-          b=data[idx+2];
-
-          src[x+y*w]=((0xf8 & r) << (11-3))  |
-            ((0xfc & g) << (5-3+1))      |
-            ((0xf8 & b) >> 3); 
-        }
-    }
-    break;
-  case 4:
-  case GL_RGBA:
-  case GL_RGBA2:
-  case GL_RGBA4:
-  case GL_RGBA8:
-  case GL_RGB10_A2:
-  case GL_RGBA12:
-  case GL_RGBA16:
-    (*istranslate)=GL_TRUE;
-
-    if(!(*dest)) {
-      if(!((*dest)=src=(unsigned short *)MALLOC(sizeof(unsigned short)*w*h))) {
-        fprintf(stderr,"fx Driver: out of memory !\n");
-        fxCloseHardware();
-        exit(-1);
-      }
-    } else
-      src=(*dest);
-
-    if(wscale==hscale==1) {
-      int i=0;
-      int lenght=h*w;
-      unsigned int r,g,b,a;
-
-      while(i++<lenght) {
-        r=*data++;
-        g=*data++;
-        b=*data++;
-        a=*data++;
-
-        *src++=((0xf0 & a) << 8) |
-          ((0xf0 & r) << 4)      |
-          (0xf0 & g)             |
-          ((0xf0 & b) >> 4);
-      }
-    } else {
-      unsigned int r,g,b,a;
-
-      for(y=0;y<h;y++)
-        for(x=0;x<w;x++) {
-          idx=(x/wscale+(y/hscale)*(w/wscale))*4;
-          r=data[idx];
-          g=data[idx+1];
-          b=data[idx+2];
-          a=data[idx+3];
-
-          src[x+y*w]=((0xf0 & a) << 8) |
-            ((0xf0 & r) << 4)      |
-            (0xf0 & g)             |
-            ((0xf0 & b) >> 4);
-        }
-    }
-    break;
-  case GL_RGB5_A1:
-    (*istranslate)=GL_TRUE;
-
-    if(!(*dest)) {
-      if(!((*dest)=src=(unsigned short *)malloc(sizeof(unsigned short)*w*h))) {
-        fprintf(stderr,"fx Driver: out of memory !\n");
-        fxCloseHardware();
-        exit(-1);
-      }
-    } else
-      src=(*dest);
-
-    if(wscale==hscale==1) {
-      int i=0;
-      int lenght=h*w;
-      unsigned  r,g,b,a;
-
-      while(i++<lenght) {
-        r=*data++;
-        g=*data++;
-        b=*data++;
-        a=*data++;
-        *src++=((0x80 & a) << 8) |
-          ((0xf8 & r) << 7)      |
-          ((0xf8 & g) << 2)      |
-          ((0xf8 & b) >> 3);
-      }
-    } else {
-      unsigned r,g,b,a;
-
-      for(y=0;y<h;y++)
-        for(x=0;x<w;x++) {
-          idx=(x/wscale+(y/hscale)*(w/wscale))*4;
-          r=data[idx];
-          g=data[idx+1];
-          b=data[idx+2];
-          a=data[idx+3];
-
-          src[x+y*w]=((0x80 & a) << 8) |
-          ((0xf8 & r) << 7)      |
-          ((0xf8 & g) << 2)      |
-          ((0xf8 & b) >> 3);
-        }
-    }
-    break;
-  default:
-    fprintf(stderr,"fx Driver: wrong internalFormat in texbuildimagemap()\n");
-    fxCloseHardware();
-    exit(-1);
-    break;
-  }
-}
-
-void fxDDTexImg(GLcontext *ctx, GLenum target,
-                struct gl_texture_object *tObj, GLint level, GLint internalFormat,
-                const struct gl_texture_image *image)
-{
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
-  tfxTexInfo *ti;
-
-  if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,
-	     "fxmesa: (%d) fxDDTexImg(...,level=%d,target=%d,format=%x,width=%d,height=%d...)\n",
-	     tObj->Name, level, target, internalFormat, image->Width,
-	     image->Height);
-  }
-
-  if(target!=GL_TEXTURE_2D)
-    return;
-
-  if (!tObj->DriverData)
-    tObj->DriverData=fxAllocTexObjData(fxMesa);
-
-  ti=fxTMGetTexInfo(tObj);
-
-  if(fxIsTexSupported(target,internalFormat,image)) {
+  if (fxIsTexSupported(target, texImage->IntFormat, texImage)) {
     GrTextureFormat_t gldformat;
-    tfxMipMapLevel *mml=&ti->mipmapLevel[level];
+    tfxTexInfo *ti = fxTMGetTexInfo(texObj);
+    tfxMipMapLevel *mml = &ti->mipmapLevel[level];
+    GLint dstWidth, dstHeight, wScale, hScale, texelSize, dstStride;
+    MesaIntTexFormat intFormat;
 
-    fxTexGetFormat(internalFormat,&gldformat,NULL);
+    fxTexGetFormat(texImage->IntFormat, &gldformat, NULL);
+
+    fxTexGetInfo(texImage->Width, texImage->Height, NULL,NULL,NULL,NULL,
+                 NULL,NULL, &wScale, &hScale);
     
-    if(mml->used) {
-      if((mml->glideFormat==gldformat) &&
-         (mml->width==image->Width) &&
-         (mml->height==image->Height)) {
-        fxTexBuildImageMap(image,internalFormat,&(mml->data),
-                           &(mml->translated));
+    dstWidth = texImage->Width * wScale;
+    dstHeight = texImage->Height * hScale;
 
-        if(ti->validated && ti->isInTM)
-          fxTMReloadMipMapLevel(fxMesa,tObj,level);
-        else
-          fxTexInvalidate(ctx,tObj);
-
-        return;
-      } else {
-        if(mml->translated)
-          FREE(mml->data);
-        mml->data=NULL;
-      }
+    switch (texImage->IntFormat) {
+      case GL_INTENSITY:
+      case GL_INTENSITY4:
+      case GL_INTENSITY8:
+      case GL_INTENSITY12:
+      case GL_INTENSITY16:
+        texelSize = 1;
+        intFormat = MESA_I8;
+        break;
+      case 1:
+      case GL_LUMINANCE:
+      case GL_LUMINANCE4:
+      case GL_LUMINANCE8:
+      case GL_LUMINANCE12:
+      case GL_LUMINANCE16:
+        texelSize = 1;
+        intFormat = MESA_L8;
+        break;
+      case GL_ALPHA:
+      case GL_ALPHA4:
+      case GL_ALPHA8:
+      case GL_ALPHA12:
+      case GL_ALPHA16:
+        texelSize = 1;
+        intFormat = MESA_A8;
+        break;
+      case GL_COLOR_INDEX:
+      case GL_COLOR_INDEX1_EXT:
+      case GL_COLOR_INDEX2_EXT:
+      case GL_COLOR_INDEX4_EXT:
+      case GL_COLOR_INDEX8_EXT:
+      case GL_COLOR_INDEX12_EXT:
+      case GL_COLOR_INDEX16_EXT:
+        texelSize = 1;
+        intFormat = MESA_C8;
+        break;
+      case 2:
+      case GL_LUMINANCE_ALPHA:
+      case GL_LUMINANCE4_ALPHA4:
+      case GL_LUMINANCE6_ALPHA2:
+      case GL_LUMINANCE8_ALPHA8:
+      case GL_LUMINANCE12_ALPHA4:
+      case GL_LUMINANCE12_ALPHA12:
+      case GL_LUMINANCE16_ALPHA16:
+        texelSize = 2;
+        intFormat = MESA_A8_L8;
+        break;
+      case 3:
+      case GL_RGB:
+      case GL_R3_G3_B2:
+      case GL_RGB4:
+      case GL_RGB5:
+        texelSize = 2;
+        intFormat = MESA_R5_G6_B5;
+        break;
+      case GL_RGB8:
+      case GL_RGB10:
+      case GL_RGB12:
+      case GL_RGB16:
+        texelSize = 4;
+        intFormat = MESA_A8_R8_G8_B8;
+        break;
+      case 4:
+      case GL_RGBA:
+      case GL_RGBA2:
+      case GL_RGBA4:
+        texelSize = 2;
+        intFormat = MESA_A4_R4_G4_B4;
+        break;
+      case GL_RGBA8:
+      case GL_RGB10_A2:
+      case GL_RGBA12:
+      case GL_RGBA16:
+        texelSize = 4;
+        intFormat = MESA_A8_R8_G8_B8;
+        break;
+      case GL_RGB5_A1:
+        texelSize = 2;
+        intFormat = MESA_A1_R5_G5_B5;
+        break;
+      default:
+        gl_problem(NULL, "tdfx driver: texbuildimagemap() bad format");
+        return GL_FALSE;
     }
 
-    mml->glideFormat=gldformat;
-    mml->width=image->Width;
-    mml->height=image->Height;
-    mml->used=GL_TRUE;
+    _mesa_set_teximage_component_sizes(intFormat, texImage);
 
-    fxTexBuildImageMap(image,internalFormat,&(mml->data),
-                       &(mml->translated));
+    /*printf("teximage:\n");*/
+    /* allocate new storage for texture image, if needed */
+    if (!mml->data || mml->glideFormat != gldformat ||
+        mml->width != dstWidth || mml->height != dstHeight) {
+      if (mml->data)
+        FREE(mml->data);
+      mml->data = MALLOC(dstWidth * dstHeight * texelSize);
+      if (!mml->data)
+        return GL_FALSE;
+      mml->texelSize = texelSize;
+      mml->glideFormat = gldformat;
+      mml->width = dstWidth;
+      mml->height = dstHeight;
+      fxTexInvalidate(ctx, texObj);
+    }
 
-    fxTexInvalidate(ctx,tObj);
+    dstStride = dstWidth * texelSize;
+
+    /* store the texture image */
+    if (!_mesa_convert_teximage(intFormat, dstWidth, dstHeight, mml->data,
+                                dstStride,
+                                texImage->Width, texImage->Height,
+                                format, type, pixels, packing)) {
+      return GL_FALSE;
+    }
+    
+    if (ti->validated && ti->isInTM) {
+      /*printf("reloadmipmaplevels\n");*/
+      fxTMReloadMipMapLevel(fxMesa, texObj, level);
+    }
+    else {
+      /*printf("invalidate2\n");*/
+      fxTexInvalidate(ctx,texObj);
+    }
+
+    *retainInternalCopy = GL_FALSE;
+    return GL_TRUE;
   }
-#ifndef FX_SILENT
-  else
-    fprintf(stderr,"fx Driver: unsupported texture in fxDDTexImg()\n");
-#endif
-}
-
-static void fxTexBuildSubImageMap(const struct gl_texture_image *image,
-                                  GLint internalFormat,
-                                  GLint xoffset, GLint yoffset, GLint width, GLint height,
-                                  unsigned short *destimg)
-{
-  fxTexGetInfo(image->Width,image->Height,NULL,NULL,NULL,NULL,NULL,NULL,
-	       NULL,NULL);
-
-  switch(internalFormat) {
-  case GL_INTENSITY:
-  case GL_INTENSITY4:
-  case GL_INTENSITY8:
-  case GL_INTENSITY12:
-  case GL_INTENSITY16:
-  case 1:
-  case GL_LUMINANCE:
-  case GL_LUMINANCE4:
-  case GL_LUMINANCE8:
-  case GL_LUMINANCE12:
-  case GL_LUMINANCE16:
-  case GL_ALPHA:
-  case GL_ALPHA4:
-  case GL_ALPHA8:
-  case GL_ALPHA12:
-  case GL_ALPHA16:
-  case GL_COLOR_INDEX:
-  case GL_COLOR_INDEX1_EXT:
-  case GL_COLOR_INDEX2_EXT:
-  case GL_COLOR_INDEX4_EXT:
-  case GL_COLOR_INDEX8_EXT:
-  case GL_COLOR_INDEX12_EXT:
-  case GL_COLOR_INDEX16_EXT:
-    {
-
-      int y;
-      unsigned char *bsrc,*bdst;
-
-      bsrc=(unsigned char *)(image->Data+(yoffset*image->Width+xoffset));
-      bdst=((unsigned char *)destimg)+(yoffset*image->Width+xoffset);
-    
-      for(y=0;y<height;y++) {
-        MEMCPY(bdst,bsrc,width);
-        bsrc += image->Width;
-        bdst += image->Width;
-      }
-    }
-    break;
-  case 2:
-  case GL_LUMINANCE_ALPHA:
-  case GL_LUMINANCE4_ALPHA4:
-  case GL_LUMINANCE6_ALPHA2:
-  case GL_LUMINANCE8_ALPHA8:
-  case GL_LUMINANCE12_ALPHA4:
-  case GL_LUMINANCE12_ALPHA12:
-  case GL_LUMINANCE16_ALPHA16:
-    {
-      int x,y;
-      unsigned char *src;
-      unsigned short *dst,a,l;
-      int simgw,dimgw;
-
-      src=(unsigned char *)(image->Data+(yoffset*image->Width+xoffset)*2);
-      dst=destimg+(yoffset*image->Width+xoffset);
-    
-      simgw=(image->Width-width)*2;
-      dimgw=image->Width-width;
-      for(y=0;y<height;y++) {
-        for(x=0;x<width;x++) {
-          l=*src++;
-          a=*src++;
-          *dst++=(a << 8) | l;
-        }
-
-        src += simgw;
-        dst += dimgw;
-      }
-    }
-    break;
-  case 3:
-  case GL_RGB:
-  case GL_R3_G3_B2:
-  case GL_RGB4:
-  case GL_RGB5:
-  case GL_RGB8:
-  case GL_RGB10:
-  case GL_RGB12:
-  case GL_RGB16:
-    {
-      int x,y;
-      unsigned char *src;
-      unsigned short *dst,r,g,b;
-      int simgw,dimgw;
-
-      src=(unsigned char *)(image->Data+(yoffset*image->Width+xoffset)*3);
-      dst=destimg+(yoffset*image->Width+xoffset);
-    
-      simgw=(image->Width-width)*3;
-      dimgw=image->Width-width;
-      for(y=0;y<height;y++) {
-        for(x=0;x<width;x++) {
-          r=*src++;
-          g=*src++;
-          b=*src++;
-          *dst++=((0xf8 & r) << (11-3))  |
-            ((0xfc & g) << (5-3+1))      |
-            ((0xf8 & b) >> 3); 
-        }
-
-        src += simgw;
-        dst += dimgw;
-      }
-    }
-    break;
-  case 4:
-  case GL_RGBA:
-  case GL_RGBA2:
-  case GL_RGBA4:
-  case GL_RGBA8:
-  case GL_RGB10_A2:
-  case GL_RGBA12:
-  case GL_RGBA16:
-    {
-      int x,y;
-      unsigned char *src;
-      unsigned short *dst,r,g,b,a;
-      int simgw,dimgw;
-
-      src=(unsigned char *)(image->Data+(yoffset*image->Width+xoffset)*4);
-      dst=destimg+(yoffset*image->Width+xoffset);
-    
-      simgw=(image->Width-width)*4;
-      dimgw=image->Width-width;
-      for(y=0;y<height;y++) {
-        for(x=0;x<width;x++) {
-          r=*src++;
-          g=*src++;
-          b=*src++;
-          a=*src++;
-          *dst++=((0xf0 & a) << 8) |
-            ((0xf0 & r) << 4)      |
-            (0xf0 & g)             |
-            ((0xf0 & b) >> 4);
-        }
-
-        src += simgw;
-        dst += dimgw;
-      }
-    }
-    break;
-  case GL_RGB5_A1:
-    {
-      int x,y;
-      unsigned char *src;
-      unsigned short *dst,r,g,b,a;
-      int simgw,dimgw;
-
-      src=(unsigned char *)(image->Data+(yoffset*image->Width+xoffset)*4);
-      dst=destimg+(yoffset*image->Width+xoffset);
-    
-      simgw=(image->Width-width)*4;
-      dimgw=image->Width-width;
-      for(y=0;y<height;y++) {
-        for(x=0;x<width;x++) {
-          r=*src++;
-          g=*src++;
-          b=*src++;
-          a=*src++;
-          *dst++=
-          ((0x80 & a) << 8) |
-          ((0xf8 & r) << 7)      |
-          ((0xf8 & g) << 2)      |
-          ((0xf8 & b) >> 3);
-        }
-
-        src += simgw;
-        dst += dimgw;
-      }
-    }
-    break; 
-  default:
-    fprintf(stderr,"fx Driver: wrong internalFormat in fxTexBuildSubImageMap()\n");
-    fxCloseHardware();
-    exit(-1);
-    break;
+  else {
+    gl_problem(NULL, "fx Driver: unsupported texture in fxDDTexImg()\n");
+    return GL_FALSE;
   }
 }
- 
 
-void fxDDTexSubImg(GLcontext *ctx, GLenum target,
-                   struct gl_texture_object *tObj, GLint level,
-                   GLint xoffset, GLint yoffset, GLint width, GLint height,
-                   GLint internalFormat, const struct gl_texture_image *image)
+
+GLboolean fxDDTexSubImage2D(GLcontext *ctx, GLenum target, GLint level,
+                            GLint xoffset, GLint yoffset,
+                            GLsizei width, GLsizei height,
+                            GLenum format, GLenum type, const GLvoid *pixels,
+                            const struct gl_pixelstore_attrib *packing,
+                            struct gl_texture_object *texObj,
+                            struct gl_texture_image *texImage)
 {
-  fxMesaContext fxMesa=(fxMesaContext)ctx->DriverCtx;
+  fxMesaContext fxMesa = (fxMesaContext) ctx->DriverCtx;
   tfxTexInfo *ti;
-  GrTextureFormat_t gldformat;
-  int wscale,hscale;
+  GLint wscale, hscale, dstStride;
+  tfxMipMapLevel *mml;
+  GLboolean result;
+
+  if (target != GL_TEXTURE_2D)
+    return GL_FALSE;
+
+  if (!texObj->DriverData)
+    return GL_FALSE;
+
+  ti = fxTMGetTexInfo(texObj);
+  mml = &ti->mipmapLevel[level];
+
+  fxTexGetInfo( texImage->Width, texImage->Height, NULL,NULL,NULL,NULL,
+                NULL,NULL, &wscale, &hscale);
+
+  assert(mml->data);  /* must have an existing texture image! */
+
+  switch (mml->glideFormat) {
+    case GR_TEXFMT_INTENSITY_8:
+      dstStride = mml->width;
+      result = _mesa_convert_texsubimage(MESA_I8, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_ALPHA_8:
+      dstStride = mml->width;
+      result = _mesa_convert_texsubimage(MESA_A8, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_P_8:
+      dstStride = mml->width;
+      result = _mesa_convert_texsubimage(MESA_C8, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_ALPHA_INTENSITY_88:
+      dstStride = mml->width * 2;
+      result = _mesa_convert_texsubimage(MESA_A8_L8, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_RGB_565:
+      dstStride = mml->width * 2;
+      result = _mesa_convert_texsubimage(MESA_R5_G6_B5, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_ARGB_4444:
+      dstStride = mml->width * 2;
+      result = _mesa_convert_texsubimage(MESA_A4_R4_G4_B4, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_ARGB_8888:
+      dstStride = mml->width * 4;
+      result = _mesa_convert_texsubimage(MESA_A8_R8_G8_B8, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    case GR_TEXFMT_ARGB_1555:
+      dstStride = mml->width * 2;
+      result = _mesa_convert_texsubimage(MESA_A1_R5_G5_B5, xoffset, yoffset,
+                                         mml->width, mml->height, mml->data,
+                                         dstStride, width, height,
+                                         texImage->Width, texImage->Height,
+                                         format, type, pixels, packing);
+      break;
+    default:
+      gl_problem(NULL, "tdfx driver: fxTexBuildSubImageMap() bad format");
+      result = GL_FALSE;
+  }
+
+  if (!result) {
+    return GL_FALSE;
+  }
+
+  if (ti->validated && ti->isInTM)
+    fxTMReloadSubMipMapLevel(fxMesa, texObj, level, yoffset, height);
+  else
+    fxTexInvalidate(ctx, texObj);
+
+  return GL_TRUE;
+}
+
+
+static void PrintTexture(int w, int h, int c, const GLubyte *data)
+{
+  int i, j;
+  for (i = 0; i < h; i++) {
+    for (j = 0; j < w; j++) {
+      if (c==2)
+        printf("%02x %02x  ", data[0], data[1]);
+      else if (c==3)
+        printf("%02x %02x %02x  ", data[0], data[1], data[2]);
+      data += c;
+    }
+    printf("\n");
+  }
+}
+
+
+GLvoid *fxDDGetTexImage(GLcontext *ctx, GLenum target, GLint level,
+                        const struct gl_texture_object *texObj,
+                        GLenum *formatOut, GLenum *typeOut,
+                        GLboolean *freeImageOut )
+{
+  tfxTexInfo *ti;
   tfxMipMapLevel *mml;
 
-  if (MESA_VERBOSE&VERBOSE_DRIVER) {
-     fprintf(stderr,
-	     "fxmesa: (%d) fxDDTexSubImg(level=%d,target=%d,format=%x,width=%d,height=%d)\n",
-	     tObj->Name, level, target, internalFormat, image->Width,
-	     image->Height);
+  if (target != GL_TEXTURE_2D)
+    return NULL;
+
+  if (!texObj->DriverData)
+    return NULL;
+
+  ti = fxTMGetTexInfo(texObj);
+  mml = &ti->mipmapLevel[level];
+  if (mml->data) {
+    MesaIntTexFormat mesaFormat;
+    GLenum glFormat;
+    struct gl_texture_image *texImage = texObj->Image[level];
+    GLint srcStride;
+
+    GLubyte *data = (GLubyte *) MALLOC(texImage->Width * texImage->Height * 4);
+    if (!data)
+      return NULL;
+
+    switch (mml->glideFormat) {
+      case GR_TEXFMT_INTENSITY_8:
+        mesaFormat = MESA_I8;
+        glFormat = GL_INTENSITY;
+        srcStride = mml->width;
+        break;
+      case GR_TEXFMT_ALPHA_INTENSITY_88:
+        mesaFormat = MESA_A8_L8;
+        glFormat = GL_LUMINANCE_ALPHA;
+        srcStride = mml->width;
+        break;
+      case GR_TEXFMT_ALPHA_8:
+        mesaFormat = MESA_A8;
+        glFormat = GL_ALPHA;
+        srcStride = mml->width;
+        break;
+      case GR_TEXFMT_RGB_565:
+        mesaFormat = MESA_R5_G6_B5;
+        glFormat = GL_RGB;
+        srcStride = mml->width * 2;
+        break;
+      case GR_TEXFMT_ARGB_8888:
+        mesaFormat = MESA_A8_R8_G8_B8;
+        glFormat = GL_RGBA;
+        srcStride = mml->width * 4;
+        break;
+      case GR_TEXFMT_ARGB_4444:
+        mesaFormat = MESA_A4_R4_G4_B4;
+        glFormat = GL_RGBA;
+        srcStride = mml->width * 2;
+        break;
+      case GR_TEXFMT_ARGB_1555:
+        mesaFormat = MESA_A1_R5_G5_B5;
+        glFormat = GL_RGBA;
+        srcStride = mml->width * 2;
+        break;
+      case GR_TEXFMT_P_8:
+        mesaFormat = MESA_C8;
+        glFormat = GL_COLOR_INDEX;
+        srcStride = mml->width;
+        break;
+      default:
+        gl_problem(NULL, "Bad glideFormat in fxDDGetTexImage");
+        return NULL;
+    }
+    _mesa_unconvert_teximage(mesaFormat, mml->width, mml->height, mml->data,
+                             srcStride, texImage->Width, texImage->Height,
+                             glFormat, data);
+    *formatOut = glFormat;
+    *typeOut = GL_UNSIGNED_BYTE;
+    *freeImageOut = GL_TRUE;
+    return data;
   }
-
-  if(target!=GL_TEXTURE_2D)
-    return;
-
-  if (!tObj->DriverData)
-    return;
-
-  ti=fxTMGetTexInfo(tObj);
-  mml=&ti->mipmapLevel[level];
-
-  fxTexGetFormat(internalFormat,&gldformat,NULL);
-
-  if(mml->glideFormat!=gldformat) {
-     if (MESA_VERBOSE&VERBOSE_DRIVER) {
-	fprintf(stderr,"fxmesa:  ti->info.format!=format in fxDDTexSubImg()\n");
-     }
-    fxDDTexImg(ctx,target,tObj,level,internalFormat,image);
-
-    return;
+  else {
+    return NULL;
   }
-
-  fxTexGetInfo(image->Width,image->Height,NULL,NULL,NULL,NULL,NULL,NULL,&wscale,&hscale);
-
-  if((wscale!=1) || (hscale!=1)) {
-     if (MESA_VERBOSE&VERBOSE_DRIVER) {
-	fprintf(stderr,"fxmesa:  (wscale!=1) || (hscale!=1) in fxDDTexSubImg()\n");
-     }
-    fxDDTexImg(ctx,target,tObj,level,internalFormat,image);
-
-    return;
-  }
-
-  if(mml->translated)
-    fxTexBuildSubImageMap(image,internalFormat,xoffset,yoffset,
-                          width,height,mml->data);
-
-  if(ti->validated && ti->isInTM)
-    fxTMReloadSubMipMapLevel(fxMesa,tObj,level,yoffset,height);
-  else
-    fxTexInvalidate(ctx,tObj);
 }
 
 

@@ -30,6 +30,13 @@
 #include "types.h"
 
 
+extern void
+_mesa_init_no_op_table(struct _glapi_table *exec, GLuint tableSize);
+
+extern void
+_mesa_init_exec_table(struct _glapi_table *exec, GLuint tableSize);
+
+
 extern void gl_update_state( GLcontext *ctx );
 
 

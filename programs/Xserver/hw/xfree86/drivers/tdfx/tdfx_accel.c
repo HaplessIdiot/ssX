@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.9 2000/03/02 16:07:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_accel.c,v 1.10 2000/03/18 17:05:11 dawes Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -79,15 +79,20 @@ void
 TDFXNeedSync(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX = TDFXPTR(pScrn);
   pTDFX->syncDone=FALSE;
+  pTDFX->AccelInfoRec->NeedToSync = TRUE;
 }
 
-static void
+void
 TDFXFirstSync(ScrnInfoPtr pScrn) {
   TDFXPtr pTDFX = TDFXPTR(pScrn);
 
   if (!pTDFX->syncDone) {
-    pTDFX->sync(pScrn);
+    if (pTDFX->directRenderingEnabled) {
+      DRILock(screenInfo.screens[pScrn->scrnIndex], 0);
+      TDFXSwapContextPrivate(screenInfo.screens[pScrn->scrnIndex]);
+    }
     pTDFX->syncDone=TRUE;
+    pTDFX->sync(pScrn);
   }
 }
 
@@ -98,12 +103,15 @@ TDFXCheckSync(ScrnInfoPtr pScrn) {
   if (pTDFX->syncDone) {
     pTDFX->sync(pScrn);
     pTDFX->syncDone=FALSE;
+    if (pTDFX->directRenderingEnabled) {
+      TDFXLostContext(screenInfo.screens[pScrn->scrnIndex]);
+      DRIUnlock(screenInfo.screens[pScrn->scrnIndex]);
+    }
   }
 }
 
 void
 TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
-#ifdef XF86DRI
   int fmt;
 
   TDFXMakeRoom(pTDFX, 4);
@@ -118,14 +126,20 @@ TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
     TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
     break;
   case TDFX_BACK:
-    fmt=((pTDFX->stride+127)/128)|(3<<16); /* Tiled 16bpp */
+    if (pTDFX->cpp==2)
+      fmt=((pTDFX->stride+127)/128)|(3<<16); /* Tiled 16bpp */
+    else
+      fmt=((pTDFX->stride+127)/128)|(5<<16); /* Tiled 32bpp */
     TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->backOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
     TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->backOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, fmt);
     break;
   case TDFX_DEPTH:
-    fmt=((pTDFX->stride+127)/128)|(3<<16); /* Tiled 16bpp */
+    if (pTDFX->cpp==2)
+      fmt=((pTDFX->stride+127)/128)|(3<<16); /* Tiled 16bpp */
+    else
+      fmt=((pTDFX->stride+127)/128)|(5<<16); /* Tiled 32bpp */
     TDFXWriteLong(pTDFX, SST_2D_DSTBASEADDR, pTDFX->depthOffset|BIT(31));
     TDFXWriteLong(pTDFX, SST_2D_DSTFORMAT, fmt);
     TDFXWriteLong(pTDFX, SST_2D_SRCBASEADDR, pTDFX->depthOffset|BIT(31));
@@ -134,14 +148,27 @@ TDFXSelectBuffer(TDFXPtr pTDFX, int which) {
   default:
     ;
   }
-#endif  
 }
 
 void
 TDFXSetLFBConfig(TDFXPtr pTDFX) {
-  TDFXWriteLongMMIO(pTDFX, LFBMEMORYCONFIG, (pTDFX->backOffset>>12) |
-		    SST_RAW_LFB_ADDR_STRIDE_4K | 
-		    ((pTDFX->stride+127)/128)<<SST_RAW_LFB_TILE_STRIDE_SHIFT);
+  if (pTDFX->ChipType<=PCI_CHIP_VOODOO3) {
+    TDFXWriteLongMMIO(pTDFX, LFBMEMORYCONFIG, (pTDFX->backOffset>>12) |
+		      SST_RAW_LFB_ADDR_STRIDE_4K | 
+		      ((pTDFX->stride+127)/128)<<SST_RAW_LFB_TILE_STRIDE_SHIFT);
+  } else {
+    int chip;
+    int stride, bits;
+    if (pTDFX->cpp==2) stride=pTDFX->stride;
+    else stride=4*pTDFX->stride/pTDFX->cpp;
+    bits=pTDFX->backOffset>>12;
+    for (chip=0; chip<pTDFX->numChips; chip++) {
+      TDFXWriteChipLongMMIO(pTDFX, chip, LFBMEMORYCONFIG, (bits&0x1FFF) |
+			    SST_RAW_LFB_ADDR_STRIDE_4K | 
+			    ((bits&0x6000)<<10) |
+			    ((stride+127)/128)<<SST_RAW_LFB_TILE_STRIDE_SHIFT);
+    }
+  }
 }
 
 Bool
@@ -266,8 +293,11 @@ static void TDFXMakeRoomNoProp(TDFXPtr pTDFX, int size) {
   }
 }
 
-static void TDFXSendNOPNoProp(TDFXPtr pTDFX)
+static void TDFXSendNOPNoProp(ScrnInfoPtr pScrn)
 {
+  TDFXPtr pTDFX;
+
+  pTDFX=TDFXPTR(pScrn);
   TDFXMakeRoomNoProp(pTDFX, 1);
   TDFXWriteLongMMIO(pTDFX, SST_2D_COMMAND, SST_2D_NOP);
 }  
@@ -281,7 +311,7 @@ void TDFXSync(ScrnInfoPtr pScrn)
   TDFXTRACEACCEL("TDFXSync\n");
   pTDFX=TDFXPTR(pScrn);
 
-  TDFXSendNOPNoProp(pTDFX);
+  TDFXSendNOPNoProp(pScrn);
   i=0;
   do {
     stat=TDFXReadLongMMIO(pTDFX, 0);
@@ -323,10 +353,15 @@ TDFXMatchState(TDFXPtr pTDFX)
 }
 
 static void
-TDFXClearState(TDFXPtr pTDFX)
+TDFXClearState(ScrnInfoPtr pScrn)
 {
+  TDFXPtr pTDFX;
+
+  pTDFX=TDFXPTR(pScrn);
   pTDFX->Cmd=0;
   pTDFX->DrawState&=~DRAW_STATE_TRANSPARENT;
+  /* Make sure we've done a sync */
+  TDFXFirstSync(pScrn);
 }
 
 static void
@@ -367,8 +402,7 @@ TDFXSetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir, int ydir, int rop,
 		 "rop=%d planemask=%d trans_color=%d\n", 
 		 xdir, ydir, rop, planemask, trans_color);
   pTDFX=TDFXPTR(pScrn);
-  TDFXFirstSync(pScrn);
-  TDFXClearState(pTDFX);
+  TDFXClearState(pScrn);
 
   if (trans_color!=-1) {
     TDFXMakeRoom(pTDFX, 3);
@@ -411,7 +445,7 @@ TDFXSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int srcX, int srcY,
   }
   if ((srcY>=dstY-32 && srcY<=dstY)||
       (srcY>=pTDFX->prevBlitDest.y1-32 && srcY<=pTDFX->prevBlitDest.y1)) {
-    TDFXSendNOP(pTDFX);
+    TDFXSendNOP(pScrn);
   }
   pTDFX->sync(pScrn);
 
@@ -435,8 +469,7 @@ TDFXSetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
   TDFXTRACEACCEL("TDFXSetupForSolidFill color=%d rop=%d planemask=%d\n",
                  color, rop, planemask);
   pTDFX=TDFXPTR(pScrn);
-  TDFXClearState(pTDFX);
-  TDFXFirstSync(pScrn);
+  TDFXClearState(pScrn);
 
   pTDFX->Cmd=TDFXROPCvt[rop]<<24;
   if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
@@ -480,8 +513,7 @@ TDFXSetupForMono8x8PatternFill(ScrnInfoPtr pScrn, int patx, int paty,
                  " bg=%d rop=%d planemask=%d\n", patx, paty, fg, bg, rop,
 		 planemask);
   pTDFX=TDFXPTR(pScrn);
-  TDFXClearState(pTDFX);
-  TDFXFirstSync(pScrn);
+  TDFXClearState(pScrn);
 
   pTDFX->Cmd = (TDFXROPCvt[rop+ROP_PATTERN_OFFSET]<<24) |
     SST_2D_MONOCHROME_PATTERN;
@@ -526,8 +558,7 @@ TDFXSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop,
 
   TDFXTRACEACCEL("TDFXSetupForSolidLine\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXClearState(pTDFX);
-  TDFXFirstSync(pScrn);
+  TDFXClearState(pScrn);
 
   pTDFX->Cmd = (TDFXROPCvt[rop]<<24);
 
@@ -592,8 +623,7 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 
   TDFXTRACEACCEL("TDFXNonTEGlyphRenderer\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXFirstSync(pScrn);
-  TDFXClearState(pTDFX);
+  TDFXClearState(pScrn);
   /* Don't bother fixing clip1, we're going to change it anyway */
   pTDFX->DrawState&=~DRAW_STATE_CLIP1CHANGED;
   TDFXMatchState(pTDFX);
@@ -609,8 +639,8 @@ TDFXNonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 	  SSTCP_SRCXY|SSTCP_COLORFORE|SSTCP_COMMAND);
   TDFXWriteLong(pTDFX, SST_2D_CLIP1MIN, ((pbox->y1&0x1FFF)<<16) |
 		(pbox->x1&0x1FFF));
-  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, (((pbox->y2+1)&0x1FFF)<<16) |
-		((pbox->x2+1)&0x1FFF));
+  TDFXWriteLong(pTDFX, SST_2D_CLIP1MAX, ((pbox->y2&0x1FFF)<<16) |
+		(pbox->x2&0x1FFF));
   TDFXWriteLong(pTDFX, SST_2D_SRCFORMAT, SST_2D_PIXFMT_1BPP |
 		SST_2D_SOURCE_PACKING_DWORD);
   TDFXWriteLong(pTDFX, SST_2D_SRCXY, 0);
@@ -658,8 +688,7 @@ TDFXSetupForDashedLine(ScrnInfoPtr pScrn, int fg, int bg, int rop,
 
   TDFXTRACEACCEL("TDFXSetupForDashedLine\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXClearState(pTDFX);
-  TDFXFirstSync(pScrn);
+  TDFXClearState(pScrn);
 
   pTDFX->Cmd = (TDFXROPCvt[rop]<<24) | SST_2D_STIPPLE_LINE;
   if(bg == -1) {
@@ -702,8 +731,7 @@ TDFXSetupForScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
 
   TDFXTRACEACCEL("TDFXSetupForScreenToScreenColorExpandFill\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXClearState(pTDFX);
-  TDFXFirstSync(pScrn);
+  TDFXClearState(pScrn);
   
   TDFXMatchState(pTDFX);
   pTDFX->Cmd|=SST_2D_SCRNTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
@@ -737,7 +765,7 @@ TDFXSubsequentScreenToScreenColorExpandFill(ScrnInfoPtr pScrn, int x, int y,
   pTDFX->DrawState|=DRAW_STATE_CLIP1CHANGED;
 
   if (srcy>=pTDFX->prevBlitDest.y1-8 && srcy<=pTDFX->prevBlitDest.y1) {
-    TDFXSendNOP(pTDFX);
+    TDFXSendNOP(pScrn);
   }
 
   if (pTDFX->cpp==1) fmt=(1<<16)|pTDFX->stride; 
@@ -768,8 +796,7 @@ TDFXSetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int fg, int bg,
   TDFXTRACEACCEL("SetupForCPUToScreenColorExpandFill bg=%x fg=%x rop=%d\n",
                  bg, fg, rop);
   pTDFX=TDFXPTR(pScrn);
-  TDFXClearState(pTDFX);
-  TDFXFirstSync(pScrn);
+  TDFXClearState(pScrn);
 
   pTDFX->Cmd|=SST_2D_HOSTTOSCRNBLIT|(TDFXROPCvt[rop]<<24);
   

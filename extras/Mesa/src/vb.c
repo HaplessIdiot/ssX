@@ -271,7 +271,11 @@ struct immediate *gl_immediate_alloc( GLcontext *ctx )
    IM->Start = VB_START;	
    IM->Material = 0;
    IM->MaterialMask = 0;
-
+#ifdef VMS
+   for (j=0; j<VB_SIZE ; j++ )
+     IM->Normal[j][0] = IM->Normal[j][1] = IM->Normal[j][2] = 0.0;
+#endif
+   
    if (MESA_VERBOSE&VERBOSE_IMMEDIATE)
       fprintf(stderr, "alloc immediate %d\n", id);
 

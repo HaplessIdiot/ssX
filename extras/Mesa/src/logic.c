@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -68,6 +68,9 @@ _mesa_LogicOp( GLenum opcode )
          gl_error( ctx, GL_INVALID_ENUM, "glLogicOp" );
 	 return;
    }
+   
+   if (ctx->Driver.LogicOpcode)
+      ctx->Driver.LogicOpcode( ctx, opcode );
 }
 
 
@@ -200,8 +203,9 @@ static void index_logicop( GLcontext *ctx, GLuint n,
  * Apply the current logic operator to a span of CI pixels.  This is only
  * used if the device driver can't do logic ops.
  */
-void gl_logicop_ci_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
-                         GLuint index[], const GLubyte mask[] )
+void
+_mesa_logicop_ci_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                       GLuint index[], const GLubyte mask[] )
 {
    GLuint dest[MAX_WIDTH];
    /* Read dest values from frame buffer */
@@ -215,9 +219,10 @@ void gl_logicop_ci_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
  * Apply the current logic operator to an array of CI pixels.  This is only
  * used if the device driver can't do logic ops.
  */
-void gl_logicop_ci_pixels( GLcontext *ctx,
-                           GLuint n, const GLint x[], const GLint y[],
-                           GLuint index[], const GLubyte mask[] )
+void
+_mesa_logicop_ci_pixels( GLcontext *ctx,
+                         GLuint n, const GLint x[], const GLint y[],
+                         GLuint index[], const GLubyte mask[] )
 {
    GLuint dest[PB_SIZE];
    /* Read dest values from frame buffer */
@@ -364,9 +369,10 @@ static void rgba_logicop( const GLcontext *ctx, GLuint n,
  * Apply the current logic operator to a span of RGBA pixels.
  * This is only used if the device driver can't do logic ops.
  */
-void gl_logicop_rgba_span( GLcontext *ctx,
-                           GLuint n, GLint x, GLint y,
-                           GLubyte rgba[][4], const GLubyte mask[] )
+void
+_mesa_logicop_rgba_span( GLcontext *ctx,
+                         GLuint n, GLint x, GLint y,
+                         GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLubyte dest[MAX_WIDTH][4];
    gl_read_rgba_span( ctx, ctx->DrawBuffer, n, x, y, dest );
@@ -379,14 +385,15 @@ void gl_logicop_rgba_span( GLcontext *ctx,
  * Apply the current logic operator to an array of RGBA pixels.
  * This is only used if the device driver can't do logic ops.
  */
-void gl_logicop_rgba_pixels( GLcontext *ctx,
-                             GLuint n, const GLint x[], const GLint y[],
-                             GLubyte rgba[][4], const GLubyte mask[] )
+void
+_mesa_logicop_rgba_pixels( GLcontext *ctx,
+                           GLuint n, const GLint x[], const GLint y[],
+                           GLubyte rgba[][4], const GLubyte mask[] )
 {
    GLubyte dest[PB_SIZE][4];
    (*ctx->Driver.ReadRGBAPixels)( ctx, n, x, y, dest, mask );
    if (ctx->RasterMask & ALPHABUF_BIT) {
-      gl_read_alpha_pixels( ctx, n, x, y, dest, mask );
+      _mesa_read_alpha_pixels( ctx, n, x, y, dest, mask );
    }
    rgba_logicop( ctx, n, mask, (GLuint *) rgba, (const GLuint *) dest );
 }

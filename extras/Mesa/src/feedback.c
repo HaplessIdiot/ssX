@@ -167,7 +167,7 @@ static void feedback_vertex( GLcontext *ctx, GLuint v, GLuint pv )
 
    win[0] = VB->Win.data[v][0];
    win[1] = VB->Win.data[v][1];
-   win[2] = VB->Win.data[v][2] / DEPTH_SCALE;
+   win[2] = VB->Win.data[v][2] / ctx->Visual->DepthMaxF;
    win[3] = 1.0 / VB->Win.data[v][3];
 
    if (ctx->Light.ShadeModel == GL_SMOOTH)
@@ -298,12 +298,13 @@ void gl_update_hitflag( GLcontext *ctx, GLfloat z )
 void gl_select_triangle( GLcontext *ctx,
 			 GLuint v0, GLuint v1, GLuint v2, GLuint pv )
 {
-   struct vertex_buffer *VB = ctx->VB;
+   const struct vertex_buffer *VB = ctx->VB;
 
    if (gl_cull_triangle( ctx, v0, v1, v2, 0 )) {
-      gl_update_hitflag( ctx, VB->Win.data[v0][2] / DEPTH_SCALE );
-      gl_update_hitflag( ctx, VB->Win.data[v1][2] / DEPTH_SCALE );
-      gl_update_hitflag( ctx, VB->Win.data[v2][2] / DEPTH_SCALE );
+      const GLfloat zs = 1.0F / ctx->Visual->DepthMaxF;
+      gl_update_hitflag( ctx, VB->Win.data[v0][2] * zs );
+      gl_update_hitflag( ctx, VB->Win.data[v1][2] * zs );
+      gl_update_hitflag( ctx, VB->Win.data[v2][2] * zs );
    }
 }
 
@@ -311,21 +312,22 @@ void gl_select_triangle( GLcontext *ctx,
 void gl_select_line( GLcontext *ctx,
 		     GLuint v0, GLuint v1, GLuint pv )
 {
-   struct vertex_buffer *VB = ctx->VB;
-
-   gl_update_hitflag( ctx, VB->Win.data[v0][2] / DEPTH_SCALE );
-   gl_update_hitflag( ctx, VB->Win.data[v1][2] / DEPTH_SCALE );
+   const struct vertex_buffer *VB = ctx->VB;
+   const GLfloat zs = 1.0F / ctx->Visual->DepthMaxF;
+   gl_update_hitflag( ctx, VB->Win.data[v0][2] * zs );
+   gl_update_hitflag( ctx, VB->Win.data[v1][2] * zs );
 }
 
 
 void gl_select_points( GLcontext *ctx, GLuint first, GLuint last )
 {
    struct vertex_buffer *VB = ctx->VB;
+   const GLfloat zs = 1.0F / ctx->Visual->DepthMaxF;
    GLuint i;
 
    for (i=first;i<=last;i++) {
       if (VB->ClipMask[i]==0) {
-         gl_update_hitflag( ctx, VB->Win.data[i][2] / DEPTH_SCALE);
+         gl_update_hitflag( ctx, VB->Win.data[i][2] * zs );
       }
    }
 }

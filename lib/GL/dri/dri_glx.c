@@ -42,17 +42,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "xf86dri.h"
 #include "sarea.h"
 #include <stdio.h>
-#ifndef __EMX__
 #include <dlfcn.h>
-#else
-/* hv: quick hack for dlopen emulation, this does not work yet */
-#define RTLD_LAZY 0
-void* dlopen(const char* f,int flg) {
-  return 0;
-}
-int dlclose(void* hndl) { return -1; }
-int dlsym(void* hndl,const char* fn) { return 0; }
-#endif
 #include "dri_glx.h"
 #include <sys/types.h>
 
@@ -85,6 +75,15 @@ static void ErrorMessage(const char *msg)
 }
 
 
+static void InfoMessage(const char *msg)
+{
+    const char *env = getenv("LIBGL_DEBUG");
+    if (env && strstr(env, "verbose")) {
+        fprintf(stderr, "libGL: %s\n", msg);
+    }
+}
+
+
 /*
  * We'll save a pointer to this function when we couldn't find a
  * direct rendering driver for a given screen.
@@ -99,6 +98,109 @@ static void *DummyCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     (void) config;
     return NULL;
 }
+
+
+
+/*
+ * Extract the ith directory path out of a colon-separated list of
+ * paths.
+ * Input:
+ *   index - index of path to extract (starting at zero)
+ *   paths - the colon-separated list of paths
+ *   dirLen - max length of result to store in <dir>
+ * Output:
+ *   dir - the extracted directory path, dir[0] will be zero when
+ *         extraction fails.
+ */
+static void ExtractDir(int index, const char *paths, int dirLen, char *dir)
+{
+   int i, len;
+   const char *start, *end;
+
+   /* find ith colon */
+   start = paths;
+   i = 0;
+   while (i < index) {
+      if (*start == ':') {
+         i++;
+         start++;
+      }
+      else if (*start == 0) {
+         /* end of string and couldn't find ith colon */
+         dir[0] = 0;
+         return;
+      }
+      else {
+         start++;
+      }
+   }
+
+   while (*start == ':')
+      start++;
+
+   /* find next colon, or end of string */
+   end = start + 1;
+   while (*end != ':' && *end != 0) {
+      end++;
+   }
+
+   /* copy string between <start> and <end> into result string */
+   len = end - start;
+   if (len > dirLen - 1)
+      len = dirLen - 1;
+   strncpy(dir, start, len);
+   dir[len] = 0;
+}
+
+
+
+/*
+ * Try to dlopen() the named driver.  This function adds the
+ * "_dri.so" suffix to the driver name and searches the
+ * directories specified by the LIBGL_DRIVERS_PATH env var
+ * in order to find the driver.
+ * Input:
+ *   driverName - a name like "tdfx", "i810", "mga", etc.
+ * Return:
+ *   handle from dlopen, or NULL if driver file not found.
+ */
+static void *OpenDriver(const char *driverName)
+{
+   char *libPaths = NULL;
+   int i;
+
+   if (geteuid() == getuid()) {
+      /* don't allow setuid apps to use LIBGL_DRIVERS_PATH */
+      libPaths = getenv("LIBGL_DRIVERS_PATH");
+      if (!libPaths)
+         libPaths = getenv("LIBGL_DRIVERS_DIR"); /* deprecated */
+   }
+   if (!libPaths)
+      libPaths = DEFAULT_DRIVER_DIR;
+
+   for (i = 0; ; i++) {
+      char libDir[1000], info[1000], realDriverName[100];
+      void *handle;
+      ExtractDir(i, libPaths, 1000, libDir);
+      if (!libDir[0])
+         return NULL;
+      sprintf(realDriverName, "%s/%s_dri.so", libDir, driverName);
+      sprintf(info, "trying %s", realDriverName);
+      InfoMessage(info);
+      handle = dlopen(realDriverName, RTLD_NOW | RTLD_GLOBAL);
+      if (handle) {
+         return handle;
+      }
+      else {
+         char message[1000];
+         snprintf(message, 1000, "dlopen failed: %s", dlerror());
+         ErrorMessage(message);
+      }
+   }
+
+   return NULL;
+}
+
 
 
 /*
@@ -122,15 +224,18 @@ static void Find_CreateScreenFuncs(Display *dpy,
         Bool b;
         int driverMajor, driverMinor, driverPatch;
         char *driverName = NULL;
+        void *handle;
 
         /* defaults */
         createFuncs[scrn] = DummyCreateScreen;
         libraryHandles[scrn] = NULL;
 
         if (!XF86DRIQueryDirectRenderingCapable(dpy, scrn, &directCapable)) {
+            ErrorMessage("XF86DRIQueryDirectRenderingCapable failed");
             continue;
         }
         if (!directCapable) {
+            ErrorMessage("XF86DRIQueryDirectRenderingCapable returned false");
             continue;
         }
 
@@ -148,46 +253,25 @@ static void Find_CreateScreenFuncs(Display *dpy,
 
 
         /*
-         * dlopen the driver module and save the pointer to its
+         * Open the driver module and save the pointer to its
          * __driCreateScreen function.
          */
-        {
-            char realDriverName[100];
-            void *handle;
-            CreateScreenFunc createScreenFunc;
-            char *libDir = NULL;
-
-            if (geteuid() == getuid()) {
-                /* don't allow setuid apps to use LIBGL_DRIVERS_DIR */
-                libDir = getenv("LIBGL_DRIVERS_DIR");
-            }
-            if (!libDir)
-                libDir = DEFAULT_DRIVER_DIR;
-
-            sprintf(realDriverName, "%s/%s_dri.so", libDir, driverName);
-            /*printf("OPEN %s\n", realDriverName);*/
-            handle = dlopen(realDriverName, RTLD_LAZY);
-            if (!handle) {
-                char message[1000];
-                snprintf(message, 1000, "dlopen failed: %s", dlerror());
-                ErrorMessage(message);
-                continue;
-            }
-
-            createScreenFunc = (CreateScreenFunc) dlsym(handle, "__driCreateScreen");
-            if (createScreenFunc) {
-                /* success! */
-                createFuncs[scrn] = createScreenFunc;
-                libraryHandles[scrn] = handle;
-            }
-            else {
-                char message[1000];
-                snprintf(message, 1000, "driCreateScreen() not defined in %s", realDriverName);
-                ErrorMessage(message);
-                dlclose(handle);
-            }
+        handle = OpenDriver(driverName);
+        if (handle) {
+           CreateScreenFunc createScreenFunc;
+           createScreenFunc = (CreateScreenFunc) dlsym(handle, "__driCreateScreen");
+           if (createScreenFunc) {
+              /* success! */
+              createFuncs[scrn] = createScreenFunc;
+              libraryHandles[scrn] = handle;
+              break;  /* onto the next screen */
+           }
+           else {
+              ErrorMessage("driCreateScreen() not defined in driver!");
+              dlclose(handle);
+           }
         }
-    }
+    } /* for scrn */
 }
 
 #endif /* BUILT_IN_DRI_DRIVER */
@@ -230,9 +314,9 @@ void *driCreateDisplay(Display *dpy, __DRIdisplay *pdisp)
 	return NULL;
     }
 
-    pdpyp->major = major;
-    pdpyp->minor = minor;
-    pdpyp->patch = patch;
+    pdpyp->driMajor = major;
+    pdpyp->driMinor = minor;
+    pdpyp->driPatch = patch;
 
     pdisp->destroyDisplay = driDestroyDisplay;
 
@@ -279,6 +363,7 @@ register_extensions_on_screen(Display *dpy, int scrNum)
    int driMajor, driMinor, driPatch;
    int driverMajor, driverMinor, driverPatch;
    char *driverName = NULL;
+   void *handle;
 
    /*
     * Check if the DRI extension is available, check the DRI version,
@@ -322,29 +407,16 @@ register_extensions_on_screen(Display *dpy, int scrNum)
     * dlopen() the driver library file, get a pointer to the driver's
     * __driRegisterExtensions() function, and call it if it exists.
     */
-   {
-      char realDriverName[100];
-      char *libDir = NULL;
-      void *handle;
-
-      if (geteuid() == getuid()) {
-         /* don't allow setuid apps to use LIBGL_DRIVERS_DIR */
-         libDir = getenv("LIBGL_DRIVERS_DIR");
+   handle = OpenDriver(driverName);
+   if (handle) {
+      typedef void *(*RegisterExtFunc)(void);
+      RegisterExtFunc registerExtFunc = (RegisterExtFunc) dlsym(handle,
+                                                    "__driRegisterExtensions");
+      if (registerExtFunc) {
+         (*registerExtFunc)();
       }
-      if (!libDir)
-         libDir = DEFAULT_DRIVER_DIR;
-
-      sprintf(realDriverName, "%s/%s_dri.so", libDir, driverName);
-      /*printf("OPEN %s\n", realDriverName);*/
-      handle = dlopen(realDriverName, RTLD_LAZY);
-      if (handle) {
-         typedef void *(*RegisterExtFunc)(void);
-         RegisterExtFunc registerExtFunc = (RegisterExtFunc) dlsym(handle, "__driRegisterExtensions");
-         if (registerExtFunc) {
-            (*registerExtFunc)();
-         }
-         dlclose(handle);
-      }
+      dlclose(handle);
+      return;
    }
 }
 #endif /* !BUILT_IN_DRI_DRIVER */
@@ -368,12 +440,14 @@ __glXRegisterExtensions(void)
    if (alreadyCalled)
       return;
 
-#ifdef BUILT_IN_DRI_DRIVER
-   __driRegisterExtensions();
-#else
+#ifndef BUILT_IN_DRI_DRIVER
    {
-      int displayNum;
-      for (displayNum = 0; ; displayNum++) {
+      int displayNum, maxDisplays;
+      if (getenv("LIBGL_MULTIHEAD"))
+          maxDisplays = 10;  /* infinity, really */
+      else
+          maxDisplays = 1;
+      for (displayNum = 0; displayNum < maxDisplays; displayNum++) {
          char displayName[200];
          Display *dpy;
          snprintf(displayName, 199, ":%d.0", displayNum);
@@ -391,13 +465,10 @@ __glXRegisterExtensions(void)
          }
       }
    }
-#endif
 
    alreadyCalled = GL_TRUE;
+#endif
 }
 
 
 #endif /* GLX_DIRECT_RENDERING */
-
-
-

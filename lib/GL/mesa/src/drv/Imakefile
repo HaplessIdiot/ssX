@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.7 2000/02/23 04:46:39 martin Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/Imakefile,v 1.8 2000/03/07 14:31:38 dawes Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -16,6 +16,15 @@ DRIVER += gamma
 #if GlxBuiltInTdfx
 DRIVER += tdfx
 #endif
+#if GlxBuiltInMga
+DRIVER += common mga
+#endif
+#if GlxBuiltInI810
+DRIVER += common i810
+#endif
+#if GlxBuiltInR128
+DRIVER += r128
+#endif
 
 SUBDIRS = $(DRIVER)
 #else
@@ -23,6 +32,10 @@ SUBDIRS += gamma
 #if HasGlide3
 SUBDIRS += tdfx
 #endif
+SUBDIRS += common
+SUBDIRS += mga
+SUBDIRS += i810
+SUBDIRS += r128
 #endif
 
 MakeSubdirs($(SUBDIRS))

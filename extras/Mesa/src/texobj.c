@@ -28,6 +28,7 @@
 #include "all.h"
 #else
 #include "glheader.h"
+#include "colortab.h"
 #include "context.h"
 #include "enums.h"
 #include "hash.h"
@@ -46,7 +47,7 @@
  * table.
  * Input:  shared - the shared GL state structure to contain the texture object
  *         name - integer name for the texture object
- *         dimensions - either 1, 2 or 3
+ *         dimensions - either 1, 2, 3 or 6 (cube map)
  * Return:  pointer to new texture object
  */
 struct gl_texture_object *
@@ -55,7 +56,7 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
 {
    struct gl_texture_object *obj;
 
-   ASSERT(dimensions <= 3);
+   ASSERT(dimensions <= 3 || dimensions == 6);
 
    obj = CALLOC_STRUCT(gl_texture_object);
 
@@ -73,13 +74,7 @@ gl_alloc_texture_object( struct gl_shared_state *shared, GLuint name,
       obj->BaseLevel = 0;
       obj->MaxLevel = 1000;
       obj->MinMagThresh = 0.0F;
-      obj->Palette.Table[0] = 255;
-      obj->Palette.Table[1] = 255;
-      obj->Palette.Table[2] = 255;
-      obj->Palette.Table[3] = 255;
-      obj->Palette.Size = 1;
-      obj->Palette.IntFormat = GL_RGBA;
-      obj->Palette.Format = GL_RGBA;
+      _mesa_init_colortable(&obj->Palette);
 
       /* insert into linked list */
       if (shared) {
@@ -143,12 +138,14 @@ void gl_free_texture_object( struct gl_shared_state *shared,
       _mesa_HashRemove(shared->TexObjects, t->Name);
    }
 
-   /* free texture image */
+   _mesa_free_colortable_data(&t->Palette);
+
+   /* free texture images */
    {
       GLuint i;
       for (i=0;i<MAX_TEXTURE_LEVELS;i++) {
          if (t->Image[i]) {
-            gl_free_texture_image( t->Image[i] );
+            _mesa_free_texture_image( t->Image[i] );
          }
       }
    }
@@ -162,26 +159,32 @@ void gl_free_texture_object( struct gl_shared_state *shared,
  * Examine a texture object to determine if it is complete or not.
  * The t->Complete flag will be set to GL_TRUE or GL_FALSE accordingly.
  */
-void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_texture_object *t )
+void
+_mesa_test_texobj_completeness( const GLcontext *ctx,
+                                struct gl_texture_object *t )
 {
+   const GLint baseLevel = t->BaseLevel;
+
    t->Complete = GL_TRUE;  /* be optimistic */
 
    /* Always need level zero image */
-   if (!t->Image[0] || !t->Image[0]->Data) {
+   if (!t->Image[baseLevel]) {
       t->Complete = GL_FALSE;
       return;
    }
 
    /* Compute number of mipmap levels */
-   if (t->Dimensions==1) {
-      t->P = t->Image[0]->WidthLog2;
+   if (t->Dimensions == 1) {
+      t->P = t->Image[baseLevel]->WidthLog2;
    }
-   else if (t->Dimensions==2) {
-      t->P = MAX2(t->Image[0]->WidthLog2, t->Image[0]->HeightLog2);
+   else if (t->Dimensions == 2 || t->Dimensions == 6) {
+      t->P = MAX2(t->Image[baseLevel]->WidthLog2,
+                  t->Image[baseLevel]->HeightLog2);
    }
-   else if (t->Dimensions==3) {
-      GLint max = MAX2(t->Image[0]->WidthLog2, t->Image[0]->HeightLog2);
-      max = MAX2(max, (GLint)(t->Image[0]->DepthLog2));
+   else if (t->Dimensions == 3) {
+      GLint max = MAX2(t->Image[baseLevel]->WidthLog2,
+                       t->Image[baseLevel]->HeightLog2);
+      max = MAX2(max, (GLint)(t->Image[baseLevel]->DepthLog2));
       t->P = max;
    }
 
@@ -189,12 +192,36 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
    t->M = (GLfloat) (MIN2(t->MaxLevel, t->P) - t->BaseLevel);
 
 
-   if (t->MinFilter!=GL_NEAREST && t->MinFilter!=GL_LINEAR) {
+   if (t->Dimensions == 6) {
+      /* make sure all six level 0 images are same size */
+      const GLint w = t->Image[baseLevel]->Width2;
+      const GLint h = t->Image[baseLevel]->Height2;
+      if (!t->NegX[baseLevel] ||
+          t->NegX[baseLevel]->Width2 != w ||
+          t->NegX[baseLevel]->Height2 != h ||
+          !t->PosY[baseLevel] ||
+          t->PosY[baseLevel]->Width2 != w ||
+          t->PosY[baseLevel]->Height2 != h ||
+          !t->NegY[baseLevel] ||
+          t->NegY[baseLevel]->Width2 != w ||
+          t->NegY[baseLevel]->Height2 != h ||
+          !t->PosZ[baseLevel] ||
+          t->PosZ[baseLevel]->Width2 != w ||
+          t->PosZ[baseLevel]->Height2 != h ||
+          !t->NegZ[baseLevel] ||
+          t->NegZ[baseLevel]->Width2 != w ||
+          t->NegZ[baseLevel]->Height2 != h) {
+         t->Complete = GL_FALSE;
+         return;
+      }
+   }
+
+   if (t->MinFilter != GL_NEAREST && t->MinFilter != GL_LINEAR) {
       /*
        * Mipmapping: determine if we have a complete set of mipmaps
        */
       GLint i;
-      GLint minLevel = t->BaseLevel;
+      GLint minLevel = baseLevel;
       GLint maxLevel = MIN2(t->P, ctx->Const.MaxTextureLevels-1);
       maxLevel = MIN2(maxLevel, t->MaxLevel);
 
@@ -206,15 +233,11 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
       /* Test dimension-independent attributes */
       for (i = minLevel; i <= maxLevel; i++) {
          if (t->Image[i]) {
-            if (!t->Image[i]->Data) {
+            if (t->Image[i]->Format != t->Image[baseLevel]->Format) {
                t->Complete = GL_FALSE;
                return;
             }
-            if (t->Image[i]->Format != t->Image[0]->Format) {
-               t->Complete = GL_FALSE;
-               return;
-            }
-            if (t->Image[i]->Border != t->Image[0]->Border) {
+            if (t->Image[i]->Border != t->Image[baseLevel]->Border) {
                t->Complete = GL_FALSE;
                return;
             }
@@ -222,19 +245,15 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
       }
 
       /* Test things which depend on number of texture image dimensions */
-      if (t->Dimensions==1) {
+      if (t->Dimensions == 1) {
          /* Test 1-D mipmaps */
-         GLuint width = t->Image[0]->Width2;
-         for (i=1; i<ctx->Const.MaxTextureLevels; i++) {
-            if (width>1) {
+         GLuint width = t->Image[baseLevel]->Width2;
+         for (i = baseLevel + 1; i < ctx->Const.MaxTextureLevels; i++) {
+            if (width > 1) {
                width /= 2;
             }
             if (i >= minLevel && i <= maxLevel) {
                if (!t->Image[i]) {
-                  t->Complete = GL_FALSE;
-                  return;
-               }
-               if (!t->Image[i]->Data) {
                   t->Complete = GL_FALSE;
                   return;
                }
@@ -243,20 +262,20 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
                   return;
                }
             }
-            if (width==1) {
+            if (width == 1) {
                return;  /* found smallest needed mipmap, all done! */
             }
          }
       }
-      else if (t->Dimensions==2) {
+      else if (t->Dimensions == 2) {
          /* Test 2-D mipmaps */
-         GLuint width = t->Image[0]->Width2;
-         GLuint height = t->Image[0]->Height2;
-         for (i=1; i<ctx->Const.MaxTextureLevels; i++) {
-            if (width>1) {
+         GLuint width = t->Image[baseLevel]->Width2;
+         GLuint height = t->Image[baseLevel]->Height2;
+         for (i = baseLevel + 1; i < ctx->Const.MaxTextureLevels; i++) {
+            if (width > 1) {
                width /= 2;
             }
-            if (height>1) {
+            if (height > 1) {
                height /= 2;
             }
             if (i >= minLevel && i <= maxLevel) {
@@ -278,19 +297,19 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
             }
          }
       }
-      else if (t->Dimensions==3) {
+      else if (t->Dimensions == 3) {
          /* Test 3-D mipmaps */
-         GLuint width = t->Image[0]->Width2;
-         GLuint height = t->Image[0]->Height2;
-         GLuint depth = t->Image[0]->Depth2;
-	 for (i=1; i<ctx->Const.MaxTextureLevels; i++) {
-            if (width>1) {
+         GLuint width = t->Image[baseLevel]->Width2;
+         GLuint height = t->Image[baseLevel]->Height2;
+         GLuint depth = t->Image[baseLevel]->Depth2;
+	 for (i = baseLevel + 1; i < ctx->Const.MaxTextureLevels; i++) {
+            if (width > 1) {
                width /= 2;
             }
-            if (height>1) {
+            if (height > 1) {
                height /= 2;
             }
-            if (depth>1) {
+            if (depth > 1) {
                depth /= 2;
             }
             if (i >= minLevel && i <= maxLevel) {
@@ -311,7 +330,41 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
                   return;
                }
             }
-            if (width==1 && height==1 && depth==1) {
+            if (width == 1 && height == 1 && depth == 1) {
+               return;  /* found smallest needed mipmap, all done! */
+            }
+         }
+      }
+      else if (t->Dimensions == 6) {
+         /* make sure 6 cube faces are consistant */
+         GLuint width = t->Image[baseLevel]->Width2;
+         GLuint height = t->Image[baseLevel]->Height2;
+	 for (i = baseLevel + 1; i < ctx->Const.MaxTextureLevels; i++) {
+            if (width > 1) {
+               width /= 2;
+            }
+            if (height > 1) {
+               height /= 2;
+            }
+            if (i >= minLevel && i <= maxLevel) {
+               /* check that we have images defined */
+               if (!t->Image[i] || !t->NegX[i] ||
+                   !t->PosY[i]  || !t->NegY[i] ||
+                   !t->PosZ[i]  || !t->NegZ[i]) {
+                  t->Complete = GL_FALSE;
+                  return;
+               }
+               /* check that all six images have same size */
+               if (t->NegX[i]->Width2!=width || t->NegX[i]->Height2!=height ||
+                   t->PosY[i]->Width2!=width || t->PosY[i]->Height2!=height ||
+                   t->NegY[i]->Width2!=width || t->NegY[i]->Height2!=height ||
+                   t->PosZ[i]->Width2!=width || t->PosZ[i]->Height2!=height ||
+                   t->NegZ[i]->Width2!=width || t->NegZ[i]->Height2!=height) {
+                  t->Complete = GL_FALSE;
+                  return;
+               }
+            }
+            if (width == 1 && height == 1) {
                return;  /* found smallest needed mipmap, all done! */
             }
          }
@@ -323,6 +376,8 @@ void gl_test_texture_object_completeness( const GLcontext *ctx, struct gl_textur
    }
 }
 
+
+_glthread_DECLARE_STATIC_MUTEX(GenTexturesLock);
 
 
 /*
@@ -341,6 +396,12 @@ _mesa_GenTextures( GLsizei n, GLuint *texName )
       return;
    }
 
+
+   /*
+    * This must be atomic (generation and allocation of texture IDs)
+    */
+   _glthread_LOCK_MUTEX(GenTexturesLock);
+
    first = _mesa_HashFindFreeKeyBlock(ctx->Shared->TexObjects, n);
 
    /* Return the texture names */
@@ -354,6 +415,8 @@ _mesa_GenTextures( GLsizei n, GLuint *texName )
       GLuint dims = 0;
       (void) gl_alloc_texture_object(ctx->Shared, name, dims);
    }
+
+   _glthread_UNLOCK_MUTEX(GenTexturesLock);
 }
 
 
@@ -429,25 +492,37 @@ _mesa_BindTexture( GLenum target, GLuint texName )
    switch (target) {
       case GL_TEXTURE_1D:
          dim = 1;
+         oldTexObj = texUnit->CurrentD[1];
          break;
       case GL_TEXTURE_2D:
          dim = 2;
+         oldTexObj = texUnit->CurrentD[2];
          break;
       case GL_TEXTURE_3D:
          dim = 3;
+         oldTexObj = texUnit->CurrentD[3];
          break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         if (ctx->Extensions.HaveTextureCubeMap) {
+            dim = 6;
+            oldTexObj = texUnit->CurrentCubeMap;
+            break;
+         }
+         /* fallthrough */
       default:
          gl_error( ctx, GL_INVALID_ENUM, "glBindTexture(target)" );
          return;
    }
 
-   oldTexObj = texUnit->CurrentD[dim];
-
    if (oldTexObj->Name == texName)
       return;
 
-   if (texName == 0) 
-      newTexObj = ctx->Shared->DefaultD[dim];
+   if (texName == 0) {
+      if (target == GL_TEXTURE_CUBE_MAP_ARB)
+         newTexObj = ctx->Shared->DefaultCubeMap;
+      else
+         newTexObj = ctx->Shared->DefaultD[dim];
+   }
    else {
       struct _mesa_HashTable *hash = ctx->Shared->TexObjects;
       newTexObj = (struct gl_texture_object *) _mesa_HashLookup(hash, texName);
@@ -467,7 +542,22 @@ _mesa_BindTexture( GLenum target, GLuint texName )
 
    newTexObj->RefCount++;
 
-   texUnit->CurrentD[dim] = newTexObj;
+   switch (target) {
+      case GL_TEXTURE_1D:
+         texUnit->CurrentD[1] = newTexObj;
+         break;
+      case GL_TEXTURE_2D:
+         texUnit->CurrentD[2] = newTexObj;
+         break;
+      case GL_TEXTURE_3D:
+         texUnit->CurrentD[3] = newTexObj;
+         break;
+      case GL_TEXTURE_CUBE_MAP_ARB:
+         texUnit->CurrentCubeMap = newTexObj;
+         break;
+      default:
+         gl_problem(ctx, "bad target in BindTexture");
+   }
 
    /* If we've changed the CurrentD[123] texture object then update the
     * ctx->Texture.Current pointer to point to the new texture object.

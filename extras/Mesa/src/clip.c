@@ -41,6 +41,15 @@
 
 
 
+#define CLIP_RGBA0    0x1
+#define CLIP_RGBA1    0x2
+#define CLIP_TEX0     0x4
+#define CLIP_TEX1     0x8
+#define CLIP_INDEX0   0x10
+#define CLIP_INDEX1   0x20
+#define CLIP_FOG_COORD 0x40
+
+
 /* Linear interpolation between A and B: */
 #define LINTERP( T, A, B )   ( (A) + (T) * ( (B) - (A) ) )
 
@@ -57,16 +66,7 @@ do {								\
 } while(0)
    
 
-
-
-#define CLIP_RGBA0    0x1
-#define CLIP_RGBA1    0x2
-#define CLIP_TEX0     0x4
-#define CLIP_TEX1     0x8
-#define CLIP_INDEX0   0x10
-#define CLIP_INDEX1   0x20
-
-static clip_interp_func clip_interp_tab[0x40]; 
+static clip_interp_func clip_interp_tab[0x80]; 
 
 #define IND 0
 #define NAME clip_nil
@@ -110,6 +110,50 @@ static clip_interp_func clip_interp_tab[0x40];
 
 #define IND (CLIP_INDEX0|CLIP_INDEX1)
 #define NAME clipINDEX0_INDEX1
+#include "interp_tmp.h"
+
+#define IND (CLIP_FOG_COORD)
+#define NAME clip_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_RGBA0|CLIP_FOG_COORD)
+#define NAME clipRGBA0_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD)
+#define NAME clipRGBA0_RGBA1_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD)
+#define NAME clipTEX0_RGBA0_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD)
+#define NAME clipTEX0_RGBA0_RGBA1_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD)
+#define NAME clipTEX1_TEX0_RGBA0_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_TEX0|CLIP_FOG_COORD)
+#define NAME clipTEX0_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_TEX1|CLIP_TEX0|CLIP_FOG_COORD)
+#define NAME clipTEX1_TEX0_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD)
+#define NAME clipTEX1_TEX0_RGBA0_RGBA1_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_INDEX0|CLIP_FOG_COORD)
+#define NAME clipINDEX0_FOG
+#include "interp_tmp.h"
+
+#define IND (CLIP_INDEX0|CLIP_INDEX1|CLIP_FOG_COORD)
+#define NAME clipINDEX0_INDEX1_FOG
 #include "interp_tmp.h"
 
 
@@ -257,10 +301,12 @@ GLuint gl_userclip_point( GLcontext* ctx, const GLfloat v[] )
 
 
 
-#if defined(__i386__)
+#if 0
 #define NEGATIVE(x) ((*(int *)&x)<0)
+#define DIFFERENT_SIGNS(a,b) ((a*b) < 0)
 #else
 #define NEGATIVE(x) (x < 0)
+#define DIFFERENT_SIGNS(a,b) ((a*b) < 0)
 #endif
 
 
@@ -330,13 +376,10 @@ void gl_update_clipmask( GLcontext *ctx )
 
    if (ctx->Visual->RGBAflag) 
    {
-      if (ctx->Light.ShadeModel==GL_SMOOTH) 
-      {
-	 mask |= CLIP_RGBA0;
+      mask |= CLIP_RGBA0;
       
-	 if (ctx->TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_SEPERATE_SPECULAR))
-	    mask |= CLIP_RGBA1;
-      }
+      if (ctx->TriangleCaps & (DD_TRI_LIGHT_TWOSIDE|DD_SEPERATE_SPECULAR))
+         mask |= CLIP_RGBA1;
 
       if (ctx->Texture.ReallyEnabled & 0xf0)
 	 mask |= CLIP_TEX1|CLIP_TEX0;
@@ -352,6 +395,8 @@ void gl_update_clipmask( GLcontext *ctx )
 	 mask |= CLIP_INDEX1;
    }
 
+   if (ctx->FogMode == FOG_FRAGMENT && (ctx->TriangleCaps & DD_CLIP_FOG_COORD))
+      mask |= CLIP_FOG_COORD;
    
    ctx->ClipInterpFunc = clip_interp_tab[mask];
    ctx->poly_clip_tab = gl_poly_clip_tab[0];
@@ -447,11 +492,22 @@ void gl_init_clip(void)
    clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0] = clipTEX1_TEX0_RGBA0;
    clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1] = 
       clipTEX1_TEX0_RGBA0_RGBA1;
-
    clip_interp_tab[CLIP_TEX0] = clipTEX0;
    clip_interp_tab[CLIP_TEX1|CLIP_TEX0] = clipTEX1_TEX0;
-
    clip_interp_tab[CLIP_INDEX0] = clipINDEX0;
    clip_interp_tab[CLIP_INDEX0|CLIP_INDEX1] = clipINDEX0_INDEX1;
+
+   clip_interp_tab[CLIP_FOG_COORD] = clip_FOG;
+   clip_interp_tab[CLIP_RGBA0|CLIP_FOG_COORD] = clipRGBA0_FOG;
+   clip_interp_tab[CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD] = clipRGBA0_RGBA1_FOG;
+   clip_interp_tab[CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD] = clipTEX0_RGBA0_FOG;
+   clip_interp_tab[CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD] = clipTEX0_RGBA0_RGBA1_FOG;
+   clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_FOG_COORD] = clipTEX1_TEX0_RGBA0_FOG;
+   clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_RGBA0|CLIP_RGBA1|CLIP_FOG_COORD] = 
+      clipTEX1_TEX0_RGBA0_RGBA1_FOG;
+   clip_interp_tab[CLIP_TEX0|CLIP_FOG_COORD] = clipTEX0_FOG;
+   clip_interp_tab[CLIP_TEX1|CLIP_TEX0|CLIP_FOG_COORD] = clipTEX1_TEX0_FOG;
+   clip_interp_tab[CLIP_INDEX0|CLIP_FOG_COORD] = clipINDEX0_FOG;
+   clip_interp_tab[CLIP_INDEX0|CLIP_INDEX1|CLIP_FOG_COORD] = clipINDEX0_INDEX1_FOG;
 }
 

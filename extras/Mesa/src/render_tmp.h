@@ -38,7 +38,13 @@
 #ifndef NEED_EDGEFLAG_SETUP
 #define NEED_EDGEFLAG_SETUP 0
 #define EDGEFLAG_TRI(a,b,c,d,e)
+#define EDGEFLAG_POLY_TRI_PRE(a,b,c,d)
+#define EDGEFLAG_POLY_TRI_POST(a,b,c,d)
 #define EDGEFLAG_QUAD(a,b,c,d,e)
+#endif
+
+#ifndef RESET_STIPPLE
+#define RESET_STIPPLE
 #endif
 
 
@@ -49,6 +55,8 @@ static void TAG(render_vb_points)( struct vertex_buffer *VB,
 {
    LOCAL_VARS;
    (void) parity;
+   VB->ctx->OcclusionResult = GL_TRUE;
+
    INIT(GL_POINTS);
    RENDER_POINTS( start, count );
    POSTFIX;
@@ -60,14 +68,14 @@ static void TAG(render_vb_lines)( struct vertex_buffer *VB,
 				  GLuint parity )
 {
    GLuint j;
-   GLuint *stipplecounter = &VB->ctx->StippleCounter;
    LOCAL_VARS;
    (void) parity;
+   VB->ctx->OcclusionResult = GL_TRUE;
 
    INIT(GL_LINES);
    for (j=start+1; j<count; j+=2 ) {
       RENDER_LINE( j-1, j );
-      *stipplecounter = 0;
+      RESET_STIPPLE;
    }
    POSTFIX;
 }
@@ -81,13 +89,16 @@ static void TAG(render_vb_line_strip)( struct vertex_buffer *VB,
    GLuint j;
    LOCAL_VARS;
    (void) parity;
+   VB->ctx->OcclusionResult = GL_TRUE;
 
    INIT(GL_LINES);
    for (j=start+1; j<count; j++ ) {
       RENDER_LINE( j-1, j );
+   }   
+
+   if (VB->Flag[count] & VERT_END) {
+      RESET_STIPPLE;
    }
-   
-   VB->ctx->StippleCounter = 0;	
    POSTFIX;
 }
 
@@ -100,6 +111,7 @@ static void TAG(render_vb_line_loop)( struct vertex_buffer *VB,
    GLuint i = start < VB->Start ? VB->Start : start + 1;	 
    LOCAL_VARS;
    (void) parity;
+   VB->ctx->OcclusionResult = GL_TRUE;
 
    INIT(GL_LINES);
    for ( ; i < count ; i++) {
@@ -108,9 +120,9 @@ static void TAG(render_vb_line_loop)( struct vertex_buffer *VB,
 
    if (VB->Flag[count] & VERT_END) {
       RENDER_LINE( i-1, start );
-   }   
+      RESET_STIPPLE;
+   }
 
-   VB->ctx->StippleCounter = 0;
    POSTFIX;
 }
 
@@ -127,6 +139,7 @@ static void TAG(render_vb_triangles)( struct vertex_buffer *VB,
    INIT(GL_POLYGON);
    for (j=start+2; j<count; j+=3) {
       RENDER_TRI( j-2, j-1, j, j, 0 );
+      RESET_STIPPLE;
    }
    POSTFIX;
 }
@@ -146,6 +159,7 @@ static void TAG(render_vb_tri_strip)( struct vertex_buffer *VB,
       for (j=start+2;j<count;j++,parity^=1) {
 	 EDGEFLAG_TRI( j-2, j-1, j, j, parity );
 	 RENDER_TRI( j-2, j-1, j, j, parity );
+	 RESET_STIPPLE;
       }
    } else {
       for (j=start+2;j<count;j++,parity^=1) {
@@ -169,6 +183,7 @@ static void TAG(render_vb_tri_fan)( struct vertex_buffer *VB,
       for (j=start+2;j<count;j++) {
 	 EDGEFLAG_TRI( start, j-1, j, j, 0 );
 	 RENDER_TRI( start, j-1, j, j, 0 );
+	 RESET_STIPPLE;
       }
    } else {
       for (j=start+2;j<count;j++) {
@@ -189,9 +204,19 @@ static void TAG(render_vb_poly)( struct vertex_buffer *VB,
    LOCAL_VARS;
    (void) parity;
    INIT(GL_POLYGON);
-   for (j=start+2;j<count;j++) {
-      RENDER_TRI( start, j-1, j, start, 0 );
+   if (NEED_EDGEFLAG_SETUP) {
+      for (j=start+2;j<count;j++) {
+	 EDGEFLAG_POLY_TRI_PRE( start, j-1, j, start );
+	 RENDER_TRI( start, j-1, j, start, 0 );
+	 EDGEFLAG_POLY_TRI_POST( start, j-1, j, start );
+      }
    }
+   else {
+      for (j=start+2;j<count;j++) {
+	 RENDER_TRI( start, j-1, j, start, 0 );
+      }
+   }
+   RESET_STIPPLE;
    POSTFIX;
 }
 
@@ -207,6 +232,7 @@ static void TAG(render_vb_quads)( struct vertex_buffer *VB,
    INIT(GL_POLYGON);
    for (j=start+3; j<count; j+=4) {
       RENDER_QUAD( j-3, j-2, j-1, j, j );
+      RESET_STIPPLE;
    }
    POSTFIX;
 }
@@ -224,6 +250,7 @@ static void TAG(render_vb_quad_strip)( struct vertex_buffer *VB,
       for (j=start+3;j<count;j+=2) {
 	 EDGEFLAG_QUAD( j-3, j-2, j, j-1, j );
 	 RENDER_QUAD( j-3, j-2, j, j-1, j );
+	 RESET_STIPPLE;
       }
    } else {
       for (j=start+3;j<count;j+=2) {
@@ -273,6 +300,7 @@ static void TAG(render_init)( void )
 #undef LOCAL_VARS
 #undef INIT
 #undef POSTFIX
+#undef RESET_STIPPLE
 #endif
 
 #ifndef PRESERVE_TAG

@@ -546,11 +546,6 @@ static GLuint gl_copy_overflow( struct vertex_buffer *VB,
    return 0;
 }
 
-
-
-
-
-
 static void gl_fast_copy_noop( struct vertex_buffer *VB,
 			       GLuint start, GLuint count,
 			       GLuint ovf)
@@ -802,7 +797,7 @@ static void build_clip_vert_bits( GLubyte *clipmask, const GLubyte *cullmask,
 GLuint gl_cull_vb( struct vertex_buffer *VB )
 {
    const GLcontext *ctx = VB->ctx;
-   GLuint i, next, prim, n;
+   GLuint i, next, prim = 0xffffffff, n;
    GLfloat (*proj)[4] = VB->Projected->data;
    GLuint *in_prim = VB->Primitive;
    GLuint *out_prim = VB->IM->Primitive;

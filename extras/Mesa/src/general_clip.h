@@ -1,9 +1,9 @@
 
 /*
  * Mesa 3-D graphics library
- * Version:  3.1
+ * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,144 +28,56 @@
  */
 
 
-
-/*
- * Clip against +X
- *
- * The if conditions are known at compile time.
- */
-#define PLANE          (CLIP_RIGHT_BIT)
-#define INSIDE(K)      (X(K) <= W(K))
-#define COMPUTE_INTERSECTION( in, out, new )		\
-        dx = X(out)-X(in);				\
-        dw = W(out)-W(in);                      	\
-        t = (X(in)-W(in)) / (dw-dx);			\
-	neww = W(in) + t * dw;				\
-	X(new) = neww;					\
-	Y(new) = Y(in) + t * (Y(out) - Y(in));		\
-	if (SIZE>=3) coord[new][2] = Z(in) + t * (Z(out) - Z(in)); 		\
-	if (SIZE==4) coord[new][3] = neww;
+#define PLANE CLIP_RIGHT_BIT
+#define CLIP_DOTPROD(K) (- X(K) + W(K))
 
    GENERAL_CLIP
 
-#undef INSIDE
+#undef CLIP_DOTPROD
 #undef PLANE
-#undef COMPUTE_INTERSECTION
 
 
-/*
- * Clip against -X
- */
-#define PLANE          (CLIP_LEFT_BIT)
-#define INSIDE(K)       (X(K) >= -W(K))
-#define COMPUTE_INTERSECTION( in, out, new )		\
-        dx = X(out)-X(in);                      	\
-        dw = W(out)-W(in);                      	\
-        t = -(X(in)+W(in)) / (dw+dx);           	\
-	neww = W(in) + t * dw;				\
-        X(new) = -neww;					\
-        Y(new) = Y(in) + t * (Y(out) - Y(in));		\
-        if (SIZE>=3) coord[new][2] = Z(in) + t * (Z(out) - Z(in));		\
-        if (SIZE==4) coord[new][3] = neww;
+#define PLANE CLIP_LEFT_BIT
+#define CLIP_DOTPROD(K) (X(K) + W(K))
 
    GENERAL_CLIP
 
-#undef INSIDE
+#undef CLIP_DOTPROD
 #undef PLANE
-#undef COMPUTE_INTERSECTION
 
-
-/*
- * Clip against +Y
- */
-#define PLANE          (CLIP_TOP_BIT)
-#define INSIDE(K)       (Y(K) <= W(K))
-#define COMPUTE_INTERSECTION( in, out, new )		\
-        dy = Y(out)-Y(in);                      	\
-        dw = W(out)-W(in);                      	\
-        t = (Y(in)-W(in)) / (dw-dy);            	\
-	neww = W(in) + t * dw; 				\
-        X(new) = X(in) + t * (X(out) - X(in));		\
-        Y(new) = neww;					\
-        if (SIZE>=3) coord[new][2] = Z(in) + t * (Z(out) - Z(in));		\
-        if (SIZE==4) coord[new][3] = neww;
+#define PLANE CLIP_TOP_BIT
+#define CLIP_DOTPROD(K) (- Y(K) + W(K))
 
    GENERAL_CLIP
 
-#undef INSIDE
+#undef CLIP_DOTPROD
 #undef PLANE
-#undef COMPUTE_INTERSECTION
 
-
-/*
- * Clip against -Y
- */
-#define PLANE          (CLIP_BOTTOM_BIT)
-#define INSIDE(K)       (Y(K) >= -W(K))
-#define COMPUTE_INTERSECTION( in, out, new )		\
-        dy = Y(out)-Y(in);                      	\
-        dw = W(out)-W(in);                      	\
-        t = -(Y(in)+W(in)) / (dw+dy);           	\
-	neww = W(in) + t * dw;				\
-        X(new) = X(in) + t * (X(out) - X(in));		\
-        Y(new) = -neww;					\
-        if (SIZE>=3) coord[new][2] = Z(in) + t * (Z(out) - Z(in));		\
-        if (SIZE==4) coord[new][3] = neww;
+#define PLANE CLIP_BOTTOM_BIT
+#define CLIP_DOTPROD(K) (Y(K) + W(K))
 
    GENERAL_CLIP
 
-#undef INSIDE
+#undef CLIP_DOTPROD
 #undef PLANE
-#undef COMPUTE_INTERSECTION
 
+#define PLANE CLIP_FAR_BIT
+#define CLIP_DOTPROD(K) (- Z(K) + W(K))
 
+   if (SIZE >= 3) { 
+      GENERAL_CLIP
+   }
 
-/*
- * Clip against +Z
- */
-#define PLANE          (CLIP_FAR_BIT)
-#define INSIDE(K)       (Z(K) <= W(K))
-#define COMPUTE_INTERSECTION( in, out, new )		\
-	   dz = Z(out)-Z(in);				\
-	   dw = W(out)-W(in);				\
-	   t = (Z(in)-W(in)) / (dw-dz);			\
-	   neww = W(in) + t * dw;			\
-	   X(new) = X(in) + t * (X(out) - X(in));	\
-	   Y(new) = Y(in) + t * (Y(out) - Y(in));	\
-	   coord[new][2] = neww;				\
-	   if (SIZE==4) coord[new][3] = neww;
-
-  if (SIZE>=3) { 
-   GENERAL_CLIP
-  }
-
-#undef INSIDE
+#undef CLIP_DOTPROD
 #undef PLANE
-#undef COMPUTE_INTERSECTION
 
+#define PLANE CLIP_NEAR_BIT
+#define CLIP_DOTPROD(K) (Z(K) + W(K))
 
-/*
- * Clip against -Z
- */
-#define PLANE          (CLIP_NEAR_BIT)
-#define INSIDE(K)       (Z(K) >= -W(K))
-#define COMPUTE_INTERSECTION( in, out, new )	\
-        dz = Z(out)-Z(in);			\
-        dw = W(out)-W(in);			\
-        t = -(Z(in)+W(in)) / (dw+dz);		\
-	neww = W(in) + t * dw;			\
-        X(new) = X(in) + t * (X(out) - X(in));	\
-        Y(new) = Y(in) + t * (Y(out) - Y(in));	\
-        coord[new][2] = -neww;				\
-        if (SIZE==4) coord[new][3] = neww; 
+   if (SIZE >=3 ) { 
+      GENERAL_CLIP
+   }
 
-  if (SIZE>=3) { 
-   GENERAL_CLIP
-  }
-
-#undef INSIDE
+#undef CLIP_DOTPROD
 #undef PLANE
-#undef COMPUTE_INTERSECTION
 #undef GENERAL_CLIP
-
-

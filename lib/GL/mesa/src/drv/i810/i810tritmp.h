@@ -63,42 +63,35 @@ static __inline__ void TAG(triangle)( GLcontext *ctx, GLuint e0,
    }
 #endif  
 
-   i810glx.c_triangles++;
-
    
-   BEGIN_CLIP_LOOP(imesa)
-      {
-	 i810_vertex *wv = (i810_vertex *)i810AllocPrimitiveVerts( imesa, 30 );
-	 wv[0] = *v0;
+   {
+      i810_vertex *wv = i810AllocTriangles( imesa, 1 );
+      wv[0] = *v0;
 #if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-	 *((int *)(&wv[0].color)) = c0;
+      *((int *)(&wv[0].color)) = c0;
 #endif
 #if (IND & I810_OFFSET_BIT)
-	 wv[0].z = v0->z + offset;
+      wv[0].z = v0->z + offset;
 #endif
 
 
-	 wv[1] = *v1;
+      wv[1] = *v1;
 #if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-	 *((int *)(&wv[1].color)) = c1;
+      *((int *)(&wv[1].color)) = c1;
 #endif
 #if (IND & I810_OFFSET_BIT)
-	 wv[1].z = v1->z + offset;
+      wv[1].z = v1->z + offset;
 #endif
 
-	 wv[2] = *v2;
+      wv[2] = *v2;
 #if (IND & (I810_FLAT_BIT|I810_TWOSIDE_BIT))
-	 *((int *)(&wv[2].color)) = c2;
+      *((int *)(&wv[2].color)) = c2;
 #endif
 #if (IND & I810_OFFSET_BIT)
-	 wv[2].z = v2->z + offset;
+      wv[2].z = v2->z + offset;
 #endif
-
-	 FINISH_PRIM();
-      }
-   END_CLIP_LOOP(imesa);
+   }
 }
-
 
 
 static void TAG(quad)( GLcontext *ctx, GLuint v0,
@@ -109,25 +102,35 @@ static void TAG(quad)( GLcontext *ctx, GLuint v0,
    TAG(triangle)( ctx, v1, v2, v3, pv );
 }
 
-
-#if ((IND & ~I810_FLAT_BIT) == 0)
-
 static void TAG(line)( GLcontext *ctx, GLuint v0, GLuint v1, GLuint pv )
 {
    i810ContextPtr imesa = I810_CONTEXT( ctx );
    i810VertexPtr i810VB = I810_DRIVER_DATA(ctx->VB)->verts;
-   i810_vertex tmp0 = i810VB[v0].v;
-   i810_vertex tmp1 = i810VB[v1].v;
-   float width = ctx->Line.Width;
+   int tmp0, tmp1;
+   (void) tmp0; (void) tmp1;
+
 
    if (IND & I810_FLAT_BIT) {
-      *(int *)&tmp1.color = *(int *)&tmp0.color = 
-	 *(int *)&i810VB[pv].v.color;
-   }
+      tmp0 = *(int *)&i810VB[v0].v.color;
+      tmp1 = *(int *)&i810VB[v1].v.color;
+      i810VB[v0].v.color = i810VB[pv].v.color;
+      i810VB[v1].v.color = i810VB[pv].v.color;
+   }      
 
-   BEGIN_CLIP_LOOP(imesa)
-      i810_draw_line( imesa, &tmp0, &tmp1, width );
-   END_CLIP_LOOP(imesa);
+   if (IND & I810_WIDE_LINE_BIT)
+   {
+      i810_draw_tri_line( imesa, &i810VB[v0].v, &i810VB[v1].v, 
+			  ctx->Line.Width );
+   } 
+   else 
+   {
+      i810_draw_line_line( imesa, &i810VB[v0].v, &i810VB[v1].v );
+   }      
+
+   if (IND & I810_FLAT_BIT) {
+      *(int *)&i810VB[v0].v.color = tmp0;
+      *(int *)&i810VB[v1].v.color = tmp1;
+   }      
 }
 
 
@@ -143,28 +146,22 @@ static void TAG(points)( GLcontext *ctx, GLuint first, GLuint last )
     * ctx->Driver.ReducedPrimitiveChange() callback.  
     */
    
-   BEGIN_CLIP_LOOP(imesa)
-      for(i=first;i<=last;i++) {
-	 if(VB->ClipMask[i]==0) {
-	    i810_vertex *tmp = &i810VB[i].v;
-	    i810_draw_point( imesa, tmp, sz );
-	 }
+   for(i=first;i<=last;i++) {
+      if(VB->ClipMask[i]==0) {
+	 i810_vertex *tmp = &i810VB[i].v;
+	 i810_draw_point( imesa, tmp, sz );
       }
-   END_CLIP_LOOP(imesa);
+   }
 }
 
-#endif
 
 
 static void TAG(init)( void )
 {
    tri_tab[IND] = TAG(triangle);
    quad_tab[IND] = TAG(quad);
-
-#if ((IND & ~I810_FLAT_BIT) == 0) 
    line_tab[IND] = TAG(line);
    points_tab[IND] = TAG(points);
-#endif
 }
 
 

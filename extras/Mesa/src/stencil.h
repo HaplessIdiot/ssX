@@ -3,7 +3,7 @@
  * Mesa 3-D graphics library
  * Version:  3.3
  * 
- * Copyright (C) 1999  Brian Paul   All Rights Reserved.
+ * Copyright (C) 1999-2000  Brian Paul   All Rights Reserved.
  * 
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -49,33 +49,31 @@ _mesa_StencilOp( GLenum fail, GLenum zfail, GLenum zpass );
 
 
 extern GLboolean
-gl_stencil_and_depth_test_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+_mesa_stencil_and_ztest_span( GLcontext *ctx, GLuint n, GLint x, GLint y,
+                              const GLdepth z[], GLubyte mask[] );
+
+extern GLboolean
+_mesa_stencil_and_ztest_pixels( GLcontext *ctx, GLuint n,
+                                const GLint x[], const GLint y[],
                                 const GLdepth z[], GLubyte mask[] );
 
-#ifdef VMS /* VMS allows externals of 31 characters maximum */
-#define gl_stencil_and_depth_test_pixels gl_stencil_and_depth_test_pixel
-#endif
-extern GLboolean
-gl_stencil_and_depth_test_pixels( GLcontext *ctx, GLuint n,
-                                  const GLint x[], const GLint y[],
-                                  const GLdepth z[], GLubyte mask[] );
 
+extern void
+_mesa_read_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
+                         GLstencil stencil[] );
 
 
 extern void
-gl_read_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
-                      GLstencil stencil[] );
+_mesa_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
+                          const GLstencil stencil[] );
 
 
 extern void
-gl_write_stencil_span( GLcontext *ctx, GLint n, GLint x, GLint y,
-                       const GLstencil stencil[] );
+_mesa_alloc_stencil_buffer( GLcontext *ctx );
 
 
-extern void gl_alloc_stencil_buffer( GLcontext *ctx );
-
-
-extern void gl_clear_stencil_buffer( GLcontext *ctx );
+extern void
+_mesa_clear_stencil_buffer( GLcontext *ctx );
 
 
 #endif

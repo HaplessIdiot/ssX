@@ -64,11 +64,17 @@
 #include "GL/xmesa.h"
 #include "xmesaP.h"
 #include "context.h"
+#include "extensions.h"
 #include "matrix.h"
 #include "mem.h"
 #include "types.h"
 #ifdef HAVE_CONFIG_H
 #include "conf.h"
+#endif
+
+
+#ifndef GLX_NONE_EXT
+#define GLX_NONE_EXT 0x8000
 #endif
 
 
@@ -418,7 +424,7 @@ static void free_xmesa_buffer(int client, XMesaBuffer buffer)
 }
 
 
-/* Copy X color table stuff from on XMesaBuffer to another. */
+/* Copy X color table stuff from one XMesaBuffer to another. */
 static void copy_colortable_info(XMesaBuffer dst, const XMesaBuffer src)
 {
    MEMCPY(dst->color_table, src->color_table, sizeof(src->color_table));
@@ -1349,10 +1355,11 @@ static GLboolean initialize_visual_and_buffer( int client,
 /*
  * Convert an RGBA color to a pixel value.
  */
-unsigned long xmesa_color_to_pixel( XMesaContext xmesa,
-                                    GLubyte r, GLubyte g, GLubyte b, GLubyte a)
+unsigned long
+xmesa_color_to_pixel( XMesaContext xmesa, GLubyte r, GLubyte g, GLubyte b, GLubyte a,
+                      GLuint pixelFormat)
 {
-   switch (xmesa->pixelformat) {
+   switch (pixelFormat) {
       case PF_INDEX:
          return 0;
       case PF_TRUECOLOR:
@@ -1408,21 +1415,29 @@ unsigned long xmesa_color_to_pixel( XMesaContext xmesa,
 
 /*
  * Create a new X/Mesa visual.
- * Input:  display - the X display
- *         visinfo - the XVisualInfo
- *         rgb_flag - TRUE=RGB(A) mode, FALSE=CI mode
- *         alpha_flag - need alpha planes?
- *         db_flag - TRUE=double bufferd, FALSE=single
- *         stereo_flag - true/false
- *         ximage_flag - TRUE=use XImage for back buffer, FALSE=use Pixmap
- *         depth_size - requested min bits per depth buffer value
- *         stencil_size - requested min bits per stencil buffer value
- *         accum_size - requested min bits per accum buffer value (per channel)
- *         level - 0=normal, 1=overaly, -1=underlay, etc.
- * Return:  New XMesaVisual or NULL if something goes wrong
+ * Input:  display - X11 display
+ *         visinfo - an XVisualInfo pointer
+ *         rgb_flag - GL_TRUE = RGB mode,
+ *                    GL_FALSE = color index mode
+ *         alpha_flag - alpha buffer requested?
+ *         db_flag - GL_TRUE = double-buffered,
+ *                   GL_FALSE = single buffered
+ *         stereo_flag - stereo visual?
+ *         ximage_flag - GL_TRUE = use an XImage for back buffer,
+ *                       GL_FALSE = use an off-screen pixmap for back buffer
+ *         depth_size - requested bits/depth values, or zero
+ *         stencil_size - requested bits/stencil values, or zero
+ *         accum_red_size - requested bits/red accum values, or zero
+ *         accum_green_size - requested bits/green accum values, or zero
+ *         accum_blue_size - requested bits/blue accum values, or zero
+ *         accum_alpha_size - requested bits/alpha accum values, or zero
+ *         num_samples - number of samples/pixel if multisampling, or zero
+ *         level - visual level, usually 0
+ *         visualCaveat - ala the GLX extension, usually GLX_NONE_EXT
+ * Return;  a new XMesaVisual or 0 if error.
  */
 XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
-			       XMesaVisualInfo visinfo,
+                               XMesaVisualInfo visinfo,
                                GLboolean rgb_flag,
                                GLboolean alpha_flag,
                                GLboolean db_flag,
@@ -1430,8 +1445,13 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
                                GLboolean ximage_flag,
                                GLint depth_size,
                                GLint stencil_size,
-                               GLint accum_size,
-                               GLint level )
+                               GLint accum_red_size,
+                               GLint accum_green_size,
+                               GLint accum_blue_size,
+                               GLint accum_alpha_size,
+                               GLint num_samples,
+                               GLint level,
+                               GLint visualCaveat )
 {
    char *gamma;
    XMesaVisual v;
@@ -1506,6 +1526,7 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
 
    v->ximage_flag = ximage_flag;
    v->level = level;
+   v->VisualCaveat = visualCaveat;
 
    (void) initialize_visual_and_buffer( 0, v, NULL, rgb_flag, 0, 0 );
 
@@ -1532,11 +1553,15 @@ XMesaVisual XMesaCreateVisual( XMesaDisplay *display,
       }
    }
 
-   v->gl_visual = gl_create_visual( rgb_flag, alpha_flag, db_flag, stereo_flag,
-                                    depth_size, stencil_size, accum_size,
-                                    v->index_bits,
-                                    red_bits, green_bits,
-                                    blue_bits, alpha_bits );
+   v->gl_visual = _mesa_create_visual( rgb_flag, db_flag, stereo_flag,
+                                       red_bits, green_bits,
+                                       blue_bits, alpha_bits,
+                                       v->index_bits,
+                                       depth_size,
+                                       stencil_size,
+                                       accum_red_size, accum_green_size,
+                                       accum_blue_size, accum_alpha_size,
+                                       0 );
    if (!v->gl_visual) {
 #ifndef XFree86Server
       FREE(v->visinfo);
@@ -1557,7 +1582,7 @@ void XMesaSetVisualDisplay( XMesaDisplay *dpy, XMesaVisual v )
 
 void XMesaDestroyVisual( XMesaVisual v )
 {
-   gl_destroy_visual( v->gl_visual );
+   _mesa_destroy_visual( v->gl_visual );
 #ifndef XFree86Server
    FREE(v->visinfo);
 #endif
@@ -1573,9 +1598,7 @@ void XMesaDestroyVisual( XMesaVisual v )
  *                      lists or NULL if no sharing is wanted.
  * Return:  an XMesaContext or NULL if error.
  */
-XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list
-				 DRI_CTX_ARG
-			       )
+XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list )
 {
    XMesaContext c;
    GLboolean direct = GL_TRUE; /* XXXX */
@@ -1593,6 +1616,9 @@ XMesaContext XMesaCreateContext( XMesaVisual v, XMesaContext share_list
       FREE(c);
       return NULL;
    }
+
+   gl_extensions_enable(c->gl_ctx, "GL_HP_occlusion_test");
+   gl_extensions_enable(c->gl_ctx, "GL_ARB_texture_cube_map");
 
    if (CHECK_BYTE_ORDER(v)) {
       c->swapbytes = GL_FALSE;
@@ -1673,11 +1699,8 @@ void XMesaDestroyContext( XMesaContext c )
  *         c - the context
  * Return:  new XMesaBuffer or NULL if error
  */
-XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
-                                      XMesaWindow w,
-                                      XMesaContext c
-				      DRI_DRAWABLE_ARG
-				    )
+XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v, XMesaWindow w,
+                                      XMesaContext c )
 {
 #ifndef XFree86Server
    XWindowAttributes attr;
@@ -1750,7 +1773,7 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
    b->gl_buffer = gl_create_framebuffer( v->gl_visual,
                                          v->gl_visual->DepthBits > 0,
                                          v->gl_visual->StencilBits > 0,
-                                         v->gl_visual->AccumBits > 0,
+                                         v->gl_visual->AccumRedBits > 0,
                                          v->gl_visual->AlphaBits > 0 );
    if (!b->gl_buffer) {
       free_xmesa_buffer(client, b);
@@ -1778,9 +1801,9 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
        if (v->gl_visual->DBflag) {
 	 attribs[numAttribs++] = FXMESA_DOUBLEBUFFER;
        }
-       if (v->gl_visual->AccumBits > 0) {
+       if (v->gl_visual->AccumRedBits > 0) {
 	 attribs[numAttribs++] = FXMESA_ACCUM_SIZE;
-	 attribs[numAttribs++] = v->gl_visual->AccumBits;
+	 attribs[numAttribs++] = v->gl_visual->AccumRedBits;
        }
        if (v->gl_visual->StencilBits > 0) {
          attribs[numAttribs++] = FXMESA_STENCIL_SIZE;
@@ -1839,12 +1862,9 @@ XMesaBuffer XMesaCreateWindowBuffer2( XMesaVisual v,
 }
 
 
-XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v,
-                                     XMesaWindow w
-				     DRI_DRAWABLE_ARG
-				   )
+XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v, XMesaWindow w )
 {
-   return XMesaCreateWindowBuffer2( v, w, NULL DRI_DRAWABLE_PARM );
+   return XMesaCreateWindowBuffer2( v, w, NULL );
 }
 
 
@@ -1857,9 +1877,7 @@ XMesaBuffer XMesaCreateWindowBuffer( XMesaVisual v,
  * Return:  new XMesaBuffer or NULL if error
  */
 XMesaBuffer XMesaCreatePixmapBuffer( XMesaVisual v,
-				     XMesaPixmap p, XMesaColormap cmap
-				     DRI_DRAWABLE_ARG
-				   )
+				     XMesaPixmap p, XMesaColormap cmap )
 {
    int client = 0;
    XMesaBuffer b = alloc_xmesa_buffer();
@@ -1897,7 +1915,9 @@ XMesaBuffer XMesaCreatePixmapBuffer( XMesaVisual v,
    b->gl_buffer = gl_create_framebuffer( v->gl_visual,
                                          v->gl_visual->DepthBits > 0,
                                          v->gl_visual->StencilBits > 0,
-                                         v->gl_visual->AccumBits > 0,
+                                         v->gl_visual->AccumRedBits +
+                                         v->gl_visual->AccumGreenBits +
+                                         v->gl_visual->AccumBlueBits > 0,
                                          v->gl_visual->AlphaBits > 0 );
    if (!b->gl_buffer) {
       free_xmesa_buffer(client, b);
@@ -2041,13 +2061,14 @@ GLboolean XMesaMakeCurrent2( XMesaContext c, XMesaBuffer drawBuffer,
           * can be different for different windows.
           */
          c->pixel = xmesa_color_to_pixel( c, c->red, c->green,
-                                          c->blue, c->alpha );
+                                          c->blue, c->alpha, c->pixelformat );
          XMesaSetForeground( c->display, c->xm_buffer->gc1, c->pixel );
          c->clearpixel = xmesa_color_to_pixel( c,
                                                c->clearcolor[0],
                                                c->clearcolor[1],
                                                c->clearcolor[2],
-                                               c->clearcolor[3] );
+                                               c->clearcolor[3],
+                                               c->xm_visual->undithered_pf);
          XMesaSetForeground(c->display, c->xm_buffer->cleargc, c->clearpixel);
       }
 
@@ -2136,7 +2157,7 @@ GLboolean XMesaSetFXmode( GLint mode )
    const char *fx = getenv("MESA_GLX_FX");
    if (fx && fx[0] != 'd') {
       GrHwConfiguration hw;
-      if (!grSstQueryHardware(&hw)) {
+      if (!FX_grSstQueryHardware(&hw)) {
          /*fprintf(stderr, "!grSstQueryHardware\n");*/
          return GL_FALSE;
       }
@@ -2147,13 +2168,13 @@ GLboolean XMesaSetFXmode( GLint mode )
       if (XMesa) {
          if (mode == XMESA_FX_WINDOW) {
 	    if (XMesa->xm_buffer->FXisHackUsable) {
-	       grSstControl(GR_CONTROL_DEACTIVATE);
+	       FX_grSstControl(GR_CONTROL_DEACTIVATE);
 	       XMesa->xm_buffer->FXwindowHack = GL_TRUE;
 	       return GL_TRUE;
 	    }
 	 }
 	 else if (mode == XMESA_FX_FULLSCREEN) {
-	    grSstControl(GR_CONTROL_ACTIVATE);
+	    FX_grSstControl(GR_CONTROL_ACTIVATE);
 	    XMesa->xm_buffer->FXwindowHack = GL_FALSE;
 	    return GL_TRUE;
 	 }
@@ -2253,7 +2274,7 @@ static void FXgetImage( XMesaBuffer b )
 					       (pixbuf[x] & 0xf800) >> 8,
 					       (pixbuf[x] & 0x07e0) >> 3,
 					       (pixbuf[x] & 0x001f) << 3,
-					       0xff));
+					       0xff, XMesa->pixelformat));
          }
       }
    }
@@ -2435,7 +2456,7 @@ GLboolean XMesaGetBackBuffer( XMesaBuffer b,
 GLboolean XMesaGetDepthBuffer( XMesaBuffer b, GLint *width, GLint *height,
                                GLint *bytesPerValue, void **buffer )
 {
-   if ((!b->gl_buffer) || (!b->gl_buffer->Depth)) {
+   if ((!b->gl_buffer) || (!b->gl_buffer->DepthBuffer)) {
       *width = 0;
       *height = 0;
       *bytesPerValue = 0;
@@ -2446,7 +2467,7 @@ GLboolean XMesaGetDepthBuffer( XMesaBuffer b, GLint *width, GLint *height,
       *width = b->gl_buffer->Width;
       *height = b->gl_buffer->Height;
       *bytesPerValue = sizeof(GLdepth);
-      *buffer = b->gl_buffer->Depth;
+      *buffer = b->gl_buffer->DepthBuffer;
       return GL_TRUE;
    }
 }

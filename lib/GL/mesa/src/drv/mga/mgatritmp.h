@@ -98,19 +98,31 @@ static void TAG(quad)( GLcontext *ctx, GLuint v0,
 }
 
 
-#if ((IND & ~MGA_FLAT_BIT) == 0)
-
 static void TAG(line)( GLcontext *ctx, GLuint v0, GLuint v1, GLuint pv )
 {
    mgaContextPtr mmesa = MGA_CONTEXT( ctx );
    mgaVertexPtr mgaVB = MGA_DRIVER_DATA(ctx->VB)->verts;
    float width = ctx->Line.Width;
 
-   if (IND & MGA_FLAT_BIT) {
+   if (IND & (MGA_TWOSIDE_BIT|MGA_FLAT_BIT)) {
       mgaVertex tmp0 = mgaVB[v0];
       mgaVertex tmp1 = mgaVB[v1];
-      *(int *)&tmp0.warp1.color = *(int *)&mgaVB[pv].warp1.color;
-      *(int *)&tmp1.warp1.color = *(int *)&mgaVB[pv].warp1.color;
+
+      if (IND & MGA_TWOSIDE_BIT) {
+	 GLubyte (*vbcolor)[4] = ctx->VB->ColorPtr->data;
+
+	 if (IND & MGA_FLAT_BIT) {
+ 	    MGA_COLOR((char *)&tmp0.warp1.color,vbcolor[pv]);
+	    *(int *)&tmp1.warp1.color = *(int *)&tmp0.warp1.color;
+	 } else {
+	    MGA_COLOR((char *)&tmp0.warp1.color,vbcolor[v0]);
+	    MGA_COLOR((char *)&tmp1.warp1.color,vbcolor[v1]);
+	 }
+
+      } else {
+	 *(int *)&tmp0.warp1.color = *(int *)&mgaVB[pv].warp1.color;
+	 *(int *)&tmp1.warp1.color = *(int *)&mgaVB[pv].warp1.color;
+      }
       mga_draw_line( mmesa, &tmp0, &tmp1, width );
    }
    else
@@ -125,13 +137,20 @@ static void TAG(points)( GLcontext *ctx, GLuint first, GLuint last )
    mgaVertexPtr mgaVB = MGA_DRIVER_DATA(VB)->verts;
    GLfloat sz = ctx->Point.Size * .5;
    int i;
-
+   
    for(i=first;i<=last;i++) 
-      if(VB->ClipMask[i]==0) 
-	 mga_draw_point( mmesa, &mgaVB[i], sz );
+      if(VB->ClipMask[i]==0) {
+	 if (IND & MGA_TWOSIDE_BIT) {	
+	    GLubyte (*vbcolor)[4] = VB->ColorPtr->data;
+	    mgaVertex tmp0 = mgaVB[i];
+	    MGA_COLOR((char *)&tmp0.warp1.color, vbcolor[i]);
+	    mga_draw_point( mmesa, &tmp0, sz );
+	 } else
+	    mga_draw_point( mmesa, &mgaVB[i], sz );
+      }
 }
 
-#endif
+
 
 
 static void TAG(init)( void )
@@ -139,10 +158,9 @@ static void TAG(init)( void )
    tri_tab[IND] = TAG(triangle);
    quad_tab[IND] = TAG(quad);
 
-#if ((IND & ~MGA_FLAT_BIT) == 0) 
    line_tab[IND] = TAG(line);
    points_tab[IND] = TAG(points);
-#endif
+
 }
 
 
