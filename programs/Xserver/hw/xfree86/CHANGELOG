@@ -1,3 +1,10 @@
+XFree86 3.9.17Za (17 February 2000)
+3807. Fix a bug in the code that checks for the presence of a core keyboard
+      and pointer (David Dawes).
+3806. Remove unnecessary system headers from Xext/fontcache.c, which were
+      causing unresolved symbols for the extmod module on Solaris
+      (David Dawes).
+
 XFree86 3.9.17Z (17 February 2000)
 3805. Fix VT switch problem when using shadowfb with the ati driver
       (Marc La France).
@@ -9726,4 +9733,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1014 2000/02/17 15:20:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1015 2000/02/17 15:34:37 dawes Exp $
