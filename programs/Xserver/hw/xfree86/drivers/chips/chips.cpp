@@ -1,3 +1,4 @@
+.\" $XFree86: $
 .TH CHIPS __drivermansuffix__ "Version 3.9.16"  "XFree86"
 .SH NAME
 chips \- Chips and Technologies video driver

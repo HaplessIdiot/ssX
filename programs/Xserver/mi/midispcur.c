@@ -3,6 +3,7 @@
  *
  * machine independent cursor display routines
  */
+/* $XFree86: $ */
 
 /* $TOG: midispcur.c /main/16 1998/02/09 14:46:39 kaleb $ */
 

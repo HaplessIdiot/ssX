@@ -1,5 +1,5 @@
 /*
- * $Id: fbpush.c,v 1.1 1999/11/19 13:53:45 hohndel Exp $
+ * $Id: fbpush.c,v 1.2 1999/11/19 14:59:16 hohndel Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,6 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+/* $XFree86: $ */
 
 #include "fb.h"
 

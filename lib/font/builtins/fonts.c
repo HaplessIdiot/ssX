@@ -1,5 +1,5 @@
 /*
- * $Id: fonts.c,v 1.1 1999/11/19 13:53:32 hohndel Exp $
+ * $Id: fonts.c,v 1.2 1999/11/19 14:59:12 hohndel Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,6 +22,8 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
+/* $XFree86: $ */
+
 #include "builtin.h"
 static char file_6x13[] = {
   '\001',  '\146',  '\143',  '\160',  '\011',  '\000',  '\000',  '\000', 

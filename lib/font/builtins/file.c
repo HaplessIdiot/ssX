@@ -1,5 +1,5 @@
 /*
- * $Id: file.c,v 1.1 1999/11/19 13:53:31 hohndel Exp $
+ * $Id: file.c,v 1.2 1999/11/19 14:59:11 hohndel Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,6 +22,8 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
+/* $XFree86: $ */
+
 #include "builtin.h"
 
 typedef struct _BuiltinIO {

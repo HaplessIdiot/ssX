@@ -1,5 +1,5 @@
 /*
- * $Id: fpe.c,v 1.1 1999/11/19 13:53:33 hohndel Exp $
+ * $Id: fpe.c,v 1.2 1999/11/19 14:59:13 hohndel Exp $
  *
  * Copyright 1999 SuSE, Inc.
  *
@@ -22,6 +22,8 @@
  *
  * Author:  Keith Packard, SuSE, Inc.
  */
+/* $XFree86: $ */
+
 
 #include    "fntfilst.h"
 
