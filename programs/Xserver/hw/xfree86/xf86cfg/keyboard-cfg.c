@@ -1084,8 +1084,6 @@ KeyboardOptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
     Arg args[1];
     int i;
-    char *oldval = xkb_info->defs.options ?
-	XtNewString(xkb_info->defs.options) : XtNewString("");
 
     for (i = 0; i < xkb_rules->option.nelem; i++)
 	if (strcmp(XtName(w), xkb_rules->option.name[i]) == 0)
@@ -1136,18 +1134,15 @@ KeyboardOptionsCallback(Widget w, XtPointer user_data, XtPointer call_data)
     if (options == NULL)
 	options = XtNewString("");
 
-    xkb_info->defs.options = *options ? options : NULL;
+    xkb_info->defs.options = options;
     if (!UpdateKeyboard(False)) {
-	XtFree(options);
-	xkb_info->defs.options = *oldval ? oldval : NULL;
+	*options = '\0';
+	xkb_info->defs.options = NULL;
     }
-    else {
-	XtFree(oldval);
-	XtSetArg(args[0], XtNlabel, options);
-	XtSetValues(optionsb, args, 1);
-	XtSetArg(args[0], XtNtip, options);
-	XtSetValues(optionsb, args, 1);
-    }
+    XtSetArg(args[0], XtNlabel, options);
+    XtSetValues(optionsb, args, 1);
+    XtSetArg(args[0], XtNtip, options);
+    XtSetValues(optionsb, args, 1);
 }
 
 /*ARGSUSED*/
