@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.106 1999/07/11 10:27:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.107 1999/08/01 07:57:33 dawes Exp $ */
 
 /*
  *
@@ -286,7 +286,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(DGAGetViewportStatus)
    SYMFUNC(DGASetViewport)
    SYMFUNC(DGAInstallCmap)
-   SYMFUNC(DGAFlush)
+   SYMFUNC(DGASync)
    SYMFUNC(DGAFillRect)
    SYMFUNC(DGABlitRect)
    SYMFUNC(DGABlitTransRect)

@@ -2,7 +2,7 @@
  * MGA-1064, MGA-G100, MGA-G200, MGA-G400 RAMDAC driver
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.28 1999/08/14 10:49:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dacG.c,v 1.29 1999/08/21 13:48:35 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -330,13 +330,20 @@ MGAGInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		pReg->Option2 = 0x0000007;
 		break;
 	case PCI_CHIP_MGAG400:
-		/* we don't have a good overclock value yet */
-		/* 165 Mhz */
-		pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x09;
-		pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x3C;
-		pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+	        if(pMga->OverclockMem) {
+		    /* 166 Mhz but faster graphics engine clock */
+		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x13;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x7A;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x08;
+		    pReg->Option3 = 0x0190a421;
+		} else {
+		    /* 165 Mhz */
+		    pReg->DacRegs[ MGA1064_SYS_PLL_M ] = 0x09;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_N ] = 0x3C;
+		    pReg->DacRegs[ MGA1064_SYS_PLL_P ] = 0x10;
+		    pReg->Option3 = 0x0190a419;
+		} 
 		pReg->Option2 = 0x01003000;
-		pReg->Option3 = 0x0190a419;
 		if(pMga->HasSDRAM)
 		    pReg->Option = 0x50040120;
 		else

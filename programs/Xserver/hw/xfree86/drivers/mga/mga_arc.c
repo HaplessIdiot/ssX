@@ -19,7 +19,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.5 1999/03/14 03:21:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_arc.c,v 1.6 1999/05/30 03:03:30 dawes Exp $ */
 
 
 #include "X.h"
@@ -132,7 +132,7 @@ MGAZeroArc(
 	    WAITFIFO(8);
 	    DRAW_POINT(org.x + info.xorg + x, org.y + yoffset);
 	    DRAW_POINT(org.x + info.xorgo - x, org.y + yoffset);
-	    DRAW_POINT(orgo.x - info.xorgo - x, orgo.y - yoffset);
+	    DRAW_POINT(orgo.x + info.xorgo - x, orgo.y - yoffset);
 	    DRAW_POINT(orgo.x + info.xorg + x, orgo.y - yoffset);
 	    MIARCSTEP(yoffset += dyoffset;, yoffset++;);
 	}

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_shadow.c,v 1.1 1999/08/14 10:49:48 dawes Exp $ */
 
 /*
    Copyright (c) 1999,  The XFree86 Project Inc. 
@@ -46,6 +46,23 @@ MGARefreshArea(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
     }
 } 
 
+void
+MGAPointerMoved(int index, int x, int y)
+{
+    ScrnInfoPtr pScrn = xf86Screens[index];
+    MGAPtr pMga = MGAPTR(pScrn);
+    int newX, newY;
+
+    if(pMga->Rotate == 1) {
+	newX = pScrn->currentMode->HDisplay - y - 1;
+	newY = x;
+    } else {
+	newX = y;
+	newY = pScrn->currentMode->VDisplay - x - 1;
+    }
+
+    (*pMga->PointerMoved)(index, newX, newY);
+}
 
 void
 MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
@@ -66,11 +83,11 @@ MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 	if(pMga->Rotate == 1) {
 	    dstPtr = pMga->FbStart + 
-			(pbox->x1 * dstPitch) + pScrn->virtualY - y2;
+			(pbox->x1 * dstPitch) + pScrn->virtualX - y2;
 	    srcPtr = pMga->ShadowPtr + ((1 - y2) * srcPitch) + pbox->x1;
 	} else {
 	    dstPtr = pMga->FbStart + 
-			((pScrn->virtualX - pbox->x2) * dstPitch) + y1;
+			((pScrn->virtualY - pbox->x2) * dstPitch) + y1;
 	    srcPtr = pMga->ShadowPtr + (y1 * srcPitch) + pbox->x2 - 1;
 	}
 
@@ -112,12 +129,12 @@ MGARefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 	if(pMga->Rotate == 1) {
 	    dstPtr = (CARD16*)pMga->FbStart + 
-			(pbox->x1 * dstPitch) + pScrn->virtualY - y2;
+			(pbox->x1 * dstPitch) + pScrn->virtualX - y2;
 	    srcPtr = (CARD16*)pMga->ShadowPtr + 
 			((1 - y2) * srcPitch) + pbox->x1;
 	} else {
 	    dstPtr = (CARD16*)pMga->FbStart + 
-			((pScrn->virtualX - pbox->x2) * dstPitch) + y1;
+			((pScrn->virtualY - pbox->x2) * dstPitch) + y1;
 	    srcPtr = (CARD16*)pMga->ShadowPtr + 
 			(y1 * srcPitch) + pbox->x2 - 1;
 	}
@@ -159,11 +176,11 @@ MGARefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 	if(pMga->Rotate == 1) {
 	    dstPtr = pMga->FbStart + 
-			(pbox->x1 * dstPitch) + ((pScrn->virtualY - y2) * 3);
+			(pbox->x1 * dstPitch) + ((pScrn->virtualX - y2) * 3);
 	    srcPtr = pMga->ShadowPtr + ((1 - y2) * srcPitch) + (pbox->x1 * 3);
 	} else {
 	    dstPtr = pMga->FbStart + 
-			((pScrn->virtualX - pbox->x2) * dstPitch) + (y1 * 3);
+			((pScrn->virtualY - pbox->x2) * dstPitch) + (y1 * 3);
 	    srcPtr = pMga->ShadowPtr + (y1 * srcPitch) + (pbox->x2 * 3) - 3;
 	}
 
@@ -207,12 +224,12 @@ MGARefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox)
 
 	if(pMga->Rotate == 1) {
 	    dstPtr = (CARD32*)pMga->FbStart + 
-			(pbox->x1 * dstPitch) + pScrn->virtualY - pbox->y2;
+			(pbox->x1 * dstPitch) + pScrn->virtualX - pbox->y2;
 	    srcPtr = (CARD32*)pMga->ShadowPtr + 
 			((1 - pbox->y2) * srcPitch) + pbox->x1;
 	} else {
 	    dstPtr = (CARD32*)pMga->FbStart + 
-			((pScrn->virtualX - pbox->x2) * dstPitch) + pbox->y1;
+			((pScrn->virtualY - pbox->x2) * dstPitch) + pbox->y1;
 	    srcPtr = (CARD32*)pMga->ShadowPtr + 
 			(pbox->y1 * srcPitch) + pbox->x2 - 1;
 	}

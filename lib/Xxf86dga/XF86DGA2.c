@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.10 1999/07/18 08:14:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.11 1999/08/14 10:49:17 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -600,20 +600,20 @@ int XDGAGetViewportStatus(
     return status;
 }
 
-void XDGAFlush(
+void XDGASync(
     Display *dpy,
     int screen 
 ){
     XExtDisplayInfo *info = xdga_find_display (dpy);
-    xXDGAFlushReply rep;
-    xXDGAFlushReq *req;
+    xXDGASyncReply rep;
+    xXDGASyncReq *req;
 
     XextSimpleCheckExtension (dpy, info, xdga_extension_name);
 
     LockDisplay(dpy);
-    GetReq(XDGAFlush, req);
+    GetReq(XDGASync, req);
     req->reqType = info->codes->major_opcode;
-    req->dgaReqType = X_XDGAFlush;
+    req->dgaReqType = X_XDGASync;
     req->screen = screen;
     _XReply(dpy, (xReply *)&rep, 0, xFalse);
     UnlockDisplay(dpy);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.45 1999/08/01 07:57:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.46 1999/08/14 10:49:46 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -183,6 +183,7 @@ typedef struct {
     void		(*Save)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     void		(*Restore)(ScrnInfoPtr, vgaRegPtr, MGARegPtr, Bool);
     Bool		(*ModeInit)(ScrnInfoPtr, DisplayModePtr);
+    void		(*PointerMoved)(int index, int x, int y);
     CloseScreenProcPtr	CloseScreen;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     void (*DDC1SetSpeed)(ScrnInfoPtr, xf86ddcSpeed);
@@ -193,6 +194,8 @@ typedef struct {
     int			fifoCount;
     int			Rotate;
     MGAFBLayout		CurrentLayout;
+    Bool		DrawTransparent;
+    int			MaxBlitDWORDS;
 } MGARec, *MGAPtr;
 
 extern CARD32 MGAAtype[16];
@@ -240,5 +243,29 @@ void MGARefreshArea8(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea16(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea24(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
 void MGARefreshArea32(ScrnInfoPtr pScrn, int num, BoxPtr pbox);
+
+void Mga8SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
+				int ydir, int rop, unsigned int planemask,
+				int trans);
+void Mga16SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
+				int ydir, int rop, unsigned int planemask,
+				int trans);
+void Mga24SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
+				int ydir, int rop, unsigned int planemask,
+				int trans);
+void Mga32SetupForScreenToScreenCopy(ScrnInfoPtr pScrn, int xdir,
+				int ydir, int rop, unsigned int planemask,
+				int trans);
+
+void Mga8SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+				unsigned int planemask);
+void Mga16SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+				unsigned int planemask);
+void Mga24SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+				unsigned int planemask);
+void Mga32SetupForSolidFill(ScrnInfoPtr pScrn, int color, int rop,
+				unsigned int planemask);
+
+void MGAPointerMoved(int index, int x, int y);
 
 #endif

@@ -27,7 +27,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/dynapro/xf86Dyna.c,v 1.1 1999/06/12 15:37:10 dawes Exp $ */
 
 #define _DYNAPRO_C_
 
@@ -172,6 +172,18 @@ DynaproPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	if ((!drv) || (!priv))
 		goto SetupProc_fail;
 
+	priv->min_x = 1000;
+	priv->max_x = 0;
+	priv->min_y = 0;
+	priv->max_y = 1000;
+	priv->screen_num = 0;
+	priv->screen_width = -1;
+	priv->screen_height = -1;
+	priv->lex_mode = Dynapro_byte0;
+	priv->swap_xy = 0;
+	priv->button_down = FALSE;
+	priv->button_number = 1;
+	priv->proximity = FALSE;
 
 	pInfo->type_name = XI_TOUCHSCREEN;
 	pInfo->device_control = DeviceControl;
@@ -185,7 +197,6 @@ DynaproPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	pInfo->private_flags = 0;
 	pInfo->flags = XI86_POINTER_CAPABLE | XI86_SEND_DRAG_EVENTS;
 	pInfo->conf_idev = dev;
-
 
 	xf86CollectInputOptions(pInfo, default_options, NULL);
 
@@ -207,6 +218,7 @@ DynaproPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	priv->max_y = xf86SetIntOption( pInfo->options, "MaxY", 1000 );
 	priv->screen_num = xf86SetIntOption( pInfo->options, "ScreenNumber", 0 );
 	priv->button_number = xf86SetIntOption( pInfo->options, "ButtonNumber", 1 );
+	priv->swap_xy = xf86SetIntOption( pInfo->options, "SwapXY", 1 );
 	priv->buffer = NULL;
 	s = xf86FindOptionValue (pInfo->options, "ReportingMode");
 	if ((s) && (xf86NameCmp (s, "raw") == 0))
@@ -376,9 +388,13 @@ ReadInput (InputInfoPtr pInfo)
 	XisbBlockDuration (priv->buffer, -1);
 	while (DynaproGetPacket (priv) == Success)
 	{
+		if (priv->swap_xy) {
+			y = priv->packet[1] | ((priv->packet[0] & 0x38) << 4);
+			x = priv->packet[2] | ((priv->packet[0] & 0x07) << 7);
+		} else {
 		x = priv->packet[1] | ((priv->packet[0] & 0x38) << 4);
 		y = priv->packet[2] | ((priv->packet[0] & 0x07) << 7);
-		
+		}
 				    
 		if (priv->reporting_mode == TS_Scaled)
 		{	

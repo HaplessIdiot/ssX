@@ -1,4 +1,19 @@
 XFree86 3.9.15c (22 August 1999)
+2978. Fix a typo in the MGA arc code that broke some arcs (#3149,
+      Mark Vojkovich).
+2977. Fix a problem with cfb allocating too much space on the stack when
+      clipping rects (#3148, Mark Vojkovich).
+2976. Add missing sync when uploading into the XAA pixmap cache (#3147,
+      Mark Vojkovich).
+2975. Change XDGAFlush() to XDGASync() (#3146, Mark Vojkovich).
+2974. Add transparent DGA blits to the MGA driver, and enable the OverclockMem
+      option for the G400 (#3145, Mark Vojkovich).
+2973. Update the common cursor code to keep virtual desktop panning from
+      interfering with screen rotation (#3144, Mark Vojkovich).
+2972. Dynapro driver update: initialise the incoming packet state machine,
+      and add a "SwapXY" option (#3142, David Woodhouse).
+2971. Fix a loader problem that shows up on Alpha/ELF platforms when there
+      is a .sbss section (#3141, Hannes Reinecke).
 2970. Modify DDC for neomagic (#3139, Egbert Eich).
 2969. Add DDC support for the S3 ViRGE (DDC2 untested) (#3139, Egbert Eich).
 2968. Fix DDC2 support for MGA and C&T drivers (#3139, Egbert Eich).
@@ -8592,4 +8607,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.813 1999/08/15 13:00:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.814 1999/08/21 13:48:17 dawes Exp $
