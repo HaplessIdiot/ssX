@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.12 1997/07/29 12:08:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/xaa/Imakefile,v 3.13 1997/09/09 10:27:59 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -14,7 +14,7 @@ GENSRCS = xf86initac.c \
 	xf86orect.c xf86line.c xf86seg.c \
 	xf86bench.c xf86line2.c xf86seg2.c \
 	xf86expblF.c xf86expbFM.c xf86tables.c xf86stip.c xf86dseg.c \
-	xf86dline.c xf86wline.c
+	xf86dline.c xf86wline.c xf86cursor.c
 
 BPPOBJS = xaavga256/xaavga256.o xaa8/xaa8.o xaa16/xaa16.o xaa24/xaa24.o \
 	  xaa32/xaa32.o
@@ -26,7 +26,7 @@ GENOBJS = xf86initac.o \
 	xf86orect.o xf86line.o xf86seg.o \
 	xf86bench.o xf86line2.o xf86seg2.o \
 	xf86expblF.o xf86expbFM.o xf86tables.o xf86stip.o xf86dseg.o \
-	xf86dline.o xf86wline.o
+	xf86dline.o xf86wline.o xf86cursor.o
 
 #ifdef i386Architecture
 SRCS = $(GENSRCS) xf86txtblt.s xf86txtblM.s 
@@ -62,6 +62,8 @@ LinkSourceFile(vga256map.h,$(XF86SRC)/xaa)
 LinkSourceFile(xf86bench.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86bitmap.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86cparea.c,$(XF86SRC)/xaa)
+LinkSourceFile(xf86cursor.c,$(XF86SRC)/xaa)
+LinkSourceFile(xf86cursor.h,$(XF86SRC)/xaa)
 LinkSourceFile(xf86defs.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86dline.c,$(XF86SRC)/xaa)
 LinkSourceFile(xf86dseg.c,$(XF86SRC)/xaa)

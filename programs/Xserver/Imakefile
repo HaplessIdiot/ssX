@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/235 1997/05/25 15:12:21 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.115 1997/07/29 12:07:17 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.116 1997/08/13 05:32:10 hohndel Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -583,6 +583,9 @@ XF98TGUI = XF98_TGUI
 #if XF98MGAServer
 XF98MGA = XF98_MGA
 #endif
+#if XF98SVGAServer
+XF98SVGA = XF98_SVGA
+#endif
 #if XF98EGCServer
 XF98EGC = XF98_EGC
 #endif
@@ -608,7 +611,8 @@ XVFB = Xvfb
     defined(XF98PEGCServer) || defined(XF98NKVNECServer) || \
     defined(XF98WABSServer) || defined(XF98WABEPServer) || \
     defined(XF98WSNAServer) || defined(XF98TGUIServer) || \
-    defined(XF98MGAServer) || defined(XF98EGCServer) || \
+    defined(XF98MGAServer)  || defined(XF98SVGAServer) || \
+    defined(XF98EGCServer) || \
     defined(XF86W32Server) || defined(XF86S3Server) || \
     defined(XF86S3VServer) || defined(XF98NECS3Server) || \
     defined(XF98PWSKBServer) || defined(XF98PWLBServer) || \
@@ -620,7 +624,8 @@ XVFB = Xvfb
     defined(XF68FBDevServer) || defined(XnestServer) || \
     defined(XVirtualFramebufferServer)
 MakeMutex($(XF86SVGA) $(XF98GANBWAP) $(XF98PEGC) $(XF98NKVNEC) $(XF98WABS) \
-	  $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF98MGA) $(XF98EGC) \
+	  $(XF98WABEP) $(XF98WSNA) $(XF98TGUI) $(XF98MGA) $(XF98SVGA) \
+	  $(XF98EGC) \
 	  $(XF86W32) $(XF86S3) $(XF86S3V) $(XF98NECS3) \
 	  $(XF98PWSKB) $(XF98PWLB) $(XF98GA968) $(XF868514) $(XF86MACH8) \
 	  $(XF86MACH32) $(XF86MACH64) $(XF86P9000) $(XF86AGX) $(XF86I128) \
@@ -1253,6 +1258,41 @@ SetUIDServerTarget(XF98_MGA,$(XF98MGASUBDIRS),$(XF98MGAOBJS),$(XF98MGALIBS),$(XF
 #define ServerToInstall XF98_MGA
 #endif
 #endif	/* XF98MGAServer */
+
+
+#if XF98SVGAServer
+XCOMM
+XCOMM XFree98 Cirrus Logic CLGD7555 Server
+XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
+DDXDIR2 = hw/xfree98
+XF98SVGASUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) \
+                  $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98SVGAOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/vga256Conf.o \
+               $(XF98SRC)/xaa/xaavga256/xaavga256.o \
+               $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o \
+               $(XF98SRC)/xaa/xaa32/xaa32.o
+XF98SVGALIBS = $(XF98DRIVERSRC)/LibraryTargetName(driversvga) \
+	       $(XF98SRC)/xaa/LibraryTargetName(xaa) \
+	       $(XF98SRC)/vga256/LibraryTargetName(vga256) \
+               $(XF98LIBS) CFBLibs
+XF98SVGASYSLIBS = $(SYSLIBS)
+#if HasParallelMake
+MakeMutex($(XF98SVGASUBDIRS) $(XF98SVGAOBJS) $(XF98SVGALIBS) $(XF98SVGASYSLIBS))
+#endif
+#if HasGnuMake
+$(XF98SVGAOBJS) $(XF98SVGALIBS) $(XF98SVGASYSLIBS):: $(XF98SVGASUBDIRS)
+	@if [ -f $@ ]; then touch $@; fi
+#endif
+SetUIDServerTarget(XF98_SVGA,$(XF98SVGASUBDIRS),$(XF98SVGAOBJS),$(XF98SVGALIBS),$(XF98SVGASYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF98_SVGA
+#endif
+#endif	/* XF98SVGAServer */
 
 
 #if XF98EGCServer

@@ -1,4 +1,4 @@
-DATE:970811
+DATE:970919
                        XFree86 PC98 Server
                         Video System List
 
@@ -30,7 +30,7 @@ NEC
 |FC-WAB-A (PC-9821A-E09) |S3-928         |Bt485  |ICS2494 |2|   o   | |
 |FC-WAB-B (PC-9801-91)   |S3-928         |Bt485  |ICS2494 |2|  o?   | |
 |FC-WAB-X (PC-9821X-B01) |MGA II         |       |        |2|   X   | |
-|FC-WAB-X2(PC-9821X-B03) |MGA2064W       |Ti3026 |Ti3026  |2|   D   |O|
+|FC-WAB-X2(PC-9821X-B03) |MGA2064W       |Ti3026 |Ti3026  |2|  o?   |O|
 |MSWIN KIT(PC-9801B3-E02)|CLGD5428       | B/I   |  B/I   |1|   X   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821As2/U7W/U8W       |S3-928E        |       |        |1|  o?   | |
@@ -52,10 +52,10 @@ NEC
 |PC9801BX4/U2            |CLGD5430       | B/I   |  B/I   |1|  o?   |X|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821Xt                |MGA II         |       |        |4|   X   | |
-|PC9821Xt13              |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
-|PC9821Xt16              |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
-|PC9821St15              |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
-|PC9821St20              |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
+|PC9821Xt13              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
+|PC9821Xt16              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
+|PC9821St15              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
+|PC9821St20              |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
 |PC9821Xa                |MGA II         |       |        |2|   X   | |
 |PC9821Xa7/C,K           |TGUI9680       | B/I   |  B/I   |2|   o   | |
 |PC9821Xa9/C,K           |TGUI9680       | B/I   |  B/I   |2|  o?   | |
@@ -79,8 +79,8 @@ NEC
 |PC9821Xe                |CLGD5430       | B/I   |  B/I   |1|  o?   |X|
 |PC9821Xe10              |CLGD5430       | B/I   |  B/I   |1|   O   |X|
 |PC9821Xv13/R            |TGUI9680       | B/I   |  B/I   |2|  o?   | |
-|PC9821Xv13/W            |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
-|PC9821Xv20/W            |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
+|PC9821Xv13/W            |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
+|PC9821Xv20/W            |MGA2064W       |Ti3026 |Ti3026  |4|  o?   |O|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821V7/C              |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
 |PC9821V10/C,S           |CLGD5440       | B/I   |  B/I   |1|  o?   |X|
@@ -121,7 +121,7 @@ NEC
 |PC9821Ra266/N,W         |TGUI9682       | B/I   |  B/I   |2|   o   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821RaII23/N,W        |TGUI9682       | B/I   |  B/I   |2|  o?   | |
-|PC9821RvII26/N20        |MGA2064W       |Ti3026 |Ti3026  |4|   D   |O|
+|PC9821RvII26/N20        |MGA2064W       |Ti3026 |Ti3026  |4|   o   |O|
 +------------------------+---------------+-------+--------+-+-------+-+
 |PC9821Rs20/B20          |TGUI9682       | B/I   |  B/I   |2|  o?   | |
 |PC9821RsII26/B40        |TGUI9682       | B/I   |  B/I   |2|  o?   | |
@@ -203,7 +203,7 @@ EPSON
 |PC586RJ                 |S3-964         |       |        |1|  x?   | |
 |PC586RV                 |CLGD5429       | B/I   |  B/I   |1|   O   |X|
 |PC586MV                 |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
-|PC486MU                 |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
+|PC486MU                 |CLGD5429       | B/I   |  B/I   |1|  o?   |X|
 |PC486MS                 |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 |PC486MR                 |CLGD5428       | B/I   |  B/I   |1|  o?   |X|
 |PC486MV                 |CLGD5428       | B/I   |  B/I   |1|   O   |X|
@@ -368,4 +368,4 @@ Force
 |WinFrame928             |S3-928         |       |        |2|   ?   | |
 +------------------------+---------------+-------+--------+-+-------+-+
 
-/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.7 1997/07/31 09:18:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree98/doc/VideoBoard98,v 3.8 1997/08/26 10:01:46 hohndel Exp $ */

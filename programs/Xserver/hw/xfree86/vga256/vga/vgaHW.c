@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.60 1997/06/15 07:12:39 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.61 1997/06/15 23:35:20 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -71,7 +71,7 @@
 #define		EGC_LENGTH	0x4ae	/* EGC Bit length          */
 #endif
 
-#if !defined(PC98_PEGC) && !defined(PC98_EGC)
+#if !defined(PC98_PEGC) && !defined(PC98_EGC) && !defined(PC98_MGA)
 #if !defined(MONOVGA) && !defined(SCO)
 #ifndef SAVE_FONT1
 #define SAVE_FONT1
@@ -101,7 +101,7 @@
 
 /* bytes per plane to save for font data */
 #define FONT_AMOUNT 8192
-#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) */
+#endif /* !defined(PC98_PEGC) && !defined(PC98_EGC) && !defined(PC98_MGA) */
 
 #if defined(CSRG_BASED) || defined(MACH386)
 #include <sys/time.h>

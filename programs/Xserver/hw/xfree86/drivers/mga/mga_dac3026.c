@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.11 1997/09/12 09:23:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.12 1997/09/15 07:18:51 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -36,6 +36,15 @@
 #include "vga.h"
 #include "vgaPCI.h"
 
+#ifdef PC98_MGA
+#ifdef XFreeXDGA
+#include "scrnintstr.h"
+#include "servermd.h"
+#define _XF86DGA_SERVER_
+#include "extensions/xf86dgastr.h"
+#endif
+#endif
+
 #include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
@@ -50,6 +59,9 @@ void	MGA3026RamdacInit();
 Bool	MGA3026Init();
 void	MGA3026Restore();
 void*	MGA3026Save();
+#ifdef PC98_MGA
+void	MGA3026Reset();
+#endif
 
 /*
  * implementation
@@ -217,6 +229,127 @@ MGATi3026InstallColormap(ColormapPtr pmap, int entries, Pixel *ppix, xrgb *prgb)
 #endif
   }
 }
+
+#ifdef PC98_MGA
+/* taken from vgaCmap.c */
+void
+MGATi3026StoreColors(pmap, ndef, pdefs)
+     ColormapPtr	pmap;
+     int		ndef;
+     xColorItem	        *pdefs;
+{
+    int		i;
+    unsigned char *cmap, *tmp;
+    xColorItem	directDefs[256];
+    Bool          new_overscan = FALSE;
+    unsigned char overscan = ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN];
+    unsigned char tmp_overscan;
+
+    if (vgaCheckColorMap(pmap))
+        return;
+
+    if ((pmap->pVisual->class | DynamicClass) == DirectColor)
+    {
+        ndef = cfbExpandDirectColors (pmap, ndef, pdefs, directDefs);
+        pdefs = directDefs;
+    }
+
+    for(i = 0; i < ndef; i++)
+    {
+        if (pdefs[i].pixel == overscan)
+	{
+	    new_overscan = TRUE;
+	}
+        cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
+	if (vgaDAC8BitComponents) {
+            cmap[0] = pdefs[i].red   >> 8;
+            cmap[1] = pdefs[i].green >> 8;
+            cmap[2] = pdefs[i].blue  >> 8;
+        }
+        else {
+            cmap[0] = pdefs[i].red   >> 10;
+            cmap[1] = pdefs[i].green >> 10;
+            cmap[2] = pdefs[i].blue  >> 10;
+        }
+
+        if (xf86VTSema
+#ifdef XFreeXDGA
+	    || ((vga256InfoRec.directMode & XF86DGADirectGraphics)
+	        && !(vga256InfoRec.directMode & XF86DGADirectColormap))
+	    || (vga256InfoRec.directMode & XF86DGAHasColormap)
+#endif
+	   )
+	{
+	    outTi3026dreg(TVP3026_WADR_PAL, pdefs[i].pixel);
+	    outTi3026dreg(TVP3026_COL_PAL, cmap[0]);
+	    outTi3026dreg(TVP3026_COL_PAL, cmap[1]);
+	    outTi3026dreg(TVP3026_COL_PAL, cmap[2]);
+	}
+    }	
+    if (new_overscan)
+    {
+	new_overscan = FALSE;
+        for(i = 0; i < ndef; i++)
+        {
+            if (pdefs[i].pixel == overscan)
+	    {
+	        if ((pdefs[i].red != 0) || 
+	            (pdefs[i].green != 0) || 
+	            (pdefs[i].blue != 0))
+	        {
+	            new_overscan = TRUE;
+		    tmp_overscan = overscan;
+        	    tmp = &((vgaHWPtr)vgaNewVideoState)->DAC[pdefs[i].pixel*3];
+	        }
+	        break;
+	    }
+        }
+        if (new_overscan)
+        {
+            /*
+             * Find a black pixel, or the nearest match.
+             */
+            for (i=255; i >= 0; i--)
+	    {
+                cmap = &((vgaHWPtr)vgaNewVideoState)->DAC[i*3];
+	        if ((cmap[0] == 0) && (cmap[1] == 0) && (cmap[2] == 0))
+	        {
+	            overscan = i;
+	            break;
+	        }
+	        else
+	        {
+	            if ((cmap[0] < tmp[0]) && 
+		        (cmap[1] < tmp[1]) && (cmap[2] < tmp[2]))
+	            {
+		        tmp = cmap;
+		        tmp_overscan = i;
+	            }
+	        }
+	    }
+	    if (i < 0)
+	    {
+	        overscan = tmp_overscan;
+	    }
+	    ((vgaHWPtr)vgaNewVideoState)->Attribute[OVERSCAN] = overscan;
+            if (xf86VTSema
+#ifdef XFreeXDGA
+	        || ((vga256InfoRec.directMode & XF86DGADirectGraphics)
+	            && !(vga256InfoRec.directMode & XF86DGADirectColormap))
+	        || (vga256InfoRec.directMode&XF86DGAHasColormap)
+#endif
+	       )
+	    {
+	      (void)inb(vgaIOBase + 0x0A);
+	      outb(0x3C0, OVERSCAN);
+	      outb(0x3C0, overscan);
+	      (void)inb(vgaIOBase + 0x0A);
+	      outb(0x3C0, 0x20);
+	    }
+        }
+    }
+}
+#endif
 
 /*
  * MGATi3026CalcClock - Calculate the PLL settings (m, n, p).
@@ -1124,3 +1257,104 @@ MGA3026RamdacInit()
 #endif
     MGATi3026SetMCLK( MGAdac.MemoryClock );
 }
+
+#ifdef PC98_MGA
+void
+MGA3026Reset()
+{
+	static unsigned char initcrtc[] = {
+			0x60, 0x4f, 0x50, 0x83, 0x55, 0x81, 0xbf, 0x1f,
+			0x00, 0x4f, 0x0e, 0x2f, 0x00, 0x00, 0xff, 0xff,
+			0x9c, 0x0e, 0x8f, 0x28, 0x1f, 0x96, 0xb9, 0xa3,
+			0xff
+	};
+	static unsigned char initcrtcext[] = {
+			0x00, 0x00, 0x00, 0x80, 0x00, 0x00
+	};
+
+	unsigned char tmp;
+	int i;
+
+	/* select CLK0 as clock source */
+	outTi3026(TVP3026_CLK_SEL, 0, 0x77);
+
+	/* select VGA mode */
+	outTi3026(TVP3026_TRUE_COLOR_CTL, 0, 0x80);
+	outTi3026(TVP3026_MUX_CTL, 0, 0x98);
+
+	/* set loop and pixel clock PLL PLLEN bits to 0 */
+	outTi3026(TVP3026_PLL_ADDR, 0, 0x2A);
+	outTi3026(TVP3026_LOAD_CLK_DATA, 0, 0);
+	outTi3026(TVP3026_PIX_CLK_DATA, 0, 0);
+
+	/* select 28MHz fixed clock */
+	outb(0x3C2, 0x6D);	/* once select PLL */
+	outb(0x3C2, 0x65);	/* then select 28MHz */
+
+	/* Pixel clock PLL routed to RCLK */
+	outTi3026(TVP3026_MCLK_CTL, 0, 0x18);
+
+	/* set MCLK */
+	MGA3026RamdacInit();
+
+	/* nogscale=1 */
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, 0x002C0000);
+
+	/* mgamode=1 */
+	outb(0x3DE, 0x03);	/* Select CRTCEXT3 */
+	tmp = inb(0x3DF);
+	outb(0x3DF, tmp | 0x80);
+
+	/* screen off */
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	tmp = inb(0x3C5);
+	outb(0x3C5, tmp | 0x20);
+
+	/* unprotect CRTC registers 0-7 */
+	outb(0x3D4, 0x11);
+	outb(0x3D5, 0x2f);
+
+	/* set initial CRTC regs value */
+	for (i = 0; i <= 24; i++) {
+		outb(0x3D4, i);
+		outb(0x3D5, initcrtc[i]);
+	}
+
+	/* set initial CRTCEXT regs value */
+	for (i=0; i<=5; i++) {
+		outb(0x3DE, i);
+		outb(0x3DF, initcrtcext[i]);
+	}
+
+	/* assert soft reset */
+	OUTREG(MGAREG_Reset, 1);
+	usleep(250);
+	OUTREG(MGAREG_Reset, 0);
+	usleep(250);
+
+	/* wait vertical retrace */
+	while ((inb(0x3DA) & 0x08) != 0x08);
+
+	/* screen on */
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	tmp = inb(0x3C5);
+	outb(0x3C5, tmp & ~0x20);
+
+	/* wait vertical retrace */
+	while ((inb(0x3DA) & 0x08) != 0x08);
+  
+	/* set memreset */
+	OUTREG(MGAREG_MACCESS, 0x00008000);
+	usleep(100);
+
+	/* screen off */
+	outb(0x3C4, 0x01);	/* Select SEQ1 */
+	tmp = inb(0x3C5);
+	outb(0x3C5, tmp | 0x20);
+
+	/*  disable HSYNC,VSYNC */
+	outb(0x3DE, 0x01);	/* Select CRTCEXT1 */
+	tmp = inb(0x3DF);
+	outb(0x3DF, tmp | 0x30);
+}
+#endif

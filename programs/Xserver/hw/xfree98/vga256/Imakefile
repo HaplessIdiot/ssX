@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/9 1996/10/25 15:43:07 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.16 1997/05/03 09:19:54 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/vga256/Imakefile,v 3.17 1997/07/29 12:08:21 hohndel Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -67,6 +67,13 @@ MGAOBJS    = mga/?*.o
 MGADONES   = mga/DONE
 #endif
 
+#if XF98SVGAServer || XF98SVGAModule
+SVGASUBDIRS = svga
+SVGASRCS    = svga/?*.c
+SVGAOBJS    = svga/?*.o
+SVGADONES   = svga/DONE
+#endif
+
 #if XF98EGCServer || XF98EGCModule
 EGCSUBDIRS = egc
 EGCSRCS    = egc/?*.c
@@ -76,14 +83,17 @@ EGCDONES   = egc/DONE
 
 SUBDIRS = $(GANBWAPSUBDIRS) $(PEGCSUBDIRS) $(NKVNECSUBDIRS) \
 	  $(WABSSUBDIRS) $(WABEPSUBDIRS) $(WSNASUBDIRS) $(TGUISUBDIRS) \
-	  $(MGASUBDIRS) $(EGCSUBDIRS)
+	  $(MGASUBDIRS) $(SVGASUBDIRS) $(EGCSUBDIRS)
 
 SRCS    = $(GANBWAPSRCS) $(PEGCSRCS) $(NKVNECSRCS) $(WABSSRCS) \
-	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS) $(MGASRCS) $(EGCSRCS)
+	  $(WABEPSRCS) $(WSNASRCS) $(TGUISRCS) $(MGASRCS) $(SVGASRCS) \
+          $(EGCSRCS)
 OBJS    = $(GANBWAPOBJS) $(PEGCOBJS) $(NKVNECOBJS) $(WABSOBJS) \
-	  $(WABEPOBJS) $(WSNAOBJS) $(TGUIOBJS) $(MGAOBJS) $(EGCOBJS)
+	  $(WABEPOBJS) $(WSNAOBJS) $(TGUIOBJS) $(MGAOBJS) $(SVGAOBJS) \
+          $(EGCOBJS)
 DONES   = $(GANBWAPDONES) $(PEGCDONES) $(NKVNECDONES) $(WABSDONES) \
-	  $(WABEPDONES) $(WSNADONES) $(TGUIDONES) $(MGADONES) $(EGCDONES)
+	  $(WABEPDONES) $(WSNADONES) $(TGUIDONES) $(MGADONES) $(SVGADONES) \
+          $(EGCDONES)
 
 INCLUDES = -I$(XF86SRC)/vga256/vga -I$(XF86COMSRC) -I$(XF86OSSRC) \
 	   -I$(SERVERSRC)/include -I$(XINCLUDESRC)
@@ -123,6 +133,9 @@ ConfigTargetNoDepend(tguiConf,$(ICONFIGFILES),ctgui.SHsuf,trident)
 #if XF98MGAServer
 ConfigTargetNoDepend(mgaConf,$(ICONFIGFILES),cmga.SHsuf,mga)
 #endif
+#if XF98SVGAServer
+ConfigTargetNoDepend(vga256Conf,$(ICONFIGFILES),cvga256.SHsuf,cirrus)
+#endif
 #if XF98EGCServer
 ConfigTargetNoDepend(egcConf,$(ICONFIGFILES),cegc.SHsuf,egc)
 #endif
@@ -156,6 +169,9 @@ NormalDepLibraryTarget(trident,$(TGUISUBDIRS) $(TGUIDONES),?*.o)
 #if XF98MGAServer || XF98MGAModule
 NormalDepLibraryTarget(mga,$(MGASUBDIRS) $(MGADONES),?*.o)
 #endif
+#if XF98SVGAServer || XF98SVGAModule
+NormalDepLibraryTarget(vga256,$(SVGASUBDIRS) $(SVGADONES),?*.o)
+#endif
 #if XF98EGCServer || XF98EGCModule
 NormalDepLibraryTarget(egc,$(EGCSUBDIRS) $(EGCDONES),?*.o)
 #endif
@@ -181,6 +197,9 @@ NormalDepLibraryTarget(wabep,$(WABEPSUBDIRS) $(WABEPDONES),$(WABEPOBJS))
 #if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(trident,$(TGUISUBDIRS) $(TGUIDONES),$(TGUIOBJS))
 #endif
+#if XF98SVGAServer || XF98SVGAModule
+NormalDepLibraryTarget(vga256,$(SVGASUBDIRS) $(SVGADONES),$(SVGAOBJS))
+#endif
 #if XF98MGAServer || XF98MGAModule
 NormalDepLibraryTarget(mga,$(MGASUBDIRS) $(MGADONES),$(MGAOBJS))
 #endif
@@ -201,6 +220,7 @@ InstallLinkKitLibrary(mga,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabep,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wabs,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(wsna,$(XF98LINKKITDIR)/drivers98)
+InstallLinkKitLibrary(svga,$(XF98LINKKITDIR)/drivers98)
 InstallLinkKitLibrary(egc,$(XF98LINKKITDIR)/drivers98)
 #ifndef DontInstallPC98Version
 InstallLinkKitNonExecFile(cvga256.SHsuf,$(XF98LINKKITDIR))
@@ -225,9 +245,6 @@ InstallDynamicModule(LibraryTargetName(nkvnec),$(MODULEDIR))
 InstallDynamicModule(LibraryTargetName(trident),$(MODULEDIR))
 #endif
 #endif
-#if XF98MGAModule
-InstallDynamicModule(LibraryTargetName(mga),$(MODULEDIR))
-#endif
 #if XF98WABEPModule
 InstallDynamicModule(LibraryTargetName(wabep),$(MODULEDIR))
 #endif
@@ -236,6 +253,12 @@ InstallDynamicModule(LibraryTargetName(wabs),$(MODULEDIR))
 #endif
 #if XF98WSNAModule
 InstallDynamicModule(LibraryTargetName(wsna),$(MODULEDIR))
+#endif
+#if XF98MGAModule
+InstallDynamicModule(LibraryTargetName(mga),$(MODULEDIR))
+#endif
+#if XF98SVGAModule
+InstallDynamicModule(LibraryTargetName(svga),$(MODULEDIR))
 #endif
 #if XF98EGCModule
 InstallDynamicModule(LibraryTargetName(egc),$(MODULEDIR))

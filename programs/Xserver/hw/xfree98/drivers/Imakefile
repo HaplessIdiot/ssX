@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.7 1997/04/17 08:17:40 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/Imakefile,v 1.8 1997/07/29 12:08:18 hohndel Exp $
 
 
 #define IHaveModules
@@ -59,8 +59,14 @@ MGASRCS = mga/?*.c
 MGAOBJS = mga/mga_drv.o
 #endif
 
+#if XF98SVGAServer || XF98SVGAModule
+SVGADIR  = svga
+SVGASRCS = svga/?*.c
+SVGAOBJS = svga/svga_drv.o
+#endif
+
 SUBDIRS = $(EGCDIR) $(GANBWAPDIR) $(PEGCDIR) $(NKVNECDIR) $(WABSDIR) \
-	  $(WABEPDIR) $(WSNADIR) $(TGUIDIR) $(MGADIR)
+	  $(WABEPDIR) $(WSNADIR) $(TGUIDIR) $(MGADIR) $(SVGADIR)
 
 #if 0
 MakeSubdirs($(SUBDIRS))
@@ -98,6 +104,9 @@ NormalDepLibraryTarget(drivertrident,$(TGUIDIR) $(TGUIOBJS),$(TGUIOBJS))
 #if XF98MGAServer || XF98MGAModule
 NormalDepLibraryTarget(drivermga,$(MGADIR) $(MGAOBJS),$(MGAOBJS))
 #endif
+#if XF98SVGAServer || XF98SVGAModule
+NormalDepLibraryTarget(driversvga,$(SVGADIR) $(SVGAOBJS),$(SVGAOBJS))
+#endif
 #else
 #if XF98EGCServer || XF98EGCModule
 NormalDepLibraryTarget(driveregc,$(EGCDIR),$(EGCOBJS))
@@ -122,6 +131,9 @@ NormalDepLibraryTarget(driverwsna,$(WSNADIR),$(WSNAOBJS))
 #endif
 #if XF98TGUIServer || XF98TGUIModule
 NormalDepLibraryTarget(drivertrident,$(TGUIDIR),$(TGUIOBJS))
+#endif
+#if XF98SVGAServer || XF98SVGAModule
+NormalDepLibraryTarget(driversvga,$(SVGADIR),$(SVGAOBJS))
 #endif
 #endif
 #if XF98MGAServer || XF98MGAModule

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.14 1997/03/17 07:18:25 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/XF98Conf.cpp,v 3.15 1997/09/09 10:27:55 hohndel Exp $
 XCOMM
 XCOMM Copyright (c) 1994 by The XFree86 Project, Inc.
 XCOMM
@@ -42,7 +42,7 @@ XCOMM The location of the RGB database.  Note, this is the name of the
 XCOMM file minus the extension (like ".txt" or ".db").  There is normally
 XCOMM no need to change the default.
 
-    RgbPath	RGBPATH
+RgbPath		RGBPATH
 
 XCOMM Multiple FontPath entries are allowed (which are concatenated together),
 XCOMM as well as specifying multiple comma-separated entries in one FontPath
@@ -477,6 +477,7 @@ Section "Device"
     ChipSet     "clgd5434"
     ClockChip   "cirrus"
     Option      "ga98nb1"
+    Option	"no_mmio"
 XCOMM    Option     "mmio"
 XCOMM    Option     "sw_cursor"
 EndSection
@@ -488,6 +489,7 @@ Section "Device"
     ChipSet     "clgd5434"
     ClockChip   "cirrus"
     Option      "ga98nb2"
+    Option	"no_mmio"
 XCOMM    Option     "mmio"
 XCOMM    Option     "sw_cursor"
 EndSection
@@ -499,6 +501,7 @@ Section "Device"
     ChipSet     "clgd5434"
     ClockChip   "cirrus"
     Option      "ga98nb4"
+    Option	"no_mmio"
 XCOMM    Option     "mmio"
 XCOMM    Option     "sw_cursor"
 EndSection
@@ -508,6 +511,7 @@ Section "Device"
     VendorName	"MELCO"
     BoardName	"WAP-2000/4000"
     Chipset	"clgd5434"
+    Option	"no_mmio"
 XCOMM    Option	"epsonmemwin"
     Option	"wap"
 EndSection
@@ -518,6 +522,8 @@ Section "Device"
     BoardName	"PCNKV/PCNKV2/NEC_CIRRUS"
     Chipset	"clgd5428"
 XCOMM    Chipset	"clgd5429"
+XCOMM    Chipset	"clgd5430"
+XCOMM    Option	"no_mmio"
 XCOMM    Option	"nec_cirrus"
 XCOMM    Option	"fast_dram"
     VideoRam    1024
@@ -548,6 +554,15 @@ Section "Device"
     BoardName   "Millennium"
 XCOMM    Option	"noaccel"
 EndSection
+
+Section "Device"
+    Identifier	"SVGA"
+    VendorName	"NEC"
+    BoardName	"generic SVGA"
+    Chipset	"clgd7555"
+    Option	"no_bitblt"
+    MemBase	0xFE000000
+Endsection
 
 Section "Device"
     Identifier	"PW"
@@ -722,6 +737,7 @@ XCOMM    Device	"GA98NB4"
 XCOMM    Device	"NECTrident"
 XCOMM    Device	"GA-DRV98"
 XCOMM    Device	"MGA"
+XCOMM    Device "SVGA"
     Monitor	"Multi sync"
     Subsection "Display"
         Depth	    4
@@ -732,13 +748,15 @@ XCOMM    Device	"MGA"
     Subsection "Display"
         Depth	    8
         Modes	    "800x600" "640x480" "1024x768"
+XCOMM        Modes	    "1024x768H" "640x480"
 XCOMM        Modes	    "NEC480" "640x400"
         ViewPort    0 0
 XCOMM        Virtual     1024 1024
 XCOMM        Virtual     1024 1022
+        Virtual     1024 768
 XCOMM        Virtual      640 480
 XCOMM        Virtual      640 400
-        Virtual     1280 816
+XCOMM        Virtual     1280 816
     EndSubsection
 EndSection
 
