@@ -47,8 +47,8 @@ SOFTWARE.
 ******************************************************************/
 #ifndef SERVERMD_H
 #define SERVERMD_H 1
-/* $XConsortium: servermd.h,v 1.70 94/04/17 20:26:08 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.1 1994/05/06 08:37:45 dawes Exp $ */
+/* $XConsortium: servermd.h,v 1.71 94/05/05 16:03:22 dpw Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.2 1994/05/08 05:25:10 dawes Exp $ */
 
 /*
  * Machine dependent values:
@@ -238,7 +238,7 @@ SOFTWARE.
 
 #if defined(mips) && !defined(sgi)
 
-#ifdef MIPSEL
+#if defined(MIPSEL) || defined(__MIPSEL__)
 # define IMAGE_BYTE_ORDER	LSBFirst        /* Values for the PMAX only */
 # define BITMAP_BIT_ORDER	LSBFirst
 # define GLYPHPADBYTES		4
