@@ -322,6 +322,7 @@ static const char *driSymbols[] = {
 static const char *vbeSymbols[] = {
     "VBEInit",
     "vbeDoEDID",
+    "vbeFree",
     NULL
 };
 #endif
@@ -979,10 +980,12 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
     if (!xf86LoadSubModule(pScrn, "ddc")) return FALSE;
     xf86LoaderReqSymLists(ddcSymbols, NULL);
     if (xf86LoadSubModule(pScrn, "vbe")) {
+	xf86LoaderReqSymLists(vbeSymbols,NULL);
 	pVbe = VBEInit(NULL,info->pEnt->index);
 	if (!pVbe) return FALSE;
 
 	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
+	vbeFree(pVbe);
 	return TRUE;
     } else
 	return FALSE;
