@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/man.h,v 1.4 2001/07/25 15:05:27 dawes Exp $ */
+/* $XFree86: xc/programs/xman/man.h,v 1.5 2004/03/12 02:17:55 dickey Exp $ */
 
 
 /* X toolkit header files */
@@ -236,7 +236,6 @@ Bool ReadManConfig(char manpath[]);
 int Man(void);
 
 /* misc.c */
-FILE * DoSearch(ManpageGlobals * man_globals, int type);
 FILE * FindManualFile(ManpageGlobals * man_globals, int section_num, int entry_num);
 ManpageGlobals * GetGlobals(Widget w);
 void AddCursor(Widget w, Cursor cursor);
