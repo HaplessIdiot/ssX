@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.33 2003/04/23 21:51:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_video.c,v 1.34 2003/06/01 22:21:01 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1024,7 +1024,7 @@ TRIDENTStopSurface(
     if(pPriv->isOn) {
 	TRIDENTPtr pTrident = TRIDENTPTR(surface->pScrn);
     	int vgaIOBase = VGAHWPTR(surface->pScrn)->IOBase;
-	WaitForVBlank(pScrn);
+	WaitForVBlank(surface->pScrn);
  	OUTW(vgaIOBase + 4, 0x848E);
 	OUTW(vgaIOBase + 4, 0x0091);
 	pPriv->isOn = FALSE;
