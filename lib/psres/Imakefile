@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/psres/Imakefile,v 1.1 2000/02/13 00:13:48 dawes Exp $
+XCOMM $XFree86: xc/lib/psres/Imakefile,v 1.2 2000/02/14 18:11:47 dawes Exp $
 
 #define DoNormalLib NormalLibPSRes
 #define DoSharedLib SharedLibPSRes
@@ -7,6 +7,7 @@ XCOMM $XFree86: xc/lib/psres/Imakefile,v 1.1 2000/02/13 00:13:48 dawes Exp $
 #define DoProfileLib ProfileLibPSRes
 #define LibName psres
 #define SoRev SOPSRESREV
+#define LibHeaders NO
 
         PSWRAP = $(TOP)/config/pswrap/pswrap
 
