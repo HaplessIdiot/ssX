@@ -8,10 +8,10 @@
 <!-- Title information -->
 <title>Documentation for XFree86&trade; version &relvers;
 <author>The XFree86 Project, Inc
-<date>8 March 2000
+<date>30 June 2000
 
 <!--
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/index.pre,v 1.6 2000/03/08 05:38:44 dawes Exp $ 
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/index.pre,v 1.7 2000/03/21 19:57:10 dawes Exp $ 
 -->
 
 <p>
