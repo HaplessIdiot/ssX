@@ -27,10 +27,12 @@ in this Software without prior written authorization from The Open Group.
  * protocol extensions.  THESE INTERFACES ARE NOT PART OF THE X STANDARD AND
  * ARE SUBJECT TO CHANGE!
  */
-/* $XFree86: xc/include/extensions/extutil.h,v 1.6 2001/08/01 00:44:35 tsi Exp $ */
+/* $XFree86: xc/include/extensions/extutil.h,v 1.7 2001/08/18 02:45:19 dawes Exp $ */
 
 #ifndef _EXTUTIL_H_
 #define _EXTUTIL_H_
+
+#include <X11/extensions/Xext.h>
 
 /*
  * We need to keep a list of open displays since the Xlib display list isn't
@@ -164,15 +166,6 @@ extern XExtDisplayInfo *XextFindDisplay(
     Display*		/* dpy */
 #endif
 );
-
-#if 0
-extern int XMissingExtension(
-#if NeedFunctionPrototypes
-    Display*		/* dpy */,
-    _Xconst char *	/* ext_name */
-#endif
-);
-#endif
 
 #define XextHasExtension(i) ((i) && ((i)->codes))
 #define XextCheckExtension(dpy,i,name,val) \

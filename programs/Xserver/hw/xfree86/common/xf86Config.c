@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.245 2001/08/15 16:25:21 paulo Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.246 2001/08/16 14:33:51 dawes Exp $ */
 
 
 /*
@@ -701,7 +701,7 @@ typedef enum {
     FLAG_NOPM,
     FLAG_XINERAMA,
     FLAG_ALLOW_DEACTIVATE_GRABS,
-    FLAG_ALLOW_CLOSEDOWN_GRABS,
+    FLAG_ALLOW_CLOSEDOWN_GRABS
 } FlagValues;
    
 static OptionInfoRec FlagOptions[] = {

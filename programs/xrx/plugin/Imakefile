@@ -3,7 +3,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:54:59 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/xrx/plugin/Imakefile,v 1.8 2001/03/03 23:07:50 tsi Exp $
+XCOMM $XFree86: xc/programs/xrx/plugin/Imakefile,v 1.9 2001/08/17 22:08:16 tsi Exp $
 
 XCOMM This isn't an option we must build a shared lib
 #define DoSharedLib YES
@@ -145,6 +145,8 @@ PLUGIN_LDOPTIONS = $(LDPRELIBS)
 RXICELIB = $(ICELIB)
 #endif
 
+#else  /* UseInstalledX11 */
+PLUGIN_LDOPTIONS = $(LDPRELIBS)
 #endif /* UseInstalledX11 */
 
     REQUIREDLIBS =  $(X11R6_3_EXTENSIONS) $(PLUGIN_LDOPTIONS) $(RXICELIB) $(XTOOLONLYLIB) $(XLIB)

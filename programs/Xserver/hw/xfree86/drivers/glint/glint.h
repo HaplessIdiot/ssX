@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.49 2001/05/24 19:55:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.50 2001/08/18 11:37:30 alanh Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -245,6 +245,7 @@ void Permedia3InitializeEngine(ScrnInfoPtr pScrn);
 void Permedia3EnableOffscreen(ScreenPtr pScreen);
 void Permedia3Sync(ScrnInfoPtr pScrn);
 void DualPermedia3Sync(ScrnInfoPtr pScrn);
+void Permedia3InitVideo(ScreenPtr pScreen);
 
 void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
