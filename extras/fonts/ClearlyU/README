@@ -1,8 +1,7 @@
 #
-# From: Id: README,v 1.8 1999/04/22 18:39:50 mleisher Exp $
+# Id: README,v 1.11 2000/12/06 22:13:11 mleisher Exp $
 #
-# Copyright 1996, 1997, 1998, 1999 Computing Research Lab,
-# New Mexico State University
+# Copyright 2000 Computing Research Lab, New Mexico State University
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -23,14 +22,14 @@
 # THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #
 
-Version: 1.7
-22 April 1999
+Version: 1.8
+6 December 2000
 
 This set of fonts provides a 12pt, 100dpi proportional font with many of
 the glyphs needed for Unicode text.  I call the typeface "ClearlyU" and
 it was influenced by Donald Knuth's Computer Modern.
 
-The fonts together contain 4270 glyphs at the moment.
+The fonts together contain 7564 glyphs at the moment.
 
 Information about this font and samples, are located at:
 
@@ -47,6 +46,52 @@ Mark Leisher <mleisher@crl.nmsu.edu>
 
 CHANGES
 =======
+
+CHANGES FROM 1.7
+---------------
+
+  o  Adjusted the shapes of U+01A2 and U+01A3 based on:
+       http://www.indigo.ie/egt/standards/iso10646/pdf/gha.pdf
+
+  o  Added some more glyphs for Unicode 3.0.
+
+  o  Some minor lightening of a few glyphs.
+
+  o  Redrew the Hebrew glyphs to be more consistent with the other scripts.
+
+  o  Removed a combination from the PUA font that is in Unicode 3.0.
+
+  o  Made the digits in the Arabic glyphs heavier to reflect more common
+     practice.  The Urdu digit glyphs in the alternate font updated as well.
+
+  o  Modified the Arabic block glyphs to be smaller and less silly looking.
+
+  o  Added Devanagari glyphs including those needed to actually present text.
+
+  o  Adjusted the advance widths of the Cyrillic capital letters to make
+     presentation more consistent.
+
+  o  Adjusted the width of the Lao vowels, I, II, Y, and YY.
+
+  o  Renamed all the glyphs to "uniXXXX".
+
+  o  Added a Macedonian/Serbian alternate for U+0431 to cu-alt12.
+
+  o  Added the Romanian alternates using virgule instead of cedilla for
+     U+015E, U+015F, U+0162, and U+0163.
+
+  o  Added the Persian alternate glyph for the decimal separator at U+066B to
+     the alternate font.
+
+  o  Fixed up some of the Greek glyphs so the small iota follows the capital
+     letters.
+
+  o  Improved the Greek drachma sign.
+
+  o  Adjusted the Cyrillic block to match Unicode 3.0 and moved the extra
+     characters to the PUA font.
+
+  o  Initial addition of some basic Hangul glyphs.
 
 CHANGES FROM 1.6
 ----------------
