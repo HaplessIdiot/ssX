@@ -7,7 +7,7 @@ XCOMM $OpenBSD: OpenBSDLib.rules,v 1.1 2000/10/09 20:43:58 matthieu Exp $
  * OpenBSD shared library rules
  */
 
-XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.4 2002/10/29 23:21:15 herrb Exp $
+XCOMM $XFree86: xc/config/cf/OpenBSDLib.rules,v 1.5 2003/02/17 21:46:44 herrb Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat NO
@@ -138,6 +138,22 @@ clean::									@@\
 	$(RM) name
 
 #endif /* SharedDepModuleTarget */
+
+#ifndef SharedDriModuleTarget
+#define SharedDriModuleTarget(name,deps,solist)				@@\
+AllTarget(name)								@@\
+									@@\
+name: deps								@@\
+	$(RM) $@~ $@.map						@@\
+	$(CC) -o $@~  $(SHLIBLDFLAGS) solist $(REQUIREDLIBS) BaseShLibReqs @@\
+	$(RM) $@ $@.map							@@\
+	$(MV) $@~ $@							@@\
+									@@\
+clean::									@@\
+	$(RM) name							@@\
+	$(RM) name.map
+
+#endif /* SharedDriModuleTarget */
 
 /*
  * SharedLibraryDataTarget - generate rules to create shlib data file;

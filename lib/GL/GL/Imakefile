@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.15 2002/12/04 21:08:03 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/GL/Imakefile,v 1.16 2002/12/04 21:38:34 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -46,7 +46,7 @@ SubdirLibraryRule($(PROFOBJ))
 NormalLintTarget($(PROFSRC))
 #endif
 
-#if BuildXF86DRI && defined(i386Architecture)
+#if BuildXF86DRI && defined(i386Architecture) && MesaUseX86Asm
     GLAPI_OBJ = $(GLXLIBSRC)/glx/glapi_x86.o
 #endif
 

@@ -1,4 +1,6 @@
 XFree86 4.3.99.4 (xx April 2003)
+ 167. Support for building a DRI enabled server on OpenBSD (Wilbern Cobb,
+      Matthieu Herrb).
  166. Fix double free bug when a Mac-specific font fails to load with
       Freetype (Torrey T. Lyons).
  165. Check for NULL tObj in the i830 3D driver's TexEnv function.  This
@@ -16946,7 +16948,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2688 2003/05/07 21:56:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2689 2003/05/07 23:25:25 torrey Exp $
 
 
 
