@@ -1,3 +1,4 @@
+1236. Xinerama support for Render extension (Keith Packard)
 1235. Make some changes to the clock selection for trident driver.
       (Alan Hourihane).
 1234. Switch savage driver to fb (+Render), correct maxHValue (Keith Packard)
@@ -12157,4 +12158,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1506 2001/01/02 21:26:47 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1507 2001/01/02 21:48:17 alanh Exp $

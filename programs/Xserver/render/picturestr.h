@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.8 2000/11/16 19:45:07 eich Exp $
+ * $XFree86: xc/programs/Xserver/render/picturestr.h,v 1.10 2000/12/05 03:13:33 keithp Exp $
  *
  * Copyright © 2000 SuSE, Inc.
  *
@@ -269,5 +269,12 @@ CompositeRects (CARD8		op,
 		xRenderColor	*color,
 		int		nRect,
 		xRectangle      *rects);
+
+void RenderExtensionInit (void);
+
+#ifdef PANORAMIX
+void PanoramiXRenderInit (void);
+void PanoramiXRenderReset (void);
+#endif
 
 #endif /* _PICTURESTR_H_ */
