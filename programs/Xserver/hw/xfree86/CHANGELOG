@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 268. Update VMware driver (#4935, Jeremy (VMware)).
  267. Native GDI infrastructure sync with Cygwin/XFree86 (#4936, Harold Hunt).
  266. Update Darwin build configuration files including:
        - Report full OS version and more capabilities.
@@ -13792,4 +13793,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1935 2001/09/13 01:28:56 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1936 2001/09/13 08:25:40 alanh Exp $
