@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.55 2000/03/31 20:13:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.57 2000/04/17 16:30:06 eich Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -119,12 +119,6 @@ static void S3VProbeDDC(ScrnInfoPtr pScrn, int index);
  */
 static int pix24bpp = 0;
  
-/*
- * For DDC Monitor detection
- */
-extern xf86MonPtr ConfiguredMonitor;
-
-
 #define S3VIRGE_NAME "S3VIRGE"
 #define S3VIRGE_DRIVER_NAME "s3virge"
 #define S3VIRGE_VERSION_NAME "1.0.0"
@@ -980,7 +974,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
        
        xf86LoaderReqSymLists(ddcSymbols, NULL);
        if ((ps3v->pVbe) 
-	   && ((pMon = xf86PrintEDID(vbeDoEDID(ps3v->pVbe))) != NULL))
+	   && ((pMon = xf86PrintEDID(vbeDoEDID(ps3v->pVbe, NULL))) != NULL))
 	   xf86SetDDCproperties(pScrn,pMon);
        else if (!S3Vddc1(pScrn->scrnIndex)) {
 	   if ( xf86LoadSubModule(pScrn, "i2c") ) {
@@ -3664,7 +3658,7 @@ S3VProbeDDC(ScrnInfoPtr pScrn, int index)
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
         pVbe = VBEInit(NULL,index);
-        ConfiguredMonitor = vbeDoEDID(pVbe);
+        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 

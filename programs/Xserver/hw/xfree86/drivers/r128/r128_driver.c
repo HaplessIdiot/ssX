@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.26 2000/03/06 23:17:44 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.28 2000/04/17 16:30:06 eich Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -1052,15 +1052,13 @@ static Bool R128PreInitInt10(ScrnInfoPtr pScrn)
     return TRUE;
 }
 
-extern xf86MonPtr ConfiguredMonitor;
-
 static void
 R128ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
-	ConfiguredMonitor = vbeDoEDID(pVbe);
+	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 

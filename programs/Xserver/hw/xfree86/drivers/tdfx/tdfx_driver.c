@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.30 2000/03/06 23:54:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.32 2000/04/17 16:30:07 eich Exp $ */
 
 /*
  * Authors:
@@ -529,15 +529,13 @@ TDFXCountRam(ScrnInfoPtr pScrn) {
   return memSize*1024;
 }
 
-extern xf86MonPtr ConfiguredMonitor;
-
 void
 TDFXProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
         pVbe = VBEInit(NULL,index);
-        ConfiguredMonitor = vbeDoEDID(pVbe);
+        ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 
@@ -884,7 +882,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags) {
   /* Initialize DDC1 if possible */
   if (xf86LoadSubModule(pScrn, "vbe")) {
       xf86MonPtr pMon;
-      pMon = vbeDoEDID(VBEInit(NULL,pTDFX->pEnt->index));
+      pMon = vbeDoEDID(VBEInit(NULL, pTDFX->pEnt->index), NULL);
       xf86SetDDCproperties(pScrn,xf86PrintEDID(pMon));
   }
 

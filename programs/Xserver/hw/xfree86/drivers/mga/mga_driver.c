@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.148 2000/03/06 23:54:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.151 2000/04/17 16:30:04 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1060,15 +1060,13 @@ VgaIOEnable(void *arg)
 }
 #endif /* DISABLE_VGA_IO */
 
-extern xf86MonPtr ConfiguredMonitor;
-
 void
 MGAProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
-	ConfiguredMonitor = vbeDoEDID(pVbe);
+	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.h,v 1.3 2000/02/08 13:13:32 eich Exp $ */
 
 #ifndef _VBE_H
 #define _VBE_H
@@ -27,7 +27,7 @@ typedef struct {
 
 vbeInfoPtr VBEInit(xf86Int10InfoPtr pInt, int entityIndex);
 void vbeFree(vbeInfoPtr pVbe);
-xf86MonPtr vbeDoEDID(vbeInfoPtr pVbe);
+xf86MonPtr vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule);
 
 #pragma pack(1)
 

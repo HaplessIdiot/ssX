@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.2 1999/12/06 03:57:06 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbe.c,v 1.5 2000/04/17 16:30:14 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_ansic.h"
@@ -237,8 +237,10 @@ vbeReadEDID(vbeInfoPtr pVbe)
 }
 
 xf86MonPtr
-vbeDoEDID(vbeInfoPtr pVbe)
+vbeDoEDID(vbeInfoPtr pVbe, pointer pDDCModule)
 {
+    xf86MonPtr    pMonitor;
+    pointer       pModule;
     unsigned char *DDC_data = NULL;
     
     if (!pVbe) return NULL;
@@ -250,11 +252,18 @@ vbeDoEDID(vbeInfoPtr pVbe)
     if (!DDC_data) 
 	return NULL;
     
-    if (!xf86LoadSubModule(xf86Screens[pVbe->pInt10->scrnIndex], "ddc"))
-  	return NULL;
-    xf86LoaderReqSymLists(ddcSymbols, NULL);
+    if (!(pModule = pDDCModule)) {
+	pModule =
+	    xf86LoadSubModule(xf86Screens[pVbe->pInt10->scrnIndex], "ddc");
+	if (!pModule)
+	    return NULL;
 
-    return xf86InterpretEDID(pVbe->pInt10->scrnIndex,DDC_data);
+	xf86LoaderReqSymLists(ddcSymbols, NULL);
+    }
+
+    pMonitor = xf86InterpretEDID(pVbe->pInt10->scrnIndex, DDC_data);
+
+    if (!pDDCModule)
+        xf86UnloadSubModule(pModule);
+    return pMonitor;
 }
-
-

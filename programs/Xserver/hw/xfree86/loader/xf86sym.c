@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.136 2000/03/31 22:55:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.138 2000/04/17 16:30:12 eich Exp $ */
 
 /*
  *
@@ -53,8 +53,6 @@
 #include "xisb.h"
 #include "xf86Priv.h"
 #include "vbe.h"
-
-extern xf86MonPtr ConfiguredMonitor;
 
 /* XXX Should get all of these from elsewhere */
 #if defined (PowerMAX_OS)

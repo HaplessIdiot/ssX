@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.21 2000/04/09 03:38:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.22 2000/04/12 14:44:39 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,7 +24,6 @@
 #include "ati.h"
 #include "atiadapter.h"
 #include "atiadjust.h"
-#include "atibios.h"
 #include "atibus.h"
 #include "atichip.h"
 #include "atidac.h"
@@ -37,6 +36,7 @@
 #include "atipreinit.h"
 #include "atiprint.h"
 #include "atividmem.h"
+#include "vbe.h"
 #include "xf86RAC.h"
 #include "xf86Resources.h"
 
@@ -327,32 +327,33 @@ ATIPreInit
     int flags
 )
 {
-#   define          BIOS_SIZE        0x00010000U     /* 64kB */
-    CARD8           BIOS[BIOS_SIZE];
-#   define          BIOSByte(_n)     (*((CARD8  *)(BIOS + (_n))))
-#   define          BIOSWord(_n)     (*((CARD16 *)(BIOS + (_n))))
-#   define          BIOSLong(_n)     (*((CARD32 *)(BIOS + (_n))))
-    unsigned int    BIOSSize = BIOS_SIZE;
-    unsigned int    ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
-    unsigned int    LCDTable = 0, LCDPanelInfo = 0;
+#   define           BIOS_SIZE       0x00010000U     /* 64kB */
+    CARD8            BIOS[BIOS_SIZE], *pBIOS;
+#   define           BIOSByte(_n)    (*((CARD8  *)(BIOS + (_n))))
+#   define           BIOSWord(_n)    (*((CARD16 *)(BIOS + (_n))))
+#   define           BIOSLong(_n)    (*((CARD32 *)(BIOS + (_n))))
+    unsigned int     BIOSSize;
+    unsigned int     ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
+    unsigned int     LCDTable = 0, LCDPanelInfo = 0;
 
-    char            Buffer[128], *Message;
-    ATIPtr          pATI;
-    GDevPtr         pGDev;
-    EntityInfoPtr   pEntity;
-    resPtr          pResources;
-    DisplayModePtr  pMode;
-    Bool            AllowCRT = TRUE;
-    CARD32          IOValue1, IOValue2 = 0;
-    int             i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
-    int             Numerator, Denominator;
-    resRange        Resources[2] = {{0, 0, 0}, _END};
-    ClockRange      ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
-    int             minPitch, maxPitch = 0xFFU, pitchInc, maxHeight = 0;
-    LookupModeFlags Strategy = LOOKUP_CLOSEST_CLOCK;
-
-    if (flags & PROBE_DETECT)
-        return FALSE;
+    char             Buffer[128], *Message;
+    ATIPtr           pATI;
+    GDevPtr          pGDev;
+    EntityInfoPtr    pEntity;
+    resPtr           pResources;
+    DisplayModePtr   pMode;
+    xf86Int10InfoPtr pInt10Info;
+    vbeInfoPtr       pVBE;
+    xf86MonPtr       pMonitor = NULL;
+    pointer          pInt10Module, pDDCModule, pVBEModule = NULL;
+    Bool             AllowCRT = TRUE;
+    CARD32           IOValue1, IOValue2 = 0;
+    int              i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
+    int              Numerator, Denominator;
+    resRange         Resources[2] = {{0, 0, 0}, _END};
+    ClockRange       ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
+    int              minPitch, maxPitch = 0xFFU, pitchInc, maxHeight = 0;
+    LookupModeFlags  Strategy = LOOKUP_CLOSEST_CLOCK;
 
     if (pScreenInfo->numEntities != 1)
     {
@@ -368,6 +369,69 @@ ATIPreInit
         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
             "Logic error:  Entity mismatch.\n");
         return FALSE;
+    }
+
+    /*
+     * Get adapter BIOS, after ensuring its initialisation entry point has been
+     * executed.
+     */
+    if (!(pInt10Module = xf86LoadSubModule(pScreenInfo, "int10")))
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+            "Unable to load int10 module.\n");
+        return FALSE;
+    }
+
+    if (!(pInt10Info = xf86InitInt10(pATI->iEntity)))
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+             "Unable to initialise int10 interface.\n");
+        xf86UnloadSubModule(pInt10Module);
+        return FALSE;
+    }
+
+    if (!(pDDCModule = xf86LoadSubModule(pScreenInfo, "ddc")))
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "Unable to load ddc module.\n");
+    else if (!(pVBEModule = xf86LoadSubModule(pScreenInfo, "vbe")))
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "Unable to load vbe module.\n");
+    else
+    {
+        if ((pVBE = VBEInit(pInt10Info, pATI->iEntity)))
+            pMonitor = vbeDoEDID(pVBE, pDDCModule);
+        vbeFree(pVBE);
+        xf86UnloadSubModule(pVBEModule);
+    }
+
+    /*
+     * Validate, then make a private copy of, the initialised BIOS.  This
+     * allows de-activating int10 early.
+     */
+    pBIOS = xf86int10Addr(pInt10Info, pInt10Info->BIOSseg << 4);
+    if ((pBIOS[0] != 0x55U) || (pBIOS[1] != 0xAAU) || !pBIOS[2])
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+            "Unable to correctly retrieve adapter BIOS.\n");
+        xf86FreeInt10(pInt10Info);
+        xf86UnloadSubModule(pInt10Module);
+        return FALSE;
+    }
+
+    BIOSSize = pBIOS[2] << 9;
+    (void)memcpy(BIOS, pBIOS, BIOSSize);
+    if (BIOSSize < SizeOf(BIOS))
+        (void)memset(BIOS + BIOSSize, 0, SizeOf(BIOS) - BIOSSize);
+
+    /* De-activate int10 */
+    xf86FreeInt10(pInt10Info);
+    xf86UnloadSubModule(pInt10Module);
+
+    if (flags & PROBE_DETECT)
+    {
+        ConfiguredMonitor = pMonitor;
+        xf86UnloadSubModule(pDDCModule);
+        return TRUE;
     }
 
     /* Register resources */
@@ -391,6 +455,15 @@ ATIPreInit
 
     /* Set monitor */
     pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
+
+    if (pMonitor)
+    {
+        xf86PrintEDID(pMonitor);
+        xf86SetDDCproperties(pScreenInfo, pMonitor);
+    }
+
+    /* DDC module is no longer needed at this point */
+    xf86UnloadSubModule(pDDCModule);
 
     /* Deal with ChipID & ChipRev overrides */
     if (pGDev->chipID >= 0)
@@ -616,25 +689,6 @@ ATIPreInit
 
         default:
             break;
-    }
-
-    /* Get PCI or legacy video BIOS, >all< of it */
-    i = ATIReadBIOS(pATI, BIOS, 0, SizeOf(BIOS));
-
-    /* Clear off what could not be read */
-    if (i < 0)
-        i = 0;
-    if (i < SizeOf(BIOS))
-        memset(BIOS + i, 0, SizeOf(BIOS) - i);
-    if ((BIOSByte(0) == 0x55U) && (BIOSByte(1) == 0xAAU) && BIOSByte(2))
-        BIOSSize = BIOSByte(2) << 9;
-    else
-        i = 0;
-    if ((unsigned int)i < BIOSSize)
-    {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-            "Unable to correctly read adapter BIOS.\n");
-        return FALSE;
     }
 
     /*
@@ -1001,14 +1055,6 @@ ATIPreInit
             "Panel clock is %.3f MHz.\n", (double)(pATI->LCDClock) / 1000.0);
     }
 
-    /* Report BIOS address */
-    if (pATI->BIOSBase)
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-            "BIOS bus address:  0x%08X.\n", pATI->BIOSBase);
-    else
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
-            "BIOS not mapped by BIOS initialisation.\n");
-
     /* Promote chipset specification */
     switch (pATI->Chipset)
     {
@@ -1281,8 +1327,22 @@ ATIPreInit
                 IOValue1 = inl(pATI->CPIO_CONFIG_CNTL);
                 pATI->LinearBase = GetBits(IOValue1, CFG_MEM_AP_LOC) << 22;
                 if ((IOValue1 & CFG_MEM_AP_SIZE) != CFG_MEM_AP_SIZE)
+                {
                     pATI->LinearSize =
                         GetBits(IOValue1, CFG_MEM_AP_SIZE) << 22;
+
+                    /*
+                     * Linear aperture could have been disabled (but still
+                     * assigned) by BIOS initialisation.
+                     */
+                    if (pATI->LinearBase && !pATI->LinearSize)
+                    {
+                        if (pATI->VideoRAM < 4096)
+                            pATI->LinearSize = 4 * 1024 * 1024;
+                        else
+                            pATI->LinearSize = 8 * 1024 * 1024;
+                    }
+                }
 
                 /* Except for PCI & AGP, allow for user override */
                 if ((pATI->BusType != ATI_BUS_PCI) &&
@@ -2001,7 +2061,7 @@ ATIPreInit
     /* Generate noise if requested */
     if (xf86GetVerbosity() > 3)
     {
-        ATIPrintBIOS(pATI, BIOS, 0, BIOSSize);
+        ATIPrintBIOS(BIOS, 0, BIOSSize);
         xf86ErrorFVerb(4, "\n On server entry:\n");
         ATIPrintRegisters(pATI);
     }

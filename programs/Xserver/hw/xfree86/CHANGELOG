@@ -1,4 +1,7 @@
 XFree86 4.0b (?? April 2000)
+ 123. Fix mode setting bug in ATI driver (Marc La France).
+ 122. Add int10, DDC & VBE support to ATI driver (Marc La France).
+ 121. Allow driver to supply DDC module to VBE (Marc La France).
  120. Added support for 'inactive' devices. (Egbert Eich)
  119. Fixed xf86misc extensions. (Egbert Eich)
  118. Fixed design of xf86SetAccessFuncs(). Now all old access funcs
@@ -10258,4 +10261,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1129 2000/04/17 16:29:49 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1130 2000/04/19 15:48:17 tsi Exp $

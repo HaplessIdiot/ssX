@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.17 2000/03/01 16:01:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_driver.c,v 1.19 2000/04/17 16:30:03 eich Exp $ */
 
 /*
  * Authors:
@@ -445,15 +445,13 @@ I740Probe(DriverPtr drv, int flags) {
   return foundScreen;
 }
 
-extern xf86MonPtr ConfiguredMonitor;
-
 void
 I740ProbeDDC(ScrnInfoPtr pScrn, int index)
 {
     vbeInfoPtr pVbe;
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	pVbe = VBEInit(NULL,index);
-	ConfiguredMonitor = vbeDoEDID(pVbe);
+	ConfiguredMonitor = vbeDoEDID(pVbe, NULL);
     }
 }
 

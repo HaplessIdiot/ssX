@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.4 1999/11/19 13:54:24 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/edid.h,v 1.6 2000/04/17 16:29:55 eich Exp $ */
 
 /* edid.h: defines to parse an EDID block 
  *
@@ -407,7 +407,7 @@ struct detailed_monitor_section {
 };
 
 typedef struct {
-    int scrnIndex;
+  int scrnIndex;
   struct vendor vendor;
   struct edid_version ver;
   struct disp_features features;
@@ -418,5 +418,7 @@ typedef struct {
   int no_sections;
   Uchar *rawData;
 } xf86Monitor, *xf86MonPtr;
+
+extern xf86MonPtr ConfiguredMonitor;
 
 #endif /* _EDID_H_ */

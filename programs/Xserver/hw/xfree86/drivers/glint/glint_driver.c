@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.73 2000/03/22 16:02:22 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.78 2000/04/17 16:30:03 eich Exp $ */
 
 #include "fb.h"
 #include "fb24_32.h"
@@ -589,7 +589,7 @@ GLINTProbeDDC(ScrnInfoPtr pScrn, int index)
 #endif
     {
 	pVbe =  VBEInit(NULL,index);
-	vbeDoEDID(pVbe);
+	vbeDoEDID(pVbe, NULL);
     }
 }
 
