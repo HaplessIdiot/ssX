@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.6 95/01/26 15:34:40 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.18 1995/07/02 07:47:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.19tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -53,7 +53,7 @@
 #include "mi.h"
 #include "cfb.h"
 
-extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed, xf86Verbose;
+extern Bool xf86Exiting, xf86Resetting, xf86ProbeFailed;
 
 static Bool ibm8514ValidMode(
 #if NeedFunctionPrototypes 

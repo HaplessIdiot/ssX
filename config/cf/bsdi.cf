@@ -1,5 +1,5 @@
 XCOMM platform:  $XConsortium: bsdi.cf,v 1.14 95/01/11 18:27:52 kaleb Exp $
-XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.15 1995/01/28 15:40:20 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/bsdi.cf,v 3.16 1995/03/11 14:46:46 dawes Exp $
 
 #define OSName            BSD/OS 2.0
 #define OSVendor          BSDI
@@ -39,6 +39,7 @@ XCOMM xf86site.def
 #endif
 #define CppCmd		/usr/bin/cpp
 #define TroffCmd	groff -Tps
+#define MkdirHierCmd	mkdir -p
 #define SetTtyGroup	YES
 #define HasNdbm		YES
 #define HasWChar32      YES
