@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.6 2001/04/03 17:05:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_pci.c,v 3.7 2001/06/01 20:03:05 dawes Exp $ */
 
 #include <stdio.h>
 #include "X.h"
@@ -11,11 +11,11 @@
 
 #ifdef __sparc__
 #define PCIADDR_TYPE		long long
-#define PCIADDR_IGNORE_FMT	"%*llx"
+#define PCIADDR_IGNORE_FMT	"%*x"
 #define PCIADDR_FMT		"%llx"
 #else
 #define PCIADDR_TYPE		long
-#define PCIADDR_IGNORE_FMT	"%*lx"
+#define PCIADDR_IGNORE_FMT	"%*x"
 #define PCIADDR_FMT		"%lx"
 #endif
 
