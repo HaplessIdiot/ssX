@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.11tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -875,7 +875,7 @@ simbaControlBridge(int bus, CARD16 mask, CARD16 value)
 	 */
 	iomap = pciReadByte(pPCI->tag, APB_IO_ADDRESS_MAP);
 	memmap = pciReadByte(pPCI->tag, APB_MEM_ADDRESS_MAP);
-	if ((iomap & 0x01) && (memmap & 0x01)) {
+	if (iomap & memmap & 0x01) {
 	    current |= PCI_PCI_BRIDGE_VGA_EN;
 	    if ((mask & PCI_PCI_BRIDGE_VGA_EN) &&
 		!(value & PCI_PCI_BRIDGE_VGA_EN)) {
