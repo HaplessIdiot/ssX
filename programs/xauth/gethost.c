@@ -1,6 +1,6 @@
 /*
  * $XConsortium: gethost.c /main/23 1995/12/05 16:53:41 mor $
- * $XFree86: xc/programs/xauth/gethost.c,v 3.4 1996/01/05 13:20:38 dawes Exp $
+ * $XFree86: xc/programs/xauth/gethost.c,v 3.5 1996/08/20 12:32:41 dawes Exp $
  *
  * 
 Copyright (c) 1989  X Consortium
@@ -177,6 +177,10 @@ static Bool get_inet_address (name, resultp)
     unsigned int hostinetaddr = inet_addr (name);
     struct hostent *host_ptr;
     struct sockaddr_in inaddr;		/* dummy variable for size calcs */
+
+#ifndef INADDR_NONE
+#define INADDR_NONE -1
+#endif
 
     if (hostinetaddr == INADDR_NONE) {
 	if ((host_ptr = gethostbyname (name)) == NULL) {

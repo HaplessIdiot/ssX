@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.4 1996/08/18 01:47:23 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/phase1.tcl,v 3.5 1996/08/20 12:26:25 dawes Exp $
 #
 # Phase I - Initial text mode interaction w/user and starting of VGA16 server
 #
@@ -344,7 +344,7 @@ while { !$gotlink } {
 if { [file exists $Pointer(Device)]
 		&& [file type $Pointer(Device)] == "link"
 		&& ![info exists Pointer_realdevice] } {
-	set Pointer_realdevice [readlink $Pointer(Device)]
+	set Pointer_realdevice [file readlink $Pointer(Device)]
 }
 set Confname "$TmpDir/XS.[pid]"
 

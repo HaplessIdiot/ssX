@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/Imakefile,v 3.6 1996/05/11 11:04:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/os-support/linux/Imakefile,v 3.0 1996/08/18 01:46:54 dawes Exp $
 #include <Server.tmpl>
 
 #if BuildXInputExt
@@ -43,13 +43,13 @@ LinkSourceFile(lnx_io.c,$(XF86OSSRC)/linux)
 LinkSourceFile(lnx_jstk.c,$(XF86OSSRC)/linux)
 LinkSourceFile(lnx_video.c,$(XF86OSSRC)/linux)
 
-ObjectFromSpecialSource(bios_devmem,(XF86OSSRC)/shared/bios_devmem,/**/)
-ObjectFromSpecialSource(IO_utils,(XF86OSSRC)/shared/IO_utils,/**/)
-ObjectFromSpecialSource(mapVT_noop,(XF86OSSRC)/shared/mapVT_noop,/**/)
-ObjectFromSpecialSource(VTsw_usl,(XF86OSSRC)/shared/VTsw_usl,/**/)
-ObjectFromSpecialSource(std_kbdEv,(XF86OSSRC)/shared/std_kbdEv,/**/)
-ObjectFromSpecialSource(posix_tty,(XF86OSSRC)/shared/posix_tty,/**/)
-ObjectFromSpecialSource(std_mouse,(XF86OSSRC)/shared/std_mouse,/**/)
-ObjectFromSpecialSource(std_mseEv,(XF86OSSRC)/shared/std_mseEv,/**/)
+ObjectFromSpecialSource(bios_devmem,$(XF86OSSRC)/shared/bios_devmem,/**/)
+ObjectFromSpecialSource(IO_utils,$(XF86OSSRC)/shared/IO_utils,/**/)
+ObjectFromSpecialSource(mapVT_noop,$(XF86OSSRC)/shared/mapVT_noop,/**/)
+ObjectFromSpecialSource(VTsw_usl,$(XF86OSSRC)/shared/VTsw_usl,/**/)
+ObjectFromSpecialSource(std_kbdEv,$(XF86OSSRC)/shared/std_kbdEv,/**/)
+ObjectFromSpecialSource(posix_tty,$(XF86OSSRC)/shared/posix_tty,/**/)
+ObjectFromSpecialSource(std_mouse,$(XF86OSSRC)/shared/std_mouse,/**/)
+ObjectFromSpecialSource(std_mseEv,$(XF86OSSRC)/shared/std_mseEv,/**/)
 
 DependTarget()

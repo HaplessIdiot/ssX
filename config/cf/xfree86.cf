@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.98 1996/08/18 03:54:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.99 1996/08/20 12:07:10 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -15,15 +15,15 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # ifndef XF86SVGAServer
 #  define XF86SVGAServer	YES
 # endif
-# ifndef XF86FBDevServer
-#  define XF86FBDevServer	NO
+# ifndef XF68FBDevServer
+#  define XF68FBDevServer	NO
 # endif
 #else
 # ifndef XF86SVGAServer
 #  define XF86SVGAServer	NO
 # endif
-# ifndef XF86FBDevServer
-#  define XF86FBDevServer	YES
+# ifndef XF68FBDevServer
+#  define XF68FBDevServer	YES
 # endif
 #endif
 
@@ -267,55 +267,55 @@ XCOMM $XConsortium: xfree86.cf /main/17 1996/01/03 14:50:55 kaleb $
 # define XF86W32Drivers		et4000w32
 #endif
 
-#if XF86FBDevServer
-# ifndef XF86FBDevIPLAN2p2
-#  define XF86FBDevIPLAN2p2	YES
+#if XF68FBDevServer
+# ifndef XF68FBDevIPLAN2p2
+#  define XF68FBDevIPLAN2p2	YES
 # endif
-# ifndef XF86FBDevIPLAN2p4
-#  define XF86FBDevIPLAN2p4	YES
+# ifndef XF68FBDevIPLAN2p4
+#  define XF68FBDevIPLAN2p4	YES
 # endif
-# ifndef XF86FBDevIPLAN2p8
-#  define XF86FBDevIPLAN2p8	YES
+# ifndef XF68FBDevIPLAN2p8
+#  define XF68FBDevIPLAN2p8	YES
 # endif
-# ifndef XF86FBDevILBM
-#  define XF86FBDevILBM		YES
+# ifndef XF68FBDevILBM
+#  define XF68FBDevILBM		YES
 # endif
-# ifndef XF86FBDevAFB
-#  define XF86FBDevAFB		YES
+# ifndef XF68FBDevAFB
+#  define XF68FBDevAFB		YES
 # endif
-# ifndef XF86FBDevCFB8
-#  define XF86FBDevCFB8		YES
+# ifndef XF68FBDevCFB8
+#  define XF68FBDevCFB8		YES
 # endif
-# ifndef XF86FBDevCFB16
-#  define XF86FBDevCFB16	NO
+# ifndef XF68FBDevCFB16
+#  define XF68FBDevCFB16	NO
 # endif
-# ifndef XF86FBDevCFB32
-#  define XF86FBDevCFB32	NO
+# ifndef XF68FBDevCFB32
+#  define XF68FBDevCFB32	NO
 # endif
 #else
-# ifndef XF86FBDevIPLAN2p2
-#  define XF86FBDevIPLAN2p2	NO
+# ifndef XF68FBDevIPLAN2p2
+#  define XF68FBDevIPLAN2p2	NO
 # endif
-# ifndef XF86FBDevIPLAN2p4
-#  define XF86FBDevIPLAN2p4	NO
+# ifndef XF68FBDevIPLAN2p4
+#  define XF68FBDevIPLAN2p4	NO
 # endif
-# ifndef XF86FBDevIPLAN2p8
-#  define XF86FBDevIPLAN2p8	NO
+# ifndef XF68FBDevIPLAN2p8
+#  define XF68FBDevIPLAN2p8	NO
 # endif
-# ifndef XF86FBDevILBM
-#  define XF86FBDevILBM		NO
+# ifndef XF68FBDevILBM
+#  define XF68FBDevILBM		NO
 # endif
-# ifndef XF86FBDevAFB
-#  define XF86FBDevAFB		NO
+# ifndef XF68FBDevAFB
+#  define XF68FBDevAFB		NO
 # endif
-# ifndef XF86FBDevCFB8
-#  define XF86FBDevCFB8		NO
+# ifndef XF68FBDevCFB8
+#  define XF68FBDevCFB8		NO
 # endif
-# ifndef XF86FBDevCFB16
-#  define XF86FBDevCFB16	NO
+# ifndef XF68FBDevCFB16
+#  define XF68FBDevCFB16	NO
 # endif
-# ifndef XF86FBDevCFB32
-#  define XF86FBDevCFB32	NO
+# ifndef XF68FBDevCFB32
+#  define XF68FBDevCFB32	NO
 # endif
 #endif
 

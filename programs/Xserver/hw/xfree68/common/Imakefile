@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree68/common/Imakefile,v 3.0 1996/08/18 03:54:42 dawes Exp $
 
 
 
@@ -84,7 +84,7 @@ MODULEDEFINES = -DDYNAMIC_MODULE -DDEFAULT_MODULE_PATH=\"$(MODULEDIR)\"
 #endif
 
 SERVERSRCS = \
-	XF86_FBDev.c
+	XF68_FBDev.c
 
 SRCS =	\
 	$(XF86DL_SRC) \
@@ -178,9 +178,9 @@ SpecialObjectRule($(XCONFIGSRC).o,$(XCONFIGSRC).c,'-DSERVER_CONFIG_FILE="$(LIBDI
 SpecialObjectRule(xf86Init.o,xf86Init.c $(ICONFIGFILES),$(OSNAMEDEF) $(EXT_DEFINES) $(BETADEFS))
 SpecialCObjectRule(xf86Events,$(ICONFIGFILES),$(EXT_DEFINES) $(KEYB_DEFINES))
 SpecialCObjectRule($(KBD),$(ICONFIGFILES),$(KEYB_DEFINES))
-#if XF86FBDevServer
-SpecialObjectRule(XF86_FBDev.o,XF86_FBDev.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
-all:: XF86_FBDev.o
+#if XF68FBDevServer
+SpecialObjectRule(XF68_FBDev.o,XF68_FBDev.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF68_FBDev.o
 #endif
 
 #if NeedXF86Beta
@@ -202,7 +202,6 @@ LinkSourceFile(xf86Cursor.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Dl.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Elo.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Events.c,$(XF86SRC)/common)
-LinkSourceFile(xf86IniExt.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Init.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Io.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Jstk.c,$(XF86SRC)/common)
@@ -218,8 +217,10 @@ LinkSourceFile(compiler.h,$(XF86SRC)/common)
 LinkSourceFile(xf86.h,$(XF86SRC)/common)
 LinkSourceFile(xf86ExtInit.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Keymap.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Lock.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Priv.h,$(XF86SRC)/common)
 LinkSourceFile(xf86Procs.h,$(XF86SRC)/common)
+LinkSourceFile(xf86Xinput.c,$(XF86SRC)/common)
 LinkSourceFile(xf86Xinput.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Config.h,$(XF86SRC)/common)
 LinkSourceFile(xf86_Option.h,$(XF86SRC)/common)
