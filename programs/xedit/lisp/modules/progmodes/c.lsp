@@ -139,7 +139,7 @@
 ))
 
 (defvar *c-mode-options* *c-DEFAULT-style*)
-;(setq *c-mode-options* *c-gnu-style*)
+; (setq *c-mode-options* *c-gnu-style*)
 
 (defsyntax *c-mode* :main nil #'c-indent *c-mode-options*
     ;;  All recognized C keywords.
@@ -500,7 +500,7 @@
     ;; Handle braces
     ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
     (indreduce :stat
-	;; If block finishes before current line, group as an statement
+	;; If block finishes before current line, group as a statement
 	(< (+ *ind-offset* *ind-length*) *ind-start*)
 	((:obrace (not :obrace) :cbrace))
     )
@@ -934,34 +934,34 @@
 	    )
 
 	    (and
-		(char= char #\{)
-		(or
-		    (gethash :newline-after-brace options)
-		    (gethash :newline-before-brace options)
-		)
-		(return-from c-should-indent t)
-	    )
-	    (and
 		(char= char #\;)
 		(gethash :newline-after-semi options)
 		(return-from c-should-indent t)
 	    )
 
 	    ;; if one of these was typed, must check indentation
-	    (and (member char '(#\} #\: #\] #\) #\#))
+	    (and (member char '(#\{ #\} #\: #\] #\) #\#))
 		(return-from c-should-indent t)
 	    )
 
-	    (and (gethash :newline-indent options)
-		;; at the start of a line
-		(and (= point start)
-		    (return-from c-should-indent t)
-		)
+	    ;; at the start of a line
+	    (and (= point start)
+		(return-from c-should-indent (gethash :newline-indent options))
 	    )
 
-	    ;; first char
-	    (setq offset (1- point))
-	    (when (gethash :cont-indent options)
+	    ;; if first character
+	    (and (= point (1+ start))
+		(return-from c-should-indent t)
+	    )
+
+	    ;; check if is the first non-blank character in a new line
+	    (when
+		(and
+		    (gethash :cont-indent options)
+		    (= point (scan point :eol :right))
+		    (alphanumericp char)
+		)
+		(setq offset (1- point))
 		(while
 		    (and
 			(> offset start)
@@ -969,9 +969,10 @@
 		    )
 		    (decf offset)
 		)
-	    )
-	    (and (<= offset start)
-		(return-from c-should-indent t)
+		;; line has only one character with possible spaces before it
+		(and (<= offset start)
+		    (return-from c-should-indent t)
+		)
 	    )
 
 	    ;; check for keywords that change indentation
