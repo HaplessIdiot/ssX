@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.33 1996/06/10 09:16:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.34 1996/06/29 09:09:26 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -857,7 +857,7 @@ vgaHWSave(save, size)
     for (i=0; i<300; i++) inb(vgaIOBase + 4);
 #endif
     outb(0x3C8,0x00);
-    for (i=0; i<3; i++) outb(0x3C9, ~save->DAC[i]);
+    for (i=0; i<3; i++) outb(0x3C9, ~save->DAC[i] & vgaRamdacMask);
 #if defined(PC98_PW)||defined(PC98_XKB)||defined(PC98_NEC)||defined(PC98_PWLB)
     for (i=0; i<300; i++) inb(vgaIOBase + 4);
 #endif

@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/8 1996/01/26 13:56:09 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.12 1996/01/24 22:03:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/Imakefile,v 3.13 1996/02/04 09:12:50 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
@@ -12,14 +12,14 @@ SRCS = cir_driver.c cir_fill.c cir_blt.c cir_bltC.c cir_im.c cir_bank.s \
        cirFillRct.c cir_blitter.c cir_textblt.s cir_cursor.c \
        cir_blitmm.c cir_immm.c cir_tebltmm.c cir_span.s cir_alloc.c \
        cir_blt16.c cir_solid.c cir_line.c cir_seg.c cir_orect.c \
-       cir_orect16.c cir_orect32.c linearline.c
+       cir_orect16.c cir_orect32.c linearline.c cir_fillLG.c cir_blitLG.c
 
 OBJS = cir_driver.o cir_fill.o cir_blt.o cir_bltC.o cir_im.o cir_bank.o \
        cir_imblt.o cir_colexp.o cirFillSt.o cir_teblt8.o \
        cirFillRct.o cir_blitter.o cir_textblt.o cir_cursor.o \
        cir_blitmm.o cir_immm.o cir_tebltmm.o cir_span.o cir_alloc.o \
        cir_blt16.o cir_solid.o cir_line.o cir_seg.o cir_orect.o \
-       cir_orect16.o cir_orect32.o linearline.o
+       cir_orect16.o cir_orect32.o linearline.o cir_fillLG.o cir_blitLG.o
 
 DEFINES = -DPSZ=8
 
@@ -64,6 +64,8 @@ InstallLinkKitNonExecFile(cir_teblt8.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cirFillRct.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_cursor.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_blitter.c,$(LINKKITDIR)/drivers/vga256/cirrus)
+InstallLinkKitNonExecFile(cir_blitLG.c,$(LINKKITDIR)/drivers/vga256/cirrus)
+InstallLinkKitNonExecFile(cir_fillLG.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_alloc.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_blt16.c,$(LINKKITDIR)/drivers/vga256/cirrus)
 InstallLinkKitNonExecFile(cir_line.c,$(LINKKITDIR)/drivers/vga256/cirrus)

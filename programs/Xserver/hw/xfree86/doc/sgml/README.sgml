@@ -519,7 +519,8 @@ XFree86 support was integrated into the base X11R6 distribution by:
 <itemize>
        <item> Simon Cooper <it>&lt;scooper@vizlab.rutgers.edu&gt;</it>,
        <item> Harm Hanemaayer <it>&lt;hhanemaa@cs.ruu.nl&gt;</it>,
-       <item> Bill Reynolds <it>&lt;bill@goshawk.lanl.gov&gt;</it>
+       <item> Bill Reynolds <it>&lt;bill@goshawk.lanl.gov&gt;</it>,
+       <item> Corin Anderson <it>&lt;corina@bdc.cirrus.com&gt;</it>
 </itemize>
 <tag/Western Digital accelerated code by:  /
 <itemize>
@@ -586,6 +587,7 @@ XFree86 support was integrated into the base X11R6 distribution by:
        <item> Hank Dietz <it>&lt;hankd@ecn.purdue.edu&gt;</it>,
        <item> Simon Cooper <it>&lt;scooper@vizlab.rutgers.edu&gt;</it>,
        <item> Harm Hanemaayer <it>&lt;hhanemaa@cs.ruu.nl&gt;</it>, 
+       <item> Corin Anderson <it>&lt;corina@bdc.cirrus.com&gt;</it>
 </itemize>
 <tag/Cirrus CL64xx driver by: /
 <itemize>
@@ -977,7 +979,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.49 1996/08/10 13:06:40 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.50 1996/08/13 11:30:56 dawes Exp $
 
 
 

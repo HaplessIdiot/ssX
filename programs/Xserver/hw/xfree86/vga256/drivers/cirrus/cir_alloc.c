@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.4 1996/02/04 09:12:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.c,v 3.5 1996/02/09 08:21:16 dawes Exp $ */
 /*
  * cir_alloc.c,v 1.2 1994/09/11 05:52:49 scooper Exp
  * 
@@ -47,15 +47,15 @@
 
 #include "cir_driver.h"
 #include "cir_inline.h"
-
+#include "cir_alloc.h"
 
 #define ROUNDUP8(x) ((x + 7) & ~7)
 
 
-static int allocatebase;	/* Video memory address of allocation space. */
+static cirOffscreenAddr allocatebase; /* Vmem address of allocation space. */
 static int freespace;		/* Number of bytes left for allocation. */
-static int currentaddr;		/* Video address of first available space. */
-static int lastaddr;		/* Video address of last allocation. */
+static cirOffscreenAddr currentaddr; /* V. address of first available space. */
+static cirOffscreenAddr lastaddr;	/* Video address of last allocation. */
 static int lastsize;		/* Size of the last request. */
 
 /*
@@ -67,10 +67,10 @@ int CirrusInitializeAllocator(base)
 	int base;	/* Base video address of allocation space. */
 {
 	/* We want to align on a multiple of 8 bytes, should be OK. */
-	allocatebase = CirrusMemTop;
-	freespace = vga256InfoRec.videoRam * 1024 - allocatebase;
+	allocatebase.addr = CirrusMemTop;
+	freespace = vga256InfoRec.videoRam * 1024 - allocatebase.addr;
 	currentaddr = allocatebase;
-	lastaddr = -1;
+	lastaddr.addr = -1;
 	return freespace;
 }
 
@@ -78,17 +78,25 @@ int CirrusInitializeAllocator(base)
  * Allocate a number of bytes of video memory.
  */
 
-int CirrusAllocate(size)
+cirOffscreenAddr CirrusAllocate(size)
 	int size;
 {
-	if (size > freespace)
-		return -1;
-	lastaddr = currentaddr;
-	size = ROUNDUP8(size);	/* Units of 8 bytes. */
-	lastsize = size;
-	freespace -= size;
-	currentaddr += size;
-	return currentaddr - size;
+  cirOffscreenAddr osAddr = {-1, -1, -1};
+
+  if (size > freespace)
+    return osAddr;
+  lastaddr = currentaddr;
+  size = ROUNDUP8(size);	/* Units of 8 bytes. */
+  lastsize = size;
+  freespace -= size;
+  currentaddr.addr += size;
+  osAddr.addr = currentaddr.addr - size;
+
+  /* Compute the X and Y coords of this off-screen address */
+  osAddr.x = osAddr.addr % vga256InfoRec.displayWidth;
+  osAddr.y = osAddr.addr / vga256InfoRec.displayWidth;
+
+  return osAddr;
 }
 
 /* <scooper>
@@ -107,11 +115,30 @@ int CirrusCursorAllocate(cursor)
   if (size > freespace)
     return -1;
   
-  cursor->cur_addr = (vga256InfoRec.videoRam * 1024) - size;
+
+  if (HAVE546X()) {
+    /*
+       The cursor "address" will actually be the (x,y) coordinate of the 
+       upper-left hand corner of the tile that the cursor will occupy.
+       The tile that we choose will be the "last" tile in memory.  The 
+       cursor address will be encoded as (y << 16) | (x).  This allows the
+       address to be loaded directly into the OP*_opRDRAM register.
+       */
+
+    /* The cursor's address is hard-coded in the cir_cursor.c file.  For
+       the 546x chips, the cursor lives at the first tile in the last
+       row of tiles.  As this row is usually incomplete, it doesn't make
+       a very useful row to display.  But it's great for little things 
+       like the HW cursor. */
+
+  } else {
+    cursor->cur_addr = (vga256InfoRec.videoRam * 1024) - size;
+
+    /* This is the cursor "pattern offset" (SR13) */
+    cursor->cur_select = (cursor->cur_size == 0) ? 63 : 15;
+  }
+
   freespace -= size;
-  
-  /* This is the cursor "pattern offset" (SR13) */
-  cursor->cur_select = (cursor->cur_size == 0) ? 63 : 15;
 
   return 0;
 }
@@ -123,12 +150,12 @@ int CirrusCursorAllocate(cursor)
 void CirrusFree(vidaddr)
 	int vidaddr;
 {
-	if (vidaddr != lastaddr)	/* If not allocated right before, */
+	if (vidaddr != lastaddr.addr)	/* If not allocated right before, */
 		return;			/* do nothing. */
 	/* Undo the last allocation. */
-	currentaddr -= lastsize;
+	currentaddr.addr -= lastsize;
 	freespace -= lastsize;
-	lastaddr = -2;
+	lastaddr.addr = -2;
 }
 
 /*
@@ -139,7 +166,7 @@ void CirrusUploadPattern(pattern, width, height, vidaddr, srcpitch)
 	unsigned char *pattern;
 	int width;	/* width of the pattern in bytes. */
 	int height;	/* height of the pattern in scanlines. */
-	int vidaddr;	/* offset into video memory for pattern. */
+	int vidaddr;    /* offset into video memory for pattern. */
 	int srcpitch;	/* Offset between scanlines in source. */
 {
 	int writebank, destaddr;
@@ -167,3 +194,7 @@ void CirrusUploadPattern(pattern, width, height, vidaddr, srcpitch)
 #endif
 	}
 }
+
+
+
+  

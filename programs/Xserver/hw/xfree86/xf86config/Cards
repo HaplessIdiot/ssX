@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.31 1996/03/04 05:17:01 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.32 1996/06/10 09:16:35 dawes Exp $
 
 # Cirrus Logic
 
@@ -44,6 +44,16 @@ LINE     #MemBase 0x80000000		# VLB card that maps to 2048Mb
 LINE     #MemBase 0x02000000		# VLB card that maps to 32Mb
 LINE     #MemBase 0xa0000000		# PCI card that maps to 2560Mb
 LINE     #Option "linear"
+
+#tested
+NAME Cirrus Logic GD546x
+CHIPSET CL-GD546x
+SERVER SVGA
+NOCLOCKPROBE
+
+NAME Creative Labs Graphics Blaster MA302
+CHIPSET CL-GD546x
+SEE Cirrus Logic GD546x
 
 #tested
 NAME Diamond SpeedStar 64

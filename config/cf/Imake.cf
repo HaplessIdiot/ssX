@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imake.cf /main/22 1995/12/05 16:39:53 mor $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.22 1996/08/11 12:32:23 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.23 1996/08/13 11:24:02 dawes Exp $
 /*
  * To add support for another platform:
  * 
@@ -516,24 +516,25 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.22 1996/08/11 12:32:23 dawes Exp $
 # endif /* mc68000 */
 #endif /* linux */
 
-#if defined(Lynx) && (defined(i386) || defined(__powerpc__) || defined(__sparc__))
-#define MacroIncludeFile <lynx.cf>
-#define MacroFile lynx.cf
-#define LynxOSArchitecture
-#undef Lynx
-#undef lynx
-#ifdef i386
-# define i386Architecture
-# undef i386
-#endif
-#ifdef __powerpc__
-# define ppcArchitecture
-# undef __powerpc__
-#endif
-#ifdef __sparc__
-# define SparcArchitecture
-# undef __sparc__
-#endif
+#if defined(Lynx) && (defined(i386) || defined(__powerpc__) || defined(__sparc__) || defined(sparc))
+# define MacroIncludeFile <lynx.cf>
+# define MacroFile lynx.cf
+# define LynxOSArchitecture
+# undef Lynx
+# undef lynx
+# ifdef i386
+#  define i386Architecture
+#  undef i386
+# endif
+# ifdef __powerpc__
+#  define ppcArchitecture
+#  undef __powerpc__
+# endif
+# if defined(sparc) || defined(__sparc__)
+#  define SparcArchitecture
+#  undef sparc
+#  undef __sparc__
+# endif
 #endif /* LynxOS AT/PPC/microSPARC */
 
 #ifdef __uxp__

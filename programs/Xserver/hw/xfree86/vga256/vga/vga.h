@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.12 1996/02/04 09:14:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.13 1996/06/29 09:09:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -108,6 +108,8 @@ typedef struct {
   int ChipClockScaleFactor;	    /* Factor to divide raw clocks by */
 } vgaVideoChipRec, *vgaVideoChipPtr;
 
+/* Allow each driver to hook the ScreenInit function */
+void vgaSetScreenInitHook(Bool (* ChipScrInit)());
 
 /*
  * hooks for communicating with the VideoChip on the VGA

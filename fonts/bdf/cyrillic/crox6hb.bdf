@@ -7,9 +7,9 @@ COMMENT in both source and binary form provided that the copyright
 COMMENT and these terms are retained. Under no circumstances is the author
 COMMENT responsible for the proper functioning of this software, nor does
 COMMENT the author assume any responsibility for damages incurred with its use.
-COMMENT $XFree86$
-FONT -Cronyx-Helvetica-Bold-R-Normal--24-240-75-75-P-130-KOI8-R
-SIZE 24 96 96
+COMMENT $XFree86: xc/fonts/bdf/cyrillic/crox6hb.bdf,v 3.0 1995/07/22 04:14:46 dawes Exp $
+FONT -Cronyx-Helvetica-Bold-R-Normal--30-300-75-75-P-130-KOI8-R
+SIZE 30 96 96
 FONTBOUNDINGBOX 33 37 0 -8
 STARTPROPERTIES 19
 DEFAULT_CHAR 32
@@ -26,8 +26,8 @@ ADD_STYLE_NAME ""
 AVERAGE_WIDTH 130
 CHARSET_REGISTRY "KOI8"
 CHARSET_ENCODING "R"
-PIXEL_SIZE 24
-POINT_SIZE 240
+PIXEL_SIZE 30
+POINT_SIZE 300
 RESOLUTION_X 75
 RESOLUTION_Y 75
 COPYRIGHT "Copyright (C) 1990, 1991 EWT Consulting, Portions Copyright (C) 1994 Cronyx Ltd."

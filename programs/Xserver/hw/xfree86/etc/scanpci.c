@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.14 1996/08/10 13:06:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.15 1996/08/11 13:01:22 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -437,6 +437,8 @@ struct pci_vendor_device {
                             { 0x00A8, "GD 5434-8", NF },
                             { 0x00AC, "GD 5436", NF },
                             { 0x00B8, "GD 5446", NF },
+                            { 0x00D0, "GD 5462", NF },
+                            { 0x00D4, "GD 5464", NF },
                             { 0x1100, "CL 6729", NF },
                             { 0x1200, "CL 7542", NF },
                             { 0x0000, (char *)NULL, NF } } },

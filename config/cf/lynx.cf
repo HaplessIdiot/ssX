@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.5 1996/01/10 05:34:28 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.6 1996/08/10 13:02:04 dawes Exp $
 
 #ifdef i386Architecture
 # define OSName			LynxOS AT
@@ -282,7 +282,8 @@ install.man:: list                                                      @@\
 #  define UseRgbTxt	YES
 # endif
 #endif
+#endif
 
-#ifdef i386Architecure
+#ifdef i386Architecture
 # include <xfree86.cf>
 #endif

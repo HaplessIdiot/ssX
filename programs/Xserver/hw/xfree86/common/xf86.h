@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.38 1996/08/13 11:29:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.39 1996/08/14 14:32:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -216,6 +216,10 @@ typedef struct {
   );
   unsigned long  physBase;
   int            physSize;
+#endif
+#ifdef XF86SETUP
+  void           *device;	/* This should be GDevPtr, but it causes
+				   problems with include file order */
 #endif
 } ScrnInfoRec, *ScrnInfoPtr;
 

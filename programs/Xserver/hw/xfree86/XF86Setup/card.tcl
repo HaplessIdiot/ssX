@@ -1,4 +1,4 @@
-# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.1 1996/06/30 10:44:00 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/card.tcl,v 3.2 1996/08/13 11:28:20 dawes Exp $
 #
 #
 
@@ -27,7 +27,8 @@ proc Card_create_widgets { win } {
 	}
 
 	frame $w.card.list
-	scrollbar $w.card.list.sb -command [list $w.card.list.lb yview]
+	scrollbar $w.card.list.sb -command [list $w.card.list.lb yview] \
+		-repeatdelay 1200 -repeatinterval 800
 	listbox   $w.card.list.lb -yscroll [list $w.card.list.sb set] \
 		-setgrid true -height 20
 	bind  $w.card.list.lb <ButtonRelease-1> \

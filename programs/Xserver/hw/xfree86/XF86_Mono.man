@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.18 1996/03/31 11:43:17 dawes Exp $
-.TH XF86_Mono 1 "Version 3.1.2E"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.19 1996/05/10 06:56:19 dawes Exp $
+.TH XF86_Mono 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF86_Mono - 1 bit non-accelerated X Window System servers for UNIX on
 x86 platforms

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.22 1996/02/09 08:21:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.h,v 3.23 1996/08/10 13:08:13 dawes Exp $ */
 /*
  *
  * Copyright 1993 by Simon P. Cooper, New Brunswick, New Jersey, USA.
@@ -188,8 +188,21 @@ extern Bool cirrusDoBackgroundBLT;
 extern Bool cirrusBLTisBusy;
 extern int cirrusBLTPatternAddress;
 
+typedef struct {
+  int tilesPerLine;  /* Number of tiles per line */
+  int pitch;         /* Display pitch, in bytes */
+  int width;         /* Tile width.  0 = 128 byte  1 = 256 byte */
+} cirrusTilesPerLine;
+
+extern int cirrusMemoryInterleave; /* Used by 546X chips */
+extern int cirrusTilesPerLineIndex; /* Used by 546X chips */
+extern int cirrusLgCursorXOffset;  /* Used by 546X chips */
+extern cirrusTilesPerLine cirrusTilesPerLineTab[];
+
 extern int CirrusMemTop;
 extern int cirrusBankShift;
+extern unsigned char *cirrusMMIOBase;
+
 
 extern int cirrusWriteModeShadow,	/* I/O register shadow variables */
     cirrusPixelMaskShadow,
@@ -204,24 +217,27 @@ extern unsigned int cirrusForegroundColorShadow,
     cirrusBackgroundColorShadow;
 
 
-#define CLGD5420    0
-#define CLGD5422    1
-#define CLGD5424    2
-#define CLGD5426    3
-#define CLGD5428    4
-#define CLGD5429    5
-#define CLGD6205    6
-#define CLGD6215    7
-#define CLGD6225    8
-#define CLGD6235    9
-#define CLGD5434    10
-#define CLGD5430    11
-#define CLGD5436    12
-#define CLGD5446    13
-#define CLGD7541    14
-#define CLGD7542    15
-#define CLGD7543    16
-#define LASTCLGD    CLGD7543
+enum {CLGD5420 = 0,
+      CLGD5422,
+      CLGD5424,
+      CLGD5426,
+      CLGD5428,
+      CLGD5429,
+      CLGD6205,
+      CLGD6215,
+      CLGD6225,
+      CLGD6235,
+      CLGD5434,
+      CLGD5430,
+      CLGD5436,
+      CLGD5446,
+      CLGD5462,
+      CLGD5464,
+      CLGD7541,
+      CLGD7542,
+      CLGD7543,
+      LASTCLGD
+      };
 
 #define CIRRUS_BUS_SLOW 0
 #define CIRRUS_BUS_FAST 1
@@ -247,6 +263,24 @@ extern unsigned int cirrusForegroundColorShadow,
 #define CROP_XOR		0x59	/*  S~=D */
 #define CROP_XNOR		0x95	/*   S=D */
 
+/* The Laguna family (546x) uses different ROP codes */
+#define LGROP_0			0x00	/*     0 */
+#define LGROP_1			0xFF	/*     1 */
+#define LGROP_SRC		0xCC	/*     S */
+#define LGROP_DST		0xAA	/*     D */
+#define LGROP_NOT_SRC		0x33	/*    ~S */
+#define LGROP_NOT_DST		0x55	/*    ~D */
+#define LGROP_AND		0x88	/*   S.D */
+#define LGROP_SRC_AND_NOT_DST	0x44	/*  S.~D */
+#define LGROP_NOT_SRC_AND_DST	0x22	/*  ~S.D */
+#define LGROP_NOR		0x77	/* ~S.~D */
+#define LGROP_OR		0xEE	/*   S+D */
+#define LGROP_SRC_OR_NOT_DST	0xDD	/*  S+~D */
+#define LGROP_NOT_SRC_OR_DST	0xBB	/*  ~S+D */
+#define LGROP_NAND		0x11	/* ~S+~D */
+#define LGROP_XOR		0x66	/*  S~=D */
+#define LGROP_XNOR		0x99	/*   S=D */
+
 /* Array that maps from alu to Cirrus ROP. */
 
 extern int cirrus_rop[];
@@ -262,6 +296,7 @@ typedef struct
   int width;
   int height;
   int cur_addr;
+  unsigned long cur_XY;  /* (x,y) offset of cursor, for 546X */
   int hotX;
   int hotY;
   int shiftX;
@@ -270,7 +305,13 @@ typedef struct
   int skewed;
 } cirrusCurRec, *cirrusCurRecPtr;
 
+#ifdef TheOldWay
 #define HAVE543X() (cirrusChip >= CLGD5434)
+#else
+#define HAVE543X() (cirrusChip >= CLGD5434 && cirrusChip <= CLGD5436)
+#endif
+
+#define HAVE546X() (cirrusChip == CLGD5462 || cirrusChip == CLGD5464)
 
 #define HAVEBITBLTENGINE() (cirrusUseBLTEngine)
 

@@ -1,3 +1,4 @@
+.\" $XFree86$
 .TH XF86Setup 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF86Setup - Graphical configuration utility for XFree86

@@ -1,11 +1,11 @@
 .\" Copyright (c) 1996  Joe Moss, The XFree86 Project
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/doc/man/XF86VM.man,v 3.1 1996/03/17 12:58:52 dawes Exp $
 .\" 
 .de ZN
 .ie t \fB\^\\$1\^\fR\\$2
 .el \fI\^\\$1\^\fP\\$2
 ..
-.TH XF86VIDMODE 3X11 "3.1.2D" "XFree86" "X FUNCTIONS"
+.TH XF86VIDMODE 3X11 "3.1.2F" "XFree86" "X FUNCTIONS"
 .SH NAME
 XF86VidModeQueryExtension, XF86VidModeQueryVersion, XF86VidModeGetModeLine, XF86VidModeGetAllModeLines, XF86VidModeModModeLine, XF86VidModeSwitchMode, XF86VidModeLockModeSwitch, XF86VidModeGetMonitor \- XFree86-VidMode extension interface functions
 .SH SYNTAX
@@ -219,6 +219,7 @@ The
 .ZN XF86VidModeQueryVersion
 function can be used to determine the version of the extension
 built into the server.
+.PP
 The function
 .ZN XF86VidModeQueryExtension
 returns the lowest numbered error and event values

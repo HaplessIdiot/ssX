@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.h,v 3.4 1995/01/28 16:11:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.h,v 3.5 1996/02/04 09:12:58 dawes Exp $ */
 
 /*
  * Definitions for video memory allocator in cir_alloc.c.
@@ -10,19 +10,26 @@
 
 _XFUNCPROTOBEGIN
 
+typedef struct {
+  int addr;             /* Linear address */
+  short x;              /* X coordinate (546x only) */
+  short y;              /* Y coordinate (546x only) */
+} cirOffscreenAddr;
+
+
 #if NeedFunctionPrototypes
 
 int CirrusInitializeAllocator(int base);
-int CirrusAllocate(int size);
+cirOffscreenAddr CirrusAllocate(int size);
 void CirrusFree(int vidaddr);
-void CirrusUploadPattern(unsigned char *pattern, int w, int h, int vidaddr,
-	int srcpitch);
+void CirrusUploadPattern(unsigned char *pattern, int w, int h, 
+			 int vidaddr, int srcpitch);
 int CirrusCursorAllocate ( cirrusCurRecPtr cirrusCur );
 
 #else
 
 int CirrusInitializeAllocator();
-int CirrusAllocate();
+cirOffscreenAddr CirrusAllocate();
 int CirrusCursorAllocate ();
 void CirrusFree();
 void CirrusUploadPattern();

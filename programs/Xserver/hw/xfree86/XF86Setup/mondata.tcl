@@ -1,4 +1,4 @@
-# $XFree86$
+# $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/mondata.tcl,v 3.1 1996/06/30 10:44:05 dawes Exp $
 #
 #
 
@@ -18,7 +18,7 @@ array set MonitorVsyncRanges {
 array set MonitorHsyncRanges {
 	0	31.5
 	1	31.5-35.1
-	2	31.5,35,5
+	2	31.5,35.5
 	3	31.5,35.15,35.5
 	4	31.5-37.9
 	5	31.5-48.5

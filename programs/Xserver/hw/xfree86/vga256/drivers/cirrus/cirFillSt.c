@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.9 1996/02/04 09:12:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cirFillSt.c,v 3.10 1996/08/10 13:08:09 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -449,7 +449,7 @@ tile8mx:
 			if (vidpattern == -1) {
 				/* Allocate space for the pattern in video
 				 * memory. */
-				vidpattern = CirrusAllocate(width * height);
+				vidpattern = (CirrusAllocate(width * height)).addr;
 				if (vidpattern == -1) {
 					/* Do the rest with vga256. */
 					vga256FillRectTileOdd(pDrawable, pGC,

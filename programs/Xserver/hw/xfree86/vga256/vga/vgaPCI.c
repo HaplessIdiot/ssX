@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaPCI.c,v 3.4 1996/03/31 11:50:14 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -42,6 +42,19 @@ vgaGetPCIInfo()
 	    info->ChipRev = pcrp->_class_revision & 0xFF;
 	    info->MemBase = 0;
 	    info->IOBase = 0;
+
+	    if (info->Vendor == PCI_VENDOR_CIRRUS &&
+		(info->ChipType == PCI_CHIP_GD5462 ||
+		 info->ChipType == PCI_CHIP_GD5464)) {
+	      info->IOBase = pcrp->_base0;
+	      info->MemBase = pcrp->_base1;
+
+	      xf86writepci(vga256InfoRec.scrnIndex, pcrp->_cardnum,
+			   0x04, 0x0003, 0x0003);
+	      break;
+	    }
+
+
 	    if (pcrp->_base0) {
 		if (pcrp->_base0 & 1)
 		    info->IOBase = pcrp->_base0 & 0xFFFFFFFC;

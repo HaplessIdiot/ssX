@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.3 1996/07/08 10:23:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/Imakefile,v 3.4 1996/08/13 11:28:17 dawes Exp $
 #include <Server.tmpl>
 
 #if !BuildXKB || !BuildXF86MiscExt || !BuildXF86VidModeExt
@@ -23,7 +23,7 @@ includes::
 		   setuplib.tcl srvflags.tcl mseconfig.tcl carddata.tcl \
 		   card.tcl done.tcl filelist.tcl keyboard.tcl \
 		   mondata.tcl monitor.tcl mouse.tcl
-    TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl misc.tcl \
+    TCLLIB_FILES = tcllib/button.tcl tcllib/combobox.tcl tcllib/misc.tcl \
 		   tcllib/downarrow.xbm tcllib/dialog.tcl tcllib/entry.tcl \
 		   tcllib/focus.tcl tcllib/init.tcl tcllib/listbox.tcl \
 		   tcllib/menu.tcl tcllib/optionMenu.tcl tcllib/palette.tcl \
@@ -72,7 +72,7 @@ LinkSourceFile(xf86_Config.h,../common)
 
 NormalProgramTarget(XF86Setup,$(OBJS),$(DEPLIBS),$(LOCAL_LIBRARIES) $(SYSTEM_LIBRARIES),NullParameter)
 InstallProgram(XF86Setup,$(BINDIR))
-InstallProgram(xmseconfig,$(BINDIR))
+InstallNamedProg(xmseconfig,xmseconfig,$(BINDIR))
 DependTarget()
 
 InstallMultiple($(TCL_FILES),$(XF86SETUPLIBDIR))

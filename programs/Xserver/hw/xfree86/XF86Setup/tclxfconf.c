@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.2 1996/07/08 10:23:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/tclxfconf.c,v 3.4 1996/08/13 11:28:41 dawes Exp $ */
 
 /*
 
@@ -188,6 +188,10 @@ CARD32		defaultScreenSaverTime, ScreenSaverTime;
 Bool		xf86fpFlag, xf86coFlag, xf86sFlag;
 char		*rgbPath = NULL, *defaultFontPath = NULL;
 Bool		xf86ScreensOpen;
+extern int	n_devices, n_monitors;
+extern GDevPtr	device_list;
+extern MonPtr	monitor_list;
+
 ScrnInfoRec	monoInfoRec, vga2InfoRec, vga16InfoRec,
 		svgaInfoRec, accelInfoRec;
 
@@ -497,6 +501,8 @@ TCL_XF86ReadXF86Config(clientData, interp, argc, argv)
 #endif
 	getsection_module  (interp, argv[10]);
 #endif
+	XtFree((char *) monitor_list);
+	XtFree((char *) device_list);
 	return TCL_OK;
 }
 
@@ -669,26 +675,13 @@ getsection_monitor(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-	int		i, j, unique[XF86MAXSCREENS];
+	int		i, j;
 	char		*namebuf, *tmpptr, *tmpbuf;
 	MonPtr	 	mptr;
 	DisplayModePtr	dptr;
 
-	for (i = 0; i < xf86MaxScreens; i++)
-	    unique[i] = xf86Screens[i]->configured;
-
-	for (i = 0; i < xf86MaxScreens; i++)
-	    if (unique[i])
-		for (j = i+1; j < xf86MaxScreens; j++)
-		    if (unique[j] &&
-			    !strcmp(xf86Screens[i]->monitor->id,
-				    xf86Screens[j]->monitor->id)) {
-			unique[j] = FALSE;
-		    }
-
-	for (i = 0; i < xf86MaxScreens; i++)
-	    if (unique[i]) {
-		mptr = xf86Screens[i]->monitor;
+	for (i = 0; i < n_monitors; i++) {
+		mptr = &monitor_list[i];
 		namebuf = (char *) XtMalloc(strlen(varname)+strlen(mptr->id)+2);
 		sprintf(namebuf, "%s_%s", varname, mptr->id);
 
@@ -756,7 +749,7 @@ getsection_monitor(interp, varname)
 		}
 		XtFree(tmpbuf);
 		XtFree(namebuf);
-	    }
+	}
 	return TCL_OK;
 }
 
@@ -764,33 +757,17 @@ getsection_monitor(interp, varname)
   Set the Tcl variables for the config from the Device sections
 */
 
-extern int n_scr_devices, scr_devices[];
-extern GDevPtr device_list;
-
 static int
 getsection_device(interp, varname)
   Tcl_Interp *interp;
   char *varname;
 {
-	int	i, j, unique[XF86MAXSCREENS];
+	int	i, j;
 	char	*namebuf, tmpbuf[128];
 	GDevPtr	dptr;
 
-	for (i = 0; i < n_scr_devices; i++)
-	    unique[i] = 1;
-
-	for (i = 0; i < n_scr_devices; i++)
-	    if (unique[i])
-		for (j = i+1; j < n_scr_devices; j++)
-		    if (unique[j] &&
-			    !strcmp(device_list[scr_devices[i]].identifier,
-				    device_list[scr_devices[j]].identifier)) {
-			unique[j] = FALSE;
-		    }
-
-	for (i = 0; i < n_scr_devices; i++)
-	    if (unique[i]) {
-		dptr = &device_list[scr_devices[i]];
+	for (i = 0; i < n_devices; i++) {
+		dptr = &device_list[i];
 		namebuf = XtMalloc(strlen(varname)+strlen(dptr->identifier)+2);
 		sprintf(namebuf, "%s_%s", varname, dptr->identifier);
 		Tcl_SetVar2(interp, namebuf, "VendorName",
@@ -885,7 +862,7 @@ getsection_device(interp, varname)
 		if (Tcl_GetVar2(interp, namebuf, "Option", 0) == NULL)
 			Tcl_SetVar2(interp, namebuf, "Option", "", 0);
 		XtFree(namebuf);
-	    }
+	}
 	return TCL_OK;
 }
 
@@ -1014,7 +991,7 @@ getsection_screen(interp, varname)
             Tcl_SetVar2(interp, namebuf, "Monitor",
 		    StrOrNull(vptr->monitor->id), 0);
             Tcl_SetVar2(interp, namebuf, "Device",
-		    StrOrNull(device_list[scr_devices[i]].identifier), 0);
+		    StrOrNull(((GDevPtr) vptr->device)->identifier), 0);
             sprintf(tmpbuf, "%ld", ScreenSaverTime/MILLI_PER_MIN);
             Tcl_SetVar2(interp, namebuf, "BlankTime", tmpbuf, 0);
             sprintf(tmpbuf, "%d", vptr->offTime/MILLI_PER_MIN);

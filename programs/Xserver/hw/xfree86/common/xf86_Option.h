@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.55 1996/08/11 12:56:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.56 1996/08/13 11:30:15 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -326,7 +326,7 @@ OptFlagRec xf86_OptionTab[] = {
   { "no_pci_probe",	OPTION_NO_PCI_PROBE },
   { "trio64v+_bug1",	OPTION_TRIO64VP_BUG1 },
   { "trio64v+_bug2",	OPTION_TRIO64VP_BUG2 },
-  { "trio64v+_bug3",	OPTION_TRIO64VP_BUG2 },
+  { "trio64v+_bug3",	OPTION_TRIO64VP_BUG3 },
   { "use_modeline",	OPTION_USE_MODELINE },
   { "suspend_hack",	OPTION_SUSPEND_HACK },
 

@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.30 1996/05/10 06:56:20 dawes Exp $ 
-.TH XF86_SVGA 1 "Version 3.1.2E"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.31 1996/08/13 11:27:49 dawes Exp $ 
+.TH XF86_SVGA 1 "Version 3.1.2F"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
 x86 platforms
@@ -53,7 +53,7 @@ NCR:
 .TP 4
 Cirrus Logic:
 CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-CLGD5430, CLGD5434, CLGD5436,
+CLGD5430, CLGD5434, CLGD5436, CLGD5446, CLGD5462,
 CLGD6205, CLGD6215, CLGD6225, CLGD6235,
 CL6410, CL6412, CL6420, CL6440
 .TP 4
@@ -140,7 +140,7 @@ ncr77c22, ncr77c22e
 .TP 4
 Cirrus Logic:
 clgd5420, clgd5422, clgd5424, clgd5426, clgd5428, clgd5429,
-clgd5430, clgd5434, clgd5436,
+clgd5430, clgd5434, clgd5436, clgd5446, clgd5462,
 clgd6205, clgd6215, clgd6225, clgd6235,
 cl6410, cl6412, cl6420, cl6440
 .TP 4
@@ -230,25 +230,27 @@ manual page for details of how to set the timeouts for the different levels
 of operation.  This option is experimental.
 .sp
 \fBnoaccel\fP - for Cirrus and WD chipsets.  This option disables the
-accelerated features for the clgd5426, clgd5428, wd90c24, wd90c31 and
-wd90c33 chipsets.
+accelerated features for the clgd542X, clgd543x, clgd5446, clgd5462, wd90c24, 
+wd90c31 and wd90c33 chipsets.
 .sp
-\fBfifo_conservative\fP - for Cirrus chipsets, and oti087.  This option
+\fBfifo_conservative\fP - for Cirrus chipsets 542x/3x/46, and oti087.  
+This option
 sets the CRT
 FIFO threshold to a conservative value for dot clocks above 65MHz.  This
 reduces performance, but may help in eliminating problems with ``streaks''
 on the screen during BitBLT operations
 .sp
-\fBfifo_aggressive\fP - for Cirrus chipsets, and oti087.  This option
+\fBfifo_aggressive\fP - for Cirrus chipsets 542x/3x/46, and oti087.  
+This option
 sets the CRT
 FIFO threshold to an aggressive value for dot clocks above 65MHz.  This
 may increase performance.
 .sp
-\fBslow_dram\fP - for Cirrus chipsets.  This option sets the DRAM timings
-for slow DRAM chips.
+\fBslow_dram\fP - for Cirrus chipsets 542x/3x/46.  This option sets the 
+DRAM timings for slow DRAM chips.
 .sp
-\fBfast_dram\fP - for ET4000 and Cirrus chipsets.  This option sets the
-DRAM timings for fast DRAM chips.
+\fBfast_dram\fP - for ET4000 and Cirrus chipsets 542x/3x/46.  This option 
+sets the DRAM timings for fast DRAM chips.
 .sp
 \fBno_2mb_banksel\fP - for Cirrus chipsets.  This option is required for
 Cirrus cards with 2MB of videoram which is in the form of 512kx8 DRAMs
@@ -259,6 +261,7 @@ hardware BitBLT.
 .sp
 \fBlinear\fP - Attempt a linear mapping of the framebuffer into high
 memory. Currently only supported for some Cirrus and oti087 configurations.
+Automatically selected (and hence the option is ignored) for the clgd5462.
 .sp
 \fBmed_dram, favour_bitblt, sw_cursor, clgd6225_lcd, mmio\fP
 - more Cirrus-specific options. Refer to

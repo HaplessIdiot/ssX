@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.1 1996/06/30 10:44:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/XF86Setup/main.c,v 3.2 1996/08/13 11:28:25 dawes Exp $ */
 
 /*
  * Main procedure for XF86Setup, by Joe Moss
@@ -12,6 +12,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <signal.h>
+#include <errno.h>
 
 #if TK_MAJOR_VERSION < 4
 #error You must use Tk 4.0 or newer
@@ -406,8 +407,14 @@ main(argc, argv)
 	}
 	if (statefile == NULL || Phase2FallBack) {
 	    statefile = Tcl_GetVar(interp, "StateFileName", TCL_GLOBAL_ONLY);
+#ifdef DEBUG
+	    fprintf(stderr,
+	        "Executing second copy of XF86Setup (%s -statefile %s)...\n",
+		argv[0], statefile);
+#endif
 	    if (statefile)
-	        execl(argv[0], argv[0], "-statefile", statefile, (char *)0);
+	        execlp(argv[0], argv[0], "-statefile", statefile, (char *)0);
+	    fprintf(stderr, "Failed - errno: %d\n", errno);
 	} else {
             /****  Lastly, execute the Phase V commands ****/
             XF86Setup_TclEvalFile(interp, PHASE5);

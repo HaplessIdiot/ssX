@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.95 1996/08/11 12:56:50 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.96 1996/08/13 11:30:01 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -83,17 +83,17 @@ static char   *modulePath = NULL;	  /* module path */
 static int    pushToken = LOCK_TOKEN;
 static LexRec val;                        /* global return value */
 
-static int scr_index = 0; 
-static int n_monitors = 0;
-static MonPtr monitor_list = NULL;
-static int n_devices = 0;
-#ifndef XF86SETUP
-static GDevPtr device_list = NULL;
+static int scr_index = 0;
+
+#ifdef XF86SETUP
+#define STATIC_OR_NOT
 #else
-GDevPtr device_list = NULL;
-int n_scr_devices = 0;
-int scr_devices[10];
+#define STATIC_OR_NOT static
 #endif
+STATIC_OR_NOT int n_monitors = 0;
+STATIC_OR_NOT MonPtr monitor_list = NULL;
+STATIC_OR_NOT int n_devices = 0;
+STATIC_OR_NOT GDevPtr device_list = NULL;
 
 static int screenno = -100;      /* some little number ... */
 
@@ -1013,9 +1013,9 @@ xf86Config (vtopen)
   xfree(configPath);
 
   /* These aren't needed after the XF86Config file has been read */
+#ifndef XF86SETUP
   if (monitor_list)
     xfree(monitor_list);
-#ifndef XF86SETUP
   if (device_list)
     xfree(device_list);
 #endif
@@ -1304,17 +1304,17 @@ configKeyboardSection()
   xf86Info.specialKeyMap[RIGHTCTL - LEFTALT] = KM_CONTROL;
 #ifdef XKB
   xf86Info.xkbkeymap   = NULL;
-  xf86Info.xkbtypes    = "types/default";
+  xf86Info.xkbtypes    = "default";
 #ifndef PC98
-  xf86Info.xkbcompat   = "compat/default";
-  xf86Info.xkbkeycodes = "keycodes/xfree86";
-  xf86Info.xkbsymbols  = "symbols/us(pc101)";
-  xf86Info.xkbgeometry = "geometry/pc";
+  xf86Info.xkbcompat   = "default";
+  xf86Info.xkbkeycodes = "xfree86";
+  xf86Info.xkbsymbols  = "us(pc101)";
+  xf86Info.xkbgeometry = "pc";
 #else
-  xf86Info.xkbcompat   = "compat/pc98";
-  xf86Info.xkbkeycodes = "keycodes/xfree98";
-  xf86Info.xkbsymbols  = "symbols/nec/jp(pc98)";
-  xf86Info.xkbgeometry = "geometry/nec(pc98)";
+  xf86Info.xkbcompat   = "pc98";
+  xf86Info.xkbkeycodes = "xfree98";
+  xf86Info.xkbsymbols  = "nec/jp(pc98)";
+  xf86Info.xkbgeometry = "nec(pc98)";
 #endif
   xf86Info.xkbcomponents_specified    = False;
   xf86Info.xkbrules    = "xfree86";
@@ -2668,8 +2668,7 @@ configScreenSection()
 	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
 	    screen->VGAbase = device_list[i].VGAbase;
 #ifdef XF86SETUP
-	  if (n_scr_devices < 10)
-	    scr_devices[n_scr_devices++] = i;
+	  screen->device = (void *) &device_list[i];
 #endif
           break;
         }

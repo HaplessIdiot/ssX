@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.54 1996/08/11 13:03:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.55 1996/08/14 14:33:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -238,6 +238,7 @@ void (* vgaAdjustFunc)(
 ) = (void (*)())NoopDDA;
 void (* vgaSaveScreenFunc)() = vgaHWSaveScreen;
 void (* vgaFbInitFunc)() = (void (*)())NoopDDA;
+Bool (* vgaScrInitFunc)() = (Bool (*)())NoopDDA;
 void (* vgaSetReadFunc)() = (void (*)())NoopDDA;
 void (* vgaSetWriteFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadWriteFunc)() = (void (*)())NoopDDA;
@@ -934,6 +935,14 @@ vgaProbe()
 }
 
 
+/* Allow each driver to hook the ScreenInit function */
+void vgaSetScreenInitHook(Bool (* ChipScrInit)())
+{
+  vgaScrInitFunc = ChipScrInit;
+}
+
+
+
 /*
  * vgaScreenInit --
  *      Attempt to find and initialize a VGA framebuffer
@@ -1121,6 +1130,16 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
       pScreen->ListInstalledColormaps = vgaListInstalledColormaps;
       pScreen->StoreColors = vgaStoreColors;
   }
+
+  /* Let each chip driver have a whack at hooking functions, etc. */
+  if (!(*vgaScrInitFunc)(pScreen,
+			 vgaLinearBase,
+			 vga256InfoRec.virtualX,
+			 vga256InfoRec.virtualY,
+			 displayResolution, displayResolution,
+			 vga256InfoRec.displayWidth))
+    return FALSE;
+
 #endif
   
   if (vgaHWCursor.Initialized)
