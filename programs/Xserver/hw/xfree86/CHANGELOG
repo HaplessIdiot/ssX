@@ -1,4 +1,11 @@
 XFree86 4.3.99.7 (xx June 2003)
+ 217. Fixes and updates for XKB keyboard maps:
+      - add more EuroSign to "us_intl" keyboard map (Paul Bolle)
+      - update geometry files (Alexander Pohoyda)
+      - add AudioMute key to inet(hpxe3gc) (Bugzilla #350, Paul Pacheco)
+      - add option for replacing RCtrl key with Right Alt (Bugzilla #343,
+        Adam Tlalka)
+      - add Uzbek keyboard map (Bugzilla #372, Mashrab Kuvatov)
  216. (Re-)fix portability of gccmakedep and generate ccmakedep on all
       platforms (Marc La France).
  215. Fix i810/i815 problem with interlaced modes where only the top half
@@ -17081,7 +17088,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2737 2003/06/12 17:25:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2738 2003/06/15 16:53:11 tsi Exp $
 
 
 
