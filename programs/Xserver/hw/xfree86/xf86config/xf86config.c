@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.29 1996/04/15 11:32:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.30 1996/05/11 11:05:13 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -137,10 +137,12 @@
 #ifndef __EMX__
 #define TREEROOT "/usr/X11R6"
 #define TREEROOTLX "/usr/X11R6/lib/X11"
+#define MODULEPATH "/usr/X11R6/lib/modules"
 #define CONFIGNAME "XF86Config"
 #else
 #define TREEROOT "/XFree86"
 #define TREEROOTLX "/XFree86/lib/X11"
+#define MODULEPATH "/XFree86/lib/modules"
 #define CONFIGNAME "XConfig"
 #endif
 
@@ -1907,7 +1909,30 @@ static char *XF86Config_fontpaths[] =
 static char *XF86Config_fontpathchunk_text =
 
 "\n"
+"# For OSs that support Dynamically loaded modules, ModulePath can be\n"
+"# used to set a search path for the modules.  This is currently supported\n"
+"# for Linux ELF, FreeBSD 2.x and NetBSD 1.x.  The default path is shown\n"
+"# here.\n"
+"\n"
+"#    ModulePath \"" MODULEPATH "\"\n"
+"\n"
 "EndSection\n"
+"\n"
+"# **********************************************************************\n"
+"# Module section -- this is an optional section which is used to specify\n"
+"# which dynamically loadable modules to load.  Dynamically loadable\n"
+"# modules are currently supported only for Linux ELF, FreeBSD 2.x\n"
+"# and NetBSD 1.x.  Currently, dynamically loadable modules are used\n"
+"# only for some extended input (XInput) device drivers.\n"
+"# **********************************************************************\n"
+"#\n"
+"# Section \"Module\"\n"
+"#\n"
+"# This loads the module for the Joystick driver\n"
+"#\n"
+"# Load \"xf86Jstk.so\"\n"
+"# \n"
+"# EndSection\n"
 "\n"
 "# **********************************************************************\n"
 "# Server flags section.\n"
@@ -2043,6 +2068,62 @@ static char *pointersection_text2 =
 "\n"
 "# Emulate3Buttons is an option for 2-button Microsoft mice\n"
 "# Emulate3Timeout is the timeout in milliseconds (default is 50ms)\n"
+"\n";
+
+static char *xinputsection_text =
+"# **********************************************************************\n"
+"# Xinput section -- this is optional and is required only if you\n"
+"# are using extended input devices.  This is for example only.  Refer\n"
+"# to the XF86Config man page for a description of the options.\n"
+"# **********************************************************************\n"
+"#\n"
+"# Section \"Xinput\" \n"
+"#    SubSection \"WacomStylus\"\n"
+"#        Port \"/dev/ttyS1\"\n"
+"#        DeviceName \"Wacom\"\n"
+"#    EndSubSection\n"
+"#    SubSection \"WacomCursor\"\n"
+"#        Port \"/dev/ttyS1\"\n"
+"#    EndSubSection\n"
+"#    SubSection \"WacomEraser\"\n"
+"#        Port \"/dev/ttyS1\"\n"
+"#    EndSubSection\n"
+"#\n"
+"#    SubSection \"Elographics\"\n"
+"#        Port \"/dev/ttyS1\"\n"
+"#        DeviceName \"Elo\"\n"
+"#        MinimumXPosition 300\n"
+"#        MaximumXPosition 3500\n"
+"#        MinimumYPosition 300\n"
+"#        MaximumYPosition 3500\n"
+"#        Screen 0\n"
+"#        UntouchDelay 10\n"
+"#        ReportDelay 10\n"
+"#    EndSubSection\n"
+"#\n"
+"#    SubSection \"Joystick\"\n"
+"#        Port \"/dev/joy0\"\n"
+"#        DeviceName \"Joystick\"\n"
+"#        TimeOut 10\n"
+"#        MinimumXPosition 100\n"
+"#        MaximumXPosition 1300\n"
+"#        MinimumYPosition 100\n"
+"#        MaximumYPosition 1100\n"
+"#        # CenterX 700\n"
+"#        # CenterY 600\n"
+"#        Delta 20\n"
+"#    EndSubSection\n"
+"#\n"
+"# The Mouse Subsection contains the same type of entries as the\n"
+"# standard Pointer Section (see above), with the addition of the\n"
+"# DeviceName entry.\n"
+"#\n"
+"#    SubSection \"Mouse\" \n"
+"#        Port \"/dev/mouse2\"\n"
+"#        DeviceName \"Second Mouse\"\n"
+"#        Protocol \"Logitech\"\n"
+"#    EndSubSection\n"
+"# EndSection\n"
 "\n";
 
 static char *monitorsection_text1 =
@@ -2316,6 +2397,11 @@ void write_XF86Config(filename)
 		fprintf(f, "    ClearRTS\n\n");
 	}
 	fprintf(f, "EndSection\n\n\n");
+
+	/*
+	 * Write XInput sample section
+	 */
+	fprintf(f, "%s", xinputsection_text);
 
 	/*
 	 * Write monitor section.
