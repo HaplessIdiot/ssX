@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.12 2002/12/02 14:49:44 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/compile.c,v 1.13 2003/01/29 03:05:53 paulo Exp $ */
 
 #define VARIABLE_USED		0x0001
 #define VARIABLE_ARGUMENT	0x0002
@@ -1783,6 +1783,17 @@ ComFuncall(LispCom *com, LispObj *function, LispObj *arguments, int eval)
 		 * don't evaluate arguments. */
 		if (com->macro || compile || builtin->type == LispMacro)
 		    eval = 0;
+
+		if (!com->macro && builtin->type == LispMacro) {
+		    /* Set flag of variable used, in case variable is only
+		     * used as a builtin macro argument. */
+		    LispObj *obj;
+
+		    for (obj = arguments; CONSP(obj); obj = CDR(obj)) {
+			if (SYMBOLP(CAR(obj)))
+			    COM_VARIABLE_USED(CAR(obj)->data.atom);
+		    }
+		}
 
 		FORM_ENTER();
 		if (!compile && !com->macro)
