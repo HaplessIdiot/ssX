@@ -22,7 +22,7 @@
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  *           Matthew Grossman, <mattg@oz.net> - acceleration and misc fixes
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.56 2001/06/15 21:23:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_driver.c,v 1.57 2001/08/07 07:04:52 keithp Exp $ */
 
 /* everybody includes these */
 #include "xf86.h"
@@ -1035,6 +1035,27 @@ TGAMapMem(ScrnInfoPtr pScrn)
     if (pTga->DACBase == NULL)
 	return FALSE;
 
+    /*
+     * This is a hack specifically for the TGA2 code, as it sometimes
+     * calculates/uses addresses in TGA2 memory which are NOT mmapped
+     * by the normal framebuffer code above. This most frequently occurs
+     * when displaying something close to the top-left corner (in the
+     * routines CopyLine{Forwards,Backwards}.
+     *
+     * This could most likely also be fixed by further modifying the
+     * code, but it (the code) is ugly enough already... ;-}
+     *
+     * So, the workaround is to simply mmap an additional PAGE of
+     * framebuffer memory in front of the normal mmap to prevent
+     * SEGVs from happening.
+     */
+    pTga->HACKBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
+				 pTga->PciTag,
+				 (unsigned long)pTga->FbAddress - getpagesize(),
+				 getpagesize());
+    if (pTga->HACKBase == NULL)
+	return FALSE;
+
     return TRUE;
 }
 
@@ -1064,6 +1085,9 @@ TGAUnmapMem(ScrnInfoPtr pScrn)
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->DACBase, 0x10000);
     pTga->DACBase = NULL;
+
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pTga->HACKBase, getpagesize());
+    pTga->HACKBase = NULL;
 
     return TRUE;
 }

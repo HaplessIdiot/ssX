@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.209 2001/10/01 13:44:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.210 2001/10/28 03:33:35 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1753,6 +1753,19 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Read the BIOS data struct
      */
 
+#if defined(__alpha__)
+    /* 
+     * Some old Digital-OEMed Matrox Millennium I cards have a VGA
+     * disable switch.  If the disable is on, we can't read the BIOS,
+     * and pMga->BiosAddress = 0x0. The disable switch is needed to
+     * allow multi-head operation with brain-dead console code... ;-}
+     */
+    
+    if ((pMga->BiosAddress == 0) && !xf86IsPrimaryPci(pMga->PciInfo))
+        xf86DrvMsg(pScrn->scrnIndex, pMga->BiosFrom,
+                   "BIOS not found, skipping read\n");
+    else
+#endif
     MGAReadBios(pScrn);
 
     /* Since the BIOS can swap DACs during the initialisation of G550, we need to

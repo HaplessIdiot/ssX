@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.13 2001/06/05 17:52:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_accel.c,v 1.14 2001/08/01 00:44:54 tsi Exp $ */
 
 /*
  * Copyright 1996,1997 by Alan Hourihane, Wigan, England.
@@ -53,7 +53,7 @@
 
 #define CE_BUFSIZE 256
 
-#define FB_OFFSET(x, y) (((y) * pScrn->displayWidth * (pTga->Bpp)) + (x) * pTga->Bpp)
+#define FB_OFFSET(x, y) (((long)(y) * pScrn->displayWidth * (pTga->Bpp)) + (long)(x) * pTga->Bpp)
 
 /* prototypes */
 
@@ -617,14 +617,10 @@ TGASubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1, int x2,
   TGA_FAST_WRITE_REG(pTga->current_rop, TGA_RASTEROP_REG);
   TGA_FAST_WRITE_REG(pTga->current_planemask, TGA_PLANEMASK_REG);
 
-#if 1
   if(x2 > x1 && (x1 + w) > x2)
     copy_func = TGACopyLineBackwards;
   else 
     copy_func = TGACopyLineForwards; 
-#else
-    copy_func = TGACopyLineForwards; 
-#endif
 
   TGA_SAVE_OFFSET();  
   if(pTga->blitdir == BLIT_FORWARDS) {
@@ -657,7 +653,8 @@ TGACopyLineForwards(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2, int w)
   int read;
   unsigned long source_address, destination_address;
   unsigned int mask_source, mask_destination;
-  unsigned int cando, cando_mask;
+  int cando;
+  unsigned int cando_mask;
   int source_align, destination_align;
   int pixel_shift;
 #ifdef PROFILE
@@ -754,7 +751,8 @@ TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
   unsigned long a1, a2;
   unsigned long source_address, destination_address;
   unsigned int mask_source, mask_destination;
-  unsigned int cando, cando_mask;
+  int cando;
+  unsigned int cando_mask;
   int source_align, destination_align;
   int pixel_shift;
   int read;
@@ -814,7 +812,7 @@ TGACopyLineBackwards(ScrnInfoPtr pScrn, int x1, int y1, int x2,
       tmp_dest_mask <<= 8 / pTga->Bpp;
       pixel_shift = (8 - source_align) + destination_align;
 #if 0
-      ErrorF("CPY-BWD - premature copy: sa = %d, da = %d, ps =%d\n",
+      ErrorF("CPY-BWD - preliminary copy: sa = %d, da = %d, ps =%d\n",
 	     source_align, destination_align, pixel_shift);
 #endif
       TGA_FAST_WRITE_REG(pixel_shift, TGA_PIXELSHIFT_REG);
