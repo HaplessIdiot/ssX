@@ -1,0 +1,50 @@
+XCOMM $XFree86$
+XCOMM 
+XCOMM 
+
+#define IHaveModules
+#include <Server.tmpl>
+
+#ifdef XFree86Version
+#if DoLoadableServer
+XFMODSRC = shmodule.c
+XFMODOBJ = shmodule.o
+#endif
+#endif
+
+SRCS =  $(XFMODSRC) \
+	shadow.c \
+	shalloc.c \
+	shplanar.c \
+	shpacked.c
+
+OBJS =  $(XFMODOBJ) \
+	shadow.o \
+	shalloc.o \
+	shplanar.o \
+	shpacked.o
+
+#if BuildRender
+RENDERINCS=-I../../render -I$(EXTINCSRC)
+#endif
+
+   INCLUDES = -I. -I../../mi -I../../fb -I../../include -I$(XINCLUDESRC) \
+	      -I$(FONTINCSRC) -I$(XF86SRC)/common $(EXTRAINCLUDES) \
+	      $(RENDERINCS)
+   LINTLIBS = ../../dix/llib-ldix.ln ../../os/llib-los.ln \
+	     ../../mi/llib-lmi.ln
+
+NormalLibraryObjectRule()
+LibraryModuleTarget(shadow,$(OBJS))
+LintLibraryTarget(shadow,$(SRCS))
+
+NormalLintTarget($(SRCS))
+
+InstallLibraryModule(shadow,$(MODULEDIR),.)
+
+#ifndef OS2Architecture
+DependTarget()
+#endif
+
+InstallDriverSDKLibraryModule(shadow,$(DRIVERSDKMODULEDIR),.)
+InstallDriverSDKNonExecFile(shadow.h,$(DRIVERSDKINCLUDEDIR))
