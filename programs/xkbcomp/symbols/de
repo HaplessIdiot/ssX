@@ -31,6 +31,8 @@ default partial xkb_symbols "basic" {
     key <AE12> {	[ dead_acute,	dead_grave	],
 			[ dead_cedilla			]	};
 
+    key <AD01> {	[	  q,	Q 		],
+			[	 at			]	};
     key <AD05> {	[	  t,	T		]	};
     key <AD06> {	[	  z,	Z		]	};
     key <AD07> {	[	  u,	U		]	};
@@ -46,9 +48,12 @@ default partial xkb_symbols "basic" {
     key <AC11> {	[ adiaeresis,	Adiaeresis	],
 			[ dead_circumflex		]	};
 
-    key <LSGT> {	[      less,	greater		]	};
+    key <LSGT> {	[      less,	greater		],
+			[       bar			]	};
     key <AB01> {	[	  y,	Y 		],
 			[ guillemotleft,less		]	};
+    key <AB07> {	[	  m,	M		],
+			[	 mu			]	};
     key <AB08> {	[     comma,	semicolon	]	};
     key <AB09> {	[    period,	colon		],
 			[ periodcentered, division	]	};

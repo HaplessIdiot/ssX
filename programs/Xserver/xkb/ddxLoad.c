@@ -1,5 +1,5 @@
 /* $XConsortium: ddxLoad.c /main/4 1996/01/14 16:45:59 kaleb $ */
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.0 1996/01/28 07:32:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.1 1996/01/30 15:27:42 dawes Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -184,14 +184,14 @@ char	buf[PATH_MAX],keymap[PATH_MAX];;
 
     XkbEnsureSafeMapName(keymap);
     if (XkbBaseDirectory!=NULL) {
-	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s %s/%s.xkm",
+	sprintf(buf,"%s/xkbcomp -w %d -R%s -xkm - -em1 %s -emp %s -eml %s \"%s/%s.xkm\"",
 		XkbBaseDirectory,
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		XkbBaseDirectory,
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }
     else {
-	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s %s/%s.xkm",
+	sprintf(buf,"xkbcomp -w %d -xkm - -em1 %s -emp %s -eml %s \"%s/%s.xkm\"",
 		((xkbDebugFlags<2)?1:((xkbDebugFlags>10)?10:xkbDebugFlags)),
 		PRE_ERROR_MSG,ERROR_PREFIX,POST_ERROR_MSG1,XKM_OUTPUT_DIR,keymap);
     }

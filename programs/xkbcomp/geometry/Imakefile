@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/7 1996/01/27 13:35:51 kaleb $
 
      TESTDATA = 
     DATAFILES = everex winbook kinesis northgate sgi \
-		microsoft keytronic sun dell pc $(TESTDATA)
+		microsoft keytronic sun dell pc nec $(TESTDATA)
       SUBDIRS = digital
 
 all::

@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c /main/122 1996/01/14 16:45:32 kaleb $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.13 1996/01/24 22:04:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.14 1996/01/30 15:27:37 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -261,17 +261,18 @@ LockServer()
     else
        break;
   } while (i < 3);
-  if (lfd < 0)
+  if (lfd < 0) {
     unlink(tmp);
-  i = 0;
-  do {
-    i++;
-    lfd = open(tmp, O_CREAT | O_EXCL | O_WRONLY, 0644);
-    if (lfd < 0)
-       sleep(2);
-    else
-       break;
-  } while (i < 3);
+    i = 0;
+    do {
+      i++;
+      lfd = open(tmp, O_CREAT | O_EXCL | O_WRONLY, 0644);
+      if (lfd < 0)
+         sleep(2);
+      else
+         break;
+    } while (i < 3);
+  }
   if (lfd < 0)
     FatalError("Could not create lock file in %s\n", tmp);
   (void) sprintf(pid_str, "%10d\n", getpid());
