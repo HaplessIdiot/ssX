@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.35 2000/06/13 23:15:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.36 2000/08/25 21:51:00 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -3026,7 +3026,8 @@ _XawTextClearAndCenterDisplay(TextWidget ctx)
 
     _XawTextShowPosition(ctx);
 
-    if (XtIsRealized(ctx) && visible && left_margin == ctx->text.left_margin) {
+    if (XtIsRealized((Widget)ctx) && visible &&
+	left_margin == ctx->text.left_margin) {
 	int insert_line = LineForPosition(ctx, ctx->text.insertPos);
 	int scroll_by = insert_line - (ctx->text.lt.lines >> 1);
 	Boolean clear_to_eol = ctx->text.clear_to_eol;
