@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.39 2003/08/27 21:43:19 tsi Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.40 2003/08/27 21:58:28 tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -157,8 +157,7 @@ from The Open Group.
 #    endif
 #   endif
 #  endif
-#  if defined(__GNU__) || \
-      (defined(_POSIX_VERSION) || (_POSIX_VERSION >= 199309))
+#  if defined(_SC_OPEN_MAX)
 #   define TRANS_OPEN_MAX OPEN_MAX
 #  else /* !__GNU__ */
 #   if OPEN_MAX > 256
