@@ -1,4 +1,5 @@
 XFree86 4.0.1a (XX XXXX 2000)
+ 429. Add missing clock values to the trident driver (Alan Hourihane).
  428. Fix Glint driver's SaveScreen function (#4057, Michel Danzer).
  427. Convert MGA driver to use fb instead of cfb (Mark Vojkovich).
  426. Rewrite MGA color expansion routines so that pci retries never occur
@@ -10837,4 +10838,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1234 2000/07/08 22:42:39 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1235 2000/07/08 23:29:29 alanh Exp $
