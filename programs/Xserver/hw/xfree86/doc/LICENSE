@@ -2,7 +2,7 @@
 
                        Compiled by The XFree86 Project
 
-                              22 February 2004
+                               06 January 2005
 
 1.  Introduction
 
@@ -61,21 +61,8 @@ requirements of the Free Software definition <URL:http://www.fsf.org/philoso-
 phy/free-sw.html> as defined by the Free Software Foundation (FSF)
 <URL:http://www.fsf.org/>.
 
-The exceptions are the GLX extension and CID font code that are covered by
-the SGI Free Software License B, version 1.1 (section 9., page 1).
-
-3.3  GPL-compatible
-
-The client-side X libraries distributed with this release (4.4.0), with the
-exception of the GL, GLU, and GLw libraries, carry a subset of the acceptable
-licenses that satisfy an additional condition: they are GPL-compatible.  The
-GL, GLU, and GLw libraries contain code covered by the SGI Free Software
-License B, version 1.1 (section 9., page 1), which is not GPL-compatible.
-
-Other portions of XFree86, including the X servers, may include code with
-licenses that are not GPL-compatible.  Example of such licenses include some
-of the BSD-style licenses (section 6.3, page 1), the FreeType License (sec-
-tion 12., page 1) and the SGI licenses (section 9., page 1).
+Exceptions to this include the GLX extension and CID font code that are cov-
+ered by the SGI Free Software License B, version 1.1 (section 9., page 1).
 
 4.  XFree86 License (version 1.1)
 
@@ -83,7 +70,7 @@ The text of the XFree86 1.1 license is included below.  A FAQ for this
 licence can be found at the XFree86 web site
 <URL:http://www.xfree86.org/legal/licenses.html>
 
-Copyright (C) 1994-2004 The XFree86 Project, Inc.
+Copyright (C) 1994-2005 The XFree86 Project, Inc.
 
 All rights reserved.
 
@@ -269,7 +256,7 @@ Copyright (C) 1999, 2000 SuSE, Inc.
 
 Copyright (C) 2002 by SuSE Linux AG
 
-Copyright (C) 1993-2004 by The XFree86 Project, Inc.
+Copyright (C) 1993-2005 by The XFree86 Project, Inc.
 
 Copyright (C) 1999-2001 by Thomas Thanner, Citron GmbH, Germany.
 
@@ -592,7 +579,7 @@ ten prior permission.
 
 5.11  XFree86 License (version 1.0)
 
-Copyright (C) 1994-2004 The XFree86 Project, Inc.  All Rights Reserved.
+Copyright (C) 1994-2005 The XFree86 Project, Inc.  All Rights Reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -1649,7 +1636,7 @@ the sale, use or other dealings in this Font Software without prior written
 authorization from the Gnome Foundation or Bitstream Inc., respectively. For
 further information, contact: fonts at gnome dot org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.38 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.39 dawes Exp $
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/LICENSE,v 1.38 2004/06/09 18:24:51 dawes Exp $
+$XFree86$
