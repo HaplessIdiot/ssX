@@ -10,10 +10,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>21 February 2000
+<date>26 February 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.99 2000/02/21 22:29:07 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.100 2000/02/21 22:41:41 dawes Exp $
 </ident>
 
 <abstract>
@@ -28,6 +28,7 @@ operating systems on Intel and other platforms.
 <sect>What is XFree86 &relvers;?
 <p>
 
+<![ %snapshot [
 XFree86 &relvers; is a ``work in progress'' snapshot of the XFree86 4.0
 development code.  It is <![ %latersnap; [one of]]>
 <![ %firstsnap; [the first in]]>
@@ -48,10 +49,44 @@ compared with the 3.3.x versions, and only a small number of drivers have
 been converted so far.  That means that this release does not support a
 wide range of video hardware.  Some of the drivers and new features are
 well developed and reasonably stable, while others are not.
+]]>
+
+<![ %release [
+XFree86 &relvers; is <![ %firstrel; [the first]]>
+<![ %laterrel; [a]]> full release of the <![ %earlyrel; [new]]> XFree86 4
+series.
+The road to XFree86 4 began in mid 1997, with serious work starting in
+early 1998.  The first pre-4.0 snapshot was released in mid 1999, and
+4.0 was released in early 2000.  A lot has been completed in that time,
+and even more has been started since the "4.0" design was drafted.  The
+result is that this release contains a lot of new features, some new
+drivers, and some significant performance improvements.  This release
+contains components in various stages of development, ranging from stable
+and well tested to new and not-so-well tested.  One the other side,
+there are drivers from the 3.3.x series that have not yet been ported
+to XFree86 4.  Most of these are for old hardware.  To find more
+information about which hardware is supported, see the <htmlurl
+name="Driver Status document" url="Status.html">.
+
+XFree86 4 uses a very modular design.  We had hoped to finalise and fully
+document the driver module API/ABI in time for the 4.0 release, but instead
+we are planning to have this done for a subsequent release.  We will try
+where possible to retain backward compatibility with the module interfaces
+in 4.0 in future releases, but we can't make guarantees about that until
+the interfaces have been fully documented.
+]]>
 
 Information on this release's features and their status can be found in
 the <htmlurl name="Release Notes" url="RELNOTES.html">.
 
+Information about obtaining and installing binary distributions of this
+release can be found in the <htmlurl name="Installation Document"
+url="Install.html">.
+
+Copyright and Licensing information for this release can be found in
+the <htmlurl name="License Document" url="LICENSE.html">.
+
+<![ %snapshot [
 <sect>Redistribution of the Snapshots
 <p>
 
@@ -60,6 +95,7 @@ prohibit vendors and others redistributing binaries of this release, we
 don't recommend it.  We ask that if you do distribute such binaries,
 you make it clear that people using then should contact you for support
 and not XFree86.
+]]>
 
 <sect>Developers
 <p>
@@ -72,10 +108,22 @@ to the latest source and to other developers.
 <sect>How to get XFree86 &relvers;
 <p>
 
+<![ %snapshot; [
 XFree86 &relvers; can be found at the <url name="XFree86 ftp server"
 url="ftp://ftp.xfree86.org/pub/XFree86/snapshots/&relvers;/">, and at
 mirrors of this server.  This snapshot is available primarily in source
-form.  Binaries for some platforms may be made available at a later time.
+form.  Binaries for some platforms may be made available at a later
+time.
+]]>
+
+<![ %release; [
+XFree86 &relvers; can be found at the <url name="XFree86 ftp server"
+url="ftp://ftp.xfree86.org/pub/XFree86/&relvers;/">,
+and at mirrors of this server.  Information about obtaining and installing
+binary distributions of this release can be found in the
+<htmlurl name="Installation Document" url="Install.html">.  Information about
+obtaining the release in source form is given below.
+]]>
 
 The source for version &relvers; is split into three tarballs:
 <tt>X&srcvers;src-1.tgz</tt>, <tt>X&srcvers;src-2.tgz</tt>,

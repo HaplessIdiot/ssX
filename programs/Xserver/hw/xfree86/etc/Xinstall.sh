@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.2 2000/02/25 21:03:10 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.3 2000/02/26 04:56:02 dawes Exp $
 #
 # Copyright © 1995-2000 by The XFree86 Project, Inc
 # Portions Copyright © 2000 by Precision Insight, Inc
@@ -19,9 +19,16 @@ RUNDIR=/usr/X11R6
 ETCDIR=/etc/X11
 VARDIR=/var
 
-#RUNDIR=/home1/test/X11R6
-#ETCDIR=/home1/test/etcX11
-#VARDIR=/home1/test/var
+if [ X"$1" = "X-test" -o X"$XINST_TEST" != X ]; then
+	RUNDIR=/home1/test/X11R6
+	ETCDIR=/home1/test/etcX11
+	VARDIR=/home1/test/var
+	if [ X"$1" = "X-test" ]; then
+		shift
+	fi
+	echo ""
+	echo "Running in test mode"
+fi
 
 OLDFILES=""
 
@@ -168,9 +175,64 @@ GetOsInfo()
 
 	OsName="`uname`"
 	OsVersion="`uname -r`"
-	OsArch="`uname -m`"
+	case "$OsName" in
+	SunOS) # Assumes SunOS 5.x
+		OsArch="`uname -p`"
+		;;
+	*)
+		OsArch="`uname -m`"
+		;;
+	esac
+	# Some SVR4.0 versions have a buggy uname that reports the node name
+	# for the OS name.  Try to catch that here.  Need to check what is
+	# reported for non-buggy versions.
+	if [ "$OsName" = "`uname -n`" -a -f /stand/unix ]; then
+		OsName=UNIX_SV
+	fi
 	echo "uname reports '$OsName' version '$OsVersion', architecture '$OsArch'"
 
+	# Find the object type, where needed
+
+	case "$OsName" in
+	Linux|FreeBSD)
+		if file -L /bin/sh | grep ELF > /dev/null 2>&1; then
+			OsObjFormat=ELF
+		else
+			OsObjFormat=a.out
+		fi
+		;;
+	esac
+
+	if [ X"$OsObjFormat" != X ]; then
+		Echo "Object format is '$OsObjFormat' "
+	fi
+
+	# Find the libc version, where needed
+	case "$OsName" in
+	Linux)
+		tmp="`ldd /bin/sh | grep libc.so 2> /dev/null`"
+		OsLibcMajor=`expr "$tmp" : '.*libc.so.\([0-9]*\)'`
+		case "$OsLibcMajor" in
+		6)
+			LibcPath=`expr "$tmp" : '[^/]*\(/[^ ]*\)'`
+			tmp="`ls -l $LibcPath 2> /dev/null`"
+			OsLibcMinor=`expr "$tmp" : '.*libc-2.\([0-9]*\)'`
+			;;
+		esac
+		;;
+	esac
+
+	if [ X"$OsLibcMajor" != X ]; then
+		Echo "libc version is '$OsLibcMajor"
+		if [ X"$OsLibcMinor" != X ]; then
+			Echo ".$OsLibcMinor'"
+		else
+			Echo "'"
+		fi
+	fi
+	echo ""
+	echo ""
+	
 	# test's flag for symlinks
 	#
 	# For OSs that don't support symlinks, choose a type that is guaranteed to
@@ -198,21 +260,8 @@ DoOsChecks()
 
 	case "$OsName" in
 	Linux)
-		if file -L /bin/sh | grep ELF > /dev/null 2>&1; then
-			case "$OsArch" in
-			i*86)
-				echo ""
-				if ldd /bin/sh | grep "libc.so.6" > /dev/null 2>&1; then
-					echo "You appear to have a Linux glibc (libc-6) based"
-					echo "system.  Make sure you are installing the "
-					echo "'Linux-ix86-glibc' binary distrbution."
-				else
-					echo "You appear to have a Linux libc-5 based system."
-					echo "Make sure you are installing the 'Linux-ix86-libc5'"
-					echo "binary distrbution (if one is available)."
-				fi
-				;;
-			esac
+		case "$OsObjFormat" in
+		ELF)
 			# Check ldconfig
 			LDSO=`/sbin/ldconfig -v -n | awk '{ print $3 }'`
 			LDSOMIN=`echo $LDSO | awk -F[.-] '{ print $3 }'`
@@ -235,33 +284,218 @@ DoOsChecks()
 					fi
 				fi
 			fi
-		else
-			case "$OsArch" in
-			i*86)
-				echo ""
-				echo "You appear to have a Linux a.out system.  a.out binaries"
-				echo "are no longer provided or supported."
-				echo ""
-				exit 1
-				;;
-			esac
-		fi
+			;;
+		esac
 		# The /dev/tty0 check is left out.  Presumably nobody has a system where
 		# this is missing any more.
-		echo ""
 		;;
 	esac
 }
 
 FindDistName()
 {
-	echo "FindDistName not implemented yet."
+	case "$OsName" in
+	DGUX)	# Check this string
+		case "$OsArch" in
+		i*86)
+			DistName="DGUX-ix86"
+			;;
+		*)
+			Message="DGUX binaries are only available for ix86 platforms"
+			;;
+		esac
+		;;
+	FreeBSD)
+		case "$OsArch" in
+		i386)
+			case "$OsVersion" in
+			2.2*)
+				DistName="FreeBSD-2.2.x"
+				;;
+			3.*)
+				case "$OsObjFormat" in
+				ELF)
+					DistName="FreeBSD-3.x"
+					;;
+				*)
+					Message="FreeBSD 3.x binaries are only available in ELF format"
+					;;
+				esac
+				;;
+			4.*)
+				DistName="FreeBSD-4.x"
+				;;
+			*)
+				Message="FreeBSD/i386 binaries are not available for this version"
+				;;
+			esac
+			;;
+		alpha)
+			case "$OsVersion" in
+			3.*)
+				DistName="FreeBSD-alpha-3.x"
+				;;
+			4.*)
+				DistName="FreeBSD-alpha-4.x"
+				;;
+			*)
+				Message="FreeBSD/alpha binaries are not available for this version"
+				;;
+			esac
+			;;
+		*)
+			Message="FreeBSD binaries are not available for this architecture"
+			;;
+		esac
+		;;
+	Linux)
+		case "$OsArch" in
+		i*86)
+			case "$OsLibcMajor" in
+			5)
+				DistName="Linux-ix86-libc5"
+				;;
+			6)
+				case "$OsLibcMinor" in
+				0)
+					DistName="Linux-ix86-glibc20"
+					;;
+				1)
+					DistName="Linux-ix86-glibc21"
+					;;
+				*)
+					Message="No dist available for glibc 2.$OsLibcMinor.  Try Linux-ix86-glibc21"
+					;;
+				esac
+				;;
+			*)
+				case "$OsObjFormat" in
+				a.out)
+					Message="Linux a.out is no longer supported"
+					;;
+				*)
+					Message="No Linux/ix86 binaries for this libc version"
+					;;
+				esac
+				;;
+			esac
+			;;
+		alpha)
+			case "$OsLibcMajor.$OsLibcMinor" in
+			6.1)
+				DistName="Linux-alpha-glibc21"
+				;;
+			6.*)
+				Message="No Linux/alpha binaries for glibc 2.$OsLibcMinor.  Try Linux-alpha-glibc21"
+				;;
+			*)
+				Message="No Linux/alpha binaries for this libc version"
+				;;
+			esac
+			;;
+		*)
+			Message="No Linux binaries available for this architecture"
+			;;
+		esac
+		;;
+	LynxOS)	# Check this
+		DistName="LynxOS"
+		;;
+	NetBSD)
+		case "$OsArch" in
+		i386)
+			case "$OsVersion" in
+			1.[3-9]*)	# Check this
+				DistName="NetBSD-1.3"
+				;;
+			*)
+				Message="No NetBSD/i386 binaries available for this version"
+				;;
+			esac
+			;;
+		*)
+			Message="No NetBSD binaries available for this architecture"
+			;;
+		esac
+		;;
+	OpenBSD)
+		case "$OsArch" in
+		i386)
+			case "$OsVersion" in
+			2.[6-9]*)	# Check this
+				DistName="OpenBSD-2.6"
+				;;
+			*)
+				Message="No OpenBSD/i386 binaries available for this version"
+				;;
+			esac
+			;;
+		*)
+			Message="No OpenBSD binaries available for this architecture"
+			;;
+		esac
+		;;
+	SunOS)
+		case "$OsArch" in
+		i386)
+			case "$OsVersion" in
+			5.[67]*)
+				DistName="Solaris"
+				;;
+			5.8*)
+				DistName="Solaris-8"
+				;;
+			*)
+				Message="No Solaris/x86 binaries available for this version"
+				;;
+			esac
+			;;
+		*)
+			Message="No SunOS/Solaris binaries available for this architecture"
+			;;
+		esac
+		;;
+	UNIX_SV)
+		case "$OsArch" in
+		i386)
+			case "$OsVersion" in
+			4.0*)
+				DistName="SVR4.0"
+				;;
+			*)
+				# More detailed version check??
+				DistName="UnixWare"
+				;;
+			esac
+			;;
+		*)
+			Message="No SYSV binaries available for this architecture"
+			;;
+		esac
+		;;
+	*)
+		Message="No binaries available for this OS"
+		;;
+	esac
+
+	if [ X"$DistName" != X ]; then
+		echo "Binary distribution name is '$DistName'"
+		echo ""
+	else
+		if [ X"$Message" = X ]; then
+			echo "Can't find which binary distribution you should use."
+			echo "Please send the output of this script to XFree86@XFree86.org"
+			echo ""
+		else
+			echo "$Message"
+			echo ""
+		fi
+	fi
 }
 
 if [ X"$1" = "X-check" ]; then
 	GetOsInfo
-	DoOsChecks
-	#FindDistName
+	FindDistName
 	exit 0
 fi
 
@@ -290,8 +524,72 @@ fi
 
 # First, do some preliminary checks
 
+GetOsInfo
+
 echo "Checking for required files ..."
 Needed=""
+
+# Check for extract and extract.exe, and check that they are usable.
+if [ -f extract ]; then
+	ExtractExists=YES
+	chmod +x extract
+	if ./extract --version | head -1 | \
+	  fgrep "extract (XFree86 version" > /dev/null 2>&1; then
+		ExtractOK=YES
+	else
+		echo "extract doesn't work properly, renaming it to 'extract.bad'"
+		rm -f extract.bad
+		mv extract extract.bad
+	fi
+fi
+if [ X"$ExtractOK" != XYES ]; then
+	if [ -f extract.exe ]; then
+		ExtractExeExists=YES
+		rm -f extract
+		ln extract.exe extract
+		chmod +x extract
+		if ./extract --version | head -1 | \
+		  fgrep "extract (XFree86 version" > /dev/null 2>&1; then
+			ExtractOK=YES
+		else
+			echo "extract.exe doesn't work properly, renaming it to"
+			echo "'extract.exe.bad'"
+			rm -f extract.exe.bad
+			mv extract.exe extract.exe.bad
+			rm -f extract
+		fi
+	fi
+fi
+if [ X"$ExtractOK" != XYES ]; then
+	echo ""
+	if [ X"$ExtractExists" = XYES -a X"$ExtractExeExists" = XYES ]; then
+		echo "The versions of 'extract' and 'extract.exe' you have do not run'"
+		echo "correctly.  Make sure that you have downloaded the correct"
+		echo "binaries for your system.  To find out which is correct,"
+		echo "run 'sh $0 -check'."
+	fi
+	if [ X"$ExtractExists" = XYES -a X"$ExtractExeExists" != XYES ]; then
+		echo "The version of 'extract' you have does not run correctly."
+		echo "This is most commonly due to problems downloading this file"
+		echo "with some web browsers.  You may get better results if you"
+		echo "download the version called 'extract.exe' and try again."
+	fi
+	if [ X"$ExtractExists" != XYES -a X"$ExtractExeExists" = XYES ]; then
+		echo "The version of 'extract.exe' you have does not run correctly."
+		echo "Make sure that you have downloaded the correct binaries for your"
+		echo "system.  To find out which is correct, run 'sh $0 -check'."
+	fi
+	if [ X"$ExtractExists" != XYES -a X"$ExtractExeExists" != XYES ]; then
+		echo "You need to download the 'extract' (or 'extract.exe') utility"
+		echo "and put it in this directory."
+	fi
+	echo ""
+	echo "When you have corrected the problem, please re-run 'sh $0'"
+	echo "to proceed with the installation."
+	echo ""
+	exit 1
+fi
+
 for i in $REQUIREDFILES; do
 	if [ ! -f $i ]; then
 		Needed="$Needed $i"
@@ -312,9 +610,6 @@ if [ X"$Needed" != X ]; then
 	exit 1
 fi
 
-# Make sure extract is executable
-chmod +x extract
-
 # Link extract to gnu-tar so it can also be used as a regular tar
 rm -f gnu-tar
 ln extract gnu-tar
@@ -323,7 +618,7 @@ WDIR=`pwd`
 EXTRACT=$WDIR/extract
 TAR=$WDIR/gnu-tar
 
-DoOsCheck
+DoOsChecks
 
 if [ X"$NEEDSOMETHING" != X ]; then
 	echo ""

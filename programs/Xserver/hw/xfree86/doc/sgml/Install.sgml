@@ -9,7 +9,7 @@
 <date>25 February 2000
 
 <ident>
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Install.sgml,v 1.1 2000/02/26 04:56:01 dawes Exp $
 </ident>
 
 <abstract>
@@ -29,11 +29,13 @@ procedures for binary distributions provided by others may be different.
 
 The XFree86 binary distributions that we provide for UNIX-like OSs are
 packaged in the platform-independent gzipped tar format (referred to as
-"tarballs").  Each tarball has the "<tt>.tgz</tt>" suffix.  We do not
-provide binaries in RPM format or any other platform specific package
-format.  Together with the binary distributions, we provide a customised
-version of GNU tar called "extract", and an installation script.  We
-recommend that these be used to install the binary distributions.
+"tarballs").  Our tarballs can be identified by the "<tt>.tgz</tt>"
+suffix.  We do not provide binaries in RPM format or any other platform
+specific package format.  If you need them in such a format, you should
+contact your OS vendor.  Together with the binary distributions, we
+provide a customised version of GNU tar called "extract", and an
+installation script.  We recommend that these be used to install the
+binary distributions.
 
 <sect>How to get the XFree86 &relvers; binary distributions
 <p>
@@ -52,7 +54,7 @@ site is also mirrored by many sites around the world.  There is a
 sub-directory for each OS/platform that we have binaries for.  The first thing
 you need to do is to decide which of these suits you.  In most cases, the
 choice is straightforward.  In some cases (e.g., Linux) there may be a number
-of choices depending on what architecture of libc version you are using.
+of choices depending on what architecture or libc version you are using.
 If in doubt, first download the <tt>Xinstall.sh</tt> script, and run it
 as follows:
 
@@ -82,6 +84,12 @@ Xvar.tgz         Run-time data
 Xxserv.tgz       XFree86 X server
 Xmod.tgz         XFree86 X server modules
 </verb></quote>
+
+NOTE: Some web browsers have a problem downloading the <tt>extract</tt>
+utility correctly.  If you encounter this problem, download the version
+called <tt>extract.exe</tt> instead.  The "<tt>.exe</tt>" suffix is only
+there to make the troublesome web browsers do the right thing.  It is
+not a DOS/Windows executable.
 
 The following tarballs are optional.  You should download the ones you
 want to install.
