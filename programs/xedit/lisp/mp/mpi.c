@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.5 2002/03/01 16:42:45 tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.6 2002/03/16 05:53:53 paulo Exp $ */
 
 #include "mp.h"
 
@@ -1428,9 +1428,18 @@ mpi_swap(mpi *op1, mpi *op2)
 int
 mpi_fiti(mpi *op)
 {
-    return (op->size < 2 ||
-	    (op->size == 2 && (!op->sign || !op->digs[0] ||
-			       !(((BNI)(op->digs[1]) << BNSBITS) & MINSLONG))));
+    if (op->size == 1)
+	return (1);
+    else if (op->size == 2) {
+	unsigned long value = ((BNI)(op->digs[1]) << BNSBITS) | op->digs[0];
+
+	if (value & MINSLONG)
+	    return (op->sign && value == MINSLONG) ? 1 : 0;
+
+	return (1);
+    }
+
+    return (0);
 }
 
 long
