@@ -1,14 +1,17 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/README.pm3,v 1.4 2000/11/14 17:32:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/README.pm3,v 1.5 2000/11/28 16:10:39 dawes Exp $ */
   
 STATUS as of Mon, 16 Oct 2000 21:24:51 +0200
   
 Working :
   * Unaccelerated : Depth 8, 15, 16 and 24 are ok. I tested them upto
     1280x1024 only as my monitor don't support higher modes.
+  * Untested on big endian systems, i had some reports of endianess problems
+    with a Permedia4 though, so i suppose things are broken for Permedia3
+    also. If you encounter problems, please contact me or try with
+    acceleration disabled.
   * HW cursor.
   * ShadowFb works.
   * Full 2D Accels.
-    - It should be endian clean, need testing on a big endian box though.
     - Sync.
     - Pixmap cache.
     - Offscreen pixmaps.
@@ -30,6 +33,7 @@ Not Working :
     - Solid & Dashed Lines are not possible on glint hardware.
     - 8x8 Color Pattern Fill is almost never used.
     - Clipping needs cleaning up.
+    - Seems broken on big endian systems, cannot test it though. 
   * 2D Accel hooks for the Rendering extension ?
     - Render extension initialization.
     - CPUToScreenTexture.
