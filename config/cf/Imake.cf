@@ -1,5 +1,5 @@
 XCOMM $TOG: Imake.cf /main/28 1997/06/25 08:31:36 barstow $
-XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.37 1997/08/26 10:00:39 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.38 1997/10/25 13:49:51 hohndel Exp $
 /*
  * To add support for another platform:
  * 
@@ -552,6 +552,12 @@ XCOMM $XFree86: xc/config/cf/Imake.cf,v 3.37 1997/08/26 10:00:39 hohndel Exp $
 #  define i386Architecture
 #  undef i386
 # endif /* i386 */
+# ifdef __i386__
+#  ifndef i386Architecture
+#   define i386Architecture
+#  endif
+#  undef __i386__
+# endif /* __i386__ */
 # ifdef __alpha
 #  define AlphaArchitecture
 #  undef __alpha
