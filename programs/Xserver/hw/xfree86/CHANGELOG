@@ -1,4 +1,6 @@
 XFree86 4.0.99.3 (26 April 2001)
+ 440. Cleanup build in Xserver/GL/mesa, making use of the earlier cleanups in
+      the lib/GL build (David Dawes).  #4602 is redundant as a result.
  439. [SECURITY] Check for negative reply length/overflow in _XAsyncReply
       (Xlib) (#4601, Mike Harris).
  438. New 'hu' xkb symbols file (#A.364, Peter Soos).
@@ -13082,4 +13084,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1718 2001/04/26 15:07:41 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1719 2001/04/26 16:23:10 dawes Exp $
