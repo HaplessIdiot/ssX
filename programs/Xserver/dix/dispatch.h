@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.h,v 3.0 1996/04/15 11:19:39 dawes Exp $ */
 /************************************************************
 
 Copyright 1996 by Thomas E. Dickey <dickey@clark.net>
@@ -78,14 +78,6 @@ void SetInputCheck(
     HWEventQueuePtr /* c1 */
 #endif
 );
-
-#undef DISPATCH_PROC
-
-#if NeedFunctionPrototypes
-#define DISPATCH_PROC(func) int func(ClientPtr /* client */)
-#else
-#define DISPATCH_PROC(func) int func(/* ClientPtr client */)
-#endif
 
 DISPATCH_PROC(InitClientPrivates);
 DISPATCH_PROC(ProcAllocColor);
@@ -210,7 +202,5 @@ DISPATCH_PROC(ProcUninstallColormap);
 DISPATCH_PROC(ProcUnmapSubwindows);
 DISPATCH_PROC(ProcUnmapWindow);
 DISPATCH_PROC(ProcWarpPointer);
-
-#undef DISPATCH_PROC
 
 #endif /* DISPATCH_H */

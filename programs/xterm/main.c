@@ -1,7 +1,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c /main/239 1995/12/10 17:21:49 gildea $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/main.c,v 3.31 1996/03/29 22:20:45 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.32 1996/04/15 11:35:25 dawes Exp $ */
 
 /*
  * 				 W A R N I N G
@@ -180,6 +180,10 @@ static Bool IsPts = False;
 #undef  TIOCSLTC
 #include <sys/termio.h>
 #undef CAPS_LOCK
+#endif
+
+#ifdef CSRG_BASED
+#undef CSRG_BASED
 #endif
 
 #ifdef CSRG_BASED

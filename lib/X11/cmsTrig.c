@@ -1,5 +1,5 @@
 /* $XConsortium: cmsTrig.c,v 1.7 95/06/08 23:20:39 gildea Exp $" */
-/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.0 1995/02/12 02:32:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsTrig.c,v 3.1 1995/06/14 07:07:22 dawes Exp $ */
 
 /*
  * Code and supporting documentation (c) Copyright 1990 1991 Tektronix, Inc.
@@ -90,8 +90,13 @@ double _XcmsArcTangent();
 #ifdef _CRAY
 #define XCMS_DMAXPOWTWO	((double)(1 < 47))
 #else
+#ifdef __alpha__
+#define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
+	    (1L << (XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(int) + 1))
+#else
 #define XCMS_DMAXPOWTWO	((double)(XCMS_LONG_MAX) * \
 	    (1L << (XCMS_NBITS(double)-XCMS_DEXPLEN) - XCMS_NBITS(long) + 1))
+#endif
 #endif
 
 /*

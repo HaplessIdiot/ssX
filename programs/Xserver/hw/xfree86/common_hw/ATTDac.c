@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.2 1995/11/18 02:31:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/ATTDac.c,v 3.3 1996/02/04 09:06:38 dawes Exp $ */
 /*
  * Copyright 1994 by David Wexelblat <dwex@goblin.org>
  *
@@ -23,10 +23,12 @@
  */
 /* $XConsortium: ATTDac.c /main/7 1995/11/19 14:43:21 kaleb $ */
 
+#include "Xfuncproto.h"
 #include "compiler.h"
 #define NO_OSLIB_PROTOTYPES
 #include "xf86_OSlib.h"
 #include "misc.h"
+/* #include "xf86_HWlib.h" */
 
 #define ATT409_CC	0x06
 #define ATT409_CR0	0x01
@@ -188,7 +190,7 @@ int clk;
 		/*
 		 * this sets the MCLK (Clock B) by setting CC[1:0]
 		 */
-		xf86setdacregindexed(ATT409_CC, (tmp & 0xFC) | 0x08 | clk & 3);
+		xf86setdacregindexed(ATT409_CC, (tmp & 0xFC) | 0x08 | (clk & 3));
 	}
 
 #ifdef EXTENDED_DEBUG

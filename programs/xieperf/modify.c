@@ -1,4 +1,5 @@
 /* $XConsortium: modify.c,v 1.12 94/04/17 20:39:26 rws Exp $ */
+/* $XFree86$ */
 
 /**** module modify.c ****/
 /******************************************************************************
@@ -827,7 +828,9 @@ XiePhotoElement **flograph;
 #define random lrand48
 #endif
 #ifndef sgi
+#ifndef __alpha__
 extern long random();
+#endif
 #endif
 #define RAND( x, y ) ( ( random() / 2147483648.0 ) * ( y - x ) + x )
 #endif

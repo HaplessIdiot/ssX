@@ -1,5 +1,5 @@
 /* $XConsortium: xinit.c,v 11.61 95/01/09 21:20:29 kaleb Exp $ */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.11 1996/03/10 12:14:20 dawes Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.12tsi Exp $ */
 
 /*
 
@@ -40,6 +40,9 @@ in this Software without prior written authorization from the X Consortium.
 #include <errno.h>
 #include <setjmp.h>
 
+#if !defined(SIGCHLD) && defined(SIGCLD)
+#define SIGCHLD SIGCLD
+#endif
 #ifdef __EMX__
 #define INCL_DOSMODULEMGR
 #include <os2.h>
@@ -392,6 +395,9 @@ main(int argc, char **argv, char **envp)
 	/*
 	 * Start the server and client.
 	 */
+#ifdef SIGCHLD
+	signal(SIGCHLD, SIG_DFL);	/* Insurance */
+#endif
 	signal(SIGQUIT, sigCatch);
 	signal(SIGINT, sigCatch);
 	signal(SIGHUP, sigCatch);

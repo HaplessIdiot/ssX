@@ -1,5 +1,5 @@
 /* $XConsortium: chgfctl.c,v 1.16 94/04/17 20:33:03 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/chgfctl.c,v 3.0 1996/03/29 22:12:52 dawes Exp $ */
 
 /************************************************************
 
@@ -100,7 +100,7 @@ int
 ProcXChangeFeedbackControl(client)
     ClientPtr client;
     {
-    int len;
+    unsigned len;
     DeviceIntPtr dev;
     KbdFeedbackPtr k;
     PtrFeedbackPtr p;

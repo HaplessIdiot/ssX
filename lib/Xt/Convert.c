@@ -1,4 +1,5 @@
 /* $XConsortium: Convert.c,v 1.74 94/04/17 20:13:48 kaleb Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -62,6 +63,7 @@ in this Software without prior written authorization from the X Consortium.
 
 #include	"IntrinsicI.h"
 #include	"StringDefs.h"
+#include	"Intrinsic.h"
 
 /* Conversion procedure hash table */
 

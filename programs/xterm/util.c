@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c,v 1.31 91/06/20 18:34:47 gildea Exp $
- *	$XFree86: xc/programs/xterm/util.c,v 3.3 1996/02/18 03:45:52 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.4 1996/03/10 12:15:26 dawes Exp $
  */
 
 /*
@@ -509,12 +509,14 @@ InsertChar (screen, n)
 		cx = CursorX (screen, screen->cur_col);
 		cy = CursorY (screen, screen->cur_row);
 
+		useCurBackground(TRUE);
 		XFillRectangle(
 		    screen->display,
 		    TextWindow(screen), 
 		    screen->reverseGC,
 		    cx, cy,
 		    (unsigned) n * FontWidth(screen), (unsigned) FontHeight(screen));
+		useCurBackground(FALSE);
 	    }
 	}
 	/* adjust screen->buf */
@@ -547,6 +549,7 @@ DeleteChar (screen, n)
 				     screen->max_col+1 - (screen->cur_col+n),
 				     -n);
 	
+		useCurBackground(TRUE);
 		XFillRectangle
 		    (screen->display, TextWindow(screen),
 		     screen->reverseGC,
@@ -554,6 +557,7 @@ DeleteChar (screen, n)
 		       + Width(screen) - n*FontWidth(screen),
 		     CursorY (screen, screen->cur_row), n * FontWidth(screen),
 		     FontHeight(screen));
+		useCurBackground(FALSE);
 	    }
 	}
 	/* adjust screen->buf */
@@ -578,11 +582,14 @@ register TScreen *screen;
 			FlushScroll(screen);
 		if((height = screen->cur_row + top) > screen->max_row)
 			height = screen->max_row;
-		if((height -= top) > 0)
+		if((height -= top) > 0) {
+			useCurBackground(TRUE);
 			XClearArea(screen->display, TextWindow(screen),
 			 screen->border + screen->scrollbar, top *
 			 FontHeight(screen) + screen->border,
 			 Width(screen), height * FontHeight(screen), FALSE);
+			useCurBackground(FALSE);
+		}
 
 		if(screen->cur_row - screen->topline <= screen->max_row)
 			ClearLeft(screen);
@@ -603,12 +610,15 @@ register TScreen *screen;
 	if((top = screen->cur_row - screen->topline) <= screen->max_row) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
-		if(++top <= screen->max_row)
+		if(++top <= screen->max_row) {
+			useCurBackground(TRUE);
 			XClearArea(screen->display, TextWindow(screen),
 			 screen->border + screen->scrollbar, top *
 			 FontHeight(screen) + screen->border,
 			 Width(screen), (screen->max_row - top + 1) *
 			 FontHeight(screen), FALSE);
+			useCurBackground(FALSE);
+		}
 	}
 	ClearBufRows(screen, screen->cur_row + 1, screen->max_row);
 }
@@ -631,12 +641,14 @@ register TScreen *screen;
 	    if(!AddToRefresh(screen)) {
 	if(screen->scroll_amt)
 		FlushScroll(screen);
+		useCurBackground(TRUE);
 		XFillRectangle(screen->display, TextWindow(screen),
 		  screen->reverseGC,
 		 CursorX(screen, screen->cur_col),
 		 CursorY(screen, screen->cur_row),
 		 Width(screen) - screen->cur_col * FontWidth(screen),
 		 FontHeight(screen));
+		useCurBackground(FALSE);
 	    }
 	}
 	bzero(BUF_CHARS(buf, screen->cur_row) + screen->cur_col, len);
@@ -669,12 +681,14 @@ ClearLeft (screen)
 	    if(!AddToRefresh(screen)) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
+		useCurBackground(TRUE);
 		XFillRectangle (screen->display, TextWindow(screen),
 		     screen->reverseGC,
 		     screen->border + screen->scrollbar,
 		      CursorY (screen, screen->cur_row),
 		     len * FontWidth(screen),
 		     FontHeight(screen));
+		useCurBackground(FALSE);
 	    }
 	}
 	
@@ -701,11 +715,13 @@ register TScreen *screen;
 	    if(!AddToRefresh(screen)) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
+		useCurBackground(TRUE);
 		XFillRectangle (screen->display, TextWindow(screen), 
 		     screen->reverseGC,
 		     screen->border + screen->scrollbar,
 		      CursorY (screen, screen->cur_row),
 		     Width(screen), FontHeight(screen));
+		useCurBackground(FALSE);
 	    }
 	}
 	bzero (SCRN_BUF_CHARS(screen, screen->cur_row), (screen->max_col + 1));
@@ -726,16 +742,13 @@ register TScreen *screen;
 	if((top = -screen->topline) <= screen->max_row) {
 		if(screen->scroll_amt)
 			FlushScroll(screen);
-#if 1	/* FIXME */
-		if(top == 0)
-			XClearWindow(screen->display, TextWindow(screen));
-		else
-#endif
-			XClearArea(screen->display, TextWindow(screen),
+		useCurBackground(TRUE);
+		XClearArea(screen->display, TextWindow(screen),
 			 screen->border + screen->scrollbar, 
 			 top * FontHeight(screen) + screen->border,	
 		 	 Width(screen), (screen->max_row - top + 1) *
 			 FontHeight(screen), FALSE);
+		useCurBackground(FALSE);
 	}
 	ClearBufRows (screen, 0, screen->max_row);
 }
@@ -1235,4 +1248,20 @@ getXtermBackground(flags, color)
 		bg = term->screen.original_fg;
 
 	return bg;
+}
+
+/*
+ * Update the screen's background (for XClearArea)
+ *
+ * If the argument is true, sets the window's background to the value set
+ * in the current SGR background. Otherwise, reset to the window's default
+ * background.
+ */
+void useCurBackground(Bool flag)
+{
+	TScreen *screen = &term->screen;
+	int color = flag ? term->cur_background : -1;
+	Pixel	bg = getXtermBackground(term->flags, color);
+
+	XSetWindowBackground(screen->display, TextWindow(screen), bg);
 }

@@ -1,4 +1,5 @@
 /* $XConsortium: x11perf.h,v 2.13 94/03/17 20:25:53 dpw Exp $ */
+/* $XFree86$ */
 /*****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -24,6 +25,9 @@ SOFTWARE.
 
 #ifndef VMS
 #include <X11/Xlib.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include <X11/Xutil.h>
 #else
 #include <decw$include/Xlib.h>

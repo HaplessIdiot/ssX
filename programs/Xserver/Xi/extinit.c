@@ -1,5 +1,5 @@
 /* $XConsortium: extinit.c,v 1.18 94/04/17 20:33:08 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.0 1996/03/29 22:13:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.1 1996/04/15 11:18:36 dawes Exp $ */
 
 /************************************************************
 
@@ -229,7 +229,7 @@ XInputExtensionInit()
 	MakeDeviceTypeAtoms ();
 	RT_INPUTCLIENT = CreateNewResourceType((DeleteType)InputClientGone);
 	FixExtensionEvents (extEntry);
-	ReplySwapVector[IReqCode] = SReplyIDispatch;
+	ReplySwapVector[IReqCode] = (ReplySwapPtr)SReplyIDispatch;
 	EventSwapVector[DeviceValuator] = SEventIDispatch;
 	EventSwapVector[DeviceKeyPress] = SEventIDispatch;
 	EventSwapVector[DeviceKeyRelease] = SEventIDispatch;
@@ -835,7 +835,7 @@ IResetProc(unused)
     ExtensionEntry *unused;
     {
 
-    ReplySwapVector[IReqCode] = NotImplemented;
+    ReplySwapVector[IReqCode] = ReplyNotSwappd;
     EventSwapVector[DeviceValuator] = NotImplemented;
     EventSwapVector[DeviceKeyPress] = NotImplemented;
     EventSwapVector[DeviceKeyRelease] = NotImplemented;

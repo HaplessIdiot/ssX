@@ -1,5 +1,5 @@
 /* $XConsortium: exevents.c /main/51 1995/12/08 13:41:35 dpw $ */
-/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.1 1996/03/29 22:13:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.2 1996/04/15 11:18:33 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -318,6 +318,8 @@ InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
     int minval;
     int maxval;
     int resolution;
+    int min_res;
+    int max_res;
     {
     register AxisInfoPtr ax = dev->valuator->axes + axnum;
 
@@ -924,6 +926,7 @@ SendEvent (client, d, dest, propagate, ev, mask, count)
     Bool		propagate;
     xEvent		*ev;
     Mask		mask;
+    int			count;
     {
     WindowPtr pWin;
     WindowPtr effectiveFocus = NullWindow; /* only set if dest==InputFocus */

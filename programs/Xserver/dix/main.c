@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c,v 5.33 95/04/07 18:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.4 1996/01/05 13:18:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.5 1996/04/15 11:19:51 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -60,6 +60,7 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "extension.h"
+#include "extnsionst.h"
 #include "colormap.h"
 #include "cursorstr.h"
 #include "font.h"
@@ -123,8 +124,33 @@ int connBlockScreenStart;
 
 static int restart = 0;
 
+/*
+ * Dummy entry for EventSwapVector[]
+ */
+/*ARGSUSED*/
 void
-NotImplemented()
+NotImplemented(
+#if NeedFunctionPrototypes && defined(EVENT_SWAP_PTR)
+	xEvent * from,
+	xEvent * to
+#endif
+	)
+{
+    FatalError("Not implemented");
+}
+
+/*
+ * Dummy entry for ReplySwapVector[]
+ */
+/*ARGSUSED*/
+void
+ReplyNotSwappd(
+#if NeedNestedPrototypes
+	ClientPtr pClient ,
+	int size ,
+	void * pbuf
+#endif
+	)
 {
     FatalError("Not implemented");
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: dispatch.c /main/168 1995/12/08 13:37:16 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.4 1996/01/05 13:17:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dispatch.c,v 3.5 1996/04/15 11:19:38 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1987, 1989  X Consortium
@@ -109,7 +109,6 @@ extern int (* ProcVector[256]) ();
 extern int (* k5_Vector[256]) ();
 #endif
 extern int (* SwappedProcVector[256]) ();
-extern void (* ReplySwapVector[256]) ();
 
 static void KillAllClients(
 #if NeedFunctionPrototypes
@@ -3307,7 +3306,7 @@ InitProcVectors()
 	if(!ProcVector[i])
 	{
             ProcVector[i] = SwappedProcVector[i] = ProcBadRequest;
-	    ReplySwapVector[i] = NotImplemented;
+	    ReplySwapVector[i] = ReplyNotSwappd;
 	}
 #ifdef K5AUTH
 	if (!k5_Vector[i])

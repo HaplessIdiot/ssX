@@ -1,5 +1,5 @@
 /* $XConsortium: xkbevd.c /main/4 1996/01/14 16:49:16 kaleb $ */
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.0 1996/01/10 05:43:36 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.1 1996/01/16 15:09:11 dawes Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,6 +27,10 @@
  ********************************************************/
 
 #define	DEBUG_VAR xkbevdDebug
+#include <X11/Xosdefs.h>
+#ifdef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "xkbevd.h"
 
 #define	lowbit(x)	((x) & (-(x)))

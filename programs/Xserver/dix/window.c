@@ -1,5 +1,5 @@
 /* $XConsortium: window.c /main/199 1995/09/22 10:22:27 dpw $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.0 1996/04/15 11:20:04 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -97,7 +97,6 @@ int screenIsSaved = SCREEN_SAVER_OFF;
 ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 
 extern WindowPtr *WindowTable;
-extern void (* ReplySwapVector[256]) ();
 
 extern int rand();
 
@@ -1126,14 +1125,14 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    pWin->forcedBS = FALSE;
 	    break;
 	  case CWBackingPlanes:
-	    if (pWin->optional || ((CARD32)*pVlist != ~0L)) {
+	    if (pWin->optional || ((CARD32)*pVlist != (CARD32)~0L)) {
 		if (!pWin->optional && !MakeWindowOptional (pWin))
 		{
 		    error = BadAlloc;
 		    goto PatchUp;
 		}
 		pWin->optional->backingBitPlanes = (CARD32) *pVlist;
-		if ((CARD32)*pVlist == ~0L)
+		if ((CARD32)*pVlist == (CARD32)~0L)
 		    checkOptional = TRUE;
 	    }
 	    pVlist++;

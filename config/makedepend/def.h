@@ -1,4 +1,5 @@
-/* $XConsortium: def.h,v 1.25 94/04/17 20:10:33 gildea Exp $ */
+/* $XConsortium: def.h /main/27 1995/12/08 18:26:29 gildea $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -26,12 +27,15 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-#include <X11/Xosdefs.h>
+#include "Xosdefs.h"
 #ifdef WIN32
-#include <X11/Xw32defs.h>
+#include "Xw32defs.h"
 #endif
-#include <X11/Xfuncproto.h>
+#include "Xfuncproto.h"
 #include <stdio.h>
+#ifndef X_NOT_STDC_ENV
+#include <string.h>
+#endif
 #include <ctype.h>
 #ifndef X_NOT_POSIX
 #ifndef _POSIX_SOURCE
@@ -94,20 +98,25 @@ struct symtab {
 	char	*s_value;
 };
 
+/* possible i_flag */
+#define DEFCHECKED	(1<<0)	/* whether defines have been checked */
+#define NOTIFIED	(1<<1)	/* whether we have revealed includes */
+#define MARKED		(1<<2)	/* whether it's in the makefile */
+#define SEARCHED	(1<<3)	/* whether we have read this */
+#define FINISHED	(1<<4)	/* whether we are done reading this */
+#define INCLUDED_SYM	(1<<5)	/* whether #include SYMBOL was found
+				   Can't use i_list if TRUE */
 struct	inclist {
 	char		*i_incstring;	/* string from #include line */
 	char		*i_file;	/* path name of the include file */
 	struct inclist	**i_list;	/* list of files it itself includes */
 	int		i_listlen;	/* length of i_list */
-	struct symtab	*i_defs;	/* symbol table for this file */
+	struct symtab	**i_defs;	/* symbol table for this file and its
+					   children when merged */
 	int		i_ndefs;	/* current # defines */
-	int		i_deflen;	/* amount of space in table */
-	boolean		i_defchecked;	/* whether defines have been checked */
-	boolean		i_notified;	/* whether we have revealed includes */
-	boolean		i_marked;	/* whether it's in the makefile */
-	boolean		i_searched;	/* whether we have read this */
-	boolean         i_included_sym; /* whether #include SYMBOL was found */
-					/* Can't use i_list if TRUE */
+	boolean		*i_merged;      /* whether we have merged child
+					   defines */
+	unsigned char   i_flags;
 };
 
 struct filepointer {
@@ -131,9 +140,9 @@ char			*realloc();
 char			*copy();
 char			*base_name();
 char			*getline();
-struct symtab		*slookup();
-struct symtab		*isdefined();
-struct symtab		*fdefined();
+struct symtab		**slookup();
+struct symtab		**isdefined();
+struct symtab		**fdefined();
 struct filepointer	*getfile();
 struct inclist		*newinclude();
 struct inclist		*inc_path();

@@ -1,5 +1,5 @@
 /* $XConsortium: ati_driver.c /main/9 1996/01/12 12:16:31 kaleb $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.28tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ati/ati_driver.c,v 3.29tsi Exp $ */
 /*
  * Copyright 1994 through 1996 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -4082,12 +4082,36 @@ ATIInit(DisplayModePtr mode)
                         new->bd |= 0x09U;       /* Invert csynch polarity */
 
                 /* Set up horizontal display enable skew */
+                if ((ATIChip <= ATI_CHIP_28800_6) && !(mode->Flags & V_HSKEW))
+                {
+                        /*
+                         * Modes using the higher clock frequencies need a
+                         * non-zero Display Enable Skew.  The following number
+                         * has been empirically determined to be somewhere
+                         * between 4.2 and 4.7 MHz.
+                         */
+#                       define Display_Enable_Skew_Threshold 4500
+                        /*
+                         * Set a reasonable default Display Enable Skew.
+                         */
+                        mode->HSkew = mode->CrtcHSkew =
+                                vga256InfoRec.clock[mode->Clock] /
+                                        Display_Enable_Skew_Threshold;
+                }
                 if (mode->CrtcHSkew > 0)
                 if (mode->CrtcHSkew <= 3)
                         new->b5 |= 0x01U;
                 else if (ATIChip >= ATI_CHIP_28800_2)
                 switch ((mode->CrtcHSkew + 4) >> 3)
                 {
+                        case 1:         /* Use ATI override */
+                                new->std.CRTC[3] &= ~0x60U;
+                                new->b0 |= 0x01U;
+                                break;
+                        case 2:         /* Use ATI override */
+                                new->std.CRTC[3] &= ~0x60U;
+                                new->a6 |= 0x01U;
+                                break;
                         case 4:
                                 new->a7 |= 0x40U;
                                 break;
@@ -4173,24 +4197,6 @@ ATIInit(DisplayModePtr mode)
                 new->b8 = (new->b8 & 0x3FU) | ((Clock << 3) & 0xC0U);
         }
 
-        if ((ATIChip <= ATI_CHIP_28800_6) && !(mode->Flags & V_HSKEW))
-        {
-                /*
-                 * Modes using the higher clock frequencies need a non-zero
-                 * Display Enable Skew.  The following number has been
-                 * empirically determined to be between 1054 and 1171
-                 * non-inclusively.
-                 */
-#               define Display_Enable_Skew_Threshold 1112
-
-                /*
-                 * Set a reasonable value for Display Enable Skew.
-                 */
-                new->std.CRTC[3] |=
-                        (vga256InfoRec.clock[mode->Clock] /
-                                Display_Enable_Skew_Threshold) & 0x60U;
-        }
-
         return (TRUE);
 }
 
@@ -4198,8 +4204,8 @@ ATIInit(DisplayModePtr mode)
  * ATIAdjust --
  *
  * This function is used to initialize the SVGA Start Address - the first
- * displayed location in the video memory.  This is used to implement the
- * virtual window.
+ * displayed location in video memory.  This is used to implement the virtual
+ * window.
  */
 static void
 ATIAdjust(const unsigned int x, const unsigned int y)

@@ -1,5 +1,5 @@
 /* $XConsortium: CvtStdSel.c /main/37 1996/01/12 15:08:34 kaleb $ */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.4 1996/01/05 13:12:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.5 1996/01/13 12:21:02 dawes Exp $ */
 
 /*
  
@@ -74,6 +74,9 @@ in this Software without prior written authorization from the X Consortium.
 #endif
 
 #include <X11/Xos.h>
+#ifndef X_NOT_STDC_ENV
+#include <stdlib.h>
+#endif
 #include "Atoms.h"
 #include "StdSel.h"
 #include "SysUtil.h"

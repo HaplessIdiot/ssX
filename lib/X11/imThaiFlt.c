@@ -1,4 +1,5 @@
-/* $XConsortium: imThaiFlt.c,v 1.8 94/04/17 20:22:07 rws Exp $ */
+/* $XConsortium: imThaiFlt.c /main/9 1995/11/18 16:08:25 kaleb $ */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright (c) 1993  X Consortium
@@ -221,32 +222,26 @@ char thaicat_isc_lookup[CH_CLASSES][CH_CLASSES] = {
 };
 
 
-Private
-int THAI_chtype (  		/* returns classification of a char */
+/* returns classification of a char */
+Private int
 #if NeedFunctionPrototypes
-	unsigned char	ch
+THAI_chtype (unsigned char	ch)
 #else
-	ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	ch;
+THAI_chtype (ch)
+    unsigned char	ch;
 #endif
 {
-    return (tactis_chtype[ch]);
+    return tactis_chtype[ch];
 }
 
 
-Private
-int THAI_chlevel (  		/* returns the display level */
+/* returns the display level */
+Private int
 #if NeedFunctionPrototypes
-	unsigned char	ch
+THAI_chlevel (unsigned char	ch)
 #else
-	ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	ch;
+THAI_chlevel (ch)
+    unsigned char	ch;
 #endif
 {
     int     chlevel;
@@ -282,20 +277,17 @@ int THAI_chlevel (  		/* returns the display level */
             chlevel = BASE;
             break;
     }
-    return (chlevel);
+    return chlevel;
 }
 
 
-Private
-Bool THAI_isdead (		/* return True if char is non-spacing */
+/* return True if char is non-spacing */
+Private Bool
 #if NeedFunctionPrototypes
-	unsigned char	ch
+THAI_isdead (unsigned char	ch)
 #else
-	ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	ch;
+THAI_isdead (ch)
+    unsigned char	ch;
 #endif
 {
     return ((tactis_chtype[ch] == CTRL) || (tactis_chtype[ch] == BV1) ||
@@ -306,32 +298,27 @@ Bool THAI_isdead (		/* return True if char is non-spacing */
             (tactis_chtype[ch] == AV3));
 }
 
-Private
-Bool THAI_iscons (	/* return True if char is consonant */
+
+/* return True if char is consonant */
+Private Bool
 #if NeedFunctionPrototypes
-	unsigned char	ch
+THAI_iscons (unsigned char	ch)
 #else
-	ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	ch;
+THAI_iscons (ch)
+    unsigned char	ch;
 #endif
 {
     return (tactis_chtype[ch] == CONS);
 }
 
 
-Private
-Bool THAI_isvowel (		/* return True if char is vowel */
+/* return True if char is vowel */
+Private Bool
 #if NeedFunctionPrototypes
-	unsigned char	ch
+THAI_isvowel (unsigned char	ch)
 #else
-	ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	ch;
+THAI_isvowel (ch)
+    unsigned char	ch;
 #endif
 {
     return ((tactis_chtype[ch] == LV)  || (tactis_chtype[ch] == FV1) ||
@@ -342,34 +329,28 @@ Bool THAI_isvowel (		/* return True if char is vowel */
 }
 
 
-Private
-Bool THAI_istone (		/* return True if char is tonemark */
+/* return True if char is tonemark */
+Private Bool
 #if NeedFunctionPrototypes
-	unsigned char	ch
+THAI_istone (unsigned char	ch)
 #else
-	ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	ch;
+THAI_istone (ch)
+    unsigned char	ch;
 #endif
 {
     return (tactis_chtype[ch] == TONE);
 }
 
-Private
-Bool THAI_iscomposible (
+
+Private Bool
 #if NeedFunctionPrototypes
-	unsigned char	follow_ch, 
-	unsigned char	lead_ch
+THAI_iscomposible (
+    unsigned char	follow_ch, 
+    unsigned char	lead_ch)
 #else
-	follow_ch, 
-	lead_ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	follow_ch;
-	unsigned char	lead_ch;
+THAI_iscomposible (follow_ch, lead_ch)
+    unsigned char	follow_ch;
+    unsigned char	lead_ch;
 #endif
 {/* "Can follow_ch be put in the same display cell as lead_ch?" */
 
@@ -377,25 +358,20 @@ Bool THAI_iscomposible (
             == CP);
 }
 
-Private
-Bool THAI_isaccepted (
+Private Bool
 #if NeedFunctionPrototypes
-	unsigned char	follow_ch, 
-	unsigned char	lead_ch,
-	unsigned char	mode
+THAI_isaccepted (
+    unsigned char	follow_ch, 
+    unsigned char	lead_ch,
+    unsigned char	mode)
 #else
-	follow_ch, 
-	lead_ch,
-	mode
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	follow_ch;
-	unsigned char	lead_ch;
-	unsigned char	mode;
+THAI_isaccepted (follow_ch, lead_ch, mode)
+    unsigned char	follow_ch;
+    unsigned char	lead_ch;
+    unsigned char	mode;
 #endif
 {
-Bool iskeyvalid; /*  means "Can follow_ch be keyed in after lead_ch?" */
+    Bool iskeyvalid; /*  means "Can follow_ch be keyed in after lead_ch?" */
 
     switch (mode)
     {
@@ -416,28 +392,22 @@ Bool iskeyvalid; /*  means "Can follow_ch be keyed in after lead_ch?" */
             break;
     }
 
-    return (iskeyvalid);
+    return iskeyvalid;
 }
 
-Private
-void THAI_apply_write_rules(
+Private void 
 #if NeedFunctionPrototypes
-	unsigned char	*instr, 
-	unsigned char	*outstr, 
-	unsigned char	insert_ch, 
-	int 		*num_insert_ch
+THAI_apply_write_rules(
+    unsigned char	*instr, 
+    unsigned char	*outstr, 
+    unsigned char	insert_ch, 
+    int 		*num_insert_ch)
 #else
-	instr, 
-	outstr, 
-	insert_ch, 
-	num_insert_ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	*instr;
-	unsigned char	*outstr;
-	unsigned char	insert_ch;
-	int 		*num_insert_ch;
+THAI_apply_write_rules(instr, outstr, insert_ch, num_insert_ch)
+    unsigned char	*instr;
+    unsigned char	*outstr;
+    unsigned char	insert_ch;
+    int 		*num_insert_ch;
 #endif
 {
 /*
@@ -479,19 +449,15 @@ Output parameters:
     }
 }
 
-Private
-int THAI_find_chtype (
+Private int 
 #if NeedFunctionPrototypes
-	unsigned char	*instr, 
-	int		chtype
+THAI_find_chtype (
+    unsigned char	*instr, 
+    int		chtype)
 #else
-	instr, 
-	chtype
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	*instr;
-	int		chtype;
+THAI_find_chtype (instr, chtype)
+    unsigned char	*instr;
+    int		chtype;
 #endif
 {
 /*
@@ -518,39 +484,31 @@ Output parameters:
 }
 
 
-Private
-int THAI_apply_scm(
+Private int 
 #if NeedFunctionPrototypes
-	unsigned char	*instr, 
-	unsigned char	*outstr, 
-	unsigned char	spec_ch, 
-	int		num_sp, 
-	unsigned char	insert_ch
+THAI_apply_scm(
+    unsigned char	*instr, 
+    unsigned char	*outstr, 
+    unsigned char	spec_ch, 
+    int		num_sp, 
+    unsigned char	insert_ch)
 #else
-	instr, 
-	outstr, 
-	spec_ch, 
-	num_sp, 
-	insert_ch
-#endif
-)
-#if !(NeedFunctionPrototypes)
-	unsigned char	*instr;
-	unsigned char	*outstr;
-	unsigned char	spec_ch;
-	int		num_sp;
-	unsigned char	insert_ch;
+THAI_apply_scm(instr, outstr, spec_ch, num_sp, insert_ch)
+    unsigned char	*instr;
+    unsigned char	*outstr;
+    unsigned char	spec_ch;
+    int		num_sp;
+    unsigned char	insert_ch;
 #endif
 {
     unsigned char   *scan, *outch;
-    int             i, j, dead_count, found_count;
+    int             i, dead_count, found_count;
     Bool            isconsecutive;
 
     scan = instr;
     outch = outstr;
     dead_count = found_count = 0;
     isconsecutive = False;
-    j = 0;
     while (*scan != '\0') {
         if (THAI_isdead(*scan))
             dead_count++;       /* count number of non-spacing char */
@@ -564,6 +522,8 @@ int THAI_apply_scm(
             dead_count = found_count = 0;
         }
     }
+    /* what to return? */
+    return 0; /* probably not right but better than returning garbage */
 }
 
 /* The following functions are copied from XKeyBind.c */
@@ -711,11 +671,11 @@ ThaiComposeConvert(dpy, insym, outsym ,lower, upper)
 	    *outsym = table_entry->to;
 	    *lower = *outsym;
 	    *upper = *outsym;
-	    return (True);
+	    return True;
 	}
 	table_entry++;
     }
-    return (False);
+    return False;
 }
 
 Private int
@@ -807,7 +767,7 @@ XThaiTranslateKeySym(dpy, symbol, lsym, usym, modifiers, buffer, nbytes)
     Display *dpy;
     register KeySym symbol, lsym, usym;
     unsigned int modifiers;
-    char *buffer;
+    unsigned char *buffer;
     int nbytes;
 {
     KeySym ckey;
@@ -986,9 +946,9 @@ KeySym HexIMNormalKey (thai_part, symbol, event)
 	{
 	SetLed (event->display,COMPOSE_LED, LedModeOn);
 	thai_part->comp_state = FIRST_COMPOSE_KEY_STATE;
-	return (NoSymbol);
+	return NoSymbol;
 	}
-    return (symbol);
+    return symbol;
 }
 
 
@@ -999,21 +959,21 @@ KeySym HexIMFirstComposeKey (thai_part, symbol, event)
     XKeyEvent *event;
 
 {
-    if (IsModifierKey (symbol)) return (symbol); /* ignore shift etc. */
+    if (IsModifierKey (symbol)) return symbol; /* ignore shift etc. */
     if (IsCancelComposeKey (&symbol, event))	/* cancel sequence */
 	{
 	SetLed (event->display,COMPOSE_LED, LedModeOff);
 	thai_part->comp_state = NORMAL_KEY_STATE;
-	return (symbol);
+	return symbol;
 	}
     if (IsComposeKey (symbol, event))		/* restart sequence ?? */
 	{
-	return (NoSymbol);			/* no state change necessary */
+	return NoSymbol;			/* no state change necessary */
 	}
 
     thai_part->keysym = symbol;		/* save key pressed */
     thai_part->comp_state = SECOND_COMPOSE_KEY_STATE;
-    return (NoSymbol);
+    return NoSymbol;
 }
 
 Private
@@ -1023,19 +983,17 @@ KeySym HexIMSecondComposeKey (thai_part, symbol, event)
     XKeyEvent *event;
 
 {
-    KeySym ks1,ks2;
-
-    if (IsModifierKey (symbol)) return (symbol);	/* ignore shift etc. */
+    if (IsModifierKey (symbol)) return symbol;	/* ignore shift etc. */
     if (IsComposeKey (symbol, event))		/* restart sequence ? */
 	{
 	thai_part->comp_state =FIRST_COMPOSE_KEY_STATE;
-	return (NoSymbol);
+	return NoSymbol;
 	}
     SetLed (event->display,COMPOSE_LED, LedModeOff);
     if (IsCancelComposeKey (&symbol, event))	/* cancel sequence ? */
 	{
 	thai_part->comp_state = NORMAL_KEY_STATE;
-	return (symbol);
+	return symbol;
 	}
 
     if ((symbol = HexIMComposeSequence (thai_part->keysym, symbol))
@@ -1044,7 +1002,7 @@ KeySym HexIMSecondComposeKey (thai_part, symbol, event)
 	XBell(event->display, BellVolume);
 	}
     thai_part->comp_state = NORMAL_KEY_STATE; /* reset to normal state */
-    return (symbol);
+    return symbol;
 }
 
 
@@ -1070,7 +1028,7 @@ int	tactis_code;
     else if ((ks1 >= XK_a) && (ks1 <= XK_f))
 	hi_digit = ks1 - XK_a + 10;
     else	/* out of range */
-	return (NoSymbol);
+	return NoSymbol;
 	    
     if ((ks2 >= XK_0) && (ks2 <= XK_9))
 	lo_digit = ks2 - XK_0;
@@ -1079,11 +1037,11 @@ int	tactis_code;
     else if ((ks2 >= XK_a) && (ks2 <= XK_f))
 	lo_digit = ks2 - XK_a + 10;
     else	/* out of range */
-	return (NoSymbol);
+	return NoSymbol;
 
     tactis_code = hi_digit * 0x10 + lo_digit ;
 
-    return( (KeySym) tactis_code );
+    return (KeySym)tactis_code;
 
 }
 
@@ -1101,9 +1059,9 @@ int IsCancelComposeKey(symbol, event)
     if (*symbol==XK_Delete && !IsControl(event->state) &&
 						!IsMod1(event->state)) {
 	*symbol=NoSymbol;  /* cancel compose sequence, and ignore key */
-	return (True);
+	return True;
     }
-    if (IsComposeKey(*symbol, event)) return (False);
+    if (IsComposeKey(*symbol, event)) return False;
     return (
 	IsControl (event->state) ||
 	IsMod1(event->state) ||
@@ -1188,7 +1146,6 @@ XPointer	client_data;
     KeySym 	    symbol;
     KeySym	    lsym,usym;
     int 	    count;
-    int 	    c;
     int 	    isc_mode; /* Thai Input Sequence Check mode */
     unsigned char   previous_char; /* Last inputted Thai char */
     int		    state;
@@ -1198,13 +1155,13 @@ XPointer	client_data;
 
     if ((ev->type != KeyPress)
         || (ev->xkey.keycode == 0))
-        return(False);
+        return False;
 
     if (!IC_IscMode(ic)) InitIscMode(ic);
 
     if (! XThaiTranslateKey(ev->xkey.display, ev->xkey.keycode, ev->xkey.state,
 	 		&modifiers, &symbol, &lsym, &usym))
-	return(False);
+	return False;
 
     /*
      *  Hex input method processing 
@@ -1224,11 +1181,11 @@ XPointer	client_data;
 				usym, ev->xkey.state, buf, 10);
 
     if (!symbol && !count)
-	return(True);
+	return True;
 
     /* Return symbol if cannot convert to character */
     if (!count)
-	return(False);
+	return False;
 
     /*
      *  Thai Input sequence check
@@ -1238,7 +1195,7 @@ XPointer	client_data;
 	if (!THAI_isaccepted(buf[0],previous_char, isc_mode)) {
 	    /* reject character */
             XBell(ev->xkey.display, BellVolume);
-    	    return(True);
+    	    return True;
         }
     }
     /* Remember the last character inputted. */
@@ -1256,5 +1213,5 @@ XPointer	client_data;
         ic->private.local.composed->keysym = symbol;
     ev->xkey.keycode = 0;
     XPutBackEvent(d, ev);
-    return(True);
+    return True;
 }

@@ -1,5 +1,5 @@
 /* $XConsortium: imake.c /main/88 1995/12/08 16:33:13 gildea $ */
-/* $XFree86: xc/config/imake/imake.c,v 3.9 1996/01/05 13:07:09 dawes Exp $ */
+/* $XFree86: xc/config/imake/imake.c,v 3.10tsi Exp $ */
 
 /***************************************************************************
  *                                                                         *
@@ -112,8 +112,11 @@ in this Software without prior written authorization from the X Consortium.
  *	<add any global targets like 'clean' and long dependencies>
  */
 #include <stdio.h>
-#include <ctype.h>
 #include "Xosdefs.h"
+#ifndef X_NOT_STDC_ENV
+#include <string.h>
+#endif
+#include <ctype.h>
 #ifdef WIN32
 #include "Xw32defs.h"
 #endif
@@ -140,6 +143,9 @@ in this Software without prior written authorization from the X Consortium.
 #define _POSIX_SOURCE
 #include <signal.h>
 #undef _POSIX_SOURCE
+#endif
+#if !defined(SIGCHLD) && defined(SIGCLD)
+#define SIGCHLD		SIGCLD
 #endif
 #include <sys/stat.h>
 #ifndef X_NOT_POSIX
@@ -404,6 +410,9 @@ init()
 
 	if (signal(SIGINT, SIG_IGN) != SIG_IGN)
 		signal(SIGINT, catch);
+#ifdef SIGCHLD
+	signal(SIGCHLD, SIG_DFL);
+#endif
 }
 
 AddMakeArg(arg)
@@ -530,7 +539,7 @@ LogFatalI(s, i)
 	int i;
 {
 	/*NOSTRICT*/
-	LogFatal(s, (char *)i);
+	LogFatal(s, (char *)(long)i);
 }
 
 void

@@ -1,4 +1,5 @@
 /* $XConsortium: Lookup.c,v 1.15 95/06/08 23:20:39 gildea Exp $ */
+/* $XFree86$ */
 
 /* 
  
@@ -129,7 +130,7 @@ static unsigned char Const greek[128] =
 
 int XmuLookupString (event, buffer, nbytes, keysym, status, keysymSet)
     register XKeyEvent *event;
-    char *buffer;
+    unsigned char *buffer;
     int nbytes;
     KeySym *keysym;
     XComposeStatus *status;

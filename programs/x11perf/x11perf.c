@@ -1,4 +1,5 @@
 /* $XConsortium: x11perf.c,v 2.54 94/03/30 19:40:27 gildea Exp $ */
+/* $XFree86$ */
 /****************************************************************************
 Copyright 1988, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -41,6 +42,7 @@ extern Time_t time ();
 #else
 #include <time.h>
 #define Time_t time_t
+#include <stdlib.h>
 #endif
 
 /* Only for working on ``fake'' servers, for hardware that doesn't exist */
