@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.76 1997/07/10 08:17:23 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.77 1997/07/29 12:07:52 hohndel Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -253,6 +253,7 @@ typedef struct {
 #define CLOCK_OPTION_ICS1562    20 /* used for TGA server */
 #define CLOCK_OPTION_S3AURORA   21 /* use S3 Aurora64V+ programmable clocks */
 #define CLOCK_OPTION_S3TRIO64V2 22 /* use S3 Trio64V2 or ViRGE/DX/GX 170MHz clocks */
+#define CLOCK_OPTION_ICS5301    23 /* use ICS 5301 (ET4000W32i) */
 
 /*
  * Table to map option strings to tokens.
@@ -466,6 +467,7 @@ OptFlagRec xf86_ClockOptionTab [] = {
   { "ch8398",		CLOCK_OPTION_CH8398 },    /* Chrontel 8398 */
   { "ati18818",		CLOCK_OPTION_ICS2595 },   /* ATI18818, ICS2595 compatible */
   { "et6000",		CLOCK_OPTION_ET6000 },    /* ET6000 */
+  { "ics5301",		CLOCK_OPTION_ICS5301 },   /* ET4000 W32i version of S3 GenDAC/ICS5301 */
   { "",			-1 },
 };
 

@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.8 1997/07/06 05:30:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_accel.c,v 1.9 1997/07/10 06:36:15 dawes Exp $ */
 
 
 /*
@@ -23,6 +23,18 @@
  */
 
 #undef NO_OPTIMIZE
+
+/*
+ * if ET6K_TRANSPARENCY is set, ScreentoScreenCopy operations (and pattern
+ * fills) will support transparency. But then the planemask support has to
+ * be dropped. The default here is to support planemasks, because all Tseng
+ * chips can do this. Only the ET6000 supports a transparency compare. The
+ * code could be easily changed to support transparency on the ET6000 and
+ * planemasks on the others, but that's only useful when transparency is
+ * more important than planemasks.
+ */
+
+#undef ET6K_TRANSPARENCY
 
 #include "vga256.h"
 #include "xf86.h"
@@ -67,7 +79,7 @@ static int bytesperpixel, powerPerPixel;
 static int tseng_line_width;
 static Bool need_wait_acl = FALSE;
 #define COLEXP_ONE_BUF 324  /* (1024-48) / 3 rounded down to multiple of 3*4 */
-
+static int planemask_mask; /* will hold the "empty" planemask value */
 
 /* for color expansion via scanline buffer in system memory */
 void *colexp_buf;
@@ -107,20 +119,13 @@ void TsengAccelInit() {
      * Set up the main acceleration flags.
      */
     xf86AccelInfoRec.Flags = BACKGROUND_OPERATIONS | DELAYED_SYNC | PIXMAP_CACHE;
-    /* we'll disable COP_FRAMEBUFFER_CONCURRENCY for the public beta
-     * release, because it causes font corruption. But THIS NEEDS TO BE
-     * INVESTIGATED.
+
+    /* We'll disable COP_FRAMEBUFFER_CONCURRENCY on PCI bus systems, because
+     * it causes font corruption. But THIS NEEDS TO BE INVESTIGATED.
      */
-/*      | COP_FRAMEBUFFER_CONCURRENCY;*/
+    if (Tseng_bus != BUS_PCI)
+       xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
       
-    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64 | 
-                             HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
-
-    if (Is_ET6K)
-    {
-      xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
-    }
-
     /*
      * The following line installs a "Sync" function, that waits for
      * all coprocessor operations to complete.
@@ -141,7 +146,6 @@ void TsengAccelInit() {
      * X = dont' care), plus a wrap value that is a multiple of 3 would have
      * to be set. There is no such wrap combination available.
      */
-    xf86GCInfoRec.PolyFillRectSolidFlags = NO_PLANEMASK;
 
     if ( !(Is_W32_W32i && (vgaBitsPerPixel == 24)) )
     {
@@ -162,13 +166,17 @@ void TsengAccelInit() {
     /*
      * We also want to set up the ScreenToScreenCopy (BitBLT) primitive for
      * copying a rectangular area from one location on the screen to
-     * another. First we set up the restrictions. In this case, we
-     * don't handle transparency color compare nor planemasks.
+     * another. First we set up the restrictions. We support EITHER a
+     * planemask OR TRANSPARENCY, but not both (they use the same Pattern
+     * map).
      */
+#if ET6K_TRANSPARENCY
     xf86GCInfoRec.CopyAreaFlags = NO_PLANEMASK;
-
     if (!Is_ET6K)
       xf86GCInfoRec.CopyAreaFlags |= NO_TRANSPARENCY;
+#else
+    xf86GCInfoRec.CopyAreaFlags = NO_TRANSPARENCY;
+#endif
     
 #if 1
     xf86AccelInfoRec.SetupForScreenToScreenCopy =
@@ -181,6 +189,17 @@ void TsengAccelInit() {
      * 8x8 pattern tiling not possible on W32 chips in 24bpp mode.
      * Currently, 24bpp pattern tiling doesn't work at all.
      */
+    xf86AccelInfoRec.PatternFlags = HARDWARE_PATTERN_ALIGN_64
+       | HARDWARE_PATTERN_PROGRAMMED_ORIGIN;
+#ifdef ET6K_TRANSPARENCY
+    xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_NO_PLANEMASK;
+#endif
+
+    if (Is_ET6K)
+    {
+      xf86AccelInfoRec.PatternFlags |= HARDWARE_PATTERN_TRANSPARENCY;
+    }
+
     if (vgaBitsPerPixel != 24)
     {
       xf86AccelInfoRec.SetupForFill8x8Pattern =
@@ -205,9 +224,9 @@ void TsengAccelInit() {
         TsengSubsequentTwoPointLine;
 
     xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
-         NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
+         TWO_POINT_LINE_ERROR_TERM;
     xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
-         NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
+         TWO_POINT_LINE_ERROR_TERM;
     }
 
     /*
@@ -272,7 +291,7 @@ void TsengAccelInit() {
       if (tseng_use_1_to_8_colexp)
       {
         xf86AccelInfoRec.PingPongBuffers = 1;
-        colexp_buf = (void *) xalloc(1024);
+        colexp_buf = xalloc(1024);
         if (colexp_buf==NULL)
           ErrorF("WARNING: Could not get scratch buffer. color expansion will not work.\n");
         xf86AccelInfoRec.ScratchBufferSize = COLEXP_ONE_BUF;
@@ -286,17 +305,19 @@ void TsengAccelInit() {
                                  (vga256InfoRec.videoRam * 1024 - (long) W32Mix));
       }
       else
+      {
         xf86AccelInfoRec.PingPongBuffers = 3;
 
-      xf86AccelInfoRec.ScratchBufferSize = scratchVidBase + 1024 - (long) W32Mix;
-      xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
+        xf86AccelInfoRec.ScratchBufferSize = scratchVidBase + 1024 - (long) W32Mix;
+        xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
 
-      if (!TSENG.ChipUseLinearAddressing)
-      {
-        /* in banked mode, use aperture #0 */
-        xf86AccelInfoRec.ScratchBufferBase =
-           (unsigned char *)
-             ( ((int)vgaBase) + 0x18000L + 1024 - xf86AccelInfoRec.ScratchBufferSize );
+        if (!TSENG.ChipUseLinearAddressing)
+        {
+          /* in banked mode, use aperture #0 */
+          xf86AccelInfoRec.ScratchBufferBase =
+             (unsigned char *)
+               ( ((int)vgaBase) + 0x18000L + 1024 - xf86AccelInfoRec.ScratchBufferSize );
+        }
       }
 #if 0
       ErrorF("ColorExpand ScratchBuf: Addr = %d (0x%x); Size = %d (0x%x); Base = %d (0x%x)\n",
@@ -371,11 +392,17 @@ void TsengAccelInit() {
      switch (bytesperpixel)   /* for MULBPP optimization */
      {
        case 1: powerPerPixel = 0;
+               planemask_mask = 0x000000FF;
                break;
-       case 2:
+       case 2: powerPerPixel = 1;
+               planemask_mask = 0x0000FFFF;
+               break;
        case 3: powerPerPixel = 1;
+               planemask_mask = 0x00FFFFFF;
                break;
        case 4: powerPerPixel = 2;
+               planemask_mask = 0xFFFFFFFF;
+               break;
      }
      
      tseng_line_width = vga256InfoRec.displayWidth * bytesperpixel;
@@ -522,6 +549,9 @@ static __inline__ int MULBPP(int x)
 #define SET_FG_ROP(rop) \
     *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable[rop];
 
+#define SET_FG_ROP_PLANEMASK(rop) \
+    *ACL_FOREGROUND_RASTER_OPERATION = W32OpTable_planemask[rop];
+
 #define SET_BG_ROP(rop) \
     *ACL_BACKGROUND_RASTER_OPERATION = W32PatternOpTable[rop];
 
@@ -550,9 +580,10 @@ static __inline__ void SET_XY(int x, int y)
  * This is plain and simple "benchmark rigging".
  * (no real application does lots of subsequent same-size blits)
  *
- * The effect of this is amazingly good on e.g large blits: 400x400 rectangle fill
- * in 24 and 32 bpp jumps from 276 MB/sec to up to 490 MB/sec... But not always.
- * There must be a good reason why this gives such a boost, but I don't know it.
+ * The effect of this is amazingly good on e.g large blits: 400x400
+ * rectangle fill in 24 and 32 bpp on ET6000 jumps from 276 MB/sec to up to
+ * 490 MB/sec... But not always. There must be a good reason why this gives
+ * such a boost, but I don't know it.
  */
 
 static __inline__ void SET_XY_4(int x, int y)
@@ -671,17 +702,25 @@ void TsengSetupForFillRectSolid(color, rop, planemask)
      
 /*    ErrorF("S");*/
 
-#ifdef DEBUG_PLANEMASK
-    if (planemask != -1)
-      ErrorF("SetupForFillRectSolid: BUG: planemask = 0x%x\n", planemask);
-#endif
-
     PINGPONG();
 
     if (!tseng_use_PCI_Retry) WAIT_QUEUE;
     if (need_wait_acl) WAIT_ACL;
 
-    SET_FG_ROP(rop);
+    /*
+     * planemask emulation uses a modified "standard" FG ROP (see ET6000
+     * data book p 66 or W32p databook p 37: "Bit masking"). We only enable
+     * the planemask emulation when the planemask is not a no-op, because
+     * blitting speed would suffer.
+     */
+
+    if ((planemask & planemask_mask) != planemask_mask) {
+      SET_FG_ROP_PLANEMASK(rop);
+      SET_BG_COLOR(planemask);
+    }
+    else {
+      SET_FG_ROP(rop);
+    }
     SET_FG_COLOR(color);
     
     SET_FUNCTION_BLT;
@@ -748,9 +787,41 @@ void Tseng6KSubsequentFillRectSolid(x, y, w, h)
 /*
  * This is the implementation of the SetupForScreenToScreenCopy function
  * that sets up the coprocessor for a subsequent batch of
- * screen-to-screen copies. Remember, we don't handle transparency,
- * so the transparency color is ignored.
+ * screen-to-screen copies.
  */
+
+static __inline__ void Tseng_setup_screencopy(rop, planemask, transparency_color, blit_dir)
+    int rop;
+    unsigned planemask;
+    int transparency_color;
+    int blit_dir;
+{
+    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
+
+#ifdef ET6K_TRANSPARENCY
+    if (Is_ET6K && (transparency_color != -1))
+    {
+      SET_BG_COLOR(transparency_color);
+      SET_FUNCTION_BLT_TR;
+    }
+    else
+      SET_FUNCTION_BLT;
+
+    SET_FG_ROP(rop);
+#else
+    if ((planemask & planemask_mask) != planemask_mask) {
+      SET_FG_ROP_PLANEMASK(rop);
+      SET_BG_COLOR(planemask);
+    }
+    else {
+      SET_FG_ROP(rop);
+    }
+    SET_FUNCTION_BLT;
+#endif
+    SET_XYDIR(blit_dir);
+}
+
 static int blitxdir, blitydir;
  
 void TsengSetupForScreenToScreenCopy(xdir, ydir, rop, planemask,
@@ -775,20 +846,7 @@ transparency_color)
     if (xdir == -1) blit_dir |= 0x1;
     if (ydir == -1) blit_dir |= 0x2;
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
-
-    SET_XYDIR(blit_dir);
-    
-    if (Is_ET6K && (transparency_color != -1))
-    {
-      SET_BG_COLOR(transparency_color);
-      SET_FUNCTION_BLT_TR;
-    }
-    else
-      SET_FUNCTION_BLT;
-
-    SET_FG_ROP(rop);
+    Tseng_setup_screencopy(rop, planemask, transparency_color, blit_dir);   
 
     *ACL_SOURCE_WRAP = 0x77; /* no wrap */
     *ACL_SOURCE_Y_OFFSET = tseng_line_width-1;
@@ -870,18 +928,7 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
   
 /*  ErrorF("P");*/
 
-  if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-  if (need_wait_acl) WAIT_ACL;
-
-  SET_FG_ROP(rop);
-
-  if (Is_ET6K && (transparency_color != -1))
-  {
-    SET_BG_COLOR(transparency_color);
-    SET_FUNCTION_BLT_TR;
-  }
-  else
-    SET_FUNCTION_BLT;
+  Tseng_setup_screencopy(rop, planemask, transparency_color, 0);
 
   switch(bytesperpixel)
   {
@@ -897,8 +944,6 @@ void TsengSetupForFill8x8Pattern(patternx, patterny, rop, planemask, transparenc
     case 4: *ACL_SOURCE_WRAP      = 0x35;   /* 32x8 wrap */
             *ACL_SOURCE_Y_OFFSET  = 32 - 1;
   }
-  
-  SET_XYDIR(0);
 }
 
 void TsengSubsequentFill8x8Pattern(patternx, patterny, x, y, w, h)
@@ -934,28 +979,13 @@ void TsengSetupForScanlineScreenToScreenColorExpand(x, y, w, h, bg, fg, rop, pla
 
 /*    ErrorF("X");*/
 
-    if (tseng_use_1_to_8_colexp)
-    {
-      colexp_width = MULBPP(w/8); /* in bytes */
-    }
-
-    PINGPONG();
+    colexp_width = w; /* only needed for 1-to-2-to-16 color expansion */
 
     ColorExpandDst = FBADDR(x,y);
-
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
-
-    SET_FG_ROP(rop);
-    SET_BG_ROP_TR(rop, bg);
-      
-    SET_FG_BG_COLOR(fg, bg);
-
-    SET_FUNCTION_COLOREXPAND;
+    
+    TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask);
 
     *ACL_MIX_Y_OFFSET = 0x0FFF; /* see remark below */
-
-    SET_XYDIR(0);
 
     SET_XY(w, 1);
 }
@@ -1027,7 +1057,7 @@ void TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr)
 void TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16(srcaddr)
     int srcaddr;
 {
-     void *dest = FrameBufColExpBase + colexp_slot;
+     CARD32 *dest = (CARD32*)(FrameBufColExpBase + colexp_slot);
 
     /* do triple-buffering here as well */
 
@@ -1036,41 +1066,51 @@ void TsengSubsequentScanlineScreenToScreenColorExpand_1to2to16(srcaddr)
     if (bytesperpixel == 2)
     {
       int i,j;
-      unsigned char ind;
-      CARD16 r;
+      CARD16 ind, *bufptr;
+      CARD32 r;
       
-      for (i=colexp_width-1; i>=0; i--)
+      i = (colexp_width+15)/16;
+      bufptr = (CARD16 *)colexp_buf;
+      
+      while (i--)
       {
         r = 0;
-        ind = *(((unsigned char *)colexp_buf) + i);
+        ind = *bufptr;
 
-        if (ind & 0x01) r |= 0x0003;
-        if (ind & 0x02) r |= 0x000C;
-        if (ind & 0x04) r |= 0x0030;
-        if (ind & 0x08) r |= 0x00C0;
-        if (ind & 0x10) r |= 0x0300;
-        if (ind & 0x20) r |= 0x0C00;
-        if (ind & 0x40) r |= 0x3000;
-        if (ind & 0x80) r |= 0xC000;
+        if (ind & 0x0001) r |= 0x00000003;
+        if (ind & 0x0002) r |= 0x0000000C;
+        if (ind & 0x0004) r |= 0x00000030;
+        if (ind & 0x0008) r |= 0x000000C0;
+        if (ind & 0x0010) r |= 0x00000300;
+        if (ind & 0x0020) r |= 0x00000C00;
+        if (ind & 0x0040) r |= 0x00003000;
+        if (ind & 0x0080) r |= 0x0000C000;
+
+        if (ind & 0x0100) r |= 0x00030000;
+        if (ind & 0x0200) r |= 0x000C0000;
+        if (ind & 0x0400) r |= 0x00300000;
+        if (ind & 0x0800) r |= 0x00C00000;
+        if (ind & 0x1000) r |= 0x03000000;
+        if (ind & 0x2000) r |= 0x0C000000;
+        if (ind & 0x4000) r |= 0x30000000;
+        if (ind & 0x8000) r |= 0xC0000000;
         
-        *((CARD16 *)(dest) + i) = r;
+        *dest = r;
+        
+        bufptr++;
+        dest++;
       }
     }
     else
     {
-      xf86memcpy(dest, colexp_buf, colexp_width);
+      xf86memcpy( dest, colexp_buf, MULBPP((colexp_width+7)/8) );
     }
 
     srcaddr += colexp_slot << 3;
     colexp_slot += COLEXP_ONE_BUF;
     if (colexp_slot >= (1024 - COLEXP_ONE_BUF)) colexp_slot=0;
 
-    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-    if (need_wait_acl) WAIT_ACL;
-
-    *ACL_MIX_ADDRESS = srcaddr;
-    START_ACL(ColorExpandDst);
-    ColorExpandDst += tseng_line_width;
+    TsengSubsequentScanlineScreenToScreenColorExpand(srcaddr);
 }
 
 
@@ -1138,19 +1178,19 @@ void TsengSetupForScreenToScreenColorExpand(bg, fg, rop, planemask)
 {
 /*  ErrorF("SSC ");*/
 
-  PINGPONG();
+    PINGPONG();
 
-  if (!tseng_use_PCI_Retry) WAIT_QUEUE;
-  if (need_wait_acl) WAIT_ACL;
+    if (!tseng_use_PCI_Retry) WAIT_QUEUE;
+    if (need_wait_acl) WAIT_ACL;
 
-  SET_FG_ROP(rop);
-  SET_BG_ROP_TR(rop, bg);
+    SET_FG_ROP(rop);
+    SET_BG_ROP_TR(rop, bg);
       
-  SET_FUNCTION_COLOREXPAND;
+    SET_FG_BG_COLOR(fg, bg);
 
-  SET_FG_BG_COLOR(fg, bg);
+    SET_FUNCTION_COLOREXPAND;
 
-  SET_XYDIR(0);
+    SET_XYDIR(0);
 }
 
 void TsengSubsequentScreenToScreenColorExpand(srcx, srcy, x, y, w, h)
@@ -1255,7 +1295,7 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
    int dir_reg = 0x80;
    int octant=0;
  
-/*   ErrorF("L"); */
+/*   ErrorF("L");  */
 
    /*
     * Fix drawing "bug" when drawing right-to-left (dx<0). This could also be

@@ -27,7 +27,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.7 1997/07/26 12:59:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128misc.c,v 3.8 1997/07/29 12:07:31 hohndel Exp $ */
 
 #include "servermd.h"
 
@@ -262,10 +262,11 @@ i128SaveScreen(pScreen, on)
       /* the server is running on the current vt */
       /* so just go for it */
 
-      if (on)
-         i128mem.rbase_g[0x58/4] |= 0x40;
-      else
-         i128mem.rbase_g[0x58/4] &= ~0x40;
+      if (on) {
+         i128mem.rbase_g[CRT_1CON] |= 0x40;				MB;
+      } else {
+         i128mem.rbase_g[CRT_1CON] &= ~0x40;				MB;
+      }
    }
    return (TRUE);
 }
@@ -317,7 +318,7 @@ i128AdjustFrame(int x, int y)
       x  = i128DisplayWidth - i128HDisplay;
 
    Base = ((y*i128DisplayWidth + x) * (i128InfoRec.bitsPerPixel/8));
-   i128mem.rbase_g[DB_ADR] = (Base & I128_PAN_MASK) + i128DisplayOffset;
+   i128mem.rbase_g[DB_ADR] = (Base & I128_PAN_MASK) + i128DisplayOffset; MB;
 
    /* now warp the cursor after the screen move */
    i128AdjustCursorXPos = Base - (Base & I128_PAN_MASK);

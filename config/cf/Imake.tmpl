@@ -1,11 +1,11 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM Makefile generated from IMAKE_TEMPLATE and INCLUDE_IMAKEFILE
-XCOMM $TOG: Imake.tmpl /main/245 1997/05/20 10:05:47 kaleb $
+XCOMM $TOG: Imake.tmpl /main/246 1997/08/05 08:50:57 kaleb $
 XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.41 1997/07/05 15:14:45 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.42 1997/07/06 05:30:31 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -47,6 +47,10 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasClearmake
 # define HasClearmake NO
+#endif
+
+#ifndef HasVarDirectory
+#define HasVarDirectory		YES
 #endif
 
 /*

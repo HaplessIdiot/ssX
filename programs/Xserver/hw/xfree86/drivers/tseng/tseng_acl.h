@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.4 1997/06/03 14:12:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.h,v 1.5 1997/07/06 05:30:56 dawes Exp $ */
 
 #ifndef _TSENG_ACL_H
 #define _TSENG_ACL_H
@@ -95,9 +95,12 @@ extern
 WordP ACL_SECONDARY_ERROR_TERM,
       ACL_SECONDARY_DELTA_MINOR,
       ACL_SECONDARY_DELTA_MAJOR;
+extern
+ByteP ACL_TRANSFER_DISABLE;
 
 
 extern int W32OpTable[16];
+extern int W32OpTable_planemask[16];
 extern int W32PatternOpTable[16];
 
 extern int W32BresTable[8];

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.8 1997/07/26 12:59:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128accel.c,v 3.9 1997/07/31 07:16:07 dawes Exp $ */
 
 /*
  * Copyright 1997 by Robin Cutshaw <robin@XFree86.Org>
@@ -174,8 +174,8 @@ i128BitBlit(int x1, int y1, int x2, int y2, int w, int h, int cmd, int dir)
 			/* split method */
 
 			eng_cur[XY2_WH] = (bppi<<16) | h;
-			eng_cur[XY0_SRC] = (x1<<16) | y1;
-			eng_cur[XY1_DST] = (x2<<16) | y2;
+			eng_cur[XY0_SRC] = (x1<<16) | y1;		MB;
+			eng_cur[XY1_DST] = (x2<<16) | y2;		MB;
 
 			i128EngineReady();
 
@@ -200,8 +200,8 @@ i128BitBlit(int x1, int y1, int x2, int y2, int w, int h, int cmd, int dir)
 	}
 
 	eng_cur[XY2_WH] = (w<<16) | h;
-	eng_cur[XY0_SRC] = (x1<<16) | y1;
-	eng_cur[XY1_DST] = (x2<<16) | y2;
+	eng_cur[XY0_SRC] = (x1<<16) | y1;				MB;
+	eng_cur[XY1_DST] = (x2<<16) | y2;				MB;
 }
 
 void
@@ -303,8 +303,8 @@ ErrorF("SFFRS color 0x%x rop 0x%x (i128rop 0x%x) pmask 0x%x\n", color, rop, i128
 	}
 
 	eng_cur[DE_PGE] = 0x00;
-	eng_cur[DE_SORG] = 0x00;
-	eng_cur[DE_DORG] = 0x00;
+	eng_cur[DE_SORG] = i128DisplayOffset;
+	eng_cur[DE_DORG] = i128DisplayOffset;
 	eng_cur[DE_MSRC] = 0x00;
 	eng_cur[DE_WKEY] = 0x00;
 	eng_cur[DE_SPTCH] = i128mem.rbase_g[DB_PTCH];
@@ -352,8 +352,8 @@ ErrorF("STPL i128rop 0x%x  %d,%d %d,%d   clip %d,%d %d,%d\n", i128rop, x1, y1, x
 	eng_cur[CLPTL] = i128clptl;
 	eng_cur[CLPBR] = i128clpbr;
 
-	eng_cur[XY0_SRC] = (x1<<16) | y1;
-	eng_cur[XY1_DST] = (x2<<16) | y2;
+	eng_cur[XY0_SRC] = (x1<<16) | y1;				MB;
+	eng_cur[XY1_DST] = (x2<<16) | y2;				MB;
 
 }
 

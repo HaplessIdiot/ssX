@@ -24,7 +24,7 @@
  * 
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128cmap.c,v 3.1 1996/02/04 09:01:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128cmap.c,v 3.2 1996/12/23 06:35:40 dawes Exp $ */
 
 /*
  * Modified by Amancio Hasty and Jon Tombs
@@ -79,12 +79,12 @@ i128RestoreDACvalues()
 
    if (xf86VTSema) {
       BLOCK_CURSOR;
-      i128mem.rbase_g_b[WR_ADR] = 0x00;
+      i128mem.rbase_g[WR_ADR] = 0x00;					MB;
 
       for (i=0; i < 256; i++) {
-	 i128mem.rbase_g_b[PAL_DAT] = currenti128dac[i].r;
-	 i128mem.rbase_g_b[PAL_DAT] = currenti128dac[i].g;
-	 i128mem.rbase_g_b[PAL_DAT] = currenti128dac[i].b;
+	 i128mem.rbase_g[PAL_DAT] = currenti128dac[i].r;		MB;
+	 i128mem.rbase_g[PAL_DAT] = currenti128dac[i].g;		MB;
+	 i128mem.rbase_g[PAL_DAT] = currenti128dac[i].b;		MB;
       }
       UNBLOCK_CURSOR;
    }
@@ -137,10 +137,10 @@ i128StoreColors(pmap, ndef, pdefs)
 	    xf86bGammaMap[pdefs[i].blue  >> 8] >> 2;
       }
       if (xf86VTSema) {
-	 i128mem.rbase_g_b[WR_ADR] = pdefs[i].pixel;
-	 i128mem.rbase_g_b[PAL_DAT] = r;
-	 i128mem.rbase_g_b[PAL_DAT] = g;
-	 i128mem.rbase_g_b[PAL_DAT] = b;
+	 i128mem.rbase_g[WR_ADR] = pdefs[i].pixel;			MB;
+	 i128mem.rbase_g[PAL_DAT] = r;					MB;
+	 i128mem.rbase_g[PAL_DAT] = g;					MB;
+	 i128mem.rbase_g[PAL_DAT] = b;					MB;
       }
    }
    UNBLOCK_CURSOR;
@@ -233,15 +233,15 @@ i128RestoreColor0(pScreen)
    QueryColors(InstalledMaps[pScreen->myNum], 1, &pix, &rgb);
 
    BLOCK_CURSOR;
-   i128mem.rbase_g_b[WR_ADR] = 0x00;
+   i128mem.rbase_g[WR_ADR] = 0x00;					MB;
    if (i128DAC8Bit) {
-      i128mem.rbase_g_b[PAL_DAT] = xf86rGammaMap[rgb.red   >> 8];
-      i128mem.rbase_g_b[PAL_DAT] = xf86gGammaMap[rgb.green >> 8];
-      i128mem.rbase_g_b[PAL_DAT] = xf86bGammaMap[rgb.blue  >> 8];
+      i128mem.rbase_g[PAL_DAT] = xf86rGammaMap[rgb.red   >> 8];		MB;
+      i128mem.rbase_g[PAL_DAT] = xf86gGammaMap[rgb.green >> 8];		MB;
+      i128mem.rbase_g[PAL_DAT] = xf86bGammaMap[rgb.blue  >> 8];		MB;
    } else {
-      i128mem.rbase_g_b[PAL_DAT] = xf86rGammaMap[rgb.red   >> 8] >> 2;
-      i128mem.rbase_g_b[PAL_DAT] = xf86gGammaMap[rgb.green >> 8] >> 2;
-      i128mem.rbase_g_b[PAL_DAT] = xf86bGammaMap[rgb.blue  >> 8] >> 2;
+      i128mem.rbase_g[PAL_DAT] = xf86rGammaMap[rgb.red   >> 8] >> 2;	MB;
+      i128mem.rbase_g[PAL_DAT] = xf86gGammaMap[rgb.green >> 8] >> 2;	MB;
+      i128mem.rbase_g[PAL_DAT] = xf86bGammaMap[rgb.blue  >> 8] >> 2;	MB;
    }
    UNBLOCK_CURSOR;
 }

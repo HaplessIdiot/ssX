@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranssock.c /main/58 1996/12/04 10:22:50 lehors $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.29 1997/07/06 11:56:44 dawes Exp $ */
+/* $TOG: Xtranssock.c /main/59 1997/08/06 18:47:23 kaleb $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.30 1997/07/19 05:43:05 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -258,6 +258,7 @@ static Sockettrans2dev Sockettrans2devtab[] = {
 
 #endif /* UNIXCONN */
 
+#define PORTBUFSIZE	32
 
 /*
  * These are some utility function used by the real interface function below.
@@ -821,7 +822,6 @@ int		socknamelen;
     return 0;
 }
 
-
 #ifdef TCPCONN
 static int
 TRANS(SocketINETCreateListener) (ciptr, port)
@@ -833,11 +833,10 @@ char 		*port;
     struct sockaddr_in	sockname;
     int		namelen = sizeof(sockname);
     int		status;
-    short	tmpport;
+    long	tmpport;
     _Xgetservbynameparams sparams;
     struct servent *servp;
 
-#define PORTBUFSIZE	64	/* what is a real size for this? */
 
     char	portbuf[PORTBUFSIZE];
     
@@ -855,14 +854,11 @@ char 		*port;
 
     if (is_numeric (port))
     {
-	tmpport = (short) atoi (port);
-
-	sprintf (portbuf,"%d", X_TCP_PORT+tmpport);
+	/* fixup the server port address */
+	tmpport = X_TCP_PORT + strtol (port, (char**)NULL, 10);
+	sprintf (portbuf,"%u", tmpport);
+	port = portbuf;
     }
-    else
-	strncpy (portbuf, port, PORTBUFSIZE);
-
-    port = portbuf;
 #endif
 
     if (port && *port)
@@ -878,12 +874,22 @@ char 		*port;
 		      port, 0, 0);
 		return TRANS_CREATE_LISTENER_FAILED;
 	    }
-	    sockname.sin_port = servp->s_port;
+	    /* we trust getservbyname to return a valid number */
+	    sockname.sin_port = htons (servp->s_port);
 	}
 	else
 	{
-	    tmpport = (short) atoi (port);
-	    sockname.sin_port = htons (tmpport);
+	    tmpport = strtol (port, (char**)NULL, 10);
+	    /* 
+	     * check that somehow the port address isn't negative or in
+	     * the range of reserved port addresses. This can happen and
+	     * be very bad if the server is suid-root and the user does 
+	     * something (dumb) like `X :60049`. 
+	     */
+	    if (tmpport < 1024 || tmpport > USHRT_MAX)
+		return TRANS_CREATE_LISTENER_FAILED;
+
+	    sockname.sin_port = htons (((unsigned short) tmpport));
 	}
     }
     else
@@ -1251,11 +1257,10 @@ char 		*port;
     struct hostent	*hostp;
     struct servent	*servp;
 
-#define PORTBUFSIZE	64	/* what is a real size for this? */
     char	portbuf[PORTBUFSIZE];
 
     int			ret;
-    short		tmpport;
+    long		tmpport;
     unsigned long 	tmpaddr;
     char 		hostnamebuf[256];		/* tmp space */
 
@@ -1280,13 +1285,11 @@ char 		*port;
 
     if (is_numeric (port))
     {
-	tmpport = (short) atoi (port);
-
-	sprintf (portbuf, "%d", X_TCP_PORT + tmpport);
+	tmpport = X_TCP_PORT + strtol (port, (char**)NULL, 10);
+	sprintf (portbuf, "%u", tmpport);
+	port = portbuf;
     }
-    else
 #endif
-	strncpy (portbuf, port, PORTBUFSIZE);
 
     /*
      * Build the socket name.
@@ -1358,20 +1361,22 @@ else
     
     /* Check for number in the port string */
 
-    if (!is_numeric (portbuf))
+    if (!is_numeric (port))
     {
-	if ((servp = _XGetservbyname (portbuf,"tcp",sparams)) == NULL)
+	if ((servp = _XGetservbyname (port,"tcp",sparams)) == NULL)
 	{
 	    PRMSG (1,"SocketINETConnect: Can't get service for %s\n",
-		  portbuf, 0, 0);
+		  port, 0, 0);
 	    return TRANS_CONNECT_FAILED;
 	}
-	sockname.sin_port = servp->s_port;
+	sockname.sin_port = htons(servp->s_port);
     }
     else
     {
-	tmpport = (short) atoi (portbuf);
-	sockname.sin_port = htons (tmpport);
+	tmpport = strtol(port, (char**)NULL, 10);
+	if (tmpport < 1024 || tmpport > USHRT_MAX)
+	    return TRANS_CONNECT_FAILED;
+	sockname.sin_port = htons (((unsigned short) tmpport));
     }
     
     PRMSG (4,"SocketINETConnect: sockname.sin_port = %d\n",

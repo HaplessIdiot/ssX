@@ -3,7 +3,7 @@ XCOMM $XConsortium: Imakefile /main/16 1996/10/28 05:13:04 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.27 1997/05/17 12:07:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Imakefile,v 3.28 1997/05/24 11:34:33 dawes Exp $
 
 #include <Server.tmpl>
 #include <lnxdoc.rules>
@@ -97,9 +97,7 @@ LinuxDocTarget(DocIndex)
 LinuxDocReadmeTarget(LinkKit)
 LinuxDocReadmeTarget(clkprog)
 LinuxDocTarget(xinput)
-#if 0
 LinuxDocTargetLong(VidModes.sgml,VideoModes.doc,VideoModes)
-#endif
 LinuxDocTargetLong(VGADriv.sgml,VGADriver.Doc,VGADriver)
 
 InstallLinkKitNamedNonExec(README.LinkKit,README,$(LINKKITDIR))

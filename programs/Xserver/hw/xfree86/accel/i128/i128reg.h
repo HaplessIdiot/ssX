@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.7 1997/06/15 07:12:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128reg.h,v 3.8 1997/06/25 08:24:56 hohndel Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -68,7 +68,6 @@ struct i128mem {
     CARD32 *rbase_a;
     CARD32 *rbase_b;
     CARD32 *rbase_i;
-    unsigned char *rbase_g_b;  /* special byte pointer for ramdac registers */
 };
 
 /* save the registers needed for restoration in this structure */
@@ -95,16 +94,16 @@ typedef struct {
 
 /* RBASE_G register offsets  (divided by four for double word indexing */
 
-#define WR_ADR   0x0000     /* use rbase_g_b for byte indexing */
-#define PAL_DAT  0x0004     /* use rbase_g_b for byte indexing */
-#define PEL_MASK 0x0008     /* use rbase_g_b for byte indexing */
-#define RD_ADR   0x000C     /* use rbase_g_b for byte indexing */
-#define INDEX_TI 0x0018     /* TI  ramdac use rbase_g_b for byte indexing */
-#define DATA_TI  0x001C     /* TI  ramdac use rbase_g_b for byte indexing */
-#define IDXL_I   0x0010     /* IBM ramdac use rbase_g_b for byte indexing */
-#define IDXH_I   0x0014     /* IBM ramdac use rbase_g_b for byte indexing */
-#define DATA_I   0x0018     /* IBM ramdac use rbase_g_b for byte indexing */
-#define IDXCTL_I 0x001C     /* IBM ramdac use rbase_g_b for byte indexing */
+#define WR_ADR   0x0000/4
+#define PAL_DAT  0x0004/4
+#define PEL_MASK 0x0008/4
+#define RD_ADR   0x000C/4
+#define INDEX_TI 0x0018/4   /* TI  ramdac */
+#define DATA_TI  0x001C/4   /* TI  ramdac */
+#define IDXL_I   0x0010/4   /* IBM ramdac */
+#define IDXH_I   0x0014/4   /* IBM ramdac */
+#define DATA_I   0x0018/4   /* IBM ramdac */
+#define IDXCTL_I 0x001C/4   /* IBM ramdac */
 #define INT_VCNT 0x0020/4
 #define INT_HCNT 0x0024/4
 #define DB_ADR   0x0028/4
@@ -289,3 +288,5 @@ typedef struct {
 #define RGB16_565         0
 #define RGB16_555         1
 #define RGB32_888         2
+
+#define MB	mem_barrier()

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.34 1997/07/26 12:59:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128.c,v 3.35 1997/07/29 12:07:30 hohndel Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -271,7 +271,7 @@ i128Probe()
    unsigned char n, m, p, mdc, df;
    float mclk;
    pciConfigPtr pcrp, *pcrpp;
-   unsigned char tmpl, tmph, tmp;
+   CARD32 tmpl, tmph, tmp;
    extern i128Registers iR;
 
    pcrpp = xf86scanpci(i128InfoRec.scrnIndex);
@@ -498,7 +498,6 @@ i128Probe()
    i128mem.rbase_a = i128mem.rbase_g + (16 * 1024)/4;
    i128mem.rbase_b = i128mem.rbase_g + (24 * 1024)/4;
    i128mem.rbase_i = i128mem.rbase_g + (32 * 1024)/4;
-   i128mem.rbase_g_b = (unsigned char *)i128mem.rbase_g;
 
    if (pcrp->_device_vendor == I128_DEVICE_ID1) {
       if (i128io.id & 0x0400)       /* 2 banks VRAM   */
@@ -520,28 +519,28 @@ i128Probe()
       case TI3025_DAC:
          /* verify that the ramdac is a TVP3025 */
 
-         i128mem.rbase_g_b[INDEX_TI] = TI_ID;
-         if (i128mem.rbase_g_b[DATA_TI] != TI_VIEWPOINT25_ID) {
+         i128mem.rbase_g[INDEX_TI] = TI_ID;				MB;
+         if ((i128mem.rbase_g[DATA_TI]&0xFF) != TI_VIEWPOINT25_ID) {
             ErrorF("%s: Ti3025 Ramdac not found.\n", i128InfoRec.name);
             return(FALSE);
          }
          OFLG_SET(CLOCK_OPTION_TI3025, &i128InfoRec.clockOptions);
          i128InfoRec.ramdac = "ti3025";
 
-         i128mem.rbase_g_b[INDEX_TI] = TI_PLL_CONTROL;
-         i128mem.rbase_g_b[DATA_TI] = 0x00;
-         i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_PLL_DATA;
-         n = i128mem.rbase_g_b[DATA_TI]&0x7f;
-         i128mem.rbase_g_b[INDEX_TI] = TI_PLL_CONTROL;
-         i128mem.rbase_g_b[DATA_TI] = 0x01;
-         i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_PLL_DATA;
-         m = i128mem.rbase_g_b[DATA_TI]&0x7f;
-         i128mem.rbase_g_b[INDEX_TI] = TI_PLL_CONTROL;
-         i128mem.rbase_g_b[DATA_TI] = 0x02;
-         i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_PLL_DATA;
-         p = i128mem.rbase_g_b[DATA_TI]&0x03;
-         i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_DCLK_CONTROL;
-         mdc = i128mem.rbase_g_b[DATA_TI];
+         i128mem.rbase_g[INDEX_TI] = TI_PLL_CONTROL;			MB;
+         i128mem.rbase_g[DATA_TI] = 0x00;				MB;
+         i128mem.rbase_g[INDEX_TI] = TI_MCLK_PLL_DATA;			MB;
+         n = i128mem.rbase_g[DATA_TI]&0x7f;
+         i128mem.rbase_g[INDEX_TI] = TI_PLL_CONTROL;			MB;
+         i128mem.rbase_g[DATA_TI] = 0x01;				MB;
+         i128mem.rbase_g[INDEX_TI] = TI_MCLK_PLL_DATA;			MB;
+         m = i128mem.rbase_g[DATA_TI]&0x7f;
+         i128mem.rbase_g[INDEX_TI] = TI_PLL_CONTROL;			MB;
+         i128mem.rbase_g[DATA_TI] = 0x02;				MB;
+         i128mem.rbase_g[INDEX_TI] = TI_MCLK_PLL_DATA;			MB;
+         p = i128mem.rbase_g[DATA_TI]&0x03;
+         i128mem.rbase_g[INDEX_TI] = TI_MCLK_DCLK_CONTROL;		MB;
+         mdc = i128mem.rbase_g[DATA_TI]&0xFF;
          if (mdc&0x08)
 	    mdc = (mdc&0x07)*2 + 2;
          else
@@ -564,23 +563,23 @@ i128Probe()
          /* verify that the ramdac is an IBM526 */
 
          i128InfoRec.ramdac = "ibm526";
-	 tmph = i128mem.rbase_g_b[IDXH_I];
-	 tmpl = i128mem.rbase_g_b[IDXL_I];
-         i128mem.rbase_g_b[IDXH_I] = 0;
-         i128mem.rbase_g_b[IDXL_I] = IBMRGB_id;
-	 tmp = i128mem.rbase_g_b[DATA_I];
+	 tmph = i128mem.rbase_g[IDXH_I] & 0xFF;
+	 tmpl = i128mem.rbase_g[IDXL_I] & 0xFF;
+         i128mem.rbase_g[IDXH_I] = 0;					MB;
+         i128mem.rbase_g[IDXL_I] = IBMRGB_id;				MB;
+	 tmp = i128mem.rbase_g[DATA_I] & 0xFF;
 
-         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
-	 n = i128mem.rbase_g_b[DATA_I] & 0x1f;
-         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_vco_div;
-	 m = i128mem.rbase_g_b[DATA_I];
+         i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_ref_div;		MB;
+	 n = i128mem.rbase_g[DATA_I] & 0x1f;
+         i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_vco_div;		MB;
+	 m = i128mem.rbase_g[DATA_I];
 	 df = m>>6;
 	 m &= 0x3f;
 	 if (n == 0) { m=0; n=1; }
 	 mclk = ((2517500 * (m+65)) / n / (8>>df) + 50) / 100;
 
-	 i128mem.rbase_g_b[IDXL_I] = tmpl;
-	 i128mem.rbase_g_b[IDXH_I] = tmph;
+	 i128mem.rbase_g[IDXL_I] = tmpl;				MB;
+	 i128mem.rbase_g[IDXH_I] = tmph;				MB;
          if (tmp != 2) {
             ErrorF("%s: %s Ramdac not found.\n", i128InfoRec.name,
 		i128InfoRec.ramdac);
@@ -598,23 +597,23 @@ i128Probe()
          /* verify that the ramdac is an IBM528 */
 
          i128InfoRec.ramdac = "ibm528";
-	 tmph = i128mem.rbase_g_b[IDXH_I];
-	 tmpl = i128mem.rbase_g_b[IDXL_I];
-         i128mem.rbase_g_b[IDXH_I] = 0;
-         i128mem.rbase_g_b[IDXL_I] = IBMRGB_id;
-	 tmp = i128mem.rbase_g_b[DATA_I];
+	 tmph = i128mem.rbase_g[IDXH_I] & 0xFF;
+	 tmpl = i128mem.rbase_g[IDXL_I] & 0xFF;
+         i128mem.rbase_g[IDXH_I] = 0;					MB;
+         i128mem.rbase_g[IDXL_I] = IBMRGB_id;				MB;
+	 tmp = i128mem.rbase_g[DATA_I] & 0xFF;
 
-         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
-	 n = i128mem.rbase_g_b[DATA_I] & 0x1f;
-         i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_vco_div;
-	 m = i128mem.rbase_g_b[DATA_I];
+         i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_ref_div;		MB;
+	 n = i128mem.rbase_g[DATA_I] & 0x1f;
+         i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_vco_div;		MB;
+	 m = i128mem.rbase_g[DATA_I] & 0xFF;
 	 df = m>>6;
 	 m &= 0x3f;
 	 if (n == 0) { m=0; n=1; }
 	 mclk = ((2517500 * (m+65)) / n / (8>>df) + 50) / 100;
 
-	 i128mem.rbase_g_b[IDXL_I] = tmpl;
-	 i128mem.rbase_g_b[IDXH_I] = tmph;
+	 i128mem.rbase_g[IDXL_I] = tmpl;				MB;
+	 i128mem.rbase_g[IDXH_I] = tmph;				MB;
          if (tmp != 2) {
             ErrorF("%s: %s Ramdac not found.\n", i128InfoRec.name,
 		i128InfoRec.ramdac);
@@ -734,7 +733,7 @@ i128Probe()
       i128DisplayOffset = 0x400000L %
 		          (i128DisplayWidth * (i128InfoRec.bitsPerPixel/8));
 
-   i128VideoMem = (pointer)((CARD32)i128VideoMem + i128DisplayOffset);
+   i128VideoMem = (pointer)&((char *)i128VideoMem)[i128DisplayOffset];
 
    if (OFLG_ISSET(OPTION_DAC_8_BIT, &i128InfoRec.options) ||
        (i128InfoRec.bitsPerPixel > 8))
@@ -798,7 +797,7 @@ i128ProgramIBMRGB(freq, flags)
 
 {
    unsigned char tmp, tmp2, m, n, df, best_m, best_n, best_df, max_n;
-   unsigned char tmpl, tmph, tmpc;
+   CARD32 tmpl, tmph, tmpc;
    long f, vrf, outf, best_vrf, best_diff, best_outf, diff;
    long requested_freq;
 
@@ -868,113 +867,113 @@ i128ProgramIBMRGB(freq, flags)
        return(FALSE);
    }
 
-   i128mem.rbase_g_b[PEL_MASK] = 0xff;
+   i128mem.rbase_g[PEL_MASK] = 0xFF;					MB;
 
-   tmpc = i128mem.rbase_g_b[IDXCTL_I];
-   tmph = i128mem.rbase_g_b[IDXH_I];
-   tmpl = i128mem.rbase_g_b[IDXL_I];
+   tmpc = i128mem.rbase_g[IDXCTL_I] & 0xFF;
+   tmph = i128mem.rbase_g[IDXH_I] & 0xFF;
+   tmpl = i128mem.rbase_g[IDXL_I] & 0xFF;
 
-   i128mem.rbase_g_b[IDXH_I] = 0;
-   i128mem.rbase_g_b[IDXCTL_I] = 0;
+   i128mem.rbase_g[IDXH_I] = 0;						MB;
+   i128mem.rbase_g[IDXCTL_I] = 0;					MB;
 
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc_clock;
-   tmp2 = i128mem.rbase_g_b[DATA_I];
-   i128mem.rbase_g_b[DATA_I] = tmp2 | 0x81;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_misc_clock;				MB;
+   tmp2 = i128mem.rbase_g[DATA_I] & 0xFF;
+   i128mem.rbase_g[DATA_I] = tmp2 | 0x81;				MB;
 
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_m0+4;
-   i128mem.rbase_g_b[DATA_I] = (best_df<<6) | (best_m&0x3f);
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_n0+4;
-   i128mem.rbase_g_b[DATA_I] = best_n;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_m0+4;				MB;
+   i128mem.rbase_g[DATA_I] = (best_df<<6) | (best_m&0x3f);		MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_n0+4;				MB;
+   i128mem.rbase_g[DATA_I] = best_n;					MB;
 
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pll_ctrl1;
-   tmp2 = i128mem.rbase_g_b[DATA_I];
-   i128mem.rbase_g_b[DATA_I] = (tmp2&0xf8) | 3;  /* 8 M/N pairs in PLL */
+   i128mem.rbase_g[IDXL_I] = IBMRGB_pll_ctrl1;				MB;
+   tmp2 = i128mem.rbase_g[DATA_I] & 0xFF;
+   i128mem.rbase_g[DATA_I] = (tmp2&0xf8) | 3;  /* 8 M/N pairs in PLL */	MB;
 
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pll_ctrl2;
-   tmp2 = i128mem.rbase_g_b[DATA_I];
-   i128mem.rbase_g_b[DATA_I] = (tmp2&0xf0) | 2;  /* clock number 2 */
+   i128mem.rbase_g[IDXL_I] = IBMRGB_pll_ctrl2;				MB;
+   tmp2 = i128mem.rbase_g[DATA_I] & 0xFF;
+   i128mem.rbase_g[DATA_I] = (tmp2&0xf0) | 2;  /* clock number 2 */	MB;
 
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc_clock;
-   tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf0;
-   i128mem.rbase_g_b[DATA_I] = tmp2 | ((flags & V_DBLCLK) ? 0x03 : 0x01);
+   i128mem.rbase_g[IDXL_I] = IBMRGB_misc_clock;				MB;
+   tmp2 = i128mem.rbase_g[DATA_I] & 0xf0;
+   i128mem.rbase_g[DATA_I] = tmp2 | ((flags & V_DBLCLK) ? 0x03 : 0x01);	MB;
 
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_sync;
-   i128mem.rbase_g_b[DATA_I] = 0x00;  /* Use 0x10 for +Hsync, 0x20 for +Vsync */
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_hsync_pos;
-   i128mem.rbase_g_b[DATA_I] = 0x01;  /* Delay syncs by 1 pclock */
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pwr_mgmt;
-   i128mem.rbase_g_b[DATA_I] = 0x00;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_dac_op;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_sync;				MB;
+   i128mem.rbase_g[DATA_I] = 0x00;  /* 0x10 +Hsync, 0x20 +Vsync */	MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_hsync_pos;				MB;
+   i128mem.rbase_g[DATA_I] = 0x01;  /* Delay syncs by 1 pclock */	MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_pwr_mgmt;				MB;
+   i128mem.rbase_g[DATA_I] = 0x00;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_dac_op;				MB;
    tmp2 = (i128RamdacType == IBM528_DAC) ? 0x02 : 0x00;  /* fast slew */
    if (i128DACSyncOnGreen) tmp2 |= 0x08;
-   i128mem.rbase_g_b[DATA_I] = tmp2;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_pal_ctrl;
-   i128mem.rbase_g_b[DATA_I] = 0x00;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk;
-   i128mem.rbase_g_b[DATA_I] = 0x01;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc1;
-   tmp2 = i128mem.rbase_g_b[DATA_I] & 0xbc;
+   i128mem.rbase_g[DATA_I] = tmp2;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_pal_ctrl;				MB;
+   i128mem.rbase_g[DATA_I] = 0x00;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk;				MB;
+   i128mem.rbase_g[DATA_I] = 0x01;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_misc1;				MB;
+   tmp2 = i128mem.rbase_g[DATA_I] & 0xbc;
    if (!i128MemoryTypeDram)
    	tmp2 |= (i128RamdacType == IBM528_DAC) ? 3 : 1;
-   i128mem.rbase_g_b[DATA_I] = tmp2;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc2;
+   i128mem.rbase_g[DATA_I] = tmp2;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_misc2;				MB;
    tmp2 = 0x03;
    if (i128DAC8Bit)
 	tmp2 |= 0x04;
    if (!(i128MemoryTypeDram && (i128InfoRec.bitsPerPixel > 16)))
 	tmp2 |= 0x40;
-   i128mem.rbase_g_b[DATA_I] = tmp2;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc3;
-   i128mem.rbase_g_b[DATA_I] = 0x00;
-   i128mem.rbase_g_b[IDXL_I] = IBMRGB_misc4;
-   i128mem.rbase_g_b[DATA_I] = 0x00;
+   i128mem.rbase_g[DATA_I] = tmp2;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_misc3;				MB;
+   i128mem.rbase_g[DATA_I] = 0x00;					MB;
+   i128mem.rbase_g[IDXL_I] = IBMRGB_misc4;				MB;
+   i128mem.rbase_g[DATA_I] = 0x00;					MB;
 
    /* ?? There is no write to cursor control register */
 
    if (i128RamdacType == IBM526_DAC) {
 	/* program mclock to 52MHz */
-   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_ref_div;
-   	i128mem.rbase_g_b[DATA_I] = 0x08;
-   	i128mem.rbase_g_b[IDXL_I] = IBMRGB_sysclk_vco_div;
-   	i128mem.rbase_g_b[DATA_I] = 0x41;
+   	i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_ref_div;		MB;
+   	i128mem.rbase_g[DATA_I] = 0x08;					MB;
+   	i128mem.rbase_g[IDXL_I] = IBMRGB_sysclk_vco_div;		MB;
+   	i128mem.rbase_g[DATA_I] = 0x41;					MB;
 	/* should delay at least a millisec so we'll wait 50 */
    	xf86usleep(50000);
    }
 
    switch (i128InfoRec.depth) {
    	case 24: /* 32 bit */
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
-   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
-   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x06;
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_32bpp;
-   		i128mem.rbase_g_b[DATA_I] = 0x03;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_pix_fmt;		MB;
+   		tmp2 = i128mem.rbase_g[DATA_I] & 0xf8;
+   		i128mem.rbase_g[DATA_I] = tmp2 | 0x06;			MB;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_32bpp;			MB;
+   		i128mem.rbase_g[DATA_I] = 0x03;				MB;
    		break;
 	case 16:
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
-   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
-   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x04;
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_16bpp;
-   		i128mem.rbase_g_b[DATA_I] = 0xC7;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_pix_fmt;		MB;
+   		tmp2 = i128mem.rbase_g[DATA_I] & 0xf8;
+   		i128mem.rbase_g[DATA_I] = tmp2 | 0x04;			MB;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_16bpp;			MB;
+   		i128mem.rbase_g[DATA_I] = 0xC7;				MB;
    		break;
 	case 15:
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
-   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
-   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x04;
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_16bpp;
-   		i128mem.rbase_g_b[DATA_I] = 0xC5;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_pix_fmt;		MB;
+   		tmp2 = i128mem.rbase_g[DATA_I] & 0xf8;
+   		i128mem.rbase_g[DATA_I] = tmp2 | 0x04;			MB;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_16bpp;			MB;
+   		i128mem.rbase_g[DATA_I] = 0xC5;				MB;
    		break;
 	default: /* 8 bit */
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_pix_fmt;
-   		tmp2 = i128mem.rbase_g_b[DATA_I] & 0xf8;
-   		i128mem.rbase_g_b[DATA_I] = tmp2 | 0x03;
-   		i128mem.rbase_g_b[IDXL_I] = IBMRGB_8bpp;
-   		i128mem.rbase_g_b[DATA_I] = 0x00;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_pix_fmt;		MB;
+   		tmp2 = i128mem.rbase_g[DATA_I] & 0xf8;
+   		i128mem.rbase_g[DATA_I] = tmp2 | 0x03;			MB;
+   		i128mem.rbase_g[IDXL_I] = IBMRGB_8bpp;			MB;
+   		i128mem.rbase_g[DATA_I] = 0x00;				MB;
    		break;
    }
 
-   i128mem.rbase_g_b[IDXCTL_I] = tmpc;
-   i128mem.rbase_g_b[IDXH_I] = tmph;
-   i128mem.rbase_g_b[IDXL_I] = tmpl;
+   i128mem.rbase_g[IDXCTL_I] = tmpc;					MB;
+   i128mem.rbase_g[IDXH_I] = tmph;					MB;
+   i128mem.rbase_g[IDXL_I] = tmpl;					MB;
 
    return(TRUE);
 }
@@ -1046,30 +1045,30 @@ int freq;
    m = (unsigned char )best_m;
    p = (unsigned char )pi;
 
-   tmp = i128mem.rbase_g_b[INDEX_TI];
+   tmp = i128mem.rbase_g[INDEX_TI] & 0xFF;
 
    /*
     * Reset the clock data index
     */
-   i128mem.rbase_g_b[INDEX_TI] = TI_PLL_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = 0x00;
+   i128mem.rbase_g[INDEX_TI] = TI_PLL_CONTROL;				MB;
+   i128mem.rbase_g[DATA_TI] = 0x00;					MB;
 
    /*
     * Now output the clock frequency
     */
-   i128mem.rbase_g_b[INDEX_TI] = TI_PIXEL_CLOCK_PLL_DATA;
-   i128mem.rbase_g_b[DATA_TI] = n;
-   i128mem.rbase_g_b[DATA_TI] = m;
-   i128mem.rbase_g_b[DATA_TI] = p | TI_PLL_ENABLE;
+   i128mem.rbase_g[INDEX_TI] = TI_PIXEL_CLOCK_PLL_DATA;			MB;
+   i128mem.rbase_g[DATA_TI] = n;					MB;
+   i128mem.rbase_g[DATA_TI] = m;					MB;
+   i128mem.rbase_g[DATA_TI] = p | TI_PLL_ENABLE;			MB;
 
 #ifdef NOTYET
    /*
     * Program the MCLK to 57MHz
     */
-   i128mem.rbase_g_b[INDEX_TI] = TI_MCLK_PLL_DATA;
-   i128mem.rbase_g_b[DATA_TI] = 0x05;
-   i128mem.rbase_g_b[DATA_TI] = 0x05;
-   i128mem.rbase_g_b[DATA_TI] = 0x05;
+   i128mem.rbase_g[INDEX_TI] = TI_MCLK_PLL_DATA;
+   i128mem.rbase_g[DATA_TI] = 0x05;
+   i128mem.rbase_g[DATA_TI] = 0x05;
+   i128mem.rbase_g[DATA_TI] = 0x05;
 #endif
 
    switch (i128InfoRec.bitsPerPixel) {
@@ -1112,38 +1111,38 @@ int freq;
 		break;
    }
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_CURS_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = TI_CURS_SPRITE_ENABLE | TI_CURS_X_WINDOW_MODE;
+   i128mem.rbase_g[INDEX_TI] = TI_CURS_CONTROL;				MB;
+   i128mem.rbase_g[DATA_TI] = TI_CURS_SPRITE_ENABLE | TI_CURS_X_WINDOW_MODE;MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_TRUE_COLOR_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = 0x00;  /* 3025 mode, vga, 8/4bit */
+   i128mem.rbase_g[INDEX_TI] = TI_TRUE_COLOR_CONTROL;			MB;
+   i128mem.rbase_g[DATA_TI] = 0x00;  /* 3025 mode, vga, 8/4bit */	MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_VGA_SWITCH_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = 0x00;
+   i128mem.rbase_g[INDEX_TI] = TI_VGA_SWITCH_CONTROL;			MB;
+   i128mem.rbase_g[DATA_TI] = 0x00;					MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_GENERAL_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = 0x00;
+   i128mem.rbase_g[INDEX_TI] = TI_GENERAL_CONTROL;			MB;
+   i128mem.rbase_g[DATA_TI] = 0x00;					MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_MISC_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = misc_ctrl;
+   i128mem.rbase_g[INDEX_TI] = TI_MISC_CONTROL;				MB;
+   i128mem.rbase_g[DATA_TI] = misc_ctrl;				MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_AUXILIARY_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = aux_ctrl;
+   i128mem.rbase_g[INDEX_TI] = TI_AUXILIARY_CONTROL;			MB;
+   i128mem.rbase_g[DATA_TI] = aux_ctrl;					MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_COLOR_KEY_CONTROL;
-   i128mem.rbase_g_b[DATA_TI] = col_key;
+   i128mem.rbase_g[INDEX_TI] = TI_COLOR_KEY_CONTROL;			MB;
+   i128mem.rbase_g[DATA_TI] = col_key;					MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_MUX_CONTROL_1;
-   i128mem.rbase_g_b[DATA_TI] = mux1_ctrl;
+   i128mem.rbase_g[INDEX_TI] = TI_MUX_CONTROL_1;			MB;
+   i128mem.rbase_g[DATA_TI] = mux1_ctrl;				MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_MUX_CONTROL_2;
-   i128mem.rbase_g_b[DATA_TI] = mux2_ctrl;
+   i128mem.rbase_g[INDEX_TI] = TI_MUX_CONTROL_2;			MB;
+   i128mem.rbase_g[DATA_TI] = mux2_ctrl;				MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_INPUT_CLOCK_SELECT;
-   i128mem.rbase_g_b[DATA_TI] = TI_ICLK_PLL;
+   i128mem.rbase_g[INDEX_TI] = TI_INPUT_CLOCK_SELECT;			MB;
+   i128mem.rbase_g[DATA_TI] = TI_ICLK_PLL;				MB;
 
-   i128mem.rbase_g_b[INDEX_TI] = TI_OUTPUT_CLOCK_SELECT;
-   i128mem.rbase_g_b[DATA_TI] = oclk;
+   i128mem.rbase_g[INDEX_TI] = TI_OUTPUT_CLOCK_SELECT;			MB;
+   i128mem.rbase_g[DATA_TI] = oclk;					MB;
 
    xf86usleep(150000);
    return(TRUE);
