@@ -1,4 +1,7 @@
 XFree86 4.4.99.3 (xx March 2004)
+  62. Modify xf86CommonSpecialKey() to match xf86PostKbdEvent() in
+      differentiating between Alt+Ctrl+SPECIAL and Alt+Ctrl+Shift+SPECIAL
+      (Bugzilla #1298, Kean Johnston).
   61. Updates for the SCO port:
       - Update the transport layer code to allow the LOCAL SCO connection
         type to be used for more than just X protocol connections.
@@ -18829,7 +18832,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3210 2004/04/03 22:13:52 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3211 2004/04/03 22:26:22 dawes Exp $
 
 
 

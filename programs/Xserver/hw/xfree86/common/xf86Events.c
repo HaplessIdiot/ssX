@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.160 2004/02/13 23:58:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.161 2004/04/03 22:26:23 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1113,8 +1113,9 @@ special:
 Bool
 xf86CommonSpecialKey(int key, Bool down, int modifiers)
 {
-  if ((ModifierIsSet(ControlMask | AltMask)) ||
-      (ModifierIsSet(ControlMask | AltLangMask))) {
+  if (!(ModifierIsSet(ShiftMask)) &&
+      ((ModifierIsSet(ControlMask | AltMask)) ||
+       (ModifierIsSet(ControlMask | AltLangMask)))) {
       switch (key) {
 	
       case KEY_BackSpace:
