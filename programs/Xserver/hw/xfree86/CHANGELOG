@@ -1,4 +1,5 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 783. Xterm followup fix for Bugzilla #981 (Thomas Dickey).
  782. Fix EXT version of vertex arrays (DRI Project).
  781. Fix long-standing off-by-one bug in calculating dimensions of single
       (private) back cliprect when the window is partially offscreen in
@@ -18605,7 +18606,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3123 2004/01/30 14:31:59 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3124 2004/01/31 09:29:33 alanh Exp $
 
 
 
