@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.62 2001/08/18 12:31:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.63 2001/08/21 19:23:27 alanh Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -652,10 +652,11 @@ configureModuleSection (void)
 
             /* Add only those font backends which are referenced by fontpath */
             /* 'strstr(dFP,"/dir")' is meant as 'dFP =~ m(/dir\W)' */
-    	    if (defaultFontPath  &&  (
-    	        strcmp(*el, "type1")  == 0  &&  strstr(defaultFontPath, "/Type1")  ||
-    	        strcmp(*el, "speedo") == 0  &&  strstr(defaultFontPath, "/Speedo")
-    	       ))
+    	    if (defaultFontPath && (
+    	        (strcmp(*el, "type1")  == 0 &&
+		 strstr(defaultFontPath, "/Type1")) ||
+    	        (strcmp(*el, "speedo") == 0 &&
+		 strstr(defaultFontPath, "/Speedo"))))
 	    	ptr->mod_load_lst = (XF86LoadPtr)xf86addListItem(
 					(glp)ptr->mod_load_lst, (glp)module);
     	}
@@ -734,7 +735,8 @@ configureDDCMonitorSection (int screennum)
 	} else {
 	  len = 0;
 	}
-	if (ptr->mon_comment = xrealloc(ptr->mon_comment, len+strlen(displaySize_string)) ) {
+	if ((ptr->mon_comment =
+	     xrealloc(ptr->mon_comment, len+strlen(displaySize_string)))) {
 	  strcpy(ptr->mon_comment + len, displaySize_string);
 	}
       }

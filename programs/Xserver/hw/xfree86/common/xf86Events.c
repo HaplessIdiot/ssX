@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.115 2001/08/17 16:58:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.116 2001/08/17 22:08:12 tsi Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -534,8 +534,8 @@ special:
 	    if (keyboard == pointer)
 	      keyboard = NULL;
 	  }
-	  if (xf86Info.grabInfo.server.grabstate == SERVER_GRABBED &&
-	      (server = xf86Info.grabInfo.server.client) == pointer ||
+	  if ((xf86Info.grabInfo.server.grabstate == SERVER_GRABBED &&
+	      (server = xf86Info.grabInfo.server.client) == pointer) ||
 	      server == keyboard)
 	      server = NULL;
 
