@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.194 1998/12/05 14:39:53 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.195 1998/12/20 11:56:28 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -54,6 +54,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF4Bpp
 #define XF4Bpp			YES
 #endif
+/* 8/32bpp overlay module */
+#ifndef XF8_32Bpp
+#define XF8_32Bpp		YES
+#endif
 /* vgahw module */
 #ifndef XF86VgaHw
 #define XF86VgaHw		YES
@@ -101,6 +105,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* 4bpp module */
 #ifndef XF4Bpp
 #define XF4Bpp			YES
+#endif
+/* 8/32bpp overlay module */
+#ifndef XF8_32Bpp
+#define XF8_32Bpp		YES
 #endif
 /* vgahw module */
 #ifndef XF86VgaHw
@@ -176,6 +184,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* 4bpp module */
 #ifndef XF4Bpp
 #define XF4Bpp			YES
+#endif
+/* 8/32bpp overlay module */
+#ifndef XF8_32Bpp
+#define XF8_32Bpp		YES
 #endif
 /* vgahw module */
 #ifndef XF86VgaHw

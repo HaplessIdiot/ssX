@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/bitmap/module/Imakefile,v 1.1.2.1 1998/07/05 14:36:02 dawes Exp $
+XCOMM $XFree86: xc/lib/font/bitmap/module/Imakefile,v 1.2 1998/07/25 06:57:06 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -38,6 +38,6 @@ LinkSourceFile(fontink.c,..)
 
 ModuleObjectRule()
 LibraryModuleTarget(bitmap,$(OBJS))
-InstallLibraryModule(bitmap,$(MODULEDIR))
+InstallLibraryModule(bitmap,$(MODULEDIR),fonts)
 
 DependTarget()

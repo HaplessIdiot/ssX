@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.3.2.6 1998/07/04 13:32:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.8 1998/07/25 16:56:15 dawes Exp $ */
 
 /*
  *
@@ -137,7 +137,6 @@ LOOKUP	*list ;
 {
     LOOKUP	*l = list;
     itemPtr	i;
-    char		*p = NULL;
     char		*modname;
 
     if (!list)
@@ -153,30 +152,27 @@ LOOKUP	*list ;
 	  || strcmp(i->name,".ModuleInit") == 0
 #endif
 	  )
-	    {
+	{
 		char *origname=i->name;
 		/*
 		 * special handling for symbol name "ModuleInit"
 		 */
-		modname = _LoaderHandleToName(handle);
-		if (modname)
-			p = LoaderGetCanonicalName(modname);
-		if (p) 
-		    {
-			i->name = (char*)xf86loadermalloc(strlen(p) +
+		modname = _LoaderHandleToCanonicalName(handle);
+		if (modname) 
+		{
+			i->name = (char*)xf86loadermalloc(strlen(modname) +
 						strlen(origname) + 1);
 			if( i->name )
 			    {
 				/* XXX Is this right for PPC? */
-				strcpy(i->name,p);
+				strcpy(i->name,modname);
 				strcat(i->name,origname);
 			    }
-			xfree(p);
-		    }
+		}
 #ifdef DEBUG
 		ErrorF("Add module init function %s at %lx\n",i->name, l->offset);
 #endif
-	    }
+	}
 	i->address = (char *) l->offset ;
 	i->handle = handle ;
 	i->module = module ;

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/Speedo/module/Imakefile,v 1.1.2.1 1998/07/05 14:35:49 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Speedo/module/Imakefile,v 1.2 1998/07/25 06:56:55 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -39,6 +39,6 @@ LinkSourceFile(spencode.c,..)
 
 ModuleObjectRule()
 LibraryModuleTarget(speedo,$(OBJS))
-InstallLibraryModule(speedo,$(MODULEDIR))
+InstallLibraryModule(speedo,$(MODULEDIR),fonts)
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.82 1998/10/05 13:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.83 1998/11/22 10:37:11 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -163,6 +163,7 @@ void xf86LoaderReqSymbols(const char *, ...);
 void xf86Break1(void);
 void xf86Break2(void);
 void xf86Break3(void);
+void xf86SetBackingStore(ScreenPtr pScreen);
 
 /* xf86Mode.c */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.5 1998/11/15 04:30:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.6 1998/12/06 06:08:39 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -29,6 +29,11 @@ XAACopyArea(
     int dstx, int dsty )
 {
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+
+    if(pDstDrawable->bitsPerPixel != pSrcDrawable->bitsPerPixel) {
+	return (XAAFallbackOps.CopyArea(pSrcDrawable, pDstDrawable, pGC,
+   	    srcx, srcy, width, height, dstx, dsty));
+    }
 
     if(pDstDrawable->type == DRAWABLE_WINDOW) {
 	if((pSrcDrawable->type == DRAWABLE_WINDOW) ||

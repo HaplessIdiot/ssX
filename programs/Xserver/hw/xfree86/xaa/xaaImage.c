@@ -1,9 +1,10 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.7 1998/11/15 04:30:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaImage.c,v 1.8 1998/12/13 05:32:57 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
 #include "xf86_ansic.h"
 #include "xf86_OSproc.h"
+#include "servermd.h"
 
 #include "X.h"
 #include "scrnintstr.h"
@@ -301,6 +302,7 @@ XAAPutImage(
     if(!w || !h) return;
 
     if(((format == ZPixmap) && infoRec->WritePixmap &&
+	     (pDraw->bitsPerPixel == BitsPerPixel(depth)) &&
 	     CHECK_ROP(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_ROPSRC(pGC,infoRec->WritePixmapFlags) &&
 	     CHECK_PLANEMASK(pGC,infoRec->WritePixmapFlags) &&
@@ -367,12 +369,20 @@ XAAPutImage(
 	    }
 	} else { /* XYPixmap */
 	    int depth = pGC->depth;
-	    int i, numBox, increment;
+	    int numBox, increment;
+	    unsigned long i, mask;
 	    BoxPtr pntBox;
 	    
 	    srcwidth = ((leftPad + w + 31) >> 5) << 2;
 	    increment = h * srcwidth;
-	    for(i = 1 << (depth - 1); i ; i >>= 1, pImage += increment) {
+ 	    i = 1 << (depth - 1);
+	    mask = ~0;
+
+	    if((infoRec->Flags & OVERLAY_8_32) && (pGC->depth == 8)){
+		i = 0x80000000;  mask = 0xff000000;
+	    }
+
+	    for(; i & mask; i >>= 1, pImage += increment) {
 		if(i & pGC->planemask) {
 		    pntBox = pbox;
 		    numBox = nboxes;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.7 1998/12/13 05:32:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInit.c,v 1.8 1998/12/13 10:33:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -169,6 +169,13 @@ XAAInit(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     pScreenPriv->LeaveVT = pScrn->LeaveVT;
     pScrn->LeaveVT = XAALeaveVT;
 
+    pScreenPriv->WindowExposures = pScreen->WindowExposures;
+    if(infoRec->Flags & OVERLAY_8_32) {
+	pScreen->PaintWindowBackground = XAAPaintWindow8_32;
+	pScreen->PaintWindowBorder = XAAPaintWindow8_32;
+	pScreen->CopyWindow = XAACopyWindow8_32;
+	pScreen->WindowExposures = XAAWindowExposures8_32;
+    }
 
     infoRec->PreAllocMem = 
 		(unsigned char*)xalloc(MAX_PREALLOC_MEM);
@@ -204,6 +211,7 @@ XAACloseScreen (int i, ScreenPtr pScreen)
     pScreen->PaintWindowBackground = pScreenPriv->PaintWindowBackground;
     pScreen->PaintWindowBorder = pScreenPriv->PaintWindowBorder;
     pScreen->CopyWindow = pScreenPriv->CopyWindow;
+    pScreen->WindowExposures = pScreenPriv->WindowExposures;
     pScreen->CreatePixmap = pScreenPriv->CreatePixmap;
     pScreen->DestroyPixmap = pScreenPriv->DestroyPixmap;
     pScreen->BackingStoreFuncs.RestoreAreas = 
@@ -268,9 +276,29 @@ XAASaveAreas (
     WindowPtr pWin
 ){
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 
-    if(xf86Screens[pScreen->myNum]->vtSema && infoRec->ReadPixmap) {
+
+    if(IS_OFFSCREEN_PIXMAP(pPixmap)) {
+	BoxPtr pbox = REGION_RECTS(prgnSave);
+	int nboxes = REGION_NUM_RECTS(prgnSave);
+
+	(*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, GXcopy, ~0, -1);
+	while(nboxes--) {
+	    (*infoRec->SubsequentScreenToScreenCopy)(pScrn, 
+		pbox->x1 + xorg, pbox->y1 + yorg, 
+		pPixmap->drawable.x + pbox->x1, 
+		pPixmap->drawable.y + pbox->y1,
+		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+	    pbox++;
+	}
+	SET_SYNC_FLAG(infoRec);
+	return;
+    }
+
+    if(xf86Screens[pScreen->myNum]->vtSema && infoRec->ReadPixmap &&
+	(pWin->drawable.bitsPerPixel == pPixmap->drawable.bitsPerPixel)) {
 	BoxPtr pbox = REGION_RECTS(prgnSave);
 	int nboxes = REGION_NUM_RECTS(prgnSave);
 	int Bpp =  pPixmap->drawable.bitsPerPixel >> 3;
@@ -287,8 +315,9 @@ XAASaveAreas (
 	}
 	return;
     }
+
     XAA_SCREEN_PROLOGUE (pScreen, BackingStoreFuncs.SaveAreas);
-    if(xf86Screens[pScreen->myNum]->vtSema) {
+    if(pScrn->vtSema) {
 	SYNC_CHECK(&pWin->drawable);
     }
     (*pScreen->BackingStoreFuncs.SaveAreas) (
@@ -307,21 +336,47 @@ XAARestoreAreas (
     WindowPtr pWin 
 ){
     ScreenPtr pScreen = pPixmap->drawable.pScreen;
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
     XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCREEN(pScreen);
 
-    if(xf86Screens[pScreen->myNum]->vtSema && infoRec->WritePixmap &&
-			!(infoRec->WritePixmapFlags & NO_GXCOPY)) {
+    if(IS_OFFSCREEN_PIXMAP(pPixmap)) {
+	BoxPtr pbox = REGION_RECTS(prgnRestore);
+	int nboxes = REGION_NUM_RECTS(prgnRestore);
+	int pm = ~0;
+
+	if((infoRec->Flags & OVERLAY_8_32) && (pWin->drawable.depth == 24))
+	   pm = 0x00ffffff;
+
+	(*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, GXcopy, pm, -1);
+	while(nboxes--) {
+	    (*infoRec->SubsequentScreenToScreenCopy)(pScrn, 
+		pPixmap->drawable.x + pbox->x1 - xorg, 
+		pPixmap->drawable.y + pbox->y1 - yorg,
+		pbox->x1, pbox->y1, pbox->x2 - pbox->x1, pbox->y2 - pbox->y1);
+	    pbox++;
+	}
+	SET_SYNC_FLAG(infoRec);
+	return;
+    }
+
+    if(pScrn->vtSema && infoRec->WritePixmap &&
+	!(infoRec->WritePixmapFlags & NO_GXCOPY) &&
+	(pWin->drawable.bitsPerPixel == pPixmap->drawable.bitsPerPixel)) {
 	BoxPtr pbox = REGION_RECTS(prgnRestore);
 	int nboxes = REGION_NUM_RECTS(prgnRestore);
 	int Bpp =  pPixmap->drawable.bitsPerPixel >> 3;
 	unsigned char *srcp = (unsigned char*)pPixmap->devPrivate.ptr;
+	int pm = ~0;
 
+	if((infoRec->Flags & OVERLAY_8_32) && (pWin->drawable.depth == 24))
+	   pm = 0x00ffffff;
+ 
 	while(nboxes--) {
-	    (*infoRec->WritePixmap)(infoRec->pScrn, pbox->x1, pbox->y1, 
+	    (*infoRec->WritePixmap)(pScrn, pbox->x1, pbox->y1, 
 		pbox->x2 - pbox->x1, pbox->y2 - pbox->y1, 
 		srcp + (pPixmap->devKind * (pbox->y1 - yorg)) + 
 				((pbox->x1 - xorg) * Bpp), 
-		pPixmap->devKind, GXcopy, ~0, -1, 
+		pPixmap->devKind, GXcopy, pm, -1, 
 		pPixmap->drawable.bitsPerPixel, pPixmap->drawable.depth);
 	    pbox++;
 	}
@@ -329,7 +384,7 @@ XAARestoreAreas (
     }
 
     XAA_SCREEN_PROLOGUE (pScreen, BackingStoreFuncs.RestoreAreas);
-    if(xf86Screens[pScreen->myNum]->vtSema) {
+    if(pScrn->vtSema) {
 	SYNC_CHECK(&pWin->drawable);
     }
     (*pScreen->BackingStoreFuncs.RestoreAreas) (
@@ -372,9 +427,6 @@ XAACreatePixmap(ScreenPtr pScreen, int w, int h, int depth)
 				XAARemoveAreaCallback, pPix);	    
 	    if(area){
 		pPriv = XAA_GET_PIXMAP_PRIVATE(pPix);
-#if 0	
-ErrorF("Allocated one !!!!  (%i x %i) %x\n", w, h, pPix);
-#endif
 		pPix->drawable.x = area->box.x1;
 		pPix->drawable.y = area->box.y1;
 		pPix->drawable.width = w;

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ddc/Imakefile,v 1.1 1998/11/28 10:43:03 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -16,7 +16,7 @@ ModuleObjectRule()
 
 LibraryModuleTarget(ddc, $(OBJS))
 
-InstallLibraryModule(ddc,$(MODULEDIR))
+InstallLibraryModule(ddc,$(MODULEDIR),.)
 
 DependTarget()
 

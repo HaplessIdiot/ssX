@@ -23,7 +23,7 @@
  * 
  * Trident accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.1 1998/09/13 05:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_accel.c,v 1.2 1998/11/15 04:30:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -152,7 +152,9 @@ TridentAccelInit(ScreenPtr pScreen)
 
     TridentInitializeAccelerator(pScrn);
 
-    infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = PIXMAP_CACHE |
+		     OFFSCREEN_PIXMAPS |
+		     LINEAR_FRAMEBUFFER;
  
     infoPtr->Sync = TridentSync;
 
@@ -234,10 +236,12 @@ TridentAccelInit(ScreenPtr pScreen)
 				TridentSubsequentCPUToScreenColorExpand;
 #endif
 
-    infoPtr->WritePixmap = TridentWritePixmap;
-    infoPtr->WritePixmapFlags = NO_PLANEMASK;
-
-    if (!HAS_DST_TRANS) infoPtr->WritePixmapFlags |= NO_TRANSPARENCY;
+    if (pTrident->Chipset > TGUI9440AGi) {
+    	infoPtr->WritePixmap = TridentWritePixmap;
+    	infoPtr->WritePixmapFlags = NO_PLANEMASK;
+   
+    	if (!HAS_DST_TRANS) infoPtr->WritePixmapFlags |= NO_TRANSPARENCY;
+    }
 
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
@@ -488,13 +492,9 @@ TridentSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
-    TridentSetClippingRectangle(pScrn,x,y,((w+x)*(pScrn->bitsPerPixel>>3))-1,y+h-1);
-
 #if 0
-ErrorF("%d %d %d %d\n",x,y,w,h);
+    TridentSetClippingRectangle(pScrn,x,y,((w+x)*(pScrn->bitsPerPixel>>3))-1,y+h-1);
 #endif
-if (w == 0) return;
-if (h == 0) return;
 
     TGUI_DEST_XY(x,y);
     TGUI_DIM_XY(w,h);

@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.140 1998/10/04 11:48:52 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.141 1998/11/28 10:42:49 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -108,6 +108,7 @@ INSTPGMFLAGS =
 #if DoLoadableServer && HasDlopen
         LIBDL = DlLibrary
 #endif
+     LIBREGEX = RegexLibrary
 
 #if BuildXprint
 
@@ -547,6 +548,9 @@ XF1BPPLIB = $(XF86SRC)/xf1bpp/LibraryTargetName(xf1bpp)
 #if XF4Bpp
 XF4BPPLIB = $(XF86SRC)/xf4bpp/LibraryTargetName(xf4bpp)
 #endif
+#if XF8_32Bpp
+XF8_32BPPLIB = $(XF86SRC)/xf8_32bpp/LibraryTargetName(xf8_32bpp)
+#endif
 XF86DRIVERLIB = $(XF86SRC)/drivers/LibraryTargetName(driver)
 #if XF86Ramdac
 XF86RAMDACLIB = $(XF86SRC)/ramdac/LibraryTargetName(ramdac)
@@ -564,7 +568,7 @@ XF86RACLIB = $(XF86SRC)/rac/LibraryTargetName(rac)
 XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86RACLIB) $(XF86XAALIB) \
-	      $(XF86VGAHWLIB) $(XF4BPPLIB) $(XF1BPPLIB)
+	      $(XF86VGAHWLIB) $(XF8_32BPPLIB) $(XF4BPPLIB) $(XF1BPPLIB)
 #endif
 XF86LIBS  = $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB) 
 #if DoLoadableServer
@@ -577,7 +581,7 @@ XF86MAINLIBS = CFBLibs
 XF86SERVEROBJS = $(XF86DRVOBJS)
 XF86SERVERLIBS = $(XF86DRVLIBS) $(XF86LIBS) $(XF86LOADERLIB) $(XF86COMLIB) \
 		 $(XF86OSLIB) $(XF86MAINLIBS)
-XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL)
+XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #if HasParallelMake
 MakeMutex($(XF86SERVERSUBDIRS) $(XF86SERVERLIBS) $(XF86SERVERSYSLIBS))
 #endif

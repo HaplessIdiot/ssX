@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.13 1998/11/29 13:09:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.14 1998/12/06 06:08:22 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1490,7 +1490,7 @@ xf86MatchIsaInstances(const char *driverName, SymTabPtr chipsets,
     int foundChip = -1;
     SymTabRec *c;
     IsaChipsets *Chips;
-    int i,j;
+    int i;
     MessageType from = X_CONFIG;
 
     for (i = 0; i < numDevs; i++) {
@@ -1784,7 +1784,8 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
     pointer ret;
     int errmaj = 0, errmin = 0;
 
-    ret = LoadSubModule(pScrn->module, name, NULL, NULL, &errmaj, &errmin);
+    ret = LoadSubModule(pScrn->module, name, NULL, NULL, NULL, NULL,
+			&errmaj, &errmin);
     if (!ret)
 	LoaderErrorMsg(pScrn->name, name, errmaj, errmin);
     return ret;
@@ -1828,3 +1829,39 @@ void xf86Break2(void)
 void xf86Break3(void)
 {
 }
+
+
+typedef enum {
+   OPTION_BACKING_STORE
+} BSOpts;
+
+static OptionInfoRec BSOptions[] = {
+   { OPTION_BACKING_STORE, "BackingStore", OPTV_TRI,  {0}, FALSE },
+   { -1,                   NULL,           OPTV_NONE, {0}, FALSE }
+};
+
+void 
+xf86SetBackingStore(ScreenPtr pScreen)
+{
+    Bool useBS = FALSE;
+    MessageType from = X_DEFAULT;
+    ScrnInfoPtr pScrn = XF86SCRNINFO(pScreen);
+
+    xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, BSOptions);
+
+    /* check for commandline option here */
+    if (xf86bsEnableFlag) {
+	from = X_CMDLINE;
+	useBS = TRUE;
+    } else if (xf86bsDisableFlag) {
+	from = X_CMDLINE;
+	useBS = FALSE;
+    } else {
+	if (xf86GetOptValBool(BSOptions, OPTION_BACKING_STORE, &useBS))
+	    from = X_CONFIG;
+    }
+    pScreen->backingStoreSupport = useBS ? Always : NotUseful;
+    xf86DrvMsg(pScreen->myNum, from, "Backing store %s\n",
+		useBS ? "enabled" : "disabled");
+}
+

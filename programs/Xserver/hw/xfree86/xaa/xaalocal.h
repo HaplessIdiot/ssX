@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.14 1998/12/06 06:08:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.15 1998/12/13 05:32:59 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -46,6 +46,7 @@ typedef struct _XAAScreen {
    PaintWindowBackgroundProcPtr PaintWindowBackground;
    PaintWindowBorderProcPtr 	PaintWindowBorder;
    CopyWindowProcPtr 		CopyWindow;
+   WindowExposuresProcPtr	WindowExposures;
    BSFuncRec 			BackingStoreFuncs;
    CreatePixmapProcPtr 		CreatePixmap;
    DestroyPixmapProcPtr 	DestroyPixmap;
@@ -1333,6 +1334,27 @@ XAAGetRectClipBoxes(
     BoxPtr pboxClippedBase,
     int nrectFill,
     xRectangle *prectInit
+);
+
+void
+XAACopyWindow8_32(
+    WindowPtr pWin,
+    DDXPointRec ptOldOrg,
+    RegionPtr prgnSrc
+);
+
+void
+XAAPaintWindow8_32(
+  WindowPtr pWin,
+  RegionPtr prgn,
+  int what 
+);
+
+void
+XAAWindowExposures8_32(
+   WindowPtr pWin,
+   RegionPtr pReg,
+   RegionPtr pOtherReg
 );
 
 void

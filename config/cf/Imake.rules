@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.49 1998/11/15 04:29:53 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.50 1998/12/20 11:56:15 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -172,11 +172,11 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.49 1998/11/15 04:29:53 dawe
  * AllTarget			(depends)
  * StaticLibrary		(libpath,libname)
  * MakeMutex			(targets)
- * LinkBuildModule		(module)
- * LinkBuildNamedModule		(module,name)
+ * LinkBuildModule		(module,subdir)
+ * LinkBuildNamedModule		(module,name,subdir)
  * DynamicModuleTarget		(module,modlist)
- * InstallDynamicModule		(module,dest)
- * InstallDynamicNamedModule	(module,instname,dest)
+ * InstallDynamicModule		(module,dest,subdir)
+ * InstallDynamicNamedModule	(module,instname,dest,subdir)
  *
  *
  * The following are in specific <os>Lib.rules:
@@ -632,6 +632,77 @@ NormalProgramTarget(program,objects,NullParameter,locallibs,syslibs)
 									@@\
 ComplexProgramTarget(program)
 #endif /* SimpleProgramTarget */
+
+#ifndef SimpleProgramTarget_1
+#define	SimpleProgramTarget_1(program)					@@\
+           OBJS1 = program.o						@@\
+           SRCS1 = program.c						@@\
+									@@\
+ComplexProgramTarget_1(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_1 */
+#ifndef SimpleProgramTarget_2
+#define	SimpleProgramTarget_2(program)					@@\
+           OBJS2 = program.o						@@\
+           SRCS2 = program.c						@@\
+									@@\
+ComplexProgramTarget_2(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_2 */
+#ifndef SimpleProgramTarget_3
+#define	SimpleProgramTarget_3(program)					@@\
+           OBJS3 = program.o						@@\
+           SRCS3 = program.c						@@\
+									@@\
+ComplexProgramTarget_3(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_3 */
+#ifndef SimpleProgramTarget_4
+#define	SimpleProgramTarget_4(program)					@@\
+           OBJS4 = program.o						@@\
+           SRCS4 = program.c						@@\
+									@@\
+ComplexProgramTarget_4(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_4 */
+#ifndef SimpleProgramTarget_5
+#define	SimpleProgramTarget_5(program)					@@\
+           OBJS5 = program.o						@@\
+           SRCS5 = program.c						@@\
+									@@\
+ComplexProgramTarget_5(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_5 */
+#ifndef SimpleProgramTarget_6
+#define	SimpleProgramTarget_6(program)					@@\
+           OBJS6 = program.o						@@\
+           SRCS6 = program.c						@@\
+									@@\
+ComplexProgramTarget_6(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_6 */
+#ifndef SimpleProgramTarget_7
+#define	SimpleProgramTarget_7(program)					@@\
+           OBJS7 = program.o						@@\
+           SRCS7 = program.c						@@\
+									@@\
+ComplexProgramTarget_7(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_7 */
+#ifndef SimpleProgramTarget_8
+#define	SimpleProgramTarget_8(program)					@@\
+           OBJS8 = program.o						@@\
+           SRCS8 = program.c						@@\
+									@@\
+ComplexProgramTarget_8(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_8 */
+#ifndef SimpleProgramTarget_9
+#define	SimpleProgramTarget_9(program)					@@\
+           OBJS9 = program.o						@@\
+           SRCS9 = program.c						@@\
+									@@\
+ComplexProgramTarget_9(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_9 */
+#ifndef SimpleProgramTarget_10
+#define	SimpleProgramTarget_10(program)					@@\
+           OBJS10 = program.o						@@\
+           SRCS10 = program.c						@@\
+									@@\
+ComplexProgramTarget_10(program,$(LOCAL_LIBRARIES),NullParameter)
+#endif /* SimpleProgramTarget_10 */
 
 #ifndef SimpleCplusplusProgramTarget
 #define SimpleCplusplusProgramTarget(program)				@@\
@@ -2683,21 +2754,27 @@ MutexDirective:	targets
 
 #ifndef LinkBuildModule
 #ifdef UseInstalled
-#define LinkBuildModule(module) $(_NULLCMD_)
+#define LinkBuildModule(module,subdir) $(_NULLCMD_)
 #else
-#define LinkBuildModule(module) MakeDir($(BUILDMODULEDIR))		@@\
-	RemoveFile($(BUILDMODULEDIR)/module)				@@\
-	cd $(BUILDMODULEDIR) && $(LN) $(BUILDMODULETOP)/$(CURRENT_DIR)/module .
+#define LinkBuildModule(module,subdir)\
+	MakeDir($(BUILDMODULEDIR)/subdir)				@@\
+	RemoveFile($(BUILDMODULEDIR)/subdir/module)			@@\
+	@(UP="`$(REVPATH) subdir`"; set -x; \				@@\
+	  cd $(BUILDMODULEDIR)/subdir && \				@@\
+		$(LN) $(BUILDMODULETOP)/$${UP}$(CURRENT_DIR)/module .)
 #endif
 #endif /* LinkBuildModule */
 
 #ifndef LinkBuildNamedModule
 #ifdef UseInstalled
-#define LinkBuildNamedModule(module,name) $(_NULLCMD_)
+#define LinkBuildNamedModule(module,name,subdir) $(_NULLCMD_)
 #else
-#define LinkBuildNamedModule(module,name) MakeDir($(BUILDMODULEDIR))	@@\
-	RemoveFile($(BUILDMODULEDIR)/name)				@@\
-	cd $(BUILDMODULEDIR) && $(LN) $(BUILDMODULETOP)/$(CURRENT_DIR)/module name
+#define LinkBuildNamedModule(module,name,subdir)\
+	MakeDir($(BUILDMODULEDIR)/subdir)				@@\
+	RemoveFile($(BUILDMODULEDIR)/subdir/name)			@@\
+	@(UP="`$(REVPATH) subdir`"; set -x; \				@@\
+	  cd $(BUILDMODULEDIR)/subdir && \				@@\
+		$(LN) $(BUILDMODULETOP)/$${UP}$(CURRENT_DIR)/module name)
 #endif
 #endif /* LinkBuildNamedModule */
 
@@ -2781,49 +2858,49 @@ clean::									@@\
  * InstallDynamicModule - install a dynamic module
  */
 #ifndef InstallDynamicModule
-#define InstallDynamicModule(module,dest)				@@\
+#define InstallDynamicModule(module,dest,subdir)			@@\
 AllTarget(module)							@@\
-	LinkBuildModule(module)						@@\
+	LinkBuildModule(module,subdir)					@@\
 									@@\
 install:: module							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c module $(DESTDIR)dest
+	MakeDir($(DESTDIR)dest/subdir)					@@\
+	$(INSTALL) -c module $(DESTDIR)dest/subdir
 #endif
 
 #ifndef InstallDynamicNamedModule
-#define InstallDynamicNamedModule(module,instname,dest)			@@\
+#define InstallDynamicNamedModule(module,instname,dest,subdir)		@@\
 AllTarget(module)							@@\
-	LinkBuildNamedModule(module,instname)				@@\
+	LinkBuildNamedModule(module,instname,subdir)			@@\
 									@@\
 install:: module							@@\
-	MakeDir($(DESTDIR)dest)						@@\
-	$(INSTALL) -c module Concat($(DESTDIR)dest/,instname)
+	MakeDir($(DESTDIR)dest/subdir)					@@\
+	$(INSTALL) -c module $(DESTDIR)dest/subdir/instname
 #endif
 
 #ifndef InstallObjectModule
 #if !DoLoadableServer
-#define InstallObjectModule(module,dest)	/**/
+#define InstallObjectModule(module,dest,subdir)	/**/
 #else
 #if MakeDllModules
-#define InstallObjectModule(module,dest)				@@\
-InstallDynamicModule(Concat(module,_drv.so),dest)
+#define InstallObjectModule(module,dest,subdir)				@@\
+InstallDynamicModule(Concat(module,_drv.so),dest,subdir)
 #else
-#define InstallObjectModule(module,dest)				@@\
-InstallDynamicModule(Concat(module,_drv.o),dest)
+#define InstallObjectModule(module,dest,subdir)				@@\
+InstallDynamicModule(Concat(module,_drv.o),dest,subdir)
 #endif
 #endif
 #endif
 
 #ifndef InstallLibraryModule
 #if !DoLoadableServer
-#define InstallLibraryModule(module,dest)	/**/
+#define InstallLibraryModule(module,dest,subdir)	/**/
 #else
 #if MakeDllModules
-#define InstallLibraryModule(module,dest)				@@\
-InstallDynamicModule(Concat3(lib,module,.so),dest)
+#define InstallLibraryModule(module,dest,subdir)			@@\
+InstallDynamicModule(Concat3(lib,module,.so),dest,subdir)
 #else
-#define InstallLibraryModule(module,dest)				@@\
-InstallDynamicModule(ModuleLibraryTargetName(module),dest)
+#define InstallLibraryModule(module,dest,subdir)			@@\
+InstallDynamicModule(ModuleLibraryTargetName(module),dest,subdir)
 #endif
 #endif
 #endif

@@ -1,5 +1,5 @@
 XCOMM $TOG: svr4.cf /main/17 1997/06/08 20:08:31 kaleb $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.31 1998/01/24 16:56:15 hohndel Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.32 1998/07/25 05:57:17 dawes Exp $
 /*
  * A default OS name
  */
@@ -117,6 +117,11 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.31 1998/01/24 16:56:15 hohndel Exp $
 #if (OSMinorVersion == 0)
 #ifndef XawI18nDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING
+#endif
+#endif
+#ifdef i386Architecture
+#ifndef HasPosixRegex
+#define HasPosixRegex		NO
 #endif
 #endif
 #endif

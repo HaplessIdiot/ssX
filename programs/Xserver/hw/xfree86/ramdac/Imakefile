@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/Imakefile,v 1.5 1998/08/29 14:34:41 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/Imakefile,v 1.6 1998/09/19 12:15:01 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -28,7 +28,7 @@ LibraryModuleTarget(ramdac,$(OBJS))
 
 NormalLintTarget($(SRCS))
 
-InstallLibraryModule(ramdac,$(MODULEDIR))
+InstallLibraryModule(ramdac,$(MODULEDIR),.)
 
 ObjectFromSpecialSource(xf86BitOrder, ../xaa/xaaBitOrder, -DXAAReverseBitOrder=xf86ReverseBitOrder -DRAMDAC_MODULE)
 

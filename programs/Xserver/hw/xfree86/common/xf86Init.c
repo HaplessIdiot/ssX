@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.82 1998/10/05 13:23:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.83 1998/11/22 10:37:15 dawes Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -104,30 +104,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
   os2ServerVideoAccess();  /* See if we have access to the screen before doing anything */
 #endif
 
-#ifdef TESTLOADER
-  /* XXX Should use a standalone loader test program */
-  {
-    pointer p[3];
-    int errmaj, errmin;
-
-    LoaderInit();
-    ErrorF("Loading test1, 1\n");
-    p[0] = LoadModule("test1", TESTLOADERPATH, NULL, &errmaj, &errmin);
-    ErrorF("Loading test1, 2\n");
-    p[1] = LoadModule("test1", TESTLOADERPATH, NULL, &errmaj, &errmin);
-    ErrorF("Loading test1, 3\n");
-    p[2] = LoadModule("test1", TESTLOADERPATH, NULL, &errmaj, &errmin);
-    ErrorF("Unloading test1, 2\n");
-    UnloadModule(p[1]);
-    ErrorF("Unloading test1, 3\n");
-    UnloadModule(p[2]);
-    ErrorF("Unloading test1, 1\n");
-    UnloadModule(p[0]);
-    exit(0);
-  }
-#endif
-
-
   /* Do this early? */
   if (generation != serverGeneration) {
       xf86ScreenIndex = AllocateScreenPrivateIndex();
@@ -174,6 +150,39 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /* Initialise the loader */
     LoaderInit();
 
+#ifdef TESTING
+    {
+	char **list, **l;
+	const char *subdirs[] = {
+		"drivers",
+		NULL
+	};
+	const char *patlist[] = {
+		"(.*)_drv\\.so",
+		"(.*)_drv\\.o",
+		NULL
+	};
+	ErrorF("Getting module listing...\n");
+	list = LoaderListDirs(xf86ModulePath, NULL, NULL);
+	if (list)
+	    for (l = list; *l; l++)
+		ErrorF("module: %s\n", *l);
+	LoaderFreeDirList(list);
+	ErrorF("Getting video driver listing...\n");
+	list = LoaderListDirs(xf86ModulePath, subdirs, NULL);
+	if (list)
+	    for (l = list; *l; l++)
+		ErrorF("video driver: %s\n", *l);
+	LoaderFreeDirList(list);
+	ErrorF("Getting driver listing...\n");
+	list = LoaderListDirs(xf86ModulePath, NULL, patlist);
+	if (list)
+	    for (l = list; *l; l++)
+		ErrorF("video driver: %s\n", *l);
+	LoaderFreeDirList(list);
+    }
+#endif
+	
     /* Force load mandatory base modules */
     xf86LoadModules(baseModules, NULL);
     
@@ -807,6 +816,18 @@ ddxProcessArgument(int argc, char **argv, int i)
     xf86coFlag = TRUE;
     return 0;
   }
+  /* Notice the -bs flag, but allow it to pass to the dix layer */
+  if (!strcmp(argv[i], "-bs"))
+  {
+    xf86bsDisableFlag = TRUE;
+    return 0;
+  }
+  /* Notice the +bs flag, but allow it to pass to the dix layer */
+  if (!strcmp(argv[i], "+bs"))
+  {
+    xf86bsEnableFlag = TRUE;
+    return 0;
+  }
   /* Notice the -s flag, but allow it to pass to the dix layer */
   if (!strcmp(argv[i], "-s"))
   {
@@ -1055,7 +1076,8 @@ xf86LoadModules(char **list, pointer *optlist)
 	else
 	    opt = NULL;
 
-        if (!LoadModule(name, xf86ModulePath, opt, &errmaj, &errmin)) {
+        if (!LoadModule(name, xf86ModulePath, NULL, NULL, opt,
+			&errmaj, &errmin)) {
 	    ErrorF("Failed to load module \"%s\"\n", name);
 	    xfree(name);
             return FALSE;

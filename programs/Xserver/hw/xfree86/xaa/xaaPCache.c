@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.7 1998/11/15 04:30:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.8 1998/12/06 06:08:42 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -1147,8 +1147,8 @@ XAACheckStippleReducibility(PixmapPtr pPixmap)
     pPriv->pattern1 = bits[4] | (bits[5]<<8) | (bits[6]<<16) | (bits[7]<<24);
  
     if(w < 8) {
-	pPriv->pattern0 &= StippleMasks[w];
-	pPriv->pattern1 &= StippleMasks[w];
+	pPriv->pattern0 &= StippleMasks[w - 1];
+	pPriv->pattern1 &= StippleMasks[w - 1];
 
 	switch(w) {
 	case 1: pPriv->pattern0 |= (pPriv->pattern0 << 1);

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.30 1998/11/15 04:29:54 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.31 1998/12/20 11:56:20 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1918,6 +1918,7 @@ FontBaseObj(basename).Z:  FontSrc(basename)				@@\
 all::   Concat(subdir,.dir)						@@\
 									@@\
 Concat(subdir,.dir):							@@\
+	RemoveFile(Concat(subdir,.dir))					@@\
 	$(XKBCOMPCMD) -lfhlpR -o Concat(subdir,.dir) '*'		@@\
 									@@\
 InstallTarget(install,Concat(subdir,.dir),$(INSTDATFLAGS),basedir)	@@\

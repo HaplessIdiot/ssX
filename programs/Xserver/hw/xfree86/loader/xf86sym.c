@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.49 1998/12/05 14:40:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.50 1998/12/07 06:56:12 dawes Exp $ */
 
 /*
  *
@@ -39,7 +39,6 @@
 #include "xf86Xinput.h"
 #include "xisb.h"
 #include "xf86xv.h"
-#include "xf86_8plus24.h"
 #include "xf86cmap.h"
 #include "xf86fbman.h"
 #include "opaque.h"
@@ -287,6 +286,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86Break1)
    SYMFUNC(xf86Break2)
    SYMFUNC(xf86Break3)
+   SYMFUNC(xf86SetBackingStore)
 
    /* xf86Mode.c */
    SYMFUNC(xf86GetNearestClock)
@@ -339,10 +339,6 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FreeOffscreenArea)
    SYMFUNC(xf86AllocateOffscreenArea)
    SYMFUNC(xf86FBManagerRunning)
-
-   /* xf86_8plus24.c */
-   SYMFUNC(xf86Overlay8Plus24Init)
-   SYMFUNC(diOverlayFBfuncs)
 
    /* xf86cmap.c */
    SYMFUNC(xf86HandleColormaps)

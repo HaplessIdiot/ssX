@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.49 1998/10/02 06:15:00 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.50 1998/12/20 11:56:16 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -344,6 +344,16 @@ XCOMM the platform-specific parameters - edit site.def to change
 #define MallocLibraries	GnuMallocLibrary
 #else
 #define MallocLibraries	/**/
+#endif
+#endif
+#ifndef HasPosixRegex		/* Most modern platforms have it */
+#define HasPosixRegex		YES
+#endif
+#ifndef RegexLibrary
+#if HasPosixRegex
+#define RegexLibrary		/**/
+#else
+#define RegexLibrary		-lregex
 #endif
 #endif
 #ifndef HasTk
@@ -975,6 +985,13 @@ TCLIBDIR = TclLibDir
 #define MkdirHierCmd $(SHELL) $(CONFIGSRC)/util/mkdirhier.sh
 #endif
 #endif
+#ifndef RevPathCmd
+#ifdef UseInstalled		/* assume BINDIR in path */
+#define RevPathCmd revpath
+#else
+#define RevPathCmd $(CONFIGSRC)/util/revpath
+#endif
+#endif
 #ifndef TroffCmd
 #define TroffCmd groff -Tps
 #endif
@@ -1099,6 +1116,7 @@ TCLIBDIR = TclLibDir
             IMAKE = ImakeCmd
            DEPEND = DependCmd
         MKDIRHIER = MkdirHierCmd
+          REVPATH = RevPathCmd
     EXPORTLISTGEN = ExportListCmd
         CONFIGSRC = ConfigSrc
          IMAKESRC = $(CONFIGSRC)/imake

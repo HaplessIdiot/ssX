@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.4 1998/09/20 14:41:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.5 1998/12/13 10:33:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -28,6 +28,8 @@ typedef enum {
     LD_RESOLV_NOW		= 1,	/* finish one delay step */
     LD_RESOLV_FORCE		= 2	/* force checking... */
 } LoaderResolveOptions;
+
+#define DEFAULT_LIST ((char *)-1)
 
 typedef enum {
     ABI_CLASS_NONE		= 0,	/* No ABI used */
@@ -106,12 +108,14 @@ extern ExtensionModule extension[];
 #ifndef IN_LOADER
 /* Prototypes with opaque pointers for use by modules */
 pointer LoadModule(const char *, const char *, pointer, int *, int *);
-pointer LoadSubModule(pointer, const char *, const char *, pointer,
-		      int *, int *);
+pointer LoadSubModule(pointer, const char *, const char *, const char **,
+		      const char **, pointer, int *, int *);
 void UnloadModule(pointer);
 pointer DuplicateModule(pointer);
 void LoadFont(pointer);
 #endif
+char **LoaderListDirs(const char *, const char **, const char **);
+void LoaderFreeDirList(char **);
 void LoaderErrorMsg(const char *, const char *, int, int);
 void LoadExtension(ExtensionModule *);
 void LoaderRefSymLists(const char **, ...);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.2 1998/09/13 05:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.3 1998/11/15 04:30:33 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -113,8 +113,11 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3x4[GraphEngReg] = 0x80; 
     else
 	pReg->tridentRegs3x4[GraphEngReg] = 0x82; 
+
     outb(vgaIOBase+ 4, PCIReg);
-    pReg->tridentRegs3x4[PCIReg] = inb(vgaIOBase + 5) | 0x06; 
+    pReg->tridentRegs3x4[PCIReg] = inb(vgaIOBase + 5) & 0xF9; 
+    /* Enable PCI Bursting on capable chips */
+    if (pTrident->Chipset > TGUI9440AGi) pReg->tridentRegs3x4[PCIReg] |= 0x06;
 
     outb(0x3CE, MiscIntContReg);
     pReg->tridentRegs3CE[MiscIntContReg] = inb(0x3CF) | 0x04;
@@ -123,8 +126,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->tridentRegs3x4[PCIRetry] = inb(vgaIOBase + 5);
 
     if (pTrident->UsePCIRetry) {
-    	outb(vgaIOBase + 4, PCIRetry);
-    	pReg->tridentRegs3x4[PCIRetry] = inb(vgaIOBase + 5) | 0xDF;
+    	pReg->tridentRegs3x4[PCIRetry] |= 0xDF;
     	outb(vgaIOBase + 4, Enhancement0);
 	pReg->tridentRegs3x4[Enhancement0] = inb(vgaIOBase + 5) | 0x50;
     }

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/i2c/Imakefile,v 1.1 1998/09/05 06:36:56 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -18,7 +18,7 @@ ModuleObjectRule()
 
 LibraryModuleTarget(i2c, $(OBJS))
 
-InstallLibraryModule(i2c,$(MODULEDIR))
+InstallLibraryModule(i2c,$(MODULEDIR),.)
 
 DependTarget()
 

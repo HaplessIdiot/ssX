@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf1bpp/Imakefile,v 1.1.2.2 1998/06/27 14:48:22 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf1bpp/Imakefile,v 1.2 1998/07/25 16:59:23 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -107,7 +107,7 @@ ObjectFromSpecialSource(mfbbltG,mfbblt,-DMROP=0)
 ObjectFromSpecialSource(mfbtileC,mfbtile,-DMROP=Mcopy)
 ObjectFromSpecialSource(mfbtileG,mfbtile,-DMROP=0)
 
-InstallLibraryModule(xf1bpp,$(MODULEDIR))
+InstallLibraryModule(xf1bpp,$(MODULEDIR),.)
 InstallLinkKitLibrary(xf1bpp,$(LINKKITDIR)/lib)
 InstallLinkKitNonExecFile(mfbmap.h,$(LINKKITDIR)/include)
 InstallLinkKitNonExecFile(mfbunmap.h,$(LINKKITDIR)/include)

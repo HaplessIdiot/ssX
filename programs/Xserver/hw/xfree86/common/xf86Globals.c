@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.2 1998/07/25 16:55:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Globals.c,v 1.3 1998/11/22 10:37:14 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -156,6 +156,8 @@ char *xf86ServerName = "no-name";
 Bool xf86fpFlag = FALSE;
 Bool xf86coFlag = FALSE;
 Bool xf86sFlag = FALSE;
+Bool xf86bsEnableFlag = FALSE;
+Bool xf86bsDisableFlag = FALSE;
 char *xf86LayoutName = NULL;
 char *xf86ScreenName = NULL;
 Bool xf86ProbeOnly = FALSE;
