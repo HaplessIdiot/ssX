@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.40 2000/11/18 19:37:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.41 2000/11/21 23:45:56 mvojkovi Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -68,8 +68,6 @@ extern void sethae(unsigned long hae);
 # else
 #  define isJensen (axpSystem == JENSEN)
 # endif
-
-# define needSparse (_bus_base_sparse() != 0)
 
 # define BUS_BASE _bus_base()
 
