@@ -11,12 +11,58 @@
  */
 
 /*
- * Copyright © 2002 by the XFree86 Project, Inc.
- *
  * The pci.ids file and the data it contains are from the Linux PCI ID's
  * Project (http://pciids.sf.net/).  It is maintained by Martin Mares
  * <mj@ucw.cz> and other volunteers.  The pci.ids file contains no
  * copyright notice.
+ *
+ * This formatting of the data is:
+ *
+ * Copyright © 2002 by the XFree86 Project, Inc.
+ * All rights reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining
+ * a copy of this software and associated documentation files (the
+ * "Software"), to deal in the Software without restriction, including
+ * without limitation the rights to use, copy, modify, merge, publish,
+ * distribute, sublicense, and/or sell copies of the Software, and to
+ * permit persons to whom the Software is furnished to do so, subject
+ * to the following conditions:
+ *
+ *   1.  Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions, and the following disclaimer.
+ *
+ *   2.  Redistributions in binary form must reproduce the above copyright
+ *       notice, this list of conditions and the following disclaimer
+ *       in the documentation and/or other materials provided with the
+ *       distribution, and in the same place and form as other copyright,
+ *       license and disclaimer information.
+ *
+ *   3.  The end-user documentation included with the redistribution,
+ *       if any, must include the following acknowledgment: "This product
+ *       includes software developed by The XFree86 Project, Inc
+ *       (http://www.xfree86.org/) and its contributors", in the same
+ *       place and form as other third-party acknowledgments.  Alternately,
+ *       this acknowledgment may appear in the software itself, in the
+ *       same form and location as other such third-party acknowledgments.
+ *
+ *   4.  Except as contained in this notice, the name of The XFree86
+ *       Project, Inc shall not be used in advertising or otherwise to
+ *       promote the sale, use or other dealings in this Software without
+ *       prior written authorization from The XFree86 Project, Inc.
+ *
+ * THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+ * IN NO EVENT SHALL THE XFREE86 PROJECT, INC OR ITS CONTRIBUTORS BE
+ * LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY,
+ * OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT
+ * OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+ * BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+ * OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+ * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
  */
 
 #include "xf86PciInfo.h"
@@ -39,6 +85,9 @@ static const char pci_vendor_0059[] = "Tiger Jet Network Inc. (Wrong ID)";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_0070[] = "Hauppauge computer works Inc.";
+static const char pci_device_0070_4000[] = "WinTV PVR-350";
+static const char pci_device_0070_4001[] = "WinTV PVR-250 (v1)";
+static const char pci_device_0070_4009[] = "WinTV PVR-250";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_0100[] = "Ncipher Corp Ltd";
@@ -270,11 +319,22 @@ static const char pci_device_1001_9100[] = "INI-9100/9100W SCSI Host";
 static const char pci_vendor_1002[] = "ATI Technologies Inc";
 static const char pci_device_1002_4136[] = "Radeon IGP 320 M";
 static const char pci_device_1002_4144[] = "Radeon R300 AD [Radeon 9500 Pro]";
-static const char pci_device_1002_4145[] = "Radeon R300 AE [Radeon 9500 Pro]";
-static const char pci_device_1002_4146[] = "Radeon R300 AF [Radeon 9500 Pro]";
+static const char pci_device_1002_4145[] = "R300 AE [Radeon 9700 Pro]";
+static const char pci_device_1002_4146[] = "R300 AF [Radeon 9700 Pro]";
 static const char pci_device_1002_4147[] = "Radeon R300 AG [FireGL Z1/X1]";
+static const char pci_device_1002_4148[] = "Radeon R350 AH [Radeon 9800]";
+static const char pci_device_1002_4149[] = "Radeon R350 AI [Radeon 9800]";
+static const char pci_device_1002_4150[] = "RV350 AP [Radeon 9600]";
+static const char pci_device_1002_4151[] = "RV350 AQ [Radeon 9600]";
+static const char pci_device_1002_4152[] = "RV350 AR [Radeon 9600]";
 static const char pci_device_1002_4158[] = "68800AX [Mach32]";
-static const char pci_device_1002_4164[] = "Radeon R300 Secondary (DVI) output";
+static const char pci_device_1002_4164[] = "R300 AD [Radeon 9500 Pro] (Secondary)";
+static const char pci_device_1002_4165[] = "R300 AE [Radeon 9700 Pro] (Secondary)";
+static const char pci_device_1002_4166[] = "R300 AF [Radeon 9700 Pro] (Secondary)";
+static const char pci_device_1002_4168[] = "Radeon R350 [Radeon 9800] (Secondary)";
+static const char pci_device_1002_4170[] = "RV350 AP [Radeon 9600] (Secondary)";
+static const char pci_device_1002_4171[] = "RV350 AQ [Radeon 9600] (Secondary)";
+static const char pci_device_1002_4172[] = "RV350 AR [Radeon 9600] (Secondary)";
 static const char pci_device_1002_4242[] = "Radeon R200 BB [Radeon All in Wonder 8500DV]";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_1002_4242_1002_02aa[] = "Radeon 8500 AIW DV Edition";
@@ -442,35 +502,35 @@ static const char pci_subsys_1002_475a_1002_0087[] = "Rage 3D IIC";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_1002_475a_1002_475a[] = "Rage IIC AGP";
 #endif
-static const char pci_device_1002_4964[] = "Radeon R250 Id [Radeon 9000]";
-static const char pci_device_1002_4965[] = "Radeon R250 Ie [Radeon 9000]";
-static const char pci_device_1002_4966[] = "Radeon R250 If [Radeon 9000]";
+static const char pci_device_1002_4964[] = "Radeon RV250 Id [Radeon 9000]";
+static const char pci_device_1002_4965[] = "Radeon RV250 Ie [Radeon 9000]";
+static const char pci_device_1002_4966[] = "Radeon RV250 If [Radeon 9000]";
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_10f1_0002[] = "R250 If [Tachyon G9000 PRO]";
+static const char pci_subsys_1002_4966_10f1_0002[] = "RV250 If [Tachyon G9000 PRO]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_148c_2039[] = "R250 If [Radeon 9000 Pro Evil Commando]";
+static const char pci_subsys_1002_4966_148c_2039[] = "RV250 If [Radeon 9000 Pro Evil Commando]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_1509_9a00[] = "R250 If [Radeon 9000 AT009]";
+static const char pci_subsys_1002_4966_1509_9a00[] = "RV250 If [Radeon 9000 AT009]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_1681_0040[] = "R250 If [3D prophet 9000]";
+static const char pci_subsys_1002_4966_1681_0040[] = "RV250 If [3D prophet 9000]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_174b_7176[] = "R250 If [Sapphire Radeon 9000 Pro]";
+static const char pci_subsys_1002_4966_174b_7176[] = "RV250 If [Sapphire Radeon 9000 Pro]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_174b_7192[] = "R250 If [Radeon 9000 Atlantis]";
+static const char pci_subsys_1002_4966_174b_7192[] = "RV250 If [Radeon 9000 Atlantis]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_17af_2005[] = "R250 If [Excalibur Radeon 9000 Pro]";
+static const char pci_subsys_1002_4966_17af_2005[] = "RV250 If [Excalibur Radeon 9000 Pro]";
 #endif
 #ifdef INIT_SUBSYS_INFO
-static const char pci_subsys_1002_4966_17af_2006[] = "R250 If [Excalibur Radeon 9000]";
+static const char pci_subsys_1002_4966_17af_2006[] = "RV250 If [Excalibur Radeon 9000]";
 #endif
-static const char pci_device_1002_4967[] = "Radeon R250 Ig [Radeon 9000]";
-static const char pci_device_1002_496e[] = "Radeon R250 [Radeon 9000] (Secondary)";
+static const char pci_device_1002_4967[] = "Radeon RV250 Ig [Radeon 9000]";
+static const char pci_device_1002_496e[] = "Radeon RV250 [Radeon 9000] (Secondary)";
 static const char pci_device_1002_4c42[] = "3D Rage LT Pro AGP-133";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_1002_4c42_0e11_b0e8[] = "Rage 3D LT Pro";
@@ -572,17 +632,21 @@ static const char pci_device_1002_4e45[] = "Radeon R300 NE [Radeon 9500 Pro]";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_1002_4e45_1002_0002[] = "Radeon R300 NE [Radeon 9500 Pro]";
 #endif
-static const char pci_device_1002_4e46[] = "Radeon R300 NF [Radeon 9700]";
+static const char pci_device_1002_4e46[] = "RV350 NF [Radeon 9600]";
 static const char pci_device_1002_4e47[] = "Radeon R300 NG [FireGL X1]";
 static const char pci_device_1002_4e48[] = "Radeon R350 [Radeon 9800]";
+static const char pci_device_1002_4e49[] = "Radeon R350 [Radeon 9800]";
+static const char pci_device_1002_4e50[] = "RV350 [Mobility Radeon 9600 M10]";
+static const char pci_device_1002_4e52[] = "RV350 [Mobility Radeon 9600 M10]";
 static const char pci_device_1002_4e64[] = "Radeon R300 [Radeon 9700 Pro] (Secondary)";
 static const char pci_device_1002_4e65[] = "Radeon R300 [Radeon 9500 Pro] (Secondary)";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_1002_4e65_1002_0003[] = "Radeon R300 NE [Radeon 9500 Pro]";
 #endif
-static const char pci_device_1002_4e66[] = "Radeon R300 [Radeon 9700] (Secondary)";
+static const char pci_device_1002_4e66[] = "RV350 NF [Radeon 9600] (Secondary)";
 static const char pci_device_1002_4e67[] = "Radeon R300 [FireGL X1] (Secondary)";
 static const char pci_device_1002_4e68[] = "Radeon R350 [Radeon 9800] (Secondary)";
+static const char pci_device_1002_4e69[] = "Radeon R350 [Radeon 9800] (Secondary)";
 static const char pci_device_1002_5041[] = "Rage 128 PA/PRO";
 static const char pci_device_1002_5042[] = "Rage 128 PB/PRO AGP 2x";
 static const char pci_device_1002_5043[] = "Rage 128 PC/PRO AGP 4x";
@@ -6459,7 +6523,7 @@ static const char pci_subsys_1131_7146_11bd_000a[] = "DV500 Overlay";
 static const char pci_vendor_1132[] = "Mitel Corp.";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
-static const char pci_vendor_1133[] = "Eicon Technology Corporation";
+static const char pci_vendor_1133[] = "Eicon Networks Corporation";
 static const char pci_device_1133_7901[] = "EiconCard S90";
 static const char pci_device_1133_7902[] = "EiconCard S90";
 static const char pci_device_1133_7911[] = "EiconCard S91";
@@ -13221,11 +13285,20 @@ static const char pci_vendor_16ca[] = "CENATEK Inc";
 static const char pci_device_16ca_0001[] = "Rocket Drive DL";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_16cd[] = "Densitron Technologies";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_16df[] = "PIKA Technologies Inc.";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_16ec[] = "U.S. Robotics";
 static const char pci_device_16ec_3685[] = "Wireless Access PCI Adapter Model 022415";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_16f6[] = "VideoTele.com, Inc.";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_1702[] = "Internet Machines Corporation (IMC)";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_1705[] = "Digital First, Inc.";
@@ -13305,6 +13378,12 @@ static const char pci_device_1888_0301[] = "VMFX1 FPGA PMC module";
 static const char pci_device_1888_0601[] = "VSM2 dual PMC carrier";
 static const char pci_device_1888_0710[] = "VS14x series PowerPC PCI board";
 static const char pci_device_1888_0720[] = "VS24x series PowerPC PCI board";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_1894[] = "KNC One";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_18fb[] = "Resilience Corporation";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_1a08[] = "Sierra semiconductor";
@@ -13484,6 +13563,9 @@ static const char pci_device_4033_1360[] = "RTL8139 Ethernet";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_4143[] = "Digital Equipment Corp";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_4144[] = "Alpha Data";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_416c[] = "Aladdin Knowledge Systems";
@@ -13851,6 +13933,9 @@ static const char pci_vendor_5654[] = "VoiceTronix Pty Ltd";
 static const char pci_vendor_5700[] = "Netpower";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_5851[] = "Exacq Technologies";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_6356[] = "UltraStor";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
@@ -13884,6 +13969,10 @@ static const char pci_device_8086_0007[] = "82379AB";
 static const char pci_device_8086_0008[] = "Extended Express System Support Controller";
 static const char pci_device_8086_0039[] = "21145";
 static const char pci_device_8086_0122[] = "82437FX";
+static const char pci_device_8086_0326[] = "PCI Bridge Hub I/OxAPIC Interrupt Controller A";
+static const char pci_device_8086_0327[] = "PCI Bridge Hub I/OxAPIC Interrupt Controller B";
+static const char pci_device_8086_0329[] = "PCI Bridge Hub A";
+static const char pci_device_8086_032a[] = "PCI Bridge Hub B";
 static const char pci_device_8086_0482[] = "82375EB";
 static const char pci_device_8086_0483[] = "82424ZX [Saturn]";
 static const char pci_device_8086_0484[] = "82378IB [SIO ISA Bridge]";
@@ -13994,7 +14083,17 @@ static const char pci_device_8086_1012[] = "82546EB Gigabit Ethernet Controller 
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_8086_1012_8086_1012[] = "PRO/1000 MF Dual Port Server Adapter";
 #endif
+static const char pci_device_8086_1013[] = "82541EI Gigabit Ethernet Controller (Copper)";
+static const char pci_device_8086_1014[] = "82541ER Gigabit Ethernet Controller";
 static const char pci_device_8086_1015[] = "82540EM Gigabit Ethernet Controller (LOM)";
+static const char pci_device_8086_1016[] = "82540EP Gigabit Ethernet Controller (LOM)";
+static const char pci_device_8086_1017[] = "82540EP Gigabit Ethernet Controller (LOM)";
+static const char pci_device_8086_1018[] = "82541EI Gigabit Ethernet Controller";
+static const char pci_device_8086_1019[] = "82547EI Gigabit Ethernet Controller (LOM)";
+static const char pci_device_8086_101e[] = "82540EP Gigabit Ethernet Controller (Mobile)";
+static const char pci_device_8086_1026[] = "82545GM Gigabit Ethernet Controller";
+static const char pci_device_8086_1027[] = "82545GM Gigabit Ethernet Controller";
+static const char pci_device_8086_1028[] = "82545GM Gigabit Ethernet Controller";
 static const char pci_device_8086_1029[] = "82559 Ethernet Controller";
 static const char pci_device_8086_1030[] = "82559 InBusiness 10/100";
 static const char pci_device_8086_1031[] = "82801CAM (ICH3) PRO/100 VE (LOM) Ethernet Controller";
@@ -14040,7 +14139,15 @@ static const char pci_device_8086_1040[] = "536EP Data Fax Modem";
 static const char pci_subsys_8086_1040_16be_1040[] = "V.9X DSP Data Fax Modem";
 #endif
 static const char pci_device_8086_1043[] = "PRO/Wireless LAN 2100 3B Mini PCI Adapter";
+static const char pci_device_8086_1048[] = "Intel(R) PRO/10GbE LR Server Adapter";
 static const char pci_device_8086_1059[] = "82551QM Ethernet Controller";
+static const char pci_device_8086_1075[] = "82547GI Gigabit Ethernet Controller";
+static const char pci_device_8086_1076[] = "82541GI Gigabit Ethernet Controller";
+static const char pci_device_8086_1077[] = "82541GI Gigabit Ethernet Controller";
+static const char pci_device_8086_1078[] = "82541EI Gigabit Ethernet Controller";
+static const char pci_device_8086_1079[] = "82546GB Gigabit Ethernet Controller";
+static const char pci_device_8086_107a[] = "82546GB Gigabit Ethernet Controller";
+static const char pci_device_8086_107b[] = "82546GB Gigabit Ethernet Controller";
 static const char pci_device_8086_1130[] = "82815 815 Chipset Host Bridge and Memory Controller Hub";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_8086_1130_1025_1016[] = "Travelmate 612 TX";
@@ -15025,6 +15132,7 @@ static const char pci_device_8086_24db[] = "82801EB Ultra ATA Storage Controller
 static const char pci_device_8086_24dc[] = "82801EB LPC Interface Controller";
 static const char pci_device_8086_24dd[] = "82801EB USB2";
 static const char pci_device_8086_24de[] = "82801EB USB";
+static const char pci_device_8086_24df[] = "82801EB (ICH5R) SATA (cc=RAID)";
 static const char pci_device_8086_2500[] = "82820 820 (Camino) Chipset Host Bridge (MCH)";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_8086_2500_1028_0095[] = "Precision Workstation 220 Chipset";
@@ -15079,12 +15187,26 @@ static const char pci_device_8086_2570[] = "82865G/PE/P Processor to I/O Control
 static const char pci_device_8086_2571[] = "82865G/PE/P Processor to AGP Controller";
 static const char pci_device_8086_2572[] = "82865G Integrated Graphics Device";
 static const char pci_device_8086_2573[] = "82865G/PE/P Processor to PCI to CSA Bridge";
-static const char pci_device_8086_2576[] = "82864G/PE/P Processor to I/O Memory Interface";
+static const char pci_device_8086_2576[] = "82865G/PE/P Processor to I/O Memory Interface";
 static const char pci_device_8086_2578[] = "82875P Memory Controller Hub";
 static const char pci_device_8086_2579[] = "82875P Processor to AGP Controller";
 static const char pci_device_8086_257b[] = "82875P Processor to PCI to CSA Bridge";
 static const char pci_device_8086_257e[] = "82875P Processor to I/O Memory Interface";
+static const char pci_device_8086_25a1[] = "Enterprise Southbridge ISA Bridge";
+static const char pci_device_8086_25a2[] = "Enterprise Southbridge PATA";
+static const char pci_device_8086_25a3[] = "Enterprise Southbridge SATA cc=IDE";
+static const char pci_device_8086_25a4[] = "Enterprise Southbridge SMBUS";
+static const char pci_device_8086_25a6[] = "Enterprise Southbridge AC'97 Audio";
+static const char pci_device_8086_25a7[] = "Enterprise Southbridge AC'97 Modem";
+static const char pci_device_8086_25a9[] = "Enterprise Southbridge USB 1.1 UHCI";
+static const char pci_device_8086_25aa[] = "Enterprise Southbridge USB 1.1 UHCI";
+static const char pci_device_8086_25ab[] = "Enterprise Southbridge Watchdog Timer";
+static const char pci_device_8086_25ac[] = "Enterprise Southbridge IOxAPIC";
+static const char pci_device_8086_25ad[] = "Enterprise Southbridge USB 2.0 EHCI";
+static const char pci_device_8086_25ae[] = "Enterprise Southbridge Hublink PCI-X Bridge";
+static const char pci_device_8086_25b0[] = "Enterprise Southbridge SATA cc=RAID";
 static const char pci_device_8086_3092[] = "Integrated RAID";
+static const char pci_device_8086_3200[] = "GD31244 PCI-X SATA HBA";
 static const char pci_device_8086_3340[] = "82855PM Processor to I/O Controller";
 static const char pci_device_8086_3341[] = "82855PM Processor to AGP Controller";
 static const char pci_device_8086_3575[] = "82830 830 Chipset Host Bridge";
@@ -15102,6 +15224,18 @@ static const char pci_subsys_8086_3577_1014_0513[] = "ThinkPad A/T/X Series";
 static const char pci_device_8086_3578[] = "82830 830 Chipset Host Bridge";
 static const char pci_device_8086_3580[] = "82852/855GM Host Bridge";
 static const char pci_device_8086_3582[] = "82852/855GM Integrated Graphics Device";
+static const char pci_device_8086_3590[] = "Server Memory Controller Hub";
+static const char pci_device_8086_3591[] = "Memory Controller Hub Error Reporting Register";
+static const char pci_device_8086_3592[] = "Server Memory Controller Hub";
+static const char pci_device_8086_3594[] = "Memory Controller Hub DMA Controller";
+static const char pci_device_8086_3595[] = "Memory Controller Hub PCI Express Port A0";
+static const char pci_device_8086_3596[] = "Memory Controller Hub PCI Express Port A1";
+static const char pci_device_8086_3597[] = "Memory Controller Hub PCI Express Port B0";
+static const char pci_device_8086_3598[] = "Memory Controller Hub PCI Express Port B1";
+static const char pci_device_8086_3599[] = "Memory Controller Hub PCI Express Port C0";
+static const char pci_device_8086_359a[] = "Memory Controller Hub PCI Express Port C1";
+static const char pci_device_8086_359b[] = "Memory Controller Hub Extended Configuration Registers";
+static const char pci_device_8086_359e[] = "Workstation Memory Controller Hub";
 static const char pci_device_8086_5200[] = "EtherExpress PRO/100 Intelligent Server";
 static const char pci_device_8086_5201[] = "EtherExpress PRO/100 Intelligent Server";
 #ifdef INIT_SUBSYS_INFO
@@ -15640,7 +15774,7 @@ static const char pci_vendor_e000[] = "Winbond";
 static const char pci_device_e000_e000[] = "W89C940";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
-static const char pci_vendor_e159[] = "Tiger Jet Network Inc.";
+static const char pci_vendor_e159[] = "Individual Computers - Jens Schoenfeld";
 static const char pci_device_e159_0001[] = "Intel 537";
 #ifdef INIT_SUBSYS_INFO
 static const char pci_subsys_e159_0001_0059_0001[] = "128k ISDN-S/T Adapter";
@@ -15652,6 +15786,9 @@ static const char pci_device_e159_0002[] = "Tiger100APC ISDN chipset";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_e4bf[] = "EKF Elektronik GmbH";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_e55e[] = "Essence Technology, Inc.";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_ea01[] = "Eagle Technology";
@@ -15714,6 +15851,9 @@ static const char pci_vendor_febd[] = "Ultraview Corp.";
 static const char pci_vendor_feda[] = "Broadcom Inc (nee Epigram)";
 static const char pci_device_feda_a0fa[] = "BCM4210 iLine10 HomePNA 2.0";
 static const char pci_device_feda_a10e[] = "BCM4230 iLine10 HomePNA 2.0";
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const char pci_vendor_fede[] = "Fedetec Inc.";
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const char pci_vendor_fffe[] = "VMWare Inc";
@@ -25551,6 +25691,9 @@ static const pciSubsystemInfo pci_ss_info_e159_0001_0059_0003 =
 #undef pci_ss_info_0059_0003
 #define pci_ss_info_0059_0003 pci_ss_info_e159_0001_0059_0003
 #endif
+#define pci_ss_list_0070_4000 NULL
+#define pci_ss_list_0070_4001 NULL
+#define pci_ss_list_0070_4009 NULL
 #define pci_ss_list_0675_1700 NULL
 #define pci_ss_list_0675_1702 NULL
 #define pci_ss_list_09c1_0704 NULL
@@ -25712,8 +25855,19 @@ static const pciSubsystemInfo *pci_ss_list_1000_1960[] = {
 #define pci_ss_list_1002_4145 NULL
 #define pci_ss_list_1002_4146 NULL
 #define pci_ss_list_1002_4147 NULL
+#define pci_ss_list_1002_4148 NULL
+#define pci_ss_list_1002_4149 NULL
+#define pci_ss_list_1002_4150 NULL
+#define pci_ss_list_1002_4151 NULL
+#define pci_ss_list_1002_4152 NULL
 #define pci_ss_list_1002_4158 NULL
 #define pci_ss_list_1002_4164 NULL
+#define pci_ss_list_1002_4165 NULL
+#define pci_ss_list_1002_4166 NULL
+#define pci_ss_list_1002_4168 NULL
+#define pci_ss_list_1002_4170 NULL
+#define pci_ss_list_1002_4171 NULL
+#define pci_ss_list_1002_4172 NULL
 static const pciSubsystemInfo *pci_ss_list_1002_4242[] = {
 	&pci_ss_info_1002_4242_1002_02aa,
 	NULL
@@ -25898,6 +26052,9 @@ static const pciSubsystemInfo *pci_ss_list_1002_4e45[] = {
 #define pci_ss_list_1002_4e46 NULL
 #define pci_ss_list_1002_4e47 NULL
 #define pci_ss_list_1002_4e48 NULL
+#define pci_ss_list_1002_4e49 NULL
+#define pci_ss_list_1002_4e50 NULL
+#define pci_ss_list_1002_4e52 NULL
 #define pci_ss_list_1002_4e64 NULL
 static const pciSubsystemInfo *pci_ss_list_1002_4e65[] = {
 	&pci_ss_info_1002_4e65_1002_0003,
@@ -25906,6 +26063,7 @@ static const pciSubsystemInfo *pci_ss_list_1002_4e65[] = {
 #define pci_ss_list_1002_4e66 NULL
 #define pci_ss_list_1002_4e67 NULL
 #define pci_ss_list_1002_4e68 NULL
+#define pci_ss_list_1002_4e69 NULL
 #define pci_ss_list_1002_5041 NULL
 #define pci_ss_list_1002_5042 NULL
 #define pci_ss_list_1002_5043 NULL
@@ -31566,6 +31724,10 @@ static const pciSubsystemInfo *pci_ss_list_5333_9102[] = {
 #define pci_ss_list_8086_0008 NULL
 #define pci_ss_list_8086_0039 NULL
 #define pci_ss_list_8086_0122 NULL
+#define pci_ss_list_8086_0326 NULL
+#define pci_ss_list_8086_0327 NULL
+#define pci_ss_list_8086_0329 NULL
+#define pci_ss_list_8086_032a NULL
 #define pci_ss_list_8086_0482 NULL
 #define pci_ss_list_8086_0483 NULL
 #define pci_ss_list_8086_0484 NULL
@@ -31642,7 +31804,17 @@ static const pciSubsystemInfo *pci_ss_list_8086_1012[] = {
 	&pci_ss_info_8086_1012_8086_1012,
 	NULL
 };
+#define pci_ss_list_8086_1013 NULL
+#define pci_ss_list_8086_1014 NULL
 #define pci_ss_list_8086_1015 NULL
+#define pci_ss_list_8086_1016 NULL
+#define pci_ss_list_8086_1017 NULL
+#define pci_ss_list_8086_1018 NULL
+#define pci_ss_list_8086_1019 NULL
+#define pci_ss_list_8086_101e NULL
+#define pci_ss_list_8086_1026 NULL
+#define pci_ss_list_8086_1027 NULL
+#define pci_ss_list_8086_1028 NULL
 #define pci_ss_list_8086_1029 NULL
 #define pci_ss_list_8086_1030 NULL
 static const pciSubsystemInfo *pci_ss_list_8086_1031[] = {
@@ -31674,7 +31846,15 @@ static const pciSubsystemInfo *pci_ss_list_8086_1040[] = {
 	NULL
 };
 #define pci_ss_list_8086_1043 NULL
+#define pci_ss_list_8086_1048 NULL
 #define pci_ss_list_8086_1059 NULL
+#define pci_ss_list_8086_1075 NULL
+#define pci_ss_list_8086_1076 NULL
+#define pci_ss_list_8086_1077 NULL
+#define pci_ss_list_8086_1078 NULL
+#define pci_ss_list_8086_1079 NULL
+#define pci_ss_list_8086_107a NULL
+#define pci_ss_list_8086_107b NULL
 static const pciSubsystemInfo *pci_ss_list_8086_1130[] = {
 	&pci_ss_info_8086_1130_1025_1016,
 	&pci_ss_info_8086_1130_1043_8027,
@@ -32145,6 +32325,7 @@ static const pciSubsystemInfo *pci_ss_list_8086_24cd[] = {
 #define pci_ss_list_8086_24dc NULL
 #define pci_ss_list_8086_24dd NULL
 #define pci_ss_list_8086_24de NULL
+#define pci_ss_list_8086_24df NULL
 static const pciSubsystemInfo *pci_ss_list_8086_2500[] = {
 	&pci_ss_info_8086_2500_1028_0095,
 	&pci_ss_info_8086_2500_1043_801c,
@@ -32202,7 +32383,21 @@ static const pciSubsystemInfo *pci_ss_list_8086_2560[] = {
 #define pci_ss_list_8086_2579 NULL
 #define pci_ss_list_8086_257b NULL
 #define pci_ss_list_8086_257e NULL
+#define pci_ss_list_8086_25a1 NULL
+#define pci_ss_list_8086_25a2 NULL
+#define pci_ss_list_8086_25a3 NULL
+#define pci_ss_list_8086_25a4 NULL
+#define pci_ss_list_8086_25a6 NULL
+#define pci_ss_list_8086_25a7 NULL
+#define pci_ss_list_8086_25a9 NULL
+#define pci_ss_list_8086_25aa NULL
+#define pci_ss_list_8086_25ab NULL
+#define pci_ss_list_8086_25ac NULL
+#define pci_ss_list_8086_25ad NULL
+#define pci_ss_list_8086_25ae NULL
+#define pci_ss_list_8086_25b0 NULL
 #define pci_ss_list_8086_3092 NULL
+#define pci_ss_list_8086_3200 NULL
 #define pci_ss_list_8086_3340 NULL
 #define pci_ss_list_8086_3341 NULL
 static const pciSubsystemInfo *pci_ss_list_8086_3575[] = {
@@ -32218,6 +32413,18 @@ static const pciSubsystemInfo *pci_ss_list_8086_3577[] = {
 #define pci_ss_list_8086_3578 NULL
 #define pci_ss_list_8086_3580 NULL
 #define pci_ss_list_8086_3582 NULL
+#define pci_ss_list_8086_3590 NULL
+#define pci_ss_list_8086_3591 NULL
+#define pci_ss_list_8086_3592 NULL
+#define pci_ss_list_8086_3594 NULL
+#define pci_ss_list_8086_3595 NULL
+#define pci_ss_list_8086_3596 NULL
+#define pci_ss_list_8086_3597 NULL
+#define pci_ss_list_8086_3598 NULL
+#define pci_ss_list_8086_3599 NULL
+#define pci_ss_list_8086_359a NULL
+#define pci_ss_list_8086_359b NULL
+#define pci_ss_list_8086_359e NULL
 #define pci_ss_list_8086_5200 NULL
 static const pciSubsystemInfo *pci_ss_list_8086_5201[] = {
 	&pci_ss_info_8086_5201_8086_0001,
@@ -36470,8 +36677,11 @@ static const pciSubsystemInfo *pci_ss_list_16be[] = {
 };
 #endif
 #define pci_ss_list_16ca NULL
+#define pci_ss_list_16cd NULL
+#define pci_ss_list_16df NULL
 #define pci_ss_list_16ec NULL
 #define pci_ss_list_16f6 NULL
+#define pci_ss_list_1702 NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciSubsystemInfo *pci_ss_list_1705[] = {
 	&pci_ss_info_1705_0001,
@@ -36553,6 +36763,8 @@ static const pciSubsystemInfo *pci_ss_list_1852[] = {
 };
 #endif
 #define pci_ss_list_1888 NULL
+#define pci_ss_list_1894 NULL
+#define pci_ss_list_18fb NULL
 #define pci_ss_list_1a08 NULL
 #define pci_ss_list_1b13 NULL
 #define pci_ss_list_1c1c NULL
@@ -36631,6 +36843,7 @@ static const pciSubsystemInfo *pci_ss_list_4005[] = {
 };
 #define pci_ss_list_4033 NULL
 #define pci_ss_list_4143 NULL
+#define pci_ss_list_4144 NULL
 #define pci_ss_list_416c NULL
 #define pci_ss_list_4444 NULL
 #define pci_ss_list_4468 NULL
@@ -36718,6 +36931,7 @@ static const pciSubsystemInfo *pci_ss_list_5654[] = {
 };
 #endif
 #define pci_ss_list_5700 NULL
+#define pci_ss_list_5851 NULL
 #define pci_ss_list_6356 NULL
 #define pci_ss_list_6374 NULL
 #define pci_ss_list_6409 NULL
@@ -37014,6 +37228,7 @@ static const pciSubsystemInfo *pci_ss_list_e4bf[] = {
 	NULL
 };
 #endif
+#define pci_ss_list_e55e NULL
 #define pci_ss_list_ea01 NULL
 #define pci_ss_list_ea60 NULL
 #define pci_ss_list_eabb NULL
@@ -37030,10 +37245,40 @@ static const pciSubsystemInfo *pci_ss_list_ecc0[] = {
 #define pci_ss_list_fa57 NULL
 #define pci_ss_list_febd NULL
 #define pci_ss_list_feda NULL
+#define pci_ss_list_fede NULL
 #define pci_ss_list_fffe NULL
 #define pci_ss_list_ffff NULL
 #endif /* INIT_VENDOR_SUBSYS_INFO */
 #endif /* INIT_SUBSYS_INFO */
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const pciDeviceInfo pci_dev_info_0070_4000 = {
+	0x4000, pci_device_0070_4000,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_0070_4000,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_0070_4001 = {
+	0x4001, pci_device_0070_4001,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_0070_4001,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_0070_4009 = {
+	0x4009, pci_device_0070_4009,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_0070_4009,
+#else
+	NULL,
+#endif
+	0
+};
+#endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo pci_dev_info_0675_1700 = {
 	0x1700, pci_device_0675_1700,
@@ -38023,6 +38268,51 @@ static const pciDeviceInfo pci_dev_info_1002_4147 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_1002_4148 = {
+	0x4148, pci_device_1002_4148,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4148,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4149 = {
+	0x4149, pci_device_1002_4149,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4149,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4150 = {
+	0x4150, pci_device_1002_4150,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4150,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4151 = {
+	0x4151, pci_device_1002_4151,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4151,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4152 = {
+	0x4152, pci_device_1002_4152,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4152,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_1002_4158 = {
 	0x4158, pci_device_1002_4158,
 #ifdef INIT_SUBSYS_INFO
@@ -38036,6 +38326,60 @@ static const pciDeviceInfo pci_dev_info_1002_4164 = {
 	0x4164, pci_device_1002_4164,
 #ifdef INIT_SUBSYS_INFO
 	pci_ss_list_1002_4164,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4165 = {
+	0x4165, pci_device_1002_4165,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4165,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4166 = {
+	0x4166, pci_device_1002_4166,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4166,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4168 = {
+	0x4168, pci_device_1002_4168,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4168,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4170 = {
+	0x4170, pci_device_1002_4170,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4170,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4171 = {
+	0x4171, pci_device_1002_4171,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4171,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4172 = {
+	0x4172, pci_device_1002_4172,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4172,
 #else
 	NULL,
 #endif
@@ -38581,6 +38925,33 @@ static const pciDeviceInfo pci_dev_info_1002_4e48 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_1002_4e49 = {
+	0x4e49, pci_device_1002_4e49,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4e49,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4e50 = {
+	0x4e50, pci_device_1002_4e50,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4e50,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4e52 = {
+	0x4e52, pci_device_1002_4e52,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4e52,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_1002_4e64 = {
 	0x4e64, pci_device_1002_4e64,
 #ifdef INIT_SUBSYS_INFO
@@ -38621,6 +38992,15 @@ static const pciDeviceInfo pci_dev_info_1002_4e68 = {
 	0x4e68, pci_device_1002_4e68,
 #ifdef INIT_SUBSYS_INFO
 	pci_ss_list_1002_4e68,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_1002_4e69 = {
+	0x4e69, pci_device_1002_4e69,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_1002_4e69,
 #else
 	NULL,
 #endif
@@ -64746,6 +65126,42 @@ static const pciDeviceInfo pci_dev_info_8086_0122 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_8086_0326 = {
+	0x0326, pci_device_8086_0326,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_0326,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_0327 = {
+	0x0327, pci_device_8086_0327,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_0327,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_0329 = {
+	0x0329, pci_device_8086_0329,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_0329,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_032a = {
+	0x032a, pci_device_8086_032a,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_032a,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_8086_0482 = {
 	0x0482, pci_device_8086_0482,
 #ifdef INIT_SUBSYS_INFO
@@ -64953,10 +65369,100 @@ static const pciDeviceInfo pci_dev_info_8086_1012 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_8086_1013 = {
+	0x1013, pci_device_8086_1013,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1013,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1014 = {
+	0x1014, pci_device_8086_1014,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1014,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_8086_1015 = {
 	0x1015, pci_device_8086_1015,
 #ifdef INIT_SUBSYS_INFO
 	pci_ss_list_8086_1015,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1016 = {
+	0x1016, pci_device_8086_1016,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1016,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1017 = {
+	0x1017, pci_device_8086_1017,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1017,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1018 = {
+	0x1018, pci_device_8086_1018,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1018,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1019 = {
+	0x1019, pci_device_8086_1019,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1019,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_101e = {
+	0x101e, pci_device_8086_101e,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_101e,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1026 = {
+	0x1026, pci_device_8086_1026,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1026,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1027 = {
+	0x1027, pci_device_8086_1027,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1027,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1028 = {
+	0x1028, pci_device_8086_1028,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1028,
 #else
 	NULL,
 #endif
@@ -65124,10 +65630,82 @@ static const pciDeviceInfo pci_dev_info_8086_1043 = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_8086_1048 = {
+	0x1048, pci_device_8086_1048,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1048,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_8086_1059 = {
 	0x1059, pci_device_8086_1059,
 #ifdef INIT_SUBSYS_INFO
 	pci_ss_list_8086_1059,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1075 = {
+	0x1075, pci_device_8086_1075,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1075,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1076 = {
+	0x1076, pci_device_8086_1076,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1076,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1077 = {
+	0x1077, pci_device_8086_1077,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1077,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1078 = {
+	0x1078, pci_device_8086_1078,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1078,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_1079 = {
+	0x1079, pci_device_8086_1079,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_1079,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_107a = {
+	0x107a, pci_device_8086_107a,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_107a,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_107b = {
+	0x107b, pci_device_8086_107b,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_107b,
 #else
 	NULL,
 #endif
@@ -66105,6 +66683,15 @@ static const pciDeviceInfo pci_dev_info_8086_24de = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_8086_24df = {
+	0x24df, pci_device_8086_24df,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_24df,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_8086_2500 = {
 	0x2500, pci_device_8086_2500,
 #ifdef INIT_SUBSYS_INFO
@@ -66447,10 +67034,136 @@ static const pciDeviceInfo pci_dev_info_8086_257e = {
 #endif
 	0
 };
+static const pciDeviceInfo pci_dev_info_8086_25a1 = {
+	0x25a1, pci_device_8086_25a1,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a1,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25a2 = {
+	0x25a2, pci_device_8086_25a2,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a2,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25a3 = {
+	0x25a3, pci_device_8086_25a3,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a3,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25a4 = {
+	0x25a4, pci_device_8086_25a4,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a4,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25a6 = {
+	0x25a6, pci_device_8086_25a6,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a6,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25a7 = {
+	0x25a7, pci_device_8086_25a7,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a7,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25a9 = {
+	0x25a9, pci_device_8086_25a9,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25a9,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25aa = {
+	0x25aa, pci_device_8086_25aa,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25aa,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25ab = {
+	0x25ab, pci_device_8086_25ab,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25ab,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25ac = {
+	0x25ac, pci_device_8086_25ac,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25ac,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25ad = {
+	0x25ad, pci_device_8086_25ad,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25ad,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25ae = {
+	0x25ae, pci_device_8086_25ae,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25ae,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_25b0 = {
+	0x25b0, pci_device_8086_25b0,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_25b0,
+#else
+	NULL,
+#endif
+	0
+};
 static const pciDeviceInfo pci_dev_info_8086_3092 = {
 	0x3092, pci_device_8086_3092,
 #ifdef INIT_SUBSYS_INFO
 	pci_ss_list_8086_3092,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3200 = {
+	0x3200, pci_device_8086_3200,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3200,
 #else
 	NULL,
 #endif
@@ -66523,6 +67236,114 @@ static const pciDeviceInfo pci_dev_info_8086_3582 = {
 	0x3582, pci_device_8086_3582,
 #ifdef INIT_SUBSYS_INFO
 	pci_ss_list_8086_3582,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3590 = {
+	0x3590, pci_device_8086_3590,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3590,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3591 = {
+	0x3591, pci_device_8086_3591,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3591,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3592 = {
+	0x3592, pci_device_8086_3592,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3592,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3594 = {
+	0x3594, pci_device_8086_3594,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3594,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3595 = {
+	0x3595, pci_device_8086_3595,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3595,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3596 = {
+	0x3596, pci_device_8086_3596,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3596,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3597 = {
+	0x3597, pci_device_8086_3597,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3597,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3598 = {
+	0x3598, pci_device_8086_3598,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3598,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_3599 = {
+	0x3599, pci_device_8086_3599,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_3599,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_359a = {
+	0x359a, pci_device_8086_359a,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_359a,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_359b = {
+	0x359b, pci_device_8086_359b,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_359b,
+#else
+	NULL,
+#endif
+	0
+};
+static const pciDeviceInfo pci_dev_info_8086_359e = {
+	0x359e, pci_device_8086_359e,
+#ifdef INIT_SUBSYS_INFO
+	pci_ss_list_8086_359e,
 #else
 	NULL,
 #endif
@@ -68605,7 +69426,14 @@ static const pciDeviceInfo pci_dev_info_fffe_0710 = {
 #define pci_dev_list_0033 NULL
 #define pci_dev_list_003d NULL
 #define pci_dev_list_0059 NULL
-#define pci_dev_list_0070 NULL
+#ifdef VENDOR_INCLUDE_NONVIDEO
+static const pciDeviceInfo *pci_dev_list_0070[] = {
+	&pci_dev_info_0070_4000,
+	&pci_dev_info_0070_4001,
+	&pci_dev_info_0070_4009,
+	NULL
+};
+#endif
 #define pci_dev_list_0100 NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_0675[] = {
@@ -68743,8 +69571,19 @@ static const pciDeviceInfo *pci_dev_list_1002[] = {
 	&pci_dev_info_1002_4145,
 	&pci_dev_info_1002_4146,
 	&pci_dev_info_1002_4147,
+	&pci_dev_info_1002_4148,
+	&pci_dev_info_1002_4149,
+	&pci_dev_info_1002_4150,
+	&pci_dev_info_1002_4151,
+	&pci_dev_info_1002_4152,
 	&pci_dev_info_1002_4158,
 	&pci_dev_info_1002_4164,
+	&pci_dev_info_1002_4165,
+	&pci_dev_info_1002_4166,
+	&pci_dev_info_1002_4168,
+	&pci_dev_info_1002_4170,
+	&pci_dev_info_1002_4171,
+	&pci_dev_info_1002_4172,
 	&pci_dev_info_1002_4242,
 	&pci_dev_info_1002_4336,
 	&pci_dev_info_1002_4337,
@@ -68805,11 +69644,15 @@ static const pciDeviceInfo *pci_dev_list_1002[] = {
 	&pci_dev_info_1002_4e46,
 	&pci_dev_info_1002_4e47,
 	&pci_dev_info_1002_4e48,
+	&pci_dev_info_1002_4e49,
+	&pci_dev_info_1002_4e50,
+	&pci_dev_info_1002_4e52,
 	&pci_dev_info_1002_4e64,
 	&pci_dev_info_1002_4e65,
 	&pci_dev_info_1002_4e66,
 	&pci_dev_info_1002_4e67,
 	&pci_dev_info_1002_4e68,
+	&pci_dev_info_1002_4e69,
 	&pci_dev_info_1002_5041,
 	&pci_dev_info_1002_5042,
 	&pci_dev_info_1002_5043,
@@ -74151,6 +74994,8 @@ static const pciDeviceInfo *pci_dev_list_16ca[] = {
 	NULL
 };
 #endif
+#define pci_dev_list_16cd NULL
+#define pci_dev_list_16df NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_16ec[] = {
 	&pci_dev_info_16ec_3685,
@@ -74158,6 +75003,7 @@ static const pciDeviceInfo *pci_dev_list_16ec[] = {
 };
 #endif
 #define pci_dev_list_16f6 NULL
+#define pci_dev_list_1702 NULL
 #define pci_dev_list_1705 NULL
 #define pci_dev_list_170b NULL
 #define pci_dev_list_170c NULL
@@ -74216,6 +75062,8 @@ static const pciDeviceInfo *pci_dev_list_1888[] = {
 	NULL
 };
 #endif
+#define pci_dev_list_1894 NULL
+#define pci_dev_list_18fb NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_1a08[] = {
 	&pci_dev_info_1a08_0000,
@@ -74327,6 +75175,7 @@ static const pciDeviceInfo *pci_dev_list_4033[] = {
 };
 #endif
 #define pci_dev_list_4143 NULL
+#define pci_dev_list_4144 NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_416c[] = {
 	&pci_dev_info_416c_0100,
@@ -74529,6 +75378,7 @@ static const pciDeviceInfo *pci_dev_list_5555[] = {
 #endif
 #define pci_dev_list_5654 NULL
 #define pci_dev_list_5700 NULL
+#define pci_dev_list_5851 NULL
 #define pci_dev_list_6356 NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_6374[] = {
@@ -74559,6 +75409,10 @@ static const pciDeviceInfo *pci_dev_list_8086[] = {
 	&pci_dev_info_8086_0008,
 	&pci_dev_info_8086_0039,
 	&pci_dev_info_8086_0122,
+	&pci_dev_info_8086_0326,
+	&pci_dev_info_8086_0327,
+	&pci_dev_info_8086_0329,
+	&pci_dev_info_8086_032a,
 	&pci_dev_info_8086_0482,
 	&pci_dev_info_8086_0483,
 	&pci_dev_info_8086_0484,
@@ -74582,7 +75436,17 @@ static const pciDeviceInfo *pci_dev_list_8086[] = {
 	&pci_dev_info_8086_1010,
 	&pci_dev_info_8086_1011,
 	&pci_dev_info_8086_1012,
+	&pci_dev_info_8086_1013,
+	&pci_dev_info_8086_1014,
 	&pci_dev_info_8086_1015,
+	&pci_dev_info_8086_1016,
+	&pci_dev_info_8086_1017,
+	&pci_dev_info_8086_1018,
+	&pci_dev_info_8086_1019,
+	&pci_dev_info_8086_101e,
+	&pci_dev_info_8086_1026,
+	&pci_dev_info_8086_1027,
+	&pci_dev_info_8086_1028,
 	&pci_dev_info_8086_1029,
 	&pci_dev_info_8086_1030,
 	&pci_dev_info_8086_1031,
@@ -74601,7 +75465,15 @@ static const pciDeviceInfo *pci_dev_list_8086[] = {
 	&pci_dev_info_8086_103e,
 	&pci_dev_info_8086_1040,
 	&pci_dev_info_8086_1043,
+	&pci_dev_info_8086_1048,
 	&pci_dev_info_8086_1059,
+	&pci_dev_info_8086_1075,
+	&pci_dev_info_8086_1076,
+	&pci_dev_info_8086_1077,
+	&pci_dev_info_8086_1078,
+	&pci_dev_info_8086_1079,
+	&pci_dev_info_8086_107a,
+	&pci_dev_info_8086_107b,
 	&pci_dev_info_8086_1130,
 	&pci_dev_info_8086_1131,
 	&pci_dev_info_8086_1132,
@@ -74710,6 +75582,7 @@ static const pciDeviceInfo *pci_dev_list_8086[] = {
 	&pci_dev_info_8086_24dc,
 	&pci_dev_info_8086_24dd,
 	&pci_dev_info_8086_24de,
+	&pci_dev_info_8086_24df,
 	&pci_dev_info_8086_2500,
 	&pci_dev_info_8086_2501,
 	&pci_dev_info_8086_250b,
@@ -74748,7 +75621,21 @@ static const pciDeviceInfo *pci_dev_list_8086[] = {
 	&pci_dev_info_8086_2579,
 	&pci_dev_info_8086_257b,
 	&pci_dev_info_8086_257e,
+	&pci_dev_info_8086_25a1,
+	&pci_dev_info_8086_25a2,
+	&pci_dev_info_8086_25a3,
+	&pci_dev_info_8086_25a4,
+	&pci_dev_info_8086_25a6,
+	&pci_dev_info_8086_25a7,
+	&pci_dev_info_8086_25a9,
+	&pci_dev_info_8086_25aa,
+	&pci_dev_info_8086_25ab,
+	&pci_dev_info_8086_25ac,
+	&pci_dev_info_8086_25ad,
+	&pci_dev_info_8086_25ae,
+	&pci_dev_info_8086_25b0,
 	&pci_dev_info_8086_3092,
+	&pci_dev_info_8086_3200,
 	&pci_dev_info_8086_3340,
 	&pci_dev_info_8086_3341,
 	&pci_dev_info_8086_3575,
@@ -74757,6 +75644,18 @@ static const pciDeviceInfo *pci_dev_list_8086[] = {
 	&pci_dev_info_8086_3578,
 	&pci_dev_info_8086_3580,
 	&pci_dev_info_8086_3582,
+	&pci_dev_info_8086_3590,
+	&pci_dev_info_8086_3591,
+	&pci_dev_info_8086_3592,
+	&pci_dev_info_8086_3594,
+	&pci_dev_info_8086_3595,
+	&pci_dev_info_8086_3596,
+	&pci_dev_info_8086_3597,
+	&pci_dev_info_8086_3598,
+	&pci_dev_info_8086_3599,
+	&pci_dev_info_8086_359a,
+	&pci_dev_info_8086_359b,
+	&pci_dev_info_8086_359e,
 	&pci_dev_info_8086_5200,
 	&pci_dev_info_8086_5201,
 	&pci_dev_info_8086_530d,
@@ -75039,6 +75938,7 @@ static const pciDeviceInfo *pci_dev_list_e159[] = {
 };
 #endif
 #define pci_dev_list_e4bf NULL
+#define pci_dev_list_e55e NULL
 #define pci_dev_list_ea01 NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_ea60[] = {
@@ -75107,6 +76007,7 @@ static const pciDeviceInfo *pci_dev_list_feda[] = {
 	NULL
 };
 #endif
+#define pci_dev_list_fede NULL
 #ifdef VENDOR_INCLUDE_NONVIDEO
 static const pciDeviceInfo *pci_dev_list_fffe[] = {
 	&pci_dev_info_fffe_0710,
@@ -79637,10 +80538,19 @@ static const pciVendorInfo pciVendorInfoList[] = {
 	{0x16ca, pci_vendor_16ca, pci_dev_list_16ca},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x16cd, pci_vendor_16cd, pci_dev_list_16cd},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x16df, pci_vendor_16df, pci_dev_list_16df},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x16ec, pci_vendor_16ec, pci_dev_list_16ec},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x16f6, pci_vendor_16f6, pci_dev_list_16f6},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x1702, pci_vendor_1702, pci_dev_list_1702},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1705, pci_vendor_1705, pci_dev_list_1705},
@@ -79695,6 +80605,12 @@ static const pciVendorInfo pciVendorInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1888, pci_vendor_1888, pci_dev_list_1888},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x1894, pci_vendor_1894, pci_dev_list_1894},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x18fb, pci_vendor_18fb, pci_dev_list_18fb},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1a08, pci_vendor_1a08, pci_dev_list_1a08},
@@ -79772,6 +80688,9 @@ static const pciVendorInfo pciVendorInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x4143, pci_vendor_4143, pci_dev_list_4143},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x4144, pci_vendor_4144, pci_dev_list_4144},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x416c, pci_vendor_416c, pci_dev_list_416c},
@@ -79867,6 +80786,9 @@ static const pciVendorInfo pciVendorInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x5700, pci_vendor_5700, pci_dev_list_5700},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x5851, pci_vendor_5851, pci_dev_list_5851},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x6356, pci_vendor_6356, pci_dev_list_6356},
@@ -80008,6 +80930,9 @@ static const pciVendorInfo pciVendorInfoList[] = {
 	{0xe4bf, pci_vendor_e4bf, pci_dev_list_e4bf},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
+	{0xe55e, pci_vendor_e55e, pci_dev_list_e55e},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
 	{0xea01, pci_vendor_ea01, pci_dev_list_ea01},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
@@ -80037,6 +80962,9 @@ static const pciVendorInfo pciVendorInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0xfeda, pci_vendor_feda, pci_dev_list_feda},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0xfede, pci_vendor_fede, pci_dev_list_fede},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0xfffe, pci_vendor_fffe, pci_dev_list_fffe},
@@ -84570,10 +85498,19 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 	{0x16ca, pci_vendor_16ca, pci_ss_list_16ca},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x16cd, pci_vendor_16cd, pci_ss_list_16cd},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x16df, pci_vendor_16df, pci_ss_list_16df},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x16ec, pci_vendor_16ec, pci_ss_list_16ec},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x16f6, pci_vendor_16f6, pci_ss_list_16f6},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x1702, pci_vendor_1702, pci_ss_list_1702},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1705, pci_vendor_1705, pci_ss_list_1705},
@@ -84628,6 +85565,12 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1888, pci_vendor_1888, pci_ss_list_1888},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x1894, pci_vendor_1894, pci_ss_list_1894},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x18fb, pci_vendor_18fb, pci_ss_list_18fb},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x1a08, pci_vendor_1a08, pci_ss_list_1a08},
@@ -84705,6 +85648,9 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x4143, pci_vendor_4143, pci_ss_list_4143},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x4144, pci_vendor_4144, pci_ss_list_4144},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x416c, pci_vendor_416c, pci_ss_list_416c},
@@ -84800,6 +85746,9 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x5700, pci_vendor_5700, pci_ss_list_5700},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0x5851, pci_vendor_5851, pci_ss_list_5851},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0x6356, pci_vendor_6356, pci_ss_list_6356},
@@ -84941,6 +85890,9 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 	{0xe4bf, pci_vendor_e4bf, pci_ss_list_e4bf},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
+	{0xe55e, pci_vendor_e55e, pci_ss_list_e55e},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
 	{0xea01, pci_vendor_ea01, pci_ss_list_ea01},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
@@ -84970,6 +85922,9 @@ static const pciVendorSubsysInfo pciVendorSubsysInfoList[] = {
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0xfeda, pci_vendor_feda, pci_ss_list_feda},
+#endif
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{0xfede, pci_vendor_fede, pci_ss_list_fede},
 #endif
 #ifdef VENDOR_INCLUDE_NONVIDEO
 	{0xfffe, pci_vendor_fffe, pci_ss_list_fffe},
