@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.83 2002/12/01 02:11:17 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.103 2003/08/23 10:25:19 twini Exp $ */
 /*
  * Copyright 2001, 2002, 2003 by Thomas Winischhofer, Vienna, Austria.
  *
@@ -2691,7 +2691,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        }
     }
 
-    if(!xf86SetDepthBpp(pScrn, 8, 8, 8, pix24flags)) {
+    if(!xf86SetDepthBpp(pScrn, 0, 0, 0, pix24flags)) {
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 	    	"xf86SetDepthBpp() error\n");
 #ifdef SISDUALHEAD

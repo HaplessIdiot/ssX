@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.7tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_driver.c,v 1.8 2003/04/23 21:51:41 tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_driver.c $
- * $Revision: 1.8 $
- * $Author: tsi $
+ * $Revision: 1.9 $
+ * $Author: dawes $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -560,7 +560,7 @@ GX1PreInit(ScrnInfoPtr pScreenInfo, int flags)
    pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
    GeodeDebug(("GX1PreInit(2)!\n"));
    /* Determine depth, bpp, etc. */
-   if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, 0)) {
+   if (!xf86SetDepthBpp(pScreenInfo, 16, 0, 0, 0)) {
       return FALSE;
 
    } else {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.66tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.67 2003/07/24 22:08:28 tsi Exp $ */
 /*
  * Copyright 1999 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -423,6 +423,7 @@ ATIPreInit
     int              ApertureSize = 0x00010000U;
     int              ModeType = M_T_BUILTIN;
     LookupModeFlags  Strategy = LOOKUP_CLOSEST_CLOCK;
+    int              DefaultDepth = 0;
 
 #   define           pATIHW     (&pATI->OldHW)
 
@@ -518,11 +519,12 @@ ATIPreInit
 
         /* Set depth, bpp, etc. */
         if ((pATI->Chipset != ATI_CHIPSET_ATI) ||
-            (pATI->Chip < ATI_CHIP_264CT))
+            (pATI->Chip < ATI_CHIP_264CT)) {
             i = NoDepth24Support;       /* No support for >8bpp either */
-        else
+	    DefaultDepth = 8;
+        } else
             i = Support24bppFb | Support32bppFb;
-        if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, i))
+        if (!xf86SetDepthBpp(pScreenInfo, DefaultDepth, 0, 0, i))
             return FALSE;
 
         for (j = 0;  ;  j++)

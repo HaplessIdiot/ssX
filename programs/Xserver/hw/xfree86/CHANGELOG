@@ -1,10 +1,13 @@
 XFree86 4.3.99.11 (xx August 2003)
+ 393. Change the XFree86 server's global default depth to 16, and change most
+      drivers that support the three common depths (8, 16, 24) to defer to
+      the global default rather than specifying their own (David Dawes).
  392. Fixed a crash when _XIMProtoOpenIM(), hich is called through XOpenIM() 
       API when protocol IM is being set up,  fails (Bugzilla #618, 
       Hisashi MIYASHITA).
  391. Fixed a possible source of Sig11 in Jamstudio driver (BugzillaR #617,
       Jonathan Hough, Egbert Eich).
- 390. Fixed building without RENDER support (BugzillaR #306, Mattieu Herrb, 
+ 390. Fixed building without RENDER support (BugzillaR #306, Matthieu Herrb, 
       Egbert Eich).
  389. Pass pointer obtained by Xalloc() to Xfree() not the one that may be
       manipulated in the mean time (Bugzilla #614, Alan Coopersmith).
@@ -17587,7 +17590,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2815 2003/08/22 13:32:29 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2816 2003/08/22 19:27:24 eich Exp $
 
 
 

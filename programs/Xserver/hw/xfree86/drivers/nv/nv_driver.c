@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.111 2003/07/31 20:24:29 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.112 2003/08/18 21:40:04 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -902,10 +902,9 @@ NVPreInit(ScrnInfoPtr pScrn, int flags)
 
     /*
      * The first thing we should figure out is the depth, bpp, etc.
-     * Our default depth is 8, so pass it to the helper function.
      */
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support32bppFb)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support32bppFb)) {
 	xf86FreeInt10(pNv->pInt);
 	return FALSE;
     } else {

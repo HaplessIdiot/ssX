@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.85 2003/06/12 17:25:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.86 2003/07/16 01:38:44 dawes Exp $ */
 
 /*
  * Reformatted with GNU indent (2.2.8), using the following options:
@@ -661,7 +661,7 @@ I810PreInit(ScrnInfoPtr pScrn, int flags)
    pScrn->monitor = pScrn->confScreen->monitor;
 
    flags24 = Support24bppFb | PreferConvert32to24 | SupportConvert32to24;
-   if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
+   if (!xf86SetDepthBpp(pScrn, 0, 0, 0, flags24)) {
       return FALSE;
    } else {
       switch (pScrn->depth) {

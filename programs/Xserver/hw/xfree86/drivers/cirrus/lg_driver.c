@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.43tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.44 2003/04/23 21:51:35 tsi Exp $ */
 
 #define EXPERIMENTAL
 
@@ -471,10 +471,9 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/*
 	 * The first thing we should figure out is the depth, bpp, etc.
-	 * Our default depth is 8, so pass it to the helper function.
 	 * We support both 24bpp and 32bpp layouts, so indicate that.
 	 */
-	if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+	if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb |
 							SupportConvert32to24 | PreferConvert32to24)) {
 		return FALSE;
     }

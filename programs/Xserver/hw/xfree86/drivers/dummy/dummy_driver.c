@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.2 2003/04/23 21:51:35 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/dummy/dummy_driver.c,v 1.3 2003/05/19 03:48:19 tsi Exp $ */
 
 /*
  * Copyright 2002, SuSE Linux AG, Author: Egbert Eich
@@ -323,7 +323,7 @@ DUMMYPreInit(ScrnInfoPtr pScrn, int flags)
     
     pScrn->monitor = pScrn->confScreen->monitor;
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8,  Support24bppFb | Support32bppFb))
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0,  Support24bppFb | Support32bppFb))
 	return FALSE;
     else {
 	/* Check that the returned depth is one we support */

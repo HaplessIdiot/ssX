@@ -30,7 +30,7 @@ CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * Copyright 2002 Shigehiro Nomura
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.67tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.68 2003/04/23 21:51:40 tsi Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -962,7 +962,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
 	      neoDoDDC1(pScrn);
     }
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, bppSupport ))
+    if (!xf86SetDepthBpp(pScrn, 16, 0, 0, bppSupport ))
 	return FALSE;
     else {
 	/* Check that the returned depth is one we support */

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.6tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_driver.c,v 1.7 2003/04/23 21:51:41 tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_driver.c $
- * $Revision: 1.7 $
- * $Author: tsi $
+ * $Revision: 1.8 $
+ * $Author: dawes $
  *
  * File Contents: This is the main module configures the interfacing 
  *                with the X server. The individual modules will be 
@@ -632,12 +632,12 @@ GX2PreInit(ScrnInfoPtr pScreenInfo, int flags)
    SupportFlags = Support24bppFb | Support32bppFb;
    GeodeDebug(("GX2PreInit(2)!\n"));
    /* Determine depth, bpp, etc. */
-   if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, SupportFlags)) {
+   if (!xf86SetDepthBpp(pScreenInfo, 0, 0, 0, SupportFlags)) {
       return FALSE;
    } else {
       if (!((pScreenInfo->depth == 8) ||
 	    (pScreenInfo->depth == 16) ||
-	    (pScreenInfo->depth == 24) || (pScreenInfo->depth == 32))) {
+	    (pScreenInfo->depth == 24))) {
 	 /* Depth not supported */
 	 DEBUGMSG(1, (pScreenInfo->scrnIndex, X_ERROR,
 		      "Given depth (%d bpp) is not supported by this driver\n",

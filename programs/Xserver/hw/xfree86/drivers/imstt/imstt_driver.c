@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.19 2002/07/24 01:47:29 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/imstt_driver.c,v 1.20 2002/09/24 15:23:55 tsi Exp $ */
 
 /*
  *	Copyright 2000	Ani Joshi <ajoshi@unixbox.com>
@@ -330,7 +330,7 @@ static Bool IMSTTPreInit(ScrnInfoPtr pScrn, int flags)
 
 	pScrn->monitor = pScrn->confScreen->monitor;
 
-	if (!xf86SetDepthBpp(pScrn, 8, 8, 8, Support24bppFb | Support32bppFb |
+	if (!xf86SetDepthBpp(pScrn, 0, 0, 0, Support24bppFb | Support32bppFb |
 			     SupportConvert32to24 | PreferConvert32to24))
 		return FALSE;
 	else {

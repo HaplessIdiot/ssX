@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.129 2003/03/25 04:18:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.130 2003/08/22 03:25:02 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -405,6 +405,14 @@ xf86AddPixFormat(ScrnInfoPtr pScrn, int depth, int bpp, int pad)
 /* Can the screen handle 24bpp pixmaps for 32bpp fb */
 #define DO_PIX24FOR32(f) ((f & Support32bppFb) && (f & SupportConvert24to32))
 
+#ifndef GLOBAL_DEFAULT_DEPTH
+#define GLOBAL_DEFAULT_DEPTH 16
+#endif
+
+#ifndef GLOBAL_DEFAULT_FBBPP
+#define GLOBAL_DEFAULT_FBBPP 16
+#endif
+
 Bool
 xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 		int depth24flags)
@@ -459,8 +467,8 @@ xf86SetDepthBpp(ScrnInfoPtr scrp, int depth, int dummy, int fbbpp,
 	    if (depth > 0)
 		scrp->depth = depth;
 	} else {
-	    scrp->bitsPerPixel = 8;
-	    scrp->depth = 8;
+	    scrp->bitsPerPixel = GLOBAL_DEFAULT_FBBPP;
+	    scrp->depth = GLOBAL_DEFAULT_DEPTH;
 	}
     }
 

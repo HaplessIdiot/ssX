@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.234 2003/06/30 16:52:56 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.235 2003/07/01 12:40:02 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1439,7 +1439,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     if (pMga->SecondCrtc)
 	flags24 = Support32bppFb;
 
-    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24)) {
+    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, flags24)) {
 	return FALSE;
     } else {
 	/* Check that the returned depth is one we support */

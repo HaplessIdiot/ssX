@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.51 2003/03/18 23:08:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/rendition.c,v 1.54 2003/08/22 19:27:29 eich Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -526,7 +526,7 @@ renditionPreInit(ScrnInfoPtr pScreenInfo, int flags)
     pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
     
     /* determine depth, bpp, etc. */
-    if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, Support32bppFb))
+    if (!xf86SetDepthBpp(pScreenInfo, 0, 0, 0, Support32bppFb))
         return FALSE;
 
     if (pScreenInfo->depth == 15)

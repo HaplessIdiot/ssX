@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_merge.c,v 1.2 2002/09/18 21:25:45 tsi Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -293,7 +293,7 @@ MGAPreInitMergedFB(ScrnInfoPtr pScrn1, int flags)
     pScrn->AdjustFrame = MGAAdjustMergeFrames;
     pScrn1->AdjustFrame = MGAAdjustMergeFrames;
     
-/*    if (!xf86SetDepthBpp(pScrn, 8, 8, 8, flags24))   FIXME:have to copy result form scrn1 
+/*    if (!xf86SetDepthBpp(pScrn, 0, 0, 0, flags24))   FIXME:have to copy result form scrn1 
   if (!xf86SetWeight(pScrn, zeros, zeros)) {
 */
 
