@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.4 1994/09/07 15:47:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.5 1994/09/11 00:36:43 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -267,7 +267,7 @@ agxPartMemToVid( dst, dstWidth, src, srcWidth, w, h )
         /*
          * Output line till back switch
          */
-        if( FALSE && multiCopy ) {
+        if( multiCopy ) {
            unsigned int size = count * w;
            MemToBus( curvm, src, size );
            count = 0;
@@ -462,15 +462,15 @@ agxImageWriteNoMem(x, y, w, h, psrc, pwidth, alu, planemask)
     unsigned int	alu;
     unsigned int	planemask;
 {
-    unsigned short      srcPWidth;
-    unsigned short      srcBWidth;
-    short  		srcBWidthShift;
-    unsigned short      srcStripHeight;
+    unsigned int      srcPWidth;
+    unsigned int      srcBWidth;
+    int  		srcBWidthShift;
+    unsigned int      srcStripHeight;
     unsigned int        srcMaxLines;
-    unsigned short      srcLine;
-    unsigned short      numVertStrips;
-    unsigned short      lastVStripHeight;
-    unsigned short      strip;
+    unsigned int      srcLine;
+    unsigned int      numVertStrips;
+    unsigned int      lastVStripHeight;
+    unsigned int      strip;
 
     /*
      * Unlike the 8514 clan, the XGA architecture does not support
@@ -817,32 +817,33 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     unsigned int	alu;
     unsigned int 	planemask;
 {
-    unsigned short      srcPWidth;
-    unsigned short      srcBWidth;
-    short  		srcBWidthShift;
-    unsigned short      srcStripHeight;
+    unsigned int      srcPWidth;
+    unsigned int      srcBWidth;
+    int  		srcBWidthShift;
+    unsigned int      srcStripHeight;
     unsigned int        srcMaxLines;
-    unsigned short      srcLine;
-    unsigned short      numHorizTiles;
-    unsigned short      firstHTileWidth = 0;
-    unsigned short      lastHTileWidth = 0;
-    unsigned short      firstBWidth = 0;
-    unsigned short      lastBWidth = 0;
-    unsigned short      numVertTiles;
+    unsigned int      srcLine;
+    unsigned int      numHorizTiles;
+    unsigned int      firstHTileWidth = 0;
+    unsigned int      lastHTileWidth = 0;
+    unsigned int      firstBWidth = 0;
+    unsigned int      lastBWidth = 0;
+    unsigned int      numVertTiles;
     unsigned int        lastVTileHeight;
-    unsigned short      numLastVTileStrips;
+    unsigned int      numLastVTileStrips;
     unsigned int        lastVTileLastStripHeight;
-    unsigned short      numVertStrips;
+    unsigned int      numVertStrips;
     unsigned int        lastVStripHeight;
-    unsigned short      strip;
-    unsigned short      vStripFirstY;         
+    unsigned int      strip;
+    unsigned int      vStripFirstY;         
     int			xrot;
     int			yrot;
-    unsigned short      newWidth;
-    unsigned short      firstHeight;
-    unsigned short      secondHeight;
-    unsigned short      vTile;
-    unsigned short      dstY;         
+    unsigned int      newWidth;
+    unsigned int      newBWidth;
+    unsigned int      firstHeight;
+    unsigned int      secondHeight;
+    unsigned int      vTile;
+    unsigned int      dstY;         
 
     modulus( x-pox, pw, xrot );
     modulus( y-poy, ph, yrot );
@@ -889,6 +890,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
      */
 
     newWidth = w > pw ? pw : w;
+    newBWidth = newWidth << BytesPerPixelShift;
     srcBWidthShift = agxBytePadScratchMapPow2( newWidth, BytesPerPixelShift );
     srcBWidth = 1 << srcBWidthShift;
     srcPWidth = srcBWidth >> BytesPerPixelShift;
@@ -914,24 +916,13 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
 
     if( xrot == 0 ) {
        firstBWidth = 0;
-       lastBWidth = w << BytesPerPixelShift;
+       lastBWidth = newBWidth;
     }
     else { 
-       int right = pw - xrot;
-       if( w < ph ) {
-          if( right < w ) {
-             firstBWidth = right << BytesPerPixelShift;
-             lastBWidth = (w-right) << BytesPerPixelShift;
-          }
-          else {
-             firstBWidth = w << BytesPerPixelShift;
-             lastBWidth = 0; 
-          }
-       }
-       else {
-          firstBWidth = right << BytesPerPixelShift;
-          lastBWidth = xrot << BytesPerPixelShift; 
-       }
+       firstBWidth = (pw - xrot) << BytesPerPixelShift;
+       if( firstBWidth > newBWidth ) 
+          firstBWidth = newBWidth; 
+       lastBWidth = newBWidth - firstBWidth;
     }
     
     if( h < ph 
@@ -1060,9 +1051,9 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
        }
           
        for( vTile = 1; vTile <= numVertTiles; vTile++ ) {
-          unsigned short hTile;
-          unsigned short dstX;
-          unsigned short dstHeight;
+          unsigned int hTile;
+          unsigned int dstX;
+          unsigned int dstHeight;
 
           if( vTile == numVertTiles )
              if( strip < numLastVTileStrips )
@@ -1080,7 +1071,7 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
           GE_OUT_W( GE_OP_DIM_HEIGHT, dstHeight );
 
           for( hTile = 1; hTile <= numHorizTiles; hTile++ ) {
-             unsigned short dstWidth;
+             unsigned int dstWidth;
 
              if( hTile == 1 ) {
                 dstWidth = firstHTileWidth - 1;
@@ -1138,35 +1129,37 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     unsigned int	bgAlu;
     unsigned int	planemask;
 {
-    unsigned short      srcPWidth = 0;
-    unsigned short      srcBWidth;
-    short  		srcBWidthShift;
-    unsigned short      srcStripHeight;
-    unsigned int        srcMaxLines;
-    unsigned short      srcLine;
-    unsigned short      numHorizTiles;
-    unsigned short      firstHTileWidth = 0;
-    unsigned short      lastHTileWidth;
-    unsigned short      firstBWidth;
-    unsigned short      lastBWidth;
-    unsigned short      numLastVTileStrips;
-    unsigned short      lastVTileLastStripHeight;
-    unsigned short      numVertTiles;
-    unsigned short      lastVTileHeight;
-    unsigned short      numVertStrips;
-    unsigned short      lastVStripHeight;
-    unsigned short      strip;
-    unsigned short      vStripFirstY; 
-    Bool                autoHTiling;
-    int			xrot;
-    int			yrot;
-    int                 xOff;
-    unsigned short      vTile;
-    unsigned short      dstY;
-    unsigned short      firstHeight;
-    unsigned short      secondHeight;
-    unsigned short      firstWidth;
-    unsigned short      remWidth;
+    unsigned int      srcPWidth = 0;
+    unsigned int      srcBWidth;
+    int  	      srcBWidthShift;
+    unsigned int      srcStripHeight;
+    unsigned int      srcMaxLines;
+    unsigned int      srcLine;
+    unsigned int      numHorizTiles;
+    unsigned int      firstHTileWidth = 0;
+    unsigned int      lastHTileWidth;
+    unsigned int      firstBWidth;
+    unsigned int      lastBWidth;
+    unsigned int      numLastVTileStrips;
+    unsigned int      lastVTileLastStripHeight;
+    unsigned int      numVertTiles;
+    unsigned int      lastVTileHeight;
+    unsigned int      numVertStrips;
+    unsigned int      lastVStripHeight;
+    unsigned int      strip;
+    unsigned int      vStripFirstY; 
+    Bool              autoHTiling;
+    int		      xrot;
+    int		      yrot;
+    int               xOff;
+    int               xStart;
+    unsigned int      vTile;
+    unsigned int      dstY;
+    unsigned int      newWidth;
+    unsigned int      firstHeight;
+    unsigned int      secondHeight;
+    unsigned int      firstWidth;
+    unsigned int      remWidth;
 
     modulus( x-pox, pw, xrot );
     modulus( y-poy, ph, yrot );
@@ -1205,33 +1198,49 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
      * the bitblt to maximize concurrency.
      */
 
-    if( pw == srcPWidth && pw < w ) {
-       numHorizTiles = 0;
-       lastHTileWidth = pw;
-       autoHTiling = TRUE;
-    }
-    else {
-       firstWidth = pw - xrot;
-       firstHTileWidth = firstWidth <= (unsigned)w ? firstWidth : w; 
-       remWidth = w - firstHTileWidth;
-       numHorizTiles  = remWidth / (unsigned)pw;
-       lastHTileWidth = remWidth % (unsigned)pw;
-       if( firstHTileWidth )
-          numHorizTiles++;
-       if( lastHTileWidth )
-          numHorizTiles++;
-       else
-          lastHTileWidth = pw;
-       autoHTiling = FALSE;
-    } 
-    firstBWidth = firstHTileWidth >> 3;
-    lastBWidth = lastHTileWidth >> 3;
-    xOff = xrot >> 3;
-
-    srcBWidthShift = agxBytePadScratchMapPow2( pw, -3 );
+    newWidth = w < pw - xrot ? w : pw;
+    srcBWidthShift = agxBytePadScratchMapPow2( pw+7, -3 );
     srcBWidth = 1 << srcBWidthShift;
     srcPWidth = srcBWidth << 3;
     srcMaxLines = agxScratchSize >> srcBWidthShift;
+
+    if( pw == srcPWidth && pw < w ) {
+       numHorizTiles = 1;
+       firstHTileWidth = pw;
+       lastHTileWidth = 0;
+       autoHTiling = TRUE;
+       firstBWidth = 0;
+       lastBWidth = pw+7 >> 3;
+       xOff = 0;
+    }
+    else {
+       autoHTiling = FALSE;
+       xOff = xrot >> 3;
+       xStart = xrot & 0xFFFFFFF8;
+       firstWidth = pw - xrot;
+       firstHTileWidth = firstWidth <= w ? firstWidth : w; 
+       remWidth = w - firstHTileWidth;
+       numHorizTiles  = remWidth / pw;
+       lastHTileWidth = remWidth % pw;
+       if( remWidth == 0 ) {
+          firstBWidth = (xrot + firstHTileWidth - xStart)+7 >> 3;
+          lastBWidth = 0; 
+       }
+       else if( lastHTileWidth > 0 && lastHTileWidth < xStart ) {
+          firstBWidth = (pw+7 >> 3) - xOff; 
+          lastBWidth = lastHTileWidth+7 >> 3;
+       }
+       else {
+          firstBWidth = 0;
+          lastBWidth = pw+7 >> 3;
+       }
+       if( firstHTileWidth > 0 )
+          numHorizTiles++;
+       if( lastHTileWidth > 0 )
+          numHorizTiles++;
+       else
+          lastHTileWidth = pw;
+    } 
 
     if( ph <= srcMaxLines ) {
        numVertStrips = 1 ;
@@ -1268,6 +1277,33 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
        else
           lastVTileLastStripHeight = srcStripHeight;
     }
+
+#if 0
+    if( lastBWidth > srcBWidth
+        || lastBWidth > (w+7>>3)
+        || lastBWidth > (pw+7>>3) ) {
+       ErrorF( "%s:%s - lastBWidth is too wide: %x,%x,%x,%x\n",
+                __FILE__, __LINE__,
+                lastBWidth, srcBWidth,
+                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+    }
+    if( firstBWidth > srcBWidth
+        || firstBWidth > (w+7>>3)
+        || firstBWidth > (pw+7>>3) ) {
+       ErrorF( "%s:%s - firstBWidth is too wide: %x,%x,%x,%x\n",
+                __FILE__, __LINE__,
+                firstBWidth, srcBWidth,
+                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+    }
+    if( firstBWidth+lastBWidth > srcBWidth
+        || firstBWidth+lastBWidth > (w+7>>3)
+        || firstBWidth+lastBWidth > (pw+7>>3) ) {
+       ErrorF( "%s:%s - firstBWidth+lastBWidth is too wide: %x,%x,%x,%x,%x\n",
+                __FILE__, __LINE__,
+                firstBWidth, lastBWidth, srcBWidth,
+                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+    }
+#endif
 
     MAP_INIT( GE_MS_MAP_B, 
               GE_MF_1BPP | GE_MF_MOTO_FORMAT,
@@ -1326,9 +1362,9 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
         * Load map B with the current strip. 
         */
        if( autoHTiling && numVertStrips == 1 ) { 
-          agxMemToVid( agxScratchOffset, srcBWidth,
-                       psrc, pwidth,
-                       ph               ); 
+          agxPartMemToVid( agxScratchOffset, srcBWidth,
+                           psrc, pwidth,
+                           lastBWidth, ph ); 
        }
        else
        {
@@ -1343,50 +1379,40 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
              secondHeight = srcStripHeight - firstHeight;
           else
              firstHeight = srcStripHeight;
-          if( firstHTileWidth > 0  && numHorizTiles == 0 ) {
-             /* load only what we need */
+
+          /* load only what we need */
+          if( firstBWidth > 0 ) {
              agxPartMemToVid( agxScratchOffset + xOff, srcBWidth, 
                               psrc + srcLine*pwidth + xOff, pwidth,
                               firstBWidth, firstHeight );
-             if( lastHTileWidth > 0 ) {
-                agxPartMemToVid( agxScratchOffset, srcBWidth, 
-                                 psrc + srcLine*pwidth, pwidth,
-                                 lastBWidth, firstHeight );
-             }
           }
-          else {
-             agxMemToVid( agxScratchOffset, srcBWidth, 
-                          psrc + srcLine*pwidth, pwidth,
-                          firstHeight );
+          if( lastBWidth > 0 ) {
+             agxPartMemToVid( agxScratchOffset, srcBWidth, 
+                              psrc + srcLine*pwidth, pwidth,
+                              lastBWidth, firstHeight );
           }
           if( secondHeight ) {
-             if( firstHTileWidth > 0  && numHorizTiles == 0 ) {
-                /* load only what we need */
+             /* load only what we need */
+             if( firstBWidth > 0 ) {
                 agxPartMemToVid( agxScratchOffset+firstHeight*srcBWidth+xOff,
                                     srcBWidth, 
-                                 psrc + srcLine*pwidth + xOff, pwidth,
-                                 firstBWidth, firstHeight );
-                if( lastHTileWidth > 0 ) {
-                   agxPartMemToVid( agxScratchOffset + firstHeight*srcBWidth,
-                                       srcBWidth, 
-                                    psrc + srcLine*pwidth, pwidth,
-                                    lastBWidth, firstHeight );
-                }
+                                 psrc + xOff, pwidth,
+                                 firstBWidth, secondHeight );
              }
-             else {
-                agxMemToVid( agxScratchOffset + firstHeight*srcBWidth, 
-                                 srcBWidth,
+             if( lastBWidth > 0 ) {
+                agxPartMemToVid( agxScratchOffset + firstHeight*srcBWidth,
+                                    srcBWidth, 
                                  psrc, pwidth,
-                                 secondHeight );
+                                 lastBWidth, secondHeight );
              }
           }
        }
 
        for( vTile = 1; vTile <= numVertTiles; vTile++ ) {
-          unsigned short hTile;
-          unsigned short dstX;
-          unsigned short srcX, srcY;
-          unsigned short dstHeight;
+          unsigned int hTile;
+          unsigned int dstX;
+          unsigned int srcX, srcY;
+          unsigned int dstHeight;
 
           if( vTile == numVertTiles )
              if( strip < numLastVTileStrips )
@@ -1404,7 +1430,7 @@ agxImageStipple( x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
           GE_OUT_W( GE_OP_DIM_HEIGHT, dstHeight );
 
           for( hTile = 1; hTile <= numHorizTiles; hTile++ ) {
-             unsigned short dstWidth;
+             unsigned int dstWidth;
 
             if( autoHTiling ) {
                dstWidth = w - 1;
@@ -1479,12 +1505,12 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
     unsigned int    bgAlu;
     unsigned int    planemask;
 {
-    short          w, h;
+    int            w, h;
     unsigned int   srcX, srcY;
     unsigned int   pixBWidth;
-    unsigned short srcPWidth;
-    unsigned short srcBWidth;
-    short          srcBWidthShift;
+    unsigned int   srcPWidth;
+    unsigned int   srcBWidth;
+    int            srcBWidthShift;
     unsigned int   srcMaxLines;
     unsigned int   width = stipple->drawable.width;
     unsigned int   height = stipple->drawable.height;
@@ -1602,13 +1628,13 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     unsigned int    alu;
     unsigned int    planemask;
 {
-    short          w, h;
+    int            w, h;
     unsigned int   width, height;
     unsigned int   srcX, srcY;
     unsigned int   pixBWidth;
-    unsigned short srcPWidth;
-    unsigned short srcBWidth;
-    short          srcBWidthShift;
+    unsigned int   srcPWidth;
+    unsigned int   srcBWidth;
+    int            srcBWidthShift;
     unsigned int   srcMaxLines;
 
     width = tile->drawable.width;
@@ -1717,9 +1743,9 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     unsigned int   height = tile->drawable.height;
     unsigned int   pixBWidth;
     unsigned int   srcX, srcY;
-    unsigned short srcPWidth;
-    unsigned short srcBWidth;
-    short          srcBWidthShift;
+    unsigned int   srcPWidth;
+    unsigned int   srcBWidth;
+    int            srcBWidthShift;
     unsigned int   srcMaxLines;
     unsigned int   firstLine;
     unsigned int   lastLine;
@@ -1980,9 +2006,9 @@ agxFSpansStipple( pDrawable, nSpans, ppts, pwidth,
     unsigned int   height = stipple->drawable.height;
     unsigned int   pixBWidth;
     unsigned int   srcX, srcY;
-    unsigned short srcPWidth;
-    unsigned short srcBWidth;
-    short          srcBWidthShift;
+    unsigned int   srcPWidth;
+    unsigned int   srcBWidth;
+    int            srcBWidthShift;
     unsigned int   srcMaxLines;
     unsigned int   firstLine;
     unsigned int   lastLine;

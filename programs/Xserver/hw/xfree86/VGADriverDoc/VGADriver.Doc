@@ -100,7 +100,7 @@ xc/config/cf/
 	xf86site.def		XFree86 local configuration custonization
 
 xc/programs/Xserver/hw/xfree86/	The server source
-	common/			Files common to all of the server (Xconfig
+	common/			Files common to all of the server (XF86Config
 				parser, I/O device handlers, etc)
 		xf86.h		Contains the 'ScrnInfoRec' data structure
 		xf86_Option.h	Contains option flags
@@ -435,8 +435,8 @@ there are things that cannot be determined without user intervention, you
 should use "option" flags.  Say that board vendors that use the SDC 
 chipsets have the option of providing 8 or 16 clocks.  There's no way you 
 can determine this from the chipset probe, so you provide an option flag to 
-let the user select the behavior from the Xconfig file.  The option flags are 
-defined in the file "xf86_option.h".  You should look to see if there is 
+let the user select the behavior from the XF86Config file.  The option flags
+are defined in the file "xf86_option.h".  You should look to see if there is 
 already a flag that can be reused.  If so, use it in your driver.  If not, 
 add a new #define, and define the string->symbol mapping in the table in 
 that file.  To see how option flags are used, look at the ET4000, 
@@ -515,7 +515,7 @@ increments from 0 on each iteration.
 6d - The ClockSelect() function
 -------------------------------
   The ClockSelect() function is used during clock probing (i.e. when no
-'Clocks' line is specified in the Xconfig file) to select the dot-clock
+'Clocks' line is specified in the XF86Config file) to select the dot-clock
 indicated by the number passed in the parameter.  The function should
 set the chipset's clock-select bits according to the passed-in number.
 Two dummy values will be passed in as well (CLK_REG_SAVE, CLK_SAVE_RESTORE).
@@ -532,7 +532,7 @@ or if the clock can't be set for some reason.
   The Probe() function is perhaps the most important, and perhaps the
 least intuitive function in the driver.  The Probe function is required
 to identify the chipset independent of all other chipsets.  If the user
-has specified a 'Chipset' line in the Xconfig file, this is a simple
+has specified a 'Chipset' line in the XF86Config file, this is a simple
 string comparison check.  Otherwise, you must use some other technique
 to figure out what chipset is installed.  If you are lucky, the chipset
 will have an identification mechanism (ident/version registers, etc), and
@@ -551,9 +551,9 @@ Once the chipset is successfully identified, the Probe() function must
 do some other initializations:
 
 	1) If the user has not specified the 'VideoRam' parameter in the
-	   Xconfig file, the amount of installed memory must be determined.
+	   XF86Config file, the amount of installed memory must be determined.
 	2) If the user has not specified the 'Clocks' parameter in the
-	   Xconfig file, the values for the available dot-clocks must
+	   XF86Config file, the values for the available dot-clocks must
 	   be determined.  This is done by calling the vgaGetClocks()
 	   function, and passing it the number of clocks available and
 	   a pointer to the ClockSelect() function.
@@ -851,4 +851,4 @@ Sunnyvale, CA  94086
 Western Digital
 (714) 932-4900
 
-$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.0 1994/05/30 08:23:04 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/VGADriver.Doc,v 3.1 1994/06/18 16:22:29 dawes Exp $

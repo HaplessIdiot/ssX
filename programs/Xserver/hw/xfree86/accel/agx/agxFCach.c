@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.5 1994/08/12 13:56:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.6 1994/09/07 15:47:15 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -504,16 +504,16 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC)
      GCPtr pGC;
 {
    CharInfoPtr pci;
-   unsigned short h = fentry->hPix;
-   unsigned short w = fentry->wBytes<<3;
-   unsigned short xStart, yStart;
+   unsigned int h = fentry->hPix;
+   unsigned int w = fentry->wBytes<<3;
+   unsigned int xStart, yStart;
    unsigned int blocki = 255;
    bitMapBlockPtr block;
-   unsigned short gHeight; 
-   unsigned short gWidth; 
-   unsigned short idx;  
-   unsigned short line;  
-   unsigned short linePos;  
+   unsigned int gHeight; 
+   unsigned int gWidth; 
+   unsigned int idx;  
+   unsigned int line;  
+   unsigned int linePos;  
    unsigned int   blockBase;
    unsigned int   oldBlockBase = 0;
 

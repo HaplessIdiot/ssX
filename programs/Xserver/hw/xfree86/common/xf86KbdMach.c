@@ -1,4 +1,5 @@
 /* $XConsortium: xf86KbdMach.c,v 1.1 94/03/28 21:23:28 dpw Exp $ */
+/* $XFree86$ */
 /*
  *****************************************************************************
  * HISTORY
@@ -195,7 +196,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
     }
 
   /*
-   * Apply the special key mapping specified in Xconfig 
+   * Apply the special key mapping specified in XF86Config 
    */
   for (k = map, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);

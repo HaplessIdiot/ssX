@@ -3,8 +3,8 @@
 # To extract the files from this archive, save it to a file, remove
 # everything above the "!/bin/sh" line above, and type "sh file_name".
 #
-# made 02/25/1994 17:20 UTC by davidh@dorite
-# Source directory /usr13/davidh
+# made 09/22/1994 21:15 UTC by davidh@dorite
+# Source directory /usr10/davidh/aperture
 #
 # $XFree86$
 #
@@ -13,10 +13,10 @@
 # This shar contains:
 # length  mode       name
 # ------ ---------- ------------------------------------------
-#   1343 -rw-r--r-- aperture/Makefile
+#   1342 -rw-r--r-- aperture/Makefile
 #   4042 -rw-r--r-- aperture/aperture.h
 #     95 -rw-r--r-- aperture/devlink.tab
-#   2770 -rw-r--r-- aperture/README
+#   2914 -rw-r--r-- aperture/README
 #  20528 -rw-r--r-- aperture/aperture.c
 #    816 -rw-r--r-- aperture/aperture.conf
 #   3530 -rw-r--r-- aperture/aptest.c
@@ -103,8 +103,8 @@ SHAR_EOF
 chmod 0644 aperture/Makefile ||
 echo 'restore of aperture/Makefile failed'
 Wc_c="`wc -c < 'aperture/Makefile'`"
-test 1343 -eq "$Wc_c" ||
-	echo 'aperture/Makefile: original size 1343, current size' "$Wc_c"
+test 1342 -eq "$Wc_c" ||
+	echo 'aperture/Makefile: original size 1342, current size' "$Wc_c"
 fi
 # ============= aperture/aperture.h ==============
 if test -f 'aperture/aperture.h' -a X"$1" != X"-c"; then
@@ -288,7 +288,7 @@ X   The screen should look something like this:
 X
 X	# make install
 X	cp aperture aperture.conf /kernel/drv
-X	# add_drv /kernel/drv/mmap
+X	# add_drv /kernel/drv/aperture
 X
 X   This installs the driver in the system. 
 X
@@ -299,9 +299,13 @@ type=ddi_pseudo;name=aperture	fbs/\M0
 X
 X   Add that line exactly as shown. You may also simply add the 
 X   contents of the devlink.tab file supplied to /etc/devlink.tab.
-X   It contains the lines as well.
+X   It contains the lines as well.  (Yes, that is a tab between
+X   aperture, and fbs, not spaces - very important)
 X
-6) Reboot the system.
+6) Perform a reconfiguration boot of the system.
+X
+X	# touch /reconfigure
+X	# init 6
 X
 7) Login as root and run the aptest program. It tests that the 
 X   mmap driver is working properly, by mmaping the main bios
@@ -337,8 +341,8 @@ SHAR_EOF
 chmod 0644 aperture/README ||
 echo 'restore of aperture/README failed'
 Wc_c="`wc -c < 'aperture/README'`"
-test 2770 -eq "$Wc_c" ||
-	echo 'aperture/README: original size 2770, current size' "$Wc_c"
+test 2914 -eq "$Wc_c" ||
+	echo 'aperture/README: original size 2914, current size' "$Wc_c"
 fi
 # ============= aperture/aperture.c ==============
 if test -f 'aperture/aperture.c' -a X"$1" != X"-c"; then

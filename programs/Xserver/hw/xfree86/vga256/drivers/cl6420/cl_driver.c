@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.4 1994/09/07 15:55:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cl6420/cl_driver.c,v 3.5 1994/09/11 00:52:36 dawes Exp $ */
 /*
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -323,7 +323,7 @@ CL6420Probe()
 	{
 		/*
 		 * This is the easy case.  The user has specified the
-		 * chipset in the Xconfig file.  All we need to do here
+		 * chipset in the XF86Config file.  All we need to do here
 		 * is a string comparison against each of the supported
 		 * names available from the Ident() function.
 		 */
@@ -382,7 +382,7 @@ CL6420Probe()
     	}
 
 	/*
-	 * If the user has specified the amount of memory in the Xconfig
+	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
 	 */
   	if (!vga256InfoRec.videoRam)
@@ -397,7 +397,7 @@ CL6420Probe()
     	}
 
 	/*
-	 * Again, if the user has specified the clock values in the Xconfig
+	 * Again, if the user has specified the clock values in the XF86Config
 	 * file, we respect those choices.
 	 */
   	if (!vga256InfoRec.clocks)

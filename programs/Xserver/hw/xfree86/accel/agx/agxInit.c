@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.7 1994/09/11 00:36:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.8 1994/09/20 12:44:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -909,7 +909,7 @@ agxGetClocks(num, scale, knownclkindex, knownclkvalue, InfoRec)
          agxClockSelect(CLK_REG_RESTORE,scale);
          ErrorF("Failed to disable interrupts during clock probe.  If\n");
          ErrorF("your OS does not support disabling interrupts, then you\n");
-         FatalError("must specify a Clocks line in the Xconfig file.\n");
+         FatalError("must specify a Clocks line in the XF86Config file.\n");
       }
       outb(agxDAReg+DA_INTR_STAT, DA_IS_START_VBLNK|DA_IS_START_PIC);
       while (!(inb(agxDAReg+DA_INTR_STAT) & DA_IS_START_VBLNK)) 

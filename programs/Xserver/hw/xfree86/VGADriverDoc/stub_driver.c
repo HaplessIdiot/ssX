@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.4 1994/09/07 15:46:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.5 1994/09/11 00:35:43 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -55,7 +55,7 @@
 #include "vga.h"
 
 /*
- * If the driver makes use of Xconfig 'Option' flags, the following will be
+ * If the driver makes use of XF86Config 'Option' flags, the following will be
  * required
  */
 #define XCONFIG_FLAGS_ONLY
@@ -258,7 +258,7 @@ static int Num_STUB_ExtPorts =
  * server will call this function when listing supported chipsets, with 'n' 
  * incrementing from 0, until the function returns NULL.  The 'Probe'
  * function should call this function to get the string name for a chipset
- * and when comparing against an Xconfig-supplied chipset value.  This
+ * and when comparing against an XF86Config-supplied chipset value.  This
  * cuts down on the number of places errors can creep in.
  */
 static char *
@@ -343,7 +343,7 @@ int no;
  * GVGA drivers for the special code that is needed.  Note that the BIOS 
  * base should not be assumed to be at 0xC0000 (although most are).  Use
  * 'vga256InfoRec.BIOSbase', which will pick up any changes the user may
- * have specified in the Xconfig file.
+ * have specified in the XF86Config file.
  *
  * The preferred mechanism for doing this is via register identification.
  * It is important not only the chipset is detected, but also to
@@ -380,7 +380,7 @@ STUBProbe()
 	{
 		/*
 		 * This is the easy case.  The user has specified the
-		 * chipset in the Xconfig file.  All we need to do here
+		 * chipset in the XF86Config file.  All we need to do here
 		 * is a string comparison against each of the supported
 		 * names available from the Ident() function.  If this
 		 * driver supports more than one chipset, there would be
@@ -425,7 +425,7 @@ STUBProbe()
     	}
 
 	/*
-	 * If the user has specified the amount of memory in the Xconfig
+	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
 	 */
   	if (!vga256InfoRec.videoRam)
@@ -439,7 +439,7 @@ STUBProbe()
     	}
 
 	/*
-	 * Again, if the user has specified the clock values in the Xconfig
+	 * Again, if the user has specified the clock values in the XF86Config
 	 * file, we respect those choices.
 	 */
   	if (!vga256InfoRec.clocks)

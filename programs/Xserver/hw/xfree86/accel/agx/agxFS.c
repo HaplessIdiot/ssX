@@ -1,5 +1,5 @@
 /* $XConsortium: mach32fs.c,v 1.2 94/04/17 20:30:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.3 1994/08/12 13:56:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.4 1994/09/07 15:47:18 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -372,6 +372,13 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
     PixmapPtr pPix = pGC->stipple;
     DDXPointPtr initPpt;
     int *initPwidth;
+
+    if (!xf86VTSema)
+    {
+        cfbUnnaturalStippleFS( pDrawable, pGC,
+                               nInit, pptInit, pwidthInit, fSorted);
+        return;
+    }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
 	switch (pDrawable->bitsPerPixel) {

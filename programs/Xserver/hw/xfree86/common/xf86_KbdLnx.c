@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_KbdLnx.c,v 1.1 94/03/28 21:24:06 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_KbdLnx.c,v 3.0 1994/06/26 13:09:19 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -76,7 +76,7 @@ xf86KbdGetMapping (KeySymsPtr pKeySyms, CARD8 *pModMap)
   readKernelMapping(pKeySyms, pModMap);
 
   /*
-   * Apply the special key mapping specified in Xconfig 
+   * Apply the special key mapping specified in XF86Config 
    */
   for (k = map, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);
@@ -343,7 +343,7 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
    * then translate the Linux keysyms into X keysyms.
    *
    * First, figure out which tables to use for the modeswitch columns
-   * above, from the Xconfig fields.
+   * above, from the XF86Config fields.
    */
   if (xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] == K_MODESHIFT ||
       xf86Info.specialKeyMap[K_INDEX_RIGHTCTL] == K_MODELOCK)

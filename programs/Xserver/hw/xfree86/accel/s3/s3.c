@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.36 1994/09/21 10:46:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.37 1994/09/22 15:50:05 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -878,8 +878,13 @@ s3Probe()
 	    break;
 	 case BT485_DAC:
 	 case ATT20C505_DAC:
-	    if (s3Bpp > 1)
-	       reason = "Bt485 and ATT20C505 RAMDACs";
+	    if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+	       if (s3Bpp > 2)
+		  reason = "Bt485 and ATT20C505 RAMDACs";
+	    } else {
+	       if (s3Bpp > 1)
+		  reason = "Bt485 and ATT20C505 RAMDACs";
+	    }
 	    break;
 	 case ATT20C498_DAC:
 	 case STG1700_DAC:
@@ -1022,6 +1027,13 @@ s3Probe()
 	 allowPixMuxSwitching = FALSE;
 	 pixMuxLimitedWidths = FALSE;
 	 pixMuxMinWidth = 1024;
+	 if (s3Bpp == 2) {
+	    nonMuxMaxMemory = 0;	/* Only 2:1MUX works (yet)!     */
+	    pixMuxMinWidth = 800;
+	 } else if (s3Bpp==4) {
+	    nonMuxMaxMemory = 2048;
+	    pixMuxMinWidth = 640;
+	 }
       } else if (OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options)) {
 	 nonMuxMaxClock = 67500;
 	 allowPixMuxSwitching = TRUE;

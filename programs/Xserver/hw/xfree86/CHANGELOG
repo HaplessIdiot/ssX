@@ -1,4 +1,10 @@
-XFree86 3.0Fb (22 September 1994)
+XFree86 3.0Fb (23 September 1994)
+348. Updated 16bpp/32bpp support for 928+Bt485 (Norbert Distler).
+347. Partial support for 16bpp/32bpp with 964+Bt485 (Steve Parker).
+346. Fix Ti3025 pll save/restore, and set MCLK to 54.8MHz to eliminate
+     screen corruption (Hans Nasten).
+345. Fix for AGX tile SEGV (plus some cleanups) (Henry Worth).
+344. Update to solx86 aperture driver docs (David Holland).
 343. Fix problem with S3 mmio usage at 16bpp and 32bpp (Hans Nasten).
 342. Fix Mono VGA server crashes when compiled with gcc2.
 341. Updates to xterm for Linux to handle its UTMP style and lastlog

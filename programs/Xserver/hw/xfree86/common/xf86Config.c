@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.21 1994/09/21 10:48:57 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.22 1994/09/22 15:50:29 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -697,7 +697,7 @@ xf86Config (vtopen)
  if (!vtopen)
  {
 
-  OFLG_ZERO(&GenericXconfigFlag);
+  OFLG_ZERO(&GenericXF86ConfigFlag);
   configBuf  = (char*)xalloc(CONFIG_BUF_LEN);
   configRBuf = (char*)xalloc(CONFIG_BUF_LEN);
   configPath = (char*)xalloc(PATH_MAX);
@@ -830,7 +830,7 @@ xf86Config (vtopen)
       ErrorF("Warning: No FontPath specified, using compiled-in default.\n");
   else    /* Use fontpath specified with '-fp' */
   {
-    OFLG_CLR (XCONFIG_FONTPATH, &GenericXconfigFlag);
+    OFLG_CLR (XCONFIG_FONTPATH, &GenericXF86ConfigFlag);
     if (fontPath)
     {
       xfree(fontPath);
@@ -855,7 +855,7 @@ xf86Config (vtopen)
     FatalError("No valid FontPath could be found\n");
   if (xf86Verbose)
     ErrorF("%s FontPath set to \"%s\"\n", 
-      OFLG_ISSET(XCONFIG_FONTPATH, &GenericXconfigFlag) ? XCONFIG_GIVEN :
+      OFLG_ISSET(XCONFIG_FONTPATH, &GenericXF86ConfigFlag) ? XCONFIG_GIVEN :
       XCONFIG_PROBED, defaultFontPath);
 
   if (!xf86Info.kbdProc)
@@ -922,7 +922,7 @@ configFilesSection()
   while ((token = getToken(FilesTab)) != ENDSECTION) {
     switch (token) {
     case FONTPATH:
-      OFLG_SET(XCONFIG_FONTPATH,&GenericXconfigFlag);
+      OFLG_SET(XCONFIG_FONTPATH,&GenericXF86ConfigFlag);
       if (getToken(NULL) != STRING) configError("Font path component expected");
       j = FALSE;
       if (fontPath == NULL)
@@ -948,7 +948,7 @@ configFilesSection()
       break;
       
     case RGBPATH:
-      OFLG_SET(XCONFIG_RGBPATH, &GenericXconfigFlag);
+      OFLG_SET(XCONFIG_RGBPATH, &GenericXF86ConfigFlag);
       if (getToken(NULL) != STRING) configError("RGB path expected");
       if (!xf86coFlag)
         rgbPath = val.str;

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Kbd.c,v 1.1 94/03/28 21:23:22 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Kbd.c,v 3.0 1994/05/08 05:20:55 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -270,7 +270,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 #endif /* !AMOEBA && !MINIX && !__OSF__ */
 
   /*
-   * Apply the special key mapping specified in Xconfig 
+   * Apply the special key mapping specified in XF86Config 
    */
   for (k = map, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);

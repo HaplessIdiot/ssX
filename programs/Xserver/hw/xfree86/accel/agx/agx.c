@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.13 1994/09/11 00:36:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.14 1994/09/20 12:44:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -583,7 +583,7 @@ agxProbe()
       agxInfoRec.videoRam = agxGetMemSize();
       if (agxInfoRec.videoRam == 0 )
          ErrorF("%s %s: Video memory probe failed, specify the \
-memory size in your Xconfig file.\n",
+memory size in your XF86Config file.\n",
                 XCONFIG_PROBED, agxInfoRec.name);
    }
 

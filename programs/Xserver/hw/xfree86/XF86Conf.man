@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.2 1994/09/17 04:05:45 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86Conf.man,v 3.3 1994/09/17 13:45:37 dawes Exp $
 .\" XF86Conf.man
 .TH XF86Config 4/5 "Version 3.1"  "XFree86"
 .SH NAME
@@ -336,20 +336,20 @@ This optional entry specifies the name of the graphics device.
 This optional entry specifies the chipset used on the graphics
 board.  In most cases this entry is not required because the X
 servers will probe the hardware to determine the chipset type.
-.TP
+.TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This optional entry specifies the type of RAMDAC used on the graphics
 board.  This is only used by a few of the X servers, and in most
 cases it is not required because the X servers will probe the
 hardware to determine the RAMDAC type where possible.
-.TP
+.TP 8
 .B DacSpeed \fIspeed\fP
 This optional entry specifies the RAMDAC speed rating (which is
 usually printed on the RAMDAC chip).  The speed is in MHz.  This
 is only used by a few of the X servers, and only needs to be
 specified when the speed rating of the RAMDAC is different from
 the default built in to the X server.
-.TP
+.TP 8
 .B Clocks \fIclock ...\fP
 specifies the dotclocks that are on your graphics board.  The clocks
 are in MHz, and may be specified as a floating point number.  The
@@ -362,13 +362,13 @@ entry is not mandatory for boards with non-programmable clock chips,
 but is highly recommended because it prevents the clock probing
 phase during server startup.  This clock probing phase can cause
 problems for some monitors.
-.TP
+.TP 8
 .B ClockChip \fI"clockchip-type"\fP
 This optional entry is used to specify the clock chip type on
 graphics boards which have a programmable clock generator.  Only
 a few X servers support programmable clock chips.  For details,
 see the appropriate X server manual page.
-.TP
+.TP 8
 .B ClockProg \fI"command"\fP [\fItextclock\fP]
 This optional entry runs \fIcommand\fP to set the clock on the
 graphics board instead of using the internal code.  The command
@@ -395,7 +395,7 @@ program fails at initialisation the server exits.  If it fails
 during a mode switch, the mode switch is aborted but the server
 keeps running.  It is assumed that if the command fails the clock
 has not been changed.
-.TP
+.TP 8
 .B Option \fI"optionstring"\fP
 This optional entry allows the user to select certain options
 provided by the drivers.  Multiple \fBOption\fP entries may be
@@ -425,37 +425,38 @@ board's linear frame buffer.  This entry is only used by a few
 X servers, and the interpretation of this base address may be different
 for different X servers.  Refer to the appropriate X server manual
 page for details.
-.TP
+.TP 8
 .B IOBase \fIbaseaddress\fP
 This optional entry specifies the IO base address.  This entry is only
 used for a few X servers.  Refer to the appropriate X server manual page
 for details.
-.TP
+.TP 8
 .B DACBase \fIbaseaddress\fP
 This optional entry specifies the DAC base address.  This entry is only
 used for a few X servers.  Refer to the appropriate X server manual page
 for details.
-.TP
+.TP 8
 .B POSBase \fIbaseaddress\fP
 This optional entry specifies the POS base address.  This entry is only
 used for a few X servers.  Refer to the appropriate X server manual page
 for details.
-.TP
+.TP 8
 .B COPBase \fIbaseaddress\fP
-This optional entry specifies the COP base address.  This entry is only
-used for a few X servers.  Refer to the appropriate X server manual page
-for details.
-.TP
+This optional entry specifies the coprocessor base address.  This entry
+is only used for a few X servers.  Refer to the appropriate X server
+manual page for details.
+.TP 8
 .B Instance \fInumber\fP
-This optional entry specifies the instance (what ever that is).
+This optional entry specifies the instance (which indicates of the
+chip is integrated on the motherboard or on an expansion card).
 This entry is only used for a few X servers.  Refer to the appropriate
 X server manual page for details.
-.TP
+.TP 8
 .B Speedup \fI"selection"\fP
 This optional entry specifies the selection of speedups to be
 enabled.  This entry is only used for a few X servers.  Refer to
 the appropriate X server manual page for details.
-.TP
+.TP 8
 .B S3MNAdjust \fIM N\fP
 This optional entry is specific to the S3 X server.  For details, refer
 to the \fIXF86_S3(1)\fP manual page.

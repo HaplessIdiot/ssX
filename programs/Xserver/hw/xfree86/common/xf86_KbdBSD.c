@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_KbdBSD.c,v 1.1 94/03/28 21:23:59 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Derived from xf86Kbd.c by S_ren Schmidt (sos@login.dkuug.dk)
  * which is Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -295,7 +296,7 @@ xf86KbdGetMapping (pKeySyms, pModMap)
 #endif
 
   /*
-   * Apply the special key mapping specified in Xconfig 
+   * Apply the special key mapping specified in XF86Config 
    */
   for (k = map, i = MIN_KEYCODE;
        i < (NUM_KEYCODES + MIN_KEYCODE);

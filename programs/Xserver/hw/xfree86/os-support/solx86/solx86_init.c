@@ -1,4 +1,5 @@
 /* $XConsortium: solx86_init.c,v 1.1 94/03/28 21:32:26 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -160,7 +161,7 @@ void xf86OpenConsole()
 
  	sprintf(vtname1,"/dev/vt%02d",xf86Info.vtno); /* Solaris 2.1  x86 */ 
 
-	xf86Config(FALSE); /* Read Xconfig */
+	xf86Config(FALSE); /* Read XF86Config */
 
 	if (!KeepTty)
     	{

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.3 1994/07/15 06:57:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.4 1994/09/07 15:47:10 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -245,50 +245,54 @@ agxCReturnBlock(block)
 
       geBlockMove = TRUE;      
 
-      MAP_INIT( GE_MS_MAP_B,
-                GE_MF_8BPP,
-                block->daddy->offset + agxMemBase,
-                CACHE_LINE_WIDTH_BYTES-1,
-                ROW_NUM_LINES-1,
-                FALSE, FALSE, FALSE );
+      if( xf86VTSema ) {
+         MAP_INIT( GE_MS_MAP_B,
+                   GE_MF_8BPP,
+                   block->daddy->offset + agxMemBase,
+                   CACHE_LINE_WIDTH_BYTES-1,
+                   ROW_NUM_LINES-1,
+                   FALSE, FALSE, FALSE );
 
-      GE_WAIT_IDLE();
-      MAP_SET_SRC_AND_DST( GE_MS_MAP_B ); 
-      GE_SET_MAP( GE_MS_MAP_B )
+         GE_WAIT_IDLE();
+         MAP_SET_SRC_AND_DST( GE_MS_MAP_B ); 
+         GE_SET_MAP( GE_MS_MAP_B )
+      }
 
       newLine = block->line;
       tmpb = block->next;
       while (tmpb != NULL) {
          oldSizeL = tmpb->sizel;
-         GE_WAIT_IDLE();
+         if( xf86VTSema ) {
+            GE_WAIT_IDLE();
 
-         GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
-         GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFF );
+            GE_OUT_B( GE_FRGD_MIX, MIX_SRC );
+            GE_OUT_D( GE_PIXEL_BIT_MASK, 0xFF );
 #ifndef NO_MULTI_IO
-         GE_OUT_D( GE_SRC_MAP_X, tmpb->line << 16 );
-         GE_OUT_D( GE_DEST_MAP_X, newLine << 16 );
-         GE_OUT_D( GE_OP_DIM_WIDTH, oldSizeL-1 << 16 
-                                    | CACHE_LINE_WIDTH_BYTES-1 );
+            GE_OUT_D( GE_SRC_MAP_X, tmpb->line << 16 );
+            GE_OUT_D( GE_DEST_MAP_X, newLine << 16 );
+            GE_OUT_D( GE_OP_DIM_WIDTH, oldSizeL-1 << 16 
+                                       | CACHE_LINE_WIDTH_BYTES-1 );
 #else
-         GE_OUT_W( GE_SRC_MAP_X, 0 );
-         GE_OUT_W( GE_SRC_MAP_Y, tmpb->line );
-         GE_OUT_W( GE_DEST_MAP_X, 0 );
-         GE_OUT_W( GE_DEST_MAP_Y, newLine );
-         GE_OUT_W( GE_OP_DIM_WIDTH, CACHE_LINE_WIDTH_BYTES-1 );
-         GE_OUT_W( GE_OP_DIM_HEIGHT, oldSizeL-1 ); 
+            GE_OUT_W( GE_SRC_MAP_X, 0 );
+            GE_OUT_W( GE_SRC_MAP_Y, tmpb->line );
+            GE_OUT_W( GE_DEST_MAP_X, 0 );
+            GE_OUT_W( GE_DEST_MAP_Y, newLine );
+            GE_OUT_W( GE_OP_DIM_WIDTH, CACHE_LINE_WIDTH_BYTES-1 );
+            GE_OUT_W( GE_OP_DIM_HEIGHT, oldSizeL-1 ); 
 #endif
-         GE_START_CMD( GE_OP_BITBLT
-                       | GE_OP_FRGD_SRC_MAP 
-                       | GE_OP_SRC_MAP_B
-                       | GE_OP_DEST_MAP_B   
-                       | GE_OP_PAT_FRGD
-                       | GE_OP_MASK_DISABLED
-                       | GE_OP_INC_X
-                       | GE_OP_INC_Y         );
-
+            GE_START_CMD( GE_OP_BITBLT
+                          | GE_OP_FRGD_SRC_MAP 
+                          | GE_OP_SRC_MAP_B
+                          | GE_OP_DEST_MAP_B   
+                          | GE_OP_PAT_FRGD
+                          | GE_OP_MASK_DISABLED
+                          | GE_OP_INC_X
+                          | GE_OP_INC_Y         );
+         }
          tmpb->line = newLine;
          newLine += oldSizeL;
 	 tmpb = tmpb->next;
+         GE_WAIT_IDLE_EXIT();
       }
 
       /* reconnect the new list of blocks */
@@ -302,8 +306,6 @@ agxCReturnBlock(block)
 
          tmpb->next = block->next;
       }
-
-      GE_WAIT_IDLE_EXIT();
    }
 
    ERROR_F(("----------To---------------\n"));

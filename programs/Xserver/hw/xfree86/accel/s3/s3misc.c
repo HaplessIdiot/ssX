@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.1 94/03/28 21:16:11 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.11 1994/09/17 13:46:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.12 1994/09/18 08:48:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -238,7 +238,7 @@ s3Initialize(scr_index, pScreen, argc, argv)
 	    }
 		  
 	    /*
-	     * If a MemBase value was given in the Xconfig, skip the LAW
+	     * If a MemBase value was given in the XF86Config, skip the LAW
 	     * probe and use the high 6 bits for the hw part of LAW.
 	     */
 	    if (s3InfoRec.MemBase != 0) {

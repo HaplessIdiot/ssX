@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.1 94/03/28 21:53:18 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.2 1994/09/07 15:55:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.3 1994/09/11 00:53:11 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -260,7 +260,7 @@ TVGA8900Probe()
   	if (vga256InfoRec.chipset)
     	{
 		/*
-		 * If chipset from Xconfig matches...
+		 * If chipset from XF86Config matches...
 		 */
 		if (!StrCaseCmp(vga256InfoRec.chipset, "tvga8900"))
 		{
@@ -440,7 +440,7 @@ TVGA8900Probe()
 		TVGA8900.ChipRounding = 16;
 
 	/*
-	 * If clocks are not specified in Xconfig file, probe for them
+	 * If clocks are not specified in XF86Config file, probe for them
 	 */
     	if (!vga256InfoRec.clocks) 
 	{
@@ -645,7 +645,7 @@ TVGA8900Init(mode)
 	 * In 256-color mode, with less than 1M memory, the horizontal
 	 * timings and the dot-clock must be doubled.  We can (and
 	 * should) do the former here.  The latter must, unfortunately,
-	 * be handled by the user in the Xconfig file.
+	 * be handled by the user in the XF86Config file.
 	 */
 	if (vga256InfoRec.videoRam != 1024)
 	{

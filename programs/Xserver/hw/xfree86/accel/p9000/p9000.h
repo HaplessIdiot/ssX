@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.4 1994/08/31 04:22:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.h,v 3.5 1994/09/08 14:26:20 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>.
@@ -123,7 +123,7 @@ typedef struct {
 			           * Hz and sets things to that. */
   EnableVendorProcPtr Enable;     /* Disables VGA and enables the P9000 */
   DisableVendorProcPtr Disable;   /* Disables the P9000 and enables VGA */
-  ValidateVendorProcPtr Validate; /* Validates Xconfig parameters like
+  ValidateVendorProcPtr Validate; /* Validates XF86Config parameters like
 				   * memory base and returns FALSE
 				   * if failed (causes p9000Probe to fail) */
   InitializeVendorProcPtr Initialize; /* Does first-time only initialization

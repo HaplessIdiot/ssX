@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.13 1994/09/13 15:11:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.15 1994/09/19 13:45:49 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -378,7 +378,7 @@ static int cirrusClockLimit32bpp[] = {
 
 /* Setting of the CRT FIFO threshold for each dot clock. There is a */
 /* default setting, and a conservative and aggressive setting selectable */
-/* by Xconfig option. Used for the 5422/4/6/8/9 and 5430. */
+/* by XF86Config option. Used for the 5422/4/6/8/9 and 5430. */
 
 static unsigned char default_FIFO_setting[] = {
   8, 8, 8, 8, 8, 8, 8, 8,	/* dot clock <= 50 MHz */
@@ -1801,7 +1801,7 @@ cirrusInit(mode)
           
           if (new->std.NoClock >= NUM_CIRRUS_CLOCKS)
                {
-               ErrorF("Invalid clock index -- too many clocks in Xconfig\n");
+               ErrorF("Invalid clock index -- too many clocks in XF86Config\n");
                return(FALSE);
                }
 				/* Always use VLCK3 */

@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.8 1994/09/11 00:50:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.9 1994/09/11 11:13:31 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -247,7 +247,7 @@ mach8Probe()
 
     if (mach8InfoRec.chipset) {
 	if (StrCaseCmp(mach8InfoRec.chipset, "mach8")) {
-	    ErrorF("Chipset specified in Xconfig is not \"mach8\" (%s)!\n",
+	    ErrorF("Chipset specified in XF86Config is not \"mach8\" (%s)!\n",
 		   mach8InfoRec.chipset);
 	    return(FALSE);
 	}

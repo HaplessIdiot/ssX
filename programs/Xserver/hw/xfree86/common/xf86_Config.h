@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.11 1994/09/17 13:46:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.12 1994/09/19 13:43:21 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -483,37 +483,37 @@ static SymTabRec VisualTab[] = {
 #endif /* XCONFIG_FLAGS_ONLY */
 
 /* 
- *   Xconfig flags to record which options were defined in the Xconfig file
+ * XF86Config flags to record which options were defined in the XF86Config file
  */
-#define XCONFIG_FONTPATH        1       /* Commandline/Xconfig or default  */
-#define XCONFIG_RGBPATH         2       /* Xconfig or default */
-#define XCONFIG_CHIPSET         3       /* Xconfig or probed */
-#define XCONFIG_CLOCKS          4       /* Xconfig or probed */
-#define XCONFIG_DISPLAYSIZE     5       /* Xconfig or default/calculated */
-#define XCONFIG_VIDEORAM        6       /* Xconfig or probed */
-#define XCONFIG_VIEWPORT        7       /* Xconfig or default */
-#define XCONFIG_VIRTUAL         8       /* Xconfig or default/calculated */
-#define XCONFIG_SPEEDUP         9       /* Xconfig or default/calculated */
+#define XCONFIG_FONTPATH        1       /* Commandline/XF86Config or default  */
+#define XCONFIG_RGBPATH         2       /* XF86Config or default */
+#define XCONFIG_CHIPSET         3       /* XF86Config or probed */
+#define XCONFIG_CLOCKS          4       /* XF86Config or probed */
+#define XCONFIG_DISPLAYSIZE     5       /* XF86Config or default/calculated */
+#define XCONFIG_VIDEORAM        6       /* XF86Config or probed */
+#define XCONFIG_VIEWPORT        7       /* XF86Config or default */
+#define XCONFIG_VIRTUAL         8       /* XF86Config or default/calculated */
+#define XCONFIG_SPEEDUP         9       /* XF86Config or default/calculated */
 #define XCONFIG_NOMEMACCESS     10      /* set if forced on */
-#define XCONFIG_INSTANCE        11      /* Xconfig or default */
-#define XCONFIG_RAMDAC          12      /* Xconfig or default */
-#define XCONFIG_DACSPEED        13      /* Xconfig or default */
-#define XCONFIG_BIOSBASE        14      /* Xconfig or default */
-#define XCONFIG_MEMBASE         15      /* Xconfig or default */
-#define XCONFIG_IOBASE          16      /* Xconfig or default */
-#define XCONFIG_DACBASE         17      /* Xconfig or default */
-#define XCONFIG_COPBASE         18      /* Xconfig or default */
-#define XCONFIG_POSBASE         19      /* Xconfig or default */
+#define XCONFIG_INSTANCE        11      /* XF86Config or default */
+#define XCONFIG_RAMDAC          12      /* XF86Config or default */
+#define XCONFIG_DACSPEED        13      /* XF86Config or default */
+#define XCONFIG_BIOSBASE        14      /* XF86Config or default */
+#define XCONFIG_MEMBASE         15      /* XF86Config or default */
+#define XCONFIG_IOBASE          16      /* XF86Config or default */
+#define XCONFIG_DACBASE         17      /* XF86Config or default */
+#define XCONFIG_COPBASE         18      /* XF86Config or default */
+#define XCONFIG_POSBASE         19      /* XF86Config or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"
 
 #ifdef INIT_CONFIG
 
-OFlagSet  GenericXconfigFlag;
+OFlagSet  GenericXF86ConfigFlag;
 
 #else
 
-extern OFlagSet  GenericXconfigFlag;
+extern OFlagSet  GenericXF86ConfigFlag;
 
 #endif  /* INIT_CONFIG */

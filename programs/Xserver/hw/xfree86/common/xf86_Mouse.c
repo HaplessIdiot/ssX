@@ -1,4 +1,5 @@
 /* $XConsortium: xf86_Mouse.c,v 1.1 94/03/28 21:24:12 dpw Exp $ */
+/* $XFree86$ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -114,7 +115,7 @@ xf86SetupMouse()
       **
       ** NOTE: There are different versions of both MouseMan and TrackMan!
       **       Hence I add another protocol P_LOGIMAN, which the user can
-      **       specify as MouseMan in his Xconfig file. This entry was
+      **       specify as MouseMan in his XF86Config file. This entry was
       **       formerly handled as a special case of P_MS. However, people
       **       who don't have the middle button problem, can still specify
       **       Microsoft and use P_MS.

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.1 1994/09/17 04:06:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.2 1994/09/18 08:49:02 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -51,14 +51,12 @@ unsigned char p;
    s3OutTiIndReg(TI_MISC_CONTROL, 0x00,
                 TI_MC_LOOP_PLL_RCLK | TI_MC_LCLK_LATCH | TI_MC_INT_6_8_CONTROL);
 
-#if 0
    /*
-    * Set a standard MCLK (57MHz)
+    * Set a standard MCLK (109.7MHz / 2)
     */
-   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x01);
-   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x01);
+   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x16);
+   s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x15);
    s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, 0x80);
-#endif
 
    /*
     * And finally enable the clock

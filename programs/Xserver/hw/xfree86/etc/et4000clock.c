@@ -1,8 +1,8 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/etc/et4000clock.c,v 3.0 1994/06/05 05:57:03 dawes Exp $
  *
  * This is a sample clock setting program.  It will not work with all
- * ET4000 cards.  To work correctly the clocks line in Xconfig must
+ * ET4000 cards.  To work correctly the clocks line in XF86Config must
  * have the values in the correct order.
  *
  * usage: et4000clock freq index

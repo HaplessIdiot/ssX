@@ -1,5 +1,5 @@
 /* $XConsortium: ibm8514.c,v 1.1 94/03/28 21:02:54 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.5 1994/09/03 02:50:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/ibm8514/ibm8514.c,v 3.6 1994/09/04 10:44:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -161,7 +161,7 @@ ibm8514Probe()
 
     if (ibm8514InfoRec.chipset) {
 	if (StrCaseCmp(ibm8514InfoRec.chipset, "ibm8514")) {
-	    ErrorF("Chipset specified in Xconfig is not \"ibm8514\" (%s)!\n",
+	    ErrorF("Chipset specified in XF86Config is not \"ibm8514\" (%s)!\n",
 		   ibm8514InfoRec.chipset);
 	    return(FALSE);
 	}

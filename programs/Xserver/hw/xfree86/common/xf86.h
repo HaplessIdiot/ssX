@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.1 94/03/28 21:22:43 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.6 1994/09/04 10:47:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.7 1994/09/08 14:27:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -189,7 +189,7 @@ typedef struct {
 				 SPEEDUP_BITBLT | SPEEDUP_LINE | \
                                  SPEEDUP_TEGBLT8 | SPEEDUP_RECTSTIP)
 
-/* SpeedUp flags used if SpeedUp is not in Xconfig */
+/* SpeedUp flags used if SpeedUp is not in XF86Config */
 #define SPEEDUP_DEFAULT		SPEEDUP_ALL
 
 extern Bool        xf86VTSema;

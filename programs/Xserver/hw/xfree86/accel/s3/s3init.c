@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.24 1994/09/19 14:20:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.25 1994/09/20 12:46:01 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -256,16 +256,15 @@ s3CleanUp(void)
       s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[0]);  /* N */
       s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[1]);  /* M */
       s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[2]);  /* P */
-#if 0
-      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
-      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[3]);  /* N */
-      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[4]);  /* M */
-      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[5]);  /* P */
-      s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[3]);         /* N */
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[4]);         /* M */
+      s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[5] | 0x80 ); /* P */
+
       s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[6]);  /* N */
       s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[7]);  /* M */
       s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[8]);  /* P */
-#endif
+
       s3OutTiIndReg(TI_TRUE_COLOR_CONTROL, 0x00,
                     oldS3->Ti3020[TI_TRUE_COLOR_CONTROL]);
       s3OutTiIndReg(TI_MISC_CONTROL, 0x00, oldS3->Ti3020[TI_MISC_CONTROL]);
@@ -305,6 +304,15 @@ s3CleanUp(void)
       outb(vgaCRIndex, 0x40 + i);
       outb(vgaCRReg, oldS3->s3sysreg[i]);
    }
+
+   if (OFLG_ISSET(CLOCK_OPTION_ICS2595, &s3InfoRec.clockOptions)){
+      outb(vgaCRIndex, 0x42);
+      outb(vgaCRReg,   0x01);
+      outb(vgaCRIndex, 0x5c);	/* switch back to 28MHz clock */
+      outb(vgaCRReg,   0x20);
+      outb(vgaCRReg,   0x00);
+   }
+
    vgaHWRestore((vgaHWPtr)oldS3);
 
    outb(0x3c2, old_clock);
@@ -484,24 +492,28 @@ s3Init(mode)
           oldS3->Ti3020[TI_TRUE_COLOR_CONTROL] =
                  s3InTiIndReg(TI_TRUE_COLOR_CONTROL);
           oldS3->Ti3020[TI_MISC_CONTROL] = s3InTiIndReg(TI_MISC_CONTROL);
+
           s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
           oldS3->Ti3025[0] = s3InTiIndReg(TI_PIXEL_CLOCK_PLL_DATA);  /* N */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x01);
+          s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[0]);
           oldS3->Ti3025[1] = s3InTiIndReg(TI_PIXEL_CLOCK_PLL_DATA);  /* M */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x02);
+          s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[1]);
           oldS3->Ti3025[2] = s3InTiIndReg(TI_PIXEL_CLOCK_PLL_DATA);  /* P */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+          s3OutTiIndReg(TI_PIXEL_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[2]);
+
           oldS3->Ti3025[3] = s3InTiIndReg(TI_MCLK_PLL_DATA);  /* N */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x04);
+          s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[3]);
           oldS3->Ti3025[4] = s3InTiIndReg(TI_MCLK_PLL_DATA);  /* M */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x08);
+          s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[4]);
           oldS3->Ti3025[5] = s3InTiIndReg(TI_MCLK_PLL_DATA);  /* P */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x00);
+          s3OutTiIndReg(TI_MCLK_PLL_DATA, 0x00, oldS3->Ti3025[5]);
+
           oldS3->Ti3025[6] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* N */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x10);
+          s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[6]);
           oldS3->Ti3025[7] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* M */
-          s3OutTiIndReg(TI_PLL_CONTROL, 0x00, 0x20);
+          s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[7]);
           oldS3->Ti3025[8] = s3InTiIndReg(TI_LOOP_CLOCK_PLL_DATA);  /* P */
+          s3OutTiIndReg(TI_LOOP_CLOCK_PLL_DATA, 0x00, oldS3->Ti3025[8]);
       }
 
       for (i = 0; i < 5; i++) {
@@ -576,7 +588,9 @@ s3Init(mode)
       pixMuxShift = -(s3Bpp>>1);  /* for 16/32 bpp */
    else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
       pixMuxShift = 0;
-   else if ((S3_928_SERIES(s3ChipId) && DAC_IS_TI3020) && pixel_multiplexing) {
+   else if ((S3_928_SERIES(s3ChipId) && 
+	     (DAC_IS_TI3020 || DAC_IS_BT485_SERIES)) &&
+            pixel_multiplexing) {
       if (s3Bpp == 4)      pixMuxShift = 0;  /* 32 bit */
       else if (s3Bpp == 2) pixMuxShift = 1;  /* 16 bit */
       else                 pixMuxShift = 2;  /*  8 bit */
@@ -1049,7 +1063,7 @@ s3Init(mode)
 
          /* set s3 reg55 to external serial by or'ing 0x08              */
          outb(vgaCRIndex, 0x55);
-         tmp = inb(vgaCRReg);
+         tmp = inb(vgaCRReg); /* XXXX Something should be masked here */
 	 if (s3InfoRec.bitsPerPixel == 32)  /* 24bpp truecolor */
 	    tmp |= 0x48;
 	 else
@@ -1058,17 +1072,19 @@ s3Init(mode)
 
 	 if (S3_964_SERIES(s3ChipId) && DAC_IS_BT485_SERIES) {
 	    /* Stealth 64 and Miro Crystal 20SV */
+	    outb(vgaCRIndex, 0x66);
+	    tmp = inb(vgaCRReg) & 0xc0;
 	    if (mode->Flags & V_DBLCLK) {
 	       /* Set VCLK = DCLCK/2 */
 	       /* And set up a 32 bit interleaved bus */
-	       outb(vgaCRIndex, 0x66);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xc0) | 0x11);
+	       tmp |= 0x11;
             } else {
-	       outb(vgaCRIndex, 0x66);
-	       tmp = inb(vgaCRReg);
-	       outb(vgaCRReg, (tmp & 0xc0) | 0x12);
+	       if (s3Bpp == 1)
+		  tmp |= 0x12;
+	       else
+		  tmp |= 0x10;
             }
+	    outb(vgaCRReg, tmp);
          }
 
 	 /* Setting the for the SPEA Mercury affects clocks > 120MHz */
@@ -1110,7 +1126,12 @@ s3Init(mode)
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);
          tmp = inb(vgaCRReg);
-         outb(vgaCRReg, tmp & 0xDF);
+	 if ((OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) &&
+	     (s3Bpp != 1)) {
+            outb(vgaCRReg, tmp | 0x20);
+	 } else {
+            outb(vgaCRReg, tmp & 0xDF);
+	 }
 
          /* set s3 reg65 for some unknown reason                        */
          outb(vgaCRIndex, 0x65);
@@ -1128,13 +1149,26 @@ s3Init(mode)
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, tmp & 0xF7);
 
-         s3OutBtReg(BT_COMMAND_REG_1, 0x00, 0x00);
+	 if (s3InfoRec.bitsPerPixel == 32)		/* 24bpp */
+	    tmp = 0x10;
+	 else if (s3InfoRec.bitsPerPixel == 16)		/* 5-6-5 */
+	    tmp = 0x3c;					/* 1:1 MUX */
+	 else if (s3InfoRec.bitsPerPixel == 15)		/* 5-5-5 */
+	    tmp = 0x34;					/* 1:1 MUX */
+	 else
+	    tmp = 0x00;
+         s3OutBtReg(BT_COMMAND_REG_1, 0x00, tmp);
+
+	 if (s3InfoRec.bitsPerPixel > 8)
+	    tmp = 0x30;
+	 else
+	    tmp = 0x10;
 
 	 /* pclk1,vgaport                                               */
 	 if (mode->Flags & V_INTERLACE)
-	    s3OutBtReg(BT_COMMAND_REG_2, 0x00, 0x10 | 0x08);
+	    s3OutBtReg(BT_COMMAND_REG_2, 0x00, tmp | 0x08);
 	 else
-	    s3OutBtReg(BT_COMMAND_REG_2, 0x00, 0x10);
+	    s3OutBtReg(BT_COMMAND_REG_2, 0x00, tmp);
 
       }  /* end of pixel_multiplexing */
    }
@@ -1436,8 +1470,10 @@ s3Init(mode)
    cebank();
    outb(vgaCRIndex, 0x3a);
 #if 0  /* x64: set to 1 if PCI read bursts should be enabled
-          NOTE: there are known problems with PCI burst mode in SATURN chipset rev. 2 
-                so this is commented out, maybe a new Xconfig option should be used */
+        * NOTE: there are known problems with PCI burst mode in SATURN
+        * chipset rev. 2 so this is commented out, maybe a new XF86Config
+        * option should be used
+        */
    if (S3_x64_SERIES(s3ChipId))
       outb(vgaCRReg, 0xb5 & 0x7f);
    else
@@ -1467,38 +1503,58 @@ s3Init(mode)
       }
    }
 
-   outb(vgaCRIndex, 0x43);
-   switch (s3InfoRec.depth) {
-        case 24:
-        case 32:
-           if (S3_864_SERIES(s3ChipId))
-	      outb(vgaCRReg, 0x08);  /* 0x88 can't be used for 864/964 */
-           else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
-	      outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
-	   break;
-	case 15:
-	case 16:
-	   if (DAC_IS_ATT490) /* JON */
-	      outb(vgaCRReg, 0x80);
-	   else if (DAC_IS_TI3025)
-	      outb(vgaCRReg, 0x10);
-	   else if (S3_864_SERIES(s3ChipId))
-	      outb(vgaCRReg, 0x08);  /* 0x88 can't be used for 864/964 */
-           else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
-	      outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
-	   else 
-	      outb(vgaCRReg, 0x09);
-           break;
-        case 8:
-        default:
-	   outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
-	   break;
+   if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+      outb(vgaCRIndex, 0x5C);
+      outb(vgaCRReg, 0x20);
+      outb(0x3C7, 0x00);
    }
 
-       
+   outb(vgaCRIndex, 0x43);
+   switch (s3InfoRec.depth) {
+   case 24:
+   case 32:
+      if (S3_864_SERIES(s3ChipId))
+	 outb(vgaCRReg, 0x08);  /* 0x88 can't be used for 864/964 */
+      else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
+	 outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
+      else if (DAC_IS_BT485_SERIES && S3_928_SERIES(s3ChipId))
+	 outb(vgaCRReg, 0x00);
+      break;
+   case 15:
+   case 16:
+      if (DAC_IS_ATT490) /* JON */
+	 outb(vgaCRReg, 0x80);
+      else if (DAC_IS_TI3025)
+	 outb(vgaCRReg, 0x10);
+      else if (S3_864_SERIES(s3ChipId))
+	 outb(vgaCRReg, 0x08);  /* 0x88 can't be used for 864/964 */
+      else if (S3_928_SERIES(s3ChipId) && DAC_IS_SC15025)
+	 outb(vgaCRReg, 0x01);  /* ELSA Winner 1000 */
+      else if (DAC_IS_BT485_SERIES && S3_928_SERIES(s3ChipId))
+	 outb(vgaCRReg, 0x08);
+      else 
+	 outb(vgaCRReg, 0x09);
+      break;
+   case 8:
+   default:
+      if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
+	 outb(vgaCRReg, 0x80);
+      } else {
+         outb(vgaCRReg, 0x00); /* DON'T enable XOR addresses */
+      }
+      break;
+   }
+
+   if (OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)){
+      outb(vgaCRIndex, 0x5C);
+      outb(vgaCRReg, 0x00);
+      tmp = inb(vgaCRReg);
+   } else {
+      tmp = 0x00;
+   }
 
    outb(vgaCRIndex, 0x44);
-   outb(vgaCRReg, 0x00);
+   outb(vgaCRReg, tmp);
 
    outb(vgaCRIndex, 0x45);
    i = inb(vgaCRReg) & 0xf2;

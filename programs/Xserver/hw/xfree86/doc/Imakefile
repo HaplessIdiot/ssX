@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.2 1994/09/17 04:06:45 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/doc/Imakefile,v 3.3 1994/09/20 12:47:11 dawes Exp $
 
 #include <Server.tmpl>
 
@@ -41,7 +41,7 @@ all::
 HWREADME =  README.ati README.trident README.tseng README.WstDig \ 
             README.cirrus README.Video7 README.P9000 README.agx
 
-MAINDOCS = /* COPYRIGHT README */ README.Config /* INSTALL */ ServersOnly
+MAINDOCS = COPYRIGHT /* README */ README.Config /* INSTALL */ ServersOnly
 
 OTHERDOCS = VideoModes.doc modeDB.txt AccelCards README.clkprog
 

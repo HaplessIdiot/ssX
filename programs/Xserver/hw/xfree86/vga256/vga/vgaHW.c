@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.3 94/03/28 21:56:01 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.8 1994/08/01 12:18:40 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.9 1994/09/04 10:51:06 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -351,7 +351,7 @@ setExternClock(clock)
 	 * Make sure that the child doesn't inherit any I/O permissions it
 	 * shouldn't have.  It's better to put constraints on the development
 	 * of a clock program than to give I/O permissions to a bogus program
-	 * in someone's Xconfig file
+	 * in someone's XF86Config file
 	 */
 	for (i = 0; i < MAXSCREENS; i++)
 	  xf86DisableIOPorts(i);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/hgc1280driv.c,v 3.0 1994/05/04 15:01:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/mono/drivers/hgc1280/hgc1280driv.c,v 3.1 1994/05/31 08:11:26 dawes Exp $ */
 /*
  * MONO: Driver family for interlaced and banked monochrome video adaptors
  * Pascal Haible 8/93, 3/94, 4/94 haible@IZFM.Uni-Stuttgart.DE
@@ -337,7 +337,7 @@ ErrorF("count=%d\n",cnt);
   /* The following is done for both probed and preset chipset */
 
   if (!monoInfoRec.videoRam) {
-	/* videoram not given in Xconfig */
+	/* videoram not given in XF86Config */
 	monoInfoRec.videoRam=192;
   }
   if (!HGC_Primary) {
@@ -356,7 +356,7 @@ ErrorF("count=%d\n",cnt);
    * HGC_MAX_VIRTUAL_X and ..._Y
    */
    if (monoInfoRec.virtualX < 0) {
-	/* No virtual set in Xconfig */
+	/* No virtual set in XF86Config */
 	/* Set virtual to real size */
 	monoInfoRec.virtualX = HGC_HDISPLAY;
 	monoInfoRec.virtualY = HGC_VDISPLAY;
