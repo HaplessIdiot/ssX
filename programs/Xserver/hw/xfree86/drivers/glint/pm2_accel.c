@@ -29,7 +29,7 @@
  * 
  * Permedia 2 accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.4 1998/08/13 14:45:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_accel.c,v 1.5 1998/09/05 06:36:48 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,6 +39,12 @@
 #include "xf86Pci.h"
 
 #include "miline.h"
+#define PSZ 8
+#include "cfb.h"
+#undef PSZ
+#include "cfb16.h"
+#include "cfb24.h"
+#include "cfb32.h"
 
 #include "glint_regs.h"
 #include "glint.h"
@@ -71,7 +77,15 @@ static void Permedia2SetClippingRectangle(ScrnInfoPtr pScrn, int x, int y,
 				int w, int h);
 static void Permedia2SetupForSolidLine(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
-static void Permedia2SubsequentSolidBresenhamLine(ScrnInfoPtr pScrn,
+static void Permedia2SubsequentHorVertLine(ScrnInfoPtr pScrn, int x, int y, 
+				int len, int dir);
+static void Permedia2SubsequentSolidBresenhamLine8bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void Permedia2SubsequentSolidBresenhamLine16bpp(ScrnInfoPtr pScrn,
+        			int x, int y, int dmaj, int dmin, int e, 
+				int len, int octant);
+static void Permedia2SubsequentSolidBresenhamLine32bpp(ScrnInfoPtr pScrn,
         			int x, int y, int dmaj, int dmin, int e, 
 				int len, int octant);
 static void Permedia2WriteBitmap(ScrnInfoPtr pScrn, int x, int y, int w, int h, 
@@ -110,6 +124,10 @@ static void Permedia2SetupForCPUToScreenColorExpandFill(ScrnInfoPtr pScrn,
 static void Permedia2SubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, 
 				int x, int y, int w, int h, int skipleft);
 static void Permedia2LoadCoord(ScrnInfoPtr pScrn, int x, int y, int w, int h);
+static void Permedia2PolylinesThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
+   				int mode, int npt, DDXPointPtr pPts);
+static void Permedia2PolySegmentThinSolidWrapper(DrawablePtr pDraw, GCPtr pGC,
+ 				int nseg, xSegment *pSeg);
 
 #define MAX_FIFO_ENTRIES 256
 
@@ -208,7 +226,7 @@ Permedia2AccelInit(ScreenPtr pScreen)
 
     Permedia2InitializeEngine(pScrn);
 
-    infoPtr->Flags = PIXMAP_CACHE /*| MICROSOFT_ZERO_LINE_BIAS*/;
+    infoPtr->Flags = PIXMAP_CACHE;
  
     infoPtr->Sync = Permedia2Sync;
 
@@ -222,10 +240,23 @@ Permedia2AccelInit(ScreenPtr pScreen)
 				Permedia2SubsequentFillRectSolid24bpp;
     } else {
         infoPtr->SolidLineFlags = 0;
-#if 0
+        infoPtr->PolySegmentThinSolidFlags = 0;
+        infoPtr->PolylinesThinSolidFlags = 0;
         infoPtr->SetupForSolidLine = Permedia2SetupForSolidLine;
-        infoPtr->SubsequentSolidBresenhamLine = Permedia2SubsequentSolidBresenhamLine;
-#endif
+        infoPtr->SubsequentSolidHorVertLine = Permedia2SubsequentHorVertLine;
+	switch(pScrn->bitsPerPixel) {
+	case 8:		infoPtr->SubsequentSolidBresenhamLine = 
+				Permedia2SubsequentSolidBresenhamLine8bpp;
+			break;
+	case 16:	infoPtr->SubsequentSolidBresenhamLine = 
+				Permedia2SubsequentSolidBresenhamLine16bpp;
+			break;
+	case 32:	infoPtr->SubsequentSolidBresenhamLine = 
+				Permedia2SubsequentSolidBresenhamLine32bpp;
+			break;
+	}
+	infoPtr->PolySegmentThinSolid = Permedia2PolySegmentThinSolidWrapper;
+	infoPtr->PolylinesThinSolid = Permedia2PolylinesThinSolidWrapper;
     	infoPtr->SetupForSolidFill = Permedia2SetupForFillRectSolid;
     	infoPtr->SubsequentSolidFillRect = Permedia2SubsequentFillRectSolid;
     }
@@ -457,6 +488,37 @@ Permedia2SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
     GLINT_WRITE_REG(PrimitiveRectangle | pGlint->BltScanDirection, Render);
 }
 
+
+
+static void 
+Permedia2PolylinesThinSolidWrapper(
+   DrawablePtr     pDraw,
+   GCPtr           pGC,
+   int             mode,
+   int             npt,
+   DDXPointPtr     pPts
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
+    pGlint->CurrentGC = pGC;
+    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
+    XAAPolyLines(pDraw, pGC, mode, npt, pPts);
+}
+
+static void 
+Permedia2PolySegmentThinSolidWrapper(
+   DrawablePtr     pDraw,
+   GCPtr           pGC,
+   int             nseg,
+   xSegment        *pSeg
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
+    GLINTPtr pGlint = GLINTPTR(infoRec->pScrn);
+    pGlint->CurrentGC = pGC;
+    if(infoRec->NeedToSync) (*infoRec->Sync)(infoRec->pScrn);
+    XAAPolySegment(pDraw, pGC, nseg, pSeg);
+}
+
 static void
 Permedia2SetupForSolidLine(ScrnInfoPtr pScrn, int color,
 					 int rop, unsigned int planemask)
@@ -476,61 +538,140 @@ Permedia2SetupForSolidLine(ScrnInfoPtr pScrn, int color,
     LOADROP(rop);
 }
 
+static void
+Permedia2SubsequentHorVertLine(ScrnInfoPtr pScrn,int x,int y,int len,int dir)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+  
+    GLINT_WAIT(6);
+    GLINT_WRITE_REG(x<<16, StartXDom);
+    GLINT_WRITE_REG(y<<16, StartY);
+    if (dir == DEGREES_0) {
+	GLINT_WRITE_REG(1<<16, dXDom);
+	GLINT_WRITE_REG(0<<16, dY);
+    } else {
+	GLINT_WRITE_REG(0<<16, dXDom);
+	GLINT_WRITE_REG(1<<16, dY);
+    }
+
+    GLINT_WRITE_REG(len, GLINTCount);
+    GLINT_WRITE_REG(PrimitiveLine, Render);
+}
+
 static void 
-Permedia2SubsequentSolidBresenhamLine( ScrnInfoPtr pScrn,
+Permedia2SubsequentSolidBresenhamLine8bpp( ScrnInfoPtr pScrn,
         int x, int y, int dmaj, int dmin, int e, int len, int octant)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
-   int dy, dxdom, startxdom, starty;
-   double min_off = 0.0;
+    cfbPrivGCPtr devPriv;
 
-#if 0 /* We get a closer match when we don't adjust */
-   dmaj >>= 1;  
-   dmin >>= 1;
-#endif
-   x <<= 16;
-   y <<= 16;
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    GLINT_WRITE_REG(-1<<16, dY);
+	} else {
+	    GLINT_WRITE_REG(1<<16, dY);
+	}
 
-   /* translate the error term into a minor axis offset  
-	in units of 1/(2^16) of a pixel. */
-   if(dmaj != -e)
-      min_off = (((double)e/(double)dmaj) + 1.0) * 0.5 * 65536.0;
+	if(octant & XDECREASING) {
+	    GLINT_WRITE_REG(-1<<16, dXDom);
+	} else {
+	    GLINT_WRITE_REG(1<<16, dXDom);
+	}
 
-   if(octant & YMAJOR) {
-	if(octant & YDECREASING)
-	  dy = -1 << 16;  
-	else
-	  dy = 1 << 16;
-        
-        if(octant & XDECREASING)
-            dxdom = (-dmin << 16)/dmaj;
-	else
-            dxdom = (dmin << 16)/dmaj;
-	/* We have to shift up one, as bit 0 isn't used for precision */
-	startxdom = x | (((int)min_off<<1) & 0xFFFF); 	
-	starty = y;
-   } else {
-        if(octant & XDECREASING)
-          dxdom = -1 << 16;  
-        else
-          dxdom = 1 << 16;
+	GLINT_WRITE_REG(x<<16, StartXDom);
+	GLINT_WRITE_REG(y<<16, StartY);
+	GLINT_WRITE_REG(len,GLINTCount);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
 
-	if(octant & YDECREASING)
-            dy = (-dmin << 16)/dmaj;
-	else
-            dy = (dmin << 16)/dmaj;
-        startxdom = x;
-	/* We have to shift up one, as bit 0 isn't used for precision */
-	starty = y | (((int)min_off<<1) & 0xFFFF);
-   }
-   GLINT_WRITE_REG(startxdom,StartXDom);
-   GLINT_WRITE_REG(starty,StartY);
-   GLINT_WRITE_REG(len,GLINTCount);
-   GLINT_WRITE_REG(dxdom,dXDom);
-   GLINT_WRITE_REG(dy,dY);
+    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
 
-   GLINT_WRITE_REG(PrimitiveLine, Render);
+    cfbBresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 2, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
 }
+
+static void 
+Permedia2SubsequentSolidBresenhamLine16bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    GLINT_WRITE_REG(-1<<16, dY);
+	} else {
+	    GLINT_WRITE_REG(1<<16, dY);
+	}
+
+	if(octant & XDECREASING) {
+	    GLINT_WRITE_REG(-1<<16, dXDom);
+	} else {
+	    GLINT_WRITE_REG(1<<16, dXDom);
+	}
+
+	GLINT_WRITE_REG(x<<16, StartXDom);
+	GLINT_WRITE_REG(y<<16, StartY);
+	GLINT_WRITE_REG(len,GLINTCount);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
+
+    cfb16BresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth >> 1, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+
+static void 
+Permedia2SubsequentSolidBresenhamLine32bpp( ScrnInfoPtr pScrn,
+        int x, int y, int dmaj, int dmin, int e, int len, int octant)
+{
+    GLINTPtr pGlint = GLINTPTR(pScrn);
+    cfbPrivGCPtr devPriv;
+
+    if(dmaj == dmin) {
+	GLINT_WAIT(6);
+	if(octant & YDECREASING) {
+	    GLINT_WRITE_REG(-1<<16, dY);
+	} else {
+	    GLINT_WRITE_REG(1<<16, dY);
+	}
+
+	if(octant & XDECREASING) {
+	    GLINT_WRITE_REG(-1<<16, dXDom);
+	} else {
+	    GLINT_WRITE_REG(1<<16, dXDom);
+	}
+
+	GLINT_WRITE_REG(x<<16, StartXDom);
+	GLINT_WRITE_REG(y<<16, StartY);
+	GLINT_WRITE_REG(len,GLINTCount);
+	GLINT_WRITE_REG(PrimitiveLine, Render);
+	return;
+    }
+
+    devPriv = cfbGetGCPrivate(pGlint->CurrentGC);
+
+    cfb32BresS(devPriv->rop, devPriv->and, devPriv->xor, 
+                (unsigned long*)pGlint->FbBase, pScrn->displayWidth, 
+                (octant & XDECREASING) ? -1 : 1, 
+                (octant & YDECREASING) ? -1 : 1, 
+                (octant & YMAJOR) ? Y_AXIS : X_AXIS,
+                x, y, dmin + e, dmin, dmin - dmaj, len);
+}
+
 
 static void
 Permedia2SetupForFillRectSolid24bpp(ScrnInfoPtr pScrn, int color,

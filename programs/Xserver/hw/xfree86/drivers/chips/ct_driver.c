@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.31 1998/09/13 05:23:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.32 1998/09/13 09:10:18 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -114,6 +114,9 @@
 #include "xf1bpp.h"
 #include "xf4bpp.h"
 
+/* Needed by Resources Access Control (RAC) */
+#include "xf86RAC.h"
+
 /* These need to be checked */
 #if 0
 #ifdef XFreeXDGA 
@@ -178,11 +181,11 @@ static Bool     chipsModeInitWingine(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static Bool     chipsModeInit655xx(ScrnInfoPtr pScrn, DisplayModePtr mode);
 static int      chipsVideoMode(int vgaBitsPerPixel, int weightGreen,
 				int displayHSize, int displayVSize);
-static void     CHIPSDisplayPowerManagementSet(ScrnInfoPtr pScrn,
+static void     chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 				int PowerManagementMode, int flags);
-static void      chipsHWCursorOn(CHIPSPtr cPtr);
-static void      chipsHWCursorOff(CHIPSPtr cPtr);
-static void      chipsFixResume(CHIPSPtr cPtr);
+static void     chipsHWCursorOn(CHIPSPtr cPtr);
+static void     chipsHWCursorOff(CHIPSPtr cPtr);
+static void     chipsFixResume(CHIPSPtr cPtr);
 
 /*
  * Initialise some arrays that are used in multiple instances of the
@@ -654,164 +657,165 @@ CHIPSIdentify(int flags)
 static Bool
 CHIPSProbe(DriverPtr drv, int flags)
 {
-  Bool foundScreen = FALSE;
-  int numDevSections, numUsed;
-  GDevPtr *devSections, *usedDevs;
-  GDevPtr usedDev;
-  pciVideoPtr pPci, *usedPci;
-  int *usedChips;
-  int usedChip;
+    Bool foundScreen = FALSE;
+    int numDevSections, numUsed;
+    GDevPtr *devSections, *usedDevs;
+    GDevPtr usedDev;
+    pciVideoPtr pPci, *usedPci;
+    int *usedChips;
+    int usedChip;
 
-  /*
-   * Find the config file Device sections that match this
-   * driver, and return if there are none.
-   */
-  if ((numDevSections = xf86MatchDevice(CHIPS_DRIVER_NAME,
-					&devSections)) <= 0) {
-    return FALSE;
-  }
+    /*
+     * Find the config file Device sections that match this
+     * driver, and return if there are none.
+     */
+    if ((numDevSections = xf86MatchDevice(CHIPS_DRIVER_NAME,
+					  &devSections)) <= 0) {
+	return FALSE;
+    }
   
-  /* PCI BUS */
-  if (xf86GetPciVideoInfo() ) {
-    numUsed = xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
-				    CHIPSChipsets, CHIPSPCIchipsets, 
-				    devSections,numDevSections,
-				    &usedDevs, &usedPci, &usedChips); /*XXX*/
-    if (numUsed > 0){
-      int i;
-      for (i = 0; i < numUsed; i++) {
-	pciVideoPtr pPci;
-	BusResource Resource;
-	pPci = usedPci[i];
-	Resource = xf86FindPciResource(usedChips[i],CHIPSPCIchipsets); /*XXX*/
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
-			     Resource)) {  /*XXX*/
-	  ScrnInfoPtr pScrn;
-	  /* Allocate a ScrnInfoRec and claim the slot */
-	  pScrn = xf86AllocateScreen(drv,0);
-	  xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, Resource,
-			   &CHIPS, usedChips[i], pScrn->scrnIndex); /*XXX*/
-	  pScrn->driverVersion = VERSION;
-	  pScrn->driverName    = CHIPS_DRIVER_NAME;
-	  pScrn->name          = CHIPS_NAME;
-	  pScrn->Probe         = CHIPSProbe;
-	  pScrn->PreInit       = CHIPSPreInit;
-	  pScrn->ScreenInit    = CHIPSScreenInit;
-	  pScrn->SwitchMode    = CHIPSSwitchMode;
-	  pScrn->AdjustFrame   = CHIPSAdjustFrame;
-	  pScrn->EnterVT       = CHIPSEnterVT;
-	  pScrn->LeaveVT       = CHIPSLeaveVT;
-	  pScrn->FreeScreen    = CHIPSFreeScreen;
-	  pScrn->ValidMode     = CHIPSValidMode;
-	  pScrn->device        = usedDevs[i];
-	  foundScreen = TRUE;
-	}
-      }
+    /* PCI BUS */
+    if (xf86GetPciVideoInfo() ) {
+	numUsed = xf86MatchPciInstances(CHIPS_NAME, PCI_VENDOR_CHIPSTECH,
+					CHIPSChipsets, CHIPSPCIchipsets, 
+					devSections,numDevSections,
+					&usedDevs, &usedPci, &usedChips);
+	if (numUsed > 0){
+	    int i;
+	    for (i = 0; i < numUsed; i++) {
+		pciVideoPtr pPci;
+		BusResource Resource;
+		pPci = usedPci[i];
+		Resource = xf86FindPciResource(usedChips[i],CHIPSPCIchipsets);
+		if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func,
+				     Resource)) {  
+		    ScrnInfoPtr pScrn;
+		    /* Allocate a ScrnInfoRec and claim the slot */
+		    pScrn = xf86AllocateScreen(drv,0);
+		    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
+				     Resource, &CHIPS, usedChips[i],
+				     pScrn->scrnIndex);
+		    pScrn->driverVersion = VERSION;
+		    pScrn->driverName    = CHIPS_DRIVER_NAME;
+		    pScrn->name          = CHIPS_NAME;
+		    pScrn->Probe         = CHIPSProbe;
+		    pScrn->PreInit       = CHIPSPreInit;
+		    pScrn->ScreenInit    = CHIPSScreenInit;
+		    pScrn->SwitchMode    = CHIPSSwitchMode;
+		    pScrn->AdjustFrame   = CHIPSAdjustFrame;
+		    pScrn->EnterVT       = CHIPSEnterVT;
+		    pScrn->LeaveVT       = CHIPSLeaveVT;
+		    pScrn->FreeScreen    = CHIPSFreeScreen;
+		    pScrn->ValidMode     = CHIPSValidMode;
+		    pScrn->device        = usedDevs[i];
+		    foundScreen = TRUE;
+		}
+	    }
       
-      xfree(usedDevs);
-      xfree(usedPci);
-   }
-  }
-  /* Isa Bus */
+	    xfree(usedDevs);
+	    xfree(usedPci);
+	}
+    }
+    /* Isa Bus */
 
-  usedChip = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
-				   chipsFindIsaDevice,devSections,
-				   numDevSections,&usedDev);    /*XXX*/
-  if(usedChip >= 0)
+    usedChip = xf86MatchIsaInstances(CHIPS_NAME,CHIPSChipsets,CHIPSISAchipsets,
+				     chipsFindIsaDevice,devSections,
+				     numDevSections,&usedDev);    /*XXX*/
+    if(usedChip >= 0)
     {
-      ScrnInfoPtr pScrn;
-      int Resource = xf86FindIsaResource(usedChip,CHIPSISAchipsets); /*XXX*/
+	ScrnInfoPtr pScrn;
+	int Resource = xf86FindIsaResource(usedChip,CHIPSISAchipsets); /*XXX*/
 	  
-      pScrn = xf86AllocateScreen(drv,0);
-      xf86ClaimIsaSlot(Resource,&CHIPS,usedChip,pScrn->scrnIndex);
-      pScrn->driverVersion = VERSION;
-      pScrn->driverName    = CHIPS_DRIVER_NAME;
-      pScrn->name          = "CHIPS";
-      pScrn->Probe         = CHIPSProbe;
-      pScrn->PreInit       = CHIPSPreInit;
-      pScrn->ScreenInit    = CHIPSScreenInit;
-      pScrn->SwitchMode    = CHIPSSwitchMode;
-      pScrn->AdjustFrame   = CHIPSAdjustFrame;
-      pScrn->EnterVT       = CHIPSEnterVT;
-      pScrn->LeaveVT       = CHIPSLeaveVT;
-      pScrn->FreeScreen    = CHIPSFreeScreen;
-      pScrn->ValidMode     = CHIPSValidMode;
-      pScrn->device        = usedDev;
-      foundScreen = TRUE;
+	pScrn = xf86AllocateScreen(drv,0);
+	xf86ClaimIsaSlot(Resource,&CHIPS,usedChip,pScrn->scrnIndex);
+	pScrn->driverVersion = VERSION;
+	pScrn->driverName    = CHIPS_DRIVER_NAME;
+	pScrn->name          = "CHIPS";
+	pScrn->Probe         = CHIPSProbe;
+	pScrn->PreInit       = CHIPSPreInit;
+	pScrn->ScreenInit    = CHIPSScreenInit;
+	pScrn->SwitchMode    = CHIPSSwitchMode;
+	pScrn->AdjustFrame   = CHIPSAdjustFrame;
+	pScrn->EnterVT       = CHIPSEnterVT;
+	pScrn->LeaveVT       = CHIPSLeaveVT;
+	pScrn->FreeScreen    = CHIPSFreeScreen;
+	pScrn->ValidMode     = CHIPSValidMode;
+	pScrn->device        = usedDev;
+	foundScreen = TRUE;
     }
 
-  xfree(devSections);
-  return foundScreen;
+    xfree(devSections);
+    return foundScreen;
 }
 
 static int
 chipsFindIsaDevice()
 {
-  int found = -1;
-  unsigned char tmp;
-  /*if ((testinx(0x3D6, 0x18) && (testinx2(0x3D6, 0x7E, 0x3F))))*/ {
-    /* Chips and Technologies chipset. Check if its supported */
-    read_xr(0x00, tmp);
-    switch (tmp & 0xF0) {
-    case 0x70: 		/* CT65520 */
-      found = CHIPS_CT65520; break;
-    case 0x80:		/* CT65525 or CT65530 */
-      found = CHIPS_CT65530; break;
-    case 0xA0:		/* CT64200 */
-      found = CHIPS_CT64200; break;
-    case 0xB0:		/* CT64300 */
-      found = CHIPS_CT64300; break;
-    case 0xC0:		/* CT65535 */
-      found = CHIPS_CT65535; break;
-    default:
-      switch (tmp & 0xF8) {
-      case 0xD0:		/* CT65540 */
-	found = CHIPS_CT65540; break;
-      case 0xD8:		/* CT65545 or CT65546 or CT65548 */
-	switch (tmp & 7) {
-	case 3:
-	  found = CHIPS_CT65546; break;
-	case 4:
-	  found = CHIPS_CT65548; break;
+    int found = -1;
+    unsigned char tmp;
+    /*if ((testinx(0x3D6, 0x18) && (testinx2(0x3D6, 0x7E, 0x3F))))*/ {
+	/* Chips and Technologies chipset. Check if its supported */
+	read_xr(0x00, tmp);
+	switch (tmp & 0xF0) {
+	case 0x70: 		/* CT65520 */
+	    found = CHIPS_CT65520; break;
+	case 0x80:		/* CT65525 or CT65530 */
+	    found = CHIPS_CT65530; break;
+	case 0xA0:		/* CT64200 */
+	    found = CHIPS_CT64200; break;
+	case 0xB0:		/* CT64300 */
+	    found = CHIPS_CT64300; break;
+	case 0xC0:		/* CT65535 */
+	    found = CHIPS_CT65535; break;
 	default:
-	  found = CHIPS_CT65545; break;
+	    switch (tmp & 0xF8) {
+	    case 0xD0:		/* CT65540 */
+		found = CHIPS_CT65540; break;
+	    case 0xD8:		/* CT65545 or CT65546 or CT65548 */
+		switch (tmp & 7) {
+		case 3:
+		    found = CHIPS_CT65546; break;
+		case 4:
+		    found = CHIPS_CT65548; break;
+		default:
+		    found = CHIPS_CT65545; break;
 
-	}
-	break;
-      default:
-	if (tmp == 0x2C) {
-	  read_xr(0x01,tmp);
-	  if (tmp != 0x10) break;
-	  read_xr(0x02,tmp);
-	  switch (tmp) {
-	  case 0xE0:		/* CT65550 */
-	    found = CHIPS_CT65550; break;
-	  case 0xE4:		/* CT65554 */
-	    found = CHIPS_CT65554; break;
-	  case 0xE5:		/* CT65555 */
-	    found = CHIPS_CT65555; break;
-	  case 0xF4:		/* CT68554 */
-	    found = CHIPS_CT68554; break;
-	  case 0xC0:		/* CT69000 */
-	    found = CHIPS_CT69000; break;
-	  default:
+		}
+		break;
+	    default:
+		if (tmp == 0x2C) {
+		    read_xr(0x01,tmp);
+		    if (tmp != 0x10) break;
+		    read_xr(0x02,tmp);
+		    switch (tmp) {
+		    case 0xE0:		/* CT65550 */
+			found = CHIPS_CT65550; break;
+		    case 0xE4:		/* CT65554 */
+			found = CHIPS_CT65554; break;
+		    case 0xE5:		/* CT65555 */
+			found = CHIPS_CT65555; break;
+		    case 0xF4:		/* CT68554 */
+			found = CHIPS_CT68554; break;
+		    case 0xC0:		/* CT69000 */
+			found = CHIPS_CT69000; break;
+		    default:
+			break;
+		    }
+		}
+		break;
+	    }
 	    break;
-	  }
 	}
-      break;
-      }
-      break;
     }
-  }
-  /* We only want ISA/VL Bus - so check for PCI Bus */
-  if(found > CHIPS_CT65548) {
-    read_xr(0x08,tmp);
-    if(tmp & 0x01) found = -1; 
-  } else if(found > CHIPS_CT65535) {
-    read_xr(0x01,tmp);
-    if ((tmp & 0x07) == 0x06) found = -1;
-  }
-  return found;
+    /* We only want ISA/VL Bus - so check for PCI Bus */
+    if(found > CHIPS_CT65548) {
+	read_xr(0x08,tmp);
+	if(tmp & 0x01) found = -1; 
+    } else if(found > CHIPS_CT65535) {
+	read_xr(0x01,tmp);
+	if ((tmp & 0x07) == 0x06) found = -1;
+    }
+    return found;
 }
 
 /* Mandatory */
@@ -843,33 +847,33 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
      * first thing to do is, figure out the chipset and its capabilities
      */
     if(xf86FindChipsetsForScreen(pScrn->scrnIndex,&CHIPS,&numChipsets) > 1)
-      return FALSE;
+	return FALSE;
     cPtr->Chipset = *numChipsets;
     pScrn->chipset = (char *)xf86TokenToString(CHIPSChipsets,
 					       *numChipsets);
 
-	    if ((cPtr->Chipset == CHIPS_CT64200) ||
-		(cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
-	    if ((cPtr->Chipset >= CHIPS_CT65550) &&
-		(cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
+    if ((cPtr->Chipset == CHIPS_CT64200) ||
+	(cPtr->Chipset == CHIPS_CT64300)) cPtr->Flags |= ChipsWingine;
+    if ((cPtr->Chipset >= CHIPS_CT65550) &&
+	(cPtr->Chipset <= CHIPS_CT69000)) cPtr->Flags |= ChipsHiQV;
 
-	    if(xf86IsPciBus(pScrn->scrnIndex)){
-	      i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
-	      if (i > 1) {
-		/* This shouldn't happen */
-		xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-			   "Expected one PCI card, but found %d\n", i);
-		CHIPSFreeRec(pScrn);
-		xfree(pciList);
-		return FALSE;
-	      }
-	      cPtr->PciInfo = *pciList;
-	      xfree(pciList);
+    if(xf86IsPciBus(pScrn->scrnIndex)){
+	i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL);
+	if (i > 1) {
+	    /* This shouldn't happen */
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		       "Expected one PCI card, but found %d\n", i);
+	    CHIPSFreeRec(pScrn);
+	    xfree(pciList);
+	    return FALSE;
+	}
+	cPtr->PciInfo = *pciList;
+	xfree(pciList);
 	      
-	      cPtr->PciTag = pciTag(cPtr->PciInfo->bus, 
-				    cPtr->PciInfo->device,
-				    cPtr->PciInfo->func);
-	    }
+	cPtr->PciTag = pciTag(cPtr->PciInfo->bus, 
+			      cPtr->PciInfo->device,
+			      cPtr->PciInfo->func);
+    }
 	
     /* Now that we've identified the chipset, setup the capabilities flags */
     switch (cPtr->Chipset) {
@@ -926,7 +930,6 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
         return FALSE;
     vgaHWGetIOBase(VGAHWPTR(pScrn));
 
-
     /*
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
@@ -955,8 +958,8 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 			  LOOKUP_BEST_REFRESH);
 
     if (i == -1) {
-      CHIPSFreeRec(pScrn);
-      return FALSE;
+	CHIPSFreeRec(pScrn);
+	return FALSE;
     }
     
     /* Prune the modes marked as invalid */
@@ -978,7 +981,7 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 
 	/* Don't adjust pitch if less than 16kb free. What's the point ! */
 	if ((pScrn->videoRam << 10) - cPtr->FrameBufferSize < pitch *
-		pScrn->virtualY * (pScrn->bitsPerPixel >> 3) + 16 * 1024) {
+	    pScrn->virtualY * (pScrn->bitsPerPixel >> 3) + 16 * 1024) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
 		       "not enough free memory to adjust display pitch.\n");
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1043,6 +1046,12 @@ CHIPSPreInit(ScrnInfoPtr pScrn, int flags)
 	    CHIPSFreeRec(pScrn);
 	    return FALSE;
 	}
+
+    if (!xf86LoadSubModule(pScrn, "rac")){
+        CHIPSFreeRec(pScrn);
+	return FALSE;
+    }
+
     return TRUE;
 }
 
@@ -2683,8 +2692,9 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     VisualPtr visual;
     int savedDefaultVisualClass;
     int allocatebase, freespace, currentaddr;
-    
-   /*
+    unsigned int racflag;
+
+    /*
      * we need to get the ScrnInfoRec for this screen, so let's allocate
      * one first thing
      */
@@ -2711,6 +2721,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     chipsSave(pScrn);
     if (!chipsModeInit(pScrn,pScrn->currentMode))
 	return FALSE;
+    CHIPSSaveScreen(pScreen,FALSE);
     CHIPSAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
     
     /*
@@ -2849,6 +2860,8 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pBankInfo->pBankB = (unsigned char *)hwp->Base + 0x08000;
 	pBankInfo->BankSize = 0x08000;
 	pBankInfo->nBankDepth = (pScrn->depth == 4) ? 1 : pScrn->depth;
+	xf86AddControlledResource(pScrn,MEM_IO);
+	xf86EnableAccess(&pScrn->Access);
 
 	if (IS_HiQV(cPtr)) {
 	    pBankInfo->pBankB = hwp->Base;
@@ -2901,15 +2914,6 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		}
 	    }
 	}
-	{
-	  miBankEnablePtr BankEnable;
-	  xf86AddControlledResource(pScrn,MEM_IO);
-	  xf86EnableAccess(&pScrn->Access);
-	  BankEnable = (miBankEnablePtr)xnfcalloc(sizeof(miBankEnableRec),1);
-	  BankEnable->func = (void (*)(void*))xf86EnableAccess;
-	  BankEnable->arg = &pScrn->Access;
-	  pBankInfo->BankingEnable = BankEnable;
-        }
 	if (!miInitializeBanking(pScreen, pScrn->virtualX, pScrn->virtualY,
 				 pScrn->displayWidth, pBankInfo)) {
 	    xfree(pBankInfo);
@@ -3072,12 +3076,20 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	break;
     }
 
+    if (pScrn->bitsPerPixel <= 8)
+        racflag = RAC_COLORMAP;
+    if (!(cPtr->Flags & ChipsLinearSupport))
+        racflag |= RAC_FB;
+    if (cPtr->Flags & ChipsHWCursor)
+        racflag |= RAC_CURSOR;
+    xf86RACInit(pScreen, racflag);
+
     pScreen->SaveScreen = CHIPSSaveScreen;
 
 #ifdef DPMSExtension
     /* Setup DPMS mode */
     if (cPtr->Flags & ChipsDPMSSupport)
-	xf86DPMSInit(pScreen, (DPMSSetProcPtr)CHIPSDisplayPowerManagementSet,
+	xf86DPMSInit(pScreen, (DPMSSetProcPtr)chipsDisplayPowerManagementSet,
 		     0);
 #endif
 
@@ -3235,7 +3247,7 @@ CHIPSValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
  */
 
 static void
-CHIPSDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
+chipsDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 			       int flags)
 {
     CHIPSPtr cPtr = CHIPSPTR(pScrn);
@@ -5344,16 +5356,7 @@ chipsHWCursorOff(CHIPSPtr cPtr)
 void
 chipsFixResume(CHIPSPtr cPtr)
 {
-  unsigned char tmp;
-    /* fix things that could be messed up by suspend/resume */
-    if (!IS_HiQV(cPtr))
-	outw(0x3D6,0x15);
-    tmp = inb(0x3CC);
-    outb(0x3C2, (tmp & 0xFE) | cPtr->SuspendHack.vgaIOBaseFlag); 
-    outb(cPtr->IOBase + 4, 0x11);
-    tmp = inb(cPtr->IOBase + 5);
-    outb(cPtr->IOBase + 5, (tmp & 0x7F));
-
+    unsigned char tmp;
     /* fix things that could be messed up by suspend/resume */
     if (!IS_HiQV(cPtr))
 	outw(0x3D6,0x15);

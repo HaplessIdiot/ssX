@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.2 1998/07/25 16:56:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ix86Pci.c,v 1.3 1998/09/13 05:23:48 dawes Exp $ */
 /*
  * ix86Pci.c - x86 PCI driver
  *
@@ -543,7 +543,7 @@ ix86PciSetBitsLong(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
 	    addr = tag.cfg1 | (reg & 0xfc);
 	    outl(PCI_CFGMECH1_ADDRESS_REG, addr);
 	    data = inl(PCI_CFGMECH1_DATA_REG);
-	    data = (data & ~mask) | val;
+	    data = (data & ~mask) | (val & mask);
 	    outl(PCI_CFGMECH1_DATA_REG, data);
 	    outl(PCI_CFGMECH1_ADDRESS_REG, 0);
 	    break;
@@ -552,7 +552,7 @@ ix86PciSetBitsLong(PCITAG Tag, int reg, CARD32 mask, CARD32 val)
 	    outb(PCI_CFGMECH2_ENABLE_REG, tag.cfg2.enable);
 	    outb(PCI_CFGMECH2_FORWARD_REG, tag.cfg2.forward);
 	    data = inl((CARD16)addr);
-	    data = (data & ~mask) | val;
+	    data = (data & ~mask) | (val & mask);
 	    outl((CARD16)addr, data);
 	    outb(PCI_CFGMECH2_ENABLE_REG, 0);
 	    outb(PCI_CFGMECH2_FORWARD_REG, 0);

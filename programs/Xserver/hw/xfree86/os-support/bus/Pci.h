@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.2 1998/07/25 16:56:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.h,v 1.3 1998/09/13 05:23:47 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -187,11 +187,14 @@ PCITAG        pciGenFindFirst(void);
 PCITAG        pciGenFindNext(void);
 CARD32        pciCfgMech1Read(PCITAG tag, int offset);
 void          pciCfgMech1Write(PCITAG tag, int offset, CARD32 val);
+void          pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask,
+				 CARD32 val);
 CARD32        pciByteSwap(CARD32);
 Bool          pciMfDev(int, int);
 CARD32        pciReadLongNULL(PCITAG tag, int offset);
 void          pciWriteLongNULL(PCITAG tag, int offset, CARD32 val);
-void          pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask, CARD32 val);
+void          pciSetBitsLongNULL(PCITAG tag, int offset, CARD32 mask,
+				 CARD32 val);
 ADDRESS       pciAddrNOOP(PCITAG tag, ADDRESS);
 
 extern PCITAG (*pciFindFirstFP)(void);

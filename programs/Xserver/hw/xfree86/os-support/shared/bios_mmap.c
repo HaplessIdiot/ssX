@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/bios_mmap.c,v 1.1 1998/09/13 05:23:52 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -58,6 +58,10 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 		close(fd);
 		return(-1);
 	}
+#ifdef DEBUG
+	ErrorF("xf86ReadBIOS: BIOS at 0x%08x has signature 0x%04x\n",
+		Base, ptr[0] | (ptr[1] << 8));
+#endif
 	(void)memcpy(Buf, (void *)(ptr + Offset), Len);
 	(void)munmap((caddr_t)ptr, BIOS_SIZE);
 	(void)close(fd);

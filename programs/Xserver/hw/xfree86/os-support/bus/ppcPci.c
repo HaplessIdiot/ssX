@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.2 1998/07/25 16:56:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/ppcPci.c,v 1.3 1998/09/13 05:23:48 dawes Exp $ */
 /*
  * ppcPci.c - PowerPC PCI access functions
  *
@@ -112,7 +112,7 @@ pciBusInfo_t motoppcPci0 = {
 /* funcs       */	  {
 	                    pciCfgMech1Read,
 			    pciCfgMech1Write,
-			    pciCfgMech1SetBits,
+			    pciCfgMech1SetBits,	/* XXX not implemented yet */
 			    motoppcHostAddrToBusAddr,
 			    motoppcBusAddrToHostAddr
 		          },

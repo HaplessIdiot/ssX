@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.6 1998/08/29 05:43:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.7 1998/09/13 05:23:45 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -172,106 +172,7 @@ GenericIdentify(int flags)
  * This function is called once, at the start of the first server generation to
  * do a minimal probe for supported hardware.
  */
-#if 0
-static Bool
-GenericProbe(DriverPtr Driver, int flags)
-{
-    ScrnInfoPtr pScreenInfo;
-    GDevPtr     *GDevs, GenericGDev = NULL;
-    int         i, nGDev;
 
-    /* Get out if VGA slot has already been claimed by another driver */
-    if (!xf86CheckIsaSlot(ISA_COLOR))
-        return FALSE;
-
-    /*
-     * Get a list of device sections whose "Driver" is either not specified,
-     * or specified as this driver.  From this list eliminate those device
-     * sections that specify a "Chipset" not supported by this driver.
-     */
-    if ((nGDev = xf86MatchDevice(VGA_NAME, &GDevs)) <= 0)
-        return FALSE;
-
-    for (i = nGDev;  i--;  )
-    {
-        if (GDevs[i]->chipset &&
-            (xf86StringToToken(GenericChipsets, GDevs[i]->chipset) == -1))
-            nGDev--;
-        else
-            GenericGDev = GDevs[i];
-    }
-
-    /* Free device list */
-    xfree(GDevs);
-
-    /* If there's no appropriate device section, leave now */
-    if (!GenericGDev)
-        return FALSE;
-
-    /* If there's more than one, complain */
-    if (nGDev > 1)
-    {
-        xf86Msg(X_ERROR,
-            VGA_NAME ": More than one matching \"Device\" section!\n");
-        return FALSE;
-    }
-
-    /* For some reason, the EGC version doesn't do a hardware probe */
-#   ifndef PC98_EGC
-        if (!GenericGDev->chipset)
-        {
-            CARD16 GenericIOBase = VGAHW_GET_IOBASE();
-            CARD8 CurrentValue, TestValue;
-
-            /* Unlock VGA registers */
-            VGAHW_UNLOCK(GenericIOBase);
-
-            /* VGA has one more read/write attribute register than EGA */
-            (void) inb(GenericIOBase + 0x0AU);  /* Reset flip-flop */
-            outb(0x3C0, 0x14 | 0x20);
-            CurrentValue = inb(0x3C1);
-            outb(0x3C0, CurrentValue ^ 0x0F);
-            outb(0x3C0, 0x14 | 0x20);
-            TestValue = inb(0x3C1);
-            outb(0x3C0, CurrentValue);
-
-            /* XXX:  This should restore lock state, rather than relock */
-            VGAHW_LOCK(GenericIOBase);
-
-            /* Quit now if no VGA is present */
-            if ((CurrentValue ^ 0x0F) != TestValue)
-                return FALSE;
-        }
-#   endif
-
-    /* Allocate a screen for VGA or EGC device */
-    pScreenInfo = xf86AllocateScreen(Driver, 0);
-
-    /* Claim the bus slot */
-    if (!xf86ClaimIsaSlot(ISA_COLOR, pScreenInfo->scrnIndex))
-    {
-        /* How can this be?!?! */
-        FatalError(VGA_NAME ": Attempt to reclaim ISA_COLOR slot!\n");
-    }
-
-    /* Fill in some of the ScreenInfo record */
-    pScreenInfo->driverVersion = VGA_VERSION_CURRENT;
-    pScreenInfo->driverName    = VGA_DRIVER_NAME;
-    pScreenInfo->name          = VGA_NAME;
-    pScreenInfo->Probe         = GenericProbe;
-    pScreenInfo->PreInit       = GenericPreInit;
-    pScreenInfo->ScreenInit    = GenericScreenInit;
-    pScreenInfo->SwitchMode    = GenericSwitchMode;
-    pScreenInfo->AdjustFrame   = GenericAdjustFrame;
-    pScreenInfo->EnterVT       = GenericEnterVT;
-    pScreenInfo->LeaveVT       = GenericLeaveVT;
-    pScreenInfo->FreeScreen    = GenericFreeScreen;
-    pScreenInfo->ValidMode     = GenericValidMode;
-    pScreenInfo->device        = GenericGDev;
-
-    return TRUE;
-}
-#endif
 
 static Bool
 GenericProbe(DriverPtr drv, int flags)
@@ -285,23 +186,28 @@ GenericProbe(DriverPtr drv, int flags)
      * Find the config file Device sections that match this
      * driver, and return if there are none.
      */
-    xf86EnablePrimaryDevice();
-
-    if ((nGDev = xf86MatchDevice(VGA_NAME,
-				 &GDevs)) <= 0) {
+    if ((nGDev = xf86MatchDevice(VGA_NAME, &GDevs)) <= 0) {
 	return foundScreen;
     }
   
-    usedChip = xf86MatchIsaInstances(VGA_NAME,GenericChipsets,GenericISAchipsets,
+    /*
+     * XXX Should get info about PrimaryDevice first and determine if
+     * something else has claimed it before enabling it.
+     */
+
+    xf86EnablePrimaryDevice();
+
+    usedChip = xf86MatchIsaInstances(VGA_NAME, GenericChipsets,
+				     GenericISAchipsets,
 				     VGAFindIsaDevice,GDevs,
-				     nGDev,&GenericGDev);    /*XXX*/
+				     nGDev,&GenericGDev);
     if(usedChip >= 0)
     {
 	ScrnInfoPtr pScrn;
-	int Resource = xf86FindIsaResource(usedChip,GenericISAchipsets); /*XXX*/
+	int Resource = xf86FindIsaResource(usedChip, GenericISAchipsets);
 	  
-	pScrn = xf86AllocateScreen(drv,0);
-	xf86ClaimIsaSlot(Resource,&VGA,usedChip,pScrn->scrnIndex);
+	pScrn = xf86AllocateScreen(drv, 0);
+	xf86ClaimIsaSlot(Resource, &VGA, usedChip, pScrn->scrnIndex);
 	pScrn->driverVersion = VGA_VERSION_CURRENT;
 	pScrn->driverName    = VGA_DRIVER_NAME;
 	pScrn->name          = VGA_NAME;

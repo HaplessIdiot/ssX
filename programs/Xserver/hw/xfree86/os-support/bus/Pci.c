@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.3 1998/09/13 00:51:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.4 1998/09/13 05:23:47 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -17,6 +17,7 @@
  * 	pciWriteLong() - Write a 32 bit value to a PCI devices cfg space
  * 	pciWriteWord() - Write a 16 bit value to a PCI devices cfg space
  * 	pciWriteByte() - Write an 8 bit value to a PCI devices cfg space
+ *	pciSetBitsLong() - Write a 32 bit value against a mask
  * 	pciTag()       - Return tag for a given PCI bus, device, & function
  * 	pciBusAddrToHostAddr() - Convert a PCI address to a host address
  * 	pciHostAddrToBusAddr() - Convert a host address to a PCI address
@@ -675,7 +676,7 @@ pciCfgMech1Write(PCITAG tag, int offset, CARD32 val)
 #endif
 }
 
-CARD32
+void
 pciCfgMech1SetBits(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 {
     unsigned long rv = 0xffffffff;

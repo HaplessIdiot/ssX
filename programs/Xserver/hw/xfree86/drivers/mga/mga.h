@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.18 1998/09/05 06:36:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.19 1998/09/13 05:23:38 dawes Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -44,6 +44,7 @@ typedef struct {
     unsigned char 	DacClk[6];
     unsigned char *     DacRegs;
     CARD32		Option;
+    Bool		VgaEnable;
 } MGARegRec, *MGARegPtr;
 
 typedef struct {
@@ -92,6 +93,7 @@ typedef struct {
     CARD32		FbAddress;
     CARD32		ILOADAddress;
     CARD32		BiosAddress;
+    MessageType		BiosFrom;
     unsigned char *     IOBase;
 #ifdef __alpha__
     unsigned char *     IOBaseDense;

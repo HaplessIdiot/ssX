@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.38 1998/08/29 05:43:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.39 1998/09/13 05:23:45 dawes Exp $ */
 
 /*
  *
@@ -184,6 +184,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86DelControlledResource)
    SYMFUNC(xf86EnableAccess)
    SYMFUNC(xf86EnablePrimaryDevice)
+   SYMFUNC(xf86IsPrimaryPci)
 
    /* xf86Cursor.c  XXX not all of these should be exported */
    SYMFUNC(xf86LockZoom)
@@ -281,6 +282,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86PruneMonitorModes)
    SYMFUNC(xf86SetCrtcForModes)
    SYMFUNC(xf86PrintModes)
+   SYMFUNC(xf86ShowClockRanges)
 
    /* xf86Option.c */
    SYMFUNC(xf86CollectOptions)
@@ -374,6 +376,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(pciReadByte)
    SYMFUNC(pciReadWord)
    SYMFUNC(pciReadLong)
+   SYMFUNC(pciSetBitsLong)
    SYMFUNC(pciTag)
    SYMFUNC(pciBusAddrToHostAddr)
    SYMFUNC(pciHostAddrToBusAddr)
