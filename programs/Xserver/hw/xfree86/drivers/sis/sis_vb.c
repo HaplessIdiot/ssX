@@ -355,8 +355,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
     unsigned char SR16, SR38, CR32, CR35=0, CR38=0, CR79;
     int temp = 0;
 
-    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE))
-        return;
+    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE)) return;
 
     inSISIDXREG(SISCR, 0x32, CR32);
     inSISIDXREG(SISSR, 0x16, SR16);
@@ -443,7 +442,7 @@ void SISTVPreInit(ScrnInfoPtr pScrn)
        }
     }
     
-    if(pSiS->VBFlags & (TV_SCART | TV_SVIDEO | TV_AVIDEO | TV_HIVISION | TV_YPBPR | TV_CHSCART | TV_CHHDTV)) {
+    if(pSiS->VBFlags & (TV_SCART|TV_SVIDEO|TV_AVIDEO|TV_HIVISION|TV_YPBPR|TV_CHSCART|TV_CHHDTV)) {
        xf86DrvMsg(pScrn->scrnIndex, X_PROBED,
 			"%sTV standard %s\n",
 			(pSiS->VBFlags & (TV_CHSCART | TV_CHHDTV)) ? "Using " : "Detected default ",
@@ -461,8 +460,7 @@ void SISCRT2PreInit(ScrnInfoPtr pScrn)
     SISPtr  pSiS = SISPTR(pScrn);
     unsigned char CR32; 
 
-    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE))
-       return;
+    if(!(pSiS->VBFlags & VB_VIDEOBRIDGE))  return;
 
     /* CRT2-VGA not supported on LVDS and 30xLV */
     if(pSiS->VBFlags & (VB_LVDS|VB_301LV|VB_302LV|VB_302ELV))

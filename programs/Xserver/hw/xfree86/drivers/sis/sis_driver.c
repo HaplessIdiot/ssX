@@ -3759,10 +3759,15 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Backup VB connection and CRT1 on/off register */
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
-       inSISIDXREG(SISCR, 0x32, pSiS->oldCR32);
-       inSISIDXREG(SISCR, 0x17, pSiS->oldCR17);
-       inSISIDXREG(SISCR, 0x63, pSiS->oldCR63);
        inSISIDXREG(SISSR, 0x1f, pSiS->oldSR1F);
+       inSISIDXREG(SISCR, 0x17, pSiS->oldCR17);
+       inSISIDXREG(SISCR, 0x32, pSiS->oldCR32);
+       inSISIDXREG(SISCR, 0x36, pSiS->oldCR36);
+       inSISIDXREG(SISCR, 0x37, pSiS->oldCR37);
+       if(pSiS->VGAEngine == SIS_315_VGA) {
+          inSISIDXREG(SISCR, 0x63, pSiS->oldCR63);
+       }
+
        pSiS->postVBCR32 = pSiS->oldCR32;
     }
 
@@ -3884,7 +3889,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     SISCRT2PreInit(pScrn);
 
     /* Backup detected CRT2 devices */
-    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD | CRT2_TV | CRT2_VGA | TV_AVIDEO | TV_SVIDEO | TV_SCART);
+    pSiS->detectedCRT2Devices = pSiS->VBFlags & (CRT2_LCD|CRT2_TV|CRT2_VGA|TV_AVIDEO|TV_SVIDEO|TV_SCART);
 
     /* Setup SD flags */
     pSiS->SiS_SD_Flags |= SiS_SD_ADDLSUPFLAG;
@@ -4299,8 +4304,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
              pSiS->VBFlags |= (VB_DISPMODE_SINGLE | DISPTYPE_CRT1);
     }
 
-    if((pSiS->VGAEngine == SIS_315_VGA) ||
-       (pSiS->VGAEngine == SIS_300_VGA) ) {
+    if((pSiS->VGAEngine == SIS_315_VGA) || (pSiS->VGAEngine == SIS_300_VGA)) {
        if((!pSiS->NoXvideo) && (!pSiS->hasTwoOverlays)) {
 	  xf86DrvMsg(pScrn->scrnIndex, from,
 	      "Using Xv overlay by default on CRT%d\n",
@@ -4315,6 +4319,13 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* VBFlags are initialized now. Back them up for SlaveMode modes. */
     pSiS->VBFlags_backup = pSiS->VBFlags;
+
+    /* Backup CR32,36,37 (in order to write them back after a VT switch) */
+    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+       inSISIDXREG(SISCR,0x32,pSiS->myCR32);
+       inSISIDXREG(SISCR,0x36,pSiS->myCR36);
+       inSISIDXREG(SISCR,0x37,pSiS->myCR37);
+    }
 
     /* Find out about paneldelaycompensation and evaluate option */
 #ifdef SISDUALHEAD
@@ -5576,10 +5587,12 @@ SISSave(ScrnInfoPtr pScrn)
 
     /* "Save" these again as they may have been changed prior to SISSave() call */
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+       sisReg->sisRegs3C4[0x1f] = pSiS->oldSR1F;
        sisReg->sisRegs3D4[0x17] = pSiS->oldCR17;
        if(vgaReg->numCRTC >= 0x17) vgaReg->CRTC[0x17] = pSiS->oldCR17;
        sisReg->sisRegs3D4[0x32] = pSiS->oldCR32;
-       sisReg->sisRegs3C4[0x1f] = pSiS->oldSR1F;
+       sisReg->sisRegs3D4[0x36] = pSiS->oldCR36;
+       sisReg->sisRegs3D4[0x37] = pSiS->oldCR37;
        if(pSiS->VGAEngine == SIS_315_VGA) {
 	  sisReg->sisRegs3D4[0x63] = pSiS->oldCR63;
        }
@@ -7722,6 +7735,12 @@ SISEnterVT(int scrnIndex, int flags)
 
     sisSaveUnlockExtRegisterLock(pSiS, NULL, NULL);
 
+    if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
+       outSISIDXREG(SISCR,0x32,pSiS->myCR32);
+       outSISIDXREG(SISCR,0x36,pSiS->myCR36);
+       outSISIDXREG(SISCR,0x37,pSiS->myCR37);
+    }
+
     if(!SISModeInit(pScrn, pScrn->currentMode)) {
        SISErrorLog(pScrn, "SiSEnterVT: SISModeInit() failed\n");
        return FALSE;
@@ -7730,7 +7749,6 @@ SISEnterVT(int scrnIndex, int flags)
     SISAdjustFrame(scrnIndex, pScrn->frameX0, pScrn->frameY0, 0);
 
 #ifdef XF86DRI
-    /* this is to be done AFTER switching the mode */
     if(pSiS->directRenderingEnabled) {
        DRIUnlock(screenInfo.screens[scrnIndex]);
     }
@@ -7760,7 +7778,6 @@ SISLeaveVT(int scrnIndex, int flags)
 #ifdef XF86DRI
     ScreenPtr pScreen;
 
-    /* to be done before mode change */
     if(pSiS->directRenderingEnabled) {
        pScreen = screenInfo.screens[scrnIndex];
        DRILock(pScreen, 0);
