@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.35 2000/02/15 18:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.36 2000/02/21 19:23:15 dawes Exp $ */
 
 /*
  *
@@ -17,12 +17,12 @@
 #include "X.h"
 #include "misc.h"
 
-#include "compiler.h"
-
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
 #include "vgaHW.h"
+
+#include "compiler.h"
 
 #include "xf86cmap.h"
 

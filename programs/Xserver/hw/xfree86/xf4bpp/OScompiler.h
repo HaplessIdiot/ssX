@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/OScompiler.h,v 1.2 1998/07/25 16:59:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/OScompiler.h,v 1.3 1999/01/31 12:22:15 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -32,9 +32,7 @@
 #define ABS(x) (((x)>0)?(x):-(x))
 
 #include "misc.h"
-#ifdef XFree86LOADER
 #include "xf86_ansic.h"
-#endif
 #include "compiler.h"
 
 #ifdef lint

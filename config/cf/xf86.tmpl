@@ -2,7 +2,7 @@ XCOMM $XConsortium: xf86.tmpl /main/2 1996/10/31 15:01:41 kaleb $
 
 
 
-XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.24 1999/07/10 07:24:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.25 1999/08/14 10:48:59 dawes Exp $
 
 #if XF86DriverSDK
     BUILDMODULEDIR = $(DRIVERSDKMODULEDIR)
@@ -38,8 +38,12 @@ XCOMM $XFree86: xc/config/cf/xf86.tmpl,v 3.24 1999/07/10 07:24:34 dawes Exp $
 #if defined(IHaveModules) && MakeDllModules
 MODULE_CFLAGS = $(PICFLAGS)
 #endif
-#if defined(IHaveModules) && DoLoadableServer
-MODULE_DEFINES = -DIN_MODULE
+#if defined(IHaveModules)
+# if DoLoadableServer
+MODULE_DEFINES = -DIN_MODULE -DXFree86Module
+# else
+MODULE_DEFINES = -DXFree86Module
+# endif
 #endif
 
 #if defined(IHaveModules) && DoLoadableServer && defined(OS2Architecture)

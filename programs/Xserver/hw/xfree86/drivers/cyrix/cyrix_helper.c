@@ -26,12 +26,12 @@
  *          Dirk H. Hohndel (hohndel@suse.de),
  *          Portions: the GGI project & confidential CYRIX databooks.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cyrix/cyrix_helper.c,v 1.2 2000/04/19 16:57:43 eich Exp $ */
 
 #include "cyrix.h"
-#include "compiler.h"
 #include "vgaHW.h"
 #include "xf86_ansic.h"
+#include "compiler.h"
 
 #define CYRIXmarkLinesDirty { \
                                int k = 0; \

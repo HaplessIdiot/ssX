@@ -23,17 +23,17 @@
  *
  * Generic RAMDAC access to colormaps.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacCmap.c,v 1.4 1998/12/06 06:08:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDacCmap.c,v 1.6 2000/03/21 21:15:28 alanh Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
 #include "windowstr.h"
-#include "compiler.h"
 #include "mipointer.h"
 #include "micmap.h"
 
 #include "xf86.h"
 #include "xf86_ansic.h"
+#include "compiler.h"
 #include "colormapst.h"
 #include "xf86RamDacPriv.h"
 

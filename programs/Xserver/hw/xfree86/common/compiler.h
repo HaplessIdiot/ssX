@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.61 2000/06/14 00:16:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.62 2000/06/25 12:35:53 alanh Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -24,6 +24,11 @@
 /* $XConsortium: compiler.h /main/16 1996/10/25 15:38:34 kaleb $ */
 
 #ifndef _COMPILER_H
+
+#if !defined(_XF86_ANSIC_H) && defined(XFree86Module)
+# error missing #include "xf86_ansic.h" before #include "compiler.h"
+#endif
+
 #define _COMPILER_H
 
 #ifndef __STDC__

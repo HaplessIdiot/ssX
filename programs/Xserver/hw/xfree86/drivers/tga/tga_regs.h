@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.8 1999/04/25 10:02:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tga/tga_regs.h,v 1.9 1999/12/13 23:48:22 robin Exp $ */
 
 /* TGA hardware description (minimal)
  *
@@ -34,6 +34,7 @@
 #ifndef TGA_REGS_H
 #define TGA_REGS_H
 
+#include "xf86_ansic.h"
 #include "compiler.h"
 
 #define TYPE_TGA_8PLANE			0

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.14 1999/06/12 07:18:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.15 2000/06/20 05:08:45 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -424,31 +424,36 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 			   p->name);
 		p->found = FALSE;
 	    } else {
-		p->value.freq.freq = strtod(s, &end);
-		p->value.freq.units = 0;
+		double freq = strtod(s, &end);
+		int    units = 0;
+
 		if (end != s) {
 		    p->found = TRUE;
 		    if (!xf86NameCmp(end, "Hz"))
-			p->value.freq.units = 1;
+			units = 1;
 		    else if (!xf86NameCmp(end, "kHz") ||
 			     !xf86NameCmp(end, "k"))
-			p->value.freq.units = 1000;
+			units = 1000;
 		    else if (!xf86NameCmp(end, "MHz") ||
 			     !xf86NameCmp(end, "M"))
-			p->value.freq.units = 1000000;
+			units = 1000000;
 		    else {
 			xf86DrvMsg(scrnIndex, X_WARNING,
 			    "Option \"%s\" requires a frequency value\n",
 			    p->name);
 			p->found = FALSE;
 		    }
-		    if (p->found && p->value.freq.units > 0)
-			p->value.freq.freq *= (double)p->value.freq.units;
+		    if (p->found)
+			freq *= (double)units;
 		} else {
 		    xf86DrvMsg(scrnIndex, X_WARNING,
 			    "Option \"%s\" requires a frequency value\n",
 			    p->name);
 		    p->found = FALSE;
+		}
+		if (p->found) {
+		    p->value.freq.freq = freq;
+		    p->value.freq.units = units;
 		}
 	    }
 	    break;

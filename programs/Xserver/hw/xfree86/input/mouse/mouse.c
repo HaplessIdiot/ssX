@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.32 2000/06/17 00:27:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.33 2000/06/28 07:51:50 keithp Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -40,8 +40,6 @@
 #include "X.h"
 #include "Xproto.h"
 
-#include "compiler.h"
-
 #include "xf86.h"
 
 #ifdef XINPUT
@@ -58,6 +56,8 @@
 #include "xf86OSmouse.h"
 #define NEED_XF86_TYPES	/* for xisb.h when !XFree86LOADER */
 #include "xf86_ansic.h"
+#include "compiler.h"
+
 #include "xisb.h"
 #include "mouse.h"
 #include "mousePriv.h"
