@@ -20,7 +20,79 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.2 1999/01/14 13:04:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.3 1999/06/13 05:18:56 dawes Exp $ */
+
+static const char identification[] = "$Identification: 18 $";
+
+#include <xf86Version.h>
+
+#if XF86_VERSION_CURRENT >= XF86_VERSION_NUMERIC(3,9,0,0,0)
+#define XFREE86_V4 1
+#endif
+
+#ifdef XFREE86_V4
+/* post 3.9 headers */
+
+#ifndef XFree86LOADER
+#include <unistd.h>
+#include <errno.h>
+#endif
+
+#include <misc.h>
+#include <xf86.h>
+#define NEED_XF86_TYPES
+#if !defined(DGUX)
+#include <xf86_ansic.h>
+#include <xisb.h>
+#endif
+#include <xf86_OSproc.h>
+#include <xf86Xinput.h>
+#include <exevents.h>		/* Needed for InitValuator/Proximity stuff */
+#include <keysym.h>
+#include <mipointer.h>
+
+#ifdef XFree86LOADER
+#include <xf86Module.h>
+#endif
+
+#undef memset
+#define memset xf86memset
+#undef sleep
+#define sleep(t) xf86WaitForInput(-1, 1000 * (t))
+#define wait_for_fd(fd) xf86WaitForInput((fd), 1000)
+#define tcflush(fd, n) xf86FlushInput((fd))
+#undef read
+#define read(a,b,c) xf86ReadSerial((a),(b),(c))
+#undef write
+#define write(a,b,c) xf86WriteSerial((a),(char*)(b),(c))
+#undef close
+#define close(a) xf86CloseSerial((a))
+#define XCONFIG_PROBED "(==)"
+#define XCONFIG_GIVEN "(**)"
+#define xf86Verbose 1
+#undef PRIVATE
+#define PRIVATE(x) XI_PRIVATE(x)
+
+/* 
+ * Be sure to set vmin appropriately for your device's protocol. You want to
+ * read a full packet before returning
+ */
+
+static const char *default_options[] =
+{
+        "BaudRate",     "9600",
+        "DataBits",     "8",
+        "StopBits",     "1",
+        "Parity",       "Odd",
+        "FlowControl",  "Xoff",
+        "VTime",        "10",
+        "VMin",         "1",
+        NULL
+};
+
+static InputDriverPtr sumDrv;
+
+#else /* pre 3.9 headers */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -61,6 +133,7 @@
 #include "extnsionst.h"
 #include "extinit.h"
 #endif
+#endif
 
 /*
 ** Debugging macros
@@ -72,7 +145,7 @@
 #undef DEBUG
 #endif
 
-static int      debug_level = 0;
+static int      debug_level = 5;
 #define DEBUG	1
 #if DEBUG
 #define 	DBG(lvl, f) 	{if ((lvl) <= debug_level) f;}
@@ -111,6 +184,9 @@ typedef struct
 ** Configuration data
 */
 #define SUMMA_SECTION_NAME "SummaSketch"
+
+#ifndef XFREE86_V4
+
 #define PORT		1
 #define DEVICENAME	2
 #define THE_MODE	3
@@ -160,6 +236,8 @@ static SymTabRec SumPointTabRec[] = {
   
 #endif
 
+#endif /* Pre 3.9 headers */
+
 /*
 ** Contants and macro
 */
@@ -198,6 +276,9 @@ static const char * ss_initstr = SS_TABID0 SS_UPPER_ORIGIN SS_BINARY_FMT SS_STRE
 /*
 ** External declarations
 */
+
+#ifndef XFREE86_V4
+
 #if defined(sun) && !defined(i386)
 #define ENQUEUE	suneqEnqueue
 #else
@@ -217,6 +298,10 @@ extern void miPointerDeltaCursor(
     unsigned long /*time*/
 #endif
 );
+
+#endif
+
+#ifndef XFREE86_V4
 
 #if !defined(sun) || defined(i386)
 /*
@@ -378,6 +463,7 @@ xf86SumConfig(LocalDevicePtr *array, int inx, int max, LexPtr val)
 
     return Success;
 }
+#endif
 #endif
 
 /*
@@ -561,8 +647,10 @@ static char *
 xf86SumWriteAndRead(int fd, char *data, char *buffer, int len, int cr_term)
 {
     int err, numread = 0;
+#ifndef XFREE86_V4
     fd_set readfds;
     struct timeval timeout;
+#endif
 
     SYSCALL(err = write(fd, data, strlen(data)));
     if (err == -1) {
@@ -570,17 +658,24 @@ xf86SumWriteAndRead(int fd, char *data, char *buffer, int len, int cr_term)
 	return NULL;
     }
 
+#ifndef XFREE86_V4
     FD_ZERO(&readfds);
     FD_SET(fd, &readfds);
+#endif
     while (numread < len) {
+#ifndef XFREE86_V4
 	timeout.tv_sec = 0;
 	timeout.tv_usec = 200000;
 
 	SYSCALL(err = select(FD_SETSIZE, &readfds, NULL, NULL, &timeout));
+#else
+	err = xf86WaitForInput(fd, 1000);
+#endif
 	if (err == -1) {
 	    Error("SummaSketch select");
 	    return NULL;
 	}
+
 	if (!err) {
 	    ErrorF("Timeout while reading SummaSketch tablet. No tablet connected ???\n");
 	    return NULL;
@@ -604,6 +699,7 @@ xf86SumWriteAndRead(int fd, char *data, char *buffer, int len, int cr_term)
     return buffer;
 }
 
+
 /*
 ** xf86SumOpen
 ** Open and initialize the tablet, as well as probe for any needed data.
@@ -611,21 +707,27 @@ xf86SumWriteAndRead(int fd, char *data, char *buffer, int len, int cr_term)
 static Bool
 xf86SumOpen(LocalDevicePtr local)
 {
+#ifndef XFREE86_V4
     struct termios	termios_tty;
     struct timeval	timeout;
+#endif
     char		buffer[256];
     int			err, idx;
     SummaDevicePtr	priv = (SummaDevicePtr)local->private;
 
     DBG(1, ErrorF("opening %s\n", priv->sumDevice));
-
+#ifdef XFREE86_V4
+    local->fd = xf86OpenSerial(local->options);
+#else
     SYSCALL(local->fd = open(priv->sumDevice, O_RDWR|O_NDELAY, 0));
+#endif
     if (local->fd == -1) {
 	Error(priv->sumDevice);
 	return !Success;
     }
     DBG(2, ErrorF("%s opened as fd %d\n", priv->sumDevice, local->fd));
 
+#ifndef XFREE86_V4
 #ifdef POSIX_TTY
     err = tcgetattr(local->fd, &termios_tty);
     if (err == -1) {
@@ -669,7 +771,13 @@ xf86SumOpen(LocalDevicePtr local)
 	return !Success;
     }
 #else
-    Code for someone else to write to handle OSs without POSIX tty functions
+#error Code for someone else to write to handle OSs without POSIX tty functions
+#endif
+#else
+/*    if (xf86SetSerialSpeed(local->fd, 9600) < 0) {
+	    return !Success;
+    }
+*/  
 #endif
 
     DBG(1, ErrorF("initializing SummaSketch tablet\n"));
@@ -682,9 +790,13 @@ xf86SumOpen(LocalDevicePtr local)
     }
 
 /* wait 200 mSecs, just in case */
+#ifndef XFREE86_V4
     timeout.tv_sec = 0;
     timeout.tv_usec = 200000;
     SYSCALL(err = select(0, NULL, NULL, NULL, &timeout));
+#else
+    err = xf86WaitForInput(-1, 200);
+#endif
     if (err == -1) {
 	Error("SummaSketch select");
 	return !Success;
@@ -696,9 +808,12 @@ xf86SumOpen(LocalDevicePtr local)
 	Error("SummaSketch write");
 	return !Success;
     }
+#ifndef XFREE86_V4
 /* Clear any pending input */
     tcflush(local->fd, TCIFLUSH);
-  
+#else
+    xf86FlushInput(local->fd);
+#endif  
     DBG(2, ErrorF("reading firmware ID\n"));
     if (!xf86SumWriteAndRead(local->fd, SS_FIRMID, buffer, 255, 1))
       return !Success;
@@ -887,8 +1002,9 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    }
 /* allocate the motion history buffer if needed */
 	    xf86MotionHistoryAllocate(local);
-
+#ifndef XFREE86_V4
 	    AssignTypeAndName(pSum, local->atom, local->name);
+#endif
 /* open the device to gather informations */
 	    xf86SumOpenDevice(pSum);
 	    break;
@@ -900,7 +1016,11 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 		return !Success;
 	    }
 	    SYSCALL(write(local->fd, SS_PROMPT, strlen(SS_PROMPT)));
+#ifdef XFREE86_V4
+	    xf86AddEnabledDevice(local);
+#else
 	    AddEnabledDevice(local->fd);
+#endif
 	    pSum->public.on = TRUE;
 	    break;
 
@@ -908,7 +1028,11 @@ xf86SumProc(DeviceIntPtr pSum, int what)
 	    DBG(1, ErrorF("xf86SumProc  pSum=0x%x what=%s\n", pSum,
 		   (what == DEVICE_CLOSE) ? "CLOSE" : "OFF"));
 	    if (local->fd >= 0)
-		RemoveEnabledDevice(local->fd);
+#ifdef XFREE86_V4
+		    xf86RemoveEnabledDevice(local);
+#else
+	            RemoveEnabledDevice(local->fd);
+#endif
 	    pSum->public.on = FALSE;
 	    break;
 
@@ -947,7 +1071,7 @@ xf86SumClose(LocalDevicePtr local)
 ** When I figure out what it does, it will do it.
 */
 static int
-xf86SumChangeControl(LocalDevicePtr local, pointer control)
+xf86SumChangeControl(LocalDevicePtr local, xDeviceCtl* control)
 {
     xDeviceResolutionCtl	*res;
 
@@ -1001,17 +1125,33 @@ xf86SumSwitchMode(ClientPtr client, DeviceIntPtr dev, int mode)
 static LocalDevicePtr
 xf86SumAllocate()
 {
-    LocalDevicePtr	local = xalloc(sizeof(LocalDeviceRec));
-    SummaDevicePtr	priv = xalloc(sizeof(SummaDeviceRec));
+    LocalDevicePtr	local;
+    SummaDevicePtr	priv;
 #if defined (sun) && !defined(i386)
     char		*dev_name = getenv("SUMMASKETCH_DEV");
 #endif
 
+    priv = xalloc(sizeof(SummaDeviceRec));
+    if (!priv)
+	return NULL;
+
+#ifdef XFREE86_V4
+    local = xf86AllocateInput(sumDrv, 0);
+#else
+    local = xalloc(sizeof(LocalDeviceRec));
+#endif
+    if (!local) {
+	xfree(priv);
+	return NULL;
+    }
+
     local->name = XI_NAME;
     local->type_name = "SummaSketch Tablet";
     local->flags = 0;
+#ifndef XFREE86_V4
 #if !defined(sun) || defined(i386)
     local->device_config = xf86SumConfig;
+#endif
 #endif
     local->device_control = xf86SumProc;
     local->read_input = xf86SumReadInput;
@@ -1025,6 +1165,8 @@ xf86SumAllocate()
     local->private = priv;
     local->private_flags = 0;
     local->history_size  = 0;
+    local->old_x = -1;
+    local->old_y = -1;
 
 #if defined(sun) && !defined(i386)
     if (def_name) {
@@ -1048,13 +1190,13 @@ xf86SumAllocate()
     priv->sumXOffset = -1;	  /* active area X offset */
     priv->sumYSize = -1;	  /* active area Y */
     priv->sumYOffset = -1;	  /* active area U offset */
-    priv->flags = 0;              /* various flags */
+    priv->flags = 0;           /* various flags */
     priv->sumIndex = 0;           /* number of bytes read */
 
     return local;
 }
 
-
+#ifndef XFREE86_V4
 /*
 ** SummaSketch device association
 ** Device section name and allocation function.
@@ -1089,45 +1231,224 @@ init_xf86Summa(unsigned long server_version)
 }
 #endif
 
+#else
+
+/*
+ * xf86SumUninit --
+ *
+ * called when the driver is unloaded.
+ */
+static void
+xf86SumUninit(InputDriverPtr	drv,
+	      LocalDevicePtr	local,
+	      int flags)
+{
+    SummaDevicePtr	priv = (SummaDevicePtr) local->private;
+    
+    DBG(1, ErrorF("xf86SumUninit\n"));
+    
+    xf86SumProc(local->dev, DEVICE_OFF);
+    
+    xfree (priv);
+    xf86DeleteInput(local, 0);    
+}
+
+/*
+ * xf86SumInit --
+ *
+ * called when the module subsection is found in XF86Config
+ */
+static InputInfoPtr
+xf86SumInit(InputDriverPtr	drv,
+	    IDevPtr		dev,
+	    int			flags)
+{
+    LocalDevicePtr	local = NULL;
+    SummaDevicePtr	priv = NULL;
+    char		*s;
+
+    sumDrv = drv;
+
+    DBG(1, ErrorF("xf86SumInit allocating...\n"));
+
+    local = xf86SumAllocate();
+    if (!local)
+	return NULL;
+
+    local->conf_idev = dev;
+
+    DBG(1, ErrorF("xf86SumInit CollectInputOptions...\n"));
+    xf86CollectInputOptions(local, default_options, NULL);   
+    DBG(1, ErrorF("done.\n"));
+    xf86OptionListReport( local->options );
+    
+
+    priv = (SummaDevicePtr) local->private;
+
+    local->name = dev->identifier;
+    
+    /* Serial Device is mandatory */
+    priv->sumDevice = xf86FindOptionValue(local->options, "Device");
+
+    if (!priv->sumDevice) {
+	xf86Msg (X_ERROR, "%s: No Device specified.\n", dev->identifier);
+	goto SetupProc_fail;
+    }
+
+    /* Process the common options. */
+    xf86ProcessCommonOptions(local, local->options);
+
+    /* Optional configuration */
+
+    xf86Msg(X_CONFIG, "%s serial device is %s\n", dev->identifier,
+	    priv->sumDevice);
+
+    debug_level = xf86SetIntOption(local->options, "DebugLevel", 0);
+    if (debug_level > 0) {
+	xf86Msg(X_CONFIG, "Summa: debug level set to %d\n", debug_level);
+    }
+
+
+
+    s = xf86FindOptionValue(local->options, "Mode");
+
+    if (s && (xf86NameCmp(s, "absolute") == 0)) {
+	priv->flags = priv->flags | ABSOLUTE_FLAG;
+    }
+    else if (s && (xf86NameCmp(s, "relative") == 0)) {
+	priv->flags = priv->flags & ~ABSOLUTE_FLAG;
+    }
+    else if (s) {
+	xf86Msg(X_ERROR, "%s: invalid Mode (should be absolute or relative). "
+		"Using default.\n", dev->identifier);
+    }
+    xf86Msg(X_CONFIG, "%s is in %s mode\n", local->name,
+	    (priv->flags & ABSOLUTE_FLAG) ? "absolute" : "relative");	    
+
+
+    s = xf86FindOptionValue(local->options, "Cursor");
+
+    if (s && (xf86NameCmp(s, "stylus") == 0)) {
+	priv->flags = priv->flags | STYLUS_FLAG;
+    }
+    else if (s && (xf86NameCmp(s, "puck") == 0)) {
+	priv->flags = priv->flags & ~STYLUS_FLAG;
+    }
+    else if (s) {
+	xf86Msg(X_ERROR, "%s: invalid Cursor (should be stylus or puck). "
+		"Using default.\n", dev->identifier);
+    }
+    xf86Msg(X_CONFIG, "%s is in cursor-mode %s\n", local->name,
+	    (priv->flags & STYLUS_FLAG) ? "cursor" : "puck");	    
+
+    priv->sumXSize = xf86SetIntOption(local->options, "XSize", 0);
+    if (priv->sumXSize != 0) {
+	    xf86Msg(X_CONFIG, "%s: XSize = %d\n", 
+		    dev->identifier, priv->sumXSize);
+    }
+
+    priv->sumYSize = xf86SetIntOption(local->options, "YSize", 0);
+    if (priv->sumYSize != 0) {
+	    xf86Msg(X_CONFIG, "%s: YSize = %d\n", 
+		    dev->identifier, priv->sumYSize);
+    }
+
+    priv->sumXOffset = xf86SetIntOption(local->options, "XOffset", 0);
+    if (priv->sumXOffset != 0) {
+	    xf86Msg(X_CONFIG, "%s: XOffset = %d\n", 
+		    dev->identifier, priv->sumXOffset);
+    }
+
+    priv->sumYOffset = xf86SetIntOption(local->options, "YOffset", 0);
+    if (priv->sumYOffset != 0) {
+	    xf86Msg(X_CONFIG, "%s: YOffset = %d\n", 
+		    dev->identifier, priv->sumYOffset);
+    }
+
+    /* mark the device configured */
+    local->flags |= XI86_POINTER_CAPABLE | XI86_CONFIGURED;
+
+    /* return the LocalDevice */
+    return local;
+
+  SetupProc_fail:
+    if (priv)
+	xfree(priv);
+    return local;
+}
+
+#ifdef XFree86LOADER
+static
+#endif
+InputDriverRec SUMMA = {
+    1,				/* driver version */
+    "summa",			/* driver name */
+    NULL,			/* identify */
+    xf86SumInit,		/* pre-init */
+    xf86SumUninit,		/* un-init */
+    NULL,			/* module */
+    0				/* ref count */
+};
+
+
+/*
+ ***************************************************************************
+ *
+ * Dynamic loading functions
+ *
+ ***************************************************************************
+ */
 #ifdef XFree86LOADER
 /*
- * Entry point for the loader code
+ * xf86SumUnplug --
+ *
+ * called when the module subsection is found in XF86Config
  */
-XF86ModuleVersionInfo xf86SummaVersion = {
-    "xf86Summa",
+static void
+xf86SumUnplug(pointer	p)
+{
+    DBG(1, ErrorF("xf86SumUnplug\n"));
+}
+
+/*
+ * xf86SumPlug --
+ *
+ * called when the module subsection is found in XF86Config
+ */
+static pointer
+xf86SumPlug(pointer	module,
+	    pointer	options,
+	    int		*errmaj,
+	    int		*errmin)
+{
+    DBG(1, ErrorF("xf86SumPlug\n"));
+	
+    xf86AddInputDriver(&SUMMA, module, 0);
+
+    return module;
+}
+
+static XF86ModuleVersionInfo xf86SumVersionRec =
+{
+    "summa",
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,
     XF86_VERSION_CURRENT,
-    0x00010000,
-    {0,0,0,0}
+    1, 0, 0,
+    ABI_CLASS_XINPUT,
+    ABI_XINPUT_VERSION,
+    MOD_CLASS_XINPUT,
+    {0, 0, 0, 0}		/* signature, to be patched into the file by */
+				/* a tool */
 };
 
-void
-xf86SummaModuleInit(data, magic)
-    pointer *data;
-    INT32 *magic;
-{
-    static int cnt = 0;
+XF86ModuleData summaModuleData = {&xf86SumVersionRec,
+				  xf86SumPlug,
+				  xf86SumUnplug};
 
-    switch (cnt) {
-      case 0:
-      *magic = MAGIC_VERSION;
-      *data = &xf86SummaVersion;
-      cnt++;
-      break;
-      
-      case 1:
-      *magic = MAGIC_ADD_XINPUT_DEVICE;
-      *data = &summasketch_assoc;
-      cnt++;
-      break;
+#endif /* XFree86LOADER */
+#endif /* XFREE86_V4 */
 
-      default:
-      *magic = MAGIC_DONE;
-      *data = NULL;
-      break;
-    } 
-}
-#endif
+
 /* end of xf86Summa.c */

@@ -48,7 +48,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.10 1999/08/28 09:01:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/microtouch/microtouch.c,v 1.11 1999/08/28 10:43:36 dawes Exp $ */
 
 #define _microtouch_C_
 /*****************************************************************************
@@ -209,13 +209,20 @@ static const char *fallback_options[] =
 static InputInfoPtr
 MuTouchPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 {
-	LocalDevicePtr local = xf86AllocateInput(drv, 0);
-	MuTPrivatePtr priv = xcalloc (1, sizeof (MuTPrivateRec));
+	LocalDevicePtr local;
+	MuTPrivatePtr priv;
 
 	char *s;
 
-	if ((!local) || (!priv))
-		goto SetupProc_fail;
+	priv = xcalloc (1, sizeof (MuTPrivateRec));
+	if (!priv)
+		return NULL;
+
+	local = xf86AllocateInput(drv, 0);
+	if (!local) {
+		xfree(priv);
+		return NULL;
+	}
 
 	local->type_name = XI_TOUCHSCREEN;
 	local->device_control = DeviceControl;
@@ -298,14 +305,12 @@ MuTouchPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 		xf86CloseSerial (local->fd);
 	if ((local) && (local->name))
 		xfree (local->name);
-	if (local)
-		xfree (local);
 
 	if ((priv) && (priv->buffer))
 		XisbFree (priv->buffer);
 	if (priv)
 		xfree (priv);
-	return (NULL);
+	return (local);
 }
 
 static Bool

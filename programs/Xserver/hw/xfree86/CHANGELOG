@@ -1,4 +1,9 @@
 XFree86 4.0.1b (11 August 2000)
+ 511. Fix input driver PreInit funtions to behave as expected by InitInput()
+      (David Dawes).
+ 510. Port the spaceorb input driver to 4.x (Guido Heumer).
+ 509. Port the Summa input driver to 4.x (#A.116, Peter Schlaile).
+ 508. Add a DigitalEdge input driver (#A.116, Peter Schlaile).
  507. Remove obsolete PC98 code (#4081, Takaaki Nomura).
  506. Fix PC98 keyboard problems (#4081, Osamu Tomita).
  505. Imake support for building on Linux/arm32 (#4080, Andrew E. Mileski).
@@ -10980,4 +10985,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1265 2000/08/11 16:50:27 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1266 2000/08/11 17:27:11 dawes Exp $

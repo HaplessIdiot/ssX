@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.9 2000/05/24 01:11:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/elographics/xf86Elo.c,v 1.10 2000/06/07 22:03:09 tsi Exp $ */
 
 /*
  *******************************************************************************
@@ -1494,23 +1494,21 @@ xf86EloAllocate(void)
 xf86EloAllocate(InputDriverPtr	drv)     
 #endif
 {
+  LocalDevicePtr	local;
+  EloPrivatePtr		priv;
+
+  priv = xalloc(sizeof(EloPrivateRec));
+  if (!priv)
+    return NULL;
+
 #ifndef XFREE86_V4
-  LocalDevicePtr        local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
+  local = (LocalDevicePtr) xalloc(sizeof(LocalDeviceRec));
 #else
-  LocalDevicePtr        local = xf86AllocateInput(drv, 0);
+  local = xf86AllocateInput(drv, 0);
 #endif
-  EloPrivatePtr         priv = (EloPrivatePtr) xalloc(sizeof(EloPrivateRec));
 
   if (!local) {
-    if (priv) {
-      xfree(priv);
-    }
-    return NULL;
-  }
-  if (!priv) {
-    if (local) {
-      xfree(local);
-    }
+    xfree(priv);
     return NULL;
   }
   
@@ -1661,8 +1659,7 @@ xf86EloInit(InputDriverPtr	drv,
       }
       xfree(priv);
     }
-    xfree(local);
-    return NULL;
+    return local;
   }
   priv->input_dev = strdup(str);
 

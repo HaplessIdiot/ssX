@@ -28,7 +28,7 @@
  * in this Software without prior written authorization from Metro Link.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/xf86PM.c,v 1.2 1999/08/22 05:57:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/penmount/xf86PM.c,v 1.1 2000/08/01 18:59:58 dawes Exp $ */
 
 #define _PENMOUNT_C_
 
@@ -167,12 +167,14 @@ PenMountPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
    	PenMountPrivatePtr priv = xcalloc (1, sizeof (PenMountPrivateRec));
 	char *s;
 
-	if (!(pInfo = xf86AllocateInput(drv, 0)))
+	if (!priv)
 		return NULL;
-  
-	if ((!drv) || (!priv))
-		goto SetupProc_fail;
 
+	if (!(pInfo = xf86AllocateInput(drv, 0))) {
+		xfree(priv);
+		return NULL;
+	}
+  
 	priv->min_x = 0;
 	priv->max_x = 1024;
 	priv->min_y = 768;
@@ -251,14 +253,12 @@ PenMountPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 		xf86CloseSerial (pInfo->fd);
 	if ((pInfo) && (pInfo->name))
 		xfree (pInfo->name);
-	if (pInfo)
-		xfree (pInfo);
 
 	if ((priv) && (priv->buffer))
 		XisbFree (priv->buffer);
 	if (priv)
 		xfree (priv);
-	return (NULL);
+	return (pInfo);
 }
 
 static Bool

@@ -1,4 +1,3 @@
-/* $XConsortium$ */
 /*
  * Copyright 1999 by Frederic Lepied, France. <Lepied@XFree86.org>
  *                                                                            
@@ -22,7 +21,7 @@
  *
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/void/void.c,v 1.1 1999/11/19 13:54:57 hohndel Exp $ */
 
 /* Input device which doesn't output any event. This device can be used
  * as a core pointer or as a core keyboard.
