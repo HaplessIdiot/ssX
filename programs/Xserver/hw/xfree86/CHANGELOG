@@ -1,4 +1,5 @@
 XFree86 3.9.16Za (xx December 1999)
+3408. Xterm patch #122. (#3517, Thomas Dickey).
 3407. Remove duplicate symbol from loader (#3516/3528,
       Jarno Paananen/Nicholas Brealey).
 
@@ -9204,4 +9205,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.904 1999/12/29 14:47:08 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.905 1999/12/30 01:23:14 robin Exp $

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/ptydata.c,v 1.7 1999/07/04 06:40:14 dawes Exp $
+ * $XFree86: xc/programs/xterm/ptydata.c,v 1.9 1999/11/19 13:55:22 hohndel Exp $
  */
 
 /************************************************************
@@ -192,17 +192,6 @@ int getPtyData(TScreen *screen, fd_set *select_mask, PtyData *data)
 	}
     }
     return 0;
-}
-
-int morePtyData(PtyData *data)
-{
-    return (data->cnt > 0);
-}
-
-int nextPtyData(PtyData *data)
-{
-    (data->cnt)--;
-    return(*(data->ptr)++);
 }
 
 void initPtyData(PtyData *data)
