@@ -9,7 +9,7 @@
 <date>9 March 2005
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.129 2005/03/09 03:38:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.130tsi Exp $
 </ident>
 
 <abstract>
@@ -60,7 +60,7 @@ creating a configuration file, and this has been improved in XFree86
 Linux and FreeBSD and it is hoped that automatic configuration will be
 supported on other platforms in future releases.
 
-If you are running either  Linux, FreeBSD, NetBSD, OpenBSD, or Solaris,
+If you are running either Linux, FreeBSD, NetBSD, OpenBSD, or Solaris,
 try it out if you do not already have a working <tt>XF86Config</tt> file.
 Even if you do, you can try it out by running:
 
@@ -110,9 +110,9 @@ need one!
 If you do need to customise the configuration file, see the <htmlurl
 name="XF86Config manual page" url="XF86Config.5.html">.  You can also
 check the driver-specific manual pages and the related documentation
-(found at <ref id="drivertables" name="tables below"> also.
+(found at <ref id="drivertables" name="tables below">).
 
-Before downloading  the binary distributions for this release, please
+Before downloading the binary distributions for this release, please
 have a quick read through the <htmlurl name="Installation Document"
 url="Install.html">.  It may save you some time and also help you figure out
 which of the binary releases you need.
@@ -125,9 +125,8 @@ as well as what is new in the latest full release (&fullrelvers;).
 The next section describes what is new in the latest version (&relvers;)
 compared with the previous full release (&prevfullrelvers).
 ]]>
-The other sections below describe some of the new features and changes
-between 3.3.x and 4.0.  There are lot's of new features, and we definitely
-don't have enough space to cover them all here.
+There are lots of new features, and we definitely don't have enough space
+to cover them all here.
 
 </sect>
 
@@ -173,6 +172,25 @@ requests in font handling and other areas.
 
 <sect1>Video Driver Enhancements
 <p>
+
+<sect2>General
+<p>
+
+<itemize>
+<item>In most drivers, fix a long-standing off-by-one error in the programming
+of sync pulse start and end for video modes based on VGA or its extensions.
+
+</itemize>
+
+<sect2>ati
+<p>
+
+<itemize>
+<item>Fix various bugs in the Mach64-based panel support.
+
+<item>Re-instate atimisc's support for DGA on UltraSPARC platforms.
+
+</itemize>
 
 <sect2>chips
 <p>
@@ -247,7 +265,7 @@ second head on dual-head cards.
 <itemize>
 <item>PCI-Xpress support added.
 
-<item>Add support for new hardware.
+<item>Add support for newer hardware.
 
 <item>Workaround for Toshiba M30 laptop issue.
 
@@ -596,7 +614,7 @@ enable automatic configuration even when a configuration file is present.
 
 <item>Integrate the TinyX servers into the standard XFree86 build.
 
-<item>Fix a problem whar a big request length of zero does not generate
+<item>Fix a problem where a big request length of zero does not generate
 a BadLength error.
 
 <item>Add a Distributed Multihead X server (DMX) and related extension.
@@ -649,7 +667,7 @@ the native video mode to be used by default for digital panels.
 detect when the version of Perl is too old and when Perl is not available.
 
 <item>Extend automatic configuration and getconfig to work with SBUS video
-devices in sparc platforms.
+devices in SPARC platforms.
 
 <item>Update the ValidMode functions in most video drivers to return
 more specific status values when a mode is rejected.
@@ -986,7 +1004,7 @@ output by Xuft8 functions under non-Unicode locales.
 <p>
 
 <itemize>
-<item>Numerous fixes and enhancements for the Solaris/sparc platform support,
+<item>Numerous fixes and enhancements for the Solaris/SPARC platform support,
 including the ability to build 64-bit shared libraries.
 
 <item>Support added for OpenBSD/amd64.
@@ -1004,6 +1022,8 @@ used for more than just X protocol connections.
 
 <item>Add support for newer UltraSPARC variants to the SunOS/Solaris and
 Linux ports.
+
+<item>Understand the PCI bus naming scheme found in Linux 2.6 kernels.
 
 </itemize>
 
@@ -1029,7 +1049,8 @@ XFree86 &relvers; includes the following video drivers:
    <tabrow><tt>ark</tt><colsep>Ark Logic<colsep>&nbsp;</tabrow>
    <tabrow><tt>ati</tt><colsep>ATI<colsep><htmlurl
 		name="README.ati" url="ati.html">, <htmlurl
-		name="README.r128" url="r128.html">, <htmlurl
+		name="README.r128" url="r128.html">,</tabrow>
+   <tabrow><tt>&nbsp;</tt><colsep>&nbsp;<colsep><htmlurl
 		name="r128(4)" url="r128.4.html">, <htmlurl
 		name="radeon(4)" url="radeon.4.html"></tabrow>
    <tabrow><tt>chips</tt><colsep>Chips &amp; Technologies<colsep><htmlurl
@@ -1107,7 +1128,7 @@ Drivers marked with (*) are present in a preliminary form in this release,
 but are not complete and/or stable yet.
 <p>
 
-Drivers marked with (+) are for Linux/Sparc only.
+Drivers marked with (+) are for Linux/SPARC only.
 <p>
 
 Drivers marked with (-) are for Linux/mips only.
@@ -1116,11 +1137,12 @@ Drivers marked with (-) are for Linux/mips only.
 Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in
 <htmlurl name="README.Darwin" url="Darwin.html">.
-
-XFree86 &relvers; includes the following input drivers:
+</sect1>
 
 <sect1>Input Drivers
 <p>
+
+XFree86 &relvers; includes the following input drivers:
 
 <table border=1 align="center">
 <tabular ca="|l|l|l|">
@@ -1186,7 +1208,7 @@ video drivers, input drivers, and other modules that are needed.
 
 XFree86 &relvers; has X server support for most UNIX&reg; and UNIX-like
 operating systems on Intel/x86 platforms, plus support for Linux and
-some BSD OSs on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms,
+some BSD OSs on Alpha, PowerPC, IA-64, AMD64, SPARC, and Mips platforms,
 and for Darwin on PowerPC.  Support for additional architectures and
 operating systems is in progress and is planned for future releases.
 
@@ -1196,7 +1218,7 @@ The XFree86 X server has a built-in run-time loader, which can load
 normal object files and libraries in most of the commonly used formats.
 The loader does not rely on an operating system's native dynamic loader
 support and it works on platforms that do not provide this feature.  This
-allows  for the modules to be operating system independent (although
+allows for the modules to be operating system independent (although
 not, of course, CPU architecture independent) which means that a module
 compiled on Linux/x86 can be loaded by an X server running on Solaris/x86,
 or FreeBSD, or even OS/2.
@@ -1440,7 +1462,7 @@ slower than core text.
 <p>
 
 The XFree86-Misc extension has not been fully ported to the new server
-architecture yet.  This may be completed in a future release.
+architecture yet.  This might be completed in a future release.
 
 The XFree86-VidModeExtension extension has been updated, and mostly ported
 to the new server architecture.  The area of mode validation needs further
@@ -1495,7 +1517,7 @@ License.
 
 XFree86 4.x has a ``fontenc'' layer to allow the scalable font backends
 to use a common method of font re-encoding.  This re-encoding makes it
-possible to uses fonts in encodings other than their their native
+possible to use fonts in encodings other than their their native
 encoding.  This layer is used by the FreeType, Type1 and Speedo backends.
 
 <sect1>Large font optimisation
@@ -1667,6 +1689,8 @@ or the 'cvs log' information for individual source files.
   <tag>Automatic configuration enhancements:</tag>X-Oz Technologies, David Dawes
 
   <tag>Distributed Multihead X:</tag>Kevin Martin, Rik Faith
+
+  <tag>Preliminary work on SunOS/SPARC and IRIX ports:</tag>Marc La France
 
   </descrip>
 <tag>Integration:</tag>
@@ -1852,7 +1876,7 @@ url="http://www.isc.org/">.
 This product includes software developed by The XFree86 Project, Inc
 (http://www.xfree86.org/) and its contributors.
 
-This produce includes software that is based in part of the work of the
+This product includes software that is based in part of the work of the
 FreeType Team (http://www.freetype.org).
 
 This product includes software developed by the University of California,
