@@ -23,7 +23,7 @@
  * 
  * Trident Blade3D accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.12 2000/12/03 18:03:03 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/blade_accel.c,v 1.13 2000/12/04 08:46:17 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -103,10 +103,6 @@ BladeInitializeAccelerator(ScrnInfoPtr pScrn)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     CARD32 stride;
  
-    BLADE_OUT(0x2124, 1<<7);
-    BLADE_OUT(0x2124, 0);
-    BladeSync(pScrn);
-
     stride = (pScrn->displayWidth >> 3) << 20;
 
     BLADE_OUT(0x21C8, stride);
