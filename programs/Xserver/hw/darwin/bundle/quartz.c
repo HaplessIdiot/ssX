@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.19 2001/10/07 18:47:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.20 2001/10/23 06:10:31 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -358,7 +358,7 @@ void QuartzCapture(void)
  * QuartzRelease
  *  Release the screen so others can draw.
  */
-static void QuartzRelease(void)
+void QuartzRelease(void)
 {
     int i;
 
@@ -374,7 +374,6 @@ static void QuartzRelease(void)
                 CGDisplaySetPalette(cgID, fsDisplayInfo->aquaPalette);
             CGDisplayRelease(cgID);
         }
-        QuartzMessageMainThread(kQuartzServerHidden);
     }
 }
 
@@ -459,8 +458,8 @@ void QuartzShow(
 /* 
  * QuartzHide
  *  Remove the X server display from the screen. Does nothing if already
- *  hidden. Release the screen, set X clip regions to prevent drawing, and
- *  restore the Aqua cursor.
+ *  hidden. Set X clip regions to prevent drawing, and restore the Aqua
+ *  cursor.
  */
 void QuartzHide(void)
 {
@@ -475,8 +474,8 @@ void QuartzHide(void)
             }
         }
     } 
-    QuartzRelease();
     quartzServerVisible = FALSE;
+    QuartzMessageMainThread(kQuartzServerHidden);
 }
 
 

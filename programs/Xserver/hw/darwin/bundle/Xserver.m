@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.29 2001/10/06 07:08:03 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.30 2001/10/18 04:59:46 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -347,6 +347,7 @@ static NSRect aquaMenuBarBox;
     if (quartzRootless) {
         // There is no help window for rootless; just start
         [helpWindow close];
+        helpWindow = nil;
         if ([NSApp isActive])
             [self sendShowHide:YES];
         else
@@ -536,6 +537,7 @@ static NSRect aquaMenuBarBox;
         [Preferences saveToDisk];
     }
     [helpWindow close];
+    helpWindow = nil;
 
     serverVisible = YES;
     [self sendShowHide:YES];
@@ -599,6 +601,27 @@ static NSRect aquaMenuBarBox;
 
 // Tell the X server to show or hide itself.
 // This ignores the current X server visible state.
+//
+// In full screen mode, the order we do things is important and must be
+// preserved between the threads. X drawing operations have to be performed
+// in the X server thread. It appears that we have the additional
+// constraint that we must hide and show the menu bar in the main thread.
+//
+// To show the X server:
+//   1. Capture the displays. (Main thread)
+//   2. Hide the menu bar. (Must be in main thread)
+//   3. Send event to X server thread to redraw X screen.
+//   4. Redraw the X screen. (Must be in X server thread)
+//
+// To hide the X server:
+//   1. Send event to X server thread to stop drawing.
+//   2. Stop drawing to the X screen. (Must be in X server thread)
+//   3. Message main thread that drawing is stopped.
+//   4. If main thread still wants X server hidden:
+//     a. Release the displays. (Main thread)
+//     b. Unhide the menu bar. (Must be in main thread)
+//   Otherwise we have already queued an event to start drawing again.
+//
 - (void)sendShowHide:(BOOL)show
 {
     NXEvent ev;
@@ -682,18 +705,25 @@ static NSRect aquaMenuBarBox;
 
     switch(msg) {
         case kQuartzServerHidden:
-            if (!quartzRootless)
+            // Make sure the X server wasn't queued to be shown again while
+            // the hide was pending.
+            if (!quartzRootless && !serverVisible) {
+                QuartzRelease();
                 ShowMenuBar();
+            }
+
             // FIXME: This hack is necessary (but not completely effective)
             // since Mac OS X 10.0.2
             [NSCursor unhide];
             break;
+
         case kQuartzServerDied:
             sendServerEvents = NO;
             if (!appQuitting) {
                 [NSApp terminate:nil];	// quit if we aren't already
             }
             break;
+
         default:
             NSLog(@"Unknown message from server thread.");
     }
