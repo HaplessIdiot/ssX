@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.12 2001/12/17 20:52:22 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.13tsi Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
@@ -121,6 +121,7 @@ struct	inclist {
 };
 
 struct filepointer {
+	char	*f_name;
 	char	*f_p;
 	char	*f_base;
 	char	*f_end;

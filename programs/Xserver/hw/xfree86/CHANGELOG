@@ -1,4 +1,6 @@
 XFree86 4.2.99.4 (xx January 2003)
+ 739. Change makedepend to warn about any whitespace it finds in front of
+      pre-processor directives (Marc La France).
  738. Missing deadkeys in UTF-8 compose table (Mike Fabian).
  737. Build fix for SPARC (Thorsten Kukuk).
  736. Fixed integer address value in vesa driver to be large enough
@@ -16036,4 +16038,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2476 2003/01/16 10:01:30 eich Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2477 2003/01/16 16:09:07 eich Exp $
