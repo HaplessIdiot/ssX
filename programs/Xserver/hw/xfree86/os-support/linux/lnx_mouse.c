@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.2 2003/10/08 14:58:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_mouse.c,v 1.3tsi Exp $ */
 
 /*
  * Copyright 1999 by The XFree86 Project, Inc.
@@ -72,11 +72,17 @@ DefaultProtocol(void)
 #define DEFAULT_PS2_DEV			"/dev/psaux"
 #define DEFAULT_GPM_DATA_DEV		"/dev/gpmdata"
 #define DEFAULT_GPM_CTL_DEV		"/dev/gpmdata"
+#ifdef __sparc__
+#define DEFAULT_SUNMOUSE_DEV		"/dev/sunmouse"
+#endif
 
 static const char *mouseDevs[] = {
 	DEFAULT_MOUSE_DEV,
 	DEFAULT_PS2_DEV,
 	DEFAULT_GPM_DATA_DEV,
+#ifdef __sparc__
+	DEFAULT_SUNMOUSE_DEV,
+#endif
 	NULL
 };
 
@@ -183,6 +189,10 @@ GuessProtocol(InputInfoPtr pInfo, int flags)
 	proto = MOUSE_PROTO_MSC;
     else if (strcmp(realdev, DEFAULT_GPM_CTL_DEV) == 0)
 	proto = MOUSE_PROTO_GPM;
+#ifdef __sparc__
+    else if (strcmp(realdev, DEFAULT_SUNMOUSE_DEV) == 0)
+	proto = MOUSE_PROTO_MSC;
+#endif
     xfree(realdev);
     /*
      * If the protocol can't be guessed from the device name,
