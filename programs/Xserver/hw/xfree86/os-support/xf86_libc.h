@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.8 1997/06/29 07:54:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_libc.h,v 3.9 1997/07/06 05:31:00 dawes Exp $ */
 
 
 
@@ -21,7 +21,6 @@
 
 #define XF86_LIBC_H
 
-#ifdef XFree86LOADER
 
 /*
  * First, the new data types
@@ -59,6 +58,8 @@ typedef struct _xf86dirent XF86DIRENT;
  * the rest of this file should only be included for code that is supposed
  * to go into modules
  */
+
+#ifdef XFree86LOADER
 
 #ifndef DONT_DEFINE_WRAPPERS
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.16 1997/06/29 07:54:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.17 1997/07/06 05:31:01 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -113,6 +113,13 @@ typedef struct _xf86dirent XF86DIRENT;
 #endif
 #endif
 
+#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx) || defined(SCO)
+#define HAVE_VFSCANF
+#endif
+
+#if defined(CSRG_BASED)
+#define SETBUF_RETURNS_VOID
+#endif
 
 /*
  * This file contains the XFree86 wrappers for libc functions that can be
@@ -449,12 +456,6 @@ int xf86vsprintf(char *s, const char *format, ...)
 	va_end(args);
 	return ret;
 }
-
-#if NeedVarargsPrototypes
-#if !defined(SYSV) && !defined(SVR4) && !defined(Lynx) || defined(SCO)
-#define HAVE_VFSCANF
-#endif
-#endif
 
 int
 xf86fscanf(
