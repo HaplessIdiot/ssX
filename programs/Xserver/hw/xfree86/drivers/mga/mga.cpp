@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.16 2000/06/11 00:01:30 mvojkovi Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.cpp,v 1.17 2000/06/14 02:13:11 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH MGA __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -79,10 +79,11 @@ when operating in 8+24 overlay mode.  The value must be in the range
 Enable or disable the HW cursor.  Default: on.
 .TP
 .BI "Option \*qMGASDRAM\*q \*q" boolean \*q
-Specify whether G100 and G200 cards have SDRAM.  The driver attempts to
+Specify whether G100, G200 or G400 cards have SDRAM.  The driver attempts to
 auto-detect this based on the card's PCI subsystem ID.  This option may
 be used to override that auto-detection.  The mga driver is not able to 
-auto-detect the prescence SDRAM on secondary heads in multihead configurations.
+auto-detect the prescence of SDRAM on secondary heads in multihead configurations
+so this option will often need to be specified in multihead configurations.
 Default: auto-detected.
 .TP
 .BI "Option \*qNoAccel\*q \*q" boolean \*q
