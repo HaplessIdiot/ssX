@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.26 1999/09/27 06:29:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.27 1999/10/13 22:32:56 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
@@ -285,9 +285,18 @@ DGASetDGAMode(
    if(!(device = (DGADevicePtr)xalloc(sizeof(DGADeviceRec))))
 	return BadAlloc;
 
-   if(!pScreenPriv->current && !(*pScrn->SaveRestoreImage)(index, SaveImage)){
-	xfree(device);
-	return BadAlloc;
+   if(!pScreenPriv->current) {
+	Bool oldVTSema = pScrn->vtSema;
+	Bool result;
+
+	pScrn->vtSema = FALSE;  /* kludge until we rewrite VT switching */
+	result = (*pScrn->SaveRestoreImage)(index, SaveImage);
+	pScrn->vtSema = oldVTSema;
+
+	if(!result) {
+	    xfree(device);
+	    return BadAlloc;
+	}
    } 
 
    if(!(*pScreenPriv->funcs->SetMode)(pScrn, pMode)) {
