@@ -754,9 +754,9 @@ static void
 SiSComputeXvGamma(SISPtr pSiS)
 {
     int num = 255, i;
-    double red = 1.0 / (double)(pSiS->XvGammaRed / 1000);
-    double green = 1.0 / (double)(pSiS->XvGammaGreen / 1000);
-    double blue = 1.0 / (double)(pSiS->XvGammaBlue / 1000);
+    double red = 1.0 / (double)((double)pSiS->XvGammaRed / 1000);
+    double green = 1.0 / (double)((double)pSiS->XvGammaGreen / 1000);
+    double blue = 1.0 / (double)((double)pSiS->XvGammaBlue / 1000);
 
     for(i = 0; i <= num; i++) {
         pSiS->XvGammaRampRed[i] =
