@@ -4,6 +4,7 @@ EXPORTS
 
 _XftMatchSymbolic
 XftCharExists
+XftCharIndex
 XftColorAllocName
 XftColorAllocValue
 XftColorFree
@@ -45,4 +46,4 @@ XftTextExtents8
 XftTextExtentsUtf8
 XftXlfdParse
 
-/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.6 2003/06/18 16:17:34 eich Exp $ */
+/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.7tsi Exp $ */

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /**************************************************************************
 
 Copyright 2004 Tungsten Graphics Inc., Cedar Park, Texas.
@@ -36,9 +37,15 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 .globl _##x;		\
 _##x:
 #else  /* !defined (__DJGPP__) && !defined (__MINGW32__) && !defined (__CYGWIN__) */
+#if defined(__UNIXOS2__)
+#define GLOBL(x)	\
+.globl _/**/x;		\
+_/**/x:
+#else  /* !defined(__UNIXOS2__) */
 #define GLOBL( x )	\
 .globl x;		\
 x:
+#endif /* !defined(__UNIXOS2__) */
 #endif /* !defined (__DJGPP__) && !defined (__MINGW32__) && !defined (__CYGWIN__) */
 
 
@@ -81,7 +88,7 @@ x:
  * have the same size.
  */
 .align 4
-GLOBL ( _tnl_x86_Vertex1fv )
+GLOBL (_tnl_x86_Vertex1fv)
 	movl	4(%esp), %ecx
 	push	%edi
 	push	%esi
@@ -106,10 +113,10 @@ GLOBL ( _tnl_x86_Vertex1fv )
 	movl	$SUBST(4), %eax	/* load ctx */
 	movl	%eax, 4(%esp)	/* push ctx */
 	_JMP	(SUBST(5))	/* jmp _tnl_wrap_filled_vertex */
-GLOBL ( _tnl_x86_Vertex1fv_end )
+GLOBL (_tnl_x86_Vertex1fv_end)
 
 .align 4
-GLOBL ( _tnl_x86_Vertex2fv )
+GLOBL (_tnl_x86_Vertex2fv)
 	movl	4(%esp), %ecx
 	push	%edi
 	push	%esi
@@ -136,10 +143,10 @@ GLOBL ( _tnl_x86_Vertex2fv )
 	movl	$SUBST(4), %eax	/* load ctx */
 	movl	%eax, 4(%esp)	/* push ctx */
 	_JMP	(SUBST(5))	/* jmp _tnl_wrap_filled_vertex */
-GLOBL ( _tnl_x86_Vertex2fv_end )
+GLOBL (_tnl_x86_Vertex2fv_end)
 
 .align 4
-GLOBL ( _tnl_x86_Vertex3fv )
+GLOBL (_tnl_x86_Vertex3fv)
 	movl	4(%esp), %ecx
 	push	%edi
 	push	%esi
@@ -168,10 +175,10 @@ GLOBL ( _tnl_x86_Vertex3fv )
 	movl	$SUBST(4), %eax	/* load ctx */
 	movl	%eax, 4(%esp)	/* push ctx */
 	_JMP	(SUBST(5))	/* jmp _tnl_wrap_filled_vertex */
-GLOBL ( _tnl_x86_Vertex3fv_end )
+GLOBL (_tnl_x86_Vertex3fv_end)
 
 .align 4
-GLOBL ( _tnl_x86_Vertex4fv )
+GLOBL (_tnl_x86_Vertex4fv)
 	movl	4(%esp), %ecx
 	push	%edi
 	push	%esi
@@ -202,29 +209,29 @@ GLOBL ( _tnl_x86_Vertex4fv )
 	movl	$SUBST(4), %eax	/* load ctx */
 	movl	%eax, 4(%esp)	/* push ctx */
 	_JMP	(SUBST(5))	/* jmp _tnl_wrap_filled_vertex */
-GLOBL ( _tnl_x86_Vertex4fv_end )
+GLOBL (_tnl_x86_Vertex4fv_end)
 
 
 /**
  * Generic handlers for vector format data. 
  */
-GLOBL( _tnl_x86_Attribute1fv )
+GLOBL(_tnl_x86_Attribute1fv)
 	movl	4(%esp), %ecx
 	movl	(%ecx), %eax	/* load v[0] */
 	movl	%eax, SUBST(0)	/* store v[0] to current vertex */
 	RETCLEAN(4)
-GLOBL ( _tnl_x86_Attribute1fv_end )
+GLOBL (_tnl_x86_Attribute1fv_end)
 
-GLOBL( _tnl_x86_Attribute2fv )
+GLOBL(_tnl_x86_Attribute2fv)
 	movl	4(%esp), %ecx
 	movl	(%ecx), %eax	/* load v[0] */
 	movl	4(%ecx), %edx	/* load v[1] */
 	movl	%eax, SUBST(0)	/* store v[0] to current vertex */
 	movl	%edx, SUBST(1)	/* store v[1] to current vertex */
 	RETCLEAN(4)
-GLOBL ( _tnl_x86_Attribute2fv_end )
+GLOBL (_tnl_x86_Attribute2fv_end)
 
-GLOBL( _tnl_x86_Attribute3fv )
+GLOBL(_tnl_x86_Attribute3fv)
 	movl	4(%esp), %ecx
 	movl	(%ecx), %eax	/* load v[0] */
 	movl	4(%ecx), %edx	/* load v[1] */
@@ -233,9 +240,9 @@ GLOBL( _tnl_x86_Attribute3fv )
 	movl	%edx, SUBST(1)	/* store v[1] to current vertex */
 	movl	%ecx, SUBST(2)	/* store v[2] to current vertex */
 	RETCLEAN(4)
-GLOBL ( _tnl_x86_Attribute3fv_end )
+GLOBL (_tnl_x86_Attribute3fv_end)
 
-GLOBL( _tnl_x86_Attribute4fv )
+GLOBL(_tnl_x86_Attribute4fv)
 	movl	4(%esp), %ecx
 	movl	(%ecx), %eax	/* load v[0] */
 	movl	4(%ecx), %edx	/* load v[1] */
@@ -246,7 +253,7 @@ GLOBL( _tnl_x86_Attribute4fv )
 	movl	%eax, SUBST(2)	/* store v[2] to current vertex */
 	movl	%edx, SUBST(3)	/* store v[3] to current vertex */
 	RETCLEAN(4)
-GLOBL ( _tnl_x86_Attribute4fv_end )
+GLOBL (_tnl_x86_Attribute4fv_end)
 
 
 /* Choosers:
@@ -254,14 +261,14 @@ GLOBL ( _tnl_x86_Attribute4fv_end )
  * Must generate all of these ahead of first usage.  Generate at
  * compile-time?
  */
-GLOBL( _tnl_x86_choose_fv )
+GLOBL(_tnl_x86_choose_fv)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	$SUBST(0), (%esp)	/* arg 0 - attrib */
 	movl	$SUBST(1), 4(%esp)	/* arg 1 - N */
 	_CALL	(SUBST(2))		/* call do_choose */
 	add	$12, %esp		/* tear down stack frame */
 	jmp	*%eax			/* jump to new func */
-GLOBL ( _tnl_x86_choose_fv_end )
+GLOBL (_tnl_x86_choose_fv_end)
 
 
 /* FIRST LEVEL FUNCTIONS -- these are plugged directly into GL dispatch.
@@ -280,65 +287,65 @@ GLOBL ( _tnl_x86_choose_fv_end )
 /* Unfortunately, have to play with the stack in the non-fv case:
  */
 #if !defined (STDCALL_API)
-GLOBL( _tnl_x86_dispatch_attrf1 )
-GLOBL( _tnl_x86_dispatch_attrf2 )
-GLOBL( _tnl_x86_dispatch_attrf3 )
-GLOBL( _tnl_x86_dispatch_attrf4 )
+GLOBL(_tnl_x86_dispatch_attrf1)
+GLOBL(_tnl_x86_dispatch_attrf2)
+GLOBL(_tnl_x86_dispatch_attrf3)
+GLOBL(_tnl_x86_dispatch_attrf4)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	leal	16(%esp), %edx	/* address of first float on stack */
 	movl	%edx, (%esp)	/* save as 'v' */
 	call	*SUBST(0)	/* 0x0 --> tabfv[attr][n] */
 	addl	$12, %esp	/* tear down frame */
 	ret			/* return */
-GLOBL( _tnl_x86_dispatch_attrf4_end )
-GLOBL( _tnl_x86_dispatch_attrf3_end )
-GLOBL( _tnl_x86_dispatch_attrf2_end )
-GLOBL( _tnl_x86_dispatch_attrf1_end )
+GLOBL(_tnl_x86_dispatch_attrf4_end)
+GLOBL(_tnl_x86_dispatch_attrf3_end)
+GLOBL(_tnl_x86_dispatch_attrf2_end)
+GLOBL(_tnl_x86_dispatch_attrf1_end)
 
 #else  /* defined(STDCALL_API) */
 
-GLOBL( _tnl_x86_dispatch_attrf1 )
+GLOBL(_tnl_x86_dispatch_attrf1)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	leal	16(%esp), %edx	/* address of first float on stack */
 	movl	%edx, (%esp)	/* save as 'v' */
 	call	*SUBST(0)	/* 0x0 --> tabfv[attr][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$4		/* return */
-GLOBL( _tnl_x86_dispatch_attrf1_end )
+GLOBL(_tnl_x86_dispatch_attrf1_end)
 
-GLOBL( _tnl_x86_dispatch_attrf2 )
+GLOBL(_tnl_x86_dispatch_attrf2)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	leal	16(%esp), %edx	/* address of first float on stack */
 	movl	%edx, (%esp)	/* save as 'v' */
 	call	*SUBST(0)	/* 0x0 --> tabfv[attr][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$8		/* return */
-GLOBL( _tnl_x86_dispatch_attrf2_end )
+GLOBL(_tnl_x86_dispatch_attrf2_end)
 
-GLOBL( _tnl_x86_dispatch_attrf3 )
+GLOBL(_tnl_x86_dispatch_attrf3)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	leal	16(%esp), %edx	/* address of first float on stack */
 	movl	%edx, (%esp)	/* save as 'v' */
 	call	*SUBST(0)	/* 0x0 --> tabfv[attr][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$12		/* return */
-GLOBL( _tnl_x86_dispatch_attrf3_end )
+GLOBL(_tnl_x86_dispatch_attrf3_end)
 
-GLOBL( _tnl_x86_dispatch_attrf4 )
+GLOBL(_tnl_x86_dispatch_attrf4)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	leal	16(%esp), %edx	/* address of first float on stack */
 	movl	%edx, (%esp)	/* save as 'v' */
 	call	*SUBST(0)	/* 0x0 --> tabfv[attr][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$16		/* return */
-GLOBL( _tnl_x86_dispatch_attrf4_end )
+GLOBL(_tnl_x86_dispatch_attrf4_end)
 #endif /* defined(STDCALL_API) */
 
 /* The fv case is simpler:
  */
-GLOBL( _tnl_x86_dispatch_attrfv )
+GLOBL(_tnl_x86_dispatch_attrfv)
 	jmp	*SUBST(0)	/* 0x0 --> tabfv[attr][n] */
-GLOBL( _tnl_x86_dispatch_attrfv_end )
+GLOBL(_tnl_x86_dispatch_attrfv_end)
 
 
 /* MultiTexcoord: the address of the function pointer must be
@@ -356,33 +363,33 @@ GLOBL( _tnl_x86_dispatch_attrfv_end )
 /* Also, will only need a maximum of four of each of these per context:
  */
 #if !defined (STDCALL_API)
-GLOBL( _tnl_x86_dispatch_multitexcoordf1 )
-GLOBL( _tnl_x86_dispatch_multitexcoordf2 )
-GLOBL( _tnl_x86_dispatch_multitexcoordf3 )
-GLOBL( _tnl_x86_dispatch_multitexcoordf4 )
+GLOBL(_tnl_x86_dispatch_multitexcoordf1)
+GLOBL(_tnl_x86_dispatch_multitexcoordf2)
+GLOBL(_tnl_x86_dispatch_multitexcoordf3)
+GLOBL(_tnl_x86_dispatch_multitexcoordf4)
 	movl	4(%esp), %ecx
 	leal	8(%esp), %edx
 	andl	$7, %ecx
 	movl	%edx, 4(%esp)
 	sall	$4, %ecx
 	jmp	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
-GLOBL( _tnl_x86_dispatch_multitexcoordf4_end )
-GLOBL( _tnl_x86_dispatch_multitexcoordf3_end )
-GLOBL( _tnl_x86_dispatch_multitexcoordf2_end )
-GLOBL( _tnl_x86_dispatch_multitexcoordf1_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordf4_end)
+GLOBL(_tnl_x86_dispatch_multitexcoordf3_end)
+GLOBL(_tnl_x86_dispatch_multitexcoordf2_end)
+GLOBL(_tnl_x86_dispatch_multitexcoordf1_end)
 
-GLOBL( _tnl_x86_dispatch_multitexcoordfv )
+GLOBL(_tnl_x86_dispatch_multitexcoordfv)
 	movl	4(%esp), %ecx
 	movl	8(%esp), %edx
 	andl	$7, %ecx
 	movl	%edx, 4(%esp)
 	sall	$4, %ecx
 	jmp	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
-GLOBL( _tnl_x86_dispatch_multitexcoordfv_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordfv_end)
 
 #else  /* defined (STDCALL_API) */
 
-GLOBL( _tnl_x86_dispatch_multitexcoordf1 )
+GLOBL(_tnl_x86_dispatch_multitexcoordf1)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %ecx
 	leal	20(%esp), %edx
@@ -392,9 +399,9 @@ GLOBL( _tnl_x86_dispatch_multitexcoordf1 )
 	call	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$8		/* return */
-GLOBL( _tnl_x86_dispatch_multitexcoordf1_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordf1_end)
 
-GLOBL( _tnl_x86_dispatch_multitexcoordf2 )
+GLOBL(_tnl_x86_dispatch_multitexcoordf2)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %ecx
 	leal	20(%esp), %edx
@@ -404,9 +411,9 @@ GLOBL( _tnl_x86_dispatch_multitexcoordf2 )
 	call	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$12		/* return */
-GLOBL( _tnl_x86_dispatch_multitexcoordf2_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordf2_end)
 
-GLOBL( _tnl_x86_dispatch_multitexcoordf3 )
+GLOBL(_tnl_x86_dispatch_multitexcoordf3)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %ecx
 	leal	20(%esp), %edx
@@ -416,9 +423,9 @@ GLOBL( _tnl_x86_dispatch_multitexcoordf3 )
 	call	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$16		/* return */
-GLOBL( _tnl_x86_dispatch_multitexcoordf3_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordf3_end)
 
-GLOBL( _tnl_x86_dispatch_multitexcoordf4 )
+GLOBL(_tnl_x86_dispatch_multitexcoordf4)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %ecx
 	leal	20(%esp), %edx
@@ -428,9 +435,9 @@ GLOBL( _tnl_x86_dispatch_multitexcoordf4 )
 	call	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$20		/* return */
-GLOBL( _tnl_x86_dispatch_multitexcoordf4_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordf4_end)
 
-GLOBL( _tnl_x86_dispatch_multitexcoordfv )
+GLOBL(_tnl_x86_dispatch_multitexcoordfv)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %ecx
 	movl	20(%esp), %edx
@@ -440,7 +447,7 @@ GLOBL( _tnl_x86_dispatch_multitexcoordfv )
 	call	*SUBST(0)(%ecx)	/* 0x0 - tabfv[tex0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$8		/* return */
-GLOBL( _tnl_x86_dispatch_multitexcoordfv_end )
+GLOBL(_tnl_x86_dispatch_multitexcoordfv_end)
 #endif /* defined (STDCALL_API) */
 
 
@@ -448,10 +455,10 @@ GLOBL( _tnl_x86_dispatch_multitexcoordfv_end )
  * calculated.
  */
 #if !defined (STDCALL_API)
-GLOBL( _tnl_x86_dispatch_vertexattribf1 )
-GLOBL( _tnl_x86_dispatch_vertexattribf2 )
-GLOBL( _tnl_x86_dispatch_vertexattribf3 )
-GLOBL( _tnl_x86_dispatch_vertexattribf4 )
+GLOBL(_tnl_x86_dispatch_vertexattribf1)
+GLOBL(_tnl_x86_dispatch_vertexattribf2)
+GLOBL(_tnl_x86_dispatch_vertexattribf3)
+GLOBL(_tnl_x86_dispatch_vertexattribf4)
 	movl	4(%esp), %eax
 	cmpl	$16, %eax
 	jb	.8		/* "cmovge" is not supported on all CPUs */
@@ -461,12 +468,12 @@ GLOBL( _tnl_x86_dispatch_vertexattribf4 )
 	movl	%ecx, 4(%esp)	/* save in 1st arg slot */
 	sall	$4, %eax
 	jmp	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
-GLOBL( _tnl_x86_dispatch_vertexattribf4_end )
-GLOBL( _tnl_x86_dispatch_vertexattribf3_end )
-GLOBL( _tnl_x86_dispatch_vertexattribf2_end )
-GLOBL( _tnl_x86_dispatch_vertexattribf1_end )
+GLOBL(_tnl_x86_dispatch_vertexattribf4_end)
+GLOBL(_tnl_x86_dispatch_vertexattribf3_end)
+GLOBL(_tnl_x86_dispatch_vertexattribf2_end)
+GLOBL(_tnl_x86_dispatch_vertexattribf1_end)
 
-GLOBL( _tnl_x86_dispatch_vertexattribfv )
+GLOBL(_tnl_x86_dispatch_vertexattribfv)
 	movl	4(%esp), %eax
 	cmpl	$16, %eax
 	jb	.9		/* "cmovge" is not supported on all CPUs */
@@ -476,11 +483,11 @@ GLOBL( _tnl_x86_dispatch_vertexattribfv )
 	movl	%ecx, 4(%esp)	/* save in 1st arg slot */
 	sall	$4, %eax
 	jmp	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
-GLOBL( _tnl_x86_dispatch_vertexattribfv_end )
+GLOBL(_tnl_x86_dispatch_vertexattribfv_end)
 
 #else  /* defined (STDCALL_API) */
 
-GLOBL( _tnl_x86_dispatch_vertexattribf1 )
+GLOBL(_tnl_x86_dispatch_vertexattribf1)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %eax
 	cmpl	$16, %eax
@@ -493,9 +500,9 @@ GLOBL( _tnl_x86_dispatch_vertexattribf1 )
 	call	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$8		/* return */
-GLOBL( _tnl_x86_dispatch_vertexattribf1_end )
+GLOBL(_tnl_x86_dispatch_vertexattribf1_end)
 
-GLOBL( _tnl_x86_dispatch_vertexattribf2 )
+GLOBL(_tnl_x86_dispatch_vertexattribf2)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %eax
 	cmpl	$16, %eax
@@ -508,9 +515,9 @@ GLOBL( _tnl_x86_dispatch_vertexattribf2 )
 	call	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$12		/* return */
-GLOBL( _tnl_x86_dispatch_vertexattribf2_end )
+GLOBL(_tnl_x86_dispatch_vertexattribf2_end)
 
-GLOBL( _tnl_x86_dispatch_vertexattribf3 )
+GLOBL(_tnl_x86_dispatch_vertexattribf3)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %eax
 	cmpl	$16, %eax
@@ -523,9 +530,9 @@ GLOBL( _tnl_x86_dispatch_vertexattribf3 )
 	call	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$16		/* return */
-GLOBL( _tnl_x86_dispatch_vertexattribf3_end )
+GLOBL(_tnl_x86_dispatch_vertexattribf3_end)
 
-GLOBL( _tnl_x86_dispatch_vertexattribf4 )
+GLOBL(_tnl_x86_dispatch_vertexattribf4)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %eax
 	cmpl	$16, %eax
@@ -538,9 +545,9 @@ GLOBL( _tnl_x86_dispatch_vertexattribf4 )
 	call	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$20		/* return */
-GLOBL( _tnl_x86_dispatch_vertexattribf4_end )
+GLOBL(_tnl_x86_dispatch_vertexattribf4_end)
 
-GLOBL( _tnl_x86_dispatch_vertexattribfv )
+GLOBL(_tnl_x86_dispatch_vertexattribfv)
 	subl	$12, %esp	/* gcc does 16 byte alignment of stack frames? */
 	movl	16(%esp), %eax
 	cmpl	$16, %eax
@@ -553,5 +560,5 @@ GLOBL( _tnl_x86_dispatch_vertexattribfv )
 	call	*SUBST(0)(%eax)	/* 0x0 - tabfv[0][n] */
 	addl	$8, %esp	/* tear down frame (4 shaved off by the callee) */
 	ret	$8		/* return */
-GLOBL( _tnl_x86_dispatch_vertexattribfv_end )
+GLOBL(_tnl_x86_dispatch_vertexattribfv_end)
 #endif /* defined (STDCALL_API) */

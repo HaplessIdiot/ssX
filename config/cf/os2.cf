@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.43 2004/06/02 22:42:53 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.44tsi Exp $
 
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
@@ -159,7 +159,7 @@ XCOMM hv: but in future a separate system)
 #define HasPlugin		NO
 #define VendorHasX11R6_3libExt	YES
 
-#define CppCmd	cpp
+#define CppCmd	cpp -D__UNIXOS2__
 #define YaccCmd	bison -y
 #define StandardCppOptions	-traditional
 #define StandardCppDefines	/**/
@@ -193,7 +193,7 @@ XCOMM hv: but in future a separate system)
 #define LdCmd	ld
 #define ExtraLoadFlags	-Zbin-files
 #define ExtraLibraries	-lshm -lemxfix -lsocket -lbsd -lgcc
-#define ServerExtraSysLibs     -lregex -lshm -lemxfix -lsocket
+#define ServerExtraSysLibs     -lregex -lshm -lemxfix -lsocket -lbsd
 
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
