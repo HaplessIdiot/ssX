@@ -1,9 +1,10 @@
+/* $XFree86: $ */
 /*
  * Copyright (C) 1997 Matthieu Herrb
  *
  * $Source: /vol1/history/xf86/xc/programs/Xserver/hw/xfree86/common/Attic/xf86_ldext.h,v $
- * $Revision: 3.1 $
- * $Date: 1997/04/08 10:11:54 $
+ * $Revision: 3.2 $
+ * $Date: 1997/04/08 14:54:26 $
  * 
  */
 #ifndef _XF86_LDEXT_H
