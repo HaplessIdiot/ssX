@@ -1,4 +1,6 @@
 XCOMM $XConsortium: Imakefile,v 1.7 91/12/20 11:29:16 rws Exp $
+XCOMM $XFree86$
+
         DEFINES = ExtensionDefines
         DEPLIBS = $(DEPXMULIB) $(DEPXLIB) $(DEPXF86LIBS)
 LOCAL_LIBRARIES = $(XMULIB) $(XLIB) $(XF86LIBS)
