@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.32 2003/02/05 17:45:29 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.33 2003/02/07 11:21:08 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -945,6 +945,7 @@ static Bool SavagePreInit(ScrnInfoPtr pScrn, int flags)
 
     if (xf86LoadSubModule(pScrn, "vbe")) {
 	xf86LoaderReqSymLists(vbeSymbols, NULL);
+	psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
     }
 
 
@@ -2221,7 +2222,7 @@ static Bool SavageScreenInit(int scrnIndex, ScreenPtr pScreen,
     psav = SAVPTR(pScrn);
 
     pEnt = xf86GetEntityInfo(pScrn->entityList[0]); 
-    psav->pVbe = VBEInit(psav->pInt10, pEnt->index);
+    psav->pVbe = VBEInit(NULL, pEnt->index);
  
     SavageEnableMMIO(pScrn);
 
