@@ -270,9 +270,11 @@ xf86DriverlistFromConfig()
      * XXX The set of inactive "Device" sections needs to be handled too,
      * when the rest of the supporting code is done.
      */
-    slp = xf86ConfigLayout.screens;
-    while ((slp++)->screen) {
-	count++;
+    if (xf86ConfigLayout.screens) {
+        slp = xf86ConfigLayout.screens;
+        while ((slp++)->screen) {
+	    count++;
+        }
     }
 
     if (count == 0)
@@ -336,11 +338,13 @@ xf86InputDriverlistFromConfig()
      * Walk the list of driver lines in active "InputDevice" sections to
      * determine now many implicitly loaded modules there are.
      */
-    idp = xf86ConfigLayout.inputs;
-    while (idp->identifier) {
-	if (!xf86BuiltinInputDriver(idp->driver))
-	    count++;
-	idp++;
+    if (xf86ConfigLayout.inputs) {
+        idp = xf86ConfigLayout.inputs;
+        while (idp->identifier) {
+	    if (!xf86BuiltinInputDriver(idp->driver))
+	        count++;
+	    idp++;
+        }
     }
 
     if (count == 0)
@@ -402,6 +406,7 @@ configFiles(XF86ConfFilesPtr fileconf)
 
   /* Try XF86Config FontPath first */
   if (!xf86fpFlag) {
+   if (fileconf) {
     if (fileconf->file_fontpath) {
       char *f = xf86ValidateFontPath(fileconf->file_fontpath);
       pathFrom = X_CONFIG;
@@ -418,6 +423,7 @@ configFiles(XF86ConfFilesPtr fileconf)
 	    "No FontPath specified.  Using compiled-in default.\n");
       pathFrom = X_DEFAULT;
     }
+   }
   } else {
     /* Use fontpath specified with '-fp' */
     if (fontPath)
@@ -426,14 +432,16 @@ configFiles(XF86ConfFilesPtr fileconf)
     }
     pathFrom = X_CMDLINE;
   }
-  if (!fileconf->file_fontpath) {
-    /* xf86ValidateFontPath will write into it's arg, but defaultFontPath
+  if (fileconf) {
+   if (!fileconf->file_fontpath) {
+      /* xf86ValidateFontPath will write into it's arg, but defaultFontPath
        could be static, so we make a copy. */
     char *f = xnfalloc(strlen(defaultFontPath) + 1);
     f[0] = '\0';
     strcpy (f, defaultFontPath);
     defaultFontPath = xf86ValidateFontPath(f);
     xfree(f);
+   }
   }
 
   /* If defaultFontPath is still empty, exit here */
@@ -449,9 +457,11 @@ configFiles(XF86ConfFilesPtr fileconf)
 
   if (xf86coFlag)
     pathFrom = X_CMDLINE;
-  else if (fileconf->file_rgbpath) {
-    rgbPath = fileconf->file_rgbpath;
-    pathFrom = X_CONFIG;
+  else if (fileconf) {
+    if (fileconf->file_rgbpath) {
+      rgbPath = fileconf->file_rgbpath;
+      pathFrom = X_CONFIG;
+    }
   }
 
   xf86Msg(pathFrom, "RgbPath set to \"%s\"\n", rgbPath);
@@ -459,9 +469,11 @@ configFiles(XF86ConfFilesPtr fileconf)
 #ifdef XFree86LOADER
   /* ModulePath */
 
-  if (xf86ModPathFrom != X_CMDLINE && fileconf->file_modulepath) {
-    xf86ModulePath = fileconf->file_modulepath;
-    xf86ModPathFrom = X_CONFIG;
+  if (fileconf) {
+    if (xf86ModPathFrom != X_CMDLINE && fileconf->file_modulepath) {
+      xf86ModulePath = fileconf->file_modulepath;
+      xf86ModPathFrom = X_CONFIG;
+    }
   }
 
   xf86Msg(xf86ModPathFrom, "ModulePath set to \"%s\"\n", xf86ModulePath);
@@ -1846,15 +1858,17 @@ xf86HandleConfigFile(void)
 	    return FALSE;
 	}
     } else {
-	char *dfltlayout = NULL;
-	pointer optlist = xf86configptr->conf_flags->flg_option_lst;
-
-	if (optlist && xf86FindOption(optlist, "defaultserverlayout"))
+	if (xf86configptr->conf_flags != NULL) {
+	  char *dfltlayout = NULL;
+ 	  pointer optlist = xf86configptr->conf_flags->flg_option_lst;
+	
+	  if (optlist && xf86FindOption(optlist, "defaultserverlayout"))
 	    dfltlayout = xf86SetStrOption(optlist, "defaultserverlayout", NULL);
-	if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst,
+	  if (!configLayout(&xf86ConfigLayout, xf86configptr->conf_layout_lst,
 			  dfltlayout)) {
 	    xf86Msg(X_ERROR, "Unable to determine the screen layout\n");
 	    return FALSE;
+	  }
 	}
     }
 
