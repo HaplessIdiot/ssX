@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/prngc.c,v 1.1 2003/09/17 05:48:32 herrb Exp $ */
 /* Code grabbed from OpenSSH - portable version */
 /*
  * Copyright (c) 1995,1999 Theo de Raadt.  All rights reserved.
@@ -25,14 +25,16 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#if defined(CSRG_BASED)  || defined(linux)
-# define HAVE_SYS_UN_H
-#endif
 
 #include <sys/types.h>
 #include <sys/socket.h>
-#ifdef HAVE_SYS_UN_H
-#include <sys/un.h>
+#include <X11/Xos.h>
+#ifndef X_NO_SYS_UN
+#ifndef Lynx
+#include	<sys/un.h>
+#else
+#include	<un.h>
+#endif
 #endif
 #include <netinet/in.h>
 #include <errno.h>
@@ -64,9 +66,10 @@ get_prngd_bytes(char *buf, int len,
 {
 	int fd, addr_len, rval, errors;
 	char msg[2];
-	struct sockaddr_storage addr;
-	struct sockaddr_in *addr_in = (struct sockaddr_in *)&addr;
-	struct sockaddr_un *addr_un = (struct sockaddr_un *)&addr;
+	struct sockaddr *addr;
+	struct sockaddr_in addr_in;
+	struct sockaddr_un addr_un;
+	int af;
 	void (*old_sigpipe)(int);
 
 	/* Sanity checks */
@@ -76,7 +79,7 @@ get_prngd_bytes(char *buf, int len,
 		return -1;
 	}
 	if (socket_path != NULL &&
-	    strlen(socket_path) >= sizeof(addr_un->sun_path)) {
+	    strlen(socket_path) >= sizeof(addr_un.sun_path)) {
 		LogError("get_random_prngd: Random pool path is too long\n");
 		return -1;
 	}
@@ -86,19 +89,21 @@ get_prngd_bytes(char *buf, int len,
 		return -1;
 	}
 
-	memset(&addr, '\0', sizeof(addr));
+	memset(&addr_in, '\0', sizeof(addr));
 
 	if (tcp_port != 0) {
-		addr_in->sin_family = AF_INET;
-		addr_in->sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-		addr_in->sin_port = htons(tcp_port);
-		addr_len = sizeof(*addr_in);
+		af = addr_in.sin_family = AF_INET;
+		addr_in.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+		addr_in.sin_port = htons(tcp_port);
+		addr_len = sizeof(addr_in);
+		addr = (struct sockaddr *)&addr_in;
 	} else {
-		addr_un->sun_family = AF_UNIX;
-		strncpy(addr_un->sun_path, socket_path,
-		    sizeof(addr_un->sun_path));
+		af = addr_un.sun_family = AF_UNIX;
+		strncpy(addr_un.sun_path, socket_path,
+		    sizeof(addr_un.sun_path));
 		addr_len = offsetof(struct sockaddr_un, sun_path) +
 		    strlen(socket_path) + 1;
+		addr = (struct sockaddr *)&addr_un;
 	}
 
 	old_sigpipe = signal(SIGPIPE, SIG_IGN);
@@ -106,20 +111,20 @@ get_prngd_bytes(char *buf, int len,
 	errors = 0;
 	rval = -1;
 reopen:
-	fd = socket(addr.ss_family, SOCK_STREAM, 0);
+	fd = socket(af, SOCK_STREAM, 0);
 	if (fd == -1) {
 		LogInfo("Couldn't create socket: %s\n", strerror(errno));
 		goto done;
 	}
 
-	if (connect(fd, (struct sockaddr*)&addr, addr_len) == -1) {
-		if (tcp_port != 0) {
+	if (connect(fd, (struct sockaddr*)addr, addr_len) == -1) {
+		if (af == AF_INET) {
 			LogInfo("Couldn't connect to PRNGD port %d: %s\n",
 			    tcp_port, strerror(errno));
 		} else {
 			LogInfo("Couldn't connect to PRNGD socket"
 			    " \"%s\": %s\n",
-			    addr_un->sun_path, strerror(errno));
+			    addr_un.sun_path, strerror(errno));
 		}
 		goto done;
 	}
