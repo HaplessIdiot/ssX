@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.1 1998/12/05 14:40:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/xf86Summa.c,v 1.2 1999/01/14 13:04:49 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -1009,7 +1009,7 @@ xf86SumAllocate()
 
     local->name = XI_NAME;
     local->type_name = "SummaSketch Tablet";
-    local->flags = 0; /*XI86_NO_OPEN_ON_INIT;*/
+    local->flags = 0;
 #if !defined(sun) || defined(i386)
     local->device_config = xf86SumConfig;
 #endif

@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.4 1999/05/23 06:33:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.5 1999/06/05 15:55:28 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -1338,7 +1338,7 @@ xf86MuTAllocate(char	*name,
   priv->finger = NULL;
   
   local->name = name;
-  local->flags = XI86_NO_OPEN_ON_INIT;
+  local->flags = 0;
 #ifndef XFREE86_V4
   local->device_config = xf86MuTConfig;
 #endif

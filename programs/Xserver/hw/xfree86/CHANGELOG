@@ -1,4 +1,7 @@
 XFree86 3.9Pr (12 June 1999)
+2741. Add some functions to the common layer to allow drivers to register
+      input handling functions, and modify the pm2_video code to make use of
+      this instead of the XInput code (David Dawes).
 2740. Trap for packed 24bpp on systems with 64-bit scanlines.
 2739. Fix the type of the "set_mckl" option in the s3virge driver (#2865,
       Harald Koenig).
@@ -8159,4 +8162,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.771 1999/06/12 14:15:26 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.772 1999/06/12 15:36:59 dawes Exp $

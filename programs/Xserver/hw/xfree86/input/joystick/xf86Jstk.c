@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.2 1999/01/14 13:04:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/xf86Jstk.c,v 1.3 1999/04/04 07:03:25 dawes Exp $ */
 
 #include <xf86Version.h>
 
@@ -570,7 +570,7 @@ xf86JstkAllocate(void)
   JoystickDevPtr        priv = xalloc(sizeof(JoystickDevRec));
   
   local->name = "JOYSTICK";
-  local->flags = XI86_NO_OPEN_ON_INIT;
+  local->flags = 0;
 #ifndef XFREE86_V4
   local->device_config = xf86JstkConfig;
 #endif

@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.37 1999/06/12 14:15:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.38 1999/06/12 17:30:20 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -528,7 +528,7 @@ GLINTProbe(DriverPtr drv, int flags)
 
     numUsed = xf86MatchPciInstances(GLINT_NAME, 0,
 		   GLINTChipsets, GLINTPciChipsets, devSections,
-		   numDevSections, &GLINT, &usedChips);
+		   numDevSections, drv, &usedChips);
     xfree(devSections);
     devSections = NULL;
     if (numUsed <= 0)
