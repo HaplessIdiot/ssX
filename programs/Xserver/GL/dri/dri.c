@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.23 2000/12/05 21:18:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.24 2000/12/07 20:26:13 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -354,24 +354,18 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 	pDRIPriv->wrap.PostValidateTree = pScreen->PostValidateTree;
 	pScreen->PostValidateTree = pDRIInfo->wrap.PostValidateTree;
     }
-
-    /* Potentential optimization:  don't wrap the following routines if
-         pDRIInfo->bufferRequests == DRI_NO_WINDOWS */
-    if (pDRIInfo->wrap.PaintWindowBackground) {
-	pDRIPriv->wrap.PaintWindowBackground = pScreen->PaintWindowBackground;
-	pScreen->PaintWindowBackground = pDRIInfo->wrap.PaintWindowBackground;
-    }
-    if (pDRIInfo->wrap.PaintWindowBorder) {
-	pDRIPriv->wrap.PaintWindowBorder = pScreen->PaintWindowBorder;
-	pScreen->PaintWindowBorder = pDRIInfo->wrap.PaintWindowBorder;
+    if (pDRIInfo->wrap.WindowExposures) {
+	pDRIPriv->wrap.WindowExposures = pScreen->WindowExposures;
+	pScreen->WindowExposures = pDRIInfo->wrap.WindowExposures;
     }
     if (pDRIInfo->wrap.CopyWindow) {
 	pDRIPriv->wrap.CopyWindow = pScreen->CopyWindow;
 	pScreen->CopyWindow = pDRIInfo->wrap.CopyWindow;
     }
-    if (pDRIInfo->wrap.ClipNotify)
-       miClipNotify(pDRIInfo->wrap.ClipNotify);
-
+    if (pDRIInfo->wrap.ClipNotify) {
+	pDRIPriv->wrap.ClipNotify = pScreen->ClipNotify;
+	pScreen->ClipNotify = pDRIInfo->wrap.ClipNotify;
+    }
     if (pDRIInfo->wrap.AdjustFrame) {
 	ScrnInfoPtr pScrn          = xf86Screens[pScreen->myNum];
 	pDRIPriv->wrap.AdjustFrame = pScrn->AdjustFrame;
@@ -1099,8 +1093,7 @@ DRICreateInfoRec(void)
     /* Wrapped function defaults */
     inforec->wrap.WakeupHandler         = DRIDoWakeupHandler;
     inforec->wrap.BlockHandler          = DRIDoBlockHandler;
-    inforec->wrap.PaintWindowBackground = DRIPaintWindow;
-    inforec->wrap.PaintWindowBorder     = DRIPaintWindow;
+    inforec->wrap.WindowExposures       = DRIWindowExposures;
     inforec->wrap.CopyWindow            = DRICopyWindow;
     inforec->wrap.ValidateTree          = DRIValidateTree;
     inforec->wrap.PostValidateTree      = DRIPostValidateTree;
@@ -1347,66 +1340,39 @@ DRIGetContextStore(DRIContextPrivPtr context)
     return((void *)context->pContextStore);
 }
 
-void 
-DRIPaintWindow(WindowPtr pWin, RegionPtr prgn, int what)
+void
+DRIWindowExposures(WindowPtr pWin, RegionPtr prgn, RegionPtr bsreg)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIDrawablePrivPtr pDRIDrawablePriv = DRI_DRAWABLE_PRIV_FROM_WINDOW(pWin);
 
-    /* NOT_DONE: HACK until we have newly transitioned 3D->2D 
-     * windows computed 
-     */
-    if(what == PW_BACKGROUND) {
-	if ((pDRIPriv->pDriverInfo->bufferRequests == DRI_3D_WINDOWS_ONLY) &&
-	      (pDRIDrawablePriv)) {
-
-	    (*pDRIPriv->pDriverInfo->InitBuffers)(pWin, prgn, 
-				    pDRIDrawablePriv->drawableIndex);
-	}
-	else if (pDRIPriv->pDriverInfo->bufferRequests == DRI_ALL_WINDOWS) {
-	    if (pDRIDrawablePriv) {
-
-		(*pDRIPriv->pDriverInfo->InitBuffers)(pWin, prgn, 
-					pDRIDrawablePriv->drawableIndex);
-	    }
-	    else {
-
-		/* DMA flush buffers shouldn't be needed here */
-
-		/* call DDX driver's DRI specific InitBuffer */
-		(*pDRIPriv->pDriverInfo->InitBuffers)(pWin, prgn,
-				pDRIPriv->pDriverInfo->ddxDrawableTableEntry);
-	    }
-	}
-
-	/* unwrap */
-	pScreen->PaintWindowBackground = pDRIPriv->wrap.PaintWindowBackground;
-
-	/* call lower layers */
-	(*pScreen->PaintWindowBackground)(pWin, prgn, what);
-
-	/* rewrap */
-	pDRIPriv->wrap.PaintWindowBackground = pScreen->PaintWindowBackground;
-	pScreen->PaintWindowBackground = DRIPaintWindow;
+    if(pDRIDrawablePriv) {
+         (*pDRIPriv->pDriverInfo->InitBuffers)(pWin, prgn,
+                                               pDRIDrawablePriv->drawableIndex);
     }
-    else {
-	if (pDRIPriv->pDriverInfo->bufferRequests == DRI_ALL_WINDOWS) {
-	    /* call DDX driver's DRI specific InitBuffer */
-	    (*pDRIPriv->pDriverInfo->InitBuffers)(pWin, prgn,
-			    pDRIPriv->pDriverInfo->ddxDrawableTableEntry);
-	}
 
-	/* unwrap */
-	pScreen->PaintWindowBorder = pDRIPriv->wrap.PaintWindowBorder;
+    pScreen->WindowExposures = pDRIPriv->wrap.WindowExposures;
 
-	/* call lower layers */
-	(*pScreen->PaintWindowBorder)(pWin, prgn, what);
+    (*pScreen->WindowExposures)(pWin, prgn, bsreg);
 
-	/* rewrap */
-	pDRIPriv->wrap.PaintWindowBorder = pScreen->PaintWindowBorder;
-	pScreen->PaintWindowBorder = DRIPaintWindow;
+    pDRIPriv->wrap.WindowExposures = pScreen->WindowExposures;
+    pScreen->WindowExposures = DRIWindowExposures;
+
+}
+
+
+static int
+DRITreeTraversal(WindowPtr pWin, pointer data)
+{
+    DRIDrawablePrivPtr pDRIDrawablePriv = DRI_DRAWABLE_PRIV_FROM_WINDOW(pWin);
+
+    if(pDRIDrawablePriv) {
+        RegionPtr reg = (RegionPtr)data;
+        REGION_UNION(pScreen, reg, reg, &(pWin->clipList));
+        return WT_DONTWALKCHILDREN;
     }
+    return WT_WALKCHILDREN;
 }
 
 void 
@@ -1414,27 +1380,22 @@ DRICopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-    DRIDrawablePrivPtr pDRIDrawablePriv = DRI_DRAWABLE_PRIV_FROM_WINDOW(pWin);
+    RegionRec reg;
 
-    /* HACK until we have newly transitioned 3D->2D windows repainted */
-    if ((pDRIPriv->pDriverInfo->bufferRequests == DRI_3D_WINDOWS_ONLY) &&
-          (pDRIDrawablePriv)) {
+    REGION_INIT(pScreen, &reg, NullBox, 0);
+    TraverseTree(pWin, DRITreeTraversal, (pointer)(&reg));
 
-	(*pDRIPriv->pDriverInfo->MoveBuffers)(pWin, ptOldOrg, prgnSrc,
-				pDRIDrawablePriv->drawableIndex);
-    }
-    else if (pDRIPriv->pDriverInfo->bufferRequests == DRI_ALL_WINDOWS) {
-        if (pDRIDrawablePriv) {
+    if(REGION_NOTEMPTY(pScreen, &reg)) {
+        REGION_TRANSLATE(pScreen, &reg, pWin->drawable.x - ptOldOrg.x,  
+                                        pWin->drawable.y - ptOldOrg.y);
+        REGION_INTERSECT(pScreen, &reg, &reg, prgnSrc);
 
-	    (*pDRIPriv->pDriverInfo->MoveBuffers)(pWin, ptOldOrg, prgnSrc,
-				    pDRIDrawablePriv->drawableIndex);
-	}
-	else {
-	    /* call DDX driver's DRI specific InitBuffer */
-	    (*pDRIPriv->pDriverInfo->MoveBuffers)(pWin, ptOldOrg, prgnSrc,
+        /* The MoveBuffers interface is not ideal */
+        (*pDRIPriv->pDriverInfo->MoveBuffers)(pWin, ptOldOrg, &reg,
 				pDRIPriv->pDriverInfo->ddxDrawableTableEntry);
-	}
     }
+
+    REGION_UNINIT(pScreen, &reg);
 
     /* unwrap */
     pScreen->CopyWindow = pDRIPriv->wrap.CopyWindow;
@@ -1507,14 +1468,10 @@ DRISpinLockTimeout(drmLock *lock, int val, unsigned long timeout /* in mS */)
     DRM_SPINLOCK_TAKE(lock, val);
 }
 
-int
-DRIValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
+static void
+DRILockTree(ScreenPtr pScreen)
 {
-    ScreenPtr pScreen = pParent->drawable.pScreen;
     DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
-    int returnValue;
-
-    /* Prepare to flush outstanding DMA buffers */
 
     /* Restore the last known 3D context if the X context is hidden */
     if (pDRIPriv->pDriverInfo->driverSwapMethod == DRI_HIDE_X_CONTEXT) {
@@ -1548,6 +1505,30 @@ DRIValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
 					      DRI_2D_CONTEXT,
 					      pDRIPriv->hiddenContextStore);
     }
+}
+
+/* It appears that somebody is relying on the lock being set even 
+   if we aren't touching 3D windows */ 
+
+#define DRI_BROKEN
+
+static Bool DRIWindowsTouched = FALSE;
+
+int
+DRIValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
+{
+    ScreenPtr pScreen = pParent->drawable.pScreen;
+    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
+    int returnValue;
+
+    DRIWindowsTouched = FALSE;
+
+#ifdef DRI_BROKEN
+    if(!DRIWindowsTouched) {
+        DRILockTree(pScreen);
+        DRIWindowsTouched = TRUE;
+    }
+#endif
 
     /* unwrap */
     pScreen->ValidateTree = pDRIPriv->wrap.ValidateTree;
@@ -1587,22 +1568,41 @@ DRIPostValidateTree(WindowPtr pParent, WindowPtr pChild, VTKind kind)
 	pScreen->PostValidateTree = DRIPostValidateTree;
     }
 
-    if (pParent) {
+    if (DRIWindowsTouched) {
+        ErrorF("DRIPostValidateTree: release\n");
 	/* Release spin lock */
 	DRM_SPINUNLOCK(&pDRIPriv->pSAREA->drawable_lock, 1);
+        DRIWindowsTouched = FALSE;
     }
 }
 
 void
 DRIClipNotify(WindowPtr pWin, int dx, int dy)
 {
-    DRIScreenPrivPtr pDRIPriv;
+    ScreenPtr pScreen = pWin->drawable.pScreen;
+    DRIScreenPrivPtr pDRIPriv = DRI_SCREEN_PRIV(pScreen);
     DRIDrawablePrivPtr	pDRIDrawablePriv;
 
     if ((pDRIDrawablePriv = DRI_DRAWABLE_PRIV_FROM_WINDOW(pWin))) {
-	pDRIPriv = DRI_SCREEN_PRIV(pWin->drawable.pScreen);
+
+#ifndef DRI_BROKEN
+        if(!DRIWindowsTouched) {
+            DRILockTree(pScreen);
+            DRIWindowsTouched = TRUE;
+        }
+#endif
+
 	pDRIPriv->pSAREA->drawableTable[pDRIDrawablePriv->drawableIndex].stamp
 	    = DRIDrawableValidationStamp++;
+    }
+
+    if(pDRIPriv->wrap.ClipNotify) {
+        pScreen->ClipNotify = pDRIPriv->wrap.ClipNotify;
+
+        (*pScreen->ClipNotify)(pWin, dx, dy);
+
+        pDRIPriv->wrap.ClipNotify = pScreen->ClipNotify;
+        pScreen->ClipNotify = DRIClipNotify;
     }
 }
 
@@ -1838,4 +1838,19 @@ DRICloseFullScreen(ScreenPtr pScreen, DrawablePtr pDrawable)
 {
     FreeResourceByType(pDrawable->id, DRIFullScreenResType, FALSE);
     return TRUE;
+}
+
+void
+DRIMoveBuffersHelper(
+   ScreenPtr pScreen, 
+   int *xdir, 
+   int *ydir, 
+   int *nbox,
+   int dx,
+   int dy,
+   DDXPointPtr pnts,
+   BoxPtr pbox,
+   RegionPtr prgnSrc
+)
+{
 }
