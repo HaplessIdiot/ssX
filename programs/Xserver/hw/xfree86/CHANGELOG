@@ -47,7 +47,7 @@ XFree86 4.X.Ya (?? January 2001)
   87. Remove the XF86_VERSION string from xf86Version.h, leaving just
       the numerical values.  All the version information is now derived
       from that single set of values (David Dawes).
-  86. Fix temp vulnerabilities in Xaw/MultiSrc.c using the technique
+  86. [SECURITY] Fix temp vulnerabilities in Xaw/MultiSrc.c using the technique
       in patch #4279 (Branden Robinson). Fix temp file vulnerability in
       gccmakedep based on report from Alan Cox. Fix temp file vulnerability 
       in Imake.rules, InstallManPageAliases (Matthieu Herrb). 
@@ -12373,4 +12373,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1559 2001/02/07 21:46:08 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1560 2001/02/08 18:56:26 dawes Exp $
