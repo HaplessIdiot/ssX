@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.20 2000/08/09 20:33:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.21 2000/10/20 14:58:59 alanh Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -151,6 +151,19 @@ xf86SetIntOption(pointer optlist, const char *name, int deflt)
     o.type = OPTV_INTEGER;
     if (ParseOptionValue(-1, optlist, &o))
 	deflt = o.value.num;
+    return deflt;
+}
+
+
+double
+xf86SetRealOption(pointer optlist, const char *name, double deflt)
+{
+    OptionInfoRec o;
+
+    o.name = name;
+    o.type = OPTV_REAL;
+    if (ParseOptionValue(-1, optlist, &o))
+	deflt = o.value.realnum;
     return deflt;
 }
 

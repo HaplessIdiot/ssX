@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.8 1999/05/22 09:59:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Opt.h,v 1.10 2000/08/04 16:13:25 eich Exp $ */
 
 /* Option handling things that ModuleSetup procs can use */
 
@@ -43,6 +43,7 @@ typedef struct {
 } OptionInfoRec, *OptionInfoPtr;
 
 int xf86SetIntOption(pointer optlist, const char *name, int deflt);
+double xf86SetRealOption(pointer optlist, const char *name, double deflt);
 char *xf86SetStrOption(pointer optlist, const char *name, char *deflt);
 int xf86SetBoolOption(pointer list, const char *name, int deflt );
 pointer xf86AddNewOption(pointer head, char *name, char *val );
