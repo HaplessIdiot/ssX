@@ -1,4 +1,10 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 670. Don't build the Aiptek driver unless HasLinuxInput is set
+      (Bugzilla #972, Andrew Aitchison).
+ 669. A new fixed version of the zh_CN.UTF-8 locale file (Bugzilla #991,
+      James Su).
+ 668. Fix locale.dir/locale.alias bugs that break the zh_CN.GB2312 locale
+      (Bugzilla #990, James Su).
  667. Fixes and updates for XKB keyboard maps:
       - Add to 'us' keymap backslash key that can be rewritten in other layouts
         (Bugzilla #976, Børre Gaup).
@@ -18378,7 +18384,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3038 2003/12/18 10:16:11 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3039 2003/12/18 14:11:01 pascal Exp $
 
 
 
