@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.8 2002/05/18 01:02:12 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/stream.c,v 1.9 2002/07/22 07:26:28 paulo Exp $ */
 
 #include "read.h"
 #include "stream.h"
@@ -599,17 +599,19 @@ Lisp_ReadLine(LispMac *mac, LispBuiltin *builtin)
 
 	start = SSTREAMP(input_stream)->string +
 		SSTREAMP(input_stream)->input;
-	if ((end = (unsigned char*)strchr((char*)start, '\n')) == NULL)
-	    /* XXX must return flag in the second return value */
+	if ((end = (unsigned char*)strchr((char*)start, '\n')) == NULL) {
+	    status = T;
 	    end = SSTREAMP(input_stream)->string +
 		  SSTREAMP(input_stream)->length;
+	}
 	length = end - start;
 	string = LispMalloc(mac, length + 1);
 	memcpy(string, start, length);
 	string[length] = '\0';
-	result = STRING(string);
-	LispFree(mac, string);
-	SSTREAMP(input_stream)->input += length;
+	result = STRING2(string);
+	/* macro STRING2 does not make a copy of it's arguments, and
+	 * calls LispMused on it. */
+	SSTREAMP(input_stream)->input += length + (status == NIL);
     }
     else /*if (input_stream->data.stream.type == LispStreamFile ||
 	     input_stream->data.stream.type == LispStreamStandard ||

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.4 2002/02/08 03:54:07 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/io.c,v 1.6 2002/07/16 05:19:38 paulo Exp $ */
 
 #include "io.h"
 #include <errno.h>
@@ -135,6 +135,7 @@ LispPushInput(LispMac *mac, LispObj *stream)
     }
     ++mac->iunget;
     memset((char*)mac->unget[mac->iunget], '\0', sizeof(LispUngetInfo));
+    mac->eof = 0;
 }
 
 void
@@ -145,6 +146,7 @@ LispPopInput(LispMac *mac, LispObj *stream)
     mac->input = CDR(mac->input);
     SINPUT = CONS_P(mac->input) ? CAR(mac->input) : mac->input;
     --mac->iunget;
+    mac->eof = 0;
 }
 
 /*

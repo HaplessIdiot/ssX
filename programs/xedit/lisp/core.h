@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.18 2002/07/16 05:19:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.19 2002/07/22 07:26:27 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -100,6 +100,7 @@ LispObj *Lisp_Maplist(LispMac*, LispBuiltin*);		/* maplist */
 LispObj *Lisp_Member(LispMac*, LispBuiltin*);		/* member */
 LispObj *Lisp_MemberIf(LispMac*, LispBuiltin*);		/* member-if */
 LispObj *Lisp_MemberIfNot(LispMac*, LispBuiltin*);	/* member-if-not */
+LispObj *Lisp_MultipleValueBind(LispMac*, LispBuiltin*);/* multiple-value-bind */
 LispObj *Lisp_MultipleValueList(LispMac*, LispBuiltin*);/* multiple-value-list */
 LispObj *Lisp_Nconc(LispMac*, LispBuiltin*);		/* nconc */
 LispObj *Lisp_Nth(LispMac*, LispBuiltin*);		/* nth */

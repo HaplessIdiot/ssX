@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.24 2002/05/23 01:14:32 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/internal.h,v 1.26 2002/07/16 05:19:38 paulo Exp $ */
 
 #ifndef Lisp_internal_h
 #define Lisp_internal_h
@@ -561,11 +561,16 @@ void LispGC(LispMac*, LispObj*, LispObj*);
 
 char *LispStrObj(LispMac*, LispObj*);
 
-void LispDestroy(LispMac *mac, char *fmt, ...);
+#ifdef __GNUC__
+#define PRINTF_FORMAT	__attribute__ ((format (printf, 2, 3)))
+#else
+#define PRINTF_FORMAT	/**/
+#endif
+void LispDestroy(LispMac *mac, char *fmt, ...) PRINTF_FORMAT;
 	/* continuable error */
-void LispContinuable(LispMac *mac, char *fmt, ...);
-void LispMessage(LispMac *mac, char *fmt, ...);
-void LispWarning(LispMac *mac, char *fmt, ...);
+void LispContinuable(LispMac *mac, char *fmt, ...) PRINTF_FORMAT;
+void LispMessage(LispMac *mac, char *fmt, ...) PRINTF_FORMAT;
+void LispWarning(LispMac *mac, char *fmt, ...) PRINTF_FORMAT;
 
 LispObj *LispSetVariable(LispMac*, LispObj*, LispObj*, char*, int);
 

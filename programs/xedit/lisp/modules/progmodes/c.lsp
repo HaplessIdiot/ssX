@@ -27,19 +27,23 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.1 2002/07/22 07:26:30 paulo Exp $
 ;;
 
 ;;  Uncomment this to run the module in the stand alone command line
 ;; interpreter. After uncommenting, in the shell run something like:
 ;;	$ ./lsp c.lsp < somefile.c
 ;;
-;;	(setq *FEATURES* (append *FEATURES* '(:DEBUG)))
+;;	(setq *FEATURES* (append *FEATURES* '(:DEBUG :DEBUG-VERBOSE)))
+
+
+(require "syntax")
+
 
 ;;  Uncomment this to run the command line version with other lisp.
 ;;  It will not do everything, but these stubs will allow it running
 ;; under clisp.
-#|
+	#|
 #-xedit
 (defun xedit::REGCOMP (pattern &key (extended t) nospec icase nosub newline)
     pattern
@@ -51,14 +55,25 @@
 #-xedit
 (defmacro xedit::WHILE (test &rest body)
     `(loop
-	(unless (eval ,test) (return))
+	(unless ,@test (return))
 	,@body
     )
 )
-|#
+#-xedit
+(defmacro xedit::UNTIL (test &rest body)
+    `(loop
+	(when ,@test (return))
+	,@body
+    )
+)
+	|#
 
-(require "syntax")
-
+(defsynprop *PROP-FORMAT*
+    "format"
+    :FONT	"*lucidatypewriter-medium-r*12*"
+    :FOREGROUND	"RoyalBlue2"
+    :UNDERLINE	T
+)
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -69,7 +84,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (defsyntax *C* "C/C++" :MAIN NIL
 
-    ;; All recognized C keywords.
+    ;;  All recognized C keywords.
     (syntoken
 	;;  For this sample put all keywords in a single regex, but to
 	;; be safe, a regex should not have more than 256 bytes.
@@ -82,171 +97,169 @@
 	)
 	:PROPERTY *PROP-KEYWORD*)
 
-    ;; This rule exists just to avoid matching keywords as substrings.
-    ;; Should be defined after the keywords rules, as will also match
+    ;;  This rule exists just to avoid matching keywords as substrings.
+    ;;  Should be defined after the keywords rules, as will also match
     ;; a keyword.
     (syntoken "(_|[a-z])(_|[a-z0-9])*"
 	:ICASE T)
 
-    ;; Hexadecimals.
-    (syntoken "0x[0-9a-f]*l{0,2}"
+    ;;  Integers.
+    (syntoken "([0-9]+)|(0x[0-9a-f]+)(u?l{0,2}|l{0,2}u?)?"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
 
-    ;; Octals.
-    (syntoken "0[0-7]*l{0,2}"
+    ;;  Floating point numbers.
+    (syntoken "([0-9]+\\.[0-9]*)|([0-9]*\\.[0-9]+)(e[+-]?[0-9]+)?[lf]?"
 	:ICASE T
 	:PROPERTY *PROP-NUMBER*)
 
-    ;; Integers.
-    (syntoken "(0|[1-9][0-9]*)(u?l{0,2}|l{0,2}u?)?"
-	:ICASE T
-	:PROPERTY *PROP-NUMBER*)
+    ;;  C++ style comments.
+    (syntoken "//.*$"
+	:PROPERTY *PROP-COMMENT*)
 
-    ;; Floating point numbers.
-    (syntoken "(([0-9]+\\.?[0-9])*|([0-9*]\\.?[0-9])+)(e[+-]?[0-9]+)?[lf]?"
-	:ICASE T
-	:PROPERTY *PROP-NUMBER*)
-
-    ;; Punctuation.
-    (syntoken "[/*+-:;=<>,&.!%|^~?]"
+    ;;  Punctuation.
+    (syntoken "[/*+:;=<>,&.!%|^~?-]"
 	:PROPERTY *PROP-PUNCTUATION*)
 
-    ;; Comment start rule.
+
+    ;;  Comment start rule.
     (syntoken "/\\*"
 	:BEGIN :COMMENT
 	:CONTAINED T)
 
-    ;; String start rule.
+    ;;  String start rule.
     (syntoken "\""
 	:BEGIN :STRING
 	:CONTAINED T)
 
-    ;; Character start rule.
+    ;;  Character start rule.
     (syntoken "'"
 	:BEGIN :CHARACTER
 	:CONTAINED T)
 
-    ;; Single word, don't start the preprocessor rule, or it
-    ;; will also match the next line.
-    (syntoken "^[ 	]*#[ 	]*[a-z]*$"
-	:PROPERTY *PROP-PREPROCESSOR*)
-
-    ;; Preprocessor start rule.
+    ;;  Preprocessor start rule.
     (syntoken "^[ 	]*#[ 	]*[a-z]*"
 	:BEGIN :PREPROCESSOR
 	:CONTAINED T)
 
-    ;; Parentheses start rule.
+    ;;  Parentheses start rule.
     (syntoken "\\("
 	:PROPERTY *PROP-PUNCTUATION*
 	:BEGIN :PARENTHESES)
 
-    ;; Brackets start rule.
+    ;;  Brackets start rule.
     (syntoken "\\["
 	:PROPERTY *PROP-PUNCTUATION*
 	:BEGIN :BRACKETS)
 
-    ;; Keys start rule.
+    ;;  Keys start rule.
     (syntoken "\\{"
 	:PROPERTY *PROP-PUNCTUATION*
 	:BEGIN :KEYS)
 
 
-    ;; Rules for comments.
+
+    ;;  Rules for comments.
     (syntable :COMMENT *PROP-COMMENT*
 
-	;; Match nested comments as an error.
+	;;  Match nested comments as an error.
 	(syntoken "/\\*"
 	    :PROPERTY *PROP-ERROR*)
 
-	;; Rule to finish a comment.
+	(syntoken "XXX|TODO|FIXME"
+	    :PROPERTY *PROP-ANNOTATION*)
+
+	;;  Rule to finish a comment.
 	(syntoken "\\*/"
 	    :SWITCH :PREVIOUS)
     )
 
-    ;; Rules for strings.
+    ;;  Rules for strings.
     (syntable :STRING *PROP-STRING*
 
-	;; Ignore escaped characters, this includes \".
+	;;  Ignore escaped characters, this includes \".
 	(syntoken "\\\\.")
 
-	;; Rule to finish a string.
+	;;  Match, most, printf arguments.
+	(syntoken "%%|%([+-]?[0-9]+)?(l?[deEfgiouxX]|[cdeEfgiopsuxX])"
+	    :PROPERTY *PROP-FORMAT*)
+
+	;;  Rule to finish a string.
 	(syntoken "\""
 	    :SWITCH :PREVIOUS)
     )
 
-    ;; Rules for characters.
+    ;;  Rules for characters.
     (syntable :CHARACTER *PROP-CONSTANT*
 
-	;; Ignore escaped characters, this includes \'.
+	;;  Ignore escaped characters, this includes \'.
 	(syntoken "\\\\.")
 
-	;; Rule to finish a character constant.
+	;;  Rule to finish a character constant.
 	(syntoken "'"
 	    :SWITCH :PREVIOUS)
     )
 
-    ;; Rules for preprocessor.
+    ;;  Rules for preprocessor.
     (syntable :PREPROCESSOR *PROP-PREPROCESSOR*
 
-	;; Preprocessor includes comments.
+	;;  Preprocessor includes comments.
 	(syntoken "/\\*"
 	    :BEGIN :COMMENT
 	    :CONTAINED T)
 
-	;; Ignore lines finishing with a backslash.
+	;;  Ignore lines finishing with a backslash.
 	(syntoken "\\\\$")
 
-	;; Return to previous state if end of line found.
+	;;  Return to previous state if end of line found.
 	(syntoken "$"
 	    :SWITCH :PREVIOUS)
     )
 
-    ;; Rules for parenthesis.
+    ;;  Rules for parenthesis.
     (syntable :PARENTHESES NIL
 	(syntoken "\\)"
 	    :PROPERTY *PROP-PUNCTUATION*
 	    :SWITCH :PREVIOUS)
 
-	;; Unbalanced.
+	;;  Unbalanced.
 	(syntoken "[]}]"
 	    :PROPERTY *PROP-ERROR*)
 
-	;; Expressions in parentheses can include everything.
+	;;  Expressions in parentheses can include everything.
 	(synaugment :MAIN)
     )
 
-    ;; Rules for brackets.
+    ;;  Rules for brackets.
     (syntable :BRACKETS NIL
 	(syntoken "\\]"
 	    :PROPERTY *PROP-PUNCTUATION*
 	    :SWITCH :PREVIOUS)
 
-	;; Unbalanced.
+	;;  Unbalanced.
 	(syntoken "[)}]"
 	    :PROPERTY *PROP-ERROR*)
 
-	;; Expressions in brackets can include everything.
+	;;  Expressions in brackets can include everything.
 	(synaugment :MAIN)
     )
 
-    ;; Rules for keys.
+    ;;  Rules for keys.
     (syntable :KEYS NIL
 	(syntoken "\\}"
 	    :PROPERTY *PROP-PUNCTUATION*
 	    :SWITCH :PREVIOUS)
 
-	;; Unbalanced.
+	;;  Unbalanced.
 	(syntoken "[])]"
 	    :PROPERTY *PROP-ERROR*)
 
-	;; Expressions in keys can include everything.
+	;;  Expressions in keys can include everything.
 	(synaugment :MAIN)
     )
 
 
-    ;; Unbalanced.
+    ;;  Unbalanced.
     ;;  This rule should be added only for this sample, or to
     ;; a very smart version of the parser, or used only when
     ;; parsing the entire file.

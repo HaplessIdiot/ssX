@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.29 2002/07/16 05:19:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.30 2002/07/22 07:26:27 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -214,12 +214,12 @@ LispCheckSequenceStartEnd(LispMac *mac, LispBuiltin *builtin,
 
     /* Check start argument */
     if (*pstart > *pend)
-	LispDestroy(mac, "%s: :START %d is larger than :END %d",
-		    *pstart, *pend);
+	LispDestroy(mac, "%s: :START %ld is larger than :END %ld",
+		    STRFUN(builtin), *pstart, *pend);
 
     /* Check end argument */
     if (*pend > *plength)
-	LispDestroy(mac, "%s: :END %d is larger then sequence length %d",
+	LispDestroy(mac, "%s: :END %ld is larger then sequence length %ld",
 		    STRFUN(builtin), *pend, *plength);
 }
 
@@ -789,7 +789,7 @@ LispLoadFile(LispMac *mac, LispObj *filename,
 	     int verbose, int print, int ifdoesnotexist)
 {
     LispObj *stream, *eval, *ext, *obj, *result = NIL;
-    int ch, eof = mac->eof, length = mac->protect.length;
+    int ch, length = mac->protect.length;
 
     LispObj *savepackage;
     LispPackage *savepack;
@@ -854,7 +854,6 @@ LispLoadFile(LispMac *mac, LispObj *filename,
 	    break;
     }
     LispPopInput(mac, stream);
-    mac->eof = eof;
     mac->protect.length = length;
 
     /* Restore package environment */
@@ -1265,7 +1264,7 @@ LispReadChar(LispMac *mac, LispBuiltin *builtin, int nohang)
 		}
 		else if (!nohang && file->nonblock) {
 		    if (fcntl(file->descriptor, F_SETFL, 0) < 0)
-			LispDestroy(mac, "%s: fcntl(%s): %s",
+			LispDestroy(mac, "%s: fcntl(%d): %s",
 				    STRFUN(builtin), file->descriptor,
 				    strerror(errno));
 		    file->nonblock = 0;

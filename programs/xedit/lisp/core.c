@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.44 2002/07/16 05:19:38 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.c,v 1.45 2002/07/22 07:26:27 paulo Exp $ */
 
 #include "io.h"
 #include "core.h"
@@ -171,7 +171,7 @@ Lisp_Aref(LispMac *mac, LispBuiltin *builtin)
 	long offset = CAR(subscripts)->data.integer;
 
 	if (offset >= length)
-	    LispDestroy(mac, "%s: index %d too large for sequence length %d",
+	    LispDestroy(mac, "%s: index %ld too large for sequence length %ld",
 			STRFUN(builtin), offset, length);
 
 	return (CHAR(*(unsigned char*)(THESTR(array) + offset)));
@@ -490,42 +490,38 @@ Lisp_Boundp(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_Butlast(LispMac *mac, LispBuiltin *builtin)
 /*
- butlast list &optional (count 1) &aux (length (length list))
+ butlast list &optional count
  */
 {
     GC_ENTER();
     long length, count;
-    LispObj *result, *cons, *list, *ocount, *olength;
+    LispObj *result, *cons, *list, *ocount;
 
-    cons = NIL;		/* fix gcc warning */
-
-    olength = ARGUMENT(2);
     ocount = ARGUMENT(1);
     list = ARGUMENT(0);
 
     if (list == NIL)
 	return (NIL);
     ERROR_CHECK_LIST(list);
-    ERROR_CHECK_INDEX(ocount);
-    count = ocount->data.integer;
-    length = olength->data.integer;
+    if (ocount == NIL)
+	count = 1;
+    else {
+	ERROR_CHECK_INDEX(ocount);
+	count = ocount->data.integer;
+    }
+    length = LispLength(mac, list);
 
     if (count == 0)
 	return (list);
     else if (count >= length)
 	return (NIL);
 
-    result = NIL;
-    length -= count;
-    for (; length > 0; list = CDR(list), length--) {
-	if (result == NIL) {
-	    result = cons = CONS(CAR(list), NIL);
-	    GC_PROTECT(result);
-	}
-	else {
-	    CDR(cons) = CONS(CAR(list), NIL);
-	    cons = CDR(cons);
-	}
+    length -= count + 1;
+    result = cons = CONS(CAR(list), NIL);
+    GC_PROTECT(result);
+    for (list = CDR(list); length > 0; list = CDR(list), length--) {
+	CDR(cons) = CONS(CAR(list), NIL);
+	cons = CDR(cons);
     }
     GC_LEAVE();
 
@@ -971,23 +967,22 @@ Lisp_DoTimes(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_Elt(LispMac *mac, LispBuiltin *builtin)
 /*
- elt sequence index &aux (length (length sequence))
- svref sequence index &aux (length (length sequence))
+ elt sequence index
+ svref sequence index
  */
 {
     long offset, length;
-    LispObj *result, *sequence, *oindex, *olength;
+    LispObj *result, *sequence, *oindex;
 
-    olength = ARGUMENT(2);
     oindex = ARGUMENT(1);
     sequence = ARGUMENT(0);
 
+    length = LispLength(mac, sequence);
     ERROR_CHECK_INDEX(oindex);
     offset = oindex->data.integer;
-    length = olength->data.integer;
 
     if (offset >= length)
-	LispDestroy(mac, "%s: index %d too large for sequence length %d",
+	LispDestroy(mac, "%s: index %ld too large for sequence length %ld",
 		    STRFUN(builtin), offset, length);
 
     if (STRING_P(sequence))
@@ -1379,23 +1374,28 @@ Lisp_Lambda(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_Last(LispMac *mac, LispBuiltin *builtin)
 /*
- last list &optional (count 1) &aux (length (length list))
+ last list &optional count
  */
 {
     long count, length;
-    LispObj *list, *ocount, *olength;
+    LispObj *list, *ocount;
 
-    olength = ARGUMENT(2);
     ocount = ARGUMENT(1);
     list = ARGUMENT(0);
 
-    ERROR_CHECK_INDEX(ocount);
-    count = FIXNUM_VALUE(ocount);
-    length = FIXNUM_VALUE(olength);
+    if (!CONS_P(list))
+	return (list);
 
-    if (list == NIL)
-	return (NIL);
-    else if (count >= length)
+    length = LispLength(mac, list);
+
+    if (ocount == NIL)
+	count = 1;
+    else {
+	ERROR_CHECK_INDEX(ocount);
+	count = ocount->data.integer;
+    }
+
+    if (count >= length)
 	return (list);
 
     length -= count;
@@ -2148,8 +2148,9 @@ Lisp_Mapcar(LispMac *mac, LispBuiltin *builtin)
  mapcar function list &rest more-lists
  */
 {
-    int i, count, length;
-    LispObj *code, *cons, *acons, *object, *result;
+    GC_ENTER();
+    long i, offset, count, length;
+    LispObj *result = NIL, *cons, *arguments, *acons, *rest, *alist;
 
     LispObj *function, *list, *more_lists;
 
@@ -2157,45 +2158,91 @@ Lisp_Mapcar(LispMac *mac, LispBuiltin *builtin)
     list = ARGUMENT(1);
     function = ARGUMENT(0);
 
-    length = mac->protect.length;
-    if (length + 2 >= mac->protect.space)
-	LispMoreProtects(mac);
-    mac->protect.objects[mac->protect.length++] = NIL;
-    mac->protect.objects[mac->protect.length++] = NIL;
+    /* Result will be no longer than this */
+    for (length = 0, alist = list; CONS_P(alist); length++, alist = CDR(alist))
+	;
 
-    result = acons = NIL;
-    for (count = 0; CONS_P(list); count++, list = CDR(list)) {
-	cons = CONS(QUOTE(CAR(list)), NIL);
-	code = CONS(function, cons);
-	mac->protect.objects[length] = code;
-	for (object = more_lists; CONS_P(object); object = CDR(object)) {
-	    LispObj *arglist = CAR(object);
+    /* If first argument is not a list... */
+    if (length == 0)
+	return (NIL);
 
-	    if (!CONS_P(arglist))
-		goto mapcar_done;
-	    for (i = count; i > 0; i--) {
-		if (!CONS_P(arglist = CDR(arglist)))
-		    goto mapcar_done;
-	    }
-	    CDR(cons) = CONS(QUOTE(CAR(arglist)), NIL);
-	}
-	cons = EVAL(code);
-	if (result == NIL) {
-	    result = acons = CONS(cons, NIL);
-	    mac->protect.objects[length + 1] = result;
-	}
-	else {
-	    CDR(acons) = CONS(cons, NIL);
-	    acons = CDR(acons);
-	}
+    /* At least one argument will be passed to function, count how many
+     * extra arguments will be used, and calculate result length. */
+    count = 0;
+    for (rest = more_lists; CONS_P(rest); rest = CDR(rest), count++) {
+
+	/* Check if extra list is really a list, and if it is smaller
+	 * than the first list */
+	for (i = 0, alist = CAR(rest);
+	     i < length && CONS_P(alist);
+	     i++, alist = CDR(alist))
+	    ;
+
+	/* If it is not a true list */
+	if (i == 0)
+	    return (NIL);
+
+	/* If it is smaller than the currently calculated result length */
+	if (i < length)
+	    length = i;
     }
 
-mapcar_done:
-    mac->protect.length = length;
+    /* Initialize gc protected object cells for resulting list */
+    result = cons = CONS(NIL, NIL);
+    GC_PROTECT(result);
+
+    /* Initialize gc protected object cells for argument list */
+    arguments = acons = CONS(NIL, NIL);
+    GC_PROTECT(arguments);
+
+    /* Allocate space for extra arguments */
+    for (; count > 0; count--) {
+	CDR(acons) = CONS(NIL, NIL);
+	acons = CDR(acons);
+    }
+
+    /* For every element of the list that will be used */
+    for (offset = 0; ; list = CDR(list)) {
+	acons = arguments;
+
+	/* Add first argument */
+	CAR(acons) = CAR(list);
+	acons = CDR(acons);
+
+	/* For every extra list argument */
+	for (rest = more_lists; CONS_P(rest); rest = CDR(rest)) {
+
+	    /* Find the cons cell of the next argument */
+	    for (alist = CAR(rest), count = 0;
+		 count < offset;
+		 alist = CDR(alist), count++)
+		;
+
+	    /* Add element to argument list */
+	    CAR(acons) = CAR(alist);
+	    acons = CDR(acons);
+	}
+
+	/* Store result */
+	CAR(cons) = APPLY(function, arguments);
+
+	/* Allocate new result cell if required */
+	if (++offset < length) {
+	    CDR(cons) = CONS(NIL, NIL);
+	    cons = CDR(cons);
+	}
+	else
+	    break;
+    }
+
+    /* Unprotect argument and result list */
+    GC_LEAVE();
 
     return (result);
 }
 
+/* XXX maplist and extra map* functions need to be rewritten in the
+ * format of the new mapcar version. */
 LispObj *
 Lisp_Maplist(LispMac *mac, LispBuiltin *builtin)
 /*
@@ -2278,6 +2325,53 @@ Lisp_MemberIfNot(LispMac *mac, LispBuiltin *builtin)
 }
 
 LispObj *
+Lisp_MultipleValueBind(LispMac *mac, LispBuiltin *builtin)
+/*
+ multiple-value-bind symbols values &rest body
+ */
+{
+    int i;
+    GC_ENTER();
+    LispObj *result, *multiple, *cons, *symbol, *value;
+
+    LispObj *symbols, *values, *body;
+
+    body = ARGUMENT(2);
+    values = ARGUMENT(1);
+    symbols = ARGUMENT(0);
+    MACRO_ARGUMENT3();
+
+    multiple = cons = CONS(EVAL(values), NIL);
+    GC_PROTECT(multiple);
+    for (i = 0; i < RETURN_COUNT; i++) {
+	CDR(cons) = CONS(RETURN(i), NIL);
+	cons = CDR(cons);
+    }
+
+    for (; CONS_P(symbols); symbols = CDR(symbols)) {
+	symbol = CAR(symbols);
+	ERROR_CHECK_SYMBOL(symbol);
+	ERROR_CHECK_CONSTANT(symbol);
+	if (CONS_P(multiple)) {
+	    value = CAR(multiple);
+	    multiple = CDR(multiple);
+	}
+	else
+	    value = NIL;
+	LispAddVar(mac, symbol, value);
+	++mac->env.head;
+    }
+    /* Values of variables are now gc protected */
+    GC_LEAVE();
+
+    /* Execute code with binded variables (if any) */
+    for (result = NIL; CONS_P(body); body = CDR(body))
+	result = EVAL(CAR(body));
+
+    return (result);
+}
+
+LispObj *
 Lisp_MultipleValueList(LispMac *mac, LispBuiltin *builtin)
 /*
  multiple-value-list form
@@ -2325,12 +2419,11 @@ Lisp_Nconc(LispMac *mac, LispBuiltin *builtin)
     }
 
     /* skip initial NIL lists */
-    for (list = CAR(lists); CONS_P(lists);
-	 lists = CDR(lists), list = CAR(lists))
-	if (list != NIL)
+    for (list = CAR(lists); CONS_P(lists); lists = CDR(lists))
+	if ((list = CAR(lists)) != NIL)
 	    break;
 
-    if (CONS_P(list)) {
+    if (list != NIL && CONS_P(list)) {
 	for (tail = list; CONS_P(CDR(tail)); tail = CDR(tail))
 	    ;
 	for (lists = CDR(lists); CONS_P(lists); lists = CDR(lists)) {
@@ -4156,6 +4249,8 @@ LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate, LispObj *key)
     CDR(cons) = NIL;
 
     protect = 0;
+    if (mac->protect.length + 2 >= mac->protect.space)
+	LispMoreProtects(mac);
     mac->protect.objects[mac->protect.length++] = list2;
     if (key != NIL) {
 	mac->protect.objects[mac->protect.length++] = NIL;
@@ -4214,9 +4309,6 @@ LispMergeSort(LispMac *mac, LispObj *list, LispObj *predicate, LispObj *key)
 	    }
 	}
     }
-
-    if (key != NIL)
-	mac->protect.length -= 2;
 
     return (result);
 }
@@ -4898,21 +4990,20 @@ Lisp_Unsetenv(LispMac *mac, LispBuiltin *builtin)
 LispObj *
 Lisp_XeditEltStore(LispMac *mac, LispBuiltin *builtin)
 /*
- lisp::elt-store sequence index value &aux (length (length sequence))
+ lisp::elt-store sequence index value
  */
 {
     int length, offset;
 
-    LispObj *sequence, *oindex, *value, *olength;
+    LispObj *sequence, *oindex, *value;
 
-    olength = ARGUMENT(3);
     value = ARGUMENT(2);
     oindex = ARGUMENT(1);
     sequence = ARGUMENT(0);
 
     ERROR_CHECK_INDEX(oindex);
     offset = oindex->data.integer;
-    length = olength->data.integer;
+    length = LispLength(mac, sequence);
 
     if (offset >= length)
 	LispDestroy(mac, "%s: index %d too large for sequence length %d",
@@ -4988,11 +5079,11 @@ Lisp_XeditVectorStore(LispMac *mac, LispBuiltin *builtin)
 	long offset = CAR(subscripts)->data.integer;
 
 	if (offset >= length)
-	    LispDestroy(mac, "%s: index %d too large for sequence length %d",
+	    LispDestroy(mac, "%s: index %ld too large for sequence length %ld",
 			STRFUN(builtin), offset, length);
 
 	if (value->data.integer < 0 || value->data.integer > 255)
-	    LispDestroy(mac, "%s: cannot represent character %d",
+	    LispDestroy(mac, "%s: cannot represent character %ld",
 			STRFUN(builtin), value->data.integer);
 
 	return (CHAR(*(unsigned char*)(THESTR(array) + offset) =
@@ -5012,7 +5103,7 @@ Lisp_XeditVectorStore(LispMac *mac, LispBuiltin *builtin)
 	    LispDestroy(mac, "%s: %s is not a positive integer",
 			STRFUN(builtin), STROBJ(CAR(list)));
 	if (CAR(list)->data.integer >= CAR(object)->data.integer)
-	    LispDestroy(mac, "%s: %d is out of range, index %d",
+	    LispDestroy(mac, "%s: %ld is out of range, index %ld",
 			STRFUN(builtin), CAR(list)->data.integer,
 			CAR(object)->data.integer);
     }

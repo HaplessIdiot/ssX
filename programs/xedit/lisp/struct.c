@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.11tsi Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.12 2002/04/10 16:20:09 tsi Exp $ */
 
 #include "struct.h"
 
@@ -90,7 +90,7 @@ Lisp_Defstruct(LispMac *mac, LispBuiltin *builtin)
 	if (!SYMBOL_P(object) || strcmp(STRPTR(object), "P") == 0)
 	    /* p is invalid as a field name due to `type'-p */
 	    LispDestroy(mac, "%s: %s cannot be a field for %s",
-			LispStrObj(mac, CAR(list)), STRPTR(oname));
+			STRFUN(builtin), STROBJ(object), STRPTR(oname));
 
 	/* check for repeated field names */
 	for (object = description; object != list; object = CDR(object)) {
