@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.8 1998/08/29 05:43:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.9 1999/02/28 11:19:48 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -166,7 +166,7 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 			return;
 		}
 	}
-	xf86Msg(X_WARNING,
+	xf86MsgVerb(X_WARNING, 2,
 		"xf86UnMapVidMem: no SMEM found for Base = %lx Size = %lx\n",
 	       	Base, Size);
 }

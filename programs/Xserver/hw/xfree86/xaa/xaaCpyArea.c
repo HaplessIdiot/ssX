@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.8 1999/01/23 09:56:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaCpyArea.c,v 1.9 1999/01/31 12:22:09 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -89,7 +89,9 @@ XAADoBitBlt(
     /* XXX we have to err on the side of safety when both are windows,
      * because we don't know if IncludeInferiors is being used.
      */
-    careful = 1;
+    careful = ((pSrc == pDst) ||
+               ((pSrc->type == DRAWABLE_WINDOW) &&
+                (pDst->type == DRAWABLE_WINDOW)));
 
     pbox = REGION_RECTS(prgnDst);
     nbox = REGION_NUM_RECTS(prgnDst);

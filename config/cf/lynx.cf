@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.25 1999/02/28 11:19:14 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.26 1999/03/21 01:44:59 dawes Exp $
 
 
 #ifndef OSName
@@ -18,47 +18,6 @@ XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.25 1999/02/28 11:19:14 dawes
 #endif
 XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
-#ifndef MetroLink
-/* We have our own cross stuff */
-/* CrossCompile stuff vvv */
-
-#define HostLinkRule(target, flags, src, libs)  cc -o target src
-
-/* ComplexHostProgramTarget - Compile a program such that we can run
- * it on this host, i.e., don't use the default cross compiler.
- */
-#ifndef ComplexHostProgramTarget
-#define	ComplexHostProgramTarget(program)				@@\
-              CC=cc							@@\
-    STD_INCLUDES=							@@\
-          CFLAGS=$(TOP_INCLUDES) $(INCLUDES) $(BOOTSTRAPCFLAGS)		@@\
-EXTRA_LOAD_FLAGS=							@@\
-        PROGRAM = program						@@\
-									@@\
-AllTarget(program)							@@\
-									@@\
-program: $(OBJS) $(DEPLIBS)						@@\
-	RemoveTargetProgram($@)						@@\
-	HostLinkRule($@,$(_NOOP_),$(OBJS),$(DEPLIBS) $(LOCAL_LIBRARIES)) @@\
-									@@\
-DependTarget()								@@\
-									@@\
-LintTarget()								@@\
-									@@\
-clean::									@@\
-	RemoveFile(ProgramTargetName(program))
-#endif /* ComplexHostProgramTarget */
-
-#ifndef SimpleHostProgramTarget
-#define SimpleHostProgramTarget(program)				@@\
-           OBJS = program.o						@@\
-           SRCS = program.c						@@\
-									@@\
-ComplexHostProgramTarget(program)
-#endif /* SimpleHostProgramTarget */
-
-/* CrossCompile stuff ^^^ */
-#endif /* !MetroLink */
 
 #define HasGcc			YES
 #if  OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion > 2)
@@ -131,8 +90,6 @@ ComplexHostProgramTarget(program)
 #define NeedWidePrototypes	NO
 #define MkdirHierCmd		mkdir -p
 
-#if !CrossCompiling
-
 #if HasGcc2
 # if OSMajorVersion == 2 && OSMinorVersion == 3
 #  define CplusplusCmd		g++ -mposix
@@ -201,38 +158,10 @@ ComplexHostProgramTarget(program)
 # endif
 #endif
 
-#else	/* !CrossCompiling */
-
-#ifndef MetroLink
-/* adjust these manually per target platform please... */
-
-#define CplusplusCmd		ppc-unknown-lynxos2.5-g++
-#define CcCmd			ppc-unknown-lynxos2.5-gcc
-#define DefaultCCOptions -ansi -pedantic -fcommon GccWarningOptions
-#define AsCmd			ppc-unknown-lynxos2.5-as
-#define ArCmdBase		ppc-unknown-lynxos2.5-ar
-#define RanlibCmd		ppc-unknown-lynxos2.5-ranlib
-#define LdCmd			ppc-unknown-lynxos2.5-ld
-#define AsmDefines		-DUSE_GAS
-#define CppCmd			/cross/usr/lib/cpp
-#define YaccCmd			/cross/usr/bin/byacc
-#define LexCmd			/cross/usr/bin/flex
-#define LexLib			-lfl
-#define MathLibrary		-lm
-#define TermcapLibrary		-ltermcap
-#define PreProcessCmd		CcCmd -E
-#define PostIncDir		`CcCmd --print-libgcc-file-name | sed 's/libgcc.a/include/'`
-#define LdCombineFlags		-r
-#define OptimizedCDebugFlags	-O2
-#define StandardDefines		-DLynx -DX_LOCALE
-#endif
-
-#endif	/* !CrossCompiling */
-
 #define StandardCppOptions	-traditional
 #define StandardCppDefines	StandardDefines
 #if defined(i386Architecture) || defined(PpcArchitecture)
-# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
+# define ServerOSDefines	XFree86ServerOSDefines -DNO_MMAP -DDDXTIME -DPART_NET
 # if defined(PpcArchitecture)
 #  define ServerExtraDefines	-DGCCUSESGAS /* -DNO_INLINE */ XFree86ServerDefines
 # else
@@ -243,7 +172,7 @@ ComplexHostProgramTarget(program)
 # endif
 #else
 # if defined(SparcArchitecture)
-#  define SparcConsoleDefines	-DPATCHED_CONSOLE
+#  define SparcConsoleDefines	/* -DPATCHED_CONSOLE */
 #  define ServerOSDefines 	-DDDXOSINIT
 #  define ServerExtraDefines	-DGCCUSESGAS SparcConsoleDefines
 #  define XkbServerDefines	-DXKB_ALWAYS_USES_SOFT_REPEAT
@@ -410,6 +339,7 @@ install.man:: list                                                      @@\
 # endif
 # define BuildXInputExt			NO
 # define BuildXF86MiscExt		NO
+# define BuildXF86VidModeExt		NO
 /*
  * XFree86 uses its own (more portable) database routines to speed up 
  * the RGB database lookups

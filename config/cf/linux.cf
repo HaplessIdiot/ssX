@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.89 1999/03/21 01:44:59 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.90 1999/03/28 15:31:30 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -91,7 +91,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define BinUtilsMajorVersion	LinuxBinUtilsMajorVersion
 #endif
 
-#if (LinuxDistribution == LinuxSuSE)
+#if (LinuxCLibMajorVersion >= 6 || LinuxDistribution == LinuxSuSE)
 #define LinuxLocaleDefines	/**/
 #else
 #define LinuxLocaleDefines	-DX_LOCALE
@@ -151,13 +151,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #endif
 #endif
 
-/* determine whether to build with FBDev support (fbdevhw.c needs 2.2.x too) */
 #ifndef LinuxFBDevSupport
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
 #define LinuxFBDevSupport	YES
-#else
-#define LinuxFBDevSupport	NO
-#endif
 #endif
 
 /* For compatibility */

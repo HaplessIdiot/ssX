@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.8 1998/08/16 10:24:23 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.9 1998/11/01 07:57:45 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -33,6 +33,10 @@
 #include <X11/IntrinsicP.h>
 #include <X11/Xmu/CharSet.h>
 #include <X11/Xfuncs.h>
+#ifdef USE_XPM
+#include <X11/extensions/shape.h>
+#include <X11/xpm.h>
+#endif
 #include "Private.h"
 
 /*
@@ -57,6 +61,10 @@ static Bool BitmapLoader(XawParams*, Screen*, Colormap, int,
 			    Pixmap*, Pixmap*, Dimension*, Dimension*);
 static Bool GradientLoader(XawParams*, Screen*, Colormap, int,
 			      Pixmap*, Pixmap*, Dimension*, Dimension*);
+#ifdef USE_XPM
+static Bool XPixmapLoader(XawParams*, Screen*, Colormap, int,
+			  Pixmap*, Pixmap*, Dimension*, Dimension*);
+#endif
 static XawPixmap *_XawFindPixmap(String, Screen*, Colormap, int);
 static void _XawCachePixmap(XawPixmap*, Screen*, Colormap, int);
 static int _XawFindPixmapLoaderIndex(String, String);
@@ -87,6 +95,9 @@ XawPixmapsInitialize(void)
   (void)XawAddPixmapLoader(NULL, NULL, BitmapLoader);
   (void)XawAddPixmapLoader("bitmap", NULL, BitmapLoader);
   (void)XawAddPixmapLoader("gradient", NULL, GradientLoader);
+#ifdef USE_XPM
+  (void)XawAddPixmapLoader("xpm", "xpm", XPixmapLoader);
+#endif
 
   return (True);
 }
@@ -277,17 +288,7 @@ XawLoadPixmap(String name, Screen *screen, Colormap colormap, int depth)
 
   idx = _XawFindPixmapLoaderIndex(xaw_params->type, xaw_params->ext);
   if (idx < 0)
-    {
-      if (xaw_params->ext)
-	{
-	  /* Try again, without extension */
-	  idx = _XawFindPixmapLoaderIndex(xaw_params->type, NULL);
-	  if (idx < 0)
-	    return (NULL);
-	}
-      else
-	return (NULL);
-    }
+    return (NULL);
 
 #ifdef DIAGNOSTIC
   fprintf(stderr, "(*) Loading pixmap \"%s\": ", name);
@@ -373,14 +374,12 @@ _XawFindPixmapLoaderIndex(String type, String ext)
     return (-1);
 
   for (i = 0; i < num_loader_info; i++)
-    {
-      if ((!type ^ !loader_info[i]->type)
-	  || (!ext ^ !loader_info[i]->ext)
-	  || (type && strcmp(type, loader_info[i]->type))
-	  || (ext && strcmp(ext, loader_info[i]->ext)))
-	continue;
+    if ((type && loader_info[i]->type && strcmp(type, loader_info[i]->type) == 0)
+	|| (ext && loader_info[i]->ext && strcmp(ext, loader_info[i]->ext) == 0))
       return ((int)i);
-    }
+
+  if (!type)
+    return (0);	/* try a bitmap */
 
   return (-1);
 }
@@ -650,6 +649,9 @@ _XawCachePixmap(XawPixmap *pixmap,
     qsort(x_cache->elems, x_cache->num_elems, sizeof(XtPointer), qcmp_x_cache);
 }
 
+static char *pixmap_path =
+   "%H/%T/%N:/usr/X11R6/include/X11/%T/%N:/usr/include/X11/%T/%N:%N";
+
 static Bool
 BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	     Pixmap *pixmap_return, Pixmap *mask_return,
@@ -663,8 +665,6 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   int hotX, hotY;
   XawArgVal *argval;
   Bool retval = False;
-  static char *path =
-    "%H/%T/%N:/usr/X11R6/include/X11/%T/%N:/usr/include/X11/%T/%N:%N";
   static SubstitutionRec sub[] = {
     {'H',   NULL},
     {'N',   NULL},
@@ -695,7 +695,7 @@ BitmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
       if (!sub[0].substitution)
 	sub[0].substitution = getenv("HOME");
       sub[1].substitution = params->name;
-      filename = XtFindFile(path, sub, XtNumber(sub), NULL);
+      filename = XtFindFile(pixmap_path, sub, XtNumber(sub), NULL);
       if (!filename)
 	return (FALSE);
     }
@@ -736,7 +736,7 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   XColor start, end, color;
   XGCValues values;
   GC gc;
-  double i, inc, x, y;
+  double i, inc, x, y, xend, yend;
   Pixmap pixmap;
   XawArgVal *argval;
   int orientation, dimension, steps;
@@ -766,7 +766,11 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 	return (False);
     }
   else
-    steps = dimension;
+    {
+      steps = dimension / 5;
+      if (!steps)
+	steps = 1;
+    }
 
   steps = XawMin(steps, dimension);
 
@@ -807,31 +811,47 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
   gc = XCreateGC(DisplayOfScreen(screen), pixmap, 0, &values);
 
   x = y = 0.0;
+  if (orientation == VERTICAL)
+    {
+      xend = 1;
+      yend = 0;
+    }
+  else
+    {
+      xend = 0;
+      yend = 1;
+    }
 
   color.flags = DoRed | DoGreen | DoBlue;
 
   XSetForeground(DisplayOfScreen(screen), gc, start.pixel);
   for (i = 0.0; i < dimension; i += inc)
     {
-      if ((int)color.red != red || (int)color.green != green
-	  || (int)color.blue != blue)
+      if ((int)color.red != (int)red || (int)color.green != (int)green
+	  || (int)color.blue != (int)blue)
 	{
+	  XFillRectangle(DisplayOfScreen(screen), pixmap, gc, (int)x, (int)y,
+			 (unsigned int)xend, (unsigned int)yend);
 	  color.red   = (unsigned short)red;
 	  color.green = (unsigned short)green;
 	  color.blue  = (unsigned short)blue;
 	  (void)XAllocColor(DisplayOfScreen(screen), colormap, &color);
 	  XSetForeground(DisplayOfScreen(screen), gc, color.pixel);
+	  if (orientation == VERTICAL)
+	    y = yend;
+	  else
+	    x = xend;
 	}
-      XFillRectangle(DisplayOfScreen(screen), pixmap, gc, (int)x, (int)y,
-		     (unsigned int)(x + inc), (unsigned int)(y + inc));
       red   += ired;
       green += igreen;
       blue  += iblue;
       if (orientation == VERTICAL)
-	y += inc;
+	yend += inc;
       else
-	x += inc;
+	xend += inc;
     }
+  XFillRectangle(DisplayOfScreen(screen), pixmap, gc, (int)x, (int)y,
+		 (unsigned int)xend, (unsigned int)yend);
 
   *pixmap_return = pixmap;
   *mask_return = None;
@@ -842,3 +862,63 @@ GradientLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
 
   return (True);
 }
+
+#ifdef USE_XPM
+static Bool
+XPixmapLoader(XawParams *params, Screen *screen, Colormap colormap, int depth,
+	      Pixmap *pixmap_return, Pixmap *mask_return,
+	      Dimension *width_return, Dimension *height_return)
+{
+  XpmAttributes xpm_attributes;
+  XawArgVal *argval;
+  unsigned int closeness = 4000;
+  static SubstitutionRec sub[] = {
+    {'H',   NULL},
+    {'N',   NULL},
+    {'T',   "pixmaps"},
+  };
+  char *filename;
+
+  if ((argval = XawFindArgVal(params, "closeness")) != NULL
+      && argval->value)
+    closeness = atoi(argval->value);
+
+  if (params->name[0] != '/' && params->name[0] != '.')
+    {
+      if (!sub[0].substitution)
+	sub[0].substitution = getenv("HOME");
+      sub[1].substitution = params->name;
+      filename = XtFindFile(pixmap_path, sub, XtNumber(sub), NULL);
+      if (!filename)
+	return (False);
+    }
+  else
+    filename = params->name;
+
+  xpm_attributes.colormap = colormap;
+  xpm_attributes.closeness = closeness;
+  xpm_attributes.valuemask = XpmSize | XpmColormap | XpmCloseness;
+  if (XpmReadFileToPixmap(DisplayOfScreen(screen),
+			  RootWindowOfScreen(screen), filename, pixmap_return,
+			  mask_return, &xpm_attributes) == XpmSuccess)
+    {
+      *width_return = xpm_attributes.width;
+      *height_return = xpm_attributes.height;
+
+      return (True);
+    }
+
+  return (False);
+}
+
+void
+XawReshapeWidget(Widget w, XawPixmap *pixmap)
+{
+  if (!pixmap || pixmap->mask == None)
+    XShapeCombineMask(XtDisplay(w), XtWindow(w), ShapeBounding, 0, 0,
+		      None, ShapeSet);
+  else
+    XShapeCombineMask(XtDisplay(w), XtWindow(w), ShapeBounding, 0, 0,
+		      pixmap->mask, ShapeSet);
+}
+#endif

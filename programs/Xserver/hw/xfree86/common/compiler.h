@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.40 1999/03/28 15:32:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.41 1999/03/29 06:54:44 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -320,7 +320,9 @@ static __inline__ void stw_u(unsigned long r5, unsigned short * r11)
 #define write_mem_barrier()  mem_barrier()
 #endif
 
-#elif defined(linux) && defined(__sparc__)
+#elif (defined(linux) || defined(Lynx)) && defined(__sparc__)
+
+#if !defined(Lynx)
 #ifndef ASI_PL
 #define ASI_PL 0x88
 #endif
@@ -360,6 +362,8 @@ static __inline__ unsigned int inl(unsigned long port)
 	__asm__ __volatile__("lda [%1] %2, %0" : "=r" (ret) : "r" (port), "i" (ASI_PL));
 	return ret;
 }
+
+#endif	/* !Lynx */
 
 #include <string.h>
 

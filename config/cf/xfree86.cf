@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.212 1999/03/28 15:31:30 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.213 1999/04/04 07:03:16 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -114,7 +114,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* Sparc drivers */
 
-#ifdef SparcArchitecture
+#if defined(SparcArchitecture) && !defined(LynxOSArchitecture)
 #ifndef XF86Server
 #define XF86Server              YES
 #endif
@@ -185,7 +185,6 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF86FBDevHw
 #define XF86FBDevHw		YES
 #endif
-/* fbdevhw module */
 /* XAA module */
 #ifndef XF86XAA
 #define XF86XAA			YES

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.3 1999/03/14 03:22:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.4 1999/03/28 15:32:52 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -12,8 +12,8 @@
 #include "xf86cmap.h"
 
 #include "fbdevhw.h"
-#include "linux/fb.h"
-
+#include "fb.h"
+#include "sys/user.h"
 #define DEBUG 1
 
 #if DEBUG
@@ -495,6 +495,8 @@ fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 			fPtr->fbmem = NULL;
 		}
 	}
+	pScrn->memPhysBase = (unsigned long)fPtr->fix.smem_start & (unsigned long)(PAGE_MASK);
+	pScrn->fbOffset = (unsigned long)fPtr->fix.smem_start & (unsigned long)(~PAGE_MASK);
 	return fPtr->fbmem;
 }
 

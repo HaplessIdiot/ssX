@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.25 1999/03/28 15:32:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.26 1999/03/29 09:41:29 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -89,6 +89,7 @@
 #define PCI_VENDOR_REALTEC	0x10EC
 #define PCI_VENDOR_TRUEVISION	0x10FA
 #define PCI_VENDOR_INITIO	0x1101
+#define PCI_VENDOR_CREATIVE_2	0x1102
 #define PCI_VENDOR_VIA		0x1106
 #define PCI_VENDOR_VORTEX	0x1119
 #define PCI_VENDOR_EF		0x111A
@@ -536,6 +537,7 @@ SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_REALTEC, "Realtek"},
     {PCI_VENDOR_TRUEVISION, "Truevision"},
     {PCI_VENDOR_INITIO, "Initio Corp"},
+    {PCI_VENDOR_CREATIVE_2, "Creative Labs"},
     {PCI_VENDOR_VIA, "VIA"},
     {PCI_VENDOR_VORTEX, "Vortex"},
     {PCI_VENDOR_EF, "EF"},
@@ -1290,6 +1292,9 @@ pciVendorCardInfo xf86PCICardInfoData[] = {
                         { 0x8139, "Generic", NF },
                         { 0x0000, (char *)NULL, NF } } },
 #endif
+	{ PCI_VENDOR_CREATIVE_2, {
+			{ 0x1017, "3D Blaster Banshee", NF },
+                        { 0x0000, (char *)NULL, NF } } },
 	{PCI_VENDOR_DIGITAL, {
 			{ 0x500A, "EtherWORKS 10/100", NF},
                         { 0x0000, (char *)NULL, NF } } },

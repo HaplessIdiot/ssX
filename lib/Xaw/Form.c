@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.7 1998/08/16 10:24:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.8 1998/10/03 08:42:04 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -65,6 +65,7 @@ static Boolean XawFormConstraintSetValues(Widget, Widget, Widget,
 static XtGeometryResult XawFormGeometryManager(Widget, XtWidgetGeometry*,
 					       XtWidgetGeometry*);
 static void XawFormInitialize(Widget, Widget, ArgList, Cardinal*);
+static void XawFormRealize(Widget, Mask*, XSetWindowAttributes*);
 static XtGeometryResult XawFormQueryGeometry(Widget, XtWidgetGeometry*,
 					     XtWidgetGeometry*);
 static void XawFormRedisplay(Widget, XEvent*, Region);
@@ -220,7 +221,7 @@ FormClassRec formClassRec = {
     False,				/* class_inited */
     XawFormInitialize,			/* initialize */
     NULL,				/* initialize_hook */
-    XtInheritRealize,			/* realize */
+    XawFormRealize,			/* realize */
     actions,				/* actions */
     XtNumber(actions),			/* num_actions */
     resources,				/* resources */
@@ -274,6 +275,21 @@ WidgetClass formWidgetClass = (WidgetClass)&formClassRec;
 /*
  * Implementation
  */
+static void
+XawFormRealize(Widget w, Mask *mask, XSetWindowAttributes *attr)
+{
+    XawPixmap *pixmap;
+
+    (*formWidgetClass->core_class.superclass->core_class.realize)(w, mask, attr);
+
+    if (w->core.background_pixmap > XtUnspecifiedPixmap) {
+	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
+				      w->core.colormap, w->core.depth);
+	if (pixmap && pixmap->mask)
+	    XawReshapeWidget(w, pixmap);
+    }
+}
+
 static void
 XawFormRedisplay(Widget w, XEvent *event, Region region)
 {
@@ -860,6 +876,20 @@ static Boolean
 XawFormSetValues(Widget current, Widget request, Widget cnew,
 		 ArgList args, Cardinal *num_args)
 {
+    FormWidget f_old = (FormWidget)current;
+    FormWidget f_new = (FormWidget)cnew;
+
+    if (f_old->core.background_pixmap != f_new->core.background_pixmap) {
+	XawPixmap *opix, *npix;
+
+	opix = XawPixmapFromXPixmap(f_old->core.background_pixmap, XtScreen(f_old),
+				    f_old->core.colormap, f_old->core.depth);
+	npix = XawPixmapFromXPixmap(f_new->core.background_pixmap, XtScreen(f_new),
+				    f_new->core.colormap, f_new->core.depth);
+	if ((npix && npix->mask) || (opix && opix->mask))
+	    XawReshapeWidget(cnew, npix);
+    }
+
     return (False);
 }
 

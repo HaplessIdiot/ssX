@@ -4,7 +4,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.2 1998/07/25 16:55:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/util/dRegs.c,v 1.3 1998/09/13 05:23:37 dawes Exp $ */
 
 #ifdef __NetBSD__
 #  include <sys/types.h>
@@ -51,8 +51,13 @@
 #      define RESET_IOPL() sysi86(SI86IOPL,0)
 #    endif
 #  else
-#    define SET_IOPL() iopl(3)
-#    define RESET_IOPL() iopl(0)
+#    ifndef Lynx
+#      define SET_IOPL() iopl(3)
+#      define RESET_IOPL() iopl(0)
+#    else
+#      define SET_IOPL() 0
+#      define RESET_IOPL() 0
+#    endif
 #  endif
 #endif
 

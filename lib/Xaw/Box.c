@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Box.c,v 1.7 1998/09/05 06:36:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Box.c,v 1.8 1998/10/03 08:42:01 dawes Exp $ */
 
 #include	<X11/IntrinsicP.h>
 #include	<X11/StringDefs.h>
@@ -625,8 +625,17 @@ XawBoxInitialize(Widget request, Widget cnew,
 static void
 XawBoxRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 {
+  XawPixmap *pixmap;
+
   XtCreateWindow(w, InputOutput, (Visual *)CopyFromParent,
 		    *valueMask, attributes);
+
+    if (w->core.background_pixmap > XtUnspecifiedPixmap) {
+	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
+				      w->core.colormap, w->core.depth);
+	if (pixmap && pixmap->mask)
+	    XawReshapeWidget(w, pixmap);
+    }
 }
 
 /*ARGSUSED*/
@@ -635,6 +644,20 @@ XawBoxSetValues(Widget current, Widget request, Widget cnew,
 		ArgList args, Cardinal *num_args)
 {
    /* need to relayout if h_space or v_space change */
+    BoxWidget b_old = (BoxWidget)current;
+    BoxWidget b_new = (BoxWidget)cnew;
+
+    if (b_old->core.background_pixmap != b_new->core.background_pixmap) {
+	XawPixmap *opix, *npix;
+
+	opix = XawPixmapFromXPixmap(b_old->core.background_pixmap, XtScreen(b_old),
+				    b_old->core.colormap, b_old->core.depth);
+	npix = XawPixmapFromXPixmap(b_new->core.background_pixmap, XtScreen(b_new),
+				    b_new->core.colormap, b_new->core.depth);
+	if ((npix && npix->mask) || (opix && opix->mask))
+	    XawReshapeWidget(cnew, npix);
+    }
+
   return (False);
 }
 

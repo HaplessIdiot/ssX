@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.3 1999/01/14 13:05:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Device.c,v 1.4 1999/03/29 09:41:34 dawes Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -170,7 +170,6 @@ parseDeviceSection (void)
 			if (xf86GetToken (NULL) != NUMBER)
 				Error (NUMBER_MSG, "ChipRev");
 			ptr->dev_chiprev = val.num;
-			/* XXX Should this be init'd to -1 rather than 0? */
 			break;
 
 		case CLOCKS:
@@ -261,7 +260,12 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 			fprintf (cf, "\tCard        \"%s\"\n", ptr->dev_card);
 		if (ptr->dev_ramdac)
 			fprintf (cf, "\tRamDac      \"%s\"\n", ptr->dev_ramdac);
-	/* XXX DacSpeed */
+		if (ptr->dev_dacSpeeds[0] > 0 ) {
+			fprintf (cf, "\tDacSpeed    ");
+			for (i = 0; ptr->dev_dacSpeeds[i] > 0; i++ )
+				fprintf (cf, "%g ", (double)ptr->dev_dacSpeeds[i] / 1000.0 );
+			fprintf (cf, "\n");
+		}
 		if (ptr->dev_videoram)
 			fprintf (cf, "\tVideoRam    %d\n", ptr->dev_videoram);
 		if (ptr->dev_bios_base)
@@ -284,7 +288,7 @@ printDeviceSection (FILE * cf, XF86ConfDevicePtr ptr)
 				fprintf (cf, " \"%s\"", optr->opt_val);
 			fprintf (cf, "\n");
 		}
-		if( ptr->dev_clocks > 0 ) {
+		if (ptr->dev_clocks > 0 ) {
 			fprintf (cf, "\tClocks ");
 			for (i = 0; i < ptr->dev_clocks; i++ )
 				fprintf (cf, "%.1f ", (double)ptr->dev_clock[i] / 1000.0 );

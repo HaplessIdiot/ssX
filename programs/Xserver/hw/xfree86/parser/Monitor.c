@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.5 1999/03/21 07:35:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/parser/Monitor.c,v 1.6 1999/03/21 16:20:59 hohndel Exp $ */
 /* 
  * 
  * Copyright (c) 1997  Metro Link Incorporated
@@ -625,7 +625,6 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 
 	while (ptr)
 	{
-		/* XXX printing out the Gamma value is missing */
 		fprintf (cf, "Section \"Monitor\"\n");
 		if (ptr->mon_identifier)
 			fprintf (cf, "\tIdentifier     \"%s\"\n", ptr->mon_identifier);
@@ -648,6 +647,19 @@ printMonitorSection (FILE * cf, XF86ConfMonitorPtr ptr)
 			fprintf (cf, "\tVertRefresh     %2.1f - %2.1f\n",
 					 ptr->mon_vrefresh[i].lo,
 					 ptr->mon_vrefresh[i].hi);
+		}
+		if (ptr->mon_gamma_red) {
+			if (ptr->mon_gamma_red == ptr->mon_gamma_green
+				&& ptr->mon_gamma_red == ptr->mon_gamma_blue)
+			{
+				fprintf (cf, "\tGamma           %.4g\n",
+					ptr->mon_gamma_red);
+			} else {
+				fprintf (cf, "\tGamma           %.4g %.4g %.4g\n",
+					ptr->mon_gamma_red,
+					ptr->mon_gamma_green,
+					ptr->mon_gamma_blue);
+			}
 		}
 		for (mlptr = ptr->mon_modeline_lst; mlptr; mlptr = mlptr->list.next)
 		{

@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Simple.c,v 1.7 1998/08/16 10:24:27 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Simple.c,v 1.8 1998/10/03 08:42:18 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -248,6 +248,7 @@ XawSimpleClassPartInitialize(WidgetClass cclass)
 static void
 XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 {
+    XawPixmap *pixmap;
     Pixmap border_pixmap = CopyFromParent;
 
   if (!XtIsSensitive(w))
@@ -278,6 +279,13 @@ XawSimpleRealize(Widget w, Mask *valueMask, XSetWindowAttributes *attributes)
 
     if (!XtIsSensitive(w))
 	w->core.border_pixmap = border_pixmap;
+
+    if (w->core.background_pixmap > XtUnspecifiedPixmap) {
+	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
+				      w->core.colormap, w->core.depth);
+	if (pixmap && pixmap->mask)
+	    XawReshapeWidget(w, pixmap);
+    }
 }
 
 /*
@@ -353,6 +361,17 @@ XawSimpleSetValues(Widget current, Widget request, Widget cnew,
 	else
 	XUndefineCursor(XtDisplay(cnew), XtWindow(cnew));
       }
+
+    if (s_old->core.background_pixmap != s_new->core.background_pixmap) {
+	XawPixmap *opix, *npix;
+
+	opix = XawPixmapFromXPixmap(s_old->core.background_pixmap, XtScreen(s_old),
+				    s_old->core.colormap, s_old->core.depth);
+	npix = XawPixmapFromXPixmap(s_new->core.background_pixmap, XtScreen(s_new),
+				    s_new->core.colormap, s_new->core.depth);
+	if ((npix && npix->mask) || (opix && opix->mask))
+	    XawReshapeWidget(cnew, npix);
+    }
 
     if (s_old->simple.display_list != s_new->simple.display_list)
       return (True);

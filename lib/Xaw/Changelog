@@ -801,7 +801,23 @@ xedit.c:
  + Added the code for creation the dirwindow to this file.
 
 
+# 2 Apr 1999
+-- Xaw --
+ + Added xpm pixmaps support to the library. This time, it is required to
+   compile Xaw with -DUSE_XPM.
+ + If the xpm image has a mask, the widget will be automatically reshaped
+   to the pixmap mask.
+ + Changed the kill_ring code in TextAction.c to always end in a text block
+   of zero length, this way, it is easier to know when one traversed the
+   entire kill ring (it may be interesting to forget the undo sequences
+   while traversing the kill ring list).
+
+-- xedit --
+ + Changed the Xedit.ad file to avoid overriding a translation that would
+   make the search window do not respond to WM_DELETE_WINODW messages.
+ + Fixed a core dump condition in the new code for listing files and
+   directories, due to deferencing a null pointer.
 
 
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.14 1999/02/28 11:19:18 dawes Exp $
+$XFree86: xc/lib/Xaw/Changelog,v 3.15 1999/03/14 03:21:10 dawes Exp $

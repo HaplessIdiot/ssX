@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.19 1999/03/14 11:17:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.20 1999/03/21 07:34:30 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -205,7 +205,7 @@ Bool _XawTextSrcToggleUndo(TextSrcObject);
  */
 #define MAX_KILL_RINGS	1024
 XawTextKillRing *xaw_text_kill_ring;
-static XawTextKillRing kill_ring_prev;
+static XawTextKillRing kill_ring_prev, kill_ring_null = { &kill_ring_prev, };
 static unsigned num_kill_rings;
 
 /*
@@ -1416,7 +1416,7 @@ KillRingYank(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    --ctx->text.kill_ring_ptr->refcount;
 	    while (mul--) {
 		if ((ctx->text.kill_ring_ptr = ctx->text.kill_ring_ptr->next) == NULL)
-		    ctx->text.kill_ring_ptr = &kill_ring_prev;
+		    ctx->text.kill_ring_ptr = &kill_ring_null;
 	    }
 	    ++ctx->text.kill_ring_ptr->refcount;
 	}
@@ -1430,10 +1430,8 @@ KillRingYank(Widget w, XEvent *event, String *params, Cardinal *num_params)
 	    ctx->text.insertPos = ctx->text.s.left + text.length;
 	}
     }
-    else {
-	--ctx->text.kill_ring_ptr->refcount;
+    else
 	XBell(XtDisplay(w), 0);
-    }
 
     EndAction(ctx);
 }

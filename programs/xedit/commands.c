@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.9 1999/02/28 11:20:15 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.10 1999/03/14 03:22:28 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -939,9 +939,8 @@ FileCompletion(Widget w, XEvent *event, String *params, Cardinal *num_params)
 		    SwitchDirWindow(True);
 		    free_matches = False;
 		}
-
 	    }
-	    if (free_matches) {
+	    if (free_matches && matches) {
 		while (--n_matches)
 		    XtFree(matches[n_matches]);
 		XtFree((char*)matches);

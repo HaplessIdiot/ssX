@@ -1,4 +1,40 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_hwcurs.c,v 1.1 1999/03/29 12:17:56 dawes Exp $ */
+
+/*
+Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of
+this software and associated documentation files (the "Software"), to deal in
+the Software without restriction, including without limitation the rights to
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+of the Software, and to permit persons to whom the Software is furnished to do
+so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FIT-
+NESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+XFREE86 PROJECT BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of the XFree86 Project shall not
+be used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from the XFree86 Project.
+*/
+
+
+/*
+ * s3v_hwcurs.c
+ * HW Cursor support for 4.0 design level
+ *
+ * S3 ViRGE driver
+ *
+ *
+ */
+
 
 #include "s3v.h"
 
@@ -10,30 +46,9 @@ static void S3VHideCursor(ScrnInfoPtr pScrn);
 static void S3VSetCursorPosition(ScrnInfoPtr pScrn, int x, int y);
 static void S3VSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg);
 
-/*
- * implementation
- */
- 
-#define DACREGSIZE 0x50
-    
-/*
- * Only change bits shown in this mask.  Ideally reserved bits should be
- * zeroed here.  Also, don't change the vgaioen bit here since it is
- * controlled elsewhere.
- *
- * XXX These settings need to be checked.
- */
-#define OPTION1_MASK	0xFFFFFEFF
-#define OPTION2_MASK	0xFFFFFFFF
-
 
 /*
  * Read/write to the DAC via MMIO 
- */
-
-/*
- * These were functions.  Use macros instead to avoid the need to
- * pass pMga to them.
  */
 
 #define inCRReg(reg) (VGAHWPTR(pScrn))->readCrtc( VGAHWPTR(pScrn), reg )
@@ -48,17 +63,15 @@ static void
 S3VLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *src)
 {
   S3VPtr ps3v = S3VPTR(pScrn);
-  CARD32 *dst = (CARD32*)(ps3v->FBCursorStart);
-  int i = 128;
-  
+ 
     /*PVERB5("	S3VLoadCursorImage\n");*/
-    
-    /* swap words */
-    while( i-- ) {
-        *dst++ = (src[0] << 16 ) | (src[1] << 24) | (src[2] ) | (src[3] << 8);
-        *dst++ = (src[4] << 16 ) | (src[5] << 24) | (src[6] ) | (src[7] << 8);
-        src += 8;
-    }
+
+    /* Load storage location.  */
+    outCRReg( HWCURSOR_ADDR_LOW_CR4D, 0xff & (ps3v->FBCursorOffset/1024));
+    outCRReg( HWCURSOR_ADDR_HIGH_CR4C, (0x0f00 & (ps3v->FBCursorOffset/1024)) >> 8);
+
+	/* Copy cursor image to framebuffer storage */
+	memcpy( (ps3v->FBBase + ps3v->FBCursorOffset), src, 1024);
 
 }
 
@@ -92,7 +105,7 @@ S3VHideCursor(ScrnInfoPtr pScrn)
 static void
 S3VSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 {
-   unsigned char xoff, yoff;
+   unsigned char xoff = 0, yoff = 0;
 
    /*
    if (!xf86VTSema)
@@ -100,39 +113,28 @@ S3VSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
     */
 
    /*
-   x -= pScrn->frameX0;
-   y -= pScrn->frameY0;
-   */
-
-   /*
    x -= s3vHotX;
    y -= s3vHotY;
     */
-
-   if (pScrn->bitsPerPixel > 16)
-      x &= ~1;
 
    /*
     * Make these even when used.  There is a bug/feature on at least
     * some chipsets that causes a "shadow" of the cursor in interlaced
     * mode.  Making this even seems to have no visible effect, so just
     * do it for the generic case.
+    * note - xoff & yoff are used for displaying partial cursors on screen
+    * edges.
     */
+
    if (x < 0) {
      xoff = ((-x) & 0xFE);
      x = 0;
-   } else {
-     xoff = 0;
    }
 
    if (y < 0) {
       yoff = ((-y) & 0xFE);
       y = 0;
-   } else {
-      yoff = 0;
    }
-
-   /* WaitIdle(); */
 
    /* This is the recomended order to move the cursor */
 
@@ -154,8 +156,11 @@ S3VSetCursorColors(ScrnInfoPtr pScrn, int bg, int fg)
 
 	switch( pScrn->bitsPerPixel) {
 	  case 8:
-	  			/* Init set depth 8 as not truecolor, so fg & bg are */
-	  			/* already properly adjusted. */
+	  			/* Dup color indexes in low, mid, & high bytes */
+	  	fg &= 0x000000ff;
+	  	fg |= (fg << 16) | (fg << 8);
+	  	bg &= 0x000000ff;
+	  	bg |= (bg << 16) | (bg << 8);
 	    break;
 	  case 16:
 				/* adjust colors to 16 bits */
@@ -215,12 +220,9 @@ S3VHWCursorInit(ScreenPtr pScreen)
 
     infoPtr->MaxWidth = 64;
     infoPtr->MaxHeight = 64;
-    infoPtr->Flags = 
-    				HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_16 |
-        			HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
-/*    				HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_64 |*/
-/*    				HARDWARE_CURSOR_TRUECOLOR_AT_8BPP;*/
-/*				HARDWARE_CURSOR_SOURCE_MASK_NOT_INTERLEAVED;*/
+    infoPtr->Flags = HARDWARE_CURSOR_SOURCE_MASK_INTERLEAVE_16 |
+    				 HARDWARE_CURSOR_SWAP_SOURCE_AND_MASK |
+        			 HARDWARE_CURSOR_BIT_ORDER_MSBFIRST;
 
     infoPtr->SetCursorColors = S3VSetCursorColors;
     infoPtr->SetCursorPosition = S3VSetCursorPosition;
