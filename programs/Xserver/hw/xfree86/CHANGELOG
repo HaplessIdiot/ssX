@@ -1,4 +1,6 @@
 XFree86 4.0.99.2 (?? March 2001)
+ 282. Lower the default fifo threshold for PM3 chips (Alan Hourihane,
+      Rafael Barbalho, 3DLabs).
  281. Fix 3DLabs GLINT driver for use the Flat Panels, use the UseFlatPanel
       option. Tested with the SGI 1600SW and Permedia3 board (Alan Hourihane).
  280. Fix glxinfo to query default display (Alan Hourihane).
@@ -12724,4 +12726,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1635 2001/03/19 13:57:33 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1636 2001/03/19 22:50:25 alanh Exp $
