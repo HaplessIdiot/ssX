@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.3 1998/12/13 10:33:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/XIE/xiemodule.c,v 1.4 1999/01/17 10:53:47 dawes Exp $ */
 
 #include "xf86Module.h"
 #include "XIE.h"		
@@ -18,16 +18,16 @@ ExtensionModule XieExt =
 
 static XF86ModuleVersionInfo VersRec =
 {
-        "xie",
-        MODULEVENDORSTRING,
-        MODINFOSTRING1,
-        MODINFOSTRING2,
-        XF86_VERSION_CURRENT,
-        1, 0, 0,
-        ABI_CLASS_EXTENSION,
-        ABI_EXTENSION_VERSION,
+	"xie",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	1, 0, 0,
+	ABI_CLASS_EXTENSION,
+	ABI_EXTENSION_VERSION,
 	NULL,
-        {0,0,0,0}
+	{0,0,0,0}
 };
 
 void

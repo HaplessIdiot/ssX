@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.5 1998/12/13 10:33:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/extmod/modinit.c,v 1.6 1999/01/17 10:53:48 dawes Exp $ */
 
 /*
  *
@@ -274,19 +274,19 @@ ExtensionModule extensionModules[] = {
 
 static XF86ModuleVersionInfo VersRec =
 {
-        "extmod",
-        MODULEVENDORSTRING,
-        MODINFOSTRING1,
-        MODINFOSTRING2,
-        XF86_VERSION_CURRENT,
-        1, 0, 0,
-        ABI_CLASS_EXTENSION,
-        ABI_EXTENSION_VERSION,
+	"extmod",
+	MODULEVENDORSTRING,
+	MODINFOSTRING1,
+	MODINFOSTRING2,
+	XF86_VERSION_CURRENT,
+	1, 0, 0,
+	ABI_CLASS_EXTENSION,
+	ABI_EXTENSION_VERSION,
 	NULL,
-        {0,0,0,0}
+	{0,0,0,0}
 };
 
-/* 
+/*
  * Entry point for the loader code
  */
 void
