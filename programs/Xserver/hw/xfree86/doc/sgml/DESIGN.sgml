@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.24 2000/03/18 20:06:21 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.25 2000/04/04 19:25:01 dawes Exp $
 </ident>
 
 
@@ -845,7 +845,7 @@ is what &s.code;InitOutput()&e.code; does:
       of this function.  The &s.code;xf86LoadSubModule()&e.code; function
       should be used to load modules.  A driver may unload a module
       within this function if it was only needed temporarily, and the
-      &s.code;UnloadSubModule()&e.code; function should be used to do
+      &s.code;xf86UnloadSubModule()&e.code; function should be used to do
       that.  Otherwise there is no need to explicitly unload modules
       because the loader takes care of module dependencies and will
       unload submodules automatically if/when the driver module is
@@ -929,11 +929,11 @@ is what &s.code;InitOutput()&e.code; does:
       fails, the return value will be &s.code;NULL&e.code;.  If a driver
       needs to explicitly unload a module it has loaded in this way,
       the return value must be saved and passed to
-      &s.code;UnloadSubModule()&e.code; when unloading.
+      &s.code;xf86UnloadSubModule()&e.code; when unloading.
 
     </quote>
 
-    &s.code;void UnloadSubModule(pointer module)&e.code;
+    &s.code;void xf86UnloadSubModule(pointer module)&e.code;
     <quote><p>
       Unloads the module referenced by &s.code;module&e.code;.
       &s.code;module&e.code; should be a pointer returned previously
@@ -3747,7 +3747,7 @@ typedef struct {
 	&s.code;typedef void (* StopVideoFuncPtr)(ScrnInfoPtr pScrn, 
 			&f.indent;pointer data, Bool cleanup)&e.code;
     <quote><p>
-	  This indicates the the driver should stop displaying the video.
+	  This indicates the driver should stop displaying the video.
 	  This is used to stop both input and output video.  The
 	  &s.code;cleanup&e.code; field indicates that the video is
 	  being stopped because the client requested it to stop or
@@ -4173,7 +4173,7 @@ XFree86 common layer.
 		  parameter passing in other situations.
 
 		  When loading ``external'' modules (modules that don't
-		  have the the standard entry point, for example a
+		  have the standard entry point, for example a
 		  special shared library) the options parameter can be
 		  set to &s.code;EXTERN_MODULE&e.code; to tell the
 		  loader not to reject the module when it doesn't find

@@ -1,4 +1,5 @@
 XFree86 4.0b (?? April 2000)
+ 104. Add an XF86UnloadSubModule() entry (Marc La France).
  103. Fix missing symbol "ServerGrabCallback" (Mark Vojkovich).
  102. Fix XAA problems with CPU-to-screen colour expansion (Marc La France).
  101. For panel support in the ATI driver, add an entry to the monitor
@@ -10231,4 +10232,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1125 2000/04/11 17:35:43 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1127 2000/04/15 17:27:23 mvojkovi Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.84 2000/03/31 22:55:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.85 2000/04/04 15:54:16 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2228,6 +2228,14 @@ xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
     return ret;
 #else
     return (pointer)1;
+#endif
+}
+
+void
+xf86UnloadSubModule(pointer mod)
+{
+#ifdef XFree86LOADER
+    UnloadSubModule(mod);
 #endif
 }
 
