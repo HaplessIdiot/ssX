@@ -19,7 +19,7 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
   THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/mkfontscale/data.h,v 1.2 2003/01/29 22:09:40 dawes Exp $ */
 
 /* Order is significant.  For example, some B&H fonts are hinted by
    URW++, and both strings appear in the notice. */
@@ -27,7 +27,7 @@
 char *notice_foundries[][2] = 
     {{"Bigelow", "b&h"},
      {"Adobe", "adobe"},
-     {"Bitstream", "bitsteam"},
+     {"Bitstream", "bitstream"},
      {"Monotype", "monotype"},
      {"Linotype", "linotype"},
      {"LINOTYPE-HELL", "linotype"},
