@@ -287,7 +287,7 @@ FindPCIVideoInfo(void)
 			    (memType)PCIGETMEMORY64HIGH(pcrp->pci_base1) << 32;
 #else
 			if (pcrp->pci_base1)
-			  info->memBase[0] = 0;
+			    info->memBase[0] = 0;
 #endif
 		    } 
 		}
@@ -849,12 +849,17 @@ correctPciSize(memType base, memType oldsize, memType newsize,
 #if defined(LONG64) || defined(WORD64)
 		      ||
 		      (B2M(pcrp->tag,PCIGETMEMORY64(basep[i])) == base)
+#else
+		      ||
+		      (!basep[i+1]
+		       && (B2M(pcrp->tag,PCIGETMEMORY(basep[i])) == base))
 #endif 
 		     ))) {
 		    pcrp->basesize[i] = new_bits;
 		    break;	/* to next device */
 		}
 	    }
+	    if (PCI_MAP_IS64BITMEM(basep[i])) i++;
 	}
     }
 
@@ -1029,7 +1034,10 @@ xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY64(basep[i-1]),
 			  pcrp->basesize[i-1], ResExcMemBlock | resMisc)
 #else
+		    if (basep[i])
 		      continue;
+		    P_M_RANGE(range,pcrp->tag,PCIGETMEMORY(basep[i-1]),
+			   pcrp->basesize[i], ResExcMemBlock | resMisc)
 #endif
 		}
 		if (range.rBegin) { /* catch cases where PCI base is unset */
@@ -2307,6 +2315,7 @@ ValidatePci(void)
      * the ones which have been assigned to a screen.
      */
     Sys = xf86DupResList(osRes);
+    /* Only validate graphics devices in use */
     for (i=0; i<xf86NumScreens; i++) {
 	for (m = 0; m < xf86Screens[i]->numEntities; m++)
 	    if ((pvp = xf86GetPciInfoForEntity(xf86Screens[i]->entityList[m])))
@@ -2349,6 +2358,7 @@ ValidatePci(void)
     }
     for (pcrpp = xf86PciInfo, pcrp = *pcrpp; pcrp; pcrp = *++(pcrpp)) {
 
+	/* These were handled above */
 	if (PCIINFOCLASSES(pcrp->pci_base_class, pcrp->pci_sub_class))
 	    continue;
 	
@@ -2377,7 +2387,10 @@ ValidatePci(void)
 		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY64(basep[i-1]),
 			      pcrp->basesize[i-1], ResExcMemBlock)
 #else
-		    continue;
+		    if (basep[i-1])
+			continue;
+		    P_M_RANGE(range, pcrp->tag, PCIGETMEMORY(basep[i-1]),
+			      pcrp->basesize[i-1], ResExcMemBlock)
 #endif
 		} 
 		Sys = xf86AddResToList(Sys, &range, -1);

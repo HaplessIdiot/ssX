@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.36 2003/07/24 13:50:19 eich Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.37 2003/08/04 10:32:21 eich Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -226,7 +226,7 @@ typedef struct _Xtransport {
 #endif /* TRANS_CLIENT */
 
 #ifdef TRANS_SERVER
-
+    char **	nolisten;
     XtransConnInfo (*OpenCOTSServer)(
 	struct _Xtransport *,	/* transport */
 	char *,			/* protocol */

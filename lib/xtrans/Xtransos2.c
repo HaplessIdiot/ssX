@@ -833,6 +833,7 @@ Xtransport	TRANS(OS2LocalFuncs) = {
 	TRANS(Os2OpenCOTSClient),
 #endif /* TRANS_CLIENT */
 #ifdef TRANS_SERVER
+	NULL,
 	TRANS(Os2OpenCOTSServer),
 #endif /* TRANS_SERVER */
 #ifdef TRANS_CLIENT

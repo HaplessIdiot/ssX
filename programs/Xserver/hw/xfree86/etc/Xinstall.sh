@@ -975,7 +975,7 @@ esac
 if [ -f extract ]; then
 	ExtractExists=YES
 	chmod +x extract
-	if ./extract --version | head -1 | \
+	if ./extract --version | sed 1q | \
 	  fgrep "extract (XFree86 version" > /dev/null 2>&1; then
 		ExtractOK=YES
 	else
