@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.19 1997/05/03 09:19:58 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/mi/Imakefile,v 3.20 1997/11/16 10:46:17 dawes Exp $
 XCOMM $XConsortium: Imakefile /main/44 1996/12/02 10:22:16 lehors $
 #include <Server.tmpl>
 
@@ -58,7 +58,7 @@ NormalLintTarget($(SRCS))
 NormalLibraryTarget(cbrt,cbrt.o)
 #endif
 
-SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULES_DEFINES))
+SpecialCObjectRule(miinitext,$(ICONFIGFILES),$(EXT_DEFINES) $(EXT_MODULE_DEFINES))
 SpecialCObjectRule(miscrinit,$(ICONFIGFILES),$(EXT_DEFINES))
 
 AllTarget($(EXTRAMIINITEXTOBJ))
