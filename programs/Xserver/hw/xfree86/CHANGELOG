@@ -1,4 +1,7 @@
 XFree86 3.9.16f (xx December 1999)
+3387. Fix posix compliance problem in Xserver/os/utils.c
+      (Robin Cutshaw/Keith Packard).
+3386. Fix for os2_bios (#3483, Holger Veit).
 3385. Enhance DK keyboard support (#3481, Keld Simonsen).
 3384. Xv client library documentation (#3480, Mark Vojkovich).
 3383. Rendition microcode cleanup, accel fix, int10/ddc support,
@@ -9169,4 +9172,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.881 1999/12/14 03:17:50 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.882 1999/12/14 03:26:13 robin Exp $
