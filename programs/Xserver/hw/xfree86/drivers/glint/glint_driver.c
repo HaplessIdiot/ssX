@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen, 
  * Siemens Nixdorf Informationssysteme and Appian Graphics.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.126 2001/05/24 19:55:04 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.127 2001/05/25 10:08:24 alanh Exp $ */
 
 #include "fb.h"
 #include "cfb8_32.h"
@@ -2036,6 +2036,20 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	        i = partprod500TX[pScrn->displayWidth >> 5];
 	    } while (i == -1);
 	}
+    }
+
+    /* Check Virtual resolution */
+    if (pScrn->virtualX > maxwidth) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		    "GLINTModeInit: virtual width (%d) too big for hardware\n",
+		    pScrn->virtualX);
+	return FALSE;
+    }
+    if (pScrn->virtualY > maxheight) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		    "GLINTModeInit: virtual height (%d) too big for hardware\n",
+		    pScrn->virtualY);
+	return FALSE;
     }
 
     switch (pGlint->Chipset)
