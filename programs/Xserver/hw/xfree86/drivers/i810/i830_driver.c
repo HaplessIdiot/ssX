@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.54 2004/03/31 21:17:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.55 2004/03/31 21:30:40 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -1095,7 +1095,7 @@ TweakMemorySize(ScrnInfoPtr pScrn, CARD32 newsize, Bool preinit)
     int reg = IS_845G(pI830) ? _845_DRAM_RW_CONTROL : _855_DRAM_RW_CONTROL;
     
     if(!pI830->PciInfo
-       || !(IS_845G(pI830) || IS_I85X(pI830) || IS_I865G(pI830))
+	|| !(IS_845G(pI830) || IS_I85X(pI830) || IS_I865G(pI830)))
 	return 0;
 
     if (!pI830->pVbe)
