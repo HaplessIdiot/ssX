@@ -1,4 +1,5 @@
 XFree86 4.0.99.x (xx May 2001)
+ 496. Fix some DRI-related build dependency problems (David Dawes).
  495. Fix some drivers (including tdfx, r128, radeon, ark, imstt) that weren't
       respecting the Virtual resolution requested in the config file
       (David Dawes).
@@ -13187,4 +13188,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1756 2001/05/10 10:17:37 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1757 2001/05/10 16:48:09 dawes Exp $
