@@ -1,5 +1,6 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/xf86dga/Imakefile,v 3.0 1995/12/02 05:07:31 dawes Exp $
 
+        DEPLIBS = $(DEPXLIB)
 LOCAL_LIBRARIES = $(XLIB)
            SRCS = dga.c XF86Dga.c
            OBJS = dga.o XF86Dga.o

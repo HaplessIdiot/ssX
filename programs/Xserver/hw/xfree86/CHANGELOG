@@ -1,3 +1,9 @@
+XFree86 3.1.2Ad (21 December 1995)
+145. Fix for incorrect usage of S3 PIX_TRANS writing (Takefumi Tsukada).
+144. PC98 support integrated into the main XFree86 source tree.  The PC98
+     code gets built under xc/programs/Xserver/hw/xfree98 (Takefumi Tsukada
+     and the X98 team).
+
 XFree86 3.1.2Ac (17 December 1995)
 143. Modify the XDGA implementation in the server, and add support for it
      to the Mach64 server.  Also, XDGA is now enabled for all OSs since there
