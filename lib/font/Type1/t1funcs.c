@@ -1,5 +1,5 @@
-/* $XConsortium: t1funcs.c,v 1.19 94/04/17 20:17:22 dpw Exp $ */
-/* $XFree86$ */
+/* $XConsortium: t1funcs.c,v 1.20 94/07/25 13:50:03 kaleb Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.0 1994/08/01 12:05:23 dawes Exp $ */
 /* Copyright International Business Machines,Corp. 1991
  * All Rights Reserved
  *
@@ -87,7 +87,13 @@ from the X Consortium.
 */
  
 #include <string.h>
+#ifdef _XOPEN_SOURCE
 #include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _X_OPEN_SOURCE
+#endif
 #include "X11/Xfuncs.h"
 #include "fntfilst.h"
 #include "FSproto.h"
@@ -100,10 +106,6 @@ from the X Consortium.
 #include "util.h"
 #include "fontfcn.h"
  
-#if defined(SVR4) && __STDC__
-extern double hypot(double, double);
-#endif
-
 int         Type1OpenScalable ();
 static int  Type1GetGlyphs();
 void        Type1CloseFont();

@@ -1,5 +1,5 @@
-/* $XConsortium: fontscale.c,v 1.13 94/04/17 20:17:07 gildea Exp $ */
-/* $XFree86$ */
+/* $XConsortium: fontscale.c,v 1.14 94/07/25 13:52:04 kaleb Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontscale.c,v 3.0 1994/08/01 12:06:17 dawes Exp $ */
 
 /*
 
@@ -33,10 +33,12 @@ in this Software without prior written authorization from the X Consortium.
  */
 
 #include    "fntfilst.h"
-#include    "math.h"
-
-#if defined(SVR4) && __STDC__
-extern double hypot(double, double);
+#ifdef _XOPEN_SOURCE
+#include <math.h>
+#else
+#define _XOPEN_SOURCE	/* to get prototype for hypot on some systems */
+#include <math.h>
+#undef _XOPEN_SOURCE
 #endif
 
 Bool

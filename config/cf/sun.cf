@@ -1,5 +1,5 @@
-XCOMM platform:  $XConsortium: sun.cf,v 1.131 94/06/03 21:38:47 matt Exp $
-XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.4 1994/06/28 12:15:03 dawes Exp $
+XCOMM platform:  $XConsortium: sun.cf,v 1.133 94/07/08 12:23:12 gildea Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sun.cf,v 3.5 1994/06/28 12:58:43 dawes Exp $
 
 #ifdef SVR4
 #ifdef i386Architecture
@@ -108,6 +108,7 @@ XCOMM operating system:  OSName
 /* We do not guarantee this will work */
 #define BootstrapCFlags   -DNOSTDHDRS
 #define StandardDefines   -DNOSTDHDRS
+#define XawI18nDefines     -DUSE_X_WCHAR_STRING -DUSE_XMBTOWC
 #endif
 
 #if OSMajorVersion == 4 
@@ -210,11 +211,11 @@ XCOMM operating system:  OSName
 #define SharedLibraryCcCmd cc
 #define ExtraLoadFlags -B/usr/bin/
 #define AllocateLocalDefines /**/
-#endif
 
 .c.o:
 	$(CC) -c $(CFLAGS) $*.c
 
+#endif /* HasGcc2 (else) */
 #else
 
 #define AllocateLocalDefines -DINCLUDE_ALLOCA_H

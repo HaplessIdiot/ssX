@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.2 1994/05/30 08:17:50 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.3 1994/06/12 16:30:18 dawes Exp $
 
 /*****************************************************************************
  *	            Defaults for SCO-specfic parameters                          *
@@ -46,6 +46,8 @@ XCOMM platform:  $XFree86: xc/config/cf/sco.cf,v 3.2 1994/05/30 08:17:50 dawes E
 # define	OSTeenyVersion	2
 # define CompressManCmd pack
 #endif /* ! i386Sco324Architecture */
+
+#define XawI18nDefines		-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
 /*
  *	XBSDLIB is included with the Socket libraries, because SCO
