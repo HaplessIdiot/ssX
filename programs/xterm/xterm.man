@@ -1,3 +1,4 @@
+.\" $XTermId: xterm.man,v 1.258 2004/04/17 18:22:07 tom Exp $
 .\" $Xorg: xterm.man,v 1.4 2001/02/09 02:06:03 xorgcvs Exp $
 .\"
 .\"
@@ -54,7 +55,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.101 2004/04/05 00:39:19 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.102 2004/04/13 09:42:00 dickey Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996 - April 2004.
 .TH XTERM 1 __vendorversion__
@@ -362,9 +363,10 @@ bug mentioned above.
 .B "\-dc"
 This option disables the escape sequence to change dynamic colors:
 the vt100 foreground and background colors,
-the text cursor color,
-the mouse cursor foreground and background colors,
+its text cursor color,
+the pointer cursor foreground and background colors,
 the Tektronix emulator foreground and background colors,
+its text cursor color
 and highlight color.
 .TP 8
 .B "+dc"
@@ -738,6 +740,7 @@ should not cause the window to be repositioned.
 .BI \-sl " number"
 This option specifies the number of lines to save that have been scrolled
 off the top of the screen.
+This corresponds to the \fBsaveLines\fP resource.
 The default is 64.
 .TP 8
 .B \-sm
