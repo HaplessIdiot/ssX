@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.152 2002/06/01 00:54:49 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.153 2002/08/06 19:55:56 herrb Exp $ */
 
 /* main.c */
 
@@ -386,6 +386,10 @@ extern struct utmp *getutid __((struct utmp * _Id));
 #include <local/openpty.h>
 #endif /* PUCC_PTYD */
 
+#ifdef __OpenBSD__
+#include <util.h>
+#endif
+
 #if !defined(UTMP_FILENAME)
 #if defined(UTMP_FILE)
 #define UTMP_FILENAME UTMP_FILE
@@ -459,10 +463,16 @@ static int pty_search(int *pty);
 #endif
 #endif /* ! VMS */
 
+static int get_pty(int *pty, char *from);
 static void get_terminal(void);
 static void resize(TScreen * s, char *oldtc, char *newtc);
+static void set_owner(char *device, int uid, int gid, int mode);
 
 static Bool added_utmp_entry = False;
+
+#ifdef __OpenBSD__
+static gid_t utmpGid = -1;
+#endif
 
 #ifdef USE_SYSV_UTMP
 static Bool xterm_exiting = False;
@@ -1424,7 +1434,7 @@ ParseSccn(char *option)
  * ut_time, ut_user and ut_host as well.
  *
  * Generally ut_id allows no more than 3 characters (plus null), even if the
- * pty implementation allows more than 3 digits.   
+ * pty implementation allows more than 3 digits.
  */
 static char *
 my_utmp_id(char *device)
@@ -1450,7 +1460,7 @@ my_utmp_id(char *device)
 
 typedef void (*sigfunc) (int);
 
-/* make sure we sure we ignore SIGCHLD for the cases parent 
+/* make sure we sure we ignore SIGCHLD for the cases parent
    has just been stopped and not actually killed */
 
 static sigfunc
@@ -1479,6 +1489,33 @@ main(int argc, char *argv[]ENVP_ARG)
     register TScreen *screen;
     int mode;
     char *my_class = DEFCLASS;
+
+#ifndef AMOEBA
+    /* extra length in case longer tty name like /dev/ttyq255 */
+    ttydev = (char *) malloc(sizeof(TTYDEV) + 80);
+#ifdef USE_PTY_DEVICE
+    ptydev = (char *) malloc(sizeof(PTYDEV) + 80);
+    if (!ttydev || !ptydev)
+#else
+    if (!ttydev)
+#endif
+    {
+	fprintf(stderr,
+		"%s:  unable to allocate memory for ttydev or ptydev\n",
+		ProgramName);
+	exit(1);
+    }
+    strcpy(ttydev, TTYDEV);
+#ifdef USE_PTY_DEVICE
+    strcpy(ptydev, PTYDEV);
+#endif
+
+#ifdef __OpenBSD__
+    get_pty(NULL, NULL);
+    seteuid(getuid());
+    setuid(getuid());
+#endif /* __OpenBSD__ */
+#endif /* AMOEBA */
 
     /* Do these first, since we may not be able to open the display */
     ProgramName = argv[0];
@@ -1517,25 +1554,6 @@ main(int argc, char *argv[]ENVP_ARG)
 #endif
 
 #ifndef AMOEBA
-    /* extra length in case longer tty name like /dev/ttyq255 */
-    ttydev = (char *) malloc(sizeof(TTYDEV) + 80);
-#ifdef USE_PTY_DEVICE
-    ptydev = (char *) malloc(sizeof(PTYDEV) + 80);
-    if (!ttydev || !ptydev)
-#else
-    if (!ttydev)
-#endif
-    {
-	fprintf(stderr,
-		"%s:  unable to allocate memory for ttydev or ptydev\n",
-		ProgramName);
-	exit(1);
-    }
-    strcpy(ttydev, TTYDEV);
-#ifdef USE_PTY_DEVICE
-    strcpy(ptydev, PTYDEV);
-#endif
-
 #ifdef MINIX
     d_tio.c_iflag = TINPUT_DEF;
     d_tio.c_oflag = TOUTPUT_DEF;
@@ -1801,20 +1819,22 @@ main(int argc, char *argv[]ENVP_ARG)
 	uid_t ruid = getuid();
 	gid_t rgid = getgid();
 
-	if (setegid(rgid) == -1)
+	if (setegid(rgid) == -1) {
 #ifdef __MVS__
 	    if (!(errno == EMVSERR))	/* could happen if _BPX_SHAREAS=REUSE */
 #endif
 		(void) fprintf(stderr, "setegid(%d): %s\n",
 			       (int) rgid, strerror(errno));
+	}
 
-	if (seteuid(ruid) == -1)
+	if (seteuid(ruid) == -1) {
 #ifdef __MVS__
 	    if (!(errno == EMVSERR))
 #endif
 		(void) fprintf(stderr, "seteuid(%d): %s\n",
 			       (int) ruid, strerror(errno));
 #endif
+	}
 
 	XtSetErrorHandler(xt_error);
 	toplevel = XtAppInitialize(&app_con, my_class,
@@ -1829,19 +1849,29 @@ main(int argc, char *argv[]ENVP_ARG)
 				  XtNumber(application_resources), NULL, 0);
 
 #ifdef HAS_SAVED_IDS_AND_SETEUID
-	if (seteuid(euid) == -1)
+	if (seteuid(euid) == -1) {
 #ifdef __MVS__
 	    if (!(errno == EMVSERR))
 #endif
 		(void) fprintf(stderr, "seteuid(%d): %s\n",
 			       (int) euid, strerror(errno));
+	}
 
-	if (setegid(egid) == -1)
+	if (setegid(egid) == -1) {
 #ifdef __MVS__
 	    if (!(errno == EMVSERR))
 #endif
 		(void) fprintf(stderr, "setegid(%d): %s\n",
 			       (int) egid, strerror(errno));
+#endif
+	}
+
+#ifdef __OpenBSD__
+	if (resource.utmpInhibit) {
+	    /* Can totally revoke group privs */
+	    setegid(getgid());
+	    setgid(getgid());
+	}
 #endif
     }
 
@@ -2206,14 +2236,37 @@ static int
 get_pty(int *pty, char *from GCC_UNUSED)
 {
     int result = 1;
-#ifdef PUCC_PTYD
+
+#ifdef __OpenBSD__
+    static int m_tty = -1;
+    static int m_pty = -1;
+    struct group *ttygrp;
+
+    if (pty == NULL) {
+	result = openpty(&m_pty, &m_tty, ttydev, NULL, NULL);
+
+	seteuid(0);
+	if ((ttygrp = getgrnam(TTY_GROUP_NAME)) != 0) {
+	    set_owner(ttydev, getuid(), ttygrp->gr_gid,
+		      0600);
+	} else {
+	    set_owner(ttydev, getuid(), getgid(),
+		      0600);
+	}
+	seteuid(getuid());
+    } else if (m_pty != -1) {
+	*pty = m_pty;
+	result = 0;
+    } else {
+	result = -1;
+    }
+#elif defined(PUCC_PTYD)
 
     result = ((*pty = openrpty(ttydev, ptydev,
 			       (resource.utmpInhibit ? OPTY_NOP : OPTY_LOGIN),
 			       getuid(), from)) < 0);
 
-#elif defined(__osf__) || (defined(__GLIBC__) && !defined(USE_USG_PTYS)) \
-	|| defined(__NetBSD__)
+#elif defined(__osf__) || (defined(__GLIBC__) && !defined(USE_USG_PTYS)) || defined(__NetBSD__)
 
     int tty;
     result = openpty(pty, &tty, ttydev, NULL, NULL);
@@ -2257,8 +2310,11 @@ get_pty(int *pty, char *from GCC_UNUSED)
     /* GNU libc 2 allows us to abstract away from having to know the
        master pty device name. */
     if ((*pty = getpt()) >= 0) {
-	strcpy(ttydev, ptsname(*pty));
-	result = 0;
+	char *name = ptsname(*pty);
+	if (name != 0) {	/* if filesystem is trashed, this may be null */
+	    strcpy(ttydev, name);
+	    result = 0;
+	}
     }
 #elif defined(__MVS__)
     result = pty_search(pty);
@@ -2338,7 +2394,8 @@ get_pty(int *pty, char *from GCC_UNUSED)
     TRACE(("get_pty(ttydev=%s, ptydev=%s) %s fd=%d\n",
 	   ttydev != 0 ? ttydev : "?",
 	   ptydev != 0 ? ptydev : "?",
-	   result ? "FAIL" : "OK", *pty));
+	   result ? "FAIL" : "OK",
+	   pty != 0 ? *pty : -1));
     return result;
 }
 
@@ -2629,9 +2686,12 @@ spawn(void)
     char *login_name = NULL;
 #ifdef HAVE_UTMP
 #if defined(UTMPX_FOR_UTMP)
-    struct utmpx utmp, *utret;
+    struct utmpx utmp;
 #else
-    struct utmp utmp, *utret;
+    struct utmp utmp;
+#endif
+#ifdef USE_SYSV_UTMP
+    struct utmp *utret;
 #endif
 #ifdef USE_LASTLOG
     struct lastlog lastlog;
@@ -3077,7 +3137,7 @@ spawn(void)
 			ioctl(tty, TCSETCTTY, 0);
 #endif
 #ifdef	USE_SYSV_PGRP
-			/* We need to make sure that we are acutally
+			/* We need to make sure that we are actually
 			 * the process group leader for the pty.  If
 			 * we are, then we should now be able to open
 			 * /dev/tty.
@@ -3091,6 +3151,7 @@ spawn(void)
 			break;
 #endif /* USE_SYSV_PGRP */
 		    }
+		    perror("open ttydev");
 #ifdef TIOCSCTTY
 		    ioctl(tty, TIOCSCTTY, 0);
 #endif
@@ -3791,6 +3852,15 @@ spawn(void)
 	    }
 #endif /* USE_LASTLOG */
 
+#ifdef __OpenBSD__
+	    /* Switch to real gid after writing utmp entry */
+	    utmpGid = getegid();
+	    if (getgid() != getegid()) {
+		utmpGid = getegid();
+		setegid(getgid());
+	    }
+#endif
+
 #ifdef USE_HANDSHAKE
 	    /* Let our parent know that we set up our utmp entry
 	     * so that it can clean up after us.
@@ -4015,6 +4085,7 @@ spawn(void)
 		close(cp_pipe[0]);
 		close(pc_pipe[1]);
 		SysError(handshake.fatal_error);
+		/*NOTREACHED*/
 
 	    case UTMP_ADDED:
 		/* The utmp entry was set by our slave.  Remember
@@ -4472,6 +4543,12 @@ Exit(int n)
 	&& added_utmp_entry
 #endif /* USE_HANDSHAKE */
 	) {
+#ifdef __OpenBSD__
+	if (utmpGid != -1) {
+	    /* Switch back to group utmp */
+	    setegid(utmpGid);
+	}
+#endif
 	utmp.ut_type = USER_PROCESS;
 	(void) strncpy(utmp.ut_id, my_utmp_id(ttydev), sizeof(utmp.ut_id));
 	(void) setutent();

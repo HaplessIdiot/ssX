@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.80 2002/03/26 01:46:40 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.81 2002/06/01 00:54:50 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -214,6 +214,47 @@ xc/programs/Xserver/hw/xfree86).
 
 <H1><A NAME="xterm_167">Patch #167 - development - XFree86 4.2.0</A></H1>
 <ul>
+	<li>update wcwidth.c to match Markus Kuhn's 2002-05-18 version.
+
+	<li>correct limit-checking in <code>ComputeSelect()</code> to handle
+	  selections that extend off the visible area; rather
+	  than modify the parameters to <code>TrackText()</code>, use
+	  <code>ScrollSelection()</code> to update the highlighting limits.
+	  (reported by Yegappan Lakshmanan and Nelson Beebe,
+	   patch by Alexander V Lukyanov).
+
+	<li>correct manpage description of <code>tiXtraScroll</code> resource
+	  (reported by Tony Finch).
+
+	<li>changes from OpenBSD:
+	<ul>
+	   Make xterm setgid utmp to be able to update utmp even
+	   with root privileges revoked.
+	   If not updating utmp, revoke group privileges totally too.
+	</ul>
+
+	<li>changes from NetBSD:
+	<ul>
+	 <li>Check that the return value from ttyslot() is greater than 0
+	  before writing the utmp file.
+	  Fixes w's "w: Stale utmp entry: &lt;user&gt &lt;tty&gt &lt;pty&gt" errors.
+	 <li>Use openpty() to deal with new pty naming scheme.
+	</ul>
+
+	<li>add <code>print-redir</code> action and menu entry to allow user to
+	  switch terminal in/out of printer controller mode.  It appears from
+	  the manual that a real vt220 would not switch back to normal mode, so
+	  another mechanism is used (addresses Debian #37517).
+
+	<li>check if <code>printerCommand</code> resource string is empty, use
+	  this to allow user to disable printer function.
+
+	<li>trim trailing blanks from resource strings.
+
+	<li>check return value from <code>ptsname()</code>, which may return
+	  null for example if someone has changed the permissions of /dev/pts
+	  to zero (Debian #121899).
+
 	<li>modify OS/2 version to use <code>__UNIXOS2__</code> definition
 	  rather than <code>__EMX__</code>, related cleanup (patch by Holger
 	  Veit).
@@ -223,7 +264,8 @@ xc/programs/Xserver/hw/xfree86).
 	  to reformat most of the C source files, to simplify maintenance.
 
 	<li>fix a couple of places where there were leading tabs on
-	  symbol-definition lines in Imakefile (Marc La France)
+	  symbol-definition lines in Imakefile (Marc La France from report by
+	  Tony Finch)
 
 	<li>add imake variable (TraceXTerm) to allow building debug version
 	  (Egbert Eich).

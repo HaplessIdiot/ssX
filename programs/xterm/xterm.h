@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.79 2002/03/26 01:46:40 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.80 2002/06/01 00:54:50 dickey Exp $ */
 
 /************************************************************
 
@@ -47,6 +47,10 @@ authorization.
 
 #ifndef GCC_UNUSED
 #define GCC_UNUSED /* nothing */
+#endif
+
+#ifndef GCC_NORETURN
+#define GCC_NORETURN /* nothing */
 #endif
 
 #include <X11/Xos.h>
@@ -643,7 +647,7 @@ extern void HandleStringEvent        PROTO_XT_ACTIONS_ARGS;
 extern void Panic (char *s, int a);
 extern void Redraw (void);
 extern void ReverseOldColors (void);
-extern void SysError (int i);
+extern void SysError (int i) GCC_NORETURN;
 extern void VisualBell (void);
 extern void do_dcs (Char *buf, size_t len);
 extern void do_osc (Char *buf, int len, int final);
@@ -679,7 +683,9 @@ extern void FlushLog (TScreen *screen);
 #endif
 
 /* print.c */
+extern Boolean xtermHasPrinter (void);
 extern int xtermPrinterControl (int chr);
+extern void setPrinterControlMode (int mode);
 extern void xtermAutoPrint (int chr);
 extern void xtermMediaControl (int param, int private_seq);
 extern void xtermPrintScreen (Boolean use_DECPEX);

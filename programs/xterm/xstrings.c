@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/xterm/xstrings.c,v 1.2 2001/06/18 19:09:27 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/xstrings.c,v 1.3 2002/06/01 00:54:50 dickey Exp $ */
 
 /************************************************************
 
-Copyright 2000,2001 by Thomas E. Dickey
+Copyright 2000-2001,2002 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -36,6 +36,7 @@ authorization.
 
 #include <sys/types.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <xstrings.h>
 
@@ -84,4 +85,39 @@ x_strindex(char *s1, char *s2)
 	s1 = ++s3;
     }
     return (NULL);
+}
+
+/*
+ * Trims leading/trailing spaces from the string, returns a copy of it if it
+ * is modified.
+ */
+char *
+x_strtrim(char *s)
+{
+    char *base = s;
+    char *d;
+
+    if (s != 0 && *s != '\0') {
+	char *t = x_strdup(base);
+	s = t;
+	d = s;
+	while (isspace(*s)) {
+	    ++s;
+	}
+	while ((*d++ = *s++) != '\0') {
+	    ;
+	}
+	if (*t != '\0') {
+	    s = t + strlen(t);
+	    while (s != t && isspace(s[-1])) {
+		*--s = '\0';
+	    }
+	}
+	if (!strcmp(t, base)) {
+	    free(t);
+	} else {
+	    base = t;
+	}
+    }
+    return base;
 }

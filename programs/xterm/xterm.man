@@ -54,7 +54,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.81 2002/01/05 22:05:03 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.82 2002/03/26 01:46:41 dickey Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996.
 .TH XTERM 1 __vendorversion__
@@ -1453,6 +1453,7 @@ Specifies a shell command to which
 will open a pipe when the first
 MC (Media Copy) command is initiated.
 The default is ``lpr.''
+If the resource value is given as a blank string, the printer is disabled.
 .TP 8
 .B "printerControlMode (\fPclass\fB PrinterControlMode)"
 Specifies the printer control mode.
@@ -1563,8 +1564,8 @@ effect as the original 47 control sequence.
 .TP 8
 .B "tiXtraScroll (\fPclass\fB TiXtraScroll)"
 Specifies whether \fIxterm\fP should scroll to a new page when processing
-the \fIti\fP termcap entry, i.e., the privde modes 47, 1047 or 1049.
-This is only in effect if \fItiteInhibit\fP is ``false'',
+the \fIti\fP termcap entry, i.e., the private modes 47, 1047 or 1049.
+This is only in effect if \fItiteInhibit\fP is ``true'',
 because the intent of this option is to provide a picture of the full-screen
 application's display on the scrollback without wiping out the text that
 would be shown before the application was initialized.
@@ -1689,6 +1690,8 @@ Specifies the width of the Tektronix window in pixels.
 The resources that may be specified for the various menus are described in
 the documentation for the Athena \fBSimpleMenu\fP widget.  The name and classes
 of the entries in each of the menus are listed below.
+Resources named "\fBline\fR\fIN\fR" where \fIN\fR is a number
+are separators with class \fBSmeLine\fR.
 .PP
 The \fImainMenu\fP has the following entries:
 .TP 8
@@ -1698,17 +1701,17 @@ This entry invokes the \fBsecure()\fP action.
 .B "allowsends (\fPclass\fB SmeBSB)"
 This entry invokes the \fBallow-send-events(toggle)\fP action.
 .TP 8
+.B "redraw (\fPclass\fB SmeBSB)"
+This entry invokes the \fBredraw()\fP action.
+.TP 8
 .B "logging (\fPclass\fB SmeBSB)"
 This entry invokes the \fBlogging(toggle)\fP action.
 .TP 8
 .B "print (\fPclass\fB SmeBSB)"
 This entry invokes the \fBprint()\fP action.
 .TP 8
-.B "redraw (\fPclass\fB SmeBSB)"
-This entry invokes the \fBredraw()\fP action.
-.TP 8
-.B "line1 (\fPclass\fB SmeLine)"
-This is a separator.
+.B "print-redir (\fPclass\fB SmeBSB)"
+This entry invokes the \fBprint-redir()\fP action.
 .TP 8
 .B "8-bit-control (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-8-bit-control(toggle)\fP action.
@@ -1740,9 +1743,6 @@ This entry invokes the \fBsun-function-keys(toggle)\fP action.
 .B "sunKeyboard (\fPclass\fB SmeBSB)"
 This entry invokes the \fBsunKeyboard(toggle)\fP action.
 .TP 8
-.B "line2 (\fPclass\fB SmeLine)"
-This is a separator.
-.TP 8
 .B "suspend (\fPclass\fB SmeBSB)"
 This entry invokes the \fBsend-signal(tstp)\fP action on systems that
 support job control.
@@ -1762,9 +1762,6 @@ This entry invokes the \fBsend-signal(term)\fP action.
 .TP 8
 .B "kill (\fPclass\fB SmeBSB)"
 This entry invokes the \fBsend-signal(kill)\fP action.
-.TP 8
-.B "line3 (\fPclass\fB SmeLine)"
-This is a separator.
 .TP 8
 .B "quit (\fPclass\fB SmeBSB)"
 This entry invokes the \fBquit()\fP action.
@@ -1829,9 +1826,6 @@ compiled into \fIxterm\fP.  It is enabled only if \fIxterm\fP
 was started with the command line option +ai or the \fBactiveIcon\fP
 resource is set to ``True.''
 .TP 8
-.B "line1 (\fPclass\fB SmeLine)"
-This is a separator.
-.TP 8
 .B "softreset (\fPclass\fB SmeBSB)"
 This entry invokes the \fBsoft-reset()\fP action.
 .TP 8
@@ -1840,9 +1834,6 @@ This entry invokes the \fBhard-reset()\fP action.
 .TP 8
 .B "clearsavedlines (\fPclass\fB SmeBSB)"
 This entry invokes the \fBclear-saved-lines()\fP action.
-.TP 8
-.B "line2 (\fPclass\fB SmeLine)"
-This is a separator.
 .TP 8
 .B "tekshow (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-visibility(tek,toggle)\fP action.
@@ -1886,9 +1877,6 @@ This entry invokes the \fBset-vt-font(e)\fP action.
 .B "fontsel (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-vt-font(s)\fP action.
 .TP 8
-.B "line1 (\fPclass\fB SmeLine)"
-This is a separator.
-.TP 8
 .B "font-linedrawing (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-font-linedrawing(s)\fP action.
 .TP 8
@@ -1910,9 +1898,6 @@ This entry invokes the \fBset-tek-text(3)\fP action.
 .B "tektextsmall (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-tek-text(s)\fP action.
 .TP 8
-.B "line1 (\fPclass\fB SmeLine)"
-This is a separator.
-.TP 8
 .B "tekpage (\fPclass\fB SmeBSB)"
 This entry invokes the \fBtek-page()\fP action.
 .TP 8
@@ -1921,9 +1906,6 @@ This entry invokes the \fBtek-reset()\fP action.
 .TP 8
 .B "tekcopy (\fPclass\fB SmeBSB)"
 This entry invokes the \fBtek-copy()\fP action.
-.TP 8
-.B "line2 (\fPclass\fB SmeLine)"
-This is a separator.
 .TP 8
 .B "vtshow (\fPclass\fB SmeBSB)"
 This entry invokes the \fBset-visibility(vt,toggle)\fP action.
@@ -2351,6 +2333,12 @@ and \fItekMenu\fP.
 .B "print()"
 This action prints the window and is also invoked by the
 \fIprint\fP entry in \fImainMenu\fP.
+.TP 8
+.B "print-redir()"
+This action toggles the \fBprinterControlMode\fR between 0 and 2.
+The corresponding popup menu entry is useful for switching the printer
+off if you happen to change your mind after deciding to print random
+binary files on the terminal.
 .TP 8
 .B "quit()"
 This action sends a SIGHUP to the subprogram and exits.  It is also invoked

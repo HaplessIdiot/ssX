@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/print.c,v 1.17 2002/03/26 01:46:40 dickey Exp $
+ * $XFree86: xc/programs/xterm/print.c,v 1.18 2002/04/28 19:04:21 dickey Exp $
  */
 
 /************************************************************
@@ -36,6 +36,7 @@ authorization.
 
 #include <xterm.h>
 #include <data.h>
+#include <menu.h>
 #include <error.h>
 
 #include <stdio.h>
@@ -72,34 +73,39 @@ static int initialized;
 static void
 closePrinter(void)
 {
+    if (xtermHasPrinter() != 0) {
 #ifdef VMS
-    register TScreen *screen = &term->screen;
-    char pcommand[256];
-    (void) sprintf(pcommand, "%s %s;",
-		   screen->printer_command,
-		   VMS_TEMP_PRINT_FILE);
+	TScreen *screen = &term->screen;
+
+	char pcommand[256];
+	(void) sprintf(pcommand, "%s %s;",
+		       screen->printer_command,
+		       VMS_TEMP_PRINT_FILE);
 #endif
 
-    if (Printer != 0) {
-	fclose(Printer);
-	TRACE(("closed printer, waiting...\n"));
-#ifdef VMS			/* This is a quick hack, really should use spawn and check status
-				   or system services and go straight to the queue */
-	(void) system(pcommand);
+	if (Printer != 0) {
+	    fclose(Printer);
+	    TRACE(("closed printer, waiting...\n"));
+#ifdef VMS			/* This is a quick hack, really should use
+				   spawn and check status or system services
+				   and go straight to the queue */
+	    (void) system(pcommand);
 #else /* VMS */
-	while (nonblocking_wait() > 0)
+	    while (nonblocking_wait() > 0)
 #endif /* VMS */
-	    ;
-	Printer = 0;
-	initialized = 0;
-	TRACE(("closed printer\n"));
+		;
+	    Printer = 0;
+	    initialized = 0;
+	    TRACE(("closed printer\n"));
+	}
     }
 }
 
 static void
 printCursorLine(void)
 {
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
+
     TRACE(("printCursorLine\n"));
     printLine(screen->cur_row, '\n');
 }
@@ -112,7 +118,7 @@ printCursorLine(void)
 static void
 printLine(int row, int chr)
 {
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
     Char *c = SCRN_BUF_CHARS(screen, row);
     Char *a = SCRN_BUF_ATTRS(screen, row);
     Char attr = 0;
@@ -121,11 +127,11 @@ printLine(int row, int chr)
     int col;
 #if OPT_ISO_COLORS && OPT_PRINT_COLORS
 #if OPT_EXT_COLORS
-    register Char *fbf = 0;
-    register Char *fbb = 0;
+    Char *fbf = 0;
+    Char *fbb = 0;
 #define ColorOf(col) ((fbf[col] << 8) | fbb[col])
 #else
-    register Char *fb = 0;
+    Char *fb = 0;
 #define ColorOf(col) (fb[col])
 #endif
 #endif
@@ -230,7 +236,7 @@ printLine(int row, int chr)
 void
 xtermPrintScreen(Boolean use_DECPEX)
 {
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
     Boolean extent = (use_DECPEX && screen->printer_extent);
     int top = extent ? 0 : screen->top_marg;
     int bot = extent ? screen->max_row : screen->bot_marg;
@@ -256,7 +262,7 @@ xtermPrintScreen(Boolean use_DECPEX)
 static void
 xtermPrintEverything(void)
 {
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
     int top = 0;
     int bot = screen->max_row;
     int was_open = initialized;
@@ -279,7 +285,7 @@ static void
 send_CharSet(int row)
 {
 #if OPT_DEC_CHRSET
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
     char *msg = 0;
 
     switch (SCRN_BUF_CSETS(screen, row)[0]) {
@@ -338,12 +344,14 @@ send_SGR(unsigned attr, int fg, int bg)
 static void
 charToPrinter(int chr)
 {
-    if (!initialized) {
+    TScreen *screen = &term->screen;
+
+    if (!initialized && xtermHasPrinter()) {
 #if defined(VMS)
 	/*
-	 * This implementation only knows how to write to a file.  When
-	 * the file is closed the print command executes.  Print
-	 * command must be of the form:
+	 * This implementation only knows how to write to a file.  When the
+	 * file is closed the print command executes.  Print command must be of
+	 * the form:
 	 *   print/que=name/delete [/otherflags].
 	 */
 	Printer = fopen(VMS_TEMP_PRINT_FILE, "w");
@@ -354,7 +362,6 @@ charToPrinter(int chr)
 	FILE *input;
 	int my_pipe[2];
 	int c;
-	register TScreen *screen = &term->screen;
 
 	if (pipe(my_pipe))
 	    SysError(ERROR_FORK);
@@ -425,8 +432,6 @@ stringToPrinter(char *str)
 void
 xtermMediaControl(int param, int private_seq)
 {
-    register TScreen *screen = &term->screen;
-
     TRACE(("MediaCopy param=%d, private=%d\n", param, private_seq));
 
     if (private_seq) {
@@ -435,12 +440,10 @@ xtermMediaControl(int param, int private_seq)
 	    printCursorLine();
 	    break;
 	case 4:
-	    screen->printer_controlmode = 0;
-	    TRACE(("Reset autoprint mode\n"));
+	    setPrinterControlMode(0);
 	    break;
 	case 5:
-	    screen->printer_controlmode = 1;
-	    TRACE(("Set autoprint mode\n"));
+	    setPrinterControlMode(1);
 	    break;
 	case 10:		/* VT320 */
 	    xtermPrintScreen(FALSE);
@@ -456,12 +459,10 @@ xtermMediaControl(int param, int private_seq)
 	    xtermPrintScreen(TRUE);
 	    break;
 	case 4:
-	    screen->printer_controlmode = 0;
-	    TRACE(("Reset printer controller mode\n"));
+	    setPrinterControlMode(0);
 	    break;
 	case 5:
-	    screen->printer_controlmode = 2;
-	    TRACE(("Set printer controller mode\n"));
+	    setPrinterControlMode(2);
 	    break;
 	}
     }
@@ -476,7 +477,7 @@ xtermMediaControl(int param, int private_seq)
 void
 xtermAutoPrint(int chr)
 {
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
 
     if (screen->printer_controlmode == 1) {
 	TRACE(("AutoPrint %d\n", chr));
@@ -487,7 +488,7 @@ xtermAutoPrint(int chr)
 }
 
 /*
- * When in printer controller mode, the terminal send received characters to
+ * When in printer controller mode, the terminal sends received characters to
  * the printer without displaying them on the screen. The terminal sends all
  * characters and control sequences to the printer, except NUL, XON, XOFF, and
  * the printer controller sequences.
@@ -501,7 +502,7 @@ xtermAutoPrint(int chr)
 int
 xtermPrinterControl(int chr)
 {
-    register TScreen *screen = &term->screen;
+    TScreen *screen = &term->screen;
     /* *INDENT-OFF* */
     static struct {
 	Char seq[5];
@@ -518,7 +519,7 @@ xtermPrinterControl(int chr)
     static size_t length;
     size_t n;
 
-    TRACE(("In printer:%d\n", chr));
+    TRACE(("In printer:%04X\n", chr));
 
     switch (chr) {
     case 0:
@@ -538,9 +539,7 @@ xtermPrinterControl(int chr)
 
 	    if (length == len
 		&& Strcmp(bfr, tbl[n].seq) == 0) {
-		screen->printer_controlmode = tbl[n].active;
-		TRACE(("Set printer controller mode %sactive\n",
-		       tbl[n].active ? "" : "in"));
+		setPrinterControlMode(tbl[n].active);
 		if (screen->printer_autoclose
 		    && screen->printer_controlmode == 0)
 		    closePrinter();
@@ -561,5 +560,40 @@ xtermPrinterControl(int chr)
 	bfr[0] = chr;
 	length = 1;
 	return 0;
+    }
+}
+
+/*
+ * If there is no printer command, we will ignore printer controls.
+ */
+Boolean
+xtermHasPrinter(void)
+{
+    TScreen *screen = &term->screen;
+
+    return (strlen(screen->printer_command) != 0);
+}
+
+#define showPrinterControlMode(mode) \
+		(((mode) == 0) \
+		 ? "normal" \
+		 : ((mode) == 1 \
+		    ? "autoprint" \
+		    : "printer controller"))
+
+void
+setPrinterControlMode(int mode)
+{
+    if (xtermHasPrinter()
+	&& term->screen.printer_controlmode != mode) {
+	TRACE(("%s %s mode\n",
+	       (mode
+		? "set"
+		: "reset"),
+	       (mode
+		? showPrinterControlMode(mode)
+		: showPrinterControlMode(term->screen.printer_controlmode))));
+	term->screen.printer_controlmode = mode;
+	update_print_redir();
     }
 }
