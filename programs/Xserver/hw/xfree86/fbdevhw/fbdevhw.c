@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.16 2000/08/11 17:27:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.17 2000/08/11 23:15:59 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -17,7 +17,9 @@
 #include "asm/page.h"	/* #define for PAGE_* */
 
 #ifdef DPMSExtension
-#include "dpms.h"
+#include "globals.h"
+#define DPMS_SERVER
+#include "extensions/dpms.h"
 #endif
 
 #define DEBUG 0
