@@ -1,4 +1,5 @@
 /* $XConsortium: XKBsrv.h /main/15 1996/01/01 10:48:05 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
