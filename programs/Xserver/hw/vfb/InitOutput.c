@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.22 2003/01/15 02:34:07 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.23 2003/09/13 21:33:05 dawes Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -78,6 +78,7 @@ typedef struct
 {
     int scrnum;
     int width;
+    int paddedBytesWidth;
     int paddedWidth;
     int height;
     int depth;
@@ -90,6 +91,7 @@ typedef struct
     Pixel blackPixel;
     Pixel whitePixel;
     unsigned int lineBias;
+    CloseScreenProcPtr closeScreen;
 
 #ifdef HAS_MMAP
     int mmap_fd;
@@ -758,11 +760,7 @@ vfbAllocateFramebufferMemory(pvfb)
 {
     if (pvfb->pfbMemory) return pvfb->pfbMemory; /* already done */
 
-    if (pvfb->bitsPerPixel == 1)
-	pvfb->sizeInBytes = (pvfb->paddedWidth * pvfb->height);
-    else
-	pvfb->sizeInBytes = pvfb->paddedWidth * pvfb->height *
-			    (pvfb->bitsPerPixel/8);
+    pvfb->sizeInBytes = pvfb->paddedBytesWidth * pvfb->height;
 
     /* Calculate how many entries in colormap.  This is rather bogus, because
      * the visuals haven't even been set up yet, but we need to know because we
@@ -850,7 +848,7 @@ vfbWriteXWDFileHeader(pScreen)
     pXWDHeader->bitmap_pad = BITMAP_SCANLINE_PAD_PROTO;
 #endif
     pXWDHeader->bits_per_pixel = pvfb->bitsPerPixel;
-    pXWDHeader->bytes_per_line = pvfb->paddedWidth;
+    pXWDHeader->bytes_per_line = pvfb->paddedBytesWidth;
     pXWDHeader->ncolors = pvfb->ncolors;
 
     /* visual related fields are written when colormap is installed */
@@ -911,6 +909,24 @@ static miPointerScreenFuncRec vfbPointerCursorFuncs =
 };
 
 static Bool
+vfbCloseScreen(int index, ScreenPtr pScreen)
+{
+    vfbScreenInfoPtr pvfb = &vfbScreens[index];
+    int i;
+ 
+    pScreen->CloseScreen = pvfb->closeScreen;
+
+    /*
+     * XXX probably lots of stuff to clean.  For now,
+     * clear InstalledMaps[] so that server reset works correctly.
+     */
+    for (i = 0; i < MAXSCREENS; i++)
+	InstalledMaps[i] = NULL;
+
+    return pScreen->CloseScreen(index, pScreen);
+}
+
+static Bool
 vfbScreenInit(index, pScreen, argc, argv)
     int index;
     ScreenPtr pScreen;
@@ -922,8 +938,12 @@ vfbScreenInit(index, pScreen, argc, argv)
     int ret;
     char *pbits;
 
-    pvfb->paddedWidth = PixmapBytePad(pvfb->width, pvfb->depth);
+    pvfb->paddedBytesWidth = PixmapBytePad(pvfb->width, pvfb->depth);
     pvfb->bitsPerPixel = vfbBitsPerPixel(pvfb->depth);
+    if (pvfb->bitsPerPixel >= 8 )
+	pvfb->paddedWidth = pvfb->paddedBytesWidth / (pvfb->bitsPerPixel / 8);
+    else
+	pvfb->paddedWidth = pvfb->paddedBytesWidth * 8;
     pbits = vfbAllocateFramebufferMemory(pvfb);
     if (!pbits) return FALSE;
 
@@ -933,7 +953,7 @@ vfbScreenInit(index, pScreen, argc, argv)
     {
     case 1:
 	ret = mfbScreenInit(pScreen, pbits, pvfb->width, pvfb->height,
-			    dpix, dpiy, pvfb->paddedWidth * 8);
+			    dpix, dpiy, pvfb->paddedWidth);
 	break;
     case 8:
     case 16:
@@ -974,6 +994,8 @@ vfbScreenInit(index, pScreen, argc, argv)
 
     pScreen->blackPixel = pvfb->blackPixel;
     pScreen->whitePixel = pvfb->whitePixel;
+    pvfb->closeScreen = pScreen->CloseScreen;
+    pScreen->CloseScreen = vfbCloseScreen;
 
     if (pvfb->bitsPerPixel == 1)
     {
