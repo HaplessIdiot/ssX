@@ -101,7 +101,7 @@ LinkSourceFile(glapi_sparc.S, $(MESASRCDIR)/src/SPARC)
 
 #if BuildXF86DRI
      DRI_INCS = -I$(GLXLIBSRC)/dri
-#if defined(i386Architecture)
+#if defined(i386Architecture) && MesaUseX86Asm
      ASM_SRCS = glapi_x86.S
      ASM_OBJS = glapi_x86.o
      ASM_DEFS = -DUSE_X86_ASM

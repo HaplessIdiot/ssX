@@ -389,42 +389,60 @@ void
 I810SubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 				 int x2, int y2, int w, int h)
 {
-   I810Ptr pI810 = I810PTR(pScrn);
-   int src, dst;
+    I810Ptr pI810 = I810PTR(pScrn);
+    int src, dst;
+    int w_back = w;
 
-   if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
-      ErrorF("I810SubsequentScreenToScreenCopy %d,%d - %d,%d %dx%d\n",
-	     x1, y1, x2, y2, w, h);
+    if (I810_DEBUG & DEBUG_VERBOSE_ACCEL)
+	ErrorF( "I810SubsequentScreenToScreenCopy %d,%d - %d,%d %dx%d\n",
+		x1,y1,x2,y2,w,h);
+    /* 
+     * This works around a bug in the i810 drawing engine.
+     * This was developed empirically so it may not catch all
+     * cases.
+     */
+    if ( !(pI810->BR[13] & BR13_RIGHT_TO_LEFT) && (y2 - y1) < 3 
+	 && (y2 - y1) >= 0 && (x2 - x1) <= (w + 4) && (w > 4))
+	w = 4;
+    do {
 
-   if (pI810->BR[13] & BR13_PITCH_SIGN_BIT) {
-      src = (y1 + h - 1) * pScrn->displayWidth * pI810->cpp;
-      dst = (y2 + h - 1) * pScrn->displayWidth * pI810->cpp;
-   } else {
-      src = y1 * pScrn->displayWidth * pI810->cpp;
-      dst = y2 * pScrn->displayWidth * pI810->cpp;
-   }
+	if (pI810->BR[13] & BR13_PITCH_SIGN_BIT) {
+	    src = (y1 + h - 1) * pScrn->displayWidth * pI810->cpp;
+	    dst = (y2 + h - 1) * pScrn->displayWidth * pI810->cpp;
+	} else {
+	    src = y1 * pScrn->displayWidth * pI810->cpp;
+	    dst = y2 * pScrn->displayWidth * pI810->cpp;
+	}
 
-   if (pI810->BR[13] & BR13_RIGHT_TO_LEFT) {
-      src += (x1 + w - 1) * pI810->cpp + pI810->cpp - 1;
-      dst += (x2 + w - 1) * pI810->cpp + pI810->cpp - 1;
-   } else {
-      src += x1 * pI810->cpp;
-      dst += x2 * pI810->cpp;
-   }
+	if (pI810->BR[13] & BR13_RIGHT_TO_LEFT) {
+	    src += (x1 + w - 1) * pI810->cpp + pI810->cpp - 1;
+	    dst += (x2 + w - 1) * pI810->cpp + pI810->cpp - 1;
+	} else {
+	    src += x1 * pI810->cpp;
+	    dst += x2 * pI810->cpp;
+	}
 
-   /* SRC_COPY_BLT, p169 */
-   {
-      BEGIN_LP_RING(6);
-      OUT_RING(BR00_BITBLT_CLIENT | BR00_OP_SRC_COPY_BLT | 0x4);
-      OUT_RING(pI810->BR[13]);
 
-      OUT_RING((h << 16) | (w * pI810->cpp));
-      OUT_RING(pI810->bufferOffset + dst);
+	/* SRC_COPY_BLT, p169 */
+	{
+	    BEGIN_LP_RING(6);
+	    OUT_RING( BR00_BITBLT_CLIENT | BR00_OP_SRC_COPY_BLT | 0x4 );
+	    OUT_RING( pI810->BR[13]);
 
-      OUT_RING(pI810->BR[13] & 0xFFFF);
-      OUT_RING(pI810->bufferOffset + src);
-      ADVANCE_LP_RING();
-   }
+	    OUT_RING( (h << 16) | (w * pI810->cpp));
+	    OUT_RING( pI810->bufferOffset + dst);
+
+	    OUT_RING( pI810->BR[13] & 0xFFFF);
+	    OUT_RING( pI810->bufferOffset + src);
+	    ADVANCE_LP_RING();
+	}
+	w_back -= w;
+	if (w_back <= 0)
+	    break;
+	x2 += w;
+	x1 += w;
+	w = w_back;
+    }  while (1);
 }
 
 static void

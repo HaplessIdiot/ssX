@@ -420,6 +420,7 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
     unsigned long cntl, chunk;
     int           s, l;
     int           flags;
+    unsigned long agpBase;
 
     if (drmAgpAcquire(info->drmFD) < 0) {
 	xf86DrvMsg(pScreen->myNum, X_WARNING, "[agp] AGP not available\n");
@@ -591,7 +592,8 @@ static Bool R128DRIAgpInit(R128InfoPtr info, ScreenPtr pScreen)
 		   info->agpSize*1024);
 	return FALSE;
     }
-    OUTREG(R128_AGP_BASE, info->ringHandle); /* Ring buf is at AGP offset 0 */
+    agpBase = drmAgpBase(info->drmFD);
+    OUTREG(R128_AGP_BASE, agpBase); 
     OUTREG(R128_AGP_CNTL, cntl);
 
 				/* Disable Rage 128's PCIGART registers */
@@ -790,7 +792,7 @@ static int R128DRIKernelInit(R128InfoPtr info, ScreenPtr pScreen)
     drmInfo.depth_pitch         = info->depthPitch;
     drmInfo.span_offset         = info->spanOffset;
 
-    drmInfo.fb_offset           = info->LinearAddr;
+    drmInfo.fb_offset           = info->fbHandle;
     drmInfo.mmio_offset         = info->registerHandle;
     drmInfo.ring_offset         = info->ringHandle;
     drmInfo.ring_rptr_offset    = info->ringReadPtrHandle;
@@ -1076,6 +1078,18 @@ Bool R128DRIScreenInit(ScreenPtr pScreen)
     if (!R128DRIMapInit(info, pScreen)) {
 	R128DRICloseScreen(pScreen);
 	return FALSE;
+    }
+
+				/* DRIScreenInit adds the frame buffer
+				   map, but we need it as well */
+    {
+	void *scratch_ptr;
+        int scratch_int;
+	
+	DRIGetDeviceInfo(pScreen, &info->fbHandle,
+                         &scratch_int, &scratch_int, 
+                         &scratch_int, &scratch_int,
+                         &scratch_ptr);
     }
 
 				/* FIXME: When are these mappings unmapped? */

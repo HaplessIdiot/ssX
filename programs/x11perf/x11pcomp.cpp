@@ -25,9 +25,10 @@ PATH=LIBPATH:.:$PATH
 export PATH
 
 set -e
-tmp=`pwd`/_rates.$$
+tmp=${TMPDIR-/tmp}/rates.$$
 trap "rm -rf $tmp" 0 1 2 15
-mkdir $tmp $tmp/rates
+mkdir $tmp || exit 1
+mkdir $tmp/rates
 ratio=
 allfiles=
 XCOMM Include relative rates in output?  Report only relative rates?

@@ -915,6 +915,12 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(_inb)
    SYMFUNC(_inw)
    SYMFUNC(_inl)
+   SYMFUNC(_alpha_outw)
+   SYMFUNC(_alpha_outb)
+   SYMFUNC(_alpha_outl)
+   SYMFUNC(_alpha_inb)
+   SYMFUNC(_alpha_inw)
+   SYMFUNC(_alpha_inl)
 # else
    SYMFUNC(outw)
    SYMFUNC(outb)

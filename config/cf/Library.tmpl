@@ -265,6 +265,19 @@ target									@@\
 	_ExtraObjCompile(options)					@@\
 	_SharedObjCompile(options)
 
+#ifndef SeparateSharedCompile
+# define _CompileObjSeparateOpts(target,staticopts,sharedopts) \
+	_CompileObj(target,sharedopts)
+#else
+# define _CompileObjSeparateOpts(target,staticopts,sharedopts)		@@\
+target									@@\
+	_DebuggedObjCompile(staticopts)					@@\
+	_ProfiledObjCompile(staticopts)					@@\
+	_NormalObjCompile(staticopts)					@@\
+	_ExtraObjCompile(staticopts)					@@\
+	_SharedObjCompile(sharedopts)	
+#endif
+
 #ifdef CplusplusSource
 # define _CompileObjCplusplus(target, options)				@@\
 target									@@\
@@ -316,6 +329,16 @@ basename.i: basename.SRCsuf depends					@@\
 									@@\
 CenterLoadTarget(debug_src,basename.SRCsuf,NullParameter,$(ALLDEFINES) options)
 #endif /* SpecialCLibObjectRule */
+
+#ifndef SpecialCLibObjectRuleSeparateOpts
+# define SpecialCLibObjectRuleSeparateOpts(basename,depends,staticopts,shopts) @@\
+_CompileObjSeparateOpts(basename.Osuf: basename.SRCsuf depends,staticopts,shopts)	@@\
+									@@\
+basename.i: basename.SRCsuf depends					@@\
+	CPPOnlyCompile(basename.SRCsuf,sharedopts)			@@\
+									@@\
+CenterLoadTarget(debug_src,basename.SRCsuf,NullParameter,$(ALLDEFINES) options)
+#endif /* SpecialCLibObjectRuleSepareateOpts */
 
 #ifndef SpecialCplusplusLibObjectRule
 # define SpecialCplusplusLibObjectRule(basename,depends,options)	@@\
@@ -434,9 +457,9 @@ LibraryObjectRule()
 # if !defined(LibCreate) || LibCreate
 #  if DoSharedLib
 #   if HugeLibrary && defined(SharedLibraryTarget3)
-SharedLibraryTarget3($(LIBNAME),$(SoRev),$(OBJS1),$(OBJS2),$(OBJS3),.,.)
+SharedLibraryTarget3($(LIBNAME),$(SoRev),$(OBJS1),$(OBJS2),$(OBJS3) $(EXTRASHAREDOBJS),.,.)
 #   else
-SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS),.,.)
+SharedLibraryTarget($(LIBNAME),$(SoRev),$(OBJS) $(EXTRASHAREDOBJS),.,.)
 #   endif
 #   if !defined(LibInstall) || LibInstall
 InstallSharedLibrary($(LIBNAME),$(SoRev),$(SHLIBDIR))
@@ -451,15 +474,15 @@ InstallSharedLibraryData($(LIBNAME),$(SoRev),$(SHLIBDIR))
 #  if DoNormalLib
 #   if HugeLibrary
 #    if DoSharedLib && SeparateSharedCompile
-UnsharedLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3),unshared,..)
+UnsharedLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3) $(EXTRAUNSHAREDOBJS),unshared,..)
 #    else
-NormalLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3))
+NormalLibraryTarget3($(LIBNAME),$(OBJS1),$(OBJS2),$(OBJS3) $(EXTRAUNSHAREDOBJS))
 #    endif
 #   else
 #    if DoSharedLib && SeparateSharedCompile
-UnsharedLibraryTarget($(LIBNAME),$(OBJS),unshared,..)
+UnsharedLibraryTarget($(LIBNAME),$(OBJS) $(EXTRAUNSHAREDOBJS),unshared,..)
 #    else
-NormalLibraryTarget($(LIBNAME),$(OBJS))
+NormalLibraryTarget($(LIBNAME),$(OBJS) $(EXTRAUNSHAREDOBJS))
 #    endif
 #   endif
 #   if !defined(LibInstall) || LibInstall
@@ -467,19 +490,19 @@ InstallLibrary($(LIBNAME),$(USRLIBDIR))
 #   endif
 #  endif
 #  if DoProfileLib
-ProfiledLibraryTarget($(LIBNAME),$(OBJS))
+ProfiledLibraryTarget($(LIBNAME),$(OBJS) $(EXTRAUNSHAREDOBJS))
 #   if !defined(LibInstall) || LibInstall
 InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #   endif
 #  endif
 #  if DoDebugLib
-DebuggedLibraryTarget($(LIBNAME),$(OBJS))
+DebuggedLibraryTarget($(LIBNAME),$(OBJS) $(EXTRAUNSHAREDOBJS))
 #   if !defined(LibInstall) || LibInstall
 InstallLibrary($(LIBNAME)_d,$(USRLIBDIR))
 #   endif
 #  endif
 #  if DoExtraLib && defined(ExtraLibRules)
-ExtraLibraryTarget($(LIBNAME),$(SoRev),$(OBJS))
+ExtraLibraryTarget($(LIBNAME),$(SoRev),$(OBJS) $(EXTRAUNSHAREDOBJS))
 #   if !defined(LibInstall) || LibInstall
 ExtraInstallLibrary($(LIBNAME),$(SoRev))
 #   endif
@@ -497,6 +520,12 @@ AllTarget($(OBJS2))
 AllTarget($(OBJS3))
 #   else
 AllTarget($(OBJS))
+#   endif
+#   if DoSharedLib
+AllTarget($(EXTRASHAREDOBJS))
+#   endif
+#   if DoNormalLib
+AllTarget($(EXTRAUNSHAREDOBJS))
 #   endif
 #  endif /* LibBuild */
 # endif /* LibCreate */

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/swrast_setup/Imakefile,v 1.7 2002/11/22 22:55:59 tsi Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/swrast_setup/Imakefile,v 1.8 2002/11/25 12:58:55 tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -41,7 +41,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 		-I$(INCLUDESRC)/GL -I$(XF86OSSRC) -I$(SERVERSRC)/GL/dri
 #endif
 
-#ifdef i386Architecture
+#if defined(i386Architecture) && MesaUseX86Asm
       ASM_DIR = X86
      ASM_SRCS =
      ASM_OBJS =

@@ -1028,7 +1028,12 @@ xf86scanpci(int flags)
 		 * The back link needs to be set here, and is unlikely to
 		 * change.
 		 */
-		devp->businfo = pciBusInfo[i];
+		if (pciBusInfo[i]) {
+		    pciBusInfo[i]->bridge = devp;
+		    /* The back link needs to be set here,
+		       and is unlikely to change*/
+		    devp->businfo = pciBusInfo[i];
+		}
 #ifdef ARCH_PCI_PCI_BRIDGE
 		ARCH_PCI_PCI_BRIDGE(devp);
 #endif

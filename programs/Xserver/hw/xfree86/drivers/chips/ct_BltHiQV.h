@@ -78,7 +78,8 @@
                             if (!(cPtr->readXR(cPtr,0x20) & 0x1)) break; \
                          } \
                          timeout++; \
-                         if (timeout == 100000) { \
+                         if ((cPtr->Chipset < CHIPS_CT69000 && \
+			     (timeout > 100000)) || timeout > 300000) { \
 			    unsigned char tmp; \
                             ErrorF("timeout\n"); \
 			    tmp = cPtr->readXR(cPtr, 0x20); \
@@ -91,67 +92,67 @@
 		    }
 
 #define ctSETROP(op) \
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x4)) = (op)
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x4), op)
 
 #define ctSETMONOCTL(op) \
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x3)) = (op)
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x3), op)
 
 #define ctSETSRCADDR(srcAddr) \
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x6)) = (srcAddr)&0x7FFFFFL
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x6), (srcAddr)&0x7FFFFFL)
 
 #define ctSETDSTADDR(dstAddr) \
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x7)) = (dstAddr)&0x7FFFFFL
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x7), (dstAddr)&0x7FFFFFL)
 
 #define ctSETPITCH(srcPitch,dstPitch) \
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x0)) = (((dstPitch)&0xFFFF)<<16)| \
-      ((srcPitch)&0xFFFF)
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x0), (((dstPitch)&0xFFFF)<<16)| \
+      ((srcPitch)&0xFFFF))
 
 #define ctSETHEIGHTWIDTHGO(Height,Width)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x8)) = (((Height)&0xFFFF)<<16)| \
-      ((Width)&0xFFFF)
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x8), (((Height)&0xFFFF)<<16)| \
+      ((Width)&0xFFFF))
 
 #define ctSETPATSRCADDR(srcAddr)\
-  *(unsigned int *)(cPtr->MMIOBase + BR(0x5)) = (srcAddr)&0x7FFFFFL
+  MMIO_OUT32(cPtr->MMIOBase, BR(0x5), (srcAddr)&0x7FFFFFL)
 
 #define ctSETBGCOLOR8(c) {\
     if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
-	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFF); \
+        MMIO_OUT32(cPtr->MMIOBase, BR(0x1), ((c)&0xFF)); \
     } \
 }
 
 #define ctSETBGCOLOR16(c) {\
     if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
-	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFFFF); \
+        MMIO_OUT32(cPtr->MMIOBase, BR(0x1), ((c)&0xFFFF)); \
     } \
 }
 
 #define ctSETBGCOLOR24(c) {\
     if ((cAcl->bgColor != (c)) || (cAcl->bgColor == -1)) { \
 	cAcl->bgColor = (c); \
-	*(unsigned int *)(cPtr->MMIOBase + BR(0x1)) = ((c)&0xFFFFFF); \
+        MMIO_OUT32(cPtr->MMIOBase, BR(0x1), ((c)&0xFFFFFF)); \
     } \
 }
 
 #define ctSETFGCOLOR8(c) {\
     if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
-	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFF); \
+        MMIO_OUT32(cPtr->MMIOBase, BR(0x2), ((c)&0xFF)); \
     } \
 }
 
 #define ctSETFGCOLOR16(c) {\
     if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
-	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFFFF); \
+        MMIO_OUT32(cPtr->MMIOBase, BR(0x2), ((c)&0xFFFF)); \
     } \
 }
 
 #define ctSETFGCOLOR24(c) {\
     if ((cAcl->fgColor != (c)) || (cAcl->fgColor == -1)) { \
 	cAcl->fgColor = (c); \
-	*(unsigned int *)(cPtr->MMIOBase + BR(0x2)) = ((c)&0xFFFFFF); \
+        MMIO_OUT32(cPtr->MMIOBase, BR(0x2), ((c)&0xFFFFFF)); \
     } \
 }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.119 2002/04/04 14:05:42 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.121 2002/09/16 18:05:52 eich Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1525,7 +1525,12 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
     /* linear base */
     if (cPtr->Flags & ChipsLinearSupport) {
 	if (cPtr->pEnt->location.type == BUS_PCI) {
+	    /* Tack on 0x800000 to access the big-endian aperture? */
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+	    cPtr->FbAddress =  (cPtr->PciInfo->memBase[0] & 0xff800000) + 0x800000L;
+#else
 	    cPtr->FbAddress =  cPtr->PciInfo->memBase[0] & 0xff800000;
+#endif
 	    from = X_PROBED;
 	    if (xf86RegisterResources(cPtr->pEnt->index,NULL,ResNone))
 		cPtr->Flags &= ~ChipsLinearSupport;
@@ -1558,7 +1563,6 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, from,
 		   "Disabling linear addressing\n");
 
-    
     if ((s = xf86GetOptValString(cPtr->Options, OPTION_ROTATE))
 	|| xf86ReturnOptValBool(cPtr->Options, OPTION_SHADOW_FB, FALSE)) {
 	if (!(cPtr->Flags & ChipsLinearSupport)) {
@@ -1786,6 +1790,7 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		pScrn->videoRam = 2048;
 		break;
 	    }
+	    break;
 	default:
 	    /* XRE0: Software reg     */
 	    /* bit 3-0: memory size   */
@@ -1815,9 +1820,9 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		pScrn->videoRam = 1024;
 		break;
 	    }
+	    break;
 	}
     }
-
 
     if ((cPtr->Flags & ChipsDualChannelSupport) &&
 		(xf86IsEntityShared(pScrn->entityList[0]))) {
@@ -4220,12 +4225,11 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		cAcl->CacheEnd = 0;
 	    }
 
-	    if (IS_HiQV(cPtr)) {
-		cAcl->BltDataWindow = (unsigned char *)cPtr->MMIOBase + 
-				0x10000L;
-	    } else {
+	    if (IS_HiQV(cPtr)) 
+		cAcl->BltDataWindow = (unsigned char *)cPtr->MMIOBase
+		    + 0x10000L;
+	    else
 		cAcl->BltDataWindow = cPtr->FbBase;
-	    }
 	    
 	}
 	/*
@@ -4309,8 +4313,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     }
     
-    if (pScrn->bitsPerPixel <= 8)
-        racflag = RAC_COLORMAP;
+    racflag = RAC_COLORMAP;
     if (cAcl->UseHWCursor)
         racflag |= RAC_CURSOR;
     racflag |= (RAC_FB | RAC_VIEWPORT);
@@ -6975,11 +6978,11 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	    if (IS_HiQV(cPtr)) {
 		if (cPtr->Bus == ChipsPCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO_32BIT,cPtr->PciTag, cPtr->IOAddress,
-			  0x20000L);
-		else
+			   VIDMEM_MMIO_32BIT,cPtr->PciTag, cPtr->IOAddress,
+			   0x20000L);
+		 else 
 		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO_32BIT, cPtr->IOAddress, 0x20000L);
+			   VIDMEM_MMIO_32BIT, cPtr->IOAddress, 0x20000L);
 	    } else {
 		if (cPtr->Bus == ChipsPCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
@@ -7063,6 +7066,10 @@ chipsUnmapMem(ScrnInfoPtr pScrn)
 	    if (cPtr->MMIOBase)
 		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase,
 				0x20000);
+	    if (cPtr->MMIOBasePipeB)
+		xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBasePipeB,
+				0x20000);
+	    cPtr->MMIOBasePipeB = NULL;
 	} else {
 	  if (cPtr->MMIOBase)
 	      xf86UnMapVidMem(pScrn->scrnIndex, (pointer)cPtr->MMIOBase,

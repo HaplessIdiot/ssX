@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.60 2002/05/31 18:46:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.62 2002/09/16 18:06:10 eich Exp $ */
 
 /*
  *
@@ -330,7 +330,7 @@ LoaderInit(void)
 
 #if defined(linux) && \
     (defined(__alpha__) || defined(__powerpc__) || defined(__ia64__) \
-     || ( defined __x86_64__ && ! defined UseMMAP))
+     || ( defined __x86_64__ && ! defined UseMMAP && ! defined DoMMAPedMerge))
     /*
      * The glibc malloc uses mmap for large allocations anyway. This breaks
      * some relocation types because the offset overflow. See loader.h for more
@@ -428,17 +428,17 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 {
 #ifdef UseMMAP
     unsigned long ret;	
-#ifdef MmapPageAlign
+# ifdef MmapPageAlign
     unsigned long pagesize;
     unsigned long new_size;
     unsigned long new_off;
     unsigned long new_off_bias;
-#endif
-#define MMAP_PROT	(PROT_READ|PROT_WRITE|PROT_EXEC)
+# endif
+# define MMAP_PROT	(PROT_READ|PROT_WRITE|PROT_EXEC)
 
-#ifdef DEBUGMEM
+# ifdef DEBUGMEM
     ErrorF("_LoaderFileToMem(%d,%u(%u),%d,%s)",fd,offset,offsetbias,size,label);
-#endif
+# endif
 # ifdef MmapPageAlign
     pagesize = getpagesize();
     new_size = (size + pagesize - 1) / pagesize;
@@ -448,9 +448,9 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     new_off_bias = (offset + offsetbias) - new_off;
     if ((new_off_bias + size) > new_size) new_size += pagesize;
     ret = (unsigned long) mmap(0,new_size,MMAP_PROT,MAP_PRIVATE
-#ifdef __x86_64__
+#  ifdef __x86_64__
 			       | MAP_32BIT
-#endif
+#  endif
 			       ,
 			       fd,new_off);
     if(ret == -1)
@@ -458,9 +458,9 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     return (void *)(ret + new_off_bias);
 # else
     ret = (unsigned long) mmap(0,size,MMAP_PROT,MAP_PRIVATE
-#ifdef __x86_64__
+#  ifdef __x86_64__
 			       | MAP_32BIT
-#endif
+#  endif
 			       ,
 			       fd,offset + offsetbias);
     if(ret == -1)
@@ -470,25 +470,25 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 #else
     char *ptr;
 
-#ifdef DEBUGMEM
+# ifdef DEBUGMEM
     ErrorF("_LoaderFileToMem(%d,%u(%u),%d,%s)",fd,offset,offsetbias,size,label);
-#endif
+# endif
 
     if(size == 0){
-#ifdef DEBUGMEM
+# ifdef DEBUGMEM
 	ErrorF("=NULL\n",ptr);
-#endif
+# endif
 	return NULL;
     }
 
-#ifndef __UNIXOS2__
+# ifndef __UNIXOS2__
     if( (ptr=xf86loadercalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
-#else
+# else
     if( (ptr=os2ldcalloc(size,1)) == NULL )
 	FatalError("_LoaderFileToMem() malloc failed\n" );
-#endif
-#if defined(linux) && defined(__ia64__)
+# endif
+# if defined(linux) && defined(__ia64__)
     {
 	unsigned long page_size = getpagesize();
 	unsigned long round;
@@ -497,7 +497,7 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 	mprotect(ptr - round, (size+round+page_size-1) & ~(page_size-1),
 		 PROT_READ|PROT_WRITE|PROT_EXEC);
     }
-#endif
+# endif
 
     if(lseek(fd,offset+offsetbias,SEEK_SET)<0)
 	FatalError("\n_LoaderFileToMem() lseek() failed: %s\n",strerror(errno));
@@ -505,7 +505,7 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
     if(read(fd,ptr,size)!=size)
 	FatalError("\n_LoaderFileToMem() read() failed: %s\n",strerror(errno));
 
-#if (defined(linux) || defined(__NetBSD__) || defined(__OpenBSD__)) \
+# if (defined(linux) || defined(__NetBSD__) || defined(__OpenBSD__)) \
     && defined(__powerpc__) 
     /*
      * Keep the instruction cache in sync with changes in the
@@ -517,11 +517,11 @@ _LoaderFileToMem(int fd, unsigned long offset,int size, char *label)
 	    ppc_flush_icache(ptr+i); 
 	ppc_flush_icache(ptr+size-1); 
     } 
-#endif
+# endif
 
-#ifdef DEBUGMEM
+# ifdef DEBUGMEM
     ErrorF("=%lx\n",ptr);
-#endif
+# endif
 
     return (void *)ptr;
 #endif

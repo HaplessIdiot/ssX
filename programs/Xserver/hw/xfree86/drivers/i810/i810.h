@@ -248,6 +248,8 @@ typedef struct _I810Rec {
    OptionInfoPtr Options;
 
    int configured_device;
+
+   Bool showCache;
 } I810Rec;
 
 #define I810PTR(p) ((I810Ptr)((p)->driverPrivate))

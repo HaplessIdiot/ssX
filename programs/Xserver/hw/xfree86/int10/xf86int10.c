@@ -754,7 +754,7 @@ int1A_handler(xf86Int10InfoPtr pInt)
 static PCITAG
 findPci(xf86Int10InfoPtr pInt, unsigned short bx)
 {
-    int bus = ((pInt->Tag >> 16) & 0x00FF00) | ((bx >> 8) & 0x00FF);
+    int bus = ((pInt->Tag >> 16) & ~0x00FF) | ((bx >> 8) & 0x00FF);
     int dev = (bx >> 3) & 0x1F;
     int func = bx & 0x7;
     if (xf86IsPciDevPresent(bus, dev, func))

@@ -610,6 +610,14 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define CS_USE_CTX0              0
 #define CS_USE_CTX1              (1<<0)
 
+/* I810 LCD/TV registers */
+#define LCD_TV_HTOTAL	0x60000
+#define LCD_TV_C	0x60018
+#define LCD_TV_OVRACT   0x6001C
+
+#define LCD_TV_ENABLE (1 << 31)
+#define LCD_TV_VGAMOD (1 << 28)
+
 /* I830 CRTC registers */
 #define HTOTAL_A	0x60000
 #define HBLANK_A	0x60004

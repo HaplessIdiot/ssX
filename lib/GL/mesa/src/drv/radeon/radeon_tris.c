@@ -475,7 +475,9 @@ static void radeonResetLineStipple( GLcontext *ctx )
 
    /* Reset the hardware stipple counter.
     */
+#if 0
    fprintf(stderr, "%s\n", __FUNCTION__);
+#endif
    RADEON_STATECHANGE( rmesa, RADEON_UPLOAD_LINE );
 }
 

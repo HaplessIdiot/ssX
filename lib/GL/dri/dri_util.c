@@ -925,7 +925,7 @@ __driUtilCreateScreen(Display *dpy, int scrn, __DRIscreen *psc,
     if (!psp) {
 	return NULL;
     }
-
+    psp->fullscreen = NULL;
     psp->display = dpy;
     psp->myNum = scrn;
 

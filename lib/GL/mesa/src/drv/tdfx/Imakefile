@@ -25,7 +25,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/tdfx/Imakefile,v 1.30 2002/02/23 00:45:51
 #include "../../tnl/Imakefile.inc"
 #include "../../tnl_dd/Imakefile.inc"
 #include "../../Imakefile.inc"
-#ifdef i386Architecture
+#if defined(i386Architecture) && MesaUseX86Asm
 #include "../../X86/Imakefile.inc"
 #endif
 #ifdef SparcArchitecture

@@ -1831,7 +1831,7 @@ vgaHWGetIOBase(vgaHWPtr hwp)
     hwp->IOBase = (hwp->readMiscOut(hwp) & 0x01) ?
 				VGA_IOBASE_COLOR : VGA_IOBASE_MONO;
     xf86DrvMsgVerb(hwp->pScrn->scrnIndex, X_INFO, 3,
-	"vgaHWGetIOBase: hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04x\n",
+	"vgaHWGetIOBase: hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04lx\n",
 	hwp->IOBase, hwp->PIOOffset);
 }
 

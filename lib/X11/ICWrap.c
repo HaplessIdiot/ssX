@@ -394,8 +394,12 @@ char *
 Xutf8ResetIC(ic)
     XIC ic;
 {
-    if (ic->core.im)
-	return (*ic->methods->utf8_reset)(ic);
+    if (ic->core.im) {
+	if (*ic->methods->utf8_reset)
+	    return (*ic->methods->utf8_reset)(ic);
+	else if (*ic->methods->mb_reset)
+	    return (*ic->methods->mb_reset)(ic);
+    }
     return (char *)NULL;
 }
 
@@ -438,8 +442,13 @@ Xutf8LookupString(ic, ev, buffer, nbytes, keysym, status)
     KeySym *keysym;
     Status *status;
 {
-    if (ic->core.im)
-	return (*ic->methods->utf8_lookup_string) (ic, ev, buffer, nbytes,
-						   keysym, status);
+    if (ic->core.im) {
+	if (*ic->methods->utf8_lookup_string)
+	    return (*ic->methods->utf8_lookup_string) (ic, ev, buffer, nbytes,
+						   	keysym, status);
+	else if (*ic->methods->mb_lookup_string)
+	    return (*ic->methods->mb_lookup_string) (ic, ev, buffer, nbytes,
+						   	keysym, status);
+    }
     return XLookupNone;
 }

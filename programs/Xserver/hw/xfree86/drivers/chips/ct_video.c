@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.9 2001/10/01 13:44:04 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_video.c,v 1.11 2002/09/16 18:05:53 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -130,7 +130,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	16,
 	XvPacked,
 	1,
-	15, 0x001F, 0x03E0, 0x7C00,
+	15, 0x7C00, 0x03E0, 0x001F,
 	0, 0, 0,
 	0, 0, 0,
 	0, 0, 0,
@@ -147,7 +147,7 @@ static XF86ImageRec Images[NUM_IMAGES] =
 	16,
 	XvPacked,
 	1,
-	16, 0x001F, 0x07E0, 0xF800,
+	16, 0xF800, 0x07E0, 0x001F,
 	0, 0, 0,
 	0, 0, 0,
 	0, 0, 0,

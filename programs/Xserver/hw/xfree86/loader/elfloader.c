@@ -66,6 +66,29 @@
 # endif
 #endif
 
+#if defined (DoMMAPedMerge)
+# include <sys/mman.h>
+# define MergeSectionAlloc
+# define MMAP_PROT	(PROT_READ | PROT_WRITE | PROT_EXEC)
+# if !defined(linux)
+#  error    No MAP_ANON?
+# endif
+# if !defined (__x86_64__)
+# define MMAP_FLAGS     (MAP_PRIVATE | MAP_ANON)
+# else
+# define MMAP_FLAGS     (MAP_PRIVATE | MAP_ANON | MAP_32BIT)
+# endif
+# if defined (MmapPageAlign)
+#  define MMAP_ALIGN(size)    do { \
+     int pagesize = getpagesize(); \
+     size = ( size + pagesize - 1) / pagesize; \
+     size *= pagesize; \
+   } while (0);
+# else
+#  define MMAP_ALIGN(size)
+# endif
+#endif
+
 #if defined (__alpha__) || \
     defined (__ia64__) || \
     defined (__x86_64__) || \
@@ -305,7 +328,9 @@ int		size;
     elffile->baseptr = (elffile->baseptr + align - 1) & ~(align - 1);
     ret = (void *)elffile->baseptr;
     elffile->baseptr += size;
-    memset(ret, 0, size);
+#ifndef DoMMAPedMerge
+    memset(ret, 0, size); /* mmap() does this for us */
+#endif
     return ret;
 }
 #else /* MergeSectionAlloc */
@@ -861,13 +886,14 @@ int		maxalign;
 
     if (!gotsize) {
 	xf86loaderfree(elffile->got);
+#  if !defined(DoMMAPedMerge)
 	elffile->basesize += 8 + elffile->gotsize;
 	elffile->base = xf86loaderrealloc(elffile->base, elffile->basesize);
 	if (elffile->base == NULL) {
 	    ErrorF( "ELFCreateGOT() Unable to reallocate memory!!!!\n" );
 	    return FALSE;
 	}
-#if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
+#   if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
 	{
 	    unsigned long page_size = getpagesize();
 	    unsigned long round;
@@ -876,7 +902,21 @@ int		maxalign;
 	    mprotect(elffile->base - round, (elffile->basesize+round+page_size-1) & ~(page_size-1),
 		     PROT_READ|PROT_WRITE|PROT_EXEC);
 	}
-#endif
+#   endif
+#  else
+	{
+	    int oldbasesize = elffile->basesize;
+	    elffile->basesize += 8 + elffile->gotsize;
+	    MMAP_ALIGN(elffile->basesize);
+	    elffile->base = mremap(elffile->base,oldbasesize,
+				   elffile->basesize,MREMAP_MAYMOVE);
+	    if (elffile->base == NULL) {
+		ErrorF( "ELFCreateGOT() Unable to remap memory!!!!\n" );
+		return FALSE;
+	    }
+	}
+#  endif
+
 	elffile->baseptr = ((long)elffile->base + (maxalign - 1)) & ~(maxalign - 1);
 	elffile->got = (unsigned char *)((long)(elffile->base + elffile->basesize - elffile->gotsize) & ~7);
     } else {
@@ -1301,6 +1341,36 @@ int		force;
 # endif
 	    break;
 	    }
+
+	case R_ALPHA_GPRELLOW:
+	    {
+	    dest64=(unsigned long *)(secp+rel->r_offset);
+	    dest16=(unsigned short *)dest64;
+
+	    symval += rel->r_addend;
+	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
+
+	    *dest16=symval;
+	    break;
+	    }
+
+	case R_ALPHA_GPRELHIGH:
+	    {
+	    dest64=(unsigned long *)(secp+rel->r_offset);
+	    dest16=(unsigned short *)dest64;
+
+	    symval += rel->r_addend;
+	    symval = ((unsigned char *)symval)-((unsigned char *)elffile->got);
+	    symval = ((long)symval >> 16) + ((symval >> 15) & 1);
+	    if( (long)symval > 0x7fff || (long)symval < -(long)0x8000 ) {
+		FatalError("R_ALPHA_GPRELHIGH symval-got is too large for %s:%lx\n",
+		ElfGetSymbolName(elffile,ELF_R_SYM(rel->r_info)),symval);
+	    }
+
+	    *dest16=symval;
+	    break;
+	    }
+
 	case R_ALPHA_LITERAL:
 	    {
 	    ELFGotEntryPtr gotent;
@@ -2423,7 +2493,6 @@ unsigned short  **psecttable;
  *
  * Do the work required to load each section into memory.
  */
-
 static void
 ELFCollectSections(elffile,pass,totalsize,maxalign)
 ELFModulePtr	elffile;
@@ -2493,10 +2562,10 @@ int		*maxalign;
 					 SecSize(i), name);
 	    } else {
 		if( SecSize(i) )
-		    elffile->lsection[j].saddr 
+		    elffile->lsection[j].saddr  
 			= ELFLoaderSectCalloc(elffile,SecAlign(i),
 					      SecSize(i));
-		else
+	        else
 		    elffile->lsection[j].saddr = NULL;
 	    }
 	} else {
@@ -2704,12 +2773,14 @@ LOOKUP **ppLookup;
 
 #ifdef MergeSectionAlloc
     elffile->basesize = totalsize + maxalign;
+ 
+# if !defined(DoMMAPedMerge)
     elffile->base = xf86loadermalloc(elffile->basesize);
     if (elffile->base == NULL) {
 	ErrorF( "Unable to allocate ELF sections\n" );
 	return NULL;
     }
-#if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
+#  if defined(linux) && defined(__ia64__) || defined(__OpenBSD__)
     {
 	unsigned long page_size = getpagesize();
 	unsigned long round;
@@ -2718,7 +2789,16 @@ LOOKUP **ppLookup;
 	mprotect(elffile->base - round, (elffile->basesize+round+page_size-1) & ~(page_size-1),
 		 PROT_READ|PROT_WRITE|PROT_EXEC);
     }
-#endif
+#  endif
+# else 
+    MMAP_ALIGN(elffile->basesize);
+    elffile->base = mmap( 0,elffile->basesize,MMAP_PROT,MMAP_FLAGS,-1,
+			  (off_t)0);
+    if (elffile->base == NULL) {
+	ErrorF( "Unable to mmap ELF sections\n" );
+	return NULL;
+    }
+# endif
     elffile->baseptr = ((long)elffile->base + (maxalign - 1)) & ~(maxalign - 1);
 #endif
 
@@ -2865,7 +2945,11 @@ void *modptr;
 /*
  * Free the sections that were allocated.
  */
-#define CheckandFree(ptr,size)  if(ptr) xf86loaderfree(ptr)
+#if !defined (DoMMAPedMerge)
+# define CheckandFree(ptr,size)  if(ptr) xf86loaderfree(ptr)
+#else 
+# define CheckandFree(ptr,size) if (ptr) munmap(ptr,size)
+#endif
 #define CheckandFreeFile(ptr,size)  if(ptr) _LoaderFreeFileMem((ptr),(size))
 
 #ifdef MergeSectionAlloc

@@ -119,7 +119,11 @@ int	choiceTimeout;	/* chooser choice timeout */
 #define DEF_ACCESS_FILE	""
 #endif
 #ifndef DEF_RANDOM_FILE
-#define DEF_RANDOM_FILE "/dev/mem"
+# ifdef linux
+#  define DEF_RANDOM_FILE "/dev/urandom"
+# else
+#  define DEF_RANDOM_FILE "/dev/mem"
+# endif
 #endif
 #ifndef DEF_GREETER_LIB
 #define DEF_GREETER_LIB "/usr/lib/X11/xdm/libXdmGreet.so"

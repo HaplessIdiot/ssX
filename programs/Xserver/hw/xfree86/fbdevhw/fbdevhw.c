@@ -792,7 +792,7 @@ fbdevHWAdjustFrame(int scrnIndex, int x, int y, int flags)
 	fPtr->var.xoffset = x;
 	fPtr->var.yoffset = y;
 	if (-1 == ioctl(fPtr->fd,FBIOPAN_DISPLAY,(void*)&fPtr->var))
-		xf86DrvMsg(scrnIndex, X_ERROR,
+		xf86DrvMsgVerb(scrnIndex,5, X_WARNING,
 			   "FBIOPAN_DISPLAY: %s\n", strerror(errno));
 }
 

@@ -1008,6 +1008,8 @@ I810DRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
       if (I810_DEBUG & DEBUG_VERBOSE_DRI)
 	 ErrorF("I810DRISwapContext (in)\n");
 
+      if (!pScrn->vtSema)
+	  return;
       pI810->LockHeld = 1;
       I810RefreshRing(pScrn);
    } else if (syncType == DRI_2D_SYNC &&
