@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbgetsp.c,v 1.3 2000/02/14 19:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbgetsp.c,v 1.4 2000/02/23 20:29:44 dawes Exp $ */
 
 #include "fb.h"
 
@@ -44,6 +44,14 @@ fbGetSpans(DrawablePtr	pDrawable,
      */
     if (!fbDrawableEnabled(pDrawable))
 	return;
+    
+#ifdef FB_24_32BIT
+    if (pDrawable->bitsPerPixel != BitsPerPixel(pDrawable->depth))
+    {
+	fb24_32GetSpans (pDrawable, wMax, ppt, pwidth, nspans, pchardstStart);
+	return;
+    }
+#endif
     
     fbGetDrawable (pDrawable, src, srcStride, srcBpp);
     

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.5 2000/04/05 18:13:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbcopy.c,v 1.6 2000/04/06 15:27:24 dawes Exp $ */
 
 #include "fb.h"
 #ifdef IN_MODULE
@@ -602,8 +602,16 @@ fbCopyArea (DrawablePtr	pSrcDrawable,
 	    int		xOut, 
 	    int		yOut)
 {
+    fbCopyProc	copy;
+    
+#ifdef FB_24_32BIT
+    if (pSrcDrawable->bitsPerPixel != pDstDrawable->bitsPerPixel)
+	copy = fb24_32CopyMtoN;
+    else
+#endif
+	copy = fbCopyNtoN;
     return fbDoCopy (pSrcDrawable, pDstDrawable, pGC, xIn, yIn,
-		     widthSrc, heightSrc, xOut, yOut, fbCopyNtoN, 0, 0);
+		     widthSrc, heightSrc, xOut, yOut, copy, 0, 0);
 }
 
 RegionPtr

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.14 2000/03/31 22:55:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.15 2000/04/04 19:24:48 dawes Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -75,6 +75,17 @@
  */
 #if BITMAP_BIT_ORDER == MSBFirst
 #undef FB_24BIT
+#endif
+
+/*
+ * Unless otherwise instructed, fb includes code to advertise 24bpp
+ * windows with 32bpp image format for application compatibility
+ */
+
+#ifdef FB_24BIT
+#ifndef FBNO24_32
+#define FB_24_32BIT
+#endif
 #endif
 
 #define FB_STIP_SHIFT	LOG2_BITMAP_PAD
@@ -502,6 +513,9 @@ extern void fbSetBits (FbStip *bits, int stride, FbStip data);
 #define FbCheck24Pix(p)	((p) == FbNext24Pix(p))
 
 extern int	fbGCPrivateIndex;
+#ifndef FB_NO_WINDOW_PIXMAPS
+extern int	fbWinPrivateIndex;
+#endif
 extern const GCOps	fbGCOps;
 extern const GCFuncs	fbGCFuncs;
 
@@ -512,6 +526,23 @@ extern const GCFuncs	fbGCFuncs;
 
 #ifdef FB_OLD_SCREEN
 extern WindowPtr    *WindowTable;
+#endif
+
+#ifdef FB_24_32BIT
+#define FB_SCREEN_PRIVATE
+#endif
+
+#ifdef FB_SCREEN_PRIVATE
+extern int	fbScreenPrivateIndex;
+
+/* private field of a screen */
+typedef struct {
+    unsigned char	win32bpp;	/* window bpp for 32-bpp images */
+    unsigned char	pix32bpp;	/* pixmap bpp for 32-bpp images */
+} FbScreenPrivRec, *FbScreenPrivPtr;
+
+#define fbGetScreenPrivate(pScreen) ((FbScreenPrivPtr) \
+				     (pScreen)->devPrivates[fbScreenPrivateIndex].ptr)
 #endif
 
 /* private field of GC */
@@ -529,8 +560,9 @@ typedef struct {
     FbBits		bgand, bgxor;	/* for stipples */
     FbBits		fg, bg, pm;	/* expanded and filled */
     unsigned int	dashLength;	/* total of all dash elements */
-    Bool		oneRect;	/* clip list is single rectangle */
-    Bool		evenStipple;	/* stipple is even */
+    unsigned char    	oneRect;	/* clip list is single rectangle */
+    unsigned char    	evenStipple;	/* stipple is even */
+    unsigned char    	bpp;		/* current drawable bpp */
 } FbGCPrivRec, *FbGCPrivPtr;
 
 #define fbGetGCPrivate(pGC)	((FbGCPrivPtr)\
@@ -549,7 +581,12 @@ typedef struct {
 #endif
 
 #define fbGetScreenPixmap(s)	((PixmapPtr) (s)->devPrivate)
+#ifdef FB_NO_WINDOW_PIXMAPS
 #define fbGetWindowPixmap(d)	fbGetScreenPixmap((d)->pScreen)
+#else
+#define fbGetWindowPixmap(pWin)	((PixmapPtr)\
+	((WindowPtr) (pWin))->devPrivates[fbWinPrivateIndex].ptr)
+#endif
 
 #define fbGetDrawable(pDrawable, pointer, stride, bpp) { \
     PixmapPtr   _pPix; \
@@ -602,6 +639,76 @@ typedef struct {
  * with dstBpp a power of 2 as well
  */
 #define FbEvenStip(w,bpp)   ((w) * (bpp) <= FB_UNIT && FbPowerOfTwo(w) && FbPowerOfTwo(bpp))
+
+/*
+ * fb24_32.c
+ */
+void
+fb24_32GetSpans(DrawablePtr	pDrawable, 
+		int		wMax, 
+		DDXPointPtr	ppt, 
+		int		*pwidth, 
+		int		nspans, 
+		char		*pchardstStart);
+
+void
+fb24_32SetSpans (DrawablePtr	    pDrawable,
+		 GCPtr		    pGC,
+		 char		    *src,
+		 DDXPointPtr	    ppt,
+		 int		    *pwidth,
+		 int		    nspans,
+		 int		    fSorted);
+
+void
+fb24_32PutZImage (DrawablePtr	pDrawable,
+		  RegionPtr	pClip,
+		  int		alu,
+		  FbBits	pm,
+		  int		x,
+		  int		y,
+		  int		width,
+		  int		height,
+		  CARD8		*src,
+		  FbStride	srcStride);
+    
+void
+fb24_32GetImage (DrawablePtr     pDrawable,
+		 int             x,
+		 int             y,
+		 int             w,
+		 int             h,
+		 unsigned int    format,
+		 unsigned long   planeMask,
+		 char            *d);
+
+void
+fb24_32CopyMtoN (DrawablePtr pSrcDrawable,
+		 DrawablePtr pDstDrawable,
+		 GCPtr       pGC,
+		 BoxPtr      pbox,
+		 int         nbox,
+		 int         dx,
+		 int         dy,
+		 Bool        reverse,
+		 Bool        upsidedown,
+		 Pixel       bitplane,
+		 void        *closure);
+
+PixmapPtr
+fb24_32ReformatTile(PixmapPtr pOldTile, int bitsPerPixel);
+    
+Bool
+fb24_32CreateScreenResources(ScreenPtr pScreen);
+
+Bool
+fb24_32ModifyPixmapHeader (PixmapPtr   pPixmap,
+			   int         width,
+			   int         height,
+			   int         depth,
+			   int         bitsPerPixel,
+			   int         devKind,
+			   pointer     pPixData);
 
 /*
  * fballpriv.c

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.28 2000/04/17 16:30:06 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.29 2000/04/20 21:28:40 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -73,7 +73,6 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define USE_FB			/* not until overlays and 24->32 code added */
 #ifdef USE_FB
 #include "fb.h"
-#include "fb24_32.h"
 #else
 				/* CFB support */
 #define PSZ 8
@@ -264,7 +263,6 @@ static const char *i2cSymbols[] = {
 #ifdef USE_FB
 static const char *fbSymbols[] = {
     "fbScreenInit",
-    "fb24_32ScreenInit",
     NULL
 };
 #else
@@ -996,10 +994,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 				/* Get ScreenInit function */
 #ifdef USE_FB
     mod = "fb";
-    if (pScrn->bitsPerPixel == 24 && info->pix24bpp != 24)
-	Sym = "fb24_32ScreenInit";
-    else
-	 Sym = "fbScreenInit";
+    Sym = "fbScreenInit";
 #else
     switch (pScrn->bitsPerPixel) {
     case  8: mod = "cfb";   Sym = "cfbScreenInit";   break;
@@ -1249,22 +1244,11 @@ static Bool R128ScreenInit(int scrnIndex, ScreenPtr pScreen,
 			  pScrn->defaultVisual)) return FALSE;
 
 #ifdef USE_FB
-    if (pScrn->bitsPerPixel == 24 && info->pix24bpp != 24)
-    {
-	if (!fb24_32ScreenInit (pScreen, info->FB,
-				pScrn->virtualX, pScrn->virtualY,
-				pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
-				pScrn->bitsPerPixel))
-	    return FALSE;
-    }
-    else
-    {
-	if (!fbScreenInit (pScreen, info->FB,
-			   pScrn->virtualX, pScrn->virtualY,
-			   pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
-			   pScrn->bitsPerPixel))
-	    return FALSE;
-    }
+    if (!fbScreenInit (pScreen, info->FB,
+		       pScrn->virtualX, pScrn->virtualY,
+		       pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth,
+		       pScrn->bitsPerPixel))
+	return FALSE;
 #else
     switch (pScrn->bitsPerPixel) {
     case 8:

@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.4 2000/02/14 19:20:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbimage.c,v 1.5 2000/02/23 20:29:45 dawes Exp $ */
 
 #include "fb.h"
 #ifdef XFree86LOADER
@@ -88,13 +88,29 @@ fbPutImage (DrawablePtr	pDrawable,
 	}
 	break;
     case ZPixmap:
-	srcStride = PixmapBytePad(w, pDrawable->depth) / sizeof (FbStip);
-	fbPutZImage (pDrawable,
-		     fbGetCompositeClip(pGC),
-		     pGC->alu,
-		     pPriv->pm,
-		     x, y, w, h, 
-		     src, srcStride);
+#ifdef FB_24_32BIT
+	if (pDrawable->bitsPerPixel != BitsPerPixel(pDrawable->depth))
+	{
+	    srcStride = PixmapBytePad(w, pDrawable->depth);
+	    fb24_32PutZImage (pDrawable,
+			      fbGetCompositeClip(pGC),
+			      pGC->alu,
+			      (FbBits) pGC->planemask,
+			      x, y, w, h,
+			      (CARD8 *) pImage,
+			      srcStride);
+	}
+	else
+#endif
+	{
+	    srcStride = PixmapBytePad(w, pDrawable->depth) / sizeof (FbStip);
+	    fbPutZImage (pDrawable,
+			 fbGetCompositeClip(pGC),
+			 pGC->alu,
+			 pPriv->pm,
+			 x, y, w, h, 
+			 src, srcStride);
+	}
     }
 }
 
@@ -283,6 +299,15 @@ fbGetImage (DrawablePtr	    pDrawable,
      */
     if (!fbDrawableEnabled(pDrawable))
 	return;
+    
+#ifdef FB_24_32BIT
+    if (format == ZPixmap &&
+	pDrawable->bitsPerPixel != BitsPerPixel (pDrawable->depth))
+    {
+	fb24_32GetImage (pDrawable, x, y, w, h, format, planeMask, d);
+	return;
+    }
+#endif
     
     fbGetDrawable (pDrawable, src, srcStride, srcBpp);
     
