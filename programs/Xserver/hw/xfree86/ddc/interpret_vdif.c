@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.3 1999/03/14 03:21:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ddc/interpret_vdif.c,v 1.5 1999/12/03 19:17:26 eich Exp $ */
 
 #include "Xarch.h"
 #include "xf86DDC.h"
@@ -17,6 +17,9 @@ xf86InterpretVdif(CARD8 *c)
     xf86VdifPtr p = (xf86VdifPtr)c;
     xf86vdifPtr vdif;
     int i;
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+    int length;
+#endif
     unsigned long l = 0;
 
     if (c == NULL) return NULL;

@@ -1,4 +1,21 @@
 XFree86 3.9.17a (20 January 2000)
+3565. Update linux.cf to use the kernel header files on Debian rather than
+      those packaged with the libc headers (#3544, Simon Richter).
+3564. Add an item to the default twm menu to open an xterm window (#3584,
+      David Brownlee).
+3563. Update Spanish locales in xc/nls (#3583, Fernando Herrera).
+3562. Fix I2C/DDC for S3 ViRGE (#3582, Harald Koenig).
+3561. Update the fbdevhw module for some new cards (#3579, Kostas Gewrgiou).
+3560. Fix interpret_vdif.c for big endian machines (#3578, Kostas Gewrgiou).
+3559. Minor fix to DDC to find monitor descriptions in EDID v1.1 (#3576,
+      Egbert Eich).
+3558. Allow silken mouse to work when building on Linux without DRI (#3574,
+      Keith Packard).
+3557. Only do the kbdrate I/O on architectures that support it (#3573, 3581,
+      Kostas Gewrgiou, Branden Robinson).
+3556. Fix XAA colour expansion for big-endian architectures (#3572,
+      Kostas Gewrgiou).
+3555. Update QNX support (#3570, Frank Guangxin Liu).
 3554. Fix "controlization" in XLookupString for chars > 127 (#3569,
       Ivan Pascal).
 3553. Take advantage of FB speedups in Tiny-X (#3568, Keith Packard).
@@ -9284,4 +9301,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.937 2000/01/20 21:46:19 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.938 2000/01/21 01:12:03 dawes Exp $

@@ -24,14 +24,13 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx/qnx_mouse.c,v 1.1.2.2 1999/07/23 13:42:36 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_mouse.c,v 1.1 1999/12/27 00:45:48 robin Exp $
  */
 
 /* This module contains the qnx-specific functions to access the keyboard
  * and the console.
  */
 
-/* [jcm] Fix mouse problem, check XINPUT for XFree86 3.3.3.1 */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -43,39 +42,37 @@
 #include <sys/proxy.h>
 #include <errno.h>
 
-#include <X.h>
+#include "X.h"
 #include "xf86.h"
 #include "xf86Priv.h"
-#include "xf86_OSlib.h"
-#include "inputstr.h"
+#include "xf86Xinput.h"
+#include "xf86OSmouse.h"
 
-extern int miPointerGetMotionEvents(DeviceIntPtr pPtr, xTimecoord *coords, 
-				unsigned long start, unsigned long stop, 
-				ScreenPtr pScreen);
-
+extern int miPointerGetMotionEvents(
+#if NeedFunctionPrototypes
+    DeviceIntPtr /*pPtr*/,
+    xTimecoord * /*coords*/,
+    unsigned long /*start*/,
+    unsigned long /*stop*/,
+    ScreenPtr /*pScreen*/
+#endif
+);
 
 struct _mouse_ctrl *QNX_mouse = NULL;
 pid_t QNX_mouse_proxy = -1;
 Bool QNX_mouse_event = FALSE;
 
-int xf86MouseOff(mouse, doclose)
-MouseDevPtr mouse;
-Bool doclose;
-{
-ErrorF("Called mouseOff\n");
-	if(QNX_mouse) {
-		mouse_close (QNX_mouse);
-		QNX_mouse = NULL;
-		}
-	return(-1);
-}
-
-void xf86OsMouseEvents()
+/* the following function is converted from old void xf86OsMouseEvents() */
+static void
+OsMouseReadInput(InputInfoPtr pInfo)
 {
 	struct mouse_event events[16];
 	int i, nEvents;
 	int buttons, col, row;
 	int armed = 0;
+	MouseDevPtr pMse;
+
+	pMse = pInfo->private;
 
 	while ((nEvents = mouse_read(QNX_mouse, &events, 
 		16, QNX_mouse_proxy, &armed) ) > 0) {
@@ -85,7 +82,7 @@ void xf86OsMouseEvents()
 			col = events[i].dx;
 			row = -events[i].dy;
 			buttons = events[i].buttons; 
-			xf86PostMseEvent(xf86Info.pMouse, buttons, col, row);
+			pMse->PostEvent(pInfo, buttons, col, row, 0);
 			}
 		xf86Info.inputPending = TRUE;
 		}
@@ -93,61 +90,9 @@ void xf86OsMouseEvents()
 	QNX_mouse_event = FALSE;
 }
 
-void
-xf86MouseInit(mouse)
-MouseDevPtr mouse;
-{
-	ErrorF("Called MouseInit\n");
-	return;
-}
-
-int
-xf86MouseOn(mouse)
-MouseDevPtr mouse;
-{
-	struct mouse_event mevent;
-	int armed, ret;
-
-	if((QNX_mouse_proxy = qnx_proxy_attach(0, 0, 0, -1)) == -1){
-		FatalError("xf86MouseOn: Could not create mouse proxy; %s\n", 
-			strerror(errno));
-		}
-        if ((QNX_mouse = mouse_open(0, NULL, xf86Info.consoleFd)) == NULL) {
-        
-                if (xf86AllowMouseOpenFail) {
-                        ErrorF("Cannot open mouse (%s) - Continuing...\n",
-                                strerror(errno));
-                        return(-2);
-                	}
-                FatalError("Cannot open mouse (%s)\n", strerror(errno));
-        	}
-	ErrorF("Opened mouse: handle %d fd %d\n", QNX_mouse->handle, 
-	QNX_mouse->fd);	
-        /* Flush any pending input */
-        mouse_flush(QNX_mouse);
-	while (!armed) {
-		ret = mouse_read(QNX_mouse, &mevent, 1, 
-			QNX_mouse_proxy, &armed);
-		if (ret < 0) { 
-			FatalError("xf86MouseOn: could not arm proxy; %s\n",
-				strerror(errno));
-			}
-		} 
-        return(-1);
-}
-
-void
-xf86OsMouseOption(token, lex_ptr)
-int token;
-pointer lex_ptr;
-{
-	/* No options are supported for now - could be later */
-	ErrorF("xf86OsMouseOption: no supported options at this time\n");
-}
-
 /* The main mouse setup proc */
-int
-xf86OsMouseProc(pPointer, what)
+static int
+OsMouseProc(pPointer, what)
 DeviceIntPtr pPointer;
 int what;
 {
@@ -155,6 +100,12 @@ int what;
 	int nbuttons;
 	unsigned char *map;
 	struct mouse_event mevent;
+        MouseDevPtr pMse;
+        InputInfoPtr pInfo;
+
+        pInfo = pPointer->public.devicePrivate;
+        pMse = pInfo->private;
+        pMse->device = pPointer;
 
 	switch (what) {
 	case DEVICE_INIT:
@@ -177,9 +128,9 @@ int what;
                 	FatalError("Cannot open mouse (%s)\n", strerror(errno));
                 	}
 		/* Ok, so we have opened the channel to the mouse driver */
-	ErrorF("Opened mouse: handle %d buttons\n", QNX_mouse->handle, 
-	QNX_mouse->buttons);	
-		xf86Info.mouseDev->mseFd = QNX_mouse->fd;
+		ErrorF("Opened mouse: handle %d buttons\n", QNX_mouse->handle, 
+			QNX_mouse->buttons);	
+		pInfo->fd = QNX_mouse->fd;
         	mouse_flush(QNX_mouse);
 		QNX_mouse_event = FALSE;
 		/* How de we determine how many buttons we have?? */
@@ -190,41 +141,27 @@ int what;
 		for(i=0;i <= nbuttons; i++)
 			map[i] = i;			
 		InitPointerDeviceStruct ((DevicePtr) pPointer, map, nbuttons, 
-			miPointerGetMotionEvents, (PtrCtrlProcPtr) xf86MseCtrl,
+			miPointerGetMotionEvents, pMse->Ctrl,
 			miPointerGetMotionBufferSize());
 
-#ifdef XINPUT
-      InitValuatorAxisStruct( (DevicePtr) pPointer,
-			     0,
-			     0, /* min val */
-			     screenInfo.screens[0]->width, /* max val */
-			     1, /* resolution */
-			     0, /* min_res */
-			     1); /* max_res */
-      InitValuatorAxisStruct( (DevicePtr) pPointer,
-			     1,
-			     0, /* min val */
-			     screenInfo.screens[0]->height, /* max val */
-			     1, /* resolution */
-			     0, /* min_res */
-			     1); /* max_res */
-      /* Initialize valuator values in synch
-       * with dix/event.c DefineInitialRootWindow
-       */
-      *pPointer->valuator->axisVal = screenInfo.screens[0]->width / 2;
-      *(pPointer->valuator->axisVal+1) = screenInfo.screens[0]->height / 2;
-#endif
+		/* X valuator */
+		xf86InitValuatorAxisStruct(pPointer, 0, 0, -1, 1, 0, 1);
+		xf86InitValuatorDefaults(pPointer, 0);
+		/* Y valuator */
+		xf86InitValuatorAxisStruct(pPointer, 1, 0, -1, 1, 0, 1);
+		xf86InitValuatorDefaults(pPointer, 1);
+		xf86MotionHistoryAllocate(pInfo);
 
 		xfree(map);
 		break;
 
 	case DEVICE_ON:
 		if(QNX_mouse == NULL) return(-1);
-		xf86Info.mouseDev->lastButtons = 0;
-		xf86Info.mouseDev->emulateState = 0;
+		pMse->lastButtons = 0;
+		pMse->emulateState = 0;
 		pPointer->public.on = TRUE;
         	mouse_flush(QNX_mouse);
-		/* AddEnabledDevice(xf86Info.mouseDev->mseFd); */
+		/* AddEnabledDevice(pInfo->fd); */
 		ret = mouse_read(QNX_mouse, &mevent, 0, 
 			QNX_mouse_proxy, NULL);
 		ErrorF("MouseOn: armed proxy, %d, proxy pid %d\n", ret, 
@@ -248,26 +185,66 @@ int what;
 	return (Success);
 }				
 
-
-
-/* This table is somewhat useless, since we only
- * support the mouse type OsMouse. This is because we use 
- * the Input/Mouse driver.
- */ 
-
-Bool xf86SupportedMouseTypes[] =
+static int
+SupportedInterfaces(void)
 {
-	FALSE,	/* Microsoft */
-	FALSE,	/* MouseSystems */
-	FALSE,	/* MMSeries */
-	FALSE,	/* Logitech */
-	FALSE,	/* BusMouse */
-	FALSE,	/* MouseMan */
-	FALSE,	/* PS/2 */
-	FALSE,	/* Hitachi Tablet */
+    /* XXX Need to check this. */
+    return MSE_SERIAL | MSE_BUS | MSE_PS2 | MSE_XPS2 | MSE_AUTO;
+}
+
+static const char *internalNames[] = {
+        "OSMouse",
+        NULL
 };
 
-int xf86NumMouseTypes = sizeof(xf86SupportedMouseTypes) /
-			sizeof(xf86SupportedMouseTypes[0]);
+static const char **
+BuiltinNames(void)
+{
+    return internalNames;
+}
 
+static Bool
+CheckProtocol(const char *protocol)
+{
+    int i;
 
+    for (i = 0; internalNames[i]; i++)
+        if (xf86NameCmp(protocol, internalNames[i]) == 0)
+            return TRUE;
+    return FALSE;
+}
+
+/* XXX Is this appropriate?  If not, this function should be removed. */
+static const char *
+DefaultProtocol(void)
+{
+    return "OSMouse";
+}
+
+static Bool
+OsMousePreInit(InputInfoPtr pInfo, const char *protocol, int flags)
+{
+
+    /* Setup the local procs. */
+    pInfo->device_control = OsMouseProc;
+    pInfo->read_input = OsMouseReadInput;
+
+    pInfo->flags |= XI86_CONFIGURED;
+    return TRUE;
+}
+
+OSMouseInfoPtr
+xf86OSMouseInit(int flags)
+{
+    OSMouseInfoPtr p;
+
+    p = xcalloc(sizeof(OSMouseInfoRec), 1);
+    if (!p)
+        return NULL;
+    p->SupportedInterfaces = SupportedInterfaces;
+    p->BuiltinNames = BuiltinNames;
+    p->DefaultProtocol = DefaultProtocol;
+    p->CheckProtocol = CheckProtocol;
+    p->PreInit = OsMousePreInit;
+    return p;
+}

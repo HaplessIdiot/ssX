@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaacexp.h,v 1.1.2.4 1998/07/18 17:54:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaacexp.h,v 1.2 1998/07/25 16:58:54 dawes Exp $ */
 
 
 #ifndef FIXEDBASE
@@ -7,8 +7,13 @@
 #define CHECKRETURN(b) if(width <= ((b) * 32)) return(base)
 #endif
 
-#define SHIFT_L(value, shift) ((value) << (shift))
-#define SHIFT_R(value, shift) ((value) >> (shift))
+#if X_BYTE_ORDER == X_BIG_ENDIAN
+# define SHIFT_L(value, shift) ((value) >> (shift))
+# define SHIFT_R(value, shift) ((value) << (shift))
+#else
+# define SHIFT_L(value, shift) ((value) << (shift))
+# define SHIFT_R(value, shift) ((value) >> (shift))
+#endif
 
 #ifndef MSBFIRST
 # ifdef FIXEDBASE

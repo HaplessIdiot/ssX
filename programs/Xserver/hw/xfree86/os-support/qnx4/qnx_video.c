@@ -24,7 +24,7 @@
  * used in advertising or otherwise to promote the sale, use or other dealings
  * in this Software without prior written authorization from Sebastien Marineau.
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx/qnx_video.c,v 1.1.2.2 1999/07/23 13:42:40 hohndel Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/qnx4/qnx_video.c,v 1.1 1999/12/27 00:45:48 robin Exp $
  */
 
 /* This module contains the qnx-specific functions to deal with video 
@@ -54,7 +54,7 @@ void xf86EnableInterrupts()
 
 void xf86DisableInterrupts()
 {
-	ErrorF("Disable interrupts: not yet...\n");
+	xf86ErrorF("Disable interrupts: not yet...\n");
 	/* _disable(); */
 }
 
@@ -63,7 +63,7 @@ void xf86DisableInterrupts()
 Bool xf86LinearVidMem()
 {
 	/* Yes we can... */
-	ErrorF("xf86LinearMem: called\n");
+	xf86ErrorF("xf86LinearMem: called\n");
 	return(TRUE);
 }
 
@@ -81,7 +81,7 @@ unsigned long Size;
 {
 int fd;
 unsigned char *base;
-	ErrorF("xf86MapVidMem called\n");
+	xf86ErrorF("xf86MapVidMem called\n");
         if(QNX_PhMem_fd < 0) {
                 if ((fd = shm_open("Physical", O_RDWR, 0777)) < 0) {
                         FatalError("xf86MapVidMem: Failed to open /dev/shmem\n");
@@ -90,7 +90,7 @@ unsigned char *base;
                 }
         base = (unsigned char *) mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
                             MAP_SHARED, QNX_PhMem_fd, (off_t)Base);
-	ErrorF("MapVidMem: addr %08x size %08x addr %08x\n", Base,
+	xf86ErrorF("MapVidMem: addr %08x size %08x addr %08x\n", Base,
 		Size, base);
         if ((long)base == -1)
         {
@@ -106,7 +106,7 @@ pointer Base;
 unsigned long Size;
 {
 
-	ErrorF("xf86UnmapVidMem called\n");
+	xf86ErrorF("xf86UnmapVidMem called\n");
 	munmap((caddr_t) Base, Size);
 
 }
@@ -121,7 +121,7 @@ int Len;
 {
         unsigned char * VirtBase;
 
-	ErrorF("xf86ReadBIOS called\n");
+	xf86ErrorF("xf86ReadBIOS called\n");
         if (QNX_PhMem_fd == -1)
         {
                 if ((QNX_PhMem_fd = shm_open("Physical", O_RDWR, 0777)) < 0)
@@ -148,7 +148,7 @@ int Len;
         if (((off_t)((off_t)Offset & 0x7FFF) != (off_t)0) &&
                 (VirtBase[0] != 0x55) &&
                 (VirtBase[1] != 0xaa)) {
-                ErrorF(
+                xf86ErrorF(
                         "xf86ReadBIOS: BIOS sanity check failed, addr=%x\n",
                         (int)Base + Offset);
                 munmap(VirtBase, (Offset & 0x7fff) + Len);

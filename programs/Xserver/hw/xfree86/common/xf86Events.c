@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.83 1999/12/27 00:39:42 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.84 2000/01/21 01:12:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -955,8 +955,25 @@ xf86Wakeup(pointer blockData, int err, pointer pReadmask)
     }
 #else   /* __EMX__ and __QNX__ */
 
+    InputInfoPtr pInfo;
+
     (xf86Info.kbdEvents)();  /* Under OS/2 and QNX, always call */
-    (xf86Info.mouseDev->mseEvents)(xf86Info.mouseDev);
+
+    pInfo = xf86InputDevs;
+    while (pInfo) {
+		if (pInfo->read_input && pInfo->fd >= 0) {
+		    int sigstate = xf86BlockSIGIO();
+		    
+		    pInfo->read_input(pInfo);
+		    xf86UnblockSIGIO(sigstate);		    
+		    /*
+		     * Must break here because more than one device may share
+		     * the same file descriptor.
+		     */
+		    break;
+		}
+		pInfo = pInfo->next;
+    }
 
 #endif  /* __EMX__ and __QNX__ */
 

@@ -4,7 +4,7 @@ XCOMM	This file contains compose table file name.
 XCOMM	The first word is the compose table file name and
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM $XFree86: xc/nls/compose.dir,v 1.5 1999/08/22 06:21:20 dawes Exp $
+XCOMM $XFree86: xc/nls/compose.dir,v 1.6 1999/08/28 09:00:33 dawes Exp $
 XCOMM
 #ifdef R63_COMPAT
 XCOMM These entries are in the old format (no ':')
@@ -32,9 +32,9 @@ iso8859-15/Compose	br_FR.ISO8859-15
 iso8859-1/Compose	ca_ES.ISO8859-1
 iso8859-15/Compose	ca_ES.ISO8859-15
 iso8859-2/Compose	cs_CZ.ISO8859-2
-iso8859-1/Compose	cy_ES.ISO8859-1
-iso8859-14/Compose	cy_ES.ISO8859-14
-iso8859-15/Compose	cy_ES.ISO8859-15
+iso8859-1/Compose	cy_GB.ISO8859-1
+iso8859-14/Compose	cy_GB.ISO8859-14
+iso8859-15/Compose	cy_GB.ISO8859-15
 iso8859-1/Compose	da_DK.ISO8859-1
 iso8859-15/Compose	da_DK.ISO8859-15
 iso8859-1/Compose	de_AT.ISO8859-1
@@ -202,9 +202,9 @@ iso8859-15/Compose:	br_FR.ISO8859-15
 iso8859-1/Compose:	ca_ES.ISO8859-1
 iso8859-15/Compose:	ca_ES.ISO8859-15
 iso8859-2/Compose:	cs_CZ.ISO8859-2
-iso8859-1/Compose:	cy_ES.ISO8859-1
-iso8859-14/Compose:	cy_ES.ISO8859-14
-iso8859-15/Compose:	cy_ES.ISO8859-15
+iso8859-1/Compose:	cy_GB.ISO8859-1
+iso8859-14/Compose:	cy_GB.ISO8859-14
+iso8859-15/Compose:	cy_GB.ISO8859-15
 iso8859-1/Compose:	da_DK.ISO8859-1
 iso8859-15/Compose:	da_DK.ISO8859-15
 iso8859-1/Compose:	de_AT.ISO8859-1

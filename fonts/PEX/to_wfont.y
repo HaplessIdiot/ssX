@@ -43,7 +43,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.7 1998/10/02 06:49:07 dawes Exp $ */
+/* $XFree86: xc/fonts/PEX/to_wfont.y,v 3.8 1998/10/25 07:11:10 dawes Exp $ */
 
 
 #define YYMAXDEPTH 10000
@@ -262,7 +262,12 @@ main(argc, argv)
 			}
 		}
 	}
+#if defined(__QNX__)
+	yyparse();
+	return;
+#else
 	return (yyparse());
+#endif
 }
 
 /* set number of characters */
@@ -346,7 +351,7 @@ check_num_ch()
 
 yyerror()
 {
-#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__)
+#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__) && !defined(__QNX__)
 	extern int      yylineno;
 #endif
 #	define ERR_SIZE (sizeof(err_string) / sizeof(char *))
@@ -369,7 +374,7 @@ yyerror()
 		str = err_string[yyerrno-1];
 	else
 		str = "Syntax error";
-#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__)
+#if !defined(CSRG_BASED) && !defined(linux) && !defined(Lynx) && !defined(__GNU__) && !defined(__QNX__)
 		fprintf(stderr, "line %d: %s.\n", yylineno, str);
 #else
 		fprintf(stderr, "%s.\n", str);

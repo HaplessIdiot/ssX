@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.46 1999/12/03 19:17:21 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.47 1999/12/27 00:39:41 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1430,8 +1430,11 @@ extern void outl(unsigned port, unsigned val);
 #define ldq_u(p)        (*((unsigned long  *)(p)))
 #define ldl_u(p)        (*((unsigned int   *)(p)))
 #define ldw_u(p)        (*((unsigned short *)(p)))
+#undef stq_u
 #define stq_u(v,p)      ((unsigned long  *)(p)) = (v)
+#undef stl_u
 #define stl_u(v,p)      ((unsigned int   *)(p)) = (v)
+#undef stw_u
 #define stw_u(v,p)      ((unsigned short *)(p)) = (v)
 #define mem_barrier()   /* NOP */
 #define write_mem_barrier()   /* NOP */

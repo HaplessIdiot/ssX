@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.104 1999/09/27 06:29:02 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.108 1999/12/03 19:17:17 eich Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -98,6 +98,12 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LinuxLocaleDefines	-DX_LOCALE
 #endif
 
+#if LinuxDistribution == LinuxDebian
+#define LinuxAdditionalIncludes	-I/usr/src/linux/include
+#else
+#define LinuxAdditionalIncludes	/**/
+#endif
+
 #ifndef LinuxGnuSourceDefines
 #ifdef UseInstalled
 #define LinuxGnuSourceDefines	/**/
@@ -110,7 +116,8 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define LinuxSourceDefines	-D_POSIX_C_SOURCE=199309L \
 				-D_POSIX_SOURCE -D_XOPEN_SOURCE \
 				-D_BSD_SOURCE -D_SVID_SOURCE \
-				LinuxGnuSourceDefines LinuxLocaleDefines
+				LinuxAdditionalIncludes LinuxGnuSourceDefines \
+				LinuxLocaleDefines
 #define XawI18nDefines		-DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
 #define HasPosixThreads		YES
 #define ThreadedX		YES
