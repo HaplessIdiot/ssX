@@ -1,5 +1,5 @@
 /* Swedish localized versions of Info.plist keys. */
 /* Most of these are set in the target application settings. */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/English.lproj/InfoPlist.strings.cpp,v 1.1 2001/05/21 01:42:17 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Swedish.lproj/InfoPlist.strings.cpp,v 1.1 2001/11/02 02:47:25 torrey Exp $ */
 
-NSHumanReadableCopyright = XF86_COPYRIGHT
+NSHumanReadableCopyright = __quote__XFree86 XF86_VERSION\nCopyright 2001 XFree86 Project, Inc.__quote__
