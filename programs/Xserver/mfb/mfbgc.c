@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.2 1998/03/20 21:08:13 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.3 1998/10/04 09:39:10 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -1187,7 +1187,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	 */
 	if ((((pGC->fillStyle == FillTiled) ||
 	      (pGC->fillStyle == FillStippled)) &&
-	     !devPriv->pRotatedPixmap) ||
+	     !pGC->pRotatedPixmap) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     ((pGC->fgPixel & 1) != (pGC->bgPixel & 1)))
 	   )
@@ -1285,11 +1285,11 @@ mfbValidateGC(pGC, changes, pDrawable)
 	/* beyond this point, opaqueStippled ==> fg != bg */
 	else if (((pGC->fillStyle == FillTiled) ||
 		  (pGC->fillStyle == FillOpaqueStippled)) &&
-		 !devPriv->pRotatedPixmap)
+		 !pGC->pRotatedPixmap)
 	{
 	    pGC->ops->FillSpans = mfbUnnaturalTileFS;
 	}
-	else if ((pGC->fillStyle == FillStippled) && !devPriv->pRotatedPixmap)
+	else if ((pGC->fillStyle == FillStippled) && !pGC->pRotatedPixmap)
 	{
 	    pGC->ops->FillSpans = mfbUnnaturalStippleFS;
 	}
@@ -1318,7 +1318,7 @@ mfbValidateGC(pGC, changes, pDrawable)
 	 */
 	if ((((pGC->fillStyle == FillTiled) ||
 	      (pGC->fillStyle == FillStippled)) &&
-	     !devPriv->pRotatedPixmap) ||
+	     !pGC->pRotatedPixmap) ||
 	    ((pGC->fillStyle == FillOpaqueStippled) &&
 	     ((pGC->fgPixel & 1) != (pGC->bgPixel & 1)))
 	   )
