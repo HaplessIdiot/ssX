@@ -679,7 +679,8 @@
   an ftp site for the binary distribution.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.5 1995/01/25 11:08:52 dawes Exp $
+  $XConsortium: SCO.sgml,v 1.4 95/01/27 16:14:31 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.6 1995/01/28 16:02:21 dawes Exp $
 
 
 
@@ -724,6 +725,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SCO,v 3.8 1995/01/25 11:15:50 dawes Exp $
-$XConsortium: README.SCO,v 1.8 95/01/27 15:58:16 kaleb Exp $
+$XFree86$

@@ -512,10 +512,8 @@
   XGA-2.
 
 
-
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.6 1995/01/25 11:08:57 dawes Exp $
-
-
+  $XConsortium: agx.sgml,v 1.4 95/01/27 16:14:35 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/agx.sgml,v 3.7 1995/01/28 16:02:54 dawes Exp $
 
 
 
@@ -527,5 +525,6 @@
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.17 1995/01/25 11:15:54 dawes Exp $
-$XConsortium: README.agx,v 1.8 95/01/27 15:58:18 kaleb Exp $
+
+
+$XFree86$

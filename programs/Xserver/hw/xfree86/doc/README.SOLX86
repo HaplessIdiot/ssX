@@ -328,7 +328,8 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.2 1995/01/15 10:34:23 dawes Exp $
+  $XConsortium: SOLX86.sgml,v 1.2 95/01/16 13:17:48 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SOLX86.sgml,v 3.3 1995/01/28 16:02:26 dawes Exp $
 
 
 
@@ -394,6 +395,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.SOLX86,v 3.4 1995/01/15 10:58:55 dawes Exp $
-$XConsortium: README.SOLX86,v 1.5 95/01/16 13:17:24 kaleb Exp $
+$XFree86$

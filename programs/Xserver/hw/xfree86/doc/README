@@ -997,7 +997,8 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.16 1995/01/25 11:51:37 dawes Exp $
+  $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.17 1995/01/28 16:02:13 dawes Exp $
 
 
 
@@ -1054,6 +1055,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.23 1995/01/25 11:55:20 dawes Exp $
-$XConsortium: README,v 1.8 95/01/27 15:58:22 kaleb Exp $
+$XFree86$

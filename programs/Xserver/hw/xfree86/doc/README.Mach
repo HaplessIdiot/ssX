@@ -190,12 +190,11 @@
   necessary for Mach is that the X servers be able to open /dev/iopl for
   read/write.  There are many ways to achieve this effect.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.3 1995/01/25 11:08:48 dawes Exp $
+  $XConsortium: Mach.sgml,v 1.3 95/01/27 16:14:25 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.4 1995/01/28 16:01:49 dawes Exp $
 
 
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.Mach,v 3.6 1995/01/25 11:15:40 dawes Exp $
-$XConsortium: README.Mach,v 1.7 95/01/27 15:58:09 kaleb Exp $
+$XFree86$

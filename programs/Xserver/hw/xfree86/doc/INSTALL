@@ -311,7 +311,8 @@
   For details of how to do this, please refer to the README.LinkKit
   (LinkKit.html) file.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.5 1995/01/25 11:51:33 dawes Exp $
+  $XConsortium: INSTALL.sgml,v 1.4 95/01/27 16:14:24 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/INSTALL.sgml,v 3.6 1995/01/28 16:01:30 dawes Exp $
 
 
 
@@ -328,6 +329,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/INSTALL,v 3.9 1995/01/25 11:55:16 dawes Exp $
-$XConsortium: INSTALL,v 1.7 95/01/27 15:58:06 kaleb Exp $
+$XFree86$

@@ -679,7 +679,8 @@
 
      o  Support for the CL6440 in the ``cl64xx'' driver.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.8 1995/01/27 04:51:53 dawes Exp $
+  $XConsortium: cirrus.sgml,v 1.4 95/01/27 16:14:36 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/cirrus.sgml,v 3.9 1995/01/28 16:03:03 dawes Exp $
 
 
 
@@ -724,6 +725,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.14 1995/01/27 10:30:37 dawes Exp $
-$XConsortium: README.cirrus,v 1.8 95/01/27 15:58:20 kaleb Exp $
+$XFree86$

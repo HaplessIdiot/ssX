@@ -72,7 +72,8 @@
   The idea of using an external clock program was suggested by Frank
   Klemm <pfk@rz.uni-jena.de>
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.1 1995/01/04 04:40:36 dawes Exp $
+  $XConsortium: clkprog.sgml,v 1.1 95/01/06 20:29:55 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/clkprog.sgml,v 3.2 1995/01/28 16:03:06 dawes Exp $
 
 
 
@@ -130,6 +131,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.clkprog,v 3.5 1995/01/15 10:59:23 dawes Exp $
-$XConsortium: README.clkprog,v 1.5 95/01/16 13:17:32 kaleb Exp $
+$XFree86$
