@@ -45,7 +45,8 @@ for SiS300/305, 540 and 630/730
 .B 315/330 series
 for SiS315/H/PRO, 55x and (M)65x/(M)661xX/74x, 330, 760
 .PP
-Note: Support for 661FX, M661FX, M661MX, 741 and 760 is untested.
+Note: Support for 661FX, M661FX, M661MX, 741 and 760 is untested as regards
+video bridge output.
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
