@@ -7,7 +7,7 @@
 	objects = {
 		01279092000747AA0A000002 = {
 			isa = PBXFileReference;
-			path = Xserver.m;
+			path = XServer.m;
 			refType = 4;
 		};
 		0127909600074AF60A000002 = {
@@ -665,7 +665,7 @@
 //1C4
 		1C4A3109004D8F24CE6F79C2 = {
 			isa = PBXFileReference;
-			path = Xserver.h;
+			path = XServer.h;
 			refType = 4;
 		};
 //1C0
