@@ -11,7 +11,7 @@
 <date> 14th June 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.31 2000/06/14 01:43:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/chips.sgml,v 3.32 2000/10/27 18:31:02 dawes Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -295,10 +295,10 @@ TextClockFreq 25.175
 	select a different clock for the server to use when returning to
 	the text console.
 <tag>
-Option "FPClock8"   "65.0"
-Option "FPClock16"  "65.0"
-Option "FPClock24"  "65.0"
-Option "FPClock32"  "65.0"
+Option "FPClock8"   "65.0MHz"
+Option "FPClock16"  "65.0MHz"
+Option "FPClock24"  "65.0MHz"
+Option "FPClock32"  "65.0MHz"
 </tag>
 	In general the LCD panel clock should be set independently of the
 	modelines supplied. Normally the chips BIOS set the flat panel
@@ -408,12 +408,6 @@ Option "NoTMED"
 	feature incorrectly setup. If you have <tt>snow</tt> on your DSTN
 	LCD, try using this option. This option is only relevant for chipsets
 	more recent than the ct65555 and only when used with a DSTN LCD.
-<tag>
-Option "UseFB"
-</tag>
-	Force the new framebuffer (fb) code to be used in place of its older
-	counterpart (cfb). The sense of this option will probably be reversed
-	when fb becomes the default.
 <tag>
 Option "Overlay"
 </tag>
@@ -845,6 +839,14 @@ video processor beyond it capabilities won't cause damage.
 	The XVideo extension has only recently been added to the chips driver.
 	Some YUV to RGB colour have been noted at 15 and 16 bit colour depths.
 	However, 8 and 24 bit colour depths seem to work fine.
+<tag> My ct69030 machine locks up when starting XFree</tag>
+	The ct69030 chipset introduced a new dual channel architecture. In its
+	current form, XFree can not take advantage of this second display
+	channel. In fact if the video BIOS on the machine sets the ct69030
+	to a dual channel mode by default, XFree will lockup hard at this
+	point. The solution is to use the BIOS setup to change to a single
+	display channel mode, ensuring that both the IOSS and MSS registers
+	are set to a single channel mode. Work is underway to fix this.
 <tag> I can't start X-windows with 16, 24 or 32bpp</tag>
 	Firstly, is your machine capable of 16/24/32bpp with the mode
 	specified. Many LCD displays are incapable of using a 24bpp 
