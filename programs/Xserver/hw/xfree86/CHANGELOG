@@ -1,4 +1,5 @@
 XFree86 3.9.17b (23 January 2000)
+3568. Fix imake failure in Mesa Imakefile (Kevin Martin).
 3567. Change trident driver to use fb instead of cfb and make DDC1 info
       available to the primary card (Alan Hourihane).
 3566. Fix an XAA text corruption problem introduced by the endian fix
@@ -9307,4 +9308,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.942 2000/01/22 17:44:25 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.943 2000/01/22 19:51:40 dawes Exp $
