@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.45 2003/09/24 03:16:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_driver.c,v 1.46 2003/10/08 15:48:41 eich Exp $ */
 /*
  * vim: sw=4 ts=8 ai ic:
  *
@@ -288,7 +288,6 @@ static const char *xaaSymbols[] = {
     "XAAHelpPatternROP",
     "XAAHelpSolidROP",
     "XAAInit",
-    "XAAScreenIndex",
     NULL
 };
 

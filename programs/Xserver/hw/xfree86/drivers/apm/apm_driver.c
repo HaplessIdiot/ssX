@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.64 2003/10/02 13:29:57 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.65 2003/10/30 17:36:57 tsi Exp $ */
 
 #include "apm.h"
 #include "xf86cmap.h"
@@ -161,13 +161,8 @@ static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAAGlyphScanlineFuncLSBFirst",
     "XAAInit",
-    "XAAQueryBestSize",
     "XAAReverseBitOrder",
-    "XAARestoreCursor",
-    "XAAScreenIndex",
     "XAAStippleScanlineFuncMSBFirst",
-    "XAAWarpCursor",
-    "XAAPixmapIndex",
     NULL
 };
 
