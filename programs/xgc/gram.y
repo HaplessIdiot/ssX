@@ -1,6 +1,7 @@
 /*
 ** grammar for xgc syntax
 */
+/* $XFree86$ */
 
 %{
 #define YYDEBUG 1

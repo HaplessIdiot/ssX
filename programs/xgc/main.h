@@ -5,6 +5,7 @@
 **
 ** Initialization of structures, etc.
 */
+/* $XFree86$ */
 
 /* The three columns in the XgcData arrays are:
 **   name: the name of the toggle button

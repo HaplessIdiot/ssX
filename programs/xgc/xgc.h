@@ -3,6 +3,7 @@
 **
 ** xgc.h
 */
+/* $XFree86$ */
 
 #include "constants.h"
 
