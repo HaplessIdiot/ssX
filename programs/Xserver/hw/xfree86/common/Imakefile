@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.127 2001/02/28 18:58:53 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.128 2001/03/05 04:48:22 mvojkovi Exp $
 
 
 
@@ -57,10 +57,6 @@ LOGDEFINES = -DDEFAULT_LOGPREFIX=\"$(LOGDIRECTORY)/XLogFile.\"
 
 #if DoLoadableServer
 EXT_MODULES_DEFINES = $(GLX_DEFINES)
-#endif
-
-#if defined(LinuxArchitecture) && defined(PpcArchitecture)
-    KBDDEFINES = -DASSUME_CUSTOM_KEYCODES
 #endif
 
 #ifndef XF86ExpireServer
