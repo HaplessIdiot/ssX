@@ -1,3 +1,5 @@
+XCOMM $XFree86: $
+
 #define IHaveModules
 #include <Server.tmpl>
 

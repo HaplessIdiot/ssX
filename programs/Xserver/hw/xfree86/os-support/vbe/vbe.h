@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 #ifndef _VBE_H
 #define _VBE_H
 #include "xf86int10.h"

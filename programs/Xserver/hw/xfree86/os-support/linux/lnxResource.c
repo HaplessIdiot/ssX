@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* Resource information code */
 
 #include "X.h"
