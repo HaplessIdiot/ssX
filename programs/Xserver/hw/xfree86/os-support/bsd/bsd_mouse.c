@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.34 2005/02/04 02:55:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_mouse.c,v 1.35 2005/02/09 23:02:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1999-2005 by The XFree86 Project, Inc.
@@ -55,6 +55,7 @@
 #include "xf86OSmouse.h"
 #include "xisb.h"
 #include "mipointer.h"
+#include <dirent.h>
 #ifdef WSCONS_SUPPORT
 #include <dev/wscons/wsconsio.h>
 #endif
@@ -98,11 +99,13 @@ static void usbSigioReadInput (int fd, void *closure);
 #if defined(__FreeBSD__)
 /* These are for FreeBSD */
 #define DEFAULT_SYSMOUSE_DEV		"/dev/sysmouse"
+#define DEFAULT_USBMOUSE_DEV		"/dev/ums0"
 
 static const char *mouseDevs[] = {
 	DEFAULT_MOUSE_DEV,
 	DEFAULT_SYSMOUSE_DEV,
 	DEFAULT_PS2_DEV,
+	DEFAULT_USBMOUSE_DEV,
 	NULL
 };
 
@@ -277,7 +280,8 @@ SetSysMouseRes(InputInfoPtr pInfo, const char *protocol, int rate, int res)
 
 #if defined(__FreeBSD__)
 
-#define MOUSED_PID_FILE "/var/run/moused.pid"
+#define MOUSED_PID_DIR "/var/run"
+#define MOUSED_PID_FILE_PREFIX "moused"
 
 /*
  * Try to check if moused is running.  DEFAULT_SYSMOUSE_DEV is useless without
@@ -288,15 +292,33 @@ MousedRunning(void)
 {
     FILE *f = NULL;
     unsigned int pid;
+    DIR *d;
+    struct dirent *dp;
+    char *fname;
 
-    if ((f = fopen(MOUSED_PID_FILE, "r")) != NULL) {
-	if (fscanf(f, "%u", &pid) == 1 && pid > 0) {
-	    if (kill(pid, 0) == 0) {
+    d = opendir(MOUSED_PID_DIR);
+    if (!d)
+	return FALSE;
+
+    while ((dp = readdir(d))) {
+	if (strncmp(dp->d_name, MOUSED_PID_FILE_PREFIX,
+		    strlen(MOUSED_PID_FILE_PREFIX)) == 0) {
+	    xasprintf(&fname, "%s/%s", MOUSED_PID_DIR, dp->d_name);
+	    if (!fname)
+		continue;
+	    f = fopen(fname, "r");
+	    xfree(fname);
+	    fname = NULL;
+	    if (f) {
+		if (fscanf(f, "%u", &pid) == 1 && pid > 0) {
+		    if (kill(pid, 0) == 0) {
+			fclose(f);
+			return TRUE;
+		    }
+		}
 		fclose(f);
-		return TRUE;
 	    }
 	}
-	fclose(f);
     }
     return FALSE;
 }
