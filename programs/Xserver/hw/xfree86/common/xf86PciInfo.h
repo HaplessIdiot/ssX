@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.117 2001/12/28 17:31:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.118 2002/01/04 22:24:25 tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -250,9 +250,12 @@
 #define PCI_CHIP_RADEON_QF	0x5146
 #define PCI_CHIP_RADEON_QG	0x5147
 #define PCI_CHIP_R200_QL	0x514C
+#define PCI_CHIP_R200_QN	0x514E
+#define PCI_CHIP_R200_QO	0x514F
 #define PCI_CHIP_RV200_QW	0x5157
 #define PCI_CHIP_RADEON_QY	0x5159
 #define PCI_CHIP_RADEON_QZ	0x515A
+#define PCI_CHIP_R200_Ql	0x516C
 #define PCI_CHIP_RAGE128RE	0x5245
 #define PCI_CHIP_RAGE128RF	0x5246
 #define PCI_CHIP_RAGE128RG	0x5247
@@ -884,9 +887,12 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_RADEON_QF,	"Radeon QF",0},
 				{PCI_CHIP_RADEON_QG,	"Radeon QG",0},
 				{PCI_CHIP_R200_QL,	"Radeon 8500 QL",0},
+				{PCI_CHIP_R200_QN,	"Radeon 8500 QN",0},
+				{PCI_CHIP_R200_QO,	"Radeon 8500 QO",0},
 				{PCI_CHIP_RV200_QW,	"Radeon 7500 QW",0},
 				{PCI_CHIP_RADEON_QY,	"Radeon VE QY",0},
 				{PCI_CHIP_RADEON_QZ,	"Radeon VE QZ",0},
+				{PCI_CHIP_R200_Ql,	"Radeon 8500 Ql",0},
 				{PCI_CHIP_RADEON_LW,	"Radeon Mobility M7 LW",0},
 				{PCI_CHIP_RADEON_LY,	"Radeon Mobility M6 LY",0},
 				{PCI_CHIP_RADEON_LZ,	"Radeon Mobility M6 LZ",0},

@@ -1,4 +1,11 @@
 XFree86 4.1.99.7 (16 January 2002)
+ 684. Disable the DRI and print a warning message for Radeon 8500 cards
+      until they are supported (Kevin Martin).
+ 683. Properly detect when no BIOS is present on Radeon cards (#4978,
+      Charles Hannum, Kevin Martin).
+ 682. Delay before restoring VGA registers for Radeons to "fix" VT switch
+      problems (Kevin Martin).
+ 681. Add new PCI IDs from ATI (Kevin Martin).
  680. Update the Xinstall.sh script to create version compatibility links for
       shared freetype libraries when needed (David Dawes).
  679. Update Freetype2 shared library versions to match the versions libtool
@@ -14535,4 +14542,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2136 2002/01/15 18:31:16 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2137 2002/01/15 23:00:34 dawes Exp $

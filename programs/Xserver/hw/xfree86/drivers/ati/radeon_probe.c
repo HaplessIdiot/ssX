@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.13 2001/09/25 14:58:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_probe.c,v 1.14 2001/12/28 17:31:44 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -84,6 +84,9 @@ SymTabRec RADEONChipsets[] = {
     { PCI_CHIP_RADEON_LY, "ATI Radeon Mobility LY (AGP)" },
     { PCI_CHIP_RADEON_LZ, "ATI Radeon Mobility LZ (AGP)" },
     { PCI_CHIP_R200_QL, "ATI Radeon 8500 QL (AGP)" },
+    { PCI_CHIP_R200_QN, "ATI Radeon 8500 QN (AGP)" },
+    { PCI_CHIP_R200_QO, "ATI Radeon 8500 QO (AGP)" },
+    { PCI_CHIP_R200_Ql, "ATI Radeon 8500 Ql (AGP)" },
     { PCI_CHIP_R200_BB, "ATI Radeon 8500 BB (AGP)" },
     { PCI_CHIP_RV200_QW, "ATI Radeon 7500 QW (AGP)" },
     { -1,                 NULL }
@@ -100,6 +103,9 @@ PciChipsets RADEONPciChipsets[] = {
     { PCI_CHIP_RADEON_LY, PCI_CHIP_RADEON_LY, RES_SHARED_VGA },
     { PCI_CHIP_RADEON_LZ, PCI_CHIP_RADEON_LZ, RES_SHARED_VGA },
     { PCI_CHIP_R200_QL, PCI_CHIP_R200_QL, RES_SHARED_VGA },
+    { PCI_CHIP_R200_QN, PCI_CHIP_R200_QN, RES_SHARED_VGA },
+    { PCI_CHIP_R200_QO, PCI_CHIP_R200_QO, RES_SHARED_VGA },
+    { PCI_CHIP_R200_Ql, PCI_CHIP_R200_Ql, RES_SHARED_VGA },
     { PCI_CHIP_R200_BB, PCI_CHIP_R200_BB, RES_SHARED_VGA },
     { PCI_CHIP_RV200_QW, PCI_CHIP_RV200_QW, RES_SHARED_VGA },
     { -1,                 -1,                 RES_UNDEFINED }
@@ -229,6 +235,9 @@ RADEONProbe(DriverPtr drv, int flags)
         if(pEnt->chipset == PCI_CHIP_RADEON_QY ||
            pEnt->chipset == PCI_CHIP_RADEON_QZ ||
            pEnt->chipset == PCI_CHIP_R200_QL ||
+           pEnt->chipset == PCI_CHIP_R200_QN ||
+           pEnt->chipset == PCI_CHIP_R200_QO ||
+           pEnt->chipset == PCI_CHIP_R200_Ql ||
            pEnt->chipset == PCI_CHIP_R200_BB ||
            pEnt->chipset == PCI_CHIP_RV200_QW ||
            pEnt->chipset == PCI_CHIP_RADEON_LW ||

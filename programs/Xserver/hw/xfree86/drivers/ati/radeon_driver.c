@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.48 2002/01/01 01:04:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.49 2002/01/07 22:12:37 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -750,9 +750,12 @@ static Bool RADEONGetBIOSParameters(ScrnInfoPtr pScrn, xf86Int10InfoPtr pInt10)
     }
     if (info->VBIOS[0] != 0x55 || info->VBIOS[1] != 0xaa)
     {
+	xfree(info->VBIOS);
+	info->VBIOS = NULL;
 	info->BIOSAddr = 0x00000000;
 	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 		   "Video BIOS not found!\n");
+	return TRUE;
     }
 
     info->FPBIOSstart = RADEON_BIOS16(0x48);
@@ -1130,6 +1133,9 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
             info->HasCRTC2 = TRUE;  
             break;
    	case PCI_CHIP_R200_QL:
+   	case PCI_CHIP_R200_QN:
+   	case PCI_CHIP_R200_QO:
+   	case PCI_CHIP_R200_Ql:
 	case PCI_CHIP_R200_BB:
             /*R200 has secondary CRTC*/
             info->HasCRTC2 = TRUE;  
@@ -1274,6 +1280,9 @@ static Bool RADEONPreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RADEON_QF:
 	case PCI_CHIP_RADEON_QG:
 	case PCI_CHIP_R200_QL:
+	case PCI_CHIP_R200_QN:
+	case PCI_CHIP_R200_QO:
+	case PCI_CHIP_R200_Ql:
 	case PCI_CHIP_R200_BB:
 	case PCI_CHIP_RV200_QW:
 	default:                 info->IsPCI = FALSE; break;
@@ -2498,6 +2507,10 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		       (pScrn->displayWidth * pScrn->virtualY *
 			info->CurrentLayout.pixel_bytes * 3 + 1023) / 1024);
 	    info->directRenderingEnabled = FALSE;
+	} else if (info->IsR200) {
+	    info->directRenderingEnabled = FALSE;
+	    xf86DrvMsg(scrnIndex, X_WARNING,
+		       "Direct rendering not yet supported on Radeon 8500\n");
 	} else {
             if(info->IsSecondary)
                 info->directRenderingEnabled = FALSE;
@@ -3584,6 +3597,13 @@ static void RADEONRestore(ScrnInfoPtr pScrn)
         OUTREG(RADEON_DAC_CNTL2, restore->dac2_cntl);
 
     RADEONRestoreMode(pScrn, restore);
+
+    /* Temp fix to "solve" VT switch problems.  When switching VTs on
+       some systems, the console can either hang or the fonts can be
+       corrupted.  This hack solves the problem 99% of the time.  A
+       correct fix is being worked on. */
+    usleep(100000);
+
     if(!info->IsSecondary)
     {
     vgaHWUnlock(hwp);
@@ -4523,5 +4543,3 @@ static void RADEONDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 	break;
     }
 }
-
-
