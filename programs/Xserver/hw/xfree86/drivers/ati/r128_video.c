@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.13 2000/12/07 15:43:44 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.14 2000/12/07 20:42:52 mvojkovi Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -776,7 +776,8 @@ R128PutImage(
     if(!RegionsEqual(&pPriv->clip, clipBoxes)) {
 	REGION_COPY(pScreen, &pPriv->clip, clipBoxes);
 	/* draw these */
-	(*info->accel->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy, ~0,
+	(*info->accel->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy,
+				        (CARD32)~0,
 					REGION_NUM_RECTS(clipBoxes),
 					REGION_RECTS(clipBoxes));
     }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.12 2000/12/07 20:26:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.13 2000/12/08 19:15:33 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -295,6 +295,10 @@ static const char *drmSymbols[] = {
     "drmMarkBufs",
     "drmR128CleanupCCE",
     "drmR128InitCCE",
+    "drmR128ResetCCE",
+    "drmR128StartCCE",
+    "drmR128StopCCE",
+    "drmR128WaitForIdleCCE",
     "drmUnmap",
     "drmUnmapBufs",
     NULL
@@ -2034,7 +2038,8 @@ static void R128RestoreFPRegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 	OUTREG(R128_LVDS_GEN_CNTL, restore->lvds_gen_cntl);
     } else {
 	if (restore->lvds_gen_cntl & (R128_LVDS_ON | R128_LVDS_BLON)) {
-	    OUTREG(R128_LVDS_GEN_CNTL, restore->lvds_gen_cntl & ~R128_LVDS_BLON);
+	    OUTREG(R128_LVDS_GEN_CNTL,
+		restore->lvds_gen_cntl & (CARD32)~R128_LVDS_BLON);
 	    usleep(R128PTR(pScrn)->PanelPwrDly * 1000);
 	    OUTREG(R128_LVDS_GEN_CNTL, restore->lvds_gen_cntl);
 	} else {
@@ -2465,9 +2470,9 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
 				  R128_FP_USE_SHADOW_EN);
 	save->fp_gen_cntl    |= (R128_FP_SEL_CRTC2 |
 				 R128_FP_CRTC_DONT_SHADOW_VPAR);
-	save->fp_panel_cntl   = orig->fp_panel_cntl & ~R128_FP_DIGON;
-	save->lvds_gen_cntl   = orig->lvds_gen_cntl & ~(R128_LVDS_ON |
-							R128_LVDS_BLON);
+	save->fp_panel_cntl   = orig->fp_panel_cntl & (CARD32)~R128_FP_DIGON;
+	save->lvds_gen_cntl   = orig->lvds_gen_cntl &
+				(CARD32)~(R128_LVDS_ON | R128_LVDS_BLON);
 	return;
     }
 
@@ -2500,11 +2505,12 @@ static void R128InitFPRegisters(R128SavePtr orig, R128SavePtr save,
     else               save->fp_vert_stretch |=  (R128_VERT_STRETCH_ENABLE |
 						  R128_VERT_STRETCH_BLEND);
 
-    save->fp_gen_cntl = (orig->fp_gen_cntl & ~(R128_FP_SEL_CRTC2 |
-					       R128_FP_CRTC_USE_SHADOW_VEND |
-					       R128_FP_CRTC_HORZ_DIV2_EN |
-					       R128_FP_CRTC_HOR_CRT_DIV2_DIS |
-					       R128_FP_USE_SHADOW_EN));
+    save->fp_gen_cntl = orig->fp_gen_cntl &
+			 (CARD32)~(R128_FP_SEL_CRTC2 |
+				   R128_FP_CRTC_USE_SHADOW_VEND |
+				   R128_FP_CRTC_HORZ_DIV2_EN |
+				   R128_FP_CRTC_HOR_CRT_DIV2_DIS |
+				   R128_FP_USE_SHADOW_EN);
     if (orig->fp_gen_cntl & R128_FP_DETECT_SENSE) {
 	save->fp_gen_cntl |= (R128_FP_CRTC_DONT_SHADOW_VPAR |
 			      R128_FP_TDMS_EN);

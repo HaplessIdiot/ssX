@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.2 2000/11/09 03:24:36 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_cursor.c,v 1.3 2000/11/18 19:37:12 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -115,7 +115,7 @@ static void RADEONLoadCursorImage(ScrnInfoPtr pScrn, unsigned char *image)
     CARD32        save;
 
     save = INREG(RADEON_CRTC_GEN_CNTL);
-    OUTREG(RADEON_CRTC_GEN_CNTL, save & ~RADEON_CRTC_CUR_EN);
+    OUTREG(RADEON_CRTC_GEN_CNTL, save & (CARD32)~RADEON_CRTC_CUR_EN);
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     switch(info->CurrentLayout.pixel_bytes) {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.4 2000/12/04 19:21:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.5 2000/12/21 08:45:42 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -148,7 +148,8 @@ void R128EngineReset(ScrnInfoPtr pScrn)
 
     OUTREG(R128_GEN_RESET_CNTL, gen_reset_cntl | R128_SOFT_RESET_GUI);
     INREG(R128_GEN_RESET_CNTL);
-    OUTREG(R128_GEN_RESET_CNTL, gen_reset_cntl & ~R128_SOFT_RESET_GUI);
+    OUTREG(R128_GEN_RESET_CNTL,
+	gen_reset_cntl & (CARD32)(~R128_SOFT_RESET_GUI));
     INREG(R128_GEN_RESET_CNTL);
 
     OUTPLL(R128_MCLK_CNTL,        mclk_cntl);
