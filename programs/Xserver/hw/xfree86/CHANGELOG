@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX May 2002)
+ 142. Fix Xft-def.cpp file for Cygwin/XFree86 (#5283, Harold Hunt).
  141. Server support for OpenBSD/sparc64 (Jason Wright, Matthieu Herrb).
  140. Alignment fixes for Xvideo on the Permedia3 (Alan Hourihane).
  139. lndir fix for paths containing '//' (H. J. Lu).
@@ -14802,4 +14803,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2219 2002/05/15 21:06:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2221 2002/05/22 21:38:21 herrb Exp $

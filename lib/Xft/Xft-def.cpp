@@ -145,6 +145,8 @@ XftInitFtLibrary
 XftConfigDirs
 XftDirScan
 XftDirSave
+XftDrawPicture
+XftDrawSrcPicture
 
 
-/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.1 2001/02/13 19:19:12 dawes Exp $ */
+/* $XFree86: xc/lib/Xft/Xft-def.cpp,v 1.2 2001/04/05 19:29:38 dawes Exp $ */
