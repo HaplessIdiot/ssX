@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.10 1999/03/14 11:17:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.11 1999/06/13 13:47:34 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -89,32 +89,34 @@ extern Time_t time ();
 			     (pci)->characterWidth)
 
 
-extern FontPtr find_old_font();
+extern FontPtr find_old_font(FSID id);
 
-extern int  _fs_build_range();
-
-static int  fs_read_glyphs();
-static int  fs_read_list();
-static int  fs_read_list_info();
+static int fs_read_glyphs ( FontPathElementPtr fpe, FSBlockDataPtr blockrec );
+static int fs_read_list ( FontPathElementPtr fpe, FSBlockDataPtr blockrec );
+static int fs_read_list_info ( FontPathElementPtr fpe, 
+			       FSBlockDataPtr blockrec );
 
 static int  fs_font_type;
 extern fd_set _fs_fd_mask;
 
-static void fs_block_handler();
-static int  fs_wakeup();
+static void fs_block_handler ( pointer data, struct timeval **wt, 
+			       fd_set * LastSelectMask );
+static int fs_wakeup ( FontPathElementPtr fpe, fd_set * LastSelectMask );
 
 static FSFpePtr awaiting_reconnect;
 
-void        _fs_connection_died();
-static int  _fs_restart_connection();
-static void _fs_try_reconnect();
-static int  fs_send_query_info();
-static int  fs_send_query_extents();
-static int  fs_send_query_bitmaps();
-static int  fs_send_close_font();
-static void fs_client_died();
-static void _fs_client_access();
-static void _fs_client_resolution();
+static int _fs_restart_connection ( FSFpePtr conn );
+static void _fs_try_reconnect ( void );
+static int fs_send_query_info ( FontPathElementPtr fpe, 
+				FSBlockDataPtr blockrec );
+static int fs_send_query_extents ( FontPathElementPtr fpe, 
+				   FSBlockDataPtr blockrec );
+static int fs_send_query_bitmaps ( FontPathElementPtr fpe, 
+				   FSBlockDataPtr blockrec );
+static int fs_send_close_font ( FontPathElementPtr fpe, Font id );
+static void fs_client_died ( pointer client, FontPathElementPtr fpe );
+static void _fs_client_access ( FSFpePtr conn, pointer client, Bool sync );
+static void _fs_client_resolution ( FSFpePtr conn );
 
 char _fs_glyph_undefined;
 char _fs_glyph_requested;
@@ -142,9 +144,7 @@ char _fs_glyph_zero_length;
 /* XXX this should probably be a macro once its fully debugged */
 /* ARGSUSED */
 static void
-_fs_add_req_log(conn, opcode)
-    FSFpePtr    conn;
-    int         opcode;
+_fs_add_req_log(FSFpePtr conn, int opcode)
 {
 
 #ifdef DEBUG
@@ -157,8 +157,7 @@ _fs_add_req_log(conn, opcode)
 }
 
 static Bool
-fs_name_check(name)
-    char       *name;
+fs_name_check(char *name)
 {
 #ifdef __EMX__
     /* OS/2 uses D:/XFree86/.... as fontfile pathnames, so check that
@@ -173,8 +172,7 @@ fs_name_check(name)
 }
 
 static void
-_fs_client_resolution(conn)
-    FSFpePtr    conn;
+_fs_client_resolution(FSFpePtr conn)
 {
     fsSetResolutionReq srreq;
     int         num_res;
@@ -199,8 +197,7 @@ _fs_client_resolution(conn)
  * sends the stuff that's meaningful to a newly opened or reset FS
  */
 static int
-fs_send_init_packets(conn)
-    FSFpePtr    conn;
+fs_send_init_packets(FSFpePtr conn)
 {
     fsSetResolutionReq srreq;
     fsSetCataloguesReq screq;
@@ -334,8 +331,7 @@ fail:
  */
 
 static void
-fs_close_conn(conn)
-    FSFpePtr	conn;
+fs_close_conn(FSFpePtr conn)
 {
     FSClientPtr	client, nclient;
 
@@ -362,8 +358,7 @@ fs_close_conn(conn)
  */
 /* ARGSUSED */
 static int
-fs_init_fpe(fpe)
-    FontPathElementPtr fpe;
+fs_init_fpe(FontPathElementPtr fpe)
 {
     FSFpePtr    conn;
     char       *name;
@@ -417,8 +412,7 @@ fs_init_fpe(fpe)
 }
 
 static int
-fs_reset_fpe(fpe)
-    FontPathElementPtr fpe;
+fs_reset_fpe(FontPathElementPtr fpe)
 {
     (void) fs_send_init_packets((FSFpePtr) fpe->private);
     return Successful;
@@ -429,8 +423,7 @@ fs_reset_fpe(fpe)
  */
 
 static int
-fs_free_fpe(fpe)
-    FontPathElementPtr fpe;
+fs_free_fpe(FontPathElementPtr fpe)
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     FSFpePtr    recon,
@@ -464,10 +457,7 @@ fs_free_fpe(fpe)
 }
 
 static      FSBlockDataPtr
-fs_new_block_rec(fpe, client, type)
-    FontPathElementPtr fpe;
-    pointer     client;
-    int         type;
+fs_new_block_rec(FontPathElementPtr fpe, pointer client, int type)
 {
     FSBlockDataPtr blockrec,
                 br;
@@ -518,9 +508,7 @@ fs_new_block_rec(fpe, client, type)
 }
 
 static void
-_fs_remove_block_rec(conn, blockrec)
-    FSFpePtr    conn;
-    FSBlockDataPtr blockrec;
+_fs_remove_block_rec(FSFpePtr conn, FSBlockDataPtr blockrec)
 {
     FSBlockDataPtr br,
                 last;
@@ -549,8 +537,7 @@ _fs_remove_block_rec(conn, blockrec)
 }
 
 static void
-signal_clients_depending(clients_depending)
-FSClientsDependingPtr *clients_depending;
+signal_clients_depending(FSClientsDependingPtr *clients_depending)
 {
     FSClientsDependingPtr p = *clients_depending, p2;
     *clients_depending = (FSClientsDependingPtr)0;
@@ -565,9 +552,7 @@ FSClientsDependingPtr *clients_depending;
 }
 
 static int
-add_clients_depending(clients_depending, client)
-FSClientsDependingPtr *clients_depending;
-pointer client;
+add_clients_depending(FSClientsDependingPtr *clients_depending, pointer client)
 {
     while (*clients_depending != (FSClientsDependingPtr)0)
     {
@@ -585,8 +570,7 @@ pointer client;
 }
 
 static void
-clean_aborted_blockrec(blockrec)
-    FSBlockDataPtr blockrec;
+clean_aborted_blockrec(FSBlockDataPtr blockrec)
 {
 
     switch(blockrec->type)
@@ -615,9 +599,7 @@ clean_aborted_blockrec(blockrec)
 }
 
 static void
-fs_abort_blockrec(conn, blockrec)
-    FSFpePtr    conn;
-    FSBlockDataPtr blockrec;
+fs_abort_blockrec(FSFpePtr conn, FSBlockDataPtr blockrec)
 {
     clean_aborted_blockrec(blockrec);
     _fs_remove_block_rec(conn, blockrec);
@@ -625,8 +607,7 @@ fs_abort_blockrec(conn, blockrec)
 
 
 static void
-fs_free_font(bfont)
-    FSBlockedFontPtr bfont;
+fs_free_font(FSBlockedFontPtr bfont)
 {
     FontPtr     pfont;
     FSFontDataRec *fsd;
@@ -648,8 +629,7 @@ fs_free_font(bfont)
 }
 
 static void
-_fs_cleanup_font(bfont)
-    FSBlockedFontPtr bfont;
+_fs_cleanup_font(FSBlockedFontPtr bfont)
 {
     FSFontDataRec *fsd;
 
@@ -667,9 +647,7 @@ _fs_cleanup_font(bfont)
 
 
 static int
-fs_read_open_font(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_read_open_font(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -744,9 +722,7 @@ fs_read_open_font(fpe, blockrec)
 
 
 static int
-fs_read_query_info(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_read_query_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -913,9 +889,7 @@ fs_read_query_info(fpe, blockrec)
 }
 
 static int
-fs_read_extent_info(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_read_extent_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
     FSFontDataPtr fsd = (FSFontDataPtr) bfont->pfont->fpePrivate;
@@ -1059,10 +1033,8 @@ fs_read_extent_info(fpe, blockrec)
  * it's our packet waiting, rather than another interspersed
  */
 static int
-fs_do_open_font(fpe, blockrec, readheader)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
-    Bool        readheader;
+fs_do_open_font(FontPathElementPtr fpe, FSBlockDataPtr blockrec, 
+		Bool readheader)
 {
     FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -1168,10 +1140,7 @@ fs_do_open_font(fpe, blockrec, readheader)
 
 /* ARGSUSED */
 static void
-fs_block_handler(data, wt, LastSelectMask)
-    pointer     data;
-    struct timeval **wt;
-    fd_set*      LastSelectMask;
+fs_block_handler(pointer data, struct timeval **wt, fd_set *LastSelectMask)
 {
     static struct timeval recon_timeout;
     Time_t      now,
@@ -1200,9 +1169,7 @@ fs_block_handler(data, wt, LastSelectMask)
 }
 
 static void
-fs_handle_unexpected(conn, rep)
-    FSFpePtr    conn;
-    fsGenericReply *rep;
+fs_handle_unexpected(FSFpePtr conn, fsGenericReply *rep)
 {
     if (rep->type == FS_Event && rep->data1 == KeepAlive) {
 	fsNoopReq   req;
@@ -1218,9 +1185,7 @@ fs_handle_unexpected(conn, rep)
 }
 
 static int
-fs_wakeup(fpe, LastSelectMask)
-    FontPathElementPtr fpe;
-    fd_set* LastSelectMask;
+fs_wakeup(FontPathElementPtr fpe, fd_set *LastSelectMask)
 {
     FSBlockDataPtr blockrec,
                 br;
@@ -1308,8 +1273,7 @@ fs_wakeup(fpe, LastSelectMask)
  */
 
 void
-_fs_connection_died(conn)
-    FSFpePtr    conn;
+_fs_connection_died(FSFpePtr conn)
 {
     if (!conn->attemptReconnect)
 	return;
@@ -1324,8 +1288,7 @@ _fs_connection_died(conn)
 }
 
 static int
-_fs_restart_connection(conn)
-    FSFpePtr    conn;
+_fs_restart_connection(FSFpePtr conn)
 {
     FSBlockDataPtr block;
 
@@ -1341,7 +1304,7 @@ _fs_restart_connection(conn)
 }
 
 static void
-_fs_try_reconnect()
+_fs_try_reconnect(void)
 {
     FSFpePtr    conn,
                *prev;
@@ -1371,16 +1334,10 @@ _fs_try_reconnect()
  */
 /* ARGSUSED */
 static int
-fs_send_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont)
-    pointer     client;
-    FontPathElementPtr fpe;
-    Mask        flags;
-    char       *name;
-    int         namelen;
-    fsBitmapFormat format;
-    fsBitmapFormatMask fmask;
-    XID         id;
-    FontPtr    *ppfont;
+fs_send_open_font(pointer client, FontPathElementPtr fpe, Mask flags, 
+		  char *name, int namelen, 
+		  fsBitmapFormat format, fsBitmapFormatMask fmask, 
+		  XID id, FontPtr *ppfont)
 {
     FontPtr     newfont;
     FSBlockDataPtr blockrec = NULL;
@@ -1556,9 +1513,7 @@ lowmem:
 }
 
 static int
-fs_send_query_info(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_send_query_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedFontPtr bfont;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -1578,9 +1533,7 @@ fs_send_query_info(fpe, blockrec)
 }
 
 static int
-fs_send_query_extents(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_send_query_extents(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedFontPtr bfont;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -1602,9 +1555,7 @@ fs_send_query_extents(fpe, blockrec)
 }
 
 static int
-fs_send_query_bitmaps(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_send_query_bitmaps(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedFontPtr bfont;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -1630,19 +1581,11 @@ fs_send_query_bitmaps(fpe, blockrec)
 
 /* ARGSUSED */
 static int
-fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
-	     alias, non_cachable_font)
-    pointer     client;
-    FontPathElementPtr fpe;
-    Mask        flags;
-    char       *name;
-    fsBitmapFormat format;
-    fsBitmapFormatMask fmask;
-    int         namelen;
-    XID         id;
-    FontPtr    *ppfont;
-    char      **alias;
-    FontPtr     non_cachable_font;	/* Not used in this FPE */
+fs_open_font(pointer client, FontPathElementPtr fpe, Mask flags, 
+	     char *name, int namelen, 
+	     fsBitmapFormat format, fsBitmapFormatMask fmask, 
+	     XID id, FontPtr *ppfont,
+	     char **alias, FontPtr non_cachable_font)
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     FSBlockDataPtr blockrec;
@@ -1677,9 +1620,7 @@ fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
 
 /* ARGSUSED */
 static int
-fs_send_close_font(fpe, id)
-    FontPathElementPtr fpe;
-    Font        id;
+fs_send_close_font(FontPathElementPtr fpe, Font id)
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     fsCloseReq  req;
@@ -1696,9 +1637,7 @@ fs_send_close_font(fpe, id)
 
 /* ARGSUSED */
 static int
-fs_close_font(fpe, pfont)
-    FontPathElementPtr fpe;
-    FontPtr     pfont;
+fs_close_font(FontPathElementPtr fpe, FontPtr pfont)
 {
     FSFontDataPtr fsd = (FSFontDataPtr) pfont->fpePrivate;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -1722,9 +1661,7 @@ fs_close_font(fpe, pfont)
 }
 
 static int
-fs_read_glyphs(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_read_glyphs(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedGlyphPtr bglyph = (FSBlockedGlyphPtr) blockrec->data;
     FSBlockedFontPtr bfont = (FSBlockedFontPtr) blockrec->data;
@@ -1891,11 +1828,8 @@ bail:
 
 
 static int
-fs_send_load_glyphs(client, pfont, nranges, ranges)
-    pointer     client;
-    FontPtr     pfont;
-    int		nranges;
-    fsRange	*ranges;
+fs_send_load_glyphs(pointer client, FontPtr pfont, 
+		    int nranges, fsRange *ranges)
 {
     FSBlockedGlyphPtr blockedglyph;
     fsQueryXBitmaps16Req req;
@@ -1976,8 +1910,7 @@ fs_send_load_glyphs(client, pfont, nranges, ranges)
 
 
 int
-fs_load_all_glyphs(pfont)
-    FontPtr	pfont;
+fs_load_all_glyphs(FontPtr pfont)
 {
     extern pointer serverClient;	/* This could be any number that
 					   doesn't conflict with existing
@@ -2024,13 +1957,8 @@ fs_load_all_glyphs(pfont)
 
 
 int
-_fs_load_glyphs(client, pfont, range_flag, nchars, item_size, data)
-    pointer     client;
-    FontPtr     pfont;
-    Bool	range_flag;
-    unsigned int nchars;
-    int         item_size;
-    unsigned char *data;
+_fs_load_glyphs(pointer client, FontPtr pfont, Bool range_flag, 
+		unsigned int nchars, int item_size, unsigned char *data)
 {
 
     int		nranges = 0;
@@ -2181,9 +2109,7 @@ _fs_load_glyphs(client, pfont, range_flag, nchars, item_size, data)
 
 
 static int
-fs_read_list(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_read_list(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedListPtr blist = (FSBlockedListPtr) blockrec->data;
     FSFpePtr    conn = (FSFpePtr) fpe->private;
@@ -2234,13 +2160,8 @@ fs_read_list(fpe, blockrec)
 }
 
 static int
-fs_send_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pattern;
-    int         patlen;
-    int         maxnames;
-    FontNamesPtr newnames;
+fs_send_list_fonts(pointer client, FontPathElementPtr fpe, char *pattern, 
+		   int patlen, int maxnames, FontNamesPtr newnames)
 {
     FSBlockDataPtr blockrec;
     FSBlockedListPtr blockedlist;
@@ -2284,13 +2205,8 @@ fs_send_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
 }
 
 static int
-fs_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pattern;
-    int         patlen;
-    int         maxnames;
-    FontNamesPtr newnames;
+fs_list_fonts(pointer client, FontPathElementPtr fpe, 
+	      char *pattern, int patlen, int maxnames, FontNamesPtr newnames)
 {
     FSBlockDataPtr blockrec;
     FSBlockedListPtr blockedlist;
@@ -2318,9 +2234,7 @@ fs_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
 static int  padlength[4] = {0, 3, 2, 1};
 
 static int
-fs_read_list_info(fpe, blockrec)
-    FontPathElementPtr fpe;
-    FSBlockDataPtr blockrec;
+fs_read_list_info(FontPathElementPtr fpe, FSBlockDataPtr blockrec)
 {
     FSBlockedListInfoPtr binfo = (FSBlockedListInfoPtr) blockrec->data;
     fsListFontsWithXInfoReply rep;
@@ -2448,13 +2362,8 @@ done:
 
 /* ARGSUSED */
 static int
-fs_start_list_with_info(client, fpe, pattern, len, maxnames, pdata)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pattern;
-    int         len;
-    int         maxnames;
-    pointer    *pdata;
+fs_start_list_with_info(pointer client, FontPathElementPtr fpe, 
+			char *pattern, int len, int maxnames, pointer *pdata)
 {
     FSBlockDataPtr blockrec;
     FSBlockedListInfoPtr blockedinfo;
@@ -2498,15 +2407,10 @@ fs_start_list_with_info(client, fpe, pattern, len, maxnames, pdata)
 
 /* ARGSUSED */
 static int
-fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
-		       private)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char      **namep;
-    int        *namelenp;
-    FontInfoPtr *pFontInfo;
-    int        *numFonts;
-    pointer     private;
+fs_next_list_with_info(pointer client, FontPathElementPtr fpe, 
+		       char **namep, int *namelenp, 
+		       FontInfoPtr *pFontInfo, int *numFonts,
+		       pointer private)
 {
     FSBlockDataPtr blockrec;
     FSBlockedListInfoPtr blockedinfo;
@@ -2561,9 +2465,7 @@ fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
  */
 
 static void
-fs_client_died(client, fpe)
-    pointer     client;
-    FontPathElementPtr fpe;
+fs_client_died(pointer client, FontPathElementPtr fpe)
 {
     FSFpePtr    conn = (FSFpePtr) fpe->private;
     FSBlockDataPtr blockrec,
@@ -2622,10 +2524,7 @@ fs_client_died(client, fpe)
 }
 
 static void
-_fs_client_access (conn, client, sync)
-    FSFpePtr	conn;
-    pointer	client;
-    Bool	sync;
+_fs_client_access (FSFpePtr conn, pointer client, Bool sync)
 {
     FSClientPtr	*prev,	    cur;
     fsCreateACReq	    crac;
@@ -2708,7 +2607,7 @@ _fs_client_access (conn, client, sync)
  */
 
 void
-fs_register_fpe_functions()
+fs_register_fpe_functions(void)
 {
     fs_font_type = RegisterFPEFunctions(fs_name_check,
 					fs_init_fpe,
@@ -2728,19 +2627,11 @@ fs_register_fpe_functions()
 }
 
 static int
-check_fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
-	     alias, non_cachable_font)
-    pointer     client;
-    FontPathElementPtr fpe;
-    Mask        flags;
-    char       *name;
-    fsBitmapFormat format;
-    fsBitmapFormatMask fmask;
-    int         namelen;
-    XID         id;
-    FontPtr    *ppfont;
-    char      **alias;
-    FontPtr     non_cachable_font;	/* Not used in this FPE */
+check_fs_open_font(pointer client, FontPathElementPtr fpe, Mask flags, 
+		   char *name, int namelen, 
+		   fsBitmapFormat format, fsBitmapFormatMask fmask, 
+		   XID id, FontPtr *ppfont,
+		   char **alias, FontPtr non_cachable_font)
 {
     if (XpClientIsBitmapClient(client))
 	return (fs_open_font(client, fpe, flags, name, namelen, format, 
@@ -2749,13 +2640,9 @@ check_fs_open_font(client, fpe, flags, name, namelen, format, fmask, id, ppfont,
 }
 
 static int
-check_fs_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pattern;
-    int         patlen;
-    int         maxnames;
-    FontNamesPtr newnames;
+check_fs_list_fonts(pointer client, FontPathElementPtr fpe, 
+		    char *pattern, int patlen, int maxnames, 
+		    FontNamesPtr newnames)
 {
     if (XpClientIsBitmapClient(client))
 	return (fs_list_fonts(client, fpe, pattern, patlen, maxnames, 
@@ -2764,13 +2651,9 @@ check_fs_list_fonts(client, fpe, pattern, patlen, maxnames, newnames)
 }
 
 static int
-check_fs_start_list_with_info(client, fpe, pattern, len, maxnames, pdata)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pattern;
-    int         len;
-    int         maxnames;
-    pointer    *pdata;
+check_fs_start_list_with_info(pointer client, FontPathElementPtr fpe, 
+			      char *pattern, int len, int maxnames, 
+			      pointer *pdata)
 {
     if (XpClientIsBitmapClient(client))
 	return (fs_start_list_with_info(client, fpe, pattern, len, maxnames,
@@ -2779,15 +2662,10 @@ check_fs_start_list_with_info(client, fpe, pattern, len, maxnames, pdata)
 }
 
 static int
-check_fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
-		       private)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char      **namep;
-    int        *namelenp;
-    FontInfoPtr *pFontInfo;
-    int        *numFonts;
-    pointer     private;
+check_fs_next_list_with_info(pointer client, FontPathElementPtr fpe, 
+			     char **namep, int *namelenp, 
+			     FontInfoPtr *pFontInfo, int *numFonts,
+			     pointer private)
 {
     if (XpClientIsBitmapClient(client))
 	return (fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, 
@@ -2796,7 +2674,7 @@ check_fs_next_list_with_info(client, fpe, namep, namelenp, pFontInfo, numFonts,
 }
 
 void
-check_fs_register_fpe_functions()
+check_fs_register_fpe_functions(void)
 {
     fs_font_type = RegisterFPEFunctions(fs_name_check,
 					fs_init_fpe,

@@ -1,16 +1,10 @@
-/* $XConsortium: bdfint.h,v 1.3 94/04/17 20:17:09 rws Exp $ */
+/* $TOG: bdfint.h /main/5 1998/05/01 16:42:08 kaleb $ */
 
 /*
 
-Copyright (c) 1990  X Consortium
+Copyright 1990, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,17 +12,18 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifndef BDFINT_H
 #define BDFINT_H
@@ -69,12 +64,23 @@ typedef struct BDFSTAT {
     BOOL        haveDefaultCh;
 }           bdfFileState;
 
-extern unsigned char *bdfGetLine();
+extern void bdfError ( char * message, ... );
+extern void bdfWarning ( char *message, ... );
+extern unsigned char * bdfGetLine ( FontFilePtr file, unsigned char *buf, 
+				    int len );
+extern Atom bdfForceMakeAtom ( char *str, int *size );
+extern Atom bdfGetPropertyValue ( char *s );
+extern int bdfIsInteger ( char *str );
+extern unsigned char bdfHexByte ( char *s );
+extern Bool bdfSpecialProperty ( FontPtr pFont, FontPropPtr prop, 
+				 char isString, bdfFileState *bdfState );
+extern int bdfReadFont( FontPtr pFont, FontFilePtr file, 
+			int bit, int byte, int glyph, int scan );
+extern int bdfReadFontInfo( FontInfoPtr pFontInfo, FontFilePtr file );
 
-extern void bdfError();
-extern void bdfWarning();
-extern Atom bdfForceMakeAtom();
-extern Atom bdfGetPropertyValue();
-extern unsigned char bdfHexByte();
+extern void FontCharInkMetrics ( FontPtr pFont, CharInfoPtr pCI, 
+				 xCharInfo *pInk );
+extern void FontCharReshape ( FontPtr pFont, CharInfoPtr pSrc, 
+			      CharInfoPtr pDst );
 
 #endif				/* BDFINT_H */

@@ -1,3 +1,14 @@
+XFree86 3.9Py (17 July 1999)
+2888. ISO 10646-1 version of the 5x7 and 6x13B fonts, and an update for the
+      6x13 font (#3017, Markus Kuhn).
+2887. First part of the ansification of xc/lib/fonts.  So far the bitmap,
+      fc and fontfile directories have been done (#3016, Matthieu Herrb).
+2886. Fix default PC98 XKB setting (#3015, Akio Morita).
+2885. Remove the reference to VGADriverDoc in xfree86/Imakefile (#3015,
+      Takaaki Nomura).
+2884. Fix a bug in Xaw/TextPop.c (#3014, Paulo Cesar Pereira de Andrade).
+2883. Man page update for xfontsel (#3013, Paulo Cesar Pereira de Andrade).
+
 XFree86 3.9Px (12 July 1999)
 2882. Updates to get XF86Setup to build again after the NewInput-related
       changes, and have XF86Setup print a short message stating that it
@@ -8429,4 +8440,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.799 1999/07/12 05:57:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.800 1999/07/12 08:14:21 dawes Exp $

@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.4 1999/01/31 12:21:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.5 1999/06/13 13:47:32 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -55,13 +55,10 @@ from The Open Group.
 #include "bitmap.h"
 #include "snfstr.h"
 
-static void snfUnloadFont();
+static void snfUnloadFont(FontPtr pFont);
 
 static int
-snfReadCharInfo(file, charInfo, base)
-    FontFilePtr file;
-    CharInfoPtr charInfo;
-    char       *base;
+snfReadCharInfo(FontFilePtr file, CharInfoPtr charInfo, char *base)
 {
     snfCharInfoRec snfCharInfo;
 
@@ -81,9 +78,7 @@ snfReadCharInfo(file, charInfo, base)
 }
 
 static int
-snfReadxCharInfo(file, charInfo)
-    FontFilePtr file;
-    xCharInfo  *charInfo;
+snfReadxCharInfo(FontFilePtr file, xCharInfo *charInfo)
 {
     snfCharInfoRec snfCharInfo;
 
@@ -96,9 +91,7 @@ snfReadxCharInfo(file, charInfo)
 }
 
 static void
-snfCopyInfo(snfInfo, pFontInfo)
-    snfFontInfoPtr snfInfo;
-    FontInfoPtr pFontInfo;
+snfCopyInfo(snfFontInfoPtr snfInfo, FontInfoPtr pFontInfo)
 {
     pFontInfo->firstCol = snfInfo->firstCol;
     pFontInfo->lastCol = snfInfo->lastCol;
@@ -124,10 +117,7 @@ snfCopyInfo(snfInfo, pFontInfo)
 }
 
 static int
-snfReadProps(snfInfo, pFontInfo, file)
-    snfFontInfoPtr snfInfo;
-    FontInfoPtr pFontInfo;
-    FontFilePtr file;
+snfReadProps(snfFontInfoPtr snfInfo, FontInfoPtr pFontInfo, FontFilePtr file)
 {
     char       *strings;
     FontPropPtr pfp;
@@ -165,10 +155,8 @@ snfReadProps(snfInfo, pFontInfo, file)
     return Successful;
 }
 
-int
-snfReadHeader(snfInfo, file)
-    snfFontInfoPtr snfInfo;
-    FontFilePtr file;
+static int
+snfReadHeader(snfFontInfoPtr snfInfo, FontFilePtr file)
 {
     if (FontFileRead(file, (char *) snfInfo, sizeof *snfInfo) != sizeof *snfInfo)
 	return BadFontName;
@@ -183,8 +171,7 @@ static int  snf_set;
 static int  snf_bit, snf_byte, snf_glyph, snf_scan;
 
 void
-SnfSetFormat (bit, byte, glyph, scan)
-    int	bit, byte, glyph, scan;
+SnfSetFormat (int bit, int byte, int glyph, int scan)
 {
     snf_bit = bit;
     snf_byte = byte;
@@ -193,9 +180,8 @@ SnfSetFormat (bit, byte, glyph, scan)
     snf_set = 1;
 }
 
-void
-SnfGetFormat (bit, byte, glyph, scan)
-    int	*bit, *byte, *glyph, *scan;
+static void
+SnfGetFormat (int *bit, int *byte, int *glyph, int *scan)
 {
     if (!snf_set)
 	FontDefaultFormat (&snf_bit, &snf_byte, &snf_glyph, &snf_scan);
@@ -206,13 +192,8 @@ SnfGetFormat (bit, byte, glyph, scan)
 }
 
 int
-snfReadFont(pFont, file, bit, byte, glyph, scan)
-    FontPtr     pFont;
-    FontFilePtr file;
-    int         bit,
-                byte,
-                glyph,
-                scan;
+snfReadFont(FontPtr pFont, FontFilePtr file, 
+	    int bit, int byte, int glyph, int scan)
 {
     snfFontInfoRec fi;
     unsigned    bytestoalloc;
@@ -423,9 +404,7 @@ snfReadFont(pFont, file, bit, byte, glyph, scan)
 }
 
 int
-snfReadFontInfo(pFontInfo, file)
-    FontInfoPtr pFontInfo;
-    FontFilePtr file;
+snfReadFontInfo(FontInfoPtr pFontInfo, FontFilePtr file)
 {
     int         ret;
     snfFontInfoRec fi;
@@ -448,7 +427,7 @@ snfReadFontInfo(pFontInfo, file)
     num_chars = n2dChars(&fi);
     bytestoskip = num_chars * sizeof(snfCharInfoRec);	/* charinfos */
     bytestoskip += BYTESOFGLYPHINFO(&fi);
-    FontFileSkip(file, bytestoskip);
+    (void)FontFileSkip(file, bytestoskip);
 
     ret = snfReadProps(&fi, pFontInfo, file);
     if (ret != Successful) {
@@ -478,8 +457,7 @@ snfReadFontInfo(pFontInfo, file)
 }
 
 static void
-snfUnloadFont(pFont)
-    FontPtr	    pFont;
+snfUnloadFont(FontPtr pFont)
 {
     BitmapFontPtr   bitmapFont;
 

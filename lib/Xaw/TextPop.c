@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.11 1999/06/20 08:41:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextPop.c,v 1.12 1999/07/11 08:49:15 dawes Exp $ */
 
 /*
  * This file is broken up into three sections one dealing with
@@ -460,7 +460,7 @@ _XawTextPopdownSearchAction(Widget w, XEvent *event,
 
 /*
  * Function:
- *	PopdownSeach
+ *	PopdownSearch
  *
  * Parameters:
  *	w	  - (not used)
@@ -1092,6 +1092,7 @@ Replace(struct SearchAndReplace *search, Bool once_only, Bool show_current)
 		break;
 	    else {
 		DoSearch(search);
+		XawTextEnableRedisplay(tw);
 
 		return (True);
 	    }

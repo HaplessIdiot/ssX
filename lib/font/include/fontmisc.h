@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.6 1999/01/31 12:21:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.7 1999/04/27 07:08:58 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -88,7 +88,9 @@ typedef CARD32 Atom;
 #define FALSE 0
 #endif
 
-extern char	    *NameForAtom ();
+extern Atom MakeAtom ( char *string, unsigned len, int makeit );
+extern int ValidAtom ( Atom atom );
+extern char *NameForAtom (Atom atom);
 
 extern pointer Xalloc(unsigned long);
 extern pointer Xrealloc(pointer, unsigned long);
@@ -136,6 +138,12 @@ RepadBitmap (
     unsigned,
     int, 
     int
+);
+
+extern void CopyISOLatin1Lowered(
+    unsigned char * /*dest*/,
+    unsigned char * /*source*/,
+    int /*length*/
 );
 
 #endif /* _FONTMISC_H_ */

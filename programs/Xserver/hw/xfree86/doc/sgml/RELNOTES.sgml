@@ -9,7 +9,7 @@
 <date>12 July 1999 (this document needs work!)
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.6 1999/07/11 08:49:23 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.7 1999/07/12 07:47:50 dawes Exp $
 </ident>
 
 <abstract>
@@ -76,7 +76,7 @@ older modules working with newer core X server binaries).
 
 </quote>
 
-<sect1>Configuration File
+<sect1>Configuration File <label id="config">
 <p>
 
 <sect1>Command Line Options
@@ -384,6 +384,20 @@ Known problems:
 	xterm (will be needed for instance for the Thai script).
 
 </itemize>
+
+
+<sect>Miscellaneous
+<p>
+
+<sect1>Directory rearrangements
+<p>
+
+Some changes to the installed XFree86 directory structure have been
+planned for 4.0.  Not all of these changes have been implemented in this
+snapshot, and they will appear in a future snapshot.  One important
+change that has been implemented is a modified search path for the X
+server's <tt>XF86Config</tt> file.  The details of this can be found
+above in the <ref id="config" name="Configuration File"> section.
 
 
 

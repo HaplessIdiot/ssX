@@ -23,7 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsio.c,v 3.6 1998/04/05 00:45:44 robin Exp $ */
+/* $XFree86: xc/lib/font/fc/fsio.c,v 3.7 1998/10/03 09:07:24 dawes Exp $ */
 /*
  * font server i/o routines
  */
@@ -100,8 +100,6 @@ extern int errno;
 static int  padlength[4] = {0, 3, 2, 1};
 fd_set _fs_fd_mask;
 
-int  _fs_wait_for_readable();
-
 #ifdef SIGNALRETURNSINT
 #define SIGNAL_T int
 #else
@@ -110,23 +108,20 @@ int  _fs_wait_for_readable();
 
 /* ARGSUSED */
 static      SIGNAL_T
-_fs_alarm(foo)
-    int         foo;
+_fs_alarm(int foo)
 {
     return;
 }
 
 static XtransConnInfo
-_fs_connect(servername, timeout)
-    char       *servername;
-    int         timeout;
+_fs_connect(char *servername, int timeout)
 {
     XtransConnInfo trans_conn;		/* transport connection object */
     int         ret = -1;
 #ifdef SIGALRM
     unsigned    oldTime;
 
-    SIGNAL_T(*oldAlarm) ();
+    SIGNAL_T(*oldAlarm) (int);
 #endif
 
     /*
@@ -170,11 +165,8 @@ static int  generationCount;
 
 /* ARGSUSED */
 static Bool
-_fs_setup_connection(conn, servername, timeout, copy_name_p)
-    FSFpePtr    conn;
-    char       *servername;
-    int         timeout;
-    Bool	copy_name_p;
+_fs_setup_connection(FSFpePtr conn, char *servername, int timeout, 
+		     Bool copy_name_p)
 {
     fsConnClientPrefix prefix;
     fsConnSetup rep;
@@ -305,9 +297,7 @@ _fs_setup_connection(conn, servername, timeout, copy_name_p)
 }
 
 static Bool
-_fs_try_alternates(conn, timeout)
-    FSFpePtr    conn;
-    int         timeout;
+_fs_try_alternates(FSFpePtr conn, int timeout)
 {
     int         i;
 
@@ -321,8 +311,7 @@ _fs_try_alternates(conn, timeout)
 #define FS_REOPEN_TIMEOUT   10
 
 FSFpePtr
-_fs_open_server(servername)
-    char       *servername;
+_fs_open_server(char *servername)
 {
     FSFpePtr    conn;
 
@@ -343,8 +332,7 @@ _fs_open_server(servername)
 }
 
 Bool
-_fs_reopen_server(conn)
-    FSFpePtr    conn;
+_fs_reopen_server(FSFpePtr conn)
 {
     if (_fs_setup_connection(conn, conn->servername, FS_REOPEN_TIMEOUT, FALSE))
 	return TRUE;
@@ -358,10 +346,7 @@ _fs_reopen_server(conn)
  * numbers of replies, but rather to get each chunk
  */
 int
-_fs_read(conn, data, size)
-    FSFpePtr    conn;
-    char       *data;
-    unsigned long size;
+_fs_read(FSFpePtr conn, char *data, unsigned long size)
 {
     long        bytes_read;
 #if defined(SVR4) && defined(i386)
@@ -423,10 +408,7 @@ _fs_read(conn, data, size)
 }
 
 int
-_fs_write(conn, data, size)
-    FSFpePtr    conn;
-    char       *data;
-    unsigned long size;
+_fs_write(FSFpePtr conn, char *data, unsigned long size)
 {
     long        bytes_written;
 
@@ -468,10 +450,7 @@ _fs_write(conn, data, size)
 }
 
 int
-_fs_read_pad(conn, data, len)
-    FSFpePtr    conn;
-    char       *data;
-    int         len;
+_fs_read_pad(FSFpePtr conn, char *data, int len)
 {
     char        pad[3];
 
@@ -486,10 +465,7 @@ _fs_read_pad(conn, data, len)
 }
 
 int
-_fs_write_pad(conn, data, len)
-    FSFpePtr    conn;
-    char       *data;
-    int         len;
+_fs_write_pad(FSFpePtr conn, char *data, int len)
 {
     static char pad[3];
 
@@ -507,8 +483,7 @@ _fs_write_pad(conn, data, len)
  * returns the amount of data waiting to be read
  */
 int
-_fs_data_ready(conn)
-    FSFpePtr    conn;
+_fs_data_ready(FSFpePtr conn)
 {
     BytesReadable_t readable;
 
@@ -518,8 +493,7 @@ _fs_data_ready(conn)
 }
 
 int
-_fs_wait_for_readable(conn)
-    FSFpePtr    conn;
+_fs_wait_for_readable(FSFpePtr conn)
 {
 #ifndef AMOEBA
     fd_set r_mask;
@@ -556,42 +530,32 @@ _fs_wait_for_readable(conn)
 }
 
 int
-_fs_set_bit(mask, fd)
-    fd_set* mask;
-    int         fd;
+_fs_set_bit(fd_set *mask, int fd)
 {
     FD_SET(fd, mask);
     return fd;
 }
 
 int
-_fs_is_bit_set(mask, fd)
-    fd_set* mask;
-    int         fd;
+_fs_is_bit_set(fd_set *mask, int fd)
 {
     return FD_ISSET(fd, mask);
 }
 
 void
-_fs_bit_clear(mask, fd)
-    fd_set* mask;
-    int         fd;
+_fs_bit_clear(fd_set *mask, int fd)
 {
     FD_CLR(fd, mask);
 }
 
 int
-_fs_any_bit_set(mask)
-    fd_set* mask;
+_fs_any_bit_set(fd_set *mask)
 {
     return XFD_ANYSET(mask);
 }
 
 void
-_fs_or_bits(dst, m1, m2)
-    fd_set* dst;
-    fd_set* m1;
-    fd_set* m2;
+_fs_or_bits(fd_set *dst, fd_set *m1, fd_set *m2)
 {
 #ifdef WIN32
     int i;
@@ -613,9 +577,7 @@ _fs_or_bits(dst, m1, m2)
 }
 
 int
-_fs_drain_bytes(conn, len)
-    FSFpePtr    conn;
-    int         len;
+_fs_drain_bytes(FSFpePtr conn, int len)
 {
     char        buf[128];
 
@@ -632,9 +594,7 @@ _fs_drain_bytes(conn, len)
 }
 
 void
-_fs_drain_bytes_pad(conn, len)
-    FSFpePtr    conn;
-    int         len;
+_fs_drain_bytes_pad(FSFpePtr conn, int len)
 {
     _fs_drain_bytes(conn, len);
 
@@ -645,9 +605,7 @@ _fs_drain_bytes_pad(conn, len)
 }
 
 void
-_fs_eat_rest_of_error(conn, err)
-    FSFpePtr    conn;
-    fsError    *err;
+_fs_eat_rest_of_error(FSFpePtr conn, fsError *err)
 {
     int         len = (err->length - (SIZEOF(fsGenericReply) >> 2)) << 2;
 

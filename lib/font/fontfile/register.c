@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/register.c,v 1.9 1999/02/07 06:18:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/register.c,v 1.10 1999/05/15 12:10:10 dawes Exp $ */
 
 /*
  * This is in a separate source file so that small programs
@@ -36,7 +36,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 void
-FontFileRegisterFpeFunctions()
+FontFileRegisterFpeFunctions(void)
 {
 #ifndef LOADABLEFONTS
     BitmapRegisterFontFileFunctions ();

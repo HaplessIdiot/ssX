@@ -46,7 +46,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.4 1999/03/14 11:17:45 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bdfread.c,v 1.5 1999/06/13 13:47:31 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -61,20 +61,14 @@ from The Open Group.
 #define MAXENCODING 0xFFFF
 #define BDFLINELEN  1024
 
-static Bool bdfPadToTerminal();
+static Bool bdfPadToTerminal(FontPtr pFont);
 extern int  bdfFileLineNum;
 
 /***====================================================================***/
 
 static Bool
-bdfReadBitmap(pCI, file, bit, byte, glyph, scan, sizes)
-    CharInfoPtr pCI;
-    FontFilePtr file;
-    int         bit,
-                byte,
-                glyph,
-                scan;
-    int         sizes[GLYPHPADOPTIONS];
+bdfReadBitmap(CharInfoPtr pCI, FontFilePtr file, int bit, int byte, 
+	      int glyph, int scan, CARD32 *sizes)
 {
     int         widthBits,
                 widthBytes,
@@ -194,9 +188,7 @@ BAILOUT:
 /***====================================================================***/
 
 static Bool
-bdfSkipBitmap(file, height)
-    FontFilePtr file;
-    int         height;
+bdfSkipBitmap(FontFilePtr file, int height)
 {
     unsigned char *line;
     int         i = 0;
@@ -217,8 +209,7 @@ bdfSkipBitmap(file, height)
 /***====================================================================***/
 
 static void
-bdfFreeFontBits(pFont)
-    FontPtr pFont;
+bdfFreeFontBits(FontPtr pFont)
 {
     BitmapFontPtr  bitmapFont;
     BitmapExtraPtr bitmapExtra;
@@ -243,14 +234,8 @@ bdfFreeFontBits(pFont)
 
 
 static Bool
-bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
-    FontFilePtr file;
-    FontPtr     pFont;
-    bdfFileState *pState;
-    int         bit,
-                byte,
-                glyph,
-                scan;
+bdfReadCharacters(FontFilePtr file, FontPtr pFont, bdfFileState *pState, 
+		  int bit, int byte, int glyph, int scan)
 {
     unsigned char *line;
     register CharInfoPtr ci;
@@ -348,7 +333,7 @@ bdfReadCharacters(file, pFont, pState, bit, byte, glyph, scan)
 	    bdfError("bad 'ENCODING' in BDF file\n");
 	    goto BAILOUT;
 	}
-	if (enc < -1 || t == 2 && enc2 < -1) {
+	if (enc < -1 || (t == 2 && enc2 < -1)) {
 	    bdfError("bad ENCODING value");
 	    goto BAILOUT;
 	}
@@ -529,9 +514,7 @@ BAILOUT:
 /***====================================================================***/
 
 static Bool
-bdfReadHeader(file, pState)
-    FontFilePtr file;
-    bdfFileState *pState;
+bdfReadHeader(FontFilePtr file, bdfFileState *pState)
 {
     unsigned char *line;
     char        namebuf[BDFLINELEN];
@@ -574,10 +557,7 @@ bdfReadHeader(file, pState)
 /***====================================================================***/
 
 static Bool
-bdfReadProperties(file, pFont, pState)
-    FontFilePtr file;
-    FontPtr     pFont;
-    bdfFileState *pState;
+bdfReadProperties(FontFilePtr file, FontPtr pFont, bdfFileState *pState)
 {
     int         nProps, props_left,
                 nextProp;
@@ -772,21 +752,15 @@ BAILOUT:
 /***====================================================================***/
 
 static void
-bdfUnloadFont(pFont)
-    FontPtr     pFont;
+bdfUnloadFont(FontPtr pFont)
 {
     bdfFreeFontBits (pFont);
     DestroyFontRec(pFont);
 }
 
 int
-bdfReadFont(pFont, file, bit, byte, glyph, scan)
-    FontPtr     pFont;
-    FontFilePtr file;
-    int         bit,
-                byte,
-                glyph,
-                scan;
+bdfReadFont(FontPtr pFont, FontFilePtr file, 
+	    int bit, int byte, int glyph, int scan)
 {
     bdfFileState state;
     xCharInfo  *min,
@@ -889,9 +863,7 @@ BAILOUT:
 }
 
 int
-bdfReadFontInfo(pFontInfo, file)
-    FontInfoPtr pFontInfo;
-    FontFilePtr file;
+bdfReadFontInfo(FontInfoPtr pFontInfo, FontFilePtr file)
 {
     FontRec     font;
     int         ret;
@@ -910,8 +882,7 @@ bdfReadFontInfo(pFontInfo, file)
 }
 
 static Bool
-bdfPadToTerminal(pFont)
-    FontPtr     pFont;
+bdfPadToTerminal(FontPtr pFont)
 {
     BitmapFontPtr  bitmapFont;
     BitmapExtraPtr bitmapExtra;

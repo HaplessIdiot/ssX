@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.9 1999/02/07 06:18:25 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.10 1999/05/15 12:10:09 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -37,31 +37,17 @@ in this Software without prior written authorization from The Open Group.
  * Map FPE functions to renderer functions
  */
 
-extern int FontFileNameCheck();
-extern int FontFileInitFPE();
-extern int FontFileResetFPE();
-extern int FontFileFreeFPE();
-extern void FontFileCloseFont();
-
 
 /* Here we must check the client to see if it has a context attached to
  * it that allows us to access the printer fonts
  */
 
-int
-FontFileCheckOpenFont (client, fpe, flags, name, namelen, format, fmask,
-		  id, pFont, aliasName, non_cachable_font)
-    pointer		client;
-    FontPathElementPtr	fpe;
-    int			flags;
-    char		*name;
-    int			namelen;
-    fsBitmapFormat	format;
-    fsBitmapFormatMask	fmask;
-    XID			id;
-    FontPtr		*pFont;
-    char		**aliasName;
-    FontPtr		non_cachable_font;
+static int
+FontFileCheckOpenFont (pointer client, FontPathElementPtr fpe, int flags, 
+		       char *name, int namelen, 
+		       fsBitmapFormat format, fsBitmapFormatMask fmask,
+		       XID id, FontPtr *pFont, char **aliasName, 
+		       FontPtr non_cachable_font)
 {
     if (XpClientIsBitmapClient(client))
 	return (FontFileOpenFont  (client, fpe, flags, name, namelen, format, 
@@ -69,28 +55,19 @@ FontFileCheckOpenFont (client, fpe, flags, name, namelen, format, fmask,
     return BadFontName;
 }
 
-int
-FontFileCheckListFonts (client, fpe, pat, len, max, names)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pat;
-    int         len;
-    int         max;
-    FontNamesPtr names;
+static int
+FontFileCheckListFonts (pointer client, FontPathElementPtr fpe, 
+			char *pat, int len, int max, FontNamesPtr names)
 {
     if (XpClientIsBitmapClient(client))
 	return FontFileListFonts (client, fpe, pat, len, max, names);
     return BadFontName;
 }
 
-int
-FontFileCheckStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pat;
-    int         len;
-    int         max;
-    pointer    *privatep;
+static int
+FontFileCheckStartListFontsWithInfo(pointer client, FontPathElementPtr fpe, 
+				    char *pat, int len, int max, 
+				    pointer *privatep)
 {
     if (XpClientIsBitmapClient(client))
 	return FontFileStartListFontsWithInfo(client, fpe, pat, len, 
@@ -98,16 +75,11 @@ FontFileCheckStartListFontsWithInfo(client, fpe, pat, len, max, privatep)
     return BadFontName;
 }
 
-int
-FontFileCheckListNextFontWithInfo(client, fpe, namep, namelenp, pFontInfo,
-			     numFonts, private)
-    pointer		client;
-    FontPathElementPtr	fpe;
-    char		**namep;
-    int			*namelenp;
-    FontInfoPtr		*pFontInfo;
-    int			*numFonts;
-    pointer		private;
+static int
+FontFileCheckListNextFontWithInfo(pointer client, FontPathElementPtr fpe, 
+				  char **namep, int *namelenp, 
+				  FontInfoPtr *pFontInfo,
+				  int *numFonts, pointer private)
 {
     if (XpClientIsBitmapClient(client))
 	return FontFileListNextFontWithInfo(client, fpe, namep, namelenp, 
@@ -115,14 +87,10 @@ FontFileCheckListNextFontWithInfo(client, fpe, namep, namelenp, pFontInfo,
     return BadFontName;
 }
 
-int
-FontFileCheckStartListFontsAndAliases(client, fpe, pat, len, max, privatep)
-    pointer     client;
-    FontPathElementPtr fpe;
-    char       *pat;
-    int         len;
-    int         max;
-    pointer    *privatep;
+static int
+FontFileCheckStartListFontsAndAliases(pointer client, FontPathElementPtr fpe, 
+				      char *pat, int len, int max, 
+				      pointer *privatep)
 {
     if (XpClientIsBitmapClient(client))
 	return FontFileStartListFontsAndAliases(client, fpe, pat, len, 
@@ -130,16 +98,11 @@ FontFileCheckStartListFontsAndAliases(client, fpe, pat, len, max, privatep)
     return BadFontName;
 }
 
-int
-FontFileCheckListNextFontOrAlias(client, fpe, namep, namelenp, resolvedp,
-			    resolvedlenp, private)
-    pointer		client;
-    FontPathElementPtr	fpe;
-    char		**namep;
-    int			*namelenp;
-    char		**resolvedp;
-    int			*resolvedlenp;
-    pointer		private;
+static int
+FontFileCheckListNextFontOrAlias(pointer client, FontPathElementPtr fpe, 
+				 char **namep, int *namelenp, 
+				 char **resolvedp, int *resolvedlenp, 
+				 pointer private)
 {
     if (XpClientIsBitmapClient(client))
 	return FontFileListNextFontOrAlias(client, fpe, namep, namelenp, 
@@ -147,12 +110,11 @@ FontFileCheckListNextFontOrAlias(client, fpe, namep, namelenp, resolvedp,
     return BadFontName;
 }
 
-extern void FontFileEmptyBitmapSource();
-typedef int (*IntFunc) ();
+typedef int (*IntFunc) (void);
 static int  font_file_check_type;
 
 void
-FontFileCheckRegisterFpeFunctions ()
+FontFileCheckRegisterFpeFunctions (void)
 {
 #ifndef LOADABLEFONTS
     BitmapRegisterFontFileFunctions ();

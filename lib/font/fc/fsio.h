@@ -23,6 +23,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
+/* $XFree86$ */
 
 #ifndef	_FSIO_H_
 #define	_FSIO_H_
@@ -76,7 +77,23 @@ typedef struct _fs_fpe_data {
     struct _XtransConnInfo *trans_conn; /* transport connection object */
 }           FSFpeRec, *FSFpePtr;
 
-FSFpePtr    _fs_open_server();
-void        _fs_bit_clear();
+extern FSFpePtr _fs_open_server ( char *servername );
+extern Bool _fs_reopen_server ( FSFpePtr conn );
+extern int _fs_read ( FSFpePtr conn, char *data, unsigned long size );
+extern int _fs_write ( FSFpePtr conn, char *data, unsigned long size );
+extern int _fs_read_pad ( FSFpePtr conn, char *data, int len );
+extern int _fs_write_pad ( FSFpePtr conn, char *data, int len );
+extern int _fs_data_ready ( FSFpePtr conn );
+extern int _fs_wait_for_readable ( FSFpePtr conn );
+extern int _fs_set_bit ( fd_set * mask, int fd );
+extern int _fs_is_bit_set ( fd_set * mask, int fd );
+extern void _fs_bit_clear ( fd_set * mask, int fd );
+extern int _fs_any_bit_set ( fd_set * mask );
+extern void _fs_or_bits ( fd_set * dst, fd_set * m1, fd_set * m2 );
+extern int _fs_drain_bytes ( FSFpePtr conn, int len );
+extern void _fs_drain_bytes_pad ( FSFpePtr conn, int len );
+extern void _fs_eat_rest_of_error ( FSFpePtr conn, fsError *err );
+
+extern void _fs_connection_died ( FSFpePtr conn );
 
 #endif				/* _FSIO_H_ */

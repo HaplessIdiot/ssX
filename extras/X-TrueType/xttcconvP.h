@@ -246,7 +246,13 @@ codeconv_search_map_id(CharSetSelectionHints const *charSetHints,
 #ifdef FONTMODULE
 /* for New Designed XFree86 font module */
 
+/*
+ * This is moved to xttcommon.h because it needs to be included before
+ * "xf86_ansic.h"
+ */
+#if 0
 #include "xf86Module.h"
+#endif
 #include "xttversion.h"
 #include "cconvversion.h"
 

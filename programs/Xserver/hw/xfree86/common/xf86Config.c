@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.186 1999/06/27 14:07:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.187 1999/07/11 10:27:03 dawes Exp $ */
 
 
 /*
@@ -706,7 +706,7 @@ configKeyboard(XF86ConfKeyboardPtr keybconf)
     xf86Info.xkbvariant    = NULL;
     xf86Info.xkboptions    = NULL;
   } else {
-    xf86Info.xkbrules      = "xfree98";
+    xf86Info.xkbrules      = "xfree86";
     xf86Info.xkbmodel      = "pc98";
     xf86Info.xkblayout     = "nec/jp";
     xf86Info.xkbvariant    = NULL;

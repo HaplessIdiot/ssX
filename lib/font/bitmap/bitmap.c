@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/bitmap/bitmap.c,v 1.3 1999/03/14 14:39:39 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -31,13 +31,10 @@ in this Software without prior written authorization from The Open Group.
 #include "bitmap.h"
 
 int
-bitmapGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;	/* RETURN */
-    CharInfoPtr *glyphs;	/* RETURN */
+bitmapGetGlyphs(FontPtr pFont, unsigned long count, unsigned char *chars, 
+		FontEncoding charEncoding, 
+		unsigned long *glyphCount, 	/* RETURN */
+		CharInfoPtr *glyphs) 		/* RETURN */
 {
     BitmapFontPtr  bitmapFont;
     unsigned int firstCol;
@@ -124,13 +121,10 @@ bitmapGetGlyphs(pFont, count, chars, charEncoding, glyphCount, glyphs)
 static CharInfoRec nonExistantChar;
 
 int
-bitmapGetMetrics(pFont, count, chars, charEncoding, glyphCount, glyphs)
-    FontPtr     pFont;
-    unsigned long count;
-    register unsigned char *chars;
-    FontEncoding charEncoding;
-    unsigned long *glyphCount;	/* RETURN */
-    xCharInfo **glyphs;		/* RETURN */
+bitmapGetMetrics(FontPtr pFont, unsigned long count, unsigned char *chars, 
+		 FontEncoding charEncoding, 
+		 unsigned long *glyphCount,	/* RETURN */
+		 xCharInfo **glyphs)		/* RETURN */
 {
     int         ret;
     xCharInfo  *ink_metrics;

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.6 1998/10/03 09:07:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.7 1999/06/13 13:47:31 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -30,21 +30,19 @@ in this Software without prior written authorization from The Open Group.
 
 #include "fntfilst.h"
 #include "bitmap.h"
+#include "fontutil.h"
+#include "bdfint.h"
+#include "pcf.h"
+#include "snfstr.h"
 
 typedef struct _BitmapFileFunctions {
-    int         (*ReadFont) ( /* pFont, file, bit, byte, glyph, scan */ );
-    int         (*ReadInfo) ( /* pFontInfo, file */ );
+    int         (*ReadFont) (FontPtr /* pFont */, FontFilePtr /* file */,  
+			     int /* bit */, int /* byte */, 
+			     int /* glyph */, int /* scan */);
+    int         (*ReadInfo) (  FontInfoPtr /* pFontInfo */, 
+			       FontFilePtr /* file */ );
 }           BitmapFileFunctionsRec, *BitmapFileFunctionsPtr;
 
-extern int  pcfReadFont(), pcfReadFontInfo();
-extern int  snfReadFont(), snfReadFontInfo();
-extern int  bdfReadFont(), bdfReadFontInfo();
-extern int  pmfReadFont();
-int	    BitmapOpenBitmap ();
-extern int  BitmapOpenScalable ();
-int	    BitmapGetInfoBitmap ();
-extern int  BitmapGetInfoScalable ();
-int	    BitmapGetRenderIndex ();
 
 /*
  * the readers[] and renderers[] arrays must be in the same order,
@@ -123,16 +121,10 @@ static FontRendererRec	renderers[] = {
 };
 
 int
-BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask,
-		  non_cachable_font)
-    FontPathElementPtr	fpe;
-    FontPtr		*ppFont;
-    int			flags;
-    FontEntryPtr	entry;
-    char		*fileName;
-    fsBitmapFormat	format;
-    fsBitmapFormatMask	fmask;
-    FontPtr		non_cachable_font;	/* We don't do licensing */
+BitmapOpenBitmap (FontPathElementPtr fpe, FontPtr *ppFont, int flags, 
+		  FontEntryPtr entry, char *fileName, 
+		  fsBitmapFormat format, fsBitmapFormatMask fmask,
+		  FontPtr non_cachable_font) /* We don't do licensing */
 {
     FontFilePtr	file;
     FontPtr     pFont;
@@ -171,11 +163,8 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask,
 }
 
 int
-BitmapGetInfoBitmap (fpe, pFontInfo, entry, fileName)
-    FontPathElementPtr	fpe;
-    FontInfoPtr		pFontInfo;
-    FontEntryPtr	entry;
-    char		*fileName;
+BitmapGetInfoBitmap (FontPathElementPtr fpe, FontInfoPtr pFontInfo, 
+		     FontEntryPtr entry, char *fileName)
 {
     FontFilePtr file;
     int		i;
@@ -197,7 +186,7 @@ BitmapGetInfoBitmap (fpe, pFontInfo, entry, fileName)
 #define numRenderers	(sizeof renderers / sizeof renderers[0])
 
 void
-BitmapRegisterFontFileFunctions ()
+BitmapRegisterFontFileFunctions (void)
 {
     int	    i;
 
@@ -211,8 +200,7 @@ BitmapRegisterFontFileFunctions ()
  * of this routine must be kept in step with the renderer array.
  */
 int
-BitmapGetRenderIndex(renderer)
-    FontRendererPtr renderer;
+BitmapGetRenderIndex(FontRendererPtr renderer)
 {
     return renderer - renderers;
 }

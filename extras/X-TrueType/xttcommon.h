@@ -82,6 +82,10 @@ Notice===
 # include <X11/X.h>
 # include <X11/Xmd.h>
 # include <X11/Xfuncproto.h>
+# ifdef FONTMODULE
+/* for New Designed XFree86 font module */
+#  include "xf86Module.h"
+# endif
 # include "fontmisc.h"
 # include "xf86_ansic.h"
 

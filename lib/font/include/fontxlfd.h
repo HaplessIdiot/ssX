@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/font/include/fontxlfd.h,v 1.3 1999/03/14 14:39:40 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -60,7 +60,6 @@ from The Open Group.
 #define XLFD_NDIGITS	3		/* Round numbers in pixel and
 					   point arrays to this many
 					   digits for repeatability */
-double xlfd_round_double();
 
 typedef struct _FontScalable {
     int		values_supplied;	/* Bitmap identifying what advanced
@@ -84,10 +83,10 @@ typedef struct _FontScalable {
     fsRange	*ranges;
 }           FontScalableRec, *FontScalablePtr;
 
-extern Bool FontParseXLFDName();
-extern fsRange *FontParseRanges();
-extern Bool FontFileCompleteXLFD();
-extern int FontFileCountDashes();
+
+extern double xlfd_round_double ( double x );
+extern Bool FontParseXLFDName ( char *fname, FontScalablePtr vals, int subst );
+extern fsRange *FontParseRanges ( char *name, int *nranges );
 
 #define FONT_XLFD_REPLACE_NONE	0
 #define FONT_XLFD_REPLACE_STAR	1
