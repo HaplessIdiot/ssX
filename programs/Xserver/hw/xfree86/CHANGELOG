@@ -1,4 +1,5 @@
 XFree86 4.0.99.900 (18 May 2001)
+ 561. Add an XKB description for Latvian (lv) keyboards (#A.411, Ilya Ketris).
  560. Resync with DRI CVS trunk (VA Linux Systems).
  559. Savage driver updates, including compiler warning fixes, document
       the "ShadowStatus" option in the man page, and fix an argument
@@ -13303,4 +13304,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1782 2001/05/18 23:35:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1783 2001/05/19 00:26:42 dawes Exp $
