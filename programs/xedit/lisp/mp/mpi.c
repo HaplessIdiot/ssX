@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.10 2002/10/06 17:11:49 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mpi.c,v 1.11 2002/11/17 07:51:29 paulo Exp $ */
 
 #include "mp.h"
 
@@ -107,7 +107,7 @@ mpi_seti(mpi *rop, long si)
     }
 
     if (rop->alloc < size) {
-	rop->digs = realloc(rop->digs, sizeof(BNS) * size);
+	rop->digs = mp_realloc(rop->digs, sizeof(BNS) * size);
 	rop->alloc = size;
     }
     rop->size = size;

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.6 2002/11/12 06:05:08 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/write.h,v 1.7 2002/11/13 04:35:47 paulo Exp $ */
 
 #ifndef Lisp_write_h
 #define Lisp_write_h
@@ -45,21 +45,11 @@ LispObj *Lisp_Print(LispBuiltin*);
 LispObj *Lisp_Write(LispBuiltin*);
 
 int LispGetColumn(LispObj*);
-int LispGetEscape(LispObj*);
-void LispSetEscape(LispObj*, int);
 
 int LispWriteChar(LispObj*, int);
 int LispWriteChars(LispObj*, int, int);
 int LispWriteStr(LispObj*, char*, long);
 
-	/* object must be an integer */
-int LispWriteInteger(LispObj*, LispObj*);
-	/* object must be a character */
-int LispWriteCharacter(LispObj*, LispObj*);
-	/* object must be a string */
-int LispWriteString(LispObj*, LispObj*);
-	/* object must be a float */
-int LispWriteFloat(LispObj*, LispObj*);
 	/* write any lisp object to stream */
 int LispWriteObject(LispObj*, LispObj*);
 

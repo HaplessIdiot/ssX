@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.17 2002/11/10 16:29:05 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/math.c,v 1.18 2002/11/17 07:51:28 paulo Exp $ */
 
 #include "math.h"
 #include "private.h"
@@ -56,6 +56,11 @@ void
 LispMathInit(void)
 {
     LispObj *object, *result;
+
+    mp_set_malloc(LispMalloc);
+    mp_set_calloc(LispCalloc);
+    mp_set_realloc(LispRealloc);
+    mp_set_free(LispFree);
 
     number_init();
     obj_zero = FIXNUM(0);

@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86$
+;; $XFree86: xc/programs/xedit/lisp/test/math.lsp,v 1.1 2002/11/17 07:51:30 paulo Exp $
 ;;
 
 ;; basic math tests
@@ -41,27 +41,28 @@
 ;; floating point results may differ from implementation to implementation (?!)
 
 (defun test (expect function &rest arguments &aux result (error t))
-    (unwind-protect
-	(setq result (apply function arguments) error nil)
-	(if error
-	    (format t "ERROR: (~A~{ ~A~})~%" function arguments)
-	    ;; Use eql to make sure result and expect have the same type
-	    (or (eql result expect)
+    (ignore-errors
+	(setq result (apply function arguments))
+	(setq error nil)
+    )
+    (if error
+	(format t "ERROR: (~A~{ ~A~})~%" function arguments)
+	;; Use eql to make sure result and expect have the same type
+	(or (eql result expect)
 #-xedit	;; hack...
-		(or
-		    (and
-			(floatp result)
-			(floatp expect)
-			(< (abs (- (abs result) (abs expect)))
-			    0.00000000000001d0)
-		    )
-		    (format t "(~A~{ ~A~}) => should be ~A not ~A~%"
-			function arguments expect result
-		    )
+	    (or
+		(and
+		    (floatp result)
+		    (floatp expect)
+		    (< (abs (- (abs result) (abs expect)))
+			0.00000000000001d0)
 		)
-#+xedit		(format t "(~A~{ ~A~}) => should be ~A not ~A~%"
+		(format t "(~A~{ ~A~}) => should be ~A not ~A~%"
 		    function arguments expect result
 		)
+	    )
+#+xedit     (format t "(~A~{ ~A~}) => should be ~A not ~A~%"
+		function arguments expect result
 	    )
 	)
     )
@@ -69,53 +70,54 @@
 
 (defun div-test (quotient remainder function &rest arguments
 		 &aux quo rem  (error t))
-    (unwind-protect
+    (ignore-errors
 	(multiple-value-setq (quo rem) (apply function arguments))
 	(setq error nil)
-	(if error
-	    (format t "ERROR: (~A~{ ~A~})~%" function arguments)
-	    (or (and (eql quotient quo) (eql remainder rem))
+    )
+    (if error
+	(format t "ERROR: (~A~{ ~A~})~%" function arguments)
+	(or (and (eql quotient quo) (eql remainder rem))
 #-xedit	;; hack
+	    (or
 		(or
-		    (or
-			(eq quotient quo)
-			(and
-			    (floatp quotient)
-			    (floatp quo)
-			    (< (abs (- (abs quotient) (abs quo)))
-				0.00000000000001d0)
-			)
-		    )
-		    (or
-			(eq remainder rem)
-			(and
-			    (floatp remainder)
-			    (floatp rem)
-			    (< (abs (- (abs remainder) (abs rem)))
-				0.00000000000001d0)
-			)
-		    )
-		    (format t "(~A~{ ~A~}) => should be ~A; ~A not ~A; ~A~%"
-			function arguments quotient remainder quo rem
+		    (eq quotient quo)
+		    (and
+			(floatp quotient)
+			(floatp quo)
+			(< (abs (- (abs quotient) (abs quo)))
+			    0.00000000000001d0)
 		    )
 		)
-#+xedit		(format t "(~A~{ ~A~}) => should be ~A; ~A not ~A; ~A~%"
+		(or
+		    (eq remainder rem)
+		    (and
+			(floatp remainder)
+			(floatp rem)
+			(< (abs (- (abs remainder) (abs rem)))
+			    0.00000000000001d0)
+		    )
+		)
+		(format t "(~A~{ ~A~}) => should be ~A; ~A not ~A; ~A~%"
 		    function arguments quotient remainder quo rem
 		)
+	    )
+#+xedit	    (format t "(~A~{ ~A~}) => should be ~A; ~A not ~A; ~A~%"
+		function arguments quotient remainder quo rem
 	    )
 	)
     )
 )
 
 (defun bool-test (expect function &rest arguments &aux result (error t))
-    (unwind-protect
-	(setq result (apply function arguments) error nil)
-	(if error
-	    (format t "ERROR: (~A~{ ~A~})~%" function arguments)
-	    (or (eq result expect)
-		(format t "(~A~{ ~A~}) => should be ~A not ~A~%"
-		    function arguments expect result
-		)
+    (ignore-errors
+	(setq result (apply function arguments))
+	(setq error nil)
+    )
+    (if error
+	(format t "ERROR: (~A~{ ~A~})~%" function arguments)
+	(or (eq result expect)
+	    (format t "(~A~{ ~A~}) => should be ~A not ~A~%"
+		function arguments expect result
 	    )
 	)
     )
@@ -475,8 +477,8 @@
 	#'/ #c(-1.3d0 4312412654633) #c(3/2 7/15))
 (test #c(0.003674737027278924d0 -257.6948748113586d0)
 	#'/ #c(1.5d0 -432412) #c(1678 -567/31313))
-(test t #'= #c(1 2d0) #c(1 2))
-(test nil #'/= #c(1 2) #c(1d0 2d0))
+(bool-test t #'= #c(1 2d0) #c(1 2))
+(bool-test nil #'/= #c(1 2) #c(1d0 2d0))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; abs

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/xedit/lisp/mp/mp.c,v 1.2 2002/11/08 08:01:00 paulo Exp $ */
 
 #include "mp.h"
 
@@ -52,20 +52,40 @@
 	/* out of memory handler */
 static void mp_outmem(void);
 
+	/* memory allocation fallback functions */
+static void *_mp_malloc(size_t);
+static void *_mp_calloc(size_t, size_t);
+static void *_mp_realloc(void*, size_t);
+static void _mp_free(void*);
+
+/*
+ * Initialization
+ */
+static mp_malloc_fun __mp_malloc = _mp_malloc;
+static mp_calloc_fun __mp_calloc = _mp_calloc;
+static mp_realloc_fun __mp_realloc = _mp_realloc;
+static mp_free_fun __mp_free = _mp_free;
+
 /*
  * Implementation
  */
-void
+static void
 mp_outmem(void)
 {
     fprintf(stderr, "out of memory in MP library.\n");
     exit(1);
 }
 
-void *
-mp_malloc(unsigned long size)
+static void *
+_mp_malloc(size_t size)
 {
-    void *pointer = malloc(size);
+    return (malloc(size));
+}
+
+void *
+mp_malloc(size_t size)
+{
+    void *pointer = (*__mp_malloc)(size);
 
     if (pointer == NULL)
 	mp_outmem();
@@ -73,10 +93,26 @@ mp_malloc(unsigned long size)
     return (pointer);
 }
 
-void *
-mp_calloc(unsigned long nmemb, unsigned long size)
+mp_malloc_fun
+mp_set_malloc(mp_malloc_fun fun)
 {
-    void *pointer = calloc(nmemb, size);
+    mp_malloc_fun old = __mp_malloc;
+
+    __mp_malloc = fun;
+
+    return (old);
+}
+
+static void *
+_mp_calloc(size_t nmemb, size_t size)
+{
+    return (calloc(nmemb, size));
+}
+
+void *
+mp_calloc(size_t nmemb, size_t size)
+{
+    void *pointer = (*__mp_calloc)(nmemb, size);
 
     if (pointer == NULL)
 	mp_outmem();
@@ -84,21 +120,63 @@ mp_calloc(unsigned long nmemb, unsigned long size)
     return (pointer);
 }
 
-void *
-mp_realloc(void *old, unsigned long size)
+mp_calloc_fun
+mp_set_calloc(mp_calloc_fun fun)
 {
-    void *pointer = realloc(old, size);
+    mp_calloc_fun old = __mp_calloc;
+
+    __mp_calloc = fun;
+
+    return (old);
+}
+
+static void *
+_mp_realloc(void *old, size_t size)
+{
+    return (realloc(old, size));
+}
+
+void *
+mp_realloc(void *old, size_t size)
+{
+    void *pointer = (*__mp_realloc)(old, size);
 
     if (pointer == NULL)
 	mp_outmem();
 
     return (pointer);
+}
+
+mp_realloc_fun
+mp_set_realloc(mp_realloc_fun fun)
+{
+    mp_realloc_fun old = __mp_realloc;
+
+    __mp_realloc = fun;
+
+    return (old);
+}
+
+static void
+_mp_free(void *pointer)
+{
+    free(pointer);
 }
 
 void
 mp_free(void *pointer)
 {
-    free(pointer);
+    (*__mp_free)(pointer);
+}
+
+mp_free_fun
+mp_set_free(mp_free_fun fun)
+{
+    mp_free_fun old = __mp_free;
+
+    __mp_free = fun;
+
+    return (old);
 }
 
 long

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.70 2002/11/15 07:01:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/lisp.c,v 1.71 2002/11/17 07:51:28 paulo Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -230,6 +230,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispMacro, Lisp_Block, "block name &rest body", 0, 0, Com_Block},
     {LispFunction, Lisp_Boundp, "boundp symbol"},
     {LispFunction, Lisp_Butlast, "butlast list &optional count"},
+    {LispFunction, Lisp_Nbutlast, "nbutlast list &optional count"},
     {LispFunction, Lisp_Car, "car list", 0, 0, Com_C_r},
     {LispFunction, Lisp_Car, "first list", 0, 0, Com_C_r},
     {LispMacro, Lisp_Case, "case keyform &rest body"},
@@ -361,6 +362,7 @@ static LispBuiltin lispbuiltins[] = {
     {LispFunction, Lisp_HashTableTest, "hash-table-test hash-table"},
     {LispFunction, Lisp_HostNamestring, "host-namestring pathname"},
     {LispMacro, Lisp_If, "if test then &optional else", 0, 0, Com_If},
+    {LispMacro, Lisp_IgnoreErrors, "ignore-errors &rest body", 1},
     {LispFunction, Lisp_Imagpart, "imagpart number"},
     {LispMacro, Lisp_InPackage, "in-package name"},
     {LispMacro, Lisp_Incf, "incf place &optional delta"},
@@ -778,12 +780,15 @@ LispTopLevel(void)
 	    lisp__data.unget = info;
 	lisp__data.unget[0] = unget;
 	lisp__data.iunget = 0;
+	lisp__data.eof = 0;
     }
 
     for (count = 0; lisp__data.mem.level;) {
 	--lisp__data.mem.level;
-	if (lisp__data.mem.mem[lisp__data.mem.level])
+	if (lisp__data.mem.mem[lisp__data.mem.level]) {
 	    ++count;
+	    printf("LEAK: %p\n", lisp__data.mem.mem[lisp__data.mem.level]);
+	}
     }
     lisp__data.mem.index = 0;
     if (count)
@@ -1113,7 +1118,7 @@ LispMused(void *pointer)
 }
 
 void *
-LispMalloc(unsigned size)
+LispMalloc(size_t size)
 {
     void *pointer;
 
@@ -1129,7 +1134,7 @@ LispMalloc(unsigned size)
 }
 
 void *
-LispCalloc(unsigned nmemb, unsigned size)
+LispCalloc(size_t nmemb, size_t size)
 {
     void *pointer;
 
@@ -1145,7 +1150,7 @@ LispCalloc(unsigned nmemb, unsigned size)
 }
 
 void *
-LispRealloc(void *pointer, unsigned size)
+LispRealloc(void *pointer, size_t size)
 {
     void *ptr;
     int i;
@@ -2119,12 +2124,16 @@ LispAllocSeg(LispObjSeg *seg, int cellcount)
     unsigned int i;
     LispObj **list, *obj;
 
+    DISABLE_INTERRUPTS();
     while (seg->nfree < cellcount) {
-	if ((obj = (LispObj*)calloc(1, sizeof(LispObj) * segsize)) == NULL)
+	if ((obj = (LispObj*)calloc(1, sizeof(LispObj) * segsize)) == NULL) {
+	    ENABLE_INTERRUPTS();
 	    LispDestroy("out of memory");
+	}
 	if ((list = (LispObj**)realloc(seg->objects,
 	    sizeof(LispObj*) * (seg->nsegs + 1))) == NULL) {
 	    free(obj);
+	    ENABLE_INTERRUPTS();
 	    LispDestroy("out of memory");
 	}
 	seg->objects = list;
@@ -2147,6 +2156,7 @@ LispAllocSeg(LispObjSeg *seg, int cellcount)
     LispMessage("gc: %d cell(s) allocated at %d segment(s)",
 		seg->nobjs, seg->nsegs);
 #endif
+    ENABLE_INTERRUPTS();
 }
 
 static INLINE void
@@ -2918,6 +2928,7 @@ LispNewBignum(mpi *bignum)
 
     integer->type = LispBignum_t;
     integer->data.mp.integer = bignum;
+    LispMused(bignum->digs);
 
     return (integer);
 }
@@ -2929,6 +2940,8 @@ LispNewBigratio(mpr *bigratio)
 
     ratio->type = LispBigratio_t;
     ratio->data.mp.ratio = bigratio;
+    LispMused(mpr_num(bigratio)->digs);
+    LispMused(mpr_den(bigratio)->digs);
 
     return (ratio);
 }
@@ -3859,6 +3872,7 @@ LispMoreEnvironment(void)
     Atom_id *names;
     LispObj **values;
 
+    DISABLE_INTERRUPTS();
     names = realloc(lisp__data.env.names,
 		    (lisp__data.env.space + 256) * sizeof(Atom_id));
     if (names != NULL) {
@@ -3868,54 +3882,65 @@ LispMoreEnvironment(void)
 	    lisp__data.env.names = names;
 	    lisp__data.env.values = values;
 	    lisp__data.env.space += 256;
-
+	    ENABLE_INTERRUPTS();
 	    return;
 	}
 	else
 	    free(names);
     }
+    ENABLE_INTERRUPTS();
     LispDestroy("out of memory");
 }
 
 void
 LispMoreStack(void)
 {
-    LispObj **values = realloc(lisp__data.stack.values,
-			       (lisp__data.stack.space + 256) *
-			       sizeof(LispObj*));
+    LispObj **values;
 
-    if (values == NULL)
+    DISABLE_INTERRUPTS();
+    values = realloc(lisp__data.stack.values,
+		     (lisp__data.stack.space + 256) * sizeof(LispObj*));
+    if (values == NULL) {
+	ENABLE_INTERRUPTS();
 	LispDestroy("out of memory");
-
+    }
     lisp__data.stack.values = values;
     lisp__data.stack.space += 256;
+    ENABLE_INTERRUPTS();
 }
 
 void
 LispMoreGlobals(LispPackage *pack)
 {
-    LispObj **pairs = realloc(pack->glb.pairs,
-			      (pack->glb.space + 256) * sizeof(LispObj*));
+    LispObj **pairs;
 
-    if (pairs == NULL)
+    DISABLE_INTERRUPTS();
+    pairs = realloc(pack->glb.pairs,
+		    (pack->glb.space + 256) * sizeof(LispObj*));
+    if (pairs == NULL) {
+	ENABLE_INTERRUPTS();
 	LispDestroy("out of memory");
-
+    }
     pack->glb.pairs = pairs;
     pack->glb.space += 256;
+    ENABLE_INTERRUPTS();
 }
 
 void
 LispMoreProtects(void)
 {
-    LispObj **objects = realloc(lisp__data.protect.objects,
-				(lisp__data.protect.space + 256) *
-				sizeof(LispObj*));
+    LispObj **objects;
 
-    if (objects == NULL)
+    DISABLE_INTERRUPTS();
+    objects = realloc(lisp__data.protect.objects,
+		      (lisp__data.protect.space + 256) * sizeof(LispObj*));
+    if (objects == NULL) {
+	ENABLE_INTERRUPTS();
 	LispDestroy("out of memory");
-
+    }
     lisp__data.protect.objects = objects;
     lisp__data.protect.space += 256;
+    ENABLE_INTERRUPTS();
 }
 
 static int
@@ -4608,8 +4633,7 @@ LispEval(LispObj *object)
 	    result = LispEvalBackquote(object->data.quote, 1);
 	    break;
 	case LispComma_t:
-	    result = LispEvalBackquote(object->data.quote, 0);
-	    break;
+	    LispDestroy("EVAL: comma outside of backquote");
 	default:
 	    result = object;
 	    break;
@@ -4869,10 +4893,9 @@ LispMachine(void)
 		}
 	    }
 	    LispTopLevel();
-	    if (lisp__data.eof)
-		break;
-	    continue;
 	}
+	if (lisp__data.eof)
+	    break;
     }
 
     signal(SIGINT, lisp__data.sigint);

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.14 2002/11/15 07:01:31 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/xedit.c,v 1.15 2002/11/17 07:51:29 paulo Exp $ */
 
 #include "../xedit.h"
 #include <X11/Xaw/TextSrcP.h>	/* Needs some private definitions */
@@ -572,8 +572,7 @@ XeditInteractiveCallback(Widget w, XtPointer client_data, XtPointer call_data)
     /*	While the newline after the right position has a "hidden" property,
      * keep incrementing a line to be reparsed. */
     while (right < last) {
-	position = XawTextSourceScan(w, right, XawstEOL, XawsdRight, 1, True);
-	if (XawTextSourceAnchorAndEntity(w, position, &anchor, &entity))
+	if (XawTextSourceAnchorAndEntity(w, right, &anchor, &entity))
 	    right = XawTextSourceScan(w, right, XawstEOL, XawsdRight, 2, False);
 	else
 	    break;
