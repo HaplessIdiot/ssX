@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.22 1999/05/09 10:51:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.23 1999/05/09 12:31:10 dawes Exp $ */
 
 
 /*
@@ -124,6 +124,7 @@ LOOKUP dixLookupTab[] = {
   SYMVAR(DeviceEventCallback)
   SYMVAR(EventCallback)
   SYMVAR(inputInfo)
+  SYMVAR(SetCriticalEvent)
   /* extension.c */
   SYMFUNC(AddExtension)
   SYMFUNC(AddExtensionAlias)

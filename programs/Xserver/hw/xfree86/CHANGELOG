@@ -1,4 +1,9 @@
 XFree86 3.9.16c (13 October 1999)
+3362. Export SetCriticalEvent from DIX, it was an unresolved external in
+      xf86dga2.c (#3326, Jarno Paananen).
+3361. Removes Alpha-specific MMIO-mappings from NVIDIA driver in the
+      same fashion that was done in MGA-driver (#3326, Jarno Paananen).
+3260. Add SilkenMouse to NVIDIA and Glint drivers (#3326, Jarno Paananen).
 3259. Workaround for problem in xf86RegisterRootWindowProperty() code
       (Jarno Paananen).
 3258. DGA workaround for recent VTSwitch changes (#3325, Mark Vojkovich).
@@ -14,8 +19,8 @@ XFree86 3.9.16c (13 October 1999)
 3251. Fix missing USE_MMIO define in trident driver (Alan Hourihane).
 3250. Blade, image and trident updates for the trident driver (Alan Hourihane).
 3249. A very preliminary "-probe" mode for the X server (David Dawes).
-3248. Remove __alpha__ ifdefs from the mga driver by changing the way
-      sparse MMIO access is handled (David Dawes).
+3248. Remove __alpha__ ifdefs from the mga and s3virge drivers by changing
+      the way sparse MMIO access is handled (David Dawes).
 3247. Fix a WarpPointer bug introduced when "xineramifying" some dix code
       (Mark Vojkovich).
 3246. Move the BuildObjectFromLibrary rule into Imake.rules.
@@ -8945,4 +8950,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.837 1999/10/13 22:41:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.838 1999/10/13 22:50:10 dawes Exp $

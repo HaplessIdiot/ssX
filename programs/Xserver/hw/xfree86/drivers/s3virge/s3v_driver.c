@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.36 1999/09/27 14:33:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.37 1999/10/13 16:49:28 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -1946,7 +1946,6 @@ S3VMapMem(ScrnInfoPtr pScrn)
 {    
   S3VPtr ps3v;
   vgaHWPtr hwp;
-  int mmioFlags;
 
     PVERB5("	S3VMapMem\n");
     
@@ -1957,22 +1956,18 @@ S3VMapMem(ScrnInfoPtr pScrn)
 					/* so that we can use registers map */
 					/* structure - see newmmio.h */
 					/* around 0x10000 from MemBase */
-#ifdef __alpha__
-  mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
-#else
-  mmioFlags = VIDMEM_MMIO;
-#endif
-  
-  ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, ps3v->PciTag,
+  ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
 			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
 			S3_NEWMMIO_REGSIZE);
 
-#ifdef __alpha__
-  ps3v->MapBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
+  ps3v->MapBaseDense = xf86MapPciMem(pScrn->scrnIndex,
+			VIDMEM_MMIO | VIDMEM_MMIO_32BIT,
 			ps3v->PciTag,
 			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
 			0x8000);
 
+  /* XXX Should handle this differently */
+#ifdef __alpha__
   /* XXX the shift of 5 isn't correct for JENSEN */
   ps3v->IOBase = ps3v->MapBase + (S3V_MMIO_REGSIZE << 5);
 #else
@@ -2055,10 +2050,8 @@ S3VUnmapMem(ScrnInfoPtr pScrn)
   if (ps3v->FBBase)
       xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
 		      ps3v->videoRambytes);
-#ifdef __alpha__
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBaseDense,
 		  0x8000);
-#endif /* __alpha__ */
 
   return;
 }

@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.8 1998/01/24 16:58:08 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.1 1999/08/01 07:20:58 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -90,15 +90,7 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- IO %x\n", pNv->riva.IO));
 
-#if !defined(__alpha__)
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-#else
-    /*
-     * For Alpha, we need to map SPARSE memory, since we need
-     * byte/short access.
-     */
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
-#endif
 
     pNv->riva.PRAMDAC = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                       regBase+0x00680000, 0x00001000);
@@ -153,15 +145,7 @@ NV3Setup(ScrnInfoPtr pScrn)
     /*
      * Map chip-specific memory-mapped registers. This MUST be done in the OS specific driver code.
      */
-#if !defined(__alpha__)
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-#else
-    /*
-     * For Alpha, we need to map SPARSE memory, since we need
-     * byte/short access.
-     */
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
-#endif
     pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                      frameBase+0x00C00000, 0x00008000);
             
@@ -181,15 +165,7 @@ NV4Setup(ScrnInfoPtr pScrn)
     /*
      * Map chip-specific memory-mapped registers. This MUST be done in the OS specific driver code.
      */
-#if !defined(__alpha__)
     mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-#else
-    /*
-     * For Alpha, we need to map SPARSE memory, since we need
-     * byte/short access.
-     */
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
-#endif
     pNv->riva.PRAMIN = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
                                      regBase+0x00710000, 0x00010000);
     pNv->riva.PCRTC  = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,

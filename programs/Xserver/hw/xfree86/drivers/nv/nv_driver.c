@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.14 1999/10/13 04:21:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.15 1999/10/13 16:49:27 dawes Exp $ */
 
 #include "nv_include.h"
 
@@ -1230,7 +1230,6 @@ static Bool
 NVMapMem(ScrnInfoPtr pScrn)
 {
     NVPtr pNv;
-    int mmioFlags;
         
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "NVMapMem\n"));
     pNv = NVPTR(pScrn);
@@ -1238,31 +1237,12 @@ NVMapMem(ScrnInfoPtr pScrn)
     /*
      * Map IO registers to virtual address space
      */ 
-#if !defined(__alpha__)
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT;
-#else
-    /*
-     * For Alpha, we need to map SPARSE memory, since we need
-     * byte/short access.
-     */
-    mmioFlags = VIDMEM_MMIO | VIDMEM_READSIDEEFFECT | VIDMEM_SPARSE;
-#endif
-    pNv->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pNv->PciTag,
-				 pNv->IOAddress, 0x4000);
+    pNv->IOBase = xf86MapPciMem(pScrn->scrnIndex,
+                                VIDMEM_MMIO | VIDMEM_READSIDEEFFECT,
+                                pNv->PciTag, pNv->IOAddress, 0x4000);
     if (pNv->IOBase == NULL)
 	return FALSE;
 
-#ifdef __alpha__
-    /*
-     * for Alpha, we need to map DENSE memory as well, for
-     * setting CPUToScreenColorExpandBase.
-     */
-    pNv->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-				      pNv->PciTag, pNv->IOAddress, 0x4000);
-    if (pNv->IOBaseDense == NULL)
-	return FALSE;
-#endif /* __alpha__ */
-       
     pNv->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pNv->PciTag, pNv->FbAddress,
 				 pNv->FbMapSize);
@@ -1312,11 +1292,6 @@ NVUnmapMem(ScrnInfoPtr pScrn)
      */ 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->IOBase, 0x4000);
     pNv->IOBase = NULL;
-
-#ifdef __alpha__
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->IOBaseDense, 0x4000);
-    pNv->IOBaseDense = NULL;
-#endif /* __alpha__ */
 
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pNv->FbBase, pNv->FbMapSize);
     pNv->FbBase = NULL;
@@ -1577,6 +1552,7 @@ NVScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     
     miInitializeBackingStore(pScreen);
     xf86SetBackingStore(pScreen);
+    xf86SetSilkenMouse(pScreen);
 
     DEBUG(xf86DrvMsg(pScrn->scrnIndex, X_INFO, "- Backing store set up\n"));
 
