@@ -912,6 +912,9 @@ TCLIBDIR = TclLibDir
 #ifndef LdCmd
 #define LdCmd ld
 #endif
+#ifndef M4Cmd
+#define M4Cmd m4
+#endif
 #ifndef LexCmd
 #define LexCmd lex
 #endif
@@ -1353,6 +1356,7 @@ CXXEXTRA_INCLUDES = CplusplusExtraIncludes
      INSTALLFLAGS = InstallFlags
                LD = LdCmd
               LEX = LexCmd
+	       M4 = M4Cmd
            LEXLIB = LexLib
              YACC = YaccCmd
            CCYACC = CplusplusYaccCmd
