@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 552. Fix rotated display in the nv driver (Mark Vojkovich).
  551. By default, validate all available modes rather than only the largest
       such mode (Marc La France).
  550. Various XDarwin improvements:
@@ -14296,4 +14297,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2076 2001/12/05 23:10:58 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2077 2001/12/06 15:40:24 tsi Exp $
