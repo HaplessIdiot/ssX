@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.9 1999/01/11 05:13:15 dawes Exp $
+XCOMM $XFree86: xc/lib/font/FreeType/Imakefile,v 1.10 1999/01/26 10:40:02 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM Mark Leisher <mleisher@crl.nmsu.edu>
@@ -23,8 +23,6 @@ MMAPDEFINES = -DHAVE_MMAP=1
 #endif
 
 DEFINES = ServerExtraDefines -DTT_MAKE_OPTION_SINGLE_OBJECT=1 $(MMAPDEFINES)
-
-FTSOURCEDIR = $(TOP)/extras/FreeType
 
 /* Much of the source is simply #included by freetype.c */
 INCLUDES = -I. -I$(FONTINCSRC) -I../include -I$(SERVERSRC)/include \

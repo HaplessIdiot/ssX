@@ -1,0 +1,3 @@
+XCOMM X-TrueType Server - TrueType rasterizer for X
+/*#include "Imakefile.obj"*/
+#include <xttMod.tmpl>

@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.34 1999/01/11 05:37:46 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.35 1999/01/11 14:40:00 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -54,6 +54,9 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.34 1999/01/11 05:37:46 dawes Exp $
 #endif
 #ifndef BuildFreeType
 #define BuildFreeType		NO
+#endif
+#ifndef BuildXTrueType
+#define BuildXTrueType		NO
 #endif
 #ifndef BuildFonts
 #define BuildFonts		(BuildServer | BuildFontServer)
@@ -249,11 +252,6 @@ XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.34 1999/01/11 05:37:46 dawes Exp $
 #endif
 #ifndef BuildXantiLibrary
 #define BuildXantiLibrary	BuildXantiExt
-#endif
-
-
-#ifndef BuildFreeType
-#define BuildFreeType		NO
 #endif
 
 #ifndef BuildMiscDocs
@@ -751,6 +749,39 @@ $(FONTDIR)/100dpi/,$(FONTDIR)/75dpi/
 #ifndef DefaultFSConfigFile
 #define DefaultFSConfigFile $(LIBDIR)/fs/config
 #endif
+
+/* X-TrueType settings */
+#ifndef HasBlindFaithInUnicode
+#define HasBlindFaithInUnicode YES
+#endif
+#ifndef XTrueTypeCConvModule  
+#define XTrueTypeCConvModule YES
+#endif
+#ifndef XTrueTypeUseOptEncodings  
+#define XTrueTypeUseOptEncodings YES
+#endif
+#ifndef XTrueTypeCConvIncDir
+#define XTrueTypeCConvIncDir $(INCROOT)/X11/fonts/codeconv
+#endif
+#ifndef XTrueTypeInstallCConvHeaders
+#define XTrueTypeInstallCConvHeaders YES
+#endif
+#ifndef XTrueTypeDebugXTT
+#define XTrueTypeDebugXTT NO
+#endif
+#ifndef XTrueTypeStandAloneCConv
+#define XTrueTypeStandAloneCConv NO
+#endif
+#ifndef XTTInLibXFont
+#define XTTInLibXFont NO
+#endif
+#ifndef XTrueTypeSrcDir
+#define XTrueTypeSrcDir $(TOP)/extras/X-TrueType
+#endif
+#ifndef FreeTypeSrcDir
+#define FreeTypeSrcDir $(TOP)/extras/FreeType
+#endif
+
 #ifndef BinDir
 #ifdef ProjectRoot
 #define BinDir Concat(ProjectRoot,/bin)
@@ -1026,6 +1057,8 @@ XCOMM X Window System make variables; these need to be coordinated with rules
     FONTSERVERSRC = $(PROGRAMSRC)/xfs
        FONTINCSRC = $(XTOP)/include/fonts
         EXTINCSRC = $(XTOP)/include/extensions
+      FTSOURCEDIR = FreeTypeSrcDir
+     XTTSOURCEDIR = XTrueTypeSrcDir
      TRANSCOMMSRC = $(LIBSRC)/xtrans
    TRANS_INCLUDES = -I$(TRANSCOMMSRC)
  CONNECTION_FLAGS = ConnectionFlags ExtraConnectionDefs
