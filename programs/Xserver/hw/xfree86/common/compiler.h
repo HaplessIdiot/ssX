@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.50 2000/02/08 17:19:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.51 2000/02/12 20:45:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1142,6 +1142,19 @@ extern void outl(unsigned int a, unsigned char l);
 # endif
 # ifndef PC98
 #  ifndef SCO325
+#   if defined(USL)
+#    if defined(IN_MODULE)
+#     /* avoid including <sys/types.h> from <sys/inline.h> on UnixWare */
+#     define ushort unsigned short
+#     define ushort_t unsigned short
+#     define ulong unsigned long
+#     define ulong_t unsigned long
+#     define uint_t unsigned int
+#     define uchar_t unsigned char
+#    else
+#     include <sys/types.h>
+#    endif /* IN_MODULE */
+#   endif /* USL */
 #   include <sys/inline.h>
 #  else
 #   include "scoasm.h"
