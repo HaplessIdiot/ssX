@@ -1,10 +1,10 @@
-/* $XTermId: misc.c,v 1.245 2005/01/10 22:31:52 tom Exp $ */
+/* $XTermId: misc.c,v 1.247 2005/01/29 22:05:32 tom Exp $ */
 
 /*
  *	$Xorg: misc.c,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/misc.c,v 3.93 2004/12/01 01:27:47 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/misc.c,v 3.94 2005/01/14 01:50:03 dickey Exp $ */
 
 /*
  *
@@ -2623,7 +2623,16 @@ xioerror(Display * dpy)
 void
 xt_error(String message)
 {
+    char *ptr;
+
     (void) fprintf(stderr, "%s Xt error: %s\n", ProgramName, message);
+
+    /*
+     * Check for the obvious - Xt does a poor job of reporting this.
+     */
+    if ((ptr = getenv("DISPLAY")) == 0 || *x_strtrim(ptr) == '\0') {
+	fprintf(stderr, "%s:  DISPLAY is not set\n", ProgramName);
+    }
     exit(1);
 }
 
