@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/events.h,v 1.3 1999/02/20 15:07:22 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/events.h,v 1.4 2001/01/17 23:45:06 dawes Exp $ */
 
 
 /***********************************************************************
@@ -118,6 +118,12 @@ extern int CurrentDragY;
 extern int ButtonPressed;
 extern int Cancel;
 
+extern int Context;
+
 extern XEvent Event;
+
+extern unsigned int mods_used;
+
+extern int MovedFromKeyPress;
 
 #endif /* _EVENTS_ */

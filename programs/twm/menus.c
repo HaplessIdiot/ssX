@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.8 2000/10/24 22:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.9 2001/01/17 23:45:07 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -78,8 +78,6 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/sync.h>
 #include <X11/SM/SMlib.h>
 
-extern XEvent Event;
-
 int RootFunction = 0;
 MenuRoot *ActiveMenu = NULL;		/* the active menu */
 MenuItem *ActiveItem = NULL;		/* the active menu item */
@@ -107,13 +105,6 @@ static struct {
     int y;
 } MenuOrigins[MAXMENUDEPTH];
 static Cursor LastCursor;
-
-
-extern char *Action;
-extern int Context;
-extern TwmWindow *ButtonWindow, *Tmp_win;
-extern XEvent Event, ButtonEvent;
-extern char *InitFile;
 
 static Bool belongs_to_twm_window ( TwmWindow *t, Window w );
 static void Identify ( TwmWindow *t );
@@ -1236,11 +1227,6 @@ belongs_to_twm_window (t, w)
  */
 
 
-extern int AddingX;
-extern int AddingY;
-extern int AddingW;
-extern int AddingH;
-
 void 
 resizeFromCenter(w, tmp_win)
      Window w;
@@ -1367,7 +1353,6 @@ WarpThere(t)
     return false;
 }
 
-extern int MovedFromKeyPress;
 
 int
 ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)

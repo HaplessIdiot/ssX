@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/events.c,v 1.8 2001/01/17 23:45:05 dawes Exp $ */
+/* $XFree86: xc/programs/twm/events.c,v 1.9 2001/01/22 21:32:37 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -72,9 +72,6 @@ in this Software without prior written authorization from The Open Group.
 #include "icons.h"
 #include "version.h"
 
-extern int iconifybox_width, iconifybox_height;
-extern unsigned int mods_used;
-extern int menuFromFrameOrWindowOrTitlebar;
 
 #define MAX_X_EVENT 256
 event_proc EventHandler[MAX_X_EVENT]; /* event handler jump table */
@@ -100,10 +97,6 @@ int DragHeight;
 int CurrentDragX;
 int CurrentDragY;
 
-/* Vars to tell if the resize has moved. */
-extern int ResizeOrigX;
-extern int ResizeOrigY;
-
 static int enter_flag;
 static int ColortableThrashing;
 static TwmWindow *enter_win, *raise_win;
@@ -119,8 +112,6 @@ static Bool UninstallRootColormapQScanner ( Display *dpy, XEvent *ev, char *args
 int ButtonPressed = -1;
 int Cancel = FALSE;
 
-
-extern int ShapeEventBase, ShapeErrorBase;
 
 void AutoRaiseWindow (tmp)
     TwmWindow *tmp;

@@ -55,16 +55,14 @@ in this Software without prior written authorization from The Open Group.
  * 12-Nov-87 Thomas E. LaStrange		File created
  *
  ***********************************************************************/
-/* $XFree86: xc/programs/twm/lex.l,v 3.11 1999/02/25 06:01:02 dawes Exp $ */
+/* $XFree86: xc/programs/twm/lex.l,v 3.12 2001/01/17 23:45:06 dawes Exp $ */
 
 /* #include <stdio.h> */		/* lex already includes stdio.h */
 #include "twm.h"
 #include "gram.h"
 #include "list.h"
 #include "parse.h"
-extern char *ProgramName;
 
-extern int ParseError;
 #ifdef FLEX_SCANNER
 int yylineno;
 

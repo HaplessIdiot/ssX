@@ -44,7 +44,7 @@ in this Software without prior written authorization from The Open Group.
 /**    TORTIOUS ACTION, ARISING OUT OF OR IN  CONNECTION  WITH  THE  USE    **/
 /**    OR PERFORMANCE OF THIS SOFTWARE.                                     **/
 /*****************************************************************************/
-/* $XFree86: xc/programs/twm/add_window.h,v 1.3 1999/02/20 15:07:21 hohndel Exp $ */
+/* $XFree86: xc/programs/twm/add_window.h,v 1.4 2001/01/17 23:45:05 dawes Exp $ */
 
 
 /**********************************************************************
@@ -66,8 +66,6 @@ extern char NoName[];
 
 extern void AddDefaultBindings ( void );
 extern TwmWindow * AddWindow ( Window w, int iconm, IconMgr *iconp );
-extern void ComputeTitleLocation ( TwmWindow *tmp );
-extern void ComputeWindowTitleOffsets ( TwmWindow *tmp_win, int width, Bool squeeze );
 extern ColormapWindow * CreateColormapWindow ( Window w, Bool creating_parent, Bool property_window );
 extern TwmColormap * CreateTwmColormap ( Colormap c );
 extern void FetchWmColormapWindows ( TwmWindow *tmp );

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/parse.h,v 1.7 2000/10/29 14:24:14 tsi Exp $ */
+/* $XFree86: xc/programs/twm/parse.h,v 1.8 2001/01/17 23:45:07 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -83,6 +83,8 @@ extern void do_squeeze_entry ( name_list **list, char *name, int justify,
 
 extern int (*twmInputFunc)(void);
 extern int ConstrainedMoveTime;
+extern char *defTwmrc[];
+extern int mods;
 
 #define F_NOP			0
 #define F_BEEP			1
