@@ -1,4 +1,15 @@
 XFree86 4.2.99.1 (XX June 2002)
+ 155. Add aliases for the Brazilian Portuguese locale as defined on FreeBSD
+      (#5157, Carlos A M dos Santos).
+ 154. Recognise the en_UK.ISO8859-15 and en_US.ISO8859-15 locales (#5156,
+      Matthias Scheler).
+ 153. Some cleanups for the UTF-8 Compose file, including:
+       - Better support for Greek
+       - Typo fixes, including incorrect character literals and keysyms.
+      (#5154, Vasilis Vasaitis).
+ 152. Modify Xt's default fallback font pattern to work better in locales
+      where the current one fails to find a useful font (#5152,
+      Tomohiro KUBOTA).
  151. Updates to bdf/misc UCS fonts, and generate ISO8859-16 subsets
       (#5147, Markus Kuhn).
  150. Fix some empty delay loops and jiffie wrap bugs in the i830 drm driver
@@ -14817,4 +14828,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2228 2002/06/03 18:29:06 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2229 2002/06/03 19:55:27 dawes Exp $
