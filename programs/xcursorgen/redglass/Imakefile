@@ -26,7 +26,7 @@ dst: src								@@\
 clean::									@@\
 	$(RM) dst							@@\
 									@@\
-install.link:: $(THEMEDIR)/dst						@@\
+install.link:: $(THEMEDIR)/src						@@\
 	RemoveFile($(THEMEDIR)/dst)					@@\
 	(set -x; cd $(THEMEDIR) && $(LN) src dst)
 
