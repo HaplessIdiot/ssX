@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/mi/miwindow.c,v 1.2 1999/01/03 08:06:41 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -376,6 +376,10 @@ miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
 	{
 	    if (pChild->viewable)
 	    {
+		if (REGION_BROKEN (pScreen, &pChild->winSize))
+		    SetWinSize (pChild);
+		if (REGION_BROKEN (pScreen, &pChild->borderSize))
+		    SetBorderSize (pChild);
 		(* MarkWindow)(pChild);
 		if (pChild->firstChild)
 		{
@@ -398,15 +402,21 @@ miMarkOverlappedWindows(pWin, pFirst, ppLayerWin)
 	pLast = pChild->parent->lastChild;
 	while (1)
 	{
-	    if (pChild->viewable && RECT_IN_REGION(pScreen, &pChild->borderSize,
-						       box))
+	    if (pChild->viewable)
 	    {
-		(* MarkWindow)(pChild);
-		anyMarked = TRUE;
-		if (pChild->firstChild)
+		if (REGION_BROKEN (pScreen, &pChild->winSize))
+		    SetWinSize (pChild);
+		if (REGION_BROKEN (pScreen, &pChild->borderSize))
+		    SetBorderSize (pChild);
+		if (RECT_IN_REGION(pScreen, &pChild->borderSize, box))
 		{
-		    pChild = pChild->firstChild;
-		    continue;
+		    (* MarkWindow)(pChild);
+		    anyMarked = TRUE;
+		    if (pChild->firstChild)
+		    {
+			pChild = pChild->firstChild;
+			continue;
+		    }
 		}
 	    }
 	    while (!pChild->nextSib && (pChild != pLast))

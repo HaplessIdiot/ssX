@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.3 1998/10/04 09:38:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.4 1999/01/13 08:30:52 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -701,7 +701,11 @@ ClientWakeup (client)
 	    *prev = q->next;
 	    xfree (q);
 	    if (client->clientGone)
-		CloseDownClient(client);
+		/* Oops -- new zombie cleanup code ensures this only
+		 * happens from inside CloseDownClient; don't want to
+		 * recurse here...
+		 */
+		/* CloseDownClient(client) */;
 	    else
 		AttendClient (client);
 	    break;

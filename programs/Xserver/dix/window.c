@@ -66,7 +66,7 @@ SOFTWARE.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.13 1999/05/23 06:33:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/window.c,v 3.14 1999/09/27 06:29:17 dawes Exp $ */
 
 #include "misc.h"
 #include "scrnintstr.h"
@@ -343,7 +343,7 @@ MakeRootTile(pWin)
     register unsigned char *from, *to;
     register int i, j;
 
-    pWin->background.pixmap = (*pScreen->CreatePixmap)(pScreen, len, 4,
+    pWin->background.pixmap = (*pScreen->CreatePixmap)(pScreen, 4, 4,
 						    pScreen->rootDepth);
 
     pWin->backgroundState = BackgroundPixmap;
@@ -3787,9 +3787,28 @@ DisposeWindowOptional (pWin)
      * everything is peachy.  Delete the optional record
      * and clean up
      */
-    if (pWin->cursorIsNone == FALSE)
+    /*
+     * TOG changed this code to:
+     *
+     *	    if (pWin->cursorIsNone == FALSE)
+     *		FreeCursor (pWin->optional->cursor, (Cursor)0);
+     *	    pWin->cursorIsNone = TRUE;
+     *
+     * This is blatently wrong; windows without optionals can have
+     * two different cursor values, either None or sharing their
+     * parents cursor.  This difference is controlled by the
+     * cursorIsNone value; when TRUE, the window has no cursor,
+     * when false, it shares its cursor with its parent; TOG
+     * made it impossible for a window to have a cursor without
+     * an optional record.
+     */
+    if (pWin->optional->cursor)
+    {
 	FreeCursor (pWin->optional->cursor, (Cursor)0);
-    pWin->cursorIsNone = TRUE;
+	pWin->cursorIsNone = FALSE;
+    }
+    else
+	pWin->cursorIsNone = TRUE;
     xfree (pWin->optional);
     pWin->optional = NULL;
 }

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/mi/miline.h,v 1.2 1998/07/26 09:56:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miline.h,v 1.3 1998/10/04 09:39:30 dawes Exp $ */
 
 #ifndef MILINE_H
 
@@ -100,6 +100,14 @@ extern void miSetZeroLineBias(
     if	    ( (_y) <  (_pbox)->y1) (_result) |= OUT_ABOVE; \
     else if ( (_y) >= (_pbox)->y2) (_result) |= OUT_BELOW;
 
+#define MIOUTCODES(outcode, x, y, xmin, ymin, xmax, ymax) \
+{\
+     if (x < xmin) outcode |= OUT_LEFT;\
+     if (x > xmax) outcode |= OUT_RIGHT;\
+     if (y < ymin) outcode |= OUT_ABOVE;\
+     if (y > ymax) outcode |= OUT_BELOW;\
+}
+  
 #define SWAPINT(i, j) \
 {  register int _t = i;  i = j;  j = _t; }
 
