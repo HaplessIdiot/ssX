@@ -1,7 +1,7 @@
 /* **********************************************************
  * Copyright (C) 1998-2001 VMware, Inc.
  * All Rights Reserved
- * $Id: svga_reg.h,v 1.5 2002/10/16 22:12:53 alanh Exp $
+ * $Id: svga_reg.h,v 1.6 2002/11/23 19:27:49 tsi Exp $
  * **********************************************************/
 
 /*
@@ -9,6 +9,7 @@
  *
  * SVGA hardware definitions
  */
+/* $XFree86$ */
 
 #ifndef _SVGA_REG_H_
 #define _SVGA_REG_H_
