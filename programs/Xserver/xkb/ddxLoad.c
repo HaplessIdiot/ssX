@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.20 1997/06/29 07:54:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/ddxLoad.c,v 3.21 1997/09/09 10:28:01 hohndel Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -188,7 +188,7 @@ char 	cmd[PATH_MAX],file[PATH_MAX],xkm_output_dir[PATH_MAX],*map,*outFile;
 	ErrorF("    \"cmd\"\n");
     }
 #endif
-    if (system(cmd)==0) {
+    if (System(cmd)==0) {
 	if (nameRtrn) {
 	    strncpy(nameRtrn,outFile,nameRtrnLen);
 	    nameRtrn[nameRtrnLen-1]= '\0';
@@ -316,7 +316,7 @@ int i;
 #endif
     }
 #ifndef WIN32
-    out= popen(buf,"w");
+    out= Popen(buf,"w");
 #else
     out= fopen(tmpname, "w");
 #endif
@@ -329,13 +329,13 @@ int i;
 #endif
 	XkbWriteXKBKeymapForNames(out,names,NULL,xkb,want,need);
 #ifndef WIN32
-	if (pclose(out)==0)
+	if (Pclose(out)==0)
 #else
 	if (fclose(out)==0)
 #endif
 	{
 #ifdef WIN32
-	    if (system(buf) < 0)
+	    if (System(buf) < 0)
 		ErrorF("Could not invoke keymap compiler\n");
 	    else {
 #endif

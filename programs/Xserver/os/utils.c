@@ -51,7 +51,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.29 1997/07/05 15:16:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.30 1997/07/10 08:17:45 hohndel Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -531,7 +531,10 @@ void UseMsg()
     ErrorF("c #                    key-click volume (0-100)\n");
     ErrorF("-cc int                default color visual class\n");
     ErrorF("-co file               color database file\n");
-    ErrorF("-config file           read options from file\n");
+#if !defined(WIN32) && !defined(__EMX__)
+    if (getuid() == geteuid())
+#endif
+      ErrorF("-config file           read options from file\n");
     ErrorF("-core                  generate core dump on fatal error\n");
     ErrorF("-dpi int               screen resolution in dots per inch\n");
 #ifdef DPMSExtension
@@ -1043,6 +1046,12 @@ ExpandCommandLine(pargc, pargv)
     char ***pargv;
 {
     int i;
+
+#if !defined(WIN32) && !defined(__EMX__)
+    if (getuid() != geteuid())
+	return;
+#endif
+
     for (i = 1; i < *pargc; i++)
     {
 	if ( (0 == strcmp((*pargv)[i], "-config")) && (i < (*pargc - 1)) )
@@ -1427,3 +1436,160 @@ OpenDebug()
         chmod(aixlogfile,00644);
 }
 #endif
+
+#if !defined(WIN32) && !defined(__EMX__)
+/*
+ * "safer" versions of system(3), popen(3) and pclose(3) which give up
+ * all privs before running a command.
+ *
+ * This is based on the code in FreeBSD 2.2 libc.
+ */
+
+int
+System(command)
+    char *command;
+{
+    int pid, p;
+    void (*csig)();
+    int status;
+
+    if (!command)
+	return(1);
+
+#ifdef SIGCHLD
+    csig = signal(SIGCHLD, SIG_DFL);
+#endif
+
+    ErrorF("System: `%s'\n", command);
+
+    switch (pid = fork()) {
+    case -1:	/* error */
+	p = -1;
+    case 0:	/* child */
+	setgid(getgid());
+	setuid(getuid());
+	execl("/bin/sh", "sh", "-c", command, (char *)NULL);
+	_exit(127);
+    default:	/* parent */
+	do {
+	    p = waitpid(pid, &status, 0);
+	} while (p == -1 && errno == EINTR);
+	
+    }
+
+#ifdef SIGCHLD
+    signal(SIGCHLD, csig);
+#endif
+
+    return p == -1 ? -1 : status;
+}
+
+static struct pid {
+    struct pid *next;
+    FILE *fp;
+    int pid;
+} *pidlist;
+
+pointer
+Popen(command, type)
+    char *command;
+    char *type;
+{
+    struct pid *cur;
+    FILE *iop;
+    int pdes[2], pid;
+    void (*csig)();
+
+    if (command == NULL || type == NULL)
+	return NULL;
+
+    if ((*type != 'r' && *type != 'w') || type[1])
+	return NULL;
+
+    if ((cur = (struct pid *)xalloc(sizeof(struct pid))) == NULL)
+	return NULL;
+
+    if (pipe(pdes) < 0) {
+	xfree(cur);
+	return NULL;
+    }
+
+    switch (pid = fork()) {
+    case -1: 	/* error */
+	close(pdes[0]);
+	close(pdes[1]);
+	xfree(cur);
+	return NULL;
+    case 0:	/* child */
+	setgid(getgid());
+	setuid(getuid());
+	if (*type == 'r') {
+	    if (pdes[1] != 1) {
+		/* stdout */
+		dup2(pdes[1], 1);
+		close(pdes[1]);
+	    }
+	    close(pdes[0]);
+	} else {
+	    if (pdes[0] != 0) {
+		/* stdin */
+		dup2(pdes[0], 0);
+		close(pdes[0]);
+	    }
+	    close(pdes[1]);
+	}
+	execl("/bin/sh", "sh", "-c", command, (char *)NULL);
+	_exit(127);
+    }
+
+    /* parent */
+    if (*type == 'r') {
+	iop = fdopen(pdes[0], type);
+	close(pdes[1]);
+    } else {
+	iop = fdopen(pdes[1], type);
+	close(pdes[0]);
+    }
+
+    cur->fp = iop;
+    cur->pid = pid;
+    cur->next = pidlist;
+    pidlist = cur;
+
+    ErrorF("Popen: `%s', fp = %p\n", command, iop);
+
+    return iop;
+}
+
+int
+Pclose(iop)
+    pointer iop;
+{
+    struct pid *cur, *last;
+    int omask;
+    int pstat;
+    int pid;
+
+    ErrorF("Pclose: fp = %p\n", iop);
+
+    fclose(iop);
+
+    for (last = NULL, cur = pidlist; cur; last = cur, cur = cur->next)
+	if (cur->fp = iop)
+	    break;
+    if (cur == NULL)
+	return -1;
+
+    do {
+	pid = waitpid(cur->pid, &pstat, 0);
+    } while (pid == -1 && errno == EINTR);
+
+    if (last == NULL)
+	pidlist = cur->next;
+    else
+	last->next = cur->next;
+    xfree(cur);
+
+    return pid == -1 ? -1 : pstat;
+}
+#endif /* !WIN32 && !__EMX__ */

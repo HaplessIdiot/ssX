@@ -1,4 +1,10 @@
 XFree86 3.9p (9 September 1997)
+1254. Disable the Xserver '-config' option when run set-uid.
+1253. Have the Xservers run xkbcomp under the real user's ID.
+1252. Fix xterm's default handling of the KP_Add key.
+1251. Fix Linux-axp xdm build problem.
+1250. Fix stripping of extension from module names (so that it works OK
+      when there is a '.' in the module directory pathname).
 1249. Fix some problems in the trident driver with the 9685 programmable clock 
       and disable the GE when too little memory is available (#950,
       Alan Hourihane).
@@ -5345,4 +5351,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.524 1997/09/09 10:27:36 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.525 1997/09/12 09:23:07 hohndel Exp $
