@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.44 2003/01/01 06:15:20 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.45 2003/01/02 20:44:56 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "compiler.h"
@@ -1948,8 +1948,8 @@ static void nv10GetConfig
 
 #if X_BYTE_ORDER == X_BIG_ENDIAN
     /* turn on big endian register access */
-    if(!(chip->PMC[0x00000004/4] & 0x10000001))
-       chip->PMC[0x00000004/4] = 0x01000000;
+    if(!(chip->PMC[0x00000004/4] & 0x01000001))
+       chip->PMC[0x00000004/4] = 0x01000001;
 #endif
 
     /*
