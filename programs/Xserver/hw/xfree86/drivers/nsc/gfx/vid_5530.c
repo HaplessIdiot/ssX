@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/vid_5530.c,v 1.1 2002/12/10 15:12:27 alanh Exp $ */
 /*
  * $Workfile: vid_5530.c $
  *
@@ -715,7 +715,6 @@ gfx_set_video_window(short x, short y, unsigned short w, unsigned short h)
    unsigned long vcfg = 0;
    unsigned long hadjust, vadjust;
    unsigned long xstart, ystart, xend, yend;
-   unsigned long offset, line_size;
 
    /* SAVE PARAMETERS */
    /* These are needed to call this routine if the scale value changes. */
@@ -731,49 +730,27 @@ gfx_set_video_window(short x, short y, unsigned short w, unsigned short h)
    hadjust = gfx_get_htotal() - gfx_get_hsync_end() - 13l;
    vadjust = gfx_get_vtotal() - gfx_get_vsync_end() + 1l;
 
-   /* LEFT CLIPPING */
+   /* HORIZONTAL START */
+   xstart = (unsigned long)x + hadjust;
 
-   if (x < 0) {
-      gfx_set_video_left_crop((unsigned short)(-x));
-      xstart = hadjust;
-   } else {
-      gfx_set_video_left_crop(0);
-      xstart = (unsigned long)x + hadjust;
-   }
+   /* HORIZONTAL END */
+   /* End positions in register are non-inclusive (one more than the actual end) */
 
-   /* CLIPPING ON RIGHT */
+   if ((x + w) < gfx_get_hactive())
+      xend = (unsigned long)x + (unsigned long)w + hadjust;
+   else					/* right clipping needed */
+      xend = (unsigned long)gfx_get_hactive() + hadjust;
 
-   xend = x + w;
-   if (xend > gfx_get_hactive())
-      xend = gfx_get_hactive();
-   xend += hadjust;
+   /* VERTICAL START */
 
-   /* CLIPPING ON TOP */
+   ystart = (unsigned long)y + vadjust;
 
-   offset = gfx_vid_offset;
-   if (y >= 0) {
-      ystart = y + vadjust;
-   } else {
-      ystart = vadjust;
-      line_size = (READ_VID32(CS5530_VIDEO_CONFIG) >> 7) & 0x000001FE;
-      if (READ_VID32(CS5530_VIDEO_CONFIG) & CS5530_VCFG_LINE_SIZE_UPPER)
-	 line_size += 512l;
-      if (gfx_vid_dsth)
-	 offset = gfx_vid_offset + (line_size << 1) *
-	       (((-y) * gfx_vid_srch) / gfx_vid_dsth);
-   }
+   /* VERTICAL END */
 
-   /* CLIPPING ON BOTTOM */
-
-   yend = y + h;
-   if (yend >= gfx_get_vactive())
-      yend = gfx_get_vactive();
-   yend += vadjust;
-
-   /* SET VIDEO BUFFER OFFSET IN DISPLAY CONTROLLER */
-   /* Use private routine to abstract the display controller. */
-
-   gfx_set_display_video_offset(offset);
+   if ((y + h) < gfx_get_vactive())
+      yend = (unsigned long)y + (unsigned long)h + vadjust;
+   else					/* bottom clipping needed */
+      yend = (unsigned long)gfx_get_vactive() + vadjust;
 
    /* DISABLE REGISTER UPDATES */
 

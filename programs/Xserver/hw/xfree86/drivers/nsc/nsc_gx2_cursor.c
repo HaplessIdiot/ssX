@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_cursor.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_cursor.c,v 1.4 2003/02/06 17:46:01 alanh Exp $ */
 /*
  * $Workfile: nsc_gx2_cursor.c $
  * $Revision$
@@ -155,6 +155,10 @@ void GX2LoadCursorImage(ScrnInfoPtr pScreenInfo, unsigned char *src);
 void GX2HideCursor(ScrnInfoPtr pScreenInfo);
 void GX2ShowCursor(ScrnInfoPtr pScreenInfo);
 static Bool GX2UseHWCursor(ScreenPtr pScreen, CursorPtr pCurs);
+extern void GX2SetVideoPosition(int x, int y, int width, int height,
+				short src_w, short src_h, short drw_w,
+				short drw_h, int id, int offset,
+				ScrnInfoPtr pScrn);
 
 /*----------------------------------------------------------------------------
  * GX2HWCursorInit.
@@ -239,6 +243,8 @@ GX2SetCursorColors(ScrnInfoPtr pScreenInfo, int bg, int fg)
 static void
 GX2SetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
 {
+   unsigned long offset;
+   static int panOffset = 0;
    GeodePtr pGeode = GEODEPTR(pScreenInfo);
 
    unsigned short xhot = 0, yhot = 0;
@@ -254,6 +260,23 @@ GX2SetCursorPosition(ScrnInfoPtr pScreenInfo, int x, int y)
 
    GFX(set_cursor_position(pGeode->CursorStartOffset, x, y, xhot, yhot));
    GFX(set_cursor_enable(1));
+
+   if ((pGeode->OverlayON) && (pGeode->Panel)) {
+#if defined(STB_X)
+      Gal_get_display_offset(&offset);
+#else
+      offset = gfx_get_display_offset();
+#endif
+      if (offset != panOffset) {
+	 GX2SetVideoPosition(pGeode->video_x, pGeode->video_y,
+			     pGeode->video_w, pGeode->video_h,
+			     pGeode->video_srcw, pGeode->video_srch,
+			     pGeode->video_dstw, pGeode->video_dsth,
+			     pGeode->video_id, pGeode->video_offset,
+			     pGeode->video_scrnptr);
+	 panOffset = offset;
+      }
+   }
 }
 
 /*----------------------------------------------------------------------------
