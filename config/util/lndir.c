@@ -1,5 +1,5 @@
 /* $XConsortium: lndir.c,v 1.13 94/04/17 20:10:42 rws Exp $ */
-/* $XFree86: xc/config/util/lndir.c,v 3.0 1994/05/08 05:13:33 dawes Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.1 1994/11/26 12:32:54 dawes Exp $ */
 /* Create shadow link tree (after X11R4 script of the same name)
    Mark Reinhold (mbr@lcs.mit.edu)/3 January 1990 */
 
@@ -231,6 +231,8 @@ int rel;			/* if true, prepend "../" to fn before using */
 		if (!strcmp (dp->d_name, "RCS"))
 		    continue;
 		if (!strcmp (dp->d_name, "SCCS"))
+		    continue;
+		if (!strcmp (dp->d_name, "CVS"))
 		    continue;
 		if (!strcmp (dp->d_name, "CVS.adm"))
 		    continue;

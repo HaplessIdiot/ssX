@@ -1,4 +1,8 @@
-XFree86 3.1.0Aa (x December 1994)
+XFree86 3.1.0Aa (11 December 1994)
+121. DoubleScan modes are no longer specified with doubled vertical timings.
+120. Add extra timings fields to the ModeRec which are the CRTC values
+     used by the hardware.
+119. Update oak driver to support linear mode for the oti-087 (Jorge Delgado).
 118. Fix '-DSTATIC_COLOR' problems (Hans Nasten).
 117. Fix typos which prevented Mach64 detection in SuperProbe from working
      (Marc Aurele La France).

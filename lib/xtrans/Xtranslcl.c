@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranslcl.c,v 1.18 94/04/17 20:23:03 mor Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.2 1994/10/23 12:55:36 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.3 1994/11/19 07:47:07 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -527,7 +527,7 @@ int		*status;
 
     if( (in=read(ciptr->fd,&length,1)) <= 0 ){
 	if( !in ) {
-		PRMSG(1,
+		PRMSG(2,
 		"TRANS(PTSAccept)() Incoming connection closed\n",0,0,0);
 		}
 	else {
@@ -541,7 +541,7 @@ int		*status;
 
     if( (in=read(ciptr->fd,buf,length)) <= 0 ){
 	if( !in ) {
-		PRMSG(1,
+		PRMSG(2,
 		"TRANS(PTSAccept)() Incoming connection closed\n",0,0,0);
 		}
 	else {

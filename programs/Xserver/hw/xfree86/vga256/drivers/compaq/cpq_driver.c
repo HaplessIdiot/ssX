@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c,v 1.1 94/03/28 21:50:26 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.2 1994/09/07 15:55:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.3 1994/09/11 00:52:38 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -326,22 +326,17 @@ DisplayModePtr mode;
 {
 #ifndef MONOVGA
 	/* Double horizontal timings. */
-	mode->HTotal <<= 1;
-	mode->HDisplay <<= 1;
-	mode->HSyncStart <<= 1;
-	mode->HSyncEnd <<= 1;
+	if (!mode->CrtcHAdjusted) {
+		mode->CrtcHTotal <<= 1;
+		mode->CrtcHDisplay <<= 1;
+		mode->CrtcHSyncStart <<= 1;
+		mode->CrtcHSyncEnd <<= 1;
+		mode->CrtcHAdjusted = TRUE;
+	}
 #endif
 
 	if (!vgaHWInit(mode,sizeof(vgaCOMPAQRec)))
 		return(FALSE);
-#ifndef MONOVGA
-	/* Restore them, they are used elsewhere */
-	mode->HTotal >>= 1;
-	mode->HDisplay >>= 1;
-	mode->HSyncStart >>= 1;
-	mode->HSyncEnd >>= 1;
-#endif
-
 #ifndef MONOVGA
 	new->std.Sequencer[0x02] = 0xff; /* write plane mask for 256 colors */
 	new->std.CRTC[0x13] = vga256InfoRec.virtualX >> 3;

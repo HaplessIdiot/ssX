@@ -1,5 +1,5 @@
 /* $XConsortium: et3_driver.c,v 1.1 94/03/28 21:50:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.2 1994/09/07 15:55:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et3000/et3_driver.c,v 3.3 1994/09/11 00:52:41 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -327,20 +327,16 @@ ET3000Init(mode)
    
 #ifdef MONOVGA
   /* weird mode, halve the horizontal timings */
-  mode->HTotal /= 2;
-  mode->HDisplay /= 2;
-  mode->HSyncStart /= 2;
-  mode->HSyncEnd /= 2;
+  if (!mode->CrtcHAdjusted) {
+    mode->CrtcHTotal /= 2;
+    mode->CrtcHDisplay /= 2;
+    mode->CrtcHSyncStart /= 2;
+    mode->CrtcHSyncEnd /= 2;
+    mode->CrtcHAdjusted = TRUE;
+  }
 #endif
   if (!vgaHWInit(mode,sizeof(vgaET3000Rec)))
     return(FALSE);
-#ifdef MONOVGA
-  /* restore... */
-  mode->HTotal *= 2;
-  mode->HDisplay *= 2;
-  mode->HSyncStart *= 2;
-  mode->HSyncEnd *= 2;
-#endif
 
 #ifndef MONOVGA
   new->std.Sequencer[4] = 0x06;  /* use the FAST 256 Color Mode */
@@ -351,10 +347,10 @@ ET3000Init(mode)
   if (new->std.NoClock >= 0)
     new->CRTCControl   = (int)(new->std.NoClock & 0x04) >> 1 ;
   new->Overflow      = 0x10
-    | ((mode->VSyncStart & 0x400) >> 7 )
-      | (((mode->VDisplay -1) & 0x400) >> 8 )
-	| (((mode->VTotal -2) & 0x400) >> 9 )
-	  | ((mode->VSyncStart & 0x400) >> 10 )
+    | ((mode->CrtcVSyncStart & 0x400) >> 7 )
+      | (((mode->CrtcVDisplay -1) & 0x400) >> 8 )
+	| (((mode->CrtcVTotal -2) & 0x400) >> 9 )
+	  | ((mode->CrtcVSyncStart & 0x400) >> 10 )
 	    | (mode->Flags & V_INTERLACE ? 0x80 : 0);
 
 #ifdef MONOVGA
