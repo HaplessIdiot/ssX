@@ -1,9 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.9 2000/06/17 00:03:25 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_priv.c,v 1.10 2000/06/21 21:40:04 tsi Exp $ */
 
 
-#if 0
-#include <sys/time.h>
-#endif
 #include "xf86.h"
 #include "xf86_OSproc.h"
 #include "xf86_ansic.h"
@@ -23,7 +20,7 @@
    C    - D-1  : Z buffer
 */
 
-void TDFXSendNOPPrivate3D(ScrnInfoPtr pScrn)
+void TDFXSendNOPFifo3D(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 
@@ -33,7 +30,7 @@ void TDFXSendNOPPrivate3D(ScrnInfoPtr pScrn)
   WRITE_FIFO(pTDFX, 0, 0);
 }
 
-void TDFXSendNOPPrivate2D(ScrnInfoPtr pScrn)
+void TDFXSendNOPFifo2D(ScrnInfoPtr pScrn)
 {
   TDFXPtr pTDFX;
 
@@ -47,10 +44,10 @@ void TDFXSendNOPPrivate2D(ScrnInfoPtr pScrn)
   WRITE_FIFO(pTDFX, SST_2D_COMMAND, SST_2D_NOP|SST_2D_GO);
 }  
 
-void TDFXSendNOPPrivate(ScrnInfoPtr pScrn)
+void TDFXSendNOPFifo(ScrnInfoPtr pScrn)
 {
-  TDFXSendNOPPrivate2D(pScrn);
-  TDFXSendNOPPrivate3D(pScrn);
+  TDFXSendNOPFifo2D(pScrn);
+  TDFXSendNOPFifo3D(pScrn);
 }
 
 void InstallFifo(ScrnInfoPtr pScrn)
@@ -78,7 +75,7 @@ void InstallFifo(ScrnInfoPtr pScrn)
   pTDFX->fifoPtr = pTDFX->fifoBase;
   pTDFX->fifoSlots = (pTDFX->fifoSize>>2) - 1;
   pTDFX->fifoEnd = pTDFX->fifoBase+pTDFX->fifoSlots;
-  TDFXSendNOPPrivate(pScrn);
+  TDFXSendNOPFifo(pScrn);
 }
 
 void TDFXResetFifo(ScrnInfoPtr pScrn)
@@ -122,15 +119,16 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
   TDFXPtr pTDFX;
   int i, cnt;
   int stat;
-  long start_sec, end_sec, dummy;
+  long start_sec, end_sec, dummy, readptr;
 
   TDFXTRACEACCEL("TDFXSyncFifo start\n");
   pTDFX=TDFXPTR(pScrn);
-  TDFXSendNOPPrivate(pScrn);
+  TDFXSendNOPFifo(pScrn);
   i=0;
   cnt=0;
   start_sec=0;
   do {
+    readptr=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
     stat=TDFXReadLongMMIO(pTDFX, 0);
     if (stat&SST_BUSY) i=0; else i++;
     cnt++;
@@ -140,7 +138,9 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
       } else {
 	getsecs(&end_sec, &dummy);
 	if (end_sec-start_sec>3) {
-	  TDFXResetFifo(pScrn);
+	  dummy=TDFXReadLongMMIO(pTDFX, SST_FIFO_RDPTRL0);
+	  if (dummy=readptr)
+	    TDFXResetFifo(pScrn);
 	  start_sec=0;
         }
       }
@@ -152,7 +152,7 @@ static void TDFXSyncFifo(ScrnInfoPtr pScrn)
   pTDFX->prevBlitDest.x2=pTDFX->prevBlitDest.y2=0;
 }
 
-Bool TDFXInitPrivate(ScreenPtr pScreen)
+Bool TDFXInitFifo(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
@@ -172,7 +172,7 @@ Bool TDFXInitPrivate(ScreenPtr pScreen)
   return TRUE;
 }
 
-void TDFXShutdownPrivate(ScreenPtr pScreen)
+void TDFXShutdownFifo(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
@@ -200,7 +200,7 @@ GetReadPtr(TDFXPtr pTDFX)
 }
 
 #ifdef XF86DRI
-void TDFXSwapContextPrivate(ScreenPtr pScreen)
+void TDFXSwapContextFifo(ScreenPtr pScreen)
 {
   ScrnInfoPtr pScrn;
   TDFXPtr pTDFX;
@@ -240,24 +240,6 @@ void TDFXSwapContextPrivate(ScreenPtr pScreen)
     pTDFX->fifoSlots = pTDFX->fifoEnd-pTDFX->fifoPtr-8;
 }    
 
-void TDFXLostContext(ScreenPtr pScreen)
-{
-  ScrnInfoPtr pScrn;
-  TDFXPtr pTDFX;
-  TDFXSAREAPriv *sPriv;
-
-  pScrn = xf86Screens[pScreen->myNum];
-  pTDFX=TDFXPTR(pScrn);
-  sPriv=(TDFXSAREAPriv*)DRIGetSAREAPrivate(pScreen);
-  if (!sPriv) return;
-  if (sPriv->fifoPtr!=(((unsigned char*)pTDFX->fifoPtr)-pTDFX->FbBase) ||
-      sPriv->fifoRead!=(((unsigned char*)pTDFX->fifoRead)-pTDFX->FbBase)) {
-    sPriv->fifoPtr=(((unsigned char*)pTDFX->fifoPtr)-pTDFX->FbBase);
-    sPriv->fifoRead=(((unsigned char*)pTDFX->fifoRead)-pTDFX->FbBase);
-    sPriv->fifoOwner=DRIGetContext(pScreen);
-    /* ErrorF("Out FifoPtr=%d FifoRead=%d\n", sPriv->fifoPtr, sPriv->fifoRead); */
-  }
-}
 #endif
 
 static void 

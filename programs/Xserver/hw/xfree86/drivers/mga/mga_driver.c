@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.179 2000/11/08 05:03:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.181 2000/11/16 19:44:55 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -219,7 +219,8 @@ typedef enum {
     OPTION_DIGITAL,
     OPTION_TV,
     OPTION_TVSTANDARD,
-    OPTION_CABLETYPE
+    OPTION_CABLETYPE,
+    OPTION_USEIRQZERO
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -248,6 +249,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_TV,		"TV",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_CABLETYPE,		"CableType",	OPTV_ANYSTR,	{0}, FALSE },
+    { OPTION_USEIRQZERO,	"UseIrqZero",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -1457,6 +1459,17 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	}
         xf86DrvMsg(pScrn->scrnIndex, from, "Using AGP Mode %dx\n",
 		   pMga->agp_mode);
+
+        pMga->ReallyUseIrqZero = 0;
+
+        if (xf86GetOptValBool(MGAOptions, OPTION_USEIRQZERO,
+			      &temp)) {
+	    pMga->ReallyUseIrqZero = 1;
+	    from = X_CONFIG;
+	    xf86DrvMsg(pScrn->scrnIndex, from, "Enabling use of IRQ "
+		       "Zero (Dangerous)\n");
+	}
+
     }
 #endif
 

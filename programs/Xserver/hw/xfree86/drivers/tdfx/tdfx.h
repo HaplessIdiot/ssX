@@ -5,7 +5,7 @@
 
    Copyright: 1998,1999
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.10 2000/06/17 00:03:24 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.h,v 1.11 2000/09/26 15:57:14 tsi Exp $ */
 
 #ifndef _TDFX_H_
 #define _TDFX_H_
@@ -41,16 +41,14 @@ typedef struct _TDFXRec *TDFXPtr;
 #define PIXMAP_CACHE_LINES 512
 #endif
 
-#ifdef PROP_3DFX
 #include "tdfx_priv.h"
-#else
-#define PROPDATA
-#define PROPSAREADATA
-#endif
-extern Bool TDFXInitPrivate(ScreenPtr pScreen);
-extern void TDFXShutdownPrivate(ScreenPtr pScreen);
-extern void TDFXSwapContextPrivate(ScreenPtr pScreen);
+
+extern Bool TDFXInitFifo(ScreenPtr pScreen);
+extern void TDFXShutdownFifo(ScreenPtr pScreen);
+extern void TDFXSwapContextFifo(ScreenPtr pScreen);
 extern void TDFXLostContext(ScreenPtr pScreen);
+extern Bool TDFXSetupSLI(ScrnInfoPtr pScrn, Bool sliEnable, int aaSamples);
+extern Bool TDFXDisableSLI(TDFXPtr pTDFX);
 
 #ifdef XF86DRI
 extern void FillPrivateDRI(TDFXPtr pTDFX, TDFXDRIPtr pTDFXDRI);
@@ -126,6 +124,7 @@ typedef struct {
   unsigned int srcbaseaddr;
   unsigned int dstbaseaddr;
   unsigned char ExtVga[2];
+  unsigned char dactable[512];
 } TDFXRegRec, *TDFXRegPtr;
 
 typedef struct TextureData_t {
@@ -198,6 +197,18 @@ typedef struct _TDFXRec {
   TDFXConfigPrivPtr pVisualConfigsPriv;
   TDFXRegRec DRContextRegs;
 #endif
+  /* State for video */
+  FBAreaPtr offscreenYUVBuf;
+  int offscreenYUVBufWidth;
+  int offscreenYUVBufHeight;
+  
+  /* This is a small register shadow.  I'm only shadowing 
+   *   sst2dDstFmt
+   *   sst2dSrcFmt
+   * If a real register shadow is ever needed we should probably
+   * shadow everything and make it happen automatically for every write. */
+  INT32 sst2DSrcFmtShadow;
+  INT32 sst2DDstFmtShadow;
 } TDFXRec;
 
 typedef struct {
@@ -232,7 +243,7 @@ extern Bool TDFXDRIFinishScreenInit(ScreenPtr pScreen);
 extern Bool TDFXDGAInit(ScreenPtr pScreen);
 extern void TDFXCursorGrabMemory(ScreenPtr pScreen);
 extern void TDFXSetLFBConfig(TDFXPtr pTDFX);
-extern void TDFXSendNOPPrivate(ScrnInfoPtr pScrn);
+extern void TDFXSendNOPFifo(ScrnInfoPtr pScrn);
 
 extern Bool TDFXSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 extern void TDFXAdjustFrame(int scrnIndex, int x, int y, int flags);
@@ -258,34 +269,6 @@ extern void TDFXSubsequentSolidFillRect(ScrnInfoPtr pScrn, int x, int y,
 					int w, int h);
 
 extern void TDFXSelectBuffer(TDFXPtr pTDFX, int which);
-
-
-#ifndef PROP_3DFX
-#define DECLARE(a)
-#define DECLARE_LAUNCH(size, x)
-#ifdef TDFX_DEBUG_CMDS
-#define TDFXMakeRoom(p, n) \
-  do { \
-    if (cmdCnt) \
-      ErrorF("Previous TDFXMakeRoom passed incorrect size\n"); \
-    cmdCnt=n; \
-    lastAddr=0;
-    TDFXMakeRoomNoProp(p, n); \
-  } while(0)
-#define TDFXWriteLong(p, a, v) \
-  do { \
-    if (lastAddr && a<lastAddr) \
-      ErrorF("TDFXWriteLong not ordered\n"); \
-    lastAddr=a; \
-    cmdCnt--; \
-    TDFXWriteLongMMIO(p, a, v); \
-  while (0)
-#else
-#define TDFXMakeRoom(p, n) TDFXMakeRoomNoProp(p, n)
-#define TDFXWriteLong(p, a, v) TDFXWriteLongMMIO(p, a, v)
-#endif
-#define TDFXSendNOP TDFXSendNOPNoProp
-#endif
 
 #endif
 

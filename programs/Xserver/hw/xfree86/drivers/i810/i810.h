@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.17 2000/09/26 15:57:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.18 2000/10/24 22:45:06 dawes Exp $ */
 
 /*
  * Authors:
@@ -269,6 +269,8 @@ extern void I810FreeGARTMemory( ScrnInfoPtr pScrn );
 
 extern Bool I810BindGARTMemory( ScrnInfoPtr pScrn );
 extern Bool I810UnbindGARTMemory( ScrnInfoPtr pScrn );
+
+extern int I810CheckAvailableMemory(ScrnInfoPtr pScrn);
 
 extern Bool I810SwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 extern void I810AdjustFrame(int scrnIndex, int x, int y, int flags);

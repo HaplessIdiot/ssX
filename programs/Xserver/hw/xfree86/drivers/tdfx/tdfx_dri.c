@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.11 2000/09/24 13:51:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_dri.c,v 1.12 2000/09/26 15:57:15 tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -26,6 +26,8 @@ static void TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 			       void *readContextStore,
 			       DRIContextType writeContextType, 
 			       void *writeContextStore);
+static Bool TDFXDRIOpenFullScreen(ScreenPtr pScreen);
+static Bool TDFXDRICloseFullScreen(ScreenPtr pScreen);
 static void TDFXDRIInitBuffers(WindowPtr pWin, RegionPtr prgn, CARD32 index);
 static void TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg, 
 			       RegionPtr prgnSrc, CARD32 index);
@@ -489,21 +491,6 @@ TDFXDRISwapContext(ScreenPtr pScreen, DRISyncType syncType,
 		   DRIContextType oldContextType, void *oldContext,
 		   DRIContextType newContextType, void *newContext)
 {
-#if 0
-  ScrnInfoPtr pScrn;
-
-  pScrn = xf86Screens[pScreen->myNum];
-  if ((syncType==DRI_2D_SYNC) && (oldContextType==DRI_NO_CONTEXT) &&
-      (newContextType==DRI_2D_CONTEXT)) { /* Exiting from Block Handler */
-    TDFXCheckSync(pScrn);
-    TDFXLostContext(pScreen);
-  }
-  if ((syncType==DRI_3D_SYNC) && (oldContextType==DRI_2D_CONTEXT) &&
-      (newContextType==DRI_2D_CONTEXT)) { /* Entering from Wakeup */
-    TDFXSwapContextPrivate(pScreen);
-    TDFXNeedSync(pScrn);
-  }
-#endif
 }
 
 static void
@@ -684,3 +671,34 @@ TDFXDRIMoveBuffers(WindowPtr pParent, DDXPointRec ptOldOrg,
 
   pTDFX->AccelInfoRec->NeedToSync = TRUE;
 }
+
+static Bool
+TDFXDRIOpenFullScreen(ScreenPtr pScreen)
+{
+  ScrnInfoPtr pScrn;
+  TDFXPtr pTDFX;
+
+  xf86DrvMsg(pScreen->myNum, X_INFO, "OpenFullScreen\n");
+#if 0
+  pScrn = xf86Screens[pScreen->myNum];
+  pTDFX=TDFXPTR(pScrn);
+  if (pTDFX->numChips>1) {
+    TDFXSetupSLI(pScrn);
+  }
+#endif
+  return TRUE;
+}
+
+static Bool
+TDFXDRICloseFullScreen(ScreenPtr pScreen)
+{
+  ScrnInfoPtr pScrn;
+
+  xf86DrvMsg(pScreen->myNum, X_INFO, "CloseFullScreen\n");
+#if 0
+  pScrn = xf86Screens[pScreen->myNum];
+  TDFXDisableSLI(pScrn);
+#endif
+  return TRUE;
+}
+

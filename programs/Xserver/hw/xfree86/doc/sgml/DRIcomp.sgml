@@ -15,7 +15,7 @@
       <date>29 October 2000
         
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.6 2000/09/24 13:51:26 alanh Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.7 2000/11/08 05:03:03 dawes Exp $
     </ident>
 
     <toc>
@@ -72,6 +72,9 @@
           <item>GCC compiler and related tools.
           <item>ssh (secure shell) for registered developer downloading of the
             DRI source tree
+          <item>A recent Linux Kernel.  See below for details.
+          <item>FreeBSD support is not currently being maintained and may not
+            work.
         </itemize>
 
       <p>
@@ -82,36 +85,40 @@
             These can be obtained from
             <htmlurl url="http://linux.3dfx.com/open_source/glide_kit.htm"
             name="linux.3dfx.com">.
-          <item>Linux kernel 2.2.x.
-            The DRI developers have been using stock RedHat 6.1 systems
-            (kernel 2.2.12-20).
-            Later kernel versions will be supported in the future.
+          <item>A recent Linux 2.4.x kernel.  AGP support is not required.
         </itemize>
 
       <p>
         For Matrox G200/G400 hardware, you'll also need:
         <itemize>
-          <item>Linux kernel 2.3.51.  Older kernel versions will not work.
+          <item>A recent Linux 2.4.x kernel with AGP support.
         </itemize>
 
       <p>
         For Intel i810 hardware, you'll also need:
         <itemize>
-          <item>Linux kernel 2.3.99-pre6.  Older kernel versions will not work.
+          <item>A recent Linux 2.4.x kernel with AGP support.
         </itemize>
 
       <p>
         For ATI Rage hardware, you'll also need:
         <itemize>
-          <item>Linux kernel 2.3.51.  Other kernel versions may work but
-            this one is known to work.
+          <item>A recent Linux 2.4.x kernel with AGP support.
         </itemize>
 
 
-    <sect>Kernel preparation <p>
+    <sect>Linux Kernel Preparation <p>
 
-        You may have to upgrade your Linux kernel in order to use the DRI.
-        This is because you need a kernel version which supports AGP.
+        The DRI project closely tracks Linux kernel development.
+        Since the internal Linux data structures change frequently in
+        the 2.4 development branch it's important to have use the most
+        recent Linux kernel.
+        As of this writing (Nov 2000), 2.4.0-test11-pre5 is the most
+        recent version of Linux which the DRI is synchronized to.
+      <p>
+        Most of the DRI drivers require AGP support and using Intel
+        Pentium III SSE optimizations also requires an up-to-date Linux kernel.
+      <p>
         Building a new Linux kernel can be difficult for beginners but
         there are resources on the Internet to help.
         This document assumes experience with configuring, building and
@@ -121,70 +128,65 @@
         <htmlurl url="http://www.kernel.org/pub/linux/kernel/"
         name="www.kernel.org">
       <p>
-        Download the needed kernel and put it in /usr/src.
-        Create a directory for the source and unpack it.
-        For example:
-            <verb>
-            cd /usr/src
-	    rm -f linux
-            mkdir linux-2.3.51
-            ln -s linux-2.3.51 linux
-            bzcat linux-2.3.51.tar.bz2 | tar xf -
-            </verb>
-      <p>
-        Now configure your kernel.
-        You might, for example, use <tt>make menuconfig</tt> and do the
-        following:
-
+        Here are the basic steps for kernel setup.
         <itemize>
-        <item>Go to <em>Code maturity level options</em>
-	<item>Enable <em>Prompt for development and/or incomplete
-          code/drivers</em>
-	<item>hit ESC
-	<item>Go to <em>Character devices</em>
-	<item>Disable <em>Direct Rendering Manager (XFree86 DRI support)</em>
-          since we'll use the DRI module from the XFree86/DRI tree.
-        <item>Go to <em>/dev/agpgart (AGP Support) (EXPERIMENTAL) (NEW)</em>
-        <item>Hit SPACE twice
-	<item>Enable all chipsets' support for AGP
-	</itemize>
+        <item>Download the needed kernel and put it in /usr/src.
+          Create a directory for the source and unpack it.
+          For example:
+          <verb>
+          cd /usr/src
+          rm -f linux
+          mkdir linux-2.4.x
+          ln -s linux-2.4.x linux
+          bzcat linux-2.4.x.tar.bz2 | tar xf -
+          </verb>
+        <item>Configure your kernel.
+          You might, for example, use <tt>make menuconfig</tt> and do the
+          following:
 
-      <p>It's recommended that you turn on MTRRs under <em>Processor type
-        and Features</em>, but not required.
-
-      <p>
-        Configure the rest of the kernel as required for your system
-        (i.e. Ethernet, SCSI, etc)
-      <p>
-        Exit, saving your kernel configuration.
-      <p>
-        Edit your /etc/lilo.conf file.
-	Make sure you have an image entry as follows (or similar):
+          <itemize>
+	  <item>Go to <em>Code maturity level options</em>
+	  <item>Enable <em>Prompt for development and/or incomplete
+	    code/drivers</em>
+	  <item>hit ESC to return to the top-level menu
+          <item>Go to <em>Character devices</em>
+          <item>Disable <em>Direct Rendering Manager (XFree86 DRI support)</em>
+            since we'll use the DRI module from the XFree86/DRI tree.
+          <item>Go to <em>/dev/agpgart (AGP Support) (EXPERIMENTAL) (NEW)</em>
+	  <item>Hit SPACE twice to build AGP support into the kernel
+          <item>Enable all chipsets' support for AGP
+          <item>It's recommended that you turn on MTRRs under
+            <em>Processor type and Features</em>, but not required.
+          </itemize>
+        <item>Configure the rest of the kernel as required for your system
+          (i.e. Ethernet, SCSI, etc)
+        <item>Exit, saving your kernel configuration.
+        <item>Edit your /etc/lilo.conf file.
+          Make sure you have an image entry as follows (or similar):
             <verb>
             image=/boot/vmlinuz
-                  label=linux.2.3.51
+                  label=linux.2.4.x
                   read-only
                   root=/dev/hda1
             </verb>
-      <p>
-	The important part is that you have /boot/vmlinuz without a
-	trailing version number.
-	If this is the first entry in your /etc/lilo.conf AND you
-	haven't set a default, then this will be your default kernel.
-
-      <p>
-        Now compile the new kernel:
-
-            <verb>
-            cd /usr/src/linux-2.3.51
-            make dep ; make bzImage
-            make modules ; make modules_install
-            make install
-            </verb>
-	Note that the final part, make install, will automatically run
-	lilo for you.
-      <p>
-        Now reboot to use this new kernel.
+	  The important part is that you have /boot/vmlinuz without a
+	  trailing version number.
+	  If this is the first entry in your /etc/lilo.conf AND you
+	  haven't set a default, then this will be your default kernel.
+        <item>Compile the new kernel.
+          <verb>
+          cd /usr/src/linux-2.4.x
+          make dep
+          make bzImage
+          make modules
+          make modules_install
+          make install
+          </verb>
+          Note that last make command will automatically run lilo for you.
+        <item>Upgrade your modutils package for Linux 2.4.x if you're
+          upgrading from Linux 2.2.x.
+        <item>Now reboot to use the new kernel.
+        </itemize>
 
 
     <sect>Downloading the XFree86/DRI CVS Sources <p>
@@ -398,14 +400,14 @@
           The most recent kernels are not always supported.
         <p>
           If your build machine is running a different version of the kernel
-          than your target machine (i.e. 2.2.12-20 vs. 2.3.99-pre6), make will
+          than your target machine (i.e. 2.2.x vs. 2.4.x), make will
           select the wrong kernel headers. This can be fixed by explicitly
           setting the value of <tt>TREE</tt>.
           If the path to your kernel source is 
-          <tt>/bigdisk/linux-2.3.99-pre6</tt>,
+          <tt>/usr/src/linux-2.4.x</tt>,
           <verb>
           cd ~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel
-          make TREE=/bigdisk/linux-2.3.99-pre6
+          make TREE=/usr/src/linux-2.4
           </verb>
           or alternatively, edit Makefile to include this change.
         <p>
@@ -413,6 +415,19 @@
           Later, you might just compile parts of the source tree but it's
           important that the whole tree will build first.
 
+      <sect1>DRI kernel module installation <p>
+
+        The DRI kernel modules are in
+        <tt>~/DRI-CVS/build/xc/programs/Xserver/hw/xfree86/os-support/linux/drm/kernel/</tt>.
+        <p>
+        To load the appropriate DRI module in your running kernel you can
+        either use ismod and restart your X server or copy the kernel module
+        to <tt>/lib/modules/2.4.x/kernel/driver/char/drm/</tt> then run
+        depmod and restart your X server.
+        <p>
+        Make sure you first unload any older DRI kernel modules that might
+        be already loaded.
+        <p>
 
     <sect>Normal Installation and Configuration <p>
 

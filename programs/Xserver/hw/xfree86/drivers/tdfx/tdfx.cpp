@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.cpp,v 1.3 2000/03/21 19:57:19 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx.cpp,v 1.4 2000/06/14 02:13:15 dawes Exp $ 
 .\" shorthand for double quote that works everywhere.
 .ds q \N'34'
 .TH TDFX __drivermansuffix__ "Version 4.0.1"  "XFree86"
@@ -15,7 +15,7 @@ tdfx \- 3Dfx video driver
 .SH DESCRIPTION
 .B tdfx 
 is an XFree86 driver for 3Dfx video cards.
-THIS MAN PAGE NEEDS TO BE FILLED IN.
+It supports the Voodoo Banshee, Voodoo3, Voodoo4 and Voodoo5 cards.
 .SH SUPPORTED HARDWARE
 The
 .B tdfx

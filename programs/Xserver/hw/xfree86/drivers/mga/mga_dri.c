@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.11 2000/11/08 05:03:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.12 2000/11/13 23:31:39 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -754,6 +754,25 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
 					     ->thisCard)->devnum,
 					    ((pciConfigPtr)pMGA->PciInfo
 					     ->thisCard)->funcnum);
+
+      if(!pMGADRIServer->irq && !pMGA->ReallyUseIrqZero) {
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		    "[drm] Your graphics card has Interrupt zero"
+		    " assigned to it.\n"
+		    "This is highly unlikely so I'm disabling the DRI.\n"
+		    "If your graphics card really has Interrupt zero, please"
+		    "add the config option UseIrqZero\n"
+		    "to the device section in your XF86Config file.\n"
+		    "Please be warned that Interrupt zero is normally "
+		    "the timer interrupt on X86 systems.\n"
+		    "Using this option could make your system unusable.\n"
+		    "The more likely solution is that your graphics card has"
+		    " no interrupt assigned to it.\nPlease consult your"
+		    " system BIOS manual for instructions on how to enable "
+		    "an interrupt for your graphics card.\n");
+	 MGADRICloseScreen(pScreen);
+	 return FALSE;
+      }
       drmCtlInstHandler(pMGA->drmSubFD, pMGADRIServer->irq);
    }
 

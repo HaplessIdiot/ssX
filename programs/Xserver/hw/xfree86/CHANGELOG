@@ -1,4 +1,14 @@
-XFree86 4.0.1h (xx December 2000)
+XFree86 4.0.1h (1 December 2000)
+1045. Fix some i810 driver problems when too little videoRam is specified
+      (David Dawes).
+1044. Fix an i810 driver bug that prevents the DRI from being enabled
+      after a server reset (Jeff Hartmann).
+1043. Add a "dri" config file option to the i810 driver that can be used
+      to enable/disable the DRI (no other method works for statically linked
+      servers) (David Dawes, from VA's 7.0.1).
+1042. Update the i810 driver to check the max available GART memory
+      (Jeff Hartmann, David Dawes, from VA's 7.0.1).
+1041. Resync DRI code/drivers with the DRI CVS (VA Linux).
 1040. Fix a couple of clipping problems on the Trident CyberBlade/Blade3d
       chipsets (Alan Hourihane).
 1039. Fix a couple of Alpha related issues (Jay Estabrook).
@@ -11741,4 +11751,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1426 2000/12/01 08:56:00 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1427 2000/12/01 12:46:28 alanh Exp $

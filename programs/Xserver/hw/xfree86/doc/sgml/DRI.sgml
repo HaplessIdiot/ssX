@@ -12,10 +12,10 @@
       <author>
           <htmlurl url="http://www.valinux.com/"
             name="VA Linux Systems, Inc."> Professional Services - Graphics.
-      <date>24 October 2000
+      <date>20 November 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.11 2000/11/16 17:20:12 alanh Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.12 2000/11/16 18:36:25 dawes Exp $
     </ident>
 
     <toc>
@@ -198,8 +198,9 @@
       <p>
       XFree86 4.0.1 added automatic kernel module loading to the X server.
       On Linux, the X server uses modprobe to load kernel modules.
-      The DRM kernel modules should be in /lib/modules/KERNEL-VERSION/misc/
-      for automatic loading to work.
+      In Linux 2.4.x the DRM kernel modules should be kept in
+      <tt>/lib/modules/2.4.x/kernel/driver/char/drm/</tt> for automatic
+      loading to work.
       <p>
       Optionally, DRM kernel modules can be loaded manually with insmod
       prior to starting the X server.
@@ -289,6 +290,11 @@
         If your graphics card doesn't have a lot of memory (less than 16MB,
         for example), you may have to reduce your screen size and/or
         color depth in order to use 3D features.
+        Reducing the screen resolution will also leave more space for
+        texture images, possibly improving 3D performance.
+        If, for example, you play Quake3 at 1024x768 but start your display
+        at 1600x1200 you might consider restarting X at 1024x768 in order to
+        maximize your texture memory space.
         <p>
         The documentation included with your card should have information
         about maximum screen size when using 3D.
@@ -328,11 +334,13 @@
           The <tt/-I/ option is used to specify where the GL/glut.h (and
           possibly the GL/gl.h and GL/glu.h) header file may be found.
         <p>
-          The <tt/-L/ options specify where the libglut.so, libGLU.so and
-          X libraries are located.
+          The <tt/-L/ options specify where the libglut.so and the X
+          libraries are located.
+          libGL.so and libGLU.so should be in /usr/lib, as specified by
+          the Linux/OpenGL ABI standard.
         <p>
           The <tt/-lglut -lGLU -lGL/ arguments specify that the application
-          should link with the GLUT, GLU and GL libraries.
+          should link with the GLUT, GLU and GL libraries, in that order.
 
       <sect1>Running your OpenGL program
 <p>
@@ -351,12 +359,15 @@
           OSMesa (Off-Screen Mesa) is an interface and driver for rendering
           3D images into a user-allocated block of memory rather than an
           on-screen window.
+          It was originally developed for Mesa before Mesa became part of
+          the XFree86/DRI project.
+          It can now be used with the XFree86/DRI libGL.so as well.
 <p>
-          libOSMesa.so implements the OSMesa interface and must be linked
+          libOSMesa.so implements the OSMesa interface and it must be linked
           with your application if you want to use the OSMesa functions.
           You must also link with libGL.so.  For example:
         <verb>
-        gcc osdemo.c -L/usr/X11R6/lib -lOSMesa -lGLU -lGL -o osdemo
+        gcc osdemo.c -lOSMesa -lGLU -lGL -o osdemo
         </verb>
 <p>
           In stand-alone Mesa this interface was compiled into the monolithic
@@ -395,9 +406,9 @@
           If you see that indirect rendering is being used when direct
           rendering was expected, proceed to the troubleshooting section.
         <p>
-          <tt/glxinfo/ also lists all of the GLX-enhanced visuals available.
-          Here you can determine which visuals may have depth buffers, stencil
-          buffers, accumulation buffers, etc.
+          <tt/glxinfo/ also lists all of the GLX-enhanced visuals available
+          so you can determine which visuals are double-bufferd, have depth (Z)
+          buffers, stencil buffers, accumulation buffers, etc.
 
       <sect1>Environment Variables
 <p>
@@ -639,7 +650,7 @@
             </verb>
           <p>
             The kernel module for the Voodoo3 is named <tt>tdfx.o</tt> and
-	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
+	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the Voodoo3 hould be in
@@ -654,7 +665,7 @@
               If you try to run an OpenGL application and see an error message
               similar to
               <verb>
-              gd error (glide): gd error (glide): grSstSelect:  non-existent SSTgd error (glide): grSstSelect:  non-existent SSTS
+      gd error (glide): gd error (glide): grSstSelect:  non-existent SSTgd error (glide): grSstSelect:  non-existent SSTS
               </verb>
               it means that you have the wrong version of the Glide library
               for your hardware.
@@ -782,7 +793,7 @@
             </verb>
           <p>
             The kernel module for the Voodoo5 is named <tt>tdfx.o</tt> and
-	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
+	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the Voodoo5 hould be in
@@ -894,7 +905,7 @@
             </verb>
           <p>
             The kernel module for the i810 is named <tt>i810.o</tt> and
-	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
+	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the i810 should be in
@@ -976,7 +987,7 @@
 
           <p>
             The kernel module for the G200/G400 is named <tt>mga.o</tt> and
-	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
+	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the G200/G400 should be in
@@ -985,18 +996,68 @@
 
         <sect2>Performance
 <p>
-          No data at this time.
+          Software rendering will be used under any of the
+          following conditions:
+          <itemize>
+          <item>Using glDrawBuffer(GL_FRONT_AND_BACK).
+          <item>Using point, line, or triangle smoothing.
+          <item>Using glLogicOp.
+          <item>Using glPolygonStipple or glLineStipple.
+          <item>Using 1D or 3D textures.
+          <item>Using the accumulation buffer.
+          </itemize>
+
+
+        <sect2>IRQ Assignment
+<p>
+          There have been problems in the past with the MGA driver being very
+          sluggish when the DRI is enabled (to the point of being unusable.)
+          This is caused by the graphics card not having an interrupt assigned
+          to it. 
+          The current DRI trunk will attempt to detect this condition and
+          bail outgracefully.
+          <p>
+          The solution to the above problem is to assign an interrupt to your
+          graphics card.
+          This is something you must turn on in your system BIOS configuration.
+          Please consult your system BIOS manual for instructions
+          on how to enable an interrupt for your graphics card.
+          <p>
+
+        <sect2>MGA HAL lib
+<p>
+	  MGAHALlib.a is a binary library Matrox has provided for use under
+          Linux to expose functionality for which they can not provide
+          documentation. 
+	  (For example TV-Out requires MacroVision be enabled on the output.) 
+	  This binary library also sets the pixel/memory clocks to the optimial
+	  settings for your Matrox card.
+          <p>
+	  Currently the MGAHAL library is required for the G450 to work.
+          You can download this from the driver section on Matrox's website: 
+	  <htmlurl url="http://www.matrox.com/mga/" name="www.matrox.com/mga">
+          <p>
+	  Here modifications to the DRI build instructions which make the
+          mga ddx driver use the MGAHAL library:
+          <verb>
+	  1.Put the following define in your host.def file
+		  #define UseMatroxHal YES
+	  2. Place mgaHALlib.a in the following directory
+		  xc/programs/Xserver/hw/xfree86/drivers/mga/HALlib/
+          </verb>
+          <p>
+	  You can use DualHead on the G400/G450 DH cards by creating two
+          device sections which both point to the same BusID.
+          For most AGP devices the BusID will be "PCI:1:0:0".
+          Configure your screen section as you would normally configure
+          XFree86 4.x Multihead.  It should be noted that currently
+	  the second head does not support direct rendering.
+          <P>
 
         <sect2>Known Problems
 <p>
-          <itemize>
-            <item>
-	      Multitexture is currently disabled on the G400 to work
-	      around a hardware lockup bug.  This should be restored in
-	      a subsequent release.
-            <item>
-	      32bpp mode has not been tested on the G400 at this time.
-          </itemize>
+          None.
+          <p>
 
 
       <sect1>ATI Rage 128
@@ -1038,7 +1099,7 @@
             </verb>
           <p>
             The kernel module for the Rage 128 is named <tt>r128.o</tt> and
-	    should be installed in /lib/modules/KERNEL-VERSION/misc/.
+	    should be installed in /lib/modules/2.4.x/kernel/driver/char/drm/.
             It will be automatically loaded by the Xserver if needed.
           <p>
 	    The DRI 3D driver for the Rage 128 should be in
@@ -1092,16 +1153,13 @@
           in an X protocol error.
         <p>
 
-      <sect1>Signal Handling
+      <sect1>Debugging
 <p>
-          There are several understood, but unresolved problems relating
-          to hardware locking and signal handling.
-          Hitting CTRL-z to suspend a 3D application can sometimes cause
-          the X server to lock-up if executing device driver code at that
-          moment.
-          Also, using a debugger to step through OpenGL/Mesa device driver
-          functions code could cause a lock-up.
-          These problems will be fixed in the future.
+          Debugging DRI drivers with gdb can be difficult because of the
+          locking involved.  When debugging OpenGL applications, you should
+          avoid stepping inside the GL functions.  If you're trying to debug
+          a DRI driver it's recommended that you do so remotely, from a
+          second system.
 
       <sect1>Scheduling
 <p>
