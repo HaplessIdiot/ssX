@@ -1,4 +1,11 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 266. Update Darwin build configuration files including:
+       - Report full OS version and more capabilities.
+       - Fix X server build problem due to libraries in ProjectRoot being
+         listed as dependencies for some targets.
+       - Allow dynamic shared libraries to take advantage of two-level
+         namespace on Darwin 1.4.
+      (Torrey T. Lyons)
  265. Disable clipboard viewer, external program xwinclip handles this (fow now)
       (#4932, Harold Hunt).
  264. Add ability to let Aqua and X use different display modes while running
@@ -13784,4 +13791,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1933 2001/09/07 08:41:52 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1934 2001/09/11 14:12:05 alanh Exp $
