@@ -1,3 +1,6 @@
+ 690. Workaround for hardware bug that prevents older ATI 3D Rage adapters from
+      being assigned to XF86Config device sections (Marc La France).
+
 XFree86 4.1.99.7 (17 January 2002)
  689. Fix bug introduced in snapshot 4.1.99.5 causing XDarwin's PseudoramiX
       extension to always be disabled (Torrey T. Lyons).
@@ -14551,4 +14554,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2141 2002/01/17 07:32:15 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2142 2002/01/17 23:27:42 dawes Exp $
