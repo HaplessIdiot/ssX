@@ -11,9 +11,12 @@ decreasing TODO file :-)"
 All Tseng cards:
 
 * We definitely NEED to fix that color-expansion problem. See Appendix A
-  below for a detailed explanation.
+below for a detailed explanation.
 
-* There are still some problems with the HW-cursor. This is being worked on.
+* There are still some problems with the HW-cursor. The error message about
+"wrong color selected" needs to be dumped, and the limitation documented. Or
+we must have a way to dynamically switch to software-cursor mode if the
+color can not be made.
 
 * text font sometimes corrupted when going back to text mode.
 
@@ -56,10 +59,25 @@ see what I mean. See also appendix B.
 * There is a fundamental limitation in the W32 chips regarding color
 expansion: it _always_ expands colors from 1 to 8 bit. That means
 "out-of-the-box" for 8bpp, but trouble in 16/24/32 bpp modes. Maybe XAA
-needs to be extended to support chips that can only do 8bpp color
-expansion. There is already support for doing acceleration in 24bpp using
-the 8bpp acceleration primitives, so maybe someone needs to add the same
-for 16bpp. Of course, this is useless unless we _have_ 16/24/32bpp first:
+needs to be extended to support chips that can only do 8bpp color expansion.
+This seems to be a very large change, with benefit for only a few chips.
+There is already support in XAA for doing acceleration in 24bpp using the
+8bpp acceleration primitives, so maybe someone needs to add the same for
+16bpp. Of course, this is useless unless we _have_ 16/24/32bpp first.
+Another option is to expand the bitmap in the Tseng acceleration code
+before rendering it. That's a lot easier to do.
+
+* The W32i doesn't work accelerated in the current Tseng driver. It does
+however work in the XF86_W32 server. This is a bug. It doesn't even work in
+banked mode. WARNING: trying it may cause a complete system hang. Prepare.
+
+* Hardware cursor support for the W32 is still lacking color support. We
+need to reserve color cells #0 and #255 to make this work. From discussions
+on the beta list, it seems the best solution is to allocate these cells
+read-write, and then use them for the HW cursor. We MUST however document
+that this will break some clients which depend on a fixed color in cell #0,
+and some others that rely on the presence of 256 color cells. It will also
+cause cursor color problems when someone uses a local color map.
 
 
 ## TODO:
@@ -68,6 +86,20 @@ All cards:
 
 Cleanup tseng_driver.c. There's mucho rubbish left from the MONO/VGA16 days.
 
+* The accelerator on the Tseng devices is capable of much more. Especially
+the pattern support if not used most of the time: It can render a pattern in
+just about every accelerated operation. This means patterned lines, bitblts,
+screencopies, etc. are possible.
+
+
+ET4000:
+
+* support needs to be added for several clockchips and RAMDACs:
+	- CH8398 clockchip support (doesn't support programmable clockchip yet)
+	- 8-bit RAMDAC support for >8bpp modes: ATT20Cxxx and Sierra DACs
+
+* SuperProbe could use an update. It doesn't detect some of the RAMDACs that
+are detected by the driver (e.g. ICS5341)
 
 ET-6000:
 
@@ -86,6 +118,8 @@ pretty complete. SOme optimisations could possibly be added. Like for
 example some assembler code for calculating a framebuffer address from X/Y
 coordinates.
 
+* SuperProbe doesn't detect the amount of MDRAM on an ET6000 yet. The same
+code that does this in the Tseng driver needs to be included in SuperProbe.
 
 
 =======================================================================

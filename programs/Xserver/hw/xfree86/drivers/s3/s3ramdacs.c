@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.1 1997/03/06 23:16:38 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3ramdacs.c,v 1.2 1997/03/22 09:35:51 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -63,6 +63,7 @@ static void Probe_ELSA();
 static Bool NORMAL_Probe();
 static Bool S3_TRIO32_Probe();
 static Bool S3_TRIO64_Probe();
+static Bool S3_TRIO64V2_Probe();
 static Bool TI3026_Probe();
 static Bool TI3030_Probe();
 static Bool TI3020_Probe();
@@ -236,7 +237,9 @@ s3RamdacInfo s3Ramdacs[] = {
 			SS2410_Restore,SS2410_Save,SS2410_Init},
 /* 22 */	{"sc1148x", 110000, SC1148x_Probe, MISC_HI_COLOR_PreInit,
 			SC1148x_Restore,SC1148x_Save,SC1148x_Init},
-/* 23 */	{NULL, 0, Null_Probe, Null_PreInit,Null_Restore,Null_Save,
+/* 23 */	{"s3_trio64v2", 170000, S3_TRIO64V2_Probe, S3_TRIO_PreInit, 	
+			S3_TRIO_Restore,S3_TRIO_Save,S3_TRIO_Init},
+/* 24 */	{NULL, 0, Null_Probe, Null_PreInit,Null_Restore,Null_Save,
 			Null_Init}
 }; 
 
@@ -2461,27 +2464,70 @@ static Bool S3_TRIO_Probe(int type)
    if (S3_TRIOxx_SERIES(s3ChipId)) {
 	 if (S3_TRIO32_SERIES(s3ChipId))
 		found = S3_TRIO32_DAC;
+	 else if (S3_TRIO64V2_SERIES(s3ChipId))
+		found = S3_TRIO64V2_DAC;
 	 else 
 		found = S3_TRIO64_DAC;
    }
 
    if(found == type)
    {
-      if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions) &&
-	  !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions)) {
-	ErrorF("%s %s: for Trio32/64 chips you shouldn't specify a Clockchip\n",
-		XCONFIG_PROBED, vga256InfoRec.name);
-	 /* Clear the other clock options */
-	OFLG_ZERO(&vga256InfoRec.clockOptions);
+      if (S3_AURORA64VP_SERIES(s3ChipId)) {
+	 if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions)) {
+	    ErrorF("%s %s: for Aurora64 chips you shouldn't specify any Clockchip\n"
+		   "\t other than \"s3_aurora64\" or maybe \"s3_trio64\"\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	    /* Clear the other clock options */
+	    OFLG_ZERO(&vga256InfoRec.clockOptions);
+	 }
+	 if (S3_AURORA64VP_SERIES(s3ChipId) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions);
+	    s3ClockChipProbed = XCONFIG_PROBED;
+	 }
       }
-      if (!OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions)) {
-	 OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
-	 OFLG_SET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions);
-	 s3ClockChipProbed = XCONFIG_PROBED;
+      else if (S3_TRIO64V2_SERIES(s3ChipId)) {
+	 if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions)) {
+	    ErrorF("%s %s: for Trio64V2 chips you shouldn't specify any Clockchip\n"
+		   "\t other than \"s3_trio64v2\" or maybe \"s3_trio64\"\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	    /* Clear the other clock options */
+	    OFLG_ZERO(&vga256InfoRec.clockOptions);
+	 }
+	 if (S3_TRIO64V2_SERIES(s3ChipId) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions);
+	    s3ClockChipProbed = XCONFIG_PROBED;
+	 }
+      }
+      else {
+	 if ( OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions) &&
+	     !OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions)) {
+	    ErrorF("%s %s: for Trio32/64 chips you shouldn't specify a Clockchip\n",
+		   XCONFIG_PROBED, vga256InfoRec.name);
+	    /* Clear the other clock options */
+	    OFLG_ZERO(&vga256InfoRec.clockOptions);
+	 }
+	 if (!OFLG_ISSET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions)) {
+	    OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
+	    OFLG_SET(CLOCK_OPTION_S3TRIO, &vga256InfoRec.clockOptions);
+	    s3ClockChipProbed = XCONFIG_PROBED;
+	 }
       }
    }
   
    return (found == type);
+}
+
+static Bool S3_TRIO64V2_Probe()
+{
+    return S3_TRIO_Probe(S3_TRIO64V2_DAC);
 }
 
 static Bool S3_TRIO64_Probe()
@@ -2496,7 +2542,7 @@ static Bool S3_TRIO32_Probe()
 
 static int S3_TRIO_PreInit()
 {
-    unsigned char sr8;
+    unsigned char sr8, sr27, sr28;
     int m,n,n1,n2, mclk;
 
     /* Verify that depth is supported by ramdac */
@@ -2524,9 +2570,15 @@ static int S3_TRIO_PreInit()
    
 	vga256InfoRec.maxClock = vga256InfoRec.dacSpeed;
     } else if (s3Bpp < 4)
-	 vga256InfoRec.maxClock = 80000;
+       if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
+	  vga256InfoRec.maxClock = 110000;
+       else
+	  vga256InfoRec.maxClock = 80000;
     else
-	 vga256InfoRec.maxClock = 50000;
+       if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
+	  vga256InfoRec.maxClock = 60000;
+       else
+	  vga256InfoRec.maxClock = 50000;
  
 
     /* If there is an internal clock, set s3ClockSelectFunc, s3maxRawClock
@@ -2534,7 +2586,10 @@ static int S3_TRIO_PreInit()
 	clocks, pass the job to OtherClocksSetup() */
     s3ClockSelectFunc = s3GendacClockSelect;
     s3numClocks = 3;
-    s3maxRawClock = 135000;
+    if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
+       s3maxRawClock = 170000;
+    else
+       s3maxRawClock = 135000;
       
     outb(0x3c4, 0x08);
     sr8 = inb(0x3c5);
@@ -2545,14 +2600,31 @@ static int S3_TRIO_PreInit()
     outb(0x3c4, 0x10);
     n = inb(0x3c5);
       
-    outb(0x3c4, 0x08);
-    outb(0x3c5, sr8);
-      
     m &= 0x7f;
     n1 = n & 0x1f;
     n2 = (n>>5) & 0x03;
     mclk = ((1431818 * (m+2)) / (n1+2) / (1 << n2) + 50) / 100;
+    if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions)) {       
+       outb(0x3c4, 0x27);
+       sr27 = inb(0x3c5);
+       outb(0x3c4, 0x28);
+       sr28 = inb(0x3c5);
+       mclk /= ((sr27 >> 2) & 0x03) + 1;
+    }
+
+    outb(0x3c4, 0x08);
+    outb(0x3c5, sr8);
+
     if (xf86Verbose)
+       if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions))
+	  ErrorF("%s %s: Using Aurora64 programmable clock (MCLK %1.3f MHz, SR27=%02x, SR28=%02x)\n"
+		 ,s3ClockChipProbed, vga256InfoRec.name
+		 ,mclk / 1000.0, sr27, sr28);
+       else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
+	  ErrorF("%s %s: Using Trio64V2 programmable clock (MCLK %1.3f MHz)\n"
+		 ,s3ClockChipProbed, vga256InfoRec.name
+		 ,mclk / 1000.0);
+       else
 	 ErrorF("%s %s: Using Trio32/64 programmable clock (MCLK %1.3f MHz)\n"
 		,s3ClockChipProbed, vga256InfoRec.name
 		,mclk / 1000.0);
@@ -2595,6 +2667,14 @@ static void S3_TRIO_Restore(vgaS3Ptr restore)
       outb(0x3c4, 0x15); outb(0x3c5, restore->s3DacRegs[6]); 
       outb(0x3c4, 0x18); outb(0x3c5, restore->s3DacRegs[7]);
 
+      /* if (S3_AURORA64VP_SERIES(s3ChipId)) { */
+      if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions)) {
+	 int i;
+	 for (i=0x1a; i<= 0x6f; i++) {
+	    outb(0x3c4, i); outb(0x3c5, restore->s3DacRegs[i]);
+	 }
+      }
+
       outb(0x3c4, 0x08); outb(0x3c5, restore->s3DacRegs[1]);
 
 } 
@@ -2620,6 +2700,14 @@ static void S3_TRIO_Save(vgaS3Ptr save)
 	 outb(0x3c4, 0x13); save->s3DacRegs[11] = inb(0x3c5);
 	 outb(0x3c4, 0x1a); save->s3DacRegs[12] = inb(0x3c5);
 	 outb(0x3c4, 0x1b); save->s3DacRegs[13] = inb(0x3c5);
+
+      /* if (S3_AURORA64VP_SERIES(s3ChipId)) { */
+	 if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions)) {
+	    int i;
+	    for (i=0x1a; i<= 0x6f; i++) {
+	       outb(0x3c4, i); save->s3DacRegs[i] = inb(0x3c5);
+	    }
+	 }
 
 	 outb(0x3c4, 8);
 	 outb(0x3c5, 0x00);
@@ -2653,7 +2741,8 @@ static int S3_TRIO_Init(DisplayModePtr mode)
       cr33 = inb(vgaCRReg) & ~0x28;
 
       /* for Trio64+ we need corrected blank signal timing */
-      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531)) ^ 
+      if (!(S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53)
+	    || (S3_TRIO64V2_SERIES(s3ChipId))) ^ 
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG1, &vga256InfoRec.options)) {
 	 cr33 |= 0x20;
       }
@@ -2696,6 +2785,12 @@ static int S3_TRIO_Init(DisplayModePtr mode)
       outb(0x3c5, sr15);
       outb(0x3c4, 0x18);
       outb(0x3c5, sr18);
+
+      if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions)) {
+	 outb(0x3c4, 0x28);
+	 outb(0x3c5, 0);
+      }
+
       outb(0x3c4, 0x08);
       outb(0x3c5, sr8);
 
@@ -4319,7 +4414,12 @@ s3GendacClockSelect(freq)
 #else
 
 	 if (S3_TRIOxx_SERIES(s3ChipId)) {
-	    (void) S3TrioSetClock(freq, 2); /* can't fail */
+	    if (OFLG_ISSET(CLOCK_OPTION_S3AURORA, &vga256InfoRec.clockOptions))
+	       (void) S3AuroraSetClock(freq, 2); /* can't fail */
+	    else if (OFLG_ISSET(CLOCK_OPTION_S3TRIO64V2, &vga256InfoRec.clockOptions))
+	       (void) S3Trio64V2SetClock(freq, 2); /* can't fail */
+	    else 
+	       (void) S3TrioSetClock(freq, 2); /* can't fail */
 	 }
 	 else {
 	    if (OFLG_ISSET(CLOCK_OPTION_ICS5342, &vga256InfoRec.clockOptions))

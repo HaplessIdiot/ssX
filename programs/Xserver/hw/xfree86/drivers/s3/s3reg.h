@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.2 1997/03/10 10:12:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3reg.h,v 1.3 1997/03/22 09:35:53 hohndel Exp $ */
 /*
- * regs3.h
+ * s3reg.h
  * 
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc., Londonderry,
  * NH - All Rights Reserved
@@ -40,12 +40,14 @@
  */
 
 
-#ifndef _REGS3_H
-#define _REGS3_H
+#ifndef _S3REG_H
+#define _S3REG_H
 
 #include "compiler.h"
 
-#define UNLOCK_SYS_REGS	   outb(vgaCRIndex, 0x39); outb(vgaCRReg, 0xa5); 
+#define UNLOCK_SYS_REGS	          do { \
+				   outb(vgaCRIndex, 0x39); \
+				   outb(vgaCRReg, 0xa5); } while (0)
 
 #define LOCK_SYS_REGS	        /**/
 
@@ -65,28 +67,28 @@
 #define S3_864_SERIES(chip)     ((chip&0xf0)==0xc0)
 #define S3_964_SERIES(chip)     ((chip&0xf0)==0xd0)
 
-#define S3_866_SERIES(chip)     (chip==0x8880)
-#define S3_868_SERIES(chip)     (chip==0x8890)
-#define S3_86x_SERIES(chip)	((chip&0xf0)==0xc0 || (chip&0xffef)==0x8880)
+#define S3_866_SERIES(chip)     (chip==PCI_868)
+#define S3_868_SERIES(chip)     (chip==(PCI_868 | 0x10))
+#define S3_86x_SERIES(chip)	((chip&0xf0)==0xc0 || (chip&0xffef)==PCI_868)
 #undef S3_864_SERIES
 #define S3_864_SERIES(chip)	S3_86x_SERIES(chip)
-#define S3_968_SERIES(chip)     (chip==0x88f0)
+#define S3_968_SERIES(chip)     (chip==PCI_968)
 #define S3_964_ONLY(chip)	S3_964_SERIES(chip)
 #undef S3_964_SERIES
 #define S3_964_SERIES(chip)     (((chip&0xf0)==0xd0) || S3_968_SERIES(chip))
 #define S3_x66_SERIES(chip)     S3_866_SERIES(chip)
 #define S3_x68_SERIES(chip)     ((chip&0xff9f)==0x8890)  /* ((S3_868_SERIES(chip) || S3_968_SERIES(chip)) */
 #define S3_x6x_SERIES(chip)     ((chip&0xff8f)==0x8880)  /* ((S3_x66_SERIES(chip) || S3_x68_SERIES(chip)) */
-#define S3_TRIO32_SERIES(chip)  (chip==0x8810)
-#define S3_TRIO64_SERIES(chip)  (chip==0x8811 || S3_TRIO64UVP_SERIES(chip) || S3_AURORA64VP_SERIES(chip) || S3_TRIO64V2_SERIES(chip))
-#define S3_TRIO64V_SERIES(chip) (S3_TRIO64_SERIES(chip) && (s3ChipRev & 0x400))
-#define S3_AURORA64VP_SERIES(chip)  (chip==0x8812)
-#define S3_TRIO64UVP_SERIES(chip)  (chip==0x8814)
-#define S3_TRIO64V2_SERIES(chip)  (chip==0x8901)
+#define S3_TRIO32_SERIES(chip)  (chip==(PCI_TRIO_32_64 & ~1))
+#define S3_TRIO64_SERIES(chip)  (chip==PCI_TRIO_32_64 || S3_TRIO64UVP_SERIES(chip) || S3_AURORA64VP_SERIES(chip) || S3_TRIO64V2_SERIES(chip) || S3_PLATO_PX_SERIES(chip))
+#define S3_TRIO64V_SERIES(chip) (S3_TRIO64_SERIES(chip) && (s3ChipRev & 0x40))
+#define S3_AURORA64VP_SERIES(chip)  (chip==PCI_AURORA64VP)
+#define S3_TRIO64UVP_SERIES(chip)  (chip==PCI_TRIO64UVP)
+#define S3_TRIO64V2_SERIES(chip)  (chip==PCI_TRIO64V2_DXGX)
+#define S3_PLATO_PX_SERIES(chip)  (chip==PCI_PLATO_PX)
 #define S3_TRIOxx_SERIES(chip)  (S3_TRIO32_SERIES(chip) || \
-				 S3_TRIO64_SERIES(chip) || \
-				 S3_TRIO64UVP_SERIES(chip))
-#define S3_ViRGE_SERIES(chip)      (chip==0x8831)
+				 S3_TRIO64_SERIES(chip))
+#define S3_ViRGE_SERIES(chip)      (chip==PCI_ViRGE)
 #define S3_ViRGE_VX_SERIES(chip)   (chip==PCI_ViRGE_VX)
 #define S3_ViRGE_DXGX_SERIES(chip) (chip==PCI_ViRGE_DXGX)
 #define S3_ANY_ViRGE_SERIES(chip) (    S3_ViRGE_SERIES(chip)		\
@@ -442,30 +444,46 @@ typedef struct {
 
 } LUTENTRY;
 
-#define WaitQueue(v)   {  			\
+#define WaitQueue(v)   do {  			\
 	mem_barrier(); 				\
 	while(inb(GP_STAT) & (0x0100 >> (v))); 	\
-}
+} while (0)
 
-#define	WaitQueue16(v) {   				\
+#define	WaitQueue16(v) do {   				\
 	mem_barrier(); 					\
 	while(inw(GP_STAT) & (0x8000 >> (v-9))); 	\
-} 
+} while (0)
 
-#define	WaitIdleEmpty()  {  				\
+#define	WaitIdleEmpty()  do {  				\
 	int fx86=(S3_x64_SERIES(s3ChipId)?0xF800:0); 	\
 	mem_barrier();				 	\
 	while (inw(GP_STAT) & (GPBUSY | 1 | fx86)); 	\
-}
+} while (0)
 
-#define WaitIdle() 	{  		\
+#define WaitIdle() 	do {  		\
 	mem_barrier(); 			\
 	while(inw(GP_STAT) & GPBUSY); 	\
-}
+} while(0)
 
-/* define the other case when PSZ 32 MArk*/
-#define WaitQueue16_32(n16,n32)	WaitQueue(n16);
+#if PSZ <= 16
+  #define WaitQueue16_32(n16,n32)	WaitQueue(n16);
+#else
+  #ifdef S3_NEWMMIO
+    #define CMD_REG_WIDTH  0x200  	/* select 32bit command register */
+  #else
+    #define CMD_REG_WIDTH  0  	/* select 16bit command register */
+  #endif
 
+  #define WaitQueue16_32(n16,n32) \
+	    if (n32 < 8) { \
+	       WaitQueue(n32+1); \
+	       SET_MULT_MISC(CMD_REG_WIDTH); \
+	    } else { \
+	       WaitQueue(1); \
+	       SET_MULT_MISC(CMD_REG_WIDTH); \
+	       WaitQueue(n32); \
+	    }
+#endif
 
 #ifndef NULL
  #define NULL	0
@@ -575,4 +593,4 @@ typedef struct {
 
 
 
-#endif /* _REGS3_H */
+#endif /* _S3REG_H */

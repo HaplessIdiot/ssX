@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.2 1997/03/17 07:18:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3.h,v 1.3 1997/03/22 09:35:46 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -179,6 +179,7 @@ extern s3RamdacInfo s3Ramdacs[];
 #define ATT20C490_DAC     20
 #define	SS2410_DAC	  21
 #define SC1148x_DAC 	  22
+#define S3_TRIO64V2_DAC   23
 
 /* DAC Macros */
 
@@ -201,7 +202,8 @@ extern s3RamdacInfo s3Ramdacs[];
 #define DAC_IS_GENDAC           (s3RamdacType == S3_GENDAC_DAC)
 #define DAC_IS_TRIO32           (s3RamdacType == S3_TRIO32_DAC)
 #define DAC_IS_TRIO64           (s3RamdacType == S3_TRIO64_DAC)
-#define DAC_IS_TRIO             (DAC_IS_TRIO32 || DAC_IS_TRIO64)
+#define DAC_IS_TRIO64V2         (s3RamdacType == S3_TRIO64V2_DAC)
+#define DAC_IS_TRIO             (DAC_IS_TRIO32 || DAC_IS_TRIO64 || DAC_IS_TRIO64V2)
 #define DAC_IS_IBMRGB524        (s3RamdacType == IBMRGB524_DAC)
 #define DAC_IS_IBMRGB525        (s3RamdacType == IBMRGB525_DAC)
 #define DAC_IS_IBMRGB528        (s3RamdacType == IBMRGB528_DAC)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.1 1997/03/06 23:16:36 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3init.c,v 1.2 1997/03/10 10:12:10 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -235,7 +235,7 @@ Bool S3InitLevelThree(DisplayModePtr mode)
 					/* disabled anyway */
 
 /* !! double negative? (MArk) */
-   if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
+   if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
        !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &vga256InfoRec.options)) {
       /* set correct blanking for broken Trio64V+ to avoid bright left border:
 	 blank signal needs to go off ~400 usec before video signal starts 
@@ -708,7 +708,7 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       }
 
 
-      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
+      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &vga256InfoRec.options))
 	 i = (((mode->CrtcVTotal - 2) & 0x400) >> 10)  |
 	     (((mode->CrtcVDisplay - 1) & 0x400) >> 9) |
@@ -723,7 +723,7 @@ Bool S3InitLevelThree(DisplayModePtr mode)
       outb(vgaCRIndex, 0x5e);
       outb(vgaCRReg, i);
 
-      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x531) && (s3Bpp==1)) ^
+      if ((S3_TRIO64V_SERIES(s3ChipId) && (s3ChipRev <= 0x53) && (s3Bpp==1)) ^
 	  !!OFLG_ISSET(OPTION_TRIO64VP_BUG2, &vga256InfoRec.options)) {
 	 i = ((((mode->CrtcHTotal >> 3) - 5) & 0x100) >> 8) |
 	     ((((mode->CrtcHDisplay >> 3) - 1) & 0x100) >> 7) |
@@ -952,6 +952,15 @@ Bool S3InitLevelThree(DisplayModePtr mode)
          /* fixes the ICS2595 initialisation problems */
 
    S3Adjust(vga256InfoRec.frameX0, vga256InfoRec.frameY0);
+
+   if ( S3_TRIO64V2_SERIES(s3ChipId) ) {
+      /* disable DAC power saving to avoid bright left edge */
+      outb(0x3d4,0x86);
+      outb(0x3d5,0x80);
+      /* disable the stream display fetch length control */
+      outb(0x3d4,0x90);
+      outb(0x3d5,0x00);
+   }     
 
    vgaProtect(FALSE);
 

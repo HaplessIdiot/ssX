@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.4 1997/03/11 13:06:02 hohndel Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.5 1997/03/17 07:18:11 hohndel Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -293,7 +293,8 @@ ET4000LinMem(Bool autodetect)
   * ISA is out of the question (I think).
   */
   
-  unsigned long mask = 0;
+  unsigned long mask = -1L;
+  unsigned char bus;
 
   if (vgaBitsPerPixel < 8) return FALSE;
 
@@ -303,28 +304,29 @@ ET4000LinMem(Bool autodetect)
     return (FALSE); /* no can do */
   }
 
+  switch(et4000_type)
+  {
+    case TYPE_ET4000W32I:
+    case TYPE_ET4000W32Ib:
+    case TYPE_ET4000W32Ic:
+        mask = 0x07C00000; /* A26..A22 are decoded (depending on bus type) */
+        break;
+    case TYPE_ET4000W32P:
+    case TYPE_ET4000W32Pa:
+    case TYPE_ET4000W32Pb:
+        mask = 0x3FC00000; /* A29..A22 */
+        break;
+    case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
+    case TYPE_ET4000W32Pd:
+        mask = 0xFFC00000; /* A31..A22 are decoded */
+        break;
+    case TYPE_ET6000:
+        mask = 0xFF000000;
+        break;
+  }
+
   if (vga256InfoRec.MemBase != 0)   /* MemBase given from XF86Config */
   {
-    switch(et4000_type)
-    {
-      case TYPE_ET4000W32I:   /* A26..A22 are decoded */
-      case TYPE_ET4000W32Ib:
-      case TYPE_ET4000W32Ic:
-          mask = 0x07C00000;
-          break;
-      case TYPE_ET4000W32P:
-      case TYPE_ET4000W32Pa:
-      case TYPE_ET4000W32Pb:
-          mask = 0x3FC00000; /* A29..A22 */
-          break;
-      case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space */
-      case TYPE_ET4000W32Pd:
-          mask = 0xFFC00000; /* A31..A22 are decoded */
-          break;
-      case TYPE_ET6000:
-          mask = 0xFF000000;
-          break;
-    }
     /* check for possible errors in given linear base address */
     if ((vga256InfoRec.MemBase & (~mask)) != 0) {
         ErrorF("%s %s: MemBase out of range. Must be <= 0x%x on 0x%x boundary.\n",
@@ -336,20 +338,47 @@ ET4000LinMem(Bool autodetect)
   {
     switch(et4000_type)
     {
-      case TYPE_ET4000W32I:   /* A26..A22 are decoded */
+      case TYPE_ET4000W32I:
       case TYPE_ET4000W32Ib:
       case TYPE_ET4000W32Ic:
-        outb(vgaIOBase+0x04, 0x30);
-        vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x1F) << 22;
+        /*
+         * Notation: SMx = bit x of Segment Map Comparator (CRTC index 0x30)
+         *
+         * We assume the driver code disables the image port (which it does)
+         *
+         * ISA:      [ A23, A22, A21, A20 ] ==      [ SM1, SM0, 0, 0 ]
+         * MCA: [ A24, A23, A22, A21, A20 ] == [ SM2, SM1, SM0, 0, 0 ]
+         * VLB: [ /A26, /A25, /A24, A23, A22, A21, A20 ] ==   ("/" means inverted!)
+         *       [ SM4,  SM3,  SM2, SM1, SM0, 0  , 0   ]
+         */
+        outb(0x217A, 0xEF); bus = inb(0x217B) & 0x60;   /* Determine bus type */
+        ErrorF("%s %s: Detected W32i bus type: ", XCONFIG_PROBED, vga256InfoRec.name);
+        switch (bus) {
+            case 0x00:
+            case 0x20:
+                ErrorF("ISA.\n");
+                vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x03) << 22;
+                break;
+            case 0x40:
+                ErrorF("MCA.\n");
+                vga256InfoRec.MemBase = (inb(vgaIOBase+0x05) & 0x07) << 22;
+                break;
+            case 0x60:
+                ErrorF("Local Bus.\n");
+                vga256InfoRec.MemBase = ((inb(vgaIOBase+0x05) & 0x1F) ^ 0x1C) << 22;
+                break;
+        }
         break;
       case TYPE_ET4000W32P:  /* A31,A30 are decoded as 00 (=always mapped below 512 MB) */
       case TYPE_ET4000W32Pa:
       case TYPE_ET4000W32Pb:
-        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & 0x3F000000;
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & mask;
+        else vga256InfoRec.MemBase = 512*1024*1024; /* map memory at 512MB by default */
         break;
       case TYPE_ET4000W32Pc: /* A31,A30 decoded from PCI config space, but in PCI mode only */
       case TYPE_ET4000W32Pd:
-        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & 0xFF000000;
+        if (tseng_pcr) vga256InfoRec.MemBase = tseng_pcr->_base0 & mask;
+        else vga256InfoRec.MemBase = 0xF0000000; /* map memory near top of memory by default */
         break;
       case TYPE_ET6000:
         if (tseng_pcr && autodetect) /* don't trust PCI when not autodetecting */
@@ -360,16 +389,8 @@ ET4000LinMem(Bool autodetect)
           ErrorF("%s %s: ET6000: port-probed linear memory base = 0x%x\n",
                   XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.MemBase);
         }
+        else vga256InfoRec.MemBase = 0xF0000000; /* map memory near top of memory by default */
         break;
-    }
-    if (vga256InfoRec.MemBase == 0) {
-        /* use a default MemBase as high as possible */
-        if (et4000_type > TYPE_ET4000W32I)
-          vga256InfoRec.MemBase = 512*1024*1024; /* map memory at 512MB by default */
-        else
-          vga256InfoRec.MemBase = 128*1024*1024; /* map memory at 128MB by default */
-        ErrorF("%s %s: Using default linear memory base address -- use 'MemBase' in case of trouble.\n",
-               XCONFIG_PROBED, vga256InfoRec.name);
     }
   }
   /*
@@ -877,12 +898,17 @@ ET4000Probe()
 
   if (vgaBitsPerPixel >= 8) {
 
+  /* currently only W32p rev C and up support linear memory */
   if (et4000_type >= TYPE_ET4000W32Pc)
   {
     OFLG_SET(OPTION_LINEAR, &TSENG.ChipOptionFlags);
+    if ( (vgaBitsPerPixel > 8) && (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) )
+    {
+      ErrorF("%s %s: %dbpp modes REQUIRE option \"linear\" in your XF86Config file.\n",
+             XCONFIG_PROBED, vga256InfoRec.name, vgaBitsPerPixel);
+    }
   }
 
-  /* currently only W32p rev C and up support linear memory */
   if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
   {
     if (et4000_type < TYPE_ET4000W32Pc)
@@ -891,14 +917,12 @@ ET4000Probe()
              XCONFIG_PROBED, vga256InfoRec.name);
       OFLG_CLR(OPTION_LINEAR, &vga256InfoRec.options);
     }
-  }
-
-  /* Use banked addressing by default. */
-  if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-  {
-    if (!ET4000LinMem(autodetect))
-      ErrorF("%s %s: Linear memory mode not supported on this device.\n",
-             XCONFIG_PROBED, vga256InfoRec.name);
+    else    /* Use banked addressing by default. */
+    {
+      if (!ET4000LinMem(autodetect))
+        ErrorF("%s %s: Linear memory mode not supported on this device.\n",
+               XCONFIG_PROBED, vga256InfoRec.name);
+    }
   }
 
   if (et4000_type >= TYPE_ET6000)

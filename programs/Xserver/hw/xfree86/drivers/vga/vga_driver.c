@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.3 1997/03/11 13:06:10 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/vga_driver.c,v 1.4 1997/03/12 11:23:45 hohndel Exp $ */
 /*
  * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -153,7 +153,11 @@ static DisplayModeRec Mode320x200 = {
 #ifdef VGA
 #undef VGA
 #endif
+#ifndef PC98_EGC
 vgaVideoChipRec VGA = {
+#else
+vgaVideoChipRec EGC = {
+#endif
 	/* 
 	 * Function pointers
 	 */
@@ -353,8 +357,13 @@ GenericProbe()
 	 * if this is not running at 8bpp
 	 */
 	if( xf86bpp < 8 ) {
+#ifndef PC98_EGC
 		VGA.ChipRounding = 32;
 		VGA.ChipBuiltinModes = NULL;
+#else
+		EGC.ChipRounding = 32;
+		EGC.ChipBuiltinModes = NULL;
+#endif
 	}
 
   	if (!vga256InfoRec.clocks)

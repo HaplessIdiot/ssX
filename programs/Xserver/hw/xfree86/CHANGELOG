@@ -1,4 +1,25 @@
-XFree86 3.2Ar (26 March 1997)
+XFree86 3.2Ar (27 March 1997)
+ 617. Change XAA to delay syncing (#211, Mark Vojkovich).
+ 616. Fix OS/2 naming problem in Xserver Imakefile and XAA 8x8 pattern
+      rotations and flag checking inconsistency (#210, Sebastien Marineau).
+ 615. Add SVGA/S3V driver (#210, Sebastien Marineau).
+ 614. Add Sigma Designs REALMagic to SuperProbe (#209, Harald Koenig).
+ 613. Merge Trio64V2/Aurora64V+/PLATO changes into S3/SVGA driver (#208,
+      Harald Koenig).
+ 612. Fix building XF98_EGC (#207, Takaaki Nomura).
+ 611. Add ImageWrite to s3/svga and prepare driver for upcoming XAA changes;
+      the s3/svga server no longer does cursor blocking, users of Xqueue 
+      might have to use the Option "sw_cursor" (#206, Mark Vojkovich).
+ 610. Fix 8 bit DAC handling in SVGA server (#205, Mark Vojkovich).
+ 609. Add better support for linear memory on W32i cards (#204, Koen Gadeyne).
+ 608. Add HORIZONTAL_TWOPOINTLINE to XAA (#203, Alan Hourihane).
+ 607. Add autoloading of libxf86cache to Mach32 & Mach64 server and compile
+      ServerInit() and ModuleInit() only for the LOADER (#202, Takaaki Nomura).
+ 606. Add support for Cirrus CL-GD5464BD, CL-GD5465 (#201, Corin Anderson).
+ 605. Documentation updates and improved memory bandwidth handling in tseng
+      driver (#200, Koen Gadeyne).
+ 604. ViRGE/DX support for S3V server (#199, Harald Koenig).
+ 603. Some fixes to Trio64V+ & Trio64V2 (#198, Harald Koenig).
  602. Recognize 1MB on ViRGE (using an illegal setting) (Alan Hourihane).
  601. Fix and enhance handling of unresolved symbols in loader (#196, Harald
       Koenig).
@@ -6,7 +27,8 @@ XFree86 3.2Ar (26 March 1997)
  599. Fix SuperProbe for W32 chipsets (#191, Koen Gadeyne).
  598. Fix building the static S3 server (#188-190, Harald Koenig).
  597. Fix undefined symbols in the pex5 module (#187, Matthieu Herrb).
- 596. Fix autoloading modules in the S3 server for PC98 (#186, Takaaki Nomura).
+ 596. Fix autoloading modules in the S3 server for PC98 (#186,197 Takaaki 
+      Nomura).
 
 XFree86 3.2Aq (23 March 1997)
  595. Fix building static XF86_S3 (#185, Harald Koenig).
@@ -4221,4 +4243,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.437 1997/03/24 13:06:02 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.438 1997/03/24 16:28:53 hohndel Exp $

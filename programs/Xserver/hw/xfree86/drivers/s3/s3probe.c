@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.2 1997/03/17 07:18:06 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3/s3probe.c,v 1.3 1997/03/22 09:35:50 hohndel Exp $ */
 /*
  *
  * Copyright 1995-1997 The XFree86 Project, Inc.
@@ -71,6 +71,7 @@ static SymTabRec s3DacTable[] = {
    { S3_TRIO64_DAC,	"s3_trio" },
    { ATT20C409_DAC,	"att20c409" },
    { SS2410_DAC,	"ss2410" },
+   { S3_TRIO64V2_DAC,	"s3_trio64v2" },
    { -1,		"" }
 };
 
@@ -204,8 +205,8 @@ Bool S3Probe()
    /* We complain (and bail) when we have no idea what S3 chip it is */
 
    if (S3_ANY_ViRGE_SERIES(s3ChipId)) {
-      ErrorF("%s %s: S3 ViRGE chipset: please load \"s3_virge\" module\n", 
-	     XCONFIG_PROBED,vga256InfoRec.name,s3ChipId,s3ChipRev);
+      ErrorF("%s %s: S3 ViRGE chipset: please load \"libs3v.a\" module\n", 
+	     XCONFIG_PROBED, vga256InfoRec.name);
       S3EnterLeave(LEAVE);
       return(FALSE);
    }
@@ -244,13 +245,21 @@ Bool S3Probe()
 	 } else if (S3_TRIO64V_SERIES(s3ChipId)) {
 	    chipname = "Trio64V+";
 	 } else if (S3_TRIO64UVP_SERIES(s3ChipId)) {
-	    chipname = "Trio64UV+ (preliminary support; please report)";
+	    chipname = "Trio64UV+";
 	 } else if (S3_AURORA64VP_SERIES(s3ChipId)) {
 	    chipname = "Aurora64V+ (preliminary support; please report)";
-	 } else if (S3_TRIO64V2_SERIES(s3ChipId /* , s3ChipRev */)) {
-	    chipname = "Trio64V2 (preliminary support (135MHz only); please report)";
+	 } else if (S3_TRIO64V2_SERIES(s3ChipId)) {
+	    outb(vgaCRIndex, 0x39);
+	    outb(vgaCRReg, 0xa5);
+	    outb(vgaCRIndex, 0x6f);
+	    if (inb(vgaCRReg) & 1)
+	       chipname = "Trio64V2/GX";
+	    else
+	       chipname = "Trio64V2/DX";
 	 } else if (S3_TRIO64_SERIES(s3ChipId)) {
 	    chipname = "Trio64";
+	 } else if (S3_PLATO_PX_SERIES(s3ChipId)) {
+	    chipname = "PLATO/PX (preliminary support; please report)";
 	 }
 	 ErrorF("%s %s: chipset:   %s rev. %x\n",
                 XCONFIG_PROBED, vga256InfoRec.name, chipname, s3ChipRev);
@@ -282,7 +291,7 @@ Bool S3Probe()
                    XCONFIG_PROBED, vga256InfoRec.name, pci);
 	    else
 	        ErrorF("%s %s: chipset:   928%s, rev D or below\n",
-                   XCONFIG_PROBED,  vga256InfoRec.name, pci);
+                   XCONFIG_PROBED, vga256InfoRec.name, pci);
 	 }
       } else if (S3_911_SERIES(s3ChipId)) {
 	 if (S3_911_ONLY(s3ChipId)) {
@@ -396,7 +405,9 @@ Bool S3Probe()
 	 if (S3_911_SERIES(s3ChipId)) {
 	    vga256InfoRec.videoRam = 1024;
 	 } else {
-	    switch ((config & 0xE0) >> 5) {	/* look at bits 6 and 7 */
+	    if (S3_PLATO_PX_SERIES(s3ChipId))
+	       vga256InfoRec.videoRam = (8-((config & 0xE0) >> 5)) * 512;
+	    else switch ((config & 0xE0) >> 5) {	/* look at bits 6 and 7 */
 	       case 0:
 	         vga256InfoRec.videoRam = 4096;
 		 break;
@@ -646,11 +657,6 @@ Bool S3Probe()
       OFLG_CLR(OPTION_DAC_8_BIT, &vga256InfoRec.options);
       ErrorF("%s %s: Option \"dac_8_bit\" not recognized for RAMDAC \"%s\"\n",
 	     XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.ramdac);
-   }
-
-   if(s3DAC8Bit) {
-     /* I think this should be handled automatically by the server (MArk) */
-      xf86weight.red =  xf86weight.green = xf86weight.blue = 8; 
    }
 
 

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/234 1996/12/27 16:16:06 kaleb $
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.104 1997/03/24 13:04:59 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.105 1997/03/24 16:28:41 hohndel Exp $
 /*
  * Server Master Makefile
  */
@@ -143,6 +143,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
              OS = os/LibraryTargetName(os) $(XAULIB) $(XDMCPLIB)
         BSDEMUL = $(DEPXBSDLIB)
+#if DoLoadableServer
             MFB = mfb/ModuleLibraryTargetName(mfb)
             CFB = cfb/ModuleLibraryTargetName(cfb) cfb16/ModuleLibraryTargetName(cfb) cfb24/ModuleLibraryTargetName(cfb) cfb32/ModuleLibraryTargetName(cfb)
            CFB8 = cfb/ModuleLibraryTargetName(cfb)
@@ -150,6 +151,15 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
           CFB16 = cfb/ModuleLibraryTargetName(cfb) cfb16/ModuleLibraryTargetName(cfb)
           CFB24 = cfb/ModuleLibraryTargetName(cfb) cfb24/ModuleLibraryTargetName(cfb)
           CFB32 = cfb/ModuleLibraryTargetName(cfb) cfb32/ModuleLibraryTargetName(cfb)
+#else 
+            MFB = mfb/LibraryTargetName(mfb)
+            CFB = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb) cfb24/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
+           CFB8 = cfb/LibraryTargetName(cfb)
+          CFB4  = cfb/LibraryTargetName(cfb) cfb4/LibraryTargetName(cfb)
+          CFB16 = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb)
+          CFB24 = cfb/LibraryTargetName(cfb) cfb24/LibraryTargetName(cfb)
+          CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb)
+#endif
              MI = mi/LibraryTargetName(mi)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
@@ -1269,13 +1279,20 @@ SetUIDServerTarget(XF98_TGUI,$(XF98TGUISUBDIRS),$(XF98TGUIOBJS),$(XF98TGUILIBS),
 XCOMM
 XCOMM XFree98 EGC Server
 XCOMM
+MFBDIR  = mfb
+CFB8DIR = cfb
+CFB16DIR = cfb16
+CFB24DIR = cfb24
+CFB32DIR = cfb32
 DDXDIR2 = hw/xfree98
-XF98EGCSUBDIRS = $(STDDIRS) $(DDXDIR2) $(DEPDIRS)
-XF98EGCOBJS = $(XF98COMSRC)/XF86_VGA16.o $(XF98SRC)/vga16/vga16Conf.o \
-                $(XF98SRC)/vga16/misc/vga16misc.o
+XF98EGCSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR2) $(DEPDIRS)
+XF98EGCOBJS = $(XF98COMSRC)/XF86_SVGA.o $(XF98SRC)/vga256/egcConf.o\
+		 $(XF98SRC)/xaa/xaa16/xaa16.o $(XF98SRC)/xaa/xaa24/xaa24.o $(XF98SRC)/xaa/xaa32/xaa32.o $(XF98SRC)/xaa/xaavga256/xaavga256.o
 XF98EGCLIBS = $(XF98DRIVERSRC)/LibraryTargetName(driveregc) \
-		$(XF98SRC)/vga16/LibraryTargetName(vga16) $(XF98MLIBS) \
-		NoMFBBareLibs $(OTHEREXTS)
+		 $(XF98SRC)/xaa/LibraryTargetName(xaa) \
+		 $(XF98SRC)/vga256/LibraryTargetName(egc) \
+		 $(XF98SRC)/vga16/LibraryTargetName(vga16) \
+		 $(XF98LIBS) CFBLibs
 XF98EGCSYSLIBS = $(SYSLIBS)
 #if HasParallelMake
 MakeMutex($(XF98EGCSUBDIRS) $(XF98EGCOBJS) $(XF98EGCLIBS) $(XF98EGCSYSLIBS))
