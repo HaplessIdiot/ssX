@@ -1,4 +1,6 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 570. Respect USE_SSE_ASM for the .S files in the r200 and radeon 3D drivers.
+      This should fix the reported OpenBSD build problem (David Dawes).
  569. Some missing FreeBSD AMD64/Sparc64 patches (Bugzilla #786, Eric Anholt).
  568. The call to xf86RandRSetMode() from xf86RandRCreateScreenResources()
       doesn't appear to be necessary.  Removing it restores the documented
@@ -18139,7 +18141,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2945 2003/11/07 23:40:11 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2946 2003/11/07 23:57:44 dawes Exp $
 
 
 
