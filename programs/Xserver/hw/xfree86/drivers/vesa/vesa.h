@@ -26,7 +26,7 @@
  *
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.9 2001/05/04 19:05:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.h,v 1.10 2002/01/25 21:56:13 tsi Exp $
  */
 
 #ifndef _VESA_H_
@@ -102,7 +102,6 @@ typedef struct _VESARec
     CARD8 *state, *pstate;	/* SVGA state */
     int statePage, stateSize, stateMode;
     int page;
-    int pix24bpp;
     CARD32 *pal, *savedPal;
     CARD8 *fonts;
     xf86MonPtr monitor;
