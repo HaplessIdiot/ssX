@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.9 2002/07/15 20:46:02 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/Imakefile,v 1.10 2002/07/25 05:06:16 tsi Exp $
 
 #if DoLoadableServer
 #define IHaveSubdirs
@@ -24,7 +24,7 @@ NormalLibraryTarget(scanpci,xf86ScanPci.o)
 
 NormalLibraryTarget(pcidata,xf86PciData.o)
 
-#if HasPerl
+#if HasPerl5
 PCIIDSRCS = ../etc/pci.ids ../etc/extrapci.ids
 PCIIDS = pci.ids
 
