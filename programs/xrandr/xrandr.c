@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xrandr/xrandr.c,v 1.2 2001/05/29 04:54:56 keithp Exp $
+ * $XFree86: xc/programs/xrandr/xrandr.c,v 1.3 2001/06/03 21:52:47 keithp Exp $
  *
  * Copyright © 2001 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -24,51 +24,70 @@
 
 #include <stdio.h>
 #include <X11/Xlib.h>
+#include <X11/Xproto.h>
 #include <X11/extensions/Xrandr.h>
 
 int
 main (int argc, char **argv)
 {
     Display *dpy;
-    Time    t, nt;
     XRRScreenSize   *sizes;
+    XRRScreenConfiguration *sc;
     int		    nsize;
     Window	    root;
     int		    n;
-    int		    rotation;
+    Status	    status;
+    int		    rot;
+    Rotation	    rotation, current_rotation, rotations;
+    XRRScreenChangeNotifyEvent event;
 
-    dpy = XOpenDisplay (0);
-    if (!dpy)
+    dpy = XOpenDisplay (NULL);
+    if (dpy == NULL)
     {
 	fprintf (stderr, "Can't open display\n");
 	exit (1);
     }
     root = DefaultRootWindow (dpy);
-    for (;;)
-    {
-	t = XRRGetScreenInfo (dpy, root, &sizes, &nsize);
-	if (t == CurrentTime)
-	{
-	    fprintf (stderr, "XRRGetScreenInfo failed\n");
-	    exit (1);
-	}
+    for (;;)    {
+	sc = XRRGetScreenInfo (dpy, root);
+	sizes = XRRSizes(sc, &nsize);
 	for (n = 0; n < nsize; n++)
 	{
 	    printf ("%d: %dx%d (%dmmx%dmm)\n",
 		    n, sizes[n].width, sizes[n].height,
 		    sizes[n].mwidth, sizes[n].mheight);
 	}
+	rotations = XRRRotations(sc, &current_rotation);
+	printf ("Rotations Possible %d, current %d\n", 
+		rotations, current_rotation);
 	printf ("Select one -> ");
 	scanf ("%d", &n);
 	printf ("Rotation -> ");
-	scanf ("%d", &rotation);
-	if (0 <= n && n < nsize)
-	{
-	    nt = XRRSetScreenConfig (dpy, DefaultRootWindow (dpy), 
-				     (SizeID) n, 0, rotation, CurrentTime, t);
-	    if (nt == t)
-		break;
-	}
+	scanf ("%d", &rot);
+	rotation = rot;
+	
+	XRRScreenChangeSelectInput (dpy, root, True);
+        do {
+	  printf("calling XRRSetScreenConfig\n");
+	  status = XRRSetScreenConfig (dpy, sc, DefaultRootWindow (dpy), 
+			       (SizeID) n, 0, rotation, CurrentTime);
+	    if (!status) {
+	      fprintf(stderr, "status = %d\n", status);
+	    }
+	    
+	}   while (status == False);
+	printf("operation succeeded!\n");
+	XNextEvent(dpy, (XEvent *) &event);
+	printf("Got and event!\n");
+	printf("timestamp = %ld, config_timestamp = %ld\n",
+	       event.timestamp, event.config_timestamp);
+	printf("root = %ld, size_index = %d, rotation, %d\n", 
+		root, event.size_index, event.rotation);
+	printf("%dX%d pixels, %dX%d mm, group = %d\n",
+	       event.new.width, event.new.height,
+	       event.new.mwidth, event.new.mheight,
+	       event.new.group);
+	XRRFreeScreenInfo(sc);
     }
-    return 0;
-}   
+}
+

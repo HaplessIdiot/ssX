@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.4 2001/06/03 21:52:44 keithp Exp $
+ * $XFree86: xc/programs/Xserver/randr/randr.c,v 1.5 2001/06/04 09:45:40 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  *
@@ -260,6 +260,7 @@ TellChanged (WindowPtr pWin, pointer value)
     xRRScreenChangeNotifyEvent	se;
     ScreenPtr			pScreen = pWin->drawable.pScreen;
     rrScrPriv(pScreen);
+    RRScreenSizePtr		pSize = pScrPriv->pSize;
     WindowPtr			pRoot = WindowTable[pScreen->myNum];
 
     pHead = (RREventPtr *) LookupIDByType (pWin->drawable.id, EventType);
@@ -271,9 +272,23 @@ TellChanged (WindowPtr pWin, pointer value)
 	if (client == serverClient || client->clientGone)
 	    continue;
 	se.type = RRScreenChangeNotify + RREventBase;
+        se.resident = xTrue;	/* XXX likely to disappear in any case */
 	se.sequenceNumber = client->sequence;
 	se.timestamp = pScrPriv->lastSetTime.milliseconds;
+	se.configTimestamp = pScrPriv->lastConfigTime.milliseconds;
 	se.root = pRoot->drawable.id;
+	se.rotation = pScrPriv->rotation;
+	if (pSize)
+	{
+	    se.sizeIndex = pSize->id;
+	    se.new.widthInPixels = pSize->width;
+	    se.new.heightInPixels = pSize->height;
+	    se.new.widthInMillimeters = pSize->mmWidth;
+	    se.new.heightInMillimeters = pSize->mmHeight;
+	    se.new.visualGroup = pScrPriv->pGroupsOfVisualGroups[pSize->groupOfVisualGroups].id;
+	}
+	else
+	    se.sizeIndex = 0xffff;
 	WriteEventsToClient (client, 1, (xEvent *) &se);
     }
 }
@@ -716,7 +731,7 @@ ProcRRSetScreenConfig (ClientPtr client)
 	 */
     
 	if (CompareTimeStamps (configTime, pScrPriv->lastConfigTime) == 0 &&
-	    CompareTimeStamps (time, pScrPriv->lastSetTime) > 0)
+	    CompareTimeStamps (time, pScrPriv->lastSetTime) >= 0)
 	{
 	    RRScreenSizePtr	pSize;
 	    RRVisualGroupPtr	pVisualGroup;
