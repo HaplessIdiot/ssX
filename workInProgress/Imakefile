@@ -1,11 +1,11 @@
 XCOMM $XConsortium: Imakefile,v 1.3 94/12/19 22:28:19 mor Exp $
-XCOMM $XFree86: xc/workInProgress/Imakefile,v 3.2 1995/01/14 10:56:46 dawes Exp $
+XCOMM $XFree86: xc/workInProgress/Imakefile,v 3.3 1995/06/24 10:36:14 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
 #if !BuildLBXProxyOnly
-XSMDIR = xsm
+XSMDIRS = xsm
 #if BuildFresco
 FRESCODIRS = Fresco Xtf
 #endif
@@ -15,7 +15,7 @@ FRESCODIRS = Fresco Xtf
 LBXDIRS = lbx
 #endif
 
-SUBDIRS = $(FRESCODIRS) $(LBXDIRS) $(XSMDIR)
+SUBDIRS = $(FRESCODIRS) $(LBXDIRS) $(XSMDIRS)
 
 MakeSubdirs($(SUBDIRS))
 DependSubdirs($(SUBDIRS))
