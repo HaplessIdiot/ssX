@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.33 2003/04/03 12:46:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_dri.c,v 1.34 2003/04/07 01:22:09 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario,
  *                VA Linux Systems Inc., Fremont, California.
@@ -726,13 +726,6 @@ static Bool RADEONDRIAgpInit(RADEONInfoPtr info, ScreenPtr pScreen)
     
     if ((vendor == PCI_VENDOR_AMD) &&
 	(device == PCI_CHIP_AMD761)) {
-	/* The combination of 761 with MOBILITY chips will lockup the
-	 * system; however, currently there is no such a product on the
-	 * market, so this is not yet a problem.
-	 */
-	if ((info->ChipFamily == CHIP_FAMILY_M6) ||
-	    (info->ChipFamily == CHIP_FAMILY_M7))
-	    return FALSE;
 
 	/* Disable fast write for AMD 761 chipset, since they cause
 	 * lockups when enabled.
@@ -1008,9 +1001,9 @@ static int RADEONDRIKernelInit(RADEONInfoPtr info, ScreenPtr pScreen)
 
     memset(&drmInfo, 0, sizeof(drmRadeonInit));
 
-    if ( (info->ChipFamily == CHIP_FAMILY_R200) ||
-		 (info->ChipFamily == CHIP_FAMILY_RV250) ||
-		 (info->ChipFamily == CHIP_FAMILY_M9) )
+    if ((info->ChipFamily == CHIP_FAMILY_R200) ||
+	(info->ChipFamily == CHIP_FAMILY_RV250) ||
+	(info->ChipFamily == CHIP_FAMILY_RV280) )
        drmInfo.func             = DRM_RADEON_INIT_R200_CP;
     else
        drmInfo.func             = DRM_RADEON_INIT_CP;
@@ -1228,8 +1221,8 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
 
     if (info->ChipFamily == CHIP_FAMILY_R200)
        pDRIInfo->clientDriverName        = R200_DRIVER_NAME;
-	else if ((info->ChipFamily == CHIP_FAMILY_RV250) ||
-			 (info->ChipFamily == CHIP_FAMILY_M9))
+    else if ((info->ChipFamily == CHIP_FAMILY_RV250) ||
+	     (info->ChipFamily == CHIP_FAMILY_RV280))
        pDRIInfo->clientDriverName        = RV250_DRIVER_NAME;
     else 
        pDRIInfo->clientDriverName        = RADEON_DRIVER_NAME;
@@ -1354,9 +1347,9 @@ Bool RADEONDRIScreenInit(ScreenPtr pScreen)
     if (version) {
 	int req_minor, req_patch;
 
-   	if ((info->ChipFamily == CHIP_FAMILY_R200) ||
-		(info->ChipFamily == CHIP_FAMILY_RV250) ||
-		(info->ChipFamily == CHIP_FAMILY_M9)) {
+	if ((info->ChipFamily == CHIP_FAMILY_R200) ||
+	    (info->ChipFamily == CHIP_FAMILY_RV250) ||
+	    (info->ChipFamily == CHIP_FAMILY_RV280)) {
 	    req_minor = 5;
 	    req_patch = 0;	
 	} else {

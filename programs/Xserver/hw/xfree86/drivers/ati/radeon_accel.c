@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.32 2003/01/17 19:54:03 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_accel.c,v 1.33 2003/04/06 20:07:33 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -207,7 +207,9 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     host_path_cntl = INREG(RADEON_HOST_PATH_CNTL);
     rbbm_soft_reset = INREG(RADEON_RBBM_SOFT_RESET);
 
-    if (info->ChipFamily == CHIP_FAMILY_R300) {
+    if ((info->ChipFamily == CHIP_FAMILY_R300) ||
+	(info->ChipFamily == CHIP_FAMILY_R350) ||
+	(info->ChipFamily == CHIP_FAMILY_RV350)) {
 	CARD32 tmp;
 
 	OUTREG(RADEON_RBBM_SOFT_RESET, (rbbm_soft_reset |
@@ -243,7 +245,9 @@ void RADEONEngineReset(ScrnInfoPtr pScrn)
     INREG(RADEON_HOST_PATH_CNTL);
     OUTREG(RADEON_HOST_PATH_CNTL, host_path_cntl);
 
-    if (info->ChipFamily != CHIP_FAMILY_R300)
+    if ((info->ChipFamily != CHIP_FAMILY_R300) &&
+        (info->ChipFamily != CHIP_FAMILY_R350) &&
+        (info->ChipFamily != CHIP_FAMILY_RV350))
 	OUTREG(RADEON_RBBM_SOFT_RESET, rbbm_soft_reset);
 
     OUTREG(RADEON_CLOCK_CNTL_INDEX, clock_cntl_index);
@@ -271,7 +275,9 @@ void RADEONEngineRestore(ScrnInfoPtr pScrn)
      */
 
     /* Turn of all automatic flushing - we'll do it all */
-    if (info->ChipFamily != CHIP_FAMILY_R300)
+    if ((info->ChipFamily != CHIP_FAMILY_R300) &&
+	(info->ChipFamily != CHIP_FAMILY_R350) &&
+	(info->ChipFamily != CHIP_FAMILY_RV350))
 	OUTREG(RADEON_RB2D_DSTCACHE_MODE, 0);
 
     pitch64 = ((pScrn->displayWidth * (pScrn->bitsPerPixel / 8) + 0x3f)) >> 6;

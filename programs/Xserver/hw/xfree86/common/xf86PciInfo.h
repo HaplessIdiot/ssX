@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.147tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.148 2003/06/30 02:42:31 tsi Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -95,12 +95,20 @@
 #define PCI_CHIP_R300_AE		0x4145
 #define PCI_CHIP_R300_AF		0x4146
 #define PCI_CHIP_R300_AG		0x4147
+#define PCI_CHIP_R350_AH                0x4148
+#define PCI_CHIP_R350_AI                0x4149
+#define PCI_CHIP_R350_AJ                0x414A
+#define PCI_CHIP_R350_AK                0x414B
+#define PCI_CHIP_RV350_AP               0x4150
+#define PCI_CHIP_RV350_AR               0x4152
 #define PCI_CHIP_MACH32			0x4158
+#define PCI_CHIP_RS250_4237		0x4237
 #define PCI_CHIP_R200_BB		0x4242
 #define PCI_CHIP_RS100_4336		0x4336
 #define PCI_CHIP_RS200_4337		0x4337
 #define PCI_CHIP_MACH64CT		0x4354
 #define PCI_CHIP_MACH64CX		0x4358
+#define PCI_CHIP_RS250_4437		0x4437
 #define PCI_CHIP_MACH64ET		0x4554
 #define PCI_CHIP_MACH64GB		0x4742
 #define PCI_CHIP_MACH64GD		0x4744
@@ -150,6 +158,11 @@
 #define PCI_CHIP_R300_NE		0x4E45
 #define PCI_CHIP_R300_NF		0x4E46
 #define PCI_CHIP_R300_NG		0x4E47
+#define PCI_CHIP_R350_NH                0x4E48  
+#define PCI_CHIP_R350_NI                0x4E49  
+#define PCI_CHIP_R350_NJ                0x4E4A  
+#define PCI_CHIP_R350_NK                0x4E4B  
+#define PCI_CHIP_RV350_NP               0x4E50
 #define PCI_CHIP_RAGE128PA		0x5041
 #define PCI_CHIP_RAGE128PB		0x5042
 #define PCI_CHIP_RAGE128PC		0x5043
@@ -217,6 +230,10 @@
 #define PCI_CHIP_MACH64VT		0x5654
 #define PCI_CHIP_MACH64VU		0x5655
 #define PCI_CHIP_MACH64VV		0x5656
+#define PCI_CHIP_RS300_5834		0x5834
+#define PCI_CHIP_RS300_5835		0x5835
+#define PCI_CHIP_RS300_5836		0x5836
+#define PCI_CHIP_RS300_5837		0x5837
 #define PCI_CHIP_RV280_5960		0x5960
 #define PCI_CHIP_RV280_5961		0x5961
 #define PCI_CHIP_RV280_5962		0x5962

@@ -16,7 +16,7 @@ radeon \- ATI RADEON video driver
 is a XFree86 driver for ATI RADEON based video cards.  It contains
 full support for 8, 15, 16 and 24 bit pixel depths, dual-head setup, 
 flat panel, hardware 2D acceleration, hardware 3D acceleration 
-(except R300 cards), hardware cursor, XV extension, Xinerama extension.
+(except R300 and IGP series cards), hardware cursor, XV extension, Xinerama extension.
 .SH SUPPORTED HARDWARE
 The
 .B radeon
@@ -29,13 +29,16 @@ Radeon 7200
 Radeon 7000(VE), M6
 .TP 12
 .B RS100
-Radeon IGP320(M)
+Radeon IGP320(M) (2D only)
 .TP 12
 .B RV200
 Radeon 7500, M7
 .TP 12
 .B RS200
-Radeon IGP330(M)/IGP340(M)
+Radeon IGP330(M)/IGP340(M) (2D only)
+.TP 12
+.B RS250
+Radeon Mobility 7000 IGP (2D only)
 .TP 12
 .B R200
 Radeon 8500, 9100, FireGL 8800/8700
@@ -43,11 +46,20 @@ Radeon 8500, 9100, FireGL 8800/8700
 .B RV250
 Radeon 9000, M9
 .TP 12
-.B R280
-Radeon 9200
+.B RS300
+Radeon 9000 IGP (2D only)
+.TP 12
+.B RV280
+Radeon 9200, M9+
 .TP 12
 .B R300
-Radeon 9700PRO/9700/9500PRO/9500, FireGL X1/Z1
+Radeon 9700PRO/9700/9500PRO/9500, FireGL X1/Z1 (2D only)
+.TP 12
+.B R350
+Radeon 9800PRO (2D only)
+.TP 12
+.B RV350
+Radeon 9600PRO/9600, M10 (2D only)
 
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.26 2003/03/07 12:07:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_reg.h,v 1.27 2003/04/06 20:07:34 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -233,7 +233,9 @@
 #define RADEON_CRC_CMDFIFO_ADDR             0x0740
 #define RADEON_CRC_CMDFIFO_DOUT             0x0744
 #define RADEON_GRPH_BUFFER_CNTL             0x02f0
+#       define GRPH_CRITICAL_POINT_MASK     (0x7f<<16)
 #define RADEON_GRPH2_BUFFER_CNTL            0x03f0
+#       define GRPH2_CRITICAL_POINT_MASK    (0x7f<<16)
 #define RADEON_CRTC_CRNT_FRAME              0x0214
 #define RADEON_CRTC_EXT_CNTL                0x0054
 #       define RADEON_CRTC_VGA_XOVERSCAN    (1 <<  0)
@@ -274,6 +276,8 @@
 #       define RADEON_CRTC2_CSYNC_EN        (1 << 27)
 #       define RADEON_CRTC2_HSYNC_DIS       (1 << 28)
 #       define RADEON_CRTC2_VSYNC_DIS       (1 << 29)
+#define RADEON_CRTC_MORE_CNTL               0x27c
+#       define RADEON_CRTC_H_CUTOFF_ACTIVE_EN (1<<4)   
 #define RADEON_CRTC_GUI_TRIG_VLINE          0x0218
 #define RADEON_CRTC_H_SYNC_STRT_WID         0x0204
 #       define RADEON_CRTC_H_SYNC_STRT_PIX        (0x07  <<  0)
@@ -385,7 +389,9 @@
 #       define RADEON_CRT2_DISP1_SEL        (1 <<  5)
 #define RADEON_DISP_OUTPUT_CNTL             0x0d64
 #       define RADEON_DISP_DAC_SOURCE_MASK  0x03
+#       define RADEON_DISP_DAC2_SOURCE_MASK  0x0c
 #       define RADEON_DISP_DAC_SOURCE_CRTC2 0x01
+#       define RADEON_DISP_DAC2_SOURCE_CRTC2 0x04
 #define RADEON_DAC_CRC_SIG                  0x02cc
 #define RADEON_DAC_DATA                     0x03c9 /* VGA */
 #define RADEON_DAC_MASK                     0x03c6 /* VGA */
@@ -408,9 +414,12 @@
 #       define RADEON_DISP_ALPHA_MODE_KEY   0
 #       define RADEON_DISP_ALPHA_MODE_PER_PIXEL 1
 #       define RADEON_DISP_ALPHA_MODE_GLOBAL 2
+#       define RADEON_DISP_RGB_OFFSET_EN    (1<<8)
 #       define RADEON_DISP_GRPH_ALPHA_MASK  (0xff << 16)
 #       define RADEON_DISP_OV0_ALPHA_MASK   (0xff << 24)
 #	define RADEON_DISP_LIN_TRANS_BYPASS (0x01 << 9)
+#define RADEON_DISP2_MERGE_CNTL	            0x0d68
+#       define RADEON_DISP2_RGB_OFFSET_EN   (1<<8)
 #define RADEON_DISP_LIN_TRANS_GRPH_A        0x0d80
 #define RADEON_DISP_LIN_TRANS_GRPH_B        0x0d84
 #define RADEON_DISP_LIN_TRANS_GRPH_C        0x0d88
@@ -607,7 +616,10 @@
 #       define RADEON_FP2_BLANK_EN             (1 <<  1)
 #       define RADEON_FP2_ON                   (1 <<  2)
 #       define RADEON_FP2_PANEL_FORMAT         (1 <<  3)
-#       define RADEON_FP2_SEL_CRTC2            (1 << 13)
+#       define RADEON_FP2_SOURCE_SEL_MASK      (3 << 10)
+#       define RADEON_FP2_SOURCE_SEL_CRTC2     (1 << 10)
+#       define RADEON_FP2_SRC_SEL_MASK         (3 << 13)
+#       define RADEON_FP2_SRC_SEL_CRTC2        (1 << 13)
 #       define RADEON_FP2_FP_POL               (1 << 16)
 #       define RADEON_FP2_LP_POL               (1 << 17)
 #       define RADEON_FP2_SCK_POL              (1 << 18)
@@ -615,6 +627,8 @@
 #       define RADEON_FP2_PAD_FLOP_EN          (1 << 22)
 #       define RADEON_FP2_CRC_EN               (1 << 23)
 #       define RADEON_FP2_CRC_READ_EN          (1 << 24)
+#       define RADEON_FP2_DV0_EN               (1 << 25)
+#       define RADEON_FP2_DV0_RATE_SEL_SDR     (1 << 26)
 #define RADEON_FP_H_SYNC_STRT_WID           0x02c4
 #define RADEON_FP_H2_SYNC_STRT_WID          0x03c4
 #define RADEON_FP_HORZ_STRETCH              0x028c
