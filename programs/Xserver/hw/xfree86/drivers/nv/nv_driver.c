@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.117 2003/11/02 20:21:19 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_driver.c,v 1.118 2003/11/03 05:11:25 tsi Exp $ */
 
 #include "nv_include.h"
 
@@ -112,7 +112,11 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0175, "GeForce4 420 Go" },
   { 0x10DE0176, "GeForce4 420 Go 32M" },
   { 0x10DE0177, "GeForce4 460 Go" },
+#if defined(__powerpc__)
+  { 0x10DE0179, "GeForce4 MX (Mac)" },
+#else
   { 0x10DE0179, "GeForce4 440 Go 64M" },
+#endif
   { 0x10DE017D, "GeForce4 410 Go 16M" },
   { 0x10DE017C, "Quadro4 500 GoGL" },
   { 0x10DE0178, "Quadro4 550 XGL" },
@@ -123,6 +127,9 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0186, "GeForce4 448 Go" },
   { 0x10DE0187, "GeForce4 488 Go" },
   { 0x10DE0188, "Quadro4 580 XGL" },
+#if defined(__powerpc__)
+  { 0x10DE0189, "GeForce4 MX with AGP8X (Mac)" },
+#endif
   { 0x10DE018A, "Quadro4 280 NVS" },
   { 0x10DE018B, "Quadro4 380 XGL" },
   { 0x10DE01F0, "GeForce4 MX Integrated GPU" },
@@ -166,7 +173,11 @@ static SymTabRec NVKnownChipsets[] =
   { 0x10DE0324, "GeForce FX Go5200" },
   { 0x10DE0325, "GeForce FX Go5250" },
   { 0x10DE0328, "GeForce FX Go5200 32M/64M" },
+#if defined(__powerpc__)
+  { 0x10DE0329, "GeForce FX 5200 (Mac)" },
+#else
   { 0x10DE0329, "0x0329" },
+#endif
   { 0x10DE032A, "Quadro NVS 280 PCI" },
   { 0x10DE032B, "Quadro FX 500" },
   { 0x10DE032C, "GeForce FX Go5300" },
@@ -1500,11 +1511,14 @@ NVRestore(ScrnInfoPtr pScrn)
 static void NVBacklightEnable(NVPtr pNv,  Bool on)
 {
     /* This is done differently on each laptop.  Here we
-       define the ones we know for sure.  For now, this is
-       only the Apple NV17 {i,power}books. */
+       define the ones we know for sure. */
 
 #if defined(__powerpc__)
-    if(pNv->Chipset == 0x10DE0179) {
+    if((pNv->Chipset == 0x10DE0179) || 
+       (pNv->Chipset == 0x10DE0189) || 
+       (pNv->Chipset == 0x10DE0329))
+    {
+       /* NV17,18,34 Apple iMac, iBook, PowerBook */
        CARD32 tmp;
        tmp = pNv->PMC[0x10F0/4] & 0x7FFFFFFF;
        pNv->PMC[0x10F0/4] = tmp;
