@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.13 2001/03/28 01:17:43 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.14 2001/07/11 22:15:08 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
@@ -1833,7 +1833,7 @@ static void nv3GetConfig
                 break;
         }
     }        
-    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x00000000/4] & 0x00000020) ? 13500 : 14318;	/* this was reversed, not sure that it is right this way either (HCS) */
+    chip->CrystalFreqKHz   = (chip->PEXTDEV[0x00000000/4] & 0x00000040) ? 14318 : 13500;
     chip->CURSOR           = &(chip->PRAMIN[0x00008000/4 - 0x0800/4]);
     chip->CURSORPOS        = &(chip->PRAMDAC[0x0300/4]);
     chip->VBLANKENABLE     = &(chip->PGRAPH[0x0140/4]);

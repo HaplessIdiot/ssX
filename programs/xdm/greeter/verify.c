@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.14 2001/05/25 18:41:02 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.15 2001/07/25 15:05:20 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -175,6 +175,7 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 	char		**argv;
 
 	Debug ("Verify %s ...\n", greet->name);
+#ifndef USE_PAM
 	p = getpwnam (greet->name);
 	endpwent();
 
@@ -183,7 +184,6 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 		bzero(greet->password, strlen(greet->password));
 		return 0;
 	} else {
-#ifndef USE_PAM
 #ifdef linux
 	    if (p->pw_passwd[0] == '!' || p->pw_passwd[0] == '*') {
 		Debug ("The account is locked, no login allowed.\n");
@@ -191,9 +191,9 @@ Verify (struct display *d, struct greet_info *greet, struct verify_info *verify)
 		return 0;
 	    }
 #endif
-#endif
 	    user_pass = p->pw_passwd;
 	}
+#endif
 #ifdef KERBEROS
 	if(strcmp(greet->name, "root") != 0){
 		char name[ANAME_SZ];
@@ -314,7 +314,7 @@ done:
 	if (pam_error != PAM_SUCCESS) { pam_end(*pamhp, 0); return 0; }
 
 	PAM_password = greet->password;
-	pam_error = pam_start("xdm", p->pw_name, &PAM_conversation, pamhp);
+	pam_error = pam_start("xdm", greet->name, &PAM_conversation, pamhp);
 	PAM_BAIL;
 	pam_error = pam_set_item(*pamhp, PAM_TTY, d->name);
 	PAM_BAIL;
@@ -327,6 +327,14 @@ done:
 	PAM_BAIL;
 	pam_error = pam_setcred(*pamhp, 0);
 	PAM_BAIL;
+	p = getpwnam (greet->name);
+	endpwent();
+
+	if (!p || strlen (greet->name) == 0) {
+		Debug ("getpwnam() failed.\n");
+		bzero(greet->password, strlen(greet->password));
+		return 0;
+	}
 #undef PAM_BAIL
 #endif /* USE_PAM */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.44 2001/07/06 08:02:37 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mouse/mouse.c,v 1.45 2001/08/06 20:51:10 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -1086,7 +1086,8 @@ SetupMouse(InputInfoPtr pInfo)
 
     case PROT_EXPPS2:		/* IntelliMouse Explorer */
 	{
-	    static unsigned char seq[] = { 243, 200, 243, 200, 243, 80, 242 };
+	    static unsigned char seq[] = { 243, 200, 243, 100, 243, 80,
+					   243, 200, 243, 200, 243, 80, 242 };
 
 	    param = seq;
 	    paramlen = sizeof(seq);

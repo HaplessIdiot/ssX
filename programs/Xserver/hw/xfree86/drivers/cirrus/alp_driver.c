@@ -11,7 +11,7 @@
  *    Guy DESBIEF
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.22 2001/06/15 21:22:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/alp_driver.c,v 1.23 2001/08/07 07:04:45 keithp Exp $ */
 
 /* All drivers should typically include these */
 #include "xf86.h"
@@ -1808,9 +1808,10 @@ AlpEnterVT(int scrnIndex, int flags)
 
 	/* Should we re-save the text mode on each VT enter? */
 	if (!(ret = AlpModeInit(pScrn, pScrn->currentMode)))
-	  return FALSE;
+		return FALSE;
 	
-	pCir->InitAccel(pScrn);
+	if (!pCir->NoAccel)
+		pCir->InitAccel(pScrn);
 
 	return ret;
 }

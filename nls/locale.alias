@@ -5,7 +5,7 @@ XCOMM	Each alias name is described within one line.
 XCOMM	The first word is the alias name (simplified locale name)
 XCOMM	the second word is full locale name.
 XCOMM
-XCOMM	$XFree86: xc/nls/locale.alias,v 1.40 2001/08/09 21:35:23 dawes Exp $
+XCOMM	$XFree86: xc/nls/locale.alias,v 1.41 2001/08/13 19:34:53 dawes Exp $
 XCOMM
 
 POSIX:						C
@@ -38,6 +38,7 @@ be_BY.cp1251:					be_BY.CP1251
 be_BY.microsoftcp1251:				be_BY.CP1251
 be_BY.microsoft-cp1251:				be_BY.CP1251
 be_BY.MICROSOFT-CP1251:				be_BY.CP1251
+bg_BG.iso88595:					bg_BY.ISO8859-5
 bg:						bg_BG.CP1251
 bg_BG:						bg_BG.CP1251
 bg_BG.cp1251:					bg_BG.CP1251
@@ -45,6 +46,7 @@ bg_BG.microsoftcp1251:				bg_BG.CP1251
 bg_BG.microsoft-cp1251:				bg_BG.CP1251
 bg_BG.MICROSOFT-CP1251:				bg_BG.CP1251
 bg_BG.iso88595:					bg_BG.ISO8859-5
+bg_BG.kio8r:					bg_BG.KIO8-R
 br:						br_FR.ISO8859-1
 br_FR:						br_FR.ISO8859-1
 br_FR.iso88591:					br_FR.ISO8859-1
@@ -423,6 +425,9 @@ mk_MK.utf8:					mk_MK.UTF-8
 ms:						ms_NY.ISO8859-1
 ms_NY:						ms_NY.ISO8859-1
 ms_NY.iso88591:					ms_NY.ISO8859-1
+mt:						mt_MT.ISO8859-3
+mt_MT:						mt_MT.ISO8859-3
+mt_MT.ISO8859-3:				mt_MT.ISO8859-3
 nl:						nl_NL.ISO8859-1
 nl_BE:						nl_BE.ISO8859-1
 nl_BE.88591:					nl_BE.ISO8859-1
@@ -538,7 +543,15 @@ sr_SP:						sr_SP.ISO8859-2
 sr:						sr_YU.ISO8859-5
 sr_YU:						sr_YU.ISO8859-5
 sr_YU.iso88592:					sr_YU.ISO8859-2
+sr_YU.ISO8859-5:				sr_YU.ISO8859-5
 sr_YU.iso88595:					sr_YU.ISO8859-5
+sr@cyrillic:					sr_YU.ISO8859-5
+sr_YU.iso88595@cyrillic:			sr_YU.ISO8859-5
+sr_YU.cp1251@cyrillic:				sr_YU.CP1251
+sr_YU.microsoftcp1251@cyrillic:			sr_YU.CP1251
+sr_YU.microsoft-cp1251@cyrillic:		sr_YU.CP1251
+sr_YU.MICROSOFT-CP1251@cyrillic:		sr_YU.CP1251
+sr_YU.UTF-8@cyrillic:				sr_YU.UTF-8
 sv:						sv_SE.ISO8859-1
 sv_FI:						sv_FI.ISO8859-1
 sv_FI.iso88591:					sv_FI.ISO8859-1
@@ -632,7 +645,7 @@ american.iso88591:				en_US.ISO8859-1
 arabic.iso88596:				ar_AA.ISO8859-6
 bokmal:						nb_NO.ISO8859-1
 bokmål:						nb_NO.ISO8859-1
-bulgarian:					bg_BG.ISO8859-5
+bulgarian:					bg_BG.CP1251
 c-french.iso88591:				fr_CA.ISO8859-1
 catalan:					ca_ES.ISO8859-1
 chinese-s:					zh_CN.eucCN

@@ -1,4 +1,46 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 244. Add XKB descriptions for the extra keys on a Dell Internet keyboard
+      (#A.533, Ben Liblit).
+ 243. Add a Maltese XKB map and locale support (#A.527, Ramon Casha).
+ 242. Add a new "bksl" variant of the Czech XKB map (#A.515, Stanislav Brabec).
+ 241. Fix the initialization sequence for ExplorerPS/2 (#A.510,
+      Arndt Schoenewald).
+ 240. When xdm is built with PAM support, don't call getpwnam() before
+      calling the various PAM functions associated with authenticating a user
+      (A.504, Ben Harris).
+ 239. Fix ccmakedep to handle source file extensions of more than one
+      character (#A.507, Andy Wiggin).
+ 238. Fix a VT switching crash in the cirrus driver when acceleration is
+      disabled (#A.489, Kirill V. Semenkov, #A.518, B. D. Elliott).
+ 237. Add support for the "PR" variant of the Rage 128 Pro (#A.487,
+      Alfred Perlstein).
+ 236. Make the config file created with 'XFree86 -configure' load the
+      speedo and/or type1 modules if relevant font directory is in
+      the font path (#A.484, Dmitry Yu. Bolkhovityanov).
+ 235. Fix a bug in the nv driver's detection of the crystal frequency (A.481,
+      Leo L. Schwab).
+ 234. Make xfontsel use the same order in its menus as the sort order used
+      by the X server and xfs (#A.480, Dmitry Yu. Bolkhovityanov).
+ 233. Add an input driver for DMC FIT10 touch-panel (#A.477, Mayk Langer).
+ 232. Fix xf86PostMotionEvent() to handle first_valuator values other than
+      zero (#A.468, Joe Krahn).
+ 231. Change the Swedish xkb map to map AltGr+Space to space (#A.467,
+      David Härdeman).
+ 230. Fix the return value information in the Xv library man pages (#A.458,
+      Tommi Vainikainen).
+ 229. Fix the DGA client library so that it can map the video memory on
+      Solaris 8 x86 (#A.454, Juergen Keil).
+ 228. Change {Max,Min}{X,Y}Position options in the elographics and mutouch
+      drivers to {Max,Min}{X,Y} so that it's consistent with the other
+      drivers.
+ 227. Some Bulgarian and Serbian locale updates (#A.444, Anton Zinoviev).
+ 226. Add a usage message to glxinfo (#A.430, Mike Coleman).
+ 225. Set the Alt/Windows key mappings for 104-key keyboards to be
+      compatible with 101-key keyboards by default, and add some new
+      XKB options to set them differently.
+ 224. Add some new XKB options to select third level shift and group
+      switchers/togglers (#A.425, Anton Zinoviev).
+ 223. Fix a bug in the Serbian XKB map (#A.424, Anton Zinoviev).
  222. Export from the loader the DIX symbols necessary for a modular version
       of the DEC-XTRAP extension (#4797, Paul Stewart).
  221. Add a workaround for FreeBSD to make programs (like mkfontdir) that
@@ -13710,4 +13752,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1915 2001/08/16 14:33:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1916 2001/08/16 15:00:06 dawes Exp $

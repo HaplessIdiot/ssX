@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_span.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -557,6 +557,10 @@ GetFbParams(tdfxContextPtr fxMesa,
  * it's better in the macro or in the call.
  *
  * Recall that x and y are screen coordinates.
+ *
+ * Note: ANSI C doesn't allow conditional expressions or cast expressions
+ * as lvalues.  Some of these macros violate that.
+ *
  */
 #define GET_FB_DATA(ReadParamsp, type, x, y)                        \
    (((x) < (ReadParamsp)->firstWrappedX)                            \
