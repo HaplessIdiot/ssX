@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.27 2000/09/08 22:43:05 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.29 2000/09/09 03:22:13 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -121,6 +121,7 @@ typedef enum {
    OPTION_NOACCEL,
    OPTION_SW_CURSOR,
    OPTION_COLOR_KEY,
+   OPTION_CACHE_LINES,
    OPTION_DAC_6BIT
 } I810Opts;
 
@@ -128,6 +129,7 @@ static OptionInfoRec I810Options[] = {
    { OPTION_NOACCEL, "NoAccel", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_SW_CURSOR, "SWcursor", OPTV_BOOLEAN, {0}, FALSE },
    { OPTION_COLOR_KEY, "ColorKey", OPTV_INTEGER, {0}, FALSE },
+   { OPTION_CACHE_LINES, "CacheLines", OPTV_INTEGER, {0}, FALSE},
    { OPTION_DAC_6BIT, "Dac6Bit", OPTV_BOOLEAN, {0}, FALSE},
    { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
@@ -1524,6 +1526,7 @@ I810LoadPalette24(ScrnInfoPtr pScrn, int numColors, int *indices, LOCO *colors,
 Bool
 I810AllocateFront(ScrnInfoPtr pScrn) {
    I810Ptr pI810 = I810PTR(pScrn);
+   int cache_lines = -1;
 
    if(pI810->DoneFrontAlloc) 
       return TRUE;
@@ -1534,12 +1537,21 @@ I810AllocateFront(ScrnInfoPtr pScrn) {
    pI810->FbMemBox.x2=pScrn->displayWidth;
    pI810->FbMemBox.y1=0;
    pI810->FbMemBox.y2=pScrn->virtualY;
-   
-   /* Make sure there is room for pixcache either beside or below
-    * the screen.
-    */
-   if (pScrn->displayWidth < pScrn->virtualX + 64) 
-      pI810->FbMemBox.y2 += 64;
+
+   xf86GetOptValInteger(I810Options, OPTION_CACHE_LINES, &cache_lines);
+
+   if(cache_lines >= 0)	
+	pI810->FbMemBox.y2 += cache_lines;
+   else {
+       /* make sure there is enough for two DVD sized YUV buffers */
+	pI810->FbMemBox.y2 += (pScrn->depth == 24) ? 256 : 384;
+	if (pScrn->displayWidth < 1024)
+	    pI810->FbMemBox.y2 += (pScrn->depth == 24) ? 256 : 384;
+	cache_lines = pI810->FbMemBox.y2 - pScrn->virtualY;
+   }
+
+   xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+         "Adding %i scanlines for pixmap caching\n", cache_lines);
 
    /* Reserve room for the framebuffer and pixcache.  Put at the top
     * of memory so we can have nice alignment for the tiled regions at
