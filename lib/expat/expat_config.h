@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /* config.h.  Generated automatically by configure.  */
 /* config.h.in.  Generated automatically from configure.in by autoheader.  */
 
@@ -36,8 +37,6 @@
 
 /* Define if you have the memmove function.  */
 #define HAVE_MEMMOVE 1
-
-#define BYTEORDER 1234
 
 #if X_BYTE_ORDER==X_BIG_ENDIAN
 #define BYTEORDER 4321
