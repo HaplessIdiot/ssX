@@ -6,7 +6,7 @@
 char rcsId_vmwarecurs[] =
     "Id: vmwarecurs.c,v 1.5 2001/01/30 23:33:02 bennett Exp $";
 #endif
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.4 2002/05/14 20:24:06 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vmware/vmwarecurs.c,v 1.5 2002/10/16 22:12:53 alanh Exp $ */
 
 #include "vmware.h"
 #include "bits2pixels.h"
@@ -322,7 +322,7 @@ VMWARECopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 
    if (hidden) {
        POST_OP_SHOW_CURSOR();
-   }   
+   }
 }
 
 #ifdef RENDER
@@ -342,8 +342,8 @@ VMWAREComposite(CARD8 op, PicturePtr pSrc, PicturePtr pMask,
     * We only worry about the source region here, since shadowfb or XAA will
     * take care of the destination region.
     */
-    box.x1 = pDst->pDrawable->x + xDst;
-    box.y1 = pDst->pDrawable->y + yDst;
+    box.x1 = pSrc->pDrawable->x + xSrc;
+    box.y1 = pSrc->pDrawable->y + ySrc;
     box.x2 = box.x1 + width;
     box.y2 = box.y1 + height;
 

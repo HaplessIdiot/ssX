@@ -6,7 +6,7 @@
    Pre-fb-write callbacks and RENDER support - Nolan Leake (nolan@vmware.com)
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.11 2002/10/16 22:12:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/shadowfb/shadow.c,v 1.12 2002/10/17 22:43:01 alanh Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -577,7 +577,7 @@ ShadowGlyphs(
     ps->Glyphs = pPriv->Glyphs;
     (*ps->Glyphs)(op, pSrc, pDst, maskFormat, xSrc, ySrc,
 		  nlistInit, listInit, glyphsInit);
-    ps->Composite = ShadowComposite;
+    ps->Glyphs = ShadowGlyphs;
 
     if (num) {
         if (pPriv->postRefresh)
