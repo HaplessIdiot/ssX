@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.14 2000/05/11 18:14:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.15 2000/06/17 00:03:11 martin Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -1393,7 +1393,7 @@ DRICopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 }
 
 static void
-DRIGetSecs(unsigned long *secs, unsigned long *usecs)
+DRIGetSecs(long *secs, long *usecs)
 {
 #if XFree86LOADER
     xf86getsecs(secs,usecs);
@@ -1421,12 +1421,12 @@ DRIComputeMilliSeconds(unsigned long s_secs, unsigned long s_usecs,
 static void
 DRISpinLockTimeout(drmLock *lock, int val, unsigned long timeout /* in mS */)
 {
-    int           count = 10000;
-    char          ret;
-    unsigned long s_secs, s_usecs;
-    unsigned long f_secs, f_usecs;
-    unsigned long msecs;
-    unsigned long prev  = 0;
+    int  count = 10000;
+    char ret;
+    long s_secs, s_usecs;
+    long f_secs, f_usecs;
+    long msecs;
+    long prev  = 0;
 
     DRIGetSecs(&s_secs, &s_usecs);
 
