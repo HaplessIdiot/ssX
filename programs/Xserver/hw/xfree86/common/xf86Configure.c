@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.4 2000/01/26 01:05:50 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Configure.c,v 3.14 2000/02/05 23:06:57 alanh Exp $ */
 /*
  * Copyright 2000 by Alan Hourihane, Sychdyn, North Wales.
  *
@@ -84,8 +84,6 @@ configureInputSection (void)
     ptr->inp_identifier = "Keyboard1";
     ptr->inp_driver = "keyboard";
     ptr->list.next = NULL;
-    ptr->inp_option_lst = 
-		addNewOption(ptr->inp_option_lst, "Protocol", "Standard");
 
 /*
 ErrorF("Supported Mice are : 0x%x\n",SupportedInterfaces());

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.207 2000/02/12 03:39:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.208 2000/02/14 19:20:42 dawes Exp $ */
 
 
 /*
@@ -945,15 +945,15 @@ checkCoreInputDevices(serverLayoutPtr servlayoutp, Bool implicitLayout)
     /* Check if a core pointer or core keyboard is needed. */
     for (indp = servlayoutp->inputs; indp->identifier; indp++) {
 	if ((indp->commonOptions &&
-	     xf86FindOption(indp->extraOptions, "CorePointer")) ||
+	     xf86FindOption(indp->commonOptions, "CorePointer")) ||
 	    (indp->extraOptions &&
-	     xf86FindOption(indp->commonOptions, "CorePointer"))) {
+	     xf86FindOption(indp->extraOptions, "CorePointer"))) {
 	    havePointer = TRUE;
 	}
 	if ((indp->commonOptions &&
-	     xf86FindOption(indp->extraOptions, "CoreKeyboard")) ||
+	     xf86FindOption(indp->commonOptions, "CoreKeyboard")) ||
 	    (indp->extraOptions &&
-	     xf86FindOption(indp->commonOptions, "CoreKeyboard"))) {
+	     xf86FindOption(indp->extraOptions, "CoreKeyboard"))) {
 	    haveKeyboard = TRUE;
 	}
 	count++;
