@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 731. Improve the i810 bitblt bug workaround, and re-enable the pixmap cache
+      at depth 24 (David Dawes).
  730. Workaround for lockup at mode switch with an i810 (David Dawes).
  729. Fix transparent mono 8x8 pattern fills for the i810 (David Dawes).
  728. Disable XKB by default in XDarwin (Torrey T. Lyons).
@@ -18475,7 +18477,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3076 2004/01/02 20:22:13 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3077 2004/01/02 22:16:03 dawes Exp $
 
 
 
