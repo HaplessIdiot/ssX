@@ -324,6 +324,7 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(miPictureInit)
   SYMFUNC(miComputeCompositeRegion)
   SYMFUNC(miGlyphs)
+  SYMFUNC(miCompositeRects)
   SYMVAR(PictureScreenPrivateIndex)
 #endif
 
