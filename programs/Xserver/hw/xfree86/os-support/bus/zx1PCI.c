@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.5 2003/11/06 18:38:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/zx1PCI.c,v 1.6tsi Exp $ */
 /*
  * Copyright (C) 2002-2003 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -156,9 +156,14 @@
 static CARD8 *pZX1mio = NULL,
 	     *pZX1ioa = NULL;
 
-static INT8   zx1_ropemap[8];		/* One for each (potential) rope */
-static CARD64 zx1_lbacntl[8];		/*  "   "   "        "       "   */
+/* Per-rope data */
+static INT8   zx1_ropemap[8];
+static CARD32 zx1_pciids[8];
+static CARD64 zx1_lbacntl[8];
 static int    zx1_busno[8], zx1_subno[8];
+
+/* Array of Booleans for non-empty buses */
+static INT8   zx1_busnmpt[MAX_PCI_BUSES];
 
 static pciBusFuncs_t zx1BusFuncs;
 static int           zx1_fakebus = -1;
@@ -526,8 +531,8 @@ xf86PreScanZX1(void)
 		    zx1_lbacntl[i] & ~LBA_HARD_FAIL;
 
 	    /* Poke for an ioa */
-	    tmp = IOA_LONG(i, PCI_ID_REG);
-	    switch ((CARD32)tmp) {
+	    zx1_pciids[i] = IOA_LONG(i, PCI_ID_REG);
+	    switch (zx1_pciids[i]) {
 	    case DEVID(VENDOR_HP, CHIP_ELROY):
 	    case DEVID(VENDOR_HP, CHIP_ZX1_LBA):	/* Mercury */
 	    case DEVID(VENDOR_HP, CHIP_ZX1_AGP8):	/* QuickSilver */
@@ -539,10 +544,10 @@ xf86PreScanZX1(void)
 		break;
 
 	    default:
-		if ((CARD16)(tmp + 1U) > (CARD16)1U)
+		if ((CARD16)(zx1_pciids[i] + 1U) > (CARD16)1U)
 		    xf86MsgVerb(X_NOTICE, 0,
 			"HP ZX1:  Unexpected vendor/device id 0x%08X"
-			" on rope %d\n", (CARD32)tmp, i);
+			" on rope %d\n", zx1_pciids[i], i);
 		/* Nobody home, or not the "right" kind of rope guest */
 
 		/*
@@ -906,6 +911,8 @@ xf86PostScanZX1(void)
     if (!pZX1mio)
 	return;
 
+    (void)memset(zx1_busnmpt, FALSE, sizeof(zx1_busnmpt));
+
     /*
      * Certain 2.4 & 2.5 Linux kernels add fake PCI devices.  Remove them to
      * prevent any possible interference with our PCI validation.
@@ -928,6 +935,8 @@ xf86PostScanZX1(void)
 	default:
 	    *ppPCI++ = pPCI;
 	    idx++;
+
+	    zx1_busnmpt[pPCI->busnum] = TRUE;
 
 	    if (zx1_hasvga)
 		continue;
@@ -953,8 +962,8 @@ xf86PostScanZX1(void)
     }
 
     /*
-     * Restore hard-fail settings and figure out the actual subordinate bus
-     * numbers.
+     * Restore hard-fail settings and figure out the actual secondary and
+     * subordinate bus numbers.
      */
     for (i = 0;  i < 8;  i++) {
 	if (zx1_ropemap[i] != i)
@@ -963,11 +972,17 @@ xf86PostScanZX1(void)
 	if (zx1_lbacntl[i] & LBA_HARD_FAIL)
 	    MIO_QUAD((i << 3) + LBA_PORT0_CNTRL) = zx1_lbacntl[i];
 
-	while ((zx1_busno[i] < zx1_subno[i]) && !pciBusInfo[zx1_subno[i]])
+	while ((zx1_busno[i] < zx1_subno[i]) && !zx1_busnmpt[zx1_subno[i]])
 	    zx1_subno[i]--;
 
 	if (zx1_fakebus <= zx1_subno[i])
 	    zx1_fakebus = zx1_subno[i] + 1;
+
+	while (!zx1_busnmpt[zx1_busno[i]]) {
+	    zx1_busno[i]++;
+	    if (zx1_busno[i] > zx1_subno[i])
+		break;
+	}
     }
 
     if (zx1_fakebus >= pciNumBuses) {
@@ -986,6 +1001,7 @@ xf86PostScanZX1(void)
     zx1FakeBus.numDevices = pciBusInfo[0]->numDevices;
     zx1FakeBus.primary_bus = zx1_fakebus;
     pciBusInfo[zx1_fakebus] = &zx1FakeBus;
+    zx1_busnmpt[zx1_fakebus] = TRUE;
 
     /* Add the fake bus' host bridge */
     if (++idx >= MAX_PCI_DEVICES)
@@ -1018,7 +1034,8 @@ xf86PostScanZX1(void)
 
     /* Add a fake PCI-to-PCI bridge to represent each active rope */
     for (i = 0;  i < 8;  i++) {
-	if ((zx1_ropemap[i] != i) || !(pBusInfo = pciBusInfo[zx1_busno[i]]))
+	if ((zx1_ropemap[i] != i) || (zx1_busno[i] > zx1_subno[i]) ||
+	    !(pBusInfo = pciBusInfo[zx1_busno[i]]))
 	    continue;
 
 	if (++idx >= MAX_PCI_DEVICES)
@@ -1028,7 +1045,7 @@ xf86PostScanZX1(void)
 	pPCI->devnum = i | 0x10;
      /* pPCI->funcnum = 0; */
 	pPCI->tag = PCI_MAKE_TAG(zx1_fakebus, pPCI->devnum, 0);
-	pPCI->pci_device_vendor = DEVID(VENDOR_HP, CHIP_ZX1_LBA);
+	pPCI->pci_device_vendor = zx1_pciids[i];
 	pPCI->pci_base_class = PCI_CLASS_BRIDGE;
 	pPCI->pci_sub_class = PCI_SUBCLASS_BRIDGE_PCI;
 	pPCI->pci_header_type = 1;
@@ -1043,6 +1060,9 @@ xf86PostScanZX1(void)
 
 	/* Plug in chipset routines */
 	pBusInfo->funcs = &zx1BusFuncs;
+
+	/* Set bridge info for scanpci utility */
+	pPCI->pci_bridge_control = ControlZX1Bridge(zx1_busno[i], 0, 0);
 
 #ifdef OLD_FORMAT
 	xf86MsgVerb(X_INFO, 2, "PCI: BusID 0x%.2x,0x%02x,0x%1x "
@@ -1063,4 +1083,14 @@ xf86PostScanZX1(void)
     }
 
     *ppPCI = NULL;	/* Terminate array */
+
+    /* Remove info records for buses that are now empty */
+    for (i = 0;  i < MAX_PCI_BUSES;  i++) {
+	if (zx1_busnmpt[i])
+	    continue;
+
+	if (i > 0)		/* Info for bus 0 is in static storage */
+	    xfree(pciBusInfo[i]);
+	pciBusInfo[i] = NULL;
+    }
 }
