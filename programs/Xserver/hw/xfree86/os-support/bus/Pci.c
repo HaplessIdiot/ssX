@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.65 2002/11/25 14:05:03 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.66 2002/11/25 16:19:09 tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -636,6 +636,7 @@ pciGenFindNext(void)
 	    for (pciBusNum = 0;  !pciBusInfo[pciBusNum];  ++pciBusNum);
 	    pciFuncNum = 0;
 	    pciDevNum = 0;
+	    previousBus = pciBusNum; /* make sure previousBus exists */
 	} else {
 #ifdef PCI_MFDEV_SUPPORT
 #ifdef DEBUGPCI
