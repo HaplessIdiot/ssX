@@ -22,7 +22,7 @@
  *
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  */
-/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.13 2003/08/29 18:01:13 herrb Exp $ */
+/* $XFree86: xc/lib/font/fc/fsconvert.c,v 1.14 2003/08/30 18:06:29 dawes Exp $ */
 /*
  * FS data conversion
  */
@@ -104,7 +104,7 @@ _fs_convert_props(fsPropInfo *pi, fsPropOffset *po, pointer pd,
     nprops = pfi->nprops = pi->num_offsets;
 
     if (nprops < 0 
-	|| nprops > SIZE_T_MAX/(sizeof(FontPropRec) + sizeof(char))) 
+	|| nprops > SIZE_MAX/(sizeof(FontPropRec) + sizeof(char))) 
 	return -1;
 	   
     dprop = (FontPropPtr) xalloc(sizeof(FontPropRec) * nprops +
