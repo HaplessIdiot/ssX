@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
 XCOMM rules:  $XConsortium: Imake.rules /main/217 1996/12/05 09:48:26 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.28 1996/11/24 09:50:39 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.29 1996/12/23 05:50:04 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -738,7 +738,7 @@ clean::                                                                @@\
  * ComplexProgramTarget_1 - generate rules for compiling and linking the
  * program specified by $(OBJS1) and $(SRCS1), installing the program and its
  * man page, and generating dependencies for it and any programs described
- * by $(SRCS2) throgh $(SRCS10).  It should be used to build the primary 
+ * by $(SRCS2) through $(SRCS10).  It should be used to build the primary 
  * program in Imakefiles that describe multiple programs.
  */
 #ifndef ComplexProgramTarget_1
