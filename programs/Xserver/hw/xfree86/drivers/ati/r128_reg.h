@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.14 2002/04/29 04:15:54 anderson Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_reg.h,v 1.15 2002/12/16 16:19:11 dawes Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -935,6 +935,7 @@
 #define R128_TRAIL_X_SUB                  0x1620
 
 #define R128_VCLK_ECP_CNTL                0x0008 /* PLL */
+#       define R128_ECP_DIV_MASK          (3 << 8)
 #define R128_VENDOR_ID                    0x0f00 /* PCI */
 #define R128_VGA_DDA_CONFIG               0x02e8
 #define R128_VGA_DDA_ON_OFF               0x02ec

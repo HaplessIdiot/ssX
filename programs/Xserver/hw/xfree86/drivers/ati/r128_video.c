@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.25 2003/02/04 02:40:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_video.c,v 1.26 2003/02/19 01:19:41 dawes Exp $ */
 
 #include "r128.h"
 #include "r128_reg.h"
@@ -61,8 +61,21 @@ typedef struct {
    CARD32        videoStatus;
    Time          offTime;
    Time          freeTime;
+   int           ecp_div;
 } R128PortPrivRec, *R128PortPrivPtr;
 
+static void R128ECP(ScrnInfoPtr pScrn, R128PortPrivPtr pPriv)
+{
+    R128InfoPtr     info      = R128PTR(pScrn);
+    unsigned char   *R128MMIO = info->MMIO;
+    int             dot_clock = info->ModeReg.dot_clock_freq;
+    
+    if (dot_clock < 12500)      pPriv->ecp_div = 0;
+    else if (dot_clock < 25000) pPriv->ecp_div = 1;
+    else                        pPriv->ecp_div = 2;
+
+    OUTPLLP(pScrn, R128_VCLK_ECP_CNTL, pPriv->ecp_div<<8, ~R128_ECP_DIV_MASK);
+}
 
 void R128InitVideo(ScreenPtr pScreen)
 {
@@ -196,6 +209,7 @@ R128AllocAdaptor(ScrnInfoPtr pScrn)
     pPriv->brightness = 0;
     pPriv->saturation = 16;
     pPriv->currentBuffer = 0;
+    R128ECP(pScrn, pPriv);
 
     return adapt;
 }
@@ -728,12 +742,15 @@ R128DisplayVideo422(
 ){
     R128InfoPtr info = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    R128PortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
     int v_inc, h_inc, step_by, tmp;
     int p1_h_accum_init, p23_h_accum_init;
     int p1_v_accum_init;
 
+    R128ECP(pScrn, pPriv);
+
     v_inc = (src_h << 20) / drw_h;
-    h_inc = (src_w << 12) / drw_w;
+    h_inc = (src_w << (12 + pPriv->ecp_div)) / drw_w;
     step_by = 1;
 
     while(h_inc >= (2 << 12)) {
@@ -799,12 +816,13 @@ R128DisplayVideo420(
 ){
     R128InfoPtr info = R128PTR(pScrn);
     unsigned char *R128MMIO = info->MMIO;
+    R128PortPrivPtr pPriv = info->adaptor->pPortPrivates[0].ptr;
     int v_inc, h_inc, step_by, tmp, leftUV;
     int p1_h_accum_init, p23_h_accum_init;
     int p1_v_accum_init, p23_v_accum_init;
 
     v_inc = (src_h << 20) / drw_h;
-    h_inc = (src_w << 12) / drw_w;
+    h_inc = (src_w << (12 + pPriv->ecp_div)) / drw_w;
     step_by = 1;
 
     while(h_inc >= (2 << 12)) {
