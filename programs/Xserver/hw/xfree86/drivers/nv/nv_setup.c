@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.14 2002/02/10 04:25:08 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.15 2002/02/21 21:04:53 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -190,25 +190,11 @@ NVIsConnected (ScrnInfoPtr pScrn, Bool second)
 }
 
 static void
-NVIsSecond (ScrnInfoPtr pScrn)
+NVOverrideCRTC(ScrnInfoPtr pScrn)
 {
     NVPtr pNv = NVPTR(pScrn);
 
-    if(NVIsConnected(pScrn, 0)) {
-       if(pNv->riva.PRAMDAC0[0x0000052C/4] & 0x100)
-          pNv->SecondCRTC = TRUE;
-       else
-          pNv->SecondCRTC = FALSE;
-    } else 
-    if (NVIsConnected(pScrn, 1)) {
-       if(pNv->riva.PRAMDAC0[0x0000252C/4] & 0x100)
-          pNv->SecondCRTC = TRUE;
-       else
-          pNv->SecondCRTC = FALSE;
-    } else /* default */
-       pNv->SecondCRTC = FALSE;
-
-    xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
                "Detected CRTC controller %i being used\n",
                pNv->SecondCRTC ? 1 : 0);
 
@@ -217,6 +203,41 @@ NVIsSecond (ScrnInfoPtr pScrn)
                    "Forcing usage of CRTC %i\n", pNv->forceCRTC);
         pNv->SecondCRTC = pNv->forceCRTC;
     }
+}
+
+static void
+NVIsSecond (ScrnInfoPtr pScrn)
+{
+    NVPtr pNv = NVPTR(pScrn);
+
+    if(pNv->FlatPanel) {
+       switch(pNv->Chipset) {
+       case NV_CHIP_GEFORCE4_440_GO:
+       case NV_CHIP_GEFORCE4_420_GO:
+       case NV_CHIP_GEFORCE4_420_GO_M32:
+           pNv->SecondCRTC = TRUE;
+           break;
+       default:
+           pNv->SecondCRTC = FALSE;
+           break;
+       }
+    } else {
+       if(NVIsConnected(pScrn, 0)) {
+          if(pNv->riva.PRAMDAC0[0x0000052C/4] & 0x100)
+             pNv->SecondCRTC = TRUE;
+          else
+             pNv->SecondCRTC = FALSE;
+       } else 
+       if (NVIsConnected(pScrn, 1)) {
+          if(pNv->riva.PRAMDAC0[0x0000252C/4] & 0x100)
+             pNv->SecondCRTC = TRUE;
+          else
+             pNv->SecondCRTC = FALSE;
+       } else /* default */
+          pNv->SecondCRTC = FALSE;
+    }
+
+    NVOverrideCRTC(pScrn);
 }
 
 static void
@@ -320,12 +341,13 @@ NVCommonSetup(ScrnInfoPtr pScrn)
 
     switch(pNv->Chipset & 0x0ff0) {
     case 0x0110:
-        if((pNv->Chipset & 0x0fff) == 0x0112)
+        if(pNv->Chipset == NV_CHIP_GEFORCE2_GO)
             pNv->SecondCRTC = TRUE;
 #if defined(__powerpc__)
         else if(pNv->FlatPanel)
             pNv->SecondCRTC = TRUE;
 #endif
+        NVOverrideCRTC(pScrn);
         break;
     case 0x0170:
     case 0x0250:
