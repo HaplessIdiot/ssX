@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.45 2000/02/10 18:57:44 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.46 2000/02/13 00:56:16 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_128">Patch #128 - 2000/2/17 - XFree86 3.9.18</A>
 <LI><A HREF="#xterm_127">Patch #127 - 2000/2/12 - XFree86 3.9.17e</A>
 <LI><A HREF="#xterm_126">Patch #126 - 2000/2/8 - XFree86 3.9.17c</A>
 <LI><A HREF="#xterm_125">Patch #125 - 2000/1/31 - XFree86 3.9.17c</A>
@@ -170,6 +171,15 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_128">Patch #128 - 2000/2/17 - XFree86 3.9.18</A></H1>
+<ul>
+	<li>correct logic for <code>oldXtermFKeys</code> resource, fixes a core
+	  dump when attempting to set it from the command-line (reported by Dr
+	  Werner Fink).
+	<li>correct ifdef for meta-sends-escap so configure --disable-num-lock
+	  builds.
+</ul>
 
 <H1><A NAME="xterm_127">Patch #127 - 2000/2/12 - XFree86 3.9.17e</A></H1>
 <ul>

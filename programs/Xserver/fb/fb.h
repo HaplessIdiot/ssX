@@ -1,5 +1,5 @@
 /*
- * $Id: fb.h,v 1.9 2000/02/16 17:56:32 alanh Exp $
+ * $Id: fb.h,v 1.10 2000/02/17 14:16:22 dawes Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.7 2000/02/12 03:39:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.9 2000/02/16 17:56:32 alanh Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -1257,6 +1257,14 @@ fbGetSpans(DrawablePtr	pDrawable,
 /*
  * fbglyph.c
  */
+
+Bool
+fbGlyphIn (RegionPtr	pRegion,
+	   int		x,
+	   int		y,
+	   int		width,
+	   int		height);
+    
 void
 fbPolyGlyphBlt (DrawablePtr	pDrawable,
 		GCPtr		pGC,
