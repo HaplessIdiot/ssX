@@ -1,4 +1,7 @@
 XFree86 3.9.17Z (16 February 2000)
+3801. Set the right max clock for the Voodoo3 3000 (#3707,
+      Yoann Vandoorselaere).
+3800. Fix various build problems (David Dawes).
 3799. Fix all other SaveScreen() functions, and add a helper xf86IsUnblank()
       that drivers can use to interpret the SaveScreen mode values
       (David Dawes).
@@ -9716,4 +9719,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1010 2000/02/15 18:00:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1011 2000/02/16 15:36:23 dawes Exp $
