@@ -27,7 +27,12 @@
 #include <machine/pmap.h>
 #include <machine/bus.h>
 #include <machine/resource.h>
+/* XXX Need to check this.  At least 4.4 has <machine/endian.h> */
+#if __FreeBSD_version > 440000
 #include <sys/endian.h>
+#else
+#include <machine/endian.h>
+#endif
 #include <sys/mman.h>
 #include <sys/rman.h>
 #include <sys/memrange.h>
