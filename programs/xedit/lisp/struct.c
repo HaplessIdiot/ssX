@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.20 2002/11/17 07:51:29 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/struct.c,v 1.21 2002/11/21 08:04:07 paulo Exp $ */
 
 #include "struct.h"
 
@@ -63,15 +63,23 @@ Lisp_Defstruct(LispBuiltin *builtin)
     description = ARGUMENT(1);
     oname = ARGUMENT(0);
 
-    /* get structure name */
-    if (!SYMBOLP(oname) ||
-	/* reserved name(s) */
-	ATOMID(oname) == Sarray)
-	LispDestroy("%s: %s cannot be a structure name",
-		    STRFUN(builtin), STROBJ(oname));
+    CHECK_SYMBOL(oname);
 
     strname = ATOMID(oname);
     length = strlen(strname);
+
+	    /* MAKE- */
+    size = length + 6;
+    name = LispMalloc(size);
+
+    sprintf(name, "MAKE-%s", strname);
+    atom = (object = ATOM(name))->data.atom;
+
+    if (atom->a_builtin)
+	LispDestroy("%s: %s cannot be a structure name",
+		    STRFUN(builtin), STROBJ(oname));
+
+    intern = !atom->ext;
 
     if (CONSP(description) && STRINGP(CAR(description))) {
 	documentation = CAR(description);
@@ -111,32 +119,22 @@ Lisp_Defstruct(LispBuiltin *builtin)
 		right = CAR(right);
 
 	    if (ATOMID(left) == ATOMID(right))
-		LispDestroy("%s: only one slot named :%s allowed",
-			    STRFUN(builtin), ATOMID(left));
+		LispDestroy("%s: only one slot named %s allowed",
+			    STRFUN(builtin), STROBJ(left));
 	}
     }
 
-    /* XXX any memory allocation failure below should be a fatal error */
-
+    /* atom should not have been modified */
     definition = CONS(oname, description);
+    LispSetAtomStructProperty(atom, definition, STRUCT_CONSTRUCTOR);
+    if (!intern)
+	LispExportSymbol(object);
+
     atom = oname->data.atom;
     if (atom->a_defstruct)
 	LispWarning("%s: structure %s is being redefined",
 		    STRFUN(builtin), strname);
     LispSetAtomStructProperty(atom, definition, STRUCT_NAME);
-
-    /* check if symbol is exported */
-    intern = !atom->ext;
-
-	    /* MAKE- */
-    size = length + 6;
-    name = LispMalloc(size);
-
-    sprintf(name, "MAKE-%s", strname);
-    atom = (object = ATOM(name))->data.atom;
-    LispSetAtomStructProperty(atom, definition, STRUCT_CONSTRUCTOR);
-    if (!intern)
-	LispExportSymbol(object);
 
     sprintf(name, "%s-P", strname);
     atom = (object = ATOM(name))->data.atom;
@@ -188,7 +186,8 @@ Lisp_XeditMakeStruct(LispBuiltin *builtin)
     struc = ARGUMENT(0);
 
     field = cons = NIL;
-    if ((!SYMBOLP(struc) && !FUNCTIONP(struc)) ||
+    if (!POINTERP(struc) ||
+	!(XSYMBOLP(struc) || XFUNCTIONP(struc)) ||
 	(atom = struc->data.atom)->a_defstruct == 0 ||
 	 atom->property->structure.function != STRUCT_CONSTRUCTOR)
 	LispDestroy("%s: invalid constructor %s",
@@ -302,7 +301,8 @@ LispStructAccessOrStore(LispBuiltin *builtin, int store)
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if ((!SYMBOLP(name) && !FUNCTIONP(name)) ||
+    if (!POINTERP(name) ||
+	!(XSYMBOLP(name) || XFUNCTIONP(name)) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
 	(offset = atom->property->structure.function) < 0) {
 	LispDestroy("%s: invalid argument %s",
@@ -355,7 +355,8 @@ Lisp_XeditStructType(LispBuiltin *builtin)
     struc = ARGUMENT(1);
     name = ARGUMENT(0);
 
-    if ((!SYMBOLP(name) && !FUNCTIONP(name)) ||
+    if (!POINTERP(name) ||
+	!(XSYMBOLP(name) || XFUNCTIONP(name)) ||
 	(atom = name->data.atom)->a_defstruct == 0 ||
 	(atom->property->structure.function != STRUCT_CHECK))
 	LispDestroy("%s: invalid argument %s",

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.15 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/package.c,v 1.16 2002/11/10 16:29:06 paulo Exp $ */
 
 #include "package.h"
 #include "private.h"
@@ -93,6 +93,23 @@ LispFindPackage(LispObj *name)
 	LispDestroy("FIND-PACKAGE: %s is not a string or symbol", STROBJ(name));
 
     return (LispFindPackageFromString(string));
+}
+
+int
+LispCheckAtomString(char *string)
+{
+    char *ptr;
+
+    if (*string == '\0')
+	return (0);
+
+    for (ptr = string; *ptr; ptr++) {
+	if (islower(*ptr) || strchr("\"\\;#()`'|:", *ptr) ||
+	    ((ptr == string || ptr[1] == '\0') && strchr(".,@", *ptr)))
+	    return (0);
+    }
+
+    return (1);
 }
 
 /*   This function is used to avoid some namespace polution caused by the
@@ -402,7 +419,7 @@ Lisp_Export(LispBuiltin *builtin)
     symbols = ARGUMENT(0);
 
     /* If specified, make sure package is available */
-    if (package != NIL)
+    if (package != UNSPEC)
 	package = LispFindPackageOrDie(builtin, package);
     else
 	package = PACKAGE;
@@ -434,7 +451,7 @@ Lisp_Import(LispBuiltin *builtin)
     symbols = ARGUMENT(0);
 
     /* If specified, make sure package is available */
-    if (package != NIL)
+    if (package != UNSPEC)
 	package = LispFindPackageOrDie(builtin, package);
     else
 	package = PACKAGE;
@@ -506,7 +523,7 @@ Lisp_Intern(LispBuiltin *builtin)
     string = ARGUMENT(0);
 
     CHECK_STRING(string);
-    if (package != NIL)
+    if (package != UNSPEC)
 	package = LispFindPackageOrDie(builtin, package);
     else
 	package = PACKAGE;
@@ -530,7 +547,6 @@ Lisp_Intern(LispBuiltin *builtin)
     if (symbol == NULL) {
 	/* symbol does not exist in the specified package, create a new
 	 * internal symbol */
-	int unreadable;
 
 	if (package == PACKAGE)
 	    symbol = ATOM(ptr);
@@ -553,25 +569,10 @@ Lisp_Intern(LispBuiltin *builtin)
 	    lisp__data.pack = savepack;
 	}
 
-	/* Check for zero length string */
-	unreadable = *ptr == '\0';
-
-	/* Check if string can be safely read back */
-	for (; *ptr; ptr++)
-	    if (islower(*ptr) || *ptr == '"' || *ptr == '\\' || *ptr == ';' ||
-		*ptr == '#' || *ptr == ',' || *ptr == '@' || *ptr == '(' ||
-		*ptr == ')' || *ptr == '`' || *ptr == '\'' || *ptr == '|' ||
-		*ptr == ':') {
-		unreadable = 1;
-		break;
-	    }
-
-	symbol->data.atom->unreadable = unreadable;
+	symbol->data.atom->unreadable = !LispCheckAtomString(ptr);
 	/* If symbol being create in the keyword package, make it external */
-	if (package == lisp__data.keyword) {
-	    symbol->data.atom->ext = 1;
-	    symbol->data.atom->constant = 1;
-	}
+	if (package == lisp__data.keyword)
+	    symbol->data.atom->ext = symbol->data.atom->constant = 1;
 	RETURN(0) = NIL;
     }
     else {
@@ -602,7 +603,7 @@ Lisp_ListAllPackages(LispBuiltin *builtin)
 LispObj *
 Lisp_MakePackage(LispBuiltin *builtin)
 /*
- make-package package-name &key nicknames (use '(lisp ext))
+ make-package package-name &key nicknames use
  */
 {
     GC_ENTER();
@@ -617,6 +618,7 @@ Lisp_MakePackage(LispBuiltin *builtin)
     /* Check if package already exists */
     package = LispFindPackage(package_name);
     if (package != NIL)
+	/* FIXME: this should be a correctable error */
 	LispDestroy("%s: package %s already defined",
 		    STRFUN(builtin), STROBJ(package_name));
 
@@ -631,6 +633,7 @@ Lisp_MakePackage(LispBuiltin *builtin)
     for (list = nicknames; CONSP(list); list = CDR(list)) {
 	package = LispFindPackage(CAR(list));
 	if (package != NIL)
+	    /* FIXME: this should be a correctable error */
 	    LispDestroy("%s: nickname %s matches package %s",
 			STRFUN(builtin), STROBJ(CAR(list)),
 			THESTR(package->data.package.name));
@@ -668,8 +671,12 @@ Lisp_MakePackage(LispBuiltin *builtin)
     lisp__data.pack = package->data.package.package;
     PACKAGE = package;
 
-    for (list = use; CONSP(list); list = CDR(list))
-	LispUsePackage(LispFindPackage(CAR(list)));
+    if (use != UNSPEC) {
+	for (list = use; CONSP(list); list = CDR(list))
+	    LispUsePackage(LispFindPackage(CAR(list)));
+    }
+    else
+	LispUsePackage(lisp__data.lisp);
 
     /* Restore pointer to package symbol table */
     lisp__data.pack = savepackage->data.package.package;
@@ -801,7 +808,7 @@ Lisp_Unexport(LispBuiltin *builtin)
     symbols = ARGUMENT(0);
 
     /* If specified, make sure package is available */
-    if (package != NIL)
+    if (package != UNSPEC)
 	package = LispFindPackageOrDie(builtin, package);
     else
 	package = PACKAGE;

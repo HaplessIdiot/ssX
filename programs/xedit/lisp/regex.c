@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.6 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/regex.c,v 1.7 2002/11/10 16:29:06 paulo Exp $ */
 
 #include "regex.h"
 #include "private.h"
@@ -95,13 +95,13 @@ Lisp_Recomp(LispBuiltin *builtin)
 
     CHECK_STRING(pattern);
 
-    if (nospec != NIL)
+    if (nospec != UNSPEC && nospec != NIL)
 	cflags |= RE_NOSPEC;
-    if (icase != NIL)
+    if (icase != UNSPEC && icase != NIL)
 	cflags |= RE_ICASE;
-    if (nosub != NIL)
+    if (nosub != UNSPEC && nosub != NIL)
 	cflags |= RE_NOSUB;
-    if (newline != NIL)
+    if (newline != UNSPEC && newline != NIL)
 	cflags |= RE_NEWLINE;
 
     regex = LispRecomp(builtin, THESTR(pattern), cflags);
@@ -150,7 +150,7 @@ Lisp_Reexec(LispBuiltin *builtin)
 
     CHECK_STRING(ostring);
 
-    if (count == NIL)
+    if (count == UNSPEC)
 	nmatch = 1;
     else {
 	CHECK_INDEX(count);
@@ -161,19 +161,14 @@ Lisp_Reexec(LispBuiltin *builtin)
     if (nmatch & (cflags & RE_NOSUB))
 	nmatch = 1;
 
-    if (notbol != NIL)
+    if (notbol != UNSPEC && notbol != NIL)
 	eflags |= RE_NOTBOL;
-    if (noteol != NIL)
+    if (noteol != UNSPEC && noteol != NIL)
 	eflags |= RE_NOTEOL;
 
     string = THESTR(ostring);
-    if (ostart != NIL || oend != NIL)
-	LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
-				  &start, &end, &length);
-    else {
-	start = 0;
-	end = STRLEN(ostring);
-    }
+    LispCheckSequenceStartEnd(builtin, ostring, ostart, oend,
+			      &start, &end, &length);
 
     eflags |= RE_STARTEND;
     match[0].rm_so = start;

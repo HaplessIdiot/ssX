@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.43 2002/11/17 07:51:28 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/helper.c,v 1.44 2002/11/21 07:25:09 paulo Exp $ */
 
 #include "helper.h"
 #include "pathname.h"
@@ -278,7 +278,7 @@ LispCheckSequenceStartEnd(LispBuiltin *builtin,
     *plength = LispLength(sequence);
 
     /* Check start argument */
-    if (start == NIL)
+    if (start == UNSPEC)
 	*pstart = 0;
     else {
 	CHECK_INDEX(start);
@@ -286,7 +286,7 @@ LispCheckSequenceStartEnd(LispBuiltin *builtin,
     }
 
     /* Check end argument */
-    if (end == NIL)
+    if (end == UNSPEC)
 	*pend = *plength;
     else {
 	CHECK_INDEX(end);
@@ -837,8 +837,7 @@ LispDoListTimes(LispBuiltin *builtin, int times)
 LispObj *
 LispLoadFile(LispObj *filename, int verbose, int print, int ifdoesnotexist)
 {
-    GC_ENTER();
-    LispObj *stream, *ext, *cod, *obj, *result;
+    LispObj *stream, *cod, *obj, *result;
     int ch;
 
     LispObj *savepackage;
@@ -847,11 +846,15 @@ LispLoadFile(LispObj *filename, int verbose, int print, int ifdoesnotexist)
     if (verbose)
 	LispMessage("; Loading %s", THESTR(filename));
 
-    ext = ifdoesnotexist ? Kerror : NIL;
-    result = CONS(filename, CONS(Kif_does_not_exist, CONS(ext, NIL)));
-    GC_PROTECT(result);
-    stream = APPLY(Oopen, result);
-    GC_LEAVE();
+    if (ifdoesnotexist) {
+	GC_ENTER();
+	result = CONS(filename, CONS(Kif_does_not_exist, CONS(Kerror, NIL)));
+	GC_PROTECT(result);
+	stream = APPLY(Oopen, result);
+	GC_LEAVE();
+    }
+    else
+	stream = APPLY1(Oopen, filename);
 
     if (stream == NIL)
 	return (NIL);
@@ -930,27 +933,27 @@ LispGetStringArgs(LispBuiltin *builtin,
     *string2 = THESTR(ostring2);
     length2 = STRLEN(ostring2);
 
-    if (ostart1 == NIL)
+    if (ostart1 == UNSPEC)
 	*start1 = 0;
     else {
 	CHECK_INDEX(ostart1);
 	*start1 = FIXNUM_VALUE(ostart1);
     }
-    if (oend1 == NIL)
+    if (oend1 == UNSPEC)
 	*end1 = length1;
     else {
 	CHECK_INDEX(oend1);
 	*end1 = FIXNUM_VALUE(oend1);
     }
 
-    if (ostart2 == NIL)
+    if (ostart2 == UNSPEC)
 	*start2 = 0;
     else {
 	CHECK_INDEX(ostart2);
 	*start2 = FIXNUM_VALUE(ostart2);
     }
 
-    if (oend2 == NIL)
+    if (oend2 == UNSPEC)
 	*end2 = length2;
     else {
 	CHECK_INDEX(oend2);
@@ -1201,6 +1204,8 @@ LispWriteString_(LispBuiltin *builtin, int newline)
     CHECK_STRING(string);
     LispCheckSequenceStartEnd(builtin, string, ostart, oend,
 			      &start, &end, &length);
+    if (output_stream == UNSPEC)
+	output_stream = NIL;
     text = THESTR(string);
     if (end > start)
 	LispWriteStr(output_stream, text + start, end - start);

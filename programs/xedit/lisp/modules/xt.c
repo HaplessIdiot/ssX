@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.17 2002/11/08 08:01:00 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/modules/xt.c,v 1.18 2002/11/10 16:29:11 paulo Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -396,8 +396,8 @@ Lisp_XtAddCallback(LispBuiltin *builtin)
 	LispDestroy("%s: %s cannot be used as a callback",
 		    STRFUN(builtin), STROBJ(callback));
 
-    if (client_data != NIL)
-	client_data = QUOTE(client_data);
+    if (client_data == UNSPEC)
+	client_data = NIL;
 
     data = CONS(widget, CONS(client_data, callback));
     PROTECT(widget, data);
@@ -449,8 +449,8 @@ Lisp_XtAppAddInput(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(function));
 
     /* client data optional */
-    if (client_data != NIL)
-	client_data = QUOTE(client_data);
+    if (client_data == UNSPEC)
+	client_data = NIL;
 
     data = CONS(NIL, CONS(client_data, function));
 
@@ -540,7 +540,7 @@ Lisp_XtAppInitialize(LispBuiltin *builtin)
     CHECK_LIST(options);
 
     /* check fallback resources, if given */
-    if (fallback_resources != NIL) {
+    if (fallback_resources != UNSPEC) {
 	LispObj *string;
 	int count;
 
@@ -567,7 +567,7 @@ Lisp_XtAppInitialize(LispBuiltin *builtin)
 
     XtAppAddActions(appcon, actions, XtNumber(actions));
 
-    if (options != NIL) {
+    if (options != UNSPEC) {
 	resources = LispConvertResources(options, shell,
 					 GetResourceList(XtClass(shell)),
 					 NULL);
@@ -636,10 +636,12 @@ Lisp_XtAppProcessEvent(LispBuiltin *builtin)
 		    STRFUN(builtin), STROBJ(app_context));
 
     appcon = (XtAppContext)(app_context->data.opaque.data);
-    if (omask == NIL)
+    if (omask == UNSPEC)
 	mask = XtIMAll;
-    CHECK_FIXNUM(omask);
-    mask = FIXNUM_VALUE(omask);
+    else {
+	CHECK_FIXNUM(omask);
+	mask = FIXNUM_VALUE(omask);
+    }
 
     if (mask != (mask & XtIMAll))
 	LispDestroy("%s: %d does not fit in XtInputMask %d",
@@ -805,7 +807,7 @@ LispXtCreateWidget(LispBuiltin *builtin, int options)
     else
 	widget = XtCreateWidget(name, widget_class, parent, NULL, 0);
 
-    if (arguments == NIL)
+    if (arguments == UNSPEC || arguments == NIL)
 	resources = NULL;
     else {
 	resources = LispConvertResources(arguments, widget,

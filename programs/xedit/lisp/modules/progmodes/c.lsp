@@ -27,7 +27,7 @@
 ;; Author: Paulo César Pereira de Andrade
 ;;
 ;;
-;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.18 2002/11/15 07:27:47 paulo Exp $
+;; $XFree86: xc/programs/xedit/lisp/modules/progmodes/c.lsp,v 1.19 2002/11/21 08:04:08 paulo Exp $
 ;;
 
 (require "syntax")
@@ -140,120 +140,6 @@
 
 (defvar *c-mode-options* *c-DEFAULT-style*)
 ; (setq *c-mode-options* *c-gnu-style*)
-
-(defsyntax *c-mode* :main nil '#'c-indent *c-mode-options*
-    ;;  All recognized C keywords.
-    (syntoken
-	(string-concat
-	    "\\<("
-	    "asm|auto|break|case|catch|char|class|const|continue|default|"
-	    "delete|do|double|else|enum|extern|float|for|friend|goto|if|"
-	    "inline|int|long|new|operator|private|protected|public|register|"
-	    "return|short|signed|sizeof|static|struct|switch|template|this|"
-	    "throw|try|typedef|union|unsigned|virtual|void|volatile|while"
-	    ")\\>")
-	:property *prop-keyword*)
-
-    ;; Numbers, this is optional, comment this rule if xedit is
-    ;; too slow to load c files.
-    (syntoken
-	(string-concat
-	    "\\<("
-	    ;; Integers
-	    "(\\d+|0x\\x+)(u|ul|ull|l|ll|lu|llu)?|"
-	    ;; Floats
-	    "\\d+\\.?\\d*(e[+-]?\\d+)?[lf]?"
-	    ")\\>")
-	:icase t
-	:property *prop-number*
-    )
-
-    ;; String start rule.
-    (syntoken "\"" :nospec t :begin :string :contained t)
-
-    ;; Character start rule.
-    (syntoken "'" :nospec t :begin :character :contained t)
-
-    ;; Preprocessor start rule.
-    (syntoken "^\\s*#\\s*\\w+" :begin :preprocessor :contained t)
-
-    ;; Comment start rule.
-    (syntoken "/*" :nospec t :begin :comment :contained t)
-
-    ;; C++ style comments.
-    (syntoken "//.*" :property *prop-comment*)
-
-    ;; Punctuation, this is also optional, comment this rule if xedit is
-    ;; too slow to load c files.
-    (syntoken "[][(){}/*+:;=<>,&.!%|^~?-][][(){}*+:;=<>,&.!%|^~?-]?"
-	:property *prop-punctuation*)
-
-
-    ;; Rules for comments.
-    (syntable :comment *prop-comment* nil
-	;; Match nested comments as an error.
-	(syntoken "/*" :nospec t :property *prop-error*)
-
-	(syntoken "XXX|TODO|FIXME" :property *prop-annotation*)
-
-	;;  Rule to finish a comment.
-	(syntoken "*/" :nospec t :switch -1)
-    )
-
-    ;; Rules for strings.
-    (syntable :string *prop-string* nil
-	;; Ignore escaped characters, this includes \".
-	(syntoken "\\\\.")
-
-	;; Match, most, printf arguments.
-	(syntoken "%%|%([+-]?\\d+)?(l?[deEfgiouxX]|[cdeEfgiopsuxX])"
-	    :property *prop-format*)
-
-	;; Ignore continuation in the next line.
-	(syntoken "\\\\$")
-
-	;; Rule to finish a string.
-	(syntoken "\"" :nospec t :switch -1)
-
-	;; Don't allow strings continuing in the next line.
-	(syntoken ".?$" :begin :error)
-    )
-
-    ;; Rules for characters.
-    (syntable :character *prop-constant* nil
-	;; Ignore escaped characters, this includes \'.
-	(syntoken "\\\\.")
-
-	;; Ignore continuation in the next line.
-	(syntoken "\\\\$")
-
-	;; Rule to finish a character constant.
-	(syntoken "'" :nospec t :switch -1)
-
-	;; Don't allow constants continuing in the next line.
-	(syntoken ".?$" :begin :error)
-    )
-
-    ;;  Rules for preprocessor.
-    (syntable :preprocessor *prop-preprocessor* nil
-	;;  Preprocessor includes comments.
-	(syntoken "/*" :nospec t :begin :comment :contained t)
-
-	;;  Ignore lines finishing with a backslash.
-	(syntoken "\\\\$")
-
-	;; Return to previous state if end of line found.
-	(syntoken ".?$" :switch -1)
-    )
-
-    (syntable :error *prop-error* nil
-	(syntoken "^.*$" :switch -2)
-    )
-
-    ;;  You may also want to comment this rule if the parsing is
-    ;; noticeably slow.
-    (syntoken "\\c" :property *prop-control*)
-)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; This is a very lazy "pattern matcher" for the C language.
@@ -1084,3 +970,117 @@
     )
 )
 (compile 'c-indent)
+
+(defsyntax *c-mode* :main nil #'c-indent *c-mode-options*
+    ;;  All recognized C keywords.
+    (syntoken
+	(string-concat
+	    "\\<("
+	    "asm|auto|break|case|catch|char|class|const|continue|default|"
+	    "delete|do|double|else|enum|extern|float|for|friend|goto|if|"
+	    "inline|int|long|new|operator|private|protected|public|register|"
+	    "return|short|signed|sizeof|static|struct|switch|template|this|"
+	    "throw|try|typedef|union|unsigned|virtual|void|volatile|while"
+	    ")\\>")
+	:property *prop-keyword*)
+
+    ;; Numbers, this is optional, comment this rule if xedit is
+    ;; too slow to load c files.
+    (syntoken
+	(string-concat
+	    "\\<("
+	    ;; Integers
+	    "(\\d+|0x\\x+)(u|ul|ull|l|ll|lu|llu)?|"
+	    ;; Floats
+	    "\\d+\\.?\\d*(e[+-]?\\d+)?[lf]?"
+	    ")\\>")
+	:icase t
+	:property *prop-number*
+    )
+
+    ;; String start rule.
+    (syntoken "\"" :nospec t :begin :string :contained t)
+
+    ;; Character start rule.
+    (syntoken "'" :nospec t :begin :character :contained t)
+
+    ;; Preprocessor start rule.
+    (syntoken "^\\s*#\\s*\\w+" :begin :preprocessor :contained t)
+
+    ;; Comment start rule.
+    (syntoken "/*" :nospec t :begin :comment :contained t)
+
+    ;; C++ style comments.
+    (syntoken "//.*" :property *prop-comment*)
+
+    ;; Punctuation, this is also optional, comment this rule if xedit is
+    ;; too slow to load c files.
+    (syntoken "[][(){}/*+:;=<>,&.!%|^~?-][][(){}*+:;=<>,&.!%|^~?-]?"
+	:property *prop-punctuation*)
+
+
+    ;; Rules for comments.
+    (syntable :comment *prop-comment* nil
+	;; Match nested comments as an error.
+	(syntoken "/*" :nospec t :property *prop-error*)
+
+	(syntoken "XXX|TODO|FIXME" :property *prop-annotation*)
+
+	;;  Rule to finish a comment.
+	(syntoken "*/" :nospec t :switch -1)
+    )
+
+    ;; Rules for strings.
+    (syntable :string *prop-string* nil
+	;; Ignore escaped characters, this includes \".
+	(syntoken "\\\\.")
+
+	;; Match, most, printf arguments.
+	(syntoken "%%|%([+-]?\\d+)?(l?[deEfgiouxX]|[cdeEfgiopsuxX])"
+	    :property *prop-format*)
+
+	;; Ignore continuation in the next line.
+	(syntoken "\\\\$")
+
+	;; Rule to finish a string.
+	(syntoken "\"" :nospec t :switch -1)
+
+	;; Don't allow strings continuing in the next line.
+	(syntoken ".?$" :begin :error)
+    )
+
+    ;; Rules for characters.
+    (syntable :character *prop-constant* nil
+	;; Ignore escaped characters, this includes \'.
+	(syntoken "\\\\.")
+
+	;; Ignore continuation in the next line.
+	(syntoken "\\\\$")
+
+	;; Rule to finish a character constant.
+	(syntoken "'" :nospec t :switch -1)
+
+	;; Don't allow constants continuing in the next line.
+	(syntoken ".?$" :begin :error)
+    )
+
+    ;;  Rules for preprocessor.
+    (syntable :preprocessor *prop-preprocessor* nil
+	;;  Preprocessor includes comments.
+	(syntoken "/*" :nospec t :begin :comment :contained t)
+
+	;;  Ignore lines finishing with a backslash.
+	(syntoken "\\\\$")
+
+	;; Return to previous state if end of line found.
+	(syntoken ".?$" :switch -1)
+    )
+
+    (syntable :error *prop-error* nil
+	(syntoken "^.*$" :switch -2)
+    )
+
+    ;;  You may also want to comment this rule if the parsing is
+    ;; noticeably slow.
+    (syntoken "\\c" :property *prop-control*)
+)

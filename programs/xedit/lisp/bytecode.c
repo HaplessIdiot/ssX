@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.11 2002/11/13 04:35:45 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/bytecode.c,v 1.12 2002/11/21 07:25:07 paulo Exp $ */
 
 
 /*
@@ -402,7 +402,7 @@ Lisp_Compile(LispBuiltin *builtin)
 	    LispObj **presult, **pwarnings_p, **pfailure_p, **pform;
 
 	    lambda = atom->property->fun.function;
-	    if (definition != NIL || lambda->funtype != LispFunction)
+	    if (definition != UNSPEC || lambda->funtype != LispFunction)
 		/* XXX TODO replace definition etc. */
 		goto finished_compilation;
 	    alist = atom->property->alist;
@@ -873,11 +873,19 @@ Lisp_Disassemble(LispBuiltin *builtin)
 		case XBC_PUSH_NIL:
 		    strcpy(ptr, "PUSH NIL");
 		    break;
+		case XBC_PUSH_UNSPEC:
+		    strcpy(ptr, "PUSH #<UNSPEC>");
+		    break;
 		case XBC_PUSH_T:
 		    strcpy(ptr, "PUSH T");
 		    break;
 		case XBC_PUSH_NIL_N:
 		    strcpy(ptr, "PUSH NIL ");
+		    ptr += strlen(ptr);
+		    sprintf(ptr, "%d", (int)(*stream++));
+		    break;
+		case XBC_PUSH_UNSPEC_N:
+		    strcpy(ptr, "PUSH #<UNSPEC> ");
 		    ptr += strlen(ptr);
 		    sprintf(ptr, "%d", (int)(*stream++));
 		    break;
@@ -1525,6 +1533,9 @@ com_LoadCon(LispCom *com, LispObj *constant)
 	com_Bytecode(com, XBC_NIL);
     else if (constant == T)
 	com_Bytecode(com, XBC_T);
+    else if (constant == UNSPEC) {
+	COMPILE_FAILURE("internal error: loading #<UNSPEC>");
+    }
     else
 	com_BytecodeObject(com, XBC_LOADCON, constant);
 }
@@ -1550,6 +1561,8 @@ com_LoadConPush(LispCom *com, LispObj *constant)
 	com_Bytecode(com, XBC_PUSH_NIL);
     else if (constant == T)
 	com_Bytecode(com, XBC_PUSH_T);
+    else if (constant == UNSPEC)
+	com_Bytecode(com, XBC_PUSH_UNSPEC);
     else
 	com_BytecodeObject(com, XBC_LOADCON_PUSH, constant);
 }
@@ -1685,6 +1698,7 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 		    case XBC_CAR_PUSH:
 		    case XBC_CDR_PUSH:
 		    case XBC_PUSH_NIL:
+		    case XBC_PUSH_UNSPEC:
 		    case XBC_PUSH_T:
 		    case XBC_LSTAR:
 		    case XBC_LCONS:
@@ -1708,6 +1722,7 @@ LinkBuildOffsets(LispCom *com, CodeTree *tree, long offset)
 
 		    /* byte + byte */
 		    case XBC_PUSH_NIL_N:
+		    case XBC_PUSH_UNSPEC_N:
 		    case XBC_PRED:
 		    case XBC_LETREC:
 		    case XBC_LOAD_PUSH:
@@ -2033,7 +2048,7 @@ LinkDoOptimize_0(LispCom *com, CodeBlock *block)
 			if (next && next->type == CodeTreeBytecode &&
 			    next->code == XBC_PUSH_NIL) {
 			    next->code = XBC_PUSH_NIL_N;
-			    next->data.signed_char = 1;
+			    next->data.signed_char = 2;
 			    goto remove_label;
 			}
 			break;
@@ -2041,6 +2056,22 @@ LinkDoOptimize_0(LispCom *com, CodeBlock *block)
 			if (next && next->type == CodeTreeBytecode &&
 			    next->code == XBC_PUSH_NIL) {
 			    next->code = XBC_PUSH_NIL_N;
+			    next->data.signed_char = tree->data.signed_char + 1;
+			    goto remove_label;
+			}
+			break;
+		    case XBC_PUSH_UNSPEC:
+			if (next && next->type == CodeTreeBytecode &&
+			    next->code == XBC_PUSH_UNSPEC) {
+			    next->code = XBC_PUSH_UNSPEC_N;
+			    next->data.signed_char = 2;
+			    goto remove_label;
+			}
+			break;
+		    case XBC_PUSH_UNSPEC_N:
+			if (next && next->type == CodeTreeBytecode &&
+			    next->code == XBC_PUSH_UNSPEC) {
+			    next->code = XBC_PUSH_UNSPEC_N;
 			    next->data.signed_char = tree->data.signed_char + 1;
 			    goto remove_label;
 			}
@@ -2095,7 +2126,7 @@ LinkResolveLabels(LispCom *com, CodeBlock *block)
 	    LinkResolveLabels(com, tree->data.block);
 	else if (tree->type == CodeTreeLabel) {
 	    for (i = 0; i < block->tagbody.length; i++)
-		if (XEQL(tree->data.object, block->tagbody.labels[i]) == T) {
+		if (tree->data.object == block->tagbody.labels[i]) {
 		    block->tagbody.codes[i] = tree;
 		    break;
 		}
@@ -2126,7 +2157,7 @@ LinkResolveJumps(LispCom *com, CodeBlock *block)
 
 	    case CodeTreeGo:
 		for (i = 0; i < body->tagbody.length; i++)
-		    if (XEQ(tree->data.object, body->tagbody.labels[i]) == T)
+		    if (tree->data.object == body->tagbody.labels[i])
 			break;
 		if (i == body->tagbody.length)
 		    LispDestroy("COMPILE: no visible tag %s to GO",
@@ -2501,6 +2532,7 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 		    case XBC_NIL:
 		    case XBC_T:
 		    case XBC_PUSH_NIL:
+		    case XBC_PUSH_UNSPEC:
 		    case XBC_PUSH_T:
 		    case XBC_CAR_PUSH:
 		    case XBC_CDR_PUSH:
@@ -2528,6 +2560,7 @@ LinkEmmitBytecode(LispCom *com, CodeTree *tree,
 		    case XBC_LETREC:
 		    case XBC_PRED:
 		    case XBC_PUSH_NIL_N:
+		    case XBC_PUSH_UNSPEC_N:
 			bytecode[offset++] = tree->data.signed_char;
 			break;
 
@@ -2866,8 +2899,10 @@ ExecuteBytecode(register unsigned char *stream)
 	JUMP_ADDRESS(XBC_CDR_PUSH),
 	JUMP_ADDRESS(XBC_PUSH),
 	JUMP_ADDRESS(XBC_PUSH_NIL),
+	JUMP_ADDRESS(XBC_PUSH_UNSPEC),
 	JUMP_ADDRESS(XBC_PUSH_T),
 	JUMP_ADDRESS(XBC_PUSH_NIL_N),
+	JUMP_ADDRESS(XBC_PUSH_UNSPEC_N),
 	JUMP_ADDRESS(XBC_LET),
 	JUMP_ADDRESS(XBC_LETX),
 	JUMP_ADDRESS(XBC_LET_NIL),
@@ -3218,13 +3253,22 @@ OPCODE_LABEL(XBC_PUSH_NIL):
 	lisp__data.stack.values[lisp__data.stack.length++] = NIL;
 	NEXT_OPCODE();
 
+OPCODE_LABEL(XBC_PUSH_UNSPEC):
+	lisp__data.stack.values[lisp__data.stack.length++] = UNSPEC;
+	NEXT_OPCODE();
+
 OPCODE_LABEL(XBC_PUSH_T):
 	lisp__data.stack.values[lisp__data.stack.length++] = T;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_PUSH_NIL_N):
-	for (offset = *stream++; offset >= 0; offset--)
+	for (offset = *stream++; offset > 0; offset--)
 	    lisp__data.stack.values[lisp__data.stack.length++] = NIL;
+	NEXT_OPCODE();
+
+OPCODE_LABEL(XBC_PUSH_UNSPEC_N):
+	for (offset = *stream++; offset > 0; offset--)
+	    lisp__data.stack.values[lisp__data.stack.length++] = UNSPEC;
 	NEXT_OPCODE();
 
 OPCODE_LABEL(XBC_LET):

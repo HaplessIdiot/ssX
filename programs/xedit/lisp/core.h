@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.28 2002/11/20 07:44:41 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/core.h,v 1.29 2002/11/21 07:25:08 paulo Exp $ */
 
 #ifndef Lisp_core_h
 #define Lisp_core_h
@@ -91,6 +91,7 @@ LispObj *Lisp_FindIf(LispBuiltin*);
 LispObj *Lisp_FindIfNot(LispBuiltin*);
 LispObj *Lisp_Fill(LispBuiltin*);
 LispObj *Lisp_Fmakunbound(LispBuiltin*);
+LispObj *Lisp_Functionp(LispBuiltin*);
 LispObj *Lisp_Funcall(LispBuiltin*);
 LispObj *Lisp_Gc(LispBuiltin*);
 LispObj *Lisp_Gensym(LispBuiltin*);
@@ -112,8 +113,11 @@ LispObj *Lisp_Listp(LispBuiltin*);
 LispObj *Lisp_Loop(LispBuiltin*);
 LispObj *Lisp_MakeArray(LispBuiltin*);
 LispObj *Lisp_MakeList(LispBuiltin*);
+LispObj *Lisp_MakeSymbol(LispBuiltin*);
 LispObj *Lisp_Makunbound(LispBuiltin*);
+LispObj *Lisp_Mapc(LispBuiltin*);
 LispObj *Lisp_Mapcar(LispBuiltin*);
+LispObj *Lisp_Mapl(LispBuiltin*);
 LispObj *Lisp_Maplist(LispBuiltin*);
 LispObj *Lisp_Member(LispBuiltin*);
 LispObj *Lisp_MemberIf(LispBuiltin*);
@@ -170,6 +174,9 @@ LispObj *Lisp_Substitute(LispBuiltin*);
 LispObj *Lisp_SubstituteIf(LispBuiltin*);
 LispObj *Lisp_SubstituteIfNot(LispBuiltin*);
 LispObj *Lisp_Symbolp(LispBuiltin*);
+LispObj *Lisp_SymbolFunction(LispBuiltin*);
+LispObj *Lisp_SymbolName(LispBuiltin*);
+LispObj *Lisp_SymbolPackage(LispBuiltin*);
 LispObj *Lisp_SymbolPlist(LispBuiltin*);
 LispObj *Lisp_SymbolValue(LispBuiltin*);
 LispObj *Lisp_Tagbody(LispBuiltin*);
@@ -188,6 +195,7 @@ LispObj *Lisp_When(LispBuiltin*);
 LispObj *Lisp_While(LispBuiltin*);
 LispObj *Lisp_XeditEltStore(LispBuiltin*);
 LispObj *Lisp_XeditPut(LispBuiltin*);
+LispObj *Lisp_XeditSetSymbolValue(LispBuiltin*);
 LispObj *Lisp_XeditVectorStore(LispBuiltin*);
 
 #endif

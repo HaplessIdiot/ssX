@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.13 2002/11/08 08:00:57 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/pathname.c,v 1.14 2002/11/10 16:29:06 paulo Exp $ */
 
 #include <stdio.h>		/* including dirent.h first may cause problems */
 #include <dirent.h>
@@ -192,7 +192,7 @@ Lisp_Directory(LispBuiltin *builtin)
 
     cons = NIL;
 
-    if (if_cannot_read != NIL) {
+    if (if_cannot_read != UNSPEC) {
 	if (!KEYWORDP(if_cannot_read) ||
 	    (ATOMID(if_cannot_read) != Sskip &&
 	     ATOMID(if_cannot_read) != Serror))
@@ -350,8 +350,8 @@ Lisp_Directory(LispBuiltin *builtin)
 		    else
 			isdir = S_ISDIR(st.st_mode);
 
-		    if (all != NIL || ((isdir && (listdirs || sep)) ||
-				       (!listdirs && !sep && !isdir))) {
+		    if (all != UNSPEC || ((isdir && (listdirs || sep)) ||
+					  (!listdirs && !sep && !isdir))) {
 			if (glob_match(base, ent->d_name)) {
 			    if (isdir) {
 				length = strlen(ptr);
@@ -461,10 +461,10 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
     host = ARGUMENT(1);
     object = ARGUMENT(0);
 
-    if (host != NIL) {
+    if (host != UNSPEC) {
 	CHECK_STRING(host);
     }
-    if (defaults != NIL) {
+    if (defaults != UNSPEC) {
 	if (!PATHNAMEP(defaults)) {
 	    defaults = APPLY1(Oparse_namestring, defaults);
 	    GC_PROTECT(defaults);
@@ -477,7 +477,7 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	/* else just check for JUNK-ALLOWED... */
     }
     else if (PATHNAMEP(object)) {
-	if (defaults == NIL) {
+	if (defaults == UNSPEC) {
 	    GC_LEAVE();
 
 	    return (object);
@@ -510,21 +510,21 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	GC_PROTECT(result);
 
 	/* host */
-	if (defaults != NIL)
+	if (defaults != UNSPEC)
 	    defaults = CDR(defaults);
-	cdr = defaults == NIL ? NIL : CAR(defaults);
+	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* device */
-	if (defaults != NIL)
+	if (defaults != UNSPEC)
 	    defaults = CDR(defaults);
-	cdr = defaults == NIL ? NIL : CAR(defaults);
+	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
 	cons = CDR(cons);
 
 	/* directory */
-	if (defaults != NIL)
+	if (defaults != UNSPEC)
 	    defaults = CDR(defaults);	/* don't use defaults for directory */
 	if (*data == PATH_SEP)
 	    cdr = CONS(Kabsolute, NIL);
@@ -555,9 +555,9 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	    LispDestroy("%s: file name too long %s", STRFUN(builtin), ptr);
 
 	/* name */
-	if (defaults != NIL)
+	if (defaults != UNSPEC)
 	    defaults = CDR(defaults);
-	cdr = defaults == NIL ? NIL : CAR(defaults);
+	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
 	str = strchr(ptr, PATH_TYPESEP);
 	if (str)
 	    *str++ = '\0';
@@ -568,9 +568,9 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	cons = CDR(cons);
 
 	/* type */
-	if (defaults != NIL)
+	if (defaults != UNSPEC)
 	    defaults = CDR(defaults);
-	cdr = defaults == NIL ? NIL : CAR(defaults);
+	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
 	ptr = str;
 	if (ptr && *ptr)
 	    cdr = STRING(ptr);
@@ -579,9 +579,9 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 	cons = CDR(cons);
 
 	/* version */
-	if (defaults != NIL)
+	if (defaults != UNSPEC)
 	    defaults = CDR(defaults);
-	cdr = defaults == NIL ? NIL : CAR(defaults);
+	cdr = defaults == UNSPEC ? NIL : CAR(defaults);
 	RPLACD(cons, CONS(cdr, NIL));
 
 	/* string representation, must be done here to use defaults */
@@ -617,7 +617,7 @@ Lisp_ParseNamestring(LispBuiltin *builtin)
 
 	result = PATHNAME(result);
     }
-    else if (junk_allowed == NIL)
+    else if (junk_allowed == UNSPEC || junk_allowed == NIL)
 	LispDestroy("%s: bad argument %s", STRFUN(builtin), STROBJ(object));
 
     GC_LEAVE();
@@ -646,14 +646,14 @@ Lisp_MakePathname(LispBuiltin *builtin)
     device = ARGUMENT(1);
     host = ARGUMENT(0);
 
-    if (host != NIL) {
+    if (host != UNSPEC) {
 	CHECK_STRING(host);
     }
-    if (device != NIL) {
+    if (device != UNSPEC) {
 	CHECK_STRING(device);
     }
 
-    if (directory != NIL) {
+    if (directory != UNSPEC) {
 	Atom_id atom;
 
 	CHECK_CONS(directory);
@@ -664,14 +664,14 @@ Lisp_MakePathname(LispBuiltin *builtin)
 			STRFUN(builtin), STROBJ(CAR(directory)));
     }    
 
-    if (name != NIL) {
+    if (name != UNSPEC) {
 	CHECK_STRING(name);
     }
-    if (type != NIL) {
+    if (type != UNSPEC) {
 	CHECK_STRING(type);
     }
 
-    if (version != NIL) {
+    if (version != UNSPEC) {
 	switch (OBJECT_TYPE(version)) {
 	    case LispFixnum_t:
 		if (FIXNUM_VALUE(version) >= 0)
@@ -691,38 +691,38 @@ Lisp_MakePathname(LispBuiltin *builtin)
     }
 version_ok:
 
-    if (defaults != NIL && !PATHNAMEP(defaults) &&
-	(host == NIL || device == NIL || directory == NIL ||
-	 name == NIL || type == NIL || version == NIL)) {
+    if (defaults != UNSPEC && !PATHNAMEP(defaults) &&
+	(host == UNSPEC || device == UNSPEC || directory == UNSPEC ||
+	 name == UNSPEC || type == UNSPEC || version == UNSPEC)) {
 	defaults = APPLY1(Oparse_namestring, defaults);
 	GC_PROTECT(defaults);
     }
 
-    if (defaults != NIL) {
+    if (defaults != UNSPEC) {
 	defaults = defaults->data.pathname;
 	defaults = CDR(defaults);	/* host */
-	if (host == NIL)
+	if (host == UNSPEC)
 	    host = CAR(defaults);
 	defaults = CDR(defaults);	/* device */
-	if (device == NIL)
+	if (device == UNSPEC)
 	    device = CAR(defaults);
 	defaults = CDR(defaults);	/* directory */
-	if (directory == NIL)
+	if (directory == UNSPEC)
 	    directory = CAR(defaults);
 	defaults = CDR(defaults);	/* name */
-	if (name == NIL)
+	if (name == UNSPEC)
 	    name = CAR(defaults);
 	defaults = CDR(defaults);	/* type */
-	if (type == NIL)
+	if (type == UNSPEC)
 	    type = CAR(defaults);
 	defaults = CDR(defaults);	/* version */
-	if (version == NIL)
+	if (version == UNSPEC)
 	    version = CAR(defaults);
     }
 
     /* string representation */
     length = 0;
-    if (directory != NIL) {
+    if (directory != UNSPEC) {
 	if (ATOMID(CAR(directory)) == Sabsolute)
 	    pathname[length++] = PATH_SEP;
 
@@ -740,10 +740,10 @@ version_ok:
 	    pathname[length++] = PATH_SEP;
 	}
     }
-    if (name != NIL) {
+    if (name != UNSPEC) {
 	int xlength = 0;
 
-	if (type != NIL)
+	if (type != UNSPEC)
 	    xlength = STRLEN(type) + 1;
 
 	string = THESTR(name);
@@ -756,7 +756,7 @@ version_ok:
 	strncpy(pathname + length, string, alength);
 	length += alength;
     }
-    if (type != NIL) {
+    if (type != UNSPEC) {
 	if (length + 2 < sizeof(pathname))
 	    pathname[length++] = PATH_TYPESEP;
 	string = THESTR(type);
@@ -779,7 +779,7 @@ version_ok:
     cons = CDR(cons);
 
     /* directory */
-    if (directory == NIL)
+    if (directory == UNSPEC)
 	cdr = CONS(Krelative, NIL);
     else
 	cdr = directory;
@@ -885,7 +885,7 @@ Lisp_EnoughNamestring(LispBuiltin *builtin)
     defaults = ARGUMENT(1);
     pathname = ARGUMENT(0);
 
-    if (defaults != NIL) {
+    if (defaults != UNSPEC) {
 	char *ppathname, *pdefaults, *pp, *pd;
 
 	if (!STRINGP(pathname)) {
@@ -991,7 +991,7 @@ Lisp_UserHomedirPathname(LispBuiltin *builtin)
 
     host = ARGUMENT(0);
 
-    if (host != NIL && !STRINGP(host))
+    if (host != UNSPEC && !STRINGP(host))
 	LispDestroy("%s: bad hostname %s", STRFUN(builtin), STROBJ(host));
 
     length = 0;

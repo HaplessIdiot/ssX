@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.2 2002/11/08 08:00:56 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/hash.c,v 1.3 2002/11/10 16:29:04 paulo Exp $ */
 
 #include "hash.h"
 
@@ -192,8 +192,11 @@ LispHash(LispBuiltin *builtin, int code)
 
     if (code == REM_HASH)
 	value = NIL;
-    else
+    else {
 	value = ARGUMENT(2);
+	if (value == UNSPEC)
+	    value = NIL;
+    }
     hash_table = ARGUMENT(1);
     okey = ARGUMENT(0);
 
@@ -525,7 +528,7 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
     size = ARGUMENT(1);
     test = ARGUMENT(0);
 
-    if (test != NIL) {
+    if (test != UNSPEC) {
 	if (test == Oeq)
 	    function = FEQ;
 	else if (test == Oeql)
@@ -541,14 +544,14 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
     else
 	test = Oeql;
 
-    if (size != NIL) {
+    if (size != UNSPEC) {
 	CHECK_INDEX(size);
 	isize = FIXNUM_VALUE(size);
     }
     else
 	isize = 1;
 
-    if (rehash_size != NIL) {
+    if (rehash_size != UNSPEC) {
 	CHECK_DFLOAT(rehash_size);
 	if (DFLOAT_VALUE(rehash_size) <= 1.0)
 	    LispDestroy("%s: :REHASH-SIZE must a float > 1, not %s",
@@ -558,7 +561,7 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
     else
 	drsize = 1.5;
 
-    if (rehash_threshold != NIL) {
+    if (rehash_threshold != UNSPEC) {
 	CHECK_DFLOAT(rehash_threshold);
 	if (DFLOAT_VALUE(rehash_threshold) < 0.0 ||
 	    DFLOAT_VALUE(rehash_threshold) > 1.0)
@@ -570,6 +573,8 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
     else
 	drthreshold = 0.75;
 
+    if (initial_contents == UNSPEC)
+	initial_contents = NIL;
     CHECK_LIST(initial_contents);
     for (xsize = 0, cons = initial_contents;
 	 CONSP(cons);
@@ -601,7 +606,7 @@ Lisp_MakeHashTable(LispBuiltin *builtin)
     LispMused(hash_table);
     LispMused(hash_table->entries);
 
-    if (initial_contents != NIL) {
+    if (initial_contents != UNSPEC) {
 	unsigned long key;
 	LispHashEntry *entry;
 

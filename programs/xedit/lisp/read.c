@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.29 2002/11/20 07:44:42 paulo Exp $ */
+/* $XFree86: xc/programs/xedit/lisp/read.c,v 1.30 2002/11/21 07:25:10 paulo Exp $ */
 
 #include <errno.h>
 #include "read.h"
@@ -246,7 +246,7 @@ Atom_id Sand, Sor, Snot;
 LispObj *
 Lisp_Read(LispBuiltin *builtin)
 /*
- read &optional input-stream (eof-error-p t) eof-value recursive-p
+ read &optional input-stream eof-error-p eof-value recursive-p
  */
 {
     LispObj *result;
@@ -258,7 +258,9 @@ Lisp_Read(LispBuiltin *builtin)
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
 
-    if (input_stream != NIL) {
+    if (input_stream == UNSPEC)
+	input_stream = NIL;
+    else if (input_stream != NIL) {
 	CHECK_STREAM(input_stream);
 	else if (!input_stream->data.stream.readable)
 	    LispDestroy("%s: stream %s is not readable",
@@ -298,7 +300,9 @@ LispReadChar(LispBuiltin *builtin, int nohang)
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
 
-    if (input_stream != NIL) {
+    if (input_stream == UNSPEC)
+	input_stream = NIL;
+    else if (input_stream != NIL) {
 	CHECK_STREAM(input_stream);
     }
     else
@@ -375,7 +379,7 @@ LispReadChar(LispBuiltin *builtin, int nohang)
 LispObj *
 Lisp_ReadChar(LispBuiltin *builtin)
 /*
- read-char &optional input-stream (eof-error-p t) eof-value recursive-p
+ read-char &optional input-stream eof-error-p eof-value recursive-p
  */
 {
     return (LispReadChar(builtin, 0));
@@ -384,7 +388,7 @@ Lisp_ReadChar(LispBuiltin *builtin)
 LispObj *
 Lisp_ReadCharNoHang(LispBuiltin *builtin)
 /*
- read-char-no-hang &optional input-stream (eof-error-p t) eof-value recursive-p
+ read-char-no-hang &optional input-stream eof-error-p eof-value recursive-p
  */
 {
     return (LispReadChar(builtin, 1));
@@ -393,7 +397,7 @@ Lisp_ReadCharNoHang(LispBuiltin *builtin)
 LispObj *
 Lisp_ReadLine(LispBuiltin *builtin)
 /*
- read-line &optional input-stream (eof-error-p t) eof-value recursive-p
+ read-line &optional input-stream eof-error-p eof-value recursive-p
  */
 {
     char *string;
@@ -407,7 +411,9 @@ Lisp_ReadLine(LispBuiltin *builtin)
     eof_error_p = ARGUMENT(1);
     input_stream = ARGUMENT(0);
 
-    if (input_stream == NIL)
+    if (input_stream == UNSPEC)
+	input_stream = NIL;
+    else if (input_stream == NIL)
 	input_stream = STANDARD_INPUT;
     else {
 	CHECK_STREAM(input_stream);
@@ -861,6 +867,7 @@ LispReadMacroArg(read_info *info)
 	    stk[len++] = ch;
 	}
 	stk[len] = '\0';
+	errno = 0;
 	integer = strtol(stk, &str, 10);
 	/* number is positive because sign is not processed here */
 	if (*str || errno == ERANGE || integer > MOST_POSITIVE_FIXNUM)
@@ -1214,7 +1221,7 @@ LispReadObject(int unintern, read_info *info)
 	if (collon > 1)
 	    symbol[-2] = '\0';
 	object = LispParseAtom(package, symbol,
-			       collon == 2, unreadable || length == 0,
+			       collon == 2, unreadable,
 			       read__stream, read__line);
     }
 
@@ -1253,6 +1260,16 @@ LispParseAtom(char *package, char *symbol, int intern, int unreadable,
 {
     LispObj *object = NULL, *thepackage = NULL;
     LispPackage *pack = NULL;
+
+    if (!unreadable) {
+	/* Until NIL and T be treated as normal symbols */
+	if (symbol[0] == 'N' && symbol[1] == 'I' &&
+	    symbol[2] == 'L' && symbol[3] == '\0')
+	    return (NIL);
+	if (symbol[0] == 'T' && symbol[1] == '\0')
+	    return (T);
+	unreadable = !LispCheckAtomString(symbol);
+    }
 
     /* If package is empty, it is a keyword */
     if (package[0] == '\0') {
@@ -1561,7 +1578,7 @@ AtomSeparator(int ch, int check_space, int check_backslash)
 	return (1);
     if (check_backslash && ch == '\\')
 	return (1);
-    return (strchr("(),\";'`#|,@", ch) != NULL);
+    return (strchr("(),\";'`#|,", ch) != NULL);
 }
 
 static LispObj *
