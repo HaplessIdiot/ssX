@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.176 2004/01/24 21:29:20 twini Exp $ */
 /*
  * SiS driver main code
  *
@@ -8039,6 +8039,7 @@ SISCloseScreen(int scrnIndex, ScreenPtr pScreen)
     if(pSiS->adaptor) {
        xfree(pSiS->adaptor);
        pSiS->adaptor = NULL;
+       pSiS->ResetXv = pSiS->ResetXvGamma = NULL;
     }
 
     pScrn->vtSema = FALSE;
