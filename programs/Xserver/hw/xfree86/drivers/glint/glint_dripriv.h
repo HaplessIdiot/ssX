@@ -42,14 +42,15 @@ extern void GlxSetVisualConfigs(
 extern Bool GLINTCreateContext(ScreenPtr pScreen,
                                VisualPtr visual,
                                drmContext hwContext,
-                               void* pVisualConfigPriv);
+                               void* pVisualConfigPriv,
+			       DRIContextType contextStore);
 
 extern void GLINTDRISwapContext( ScreenPtr pScreen,
 				 DRISyncType syncType,
 				 DRIContextType readContextType,
-				 void** readContextStore,
+				 void* readContextStore,
 				 DRIContextType writeContextType,
-				 void** writeContextStore);
+				 void* writeContextStore);
 
 /* Macros to Setup Generic Kernel Device Driver to Handle DMA for gamma */
 

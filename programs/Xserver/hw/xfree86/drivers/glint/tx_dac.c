@@ -93,11 +93,14 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[Aperture1 >> 3] = 0;
 
     if (pGlint->UsePCIRetry) {
-	pReg->glintRegs[DFIFODis >> 3] = 1;
-	pReg->glintRegs[FIFODis >> 3] = 3;
+	pReg->glintRegs[DFIFODis >> 3] = GLINT_READ_REG(DFIFODis) | 0x01;
+    	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
+	    pReg->glintRegs[FIFODis >> 3] = GLINT_READ_REG(FIFODis) | 0x01;
+	else
+	    pReg->glintRegs[FIFODis >> 3] = GLINT_READ_REG(FIFODis) | 0x03;
     } else {
-	pReg->glintRegs[DFIFODis >> 3] = 0;
-	pReg->glintRegs[FIFODis >> 3] = 1;
+	pReg->glintRegs[DFIFODis >> 3] = GLINT_READ_REG(DFIFODis) & 0xFFFFFFFE;
+	pReg->glintRegs[FIFODis >> 3] = GLINT_READ_REG(FIFODis) | 0x01;
     }
 
     temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
@@ -229,42 +232,44 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
     case TI3026_RAMDAC:
     case TI3030_RAMDAC:
-	{
-	    /* Get the programmable clock values */
-	    unsigned long m=0,n=0,p=0;
-	    unsigned long clock;
-	    int count;
-	    unsigned long q, status, VCO;
+    {
+	/* Get the programmable clock values */
+	unsigned long m=0,n=0,p=0;
+	unsigned long clock;
+	int count;
+	unsigned long q, status, VCO;
 
-	    clock = TIramdacCalculateMNPForClock(pGlint->RefClock, 
+	clock = TIramdacCalculateMNPForClock(pGlint->RefClock, 
 		mode->Clock, 1, pGlint->MinClock, pGlint->MaxClock, &m, &n, &p);
 
-	    ramdacReg->DacRegs[TIDAC_PIXEL_N] = ((n & 0x3f) | 0xC0);
-	    ramdacReg->DacRegs[TIDAC_PIXEL_M] =  (m & 0x3f)        ;
-	    ramdacReg->DacRegs[TIDAC_PIXEL_P] = ((p & 0x03) | 0xbc);
-	    ramdacReg->DacRegs[TIDAC_PIXEL_VALID] = TRUE;
+	ramdacReg->DacRegs[TIDAC_PIXEL_N] = ((n & 0x3f) | 0xC0);
+	ramdacReg->DacRegs[TIDAC_PIXEL_M] =  (m & 0x3f)        ;
+	ramdacReg->DacRegs[TIDAC_PIXEL_P] = ((p & 0x03) | 0xbc);
+	ramdacReg->DacRegs[TIDAC_PIXEL_VALID] = TRUE;
 
-    	    if (pGlint->RamDac->RamDacType == (TI3026_RAMDAC))
-                n = 65 - ((64 << 2) / pScrn->bitsPerPixel);
-	    else
-                n = 65 - ((128 << 2) / pScrn->bitsPerPixel);
-	    m = 61;
-	    p = 0;
-	    for (q = 0; q < 8; q++) {
-		if (q > 0) p = 3;
-		for ( ; p < 4; p++) {
-		    VCO = ((clock * (q + 1) * (65 - m)) / (65 - n)) << (p + 1);
-		    if (VCO >= 110000) { break; }
-		}
+    	if (pGlint->RamDac->RamDacType == (TI3026_RAMDAC))
+            n = 65 - ((64 << 2) / pScrn->bitsPerPixel);
+	else
+            n = 65 - ((128 << 2) / pScrn->bitsPerPixel);
+	m = 61;
+	p = 0;
+	for (q = 0; q < 8; q++) {
+	    if (q > 0) p = 3;
+	    for ( ; p < 4; p++) {
+		VCO = ((clock * (q + 1) * (65 - m)) / (65 - n)) << (p + 1);
 		if (VCO >= 110000) { break; }
 	    }
-	    ramdacReg->DacRegs[TIDAC_clock_ctrl] = (q | 0x38);
-
-	    ramdacReg->DacRegs[TIDAC_LOOP_N] = ((n & 0x3f) | 0xC0);
-	    ramdacReg->DacRegs[TIDAC_LOOP_M] =  (m & 0x3f)        ;
-	    ramdacReg->DacRegs[TIDAC_LOOP_P] = ((p & 0x03) | 0xF0);
-	    ramdacReg->DacRegs[TIDAC_LOOP_VALID] = TRUE;
+	    if (VCO >= 110000) { break; }
 	}
+	ramdacReg->DacRegs[TIDAC_clock_ctrl] = (q | 0x38);
+
+	ramdacReg->DacRegs[TIDAC_LOOP_N] = ((n & 0x3f) | 0xC0);
+	ramdacReg->DacRegs[TIDAC_LOOP_M] =  (m & 0x3f)        ;
+	ramdacReg->DacRegs[TIDAC_LOOP_P] = ((p & 0x03) | 0xF0);
+	ramdacReg->DacRegs[TIDAC_LOOP_VALID] = TRUE;
+    }
+    if (pGlint->RamDac->RamDacType == (TI3030_RAMDAC))
+    	pReg->glintRegs[VTGModeCtl >> 3] = 0x04;
     break;
     }
 
@@ -282,7 +287,8 @@ TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[Aperture0 >> 3]  = GLINT_READ_REG(Aperture0);
     glintReg->glintRegs[Aperture1 >> 3]  = GLINT_READ_REG(Aperture1);
 
-    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA)
+    if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) ||
+    	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA))
     	glintReg->glintRegs[DFIFODis >> 3]  = GLINT_READ_REG(DFIFODis);
 
     if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_300SX) {
@@ -316,7 +322,8 @@ TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture0 >> 3], Aperture0);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[Aperture1 >> 3], Aperture1);
 
-    if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA)
+    if ((pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_DELTA) ||
+    	(pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA))
     	GLINT_SLOW_WRITE_REG(glintReg->glintRegs[DFIFODis >> 3], DFIFODis);
 
     if (pGlint->Chipset != PCI_VENDOR_3DLABS_CHIP_300SX) {

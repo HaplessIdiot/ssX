@@ -298,15 +298,13 @@ Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x00;
 	pReg->DacRegs[PM2VDACRDColorFormat] = 0x2E;
     	break;
-    case 15:
-        pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
-	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
-	pReg->DacRegs[PM2VDACRDColorFormat] = 0x61;
-    	break;
     case 16:
         pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 
 	pReg->DacRegs[PM2VDACRDPixelSize] = 0x01;
-	pReg->DacRegs[PM2VDACRDColorFormat] = 0x70;
+	if (pScrn->depth == 15) 
+	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x61;
+	else
+	    pReg->DacRegs[PM2VDACRDColorFormat] = 0x70;
     	break;
     case 24:
         pReg->DacRegs[PM2VDACRDMiscControl] |= 0x08; 

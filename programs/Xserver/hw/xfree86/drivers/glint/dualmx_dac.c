@@ -36,10 +36,12 @@
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
 
+#include "IBM.h"
 #include "TI.h"
 #include "glint_regs.h"
 #include "glint.h"
 
+#define DEBUG
 #ifdef DEBUG
 #define DUMP(name,field) do {                                             \
     value = GLINT_READ_REG(field);                                        \
@@ -389,7 +391,11 @@ Shiftbpp(ScrnInfoPtr pScrn, int value)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int logbytesperaccess;
 
-    logbytesperaccess = 4;
+    if ( (pGlint->RamDac->RamDacType == (IBM640_RAMDAC)) ||
+         (pGlint->RamDac->RamDacType == (TI3030_RAMDAC)) )
+    	logbytesperaccess = 4;
+    else
+    	logbytesperaccess = 3;
 	
     switch (pScrn->bitsPerPixel) {
     case 8:
@@ -431,11 +437,14 @@ DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[Aperture1 >> 3] = 0;
 
     if (pGlint->UsePCIRetry) {
-	pReg->glintRegs[DFIFODis >> 3] = 1;
-	pReg->glintRegs[FIFODis >> 3] = 3;
+	pReg->glintRegs[DFIFODis >> 3] = GLINT_READ_REG(DFIFODis) | 0x01;
+    	if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_GAMMA)
+	    pReg->glintRegs[FIFODis >> 3] = GLINT_READ_REG(FIFODis) | 0x01;
+	else
+	    pReg->glintRegs[FIFODis >> 3] = GLINT_READ_REG(FIFODis) | 0x03;
     } else {
-	pReg->glintRegs[DFIFODis >> 3] = 0;
-	pReg->glintRegs[FIFODis >> 3] = 1;
+	pReg->glintRegs[DFIFODis >> 3] = GLINT_READ_REG(DFIFODis) & 0xFFFFFFFE;
+	pReg->glintRegs[FIFODis >> 3] = GLINT_READ_REG(FIFODis) | 0x01;
     }
 
     temp1 = mode->CrtcHSyncStart - mode->CrtcHDisplay;
@@ -454,21 +463,25 @@ DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintRegs[VTGVSyncStart >> 3] = temp2;
     pReg->glintRegs[VTGVBlankEnd >> 3] = mode->CrtcVTotal - mode->CrtcVDisplay;
 
+#if 1 /* We force them high */
+    pReg->glintRegs[VTGPolarity >> 3] = 0xBA;
+#else
     pReg->glintRegs[VTGPolarity >> 3] = (((mode->Flags & V_PHSYNC) ? 0:2)<<2) |
 			     ((mode->Flags & V_PVSYNC) ? 0 : 2) | (0xb0);
+#endif
 
-    pReg->glintRegs[VClkCtl >> 3] = 0; 
+    pReg->glintRegs[VClkCtl >> 3] = 0;
     pReg->glintRegs[VTGVGateStart >> 3] = pReg->glintRegs[VTGVBlankEnd>>3] - 1; 
     pReg->glintRegs[VTGVGateEnd >> 3] = pReg->glintRegs[VTGVBlankEnd>>3];
     /*
      * tell DAC to use the ICD chip clock 0 as ref clock 
-     * and set up some more video timining generator registers
+     * and set up some more video timing generator registers
      */
     pReg->glintRegs[VTGHGateStart >> 3] = pReg->glintRegs[VTGHBlankEnd>>3] - 1;
     pReg->glintRegs[VTGHGateEnd >> 3] = pReg->glintRegs[VTGHLimit>>3] - 1;
-    pReg->glintRegs[VTGSerialClk >> 3] = 0x0002; 
-    pReg->glintRegs[FBModeSel >> 3] = 0x0907;
-    pReg->glintRegs[VTGModeCtl >> 3] = 0x00;
+    pReg->glintRegs[VTGSerialClk >> 3] = 0x0002;
+    pReg->glintRegs[FBModeSel >> 3] = 0x907;
+    pReg->glintRegs[VTGModeCtl >> 3] = 0x04;
 
     /*
      * Setup memory control registers for FB and LB
@@ -498,9 +511,27 @@ DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 					  (0x20 << LBRefreshCountShift));
     pReg->glintRegs[GCSRAperture >> 3] = GCSRSecondaryGLINTMapEn;
 
+    /* 
+     * Setup HW 
+     * 
+     * Note: The order of discovery for the MX devices is dependent
+     * on which way the resource allocation code decides to scan the
+     * bus.  This setup assumes the first MX found owns the even
+     * scanlines.  Should the implementation change an scan the bus
+     * in the opposite direction, then simple invert the indices for
+     * MXPciInfo below.  If this is setup wrong, the bug will appear
+     * as incorrect scanline interleaving when software rendering.
+     */
+    pReg->glintRegs[GMultGLINTAperture >> 3] = pGlint->realMXWidth;
+    pReg->glintRegs[GMultGLINT1 >> 3] = 
+				pGlint->MXPciInfo[0]->memBase[2] & 0xFF800000;
+    pReg->glintRegs[GMultGLINT2 >> 3] = 
+				pGlint->MXPciInfo[1]->memBase[2] & 0xFF800000;
+
     /* Copy info to secondary regs */
     pReg->glintSecondRegs[Aperture0>>3]     = pReg->glintRegs[Aperture0>>3];
     pReg->glintSecondRegs[Aperture1>>3]     = pReg->glintRegs[Aperture1>>3];
+
     pReg->glintSecondRegs[DFIFODis>>3]      = pReg->glintRegs[DFIFODis>>3];
     pReg->glintSecondRegs[FIFODis>>3]       = pReg->glintRegs[FIFODis>>3];
     pReg->glintSecondRegs[VTGHLimit>>3]     = pReg->glintRegs[VTGHLimit>>3];
@@ -524,9 +555,14 @@ DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     pReg->glintSecondRegs[LBMemoryEDO>>3]   = pReg->glintRegs[LBMemoryEDO>>3];
     pReg->glintSecondRegs[LBMemoryCtl>>3]   = pReg->glintRegs[LBMemoryCtl>>3];
     pReg->glintSecondRegs[GCSRAperture>>3]  = pReg->glintRegs[GCSRAperture>>3];
+    pReg->glintSecondRegs[GMultGLINTAperture>>3] = 
+					pReg->glintRegs[GMultGLINTAperture>>3];
+    pReg->glintSecondRegs[GMultGLINT1>>3]   = pReg->glintRegs[GMultGLINT1>>3];
+    pReg->glintSecondRegs[GMultGLINT2>>3]   = pReg->glintRegs[GMultGLINT2>>3];
 
     switch (pGlint->RamDac->RamDacType) {
     case TI3030_RAMDAC:
+    case TI3026_RAMDAC:
 	{
 	    /* Get the programmable clock values */
 	    unsigned long m=0,n=0,p=0;
@@ -542,7 +578,10 @@ DualMXInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    ramdacReg->DacRegs[TIDAC_PIXEL_P] = ((p & 0x03) | 0xb0);
 	    ramdacReg->DacRegs[TIDAC_PIXEL_VALID] = TRUE;
 
-            n = 65 - ((128 << 2) / pScrn->bitsPerPixel);
+    	    if (pGlint->RamDac->RamDacType == (TI3026_RAMDAC))
+                n = 65 - ((64 << 2) / pScrn->bitsPerPixel);
+	    else
+                n = 65 - ((128 << 2) / pScrn->bitsPerPixel);
 	    m = 61;
 	    p = 0;
 	    for (q = 0; q < 8; q++) {
@@ -601,6 +640,10 @@ DualMXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     glintReg->glintRegs[LBMemoryEDO >> 3] = GLINT_READ_REG(LBMemoryEDO);
     glintReg->glintRegs[LBMemoryCtl >> 3] = GLINT_READ_REG(LBMemoryCtl);
     glintReg->glintRegs[GCSRAperture >> 3] = GLINT_READ_REG(GCSRAperture);
+    glintReg->glintRegs[GMultGLINTAperture>>3] = 
+					GLINT_READ_REG(GMultGLINTAperture);
+    glintReg->glintRegs[GMultGLINT1>>3] = GLINT_READ_REG(GMultGLINT1);
+    glintReg->glintRegs[GMultGLINT2>>3] = GLINT_READ_REG(GMultGLINT2);
 
     glintReg->glintSecondRegs[Aperture0 >> 3] = 
 	GLINT_SECONDARY_READ_REG(Aperture0);
@@ -654,6 +697,12 @@ DualMXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 	GLINT_SECONDARY_READ_REG(LBMemoryCtl);
     glintReg->glintSecondRegs[GCSRAperture >> 3] = 
 	GLINT_SECONDARY_READ_REG(GCSRAperture);
+    glintReg->glintSecondRegs[GMultGLINTAperture>>3] = 
+	GLINT_SECONDARY_READ_REG(GMultGLINTAperture);
+    glintReg->glintSecondRegs[GMultGLINT1>>3] = 
+	GLINT_SECONDARY_READ_REG(GMultGLINT1);
+    glintReg->glintSecondRegs[GMultGLINT2>>3] = 
+	GLINT_SECONDARY_READ_REG(GMultGLINT2);
 }
 
 void
@@ -694,6 +743,10 @@ DualMXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[LBMemoryEDO >> 3], LBMemoryEDO);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[LBMemoryCtl >> 3], LBMemoryCtl);
     GLINT_SLOW_WRITE_REG(glintReg->glintRegs[GCSRAperture >> 3], GCSRAperture);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[GMultGLINTAperture >> 3], 
+							GMultGLINTAperture);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[GMultGLINT1 >> 3], GMultGLINT1);
+    GLINT_SLOW_WRITE_REG(glintReg->glintRegs[GMultGLINT2 >> 3], GMultGLINT2);
 
     GLINT_SECONDARY_SLOW_WRITE_REG(
 	glintReg->glintSecondRegs[Aperture0 >> 3], Aperture0);
@@ -744,5 +797,11 @@ DualMXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINT_SECONDARY_SLOW_WRITE_REG(
 	glintReg->glintSecondRegs[LBMemoryCtl >> 3], LBMemoryCtl);
     GLINT_SECONDARY_SLOW_WRITE_REG(
-    	glintReg->glintRegs[GCSRAperture >> 3], GCSRAperture);
+    	glintReg->glintSecondRegs[GCSRAperture >> 3], GCSRAperture);
+    GLINT_SECONDARY_SLOW_WRITE_REG(
+	glintReg->glintSecondRegs[GMultGLINTAperture >>3], GMultGLINTAperture); 
+    GLINT_SECONDARY_SLOW_WRITE_REG(
+	glintReg->glintSecondRegs[GMultGLINT1 >> 3], GMultGLINT1);
+    GLINT_SECONDARY_SLOW_WRITE_REG(
+	glintReg->glintSecondRegs[GMultGLINT2 >> 3], GMultGLINT2);
 }

@@ -1167,6 +1167,10 @@
 
 #define GLINT_WRITE_REG(v,r) MMIO_OUT32(pGlint->IOBase,(unsigned long)r, v)
 #define GLINT_READ_REG(r) MMIO_IN32(pGlint->IOBase,(unsigned long)r)
+#define GLINT_SECONDARY_WRITE_REG(v,r) \
+			MMIO_OUT32(pGlint->IOBase,(unsigned long)r+0x10000, v)
+#define GLINT_SECONDARY_READ_REG(r) \
+			MMIO_IN32(pGlint->IOBase,(unsigned long)r+0x10000)
 
 #endif /* DEBUG */
 
@@ -1194,22 +1198,11 @@ do{								\
 	GLINTDACDelay(5);					\
 }while(0)
 
-#define GLINT_SECONDARY_WRITE_REG(v,r)                          	\
-do{									\
-	*(volatile CARD32 *)((char *)pGlint->SecondaryBase+(r))=v;	\
-}while(0)
-
-#define GLINT_SECONDARY_READ_REG(r)                             	\
-	(*(volatile CARD32 *)((char *)pGlint->SecondaryBase+(r)))
-
 #define GLINT_SECONDARY_SLOW_WRITE_REG(v,r)				\
 do{									\
 	while(GLINT_READ_REG(InFIFOSpace)<1);				\
         GLINT_SECONDARY_WRITE_REG(v,r);					\
 }while(0)
-
-#define GLINT_LOAD_PAR(v,r) \
-        *(unsigned long *)((char*)pGlint->IOBase+r) = *((unsigned long *) &v)
 
 #define REPLICATE(r)						\
 {								\

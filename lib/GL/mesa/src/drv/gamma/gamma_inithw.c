@@ -35,21 +35,25 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #ifdef GLX_DIRECT_RENDERING
 
 #include "gamma_init.h"
+#include "glint_dri.h"
 
 void gammaInitHW(gammaContextPrivate *gcp)
 {
     __DRIscreenPrivate *driScrnPriv = gcp->gammaScrnPriv->driScrnPriv;
+    GLINTDRIPtr         gDRIPriv = (GLINTDRIPtr)driScrnPriv->pDevPriv;
 
-    /* Set up each MX's ScanLineOwnership for OpenGL */
-    CHECK_DMA_BUFFER(nullCC, gcp, 4);
-    WRITE(gcp->buf, BroadcastMask, 1);
-    WRITE(gcp->buf, ScanLineOwnership, 5); /* Use bottom left as [0,0] */
-    WRITE(gcp->buf, BroadcastMask, 2);
-    WRITE(gcp->buf, ScanLineOwnership, 1); /* Use bottom left as [0,0] */
+    if (gDRIPriv->numMXDevices == 2) {
+	/* Set up each MX's ScanLineOwnership for OpenGL */
+	CHECK_DMA_BUFFER(nullCC, gcp, 4);
+	WRITE(gcp->buf, BroadcastMask, 1);
+	WRITE(gcp->buf, ScanLineOwnership, 5); /* Use bottom left as [0,0] */
+	WRITE(gcp->buf, BroadcastMask, 2);
+	WRITE(gcp->buf, ScanLineOwnership, 1); /* Use bottom left as [0,0] */
 
-    /* Broadcast to both MX's */
-    CHECK_DMA_BUFFER(nullCC, gcp, 1);
-    WRITE(gcp->buf, BroadcastMask, 3);
+	/* Broadcast to both MX's */
+	CHECK_DMA_BUFFER(nullCC, gcp, 1);
+	WRITE(gcp->buf, BroadcastMask, 3);
+    }
 
     /* Set MXs to known state */
     CHECK_DMA_BUFFER(nullCC, gcp, 27);
@@ -136,7 +140,10 @@ void gammaInitHW(gammaContextPrivate *gcp)
     WRITE(gcp->buf, AlphaTestMode, gcp->AlphaTestMode);
     WRITE(gcp->buf, AlphaBlendMode, gcp->AlphaBlendMode);
     WRITE(gcp->buf, DitherMode, DitherModeEnable | DM_ColorOrder_RGB);
-    WRITE(gcp->buf, RasterizerMode, RM_MultiGLINT | RM_BiasCoordNearHalf);
+    if (gDRIPriv->numMXDevices == 2)
+    	WRITE(gcp->buf, RasterizerMode, RM_MultiGLINT | RM_BiasCoordNearHalf);
+    else
+    	WRITE(gcp->buf, RasterizerMode, RM_BiasCoordNearHalf);
     WRITE(gcp->buf, GLINTWindow, gcp->Window);
     WRITE(gcp->buf, FastClearDepth, 0xffffffff);
     WRITE(gcp->buf, GLINTDepth, 0xffffffff);

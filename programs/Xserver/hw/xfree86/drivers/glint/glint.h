@@ -63,7 +63,6 @@ typedef struct {
     int			numMXDevices;
     PCITAG		PciTag;
     EntityInfoPtr	pEnt;
-    EntityInfoPtr	pEntMX[GLINT_MAX_MX_DEVICES];
     RamDacHelperRecPtr	RamDac;
     int			MemClock;
     int			Chipset;
@@ -88,6 +87,7 @@ typedef struct {
     int			cpuheight;
     int			cpucount;
     int			planemask;
+    int			realMXWidth;
     CARD32		IOAddress;
     CARD32		FbAddress;
     int                 irq;
@@ -95,6 +95,10 @@ typedef struct {
     unsigned char *     IOBaseVGA;
     unsigned char *	FbBase;
     long		FbMapSize;
+    DGAModePtr		DGAModes;
+    int			numDGAModes;
+    Bool		DGAactive;
+    int			DGAViewportStatus;
     Bool		DoubleBuffer;
     Bool		NoAccel;
     Bool		FBDev;
@@ -109,12 +113,8 @@ typedef struct {
     Bool		UseBlockWrite;
     Bool		UseFireGL3000;
     Bool		VGAcore;
-    int			MultiGLINTApSize;
     int			MXFbSize;
-    int			realMXWidth;
-    CARD32		SecondaryAddress;
     CARD32		rasterizerMode;
-    unsigned char *	SecondaryBase;
     int			MinClock;
     int			MaxClock;
     int			RefClock;
@@ -271,6 +271,9 @@ void Permedia2VideoInit(ScreenPtr pScreen);
 void Permedia2vOutIndReg(ScrnInfoPtr pScrn,
 		   CARD32, unsigned char mask, unsigned char data);
 unsigned char Permedia2vInIndReg(ScrnInfoPtr pScrn, CARD32);
+
+Bool GLINTSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+void GLINTAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 extern int partprodPermedia[];
 
