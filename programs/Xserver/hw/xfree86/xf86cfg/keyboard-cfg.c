@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.14 2001/03/29 16:54:30 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/keyboard-cfg.c,v 1.15 2001/10/28 03:34:07 tsi Exp $
  */
 
 #include "xf86config.h"
@@ -979,7 +979,7 @@ KeyboardRulesCallback(Widget w, XtPointer user_data, XtPointer call_data)
 	model = xkb_info->defs.model = omodel;
 	layout = xkb_info->defs.layout = olayout;
 	variant = xkb_info->defs.variant = ovariant;
-	options = xkb_info->defs.options = ooptions;
+	options = XtNewString(xkb_info->defs.options = ooptions);
 	xkb_rules = oxkb_rules;
 	rules = xkb_rules->rules;
 

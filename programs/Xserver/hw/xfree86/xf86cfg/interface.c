@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.30 2001/10/21 18:28:13 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/interface.c,v 1.31 2001/10/28 03:34:07 tsi Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -220,7 +220,7 @@ Usage(void)
 "   -nomodules                 Use this option if xf86cfg is slow to start.\n"
 "   -verbose <number>          Verbosity used in the loader (default 1).\n"
 #endif
-"   -noverify                  Do not verify modules/options integrity.\n"
+"   -verify                    Verify modules/options integrity.\n"
 );
 
     exit(1);
@@ -250,6 +250,7 @@ main(int argc, char *argv[])
 #ifdef USE_MODULES
     xf86Verbose = 1;
 #endif
+    noverify = True;
 
     for (i = 1; i < argc; i++) {
 	if (strcmp(argv[i], "-xf86config") == 0) {
@@ -282,8 +283,8 @@ main(int argc, char *argv[])
 		xf86Verbose = atoi(argv[++i]);
 	}
 #endif
-	else if (strcmp(argv[i], "-noverify") == 0)
-	    noverify = True;
+	else if (strcmp(argv[i], "-verify") == 0)
+	    noverify = False;
 	else
 	    Usage();
     }
