@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.75 2001/10/24 01:21:25 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.76 2001/11/05 02:07:16 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_164">Patch #164 - 2001/11/13 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_163">Patch #163 - 2001/11/04 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_162">Patch #162 - 2001/10/23 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_161">Patch #161 - 2001/10/10 - XFree86 4.1.0</A>
@@ -207,6 +208,15 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_163">Patch #163 - 2001/1l/04 - XFree86 4.1.0</A></H1>
+<ul>
+	<li>correct a case where <code>ptyInitialErase</code> and
+	  <code>backarrowKeyIsErase</code> resources combine to set
+	  <code>DECBKM</code> mode, but a <code>reset</code> command would not
+	  reset xterm to that state, making the erase character revert to ^H
+	  (Debian #117184)
+</ul>
 
 <H1><A NAME="xterm_163">Patch #163 - 2001/1l/04 - XFree86 4.1.0</A></H1>
 <ul>
