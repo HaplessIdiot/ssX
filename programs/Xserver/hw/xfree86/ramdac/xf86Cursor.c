@@ -101,12 +101,14 @@ xf86InitCursor(
     PointPriv->spriteFuncs = &xf86CursorSpriteFuncs; 
 
     ScreenPriv->SwitchMode = pScrn->SwitchMode;
-    pScrn->SwitchMode = xf86CursorSwitchMode;
     ScreenPriv->EnterVT = pScrn->EnterVT;
-    pScrn->EnterVT = xf86CursorEnterVT; 
     ScreenPriv->LeaveVT = pScrn->LeaveVT;
-    pScrn->LeaveVT = xf86CursorLeaveVT;
     ScreenPriv->SetDGAMode = pScrn->SetDGAMode;
+
+    if(pScrn->SwitchMode)
+	pScrn->SwitchMode = xf86CursorSwitchMode;
+    pScrn->EnterVT = xf86CursorEnterVT; 
+    pScrn->LeaveVT = xf86CursorLeaveVT;
     pScrn->SetDGAMode = xf86SetDGAMode;
 
     return TRUE;
