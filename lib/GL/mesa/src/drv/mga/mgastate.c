@@ -24,7 +24,7 @@
  * Authors:
  *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.8 2001/03/21 16:14:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgastate.c,v 1.9 2001/04/10 16:07:51 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -391,21 +391,17 @@ static void mgaUpdateAlphaMode(GLcontext *ctx)
    int a = 0;
 
    /* determine source of alpha for blending and testing */
-   if ( !ctx->Texture.ReallyEnabled )
+   if ( !ctx->Texture.ReallyEnabled ) {
       a |= AC_alphasel_diffused;
+   }
    else {
-      switch (ctx->Texture.Unit[0].EnvMode) {
-      case GL_DECAL:
-      case GL_REPLACE:
-	 a |= AC_alphasel_fromtex;
-	 break;
-      case GL_BLEND:
-      case GL_MODULATE:
-	 a |= AC_alphasel_modulated;
-	 break;
-      default:
-	 break;
-      }
+      /* Regardless of texture env mode, we use the alpha from the
+       * texture unit (AC_alphasel_fromtex) since it will have already
+       * been modulated by the incoming fragment color, if needed.
+       * We don't want (AC_alphasel_modulate) since that'll effectively
+       * do the modulation twice.
+       */
+      a |= AC_alphasel_fromtex;
    }
 
 

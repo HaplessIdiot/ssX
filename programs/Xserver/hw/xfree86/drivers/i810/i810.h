@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.19 2000/12/01 14:28:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.20 2001/05/04 19:05:39 dawes Exp $ */
 
 /*
  * Authors:
@@ -136,6 +136,8 @@ typedef struct _I810Rec {
    unsigned char *MMIOBase;
    unsigned char *FbBase;
    long FbMapSize;
+   long DepthOffset;
+   long BackOffset;
    int cpp;
    int MaxClock;
 
