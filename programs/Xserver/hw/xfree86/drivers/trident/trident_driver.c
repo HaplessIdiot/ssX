@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.95 2000/04/28 18:19:24 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.97 2000/05/31 07:15:04 eich Exp $ */
 
 #include "cfb24_32.h"
 
@@ -196,7 +196,11 @@ typedef enum {
     OPTION_SETMCLK,
     OPTION_MUX_THRESHOLD,
     OPTION_SHADOW_FB,
+    OPTION_MMIO_ONLY,
+#if 0
+    /* obsolete */
     OPTION_CYBER_SHADOW,
+#endif
     OPTION_NOMMIO
 } TRIDENTOpts;
 
@@ -208,8 +212,12 @@ static OptionInfoRec TRIDENTOptions[] = {
     { OPTION_SETMCLK,		"SetMClk",	OPTV_FREQ,	{0}, FALSE },
     { OPTION_MUX_THRESHOLD,	"MUXThreshold",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_SHADOW_FB,		"ShadowFB",	OPTV_BOOLEAN,	{0}, FALSE },
+#if 0
+        /* obsolete */
     { OPTION_CYBER_SHADOW,	"CyberShadow",	OPTV_BOOLEAN,	{0}, FALSE },
+#endif
     { OPTION_NOMMIO,		"NoMMIO",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_MMIO_ONLY,		"MMIOonly",	OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -386,7 +394,21 @@ static int ClockLimit32bpp[] = {
 	115000,
 };
 
-static const char *xaaSymbols[] = {
+/*
+ * These are fixed modelines for all physical display dimensions the
+ *  chipsets supports on FPs. Most of them are not tested yet.
+ */
+tridentLCD LCD[] = { 
+    { 0,"640x480",25200,0x5f,0x82,0x54,0x80,0xb,0x3e,0xea,0x8c,0xb},
+    { 1,"800x600",40000,0x7f,0x82,0x6b,0x1b,0x72,0xf8,0x58,0x8c,0x72},
+    { 2,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96},
+    { 3,"1024x768",65000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96},
+    { 4,"1280x1024",108000,0xa3,0x6,0x8f,0xa0,0x24,0xf5,0x0f,0x25,0x96},
+    { 5,"1024x600",50500 ,0xa3,0x6,0x8f,0xa0,0xb,0x3e,0xea,0x8c,0xb},
+    { 0xff,"", 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
+};
+
+    static const char *xaaSymbols[] = {
     "XAADestroyInfoRec",
     "XAACreateInfoRec",
     "XAAHelpPatternROP",
@@ -1055,9 +1077,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
 
-    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-    pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
-
     /* The ramdac module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "ramdac"))
 	return FALSE;
@@ -1139,15 +1158,28 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->UsePCIRetry = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "PCI retry enabled\n");
     }
+#if 0
+    /* obsolete */
     if ((pTrident->CyberShadowSet = xf86GetOptValBool(TRIDENTOptions,
 						     OPTION_CYBER_SHADOW,
 						      &pTrident->CyberShadow)))
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Shadow Registers %s\n",
 		   pTrident->CyberShadow?"enabled":"disabled");
+#endif
     if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_NOMMIO, FALSE)) {
 	pTrident->NoMMIO = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
     }
+    if (xf86ReturnOptValBool(TRIDENTOptions, OPTION_MMIO_ONLY, FALSE)) {
+	if (pTrident->NoMMIO)
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR, "MMIO only cannot be set"
+		       " with NoMMIO\n");
+	else {
+	    pTrident->MMIOonly = TRUE;
+	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MMIO Disabled\n");
+	}
+    }
+
     pTrident->MUXThreshold = 80000; /* 100MHz */
     if (xf86GetOptValInteger(TRIDENTOptions, OPTION_MUX_THRESHOLD, 
 						&pTrident->MUXThreshold)) {
@@ -1659,6 +1691,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case 0x07:
 	    pScrn->videoRam = 2048;
+	    if (pTrident->Chipset == CYBER9525DVD)
+		pScrn->videoRam = 2560;
 	    break;
 	case 0x0F:
 	    pScrn->videoRam = 4096;
@@ -1672,10 +1706,24 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	}
     }
 
-
     xf86DrvMsg(pScrn->scrnIndex, from, "VideoRAM: %d kByte\n",
                pScrn->videoRam);
 
+    if (pTrident->IsCyber) {
+	unsigned char tmp;
+	
+	pTrident->lcdMode = 0xff;
+	OUTB(0x3CE,0x41);
+	tmp = INB(0x3CF);
+	for (i = 0; LCD[i].mode != 0xff; i++) {
+	    if (LCD[i].mode == (tmp & 0x7)) {
+		pTrident->lcdMode = i;
+		xf86DrvMsg(pScrn->scrnIndex, X_PROBED,"%s Panel %s found\n",
+			   (tmp & 0x8) ? "DSTN" : "TFT", LCD[i].display);
+	    }
+	}
+    }
+    
     pTrident->MCLK = 0;
     mclk = CalculateMCLK(pScrn);
     xf86DrvMsg(pScrn->scrnIndex, X_PROBED, "Memory Clock is %3.2f MHz\n", mclk);
@@ -1939,6 +1987,13 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     pTrident->FbMapSize = pScrn->videoRam * 1024;
+    
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+
+    if (pTrident->IsCyber && pTrident->MMIOonly)
+	pScrn->racIoFlags = 0;
+    else 
+	pScrn->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
     return TRUE;
 }

@@ -39,7 +39,7 @@ typedef struct {
 	unsigned char tridentRegs3CE[0x100];
 	unsigned char tridentRegs3C4[0x100];
 	unsigned char tridentRegsDAC[0x01];
-	unsigned char tridentRegsClock[0x03];
+        unsigned char tridentRegsClock[0x03];
 	unsigned char DacRegs[0x300];
 } TRIDENTRegRec, *TRIDENTRegPtr;
 
@@ -75,9 +75,13 @@ typedef struct {
     Bool		HasSGRAM;
     Bool		MUX;
     Bool		IsCyber;
+#if 0
+    /* obsolete */
     Bool		CyberShadowSet;
+#endif
     Bool		CyberShadow;
     Bool		NoMMIO;
+    Bool                MMIOonly;
     Bool		ShadowFB;
     Bool		Linear;
     DGAModePtr		DGAModes;
@@ -98,6 +102,7 @@ typedef struct {
     int			MCLK;
     int			dwords;
     int			height;
+    int                 lcdMode;
     TRIDENTRegRec	SavedReg;
     TRIDENTRegRec	ModeReg;
     I2CBusPtr		DDC;
@@ -111,10 +116,33 @@ typedef struct {
     xf86Int10InfoPtr	Int10;
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
+    int                 panelWidth;
+    int                 panelHeight;
     unsigned int	(*ddc1Read)(ScrnInfoPtr);
     CARD8*		XAAScanlineColorExpandBuffers[2];
     CARD8*		XAAImageScanlineBuffer[1];
 } TRIDENTRec, *TRIDENTPtr;
+
+typedef struct {
+    CARD8 mode;
+    char* display;
+    int clock;
+    int shadow_0;
+    int shadow_3;
+    int shadow_4;
+    int shadow_5;
+    int shadow_6;
+    int shadow_7;
+    int shadow_10;
+    int shadow_11;
+    int shadow_16;
+} tridentLCD;
+
+typedef struct {
+    int x_res;
+    int y_res;
+    int mode;
+} biosMode;
 
 /* Prototypes */
 

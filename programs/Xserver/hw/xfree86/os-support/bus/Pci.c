@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.24 2000/02/08 13:13:28 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.26 2000/05/31 07:15:08 eich Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -685,7 +685,13 @@ ErrorF("pciGenFindNext: next bus\n");
 		    /*
 		     * No more devices for this bus. Next bus please
 		     */
-		    if (++pciBusNum >= pciNumBuses) {
+     if (speculativeProbe) {
+	 xfree(pciBusInfo[pciBusNum]);
+	 pciBusInfo[pciBusNum] = NULL;
+     }
+     
+	 
+     if (++pciBusNum >= MAX_PCI_BUSES) {
 #ifdef DEBUGPCI
 ErrorF("pciGenFindNext: out of buses\n");
 #endif
@@ -700,8 +706,14 @@ ErrorF("pciGenFindNext: out of buses\n");
 #ifdef DEBUGPCI
 ErrorF("pciGenFindNext: pciBusInfo[%d] = 0x%lx\n", pciBusNum, pciBusInfo[pciBusNum]);
 #endif
-    if (!pciBusInfo[pciBusNum])
-	    continue;	    /* Bus not defined, next please */
+ if (!pciBusInfo[pciBusNum]) {
+     pciBusInfo[pciBusNum] = xnfalloc(sizeof(pciBusInfo_t));
+     *pciBusInfo[pciBusNum] = *pciBusInfo[0];
+     speculativeProbe = TRUE;
+ } else {
+     speculativeProbe = FALSE;
+ }
+ 
     
     /*
      * At this point, pciBusNum, pciDevNum, and pciFuncNum have been
@@ -719,6 +731,11 @@ ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, de
     if (devid == 0xffffffff)
 	    continue; /* Nobody home.  Next device please */
 
+    if (speculativeProbe && (pciNumBuses <= pciBusNum))
+	pciNumBuses = pciBusNum + 1;
+    
+    speculativeProbe = FALSE;
+    
     /*
      * Before checking for a specific devid, look for enabled
      * PCI to PCI bridge devices.  If one is found, create and
@@ -728,7 +745,8 @@ ErrorF("pciGenFindNext: pciDeviceTag = 0x%lx, devid = 0x%lx\n", pciDeviceTag, de
     tmp = pciReadLong(pciDeviceTag, PCI_CLASS_REG);
     base_class = PCI_CLASS_EXTRACT(tmp);
     sub_class = PCI_SUBCLASS_EXTRACT(tmp); 
-    if (base_class == PCI_CLASS_BRIDGE && sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
+    if (base_class == PCI_CLASS_BRIDGE)
+	if (sub_class == PCI_SUBCLASS_BRIDGE_PCI) {
 	    tmp = pciReadLong(pciDeviceTag, PCI_PCI_BRIDGE_BUS_REG);
 	    sec_bus = PCI_SECONDARY_BUS_EXTRACT(tmp);
 	    pri_bus = PCI_PRIMARY_BUS_EXTRACT(tmp);
