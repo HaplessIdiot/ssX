@@ -23,7 +23,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.2 2001/11/26 16:25:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.3 2003/10/29 11:42:11 alanh Exp $ */
 
 #define _ACECAD_C_
 /*****************************************************************************
@@ -72,7 +72,7 @@
 #define MAX_EVENTS 50
 
 
-static InputDriverRec ACECAD = 
+InputDriverRec ACECAD = 
 {
 	1,
 	"acecad",
@@ -83,7 +83,7 @@ static InputDriverRec ACECAD =
 	0
 };
 
-
+#ifdef XFree86LOADER
 static XF86ModuleVersionInfo VersionRec =
 {
 	"acecad",
@@ -98,18 +98,6 @@ static XF86ModuleVersionInfo VersionRec =
 	{0, 0, 0, 0}
 };
 
-
-static const char *default_options[] =
-{
-	"BaudRate", "9600",
-	"StopBits", "1",
-	"DataBits", "8",
-	"Parity", "Odd",
-	"Vmin", "1",
-	"Vtime", "10",
-	"FlowControl", "Xoff",
-	NULL
-};
 
 XF86ModuleData acecadModuleData = { &VersionRec, SetupProc, TearDownProc};
 
@@ -143,6 +131,19 @@ TearDownProc( pointer p )
 	xfree (local);
 #endif
 }
+#endif
+
+static const char *default_options[] =
+{
+	"BaudRate", "9600",
+	"StopBits", "1",
+	"DataBits", "8",
+	"Parity", "Odd",
+	"Vmin", "1",
+	"Vtime", "10",
+	"FlowControl", "Xoff",
+	NULL
+};
 
 #ifdef LINUX_INPUT
 static int
