@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.21 2002/08/12 22:16:08 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.23 2002/10/11 17:53:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -26,7 +26,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "xftint.h"
-#include <freetype/ftoutln.h>
+#include <ft2build.h>
+#include FT_OUTLINE_H
 #include <fontconfig/fcfreetype.h>
 
 static const int    filters[3][3] = {

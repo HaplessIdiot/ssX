@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.232 2003/11/12 00:10:22 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.233 2003/11/14 02:17:19 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2971,9 +2971,9 @@ ProjectUnsharedLibReferences(FREETYPE2,freetype,$(FREETYPE2LIBSRC),XBuildLibDir)
 #endif
 
 #ifdef UseInstalled
-FREETYPE2INCDIR=$(INCDIR)/freetype2
+FREETYPE2INCDIR=$(INCDIR)
 #else
-FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
+FREETYPE2INCDIR=$(BUILDINCDIR)
 #endif
 
 #else /* BuildFreetype2Library */
@@ -3001,7 +3001,7 @@ FREETYPE2INCDIR=$(BUILDINCDIR)/freetype2
 #endif
 
 #ifndef Freetype2IncDir
-#define Freetype2IncDir Freetype2Dir/include/freetype2
+#define Freetype2IncDir Freetype2Dir/include
 #endif
 
 FREETYPE2DIR = Freetype2Dir
@@ -3018,7 +3018,7 @@ FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
 #endif /* else BuildFreetype2Library */
 
 #if BuildFreetype2Library || HasFreetype2
-FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR)
+FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR) -I$(FREETYPE2INCDIR)/freetype2
 FREETYPE2DEFINES = -DFREETYPE2
 #endif
 
