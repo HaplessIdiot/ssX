@@ -12,10 +12,10 @@
       <author>
           <htmlurl url="http://www.valinux.com/"
             name="VA Linux Systems, Inc."> Professional Services - Graphics.
-      <date>22 August 2000
+      <date>24 October 2000
 
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.7 2000/08/28 18:24:15 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRI.sgml,v 1.8 2000/09/24 13:51:26 alanh Exp $
     </ident>
 
     <toc>
@@ -614,6 +614,14 @@
 <p>
           <itemize>
             <item>
+              If you try to run an OpenGL application and see an error message
+              similar to
+              <verb>
+              gd error (glide): gd error (glide): grSstSelect:  non-existent SSTgd error (glide): grSstSelect:  non-existent SSTS
+              </verb>
+              it means that you have the wrong version of the Glide library
+              for your hardware.
+            <item>
               3D acceleration for Voodoo3 is only supported in the 16
               bit/pixel screen mode.
               Use <tt/xdpyinfo/ to verify that all your visuals are depth 16.
@@ -642,7 +650,44 @@
               Applications which use that mode, such as the Performer Town
               demo, may become sluggish when falling back to software
               rendering to render in that mode.
+            <item>
+              The Voodoo3/Banshee driver reverts to software rendering under
+              the following conditions:
+              <itemize>
+                <item>
+                  Setting <tt/GL_LIGHT_MODEL_COLOR_CONTROL/ to
+                  <tt/GL_SEPARATE_SPECULAR_COLOR/.
+                <item>
+                  Enabling line stippline or polygon stippling.
+                <item>
+                  Enabling point smoothing or polygon smoothing.
+                <item>
+                  Enabling line smoothing when line width is not 1.0.
+                  That is, antialiased lines are done in hardware only when
+                  the line width is 1.0.
+                <item>
+                  Using 1-D or 3-D texture maps.
+                <item>
+                  Using the GL_BLEND texture environment.
+                <item>
+                  Using stencil operations.
+                <item>
+                  Using the accumulation buffer.
+                <item>
+                  Using <tt/glBlendEquation(GL_LOGIC_OP)/.
+                <item>
+                  Using <tt/glDrawBuffer(GL_FRONT_AND_BACK)/.
+                <item>
+                  Using <tt/glPolygonMode(face, GL_POINT)/ or
+                  <tt/glPolygonMode(face, GL_LINE)/.
+                <item>
+                  Using point size attenuation
+                  (i.e. <tt/GL_DISTANCE_ATTENUATION_EXT/).
+                <item>
+                  Using <tt/glColorMask(r, g, b, a)/ when r!=g or g!=b.
+              </itemize>
           </itemize>
+
         <sect2>Known Problems
 <p>
           <itemize>
@@ -740,6 +785,19 @@
               The value of this variable indicates the maximum number of
               swap buffer commands can be buffered.
               Zero allows maximum frame rate.
+            <item>
+              Rendering with 16-bit per texel textures is faster than using
+              32-bit per texel textures.  The <tt/internalFormat/ parameter
+              to <tt/glTexImage2D/ can be used to control texel size.
+            <item>
+              The Voodoo5 driver reverts to software rendering under the
+              same conditions Voodoo3 with three exceptions.
+              First, stencil operations are implemented in hardware when the
+              screen is configured for 32 bits/pixel.
+              Second, the <tt/GL_BLEND/ texture env mode is fully supported in
+              hardware.
+              Third, <tt/glColorMask/ is fully supported in hardware when
+              the screen is configured for 32 bits/pixel.
           </itemize>
         <sect2>Known Problems
 <p>
@@ -749,7 +807,14 @@
               be used via the tdfx DRI driver.
             <item>
               24bpp screen modes are supported by the hardware but not by
-              the current driver.
+              the current driver.  32bpp is fully supported.
+            <item>
+              As of October, 2000 the second VSA-100 chip on the Voodoo5 is
+              not yet operational.
+              Therefore, the board isn't being used to its full capacity.
+              The second VSA-100 chip will allow Scan-Line Interleave (SLI)
+              mode for full-screen applications and games, potentially doubling
+              the system's fill rate.
           </itemize>
 
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.20 2000/09/24 13:51:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.21 2000/09/26 15:57:01 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -68,9 +68,7 @@ static int DRIScreenPrivIndex = -1;
 static int DRIWindowPrivIndex = -1;
 static unsigned long DRIGeneration = 0;
 static unsigned int DRIDrawableValidationStamp = 0;
-/* We know there will be one extra unlock during startup. Setting this to
-   -1, flags that we are in this initialization case */
-static int lockRefCount=-1;
+static int lockRefCount=0;
 
 static RESTYPE DRIDrawablePrivResType;
 static RESTYPE DRIContextPrivResType;
@@ -125,7 +123,7 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
                  pDRIInfo->drmDriverName);
     }
 
-    pDRIPriv = (DRIScreenPrivPtr) xalloc(sizeof(DRIScreenPrivRec));
+    pDRIPriv = (DRIScreenPrivPtr) xcalloc(1, sizeof(DRIScreenPrivRec));
     if (!pDRIPriv) {
         pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;
         return FALSE;
@@ -237,6 +235,9 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	pDRIPriv->pSAREA->drawableTable[i].flags = 0;
     }
 
+    /* Grab the hardware lock */
+    DRILock(pScreen, 0);
+
     return TRUE;
 }
 
@@ -278,7 +279,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 	
 	/* allocate memory for hidden context store */
 	pDRIPriv->hiddenContextStore
-	    = (void *)xalloc(pDRIInfo->contextSize);
+	    = (void *)xcalloc(1, pDRIInfo->contextSize);
 	if (!pDRIPriv->hiddenContextStore) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "failed to allocate hidden context\n");
@@ -288,7 +289,7 @@ DRIFinishScreenInit(ScreenPtr pScreen)
 
 	/* allocate memory for partial 3D context store */
 	pDRIPriv->partial3DContextStore
-	    = (void *)xalloc(pDRIInfo->contextSize);
+	    = (void *)xcalloc(1, pDRIInfo->contextSize);
 	if (!pDRIPriv->partial3DContextStore) {
 	    DRIDrvMsg(pScreen->myNum, X_ERROR, 
 		      "[DRI] failed to allocate partial 3D context\n");
@@ -400,7 +401,7 @@ DRICloseScreen(ScreenPtr pScreen)
 	}
 
 	DRIUnlock(pScreen);
-	lockRefCount=-1;
+	lockRefCount=0;
 	DRIDrvMsg(pScreen->myNum, X_INFO,
 		  "[drm] unmapping %d bytes of SAREA 0x%08lx at %p\n",
 		  pDRIPriv->pDriverInfo->SAREASize,
@@ -558,7 +559,7 @@ DRICreateContextPrivFromHandle(ScreenPtr pScreen,
 
     contextPrivSize = sizeof(DRIContextPrivRec) +
 			    pDRIPriv->pDriverInfo->contextSize;
-    if (!(pDRIContextPriv = xalloc(contextPrivSize))) {
+    if (!(pDRIContextPriv = xcalloc(1, contextPrivSize))) {
 	return NULL;
     }
     pDRIContextPriv->pContextStore = (void *)(pDRIContextPriv + 1);
@@ -1052,7 +1053,7 @@ DRIGetDeviceInfo(ScreenPtr pScreen,
 DRIInfoPtr
 DRICreateInfoRec(void)
 {
-    DRIInfoPtr inforec = (DRIInfoPtr)xalloc(sizeof(DRIInfoRec));
+    DRIInfoPtr inforec = (DRIInfoPtr)xcalloc(1, sizeof(DRIInfoRec));
     if (!inforec) return NULL;
 
     /* Initialize defaults */
@@ -1616,10 +1617,6 @@ DRIUnlock(ScreenPtr pScreen) {
 
     if (lockRefCount>0) lockRefCount--;
     else {
-      if (lockRefCount==-1) {
-	lockRefCount=0;
-	return;
-      }
       ErrorF("DRIUnlock called when not locked\n");
       return;
     }

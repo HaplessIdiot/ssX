@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.176 2000/11/02 16:01:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.178 2000/11/03 18:46:10 eich Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -214,11 +214,12 @@ typedef enum {
     OPTION_XAALINES,
     OPTION_CRTC2HALF,
     OPTION_INT10,
+    OPTION_AGP_MODE_2X,
+    OPTION_AGP_MODE_4X,
     OPTION_DIGITAL,
     OPTION_TV,
     OPTION_TVSTANDARD,
     OPTION_CABLETYPE
-
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -241,6 +242,8 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_XAALINES,		"XAALines",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_CRTC2HALF,		"Crtc2Half",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_INT10,		"Int10",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_AGP_MODE_2X,	"AGPMode2x",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_AGP_MODE_4X,	"AGPMode4x",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_DIGITAL,		"DigitalScreen",OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TV,		"TV",		OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
@@ -1433,6 +1436,29 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
                    "will be limited to %d lines if the DRI is enabled.\n",
 		   pMga->numXAALines);
     }
+
+#ifdef XF86DRI
+    {
+        Bool temp;
+
+        from = X_DEFAULT;
+
+        pMga->agp_mode = 1;
+        if (xf86GetOptValBool(MGAOptions, OPTION_AGP_MODE_2X,
+			      &temp)) {
+	    pMga->agp_mode = 2;
+	    from = X_CONFIG;
+	}
+
+        if (xf86GetOptValBool(MGAOptions, OPTION_AGP_MODE_4X,
+			      &temp)) {
+	    pMga->agp_mode = 4;
+	    from = X_CONFIG;
+	}
+        xf86DrvMsg(pScrn->scrnIndex, from, "Using AGP Mode %dx\n",
+		   pMga->agp_mode);
+    }
+#endif
 
     from = X_DEFAULT;
 

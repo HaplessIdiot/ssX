@@ -1,3 +1,5 @@
+XFree86 4.0.1f (xx November 2000)
+ 913. Resync DRI code/drivers with the DRI CVS (VA Linux).
  912. Fix tdfx driver to register resources and remove some redundant code
       (Alan Hourihane).
 
@@ -11500,4 +11502,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1381 2000/11/06 19:24:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1382 2000/11/07 10:49:45 alanh Exp $

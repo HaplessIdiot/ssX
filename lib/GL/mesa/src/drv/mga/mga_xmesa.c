@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.5 2000/08/25 13:42:22 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.6 2000/09/24 13:51:05 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -380,7 +380,6 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
 
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
-			       DD_LIGHTING_CULL|
 			       DD_TRI_LIGHT_TWOSIDE|
 			       DD_TRI_STIPPLE|
 			       DD_TRI_OFFSET);

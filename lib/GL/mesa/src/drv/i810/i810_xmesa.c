@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.6 2000/08/25 13:42:20 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810_xmesa.c,v 1.7 2000/09/24 13:51:04 alanh Exp $ */
 
 /*
  * Authors:
@@ -387,7 +387,6 @@ GLboolean XMesaCreateContext( Display *dpy, GLvisual *mesaVis,
 
    ctx->Driver.TriangleCaps = (DD_TRI_CULL|
 			       DD_TRI_LIGHT_TWOSIDE|
-			       DD_LIGHTING_CULL|
 			       DD_TRI_STIPPLE|
 			       DD_TRI_OFFSET);
 

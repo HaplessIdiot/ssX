@@ -12,10 +12,10 @@
       <author>
           <htmlurl url="http://www.valinux.com/"
             name="VA Linux Systems, Inc."> Professional Services - Graphics.
-      <date>8 August 2000
+      <date>29 October 2000
         
     <ident>
-    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.5 2000/08/28 18:24:15 dawes Exp $
+    $XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DRIcomp.sgml,v 1.6 2000/09/24 13:51:26 alanh Exp $
     </ident>
 
     <toc>
@@ -489,7 +489,7 @@
              cd /usr/X11R6/bin
              mv Xwrapper Xwrapper.old
              rm X
-             ln -s /usr/X11R6-4.0.1/lib/X11/XFree86  X
+             ln -s /usr/X11R6-DRI/bin/XFree86  X
           </verb>
           This will cause the new X server to be used instead of the
           original one.

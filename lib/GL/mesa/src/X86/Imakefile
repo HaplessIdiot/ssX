@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.10 2000/08/01 20:28:39 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.11 2000/09/24 13:51:02 alanh Exp $
 
 #define DoNormalLib NormalLibGlx
 #define DoSharedLib SharedLibGlx
@@ -32,6 +32,19 @@ LinkSourceFile(3dnow_xform_raw2.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_raw3.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(3dnow_xform_raw4.S, $(MESASRCDIR)/src/X86)
 LinkSourceFile(vertex_3dnow.S, $(MESASRCDIR)/src/X86)
+
+LinkSourceFile(katmai.c, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai.h, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_norm_raw.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_masked1.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_masked2.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_masked3.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_masked4.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_raw1.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_raw2.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_raw3.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(katmai_xform_raw4.S, $(MESASRCDIR)/src/X86)
+LinkSourceFile(vertex_katmai.S, $(MESASRCDIR)/src/X86)
 
 LinkSourceFile(glapioffsets.h, $(MESASRCDIR)/src)
 

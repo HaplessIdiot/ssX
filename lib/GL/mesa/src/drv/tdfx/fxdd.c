@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/fxdd.c,v 1.1 2000/09/24 13:51:14 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  3.3
@@ -204,7 +204,7 @@ fxDDClear(GLcontext * ctx, GLbitfield mask, GLboolean all,
          * in the OGL state.
          */
         if (mask & DD_STENCIL_BIT) {
-            FX_grStencilMask(fxMesa, ctx->Stencil.WriteMask);
+            FX_grStencilMask(fxMesa, 0xff /*ctx->Stencil.WriteMask*/);
             /* set stencil ref value = desired clear value */
             FX_grStencilFunc(fxMesa, GR_CMP_ALWAYS, ctx->Stencil.Clear, 0xff);
             FX_grStencilOp(fxMesa, GR_STENCILOP_REPLACE,

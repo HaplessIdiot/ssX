@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.3 2000/08/25 13:42:30 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tex.c,v 1.4 2000/09/27 03:39:03 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -972,7 +972,7 @@ static void r128UpdateTex0State(r128ContextPtr r128ctx)
        if tex1 is enabled but tex0 is disabled, then we need to enable
        tex0 and have it to copy the input (see how tex_combine_cntl is
        setup below). */
-    if (!(ctx->Texture.Enabled & (ENABLE_TEX0 | ENABLE_TEX1))) {
+    if (!(ctx->Texture.ReallyEnabled & (ENABLE_TEX0 | ENABLE_TEX1))) {
 	r128ctx->regs.tex_cntl_c &= ~R128_TEXMAP_ENABLE;
 	return;
     }
@@ -1233,7 +1233,7 @@ static void r128UpdateTex0State(r128ContextPtr r128ctx)
     }
 
     /* If tex0 is disabled, then make sure it just copies the input */
-    if (!(ctx->Texture.Enabled & ENABLE_TEX0))
+    if (!(ctx->Texture.ReallyEnabled & ENABLE_TEX0))
 	tex_combine_cntl = (R128_COMB_COPY_INP           |
 			    R128_COLOR_FACTOR_TEX        |
 			    R128_INPUT_FACTOR_INT_COLOR  |
@@ -1296,7 +1296,7 @@ static void r128UpdateTex1State(r128ContextPtr r128ctx)
     if (!tObj->Complete)                              return;
 
     /* If tex1 is not enabled, then disable it */
-    if (!(ctx->Texture.Enabled & ENABLE_TEX1)) {
+    if (!(ctx->Texture.ReallyEnabled & ENABLE_TEX1)) {
 	r128ctx->regs.tex_cntl_c &= ~R128_SEC_TEXMAP_ENABLE;
 	return;
     }

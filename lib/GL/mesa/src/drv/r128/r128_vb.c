@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.5 2000/09/24 13:51:10 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.c,v 1.6 2000/09/26 15:56:47 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -313,7 +313,7 @@ void r128DDChooseRasterSetupFunc(GLcontext *ctx)
     r128ctx->vc_format = R128_TEX0_VERTEX_FORMAT;
     r128ctx->multitex = 0;
 
-    if (ctx->Texture.Enabled & ENABLE_TEX0) {
+    if (ctx->Texture.ReallyEnabled & ENABLE_TEX0) {
         /* This doesn't work for non-RGBA textures
 	if (ctx->Texture.Unit[0].EnvMode == GL_REPLACE)
 	    funcIndex &= ~R128_RGBA_BIT;
@@ -321,7 +321,7 @@ void r128DDChooseRasterSetupFunc(GLcontext *ctx)
 	funcIndex |= R128_TEX0_BIT;
     }
 
-    if (ctx->Texture.Enabled & ENABLE_TEX1) {
+    if (ctx->Texture.ReallyEnabled & ENABLE_TEX1) {
         /* GTH: we should really only enable the second texture unit
 	 * when we're doing true multitexturing.  I guess there aren't
 	 * that many cases where apps will only bind a texture to the

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.9 2000/10/24 22:45:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dri.c,v 1.10 2000/11/02 19:10:51 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -335,6 +335,39 @@ static unsigned int mylog2(unsigned int n)
    return log2;
 }
 
+static unsigned long MGAParseAgpMode(ScreenPtr pScreen)
+{
+   ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+   MGAPtr pMga = MGAPTR(pScrn);
+   unsigned long mode_mask;
+
+   switch(pMga->agp_mode) {
+   case 4:
+      mode_mask = ~0x00000003;
+      break;
+   case 2:
+      if (pMga->Chipset == PCI_CHIP_MGAG200) {
+	 xf86DrvMsg(pScreen->myNum, X_INFO, 
+		    "[drm] Enabling AGP 2x pll encoding\n");
+	 OUTREG(MGAREG_AGP_PLL, AGP_PLL_agp2xpllen_enable);
+      }
+      mode_mask = ~0x00000005;
+      break;
+   default:
+   /* Default to 1X agp mode */
+   case 1:
+      if (pMga->Chipset == PCI_CHIP_MGAG200) {
+	 xf86DrvMsg(pScreen->myNum, X_INFO, 
+		    "[drm] Disabling AGP 2x pll encoding\n");
+	 OUTREG(MGAREG_AGP_PLL, AGP_PLL_agp2xpllen_disable);
+      }
+      pMga->agp_mode = 1;
+      mode_mask = ~0x00000006;
+      break;
+   }
+
+   return mode_mask;
+}
 
 Bool MGADRIScreenInit(ScreenPtr pScreen)
 {
@@ -347,6 +380,7 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
    int prim_size;
    int init_offset;
    int i;
+   unsigned long mode_mask;
 
    switch(pMGA->Chipset) {
    case PCI_CHIP_MGAG400:
@@ -543,16 +577,17 @@ Bool MGADRIScreenInit(ScreenPtr pScreen)
       DRICloseScreen(pScreen);
       return FALSE;
    }
-   
+
+   mode_mask = MGAParseAgpMode(pScreen);
+
    pMGADRIServer->agpMode = drmAgpGetMode(pMGA->drmSubFD);
-   /* Default to 1X agp mode */
-   pMGADRIServer->agpMode &= ~0x00000002;
+   pMGADRIServer->agpMode &= mode_mask;
    if (drmAgpEnable(pMGA->drmSubFD, pMGADRIServer->agpMode) < 0) {
       xf86DrvMsg(pScreen->myNum, X_ERROR, "[drm] drmAgpEnable failed\n");
       DRICloseScreen(pScreen);
       return FALSE;
    }
-   ErrorF("[drm] drmAgpEnabled succeeded\n");
+   ErrorF("[drm] drmAgpEnabled succeeded for AGP mode %dx\n", pMGA->agp_mode);
 
    prim_size = 65536;
    init_offset = ((prim_size + pMGADRIServer->warp_ucode_size + 
@@ -741,22 +776,16 @@ MGADRICloseScreen(ScreenPtr pScreen)
   MGAPtr pMGA = MGAPTR(pScrn);
   MGADRIServerPrivatePtr pMGADRIServer = pMGA->DRIServerInfo;
 
-  MgaCleanupDma(pScrn);
-
+/* The DRI will automagically clean these up when driFD is closed */
   if(pMGADRIServer->agp_map) {  
-     ErrorF("Unmapped agp region\n");
      drmUnmap(pMGADRIServer->agp_map, pMGADRIServer->agpSizep);
      pMGADRIServer->agp_map = 0;
   }
   if(pMGADRIServer->agpHandle) {
-     ErrorF("Freeing agp memory\n");
-     drmAgpFree(pMGA->drmSubFD, pMGADRIServer->agpHandle);
      pMGADRIServer->agpHandle = 0;
      pMGADRIServer->agpSizep = 0;
   }
   if(pMGADRIServer->agpAcquired == TRUE) {
-     ErrorF("releasing agp module\n");
-     drmAgpRelease(pMGA->drmSubFD);
      pMGADRIServer->agpAcquired = FALSE;
   }
 
