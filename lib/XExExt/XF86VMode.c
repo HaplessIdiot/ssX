@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.5 1995/07/02 07:43:21 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.6 1995/07/15 14:57:31 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -36,7 +36,6 @@ from the Kaleb S. KEITHLEY.
 #include "xf86vmstr.h"
 #include "Xext.h"
 #include "extutil.h"
-#include <stdio.h>
 
 static XExtensionInfo _vgahelp_info_data;
 static XExtensionInfo *vgahelp_info = &_vgahelp_info_data;
