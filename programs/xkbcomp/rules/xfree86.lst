@@ -4,7 +4,7 @@
 //  Rules descriptions for XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.58 2003/01/04 02:57:14 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86.lst,v 3.59 2003/01/04 03:40:25 dawes Exp $
 
 ! model
   pc101		Generic 101-key PC
@@ -196,14 +196,21 @@
   grp:rwin_switch	Right Win-key switches group while pressed
   grp:win_switch	Both Win-keys switch group while pressed
   grp:toggle		Right Alt key changes group
+  grp:lalt_toggle       Left Alt key changes group
   grp:caps_toggle	Caps Lock key changes group
-  grp:menu_toggle	Menu key changes group
-  grp:lwin_toggle	Left Win-key changes group
-  grp:rwin_toggle	Right Win-key changes group
   grp:shift_toggle 	Both Shift keys together change group
+  grp:alts_toggle 	Both Alt keys together change group
+  grp:ctrls_toggle 	Both Ctrl keys together change group
   grp:ctrl_shift_toggle Control+Shift changes group
   grp:ctrl_alt_toggle	Alt+Control changes group
   grp:alt_shift_toggle	Alt+Shift changes group
+  grp:menu_toggle	Menu key changes group
+  grp:lwin_toggle	Left Win-key changes group
+  grp:rwin_toggle	Right Win-key changes group
+  grp:lshift_toggle     Left Shift key changes group
+  grp:rshift_toggle     Right Shift key changes group
+  grp:lctrl_toggle      Left Ctrl key changes group
+  grp:rctrl_toggle      Right Ctrl key changes group
   lv3			Third level choosers
   lv3:switch		Press Right Control to choose 3rd level
   lv3:menu_switch	Press Menu key to choose 3rd level
