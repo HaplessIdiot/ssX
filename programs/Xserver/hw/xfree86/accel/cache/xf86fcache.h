@@ -33,7 +33,8 @@ void xf86InitFontCache(
     int /*RowWidth*/,
     int /*RowHeight*/,
     void (*/*ImageOpStippleFunc*/)(int, int, int, int, unsigned char *, int,
-				   int, int, int, int, int, int, short, short),
+				   int, int, int, int, Pixel, Pixel, short,
+				   Pixel),
     short */*Alu*/
 #endif
 );
