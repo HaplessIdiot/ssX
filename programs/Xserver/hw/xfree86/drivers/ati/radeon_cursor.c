@@ -160,7 +160,16 @@ static void RADEONSetCursorPosition(ScrnInfoPtr pScrn, int x, int y)
 	}
     }
 
-    if (x >= 0) {
+#if 0
+    /* This test is NOT needed, and is the cause of jerky behavior
+     * as the mouse approaches the left edge of the screen, especially
+     * at high acceleration.
+     *
+     * Nowhere below is x (or y) used when they are negative!
+     */
+     if(x >= 0)
+#endif
+     {
 	if (!info->IsSecondary) {
 	    OUTREG(RADEON_CUR_HORZ_VERT_OFF,  (RADEON_CUR_LOCK
 					       | (xorigin << 16)
