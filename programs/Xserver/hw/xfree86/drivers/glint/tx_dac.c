@@ -27,7 +27,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.12 2001/01/31 17:09:10 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_dac.c,v 1.13 2001/04/19 09:28:32 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -155,8 +155,11 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
 	STOREREG(VTGModeCtl, 0x44);
     }
 
-    if (IS_GMX2000 || IS_GLORIAXXL)
+    if (IS_GMX2000 || IS_GLORIAXXL) {
     	STOREREG(FBMemoryCtl, 0x800); /* Optimum memory timings */
+    } else {
+    	STOREREG(FBMemoryCtl, GLINT_READ_REG(FBMemoryCtl));
+    }
 
     /* Override FBModeSel for 300SX chip */
     if (pGlint->Chipset == PCI_VENDOR_3DLABS_CHIP_300SX) {
@@ -236,7 +239,7 @@ TXInit(ScrnInfoPtr pScrn, DisplayModePtr mode, GLINTRegPtr pReg)
     STORERAMDAC(RGB640_VGA_CONTROL, temp1);
 
     STORERAMDAC(RGB640_DAC_CONTROL, IBM640_DACENBL | IBM640_SHUNT);
-    STORERAMDAC(RGB640_OUTPUT_CONTROL, IBM640_WATCTL);
+    STORERAMDAC(RGB640_OUTPUT_CONTROL, IBM640_RDAI | IBM640_WATCTL);
     STORERAMDAC(RGB640_SYNC_CONTROL, 0x00);
     STORERAMDAC(RGB640_VRAM_MASK0, 0xFF);
     STORERAMDAC(RGB640_VRAM_MASK1, 0xFF);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.47 2001/04/18 09:24:47 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint.h,v 1.48 2001/05/04 19:05:38 dawes Exp $ */
 /*
  * Copyright 1997-2001 by Alan Hourihane <alanh@fairlite.demon.co.uk>
  *
@@ -46,7 +46,6 @@
 #endif
 
 #define GLINT_MAX_MULTI_DEVICES 2
-#define GLINT_VGA_MMIO_OFF 0x6000
 
 #define VERSION 4000
 #define GLINT_NAME "GLINT"
@@ -83,29 +82,28 @@ typedef struct {
     int			HwBpp;
     int			BppShift;
     int			pprod;
-    int			ForeGroundColor;
-    int			BackGroundColor;
+    CARD32		ForeGroundColor;
+    CARD32		BackGroundColor;
     int			bppalign;
-    int			startxdom;
-    int			startxsub;
-    int			starty;
-    int			count;
-    int			dy;
-    int			x;
-    int			y;
-    int			w;
-    int			h;
-    int			dxdom;
+    CARD32		startxdom;
+    CARD32		startxsub;
+    CARD32		starty;
+    CARD32		count;
+    CARD32		dy;
+    CARD32		x;
+    CARD32		y;
+    CARD32		w;
+    CARD32		h;
+    CARD32		dxdom;
     int			dwords;
     int			cpuheight;
     int			cpucount;
-    int			planemask;
+    CARD32		planemask;
     int			realWidth;
     CARD32		IOAddress;
     unsigned long	FbAddress;
     int                 irq;
     unsigned char *     IOBase;
-    unsigned char *     IOBaseVGA;
     unsigned char *	FbBase;
     long		FbMapSize;
     long		IOOffset;
@@ -126,7 +124,6 @@ typedef struct {
     Bool		UseFlatPanel;
     Bool		UseFireGL3000;
     CARD8		VGAdata[65536];
-    Bool		VGAcore;
     Bool		STATE;
     Bool		ScanlineDirect;
     int			MXFbSize;
@@ -160,10 +157,11 @@ typedef struct {
     void		(*LoadCursorCallback)(ScrnInfoPtr);
     void		(*CursorColorCallback)(ScrnInfoPtr);
     CARD32		PM3_PixelSize;
-    int			PM3_Config2D;
-    int			PM3_Render2D;
-    int			PM3_AreaStippleMode;
-    int			PM3_VideoControl;
+    CARD32		PM3_Config2D;
+    CARD32		PM3_Render2D;
+    CARD32		PM3_AreaStippleMode;
+    CARD32		PM3_VideoControl;
+    int			InFifoSpace;
 #ifdef XF86DRI
     Bool		directRenderingEnabled;
     DRIInfoPtr		pDRIInfo;

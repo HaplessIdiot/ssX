@@ -28,7 +28,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.22 2001/02/07 13:26:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_dac.c,v 1.23 2001/05/11 08:16:55 alanh Exp $ */
 
 #include "Xarch.h"
 #include "xf86.h"
@@ -211,6 +211,11 @@ Permedia2Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
 
+    /* We can't rely on the vgahw layer copying the font information
+     * back properly, due to problems with MMIO access to VGA space
+     * so we memcpy the information using the slow routines */
+    xf86SlowBcopy((CARD8*)pGlint->FbBase, (CARD8*)pGlint->VGAdata, 65536);
+
     glintReg->glintRegs[Aperture0 >> 3] = GLINT_READ_REG(Aperture0);
     glintReg->glintRegs[Aperture1 >> 3] = GLINT_READ_REG(Aperture1);
     glintReg->glintRegs[PMFramebufferWriteMask >> 3] = 
@@ -265,6 +270,12 @@ Permedia2Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg)
 {
     GLINTPtr pGlint = GLINTPTR(pScrn);
     int i;
+
+    /* We can't rely on the vgahw layer copying the font information
+     * back properly, due to problems with MMIO access to VGA space
+     * so we memcpy the information using the slow routines */
+    if (pGlint->STATE)
+	xf86SlowBcopy((CARD8*)pGlint->VGAdata, (CARD8*)pGlint->FbBase, 65536);
 
 #if 0
     GLINT_SLOW_WRITE_REG(0, ResetStatus);
