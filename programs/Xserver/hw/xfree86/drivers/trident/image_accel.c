@@ -23,7 +23,7 @@
  * 
  * Trident 3DImage' accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.4 1999/01/31 12:22:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/image_accel.c,v 1.5 1999/03/12 02:28:45 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -73,6 +73,7 @@ static void ImageSubsequentCPUToScreenColorExpand(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
 static void ImageSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, 
 				int x2, int y2);
+static void ImageDisableClipping(ScrnInfoPtr pScrn);
 static void ImageWritePixmap(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     				unsigned char *src, int srcwidth, int rop,
     				unsigned int planemask, int transparency_color,
@@ -152,6 +153,11 @@ ImageAccelInit(ScreenPtr pScreen)
  
     infoPtr->Sync = ImageSync;
 
+    infoPtr->SetClippingRectangle = ImageSetClippingRectangle;
+    infoPtr->DisableClipping = ImageDisableClipping;
+    infoPtr->ClippingFlags = HARDWARE_CLIP_SOLID_FILL |
+			     HARDWARE_CLIP_SCREEN_TO_SCREEN_COPY;
+
 #if 0 /* Lines are slower than cfb/mi */
     infoPtr->SolidLineFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidLine = TridentSetupForSolidLine;
@@ -163,9 +169,7 @@ ImageAccelInit(ScreenPtr pScreen)
     infoPtr->SetupForSolidFill = ImageSetupForFillRectSolid;
     infoPtr->SubsequentSolidFillRect = ImageSubsequentFillRectSolid;
     
-    infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK |
-				       ONLY_TWO_BITBLT_DIRECTIONS |
-				       NO_TRANSPARENCY;
+    infoPtr->ScreenToScreenCopyFlags = NO_PLANEMASK|ONLY_TWO_BITBLT_DIRECTIONS;
 
     infoPtr->SetupForScreenToScreenCopy = 	
 				ImageSetupForScreenToScreenCopy;
@@ -243,9 +247,6 @@ ImageSync(ScrnInfoPtr pScrn)
     int count = 0, timeout = 0;
     int busy;
 
-    if (!pTrident->UsePCIRetry)
-    	infoRec->NeedToSync = FALSE;
-
     for (;;) {
 	IMAGEBUSY(busy);
 	if (busy == 0x00800000) {
@@ -278,7 +279,10 @@ ImageSetupForScreenToScreenCopy(ScrnInfoPtr pScrn,
 
     if (transparency_color != -1) {
 	pTrident->DstEnable = TRUE;
-	IMAGE_OUT(0x20, 0x70000000 | 1<<27 | transparency_color);
+	IMAGE_OUT(0x20, 0x70000000 | 1<<25 | (transparency_color&0xFFFFFF));
+    } else {
+	pTrident->DstEnable = FALSE;
+	IMAGE_OUT(0x20, 0x70000000);
     }
 
     IMAGE_OUT(0x20, 0x90000000 | TGUIRops_alu[rop]);
@@ -289,6 +293,7 @@ ImageSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 					int x2, int y2, int w, int h)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int clip = 0;
 
     if (pTrident->BltScanDirection) {
 	IMAGE_OUT(0x00, (y1+h-1)<<16 | (x1+w-1));
@@ -302,14 +307,12 @@ ImageSubsequentScreenToScreenCopy(ScrnInfoPtr pScrn, int x1, int y1,
 	IMAGE_OUT(0x0C, (y2+h-1)<<16 | (x2+w-1));
     }
 
-    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<7 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | pTrident->BltScanDirection);
+    if (pTrident->Clipping) clip = 1;
+
+    IMAGE_OUT(0x24, 0x80000000 | 1<<22 | 1<<7 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | pTrident->BltScanDirection | clip);
 
     if (!pTrident->UsePCIRetry)
     	ImageSync(pScrn);
-    if (pTrident->DstEnable) {
-	IMAGE_OUT(0x20, 0x70000000);
-	pTrident->DstEnable = FALSE;
-    }
 }
 
 static void
@@ -322,6 +325,13 @@ ImageSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
     pTrident->Clipping = TRUE;
 }
 
+static void
+ImageDisableClipping(ScrnInfoPtr pScrn)
+{
+    TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    pTrident->Clipping = FALSE;
+}
+    
 static void
 ImageSetupForSolidLine(ScrnInfoPtr pScrn, int color,
 					 int rop, unsigned int planemask)
@@ -360,6 +370,10 @@ ImageSetupForFillRectSolid(ScrnInfoPtr pScrn, int color,
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
+    if (pTrident->DstEnable) {
+	IMAGE_OUT(0x20, 0x70000000);
+	pTrident->DstEnable = FALSE;
+    }
     REPLICATE(color);
     pTrident->ROP = rop;
     IMAGE_OUT(0x20, 0x40000000 | pTrident->EngineOperation);
@@ -372,10 +386,12 @@ static void
 ImageSubsequentFillRectSolid(ScrnInfoPtr pScrn, int x, int y, int w, int h)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
+    int clip = 0;
 
+    if (pTrident->Clipping) clip = 1;
     IMAGE_OUT(0x08, y<<16 | x);
     IMAGE_OUT(0x0C, (y+h-1)<<16 | x+w-1);
-    IMAGE_OUT(0x24, 0x80000000 | 3<<22 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | 1<<9);
+    IMAGE_OUT(0x24, 0x80000000 | 3<<22 | (pTrident->ROP == GXcopy ? 0 : 1<<10) | 1<<9 | clip);
     if (!pTrident->UsePCIRetry)
     	ImageSync(pScrn);
 }

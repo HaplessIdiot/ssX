@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.32tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.c,v 1.33 1999/03/14 03:22:13 dawes Exp $ */
 
 /*
  *
@@ -706,6 +706,8 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
     unsigned int	offset;
     int	arnamesize, modnamesize;
     char	*slash, *longname;
+    char		*nametable = NULL;
+    int  		nametablelen = 0;
     LOOKUP *lookup_ret, *p;
     LOOKUP *myLookup = NULL; /* Does realloc behave if ptr == 0? */
     int modtype;
@@ -781,15 +783,45 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	           hdr.ar_name, size, offset );
 	    ErrorF("String table size %d\n", size );
 #endif
-	    offset=lseek(arfd,offset+size,SEEK_SET);
+	    nametablelen = size;
+	    nametable=(char *)xf86loadermalloc(nametablelen);
+	    read(arfd, nametable, size);
+	    offset=lseek(arfd,0,SEEK_CUR);
+	    /* offset=lseek(arfd,offset+size,SEEK_SET); */
 	    if( offset&0x1 ) /* odd value */
 		    offset=lseek(arfd,1,SEEK_CUR); /* make it an even boundary */
 	    continue;
 	}
-	/* Check for a BSD 4.4 style long member name */
-	if (hdr.ar_name[0] == '#' && hdr.ar_name[1] == '1' &&
-	    hdr.ar_name[2] == '/') {
-	    if (sscanf(hdr.ar_name+3, "%d", &modnamesize) != 1) {
+
+	if (hdr.ar_name[0] == '/') {
+	    /*  SYS V r4 style long member name */
+	    int nameoffset = atol(&hdr.ar_name[1]);
+	    char *membername;
+	    if (!nametable) {
+		ErrorF( "Missing string table whilst processing %s\n", 
+			modrec->name ) ;
+		offsetbias = 0;
+		return NULL;
+	    }
+	    if (nameoffset > nametablelen) {
+		ErrorF( "Invalid string table offset (%s) whilst processing %s\n", 
+			hdr.ar_name, modrec->name ) ;
+		offsetbias = 0;
+		xf86loaderfree(nametable);
+		return NULL;
+	    }
+	    membername = nametable + nameoffset;
+	    slash=strchr(membername,'/');
+	    if (slash)
+		*slash = '\0';
+	    longname = xf86loadermalloc(arnamesize + strlen(membername) + 2);
+	    strcpy(longname,modrec->name);
+	    strcat(longname,":");
+	    strcat(longname,membername);
+	} else if (hdr.ar_name[0] == '#' && hdr.ar_name[1] == '1' &&
+		   hdr.ar_name[2] == '/') {
+	    /* BSD 4.4 style long member name */
+            if (sscanf(hdr.ar_name+3, "%d", &modnamesize) != 1) {
 		ErrorF("Bad archive member %s\n", hdr.ar_name);
 		offsetbias = 0;
 		return NULL;
@@ -804,12 +836,11 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 		xf86loaderfree(longname);
 		offsetbias = 0;
 		return NULL;
-	    }		
+	    }               
 	    longname[i] = '\0';
 	    offset += i;
 	    size -= i;
-	} else {
-
+	 } else {
 	    /* Regular archive member */
 #ifdef DEBUGAR
 	    ErrorF("Member '%16.16s', size %d, offset %x\n",
@@ -835,6 +866,8 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	if( (modtype=_GetModuleType(arfd,offset)) < 0 ) {
 	    ErrorF( "%s is an unrecognized module type\n", hdr.ar_name ) ;
 	    offsetbias=0;
+	    if (nametable)
+		xf86loaderfree(nametable);
 	    return NULL;
 	}
 
@@ -855,7 +888,6 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	} else {
 	    tmp->name = longname;
 	}
-	    
 	offsetbias=offset;
 
 	if((tmp->private = funcs[modtype].LoadModule(tmp, arfd,
@@ -863,6 +895,8 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
 	   == NULL) {
 	    ErrorF( "Failed to load %s\n", hdr.ar_name ) ;
 	    offsetbias=0;
+	    if (nametable)
+		xf86loaderfree(nametable);
 	    return NULL;
 	}
 
@@ -891,6 +925,8 @@ ARCHIVELoadModule(loaderPtr modrec, int arfd, LOOKUP **ppLookup)
     offsetbias=0;
 
     *ppLookup = myLookup;
+    if (nametable)
+	xf86loaderfree(nametable);
 
     if (tmp)
 	return tmp->private;

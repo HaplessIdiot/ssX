@@ -1,4 +1,10 @@
 XFree86 3.9Pe (14 March 1999)
+2369. Fix problems debugging archive library modules on Linux with long
+      member names (Paul Flinders).
+2368. Add new XAA clipping for Trident Image (#2553, Alan Hourihane).
+2367. Fix Trident save screen so that it blanks the display (#2553,
+      Alan Hourihane).
+2366. Fix tranparency for the Trident Image cards (#2553, Alan Hourihane).
 2365. Remove the panmi and pandix directories, since they're no longer
       needed.
 2364. Add gamma correction to the C&T driver, but disabled because it doesn't
@@ -58,8 +64,7 @@ XFree86 3.9Pe (14 March 1999)
 2334. Disable MTRRs when unmapping memory (#2531, David Wragg).
 2333. Avoid the MTRR messages on systems with no MTRR support unless
       the "mtrr" option is specified or -verbose is used (#2531, David Wragg).
-2332. Disable transparency for screen to screen copies for the Trident
-      Image3D (Alan Hourihane).
+2332. -
 2331. Fix some offscreen pixmap-related problems with XAA (#2497, 2549,
       Mark Vojkovich).
 
@@ -7484,4 +7489,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.705 1999/03/14 11:17:53 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.706 1999/03/14 12:53:25 dawes Exp $
