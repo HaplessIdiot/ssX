@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.2 2002/11/20 23:00:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/mmapw.c,v 1.3 2003/01/01 19:16:42 tsi Exp $ */
 /*
  * Copyright 2002 through 2003 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -96,7 +96,7 @@ main(int argc, char **argv)
 {
     unsigned long long data;
     off_t Offset = 0, offset;
-    size_t Length = 0, length;
+    size_t length;
     char *BadString;
     void *buffer;
     int fd, pagesize;
@@ -167,7 +167,7 @@ main(int argc, char **argv)
 
     pagesize = getpagesize();
     offset = Offset & (off_t)(-pagesize);
-    length = ((Offset + Length + pagesize - 1) & (off_t)(-pagesize)) - offset;
+    length = ((Offset + size + pagesize - 1) & (off_t)(-pagesize)) - offset;
     buffer = mmap((caddr_t)0, length, PROT_WRITE, MAP_SHARED, fd, offset);
     close(fd);
     if (buffer == MAP_FAILED)
