@@ -49,7 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/ClockP.h,v 1.8 2002/05/17 23:55:29 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/ClockP.h,v 1.10 2002/06/14 22:34:57 keithp Exp $ */
 
 #ifndef _XawClockP_h
 #define _XawClockP_h
@@ -64,6 +64,8 @@ SOFTWARE.
 
 #define SEG_BUFF_SIZE		128
 #define ASCII_TIME_BUFLEN	32	/* big enough for 26 plus slop */
+
+#define STRFTIME_BUFF_SIZE      100     /* buffer for "strftime" option */
 
 /* New fields for the clock widget instance record */
 typedef struct {
@@ -86,6 +88,7 @@ typedef struct {
 	 Boolean analog;
 	 Boolean brief;
 	 Boolean utime;
+         String strftime;
 	 Boolean show_second_hand;
 	 Dimension second_hand_length;
 	 Dimension minute_hand_length;

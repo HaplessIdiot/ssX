@@ -2,6 +2,8 @@
 
 /*
  * xclock --  Hacked from Tony Della Fera's much hacked clock program.
+ *
+ * "-strftime" option added by George Belotsky, Open Light Software Inc.
  */
 
 /*
@@ -27,7 +29,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.12 2002/05/17 23:55:29 keithp Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.14 2002/06/14 22:34:57 keithp Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,8 +61,9 @@ static XrmOptionDescRec options[] = {
 {"-d",		"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-digital",	"*clock.analog",	XrmoptionNoArg,		"FALSE"},
 {"-analog",	"*clock.analog",	XrmoptionNoArg,		"TRUE"},
-{"-brief",      "*clock.brief",	        XrmoptionNoArg,	        "TRUE"},
-{"-utime",      "*clock.utime",	        XrmoptionNoArg,	        "TRUE"},
+{"-brief",	"*clock.brief",		XrmoptionNoArg,		"TRUE"},
+{"-utime",	"*clock.utime",		XrmoptionNoArg,		"TRUE"},
+{"-strftime",	"*clock.strftime",	XrmoptionSepArg,	NULL},
 #ifdef XRENDER
 {"-face",	"*clock.face",		XrmoptionSepArg,	NULL},
 {"-render",	"*clock.render",	XrmoptionNoArg,		"TRUE"},
@@ -84,7 +87,7 @@ static Atom wm_delete_window;
 static void
 Syntax(char *call)
 {
-	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital] [-brief] [-utime]\n", call);
+	(void) printf ("Usage: %s [-analog] [-bw <pixels>] [-digital] [-brief] [-utime] [-strftime <fmt-str>]\n", call);
 	(void) printf ("       [-fg <color>] [-bg <color>] [-hd <color>]\n");
 	(void) printf ("       [-hl <color>] [-bd <color>]\n");
 	(void) printf ("       [-fn <font_name>] [-help] [-padding <pixels>]\n");
