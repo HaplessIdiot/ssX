@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.4 1999/03/28 15:32:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm2_video.c,v 1.5 1999/04/17 07:06:11 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -1754,7 +1754,7 @@ xvipcOpen(char *name, ScrnInfoPtr pScrn)
     if (xvipc_fd >= 0)
 	return TRUE;
 
-    LoaderGetOS(&osname, NULL, NULL, NULL);
+    xf86GetOS(&osname, NULL, NULL, NULL);
 
     if (!osname || strcmp(osname, "linux"))
 	return FALSE;

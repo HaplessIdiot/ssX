@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.21 1999/04/04 08:46:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.22 1999/04/17 07:06:54 dawes Exp $ */
 
 #define DEBUG
 
@@ -1196,6 +1196,7 @@ SISMapMem(ScrnInfoPtr pScrn)
 {
     CARD32 save = 0;
     SISPtr pSiS;
+    int mmioFlags;
 
     pSiS = SISPTR(pScrn);
 
@@ -1213,16 +1214,16 @@ SISMapMem(ScrnInfoPtr pScrn)
      * Map IO registers to virtual address space
      */ 
 #if !defined(__alpha__)
-    pSiS->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-		pSiS->PciTag, (pointer)pSiS->IOAddress, 0x10000);
+    mmioFlags = VIDMEM_MMIO;
 #else
     /*
      * For Alpha, we need to map SPARSE memory, since we need
      * byte/short access.
      */
-    pSiS->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-				       (pointer)pSiS->IOAddress, 0x10000);
+    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
 #endif
+    pSiS->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, 
+			pSiS->PciTag, pSiS->IOAddress, 0x10000);
     if (pSiS->IOBase == NULL)
 	return FALSE;
 
@@ -1250,7 +1251,7 @@ SISMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pSiS->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-		pSiS->PciTag, (pointer)pSiS->IOAddress, 0x1000);
+		pSiS->PciTag, pSiS->IOAddress, 0x1000);
 
     if (pSiS->IOBaseDense == NULL)
 	return FALSE;
@@ -1258,7 +1259,7 @@ SISMapMem(ScrnInfoPtr pScrn)
 
     pSiS->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pSiS->PciTag,
-				 (pointer)((unsigned long)pSiS->FbAddress),
+				 (unsigned long)pSiS->FbAddress,
 				 pSiS->FbMapSize);
     if (pSiS->FbBase == NULL)
 	return FALSE;
@@ -1285,11 +1286,7 @@ SISUnmapMem(ScrnInfoPtr pScrn)
     /*
      * Unmap IO registers to virtual address space
      */ 
-#ifndef __alpha__
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pSiS->IOBase, 0x1000);
-#else
-    xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)pSiS->IOBase, 0x1000);
-#endif
     pSiS->IOBase = NULL;
 
 #ifdef __alpha__

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.1 1998/12/13 07:37:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/dgux/dgux_video.c,v 1.2 1999/01/14 13:05:04 dawes Exp $ */
 /*
  * INTEL DG/UX RELEASE 4.20 MU03
  * Copyright 1997 Takis Psarogiannakopoulos Cambridge,UK
@@ -27,6 +27,10 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 /* Stuff for the SET_IOPL() ,RESET_IOPL() */
 /* #include <fcntl.h> */
@@ -88,7 +92,7 @@ static int mmapFd = -2;
 
 
 #if 0
-/* For DGA support */
+/* For DGA support?? */
 static struct xf86memMap {
   int offset;
   int memSize;
@@ -97,11 +101,8 @@ static struct xf86memMap {
 
 
 
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Region, unsigned long Base, unsigned long Size)
 {
         pointer base;
         int fd;
@@ -112,10 +113,10 @@ unsigned long Size;
                 FatalError("xf86MapVidMem: failed to open %s (%s)\n",
                            DEV_MEM, strerror(errno));
         }
-        base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-                             MAP_SHARED, fd, (off_t)Base);
+        base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
+                            MAP_SHARED, fd, (off_t)Base);
         close(fd);
-        if ((long)base == -1)
+        if (base == MAP_FAILED)
         {
                 FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
                            "xf86MapVidMem", Size, Base, strerror(errno));
@@ -149,7 +150,7 @@ unsigned long Size;
         if(mmapFd >= 0)
         {
             if((base = (pointer)ioctl(mmapFd, MAP,
-                           &(MapDSC[ScreenNum][Region]))) == (pointer)-1)
+                           &(MapDSC[ScreenNum][Region]))) == MAP_FAILED)
             {
                 FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
                            "xf86MapVidMem", Size, Base, strerror(errno));
@@ -158,7 +159,7 @@ unsigned long Size;
 
 #if 0
 /* inserted for DGA support */
-            xf86memMaps[ScreenNum].offset = (int) Base;
+            xf86memMaps[ScreenNum].offset = Base;
             xf86memMaps[ScreenNum].memSize = Size;
 #endif
             return((pointer)base);
@@ -166,10 +167,10 @@ unsigned long Size;
 #endif
 #endif /* DGUX */
 #if 0
-        xf86memMaps[ScreenNum].offset = (int) Base;
+        xf86memMaps[ScreenNum].offset = Base;
         xf86memMaps[ScreenNum].memSize = Size;
 #endif
-        return((pointer)base);
+        return(base);
 }
 
 

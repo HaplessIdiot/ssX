@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.24 1999/02/14 03:20:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.25 1999/04/11 13:11:06 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -63,6 +63,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86OSpriv.h"
 
 #ifdef __arm32__
 #include "machine/devmap.h"
@@ -95,6 +96,10 @@ struct memAccess ioMemInfo = { CONSOLE_GET_IO_INFO, NULL, NULL,
 #define MAP_FLAGS (MAP_FILE | MAP_SHARED)
 #endif
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((caddr_t)-1)
+#endif
+
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
@@ -107,6 +112,9 @@ static int  devMemFd = -1;
 #define DEV_APERTURE "/dev/xf86"
 #endif
 #define DEV_MEM "/dev/mem"
+
+static pointer mapVidMem(int, unsigned long, unsigned long);
+static void unmapVidMem(int, pointer, unsigned long);
 
 /*
  * Check if /dev/mem can be mmap'd.  If it can't print a warning when
@@ -122,10 +130,10 @@ checkDevMem(Bool warn)
 	if ((fd = open(DEV_MEM, O_RDWR)) >= 0)
 	{
 	    /* Try to map a page at the VGA address */
-	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+	    base = mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
 				 MAP_FLAGS, fd, (off_t)0xA0000);
 	
-	    if (base != (pointer)-1)
+	    if (base != MAP_FAILED)
 	    {
 		munmap((caddr_t)base, 4096);
 		devMemFd = fd;
@@ -156,10 +164,10 @@ checkDevMem(Bool warn)
 	if ((fd = open(DEV_APERTURE, O_RDWR)) >= 0)
 	{
 	    /* Try to map a page at the VGA address */
-	    base = (pointer)mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
+	    base = mmap((caddr_t)0, 4096, PROT_READ|PROT_WRITE,
 			     MAP_FLAGS, fd, (off_t)0xA0000);
 	
-	    if (base != (pointer)-1)
+	    if (base != MAP_FAILED)
 	    {
 		munmap((caddr_t)base, 4096);
 		devMemFd = fd;
@@ -194,39 +202,25 @@ checkDevMem(Bool warn)
 }
 
 
-pointer
-xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+void
+xf86OSInitVidMem(VidMemInfoPtr pVidMem)
+{
+	checkDevMem(TRUE);
+	pVidMem->linearSupported = useDevMem;
+#ifndef __arm32__
+	pVidMem->mapMem = mapVidMem;
+	pVidMem->unmapMem = unmapVidMem;
+#else
+	pVidMem->mapMem = armMapVidMem;
+	pVidMem->unmapVidMem = armUnmapVidMem;
+#endif
+	pVidMem->initialised = TRUE;
+}
+
+static pointer
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	pointer base;
-
-#ifdef __arm32__
-	struct memAccess *memInfoP;
-	
-	if((memInfoP = checkMapInfo(FALSE, Region)) != NULL)
-	{
-	    /*
-	     ** xf86 passes in a physical address offset from the start
-	     ** of physical memory, but xf86MapInfoMap expects an 
-	     ** offset from the start of the specified region - it gets 
-	     ** the physical address of the region from the display driver.
-	     */
-	    switch(Region)
-	    {
-	        case LINEAR_REGION:
-		    if (vgaPhysLinearBase)
-		    {
-			Base -= vgaPhysLinearBase;
-		    }
-		    break;
-		case VGA_REGION:
-		    Base -= 0xA0000;
-		    break;
-	    }
-	    
-	    base = xf86MapInfoMap(memInfoP, Base, Size);
-	    return (base);
-	}
-#endif /* __arm32__ */
 
 	if (!devMemChecked)
 		checkDevMem(FALSE);
@@ -238,10 +232,9 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
 			   DEV_MEM, strerror(errno));
 	    }
-	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-				 MAP_FLAGS, devMemFd,
-				 (off_t)(unsigned long) Base);
-	    if (base == (pointer)-1)
+	    base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
+				 MAP_FLAGS, devMemFd, (off_t)Base);
+	    if (base == MAP_FAILED)
 	    {
 		FatalError("%s: could not mmap %s [s=%x,a=%x] (%s)\n",
 			   "xf86MapVidMem", DEV_MEM, Size, Base, 
@@ -260,14 +253,14 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 		FatalError("%s: Address 0x%x outside allowable range\n",
 			   "xf86MapVidMem", Base);
 	}
-	base = (pointer)mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FLAGS,
+	base = mmap(0, Size, PROT_READ|PROT_WRITE, MAP_FLAGS,
 			     xf86Info.screenFd,
 #ifdef __mips__
 			     (unsigned long)Base);
 #else
 			     (unsigned long)Base - 0xA0000);
 #endif
-	if (base == (pointer)-1)
+	if (base == MAP_FAILED)
 	{
 	    FatalError("xf86MapVidMem: Could not mmap /dev/vga (%s)\n",
 		       strerror(errno));
@@ -275,37 +268,10 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	return(base);
 }
 
-void
-xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+static void
+unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
-#ifdef __arm32__
-        struct memAccess *memInfoP;
-	
-	if((memInfoP = checkMapInfo(FALSE, Region)) != NULL)
-	{
-	    xf86MapInfoUnmap(memInfoP, Base, Size);
-	}
-#endif
-	if (useDevMem)
-	{
-		munmap((caddr_t)Base, Size);
-		return;
-	}
-
 	munmap((caddr_t)Base, Size);
-}
-
-Bool
-xf86LinearVidMem()
-{
-	/*
-	 * Call checkDevMem even if already called by xf86MapVidMem() so that
-	 * a warning about no linear fb is printed.
-	 */
-	if (!useDevMem)
-		checkDevMem(TRUE);
-
-	return(useDevMem);
 }
 
 #ifdef __arm32__
@@ -437,6 +403,50 @@ xf86MapInfoUnmap(struct memAccess *memInfoP, unsigned long Size)
 	    FatalError("xf86MapInfoMap: Unsuported mapping method\n");
 	    break;
     }
+}
+
+static pointer
+armMapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
+{
+	struct memAccess *memInfoP;
+	
+	if((memInfoP = checkMapInfo(FALSE, Region)) != NULL)
+	{
+	    /*
+	     ** xf86 passes in a physical address offset from the start
+	     ** of physical memory, but xf86MapInfoMap expects an 
+	     ** offset from the start of the specified region - it gets 
+	     ** the physical address of the region from the display driver.
+	     */
+	    switch(Region)
+	    {
+	        case LINEAR_REGION:
+		    if (vgaPhysLinearBase)
+		    {
+			Base -= vgaPhysLinearBase;
+		    }
+		    break;
+		case VGA_REGION:
+		    Base -= 0xA0000;
+		    break;
+	    }
+	    
+	    base = xf86MapInfoMap(memInfoP, Base, Size);
+	    return (base);
+	}
+	return mapVidMem(ScreenNum, Base, Size);
+}
+
+static void
+armUnmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+{
+        struct memAccess *memInfoP;
+	
+	if((memInfoP = checkMapInfo(FALSE, Region)) != NULL)
+	{
+	    xf86MapInfoUnmap(memInfoP, Base, Size);
+	}
+	unmapVidMem(ScreenNum, Base, Size);
 }
 #endif /* __arm32__ */
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.12 1999/03/22 13:40:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_driver.c,v 1.13 1999/03/23 05:00:04 dawes Exp $ */
 
 
 #include "apm.h"
@@ -709,7 +709,7 @@ ApmPreInit(ScrnInfoPtr pScrn, int flags)
 	volatile unsigned char	*LinMap;
 
 	LinMap = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-				     pApm->PciTag, (pointer)pApm->LinAddress,
+				     pApm->PciTag, pApm->LinAddress,
 				     pApm->LinMapSize);
 	save = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
 	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, save | PCI_CMD_MEM_ENABLE);
@@ -948,7 +948,7 @@ ApmMapMem(ScrnInfoPtr pScrn)
 
     pApm->LinMap = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pApm->PciTag,
-				 (pointer)((unsigned long)pApm->LinAddress),
+				 (unsigned long)pApm->LinAddress,
 				 pApm->LinMapSize);
     if (pApm->LinMap == NULL)
 	return FALSE;
@@ -1462,7 +1462,7 @@ ApmScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	pApm->saveCmd = pciReadLong(pApm->PciTag, PCI_CMD_STAT_REG);
 	pciWriteLong(pApm->PciTag, PCI_CMD_STAT_REG, pApm->saveCmd | (PCI_CMD_IO_ENABLE|PCI_CMD_MEM_ENABLE));
 	pApm->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-				 pApm->PciTag, (pointer)0xA0000, 0x10000);
+				 pApm->PciTag, 0xA0000, 0x10000);
     }
     else
 	if (!ApmMapMem(pScrn))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.99 1999/03/29 07:08:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.100 1999/04/04 00:20:50 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -177,6 +177,7 @@ void xf86SetBackingStore(ScreenPtr pScreen);
 int xf86NewSerialNumber(WindowPtr p, pointer unused);
 pointer xf86FindXvOptions(int scrnIndex, int adapt_index, char *port_name,
 			  char **adaptor_name, pointer *adaptor_options);
+void xf86GetOS(const char **name, int *major, int *minor, int *teeny);
 
 
 /* xf86Init.c */

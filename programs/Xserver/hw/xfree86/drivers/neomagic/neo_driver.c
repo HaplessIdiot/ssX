@@ -22,7 +22,7 @@ RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF
 CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
 CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 **********************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/neomagic/neo_driver.c,v 1.1 1999/04/17 07:06:24 dawes Exp $ */
 
 /*
  * The original Precision Insight driver for
@@ -161,7 +161,7 @@ static int pix24bpp = 0;
  * an upper-case version of the driver name.
  */
 
-DriverRec NEO = {
+DriverRec NEOMAGIC = {
     VERSION,
     "Driver for the Neomagic chipsets",
     NEOIdentify,
@@ -365,7 +365,7 @@ neoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
     if (!setupDone) {
 	setupDone = TRUE;
-        xf86AddDriver(&NEO, module, 0);
+        xf86AddDriver(&NEOMAGIC, module, 0);
 
 	/*
 	 * Modules that this driver always requires can be loaded here
@@ -467,7 +467,7 @@ NEOProbe(DriverPtr drv, int flags)
 		    /* Allocate a ScrnInfoRec and claim the slot */
 		    pScrn = xf86AllocateScreen(drv,0);
 		    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func,
-				     Resource, &NEO, usedChips[i],
+				     Resource, &NEOMAGIC, usedChips[i],
 				     pScrn->scrnIndex);
 		    pScrn->driverVersion = VERSION;
 		    pScrn->driverName    = NEO_DRIVER_NAME;
@@ -501,7 +501,7 @@ NEOProbe(DriverPtr drv, int flags)
 	int Resource = xf86FindIsaResource(usedChip,NEOISAchipsets);
 	  
 	pScrn = xf86AllocateScreen(drv,0);
-	xf86ClaimIsaSlot(Resource,&NEO,usedChip,pScrn->scrnIndex);
+	xf86ClaimIsaSlot(Resource,&NEOMAGIC,usedChip,pScrn->scrnIndex);
 	pScrn->driverVersion = VERSION;
 	pScrn->driverName    = NEO_DRIVER_NAME;
 	pScrn->name          = NEO_NAME;
@@ -600,7 +600,7 @@ NEOPreInit(ScrnInfoPtr pScrn, int flags)
     /* Since, the capabilities are determined by the chipset the very
      * first thing to do is, figure out the chipset and its capabilities
      */
-    if(xf86FindChipsetsForScreen(pScrn->scrnIndex,&NEO,&numChipsets) > 1)
+    if(xf86FindChipsetsForScreen(pScrn->scrnIndex,&NEOMAGIC,&numChipsets) > 1)
 	RETURN;
 
     nPtr->NeoChipset = *numChipsets;
@@ -1650,12 +1650,12 @@ neoMapMem(ScrnInfoPtr pScrn)
 	    if (xf86IsPciBus(pScrn->scrnIndex))
 		nPtr->NeoMMIOBase =
 		    xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-				  nPtr->PciTag, (pointer)nPtr->NeoMMIOAddr,
+				  nPtr->PciTag, nPtr->NeoMMIOAddr,
 				  0x200000L);
 	    else
 		nPtr->NeoMMIOBase =
 		    xf86MapVidMem(pScrn->scrnIndex,
-				  VIDMEM_MMIO, (pointer)nPtr->NeoMMIOAddr,
+				  VIDMEM_MMIO, nPtr->NeoMMIOAddr,
 				  0x200000L);
 	}
 	if (nPtr->NeoMMIOBase == NULL)
@@ -1665,12 +1665,12 @@ neoMapMem(ScrnInfoPtr pScrn)
 	    nPtr->NeoFbBase =
 		xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 			      nPtr->PciTag,
-			      (pointer)((unsigned long)nPtr->NeoLinearAddr),
+			      (unsigned long)nPtr->NeoLinearAddr,
 			      nPtr->NeoFbMapSize);
 	else
 	    nPtr->NeoFbBase =
 		xf86MapVidMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-			      (pointer)((unsigned long)nPtr->NeoLinearAddr),
+			      (unsigned long)nPtr->NeoLinearAddr,
 			      nPtr->NeoFbMapSize);
 	if (nPtr->NeoFbBase == NULL)
 	    return FALSE;

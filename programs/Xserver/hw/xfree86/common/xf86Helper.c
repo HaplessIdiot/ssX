@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.34 1999/03/29 09:41:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.35 1999/04/15 14:39:40 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -1899,4 +1899,8 @@ xf86FindXvOptions(int scrnIndex, int adaptor_index, char *port_name,
 
     return NULL;
 }
+
+/* Rather than duplicate loader's get OS function, just include it directly */
+#define LoaderGetOS xf86GetOS
+#include "loader/os.c"
 

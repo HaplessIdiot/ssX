@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.22 1999/03/20 08:59:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.23 1999/03/28 15:32:58 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -32,6 +32,7 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+#include "xf86OSpriv.h"
 
 #include "compiler.h"
 
@@ -39,6 +40,9 @@
 #include <asm/mtrr.h>
 #endif
 
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 static Bool ExtendedEnabled = FALSE;
 
@@ -70,44 +74,17 @@ static Bool ExtendedEnabled = FALSE;
 /* Video Memory Mapping section                                            */
 /***************************************************************************/
 
-/*
- * Get a piece of the ScrnInfoRec.  At the moment, this is only used to hold
- * the MTRR option information, but it is likely to be expanded if we do
- * auto unmapping of memory at VT switch.
- *
- * XXX This might be better located in an OS-independent front-end to the
- * VidMap functions.
- */
-
-static int vidMapIndex = -1;
-typedef struct {
-	Bool mtrrEnabled;
-	MessageType mtrrFrom;
-	Bool mtrrOptChecked;
-} VidMapRec, *VidMapPtr;
-
-#define VIDMAPPTR(p) ((VidMapPtr)((p)->privates[vidMapIndex].ptr))
-
-static VidMapPtr
-getVidMapRec(int scrnIndex)
-{
-	VidMapPtr vp;
-
-	ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-	if (vidMapIndex < 0)
-		vidMapIndex = xf86AllocateScrnInfoPrivateIndex();
-
-	if (VIDMAPPTR(pScrn) != NULL)
-		return VIDMAPPTR(pScrn);
-
-	vp = pScrn->privates[vidMapIndex].ptr = xnfcalloc(sizeof(VidMapRec), 1);
-	vp->mtrrEnabled = TRUE;	/* default to enabled */
-	vp->mtrrFrom = X_DEFAULT;
-	vp->mtrrOptChecked = FALSE;
-	return vp;
-}
+static pointer mapVidMem(int, unsigned long, unsigned long);
+static void unmapVidMem(int, pointer, unsigned long);
+#ifdef __alpha__
+static pointer mapVidMemSparse(int, unsigned long, unsigned long);
+static void unmapVidMemSparse(int, pointer, unsigned long);
+#endif
 
 #ifdef HAS_MTRR_SUPPORT
+static pointer setWC(int, unsigned long, unsigned long, Bool, MessageType);
+static void undoWC(int, pointer);
+
 /* The file desc for /proc/mtrr. Once opened, left opened, and the mtrr
    driver will clean up when we exit. */
 #define MTRR_FD_UNOPENED (-1)	/* We have yet to open /proc/mtrr */
@@ -155,8 +132,20 @@ mtrr_open(int verbosity)
 		return TRUE;
 }
 
-static void 
-mtrr_cull_mmio_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
+/*
+ * We maintain a list of WC regions for each physical mapping so they can
+ * be undone when unmapping.
+ */
+
+struct mtrr_wc_region {
+	struct mtrr_sentry	sentry;
+	Bool			added;		/* added WC or removed it */
+	struct mtrr_wc_region *	next;
+};
+
+static struct mtrr_wc_region *
+mtrr_cull_wc_region(int screenNum, unsigned long base, unsigned long size,
+		      MessageType from)
 {
 	/* Some BIOS writers thought that setting wc over the mmio
 	   region of a graphics devices was a good idea. Try to fix
@@ -164,81 +153,82 @@ mtrr_cull_mmio_region(ScrnInfoPtr scrn, pointer base, unsigned long size)
 
 	struct mtrr_gentry gent;
 	char buf[20];
+	struct mtrr_wc_region *wcreturn = NULL, *wcr;
 
 	/* Linux 2.0 users should not get a warning without -verbose */
 	if (!mtrr_open(2))
-		return;
+		return NULL;
 
 	for (gent.regnum = 0; 
 	     ioctl(mtrr_fd, MTRRIOC_GET_ENTRY, &gent) >= 0;
 	     gent.regnum++) {
 		if (gent.type != MTRR_TYPE_WRCOMB
-		    || gent.base + gent.size <= (unsigned long)base
-		    || (unsigned long)base + size <= gent.base)
+		    || gent.base + gent.size <= base
+		    || base + size <= gent.base)
 			continue;
 
 		/* Found an overlapping region. Delete it. */
+		
+		wcr = xalloc(sizeof(*wcr));
+		if (!wcr)
+			return NULL;
+		wcr->sentry.base = gent.base;
+		wcr->sentry.size = gent.size;
+		wcr->sentry.type = MTRR_TYPE_WRCOMB;
+		wcr->added = FALSE;
 		
 		/* There is now a nicer ioctl-based way to do this,
 		   but it isn't in current kernels. */
 		snprintf(buf, sizeof(buf), "disable=%u\n", gent.regnum);
 
-		if (write(mtrr_fd, buf, strlen(buf)) >= 0)
-			xf86DrvMsg(scrn->scrnIndex, X_DEFAULT,
+		if (write(mtrr_fd, buf, strlen(buf)) >= 0) {
+			xf86DrvMsg(screenNum, from,
 				   "Removed MMIO write-combining range "
 				   "(0x%lx,0x%lx)\n",
 				   gent.base, gent.size);
-		else
-			xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
+			wcr->next = wcreturn;
+			wcreturn = wcr;
+		} else {
+			xfree(wcr);
+			xf86DrvMsgVerb(screenNum, X_WARNING, 0,
 				   "Failed to remove MMIO "
 				   "write-combining range (0x%lx,0x%lx)\n",
 				   gent.base, gent.size);
+		}
 	}
+	return wcreturn;
 }
 
 
-/* xf86UnmapVidMem only gets the virtual address of the region to
-   unmap, so we maintain a list of WC regions to map to the physical
-   address */
-struct mtrr_wc_region {
-	pointer virtual_base;
-	struct mtrr_sentry sentry;
-	struct mtrr_wc_region *next;
-};
-
-static struct mtrr_wc_region *mtrr_wc_regions;
-
-
-static void
-mtrr_add_wc_region(ScrnInfoPtr scrn, pointer base, unsigned long size,
-		   pointer vbase)
+static struct mtrr_wc_region *
+mtrr_add_wc_region(int screenNum, unsigned long base, unsigned long size,
+		   MessageType from)
 {
 	struct mtrr_wc_region *wcr;
-	VidMapPtr vp = VIDMAPPTR(scrn);
 
 	/* Linux 2.0 should not warn, unless the user explicitly asks for
 	   WC. */
-	if (!mtrr_open(vp->mtrrFrom == X_CONFIG ? 0 : 2))
-		return;
+	if (!mtrr_open(from == X_CONFIG ? 0 : 2))
+		return NULL;
 
 	wcr = xalloc(sizeof(*wcr));
 	if (!wcr)
-		return;
+		return NULL;
 
-	wcr->virtual_base = vbase;
-	wcr->sentry.base = (unsigned long) base;
+	wcr->sentry.base = base;
 	wcr->sentry.size = size;
 	wcr->sentry.type = MTRR_TYPE_WRCOMB;
-		
-	if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &wcr->sentry) >= 0) {
-		wcr->next = mtrr_wc_regions;
-		mtrr_wc_regions = wcr;
+	wcr->added = TRUE;
+	wcr->next = NULL;
 
+	if (ioctl(mtrr_fd, MTRRIOC_ADD_ENTRY, &wcr->sentry) >= 0) {
 		/* Avoid printing on every VT switch */
-		if (xf86ServerIsInitialising())
-			xf86DrvMsg(scrn->scrnIndex, vp->mtrrFrom,
-				"Write-combining range (0x%lx,0x%lx)\n",
-				(unsigned long)base, (unsigned long)size);
+		if (xf86ServerIsInitialising()) {
+			xf86DrvMsg(screenNum, from,
+				   "Write-combining range (0x%lx,0x%lx)\n",
+				   base, size);
+		}
+		return wcr;
 	}
 	else {
 		xfree(wcr);
@@ -246,46 +236,73 @@ mtrr_add_wc_region(ScrnInfoPtr scrn, pointer base, unsigned long size,
 		/* Don't complain about the VGA region: MTRR fixed
 		   regions aren't currently supported, but might be in
 		   the future. */
-		if ((unsigned long)base >= 0x100000)
-			xf86DrvMsgVerb(scrn->scrnIndex, X_WARNING, 0,
+		if ((unsigned long)base >= 0x100000) {
+			xf86DrvMsgVerb(screenNum, X_WARNING, 0,
 				"Failed to set up write-combining range "
-				"(0x%lx,0x%lx)\n", 
-				(unsigned long)base, (unsigned long)size);
+				"(0x%lx,0x%lx)\n", base, size);
+		}
+		return NULL;
 	}
 }
 
 static void
-mtrr_del_wc_region(ScrnInfoPtr scrn, pointer vbase, unsigned long size)
+mtrr_undo_wc_region(int screenNum, struct mtrr_wc_region *wcr)
 {
-	struct mtrr_wc_region *p, **pto;
+	struct mtrr_wc_region *p, *prev;
 
 	if (mtrr_fd > 0) {
-		/* Find the region with the given virtual base addr */
-		for (pto = &mtrr_wc_regions, p = *pto;
-		     p && p->virtual_base != vbase;
-		     pto = &p->next, p = *pto)
-			;
-
-		if (!p)
-			/* Didn't WC this region */
-			return;
-
-		*pto = p->next;
-		ioctl(mtrr_fd, MTRRIOC_DEL_ENTRY, &p->sentry);
-		xfree(p);
+		p = wcr;
+		while (p) {
+			if (p->added)
+				ioctl(mtrr_fd, MTRRIOC_DEL_ENTRY, &p->sentry);
+			prev = p;
+			p = p->next;
+			xfree(prev);
+		}
 	}
 }
 
+static pointer
+setWC(int screenNum, unsigned long base, unsigned long size, Bool enable,
+      MessageType from)
+{
+	if (enable)
+		return mtrr_add_wc_region(screenNum, base, size, from);
+	else
+		return mtrr_cull_wc_region(screenNum, base, size, from);
+}
+
+static void
+undoWC(int screenNum, pointer regioninfo)
+{
+	mtrr_undo_wc_region(screenNum, regioninfo);
+}
 
 #endif /* HAS_MTRR_SUPPORT */
 
 
-pointer
-xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+void
+xf86OSInitVidMem(VidMemInfoPtr pVidMem)
+{
+	pVidMem->linearSupported = TRUE;
+	pVidMem->mapMem = mapVidMem;
+	pVidMem->unmapMem = unmapVidMem;
+#ifdef __alpha__
+	pVidMem->mapMemSparse = mapVidMemSparse;
+	pVidMem->unmapMemSparse = unmapVidMemSparse;
+#endif
+#ifdef HAS_MTRR_SUPPORT
+	pVidMem->setWC = setWC;
+	pVidMem->undoWC = undoWC;
+#endif
+	pVidMem->initialised = TRUE;
+}
+
+static pointer
+mapVidMem(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	pointer base;
       	int fd;
-	VidMapPtr vp;
 
 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
 	{
@@ -293,83 +310,24 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 			   strerror(errno));
 	}
 	/* This requires linux-0.99.pl10 or above */
-	base = (pointer)mmap((caddr_t)0, JENSEN_SHIFT(Size),
-			     PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd,
-			     (off_t)(JENSEN_SHIFT((off_t)Base) + BUS_BASE));
+	base = mmap((caddr_t)0, JENSEN_SHIFT(Size),
+		     PROT_READ|PROT_WRITE,
+		     MAP_SHARED, fd,
+		     (off_t)(JENSEN_SHIFT((off_t)Base) + BUS_BASE));
 	close(fd);
-	if ((long)base == -1)
+	if (base == MAP_FAILED)
 	{
 		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
 			   strerror(errno));
 	}
 
-	/*
-	 * Check the "mtrr" option even when MTRR isn't supported to avoid
-	 * warnings about unrecognised options.
-	 */
-	/*
-	 * XXX Maybe some functions like this should be divided into
-	 * OS-dependent and OS-independent parts.  The option checking could
-	 * go into the OS-independent part.
-	 */
-	vp = getVidMapRec(ScreenNum);
-	if (!vp->mtrrOptChecked && xf86Screens[ScreenNum]->options != NULL)
-	{
-		enum { OPTION_MTRR };
-		static OptionInfoRec opts[] =
-		{
-			{ OPTION_MTRR, "mtrr", OPTV_BOOLEAN, {0}, FALSE },
-			{ -1, NULL, OPTV_NONE, {0}, FALSE }
-		};
-		/*
-		 * We get called once for each screen, so reset
-		 * the OptionInfoRecs.
-		 */
-		opts[0].found = FALSE;
-
-		xf86ProcessOptions(ScreenNum, xf86Screens[ScreenNum]->options,
-				   opts);
-		if (xf86GetOptValBool(opts, OPTION_MTRR, &vp->mtrrEnabled))
-			vp->mtrrFrom = X_CONFIG;
-		vp->mtrrOptChecked = TRUE;
-	}
-
-#ifdef HAS_MTRR_SUPPORT
-	if (vp->mtrrEnabled) {
-		if (Flags & VIDMEM_MMIO)
-			mtrr_cull_mmio_region(xf86Screens[ScreenNum], Base,
-					      Size);
-
-		if (Flags & VIDMEM_FRAMEBUFFER)
-			mtrr_add_wc_region(xf86Screens[ScreenNum],
-					   Base, Size, base);
-	}
-#endif
-
 	return base;
 }
 
-void
-xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
+static void
+unmapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
-#ifdef HAS_MTRR_SUPPORT
-	/* The MTRR driver would clean up for us when the server exits
-	   and hangs up the fd, but because of VT switches and server
-	   generations the region ought to be deleted here. */
-
-	VidMapPtr vp = getVidMapRec(ScreenNum);
-	if (vp->mtrrEnabled)
-		mtrr_del_wc_region(xf86Screens[ScreenNum], Base, Size);
-#endif
-
 	munmap((caddr_t)JENSEN_SHIFT(Base), JENSEN_SHIFT(Size));
-}
-
-Bool
-xf86LinearVidMem()
-{
-	return(TRUE);
 }
 
 /***************************************************************************/
@@ -477,8 +435,8 @@ xf86EnableInterrupts()
 
 static int xf86SparseShift = 5; /* default to all but JENSEN */
 
-pointer
-xf86MapVidMemSparse(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+static pointer
+mapVidMemSparse(int ScreenNum, unsigned long Base, unsigned long Size)
 {
 	pointer base;
       	int fd;
@@ -486,7 +444,7 @@ xf86MapVidMemSparse(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	if (!_bus_base()) xf86SparseShift = 7; /* Uh, oh, JENSEN... */
 
 	Size <<= xf86SparseShift;
-	Base = (pointer)((unsigned long)Base << xf86SparseShift);
+	Base = Base << xf86SparseShift;
 
 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
 	{
@@ -494,12 +452,12 @@ xf86MapVidMemSparse(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 			   strerror(errno));
 	}
 	/* This requirers linux-0.99.pl10 or above */
-	base = (pointer)mmap((caddr_t)0, Size,
-			     PROT_READ | PROT_WRITE,
-			     MAP_SHARED, fd,
-			     (off_t)Base + _bus_base_sparse());
+	base = mmap((caddr_t)0, Size,
+		     PROT_READ | PROT_WRITE,
+		     MAP_SHARED, fd,
+		     (off_t)Base + _bus_base_sparse());
 	close(fd);
-	if ((long)base == -1)
+	if (base == MAP_FAILED)
 	{
 		FatalError("xf86MapVidMem: Could not mmap framebuffer (%s)\n",
 			   strerror(errno));
@@ -507,8 +465,8 @@ xf86MapVidMemSparse(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	return base;
 }
 
-void
-xf86UnMapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
+static void
+unmapVidMemSparse(int ScreenNum, pointer Base, unsigned long Size)
 {
 	Size <<= xf86SparseShift;
 

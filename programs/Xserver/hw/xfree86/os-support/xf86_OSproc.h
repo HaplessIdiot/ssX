@@ -64,7 +64,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.20 1999/03/06 13:12:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSproc.h,v 3.21 1999/04/04 00:20:53 dawes Exp $ */
 
 #ifndef _XF86_OSPROC_H
 #define _XF86_OSPROC_H
@@ -81,11 +81,9 @@
  * enable write combining for memory marked only for framebuffer use.
  */
 
-typedef enum {
-    VIDMEM_FRAMEBUFFER = 0x01,	/* memory for framebuffer use */
-    VIDMEM_MMIO        = 0x02	/* memory for I/O use */
-} VidMemFlags;
-
+#define VIDMEM_FRAMEBUFFER	0x01	/* memory for framebuffer use */
+#define VIDMEM_MMIO		0x02	/* memory for I/O use */
+#define VIDMEM_SPARSE		0x04	/* sparse mapping required */
 
 #ifdef XF86_OS_PRIVS
 extern void xf86WrapperInit(void);
@@ -115,7 +113,7 @@ _XFUNCPROTOBEGIN
 
 /* public functions */
 extern Bool xf86LinearVidMem(void);
-extern pointer xf86MapVidMem(int, int, pointer, unsigned long);
+extern pointer xf86MapVidMem(int, int, unsigned long, unsigned long);
 extern void xf86UnMapVidMem(int, pointer, unsigned long);
 extern int xf86ReadBIOS(unsigned long, unsigned long, unsigned char *, int);
 extern void xf86EnableIO(void);
@@ -142,8 +140,10 @@ extern int xf86SerialSendBreak( int, int );
 
 #if defined(__alpha__)
 /* entry points for SPARSE memory access routines */
+#if 0
 extern pointer xf86MapVidMemSparse(int, int, pointer, unsigned long);
 extern void xf86UnMapVidMemSparse(int, pointer, unsigned long);
+#endif
 extern int xf86ReadSparse8(pointer, unsigned long);
 extern int xf86ReadSparse16(pointer, unsigned long);
 extern int xf86ReadSparse32(pointer, unsigned long);

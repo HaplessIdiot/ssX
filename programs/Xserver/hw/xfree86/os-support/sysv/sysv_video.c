@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.14 1999/04/05 07:13:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/sysv/sysv_video.c,v 3.15 1999/04/11 13:11:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -31,6 +31,10 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86_OSlib.h"
+
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 #ifndef SI86IOPL
 #define SET_IOPL() sysi86(SI86V86,V86SC_IOPL,PS_IOPL)
@@ -131,7 +135,7 @@ xf86LinearVidMem()
 }
 
 pointer
-xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
 	pointer base;
 	int fd;
@@ -142,10 +146,10 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
 			   DEV_MEM, strerror(errno));
 	}
-	base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd, (off_t)Base);
+	base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
+		     MAP_SHARED, fd, (off_t)Base);
 	close(fd);
-	if ((long)base == -1)
+	if (base == MAP_FAILED)
 	{
 		FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
 			   "xf86MapVidMem", Size, Base, strerror(errno));
@@ -199,7 +203,7 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 			"xf86MapVidMem: SUCCEED Mapping FrameBuffer \n");
 #endif /* HAS_SVR3_MMAPDRV */
 #endif /* SVR4 */
-	return((pointer)base);
+	return(base);
 }
 
 /* ARGSUSED */

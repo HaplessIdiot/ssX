@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.3 1999/04/04 10:59:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.4 1999/04/11 13:11:00 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -298,13 +298,21 @@ xf86ErrorF(const char *format, ...)
     va_end(ap);
 }
 
-    
+
 pointer
 Xalloc(unsigned long n)
 {
     if (!n)
 	n = 1;
     return malloc(n);
+}
+
+pointer
+Xrealloc(pointer p, unsigned long n)
+{
+    if (!n)
+	n = 1;
+    return realloc(p, n);
 }
 
 pointer
@@ -325,6 +333,18 @@ XNFalloc(unsigned long n)
     r = Xalloc(n);
     if (!r)
 	FatalError("XNFalloc failed\n");
+    return r;
+   
+}
+
+pointer
+XNFrealloc(pointer p, unsigned long n)
+{
+    pointer r;
+
+    r = Xrealloc(p, n);
+    if (!r)
+	FatalError("XNFrealloc failed\n");
     return r;
    
 }

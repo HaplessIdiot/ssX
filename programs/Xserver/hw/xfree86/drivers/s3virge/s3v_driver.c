@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.21 1999/03/29 12:17:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.22 1999/04/04 08:46:17 dawes Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -510,6 +510,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
     ClockRangePtr clockRanges;
     char *mod = NULL;
     const char *reqSym = NULL;
+    int mmioFlags;
 
     unsigned char config1, config2, m, n, n1, n2, cr66;
     int mclk;
@@ -826,16 +827,13 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
 					/* Starts with PCI registers */
 					/* around 0x18000 from MemBase */
 #ifdef __alpha__ 
-    ps3v->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-				       ps3v->PciTag,
-				       (pointer)(ps3v->PciInfo->memBase[0] +
-						 S3_NEWMMIO_VGABASE),
-				       S3V_MMIO_REGSIZE);
+    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
 #else
-    ps3v->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
-			(pointer) (ps3v->PciInfo->memBase[0] + S3_NEWMMIO_VGABASE),
+    mmioFlags = VIDMEM_MMIO;
+#endif
+    ps3v->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, ps3v->PciTag,
+			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_VGABASE,
 			S3V_MMIO_REGSIZE );
-#endif /* __alpha__ */
   		   
 					/* Add me to resource management */
     xf86AddControlledResource(pScrn, MEM_IO);
@@ -1120,13 +1118,7 @@ S3VPreInit(ScrnInfoPtr pScrn, int flags)
    }
 
    S3VDisableMmio(pScrn);
-#ifdef __alpha__
-   xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)ps3v->IOBase,
-			 S3V_MMIO_REGSIZE);
-#else
    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->IOBase, S3V_MMIO_REGSIZE);
-#endif
-   
 
    /* Set scale factors for mode timings */
 
@@ -1982,6 +1974,7 @@ S3VMapMem(ScrnInfoPtr pScrn)
 {    
   S3VPtr ps3v;
   vgaHWPtr hwp;
+  int mmioFlags;
 
     PVERB5("	S3VMapMem\n");
     
@@ -1993,27 +1986,27 @@ S3VMapMem(ScrnInfoPtr pScrn)
 					/* structure - see newmmio.h */
 					/* around 0x10000 from MemBase */
 #ifdef __alpha__
-  ps3v->MapBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-				      ps3v->PciTag,
-				      (pointer) (ps3v->PciInfo->memBase[0] +
-						 S3_NEWMMIO_REGBASE),
-			S3_NEWMMIO_REGSIZE );
-  
+  mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
+#else
+  mmioFlags = VIDMEM_MMIO;
+#endif
+
+  ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, ps3v->PciTag,
+			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
+			S3_NEWMMIO_REGSIZE);
+
+#ifdef __alpha__
   ps3v->MapBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-				     ps3v->PciTag,
-				     (pointer) (ps3v->PciInfo->memBase[0] +
-						S3_NEWMMIO_REGBASE),
-				     0x8000);
+			ps3v->PciTag,
+			ps3v->PciInfo->memBase[0] + S3_NEWMMIO_REGBASE,
+			0x8000);
+
+  /* XXX the shift of 5 isn't correct for JENSEN */
   ps3v->IOBase = ps3v->MapBase + (S3V_MMIO_REGSIZE << 5);
 #else
-  ps3v->MapBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, ps3v->PciTag,
-			(pointer) (ps3v->PciInfo->memBase[0] +
-				   S3_NEWMMIO_REGBASE),
-			S3_NEWMMIO_REGSIZE );
   /* IOBase starts at PCI registers */
   ps3v->IOBase = ps3v->MapBase + S3V_MMIO_REGSIZE;
-
-#endif /* __alpha__ */
+#endif
 
   if( !ps3v->MapBase ) {
     xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -2022,8 +2015,7 @@ S3VMapMem(ScrnInfoPtr pScrn)
   }
 					/* Map the framebuffer */
   ps3v->FBBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER, 
-			ps3v->PciTag,
-			(pointer) ps3v->PciInfo->memBase[0],
+			ps3v->PciTag, ps3v->PciInfo->memBase[0],
 			ps3v->videoRambytes );
 
   if( !ps3v->FBBase ) {
@@ -2082,18 +2074,13 @@ S3VUnmapMem(ScrnInfoPtr pScrn)
 
   S3VDisableMmio(pScrn);
 
-#ifdef __alpha__
-  xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)ps3v->MapBase,
-			S3_NEWMMIO_REGSIZE);
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
-		  ps3v->videoRambytes);
-  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBaseDense,
-		  0x8000);
-#else
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBase,
 		  S3_NEWMMIO_REGSIZE);
   xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->FBBase,
 		  ps3v->videoRambytes);
+#ifdef __alpha__
+  xf86UnMapVidMem(pScrn->scrnIndex, (pointer)ps3v->MapBaseDense,
+		  0x8000);
 #endif /* __alpha__ */
 
   return;

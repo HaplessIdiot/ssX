@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.9 1999/02/28 11:19:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_video.c,v 3.10 1999/04/04 08:46:22 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -42,7 +42,7 @@
 typedef struct
 {
 	char	name[16];
-	pointer	Base;
+	unsigned long	Base;
 	long	Size;
 	char	*ptr;
 	int	RefCnt;
@@ -69,7 +69,7 @@ smemCleanup()
 			(void)smem_remove(smems[i].name);
 			*smems[i].name = '\0';
 			smems[i].ptr = NULL;
-			smems[i].Base = NULL;
+			smems[i].Base = 0;
 			smems[i].Size = 0;
 			smems[i].RefCnt = 0;
 		}
@@ -77,7 +77,7 @@ smemCleanup()
 }
 
 pointer
-xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
 	static int once;
 	int	free_slot = -1;
@@ -114,11 +114,11 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 
 #if defined(__powerpc__)
 	if (((unsigned long)Base & PHYS_IO_MEM_START) != PHYS_IO_MEM_START) {
-		Base = (pointer)((unsigned long)Base | PHYS_IO_MEM_START);
+		Base = Base | PHYS_IO_MEM_START;
 	}
 #endif
 
-	smems[i].ptr = smem_create(smems[i].name, Base, Size, SM_READ|SM_WRITE);
+	smems[i].ptr = smem_create(smems[i].name, (char *)Base, Size, SM_READ|SM_WRITE);
 	smems[i].RefCnt = 1;
 	if (smems[i].ptr == NULL)
 	{
@@ -128,7 +128,7 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 			    "xf86MapVidMem: removed stale smem_ segment %s\n",
 		            smems[i].name);
 			smems[i].ptr = smem_create(smems[i].name, 
-						Base, Size, SM_READ|SM_WRITE);
+						(char *)Base, Size, SM_READ|SM_WRITE);
 		}
 	        if (smems[i].ptr == NULL) {
 			*smems[i].name = '\0';

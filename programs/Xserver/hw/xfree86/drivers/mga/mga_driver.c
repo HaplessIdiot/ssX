@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.87 1999/03/28 15:32:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.88 1999/04/05 07:13:13 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -1367,7 +1367,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
     (*pMga->PreInit)(pScrn);
 
-
     /* XXX Set HW cursor use */
 
     /* Set the min pixel clock */
@@ -1675,6 +1674,7 @@ MGAMapMem(ScrnInfoPtr pScrn)
 {
     CARD32 save;
     MGAPtr pMga;
+    int mmioFlags;
 
     pMga = MGAPTR(pScrn);
 
@@ -1692,17 +1692,16 @@ MGAMapMem(ScrnInfoPtr pScrn)
      * Map IO registers to virtual address space
      */ 
 #if !defined(__alpha__)
-    pMga->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, pMga->PciTag,
-				 (pointer)pMga->IOAddress, 0x4000);
+    mmioFlags = VIDMEM_MMIO;
 #else
     /*
      * For Alpha, we need to map SPARSE memory, since we need
      * byte/short access.
      */
-    pMga->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-				       pMga->PciTag,
-				       (pointer)pMga->IOAddress, 0x4000);
+    mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
 #endif
+    pMga->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags, pMga->PciTag,
+				 pMga->IOAddress, 0x4000);
     if (pMga->IOBase == NULL)
 	return FALSE;
 
@@ -1730,15 +1729,13 @@ MGAMapMem(ScrnInfoPtr pScrn)
      * setting CPUToScreenColorExpandBase.
      */
     pMga->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-					pMga->PciTag, (pointer)pMga->IOAddress,
-					0x4000);
+				      pMga->PciTag, pMga->IOAddress, 0x4000);
     if (pMga->IOBaseDense == NULL)
 	return FALSE;
 #endif /* __alpha__ */
 
     pMga->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-				 pMga->PciTag,
-				 (pointer)((unsigned long)pMga->FbAddress),
+				 pMga->PciTag, pMga->FbAddress,
 				 pMga->FbMapSize);
     if (pMga->FbBase == NULL)
 	return FALSE;
@@ -1750,7 +1747,7 @@ MGAMapMem(ScrnInfoPtr pScrn)
 	DWORD access on DWORD boundaries to this window */
     if(pMga->ILOADAddress)
 	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-			pMga->PciTag, (pointer)pMga->ILOADAddress, 0x800000);
+				pMga->PciTag, pMga->ILOADAddress, 0x800000);
     else  pMga->ILOADBase = NULL;
 
 
@@ -1783,7 +1780,7 @@ MGAMapMemFBDev(ScrnInfoPtr pScrn)
 	DWORD access on DWORD boundaries to this window */
     if(pMga->ILOADAddress)
 	pMga->ILOADBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO, 
-			pMga->PciTag, (pointer)pMga->ILOADAddress, 0x800000);
+				pMga->PciTag, pMga->ILOADAddress, 0x800000);
     else  pMga->ILOADBase = NULL;
 #endif
     return TRUE;
@@ -1805,11 +1802,7 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
     /*
      * Unmap IO registers to virtual address space
      */ 
-#ifndef __alpha__
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->IOBase, 0x4000);
-#else
-    xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)pMga->IOBase, 0x4000);
-#endif
     pMga->IOBase = NULL;
 
 #ifdef __alpha__
@@ -1817,7 +1810,7 @@ MGAUnmapMem(ScrnInfoPtr pScrn)
     pMga->IOBaseDense = NULL;
 #endif /* __alpha__ */
 
-    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->FbBase, pScrn->videoRam);
+    xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pMga->FbBase, pMga->FbMapSize);
     pMga->FbBase = NULL;
     pMga->FbStart = NULL;
 

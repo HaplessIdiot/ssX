@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.56 1999/04/11 13:10:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.57 1999/04/17 07:06:06 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -5912,19 +5912,19 @@ chipsMapMem(ScrnInfoPtr pScrn)
 	    if (IS_HiQV(cPtr)) {
 		if (cPtr->Bus == ChipsPCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO,cPtr->PciTag, (pointer)cPtr->IOAddress,
+			  VIDMEM_MMIO,cPtr->PciTag, cPtr->IOAddress,
 			  0x20000L);
 		else
 		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO, (pointer)cPtr->IOAddress, 0x20000L);
+			  VIDMEM_MMIO, cPtr->IOAddress, 0x20000L);
 	    } else {
 		if (cPtr->Bus == ChipsPCI)
 		    cPtr->MMIOBase = xf86MapPciMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO, cPtr->PciTag, (pointer)cPtr->IOAddress,
+			  VIDMEM_MMIO, cPtr->PciTag, cPtr->IOAddress,
 			  0x10000L);
 		else
 		    cPtr->MMIOBase = xf86MapVidMem(pScrn->scrnIndex,
-			  VIDMEM_MMIO, (pointer)cPtr->IOAddress, 0x10000L);
+			  VIDMEM_MMIO, cPtr->IOAddress, 0x10000L);
 	    }
 
 	    if (cPtr->MMIOBase == NULL)
@@ -5933,11 +5933,11 @@ chipsMapMem(ScrnInfoPtr pScrn)
     
 	if (cPtr->Bus == ChipsPCI)
 	    cPtr->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-		  cPtr->PciTag, (pointer)((unsigned long)cPtr->FbAddress),
+		  cPtr->PciTag, (unsigned long)cPtr->FbAddress,
 		  cPtr->FbMapSize);
 	else
 	    cPtr->FbBase = xf86MapVidMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
-		  (pointer)((unsigned long)cPtr->FbAddress), cPtr->FbMapSize);
+		  (unsigned long)cPtr->FbAddress, cPtr->FbMapSize);
 
 	if (cPtr->FbBase == NULL)
 	  return FALSE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.11 1999/04/04 00:20:55 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.12 1999/04/04 10:59:49 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -24,7 +24,6 @@
  *	pciGetBaseSize - Returns the number of bits in a PCI base addr mapping
  *	xf86MapPciMem() - Like xf86MapVidMem() expect function expects
  *                        a PCI address and PCITAG (identifies PCI domain)
- *	xf86MapPciMemSparse - Like xf86MapPciMem() but for xf86MapVidMemSparse
  *	xf86ReadPciBIOS() - Like xf86ReadBIOS, except that it handles PCI/host
  *                          address translation and BIOS decode enabling.
  *	xf86scanpci()  - Return info about all PCI devices
@@ -273,8 +272,6 @@ CARD32
 pciReadLong(PCITAG tag, int offset)
 {
   int bus = PCI_BUS_FROM_TAG(tag);
-  int dev = PCI_DEV_FROM_TAG(tag);
-  int func = PCI_FUNC_FROM_TAG(tag);
 
 #ifdef DEBUGPCI
 ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
@@ -287,7 +284,7 @@ ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
     CARD32 rv = (*pciBusInfo[bus]->funcs.pciReadLong)(tag, offset);
 
     PCITRACE(1, ("pciReadLong: tag=0x%x [b=%d,d=%d,f=%d] returns 0x%08x\n",
-		 tag, bus, dev, func, rv));
+		 tag, bus, PCI_DEV_FROM_TAG(tag), PCI_FUNC_FROM_TAG(tag), rv));
     return(rv);
    }
 
@@ -373,8 +370,6 @@ void
 pciSetBitsLong(PCITAG tag, int offset, CARD32 mask, CARD32 val)
 {
     int bus = PCI_BUS_FROM_TAG(tag);
-    int dev = PCI_DEV_FROM_TAG(tag);
-    int func = PCI_FUNC_FROM_TAG(tag);
 
 #ifdef DEBUGPCI
     ErrorF("pciReadLong(0x%lx, %d)\n", tag, offset);
@@ -938,19 +933,15 @@ ErrorF("xf86scanpci: tag = pciFindNext = 0x%lx\n", tag);
 
 #if defined(INCLUDE_XF86_MAP_PCI_MEM)
 
-#ifndef MAP_FAILED
-#define MAP_FAILED (pointer)(-1)
-#endif
-
 pointer
-xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, pointer Base,
+xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, unsigned long Base,
 		unsigned long Size)
 {
-	pointer hostbase = pciBusAddrToHostAddr(Tag, Base);
+	unsigned long hostbase = pciBusAddrToHostAddr(Tag, Base);
 	pointer base;
 
 	base = xf86MapVidMem(ScreenNum, Flags, hostbase, Size);
-	if (base == MAP_FAILED)	{
+	if (!base)	{
 		FatalError("xf86MapPciMem: Could not mmap PCI memory "
 			   "[base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
 			   Base, hostbase, Size, strerror(errno));
@@ -958,29 +949,12 @@ xf86MapPciMem(int ScreenNum, int Flags, PCITAG Tag, pointer Base,
 	return((pointer)base);
 }
 
-#ifdef __alpha__
-pointer
-xf86MapPciMemSparse(int ScreenNum, int Flags, PCITAG Tag, pointer Base,
-		    unsigned long Size)
-{
-	pointer hostbase = pciBusAddrToHostAddr(Tag, Base);
-	pointer base;
-
-	base = xf86MapVidMemSparse(ScreenNum, Flags, hostbase, Size);
-	if (base == MAP_FAILED)	{
-		FatalError("xf86MapPciMemSparse: Could not mmap PCI memory "
-			   "[base=0x%x,hostbase=0x%x,size=%x] (%s)\n",
-			   Base, hostbase, Size, strerror(errno));
-	}
-	return((pointer)base);
-}
-#endif
 
 int
 xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
 		unsigned char *Buf, int Len)
 {
-    pointer hostbase = pciBusAddrToHostAddr(Tag, (ADDRESS)Base);
+    ADDRESS hostbase = pciBusAddrToHostAddr(Tag, Base);
     CARD32 romaddr;
     int ret;
 
@@ -990,7 +964,7 @@ xf86ReadPciBIOS(unsigned long Base, unsigned long Offset, PCITAG Tag,
     /* Enable ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr | PCI_MAP_ROM_DECODE_ENABLE);
 
-    ret = xf86ReadBIOS((unsigned long)hostbase, Offset, Buf, Len);
+    ret = xf86ReadBIOS(hostbase, Offset, Buf, Len);
 
     /* Restore ROM address decoding */
     pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);

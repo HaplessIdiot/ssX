@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.13 1999/01/23 09:56:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loaderProcs.h,v 1.14 1999/01/24 13:32:38 dawes Exp $ */
 
 /*
  *
@@ -22,6 +22,9 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+
+#ifndef _LOADERPROCS_H
+#define _LOADERPROCS_H
 
 #define IN_LOADER
 #include "xf86Module.h"
@@ -77,3 +80,4 @@ void LoaderShowStack(void);
 void *LoaderSymbolHandle(const char *, int);
 int LoaderUnload(int);
 
+#endif /* _LOADERPROCS_H */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.9 1997/01/05 11:59:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.10 1997/01/27 06:58:08 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -98,11 +98,8 @@ typedef struct {
 /***************************************************************************/
 
 /* ARGSUSED */
-pointer xf86MapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+pointer
+xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
 	DIOParPkt	par;
 	ULONG		plen;
@@ -141,7 +138,7 @@ unsigned long Size;
 	if ((rc=DosDevIOCtl(mapdev, (ULONG)0x76, (ULONG)0x44,
 	      (PVOID)&par, (ULONG)plen, (PULONG)&plen,
 	      (PVOID)&dta, (ULONG)dlen, (PULONG)&dlen)) == 0) {
-		ErrorF("xf86-OS/2: xf86MapVidMem succeeded: (ScreenNum= %d, Base= %p, Size= 0x%x\n",
+		ErrorF("xf86-OS/2: xf86MapVidMem succeeded: (ScreenNum= %d, Base= 0x%x, Size= 0x%x\n",
 		ScreenNum, Base, Size);
 		if (dlen==sizeof(dta)) {
 			return (pointer)dta.addr;
@@ -150,17 +147,14 @@ unsigned long Size;
 	}
 
 	/* fail */
-	FatalError("xf86-OS/2: xf86MapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= %p, Size= 0x%x return len %d\n",
+	FatalError("xf86-OS/2: xf86MapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= 0x%x, Size= 0x%x return len %d\n",
 		rc, ScreenNum, Base, Size,dlen);
 	return (pointer)0;
 }
 
 /* ARGSUSED */
-void xf86UnMapVidMem(ScreenNum, Region, Base, Size)
-int ScreenNum;
-int Region;
-pointer Base;
-unsigned long Size;
+void
+xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	DIOParPkt	par;
 	ULONG		plen,vmaddr;

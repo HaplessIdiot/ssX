@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.9 1998/07/25 16:57:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.10 1999/02/01 11:56:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -32,6 +32,10 @@
 #include "xf86Priv.h"
 #undef usleep
 #include "xf86_OSlib.h"
+
+#ifndef MAP_FAILED
+#define MAP_FAILED ((void *)-1)
+#endif
 
 /***************************************************************************/
 /* Video Memory Mapping section                                            */
@@ -67,7 +71,7 @@ xf86LinearVidMem()
 }
 
 pointer
-xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
+xf86MapVidMem(int ScreenNum, int Flags, unsigned long Base, unsigned long Size)
 {
 	pointer base;
 	int fd;
@@ -92,7 +96,7 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 	 * DWH - 1/31/99 (Gee has it really been 5 years?) 
 	 */
 
-	if(Base < (pointer)0xFFFFF)
+	if(Base < 0xFFFFF)
 		sprintf(solx86_vtname,"/dev/vt%02d",xf86Info.vtno);
 	else
 
@@ -111,15 +115,15 @@ xf86MapVidMem(int ScreenNum, int Flags, pointer Base, unsigned long Size)
 		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
 			   solx86_vtname, strerror(errno));
 	}
-	base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-			     MAP_SHARED, fd, (off_t)Base);
+	base = mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
+		     MAP_SHARED, fd, (off_t)Base);
 	close(fd);
-	if ((long)base == -1)
+	if (base == MAP_FAILED)
 	{
 		FatalError("%s: Could not mmap framebuffer [s=%x,a=%x] (%s)\n",
 			   "xf86MapVidMem", Size, Base, strerror(errno));
 	}
-	return((pointer)base);
+	return(base);
 }
 
 /* ARGSUSED */
@@ -128,24 +132,6 @@ xf86UnMapVidMem(int ScreenNum, pointer Base, unsigned long Size)
 {
 	munmap(Base, Size);
 }
-
-#if 0
-/* ARGSUSED */
-void xf86MapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-	return;
-}
-
-/* ARGSUSED */
-void xf86UnMapDisplay(ScreenNum, Region)
-int ScreenNum;
-int Region;
-{
-	return;
-}
-#endif
 
 /***************************************************************************/
 /* I/O Permissions section                                                 */

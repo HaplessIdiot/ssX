@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.32 1999/02/28 11:19:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.33 1999/03/20 08:59:16 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -1204,6 +1204,7 @@ CIRMapMem(ScrnInfoPtr pScrn)
 {
     CARD32 save;
     CIRPtr pCir;
+    int mmioFlags;
 
 #ifdef CIR_DEBUG
     ErrorF("CIRMapMem\n");
@@ -1231,7 +1232,7 @@ CIRMapMem(ScrnInfoPtr pScrn)
 
     pCir->FbBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_FRAMEBUFFER,
 				 pCir->PciTag,
-				 (pointer)((unsigned long)pCir->FbAddress),
+				 (unsigned long)pCir->FbAddress,
 				 pCir->FbMapSize);
     if (pCir->FbBase == NULL)
 	return FALSE;
@@ -1248,17 +1249,17 @@ CIRMapMem(ScrnInfoPtr pScrn)
     }
     else {
 #if !defined(__alpha__)
-        pCir->IOBase = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-                                     pCir->PciTag,
-				     (pointer)pCir->IOAddress, 0x4000);
+	mmioFlags = VIDMEM_MMIO;
 #else
         /*
          * For Alpha, we need to map SPARSE memory, since we need
          * byte/short access.
          */
-        pCir->IOBase = xf86MapPciMemSparse(pScrn->scrnIndex, VIDMEM_MMIO,
-				           (pointer)pCir->IOAddress, 0x4000);
+	mmioFlags = VIDMEM_MMIO | VIDMEM_SPARSE;
 #endif
+        pCir->IOBase = xf86MapPciMem(pScrn->scrnIndex, mmioFlags,
+                                     pCir->PciTag,
+				     pCir->IOAddress, 0x4000);
         if (pCir->IOBase == NULL)
 	    return FALSE;
     }
@@ -1292,7 +1293,7 @@ CIRMapMem(ScrnInfoPtr pScrn)
          * setting CPUToScreenColorExpandBase.
          */
         pCir->IOBaseDense = xf86MapPciMem(pScrn->scrnIndex, VIDMEM_MMIO,
-					    pCir->PciTag, (pointer)pCir->IOAddr,
+					    pCir->PciTag, pCir->IOAddr,
 					    0x4000);
         if (pCir->IOBaseDense == NULL)
 	    return FALSE;
@@ -1324,11 +1325,7 @@ CIRUnmapMem(ScrnInfoPtr pScrn)
     /*
      * Unmap IO registers to virtual address space
      */ 
-#ifndef __alpha__
     xf86UnMapVidMem(pScrn->scrnIndex, (pointer)pCir->IOBase, 0x4000);
-#else
-    xf86UnMapVidMemSparse(pScrn->scrnIndex, (pointer)pCir->IOBase, 0x4000);
-#endif
     pCir->IOBase = NULL;
 
 #ifdef __alpha__
