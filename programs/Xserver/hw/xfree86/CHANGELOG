@@ -1,3 +1,12 @@
+3276. Nvidia driver changes (Mark Vojkovich):
+      - Improved shadowfb support (screen rotation).
+      - Improved acceleration (color expansion, lines).
+      - Fixed some rendering correctness issues. 
+      - Full DGA 2.0 support including changing depth on the fly.
+3275. Make usage of hardware clipping in XAA more consistent (Mark Vojkovich).
+3274. Limit MGA driver to using 16 Meg of ram to workaround some hardware
+      limitations (Mark Vojkovich).
+3273. Fix DGA event bug (Mark Vojkovich).
 3272. Mode validation changes (Marc La France).
       - Remove assumption that modes of the same name are also of the same
         size.
