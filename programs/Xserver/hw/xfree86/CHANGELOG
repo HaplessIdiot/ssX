@@ -1,4 +1,6 @@
 XFree86 4.1.99.2 (xx September 2001)
+ 296. Update wskbd keyboard protocol handling for OpenBSD/macppc
+      (Matthieu Herrb).
  295. Fix problems starting XDarwin from the Finder and pasting with
       multi-button mouse emulation (Torrey T. Lyons).
  294. S3 driver updates. Restore console for 964 with Ti3025 and Trio64, and
@@ -13844,4 +13846,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1958 2001/09/27 08:34:26 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1959 2001/09/29 04:48:51 torrey Exp $
