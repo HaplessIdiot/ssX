@@ -3,39 +3,8 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/21 16:42:31 coskrey Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.17 2000/12/09 20:25:05 herrb Exp $
+XCOMM $XFree86: xc/fonts/bdf/misc/Imakefile,v 1.18 2001/01/17 17:33:09 dawes Exp $
 
-
-/*
- * Default to installing "truncated" versions of the UCS fonts.  This means
- * that glyphs above 0x3200 are marked "unencoded" to keep XFontStruct small.
- */
-
-#ifndef TruncateUCSFonts
-#ifdef MakeTruncatedUCSBdfFont
-#define TruncateUCSFonts YES
-#else
-#define TruncateUCSFonts NO
-#endif
-#endif
-
-#ifndef MaxUCSChar
-#define MaxUCSChar 0x3200
-#endif
-
-/*
- * Default to building 8-bit subsets derived from the UCS master fonts.
- * Currently this means building all the ISO8859 and KOI8-R subsets that
- * are supported.
- */
-
-#ifndef DerivedUCSFonts
-#ifdef MakeBdfFontFromUCSMaster
-#define DerivedUCSFonts YES
-#else
-#define DerivedUCSFonts NO
-#endif
-#endif
 
 ARABIC24OBJS = FontObj(arabic24)
 ARABIC24DIR = $(TOP)/extras/fonts/arabic24
