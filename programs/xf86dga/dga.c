@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xf86dga/dga.c,v 3.8 1996/01/30 15:27:53 dawes Exp $ */
+/* $XFree86: xc/programs/xf86dga/dga.c,v 3.9 1996/08/10 13:09:20 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Intrinsic.h>
@@ -132,6 +132,8 @@ main(int argc, char *argv[])
 #endif
 
    XF86DGASetViewPort(dis, DefaultScreen(dis), 0, 0);
+
+   XF86DGAInstallColormap(dis, DefaultScreen(dis), cmap);
 
    banks = (ram * 1024)/bank;
 #ifdef DEBUG
