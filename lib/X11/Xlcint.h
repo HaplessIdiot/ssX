@@ -1,4 +1,4 @@
-/* $TOG: Xlcint.h /main/26 1998/02/06 18:01:56 kaleb $ */
+/* $Xorg: Xlcint.h,v 1.3 2000/08/17 19:45:06 cpqbld Exp $ */
 /*
 
 Copyright 1991, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/Xlcint.h,v 3.6 2000/11/28 18:49:27 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Xlcint.h,v 3.7 2000/12/02 15:30:22 tsi Exp $ */
 
 /*
  * Copyright 1990, 1991 by OMRON Corporation, NTT Software Corporation,

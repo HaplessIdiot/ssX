@@ -1,4 +1,4 @@
-/* $TOG: CvtStdSel.c /main/43 1998/02/06 15:42:23 kaleb $ */
+/* $Xorg: CvtStdSel.c,v 1.3 2000/08/17 19:46:00 cpqbld Exp $ */
 
 /*
  
@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.13 1999/03/21 07:34:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CvtStdSel.c,v 3.14 2000/11/06 19:24:02 dawes Exp $ */
 
 /*
  * This file contains routines to handle common selection targets.

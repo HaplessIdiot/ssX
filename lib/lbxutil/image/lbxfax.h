@@ -1,4 +1,4 @@
-/* $XConsortium: lbxfax.h /main/3 1996/11/04 16:49:07 rws $ */
+/* $Xorg: lbxfax.h,v 1.3 2000/08/17 19:46:41 cpqbld Exp $ */
 /*
  * Copyright (c) 1988, 1989, 1990, 1991, 1992 Sam Leffler
  * Copyright (c) 1991, 1992 Silicon Graphics, Inc.

@@ -1,4 +1,4 @@
-/* $TOG: pcfwrite.c /main/8 1998/05/01 16:42:26 kaleb $ */
+/* $Xorg: pcfwrite.c,v 1.3 2000/08/17 19:46:35 cpqbld Exp $ */
 
 /*
 
@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.2 1999/07/17 05:30:32 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/pcfwrite.c,v 1.4 1999/11/19 13:53:29 hohndel Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

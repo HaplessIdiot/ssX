@@ -1,4 +1,4 @@
-/* $TOG: lcCT.c /main/17 1998/06/18 13:17:06 kaleb $ */
+/* $Xorg: lcCT.c,v 1.4 2000/08/17 19:45:16 cpqbld Exp $ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -36,7 +36,7 @@
  *  Modifier: Ivan Pascal     The XFree86 Project
  *  Modifier: Bruno Haible    The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcCT.c,v 3.21 2000/12/04 18:49:25 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCT.c,v 3.22 2000/12/07 20:26:11 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "XlcPubI.h"

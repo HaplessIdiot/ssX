@@ -1,4 +1,4 @@
-/* $XConsortium: XpScreens.c /main/2 1996/11/16 15:22:09 rws $ */
+/* $Xorg: XpScreens.c,v 1.5 2000/08/17 19:46:08 cpqbld Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpScreens.c,v 1.2 2000/01/25 18:37:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpScreens.c,v 1.3 2000/09/26 15:56:58 tsi Exp $ */
 
 #define NEED_REPLIES
 
@@ -89,13 +89,13 @@ XpQueryScreens (
             SyncHandle();
             return ( (Screen **) NULL ); /* malloc error */
 	}
-
-	for ( i = 0; i < *list_count; i++ ) {
+	i = 0;
+	while(i < *list_count){
 	    /*
 	     * Pull printer length and then name.
 	     */
-	    _XRead32 (dpy, (long *) &rootWindow, (long) sizeof(rootWindow) );
-
+	    _XRead32 (dpy, (char *) &rootWindow, (long) sizeof(rootWindow) );
+	    scr_list[i] = NULL;
 	    for ( j = 0; j < XScreenCount(dpy); j++ ) {
 		checkScr = XScreenOfDisplay(dpy, j);
 		if ( XRootWindowOfScreen(checkScr) == (Window) rootWindow  ) {
@@ -103,6 +103,14 @@ XpQueryScreens (
 		    break;
 		}
 	    }
+	    if(scr_list[i] == NULL)
+		(*list_count)--;
+	    else
+		i++;
+	}
+	if(!(*list_count)) {
+	    Xfree(scr_list);
+	    scr_list = (Screen **) NULL;
 	}
     }
     else {

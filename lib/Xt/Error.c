@@ -1,4 +1,4 @@
-/* $TOG: Error.c /main/43 1998/02/06 13:21:30 kaleb $ */
+/* $Xorg: Error.c,v 1.4 2000/08/17 19:46:11 cpqbld Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts
@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Error.c,v 3.8 1997/07/26 12:59:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Error.c,v 3.9 1998/10/03 09:06:51 dawes Exp $ */
 
 /*
 

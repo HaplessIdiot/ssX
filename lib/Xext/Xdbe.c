@@ -1,4 +1,4 @@
-/* $XConsortium: Xdbe.c /main/3 1995/09/22 10:20:31 dpw $ */
+/* $Xorg: Xdbe.c,v 1.4 2000/08/17 19:45:53 cpqbld Exp $ */
 /******************************************************************************
  * 
  * Copyright (c) 1994, 1995  Hewlett-Packard Company
@@ -30,7 +30,7 @@
  *     Xlib DBE code
  *
  *****************************************************************************/
-/* $XFree86: xc/lib/Xext/Xdbe.c,v 3.1tsi Exp $ */
+/* $XFree86: xc/lib/Xext/Xdbe.c,v 3.2 2000/09/26 15:56:56 tsi Exp $ */
 
 #define NEED_EVENTS
 #define NEED_REPLIES

@@ -1,4 +1,4 @@
-/* $TOG: bitmapfunc.c /main/14 1998/05/07 15:23:26 kaleb $ */
+/* $Xorg: bitmapfunc.c,v 1.3 2000/08/17 19:46:35 cpqbld Exp $ */
 
 /*
 
@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.7 1999/06/13 13:47:31 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.9 1999/11/19 13:53:28 hohndel Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

@@ -138,5 +138,5 @@ EXPORTS
  XeviQueryExtension
  XeviQueryVersion
  XeviGetVisualInfo
-/* $TOG: Xext-def.cpp /main/10 1998/01/04 12:31:45 kaleb $ */
-/* $XFree86$ */
+/* $Xorg: Xext-def.cpp,v 1.3 2000/08/17 19:45:53 cpqbld Exp $ */
+/* $XFree86: xc/lib/Xext/Xext-def.cpp,v 1.6 2000/08/09 23:40:13 dawes Exp $ */

@@ -1,4 +1,4 @@
-/* $TOG: fntfil.h /main/6 1998/02/09 10:49:13 kaleb $ */
+/* $Xorg: fntfil.h,v 1.3 2000/08/17 19:46:38 cpqbld Exp $ */
 
 /*
 
@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fntfil.h,v 1.4 1999/07/17 05:30:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fntfil.h,v 1.5 1999/08/21 13:48:06 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

@@ -1,4 +1,4 @@
-/* $TOG: imLcPrs.c /main/11 1998/06/17 12:19:31 kaleb $ */
+/* $Xorg: imLcPrs.c,v 1.3 2000/08/17 19:45:14 cpqbld Exp $ */
 /******************************************************************
 
               Copyright 1992 by Oki Technosystems Laboratory, Inc.
@@ -30,7 +30,7 @@ OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.4 1998/10/04 11:48:07 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imLcPrs.c,v 1.5 2000/11/28 18:49:38 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xmd.h>

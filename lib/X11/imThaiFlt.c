@@ -1,4 +1,4 @@
-/* $TOG: imThaiFlt.c /main/10 1998/02/06 17:36:48 kaleb $ */
+/* $Xorg: imThaiFlt.c,v 1.4 2000/08/17 19:45:15 cpqbld Exp $ */
 /***********************************************************
 
 Copyright 1993, 1998  The Open Group
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.5 2000/11/28 18:49:38 dawes Exp $ */
+/* $XFree86: xc/lib/X11/imThaiFlt.c,v 3.6 2000/12/02 15:30:22 tsi Exp $ */
 
 /*
 **++ 
@@ -1234,7 +1234,7 @@ XPointer	client_data;
      *  Thai Input sequence check
      */
     isc_mode = IC_IscMode(ic);
-    if (!IC_GetPreviousChar(ic, previous_char)) previous_char = ' ';
+    if (!(IC_GetPreviousChar(ic, previous_char))) previous_char = ' ';
     if (!THAI_isaccepted(buf[0],previous_char, isc_mode)) {
         /* reject character */
         XBell(ev->xkey.display, BellVolume);

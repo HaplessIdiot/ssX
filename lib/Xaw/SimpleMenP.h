@@ -1,5 +1,5 @@
 /*
- * $TOG: SimpleMenP.h /main/16 1998/02/11 14:54:47 kaleb $
+ * $Xorg: SimpleMenP.h,v 1.3 2000/08/17 19:45:37 cpqbld Exp $
  *
 Copyright 1989, 1994, 1998  The Open Group
 
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
-/* $XFree86: xc/lib/Xaw/SimpleMenP.h,v 1.10 1999/06/13 13:47:20 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenP.h,v 1.11 1999/06/20 08:41:05 dawes Exp $ */
 
 /*
  * SimpleMenuP.h - Private Header file for SimpleMenu widget.

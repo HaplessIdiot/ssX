@@ -1,4 +1,4 @@
-/* $TOG: FSlibInt.c /main/23 1998/05/01 11:42:57 kaleb $ */
+/* $Xorg: FSlibInt.c,v 1.4 2000/08/17 19:44:05 cpqbld Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices;
@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.6 1999/02/25 06:00:56 dawes Exp $ */
+/* $XFree86: xc/lib/FS/FSlibInt.c,v 3.7 1999/12/27 00:39:20 robin Exp $ */
 
 /*
  *	FSlibInt.c - Internal support routines for the C subroutine
@@ -946,7 +946,6 @@ _SysErrorMsg(n)
  * _FSDefaultIOError - Default fatal system error reporting routine.  Called
  * when an X internal system error is encountered.
  */
-int
 _FSDefaultIOError(svr)
     FSServer   *svr;
 {
@@ -961,8 +960,8 @@ _FSDefaultIOError(svr)
 		   FSServerString(svr));
     (void) fprintf(stderr,
 		   "      after %lu requests (%lu known processed) with %d events remaining.\r\n",
-		   NextRequest(svr) - 1, LastKnownRequestProcessed(svr),
-		   QLength(svr));
+		   FSNextRequest(svr) - 1, FSLastKnownRequestProcessed(svr),
+		   FSQLength(svr));
 
     if (ECHECK(EPIPE)) {
 	(void) fprintf(stderr,

@@ -1,4 +1,4 @@
-/* $TOG: authutil.c /main/18 1998/02/06 13:55:51 kaleb $ */
+/* $Xorg: authutil.c,v 1.4 2000/08/17 19:44:12 cpqbld Exp $ */
 /******************************************************************************
 
 
@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/authutil.c,v 3.4 1998/10/03 08:41:09 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/authutil.c,v 3.5 1999/05/23 06:33:23 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
