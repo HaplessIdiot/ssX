@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.6 2001/05/29 04:54:08 keithp Exp $
+ * $XFree86: xc/programs/Xserver/fb/fbcompose.c,v 1.7 2001/06/08 19:36:35 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -34,11 +34,6 @@
  * All work is done on canonical ARGB values, functions for fetching
  * and storing these exist for each format.
  */
-
-typedef struct _fbCompSrc {
-    CARD32	value;
-    CARD32	alpha;
-} FbCompSrc;
 
 /*
  * Combine src and mask using IN
@@ -132,7 +127,6 @@ fbCombineMaskValueC (FbCompositeOperand   *src,
 {
     CARD32	x;
     CARD32	a;
-    CARD16	xa;
     CARD16	t;
     CARD32	m,n,o,p;
 
@@ -187,7 +181,6 @@ fbCombineMaskAlphaC (FbCompositeOperand   *src,
 {
     CARD32	x;
     CARD32	a;
-    CARD16	xa;
     CARD16	t;
     CARD32	m,n,o,p;
 
@@ -805,7 +798,6 @@ fbCombineSaturateC (FbCompositeOperand   *src,
     FbCompSrc	cs;
     CARD32  s, d;
     CARD16  sa, sr, sg, sb, da;
-    CARD16  ad, as;
     CARD16  t;
     CARD32  m,n,o,p;
     
@@ -1420,12 +1412,12 @@ fbStore_a2r2g2b2 (FbCompositeOperand *op, CARD32 value)
 #define Store8(l,o,v)  (((CARD8 *) l)[(o) >> 3] = (v))
 #if IMAGE_BYTE_ORDER == MSBFirst
 #define Store4(l,o,v)  Store8(l,o,((o) & 2 ? \
-				   Fetch8(l,o) & 0xf0 | (v) : \
-				   Fetch8(l,o) & 0x0f | ((v) << 4)))
+				   (Fetch8(l,o) & 0xf0) | (v) : \
+				   (Fetch8(l,o) & 0x0f) | ((v) << 4)))
 #else
 #define Store4(l,o,v)  Store8(l,o,((o) & 2 ? \
-				   Fetch8(l,o) & 0x0f | ((v) << 4) : \
-				   Fetch8(l,o) & 0xf0 | (v)))
+				   (Fetch8(l,o) & 0x0f) | ((v) << 4) : \
+				   (Fetch8(l,o) & 0xf0) | (v)))
 #endif
 
 void
@@ -1495,7 +1487,7 @@ fbStore_a1 (FbCompositeOperand *op, CARD32 value)
     CARD32  mask = FbStipMask(offset & 0x1f, 1);
 
     value = value & 0x80000000 ? mask : 0;
-    *pixel = *pixel & ~mask | value;
+    *pixel = (*pixel & ~mask) | value;
 }
 
 CARD32
