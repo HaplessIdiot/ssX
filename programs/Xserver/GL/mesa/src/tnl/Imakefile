@@ -1,96 +1,21 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.8 2000/08/01 20:28:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/tnl/Imakefile,v 1.1 2002/02/22 21:45:10 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
+#define NeedAllMesaSrc
+#define NeedToLinkMesaSrc
+#define MesaTnlBuildDir /**/
+#include "../../../../../../lib/GL/mesa/src/tnl/Imakefile.inc"
 
-LinkSourceFile(t_array_api.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_array_api.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_array_import.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_array_import.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_context.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_context.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_eval_api.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_eval_api.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_alloc.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_alloc.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_api.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_api.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_debug.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_debug.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_dlist.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_dlist.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_elt.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_elt.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_eval.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_eval.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_exec.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_exec.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_fixup.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_imm_fixup.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_pipeline.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_pipeline.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_cliptmp.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_fog.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_light.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_lighttmp.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_normals.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_points.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_render.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_rendertmp.h, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_texgen.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_texmat.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(t_vb_vertex.c, $(MESASRCDIR)/src/tnl)
-LinkSourceFile(tnl.h, $(MESASRCDIR)/src/tnl)
 
-         SRCS = t_array_api.c \
-		t_array_import.c \
-		t_context.c \
-		t_eval_api.c \
-		t_imm_alloc.c \
-		t_imm_api.c \
-		t_imm_debug.c \
-		t_imm_dlist.c \
-		t_imm_elt.c \
-		t_imm_eval.c \
-		t_imm_exec.c \
-		t_imm_fixup.c \
-		t_pipeline.c \
-		t_vb_fog.c \
-		t_vb_light.c \
-		t_vb_normals.c \
-		t_vb_points.c \
-		t_vb_render.c \
-		t_vb_texgen.c \
-		t_vb_texmat.c \
-		t_vb_vertex.c 
-
-         OBJS = t_array_api.o \
-		t_array_import.o \
-		t_context.o \
-		t_eval_api.o \
-		t_imm_alloc.o \
-		t_imm_api.o \
-		t_imm_debug.o \
-		t_imm_dlist.o \
-		t_imm_elt.o \
-		t_imm_eval.o \
-		t_imm_exec.o \
-		t_imm_fixup.o \
-		t_pipeline.o \
-		t_vb_fog.o \
-		t_vb_light.o \
-		t_vb_normals.o \
-		t_vb_points.o \
-		t_vb_render.o \
-		t_vb_texgen.o \
-		t_vb_texmat.o \
-		t_vb_vertex.o 
-
+         SRCS = $(MESA_TNL_SRCS)
+         OBJS = $(MESA_TNL_OBJS)
 
      INCLUDES = -I$(MESASRCDIR)/src \
 		-I$(MESASRCDIR)/src/array_cache \
 		-I$(MESASRCDIR)/src/math \
+		-I$(MESASRCDIR)/src/tnl \
 		-I$(MESASRCDIR)/include \
                 -I$(SERVERSRC)/include -I$(XINCLUDESRC) \
                 -I../../../include -I../../../glx \

@@ -1,28 +1,19 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.11 2002/01/10 21:51:47 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.12 2002/02/22 21:45:08 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
+#define NeedAllMesaSrc
+#define NeedToLinkMesaSrc
+#define MesaXBuildDir /**/
+#define MesaInXServer
+#include "../../../../../../lib/GL/mesa/src/X/Imakefile.inc"
 
-LinkSourceFile(glxheader.h, $(MESASRCDIR)/src/X)
-LinkSourceFile(xm_api.c, $(MESASRCDIR)/src/X)
-LinkSourceFile(xm_dd.c, $(MESASRCDIR)/src/X)
-LinkSourceFile(xm_line.c, $(MESASRCDIR)/src/X)
-LinkSourceFile(xm_span.c, $(MESASRCDIR)/src/X)
-LinkSourceFile(xm_tri.c, $(MESASRCDIR)/src/X)
-LinkSourceFile(xmesaP.h, $(MESASRCDIR)/src/X)
 
 LinkSourceFile(compsize.c,$(LIBSRC)/GL/glx)
 
-  DRIVER_SRCS = xm_api.c xm_dd.c xm_line.c xm_span.c xm_tri.c
-  DRIVER_OBJS = xm_api.o xm_dd.o xm_line.o xm_span.o xm_tri.o
-
-#ifndef XFree86Version
-
-/* This appears to be the quickest way to build a non-XFree86 server */
-GLXSRV_DEFINES = -DXFree86Server
-
-#endif
+  DRIVER_SRCS = $(XMESA_SRCS)
+  DRIVER_OBJS = $(XMESA_OBJS)
 
 #ifndef XFree86Version
 

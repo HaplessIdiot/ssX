@@ -1,131 +1,16 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/X/Imakefile,v 1.8 2000/08/01 20:28:40 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/mesa/src/swrast/Imakefile,v 1.1 2002/02/22 21:45:09 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
-LinkSourceFile(s_aaline.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_aaline.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_aalinetemp.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_aatriangle.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_aatriangle.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_aatritemp.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_accum.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_accum.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_alpha.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_alpha.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_alphabuf.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_alphabuf.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_bitmap.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_blend.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_blend.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_buffers.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_context.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_context.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_copypix.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_depth.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_depth.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_drawpix.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_drawpix.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_feedback.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_feedback.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_fog.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_fog.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_imaging.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_histogram.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_histogram.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_lines.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_lines.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_linetemp.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_logic.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_logic.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_masking.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_masking.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pb.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pb.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pixeltex.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pixeltex.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_pointtemp.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_points.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_points.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_readpix.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_scissor.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_scissor.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_span.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_span.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_stencil.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_stencil.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_texstore.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_texture.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_texture.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_triangle.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_triangle.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_trispan.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_tritemp.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_zoom.c, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(s_zoom.h, $(MESASRCDIR)/src/swrast)
-LinkSourceFile(swrast.h, $(MESASRCDIR)/src/swrast)
+#define NeedAllMesaSrc
+#define NeedToLinkMesaSrc
+#define MesaSwrastBuildDir /**/
+#include "../../../../../../lib/GL/mesa/src/swrast/Imakefile.inc"
 
-         SRCS = s_aaline.c \
-		s_aatriangle.c \
-		s_accum.c \
-		s_alpha.c \
-		s_alphabuf.c \
-		s_bitmap.c \
-		s_blend.c \
-		s_buffers.c \
-		s_context.c \
-		s_copypix.c \
-		s_depth.c \
-		s_drawpix.c \
-		s_feedback.c \
-		s_fog.c \
-		s_histogram.c \
-		s_imaging.c \
-		s_lines.c \
-		s_logic.c \
-		s_masking.c \
-		s_pb.c \
-		s_pixeltex.c \
-		s_points.c \
-		s_readpix.c \
-		s_scissor.c \
-		s_span.c \
-		s_stencil.c \
-		s_texstore.c \
-		s_texture.c \
-		s_triangle.c \
-		s_zoom.c 
 
-         OBJS = s_aaline.o \
-		s_aatriangle.o \
-		s_accum.o \
-		s_alpha.o \
-		s_alphabuf.o \
-		s_bitmap.o \
-		s_blend.o \
-		s_buffers.o \
-		s_context.o \
-		s_copypix.o \
-		s_depth.o \
-		s_drawpix.o \
-		s_feedback.o \
-		s_fog.o \
-		s_histogram.o \
-		s_imaging.o \
-		s_lines.o \
-		s_logic.o \
-		s_masking.o \
-		s_pb.o \
-		s_pixeltex.o \
-		s_points.o \
-		s_readpix.o \
-		s_scissor.o \
-		s_span.o \
-		s_stencil.o \
-		s_texture.o \
-		s_texstore.o \
-		s_triangle.o \
-		s_zoom.o 
+         SRCS = $(MESA_SWRAST_SRCS)
+         OBJS = $(MESA_SWRAST_OBJS)
 
      INCLUDES = -I$(MESASRCDIR)/src \
 		-I$(MESASRCDIR)/src/swrast \
