@@ -1,4 +1,4 @@
 Xdbe.obj MITMisc.obj XMultibuf.obj XShape.obj XSync.obj XTestExt1.obj extutil.obj+
-globals.obj /NOL /NOD /BAT
+globals.obj /NOI /NOL /NOD /BAT
 Xext.dll
 

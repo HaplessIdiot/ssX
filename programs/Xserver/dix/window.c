@@ -1,4 +1,5 @@
-/* $XConsortium: window.c,v 5.104 94/04/17 20:26:49 dpw Exp $ */
+/* $XConsortium: window.c /main/199 1995/09/22 10:22:27 dpw $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -67,8 +68,16 @@ SOFTWARE.
 #include "dixstruct.h"
 #include "gcstruct.h"
 #include "servermd.h"
+#include "dixevents.h"
 
 extern Bool permitOldBugs;
+
+#if defined(NEED_SCREEN_REGIONS)
+#define REGION_PTR(pScreen,pWin) \
+    register ScreenPtr pScreen = pWin->drawable.pScreen;
+#else
+#define REGION_PTR(pScreen,pWin) /* nothing */
+#endif
 
 /******
  * Window stuff for server 
@@ -90,10 +99,6 @@ ScreenSaverStuffRec savedScreenInfo[MAXSCREENS];
 extern WindowPtr *WindowTable;
 extern void (* ReplySwapVector[256]) ();
 
-extern void DeleteWindowFromAnyEvents();
-extern Mask EventMaskForClient();
-extern void WindowHasNewCursor();
-extern void RecalculateDeliverableEvents();
 extern int rand();
 
 static Bool TileScreenSaver(
@@ -224,8 +229,12 @@ Bool	disableBackingStore = FALSE;
 Bool	disableSaveUnders = FALSE;
 
 static void
+#if NeedFunctionPrototypes
+SetWindowToDefaults(register WindowPtr pWin)
+#else
 SetWindowToDefaults(pWin)
     register WindowPtr pWin;
+#endif
 {
     pWin->prevSib = NullWindow;
     pWin->firstChild = NullWindow;
@@ -253,11 +262,19 @@ SetWindowToDefaults(pWin)
     pWin->deliverableEvents = 0;
     pWin->dontPropagate = 0;
     pWin->forcedBS = FALSE;
+#ifdef NEED_DBE_BUF_BITS
+    pWin->srcBuffer = DBE_FRONT_BUFFER;
+    pWin->dstBuffer = DBE_FRONT_BUFFER;
+#endif
 }
 
 static void
+#if NeedFunctionPrototypes
+MakeRootTile(WindowPtr pWin)
+#else
 MakeRootTile(pWin)
     WindowPtr pWin;
+#endif
 {
     ScreenPtr pScreen = pWin->drawable.pScreen;
     GCPtr pGC;
@@ -477,7 +494,7 @@ ClippedRegionFromBox(pWin, Rgn, x, y, w, h)
     register int x, y;
     int w, h;
 {
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    REGION_PTR(pScreen, pWin)
     BoxRec box;
 
     box = *(REGION_EXTENTS(pScreen, &pWin->winSize));
@@ -747,12 +764,14 @@ CreateWindow(wid, pParent, x, y, w, h, bw, class, vmask, vlist,
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeWindowResources(register WindowPtr pWin)
+#else
 FreeWindowResources(pWin)
     register WindowPtr pWin;
+#endif
 {
-    register ScreenPtr pScreen;
-
-    pScreen = pWin->drawable.pScreen;
+    register ScreenPtr pScreen = pWin->drawable.pScreen;
 
     DeleteWindowFromAnySaveSet(pWin);
     DeleteWindowFromAnySelections(pWin);
@@ -779,11 +798,15 @@ FreeWindowResources(pWin)
 }
 
 static void
+#if NeedFunctionPrototypes
+CrushTree(WindowPtr pWin)
+#else
 CrushTree(pWin)
     WindowPtr pWin;
+#endif
 {
     register WindowPtr pChild, pSib, pParent;
-    Bool (* UnrealizeWindow)();
+    UnrealizeWindowProcPtr UnrealizeWindow;
     xEvent event;
 
     if (!(pChild = pWin->firstChild))
@@ -908,7 +931,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     XID *vlist;
     ClientPtr client;
 {
-    register Mask index;
+    register Mask index2;
     register XID *pVlist;
     PixmapPtr pPixmap;
     Pixmap pixID;
@@ -937,9 +960,9 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
     tmask = vmask;
     while (tmask)
     {
-	index = (Mask) lowbit (tmask);
-	tmask &= ~index;
-	switch (index)
+	index2 = (Mask) lowbit (tmask);
+	tmask &= ~index2;
+	switch (index2)
 	{
 	  case CWBackPixmap:
 	    pixID = (Pixmap )*pVlist;
@@ -1026,7 +1049,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 		pWin->border = pWin->parent->border;
 		if ((pWin->borderIsPixel = pWin->parent->borderIsPixel) == TRUE)
 		{
-		    index = CWBorderPixel;
+		    index2 = CWBorderPixel;
 		}
 		else
 		{
@@ -1380,7 +1403,7 @@ ChangeWindowAttributes(pWin, vmask, vlist, client)
 	    client->errorValue = vmask;
 	    goto PatchUp;
       }
-      vmaskCopy |= index;
+      vmaskCopy |= index2;
     }
 PatchUp:
     if (checkOptional)
@@ -1539,7 +1562,7 @@ CreateUnclippedWinSize (pWin)
     pRgn = REGION_CREATE(pWin->drawable.pScreen, &box, 1);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
-	ScreenPtr	pScreen = pWin->drawable.pScreen;
+	REGION_PTR(pScreen, pWin)
 
 	REGION_TRANSLATE(pScreen, pRgn, - pWin->drawable.x,
 			 - pWin->drawable.y);
@@ -1563,7 +1586,7 @@ SetWinSize (pWin)
 			 (int)pWin->drawable.height);
 #ifdef SHAPE
     if (wBoundingShape (pWin) || wClipShape (pWin)) {
-	ScreenPtr	pScreen = pWin->drawable.pScreen;
+	REGION_PTR(pScreen, pWin)
 
 	REGION_TRANSLATE(pScreen, &pWin->winSize, - pWin->drawable.x,
 			 - pWin->drawable.y);
@@ -1593,7 +1616,7 @@ SetBorderSize (pWin)
 		(int)(pWin->drawable.height + (bw<<1)));
 #ifdef SHAPE
 	if (wBoundingShape (pWin)) {
-	    ScreenPtr	pScreen = pWin->drawable.pScreen;
+	    REGION_PTR(pScreen, pWin)
 
 	    REGION_TRANSLATE(pScreen, &pWin->borderSize, - pWin->drawable.x,
 			     - pWin->drawable.y);
@@ -1760,8 +1783,14 @@ ResizeChildrenWinSize(pWin, dx, dy, dw, dh)
  */
 
 static int
+#if NeedFunctionPrototypes
+IsSiblingAboveMe(
+    register WindowPtr pMe,
+    register WindowPtr pSib)
+#else
 IsSiblingAboveMe(pMe, pSib)
     register WindowPtr pMe, pSib;
+#endif
 {
     register WindowPtr pWin;
 
@@ -1778,9 +1807,15 @@ IsSiblingAboveMe(pMe, pSib)
 }
 
 static BoxPtr
+#if NeedFunctionPrototypes
+WindowExtents(
+    register WindowPtr pWin,
+    register BoxPtr pBox)
+#else
 WindowExtents(pWin, pBox)
     register WindowPtr pWin;
     register BoxPtr pBox;
+#endif
 {
     pBox->x1 = pWin->drawable.x - wBorderWidth (pWin);
     pBox->y1 = pWin->drawable.y - wBorderWidth (pWin);
@@ -1795,12 +1830,18 @@ WindowExtents(pWin, pBox)
 #define IS_SHAPED(pWin)	(wBoundingShape (pWin) != (RegionPtr) NULL)
 
 static RegionPtr
+#if NeedFunctionPrototypes
+MakeBoundingRegion (
+    register WindowPtr	pWin,
+    BoxPtr	pBox)
+#else
 MakeBoundingRegion (pWin, pBox)
     register WindowPtr	pWin;
     BoxPtr	pBox;
+#endif
 {
     RegionPtr	pRgn;
-    register ScreenPtr pScreen = pWin->drawable.pScreen;
+    REGION_PTR(pScreen, pWin)
 
     pRgn = REGION_CREATE(pScreen, pBox, 1);
     if (wBoundingShape (pWin)) {
@@ -1814,9 +1855,17 @@ MakeBoundingRegion (pWin, pBox)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+ShapeOverlap (
+    WindowPtr	pWin,
+    BoxPtr	pWinBox,
+    WindowPtr	pSib,
+    BoxPtr	pSibBox)
+#else
 ShapeOverlap (pWin, pWinBox, pSib, pSibBox)
     WindowPtr	pWin, pSib;
     BoxPtr	pWinBox, pSibBox;
+#endif
 {
     RegionPtr	pWinRgn, pSibRgn;
     register ScreenPtr	pScreen;
@@ -1836,9 +1885,16 @@ ShapeOverlap (pWin, pWinBox, pSib, pSibBox)
 #endif
 
 static Bool
+#if NeedFunctionPrototypes
+AnyWindowOverlapsMe(
+    WindowPtr pWin,
+    WindowPtr pHead,
+    register BoxPtr box)
+#else
 AnyWindowOverlapsMe(pWin, pHead, box)
     WindowPtr pWin, pHead;
     register BoxPtr box;
+#endif
 {
     register WindowPtr pSib;
     BoxRec sboxrec;
@@ -1861,9 +1917,15 @@ AnyWindowOverlapsMe(pWin, pHead, box)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+IOverlapAnyWindow(
+    WindowPtr pWin,
+    register BoxPtr box)
+#else
 IOverlapAnyWindow(pWin, box)
     WindowPtr pWin;
     register BoxPtr box;
+#endif
 {
     register WindowPtr pSib;
     BoxRec sboxrec;
@@ -1914,11 +1976,22 @@ IOverlapAnyWindow(pWin, box)
  */
 
 static WindowPtr
+#if NeedFunctionPrototypes
+WhereDoIGoInTheStack(
+    register WindowPtr pWin,
+    register WindowPtr pSib,
+    short x,
+    short y,
+    unsigned short w,
+    unsigned short h,
+    int smode)
+#else
 WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
     register WindowPtr pWin, pSib;
     short x, y;
     unsigned short w, h;
     int smode;
+#endif
 {
     BoxRec box;
     register ScreenPtr pScreen;
@@ -2017,9 +2090,16 @@ WhereDoIGoInTheStack(pWin, pSib, x, y, w, h, smode)
 }
 
 static void
+#if NeedFunctionPrototypes
+ReflectStackChange(
+    register WindowPtr pWin,
+    register WindowPtr pSib,
+    VTKind  kind)
+#else
 ReflectStackChange(pWin, pSib, kind)
     register WindowPtr pWin, pSib;
     VTKind  kind;
+#endif
 {
 /* Note that pSib might be NULL */
 
@@ -2084,7 +2164,7 @@ ConfigureWindow(pWin, mask, vlist, client)
     register WindowPtr pSib = NullWindow;
     register WindowPtr pParent = pWin->parent;
     Window sibwid;
-    Mask index, tmask;
+    Mask index2, tmask;
     register XID *pVlist;
     short x,   y, beforeX, beforeY;
     unsigned short w = pWin->drawable.width,
@@ -2138,9 +2218,9 @@ ConfigureWindow(pWin, mask, vlist, client)
     tmask = mask & ~ChangeMask;
     while (tmask)
     {
-	index = (Mask)lowbit (tmask);
-	tmask &= ~index;
-	switch (index)
+	index2 = (Mask)lowbit (tmask);
+	tmask &= ~index2;
+	switch (index2)
 	{
 	  case CWBorderWidth:
 	    GET_CARD16(CWBorderWidth, bw);
@@ -2379,9 +2459,15 @@ CirculateWindow(pParent, direction, client)
 }
 
 static int
+#if NeedFunctionPrototypes
+CompareWIDs(
+    WindowPtr pWin,
+    pointer   value) /* must conform to VisitWindowProcPtr */
+#else
 CompareWIDs(pWin, value)
     WindowPtr pWin;
     pointer   value; /* must conform to VisitWindowProcPtr */
+#endif
 {
     Window *wid = (Window *)value;
 
@@ -2484,11 +2570,15 @@ ReparentWindow(pWin, pParent, x, y, client)
 }
 
 static void
+#if NeedFunctionPrototypes
+RealizeTree(WindowPtr pWin)
+#else
 RealizeTree(pWin)
     WindowPtr pWin;
+#endif
 {
     register WindowPtr pChild;
-    Bool (* Realize)();
+    RealizeWindowProcPtr Realize;
 
     Realize = pWin->drawable.pScreen->RealizeWindow;
     pChild = pWin;
@@ -2741,9 +2831,15 @@ MapSubwindows(pParent, client)
 }
 
 static void
+#if NeedFunctionPrototypes
+UnrealizeTree(
+    WindowPtr pWin,
+    Bool fromConfigure)
+#else
 UnrealizeTree(pWin, fromConfigure)
     WindowPtr pWin;
     Bool fromConfigure;
+#endif
 {
     register WindowPtr pChild;
     UnrealizeWindowProcPtr Unrealize;
@@ -3155,9 +3251,13 @@ SaveScreens(on, mode)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+TileScreenSaver(int i, int kind)
+#else
 TileScreenSaver(i, kind)
     int i;
     int	kind;
+#endif
 {
     int j;
     int result;
@@ -3410,15 +3510,19 @@ DisposeWindowOptional (pWin)
 
 #ifndef NOLOGOHACK
 static void
+#if NeedFunctionPrototypes
+DrawLogo(WindowPtr pWin)
+#else
 DrawLogo(pWin)
     WindowPtr pWin;
+#endif
 {
     DrawablePtr pDraw;
     ScreenPtr pScreen;
     int x, y;
     unsigned int width, height, size;
     GC *pGC;
-    int d11, d21, d31;
+    int thin, gap, d31;
     DDXPointRec poly[4];
     XID fore[2], back[2];
     xrgb rgb[2];
@@ -3467,6 +3571,8 @@ DrawLogo(pWin)
 	bmask = GCFillStyle|GCTile;
     }
 
+    /* should be the same as the reference function XmuDrawLogo() */
+
     size = width;
     if (height < width)
 	 size = height;
@@ -3476,18 +3582,23 @@ DrawLogo(pWin)
     y += rand() % (height - size);
 
 /*
- *	     -----
- *	    /	 /
- *	   /	/
- *	  /    /
- *	 /    /
- *	/____/
+ * Draw what will be the thin strokes.
+ *
+ *           -----
+ *          /    /
+ *         /    /
+ *        /    /
+ *       /    /
+ *      /____/
+ *           d
+ *
+ * Point d is 9/44 (~1/5) of the way across.
  */
 
-    d11 = (size / 11);
-    if (d11 < 1) d11 = 1;
-    d21 = (d11+3) / 4;
-    d31 = d11 + d11 + d21;
+    thin = (size / 11);
+    if (thin < 1) thin = 1;
+    gap = (thin+3) / 4;
+    d31 = thin + thin + gap;
     poly[0].x = x + size;	       poly[0].y = y;
     poly[1].x = x + size-d31;	       poly[1].y = y;
     poly[2].x = x + 0;		       poly[2].y = y + size;
@@ -3497,12 +3608,14 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
- *	     ------
- *	    /	  /
- *	   /  __ /
- *	  /  /	/
- *	 /  /  /
- *	/__/__/
+ * Erase area not needed for lower thin stroke.
+ *
+ *           ------
+ *          /	  /
+ *         /  __ /
+ *        /  /	/
+ *       /  /  /
+ *      /__/__/
  */
 
     poly[0].x = x + d31/2;			 poly[0].y = y + size;
@@ -3514,6 +3627,8 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
+ * Erase area not needed for upper thin stroke.
+ *
  *	     ------
  *	    /  /  /
  *	   /--/	 /
@@ -3530,6 +3645,10 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
+ * Draw thick stroke.
+ * Point b is 1/4 of the way across.
+ *
+ *      b
  * -----
  * \	\
  *  \	 \
@@ -3547,6 +3666,8 @@ DrawLogo(pWin)
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);
 
 /*
+ * Erase to create gap.
+ *
  *	    /
  *	   /
  *	  /
@@ -3554,10 +3675,10 @@ DrawLogo(pWin)
  *	/
  */
 
-    poly[0].x = x + size- d11;	      poly[0].y = y;
-    poly[1].x = x + size-( d11+d21);  poly[1].y = y;
-    poly[2].x = x + d11;	      poly[2].y = y + size;
-    poly[3].x = x + d11 + d21;	      poly[3].y = y + size;
+    poly[0].x = x + size- thin;	      poly[0].y = y;
+    poly[1].x = x + size-( thin+gap);  poly[1].y = y;
+    poly[2].x = x + thin;	      poly[2].y = y + size;
+    poly[3].x = x + thin + gap;	      poly[3].y = y + size;
     (void)DoChangeGC(pGC, bmask, back, 1);
     ValidateGC(pDraw, pGC);
     (*pGC->ops->FillPolygon)(pDraw, pGC, Convex, CoordModeOrigin, 4, poly);

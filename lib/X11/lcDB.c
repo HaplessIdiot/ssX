@@ -1,5 +1,5 @@
 /* $XConsortium: lcDB.c /main/9 1995/12/01 11:53:25 kaleb $ */
-/* $XFree86: xc/lib/X11/lcDB.c,v 3.0 1996/01/30 15:24:59 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcDB.c,v 3.1 1996/02/09 08:18:57 dawes Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -283,6 +283,15 @@ read_line(fd, line)
 	strncpy(str + cur, p, len);
 	cur += len;
 	str[cur] = '\0';
+#ifdef __EMX__  /* Take out carriage returns under OS/2 */
+	if(cur>1) {
+	   if(str[cur-2] == '\r' && str[cur-1] == '\n'){
+	      str[cur-2] = '\n';
+	      str[cur-1] = '\0';
+	      cur--;
+	   }
+	}
+#endif
 	if(!quoted){
 	    if(cur > 1 && str[cur - 2] == SYM_BACKSLASH &&
 	       (str[cur - 1] == SYM_NEWLINE || str[cur-1] == SYM_CR)){

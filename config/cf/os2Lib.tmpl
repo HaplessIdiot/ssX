@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.1 1996/01/24 21:51:55 dawes Exp $
+XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.2 1996/02/19 09:47:26 dawes Exp $
 
 /*
  * OS2/EMX shared library template
@@ -33,20 +33,50 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.1 1996/01/24 21:51:55 dawes Exp $
 #endif
 
 /*
+ * By setting this in your Imakefile, you can force using static libraries
+ * to be linked with you app, rather than DLLs
+ */
+#ifndef LinkStatically
+#define LinkStatically NO
+#endif
+
+#if LinkStatically
+#define SDlibX11 -lX11_s
+#define SDlibXExt -lXExt_s
+#define SDlibXmu -lXmu_s
+#define SDlibXt -lXt_s
+#define SDlibXaw -lXaw_s
+#define SDlibXi -lXi_s
+#define SDlibXIE -lXIE_s
+#define SDlibXtst -lXtst_s
+#define SDlibPEX5 -lPEX5_s
+#else
+#define SDlibX11 -lX11
+#define SDlibXExt -lXExt
+#define SDlibXmu -lXmu
+#define SDlibXt -lXt
+#define SDlibXaw -lXaw
+#define SDlibXi -lXi
+#define SDlibXIE -lXIE
+#define SDlibXtst -lXtst
+#define SDlibPEX5 -lPEX5
+#endif
+
+/*
  * and now a little bit of magic for using imake without source tree; if we
  * are using shared libraries, we really do not need to depend on anything
  */
 #if SharedLibXext
  DEPEXTENSIONLIB = 
-    EXTENSIONLIB = _Use(-lXext,-L$(EXTENSIONSRC)/lib -lXext)
+    EXTENSIONLIB = _Use(SDlibXExt,-L$(EXTENSIONSRC)/lib SDlibXExt)
 #endif
 #if SharedLibX11
          DEPXLIB = 
-            XLIB = $(EXTENSIONLIB) _Use(-lX11,-L$(XLIBSRC) -lX11)
+            XLIB = $(EXTENSIONLIB) _Use(SDlibX11,-L$(XLIBSRC) SDlibX11)
 #endif
 #if SharedLibXmu
        DEPXMULIB = 
-          XMULIB = _Use(-lXmu,-L$(XMUSRC) -lXmu) $(XLIB)
+          XMULIB = _Use(SDlibXmu,-L$(XMUSRC) SDlibXmu) $(XLIB)
 #ifndef XawClientLibs
 #define XawClientLibs $(XAWLIB) $(XMULIB) $(XTOOLLIB) $(XLIB)
 #endif
@@ -57,21 +87,21 @@ XCOMM $XFree86: xc/config/cf/os2Lib.tmpl,v 3.1 1996/01/24 21:51:55 dawes Exp $
 #endif
 #if SharedLibXt
      DEPXTOOLLIB = 
-        XTOOLLIB = _Use(-lXt,-L$(TOOLKITSRC) -lXt)
+        XTOOLLIB = _Use(SDlibXt,-L$(TOOLKITSRC) SDlibXt)
 #endif
 #if SharedLibXaw
        DEPXAWLIB = 
-          XAWLIB = _Use(-lXaw,-L$(AWIDGETSRC) -lXaw)
+          XAWLIB = _Use(SDlibXaw,-L$(AWIDGETSRC) SDlibXaw)
 #endif
 #if SharedLibXi
         DEPXILIB = 
-           XILIB = _Use(-lXi,-L$(XILIBSRC) -lXi)
+           XILIB = _Use(SDlibXi,-L$(XILIBSRC) SDlibXi)
 #endif
 #if SharedLibXTest
     DEPXTESTLIB = 
-       XTESTLIB = _Use(-lXtst,-L$(EXTENSIONSRC)/lib/xtest -lXtst)
+       XTESTLIB = _Use(SDlibXtst,-L$(EXTENSIONSRC)/lib/xtest SDlibXtst)
 #endif
 #if SharedLibPex
       DEPPEXLIB = 
-         PEXLIB = _Use(-lPEX5,-L$(PEXLIBSRC) -lPEX5)
+         PEXLIB = _Use(SDlibPEX5,-L$(PEXLIBSRC) SDlibPEX5)
 #endif

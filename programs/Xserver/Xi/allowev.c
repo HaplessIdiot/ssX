@@ -1,5 +1,5 @@
 /* $XConsortium: allowev.c,v 1.8 94/04/17 20:33:02 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/allowev.c,v 3.0 1996/03/29 22:12:47 dawes Exp $ */
 
 /************************************************************
 
@@ -67,6 +67,7 @@ SOFTWARE.
 #include "exglobals.h"
 
 #include "allowev.h"
+#include "dixevents.h"
 
 /***********************************************************************
  *

@@ -1,5 +1,5 @@
 /* $XConsortium: exevents.c /main/51 1995/12/08 13:41:35 dpw $ */
-/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.0 1996/01/14 13:34:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/exevents.c,v 3.1 1996/03/29 22:13:10 dawes Exp $ */
 /************************************************************
 
 Copyright (c) 1989  X Consortium
@@ -69,12 +69,9 @@ SOFTWARE.
 #include "extinit.h"			/* LookupDeviceIntRec */
 #include "exglobals.h"
 #include "dixevents.h"			/* DeliverFocusedEvent */
+#include "dixgrabs.h"			/* CreateGrab() */
 
 #include "chgptr.h"
-
-extern	void	NoticeEventTime();
-extern	GrabPtr CreateGrab();
-extern	WindowPtr GetCurrentRootWindow();
 
 #define WID(w) ((w) ? ((w)->drawable.id) : 0)
 #define AllModifiersMask ( \
@@ -84,9 +81,6 @@ extern	WindowPtr GetCurrentRootWindow();
 	Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask )
 #define Motion_Filter(class) (DevicePointerMotionMask | \
 			      (class)->state | (class)->motionMask)
-
-void 			ActivateKeyboardGrab();
-void 			DeactivateKeyboardGrab();
 
 static Bool		ShouldFreeInputMasks(
 #if NeedFunctionPrototypes
@@ -334,14 +328,25 @@ InitValuatorAxisStruct(dev, axnum, minval, maxval, resolution, min_res, max_res)
     ax->max_resolution = max_res;
     }
 
-static void FixDeviceStateNotify (dev, ev, k, b, v, first)
+static void
+#if NeedFunctionPrototypes
+FixDeviceStateNotify (
+    DeviceIntPtr dev,
+    deviceStateNotify *ev,
+    KeyClassPtr k,
+    ButtonClassPtr b,
+    ValuatorClassPtr v,
+    int first)
+#else
+FixDeviceStateNotify (dev, ev, k, b, v, first)
     DeviceIntPtr dev;
     deviceStateNotify *ev;
     KeyClassPtr k;
     ButtonClassPtr b;
     ValuatorClassPtr v;
     int first;
-    {
+#endif
+{
     ev->type = DeviceStateNotify;
     ev->deviceid = dev->id;
     ev->time = currentTime.milliseconds;
@@ -378,12 +383,21 @@ static void FixDeviceStateNotify (dev, ev, k, b, v, first)
 	}
     }
 
-static void FixDeviceValuator (dev, ev, v, first)
+static void
+#if NeedFunctionPrototypes
+FixDeviceValuator (
+    DeviceIntPtr dev,
+    deviceValuator *ev,
+    ValuatorClassPtr v,
+    int first)
+#else
+FixDeviceValuator (dev, ev, v, first)
     DeviceIntPtr dev;
     deviceValuator *ev;
     ValuatorClassPtr v;
     int first;
-    {
+#endif
+{
     int nval = v->numAxes - first;
 
     ev->type = DeviceValuator;
@@ -512,7 +526,7 @@ DeviceFocusEvent(dev, type, mode, detail, pWin)
 	    nval -= 3;
 	    if (nval > 0) {
 		(ev-1)->deviceid |= MORE_EVENTS;
-		FixDeviceValuator (dev, ev++, v, first);
+		FixDeviceValuator (dev, (deviceValuator *) ev++, v, first);
 		first += 3;
 		nval -= 3;
 	    }

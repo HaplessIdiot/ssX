@@ -1,5 +1,5 @@
 /* $XConsortium: queryst.c,v 1.13 94/04/17 20:33:19 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/Xi/queryst.c,v 3.0 1995/07/07 15:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/queryst.c,v 3.1 1996/03/29 22:13:52 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -46,6 +46,7 @@ from the X Consortium.
 #include "XIproto.h"
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
+#include "exevents.h"
 #include "exglobals.h"
 
 #include "queryst.h"

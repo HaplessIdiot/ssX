@@ -1,5 +1,5 @@
 /* $XConsortium: ungrdevb.c,v 1.10 94/04/17 20:33:24 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/ungrdevb.c,v 3.0 1996/03/29 22:14:18 dawes Exp $ */
 
 /************************************************************
 
@@ -65,6 +65,7 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
 #include "exglobals.h"
+#include "dixgrabs.h"
 
 #include "ungrdevb.h"
 

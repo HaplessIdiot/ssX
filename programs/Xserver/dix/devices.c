@@ -48,7 +48,7 @@ SOFTWARE.
 
 
 /* $XConsortium: devices.c /main/52 1996/01/14 16:44:49 kaleb $ */
-/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.5 1996/02/18 03:41:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/devices.c,v 3.6 1996/03/10 11:53:53 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -67,16 +67,15 @@ SOFTWARE.
 #include "XKBsrv.h"
 #endif
 
+#include "dispatch.h"
+#include "swaprep.h"
+#include "dixevents.h"
+
 extern InputInfo inputInfo;
 #ifdef XKB
 extern Bool noXkbExtension;
 #endif
 extern void (* ReplySwapVector[256]) ();
-extern void CopySwap32Write(), SwapTimeCoordWrite();
-extern void ActivatePointerGrab(), DeactivatePointerGrab();
-extern void ActivateKeyboardGrab(), DeactivateKeyboardGrab();
-extern Mask EventMaskForClient();
-extern void EnqueueEvent();
 
 DeviceIntPtr
 _AddInputDevice(deviceProc, autoStart)
@@ -194,8 +193,12 @@ InitAndStartDevices()
 }
 
 static void
+#if NeedFunctionPrototypes
+CloseDevice(register DeviceIntPtr dev)
+#else
 CloseDevice(dev)
     register DeviceIntPtr dev;
+#endif
 {
     KbdFeedbackPtr k, knext;
     PtrFeedbackPtr p, pnext;
@@ -470,8 +473,12 @@ SetKeySymsMap(dst, src)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+InitModMap(register KeyClassPtr keyc)
+#else
 InitModMap(keyc)
     register KeyClassPtr keyc;
+#endif
 {
     int i, j;
     CARD8 keysPerModifier[8];
@@ -645,7 +652,7 @@ InitKbdFeedbackClassDeviceStruct(dev, bellProc, controlProc)
 #endif
     feedc->ctrl = defaultKeyboardControl;
     feedc->ctrl.id = 0;
-    if (feedc->next = dev->kbdfeed)
+    if ((feedc->next = dev->kbdfeed) != 0)
 	feedc->ctrl.id = dev->kbdfeed->ctrl.id + 1;
     dev->kbdfeed = feedc;
 #ifdef XKB
@@ -1051,7 +1058,6 @@ ProcGetModifierMapping(client)
     ClientPtr client;
 {
     xGetModifierMappingReply rep;
-    REQUEST(xReq);
     register KeyClassPtr keyc = inputInfo.keyboard->key;
 
     REQUEST_SIZE_MATCH(xReq);
@@ -1179,7 +1185,7 @@ ProcGetKeyboardMapping(client)
     /* length is a count of 4 byte quantities and KeySyms are 4 bytes */
     rep.length = (curKeySyms->mapWidth * stuff->count);
     WriteReplyToClient(client, sizeof(xGetKeyboardMappingReply), &rep);
-    client->pSwapReplyFunc = CopySwap32Write;
+    client->pSwapReplyFunc = (ReplySwapPtr) CopySwap32Write;
     WriteSwappedDataToClient(
 	client,
 	curKeySyms->mapWidth * stuff->count * sizeof(KeySym),
@@ -1194,7 +1200,6 @@ ProcGetPointerMapping(client)
     ClientPtr client;
 {
     xGetPointerMappingReply rep;
-    REQUEST(xReq);
     ButtonClassPtr butc = inputInfo.pointer->button;
 
     REQUEST_SIZE_MATCH(xReq);
@@ -1242,7 +1247,7 @@ ProcChangeKeyboardControl (client)
     int t;
     int led = DO_ALL;
     int key = DO_ALL;
-    BITS32 vmask, index;
+    BITS32 vmask, index2;
     int mask, i;
     REQUEST(xChangeKeyboardControlReq);
 
@@ -1254,9 +1259,9 @@ ProcChangeKeyboardControl (client)
     ctrl = keybd->kbdfeed->ctrl;
     while (vmask)
     {
-	index = (BITS32) lowbit (vmask);
-	vmask &= ~index;
-	switch (index)
+	index2 = (BITS32) lowbit (vmask);
+	vmask &= ~index2;
+	switch (index2)
 	{
 	case KBKeyClickPercent: 
 	    t = (INT8)*vlist;
@@ -1425,7 +1430,6 @@ ProcGetKeyboardControl (client)
     int i;
     register KeybdCtrl *ctrl = &inputInfo.keyboard->kbdfeed->ctrl;
     xGetKeyboardControlReply rep;
-    REQUEST(xReq);
 
     REQUEST_SIZE_MATCH(xReq);
     rep.type = X_Reply;
@@ -1533,7 +1537,6 @@ ProcGetPointerControl(client)
     ClientPtr client;
 {
     register PtrCtrl *ctrl = &inputInfo.pointer->ptrfeed->ctrl;
-    REQUEST(xReq);
     xGetPointerControlReply rep;
 
     REQUEST_SIZE_MATCH(xReq);
@@ -1624,7 +1627,7 @@ ProcGetMotionEvents(client)
     WriteReplyToClient(client, sizeof(xGetMotionEventsReply), &rep);
     if (nEvents)
     {
-	client->pSwapReplyFunc = SwapTimeCoordWrite;
+	client->pSwapReplyFunc = (ReplySwapPtr) SwapTimeCoordWrite;
 	WriteSwappedDataToClient(client, nEvents * sizeof(xTimecoord),
 				 (char *)coords);
     }
@@ -1637,7 +1640,6 @@ int
 ProcQueryKeymap(client)
     ClientPtr client;
 {
-    REQUEST(xReq);
     xQueryKeymapReply rep;
     int i;
     CARD8 *down = inputInfo.keyboard->key->down;

@@ -22,7 +22,7 @@ SOFTWARE.
 ************************************************************************/
 
 /* $XConsortium: dixfonts.c,v 1.55 95/05/19 19:35:35 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.2 1996/01/05 13:17:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixfonts.c,v 3.3 1996/02/18 03:41:48 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "X.h"
@@ -215,15 +215,23 @@ FontWakeup(data, count, LastSelectMask)
 
 /* XXX -- these two funcs may want to be broken into macros */
 static void
+#if NeedFunctionPrototypes
+UseFPE(FontPathElementPtr fpe)
+#else
 UseFPE(fpe)
     FontPathElementPtr fpe;
+#endif
 {
     fpe->refcount++;
 }
 
 static void
+#if NeedFunctionPrototypes
+FreeFPE (FontPathElementPtr fpe)
+#else
 FreeFPE (fpe)
     FontPathElementPtr	fpe;
+#endif
 {
     fpe->refcount--;
     if (fpe->refcount == 0) {
@@ -234,9 +242,13 @@ FreeFPE (fpe)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+doOpenFont(ClientPtr client, OFclosurePtr c)
+#else
 doOpenFont(client, c)
     ClientPtr   client;
     OFclosurePtr c;
+#endif
 {
     FontPtr     pfont = NullFont;
     FontPathElementPtr fpe;
@@ -295,7 +307,7 @@ doOpenFont(client, c)
 	if (err == Suspended) {
 	    if (!c->slept) {
 		c->slept = TRUE;
-		ClientSleep(client, doOpenFont, (pointer) c);
+		ClientSleep(client, (ClientSleepProcPtr)doOpenFont, (pointer) c);
 	    }
 	    return TRUE;
 	}
@@ -500,10 +512,10 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
     xFontProp  *prFP;
     xCharInfo  *prCI;
     xCharInfo  *charInfos[256];
-    char        chars[512];
+    unsigned char chars[512];
     int         ncols;
     int         ninfos;
-    int         count;
+    unsigned long count;
 
     /* pr->length set in dispatch */
     pReply->minCharOrByte2 = pFont->info.firstCol;
@@ -553,9 +565,13 @@ QueryFont(pFont, pReply, nProtoCCIStructs)
 }
 
 static Bool
+#if NeedFunctionPrototypes
+doListFontsAndAliases(ClientPtr client, LFclosurePtr c)
+#else
 doListFontsAndAliases(client, c)
     ClientPtr   client;
     LFclosurePtr c;
+#endif
 {
     FontPathElementPtr fpe;
     int         err = Successful;
@@ -600,7 +616,9 @@ doListFontsAndAliases(client, c)
 	    if (err == Suspended) {
 		if (!c->slept) {
 		    c->slept = TRUE;
-		    ClientSleep(client, doListFontsAndAliases, (pointer) c);
+		    ClientSleep(client,
+			(ClientSleepProcPtr)doListFontsAndAliases,
+			(pointer) c);
 		}
 		return TRUE;
 	    }
@@ -625,7 +643,8 @@ doListFontsAndAliases(client, c)
 		     &c->current.private);
 		if (err == Suspended) {
 		    if (!c->slept) {
-			ClientSleep(client, doListFontsAndAliases,
+			ClientSleep(client,
+				    (ClientSleepProcPtr)doListFontsAndAliases,
 				    (pointer) c);
 			c->slept = TRUE;
 		    }
@@ -642,7 +661,8 @@ doListFontsAndAliases(client, c)
 		     &resolvedlen, c->current.private);
 		if (err == Suspended) {
 		    if (!c->slept) {
-			ClientSleep(client, doListFontsAndAliases,
+			ClientSleep(client,
+				    (ClientSleepProcPtr)doListFontsAndAliases,
 				    (pointer) c);
 			c->slept = TRUE;
 		    }
@@ -909,7 +929,7 @@ doListFontsWithInfo(client, c)
  	    {
 		if (!c->slept)
  		{
-		    ClientSleep(client, doListFontsWithInfo, c);
+		    ClientSleep(client, (ClientSleepProcPtr)doListFontsWithInfo, c);
 		    c->slept = TRUE;
 		}
 		return TRUE;
@@ -928,7 +948,9 @@ doListFontsWithInfo(client, c)
  	    {
 		if (!c->slept)
  		{
-		    ClientSleep(client, doListFontsWithInfo, c);
+		    ClientSleep(client,
+		    	     (ClientSleepProcPtr)doListFontsWithInfo,
+			     c);
 		    c->slept = TRUE;
 		}
 		return TRUE;
@@ -1224,9 +1246,9 @@ doPolyText(client, c)
 		    ChangeGC( c->pGC, GCFont, &fid);
 		    ValidateGC(c->pDraw, c->pGC);
 		    if (c->reqType == X_PolyText8)
-			c->polyText = c->pGC->ops->PolyText8;
+			c->polyText = (PolyTextPtr) c->pGC->ops->PolyText8;
 		    else
-			c->polyText = c->pGC->ops->PolyText16;
+			c->polyText = (PolyTextPtr) c->pGC->ops->PolyText16;
 		}
 
 		/* Undo the refcnt++ we performed when going to sleep */
@@ -1332,7 +1354,9 @@ doPolyText(client, c)
 		    ValidateGC(c->pDraw, c->pGC);
 		    
 		    c->slept = TRUE;
-		    ClientSleep(client, (ClientSleepProcPtr)doPolyText, (pointer) c);
+		    ClientSleep(client,
+		    	     (ClientSleepProcPtr)doPolyText,
+			     (pointer) c);
 
 		    /* Set up to perform steps 3 and 4 */
 		    client_state = START_SLEEP;
@@ -1413,12 +1437,12 @@ PolyText(client, pDraw, pGC, pElt, endReq, xorg, yorg, reqType, did)
     local_closure.yorg = yorg;
     if ((local_closure.reqType = reqType) == X_PolyText8)
     {
-	local_closure.polyText = pGC->ops->PolyText8;
+	local_closure.polyText = (PolyTextPtr) pGC->ops->PolyText8;
 	local_closure.itemSize = 1;
     }
     else
     {
-	local_closure.polyText =  pGC->ops->PolyText16;
+	local_closure.polyText =  (PolyTextPtr) pGC->ops->PolyText16;
 	local_closure.itemSize = 2;
     }
     local_closure.pGC = pGC;
@@ -1579,12 +1603,12 @@ ImageText(client, pDraw, pGC, nChars, data, xorg, yorg, reqType, did)
     local_closure.yorg = yorg;
     if ((local_closure.reqType = reqType) == X_ImageText8)
     {
-	local_closure.imageText = pGC->ops->ImageText8;
+	local_closure.imageText = (ImageTextPtr) pGC->ops->ImageText8;
 	local_closure.itemSize = 1;
     }
     else
     {
-	local_closure.imageText =  pGC->ops->ImageText16;
+	local_closure.imageText = (ImageTextPtr) pGC->ops->ImageText16;
 	local_closure.itemSize = 2;
     }
     local_closure.did = did;
@@ -1597,8 +1621,12 @@ ImageText(client, pDraw, pGC, nChars, data, xorg, yorg, reqType, did)
 
 /* does the necessary magic to figure out the fpe type */
 static int
+#if NeedFunctionPrototypes
+DetermineFPEType(char *pathname)
+#else
 DetermineFPEType(pathname)
     char       *pathname;
+#endif
 {
     int         i;
 
@@ -1611,10 +1639,14 @@ DetermineFPEType(pathname)
 
 
 static void
+#if NeedFunctionPrototypes
+FreeFontPath(FontPathElementPtr *list, int n, Bool force)
+#else
 FreeFontPath(list, n, force)
     FontPathElementPtr	*list;
     Bool		force;
     int         n;
+#endif
 {
     int         i;
 
@@ -1640,12 +1672,16 @@ FreeFontPath(list, n, force)
     xfree((char *) list);
 }
 
-static      FontPathElementPtr
+static FontPathElementPtr
+#if NeedFunctionPrototypes
+find_existing_fpe(FontPathElementPtr *list, int num, unsigned char *name, int len)
+#else
 find_existing_fpe(list, num, name, len)
     FontPathElementPtr *list;
     int         num;
     unsigned char *name;
     int         len;
+#endif
 {
     FontPathElementPtr fpe;
     int         i;
@@ -1660,10 +1696,14 @@ find_existing_fpe(list, num, name, len)
 
 
 static int
+#if NeedFunctionPrototypes
+SetFontPathElements(int npaths, unsigned char *paths, int *bad)
+#else
 SetFontPathElements(npaths, paths, bad)
     int         npaths;
     unsigned char *paths;
     int        *bad;
+#endif
 {
     int         i,
                 err;
@@ -1934,6 +1974,100 @@ GetClientResolutions (num)
  */
 
 int
+#if NeedFunctionPrototypes
+RegisterFPEFunctions(
+    int         (*name_func) (
+                  char* /* name */
+                  ),
+    int         (*init_func) (
+                  FontPathElementPtr /* fpe */
+                  ),
+    int         (*free_func) (
+                  FontPathElementPtr /* fpe */
+                  ),
+    int         (*reset_func) (
+                  FontPathElementPtr /* fpe */
+                  ),
+    int         (*open_func) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */,
+                  int /* flags */,
+                  char* /* name */,
+                  int /* namelen */,
+                  fsBitmapFormat /* format */,
+                  fsBitmapFormatMask /* fmask */,
+                  unsigned long /* id (type XID or FSID) */,
+                  FontPtr* /* pFont */,
+                  char** /* aliasName */,
+                  FontPtr /* non_cachable_font */
+                  ),
+    int         (*close_func) (
+                  FontPathElementPtr /* fpe */,
+                  FontPtr /* pFont */
+                  ),
+    int         (*list_func) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */,
+                  char* /* pat */,
+                  int /* len */,
+                  int /* max */,
+                  FontNamesPtr /* names */
+                  ),
+    int         (*start_lfwi_func) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */,
+                  char* /* pat */,
+                  int /* patlen */,
+                  int /* maxnames */,
+                  pointer* /* privatep */
+                  ),
+    int         (*next_lfwi_func) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */,
+                  char** /* name */,
+                  int* /* namelen */,
+                  FontInfoPtr* /* info */,
+                  int* /* numFonts */,
+                  pointer /* private */
+                  ),
+    int         (*wakeup_func) (
+                  FontPathElementPtr /* fpe */,
+                  unsigned long* /* LastSelectMask */
+                  ),
+    int         (*client_died) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */
+                  ),
+    int         (*load_glyphs) (
+                  pointer /* client */,
+                  FontPtr /* pfont */,
+                  Bool /* range_flag */,
+                  unsigned int /* nchars */,
+                  int /* item_size */,
+                  unsigned char* /* data */
+                  ),
+    int         (*start_list_alias_func) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */,
+                  char* /* pat */,
+                  int /* len */,
+                  int /* max */,
+                  pointer* /* privatep */
+                  ),
+    int         (*next_list_alias_func) (
+                  pointer /* client */,
+                  FontPathElementPtr /* fpe */,
+                  char** /* namep */,
+                  int* /* namelenp */,
+                  char** /* resolvedp */,
+                  int* /* resolvedlenp */,
+                  pointer /* private */
+                  ),
+    void        (*set_path_func) (
+                  void
+                  )
+)
+#else
 RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
 	   open_func, close_func, list_func, start_lfwi_func, next_lfwi_func,
 		     wakeup_func, client_died, load_glyphs,
@@ -1954,6 +2088,7 @@ RegisterFPEFunctions(name_func, init_func, free_func, reset_func,
     int		(*start_list_alias_func) ();
     int		(*next_list_alias_func) ();
     void	(*set_path_func) ();
+#endif
 {
     FPEFunctions *new;
 

@@ -46,7 +46,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: extension.c,v 1.55 95/02/27 16:43:20 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/dix/extension.c,v 3.2 1996/03/29 22:14:54 dawes Exp $ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -57,6 +57,7 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "gcstruct.h"
 #include "scrnintstr.h"
+#include "dispatch.h"
 
 #define EXTENSION_BASE  128
 #define EXTENSION_EVENT_BASE  64
@@ -292,7 +293,6 @@ ProcListExtensions(client)
     char *bufptr, *buffer;
     int total_length = 0;
 
-    REQUEST(xReq);
     REQUEST_SIZE_MATCH(xReq);
 
     reply.type = X_Reply;

@@ -148,6 +148,17 @@ _XlcResolveName(lc_name, file_name, direction)
 	char *p = buf;
 	int n;
 	char *args[2], *from, *to;
+#ifdef __EMX__  /* Take out CR under OS/2 */
+	int len;
+
+	len=strlen(p);
+	if(len>1){
+	   if(*(p+len-2) == '\r' && *(p+len-1) == '\n'){
+	       *(p+len-2) = '\n';
+	       *(p+len-1) = '\0';
+	   }
+	}
+#endif
 	while(isspace(*p)){
 	    ++p;
 	}

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -30,12 +30,11 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes E
 #define ProjectRoot /XFree86
 
 /* more directories */
-#define AdmDir		$(LIBDIR)/adm
+#define AdmDir		        $(LIBDIR)/adm
         DESTDIR = $(X11ROOT)
 
 /* for the man pages */
 #define BookFormatManPages	YES
-#define ManDirectoryRoot /XFree86/man/man
 #define ManSuffix	1
 #define LibManSuffix	3
 #define FileManSuffix	4
@@ -53,6 +52,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes E
 
 #define BuildXKB		YES
 #define BuildImplibs		YES
+#define BuildLBX		YES
 
 /* some more properties of the OS/2 implementation */
 #define HasNdbm         	YES
@@ -65,7 +65,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes E
 #define HasSecureRPC		NO
 #define	HasSymLinks		NO
 #define HasVFork		NO
-#define Malloc0ReturnsNull	NO
+#define Malloc0ReturnsNull	YES
 #define SetTtyGroup     	NO
 #ifndef HasLibCrypt
 # define HasLibCrypt		NO
@@ -101,6 +101,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes E
 #define DefaultCCOptions	-Zmtd -Zsysv-signals
 #define LibraryCCOptions	-Zmtd -Zsysv-signals
 #define ServerCCOptions		-Zmtd -Zsysv-signals
+#define CplusplusOptions	-Zmtd -Zsysv-signals
 
 #define MakeCmd x11make 
 #define AsCmd	gcc -S
@@ -118,7 +119,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.8 1996/02/19 09:47:24 dawes E
  * with Unix, but listed here for completeness
  */
 #define CplusplusCmd	g++
-#define ArCmd	ar crJ
+#define ArCmd	ar cq
 #define RanlibCmd	ar s
 #define BourneShell	/**/
 #define LexCmd	flex -l
@@ -174,8 +175,8 @@ _NULLCMD_ = @ rem
 /* _NULLCMD_ = @ echo ÿ*/		/*WARNING: ALT-255 IN LINE!*/
 #define StripInstalledPrograms	NO
 #define CompressAllFonts	YES
-#define DefaultUserPath		.:/os2:/emx/bin:/tcpip/bin:$(BINDIR)
-#define DefaultSystemPath	/os2:/emx/bin:$(BINDIR)
+#define DefaultUserPath		.;/os2;/emx/bin;/tcpip/bin;$(BINDIR)
+#define DefaultSystemPath	/os2;/emx/bin;$(BINDIR)
 
 #ifndef ExtraFilesToClean
 # define ExtraFilesToClean 	*.~* *.exe *.dll *.obj *.lib

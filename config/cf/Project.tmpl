@@ -1,7 +1,7 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
 XCOMM $XConsortium: Project.tmpl /main/r61_main/6 1996/01/15 12:26:59 gildea $
-XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.25 1996/01/16 15:00:01 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.26 1996/01/21 01:47:15 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -117,6 +117,9 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.25 1996/01/16 15:00:01 dawes Exp $
 #endif
 #ifndef BuildXF86MiscExt
 #define BuildXF86MiscExt	NO
+#endif
+#ifndef BuildLBX
+#define BuildLBX		NO
 #endif
 
 #ifndef InstallLibManPages
@@ -270,7 +273,13 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.25 1996/01/16 15:00:01 dawes Exp $
 #ifndef BigReqDefines
 #define BigReqDefines -DBIGREQS
 #endif
-
+#ifndef LbxDefines
+#if BuildLBX
+#define LbxDefines -DLBX -DLBX_COMPAT
+#else
+#define LbxDefines /**/
+#endif
+#endif
 #ifndef DBEDefines
 #if BuildDBE
 #define DBEDefines -DDBE
@@ -325,7 +334,7 @@ XCOMM $XFree86: xc/config/cf/Project.tmpl,v 3.25 1996/01/16 15:00:01 dawes Exp $
 #define SitePervasiveExtensionDefines /**/
 #endif
 #ifndef PervasiveExtensionDefines
-#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines PervasiveDBEDefines SitePervasiveExtensionDefines
+#define PervasiveExtensionDefines -DSHAPE XInputDefines XkbDefines LbxDefines PervasiveDBEDefines SitePervasiveExtensionDefines
 #endif
 #ifndef SiteExtensionDefines
 #define SiteExtensionDefines /**/

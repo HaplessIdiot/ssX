@@ -1,5 +1,5 @@
 LIBRARY Xt
-DESCRIPTION "X11R6 XFree86 libXt.dll for OS/2 EMX09B VERSION=6.1"
+DESCRIPTION "X11R6 XFree86 3.1.2E libXt.dll for OS/2 EMX09B VERSION=6.1"
 CODE
 	PRELOAD
 DATA
@@ -322,7 +322,7 @@ EXPORTS
 	_XtCacheFlushTag  @ 314
 	_XtConvert  @ 315
 	_XtConvertInitialize  @ 316
- 	_XtAddDefaultConverters  @ 317
+	 	_XtAddDefaultConverters  @ 317
 	_XtCreateWidget  @ 318
 	_XtCreatePopupShell  @ 319
 	_XtAppCreateShell  @ 320
@@ -439,7 +439,7 @@ EXPORTS
 	XtCXtToolkitError @ 437
 	_XtQString @ 438
 	_XtAppDestroyCount @ 439
-	_XtPerDisplayList @ 440
+	_XtperDisplayList @ 440
 	_XtGlobalTM @ 444
 	XtStrings @ 445
 	overrideShellClassRec @ 446
@@ -469,3 +469,7 @@ EXPORTS
 	_XtInheritTranslations @ 471
 	sessionShellClassRec @ 472
 	sessionShellWidgetClass @ 473
+	vendorShellClassRec @ 474
+	vendorShellWidgetClass @ 475
+	hookObjClassRec @ 476
+	hookObjectClass @ 477

@@ -1,5 +1,5 @@
 /* $XConsortium: getprop.c,v 1.11 94/04/17 20:33:12 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/Xi/getprop.c,v 3.0 1995/07/07 15:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getprop.c,v 3.1 1996/03/29 22:13:29 dawes Exp $ */
 
 /************************************************************
 
@@ -65,11 +65,11 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
 #include "exglobals.h"
+#include "swaprep.h"
 
 #include "getprop.h"
 
 extern			XExtEventInfo EventInfo[];
-extern	void				Swap32Write();
 extern int	ExtEventIndex;
 
 /***********************************************************************
@@ -149,7 +149,7 @@ ProcXGetDeviceDontPropagateList (client)
 
     if (count)
 	{
-	client->pSwapReplyFunc = Swap32Write;
+	client->pSwapReplyFunc = (ReplySwapPtr)Swap32Write;
 	WriteSwappedDataToClient( client, count * sizeof(XEventClass), buf);
 	xfree (buf);
 	}

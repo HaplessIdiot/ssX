@@ -267,6 +267,14 @@ Display *XtOpenDisplay(app, displayName, applName, className,
 #else
 		char *ptr = strrchr(argv[0], '/');
 #endif
+#ifdef __EMX__
+		char *dot_ptr,*ptr2;
+		ptr2 = strrchr(argv[0],'\\');
+		if (ptr2 > ptr) ptr = ptr2;
+		dot_ptr = strrchr(argv[0],'.');
+		if (dot_ptr && (dot_ptr > ptr)) *dot_ptr='\0';
+#endif  /* This will remove the .exe suffix under OS/2 */
+
 		if (ptr) applName = ++ptr;
 		else applName = argv[0];
 	    } else

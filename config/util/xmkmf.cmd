@@ -1,7 +1,7 @@
 /* OS/2 REXX */
 /* make a Makefile from an Imakefile from inside or outside the sources
  * 
- * $XFree86$
+ * $XFree86: xc/config/util/xmkmf.cmd,v 3.0 1996/01/24 21:56:19 dawes Exp $
  */
 '@ECHO OFF'
 
@@ -55,11 +55,11 @@ SAY 'imake 'iargs
 IF do_all = 1 THEN DO
 	'imake 'iargs
 	SAY 'make Makefiles'
-	CALL xmake 'Makefiles'
+	CALL make 'Makefiles'
 	SAY 'make includes'
-	CALL xmake 'includes'
+	CALL make 'includes'
 	SAY 'make depend'
-	CALL xmake 'depend'
+	CALL make 'depend'
 END
 ELSE
 	'imake 'iargs

@@ -1,5 +1,5 @@
 LIBRARY Xaw
-DESCRIPTION "X11R6 XFree86 libXaw.dll for OS/2 EMX09B VERSION=6.1"
+DESCRIPTION "X11R6 XFree86 3.1.2E libXaw.dll for OS/2 EMX09B VERSION=6.1"
 CODE
 	PRELOAD
 DATA
@@ -154,3 +154,37 @@ EXPORTS
 	pannerWidgetClass @ 153
 	textSrcClassRec @ 154
 	textSrcObjectClass @ 155
+	gripWidgetClass @ 156
+	XawWidgetArray @ 157
+	XawWidgetCount @ 158
+	XawPanedAllowResize @ 159
+	_XawTextNeedsUpdating @ 160
+        _XawTextGetText @ 161
+        _XawTextSetScrollBars @ 162
+        _XawTextVScroll @ 163
+        _XawTextReplace @ 164
+        _XawTextClearAndCenterDisplay @ 165
+        _XawTextCheckResize @ 166
+        _XawTextSelectionList @ 167
+        _XawTextSetSelection @ 168
+        _XawTextAlterSelection @ 169
+        _XawTextPrepareToUpdate @ 170
+        _XawTextShowPosition @ 171
+        _XawTextExecuteUpdate @ 172
+        XawVendorShellExtResize @ 173
+	asciiSinkClassRec @ 174
+	asciiSinkObjectClass @ 175
+        gripClassRec @ 176
+        vPanedWidgetClass @ 177
+        repeaterClassRec @ 178
+        repeaterWidgetClass @ 179
+        smeClassRec @ 180
+        smeObjectClass @ 181
+        stripChartClassRec @ 182
+        stripChartWidgetClass @ 183
+        _XawDefaultTextTranslations1 @ 184
+        _XawDefaultTextTranslations2 @ 185
+        _XawDefaultTextTranslations3 @ 186
+        vendorShellClassRec @ 187
+        vendorShellWidgetClass @ 188
+        _XawDefaultTextTranslations4 @ 189

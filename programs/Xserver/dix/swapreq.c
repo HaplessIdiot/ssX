@@ -47,6 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: swapreq.c,v 1.39 94/04/17 20:26:45 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -54,9 +55,10 @@ SOFTWARE.
 #include "Xprotostr.h"
 #include "misc.h"
 #include "dixstruct.h"
+#include "extnsionst.h"	/* for SendEvent */
+#include "swapreq.h"
 
 extern int (* ProcVector[256]) ();
-extern void (* EventSwapVector[128]) ();  /* for SendEvent */
 
 /* Thanks to Jack Palevich for testing and subsequently rewriting all this */
 

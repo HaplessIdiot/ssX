@@ -46,7 +46,7 @@ SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: getselev.c,v 1.12 94/04/17 20:33:13 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.0 1995/07/07 15:36:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xi/getselev.c,v 3.1 1996/03/29 22:13:31 dawes Exp $ */
 
 /***********************************************************************
  *
@@ -65,11 +65,10 @@ SOFTWARE.
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
 #include "exglobals.h"
+#include "swaprep.h"
 
 #include "getprop.h"
 #include "getselev.h"
-
-extern	void				Swap32Write();
 
 /***********************************************************************
  *
@@ -164,7 +163,7 @@ ProcXGetSelectedExtensionEvents(client)
 
     if (total_length)
 	{
-	client->pSwapReplyFunc = Swap32Write;
+	client->pSwapReplyFunc = (ReplySwapPtr) Swap32Write;
 	WriteSwappedDataToClient( client, total_length, buf);
 	xfree (buf);
 	}

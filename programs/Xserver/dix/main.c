@@ -46,8 +46,9 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: main.c,v 5.33 95/04/07 18:59:06 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.3 1994/12/29 09:41:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.4 1996/01/05 13:18:00 dawes Exp $ */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "input.h"
@@ -66,6 +67,8 @@ SOFTWARE.
 #include "servermd.h"
 #include "site.h"
 #include "dixfont.h"
+#include "dixevents.h"		/* InitEvents() */
+#include "dispatch.h"		/* InitProcVectors() */
 
 extern CARD32 defaultScreenSaverTime;
 extern CARD32 defaultScreenSaverInterval;
@@ -93,11 +96,6 @@ xConnSetupPrefix connSetupPrefix;
 extern WindowPtr *WindowTable;
 extern FontPtr defaultFont;
 extern int screenPrivateCount;
-
-extern void InitProcVectors();
-extern void InitEvents();
-extern void DefineInitialRootWindow();
-extern Bool CreateGCperDepthArray();
 
 static Bool CreateConnectionBlock(
 #if NeedFunctionPrototypes
@@ -528,10 +526,24 @@ with its screen number, a pointer to its ScreenRec, argc, and argv.
 */
 
 int
+#if NeedFunctionPrototypes
+AddScreen(
+    Bool	(* pfnInit)(
+#if NeedNestedPrototypes
+	int /*index*/,
+	ScreenPtr /*pScreen*/,
+	int /*argc*/,
+	char ** /*argv*/
+#endif
+		),
+    int argc,
+    char **argv)
+#else
 AddScreen(pfnInit, argc, argv)
     Bool	(* pfnInit)();
     int argc;
     char **argv;
+#endif
 {
 
     int i;
@@ -568,8 +580,8 @@ AddScreen(pfnInit, argc, argv)
     pScreen->PixmapPrivateSizes = (unsigned *)NULL;
     pScreen->totalPixmapSize = sizeof(PixmapRec);
 #endif
-    pScreen->ClipNotify = (void (*)())NULL; /* for R4 ddx compatibility */
-    pScreen->CreateScreenResources = (Bool (*)())NULL;
+    pScreen->ClipNotify = 0;	/* for R4 ddx compatibility */
+    pScreen->CreateScreenResources = 0;
     
 #ifdef DEBUG
     for (jNI = &pScreen->QueryBestSize; 

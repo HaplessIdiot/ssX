@@ -1,5 +1,5 @@
 /* $XConsortium: gtmotion.c,v 1.15 94/04/17 20:33:15 rws Exp $ */ /*ALLOC-FIX*/
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/gtmotion.c,v 3.0 1996/03/29 22:13:45 dawes Exp $ */
 
 /************************************************************
 
@@ -63,6 +63,7 @@ SOFTWARE.
 #include "XIproto.h"
 #include "extnsionst.h"
 #include "extinit.h"			/* LookupDeviceIntRec */
+#include "exevents.h"
 #include "exglobals.h"
 
 #include "gtmotion.h"

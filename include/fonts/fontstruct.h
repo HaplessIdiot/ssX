@@ -1,4 +1,5 @@
 /* $XConsortium: fontstruct.h,v 1.16 94/04/17 20:11:08 gildea Exp $ */
+/* $XFree86$ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts.
 
@@ -107,10 +108,36 @@ typedef struct _Font {
     char        glyph;
     char        scan;
     fsBitmapFormat format;
-    int         (*get_glyphs) ( /* font, count, chars, encoding, count, glyphs */ );
-    int         (*get_metrics) ( /* font, count, chars, encoding, count, glyphs */ );
-    void        (*unload_font) ( /* font */ );
-    void        (*unload_glyphs) ( /* font */ );
+    int         (*get_glyphs) (
+#if NeedNestedPrototypes
+                FontPtr         /* font */,
+                unsigned long   /* count */,
+                unsigned char * /* chars */,
+                FontEncoding    /* encoding */,
+                unsigned long * /* count */,
+                CharInfoPtr *   /* glyphs */
+#endif
+                );
+    int         (*get_metrics) (
+#if NeedNestedPrototypes
+                FontPtr         /* font */,
+                unsigned long   /* count */,
+                unsigned char * /* chars */,
+                FontEncoding    /* encoding */,
+                unsigned long * /* count */,
+                xCharInfo **    /* glyphs */
+#endif
+                );
+    void        (*unload_font) (
+#if NeedNestedPrototypes
+                FontPtr         /* font */
+#endif
+                );
+    void        (*unload_glyphs) (
+#if NeedNestedPrototypes
+                FontPtr         /* font */
+#endif
+                );
     FontPathElementPtr fpe;
     pointer     svrPrivate;
     pointer     fontPrivate;
@@ -119,8 +146,18 @@ typedef struct _Font {
     pointer	*devPrivates;
 }           FontRec;
 
-extern Bool	_FontSetNewPrivate (/* pFont, n, ptr */);
-extern int	AllocateFontPrivateIndex ();
+extern Bool     _FontSetNewPrivate (
+#if NeedFunctionPrototypes
+                FontPtr        /* pFont */,
+                int            /* n */,
+                pointer        /* ptr */
+#endif
+                );
+extern int      AllocateFontPrivateIndex (
+#if NeedFunctionPrototypes
+                void
+#endif
+                );
 
 #define FontGetPrivate(pFont,n) ((n) > (pFont)->maxPrivate ? (pointer) 0 : \
 			     (pFont)->devPrivates[n])
@@ -278,7 +315,9 @@ typedef struct _FPEFunctions {
 				 );
 }           FPEFunctionsRec, FPEFunctions;
 
+#if 0	/* unused */
 extern int  InitFPETypes();
+#endif
 
 /*
  * Various macros for computing values based on contents of

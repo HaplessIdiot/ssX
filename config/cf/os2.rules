@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.8 1996/02/19 09:47:25 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.9 1996/03/10 11:46:59 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -170,8 +170,8 @@ clean::									@@\
 target:: ProgramTargetName($(IMAKE))					@@\
 									@@\
 ProgramTargetName($(IMAKE)):						@@\
-	@\indir $(IMAKESRC) if exist Makefile $(MAKE) SHELL= MAKE=x11make all		@@\
-	@\indir $(IMAKESRC) if not exist Makefile $(MAKE) SHELL= MAKE=x11make -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
+	@ImakeIndir $(IMAKESRC) if exist Makefile $(MAKE) SHELL= MAKE=x11make all		@@\
+	@ImakeIndir $(IMAKESRC) if not exist Makefile $(MAKE) SHELL= MAKE=x11make -f Makefile.ini BOOTSTRAPCFLAGS="$(BOOTSTRAPCFLAGS)"
 #endif
 
 #ifndef UseInstalled
@@ -179,7 +179,7 @@ ProgramTargetName($(IMAKE)):						@@\
 depend:: ProgramTargetName($(DEPEND))					@@\
 									@@\
 ProgramTargetName($(DEPEND)):						@@\
-	@\indir $(DEPENDSRC) $(MAKE) SHELL= MAKE=x11make 
+	@ImakeIndir $(DEPENDSRC) $(MAKE) SHELL= MAKE=x11make 
 #endif
 
 #define	DependTarget()							@@\
@@ -202,7 +202,7 @@ depend::								@@\
 dirs: DONE								@@\
 									@@\
 DONE:									@@\
-	@for %i in (dirs) do \indir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) PassCDebugFlags all @@\
+	@for %i in (dirs) do ImakeIndir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) PassCDebugFlags all @@\
 	touch DONE							@@\
 									@@\
 clean::									@@\
@@ -219,7 +219,7 @@ target::								@@\
 #define NamedTargetSubdirs(name,dirs,verb,flags,subname)		@@\
 Concat(SUBST,name) = dirs						@@\
 name::									@@\
-	@for %i in ($(subst /,\,$(Concat(SUBST,name)))) do \indir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) flags subname
+	@for %i in ($(subst /,\,$(Concat(SUBST,name)))) do ImakeIndir %i $(MAKE) SHELL= MAKE=x11make $(MFLAGS) flags subname
 
 #define InstallNamedTarget(step,srcname,flags,dest,dstname)		@@\
 step:: srcname								@@\
@@ -411,3 +411,13 @@ install.man:: list                                                      @@\
 	MakeDir($(DESTDIR)dest)						@@\
 	for %i in (list) do ImakeHelper 10 %i $(DESTDIR)dest %i $(MANSUFFIX)
 #endif
+
+#ifndef NormalLintTarget
+#define NormalLintTarget(srclist)
+#endif /* NormalLintTarget */
+
+#ifndef MakeDirectories
+#define MakeDirectories(step,dirs)					@@\
+step::									@@\
+	-for %i in (dirs) do $(MKDIRHIER) $(DESTDIR)%i
+#endif /* MakeDirectories */

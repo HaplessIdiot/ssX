@@ -1,5 +1,5 @@
 /* $XConsortium: extinit.c,v 1.18 94/04/17 20:33:08 rws Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/Xi/extinit.c,v 3.0 1996/03/29 22:13:13 dawes Exp $ */
 
 /************************************************************
 
@@ -57,6 +57,7 @@ SOFTWARE.
 #define	 NUMTYPES 15
 
 #define	 NEED_EVENTS
+#define	 NEED_REPLIES
 #include "X.h"
 #include "Xproto.h"
 #include "inputstr.h"
@@ -65,9 +66,11 @@ SOFTWARE.
 #include "XI.h"
 #include "XIproto.h"
 
+#include "dixevents.h"
 #include "exevents.h"
 #include "extinit.h"
 #include "exglobals.h"
+#include "swaprep.h"
 
 /* modules local to Xi */
 #include "allowev.h"

@@ -47,6 +47,7 @@ SOFTWARE.
 ********************************************************/
 
 /* $XConsortium: resource.c,v 1.95 94/04/17 20:26:43 dpw Exp $ */
+/* $XFree86$ */
 
 /*	Routines to manage various kinds of resources:
  *
@@ -71,6 +72,7 @@ SOFTWARE.
  *      resource "owned" by the client.
  */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "misc.h"
 #include "os.h"
@@ -78,6 +80,12 @@ SOFTWARE.
 #include "dixstruct.h" 
 #include "opaque.h"
 #include "windowstr.h"
+#include "inputstr.h"
+#include "dixfont.h"
+#include "dixevents.h"
+#include "dixgrabs.h"
+#include "colormap.h"
+#include "cursor.h"
 
 extern WindowPtr *WindowTable;
 
@@ -164,11 +172,6 @@ InitClientResources(client)
  
     if (client == serverClient)
     {
-	extern int DeleteWindow(), dixDestroyPixmap(), FreeGC();
-	extern int CloseFont(), FreeCursor();
-	extern int FreeColormap(), FreeClientPixels();
-	extern int OtherClientGone(), DeletePassiveGrab();
-
 	lastResourceType = RT_LASTPREDEF;
 	lastResourceClass = RC_LASTPREDEF;
 	TypeMask = RC_LASTPREDEF - 1;
@@ -213,9 +216,13 @@ InitClientResources(client)
 }
 
 static int
+#if NeedFunctionPrototypes
+Hash(int client, register XID id)
+#else
 Hash(client, id)
     int client;
     register XID id;
+#endif
 {
     id &= RESOURCE_ID_MASK;
     switch (clientTable[client].hashsize)
@@ -237,9 +244,17 @@ Hash(client, id)
 }
 
 static XID
+#if NeedFunctionPrototypes
+AvailableID(
+    register int client,
+    register XID id,
+    register XID maxid,
+    register XID goodid)
+#else
 AvailableID(client, id, maxid, goodid)
     register int client;
     register XID id, maxid, goodid;
+#endif
 {
     register ResourcePtr res;
 

@@ -1,6 +1,6 @@
 
 LIBRARY X11
-DESCRIPTION "X11R6 XFree86 libX11.dll for OS/2 EMX09B VERSION=6.1"
+DESCRIPTION "X11R6 XFree86 3.1.2E libX11.dll for OS/2 EMX09B VERSION=6.1"
 CODE
 	PRELOAD
 DATA
@@ -950,9 +950,9 @@ EXPORTS
 	_XimXTransGetPeerAddr  @ 939
 	_XimXTransGetConnectionNumber  @ 940
 	_XimXTransGetHostname  @ 945
+	_Xdebug @ 946
 	__XOS2RedirRoot @ 950
 	__XOS2RedirRoot1 @ 951
-
 	XkbIgnoreExtension @ 1000
 	XkbOpenDisplay @ 1001
 	XkbQueryExtension @ 1002
@@ -1100,4 +1100,84 @@ EXPORTS
 	XkbFindOverlayForKey @ 1149
 	XkbAllocGeomKeyAliases @ 1150
 	XkbSetGeometry @ 1151
+	XkbXlibControlsImplemented @ 1152
+	XkbTranslateKey @ 1153
+	XkbAddGeomOverlayKey @ 1154
+	XkbNoteControlsChanges @ 1155
+	XkbGetKeyVirtualModMap @ 1156
+	XkbComputeRowBounds @ 1157
+	XkbGetNamedGeometry @ 1158
+	XkbKeyTypesForCoreSymbols @ 1159
+	XkbApplyCompatMapToKey @ 1160
+	XkbUpdateMapFromCore @ 1161
+	XkbUpdateActionVirtualMods @ 1162
+	XkbUpdateKeyTypeVirtualMods @ 1163
+	XkbApplyVirtualModChanges @ 1164
+	XkbFreeGeomProperties @ 1165
+	XkbFreeGeomKeyAliases @ 1166
+	XkbFreeGeomColors @ 1167
+	XkbFreeGeomPoints @ 1168
+	XkbFreeGeomOutlines @ 1169
+	XkbFreeGeomShapes @ 1170
+	XkbFreeGeomOverlayKeys @ 1171
+	XkbFreeGeomOverlayRows @ 1172
+	XkbFreeGeomOverlays @ 1173
+	XkbFreeGeomKeys @ 1174
+	XkbFreeGeomRows @ 1175
+	XkbFreeGeomSections @ 1176
+	XkbFreeGeomDoodads @ 1177
+	XkbFreeGeometry @ 1178
+	XkbAllocGeomProps @ 1179
+	XkbAllocGeomColors @ 1180
+	XkbAllocGeomShapes @ 1181
+	XkbAllocGeomSections @ 1182
+	XkbAllocGeomOverlays @ 1183
+	XkbAllocGeomOverlayRows @ 1184
+	XkbAllocGeomOverlayKeys @ 1185
+	XkbAllocGeomDoodads @ 1186
+	XkbAllocGeomSectionDoodads @ 1187
+	XkbAllocGeomOutlines @ 1188
+	XkbAllocGeomRows @ 1189
+	XkbAllocGeomPoints @ 1190
+	XkbAllocGeomKeys @ 1191
+	XkbAddGeomKeyAlias @ 1192
+	_XkeyTable @ 1200
+	_Xevent_to_mask @ 1201
+	_qfree @ 1202
+	_XIOErrorFunction @ 1203
+	_XErrorFunction @ 1204
+	_XHeadOfDisplayList @ 1205
+	XcmsCIELabColorSpace @ 1206
+	XcmsCIELuvColorSpace @ 1207
+	XcmsCIEXYZColorSpace @ 1208
+	XcmsCIEuvYColorSpace @ 1209
+	XcmsCIExyYColorSpace @ 1210
+	XcmsTekHVCColorSpace @ 1211
+	XcmsUNDEFINEDColorSpace @ 1212
+	_XcmsDIColorSpacesInit @ 1213
+	_XcmsDIColorSpaces @ 1214
+	_XcmsDDColorSpacesInit @ 1215
+	_XcmsDDColorSpaces @ 1216
+	_XcmsSCCFuncSetsInit @ 1217
+	_XcmsSCCFuncSets @ 1218
+	_XcmsCIEXYZ_prefix @ 1219
+	_XcmsCIEuvY_prefix @ 1220
+	_XcmsCIExyY_prefix @ 1221
+	_XcmsCIELab_prefix @ 1222
+	_XcmsCIELuv_prefix @ 1223
+	_XcmsTekHVC_prefix @ 1224
+	_XcmsRGBi_prefix @ 1225
+	_XcmsRGB_prefix @ 1226
+	_XcmsRegColorSpaces @ 1227
+	XcmsRGBiColorSpace @ 1228
+	XcmsRGBColorSpace @ 1229
+	XcmsLinearRGBFunctionSet @ 1230
+	_X11TransSocketINETFuncs @ 1231
+	_X11TransSocketTCPFuncs @ 1232
+	_XimXTransSocketINETFuncs @ 1233
+	_XimXTransSocketTCPFuncs @ 1234
+	_XimImSportRec @ 1235
+	_XimTransportRec @ 1236
+	_XlcGenericMethods @ 1237
+	_XlcPublicMethods @ 1238
 

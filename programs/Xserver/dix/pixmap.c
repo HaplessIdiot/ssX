@@ -1,4 +1,5 @@
 /* $XConsortium: pixmap.c,v 1.3 94/04/17 20:26:41 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -133,7 +134,7 @@ AllocatePixmap(pScreen, pixDataSize)
     ptr = (char *)(ppriv + pScreen->PixmapPrivateLen);
     for (i = pScreen->PixmapPrivateLen; --i >= 0; ppriv++, sizes++)
     {
-        if (size = *sizes)
+        if ((size = *sizes) != 0)
         {
 	    ppriv->ptr = (pointer)ptr;
 	    ptr += size;

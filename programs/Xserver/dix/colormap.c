@@ -46,7 +46,8 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XConsortium: colormap.c,v 5.31 94/04/17 20:26:17 dpw Exp $ */
+/* $XConsortium: colormap.c,v 5.33 95/05/18 21:08:14 dpw Exp $ */
+/* $XFree86$ */
 
 #include "X.h"
 #define NEED_EVENTS
@@ -65,7 +66,7 @@ static Pixel FindBestPixel(
 #if NeedFunctionPrototypes
     EntryPtr /*pentFirst*/,
     int /*size*/,
-    xrgb */*prgb*/,
+    xrgb * /*prgb*/,
     int /*channel*/
 #endif
 );
@@ -73,28 +74,28 @@ static Pixel FindBestPixel(
 static int AllComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
 static int RedComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
 static int GreenComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
 static int BlueComp(
 #if NeedFunctionPrototypes
     EntryPtr /*pent*/,
-    xrgb */*prgb*/
+    xrgb * /*prgb*/
 #endif
 );
 
@@ -137,10 +138,10 @@ static int AllocDirect(
     int /*g*/,
     int /*b*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*prmask*/,
-    Pixel */*pgmask*/,
-    Pixel */*pbmask*/
+    Pixel * /*pixels*/,
+    Pixel * /*prmask*/,
+    Pixel * /*pgmask*/,
+    Pixel * /*pbmask*/
 #endif
 );
 
@@ -151,9 +152,9 @@ static int AllocPseudo(
     int /*c*/,
     int /*r*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*pmask*/,
-    Pixel **/*pppixFirst*/
+    Pixel * /*pixels*/,
+    Pixel * /*pmask*/,
+    Pixel ** /*pppixFirst*/
 #endif
 );
 
@@ -164,15 +165,15 @@ static Bool AllocCP(
     int /*count*/,
     int /*planes*/,
     Bool /*contig*/,
-    Pixel */*pixels*/,
-    Pixel */*pMask*/
+    Pixel * /*pixels*/,
+    Pixel * /*pMask*/
 #endif
 );
 
 static Bool AllocShared(
 #if NeedFunctionPrototypes
     ColormapPtr /*pmap*/,
-    Pixel */*ppix*/,
+    Pixel * /*ppix*/,
     int /*c*/,
     int /*r*/,
     int /*g*/,
@@ -180,7 +181,7 @@ static Bool AllocShared(
     Pixel /*rmask*/,
     Pixel /*gmask*/,
     Pixel /*bmask*/,
-    Pixel */*ppixFirst*/
+    Pixel * /*ppixFirst*/
 #endif
 );
 
@@ -190,7 +191,7 @@ static int FreeCo(
     int /*client*/,
     int /*color*/,
     int /*npixIn*/,
-    Pixel */*ppixIn*/,
+    Pixel * /*ppixIn*/,
     Pixel /*mask*/
 #endif
 );
@@ -589,6 +590,7 @@ CopyFree (channel, client, pmapSrc, pmapDst)
 
     switch(channel)
     {
+      default:	/* so compiler can see that everything gets initialized */
       case REDMAP:
 	ppix = (pmapSrc->clientPixelsRed)[client];
 	npix = (pmapSrc->numPixelsRed)[client];
@@ -679,6 +681,7 @@ FreeCell (pmap, i, channel)
 
     switch (channel)
     {
+      default:	/* so compiler can see that everything gets initialized */
       case PSEUDOMAP:
       case REDMAP:
           pent = (EntryPtr) &pmap->red[i];
@@ -941,6 +944,7 @@ FakeAllocColor (pmap, item)
     register xColorItem  *item;
 {
     Pixel	pixR, pixG, pixB;
+    Pixel	temp;
     int		entries;
     xrgb	rgb;
     int		class;
@@ -958,9 +962,11 @@ FakeAllocColor (pmap, item)
     case GrayScale:
     case PseudoColor:
 	item->pixel = 0;
-	if (FindColor(pmap, pmap->red, entries, &rgb, &item->pixel, PSEUDOMAP,
-		      -1, AllComp) == Success)
+	if (FindColor(pmap, pmap->red, entries, &rgb, &temp, PSEUDOMAP,
+		      -1, AllComp) == Success) {
+	    item->pixel = temp;
 	    break;
+	}
 	/* fall through ... */
     case StaticColor:
     case StaticGray:
@@ -1044,8 +1050,8 @@ typedef struct _bignum {
     BigNumLower	lower;
 } BigNumRec, *BigNumPtr;
 
-#define BigNumGreater(x,y) ((x)->upper > (y)->upper ||\
-			    (x)->upper == (y)->upper && (x)->lower > (y)->lower)
+#define BigNumGreater(x,y) (((x)->upper > (y)->upper) ||\
+			    ((x)->upper == (y)->upper && (x)->lower > (y)->lower))
 
 #define UnsignedToBigNum(u,r)	(((r)->upper = UPPERPART(u)), \
 				 ((r)->lower = LOWERPART(u)))
@@ -1054,8 +1060,12 @@ typedef struct _bignum {
 				 ((r)->lower = BIGNUMLOWER-1))
 
 static void
+#if NeedFunctionPrototypes
+BigNumAdd (BigNumPtr x, BigNumPtr y, BigNumPtr r)
+#else
 BigNumAdd (x, y, r)
     BigNumPtr	x, y, r;
+#endif
 {
     BigNumLower	lower, carry = 0;
 
@@ -1678,7 +1688,7 @@ AllocDirect (client, pmap, c, r, g, b, contig, pixels, prmask, pgmask, pbmask)
     Pixel	*ppix, *pDst, *p;
     int		npix, npixR, npixG, npixB;
     Bool	okR, okG, okB;
-    Pixel	*rpix, *gpix, *bpix;
+    Pixel	*rpix = 0, *gpix = 0, *bpix = 0;
 
     npixR = c << r;
     npixG = c << g;
@@ -2255,6 +2265,7 @@ FreeCo (pmap, client, color, npixIn, ppixIn, mask)
 	ppixClient = pmap->clientPixelsBlue[client];
 	npixClient = pmap->numPixelsBlue[client];
 	break;
+      default:	/* so compiler can see that everything gets initialized */
       case PSEUDOMAP:
 	cmask = ~((Pixel)0);
 	rgbbad = 0;
