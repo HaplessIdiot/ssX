@@ -1,3 +1,8 @@
+XFree86 3.1.0Za (25 January 1995)
+252. Minor pixmux clock limit update for Trio64 (Harald Koenig).
+251. Merge in XC fix-07.
+250. Some documentation updates.
+
 XFree86 3.1.0Z (23 January 1995)
 249. Restore correct key maps for 84-key keyboard, but allow alternate (old)
      behaviour when "ServerNumLock" is set in the XF86Config.

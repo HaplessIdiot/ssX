@@ -2,7 +2,7 @@
 
  <article>
 
- <title>README for XFree86(TM) 3.1.1
+ <title>README for XFree86&tm; 3.1.1
  <author> The XFree86 Project, Inc
  <date>15 January 1995
 
@@ -135,7 +135,7 @@ source distribution for full details.
     <tag/SVR3:/
 	<itemize>
 	<ITEM>SCO: 3.2.2, 3.2.4
-	<ITEM>ISC: 4.0, 4.1
+	<ITEM>ISC: 3.0, 4.0, 4.1
 	</itemize>	
 
     <tag/Others:/
@@ -810,7 +810,7 @@ file that describes what files you need to take from the archive, and which
 compile-time option selections were made when building the distribution.
 
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.13 1995/01/22 03:06:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.14 1995/01/23 01:30:05 dawes Exp $
 </verb>
 
 </article>

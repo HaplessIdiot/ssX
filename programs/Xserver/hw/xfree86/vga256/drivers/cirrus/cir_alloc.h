@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.h,v 3.1 1994/08/20 08:48:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_alloc.h,v 3.2 1995/01/04 04:42:15 dawes Exp $ */
 
 /*
  * Definitions for video memory allocator in cir_alloc.c.
@@ -20,7 +20,7 @@ int CirrusCursorAllocate ( cirrusCurRecPtr cirrusCur );
 #else
 
 int CirrusInitializeAllocator();
-void CirrusAllocate();
+int CirrusAllocate();
 int CirrusCursorAllocate ();
 void CirrusFree();
 void CirrusUploadPattern();
