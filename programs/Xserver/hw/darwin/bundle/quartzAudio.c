@@ -10,7 +10,7 @@
 // Smoothing transitions between sounds
 //  http://www.wam.umd.edu/~mphoenix/dss/dss.html
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzAudio.c,v 1.2 2001/04/05 06:08:46 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzAudio.c,v 1.3 2001/04/07 18:01:29 torrey Exp $ */
 
 #include <CoreAudio/AudioHardware.h>
 #include <pthread.h>
@@ -20,6 +20,8 @@
 
 #include "quartzAudio.h"
 #include "quartzShared.h"
+
+void NSBeep();
 
 typedef struct QuartzAudioRec {
     double frequency;
