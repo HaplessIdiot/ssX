@@ -1,5 +1,5 @@
 // $TOG: xfree86 /main/13 1997/08/02 10:11:21 kaleb $
-// $XFree86$
+// $XFree86: xc/programs/xkbcomp/keymap/xfree86,v 3.10 1998/12/13 05:33:05 dawes Exp $
 default xkb_keymap "us" {
     xkb_keycodes	{ include "xfree86"		};
     xkb_types		{ include "default"		};
@@ -187,3 +187,107 @@ xkb_keymap "fr_CA"	{
     xkb_symbols		{ include "en_US(pc102)+ca_enhanced(basic)+us_group3(basic)+group(ctrl_shift_toggle)+ralt(mode_switch)" };
     xkb_geometry 	{ include "pc(pc102)"		};
 };
+
+// us_intl and br by Ricardo Y. Igarashi (iga@that.com.br)
+// us_intl means standard us keyboard plus dead_keys symbols
+// these keyboards are very popular in Brazil
+
+xkb_keymap "us_intl" {
+    xkb_keycodes	{ include "xfree86"		};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "us(pc101)+us_intl"	};
+    xkb_geometry	{ include "pc"			};
+};
+xkb_keymap "br"	{
+    xkb_keycodes	{ include "xfree86(abnt2)"	};
+    xkb_types		{ include "default"		};
+    xkb_compatibility	{ include "default"		};
+    xkb_symbols		{ include "us(pc101)+br"	};
+    xkb_geometry 	{ include "pc(abnt2)"		};
+};
+
+xkb_keymap "us_cz_qwerty" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(us_cz_qwerty)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "us_cz_qwertz" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(us_cz_qwertz)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "us_cz_prog" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(us_cz_prog)"    };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "cz_us_qwerty" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(cz_us_qwerty)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "cz_us_qwertz" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(cz_us_qwertz)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "cz_us_prog" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(cz_us_prog)"    };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "us_sk_qwerty" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(us_sk_qwerty)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "us_sk_qwertz" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(us_sk_qwertz)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "us_sk_prog" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(us_sk_prog)"    };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "sk_us_qwerty" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(sk_us_qwerty)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "sk_us_qwertz" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(sk_us_qwertz)"  };
+    xkb_geometry      { include "pc"                  };
+};
+xkb_keymap "sk_us_prog" {
+    xkb_keycodes      { include "xfree86"             };
+    xkb_types         { include "default"             };
+    xkb_compatibility { include "group_led"           };
+    xkb_symbols       { include "czsk(sk_us_prog)"    };
+    xkb_geometry      { include "pc"                  };
+};   

@@ -1,8 +1,8 @@
 XCOMM $TOG: Imakefile /main/5 1997/08/02 10:10:30 kaleb $
-XCOMM $XFree86: xc/programs/xkbcomp/compat/Imakefile,v 3.4 1997/06/22 10:17:06 dawes Exp $
+XCOMM $XFree86: xc/programs/xkbcomp/compat/Imakefile,v 3.5 1997/10/26 13:25:33 dawes Exp $
 
-     DATAFILES = accessx basic complete default iso9995 japan keypad \
-		 misc mousekeys norepeat pc pc98 xtest
+     DATAFILES = accessx basic complete default group_led iso9995 japan \
+		 keypad misc mousekeys norepeat pc pc98 xtest
 
 all::
 
