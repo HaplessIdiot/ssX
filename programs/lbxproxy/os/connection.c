@@ -580,6 +580,7 @@ EstablishNewConnections(clientUnused, closure)
     fd_set tmask;
     int i;
 
+    XFD_ANDSET(&tmask, (fd_set*)closure, &WellKnownConnections);
     XFD_COPYSET(&tmask, &readyconnections);
     if (!XFD_ANYSET(&readyconnections))
 	return TRUE;
