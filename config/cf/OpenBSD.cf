@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.92 2003/10/07 21:09:33 herrb Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.93 2003/10/11 10:07:10 herrb Exp $
 XCOMM
 
 #ifndef OSName
@@ -907,10 +907,6 @@ install:: fonts.alias							@@\
 
 #ifndef BuildScreenSaverLibrary
 # define BuildScreenSaverLibrary	YES
-#endif
-
-#ifndef ForceNormalLib
-# define ForceNormalLib			YES
 #endif
 
 #ifndef CompressAllFonts
