@@ -15,14 +15,7 @@
 
 #include "xgc.h"
 
-static void print_text_to_buffer(
-#if NeedFunctionPrototypes
-     Widget, caddr_t, caddr_t
-#endif
-);
-extern void interpret();
-
-extern XStuff X;
+static void print_text_to_buffer(Widget, caddr_t, caddr_t);
 
 /* create_choice(w,info)
 ** ---------------------
@@ -50,9 +43,7 @@ extern XStuff X;
 */
 
 ChoiceDesc *
-create_choice(w,info)
-     Widget w;
-     XgcStuff *info;
+create_choice(Widget w, XgcStuff *info)
 {
   ChoiceDesc *choice;		/* What we will return.  Contains
 				** Widget ID's of the label and toggles. */
@@ -188,9 +179,7 @@ create_choice(w,info)
 */
 
 void
-select_button(choice,togglenum)
-     ChoiceDesc *choice;
-     int togglenum;
+select_button(ChoiceDesc *choice, int togglenum)
 {
   static Arg toggleargs[] = {
     {XtNstate,   (XtArgVal) True}
@@ -207,9 +196,7 @@ select_button(choice,togglenum)
 */
 
 void
-line_up_labels(descs,numdescs)
-     ChoiceDesc *descs[];
-     int numdescs;
+line_up_labels(ChoiceDesc *descs[], int numdescs)
 {
   int i;			/* counter */
   Dimension width;		/* current width */
@@ -246,9 +233,7 @@ line_up_labels(descs,numdescs)
 */
 
 void
-choose_defaults(descs,numdescs)
-     ChoiceDesc *descs[];
-     int numdescs;
+choose_defaults(ChoiceDesc *descs[], int numdescs)
 {
   int i;			/* which choice layout */
   int j;			/* which toggle within it */
@@ -273,10 +258,10 @@ choose_defaults(descs,numdescs)
 
 /*ARGSUSED*/
 static void
-print_text_to_buffer(w,closure,call_data)
-     Widget  w;
-     caddr_t closure;           /* contains the string */
-     caddr_t call_data;
+print_text_to_buffer(
+    Widget  w,
+    caddr_t closure,           /* contains the string */
+    caddr_t call_data)
 {
   interpret((char *) closure);          /* Gee, that was easy */
 }
