@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_texman.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -863,20 +863,8 @@ void tdfxTMFreeTextureLocked( tdfxContextPtr fxMesa,
       int i;
       tdfxTMMoveOutTMLocked( fxMesa, tObj );
       for ( i = 0 ; i < MAX_TEXTURE_LEVELS ; i++ ) {
-	 if ( t->image[i].original.data ) {
-	    FREE( t->image[i].original.data );
-	    t->image[i].original.data = NULL;
-	    t->image[i].original.width = 0;
-	    t->image[i].original.height = 0;
-	    t->image[i].original.size = 0;
-	 }
-	 if ( t->image[i].rescaled.data ) {
-	    FREE( t->image[i].rescaled.data );
-	    t->image[i].rescaled.data = NULL;
-	    t->image[i].rescaled.width = 0;
-	    t->image[i].rescaled.height = 0;
-	    t->image[i].rescaled.size = 0;
-	 }
+	 if ( t->image[i].original.data ) FREE( t->image[i].original.data );
+	 if ( t->image[i].rescaled.data ) FREE( t->image[i].rescaled.data );
       }
       FREE( t );
       tObj->DriverData = NULL;

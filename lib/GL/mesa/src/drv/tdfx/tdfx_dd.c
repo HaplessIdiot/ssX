@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.1 2001/03/21 16:14:27 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.2 2001/04/01 14:00:00 tsi Exp $ */
 
 /*
  * Original rewrite:
@@ -47,7 +47,7 @@
 #include "X86/common_x86_asm.h"
 #endif
 
-#define TDFX_DATE	"20010305"
+#define TDFX_DATE	"20010321"
 
 
 /* These are used in calls to FX_grColorMaskv() */

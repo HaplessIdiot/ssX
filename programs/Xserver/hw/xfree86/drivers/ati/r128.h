@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.9 2001/01/06 20:19:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128.h,v 1.10 2001/01/16 05:11:06 martin Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -273,6 +273,9 @@ typedef struct {
     drmHandle         registerHandle;
 
     Bool              IsPCI;            /* Current card is a PCI card */
+    drmSize           pciSize;
+    drmHandle         pciMemHandle;
+    unsigned char     *PCI;             /* Map */
 
     drmSize           agpSize;
     drmHandle         agpMemHandle;     /* Handle from drmAgpAlloc */

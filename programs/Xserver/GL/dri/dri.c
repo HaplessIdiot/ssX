@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.29 2000/12/22 02:40:00 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.30 2001/03/21 16:21:40 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -65,7 +65,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "glxserver.h"
 #include "mi.h"
 #include "mipointer.h"
-#include "xf86Priv.h"
+
+#if defined(XFree86LOADER) || defined(PANORAMIX)
+extern Bool noPanoramiXExtension;
+#endif
 
 static int DRIScreenPrivIndex = -1;
 static int DRIWindowPrivIndex = -1;
@@ -88,15 +91,20 @@ static void    DRIDestroyDummyContext(ScreenPtr pScreen, Bool hasCtxPriv);
 				   This will make it easy to turn off some
 				   messages later, based on verbosity
 				   level. */
+/*
+ * Since we're already referencing things from the XFree86 common layer in
+ * this file, we'd might as well just call xf86VDrvMsgVerb, and have
+ * consistent message formatting.  The verbosity of these messages can be
+ * easily changed here.
+ */
+#define DRI_MSG_VERBOSITY 1
 static void
 DRIDrvMsg(int scrnIndex, MessageType type, const char *format, ...)
 {
     va_list     ap;
-    static char buffer[1024];
 
     va_start(ap, format);
-    vsprintf(buffer, format, ap);
-    ErrorF("(%d): %s", scrnIndex, buffer);
+    xf86VDrvMsgVerb(scrnIndex, type, DRI_MSG_VERBOSITY, format, ap);
     va_end(ap);
 }
 
@@ -107,6 +115,7 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
     drmContextPtr       reserved;
     int                 reserved_count;
     int	                i, fd, drmWasAvailable;
+    Bool                xineramaInCore = FALSE;
 
     if (DRIGeneration != serverGeneration) {
 	if ((DRIScreenPrivIndex = AllocateScreenPrivateIndex()) < 0)
@@ -114,10 +123,31 @@ DRIScreenInit(ScreenPtr pScreen, DRIInfoPtr pDRIInfo, int *pDRMFD)
 	DRIGeneration = serverGeneration;
     }
 
+    /*
+     * If Xinerama is on, don't allow DRI to initialise.  It won't be usable
+     * anyway.
+     */
+#if defined(PANORAMIX) && !defined(XFree86LOADER)
+    xineramaInCore = TRUE;
+#elif defined(XFree86LOADER)
+    if (xf86LoaderCheckSymbol("noPanoramiXExtension"))
+	xineramaInCore = TRUE;
+#endif
+
+#if defined(PANORAMIX) || defined(XFree86LOADER)
+    if (xineramaInCore) {
+	if (!noPanoramiXExtension) {
+	    DRIDrvMsg(pScreen->myNum, X_WARNING,
+		"Direct rendering is not supported when Xinerama is enabled\n");
+	    return FALSE;
+	}
+    }
+#endif
+
     drmWasAvailable = drmAvailable();
 
     /* Note that drmOpen will try to load the kernel module, if needed. */
-    fd = drmOpen(pDRIInfo->drmDriverName, NULL);
+    fd = drmOpen(pDRIInfo->drmDriverName, NULL /*pDRIInfo->busIdString*/);
     if (fd < 0) {
         /* failed to open DRM */
         pScreen->devPrivates[DRIScreenPrivIndex].ptr = NULL;

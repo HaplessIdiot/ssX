@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.4 2001/03/21 16:14:23 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_ioctl.c,v 1.5 2001/04/01 14:00:00 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -308,7 +308,19 @@ static int r128WaitForFrameCompletion( r128ContextPtr rmesa )
    int wait = 0;
 
    while ( 1 ) {
+#if defined(__alpha__)
+       /* necessary to preserve the Alpha paradigm */
+       /* NOTE: this will not work on SPARSE machines */
+       mem_barrier();
+       frame = *(volatile CARD32 *)(void *)(R128MMIO + R128_LAST_FRAME_REG);
+#else
       frame = INREG( R128_LAST_FRAME_REG );
+#endif
+
+      if ( 0 )
+	 fprintf( stderr, " last=0x%08x frame=0x%08x\n",
+		  rmesa->sarea->last_frame, frame );
+
       if ( rmesa->sarea->last_frame - frame <= R128_MAX_OUTSTANDING ) {
 	 break;
       }
@@ -327,7 +339,7 @@ static int r128WaitForFrameCompletion( r128ContextPtr rmesa )
  */
 void r128SwapBuffers( r128ContextPtr rmesa )
 {
-   GLint nbox = rmesa->numClipRects;
+   GLint nbox;
    GLint i;
    GLint ret;
 
@@ -341,6 +353,8 @@ void r128SwapBuffers( r128ContextPtr rmesa )
    FLUSH_BATCH( rmesa );
 
    LOCK_HARDWARE( rmesa );
+
+   nbox = rmesa->numClipRects;	/* must be in locked region */
 
    /* Throttle the frame rate -- only allow one pending swap buffers
     * request at a time.

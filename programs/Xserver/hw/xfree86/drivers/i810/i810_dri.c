@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.16 2001/03/21 17:18:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dri.c,v 1.17 2001/03/21 19:46:27 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -112,17 +112,17 @@ I810InitVisualConfigs(ScreenPtr pScreen)
    case 16:
       numConfigs = 8;
 
-      pConfigs = (__GLXvisualConfig *) xnfcalloc(sizeof(__GLXvisualConfig), numConfigs);
+      pConfigs = (__GLXvisualConfig *) xcalloc(sizeof(__GLXvisualConfig), numConfigs);
       if (!pConfigs)
 	 return FALSE;
 
-      pI810Configs = (I810ConfigPrivPtr) xnfcalloc(sizeof(I810ConfigPrivRec), numConfigs);
+      pI810Configs = (I810ConfigPrivPtr) xcalloc(sizeof(I810ConfigPrivRec), numConfigs);
       if (!pI810Configs) {
 	 xfree(pConfigs);
 	 return FALSE;
       }
 
-      pI810ConfigPtrs = (I810ConfigPrivPtr *) xnfcalloc(sizeof(I810ConfigPrivPtr), numConfigs);
+      pI810ConfigPtrs = (I810ConfigPrivPtr *) xcalloc(sizeof(I810ConfigPrivPtr), numConfigs);
       if (!pI810ConfigPtrs) {
 	 xfree(pConfigs);
 	 xfree(pI810Configs);
@@ -294,7 +294,7 @@ Bool I810DRIScreenInit(ScreenPtr pScreen)
    }
    pDRIInfo->SAREASize = SAREA_MAX;
 
-   if (!(pI810DRI = (I810DRIPtr)xnfcalloc(sizeof(I810DRIRec),1))) {
+   if (!(pI810DRI = (I810DRIPtr)xcalloc(sizeof(I810DRIRec),1))) {
       DRIDestroyInfoRec(pI810->pDRIInfo);
       pI810->pDRIInfo=0;
       return FALSE;

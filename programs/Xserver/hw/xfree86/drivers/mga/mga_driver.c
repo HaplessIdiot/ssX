@@ -45,7 +45,7 @@
  *		Added digital screen option for first head
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.194 2001/04/05 21:29:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.195 2001/04/06 02:09:12 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -214,7 +214,8 @@ typedef enum {
     OPTION_CABLETYPE,
     OPTION_USEIRQZERO,
     OPTION_NOHAL,
-    OPTION_SWAPPED_HEAD
+    OPTION_SWAPPED_HEAD,
+    OPTION_DRI
 } MGAOpts;
 
 static OptionInfoRec MGAOptions[] = {
@@ -243,7 +244,8 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_TVSTANDARD,	"TVStandard",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_CABLETYPE,		"CableType",	OPTV_ANYSTR,	{0}, FALSE },
     { OPTION_NOHAL,		"NoHal",	OPTV_BOOLEAN,	{0}, FALSE },
-    { OPTION_SWAPPED_HEAD,      "SwappedHead",  OPTV_BOOLEAN,   {0}, FALSE },
+    { OPTION_SWAPPED_HEAD,	"SwappedHead",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_DRI,		"DRI",		OPTV_BOOLEAN,	{0}, FALSE },
     { -1,			NULL,		OPTV_NONE,	{0}, FALSE }
 };
 
@@ -315,20 +317,28 @@ static const char *drmSymbols[] = {
     "drmAddMap",
     "drmCtlInstHandler",
     "drmGetInterruptFromBusID",
+    "drmFreeVersion",
+    "drmGetVersion",
+    "drmMap",
+    "drmUnmap",
+    "drmMapBufs",
+    "drmUnmapBufs",
     "drmAgpAcquire",
     "drmAgpRelease",
     "drmAgpEnable",
     "drmAgpAlloc",
     "drmAgpFree",
     "drmAgpBind",
+    "drmAgpUnbind",
     "drmAgpGetMode",
     "drmAgpBase",
     "drmAgpSize",
+    "drmAgpVendorId",
+    "drmAgpDeviceId",
     "drmMGAInitDMA",
     "drmMGACleanupDMA",
     "drmMGAFlushDMA",
-    "drmFreeVersion",
-    "drmGetVersion",
+    "drmMGAEngineReset",
     NULL
 };
 
@@ -1313,13 +1323,17 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * We support both 24bpp and 32bpp layouts, so indicate that.
      */
 
-    /* Prefer 24bpp fb unless the Overlay option is set */
+    /* Prefer 24bpp fb unless the Overlay option is set, or DRI is
+     * supported.
+     */
     flags24 = Support24bppFb | Support32bppFb | SupportConvert32to24;
     s = xf86TokenToOptName(MGAOptions, OPTION_OVERLAY);
+#ifndef XF86DRI
     if (!(xf86FindOption(pScrn->confScreen->options, s) ||
 	  xf86FindOption(pMga->device->options, s))) {
 	flags24 |= PreferConvert32to24;
     }
+#endif
 
     if (pMga->SecondCrtc)
 	flags24 = Support32bppFb;
@@ -1768,7 +1782,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    adjust = pScrn->videoRam / 2;
 
 	    if (UseHalf == TRUE || xf86GetOptValInteger(MGAOptions, OPTION_CRTC2RAM, &adjust)) {
-	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
+	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
 			   "Crtc2 will use %dK of VideoRam\n",
 			   adjust);
 	    } else {
@@ -2031,7 +2045,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 #ifdef USEMGAHAL
     MGA_HAL(
-    swap_head 
+    swap_head
         = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
 
     if(pMga->SecondCrtc == FALSE) {
@@ -2050,13 +2064,13 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    pMgaEnt->pClientStruct = pMga->pClientStruct;
 	    pMgaEnt->pBoard = pMga->pBoard;
 	    pMgaEnt->pMgaHwInfo = pMga->pMgaHwInfo;
-	} 
+	}
 
         if (!swap_head) {
           mgaModeInfo.flOutput = (digital == TRUE) ? MGAMODEINFO_DIGITAL2
 					: MGAMODEINFO_ANALOG1;
         } else {
-          mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2; 
+          mgaModeInfo.flOutput = MGAMODEINFO_ANALOG2;
         }
         mgaModeInfo.ulDispWidth = pScrn->virtualX;
         mgaModeInfo.ulDispHeight = pScrn->virtualY;
@@ -2111,10 +2125,10 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * Can we trust HALlib to set the memory configuration
      * registers correctly?
      */
-    else if ((pMga->softbooted || pMga->Primary /*|| pMga->HALLoaded*/ ) && 
-	     (pMga->Chipset != PCI_CHIP_MGA2064) && 
+    else if ((pMga->softbooted || pMga->Primary /*|| pMga->HALLoaded*/ ) &&
+	     (pMga->Chipset != PCI_CHIP_MGA2064) &&
 	     (pMga->Chipset != PCI_CHIP_MGA2164) &&
-	     (pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
+	     (pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {
         CARD32 option_reg = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 	if(!(option_reg & (1 << 14))) {
 	    pMga->HasSDRAM = TRUE;
@@ -2573,7 +2587,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     Bool digital = FALSE;
     Bool tv = FALSE;
     ULONG status;
-    Bool swap_head 
+    Bool swap_head
       = xf86ReturnOptValBool(MGAOptions, OPTION_SWAPPED_HEAD, FALSE);
 
     /* Verify if user wants digital screen output */
@@ -2771,6 +2785,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     int width, height, displayWidth;
     MGAEntPtr pMgaEnt = NULL;
     int f;
+    MessageType driFrom = X_DEFAULT;
 
     /*
      * First get the ScrnInfoRec
@@ -2790,8 +2805,8 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    return FALSE;
     }
 
-    if ((pMga->Chipset == PCI_CHIP_MGAG100) 
-	|| (pMga->Chipset == PCI_CHIP_MGAG100_PCI)) 
+    if ((pMga->Chipset == PCI_CHIP_MGAG100)
+	|| (pMga->Chipset == PCI_CHIP_MGAG100_PCI))
         MGAG100BlackMagic(pMga);
 
     if (xf86IsEntityShared(pScrn->entityList[0])) {
@@ -2848,7 +2863,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef USEMGAHAL
     MGA_HAL(
 	/* There is a problem in the HALlib: set soft reset bit */
-	if (!pMga->Primary && !pMga->FBDev && 
+	if (!pMga->Primary && !pMga->FBDev &&
 	    (pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SG) ) {
 	    OUTREG(MGAREG_Reset, 1);
 	    usleep(200);
@@ -2969,12 +2984,39 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
       * InitGLXVisuals call back.
       * The DRI does not work when textured video is enabled at this time.
       */
-
-    if (!pMga->NoAccel && pMga->TexturedVideo != TRUE &&
-	pMga->SecondCrtc == FALSE)
-       pMga->directRenderingEnabled = MGADRIScreenInit(pScreen);
-    else
+    if (!xf86ReturnOptValBool(MGAOptions, OPTION_DRI, TRUE)) {
+	driFrom = X_CONFIG;
+    } else if ( pMga->NoAccel ) {
+       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
+		   "Acceleration disabled, not initializing the DRI\n" );
        pMga->directRenderingEnabled = FALSE;
+       driFrom = X_CONFIG;
+    }
+    else if ( pMga->TexturedVideo == TRUE ) {
+       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
+		   "Textured video enabled, not initializing the DRI\n" );
+       pMga->directRenderingEnabled = FALSE;
+       driFrom = X_CONFIG;
+    }
+    else if ( pMga->SecondCrtc == TRUE ) {
+       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
+		   "Not initializing the DRI on the second head\n" );
+       pMga->directRenderingEnabled = FALSE;
+    }
+    else if ( (pMga->FbMapSize /
+	       (width * (pScrn->bitsPerPixel >> 3))) <= height * 3 ) {
+       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
+		   "Static buffer allocation failed, not initializing the DRI\n" );
+       xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
+		   "Need at least %d kB video memory at this resolution, bit depth\n",
+		   (3 * displayWidth * height *
+		    (pScrn->bitsPerPixel >> 3)) / 1024 );
+       pMga->directRenderingEnabled = FALSE;
+       driFrom = X_PROBED;
+    }
+    else {
+       pMga->directRenderingEnabled = MGADRIScreenInit(pScreen);
+    }
 #endif
 
 
@@ -3077,7 +3119,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 
     xf86DPMSInit(pScreen, MGADisplayPowerManagementSet, 0);
-   
+
     pScrn->memPhysBase = pMga->FbAddress;
     pScrn->fbOffset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
 
@@ -3096,9 +3138,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         pMga->directRenderingEnabled = MGADRIFinishScreenInit(pScreen);
     }
     if (pMga->directRenderingEnabled) {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering enabled\n");
+        xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering enabled\n");
     } else {
-        xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Direct rendering disabled\n");
+        xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering disabled\n");
     }
     if (xf86IsEntityShared(pScrn->entityList[0]) && pMga->SecondCrtc == FALSE)
 	pMgaEnt->directRenderingEnabled = pMga->directRenderingEnabled;

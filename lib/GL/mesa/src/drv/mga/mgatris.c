@@ -1,29 +1,30 @@
 /*
- * GLX Hardware Device Driver for Matrox Millenium G200
- * Copyright (C) 1999 Wittawat Yamwong
+ * Copyright 2000-2001 VA Linux Systems, Inc.
+ * All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
  * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * on the rights to use, copy, modify, merge, publish, distribute, sub
+ * license, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
  *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * WITTAWAT YAMWONG, OR ANY OTHER CONTRIBUTORS BE LIABLE FOR ANY CLAIM, 
- * DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
- * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE 
- * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
+ * VA LINUX SYSTEMS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
  *
- *
- *    Wittawat Yamwong <Wittawat.Yamwong@stud.uni-hannover.de>
+ * Authors:
+ *    Keith Whitwell <keithw@valinux.com>
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.6 2001/01/08 01:07:19 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgatris.c,v 1.7 2001/03/21 16:14:22 dawes Exp $ */
 
 #include <stdio.h>
 #include <math.h>
@@ -53,9 +54,9 @@
 
 
 
-static triangle_func tri_tab[0x10];   
-static quad_func     quad_tab[0x10];  
-static line_func     line_tab[0x10];  
+static triangle_func tri_tab[0x10];
+static quad_func     quad_tab[0x10];
+static line_func     line_tab[0x10];
 static points_func   points_tab[0x10];
 
 #define IND (0)
@@ -132,9 +133,9 @@ void mgaDDChooseRenderState(GLcontext *ctx)
     if (flags & ANY_RASTER_FLAGS) {
 	if (flags & DD_FLATSHADE)               index |= MGA_FLAT_BIT;
 	if (flags & DD_TRI_LIGHT_TWOSIDE)       index |= MGA_TWOSIDE_BIT;
-	if (flags & DD_TRI_OFFSET)              index |= MGA_OFFSET_BIT; 
+	if (flags & DD_TRI_OFFSET)              index |= MGA_OFFSET_BIT;
     }
-	
+
     mmesa->PointsFunc = points_tab[index];
     mmesa->LineFunc = line_tab[index];
     mmesa->TriangleFunc = tri_tab[index];
@@ -149,7 +150,7 @@ void mgaDDChooseRenderState(GLcontext *ctx)
 	    mmesa->PointsFunc = 0;
 	    mmesa->IndirectTriangles |= DD_POINT_SW_RASTERIZE;
 	}
-	    
+
 	if (flags & LINE_FALLBACK) {
 	    mmesa->renderindex |= MGA_FALLBACK_BIT;
 	    mmesa->LineFunc = 0;

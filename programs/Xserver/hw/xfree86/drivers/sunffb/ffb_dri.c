@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.5 2000/12/21 12:22:57 alanh Exp $
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sunffb/ffb_dri.c,v 1.6 2001/03/21 17:02:25 dawes Exp $
  * Acceleration for the Creator and Creator3D framebuffer - DRI/DRM support.
  *
  * Copyright (C) 2000 David S. Miller (davem@redhat.com)
@@ -80,19 +80,19 @@ FFBDRIInitVisualConfigs(ScreenPtr pScreen)
 	FFBConfigPrivPtr *pFfbConfigPtrs;
 
 	pConfigs = (__GLXvisualConfig *)
-		xnfcalloc(sizeof(__GLXvisualConfig), 1);
+		xcalloc(sizeof(__GLXvisualConfig), 1);
 	if (!pConfigs)
 		return FALSE;
 
 	pFfbConfigs = (FFBConfigPrivPtr)
-		xnfcalloc(sizeof(FFBConfigPrivRec), 1);
+		xcalloc(sizeof(FFBConfigPrivRec), 1);
 	if (!pFfbConfigs) {
 		xfree(pConfigs);
 		return FALSE;
 	}
 
 	pFfbConfigPtrs = (FFBConfigPrivPtr *)
-		xnfcalloc(sizeof(FFBConfigPrivPtr), 1);
+		xcalloc(sizeof(FFBConfigPrivPtr), 1);
 	if (!pFfbConfigPtrs) {
 		xfree(pConfigs);
 		xfree(pFfbConfigs);
@@ -254,7 +254,7 @@ FFBDRIScreenInit(ScreenPtr pScreen)
 	pDRIInfo->maxDrawableTableEntry = 15;
 	pDRIInfo->SAREASize = (SAREA_MAX + (0x2000 - 1)) & ~(0x2000 - 1);
 
-	pFfbDRI = (FFBDRIPtr) xnfcalloc(sizeof(FFBDRIRec), 1);
+	pFfbDRI = (FFBDRIPtr) xcalloc(sizeof(FFBDRIRec), 1);
 	if (pFfbDRI == NULL) {
 		DRIDestroyInfoRec(pFfb->pDRIInfo);
 		return FALSE;

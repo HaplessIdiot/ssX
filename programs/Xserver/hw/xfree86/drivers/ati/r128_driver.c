@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.24 2001/03/21 17:02:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.25 2001/04/03 17:10:36 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -626,7 +626,7 @@ static Bool R128GetPLLParameters(ScrnInfoPtr pScrn)
     R128InfoPtr   info = R128PTR(pScrn);
     R128PLLPtr    pll  = &info->pll;
 
-#if defined(__powerpc__)
+#if defined(__powerpc__) || defined(__alpha__)
     /* there is no bios under Linux PowerPC but Open Firmware
        does set up the PLL registers properly and we can use
        those to calculate xclk and find the reference divider */
@@ -1186,9 +1186,7 @@ static Bool R128PreInitDRI(ScrnInfoPtr pScrn)
 {
     R128InfoPtr   info = R128PTR(pScrn);
 
-    if (info->IsPCI) {
-	info->CCEMode = R128_DEFAULT_CCE_PIO_MODE;
-    } else if (xf86ReturnOptValBool(R128Options, OPTION_CCE_PIO, FALSE)) {
+    if (xf86ReturnOptValBool(R128Options, OPTION_CCE_PIO, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing CCE into PIO mode\n");
 	info->CCEMode = R128_DEFAULT_CCE_PIO_MODE;
     } else {

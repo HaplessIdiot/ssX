@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.15 2001/03/21 17:02:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.16 2001/03/25 05:32:09 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -279,6 +279,9 @@ typedef struct {
     drmHandle         registerHandle;
 
     Bool              IsPCI;            /* Current card is a PCI card */
+    drmSize           pciSize;
+    drmHandle         pciMemHandle;
+    unsigned char     *PCI;             /* Map */
 
     Bool              depthMoves;       /* Enable depth moves -- slow! */
 
@@ -414,19 +417,19 @@ extern void        RADEONCPReleaseIndirect(ScrnInfoPtr pScrn);
 
 #define RADEONCP_START(pScrn, info)					\
 do {									\
-    int _ret = drmRadeonStartCP(info->drmFD);				\
-    if (_ret) {								\
+    int ret = drmRadeonStartCP(info->drmFD);				\
+    if (ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CP start %d\n", __FUNCTION__, _ret);		\
+		   "%s: CP start %d\n", __FUNCTION__, ret);		\
     }									\
 } while (0)
 
 #define RADEONCP_STOP(pScrn, info)					\
 do {									\
-    int _ret = drmRadeonStopCP(info->drmFD);				\
-    if (_ret) {								\
+    int ret = drmRadeonStopCP(info->drmFD);				\
+    if (ret) {								\
 	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
-		   "%s: CP stop %d\n", __FUNCTION__, _ret);		\
+		   "%s: CP stop %d\n", __FUNCTION__, ret);		\
     }									\
     RADEONEngineRestore(pScrn);						\
 } while (0)
@@ -434,10 +437,10 @@ do {									\
 #define RADEONCP_RESET(pScrn, info)					\
 do {									\
     if (RADEONCP_USE_RING_BUFFER(info->CPMode)) {			\
-	int _ret = drmRadeonResetCP(info->drmFD);			\
-	if (_ret) {							\
+	int ret = drmRadeonResetCP(info->drmFD);			\
+	if (ret) {							\
 	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
-		       "%s: CP reset %d\n", __FUNCTION__, _ret);	\
+		       "%s: CP reset %d\n", __FUNCTION__, ret);		\
 	}								\
     }									\
 } while (0)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.5 2001/01/08 01:07:20 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.6 2001/03/21 16:14:23 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -255,6 +255,24 @@ extern r128ContextPtr r128MakeCurrent( r128ContextPtr oldCtx,
 				       r128ContextPtr newCtx,
 				       __DRIdrawablePrivate *dPriv );
 
+/* ================================================================
+ * Byte ordering
+ */
+#include <endian.h>
+
+#if __BYTE_ORDER == __LITTLE_ENDIAN
+#define LE32_OUT( x, y )	do { x = y; } while (0)
+#define LE32_OUT_FLOAT( x, y )	do { *(GLfloat *)&(x) = y; } while (0)
+#else
+#include <byteswap.h>
+#define LE32_OUT( x, y )	do { x = bswap_32( y ); } while (0)
+#define LE32_OUT_FLOAT( x, y )						\
+do {									\
+   GLuint __tmp;							\
+   *(GLfloat *)&__tmp = y;						\
+   x = bswap_32( __tmp );						\
+} while (0)
+#endif
 
 /* ================================================================
  * Debugging:

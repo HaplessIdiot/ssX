@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.10 2001/03/21 16:14:23 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.11 2001/03/25 05:32:00 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -45,7 +45,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "X86/common_x86_asm.h"
 #endif
 
-#define R128_DATE	"20010130"
+#define R128_DATE	"20010405"
 
 
 /* Return the width and height of the current color buffer.
@@ -84,7 +84,7 @@ static const GLubyte *r128DDGetString( GLcontext *ctx, GLenum name )
 	 strncat( buffer, " M3", 3 );
       }
 
-      /* Append any AGP-specific information.
+      /* Append any AGP/PCI-specific information.
        */
       switch ( rmesa->r128Screen->AGPMode ) {
       case 1:

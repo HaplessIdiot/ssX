@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.c,v 1.1 2001/01/08 01:07:27 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_lock.c,v 1.2 2001/03/21 16:14:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -71,8 +71,8 @@ void radeonGetLock( radeonContextPtr rmesa, GLuint flags )
     */
    XMESA_VALIDATE_DRAWABLE_INFO( rmesa->display, sPriv, dPriv );
 
-   if ( rmesa->lastStamp != dPriv->lastStamp ) {
-      rmesa->lastStamp = dPriv->lastStamp;
+   if ( rmesa->lastStamp != *(dPriv->pStamp) ) {
+      rmesa->lastStamp = *(dPriv->pStamp);
       rmesa->new_state |= RADEON_NEW_WINDOW | RADEON_NEW_CLIP;
       rmesa->SetupDone = 0;
    }

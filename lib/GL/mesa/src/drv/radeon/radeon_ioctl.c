@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.2 2001/03/21 16:14:24 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_ioctl.c,v 1.3 2001/04/01 14:00:00 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -386,7 +386,14 @@ static int radeonWaitForFrameCompletion( radeonContextPtr rmesa )
    int i;
 
    while ( 1 ) {
+#if defined(__alpha__)
+      /* necessary to preserve the Alpha paradigm */
+      /* NOTE: this will not work on SPARSE machines */
+      mem_barrier();
+      frame = *(volatile CARD32 *)(void *)(RADEONMMIO + RADEON_LAST_FRAME_REG);
+#else
       frame = INREG( RADEON_LAST_FRAME_REG );
+#endif
       if ( sarea->last_frame - frame <= RADEON_MAX_OUTSTANDING ) {
 	 break;
       }
@@ -405,7 +412,7 @@ static int radeonWaitForFrameCompletion( radeonContextPtr rmesa )
  */
 void radeonSwapBuffers( radeonContextPtr rmesa )
 {
-   GLint nbox = rmesa->numClipRects;
+   GLint nbox;
    GLint i;
    GLint ret;
 
@@ -416,6 +423,8 @@ void radeonSwapBuffers( radeonContextPtr rmesa )
    FLUSH_BATCH( rmesa );
 
    LOCK_HARDWARE( rmesa );
+
+   nbox = rmesa->numClipRects;	/* must be in locked region */
 
    /* Throttle the frame rate -- only allow one pending swap buffers
     * request at a time.
@@ -607,7 +616,14 @@ static GLbitfield radeonDDClear( GLcontext *ctx, GLbitfield mask,
    }
 #else
    while ( 1 ) {
+#if defined(__alpha__)
+     /* necessary to preserve the Alpha paradigm */
+     /* NOTE: this will not work on SPARSE machines */
+     mem_barrier();
+     clear = *(volatile CARD32 *)(void *)(RADEONMMIO + RADEON_LAST_CLEAR_REG);
+#else
       clear = INREG( RADEON_LAST_CLEAR_REG );
+#endif
       if ( sarea->last_clear - clear <= RADEON_MAX_CLEARS ) {
 	 break;
       }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.h,v 1.4 2001/01/08 01:07:24 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_tris.h,v 1.5 2001/03/21 16:14:24 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -56,7 +56,7 @@ static __inline void r128_draw_triangle( r128ContextPtr rmesa,
 					 r128VertexPtr v1,
 					 r128VertexPtr v2 )
 {
-   int vertsize = rmesa->vertsize;
+   GLuint vertsize = rmesa->vertsize;
    CARD32 *vb = r128AllocVerticesInline( rmesa, 3 );
    int j;
 
@@ -80,15 +80,15 @@ static __inline void r128_draw_triangle( r128ContextPtr rmesa,
 			 : "memory" );
 #else
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v0->ui[j];
+      LE32_OUT( vb[j], v0->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v1->ui[j];
+      LE32_OUT( vb[j], v1->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v2->ui[j];
+      LE32_OUT( vb[j], v2->ui[j] );
 #endif
 }
 
@@ -98,7 +98,7 @@ static __inline void r128_draw_quad( r128ContextPtr rmesa,
 				     r128VertexPtr v2,
 				     r128VertexPtr v3 )
 {
-   int vertsize = rmesa->vertsize;
+   GLuint vertsize = rmesa->vertsize;
    CARD32 *vb = r128AllocVerticesInline( rmesa, 6 );
    int j;
 
@@ -134,37 +134,37 @@ static __inline void r128_draw_quad( r128ContextPtr rmesa,
 			 : "memory" );
 #else
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v0->ui[j];
+      LE32_OUT( vb[j], v0->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v1->ui[j];
+      LE32_OUT( vb[j], v1->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v3->ui[j];
+      LE32_OUT( vb[j], v3->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v1->ui[j];
+      LE32_OUT( vb[j], v1->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v2->ui[j];
+      LE32_OUT( vb[j], v2->ui[j] );
 
    vb += vertsize;
    for ( j = 0 ; j < vertsize ; j++ )
-      vb[j] = v3->ui[j];
+      LE32_OUT( vb[j], v3->ui[j] );
 #endif
 }
 
 static __inline void r128_draw_line( r128ContextPtr rmesa,
 				     r128VertexPtr tmp0,
 				     r128VertexPtr tmp1,
-				     float width )
+				     GLfloat width )
 {
 #if 1
-   int vertsize = rmesa->vertsize;
+   GLuint vertsize = rmesa->vertsize;
    CARD32 *vb = r128AllocVerticesInline( rmesa, 6 );
    GLfloat hw, dx, dy, ix, iy;
    GLuint j;
@@ -204,40 +204,40 @@ static __inline void r128_draw_line( r128ContextPtr rmesa,
       x1 += 0.5F;
    }
 
-   *(float *)&vb[0] = x0 - ix;
-   *(float *)&vb[1] = y0 - iy;
+   LE32_OUT_FLOAT( vb[0], x0 - ix );
+   LE32_OUT_FLOAT( vb[1], y0 - iy );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp0->ui[j];
+      LE32_OUT( vb[j], tmp0->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x1 + ix;
-   *(float *)&vb[1] = y1 + iy;
+   LE32_OUT_FLOAT( vb[0], x1 + ix );
+   LE32_OUT_FLOAT( vb[1], y1 + iy );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp1->ui[j];
+      LE32_OUT( vb[j], tmp1->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x0 + ix;
-   *(float *)&vb[1] = y0 + iy;
+   LE32_OUT_FLOAT( vb[0], x0 + ix );
+   LE32_OUT_FLOAT( vb[1], y0 + iy );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp0->ui[j];
+      LE32_OUT( vb[j], tmp0->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x0 - ix;
-   *(float *)&vb[1] = y0 - iy;
+   LE32_OUT_FLOAT( vb[0], x0 - ix );
+   LE32_OUT_FLOAT( vb[1], y0 - iy );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp0->ui[j];
+      LE32_OUT( vb[j], tmp0->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x1 - ix;
-   *(float *)&vb[1] = y1 - iy;
+   LE32_OUT_FLOAT( vb[0], x1 - ix );
+   LE32_OUT_FLOAT( vb[1], y1 - iy );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp1->ui[j];
+      LE32_OUT( vb[j], tmp1->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x1 + ix;
-   *(float *)&vb[1] = y1 + iy;
+   LE32_OUT_FLOAT( vb[0], x1 + ix );
+   LE32_OUT_FLOAT( vb[1], y1 + iy );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp1->ui[j];
+      LE32_OUT( vb[j], tmp1->ui[j] );
 
 #else
 
@@ -271,49 +271,50 @@ static __inline void r128_draw_line( r128ContextPtr rmesa,
 }
 
 static __inline void r128_draw_point( r128ContextPtr rmesa,
-				      r128VertexPtr tmp, float sz )
+				      r128VertexPtr tmp, GLfloat sz )
 {
 #if 1
-   int vertsize = rmesa->vertsize;
+   GLuint vertsize = rmesa->vertsize;
    CARD32 *vb = r128AllocVerticesInline( rmesa, 6 );
    int j;
    const float x = tmp->v.x + PNT_X_OFFSET;
    const float y = tmp->v.y + PNT_Y_OFFSET;
 
-   *(float *)&vb[0] = x - sz;
-   *(float *)&vb[1] = y - sz;
+   LE32_OUT_FLOAT( vb[0], x - sz );
+   LE32_OUT_FLOAT( vb[1], y - sz );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp->ui[j];
+      LE32_OUT( vb[j], tmp->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x + sz;
-   *(float *)&vb[1] = y - sz;
+   LE32_OUT_FLOAT( vb[0], x + sz );
+   LE32_OUT_FLOAT( vb[1], y - sz );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp->ui[j];
+      LE32_OUT( vb[j], tmp->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x + sz;
-   *(float *)&vb[1] = y + sz;
+   LE32_OUT_FLOAT( vb[0], x + sz );
+   LE32_OUT_FLOAT( vb[1], y + sz );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp->ui[j];
+      LE32_OUT( vb[j], tmp->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x + sz;
-   *(float *)&vb[1] = y + sz;
+   LE32_OUT_FLOAT( vb[0], x + sz );
+   LE32_OUT_FLOAT( vb[1], y + sz );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp->ui[j];
+      LE32_OUT( vb[j], tmp->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x - sz;
-   *(float *)&vb[1] = y + sz;
+   LE32_OUT_FLOAT( vb[0], x - sz );
+   LE32_OUT_FLOAT( vb[1], y + sz );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp->ui[j];
+      LE32_OUT( vb[j], tmp->ui[j] );
    vb += vertsize;
 
-   *(float *)&vb[0] = x - sz;
-   *(float *)&vb[1] = y - sz;
+   LE32_OUT_FLOAT( vb[0], x - sz );
+   LE32_OUT_FLOAT( vb[1], y - sz );
    for (j = 2 ; j < vertsize ; j++)
-      vb[j] = tmp->ui[j];
+      LE32_OUT( vb[j], tmp->ui[j] );
+
 #else
 
    int vertsize = rmesa->vertsize;

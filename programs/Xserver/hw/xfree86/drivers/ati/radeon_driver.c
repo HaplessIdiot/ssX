@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.17 2001/04/01 14:00:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.18 2001/04/03 17:10:36 tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -1103,9 +1103,7 @@ static Bool RADEONPreInitDRI(ScrnInfoPtr pScrn)
 {
     RADEONInfoPtr   info = RADEONPTR(pScrn);
 
-    if (info->IsPCI) {
-	info->CPMode = RADEON_DEFAULT_CP_PIO_MODE;
-    } else if (xf86ReturnOptValBool(RADEONOptions, OPTION_CP_PIO, FALSE)) {
+    if (xf86ReturnOptValBool(RADEONOptions, OPTION_CP_PIO, FALSE)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Forcing CP into PIO mode\n");
 	info->CPMode = RADEON_DEFAULT_CP_PIO_MODE;
     } else {
@@ -1742,6 +1740,9 @@ Bool RADEONScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	y2        = (info->FbMapSize
 		     / (pScrn->displayWidth *
 			info->CurrentLayout.pixel_bytes));
+	if (y2 >= 32768) y2 = 32767; /* because MemBox.y2 is signed short */
+	MemBox.y2 = y2;
+
 				/* The acceleration engine uses 14 bit
 				   signed coordinates, so we can't have any
 				   drawable caches beyond this region. */

@@ -1,29 +1,31 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_context.h,v 1.2 2000/08/25 13:42:28 dawes Exp $ */
-/**************************************************************************
-
-Copyright 2000 Compaq Computer Inc. and VA Linux, Inc.
-All Rights Reserved.
-
-Permission is hereby granted, free of charge, to any person obtaining a
-copy of this software and associated documentation files (the "Software"),
-to deal in the Software without restriction, including without limitation
-on the rights to use, copy, modify, merge, publish, distribute, sub
-license, and/or sell copies of the Software, and to permit persons to whom
-the Software is furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice (including the next
-paragraph) shall be included in all copies or substantial portions of the
-Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT. IN NO EVENT SHALL
-ATI, PRECISION INSIGHT AND/OR THEIR SUPPLIERS BE LIABLE FOR ANY CLAIM,
-DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-**************************************************************************/
+/*
+ * Copyright 2000 Compaq Computer Inc. and VA Linux Systems, Inc.
+ * All Rights Reserved.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a
+ * copy of this software and associated documentation files (the "Software"),
+ * to deal in the Software without restriction, including without limitation
+ * on the rights to use, copy, modify, merge, publish, distribute, sub
+ * license, and/or sell copies of the Software, and to permit persons to whom
+ * the Software is furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice (including the next
+ * paragraph) shall be included in all copies or substantial portions of the
+ * Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT.  IN NO EVENT SHALL
+ * VA LINUX SYSTEMS AND/OR ITS SUPPLIERS BE LIABLE FOR ANY CLAIM, DAMAGES OR
+ * OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
+ * ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
+ * OTHER DEALINGS IN THE SOFTWARE.
+ *
+ * Authors:
+ *    Keith Whitwell <keithw@valinux.com>
+ *    Gareth Hughes <gareth@valinux.com>
+ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgapixel.c,v 1.2 2001/03/21 16:14:22 dawes Exp $ */
 
 #include "enums.h"
 #include "types.h"
@@ -35,14 +37,14 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "mgabuffers.h"
 
 #include "drm.h"
-#include <sys/ioctl.h>
 
-#define IS_AGP_MEM(mmesa, p) 			\
-   (mmesa->mgaScreen->agp.map <= ((char *)p) &&	\
-    mmesa->mgaScreen->agp.map +			\
-    mmesa->mgaScreen->agp.size > ((char *)p))
-#define AGP_OFFSET(mmesa, p)						\
-     (((char *)p) - mmesa->mgaScreen->agp.map )
+#define IS_AGP_MEM( mmesa, p )						\
+   ((GLuint)mmesa->mgaScreen->buffers.map <= ((GLuint)p) &&		\
+    (GLuint)mmesa->mgaScreen->buffers.map +				\
+    (GLuint)mmesa->mgaScreen->buffers.size > ((GLuint)p))
+
+#define AGP_OFFSET( mmesa, p )						\
+     (((GLuint)p) - (GLuint)mmesa->mgaScreen->buffers.map )
 
 
 #if defined(MESA_packed_depth_stencil)
@@ -54,20 +56,19 @@ check_depth_stencil_24_8( const GLcontext *ctx, GLenum type,
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
-   return (type == GL_UNSIGNED_INT_24_8_MESA &&
-	   ctx->Visual->DepthBits == 24 &&
-	   ctx->Visual->StencilBits == 8 &&
-	   mmesa->mgaScreen->cpp == 4 &&
-	   mmesa->hw_stencil &&
-	   !ctx->Pixel.IndexShift &&
-	   !ctx->Pixel.IndexOffset &&
-	   !ctx->Pixel.MapStencilFlag &&
-	   ctx->Pixel.DepthBias == 0.0 &&
-	   ctx->Pixel.DepthScale == 1.0 &&
-	   !packing->SwapBytes &&
-	   pitch % 32 == 0 &&
-	   pitch < 4096);
-
+   return ( type == GL_UNSIGNED_INT_24_8_MESA &&
+	    ctx->Visual->DepthBits == 24 &&
+	    ctx->Visual->StencilBits == 8 &&
+	    mmesa->mgaScreen->cpp == 4 &&
+	    mmesa->hw_stencil &&
+	    !ctx->Pixel.IndexShift &&
+	    !ctx->Pixel.IndexOffset &&
+	    !ctx->Pixel.MapStencilFlag &&
+	    ctx->Pixel.DepthBias == 0.0 &&
+	    ctx->Pixel.DepthScale == 1.0 &&
+	    !packing->SwapBytes &&
+	    pitch % 32 == 0 &&
+	    pitch < 4096 );
 }
 #endif
 
@@ -79,69 +80,70 @@ check_depth( const GLcontext *ctx, GLenum type,
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
 
-   if (IS_AGP_MEM(mmesa, pixels) &&
-       !((type == GL_UNSIGNED_INT && mmesa->mgaScreen->cpp == 4) ||
-	 (type == GL_UNSIGNED_SHORT && mmesa->mgaScreen->cpp == 2)))
+   if ( IS_AGP_MEM( mmesa, pixels ) &&
+	!( ( type == GL_UNSIGNED_INT && mmesa->mgaScreen->cpp == 4 ) ||
+	   ( type == GL_UNSIGNED_SHORT && mmesa->mgaScreen->cpp == 2 ) ) )
       return GL_FALSE;
 
-   return (ctx->Pixel.DepthBias == 0.0 &&
-	   ctx->Pixel.DepthScale == 1.0 &&
-	   !packing->SwapBytes &&
-	   pitch % 32 == 0 &&
-	   pitch < 4096);
+   return ( ctx->Pixel.DepthBias == 0.0 &&
+	    ctx->Pixel.DepthScale == 1.0 &&
+	    !packing->SwapBytes &&
+	    pitch % 32 == 0 &&
+	    pitch < 4096 );
 }
 
 
 static GLboolean
 check_color( const GLcontext *ctx, GLenum type, GLenum format,
-		const struct gl_pixelstore_attrib *packing,
-		const void *pixels, GLint sz, GLint pitch )
+	     const struct gl_pixelstore_attrib *packing,
+	     const void *pixels, GLint sz, GLint pitch )
 {
    mgaContextPtr mmesa = MGA_CONTEXT(ctx);
    GLuint cpp = mmesa->mgaScreen->cpp;
 
    /* Can't do conversions on agp reads/draws.
     */
-   if (IS_AGP_MEM(mmesa, pixels) &&
-       !(pitch % 32 == 0 &&
-	 pitch < 4096 &&
-	 ((type == GL_UNSIGNED_BYTE && cpp == 4 && format == GL_BGRA) ||
-	  (type == GL_UNSIGNED_INT_8_8_8_8 && cpp == 4 && format == GL_BGRA) ||
-	  (type == GL_UNSIGNED_SHORT_5_6_5_REV && cpp==2 && format == GL_RGB))))
+   if ( IS_AGP_MEM( mmesa, pixels ) &&
+	!( pitch % 32 == 0 && pitch < 4096 &&
+	   ( ( type == GL_UNSIGNED_BYTE &&
+	       cpp == 4 && format == GL_BGRA ) ||
+	     ( type == GL_UNSIGNED_INT_8_8_8_8 &&
+	       cpp == 4 && format == GL_BGRA ) ||
+	     ( type == GL_UNSIGNED_SHORT_5_6_5_REV &&
+	       cpp == 2 && format == GL_RGB ) ) ) )
       return GL_FALSE;
 
-   return
-      (ctx->ColorMatrix.type == MATRIX_IDENTITY &&
-       !ctx->Pixel.ScaleOrBiasRGBA &&
-       !ctx->Pixel.ScaleOrBiasRGBApcm &&
-       !ctx->Pixel.MapColorFlag &&
-       !ctx->Pixel.ColorTableEnabled &&
-       !ctx->Pixel.PostColorMatrixColorTableEnabled &&
-       !ctx->Pixel.MinMaxEnabled &&
-       !ctx->Pixel.HistogramEnabled &&
-       !packing->SwapBytes &&
-       !packing->LsbFirst);
+   return ( ctx->ColorMatrix.type == MATRIX_IDENTITY &&
+	    !ctx->Pixel.ScaleOrBiasRGBA &&
+	    !ctx->Pixel.ScaleOrBiasRGBApcm &&
+	    !ctx->Pixel.MapColorFlag &&
+	    !ctx->Pixel.ColorTableEnabled &&
+	    !ctx->Pixel.PostColorMatrixColorTableEnabled &&
+	    !ctx->Pixel.MinMaxEnabled &&
+	    !ctx->Pixel.HistogramEnabled &&
+	    !packing->SwapBytes &&
+	    !packing->LsbFirst );
 }
 
 static GLboolean
 check_color_per_fragment_ops( const GLcontext *ctx )
 {
-   return (!(ctx->RasterMask & ~(SCISSOR_BIT|WINCLIP_BIT|MULTI_DRAW_BIT)) &&
-	   ctx->Current.RasterPosValid &&
-	   ctx->Pixel.ZoomX == 1.0F &&
-	   (ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F));
+   return ( !(ctx->RasterMask & ~(SCISSOR_BIT|WINCLIP_BIT|MULTI_DRAW_BIT)) &&
+	    ctx->Current.RasterPosValid &&
+	    ctx->Pixel.ZoomX == 1.0F &&
+	    ( ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F ) );
 }
 
 static GLboolean
 check_depth_per_fragment_ops( const GLcontext *ctx )
 {
-   return (ctx->Current.RasterPosValid &&
-	   ctx->Color.ColorMask[RCOMP] == 0 &&
-	   ctx->Color.ColorMask[BCOMP] == 0 &&
-	   ctx->Color.ColorMask[GCOMP] == 0 &&
-	   ctx->Color.ColorMask[ACOMP] == 0 &&
-	   ctx->Pixel.ZoomX == 1.0F &&
-	   (ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F));
+   return ( ctx->Current.RasterPosValid &&
+	    ctx->Color.ColorMask[RCOMP] == 0 &&
+	    ctx->Color.ColorMask[BCOMP] == 0 &&
+	    ctx->Color.ColorMask[GCOMP] == 0 &&
+	    ctx->Color.ColorMask[ACOMP] == 0 &&
+	    ctx->Pixel.ZoomX == 1.0F &&
+	    ( ctx->Pixel.ZoomY == 1.0F || ctx->Pixel.ZoomY == -1.0F ) );
 }
 
 /* In addition to the requirements for depth:
@@ -150,8 +152,8 @@ check_depth_per_fragment_ops( const GLcontext *ctx )
 static GLboolean
 check_stencil_per_fragment_ops( const GLcontext *ctx )
 {
-   return (!ctx->Pixel.IndexShift &&
-	   !ctx->Pixel.IndexOffset);
+   return ( !ctx->Pixel.IndexShift &&
+	    !ctx->Pixel.IndexOffset );
 }
 #endif
 

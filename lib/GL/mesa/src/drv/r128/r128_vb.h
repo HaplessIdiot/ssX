@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.3 2000/12/04 19:21:48 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_vb.h,v 1.4 2001/01/08 01:07:24 martin Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -30,6 +30,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
  * Authors:
  *   Gareth Hughes <gareth@valinux.com>
  *   Kevin E. Martin <martin@valinux.com>
+ *   Michel Dänzer <michdaen@iiic.ethz.ch>
  *
  */
 
@@ -38,13 +39,21 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #ifdef GLX_DIRECT_RENDERING
 
-/* FIXME: This is endian-specific */
+#if __BYTE_ORDER == __LITTLE_ENDIAN
 typedef struct {
    GLubyte	blue;
    GLubyte	green;
    GLubyte	red;
    GLubyte	alpha;
 } r128_color_t;
+#else
+typedef struct {
+   GLubyte	alpha;
+   GLubyte	red;
+   GLubyte	green;
+   GLubyte	blue;
+} r128_color_t;
+#endif
 
 /* The vertex structure.  The final tu1/tv1 values are only used in
  * multitexture modes, and the rhw2 value is currently never used.

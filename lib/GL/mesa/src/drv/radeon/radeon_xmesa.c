@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_xmesa.c,v 1.2 2001/01/23 18:14:39 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_xmesa.c,v 1.3 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -82,7 +82,7 @@ GLboolean XMesaInitDriver( __DRIscreenPrivate *sPriv )
 
    /* Check that the DRM driver version is compatible */
    if ( sPriv->drmMajor != 1 ||
-	sPriv->drmMinor < 0 ) {
+	sPriv->drmMinor < 1 ) {
       char msg[128];
       sprintf( msg, "RADEON DRI driver expected DRM driver version 1.0.x but got version %d.%d.%d", sPriv->drmMajor, sPriv->drmMinor, sPriv->drmPatch );
       __driMesaMessage( msg );

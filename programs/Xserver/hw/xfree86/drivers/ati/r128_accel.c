@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.7 2001/02/27 23:04:59 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_accel.c,v 1.8 2001/03/03 22:26:09 tsi Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -838,9 +838,7 @@ static void R128SubsequentColorExpandScanline(ScrnInfoPtr pScrn, int bufno)
     if (info->scanline_direct) return;
     --info->scanline_h;
     while (left) {
-#if defined(__alpha__)
-	write_mem_barrier();
-#endif
+        write_mem_barrier();
 	if (left <= 8) {
 	  /* Last scanline - finish write to DATA_LAST */
 	  if (info->scanline_h == 0) {
@@ -982,9 +980,7 @@ static void R128SubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
     if (info->scanline_direct) return;
     --info->scanline_h;
     while (left) {
-#if defined(__alpha__)
-	write_mem_barrier();
-#endif
+        write_mem_barrier();
 	if (left <= 8) {
 	  /* Last scanline - finish write to DATA_LAST */
 	  if (info->scanline_h == 0) {

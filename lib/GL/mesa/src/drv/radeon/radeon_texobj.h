@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texobj.h,v 1.1 2001/01/08 01:07:28 martin Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_texobj.h,v 1.2 2001/03/21 16:14:25 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -53,10 +53,10 @@ struct radeon_tex_obj {
    struct gl_texture_object *tObj;	/* Mesa texture object */
 
    PMemBlock memBlock;			/* Memory block containing texture */
-   CARD32 bufAddr;			/* Offset to start of locally
+   GLuint bufAddr;			/* Offset to start of locally
 					   shared texture block */
 
-   CARD32 dirty_images;			/* Flags for whether or not
+   GLuint dirty_images;			/* Flags for whether or not
 					   images need to be uploaded to
 					   local or AGP texture space */
 

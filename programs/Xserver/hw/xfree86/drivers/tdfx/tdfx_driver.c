@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.66 2001/03/24 18:47:40 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.67 2001/04/05 21:29:17 dawes Exp $ */
 
 /*
  * Authors:
@@ -172,7 +172,8 @@ typedef enum {
   OPTION_USE_PIO,
   OPTION_SHOWCACHE,
   OPTION_VIDEO_KEY,
-  OPTION_NO_SLI
+  OPTION_NO_SLI,
+  OPTION_DRI
 } TDFXOpts;
 
 static OptionInfoRec TDFXOptions[] = {
@@ -182,6 +183,7 @@ static OptionInfoRec TDFXOptions[] = {
   { OPTION_SHOWCACHE, "ShowCache", OPTV_BOOLEAN, {0}, FALSE},
   { OPTION_VIDEO_KEY, "VideoKey", OPTV_INTEGER, {0}, FALSE},
   { OPTION_NO_SLI, "NoSLI", OPTV_BOOLEAN, {0}, FALSE},
+  { OPTION_DRI, "DRI", OPTV_BOOLEAN, {0}, FALSE},
   { -1, NULL, OPTV_NONE, {0}, FALSE}
 };
 
@@ -682,6 +684,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
 #if !defined(__powerpc__)
   if (xf86LoadSubModule(pScrn, "int10")) {
     xf86Int10InfoPtr pInt;
+#if 0
     xf86DrvMsg(pScrn->scrnIndex, X_INFO, 
                "Softbooting the board (through the int10 interface).\n");
     pInt = xf86InitInt10(pTDFX->pEnt->index);
@@ -696,6 +699,7 @@ TDFXPreInit(ScrnInfoPtr pScrn, int flags)
                  "Softbooting the board succeeded.\n");
       xf86FreeInt10(pInt);
     }
+#endif
   }
 #endif
 
@@ -1813,6 +1817,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   TDFXPtr pTDFX;
   VisualPtr visual;
   BoxRec MemBox;
+  MessageType driFrom = X_DEFAULT;
 
   TDFXTRACE("TDFXScreenInit start\n");
   pScrn = xf86Screens[pScreen->myNum];
@@ -1832,6 +1837,7 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   pTDFX->pixmapCacheLinesMin = ((720*480*2) + pTDFX->stride - 1)/pTDFX->stride;
 
   allocateMemory(pScrn);
+
 #if 0
   if (pTDFX->numChips>1) {
     if (xf86ReturnOptValBool(TDFXOptions, OPTION_NO_SLI, FALSE)) {
@@ -1877,6 +1883,8 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   TDFXSave(pScrn);
   if (!TDFXModeInit(pScrn, pScrn->currentMode)) return FALSE;
 
+  TDFXSetLFBConfig(pTDFX);
+
   miClearVisualTypes();
 
   if (!miSetVisualTypes(pScrn->depth, miGetDefaultVisualMask(pScrn->depth),
@@ -1892,10 +1900,14 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    * is called.   fbScreenInit will eventually call into the drivers
    * InitGLXVisuals call back.
    */
-  if (!pTDFX->NoAccel) {
-    if ((pTDFX->backOffset != -1) && (pTDFX->depthOffset != -1)) {
+  if (!xf86ReturnOptValBool(TDFXOptions, OPTION_DRI, TRUE) || pTDFX->NoAccel) {
+      pTDFX->directRenderingEnabled = FALSE;
+      driFrom = X_CONFIG;
+  } else if ((pTDFX->backOffset == -1) || (pTDFX->depthOffset == -1)) {
+      pTDFX->directRenderingEnabled = FALSE;
+      driFrom = X_PROBED;
+  } else {
       pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
-    }
   }
 #endif
 
@@ -1975,18 +1987,16 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
   xf86DPMSInit(pScreen, TDFXDisplayPowerManagementSet, 0);
 
 #ifdef XF86DRI
-  if (!pTDFX->NoAccel) {
-    if (pTDFX->directRenderingEnabled) {
+  if (pTDFX->directRenderingEnabled) {
 	/* Now that mi, fb, drm and others have done their thing, 
          * complete the DRI setup.
          */
 	pTDFX->directRenderingEnabled = TDFXDRIFinishScreenInit(pScreen);
-    }
   }
   if (pTDFX->directRenderingEnabled) {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering enabled\n");
+	xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering enabled\n");
   } else {
-	xf86DrvMsg(pScrn->scrnIndex, X_INFO, "direct rendering disabled\n");
+	xf86DrvMsg(pScrn->scrnIndex, driFrom, "Direct rendering disabled\n");
   }
 #endif
 
