@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /* OEM Data for 310/325 series */
 

@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 
 /* Register settings for SiS 310/325 series */

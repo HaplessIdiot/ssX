@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 /* OS depending defines */
 

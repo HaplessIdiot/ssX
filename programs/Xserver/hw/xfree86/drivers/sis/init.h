@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #ifndef _INIT_
 #define _INIT_
 
