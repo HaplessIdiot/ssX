@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.4 2003/11/03 05:11:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/jamstudio/js_x.c,v 1.5 2004/04/26 22:26:11 dawes Exp $ */
 
 #include <sys/types.h>
 #include "misc.h"
@@ -66,6 +66,10 @@ typedef struct
 }
 JS_XDevRec, *JS_XDevPtr;
 
+static Bool xf86JS_XConvert(LocalDevicePtr local, int first, int num,
+			    int v0, int v1, int v2, int v3, int v4, int v5,
+			    int *x, int *y);
+
 static void
 xf86JS_XReadInput(LocalDevicePtr local)
 {
@@ -74,6 +78,7 @@ xf86JS_XReadInput(LocalDevicePtr local)
    int x = priv->jsxOldX, y = priv->jsxOldY, press = priv->jsxOldPress;
    int btn = priv->jsxOldBtn;
    int btn_notify = priv->jsxOldNotify;
+   int conv_x, conv_y;
 
    while (read(local->fd, &event, sizeof(struct hiddev_event))
 	  == sizeof(struct hiddev_event)) {
@@ -103,6 +108,9 @@ xf86JS_XReadInput(LocalDevicePtr local)
       btn_notify = 1;
    else
       btn_notify = 0;
+
+   xf86JS_XConvert(local, 0, 2, x, y, 0, 0, 0, 0, &conv_x, &conv_y);
+   xf86XInputSetScreen(local, 0, conv_x, conv_y);
 
    if ((x != priv->jsxOldX) || (y != priv->jsxOldY)
        || (press != priv->jsxOldPress)) {
@@ -150,7 +158,6 @@ deltaX=(float)width/priv->jsxMaxX; deltaY=(float)height/priv->jsxMaxY;
    deltaY = priv->jsxMaxY / height;
    *x = v0 / deltaX;
    *y = v1 / deltaY;
-   xf86XInputSetScreen(local, 0, *x, *y);
    return TRUE;
 }
 

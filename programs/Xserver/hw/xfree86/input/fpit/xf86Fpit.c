@@ -40,7 +40,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.4 2003/11/03 05:11:47 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/fpit/xf86Fpit.c,v 1.5 2004/04/26 22:26:10 dawes Exp $ */
 
 #include <xf86Version.h>
 
@@ -154,12 +154,6 @@ static Bool xf86FpitConvert(LocalDevicePtr local, int first, int num, int v0, in
 		*x = xf86ScaleAxis(v0, 0, priv->screen_width, priv->fpitMinX, priv->fpitMaxX);
 		*y = xf86ScaleAxis(v1, 0, priv->screen_height, priv->fpitMinY, priv->fpitMaxY);
 	}
-	/*
-	 * Need to check if still on the correct screen.
-	 * This call is here so that this work can be done after
-	 * calib and before posting the event.
-	 */
-	xf86XInputSetScreen(local, priv->screen_no, *x, *y);
 	return TRUE;
 }
 
@@ -174,6 +168,7 @@ static void xf86FpitReadInput(LocalDevicePtr local)
 	int is_core_pointer;
 	int x, y, buttons, prox;
 	DeviceIntPtr device;
+	int conv_x, conv_y;
 	/* Read data into buffer */
 	len = xf86ReadSerial(local->fd, priv->fpitData, BUFFER_SIZE);
 	if (len <= 0) {
@@ -250,7 +245,11 @@ static void xf86FpitReadInput(LocalDevicePtr local)
 	priv->fpitIndex = 0;
 	device = local->dev;
 	is_core_pointer = xf86IsCorePointer(device);
-	/* coordonates are ready we can send events */
+
+	xf86FpitConvert(local, 0, 2, x, y, 0, 0, 0, 0, &conv_x, &conv_y);
+	xf86XInputSetScreen(local, priv->screen_no, conv_x, conv_y);
+
+	/* coordinates are ready we can send events */
 	if (prox) {
 		if (!(priv->fpitOldProximity))
 			if (!is_core_pointer)
