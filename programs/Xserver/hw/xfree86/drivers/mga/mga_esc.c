@@ -70,7 +70,7 @@ static void GetVideoParameterStr(LPMGAMODEINFO pModeInfo, char *sResult);
 static Bool convertNumber(unsigned long *pulNumber, char *sNumber);
 
 
-MGAEscFuncRec FunctionTable[] = {
+static MGAEscFuncRec FunctionTable[] = {
     {"hal",  EscHal},
     {"test",  EscTest},
     {"read",  EscRead},
