@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/dri/i915/intel_ioctl.c,v 1.2 2004/06/23 19:40:13 tsi Exp $ */
 /**************************************************************************
  * 
  * Copyright 2003 Tungsten Graphics, Inc., Cedar Park, Texas.
@@ -151,7 +151,7 @@ void intelFlushBatchLocked( intelContextPtr intel,
        */
       if (allow_unlock) {
 	 UNLOCK_HARDWARE( intel );
-	 sched_yield();
+	 usleep(0);
 	 LOCK_HARDWARE( intel );
       }
 
