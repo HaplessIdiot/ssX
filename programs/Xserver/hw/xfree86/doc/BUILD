@@ -169,9 +169,9 @@ XFree86:
 
    o VerifyOS displays the detected operating system version. If the numbers
      shown do not match your system, you probably need to set them manually
-     in host.def and report the problem to XFree86@XFree86.org.
+     in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.8 2002/12/21 03:47:40 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.9 2003/01/04 04:20:23 dawes Exp $
 
 
 $XFree86: $
