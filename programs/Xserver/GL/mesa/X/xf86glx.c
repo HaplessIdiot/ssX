@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/mesa/X/xf86glx.c,v 1.3 2004/04/26 00:23:37 tsi Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -477,8 +477,6 @@ static Bool init_visuals(int *nvisualp, VisualPtr *visualp,
 void __MESA_setVisualConfigs(int nconfigs, __GLXvisualConfig *configs,
 			     void **privates)
 {
-    (void)kernel8;
-    (void)DitherValues;
     numConfigs = nconfigs;
     visualConfigs = configs;
     visualPrivates = privates;
