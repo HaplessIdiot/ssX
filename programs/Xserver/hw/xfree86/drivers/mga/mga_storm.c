@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.100 2004/02/20 16:59:49 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.101tsi Exp $ */
 
 
 /* All drivers should typically include these */
@@ -769,20 +769,6 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->NumScanlineImageWriteBuffers = 1;
     infoPtr->ScanlineImageWriteBuffers = &(pMga->ScratchBuffer);
 
-
-    /* midrange replacements */
-
-    if(pMga->ILOADBase && pMga->UsePCIRetry && infoPtr->SetupForSolidFill) {
-	infoPtr->FillSolidRects = MGAFillSolidRectsDMA;
-	infoPtr->FillSolidSpans = MGAFillSolidSpansDMA;
-    }
-
-    if(pMga->AccelFlags & TWO_PASS_COLOR_EXPAND) {
-	if(infoPtr->SetupForMono8x8PatternFill)
-	    infoPtr->FillMono8x8PatternRects =
-				MGAFillMono8x8PatternRectsTwoPass;
-    }
-
     if(infoPtr->SetupForSolidFill) {
 	infoPtr->ValidatePolyArc = MGAValidatePolyArc;
 	infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask |
@@ -790,6 +776,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	infoPtr->ValidatePolyPoint = MGAValidatePolyPoint;
 	infoPtr->PolyPointMask = GCFunction | GCPlaneMask;
     }
+
     if(pMga->AccelFlags & MGA_NO_PLANEMASK) {
 	infoPtr->ScanlineImageWriteFlags |= NO_PLANEMASK;
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
@@ -891,6 +878,8 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 	  xf86DrvMsg( pScrn->scrnIndex, X_ERROR,
 		      "Memory manager initialization to (%d,%d) (%d,%d) failed\n",
 		      MemBox.x1, MemBox.y1, MemBox.x2, MemBox.y2 );
+	  XAADestroyInfoRec(infoPtr);
+	  pMga->AccelInfoRec = NULL;
 	  return FALSE;
        } else {
 	  int width, height;
@@ -976,7 +965,36 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     }
 #endif
 
-    return(XAAInit(pScreen, infoPtr));
+    if (!XAAInit(pScreen, infoPtr)) {
+	XAADestroyInfoRec(infoPtr);
+	pMga->AccelInfoRec = NULL;
+	return FALSE;
+    }
+
+    /* Midrange replacements, after XAAInit() has looked at options */
+
+    if(pMga->ILOADBase && pMga->UsePCIRetry && infoPtr->SetupForSolidFill) {
+	infoPtr->FillSolidRects = MGAFillSolidRectsDMA;
+	infoPtr->FillSolidSpans = MGAFillSolidSpansDMA;
+    }
+
+    if(pMga->AccelFlags & TWO_PASS_COLOR_EXPAND) {
+	if(infoPtr->SetupForMono8x8PatternFill)
+	    infoPtr->FillMono8x8PatternRects =
+				MGAFillMono8x8PatternRectsTwoPass;
+    }
+
+    if(!infoPtr->SetupForSolidFill) {
+	/*
+	 * The user disabled solid fills, so clobber our GC validation hooks.
+	 * Not all of this is necessary;  I'm just being anal...
+	 */
+	infoPtr->ValidatePolyArc = NULL;
+	infoPtr->ValidatePolyPoint = NULL;
+	infoPtr->PolyArcMask = infoPtr->PolyPointMask = 0;
+    }
+
+    return TRUE;
 }
 
 void
@@ -1808,7 +1826,8 @@ MGANAME(SubsequentColorExpandScanline)(
 	\*******************/
 
 
-static void MGANAME(SetupForScanlineImageWrite)(
+static void
+MGANAME(SetupForScanlineImageWrite)(
    ScrnInfoPtr pScrn,
    int rop,
    unsigned int planemask,
@@ -1827,7 +1846,8 @@ static void MGANAME(SetupForScanlineImageWrite)(
 }
 
 
-static void MGANAME(SubsequentScanlineImageWriteRect)(
+static void
+MGANAME(SubsequentScanlineImageWriteRect)(
    ScrnInfoPtr pScrn,
    int x, int y, int w, int h,
    int skipleft
@@ -1846,7 +1866,8 @@ static void MGANAME(SubsequentScanlineImageWriteRect)(
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
 
-static void MGANAME(SubsequentImageWriteScanline)(
+static void
+MGANAME(SubsequentImageWriteScanline)(
     ScrnInfoPtr pScrn,
     int bufno
 ){
@@ -2443,10 +2464,11 @@ MGAFillCacheBltRects(
    int xorg, int yorg,
    XAACacheInfoPtr pCache
 ){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    MGAPtr pMga = MGAPTR(pScrn);
+    XAAInfoRecPtr infoRec = pMga->AccelInfoRec;
     int x, y, phaseY, phaseX, skipleft, height, width, w, blit_w, blit_h, start;
 
-    CHECK_DMA_QUIESCENT(MGAPTR(pScrn), pScrn);
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
 
     (*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, rop, planemask,
 		pCache->trans_color);
@@ -2538,7 +2560,7 @@ MGANAME(DRIInitBuffers)(WindowPtr pWin, RegionPtr prgn, CARD32 index)
     BoxPtr pbox = REGION_RECTS(prgn);
     int nbox  = REGION_NUM_RECTS(prgn);
 
-    CHECK_DMA_QUIESCENT(MGAPTR(pScrn), pScrn);
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
 
     MGANAME(SetupForSolidFill)(pScrn, 0, GXcopy, -1);
     while (nbox--) {
@@ -2578,7 +2600,7 @@ MGANAME(DRIMoveBuffers)(WindowPtr pParent, DDXPointRec ptOldOrg,
     int screenwidth = pScrn->virtualX;
     int screenheight = pScrn->virtualY;
 
-    CHECK_DMA_QUIESCENT(MGAPTR(pScrn), pScrn);
+    CHECK_DMA_QUIESCENT(pMga, pScrn);
 
     pbox = REGION_RECTS(prgnSrc);
     nbox = REGION_NUM_RECTS(prgnSrc);
