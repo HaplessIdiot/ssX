@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.36 2001/01/17 19:42:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.37 2001/01/30 15:03:34 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2861,8 +2861,16 @@ TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
 {
     TextWidget ctx = (TextWidget)w;
     Bool display_caret = ctx->text.display_caret;
+    Widget shell;
 
-    if (event->xfocus.detail == NotifyPointer)
+    shell = w;
+    while (shell) {
+	if (XtIsShell(shell))
+	    break;
+	shell = XtParent(shell);
+    }
+    if ((shell && XtGetKeyboardFocusWidget(shell) == w) ||
+	 event->xfocus.detail == NotifyPointer)
 	return;
 
     /* Let the input method know focus has left.*/
