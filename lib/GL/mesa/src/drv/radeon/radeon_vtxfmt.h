@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxfmt.h,v 1.2 2002/10/30 12:51:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -77,13 +77,13 @@ do {						\
 
 /* Useful for figuring out the offsets:
  */
-#define FIXUP2( CODE, OFFSET, CHECKVAL, NEWVAL )		\
-do {								\
-   while (*(int *)(CODE+OFFSET) != CHECKVAL) OFFSET++;		\
-   fprintf(stderr, "%s/%d CVAL %x OFFSET %d VAL %x\n", __FUNCTION__,	\
-	   __LINE__, CHECKVAL, OFFSET, (int)(NEWVAL));			\
-   *(int *)(CODE+OFFSET) = (int)(NEWVAL);				\
-   OFFSET += 4;							\
+#define FIXUP2( CODE, OFFSET, CHECKVAL, NEWVAL )				\
+do {										\
+   while (*(int *)(CODE+OFFSET) != CHECKVAL) OFFSET++;				\
+   /* fprintf(stderr, "%s/%d CVAL %x OFFSET %d VAL %x\n", __FUNCTION__, */	\
+/* 	   __LINE__, CHECKVAL, OFFSET, (int)(NEWVAL)); */			\
+   *(int *)(CODE+OFFSET) = (int)(NEWVAL);					\
+   OFFSET += 4;									\
 } while (0)
 
 /* 

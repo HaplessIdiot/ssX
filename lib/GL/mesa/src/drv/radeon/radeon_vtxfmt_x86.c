@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxfmt_x86.c,v 1.1 2002/10/30 12:51:58 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -195,7 +195,7 @@ struct dynfn *radeon_makeX86Normal3fv( GLcontext *ctx, int key )
    FIXUP2(dfn->code, i, 0x0, (int)vb.normalptr); 
    FIXUP2(dfn->code, i, 0x4, 4+(int)vb.normalptr); 
    FIXUP2(dfn->code, i, 0x8, 8+(int)vb.normalptr); 
-   fprintf(stderr, "%s done\n", __FUNCTION__);
+   /* fprintf(stderr, "%s done\n", __FUNCTION__); */
    return dfn;
 }
 
