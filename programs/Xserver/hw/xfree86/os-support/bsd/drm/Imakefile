@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.17 2004/06/01 00:17:06 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.18 2004/06/10 14:34:59 alanh Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -95,6 +95,7 @@ LibraryModuleTarget(drm,$(OBJS),$(OS_SUBDIR))
 NormalLintTarget($(SRCS))
 
 InstallLibraryModule(drm,$(MODULEDIR),$(OS_SUBDIR))
+#endif
 
 DependTarget()
 
