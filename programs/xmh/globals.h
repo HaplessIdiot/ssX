@@ -1,5 +1,5 @@
 /*
- *  $XConsortium: globals.h,v 2.39 91/07/18 21:03:15 converse Exp $
+ *  $XConsortium: globals.h /main/37 1996/02/02 14:27:39 kaleb $
  *
  *
  *		       COPYRIGHT 1987, 1989
@@ -121,7 +121,7 @@ ext Boolean	subProcessRunning; /* interlock for DoCommand/CheckMail */
 
 typedef struct _XmhMenuEntry {
     char	*name;			/* menu entry name */
-    void   	(*function)();		/* menu entry callback function */
+    void   	(*function)(XMH_CB_ARGS); /* menu entry callback function */
 } XmhMenuEntryRec, *XmhMenuEntry;	
 
 
@@ -152,3 +152,14 @@ extern XmhMenuButtonDescRec	MenuBoxButtons[];
 #define XMH_VIEW	4
 #define XMH_OPTION	5
 
+/* Bell types Feep() */
+#ifdef XKB
+#include <X11/extensions/XKBbells.h>
+#else
+#define	XkbBI_Info			0
+#define	XkbBI_MinorError		1
+#define	XkbBI_MajorError		2
+#define	XkbBI_Failure			6
+#define	XkbBI_Wait			7
+#define	XkbBI_NewMail			12
+#endif

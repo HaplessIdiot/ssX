@@ -1,4 +1,4 @@
-/* $XConsortium: tocutil.h,v 2.6 89/12/10 17:30:14 converse Exp $ */
+/* $XConsortium: tocutil.h,v 2.7 95/01/09 16:52:53 swick Exp $ */
 /*
  *			  COPYRIGHT 1987
  *		   DIGITAL EQUIPMENT CORPORATION
@@ -27,20 +27,20 @@
 #ifndef _tocutil_h
 #define _tocutil_h
 
-extern Toc	TUMalloc			(/* void	*/);
-extern int	TUScanFileOutOfDate		(/* Toc 	*/);
-extern void	TUCheckSequenceMenu		(/* Toc		*/);
-extern void	TUScanFileForToc		(/* Toc 	*/);
-extern int	TUGetMsgPosition		(/* Toc, Msg 	*/);
-extern void	TUResetTocLabel			(/* Scrn 	*/);
-extern void	TURedisplayToc			(/* Scrn 	*/);
-extern void	TULoadSeqLists			(/* Toc 	*/);
-extern void	TURefigureWhatsVisible		(/* Toc 	*/);
-extern void	TULoadTocFile			(/* Toc 	*/);
-extern void	TUSaveTocFile			(/* Toc 	*/);
-extern void	TUEnsureScanIsValidAndOpen	(/* Toc 	*/);
-extern void	TURefigureTocPositions		(/* Toc 	*/);
-extern void	TUGetFullFolderInfo		(/* Toc 	*/);
-extern Msg	TUAppendToc			(/* Toc, char *	*/);
+extern Toc	TUMalloc			(void);
+extern int	TUScanFileOutOfDate		(Toc);
+extern void	TUCheckSequenceMenu		(Toc);
+extern void	TUScanFileForToc		(Toc);
+extern int	TUGetMsgPosition		(Toc, Msg);
+extern void	TUResetTocLabel			(Scrn);
+extern void	TURedisplayToc			(Scrn);
+extern void	TULoadSeqLists			(Toc);
+extern void	TURefigureWhatsVisible		(Toc);
+extern void	TULoadTocFile			(Toc);
+extern void	TUSaveTocFile			(Toc);
+extern void	TUEnsureScanIsValidAndOpen	(Toc, Boolean);
+extern void	TURefigureTocPositions		(Toc);
+extern void	TUGetFullFolderInfo		(Toc);
+extern Msg	TUAppendToc			(Toc, char *);
 
 #endif /* _tocutil_h */
