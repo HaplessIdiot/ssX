@@ -1,3 +1,6 @@
+
+ 568. Fix I810 driver bug relating to Xv (Jonathan Bian).
+
 XFree86 4.0.1c (28 August 2000)
  567. Add support to xset for setting the keyboard repeat rate using XKB
       (A.119, A.126, Stephen Montgomery-Smith).
@@ -11085,4 +11088,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1286 2000/08/28 16:04:49 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1287 2000/08/28 16:35:02 dawes Exp $
