@@ -25,7 +25,7 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.25 2000/02/22 01:03:25 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.26 2000/05/18 23:21:42 dawes Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
@@ -186,7 +186,8 @@ extern Bool Must_have_memory;
 #define TAIL_SIZE		0
 #endif
 
-#if defined(__alpha__) || defined(__ia64__)
+#if defined(__alpha__) || defined(__alpha) || \
+    defined(__ia64__) || defined(ia64)
 #define MAGIC			0x1404196414071968
 #define MAGIC_FREE              0x1506196615061966
 #define MAGIC2			0x2515207525182079
@@ -327,7 +328,12 @@ Xalloc (unsigned long amount)
     }
 
     /* alignment check */
-#if defined(__alpha__) || defined(__sparc__) || defined(__mips__) || defined(__powerpc__) || defined(__arm32__) || defined(__ia64__)
+#if defined(__alpha__) || defined(__alpha) || \
+    defined(__sparc__) || \
+    defined(__mips__) || \
+    defined(__powerpc__) || \
+    defined(__arm32__) || \
+    defined(__ia64__) || defined(ia64)
     amount = (amount + (sizeof(long)-1)) & ~(sizeof(long)-1);
 #endif
 

@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.22 2000/01/26 22:05:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfb.h,v 3.23 2000/02/12 03:39:19 dawes Exp $ */
 
 #if !defined(__CFB_H__) || defined(CFB_PROTOTYPES_ONLY)
 
@@ -1303,7 +1303,11 @@ extern int cfbScreenPrivateIndex;
  * forcing as to use div instead of shift.  Let's be explicit.
  */
 
-#if defined(mips) || defined(sparc) || defined(__alpha) || defined(__alpha__) || defined(__i386__) || defined(i386)
+#if defined(mips) || \
+    defined(sparc) || \
+    defined(__alpha) || defined(__alpha__) || \
+    defined(__i386__) || defined(i386) || \
+    defined(__ia64__) || defined(ia64)
 #define GetHighWord(x) (((int) (x)) >> 16)
 #else
 #define GetHighWord(x) (((int) (x)) / 65536)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Utils.c,v 3.4 1996/02/04 08:57:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Utils.c,v 3.5 1996/12/23 06:31:42 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by David Wexelblat <dwex@xfree86.org>
  *
@@ -510,12 +510,12 @@ char *s2;
 	return(c1 - c2);
 }
 
-unsigned int StrToUL(str)
+unsigned long StrToUL(str)
 CONST char *str;
 {
 	int base = 10;
 	CONST char *p = str;
-	unsigned int tot = 0;
+	unsigned long tot = 0;
 
 	if (*p == '0')
 	{

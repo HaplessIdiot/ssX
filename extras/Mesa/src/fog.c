@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 #ifdef PC_HEADER
 #include "all.h"
@@ -330,7 +330,7 @@ _mesa_fog_rgba_pixels( const GLcontext *ctx,
                GLfloat eyez = d / (c+ndcz);
                GLfloat f, g;
                GLfloat tmp = negDensitySquared * eyez * eyez;
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
                /* XXX this underflow check may be needed for other systems */
                if (tmp < FLT_MIN_10_EXP)
                   f = exp( FLT_MIN_10_EXP );
@@ -409,7 +409,7 @@ _mesa_fog_ci_pixels( const GLcontext *ctx,
                if (eyez < 0.0)
                   eyez = -eyez;
                tmp = negDensitySquared * eyez * eyez;
-#ifdef __alpha__
+#if defined(__alpha__) || defined(__alpha)
                /* XXX this underflow check may be needed for other systems */
                if (tmp < FLT_MIN_10_EXP)
                   f = exp( FLT_MIN_10_EXP );

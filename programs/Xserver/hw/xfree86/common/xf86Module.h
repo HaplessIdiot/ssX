@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.24 2000/04/05 18:13:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.25 2000/08/15 16:05:36 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -23,7 +23,7 @@
 #include "misc.h"
 #include "xf86Version.h"
 #ifndef NULL
-#define NULL 0
+#define NULL ((void *)0)
 #endif
 
 typedef enum {

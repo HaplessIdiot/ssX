@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/Xmd.h,v 3.6 2000/02/22 00:59:40 mvojkovi Exp $ */
+/* $XFree86: xc/include/Xmd.h,v 3.7 2000/08/09 23:40:11 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -54,7 +54,8 @@ SOFTWARE.
 #ifdef CRAY
 #define WORD64				/* 64-bit architecture */
 #endif
-#if defined(__alpha) || defined(__alpha__) || defined(__ia64__)
+#if defined(__alpha) || defined(__alpha__) || \
+    defined(__ia64__) || defined(ia64)
 #define LONG64				/* 32/64-bit architecture */
 #endif
 #ifdef __sgi

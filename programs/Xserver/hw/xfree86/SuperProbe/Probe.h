@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.71 1999/12/27 00:39:40 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.73 2000/02/22 01:00:15 mvojkovi Exp $ */
 
 /*
  * Includes
@@ -45,7 +45,7 @@
 #endif	/* MACH386 */
 #include <ctype.h>
 #if defined(SYSV) || defined(SVR4) || defined(linux) || defined(__QNX__) || defined(__QNXNTO__)
-#if defined(__ia64__)
+#if defined(__ia64__) || defined(ia64)
 #include <sys/io.h>
 #include <asm/io.h>
 #endif
@@ -156,7 +156,7 @@ Byte getdaccomm __STDCARGS((void));
 void waitforretrace __STDCARGS((void));
 Bool Excluded __STDCARGS((Range *, Chip_Descriptor *, Bool));
 int StrCaseCmp __STDCARGS((char *, char *));
-unsigned int StrToUL __STDCARGS((const char *));
+unsigned long StrToUL __STDCARGS((const char *));
 
 /*
  * Ident functions

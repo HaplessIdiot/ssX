@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.38 2000/02/22 01:04:01 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.39 2000/05/18 16:30:02 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -309,7 +309,7 @@ SOFTWARE.
 #endif /* alpha */
 
 
-#if defined(__ia64__)
+#if defined(__ia64__) || defined(ia64)
 # define IMAGE_BYTE_ORDER	LSBFirst
 
 # if defined(XF86MONOVGA) || defined(XF86VGA16) || defined(XF86MONO)
@@ -362,7 +362,7 @@ SOFTWARE.
 
 #if	(defined(AMOEBA) && defined(i80386)) || \
 	(defined(SVR4) && defined(i386)) || \
-	defined(__alpha__) || \
+	defined(__alpha__) || defined(__alpha) || \
 	defined(__i386__) || \
 	defined(__EMX__) || \
 	defined(__OS2ELF__) || \

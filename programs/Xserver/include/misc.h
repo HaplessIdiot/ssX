@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.22 1999/08/21 13:48:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.23 2000/08/10 17:40:39 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -84,7 +84,7 @@ extern unsigned long serverGeneration;
 #ifndef X_NOT_STDC_ENV
 #include <stddef.h>
 #else
-#define NULL            0
+#define NULL            ((void *)0)
 #endif
 #endif
 #endif

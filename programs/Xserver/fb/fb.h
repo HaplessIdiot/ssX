@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.15 2000/04/04 19:24:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fb.h,v 1.16 2000/05/06 21:09:30 keithp Exp $ */
 
 #ifndef _FB_H_
 #define _FB_H_
@@ -105,7 +105,7 @@
 # ifdef WIN32
 typedef unsigned __int64    FbBits;
 # else
-#  ifdef __alpha__
+#  if defined(__alpha__) || defined(__alpha)
 typedef unsigned long	    FbBits;
 #  else
 typedef unsigned long long  FbBits;

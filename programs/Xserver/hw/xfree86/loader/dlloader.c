@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.9 1998/09/27 04:43:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dlloader.c,v 1.10 1999/01/14 13:04:54 dawes Exp $ */
 
 
 /*
@@ -101,13 +101,14 @@ DLFindSymbol(const char *name)
     sprintf(n, "_%s", name);
 #endif
     
+    (void)dlerror();	/* Clear out any previous error */
     for (l = dlModuleList; l != NULL; l = l->next) {
 #ifdef NEED_UNDERSCORE_FOR_DLLSYM
         p = dlsym(l->module->dlhandle, n);
 #else
         p = dlsym(l->module->dlhandle, name);
 #endif
-	if (p != NULL) {
+	if (dlerror() == NULL) {
 #ifdef NEED_UNDERSCORE_FOR_DLLSYM
 	    xf86loaderfree(n);
 #endif
