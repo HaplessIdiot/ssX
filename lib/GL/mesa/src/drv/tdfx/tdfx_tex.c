@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_tex.c,v 1.1 2001/03/21 16:14:28 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -795,9 +795,11 @@ static void tdfxDDDeleteTexture( GLcontext *ctx,
 {
    tdfxContextPtr fxMesa = TDFX_CONTEXT(ctx);
 
-   LOCK_HARDWARE( fxMesa );
-   tdfxTMFreeTextureLocked( fxMesa, tObj );
-   UNLOCK_HARDWARE( fxMesa );
+   if ( fxMesa->driDrawable ) {
+      LOCK_HARDWARE( fxMesa );
+      tdfxTMFreeTextureLocked( fxMesa, tObj );
+      UNLOCK_HARDWARE( fxMesa );
+   }
 
    fxMesa->new_state |= TDFX_NEW_TEXTURE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.14 2001/05/16 13:43:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_dri.c,v 1.15 2001/05/19 01:52:43 dawes Exp $ */
 
 /* modified from tdfx_dri.c, mga_dri.c */
 
@@ -22,9 +22,7 @@
   while((MMIO_IN16(pSiS->IOBase, BR(16)+2) & 0xE000) != 0xE000){}; \
   MMIO_IN16(pSiS->IOBase, 0x8240);
 
-#if 0
 extern Bool drmSiSAgpInit(int driSubFD, int offset, int size);
-#endif
 
 extern void GlxSetVisualConfigs(
     int nconfigs,
@@ -198,7 +196,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
    {
       int major, minor, patch;
       DRIQueryVersion(&major, &minor, &patch);
-      if (major != 3 || minor != 1 || patch < 0) {
+      if (major != 4 || minor < 0) {
          xf86DrvMsg(pScreen->myNum, X_ERROR,
                     "[dri] SISDRIScreenInit failed because of a version mismatch.\n"
                     "[dri] libDRI version is %d.%d.%d but version 4.0.x is needed.\n"
@@ -372,9 +370,7 @@ Bool SISDRIScreenInit(ScreenPtr pScreen)
     pSISDRI->AGPCmdBufOffset = pSIS->agpCmdBufAddr - pSIS->agpAddr;
     pSISDRI->AGPCmdBufSize = pSIS->agpCmdBufSize;
 
-#if 0
     drmSiSAgpInit(pSIS->drmSubFD, AGP_CMDBUF_SIZE,(AGP_SIZE - AGP_CMDBUF_SIZE));
-#endif
   }
   while(0);
     

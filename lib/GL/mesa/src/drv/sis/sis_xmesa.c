@@ -24,7 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_xmesa.c,v 1.8 2000/12/21 14:10:27 alanh Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/sis/sis_xmesa.c,v 1.9 2000/12/22 09:20:04 alanh Exp $ */
 
 /*
  * Authors:
@@ -80,9 +80,9 @@ GLboolean XMesaInitDriver (__DRIscreenPrivate * driScrnPriv)
   {
       int major, minor, patch;
       if (XF86DRIQueryVersion(driScrnPriv->display, &major, &minor, &patch)) {
-         if (major != 3 || minor != 1 || patch < 0) {
+         if (major != 4 || minor < 0) {
             char msg[1000];
-            sprintf(msg, "sis DRI driver expected DRI version 3.1.x but got version %d.%d.%d", major, minor, patch);
+            sprintf(msg, "sis DRI driver expected DRI version 4.0.x but got version %d.%d.%d", major, minor, patch);
             __driMesaMessage(msg);
             return GL_FALSE;
          }
@@ -90,11 +90,11 @@ GLboolean XMesaInitDriver (__DRIscreenPrivate * driScrnPriv)
   }
 
   /* Check that the DDX driver version is compatible */
-  if (driScrnPriv->ddxMajor != 1 ||
-       driScrnPriv->ddxMinor != 0 ||
+  if (driScrnPriv->ddxMajor != 0 ||
+       driScrnPriv->ddxMinor != 1 ||
        driScrnPriv->ddxPatch < 0) {
       char msg[1000];
-      sprintf(msg, "sis DRI driver expected DDX driver version 1.0.x but got version %d.%d.%d", driScrnPriv->ddxMajor, driScrnPriv->ddxMinor, driScrnPriv->ddxPatch);
+      sprintf(msg, "sis DRI driver expected DDX driver version 0.1.x but got version %d.%d.%d", driScrnPriv->ddxMajor, driScrnPriv->ddxMinor, driScrnPriv->ddxPatch);
       __driMesaMessage(msg);
       return GL_FALSE;
   }

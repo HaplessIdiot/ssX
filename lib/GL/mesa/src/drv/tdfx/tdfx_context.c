@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_context.c,v 1.1 2001/03/21 16:14:27 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -457,7 +457,7 @@ void tdfxDestroyContext( tdfxContextPtr fxMesa )
       GLcontext *ctx = fxMesa->glCtx;
       struct gl_texture_object *tObj;
 
-      if ( ctx->Shared->RefCount == 1 ) {
+      if ( ctx->Shared->RefCount == 1 && fxMesa->driDrawable ) {
          /* This share group is about to go away, free our private
           * texture object data.
           */

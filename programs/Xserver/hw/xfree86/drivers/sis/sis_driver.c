@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.63 2001/05/15 10:19:40 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_driver.c,v 1.64 2001/05/16 13:43:17 alanh Exp $ */
 
 #include "fb.h"
 #include "xf1bpp.h"
@@ -1372,10 +1372,6 @@ SISScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 #ifdef XF86DRI
     pSiS->directRenderingEnabled = SISDRIScreenInit(pScreen);
     /* Force the initialization of the context */
-#if 0
-    SISLostContext(pScreen);
-#endif
-
 #endif
 
     /*
