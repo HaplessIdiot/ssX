@@ -3,11 +3,11 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:42:52 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/fonts/Imakefile,v 3.9 2003/04/14 20:37:05 herrb Exp $
+XCOMM $XFree86: xc/fonts/Imakefile,v 3.10 2003/08/22 02:50:11 dawes Exp $
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
 
-#if BuildSpeedoFonts || BuildType1Fonts || BuildCIDFonts || BuildTTFonts
+#if BuildSpeedoFonts || BuildType1Fonts || BuildCIDFonts || BuildTrueTypeFonts
 SCALEDDIR = scaled
 #endif
 
