@@ -46,6 +46,8 @@ INSTPGMFLAGS =
 #define FbPostFbLibs  $(FB) NoMfbPostFbLibs
 #define FBLibs PreFbLibs FbPostFbLibs
 
+#define MiExtLibs $(SHADOW)
+
 #define AllFBLibs PreFbLibs $(FB) $(CFB) PostFbLibs
 
 #if BuildPexExt
@@ -184,8 +186,8 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 #endif
 
 #if BuildRender
-	RENDER = render
-     RENDERLIB = $(RENDER)/librender.a
+      RENDERDIR = render
+      RENDERLIB = $(RENDERDIR)/librender.a
 #endif
 #if DoLoadableServer
      EXTENSIONS = $(OTHEREXTS) $(RENDERLIB)
@@ -200,7 +202,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
                   $(XIEEXT) $(LBXEXT) $(DBEEXT) $(RECORDEXT) $(SITEEXTS)
 #endif
         EXTDIRS = Xext $(XKBDIR) $(XIDIR) $(XIEDIR) $(PEXDIR) $(GLXDIR) \
-                  $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(RENDER) $(SITEEXTDIRS)
+                  $(LBXDIRS) $(DBEDIR) $(RECORDDIR) $(SITEEXTDIRS) $(RENDERDIR)
          XAULIB = $(XAUTHSRC)/LibraryTargetName(Xau)
        XDMCPLIB = $(XDMCPLIBSRC)/LibraryTargetName(Xdmcp)
 #if BuildLBX || GzipFontCompression
@@ -224,6 +226,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 		  cfb24/ModuleLibraryTargetName(cfb24)
           CFB32 = cfb/ModuleLibraryTargetName(cfb) \
 		  cfb32/ModuleLibraryTargetName(cfb32)
+         SHADOW = miext/shadow/ModuleLibraryTargetName(shadow)
 #else 
             MFB = mfb/LibraryTargetName(mfb)
              FB = fb/LibraryTargetName(fb)
@@ -234,12 +237,12 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
           CFB16 = cfb/LibraryTargetName(cfb) cfb16/LibraryTargetName(cfb16)
           CFB24 = cfb/LibraryTargetName(cfb) cfb24/LibraryTargetName(cfb24)
           CFB32 = cfb/LibraryTargetName(cfb) cfb32/LibraryTargetName(cfb32)
+         SHADOW = miext/shadow/LibraryTargetName(shadow)
 #endif
 #if BuildLowMem
          LMFCFB = lmfcfb/LibraryTargetName(cfb)
 #endif
              MI = mi/LibraryTargetName(mi)
-    MISHADOWLIB = miext/shadow/LibraryTargetName(shadow)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
        FONTBASE = $(FONTLIBSRC)/fontbase.o \
@@ -263,9 +266,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
 	$(EXTRASYSLIBS)
 #endif
            CBRT = mi/LibraryTargetName(cbrt)
-    MISHADOWDIR = miext/shadow
-      MIEXTDIRS = $(MISHADOWDIR)
-        STDDIRS = include dix os mi $(MIEXTDIRS) $(XPDDXDIR) $(EXTDIRS)
+        STDDIRS = include dix os mi $(XPDDXDIR) $(EXTDIRS)
 
 XCOMM
 XCOMM This turns off the default rule for compiling .c files because
@@ -563,11 +564,12 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
+SHADOWDIR = miext/shadow
 #if XF86AFB
 AFBDIR = afb
 #endif
 DDXDIR1  = hw/xfree86
-XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(FBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(AFBDIR) $(DDXDIR1) $(DEPDIRS)
+XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(FBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(AFBDIR) $(SHADOWDIR) $(DDXDIR1) $(DEPDIRS)
 XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
@@ -627,7 +629,7 @@ XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
               $(XF8_32BPPLIB) $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
-	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(MISHADOWLIB) $(AFBLIB)
+	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(AFBLIB)
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o
 XF86IDRVLIBS = $(XF86IDRIVERLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)
@@ -638,11 +640,11 @@ XF86LIBS  = $(XF86INIT) $(XF86COMLIB) $(XF86PARSLIB) $(XF86OSLIB)
 #endif
 #if DoLoadableServer
 XF86LOADERLIB = $(XF86SRC)/loader/LibraryTargetName(loader)
-XF86MAINLIBS = PreFbLibsNoFont $(FONTBASE) $(OTHEREXTS) $(XF86COMLIB) \
+XF86MAINLIBS = MiExtLibs PreFbLibsNoFont $(FONTBASE) $(OTHEREXTS) $(XF86COMLIB) \
 	       NoMfbPostFbLibs
 XF86SERVERSYSLIBS = $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #else
-XF86MAINLIBS = AllFBLibs $(XF86COMLIB) $(MI)
+XF86MAINLIBS = MiExtLibs AllFBLibs $(XF86COMLIB) $(MI)
 XF86SERVERSYSLIBS = $(FONTLIBS) $(SYSLIBS) $(LIBDL) $(LIBREGEX)
 #endif
 XF86SERVEROBJS = $(XF86DRVOBJS) $(XF86IDRVOBJS)
@@ -664,6 +666,7 @@ ServerDriverSDKTarget(XFree86)
 #endif
 #endif        /* XF86Server */
 
+#ifdef KDriveXServer
 XCOMM
 XCOMM Tiny X server section
 XCOMM
@@ -683,13 +686,14 @@ XCOMM
        PSEUDO8 = $(KDRIVE)/pseudo8/LibraryTargetName(pseudo8)
     PSEUDO8DIR = $(KDRIVE)/pseudo8
 #endif
+     SHADOWDIR = miext/shadow
             KD = $(KDRIVE)/LibraryTargetName(kdrive)
        KDFBDEV = $(KDRIVE)/fbdev/LibraryTargetName(fbdev)
        
 
-#define StdKdDirs $(RENDER) $(KDRIVE) $(KDOSDIR) $(PSEUDO8DIR) fb $(DEPDIRS)
+#define StdKdDirs $(KDRIVE) $(KDOSDIR) $(PSEUDO8DIR) fb $(DEPDIRS)
 #define StdKdSysLibs $(FONTLIBS) $(SYSLIBS)
-#define KdLibs $(KD) $(KDOS) $(PSEUDO8) $(RENDERLIB) 
+#define KdLibs $(KD) $(KDOS) $(PSEUDO8) MiExtLibs $(RENDERLIB) 
 
 #if XfbdevServer
 XCOMM
@@ -775,12 +779,13 @@ XCOMM
          FBDEV = $(FBDEVDIR)/LibraryTargetName(fbdev)
        VESADIR = $(KDRIVE)/vesa
           VESA = $(FBDEVDIR)/LibraryTargetName(vesa)
+     SHADOWDIR = miext/shadow
     TRIDENTDIR = $(KDRIVE)/trident
        TRIDENT = $(TRIDENTDIR)/LibraryTargetName(trident)
 
         KDDIRS = StdKdDirs
   
-   TRIDENTDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(VESADIR) $(TRIDENTDIR)
+   TRIDENTDIRS = $(STDDIRS) $(KDDIRS) $(FBDEVDIR) $(VESADIR) $(SHADOWDIR) $(TRIDENTDIR)
    
    TRIDENTLIBS = PreFbLibs $(TRIDENT) $(FBDEV) $(VESA) KdLibs FbPostFbLibs
 TRIDENTSYSLIBS = StdKdSysLibs
@@ -910,7 +915,9 @@ XCOMM
 
       KDDIRS = StdKdDirs
 
-    VESADIRS = $(STDDIRS) $(KDDIRS) $(VESADIR)
+   SHADOWDIR = miext/shadow
+
+    VESADIRS = $(STDDIRS) $(KDDIRS) $(VESADIR) $(SHADOWDIR)
 
    VESALIBS = PreFbLibs $(VESA) KdLibs FbPostFbLibs
 VESASYSLIBS = StdKdSysLibs
@@ -927,6 +934,7 @@ ServerTarget(Xvesa,$(VESADIRS),$(VESAOBJS),$(VESALIBS),$(VESASYSLIBS))
 
 KDRIVEDIRS=$(KDDIRS) $(FBDEVDIR) $(SAVAGEDIR) $(TRIDENTDIR) $(SIS530DIR) \
 	$(TRIODIR) $(TS300DIR) $(ITSYDIR) $(IGSDIR) $(VESADIR)
+#endif	/* KDriveXServer */
 
 #if XprtServer
 XCOMM
@@ -1092,10 +1100,11 @@ ServerTarget(XWin,$(XWINDIRS),$(XWINOBJS), \
  
  
 CFBDIRS = $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR)
+MIEXTDIRS = $(SHADOWDIR)
 IPLANDIRS = $(IPLAN2P2DIR) $(IPLAN2P4DIR) $(IPLAN2P8DIR)
 DDXDIRS = $(DDXDIR1) $(DDXDIR2) $(DDXDIR3) $(XVFBDDXDIR) $(XNESTDDXDIR)
 SUBDIRS = $(STDDIRS) $(MFBDIR) $(CFBDIRS) $(IPLANDIRS) $(ILBMDIR) $(AFBDIR) \
-          $(LMFCFBDIR) $(DDXDIRS) $(FBDIR) $(KDRIVEDIRS)
+          $(LMFCFBDIR) $(DDXDIRS) $(FBDIR) $(KDRIVEDIRS) $(MIEXTDIRS)
 
 #if defined(ServerToInstall) && !defined(OS2Architecture) && !defined(QNX4Architecture)
 install::
