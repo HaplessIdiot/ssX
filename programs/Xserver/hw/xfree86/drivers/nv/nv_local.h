@@ -36,6 +36,8 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
+/* $XFree86$/
+
 #ifndef __NV_LOCAL_H__
 #define __NV_LOCAL_H__
 /*
