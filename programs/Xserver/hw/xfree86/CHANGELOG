@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 754. Fix the fbdev driver so that it allows 24-bit pixel size, and disable
+      the RandR extension when rotation is enabled (Jonathan Thambidurai).
  753. Rendition driver fixes:
        - Fix the mode size limits so that the set of modes that the driver
          accepts isn't unnecessarily restricted.
@@ -18537,7 +18539,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3097 2004/01/10 21:45:23 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3098 2004/01/11 04:03:12 dawes Exp $
 
 
 
