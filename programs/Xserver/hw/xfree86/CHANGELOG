@@ -1,4 +1,6 @@
 XFree86 4.3.99.1 (xx March 2003)
+ 978. Fix bug in trident driver that caused old Cyber 9382/9385 chipsets
+      to display half a jittered screen (Alan Hourihane).
  977. Add shadowfb support to XDarwin IOKit mode (Torrey T. Lyons).
  976. Change most of os-support/ to respect VIDMEM_READONLY (Marc La France).
  975. Fix compatibility problem between modules generated without the recent
@@ -16559,4 +16561,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2594 2003/03/14 13:45:58 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2595 2003/03/15 18:02:06 torrey Exp $

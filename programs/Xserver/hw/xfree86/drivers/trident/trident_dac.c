@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.69 2002/09/16 18:06:02 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.70 2003/01/05 18:09:00 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -652,7 +652,8 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	pReg->tridentRegs3x4[Performance] |= 0x10;
 
     OUTB(vgaIOBase+ 4, DRAMControl);
-    pReg->tridentRegs3x4[DRAMControl] = INB(vgaIOBase + 5) | 0x10;
+    if (pTrident->Chipset >= CYBER9388)
+    	pReg->tridentRegs3x4[DRAMControl] = INB(vgaIOBase + 5) | 0x10;
 
     if (pTrident->IsCyber && !pTrident->MMIOonly)
 	pReg->tridentRegs3x4[DRAMControl] |= 0x20;
