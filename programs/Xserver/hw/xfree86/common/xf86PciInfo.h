@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.74 2000/10/18 17:19:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.75 2000/10/23 21:16:45 tsi Exp $ */
 /*
  * PCI Probe
  *
@@ -1011,8 +1011,8 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_NUMNINE, {
 				{PCI_CHIP_I128,		"Imagine 128",0},
 				{PCI_CHIP_I128_2,	"Imagine 128 II",0},
-				{PCI_CHIP_I128_T2R,	"Imagine 128 T2R",0},
-				{PCI_CHIP_I128_T2R4,	"Imagine 128 T2R4",0},
+				{PCI_CHIP_I128_T2R,	"Imagine 128 Rev 3D T2R",0},
+				{PCI_CHIP_I128_T2R4,	"Imagine 128 Rev IV T2R4",0},
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_UMC,	{
