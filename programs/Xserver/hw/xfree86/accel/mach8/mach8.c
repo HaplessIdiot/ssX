@@ -1,5 +1,5 @@
 /* $XConsortium: mach8.c,v 1.1 94/03/28 21:09:56 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.3 1994/07/21 13:47:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach8/mach8.c,v 3.4 1994/08/20 07:33:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -237,6 +237,7 @@ mach8Probe()
     DisplayModePtr pMode, pEnd, pmaxX = NULL, pmaxY = NULL;
     int            maxX, maxY;
     OFlagSet       validOptions;
+    int            tx, ty;
 
     mach8InfoRec.maxClock = mach8MaxClock;
 
@@ -413,29 +414,54 @@ mach8Probe()
     }
 
     maxX = maxY = -1;
-    pMode = pEnd = mach8InfoRec.modes;
+    pMode = mach8InfoRec.modes;
+    pEnd = NULL;
+    tx = mach8InfoRec.virtualX;
+    ty = mach8InfoRec.virtualY;
     do {
-        if (!xf86LookupMode(pMode, &mach8InfoRec))
-	    return(FALSE);
-  
-        if (pMode->HDisplay * pMode->VDisplay > memavail)
-        {
-            ErrorF("%s: Too little memory for mode %s\n", mach8InfoRec.name,
-                   pMode->name);
-            return(FALSE);
-        }
-  
-        if (pMode->HDisplay > maxX)
-        {
-            maxX = pMode->HDisplay;
-            pmaxX = pMode;
-        }
-        if (pMode->VDisplay > maxY)
-        {
-            maxY = pMode->VDisplay;
-            pmaxY = pMode;
-        }
-        pMode = pMode->next;
+	  DisplayModePtr pModeSv;
+	  /*
+	   * xf86LookupMode returns FALSE if it ran into an invalid
+	   * parameter
+	   */
+	  if(xf86LookupMode(pMode, &mach8InfoRec) == FALSE) {
+		pModeSv=pMode->next;
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv; 
+	  } else if (pMode->HDisplay * pMode->VDisplay > memavail) {
+		pModeSv=pMode->next;
+		ErrorF("%s: Too little memory for mode %s\n", 
+			mach8InfoRec.name, pMode->name);
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv;
+	  } else if (((tx > 0) && (pMode->HDisplay > tx)) || 
+		     ((ty > 0) && (pMode->VDisplay > ty))) {
+		pModeSv=pMode->next;
+		ErrorF("Resolution %dx%d too large for virtual %dx%d\n",
+			pMode->HDisplay, pMode->VDisplay, tx, ty);
+		xf86DeleteMode(&mach8InfoRec, pMode);
+		pMode = pModeSv;
+	  } else {
+		/*
+		 * Successfully looked up this mode.  If pEnd isn't 
+		 * initialized, set it to this mode.
+		 */
+		if(pEnd == (DisplayModePtr) NULL)
+			pEnd = pMode;
+
+		if (pMode->HDisplay > maxX)
+		{
+			maxX = pMode->HDisplay;
+			pmaxX = pMode;
+		}
+		if (pMode->VDisplay > maxY)
+		{
+			maxY = pMode->VDisplay;
+			pmaxY = pMode;
+		}
+
+		pMode = pMode->next;
+	  }
     } while (pMode != pEnd);
   
     mach8InfoRec.virtualX = max(maxX, mach8InfoRec.virtualX);
