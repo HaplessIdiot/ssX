@@ -34,12 +34,13 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/programs/dpsexec/dpsexec.c,v 1.1 2001/03/01 01:23:58 dawes Exp $ */
+/* $XFree86: xc/programs/dpsexec/dpsexec.c,v 1.2 2001/03/04 04:32:03 tsi Exp $ */
 
 #include <errno.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <signal.h>
+#include <sys/time.h>
 #include <X11/X.h>
 #include <DPS/XDPS.h>
 #include <X11/Xlib.h>
