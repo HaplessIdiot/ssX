@@ -19,7 +19,7 @@ XCOMM $Xorg: Library.tmpl,v 1.3 2000/08/17 19:41:46 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.17tsi Exp $
+XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.18 2002/11/14 21:01:14 tsi Exp $
 
 #ifndef DoNormalLib
 #define DoNormalLib NO
@@ -42,6 +42,14 @@ XCOMM $XFree86: xc/config/cf/Library.tmpl,v 3.17tsi Exp $
 #endif
 #ifndef HugeLibrary
 #define HugeLibrary NO
+#endif
+
+#ifndef ShlibBindGlobals
+#define ShlibBindGlobals NO
+#endif
+
+#if ShlibBindGlobals && defined(ShlibGlobalsFlags)
+SHLIBGLOBALSFLAGS = ShlibGlobalsFlags
 #endif
 
 #ifndef LibraryCplusplusOptions
