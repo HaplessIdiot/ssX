@@ -1,4 +1,5 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 671. Updates for SCO support (Bugzilla #994, Kean Johnston).
  670. Don't build the Aiptek driver unless HasLinuxInput is set
       (Bugzilla #972, Andrew Aitchison).
  669. A new fixed version of the zh_CN.UTF-8 locale file (Bugzilla #991,
@@ -18384,7 +18385,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3039 2003/12/18 14:11:01 pascal Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3040 2003/12/18 15:02:24 dawes Exp $
 
 
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
+XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.13 2003/07/07 15:34:20 eich Exp $
 
 /*
  * This is for SCO Open Server 5.0.6A or later. You must have the
@@ -127,6 +127,7 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 #define HasExpat		YES
 #define HasFreetype2		YES
 #define HasLibpng		YES
+#define HasPerl			YES
 #define HasPerl5		YES
 #define HasDlopen		YES
 #define HasShm			YES
@@ -138,9 +139,17 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 #define SystemV                 YES
 #define LdCombineFlags          -r 
 
+#define AvoidNullMakeCommand	YES
 #define HasLdRunPath            YES
 #define HasPoll                 YES
 #define PatheticCpp		YES
+
+#define HasGnuMake		YES
+
+#define MesaUseX86Asm		NO
+
+#define MakeNamedTargetSubdir(dir,flags,subname)\
+	$(MAKE) -C dir $(MFLAGS) $(PARALLELMFLAGS) flags subname
 
 #define ArCmdBase               ar
 #define AsCmd                   CcCmd
@@ -148,10 +157,11 @@ XCOMM $XFree86: xc/config/cf/sco5.cf,v 3.11 2003/01/28 22:06:08 alanh Exp $
 #define PreProcessCmd		CppCmd
 #define RawCppCmd		CppCmd
 #define LdCmd                   ld
-#define LexCmd                  flex
-#define MakeCmd	                make
-#define YaccCmd                 yacc
+#define LexCmd                  /usr/gnu/bin/flex
+#define MakeCmd	                /usr/gnu/bin/gmake
+#define YaccCmd                 /usr/gnu/bin/bison -y
 #define InstallCmd		/usr/gnu/bin/ginstall
+
 
 #ifndef UseSeparateConfDir
 #define UseSeparateConfDir	NO
