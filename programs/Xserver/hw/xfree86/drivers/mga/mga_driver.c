@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.162 2000/06/29 20:56:59 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.163 2000/06/29 21:03:11 mvojkovi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -87,11 +87,8 @@
 #define PSZ 8	/* needed for cfb.h */
 #include "cfb.h"
 #undef PSZ
-#include "cfb16.h"
-#include "cfb24.h"
-#include "cfb32.h"
-#include "cfb24_32.h"
 #include "cfb8_32.h"
+#include "fb.h"
 
 #include "mga_bios.h"
 #include "mga_reg.h"
@@ -262,12 +259,12 @@ static const char *vgahwSymbols[] = {
 };
 
 static const char *cfbSymbols[] = {
-    "cfbScreenInit",
-    "cfb16ScreenInit",
-    "cfb24ScreenInit",
-    "cfb32ScreenInit",
     "cfb8_32ScreenInit",
-    "cfb24_32ScreenInit",
+    NULL
+};
+
+static const char *fbSymbols[] = {
+    "fbScreenInit",
     NULL
 };
 
@@ -437,7 +434,7 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	LoaderRefSymLists(vgahwSymbols, cfbSymbols, xaaSymbols, 
 			  xf8_32bppSymbols, ramdacSymbols,
 			  ddcSymbols, i2cSymbols, shadowSymbols,
-			  fbdevHWSymbols, vbeSymbols,
+			  fbdevHWSymbols, vbeSymbols, fbSymbols,
 #ifdef XF86DRI 
 			  drmSymbols, driSymbols,
 #endif
@@ -457,12 +454,6 @@ mgaSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 
 
 #endif /* XFree86LOADER */
-
-/*
- * This is intentionally screen-independent.  It indicates the binding
- * choice made in the first PreInit.
- */
-static int pix24bpp = 0;
 
 /* 
  * ramdac info structure initialization
@@ -1082,8 +1073,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     double real;
     int bytesPerPixel;
     ClockRangePtr clockRanges;
-    char *mod = NULL;
-    const char *reqSym = NULL;
     const char *s;
     int flags24;
 
@@ -1220,10 +1209,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     xf86PrintDepthBpp(pScrn);
 
-    /* Get the depth24 pixmap format */
-    if (pScrn->depth == 24 && pix24bpp == 0)
-	pix24bpp = xf86GetBppFromDepth(pScrn, 24);
-
     /*
      * This must happen after pScrn->display has been set because
      * xf86SetWeight references it.
@@ -1239,9 +1224,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
             ;
         }
     }
-
-    if (!xf86SetDefaultVisual(pScrn, -1))
-	return FALSE;
 
     bytesPerPixel = pScrn->bitsPerPixel / 8;
 
@@ -1909,43 +1891,20 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
         }
     }
 
-    /* Load bpp-specific modules */
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	mod = "cfb";
-	reqSym = "cfbScreenInit";
-	break;
-    case 16:
-	mod = "cfb16";
-	reqSym = "cfb16ScreenInit";
-	break;
-    case 24:
-	if (pix24bpp == 24) {
-	    mod = "cfb24";
-	    reqSym = "cfb24ScreenInit";
-	} else {
-	    mod = "xf24_32bpp";
-	    reqSym = "cfb24_32ScreenInit";
+    /* Load the required framebuffer */
+    if(pMga->Overlay8Plus24) {
+	if (!xf86LoadSubModule(pScrn, "xf8_32bpp")) {
+	    MGAFreeRec(pScrn);
+	    return FALSE;
 	}
-	break;
-    case 32:
-	if (pMga->Overlay8Plus24) {
-	    mod = "xf8_32bpp";
-	    reqSym = "cfb8_32ScreenInit";
-	    xf86LoaderReqSymLists(xf8_32bppSymbols, NULL);
-	} else {
-	    mod = "cfb32";
-	    reqSym = "cfb32ScreenInit";
-	    
+	xf86LoaderReqSymbols("cfb8_32ScreenInit", NULL);
+    } else {
+	if (!xf86LoadSubModule(pScrn, "fb")) {
+	    MGAFreeRec(pScrn);
+	    return FALSE;
 	}
-	break;
+	xf86LoaderReqSymbols("fbScreenInit", NULL);
     }
-    if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
-	MGAFreeRec(pScrn);
-	return FALSE;
-    }
-
-    xf86LoaderReqSymbols(reqSym, NULL);
 
     /* Load XAA if needed */
     if (!pMga->NoAccel) {
@@ -2308,6 +2267,9 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!miSetVisualTypes(24, TrueColorMask, pScrn->rgbBits, TrueColor))
 		return FALSE;
     } else {
+	if (!xf86SetDefaultVisual(pScrn, -1))
+	    return FALSE;
+
 	if (!miSetVisualTypes(pScrn->depth,
 			      miGetDefaultVisualMask(pScrn->depth),
 			      pScrn->rgbBits, pScrn->defaultVisual))
@@ -2354,50 +2316,16 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
        pMga->directRenderingEnabled = FALSE;
 #endif
      
-   
-    switch (pScrn->bitsPerPixel) {
-    case 8:
-	ret = cfbScreenInit(pScreen, FBStart,
+
+    if(pMga->Overlay8Plus24) {
+	ret = cfb8_32ScreenInit(pScreen, FBStart,
 			width, height,
 			pScrn->xDpi, pScrn->yDpi,
 			displayWidth);
-	break;
-    case 16:
-	ret = cfb16ScreenInit(pScreen, FBStart,
-			width, height,
+    } else {
+	ret = fbScreenInit(pScreen, FBStart, width, height,
 			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-    case 24:
-	if (pix24bpp == 24)
-	    ret = cfb24ScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	else
-	    ret = cfb24_32ScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-    case 32:
-	if(pMga->Overlay8Plus24)
-	    ret = cfb8_32ScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	else 
-	    ret = cfb32ScreenInit(pScreen, FBStart,
-			width, height,
-			pScrn->xDpi, pScrn->yDpi,
-			displayWidth);
-	break;
-    default:
-	xf86DrvMsg(scrnIndex, X_ERROR,
-		   "Internal error: invalid bpp (%d) in MGAScreenInit\n",
-		   pScrn->bitsPerPixel);
-	ret = FALSE;
-	break;
+			displayWidth, pScrn->bitsPerPixel);
     }
     if (!ret)
 	return FALSE;
@@ -2703,6 +2631,8 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xfree(pMga->adaptor);
     if (pMga->portPrivate)
 	xfree(pMga->portPrivate);
+    if (pMga->ScratchBuffer)
+	xfree(pMga->ScratchBuffer);
 
     pScrn->vtSema = FALSE;
 

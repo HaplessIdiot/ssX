@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.58 2000/06/09 22:43:38 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.59 2000/06/17 00:03:19 martin Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -223,6 +223,13 @@ typedef struct {
     Bool		TexturedVideo;
     MGAPortPrivPtr	portPrivate;
     int 		numXAALines;
+    unsigned char	*ScratchBuffer;
+    unsigned char	*ColorExpandBase;
+    int			expandRows;
+    int			expandDWORDs;
+    int			expandRemaining;
+    int			expandHeight;
+    int			expandY;
 #ifdef XF86DRI
     Bool		have_quiescense;
     Bool 		directRenderingEnabled;
