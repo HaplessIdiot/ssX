@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.119tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.120tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -6566,7 +6566,6 @@ static void RADEONInitPLL2Registers(RADEONSavePtr save, RADEONPLLPtr pll,
     save->htotal_cntl2     = 0;
 }
 
-#if 0
 /* Define initial palette for requested video mode.  This doesn't do
  * anything for XFree86 4.0.
  */
@@ -6574,7 +6573,6 @@ static void RADEONInitPalette(RADEONSavePtr save)
 {
     save->palette_valid = FALSE;
 }
-#endif
 
 /* Define registers for a requested video mode */
 static Bool RADEONInit(ScrnInfoPtr pScrn, DisplayModePtr mode,
@@ -6662,8 +6660,7 @@ static Bool RADEONInit(ScrnInfoPtr pScrn, DisplayModePtr mode,
 	    dot_clock = info->CurCloneMode->Clock / 1000.0;
 	    RADEONInitPLL2Registers(save, &info->pll, dot_clock);
 	}
-	/* Not used for now: */
-     /* if (!info->PaletteSavedOnVT) RADEONInitPalette(save); */
+	if (!info->PaletteSavedOnVT) RADEONInitPalette(save);
     }
 
     RADEONInitFPRegisters(pScrn, &info->SavedReg, save, mode, info);
