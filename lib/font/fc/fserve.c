@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.18 2001/01/17 19:43:28 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.19 2001/04/05 17:42:27 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -63,22 +63,14 @@ in this Software without prior written authorization from The Open Group.
 #include	"fontutil.h"
 #include	<errno.h>
 
-#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
-extern int errno;
-#define Time_t long
-extern Time_t time ();
-#else
 #include	<time.h>
 #define Time_t time_t
-#endif
 
 #ifdef NCD
 #include	<ncd/nvram.h>
 #endif
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 #ifndef MIN
 #define MIN(a,b)    ((a)<(b)?(a):(b))

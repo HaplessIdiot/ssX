@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Initialize.c,v 3.15 1998/10/03 09:06:54 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Initialize.c,v 3.16 2001/01/17 19:43:05 dawes Exp $ */
 
 /*
 
@@ -73,17 +73,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xos_r.h>
 #endif
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *getenv();
-#endif
 
 extern void _XtConvertInitialize();
 
@@ -123,7 +113,7 @@ extern void _XtConvertInitialize();
  policy, which the toolkit avoids but I hate differing programs at this level.
 */
 
-static XrmOptionDescRec Const opTable[] = {
+static XrmOptionDescRec const opTable[] = {
 {"+rv",		"*reverseVideo", XrmoptionNoArg,	(XtPointer) "off"},
 {"+synchronous","*synchronous",	XrmoptionNoArg,		(XtPointer) "off"},
 {"-background",	"*background",	XrmoptionSepArg,	(XtPointer) NULL},

@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/GetHost.c,v 3.5 1998/10/03 09:06:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/GetHost.c,v 3.6 2001/01/17 19:42:55 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -30,10 +30,8 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #include <X11/Xosdefs.h>
-#ifndef X_NOT_STDC_ENV
 #include <string.h>
 #include <unistd.h>
-#endif
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>

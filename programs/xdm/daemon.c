@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/daemon.c,v 3.14 2001/04/26 20:26:30 alanh Exp $ */
+/* $XFree86: xc/programs/xdm/daemon.c,v 3.15 2001/07/23 13:15:51 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -43,9 +43,6 @@ from The Open Group.
 #include <sys/ptyio.h>
 #endif
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include <sys/types.h>
 #ifdef X_NOT_POSIX
 #define Pid_t int
@@ -53,12 +50,7 @@ extern int errno;
 #define Pid_t pid_t
 #endif
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern void exit (int);
-#endif
-
 
 #include "dm.h"
 #include "dm_error.h"

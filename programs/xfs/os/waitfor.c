@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * $NCDXorg: @(#)waitfor.c,v 4.5 1991/06/24 11:59:20 lemke Exp $
  *
  */
-/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.12 2001/01/17 23:45:33 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/waitfor.c,v 3.13 2001/07/23 13:15:53 dawes Exp $ */
 
 #include	<X11/Xos.h>	/* strings, time, etc */
 
@@ -67,10 +67,6 @@ in this Software without prior written authorization from The Open Group.
 #endif
 
 extern WorkQueuePtr workQueue;
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 
 extern fd_set WellKnownConnections;

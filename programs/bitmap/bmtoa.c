@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.4 1999/02/01 11:56:10 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/bmtoa.c,v 3.5 2001/01/17 23:44:51 dawes Exp $ */
 
 /*
  * bmtoa - bitmap to ascii filter
@@ -36,16 +36,10 @@ from The Open Group.
 
 #include <X11/Xmu/Drawing.h>
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #include <unistd.h>
-#else
-#include <stdlib.h>
-#endif
 #ifndef HAS_MKSTEMP
 extern char *mktemp();
-#else
-#include <unistd.h>
 #endif
 
 char *ProgramName;

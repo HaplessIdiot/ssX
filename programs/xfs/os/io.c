@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.13 2001/06/25 20:40:18 paulo Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.14 2001/07/23 13:15:53 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
@@ -63,10 +63,6 @@ in this Software without prior written authorization from The Open Group.
 #include	"osdep.h"
 #include	"globals.h"
 #include	"dispatch.h"
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 
 /* check for both EAGAIN and EWOULDBLOCK, because some supposedly POSIX

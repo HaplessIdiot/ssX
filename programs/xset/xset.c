@@ -23,18 +23,13 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.20 2000/08/28 16:35:04 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.21 2001/01/17 23:46:27 dawes Exp $ */
 /* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
 #include <ctype.h>
 #include <stdarg.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-#endif
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>
 #include <X11/Xlib.h>

@@ -29,9 +29,7 @@ in this Software without prior written authorization from The Open Group.
 #include "Xlibint.h"
 #include "Xcmsint.h"
 
-#if !defined(X_NOT_STDC_ENV) && (defined(__STDC__) || !(defined(sun) || (defined(sony) && !defined(SYSTYPE_SYSV) && !defined(_SYSTYPE_SYSV))))
 #include <float.h>
-#endif
 #ifndef DBL_EPSILON
 #define DBL_EPSILON 1e-6
 #endif

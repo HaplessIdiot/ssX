@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/session.c,v 3.27 2001/01/17 23:45:22 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/session.c,v 3.28 2001/05/25 18:41:02 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -154,10 +154,6 @@ static	struct dlfuncs	dlfuncs = {
 #endif
 	};
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 static Bool StartClient(
     struct verify_info	*verify,
     struct display	*d,
@@ -204,12 +200,9 @@ static void
 AbortClient (int pid)
 {
     int	sig = SIGTERM;
-#ifdef __STDC__
     volatile int	i;
-#else
-    int	i;
-#endif
     int	retId;
+
     for (i = 0; i < 4; i++) {
 	if (killpg (pid, sig) == -1) {
 	    switch (errno) {

@@ -53,9 +53,7 @@
 
 /* ---Defines--- */
 
-#ifndef NULL
-#define NULL (void *) 0
-#endif
+#include <stddef.h>
   
 #define DOZETIME 1              /* time to wait for agent to start up (sec) */
 

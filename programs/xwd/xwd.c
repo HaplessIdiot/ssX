@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xwd/xwd.c,v 3.6 2000/12/01 00:24:36 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/xwd.c,v 3.7 2001/01/17 23:46:42 dawes Exp $ */
 
 /*
  * xwd.c MIT Project Athena, X Window system window raster image dumper.
@@ -65,13 +65,7 @@ in this Software without prior written authorization from The Open Group.
 #include <stdio.h>
 #include <errno.h>
 #include <X11/Xos.h>
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-char *calloc();
-#else
 #include <stdlib.h>
-#endif
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

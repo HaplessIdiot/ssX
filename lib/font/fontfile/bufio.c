@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/bufio.c,v 3.6 2000/09/19 12:46:08 eich Exp $ */
+/* $XFree86: xc/lib/font/fontfile/bufio.c,v 3.7 2001/01/17 19:43:29 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -34,9 +34,6 @@ from The Open Group.
 #include <fontmisc.h>
 #include <bufio.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 BufFilePtr
 BufFileCreate (char *private,

@@ -13,10 +13,6 @@
 #include <ctype.h>
 #include "DviP.h"
 
-#ifdef X_NOT_STDC_ENV
-extern long	ftell();
-#endif
-
 static DviFileMap *
 MapPageNumberToFileMap (dw, number)
 	DviWidget	dw;

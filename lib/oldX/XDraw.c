@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/oldX/XDraw.c,v 1.2 1999/05/23 06:33:35 dawes Exp $ */
+/* $XFree86: xc/lib/oldX/XDraw.c,v 1.3 2001/01/17 19:43:38 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xlib.h"
@@ -34,9 +34,7 @@ in this Software without prior written authorization from The Open Group.
 
 #define OK_RETURN 1
 #define ERR_RETURN 0
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 /*
 

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/CloseHook.c,v 3.3 1998/10/03 09:06:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/CloseHook.c,v 3.4 2001/01/17 19:42:53 dawes Exp $ */
 
 /*
  * CloseDisplayHook package - provide callback on XCloseDisplay
@@ -54,12 +54,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
 #include <X11/Xmu/CloseHook.h>
-
-#ifdef X_NOT_STDC_ENV
-extern char *malloc();					/* should be void * */
-#else
 #include <stdlib.h>
-#endif
 
 /*
  *				 Private data

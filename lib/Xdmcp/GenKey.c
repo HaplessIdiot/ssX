@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.5 2000/11/14 18:20:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.6 2001/01/17 19:42:43 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/X.h>
@@ -39,19 +39,9 @@ getbits (long data, unsigned char *dst)
     dst[3] = (data >> 24) & 0xff;
 }
 
-/* EMX is not STDC, but sometimes it is */
-#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
-#define Time_t long
-extern Time_t time ();
-#else
 #define Time_t time_t
-#endif
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-long random();
-#endif
 
 #if defined(SYSV) || defined(SVR4)
 #define srandom srand48

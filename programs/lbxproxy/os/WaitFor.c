@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/WaitFor.c,v 1.5 1998/10/04 09:40:28 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/WaitFor.c,v 1.6 2001/01/17 23:44:59 dawes Exp $ */
 
 /*****************************************************************
  * OS Dependent input routines:
@@ -54,10 +54,6 @@ SOFTWARE.
 #include "Xos.h"			/* for strings, fcntl, time */
 
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 #include <stdio.h>
 #include "misc.h"
 #include "util.h"

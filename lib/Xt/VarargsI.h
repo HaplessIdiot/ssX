@@ -25,13 +25,7 @@ in this Software without prior written authorization from The Open Group.
 #ifndef _VarargsI_h_ 
 #define _VarargsI_h_ 
 
-#if NeedVarargsPrototypes
-# include <stdarg.h>
-# define Va_start(a,b) va_start(a,b)
-#else
-# include <varargs.h>
-# define Va_start(a,b) va_start(a)
-#endif
+#include <stdarg.h>
  
 /* private routines */
 

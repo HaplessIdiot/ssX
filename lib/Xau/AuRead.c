@@ -21,16 +21,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuRead.c,v 1.3 1999/05/09 10:51:33 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuRead.c,v 1.4 2001/01/17 19:42:24 dawes Exp $ */
 
 #include <X11/Xauth.h>
-
-#ifdef X_NOT_STDC_ENV
-extern void free();
-extern char *malloc();
-#else
 #include <stdlib.h>
-#endif
 
 static int
 read_short (unsigned short *shortp, FILE *file)

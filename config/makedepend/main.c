@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/main.c,v 3.20 2001/04/29 23:25:02 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/main.c,v 3.21 2001/06/07 18:30:41 alanh Exp $ */
 
 #include "def.h"
 #ifdef hpux
@@ -41,9 +41,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #endif
 
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#endif
 
 #ifdef MINIX
 #define USE_CHMOD	1
@@ -100,11 +98,6 @@ boolean	show_where_not = FALSE;
 boolean warn_multiple = FALSE;	/* Warn on multiple includes of same file */
 
 static void redirect(char *line, char *makefile);
-#if !NeedVarargsPrototypes
-void fatalerr();
-void warning();
-void warning1();
-#endif
 
 static
 #ifdef SIGNALRETURNSINT
@@ -712,65 +705,31 @@ redirect(char *line, char *makefile)
 }
 
 void
-#if NeedVarargsPrototypes
 fatalerr(char *msg, ...)
-#else
-/*VARARGS*/
-fatalerr(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-    char *msg;
-#endif
 {
-#if NeedVarargsPrototypes
 	va_list args;
-#endif
 	fprintf(stderr, "%s: error:  ", ProgramName);
-#if NeedVarargsPrototypes
 	va_start(args, msg);
 	vfprintf(stderr, msg, args);
 	va_end(args);
-#else
-	fprintf(stderr, msg,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-#endif
 	exit (1);
 }
 
 void
-#if NeedVarargsPrototypes
 warning(char *msg, ...)
-#else
-/*VARARGS0*/
-warning(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-    char *msg;
-#endif
 {
-#if NeedVarargsPrototypes
 	va_list args;
-#endif
 	fprintf(stderr, "%s: warning:  ", ProgramName);
-#if NeedVarargsPrototypes
 	va_start(args, msg);
 	vfprintf(stderr, msg, args);
 	va_end(args);
-#else
-	fprintf(stderr, msg,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-#endif
 }
 
 void
-#if NeedVarargsPrototypes
 warning1(char *msg, ...)
-#else
-/*VARARGS0*/
-warning1(msg,x1,x2,x3,x4,x5,x6,x7,x8,x9)
-    char *msg;
-#endif
 {
-#if NeedVarargsPrototypes
 	va_list args;
 	va_start(args, msg);
 	vfprintf(stderr, msg, args);
 	va_end(args);
-#else
-	fprintf(stderr, msg,x1,x2,x3,x4,x5,x6,x7,x8,x9);
-#endif
 }

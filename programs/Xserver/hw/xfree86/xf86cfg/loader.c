@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.11 2001/07/09 23:45:24 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.c,v 1.12 2001/07/19 02:22:52 tsi Exp $
  */
 
 #include "config.h"
@@ -36,20 +36,12 @@
 
 #ifdef USE_MODULES
 #include <stdio.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include <string.h>
 #include <setjmp.h>
 #include <sys/signal.h>
 
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#define Va_start(a,b) va_start(a,b)
-#else
-#include <varargs.h>
-#define Va_start(a,b) va_start(a)
-#endif
 
 #ifndef SIGNALRETURNSINT
 void sig_handler(int);
@@ -127,7 +119,7 @@ CheckMsg(int code, char *fmt, ...)
     ++checkerErrors[code];
     ErrorF("%3d ", code);
 
-    Va_start(ap, fmt);
+    va_start(ap, fmt);
     VErrorF(fmt, ap);
     va_end(ap);
 }

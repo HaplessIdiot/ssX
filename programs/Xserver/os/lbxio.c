@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.11 2000/05/18 23:46:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/lbxio.c,v 3.12 2001/01/17 22:37:10 dawes Exp $ */
 /*
 
 Copyright 1996, 1998  The Open Group
@@ -47,9 +47,6 @@ SOFTWARE.
 
 #include <stdio.h>
 #include <X11/Xtrans.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include "Xmd.h"
 #include <errno.h>
 #ifndef Lynx

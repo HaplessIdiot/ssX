@@ -22,17 +22,13 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/error.c,v 1.2 1999/05/23 06:33:23 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/error.c,v 1.3 2001/01/17 19:41:29 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <stdio.h>
 
 #include <errno.h>
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 
 void

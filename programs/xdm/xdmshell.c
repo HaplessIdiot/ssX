@@ -32,14 +32,11 @@ in this Software without prior written authorization from The Open Group.
  * bring down X when you are finished.
  */
 
-/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.4 1998/10/10 15:25:40 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/xdmshell.c,v 3.5 2001/01/17 23:45:23 dawes Exp $ */
 
 #include <stdio.h>
 #include "dm.h"
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 #ifdef macII
 #define ON_CONSOLE_ONLY

@@ -21,18 +21,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/makestrs.c,v 3.4 1998/10/05 13:21:51 dawes Exp $ */
+/* $XFree86: xc/config/util/makestrs.c,v 3.5 2001/01/17 16:39:01 dawes Exp $ */
 
 /* Constructs string definitions */
 
 #include <stdio.h>
 #include <X11/Xos.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #include <unistd.h>
-#else
-char *malloc();
-#endif
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
 char *malloc();
 #endif /* macII */

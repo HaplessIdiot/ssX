@@ -63,7 +63,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/connection.c,v 3.20 2001/01/17 23:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/connection.c,v 3.21 2001/07/23 13:15:53 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdlib.h>
@@ -97,10 +97,6 @@ in this Software without prior written authorization from The Open Group.
 #ifdef __EMX__
 #define _NFILE OPEN_MAX
 #define select(n,r,w,x,t) os2PseudoSelect(n,r,w,x,t)
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
 #endif
 
 

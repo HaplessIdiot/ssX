@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.10 2000/10/17 16:53:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mergerop.h,v 3.11 2001/01/17 22:37:02 dawes Exp $ */
 
 #ifndef _MERGEROP_H_
 #define _MERGEROP_H_
@@ -382,7 +382,7 @@ extern mergeRopRec	mergeRopBits[16];
 #define MROP_PREBUILT_MASK24(src,dst,mask,index) MROP_MASK24(src,dst,mask,index)
 #endif
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define MROP_NAME_CAT(prefix,suffix)	prefix##suffix
 #else
 #define MROP_NAME_CAT(prefix,suffix)	prefix/**/suffix

@@ -24,13 +24,11 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.11 1997/10/26 13:24:56 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/maprules.c,v 3.12 2001/01/17 19:43:41 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 
 #define X_INCLUDE_STRING_H
 #define XOS_USE_NO_LOCKING

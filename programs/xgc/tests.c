@@ -1,6 +1,6 @@
 /*
 ** $XConsortium: tests.c,v 1.20 91/06/08 18:57:07 rws Exp $
-** $XFree86: xc/programs/xgc/tests.c,v 1.5 2000/11/14 18:20:39 dawes Exp $
+** $XFree86: xc/programs/xgc/tests.c,v 1.6 2001/07/23 13:15:53 dawes Exp $
 **
 */
 
@@ -26,10 +26,6 @@
 
 #ifdef SYSV
 #define random lrand48
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern long random();
 #endif
 
 extern XStuff X;

@@ -48,7 +48,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.11 2000/09/05 19:51:16 mvojkovi Exp $ */
+/* $XFree86: xc/lib/Xaw/XawIm.c,v 1.12 2001/01/17 19:42:36 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -63,13 +63,7 @@ in this Software without prior written authorization from The Open Group.
 #include "XawI18n.h"
 #include <ctype.h>
 
-#if NeedVarargsPrototypes
-# include <stdarg.h>
-# define Va_start(a,b) va_start(a,b)
-#else
-# include <varargs.h>
-# define Va_start(a,b) va_start(a)
-#endif
+#include <stdarg.h>
 
 #define maxAscentOfFontSet(fontset)     \
         ( - (XExtentsOfFontSet((fontset)))->max_logical_extent.y)

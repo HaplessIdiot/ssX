@@ -54,12 +54,7 @@ from The Open Group.
 #include "Xlibint.h"
 #include "Xlcint.h"
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-extern long Const _Xevent_to_mask[];
+extern long const _Xevent_to_mask[];
 
 /*
  * Look up if there is a specified filter for the event.

@@ -24,13 +24,11 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkbconfig.c,v 3.4 2000/06/14 18:20:33 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkbconfig.c,v 3.5 2001/01/17 19:43:42 dawes Exp $ */
 
 #include <stdio.h>
 #include <ctype.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 
 #include <X11/Xfuncs.h>
 

@@ -30,7 +30,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xrdb/xrdb.c,v 3.12 1999/03/12 02:36:27 dawes Exp $ */
+/* $XFree86: xc/programs/xrdb/xrdb.c,v 3.13 2001/01/17 23:46:22 dawes Exp $ */
 
 /*
  * this program is used to load, or dump the resource manager database
@@ -49,18 +49,7 @@
 #include <stdio.h>
 #include <ctype.h>
 #include <errno.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-char *realloc();
-#endif
-
-#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
-extern int errno;
-#endif
-
 #include <stdarg.h>
 
 #define SCREEN_RESOURCES "SCREEN_RESOURCES"
@@ -138,12 +127,6 @@ String includes;
 Display *dpy;
 Buffer buffer;
 Entries newDB;
-
-#if !defined(sgi) && !defined(WIN32)
-#ifdef X_NOT_STDC_ENV
-extern FILE *popen();
-#endif
-#endif
 
 static void fatal(char *, ...);
 static void addstring ( String *arg, const char *s );

@@ -1,5 +1,5 @@
 /* $XConsortium: Eyes.c,v 1.28 94/04/17 20:45:22 eswu Exp $ */
-/* $XFree86: xc/programs/xeyes/Eyes.c,v 1.1 2000/02/13 03:26:21 dawes Exp $ */
+/* $XFree86: xc/programs/xeyes/Eyes.c,v 1.2 2000/02/14 19:20:59 dawes Exp $ */
 /*
 
 Copyright (c) 1991  X Consortium
@@ -46,11 +46,7 @@ from the X Consortium.
 # include <X11/extensions/shape.h>
 
 #if (defined(SVR4) || defined(SYSV) && defined(i386))
-#if __STDC__
 extern double hypot(double, double);
-#else
-extern double hypot();
-#endif
 #endif
 
 #define offset(field) XtOffsetOf(EyesRec, eyes.field)

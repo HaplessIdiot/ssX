@@ -50,7 +50,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
 
-/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.11 2000/10/24 18:07:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/sun/sunCfb.c,v 3.12 2001/01/17 22:36:50 dawes Exp $ */
 
 /*
  * Copyright 1987 by the Regents of the University of California
@@ -332,10 +332,7 @@ static void CG2UpdateColormap(pScreen, index, count, rmap, gmap,bmap)
     u_char	  *rmap, *gmap, *bmap;
 {
     CG2Ptr	fb = (CG2Ptr) sunFbs[pScreen->myNum].fb;
-#if __STDC__
-    volatile
-#endif
-    struct cg2statusreg *regp = &fb->regs.status.reg;
+    volatile struct cg2statusreg *regp = &fb->regs.status.reg;
 
     regp->update_cmap = 0;
     while (count--) {
@@ -368,10 +365,7 @@ static Bool CG2SaveScreen (pScreen, on)
     int    	  on;
 {
     CG2Ptr	fb = (CG2Ptr) sunFbs[pScreen->myNum].fb;
-#if __STDC__
-    volatile
-#endif
-    struct cg2statusreg *regp = &fb->regs.status.reg;
+    volatile struct cg2statusreg *regp = &fb->regs.status.reg;
 
     if (on != SCREEN_SAVER_FORCER)
 	regp->video_enab = (on == SCREEN_SAVER_ON) ? 0 : 1;

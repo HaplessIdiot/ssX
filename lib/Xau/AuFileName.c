@@ -21,16 +21,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuFileName.c,v 3.4 1999/05/09 10:51:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuFileName.c,v 3.5 2001/01/17 19:42:23 dawes Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
-
-#ifdef X_NOT_STDC_ENV
-char *malloc (), *getenv ();
-#else
 #include <stdlib.h>
-#endif
 
 char *
 XauFileName ()

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/access.c,v 3.32 2001/01/17 22:37:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/access.c,v 3.33 2001/07/23 13:15:49 dawes Exp $ */
 
 #ifdef WIN32
 #include <X11/Xwinsock.h>
@@ -57,14 +57,10 @@ SOFTWARE.
 #include <errno.h>
 #include <sys/types.h>
 #ifndef WIN32
-#ifdef ESIX
-#include <lan/socket.h>
-#else
 #ifndef Lynx
 #include <sys/socket.h>
 #else
 #include <socket.h>
-#endif
 #endif
 #include <sys/ioctl.h>
 #include <ctype.h>
@@ -108,16 +104,12 @@ SOFTWARE.
 #  include <sys/sioctl.h>
 # endif /* ISC */
 #endif
-#ifdef ESIX
-# include <lan/if.h>
-#else
 #ifdef __GNU__
 #undef SIOCGIFCONF
 #include <netdb.h>
 #else /*!__GNU__*/
 # include <net/if.h>
 #endif /*__GNU__ */
-#endif
 #endif /* hpux */
 
 #ifdef SVR4
@@ -127,11 +119,7 @@ SOFTWARE.
 #include <sys/stropts.h>
 #endif
 
-#ifdef ESIX
-#include <lan/netdb.h>
-#else
 #include <netdb.h>
-#endif /* ESIX */
 
 #ifdef CSRG_BASED
 #include <sys/param.h>

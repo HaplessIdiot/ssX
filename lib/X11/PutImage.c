@@ -20,21 +20,16 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/PutImage.c,v 3.5 1999/05/09 10:49:56 dawes Exp $ */
+/* $XFree86: xc/lib/X11/PutImage.c,v 3.6 2001/01/17 19:41:41 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xutil.h"
 #include <stdio.h>
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
 #if defined(__STDC__) && ((defined(sun) && defined(SVR4)) || defined(WIN32))
 #define RConst /**/
 #else
-#define RConst Const
+#define RConst const
 #endif
 
 #if defined(Lynx) && defined(ROUNDUP)
@@ -44,7 +39,7 @@ in this Software without prior written authorization from The Open Group.
 /* assumes pad is a power of 2 */
 #define ROUNDUP(nbytes, pad) (((nbytes) + ((pad) - 1)) & ~(long)((pad) - 1))
 
-static unsigned char Const _reverse_byte[0x100] = {
+static unsigned char const _reverse_byte[0x100] = {
 	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
 	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
 	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
@@ -79,7 +74,7 @@ static unsigned char Const _reverse_byte[0x100] = {
 	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
-static unsigned char Const _reverse_nibs[0x100] = {
+static unsigned char const _reverse_nibs[0x100] = {
 	0x00, 0x10, 0x20, 0x30, 0x40, 0x50, 0x60, 0x70,
 	0x80, 0x90, 0xa0, 0xb0, 0xc0, 0xd0, 0xe0, 0xf0,
 	0x01, 0x11, 0x21, 0x31, 0x41, 0x51, 0x61, 0x71,
@@ -283,7 +278,7 @@ SwapNibbles (src, dest, srclen, srcinc, destinc, height)
     unsigned int height;
 {
     register long h, n;
-    register Const unsigned char *rev = _reverse_nibs;
+    register const unsigned char *rev = _reverse_nibs;
 
     srcinc -= srclen;
     destinc -= srclen;
@@ -330,7 +325,7 @@ SwapBits (src, dest, srclen, srcinc, destinc, height, half_order)
     int half_order;
 {
     register long h, n;
-    register Const unsigned char *rev = _reverse_byte;
+    register const unsigned char *rev = _reverse_byte;
 
     srcinc -= srclen;
     destinc -= srclen;
@@ -347,7 +342,7 @@ SwapBitsAndTwoBytes (src, dest, srclen, srcinc, destinc, height, half_order)
 {
     long length = ROUNDUP(srclen, 2);
     register long h, n;
-    register Const unsigned char *rev = _reverse_byte;
+    register const unsigned char *rev = _reverse_byte;
 
     srcinc -= length;
     destinc -= length;
@@ -375,7 +370,7 @@ SwapBitsAndFourBytes (src, dest, srclen, srcinc, destinc, height, half_order)
 {
     long length = ROUNDUP(srclen, 4);
     register long h, n;
-    register Const unsigned char *rev = _reverse_byte;
+    register const unsigned char *rev = _reverse_byte;
 
     srcinc -= length;
     destinc -= length;
@@ -411,7 +406,7 @@ SwapBitsAndWords (src, dest, srclen, srcinc, destinc, height, half_order)
 {
     long length = ROUNDUP(srclen, 4);
     register long h, n;
-    register Const unsigned char *rev = _reverse_byte;
+    register const unsigned char *rev = _reverse_byte;
 
     srcinc -= length;
     destinc -= length;
@@ -530,7 +525,7 @@ static void (* RConst (SwapFunction[12][12]))() = {
  *
  * Defines whether the first half of a unit has the first half of the data
  */
-static int Const HalfOrder[12] = {
+static int const HalfOrder[12] = {
 	LSBFirst, /* 1Mm */
 	LSBFirst, /* 2Mm */
 	LSBFirst, /* 4Mm */
@@ -551,7 +546,7 @@ static int Const HalfOrder[12] = {
  * NoSwap or SwapBits) in addition to changing the desired ones.
  */
 
-static int Const HalfOrderWord[12] = {
+static int const HalfOrderWord[12] = {
 	MSBFirst, /* 1Mm */
 	MSBFirst, /* 2Mm */
 	MSBFirst, /* 4Mm */

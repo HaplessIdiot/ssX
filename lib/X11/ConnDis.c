@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ConnDis.c,v 3.18 2001/01/17 19:41:33 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ConnDis.c,v 3.19 2001/07/23 13:15:41 dawes Exp $ */
 
 /* 
  * This file contains operating system dependencies.
@@ -557,13 +557,8 @@ _XSendClientPrefix (dpy, client, auth_proto, auth_string, prefix)
 #endif
 
 #ifdef HASXDMAUTH
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 #endif
 
 /*

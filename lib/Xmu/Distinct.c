@@ -21,16 +21,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/Distinct.c,v 3.3 1998/10/03 09:06:26 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/Distinct.c,v 3.4 2001/01/17 19:42:54 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 
-# include   <X11/Xlib.h>
-# ifndef X_NOT_STDC_ENV
-# include   <stdlib.h>
-# endif
+#include <X11/Xlib.h>
+#include <stdlib.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/StdCmap.h>
 

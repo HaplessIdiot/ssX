@@ -35,7 +35,7 @@
  *  2000  
  *  Modifier: Ivan Pascal      The XFree86 Project
  */
-/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.18 2001/01/17 19:41:54 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGenConv.c,v 3.19 2001/06/15 08:09:19 alanh Exp $ */
 
 /*
  * A generic locale loader for all kinds of ISO-2022 based codesets.
@@ -52,7 +52,7 @@
 #include "XlcGeneric.h"
 #include <stdio.h>
 
-#if !defined(X_NOT_STDC_ENV) && !defined(macII) && !defined(Lynx_22) && !defined(X_LOCALE)
+#if !defined(macII) && !defined(Lynx_22) && !defined(X_LOCALE)
 #define STDCVT
 #endif
 

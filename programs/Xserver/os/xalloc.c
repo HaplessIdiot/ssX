@@ -25,16 +25,14 @@ dealings in this Software without prior written authorization from
 Pascal Haible.
 */
 
-/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.29 2001/07/23 13:15:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/xalloc.c,v 3.30 2001/07/24 08:32:58 alanh Exp $ */
 
 /* Only used if INTERNAL_MALLOC is defined
  * - otherwise xalloc() in utils.c is used
  */
 #ifdef INTERNAL_MALLOC
 
-#ifndef NOSTDHDRS
 #include <stdlib.h>	/* for malloc() etc. */
-#endif
 
 #include "Xos.h"
 #include "misc.h"
@@ -293,9 +291,6 @@ static int pagesize;
 #ifdef MMAP_DEV_ZERO
 static int devzerofd = -1;
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #endif
 
 /*

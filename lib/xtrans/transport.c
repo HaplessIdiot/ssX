@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/transport.c,v 3.5 2001/01/17 19:43:49 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/transport.c,v 3.6 2001/07/23 13:15:43 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -50,9 +50,7 @@ from The Open Group.
 #ifdef XSERV_t
 #include "os.h"
 #else
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #define xalloc(_size)		malloc(_size)
 #define xcalloc(_num,_size)	calloc(_num,_size)
 #define xrealloc(_ptr,_size)	realloc(_ptr,_size)

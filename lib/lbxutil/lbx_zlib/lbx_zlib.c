@@ -46,7 +46,7 @@ from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  * 
  */
-/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.6 2000/05/18 23:46:17 dawes Exp $ */
+/* $XFree86: xc/lib/lbxutil/lbx_zlib/lbx_zlib.c,v 1.7 2001/01/17 19:43:36 dawes Exp $ */
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -55,9 +55,6 @@ from The Open Group.
 #include <X11/Xfuncs.h>
 #include <stdio.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include <sys/types.h>
 #if !defined(WIN32) && !defined(Lynx)
 #include <sys/param.h>

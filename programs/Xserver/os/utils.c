@@ -45,7 +45,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.69 2001/05/04 19:05:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.70 2001/07/23 13:15:50 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -80,18 +80,14 @@ OR PERFORMANCE OF THIS SOFTWARE.
 #include <time.h>
 #include <sys/stat.h>
 #include <ctype.h>    /* for isspace */
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#endif
 
 #if defined(DGUX)
 #include <sys/resource.h>
 #include <netdb.h>
 #endif
 
-#ifndef NOSTDHDRS
 #include <stdlib.h>	/* for malloc() */
-#endif
 
 #if defined(TCPCONN) || defined(STREAMSCONN)
 # ifndef WIN32
@@ -141,9 +137,7 @@ extern int SelectWaitTime;
 #ifdef MEMBUG
 #define MEM_FAIL_SCALE 100000
 long Memory_fail = 0;
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>  /* for random() */
-#endif
 #endif
 
 #ifdef sgi
@@ -1325,11 +1319,7 @@ void
 AuditPrefix(f)
     char *f;
 {
-#ifdef X_NOT_STDC_ENV
-    long tm;
-#else
     time_t tm;
-#endif
     char *autime, *s;
     if (*f != ' ')
     {
@@ -1345,46 +1335,22 @@ AuditPrefix(f)
     }
 }
 
-/*VARARGS1*/
 void
-AuditF(
-#if NeedVarargsPrototypes
-    const char * f, ...)
-#else
-    f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+AuditF(const char * f, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
-#endif
 
     AuditPrefix(f);
 
-#if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
     va_end(args);
-#else
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
 }
 
-/*VARARGS1*/
 void
-FatalError(
-#if NeedVarargsPrototypes
-    const char *f, ...)
-#else
-f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    const char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+FatalError(const char *f, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
-#endif
     static Bool beenhere = FALSE;
 
     if (beenhere)
@@ -1392,13 +1358,9 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     else
 	ErrorF("\nFatal server error:\n");
 
-#if NeedVarargsPrototypes
     va_start(args, f);
     VErrorF(f, args);
     va_end(args);
-#else
-    ErrorF(f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif
     ErrorF("\n");
 #ifdef DDXOSFATALERROR
     if (!beenhere)
@@ -1415,7 +1377,6 @@ f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
     /*NOTREACHED*/
 }
 
-#if NeedVarargsPrototypes
 void
 VErrorF(f, args)
     const char *f;
@@ -1447,32 +1408,14 @@ VFatalError(const char *msg, va_list args)
     AbortServer();
     /*NOTREACHED*/
 }
-#endif /* NeedVarargsPrototypes */
 
-/*VARARGS1*/
 void
-ErrorF(
-#if NeedVarargsPrototypes
-    const char * f, ...)
-#else
- f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9) /* limit of ten args */
-    char *f;
-    char *s0, *s1, *s2, *s3, *s4, *s5, *s6, *s7, *s8, *s9;
-#endif
+ErrorF(const char * f, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
     va_start(args, f);
     VErrorF(f, args);
     va_end(args);
-#else
-#ifdef AIXV3
-    if (SyncOn)
-        sync();
-#else /* not AIXV3 */
-    fprintf( stderr, f, s0, s1, s2, s3, s4, s5, s6, s7, s8, s9);
-#endif /* AIXV3 */
-#endif
 }
 
 #ifdef SMART_SCHEDULE

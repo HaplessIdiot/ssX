@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.7 2000/12/04 18:49:26 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcCharSet.c,v 3.8 2001/01/17 19:41:53 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -137,26 +137,19 @@ get_values(
 /* Retrieves a number of attributes of an XlcCharSet.
    Return NULL if successful, otherwise the name of the first argument
    specifiying a nonexistent attribute. */
-#if NeedVarargsPrototypes
 char *
 _XlcGetCSValues(XlcCharSet charset, ...)
-#else
-char *
-_XlcGetCSValues(charset, va_alist)
-    XlcCharSet charset;
-    va_dcl
-#endif
 {
     va_list var;
     XlcArgList args;
     char *ret;
     int num_args;
 
-    Va_start(var, charset);
+    va_start(var, charset);
     _XlcCountVaList(var, &num_args);
     va_end(var);
 
-    Va_start(var, charset);
+    va_start(var, charset);
     _XlcVaToArgList(var, num_args, &args);
     va_end(var);
 

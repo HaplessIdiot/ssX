@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.12 1999/09/04 09:14:12 dawes Exp $ */
+/* $XFree86: xc/lib/font/include/fontmisc.h,v 3.13 2001/01/17 19:43:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -32,12 +32,7 @@ in this Software without prior written authorization from The Open Group.
 
 #ifndef FONTMODULE
 #include <X11/Xfuncs.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern int rand();
-#endif
 #include <stdio.h>
 
 #ifndef X_NOT_POSIX

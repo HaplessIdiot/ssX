@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/include/extensions/multibufst.h,v 3.4 1999/01/31 12:21:17 dawes Exp $ */
+/* $XFree86: xc/include/extensions/multibufst.h,v 3.5 2001/01/17 17:53:22 dawes Exp $ */
 
 #ifndef _MULTIBUFST_H_
 #define _MULTIBUFST_H_
@@ -34,7 +34,7 @@ in this Software without prior written authorization from The Open Group.
 #include "inputstr.h"
 #endif
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define MbufGetReq(name,req,info) GetReq (name, req); \
 	req->reqType = info->codes->major_opcode; \
 	req->mbufReqType = X_##name;
@@ -301,7 +301,7 @@ typedef struct {
     pSTRUCT2->FUNC_NAME = tmpFn;					\
 }
 
-#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#if !defined(UNIXCPP) || defined(ANSICPP)
 #define WRAP_SCREEN_FUNC(pSCREEN,pPRIV,FUNC_NAME, PRIV_FUNC_NAME)	\
 {									\
     if ((pPRIV->funcsWrapped & FUNC_NAME##Mask) == 0)			\

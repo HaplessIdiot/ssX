@@ -30,15 +30,10 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
   ----------------------------------------------------------------------- **/
-/* $XFree86: xc/programs/xwd/list.c,v 3.3 1999/03/07 11:41:36 dawes Exp $ */
+/* $XFree86: xc/programs/xwd/list.c,v 3.4 2001/01/17 23:46:41 dawes Exp $ */
 
 #include <stdio.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-#endif
 
 #include "list.h"
 

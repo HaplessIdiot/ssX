@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.25 2001/01/17 22:36:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/misc.h,v 3.26 2001/05/06 06:28:46 alanh Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -81,11 +81,7 @@ extern unsigned long serverGeneration;
 
 #ifndef IN_MODULE
 #ifndef NULL
-#ifndef X_NOT_STDC_ENV
 #include <stddef.h>
-#else
-#define NULL            ((void *)0)
-#endif
 #endif
 #endif
 
@@ -146,16 +142,10 @@ typedef struct _xReq *xReqPtr;
 #define min(a, b) (((a) < (b)) ? (a) : (b))
 #define max(a, b) (((a) > (b)) ? (a) : (b))
 #ifndef IN_MODULE
-#ifdef X_NOT_STDC_ENV
-#ifndef abs
-#define abs(a) ((a) > 0 ? (a) : -(a))
-#endif
-#else
 /* abs() is a function, not a macro; include the file declaring
  * it in case we haven't done that yet.
  */  
 #include <stdlib.h>
-#endif /* X_NOT_STDC_ENV */
 #endif /* IN_MODULE */
 #ifndef Fabs
 #define Fabs(a) ((a) > 0.0 ? (a) : -(a))	/* floating absolute value */

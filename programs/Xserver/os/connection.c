@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.46 2001/04/27 12:51:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/connection.c,v 3.47 2001/07/23 13:15:50 dawes Exp $ */
 /*****************************************************************
  *  Stuff to create connections --- OS dependent
  *
@@ -66,10 +66,6 @@ SOFTWARE.
 #include "Xproto.h"
 #include <X11/Xtrans.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 #include <signal.h>
 #include <stdio.h>
 

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.4 1998/10/05 13:22:00 dawes Exp $ */
+/* $XFree86: xc/lib/X11/util/makekeys.c,v 3.5 2001/01/17 19:42:20 dawes Exp $ */
 
 /* Constructs hash tables for XStringToKeysym and XKeysymToString. */
 
@@ -30,12 +30,7 @@ from The Open Group.
 #include <X11/Xos.h>
 #include <X11/keysymdef.h>
 #include <stdio.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-#endif
 #if defined(macII) && !defined(__STDC__)  /* stdlib.h fails to define these */
 char *malloc();
 #endif /* macII */
@@ -142,7 +137,7 @@ next1:	;
 
     z = best_z;
     printf("#ifdef NEEDKTABLE\n");
-    printf("Const unsigned char _XkeyTable[] = {\n");
+    printf("const unsigned char _XkeyTable[] = {\n");
     printf("0,\n");
     k = 1;
     for (i = 0; i < ksnum; i++) {
@@ -171,7 +166,7 @@ next1:	;
     printf("#define KTABLESIZE %d\n", z);
     printf("#define KMAXHASH %d\n", best_max_rehash + 1);
     printf("\n");
-    printf("static Const unsigned short hashString[KTABLESIZE] = {\n");
+    printf("static const unsigned short hashString[KTABLESIZE] = {\n");
     for (i = 0; i < z;) {
 	printf("0x%.4x", offsets[i]);
 	i++;
@@ -241,7 +236,7 @@ skip2:	;
     printf("#define VTABLESIZE %d\n", z);
     printf("#define VMAXHASH %d\n", best_max_rehash + 1);
     printf("\n");
-    printf("static Const unsigned short hashKeysym[VTABLESIZE] = {\n");
+    printf("static const unsigned short hashKeysym[VTABLESIZE] = {\n");
     for (i = 0; i < z;) {
 	printf("0x%.4x", offsets[i]);
 	i++;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.11 2001/01/17 22:37:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/osdep.h,v 3.12 2001/07/23 13:15:50 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -115,9 +115,7 @@ SOFTWARE.
 #define HAS_GETDTABLESIZE
 #endif
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 typedef Bool (*ValidatorFunc)(ARRAY8Ptr Auth, ARRAY8Ptr Data, int packet_type);
 typedef Bool (*GeneratorFunc)(ARRAY8Ptr Auth, ARRAY8Ptr Data, int packet_type);

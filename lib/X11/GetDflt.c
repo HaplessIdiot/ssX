@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/GetDflt.c,v 3.16 1999/05/09 10:49:25 dawes Exp $ */
+/* $XFree86: xc/lib/X11/GetDflt.c,v 3.17 2001/01/17 19:41:36 dawes Exp $ */
 
 #include "Xlibint.h"
 #include <X11/Xos.h>
@@ -83,9 +83,6 @@ SOFTWARE.
 #include <stdio.h>
 #include <ctype.h>
 
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-#endif
 
 /*ARGSUSED*/
 static char *GetHomeDir (dest, len)

@@ -28,7 +28,7 @@
  *  This is source code modified by FUJITSU LIMITED under the Joint
  *  Development Agreement for the CDE/Motif PST.
  */
-/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.13 2000/12/06 22:00:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcGeneric.c,v 3.14 2001/01/17 19:41:54 dawes Exp $ */
 
 #include <stdio.h>
 #include "Xlibint.h"
@@ -723,7 +723,6 @@ load_generic(
 	gen->wc_shift_bits = atoi(value[0]);
     if (gen->wc_shift_bits < 1)
 	gen->wc_shift_bits = 8;
-#ifndef X_NOT_STDC_ENV
     /***** use_stdc_env *****/
     _XlcGetResource(lcd, "XLC_XLOCALE", "use_stdc_env", &value, &num);
     if (num > 0 && !_XlcCompareISOLatin1(value[0], "True"))
@@ -736,7 +735,6 @@ load_generic(
 	gen->force_convert_to_mb = True;
     else
 	gen->force_convert_to_mb = False;
-#endif
     
     for (i = 0; ; i++) {
 	CodeSetRec *codeset = NULL;

@@ -54,7 +54,6 @@ in this Software without prior written authorization from The Open Group.
 
 static String XtNxtGetTypedArg = "xtGetTypedArg";
 
-#if NeedVarargsPrototypes
 void
 XtVaGetSubresources(
     Widget widget,
@@ -64,17 +63,6 @@ XtVaGetSubresources(
     XtResourceList resources,
     Cardinal num_resources,
     ...)
-#else
-/*VARARGS6*/
-void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va_alist)
-    Widget widget;
-    XtPointer base;
-    String name;
-    String class;
-    XtResourceList resources;
-    Cardinal num_resources;
-    va_dcl
-#endif
 {
     va_list                 var;
     XtTypedArgList          args;
@@ -83,11 +71,11 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
-    Va_start(var, num_resources);
+    va_start(var, num_resources);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
 	 
-    Va_start(var, num_resources);
+    va_start(var, num_resources);
 	      
     _XtVaToTypedArgList(var, total_count, &args, &num_args);
 
@@ -103,18 +91,8 @@ void XtVaGetSubresources(widget, base, name, class, resources, num_resources, va
 }
 
 
-#if NeedVarargsPrototypes
 void
 XtVaGetApplicationResources(Widget widget, XtPointer base, XtResourceList resources, Cardinal num_resources, ...)
-#else
-/*VARARGS4*/
-void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alist)
-    Widget widget;
-    XtPointer base;
-    XtResourceList resources;
-    Cardinal num_resources;
-    va_dcl
-#endif
 {
     va_list                 var;
     XtTypedArgList          args; 
@@ -123,11 +101,11 @@ void XtVaGetApplicationResources(widget, base, resources, num_resources, va_alis
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
-    Va_start(var,num_resources);
+    va_start(var,num_resources);
     _XtCountVaList(var, &total_count, &typed_count);
     va_end(var);
 	
-    Va_start(var,num_resources); 
+    va_start(var,num_resources); 
 
     _XtVaToTypedArgList(var, total_count, &args, &num_args);
                                 
@@ -238,15 +216,8 @@ GetNestedArg(widget, avlist, args, resources, num_resources)
     return(count);
 }
 
-#if NeedVarargsPrototypes
 void
 XtVaGetValues(Widget widget, ...)
-#else
-/*VARARGS1*/
-void XtVaGetValues(widget, va_alist)
-    Widget widget;
-    va_dcl
-#endif
 {
     va_list		var;
     String      	attr;
@@ -258,7 +229,7 @@ void XtVaGetValues(widget, va_alist)
     WIDGET_TO_APPCON(widget);
 
     LOCK_APP(app);
-    Va_start(var,widget);
+    va_start(var,widget);
 
     _XtCountVaList(var, &total_count, &typed_count);
 
@@ -269,7 +240,7 @@ void XtVaGetValues(widget, va_alist)
     else args = NULL;		/* for lint; really unused */
     va_end(var);
 
-    Va_start(var,widget);
+    va_start(var,widget);
     for(attr = va_arg(var, String), count = 0 ; attr != NULL;
 			attr = va_arg(var, String)) {
 	if (strcmp(attr, XtVaTypedArg) == 0) {
@@ -309,24 +280,15 @@ void XtVaGetValues(widget, va_alist)
     UNLOCK_APP(app);
 }
 
-#if NeedVarargsPrototypes
 void
 XtVaGetSubvalues(XtPointer base,XtResourceList  resources, Cardinal num_resources, ...)
-#else
-/*VARARGS3*/
-void XtVaGetSubvalues(base, resources, num_resources, va_alist)
-    XtPointer base;
-    XtResourceList  resources;
-    Cardinal num_resources;
-    va_dcl
-#endif
 {
     va_list	var;
     ArgList    	args;
     Cardinal   	num_args;
     int		total_count, typed_count;		
 
-    Va_start(var,num_resources);
+    va_start(var,num_resources);
 
     _XtCountVaList(var, &total_count, &typed_count);
 
@@ -335,7 +297,7 @@ void XtVaGetSubvalues(base, resources, num_resources, va_alist)
     }
     va_end(var);
 
-    Va_start(var,num_resources);
+    va_start(var,num_resources);
     _XtVaToArgList((Widget)NULL, var, total_count, &args, &num_args);
     va_end(var);
 

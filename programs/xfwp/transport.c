@@ -43,10 +43,6 @@ X Window System is a trademark of The Open Group.
 
 #include <X11/Xfuncs.h>		/* Need for bzero() */
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 #include <X11/ICE/ICElib.h>	/* Need typedef for Bool */
 
 #include "xfwp.h"

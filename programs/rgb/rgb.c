@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/rgb/rgb.c,v 3.4 1998/10/04 09:40:33 dawes Exp $ */
+/* $XFree86: xc/programs/rgb/rgb.c,v 3.5 2001/01/17 23:45:03 dawes Exp $ */
 
 
 /* reads from standard input lines of the form:
@@ -51,10 +51,6 @@ from The Open Group.
 #include <ctype.h>
 
 #include <errno.h>
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 char *ProgramName;
 

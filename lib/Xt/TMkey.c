@@ -65,12 +65,6 @@ in this Software without prior written authorization from The Open Group.
 #include "IntrinsicI.h"
 #include <X11/keysymdef.h>
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 #define FLUSHKEYCACHE(ctx) \
 	bzero((char *)&ctx->keycache, sizeof(TMKeyCache))
 
@@ -82,7 +76,7 @@ in this Software without prior written authorization from The Open Group.
  */
 
 #define FM(i) i >> (8 - TMKEYCACHELOG2)
-static Const unsigned char modmix[256] = {
+static const unsigned char modmix[256] = {
 FM(0x0f), FM(0x8f), FM(0x4f), FM(0xcf), FM(0x2f), FM(0xaf), FM(0x6f), FM(0xef),
 FM(0x1f), FM(0x9f), FM(0x5f), FM(0xdf), FM(0x3f), FM(0xbf), FM(0x7f), FM(0xff),
 FM(0x07), FM(0x87), FM(0x47), FM(0xc7), FM(0x27), FM(0xa7), FM(0x67), FM(0xe7),

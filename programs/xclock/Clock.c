@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/xclock/Clock.c,v 3.8 2000/11/02 02:51:24 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/Clock.c,v 3.9 2001/01/17 23:45:18 dawes Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/StringDefs.h>
@@ -52,20 +52,8 @@ SOFTWARE.
 #include <stdio.h>
 #include <X11/Xos.h>
 
-#if defined(__STDC__) && !defined(AIXV3) /* AIX is broken */
-#define Const const
-#else
-#define Const /**/
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern struct tm *localtime();
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 #ifdef XKB
 #include <X11/extensions/XKBbells.h>
@@ -576,7 +564,7 @@ erase_hands(ClockWidget w, struct tm *tm)
     }
 }
 
-static float Const Sines[] = {
+static float const Sines[] = {
 .000000, .008727, .017452, .026177, .034899, .043619, .052336, .061049,
 .069756, .078459, .087156, .095846, .104528, .113203, .121869, .130526,
 .139173, .147809, .156434, .165048, .173648, .182236, .190809, .199368,
@@ -591,7 +579,7 @@ static float Const Sines[] = {
 .694658, .700909, .707107
 };
 
-static float Const Cosines[] = {
+static float const Cosines[] = {
 1.00000, .999962, .999848, .999657, .999391, .999048, .998630, .998135,
 .997564, .996917, .996195, .995396, .994522, .993572, .992546, .991445,
 .990268, .989016, .987688, .986286, .984808, .983255, .981627, .979925,

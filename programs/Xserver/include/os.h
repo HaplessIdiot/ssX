@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/os.h,v 3.36 2000/11/30 23:30:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/os.h,v 3.37 2001/01/17 22:36:57 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -91,15 +91,7 @@ typedef struct _NewClientRec *NewClientPtr;
 #ifdef SCO
 #include <stdio.h>
 #endif
-#ifndef X_NOT_STDC_ENV
 #include <string.h>
-#else
-#ifdef SYSV
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-#endif
 #endif
 
 /* have to put $(SIGNAL_DEFINES) in DEFINES in Imakefile to get this right */

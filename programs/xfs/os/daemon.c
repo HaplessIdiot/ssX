@@ -27,7 +27,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.5 2001/04/26 20:26:31 alanh Exp $ */
+/* $XFree86: xc/programs/xfs/os/daemon.c,v 1.6 2001/07/23 13:15:53 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -45,9 +45,6 @@ from the X Consortium.
 #include <sys/ptyio.h>
 #endif
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include <sys/types.h>
 #ifdef X_NOT_POSIX
 #define Pid_t int

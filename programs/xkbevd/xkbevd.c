@@ -24,15 +24,11 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.7 1999/03/02 10:42:27 dawes Exp $ */
+/* $XFree86: xc/programs/xkbevd/xkbevd.c,v 3.8 2001/01/17 23:46:09 dawes Exp $ */
 
 #define	DEBUG_VAR xkbevdDebug
 #include <X11/Xosdefs.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *getenv();
-#endif
 #include "xkbevd.h"
 
 

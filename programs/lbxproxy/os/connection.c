@@ -56,7 +56,7 @@ SOFTWARE.
  *      socket ids aren't small nums (0 - 2^8)
  *
  *****************************************************************/
-/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.13 2000/08/10 17:40:40 dawes Exp $ */
+/* $XFree86: xc/programs/lbxproxy/os/connection.c,v 1.14 2001/01/17 23:44:59 dawes Exp $ */
 
 #include "misc.h"
 #include <X11/Xtrans.h>
@@ -64,10 +64,6 @@ SOFTWARE.
 #include <stdio.h>
 #include <stdlib.h>			/* atoi */
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 #include <signal.h>
 #include <setjmp.h>
 

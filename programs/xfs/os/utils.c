@@ -42,13 +42,11 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.13 2001/02/13 19:19:18 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.14 2001/06/26 22:18:14 paulo Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
-#ifndef X_NOT_STDC_ENV
 #include	<stdlib.h>
-#endif
 #include	"misc.h"
 #include	"globals.h"
 #include	<signal.h>
@@ -85,11 +83,7 @@ in this Software without prior written authorization from The Open Group.
 #define SIGNALS_RESET_WHEN_CAUGHT
 #endif
 
-#ifdef X_NOT_STDC_ENV
-char *realloc();
-#else
 #include <stdlib.h>
-#endif
 
 extern char *configfilename;
 static Bool dropPriv = FALSE; /* whether or not to drop root privileges */

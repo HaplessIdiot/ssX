@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.75 2001/05/18 20:22:30 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.76 2001/07/23 13:15:48 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1171,7 +1171,6 @@ xf86bsearch(const void *key, const void *base, xf86size_t nmemb,
 	return bsearch(key, base, (size_t)nmemb, (size_t)size, compar);
 }
 
-/*VARARGS1*/
 int
 xf86execl(const char *pathname, const char *arg, ...)
 {

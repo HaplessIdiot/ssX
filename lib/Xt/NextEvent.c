@@ -54,14 +54,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.18 2001/02/11 04:41:28 keithp Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.19 2001/07/23 13:15:42 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 #ifdef __EMX__
 #include <sys/time.h>

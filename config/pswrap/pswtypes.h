@@ -39,9 +39,7 @@
 #ifndef PSWTYPES_H
 #define PSWTYPES_H
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 #define false 0
 #define true  1

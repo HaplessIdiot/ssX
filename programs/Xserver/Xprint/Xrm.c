@@ -57,7 +57,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/Xprint/Xrm.c,v 1.6 1999/12/13 02:12:49 robin Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/Xrm.c,v 1.7 2001/01/17 22:36:28 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<ctype.h>
@@ -76,11 +76,6 @@ typedef char *XPointer;
 #include	"Xlcint.h"
 #include 	"XrmI.h"
 
-#if __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
 #if __STDC__ && !defined(VMS)
 #define RConst const
 #else
@@ -306,7 +301,7 @@ typedef unsigned char XrmBits;
 #define is_special(bits)	((bits) & (ENDOF|BSLASH))
 
 /* parsing types */
-static XrmBits Const xrmtypes[256] = {
+static XrmBits const xrmtypes[256] = {
     EOS,0,0,0,0,0,0,0,
     0,SPACE,EOL,0,0,0,0,0,
     0,0,0,0,0,0,0,0,

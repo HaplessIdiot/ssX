@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/modify.c,v 3.6 1999/03/02 10:42:14 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/modify.c,v 3.7 2001/01/17 23:45:38 dawes Exp $ */
 
 #include "xieperf.h"
 #include <stdio.h>
@@ -790,12 +790,8 @@ BuildModifyLong1Flograph(XParms xp, Parms p, XiePhotoElement **flograph)
 #ifdef WIN32
 #define RAND( x, y ) ( ( rand() / ((RAND_MAX + 1) / 2.0) ) * ( y - x ) + x )
 #else
-#ifndef X_NOT_STDC_ENV
 #include <math.h>
 #include <stdlib.h>
-#else
-extern long random();
-#endif
 #if defined(SYSV) || defined(SVR4) || defined(__osf__) || defined(CSRG_BASED)
 #define random lrand48
 #endif

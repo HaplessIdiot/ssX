@@ -43,11 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-#ifdef __STDC__
 #define Const const
-#else
-#define Const /**/
-#endif
 
 <<<STRING_TABLE_GOES_HERE>>>
 

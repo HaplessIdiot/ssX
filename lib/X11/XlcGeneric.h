@@ -31,7 +31,7 @@
  * Modifier: Takanori Tateno   FUJITSU LIMITED
  *
  */
-/* $XFree86: xc/lib/X11/XlcGeneric.h,v 1.2 2000/02/25 18:27:53 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcGeneric.h,v 1.3 2001/01/17 19:41:49 dawes Exp $ */
 
 #ifndef _XLCGENERIC_H_
 #define _XLCGENERIC_H_
@@ -131,10 +131,8 @@ typedef struct _XLCdGenericPart {
     CodeSet 		initial_state_GR;
     int  		segment_conv_num;  /* UDC */
     SegConv 		segment_conv;      /* UDC */
-#ifndef X_NOT_STDC_ENV
     Bool 		use_stdc_env;
     Bool 		force_convert_to_mb;
-#endif
 } XLCdGenericPart;
 
 typedef struct _XLCdGenericRec {

@@ -64,11 +64,7 @@ in this Software without prior written authorization from The Open Group.
 #include "IntrinsicI.h"
 #undef _XBCOPYFUNC
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc(), *realloc(), *calloc();
-#endif
 
 #define Xmalloc(size) malloc((size))
 #define Xrealloc(ptr, size) realloc((ptr), (size))

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.82 2001/07/19 02:22:48 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.83 2001/07/23 13:15:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -30,28 +30,6 @@
 #endif
 
 #define _COMPILER_H
-
-#ifndef __STDC__
-# ifdef signed
-#  undef signed
-# endif
-# ifdef volatile
-#  undef volatile
-# endif
-# ifdef const
-#  undef const
-# endif
-# define signed /**/
-# ifdef __GNUC__
-#  define volatile __volatile__
-#  define const __const__
-# else
-#  define const /**/
-#  ifdef __HIGHC__
-#   define __inline__ _Inline
-#  endif
-# endif /* __GNUC__ */
-#endif /* !__STDC__ */
 
 #if defined(IODEBUG) && defined(__GNUC__)
 #define outb RealOutb

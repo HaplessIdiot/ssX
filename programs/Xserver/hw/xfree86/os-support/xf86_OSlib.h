@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.82 2001/05/28 18:14:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_OSlib.h,v 3.83 2001/07/23 13:15:48 dawes Exp $ */
 /*
  * Copyright 1990, 1991 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1992 by David Dawes <dawes@XFree86.org>
@@ -100,6 +100,7 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 #include <stdio.h>
 #include <ctype.h>
+#include <stddef.h>
 
 /**************************************************************************/
 /* SYSV386 (SVR3, SVR4) - But not Solaris8                                */
@@ -241,10 +242,6 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 #  endif
 # endif
 
-# ifndef NULL
-#  define NULL 0
-# endif
-
 #endif /* (SYSV || SVR4) && !DGUX */
 
 /**********
@@ -335,10 +332,6 @@ extern int vsnprintf(char *str, size_t size, const char *format, va_list ap);
 
 #undef  VT_SYSREQ_DEFAULT
 #define VT_SYSREQ_DEFAULT FALSE        /* Make sure that we dont define any VTs since DG/ux has none */
-
-#ifndef NULL
-# define NULL 0
-#endif
 
 #endif /* DGUX && SVR4 */
 
@@ -558,10 +551,6 @@ extern int errno;
 
 # if defined(SYSCONS_SUPPORT) || defined(PCVT_SUPPORT) || defined(WSCONS_SUPPORT)
 #  define USE_VT_SYSREQ
-# endif
-
-# ifndef NULL
-#   define NULL 0
 # endif
 
 #endif /* CSRG_BASED */

@@ -55,7 +55,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xt/Resources.c,v 1.6 1998/12/20 11:57:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Resources.c,v 1.7 2001/01/17 19:43:07 dawes Exp $ */
 
 /*LINTLIBRARY*/
 #include "IntrinsicI.h"
@@ -368,12 +368,8 @@ void _XtCompileResourceList(resources, num_resources)
     	xrmres->xrm_name	 = PSToQ(resources->resource_name);
     	xrmres->xrm_class	 = PSToQ(resources->resource_class);
     	xrmres->xrm_type	 = PSToQ(resources->resource_type);
-#if defined(CRAY1) && !defined(__STDC__)
-	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
-#else
         xrmres->xrm_offset	 = (Cardinal)
 		(-(int)resources->resource_offset - 1);
-#endif
     	xrmres->xrm_default_type = PSToQ(resources->default_type);
     }
 #undef PSToQ
@@ -393,12 +389,8 @@ static void  XrmCompileResourceListEphem(resources, num_resources)
     	xrmres->xrm_name	 = StringToName(resources->resource_name);
     	xrmres->xrm_class	 = StringToClass(resources->resource_class);
     	xrmres->xrm_type	 = StringToQuark(resources->resource_type);
-#if defined(CRAY1) && !defined(__STDC__)
-	xrmres->xrm_offset = -(resources->resource_offset * sizeof(long) + 1);
-#else
         xrmres->xrm_offset	 = (Cardinal)
 		(-(int)resources->resource_offset - 1);
-#endif
     	xrmres->xrm_default_type = StringToQuark(resources->default_type);
     }
 #undef xrmres

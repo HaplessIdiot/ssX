@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/oclock/Clock.c,v 1.4 2001/01/17 23:45:01 dawes Exp $ */
+/* $XFree86: xc/programs/oclock/Clock.c,v 1.5 2001/04/01 14:00:18 tsi Exp $ */
 
 /*
  * Clock.c
@@ -37,14 +37,8 @@ in this Software without prior written authorization from The Open Group.
 #include <math.h>
 #include <X11/extensions/shape.h>
 
-#ifdef X_NOT_STDC_ENV
-extern struct tm *localtime();
-#define Time_t long
-extern Time_t time();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 #define offset(field) XtOffsetOf(ClockRec, clock.field)
 #define goffset(field) XtOffsetOf(WidgetRec, core.field)

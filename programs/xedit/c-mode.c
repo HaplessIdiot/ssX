@@ -27,16 +27,14 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/c-mode.c,v 1.4 1999/09/27 06:30:08 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/c-mode.c,v 1.5 2001/01/30 15:03:33 paulo Exp $ */
 
 #include "xedit.h"
 #include <X11/IntrinsicP.h>
 #include <X11/Xaw/TextSinkP.h>
 #include <X11/Xaw/TextSrcP.h>
 #include <X11/Xmu/Xmu.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>		/* for bsearch() */
-#endif
 #include <ctype.h>
 
 #define C_Peek(parser)	((parser)->next)

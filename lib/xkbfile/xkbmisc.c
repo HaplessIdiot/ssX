@@ -1,4 +1,4 @@
-/* $XConsortium: xkbmisc.c /main/2 1995/12/07 21:18:56 kaleb $ */
+/* $Xorg: xkbmisc.c,v 1.4 2000/08/17 19:46:44 cpqbld Exp $ */
 /************************************************************
  Copyright (c) 1995 by Silicon Graphics Computer Systems, Inc.
 
@@ -27,9 +27,7 @@
 
 #include <stdio.h>
 #include <ctype.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 
 #define	XK_CYRILLIC
 
@@ -57,12 +55,17 @@
 #include "XKBstr.h"
 #define XKBSRV_NEED_FILE_FUNCS	1
 #include "XKBsrv.h"
+#include <X11/extensions/XKBgeom.h>
 
 #endif
 
 unsigned
+#if NeedFunctionPrototypes
+_XkbKSCheckCase(KeySym ks)
+#else
 _XkbKSCheckCase(ks)
     KeySym	ks;
+#endif
 {
 unsigned	set,rtrn;
 unsigned char	ch;
@@ -88,15 +91,19 @@ unsigned char	ch;
 /***===================================================================***/
 
 int
+#if NeedFunctionPrototypes
+_XkbStrCaseCmp(char *str1,char *str2)
+#else
 _XkbStrCaseCmp(str1,str2)
     char *	str1;
     char *	str2;
+#endif
 {
     char buf1[512],buf2[512];
     char c, *s;
     register int n;
 
-    for (n=0, s = buf1; c = *str1++; n++) {
+    for (n=0, s = buf1; (c = *str1++); n++) {
         if (isupper(c))
             c = tolower(c);
         if (n>510)
@@ -104,7 +111,7 @@ _XkbStrCaseCmp(str1,str2)
         *s++ = c;
     }
     *s = '\0';
-    for (n=0, s = buf2; c = *str2++; n++) {
+    for (n=0, s = buf2; (c = *str2++); n++) {
         if (isupper(c))
             c = tolower(c);
         if (n>510)
@@ -118,12 +125,20 @@ _XkbStrCaseCmp(str1,str2)
 /***===================================================================***/
 
 Bool
+#if NeedFunctionPrototypes
+XkbLookupGroupAndLevel(	XkbDescPtr 	xkb,
+			int 		key,
+			int *		mods_inout,
+			int *		grp_inout,
+			int *		lvl_rtrn)
+#else
 XkbLookupGroupAndLevel(xkb,key,mods_inout,grp_inout,lvl_rtrn)
     XkbDescPtr	xkb;
     int		key;
     int	*	mods_inout;
     int *	grp_inout;
     int	*	lvl_rtrn;
+#endif
 {
 int		nG,eG;
 
@@ -189,10 +204,14 @@ int		nG,eG;
 /***===================================================================***/
 
 static Bool
+#if NeedFunctionPrototypes
+XkbWriteSectionFromName(FILE *file,char *sectionName,char *name)
+#else
 XkbWriteSectionFromName(file,sectionName,name)
     FILE *			file;
     char *			sectionName;
     char *			name;
+#endif
 {
     fprintf(file,"    xkb_%-20s { include \"%s\" };\n",sectionName,name);
     return True;
@@ -203,6 +222,14 @@ XkbWriteSectionFromName(file,sectionName,name)
 
 /* ARGSUSED */
 static void
+#if NeedFunctionPrototypes
+_AddIncl(	FILE *		file,
+		XkbFileInfo *	result,
+		Bool 		topLevel,
+		Bool 		showImplicit,
+		int 		index,
+		void *		priv)
+#else
 _AddIncl(file,result,topLevel,showImplicit,index,priv)
     FILE *		file;
     XkbFileInfo *	result;
@@ -210,6 +237,7 @@ _AddIncl(file,result,topLevel,showImplicit,index,priv)
     Bool		showImplicit;
     int			index;
     void *		priv;
+#endif
 {
     if ((priv)&&(strcmp(priv,"%")!=0))
 	fprintf(file,"    include \"%s\"\n",(char *)priv);
@@ -217,6 +245,14 @@ _AddIncl(file,result,topLevel,showImplicit,index,priv)
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbWriteXKBKeymapForNames(	FILE *			file,
+				XkbComponentNamesPtr	names,
+				Display *		dpy,
+				XkbDescPtr		xkb,
+				unsigned		want,
+				unsigned		need)
+#else
 XkbWriteXKBKeymapForNames(file,names,dpy,xkb,want,need)
     FILE *			file;
     XkbComponentNamesPtr	names;
@@ -224,6 +260,7 @@ XkbWriteXKBKeymapForNames(file,names,dpy,xkb,want,need)
     XkbDescPtr			xkb;
     unsigned			want;
     unsigned			need;
+#endif
 {
 char *		name,*tmp;
 unsigned	complete;
@@ -355,7 +392,7 @@ XkbFileInfo	finfo;
 	((complete&(~XkmLayoutLegal))==0)) {
 	fprintf(file,"xkb_layout \"%s\" {\n",name);
     }
-    else if (XkmSingleSection(complete)) {
+    else if (XkmSingleSection(complete&(~XkmVirtualModsMask))) {
 	multi_section= 0;
     }
     else {
@@ -408,142 +445,67 @@ XkbFileInfo	finfo;
 
 /*ARGSUSED*/
 Status
+#if NeedFunctionPrototypes
+XkbMergeFile(XkbDescPtr xkb,XkbFileInfo finfo)
+#else
 XkbMergeFile(xkb,finfo)
     XkbDescPtr	 xkb;
     XkbFileInfo	*finfo;
+#endif
 {
     return BadImplementation;
 }
 
 /***====================================================================***/
 
-#ifdef _XKBGEOM_H_
-
-static void
-_XkbAddDrawable(pfirst,plast,tmp)
-    XkbDrawablePtr *	pfirst;
-    XkbDrawablePtr *	plast;
-    XkbDrawablePtr	tmp;
-{
-XkbDrawablePtr	old;
-
-    if (*pfirst==NULL) {
-	*pfirst= *plast= tmp;
-    }
-    else if (tmp->priority>=(*plast)->priority) {
-	(*plast)->next= tmp;
-	*plast= tmp;
-    }
-    else if (tmp->priority<(*pfirst)->priority) {
-	tmp->next= (*pfirst);
-	(*pfirst)= tmp;
-    }
-    else {
-	old= *pfirst;
-	while ((old->next)&&(old->next->priority<=tmp->priority)) {
-	    old= old->next;
-	}
-	tmp->next= old->next;
-	old->next= tmp;
-    }
-    return;
-}
-
-XkbDrawablePtr
-XkbGetOrderedDrawables(geom,section)
-    XkbGeometryPtr	geom;
-    XkbSectionPtr	section;
-{
-XkbDrawablePtr	first,last,tmp;
-int		i;
-
-    first= last= NULL;
-    if (geom!=NULL) {
-	XkbSectionPtr	section;
-	XkbDoodadPtr	doodad;
-	for (i=0,section=geom->sections;i<geom->num_sections;i++,section++) {
-	    tmp= _XkbTypedCalloc(1,XkbDrawableRec);
-	    if (!tmp) {
-		XkbFreeOrderedDrawables(first);
-		return NULL;
-	    }
-	    tmp->type= XkbDW_Section;
-	    tmp->priority= section->priority;
-	    tmp->u.section= section;
-	    tmp->next= NULL;
-	    _XkbAddDrawable(&first,&last,tmp);
-	}
-	for (i=0,doodad=geom->doodads;i<geom->num_doodads;i++,doodad++) {
-	    tmp= _XkbTypedCalloc(1,XkbDrawableRec);
-	    if (!tmp) {
-		XkbFreeOrderedDrawables(first);
-		return NULL;
-	    }
-	    tmp->type= XkbDW_Doodad;
-	    tmp->priority= doodad->any.priority;
-	    tmp->u.doodad= doodad;
-	    tmp->next= NULL;
-	    _XkbAddDrawable(&first,&last,tmp);
-	}
-    }
-    if (section!=NULL) {
-	XkbDoodadPtr	doodad;
-	for (i=0,doodad=section->doodads;i<section->num_doodads;i++,doodad++) {
-	    tmp= _XkbTypedCalloc(1,XkbDrawableRec);
-	    if (!tmp) {
-		XkbFreeOrderedDrawables(first);
-		return NULL;
-	    }
-	    tmp->type= XkbDW_Doodad;
-	    tmp->priority= doodad->any.priority;
-	    tmp->u.doodad= doodad;
-	    tmp->next= NULL;
-	    _XkbAddDrawable(&first,&last,tmp);
-	}
-    }
-    return first;
-}
-
-void
-XkbFreeOrderedDrawables(draw)
-    XkbDrawablePtr	draw;
-{
-XkbDrawablePtr	tmp;
-
-   for (;draw!=NULL;draw=tmp) {
-	tmp= draw->next;
-	_XkbFree(draw);
-   }
-   return;
-}
-#endif /* ifdef _XKBGEOM_H_ */
-
-/***====================================================================***/
-
 int
-XkbFindKeycodeByName(xkb,name)
+#if NeedFunctionPrototypes
+XkbFindKeycodeByName(XkbDescPtr xkb,char *name,Bool use_aliases)
+#else
+XkbFindKeycodeByName(xkb,name,use_aliases)
     XkbDescPtr	xkb;
     char *	name;
+    Bool	use_aliases;
+#endif
 {
 register int	i;
-char 		buf[XkbKeyNameLength];
 
     if ((!xkb)||(!xkb->names)||(!xkb->names->keys))
 	return 0;
-    bzero(buf,XkbKeyNameLength);
-    strncpy(buf,name,XkbKeyNameLength);
     for (i=xkb->min_key_code;i<=xkb->max_key_code;i++) {
-	if (strncmp(xkb->names->keys[i].name,buf,XkbKeyNameLength)==0)
+	if (strncmp(xkb->names->keys[i].name,name,XkbKeyNameLength)==0)
 	    return i;
+    }
+    if (!use_aliases)
+	return 0;
+    if (xkb->geom && xkb->geom->key_aliases) {
+	XkbKeyAliasPtr	a;
+	a= xkb->geom->key_aliases;
+	for (i=0;i<xkb->geom->num_key_aliases;i++,a++) {
+	    if (strncmp(name,a->alias,XkbKeyNameLength)==0)
+		return XkbFindKeycodeByName(xkb,a->real,False);
+	}
+    }
+    if (xkb->names && xkb->names->key_aliases) {
+	XkbKeyAliasPtr	a;
+	a= xkb->names->key_aliases;
+	for (i=0;i<xkb->names->num_key_aliases;i++,a++) {
+	    if (strncmp(name,a->alias,XkbKeyNameLength)==0)
+		return XkbFindKeycodeByName(xkb,a->real,False);
+	}
     }
     return 0;
 }
 
 
 unsigned
+#if NeedFunctionPrototypes
+XkbConvertGetByNameComponents(Bool toXkm,unsigned orig)
+#else
 XkbConvertGetByNameComponents(toXkm,orig)
     Bool	toXkm;
     unsigned	orig;
+#endif
 {
 unsigned	rtrn;
 
@@ -569,9 +531,13 @@ unsigned	rtrn;
 }
 
 unsigned
+#if NeedFunctionPrototypes
+XkbConvertXkbComponents(Bool toXkm,unsigned orig)
+#else
 XkbConvertXkbComponents(toXkm,orig)
     Bool		toXkm;
     unsigned 		orig;
+#endif
 {
 unsigned	rtrn;
 
@@ -599,10 +565,14 @@ unsigned	rtrn;
 }
 
 Bool
+#if NeedFunctionPrototypes
+XkbDetermineFileType(XkbFileInfoPtr finfo,int format,int *opts_missing)
+#else
 XkbDetermineFileType(finfo,format,opts_missing)
     XkbFileInfoPtr	finfo;
     int			format;
     int *		opts_missing;
+#endif
 {
 unsigned	present;
 XkbDescPtr	xkb;
@@ -679,7 +649,7 @@ XkbDescPtr	xkb;
 /* all latin-1 alphanumerics, plus parens, slash, minus, underscore and */
 /* wildcards */
 
-static char componentSpecLegal[] = {
+static unsigned char componentSpecLegal[] = {
 	0x00, 0x00, 0x00, 0x00, 0x00, 0xa7, 0xff, 0x83,
 	0xfe, 0xff, 0xff, 0x87, 0xfe, 0xff, 0xff, 0x07,
 	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -687,8 +657,12 @@ static char componentSpecLegal[] = {
 };
 
 void
+#if NeedFunctionPrototypes
+XkbEnsureSafeMapName(char *name)
+#else
 XkbEnsureSafeMapName(name)
     char *name;
+#endif
 {
    if (name==NULL)
         return;
@@ -698,4 +672,43 @@ XkbEnsureSafeMapName(name)
         name++;
     }
     return;
+}
+
+/***====================================================================***/
+
+#define	UNMATCHABLE(c)	(((c)=='(')||((c)==')')||((c)=='/'))
+
+Bool
+#if NeedFunctionPrototypes
+XkbNameMatchesPattern(char *name,char *ptrn)
+#else
+XkbNameMatchesPattern(name,ptrn)
+    char *	name;
+    char *	ptrn;
+#endif
+{
+    while (ptrn[0]!='\0') {
+	if (name[0]=='\0') {
+	    if (ptrn[0]=='*') {
+		ptrn++;
+		continue;
+	    }
+	    return False;
+	}
+	if (ptrn[0]=='?') {
+	    if (UNMATCHABLE(name[0]))
+		return False;
+	}
+	else if (ptrn[0]=='*') {
+	    if ((!UNMATCHABLE(name[0]))&&XkbNameMatchesPattern(name+1,ptrn))
+		return True;
+	    return XkbNameMatchesPattern(name,ptrn+1);
+	}
+	else if (ptrn[0]!=name[0])
+	    return False;
+	name++;
+	ptrn++;
+    }
+    /* if we get here, the pattern is exhausted (-:just like me:-) */
+    return (name[0]=='\0');
 }

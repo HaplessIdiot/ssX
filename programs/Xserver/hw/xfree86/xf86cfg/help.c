@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.3 2000/10/20 14:59:05 alanh Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/help.c,v 1.4 2001/05/15 18:22:23 paulo Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -42,9 +42,7 @@
 #include <X11/Xaw/TextSrcP.h>
 #include <X11/Xmu/SysUtil.h>
 #include <X11/Xmu/Xmu.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>		/* for bsearch() */
-#endif
 #include <ctype.h>
 #include "help.h"
 #include "options.h"

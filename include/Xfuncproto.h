@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  *
  */
+/* $XFree86$ */
 
 /* Definitions to make function prototypes manageable */
 
@@ -27,37 +28,21 @@ in this Software without prior written authorization from The Open Group.
 #define _XFUNCPROTO_H_
 
 #ifndef NeedFunctionPrototypes
-#if defined(FUNCPROTO) || defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus)
 #define NeedFunctionPrototypes 1
-#else
-#define NeedFunctionPrototypes 0
-#endif
 #endif /* NeedFunctionPrototypes */
 
 #ifndef NeedVarargsPrototypes
-#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&2)
 #define NeedVarargsPrototypes 1
-#else
-#define NeedVarargsPrototypes 0
-#endif
 #endif /* NeedVarargsPrototypes */
 
 #if NeedFunctionPrototypes
 
 #ifndef NeedNestedPrototypes
-#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&8)
 #define NeedNestedPrototypes 1
-#else
-#define NeedNestedPrototypes 0
-#endif
 #endif /* NeedNestedPrototypes */
 
 #ifndef _Xconst
-#if defined(__STDC__) || defined(__cplusplus) || defined(c_plusplus) || (FUNCPROTO&4)
 #define _Xconst const
-#else
-#define _Xconst
-#endif
 #endif /* _Xconst */
 
 #ifndef NeedWidePrototypes

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.13 2001/05/18 16:03:15 tsi Exp $ */
+/* $XFree86: xc/programs/xdm/greeter/verify.c,v 3.14 2001/05/25 18:41:02 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -43,17 +43,10 @@ from The Open Group.
 # ifdef USESHADOW
 #  include	<shadow.h>
 #  include	<errno.h>
-#  ifdef X_NOT_STDC_ENV
-extern int errno;
-#  endif
 # endif
 #endif
 
 # include	"greet.h"
-
-#ifdef X_NOT_STDC_ENV
-char *getenv();
-#endif
 
 #ifdef QNX4
 extern char *crypt(const char *, const char *);

@@ -46,7 +46,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/FS/FSlibos.h,v 3.5 1999/12/27 00:39:21 robin Exp $ */
+/* $XFree86: xc/lib/FS/FSlibos.h,v 3.6 2001/01/17 19:41:28 dawes Exp $ */
 
 /*
  * FSlib networking & os include file
@@ -252,18 +252,8 @@ typedef fd_set FdSet;
 #endif
 
 #include <X11/Xtrans.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #include <string.h>
-#else
-char *malloc(), *realloc(), *calloc();
-void exit();
-#ifdef SYSV
-#include <string.h>
-#else
-#include <strings.h>
-#endif
-#endif
 
 /*
  * The following definitions can be used for locking requests in multi-threaded

@@ -43,7 +43,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/objects.h,v 1.7 1999/08/22 05:35:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/objects.h,v 1.8 2001/01/17 19:43:22 dawes Exp $ */
 /*SHARED*/
  
 /*END SHARED*/
@@ -139,7 +139,7 @@ extern struct xobject *t1_Copy ( pointer obj );
 #endif
  
 #ifndef   NULL
-#define   NULL        0
+#include <stddef.h>
 /*
 The NULL pointer is system specific.  (Most systems, however, use 0.)
 TYPE1IMAGER could have its own NULL, independent of the rest of the system,

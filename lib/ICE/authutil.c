@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/authutil.c,v 3.5 1999/05/23 06:33:23 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/authutil.c,v 3.6 2001/01/17 19:41:29 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
@@ -31,18 +31,11 @@ Author: Ralph Mor, X Consortium
 #include <sys/stat.h>
 #include <errno.h>
 
-#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
-extern int errno;
-extern long time ();
-extern char *getenv();
-#define Time_t long
-#else
 #include <time.h>
 #define Time_t time_t
 #ifdef __EMX__
 extern char* getenv(const char*);
 #define link rename
-#endif
 #endif
 #ifndef X_NOT_POSIX
 #include <unistd.h>

@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.5 2001/01/17 23:46:16 dawes Exp $ */
+/* $XFree86: xc/programs/xlogo/xlogo.c,v 3.6 2001/07/23 13:15:54 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -31,12 +31,7 @@ in this Software without prior written authorization from The Open Group.
 #ifdef XKB
 #include <X11/extensions/XKBbells.h>
 #endif
-
-#ifdef X_NOT_STDC_ENV
-extern void exit();
-#else
 #include <stdlib.h>
-#endif
 
 static void quit(Widget w, XEvent *event, String *params, 
 		 Cardinal *num_params);

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: draw.c,v 1.8 94/04/17 20:43:35 gildea Exp $
- * $XFree86: contrib/programs/xditview/draw.c,v 3.0 1994/06/05 07:59:48 dawes Exp $
+ * $XFree86: xc/programs/xditview/draw.c,v 1.2 2000/12/03 05:20:53 keithp Exp $
  *
 Copyright (c) 1991  X Consortium
 
@@ -48,10 +48,7 @@ in this Software without prior written authorization from the X Consortium.
 #include <ctype.h>
 #include <math.h>
 #include "DviP.h"
-
-#if !defined(X_NOT_STDC_ENV) || defined(SCO)
 #include <stdlib.h>
-#endif
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.30 2001/04/27 12:51:07 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/WaitFor.c,v 3.31 2001/07/23 13:15:49 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -56,12 +56,7 @@ SOFTWARE.
 #include <X11/Xwinsock.h>
 #endif
 #include "Xos.h"			/* for strings, fcntl, time */
-
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 #include <stdio.h>
 #include "X.h"
 #include "misc.h"

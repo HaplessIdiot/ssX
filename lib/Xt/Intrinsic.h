@@ -44,7 +44,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.5 2000/12/15 22:48:39 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.h,v 3.6 2001/01/17 19:43:05 dawes Exp $ */
 
 #ifndef _XtIntrinsic_h
 #define _XtIntrinsic_h
@@ -57,15 +57,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xos.h>		/* for R4 compatibility */
 #else
 #include <X11/Xosdefs.h>
-#ifndef X_NOT_STDC_ENV
 #include <string.h>		/* for XtNewString */
-#else
-#ifdef SYSV
-#include <string.h>
-#else
-#include <strings.h>
-#endif /* SYSV else */
-#endif /* !X_NOT_STDC_ENV else */
 #endif /* XT_BC else */
 
 #define XtSpecificationRelease 6
@@ -98,9 +90,7 @@ typedef char *String;
 
 #endif /* NeedFunctionPrototypes */
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 #ifdef VMS
 #define externalref globalref
@@ -747,13 +737,8 @@ extern void XtDisplayStringConversionWarning(
 #endif
 );
 
-#ifdef __STDC__
 externalref XtConvertArgRec const colorConvertArgs[];
 externalref XtConvertArgRec const screenConvertArg[];
-#else
-externalref XtConvertArgRec colorConvertArgs[];
-externalref XtConvertArgRec screenConvertArg[];
-#endif
 
 extern void XtAppAddConverter( /* obsolete */
 #if NeedFunctionPrototypes
@@ -2054,25 +2039,11 @@ extern void XtGetConstraintResourceList(
 #define XtDefaultFont		"XtDefaultFont"
 #define XtDefaultFontSet	"XtDefaultFontSet"
 
-#if defined(CRAY) || defined(__ACK)
-#if __STDC__ && !defined(__ACK)
+#if defined(CRAY)
 #define XtOffset(p_type,field) _Offsetof(p_type,field)
-#else
-#ifdef CRAY2
-#define XtOffset(p_type,field) \
-	(sizeof(int)*((unsigned int)&(((p_type)NULL)->field)))
-
-#else	/* !CRAY2 */
-
-#define XtOffset(p_type,field) ((unsigned int)&(((p_type)NULL)->field))
-
-#endif	/* !CRAY2 */
-#endif  /* __STDC__ */
-#else	/* ! (CRAY || __arm || __ACK) */
-
+#else	/* ! CRAY */
 #define XtOffset(p_type,field) \
 	((Cardinal) (((char *) (&(((p_type)NULL)->field))) - ((char *) NULL)))
-
 #endif /* !CRAY */
 
 #ifdef offsetof

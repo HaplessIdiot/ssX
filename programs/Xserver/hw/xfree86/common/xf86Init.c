@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.179 2001/06/12 04:27:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.180 2001/07/23 13:15:47 dawes Exp $ */
 
 /*
  * Copyright 1991-1999 by The XFree86 Project, Inc.
@@ -8,11 +8,7 @@
  *   Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  */
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern int atoi();
-#endif
 
 #define NEED_EVENTS
 #include "X.h"

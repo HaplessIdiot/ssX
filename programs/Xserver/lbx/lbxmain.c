@@ -41,7 +41,7 @@ in this Software without prior written authorization from The Open Group.
  * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.8 2000/06/07 22:03:14 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/lbx/lbxmain.c,v 1.9 2001/01/17 22:36:59 dawes Exp $ */
  
 #include <sys/types.h>
 #define NEED_REPLIES
@@ -68,9 +68,6 @@ in this Software without prior written authorization from The Open Group.
 #include "lbxtags.h"
 #include "Xfuncproto.h"
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #ifndef Lynx
 #include <sys/uio.h>
 #else

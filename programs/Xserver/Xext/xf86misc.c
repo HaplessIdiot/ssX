@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.32 2000/04/17 16:29:48 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86misc.c,v 3.33 2000/05/03 00:43:42 tsi Exp $ */
 
 /*
  * Copyright (c) 1995, 1996  The XFree86 Project, Inc
@@ -29,14 +29,10 @@
 #include "../os/osdep.h"
 #include <X11/Xauth.h>
 #ifndef USL
-#ifndef ESIX
 #ifndef Lynx
 #include <sys/socket.h>
 #else
 #include <socket.h>
-#endif
-#else
-#include <lan/socket.h>
 #endif
 #endif /* USL */
 #endif

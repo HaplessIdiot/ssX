@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xauth/process.c,v 3.8 2001/01/17 23:45:15 dawes Exp $ */
+/* $XFree86: xc/programs/xauth/process.c,v 3.9 2001/04/23 20:31:09 dawes Exp $ */
 
 /*
  * Author:  Jim Fulton, MIT X Consortium
@@ -31,9 +31,6 @@ from The Open Group.
 #include "xauth.h"
 #include <ctype.h>
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 #include <sys/stat.h>
 
 #include <signal.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.71 2001/06/08 09:48:16 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.72 2001/06/18 19:09:27 dickey Exp $ */
 
 /************************************************************
 
@@ -71,13 +71,8 @@ authorization.
 #define HAVE_UNISTD_H 1
 #endif
 
-#ifndef X_NOT_STDC_ENV
 #define HAVE_STDLIB_H 1
 #define DECL_ERRNO 1
-#else
-#define size_t int
-#define time_t long
-#endif
 
 #if defined(CSRG_BASED) || defined(__GNU__)
 #define USE_POSIX_TERMIOS 1

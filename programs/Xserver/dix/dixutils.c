@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.5 1999/10/13 22:32:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.6 2001/01/17 22:36:43 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -394,11 +394,7 @@ DeleteWindowFromAnySaveSet(pWin)
  * procedure to call than to check if there's a procedure 
  */
 void
-NoopDDA(
-#if NeedVarargsPrototypes
-    void* f, ...
-#endif
-)
+NoopDDA(void* f, ...)
 {
 }
 

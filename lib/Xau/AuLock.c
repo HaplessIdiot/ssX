@@ -21,20 +21,14 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuLock.c,v 3.2 2000/02/14 17:43:40 robin Exp $ */
+/* $XFree86: xc/lib/Xau/AuLock.c,v 3.3 2001/01/17 19:42:24 dawes Exp $ */
 
 #include <X11/Xauth.h>
 #include <X11/Xos.h>
 #include <sys/stat.h>
 #include <errno.h>
-#if defined(X_NOT_STDC_ENV)
-extern int errno;
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 #ifndef X_NOT_POSIX
 #include <unistd.h>
 #else

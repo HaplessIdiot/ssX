@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xmu/LookupCmap.c,v 1.5 1998/10/03 09:06:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xmu/LookupCmap.c,v 1.6 2001/01/17 19:42:56 dawes Exp $ */
 
 /*
  * Author:  Donna Converse, MIT X Consortium
@@ -32,12 +32,7 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/Xatom.h>
 #include <X11/Xutil.h>
 #include <X11/Xmu/StdCmap.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *malloc();
-#endif
 
 /*
  * Prototypes

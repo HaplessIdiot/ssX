@@ -49,7 +49,7 @@ from The Open Group.
  *
  *		 Katsuhisa Yano		TOSHIBA Corp.
  */				
-/* $XFree86: xc/lib/X11/lcWrap.c,v 3.9 2000/11/28 18:49:51 dawes Exp $ */
+/* $XFree86: xc/lib/X11/lcWrap.c,v 3.10 2001/01/17 19:41:55 dawes Exp $ */
 
 #include <stdlib.h>
 #include "Xlibint.h"
@@ -243,7 +243,7 @@ _XOpenLC(
     XLCd lcd;
     XlcLoaderList loader;
     XLCdList cur;
-#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+#if !defined(X_LOCALE)
     int len;
     char sinamebuf[256];
     char* siname = sinamebuf;
@@ -252,7 +252,7 @@ _XOpenLC(
 
     if (name == NULL) {
 	name = setlocale (LC_CTYPE, (char *)NULL);
-#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+#if !defined(X_LOCALE)
         /* 
          * _XlMapOSLocaleName will return the same string or a substring 
          * of name, so strlen(name) is okay 
@@ -307,7 +307,7 @@ _XOpenLC(
 found:
     _XUnlockMutex(_Xi18n_lock);
 
-#if !defined(X_NOT_STDC_ENV) && !defined(X_LOCALE)
+#if !defined(X_LOCALE)
     if (siname != sinamebuf) Xfree(siname);
 #endif
 

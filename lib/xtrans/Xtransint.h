@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.28 2001/01/17 19:43:46 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.29 2001/07/23 13:15:43 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -85,9 +85,6 @@ from The Open Group.
 #endif /* XTRANSDEBUG */
 
 #include <errno.h>
-#ifdef X_NOT_STDC_ENV
-extern int  errno;		/* Internal system error number. */
-#endif
 
 #ifndef WIN32
 #ifndef Lynx
@@ -181,9 +178,7 @@ extern int  errno;		/* Internal system error number. */
 
 #endif /* WIN32 */
 
-#ifndef NULL
-#define NULL 0
-#endif
+#include <stddef.h>
 
 #ifdef X11_t
 #define X_TCP_PORT	6000

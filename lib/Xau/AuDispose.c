@@ -21,15 +21,10 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xau/AuDispose.c,v 1.2 1999/03/14 03:21:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xau/AuDispose.c,v 1.3 2001/01/17 19:42:23 dawes Exp $ */
 
 #include <X11/Xauth.h>
-
-#ifdef X_NOT_STDC_ENV
-extern void free();
-#else
 #include <stdlib.h>
-#endif
 
 void
 XauDisposeAuth (auth)

@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Converters.c,v 3.7 1999/03/28 15:31:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Converters.c,v 3.8 2001/01/17 19:43:04 dawes Exp $ */
 
 /*
 
@@ -68,16 +68,6 @@ in this Software without prior written authorization from The Open Group.
 #include	<X11/Xlocale.h>
 #include	<errno.h>	/* for StringToDirectoryString */
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;	
-#endif
-
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
 #ifdef __EMX__
 #define IsNewline(str) ((str) == '\n' || (str) == '\r')
 #define IsWhitespace(str) ((str)== ' ' || (str) == '\t' || (str) == '\r')
@@ -86,9 +76,9 @@ extern int errno;
 #define IsWhitespace(str) ((str)== ' ' || (str) == '\t')
 #endif
 
-static Const String XtNwrongParameters = "wrongParameters";
-static Const String XtNconversionError = "conversionError";
-static Const String XtNmissingCharsetList = "missingCharsetList";
+static const String XtNwrongParameters = "wrongParameters";
+static const String XtNconversionError = "conversionError";
+static const String XtNmissingCharsetList = "missingCharsetList";
 
 /* Representation types */
 
@@ -434,7 +424,7 @@ Boolean XtCvtStringToBool(dpy, args, num_args, fromVal, toVal, closure_ret)
     return False;
 }
 
-XtConvertArgRec Const colorConvertArgs[] = {
+XtConvertArgRec const colorConvertArgs[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
      sizeof(Screen *)},
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.colormap),
@@ -567,7 +557,7 @@ static void FreePixel(app, toVal, closure, args, num_args)
 
 
 /* no longer used by Xt, but it's in the spec */
-XtConvertArgRec Const screenConvertArg[] = {
+XtConvertArgRec const screenConvertArg[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
      sizeof(Screen *)}
 };
@@ -589,7 +579,7 @@ static void FetchDisplayArg(widget, size, value)
     value->addr = (XPointer)&DisplayOfScreen(XtScreenOfObject(widget));
 }
 
-static XtConvertArgRec Const displayConvertArg[] = {
+static XtConvertArgRec const displayConvertArg[] = {
     {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
 };
 
@@ -603,8 +593,8 @@ Boolean XtCvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_ret)
 
     XtPointer	*closure_ret;
 {
-    static Const struct _CursorName {
-	Const char	*name;
+    static const struct _CursorName {
+	const char	*name;
 	unsigned int	shape;
     } cursor_names[] = {
 			{"X_cursor",		XC_X_cursor},
@@ -685,7 +675,7 @@ Boolean XtCvtStringToCursor(dpy, args, num_args, fromVal, toVal, closure_ret)
 			{"watch",		XC_watch},
 			{"xterm",		XC_xterm},
     };
-    Const struct _CursorName *nP;
+    const struct _CursorName *nP;
     char *name = (char *)fromVal->addr;
     register int i;
 
@@ -1098,7 +1088,7 @@ static void FetchLocaleArg(widget, size, value )
     value->addr = (XPointer)&locale;
 }
 
-static XtConvertArgRec Const localeDisplayConvertArgs[] = {
+static XtConvertArgRec const localeDisplayConvertArgs[] = {
     {XtProcedureArg, (XtPointer)FetchDisplayArg, 0},
     {XtProcedureArg, (XtPointer)FetchLocaleArg, 0},
 };
@@ -1466,7 +1456,7 @@ XtCvtStringToInitialState(dpy, args, num_args, fromVal, toVal, closure_ret)
     return False;
 }
 
-static XtConvertArgRec Const visualConvertArgs[] = {
+static XtConvertArgRec const visualConvertArgs[] = {
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.screen),
      sizeof(Screen *)},
     {XtWidgetBaseOffset, (XtPointer)XtOffsetOf(WidgetRec, core.depth),

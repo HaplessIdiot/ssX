@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.29 2001/01/17 19:41:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.30 2001/02/09 00:02:53 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
@@ -48,21 +48,6 @@ from The Open Group.
 
 #ifdef __sgi_not_xconsortium
 #define	XKB_EXTEND_LOOKUP_STRING
-#endif
-
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-#endif
-
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-#if defined(__STDC__) && !defined(NORCONST)
-#define RConst const
-#else
-#define RConst /**/
 #endif
 
 static int 

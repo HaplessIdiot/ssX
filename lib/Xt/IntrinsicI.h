@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.4 1998/10/03 09:06:55 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/IntrinsicI.h,v 3.5 2001/01/17 19:43:05 dawes Exp $ */
 
 #ifndef _XtintrinsicI_h
 #define _XtintrinsicI_h
@@ -236,10 +236,8 @@ extern void _XtAddShellToHookObj(
 
 extern void _XtGeoTab ();
 extern void _XtGeoTrace (
-#if NeedVarargsPrototypes
 			    Widget widget, 
 			    ...
-#endif
 );
 
 #define CALLGEOTAT(f) f

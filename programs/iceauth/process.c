@@ -24,17 +24,13 @@ in this Software without prior written authorization from The Open Group.
  * Modified into "iceauth"    : Ralph Mor, X Consortium
  */
 
-/* $XFree86: xc/programs/iceauth/process.c,v 3.2 1999/02/19 21:27:11 hohndel Exp $ */
+/* $XFree86: xc/programs/iceauth/process.c,v 3.3 2001/01/17 23:44:54 dawes Exp $ */
 
 #include "iceauth.h"
 #include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
-
 #include <signal.h>
 
 #define SECURERPC "SUN-DES-1"

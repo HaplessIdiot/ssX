@@ -47,11 +47,7 @@ SOFTWARE.
 #define _XtStringDefs_h_
 
 #ifndef XTSTRINGDEFINES
-#ifdef __STDC__
 #define _XtStringDefs_h_Const const
-#else
-#define _XtStringDefs_h_Const /**/
-#endif
 #endif
 
 <<<STRING_TABLE_GOES_HERE>>>

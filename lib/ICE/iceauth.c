@@ -22,19 +22,14 @@ in this Software without prior written authorization from The Open Group.
 
 Author: Ralph Mor, X Consortium
 ******************************************************************************/
-/* $XFree86: xc/lib/ICE/iceauth.c,v 3.2 1998/10/03 08:41:09 dawes Exp $ */
+/* $XFree86: xc/lib/ICE/iceauth.c,v 3.3 2001/01/17 19:41:29 dawes Exp $ */
 
 #include <X11/ICE/ICElib.h>
 #include "ICElibint.h"
 #include <X11/ICE/ICEutil.h>
 
-#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 static int binaryEqual ();
 

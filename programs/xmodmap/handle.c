@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/handle.c,v 3.4 2001/01/17 23:46:20 dawes Exp $ */
+/* $XFree86: xc/programs/xmodmap/handle.c,v 3.5 2001/04/23 21:41:47 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -30,13 +30,7 @@ from The Open Group.
 #include <ctype.h>
 #include "xmodmap.h"
 #include "wq.h"
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-char *realloc();
-#endif
 
 static XModifierKeymap *map = NULL;
 

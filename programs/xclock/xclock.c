@@ -23,7 +23,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
-/* $XFree86: xc/programs/xclock/xclock.c,v 1.6 2001/01/17 23:45:18 dawes Exp $ */
+/* $XFree86: xc/programs/xclock/xclock.c,v 1.7 2001/04/01 14:00:19 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,9 +40,6 @@ in this Software without prior written authorization from The Open Group.
 #include <X11/extensions/XKBbells.h>
 #endif
 
-#ifdef X_NOT_STDC_ENV
-extern void exit();
-#endif
 
 /* Command line options table.  Only resources are entered here...there is a
    pass over the remaining options after XtParseCommand is let loose. */

@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.23 2001/02/16 13:24:10 eich Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.24 2001/07/23 13:15:52 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -58,13 +58,8 @@ from The Open Group.
 #undef _POSIX_SOURCE
 #endif
 #endif
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 /* If XDMCP symbol defined, compile to run XDMCP protocol */
 
@@ -471,11 +466,7 @@ extern void registerHostname(char *name, int namelen);
 # define CLOSE_ALWAYS	    0
 # define LEAVE_FOR_DISPLAY  1
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc(), *realloc();
-#endif
 
 #if defined(X_NOT_POSIX) && defined(SIGNALRETURNSINT)
 #define SIGVAL int

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Jim Fulton, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/rgb/showrgb.c,v 3.5 1999/02/19 21:27:19 hohndel Exp $ */
+/* $XFree86: xc/programs/rgb/showrgb.c,v 3.6 2001/01/17 23:45:03 dawes Exp $ */
 
 #ifndef USE_RGB_TXT
 #ifdef NDBM
@@ -43,9 +43,7 @@ in this Software without prior written authorization from The Open Group.
 #undef NULL
 #include <stdio.h>
 #include <X11/Xos.h>
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include "rgb.h"			/* off in server/include/ */
 #include "site.h"
 #include <X11/Xfuncs.h>

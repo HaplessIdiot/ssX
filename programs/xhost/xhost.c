@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xhost/xhost.c,v 3.14 2001/01/30 22:06:21 tsi Exp $ */
+/* $XFree86: xc/programs/xhost/xhost.c,v 3.15 2001/07/23 13:15:53 dawes Exp $ */
 
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
 #define NEEDSOCKETS
@@ -44,12 +44,7 @@ from The Open Group.
 #include <ctype.h>
 #include <X11/Xauth.h>
 #include <X11/Xmu/Error.h>
-
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-char *malloc();
-#endif
 
 #ifdef NEEDSOCKETS
 #ifdef att
@@ -539,9 +534,6 @@ get_hostname(XHostAddress *ha)
 {
 #if defined(TCPCONN) || defined(STREAMSCONN) || defined(AMTCPCONN)
     static struct hostent *hp = NULL;
-#ifdef X_NOT_STDC_ENV
-    char *inet_ntoa();
-#endif
 #endif
 #ifdef DNETCONN
     struct nodeent *np;

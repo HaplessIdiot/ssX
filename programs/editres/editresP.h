@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/programs/editres/editresP.h,v 1.4 1999/02/01 12:52:25 dawes Exp $ */
+/* $XFree86: xc/programs/editres/editresP.h,v 1.5 2001/01/17 23:44:52 dawes Exp $ */
 
 #include <X11/Xmu/EditresP.h>
 #include <X11/Xresource.h>
@@ -53,9 +53,6 @@ in this Software without prior written authorization from The Open Group.
 #define ANY_RADIO_DATA ("the any widget")
 #define RESOURCE_BOX ("resourceBox")
 
-#ifdef X_NOT_STDC_ENV
-extern void exit();
-#endif
 
 /*
  * Retrieving ResType and Boolean is the same as retrieving a Card8 except

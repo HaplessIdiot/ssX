@@ -31,7 +31,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.6 2000/01/29 18:58:14 dawes Exp $ */
+/* $XFree86: xc/lib/X11/cmsColNm.c,v 3.7 2001/01/17 19:41:51 dawes Exp $ */
 
 #include "Xlibint.h"
 #include "Xcmsint.h"
@@ -49,11 +49,6 @@
  *              that are not already declared in any of the included header
  *		files (external includes or internal includes).
  */
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-extern void qsort();
-extern char *bsearch();
-#endif
 extern XcmsColorSpace **_XcmsDIColorSpaces;
 
 /* CvCols.c */
@@ -260,11 +255,7 @@ _XcmsParseColorString(ccc, color_string, pColor)
  */
 static int
 FirstCmp(p1, p2)
-#ifdef __STDC__
     const void *p1, *p2;
-#else
-    XcmsPair *p1, *p2;
-#endif
 /*
  *	DESCRIPTION
  *		Compares the color names of XcmsColorTuples.

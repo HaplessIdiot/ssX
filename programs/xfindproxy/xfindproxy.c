@@ -21,7 +21,7 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86: xc/programs/xfindproxy/xfindproxy.c,v 1.4 2000/06/26 23:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/xfindproxy/xfindproxy.c,v 1.5 2001/01/17 23:45:27 dawes Exp $ */
 
 
 #include <stdio.h>
@@ -37,11 +37,7 @@ from The Open Group.
 #include <X11/PM/PMproto.h>
 #include "xfindproxy.h"
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *getenv();
-#endif
 #include <ctype.h>
 
 static void PMprocessMessages(IceConn iceConn, IcePointer clientData, 

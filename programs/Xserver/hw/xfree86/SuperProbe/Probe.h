@@ -26,7 +26,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.75 2000/11/14 18:20:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.77 2000/12/06 15:35:05 eich Exp $ */
 
 /*
  * Includes
@@ -81,9 +81,7 @@ typedef unsigned long Long;
 typedef int Bool;
 #define FALSE 0
 #define TRUE 1
-#ifndef NULL
-# define NULL	(void *)0
-#endif
+#include <stddef.h>
 
 
 typedef struct {

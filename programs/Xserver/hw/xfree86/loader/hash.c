@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.17 2001/02/17 11:36:52 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/hash.c,v 1.18 2001/02/22 23:17:09 dawes Exp $ */
 
 /*
  *
@@ -25,12 +25,8 @@
 
 #include "os.h"
 #include "Xos.h"
-#ifndef X_NOT_STDC_ENV
 #undef abs
 #include <stdlib.h>
-#else
-extern void free();
-#endif
 #include "sym.h"
 #include "loader.h"
 #include "hash.h"

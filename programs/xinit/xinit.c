@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xinit/xinit.c,v 3.25 2001/03/30 02:15:25 keithp Exp $ */
+/* $XFree86: xc/programs/xinit/xinit.c,v 3.26 2001/04/16 06:51:46 torrey Exp $ */
 
 #include <X11/Xlib.h>
 #include <X11/Xos.h>
@@ -47,9 +47,7 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include <errno.h>
 #include <setjmp.h>
-#ifdef NeedVarargsPrototypes
 #include <stdarg.h>
-#endif
 
 #if !defined(SIGCHLD) && defined(SIGCLD)
 #define SIGCHLD SIGCLD
@@ -67,11 +65,7 @@ char **envsave;	/* to circumvent an EMX problem */
 #define environ envsave
 #endif
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-extern char *getenv();
-#endif
 extern char **environ;
 char **newenviron = NULL;
 
@@ -171,10 +165,6 @@ union wait	status;
 #endif /* SYSV */
 int serverpid = -1;
 int clientpid = -1;
-
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 
 static void Execute ( char **vec, char **envp );
 static Bool waitforserver ( void );

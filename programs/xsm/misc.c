@@ -19,7 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
-/* $XFree86: xc/programs/xsm/misc.c,v 1.3 1999/03/07 14:23:41 dawes Exp $ */
+/* $XFree86: xc/programs/xsm/misc.c,v 1.4 2001/01/17 23:46:29 dawes Exp $ */
 
 #include "xsm.h"
 
@@ -96,29 +96,6 @@ strbw(char *a, char *b)
 {
     return !strncmp (a, b, strlen (b));
 }
-
-
-
-#ifdef X_NOT_STDC_ENV
-
-char *
-Strstr(char *s1, char *s2)
-{
-    int n1, n2;
-
-    n1 = strlen (s1);
-    n2 = strlen (s2);
-
-    for (; n1 >= n2; s1++, n1--)
-    {
-	if (!strncmp (s1, s2, n2))
-	    return s1;
-    }
-
-    return NULL;
-}
-
-#endif
 
 
 

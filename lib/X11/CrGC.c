@@ -20,17 +20,11 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/CrGC.c,v 3.3 1999/05/09 10:49:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/CrGC.c,v 3.4 2001/01/17 19:41:33 dawes Exp $ */
 
 #include "Xlibint.h"
 
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
-
-static XGCValues Const initial_GC = {
+static XGCValues const initial_GC = {
     GXcopy, 	/* function */
     AllPlanes,	/* plane_mask */
     0L,		/* foreground */

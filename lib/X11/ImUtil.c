@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/ImUtil.c,v 3.6 2000/01/29 18:58:10 dawes Exp $ */
+/* $XFree86: xc/lib/X11/ImUtil.c,v 3.7 2001/01/17 19:41:38 dawes Exp $ */
 
 #include <X11/Xlibint.h>
 #include <X11/Xutil.h>
@@ -28,12 +28,6 @@ in this Software without prior written authorization from The Open Group.
 
 /* PutImage.c */
 extern int _XReverse_Bytes();
-
-#ifdef __STDC__
-#define Const const
-#else
-#define Const /**/
-#endif
 
 #if NeedFunctionPrototypes
 static int _XDestroyImage(XImage *);
@@ -51,8 +45,8 @@ static XImage *_XSubImage(XImage *, int, int, unsigned int, unsigned int);
 static int _XAddPixel(XImage *, long);
 #endif
 
-static unsigned char Const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
-static unsigned char Const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
+static unsigned char const _lomask[0x09] = { 0x00, 0x01, 0x03, 0x07, 0x0f, 0x1f, 0x3f, 0x7f, 0xff };
+static unsigned char const _himask[0x09] = { 0xff, 0xfe, 0xfc, 0xf8, 0xf0, 0xe0, 0xc0, 0x80, 0x00 };
 
 /* These two convenience routines return the scanline_pad and bits_per_pixel 
 	associated with a specific depth of ZPixmap format image for a 
@@ -450,7 +444,7 @@ static int _XDestroyImage (ximage)
  *
  */
 
-static unsigned long Const low_bits_table[] = {
+static unsigned long const low_bits_table[] = {
     0x00000000, 0x00000001, 0x00000003, 0x00000007,
     0x0000000f, 0x0000001f, 0x0000003f, 0x0000007f,
     0x000000ff, 0x000001ff, 0x000003ff, 0x000007ff,
@@ -524,7 +518,7 @@ static unsigned long _XGetPixel (ximage, x, y)
 }
 
 #ifndef WORD64
-static unsigned long Const byteorderpixel = MSBFirst << 24;
+static unsigned long const byteorderpixel = MSBFirst << 24;
 #endif
 
 static unsigned long _XGetPixel32 (ximage, x, y)
@@ -539,7 +533,7 @@ static unsigned long _XGetPixel32 (ximage, x, y)
 	    addr = &((unsigned char *)ximage->data)
 			[y * ximage->bytes_per_line + (x << 2)];
 #ifndef WORD64
-	    if (*((Const char *)&byteorderpixel) == ximage->byte_order)
+	    if (*((const char *)&byteorderpixel) == ximage->byte_order)
 		pixel = *((CARD32 *)addr);
 	    else
 #endif
@@ -730,7 +724,7 @@ static int _XPutPixel32 (ximage, x, y, pixel)
 	    addr = &((unsigned char *)ximage->data)
 			[y * ximage->bytes_per_line + (x << 2)];
 #ifndef WORD64
-	    if (*((Const char *)&byteorderpixel) == ximage->byte_order)
+	    if (*((const char *)&byteorderpixel) == ximage->byte_order)
 		*((CARD32 *)addr) = pixel;
 	    else
 #endif
@@ -996,14 +990,14 @@ _XAddPixel (ximage, value)
 #ifndef WORD64
 	} else if ((ximage->format == ZPixmap) &&
 		   (ximage->bits_per_pixel == 16) &&
-		   (*((Const char *)&byteorderpixel) == ximage->byte_order)) {
+		   (*((const char *)&byteorderpixel) == ximage->byte_order)) {
 	    register unsigned short *dp = (unsigned short *) ximage->data;
 	    x = (ximage->bytes_per_line >> 1) * ximage->height;
 	    while (--x >= 0)
 		*dp++ += value;
 	} else if ((ximage->format == ZPixmap) &&
 		   (ximage->bits_per_pixel == 32) &&
-		   (*((Const char *)&byteorderpixel) == ximage->byte_order)) {
+		   (*((const char *)&byteorderpixel) == ximage->byte_order)) {
 	    register CARD32 *dp = (CARD32 *) ximage->data;
 	    x = (ximage->bytes_per_line >> 2) * ximage->height;
 	    while (--x >= 0)

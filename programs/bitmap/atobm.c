@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/bitmap/atobm.c,v 3.2 1999/02/01 11:56:09 dawes Exp $ */
+/* $XFree86: xc/programs/bitmap/atobm.c,v 3.3 2001/01/17 23:44:51 dawes Exp $ */
 
 /*
  * atobm - ascii to bitmap filter
@@ -32,12 +32,7 @@ from The Open Group.
 #include <stdio.h>
 #include <ctype.h>
 #include <X11/Xos.h>
-
-#ifdef X_NOT_STDC_ENV
-extern char *malloc(), *calloc();
-#else
 #include <stdlib.h>
-#endif
 
 char *ProgramName;
 

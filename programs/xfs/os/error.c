@@ -40,7 +40,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/error.c,v 1.7 2001/01/17 23:45:32 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/error.c,v 1.8 2001/04/01 14:00:21 tsi Exp $ */
 
 #include	<stdio.h>
 #include	<stdlib.h>
@@ -146,7 +146,6 @@ Error(char *str)
 /*
  * used for informational messages
  */
-/* VARARGS1 */
 void
 NoticeF(char *f, ...)
 {
@@ -167,7 +166,6 @@ NoticeF(char *f, ...)
 /*
  * used for non-fatal error messages
  */
-/* VARARGS1 */
 void
 ErrorF(char * f, ...)
 {
@@ -184,7 +182,6 @@ ErrorF(char * f, ...)
     va_end(args);
 }
 
-/* VARARGS1 */
 void
 FatalError(char * f, ...)
 {

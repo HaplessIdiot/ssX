@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/OpenDis.c,v 3.8 2000/11/27 05:06:44 dawes Exp $ */
+/* $XFree86: xc/lib/X11/OpenDis.c,v 3.9 2001/01/17 19:41:41 dawes Exp $ */
 
 #define NEED_REPLIES
 #define NEED_EVENTS
@@ -33,10 +33,6 @@ in this Software without prior written authorization from The Open Group.
 #ifdef XKB
 #include "XKBlib.h"
 #endif /* XKB */
-
-#ifdef X_NOT_STDC_ENV
-extern char *getenv();
-#endif
 
 #ifdef X_NOT_POSIX
 #define Size_t unsigned int

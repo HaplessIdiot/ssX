@@ -24,7 +24,7 @@
  THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
  ********************************************************/
-/* $XFree86: xc/lib/xkbfile/xkmread.c,v 1.3 2000/10/28 00:34:02 dawes Exp $ */
+/* $XFree86: xc/lib/xkbfile/xkmread.c,v 1.4 2001/01/17 19:43:43 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -33,9 +33,7 @@
 
 #ifndef XKB_IN_SERVER
 
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#endif
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 

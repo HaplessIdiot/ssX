@@ -100,16 +100,8 @@ _XtCountVaList(var, total_count, typed_count)
  *   constructs an attribute-value list of type XtTypedArgList and 
  *   returns the list.
  */
-#if NeedVarargsPrototypes
 XtVarArgsList
 XtVaCreateArgsList(XtPointer unused, ...)
-#else
-/*ARGSUSED*/
-/*VARARGS1*/
-XtVarArgsList XtVaCreateArgsList(unused, va_alist)
-    XtPointer unused;
-    va_dcl
-#endif
 {
     va_list var;
     XtTypedArgList  avlist;
@@ -121,7 +113,7 @@ XtVarArgsList XtVaCreateArgsList(unused, va_alist)
      * Note: The count is required only to allocate enough space to store
      * the list. Therefore nested lists are not counted recursively.
      */
-    Va_start(var,unused);
+    va_start(var,unused);
     for(attr = va_arg(var, String) ; attr != NULL;
                         attr = va_arg(var, String)) {
         ++count;
@@ -136,7 +128,7 @@ XtVarArgsList XtVaCreateArgsList(unused, va_alist)
     }
     va_end(var);
 
-    Va_start(var,unused);
+    va_start(var,unused);
     avlist = _XtVaCreateTypedArgList(var, count);
     va_end(var);
     return (XtVarArgsList)avlist;

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/programs/xdm/choose.c,v 3.11 2001/01/17 23:45:20 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/choose.c,v 3.12 2001/07/23 13:15:51 dawes Exp $ */
 
 /*
  * choose.c
@@ -55,14 +55,8 @@ in this Software without prior written authorization from The Open Group.
 # include       <tiuser.h>
 #endif
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 static int
 FormatBytes (

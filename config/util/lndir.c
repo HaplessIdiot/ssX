@@ -22,7 +22,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/util/lndir.c,v 3.12 2001/02/11 22:04:07 herrb Exp $ */
+/* $XFree86: xc/config/util/lndir.c,v 3.13 2001/04/01 13:59:57 tsi Exp $ */
 
 /* From the original /bin/sh script:
 
@@ -69,13 +69,8 @@ in this Software without prior written authorization from The Open Group.
 #define MAXPATHLEN 2048
 #endif
 
-#if NeedVarargsPrototypes
 #include <stdarg.h>
-#endif
 
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#endif
 int silent = 0;			/* -silent */
 int ignore_links = 0;		/* -ignorelinks */
 int with_revinfo = 0;		/* -withrevinfo */
@@ -84,22 +79,12 @@ char *rcurdir;
 char *curdir;
 
 static void
-quit (
-#if NeedVarargsPrototypes
-    int code, char * fmt, ...)
-#else
-    code, fmt, a1, a2, a3)
-    char *fmt;
-#endif
+quit (int code, char * fmt, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
     va_start(args, fmt);
     vfprintf (stderr, fmt, args);
     va_end(args);
-#else
-    fprintf (stderr, fmt, a1, a2, a3);
-#endif
     putc ('\n', stderr);
     exit (code);
 }
@@ -112,28 +97,16 @@ quiterr (int code, char *s)
 }
 
 static void
-msg (
-#if NeedVarargsPrototypes
-    char * fmt, ...)
-#else
-    fmt, a1, a2, a3)
-    char *fmt;
-#endif
+msg (char * fmt, ...)
 {
-#if NeedVarargsPrototypes
     va_list args;
-#endif
     if (curdir) {
 	fprintf (stderr, "%s:\n", curdir);
 	curdir = 0;
     }
-#if NeedVarargsPrototypes
     va_start(args, fmt);
     vfprintf (stderr, fmt, args);
     va_end(args);
-#else
-    fprintf (stderr, fmt, a1, a2, a3);
-#endif
     putc ('\n', stderr);
 }
 

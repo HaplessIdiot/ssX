@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/SM/sm_genid.c,v 3.10 1998/12/20 11:56:54 dawes Exp $ */
+/* $XFree86: xc/lib/SM/sm_genid.c,v 3.11 2001/01/17 19:41:31 dawes Exp $ */
 
 /*
  * Author: Ralph Mor, X Consortium
@@ -38,13 +38,8 @@ in this Software without prior written authorization from The Open Group.
 #endif
 #include <stdio.h>
 
-#if defined(X_NOT_STDC_ENV) && !defined(__EMX__)
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 #ifndef WIN32
 

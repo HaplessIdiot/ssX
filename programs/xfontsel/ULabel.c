@@ -47,7 +47,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: contrib/programs/xfontsel/ULabel.c,v 1.1 1999/04/29 09:12:39 dawes Exp $ */
+/* $XFree86: xc/programs/xfontsel/ULabel.c,v 1.1 2000/02/13 03:26:23 dawes Exp $ */
 
 /*
  * ULabel.c - UCSLabel widget
@@ -63,13 +63,8 @@ SOFTWARE.
 #include <X11/Xmu/Drawing.h>
 #include <stdio.h>
 #include <ctype.h>
-
 /* needed for abs() */
-#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
-#else
-int abs();
-#endif
 
 #define streq(a,b) (strcmp( (a), (b) ) == 0)
 

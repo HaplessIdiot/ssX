@@ -67,7 +67,7 @@ terms and conditions:
 	Syd Logan -- AGE Logic, Inc.
   
 *****************************************************************************/
-/* $XFree86: xc/programs/xieperf/xieperf.c,v 3.5 2001/01/19 16:04:15 dawes Exp $ */
+/* $XFree86: xc/programs/xieperf/xieperf.c,v 3.6 2001/01/23 20:38:30 herrb Exp $ */
 
 #include <X11/Xos.h>
 #include <stdio.h>
@@ -78,14 +78,8 @@ terms and conditions:
 #include "xieperf.h"
 #include <X11/Xmu/SysUtil.h>
 #include <X11/Xmu/StdCmap.h>
-#ifdef X_NOT_STDC_ENV
-extern int errno;
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif

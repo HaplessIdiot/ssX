@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Keith Packard, MIT X Consortium
  */
-/* $XFree86: xc/programs/xdm/protodpy.c,v 1.2 1998/10/10 15:25:37 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/protodpy.c,v 1.3 2001/01/17 23:45:21 dawes Exp $ */
 
 /*
  * protodpy.c
@@ -37,13 +37,8 @@ in this Software without prior written authorization from The Open Group.
 #ifdef XDMCP
 
 #include <sys/types.h>
-#ifdef X_NOT_STDC_ENV
-#define Time_t long
-extern Time_t time ();
-#else
 #include <time.h>
 #define Time_t time_t
-#endif
 
 static struct protoDisplay	*protoDisplays;
 
