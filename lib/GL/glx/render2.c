@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/render2.c,v 1.4 2003/09/28 20:15:04 alanh Exp $ */
+/* $XFree86: xc/lib/GL/glx/render2.c,v 1.5 2003/11/14 16:20:59 dawes Exp $ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -426,6 +426,21 @@ void glEnable(GLenum cap)
     __GLX_LOAD_VARIABLES();
     if (!gc->currentDpy) return;
 
+    switch(cap) {
+	case GL_COLOR_ARRAY:
+	case GL_EDGE_FLAG_ARRAY:
+	case GL_INDEX_ARRAY:
+	case GL_NORMAL_ARRAY:
+	case GL_TEXTURE_COORD_ARRAY:
+	case GL_VERTEX_ARRAY:
+	case GL_SECONDARY_COLOR_ARRAY:
+	case GL_FOG_COORD_ARRAY:
+	    glEnableClientState(cap);
+	    return;
+	default:
+	    break;
+    }
+
     __GLX_BEGIN(X_GLrop_Enable,8);
     __GLX_PUT_LONG(4,cap);
     __GLX_END(8);
@@ -437,6 +452,21 @@ void glDisable(GLenum cap)
 
     __GLX_LOAD_VARIABLES();
     if (!gc->currentDpy) return;
+
+    switch(cap) {
+	case GL_COLOR_ARRAY:
+	case GL_EDGE_FLAG_ARRAY:
+	case GL_INDEX_ARRAY:
+	case GL_NORMAL_ARRAY:
+	case GL_TEXTURE_COORD_ARRAY:
+	case GL_VERTEX_ARRAY:
+	case GL_SECONDARY_COLOR_ARRAY:
+	case GL_FOG_COORD_ARRAY:
+	    glDisableClientState(cap);
+	    return;
+	default:
+	    break;
+    }
 
     __GLX_BEGIN(X_GLrop_Disable,8);
     __GLX_PUT_LONG(4,cap);
