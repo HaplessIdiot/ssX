@@ -33,10 +33,15 @@
 #include "vgaHW.h"
 #include "xf86_ansic.h"
 
-static void CYRIXresetVGA(unsigned long vgaIOBase);
-static void CYRIXmarkLinesDirty(void);
-/* DEBUG STUFF */
-int CYRIXcbLineDelta = 800;
+#define CYRIXmarkLinesDirty { \
+                               int k = 0; \
+                               while (k < 1024) { \
+	                         GX_REG(MC_DR_ADD) = k++; \
+                                 GX_REG(MC_DR_ACC) = 0; \
+                               } \
+                            }
+
+static void CYRIXresetVGA(ScrnInfoPtr pScrn, unsigned long vgaIOBase);
 
 void 
 Cyrix1bppColorMap(ScrnInfoPtr pScrn)
@@ -63,7 +68,6 @@ CyrixRestore(ScrnInfoPtr pScrn, CYRIXRegPtr cyrixReg)
 {	unsigned char temp;
 	CYRIXPrvPtr pCyrix;
 	vgaRegPtr vgaReg;
-	int flags;
 	unsigned long vgaIOBase;
 
 	vgaHWProtect(pScrn, TRUE);		/* Blank the screen */
@@ -78,9 +82,9 @@ CyrixRestore(ScrnInfoPtr pScrn, CYRIXRegPtr cyrixReg)
 	   the font). Luckily things seem to work without it. */
 
 	/* restore standard VGA portion */
-	CYRIXresetVGA(vgaIOBase);
-	vgaHWRestore(pScrn, vgaReg, flags);
-	CYRIXmarkLinesDirty();
+	CYRIXresetVGA(pScrn,vgaIOBase);
+	vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
+	CYRIXmarkLinesDirty;
 
 	/* restore miscellaneous output registers */
 	outb(0x3C2, vgaReg->MiscOutReg);
@@ -124,7 +128,7 @@ CyrixRestore(ScrnInfoPtr pScrn, CYRIXRegPtr cyrixReg)
 	/* let SoftVGA programming settle before we access DC registers,
 	   but don't wait too long */
 	usleep(1000);
-	CYRIXmarkLinesDirty();
+	CYRIXmarkLinesDirty;
 
 	/* restore display controller hardware registers */
 #ifndef MONOVGA
@@ -222,7 +226,7 @@ CyrixSave(ScrnInfoPtr pScrn, CYRIXRegPtr cyrixReg)
 	pCyrix->PrevExt.RefreshRate = inb(vgaIOBase + 5);
 
 	/* save standard VGA portion */
-	CYRIXresetVGA(vgaIOBase);
+	CYRIXresetVGA(pScrn,vgaIOBase);
 
 	return((void *)vgaIOBase);
 }
@@ -283,10 +287,7 @@ CyrixInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #ifndef MONOVGA
 	/* initialize masked contents of display controller
 	   hardware registers. */
-	pCyrix->PrevExt.DcCursStOffset =  CYRIXcursorAddress;
-/* DEBUG
-	pCyrix->PrevExt.DcCbStOffset  =  CYRIXcbufferAddress;
-*/
+	pCyrix->PrevExt.DcCursStOffset =  pCyrix->CYRIXcursorAddress;
 	pCyrix->PrevExt.DcLineDelta   =  0 << 12;
 	pCyrix->PrevExt.DcBufSize     =  0x41 << 9;
 	pCyrix->PrevExt.DcCursorX     =  0;
@@ -298,8 +299,7 @@ CyrixInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	   screen.  If the line delta is not 1024 or 2048, entire frames
 	   will be flagged dirty as opposed to lines.  Problems with 16bpp
 	   and line-dirty flagging seem to have been solved now.  */
-	if (CYRIXcbLineDelta != 0 &&
-	    mode->CrtcVDisplay == pScrn->virtualY &&
+	if (mode->CrtcVDisplay == pScrn->virtualY &&
 	    mode->CrtcHDisplay == pScrn->virtualX)
 	{	pCyrix->PrevExt.DcGeneralCfg = DC_GCFG_DECE
 		                           | DC_GCFG_CMPE;
@@ -323,21 +323,15 @@ CyrixInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
 
 static void
-CYRIXmarkLinesDirty()
-{	int k = 0;
-	while (k < 1024)
-	{	GX_REG(MC_DR_ADD) = k++;
-		GX_REG(MC_DR_ACC) = 0;
-}	}
-
-static void
-CYRIXresetVGA(unsigned long vgaIOBase)
-{	unsigned char temp;
-	/* switch off compression and cursor the hard way */
-	GX_REG(DC_UNLOCK)  = DC_UNLOCK_VALUE;
+CYRIXresetVGA(ScrnInfoPtr pScrn, unsigned long vgaIOBase)
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+    unsigned char temp;
+    /* switch off compression and cursor the hard way */
+    GX_REG(DC_UNLOCK)  = DC_UNLOCK_VALUE;
 	GX_REG(DC_GENERAL_CFG) &= ~(DC_GCFG_CMPE | DC_GCFG_DECE | DC_GCFG_FDTY | DC_GCFG_CURE);
 	GX_REG(DC_UNLOCK)  = 0;
-	CYRIXmarkLinesDirty();
+	CYRIXmarkLinesDirty;
 
 	/* reset SoftVGA extensions to standard VGA behaviour */
 	outb(vgaIOBase + 4, CrtcExtendedAddressControl);

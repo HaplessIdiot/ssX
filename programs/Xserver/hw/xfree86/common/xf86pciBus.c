@@ -472,10 +472,6 @@ pciIoAccessEnable(void* arg)
     ErrorF("pciIoAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     ((pciArg*)arg)->ctrl |= SETBITS;
-#ifdef notanymore
-    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
-			 SETBITS, SETBITS);
-#endif
     ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
 			 ((pciArg*)arg)->ctrl);
 }
@@ -487,9 +483,6 @@ pciIoAccessDisable(void* arg)
     ErrorF("pciIoAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     ((pciArg*)arg)->ctrl &= ~SETBITS;
-#ifdef notanymore
-    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG, SETBITS, 0);
-#endif
     ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
 			 ((pciArg*)arg)->ctrl);
 }
@@ -503,10 +496,6 @@ pciIo_MemAccessEnable(void* arg)
     ErrorF("pciIo_MemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     ((pciArg*)arg)->ctrl |= SETBITS;
-#ifdef notanymore
-    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
-			 SETBITS, SETBITS);
-#endif
     ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
 			 ((pciArg*)arg)->ctrl);
 }
@@ -518,9 +507,6 @@ pciIo_MemAccessDisable(void* arg)
     ErrorF("pciIo_MemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     ((pciArg*)arg)->ctrl &= ~SETBITS;
-#ifdef notanymore
-    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG, SETBITS, 0);
-#endif
     ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
 			 ((pciArg*)arg)->ctrl);
 }
@@ -534,10 +520,6 @@ pciMemAccessEnable(void* arg)
     ErrorF("pciMemAccessEnable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     ((pciArg*)arg)->ctrl |= SETBITS;
-#ifdef notanymore
-    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
-			 SETBITS, SETBITS);
-#endif
     ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
 			 ((pciArg*)arg)->ctrl);
 }
@@ -549,9 +531,6 @@ pciMemAccessDisable(void* arg)
     ErrorF("pciMemAccessDisable: 0x%05lx\n", *(PCITAG *)arg);
 #endif
     ((pciArg*)arg)->ctrl &= ~SETBITS;
-#ifdef notanymore
-    ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,SETBITS, 0);
-#endif
     ((pciArg*)arg)->func(((pciArg*)arg)->tag, PCI_CMD_STAT_REG,
 			 ((pciArg*)arg)->ctrl);
 }
@@ -601,17 +580,19 @@ pciSetBusAccess(BusAccPtr ptr)
     }
 }
 
+/* move to OS layer */
 static void
 savePciState(PCITAG tag, pciSavePtr ptr)
 {
     int i;
-    
+     
     ptr->command = pciReadLong(tag,PCI_CMD_STAT_REG);
     for (i=0; i < 6; i++) 
         ptr->base[i] = pciReadLong(tag,PCI_CMD_BASE_REG + i*4 );
     ptr->biosBase = pciReadLong(tag,PCI_CMD_BIOS_REG);
 }
 
+/* move to OS layer */
 static void
 restorePciState(PCITAG tag, pciSavePtr ptr)
 {
@@ -626,6 +607,7 @@ restorePciState(PCITAG tag, pciSavePtr ptr)
     pciWriteLong(tag,PCI_CMD_STAT_REG,ptr->command);
 }
 
+/* move to OS layer */
 static void
 savePciBusState(BusAccPtr ptr)
 {
@@ -639,6 +621,7 @@ savePciBusState(BusAccPtr ptr)
 		pciReadByte(ptr->busdep.pci.acc,PCI_PCI_BRIDGE_CONTROL_REG);
 }
 
+/* move to OS layer */
 static void
 restorePciBusState(BusAccPtr ptr)
 {
@@ -659,6 +642,7 @@ disablePciBios(PCITAG tag)
     pciSetBitsLong(tag, PCI_CMD_BIOS_REG, PCI_CMD_BIOS_ENABLE, 0);
 }
 
+/* ????? */
 static void
 correctPciSize(memType base, int oldsize, int newsize, long type)
 {
@@ -719,6 +703,7 @@ correctPciSize(memType base, int oldsize, int newsize, long type)
 	}
 }
 
+/* ????? */
 static void
 removeOverlapsWithBridges(int busIndex, resPtr target)
 {
@@ -749,6 +734,7 @@ removeOverlapsWithBridges(int busIndex, resPtr target)
     xf86FreeResList(bridgeRes);
 }
     
+/* ????? */
 static void
 xf86GetPciRes(resPtr *activeRes, resPtr *inactiveRes)
 {
@@ -1933,9 +1919,6 @@ initPciState(void)
  	    pcaccp->funcnum = pvp->func;
  	    pcaccp->arg.tag = pciTag(pvp->bus, pvp->device, pvp->func);
  	    pcaccp->arg.func =
-#ifdef notanymore
-		(SetBitsProcPtr)pciLongFunc(pcaccp->arg.tag,SET_BITS);
-#endif
 	        (WriteProcPtr)pciLongFunc(pcaccp->arg.tag,WRITE);
   	    pcaccp->ioAccess.AccessDisable = pciIoAccessDisable;
   	    pcaccp->ioAccess.AccessEnable = pciIoAccessEnable;

@@ -89,7 +89,12 @@ typedef struct {
 	/* struct for the server */
 	CARD32 	 		IOAccelAddress;
 	CARD32 			FbAddress;
-	EntityInfoPtr       	pEnt;
+        char*                   GXregisters;
+        int                     CYRIXcursorAddress; /* relative to fb base */
+        int                     CYRIXbltBuf0Address;/*relative to GXregisters*/
+        int                     CYRIXbltBuf1Address;
+        int                     CYRIXbltBufSize;
+        EntityInfoPtr       	pEnt;
 	unsigned char *		FbBase;
 	pciVideoPtr		PciInfo;
 	XAAInfoRecPtr		AccelInfoRec;
@@ -111,6 +116,14 @@ typedef struct {
 	Bool			IsCyber;
 	Bool			NewClockCode;
 	Bool			NoAccel;
+    /* accel stuff */
+        int bltBufWidth;
+        int blitMode;
+        int vectorMode;
+        int transMode;
+        int copyXdir;
+        int setBlitModeOnSync;
+
 } CYRIXPrivate, *CYRIXPrvPtr;
 
 typedef struct {
@@ -125,24 +138,13 @@ extern int	CyrixInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 extern void    	CyrixRestore(ScrnInfoPtr pScrn, CYRIXRegPtr cyrixReg);
 extern void *  	CyrixSave(ScrnInfoPtr pScrn, CYRIXRegPtr cyrixReg);
 
-/* externs in cyrix_driver.c */
-extern char* GXregisters;
-extern int CYRIXisOldChipRevision;
-
-extern int CYRIXcursorAddress;       /* relative to frame buffer base */
-extern int CYRIXoffscreenAddress;
-extern int CYRIXoffscreenSize;
-
-extern int CYRIXbltBuf0Address;      /* relative to GXregisters */
-extern int CYRIXbltBuf1Address;
-extern int CYRIXbltBufSize;
 
 /* externs in cyrix_asm.s */
 extern void CYRIXsetBlitBuffers(void);
 extern void CYRIXsetBlitBuffersOnOldChip(void);
 
 /* 32 bit access to GX registers */
-#define GX_REG(a) (*(volatile CARD32*)(GXregisters + (a)))
+#define GX_REG(a) (*(volatile CARD32*)(pCyrix->GXregisters + (a)))
 
 
 /* externs in cyrix_accel.c */
@@ -187,10 +189,10 @@ extern void CYRIXAccelInit(ScreenPtr);
                      GX_REG(GP_RASTER_MODE)  = ((pm) | RM_CLIP_ENABLE | 0xC6);
 
 #define CYRIXsetBlitMode()                   \
-                     GX_REG(GP_BLIT_MODE)    = (blitMode)
+                     GX_REG(GP_BLIT_MODE)    = (pCyrix->blitMode)
 
 #define CYRIXsetVectorMode()                 \
-                     GX_REG(GP_VECTOR_MODE)  = (vectorMode)
+                     GX_REG(GP_VECTOR_MODE)  = (pCyrix->vectorMode)
 
 #define IfDest(rop, planemask, val)                                        \
                                  (( (((rop) & 0x5) ^ (((rop) & 0xA) >> 1)) \

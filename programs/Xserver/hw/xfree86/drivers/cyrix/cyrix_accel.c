@@ -58,14 +58,8 @@ static const int windowsROPsrcMask[16] = { 0x22, 0xA2, 0x62, 0xE2,
                                            0x26, 0xA6, 0x66, 0xE6,
                                            0x2E, 0xAE, 0x6E, 0xEE };
 
-static int bltBufWidth;
-
-static int blitMode;
-static int vectorMode;
-static int transMode;
-static int copyXdir;
-static int setBlitModeOnSync = 0;
-
+#if 0
+#endif
 
 /* Forward declaration of functions used in the driver */
 void CYRIXAccelSync(ScrnInfoPtr pScrn);
@@ -77,8 +71,9 @@ void CYRIXSetupForScreenToScreenCopy(ScrnInfoPtr, int xdir, int ydir,
 		int rop, unsigned int planemask, int transparency_color);
 void CYRIXSubsequentScreenToScreenCopy(ScrnInfoPtr, int x1, int y1, int x2,
 					int y2, int w, int h);
-void CYRIXSubsequentBresenhamLine(int x1, int y1, int octant, int err,
-					int e1, int e2, int length);
+void CYRIXSubsequentBresenhamLine(ScrnInfoPtr pScrn,int x1, int y1,
+				  int e1, int e2, int err, int length,
+				  int octant);
 void CYRIXSetupForColor8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx,
 	int patterny, int rop, unsigned int planemask, int transparency_color);
 void CYRIXSubsequentColor8x8PatternFillRect(ScrnInfoPtr pScrn, int patternx,
@@ -89,7 +84,6 @@ void CYRIXSubsequentCPUToScreenColorExpandFill(ScrnInfoPtr pScrn, int x,
 			int y, int w, int h, int skipleft);
 void InitPixmapCache(ScreenPtr pScreen, RegionPtr areas, pointer data);
 /* Info Rec for all these routines to use */
-static XAAInfoRecPtr localRecPtr;
 
 /* Acceleration init function, sets up pointers to our accelerated functions */
 void 
@@ -98,6 +92,7 @@ CYRIXAccelInit(ScreenPtr pScreen)
 
 	CYRIXPrvPtr	pCyrix;
 	ScrnInfoPtr 	pScrn;
+	XAAInfoRecPtr localRecPtr;
 
 	pScrn = xf86Screens[pScreen->myNum];
 	pCyrix = CYRIXPTR(pScrn);
@@ -152,9 +147,9 @@ CYRIXAccelInit(ScreenPtr pScreen)
 	   bug if we don't give XAA enough room, but the only thing that
 	   seems to make it work properly) */
 	localRecPtr->ColorExpandBase =
-	    (unsigned char*)(GXregisters + CYRIXbltBuf0Address);
+	    (unsigned char*)(pCyrix->GXregisters + pCyrix->CYRIXbltBuf0Address);
 	localRecPtr->ColorExpandRange =
-	    CYRIXbltBufSize * 2;
+	    pCyrix->CYRIXbltBufSize * 2;
 
 	localRecPtr->SetupForCPUToScreenColorExpandFill =
 	    CYRIXSetupForCPUToScreenColorExpandFill;
@@ -162,14 +157,16 @@ CYRIXAccelInit(ScreenPtr pScreen)
 	    CYRIXSubsequentCPUToScreenColorExpandFill;
 
 	/* calculate the pixel width of a blit buffer for convenience */
-	bltBufWidth = CYRIXbltBufSize / (pScrn->bitsPerPixel / 8);
+	pCyrix->bltBufWidth = pCyrix->CYRIXbltBufSize / (pScrn->bitsPerPixel / 8);
 } 
 
 
 /* set colors - called through access macros in cyrix.h */
 static __inline__ void CYRIXsetColors01(ScrnInfoPtr pScrn, int reg,
-					int col0, int col1)
-{	if (pScrn->bitsPerPixel == 16)
+					int col0, int col1) {
+	CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+	
+    if (pScrn->bitsPerPixel == 16)
 		GX_REG(reg) = ((col1 & 0xFFFF) << 16) | (col0 & 0xFFFF);
 	else
 	{	col0 &= 0xFF;
@@ -183,8 +180,11 @@ static __inline__ void CYRIXsetColors01(ScrnInfoPtr pScrn, int reg,
    directly). */
 void
 CYRIXAccelSync(ScrnInfoPtr pScrn)
-{	if (setBlitModeOnSync)
-	{	setBlitModeOnSync = 0;
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+	
+    if (pCyrix->setBlitModeOnSync)
+	{	pCyrix->setBlitModeOnSync = 0;
 		CYRIXsetupSync();
 		CYRIXsetBlitMode();
 	}
@@ -211,9 +211,9 @@ unsigned int planemask;
 	CYRIXsetSourceColors01(pScrn, color, color);
 	CYRIXsetPatColors01(pScrn, planemask, 0);
 	CYRIXsetPatMode(rop, RM_PAT_DISABLE);
-	blitMode = BM_READ_SRC_NONE | BM_WRITE_FB | BM_SOURCE_EXPAND
-	         | IfDest(rop, planemask, BM_READ_DST_FB0);
-	vectorMode = IfDest(rop, planemask, VM_READ_DST_FB);
+	pCyrix->blitMode = BM_READ_SRC_NONE | BM_WRITE_FB | BM_SOURCE_EXPAND
+	    | IfDest(rop, planemask, BM_READ_DST_FB0);
+	pCyrix->vectorMode = IfDest(rop, planemask, VM_READ_DST_FB);
 }
     
     
@@ -221,12 +221,16 @@ void
 CYRIXSubsequentSolidFillRect(pScrn, x, y, w, h)
 ScrnInfoPtr pScrn;
 int x, y, w, h;
-{	/* divide the operation into columns if required; use twice the
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+
+    /* divide the operation into columns if required; use twice the
            blit buffer width because buffer 0 will overflow into buffer 1 */
-	while (w > 2 * bltBufWidth)
-	{	CYRIXSubsequentSolidFillRect(pScrn, x, y, 2 * bltBufWidth, h);
-		x += 2 * bltBufWidth;
-		w -= 2 * bltBufWidth;
+	while (w > 2 * pCyrix->bltBufWidth)
+	{	CYRIXSubsequentSolidFillRect(pScrn, x, y,
+					     2 * pCyrix->bltBufWidth, h);
+		x += 2 * pCyrix->bltBufWidth;
+		w -= 2 * pCyrix->bltBufWidth;
 	}
 	CYRIXsetupSync();
 	CYRIXsetDstXY(x, y);
@@ -260,11 +264,11 @@ int transparency_color;
 
 	if (transparency_color == -1)
 	{	CYRIXsetPatMode(rop, RM_PAT_DISABLE);
-		transMode = 0;
+		pCyrix->transMode = 0;
 	}
 	else
 	{	CYRIXsetPatModeTrans(RM_PAT_DISABLE);
-		transMode = 1;
+		pCyrix->transMode = 1;
 
 		if (pCyrix->AccelInfoRec->CopyAreaFlags &
 						TRANSPARENCY_GXCOPY_ONLY)
@@ -272,48 +276,50 @@ int transparency_color;
 
 		/* fill blit buffer 1 with the transparency color */
 		if (pScrn->bitsPerPixel == 16)
-		{	int              k   = CYRIXbltBufSize / 4;
+		{	int              k   = pCyrix->CYRIXbltBufSize / 4;
 			CARD32           val = (transparency_color << 16) |
 			                       transparency_color;
-			volatile CARD32* buf = &(GX_REG(CYRIXbltBuf1Address));
+			volatile CARD32* buf = &(GX_REG(pCyrix->CYRIXbltBuf1Address));
 
 			while (--k >= 0) buf[k] = val;
 		}
 		else
-			memset(GXregisters + CYRIXbltBuf1Address,
-			       transparency_color, CYRIXbltBufSize);
+			memset(pCyrix->GXregisters + pCyrix->CYRIXbltBuf1Address,
+			       transparency_color, pCyrix->CYRIXbltBufSize);
 	}
 
-	blitMode = BM_READ_SRC_FB | BM_WRITE_FB | BM_SOURCE_COLOR
-	         | (transMode ? BM_READ_DST_NONE : IfDest(rop, planemask, BM_READ_DST_FB1))
-	         | (ydir < 0 ? BM_REVERSE_Y : 0);
+	pCyrix->blitMode = BM_READ_SRC_FB | BM_WRITE_FB | BM_SOURCE_COLOR
+	    | (pCyrix->transMode ? BM_READ_DST_NONE : IfDest(rop, planemask, BM_READ_DST_FB1))
+	    | (ydir < 0 ? BM_REVERSE_Y : 0);
 
-	copyXdir = xdir;
+	pCyrix->copyXdir = xdir;
 }
 
 void 
 CYRIXSubsequentScreenToScreenCopy(pScrn, x1, y1, x2, y2, w, h)
 ScrnInfoPtr pScrn;
 int x1, y1, x2, y2, w, h;
-{	int up       = (blitMode & BM_REVERSE_Y);
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+    int up       = (pCyrix->blitMode & BM_REVERSE_Y);
 
 	/* divide the operation into columns when necessary */
-	if (copyXdir < 0)
-	{	int x_offset = w - bltBufWidth;
+	if (pCyrix->copyXdir < 0)
+	{	int x_offset = w - pCyrix->bltBufWidth;
 
 		while (x_offset > 0)
 		{	CYRIXSubsequentScreenToScreenCopy(pScrn, x1 + x_offset, y1,
 			                                  x2 + x_offset, y2,
-			                                  bltBufWidth, h);
-			x_offset -= bltBufWidth;
-			w -= bltBufWidth;
+			                                  pCyrix->bltBufWidth, h);
+			x_offset -= pCyrix->bltBufWidth;
+			w -= pCyrix->bltBufWidth;
 	}	}
-	else while (w > bltBufWidth)
+	else while (w > pCyrix->bltBufWidth)
 	{	CYRIXSubsequentScreenToScreenCopy(pScrn, x1, y1, x2, y2,
-		                                  bltBufWidth, h);
-		x1 += bltBufWidth;
-		x2 += bltBufWidth;
-		w -= bltBufWidth;
+		                                  pCyrix->bltBufWidth, h);
+		x1 += pCyrix->bltBufWidth;
+		x2 += pCyrix->bltBufWidth;
+		w -= pCyrix->bltBufWidth;
 	}
 
 	CYRIXsetupSync();
@@ -323,8 +329,8 @@ int x1, y1, x2, y2, w, h;
 	/* in transparent mode, one line reads the transparency color
 	   into a processor-internal register, and the remaining lines
 	   can be done in a single second pass */
-	if (transMode)
-	{	blitMode |= BM_READ_DST_BB1;
+	if (pCyrix->transMode)
+	{	pCyrix->blitMode |= BM_READ_DST_BB1;
 		CYRIXsetWH(w, 1);
 		CYRIXsetBlitMode();
 		h--;
@@ -332,7 +338,7 @@ int x1, y1, x2, y2, w, h;
 		if (up) { y1--; y2--; }
 		else { y1++; y2++; }
 		CYRIXsetupSync();
-		blitMode &= ~(BM_READ_DST_BB1);
+		pCyrix->blitMode &= ~(BM_READ_DST_BB1);
 	}
 	CYRIXsetWH(w, h);
 	CYRIXsetBlitMode();
@@ -341,24 +347,26 @@ int x1, y1, x2, y2, w, h;
 
 /* Bresenham lines */
 void
-CYRIXSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
-int x1, y1, octant, err, e1, e2, length;
-{	if (octant & YMAJOR)
-	{	vectorMode = (vectorMode & VM_READ_DST_FB) | VM_Y_MAJOR;
-		if (!(octant & XDECREASING)) vectorMode |= VM_MINOR_INC;
-		if (!(octant & YDECREASING)) vectorMode |= VM_MAJOR_INC;
-	}
-	else
-	{	vectorMode = (vectorMode & VM_READ_DST_FB) | VM_X_MAJOR;
-		if (!(octant & XDECREASING)) vectorMode |= VM_MAJOR_INC;
-		if (!(octant & YDECREASING)) vectorMode |= VM_MINOR_INC;
-	}
-
-	CYRIXsetupSync();
-	CYRIXsetDstXY(x1, y1);
-	CYRIXsetWH(length, (err & 0xFFFF));
-	CYRIXsetSrcXY((e1 & 0xFFFF), (e2 & 0xFFFF));
-	CYRIXsetVectorMode();
+CYRIXSubsequentBresenhamLine(pScrn, x1, y1, e1, e2, err, length, octant)
+ScrnInfoPtr pScrn; int x1, y1, octant, err, e1, e2, length;
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+    
+    if (octant & YMAJOR) {
+	pCyrix->vectorMode = (pCyrix->vectorMode & VM_READ_DST_FB) | VM_Y_MAJOR;
+	if (!(octant & XDECREASING)) pCyrix->vectorMode |= VM_MINOR_INC;
+	if (!(octant & YDECREASING)) pCyrix->vectorMode |= VM_MAJOR_INC;
+    } else {
+	pCyrix->vectorMode = (pCyrix->vectorMode & VM_READ_DST_FB) | VM_X_MAJOR;
+	if (!(octant & XDECREASING)) pCyrix->vectorMode |= VM_MAJOR_INC;
+	if (!(octant & YDECREASING)) pCyrix->vectorMode |= VM_MINOR_INC;
+    }
+    
+    CYRIXsetupSync();
+    CYRIXsetDstXY(x1, y1);
+    CYRIXsetWH(length, (err & 0xFFFF));
+    CYRIXsetSrcXY((e1 & 0xFFFF), (e2 & 0xFFFF));
+    CYRIXsetVectorMode();
 }
 
 
@@ -370,7 +378,9 @@ int patternx, patterny;
 int rop, transparency_color;
 unsigned int planemask;
 {
-
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+    XAAInfoRecPtr localRecPtr = pCyrix->AccelInfoRec;
+    
 	if (localRecPtr->Color8x8PatternFillFlags & NO_PLANEMASK)
 		planemask = 0xFFFF;
 	if ((transparency_color == -1) && (localRecPtr->Color8x8PatternFillFlags &
@@ -384,7 +394,7 @@ unsigned int planemask;
 	CYRIXsetPatModeX(rop, RM_PAT_MONO | ((transparency_color == -1) ?
 						RM_PAT_TRANSPARENT : 0));
 
-	blitMode = BM_READ_SRC_NONE | BM_WRITE_FB | BM_SOURCE_EXPAND |
+	pCyrix->blitMode = BM_READ_SRC_NONE | BM_WRITE_FB | BM_SOURCE_EXPAND |
 	         ((transparency_color == -1) ?
 		 IfDest(rop, planemask, BM_READ_DST_FB0) : BM_READ_DST_NONE);
 }
@@ -402,7 +412,11 @@ void CYRIXSetupForCPUToScreenColorExpandFill(pScrn, fg, bg, rop, planemask)
 ScrnInfoPtr pScrn;
 int bg, fg, rop;
 unsigned int planemask;
-{	int trans = (bg == -1);
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+    XAAInfoRecPtr localRecPtr = pCyrix->AccelInfoRec;
+
+    int trans = (bg == -1);
 
 	if (trans && (localRecPtr->CPUToScreenColorExpandFillFlags &
 						TRANSPARENCY_GXCOPY_ONLY))
@@ -418,20 +432,22 @@ unsigned int planemask;
 	   for the text source bitmap, so READ_DST_FB1 should not be
 	   used.  So far, this problem has not manifested itself in
 	   practice. */
-	blitMode = BM_READ_SRC_BB0 | BM_WRITE_FB | BM_SOURCE_EXPAND
-	         | (trans ? IfDest(rop, planemask, BM_READ_DST_FB1) : BM_READ_DST_NONE);
+	pCyrix->blitMode = BM_READ_SRC_BB0 | BM_WRITE_FB | BM_SOURCE_EXPAND
+	    | (trans ? IfDest(rop, planemask, BM_READ_DST_FB1) : BM_READ_DST_NONE);
 }
 
 void CYRIXSubsequentCPUToScreenColorExpandFill(pScrn, x, y, w, h, skipleft)
 ScrnInfoPtr pScrn;
 int x, y, w, h;
 int skipleft;
-{	CYRIXsetupSync();
-	CYRIXsetSrcXY(0, 0);
-	CYRIXsetDstXY(x, y);
-	CYRIXsetWH(w, h);
-
-	CYRIXAccelSync(pScrn);
-	setBlitModeOnSync = 1;
+{
+    CYRIXPrvPtr pCyrix = CYRIXPTR(pScrn);
+    CYRIXsetupSync();
+    CYRIXsetSrcXY(0, 0);
+    CYRIXsetDstXY(x, y);
+    CYRIXsetWH(w, h);
+    
+    CYRIXAccelSync(pScrn);
+    pCyrix->setBlitModeOnSync = 1;
 }
 

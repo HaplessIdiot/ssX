@@ -2249,6 +2249,7 @@ xf86LoadDrvSubModule(DriverPtr drv, const char *name)
 pointer
 xf86LoadSubModule(ScrnInfoPtr pScrn, const char *name)
 {
+#ifdef XFree86LOADER
     pointer ret;
     int errmaj = 0, errmin = 0;
 
