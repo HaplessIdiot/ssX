@@ -612,21 +612,36 @@ int DRM(wait_vblank)( DRM_IOCTL_ARGS )
 	DRM_COPY_FROM_USER_IOCTL( vblwait, (drm_wait_vblank_t *)data,
 				  sizeof(vblwait) );
 
-	if ( vblwait.type == _DRM_VBLANK_RELATIVE ) {
-		vblwait.sequence += atomic_read( &dev->vbl_received );
+	switch ( vblwait.request.type & ~_DRM_VBLANK_FLAGS_MASK ) {
+	case _DRM_VBLANK_RELATIVE:
+		vblwait.request.sequence += atomic_read( &dev->vbl_received );
+	case _DRM_VBLANK_ABSOLUTE:
+		break;
+	default:
+		return EINVAL;
 	}
 
-	ret = DRM(vblank_wait)( dev, &vblwait.sequence );
+	if ( flags & _DRM_VBLANK_SIGNAL ) {
+		/* Signals from vblank not supported on BSD yet */
+		return EINVAL;
+	}
+	
+	ret = DRM(vblank_wait)( dev, &vblwait.request.sequence );
 
 	microtime( &now );
-	vblwait.tval_sec = now.tv_sec;
-	vblwait.tval_usec = now.tv_usec;
+	vblwait.reply.tval_sec = now.tv_sec;
+	vblwait.reply.tval_usec = now.tv_usec;
 
 	DRM_COPY_TO_USER_IOCTL( (drm_wait_vblank_t *)data, vblwait,
 				sizeof(vblwait) );
 
 	return ret;
 }
+
+void DRM(vbl_send_signals)( drm_device_t *dev ) {
+	/* Signals from vblank not supported on BSD yet */
+}
+
 #endif /*  __HAVE_VBL_IRQ */
 
 #else
