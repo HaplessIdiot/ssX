@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.55 1997/05/26 15:35:04 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.56 1997/05/27 06:30:55 dawes Exp $
 
 #Chips & Technologies
 
@@ -615,6 +615,28 @@ SEE S3 Trio64V+ (generic)
 NAME DSV3326
 SEE S3 Trio64V+ (generic)
 
+# S3 Trio64V2
+
+NAME S3 Trio64V2 (generic)
+CHIPSET S3 Trio64V2
+SERVER S3
+NOCLOCKPROBE
+
+NAME S3 Trio64V2/DX (generic)
+see S3 Trio64V2 (generic)
+
+NAME S3 Trio64V2/GX (generic)
+see S3 Trio64V2 (generic)
+
+NAME S3 86C775 (generic)
+SEE S3 Trio64V2/DX (generic)
+
+NAME S3 86C785 (generic)
+SEE S3 Trio64V2/GX (generic)
+
+NAME ELSA WINNER 1000/T2D
+SEE S3 Trio64V2/DX (generic)
+
 # S3 964/968
 
 NAME S3 964 (generic)
@@ -911,8 +933,8 @@ CHIPSET S3 911/924
 SERVER S3
 CLOCKCHIP icd2061a
 
-NAME Orchid Fahrenheit 1280
-SEE S3 911/924 (generic)
+#NAME Orchid Fahrenheit 1280
+#SEE S3 911/924 (generic)
 
 NAME S3 924 with SC1148 DAC
 CHIPSET S3 924
@@ -921,26 +943,59 @@ LINE     #Probable clocks:
 LINE     #Clocks 25.2 28.3 39.7 1.7 49.9 76.7 35.7 44
 LINE     #Clocks 130.2 119.5 79.4 31.2 110.0 65.2 74.9 71.3
 
-# S3 ViRGE and ViRGE/VX
+# S3 ViRGE,/DX,/GX and ViRGE/VX
 
 NAME S3 ViRGE (S3V server)
 CHIPSET S3 ViRGE
 SERVER S3V
+NOCLOCKPROBE
 
 NAME S3 ViRGE (generic)
 CHIPSET S3 ViRGE
 SERVER SVGA
+NOCLOCKPROBE
 LINE      #Option "xaa_benchmark"
 LINE      #Option "fifo_moderate"
 LINE      #Option "pci_burst_on"
 LINE      #Option "pci_retry"
 LINE      #Option "hw_cursor"
 
+NAME S3 ViRGE/DX (generic)
+CHIPSET S3 ViRGE/DX
+SERVER SVGA
+NOCLOCKPROBE
+LINE      #Option "xaa_benchmark"
+LINE      #Option "fifo_moderate"
+LINE      #Option "pci_burst_on"
+LINE      #Option "pci_retry"
+LINE      #Option "hw_cursor"
+
+NAME S3 ViRGE/GX (generic)
+CHIPSET S3 ViRGE/GX
+SERVER SVGA
+NOCLOCKPROBE
+LINE      #Option "xaa_benchmark"
+LINE      #Option "fifo_moderate"
+LINE      #Option "pci_burst_on"
+LINE      #Option "pci_retry"
+LINE      #Option "hw_cursor"
+
+
 NAME S3 86C325 (generic)
 SEE S3 ViRGE (generic)
 
+NAME S3 86C375 (generic)
+SEE S3 ViRGE/DX (generic)
+
+NAME S3 86C385 (generic)
+SEE S3 ViRGE/GX (generic)
+
+
 NAME ELSA Victory 3D
 SEE S3 ViRGE (generic)
+
+NAME ELSA Victory 3DX
+SEE S3 ViRGE/DX (generic)
 
 NAME ELSA Winner 3000-S
 SEE S3 ViRGE (generic)
@@ -954,6 +1009,15 @@ SEE S3 ViRGE (generic)
 NAME Diamond Stealth 3D 2000
 SEE S3 ViRGE (generic)
 
+NAME Diamond Stealth 3D 2000 PRO
+SEE S3 ViRGE/DX (generic)
+
+NAME Diamond Multimedia Stealth 3D 2000
+SEE S3 ViRGE (generic)
+
+NAME Diamond Multimedia Stealth 3D 2000 PRO
+SEE S3 ViRGE/DX (generic)
+
 NAME Canopus Co. Power Window 3DV
 SEE S3 ViRGE (generic)
 
@@ -966,11 +1030,11 @@ SEE S3 ViRGE (generic)
 NAME DSV3325
 SEE S3 ViRGE (generic)
 
-NAME Diamond Multimedia Stealth 3D 2000
-SEE S3 ViRGE (generic)
-
 NAME Hercules Terminator 64/3D
 SEE S3 ViRGE (generic)
+
+NAME Hercules Terminator 3D/DX
+SEE S3 ViRGE/DX (generic)
 
 NAME LeadTek WinFast 3D S600
 SEE S3 ViRGE (generic)
@@ -987,6 +1051,10 @@ SEE S3 ViRGE (generic)
 NAME STB Systems Powergraph 3D
 SEE S3 ViRGE (generic)
 
+NAME STB Nitro 3D
+CHIPSET S3 ViRGE/GX
+SEE S3 ViRGE/GX (generic)
+
 NAME MELCO WGP-VG4S
 LINE      #DACSpeed  191 162 111 83
 LINE      #SetMClck  75
@@ -997,6 +1065,7 @@ SEE S3 ViRGE (generic)
 NAME S3 ViRGE/VX (generic)
 CHIPSET S3 ViRGE/VX
 SERVER SVGA
+NOCLOCKPROBE
 LINE      #Option "xaa_benchmark"
 LINE      #Option "fifo_moderate"
 LINE      #Option "pci_burst_on"
@@ -1100,9 +1169,6 @@ SEE ET4000 (generic)
 
 NAME Diamond SpeedStar HiColor
 SEE ET4000 (generic)
-
-NAME Diamond Stealth 32
-SEE ET4000 W32i, W32p (generic)
 
 NAME Genoa 8900 Phantom 32i
 SEE ET4000 W32i, W32p (generic)
@@ -1285,7 +1351,12 @@ CHIPSET ATI-Mach64
 SERVER Mach64
 NOCLOCKPROBE
 
-NAME ATI Mach64 GT (264GT), aka RAGE, Internal RAMDAC
+NAME ATI Mach64 GT (264GT), aka 3D RAGE, Internal RAMDAC
+CHIPSET ATI-Mach64
+SERVER Mach64
+NOCLOCKPROBE
+
+NAME ATI Mach64 3D RAGE II, Internal RAMDAC
 CHIPSET ATI-Mach64
 SERVER Mach64
 NOCLOCKPROBE
@@ -1309,7 +1380,13 @@ NAME ATI Video Xpression
 SEE ATI Mach64 VT (264VT), Internal RAMDAC
 
 NAME ATI 3D Xpression
-SEE ATI Mach64 GT (264GT), aka RAGE, Internal RAMDAC
+SEE ATI Mach64 GT (264GT), aka 3D RAGE, Internal RAMDAC
+
+NAME ATI 3D Xpression+ PC2TV
+SEE ATI Mach64 GT2 (264GT), aka 3D RAGE II, Internal RAMDAC
+
+NAME ATI 3D Pro Turbo
+SEE ATI Mach64 GT2 (264GT), aka 3D RAGE II, Internal RAMDAC
 
 NAME ATI Win Boost with STG1702 RAMDAC
 SEE ATI Mach64
@@ -1713,46 +1790,10 @@ SEE Cirrus Logic GD5464
 NAME Jaton Video-58P
 SEE ET6000 (generic)
 
-NAME S3 ViRGE/DX (generic)
-CHIPSET S3 ViRGE/DX
-SERVER SVGA
-NOCLOCKPROBE
-LINE      #Option "xaa_benchmark"
-LINE      #Option "fifo_moderate"
-LINE      #Option "pci_burst_on"
-LINE      #Option "pci_retry"
-LINE      #Option "hw_cursor"
-
-NAME S3 ViRGE/GX (generic)
-CHIPSET S3 ViRGE/GX
-SERVER SVGA
-NOCLOCKPROBE
-LINE      #Option "xaa_benchmark"
-LINE      #Option "fifo_moderate"
-LINE      #Option "pci_burst_on"
-LINE      #Option "pci_retry"
-LINE      #Option "hw_cursor"
-
-NAME S3 86C375 (generic)
-SEE S3 ViRGE/DX (generic)
-
-NAME S3 86C385 (generic)
-SEE S3 ViRGE/GX (generic)
-
-NAME Diamond Stealth 3D Pro
-SEE S3 ViRGE/DX (generic)
-
 NAME Diamond Stealth Video 2500
 CHIPSET Alliance AT24 
 SERVER SVGA
 NOCLOCKPROBE
-
-NAME Hercules Terminator 3D/DX
-SEE S3 ViRGE/DX (generic)
-
-NAME STB Nitro 3D
-CHIPSET S3 ViRGE/GX
-SEE S3 ViRGE/GX (generic)
 
 NAME Matrox Mystique
 CHIPSET MGA1064SG

@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/sis/sis_curs.c,v 3.5 1997/02/17 09:48:05 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis_curs.c,v 1.1 1997/03/06 23:16:52 hohndel Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -98,14 +98,13 @@ Bool SISCursorInit(pm, pScr)
 	char *pm;
 	ScreenPtr pScr;
 {
-	SISCursorHotX = 0;
-	SISCursorHotY = 0;
-
 	if (SISCursorGeneration != serverGeneration) {
 		if (!(miPointerInitialize(pScr, &SISPointerSpriteFuncs,
 		&xf86PointerScreenFuncs, FALSE)))
 			return FALSE;
 
+		SISCursorHotX = 0;
+		SISCursorHotY = 0;
 		pScr->RecolorCursor = SISRecolorCursor;
 		SISCursorGeneration = serverGeneration;
 	}

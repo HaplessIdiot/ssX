@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.4 1996/02/20 14:34:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000curs.c,v 3.5 1996/12/23 06:40:38 dawes Exp $ */
 /*
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -139,8 +139,6 @@ p9000CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-   p9000hotX = 0;
-   p9000hotY = 0;
    p9000BlockCursor = FALSE;
    p9000ReloadCursor = FALSE;
 
@@ -148,6 +146,9 @@ p9000CursorInit(pm, pScr)
      if (!(miPointerInitialize(pScr, &p9000BtPointerSpriteFuncs,
 			       &xf86PointerScreenFuncs, FALSE)))
        return FALSE;
+
+     p9000hotX = 0;
+     p9000hotY = 0;
      pScr->RecolorCursor = p9000BtRecolorCursor;
      p9000CursGeneration = serverGeneration;
    }

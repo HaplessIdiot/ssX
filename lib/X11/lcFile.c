@@ -1,5 +1,4 @@
 /* $XConsortium: lcFile.c /main/6 1996/09/28 16:37:56 rws $ */
-/* $XFree86: xc/lib/X11/lcFile.c,v 3.5 1996/12/23 06:00:01 dawes Exp $ */
 /*
  *
  * Copyright IBM Corporation 1993
@@ -24,6 +23,7 @@
  * SOFTWARE.
  *
 */
+/* $XFree86: xc/lib/X11/lcFile.c,v 3.6.2.2 1997/05/30 13:40:04 dawes Exp $ */
 #include <stdio.h>
 #include <ctype.h>
 #include "Xlibint.h"
@@ -301,10 +301,22 @@ _XlcResolveLocaleName(lc_name, full_name, language, territory, codeset)
     }
 
     if(name != NULL){
-	strcpy(buf, name);
+	if(strlen(name) < BUFSIZE - 1){
+	    strcpy(buf, name);
+	}else{
+	    fprintf(stderr, "Warning: locale \"%s\" is too long, ignored\n",
+		    name);
+	    *buf = '\0';
+	}
 	Xfree(name);
     }else{
-	strcpy(buf, lc_name);
+	if(strlen(lc_name) < BUFSIZE - 1){
+	    strcpy(buf, lc_name);
+	}else{
+	    fprintf(stderr, "Warning: locale \"%s\" is too long, ignored\n",
+		    lc_name);
+	    *buf = '\0';
+	}
     }
     if(full_name != NULL){
 	strcpy(full_name, buf);
@@ -320,23 +332,54 @@ _XlcResolveLocaleName(lc_name, full_name, language, territory, codeset)
 	if(codeset) *codeset = '\0';
 
 	name_p = buf;
-	ptr = language;
-	while (1) {
-	    if (*name_p == '_') {
-		if (ptr)
-		    *ptr = '\0';
-		ptr = territory;
-	    } else if (*name_p == '.') {
-		if (ptr)
-		    *ptr = '\0';
-		ptr = codeset;
+	ptr = strchr(name_p, '_');
+	if (!ptr)
+	    ptr = strchr(name_p, '.');
+	if (!ptr)
+	    ptr = name_p + strlen(name_p);
+
+	/*
+	 * The size of the language, territory, codset buffers is 128 in
+	 * initialize() in lcPublic.c
+	 */
+	if (language) {
+	    if (ptr - name_p < 128) {
+		strncpy(language, name_p, ptr - name_p);
+		language[ptr - name_p] = '\0';
 	    } else {
-		if (ptr)
-		    *ptr++ = *name_p;
-		if (*name_p == '\0')
-		    break;
+		fprintf(stderr,
+	      "Warning: language part of locale \"%s\" is too long, ignored\n",
+			buf);
 	    }
-	    name_p++;
+	}
+	if (*ptr == '_') {
+	    name_p = ptr + 1;
+	    ptr = strchr(name_p, '.');
+	    if (!ptr)
+		ptr = name_p + strlen(name_p);
+	    if (territory) {
+		if (ptr - name_p < 128) {
+		    strncpy(territory, name_p, ptr - name_p);
+		    territory[ptr - name_p] = '\0';
+		} else {
+		    fprintf(stderr,
+	     "Warning: territory part of locale \"%s\" is too long, ignored\n",
+			    buf);
+		}
+	    }
+	}
+	if (*ptr == '.') {
+	    name_p = ptr + 1;
+	    ptr = name_p + strlen(name_p);
+	    if (codeset) {
+		if (ptr - name_p < 128) {
+		    strcpy(codeset, name_p);
+		} else {
+		    fprintf(stderr,
+		"Warning: codeset part of locale \"%s\" is too long, ignored\n",
+			    buf);
+		}
+	    }
 	}
     }
 

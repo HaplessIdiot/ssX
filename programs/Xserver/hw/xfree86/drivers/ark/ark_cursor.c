@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_cursor.c,v 3.9 1997/02/17 09:47:12 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ark/ark_cursor.c,v 1.1 1997/03/06 23:14:39 hohndel Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -96,14 +96,13 @@ Bool ArkCursorInit(pm, pScr)
 	char *pm;
 	ScreenPtr pScr;
 {
-	arkCursorHotX = 0;
-	arkCursorHotY = 0;
-
 	if (arkCursorGeneration != serverGeneration) {
 		if (!(miPointerInitialize(pScr, &arkPointerSpriteFuncs,
 		&xf86PointerScreenFuncs, FALSE)))
 			return FALSE;
 
+		arkCursorHotX = 0;
+		arkCursorHotY = 0;
 		pScr->RecolorCursor = ArkRecolorCursor;
 		arkCursorGeneration = serverGeneration;
 	}

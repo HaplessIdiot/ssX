@@ -1,4 +1,4 @@
-/* $TOG: XKBBind.c /main/25 1997/02/26 13:53:26 kaleb $ */
+/* $TOG: XKBBind.c /main/26 1997/05/28 11:42:32 kaleb $ */
 /*
 
 Copyright (c) 1985, 1987, 1994  X Consortium
@@ -36,7 +36,6 @@ from the X Consortium.
 #include <X11/keysym.h>
 #include <stdio.h>
 #include <ctype.h>
-#include <locale.h>
 
 #include <X11/extensions/XKBproto.h>
 #include "XKBlibint.h"

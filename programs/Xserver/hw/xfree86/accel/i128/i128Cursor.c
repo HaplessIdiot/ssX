@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.3 1996/04/15 11:29:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/i128/i128Cursor.c,v 3.4 1996/12/23 06:35:37 dawes Exp $ */
 
 #include "i128.h"
 #include "i128reg.h"
@@ -74,8 +74,6 @@ i128CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-   i128hotX = 0;
-   i128hotY = 0;
    i128BlockCursor = FALSE;
    i128ReloadCursor = FALSE;
    
@@ -85,6 +83,9 @@ i128CursorInit(pm, pScr)
                   &i128IBMPointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
          return FALSE;
+
+      i128hotX = 0;
+      i128hotY = 0;
       pScr->RecolorCursor =
          i128RamdacType == TI3025_DAC ? i128TiRecolorCursor :
             i128IBMRecolorCursor;

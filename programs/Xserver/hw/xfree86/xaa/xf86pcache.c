@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.16 1997/05/03 09:19:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86pcache.c,v 3.17 1997/05/28 13:24:24 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -185,12 +185,20 @@ void xf86InitPixmapCacheSlots()
        return;
     }
 
-   if ((MaxHeight < 8) && ((xf86AccelInfoRec.Subsequent8x8PatternColorExpand)
-			   || (xf86AccelInfoRec.SubsequentFill8x8Pattern))) {
-       ErrorF("%s %s: XAA: 8x8 Pattern fill disabled - insufficient memory available\n", 
-	      XCONFIG_PROBED, infoRec->name);
-       xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 0;
-       xf86AccelInfoRec.SubsequentFill8x8Pattern = 0;
+   if ((MaxHeight < 8) && 
+       (!(xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_ORIGIN))) {
+       if ((xf86AccelInfoRec.Flags & HARDWARE_PATTERN_PROGRAMMED_BITS) &&
+	     (xf86AccelInfoRec.SubsequentFill8x8Pattern)) {
+	   ErrorF("%s %s: XAA: 8x8 Pattern fill disabled - insufficient video memory available\n", 
+		  XCONFIG_PROBED, infoRec->name);
+	   xf86AccelInfoRec.SubsequentFill8x8Pattern = 0;
+       } else if ((xf86AccelInfoRec.Subsequent8x8PatternColorExpand) ||
+	     (xf86AccelInfoRec.SubsequentFill8x8Pattern)) {
+	   ErrorF("%s %s: XAA: 8x8 Pattern fill disabled - insufficient video memory available\n", 
+		  XCONFIG_PROBED, infoRec->name);
+	   xf86AccelInfoRec.Subsequent8x8PatternColorExpand = 0;
+	   xf86AccelInfoRec.SubsequentFill8x8Pattern = 0;
+       }
    }
 
     /*

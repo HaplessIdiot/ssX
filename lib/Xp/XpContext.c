@@ -1,4 +1,4 @@
-/* $XConsortium: XpContext.c /main/2 1996/11/16 15:20:54 rws $ */
+/* $TOG: XpContext.c /main/3 1997/05/28 11:41:13 kaleb $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -40,8 +40,6 @@
 #include "Printstr.h"
 #include "Xlibint.h"
 #include "extutil.h"
-
-#include <locale.h>
 
 #define _XpPadOut(len) (((len) + 3) & ~3)
 

@@ -1,5 +1,4 @@
-/* $XConsortium: fserve.c /main/46 1996/09/28 16:48:41 rws $ */
-/* $XFree86: xc/lib/font/fc/fserve.c,v 3.3 1996/04/15 11:17:34 dawes Exp $ */
+/* $TOG: fserve.c /main/47 1997/05/28 08:44:49 barstow $ */
 /*
 
 Copyright (c) 1990  X Consortium
@@ -26,6 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 */
+/* $XFree86: xc/lib/font/fc/fserve.c,v 3.4 1996/12/23 06:02:06 dawes Exp $ */
 
 /*
  * Copyright 1990 Network Computing Devices
@@ -1235,7 +1235,10 @@ fs_wakeup(fpe, LastSelectMask)
 
     /* see if there's any data to be read */
 
-    /* ### Workaround disappearing fontservers */
+    /* 
+     * Don't continue if the fd is -1 (which will be true when the
+     * font server terminates
+     */
     if (conn->fs_fd == -1)
 	return FALSE;
 

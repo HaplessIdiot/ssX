@@ -1,4 +1,4 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.37 1997/05/17 13:11:36 dawes Exp $ 
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.38 1997/05/22 14:22:20 dawes Exp $ 
 .TH XFree86 1 "Version 3.2A"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -150,6 +150,17 @@ that can be used to change the video modes.
 .B \-allowNonLocalXvidtune
 Allow the xvidtune client to connect from another host.  By default non-local
 connections are not allowed.
+.TP 8
+.B \-disableModInDev
+Disable dynamic modification of input device settings.
+.TP 8
+.B \-allowNonLocalModInDev
+Allow changes to keyboard and mouse settings from non-local clients.
+By default, connections from non-local clients are not allowed to do this.
+.TP
+.B \-allowMouseOpenFail
+Allow the server to start up even if the mouse device can't be opened or
+initialised.
 .TP 8
 .B \-gamma \fIvalue\fP
 Set the gamma correction.  \fIvalue\fP must be between 0.1 and 10.  The

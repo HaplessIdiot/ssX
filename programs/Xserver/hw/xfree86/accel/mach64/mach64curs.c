@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.16 1996/12/23 06:39:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64curs.c,v 3.17 1997/02/17 09:45:05 hohndel Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -155,13 +155,13 @@ mach64CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-  xhot = 0;
-  yhot = 0;
-  
   if (mach64CursGeneration != serverGeneration) {
       if (!(miPointerInitialize(pScr, &mach64PointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
 	  return FALSE;
+
+      xhot = 0;
+      yhot = 0;
       pScr->RecolorCursor = mach64RecolorCursor;
       mach64CursGeneration = serverGeneration;
   }

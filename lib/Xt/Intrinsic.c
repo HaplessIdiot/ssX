@@ -32,7 +32,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.7 1996/12/23 06:01:17 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.8 1997/05/17 12:52:12 dawes Exp $ */
 
 /*
 
@@ -1138,6 +1138,8 @@ static char *ExtractLocaleName(lang)
 #endif
         if (end = strchr (start, ENDCHAR)) {
             len = end - start;
+	    if (len >= MAXLOCALE)
+		len = MAXLOCALE - 1;
             strncpy(buf, start, len);
             *(buf + len) = '\0';
 #ifdef WHITEFILL
@@ -1151,7 +1153,11 @@ static char *ExtractLocaleName(lang)
     }
 #ifdef WHITEFILL
     if (strchr(lang, ' ')) {
-	strcpy(buf, lang);
+	len = strlen(lang);
+	if (len >= MAXLOCALE - 1)
+	    len = MAXLOCALE - 1;
+	strncpy(buf, lang, len);
+	*(buf + len) = '\0';
 	for (start = buf; start = strchr(start, ' '); )
 	    *start++ = '-';
 	return buf;

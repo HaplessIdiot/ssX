@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.7 1996/12/23 06:32:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxCursor.c,v 3.8 1997/02/17 09:44:30 hohndel Exp $ */
 /*
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
@@ -181,15 +181,15 @@ agxCursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-  xf86hotX = 0;
-  xf86hotY = 0;
-  
   if (agxCursGeneration != serverGeneration) {
       if (!(miPointerInitialize( pScr, 
                                  &agxPointerSpriteFuncs,
 			 	 &xf86PointerScreenFuncs, 
                                  FALSE ) ) )
 	  return FALSE;
+
+      xf86hotX = 0;
+      xf86hotY = 0;
       pScr->RecolorCursor = agxRecolorCursor;
       agxCursGeneration = serverGeneration;
   }

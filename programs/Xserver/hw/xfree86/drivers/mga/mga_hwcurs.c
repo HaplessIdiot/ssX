@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.1 1997/05/03 09:18:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_hwcurs.c,v 1.2 1997/05/04 05:26:50 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -212,14 +212,13 @@ MGACursorInit(pm, pScr)
     char *pm;
     ScreenPtr pScr;
 {
-    MGACursorHotX = 0;
-    MGACursorHotY = 0;
-    
     if (MGACursorGeneration != serverGeneration) {
 	if (!(miPointerInitialize(pScr, &MGAPointerSpriteFuncs,
 				 &xf86PointerScreenFuncs, FALSE)))
 	    return FALSE;
-       
+
+	MGACursorHotX = 0;
+	MGACursorHotY = 0;
 	pScr->RecolorCursor = MGARecolorCursor;
 	MGACursorGeneration = serverGeneration;
     }

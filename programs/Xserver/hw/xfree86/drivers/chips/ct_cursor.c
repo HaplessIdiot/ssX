@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.2 1997/03/22 09:35:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.3 1997/04/08 10:12:24 hohndel Exp $ */
 
 /*
  * Hardware cursor handling. Adapted from cirrus/cir_cursor.c and
@@ -98,6 +98,9 @@ CHIPSCursorInit(pm, pScr)
 	if (!(miPointerInitialize(pScr, &CHIPSPointerSpriteFuncs,
 		    &xf86PointerScreenFuncs, FALSE)))
 	    return FALSE;
+
+	ctCursorHotX = 0;
+	ctCursorHotY = 0;
     }
     ctCursorGeneration = serverGeneration;
 

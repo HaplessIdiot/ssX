@@ -169,11 +169,8 @@ char_type magic_header[] = { "\037\235" };	/* 1F 9D */
  *		James A. Woods		(decvax!ihnp4!ames!jaw)
  *		Joe Orost		(decvax!vax135!petsd!joe)
  *
- * $Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.1 1995/03/11 14:26:08 dawes Exp $
- * $Log: compress.c,v $
- * Revision 3.1  1995/03/11 14:26:08  dawes
- * updates
- *
+ * Header: compress.c,v 4.0 85/07/30 12:50:00 joe Release
+ * Log:	compress.c,v
  * Revision 4.0  85/07/30  12:50:00  joe
  * Removed ferror() calls in output routine on every output except first.
  * Prepared for release to the world.
@@ -284,7 +281,7 @@ char_type magic_header[] = { "\037\235" };	/* 1F 9D */
  * Add variable bit length output.
  *
  */
-static char rcs_ident[] = "$Header: /vol1/history/xf86/xc/util/compress/Attic/compress.c,v 3.1 1995/03/11 14:26:08 dawes Exp $";
+static char rcs_ident[] = "Header: compress.c,v 4.0 85/07/30 12:50:00 joe Release";
 
 #include <stdio.h>
 #include <ctype.h>

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.12 1996/12/23 06:38:26 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32curs.c,v 3.13 1997/02/17 09:44:56 hohndel Exp $
  * 
  * Copyright 1991 MIPS Computer Systems, Inc.
  * 
@@ -154,13 +154,13 @@ mach32CursorInit(pm, pScr)
      char *pm;
      ScreenPtr pScr;
 {
-  xhot = 0;
-  yhot = 0;
-  
   if (mach32CursGeneration != serverGeneration) {
       if (!(miPointerInitialize(pScr, &mach32PointerSpriteFuncs,
 				&xf86PointerScreenFuncs, FALSE)))
 	  return FALSE;
+
+      xhot = 0;
+      yhot = 0;
       pScr->RecolorCursor = mach32RecolorCursor;
       mach32CursGeneration = serverGeneration;
   }
