@@ -256,7 +256,6 @@ vgaInstallColormap(pmap)
       defs[i].blue = prgb[i].blue;
       defs[i].flags =  DoRed|DoGreen|DoBlue;
     }
-
   pmap->pScreen->StoreColors(pmap, entries, defs);
 
   WalkTree(pmap->pScreen, TellGainedMap, &pmap->mid);

@@ -746,8 +746,9 @@ vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore)
      *
      * BUG ALERT: The (S)VGA's segment-select register MUST be set correctly!
      */
-
+#if 0
     hwp->writeAttr(hwp, 0x10, 0x01);	/* graphics mode */
+#endif
     if (scrninfp->depth == 4) {
 	/* GJA */
 	hwp->writeGr(hwp, 0x03, 0x00);	/* don't rotate, write unmodified */
@@ -939,9 +940,9 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
      *
      * BUG ALERT: The (S)VGA's segment-select register MUST be set correctly!
      */
-
+#if 0
     hwp->writeAttr(hwp, 0x10, 0x01);	/* graphics mode */
-
+#endif
 #ifdef SAVE_FONT1
     if (hwp->FontInfo1 || (hwp->FontInfo1 = xalloc(FONT_AMOUNT))) {
 	hwp->writeSeq(hwp, 0x02, 0x04);	/* write to plane 2 */
@@ -1281,67 +1282,8 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
 	regp->CRTC[23] = 0xC3;
     regp->CRTC[24] = 0xFF;
 
-    /*
-     * OK, so much for theory.  Now, let's deal with the >real< world...
-     *
-     * The above CRTC settings are precise in theory, except that many, if not
-     * most, VGA clones fail to reset the blanking signal when the character or
-     * line counter reaches [HV]Total.  In this case, the signal is only
-     * unblanked when the counter reaches [HV]BlankEnd (mod 64, 128 or 256 as
-     * the case may be) at the start of the >next< scanline or frame, which
-     * means only part of the screen shows.  This affects how null overscans
-     * are to be implemented on such adapters.
-     *
-     * Henceforth, VGA cores that implement this broken, but unfortunately
-     * common, behaviour are to be designated as KGA's, in honour of Koen
-     * Gadeyne, whose zeal to eliminate overscans (read: fury) set in motion
-     * a series of events that led to the discovery of this problem.
-     *
-     * Some VGA's are KGA's only in the horizontal, or only in the vertical,
-     * some in both, others in neither.  Don't let anyone tell you there is
-     * such a thing as a VGA "standard"...  And, thank the Creator for the fact
-     * that Hilbert spaces are not yet implemented in this industry.
-     *
-     * The following implements a trick suggested by David Dawes.  This sets
-     * [HV]BlankEnd to zero if the blanking interval does not already contain a
-     * 0-point, and decrements it by one otherwise.  In the latter case, this
-     * will produce a left and/or top overscan which the colourmap code will
-     * (still) need to ensure is as close to black as possible.  This will make
-     * the behaviour consistent across all chipsets, while allowing all
-     * chipsets to display the entire screen.  Non-KGA drivers can ignore the
-     * following in their own copy of this code.
-     *
-     * --  TSI @ UQV,  1998.08.21
-     */
-
-    /* First the horizontal case */
-    if ((mode->CrtcHBlankEnd >> 3) == (mode->CrtcHTotal >> 3))
-    {
-	i = (regp->CRTC[3] & 0x1F) | ((regp->CRTC[5] & 0x80) >> 2);
-	if ((i-- > (regp->CRTC[2] & 0x3F)) &&
-	    (mode->CrtcHBlankEnd == mode->CrtcHTotal))
-	    i = 0;
-	regp->CRTC[3] = (regp->CRTC[3] & ~0x1F) | (i & 0x1F);
-	regp->CRTC[5] = (regp->CRTC[5] & ~0x80) | ((i << 2) & 0x80);
-    }
-
-    /*
-     * The vertical case is a little trickier.  Some VGA's ignore bit 0x80 of
-     * CRTC[22].  Also, in some cases, a zero CRTC[22] will still blank the
-     * very first scanline in a double- or multi-scanned mode.  This last case
-     * needs further investigation.
-     */
-    if (mode->CrtcVBlankEnd == mode->CrtcVTotal)	/* Null top overscan */
-    {
-	i = regp->CRTC[22];
-	if ((i > regp->CRTC[21]) &&			/* 8-bit case */
-	    ((i & 0x7F) > (regp->CRTC[21] & 0x7F)) &&	/* 7-bit case */
-	    !(regp->CRTC[9] & 0x9F))			/* 1 scanline/row */
-	    i = 0;
-	else
-	    i = (CARD8)(i - 1);
-	regp->CRTC[22] = i;
-    }
+    vgaHWHBlankKGA(mode, regp, 0, KGA_FIX_OVERSCAN | KGA_ENABLE_ON_ZERO);
+    vgaHWVBlankKGA(mode, regp, 0, KGA_FIX_OVERSCAN | KGA_ENABLE_ON_ZERO);
 
     /*
      * Theory resumes here....
@@ -1412,6 +1354,110 @@ vgaHWInit(ScrnInfoPtr scrninfp, DisplayModePtr mode)
     return(TRUE);
 }
 
+    /*
+     * OK, so much for theory.  Now, let's deal with the >real< world...
+     *
+     * The above CRTC settings are precise in theory, except that many, if not
+     * most, VGA clones fail to reset the blanking signal when the character or
+     * line counter reaches [HV]Total.  In this case, the signal is only
+     * unblanked when the counter reaches [HV]BlankEnd (mod 64, 128 or 256 as
+     * the case may be) at the start of the >next< scanline or frame, which
+     * means only part of the screen shows.  This affects how null overscans
+     * are to be implemented on such adapters.
+     *
+     * Henceforth, VGA cores that implement this broken, but unfortunately
+     * common, behaviour are to be designated as KGA's, in honour of Koen
+     * Gadeyne, whose zeal to eliminate overscans (read: fury) set in motion
+     * a series of events that led to the discovery of this problem.
+     *
+     * Some VGA's are KGA's only in the horizontal, or only in the vertical,
+     * some in both, others in neither.  Don't let anyone tell you there is
+     * such a thing as a VGA "standard"...  And, thank the Creator for the fact
+     * that Hilbert spaces are not yet implemented in this industry.
+     *
+     * The following implements a trick suggested by David Dawes.  This sets
+     * [HV]BlankEnd to zero if the blanking interval does not already contain a
+     * 0-point, and decrements it by one otherwise.  In the latter case, this
+     * will produce a left and/or top overscan which the colourmap code will
+     * (still) need to ensure is as close to black as possible.  This will make
+     * the behaviour consistent across all chipsets, while allowing all
+     * chipsets to display the entire screen.  Non-KGA drivers can ignore the
+     * following in their own copy of this code.
+     *
+     * --  TSI @ UQV,  1998.08.21
+     */
+
+CARD32
+vgaHWHBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits, 
+	       unsigned int Flags)
+{
+    int nExtBits = (nBits > 6) ? 0 : nBits - 6;
+    CARD32 ExtBits;
+    CARD32 ExtBitMask = ((1 << nExtBits) - 1) << 6;
+
+    regp->CRTC[3]  = (regp->CRTC[3] & ~0x1F) 
+                     | (((mode->CrtcHBlankEnd >> 3) - 1) & 0x1F);
+    regp->CRTC[5]  = (regp->CRTC[5] & ~0x80) 
+                     | ((((mode->CrtcHBlankEnd >> 3) - 1) & 0x20) << 2);
+    ExtBits        = ((mode->CrtcHBlankEnd >> 3) - 1) & ExtBitMask;
+
+    /* First the horizontal case */
+    if ((Flags & KGA_FIX_OVERSCAN)
+	&& ((mode->CrtcHBlankEnd >> 3) == (mode->CrtcHTotal >> 3)))
+    {
+	int i = (regp->CRTC[3] & 0x1F) 
+	    | ((regp->CRTC[5] & 0x80) >> 2)
+	    | ExtBits;
+	if ((Flags & KGA_ENABLE_ON_ZERO) 
+	    && (i-- > (((mode->CrtcHBlankStart >> 3) - 1) 
+		       & (0x3F | ExtBitMask)))
+	    && (mode->CrtcHBlankEnd == mode->CrtcHTotal))
+	    i = 0;
+	regp->CRTC[3] = (regp->CRTC[3] & ~0x1F) | (i & 0x1F);
+	regp->CRTC[5] = (regp->CRTC[5] & ~0x80) | ((i << 2) & 0x80);
+	ExtBits = i & ExtBitMask;
+    }
+    return ExtBits >> 6;
+}
+
+    /*
+     * The vertical case is a little trickier.  Some VGA's ignore bit 0x80 of
+     * CRTC[22].  Also, in some cases, a zero CRTC[22] will still blank the
+     * very first scanline in a double- or multi-scanned mode.  This last case
+     * needs further investigation.
+     */
+CARD32
+vgaHWVBlankKGA(DisplayModePtr mode, vgaRegPtr regp, int nBits, 
+	       unsigned int Flags)
+{
+    CARD32 ExtBits;
+    CARD32 nExtBits = (nBits > 8) ? 0 : (nBits - 8);
+    CARD32 ExtBitMask = ((1 << nExtBits) - 1) << 8;
+    /* If width is not known nBits should be 0. In this 
+     * case BitMask is set to 0 so we can check for it. */
+    CARD32 BitMask = (nBits < 7) ? 0 : ((1 << nExtBits) - 1);
+    int VBlankStart = (mode->CrtcVBlankStart - 1) & 0xFF; 
+    regp->CRTC[22] = (mode->CrtcVBlankEnd - 1) & 0xFF;
+    ExtBits        = (mode->CrtcVBlankEnd - 1) & ExtBitMask;
+
+    if ((Flags & KGA_FIX_OVERSCAN) 
+	&& (mode->CrtcVBlankEnd == mode->CrtcVTotal))
+      /* Null top overscan */
+    {
+	int i = regp->CRTC[22] | ExtBits;
+	if ((Flags & KGA_ENABLE_ON_ZERO) 
+	    && ((BitMask && ((i & BitMask) > (VBlankStart & BitMask)))
+	     || ((i > VBlankStart)  &&  		/* 8-bit case */
+	    ((i & 0x7F) > (VBlankStart & 0x7F)))) &&	/* 7-bit case */
+	    !(regp->CRTC[9] & 0x9F))			/* 1 scanline/row */
+	    i = 0;
+	else
+	    i = (i - 1);
+	regp->CRTC[22] = i & 0xFF;
+	ExtBits = i & 0xFF00;
+    }
+	return ExtBits >> 8;
+}
 
 /*
  * these are some more hardware specific helpers, formerly in vga.c
