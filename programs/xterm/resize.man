@@ -2,7 +2,7 @@
 .\"
 .\" updated by Thomas E. Dickey for XFree86, Februrary 1998.
 .\"
-.\" $XFree86: xc/programs/xterm/resize.man,v 1.5 2000/06/13 02:28:40 dawes Exp $
+.\" $XFree86: xc/programs/xterm/resize.man,v 1.6 2001/01/17 23:46:38 dawes Exp $
 .TH RESIZE 1 "Release 6.4" "X Version 11"
 .SH NAME
 resize \- set TERMCAP and terminal settings to current xterm window size
@@ -80,5 +80,5 @@ Mark Vandevoorde (MIT-Athena), Edward Moy (Berkeley)
 Copyright (c) 1984, 1985 by X Consortium
 .br
 See
-.IR X (1)
+.IR X (__miscmansuffix__)
 for a complete copyright notice.

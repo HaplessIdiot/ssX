@@ -56,7 +56,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from the X Consortium.
 .\"
-.\" $XFree86: xc/programs/xterm/xterm.man,v 3.67 2000/12/30 19:15:48 dickey Exp $
+.\" $XFree86: xc/programs/xterm/xterm.man,v 3.68 2001/01/17 23:46:39 dawes Exp $
 .\"
 .\" updated by Thomas E. Dickey for XFree86, July 1996.
 .TH XTERM 1 "Release 6.3" "X Version 11"
@@ -744,7 +744,7 @@ The default is ``white.''
 This option specifies the width in pixels of the border surrounding the window.
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the X server to contact; see \fIX(1)\fP.
+This option specifies the X server to contact; see \fIX(__miscmansuffix__)\fP.
 .TP 8
 .B \-fg \fIcolor\fP
 This option specifies the color to use for displaying text.  The default is
@@ -756,7 +756,7 @@ default is \fIfixed\fP.
 .TP 8
 .B \-geometry \fIgeometry\fP
 This option specifies the preferred size and position of the VT102 window;
-see \fIX(1)\fP.
+see \fIX(__miscmansuffix__)\fP.
 .TP 8
 .B \-iconic
 This option indicates that \fIxterm\fP should ask the window manager to
@@ -2507,9 +2507,9 @@ The default bindings in the VT102 window are:
          Shift <KeyPress> Select:select-cursor-start() \\
                                  select-cursor-end(PRIMARY, CUT_BUFFER0) \\n\\
          Shift <KeyPress> Insert:insert-selection(PRIMARY, CUT_BUFFER0) \\n\\
-         Shift <KeyPress> KP_Add:larger-vt-font() \n\
-    Shift <KeyPress> KP_Subtract:smaller-vt-font() \n\
-                ~Meta <KeyPress>:insert-seven-bit() \\n\\
+         Shift <KeyPress> KP_Add:larger-vt-font() \\n\\
+    Shift <KeyPress> KP_Subtract:smaller-vt-font() \\n\\
+                ~Meta <KeyPress>:insert-seven-bit() \\\n\\
                  Meta <KeyPress>:insert-eight-bit() \\n\\
                 !Ctrl <Btn1Down>:popup-menu(mainMenu) \\n\\
            !Lock Ctrl <Btn1Down>:popup-menu(mainMenu) \\n\\
@@ -2657,7 +2657,7 @@ If your display supports color, use this
 in your .Xdefaults file to
 automatically turn on color in \fIxterm\fP and similar applications.
 .SH "SEE ALSO"
-resize(1), X(1), pty(4), tty(4)
+resize(1), X(__miscmansuffix__), pty(4), tty(4)
 .br
 \fIXterm Control Sequences\fP
 (this is the file ctlseqs.ms).

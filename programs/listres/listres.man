@@ -67,7 +67,7 @@ out the name, instance, class, and type of each resource.
 .SH "X DEFAULTS"
 To be written.
 .SH "SEE ALSO"
-X(1), xrdb(1), appropriate widget documents
+X(__miscmansuffix__), xrdb(1), appropriate widget documents
 .SH "BUGS"
 On operating systems that do not support dynamic linking of run-time routines,
 this program must have all of its known widgets compiled in.  The sources
@@ -75,6 +75,6 @@ provide several tools for automating this process for various widget sets.
 .SH COPYRIGHT
 Copyright ([\d,\s]*) X Consortium
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHOR
 Jim Fulton, MIT X Consortium

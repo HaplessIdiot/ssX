@@ -64,12 +64,12 @@ This is the default.  All of the windows simply repaint.
 .PP
 .TP 10
 .B \-geometry \fIWxH+X+Y\fP
-Specifies the portion of the screen to be repainted; see \fIX(1)\fP.
+Specifies the portion of the screen to be repainted; see \fIX(__miscmansuffix__)\fP.
 .PP
 .TP 10
 .B \-display \fIdisplay\fP
 This  argument  allows  you  to  specify the server and screen to
-refresh; see \fIX(1)\fP.
+refresh; see \fIX(__miscmansuffix__)\fP.
 .SH X DEFAULTS
 The
 .I xrefresh
@@ -89,7 +89,7 @@ Determines the area to refresh.  Not very useful.
 .TP 8
 DISPLAY - To get default host and display number.
 .SH SEE ALSO
-X(1)
+X(__miscmansuffix__)
 .SH BUGS
 .PP
 It should have just one default type for the background.

@@ -354,7 +354,7 @@ tree.
 creates temporary files in /tmp for all unformatted man pages and all apropos
 searches.
 .SH "SEE ALSO"
-.IR X (1),
+.IR X (__miscmansuffix__),
 .IR man (1),
 .IR apropos (1),
 .IR catman (8),
@@ -378,7 +378,7 @@ the full path name of a user app-defaults file to be merged into the
 resource database after the system app-defaults file, and before
 the resources that are attached to the display.
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 Chris Peterson, MIT X Consortium from the V10 version written by Barry
 Shein formerly of Boston University.

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/Imakefile,v 1.1 2000/12/01 19:47:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/Imakefile,v 1.2 2000/12/14 20:59:12 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -34,7 +34,6 @@ InstallObjectModule(newport,$(MODULEDIR),drivers)
 InstallNamedNonExec($(XF86CONFIG),$(XF86CONFIG),$(LIBDIR))
 
 #if !defined(XF86DriverSDK)
-CppManTarget(newport,)
 InstallModuleManPage(newport)
 #endif
 

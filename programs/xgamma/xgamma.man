@@ -18,7 +18,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The XFree86 Project.
 .\"
-.\" $XFree86: xc/programs/xgamma/xgamma.man,v 1.3 1999/03/21 07:35:38 dawes Exp $
+.\" $XFree86: xc/programs/xgamma/xgamma.man,v 1.5 1999/11/19 13:55:13 hohndel Exp $
 .\"
 .TH xgamma 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -36,7 +36,7 @@ the XFree86 X server video mode extension (XFree86-VidModeExtension).
 .PP
 .TP 8
 .B "-display \fIdisplay\fP"
-This argument allows you to specify the server to connect to; see \fIX(1)\fP.
+This argument allows you to specify the server to connect to; see \fIX(__miscmansuffix__)\fP.
 .PP
 .TP 8
 .B "-screen \fIscreen\fP"

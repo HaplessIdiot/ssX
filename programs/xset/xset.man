@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xset/xset.man,v 3.10 2000/11/14 21:59:26 dawes Exp $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.11 2001/01/17 23:46:27 dawes Exp $
 .\" 
 .TH XSET 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -45,7 +45,7 @@ This program is used to set various user preference options of the display.
 .PP
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the server to use; see \fIX(1)\fP.
+This option specifies the server to use; see \fIX(__miscmansuffix__)\fP.
 .PP
 .TP 8
 .B b
@@ -236,7 +236,7 @@ These settings will be reset to default values when you log out.
 Note that not all X implementations are guaranteed to honor all of these
 options.
 .SH "SEE ALSO"
-X(1), Xserver(1), xmodmap(1), xrdb(1), xsetroot(1)
+X(__miscmansuffix__), Xserver(1), xmodmap(1), xrdb(1), xsetroot(1)
 .SH AUTHOR
 Bob Scheifler, MIT Laboratory for Computer Science
 .br

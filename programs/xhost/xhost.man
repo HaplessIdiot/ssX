@@ -106,7 +106,7 @@ is printed.
 .SH FILES
 /etc/X*.hosts
 .SH "SEE ALSO"
-X(1), Xsecurity(1), Xserver(1), xdm(1)
+X(__miscmansuffix__), Xsecurity(__miscmansuffix__), Xserver(1), xdm(1)
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY

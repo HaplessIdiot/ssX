@@ -165,7 +165,7 @@ This option (or any unsupported option) will cause a brief description of
 the allowable options and parameters to be printed.
 .TP 8
 .B \-display \fIdisplay\fP
-This option specifies the X server to be used; see \fIX(1)\fP.
+This option specifies the X server to be used; see \fIX(__miscmansuffix__)\fP.
 It also specifies the screen to use for the \fI-screen\fP option,
 and it specifies the screen from which preprocessor symbols are
 derived for the \fI-global\fP option.
@@ -284,7 +284,7 @@ a directory to search for files that are referenced with
 .SH FILES
 Generalizes \fI~/.Xdefaults\fP files.
 .SH "SEE ALSO"
-X(1), Xlib Resource Manager documentation, Xt resource documentation
+X(__miscmansuffix__), Xlib Resource Manager documentation, Xt resource documentation
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY

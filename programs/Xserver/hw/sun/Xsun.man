@@ -132,7 +132,7 @@ If present,  and if no explicit \fB-dev\fP options are given, specifies
 the (colon separated) list of display devices to use.
 .SH "SEE ALSO"
 .PP
-X(1), Xserver(1), xdm(1), xinit(1)
+X(__miscmansuffix__), Xserver(1), xdm(1), xinit(1)
 .SH BUGS
 The auto-configuration depends on there being appropriate special files 
 in the

@@ -149,7 +149,7 @@ accurately reflected on the screen; for servers which do not support scaled
 .I xditview
 will use the closest font from the same family.
 .SH "SEE ALSO"
-.IR X (1),
+.IR X (__miscmansuffix__),
 .IR xrdb (1),
 .IR ditroff (1),
 .I "X Logical Font Description Conventions"

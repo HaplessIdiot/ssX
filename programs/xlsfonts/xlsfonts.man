@@ -83,7 +83,7 @@ font (as is the case with some scaled font systems).
 This option specifies the font name pattern to match.
 .PP
 .SH "SEE ALSO"
-X(1), Xserver(1), xset(1), xfd(1),
+X(__miscmansuffix__), Xserver(1), xset(1), xfd(1),
 .I "X Logical Font Description Conventions"
 .SH ENVIRONMENT
 .TP 8

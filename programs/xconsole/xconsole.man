@@ -88,6 +88,6 @@ stored in the RESOURCE_MANAGER property.
 .SH FILES
 <XRoot>/lib/X11/app-defaults/XConsole - specifies required resources
 .SH "SEE ALSO"
-X(1), xrdb(1), Athena Text widget
+X(__miscmansuffix__), xrdb(1), Athena Text widget
 .SH AUTHOR
 Keith Packard (MIT X Consortium)

@@ -419,7 +419,7 @@ customization file:
 <XRoot>/lib/X11/app-defaults/XCalc-color.
 .fi
 .SH "SEE ALSO"
-X(1), xrdb(1), the Athena Widget Set
+X(__miscmansuffix__), xrdb(1), the Athena Widget Set
 .SH BUGS
 .PP
 HP mode:  A bug report claims that the sequence of keys 5, ENTER, <- 
@@ -427,7 +427,7 @@ should clear the display, but it doesn't.
 .SH COPYRIGHT
 Copyright ([\d,\s]*) X Consortium
 .br
-See \fIX(1)\fP for a full statement of rights and permissions.
+See \fIX(__miscmansuffix__)\fP for a full statement of rights and permissions.
 .SH AUTHORS
 John Bradley, University of Pennsylvania
 .br

@@ -52,7 +52,7 @@ This option specifies the name of an atom to list.  If the atom does not
 exist, a message will be printed on the standard error.
 .PP
 .SH "SEE ALSO"
-X(1), Xserver(1), xprop(1)
+X(__miscmansuffix__), Xserver(1), xprop(1)
 .SH ENVIRONMENT
 .TP 8
 .B DISPLAY

@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\"
-.\" $XFree86: xc/programs/xclock/xclock.man,v 1.6 2000/11/02 02:51:25 dawes Exp $
+.\" $XFree86: xc/programs/xclock/xclock.man,v 1.7 2001/01/17 23:45:18 dawes Exp $
 .\"
 .TH XCLOCK 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -158,7 +158,7 @@ stored in the RESOURCE_MANAGER property.
 .SH FILES
 <XRoot>/lib/X11/app-defaults/XClock - specifies required resources
 .SH "SEE ALSO"
-X(1), xrdb(1), time(3C)
+X(__miscmansuffix__), xrdb(1), time(3C)
 .SH BUGS
 .I Xclock
 believes the system clock.

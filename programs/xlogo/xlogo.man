@@ -71,7 +71,7 @@ stored in the RESOURCE_MANAGER property.
 .SH FILES
 <XRoot>/lib/X11/app-defaults/XLogo - specifies required resources
 .SH SEE ALSO
-X(1), xrdb(1)
+X(__miscmansuffix__), xrdb(1)
 .SH AUTHORS
 Ollie Jones of Apollo Computer and Jim Fulton of the MIT X Consortium
 wrote the logo graphics routine, based on a graphic design by Danny
