@@ -3,7 +3,7 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.18 2003/07/16 01:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86dga2.c,v 1.19tsi Exp $ */
 
 
 #define NEED_REPLIES
@@ -160,17 +160,18 @@ ProcXDGAOpenFramebuffer(ClientPtr client)
 
     REQUEST_SIZE_MATCH(xXDGAOpenFramebufferReq);
     rep.type = X_Reply;
-    rep.length = 0;
+    rep.length = rep.mem1 = rep.mem2 = rep.size = rep.offset = rep.extra = 0;
     rep.sequenceNumber = client->sequence;
+    deviceName = NULL;
 
     if(!DGAOpenFramebuffer(stuff->screen, &deviceName, 
-			(unsigned char**)(&rep.mem1),
-			(int*)&rep.size, (int*)&rep.offset, (int*)&rep.extra)) 
-    {
+			   (unsigned int*)(&rep.mem1),
+			   (unsigned int*)&rep.size,
+			   (unsigned int*)&rep.offset,
+			   (unsigned int*)&rep.extra)) 
 	return BadAlloc;
-    }
 
-    nameSize = deviceName ? (strlen(deviceName) + 1) : 0;
+    nameSize = (deviceName && *deviceName) ? (strlen(deviceName) + 1) : 0;
     rep.length = (nameSize + 3) >> 2;
 
     WriteToClient(client, sizeof(xXDGAOpenFramebufferReply), (char *)&rep);

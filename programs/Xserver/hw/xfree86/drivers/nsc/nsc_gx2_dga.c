@@ -1,7 +1,7 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_dga.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx2_dga.c,v 1.4tsi Exp $ */
 /*
  * $Workfile: nsc_gx2_dga.c $
- * $Revision: 1.4 $
+ * $Revision: 1.5 $
  * $Author: tsi $
  * 
  * File contents: DGA(Direct Acess Graphics mode) is feature of
@@ -154,8 +154,8 @@
 
 /* forward declarations */
 Bool GX2DGAInit(ScreenPtr pScreen);
-static Bool GX2_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
-				int *, int *, int *);
+static Bool GX2_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *,
+				unsigned int *, unsigned int *, unsigned int *);
 static Bool GX2_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  GX2_GetViewport(ScrnInfoPtr);
 static void GX2_SetViewport(ScrnInfoPtr, int, int, int);
@@ -486,16 +486,17 @@ GX2_BlitRect(ScrnInfoPtr pScrn,
 */
 static Bool
 GX2_OpenFramebuffer(ScrnInfoPtr pScrn,
-		    char **name, unsigned char **mem,
-		    int *size, int *offset, int *flags)
+		    char **name, unsigned int *mem,
+		    unsigned int *size, unsigned int *offset,
+		    unsigned int *flags)
 {
    GeodePtr pGeode = GEODEPTR(pScrn);
 
    *name = NULL;			/* no special device */
-   *mem = (unsigned char *)pGeode->FBLinearAddr;
+   *mem = pGeode->FBLinearAddr;
    *size = pGeode->FBSize;
    *offset = 0;
-   *flags = DGA_NEED_ROOT;
+   *flags = 0;
    return TRUE;
 }
 

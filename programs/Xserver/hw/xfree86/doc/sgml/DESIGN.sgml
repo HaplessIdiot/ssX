@@ -36,7 +36,7 @@
 
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.54tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.55tsi Exp $
 </ident>
 
 
@@ -1120,7 +1120,7 @@ is what &s.code;InitOutput()&e.code; does:
     &s.code;void ChipAdjustFrame(int index, int x, int y, int flags)&e.code;
     <quote><p>
       Changes the viewport for the screen identified by
-      &s.code;index;&e.code;.
+      &s.code;index&e.code;.
 
       It should be noted that many chipsets impose restrictions on where the
       viewport may be placed in the virtual resolution, either for alignment
@@ -3326,10 +3326,10 @@ typedef struct {
   Bool (*OpenFramebuffer)(
        ScrnInfoPtr pScrn,
        char **name,
-       unsigned char **mem,
-       int *size,
-       int *offset,
-       int *extra
+       unsigned int *mem,
+       unsigned int *size,
+       unsigned int *offset,
+       unsigned int *extra
   );
   void (*CloseFramebuffer)(ScrnInfoPtr pScrn);
   Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
@@ -3376,7 +3376,13 @@ typedef struct {
 	</quote>
       &s.code;mem&e.code;
 	<quote><p>
-	       The physical address of the start of the framebuffer.
+	       The physical address of the start of the framebuffer, or the
+	       &s.code;mmap(2)&e.code; offset into the device designated by
+	       &s.code;name&e.code;.  This is actually a pointer to two
+	       consecutive 32-bit values.  Regardless of hardware architecture,
+	       the first of these is to be set to the low-order 32 bits of the
+	       address or offset, and the second is to be set to the high-order
+	       32 bits.
 
 	</quote>
       &s.code;size&e.code;

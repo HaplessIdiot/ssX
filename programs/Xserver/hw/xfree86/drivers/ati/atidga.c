@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.10 2003/04/23 21:51:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidga.c,v 1.11tsi Exp $ */
 /*
  * Copyright 2000 through 2004 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -42,18 +42,18 @@
 static Bool
 ATIDGAOpenFramebuffer
 (
-    ScrnInfoPtr   pScreenInfo,
-    char          **DeviceName,
-    unsigned char **ApertureBase,
-    int           *ApertureSize,
-    int           *ApertureOffset,
-    int           *flags
+    ScrnInfoPtr  pScreenInfo,
+    char         **DeviceName,
+    unsigned int *ApertureBase,
+    unsigned int *ApertureSize,
+    unsigned int *ApertureOffset,
+    unsigned int *flags
 )
 {
     ATIPtr pATI = ATIPTR(pScreenInfo);
 
     *DeviceName = NULL;         /* No special device */
-    *ApertureBase = (unsigned char *)(pATI->LinearBase);
+    *ApertureBase = pATI->LinearBase;
     *ApertureSize = pScreenInfo->videoRam * 1024;
     *ApertureOffset = 0;        /* Always */
     *flags = 0;                 /* Root premissions OS-dependent */

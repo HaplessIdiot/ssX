@@ -919,7 +919,7 @@ it exists):
 
      void ChipAdjustFrame(int index, int x, int y, int flags)
 
-          Changes the viewport for the screen identified by index;.
+          Changes the viewport for the screen identified by index.
 
           It should be noted that many chipsets impose restrictions
           on where the viewport may be placed in the virtual reso-
@@ -2762,10 +2762,10 @@ DGAInit.
                  Bool (*OpenFramebuffer)(
                       ScrnInfoPtr pScrn,
                       char **name,
-                      unsigned char **mem,
-                      int *size,
-                      int *offset,
-                      int *extra
+                      unsigned int *mem,
+                      unsigned int *size,
+                      unsigned int *offset,
+                      unsigned int *extra
                  );
                  void (*CloseFramebuffer)(ScrnInfoPtr pScrn);
                  Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
@@ -2810,7 +2810,13 @@ DGAInit.
           mem
 
                The physical address of the start of the frame-
-               buffer.
+               buffer, or the mmap(2) offset into the device
+               designated by name.  This is actually a pointer
+               to two consecutive 32-bit values.  Regardless
+               of hardware architecture, the first of these is
+               to be set to the low-order 32 bits of the
+               address or offset, and the second is to be set
+               to the high-order 32 bits.
 
           size
 
@@ -6364,7 +6370,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.55 tsi Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.56 tsi Exp $
 
 
-$XFree86: $
+$XFree86$

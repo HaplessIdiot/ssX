@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.25tsi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.26tsi Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -824,11 +824,17 @@ XDGAMapFramebuffer(
      pMap = pMap->next;
    }
 
+#if 0
    if(extra & XDGANeedRoot) {
     /* we should probably check if we have root permissions and
        return False here */
 
+    /*
+     * On the other hand, checking for root permission is pointless, given that
+     * DGAMapPhysical() returns False on EACCESS anyway.
+     */
    }
+#endif
 
    pMap = (DGAMapPtr)Xmalloc(sizeof(DGAMapRec));
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.97 2003/10/30 17:36:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.98tsi Exp $ */
 
 /*
  * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
@@ -956,10 +956,10 @@ typedef struct {
    Bool (*OpenFramebuffer)(
 	ScrnInfoPtr pScrn, 
 	char **name,
-	unsigned char **mem, 
-	int *size,
-	int *offset,
-        int *extra
+	unsigned int *mem, 
+	unsigned int *size,
+	unsigned int *offset,
+	unsigned int *extra
    );
    void	(*CloseFramebuffer)(ScrnInfoPtr pScrn);
    Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.12tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dga.c,v 1.13tsi Exp $ */
 
 #include "nv_local.h"
 #include "nv_include.h"
@@ -7,15 +7,15 @@
 #include "dgaproc.h"
 
 
-static Bool NV_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
-					int *, int *, int *);
+static Bool NV_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *, 
+			       unsigned int *, unsigned int *, unsigned int *);
 static Bool NV_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  NV_GetViewport(ScrnInfoPtr);
 static void NV_SetViewport(ScrnInfoPtr, int, int, int);
 static void NV_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void NV_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 static void NV_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-					unsigned long);
+			     unsigned long);
 
 static
 DGAFunctionRec NV_DGAFuncs = {
@@ -294,18 +294,18 @@ static Bool
 NV_OpenFramebuffer(
    ScrnInfoPtr pScrn, 
    char **name,
-   unsigned char **mem,
-   int *size,
-   int *offset,
-   int *flags
+   unsigned int *mem,
+   unsigned int *size,
+   unsigned int *offset,
+   unsigned int *flags
 ){
     NVPtr pNv = NVPTR(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)pNv->FbAddress;
+    *mem = pNv->FbAddress;
     *size = pNv->FbMapSize;
     *offset = 0;
-    *flags = DGA_NEED_ROOT;
+    *flags = 0;
 
     return TRUE;
 }

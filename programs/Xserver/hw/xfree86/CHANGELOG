@@ -1,4 +1,8 @@
 XFree86 4.4.99.19 (xx November 2004)
+ 232. Rationalise driver interface for DGA's OpenFramebuffer();  fix
+      siliconmotion driver's entry for it;  bump driver ABI version (not
+      strictly necessary as this is only a source API change)
+      (Marc La France).
  231. Cleanup loader.c's handling of MAP_32BIT to match that in elfloader.c
       (Bugzilla #1515, Nicolas Joly);
  230. Fix the code sequence order for the repaya in the Sinhala XKB map
@@ -19189,7 +19193,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3355 2004/12/01 01:27:45 dickey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3356 2004/12/03 02:18:38 dawes Exp $
 
 
 

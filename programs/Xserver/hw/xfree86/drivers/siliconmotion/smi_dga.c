@@ -26,7 +26,7 @@ Silicon Motion shall not be used in advertising or otherwise to promote the
 sale, use or other dealings in this Software without prior written
 authorization from the XFree86 Project and Silicon Motion.
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_dga.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/siliconmotion/smi_dga.c,v 1.3tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -38,15 +38,20 @@ authorization from the XFree86 Project and Silicon Motion.
 #include "smi.h"
 #include "dgaproc.h"
 
-static Bool SMI_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, int *,
-								int *, int *);
+#ifndef NEW_DGAOPENFRAMEBUFFER
+static Bool SMI_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **,
+				int *, int *, int *);
+#else
+static Bool SMI_OpenFramebuffer(ScrnInfoPtr, char **, unsigned int *,
+				unsigned int *, unsigned int *, unsigned int *);
+#endif
 static Bool SMI_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  SMI_GetViewport(ScrnInfoPtr);
 static void SMI_SetViewport(ScrnInfoPtr, int, int, int);
 static void SMI_FillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void SMI_BlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 static void SMI_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int,
-							  unsigned long);
+			      unsigned long);
 
 static
 DGAFunctionRec SMI_DGAFuncs =
@@ -281,19 +286,30 @@ SMI_BlitTransRect(ScrnInfoPtr pScrn, int srcx, int srcy, int w, int h, int dstx,
 	LEAVE_PROC("SMI_BlitTraneRect");
 }
 
+#ifndef NEW_DGAOPENFRAMEBUFFER
 static Bool
 SMI_OpenFramebuffer(ScrnInfoPtr pScrn, char **name, unsigned char **mem,
-					int *size, int *offset, int *flags)
+		    int *size, int *offset, int *flags)
+#else
+static Bool
+SMI_OpenFramebuffer(ScrnInfoPtr pScrn, char **name, unsigned int *mem,
+		    unsigned int *size, unsigned int *offset,
+		    unsigned int *flags)
+#endif
 {
 	SMIPtr pSmi = SMIPTR(pScrn);
 
 	ENTER_PROC("SMI_OpenFrameBuffer");
 
 	*name   = NULL;	/* no special device */
-	*mem    = (unsigned char*)pSmi->FBBase;
+#ifndef NEW_DGAOPENFRAMEBUFFER
+	*mem    = (unsigned char *)pScrn->memPhysBase;
+#else
+	*mem    = pScrn->memPhysBase;
+#endif
 	*size   = pSmi->videoRAMBytes;
 	*offset = 0;
-	*flags  = DGA_NEED_ROOT;
+	*flags  = 0;
 
 	LEAVE_PROC("SMI_OpenFrameBuffer");
 	return(TRUE);

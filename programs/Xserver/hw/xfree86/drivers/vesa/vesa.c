@@ -28,7 +28,7 @@
  * Authors: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *          David Dawes <dawes@xfree86.org>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.43 2004/04/25 14:22:55 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vesa/vesa.c,v 1.44tsi Exp $
  */
 /*
  * Copyright (c) 2000-2004 by The XFree86 Project, Inc.
@@ -1659,24 +1659,25 @@ VESADisplayPowerManagementSet(ScrnInfoPtr pScrn, int mode,
  * DGA stuff
  ***********************************************************************/
 static Bool VESADGAOpenFramebuffer(ScrnInfoPtr pScrn, char **DeviceName,
-				   unsigned char **ApertureBase,
-				   int *ApertureSize, int *ApertureOffset,
-				   int *flags);
+				   unsigned int *ApertureBase,
+				   unsigned int *ApertureSize,
+				   unsigned int *ApertureOffset,
+				   unsigned int *flags);
 static Bool VESADGASetMode(ScrnInfoPtr pScrn, DGAModePtr pDGAMode);
 static void VESADGASetViewport(ScrnInfoPtr pScrn, int x, int y, int flags);
 
 static Bool
 VESADGAOpenFramebuffer(ScrnInfoPtr pScrn, char **DeviceName,
-		       unsigned char **ApertureBase, int *ApertureSize,
-		       int *ApertureOffset, int *flags)
+		       unsigned int *ApertureBase, unsigned int *ApertureSize,
+		       unsigned int *ApertureOffset, unsigned int *flags)
 {
     VESAPtr pVesa = VESAGetRec(pScrn);
 
     *DeviceName = NULL;		/* No special device */
-    *ApertureBase = (unsigned char *)(long)(pVesa->mapPhys);
+    *ApertureBase = pVesa->mapPhys;
     *ApertureSize = pVesa->mapSize;
     *ApertureOffset = pVesa->mapOff;
-    *flags = DGA_NEED_ROOT;
+    *flags = 0;
 
     return (TRUE);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.10tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/apm/apm_dga.c,v 1.11tsi Exp $ */
 /*
  * file: apm_dga.c
  * ported from s3virge, ported from mga
@@ -15,15 +15,15 @@
 #include "dgaproc.h"
 
 
-static Bool ApmOpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
-					int *, int *, int *);
+static Bool ApmOpenFramebuffer(ScrnInfoPtr, char **, unsigned int *, 
+			       unsigned int *, unsigned int *, unsigned int *);
 static Bool ApmSetMode(ScrnInfoPtr, DGAModePtr);
 static int  ApmGetViewport(ScrnInfoPtr);
 static void ApmSetViewport(ScrnInfoPtr, int, int, int);
 static void ApmFillRect(ScrnInfoPtr, int, int, int, int, unsigned long);
 static void ApmBlitRect(ScrnInfoPtr, int, int, int, int, int, int);
 static void ApmBlitTransRect(ScrnInfoPtr, int, int, int, int, int, int, 
-					unsigned long);
+			     unsigned long);
 static void ApmSync(ScrnInfoPtr);
 
 static
@@ -414,20 +414,20 @@ static Bool
 ApmOpenFramebuffer(
     ScrnInfoPtr pScrn, 
     char **name,
-    unsigned char **mem,
-    int *size,
-    int *offset,
-    int *flags
+    unsigned int *mem,
+    unsigned int *size,
+    unsigned int *offset,
+    unsigned int *flags
 )
 {
     APMDECL(pScrn);
 
     *name = NULL; 		/* no special device */
-    *mem = (unsigned char*)(pApm->LinAddress +
+    *mem = (pApm->LinAddress +
 			0*((char *)pApm->FbBase - (char *)pApm->LinMap));
     *size = pScrn->videoRam << 10;
     *offset = 0;
-    *flags = DGA_NEED_ROOT;
+    *flags = 0;
 
     return TRUE;
 }
