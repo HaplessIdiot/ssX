@@ -2864,15 +2864,21 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    set_dispmode(pScrn, pPriv);
 
    /* Check if overlay is supported with current mode */
-   if(pPriv->displayMode & (DISPMODE_SINGLE1 | DISPMODE_MIRROR)) {
-      if(!(pSiS->MiscFlags & MISC_CRT1OVERLAY)) {
-         if(pPriv->overlayStatus) {
-	    close_overlay(pSiS, pPriv);
-	 }
-	 pPriv->NoOverlay = TRUE;
-	 return;
+#ifdef SISMERGED
+   if(!pSiS->MergedFB) {
+#endif
+      if(pPriv->displayMode & (DISPMODE_SINGLE1 | DISPMODE_MIRROR)) {
+         if(!(pSiS->MiscFlags & MISC_CRT1OVERLAY)) {
+            if(pPriv->overlayStatus) {
+	       close_overlay(pSiS, pPriv);
+	    }
+	    pPriv->NoOverlay = TRUE;
+	    return;
+         }
       }
+#ifdef SISMERGED
    }
+#endif
 
    memset(&overlay, 0, sizeof(overlay));
 
@@ -2945,6 +2951,17 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 #endif
            return;
    }
+
+#ifdef SISMERGED
+   if(pSiS->MergedFB) {
+      /* Check if dotclock is within limits for CRT1 */
+      if(pPriv->displayMode & (DISPMODE_SINGLE1 | DISPMODE_MIRROR)) {
+         if(!(pSiS->MiscFlags & MISC_CRT1OVERLAY)) {
+            overlay.DoFirst = FALSE;
+         }
+      }
+   }
+#endif
 
    if(overlay.dstBox.x1 < 0) {
       srcOffsetX = pPriv->src_w * (-overlay.dstBox.x1) / pPriv->drw_w;
