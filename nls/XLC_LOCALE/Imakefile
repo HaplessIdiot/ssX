@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:59 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.22 2002/10/08 23:31:42 dawes Exp $
+XCOMM $XFree86: xc/nls/XLC_LOCALE/Imakefile,v 1.23 2002/10/09 00:05:23 dawes Exp $
 
   WCHAR32 = HasWChar32
 
@@ -34,6 +34,7 @@ InstallNamedNonExec(name.lt,XLC_LOCALE,$(XLOCALEDIR)/name)
 
 LTarget(C)
 LTarget(armscii-8)
+LTarget(en_US.UTF-8)
 LTarget(georgian-academy)
 LTarget(georgian-ps)
 LTarget(ibm-cp1133)
@@ -57,7 +58,9 @@ LTarget(iso8859-9e)
 LTarget(ja)
 LTarget(ja.JIS)
 LTarget(ja.SJIS)
+LTarget(ja_JP.UTF-8)
 LTarget(ko)
+LTarget(ko_KR.UTF-8)
 LTarget(koi8-r)
 LTarget(koi8-u)
 LTarget(koi8-c)
@@ -67,6 +70,8 @@ LTarget(microsoft-cp1256)
 LTarget(mulelao-1)
 LTarget(nokhchi-1)
 LTarget(tatar-cyr)
+LTarget(th_TH)
+LTarget(th_TH.UTF-8)
 LTarget(tscii-0)
 LTarget(vi_VN.tcvn)
 LTarget(vi_VN.viscii)
@@ -76,9 +81,6 @@ LTarget(zh_HK.big5)
 LTarget(zh_HK.big5hkscs)
 LTarget(zh_TW)
 LTarget(zh_TW.big5)
-LTarget(th_TH)
-LTarget(en_US.UTF-8)
-LTarget(th_TH.UTF-8)
 #ifdef UXPArchitecture
 LTarget(ja.U90)
 LTarget(ja.S90)
