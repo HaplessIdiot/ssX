@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile /main/22 1996/09/28 17:16:44 rws $
-XCOMM $XFree86: xc/programs/bitmap/Imakefile,v 3.2 1996/12/23 07:10:29 dawes Exp $
+XCOMM $XFree86: xc/programs/bitmap/Imakefile,v 3.3 1997/05/12 13:28:06 hohndel Exp $
 
 BUTTONPICTURES = \
 	Dashes \
@@ -16,10 +16,10 @@ BUTTONPICTURES = \
 	Term \
 	Up
 
-        DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES)
 #if HasMkstemp
-  EXTRA_DEFINES = -DHAS_MKSTEMP
+  MKTMP_DEFINES = -DHAS_MKSTEMP
 #endif
+        DEFINES = $(IEEE_DEFS) $(SIGNAL_DEFINES) $(MKTMP_DEFINES)
         DEPLIBS = XawClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs
           SRCS1 = BitEdit.c CutPaste.c Graphics.c ReqMach.c Bitmap.c \

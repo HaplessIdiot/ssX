@@ -1,10 +1,10 @@
 XCOMM $XConsortium: Imakefile /main/42 1996/01/14 16:50:01 kaleb $
-XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.6 1996/01/24 22:04:31 dawes Exp $
+XCOMM $XFree86: xc/programs/twm/Imakefile,v 3.7 1997/05/12 13:28:08 hohndel Exp $
 
 
 
 #if HasMkstemp
-  EXTRA_DEFINES = -DHAS_MKSTEMP
+  MKTMP_DEFINES = -DHAS_MKSTEMP
 #endif
          YFLAGS = -d
         DEPLIBS = $(DEPXMULIB) $(DEPXTOOLLIB) XkbClientDepLibs $(DEPXLIB)
@@ -14,7 +14,7 @@ LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) XkbClientLibs $(XLIB)
 LOCAL_LIBRARIES = $(XMULIB) $(XTOOLLIB) XkbClientLibs $(XLIB) $(LEXLIB)
 #endif
        LINTLIBS = $(LINTXMU) $(LINTXTOOLLIB) $(LINTXLIB)
-        DEFINES = $(SIGNAL_DEFINES) XkbClientDefines
+        DEFINES = $(SIGNAL_DEFINES) $(MKTMP_DEFINES) XkbClientDefines
 
            SRCS = gram.c lex.c deftwmrc.c add_window.c gc.c list.c twm.c \
 		parse.c menus.c events.c resize.c util.c version.c iconmgr.c \

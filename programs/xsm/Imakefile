@@ -13,12 +13,12 @@ XCOMM $XConsortium: Imakefile /main/18 1996/01/31 23:50:38 gildea $
 
          RSHCMD = RshCmd
 
+#if HasMkstemp
+  MKTMP_DEFINES = -DHAS_MKSTEMP
+#endif
         DEPLIBS = XawClientDepLibs XkbClientDepLibs
 LOCAL_LIBRARIES = XawClientLibs XkbClientLibs
-        DEFINES = XkbClientDefines
-#if HasMkstemp
-  EXTRA_DEFINES = -DHAS_MKSTEMP
-#endif
+        DEFINES = $(MKTMP_DEFINES) XkbClientDefines
            SRCS1 = auth.c choose.c info.c list.c lock.c log.c \
 		   mainwin.c misc.c popup.c printhex.c prop.c remote.c \
 		   restart.c save.c saveutil.c signals.c xsm.c xtwatch.c
