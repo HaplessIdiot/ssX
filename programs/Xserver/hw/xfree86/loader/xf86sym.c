@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.181 2001/01/21 21:19:37 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.182 2001/01/30 22:06:20 tsi Exp $ */
 
 /*
  *
@@ -753,22 +753,18 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86memchr)
    SYMFUNC(xf86memcmp)
    SYMFUNC(xf86memcpy)
-#if (defined(__powerpc__) && (defined(Lynx) || defined(linux))) || defined(__sparc__) || defined(__ia64__)
    /*
-    * Some PPC, SPARC, and IA64 compilers generate calls to memcpy to handle
-    * structure copies.  This causes a problem both here and in shared
-    * libraries as there is no way to map the name of the call to the
-    * correct function.
+    * Some compilers generate calls to memcpy to handle structure copies
+    * or run-time initializations.
     */
-   SYMFUNC(memcpy)
-   /*
-    * Some PPC, SPARC, and IA64 compilers generate calls to memset to handle 
-    * aggregate initializations.
-    */
-   SYMFUNC(memset)
-#endif
-   SYMFUNC(xf86memmove)
+   SYMFUNCALIAS("memcpy",xf86memcpy)
    SYMFUNC(xf86memset)
+   /*
+    * Some compilers generate calls to memset to handle aggregate
+    * initializations.
+    */
+   SYMFUNCALIAS("memset",xf86memset)
+   SYMFUNC(xf86memmove)
    SYMFUNC(xf86mmap)
    SYMFUNC(xf86modf)
    SYMFUNC(xf86munmap)
