@@ -37,7 +37,7 @@
 *               instructions.
 *
 ****************************************************************************/
-/* $XFree86: xc/extras/x86emu/src/x86emu/ops2.c,v 1.4 2000/11/16 19:44:50 eich Exp $ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/ops2.c,v 1.5tsi Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -145,6 +145,7 @@ static void x86emuOp2_long_jump(u8 op2)
         break;
     }
     DECODE_PRINTF(name);
+    (void)name;
     target = (s16) fetch_word_imm();
     target += (s16) M.x86.R_IP;
     DECODE_PRINTF2("%04x\n", target);
@@ -237,6 +238,7 @@ static void x86emuOp2_set_byte(u8 op2)
         break;
     }
     DECODE_PRINTF(name);
+    (void)name;
     FETCH_DECODE_MODRM(mod, rh, rl);
     switch (mod) {
     case 0:

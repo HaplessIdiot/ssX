@@ -35,7 +35,7 @@
 * Description:  Header file for x86 register definitions.
 *
 ****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/extras/x86emu/include/x86emu/regs.h,v 1.4tsi Exp $ */
 
 #ifndef __X86EMU_REGS_H
 #define __X86EMU_REGS_H
@@ -88,6 +88,8 @@ typedef struct {
 	} I8_reg_t;
 
 #endif /* BIG_ENDIAN */
+
+#pragma pack(0)
 
 typedef union {
 	I32_reg_t   I32_reg;
@@ -304,8 +306,6 @@ typedef struct {
 	void*        	private;
 	X86EMU_regs		x86;
 	} X86EMU_sysEnv;
-
-#pragma pack()
 
 /*----------------------------- Global Variables --------------------------*/
 

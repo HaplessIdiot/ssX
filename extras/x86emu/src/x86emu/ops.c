@@ -70,7 +70,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.6 2001/01/06 20:19:03 tsi Exp $ */
+/* $XFree86: xc/extras/x86emu/src/x86emu/ops.c,v 1.8tsi Exp $ */
 
 #include "x86emu/x86emui.h"
 
@@ -9421,11 +9421,9 @@ Handles opcode 0xd5
 ****************************************************************************/
 static void x86emuOp_aad(u8 X86EMU_UNUSED(op1))
 {
-    u8 a;
-
     START_OF_INSTR();
     DECODE_PRINTF("AAD\n");
-    a = fetch_byte_imm();
+    (void) fetch_byte_imm();
     TRACE_AND_STEP();
     M.x86.R_AX = aad_word(M.x86.R_AX);
     DECODE_CLEAR_SEGOVR();
