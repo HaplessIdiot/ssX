@@ -10248,7 +10248,6 @@ void SiS_SetTVyposoffset(ScrnInfoPtr pScrn, int val)
 		SISWaitRetraceCRT2(pScrn);
 		outSISIDXREG(SISPART2,0x01,p2_01);
 		outSISIDXREG(SISPART2,0x02,p2_02);
-		xf86DrvMsg(0, X_INFO, "Part2 1,2: %x %x\n", p2_01, p2_02);
 	     }
 	 }
 
