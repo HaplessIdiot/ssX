@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.77 2000/11/27 00:10:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.78 2000/11/28 17:25:12 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -256,6 +256,7 @@
 #define PCI_CHIP_VAS96011  	0x0702
 
 /* Avance Logic */
+#define PCI_CHIP_ALG2064	0x2064
 #define PCI_CHIP_ALG2301	0x2301
 
 /* NS */
@@ -1367,6 +1368,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_PERMEDIA3,	"GLINT Permedia 3",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_AVANCE_2, {
+				{PCI_CHIP_ALG2064,	"ALG2064",0},
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_S3,	{
 				{PCI_CHIP_PLATO,	"PLATO/PX",0},
