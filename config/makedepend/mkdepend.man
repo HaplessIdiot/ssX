@@ -23,7 +23,7 @@
 .\" dealing in this Software without prior written authorization from The
 .\" Open Group.
 .\"
-.\" $XFree86: xc/config/makedepend/mkdepend.man,v 1.4 2001/02/07 22:51:55 tsi Exp $
+.\" $XFree86: xc/config/makedepend/mkdepend.man,v 1.5 2001/12/14 19:53:21 dawes Exp $
 .\"
 .TH MAKEDEPEND 1 __xorgversion__
 .UC 4
@@ -239,7 +239,7 @@ This option enables you to change this width.
 Verbose operation.
 This option causes 
 .B makedepend
-to emit the list of files included by each input file on standard output.
+to emit the list of files included by each input file.
 .TP 5
 .B \-m
 Warn about multiple inclusion.

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.9 2001/04/29 23:25:02 tsi Exp $ */
+/* $XFree86: xc/config/makedepend/cppsetup.c,v 3.10 2001/12/14 19:53:20 dawes Exp $ */
 
 #include "def.h"
 
@@ -126,6 +126,7 @@ yyerror(s)
 struct _parse_data {
     struct filepointer *filep;
     struct inclist *inc;
+    char *filename;
     const char *line;
 };
 
@@ -134,7 +135,7 @@ my_if_errors (IfParser *ip, const char *cp, const char *expecting)
 {
     struct _parse_data *pd = (struct _parse_data *) ip->data;
     int lineno = pd->filep->f_line;
-    char *filename = pd->inc->i_file;
+    char *filename = pd->filename;
     char prefix[300];
     int prefixlen;
     int i;
@@ -204,7 +205,10 @@ my_eval_variable (IfParser *ip, const char *var, int len)
 }
 
 int
-cppsetup(char *line, struct filepointer *filep, struct inclist *inc)
+cppsetup(char *filename,
+	 char *line,
+	 struct filepointer *filep,
+	 struct inclist *inc)
 {
     IfParser ip;
     struct _parse_data pd;
@@ -213,6 +217,7 @@ cppsetup(char *line, struct filepointer *filep, struct inclist *inc)
     pd.filep = filep;
     pd.inc = inc;
     pd.line = line;
+    pd.filename = filename;
     ip.funcs.handle_error = my_if_errors;
     ip.funcs.eval_defined = my_eval_defined;
     ip.funcs.eval_variable = my_eval_variable;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.49 2001/12/06 15:28:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/r128_driver.c,v 1.50 2001/12/10 23:13:39 alanh Exp $ */
 /*
  * Copyright 1999, 2000 ATI Technologies Inc., Markham, Ontario,
  *                      Precision Insight, Inc., Cedar Park, Texas, and
@@ -1527,7 +1527,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 				   NULL,        /* linePitches */
 				   8 * 64,      /* minPitch */
 				   8 * 1024,    /* maxPitch */
-				   64 * pScrn->bitsPerPixel, /* pitchInc */
+				   8 * 64,      /* pitchInc */
 				   128,         /* minHeight */
 				   2048,        /* maxHeight */
 				   pScrn->display->virtualX,
@@ -1537,7 +1537,7 @@ static Bool R128PreInitModes(ScrnInfoPtr pScrn)
 
         if (modesFound < 1 && info->FBDev) {
 	        fbdevHWUseBuildinMode(pScrn);
-	        pScrn->displayWidth = pScrn->virtualX; /* FIXME: might be wrong */
+	        pScrn->displayWidth = fbdevHWGetLineLength(pScrn)/(pScrn->bitsPerPixel/8);
 	        modesFound = 1;
         }
 

@@ -24,7 +24,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/makedepend/def.h,v 3.10 2001/07/25 15:04:40 dawes Exp $ */
+/* $XFree86: xc/config/makedepend/def.h,v 3.11 2001/12/14 19:53:20 dawes Exp $ */
 
 #include "Xos.h"
 #include "Xfuncproto.h"
@@ -166,7 +166,9 @@ void                    add_include(struct filepointer *filep,
 				    char *include, int type,
 				    boolean failOK);
 
-int                     cppsetup(char *line, struct filepointer *filep, 
+int                     cppsetup(char *filename,
+				 char *line,
+				 struct filepointer *filep,
 				 struct inclist *inc);
 
 

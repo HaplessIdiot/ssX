@@ -35,7 +35,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
 
-Copyright 1987, 1988, 1994, 1998  The Open Group
+Copyright 1987, 1988, 1994, 1998, 2001  The Open Group
 
 Permission to use, copy, modify, distribute, and sell this software and its
 documentation for any purpose is hereby granted without fee, provided that
@@ -58,7 +58,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.22 2001/10/31 22:50:26 tsi Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.23 2001/12/14 19:56:26 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -238,25 +238,25 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 	    FD_SET (ConnectionNumber(app->list[ii]), &wf->rmask);
 	}
 #else
-#ifdef POLLRDNORM
-#define XPOLL_READ (POLLIN|POLLRDNORM)
-#else
-#define XPOLL_READ POLLIN
+#ifndef POLLRDNORM
+#define POLLRDNORM 0
 #endif
-#ifdef POLLWRNORM
-#if (POLLWRNORM == POLLOUT)
-#define XPOLL_WRITE POLLOUT
-#else
-#define XPOLL_WRITE (POLLOUT|POLLWRNORM)
+
+#ifndef POLLRDBAND
+#define POLLRDBAND 0
 #endif
-#else
-#define XPOLL_WRITE POLLOUT
+
+#ifndef POLLWRNORM
+#define POLLWRNORM 0
 #endif
-#ifdef POLLRDBAND
-#define XPOLL_EXCEPT (POLLPRI|POLLRDBAND)
-#else
-#define XPOLL_EXCEPT POLLPRI
+
+#ifndef POLLWRBAND
+#define POLLWRBAND 0
 #endif
+
+#define XPOLL_READ (POLLIN|POLLRDNORM|POLLPRI|POLLRDBAND)
+#define XPOLL_WRITE (POLLOUT|POLLWRNORM|POLLWRBAND)
+#define XPOLL_EXCEPT 0
 
     if (!ignoreEvents)
 	wf->fdlistlen = wf->num_dpys = app->count;

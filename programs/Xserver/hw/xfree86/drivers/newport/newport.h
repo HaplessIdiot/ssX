@@ -1,7 +1,7 @@
 /* 
  * Id: newport.h,v 1.4 2000/11/29 20:58:10 agx Exp $
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.4 2001/11/23 19:50:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport.h,v 1.5 2001/11/26 15:24:37 tsi Exp $ */
 
 #ifndef __NEWPORT_H__
 #define __NEWPORT_H__
@@ -87,6 +87,8 @@ void NewportBfwait(NewportRegsPtr pNewportRegs);
 void NewportXmap9SetModeRegister(NewportRegsPtr pNewportRegs, CARD8 address, CARD32 mode);
 void NewportBackupRex3( ScrnInfoPtr pScrn);
 void NewportRestoreRex3( ScrnInfoPtr pScrn);
+void NewportBackupXMap9s( ScrnInfoPtr pScrn);
+void NewportRestoreXMap9s( ScrnInfoPtr pScrn);
 
 /* newort_cmap.c */
 void NewportLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indices, 

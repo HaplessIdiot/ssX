@@ -30,7 +30,7 @@
  * Project.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.13 2001/10/28 03:33:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/newport/newport_driver.c,v 1.14 2001/11/23 19:50:45 dawes Exp $ */
 
 /* function prototypes, common data structures & generic includes */
 #include "newport.h"
@@ -387,7 +387,8 @@ NewportPreInit(ScrnInfoPtr pScrn, int flags)
 	}
 	
 	/* Set up clock ranges that are alway ok */
-	/* XXX Should use the correct data from the specs(which specs?) here */
+	
+	/* XXX: Use information from VC2 here */
 	clockRanges = xnfalloc(sizeof(ClockRange));
 	clockRanges->next = NULL;
 	clockRanges->minClock = 10000;
@@ -644,18 +645,7 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	NewportBackupPalette(pScrn);
 	/* XXX move this into a generic backup_xmap9 function */
 	if( pNewport->Bpp == 3) { /* at 24bpp we have to backup some more registers */
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP0 | R_DCB_XMAP9_PROTOCOL |
-				XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-		pNewport->txt_xmap9_cfg0 = pNewportRegs->set.dcbdata0.bytes.b3;
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP1 | R_DCB_XMAP9_PROTOCOL |
-					XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-		pNewport->txt_xmap9_cfg1 = pNewportRegs->set.dcbdata0.bytes.b3;
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP0 | R_DCB_XMAP9_PROTOCOL |
-					XM9_CRS_MODE_REG_INDEX | NPORT_DMODE_W1 );
-		pNewport->txt_xmap9_mi = pNewportRegs->set.dcbdata0.bytes.b3; 
+		NewportBackupXMap9s( pScrn );
 	}
 	/* ...then  setup the hardware */
 	pNewport->drawmode1 = DM1_RGBPLANES | 
@@ -674,10 +664,12 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 		NewportBfwait(pNewport->pNewportRegs);
 		pNewportRegs->set.dcbmode = (DCB_XMAP0 | R_DCB_XMAP9_PROTOCOL |
 				XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-		pNewportRegs->set.dcbdata0.bytes.b3 &= ~XM9_8_BITPLANES;
+		pNewportRegs->set.dcbdata0.bytes.b3 &= ~(XM9_8_BITPLANES | XM9_PUPMODE);
+		NewportBfwait(pNewport->pNewportRegs);
 		pNewportRegs->set.dcbmode = (DCB_XMAP1 | W_DCB_XMAP9_PROTOCOL |
 				XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-		pNewportRegs->set.dcbdata0.bytes.b3 &= ~XM9_8_BITPLANES;
+		pNewportRegs->set.dcbdata0.bytes.b3 &= ~(XM9_8_BITPLANES | XM9_PUPMODE);
+		NewportBfwait(pNewport->pNewportRegs);
 		/* set up the mode register for 24bpp */
 		mode = XM9_MREG_PIX_SIZE_24BPP | XM9_MREG_PIX_MODE_RGB1
 				| XM9_MREG_GAMMA_BYPASS;
@@ -696,14 +688,28 @@ NewportModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 					/* turn on 8888 = RGBA pixel packing */
 					NPORT_DMODE1_HD32 | NPORT_DMODE1_RWPCKD; 
 	}
+	/* blank the framebuffer */
+	NewportWait(pNewportRegs);
+	pNewportRegs->set.drawmode0 = (NPORT_DMODE0_DRAW | NPORT_DMODE0_DOSETUP |
+					NPORT_DMODE0_STOPX | NPORT_DMODE0_STOPY |
+					NPORT_DMODE0_BLOCK);
+	pNewportRegs->set.drawmode1 = pNewport->drawmode1 |
+					NPORT_DMODE1_FCLR |
+					NPORT_DMODE1_RGBMD;
+	pNewportRegs->set.colorvram = 0;
+	pNewportRegs->set.xystarti = 0;
+	pNewportRegs->go.xyendi = ( (1279+64) << 16) | 1023;
+
+	/* default drawmode */
 	NewportWait(pNewportRegs);
 	pNewportRegs->set.drawmode1 = pNewport->drawmode1;
+
 	return TRUE;
 }
 
 
 /* 
- * This will acutally restore the saved state 
+ * This will actually restore the saved state 
  * (either when switching back to a VT or when the server is going down)
  * Closing is true if the X server is really going down 
  */
@@ -717,20 +723,8 @@ NewportRestore(ScrnInfoPtr pScrn, Bool Closing)
 	NewportRestoreRex3( pScrn );
 	NewportVc2Set( pNewportRegs, VC2_IREG_CONTROL, pNewport->txt_vc2ctrl );
 	NewportRestorePalette( pScrn );
-	/* XXX move this to a generic xmap9_restore function */
 	if( pNewport->Bpp == 3) {
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP0 | W_DCB_XMAP9_PROTOCOL |
-				XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-		pNewportRegs->set.dcbdata0.bytes.b3 = pNewport->txt_xmap9_cfg0;
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP1 | W_DCB_XMAP9_PROTOCOL |
-					XM9_CRS_CONFIG | NPORT_DMODE_W1 );
-	 	pNewportRegs->set.dcbdata0.bytes.b3 = pNewport->txt_xmap9_cfg1;
-		NewportBfwait(pNewport->pNewportRegs);
-		pNewportRegs->set.dcbmode = (DCB_XMAP_ALL | W_DCB_XMAP9_PROTOCOL |
-					XM9_CRS_MODE_REG_INDEX | NPORT_DMODE_W1 );
-		pNewportRegs->set.dcbdata0.bytes.b3 = pNewport->txt_xmap9_mi;
+		NewportRestoreXmap9s( pScrn);
 	}
 }
 
@@ -778,6 +772,7 @@ static Bool NewportProbeCardInfo(ScrnInfoPtr pScrn)
 					XM9_CRS_REVISION | NPORT_DMODE_W1);
 	pNewport->xmap9_rev = (char)('A'+(pNewportRegs->set.dcbdata0.bytes.b3 & 7));
 	
+	/* XXX: read possible modes from VC2 here */
 	return TRUE;
 }
 
