@@ -1,4 +1,9 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 180. XDarwin bug fixes:
+       - Stop FatalError re-entry in "no Quartz support" messages.
+       - Synchronize XDarwin serverVisible state with application on rootless
+         startup.
+      (Torrey T. Lyons)
  179. Fix an XDarwin bug that broke XWarpPointer in Quartz modes (Gregory
       Parker).
  178. Fix some more mi build warnings (David Dawes).
@@ -13623,4 +13628,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1899 2001/08/06 20:51:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1900 2001/08/07 01:52:21 torrey Exp $

@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.20 2001/07/15 01:57:35 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.21 2001/07/15 02:23:29 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -305,7 +305,10 @@ static NSPortMessage *signalMessage;
     if (quartzRootless) {
         // There is no help window for rootless; just start
         [helpWindow close];
-        [self sendShowHide:YES];
+        if ([NSApp isActive])
+            [self sendShowHide:YES];
+        else
+            [self sendShowHide:NO];
     } else {
         // Show the X switch window if not using dock icon switching
         if (![Preferences dockSwitch])
@@ -432,9 +435,10 @@ static NSPortMessage *signalMessage;
     ev.type = NX_APPDEFINED;
 
     if (show) {
-        QuartzCapture();
-        if (!quartzRootless)
+        if (!quartzRootless) {
+            QuartzCapture();
             HideMenuBar();
+        }
         ev.data.compound.subType = kXDarwinShow;
         [self sendNXEvent:&ev];
 
