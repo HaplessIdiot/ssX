@@ -755,7 +755,8 @@ FreePicture
 		Picture
 
 	This request deletes the association between the resource ID and the
-	picture and destroys the picture.
+	picture.  The picture storage will be freed when no other resource
+	references it.
 
 Composite
 
