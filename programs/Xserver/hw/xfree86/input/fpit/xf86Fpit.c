@@ -40,7 +40,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86$ */
+/* $XFree86: xf86Fpit.c,v 1.2 2002/11/22 03:37:37 dawes Exp $ */
 
 #include <xf86Version.h>
 
@@ -310,7 +310,7 @@ static Bool xf86FpitControl(DeviceIntPtr dev, int mode)
 	LocalDevicePtr local = (LocalDevicePtr) dev->public.devicePrivate;
 	FpitPrivatePtr priv = (FpitPrivatePtr) (local->private);
 	unsigned char map[] = {
-		0, 1
+		0, 1, 2
 	};
 
 
@@ -324,9 +324,9 @@ static Bool xf86FpitControl(DeviceIntPtr dev, int mode)
 			priv->screen_width = screenInfo.screens[priv->screen_no]->width;
 			priv->screen_height = screenInfo.screens[priv->screen_no]->height;
 			/*
-			 * Device reports button press for up to 1 button.
+			 * Device reports button press for up to 3 buttons.
 			 */
-			if (InitButtonClassDeviceStruct(dev, 1, map) == FALSE) {
+			if (InitButtonClassDeviceStruct(dev, 3, map) == FALSE) {
 				ErrorF("Unable to allocate Fpit touchscreen ButtonClassDeviceStruct\n");
 				return !Success;
 			}
