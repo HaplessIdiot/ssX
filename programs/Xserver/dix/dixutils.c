@@ -82,8 +82,12 @@ Author:  Adobe Systems Incorporated
 
 */
 
-/* $XConsortium: dixutils.c /main/32 1996/11/07 15:34:26 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.0 1996/04/15 11:19:42 dawes Exp $ */
+/* $TOG: dixutils.c /main/33 1997/05/22 10:02:20 kaleb $ */
+
+
+
+
+/* $XFree86: xc/programs/Xserver/dix/dixutils.c,v 3.1 1996/12/23 06:29:41 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -943,7 +947,7 @@ CreateCallbackList(pcbl, cbfuncs)
     }
 
     listsToCleanup = (CallbackListPtr **)xnfrealloc(listsToCleanup,
-		sizeof(CallbackListPtr *) * numCallbackListsToCleanup+1);
+		sizeof(CallbackListPtr *) * (numCallbackListsToCleanup+1));
     listsToCleanup[numCallbackListsToCleanup] = pcbl;
     numCallbackListsToCleanup++;
     return TRUE;

@@ -1,6 +1,6 @@
 /*
  *	$XConsortium: util.c /main/33 1996/12/01 23:47:10 swick $
- *	$XFree86: xc/programs/xterm/util.c,v 3.13 1997/01/08 20:52:40 dawes Exp $
+ *	$XFree86: xc/programs/xterm/util.c,v 3.14 1997/05/23 09:19:57 dawes Exp $
  */
 
 /*
@@ -1491,6 +1491,7 @@ void ClearCurBackground(screen, top,left, height,width)
 }
 #endif /* OPT_ISO_COLORS */
 
+#ifdef HAVE_CONFIG_H
 #if USE_MY_MEMMOVE
 char *	my_memmove(s1, s2, n)
 	char *	s1;
@@ -1515,7 +1516,7 @@ char *	my_memmove(s1, s2, n)
 	}
 	return s1;
 }
-#endif USE_MY_MEMMOVE
+#endif /* USE_MY_MEMMOVE */
 
 #if !HAVE_STRERROR
 char *my_strerror(n)
@@ -1526,4 +1527,5 @@ char *my_strerror(n)
 		return sys_errlist[n];
 	return "?";
 }
+#endif
 #endif
