@@ -7,7 +7,7 @@
 <date>2001 October 01
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.4tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Solaris.sgml,v 1.5tsi Exp $
 </ident>
 
 <!-- Table of contents -->
@@ -157,10 +157,9 @@ Under Solaris x86 2.5 and later, there's a system driver (<tt>/dev/xsvc</tt>)
 that provides this functionality.
 It will be detected automatically by the server, so you don't need to install
 the aperture driver.<p>
-For older Solaris x86 and for Solaris SPARC releases, the source for this
-driver is included in
-<tt>xc/programs/Xserver/hw/xfree86/etc/apSolaris.shar</tt> of the source
-distribution.
+For older Solaris x86 and for any SPARC release, the source for this driver is
+included in <tt>xc/programs/Xserver/hw/xfree86/etc/apSolaris.shar</tt> of the
+source distribution.
 This file can usually also be found in the <tt>/usr/X11R6/lib/X11/etc</tt>
 directory when XFree86 is installed.
 Building, and installing the driver is relatively straight forward. Please read
