@@ -52,7 +52,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.3 1997/06/11 12:24:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/globals.c,v 1.4 1997/11/22 06:50:21 dawes Exp $ */
 
 #include "X.h"
 #include "Xmd.h"
@@ -130,6 +130,7 @@ char *rgbPath = RGB_DB;
 char *defaultDisplayClass = COMPILEDDISPLAYCLASS;
 FontPtr defaultFont;   /* not declared in dix.h to avoid including font.h in
 			every compilation of dix code */
+Bool loadableFonts = FALSE;
 CursorPtr rootCursor;
 ClientPtr requestingClient;	/* XXX this should be obsolete now, remove? */
 

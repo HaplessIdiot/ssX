@@ -50,7 +50,7 @@ SOFTWARE.
 
 
 
-/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.16 1998/06/27 12:53:48 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/main.c,v 3.17 1998/06/28 03:52:54 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -248,7 +248,7 @@ main(argc, argv)
     int		argc;
     char	*argv[];
 {
-    int		i, j, k;
+    int		i, j, k, error;
     HWEventQueueType	alwaysCheckForInput[2];
 
     /* Notice if we're restarted.  Probably this is because we jumped through
@@ -335,6 +335,7 @@ main(argc, argv)
 	PixmapWidthPaddingInfo[1].padPixelsLog2 = answer[j][k];
  	j = indexForBitsPerPixel[8]; /* bits per byte */
  	PixmapWidthPaddingInfo[1].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[1].bitsPerPixel = 1;
 
 #ifdef INTERNAL_VS_EXTERNAL_PADDING
 	/* Fake out protocol interface to make them believe we support
@@ -346,6 +347,7 @@ main(argc, argv)
 	PixmapWidthPaddingInfoProto[1].padPixelsLog2 = answer[j][k];
  	j = indexForBitsPerPixel[8]; /* bits per byte */
  	PixmapWidthPaddingInfoProto[1].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[1].bitsPerPixel = 1;
 #endif /* INTERNAL_VS_EXTERNAL_PADDING */
 
 	InitAtoms();
@@ -392,8 +394,13 @@ main(argc, argv)
 	    FatalError("failed to initialize core devices");
 
 	InitFonts();
-	if (SetDefaultFontPath(defaultFontPath) != Success)
-	    ErrorF("failed to set default font path '%s'", defaultFontPath);
+	if (loadableFonts) {
+	    SetFontPath(0, 0, (unsigned char *)defaultFontPath, &error);
+	} else {
+	    if (SetDefaultFontPath(defaultFontPath) != Success)
+		ErrorF("failed to set default font path '%s'",
+			defaultFontPath);
+	}
 	if (!SetDefaultFont(defaultTextFont))
 	    FatalError("could not open default font '%s'", defaultTextFont);
 	if (!(rootCursor = CreateRootCursor(defaultCursorFont, 0)))
@@ -408,6 +415,7 @@ main(argc, argv)
 	for (i = 0; i < screenInfo.numScreens; i++)
 	    InitRootWindow(WindowTable[i]);
         DefineInitialRootWindow(WindowTable[0]);
+	SaveScreens(SCREEN_SAVER_FORCER, ScreenSaverReset);
 
 	if (!CreateConnectionBlock())
 	    FatalError("could not create connection block info");
@@ -696,6 +704,7 @@ AddScreen(pfnInit, argc, argv)
  	    (scanlinepad/bitsPerPixel) - 1;
  	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
  	PixmapWidthPaddingInfo[ depth ].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[ depth ].bitsPerPixel = bitsPerPixel;
 	if (answerBytesPerPixel[bitsPerPixel])
 	{
 	    PixmapWidthPaddingInfo[ depth ].notPower2 = 1;
@@ -718,6 +727,7 @@ AddScreen(pfnInit, argc, argv)
  	    (BITMAP_SCANLINE_PAD_PROTO/bitsPerPixel) - 1;
  	j = indexForBitsPerPixel[ 8 ]; /* bits per byte */
  	PixmapWidthPaddingInfoProto[ depth ].padBytesLog2 = answer[j][k];
+	PixmapWidthPaddingInfo[ depth ].bitsPerPixel = bitsPerPixel;
 	if (answerBytesPerPixel[bitsPerPixel])
 	{
 	    PixmapWidthPaddingInfoProto[ depth ].notPower2 = 1;

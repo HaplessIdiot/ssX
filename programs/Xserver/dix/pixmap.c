@@ -1,5 +1,5 @@
 /* $XConsortium: pixmap.c /main/4 1996/08/12 22:04:49 dpw $ */
-/* $XFree86: xc/programs/Xserver/dix/pixmap.c,v 3.0 1996/04/15 11:19:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/dix/pixmap.c,v 3.1.4.1 1998/07/18 17:53:11 dawes Exp $ */
 /*
 
 Copyright (c) 1993  X Consortium
@@ -68,10 +68,12 @@ GetScratchPixmapHeader(pScreen, width, height, depth, bitsPerPixel, devKind,
 	/* width and height of 0 means don't allocate any pixmap data */
 	pPixmap = (*pScreen->CreatePixmap)(pScreen, 0, 0, depth);
 
-    if (pPixmap)
+    if (pPixmap) {
 	if ((*pScreen->ModifyPixmapHeader)(pPixmap, width, height, depth,
 					   bitsPerPixel, devKind, pPixData))
 	    return pPixmap;
+	(*pScreen->DestroyPixmap)(pPixmap);
+    }
     return NullPixmap;
 }
 
