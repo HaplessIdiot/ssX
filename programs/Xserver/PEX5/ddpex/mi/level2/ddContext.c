@@ -1,5 +1,4 @@
 /* $XConsortium: ddContext.c,v 5.10 94/04/17 20:37:00 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/ddContext.c,v 3.2.2.1 1998/05/20 15:51:08 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -51,6 +50,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/ddContext.c,v 3.3 1998/07/25 07:36:07 dawes Exp $ */
 
 #include "miWks.h"
 #include "miStruct.h"
@@ -61,10 +61,8 @@ SOFTWARE.
 #include "windowstr.h"
 #include "regionstr.h"
 #include "miscstruct.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 static void     deleteDynamicDDContext();
 

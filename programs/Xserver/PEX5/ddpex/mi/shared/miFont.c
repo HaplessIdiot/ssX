@@ -1,5 +1,4 @@
 /* $XConsortium: miFont.c,v 5.7 94/04/17 20:37:39 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miFont.c,v 3.2.2.2 1998/06/09 14:40:46 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,10 +48,8 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miFont.c,v 3.3 1998/07/25 07:36:29 dawes Exp $ */
 
-#if 0
-#include <X11/Xos.h>
-#endif
 #include "miFont.h"
 #include "miLUT.h"
 #include "miWks.h"
@@ -60,10 +57,8 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "pexExtract.h"
 #include "pexUtils.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 extern void CopyISOLatin1Lowered();
 extern ErrorCode LoadPEXFontFile();

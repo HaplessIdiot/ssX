@@ -1,5 +1,4 @@
 /* $XConsortium: pexRndr.c,v 5.29 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.3.2.1 1998/05/20 15:51:41 dawes Exp $ */
 
 /***********************************************************
 
@@ -47,6 +46,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
+/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexRndr.c,v 3.4 1998/07/25 07:36:39 dawes Exp $ */
 
 /*++
  *	PEXCreateRenderer
@@ -95,10 +95,7 @@ SOFTWARE.
 #include "pexUtils.h"
 #include "pex_site.h"
 #include "scrnintstr.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
+#include "pexos.h"
 
 
 #ifndef PEX_BUFFER_CHUNK

@@ -1,5 +1,4 @@
 /* $XConsortium: OCattr.c,v 5.7 94/04/17 20:36:17 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/OCattr.c,v 1.4.2.1 1998/05/20 15:51:44 dawes Exp $ */
 
 /***********************************************************
 
@@ -61,10 +60,6 @@ SOFTWARE.
 #include "ddpex.h"
 #include "pexLookup.h"
 #include "convertStr.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #undef LOCAL_FLAG
 #define LOCAL_FLAG

@@ -1,5 +1,4 @@
 /* $XConsortium: miClrApLUT.c,v 5.2 94/04/17 20:37:37 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miClrApLUT.c,v 1.4.2.1 1998/05/20 15:51:28 dawes Exp $ */
 /*
 
 Copyright (c) 1990, 1991  X Consortium
@@ -49,16 +48,15 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/shared/miClrApLUT.c,v 1.5 1998/07/25 07:36:27 dawes Exp $ */
 
 #include "miLUT.h"
 #include "miWks.h"
 #include "miInfo.h"
 #include "PEXErr.h"
 #include "PEXprotost.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /*  Level 4 Shared Resources  */
 /* Lookup Table Procedures */

@@ -1,5 +1,4 @@
 /* $XConsortium: miClip.c,v 5.4 94/04/17 20:37:03 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miClip.c,v 3.2.2.1 1998/05/20 15:51:09 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -50,6 +49,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miClip.c,v 3.3 1998/07/25 07:36:08 dawes Exp $ */
 
 #include "mipex.h"
 #include "misc.h"
@@ -58,10 +58,8 @@ SOFTWARE.
 #include "miRender.h"
 #include "miClip.h"
 #include "gcstruct.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /*++
  |

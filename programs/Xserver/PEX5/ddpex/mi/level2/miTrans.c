@@ -1,5 +1,4 @@
 /* $XConsortium: miTrans.c,v 5.3 94/04/17 20:37:21 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miTrans.c,v 1.4.2.1 1998/05/20 15:51:16 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miTrans.c,v 1.5 1998/07/25 07:36:16 dawes Exp $ */
 
 #include "mipex.h"
 #include "misc.h"
@@ -56,12 +56,7 @@ SOFTWARE.
 #include "PEXErr.h"
 #include "miRender.h"
 #include "miLight.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
+#include "pexos.h"
 
 #define IRINT(x) ( ((x) >= 0.0) ? ((int)((x) + 0.5)) : ((int)((x) - 0.5)) )
 

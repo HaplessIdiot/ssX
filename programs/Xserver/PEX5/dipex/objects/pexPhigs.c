@@ -1,5 +1,4 @@
 /* $XConsortium: pexPhigs.c,v 5.5 94/04/17 20:36:11 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexPhigs.c,v 3.2.2.1 1998/05/20 15:51:40 dawes Exp $ */
 
 /***********************************************************
 
@@ -81,11 +80,6 @@ SOFTWARE.
 #include "ddpex4.h"
 #include "pexLookup.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
 
 extern LUTAddWksXref();
 extern void LostXResource();

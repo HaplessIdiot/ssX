@@ -1,5 +1,4 @@
 /* $XConsortium: miTriStrip.c,v 5.12 94/04/17 20:37:22 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miTriStrip.c,v 3.2.2.1 1998/05/20 15:51:16 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miTriStrip.c,v 3.3 1998/07/25 07:36:17 dawes Exp $ */
 
 #include "miClip.h"
 #include "misc.h"
@@ -61,12 +61,8 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "miLight.h"
 #include "ddpex2.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
 
 static ddpex3rtn	miClipTriStrip();
 static ddpex3rtn	miCullTriStrip();

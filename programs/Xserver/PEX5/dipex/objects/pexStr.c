@@ -1,5 +1,4 @@
 /* $XConsortium: pexStr.c,v 5.5 94/09/09 20:32:50 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/objects/pexStr.c,v 3.3.2.1 1998/05/20 15:51:42 dawes Exp $ */
 
 /***********************************************************
 
@@ -78,10 +77,6 @@ SOFTWARE.
 #include "pex_site.h"
 #include "pexLookup.h"
 #include "ddpex4.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #ifdef min
 #undef min

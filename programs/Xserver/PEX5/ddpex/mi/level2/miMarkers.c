@@ -1,5 +1,4 @@
 /* $XConsortium: miMarkers.c,v 5.5 94/04/17 20:37:09 mor Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miMarkers.c,v 3.2.2.1 1998/05/20 15:51:11 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level2/miMarkers.c,v 3.3 1998/07/25 07:36:10 dawes Exp $ */
 
 #include "mipex.h"
 #include "misc.h"
@@ -61,13 +61,6 @@ SOFTWARE.
 #include "ddpex2.h"
 #include "miMarkers.h"
 #include "miClip.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#else
-#include <stdio.h>
-#endif
-
 
 
 /*++

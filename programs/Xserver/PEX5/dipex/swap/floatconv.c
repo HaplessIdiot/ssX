@@ -1,5 +1,4 @@
 /* $XConsortium: floatconv.c,v 5.6 94/04/17 20:36:32 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/floatconv.c,v 1.4.2.1 1998/05/20 15:51:47 dawes Exp $ */
 
 /***********************************************************
 
@@ -79,11 +78,7 @@ SOFTWARE.
  * SOFTWARE.
  */
 
-#include"floatconv.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
+#include "floatconv.h"
 
 #define BITMASK(n) ((((unsigned long)1)<<n)-1)
 #define VAX_EXPONENT_BIAS	0x00000081

@@ -1,5 +1,4 @@
 /* $XConsortium: miTraverse.c,v 5.6 94/04/17 20:37:34 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miTraverse.c,v 1.4.2.1 1998/05/20 15:51:26 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -58,9 +57,6 @@ SOFTWARE.
 #include "miStruct.h"
 #include "miStrMacro.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 extern void     InquirePickStatus();
 extern void     InquireSearchStatus();

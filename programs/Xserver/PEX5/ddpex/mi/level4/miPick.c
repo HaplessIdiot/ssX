@@ -1,5 +1,4 @@
 /* $XConsortium: miPick.c,v 5.8 94/04/17 20:37:32 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miPick.c,v 1.4.2.1 1998/05/20 15:51:25 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miPick.c,v 1.5 1998/07/25 07:36:24 dawes Exp $ */
 
 #include "miWks.h"		/* miPickMeasureStr is defined in here */
 #include "miNS.h"
@@ -57,10 +57,8 @@ SOFTWARE.
 #include "pexUtils.h"
 #include "PEXErr.h"
 #include "pexExtract.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 extern ddpex4rtn    UpdateStructRefs();
 extern ddpex43rtn   UpdateNSRefs();

@@ -1,5 +1,4 @@
 /* $XConsortium: miRender.c,v 5.21 94/04/17 20:37:25 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/miRender.c,v 3.2.2.1 1998/05/20 15:51:21 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level3/miRender.c,v 3.3 1998/07/25 07:36:22 dawes Exp $ */
 
 #include "miLUT.h"
 #include "dipex.h"
@@ -68,10 +68,8 @@ SOFTWARE.
 #include "miWks.h"
 #include "ddpex4.h"
 #include "gcstruct.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /* External variables used */
 

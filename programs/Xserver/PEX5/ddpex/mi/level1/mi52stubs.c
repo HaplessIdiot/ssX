@@ -26,7 +26,6 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level1/mi52stubs.c,v 3.2.2.1 1998/05/20 15:51:03 dawes Exp $ */
 
 #include "X.h"
 #include "PEX.h"
@@ -34,10 +33,6 @@ in this Software without prior written authorization from the X Consortium.
 #include "pex_site.h"
 #include "pexLookup.h"
 #include "ddpex4.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 ErrorCode
 PutZBuffer(prend, x, y, width, height, normalizedValues, numValues, Zbuffer)

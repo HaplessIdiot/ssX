@@ -1,5 +1,4 @@
 /* $XConsortium: dipexParse.c,v 5.2 94/04/17 20:36:04 rws Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/dispatch/dipexParse.c,v 1.4.2.1 1998/05/20 15:51:37 dawes Exp $ */
 
 /***********************************************************
 
@@ -58,9 +57,6 @@ SOFTWARE.
 #include "pexError.h"
 #include "pexSwap.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 extern RequestFunction set_tables[];
 extern pexContext * InitPexClient();

@@ -1,5 +1,4 @@
 /* $XConsortium: miWks.c /main/16 1996/09/28 16:54:30 rws $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miWks.c,v 1.4.2.1 1998/05/20 15:51:27 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -49,6 +48,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
+/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/miWks.c,v 1.5 1998/07/25 07:36:25 dawes Exp $ */
 
 
 #include "miWks.h"
@@ -61,10 +61,8 @@ SOFTWARE.
 #include "Xprotostr.h"
 #include "gcstruct.h"
 #include "resource.h"
+#include "pexos.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #ifdef MULTIBUFFER
 #define _MULTIBUF_SERVER_

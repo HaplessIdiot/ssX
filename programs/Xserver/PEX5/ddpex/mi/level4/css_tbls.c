@@ -1,5 +1,4 @@
 /* $XConsortium: css_tbls.c,v 5.4 94/04/17 20:37:31 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/css_tbls.c,v 1.4.2.1 1998/05/20 15:51:25 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -54,9 +53,6 @@ SOFTWARE.
 #include "ddpex.h"
 #include "miStruct.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 /* declarations for procs which handle elements stored in PEX format
  * this includes elements stored in PEX format and any extra elements

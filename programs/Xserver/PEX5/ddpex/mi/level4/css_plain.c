@@ -1,5 +1,4 @@
 /* $XConsortium: css_plain.c,v 5.5 94/04/17 20:37:28 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/ddpex/mi/level4/css_plain.c,v 1.4.2.1 1998/05/20 15:51:24 dawes Exp $ */
 /*
 
 Copyright (c) 1989, 1990, 1991  X Consortium
@@ -59,9 +58,6 @@ SOFTWARE.
 #include "ddpex.h"
 #include "miStrMacro.h"
 
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 extern ocTableType ParseOCTable[];
 extern destroyTableType DestroyOCTable[];

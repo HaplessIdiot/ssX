@@ -1,5 +1,4 @@
 /* $XConsortium: convUtil.c,v 5.4 94/04/17 20:36:30 hersh Exp $ */
-/* $XFree86: xc/programs/Xserver/PEX5/dipex/swap/convUtil.c,v 1.4.2.1 1998/05/20 15:51:47 dawes Exp $ */
 
 /***********************************************************
 
@@ -59,10 +58,6 @@ SOFTWARE.
 #include "pexSwap.h"
 #include "pex_site.h"
 #include "convertStr.h"
-
-#ifdef XFree86LOADER
-#include "xf86_ansic.h"
-#endif
 
 #undef LOCAL_FLAG
 #define LOCAL_FLAG
