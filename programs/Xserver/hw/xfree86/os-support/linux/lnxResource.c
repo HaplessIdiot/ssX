@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.12 2001/01/06 20:19:15 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnxResource.c,v 3.13 2001/02/12 01:25:24 tsi Exp $ */
 
 /* Resource information code */
 
@@ -129,6 +129,7 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
+    resPtr ret = NULL;
     resRange range;
 
     /*
@@ -234,6 +235,9 @@ xf86IsaBusAccWindowsFromOS(void)
 resPtr
 xf86AccResFromOS(resPtr ret)
 {
+    resPtr ret = NULL;
+    resRange range;
+
     /*
      * At minimum, the top and bottom resources must be claimed, so that
      * resources that are (or appear to be) unallocated can be relocated.
