@@ -785,10 +785,12 @@
 
   o  Number Nine, Lexington, MA
 
+  o  Kazuyuki Okamoto, Japan
+
   o  Prime Time Freeware, San Bruno, CA
 
-  o  Red Hat Software, Chapel Hill, NC
 
+  o  Red Hat Software, Chapel Hill, NC
 
   o  Clifford M Stein
 
@@ -854,8 +856,6 @@
   o  ftp.eecs.umich.edu
      (ftp://ftp.eecs.umich.edu/BSD/XFree86):/BSD/XFree86
      (source and binaries)
-
-
   o  sunsite.unc.edu
      (ftp://sunsite.unc.edu/pub/X11/XFree86):/pub/X11/XFree86
      (source and binaries)
@@ -931,7 +931,7 @@
   archive, and which compile-time option selections were made when
   building the distribution.
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.5 1995/01/11 03:50:57 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.6 1995/01/12 12:04:07 dawes Exp $
 
 
 
