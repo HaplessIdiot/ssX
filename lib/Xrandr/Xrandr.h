@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.8 2001/11/23 23:26:38 keithp Exp $
+ * $XFree86: xc/lib/Xrandr/Xrandr.h,v 1.9 2002/09/29 23:39:44 keithp Exp $
  *
  * Copyright © 2000 Compaq Computer Corporation, Inc.
  * Copyright © 2002 Hewlett-Packard Company, Inc.
@@ -37,7 +37,6 @@ _XFUNCPROTOBEGIN
 typedef struct {
     int	width, height;
     int	mwidth, mheight;
-    int	group;
 } XRRScreenSize;
 
 /*
