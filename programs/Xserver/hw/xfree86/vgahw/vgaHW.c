@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.50 2001/05/10 22:18:57 dbateman Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.51 2001/07/23 13:15:49 dawes Exp $ */
 
 /*
  *
@@ -1820,6 +1820,9 @@ vgaHWGetIOBase(vgaHWPtr hwp)
 {
     hwp->IOBase = (hwp->readMiscOut(hwp) & 0x01) ?
 				VGA_IOBASE_COLOR : VGA_IOBASE_MONO;
+    xf86DrvMsgVerb(hwp->pScrn->scrnIndex, X_INFO, 3,
+	"vgaHWGetIOBase: hwp->IOBase is 0x%04x, hwp->PIOOffset is 0x%04x\n",
+	hwp->IOBase, hwp->PIOOffset);
 }
 
 
