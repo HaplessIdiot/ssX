@@ -1047,7 +1047,7 @@
 		    (setq
 			bols   0
 			flow   (1+ flow)
-			switch flow
+			switch (+ switch flow)
 			indent (+ indent *indentation*)
 		    )
 		    (and *case-indent* (incf indent *indentation*))
@@ -1074,9 +1074,11 @@
 			    indent (- indent *indentation*)
 			)
 			(and (> switch 0) (>= switch flow) *case-indent*
-			    (setq
-				indent (- indent *indentation*)
-				switch 0
+			    (while (> switch 0)
+				(setq
+				    indent (- indent *indentation*)
+				    switch (1- switch)
+				)
 			    )
 			)
 		    )
