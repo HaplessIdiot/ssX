@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.168 2001/07/25 08:11:02 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.169 2001/08/06 20:51:00 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -143,22 +143,29 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  define BuildAllSpecsDocs	YES
 /* we build-depend on libfreetype6-dev (FreeType 2.x) */
 #  define BuildFreetype2Library	NO
+#  define HasFreetype2		YES
+#  define HasLinuxInput		YES
 #  define HasXdmAuth		YES
-/* modern LaTeX chokes on ancient sync.tex document */
-/* #  define HasLatex		YES */
+#  define HasLatex		YES
 #  define BuilderEMailAddr	"submit@bugs.debian.org"
-/* right now glide only works on i386 */
+/* at present, glide2 only works on i386 */
+#  ifdef i386Architecture
+#   define HasGlide2		YES
+#   define Glide2IncDir		/usr/include/glide
+#  endif /* i386Architecture */
+/* at present, glide3 only works on alpha and i386 */
+#  if defined(i386Architecture) || defined(AlphaArchitecture)
+#   define HasGlide3		YES
+#   define Glide3IncDir		/usr/include/glide3
+#  endif /* i386Architecture || AlphaArchitecture */
+/* extended instruction set support */
 #  ifdef i386Architecture
 #   define HasMMXSupport	YES
 #   define Has3DNowSupport	YES
 /* 2.4 is not yet the official (or predominant) kernel in unstable */
 #   define HasKatmaiSupport	NO
-#   define HasGlide2		YES
-#   define Glide2IncDir		/usr/include/glide
-#   define HasGlide3		YES
-#   define Glide3IncDir		/usr/include/glide3
 #  endif /* i386Architecture */
-# endif /* DebianMaintiner */
+# endif /* DebianMaintainer */
 #endif /* LinuxDebian */
 
 #if LinuxDistribution == LinuxRedHat
@@ -282,11 +289,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 /*
- * Build shared libGL and the DRI modules without -fPIC.  This improves
- * performance.
+ * Build shared libGL and the DRI modules without -fPIC on some architectures.
+ * This improves performance.
  */
 #if BuildXF86DRI
+# if defined(i386Architecture)
 #  define BuildLibGlxWithoutPIC	YES
+# endif
 #endif
 
 /* The DRM module requires kernel services that appeared in late 2.1.x
@@ -515,12 +524,19 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #   define LdCmd		/usr/alpha-linuxecoff/bin/ld -m alpha
 #   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* AlphaArchitecture */
+#  ifdef HPArchitecture
+#   define CcCmd		gcc
+#   define CplusplusCmd		g++
+#   define AsCmd		as
+#   define LdCmd		ld
+#   define AsmDefines		-DUSE_GAS -U__ELF__
+#  endif /* HPArchitecture */
 #  ifdef ia64Architecture
-#   define CcCmd                 gcc
-#   define CplusplusCmd          g++
-#   define AsCmd                 as
-#   define LdCmd                 ld
-#   define AsmDefines            -DUSE_GAS -U__ELF__
+#   define CcCmd		gcc
+#   define CplusplusCmd		g++
+#   define AsCmd		as
+#   define LdCmd		ld
+#   define AsmDefines		-DUSE_GAS -U__ELF__
 #  endif /* ia64Architecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linuxaout
@@ -553,6 +569,14 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #   define LdCmd		ld
 #   define AsmDefines		-D__ELF__
 #  endif /* ia64Architecture */
+#  ifdef HPArchitecture
+#   define CcCmd		gcc
+#   define CplusplusCmd		g++
+#   define AsCmd		as
+#   define LdCmd		ld
+#   define AsmDefines		-D__ELF__
+#   define SharedLibXau		YES
+#  endif /* HPArchitecture */
 #  ifdef i386Architecture
 #   define CcCmd		gcc -b i486-linux
 #   define AsCmd		/usr/i486-linux/bin/as
@@ -576,7 +600,11 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 #if UseElfFormat
 # ifndef DoLoadableServer
-#  define DoLoadableServer	YES
+#  ifdef HPArchitecture
+#   define DoLoadableServer	YES
+#  else
+#   define DoLoadableServer	YES
+#  endif
 # endif
 #endif
 #ifndef CppCmd
@@ -707,6 +735,13 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #  define OptimizedCDebugFlags	-O2
 # endif
 # define LinuxMachineDefines	-D__mips__
+# define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
+# define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#endif
+
+#ifdef HPArchitecture
+# define OptimizedCDebugFlags	-O2
+# define LinuxMachineDefines	-D__hppa__
 # define ServerOSDefines	XFree86ServerOSDefines -DDDXTIME -DPART_NET
 # define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
 #endif

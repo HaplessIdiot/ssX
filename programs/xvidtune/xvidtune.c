@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.26 2000/09/26 15:57:27 tsi Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v $ */
 
 /*
 
@@ -1425,6 +1425,7 @@ usage(void)
 {
     fprintf(stderr, "Usage: xvidtune [option]\n");
     fprintf(stderr, "    where option is one of:\n");
+    fprintf(stderr, "        -show                             Print current modeline to stdout\n");
     fprintf(stderr, "        -next                             Switch to next video mode\n");
     fprintf(stderr, "        -prev                             Switch to previous video mode\n");
     fprintf(stderr, "        -unlock                           Enable mode switch hot-keys\n");
@@ -1504,7 +1505,15 @@ main (int argc, char** argv)
         
 	if (argc != 2)
 		usage();
-	if (!strcmp(argv[1], "-next"))
+	if (!strcmp(argv[1], "-show")) {
+	  if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top)))) {
+	    fprintf(stderr, "Unable to get mode info\n");
+	    CleanUp(XtDisplay (top));
+	    return 2;
+	  }
+	  ShowCB(top, NULL, NULL);
+	  return 0;
+	} else if (!strcmp(argv[1], "-next"))
 	    i = 1;
 	else if (!strcmp(argv[1], "-prev"))
 	    i = -1;
