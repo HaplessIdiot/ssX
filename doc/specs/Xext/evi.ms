@@ -1,5 +1,6 @@
 .\" Use -ms and macros.t
 .\" $TOG: evi.ms /main/2 1997/12/11 18:43:52 kaleb $
+.\" $XFree86$
 .EH ''''
 .OH ''''
 .EF ''''

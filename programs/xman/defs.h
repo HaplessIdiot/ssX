@@ -1,5 +1,4 @@
 /* $XConsortium: defs.h,v 1.25 94/04/17 20:43:50 converse Exp $ */
-/* $XFree86: contrib/programs/xman/defs.h,v 3.0 1994/06/05 08:00:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xman/defs.h,v 1.1 2000/02/12 03:55:15 dawes Exp $ */
 
 /*
  * xman - X window system manual page display program.

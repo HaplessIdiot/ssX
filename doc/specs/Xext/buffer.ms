@@ -1,4 +1,5 @@
 .\" $TOG: buffer.ms /main/9 1997/11/04 17:55:08 kaleb $
+.\" $XFree86$
 .TL
 Extending X for Double-Buffering, Multi-Buffering, and Stereo
 .AU

@@ -1,5 +1,4 @@
 /* $XConsortium: man.h,v 1.31 94/12/16 21:36:53 gildea Exp $ */
-/* $XFree86: xc/programs/xman/man.h,v 1.1 2000/02/12 03:55:17 dawes Exp $ */
 /*
 
 Copyright (c) 1987, 1988  X Consortium
@@ -29,6 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
+/* $XFree86: xc/programs/xman/man.h,v 1.2 2000/03/03 20:02:24 dawes Exp $ */
 
 
 /* X toolkit header files */
