@@ -3,7 +3,7 @@
 
 
 
-// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.25 2003/09/04 13:56:47 pascal Exp $
+// $XFree86: xc/programs/xkbcomp/keycodes/xfree86,v 3.26 2003/10/09 11:45:26 pascal Exp $
 
 // "standard" XFree86 codes
 // It seems that the "default" must be the first entry in the file.
@@ -150,7 +150,7 @@ xkb_keycodes "basic" {
     // Keys that are generated on Japanese keyboards
 
     alias <HZTG> = <TLDE>;	// Hankaku_Zenkaku toggle
-    alias <HKTG> = <FK15>;	// Hiragana_Katakana toggle
+    <HKTG> =   208;		// Hiragana_Katakana toggle
     <AB11> =   211;		// backslash/underscore
     <XFER> =   129;		// Henkan
     <NFER> =   131;		// Muhenkan
@@ -311,7 +311,7 @@ xkb_keycodes "basic" {
     <K6D> =   205;		// <I4D>
     <K6E> =   206;		// <I4E>
     <K6F> =   207;		// <I4F>
-    <K70> =   208;		// <I50>
+    alias <K70> = <HKTG>;	// <I50>
     <K71> =   209;		// <I51>
     <K72> =   210;		// <I52>
     alias <K73> = <AB11>;	// <I53>
