@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.80 2003/01/25 20:43:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.81tsi Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -405,10 +405,6 @@ static struct
 
 extern int gRADEONEntityIndex;
 
-#if 0 /* !defined(__alpha__) */
-# define RADEONPreInt10Save(s, p)
-# define RADEONPostInt10Check(s, p)
-#else /* __alpha__ */
 struct RADEONInt10Save {
 	CARD32 MEM_CNTL;
 	CARD32 MEMSIZE;
@@ -498,10 +494,13 @@ RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
 		   CardTmp, pSave->MEM_CNTL);
 	OUTREG(RADEON_MEM_CNTL, pSave->MEM_CNTL);
 
-	xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
-		   "Restoring CONFIG_MEMSIZE (%08x), setting to %08x\n",
-		   INREG(RADEON_CONFIG_MEMSIZE), pSave->MEMSIZE);
-	OUTREG(RADEON_CONFIG_MEMSIZE, pSave->MEMSIZE);
+	CardTmp = INREG(RADEON_CONFIG_MEMSIZE);
+	if (CardTmp != pSave->MEMSIZE) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
+		       "Restoring CONFIG_MEMSIZE (%08x), setting to %08x\n",
+		       CardTmp, pSave->MEMSIZE);
+	    OUTREG(RADEON_CONFIG_MEMSIZE, pSave->MEMSIZE);
+	}
     }
 
     CardTmp = INREG(RADEON_MPP_TB_CONFIG);
@@ -518,7 +517,6 @@ RADEONPostInt10Check(ScrnInfoPtr pScrn, void *ptr)
     if (mapped)
 	RADEONUnmapMMIO(pScrn);
 }
-#endif /* __alpha__ */
 
 /* Allocate our private RADEONInfoRec */
 static Bool RADEONGetRec(ScrnInfoPtr pScrn)
@@ -3143,7 +3141,14 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     info->pEnt         = xf86GetEntityInfo(pScrn->entityList[0]);
     if (info->pEnt->location.type != BUS_PCI) goto fail;
 
-    RADEONPreInt10Save(pScrn, &int10_save);
+    info->PciInfo = xf86GetPciInfoForEntity(info->pEnt->index);
+    info->PciTag  = pciTag(info->PciInfo->bus,
+			   info->PciInfo->device,
+			   info->PciInfo->func);
+
+    if (xf86GetPciDomain(info->PciTag) ||
+	!xf86IsPrimaryPci(info->PciInfo))
+	RADEONPreInt10Save(pScrn, &int10_save);
 
     if (xf86IsEntityShared(pScrn->entityList[0])) {
 	if (xf86IsPrimInitDone(pScrn->entityList[0])) {
@@ -3193,11 +3198,6 @@ Bool RADEONPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
-
-    info->PciInfo = xf86GetPciInfoForEntity(info->pEnt->index);
-    info->PciTag  = pciTag(info->PciInfo->bus,
-			   info->PciInfo->device,
-			   info->PciInfo->func);
 
     xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	       "PCI bus %d card %d func %d\n",
