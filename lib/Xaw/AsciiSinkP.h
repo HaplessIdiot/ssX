@@ -97,8 +97,7 @@ typedef struct {
 
     /* private state */
     GC normgc, invgc, xorgc;
-  /*    Pixmap insertCursorOn;*/
-  Position cursor_position;
+    XawTextPosition cursor_position;
     XawTextInsertState laststate;
     short cursor_x, cursor_y;	/* Cursor Location. */
 } AsciiSinkPart;

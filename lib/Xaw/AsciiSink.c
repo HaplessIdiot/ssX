@@ -187,7 +187,7 @@ AsciiSinkClassRec asciiSinkClassRec = {
 WidgetClass asciiSinkObjectClass = (WidgetClass)&asciiSinkClassRec;
 
 /* Utilities */
-int
+static int
 CharWidth(Widget w, int x, unsigned char c)
 {
   int i, width, nonPrinting;
@@ -254,7 +254,7 @@ CharWidth(Widget w, int x, unsigned char c)
  * NOTE:  If this string attempts to paint past the end of the window
  *	  then this function will return zero.
  */
-unsigned int
+static unsigned int
 PaintText(Widget w, GC gc, int x, int y, unsigned char *buf, int len)
 {
   int max_x;
@@ -296,7 +296,7 @@ PaintText(Widget w, GC gc, int x, int y, unsigned char *buf, int len)
 /*
  * This function does not know about drawing more than one line of text.
  */
-void
+static void
 DisplayText(Widget w, int x, int y,
 	    XawTextPosition pos1, XawTextPosition pos2, Bool highlight)
 {
@@ -387,7 +387,7 @@ DisplayText(Widget w, int x, int y,
  * RETURNED	   rect - an X rectangle to return the cursor bounds in.
  *	Returns: none.
  */
-void
+static void
 GetCursorBounds(Widget w, XRectangle *rect)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;
@@ -403,7 +403,7 @@ GetCursorBounds(Widget w, XRectangle *rect)
 /*
  * The following procedure manages the "insert" cursor.
  */
-void
+static void
 InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;
@@ -507,7 +507,7 @@ InsertCursor(Widget w, int x, int y, XawTextInsertState state)
 /*
  * Given two positions, find the distance between them.
  */
-void
+static void
 FindDistance(Widget w, XawTextPosition fromPos, int fromx,
 	     XawTextPosition toPos, int *resWidth,
 	     XawTextPosition *resPos, int *resHeight)
@@ -539,7 +539,7 @@ FindDistance(Widget w, XawTextPosition fromPos, int fromx,
 		+ sink->ascii_sink.font->descent);
 }
 
-void
+static void
 FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
 	     Bool stopAtWordBreak, XawTextPosition *resPos,
 	     int *resWidth, int *resHeight)
@@ -596,7 +596,7 @@ FindPosition(Widget w, XawTextPosition fromPos, int fromx, int width,
   *resHeight = sink->ascii_sink.font->ascent + sink->ascii_sink.font->descent;
 }
 
-void
+static void
 Resolve(Widget w, XawTextPosition pos, int fromx, int width,
 	XawTextPosition *pos_return)
 {
@@ -608,7 +608,7 @@ Resolve(Widget w, XawTextPosition pos, int fromx, int width,
     *pos_return = GETLASTPOS;
 }
 
-void
+static void
 GetGC(AsciiSinkObject sink)
 {
   XtGCMask valuemask = (GCFont | GCClipXOrigin |
@@ -652,7 +652,7 @@ GetGC(AsciiSinkObject sink)
  *	Returns: none.
  */
 /* ARGSUSED */
-void
+static void
 XawAsciiSinkInitialize(Widget request, Widget c_new,
 		       ArgList args, Cardinal *num_args)
 {
@@ -671,7 +671,7 @@ XawAsciiSinkInitialize(Widget request, Widget c_new,
  *	Arguments: w - the AsciiSink Object.
  *	Returns: none.
  */
-void
+static void
 XawAsciiSinkDestroy(Widget w)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;
@@ -691,7 +691,7 @@ XawAsciiSinkDestroy(Widget w)
     sink->ascii_sink.xorgc = NULL;
 }
 
-void
+static void
 XawAsciiSinkResize(Widget w)
 {
   TextWidget ctx = (TextWidget)XtParent(w);
@@ -742,7 +742,7 @@ XawAsciiSinkResize(Widget w)
  *	Returns: True if redisplay is needed.
  */
 /* ARGSUSED */
-Boolean
+static Boolean
 XawAsciiSinkSetValues(Widget current, Widget request, Widget c_new,
 		      ArgList args, Cardinal *num_args)
 {
@@ -777,7 +777,7 @@ XawAsciiSinkSetValues(Widget current, Widget request, Widget c_new,
  *	Returns: the number of lines that will fit.
  */
 /* ARGSUSED */
-int
+static int
 MaxLines(Widget w, unsigned int height)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;
@@ -797,7 +797,7 @@ MaxLines(Widget w, unsigned int height)
  *	Returns: the height.
  */
 /* ARGSUSED */
-int
+static int
 MaxHeight(Widget w, int lines)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;
@@ -813,7 +813,7 @@ MaxHeight(Widget w, int lines)
  *		   tabs - the text positions of the tabs.
  *	Returns: none
  */
-void
+static void
 SetTabs(Widget w, int tab_count, short *tabs)
 {
   AsciiSinkObject sink = (AsciiSinkObject)w;

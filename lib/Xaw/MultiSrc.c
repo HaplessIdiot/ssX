@@ -27,7 +27,7 @@
  *
  * Much code taken from X11R3 String and Disk Sources.
  */
-/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.6 1998/06/28 12:32:19 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSrc.c,v 1.7 1998/06/28 12:56:17 dawes Exp $ */
 
 /*
 
@@ -465,7 +465,7 @@ ReplaceText( w, startPos, endPos, u_text_p)
  *	 possible cursor positions (one before the first character and
  *	 one after the last character.
  */
-XawTextPosition
+static XawTextPosition
 Scan(Widget w, XawTextPosition position, XawTextScanType type,
      XawTextScanDirection dir, int count, Bool include)
 {

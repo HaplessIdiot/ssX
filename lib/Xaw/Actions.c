@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.7 1998/06/28 12:56:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.8 1998/06/28 13:04:19 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
@@ -214,7 +214,7 @@ XawBooleanExpression(Widget w, String param, XEvent *event)
   return (info.token != ERROR ? retval : False);
 }
 
-int
+static int
 get_token(XawEvalInfo *info)
 {
   int ch;
@@ -297,7 +297,7 @@ get_token(XawEvalInfo *info)
   return (info->token = ERROR);
 }
 
-Boolean
+static Boolean
 expr(XawEvalInfo *info)
 {
   Boolean left = prim(info);
@@ -323,7 +323,7 @@ expr(XawEvalInfo *info)
   /* NOTREACHED */
 }
 
-Boolean
+static Boolean
 prim(XawEvalInfo *info)
 {
   Boolean e;
@@ -549,7 +549,7 @@ XawCallProcAction(Widget w, XEvent *event,
   XtCallActionProc(w, params[1], event, args, num_args);
 }
 
-String
+static String
 XawConvertActionRes(XawActionResList *list, Widget w, String name)
 {
   XawActionRes *resource;
@@ -650,7 +650,7 @@ XawGetActionResList(WidgetClass wc)
   return (list);
 }
 
-int
+static int
 qcmp_action_resource_list(register _Xconst void *left,
 			  register _Xconst void *right)
 {   
@@ -658,7 +658,7 @@ qcmp_action_resource_list(register _Xconst void *left,
           (int)((*(XawActionResList **)right)->widget_class));
 }
 
-XawActionResList *
+static XawActionResList *
 _XawCreateActionResList(WidgetClass wc)
 {
   XawActionResList *list;
@@ -690,14 +690,14 @@ _XawCreateActionResList(WidgetClass wc)
   return (list);
 }
 
-int
+static int
 bcmp_action_resource_list(register _Xconst void *wc,
 			  register _Xconst void *list)
 {
   return ((int)wc - (int)((*(XawActionResList **)list)->widget_class));
 }
 
-XawActionResList *
+static XawActionResList *
 _XawFindActionResList(WidgetClass wc)
 {  
   XawActionResList **list;
@@ -713,7 +713,7 @@ _XawFindActionResList(WidgetClass wc)
   return (list ? *list : NULL);
 }
 
-int
+static int
 qcmp_action_resource(register _Xconst void *left,
 		     register _Xconst void *right)
 {
@@ -721,7 +721,7 @@ qcmp_action_resource(register _Xconst void *left,
 		 XrmQuarkToString((*(XawActionRes **)right)->qname)));
 }
 
-void
+static void
 _XawBindActionResList(XawActionResList *list)
 {
   XtResourceList xt_list, cons_list;
@@ -797,7 +797,7 @@ _XawBindActionResList(XawActionResList *list)
 	  sizeof(XawActionRes*), qcmp_action_resource);
 }
 
-int
+static int
 bcmp_action_resource(register _Xconst void *string,
 		     register _Xconst void *resource)
 {
@@ -805,7 +805,7 @@ bcmp_action_resource(register _Xconst void *string,
 		 XrmQuarkToString((*(XawActionRes **)resource)->qname)));
 }   
     
-XawActionRes *
+static XawActionRes *
 _XawFindActionRes(XawActionResList *list, Widget detail, String name)
 {
   XawActionRes **res;
@@ -836,7 +836,7 @@ _XawFindActionRes(XawActionResList *list, Widget detail, String name)
  * Start of Variables Implementation Code
  */
 /* For speed, only does memory allocation when really required */
-String
+static String
 _XawEscapeActionVarValue(String value)
 {
   String escape;
@@ -852,7 +852,7 @@ _XawEscapeActionVarValue(String value)
 }
 
 /* For speed, only does memory allocation when really required */
-String
+static String
 _XawUnescapeActionVarValue(String value)
 {
   String unescape;
@@ -866,7 +866,7 @@ _XawUnescapeActionVarValue(String value)
   return (NULL);
 }
 
-void
+static void
 XawDeclareActionVar(XawActionVarList *list, String name, String value)
 {
   XawActionVar *variable;
@@ -904,7 +904,7 @@ XawDeclareActionVar(XawActionVarList *list, String name, String value)
     XtFree(escape);
 }
 
-String
+static String
 XawConvertActionVar(XawActionVarList *list, String name)
 {
   XawActionVar *variable;
@@ -949,7 +949,7 @@ qcmp_action_variable_list(register _Xconst void *left,
 	  (int)((*(XawActionVarList **)right)->widget));
 }
 
-XawActionVarList *
+static XawActionVarList *
 _XawCreateActionVarList(Widget w)
 {
   XawActionVarList *list;
@@ -995,7 +995,7 @@ bcmp_action_variable_list(register _Xconst void *widget,
   return ((int)widget - (int)((*(XawActionVarList **)list)->widget));
 }
 
-XawActionVarList *
+static XawActionVarList *
 _XawFindActionVarList(Widget w)
 {
   XawActionVarList **list;
@@ -1018,7 +1018,7 @@ qcmp_action_variable(register _Xconst void *left,
 		 XrmQuarkToString((*(XawActionVar **)right)->qname)));
 }
 
-XawActionVar *
+static XawActionVar *
 _XawCreateActionVar(XawActionVarList *list, String name)
 {
   XawActionVar *variable;
@@ -1059,7 +1059,7 @@ bcmp_action_variable(register _Xconst void *string,
 		 XrmQuarkToString((*(XawActionVar **)variable)->qname)));
 }
 
-XawActionVar *
+static XawActionVar *
 _XawFindActionVar(XawActionVarList *list, String name)
 {
   XawActionVar **var;
@@ -1074,7 +1074,7 @@ _XawFindActionVar(XawActionVarList *list, String name)
 }
 
 /* ARGSUSED */
-void
+static void
 _XawDestroyActionVarList(Widget w, XtPointer client_data, XtPointer call_data)
 {
   XawActionVarList *list = (XawActionVarList *)client_data;

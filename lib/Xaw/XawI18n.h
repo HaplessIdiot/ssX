@@ -26,7 +26,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from the X Consortium.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.3 1996/10/19 15:13:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/XawI18n.h,v 3.4 1998/06/28 11:23:52 dawes Exp $ */
 
 #ifdef HAS_WCTYPE_H
 #include <wctype.h>
@@ -58,7 +58,7 @@ extern int _Xaw_iswspace(wchar_t);
 #endif
 #endif
 
-#ifdef __FreeBSD__
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #endif
 
