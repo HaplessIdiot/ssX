@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.64 1999/02/12 22:52:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.65 1999/02/13 16:44:58 hohndel Exp $ */
 
 /*
  *
@@ -720,6 +720,7 @@ LOOKUP xfree86LookupTab[] = {
    /* variables for PCI devices and cards from xf86Bus.c */
    SYMVAR(xf86PCICardInfo)
    SYMVAR(xf86PCIVendorInfo)
+   SYMVAR(xf86PCIVendorNameInfo)
 
 #if defined(__powerpc__) && (!defined(NO_INLINE) || defined(Lynx))
    SYMVAR(ioBase)

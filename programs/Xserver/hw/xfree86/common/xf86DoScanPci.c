@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.2 1999/02/13 07:59:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.3 1999/02/13 16:44:56 hohndel Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -84,10 +84,13 @@ void DoScanPci(int argc, char **argv, int i)
    */
   xf86PCIVendorInfo = 
     (pciVendorDeviceInfo*)LoaderSymbol("xf86PCIVendorInfoData");
+  xf86PCIVendorNameInfo = 
+    (SymTabPtr)LoaderSymbol("xf86PCIVendorNameInfoData");
   xf86PCICardInfo = 
     (pciVendorCardInfo*)LoaderSymbol("xf86PCICardInfoData");
 #else
   xf86ScanPciFunc = xf86DisplayPCICardInfo;
+  xf86PCIVendorNameInfo = xf86PCIVendorNameInfoData;
   xf86PCIVendorInfo = xf86PCIVendorInfoData;
   xf86PCICardInfo = xf86PCICardInfoData;
 #endif

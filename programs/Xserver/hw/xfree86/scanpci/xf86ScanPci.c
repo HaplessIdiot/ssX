@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.2 1999/02/13 16:44:59 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.3 1999/02/14 07:52:29 hohndel Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
@@ -17,10 +17,11 @@
 #include "xf86Priv.h"
 #include "xf86Pci.h"
 
-#define INIT_PCI_CARD_INFO TRUE
-#define DECLARE_CARD_DATASTRUCTURES TRUE
-#define INIT_PCI_VENDOR_INFO TRUE
-#define VENDOR_INCLUDE_NONVIDEO TRUE
+#define INIT_PCI_CARD_INFO		TRUE
+#define DECLARE_CARD_DATASTRUCTURES	TRUE
+#define INIT_PCI_VENDOR_INFO		TRUE
+#define INIT_PCI_VENDOR_NAME_INFO	TRUE
+#define VENDOR_INCLUDE_NONVIDEO		TRUE
 #include "xf86PciInfo.h"
 
 /*
@@ -64,6 +65,7 @@ XF86ModuleData scanpciModuleData = { &scanPciVersRec, NULL, NULL };
 void
 xf86InitPciData(void)
 {
+    xf86PCIVendorNameInfo = xf86PCIVendorNameInfoData;
     xf86PCIVendorInfo = xf86PCIVendorInfoData;
     xf86PCICardInfo = xf86PCICardInfoData;
 }
@@ -101,10 +103,15 @@ xf86DisplayPCICardInfo(int verbosity)
 	 */
 	if ( pcrp->_subsys_vendor || pcrp->_subsys_card ) {
 	    k = 0;
-	    while(xf86PCICardInfo[k].VendorName) {
+	    while (xf86PCIVendorNameInfo[k].token) {
+	      if (xf86PCIVendorNameInfo[k].token == pcrp->_subsys_vendor) 
+		vendorname = (char*)xf86PCIVendorNameInfo[k].name;
+	      k++;
+	    }
+	    k = 0;
+	    while(xf86PCICardInfo[k].VendorID) {
 		if (xf86PCICardInfo[k].VendorID == pcrp->_subsys_vendor) {
 		    j = 0;
-		    vendorname = xf86PCICardInfo[k].VendorName;
 		    while (xf86PCICardInfo[k].Device[j].CardName) {
 			if (xf86PCICardInfo[k].Device[j].SubsystemID ==
 			    pcrp->_subsys_card) {
@@ -123,7 +130,12 @@ xf86DisplayPCICardInfo(int verbosity)
 	    if (cardname)
 		xf86MsgVerb(X_NONE,-verbosity,"%s ", cardname);
 	    if (vendorname && !cardname)
-		xf86MsgVerb(X_NONE,-verbosity,"unknown card ");
+	        if (pcrp->_subsys_card)
+		    xf86MsgVerb(X_NONE,-verbosity,"unknown card (0x%04x) ",
+				pcrp->_subsys_card);
+		else
+		    xf86MsgVerb(X_NONE,-verbosity,"card ",
+				pcrp->_subsys_card);
 	}
 	if (!(cardname || vendorname)) {
 	    /*
@@ -154,10 +166,15 @@ xf86DisplayPCICardInfo(int verbosity)
 	}
 	/* now check for the chipset used */
 	k = 0;
-	while(xf86PCIVendorInfo[k].VendorName) {
+	while (xf86PCIVendorNameInfo[k].token) {
+	  if (xf86PCIVendorNameInfo[k].token == pcrp->_vendor) 
+	    chipvendorname = (char *)xf86PCIVendorNameInfo[k].name;
+	  k++;
+	}
+	k = 0;
+	while(xf86PCIVendorInfo[k].VendorID) {
 	    if (xf86PCIVendorInfo[k].VendorID == pcrp->_vendor) {
 		j = 0;
-		chipvendorname = xf86PCIVendorInfo[k].VendorName;
 		while (xf86PCIVendorInfo[k].Device[j].DeviceName) {
 		    if (xf86PCIVendorInfo[k].Device[j].DeviceID ==
 			pcrp->_device) {

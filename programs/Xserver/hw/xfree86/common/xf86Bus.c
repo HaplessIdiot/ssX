@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.11 1999/02/13 16:44:55 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.12 1999/02/14 13:04:41 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -81,6 +81,7 @@ struct {
  */
 #define PCINONSYSTEMCLASSES(b,s) PCIALWAYSPRINTCLASSES(b,s)
 
+SymTabPtr xf86PCIVendorNameInfo;
 pciVendorCardInfo *xf86PCICardInfo;
 pciVendorDeviceInfo * xf86PCIVendorInfo;
 
@@ -229,10 +230,15 @@ xf86FindPCIVideoInfo(void)
 
 	    i = 0; 
 	    info = xf86PciVideoInfo[k];
-	    while(xf86PCIVendorInfo[i].VendorName) {
+	    while (xf86PCIVendorNameInfo[k].token) {
+		if (xf86PCIVendorNameInfo[k].token == info->vendor) 
+		    vendorname = (char *)xf86PCIVendorNameInfo[k].name;
+		i++;
+	    }
+	    i = 0;
+	    while(xf86PCIVendorInfo[i].VendorID) {
 		if (xf86PCIVendorInfo[i].VendorID == info->vendor) {
 		    j = 0;
-		    vendorname = xf86PCIVendorInfo[i].VendorName;
 		    while (xf86PCIVendorInfo[i].Device[j].DeviceName) {
 			if (xf86PCIVendorInfo[i].Device[j].DeviceID ==
 			    info->chipType) {
@@ -299,11 +305,14 @@ xf86BusProbe(void)
     /* 
      * we need to get the pointer to the pci data structures initialized
      */
+    xf86PCIVendorNameInfo =
+      (SymTabPtr)LoaderSymbol("xf86PCIVendorNameInfoData");
     xf86PCIVendorInfo =
       (pciVendorDeviceInfo*)LoaderSymbol("xf86PCIVendorInfoData");
     xf86PCICardInfo =
       (pciVendorCardInfo*)LoaderSymbol("xf86PCICardInfoData");
 #else
+    xf86PCIVendorNameInfo = xf86PCIVendorNameInfoData; 
     xf86PCIVendorInfo = xf86PCIVendorInfoData; 
     xf86PCICardInfo = xf86PCICardInfoData;
 #endif
