@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.4 2002/05/22 04:41:39 keithp Exp $
+ * $XFree86: xc/programs/Xserver/render/mitri.c,v 1.5 2002/05/31 16:48:52 keithp Exp $
  *
  * Copyright © 2002 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -95,9 +95,9 @@ miRasterizeTriangle (PicturePtr	pPicture,
      *	       / \             / \
      *	      /   \           /   \
      *	     /     +         +     \
-     *          /    --           --    \
-     *         /   --               --   \
-     *        / ---                   --- \
+     *      /    --           --    \
+     *     /   --               --   \
+     *    / ---                   --- \
      *	 +--                         --+
      */
     
@@ -153,7 +153,12 @@ miTriangles (CARD8	    op,
     ScreenPtr		pScreen = pDst->pDrawable->pScreen;
     BoxRec		bounds;
     PicturePtr		pPicture = 0;
-
+    INT16		xDst, yDst;
+    INT16		xRel, yRel;
+    
+    xDst = tris[0].p1.x >> 16;
+    yDst = tris[0].p1.y >> 16;
+    
     if (maskFormat)
     {
 	miTriangleBounds (ntri, tris, &bounds);
@@ -181,8 +186,10 @@ miTriangles (CARD8	    op,
 	miRasterizeTriangle (pPicture, tris, -bounds.x1, -bounds.y1);
 	if (!maskFormat)
 	{
+	    xRel = bounds.x1 + xSrc - xDst;
+	    yRel = bounds.y1 + ySrc - yDst;
 	    CompositePicture (op, pSrc, pPicture, pDst,
-			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
@@ -190,8 +197,10 @@ miTriangles (CARD8	    op,
     }
     if (maskFormat)
     {
+	xRel = bounds.x1 + xSrc - xDst;
+	yRel = bounds.y1 + ySrc - yDst;
 	CompositePicture (op, pSrc, pPicture, pDst,
-			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	FreePicture (pPicture, 0);
     }
@@ -211,7 +220,12 @@ miTriStrip (CARD8	    op,
     xTriangle		tri;
     BoxRec		bounds;
     PicturePtr		pPicture = 0;
-
+    INT16		xDst, yDst;
+    INT16		xRel, yRel;
+    
+    xDst = points[0].x >> 16;
+    yDst = points[0].y >> 16;
+    
     if (npoint < 3)
 	return;
     if (maskFormat)
@@ -244,16 +258,20 @@ miTriStrip (CARD8	    op,
 	miRasterizeTriangle (pPicture, &tri, -bounds.x1, -bounds.y1);
 	if (!maskFormat)
 	{
+	    xRel = bounds.x1 + xSrc - xDst;
+	    yRel = bounds.y1 + ySrc - yDst;
 	    CompositePicture (op, pSrc, pPicture, pDst,
-			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
     }
     if (maskFormat)
     {
+	xRel = bounds.x1 + xSrc - xDst;
+	yRel = bounds.y1 + ySrc - yDst;
 	CompositePicture (op, pSrc, pPicture, pDst,
-			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	FreePicture (pPicture, 0);
     }
@@ -274,7 +292,12 @@ miTriFan (CARD8		op,
     BoxRec		bounds;
     PicturePtr		pPicture = 0;
     xPointFixed		*first;
-
+    INT16		xDst, yDst;
+    INT16		xRel, yRel;
+    
+    xDst = points[0].x >> 16;
+    yDst = points[0].y >> 16;
+    
     if (npoint < 3)
 	return;
     if (maskFormat)
@@ -309,16 +332,20 @@ miTriFan (CARD8		op,
 	miRasterizeTriangle (pPicture, &tri, -bounds.x1, -bounds.y1);
 	if (!maskFormat)
 	{
+	    xRel = bounds.x1 + xSrc - xDst;
+	    yRel = bounds.y1 + ySrc - yDst;
 	    CompositePicture (op, pSrc, pPicture, pDst,
-			      xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			      xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			      bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	    FreePicture (pPicture, 0);
 	}
     }
     if (maskFormat)
     {
+	xRel = bounds.x1 + xSrc - xDst;
+	yRel = bounds.y1 + ySrc - yDst;
 	CompositePicture (op, pSrc, pPicture, pDst,
-			  xSrc, ySrc, 0, 0, bounds.x1, bounds.y1,
+			  xRel, yRel, 0, 0, bounds.x1, bounds.y1,
 			  bounds.x2 - bounds.x1, bounds.y2 - bounds.y1);
 	FreePicture (pPicture, 0);
     }
