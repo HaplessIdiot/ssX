@@ -1,4 +1,5 @@
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
+/* $XFree86$ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group

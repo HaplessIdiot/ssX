@@ -47,13 +47,13 @@
 #else
 #include <assert.h>
 #include <ctype.h>
-#include <float.h>
 #include <math.h>
 #include <limits.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #endif
+#include <float.h>
 
 #ifdef HAVE_CONFIG_H
 #include "conf.h"

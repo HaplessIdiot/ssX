@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "X.h"
 #include "scrnintstr.h"
 #include "validate.h"
