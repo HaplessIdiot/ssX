@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* Extension for iterating over Cmaps */
 
 /* Find the first entry of a Cmap.

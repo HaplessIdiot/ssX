@@ -1,3 +1,5 @@
+/* $XFree86: $ */
+
 /* Types */
 
 /* Those are defined in miscutil.c but don't seem to have protos anywhere */
