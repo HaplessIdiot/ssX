@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.45 2003/10/21 04:13:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.46 2003/10/30 17:37:05 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -201,9 +201,7 @@ typedef enum {
    OPTION_PAGEFLIP,
    OPTION_XVIDEO,
    OPTION_VIDEO_KEY,
-   OPTION_COLOR_KEY,
-   OPTION_STRETCH,
-   OPTION_CENTER
+   OPTION_COLOR_KEY
 } I830Opts;
 
 static OptionInfoRec I830BIOSOptions[] = {
@@ -215,8 +213,6 @@ static OptionInfoRec I830BIOSOptions[] = {
    {OPTION_XVIDEO,	"XVideo",	OPTV_BOOLEAN,	{0},	TRUE},
    {OPTION_COLOR_KEY,	"ColorKey",	OPTV_INTEGER,	{0},	FALSE},
    {OPTION_VIDEO_KEY,	"VideoKey",	OPTV_INTEGER,	{0},	FALSE},
-   {OPTION_STRETCH,	"Stretch",	OPTV_BOOLEAN,	{0},	FALSE},
-   {OPTION_CENTER,	"Center",	OPTV_BOOLEAN,	{0},	FALSE},
    {-1,			NULL,		OPTV_NONE,	{0},	FALSE}
 };
 /* *INDENT-ON* */
