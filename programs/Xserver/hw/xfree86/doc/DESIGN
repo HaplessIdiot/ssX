@@ -2109,8 +2109,8 @@ Next, the higher level functions that most drivers would use.
           of options that isn't marked as used.  This is intended
           to show options that the driver hasn't recognised.  It
           would normally be called near the end of the Chip-
-          ScreenInit() function, but only when
-          serverGeneration == 1.
+          ScreenInit() function, but only when serverGenera-
+          tion == 1.
 
      OptionInfoPtr xf86TokenToOptinfo(const OptionInfoRec *table, int
      token)
@@ -6349,4 +6349,4 @@ eScreen() function.
      Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.46 2001/08/01 00:44:52 tsi Exp $
 
 
-$XFree86$
+$XFree86: $

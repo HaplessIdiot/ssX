@@ -2,7 +2,7 @@
 
                     Juliusz Chroboczek, <jch@xfree86.org>
 
-                               31 October 2001
+                              26 November 2001
 
 1.  Introduction
 
@@ -430,12 +430,15 @@ and Luxi Mono, with XLFD
 
      -b&h-luxi mono-medium-*-normal--*-*-*-*-m-*-*-*
 
-Each of these fonts comes Roman, oblique, bold and bold oblique variants and
-has glyphs covering the basic ASCII Unicode range, the Latin 1 range, as well
-as the Extended Latin range and some additional punctuation characters.  In
-particular, these fonts include all the glyphs needed for ISO 8859 parts 1,
-2, 3, 4, 9 and 15, as well as all the glyphs in the Adobe Standard encoding
-and the Windows 3.1 character set.
+Each of these fonts comes Roman, oblique, bold and bold oblique variants The
+TrueType version have glyphs covering the basic ASCII Unicode range, the
+Latin 1 range, as well as the Extended Latin range and some additional punc-
+tuation characters.  In particular, these fonts include all the glyphs needed
+for ISO 8859 parts 1, 2, 3, 4, 9, 13 and 15, as well as all the glyphs in the
+Adobe Standard encoding and the Windows 3.1  character set.
+
+The glyph coverage of the Type 1 versions is somewhat reduced, and only cov-
+ers ISO 8859 parts 1, 2 and 15 as well as the Adobe Standard encoding.
 
 The Luxi fonts are original designs by Kris Holmes and Charles Bigelow. Luxi
 fonts include seriffed, sans serif, and monospaced styles, in roman and
@@ -1020,7 +1023,7 @@ The IANA RFC documents, available from a number of sites throughout the
 world, often provide interesting information about character set issues; my
 favourite is RFC 373.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.14 2001/11/21 21:31:30 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.15 2001/12/17 19:25:36 dawes Exp $
 
 
-$XFree86: xc/config/cf/lnxdoc.rules,v 3.24 2001/11/15 17:36:06 dawes Exp $
+$XFree86: $
