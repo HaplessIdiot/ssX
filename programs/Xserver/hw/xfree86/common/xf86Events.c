@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.134 2002/11/20 04:49:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.135 2002/11/20 18:14:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -598,8 +598,9 @@ special:
 #ifdef XKB
   if (noXkbExtension) {
 #endif
-  if ((ModifierDown(ControlMask | AltMask)) ||
-      (ModifierDown(ControlMask | AltLangMask)))
+  if (!(ModifierDown(ShiftMask)) &&
+      ((ModifierDown(ControlMask | AltMask)) ||
+       (ModifierDown(ControlMask | AltLangMask))))
     {
       switch (specialkey) {
 	
