@@ -16,7 +16,7 @@
 <date>16 January 2002
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.118 2002/01/15 21:51:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.119 2002/01/16 19:40:48 dawes Exp $
 </ident>
 
 <abstract>
@@ -116,7 +116,7 @@ If you would like to work on the development of XFree86 4, either by
 helping with the conversion of our older drivers to the new 4.x design,
 or assisting in the addition of new drivers or platforms to the code base
 then send a request to <url name="join the XFree86 development team"
-url="http://www.xfree86.org:/developer.html">.  This will give you direct
+url="http://www.xfree86.org/developer.html">.  This will give you direct
 access to the latest XFree86 related development topics and discussions.
 Include in your note, your name, email address, reason for joining (what
 you will work on) and, level of expertise (coder, DRI, core, specific
