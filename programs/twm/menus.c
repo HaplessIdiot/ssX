@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/twm/menus.c,v 1.16 2002/10/19 20:04:20 herrb Exp $ */
+/* $XFree86: xc/programs/twm/menus.c,v 1.17 2003/04/03 16:27:24 dawes Exp $ */
 /*****************************************************************************/
 /*
 
@@ -2306,7 +2306,7 @@ ExecuteFunction(func, action, w, tmp_win, eventp, context, pulldown)
 	break;
 
     case F_QUIT:
-	Done(0);
+	Done(NULL, NULL);
 	break;
 
     case F_PRIORITY:
