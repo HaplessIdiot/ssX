@@ -1,8 +1,8 @@
-                   XFree86 X server ``New Design'' (DRAFT)
+                      XFree86 server 4.x Design (DRAFT)
 
                           The XFree86 Project, Inc
 
-                        Last modified 2003 January 22
+                              19 December 2003
 
 NOTE: This is a DRAFT document, and the interfaces described here are subject
 to change without notice.
@@ -6366,7 +6366,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.53 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.54 dawes Exp $
 
 
 $XFree86: $
