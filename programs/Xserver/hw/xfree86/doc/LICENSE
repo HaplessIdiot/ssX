@@ -65,7 +65,7 @@ License B, version 1.1 (section 9., page 1), which is not GPL-compatible.
 
 Other portions of XFree86, including the X servers, may include code with
 licenses that are not GPL-compatible.  Example of such licenses include some
-of the BSD-style licenses (section 6.4, page 1), the FreeType License (sec-
+of the BSD-style licenses (section 6.3, page 1), the FreeType License (sec-
 tion 12., page 1), the SGI licenses (section 9., page 1) and the XFree86
 License version 1.1 (section 4., page 1).
 
@@ -662,8 +662,6 @@ Copyright (c) 1999 Chris Costello
 Copyright (c) 1995,1999 Theo de Raadt.
 
 Copyright (c) 2001-2002 Damien Miller.
-
-Copyright (c) 1994 Paul Vojta.
 
 All Rights Reserved.
 
@@ -1644,7 +1642,7 @@ the sale, use or other dealings in this Font Software without prior written
 authorization from the Gnome Foundation or Bitstream Inc., respectively. For
 further information, contact: fonts at gnome dot org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.33 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LICENSE.sgml,v 1.35 dawes Exp $
 
 
 $XFree86: $
