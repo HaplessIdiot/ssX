@@ -1,9 +1,10 @@
 
+//
+// $XFree86$
+
 partial alphanumeric_keys 
 xkb_symbols "basic" {
      
-     // Describes the differences between a very simple en_US
-     // keyboard and a Slovak keyboard
      // This layout conforms to a new sk compromise standard designed 
      // to satisfy most unix, windows and mac users.
      // 2001 by Kamil Toman <ktoman@email.cz>
@@ -57,8 +58,7 @@ xkb_symbols "basic" {
     key <AC12>	{ [  EuroSign, dead_diaeresis, NoSymbol,     NoSymbol ]	};
     key <BKSL>	{ [    ncaron, parenright,    backslash,          bar ]	};
 
-    key <LSGT>	{ type[Group1] = "FOUR_LEVEL",
-                  [ backslash,        bar,        slash,     NoSymbol ]	};
+    key <LSGT>	{ [ backslash,        bar,        slash,     NoSymbol ]	};
     key <AB01>	{ [         y,          Y,       degree,     NoSymbol ]	};
     key <AB02>	{ [         x,          X,   numbersign,     Nosymbol ]	};
     key <AB03>	{ [         c,          C,    ampersand,     NoSymbol ]	};
@@ -70,9 +70,8 @@ xkb_symbols "basic" {
     key <AB09>	{ [    period,      colon,      greater,     NoSymbol ]	};
     key <AB10>	{ [     minus, underscore,     asterisk,     NoSymbol ]	};
 
+    key <SPCE>  { [     space,      space, nobreakspace, nobreakspace ] };
 
-    // This certainly shouldn't be 'comma'. Something like KP_DecimalComma
-    // would be better but there's no such definition in keysyms.
     key <KPDL>	{ type[Group1]="FOUR_LEVEL_KEYPAD",
                   [ KP_Delete,      comma,    KP_Delete,   KP_Decimal ]	};
 
@@ -80,4 +79,10 @@ xkb_symbols "basic" {
                   [ ISO_Level3_Shift, Multi_key ]	};
     modifier_map Mod5   { <RALT> };			
 };
-			
+
+// Use <BKSL> instead of <LSGT> (useful for keyboard without <LSGT> key)
+xkb_symbols "bksl" {
+    include "pc/sk(basic)"
+
+    key <BKSL>	{ [ backslash,        bar,        slash,     NoSymbol ]	};
+};

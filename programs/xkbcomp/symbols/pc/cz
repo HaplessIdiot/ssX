@@ -1,11 +1,11 @@
 
 // based on a keyboard map from an 'xkb/symbols/cz' file
+//
+// $XFree86$
 
 partial alphanumeric_keys 
 xkb_symbols "basic" {
      
-     // Describes the differences between a very simple en_US
-     // keyboard and a Czech keyboard
      // This layout conforms to a new cz compromise standard designed 
      // to satisfy most unix, windows and mac users.
      // 2001 by Kamil Toman <ktoman@email.cz>
@@ -73,9 +73,7 @@ xkb_symbols "basic" {
 
     key <SPCE>	{ [     space,      space, nobreakspace, nobreakspace ]	};
 
-    // This certainly shouldn't be 'comma'. Something like KP_DecimalComma
-    // would be better but there's no such definition in keysyms.
-    key <KPDL>	{ type="FOUR_LEVEL_KEYPAD",
+    key <KPDL>	{ type[Group1]="FOUR_LEVEL_KEYPAD",
                   [ KP_Delete,      comma,    KP_Delete,   KP_Decimal ]	};
 
     key <RALT>	{ type[Group1]="TWO_LEVEL",
