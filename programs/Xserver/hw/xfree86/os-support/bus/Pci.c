@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.19 1999/07/06 14:51:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.20 1999/07/10 07:24:48 dawes Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -1024,11 +1024,13 @@ xf86ReadPciBIOS(unsigned long Offset, PCITAG Tag, int basereg,
     if ((newbase = getValidBIOSBase(Tag,basereg)) != romaddr) {
 	romaddr = PCIGETROM(newbase);
 	if (romaddr != 0 && romaddr == newbase) {
+#if 0
 	    savebase = pciReadLong(Tag, PCI_MAP_REG_START + (basereg << 2));
 	    if (PCIGETROM(savebase) == romaddr)
 		pciWriteLong(Tag, PCI_MAP_REG_START + (basereg << 2), 0);
 	    else
 		savebase = 0;
+#endif
 	    pciWriteLong(Tag, PCI_MAP_ROM_REG, romaddr);
 	} else
 	    romaddr = 0;

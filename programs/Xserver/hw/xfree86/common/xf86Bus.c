@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.32 1999/07/06 11:38:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.33 1999/07/10 07:24:42 dawes Exp $ */
 #define DEBUG
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -402,6 +402,19 @@ xf86CheckPciSlot(int bus, int device, int func)
  * (if not already done), fix pciVideoInfo and entry in the resource
  * list.
  */
+/*
+ * Note: once we have OS support to read the sizes GetBaseSize() will
+ * have to be wrapped by the OS layer. fixPciSizeInfo() should also
+ * be wrapped by the OS layer to do nothing if the size is always
+ * returned correctly by GetBaseSize(). It should however set validate
+ * in pciVideoRec if validation is required. PciValidate() also needs
+ * to be wrapped by the OS layer. This may do nothing if the OS has
+ * already taken care of validation. fixPciResource() may be moved to
+ * OS layer with minimal changes. Once the wrapping layer is in place
+ * the common level and drivers should not reference these functions
+ * directly but thru the OS layer.
+ */
+
 static void
 fixPciSizeInfo(int entityIndex)
 {
@@ -530,8 +543,9 @@ xf86GetPciVideoInfo()
  * Get the full xf86scanpci data.
  * XXX This function may be removed, so don't rely on it.
  */
+
 pciConfigPtr *
-xf86GetPciConfigInfo()
+xf86GetPciConfigInfo(void)
 {
     return xf86PciInfo;
 }
@@ -896,9 +910,6 @@ initPciState(void)
 
     while ((pvp = xf86PciVideoInfo[i]) != NULL) {
   	i++;
-#if 0 /*EE*/
- 	if (PCISHAREDIOCLASSES(pvp->class, pvp->subclass)) {
-#endif
   	    j++;
   	    xf86PciAccInfo = xnfrealloc(xf86PciAccInfo,
   					sizeof(pciAccPtr) * (j + 1));
@@ -924,9 +935,6 @@ initPciState(void)
  	    else
  		pcaccp->ctrl = FALSE;
  	    savePciState(pcaccp->arg.tag, &pcaccp->save);
-#if 0 /*EE*/
-	}
-#endif
     }
 }
 
@@ -2272,24 +2280,6 @@ ValidatePci(void)
 		    Sys = xf86AddResToList(Sys,&range,-1);
 		}
 	    }
-            /*
-	     * if bus and device of pvp and pvp1 are identical, and both
-	     * have a bios base we assume both bioses are actually the
-	     * same.
-	     */
-#if 0  /*EE*/
-	    if (pvp1->biosBase
-#ifdef COMMON_BIOS /*EE*/
-		&& (pvp->bus != pvp1->bus || pvp->device != pvp1->device 
-		|| !pvp->biosBase)
-#endif
-		) {
-		    RANGE(range, pvp1->biosBase,
-			  pvp1->biosBase + (1 << pvp1->biosSize) - 1,
-			  ResExcMemBlock);
-		    Sys = xf86AddResToList(Sys,&range,-1);
-	    }
-#endif
 	}
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"Sys:\n");
@@ -2349,14 +2339,6 @@ ValidatePci(void)
 		    own = xf86AddResToList(own,&range,-1);
 		}
 	    }
-#if 0 /*EE*/
-	    if (pvp->biosBase) {
-		RANGE(range, pvp->biosBase,
-		      pvp->biosBase + (1 << pvp->biosSize) - 1,
-		      ResExcMemBlock);
-		own = xf86AddResToList(own,&range,-1);
-	    }
-#endif
 #ifdef DEBUG
 	xf86MsgVerb(X_INFO, 3,"own:\n");
 	xf86PrintResList(3,own);
@@ -2403,25 +2385,6 @@ ValidatePci(void)
 	    }
 	    xf86FreeResList(own);
 	}
-#if 0 /*EE*/
-	if (pvp->biosBase) {
-	    RANGE(range, pvp->biosBase,
-		  pvp->biosBase + (1 << pvp->biosSize) - 1,
-		  ResExcMemBlock);
-	    if (((range.rBegin >= start_m && range.rEnd <= end_m) ||
-		(range.rBegin >= start_mp && range.rEnd <= end_mp))
-		&& ! ChkConflict(&range,avoid,SETUP)
-		&& ! ChkConflict(&range,Sys,SETUP))
-		continue;
-	    xf86MsgVerb(X_WARNING, 0,
-		"****INVALID BIOS ROM ALLOCATION**** b: 0x%lx e: 0x%lx "
-		"correcting\a\n",range.rBegin,range.rEnd);
-#ifdef DEBUG
-	    sleep(2);
-#endif
-	    fixPciResource(6, 0, pvp, range.type);
-	}
-#endif
 	xf86FreeResList(avoid);
 	xf86FreeResList(Sys);
     }
@@ -3564,7 +3527,8 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     memType *p_base;
     int *p_size;
     unsigned char p_type;
-    resPtr *pAcc = &Acc;
+    resPtr AccTmp = NULL;
+    resPtr *pAcc = &AccTmp;
     resPtr avoid = NULL;
     resList p_avoid = PciAvoid;
     resRange range;
@@ -3609,20 +3573,6 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
     
     type |= ResBlock;
     
-    /* Access list holds bios resources -- remove this one */
-    while ((*pAcc)) {
-	if ((((*pAcc)->res_type & (type & ~ResAccMask)) == (type & ~ResAccMask))
-	    && ((*pAcc)->block_begin == (*p_base))
-	    && ((*pAcc)->block_end == (*p_base) + (1 << (*p_size)) - 1)) {
-#ifdef DEBUG
-	    ErrorF("removing old resource\n");
-#endif
-	    (*pAcc) = (*pAcc)->next;
-	    break;
-	} else
-	    pAcc = &((*pAcc)->next);
-    }
-
     /* setup avoid */
     avoid = addRangesToList(avoid,p_avoid,-1);
 
@@ -3644,10 +3594,12 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 		} else if (pbp->mem) {
 		    start_w = pbp->mem->block_begin;
 		    end_w = MIN(end_w,pbp->mem->block_end);
+		    start_w_2nd = end_w_2nd = 0;
 		} 
 	    } else if (pbp->io) {
 		start_w = pbp->io->block_begin;
 		end_w = MIN(end_w,pbp->io->block_end);
+		start_w_2nd = end_w_2nd = 0;
 	    }
 		
 	    while (pbp1) {
@@ -3671,6 +3623,58 @@ fixPciResource(int prt, memType alignment, pciVideoPtr pvp, long type)
 
     if (!alignment)
 	alignment = (1 << (*p_size)) - 1;
+
+    /* Access list holds bios resources -- remove this one */
+#ifdef NOTYET
+    AccTmp = xf86DupResList(Acc);
+    while ((*pAcc)) {
+	if ((((*pAcc)->res_type & (type & ~ResAccMask))
+	     == (type & ~ResAccMask))
+	    && ((*pAcc)->block_begin == (*p_base))
+	    && ((*pAcc)->block_end == (*p_base) + (1 << (*p_size)) - 1)) {
+	    (*pAcc) = (*pAcc)->next;
+	    break;
+	} else
+	    pAcc = &((*pAcc)->next);
+    }
+    /* check if we really need to fix anything */
+    RANGE(range,(*pAcc)->block_begin,(*pAcc)->block_end,type);
+    if (!ChkConflict(&range,avoid,SETUP)
+	&& !ChkConflict(&range,AccTmp,SETUP)
+	&& (((*pAcc)->block_begin & alignment) == (*pAcc)->block_begin)
+	&& (((*pAcc)->block_begin >= start_w && (*pAcc)->block_end <= end_w)
+	    || (end_w_2nd
+		&& (*pAcc)->block_begin >= start_w_2nd
+		&& (*pAcc)->block_end <= end_w))) {
+#ifdef DEBUG
+	    ErrorF("nothing to fix\n");
+#endif
+	xf86FreeResList(AccTmp);
+	return TRUE;
+    } else {
+#ifdef DEBUG
+	    ErrorF("removing old resource\n");
+#endif
+	xf86FreeResList(Acc);
+	Acc = AccTmp;
+    }
+#else
+    pAcc = &Acc;
+    while ((*pAcc)) {
+	if ((((*pAcc)->res_type & (type & ~ResAccMask))
+	     == (type & ~ResAccMask))
+	    && ((*pAcc)->block_begin == (*p_base))
+	    && ((*pAcc)->block_end == (*p_base) + (1 << (*p_size)) - 1)) {
+#ifdef DEBUG
+	    ErrorF("removing old resource\n");
+#endif
+	    (*pAcc) = (*pAcc)->next;
+	    break;
+	} else
+	    pAcc = &((*pAcc)->next);
+    }
+#endif
+    
 #ifdef DEBUG
     ErrorF("base: 0x%lx alignment: 0x%lx size[bit]: 0x%x\n",
 	   (*p_base),alignment,(*p_size));
@@ -3863,6 +3867,7 @@ getValidBIOSBase(PCITAG tag, int num)
 	    return pvp->biosBase;
 	}
     }
+#if 0
     if (num >= 0 && num <= 5 && pvp->memBase[num]) {
     /* then try suggested memBase */
 	RANGE(range, pvp->memBase[num],
@@ -3875,7 +3880,7 @@ getValidBIOSBase(PCITAG tag, int num)
 	    return pvp->memBase[num];
 	}
     }
-
+#endif
     range = xf86GetBlock(ResExcMemBlock, (1 << pvp->biosSize),start_m,end_m,
 			 (1 << pvp->biosSize) -1, avoid);
     xf86FreeResList(avoid);
@@ -3891,3 +3896,63 @@ addRangesToList(resPtr list, resRange *pRange, int entityIndex)
     }
     return list;
 }
+
+/*
+ * not yet used. FIXME: add support for sparse
+ */
+static Bool
+isSubsetOf(resRange range, resPtr list)
+{
+    while (list) {
+	if (range.type & list->res_type & ResPhysMask) {
+	    switch (range.type & ResExtMask) {
+	    case ResBlock:
+		switch (list->res_type) {
+		case ResBlock:
+		    if (range.rBegin >= list->block_begin
+			&& range.rEnd <= list->block_end)
+			return TRUE;
+			break;
+		}
+		break;
+	    }
+	}
+	list = list->next;
+    }
+    return FALSE;
+}
+
+static resPtr
+findIntersect(resRange Range, resPtr list)
+{
+    resRange range;
+    resPtr new = NULL;
+    
+    while (list) {
+	    if (Range.type & list->res_type & ResPhysMask) {
+		switch (Range.type & ResExtMask) {
+		case ResBlock:
+		    switch (list->res_type) {
+		    case ResBlock:
+			if (Range.rBegin >= list->block_begin)
+			    range.rBegin = Range.rBegin;
+			else
+			    range.rBegin = list->block_begin;
+			if (range.rEnd <= list->block_end)
+			    range.rEnd = Range.rEnd;
+			else 
+			    range.rEnd = Range.rEnd;
+			if (range.rEnd > range.rBegin) {
+			    range.type = Range.type;
+			    xf86AddResToList(new,&range,-1);
+			}
+			break;
+		    }
+		    break;
+		}
+	    }
+	list = list->next;
+    }
+    return new;
+}
+    
