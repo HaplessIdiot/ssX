@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.23 2001/10/04 18:28:21 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.24 2001/10/10 14:08:36 alanh Exp $ */
 
 /*
  * Authors:
@@ -793,26 +793,6 @@ extern int I810_DEBUG;
 #define IS_I815(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I815)
 #define IS_I830(pI810) (pI810->PciInfo->chipType == PCI_CHIP_I830_M)
 
-/* XvMC Subpicture surface definition */
-#define FOURCC_IA44 0x34344149
-#define XVIMAGE_IA44 \
-   { \
-        FOURCC_IA44, \
-        XvYUV, \
-        LSBFirst, \
-        {'I','A','4','4', \
-          0x00,0x00,0x00,0x10,0x80,0x00,0x00,0xAA,0x00,0x38,0x9B,0x71}, \
-        8, \
-        XvPacked, \
-        1, \
-        0, 0, 0, 0, \
-        8, 8, 8, \
-        1, 1, 1, \
-        1, 1, 1, \
-        {'I','A', \
-          0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0}, \
-        XvTopToBottom \
-   }
 
 #endif
   

@@ -33,7 +33,7 @@ THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 **
 **
 ***************************************************************************/
-/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.4 2001/10/01 17:15:20 alanh Exp $ */
+/* $XFree86: xc/lib/XvMC/hw/i810/I810XvMC.c,v 1.5 2001/11/14 21:54:38 mvojkovi Exp $ */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -3532,6 +3532,7 @@ Status XvMCCreateSubpicture(Display *display, XvMCContext *context,
 
   switch(subpicture->xvimage_id) {
   case FOURCC_IA44:
+  case FOURCC_AI44:
     /* Destination buffer info command */
     pI810Subpicture->dbi1 = ((((unsigned int)pI810Subpicture->offset +
 			       pI810Subpicture->offsets[0]) & ~0xfc000fff) |
@@ -3836,6 +3837,11 @@ Status XvMCBlendSubpicture2(Display *display,
     return (error_base + XvMCBadSurface);
   }
 
+  if((subpicture->xvimage_id != FOURCC_AI44) &&
+     (subpicture->xvimage_id != FOURCC_IA44)) {
+      return (error_base + XvMCBadSubpicture);
+  }
+
   if(!subpicture->privData) {
     return (error_base + XvMCBadSubpicture);
   }
@@ -3903,10 +3909,21 @@ Status XvMCBlendSubpicture2(Display *display,
   /* Load Palette */
   *data++ = MAP_PALETTE_LOAD;
   /* 16 levels of alpha for each Y */
-  for(i=0; i<16; i++) {
-    for(j=0; j<16; j++) {
-      *data++ = (j<<12) | (j<<8) | privSubpicture->palette[0][i];
+  switch(subpicture->xvimage_id) {
+  case FOURCC_IA44:
+    for(i=0; i<16; i++) {
+      for(j=0; j<16; j++) {
+        *data++ = (j<<12) | (j<<8) | privSubpicture->palette[0][i];
+      }
     }
+    break;
+  case FOURCC_AI44:
+    for(i=0; i<16; i++) {
+      for(j=0; j<16; j++) {
+        *data++ = (i<<12) | (i<<8) | privSubpicture->palette[0][j];
+      }
+    }
+    break;
   }
   /* TARGET */
   /* *data++ = CMD_FLUSH; */
@@ -3981,10 +3998,21 @@ Status XvMCBlendSubpicture2(Display *display,
   /* ALPHA PALETTE */
   *data++ = MAP_PALETTE_LOAD;
   /* 16 levels of alpha for each Y */
-  for(i=0; i<16; i++) {
-    for(j=0; j<16; j++) {
-      *data++ = (j<<12) | (j<<8) | privSubpicture->palette[1][i];
+  switch(subpicture->xvimage_id) {
+  case FOURCC_IA44:
+    for(i=0; i<16; i++) {
+      for(j=0; j<16; j++) {
+        *data++ = (j<<12) | (j<<8) | privSubpicture->palette[2][i];
+      }
     }
+    break;
+  case FOURCC_AI44:
+    for(i=0; i<16; i++) {
+      for(j=0; j<16; j++) {
+        *data++ = (i<<12) | (i<<8) | privSubpicture->palette[2][j];
+      }
+    }
+    break;
   }
   /* TARGET */
   *data++ = CMD_FLUSH;
@@ -4060,10 +4088,21 @@ Status XvMCBlendSubpicture2(Display *display,
   /* ALPHA PALETTE */
   *data++ = MAP_PALETTE_LOAD;
   /* 16 levels of alpha for each Y */
-  for(i=0; i<16; i++) {
-    for(j=0; j<16; j++) {
-      *data++ = (j<<12) | (j<<8) | privSubpicture->palette[2][i];
+  switch(subpicture->xvimage_id) {
+  case FOURCC_IA44:
+    for(i=0; i<16; i++) {
+      for(j=0; j<16; j++) {
+        *data++ = (j<<12) | (j<<8) | privSubpicture->palette[1][i];
+      }
     }
+    break;
+  case FOURCC_AI44:
+    for(i=0; i<16; i++) {
+      for(j=0; j<16; j++) {
+        *data++ = (i<<12) | (i<<8) | privSubpicture->palette[1][j];
+      }
+    }
+    break;
   }
   /* TARGET */
   *data++ = CMD_FLUSH;

@@ -1,4 +1,5 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 547. i810 XvMC fixes (#5078, Matthew J. Sottek).
  546. Downgrade DDC-related mode rejections to warnings as some monitors
       advertise their nominal, rather than actual, tolerances (Marc La France).
  545. Add Korean localization of XDarwin front end (Kyunghwan Kim).
@@ -14283,4 +14284,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2071 2001/12/04 03:36:35 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2072 2001/12/04 17:41:04 tsi Exp $
