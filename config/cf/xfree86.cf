@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.361 2001/05/19 18:29:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.362 2001/05/28 02:42:25 tsi Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -741,7 +741,7 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #if !defined(BuildPexExt)
 # if XF86Server && !defined(AlphaArchitecture) && !defined(ia64Architecture)
-#  define BuildPexExt		YES
+#  define BuildPexExt		NO
 # else
 #  define BuildPexExt		NO
 # endif
@@ -939,14 +939,14 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
  */
 #ifndef BuildXIE
 # if XF86Server
-#  define BuildXIE		YES
+#  define BuildXIE		NO
 # else
 #  define BuildXIE		NO
 # endif
 #endif
 
 #ifndef BuildXIElib
-# define BuildXIElib	YES
+# define BuildXIElib	NO
 #endif
 
 #ifndef BuildDBElib
