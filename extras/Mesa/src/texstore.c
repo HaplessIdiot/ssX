@@ -1,7 +1,7 @@
-/* $XFree86$ */
+/* $XFree86: xc/extras/Mesa/src/texstore.c,v 1.6 2003/10/22 15:27:41 tsi Exp $ */
 /*
  * Mesa 3-D graphics library
- * Version:  5.0.1
+ * Version:  5.0.2
  *
  * Copyright (C) 1999-2003  Brian Paul   All Rights Reserved.
  *
@@ -1096,7 +1096,7 @@ _mesa_store_texsubimage3d(GLcontext *ctx, GLenum target, GLint level,
                            texImage->Format,
                            texImage->TexFormat, texImage->Data,
                            width, height, depth, /* src size */
-                           xoffset, yoffset, xoffset, /* dest offsets */
+                           xoffset, yoffset, zoffset, /* dest offsets */
                            texImage->Width * texelBytes,  /* dst row stride */
                            texImage->Width * texImage->Height * texelBytes,
                            format, type, pixels, packing);
