@@ -23,7 +23,7 @@
  *
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.3 2003/10/29 11:42:11 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/acecad/acecad.c,v 1.4 2003/10/30 00:40:45 dawes Exp $ */
 
 #define _ACECAD_C_
 /*****************************************************************************
@@ -301,7 +301,7 @@ AceCadPreInit(InputDriverPtr drv, IDevPtr dev, int flags)
 	if ((local) && (local->fd))
 		xf86CloseSerial (local->fd);
 	if (local)
-		xfree (local);
+		xf86DeleteInput (local, 0);
 
 	if ((priv) && (priv->buffer))
 		XisbFree (priv->buffer);
