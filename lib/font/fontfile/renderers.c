@@ -25,7 +25,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/renderers.c,v 1.4 2001/12/14 19:56:52 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/renderers.c,v 1.5 2002/09/21 02:50:32 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -36,19 +36,38 @@ extern void ErrorF(const char *f, ...);
 
 static FontRenderersRec	renderers;
 
+/*
+ * XXX Maybe should allow unregistering renders. For now, just clear the
+ * list at each new generation.
+ */
+extern unsigned long serverGeneration;
+static unsigned long rendererGeneration = 0;
+
 Bool
 FontFileRegisterRenderer (FontRendererPtr renderer)
 {
     int		    i;
     FontRendererPtr *new;
 
-    for (i = 0; i < renderers.number; i++)
+    if (rendererGeneration != serverGeneration) {
+	rendererGeneration = serverGeneration;
+	renderers.number = 0;
+	if (!renderers.renderers)
+	   xfree(renderers.renderers);
+	renderers.renderers = NULL;
+    }
+
+    for (i = 0; i < renderers.number; i++) {
 	if (!strcmp (renderers.renderers[i]->fileSuffix, 
                      renderer->fileSuffix)) {
-            ErrorF("Warning: font renderer for \"%s\" registered more than once\n",
-                   renderer->fileSuffix);
+	    /* Only print these warnings for the first generation. */
+	    if (rendererGeneration == 1) {
+        	ErrorF("Warning: font renderer for \"%s\" "
+		       "registered more than once\n", renderer->fileSuffix);
+	    }
 	    return TRUE;
         }
+    }
     i = renderers.number + 1;
     new = (FontRendererPtr *) xrealloc (renderers.renderers, sizeof *new * i);
     if (!new)
