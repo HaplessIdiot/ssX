@@ -34,7 +34,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.4 2002/10/12 00:32:45 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.5 2002/11/15 00:55:10 torrey Exp $ */
 
 #include "quartzCommon.h"
 
@@ -56,6 +56,13 @@
 #include <pwd.h>
 #include <signal.h>
 #include <fcntl.h>
+
+// For power management notifications
+#import <mach/mach_port.h>
+#import <mach/mach_interface.h>
+#import <mach/mach_init.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
+#import <IOKit/IOMessage.h>
 
 #define ENQUEUE(xe)                                                         \
 {                                                                           \
@@ -93,6 +100,8 @@ extern int main(int argc, char *argv[], char *envp[]);
 extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
 static void childDone(int sig);
+static void powerDidChange(void *x, io_service_t y, natural_t messageType,
+                           void *messageArgument);
 
 static NSPort *signalPort;
 static NSPort *returnPort;
@@ -100,6 +109,7 @@ static NSPortMessage *signalMessage;
 static pid_t clientPID;
 static XServer *oneXServer;
 static NSRect aquaMenuBarBox;
+static io_connect_t root_port;
 
 
 @implementation XServer
@@ -441,6 +451,20 @@ static NSRect aquaMenuBarBox;
         [helpWindow close];
         helpWindow = nil;
     } else {
+        IONotificationPortRef notify;
+        io_object_t anIterator;
+
+        // Register for system power notifications
+        root_port = IORegisterForSystemPower(0, &notify, powerDidChange,
+                                             &anIterator);
+        if (root_port) {
+            CFRunLoopAddSource([[NSRunLoop currentRunLoop] getCFRunLoop],
+                               IONotificationPortGetRunLoopSource(notify),
+                               kCFRunLoopDefaultMode);
+        } else {
+            NSLog(@"Failed to register for system power notifications.");
+        }
+        
         // Show the X switch window if not using dock icon switching
         if (![Preferences dockSwitch])
             [switchWindow orderFront:nil];
@@ -772,6 +796,16 @@ static NSRect aquaMenuBarBox;
     serverVisible = show;
 }
 
+// Enable or disable rendering to the X screen
+- (void)setRootClip:(BOOL)enable
+{
+    xEvent xe;
+
+    xe.u.u.type = kXDarwinSetRootClip;
+    xe.u.clientMessage.u.l.longs0 = enable;
+    [self sendXEvent:&xe];
+}
+
 // Tell the X server to read from the pasteboard into the X cut buffer
 - (void)readPasteboard
 {
@@ -940,4 +974,29 @@ static void childDone(int sig)
         clientPID = 0;
         [oneXServer clientProcessDone:clientStatus];
     }
+}
+
+static void powerDidChange(
+    void *x,
+    io_service_t y,
+    natural_t messageType,
+    void *messageArgument)
+{
+    switch (messageType) {
+        case kIOMessageSystemWillSleep:
+            if (!quartzRootless) {
+                [oneXServer setRootClip:FALSE];
+            }
+            IOAllowPowerChange(root_port, (long)messageArgument);
+            break;
+        case kIOMessageCanSystemSleep:
+            IOAllowPowerChange(root_port, (long)messageArgument);
+            break;
+        case kIOMessageSystemHasPoweredOn:
+            if (!quartzRootless) {
+                [oneXServer setRootClip:TRUE];
+            }
+            break;
+    }
+    
 }

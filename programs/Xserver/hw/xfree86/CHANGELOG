@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 498. Refresh screen after wake from sleep in XDarwin full screen mode
+      (Torrey T. Lyons).
  497. Fixes and updates for the SCO OpenServer port (#5459, J. Kean Johnston).
  496. Add PCI ID defines for some ATI R300 chipsets (#5458,
       Vladimir Dergachev).
@@ -8,7 +10,7 @@ XFree86 4.2.99.3 (xx November 2002)
       X server's config file, module path, and log file name (#5456, Joe Moss).
  492. Add support for using the XKEYBOARD extension's action handlers
       for the XFree86 X server hot keys.  This provides control over
-      the mapping of theese hot keys (#A.1334, 5454, Joe Moss).
+      the mapping of these hot keys (#A.1334, 5454, Joe Moss).
  491. Reinstate the X server -xkbdir option, but only when the X server's
       real and effective uids are the same (based on #A.1132, Ivan Popov).
  490. Fix an xkbcomp bug that prevents a later definition from specifying
@@ -15530,4 +15532,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2395 2002/11/20 05:28:33 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2396 2002/11/20 23:00:37 dawes Exp $

@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.2 2002/10/12 00:32:45 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.3 2002/11/15 00:55:10 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -69,38 +69,6 @@ int                     aquaNumScreens = 0;
 
 ===========================================================================
 */
-
-/*
- * QuartzPMThread
- * Handle power state notifications, FIXME
- */
-#if 0
-static void *QuartzPMThread(void *arg)
-{
-    for (;;) {
-        mach_msg_return_t       kr;
-        mach_msg_empty_rcv_t    msg;
-
-        kr = mach_msg((mach_msg_header_t*) &msg, MACH_RCV_MSG, 0,
-                      sizeof(msg), pmNotificationPort, 0, MACH_PORT_NULL);
-        kern_assert(kr);
-
-        // computer just woke up
-        if (msg.header.msgh_id == 1) {
-            if (quartzServerVisible) {
-                int i;
-
-                for (i = 0; i < screenInfo.numScreens; i++) {
-                    if (screenInfo.screens[i])
-                        xf86SetRootClip(screenInfo.screens[i], true);
-                }
-            }
-        }
-    }
-    return NULL;
-}
-#endif
-
 
 /*
  * QuartzAddScreen
@@ -200,9 +168,9 @@ void QuartzInitInput(
 /*
  * QuartzShow
  *  Show the X server on screen. Does nothing if already shown.
- *  Restore the X clip regions the X server cursor state.
+ *  Restore the X clip regions and the X server cursor state.
  */
-void QuartzShow(
+static void QuartzShow(
     int x,	// cursor location
     int y )
 {
@@ -227,7 +195,7 @@ void QuartzShow(
  *  hidden. Set X clip regions to prevent drawing, and restore the Aqua
  *  cursor.
  */
-void QuartzHide(void)
+static void QuartzHide(void)
 {
     int i;
 
@@ -242,6 +210,26 @@ void QuartzHide(void)
     }
     quartzServerVisible = FALSE;
     QuartzMessageMainThread(kQuartzServerHidden, NULL, 0);
+}
+
+
+/*
+ * QuartzSetRootClip
+ *  Enable or disable rendering to the X screen.
+ */
+static void QuartzSetRootClip(
+    BOOL enable)
+{
+    int i;
+
+    if (!quartzServerVisible)
+        return;
+
+    for (i = 0; i < screenInfo.numScreens; i++) {
+        if (screenInfo.screens[i]) {
+            xf86SetRootClip(screenInfo.screens[i], enable);
+        }
+    }
 }
 
 
@@ -261,6 +249,10 @@ void QuartzProcessEvent(
 
         case kXDarwinHide:
             QuartzHide();
+            break;
+
+        case kXDarwinSetRootClip:
+            QuartzSetRootClip((BOOL)xe->u.clientMessage.u.l.longs0);
             break;
 
         case kXDarwinQuit:

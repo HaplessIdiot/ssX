@@ -30,7 +30,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.2 2002/10/12 00:32:45 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.h,v 1.3 2002/11/15 00:55:10 torrey Exp $ */
 
 #ifndef _QUARTZ_H
 #define _QUARTZ_H
@@ -45,8 +45,6 @@ void QuartzInitInput(int argc, char **argv);
 Bool QuartzAddScreen(int index, ScreenPtr pScreen);
 Bool QuartzSetupScreen(int index, ScreenPtr pScreen);
 void QuartzGiveUp(void);
-void QuartzHide(void);
-void QuartzShow(int x, int y);
 void QuartzProcessEvent(xEvent *xe);
 
 #endif

@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.4 2002/10/12 00:32:45 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.5 2002/11/15 00:55:10 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -76,6 +76,7 @@
 - (void)toggle;
 - (void)showServer:(BOOL)show;
 - (void)forceShowServer:(BOOL)show;
+- (void)setRootClip:(BOOL)enable;
 - (void)readPasteboard;
 - (void)writePasteboard;
 - (void)quitServer;
