@@ -1,4 +1,5 @@
 /* $XConsortium: xf86XKB.c /main/1 1995/11/30 19:24:49 kaleb $ */
+/* $XFree86$ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
