@@ -1,5 +1,5 @@
 .\"
-.\" $XFree86: xc/lib/XRes/XRes.man,v 1.2 2003/10/13 21:22:54 herrb Exp $
+.\" $XFree86: xc/lib/Xss/Xss.man,v 1.1 2003/10/26 19:00:24 herrb Exp $
 .\"
 .\" Copyright (C) 2003 The XFree86 Project, Inc.  All Rights Reserved.
 .\"
@@ -36,26 +36,26 @@ XScreenSaver \- X11 Screen Saver extension client library
 .nf
 .ta .5i 2i
 typedef struct {
-    Window window;                /* screen saver window */
-    int state;                    /* ScreenSaver{Off,On,Disabled} */
-    int kind;                     /* ScreenSaver{Blanked,Internal,External} */
-    unsigned long til_or_since;   /* milliseconds */
-    unsigned long idle;           /* milliseconds */
-    unsigned long event_mask;     /* events */
+    Window window;                /\(** screen saver window */
+    int state;                    /\(** ScreenSaver{Off,On,Disabled} */
+    int kind;                     /\(** ScreenSaver{Blanked,Internal,External} */
+    unsigned long til_or_since;   /\(** milliseconds */
+    unsigned long idle;           /\(** milliseconds */
+    unsigned long event_mask;     /\(** events */
 .br
 } XScreenSaverInfo;
 
 typedef struct {
-    int type;               /* of event */
-    unsigned long serial;   /* # of last request processed by server */
-    Bool send_event;        /* true if this came frome a SendEvent request */
-    Display *display;       /* Display the event was read from */
-    Window window;          /* screen saver window */
-    Window root;            /* root window of event screen */
-    int state;              /* ScreenSaver{Off,On,Cycle} */
-    int kind;               /* ScreenSaver{Blanked,Internal,External} */
-    Bool forced;            /* extents of new region */
-    Time time;              /* event timestamp */
+    int type;               /\(** of event */
+    unsigned long serial;   /\(** # of last request processed by server */
+    Bool send_event;        /\(** true if this came frome a SendEvent request */
+    Display *display;       /\(** Display the event was read from */
+    Window window;          /\(** screen saver window */
+    Window root;            /\(** root window of event screen */
+    int state;              /\(** ScreenSaver{Off,On,Cycle} */
+    int kind;               /\(** ScreenSaver{Blanked,Internal,External} */
+    Bool forced;            /\(** extents of new region */
+    Time time;              /\(** event timestamp */
 .br
 } XScreenSaverNotifyEvent;
 .fi
