@@ -641,9 +641,10 @@ installation procedure will overwrite your existing version of XFree86.
 If you have a previous version of XFree86 installed, you can upgrade to
 the new version by first running the script <tt>preinst.sh</tt>, and
 then extracting the required .tgz files over the previous version in
-<tt>/usr/X11R6</tt>.  The <tt>preinst.sh</tt> script removes symbolic
-links that are going to be replaced by either files or new links in this
-version (tar won't overwrite existing symbolic links).
+<tt>/usr/X11R6</tt>.  The <tt>preinst.sh</tt> script must be run before
+removing any previous beta versions you have installed.  It removes
+symbolic links that are going to be replaced by either files or new
+links in this version (tar won't overwrite existing symbolic links).
 
 If you are installing from scratch, create a directory called
 <tt>/usr/X11R6</tt>, then extract the required <tt>.tgz</tt> files.
@@ -660,6 +661,19 @@ The <tt>.tgz</tt> files are gzipped tar files.  To extract them, go to
 file you need:
 <tscreen><verb>
 	gzip -d < X312Dfile.tgz | tar vxf -
+</verb></tscreen>
+
+If you are using NetBSD or FreeBSD, an alternative to using the
+<tt>preinst.sh</tt> script is to extract the <tt>.tgz</tt> files with:
+<tscreen><verb>
+        gzip -d < X312Dfile.tgz | tar -v -x --unlink -f -
+</verb></tscreen>
+
+If you have GNU cpio (as Linux does) or SVR4 cpio, an alternative to
+using the <tt>preinst.sh</tt> script is to extract the <tt>.tgz</tt>
+files with:
+<tscreen><verb>
+	gzip -d < X312Dfile.tgz | cpio -i -v -u -H ustar
 </verb></tscreen>
 
 Note that there is no postinst.sh script to be run for this release.
@@ -701,7 +715,7 @@ instructions, the files for that version will still be in the
 -->
 <p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.21 1996/03/03 03:56:30 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.22 1996/03/03 04:30:40 dawes Exp $
 </verb>
 
 </article>

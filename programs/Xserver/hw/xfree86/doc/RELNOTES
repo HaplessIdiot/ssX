@@ -782,14 +782,15 @@
   If you have a previous version of XFree86 installed, you can upgrade
   to the new version by first running the script preinst.sh, and then
   extracting the required .tgz files over the previous version in
-  /usr/X11R6.  The preinst.sh script removes symbolic links that are
-  going to be replaced by either files or new links in this version (tar
-  won't overwrite existing symbolic links).
+  /usr/X11R6.  The preinst.sh script must be run before removing any
+  previous beta versions you have installed.  It removes symbolic links
+  that are going to be replaced by either files or new links in this
+  version (tar won't overwrite existing symbolic links).
 
   If you are installing from scratch, create a directory called
   /usr/X11R6, then extract the required .tgz files.  If you don't have
-  enough space in /usr for this, create a directory elsewhere and create
 
+  enough space in /usr for this, create a directory elsewhere and create
   a symbolic link to it.  E.g., if you create a directory in /home:
 
 
@@ -808,6 +809,24 @@
 
 
 
+  If you are using NetBSD or FreeBSD, an alternative to using the
+  preinst.sh script is to extract the .tgz files with:
+
+
+               gzip -d < X312Dfile.tgz | tar -v -x --unlink -f -
+
+
+
+
+  If you have GNU cpio (as Linux does) or SVR4 cpio, an alternative to
+  using the preinst.sh script is to extract the .tgz files with:
+
+
+               gzip -d < X312Dfile.tgz | cpio -i -v -u -H ustar
+
+
+
+
   Note that there is no postinst.sh script to be run for this release.
   However, for OSs which use ldconfig (like Linux, FreeBSD and NetBSD),
   you should either run ldconfig or reboot to complete the installation.
@@ -816,26 +835,7 @@
   line.  Check /etc/rc to see how ldconfig gets run at boot time.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.22 1996/03/03 04:30:40 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.23 1996/03/03 05:44:45 dawes Exp $
 
 
 
