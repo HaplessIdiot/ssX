@@ -1,5 +1,5 @@
 .\" $XConsortium: XFree86.man,v 1.6 95/01/23 15:33:32 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.17 1995/11/04 11:29:23 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XFree86.man,v 3.18 1995/11/12 09:50:49 dawes Exp $
 .TH XFree86 1 "Version 3.1.2"  "XFree86"
 .SH NAME
 XFree86 - X11R6 for UNIX on x86 platforms
@@ -163,10 +163,14 @@ default is 1.0
 Not all servers support this.
 .TP 8
 .B \-showconfig
-Print out a list of screen drivers configured in the server.
+Print out the server version, patchlevel, and a list of screen drivers
+configured in the server.
 .TP 8
 .B \-verbose
 Maximise information printed at startup (more than the default).
+.TP 8
+.B \-version
+Same as \fB\-showconfig\fP.
 .TP 8
 .B \-xf86config \fIfile\fP
 Read the server configuration from \fIfile\fP.  This option is only available

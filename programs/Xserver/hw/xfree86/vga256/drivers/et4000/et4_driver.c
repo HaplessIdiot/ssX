@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.15 1995/11/12 09:53:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.16 1995/11/16 11:06:12 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -942,6 +942,7 @@ ET4000Init(mode)
        
        /* the programmed clock will be on clock undex 2 */
        new->AuxillaryMode = (new->AuxillaryMode & 0xBE);   /* disable MCLK/2 and MCLK/4 */
+       new->Compatibility = (new->Compatibility & 0xFD);   /* clear CS2: we need clock #2 */
        new->std.MiscOutReg = (new->std.MiscOutReg & 0xF3) | 0x08; 
        new->std.NoClock = 2;
     }

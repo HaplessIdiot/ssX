@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.42 1995/11/05 07:23:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.43 1995/11/12 09:53:17 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -140,9 +140,12 @@ int cirrusReprogrammedMCLK = 0;
 #define CLGD5430_ID 0x28
 #define CLGD5436_ID 0x2B
 
+#define CLGD7541_ID 0x0a	/* guess */
+#define CLGD7542_ID 0x0b
 #define CLGD7543_ID 0x0c
 
 #define Is_62x5(x)  ((x) >= CLGD6205 && (x) <= CLGD6235)
+#define Is_754x(x)  ((x) >= CLGD7541 && (x) <= CLGD7543)
 
 /* <scooper>
  * The following will need updating for other chips in the cirrus
@@ -185,6 +188,10 @@ typedef struct {
   unsigned char CR1A;		/* Miscellaneous Control */
   unsigned char CR1B;		/* Extended Display Control */
   unsigned char CR1D;		/* Overlay Extended Control Register */
+  unsigned char CR2A;		/* 754x */
+  unsigned char CR2B;		/* 754x */
+  unsigned char CR2C;		/* 754x */
+  unsigned char CR2D;		/* 754x */
   unsigned char RAX;		/* 62x5 LCD Timing -- TFT HSYNC */
   unsigned char HIDDENDAC;	/* Hidden DAC Register */
   DACcolourRec  FOREGROUND;     /* Hidden DAC cursor foreground colour */
@@ -375,6 +382,8 @@ static int cirrusClockLimit[] = {
 #endif
   85500,	/* 5430 */
   135100,	/* 5436 */
+  80100,	/* 7541 */
+  80100,	/* 7542 */
   80100,	/* 7543 */
 #endif
 };
@@ -420,6 +429,8 @@ static SymTabRec chipsets[] = {
   { CLGD6215,	"clgd6215" },
   { CLGD6225,	"clgd6225" },
   { CLGD6235,	"clgd6235" },
+  { CLGD7541,	"clgd7541" },
+  { CLGD7542,	"clgd7542" },
   { CLGD7543,	"clgd7543" },
   { -1,		"" },
 };
@@ -688,6 +699,12 @@ cirrusProbe()
 
 	  switch( id )
 	       {
+	     case CLGD7541_ID:
+	       cirrusChip = CLGD7541;
+	       break;
+	     case CLGD7542_ID:
+	       cirrusChip = CLGD7542;
+	       break;
 	     case CLGD7543_ID:
 	       cirrusChip = CLGD7543;
 	       break;
@@ -822,10 +839,10 @@ cirrusProbe()
       * Later versions of this driver will probably do more
       * with this info than just print it out....
       */
-     if (Is_62x5(cirrusChip) || cirrusChip == CLGD7543 ) 
+     if (Is_62x5(cirrusChip) || Is_754x(cirrusChip)) 
 	  {
 	  /* Unlock the LCD registers... */
-	  if( cirrusChip == CLGD7543 )
+	  if( Is_754x(cirrusChip) )
 	      outb(vgaIOBase + 4, 0x2d);
 	  else
 	      outb(vgaIOBase + 4, 0x1D);
@@ -856,14 +873,11 @@ cirrusProbe()
           /* What type of LCD panel do we have? */
 	  if (lcd_is_on) 
 	       {
-	       if (cirrusChip == CLGD7543 )
+	       if (Is_754x(cirrusChip) )
 		    {
 		    outb(vgaIOBase + 4, 0x43); /* access fine dotclk delay */
 		    outb(vgaIOBase + 5, 0x2a); /* set to 2 pixels */
-		    outb(vgaIOBase + 4, 0x2d);
-		    temp = (inb(vgaIOBase + 5) | 0x00) & 0xFE;
-		    outb(vgaIOBase + 5, temp); /* this disables centering */
-		    outb(vgaIOBase + 4, 0x2c); /* this is the 7543 register */
+		    outb(vgaIOBase + 4, 0x2c); /* this is the 754x register */
 		    temp = (inb(vgaIOBase + 5) | 0x20) & 0xF7;
 		    outb(vgaIOBase + 5, temp); /* enable shadow write */
 	            }
@@ -888,7 +902,7 @@ cirrusProbe()
 	       }
 
 	  /* Lock the LCD registers... */
-	  if(cirrusChip == CLGD7543 )
+	  if(Is_754x(cirrusChip) )
 	      outb(vgaIOBase + 4, 0x2d);
 	  else
 	      outb(vgaIOBase + 4, 0x1D);
@@ -1833,6 +1847,13 @@ cirrusRestore(restore)
       outb(vgaIOBase + 5, restore->CR1D);
   }
 
+  if (Is_754x(cirrusChip)) {
+      /* Does something need to be unlocked here?? */
+      outb(vgaIOBase + 4, 0x2d);
+      i = inb(vgaIOBase + 5)
+      outb(vgaIOBase + 5, (i & ~0x01) | (restore->CR2D & 0x01));
+  }
+
   if (cirrusChip == CLGD6225) 
        {
        /* Unlock the LCD registers... */
@@ -1976,6 +1997,11 @@ cirrusSave(save)
   if (cirrusChip == CLGD5434 || cirrusChip == CLGD5436) {
       outb(vgaIOBase + 4, 0x1D);
       save->CR1D = inb(vgaIOBase + 5);
+  }
+
+  if (Is_754x(cirrusChip)) {
+      outb(vgaIOBase + 4, 0x2D);
+      save->CR2D = inb(vgaIOBase + 5);
   }
 
 #ifndef MONOVGA
@@ -2435,6 +2461,14 @@ VirtX = %x\n",
           outb(vgaIOBase + 4, 0x1D);
           /* Set display start address bit 19 to 0. */
           new->CR1D = inb(vgaIOBase + 5) & 0x7f;
+     }
+
+     if (Is_754x(cirrusChip)) {
+	  /* Clear the LSB for 800x600 modes */
+	  if (mode->HDisplay == 800)
+	       new->CR2D = 0x00;
+	  else
+	       new->CR2D = 0x01;
      }
 
      if (HAVE543X() || cirrusChip == CLGD5429) {

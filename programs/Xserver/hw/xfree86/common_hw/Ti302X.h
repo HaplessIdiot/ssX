@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.1 1995/04/09 13:47:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti302X.h,v 3.2 1995/07/21 14:40:29 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.Org>
  *
@@ -155,7 +155,7 @@
 #define TI_CURSOR_COLOR_1_RED	0x26
 #define TI_CURSOR_COLOR_1_GREEN	0x27
 #define TI_CURSOR_COLOR_1_BLUE	0x28
-#define TI_AUXILLARY_CONTROL	0x29
+#define TI_AUXILIARY_CONTROL	0x29
 #define   TI_AUX_SELF_CLOCK	0x08
 #define   TI_AUX_W_CMPL		0x01
 #define TI_GENERAL_IO_CONTROL	0x2A
@@ -183,6 +183,7 @@
 #define TI_COLOR_KEY_BLUE_LOW	0x36
 #define TI_COLOR_KEY_BLUE_HIGH	0x37
 #define TI_COLOR_KEY_CONTROL	0x38
+#define   TI_COLOR_KEY_CMPL	0x10
 #define TI_MCLK_DCLK_CONTROL	0x39    /* 3025 only */
 #define TI_MCLK_LCLK_CONTROL	0x39    /* 3026 only */
 #define TI_SENSE_TEST		0x3A

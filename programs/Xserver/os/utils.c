@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.147 94/08/16 14:03:23 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.8 1995/07/07 15:46:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.9 1995/11/12 09:54:30 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -110,7 +110,6 @@ extern int defaultBackingStore;
 extern Bool disableBackingStore;
 extern Bool disableSaveUnders;
 extern Bool PartialNetwork;
-extern Bool BitmapNoScaledFonts;
 #ifndef NOLOGOHACK
 extern int logoScreenSaver;
 #endif
@@ -775,8 +774,6 @@ char	*argv[];
 	    PartialNetwork = TRUE;
 	else if ( strcmp( argv[i], "-nopn") == 0)
 	    PartialNetwork = FALSE;
-	else if ( strcmp( argv[i], "-noscale") == 0)
-	    BitmapNoScaledFonts = TRUE;
 	else if ( strcmp( argv[i], "r") == 0)
 	    defaultKeyboardControl.autoRepeat = TRUE;
 	else if ( strcmp( argv[i], "-r") == 0)
@@ -860,6 +857,7 @@ char	*argv[];
 #endif
  	else
  	{
+	    ErrorF("Unrecognized option: %s\n", argv[i]);
 	    UseMsg();
 	    exit (1);
         }

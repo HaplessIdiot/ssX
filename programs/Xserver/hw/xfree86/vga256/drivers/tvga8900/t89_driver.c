@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.12 1995/11/04 11:30:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.13 1995/11/16 11:06:25 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -584,6 +584,12 @@ TVGA8900Probe()
 		TVGA8900.ChipRounding = 16;
 
 	if (TVGAchipset == TGUI9440AGi) {
+		if (vga256InfoRec.clocks)
+		{
+			TVGA8900EnterLeave(LEAVE);
+			FatalError("Please Remove Clocks Line from "
+				   "your XF86Config file.\n");
+		}
 		if (!OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE,
 			 &vga256InfoRec.clockOptions))
 		{
@@ -1205,18 +1211,18 @@ TVGA8900Adjust(x, y)
 	{
 		outb(vgaIOBase + 4, 0x27); temp2 = inb(vgaIOBase + 5) & 0xFC;
 		if (base > 0x1FFFF)
-			temp |= 0x01;
+			temp2 |= 0x01;
 		else
 			if (base > 0xFFFF)
-				temp2 |= 0x20;
-		outw(vgaIOBase + 4, (temp << 8) | 0x27);
+				temp |= 0x20;
+		outw(vgaIOBase + 4, (temp2 << 8) | 0x27);
 	}
 	else
 	{
 		if (base > 0xFFFF)
-			temp2 |= 0x20;
+			temp |= 0x20;
 	}
-	outw(vgaIOBase + 4, (temp2 << 8) | 0x1E);
+	outw(vgaIOBase + 4, (temp << 8) | 0x1E);
 }
 
 /*

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.76 1995/07/21 14:39:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.77 1995/11/16 11:04:49 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -305,8 +305,8 @@ s3CleanUp(void)
 		    oldS3->Ti3020[TI_OUTPUT_CLOCK_SELECT]);
       s3OutTiIndReg(TI_GENERAL_CONTROL, 0x00,
 		    oldS3->Ti3020[TI_GENERAL_CONTROL]);
-      s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0x00,
-		    oldS3->Ti3020[TI_AUXILLARY_CONTROL]);
+      s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0x00,
+		    oldS3->Ti3020[TI_AUXILIARY_CONTROL]);
       s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
       s3OutTiIndReg(TI_GENERAL_IO_DATA, 0x00,
 		    oldS3->Ti3020[TI_GENERAL_IO_DATA]);
@@ -662,8 +662,8 @@ s3Init(mode)
           oldS3->Ti3020[TI_OUTPUT_CLOCK_SELECT] =
                  s3InTiIndReg(TI_OUTPUT_CLOCK_SELECT);
           oldS3->Ti3020[TI_GENERAL_CONTROL] = s3InTiIndReg(TI_GENERAL_CONTROL);
-          oldS3->Ti3020[TI_AUXILLARY_CONTROL] =
-		 s3InTiIndReg(TI_AUXILLARY_CONTROL);
+          oldS3->Ti3020[TI_AUXILIARY_CONTROL] =
+		 s3InTiIndReg(TI_AUXILIARY_CONTROL);
           s3OutTiIndReg(TI_GENERAL_IO_CONTROL, 0x00, 0x1f);
           oldS3->Ti3020[TI_GENERAL_IO_DATA] = s3InTiIndReg(TI_GENERAL_IO_DATA);
       }
@@ -1704,15 +1704,15 @@ s3Init(mode)
 
 	 if (DAC_IS_TI3025) {
 	    if (s3InfoRec.bitsPerPixel > 8)
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, 0x00);
+	       s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0, 0x00);
             else
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_W_CMPL);
+	       s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0, TI_AUX_W_CMPL);
          } else {
 	    /* set aux control to self clocked, window function complement */
 	    if (s3InfoRec.bitsPerPixel > 8)
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
+	       s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
             else
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0,
+	       s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0,
 		          TI_AUX_SELF_CLOCK | TI_AUX_W_CMPL);
          }
 	 if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
@@ -1886,13 +1886,13 @@ s3Init(mode)
 
 	 if (DAC_IS_TI3025) {
 	    if (s3InfoRec.bitsPerPixel > 8)
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, 0);
+	       s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0, 0);
 	    else
-	       s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_W_CMPL);
+	       s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0, TI_AUX_W_CMPL);
 	 }
 	 else {
             /* set aux control to self clocked only                        */
-            s3OutTiIndReg(TI_AUXILLARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
+            s3OutTiIndReg(TI_AUXILIARY_CONTROL, 0, TI_AUX_SELF_CLOCK);
 	 }
          /*
           * set output clocking to default of VGA.

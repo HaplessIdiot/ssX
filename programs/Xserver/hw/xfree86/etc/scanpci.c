@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.0 1995/07/16 09:15:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/scanpci.c,v 3.1 1995/07/24 08:03:18 dawes Exp $ */
 
 /*
  * Copyright 1995 by Robin Cutshaw <robin@XFree86.Org>
@@ -78,13 +78,17 @@
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__386BSD__)
 #include <sys/file.h>
 #include <machine/console.h>
+#ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
 #endif
 #if defined(__bsdi__)
 #include <sys/file.h>
 #include <sys/ioctl.h>
 #include <i386/isa/pcconsioctl.h>
+#ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
 #endif
 #if defined(SCO)
 #include <sys/console.h>
@@ -97,7 +101,9 @@
 #include <sys/v86.h>
 #endif
 #if defined(Lynx_22)
+#ifndef GCCUSESGAS
 #define GCCUSESGAS
+#endif
 #endif
 
 

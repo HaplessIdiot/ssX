@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.60 1995/11/12 09:51:47 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.61 1995/11/16 11:05:03 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -67,7 +67,6 @@ extern Bool xf86ScreensOpen;
 
 extern int defaultColorVisualClass;
 extern CARD32 defaultScreenSaverTime, ScreenSaverTime;
-extern Bool BitmapNoScaledFonts;
 
 char *xf86VisualNames[] = {
     "StaticGray",
@@ -254,6 +253,7 @@ xf86ValidateFontPath(path)
 	  continue;
 	}
       }
+      xfree(dir_elem);
     }
 
     /*
@@ -264,7 +264,6 @@ xf86ValidateFontPath(path)
       *out_pnt++ = ',';
     strcat(out_pnt, path_elem);
     out_pnt += strlen(path_elem);
-    xfree(dir_elem);
   }
   return(tmp_path);
 }
@@ -555,12 +554,13 @@ findConfigFile(filename, fp)
       char *filename;
       FILE **fp;
 {
+#define configFile (*fp)
+#define MAXPTRIES   6
   char           *home = NULL;
   char           *xconfig = NULL;
-  char	         *xwinhome = NULL;
-
-#define configFile (*fp)
-#define configPath filename
+  char           *xwinhome = NULL;
+  char           *configPaths[MAXPTRIES];
+  int            pcount, idx;
 
   /*
    * First open if necessary the config file.
@@ -573,29 +573,39 @@ findConfigFile(filename, fp)
   while (!configFile) {
     
     /*
+     * configPaths[0]			is used as a buffer for -xf86config
+     *					and $XF86CONFIG if it contains a path
+     * configPaths[1...MAXPTRIES-1]	is used to store the paths of each of
+     *					the other attempts
+     */
+    for (pcount = idx = 0; idx < MAXPTRIES; idx++)
+      configPaths[idx] = NULL;
+
+    /*
      * First check if the -xf86config option was used.
      */
+    configPaths[pcount] = (char *)xalloc(PATH_MAX);
     if (getuid() == 0 && xf86ConfigFile[0]) {
-      strcpy(configPath, xf86ConfigFile);
-      if (configFile = fopen(configPath, "r"))
+      strcpy(configPaths[pcount], xf86ConfigFile);
+      if (configFile = fopen(configPaths[pcount], "r"))
         break;
       else
         FatalError(
              "Cannot read file \"%s\" specified by the -xf86config flag\n",
-             configPath);
+             configPaths[pcount]);
     }
     /*
      * Check if XF86CONFIG is set.
      */
     if (getuid() == 0 && (xconfig = getenv("XF86CONFIG"))) {
       if (index(xconfig, '/')) {
-        strcpy(configPath, xconfig);
-        if (configFile = fopen(configPath, "r"))
+        strcpy(configPaths[pcount], xconfig);
+        if (configFile = fopen(configPaths[pcount], "r"))
           break;
         else
           FatalError(
                "Cannot read file \"%s\" specified by XF86CONFIG variable\n",
-               configPath);
+               configPaths[pcount]);
       }
     }
      
@@ -603,60 +613,74 @@ findConfigFile(filename, fp)
      * ~/XF86Config ...
      */
     if (getuid() == 0 && (home = getenv("HOME"))) {
-      strcpy(configPath,home);
-      strcat(configPath,"/XF86Config");
-      if (xconfig) strcat(configPath,xconfig);
-      if (configFile = fopen( configPath, "r" )) break;
+      configPaths[++pcount] = (char *)xalloc(PATH_MAX);
+      strcpy(configPaths[pcount],home);
+      strcat(configPaths[pcount],"/XF86Config");
+      if (xconfig) strcat(configPaths[pcount],xconfig);
+      if (configFile = fopen( configPaths[pcount], "r" )) break;
     }
     
     /*
      * /etc/XF86Config
      */
-    strcpy(configPath, "/etc/XF86Config");
-    if (xconfig) strcat(configPath,xconfig);
-    if (configFile = fopen( configPath, "r" )) break;
+    configPaths[++pcount] = (char *)xalloc(PATH_MAX);
+    strcpy(configPaths[pcount], "/etc/XF86Config");
+    if (xconfig) strcat(configPaths[pcount],xconfig);
+    if (configFile = fopen( configPaths[pcount], "r" )) break;
     
     /*
      * $(LIBDIR)/XF86Config.<hostname>
      */
 
+    configPaths[++pcount] = (char *)xalloc(PATH_MAX);
     if (getuid() == 0 && (xwinhome = getenv("XWINHOME")) != NULL)
-	sprintf(configPath, "%s/lib/X11/XF86Config", xwinhome);
+	sprintf(configPaths[pcount], "%s/lib/X11/XF86Config", xwinhome);
     else
-	strcpy(configPath, SERVER_CONFIG_FILE);
-    if (getuid() == 0 && xconfig) strcat(configPath,xconfig);
-    strcat(configPath, ".");
+	strcpy(configPaths[pcount], SERVER_CONFIG_FILE);
+    if (getuid() == 0 && xconfig) strcat(configPaths[pcount],xconfig);
+    strcat(configPaths[pcount], ".");
 #ifdef AMOEBA
     {
       extern char *XServerHostName;
 
-      strcat(configPath, XServerHostName);
+      strcat(configPaths[pcount], XServerHostName);
     }
 #else
-    gethostname(configPath+strlen(configPath), MAXHOSTNAMELEN);
+    gethostname(configPaths[pcount]+strlen(configPaths[pcount]),
+                MAXHOSTNAMELEN);
 #endif
-    if (configFile = fopen( configPath, "r" )) break;
+    if (configFile = fopen( configPaths[pcount], "r" )) break;
     
     /*
      * $(LIBDIR)/XF86Config
      */
+    configPaths[++pcount] = (char *)xalloc(PATH_MAX);
     if (getuid() == 0 && xwinhome)
-	sprintf(configPath, "%s/lib/X11/XF86Config", xwinhome);
+	sprintf(configPaths[pcount], "%s/lib/X11/XF86Config", xwinhome);
     else
-	strcpy(configPath, SERVER_CONFIG_FILE);
-    if (getuid() == 0 && xconfig) strcat(configPath,xconfig);
-    if (configFile = fopen( configPath, "r" )) break;
+	strcpy(configPaths[pcount], SERVER_CONFIG_FILE);
+    if (getuid() == 0 && xconfig) strcat(configPaths[pcount],xconfig);
+    if (configFile = fopen( configPaths[pcount], "r" )) break;
     
+    ErrorF("\nCould not find config file!\n");
+    ErrorF("- Tried:\n");
+    for (idx = 1; idx <= pcount; idx++)
+        if (configPaths[idx] != NULL)
+            ErrorF("      %s\n", configPaths[idx]);
     FatalError("No config file found!\n%s", getuid() == 0 ? "" :
                "Note, the X server no longer looks for XF86Config in $HOME");
   }
+  strcpy(filename, configPaths[pcount]);
   if (xf86Verbose) {
-    ErrorF("XF86Config: %s\n", configPath);
+    ErrorF("XF86Config: %s\n", filename);
     ErrorF("%s stands for supplied, %s stands for probed/default values\n",
        XCONFIG_GIVEN, XCONFIG_PROBED);
   }
+  for (idx = 0; idx <= pcount; idx++)
+      if (configPaths[idx] != NULL)
+          xfree(configPaths[idx]);
 #undef configFile
-#undef configPath
+#undef MAXPTRIES
 }
 
 static DisplayModePtr pNew, pLast;
@@ -817,15 +841,15 @@ xf86Config (vtopen)
   }
 
   fclose(configFile);
-  Xfree(configBuf);
-  Xfree(configRBuf);
-  Xfree(configPath);
+  xfree(configBuf);
+  xfree(configRBuf);
+  xfree(configPath);
 
   /* These aren't needed after the XF86Config file has been read */
   if (monitor_list)
-    Xfree(monitor_list);
+    xfree(monitor_list);
   if (device_list)
-    Xfree(device_list);
+    xfree(device_list);
 
 #if defined(SYSV) || defined(linux)
   if (getuid() != 0) {
@@ -1005,7 +1029,7 @@ configServerFlagsSection()
       xf86Info.dontZoom = TRUE;
       break;
     case DONTSCALEBITMAP:
-      BitmapNoScaledFonts = TRUE;
+      configError("DontScaleBitmapFonts is no longer valid");
       break;
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
@@ -1272,13 +1296,7 @@ configPointerSection()
       break;
 
     case REPEATEDMIDDLE:
-     if (xf86Info.mseType + MICROSOFT == MICROSOFT) {
-        if (xf86Info.emulate3Buttons)
-          configError("Can't use RepeatedMiddle with Emulate3Buttons");
-        xf86Info.repeatedMiddle = TRUE;
-     }
-     else
-        configError("RepeatedMiddle is only supported for Microsoft");
+        configError("The RepeatedMiddle flag is no longer valid");
       break;
     case CLEARDTR:
 #ifdef CLEARDTR_SUPPORT

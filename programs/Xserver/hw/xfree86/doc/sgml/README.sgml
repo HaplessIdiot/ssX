@@ -709,12 +709,14 @@ Also deserving of special mention are the organizers and attendees of the
 XFree86 Project has been provided from its proceeds.
 
 <itemize>
-  <item>  <url url="ftp://ftp.uu.net/vendor/AIB/" 
+  <item>  <url url="http://www.aib.com/" 
 	name="AIB Software Corporation">, Herndon, VA
   <item>  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
   <item>  American Micro Group
   <item>  <url url="http://www.attgis.com/"  
 	name="AT&amp;T Global Information Services"> (formerly NCR)
+  <item>  <url url="http://www.atitech.ca/"  
+	name="ATI Technologies Inc">
   <item>  Andrew Burgess
   <item>  <url url="http://www.bsdi.com/"  
 	name="Berkeley Software Design, Inc">, Falls Church, VA
@@ -925,7 +927,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.35 1995/11/04 11:30:09 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.36 1995/11/12 09:52:34 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.9 95/04/07 19:28:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.103 1995/11/16 11:04:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.104 1995/11/18 02:30:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1267,6 +1267,7 @@ s3Probe()
       /* If it wasn't a Bt485, probe for the ATT 20C498/409/499 */
       if (s3RamdacType == UNKNOWN_DAC) {
          s3RamdacType = S3ProbeATT4xx(FALSE);
+      }
 
       /* now, probe for the SC 15025/26 */
       if (s3RamdacType == UNKNOWN_DAC) {
@@ -1956,7 +1957,7 @@ s3Probe()
       OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions);
       clockchip_probed = XCONFIG_PROBED;
    }
-   }
+
    if (DAC_IS_ATT20C409 && 
        !OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &s3InfoRec.clockOptions)) {
       OFLG_SET(CLOCK_OPTION_ATT409, &s3InfoRec.clockOptions);

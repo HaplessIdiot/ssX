@@ -1,5 +1,5 @@
 /* $XConsortium: compiler.h,v 1.2 94/10/12 20:33:21 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.3 1995/01/28 17:03:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/compiler.h,v 3.4 1995/09/17 06:31:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -256,17 +256,21 @@ inl(port)
 # endif
 # ifdef SVR4
 #  include <sys/types.h>
-#  ifndef __USLC__
-#   define __USLC__
+#  ifndef __HIGHC__
+#   ifndef __USLC__
+#    define __USLC__
+#   endif
 #  endif
 # endif
 # include <sys/inline.h>
-# pragma asm partial_optimization outl
-# pragma asm partial_optimization outw
-# pragma asm partial_optimization outb
-# pragma asm partial_optimization inl
-# pragma asm partial_optimization inw
-# pragma asm partial_optimization inb
+# ifndef __HIGHC__
+#  pragma asm partial_optimization outl
+#  pragma asm partial_optimization outw
+#  pragma asm partial_optimization outb
+#  pragma asm partial_optimization inl
+#  pragma asm partial_optimization inw
+#  pragma asm partial_optimization inb
+# endif
 #endif
 #endif
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.8 1995/03/18 11:00:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common_hw/Ti3025clk.c,v 3.9 1995/07/01 10:49:05 dawes Exp $ */
 
 /*
  * Copyright 1994 The XFree86 Project, Inc
@@ -16,14 +16,13 @@
 #include <math.h>
 
 
+
 #if NeedFunctionPrototypes
-void Ti3025SetClock(long freq, int clk, void (*ProgramClockFunc)())
+void Ti3025CalcNMP(long freq, int *calc_n, int *calc_m, int *calc_p)
 #else
-void
-Ti3025SetClock(freq, clk, ProgramClockFunc)
+void Ti3025CalcNMP(freq, calc_n, calc_m, calc_p)
 long freq;
-int clk;
-void (*ProgramClockFunc)();
+int *calc_n, *calc_m, *calc_p;
 #endif
 {
    double ffreq;
@@ -85,11 +84,32 @@ void (*ProgramClockFunc)();
 	 best_m = m;
       }
    }
-#ifdef DEBUG
-   ErrorF("clk %d (%f), setting to %f, n %02x, m %02x, p %d\n", clk,freq/1e3,
-	  8.0/(1 << p)*((best_m+2.0)/(best_n+2)) * TI_REF_FREQ,
-	  best_n, best_m, p);
+
+   *calc_n = best_n;
+   *calc_m = best_m;
+   *calc_p = p;
+}
+
+
+#if NeedFunctionPrototypes
+void Ti3025SetClock(long freq, int clk, void (*ProgramClockFunc)())
+#else
+void
+Ti3025SetClock(freq, clk, ProgramClockFunc)
+long freq;
+int clk;
+void (*ProgramClockFunc)();
 #endif
-   
-   ProgramClockFunc(clk, best_n, best_m, p);
+{
+   int n, m, p;
+
+   Ti3025CalcNMP(freq, &n, &m, &p);
+
+#ifdef DEBUG
+   ErrorF("clk %d (%f), setting to %f, n %02x, m %02x, p %d\n", clk, freq/1e3,
+	  8.0/(1 << p)*((m+2.0)/(n+2)) * TI_REF_FREQ,
+	  n, m, p);
+#endif
+
+   ProgramClockFunc(clk, n, m, p);
 }

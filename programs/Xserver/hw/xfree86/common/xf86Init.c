@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Init.c,v 1.8 95/01/16 13:17:00 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.25 1995/11/12 09:51:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.26 1995/11/18 02:30:56 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -608,7 +608,7 @@ xf86PrintConfig()
 
 
 /*
- * This is for publically released beta server binaries.
+ * This is for publicly released beta server binaries.
  *
  * The current version is written to $HOME/.xf86ServerName
  *

@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.21 1995/11/12 09:51:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.22 1995/11/16 11:04:24 dawes Exp $ */
 
 /*
  * Includes
@@ -378,7 +378,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define V_YAMAHA	21
 
 #define NUM_VENDORS	21
-#define CHPS_PER_VENDOR	28
+#define CHPS_PER_VENDOR	30
 
 #define CHIP_AHEAD_UNK	SVGA_TYPE(V_AHEAD,0)	/* Ahead unknown	*/
 #define CHIP_AHEAD_A	SVGA_TYPE(V_AHEAD,1)	/* Ahead V5000 Version A*/
@@ -440,7 +440,9 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CL6420B	SVGA_TYPE(V_CIRRUS,24)	/* Cirrus 6420B		*/
 #define CHIP_CL6440	SVGA_TYPE(V_CIRRUS,25)	/* Cirrus 6440		*/
 #define CHIP_CL5436	SVGA_TYPE(V_CIRRUS,26)	/* Cirrus 5436		*/
-#define CHIP_CL7543	SVGA_TYPE(V_CIRRUS,27)	/* Cirrus 7541/3	*/
+#define CHIP_CL7541	SVGA_TYPE(V_CIRRUS,27)	/* Cirrus 7541		*/
+#define CHIP_CL7542	SVGA_TYPE(V_CIRRUS,28)	/* Cirrus 7542		*/
+#define CHIP_CL7543	SVGA_TYPE(V_CIRRUS,29)	/* Cirrus 7543		*/
 #define CHIP_CPQ_UNK	SVGA_TYPE(V_COMPAQ,0)	/* Compaq unknown	*/
 #define CHIP_CPQ_IVGS	SVGA_TYPE(V_COMPAQ,1)	/* Compaq Int Vid Gr Sys*/
 #define CHIP_CPQ_AVGA	SVGA_TYPE(V_COMPAQ,2)	/* Compaq Advanced VGA	*/

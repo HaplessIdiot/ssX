@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.5 95/01/26 15:36:06 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.18 1995/11/05 06:54:19 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.19 1995/11/16 11:05:01 dawes Exp $
 #include <Server.tmpl>
 
 #ifdef i386MachArchitecture
@@ -30,7 +30,8 @@ SERVERSRCS = \
 	XF86_Mach64.c \
 	XF86_P9000.c \
 	XF86_AGX.c \
-	XF86_W32.c
+	XF86_W32.c \
+	XF86_I128.c
 
 SRCS =	\
 	$(XCONFIGSRC).c \
@@ -71,9 +72,9 @@ OFILES = \
    OSVENDOR = OSVendor
   OSNAMEDEF = -DOSNAME='"$(OSNAME)"' -DOSVENDOR='"$(OSVENDOR)"'
 CONSDEFINES = XFree86ConsoleDefines
-/* 820454400 is Mon Jan  1 00:00:00 1996 GMT */
 /* 823132800 is Thu Feb  1 00:00:00 1996 GMT */
-EXP_DEFINES = -DSHOW_BETA_MESSAGE -DEXPIRE_SERVER -DEXPIRY_TIME=823132800
+/* 828316800 is Mon Apr  1 00:00:00 1996 GMT */
+EXP_DEFINES = -DEXPIRY_TIME=828316800
 
     DEFINES = $(XCONFIGDEFINES) $(CONSDEFINES)
 
@@ -141,6 +142,10 @@ all:: XF86_AGX.o
 SpecialObjectRule(XF86_W32.o,XF86_W32.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
 all:: XF86_W32.o
 #endif
+#if XF86I128Server
+SpecialObjectRule(XF86_I128.o,XF86_I128.c $(ICONFIGFILES),$(XF86SCREENFLAGS))
+all:: XF86_I128.o
+#endif
 
 ObjectFromSpecialSource(xf86Init_m,xf86Init,$(OSNAMEDEF) $(EXT_DEFINES) $(EXP_DEFINES) -DXF86MONOVGA)
 ObjectFromSpecialSource(xf86IniExt,$(SERVERSRC)/mi/miinitext,$(EXT_DEFINES) -DXFREE86)
@@ -175,5 +180,6 @@ InstallLinkKitNonExecFile(XF86_Mach64.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_P9000.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_AGX.c,$(LINKKITDIR))
 InstallLinkKitNonExecFile(XF86_W32.c,$(LINKKITDIR))
+InstallLinkKitNonExecFile(XF86_I128.c,$(LINKKITDIR))
 
 DependTarget()

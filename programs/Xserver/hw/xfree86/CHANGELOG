@@ -1,3 +1,25 @@
+XFree86 3.1.2Aa (2 December 1995)
+ 89. Initial changes to allow for integration of the I128 server
+     (Robin Cutshaw).
+ 88. Avoid defining __USLC__ for MP/RAS in compiler.h (Kaleb Keithley).
+ 87. If the server can't find an XF86Config file, print out the files it
+     tried to open (Joe Moss).
+ 86. Fix(?) display centering for the Cirrus 754x.
+ 85. Fix text mode clock problem in ET4000/W32 server (Koen Gadeyne).
+ 84. Remove the "-noscale" flag from the Xserver and xfs since it has
+     been obsoleted by the ":unscaled" fontpath attribute.
+ 83. Remove the RepeatedMiddle mouse option because it doesn't work
+     properly (Jon Tombs).
+ 82. Remove some casts in xf86MouseProtocol() to work around in the
+     Metaware compiler/NCR assembler (Kaleb Keithley).
+ 81. When the X server exits due to an unrecognised command-line option,
+     print out the offending option (Joe Moss).
+ 80. Remove '-lc_s' from ExtraLibraries for ISC (Michael Rohleder).
+ 79. Add code to SuperProbe and the Cirrus driver to recognise the
+     CL-GD7542 (and a guess for the CL-GD7541).
+ 78. Fix RAMDAC probe problem introduced into the S3 server in 3.1.2e
+     (Joe Moss).
+
 XFree86 3.1.2A (19 November 1995)
  77. Added a Beta Report template form.
  76. Update xf86config for some of the new Ramdacs.

@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Cirrus.c,v 1.4 95/01/12 19:11:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.7 1995/11/02 00:28:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.8 1995/11/04 12:00:05 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -207,6 +207,12 @@ int Class;
 						break;
 					case 0x2B:
 						*Chipset = CHIP_CL5436;
+						break;
+					case 0x0A: /* guess */
+						*Chipset = CHIP_CL7541;
+						break;
+					case 0x0B:
+						*Chipset = CHIP_CL7542;
 						break;
 					case 0x0C:
 						*Chipset = CHIP_CL7543;

@@ -1,5 +1,5 @@
 /* $XConsortium: utils.c,v 1.20 94/04/17 19:56:08 gildea Exp $ */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.0 1995/11/12 09:55:40 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.1 1995/11/12 10:27:24 dawes Exp $ */
 /*
  * misc os utilities
  */
@@ -92,7 +92,6 @@ extern char *configfilename;
 char       *progname;
 Bool        CloneSelf;
 extern int  ListenPort;
-extern Bool BitmapNoScaledFonts;
 
 OldListenRec *OldListen = NULL;
 int 	     OldListenCount = 0;
@@ -316,8 +315,6 @@ ProcessCmdLine(argc, argv)
 		usage ();
 	}
 #endif
-	else if ( strcmp( argv[i], "-noscale") == 0)
-	    BitmapNoScaledFonts = TRUE;
 	else
 	    usage();
     }
