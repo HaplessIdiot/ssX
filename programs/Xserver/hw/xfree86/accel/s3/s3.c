@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.7 1994/06/18 16:24:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.8 1994/06/19 11:05:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -345,7 +345,7 @@ s3Probe()
    if (s3InfoRec.ramdac) {
       s3RamdacType = xf86StringToToken(s3DacTable, s3InfoRec.ramdac);
       if (s3RamdacType < 0) {
-	 ErrorF(%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
+	 ErrorF("%s %s: Unknown RAMDAC type \"%s\"\n", XCONFIG_GIVEN,
 		s3InfoRec.name, s3InfoRec.ramdac);
 	 xf86DisableIOPorts(s3InfoRec.scrnIndex);
 	 return(FALSE);
@@ -381,13 +381,14 @@ s3Probe()
    OFLG_SET(OPTION_STB_PEGASUS, &validOptions);
    OFLG_SET(OPTION_ELSA_W1000PRO, &validOptions);
    OFLG_SET(OPTION_ELSA_W2000PRO, &validOptions);
+   OFLG_SET(OPTION_STEALTH64, &validOptions);
    if (S3_928_P(s3ChipId))
       OFLG_SET(OPTION_PCI_HACK, &validOptions);
    OFLG_SET(OPTION_POWER_SAVER, &validOptions);
    xf86VerifyOptions(&validOptions, &s3InfoRec);
 
    /* LocalBus or EISA or PCI */
-   s3Localbus = ((config & 0x03) <= 1) || S3_928_P(s3ChipId);
+   s3Localbus = ((config & 0x03) <= 2) || S3_928_P(s3ChipId);
 
    if (xf86Verbose) {
       if (S3_928_P(s3ChipId)) {
@@ -711,7 +712,8 @@ s3Probe()
        (
         OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options) ||
         OFLG_ISSET(OPTION_NUMBER_NINE, &s3InfoRec.options) ||
-        OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)))
+        OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options) ||
+	OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)))
       s3Bt485PixMux = TRUE;
 
    /* Move this down, and only force when s3UsingPixMux is TRUE */
@@ -794,6 +796,12 @@ s3Probe()
 	 allowPixMuxSwitching = TRUE;
 	 pixMuxLimitedWidths = FALSE;
 	 pixMuxMinWidth = 1024;
+      } else if (OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)) {
+	 /* These are guesses... (Steve Parker) */
+	 nonMuxMaxClock = 67500;
+	 allowPixMuxSwitching = TRUE;
+	 pixMuxLimitedWidths = TRUE;
+	 pixMuxMinWidth = 800;
       } else {
 	 nonMuxMaxClock = 85000;
       }

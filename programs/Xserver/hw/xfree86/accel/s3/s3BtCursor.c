@@ -1,5 +1,5 @@
 /* $XConsortium: s3BtCursor.c,v 1.1 94/03/28 21:13:54 dpw Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3BtCursor.c,v 3.0 1994/04/29 14:07:46 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -37,6 +37,7 @@
 #include "xf86.h"
 #include "inputstr.h"
 #include "xf86Priv.h"
+#include "xf86_Option.h"
 #include "xf86_OSlib.h"
 #include "s3.h"
 #include "regs3.h"
@@ -274,9 +275,11 @@ s3BtCursorOn()
    outb(vgaCRReg, tmp | 0x20);
 
    /* Enable Bt485 */
-   outb(vgaCRIndex, 0x45);
-   tmp = inb(vgaCRReg) & 0xDF;
-   outb(vgaCRReg, tmp | 0x20);
+   if(!OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)){
+     outb(vgaCRIndex, 0x45);
+     tmp = inb(vgaCRReg) & 0xDF;
+     outb(vgaCRReg, tmp | 0x20);
+   }
    
    /* Enable cursor mode 3 - X11 mode */
    s3OutBtReg(BT_COMMAND_REG_2, 0xFC, 0x03);

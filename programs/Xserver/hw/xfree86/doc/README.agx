@@ -4,11 +4,6 @@
 
 1) General Notes
 
-     NOTE >>> This version server is only known to work with  <<<
-          >>> the AGX-015 based Hercules Graphite PRO VL and  <<<
-          >>> is known NOT to work with the Spider Black      <<<
-          >>> Widow Plus and BOCA Vortek VL.                  <<<
-
      This driver currently supports Hercules Graphite boards,
      but has only been tested on the AGX-015 based Graphite PRO VL. 
      The AGX chispset is based on XGA architecture, but is missing
@@ -20,13 +15,9 @@
 
      While Hercules uses Brooktree and AT&T RAMDACS, most other
      AGX based vendors use Sierra RAMDAC's (15025 and 15021).
-     Attempts to use two boards based on Sierra RAMDAC's have not
-     been successful as the RAMDAC becomes unaccessable when the 
-     AGX chipset is in XGA mode (makes it a bit difficult to 
-     update the colormap). This behavior is very contradictory to 
-     AGX chipset documentation, I haven't had much chance to 
-     investigate this yet, but will be turning more attention to 
-     it once the first version of this driver is out.
+     The server has had limited last-minute testing on two boards 
+     based on Sierra RAMDAC's, the Spider Black Widow Plus VLB and 
+     Boca Vortek VL. 
   
      The current driver has some basic acceleration routines:
      solid zero-width lines (except AGX-014), bitblt's, fill's,
@@ -151,12 +142,12 @@
            it's probably an AGX-015 and is it's an ISA board it may
            be an AGX-014.
 
-           Note: Only an AGX-015 has been successfully tested, the 
+           Note: Only an AGX-015 has had much testing, the 
            AGX-014 and AGX-016 are very similiar and have a high
            likelyhood of working. 
 
-           The limited documentation I have for the AGX-010 is that 
-           is is a full clone of the XGA architecture (I assume XGA-1). 
+           The limited documentation I have for the AGX-010 indicates
+           it is a full clone of the XGA architecture (I assume XGA-1). 
            See the notes below on the XGA configuration.
            
 
@@ -209,7 +200,9 @@
            this also happens with the MS-Windows drivers.
 
            The server requires at least a 32KB scratchpad, 1MB AGX-016
-           users should limit max virtual resolution to 1152x881.
+           users should limit max virtual resolution to 1152x881. Future
+           versions of the server may require a minimum of 64KB for 
+           the scratchpad.
 
 
        Clocks:
@@ -230,15 +223,16 @@
           if they aren't close (actually the first is 90 on my card 
           and the Sierra based cards is different for all of these). 
           For XGA compatibility the first two clocks should be about
-          25 amd 28, and the fourth 90 (once again the Sierra based 
-          boards deviate considerably). The fourth clock is used by the 
-          probe to derive the others, and is assumed to be 90.80Mhz
-          (produced the best fit for the Graphite Pro). 
+          25 amd 28, and the fourth 90 (once again, the Sierra based 
+          boards deviate on the fourth value). The first clock is 
+          used by the probe to derive the others, and is assumed to 
+          be 25.175Mhz.
         
-          The maximum clock generally allowed is 85Mhz, check your 
-          RAMDAC though, some RAMDAC's used on AGX based boards are 
-          produced in versions rated to lesser values and you should 
-          check the rating and limit yourself to that value.
+          The maximum clock generally allowed is 85Mhz, but some RAMDAC's
+          do support higher values. In any case you should check your 
+          RAMDAC, some RAMDAC's used on AGX based boards are produced 
+          in versions rated to lesser values than the server allows.
+          You should check the rating and limit yourself to that value.
 
 
        Modes:
@@ -319,4 +313,4 @@
            
           
 
-$XFree86$
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.agx,v 3.0 1994/06/15 15:42:47 dawes Exp $

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.0 1994/06/15 15:35:45 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -337,7 +337,7 @@ extern agxPixMap *agxCurPixMap[2];
 #define DA_OM_DISP_VGA_XGA_EN	  	0x01
 #define DA_OM_DISP_132_XGA_DIS	  	0x02
 #define DA_OM_DISP_132_XGA_EN	  	0x03
-#define DA_OM_DISP_XGA_MODE       	0x04
+#define DA_OM_DISP_XGA_MODE       	0x05
 
 
 #define DA_APERATURE_CNTL	0x1

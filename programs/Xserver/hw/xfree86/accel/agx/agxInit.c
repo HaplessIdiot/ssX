@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.0 1994/06/15 15:35:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.1 1994/06/18 16:23:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -1260,7 +1260,7 @@ agxProbeClocks(scale)
 
    agxGetClocks( 32, 			/* num of clocks */ 
                  scale-1,		/* clock scaling factor */
-                 3, 90800/scale,        /* known clock num & KHz value */ 
+                 0, 25175/scale,        /* known clock num & KHz value */ 
                  &agxInfoRec );
 
    agxResetCRTC(CRTC_PRERESET);

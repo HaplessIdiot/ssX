@@ -28,12 +28,18 @@ CL-GD5420	ISA SVGA chipset, 1Mbyte; maximum dot clock is 50 MHz (256
 CL-GD5422	Enhanced version of the 5420 (32-bit internal memory
 		interface). Maximum dot clock is 80 MHz.
 
-CL-GD6205/6215/6225/6235/64xx
+CL-GD6205/6215/6225/6235/6440(?)
 		Laptop chipsets more or less compatible with the 5420. The
 		only dot clock supported is 25 MHz (more on an external
 		display). Some problems have been reported with these
 		chipsets (especially on external displays). Take note of
 		the "noaccel" option.
+
+CL-GD6420	This chipset is not compatible with the 542x series, but is
+		supported by a seperate driver (cl6420). It is used in
+		recent laptops, and bears some similarity to old Cirrus
+		chipsets (5410/AVGA2). It may also work for other 64xx
+		chips.
 
 CL-GD5424	Basically VLB version of the 5422, but resembles the
 		5426 in some respects.
@@ -54,9 +60,6 @@ CL-GD5434	Next generation 'Alpine' family chip with 64-bit internal
 		memory interface. Used by the Orchid Kelvin 64. The chip
 		can only support 64-bit mode if equipped with 2 Mbytes of
 		memory; cards with only 1 Mbyte are severely limited.
-		There is some limited support for this chipset, but it has
-		not really been tested. It is hoped that it will be usable
-		with this driver (being largely compatible with the 5426).
 
 
 2 - Xconfig options
@@ -123,11 +126,11 @@ Option "slow_dram"	(5424, 5426, 5428)
 Option "no_bitblt"
 
 	This option, when used with a 5426/28/29/3x, will have the effect of
-	disabling the use of the BitBLT engine (which the 5424 does not
-	have), while retaining some acceleration. This will be useful for
-	problems related to the BitBLT engine. In particular, this will
-	be useful for the 5434, on which the functions that use the BitBLT
-	engine may not work correctly.
+        disabling the use of the BitBLT engine (which the 5424 does not
+        have), while retaining some acceleration. This will be useful for
+        problems related to the BitBLT engine. In particular, this will be
+        useful for the 5434, if functions that use the BitBLT engine do not
+        work correctly.
 
 videoram 1024
 
@@ -185,7 +188,8 @@ based card is a very poor match anyway.
 
 Any 5434-based cards (untested at the time of writing) should do much better
 at high dot clocks; the DRAM bandwidth is basically double that of the 542x
-series (with 2Mbytes or more installed; 1Mbyte is silly).
+series (with 2Mbytes or more installed; 1Mbyte is silly). The 543x chips
+also make more efficient use of the available DRAM bandwidth.
 
 
 4 - Trouble shooting
@@ -252,6 +256,12 @@ Corrupted text in terminal window.
 	This has been reported on non-standard video implementations.
 	Use the "no_bitblt" option.
 
+Streaks or hangs with laptop chipset
+
+	This can happen if the dot clock is high enough to leave very
+	little bandwidth for drawing (e.g 40 MHz on a 512K card), and
+	(5422-style) acceleration is used.
+
 Chipset is not detected.
 
 	Try forcing the chipset to a type that is most similar to what
@@ -265,4 +275,4 @@ If are having driver-related problems that are not addressed by this document,
 or if you have found bugs in accelerated functions, you can try contacting
 the XFree86 team, or post in the Usenet newsgroup "comp.windows.x.i386unix".
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.0 1994/05/29 02:06:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/README.cirrus,v 3.1 1994/05/31 14:22:38 dawes Exp $

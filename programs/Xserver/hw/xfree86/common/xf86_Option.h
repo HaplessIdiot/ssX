@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Option.h,v 1.1 94/03/28 21:24:25 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.4 1994/06/15 15:42:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Option.h,v 3.5 1994/06/18 16:25:11 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -102,6 +102,7 @@ typedef struct {
 #define OPTION_STB_PEGASUS	48 /* Enable pixmux for STB Pegasus (S3) */
 #define OPTION_ELSA_W1000PRO	49 /* Enable pixmux for ELSA Winner 1000PRO (S3) */
 #define OPTION_ELSA_W2000PRO	50 /* Enable pixmux for ELSA Winner 2000PRO (S3) */
+#define OPTION_STEALTH64	51 /* Enable pixmux for the D-word Stealth 64 (S3) */
 
 /* More RAMDAC options */
 #define OPTION_BT481            55 /* Has BrookTree Bt481 RAMDAC */
@@ -194,15 +195,16 @@ OptFlagRec xf86_OptionTab[] = {
   { "stb_pegasus",	OPTION_STB_PEGASUS },
   { "elsa_w1000pro",	OPTION_ELSA_W1000PRO },
   { "elsa_w2000pro",	OPTION_ELSA_W2000PRO },
+  { "stealth64",	OPTION_STEALTH64 },
 
   { "showcache",	OPTION_SHOWCACHE },
   { "fb_debug",		OPTION_FB_DEBUG },
 
-  { "bt481",          OPTION_BT481 },
-  { "bt482",          OPTION_BT482 },
-  { "bt482_curs",     OPTION_BT482_CURS },
-  { "herc_dual_dac",  OPTION_HERC_DUAL_DAC },
-  { "herc_small_dac", OPTION_HERC_SMALL_DAC },
+  { "bt481",		OPTION_BT481 },
+  { "bt482",		OPTION_BT482 },
+  { "bt482_curs",	OPTION_BT482_CURS },
+  { "herc_dual_dac",	OPTION_HERC_DUAL_DAC },
+  { "herc_small_dac",	OPTION_HERC_SMALL_DAC },
 
   { "8_bit_bus",        OPTION_8_BIT_BUS },
   { "wait_state",       OPTION_WAIT_STATE },

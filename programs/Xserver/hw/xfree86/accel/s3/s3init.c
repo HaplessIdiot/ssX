@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.4 1994/06/11 06:11:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.5 1994/06/13 14:52:59 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -430,7 +430,8 @@ s3Init(mode)
    else
       pixel_multiplexing = FALSE;
 
-   if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options))
+   if (OFLG_ISSET(OPTION_ELSA_W2000PRO, &s3InfoRec.options) ||
+       OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options))
       pixMuxShift = 1;
    else if (S3_x64_SERIES(s3ChipId)) /* XXXX Better to test the DAC type? */
       pixMuxShift = 0;
@@ -624,7 +625,9 @@ s3Init(mode)
 	 
 	 if (S3_x64_SERIES(s3ChipId)) {
 	    outb(vgaCRIndex, 0x67);
-	    outb(vgaCRReg, 0x11 );
+	    outb(vgaCRReg, 0x11 );  /* set Mode 8: Two 8-bit color, 1 VCLK/2 pixels */
+	    outb(vgaCRIndex, 0x6d);
+	    outb(vgaCRReg, 2 );     /* delay -BLANK pulse by 2 DCLKs */
 	 }
 	 else {
 	    /* don't know */
@@ -640,7 +643,9 @@ s3Init(mode)
 
 	 if (S3_x64_SERIES(s3ChipId)) {
 	    outb(vgaCRIndex, 0x67);
-	    outb(vgaCRReg, 0x00 );
+	    outb(vgaCRReg, 0x00 );  /* set Mode 0: 8-bit color, 1 VCLK/pixel */
+	    outb(vgaCRIndex, 0x6d);
+	    outb(vgaCRReg, 0 );     /* don't delay -BLANK pulse  */
 	 }
 	 else {
 	    /* don't know */
@@ -681,6 +686,14 @@ s3Init(mode)
          outb(vgaCRIndex, 0x55);
          tmp = inb(vgaCRReg);
          outb(vgaCRReg, tmp | 0x08);
+
+	 if (OFLG_ISSET(OPTION_STEALTH64, &s3InfoRec.options)) {
+	    /* Set VCLK = DCLCK/2 */
+	    /* And set up a 32 bit interleaved bus (why??) */
+	    outb(vgaCRIndex, 0x66);
+	    tmp = inb(vgaCRReg);
+	    outb(vgaCRReg, (tmp & 0xc0) | 0x11);
+	 }
 
 	 /* Setting the for the SPEA Mercury affects clocks > 120MHz */
 	 if (!OFLG_ISSET(OPTION_SPEA_MERCURY, &s3InfoRec.options)) {
