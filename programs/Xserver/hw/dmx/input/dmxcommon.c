@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxcommon.c,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /*
  * Copyright 2001-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -368,7 +368,7 @@ void dmxCommonOthGetInfo(DevicePtr pDev, DMXLocalInitInfoPtr info)
     Display              *display = priv->display;
     int                  num;
     int                  i, j, k;
-    int                  (*handler)(Display *, char *, char *);
+    XExtensionErrorHandler handler;
 
     if (!display && !(display = XOpenDisplay(dmxInput->name)))
         return;

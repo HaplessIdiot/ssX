@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.2tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.c,v 1.3 2004/08/04 20:39:58 tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -803,7 +803,8 @@ static void dmxPopulateLocal(DMXInputInfo *dmxInput, dmxArg a)
     }
 }
 
-int dmxInputExtensionErrorHandler(Display *dsp, char *name, char *reason)
+int dmxInputExtensionErrorHandler(Display *dsp, const char *name,
+				  const char *reason)
 {
     return 0;
 }
@@ -816,7 +817,7 @@ static void dmxInputScanForExtensions(DMXInputInfo *dmxInput, int doXI)
     int                  num;
     int                  i, j;
     DMXLocalInputInfoPtr dmxLocal;
-    int                  (*handler)(Display *, char *, char *);
+    XExtensionErrorHandler handler;
 
     if (!(display = XOpenDisplay(dmxInput->name))) return;
     

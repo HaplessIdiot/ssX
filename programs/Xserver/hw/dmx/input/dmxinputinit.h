@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/input/dmxinputinit.h,v 1.1 2004/06/30 20:21:44 martin Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -279,8 +279,8 @@ extern void dmxKeyboardKbdCtrlProc(DeviceIntPtr pDevice, KeybdCtrl *ctrl);
 extern void dmxKeyboardBellProc(int percent, DeviceIntPtr pDevice,
                                 pointer ctrl, int unknown);
 
-extern int  dmxInputExtensionErrorHandler(Display *dsp, char *name,
-                                          char *reason);
+extern int  dmxInputExtensionErrorHandler(Display *dsp, const char *name,
+                                          const char *reason);
 
 extern int          dmxInputDetach(DMXInputInfo *dmxInput);
 extern void         dmxInputDetachAll(DMXScreenInfo *dmxScreen);
