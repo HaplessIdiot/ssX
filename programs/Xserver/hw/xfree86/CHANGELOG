@@ -1,4 +1,7 @@
-XFree86 3.9Ni (5 October 1998)
+XFree86 3.9Ni (6 October 1998)
+1899. Update the cirrus driver for the recent i2c module changes (#2025,
+      Itai Nahshon).
+1898. Initial XAA acceleration for the cirrus driver (#2025, Itai Nahshon).
 1897. Add some option code to do a soft reset when restoring the video state
       for the "dacG" part of the MGA driver (#2012, Uli Walther).
 1896. Add some TTF encoding files (#2013-2016, Juliusz Chroboczek).
@@ -6621,4 +6624,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.631 1998/10/05 00:12:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.632 1998/10/05 13:22:51 dawes Exp $

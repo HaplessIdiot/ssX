@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.20 1998/09/20 06:01:21 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.21 1998/09/26 08:34:13 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -61,6 +61,11 @@
 #endif
 
 #include "cir.h"
+
+#ifdef CIRPROBEI2C
+/* For debugging... should go away. */
+static void CirProbeI2C(int scrnIndex);
+#endif
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -603,6 +608,11 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	pCir->NoAccel = TRUE;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Acceleration disabled\n");
     }
+    if(pScrn->bitsPerPixel < 8) {
+	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+		   "Cannot use accelerations in less than 8 bpp\n");
+	pCir->NoAccel = TRUE;
+    }
 
     /* Find the PCI slot for this screen */
     /*
@@ -891,6 +901,11 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 
+   if (!xf86LoadSubModule(pScrn, "i2c")) {
+       CIRFreeRec(pScrn);
+       return FALSE;
+   }
+
     return TRUE;
 }
 
@@ -1066,6 +1081,7 @@ CIRSave(ScrnInfoPtr pScrn)
     outb(0x3C4, 0x12);   pCir->ModeReg.ExtVga[SR12] = pCir->SavedReg.ExtVga[SR1E] = inb(0x3C5);
     outb(0x3C4, 0x13);   pCir->ModeReg.ExtVga[SR13] = pCir->SavedReg.ExtVga[SR1E] = inb(0x3C5);
     outb(0x3C4, 0x1E);   pCir->ModeReg.ExtVga[SR1E] = pCir->SavedReg.ExtVga[SR1E] = inb(0x3C5);
+    outb(0x3CE, 0x17);   pCir->ModeReg.ExtVga[GR17] = pCir->SavedReg.ExtVga[GR17] = inb(0x3CF);
     outb(0x3CE, 0x18);   pCir->ModeReg.ExtVga[GR18] = pCir->SavedReg.ExtVga[GR18] = inb(0x3CF);
     /* The first 4 reads are for the pixel mask register. After 4 times that
        this register is accessed in succession reading/writing this address
@@ -1176,6 +1192,11 @@ CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     ErrorF("SynthClock = %d\n", mode->SynthClock);
 #endif
     CirrusSetClock(pScrn, mode->SynthClock);
+
+    /* Disable DCLK pin driver, interrupts. */
+    pCir->ModeReg.ExtVga[GR17] |= 0x08;
+    pCir->ModeReg.ExtVga[GR17] &= ~0x04;
+    outw(0x3CE, (pCir->ModeReg.ExtVga[GR17] << 8) | 0x17);
 
     vgaReg = &hwp->ModeReg;
 
@@ -1301,6 +1322,7 @@ CIRRestore(ScrnInfoPtr pScrn)
     outw(0x3C4, (cirReg->ExtVga[SR12] << 8) | 0x12);
     outw(0x3C4, (cirReg->ExtVga[SR13] << 8) | 0x13);
     outw(0x3C4, (cirReg->ExtVga[SR1E] << 8) | 0x1E);
+    outw(0x3CE, (cirReg->ExtVga[GR17] << 8) | 0x17);
     outw(0x3CE, (cirReg->ExtVga[GR18] << 8) | 0x18);
     /* The first 4 reads are for the pixel mask register. After 4 times that
        this register is accessed in succession reading/writing this address
@@ -1487,6 +1509,12 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     /* Initialise cursor functions */
     miDCInitialize(pScreen, xf86GetPointerScreenFuncs());
 
+    if(!pCir->NoAccel) { /* Initialize XAA functions */
+       if(!CIRXAAInit(pScreen))
+          xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+              "Could not initialize XAA\n");
+    }
+
     if (pCir->HWCursor) { /* Initialize HW cursor layer */
         if(!CIRHWCursorInit(pScreen))
             xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
@@ -1496,6 +1524,15 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
         xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
             "DGA initialization failed\n");
     }
+
+    if(!CIRI2CInit(pScreen)) {
+        xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
+            "I2C initialization failed\n");
+    }
+
+#ifdef CIRPROBEI2C
+    CirProbeI2C(pScrn->scrnIndex);
+#endif
 
     /* Initialise default colourmap */
     if (!miCreateDefColormap(pScreen))
@@ -1760,5 +1797,31 @@ CIRDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode,
 	outb(hwp->IOBase + 0xE, 0x01);	/* Select CRTCEXT1 */
 	crtcext1 |= inb(hwp->IOBase + 0xF) & ~0x30;
 	outb(hwp->IOBase + 0xF, crtcext1);
+}
+#endif
+
+#ifdef CIRPROBEI2C
+static void CirProbeI2C(int scrnIndex) {
+       int i;
+       I2CBusPtr b;
+
+       b = xf86I2CFindBus(scrnIndex, "I2C bus 1");
+       if (b == NULL)
+               ErrorF("Could not find I2C bus \"%s\"\n", "I2C bus 1");
+       else {
+               for(i = 2; i < 256; i += 2)
+                       if(xf86I2CProbeAddress(b, i))
+                               ErrorF("Found device 0x%02x on bus \"%s\"\n",
+                                       i, b->BusName);
+       }
+       b = xf86I2CFindBus(scrnIndex, "I2C bus 2");
+       if (b == NULL)
+               ErrorF("Could not find I2C bus \"%s\"\n", "I2C bus 2");
+       else {
+               for(i = 2; i < 256; i += 2)
+                       if(xf86I2CProbeAddress(b, i))
+                               ErrorF("Found device 0x%02x on bus \"%s\"\n",
+                                       i, b->BusName);
+       }
 }
 #endif

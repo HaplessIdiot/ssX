@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.2 1998/08/29 07:39:50 dawes Exp $ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/CirrusClk.c,v 1.3 1998/09/05 06:36:43 dawes Exp $ */ 
 
 /*
  * Programming of the built-in Cirrus clock generator.
@@ -7,7 +7,7 @@
  * VCO stability criterion code added by Koen Gadeyne (koen.gadeyne@barco.com)
  * Max clock specification added by Harm Hanemaayer (H.Hanemaayer@inter.nl.net)
  *
- * Minor changes and celanup Itai Nahshon.
+ * Minor changes and cleanup Itai Nahshon.
  */
  
 #include "compiler.h"

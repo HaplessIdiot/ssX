@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.3 1998/08/29 14:34:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir.h,v 1.4 1998/09/05 06:36:44 dawes Exp $ */
 
 /* (c) Itai Nahshon */
 
@@ -83,7 +83,9 @@ typedef struct {
 
 
 extern Bool CIRHWCursorInit(ScreenPtr pScreen);
+extern Bool CIRXAAInit(ScreenPtr pScreen);
 extern Bool CIRDGAInit(ScreenPtr pScreen);
+extern Bool CIRI2CInit(ScreenPtr pScreen);
 extern Bool CirrusSetClock(ScrnInfoPtr pScrn, int freq);
 
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.8 1998/08/29 08:05:03 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/Imakefile,v 1.9 1998/09/05 06:36:44 dawes Exp $
 XCOMM
 XCOMM This is an Imakefile for the CLGD5480 driver.  
 XCOMM
@@ -6,8 +6,8 @@ XCOMM
 #define IHaveModules
 #include <Server.tmpl>
 
-SRCS = cir_driver.c CirrusClk.c cir_hwcurs.c cir_dga.c cir_i2c.c
-OBJS = cir_driver.o CirrusClk.o cir_hwcurs.o cir_dga.o cir_i2c.o
+SRCS = cir_driver.c CirrusClk.c cir_xaa.c cir_hwcurs.c cir_dga.c cir_i2c.c
+OBJS = cir_driver.o CirrusClk.o cir_xaa.o cir_hwcurs.o cir_dga.o cir_i2c.o
 
 #if XF86LinkKit
 INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
