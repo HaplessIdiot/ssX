@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 387. Add a little utility to write files through mmap() (Marc La France).
  386. Add National Semiconductor Geode driver, support for the 5530, SC1200
       and SC1400 chipsets (NSC, Alan Hourihane).
  385. linux.cf updates:
@@ -15307,4 +15308,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2334 2002/10/11 02:41:50 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2335 2002/10/11 14:32:54 alanh Exp $
