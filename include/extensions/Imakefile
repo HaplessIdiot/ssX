@@ -29,9 +29,12 @@ XF86RUSHHEADERS = xf86rush.h xf86rushstr.h
 #if BuildFontCache
 FONTCACHEHEADERS = fontcache.h fontcacheP.h fontcachstr.h
 #endif
+#if BuildXinerama
+XINERAMAHEADERS = panoramiXext.h panoramiXproto.h Xinerama.h
+#endif
 
 EXTRAHEADERS = $(SCREENSAVERHEADERS) $(XF86MISCHEADERS) $(XF86BIGFONTHEADERS) \
-	       $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) \
+	       $(XF86VIDMODEHEADERS) $(XF86DGAHEADERS) $(XINERAMAHEADERS) \
 	       $(LBXHEADERS) $(XVHEADERS) $(FONTCACHEHEADERS)
 
 
@@ -50,7 +53,6 @@ HEADERS = Xext.h multibuf.h shape.h sync.h XShm.h MITMisc.h \
 	security.h securstr.h \
 	Print.h Printstr.h \
 	Xcup.h Xcupstr.h \
-	panoramiXext.h panoramiXproto.h \
 	dpms.h dpmsstr.h \
 	XEVI.h XEVIstr.h
 

@@ -26,7 +26,7 @@
 /* THIS IS NOT AN X PROJECT TEAM SPECIFICATION */
 
 #define PANORAMIX_MAJOR_VERSION         1       /* current version number */
-#define PANORAMIX_MINOR_VERSION         0
+#define PANORAMIX_MINOR_VERSION         1
 
 typedef struct {
     Window  window;         /* PanoramiX window - may not exist */
