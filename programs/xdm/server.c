@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xdm/server.c,v 3.10 2001/07/23 13:15:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/server.c,v 3.11 2001/07/25 15:05:19 dawes Exp $ */
 
 /*
  * xdm - display manager daemon
@@ -52,11 +52,14 @@ static Display	*dpy;
 static SIGVAL
 CatchUsr1 (int n)
 {
+    int olderrno = errno;
+
 #ifdef SIGNALS_RESET_WHEN_CAUGHT
     (void) Signal (SIGUSR1, CatchUsr1);
 #endif
     Debug ("display manager caught SIGUSR1\n");
     ++receivedUsr1;
+    errno = olderrno;
 }
 
 char *_SysErrorMsg (int n)

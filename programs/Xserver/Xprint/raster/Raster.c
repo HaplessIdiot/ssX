@@ -1387,6 +1387,7 @@ static void SigchldHndlr (int dummy)
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
     act.sa_handler = SigchldHndlr;
+    int olderrno = errno;
 
     w = wait (&status);
 
@@ -1394,6 +1395,7 @@ static void SigchldHndlr (int dummy)
      * Is this really necessary?
      */
     sigaction(SIGCHLD, &act, (struct sigaction *)NULL);
+    errno = olderrno;
 }
 
 /*

@@ -44,7 +44,7 @@ not be used in advertising or otherwise to promote the sale, use or other
 dealings in this Software without prior written authorization from said
 copyright holders.
 */
-/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.8 2001/01/17 22:36:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xprint/pcl/PclMisc.c,v 1.9 2001/08/01 00:44:45 tsi Exp $ */
 
 #include <stdlib.h>
 #include <signal.h>
@@ -147,12 +147,14 @@ GetPropString(
 }
 
 #include <signal.h>
+#include <errno.h>
 
 /* ARGSUSED */
 static void SigchldHndlr (
     int dummy)
 {
     int   status, w;
+    int olderrno = errno;
     struct sigaction act;
     sigfillset(&act.sa_mask);
     act.sa_flags = 0;
@@ -164,6 +166,7 @@ static void SigchldHndlr (
      * Is this really necessary?
      */
     sigaction(SIGCHLD, &act, (struct sigaction *)NULL);
+    errno = olderrno;
 }
 
 /*
