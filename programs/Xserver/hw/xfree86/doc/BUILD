@@ -2,7 +2,7 @@
 
                          David Dawes, Matthieu Herrb
 
-                                 27 May 2001
+                              20 December 2002
 
                                   Abstract
 
@@ -17,35 +17,12 @@
 We highly recommend using gcc to build XFree86, but it generally also builds
 with the native compiler for each platform;
 
-1.  How to get the XFree86 4.2.0 source
+1.  How to get the XFree86 4.2.99.3 source
 
-There are a few starting points for getting the XFree86 source.  One option
-is to start directly with the XFree86 4.2.0 source distribution.  In this
-case, the procedure is as follows:
-
-   o The XFree86 source is contained in files X420src-1.tgz, X420src-2.tgz
-     and X420src-3.tgz.  These can be found at
-     ftp://ftp.xfree86.org/pub/XFree86/4.2.0/source/ and similar locations on
-     XFree86 mirror sites.  X420src-2.tgz contains the fonts and documenta-
-     tion source.  X420src-3.tgz contains the hardcopy documentation.
-     X420src-1.tgz contains everything else.  If you don't need the docs or
-     fonts you can get by with only X420src-1.tgz.
-
-   o Extract each of these files by running the following from a directory on
-     a filesystem containing enough space (the full source requires around
-     270MB, and a similar amount is required in addition to this for the com-
-     piled binaries):
-
-          gzip -d < X420src-1.tgz | tar vxf -
-
-          gzip -d < X420src-2.tgz | tar vxf -
-
-          gzip -d < X420src-3.tgz | tar vxf -
-
-Another option is to get the source by anonymous CVS or CVSup.  See
-http://www.xfree86.org/cvs/ for details on the different procedure available.
-
-All methods will produce one main source directory called xc.
+The source for the XFree86 4.2.99.3 snapshot is available from the XFree86
+CVS repository.  See See http://www.xfree86.org/cvs/ for details.  The tag
+for this snapshot is "xf-4_2_99_3".  To get the current development version,
+don't specify any tag.
 
 2.  Configuring the source before building
 
@@ -59,9 +36,6 @@ OS.
 Unlike previous versions, imake can now automatically detect and set the var-
 ious OS*Version parameters, so you shouldn't need to enter those settings
 explicitly.
-
-If you are using just the X420src-1.tgz part of the source dist, you will
-need to define BuildFonts to NO.
 
 3.  Using a shadow directory of symbolic links for the build
 
@@ -156,7 +130,7 @@ drivers installed:
 
                 make Makefile
                 make Makefiles
-                   make includes
+                make includes
                 make depend
                 make
 
@@ -165,7 +139,7 @@ drivers installed:
 There are some other useful targets defined in the top level Makefileof
 XFree86:
 
-   o Everything after a make World, make Everythingdoes everything a make
+   o Everything after a make World, make Everything does everything a make
      World does, except the cleaning of the tree. It is a way to quickly
      rebuild the tree after a source patch, but it is not 100% bullet proof.
      There are cases were it is better to force a full build by using make
@@ -197,7 +171,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to XFree86@XFree86.org.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.7 2002/09/04 03:31:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.8 2002/12/21 03:47:40 dawes Exp $
 
 
 $XFree86: $
