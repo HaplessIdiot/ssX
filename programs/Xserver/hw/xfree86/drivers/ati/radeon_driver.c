@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.23 2001/05/04 19:05:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon_driver.c,v 1.24 2001/05/10 16:48:12 dawes Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -2384,6 +2384,11 @@ static Bool RADEONInitCrtcRegisters(ScrnInfoPtr pScrn, RADEONSavePtr save,
 			     ? RADEON_CRTC_INTERLACE_EN
 			     : 0));
 
+    if (info->Chipset == PCI_CHIP_RADEON_VE) {
+	save->crtc_ext_cntl = RADEON_VGA_ATI_LINEAR | RADEON_CRTC_CRT_ON;
+    } else {
+	save->crtc_ext_cntl = RADEON_VGA_ATI_LINEAR | RADEON_XCRT_CNT_EN;
+    }
     save->crtc_ext_cntl = RADEON_VGA_ATI_LINEAR | RADEON_XCRT_CNT_EN;
     save->dac_cntl      = (RADEON_DAC_MASK_ALL
 			   | RADEON_DAC_VGA_ADR_EN

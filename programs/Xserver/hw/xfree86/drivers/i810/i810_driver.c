@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.46 2001/04/18 14:52:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_driver.c,v 1.47 2001/05/04 19:05:39 dawes Exp $ */
 
 /*
  * Authors:
@@ -478,14 +478,6 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 
    if (pScrn->numEntities != 1) return FALSE;
 
-   /* The vgahw module should be loaded here when needed */
-   if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
-
-   xf86LoaderReqSymLists(vgahwSymbols, NULL);
-
-   /* Allocate a vgaHWRec */
-   if (!vgaHWGetHWRec(pScrn)) return FALSE;
-
    /* Allocate driverPrivate */
    if (!I810GetRec(pScrn)) return FALSE;
 
@@ -498,6 +490,14 @@ I810PreInit(ScrnInfoPtr pScrn, int flags) {
 	I810ProbeDDC(pScrn, pI810->pEnt->index);
 	return TRUE;
    }
+
+   /* The vgahw module should be loaded here when needed */
+   if (!xf86LoadSubModule(pScrn, "vgahw")) return FALSE;
+
+   xf86LoaderReqSymLists(vgahwSymbols, NULL);
+
+   /* Allocate a vgaHWRec */
+   if (!vgaHWGetHWRec(pScrn)) return FALSE;
 
    pI810->PciInfo = xf86GetPciInfoForEntity(pI810->pEnt->index);
    pI810->PciTag = pciTag(pI810->PciInfo->bus, pI810->PciInfo->device,
