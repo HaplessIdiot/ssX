@@ -1,4 +1,8 @@
 XFree86 4.4.99.1 (XX March 2004)
+   6. Do the Linux KDKBDREP ioctl on the correct fd.  This prevents the
+      fallback that tries to directly program the keyboard repeat rate,
+      and the related warning messages that recent Linux kernels generate
+      (David Dawes).
    5. Turn off the DAC for Radeon DPMS modes.  Without this some monitors
       can be badly affected. (Bugzilla #1221, Hui Yu@ATI, reported by
       Paul Shupak).
@@ -18695,7 +18699,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3160 2004/03/02 19:43:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3161 2004/03/03 18:10:48 dawes Exp $
 
 
 
