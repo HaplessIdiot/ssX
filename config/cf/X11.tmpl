@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.88 2000/12/08 22:58:06 keithp Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.89 2000/12/12 23:24:25 dawes Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -2228,7 +2228,7 @@ FREETYPE2DIR = Freetype2Dir
 FREETYPE2LIBDIR = Freetype2LibDir
 FREETYPE2INCDIR = Freetype2IncDir
 FREETYPE2INCLUDES = -I$(FREETYPE2INCDIR)
-FREETYPE2LIB = -L$(FREETYPE2DIR)/lib -lfreetype
+FREETYPE2LIB = -L$(FREETYPE2LIBDIR) -lfreetype
 FREETYPE2DEFINES = -DFREETYPE2
 
 #endif
