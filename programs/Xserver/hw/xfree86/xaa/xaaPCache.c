@@ -1911,8 +1911,8 @@ XAAWritePixmapToCacheLinear(
 
    pScreenPix = (*pScreen->GetScreenPixmap)(pScreen);
 
-   pDstPix = GetScratchPixmapHeader(pScreen, pScreenPix->drawable.width, 
-					y + h, depth, bpp, pScreenPix->devKind,
+   pDstPix = GetScratchPixmapHeader(pScreen, x + w, y + h, 
+					depth, bpp, pScreenPix->devKind,
 					pScreenPix->devPrivate.ptr);
    
    pGC = GetScratchGC(depth, pScreen);
