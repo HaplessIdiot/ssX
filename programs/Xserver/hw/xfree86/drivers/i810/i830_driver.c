@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.30 2003/04/11 15:26:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.31 2003/04/12 02:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -3234,9 +3234,7 @@ static void
 I830BIOSLeaveVT(int scrnIndex, int flags)
 {
    ScrnInfoPtr pScrn = xf86Screens[scrnIndex];
-#ifdef XF86DRI
    I830Ptr pI830 = I830PTR(pScrn);
-#endif
 
    DPRINTF(PFX, "Leave VT\n");
 
