@@ -27,7 +27,7 @@
  *
  * Tested running under a Compaq IPAQ Pocket PC running Linux
  */
-/* $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmcia.c,v 1.7 2002/10/18 06:08:10 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/tinyx/pcmcia/pcmcia.c,v 1.1tsi Exp $ */
 /*
  * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -75,9 +75,11 @@
  * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifdef __GNUC__
+#define inline __inline__
+#endif
 #include "pcmcia.h"
 #define extern static
-#define inline __inline__
 #include <asm/io.h>
 #undef extern
 
