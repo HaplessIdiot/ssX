@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/34 1996/10/27 11:05:08 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.137 2001/08/16 14:33:51 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.138 2001/10/09 19:31:05 herrb Exp $
 
 
 
@@ -31,8 +31,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/common/Imakefile,v 3.137 2001/08/
 #endif
 
 #ifdef SparcArchitecture
-	SBUSSRC = xf86sbusBus.c
-	SBUSOBJ = xf86sbusBus.o
+        SBUSSRC = xf86sbusBus.c
+        SBUSOBJ = xf86sbusBus.o
 #endif
 
 #if BuildXKB
