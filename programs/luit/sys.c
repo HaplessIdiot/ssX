@@ -19,7 +19,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86: xc/programs/luit/sys.c,v 1.7 2002/01/07 20:38:30 dawes Exp $ */
+/* $XFree86: xc/programs/luit/sys.c,v 1.8 2003/04/03 16:44:36 dawes Exp $ */
 
 #include <stdlib.h>
 #include <string.h>
@@ -66,6 +66,10 @@ THE SOFTWARE.
 
 #ifdef SVR4
 #include <stropts.h>
+#endif
+
+#if (defined(__unix__) || defined(unix)) && !defined(USG)
+#include <sys/param.h>
 #endif
 
 #include "sys.h"
