@@ -1,4 +1,18 @@
 XFree86 4.1.99.2 (xx November 2001)
+ 507. Enable XVideo support for the SuperSavage (#5031, Tim Roberts).
+ 506. Add some missing locale entries (#5026, Mike Harris).
+ 505. s3virge driver updates, including:
+       - cr3a patch (#4884, Adam J. Richter)
+       - ViRGE MX XVideo patch (#4915, Sven Menke)
+       - An option to disable XVideo
+       - Disable solid filled rects for Trio3D because of trouble reports
+       - Some MX fixes
+       - Fix ViRGE MX XVideo so window overlap works
+       - Enable ViRGE GX2 XVideo
+       - Fix low resolution problems on ViRGE MX (&GX2)
+      (#5024, 5030, 5034, Kevin Brosius).
+ 504. Some new/updated xkb files (#5019, Pablo Saratxaga).
+ 503. Add some ATI PCI IDs (#5018, Mike Harris).
  502. Implement a hack for the DEC TGA2 cards which maps an extra page
       before framebuffer start as the acceleration code is slightly
       broken (Jay Estabrook).
@@ -14195,4 +14209,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2054 2001/11/21 21:31:27 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2055 2001/11/21 22:32:50 alanh Exp $

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.27 2001/05/04 19:05:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.28 2001/10/28 03:33:46 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -283,6 +283,8 @@ typedef struct tagS3VRec {
   /* hardware cursor enabled */
   Bool		hwcursor;
   Bool          UseFB;
+  Bool          mx_cr3a_fix;
+  Bool          XVideo;
   /* ViRGE options -end- */
   /***********************/
   /* ViRGE specifics -end- */

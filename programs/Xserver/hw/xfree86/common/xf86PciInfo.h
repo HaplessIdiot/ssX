@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.112 2001/10/30 19:35:39 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.113 2001/11/05 23:37:50 alanh Exp $ */
 /*
  * PCI Probe
  *
@@ -207,6 +207,7 @@
 #define PCI_CHIP_MACH64ET	0x4554
 #define PCI_CHIP_MACH64GB	0x4742
 #define PCI_CHIP_MACH64GD	0x4744
+#define PCI_CHIP_MACH64GG	0x4747
 #define PCI_CHIP_MACH64GI	0x4749
 #define PCI_CHIP_MACH64GL	0x474C
 #define PCI_CHIP_MACH64GM	0x474D
@@ -221,6 +222,7 @@
 #define PCI_CHIP_MACH64GV	0x4756
 #define PCI_CHIP_MACH64GW	0x4757
 #define PCI_CHIP_MACH64GX	0x4758
+#define PCI_CHIP_MACH64GY	0x4759
 #define PCI_CHIP_MACH64GZ	0x475A
 #define PCI_CHIP_MACH64LB	0x4C42
 #define PCI_CHIP_MACH64LD	0x4C44
@@ -231,8 +233,10 @@
 #define PCI_CHIP_MACH64LM	0x4C4D
 #define PCI_CHIP_MACH64LN	0x4C4E
 #define PCI_CHIP_MACH64LP	0x4C50
+#define PCI_CHIP_MACH64LQ	0x4C51
 #define PCI_CHIP_MACH64LR	0x4C52
 #define PCI_CHIP_MACH64LS	0x4C53
+#define PCI_CHIP_MACH64LT	0x4C54
 #define PCI_CHIP_RADEON_LW	0x4C57
 #define PCI_CHIP_RADEON_LY	0x4C59
 #define PCI_CHIP_RADEON_LZ	0x4C5A
@@ -838,6 +842,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64ET,	"Mach64 ET",0},
 				{PCI_CHIP_MACH64GB,	"Mach64 GB",0},
 				{PCI_CHIP_MACH64GD,	"Mach64 GD",0},
+				{PCI_CHIP_MACH64GG,	"Mach64 GG",0},
 				{PCI_CHIP_MACH64GI,	"Mach64 GI",0},
 				{PCI_CHIP_MACH64GL,	"Mach64 GL",0},
 				{PCI_CHIP_MACH64GM,	"Mach64 GM",0},
@@ -852,6 +857,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64GV,	"Mach64 GV",0},
 				{PCI_CHIP_MACH64GW,	"Mach64 GW",0},
 				{PCI_CHIP_MACH64GX,	"Mach64 GX",0},
+				{PCI_CHIP_MACH64GY,	"Mach64 GY",0},
 				{PCI_CHIP_MACH64GZ,	"Mach64 GZ",0},
 				{PCI_CHIP_MACH64LB,	"Mach64 LB",0},
 				{PCI_CHIP_MACH64LD,	"Mach64 LD",0},
@@ -862,8 +868,10 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_MACH64LM,	"Mach64 LM",0},
 				{PCI_CHIP_MACH64LN,	"Mach64 LN",0},
 				{PCI_CHIP_MACH64LP,	"Mach64 LP",0},
+				{PCI_CHIP_MACH64LQ,	"Mach64 LQ",0},
 				{PCI_CHIP_MACH64LR,	"Mach64 LR",0},
 				{PCI_CHIP_MACH64LS,	"Mach64 LS",0},
+				{PCI_CHIP_MACH64LT,	"Mach64 LT",0},
 				{PCI_CHIP_RAGE128MF,	"Rage 128 Mobility MF",0},
 				{PCI_CHIP_RAGE128ML,	"Rage 128 Mobility ML",0},
 				{PCI_CHIP_RAGE128PD,	"Rage 128 Pro PD",0},

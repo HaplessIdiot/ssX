@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.5 2001/10/01 13:44:09 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_video.c,v 1.6 2001/11/02 16:24:51 alanh Exp $ */
 
 #include "Xv.h"
 #include "dix.h"
@@ -237,7 +237,7 @@ typedef struct {
 /*
  * There are two different streams engines used in the Savage line.
  * The old engine is in the 3D, 4, Pro, and Twister.
- * The new engine is in the 2000, MX and IX.
+ * The new engine is in the 2000, MX, IX, and Super.
  */
 
 
@@ -420,6 +420,7 @@ void SavageStreamsOn(ScrnInfoPtr pScrn, int id)
     VGAOUT8( vgaCRIndex, EXT_MISC_CTRL2 );
 
     if( (psav->Chipset == S3_SAVAGE_MX)  ||
+        (psav->Chipset == S3_SUPERSAVAGE) ||
         (psav->Chipset == S3_SAVAGE2000) )
     {
 	jStreamsControl = VGAIN8( vgaCRReg ) | ENABLE_STREAM1;
@@ -495,6 +496,7 @@ void SavageStreamsOff(ScrnInfoPtr pScrn)
 
     VGAOUT8( vgaCRIndex, EXT_MISC_CTRL2 );
     if( (psav->Chipset == S3_SAVAGE_MX)  ||
+        (psav->Chipset == S3_SUPERSAVAGE) ||
         (psav->Chipset == S3_SAVAGE2000) )
 	jStreamsControl = VGAIN8( vgaCRReg ) & NO_STREAMS;
     else
@@ -527,6 +529,7 @@ void SavageInitVideo(ScreenPtr pScreen)
     xf86ErrorFVerb(XVTRACE,"SavageInitVideo\n");
     if(
 	(psav->Chipset == S3_SAVAGE_MX) ||
+	(psav->Chipset == S3_SUPERSAVAGE) ||
 	(psav->Chipset == S3_SAVAGE2000)
     )
     {
