@@ -27,16 +27,10 @@
   into trouble building on a earlier release, please let us know so that
   we can correct any incompatibilities.  If you've done it and want to
   share your binaries, please let the Bsdi mailing list know.  The
-  binaries are built using gcc 2.6.3 as distributed with BSD/OS 2.0.
-  The XFree86 3.1.2 server displays large amounts of diagnostic output
-  to stderr when the server is started. If the server is started from
-  the console on BSD/OS 2.0, the output to stderr will block and the
-  server will hang.  The workaround for this is to redirect stdout and
-  stderr to a file when using startx or xinit. This problem does only
-  appear on BSD/OS 2.0, earlier versions are not affected.  If you build
-  the distribution from source using a gcc compiler built using the
-  generic gcc source code, you may run into problems using the binaries
-  on a 386/486 not equipped with a math coprocessor.
+  binaries are built using gcc 2.6.3 as distributed with BSD/OS 2.0.  If
+  you build the distribution from source using a gcc compiler built
+  using the generic gcc source code, you may run into problems using the
+  binaries on a 386/486 not equipped with a math coprocessor.
 
 
   2.  Bug Reports for This Document
@@ -63,12 +57,12 @@
 
      REQUIRED:
 
-
         X312doc.tgz
            READMEs and XFree86 specific man pages.
 
         X312bin.tgz
            all of the executable X client applications.
+
 
         X312fnts.tgz
            all fonts
@@ -136,7 +130,6 @@
         distribution to live.  /usr/X11R6 is recommended, but if that
         partition is full (as it is on my machine), then just create an
         alternate directory, and sym-link /usr/X11R6 to this place.
-
         ie, on my machine, I do the following:
 
             % cd /usr/local
@@ -196,13 +189,13 @@
   XFree86 3.1 and later releases uses a new configuration file format.
   Consult the XF86Config man page and the general INSTALL file for
   instructions.
+
   If you have a Xconfig file for XFree86 2.x, use reconfig to translate
   part of it into the new format:
      # reconfig <Xconfig >XF86Config
 
   and complete the rest according to the XF86Config man page and the
   XF86Config.sample file as a template.
-
   In order to protect your hardware from damage, the server will no
   longer read XF86Config files from a user's home directory, but
   requires that it be in /etc/XF86Config,
@@ -268,6 +261,7 @@
   in the xc directory.
 
 
+
   8.  Building New X Clients
 
   The easiest way to build a new client (X application) is to use xmkmf
@@ -328,6 +322,12 @@
 
 
 
+
+
+
+
+
+
   *** vga.c.orig  Sun Dec 19 09:35:01 1993
   --- vga.c       Mon Oct 24 01:38:44 1994
   ***************
@@ -350,7 +350,7 @@
 
 
   $XConsortium: Bsdi.sgml,v 1.3 95/01/23 15:34:39 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.10 1995/06/01 08:25:23 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Bsdi.sgml,v 3.11 1995/06/17 12:16:26 dawes Exp $
 
 
 
