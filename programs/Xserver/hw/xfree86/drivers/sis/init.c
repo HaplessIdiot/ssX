@@ -2456,6 +2456,7 @@ SiSBIOSSetModeCRT2(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension, S
    switch (HwDeviceExtension->ujVBChipID) {
      case VB_CHIP_301:
      case VB_CHIP_301B:
+     case VB_CHIP_301C:
      case VB_CHIP_301LV:
      case VB_CHIP_302:
      case VB_CHIP_302B:
@@ -2679,6 +2680,7 @@ SiSSetMode(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,USHORT Mod
      switch (HwDeviceExtension->ujVBChipID) {
      case VB_CHIP_301:
      case VB_CHIP_301B:
+     case VB_CHIP_301C:
      case VB_CHIP_301LV:
      case VB_CHIP_302:
      case VB_CHIP_302B:
@@ -3004,25 +3006,26 @@ SiS_GetVBType(SiS_Private *SiS_Pr, USHORT BaseAddr,PSIS_HW_DEVICE_INFO HwDeviceE
 
   flag = SiS_GetReg1(SiS_Pr->SiS_Part4Port,0x00);
 
-  /* TW: Illegal values not welcome... */
   if(flag > 3) return;
 
   rev = SiS_GetReg1(SiS_Pr->SiS_Part4Port,0x01);
 
-  if (flag >= 2) {
+  if(flag >= 2) {
         SiS_Pr->SiS_VBType = VB_SIS302B;
-  } else if (flag == 1) {
+  } else if(flag == 1) {
         SiS_Pr->SiS_VBType = VB_SIS301;
-        if(rev >= 0xB0) {
+	if(rev >= 0xC0) {
+            	SiS_Pr->SiS_VBType = VB_SIS301C;
+        } else if(rev >= 0xB0) {
             	SiS_Pr->SiS_VBType = VB_SIS301B;
 		/* Check if 30xB DH version (no LCD support, use Panel Link instead) */
     		nolcd = SiS_GetReg1(SiS_Pr->SiS_Part4Port,0x23);
                 if(!(nolcd & 0x02)) SiS_Pr->SiS_VBType |= VB_NoLCD;
         }
   }
-  if(SiS_Pr->SiS_VBType & (VB_SIS301B | VB_SIS302B)) {
+  if(SiS_Pr->SiS_VBType & (VB_SIS301B | VB_SIS301C | VB_SIS302B)) {
         if(rev >= 0xD0) {
-	        SiS_Pr->SiS_VBType &= ~(VB_SIS301B | VB_SIS302B);
+	        SiS_Pr->SiS_VBType &= ~(VB_SIS301B | VB_SIS301C | VB_SIS302B);
           	SiS_Pr->SiS_VBType |= VB_SIS301LV;
 		SiS_Pr->SiS_VBType &= ~(VB_NoLCD);
 		if(rev >= 0xE0) {
@@ -3332,7 +3335,7 @@ SiS_SetATTRegs(SiS_Private *SiS_Pr, UCHAR *ROMAddr,USHORT StandTableIndex,
          if(HwDeviceExtension->jChipType >= SIS_315H) {
 	    if(IS_SIS550650740660) {
 	       /* 315, 330 don't do this */
-	       if(SiS_Pr->SiS_VBType & VB_SIS301B302B) { 
+	       if(SiS_Pr->SiS_VBType & VB_SIS301B302B) {
 	          if(SiS_Pr->SiS_VBInfo & SetInSlaveMode) ARdata=0;
 	       } else {
 	          ARdata = 0;
@@ -4966,23 +4969,23 @@ SiS_GetSenseStatus(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,UC
         tempax=0;
         tempbx=*SiS_Pr->pSiS_RGBSenseData;
 	if(SiS_Is301B(SiS_Pr, BaseAddr)){
-                tempbx=*SiS_Pr->pSiS_RGBSenseData2;
+           tempbx=*SiS_Pr->pSiS_RGBSenseData2;
         }
         tempcx=0x0E08;
         if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
-          if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
-            tempax=tempax|Monitor2Sense;
-          }
+           if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
+              tempax=tempax|Monitor2Sense;
+           }
         }
         tempbx=*SiS_Pr->pSiS_YCSenseData;
         if(SiS_Is301B(SiS_Pr, BaseAddr)){
-               tempbx=*SiS_Pr->pSiS_YCSenseData2;
+           tempbx=*SiS_Pr->pSiS_YCSenseData2;
         }
         tempcx=0x0604;
         if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
-          if(SiS_Sense(SiS_Pr,tempbx,tempcx)){
-            tempax=tempax|SVIDEOSense;
-          }
+           if(SiS_Sense(SiS_Pr,tempbx,tempcx)){
+              tempax=tempax|SVIDEOSense;
+           }
         }
 
 	if(ROMAddr && SiS_Pr->SiS_UseROM) {
@@ -5003,24 +5006,24 @@ SiS_GetSenseStatus(SiS_Private *SiS_Pr, PSIS_HW_DEVICE_INFO HwDeviceExtension,UC
         }
         if(OutputSelect & BoardTVType){
           tempbx = *SiS_Pr->pSiS_VideoSenseData;
-          if(SiS_Is301B(SiS_Pr, BaseAddr)){
+          if(SiS_Is301B(SiS_Pr, BaseAddr)) {
              tempbx = *SiS_Pr->pSiS_VideoSenseData2;
           }
           tempcx = 0x0804;
-          if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
-            if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
+          if(SiS_Sense(SiS_Pr, tempbx,tempcx)) {
+            if(SiS_Sense(SiS_Pr, tempbx,tempcx)) {
               tempax |= AVIDEOSense;
             }
           }
         } else {
-          if(!(tempax & SVIDEOSense)){
+          if(!(tempax & SVIDEOSense)) {
             tempbx = *SiS_Pr->pSiS_VideoSenseData;
             if(SiS_Is301B(SiS_Pr, BaseAddr)){
               tempbx = *SiS_Pr->pSiS_VideoSenseData2;
             }
             tempcx = 0x0804;
-            if(SiS_Sense(SiS_Pr,tempbx,tempcx)){
-              if(SiS_Sense(SiS_Pr, tempbx,tempcx)){
+            if(SiS_Sense(SiS_Pr,tempbx,tempcx)) {
+              if(SiS_Sense(SiS_Pr, tempbx,tempcx)) {
                 tempax |= AVIDEOSense;
               }
             }

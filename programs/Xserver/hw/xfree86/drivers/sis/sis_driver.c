@@ -714,18 +714,18 @@ SISDisplayPowerManagementSet(ScrnInfoPtr pScrn, int PowerManagementMode, int fla
              setSISIDXREG(SISSR, 0x11, ~0x0c, sr11);
           }
           if(pSiS->VGAEngine == SIS_300_VGA) {
-             if((pSiS->VBFlags & (VB_301B|VB_302B)) &&
+             if((pSiS->VBFlags & (VB_301B|VB_301C|VB_302B)) &&
                 (!(pSiS->VBFlags & VB_30xBDH))) {
 	        setSISIDXREG(SISPART1, 0x13, 0x3f, p1_13);
 	     }
           } else if(pSiS->VGAEngine == SIS_315_VGA) {
-             if((pSiS->VBFlags & (VB_301B|VB_302B)) &&
+             if((pSiS->VBFlags & (VB_301B|VB_301C|VB_302B)) &&
                 (!(pSiS->VBFlags & VB_30xBDH))) {
 	        setSISIDXREG(SISPART2, 0x00, 0x1f, p2_0);
 	     }
           }
        } else if(pSiS->VBFlags & CRT2_VGA) {
-          if(pSiS->VBFlags & (VB_301B|VB_302B)) {
+          if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B)) {
 	     setSISIDXREG(SISPART2, 0x00, 0x1f, p2_0);
           }
        }
@@ -3637,7 +3637,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
     }
     
     if((pSiS->VGAEngine == SIS_300_VGA) || (pSiS->VGAEngine == SIS_315_VGA)) {
-       if( (pSiS->VBFlags & (VB_301 | VB_301B | VB_302B | VB_301LV | VB_302LV)) &&
+       if( (pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) &&
            (!((pSiS->VBFlags & VB_30xBDH) && (pSiS->VBFlags & CRT2_LCD))) ) {
           xf86DrvMsg(pScrn->scrnIndex, X_INFO,
 	     	"CRT2 gamma correction is %s\n",
@@ -4328,7 +4328,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 #ifdef SISDUALHEAD
           if(pSiS->DualHeadMode) {
 	     if(!pSiS->SecondHead) {
-	        if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
+	        if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
 		   if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 		   if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 		   if(pSiS->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
@@ -4346,7 +4346,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
 	     includelcdmodes = FALSE;
           else
 #endif
-          if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
+          if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
 	     if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 	     if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 	     if(pSiS->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
@@ -4639,7 +4639,7 @@ SISPreInit(ScrnInfoPtr pScrn, int flags)
        xf86DrvMsg(pScrn->scrnIndex, X_DEFAULT, "Max pixel clock for CRT2 is %d MHz\n",
                 clockRanges->maxClock / 1000);
 
-       if(pSiS->VBFlags & (VB_301|VB_301B|VB_302B)) {
+       if(pSiS->VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)) {
           if(!(pSiS->VBFlags & (CRT2_LCD|CRT2_VGA))) includelcdmodes   = FALSE;
 	  if(pSiS->VBFlags & CRT2_LCD)               isfordvi          = TRUE;
 	  if(pSiS->VBFlags & CRT2_TV)                acceptcustommodes = FALSE;
@@ -5805,7 +5805,7 @@ SISRestore(ScrnInfoPtr pScrn)
 	* the option RestoreBySetMode.
         */
         if( ( (pSiS->restorebyset) ||
-	      (pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) ||
+	      (pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) ||
 	      ((pSiS->sishw_ext.jChipType == SIS_730) && (pSiS->VBFlags & VB_LVDS)) ) &&
 	    (pSiS->OldMode) ) {
 
@@ -5830,7 +5830,7 @@ SISRestore(ScrnInfoPtr pScrn)
 	      int backupscaler = pSiS->SiS_Pr->UsePanelScaler;
 	      unsigned long backupspecialtiming = pSiS->SiS_Pr->SiS_CustomT;
 
- 	      if((pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV))) {
+ 	      if((pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV))) {
 	        /* !!! REQUIRED for 630+301B-DH, otherwise the text modes
 	         *     will not be restored correctly !!!
 	         * !!! Do this ONLY for LCD; VGA2 will not be restored
@@ -5921,7 +5921,7 @@ SISRestore(ScrnInfoPtr pScrn)
 	      vgaHWRestore(pScrn, vgaReg, VGA_SR_ALL);
 
 #if 0
-	      if(pSiS->VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) {
+	      if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
 	         if(vesasuccess) {
 		   vgaHWRestore(pScrn, vgaReg, (VGA_SR_CMAP | VGA_SR_FONTS));
 		 } else {
@@ -8047,7 +8047,7 @@ void SiSPreSetMode(ScrnInfoPtr pScrn, DisplayModePtr mode)
 #if 0  /* For future use */
     if( (pSiS->VBFlags & VB_LVDS) ||
         (pSiS->VBFlags & VB_301)  ||
-        ( (pSiS->VBFlags & (VB_301B | VB_302B |VB_301LV | VB_302LV)) &&
+        ( (pSiS->VBFlags & (VB_301B | VB_301C | VB_302B |VB_301LV | VB_302LV)) &&
 	  (!(pSiS->VBLCDFlags & VB_LCD_1400x1050)) ) ) {
 #endif
        usScratchCR31 |= 0x04;   /* Set VB_NotSimuMode (not for 30xB/1400x1050?) */
@@ -10847,7 +10847,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		}
 		break;
 	  case 1400:
-	        if(VBFlags & (VB_302B | VB_302LV)) {
+	        if(VBFlags & (VB_301C | VB_302B | VB_302LV)) {
 	           if(mode->VDisplay == 1050) {
 		      if(pSiS->VGAEngine == SIS_315_VGA) {
 		         ModeIndex = ModeIndex_1400x1050[i];
@@ -10856,7 +10856,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		}
 		break;
 	  case 1600:
-	        if(VBFlags & (VB_302B | VB_302LV)) {
+	        if(VBFlags & (VB_301C | VB_302B | VB_302LV)) {
 		   if(mode->VDisplay == 1200) {
 		      ModeIndex = ModeIndex_1600x1200[i];
 		   }
@@ -10961,7 +10961,7 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 		break;
 	case 1024:
 		if(mode->VDisplay == 768) {
-		   if(VBFlags & (VB_301B|VB_302B|VB_301LV|VB_302LV)) {
+		   if(VBFlags & (VB_301B|VB_301C|VB_302B|VB_301LV|VB_302LV)) {
 		      ModeIndex = ModeIndex_1024x768[i];
 		   }
 		} else if(VBFlags & (TV_HIVISION | TV_HIVISION_LV)) {
@@ -11092,8 +11092,26 @@ SiS_CheckCalcModeIndex(ScrnInfoPtr pScrn, DisplayModePtr mode, unsigned long VBF
 	case 1600:
 	        if(mode->VDisplay == 1200) {
 		   if(pSiS->VGAEngine == SIS_315_VGA) {
-		      if(pSiS->VBFlags & (VB_301B|VB_302B)) {
+		      if(pSiS->VBFlags & (VB_301B|VB_301C|VB_302B)) {
 		         ModeIndex = ModeIndex_1600x1200[i];
+		      }
+		   }
+		}
+		break;
+	case 1920:
+	        if(mode->VDisplay == 1440) {
+		   if(pSiS->VGAEngine == SIS_315_VGA) {
+		      if(pSiS->VBFlags & VB_301C) {
+		         ModeIndex = ModeIndex_1920x1440[i];
+		      }
+		   }
+		}
+		break;
+	case 2048:
+	        if(mode->VDisplay == 1536) {
+		   if(pSiS->VGAEngine == SIS_315_VGA) {
+		      if(pSiS->VBFlags & VB_301C) {
+		         ModeIndex = ModeIndex_310_2048x1536[i];
 		      }
 		   }
 		}
