@@ -23,7 +23,8 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/programs/xset/xset.c,v 3.18 2000/02/13 06:15:47 dawes Exp $ */
+/* $XFree86: xc/programs/xset/xset.c,v 3.19 2000/04/20 21:28:50 tsi Exp $ */
+/* Modified by Stephen so keyboard rate is set using XKB extensions */
 
 #include <stdio.h>
 #include <ctype.h>
@@ -78,6 +79,9 @@ char *malloc();
 #include <X11/extensions/xf86misc.h>
 #include <X11/extensions/xf86mscstr.h>
 #endif
+#ifdef XKB
+#include <X11/XKBlib.h>
+#endif
 #ifdef FONTCACHE
 #include <X11/extensions/fontcacheP.h>
 #endif
@@ -100,6 +104,10 @@ char *malloc();
 #ifdef XF86MISC
 #define KBDDELAY_DEFAULT 500
 #define KBDRATE_DEFAULT 30
+#endif
+#ifdef XKB
+#define XKBDDELAY_DEFAULT 660
+#define XKBDRATE_DEFAULT (1000/40)
 #endif
 
 #define	nextarg(i, argv) \
@@ -134,6 +142,9 @@ static int local_xerror(Display *dpy, XErrorEvent *rep);
 #ifdef XF86MISC
 static void set_repeatrate(Display *dpy, int delay, int rate);
 #endif
+#ifdef XKB
+static void xkbset_repeatrate(Display *dpy, int delay, int rate);
+#endif
 
 int
 main(int argc, char *argv[])
@@ -157,6 +168,15 @@ Bool hasargs = False;
 #ifdef XF86MISC
 int miscpresent = 1;
 int major, minor;
+#else
+int miscpresent = 0;
+#endif
+#ifdef XKB
+int xkbpresent = 1;
+int xkbmajor = XkbMajorVersion, xkbminor = XkbMinorVersion;
+int xkbopcode, xkbevent, xkberror;
+#else
+int xkbpresent = 0;
 #endif
 #ifdef FONTCACHE
 long himark, lowmark, balance;
@@ -290,7 +310,7 @@ for (i = 1; i < argc; ) {
 	      himark = atoi(arg);
 	      i++;
 	      if (himark <= 0) {
-		  usage("hi-mark must be grater than 0", NULL);
+		  usage("hi-mark must be greater than 0", NULL);
 	      }
 	      if (i >= argc) {
 		  lowmark = (himark * 70) / 100;
@@ -302,10 +322,10 @@ for (i = 1; i < argc; ) {
 		  lowmark = atoi(arg);
 		  i++;
 		  if (lowmark <= 0) {
-		      usage("low-mark must be grater than 0", NULL);
+		      usage("low-mark must be greater than 0", NULL);
 		  }
 		  if (himark <= lowmark) {
-		      usage("hi-mark must be grater than low-mark", NULL);
+		      usage("hi-mark must be greater than low-mark", NULL);
 		  }
 		  if (i >= argc) {
 		      set_font_cache(dpy, himark, lowmark, balance);
@@ -654,10 +674,10 @@ for (i = 1; i < argc; ) {
     set_repeat(dpy, key, auto_repeat_mode);
   } 
   else if (strcmp(arg, "r") == 0) {         /* Turn on one or all autorepeats */
-    auto_repeat_mode = ON;
-    key = ALL;          /* None specified */
-    arg = argv[i];
-    if (i < argc) {
+   auto_repeat_mode = ON;
+   key = ALL;          /* None specified */
+   arg = argv[i];
+   if (i < argc) {
     if (strcmp(arg, "on") == 0) {
       i++;
     } 
@@ -665,41 +685,62 @@ for (i = 1; i < argc; ) {
       auto_repeat_mode = OFF;
       i++;
     }
-#ifdef XF86MISC
+#if defined(XF86MISC) || defined(XKB)
     else if (strcmp(arg, "rate") == 0) {       /*  ...or this one. */
-      int delay=KBDDELAY_DEFAULT, rate=KBDRATE_DEFAULT;
-
-      if (!XF86MiscQueryVersion(dpy, &major, &minor)) {
+      int delay, rate;
+      int rate_set = 0;
+#ifdef XF86MISC
+      if (XF86MiscQueryVersion(dpy, &major, &minor)) {
+        delay=KBDDELAY_DEFAULT, rate=KBDRATE_DEFAULT;
+      } else {
         miscpresent = 0;
-        fprintf(stderr,
-          "server does not have extension for \"r rate\" option\n");
       }
-
+#endif
+#ifdef XKB
+      if (XkbQueryExtension(dpy, &xkbopcode, &xkbevent, &xkberror, &xkbmajor,
+				&xkbminor)) {
+        delay=XKBDDELAY_DEFAULT, rate=XKBDRATE_DEFAULT;
+      } else {
+        xkbpresent = 0;
+      }
+#endif
+      if (!miscpresent && !xkbpresent)
+        fprintf(stderr,
+            "server does not have extension for \"r rate\" option\n");
       i++;
       arg = argv[i];
       if (i < argc) {
-        if (is_number(arg, 10000)) {
+        if (is_number(arg, 10000) && atoi(arg)>0) {
 	  delay = atoi(arg);
 	  i++;
           arg = argv[i];
 	  if (i < argc) {
-            if (is_number(arg, 255)) {
+            if (is_number(arg, 255) && atoi(arg)>0) {
 	      rate = atoi(arg);
 	      i++;
             }
           }
         }
       }
-      if (miscpresent)
+#ifdef XKB
+      if (xkbpresent) {
+        xkbset_repeatrate(dpy, delay, 1000/rate);
+	rate_set = 1;
+      }
+#endif
+#ifdef XF86MISC
+      if (miscpresent && !rate_set) {
         set_repeatrate(dpy, delay, rate);
+      }
+#endif
     }
 #endif
     else if (is_number(arg, 255)) {
       key = atoi(arg);
       i++;
     }
-    } 
-    set_repeat(dpy, key, auto_repeat_mode);
+   } 
+   set_repeat(dpy, key, auto_repeat_mode);
   } 
   else if (strcmp(arg, "p") == 0) {
     if (i + 1 >= argc)
@@ -1043,6 +1084,18 @@ set_repeatrate(Display *dpy, int delay, int rate)
 }
 #endif
 
+#ifdef XKB
+static void 
+xkbset_repeatrate(Display *dpy, int delay, int interval)
+{
+  XkbDescPtr xkb = XkbGetKeyboard(dpy,XkbControlsMask,XkbUseCoreKbd);
+  XkbGetControls(dpy, XkbRepeatKeysMask, xkb);
+  xkb->ctrls->repeat_delay = delay;
+  xkb->ctrls->repeat_interval = interval;
+  XkbSetControls(dpy, XkbRepeatKeysMask, xkb);
+}
+#endif
+
 static void
 set_pixels(Display *dpy, unsigned long *pixels, caddr_t *colors, int numpixels)
 {
@@ -1171,6 +1224,11 @@ int timeout, interval, prefer_blank, allow_exp;
 #ifdef XF86MISC
 XF86MiscKbdSettings kbdinfo;
 #endif
+#ifdef XKB
+XkbDescPtr xkb;
+int xkbmajor = XkbMajorVersion, xkbminor = XkbMinorVersion;
+int xkbopcode, xkbevent, xkberror;
+#endif
 char **font_path; int npaths;
 int i, j;
 char buf[20];				/* big enough for 16 bit number */
@@ -1185,6 +1243,16 @@ printf ("  auto repeat:  %s    key click percent:  %d    LED mask:  %08lx\n",
 	on_or_off (values.global_auto_repeat,
 		   AutoRepeatModeOn, "on", AutoRepeatModeOff, "off", buf),
 	values.key_click_percent, values.led_mask);
+#ifdef XKB
+if (XkbQueryExtension(dpy, &xkbopcode, &xkbevent, &xkberror, &xkbmajor, &xkbminor)
+    && (xkb = XkbGetKeyboard(dpy,XkbControlsMask,XkbUseCoreKbd)) != NULL
+    && XkbGetControls(dpy, XkbRepeatKeysMask, xkb) == Success)
+  printf ("  auto repeat delay:  %d    repeat rate:  %d\n",
+          xkb->ctrls->repeat_delay,  1000/xkb->ctrls->repeat_interval);
+#ifdef XF86MISC
+else
+#endif
+#endif
 #ifdef XF86MISC
 if (XF86MiscGetKbdSettings(dpy, &kbdinfo))
   printf ("  auto repeat delay:  %d    repeat rate:  %d\n",
@@ -1431,7 +1499,7 @@ usage(char *fmt, ...)
     fprintf (stderr, "    To turn auto-repeat off or on:\n");
     fprintf (stderr, "\t-r [keycode]        r off\n");
     fprintf (stderr, "\t r [keycode]        r on\n");
-#ifdef XF86MISC
+#if defined(XF86MISC) || defined(XKB)
     fprintf (stderr, "\t r rate [delay [rate]]\n");
 #endif
     fprintf (stderr, "    For screen-saver control:\n");

@@ -19,7 +19,7 @@
 .\" other dealings in this Software without prior written authorization
 .\" from The Open Group.
 .\" 
-.\" $XFree86: xc/programs/xset/xset.man,v 3.7 1998/04/05 02:29:18 dawes Exp $
+.\" $XFree86: xc/programs/xset/xset.man,v 3.8 1998/10/04 09:41:57 dawes Exp $
 .\" 
 .TH XSET 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -187,10 +187,15 @@ If a preceding dash or the 'off' flag is used, autorepeat will be disabled.
 If no parameters or the 'on' flag is used, autorepeat will be enabled.
 If a specific keycode is specified as a parameter, autorepeat for that
 keycode is enabled or disabled.
-If the server supports the XFree86-Misc extension, then a parameter
-of 'rate' is accepted and should be followed by one or two numeric
+If the server supports the XFree86-Misc extension,
+or the XKB extension, then a parameter
+of 'rate' is accepted and should be followed by zero, one or two numeric
 values. The first specifies the delay before autorepeat starts and
-the second specifies the repeat rate.
+the second specifies the repeat rate.  In the case that the server
+supports the XKB extension, the delay is the number of milliseconds
+before autorepeat starts, and the rate is the number of repeats
+per second.  If the rate or delay is not given, it will be set 
+to the default value.
 .PP
 .TP 8
 .B s
