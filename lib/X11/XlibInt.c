@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.27 2001/07/23 13:15:41 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.28 2001/10/28 03:32:33 tsi Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -81,6 +81,9 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #ifdef WIN32
 #define ETEST() (WSAGetLastError() == WSAEWOULDBLOCK)
 #else
+#ifdef __CYGWIN__ /* Cygwin uses ENOBUFS to signal socket is full */
+#define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK || errno == ENOBUFS)
+#else
 #if defined(EAGAIN) && defined(EWOULDBLOCK)
 #define ETEST() (errno == EAGAIN || errno == EWOULDBLOCK)
 #else
@@ -88,9 +91,11 @@ xthread_t (*_Xthread_self_fn)() = NULL;
 #define ETEST() (errno == EAGAIN)
 #else
 #define ETEST() (errno == EWOULDBLOCK)
-#endif
-#endif
-#endif
+#endif /* EAGAIN */
+#endif /* EAGAIN && EWOULDBLOCK */
+#endif /* __CYGWIN__ */
+#endif /* WIN32 */
+
 #ifdef WIN32
 #define ECHECK(err) (WSAGetLastError() == err)
 #define ESET(val) WSASetLastError(val)
