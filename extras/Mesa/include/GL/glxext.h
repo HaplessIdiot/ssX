@@ -33,7 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
-/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.10 2004/04/22 14:09:16 alanh Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.11 2004/12/10 15:30:08 alanh Exp $ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__) && !defined(__SCITECH_SNAP__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -619,8 +619,6 @@ typedef Bool ( * PFNGLXGETMSCRATEOMLPROC) (Display *dpy, GLXDrawable drawable, i
 typedef int64_t ( * PFNGLXSWAPBUFFERSMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder);
 typedef Bool ( * PFNGLXWAITFORMSCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_msc, int64_t divisor, int64_t remainder, int64_t *ust, int64_t *msc, int64_t *sbc);
 typedef Bool ( * PFNGLXWAITFORSBCOMLPROC) (Display *dpy, GLXDrawable drawable, int64_t target_sbc, int64_t *ust, int64_t *msc, int64_t *sbc);
-#endif /* C99 version test */
-#endif /* STDC test */
 #endif
 
 #ifndef GLX_SGIX_hyperpipe_group
