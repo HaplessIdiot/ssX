@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.2 2002/04/03 00:06:32 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessCommon.c,v 1.3 2002/04/04 18:29:24 torrey Exp $ */
 
 #include "rootlessCommon.h"
 
@@ -72,6 +72,8 @@ void RootlessStartDrawing(WindowPtr pWindow)
 
     // Make sure the window's top-level parent is prepared for drawing.
     if (!winRec->drawing) {
+        int bw = wBorderWidth(pWindow);
+
         CallFrameProc(pScreen, StartDrawing, (pScreen, &winRec->frame));
         winRec->pixmap =
             GetScratchPixmapHeader(pScreen, winRec->frame.w, winRec->frame.h,
@@ -80,7 +82,7 @@ void RootlessStartDrawing(WindowPtr pWindow)
                                    winRec->frame.bytesPerRow,
                                    winRec->frame.pixelData);
         SetPixmapBaseToScreen(winRec->pixmap,
-                              top->origin.x, top->origin.y);
+                              top->drawable.x - bw, top->drawable.y - bw);
         winRec->drawing = TRUE;
     }
 
@@ -130,6 +132,7 @@ void UpdatePixmap(WindowPtr pWindow)
     RootlessWindowRec *winRec;
     ScreenPtr pScreen = pWindow->drawable.pScreen;
     PixmapPtr pix;
+    int bw = wBorderWidth(pWin);
 
     RL_DEBUG_MSG("update pixmap (win 0x%x)", pWindow);
 
@@ -155,7 +158,8 @@ void UpdatePixmap(WindowPtr pWindow)
                                          winRec->frame.bitsPerPixel,
                                          winRec->frame.bytesPerRow,
                                          winRec->frame.pixelData);
-            SetPixmapBaseToScreen(pix, pWindow->origin.x, pWindow->origin.y);
+            SetPixmapBaseToScreen(pix, pWindow->drawable.x - bw,
+                                  pWindow->drawable.y - bw);
             pScreen->SetWindowPixmap(pWindow, pix);
             winRec->pixmap = pix;
         } else {
@@ -168,7 +172,8 @@ void UpdatePixmap(WindowPtr pWindow)
                                         winRec->frame.bitsPerPixel,
                                         winRec->frame.bytesPerRow,
                                         winRec->frame.pixelData);
-            SetPixmapBaseToScreen(pix, top->origin.x, top->origin.y);
+            SetPixmapBaseToScreen(pix, top->drawable.x - bw, 
+                                  top->drawable.y - bw);
         }
     } else {
         // This is not the top window. Point to the parent's pixmap.
