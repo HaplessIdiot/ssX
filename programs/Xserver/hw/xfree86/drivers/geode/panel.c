@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/panel.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: panel.c $
  * $Revision$
@@ -170,6 +170,7 @@ extern unsigned long gfx_detect_video(void);
 #define PLATFORM_DRACO			0   /* Draco + 9210 */
 #define PLATFORM_CENTAURUS		1   /* Centaurus + 9211 RevA */
 #define PLATFORM_DORADO			1   /* Dorado + 9211 RevC */
+#define PLATFORM_GX2BASED		0   /* ??? */
 
 unsigned char *XpressROMPtr;
 

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/gfx_init.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: gfx_init.c $
  *
@@ -287,19 +287,19 @@ unsigned long gfx_detect_cpu(void)
 				}
 				/* Currently always CS5530 for video overlay. */
 
-				#if GFX_VIDEO_DYNAMIC
+#				if GFX_VIDEO_DYNAMIC
 				gfx_video_type = GFX_VIDEO_TYPE_CS5530;
-				#endif
+#				endif
 
 				/* Currently always CS5530 GPIOs for I2C access. */
 
-				#if GFX_I2C_DYNAMIC
+#				if GFX_I2C_DYNAMIC
 				gfx_i2c_type = GFX_I2C_TYPE_GPIO;
-				#endif
+#				endif
 
-				#if GFX_TV_DYNAMIC
+#				if GFX_TV_DYNAMIC
 				gfx_tv_type = GFX_TV_TYPE_FS451;
-				#endif
+#				endif
 			}
 		}
 		else if (dir0 == 0xB0)
@@ -318,31 +318,31 @@ unsigned long gfx_detect_cpu(void)
 
 				/* SC1200 for video overlay and VIP. */
 
-				#if GFX_VIDEO_DYNAMIC  
+#				if GFX_VIDEO_DYNAMIC  
 				gfx_video_type = GFX_VIDEO_TYPE_SC1200;
-				#endif		
+#				endif		
 
-				#if GFX_VIP_DYNAMIC
+#				if GFX_VIP_DYNAMIC
 				gfx_vip_type = GFX_VIP_TYPE_SC1200;
-				#endif
+#				endif
 
 				/* Currently always SAA7114 decoder. */
 
-				#if GFX_DECODER_DYNAMIC
+#				if GFX_DECODER_DYNAMIC
 				gfx_decoder_type = GFX_DECODER_TYPE_SAA7114;
-				#endif
+#				endif
 
 				/* SC1200 for TV encoder */
 
-				#if GFX_TV_DYNAMIC
+#				if GFX_TV_DYNAMIC
 				gfx_tv_type = GFX_TV_TYPE_SC1200; 
-				#endif
+#				endif
 
 				/* Currently always ACCESS.bus for I2C access. */
 
-				#if GFX_I2C_DYNAMIC
+#				if GFX_I2C_DYNAMIC
 				gfx_i2c_type = GFX_I2C_TYPE_ACCESS;
-				#endif
+#				endif
 			}
 		}
 
@@ -350,15 +350,15 @@ unsigned long gfx_detect_cpu(void)
 		{
 			/* ALWAYS FIRST GENERATION GRAPHICS UNIT */
 
-			#if GFX_DISPLAY_DYNAMIC
+#			if GFX_DISPLAY_DYNAMIC
 			gfx_display_type = GFX_DISPLAY_TYPE_GU1;
-			#endif
-			#if GFX_2DACCEL_DYNAMIC
+#			endif
+#			if GFX_2DACCEL_DYNAMIC
 			gfx_2daccel_type = GFX_2DACCEL_TYPE_GU1;
-			#endif
-			#if GFX_INIT_DYNAMIC
+#			endif
+#			if GFX_INIT_DYNAMIC
 			gfx_init_type = GFX_INIT_TYPE_GU1;
-			#endif
+#			endif
 
 			/* READ THE CORE FREQUENCY  */
 
@@ -404,45 +404,45 @@ unsigned long gfx_detect_cpu(void)
 			{
 				/* REDCLOUD INTEGRATED VIDEO             */
 
-				#if GFX_VIDEO_DYNAMIC  
+#				if GFX_VIDEO_DYNAMIC  
 				gfx_video_type = GFX_VIDEO_TYPE_REDCLOUD;
-				#endif
+#				endif
 				
 				/* CURRENTLY, ALWAYS GPIO FOR I2C ACCESS */
 
-				#if GFX_I2C_DYNAMIC
+#				if GFX_I2C_DYNAMIC
 				gfx_i2c_type = GFX_I2C_TYPE_GPIO;
-				#endif
+#				endif
 
 				/* SECOND-GENERATION DISPLAY CONTROLLER  */
 
-				#if GFX_DISPLAY_DYNAMIC
+#				if GFX_DISPLAY_DYNAMIC
 				gfx_display_type = GFX_DISPLAY_TYPE_GU2;
-				#endif
+#				endif
 
 				/* SECOND-GENERATION GRAPHICS UNIT       */
 
-				#if GFX_2DACCEL_DYNAMIC
+#				if GFX_2DACCEL_DYNAMIC
 				gfx_2daccel_type = GFX_2DACCEL_TYPE_GU2;
-				#endif
+#				endif
 				
 				/* SECOND-GENERATION INITIALIZATION      */
 
-				#if GFX_INIT_DYNAMIC
+#				if GFX_INIT_DYNAMIC
 				gfx_init_type = GFX_INIT_TYPE_GU2;
-				#endif
+#				endif
 
 				/* MBUS MSR ACCESSES                     */
 
-				#if GFX_MSR_DYNAMIC
+#				if GFX_MSR_DYNAMIC
 				gfx_msr_type = GFX_MSR_TYPE_REDCLOUD;
-				#endif
+#				endif
 
 				/* CS5530 GPIO I2C */
 
-				#if GFX_I2C_DYNAMIC
+#				if GFX_I2C_DYNAMIC
 				gfx_i2c_type = GFX_I2C_TYPE_GPIO;
-				#endif
+#				endif
 
 				/* READ VERSION */
 
@@ -479,24 +479,24 @@ unsigned long gfx_detect_cpu(void)
 		/* ALWAYS SECOND GENERATION IF SIMULATING */
 		/* For now, that is.  This could change.  */
 
-		#if GFX_DISPLAY_DYNAMIC
+#		if GFX_DISPLAY_DYNAMIC
 		gfx_display_type = GFX_DISPLAY_TYPE_GU2;
-		#endif
-		#if GFX_2DACCEL_DYNAMIC
+#		endif
+#		if GFX_2DACCEL_DYNAMIC
 		gfx_2daccel_type = GFX_2DACCEL_TYPE_GU2;
-		#endif
-		#if GFX_INIT_DYNAMIC
+#		endif
+#		if GFX_INIT_DYNAMIC
 		gfx_init_type = GFX_INIT_TYPE_GU2;
-		#endif
-		#if GFX_MSR_DYNAMIC
+#		endif
+#		if GFX_MSR_DYNAMIC
 		gfx_msr_type = GFX_MSR_TYPE_REDCLOUD;
-		#endif
-		#if GFX_VIDEO_DYNAMIC
+#		endif
+#		if GFX_VIDEO_DYNAMIC
 		gfx_video_type = GFX_VIDEO_TYPE_REDCLOUD;
-		#endif
-		#if GFX_I2C_DYNAMIC
+#		endif
+#		if GFX_I2C_DYNAMIC
 		gfx_i2c_type = GFX_I2C_TYPE_GPIO;
-		#endif
+#		endif
 	}
 	gfx_cpu_version = version;
 	
@@ -569,14 +569,14 @@ void gfx_pci_config_write(unsigned long address, unsigned long data)
 unsigned long gfx_get_core_freq(void)
 {
 	unsigned long freq = 0;
-	#if GFX_INIT_GU1
+#	if GFX_INIT_GU1
 	if (gfx_init_type & GFX_INIT_TYPE_GU1)
 		freq = gu1_get_core_freq();
-	#endif
-	#if GFX_INIT_GU2
+#	endif
+#	if GFX_INIT_GU2
 	if (gfx_init_type & GFX_INIT_TYPE_GU2)
 		freq = gu2_get_core_freq();
-	#endif
+#	endif
 	return freq;
 }
 
@@ -588,14 +588,14 @@ unsigned long gfx_get_cpu_register_base(void)
 {
 	unsigned long base = 0;
 	
-	#if GFX_INIT_GU1	
+#	if GFX_INIT_GU1	
 	if (gfx_init_type & GFX_INIT_TYPE_GU1)
 		base = gu1_get_cpu_register_base ();
-	#endif
-	#if GFX_INIT_GU2	
+#	endif
+#	if GFX_INIT_GU2	
 	if (gfx_init_type & GFX_INIT_TYPE_GU2)
 		base = gu2_get_cpu_register_base ();
-	#endif
+#	endif
 
 	return(base);
 }
@@ -608,10 +608,10 @@ unsigned long gfx_get_graphics_register_base(void)
 {
 	unsigned long base = 0;
 	
-	#if GFX_INIT_GU2
+#	if GFX_INIT_GU2
 	if (gfx_init_type & GFX_INIT_TYPE_GU2)
 		base = gu2_get_graphics_register_base ();
-	#endif
+#	endif
 
 	return(base);
 }
@@ -624,14 +624,14 @@ unsigned long gfx_get_frame_buffer_base(void)
 {
 	unsigned long base = 0;
 	
-	#if GFX_INIT_GU1	
+#	if GFX_INIT_GU1	
 	if (gfx_init_type & GFX_INIT_TYPE_GU1)
 		base = gu1_get_frame_buffer_base ();
-	#endif
-	#if GFX_INIT_GU2	
+#	endif
+#	if GFX_INIT_GU2	
 	if (gfx_init_type & GFX_INIT_TYPE_GU2)
 		base = gu2_get_frame_buffer_base ();
-	#endif
+#	endif
 
 	return(base);
 }
@@ -644,14 +644,14 @@ unsigned long gfx_get_frame_buffer_size(void)
 {
 	unsigned long size = 0;
 
-	#if GFX_INIT_GU1	
+#	if GFX_INIT_GU1	
 	if (gfx_init_type & GFX_INIT_TYPE_GU1)
 		size = gu1_get_frame_buffer_size();
-	#endif
-	#if GFX_INIT_GU2	
+#	endif
+#	if GFX_INIT_GU2	
 	if (gfx_init_type & GFX_INIT_TYPE_GU2)
 		size = gu2_get_frame_buffer_size();
-	#endif
+#	endif
 
 	return size;
 }
@@ -664,14 +664,14 @@ unsigned long gfx_get_vid_register_base(void)
 {
 	unsigned long base = 0;
 	
-	#if GFX_INIT_GU1	
+#	if GFX_INIT_GU1	
 	if (gfx_init_type & GFX_INIT_TYPE_GU1)
 		base = gu1_get_vid_register_base ();
-	#endif
-	#if GFX_INIT_GU2
+#	endif
+#	if GFX_INIT_GU2
 	if (gfx_init_type & GFX_INIT_TYPE_GU2)
 		base = gu2_get_vid_register_base ();
-	#endif
+#	endif
 
 	return(base);
 }
@@ -684,10 +684,10 @@ unsigned long gfx_get_vip_register_base(void)
 {
 	unsigned long base = 0;
 	
-	#if GFX_INIT_GU1	
+#	if GFX_INIT_GU1	
 	if (gfx_init_type & GFX_INIT_TYPE_GU1)
 		base = gu1_get_vip_register_base ();
-	#endif
+#	endif
 
 	return(base);
 }

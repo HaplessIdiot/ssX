@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/gfx_tv.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: gfx_tv.c $
  *
@@ -369,10 +369,10 @@ int gfx_set_tv_cc_data(unsigned char data1, unsigned char data2)
 int gfx_set_tv_display(int width, int height)
 {
 	int status = GFX_STATUS_UNSUPPORTED;
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		status = sc1200_set_tv_display(width, height);
-	#endif
+#	endif
 	return(status);
 }
 
@@ -383,10 +383,10 @@ int gfx_set_tv_display(int width, int height)
 int gfx_test_tvout_odd_field(void)
 {
 	int status = GFX_STATUS_UNSUPPORTED;
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		status = sc1200_test_tvout_odd_field();
-	#endif
+#	endif
 	return(status);
 }
 
@@ -397,10 +397,10 @@ int gfx_test_tvout_odd_field(void)
 int gfx_test_tvenc_odd_field(void)
 {
 	int status = GFX_STATUS_UNSUPPORTED;
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		status = sc1200_test_tvenc_odd_field();
-	#endif
+#	endif
 	return(status);
 }
 
@@ -425,10 +425,10 @@ int gfx_set_tv_field_status_invert(int enable)
 int gfx_get_tv_vphase(void)
 {
 	int status = GFX_STATUS_UNSUPPORTED;
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		status = sc1200_get_tv_vphase();
-	#endif
+#	endif
 	return(status);
 }
 
@@ -439,14 +439,14 @@ int gfx_get_tv_vphase(void)
 int gfx_get_tv_enable(unsigned int *p_on)
 {
 	int retval = -1;
-	#if GFX_TV_FS451
+#	if GFX_TV_FS451
 	if (gfx_tv_type & GFX_TV_TYPE_FS451)
 		retval = fs450_get_tv_enable( p_on);
-	#endif 
-	#if GFX_TV_SC1200
+#	endif 
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		retval = sc1200_get_tv_enable(p_on);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -458,10 +458,10 @@ int gfx_get_tv_output()
 {
 	int retval = -1;
 
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		retval = sc1200_get_tv_output();
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -473,10 +473,10 @@ int gfx_get_tv_mode_count(TVStandardType format)
 {
 	int retval = -1;
 
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		retval = sc1200_get_tv_mode_count (format);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -488,10 +488,10 @@ int gfx_get_tv_display_mode (int *width, int *height, int *bpp, int *hz)
 {
 	int retval = -1;
 
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		retval = sc1200_get_tv_display_mode (width, height, bpp, hz);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -504,10 +504,10 @@ int gfx_get_tv_display_mode_frequency (unsigned short width, unsigned short heig
 {
 	int retval = -1;
 
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		retval = sc1200_get_tv_display_mode_frequency (width, height, format, frequency);
-	#endif
+#	endif
 	return(retval);
 }
 
@@ -519,10 +519,10 @@ int gfx_is_tv_display_mode_supported (unsigned short width, unsigned short heigh
 {
 	int retval = -1;
 
-	#if GFX_TV_SC1200
+#	if GFX_TV_SC1200
 	if (gfx_tv_type & GFX_TV_TYPE_SC1200)
 		retval = sc1200_is_tv_display_mode_supported (width, height, format);
-	#endif
+#	endif
 	return(retval);
 }
 

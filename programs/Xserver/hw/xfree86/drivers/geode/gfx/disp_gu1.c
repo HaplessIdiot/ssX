@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/disp_gu1.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: disp_gu1.c $
  *
@@ -149,7 +149,7 @@ void gu1_delay_approximate (unsigned long milliseconds)
 {
 	/* ASSUME 300 MHz, 5 CLOCKS PER READ */
 
-	#define READS_PER_MILLISECOND 60000L
+#	define READS_PER_MILLISECOND 60000L
 
 	unsigned long loop;
 	loop = milliseconds * READS_PER_MILLISECOND;

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/tv_fs450.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: tv_fs450.c $
  *
@@ -937,13 +937,13 @@ int FS450_init(void)
 	
 	initialize_houston_static_registers();
 
-#if (1)
+#if 1
 	d.tv_on = PLAL_IsTVOn() ? 1 : 0;
 #else
 	d.tv_on = 0;
 #endif
 
-#if (1)
+#if 1
 	/*get the current tv standard*/
 	conget_tv_std(&d.tv_std);
 #else
@@ -954,7 +954,7 @@ int FS450_init(void)
 
 	d.vga_mode = 0;
 
-#if (0)
+#if 0
 	/*get the current tvout mode*/
 	conget_tvout_mode(&d.tvout_mode);
 #else
@@ -962,7 +962,7 @@ int FS450_init(void)
 	d.tvout_mode = GFX_TVOUT_MODE_CVBS_YC;
 #endif
 
-#if (0)
+#if 0
 	/*get the current sharpness*/
 	conget_sharpness(d.sharpness);
 #else
@@ -971,7 +971,7 @@ int FS450_init(void)
 	config_sharpness(d.sharpness);
 #endif
 
-#if (0)
+#if 0
 	/*get the current flicker*/
 	conget_flicker(d.flicker);
 #else
@@ -980,7 +980,7 @@ int FS450_init(void)
 	config_flicker(d.flicker);
 #endif
 
-#if (0)
+#if 0
 	/*get the current size and position*/
 #else
 	/*default to zeros*/
@@ -990,7 +990,7 @@ int FS450_init(void)
 	d.position_y = 0;
 #endif
 
-#if (0)
+#if 0
 	/*get the current color*/
 	conget_color(d.color);
 #else
@@ -999,7 +999,7 @@ int FS450_init(void)
 	config_color(d.color);
 #endif
 
-#if (0)
+#if 0
 	/*get the current brightness and contrast*/
 	conget_brightness_contrast(d.tv_std,d.aps_trigger_bits,d.brightness,d.contrast);
 #else
@@ -1009,7 +1009,7 @@ int FS450_init(void)
 	config_brightness_contrast(d.tv_std,d.aps_trigger_bits,d.brightness,d.contrast);
 #endif
 
-#if (1)
+#if 1
 	/*get the current yc filtering*/
 	{
 		int luma_filter,chroma_filter;
@@ -1026,7 +1026,7 @@ int FS450_init(void)
 	d.yc_filter = GFX_LUMA_FILTER + GFX_CHROMA_FILTER;
 #endif
 
-#if (0)
+#if 0
 	/*get the current cp settings*/
 	conget_macrovision(d.tv_std,&d.aps_trigger_bits);
 #else

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/gfx/gfx_msr.c,v 1.1tsi Exp $ */
 /*
  * $Workfile: gfx_msr.c $
  *
@@ -156,10 +156,10 @@ int gfx_msr_init ()
 {
 	int ret_value = 0;
 
-	#if GFX_MSR_REDCLOUD
+#	if GFX_MSR_REDCLOUD
 	if (gfx_msr_type & GFX_MSR_TYPE_REDCLOUD)
 		ret_value = redcloud_msr_init();
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -172,10 +172,10 @@ DEV_STATUS gfx_id_msr_device (MSR *pDev, unsigned long address)
 {
 	DEV_STATUS ret_value = NOT_KNOWN;
 
-	#if GFX_MSR_REDCLOUD
+#	if GFX_MSR_REDCLOUD
 	if (gfx_msr_type & GFX_MSR_TYPE_REDCLOUD)
 		ret_value = redcloud_id_msr_device(pDev, address);
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -188,10 +188,10 @@ DEV_STATUS gfx_get_msr_dev_address (unsigned int device, unsigned long *address)
 {
 	DEV_STATUS ret_value = NOT_KNOWN;
 
-	#if GFX_MSR_REDCLOUD
+#	if GFX_MSR_REDCLOUD
 	if (gfx_msr_type & GFX_MSR_TYPE_REDCLOUD)
 		ret_value = redcloud_get_msr_dev_address (device, address);
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -204,10 +204,10 @@ DEV_STATUS gfx_get_glink_id_at_address(unsigned int *device, unsigned long addre
 {
 	DEV_STATUS ret_value = NOT_KNOWN;
 
-	#if GFX_MSR_REDCLOUD
+#	if GFX_MSR_REDCLOUD
 	if (gfx_msr_type & GFX_MSR_TYPE_REDCLOUD)
 		ret_value = redcloud_get_glink_id_at_address (device, address);
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -220,10 +220,10 @@ DEV_STATUS gfx_msr_read (unsigned int device, unsigned int msrRegister, Q_WORD *
 {
 	DEV_STATUS ret_value = NOT_KNOWN;
 
-	#if GFX_MSR_REDCLOUD
+#	if GFX_MSR_REDCLOUD
 	if (gfx_msr_type & GFX_MSR_TYPE_REDCLOUD)
 		ret_value = redcloud_msr_read (device, msrRegister, msrValue);
-	#endif
+#	endif
 
 	return ret_value;
 }
@@ -236,10 +236,10 @@ DEV_STATUS gfx_msr_write (unsigned int device, unsigned int msrRegister, Q_WORD 
 {
 	DEV_STATUS ret_value = NOT_KNOWN;
 
-	#if GFX_MSR_REDCLOUD
+#	if GFX_MSR_REDCLOUD
 	if (gfx_msr_type & GFX_MSR_TYPE_REDCLOUD)
 		ret_value = redcloud_msr_write(device, msrRegister, msrValue);
-	#endif
+#	endif
 
 	return ret_value;
 }

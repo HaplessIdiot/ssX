@@ -1,4 +1,4 @@
-/* $XFree86$ */ 
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/geode/panel/platform.c,v 1.1tsi Exp $ */ 
 /*
  * $Workfile: platform.c $
  * $Revision$
@@ -295,11 +295,13 @@ int FindStringInSeg( unsigned int segment_address, char *string_ptr )
 	int string_length = Strlen( string_ptr );
 	char *psegment_buf;
 	unsigned long mem_ptr = (unsigned long)segment_address << 16;
+	unsigned char segment_buffer[SEGMENT_LENGTH + 1 ];
 	int i, cursor;
 
 	/* silence compiler */
 	(void) cursor;
 	(void) mem_ptr;
+	(void) segment_buffer;
 	
 #if defined(linux) 
 #if defined(__KERNEL__) 
@@ -309,8 +311,6 @@ int FindStringInSeg( unsigned int segment_address, char *string_ptr )
 #if defined(XFree86Server) && defined(IN_MODULE)
 	psegment_buf = (char *)XpressROMPtr;
 #else
-	unsigned char segment_buffer[SEGMENT_LENGTH + 1 ];
-
 	/* Fill the segment_buffer with 16 page accesses */
 
 	for(cursor = 0; (cursor * PAGE_LENGTH) < SEGMENT_LENGTH; cursor++) {
