@@ -3,7 +3,7 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.5 2001/09/21 22:57:17 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.6 2001/11/05 05:12:16 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -520,6 +520,9 @@ FinishFrameResize(WindowPtr pWin, Bool gravity,
 
     CallFrameProc(pScreen, FinishResizeFrame,
                   (pScreen, &winRec->frame, oldX, oldY, oldW, oldH));
+    if (wBoundingShape(pWin)) {
+        RootlessDamageShape(pWin);
+    }
 
     // Destroy temp pixmap
     FreeScratchPixmapHeader(gResizeDeathPix);
