@@ -5,7 +5,7 @@
 //  Copyright 1996 by Joseph Moss
 //
 //  2002 Modifier: Ivan Pascal      The XFree86 Project
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.59 2003/02/14 21:53:11 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.60 2003/02/14 22:59:09 dawes Exp $
 //
 
 // Layouts that still need be composed by old rules
@@ -60,7 +60,7 @@
 ! model		variant		layout	=	symbols
   macintosh	nodeadkeys	*	=	macintosh/us(extended)+macintosh/%l%(v)
  $pcmodels	nodeadkeys  $oldlayouts	=	en_US(%m%_v)+%l%(v)
-  *		nodeadkeys  $oldlayouts	=	en_US(pc104%_v)+%l%(v)
+  *		nodeadkeys  $oldlayouts	=	en_US(pc105%_v)+%l%(v)
 
 ! model		layout	=	symbols
   pc98		nec/jp	=	nec/jp(pc98)
@@ -75,13 +75,13 @@
  $pcmodels $oldlayouts  =       en_US(%m)+%l%(v)
  $pcmodels $nonlatin	=	pc/pc(%m)+pc/us+pc/%l%(v):2
  $pcmodels	*	=	pc/pc(%m)+pc/%l%(v)
-  *	   $oldlayouts  =       en_US(pc104)+%l%(v)
-  *	   $nonlatin	=	pc/pc(pc104)+pc/us+pc/%l%(v):2
-  *		*	=	pc/pc(pc104)+pc/%l%(v)
+  *	   $oldlayouts  =       en_US(pc105)+%l%(v)
+  *	   $nonlatin	=	pc/pc(pc105)+pc/us+pc/%l%(v):2
+  *		*	=	pc/pc(pc105)+pc/%l%(v)
 
 ! model	    layout[1]	=	symbols
  $pcmodels	*	=	pc/pc(%m)+pc/%l[1]%(v[1])
-  *		*	=	pc/pc(pc104)+pc/%l[1]%(v[1])
+  *		*	=	pc/pc(pc105)+pc/%l[1]%(v[1])
 
 ! layout[2]	=	symbols
   *		=	+pc/%l[2]%(v[2]):2
