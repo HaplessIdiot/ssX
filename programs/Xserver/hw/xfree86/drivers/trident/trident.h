@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.9 1999/04/25 10:02:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.10 1999/06/07 08:50:22 dawes Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -48,6 +48,7 @@ typedef struct {
     ScrnInfoPtr		pScrn;
     pciVideoPtr		PciInfo;
     PCITAG		PciTag;
+    EntityInfoPtr	pEnt;
     int			Chipset;
     int			DACtype;
     int			RamDac;
@@ -112,11 +113,25 @@ void TridentReadAddress(ScrnInfoPtr pScrn, CARD32 index);
 void TridentWriteData(ScrnInfoPtr pScrn, unsigned char data);
 unsigned char TridentReadData(ScrnInfoPtr pScrn);
 
+void TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies,
+			LOCO *colors, short visualClass);
+
 void TGUISetRead(int bank);
 void TGUISetWrite(int bank);
 void TGUISetReadWrite(int bank);
 
 float CalculateMCLK(ScrnInfoPtr pScrn);
+void TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a,
+		  unsigned char *b);
+void TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a,
+		 unsigned char *b);
+
+Bool BladeAccelInit(ScreenPtr pScreen);
+Bool ImageAccelInit(ScreenPtr pScreen);
+
+Bool TridentHWCursorInit(ScreenPtr pScreen);
+
+Bool TRIDENTI2CInit(ScreenPtr pScreen);
 
 /*
  * Trident Chipset Definitions

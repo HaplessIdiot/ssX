@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.6 1999/04/15 06:39:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/tridenthelper.c,v 1.7 1999/04/25 10:02:31 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -25,7 +25,6 @@ TGUISetClock(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
 	int p, q, r, s; 
 	int startn, endn;
 	int endm, endk;
-	unsigned char temp;
 
 	p = q = r = s = 0;
 
@@ -119,7 +118,7 @@ CalculateMCLK(ScrnInfoPtr pScrn)
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     int a,b;
     int m,n,k;
-    float freq;
+    float freq = 0;
     int powerup[4] = { 1,2,4,8 };
     unsigned char temp;
 
@@ -197,7 +196,6 @@ TGUISetMCLK(ScrnInfoPtr pScrn, int clock, unsigned char *a, unsigned char *b)
     int p, q, r, s; 
     int startn, endn;
     int endm, endk;
-    unsigned char temp;
 
     p = q = r = s = 0;
 

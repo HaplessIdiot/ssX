@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.10 1999/05/03 04:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.11 1999/06/13 13:47:46 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -34,6 +34,8 @@
 /* All drivers using the vgahw module need this */
 /* This driver needs to be modified to not use vgaHW for multihead operation */
 #include "vgaHW.h"
+
+#include "xf86RAC.h"
 
 /* All drivers initialising the SW cursor need this */
 #include "mipointer.h"
@@ -303,7 +305,6 @@ LgCountRam(ScrnInfoPtr pScrn)
  Bool
 LgPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
     LgPtr pLg;
     MessageType from;
     int i;
@@ -328,6 +329,10 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
+    /* Check the number of entities, and fail if it isn't one. */
+    if (pScrn->numEntities != 1)
+	return FALSE;
+
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
 	return FALSE;
@@ -339,6 +344,31 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
      */
     if (!vgaHWGetHWRec(pScrn))
 	return FALSE;
+
+    /* Allocate the LgRec driverPrivate */
+    if (!LgGetRec(pScrn)) {
+	return FALSE;
+    }
+    pLg = LGPTR(pScrn);
+    pLg->pScrn = pScrn;
+
+    /* Get the entity, and make sure it is PCI. */
+    pLg->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+    if (pLg->pEnt->location.type != BUS_PCI)
+	return FALSE;
+
+    /* Find the PCI info for this screen */
+    pLg->PciInfo = xf86GetPciInfoForEntity(pLg->pEnt->index);
+    pLg->PciTag = pciTag(pLg->PciInfo->bus, pLg->PciInfo->device,
+			 pLg->PciInfo->func);
+    
+    /*
+     * XXX Check which of the VGA resources are decode and/or actually
+     * required in operating mode?  For now, assume everything is needed,
+     * so don't call xf86SetOperatingState().
+     */
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
+    pScrn->racIoFlags =  RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
     /* Set pScrn->monitor */
     pScrn->monitor = pScrn->confScreen->monitor;
@@ -416,13 +446,6 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
-    /* Allocate the LgRec driverPrivate */
-    if (!LgGetRec(pScrn)) {
-	return FALSE;
-    }
-    pLg = LGPTR(pScrn);
-    pLg->pScrn = pScrn;
-
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
@@ -451,33 +474,16 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	pLg->NoAccel = TRUE;
     }
 
-    /* Find the PCI slot for this screen */
-    /*
-     * XXX Ignoring the Type list for now.  It might be needed when
-     * multiple cards are supported.
-     */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
-	LgFreeRec(pScrn);
-	if (i > 0)
-	    xfree(pciList);
-	return FALSE;
-    }
-
-    pLg->PciInfo = *pciList;
-    xfree(pciList);
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
+    if (pLg->pEnt->device->chipset && *pLg->pEnt->device->chipset) {
+	pScrn->chipset = pLg->pEnt->device->chipset;
         pLg->Chipset = xf86StringToToken(CIRChipsets, pScrn->chipset);
         from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
-	pLg->Chipset = pScrn->device->chipID;
+    } else if (pLg->pEnt->device->chipID >= 0) {
+	pLg->Chipset = pLg->pEnt->device->chipID;
 	pScrn->chipset = (char *)xf86TokenToString(CIRChipsets, pLg->Chipset);
 	from = X_CONFIG;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipID override: 0x%04X\n",
@@ -487,8 +493,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	pLg->Chipset = pLg->PciInfo->chipType;
 	pScrn->chipset = (char *)xf86TokenToString(CIRChipsets, pLg->Chipset);
     }
-    if (pScrn->device->chipRev >= 0) {
-	pLg->ChipRev = pScrn->device->chipRev;
+    if (pLg->pEnt->device->chipRev >= 0) {
+	pLg->ChipRev = pLg->pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 		   pLg->ChipRev);
     } else {
@@ -512,9 +518,6 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 
     xf86DrvMsg(pScrn->scrnIndex, from, "Chipset: \"%s\"\n", pScrn->chipset);
 	
-    pLg->PciTag = pciTag(pLg->PciInfo->bus, pLg->PciInfo->device,
-			 pLg->PciInfo->func);
-    
     /* Cirrus swapped the FB and IO registers in the 5465 (by design). */
     if (PCI_CHIP_GD5465 == pLg->Chipset) {
       fbPCIReg = 0;
@@ -525,8 +528,12 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
     /* Find the frame buffer base address */
-    if (pScrn->device->MemBase != 0) {
-	pLg->FbAddress = pScrn->device->MemBase;
+    if (pLg->pEnt->device->MemBase != 0) {
+	/*
+	 * XXX Should check that the config file value matches one of the
+	 * PCI base address values.
+	 */
+	pLg->FbAddress = pLg->pEnt->device->MemBase;
 	from = X_CONFIG;
     } else {
 	if (pLg->PciInfo->memBase[fbPCIReg] != 0) {
@@ -543,8 +550,8 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	       (unsigned long)pLg->FbAddress);
 
     /* Find the MMIO base address */
-    if (pScrn->device->IOBase != 0) {
-	pLg->IOAddress = pScrn->device->IOBase;
+    if (pLg->pEnt->device->IOBase != 0) {
+	pLg->IOAddress = pLg->pEnt->device->IOBase;
 	from = X_CONFIG;
     } else {
 	if (pLg->PciInfo->memBase[ioPCIReg] != 0) {
@@ -560,15 +567,12 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 		   (unsigned long)pLg->IOAddress);
     }
 
-    xf86AddControlledResource(pScrn, MEM_IO);
-    xf86EnableAccess(&pScrn->Access);
-
     /*
      * If the user has specified the amount of memory in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (pLg->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = pLg->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
         vgaHWProtect(pScrn, TRUE);
@@ -602,7 +606,7 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified ramdac speed in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->dacSpeeds[0]) {
+    if (pLg->pEnt->device->dacSpeeds[0]) {
         ErrorF("Do not specify a Clocks line for Cirrus chips\n");
         return FALSE;
     } else {
@@ -777,8 +781,6 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
         return FALSE;
     }
     xf86LoaderReqSymLists(ddcSymbols, NULL);
-
-    xf86DelControlledResource(&pScrn->Access, FALSE);
 
     return TRUE;
 }
@@ -1245,9 +1247,6 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
     pScrn = xf86Screens[pScreen->myNum];
 
-    xf86AddControlledResource(pScrn, MEM_IO);
-    xf86EnableAccess(&pScrn->Access);
-
     hwp = VGAHWPTR(pScrn);
 
     hwp->MapSize = 0x10000;		/* Standard 64k VGA window */
@@ -1583,8 +1582,6 @@ LgEnterVT(int scrnIndex, int flags)
 #ifdef LG_DEBUG
     ErrorF("LgEnterVT\n");
 #endif
-
-    xf86EnableAccess(&pScrn->Access);
 
     /* XXX Shouldn't this be in LeaveVT? */
     /* Disable HW cursor */

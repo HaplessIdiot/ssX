@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.56 1999/06/07 08:50:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.57 1999/06/08 11:31:09 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -43,12 +43,14 @@
 #include "micmap.h"
 #include "xf86.h"
 #include "xf86_OSproc.h"
+#include "xf86Resources.h"
 #include "xf86_ansic.h"
 #include "xf86Version.h"
 #include "xf86PciInfo.h"
 #include "xf86Pci.h"
 #include "xf86cmap.h"
 #include "vgaHW.h"
+#include "xf86RAC.h"
 
 #include "mipointer.h"
 
@@ -94,8 +96,6 @@ static Bool	TRIDENTUnmapMem(ScrnInfoPtr pScrn);
 static void	TRIDENTSave(ScrnInfoPtr pScrn);
 static void	TRIDENTRestore(ScrnInfoPtr pScrn);
 static Bool	TRIDENTModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
-
-void 	TridentLoadPalette(ScrnInfoPtr pScrn, int numColors, int *indicies, LOCO *colors, short visualClass);
 
 /*
  * This is intentionally screen-independent.  It indicates the binding
@@ -534,14 +534,12 @@ static Bool
 TRIDENTProbe(DriverPtr drv, int flags)
 {
     int i;
-    pciVideoPtr pPci, *usedPci;
     GDevPtr *devSections;
-    GDevPtr *usedDevs;
     int *usedChips;
     int numDevSections;
     int numUsed;
-    BusResource resource;
     Bool foundScreen = FALSE;
+    EntityInfoPtr pEnt;
 
     /*
      * The aim here is to find all cards that this driver can handle,
@@ -599,7 +597,7 @@ TRIDENTProbe(DriverPtr drv, int flags)
 
     numUsed = xf86MatchPciInstances(TRIDENT_NAME, PCI_VENDOR_TRIDENT,
 		   TRIDENTChipsets, TRIDENTPciChipsets, devSections,
-		   numDevSections, &usedDevs, &usedPci, &usedChips);
+		   numDevSections, drv, &usedChips);
 
     /* Free it since we don't need that list after this */
     xfree(devSections);
@@ -608,20 +606,13 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	return FALSE;
 
     for (i = 0; i < numUsed; i++) {
-	pPci = usedPci[i];
-	resource = xf86FindPciResource(usedChips[i], TRIDENTPciChipsets);
+	pEnt = xf86GetEntityInfo(usedChips[i]);
 
-	/*
-	 * Check that nothing else has claimed the slots.
-	 */
-	
-	if (xf86CheckPciSlot(pPci->bus, pPci->device, pPci->func, resource)) {
+	if (pEnt->active) {
 	    ScrnInfoPtr pScrn;
 
 	    /* Allocate a ScrnInfoRec and claim the slot */
 	    pScrn = xf86AllocateScreen(drv, 0);
-	    xf86ClaimPciSlot(pPci->bus, pPci->device, pPci->func, resource,
-			     &TRIDENT, usedChips[i], pScrn->scrnIndex);
 
 	    /* Fill in what we can of the ScrnInfoRec */
 	    pScrn->driverVersion = VERSION;
@@ -636,12 +627,13 @@ TRIDENTProbe(DriverPtr drv, int flags)
 	    pScrn->LeaveVT	 = TRIDENTLeaveVT;
 	    pScrn->FreeScreen	 = TRIDENTFreeScreen;
 	    pScrn->ValidMode	 = TRIDENTValidMode;
-	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
+	    xf86ConfigActivePciEntity(pScrn, pEnt, TRIDENTPciChipsets, NULL,
+				      NULL, NULL, NULL, NULL);
 	}
+	xfree(pEnt);
     }
-    xfree(usedDevs);
-    xfree(usedPci);
+    xfree(usedChips);
     return foundScreen;
 }
 	
@@ -683,7 +675,6 @@ GetAccelPitchValues(ScrnInfoPtr pScrn)
 static Bool
 TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 {
-    pciVideoPtr *pciList = NULL;
     TRIDENTPtr pTrident;
     MessageType from;
     unsigned char videoram;
@@ -692,7 +683,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     int vgaIOBase;
     float mclk;
     double real;
-    int i,j;
+    int i;
     unsigned char revision;
     ClockRangePtr clockRanges;
     char *mod = NULL;
@@ -711,6 +702,9 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * AllocateScreenPrivateIndex() from the ScreenInit() function.
      */
 
+    /* Check the number of entities, and fail if it isn't one. */
+    if (pScrn->numEntities != 1)
+	return FALSE;
 
     /* The vgahw module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "vgahw"))
@@ -726,6 +720,32 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 
     vgaHWGetIOBase(VGAHWPTR(pScrn));
     vgaIOBase = VGAHWPTR(pScrn)->IOBase;
+
+    /* Allocate the TRIDENTRec driverPrivate */
+    if (!TRIDENTGetRec(pScrn)) {
+	return FALSE;
+    }
+    pTrident = TRIDENTPTR(pScrn);
+    pTrident->pScrn = pScrn;
+
+    /* Get the entity, and make sure it is PCI. */
+    pTrident->pEnt = xf86GetEntityInfo(pScrn->entityList[0]);
+    if (pTrident->pEnt->location.type != BUS_PCI)
+	return FALSE;
+
+    /* Find the PCI info for this screen */
+    pTrident->PciInfo = xf86GetPciInfoForEntity(pTrident->pEnt->index);
+    pTrident->PciTag = pciTag(pTrident->PciInfo->bus, pTrident->PciInfo->device,
+			  pTrident->PciInfo->func);
+
+    /*
+     * VGA resources are not used in operating mode.  XXX It may be possible
+     * to refine this depending on what is actually decoded in operating mode.
+     */
+    xf86SetOperatingState(RES_SHARED_VGA, pTrident->pEnt->index, ResUnusedOpr);
+
+    /* Operations for which memory access is required. */
+    pScrn->racMemFlags = RAC_FB | RAC_COLORMAP | RAC_CURSOR | RAC_VIEWPORT;
 
     /* The ramdac module should be loaded here when needed */
     if (!xf86LoadSubModule(pScrn, "ramdac"))
@@ -810,13 +830,6 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* We use a programamble clock */
     pScrn->progClock = TRUE;
 
-    /* Allocate the TRIDENTRec driverPrivate */
-    if (!TRIDENTGetRec(pScrn)) {
-	return FALSE;
-    }
-    pTrident = TRIDENTPTR(pScrn);
-    pTrident->pScrn = pScrn;
-
     /* Collect all of the relevant option flags (fill in pScrn->options) */
     xf86CollectOptions(pScrn, NULL);
 
@@ -861,27 +874,17 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 						pTrident->MUXThreshold);
     }
 
-    /* Find the PCI slot for this screen */
-    if ((i = xf86GetPciInfoForScreen(pScrn->scrnIndex, &pciList, NULL)) != 1) {
-	/* This shouldn't happen */
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,
-		   "Expected one PCI card, but found %d\n", i);
-	TRIDENTFreeRec(pScrn);
-	return FALSE;
-    }
-
-    pTrident->PciInfo = *pciList;
     pTrident->RamDac = -1;
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
      * override.
      */
-    if (pScrn->device->chipset && *pScrn->device->chipset) {
-	pScrn->chipset = pScrn->device->chipset;
+    if (pTrident->pEnt->device->chipset && *pTrident->pEnt->device->chipset) {
+	pScrn->chipset = pTrident->pEnt->device->chipset;
         pTrident->Chipset = xf86StringToToken(TRIDENTChipsets, pScrn->chipset);
         from = X_CONFIG;
-    } else if (pScrn->device->chipID >= 0) {
-	pTrident->Chipset = pScrn->device->chipID;
+    } else if (pTrident->pEnt->device->chipID >= 0) {
+	pTrident->Chipset = pTrident->pEnt->device->chipID;
 	pScrn->chipset = (char *)xf86TokenToString(TRIDENTChipsets, pTrident->Chipset);
 
 	from = X_CONFIG;
@@ -892,8 +895,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	pTrident->Chipset = pTrident->PciInfo->chipType;
 	pScrn->chipset = (char *)xf86TokenToString(TRIDENTChipsets, pTrident->Chipset);
     }
-    if (pScrn->device->chipRev >= 0) {
-	pTrident->ChipRev = pScrn->device->chipRev;
+    if (pTrident->pEnt->device->chipRev >= 0) {
+	pTrident->ChipRev = pTrident->pEnt->device->chipRev;
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "ChipRev override: %d\n",
 		   pTrident->ChipRev);
     } else {
@@ -915,11 +918,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	return FALSE;
     }
 
-    pTrident->PciTag = pciTag(pTrident->PciInfo->bus, pTrident->PciInfo->device,
-			  pTrident->PciInfo->func);
-    
-    if (pScrn->device->MemBase != 0) {
-	pTrident->FbAddress = pScrn->device->MemBase;
+    if (pTrident->pEnt->device->MemBase != 0) {
+	/*
+	 * XXX Should check that the config file value matches one of the
+	 * PCI base address values.
+	 */
+	pTrident->FbAddress = pTrident->pEnt->device->MemBase;
 	from = X_CONFIG;
     } else {
 	pTrident->FbAddress = pTrident->PciInfo->memBase[0] & 0xFFFFFFF0;
@@ -928,8 +932,12 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86DrvMsg(pScrn->scrnIndex, from, "Linear framebuffer at 0x%lX\n",
 	       (unsigned long)pTrident->FbAddress);
 
-    if (pScrn->device->IOBase != 0) {
-	pTrident->IOAddress = pScrn->device->IOBase;
+    if (pTrident->pEnt->device->IOBase != 0) {
+	/*
+	 * XXX Should check that the config file value matches one of the
+	 * PCI base address values.
+	 */
+	pTrident->IOAddress = pTrident->pEnt->device->IOBase;
 	from = X_CONFIG;
     } else {
 	pTrident->IOAddress = pTrident->PciInfo->memBase[1] & 0xFFFFC000;
@@ -1178,8 +1186,8 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
     /* HW bpp matches reported bpp */
     pTrident->HwBpp = pScrn->bitsPerPixel;
 
-    if (pScrn->device->videoRam != 0) {
-	pScrn->videoRam = pScrn->device->videoRam;
+    if (pTrident->pEnt->device->videoRam != 0) {
+	pScrn->videoRam = pTrident->pEnt->device->videoRam;
 	from = X_CONFIG;
     } else {
 	MMIO_OUTB(vgaIOBase + 4, SPR);
@@ -1242,25 +1250,25 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
      * If the user has specified ramdac speed in the XF86Config
      * file, we respect that setting.
      */
-    if (pScrn->device->dacSpeeds[0]) {
+    if (pTrident->pEnt->device->dacSpeeds[0]) {
 	int speed = 0;
 
 	switch (pScrn->bitsPerPixel) {
 	case 8:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP8];
+	   speed = pTrident->pEnt->device->dacSpeeds[DAC_BPP8];
 	   break;
 	case 16:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP16];
+	   speed = pTrident->pEnt->device->dacSpeeds[DAC_BPP16];
 	   break;
 	case 24:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP24];
+	   speed = pTrident->pEnt->device->dacSpeeds[DAC_BPP24];
 	   break;
 	case 32:
-	   speed = pScrn->device->dacSpeeds[DAC_BPP32];
+	   speed = pTrident->pEnt->device->dacSpeeds[DAC_BPP32];
 	   break;
 	}
 	if (speed == 0)
-	    pTrident->MaxClock = pScrn->device->dacSpeeds[0];
+	    pTrident->MaxClock = pTrident->pEnt->device->dacSpeeds[0];
 	else
 	    pTrident->MaxClock = speed;
 	from = X_CONFIG;
@@ -1324,7 +1332,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	/*
 	 * XXX Assuming min height 128, max 2048
 	 */
-	j = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
+	i = xf86ValidateModes(pScrn, pScrn->monitor->Modes,
 			      pScrn->display->modes, clockRanges,
 			      GetAccelPitchValues(pScrn), 0, 0,
 			      pScrn->bitsPerPixel, 128, 2048,
@@ -1478,9 +1486,6 @@ TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     unsigned char temp;
 
-    xf86AddControlledResource(pScrn,IO);
-    xf86EnableAccess(&pScrn->Access);
-
     /* Goto New Mode */
     outb(0x3C4, 0x0B); inb(0x3C5);
 
@@ -1491,11 +1496,6 @@ TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
     /* Enable MMIO */
     outb(vgaIOBase + 4, PCIReg); pTrident->REGPCIReg = inb(vgaIOBase + 5);
     outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01);
-
-    xf86DelControlledResource(&pScrn->Access, FALSE);
-
-    xf86AddControlledResource(pScrn,MEM);
-    xf86EnableAccess(&pScrn->Access);
 
     /* Protect registers */
     MMIO_OUTB(0x3C4, NewMode1);
@@ -1524,16 +1524,9 @@ TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
     MMIO_OUTB(vgaIOBase + 4, PCIReg);
     MMIO_OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
 
-    xf86DelControlledResource(&pScrn->Access, FALSE);
-
-    xf86AddControlledResource(pScrn,IO);
-    xf86EnableAccess(&pScrn->Access);
-
     /* Protect registers */
     outb(0x3C4, NewMode1);
     outb(0x3C5, temp);
-
-    xf86DelControlledResource(&pScrn->Access, FALSE);
 }
 
 
@@ -1545,7 +1538,6 @@ static Bool
 TRIDENTMapMem(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
     int mmioFlags;
 
     /*
@@ -1599,8 +1591,6 @@ static Bool
 TRIDENTUnmapMem(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
-    int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    unsigned char temp;
 
     TRIDENTDisableMMIO(pScrn);
 
