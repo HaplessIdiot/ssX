@@ -1,4 +1,6 @@
-XFree86 4.3.99.5 (xx May 2003)
+XFree86 4.3.99.6 (xx May 2003)
+
+XFree86 4.3.99.5 (25 May 2003)
  187. Fix XDMCP queries in xdm on systems using getifaddrs(). 
       (Bugzilla #277, Joel Ray Holveck). 
  186. Initial imake/config support for more closely (and more
@@ -17011,7 +17013,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2707 2003/05/25 03:12:25 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2708 2003/05/25 10:42:41 herrb Exp $
 
 
 
