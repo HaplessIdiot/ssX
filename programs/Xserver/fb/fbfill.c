@@ -21,7 +21,7 @@
  * TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/Xserver/fb/fbfill.c,v 1.4 2001/05/29 04:54:09 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/fb/fbfill.c,v 1.5 2003/01/29 00:43:33 torrey Exp $ */
 
 #include "fb.h"
 
@@ -81,8 +81,8 @@ fbFill (DrawablePtr pDrawable,
 		    pPriv->pm,
 		    dstBpp,
 		    
-		    (pGC->patOrg.x + pDrawable->x),
-		    pGC->patOrg.y + pDrawable->y - y);
+		    (pGC->patOrg.x + pDrawable->x + dstXoff),
+		    pGC->patOrg.y + pDrawable->y + dstYoff - y);
 	}
 	else
 	{
@@ -118,8 +118,8 @@ fbFill (DrawablePtr pDrawable,
 		       pPriv->evenStipple,
 		       fgand, fgxor,
 		       bgand, bgxor,
-		       pGC->patOrg.x + pDrawable->x,
-		       pGC->patOrg.y + pDrawable->y - y);
+		       pGC->patOrg.x + pDrawable->x + dstXoff,
+		       pGC->patOrg.y + pDrawable->y + dstYoff - y);
 	}
 	break;
     }
@@ -146,8 +146,8 @@ fbFill (DrawablePtr pDrawable,
 		pGC->alu,
 		pPriv->pm,
 		dstBpp,
-		(pGC->patOrg.x + pDrawable->x) * dstBpp,
-		pGC->patOrg.y + pDrawable->y - y);
+		(pGC->patOrg.x + pDrawable->x + dstXoff) * dstBpp,
+		pGC->patOrg.y + pDrawable->y + dstYoff - y);
 	break;
     }
     }
