@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.57 2000/12/15 15:19:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tdfx/tdfx_driver.c,v 1.58 2000/12/16 06:33:43 dawes Exp $ */
 
 /*
  * Authors:
@@ -1663,6 +1663,15 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
   pTDFX->fifoOffset = 4096;
   pTDFX->fifoSize = fifoSize;
   pTDFX->cursorOffset = 0;
+  if (texSize < 0) {
+    pTDFX->backOffset = -1;
+    pTDFX->depthOffset = -1;
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "No Texture Memory available."
+			"  Disabling direct rendering.\n");
+  } else {
+    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Textures Memory %0.02f MB\n",
+		(float)texSize/1024.0/1024.0);
+  }
 #if	0
   xf86DrvMsg(pScrn->scrnIndex, X_INFO,
              "Cursor Offset: [0x%08X,0x%08X)\n",
@@ -1690,8 +1699,6 @@ static void allocateMemory(ScrnInfoPtr pScrn) {
              pTDFX->depthOffset,
              pTDFX->depthOffset+screenSizeInTiles);
 #endif	/* 0/1 */
-  xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Textures Memory %0.02f MB\n",
-	     (float)texSize/1024.0/1024.0);
 }
 
 static Bool
@@ -1761,7 +1768,9 @@ TDFXScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv) {
    * InitGLXVisuals call back.
    */
   if (!pTDFX->NoAccel) {
-    pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
+    if ( !((pTDFX->backOffset == -1) && (pTDFX->depthOffset == -1))) {
+      pTDFX->directRenderingEnabled = TDFXDRIScreenInit(pScreen);
+    }
     /* Force the initialization of the context */
     if (pTDFX->directRenderingEnabled)
       TDFXLostContext(pScreen);
