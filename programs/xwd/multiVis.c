@@ -30,6 +30,8 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
     ------------------------------------------------------------------------ **/
+/* $XFree86$ */
+
 #include <stdlib.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>

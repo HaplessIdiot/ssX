@@ -19,6 +19,7 @@ Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 ******************************************************************************/
+/* $XFree86$ */
 
 extern int GetSessionNames(int *count_ret, String **short_names_ret, 
 			   String **long_names_ret, Bool **locked_ret);

@@ -22,6 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
+/* $XFree86$ */
 
 #ifndef _XawScale_h
 #define _XawScale_h

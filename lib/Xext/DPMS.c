@@ -26,6 +26,7 @@ dealings in this Software without prior written authorization from Digital
 Equipment Corporation.
 
 ******************************************************************/
+/* $XFree86$ */
 
 /*
  * HISTORY

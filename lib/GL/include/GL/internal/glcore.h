@@ -21,6 +21,9 @@
 **
 ** Header: /p0/cvs/X39-3D/xc/lib/GL/include/GL/internal/glcore.h,v 1.2 1999/02/23 07:49:34 martin Exp $
 */
+
+/* $XFree86$ */
+
 #ifndef XFree86LOADER
 #include <sys/types.h>
 #endif
