@@ -2,7 +2,7 @@ XCOMM $Xorg: Imakefile,v 1.4 2000/08/17 19:47:01 cpqbld Exp $
 
 
 
-XCOMM $XFree86: xc/programs/Imakefile,v 3.38 2001/03/01 01:23:55 dawes Exp $
+XCOMM $XFree86: xc/programs/Imakefile,v 3.39 2001/03/18 14:50:32 dawes Exp $
 
 #define IHaveSubdirs
 #define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)"
@@ -75,7 +75,7 @@ XFINDPROXYSRCDIR = xfindproxy
 #endif
 
    XPMCLIENTDIRS = cxpm sxpm
-#ifdef UseFreetype2
+#if UseFreetype2
      XFTCACHEDIR = xftcache
 #endif
 
@@ -100,7 +100,7 @@ SUBDIRS = \
 	$(XF86DGASRCDIR) xedit xev xeyes xfd xfontsel $(XFSSRCDIR) xfsinfo \
 	$(XFINDPROXYSRCDIR) $(XFWPSRCDIR) $(XGAMMASRCDIR) xgc $(XHOSTSRCDIR) \
 	xieperf $(XINITSRCDIR) $(XKBSRCDIRS) xkill xload xlogo xlsatoms \
-	xlsclients xlsfonts xmag xman xmessage xmodmap xprop xrdb \
+	xlsclients xlsfonts xmag xman xmessage xmh xmodmap xprop xrdb \
 	xrefresh $(XRXSRCDIR) xset \
 	xsetroot $(XSMSRCDIR) xstdcmap xsetmode xsetpointer \
 	$(XTERMSRCDIR) $(XVIDTUNESRCDIR) xwd xwininfo xwud \
