@@ -1,11 +1,11 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.69 2004/02/17 03:22:29 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.70 2004/02/18 04:19:28 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
-# Copyright © 1996-2003 by The XFree86 Project, Inc.
+# Copyright © 1996-2004 by The XFree86 Project, Inc.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a
 # copy of this software and associated documentation files (the "Software"),
@@ -45,7 +45,7 @@
 # Fallbacks for when the bindist version can't be auto-detected.
 # These should be updated for each release.
 
-SNAPSHOT=y
+SNAPSHOT=n
 
 if [ $SNAPSHOT = y ]; then
 	FULLPREFIX=XXX

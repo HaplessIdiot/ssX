@@ -1,6 +1,6 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Date.h,v 1.55 2004/02/13 23:58:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86Date.h,v 1.56 2004/02/16 01:01:47 dawes Exp $ */
 /*
- * Copyright (c) 2003 by The XFree86 Project, Inc.
+ * Copyright (c) 2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining

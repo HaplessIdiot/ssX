@@ -13,10 +13,10 @@
 
 <title>README for XFree86&tm; &relvers;
 <author>The XFree86 Project, Inc
-<date>14 February 2004
+<date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.138 2003/12/19 04:26:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.139 2004/02/15 02:16:49 dawes Exp $
 </ident>
 
 <abstract>
@@ -86,11 +86,12 @@ the "vesa" driver.  The <htmlurl name="Releaes Notes" url="RELNOTES3.html">
 has a table showing the drivers provided with XFree86 &relvers;, and links
 to related documentation.
 
-XFree86 is produced by The XFree86 Project, Inc, which is a group of
-mostly volunteer independent developers.  XFree86 is a non-commercial
-organisation, and would not be viable without the invaluable development
-contributions of volunteers.  This release is dedicated to the greater
-XFree86 community.
+XFree86&trade; is produced by The XFree86 Project, Inc through the work
+of a group of volunteer independent developers.  The XFree86 Project is
+a non-commercial organisation and XFree86 would not exist without the
+invaluable development contributions of volunteers from around the world.
+This release is dedicated to the greater XFree86 community, developers
+and users alike.
 
 <![ %snapshot [
 <sect>Redistribution of Snapshots
@@ -127,7 +128,8 @@ Copyright and Licensing information for XFree86, including the reproduction
 of copyright and/or license notices and attributions required by some
 of the licenses for binary distributions, can be found in the <htmlurl
 name="License Document" url="LICENSE.html">.  If you find any omissions
-in that document, please contact us with details.
+in that document, please contact us with details at
+<email>bod@XFree86.org</email>.
 
 <sect>Pointers to additional information
 <p>
@@ -138,7 +140,7 @@ Documentation for the latest release version can always be found <url
 name="here" url="http://www.xfree86.org/current/">, and documentation
 for the latest pre-release snapshot can be found <url name="here"
 url="http://www.xfree86.org/snapshot/">.  Checking those last two links
-is a good way of finding out the latest versions available from XFree86.
+is a good way of finding out the latest available versions of XFree86.
 
 Information about binary distributions and the attendant installation
 instructions can be found in the <htmlurl name="Installation Document"
@@ -231,10 +233,18 @@ README file for that version, which can be found on the
 
 <![ %fullrel [
 The source for version &fullrelvers; is split into seven tarballs:
-<tt>X&fullsrcvers;src-1.tgz</tt>, <tt>X&fullsrcvers;src-2.tgz</tt>,
-<tt>X&fullsrcvers;src-3.tgz</tt>, <tt>X&fullsrcvers;src-4.tgz</tt>,
-<tt>X&fullsrcvers;src-5.tgz</tt>, <tt>X&fullsrcvers;src-6.tgz</tt> and
-<tt>X&fullsrcvers;src-7.tgz</tt>.  The first three contain everything
+
+<tscreen><verb>
+XFree86-&fullrelvers;-src-1.tgz
+XFree86-&fullrelvers;-src-2.tgz
+XFree86-&fullrelvers;-src-3.tgz
+XFree86-&fullrelvers;-src-4.tgz
+XFree86-&fullrelvers;-src-5.tgz
+XFree86-&fullrelvers;-src-6.tgz
+XFree86-&fullrelvers;-src-7.tgz
+</verb></tscreen>
+
+The first three contain everything
 except the fonts and general X11 documentation.  Those three are sufficient
 for building XFree86 if you already have a set of fonts.  The fourth
 and fifth contain the fonts.  The sixth contains the source for the
@@ -243,10 +253,11 @@ documentation in hardcopy format.
 
 <![ %onediff; [
 A source patch relative to version &prevfullrelvers; is also available.
-The patch file is <tt>&prevfullrelvers;-&fullrelvers;.diff.gz</tt>.
+The patch file is <tt>XFree86-&prevfullrelvers;-&fullrelvers;.diff.gz</tt>.
 <![ %difftar; [
 There is also a tarball that contains some files that have components that
-can't be included in a diff.  It is <tt>&fullrelvers;.tgz</tt>.
+can't be included in a diff.  It is
+<tt>XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz</tt>.
 ]]>
 The patch
 should be applied to a clean &prevfullrelvers; source tree, working from
@@ -254,23 +265,23 @@ the directory containing the <tt>xc/</tt> directory.  The patch should
 be applied by running:
 
 <tscreen><verb>
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff.gz | patch -p0 -E
 </verb></tscreen>
 <![ %difftar; [
 <tscreen><verb>
-gzip -d &lt; &fullrelvers;.tgz | tar vxf -
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz | tar vxf -
 </verb></tscreen>
 ]]>
 ]]>
 
 <![ %twodiffs; [
 A source patch relative to version &prevfullrelvers; is also available.
-Because of its size, it is split into two parts.
-The patch files are <tt>&prevfullrelvers;-&fullrelvers;.diff1.gz</tt> and
-<tt>&prevfullrelvers;-&fullrelvers;.diff2.gz</tt>.
+Because of its size, it is split into two parts.  The patch files are
+<tt>XFree86-&prevfullrelvers;-&fullrelvers;.diff1.gz</tt> and
+<tt>XFree86-&prevfullrelvers;-&fullrelvers;.diff2.gz</tt>.
 <![ %difftar; [
 There is also a tarball that contains some files that have components that
-can't be included in a diff.  It is <tt>&fullrelvers;.tgz</tt>.
+can't be included in a diff.  It is <tt>XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz</tt>.
 ]]>
 These patches should
 be applied to a clean &prevfullrelvers; source tree, working from the directory
@@ -278,12 +289,12 @@ containing the <tt>xc/</tt> directory.  The patches should be applied by
 running:
 
 <tscreen><verb>
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff1.gz | patch -p0 -E
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff2.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff1.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff2.gz | patch -p0 -E
 </verb></tscreen>
 <![ %difftar; [
 <tscreen><verb>
-gzip -d &lt; &fullrelvers;.tgz | tar vxf -
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz | tar vxf -
 </verb></tscreen>
 ]]>
 ]]>
@@ -291,12 +302,18 @@ gzip -d &lt; &fullrelvers;.tgz | tar vxf -
 <![ %threediffs; [
 A source patch relative to version &prevfullrelvers; is also available.
 Because of its size, it is split into three parts.
-The patch files are <tt>&prevfullrelvers;-&fullrelvers;.diff1.gz</tt>,
-<tt>&prevfullrelvers;-&fullrelvers;.diff2.gz</tt> and
-<tt>&prevfullrelvers;-&fullrelvers;.diff3.gz</tt>.
+The patch files are:
+
+<tscreen><verb>
+XFree86-&prevfullrelvers;-&fullrelvers;.diff1.gz
+XFree86-&prevfullrelvers;-&fullrelvers;.diff2.gz
+XFree86-&prevfullrelvers;-&fullrelvers;.diff3.gz
+</verb></tscreen>
+
 <![ %difftar; [
 There is also a tarball that contains some files that have components that
-can't be included in a diff.  It is <tt>&fullrelvers;.tgz</tt>.
+can't be included in a diff.  It is
+<tt>XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz</tt>.
 ]]>
 These patches should
 be applied to a clean &prevfullrelvers; source tree, working from the directory
@@ -304,13 +321,13 @@ containing the <tt>xc/</tt> directory.  The patches should be applied by
 running:
 
 <tscreen><verb>
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff1.gz | patch -p0 -E
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff2.gz | patch -p0 -E
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff3.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff1.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff2.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff3.gz | patch -p0 -E
 </verb></tscreen>
 <![ %difftar; [
 <tscreen><verb>
-gzip -d &lt; &fullrelvers;.tgz | tar vxf -
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz | tar vxf -
 </verb></tscreen>
 ]]>
 ]]>
@@ -318,13 +335,19 @@ gzip -d &lt; &fullrelvers;.tgz | tar vxf -
 <![ %fourdiffs; [
 A source patch relative to version &prevfullrelvers; is also available.
 Because of its size, it is split into four parts.
-The patch files are <tt>&prevfullrelvers;-&fullrelvers;.diff1.gz</tt>,
-<tt>&prevfullrelvers;-&fullrelvers;.diff2.gz</tt>,
-<tt>&prevfullrelvers;-&fullrelvers;.diff3.gz</tt> and
-<tt>&prevfullrelvers;-&fullrelvers;.diff4.gz</tt>.
+The patch files are:
+
+<tscreen><verb>
+XFree86-&prevfullrelvers;-&fullrelvers;.diff1.gz
+XFree86-&prevfullrelvers;-&fullrelvers;.diff2.gz
+XFree86-&prevfullrelvers;-&fullrelvers;.diff3.gz
+XFree86-&prevfullrelvers;-&fullrelvers;.diff4.gz
+</verb></tscreen>
+
 <![ %difftar; [
 There is also a tarball that contains some files that have components that
-can't be included in a diff.  It is <tt>&fullrelvers;.tgz</tt>.
+can't be included in a diff.  It is
+<tt>XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz</tt>.
 ]]>
 These patches should
 be applied to a clean &prevfullrelvers; source tree, working from the directory
@@ -332,10 +355,10 @@ containing the <tt>xc/</tt> directory.  The patches should be applied by
 running:
 
 <tscreen><verb>
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff1.gz | patch -p0 -E
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff2.gz | patch -p0 -E
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff3.gz | patch -p0 -E
-gzip -d &lt; &prevfullrelvers;-&fullrelvers;.diff4.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff1.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff2.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff3.gz | patch -p0 -E
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;.diff4.gz | patch -p0 -E
 </verb></tscreen>
 <![ %difftar; [
 <![ %removefiles; [
@@ -355,7 +378,7 @@ touch xc/lib/fontconfig/NEWS
 </verb></tscreen>
 ]]>
 <tscreen><verb>
-gzip -d &lt; &fullrelvers;.tgz | tar vxf -
+gzip -d &lt; XFree86-&prevfullrelvers;-&fullrelvers;-diff0.tgz | tar vxf -
 </verb></tscreen>
 ]]>
 ]]>

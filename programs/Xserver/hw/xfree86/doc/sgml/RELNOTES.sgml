@@ -6,16 +6,16 @@
 
 <title>Release Notes for XFree86&trade; &relvers;
 <author>The XFree86 Project, Inc
-<date>14 February 2004
+<date>23 February 2004
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.113 2004/02/17 21:33:07 herrb Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.114 2004/02/20 21:46:34 dawes Exp $
 </ident>
 
 <abstract>
 
-This document contains some information about features present
-in XFree86 &relvers; and their status.
+This document contains information about features and their status  in XFree86
+&relvers;.
 
 </abstract>
 
@@ -39,31 +39,32 @@ of the hardware drivers from 3.3.x have been ported to 4.x yet, but
 conversely, 4.x has support for a lot of hardware that is not supported
 in 3.3.x.  Our <htmlurl name="Driver Status document" url="Status.html">
 summarizes how the hardware driver support compares between &legacyvers;
-and &relvers;.  Please check there first before downloading &relvers;.
+and &relvers;.  
 
 XFree86 4.4 introduces an automatic configuration mechanism for the
-XFree86 server.  This makes it possible to start XFree86 in a usable
-way without first creating a configuration file.  The initial automatic
-configuration support is currently targeted towards Linux and FreeBSD.
-Automatic configuration will be supported on other platforms in future
-releases.  If you're running Linux or FreeBSD, try it out if you don't
-already have a working <tt>XF86Config</tt> file.  If you want to customise
-things afterwards, you can cut and paste the automatically generated
-configuration from the <tt>/var/log/XFree86.0.log</tt> file into an
-<tt>XF86Config</tt> file and make your customisations there.  Runtime
-and dynamic configuration is planned for future releases.
+XFree86 server which makes it now possible to start XFree86 without first
+creating a configuration file.  The initial automatic configuration
+support is targeted towards Linux and FreeBSD and it is hoped that
+automatic configuration will be supported on other platforms in
+future releases. 
 
-If you don't have any luck with automatic configuration, or you are using
-a platform that it isn't currently supported on, try one of the older
-methods for getting started.
+If you are running either  Linux or FreeBSD, try it out if you
+do not already have a working <tt>XF86Config</tt> file.  If you want to
+customise things afterwards, you can cut and paste the automatically
+generated configuration from the <tt>/var/log/XFree86.0.log</tt> file
+into an <tt>XF86Config</tt> file and make your customisations there.
 
-XFree86 comes with a graphical configuration tool called "<tt>xf86cfg</tt>".
-It also has a text mode interface.  It can be used to create an initial
-configuration file, and to customise existing configurations.
+If you do not have any luck with automatic configuration, or you are using
+a platform that is not currently supported, try one of the older methods
+for getting started.
 
-Next in the order of configuration preferences is to make use of the
-XFree86 server's ability to create a starting configuration file.  To
-do this, just run (as root):
+XFree86 comes with a graphical configuration tool called "<tt>xf86cfg</tt>",
+which also has a text mode interface and can be used to create an initial
+configuration file. It can also be used to customise existing
+configurations.
+
+Next in the order of configuration preferences is to use the XFree86
+server's ability to create a starting configuration file.  Run as root:
 
 <tscreen><verb>
 XFree86 -configure
@@ -71,22 +72,24 @@ XFree86 -configure
 
 and follow the instructions.
 
-Finally, the trusty old text-based tool "<tt>xf86config</tt>" can also
-be used for generating X server config files.
+Finally, if all else fails, the trusty old standby text-based tool
+"<tt>xf86config</tt>" can also be used for generating X server config
+files.
 
-At least one of these configuration options will give you a reasonable
-starting point for a suitable configuration file.  With the automatic
-mechanism you might even find that you don't need one!  If you do need
-to customise the configuration file, you can find it fully documented
-in the <htmlurl name="XF86Config manual page" url="XF86Config.5.html">.
-Also check the driver-specific manual pages and the related documentation
-for further information.  References to this driver-specific information
-can be found in the <ref id="drivertables" name="tables below">.
+At least one, and hopefully, all of these configuration options will
+give you a reasonable starting point for a suitable configuration
+file.  With the automatic mechanism you might even find that you don't
+need one!  
 
-Before you go to download and install the binary distributions for
-this release, please have a quick read through the <htmlurl
-name="Installation Document" url="Install.html">.  It may save you some
-time and help you figure out which of the binary releases you need.
+If you do need to customise the configuration file, see the <htmlurl
+name="XF86Config manual page" url="XF86Config.5.html">.  You can also
+check the driver-specific manual pages and the related documentation
+(found at <ref id="drivertables" name="tables below"> also.
+
+Before downloading  the binary distributions for this release, please
+have a quick read through the <htmlurl name="Installation Document"
+url="Install.html">.  It may save you some time and also help you figure out
+which of the binary releases you need.
 
 <![ %updaterel [
 The next sections describe what has changed in the update release(s)
@@ -110,6 +113,13 @@ don't have enough space to cover them all here.
 ]]>
 
 <sect>Summary of new features in &fullrelvers;.
+<p>
+
+This is a sampling of the new features in XFree86 &fullrelvers;.  A more
+complete list of changes can be found in the CHANGELOG that is part of
+the XFree86 source tree.  It can also be viewed online at our <url
+name="CVSweb server"
+url="http://cvsweb.xfree86.org/cvsweb/xc/programs/Xserver/hw/xfree86/CHANGELOG?rev=HEAD">.
 
 <sect1>Video Driver Enhancements
 
@@ -128,11 +138,12 @@ don't have enough space to cover them all here.
 
 	<item>The driver now does a much better job of auto-detecting
 		which connector of dual output cards the monitor is
-		attached to, which should reduce or eliminate the need
-		for manual XF86Config overrides.
+		attached to, and this should reduce or eliminate the
+		need for manual XF86Config overrides.
 
-	<item>The 2D acceleration for TNT and GeForce was completely
-		rewritten.  Performance should be substantially improved.
+	<item>The 2D acceleration for TNT and GeForce has been completely
+		rewritten and its performance should be substantially
+		improved.
 
 	<item>TNT and GeForce cards have a new Xv PutImage adaptor which
 		does scaled YUV bit blits.
@@ -164,16 +175,17 @@ don't have enough space to cover them all here.
 <p>
 <itemize>
 <item>The mouse driver has some support on Linux and FreeBSD for
-	auto-detecting the device node to use, making it unnecessary to
-	supply this information in the XF86Config file in most cases.
+	auto-detecting which device node to use. This makes it unnecessary
+	to supply this information in the XF86Config file in most cases.
 
 </itemize>
 
 <sect1>IPv6 support
 <p>
 XFree86 4.4 supports IPv6, based on the code contributed by Sun
-Microsystems to X.Org. See 
-<url name="X.org's document" url="http://www.x.org/IPV6_Specific_Changes.html"> for a detailed list of the changes. 
+Microsystems, Inc. to X.Org. See <url name="X.org's document"
+url="http://www.x.org/IPV6_Specific_Changes.html"> for a detailed list
+of what these changes are and how your system is affected by them.
 
 <sect2>Protocol names and aliases. 
 <p>
@@ -183,10 +195,9 @@ Microsystems to X.Org. See
 <item>inet6 specifies IPv6 only.
 </itemize>
 <p>
-You can force the X server to only listen to IPv4 connections with 
-the <tt>X -nolisten inet6 </tt> command.
-Or you can force a IPv6 connection by setting <bf>DISPLAY</bf> to 
-<tt>inet6/host:0</tt>.
+You can force the X server to only listen to IPv4 connections with the
+<tt>X -nolisten inet6 </tt> command or you can force a IPv6 connection
+by setting <bf>DISPLAY</bf> to <tt>inet6/host:0</tt>.
 
 <sect2>XDM
 <p>
@@ -194,10 +205,9 @@ The IPv6 XDMCP code is not enabled by default on platforms that don't
 support binding a IPv6 socket to a IPv4 address. 
 <p>
 The XDM-AUTHORIZATION-1 authentication scheme does not support IPv6
-addresses. A new release of the protocol, XDM-AUTHORIZATION-2 has been
-designed, but is not implemented yet. 
-Note that  by default XFree86 builds do not enable the XDM-AUTHORIZATION-1
-code. 
+addresses but a new release of the protocol, XDM-AUTHORIZATION-2 has
+been designed; this though is yet to be  implemented.  By default XFree86
+builds do not enable the XDM-AUTHORIZATION-1 code.
 
 
 <sect1>X Server and Extension Updates
@@ -396,7 +406,7 @@ scroll-back(1, page-2)
 	file support and extensions section below">.
 
 <item>The Bitstream Vera TrueType fonts that Bitstream, Inc donated to
-	the GNOME Foundation are included with this release.
+	the GNOME Foundation have been included with this release.
 
 </itemize>
 
@@ -405,7 +415,7 @@ scroll-back(1, page-2)
 <p>
 <itemize>
 <item>On Mac OS X, the appropriate backend drawing code is now dynamically
-	loaded at runtime. This reduces the X server's memory footprint.
+	loaded at runtime which reduces the X server's memory footprint.
 	In rootless mode, Apple's Xplugin library is used where available.
 	(Xplugin is included as part of Mac OS X on Panther.) With Xplugin,
 	XDarwin provides identical performance to Apple's X11, including
@@ -429,11 +439,6 @@ scroll-back(1, page-2)
 file for details.
 
 </itemize>
-
-A more complete list of changes can be found in the CHANGELOG that is
-part of the XFree86 source tree.  It can also be viewed online at our
-<url name="CVSweb server"
-url="http://cvsweb.xfree86.org/cvsweb/xc/programs/Xserver/hw/xfree86/CHANGELOG?rev=HEAD">.
 
 <!--
 <sect>Summary of new features in &prevrelvers;.
@@ -602,39 +607,36 @@ Drivers marked with (*) are available for Linux only.
 <p>
 XFree86 4.x has a single X server binary called <tt>XFree86</tt>.  This
 binary can either have one or more video and input drivers linked in
-statically, or, more usually, dynamically load the video drivers, input
-drivers, and other modules that are needed.
+statically, or more usually, dynamically, and in that manner load the
+video drivers, input drivers, and other modules that are needed.
 
 XFree86 &relvers; has X server support for most UNIX&reg; and UNIX-like
 operating systems on Intel/x86 platforms, plus support for Linux and
 some BSD OSs on Alpha, PowerPC, IA-64, AMD64, Sparc, and Mips platforms,
-and for Darwin on PowerPC.  Work on support for additional architectures
-and operating systems is in progress, and is planned for future releases.
+and for Darwin on PowerPC.  Support for additional architectures
+and operating systems is in progress and is planned for future releases.
 
 <sect1>Loader and Modules
 <p>
-The XFree86 X server has a built-in run-time loader developed from code
-donated by <url name="Metro Link" url="http://www.metrolink.com">.  This
-loader can load normal object files and libraries in most of the commonly
-used formats.  Since the loader doesn't rely on an operating system's
-native dynamic loader support, it works on platforms that don't provide
-this feature, and makes it possible for the modules to be operating
-system independent (although not, of course, independent of CPU
-architecture).  This means that a module compiled on Linux/x86 can be
-loaded by an X server running on Solaris/x86, or FreeBSD, or even OS/2.
+The XFree86 X server has a built-in run-time loader, which can load
+normal object files and libraries in most of the commonly used formats.
+The loader does not rely on an operating system's native dynamic
+loader support and it works on platforms that do not provide this feature.
+This  allows  for the modules to be operating system independent (although
+not, of course, CPU architecture independent) which means that a module
+compiled on Linux/x86 can be loaded by an X server running on Solaris/x86,
+or FreeBSD, or even OS/2.
 
-One of the main benefits of this loader is that when modules are
-updated, they do not need to be recompiled for every different operating
-system.
-
-The loader in version &relvers; has support for Intel (x86), Alpha and
-PowerPC platforms.  It also has preliminary support for Sparc platforms.
+A main benefit of this, is that when modules are updated, they do not
+need to be recompiled for every different operating system.  The loader
+in version &relvers; has support for Intel (x86), Alpha and PowerPC
+platforms.  It also has preliminary support for Sparc platforms.
 
 The X server makes use of modules for video drivers, X server extensions,
 font rasterisers, input device drivers, framebuffer layers (like mfb,
 cfb, etc), and internal components used by some drivers (like XAA),
 
-The module interfaces (API and ABI) used in this release is subject
+The module interfaces (both API and ABI) used in this release are subject
 to change without notice.  While we will attempt to provide backward
 compatibility for the module interfaces as of the 4.0 release (meaning
 that 4.0 modules will work with future core X server binaries), we cannot
@@ -871,14 +873,14 @@ slower than core text.
 The XFree86-Misc extension has not been fully ported to the new server
 architecture yet.  This should be completed in a future release.
 
-The XFree86-VidModeExtension extension has been updated, and mostly
-ported to the new server architecture.  The area of mode validation
-needs further work, and the extension should be used with care.  This
-extension has support for changing the gamma setting at run-time, for
-modes where this is possible.  The <tt>xgamma</tt> utility makes
-use of this feature.  Compatibility with the 3.3.x version of the
-extension is provided.  The missing parts of this extension and some
-new features should be completed in a future release.
+The XFree86-VidModeExtension extension has been updated, and mostly ported
+to the new server architecture.  The area of mode validation needs further
+work, and the extension should be used with care.  This extension has
+support for changing the gamma setting at run-time, for modes where this
+is possible.  The <tt>xgamma</tt> utility makes use of this feature.
+Compatibility with the 3.3.x version of the extension is provided.
+The missing parts of this extension and some new features should be
+completed in a future release.
 
 
 <!--
