@@ -49,7 +49,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE
 OR PERFORMANCE OF THIS SOFTWARE.
 
 */
-/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.95 2003/10/01 18:36:38 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/os/utils.c,v 3.96 2004/01/07 04:16:37 dawes Exp $ */
 
 #ifdef __CYGWIN__
 #include <stdlib.h>
@@ -586,8 +586,10 @@ ProcessCommandLine(int argc, char *argv[])
 
     defaultKeyboardControl.autoRepeat = TRUE;
 
-#ifdef PART_NET
-	PartialNetwork = TRUE;
+#ifdef NO_PART_NET
+    PartialNetwork = FALSE;
+#else
+    PartialNetwork = TRUE;
 #endif
 
     for ( i = 1; i < argc; i++ )

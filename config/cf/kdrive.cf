@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.12 2001/06/23 17:00:03 keithp Exp $
+XCOMM $XFree86: xc/config/cf/kdrive.cf,v 1.13 2003/12/21 05:14:57 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -199,7 +199,7 @@ XF86COMSRC=.
 #undef ServerExtraDefines
 #define ServerExtraDefines -DKDRIVESERVER -DGCCUSESGAS -DDDXOSINIT -DSMART_SCHEDULE $(FONTSERVERACCESS) Pseudo8Defines TouchScreenDefines KdriveServerExtraDefines
 #undef ServerOSDefines
-#define ServerOSDefines -DDDXOSINIT -DPART_NET
+#define ServerOSDefines -DDDXOSINIT
 
 #ifndef Other IConfigFiles
 #define OtherIConfigFile $(IRULESRC)/kdrive.cf
