@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/mga/Imakefile,v 1.4 1998/03/20 19:08:06 hohndel Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree98/drivers/mga/Imakefile,v 1.5 1998/03/20 21:07:52 hohndel Exp $
 XCOMM
 XCOMM This is an Imakefile for the MGA driver.  
 XCOMM
@@ -43,6 +43,7 @@ LinkSourceFile(mga_dac1064.c,$(XF86SRC)/drivers/mga)
 LinkSourceFile(mga_dac3026.c,$(XF86SRC)/drivers/mga)
 LinkSourceFile(mga_driver.c,$(XF86SRC)/drivers/mga)
 LinkSourceFile(mga_hwcurs.c,$(XF86SRC)/drivers/mga)
+LinkSourceFile(mga_macros.h,$(XF86SRC)/drivers/mga)
 LinkSourceFile(mga_reg.h,$(XF86SRC)/drivers/mga)
 LinkSourceFile(mga_map.h,$(XF86SRC)/drivers/mga)
 LinkSourceFile(mga_storm.c,$(XF86SRC)/drivers/mga)
