@@ -4,7 +4,7 @@ XCOMM platform:  $Xorg: linux.cf,v 1.3 2000/08/17 19:41:47 cpqbld Exp $
 
 
 
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.216 2003/11/25 19:11:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.217 2003/12/07 02:27:38 dawes Exp $
 
 #ifndef LinuxElfDefault
 # define LinuxElfDefault	YES
@@ -252,6 +252,8 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #ifndef HasLinuxInput
 # if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 4)
 #  define HasLinuxInput YES
+# else
+#  define HasLinuxInput NO
 # endif
 #endif
 
@@ -720,7 +722,11 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 #endif
 
 #ifndef OSXInputDrivers
-# define OSXInputDrivers	ur98 aiptek
+# if HasLinuxInput
+#  define OSXInputDrivers	ur98 aiptek
+# else
+#  define OSXInputDrivers	ur98
+# endif
 #endif
 
 #if UseElfFormat
