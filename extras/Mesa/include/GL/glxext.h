@@ -33,7 +33,7 @@ extern "C" {
 ** not been independently verified as being compliant with the OpenGL(R)
 ** version 1.2.1 Specification.
 */
-/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.3 2003/11/14 22:44:26 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/include/GL/glxext.h,v 1.4 2003/11/29 01:31:20 dawes Exp $ */
 
 #if defined(_WIN32) && !defined(APIENTRY) && !defined(__CYGWIN__)
 #define WIN32_LEAN_AND_MEAN 1
@@ -319,6 +319,10 @@ typedef struct {
 #ifdef __UNIXOS2__
 typedef long int int32_t;
 typedef long long int int64_t;
+#endif
+
+#if defined(SCO) || defined(__USLC__)
+#include <stdint.h>
 #endif
 
 #ifndef GLX_VERSION_1_3

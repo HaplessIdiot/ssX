@@ -1,4 +1,6 @@
 XFree86 4.3.99.903 (xx January 2004)
+ 741. Some cleanups for the SCO support, and a few changes required for
+      compilation on UnixWare (Bugzilla #1045, Kean Johnston).
  740. Make the X server lock file code treat the display string in the same
       way as the local listener code (i.e., convert it to an integer then back
       to a string).  This fixes a problem where an non-numeric display
@@ -18507,7 +18509,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3083 2004/01/07 03:47:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3084 2004/01/07 04:16:33 dawes Exp $
 
 
 
