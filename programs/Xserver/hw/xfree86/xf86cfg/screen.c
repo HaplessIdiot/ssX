@@ -650,48 +650,46 @@ AdjustScreenUI(void)
     XtUnmapWidget(work);
 
     while (adj) {
-	xf86cfgScreen *scr, *topscr, *botscr, *lefscr, *rigscr;
+	xf86cfgScreen *scr = NULL,
+	    *topscr = NULL, *botscr = NULL, *lefscr = NULL, *rigscr = NULL;
 
 	for (i = 0; i < computer.num_screens; i++)
 	    if (computer.screens[i]->screen == adj->adj_screen)
 		break;
+	if (i < computer.num_screens)
 	    scr = computer.screens[i];
 
 	if (adj->adj_top != NULL) {
 	    for (i = 0; i < computer.num_screens; i++)
 		if (computer.screens[i]->screen == adj->adj_top)
 		    break;
-	    topscr = computer.screens[i];
+	    if (i < computer.num_screens)
+		topscr = computer.screens[i];
 	}
-	else
-	    topscr = NULL;
 
 	if (adj->adj_bottom != NULL) {
 	    for (i = 0; i < computer.num_screens; i++)
 		if (computer.screens[i]->screen == adj->adj_bottom)
 		    break;
-	    botscr = computer.screens[i];
+	    if (i < computer.num_screens)
+		botscr = computer.screens[i];
 	}
-	else
-	    botscr = NULL;
 
 	if (adj->adj_left != NULL) {
 	    for (i = 0; i < computer.num_screens; i++)
 		if (computer.screens[i]->screen == adj->adj_left)
 		    break;
-	    lefscr = computer.screens[i];
+	    if (i < computer.num_screens)
+		lefscr = computer.screens[i];
 	}
-	else
-	    lefscr = NULL;
 
 	if (adj->adj_right != NULL) {
 	    for (i = 0; i < computer.num_screens; i++)
 		if (computer.screens[i]->screen == adj->adj_right)
 		    break;
-	    rigscr = computer.screens[i];
+	    if (i < computer.num_screens)
+		rigscr = computer.screens[i];
 	}
-	else
-	    rigscr = NULL;
 
 	if (lefscr == NULL && rigscr == NULL && topscr == NULL && lefscr == NULL) {
 	    XF86ConfScreenPtr s;
@@ -701,19 +699,21 @@ AdjustScreenUI(void)
 		for (i = 0; i < computer.num_screens; i++)
 		    if (computer.screens[i]->screen == s)
 			break;
-		switch (adj->adj_where) {
-		    case CONF_ADJ_RIGHTOF:
-			lefscr = computer.screens[i];
-			break;
-		    case CONF_ADJ_LEFTOF:
-			rigscr = computer.screens[i];
-			break;
-		    case CONF_ADJ_ABOVE:
-			botscr = computer.screens[i];
-			break;
-		    case CONF_ADJ_BELOW:
-			topscr = computer.screens[i];
-			break;
+		if (i < computer.num_screens) {
+		    switch (adj->adj_where) {
+			case CONF_ADJ_RIGHTOF:
+			    lefscr = computer.screens[i];
+			    break;
+			case CONF_ADJ_LEFTOF:
+			    rigscr = computer.screens[i];
+			    break;
+			case CONF_ADJ_ABOVE:
+			    botscr = computer.screens[i];
+			    break;
+			case CONF_ADJ_BELOW:
+			    topscr = computer.screens[i];
+			    break;
+		    }
 		}
 	    }
 	}
