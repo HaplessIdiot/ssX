@@ -1,4 +1,5 @@
 /* $XConsortium: lcGenConv.c,v 1.5 94/04/02 22:36:59 rws Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1992, 1993 by TOSHIBA Corp.
  *
@@ -771,7 +772,7 @@ stdc_wcstocs(conv, from, from_left, to, to_left, args, num_args)
 }
 
 #define DefineLocalBuf		char local_buf[BUFSIZ]
-#define AllocLocalBuf(length)	(length > BUFSIZ ? Xmalloc(length) : local_buf)
+#define AllocLocalBuf(length)	(length > BUFSIZ ? (char *) Xmalloc(length) : local_buf)
 #define FreeLocalBuf(ptr)	if (ptr != local_buf) Xfree(ptr)
 
 static int

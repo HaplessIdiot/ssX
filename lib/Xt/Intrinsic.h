@@ -1,4 +1,5 @@
 /* $XConsortium: Intrinsic.h,v 1.199 94/04/17 20:14:22 converse Exp $ */
+/* $XFree86$ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -2058,8 +2059,8 @@ extern void XtGetConstraintResourceList(
 #define XtDefaultFont		"XtDefaultFont"
 #define XtDefaultFontSet	"XtDefaultFontSet"
 
-#if defined(CRAY) || defined(__arm)
-#if __STDC__
+#if defined(CRAY) || defined(__arm) || defined(__ACK)
+#if __STDC__ && !defined(__ACK)
 #define XtOffset(p_type,field) _Offsetof(p_type,field)
 #else
 #ifdef CRAY2
@@ -2072,7 +2073,7 @@ extern void XtGetConstraintResourceList(
 
 #endif	/* !CRAY2 */
 #endif  /* __STDC__ */
-#else	/* ! (CRAY || __arm) */
+#else	/* ! (CRAY || __arm || __ACK) */
 
 #define XtOffset(p_type,field) \
 	((Cardinal) (((char *) (&(((p_type)NULL)->field))) - ((char *) NULL)))

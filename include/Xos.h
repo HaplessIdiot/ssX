@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.66 94/04/17 20:10:51 rws Exp $
- * $XFree86$
+ * $XFree86: xc/include/Xos.h,v 3.0 1994/05/08 05:14:26 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -197,11 +197,16 @@ struct timeval {
 #ifdef _SEQUENT_
 #include <time.h>
 #else /* _SEQUENT_ */
+#ifdef AMOEBA
+#include <time.h>
+#include <sys/time.h>
+#else /* AMOEBA */
 #ifdef MINIX
 #include <time.h>
 #else /* !MINIX */
 #include <sys/time.h>
 #endif /* MINIX */
+#endif /* AMOEBA */
 #endif /* _SEQUENT_ */
 #endif /* WIN32 else */
 #endif /* defined(_POSIX_SOURCE) && defined(SVR4) */

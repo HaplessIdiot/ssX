@@ -1,5 +1,5 @@
 /* $XConsortium: NextEvent.c,v 1.143 94/05/11 16:01:26 kaleb Exp $ */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.0 1994/05/08 05:16:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.1 1994/05/22 06:45:22 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -154,6 +154,12 @@ static void AdjustHowLong (howlong, start_time)
 	    *howlong -= (time_spent.tv_sec*1000+time_spent.tv_usec/1000);
 }
 
+#ifdef AMOEBA
+/* For IoWait emulation: */
+static int DoIgnoreEvents;
+static int DoIgnoreInputs;
+#endif
+
 typedef struct {
     struct timeval cur_time;
     struct timeval start_time;
@@ -227,6 +233,7 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
     wait_fds_ptr_t wf;
 {
     int ii;
+#ifndef AMOEBA
 #ifndef USE_POLL
     wf->nfds = app->fds.nfds;
     if( !ignoreInputs ) {
@@ -266,6 +273,10 @@ static void InitFds (app, ignoreEvents, ignoreInputs, wf)
 		}
     }
 #endif
+#else /* AMOEBA */
+    DoIgnoreEvents = ignoreEvents;
+    DoIgnoreInputs = ignoreInputs;
+#endif /* AMOEBA */
 }
 
 static void AdjustTimes (app, block, howlong, ignoreTimers, wt)
@@ -296,6 +307,8 @@ static void AdjustTimes (app, block, howlong, ignoreTimers, wt)
 #endif
 }
 
+#ifndef AMOEBA
+
 static int IoWait (wt, wf)
     wait_times_ptr_t wt;
     wait_fds_ptr_t wf;
@@ -311,6 +324,44 @@ static int IoWait (wt, wf)
 #endif
 }
 
+#else /* AMOEBA */
+
+static int AppIoWait (app, wt, wf)
+    XtAppContext app;
+    wait_times_ptr_t wt;
+    wait_fds_ptr_t wf;
+{
+    /* Unfortunately we cannot use select() under Amoeba.  We call
+     * _X11TransAmSelect to wait for the display to produce input
+     * or until the timer runs out.  This has two disadvantages:
+     * - We cannot wait for multiple displays (we just wait for the
+     *   first display).
+     * - We cannot wait for other file descriptors (there is no easy solution
+     *   for this, but it seems that not too many applications need it).
+     * There is a workaround, however, in the form of XamSetSema and XamBlock,
+     * which allow you to wait for X events or other things.
+     */
+    long timout;
+    int nfound;
+
+    if (wt->wait_time_ptr != NULL) {
+	timout = wt->wait_time_ptr->tv_sec*1000 +
+		 (wt->wait_time_ptr->tv_usec+999)/1000;
+    } else {
+	timout = -1;
+    }
+    if ((DoIgnoreEvents || app->count == 0) && timout >= 0) {
+	millisleep(timout);
+	nfound = 0;
+    } else {
+	nfound = _X11TransAmSelect(ConnectionNumber(app->list[0]), timout);
+    }
+
+    return nfound;
+}
+
+#endif /* AMOEBA */
+
 static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found_input)
     XtAppContext app;
     wait_fds_ptr_t wf;
@@ -323,6 +374,7 @@ static void FindInputs (app, wf, nfds, ignoreEvents, ignoreInputs, dpy_no, found
     XtInputMask condition;
     InputEvent *ep;
     int ii;
+#ifndef AMOEBA
 #ifndef USE_POLL /* { check ready file descriptors block */
 #ifdef XTHREADS
     Fd_set rmask;
@@ -448,6 +500,26 @@ ENDILOOP:   ;
 	}
     }
 #endif /* } */
+#else /* AMOEBA */
+    int dd;
+
+    *dpy_no = -1;
+    *found_input = False;
+
+    for (ii = 0; ii < app->fds.nfds && nfds > 0; ii++) {
+	if (!ignoreEvents) {
+	    for (dd = 0; dd < app->count; dd++) {
+		if (ii == ConnectionNumber (app->list[dd])) {
+		    if (*dpy_no == -1) {
+			if (XEventsQueued (app->list[dd], QueuedAfterReading))
+			    *dpy_no = dd;
+		    }
+		}
+	    }
+	}
+	/* Inputs not implemented */
+    }
+#endif /* AMOEBA */
 }
 
 /* 
@@ -593,7 +665,11 @@ WaitLoop:
 	    push_thread = TRUE;
 	} else
 #endif /* } */
+#ifndef AMOEBA
 	nfds = IoWait (&wt, &wf);
+#else
+	nfds = AppIoWait (app, &wt, &wf);
+#endif
 	if (nfds == -1) {
 	    /*
 	     *  interrupt occured recalculate time value and wait again.
@@ -951,6 +1027,7 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	XtInputCallbackProc proc;
 	XtPointer closure;
 {
+#ifndef AMOEBA
 	InputEvent* sptr;
 	XtInputMask condition = (XtInputMask) Condition;
 
@@ -993,6 +1070,10 @@ XtInputId XtAppAddInput(app, source, Condition, proc, closure)
 	app->input_count++;
 	UNLOCK_APP(app);
 	return((XtInputId)sptr);
+#else /* AMOEBA */
+        printf("XtAppAddInput not yet implemented\n");
+        abort();
+#endif /* AMOEBA */
 }
 
 void XtRemoveInput( id )
