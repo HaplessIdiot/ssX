@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.h,v 1.4 1999/09/27 06:29:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atividmem.h,v 1.5 2000/02/18 12:19:45 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,7 +26,6 @@
 
 #include "atiproto.h"
 #include "atipriv.h"
-#include "xf86str.h"
 
 /* Memory types for 68800's and 88800GX's */
 typedef enum
@@ -70,7 +69,7 @@ typedef enum
 } ATI264MemoryType;
 extern const char *ATIMemoryTypeNames_264xT[];
 
-extern Bool ATIMapApertures   FunctionPrototype((ScrnInfoPtr, ATIPtr));
-extern void ATIUnmapApertures FunctionPrototype((ScrnInfoPtr, ATIPtr));
+extern Bool ATIMapApertures   FunctionPrototype((int, ATIPtr));
+extern void ATIUnmapApertures FunctionPrototype((int, ATIPtr));
 
 #endif /* ___ATIVIDMEM_H___ */

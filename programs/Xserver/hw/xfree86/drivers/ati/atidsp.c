@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.10 2000/06/19 15:00:56 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atidsp.c,v 1.11 2000/07/07 20:07:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,7 +25,7 @@
 #include "atichip.h"
 #include "aticrtc.h"
 #include "atidsp.h"
-#include "atiio.h"
+#include "atimach64io.h"
 #include "atividmem.h"
 
 /*
@@ -37,16 +37,12 @@
 Bool
 ATIDSPPreInit
 (
-    ScrnInfoPtr pScreenInfo,
-    ATIPtr      pATI
+    int    iScreen,
+    ATIPtr pATI
 )
 {
     CARD32 IOValue, dsp_config, dsp_on_off, vga_dsp_config, vga_dsp_on_off;
     int trp;
-
-    /* Set DSP register port numbers */
-    pATI->CPIO_DSP_CONFIG = ATIIOPort(DSP_CONFIG);
-    pATI->CPIO_DSP_ON_OFF = ATIIOPort(DSP_ON_OFF);
 
     /*
      * VT-B's and later have additional post-dividers that are not powers of
@@ -69,7 +65,7 @@ ATIDSPPreInit
             break;
 
         default:
-            xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+            xf86DrvMsg(iScreen, X_ERROR,
                 "Unsupported XCLK source:  %d.\n", pATI->XCLKPostDivider);
             return FALSE;
     }
@@ -78,11 +74,11 @@ ATIDSPPreInit
     pATI->XCLKFeedbackDivider = ATIGetMach64PLLReg(PLL_MCLK_FB_DIV);
 
     /* Compute maximum RAS delay and friends */
-    IOValue = inl(pATI->CPIO_MEM_INFO);
-    trp = GetBits(IOValue, CTL_MEM_TRP);
-    pATI->XCLKPageFaultDelay = GetBits(IOValue, CTL_MEM_TRCD) +
-        GetBits(IOValue, CTL_MEM_TCRD) + trp + 2;
-    pATI->XCLKMaxRASDelay = GetBits(IOValue, CTL_MEM_TRAS) + trp + 2;
+    trp = GetBits(pATI->LockData.mem_cntl, CTL_MEM_TRP);
+    pATI->XCLKPageFaultDelay = GetBits(pATI->LockData.mem_cntl, CTL_MEM_TRCD) +
+        GetBits(pATI->LockData.mem_cntl, CTL_MEM_TCRD) + trp + 2;
+    pATI->XCLKMaxRASDelay = GetBits(pATI->LockData.mem_cntl, CTL_MEM_TRAS) +
+        trp + 2;
     pATI->DisplayFIFODepth = 32;
 
     if (pATI->Chip < ATI_CHIP_264VT4)
@@ -140,10 +136,10 @@ ATIDSPPreInit
         pATI->XCLKMaxRASDelay = pATI->XCLKPageFaultDelay + 1;
 
     /* Allow BIOS to override */
-    dsp_config = inl(pATI->CPIO_DSP_CONFIG);
-    dsp_on_off = inl(pATI->CPIO_DSP_ON_OFF);
-    vga_dsp_config = inl(ATIIOPort(VGA_DSP_CONFIG));
-    vga_dsp_on_off = inl(ATIIOPort(VGA_DSP_ON_OFF));
+    dsp_config = inr(DSP_CONFIG);
+    dsp_on_off = inr(DSP_ON_OFF);
+    vga_dsp_config = inr(VGA_DSP_CONFIG);
+    vga_dsp_on_off = inr(VGA_DSP_ON_OFF);
 
     if (dsp_config)
         pATI->DisplayLoopLatency = GetBits(dsp_config, DSP_LOOP_LATENCY);
@@ -175,8 +171,8 @@ ATIDSPSave
     ATIHWPtr pATIHW
 )
 {
-    pATIHW->dsp_on_off = inl(pATI->CPIO_DSP_ON_OFF);
-    pATIHW->dsp_config = inl(pATI->CPIO_DSP_CONFIG);
+    pATIHW->dsp_on_off = inr(DSP_ON_OFF);
+    pATIHW->dsp_config = inr(DSP_CONFIG);
 }
 
 
@@ -209,12 +205,26 @@ ATIDSPCalculate
     Multiplier = pATI->XCLKFeedbackDivider *
         pATI->ClockDescriptor.PostDividers[pATIHW->PostDivider];
     Divider = pATIHW->FeedbackDivider * pATI->XCLKReferenceDivider;
+
+#ifndef AVOID_CPIO
+
     if (pATI->depth >= 8)
+
+#endif /* AVOID_CPIO */
+
+    {
         Divider *= pATI->bitsPerPixel / 4;
-    /* Start by assuming a display FIFO width of 32 bits */
-    vshift = (5 - 2) - pATI->XCLKPostDivider;
-    if (pATIHW->crtc != ATI_CRTC_VGA)
-        vshift++;               /* Nope, it's 64 bits wide */
+    }
+
+    /* Start by assuming a display FIFO width of 64 bits */
+    vshift = (6 - 2) - pATI->XCLKPostDivider;
+
+#ifndef AVOID_CPIO
+
+    if (pATIHW->crtc == ATI_CRTC_VGA)
+        vshift--;               /* Nope, it's 32 bits wide */
+
+#endif /* AVOID_CPIO */
 
     if (!pATI->OptionCRT && (pATI->LCDPanelID >= 0))
     {
@@ -243,6 +253,9 @@ ATIDSPCalculate
         vshift, -1) - ATIDivide(1, 1, vshift - xshift, 1);
 
     /* Next is dsp_on */
+
+#ifndef AVOID_CPIO
+
     if ((pATIHW->crtc == ATI_CRTC_VGA) /* && (dsp_precision < 3) */)
     {
         /*
@@ -252,6 +265,9 @@ ATIDSPCalculate
         dsp_on = ATIDivide(Multiplier * 5, Divider, vshift + 2, 1);
     }
     else
+
+#endif /* AVOID_CPIO */
+
     {
         dsp_on = ATIDivide(Multiplier, Divider, vshift, 1);
         tmp = ATIDivide(RASMultiplier, RASDivider, xshift, 1);
@@ -294,6 +310,6 @@ ATIDSPSet
     ATIHWPtr pATIHW
 )
 {
-    outl(pATI->CPIO_DSP_ON_OFF, pATIHW->dsp_on_off);
-    outl(pATI->CPIO_DSP_CONFIG, pATIHW->dsp_config);
+    outr(DSP_ON_OFF, pATIHW->dsp_on_off);
+    outr(DSP_CONFIG, pATIHW->dsp_config);
 }

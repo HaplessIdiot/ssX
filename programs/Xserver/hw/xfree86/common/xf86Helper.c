@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.93 2000/06/07 22:03:07 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Helper.c,v 1.94 2000/06/20 05:08:44 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1998 by The XFree86 Project, Inc.
@@ -2053,14 +2053,7 @@ xf86GetClocks(ScrnInfoPtr pScrn, int num, Bool (*ClockFunc)(ScrnInfoPtr, int),
     /* First save registers that get written on */
     (*ClockFunc)(pScrn, CLK_REG_SAVE);
 
-#if defined(CSRG_BASED) || defined(MACH386)
-    saved_nice = getpriority(PRIO_PROCESS, 0);
-    setpriority(PRIO_PROCESS, 0, -20);
-#endif
-#if defined(SYSV) || defined(SVR4) || defined(linux)
-    saved_nice = nice(0);
-    nice(-20 - saved_nice);
-#endif
+    xf86SetPriority(TRUE);
 
     if (num > MAXCLOCKS)
 	num = MAXCLOCKS;
@@ -2119,12 +2112,7 @@ finish:
             (*BlankScreen)(pScrn, TRUE);
     }
 
-#if defined(CSRG_BASED) || defined(MACH386)
-    setpriority(PRIO_PROCESS, 0, saved_nice);
-#endif
-#if defined(SYSV) || defined(SVR4) || defined(linux)
-    nice(20 + saved_nice);
-#endif
+    xf86SetPriority(FALSE);
 
     for (i = 0; i < num; i++) 
     {
@@ -2153,6 +2141,31 @@ finish:
     /* Restore registers that were written on */
     (*ClockFunc)(pScrn, CLK_REG_RESTORE);
 }
+
+void
+xf86SetPriority(Bool up)
+{
+    static int saved_nice;
+
+    if (up) {
+#if defined(CSRG_BASED) || defined(MACH386)
+	saved_nice = getpriority(PRIO_PROCESS, 0);
+	setpriority(PRIO_PROCESS, 0, -20);
+#endif
+#if defined(SYSV) || defined(SVR4) || defined(linux)
+	saved_nice = nice(0);
+	nice(-20 - saved_nice);
+#endif
+    } else {
+#if defined(CSRG_BASED) || defined(MACH386)
+	setpriority(PRIO_PROCESS, 0, saved_nice);
+#endif
+#if defined(SYSV) || defined(SVR4) || defined(linux)
+	nice(20 + saved_nice);
+#endif
+    }
+}
+
 const char *
 xf86GetVisualName(int visual)
 {

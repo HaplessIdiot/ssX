@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.4 1999/09/27 06:29:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibios.c,v 1.5 2000/02/18 12:19:14 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -25,6 +25,8 @@
 #include "atibios.h"
 #include "atistruct.h"
 
+#ifndef AVOID_CPIO
+
 /*
  * ATIReadBIOS --
  *
@@ -47,7 +49,7 @@ ATIReadBIOS
      * disabled on server entry.
      */
     if ((pVideo = pATI->PCIInfo) &&
-        (((pPCI = (pciConfigPtr)(pVideo->thisCard))->pci_command &
+        (((pPCI = pVideo->thisCard)->pci_command &
           (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)) !=
          (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE)))
 
@@ -61,3 +63,5 @@ ATIReadBIOS
         pATI->BIOSBase = 0x000C0000U;
     return xf86ReadBIOS(pATI->BIOSBase, Offset, Buffer, Length);
 }
+
+#endif /* AVOID_CPIO */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.h,v 1.4 2000/02/18 12:19:20 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.h,v 1.5 2000/03/22 03:08:11 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 
 #include "atipriv.h"
 #include "atiproto.h"
+
 #include "xf86str.h"
 
 extern Bool ATISaveScreen    FunctionPrototype((ScreenPtr, int));

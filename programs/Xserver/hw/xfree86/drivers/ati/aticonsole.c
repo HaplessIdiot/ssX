@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.11 2000/03/22 03:08:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/aticonsole.c,v 1.12 2000/06/19 15:00:56 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -29,6 +29,7 @@
 #include "atistruct.h"
 #include "ativga.h"
 #include "atividmem.h"
+
 #include "xf86.h"
 
 /*
@@ -59,9 +60,14 @@ ATISaveScreen
     pATI = ATIPTR(pScreenInfo);
     switch (pATI->NewHW.crtc)
     {
+
+#ifndef AVOID_CPIO
+
         case ATI_CRTC_VGA:
             ATIVGASaveScreen(pATI, Mode);
             break;
+
+#endif /* AVOID_CPIO */
 
         case ATI_CRTC_MACH64:
             ATIMach64SaveScreen(pATI, Mode);
@@ -101,13 +107,23 @@ ATISetDPMSMode
             ATIMach64SetDPMSMode(pATI, DPMSMode);
             break;
 
+#ifndef AVOID_CPIO
+
         case ATI_ADAPTER_NONE:
         case ATI_ADAPTER_8514A:
         case ATI_ADAPTER_MACH8:
             break;
 
+#endif /* AVOID_CPIO */
+
         default:        /* Assume EGA/VGA */
+
+#ifndef AVOID_CPIO
+
             ATIVGASetDPMSMode(pATI, DPMSMode);
+
+#endif /* AVOID_CPIO */
+
             break;
     }
 }
@@ -126,7 +142,7 @@ ATIEnterGraphics
 )
 {
     /* Map apertures */
-    if (!ATIMapApertures(pScreenInfo, pATI))
+    if (!ATIMapApertures(pScreenInfo->scrnIndex, pATI))
         return FALSE;
 
     /* Unlock device */
@@ -134,7 +150,7 @@ ATIEnterGraphics
 
     /* Calculate hardware data */
     if (pScreen &&
-        !ATIAdapterCalculate(pScreenInfo, pATI, &pATI->NewHW,
+        !ATIAdapterCalculate(pScreenInfo->scrnIndex, pATI, &pATI->NewHW,
             pScreenInfo->currentMode))
         return FALSE;
 
@@ -188,7 +204,7 @@ ATILeaveGraphics
 
     /* Unmap apertures */
     if (!pATI->Closeable || !pATI->nDGAMode)
-        ATIUnmapApertures(pScreenInfo, pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
 
     SetTimeSinceLastInputEvent();
 }
@@ -210,7 +226,7 @@ ATISwitchMode
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
 
     /* Calculate new hardware data */
-    if (!ATIAdapterCalculate(pScreenInfo, pATI, &pATI->NewHW, pMode))
+    if (!ATIAdapterCalculate(iScreen, pATI, &pATI->NewHW, pMode))
         return FALSE;
 
     /* Set new hardware state */
@@ -251,9 +267,13 @@ ATIEnterVT
     if (pATI->OptionShadowFB)
         return TRUE;
 
+#ifndef AVOID_CPIO
+
     /* If used, modify banking interface */
     if (!miModifyBanking(pScreen, &pATI->BankInfo))
         return FALSE;
+
+#endif /* AVOID_CPIO */
 
     pScreenPixmap = (*pScreen->GetScreenPixmap)(pScreen);
     PixmapPrivate = pScreenPixmap->devPrivate;
@@ -312,8 +332,12 @@ ATIFreeScreen
 
     ATILeaveGraphics(pScreenInfo, pATI);
 
+#ifndef AVOID_CPIO
+
     xfree(pATI->OldHW.frame_buffer);
     xfree(pATI->NewHW.frame_buffer);
+
+#endif /* AVOID_CPIO */
 
     xfree(pATI->pShadow);
 

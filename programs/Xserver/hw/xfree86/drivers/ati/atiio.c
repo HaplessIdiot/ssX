@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.4 2000/02/18 12:19:23 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.c,v 1.5 2000/07/07 20:07:01 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -24,6 +24,8 @@
 #include "ati.h"
 #include "atichip.h"
 #include "atiio.h"
+
+#ifndef AVOID_CPIO
 
 /*
  * ATISetVGAIOBase --
@@ -97,24 +99,4 @@ ATIModifyExtReg
         ATIPutExtReg(Index, NewValue);
 }
 
-/*
- * ATIAccessMach64PLLReg --
- *
- * This function sets up the addressing required to access, for read or write,
- * a 264xT's PLL registers.
- */
-void
-ATIAccessMach64PLLReg
-(
-    ATIPtr      pATI,
-    const CARD8 Index,
-    const Bool  Write
-)
-{
-    CARD8 clock_cntl1 = inb(pATI->CPIO_CLOCK_CNTL + 1) &
-        ~GetByte(PLL_WR_EN | PLL_ADDR, 1);
-
-    /* Set PLL register to be read or written */
-    outb(pATI->CPIO_CLOCK_CNTL + 1, clock_cntl1 |
-        GetByte(SetBits(Index, PLL_ADDR) | SetBits(Write, PLL_WR_EN), 1));
-}
+#endif /* AVOID_CPIO */

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.26 2000/06/19 15:00:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.27 2000/07/11 01:46:35 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -31,13 +31,17 @@
 #include "atiident.h"
 #include "atilock.h"
 #include "atimach64.h"
+#include "atimach64io.h"
 #include "atimodule.h"
 #include "atioption.h"
 #include "atipreinit.h"
 #include "atiprint.h"
 #include "atividmem.h"
+
 #include "vbe.h"
 #include "xf86RAC.h"
+
+#ifndef AVOID_CPIO
 
 typedef CARD16 Colour;          /* The correct spelling should be OK :-) */
 
@@ -277,6 +281,8 @@ ATIMach32videoRam
     return Test_Case[Case_Number].videoRamSize;
 }
 
+#endif /* AVOID_CPIO */
+
 /*
  * ATIReportMemory --
  *
@@ -295,6 +301,9 @@ ATIReportMemory
     Message = Buffer +
         snprintf(Buffer, SizeOf(Buffer), "%d kB of %s detected",
             pATI->VideoRAM, MemoryTypeName);
+
+#ifndef AVOID_CPIO
+
     if (pATI->depth == 1)
     {
         /* 1bpp only uses one plane of four */
@@ -302,7 +311,11 @@ ATIReportMemory
         Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
             " (using %d kB)", pScreenInfo->videoRam);
     }
-    else if (pATI->VideoRAM > pScreenInfo->videoRam)
+    else
+
+#endif /* AVOID_CPIO */
+
+    if (pATI->VideoRAM > pScreenInfo->videoRam)
         Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
             " (using %d kB)", pScreenInfo->videoRam);
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "%s.\n", Buffer);
@@ -312,6 +325,24 @@ static const int videoRamSizes[] =
     {0, 256, 512, 1024, 2*1024, 4*1024, 6*1024, 8*1024, 12*1024, 16*1024, 0};
 static const rgb   defaultWeight = {0, 0, 0};
 static const Gamma defaultGamma  = {0.0, 0.0, 0.0};
+
+/*
+ * ATIMapMach64 --
+ *
+ * This function attempts to mmap() a Mach64's MMIO aperture.
+ */
+static void
+ATIMapMach64
+(
+    int    iScreen,
+    ATIPtr pATI
+)
+{
+    (void)ATIMapApertures(iScreen, pATI);
+    if (!pATI->pBlock[0] ||
+        (pATI->config_chip_id != inr(CONFIG_CHIP_ID)))
+        ATIUnmapApertures(iScreen, pATI);
+}
 
 /*
  * ATIPreInit --
@@ -327,11 +358,11 @@ ATIPreInit
 )
 {
 #   define           BIOS_SIZE       0x00010000U     /* 64kB */
-    CARD8            BIOS[BIOS_SIZE], *pBIOS;
+    CARD8            BIOS[BIOS_SIZE];
 #   define           BIOSByte(_n)    (*((CARD8  *)(BIOS + (_n))))
 #   define           BIOSWord(_n)    (*((CARD16 *)(BIOS + (_n))))
 #   define           BIOSLong(_n)    (*((CARD32 *)(BIOS + (_n))))
-    unsigned int     BIOSSize;
+    unsigned int     BIOSSize = 0;
     unsigned int     ROMTable = 0, ClockTable = 0, FrequencyTable = 0;
     unsigned int     LCDTable = 0, LCDPanelInfo = 0;
 
@@ -341,21 +372,25 @@ ATIPreInit
     EntityInfoPtr    pEntity;
     resPtr           pResources;
     pciVideoPtr      pVideo;
-    pciConfigPtr     pPCI;
     DisplayModePtr   pMode;
-    xf86Int10InfoPtr pInt10Info;
+    xf86Int10InfoPtr pInt10Info = NULL;
     vbeInfoPtr       pVBE;
-    xf86MonPtr       pMonitor = NULL;
-    pointer          pInt10Module, pDDCModule, pVBEModule = NULL;
-    Bool             AllowCRT = TRUE;
-    CARD32           IOValue1, IOValue2 = 0;
-    int              i, j, AcceleratorVideoRAM = 0, VGAVideoRAM = 0;
+    pointer          pInt10Module, pDDCModule = NULL, pVBEModule = NULL;
+    CARD32           IOValue1, IOValue2 = 0, IOValue3 = 0, IOValue4 = 0;
+    int              i, j, AcceleratorVideoRAM = 0;
     int              Numerator, Denominator;
     int              MinX, MinY;
-    resRange         Resources[2] = {{0, 0, 0}, _END};
     ClockRange       ATIClockRange = {NULL, 0, 80000, 0, TRUE, TRUE, 1, 1, 0};
     int              minPitch, maxPitch = 0xFFU, maxHeight = 0;
+    int              ApertureSize = 0x00010000U;
     LookupModeFlags  Strategy = LOOKUP_CLOSEST_CLOCK;
+
+#ifndef AVOID_CPIO
+
+    int              VGAVideoRAM = 0;
+    resRange         Resources[2] = {{0, 0, 0}, _END};
+
+#endif /* AVOID_CPIO */
 
     if (pScreenInfo->numEntities != 1)
     {
@@ -372,89 +407,6 @@ ATIPreInit
             "Logic error:  Entity mismatch.\n");
         return FALSE;
     }
-
-    /*
-     * Get adapter BIOS, after ensuring its initialisation entry point has been
-     * executed.
-     */
-    if (!(pInt10Module = xf86LoadSubModule(pScreenInfo, "int10")))
-    {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-            "Unable to load int10 module.\n");
-        return FALSE;
-    }
-
-    if (!(pInt10Info = xf86InitInt10(pATI->iEntity)))
-    {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-             "Unable to initialise int10 interface.\n");
-        xf86UnloadSubModule(pInt10Module);
-        return FALSE;
-    }
-
-    if (!(pDDCModule = xf86LoadSubModule(pScreenInfo, "ddc")))
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-            "Unable to load ddc module.\n");
-    else if (!(pVBEModule = xf86LoadSubModule(pScreenInfo, "vbe")))
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
-            "Unable to load vbe module.\n");
-    else
-    {
-        if ((pVBE = VBEInit(pInt10Info, pATI->iEntity)))
-            pMonitor = vbeDoEDID(pVBE, pDDCModule);
-        vbeFree(pVBE);
-        xf86UnloadSubModule(pVBEModule);
-    }
-
-    /*
-     * Validate, then make a private copy of, the initialised BIOS.  This
-     * allows de-activating int10 early.
-     */
-    pBIOS = xf86int10Addr(pInt10Info, pInt10Info->BIOSseg << 4);
-    if ((pBIOS[0] != 0x55U) || (pBIOS[1] != 0xAAU) || !pBIOS[2])
-    {
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-            "Unable to correctly retrieve adapter BIOS.\n");
-        xf86FreeInt10(pInt10Info);
-        xf86UnloadSubModule(pInt10Module);
-        return FALSE;
-    }
-
-    BIOSSize = pBIOS[2] << 9;
-    (void)memcpy(BIOS, pBIOS, BIOSSize);
-    if (BIOSSize < SizeOf(BIOS))
-        (void)memset(BIOS + BIOSSize, 0, SizeOf(BIOS) - BIOSSize);
-
-    /* De-activate int10 */
-    xf86FreeInt10(pInt10Info);
-    xf86UnloadSubModule(pInt10Module);
-
-    if (flags & PROBE_DETECT)
-    {
-        ConfiguredMonitor = pMonitor;
-        xf86UnloadSubModule(pDDCModule);
-        return TRUE;
-    }
-
-    if ((pVideo = pATI->PCIInfo))
-    {
-        pPCI = (pciConfigPtr)(pVideo->thisCard);
-
-        /* Resource conflict resolution might have moved I/O base */
-        if (pATI->CPIODecoding == BLOCK_IO)
-        {
-            pPCI->pci_base1 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 4);
-            pVideo->ioBase[1] = PCIGETIO(pPCI->pci_base1);
-
-            if (pATI->CPIOBase != pVideo->ioBase[1])
-            {
-                pATI->CPIO_BUS_CNTL = ATIIOPort(BUS_CNTL);
-                pATI->CPIO_GEN_TEST_CNTL = ATIIOPort(GEN_TEST_CNTL);
-            }
-        }
-    }
-    else
-        pPCI = NULL;
 
     /* Register resources */
     pEntity = xf86GetEntityInfo(pScreenInfo->entityList[0]);
@@ -473,20 +425,87 @@ ATIPreInit
         return FALSE;
     }
 
-    pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_VIEWPORT;
-    pScreenInfo->racMemFlags = RAC_FB;
+    ConfiguredMonitor = NULL;
+
+    /*
+     * If there is an ix86-style BIOS, ensure its initialisation entry point
+     * has been executed, and retrieve DDC and VBE information from it.
+     */
+    (void)memset(BIOS, 0, SizeOf(BIOS));
+    if (!(pInt10Module = xf86LoadSubModule(pScreenInfo, "int10")))
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+            "Unable to load int10 module.\n");
+    else if (!(pInt10Info = xf86InitInt10(pATI->iEntity)))
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+             "Unable to initialise int10 interface.\n");
+    else
+    {
+        if (!(pDDCModule = xf86LoadSubModule(pScreenInfo, "ddc")))
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Unable to load ddc module.\n");
+        else if (!(pVBEModule = xf86LoadSubModule(pScreenInfo, "vbe")))
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                "Unable to load vbe module.\n");
+        else
+        {
+            if ((pVBE = VBEInit(pInt10Info, pATI->iEntity)))
+            {
+                ConfiguredMonitor = vbeDoEDID(pVBE, pDDCModule);
+                vbeFree(pVBE);
+            }
+            xf86UnloadSubModule(pVBEModule);
+        }
+
+        if (!(flags & PROBE_DETECT))
+        {
+            /* Validate, then make a private copy of, the initialised BIOS */
+            CARD8 *pBIOS = xf86int10Addr(pInt10Info, pInt10Info->BIOSseg << 4);
+
+            if ((pBIOS[0] != 0x55U) || (pBIOS[1] != 0xAAU) ||
+                !pBIOS[2] || (pBIOS[2] > 0x80U))
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
+                    "Unable to correctly retrieve adapter BIOS.\n");
+            else
+            {
+                BIOSSize = pBIOS[2] << 9;
+                (void)memcpy(BIOS, pBIOS, BIOSSize);
+            }
+        }
+    }
+
+    /* De-activate int10 */
+    xf86FreeInt10(pInt10Info);
+    xf86UnloadSubModule(pInt10Module);
+
+    if (flags & PROBE_DETECT)
+    {
+        xf86UnloadSubModule(pDDCModule);
+        return TRUE;
+    }
 
     /* Set monitor */
     pScreenInfo->monitor = pScreenInfo->confScreen->monitor;
-
-    if (pMonitor)
-    {
-        xf86PrintEDID(pMonitor);
-        xf86SetDDCproperties(pScreenInfo, pMonitor);
-    }
+    xf86PrintEDID(ConfiguredMonitor);
+    xf86SetDDCproperties(pScreenInfo, ConfiguredMonitor);
 
     /* DDC module is no longer needed at this point */
     xf86UnloadSubModule(pDDCModule);
+
+    pATI->Block0Base = 0;       /* Might no longer be valid */
+    if ((pVideo = pATI->PCIInfo))
+    {
+        ATIRefreshPCIBases(pVideo, pVideo->thisCard);
+
+        if (pATI->CPIODecoding == BLOCK_IO)
+            pATI->CPIOBase = pVideo->ioBase[1];
+
+        /* Set MMIO address from PCI configuration space, if available */
+        if ((pATI->Block0Base = pVideo->memBase[2]))
+           pATI->Block0Base += 0x0400U;
+    }
+
+    pScreenInfo->racIoFlags = RAC_FB | RAC_COLORMAP | RAC_VIEWPORT;
+    pScreenInfo->racMemFlags = RAC_FB;
 
     /* Deal with ChipID & ChipRev overrides */
     if (pGDev->chipID >= 0)
@@ -523,19 +542,26 @@ ATIPreInit
 
     /* Finish private area initialisation */
     pATI->DAC = ATI_DAC_GENERIC;
+
+#ifndef AVOID_CPIO
+
     pATI->NewHW.SetBank = ATIx8800SetBank;
     pATI->BankInfo.SetSourceBank = ATIx8800SetRead;
     pATI->BankInfo.SetDestinationBank = ATIx8800SetWrite;
     pATI->BankInfo.SetSourceAndDestinationBanks = ATIx8800SetReadWrite;
     pATI->BankInfo.BankSize = 0x00010000U;      /* 64kB */
-    pATI->ApertureBase = 0x000A0000U;
-    pATI->ApertureSize = 0x00010000U;
+
+#endif /* AVOID_CPIO */
+
     pATI->LCDPanelID = -1;
     pATI->nFIFOEntries = 16;                    /* For now */
 
     /* Finish probing the adapter */
     switch (pATI->Adapter)
     {
+
+#ifndef AVOID_CPIO
+
         case ATI_ADAPTER_NONE:
         case ATI_ADAPTER_EGA:
         case ATI_ADAPTER_EGA_PLUS:
@@ -595,25 +621,73 @@ ATIPreInit
 
             break;
 
-        case ATI_ADAPTER_MACH64:
-            /* Set I/O port addresses */
-            pATI->CPIO_CRTC_H_TOTAL_DISP = ATIIOPort(CRTC_H_TOTAL_DISP);
-            pATI->CPIO_CRTC_H_SYNC_STRT_WID = ATIIOPort(CRTC_H_SYNC_STRT_WID);
-            pATI->CPIO_CRTC_V_TOTAL_DISP = ATIIOPort(CRTC_V_TOTAL_DISP);
-            pATI->CPIO_CRTC_V_SYNC_STRT_WID = ATIIOPort(CRTC_V_SYNC_STRT_WID);
-            pATI->CPIO_CRTC_OFF_PITCH = ATIIOPort(CRTC_OFF_PITCH);
-            pATI->CPIO_CRTC_INT_CNTL = ATIIOPort(CRTC_INT_CNTL);
-            pATI->CPIO_CRTC_GEN_CNTL = ATIIOPort(CRTC_GEN_CNTL);
-            pATI->CPIO_OVR_CLR = ATIIOPort(OVR_CLR);
-            pATI->CPIO_OVR_WID_LEFT_RIGHT = ATIIOPort(OVR_WID_LEFT_RIGHT);
-            pATI->CPIO_OVR_WID_TOP_BOTTOM = ATIIOPort(OVR_WID_TOP_BOTTOM);
-            pATI->CPIO_CLOCK_CNTL = ATIIOPort(CLOCK_CNTL);
-            pATI->CPIO_MEM_INFO = ATIIOPort(MEM_INFO);
-            pATI->CPIO_DAC_REGS = ATIIOPort(DAC_REGS);
-            pATI->CPIO_DAC_CNTL = ATIIOPort(DAC_CNTL);
-            pATI->CPIO_CONFIG_CNTL = ATIIOPort(CONFIG_CNTL);
+#endif /* AVOID_CPIO */
 
-            IOValue1 = inl(pATI->CPIO_MEM_INFO);
+        case ATI_ADAPTER_MACH64:
+            /* Find and mmap() MMIO area */
+            do
+            {
+                /* Only allow auxiliary aperture if it exists */
+                if (!pATI->Block0Base)
+                {
+                    if (pVideo)
+                    {
+                        /* Check tail end of linear (8MB or 4MB) aperture */
+                        if ((pATI->Block0Base = pVideo->memBase[0]))
+                        {
+                            pATI->Block0Base += 0x007FFC00U;
+                            ATIMapMach64(pScreenInfo->scrnIndex, pATI);
+                            if (pATI->pBlock[0])
+                                break;
+
+                            pATI->Block0Base -= 0x00400000U;
+                            ATIMapMach64(pScreenInfo->scrnIndex, pATI);
+                            if (pATI->pBlock[0])
+                                break;
+                        }
+                    }
+
+                    /* Check VGA MMIO aperture */
+                    pATI->Block0Base = 0x000BFC00U;
+                }
+
+                ATIMapMach64(pScreenInfo->scrnIndex, pATI);
+            } while(0);
+
+#ifdef AVOID_CPIO
+
+            if (!pATI->pBlock[0])
+            {
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    "Unable to mmap() adapter registers.\n");
+                return FALSE;
+            }
+
+#endif /* AVOID_CPIO */
+
+            IOValue1 = inr(CRTC_GEN_CNTL);
+            if (!(IOValue1 & CRTC_EN))
+            {
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    "Adapter has not been initialised.\n");
+                ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
+                return FALSE;
+            }
+
+#ifdef AVOID_CPIO
+
+            if (!(IOValue1 & CRTC_EXT_DISP_EN))
+            {
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    "Adapters found to be in VGA mode on server entry are not"
+                    " supported by the MMIO-only version of this driver.\n");
+                ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
+                return FALSE;
+            }
+
+#endif /* AVOID_CPIO */
+
+            IOValue1 = inr(MEM_CNTL);
             if (pATI->Chip < ATI_CHIP_264VTB)
                 pATI->VideoRAM =
                     videoRamSizes[GetBits(IOValue1, CTL_MEM_SIZE) + 2];
@@ -631,9 +705,9 @@ ATIPreInit
                     pATI->VideoRAM = (IOValue1 - 7) * 2048;
             }
 
-            pATI->DAC = GetBits(inl(pATI->CPIO_DAC_CNTL), DAC_TYPE);
+            pATI->DAC = GetBits(inr(DAC_CNTL), DAC_TYPE);
 
-            IOValue1 = inl(ATIIOPort(CONFIG_STATUS64_0));
+            IOValue1 = inr(CONFIG_STATUS64_0);
             if (pATI->Chip >= ATI_CHIP_264CT)
             {
                 pATI->MemoryType = GetBits(IOValue1, CFG_MEM_TYPE_T);
@@ -643,12 +717,9 @@ ATIPreInit
                 {
                     pATI->LCDPanelID = GetBits(IOValue1, CFG_PANEL_ID);
 
-                    pATI->CPIO_HORZ_STRETCHING = ATIIOPort(HORZ_STRETCHING);
-                    pATI->CPIO_VERT_STRETCHING = ATIIOPort(VERT_STRETCHING);
-                    pATI->CPIO_LCD_GEN_CTRL = ATIIOPort(LCD_GEN_CTRL);
-                    pATI->CPIO_POWER_MANAGEMENT = ATIIOPort(POWER_MANAGEMENT);
-
-                    IOValue2 = inl(pATI->CPIO_LCD_GEN_CTRL);
+                    IOValue2 = inr(HORZ_STRETCHING);
+                    IOValue3 = inr(VERT_STRETCHING);
+                    IOValue4 = inr(LCD_GEN_CTRL);
                 }
                 else if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                          (pATI->Chip == ATI_CHIP_264XL) ||
@@ -656,40 +727,42 @@ ATIPreInit
                 {
                     pATI->LCDPanelID = GetBits(IOValue1, CFG_PANEL_ID);
 
-                    pATI->CPIO_TV_OUT_INDEX = ATIIOPort(TV_OUT_INDEX);
-                    pATI->CPIO_TV_OUT_DATA = ATIIOPort(TV_OUT_DATA);
-                    pATI->CPIO_LCD_INDEX = ATIIOPort(LCD_INDEX);
-                    pATI->CPIO_LCD_DATA = ATIIOPort(LCD_DATA);
-
-                    IOValue1 = inl(pATI->CPIO_LCD_INDEX);
-                    IOValue2 = ATIGetLTProLCDReg(LCD_HORZ_STRETCHING);
-#if 0
-                    if (IOValue2 & AUTO_HORZ_RATIO)
-#endif
-                        pATI->LCDHorizontal =
-                            (GetBits(IOValue2, HORZ_PANEL_SIZE) + 1) << 3;
-                    IOValue2 = ATIGetLTProLCDReg(LCD_EXT_VERT_STRETCH);
-#if 0
-                    if (IOValue2 & AUTO_VERT_RATIO)
-#endif
-                        pATI->LCDVertical =
-                            GetBits(IOValue2, VERT_PANEL_SIZE) + 1;
-                    IOValue2 = ATIGetLTProLCDReg(LCD_GEN_CNTL);
-                    outl(pATI->CPIO_LCD_INDEX, IOValue1);
+                    IOValue1 = inr(LCD_INDEX);
+                    IOValue2 = ATIGetMach64LCDReg(LCD_HORZ_STRETCHING);
+                    pATI->LCDHorizontal = GetBits(IOValue2, HORZ_PANEL_SIZE);
+                    if (pATI->LCDHorizontal)
+                    {
+                        if (pATI->LCDHorizontal == MaxBits(HORZ_PANEL_SIZE))
+                            pATI->LCDHorizontal = 0;
+                        else
+                            pATI->LCDHorizontal =
+                                (pATI->LCDHorizontal + 1) << 3;
+                    }
+                    IOValue3 = ATIGetMach64LCDReg(LCD_EXT_VERT_STRETCH);
+                    pATI->LCDVertical = GetBits(IOValue3, VERT_PANEL_SIZE);
+                    if (pATI->LCDVertical)
+                    {
+                        if (pATI->LCDVertical == MaxBits(VERT_PANEL_SIZE))
+                            pATI->LCDVertical = 0;
+                        else
+                            pATI->LCDVertical++;
+                    }
+                    IOValue3 = ATIGetMach64LCDReg(LCD_VERT_STRETCHING);
+                    IOValue4 = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+                    outr(LCD_INDEX, IOValue1);
                 }
 
-                if (pATI->LCDPanelID >= 0)
-                {
-                    /*
-                     * Don't bother with panel support if it's not enabled by
-                     * BIOS initialisation.  Also, remember if the BIOS knows
-                     * about the CRT.
-                     */
-                    if (!(IOValue2 & LCD_ON))
+                /*
+                 * Don't bother with panel support if it hasn't been previously
+                 * enabled.
+                 */
+                if ((pATI->LCDPanelID >= 0) &&
+                    !pATI->LCDHorizontal &&
+                    !pATI->LCDVertical &&
+                    !(IOValue2 & HORZ_STRETCH_EN) &&
+                    !(IOValue3 & VERT_STRETCH_EN) &&
+                    !(IOValue4 & LCD_ON))
                         pATI->LCDPanelID = -1;
-                    else if (!(IOValue2 & CRT_ON))
-                        AllowCRT = FALSE;
-                }
             }
             else
             {
@@ -697,8 +770,7 @@ ATIPreInit
 
                 /* Factor in what the BIOS says the DAC is */
                 pATI->DAC = ATI_DAC(pATI->DAC,
-                    GetBits(inl(ATIIOPort(SCRATCH_REG1)),
-                        BIOS_INIT_DAC_SUBTYPE));
+                    GetBits(inr(SCRATCH_REG1), BIOS_INIT_DAC_SUBTYPE));
             }
 
             /*
@@ -718,7 +790,13 @@ ATIPreInit
      * For Mach64 adapters, pick up, from the BIOS, the type of programmable
      * clock generator (if any), and various information about it.
      */
+
+#ifndef AVOID_CPIO
+
     if (pATI->Chip >= ATI_CHIP_88800GXC)
+
+#endif /* AVOID_CPIO */
+
     {
         CARD16 ClockDac;
 
@@ -746,9 +824,6 @@ ATIPreInit
                     pATI->BIOSClocks[i] = (&BIOSWord(FrequencyTable))[i];
             pATI->ProgrammableClock = BIOSByte(ClockTable);
             pATI->ClockNumberToProgramme = BIOSByte(ClockTable + 0x06U);
-            if (pATI->ProgrammableClock < ATI_CLOCK_MAX)
-                pATI->ClockDescriptor =
-                    ATIClockDescriptors[pATI->ProgrammableClock];
             switch (BIOSWord(ClockTable + 0x08U) / 10)
             {
                 case 143:
@@ -768,6 +843,45 @@ ATIPreInit
                     break;
             }
         }
+        else
+        {
+            /*
+             * Compensate for BIOS absence.  Note that the reference
+             * frequency will be set later by option processing.
+             */
+            if ((pATI->DAC & 0x0FU) == ATI_DAC_INTERNAL)
+                pATI->ProgrammableClock = ATI_CLOCK_INTERNAL;
+            else switch (pATI->DAC)
+            {
+                case ATI_DAC_STG1703:
+                    pATI->ProgrammableClock = ATI_CLOCK_STG1703;
+                    break;
+
+                case ATI_DAC_CH8398:
+                    pATI->ProgrammableClock = ATI_CLOCK_CH8398;
+                    break;
+
+                case ATI_DAC_ATT20C408:
+                    pATI->ProgrammableClock = ATI_CLOCK_ATT20C408;
+                    break;
+
+                case ATI_DAC_IBMRGB514:
+                    pATI->ProgrammableClock = ATI_CLOCK_IBMRGB514;
+                    break;
+
+                default:        /* Provisional */
+                    pATI->ProgrammableClock = ATI_CLOCK_ICS2595;
+                    break;
+            }
+
+            /* This should be safe for all generators except IBM's RGB514 */
+            pATI->ClockNumberToProgramme = 3;
+        }
+
+        if ((pATI->ProgrammableClock > ATI_CLOCK_FIXED) &&
+            (pATI->ProgrammableClock < ATI_CLOCK_MAX))
+            pATI->ClockDescriptor =
+                ATIClockDescriptors[pATI->ProgrammableClock];
 
         ClockDac = pATI->DAC;
         switch (pATI->ProgrammableClock)
@@ -778,8 +892,17 @@ ATIPreInit
                  * revision level.
                  */
                 if (ClockTable > 0)
-                    pATI->ClockDescriptor.MinM = pATI->ClockDescriptor.MaxM =
-                        BIOSWord(ClockTable + 0x0AU);
+                    pATI->ClockDescriptor.MinM =
+                        pATI->ClockDescriptor.MaxM =
+                            BIOSWord(ClockTable + 0x0AU);
+                else if (!xf86NameCmp(pGDev->clockchip, "ATI 18818-0"))
+                    pATI->ClockDescriptor.MinM =
+                        pATI->ClockDescriptor.MaxM = 43;
+                else if (!xf86NameCmp(pGDev->clockchip, "ATI 18818-1"))
+                    pATI->ClockDescriptor.MinM =
+                        pATI->ClockDescriptor.MaxM = 46;
+                else
+                    pATI->ProgrammableClock = ATI_CLOCK_UNKNOWN;
                 break;
 
             case ATI_CLOCK_STG1703:
@@ -891,15 +1014,12 @@ ATIPreInit
                         }
 
                     /* ... verify panel width ... */
-                    if ((pATI->LCDHorizontal > 8) &&
-                        (pATI->LCDHorizontal <=
-                         (int)(MaxBits(HORZ_PANEL_SIZE) << 3)) &&
+                    if (pATI->LCDHorizontal &&
                         (pATI->LCDHorizontal != BIOSWord(i + 0x19U)))
                         continue;
 
                     /* ... and verify panel height */
-                    if ((pATI->LCDVertical > 1) &&
-                        (pATI->LCDVertical <= (int)MaxBits(VERT_PANEL_SIZE)) &&
+                    if (pATI->LCDVertical &&
                         (pATI->LCDVertical != BIOSWord(i + 0x1BU)))
                         continue;
 
@@ -925,41 +1045,16 @@ ATIPreInit
 
             if (LCDPanelInfo > 0)
             {
-                CARD8 ClockMask, PostMask;
-
                 pATI->LCDPanelID = BIOSByte(LCDPanelInfo);
                 pATI->LCDHorizontal = BIOSWord(LCDPanelInfo + 0x19U);
                 pATI->LCDVertical = BIOSWord(LCDPanelInfo + 0x1BU);
-
-                /* Get clock number */
-                if (inl(pATI->CPIO_CRTC_GEN_CNTL) & CRTC_EXT_DISP_EN)
-                    i = inl(pATI->CPIO_CLOCK_CNTL) & 0x03U;
-                else
-                    i = (inb(R_GENMO) & 0x0CU) >> 2;
-
-                /*
-                 * Get post divider.  A GCC bug has caused the following
-                 * expression to be broken down into its individual
-                 * components.
-                 */
-                ClockMask = PLL_VCLK0_XDIV << i;
-                PostMask = PLL_VCLK0_POST_DIV << (i * 2);
-                j = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
-                j *= MaxBits(PLL_VCLK0_POST_DIV) + 1;
-                j |= GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
-
-                /* Calculate clock of mode on entry */
-                Numerator = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV + i) *
-                    pATI->ReferenceNumerator;
-                Denominator = pATI->ClockDescriptor.MinM *
-                    pATI->ReferenceDenominator *
-                    pATI->ClockDescriptor.PostDividers[j];
-                pATI->LCDClock = ATIDivide(Numerator, Denominator, 1, 0);
             }
         }
     }
 
     ATIUnlock(pATI);            /* Unlock registers */
+
+#ifndef AVOID_CPIO
 
     /* Sometimes, the BIOS lies about the chip */
     if ((pATI->Chip >= ATI_CHIP_28800_4) && (pATI->Chip <= ATI_CHIP_28800_6))
@@ -970,6 +1065,8 @@ ATIPreInit
             pATI->Chip = IOValue1;
     }
 
+#endif /* AVOID_CPIO */
+
     /* Report what was found */
     xf86DrvMsg(pScreenInfo->scrnIndex, pATI->Chipset ? X_CONFIG : X_DEFAULT,
         "Chipset:  \"%s\".\n", ATIChipsetNames[pATI->Chipset]);
@@ -977,7 +1074,12 @@ ATIPreInit
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
         "%s graphics controller detected.\n", ATIChipNames[pATI->Chip]);
 
+#ifndef AVOID_CPIO
+
     if ((pATI->Chip >= ATI_CHIP_68800) && (pATI->Chip != ATI_CHIP_68800_3))
+
+#endif /* AVOID_CPIO */
+
     {
         Message = Buffer + snprintf(Buffer, SizeOf(Buffer), "Chip type %04X",
             pATI->ChipType);
@@ -999,17 +1101,33 @@ ATIPreInit
             Buffer, pATI->ChipClass, pATI->ChipRevision);
     }
 
+#ifndef AVOID_CPIO
+
     if (pATI->Adapter >= ATI_ADAPTER_MACH8)
+
+#endif /* AVOID_CPIO */
+
     {
         Message = Buffer + snprintf(Buffer, SizeOf(Buffer),
             "%s bus interface detected", ATIBusNames[pATI->BusType]);
+
+#ifndef AVOID_CPIO
+
         if (pATI->Adapter >= ATI_ADAPTER_MACH64)
+
+#endif /* AVOID_CPIO */
+
+        {
             Message += snprintf(Message, Buffer + SizeOf(Buffer) - Message,
                 ";  %s I/O base is 0x%04X",
                 (pATI->CPIODecoding == SPARSE_IO) ? "sparse" : "block",
                 pATI->CPIOBase);
+        }
+
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED, "%s.\n", Buffer);
     }
+
+#ifndef AVOID_CPIO
 
     if (pATI->CPIO_VGAWonder)
         xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
@@ -1021,6 +1139,8 @@ ATIPreInit
             "%s graphics accelerator detected,\n with %d kB of coprocessor"
             " memory.\n",
             ATIChipNames[pATI->Coprocessor], pATI->VideoRAM);
+
+#endif /* AVOID_CPIO */
 
     xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
         "%s adapter detected.\n", ATIAdapterNames[pATI->Adapter]);
@@ -1050,37 +1170,12 @@ ATIPreInit
         }
     }
 
-    if (pATI->LCDPanelID >= 0)
-    {
-        if (LCDPanelInfo <= 0)
-        {
-            xf86DrvMsgVerb(pScreenInfo->scrnIndex, X_ERROR, 0,
-                "Unable to determine dimensions of panel (ID %d).\n",
-                pATI->LCDPanelID);
-            ATILock(pATI);
-            return FALSE;
-        }
-
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-            "%dx%d panel (ID %d) detected.\n",
-            pATI->LCDHorizontal, pATI->LCDVertical, pATI->LCDPanelID);
-        for (i = 0;  i < 24;  i++)
-            Buffer[i] = BIOSByte(LCDPanelInfo + 1 + i);
-        for (i = 24;  --i >= 0;  )
-            if (Buffer[i] != ' ')
-            {
-                Buffer[i + 1] = '\0';
-                xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-                    "Panel model %s.\n", Buffer);
-                break;
-            }
-        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
-            "Panel clock is %.3f MHz.\n", (double)(pATI->LCDClock) / 1000.0);
-    }
-
     /* Promote chipset specification */
     switch (pATI->Chipset)
     {
+
+#ifndef AVOID_CPIO
+
         case ATI_CHIPSET_IBMVGA:
             if (pATI->Adapter == ATI_ADAPTER_VGA)
                 break;          /* XXX */
@@ -1097,6 +1192,9 @@ ATIPreInit
 
         case ATI_CHIPSET_MACH8:
         case ATI_CHIPSET_MACH32:
+
+#endif /* AVOID_CPIO */
+
         case ATI_CHIPSET_MACH64:
         case ATI_CHIPSET_RAGE128:
             pATI->Chipset = ATI_CHIPSET_ATI;
@@ -1115,11 +1213,22 @@ ATIPreInit
     else
         i = Support24bppFb | Support32bppFb;
     if (!xf86SetDepthBpp(pScreenInfo, 8, 8, 8, i))
+    {
+        ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
+    }
 
     switch (pScreenInfo->depth)
     {
-        case 1:  case 4:  case 8:  case 15:  case 16:  case 24:
+
+#ifndef AVOID_CPIO
+
+        case 1:  case 4:
+
+#endif /* AVOID_CPIO */
+
+        case 8:  case 15:  case 16:  case 24:
             break;
 
         default:
@@ -1127,6 +1236,7 @@ ATIPreInit
                 "Driver does not support depth %d.\n",
                 pScreenInfo->depth);
             ATILock(pATI);
+            ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
     }
 
@@ -1138,6 +1248,7 @@ ATIPreInit
             "Depth %d is not supported through this adapter.\n",
             pScreenInfo->depth);
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -1146,6 +1257,19 @@ ATIPreInit
      */
 
     ATIProcessOptions(pScreenInfo, pATI);
+
+#ifdef AVOID_CPIO
+
+    if (!pATI->OptionLinear)
+    {
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+            "A linear aperture is not available in this configuration.\n");
+        ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
+        return FALSE;
+    }
+
+#endif /* AVOID_CPIO */
 
     /*
      * Set colour weights.
@@ -1159,6 +1283,7 @@ ATIPreInit
     if (!xf86SetWeight(pScreenInfo, defaultWeight, defaultWeight))
     {
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -1174,6 +1299,7 @@ ATIPreInit
             pScreenInfo->weight.red, pScreenInfo->weight.green,
             pScreenInfo->weight.blue, pScreenInfo->depth);
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -1184,6 +1310,7 @@ ATIPreInit
     if (!xf86SetDefaultVisual(pScreenInfo, -1))
     {
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -1197,6 +1324,7 @@ ATIPreInit
             xf86GetVisualName(pScreenInfo->defaultVisual),
             pScreenInfo->depth);
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -1204,10 +1332,19 @@ ATIPreInit
      * Set colour gamma.
      */
 
-    if ((pScreenInfo->depth > 1) && !xf86SetGamma(pScreenInfo, defaultGamma))
+#ifndef AVOID_CPIO
+
+    if (pScreenInfo->depth > 1)
+
+#endif /* AVOID_CPIO */
+
     {
-        ATILock(pATI);
-        return FALSE;
+        if (!xf86SetGamma(pScreenInfo, defaultGamma))
+        {
+            ATILock(pATI);
+            ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
+            return FALSE;
+        }
     }
 
     pATI->depth = pScreenInfo->depth;
@@ -1219,14 +1356,21 @@ ATIPreInit
      * Determine which CRT controller to use for video modes.
      */
 
+#ifndef AVOID_CPIO
+
     if ((pATI->Chip >= ATI_CHIP_88800GXC) &&
         (pATI->depth >= 8) &&
         (pATI->Chipset == ATI_CHIPSET_ATI))
+
+#endif /* AVOID_CPIO */
+
     {
         pATI->NewHW.crtc = ATI_CRTC_MACH64;
 
         xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
             "Using Mach64 accelerator CRTC.\n");
+
+#ifndef AVOID_CPIO
 
         if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
         {
@@ -1256,7 +1400,13 @@ ATIPreInit
                 }
             }
         }
+
+#endif /* AVOID_CPIO */
+
     }
+
+#ifndef AVOID_CPIO
+
     else
     {
         pATI->NewHW.crtc = ATI_CRTC_VGA;
@@ -1274,6 +1424,7 @@ ATIPreInit
             xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                 "VGA is not available through this adapter.\n");
             ATILock(pATI);
+            ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
             return FALSE;
         }
 
@@ -1287,27 +1438,106 @@ ATIPreInit
         }
     }
 
+#endif /* AVOID_CPIO */
+
     /*
      * Decide between the CRT and the panel.
      */
     if (pATI->LCDPanelID >= 0)
     {
-        if (pATI->OptionCRT && AllowCRT)
+        CARD8 ClockMask, PostMask;
+
+        if (!pATI->LCDHorizontal || !pATI->LCDVertical)
+        {
+            if (pATI->LCDPanelID || (pATI->Chip <= ATI_CHIP_264LTPRO))
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    "Unable to determine dimensions of panel (ID %d).\n",
+                    pATI->LCDPanelID);
+            else
+                xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
+                    "Unable to determine dimensions of panel.\n");
+
+            ATILock(pATI);
+            ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
+            return FALSE;
+        }
+
+        if (pATI->LCDPanelID || (pATI->Chip <= ATI_CHIP_264LTPRO))
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                "%dx%d panel (ID %d) detected.\n",
+                pATI->LCDHorizontal, pATI->LCDVertical, pATI->LCDPanelID);
+        else
+            xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                "%dx%d panel detected.\n",
+                pATI->LCDHorizontal, pATI->LCDVertical);
+
+        if (LCDPanelInfo)
+        {
+            for (i = 0;  i < 24;  i++)
+                Buffer[i] = BIOSByte(LCDPanelInfo + 1 + i);
+            for (;  --i >= 0;  )
+                if (Buffer[i] && Buffer[i] != ' ')
+                {
+                    Buffer[i + 1] = '\0';
+                    xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+                        "Panel model %s.\n", Buffer);
+                    break;
+                }
+        }
+
+        /*
+         * Determine panel clock.  This must be done after option processing so
+         * that the adapter's reference frequency is always available.
+         */
+
+#ifndef AVOID_CPIO
+
+        if (!(pATI->LockData.crtc_gen_cntl & CRTC_EXT_DISP_EN))
+            i = (inb(R_GENMO) & 0x0CU) >> 2;
+        else
+
+#endif /* AVOID_CPIO */
+
+        {
+            i = inr(CLOCK_CNTL) & 0x03U;
+        }
+
+        /*
+         * Get post divider.  A GCC bug has caused the following expression to
+         * be broken down into its individual components.
+         */
+        ClockMask = PLL_VCLK0_XDIV << i;
+        PostMask = PLL_VCLK0_POST_DIV << (i * 2);
+        j = GetBits(ATIGetMach64PLLReg(PLL_XCLK_CNTL), ClockMask);
+        j *= MaxBits(PLL_VCLK0_POST_DIV) + 1;
+        j |= GetBits(ATIGetMach64PLLReg(PLL_VCLK_POST_DIV), PostMask);
+
+        /* Calculate clock of mode on entry */
+        Numerator = ATIGetMach64PLLReg(PLL_VCLK0_FB_DIV + i) *
+            pATI->ReferenceNumerator;
+        Denominator = pATI->ClockDescriptor.MinM * pATI->ReferenceDenominator *
+            pATI->ClockDescriptor.PostDividers[j];
+        pATI->LCDClock = ATIDivide(Numerator, Denominator, 1, 0);
+
+        xf86DrvMsg(pScreenInfo->scrnIndex, X_PROBED,
+            "Panel clock is %.3f MHz.\n", (double)(pATI->LCDClock) / 1000.0);
+
+        if (pATI->OptionCRT)
             xf86DrvMsg(pScreenInfo->scrnIndex, X_CONFIG,
                 "Using CRT interface and disabling digital flat panel.\n");
-        else if (pATI->OptionCRT || AllowCRT)
-        {
-            pATI->OptionCRT = FALSE;
+        else
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
                 "Using digital flat panel interface.\n");
-        }
     }
 
     /*
      * Finish detecting video RAM size.
      */
+    pScreenInfo->videoRam = pATI->VideoRAM;
 
-    AcceleratorVideoRAM = pScreenInfo->videoRam = pATI->VideoRAM;
+#ifndef AVOID_CPIO
+
+    AcceleratorVideoRAM = pScreenInfo->videoRam;
     if (pATI->Chip == ATI_CHIP_VGA)
     {
         if (pATI->depth <= 4)
@@ -1363,42 +1593,43 @@ ATIPreInit
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
                     "Virtual resolutions requiring more than %s kB\n of video"
-                    " memory might not function properly." ATI_README,
+                    " memory might not function properly.\n",
                     (pATI->depth == 1) ? "64" : "256");
             }
             else
             {
                 xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
-                    "VideoRAM reduced to 256 kB due to hardware limitations."
-                    ATI_README);
+                    "VideoRAM reduced to 256 kB due to hardware"
+                    " limitations.\n");
                 pScreenInfo->videoRam = 256;
             }
         }
     }
     else if ((pATI->NewHW.crtc == ATI_CRTC_MACH64) ||
              (pATI->Chip >= ATI_CHIP_264CT))
+
+#endif /* AVOID_CPIO */
+
     {
+
+#ifndef AVOID_CPIO
+
         if (pATI->depth >= 8)
+
+#endif /* AVOID_CPIO */
+
         {
-            /* Set MMIO address from PCI configuration space, if available */
-            if (pVideo)
-            {
-                /*
-                 * Update MMIO base address in case it was relocated by
-                 * resource conflict resolution.
-                 */
-                pPCI->pci_base2 = pciReadLong(pPCI->tag, PCI_CMD_BASE_REG + 8);
-                pVideo->memBase[2] = PCIGETMEMORY(pPCI->pci_base2);
-
-                if ((pATI->Block0Base = pVideo->memBase[2]))
-                   pATI->Block0Base += 0x0400U;
-            }
-
             /* Possibly set up for linear aperture */
+
+#ifndef AVOID_CPIO
+
             if (pATI->OptionLinear)
+
+#endif /* AVOID_CPIO */
+
             {
                 /* Get adapter's linear aperture configuration */
-                IOValue1 = inl(pATI->CPIO_CONFIG_CNTL);
+                IOValue1 = inr(CONFIG_CNTL);
                 pATI->LinearBase = GetBits(IOValue1, CFG_MEM_AP_LOC) << 22;
                 if ((IOValue1 & CFG_MEM_AP_SIZE) != CFG_MEM_AP_SIZE)
                 {
@@ -1418,9 +1649,10 @@ ATIPreInit
                     }
                 }
 
+#ifndef AVOID_CPIO
+
                 /* Except for PCI & AGP, allow for user override */
-                if ((pATI->BusType != ATI_BUS_PCI) &&
-                    (pATI->BusType != ATI_BUS_AGP))
+                if (pATI->BusType < ATI_BUS_PCI)
                 {
                     if (pATI->Chip == ATI_CHIP_88800CX)
                         IOValue2 = ~((unsigned long)((1 << 23) - 1));
@@ -1464,19 +1696,33 @@ ATIPreInit
                     }
                 }
 
+#endif /* AVOID_CPIO */
+
                 if (!pATI->LinearBase || !pATI->LinearSize)
                 {
+
+#ifndef AVOID_CPIO
+
                     if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
+
+#endif /* AVOID_CPIO */
+
                     {
                         xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
                             "A linear aperture is not available through this"
                             " adapter.\n");
                         ATILock(pATI);
+                        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
                         return FALSE;
                     }
 
+#ifndef AVOID_CPIO
+
                     /* Insurance */
                     pATI->LinearBase = pATI->LinearSize = 0;
+
+#endif /* AVOID_CPIO */
+
                 }
                 else
                 {
@@ -1488,37 +1734,32 @@ ATIPreInit
                         pATI->Block0Base =
                             pATI->LinearBase + pATI->LinearSize - 0x00000400U;
 
-                    AcceleratorVideoRAM = (pATI->LinearSize >> 10) - 2; /* 4? */
+                    AcceleratorVideoRAM = pATI->LinearSize >> 10;
+
+#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+
+                    /* Account for MMIO area, if it cannot be disabled */
+                    if (pATI->Chip < ATI_CHIP_264VTB)
+                    {
+                        AcceleratorVideoRAM--;
+                        if (pATI->Chip >= ATI_CHIP_264VT)
+                            AcceleratorVideoRAM--;
+                    }
+
+#else /* if X_BYTE_ORDER == X_BIG_ENDIAN */
+
+                    /* Big-endian aperture is 8 MB higher */
+                    pATI->LinearBase += 0x00800000U;
+
+#endif /* X_BYTE_ORDER */
+
                     if (AcceleratorVideoRAM < pATI->VideoRAM)
                     {
-                        if (pATI->Chip < ATI_CHIP_264VTB)
-                        {
-                            /*
-                             * Don't allow virtual resolution to overlay
-                             * register aperture(s).
-                             */
-                            pScreenInfo->videoRam = AcceleratorVideoRAM;
-                            xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
-                                "Virtual resolutions will be limited to %d kB"
-                                " to account for\n accelerator register"
-                                " aperture.\n",
-                                AcceleratorVideoRAM);
-                        }
-                        else
-                        {
-                            /*
-                             * On VTB's and later, ATIInit disables the primary
-                             * register aperture.  This is done so the driver
-                             * can get at the frame buffer memory behind it.
-                             * For MMIO purposes, the auxillary register
-                             * aperture will be used instead.  Also, ignore the
-                             * CONFIG_CNTL register's indication of linear
-                             * aperture size, as it is insufficient for
-                             * adapters with more than 8MB of video memory.
-                             */
-                            if (pATI->VideoRAM > (8 * 1024))
-                                pATI->LinearSize = 16 * 1024 * 1024;
-                        }
+                        pScreenInfo->videoRam = AcceleratorVideoRAM;
+                        xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
+                            "Virtual resolutions will be limited to %d kB due"
+                            " to linear aperture size.\n",
+                            AcceleratorVideoRAM);
                     }
 
                     xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
@@ -1526,20 +1767,17 @@ ATIPreInit
                         pATI->LinearSize >> 20, pATI->LinearBase);
 
                     /* Only mmap what is needed */
-                    pATI->ApertureSize = pATI->LinearSize =
-                        pATI->VideoRAM * 1024;
+                    ApertureSize = pATI->LinearSize = pATI->VideoRAM * 1024;
                 }
             }
         }
+
+#ifndef AVOID_CPIO
 
         /* Set up for a banked aperture */
         if (pATI->VGAAdapter != ATI_ADAPTER_NONE)
         {
             pATI->UseSmallApertures = TRUE;
-
-            /* Set banking port numbers */
-            pATI->CPIO_MEM_VGA_RP_SEL = ATIIOPort(MEM_VGA_RP_SEL);
-            pATI->CPIO_MEM_VGA_WP_SEL = ATIIOPort(MEM_VGA_WP_SEL);
 
             /* Set banking functions */
             if (pATI->depth <= 4)
@@ -1571,11 +1809,10 @@ ATIPreInit
                 pATI->Block0Base = 0x000BFC00U;
         }
 
+#endif /* AVOID_CPIO */
+
         if (pATI->Block0Base)
         {
-            pATI->PageSize = getpagesize();
-            pATI->MMIOBase = pATI->Block0Base & ~(pATI->PageSize - 1);
-
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
                 "Using Block 0 MMIO aperture at 0x%08X.\n", pATI->Block0Base);
 
@@ -1589,12 +1826,15 @@ ATIPreInit
             }
         }
     }
+
+#ifndef AVOID_CPIO
+
     else
     /*
      * After BIOS initialisation, the accelerator (if any) and the VGA won't
      * necessarily agree on the amount of video memory, depending on whether or
      * where the memory boundary is configured.  Any discrepancy will be
-     * resolved by ATIInit.
+     * resolved by ATIAdapterPreInit().
      *
      * However, it's possible that there is more video memory than VGA Wonder
      * can architecturally handle.
@@ -1615,8 +1855,8 @@ ATIPreInit
         else
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_NOTICE,
-                "VideoRAM reduced to %d kB due to hardware limitations."
-                ATI_README, AcceleratorVideoRAM);
+                "VideoRAM reduced to %d kB due to hardware limitations.\n",
+                AcceleratorVideoRAM);
 
             pScreenInfo->videoRam = AcceleratorVideoRAM;
         }
@@ -1651,8 +1891,24 @@ ATIPreInit
         }
     }
 
+#endif /* AVOID_CPIO */
+
+    /*
+     * Remap apertures.  Must lock and re-unlock around this in case the
+     * remapping fails.
+     */
+    ATILock(pATI);
+    ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
+    if (!ATIMapApertures(pScreenInfo->scrnIndex, pATI))
+        return FALSE;
+
+    ATIUnlock(pATI);
+
     if (pATI->OptionAccel)
     {
+
+#ifndef AVOID_CPIO
+
         if (!pATI->Block0Base || (pATI->NewHW.crtc == ATI_CRTC_VGA))
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
@@ -1660,12 +1916,22 @@ ATIPreInit
             pATI->OptionAccel = FALSE;
         }
         else
+
+#endif /* AVOID_CPIO */
+
+        {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_INFO,
                 "MMIO write caching %sabled.\n",
                 pATI->OptionMMIOCache ? "en" : "dis");
+        }
     }
 
+#ifndef AVOID_CPIO
+
     if (pATI->Adapter >= ATI_ADAPTER_MACH32)
+
+#endif /* AVOID_CPIO */
+
     {
         if (pATI->Chip >= ATI_CHIP_264CT)
             ATIReportMemory(pScreenInfo, pATI,
@@ -1677,22 +1943,42 @@ ATIPreInit
             ATIReportMemory(pScreenInfo, pATI,
                 ATIMemoryTypeNames_Mach[pATI->MemoryType]);
     }
+
+#ifndef AVOID_CPIO
+
     else if (pATI->Adapter >= ATI_ADAPTER_V3)
         ATIReportMemory(pScreenInfo, pATI,
             (ATIGetExtReg(0xB7U) & 0x04U) ? "DRAM" : "VRAM");
     else
         ATIReportMemory(pScreenInfo, pATI, "video memory");
 
+#endif /* AVOID_CPIO */
+
     /*
      * Finish banking setup.  This needs to be fixed to not assume the mode on
      * entry is a VGA mode.  XXX
      */
+
+#ifndef AVOID_CPIO
+
     if (pATI->VGAAdapter == ATI_ADAPTER_NONE)
+
+#endif /* AVOID_CPIO */
+
     {
         pATI->OldHW.crtc = pATI->NewHW.crtc;
+
+#ifndef AVOID_CPIO
+
         pATI->OldHW.SetBank = (ATIBankProcPtr)NoopDDA;
         pATI->BankInfo.BankSize = 0;            /* No banking */
+
+#endif /* AVOID_CPIO */
+
     }
+
+#ifndef AVOID_CPIO
+
     else
     {
         pATI->OldHW.crtc = ATI_CRTC_VGA;
@@ -1703,7 +1989,7 @@ ATIPreInit
         else
 #endif
         if ((pATI->Chip >= ATI_CHIP_88800GXC) &&
-            (inl(pATI->CPIO_CRTC_GEN_CNTL) & CRTC_EXT_DISP_EN))
+            (pATI->LockData.crtc_gen_cntl & CRTC_EXT_DISP_EN))
             pATI->OldHW.crtc = ATI_CRTC_MACH64;
 
         if (pATI->depth <= 4)
@@ -1737,7 +2023,7 @@ ATIPreInit
         else if (!pATI->UseSmallApertures)
             pATI->OldHW.SetBank = pATI->NewHW.SetBank;
         else if ((pATI->OldHW.crtc == ATI_CRTC_VGA) &&
-                 !(inl(pATI->CPIO_CONFIG_CNTL) & CFG_MEM_VGA_AP_EN))
+                 !(pATI->LockData.config_cntl & CFG_MEM_VGA_AP_EN))
         {
             pATI->OldHW.SetBank = (ATIBankProcPtr)NoopDDA;
             pATI->OldHW.nBank = 1;
@@ -1747,15 +2033,19 @@ ATIPreInit
         else
             pATI->OldHW.SetBank = ATIMach64SetBankPlanar;
 
-        if (((pATI->ApertureSize * pATI->depth) /
-             pATI->BankInfo.nBankDepth) >=
+        if (((ApertureSize * pATI->depth) / pATI->BankInfo.nBankDepth) >=
             (unsigned)(pScreenInfo->videoRam * 1024))
             pATI->BankInfo.BankSize = 0;        /* No banking */
     }
 
+#endif /* AVOID_CPIO */
+
     if (pATI->OptionShadowFB)
     {
         /* Until ShadowFB becomes a true screen wrapper... */
+
+#ifndef AVOID_CPIO
+
         if (pATI->BankInfo.BankSize)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
@@ -1768,7 +2058,11 @@ ATIPreInit
                 "Cannot shadow a planar frame buffer.\n");
             pATI->OptionShadowFB = FALSE;
         }
-        else if (pATI->OptionAccel)
+        else
+
+#endif /* AVOID_CPIO */
+
+        if (pATI->OptionAccel)
         {
             xf86DrvMsg(pScreenInfo->scrnIndex, X_WARNING,
                 "Cannot shadow an accelerated frame buffer.\n");
@@ -1780,10 +2074,11 @@ ATIPreInit
     }
 
     /* 264VT-B's and later have DSP registers */
-    if ((pATI->Chip >= ATI_CHIP_264VTB) && (pATI->CPIODecoding == BLOCK_IO) &&
-        !ATIDSPPreInit(pScreenInfo, pATI))
+    if ((pATI->Chip >= ATI_CHIP_264VTB) &&
+        !ATIDSPPreInit(pScreenInfo->scrnIndex, pATI))
     {
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -1825,12 +2120,24 @@ ATIPreInit
             Denominator = pATI->ClockDescriptor.MinM *
                 pATI->XCLKReferenceDivider * pATI->ReferenceDenominator;
 
-            if (pATI->depth >= 8)
-                Denominator *= pATI->bitsPerPixel / 4;
+#ifndef AVOID_CPIO
 
-            i = (5 - 2) - pATI->XCLKPostDivider;
-            if (pATI->NewHW.crtc != ATI_CRTC_VGA)
-               i++;
+            if (pATI->depth >= 8)
+
+#endif /* AVOID_CPIO */
+
+            {
+                Denominator *= pATI->bitsPerPixel / 4;
+            }
+
+            i = (6 - 2) - pATI->XCLKPostDivider;
+
+#ifndef AVOID_CPIO
+
+            if (pATI->NewHW.crtc == ATI_CRTC_VGA)
+               i--;
+
+#endif /* AVOID_CPIO */
 
             i = (ATIDivide(Numerator, Denominator, i, -1) / 1000) * 1000;
             if (i < ATIClockRange.maxClock)
@@ -1900,6 +2207,9 @@ ATIPreInit
             break;
 
         default:
+
+#ifndef AVOID_CPIO
+
             /*
              * 80 MHz is too high in some cases.  Limit 18800-x's to 40 MHz.
              * Don't exceed the memory clock on VGA Wonder capables with less
@@ -1914,7 +2224,13 @@ ATIPreInit
                 ATIClockRange.maxClock =
                     (GetBits(BIOSByte(0x44U), 0x04U) * 5000) + 40000;
             else
+
+#endif /* AVOID_CPIO */
+
+            {
                 ATIClockRange.maxClock = 80000;
+            }
+
             break;
     }
     if (pATI->ClockDescriptor.MaxN <= 0)
@@ -1922,21 +2238,24 @@ ATIPreInit
             "Maximum pixel clock:  %.3f MHz.\n",
             (double)ATIClockRange.maxClock / 1000.0);
 
-    /* Map MMIO areas */
-    if (!ATIMapApertures(pScreenInfo, pATI))
-        return FALSE;
-
     /*
      * Determine available pixel clock frequencies.
      */
 
     ATIClockPreInit(pScreenInfo, pATI, pGDev, &ATIClockRange);
-    if (pATI->ProgrammableClock != ATI_CLOCK_FIXED)
+    if (pATI->ProgrammableClock > ATI_CLOCK_FIXED)
         Strategy = LOOKUP_BEST_REFRESH;
 
     /*
      * Mode validation.
      */
+
+#ifdef AVOID_CPIO
+
+    if (pATI->Chip >= ATI_CHIP_264CT)
+        minPitch = 8;
+
+#else /* AVOID_CPIO */
 
     if ((pATI->depth >= 8) && (pATI->Chip >= ATI_CHIP_264CT))
         minPitch = 8;
@@ -1948,15 +2267,29 @@ ATIPreInit
         minPitch = 32;          /* Very strange, but true */
         maxPitch = 0x3FU;
     }
+
+#endif /* AVOID_CPIO */
+
     else
         minPitch = 16;
 
     pATI->pitchInc = minPitch;
+
+#ifndef AVOID_CPIO
+
     if (pATI->depth >= 8)
+
+#endif /* AVOID_CPIO */
+
+    {
         pATI->pitchInc *= pATI->bitsPerPixel;
+    }
 
     switch (pATI->NewHW.crtc)
     {
+
+#ifndef AVOID_CPIO
+
         case ATI_CRTC_VGA:
             /*
              * IBM's VGA doesn't allow for interlaced modes.
@@ -1997,6 +2330,8 @@ ATIPreInit
             Strategy |= LOOKUP_CLKDIV2;
 
             break;
+
+#endif /* AVOID_CPIO */
 
         case ATI_CRTC_MACH64:
             pScreenInfo->maxHValue = (MaxBits(CRTC_H_TOTAL) + 1) << 3;
@@ -2108,11 +2443,11 @@ ATIPreInit
             &ATIClockRange, NULL, minPitch, maxPitch,
             pATI->pitchInc, 0, maxHeight,
             pScreenInfo->display->virtualX, pScreenInfo->display->virtualY,
-            pATI->ApertureSize, Strategy);
+            ApertureSize, Strategy);
     if (i <= 0)
     {
-        ATIUnmapApertures(pScreenInfo, pATI);
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 
@@ -2132,8 +2467,8 @@ ATIPreInit
     /* Load required modules */
     if (!ATILoadModules(pScreenInfo, pATI))
     {
-        ATIUnmapApertures(pScreenInfo, pATI);
         ATILock(pATI);
+        ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
         return FALSE;
     }
 #endif
@@ -2169,7 +2504,6 @@ ATIPreInit
     ATIAdapterPreInit(pScreenInfo, pATI, &pATI->NewHW);
 
     /* Relock registers */
-    ATIUnmapApertures(pScreenInfo, pATI);
     ATILock(pATI);
 
     if (!pScreenInfo->chipset || !*pScreenInfo->chipset)
@@ -2178,10 +2512,13 @@ ATIPreInit
     /* Generate noise if requested */
     if (xf86GetVerbosity() > 3)
     {
-        ATIPrintBIOS(BIOS, 0, BIOSSize);
+        if (BIOSSize > 0)
+            ATIPrintBIOS(BIOS, 0, BIOSSize);
         xf86ErrorFVerb(4, "\n On server entry:\n");
         ATIPrintRegisters(pATI);
     }
+
+    ATIUnmapApertures(pScreenInfo->scrnIndex, pATI);
 
     return TRUE;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.15 2000/06/20 05:08:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.17 2000/08/04 16:13:25 eich Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -210,7 +210,7 @@ xf86ReplaceStrOption(pointer optlist, char *name, char* val)
 pointer
 xf86AddNewOption(pointer head, char *name, char *val)
 {
-    char *tmp = xf86strdup(val);
+    char *tmp = strdup(val);
                                                                                
     return addNewOption(head, name, val);
 }

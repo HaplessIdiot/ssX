@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.139 2000/05/23 04:47:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.140 2000/06/20 05:08:43 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -223,6 +223,7 @@ void xf86GetClocks(ScrnInfoPtr pScrn, int num,
 		   void (*ProtectRegs)(ScrnInfoPtr, Bool),
 		   void (*BlankScreen)(ScrnInfoPtr, Bool), int vertsyncreg,
 		   int maskval, int knownclkindex, int knownclkvalue);
+void xf86SetPriority(Bool up);
 const char *xf86GetVisualName(int visual);
 int xf86GetVerbosity(void);
 Pix24Flags xf86GetPix24(void);

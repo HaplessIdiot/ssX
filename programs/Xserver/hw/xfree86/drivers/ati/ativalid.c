@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.9 2000/02/18 12:19:42 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/ativalid.c,v 1.10 2000/04/12 14:44:40 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 #include "aticrtc.h"
 #include "atistruct.h"
 #include "ativalid.h"
+
 #include "xf86.h"
 
 /*
@@ -45,8 +46,13 @@ ATIValidMode
     ScrnInfoPtr pScreenInfo = xf86Screens[iScreen];
     ATIPtr      pATI        = ATIPTR(pScreenInfo);
     Bool        InterlacedSeen;
-    int         VDisplay, VTotal, HBlankWidth;
-    int         HAdjust, VScan, VInterlace;
+    int         HBlankWidth, HAdjust, VScan, VInterlace;
+
+#ifndef AVOID_CPIO
+
+    int VDisplay, VTotal;
+
+#endif /* AVOID_CPIO */
 
     if (flags & MODECHECK_FINAL)
     {
@@ -170,7 +176,7 @@ ATIValidMode
         pMode->VTotal = ATIReverseVertical(CrtcVTotal);
 
 #       undef ATIReverseHorizontal
-#       undef ATIReverVertical
+#       undef ATIReverseVertical
     }
 
     HBlankWidth = (pMode->HTotal >> 3) - (pMode->HDisplay >> 3);
@@ -179,6 +185,9 @@ ATIValidMode
 
     switch (pATI->NewHW.crtc)
     {
+
+#ifndef AVOID_CPIO
+
         case ATI_CRTC_VGA:
             /* Prevent overscans */
             if (HBlankWidth > 63)
@@ -209,6 +218,8 @@ ATIValidMode
                 return MODE_BAD_VVALUE;
 
             break;
+
+#endif /* AVOID_CPIO */
 
         case ATI_CRTC_MACH64:
             if (VScan > 2)

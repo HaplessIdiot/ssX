@@ -1,4 +1,19 @@
-XFree86 4.0.1a (2 August 2000)
+XFree86 4.0.1b (?? ?????? 2000)
+ 492. ATI driver changes (Marc La France):
+      - Fix resource relocation bug.
+      - An attempt at fixing problems reported with Chrontel 8398's.
+      - Workaround for Mobility BIOS bug that affected the driver's ability to
+        restore the mode on server entry.
+      - Fix SEGV that occurs with ATI adapter BIOS'es that do not support some
+        flavour of VBE.
+      - Allow the driver to tolerate the absence of an initialised adapter BIOS
+        image and introduce XF86Config options for the information the driver
+        would otherwise require from it.
+      - Recognise more cases where a DFP panel might be in use.
+      - Fix minor bug that occurred on xf86SetDepthBpp() failures.
+      - Implement a compilation option that produces an MMIO-only version of
+        the driver.  Intended for non-Intel architectures.  See the driver's
+        Imakefile for details.
  491. fixed handling of backwards compatibility in xvmode (Egbert Eich). 
  490. fixed changing mouse protocol with xf86misc extensions (Egbert Eich).
  489. added code to sanitize uninitialized PCI config space
@@ -28,6 +43,8 @@ XFree86 4.0.1a (2 August 2000)
       test of pallette registers. This prevents annoying flashing
       screen on server start (Egbert Eich).
  475. added module/font/rgb path parameters to xf86cfg (Egbert Eich).
+
+XFree86 4.0.1a (2 August 2000)
  474. i810 DRI updates (Jeff Hartmann).
  473. i810 driver updates (H. J. Lu).
  472. Save/restore the text mode colourmap for Solaris, to fix a blank
@@ -10941,4 +10958,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1254 2000/08/01 23:38:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1256 2000/08/04 16:13:17 eich Exp $

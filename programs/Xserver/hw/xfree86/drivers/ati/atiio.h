@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.6 2000/03/01 16:00:57 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atiio.h,v 1.7 2000/03/30 15:41:17 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -22,13 +22,19 @@
  */
 
 #ifndef ___ATIIO_H___
-#define ___ATIIO_H___ 1
 
-#ifndef NO_COMPILER_H_EXTRAS
-#define NO_COMPILER_H_EXTRAS
+#if !defined(___ATI_H___) && defined(XFree86Module)
+# error missing #include "ati.h" before #include "atiio.h"
+# undef XFree86Module
 #endif
 
+#define ___ATIIO_H___ 1
+
 #include "atistruct.h"
+
+#ifndef NO_COMPILER_H_EXTRAS
+# define NO_COMPILER_H_EXTRAS
+#endif
 #include "compiler.h"
 
 /* I/O decoding definitions */
@@ -38,15 +44,13 @@ typedef enum
     BLOCK_IO
 } ATIIODecodingType;
 
-#define ATIIOPort(_PortTag)                                                \
-    (((pATI->CPIODecoding == SPARSE_IO) ?                                  \
-      (((_PortTag) & SPARSE_IO_SELECT) | ((_PortTag) & IO_BYTE_SELECT)) :  \
-      (((_PortTag) & BLOCK_IO_SELECT)  | ((_PortTag) & IO_BYTE_SELECT))) | \
-     pATI->CPIOBase)
+#ifndef AVOID_CPIO
 
 extern void ATISetVGAIOBase FunctionPrototype((ATIPtr, const CARD8));
 extern void ATIModifyExtReg FunctionPrototype((ATIPtr, const CARD8, int,
                                                const CARD8, CARD8));
+
+#endif /* AVOID_CPIO */
 
 /* Odds and ends to ease reading and writting of registers */
 #define GetReg(_Register, _Index) \
@@ -64,42 +68,6 @@ extern void ATIModifyExtReg FunctionPrototype((ATIPtr, const CARD8, int,
     GetReg(pATI->CPIO_VGAWonder, _Index)
 #define ATIPutExtReg(_Index, _Value)            \
     PutReg(pATI->CPIO_VGAWonder, _Index, _Value)
-
-extern void ATIAccessMach64PLLReg FunctionPrototype((ATIPtr, const CARD8,
-                                                     const Bool));
-
-#define ATIGetMach64PLLReg(_Index)                  \
-    (                                               \
-        ATIAccessMach64PLLReg(pATI, _Index, FALSE), \
-        inb(pATI->CPIO_CLOCK_CNTL + 2)              \
-    )
-#define ATIPutMach64PLLReg(_Index, _Value)          \
-    (                                               \
-        ATIAccessMach64PLLReg(pATI, _Index, TRUE),  \
-        outb(pATI->CPIO_CLOCK_CNTL + 2, _Value)     \
-    )
-
-#define ATIGetLTProLCDReg(_Index)                                     \
-    (                                                                 \
-        outb(pATI->CPIO_LCD_INDEX, SetBits((_Index), LCD_REG_INDEX)), \
-        inl(pATI->CPIO_LCD_DATA)                                      \
-    )
-#define ATIPutLTProLCDReg(_Index, _Value)                             \
-    (                                                                 \
-        outb(pATI->CPIO_LCD_INDEX, SetBits((_Index), LCD_REG_INDEX)), \
-        outl(pATI->CPIO_LCD_DATA, (_Value))                           \
-    )
-
-#define ATIGetLTProTVReg(_Index)                                        \
-    (                                                                   \
-        outb(pATI->CPIO_TV_OUT_INDEX, SetBits((_Index), TV_REG_INDEX)), \
-        inl(pATI->CPIO_TV_OUT_DATA)                                     \
-    )
-#define ATIPutLTProTVReg(_Index, _Value)                                \
-    (                                                                   \
-        outb(pATI->CPIO_TV_OUT_INDEX, SetBits((_Index), TV_REG_INDEX)), \
-        outl(pATI->CPIO_TV_OUT_DATA, (_Value))                          \
-    )
 
 /* Wait until "n" queue entries are free */
 #define ibm8514WaitQueue(_n)                      \

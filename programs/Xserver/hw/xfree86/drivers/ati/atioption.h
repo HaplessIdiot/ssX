@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.1 1999/07/06 11:38:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.h,v 1.2 2000/02/18 12:19:27 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -26,6 +26,7 @@
 
 #include "atipriv.h"
 #include "atiproto.h"
+
 #include "xf86str.h"
 
 extern OptionInfoPtr ATIAvailableOptions FunctionPrototype((int, int));

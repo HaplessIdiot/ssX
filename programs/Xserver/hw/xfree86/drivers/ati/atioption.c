@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.7 2000/03/30 15:41:18 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atioption.c,v 1.8 2000/05/03 00:44:06 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -38,6 +38,7 @@ typedef enum
     ATI_OPTION_LINEAR,
     ATI_OPTION_MMIO_CACHE,
     ATI_OPTION_PROBE_CLOCKS,
+    ATI_OPTION_REFERENCE_CLOCK,
     ATI_OPTION_SHADOW_FB
 } ATIPublicOptionType;
 
@@ -49,14 +50,69 @@ typedef enum
 
 static OptionInfoRec ATIPublicOptions[] =
 {
-    {ATI_OPTION_ACCEL,        "accel",          OPTV_BOOLEAN, {0, }, FALSE},
-    {ATI_OPTION_CRT,          "crt_screen",     OPTV_BOOLEAN, {0, }, FALSE},
-    {ATI_OPTION_CSYNC,        "composite_sync", OPTV_BOOLEAN, {0, }, FALSE},
-    {ATI_OPTION_LINEAR,       "linear",         OPTV_BOOLEAN, {0, }, FALSE},
-    {ATI_OPTION_MMIO_CACHE,   "mmio_cache",     OPTV_BOOLEAN, {0, }, FALSE},
-    {ATI_OPTION_PROBE_CLOCKS, "probe_clocks",   OPTV_BOOLEAN, {0, }, FALSE},
-    {ATI_OPTION_SHADOW_FB,    "shadow_fb",      OPTV_BOOLEAN, {0, }, FALSE},
-    {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
+    {
+        ATI_OPTION_ACCEL,
+        "accel",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_CRT,
+        "crt_screen",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_CSYNC,
+        "composite_sync",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_LINEAR,
+        "linear",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_MMIO_CACHE,
+        "mmio_cache",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_PROBE_CLOCKS,
+        "probe_clocks",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_REFERENCE_CLOCK,
+        "reference_clock",
+        OPTV_FREQ,
+        {0, },
+        FALSE
+    },
+    {
+        ATI_OPTION_SHADOW_FB,
+        "shadow_fb",
+        OPTV_BOOLEAN,
+        {0, },
+        FALSE
+    },
+    {
+        -1,
+        NULL,
+        OPTV_NONE,
+        {0, },
+        FALSE
+    }
 };
 
 /*
@@ -90,9 +146,27 @@ ATIProcessOptions
     OptionInfoRec PublicOption[NumberOf(ATIPublicOptions)];
     OptionInfoRec PrivateOption[] =
     {
-        {ATI_OPTION_DEVEL,        "tsi",            OPTV_BOOLEAN, {0, }, FALSE},
-        {ATI_OPTION_SYNC,         "lcdsync",        OPTV_BOOLEAN, {0, }, FALSE},
-        {-1,                      NULL,             OPTV_NONE   , {0, }, FALSE}
+        {
+            ATI_OPTION_DEVEL,
+            "tsi",
+            OPTV_BOOLEAN,
+            {0, },
+            FALSE
+        },
+        {
+            ATI_OPTION_SYNC,
+            "lcdsync",
+            OPTV_BOOLEAN,
+            {0, },
+            FALSE
+        },
+        {
+            -1,
+            NULL,
+            OPTV_NONE,
+            {0, },
+            FALSE
+        }
     };
 
     (void)memcpy(PublicOption, ATIPublicOptions, SizeOf(ATIPublicOptions));
@@ -107,14 +181,36 @@ ATIProcessOptions
 #   define ShadowFB    PublicOption[ATI_OPTION_SHADOW_FB].value.bool
 #   define Sync        PrivateOption[ATI_OPTION_SYNC].value.bool
 
+#   define ReferenceClock \
+        PublicOption[ATI_OPTION_REFERENCE_CLOCK].value.freq.freq
+
     /* Pick up XF86Config options */
     xf86CollectOptions(pScreenInfo, NULL);
 
     /* Set non-zero defaults */
+
+#ifndef AVOID_CPIO
+
     if (pATI->Adapter >= ATI_ADAPTER_MACH64)
+
+#endif /* AVOID_CPIO */
+
+    {
         Accel = Linear = CacheMMIO = TRUE;
+    }
+
+    ReferenceClock = ((double)157500000.0) / ((double)11.0);
+
+#ifndef AVOID_CPIO
+
     if (pATI->BusType >= ATI_BUS_PCI)
+
+#endif /* AVOID_CPIO */
+
+    {
         ShadowFB = TRUE;
+    }
+
     Sync = TRUE;
 
     xf86ProcessOptions(pScreenInfo->scrnIndex, pScreenInfo->options,
@@ -141,4 +237,27 @@ ATIProcessOptions
     pATI->OptionProbeClocks = ProbeClocks;
     pATI->OptionShadowFB = ShadowFB;
     pATI->OptionSync = Sync;
+
+    /* Only set the reference clock if it hasn't already been determined */
+    if (!pATI->ReferenceNumerator || !pATI->ReferenceDenominator)
+    {
+        switch ((int)(ReferenceClock / ((double)100000.0)))
+        {
+            case 143:
+                pATI->ReferenceNumerator = 157500;
+                pATI->ReferenceDenominator = 11;
+                break;
+
+            case 286:
+                pATI->ReferenceNumerator = 315000;
+                pATI->ReferenceDenominator = 11;
+                break;
+
+            default:
+                pATI->ReferenceNumerator =
+                    (int)(ReferenceClock / ((double)1000.0));
+                pATI->ReferenceDenominator = 1;
+                break;
+        }
+    }
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.4 1999/08/01 07:57:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atibus.h,v 1.5 2000/02/18 12:19:15 tsi Exp $ */
 /*
  * Copyright 1997 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -22,10 +22,17 @@
  */
 
 #ifndef ___ATIBUS_H___
+
+#if !defined(___ATI_H___) && defined(XFree86Module)
+# error missing #include "ati.h" before #include "atibus.h"
+# undef XFree86Module
+#endif
+
 #define ___ATIBUS_H___ 1
 
 #include "atipriv.h"
 #include "atiproto.h"
+
 #include "xf86str.h"
 
 /*
@@ -46,7 +53,8 @@ typedef enum
 
 extern const char *ATIBusNames[];
 
-extern int ATIClaimBusSlot FunctionPrototype((DriverPtr, int, GDevPtr, Bool,
-                                              ATIPtr));
+extern void ATIRefreshPCIBases FunctionPrototype((pciVideoPtr, pciConfigPtr));
+extern int  ATIClaimBusSlot    FunctionPrototype((DriverPtr, int, GDevPtr,
+                                                  Bool, ATIPtr));
 
 #endif /* ___ATIBUS_H___ */

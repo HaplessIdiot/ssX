@@ -8,10 +8,14 @@
 
 <title>ATI Adapters README file
 <author>Marc Aurele La France
-<date>2000 June 15
+<date>2000 August 3
+
+
+
+
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.30tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.31tsi Exp $
 </ident>
 
 <abstract>
@@ -83,7 +87,7 @@ VGAWonder series:  18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6
                    3D Rage Mobility (including the -M and -P variants)</verb>
 The driver also supports 32K, 64K and 16M-colour modes on the 264xT and 3D Rage
 series of adapters using the accelerator CRTC (but not the VGA CRTC).<p>
-The newer Rage 128 chips are not yet supported by this driver.
+The newer Rage 128 and Radeon chips are not yet supported by this driver.
 Rage 128's are, however, supported by a separate driver, and Rage 128 owners
 should read the r128 driver's documentation for details.<p>
 Adapters based on the above chips have been marketed under a rather large
@@ -135,9 +139,12 @@ on 88800 controllers, if the accelerator CRTC is used.
 XF86Config options are available to disable this aperture, or (for non-PCI
 adapters) enable it or move it to some other address.<p>
 By default, the driver provides some acceleration for Mach64 if the accelerator
-CRTC is used.
+CRTC is used, and modes whose colour depth greater than or equal to 8 are to be
+used.
 This support is as yet incomplete and can be disabled entirely with an
 XF86Config option.<p>
+On non-Intel platforms, the driver can, currenly, only support PCI Mach64
+adapters.<p>
 <sect>Current implementation of generic VGA support for non-ATI adapters<p>
 Support for generic VGA with non-ATI adapters is also implemented, but has
 undergone only limited testing.
@@ -145,7 +152,7 @@ The driver will intentionally disallow the use of this support with ATI
 adapters.
 This support must be explicitly requested through an XF86Config ChipSet
 specification.
-This prevents the current generic driver from being disabled.<p>
+This prevents the current VGA generic driver from being disabled.<p>
 This driver's generic VGA support is intended as an extension of that provided
 by the current generic driver.
 Specifically, within the architectural bounds defined by IBM's VGA standard,
@@ -212,6 +219,8 @@ appropriate, will force the driver to probe for the non-PCI adapter.
 These ChipSet names should, therefore, only be used when there is in fact such
 an adapter in the system.
 They are otherwise equivalent to ``<it>ati</it>''.<p>
+On non-Intel platforms, only ``<it>ati</it>'' and ``<it>mach64</it>'' ChipSet
+values are operative.<p>
 <sect1>ChipID & ChipRev specifications<p>
 These specifications will cause the driver to associate the ``Device'' section
 only with an adapter having the same attributes, or an adapter whose PCI device
@@ -348,7 +357,8 @@ ICS 2494-AM clock generators (found on some Dell motherboards):
           18.750  19.375  20.000  22.500   6.294   7.081   7.875   9.000
           25.000  27.500  31.500  33.750  10.000  11.225  12.500  16.250</verb>
 VGAWonder VLB, VGA 1024 VLB, Mach32 and Mach64 owners should only specify up to
-the first 32 frequencies.<p>
+the first 32 frequencies.
+Any more will be ignored.<p>
 Other clock generators that have been used on ATI adapters (which can all be
 said to be clones of one of the above) might generate non-zero frequencies for
 those that are zero above, or vice-versa.<p>
@@ -366,11 +376,9 @@ Any more will be ignored.<p>
 <sect1>Option <it>``crt_screen''</it><p>
 This specification is only effective when the driver detects that the adapter's
 BIOS has initialised both the digital flat panel and CRT interfaces.
-In such a situation, the driver will normally drive the panel and disable the
-CRT.
+In such a situation, the driver will normally drive both the panel and the CRT.
 This specification causes the driver to disable the digital flat panel and
-display the screen image on the CRT instead.
-This specification will be reworked in the near future.<p>
+display the screen image on the CRT instead.<p>
 <sect1>Option <it>``noaccel''</it><p>
 By default, the driver will accelerate draw operations if a Mach64 CRTC is used
 to drive the display.
@@ -382,6 +390,8 @@ By default, the driver will enable a linear video memory aperture for
 256-colour and higher depth modes if it is also using a Mach64 accelerator CRTC
 or an integrated Mach64 graphics chip.
 This option disables this linear aperture.<p>
+On non-Intel platforms, the driver requires a linear aperture and, so, this
+option should not be specified.<p>
 <sect1>Option <it>``shadowfb''</it><p>
 If this option is enabled, the driver will cause the CPU to do each drawing
 operation first into a shadow frame buffer in system virtual memory and then
@@ -416,6 +426,25 @@ For PCI and AGP adapters, this address is determined at system bootup according
 to the PCI Plug'n'Play specification which arbitrates the resource requirements
 of most devices in the system.
 This means the driver can not easily change the linear aperture address.<p>
+<sect1>Option <it>``ReferenceClock''</it> ``frequency''<p>
+This option is only applicable to non-Intel platforms, where an adapter BIOS is
+not available to the driver.
+The option specifies the reference frequency used by the adapter's clock
+generator.
+The default is 14.318 MHz, and other typical values are 28.636, or 29.5 MHz.<p>
+<sect1>ClockChip <it>``name''</it><p>
+This option is only applicable to non-Intel platforms, where an adapter BIOS is
+not available to the driver, and the driver cannot reliably determine whether
+the clock generator the adapter uses is a variant of an ATI 18818 (a.k.a.
+ICS 2595) or an unsupported clock generator.
+The only values that are acted upon are <it>``ATI 18818-0''</it> or
+<it>``ATI 18818-1''</it>.
+From this specification, the driver derives a reference divider of 43 or 46
+(respectively) for use in clock programming calculations.
+The driver's default behaviour, in this case, is to assume an unsupported clock
+generator, which means it will treat it as a fixed-frequency clock generator,
+as described under the heading <bf>``Clocks for unsupported programmable clock
+generators''</bf> above.<p>
 <sect>Video modes<p>
 Mode timings can be derived from the information in XFree86's doc subdirectory.
 However, it is no longer required to specify such timings in an XF86Config's
@@ -570,4 +599,6 @@ This is the version found in XFree86 3.3.2, 3.3.3, 3.3.3.1, 3.3.3.2, 3.3.4,
 3.3.5 and 3.3.6.<p>
 Version 5 is an almost complete restructuring of version 4 to fit in the newer
 driver API of XFree86 4.0 and later.<p>
+The introduction of version 6 is a first swipe at porting the driver to
+non-Intel architectures.<p>
 </article>
