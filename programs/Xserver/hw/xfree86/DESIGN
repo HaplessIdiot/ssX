@@ -1,3 +1,8 @@
+NOTE: This version has been replaced by an SGML version.  Modifications
+should be made to doc/sgml/DESIGN.sgml.  A pre-formatted version can be
+found as doc/DESIGN.
+
+
                         XFree86 X server "New Design"
 
                                   DRAFT
@@ -5456,4 +5461,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.34 1999/06/27 09:20:12 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.35 1999/06/27 14:07:45 dawes Exp $
