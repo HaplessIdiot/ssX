@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.39 2001/02/01 19:15:19 paulo Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.40 2001/02/23 19:14:41 paulo Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -2851,7 +2851,10 @@ static Cardinal num_focus;
 static void
 DestroyFocusCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    ((struct _focus*)(user_data))->widget = NULL;
+    struct _focus *f = (struct _focus*)(user_data);
+
+    if (f->widget == w)
+	f->widget = NULL;
 }
 
 /*ARGSUSED*/
@@ -2888,9 +2891,9 @@ TextFocusIn(Widget w, XEvent *event, String *p, Cardinal *n)
     if (focus[i].widget != w) {
 	Widget old = focus[i].widget;
 
+	focus[i].widget = w;
 	if (old != NULL)
 	    TextFocusOut(old, event, p, n);
-	focus[i].widget = w;
 	XtAddCallback(w, XtNdestroyCallback,
 		      DestroyFocusCallback, (XtPointer)&focus[i]);
     }
@@ -2922,11 +2925,9 @@ TextFocusOut(Widget w, XEvent *event, String *p, Cardinal *n)
 	 || event->xfocus.detail == NotifyPointer)
 	return;
 
-    if (i < num_focus && focus[i].widget) {
+    if (i < num_focus && focus[i].widget)
 	XtRemoveCallback(focus[i].widget, XtNdestroyCallback,
 			 DestroyFocusCallback, (XtPointer)&focus[i]);
-	focus[i].widget = NULL;
-    }
 
     /* Let the input method know focus has left.*/
     _XawImUnsetFocus(w);
