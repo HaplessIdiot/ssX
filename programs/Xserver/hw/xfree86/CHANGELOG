@@ -1,4 +1,6 @@
 XFree86 3.9q (19 September 1997)
+1274. Add XF98_SVGA server, update XF98Conf.cpp, VideoBoard98, fix mga driver
+      for PC98 (#980, Michio "Karl" Jinbo, Shuichirou Urata).
 1273. Some fixes to glint server (Helmut Fahrion, Stefan Dirsch, Dirk Hohndel).
 1272. Fix for glint_dump_regs and disable accelerated lines for glint 
       (Stefan Dirsch).
@@ -5369,4 +5371,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.527 1997/09/15 07:18:46 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.528 1997/09/19 08:29:52 hohndel Exp $

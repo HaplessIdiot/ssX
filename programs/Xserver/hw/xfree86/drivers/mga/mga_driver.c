@@ -37,7 +37,7 @@
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.16 1997/09/09 10:27:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.17 1997/09/12 09:23:14 hohndel Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -113,6 +113,10 @@ static int		MGALinearOffset();
 static void		MGADisplayPowerManagementSet();
 static Bool		MGAScreenInit();
 static void		MGAInstallColormap();
+
+#ifdef PC98_MGA
+extern void		MGATi3026StoreColors();
+#endif
 
 /*
  * This data structure defines the driver itself.
@@ -329,7 +333,8 @@ MGAReadBios()
 	if ( tmp[ 0 ] != 0x55 || tmp[ 1 ] != 0xaa
 	     || xf86strncmp(( char * )( tmp + 45 ), "MATROX", 6 ) )
         {
-		ErrorF( "%s %s: Video BIOS info block not detected!" );
+		ErrorF( "%s %s: Video BIOS info block not detected!\n",
+			XCONFIG_PROBED, vga256InfoRec.name);
 		return;
 	}
 
@@ -742,14 +747,27 @@ MGAProbe()
 			    (pointer)(MGAMMIOAddr), 0x4000);
 #endif /* __alpha__ */
 
+#ifdef PC98_MGA
+	/* Re-enable memory (don't enable I/O) */
+	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
+		     save | PCI_CMD_MEM_ENABLE);
+#else
 	/* Re-enable I/O and memory */
 	pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
 		     save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+#endif
 
 	if (!MGAMMIOBase)
 		FatalError("MGA: Can't map IO registers\n");
 	
-#ifndef PC98_MGA
+#ifdef PC98_MGA
+	/* overlap BIOS ROM onto frame buffer aperture */
+	save = pciReadLong(MGAPciTag, PCI_OPTION_REG);
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, save | 0x40000000);
+	pciWriteLong(MGAPciTag, 0x30, MGA.ChipLinearBase | 0x00000001);
+	vga256InfoRec.BIOSbase = MGA.ChipLinearBase;
+#endif
+
 	/*
 	 * Read the BIOS data struct
 	 */
@@ -757,15 +775,27 @@ MGAProbe()
 #ifdef DEBUG
 	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
 #endif
-#else /* PC98_MGA */
+
+#ifdef PC98_MGA
+	/* disable BIOS ROM */
+	pciWriteLong(MGAPciTag, 0x30, 0);
+	pciWriteLong(MGAPciTag, PCI_OPTION_REG, save);
+
+	/* set VGA I/O to MMIO redirection base */
 	mmioBase = MGAMMIOBase + 0x1c00;
 
 	/* enable IO ports, etc. */
 	MGAEnterLeave(ENTER);
 
-	/* PC98 can't read MGABios */
-	MGABios.ClkBase = MGABios.Clk4MB = MGABios.Clk8MB = 5000;
-	MGABios.RamdacType = MGABios.FeatFlag = 0;
+	switch (MGAchipset) {
+	case PCI_CHIP_MGA2064:
+		MGA3026Reset();
+		break;
+	case PCI_CHIP_MGA2164:
+		break;
+	case PCI_CHIP_MGA1064:
+		break;
+	}
 #endif /* PC98_MGA */
 	
 	/*
@@ -1181,6 +1211,16 @@ MGAScreenInit(ScreenPtr pScreen, pointer pbits,
       pScreen->InstallColormap = privateInstallColormap;
     }
   }
+
+#ifdef PC98_MGA
+  switch (MGAchipset) {
+  case PCI_CHIP_MGA2064:
+    pScreen->StoreColors = MGATi3026StoreColors;
+    break;
+  default:
+    break;
+  }
+#endif
 
   return TRUE; /* Should I test something before saying I'm OK ? */
 }
