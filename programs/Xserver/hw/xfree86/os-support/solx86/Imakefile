@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.10 1999/05/22 08:40:16 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/Imakefile,v 3.11 1999/06/10 12:37:54 dawes Exp $
 
 
 
@@ -21,11 +21,11 @@ MOUSESRC = std_mouse.c std_mseEv.c
 MOUSEOBJ = std_mouse.o std_mseEv.o
 #endif
 
-SRCS = solx86_init.c solx86_vid.c sysv_io.c \
+SRCS = solx86_init.c solx86_vid.c solx86_bios.c sysv_io.c \
 	VTsw_usl.c sysv_kbd.c std_kbdEv.c posix_tty.c $(MOUSESRC) \
 	libc_wrapper.c $(PROWORKS_INOUT_SRC) stdResource.c
 
-OBJS = solx86_init.o solx86_vid.o sysv_io.o \
+OBJS = solx86_init.o solx86_vid.o solx86_bios.o sysv_io.o \
 	VTsw_usl.o sysv_kbd.o std_kbdEv.o posix_tty.o $(MOUSEOBJ) \
 	libc_wrapper.o $(PROWORKS_INOUT_OBJ) stdResource.o
 

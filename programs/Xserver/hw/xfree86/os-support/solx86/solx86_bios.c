@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_vid.c,v 3.14 1999/07/18 08:14:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/solx86/solx86_bios.c,v 1.1 1999/07/18 14:50:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -77,8 +77,9 @@ xf86ReadBIOS(unsigned long Base, unsigned long Offset, unsigned char *Buf,
 	psize = xf86getpagesize();
 	mlen = (Offset + Len + psize - 1) & ~psize;
 	/* Base is assumed to be page-aligned. */
-	ptr = mmap((caddr_t)0, mlen, PROT_READ, MAP_SHARED, fd, (off_t)Base);
-	if ((int)ptr == MAP_FAILED)
+	ptr = (unsigned char *)mmap((caddr_t)0, mlen, PROT_READ,
+					MAP_SHARED, fd, (off_t)Base);
+	if (ptr == MAP_FAILED)
 	{
 		xf86Msg(X_WARNING, "xf86ReadBIOS: %s mmap failed\n",
 			solx86_vtname);
