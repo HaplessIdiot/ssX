@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.22 2002/03/05 02:02:53 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_dac.c,v 1.23 2002/03/05 03:44:51 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -178,7 +178,8 @@ NVDACInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
        nvReg->crtcOwner = 3;
        nvReg->pllsel |= 0x20000800;
        nvReg->vpll2 = nvReg->vpll;
-    } else {
+    } else 
+    if(pNv->riva.twoHeads) {
        nvReg->head  =  pNv->riva.PCRTC0[0x00000860/4] | 0x00001000;
        nvReg->head2 =  pNv->riva.PCRTC0[0x00002860/4] & ~0x00001000;
        nvReg->crtcOwner = 0;
