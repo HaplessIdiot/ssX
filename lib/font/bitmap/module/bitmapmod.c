@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/bitmap/module/bitmapmod.c,v 1.1.2.1 1998/07/05 14:36:03 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/module/bitmapmod.c,v 1.2 1998/07/25 06:57:06 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -66,17 +66,17 @@ bitmapModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 
 extern void BitmapRegisterFontFileFunctions(void);
 
-FontModule bitmapModule[] = {
-    {
-	BitmapRegisterFontFileFunctions,
-	"Bitmap"
-    }
+FontModule bitmapModule = {
+    BitmapRegisterFontFileFunctions,
+    "Bitmap",
+    NULL
 };
 
 static pointer
 bitmapSetup(pointer mod, pointer opts, int *errmaj, int *errmin)
 {
-    LoadFont(&bitmapModule[0]);
+    bitmapModule.module = mod;
+    LoadFont(&bitmapModule);
 
     /* Need a non-NULL return */
     return (pointer)1;

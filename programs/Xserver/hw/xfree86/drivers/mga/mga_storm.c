@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.36 1998/11/29 10:50:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_storm.c,v 1.37 1998/12/06 06:08:34 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -26,10 +26,6 @@
 #include "mga_reg.h"
 #include "mga_map.h"
 #include "mga_macros.h"
-
-/* To use planar screen->screen expansions instead of linear ones
-   because there seems to be a hardware problem with the linear ones */
-#define USE_PLANAR_EXPANSION
 
 static void MGANAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir,
 				int ydir, int rop, unsigned int planemask,
@@ -73,7 +69,6 @@ static void MGANAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop,
 				int transparency_color, int bpp, int depth);
 static void MGANAME(SubsequentImageWriteRect)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h, int skipleft);
-#ifdef USE_PLANAR_EXPANSION
 #if PSZ != 24
 static void MGANAME(SetupForPlanarScreenToScreenColorExpandFill)(
 				ScrnInfoPtr pScrn, int fg, int bg, int rop, 
@@ -83,14 +78,12 @@ static void MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
 #endif
-#else
 static void MGANAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int fg, int bg, int rop, 
 				unsigned int planemask);
 static void MGANAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h,
 				int srcx, int srcy, int skipleft);
-#endif
 static void MGANAME(SetupForImageRead)(ScrnInfoPtr pScrn, int bpp, int depth);
 static void MGANAME(SubsequentImageReadRect)(ScrnInfoPtr pScrn,
 				int x, int y, int w, int h);
@@ -123,6 +116,8 @@ extern void MGANonTEGlyphRenderer(ScrnInfoPtr pScrn, int x, int y, int n,
 				NonTEGlyphPtr glyphs, BoxPtr pbox,
 				int fg, int rop, unsigned int planemask);
 extern void MGAValidatePolyArc(GCPtr, unsigned long, DrawablePtr);
+extern void MGAFillCacheBltRects(ScrnInfoPtr, int, unsigned int, int, BoxPtr,
+				int, int, XAACacheInfoPtr);
 
 Bool
 MGANAME(AccelInit)(ScreenPtr pScreen) 
@@ -189,6 +184,11 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->SubsequentScreenToScreenCopy =
         	MGANAME(SubsequentScreenToScreenCopy);
 
+    if(pMga->HasFBitBlt) {
+	infoPtr->FillCacheBltRects = MGAFillCacheBltRects;
+	infoPtr->FillCacheBltRectsFlags = NO_TRANSPARENCY;
+    }
+
     /* solid fills */
     infoPtr->SetupForSolidFill = MGANAME(SetupForSolidFill);
     infoPtr->SubsequentSolidFillRect = MGANAME(SubsequentSolidFillRect);
@@ -244,24 +244,27 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
 
 
     /* screen to screen color expansion */
-#ifdef USE_PLANAR_EXPANSION
-#if PSZ != 24
-    /* Example of how to use the planar expansions instead. It's slower. */
-    infoPtr->SetupForScreenToScreenColorExpandFill = 
-		MGANAME(SetupForPlanarScreenToScreenColorExpandFill);
-    infoPtr->SubsequentScreenToScreenColorExpandFill = 
-		MGANAME(SubsequentPlanarScreenToScreenColorExpandFill);
-    infoPtr->CacheColorExpandDensity = pScrn->bitsPerPixel;
-    infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple;
-#endif
-#else
-    infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_LSBFIRST;
-    infoPtr->SetupForScreenToScreenColorExpandFill = 
+    if(pMga->AccelFlags & USE_LINEAR_EXPANSION) {
+	infoPtr->ScreenToScreenColorExpandFillFlags = 
+						BIT_ORDER_IN_BYTE_LSBFIRST;
+	infoPtr->SetupForScreenToScreenColorExpandFill = 
 		MGANAME(SetupForScreenToScreenColorExpandFill);
-    infoPtr->SubsequentScreenToScreenColorExpandFill = 
+	infoPtr->SubsequentScreenToScreenColorExpandFill = 
 		MGANAME(SubsequentScreenToScreenColorExpandFill);
+    } else {
+#if PSZ != 24
+    /* Slower planar expansions.  Linear shows bugs on some hardware */
+	infoPtr->SetupForScreenToScreenColorExpandFill = 
+		MGANAME(SetupForPlanarScreenToScreenColorExpandFill);
+	infoPtr->SubsequentScreenToScreenColorExpandFill = 
+		MGANAME(SubsequentPlanarScreenToScreenColorExpandFill);
+	infoPtr->CacheColorExpandDensity = pScrn->bitsPerPixel;
+	infoPtr->CacheMonoStipple = XAACachePlanarMonoStipple;
+	/* It's faster to blit the stipples if you have fastbilt */
+	if(pMga->HasFBitBlt)
+	    infoPtr->ScreenToScreenColorExpandFillFlags = TRANSPARENCY_ONLY;
 #endif
-
+    }
 
     /* image writes */
     infoPtr->ImageWriteFlags = 	CPU_TRANSFER_PAD_DWORD |
@@ -335,6 +338,7 @@ MGANAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->FillSolidSpansFlags |= NO_PLANEMASK;
     infoPtr->FillMono8x8PatternRectsFlags |= NO_PLANEMASK;
     infoPtr->NonTEGlyphRendererFlags |= NO_PLANEMASK;
+    infoPtr->FillCacheBltRectsFlags |= NO_PLANEMASK;
     }
 
     
@@ -1127,7 +1131,6 @@ MGANAME(SubsequentDashedTwoPointLine)(
 }
 
 
-#ifdef USE_PLANAR_EXPANSION
 #if PSZ != 24
 
 	/******************************************\
@@ -1181,7 +1184,6 @@ MGANAME(SubsequentPlanarScreenToScreenColorExpandFill)(
 }
 
 #endif
-#else /* USE_PLANAR_EXPANSION */
 
 	/***********************************\
 	|  Screen to Screen Color Expansion |
@@ -1247,8 +1249,6 @@ MGANAME(SubsequentScreenToScreenColorExpandFill)(
     OUTREG(MGAREG_FXBNDRY, ((x + w) << 16) | x);
     OUTREG(MGAREG_YDSTLEN + MGAREG_EXEC, (y << 16) | h);
 }
-
-#endif /* USE_PLANAR_EXPANSION */
 
 
 
@@ -1642,6 +1642,99 @@ MGAValidatePolyArc(
 	pGC->ops->PolyArc = MGAPolyArcThinSolid;
    }
 }
+
+
+void 
+MGAFillCacheBltRects(
+   ScrnInfoPtr pScrn,
+   int rop,
+   unsigned int planemask,
+   int nBox,
+   BoxPtr pBox,
+   int xorg, int yorg,
+   XAACacheInfoPtr pCache
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    int x, y, phaseY, phaseX, skipleft, height, width, w, blit_w, blit_h, start;
+
+    (*infoRec->SetupForScreenToScreenCopy)(pScrn, 1, 1, rop, planemask,
+		pCache->trans_color);
+
+    while(nBox--) {
+	y = pBox->y1;
+	phaseY = (y - yorg) % pCache->orig_h;
+	if(phaseY < 0) phaseY += pCache->orig_h;
+	phaseX = (pBox->x1 - xorg) % pCache->orig_w;
+	if(phaseX < 0) phaseX += pCache->orig_w;
+	height = pBox->y2 - y;
+	width = pBox->x2 - pBox->x1;
+	start = phaseY ? (pCache->orig_h - phaseY) : 0;
+
+	/* This is optimized for WRAM */
+	
+	if ((rop == GXcopy) && (height >= (pCache->orig_h + start))) {		
+	    w = width; skipleft = phaseX; x = pBox->x1;
+	    blit_h = pCache->orig_h;
+	
+	    while(1) {
+		blit_w = pCache->w - skipleft;
+		if(blit_w > w) blit_w = w;
+		(*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+			pCache->x + skipleft, pCache->y,
+			x, y + start, blit_w, blit_h);
+		w -= blit_w;
+		if(!w) break;
+		x += blit_w;
+		skipleft = (skipleft + blit_w) % pCache->orig_w;
+	    }
+	    height -= blit_h;
+
+	    if(start) {
+		(*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+			pBox->x1, y + blit_h, pBox->x1, y, width, start);
+		height -= start;
+		y += start;
+	    }
+	    start = blit_h;
+	
+	    while(height) {
+		if(blit_h > height) blit_h = height;
+		(*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+			pBox->x1, y,
+			pBox->x1, y + start, width, blit_h);
+		height -= blit_h;
+		start += blit_h;
+		blit_h <<= 1;
+	    }
+	} else {
+	    while(1) {
+		w = width; skipleft = phaseX; x = pBox->x1;
+		blit_h = pCache->h - phaseY;
+		if(blit_h > height) blit_h = height;
+	
+		while(1) {
+		    blit_w = pCache->w - skipleft;
+		    if(blit_w > w) blit_w = w;
+		    (*infoRec->SubsequentScreenToScreenCopy)(pScrn,
+			pCache->x + skipleft, pCache->y + phaseY,
+			x, y, blit_w, blit_h);
+		    w -= blit_w;
+		    if(!w) break;
+		    x += blit_w;
+		    skipleft = (skipleft + blit_w) % pCache->orig_w;
+		}
+		height -= blit_h;
+		if(!height) break;
+		y += blit_h;
+		phaseY = (phaseY + blit_h) % pCache->orig_h;
+	    }
+	}
+	pBox++;
+    }
+    
+    SET_SYNC_FLAG(infoRec);
+}
+
 
 #endif
 

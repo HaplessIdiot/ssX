@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/xmodmap/handle.c,v 3.0 1996/08/25 14:15:27 dawes Exp $ */
+/* $XFree86: xc/programs/xmodmap/handle.c,v 3.1 1998/10/04 09:41:42 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/Xlib.h>
@@ -70,7 +70,8 @@ KeyCode *KeysymToKeycodes(dpy, keysym, pnum_kcs)
 		if (!kcs)
 		    kcs = (KeyCode *)malloc(sizeof(KeyCode));
 		else
-		    kcs = (KeyCode *)realloc((char *)kcs, *pnum_kcs + 1);
+		    kcs = (KeyCode *)realloc((char *)kcs,
+					 sizeof(KeyCode) * (*pnum_kcs + 1));
 		kcs[*pnum_kcs] = i;
 		*pnum_kcs += 1;
 		break;

@@ -1,4 +1,5 @@
 XCOMM $TOG: Imakefile /main/1 1997/10/29 13:27:00 kaleb $
+XCOMM $XFree86$
 #include <Server.tmpl>
 
 #if PrintOnlyServer
@@ -91,6 +92,7 @@ LinkSourceFile(colormap.c,../dix)
 LinkSourceFile(cursor.c,../dix)
 LinkSourceFile(devices.c,../dix)
 LinkSourceFile(dixutils.c,../dix)
+LinkSourceFile(dispatch.h,../dix)
 LinkSourceFile(extension.c,../dix)
 LinkSourceFile(ffs.c,../dix)
 LinkSourceFile(gc.c,../dix)

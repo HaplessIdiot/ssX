@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/summa/Imakefile,v 1.1 1998/12/05 14:40:21 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -11,13 +11,14 @@ DRIVER = xf86Summa
 INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
 			-I$(SERVERSRC)/include -I$(XINCLUDESRC) -I$(EXTINCSRC)
 
-NormalLibraryObjectRule()
-NormalAsmObjectRule()
-NormalRelocatableTarget($(DRIVER),$(OBJS))
-	LinkBuildModule($(DRIVER).Osuf)
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 
-install:: $(DRIVER).Osuf
-	MakeDir($(DESTDIR)$(MODULEDIR))
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMODFLAGS) $(DRIVER).Osuf $(DESTDIR)$(MODULEDIR)
+ModuleObjectRule()
+
+ObjectModuleTarget($(DRIVER),$(OBJS))
+
+InstallObjectModule($(DRIVER),$(MODULEDIR))
 
 DependTarget()

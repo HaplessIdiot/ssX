@@ -21,17 +21,17 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.6 1998/10/03 09:07:26 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/ffcheck.c,v 1.7 1998/10/06 06:59:33 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
  */
 /* $NCDId: @(#)fontfile.c,v 1.6 1991/07/02 17:00:46 lemke Exp $ */
 
+#include "fntfilst.h"
 #ifdef LOADABLEFONTS
 #include "fontmod.h"
 #endif
-#include "fntfilst.h"
 
 /*
  * Map FPE functions to renderer functions
@@ -172,13 +172,13 @@ FontFileCheckRegisterFpeFunctions ()
 #else
 
     {
-	int i = 0;
-	
-ErrorF("lets do the font\n");
-	while (FontModuleList[i].initFunc != NULL) {
-ErrorF("%s\n",FontModuleList[i].name);
-	    (*FontModuleList[i].initFunc)();
-	    i++;
+	int i;
+
+	if (FontModuleList) {
+	    for (i = 0; FontModuleList[i].name; i++) {
+		if (FontModuleList[i].initFunc)
+		    FontModuleList[i].initFunc();
+	    }
 	}
     }
 #endif

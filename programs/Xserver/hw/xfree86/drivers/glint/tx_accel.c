@@ -28,7 +28,7 @@
  * 
  * GLINT 500TX / MX accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.8 1998/11/22 10:37:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/tx_accel.c,v 1.9 1998/11/28 10:43:13 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -190,7 +190,9 @@ TXAccelInit(ScreenPtr pScreen)
 
     TXInitializeEngine(pScrn);
 
-    infoPtr->Flags = PIXMAP_CACHE;
+    infoPtr->Flags = PIXMAP_CACHE |
+		     LINEAR_FRAMEBUFFER |
+		     OFFSCREEN_PIXMAPS;
  
     infoPtr->Sync = TXSync;
 
@@ -247,10 +249,14 @@ TXAccelInit(ScreenPtr pScreen)
     infoPtr->WriteBitmap = TXWriteBitmap;
     infoPtr->WritePixmap = TXWritePixmap;
 
+    /* XAA's pixmap cache seems to have problems with depth 30 */
+    if (pScrn->depth == 30) infoPtr->Flags &= ~PIXMAP_CACHE;
+
     AvailFBArea.x1 = 0;
     AvailFBArea.y1 = 0;
     AvailFBArea.x2 = pScrn->displayWidth;
-    if (memory > 16777216) memory = 16777216; /* Cater for >16MB of videoRAM */
+    /* X11 can't handle co-ordinates bigger than 32768 */
+    if (memory > (32767*1024)) memory = 32767*1024;
     AvailFBArea.y2 = memory / (pScrn->displayWidth * 
 					  pScrn->bitsPerPixel / 8);
 
@@ -532,7 +538,6 @@ TXSubsequentMono8x8PatternFillRect(
 	if (pGlint->ROP == GXcopy) {
 	  GLINT_WRITE_REG(pGlint->BackGroundColor, FBBlockColor);
 	  GLINT_WRITE_REG(PrimitiveTrapezoid | FastFillEnable,Render);
-	  GLINT_WRITE_REG(0, WaitForCompletion);
 	} else {
   	  GLINT_WRITE_REG(pGlint->BackGroundColor, PatternRamData0);
 	  GLINT_WRITE_REG(2<<1|2<<4|patternx<<7|patterny<<12|ASM_InvertPattern |

@@ -1,10 +1,10 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/input/joystick/Imakefile,v 1.1 1998/12/05 14:40:17 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
 
 SRCS = xf86Jstk.c
-OBJS = xf86Jstk.o
+OBJS = xf86Jstk.o $(ARCH_JSTK)
 
 DRIVER = xf86Jstk
 
@@ -19,13 +19,14 @@ INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86SRC)/loader -I$(XF86OSSRC) \
 	ARCH_JSTK = ../os-support/bsd/bsd_jstk.o
 #endif
 
-NormalLibraryObjectRule()
-NormalAsmObjectRule()
-NormalRelocatableTarget($(DRIVER),$(OBJS),$(ARCH_JSTK))
-	LinkBuildModule($(DRIVER).Osuf)
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
 
-install:: $(DRIVER).Osuf
-	MakeDir($(DESTDIR)$(MODULEDIR))
-	$(INSTALL) $(INSTALLFLAGS) $(INSTMODFLAGS) $(DRIVER).Osuf $(DESTDIR)$(MODULEDIR)
+ModuleObjectRule()
+
+ObjectModuleTarget($(DRIVER),$(OBJS))
+
+InstallObjectModule($(DRIVER),$(MODULEDIR))
 
 DependTarget()

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.28 1998/08/13 14:46:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loadmod.c,v 1.29 1998/09/05 06:36:58 dawes Exp $ */
 
 /*
  *
@@ -250,33 +250,6 @@ LoadSubModule(ModuleDescPtr parent, const char *module, const char *path,
 		parent->child = AddSibling (parent->child, submod);
 	return submod;
 }
-
-void
-LoadFont (FontModule *e)
-{
-	int i;
-
-	if (e == NULL)
-		return;
-	xf86MsgVerb(X_INFO, 2, "Loading font %s\n", e->name);
-
-	for (i = 0; i<5 ; i++)
-	{
-	    if (FontModuleList[i].name != NULL ) {
-		if (strcmp (FontModuleList[i].name, e->name) == 0)
-		{
-			FontModuleList[i].initFunc = e->initFunc;
-			break;
-		}
-	    }
-	}
-	if (FontModuleList[i].name == NULL)
-	{
-		xf86MsgVerb(X_WARNING, 0,
-			"Font \"%s\" is not recognised\n", e->name);
-	}
-}
-
 
 void
 LoadExtension (ExtensionModule *e)

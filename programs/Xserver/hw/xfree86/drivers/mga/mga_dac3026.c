@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.33 1998/11/15 04:30:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac3026.c,v 1.34 1998/11/29 10:50:25 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -50,6 +50,8 @@
 #include "mga_bios.h"
 #include "mga_reg.h"
 #include "mga.h"
+
+#include "xf86DDC.h"
 
 /* Set to 1 if you want to set MCLK from XF86Config - AT YOUR OWN RISK! */
 #define MCLK_FROM_XCONFIG 0
@@ -881,6 +883,21 @@ MGA3026UseHWCursor(ScreenPtr pScrn, CursorPtr pCurs)
     return TRUE;
 }
 
+static unsigned int
+MGA3026_ddc1Read(ScrnInfoPtr pScrn)
+{
+  MGAPtr pMga = MGAPTR(pScrn);
+
+  /* Define the SDA as an input */
+  outTi3026(TVP3026_GEN_IO_CTL, 0xfb, 0);
+
+  /* wait for Vsync */
+  while( INREG( MGAREG_Status ) & 0x08 );
+  while( ! (INREG( MGAREG_Status ) & 0x08) );
+
+  /* Get the result */
+  return (inTi3026(TVP3026_GEN_IO_DATA) & 0x04) >> 2 ;
+}
 
 static void
 MGA3026RamdacInit(ScrnInfoPtr pScrn)
@@ -1116,4 +1133,5 @@ void MGA2064SetupFuncs(ScrnInfoPtr pScrn)
     pMga->Save = MGA3026Save;
     pMga->Restore = MGA3026Restore;
     pMga->ModeInit = MGA3026Init;
+    pMga->ddc1Read = MGA3026_ddc1Read;
 }

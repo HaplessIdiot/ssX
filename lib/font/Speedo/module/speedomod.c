@@ -23,7 +23,7 @@
  * dealings in this Software without prior written authorization from the
  * XFree86 Project.
  */
-/* $XFree86: xc/lib/font/Speedo/module/speedomod.c,v 1.1.2.1 1998/07/05 14:35:51 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/module/speedomod.c,v 1.2 1998/07/25 06:56:56 dawes Exp $ */
 
 #include "X.h"
 #include "misc.h"
@@ -66,18 +66,17 @@ speedoModuleInit(XF86ModuleVersionInfo **vers, ModuleSetupProc *setup,
 
 extern void SpeedoRegisterFontFileFunctions(void);
 
-FontModule speedoModule[] = {
-    {
-	SpeedoRegisterFontFileFunctions,
-	"Speedo"
-    }
+FontModule speedoModule = {
+    SpeedoRegisterFontFileFunctions,
+    "Speedo",
+    NULL
 };
 
 static pointer
 speedoSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 {
-    
-    LoadFont(&speedoModule[0]);
+    speedoModule.module = module;
+    LoadFont(&speedoModule);
 
     /* Need a non-NULL return */
     return (pointer)1;

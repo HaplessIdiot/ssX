@@ -26,7 +26,7 @@
  * this work is sponsored by S.u.S.E. GmbH, Fuerth, Elsa GmbH, Aachen and
  * Siemens Nixdorf Informationssysteme
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.15 1998/11/28 10:43:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/glint_driver.c,v 1.16 1998/12/06 06:08:32 dawes Exp $ */
 
 #define PSZ 8
 #include "cfb.h"
@@ -830,7 +830,8 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, GLINTOptions);
 
     /* Default to 8bits per RGB */
-    pScrn->rgbBits = 8;
+    if (pScrn->depth == 30)  pScrn->rgbBits = 10;	
+    			else pScrn->rgbBits = 8;
     if (xf86GetOptValInteger(GLINTOptions, OPTION_RGB_BITS, &pScrn->rgbBits)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Bits per RGB set to %d\n",
 		       pScrn->rgbBits);
@@ -1868,9 +1869,15 @@ GLINTScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	    CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
     } else {
+	if (pScrn->rgbBits == 10) {
+    	if (!RamDacHandleColormaps(pScreen, 1024, pScrn->rgbBits, 
+	    CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
+	return FALSE;
+	} else {
     	if (!RamDacHandleColormaps(pScreen, 256, pScrn->rgbBits, 
 	    CMAP_RELOAD_ON_MODE_SWITCH | CMAP_PALETTED_TRUECOLOR))
 	return FALSE;
+	}
     }
 
 #ifdef DPMSExtension
