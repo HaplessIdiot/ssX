@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.68 2000/11/28 20:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v_driver.c,v 1.69 2000/12/02 15:30:47 tsi Exp $ */
 
 /*
 Copyright (C) 1994-1999 The XFree86 Project, Inc.  All Rights Reserved.
@@ -2433,10 +2433,16 @@ S3VScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	if (!miSetVisualTypes(pScrn->depth, TrueColorMask, pScrn->rgbBits,
 				pScrn->defaultVisual))
 	    return FALSE;
+
+	if (!miSetPixmapDepths ())
+	    return FALSE;
   } else {
 	if (!miSetVisualTypes(pScrn->depth,
 			      miGetDefaultVisualMask(pScrn->depth),
 			      pScrn->rgbBits, pScrn->defaultVisual))
+	    return FALSE;
+
+	if (!miSetPixmapDepths ())
 	    return FALSE;
   }
 
