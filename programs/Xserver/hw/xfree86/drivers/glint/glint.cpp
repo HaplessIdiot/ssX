@@ -22,7 +22,8 @@ following framebuffer depths: 8, 15 (may give bad results with FBDev support),
 The
 .B glint
 driver supports 3Dlabs (GLINT MX, GLINT 500TX, GLINT GAMMA, Permedia,
-Permedia 2, Permedia 2v) and Texas Instruments (Permedia, Permedia 2) chips.
+Permedia 2, Permedia 2v, Permedia 3) and Texas Instruments (Permedia,
+Permedia 2) chips.
 .SH CONFIGURATION DETAILS
 Please refer to XF86Config(__filemansuffix__) for general configuration
 details.  This section only covers configuration details specific to this
@@ -35,7 +36,7 @@ names may optionally be specified in the config file
 section, and will override the auto-detection:
 .PP
 .RS 4
-"ti_pm2", "ti_pm", "pm2v", "pm2", "pm", "500tx", "mx", "gamma".
+"ti_pm2", "ti_pm", "pm3", "pm2v", "pm2", "pm", "500tx", "mx", "gamma".
 .RE
 .PP
 The driver will try to auto-detect the amount of video memory present for all

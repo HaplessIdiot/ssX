@@ -159,6 +159,8 @@ typedef struct {
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2)
 #define PCI_VENDOR_3DLABS_CHIP_PERMEDIA2V	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA2V)
+#define PCI_VENDOR_3DLABS_CHIP_PERMEDIA3	\
+			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_PERMEDIA3)
 #define PCI_VENDOR_3DLABS_CHIP_300SX	\
 			((PCI_VENDOR_3DLABS << 16) | PCI_CHIP_300SX)
 #define PCI_VENDOR_3DLABS_CHIP_500TX	\
@@ -195,6 +197,14 @@ void Permedia2VRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void Permedia2VSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 Bool Permedia2VInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 Bool Permedia2vHWCursorInit(ScreenPtr pScreen);
+
+/* pm3_dac.c */
+void Permedia3PreInit(ScrnInfoPtr pScrn, GLINTPtr pGlint);
+int Permedia3MemorySizeDetect(ScrnInfoPtr pScrn);
+void Permedia3Restore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+void Permedia3Save(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
+Bool Permedia3Init(ScrnInfoPtr pScrn, DisplayModePtr mode);
+Bool Permedia3HWCursorInit(ScreenPtr pScreen);
 
 void TXRestore(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
 void TXSave(ScrnInfoPtr pScrn, GLINTRegPtr glintReg);
