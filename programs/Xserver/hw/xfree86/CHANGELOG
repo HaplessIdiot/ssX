@@ -1,103 +1,108 @@
 XFree86 4.1.99.6 (xx January 2002)
- 658. In XDarwin IOKit mode, ignore screens sized 1x1 (Torrey T. Lyons).
- 657. Some missing QNX fixes (#5121, Frank Liu).
- 656. Update XDarwin man page and usage message for XFree86 4.2.0. Add
-      XFree86 man page to XDarwin distribution (Torrey T. Lyons).
- 655. Add bn_BD.UTF-8 to locale.dir (Taneem Ahmed).
- 654. Fix luit not dropping priviledges when run with the -c flag (#5134,
-      Juliusz Chroboczek).
- 653. Fix unresolved symbol and loader symbol registration problems in the
-      i810 driver that were introduced with the i830 support (David Dawes,
-      Abraham vd Merwe).
- 652. Fix sparklies problem for other Trident *BladeXP chipsets 
+ 657. More ROP_NEEDS_SOURCE fixes for Savage chipsets (Egbert Eich).
+ 656. Improvements to the SiS driver which should fix a lot of the 630
+      issues (Thomas Winischhofer).
+ 655. Fix sparklies problem for other Trident *BladeXP chipsets 
       (Alan Hourihane).
- 651. In XDarwin IOKit mode, ignore screens that can not provide the requested
+ 654. In XDarwin IOKit mode, ignore screens that can not provide the requested
       size, depth, or refresh rate instead of generating a fatal error
       (Torrey T. Lyons).
 
 XFree86 4.1.99.5 (7 January 2002)
- 650. Fix some typos in the DRI README (#A.757, Andreas Mohr).
- 649. xon.sh path setting from 3.3.6 (#A.756, Marc Herbert).
- 648. Fix a problem with the Radeon driver that was causing the sync polarity
+ 653. Fix some typos in the DRI README (#A.757, Andreas Mohr).
+ 652. xon.sh path setting from 3.3.6 (#A.756, Marc Herbert).
+ 651. Fix a problem with the Radeon driver that was causing the sync polarity
       to be ignored (#A.753, Vedran Rodic).
- 647. Set the max clock correctly for the G550 second head (#5133,
+ 650. Set the max clock correctly for the G550 second head (#5133,
       Luugi Marsan).
- 646. Fix a Radeon DRI lockup problem (#5128, Steven Pritchard).
- 645. Back out some mga_g450pll.c changes that cause problems on at least
+ 649. Fix a Radeon DRI lockup problem (#5128, Steven Pritchard).
+ 648. Back out some mga_g450pll.c changes that cause problems on at least
       some G450 configurations (#5122, David Woodhouse).
- 644. Fix some xterm build warnings on *BSD (David Dawes, Thomas Dickey).
- 643. Some QNX4 fixes/updates (#5121, 5124, 5130, 5131, Frank Liu).
- 642. Prefer POSIX O_NONBLOCK to O_NDELAY (when defined) in lib/dps (#5121,
+ 647. Fix some xterm build warnings on *BSD (David Dawes, Thomas Dickey).
+ 646. Some QNX4 fixes/updates (#5121, 5124, 5130, 5131, Frank Liu).
+ 645. Prefer POSIX O_NONBLOCK to O_NDELAY (when defined) in lib/dps (#5121,
       Frank Liu).
- 641. Fix portability problem with XpmI.h (based on #5121, Frank Liu).
- 640. Only use SA_RESTART in xterm when it's available (#5121, Frank Liu).
- 639. Work around Watcom compiler bug that shows up when building Mesa's
+ 644. Fix portability problem with XpmI.h (based on #5121, Frank Liu).
+ 643. Only use SA_RESTART in xterm when it's available (#5121, Frank Liu).
+ 642. Work around Watcom compiler bug that shows up when building Mesa's
       stencil.c (David Dawes, based on #5121, Frank Liu).
- 638. Handle __inline and __inline__ in compiler.h for non-GNU compilers,
+ 641. Handle __inline and __inline__ in compiler.h for non-GNU compilers,
       which makes it more likely that drivers will build with other compilers
       (David Dawes, based on #5121, Frank Liu).
- 637. Build fixes for xedit/lisp. Don't define NEED_SNPRINTF when not needed.
+ 640. Build fixes for xedit/lisp. Don't define NEED_SNPRINTF when not needed.
       Avoid a double recursion into subdirs (#5123, Matthieu Herrb).
       Added code for systems without getpagesize.
- 636. Fix the xdm's handling of keys, allowing keypad keys to work (#A.662,
+ 639. Fix the xdm's handling of keys, allowing keypad keys to work (#A.662,
       Servaas Vandenberghe).
- 635. Fix hang when quitting XDarwin before starting X server
+ 638. Fix hang when quitting XDarwin before starting X server
       (Torrey T. Lyons).
- 634. Don't add XDarwin's PseudoramiX extension with only one screen
+ 637. Don't add XDarwin's PseudoramiX extension with only one screen
       (Greg Parker).
- 633. Add Spanish localization of XDarwin help file (Pablo Di Noto).
- 632. Improve XDarwinStartup's error reporting (Torrey T. Lyons).
+ 636. Add Spanish localization of XDarwin help file (Pablo Di Noto).
+ 635. Improve XDarwinStartup's error reporting (Torrey T. Lyons).
 
 XFree86 4.1.99.4 (28 December 2001)
- 631. Update the ati/radeon driver to recognise the All-in-Wonder 8500's
+ 634. Update the ati/radeon driver to recognise the All-in-Wonder 8500's
       ID (#5117, Vladimir Dergachev).
- 630. Fix bug where a pointer may be checked without being intialized in xman
+ 633. Fix bug where a pointer may be checked without being intialized in xman
       (#5120, Martin Husemann).
- 629. Add an informational message to the radeon driver when LCD/DFP mode
+ 632. Add an informational message to the radeon driver when LCD/DFP mode
       validation fails (#5118, Vladimir Dergachev).
- 628. Handle the ATI Rage128 "PP" variant like the "PR" variant (#4982,
+ 631. Handle the ATI Rage128 "PP" variant like the "PR" variant (#4982,
       Mike Harris).
- 627. Fix a LynxOS on PowerPC build problem (#A.746, Stuart Lissaman).
- 626. Fix the names of the Northern Saami keyboards (#A.742,
+ 630. Fix a LynxOS on PowerPC build problem (#A.746, Stuart Lissaman).
+ 629. Fix the names of the Northern Saami keyboards (#A.742,
       Petter Reinholdtsen).
- 625. Add Xinerama info to xdpyinfo (#A.741, Greg Parker).
- 624. Fix an xdm problem caused by not handling an interrupted read (#A.728,
+ 628. Add Xinerama info to xdpyinfo (#A.741, Greg Parker).
+ 627. Fix an xdm problem caused by not handling an interrupted read (#A.728,
       Darren Marshall).
- 623. Add functions completing text control for Render.  Bump XRender library
+ 626. Add functions completing text control for Render.  Bump XRender library
       minor version (Keith Packard).
- 622. Add XKB layout info for a newer Logitech iTouch keyboard (#A.727,
+ 625. Add XKB layout info for a newer Logitech iTouch keyboard (#A.727,
       Dimitromanolakis Apostolos).
- 621. Fix a problem that shows up with the summa tablet driver when using
+ 624. Fix a problem that shows up with the summa tablet driver when using
       a Genius EasyPen (#A.714, Anders Melchiorsen).
- 620. Fix for VT switch problem with the S3 driver (based on #A.677,
+ 623. Fix for VT switch problem with the S3 driver (based on #A.677,
       Juergen Lesny).
- 619. Remove some more spurious entries in the KSC 5601 encoding file (#A.678,
+ 622. Remove some more spurious entries in the KSC 5601 encoding file (#A.678,
       Jungshik Shin).
- 618. Fix for APM problem on devfs-based Linux systems with APM in a kernel
+ 621. Fix for APM problem on devfs-based Linux systems with APM in a kernel
       module (#A.663, Denis Zaitsev).
- 617. Update the mga Xv double buffering to match the more recent submission
+ 620. Update the mga Xv double buffering to match the more recent submission
       (#4976, Didier Gautheron).
- 616. Fix a bug in the XKB Slovak (sk) layout (#A.621, Juraj Bednar).
- 615. Fix a small window when a SIGIO may be received without a handler
+ 619. Fix a bug in the XKB Slovak (sk) layout (#A.621, Juraj Bednar).
+ 618. Fix a small window when a SIGIO may be received without a handler
       installed (David Dawes, based on #A.620, Michel Lespinasse).
- 614. ISO 8859-{1,7,15} Compose file updates and fixes (#5114,
+ 617. ISO 8859-{1,7,15} Compose file updates and fixes (#5114,
       Vasilis Vasaitis).
- 613. In XDarwin multi-monitor IOKit mode, read screen location from the
+ 616. In XDarwin multi-monitor IOKit mode, read screen location from the
       kernel (Torrey T. Lyons).
- 612. Update XDarwin credits file (Torrey T. Lyons).
- 611. Fix various XDarwin crashes in multi-monitor rootless mode by using
+ 615. Update XDarwin credits file (Torrey T. Lyons).
+ 614. Fix various XDarwin crashes in multi-monitor rootless mode by using
       a new "light" version of PanoramiX/Xinerama called PseudoramiX
       (Gregory Parker).
- 610. Fix some typos in the X.Org INSTALL doc (#5113, Chris Pepper).
- 609. Fix an bug that prevented the releasing of XvMC memory on exit (#5112,
+ 613. Fix some typos in the X.Org INSTALL doc (#5113, Chris Pepper).
+ 612. Fix an bug that prevented the releasing of XvMC memory on exit (#5112,
       Matthew J. Sottek).
- 608. Some Xprint build warning fixes (David Dawes).
- 607. Xprt PCL3 support (#5111, Mark Snitily, from X11R6.6).
- 606. Xprt PostScript bitmap cache (#5110, Chris Bare, from X11R6.6).
- 605. Updates for the Romanian (ro) XKB map (#5108, Marius Andreiana).
- 604. Update s3virge docs (#5107, Kevin Brosius).
- 603. Disable pixmap24 option for Permedia3/4/R4 as the chip doesn't support
+ 611. Some Xprint build warning fixes (David Dawes).
+ 610. Xprt PCL3 support (#5111, Mark Snitily, from X11R6.6).
+ 609. Xprt PostScript bitmap cache (#5110, Chris Bare, from X11R6.6).
+ 608. Updates for the Romanian (ro) XKB map (#5108, Marius Andreiana).
+ 607. Update s3virge docs (#5107, Kevin Brosius).
+ 606. Disable pixmap24 option for Permedia3/4/R4 as the chip doesn't support
       this (Alan Hourihane).
+ 605. Fixed a infinite loop in the i2c code.
+ 604. Fixed a Sig11 problem in siliconmotion driver (Egbert Eich).
+ 603. Fixes to silicon motion driver:
+	- gamma correction for 24 bit true color mode.
+	- XAA: clipping rectangle was clipped to visible screen, so offscreen
+	  pixmaps could not been drawn at with accelerated drawing functions.
+	- in SMI_ScreenInit frame buffer size calculation for video changed.
+	- smi_video: partly rewritten.
+	  - Support for 7111
+	  - interlaced video via
+	    - XF86Config Option "Interlaced" or
+	    - attribute XV_INTERLACED (Corvin Zahn).
  602. Add French localization of XDarwin help file (Olivier Verdier).
 
 XFree86 4.1.99.3 (19 December 2001)
@@ -14491,4 +14496,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2121 2002/01/10 04:29:15 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2122 2002/01/10 06:59:47 torrey Exp $
