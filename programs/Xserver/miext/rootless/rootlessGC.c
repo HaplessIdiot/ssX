@@ -3,7 +3,7 @@
  */
 /*
  * Copyright (c) 2001 Greg Parker. All Rights Reserved.
- * Copyright (c) 2002 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2002-2003 Torrey T. Lyons. All Rights Reserved.
  * Copyright (c) 2002 Apple Computer, Inc. All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/rootlessGC.c,v 1.4 2003/01/27 06:04:59 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessGC.c,v 1.1 2003/04/15 01:05:44 torrey Exp $ */
 
 #include "mi.h"
 #include "scrnintstr.h"
@@ -44,6 +44,10 @@
 #include <fcntl.h>
 
 #include "rootlessCommon.h"
+
+#if ROOTLESS_ACCEL
+#include "rlAccel.h"
+#endif
 
 
 // GC functions
@@ -115,7 +119,158 @@ static GCOps rootlessGCOps = {
 #endif
 };
 
+/*
+   There are two issues we must contend with when drawing. These are
+   controlled with ROOTLESS_PROTECT_ALPHA and ROOTLESS_ACCEL.
 
+   If ROOTLESS_PROTECT_ALPHA is set, we have to make sure that the alpha
+   channel of the on screen windows is always opaque. fb makes this harder
+   than it would otherwise be by noticing that a planemask of 0x00ffffff
+   includes all bits when depth==24, and so it "optimizes" the planemask to
+   0xffffffff. We work around this by temporarily setting depth=bpp while
+   changing the GC.
+
+   So the normal situation (in 32 bit mode) is that the planemask is
+   0x00ffffff and thus fb leaves the alpha channel alone. The rootless
+   implementation is responsible for setting the alpha channel opaque
+   initially.
+
+   Unfortunately drawing with a planemask that doesn't have all bits set
+   normally causes fb to fall off its fastest paths when blitting and
+   filling.  So we try to recognize when we can relax the planemask back to
+   0xffffffff, and do that for the duration of the drawing operation,
+   setting the alpha channel in fg/bg pixels to opaque at the same time. We
+   can do this when drawing op is GXcopy. We can also do this when copying
+   from another window since its alpha channel must also be opaque.
+
+   The other issue to consider is that the rootless implementation may
+   provide accelerated drawing functions if ROOTLESS_ACCEL is set. For some
+   drawing primitives we swap in rootless acceleration functions, which use
+   the accelerated drawing functions where possible.
+
+   Where both alpha protection and acceleration is used, it is even a bigger
+   win to relax the planemask to all ones because most accelerated drawing
+   functions can only be used in this case. However, even if we can't set
+   the planemask to all ones, we can still use the accelerated
+   CompositePixels function for GXcopy if it is a forward copy. This is
+   mainly intended for copying from pixmaps to windows. The CompositePixels
+   operation used sets alpha to 0xFF during the copy.
+
+   The three macros below are used to implement this, potentially accelerated
+   drawing ops look something like this:
+
+   OP {
+       GC_SAVE(gc);
+       GCOP_UNWRAP(gc);
+
+       ...
+
+       if (can_accel_xxx(..) && otherwise-suitable)
+            GC_UNSET_PM(gc, dst);
+
+       gc->funcs->OP(gc, ...);
+
+       GC_RESTORE(gc, dst);
+       GCOP_WRAP(gc);
+   }
+
+ */
+
+#define GC_SAVE(pGC) 				\
+    unsigned long _save_fg = (pGC)->fgPixel;	\
+    unsigned long _save_bg = (pGC)->bgPixel;	\
+    unsigned long _save_pm = (pGC)->planemask;	\
+    Bool _changed = FALSE
+
+#define GC_RESTORE(pGC, pDraw)					\
+    do {							\
+        if (_changed) {						\
+            unsigned int depth = (pDraw)->depth;		\
+            (pGC)->fgPixel = _save_fg;				\
+            (pGC)->bgPixel = _save_bg;				\
+            (pGC)->planemask = _save_pm;			\
+            (pDraw)->depth = (pDraw)->bitsPerPixel;		\
+            VALIDATE_GC(pGC, GCForeground | GCBackground |	\
+                        GCPlaneMask, pDraw);			\
+            (pDraw)->depth = depth;				\
+        }							\
+    } while (0)
+
+#define GC_UNSET_PM(pGC, pDraw)						\
+    do {								\
+        unsigned int mask = RootlessAlphaMask ((pDraw)->bitsPerPixel);	\
+        if (((pGC)->planemask & mask) != mask) {			\
+            unsigned int depth = (pDraw)->depth;			\
+            (pGC)->fgPixel |= mask;					\
+            (pGC)->bgPixel |= mask;					\
+            (pGC)->planemask |= mask;					\
+            (pDraw)->depth = (pDraw)->bitsPerPixel;			\
+            VALIDATE_GC(pGC, GCForeground |				\
+                        GCBackground | GCPlaneMask, pDraw);		\
+            (pDraw)->depth = depth;					\
+            _changed = TRUE;						\
+        }								\
+    } while (0)
+
+#define VALIDATE_GC(pGC, changes, pDrawable)				\
+    do {								\
+        pGC->funcs->ValidateGC(pGC, changes, pDrawable);		\
+        if (((WindowPtr) pDrawable)->viewable) {			\
+            gcrec->originalOps = pGC->ops;				\
+        }								\
+    } while(0)
+
+static RootlessWindowRec *
+canAccelBlit (DrawablePtr pDraw, GCPtr pGC)
+{
+    WindowPtr pTop;
+    RootlessWindowRec *winRec;
+    unsigned int pm;
+
+    if (pGC->alu != GXcopy)
+        return NULL;
+
+    if (pDraw->type != DRAWABLE_WINDOW)
+        return NULL;
+
+    pm = ~RootlessAlphaMask(pDraw->bitsPerPixel);
+    if ((pGC->planemask & pm) != pm)
+        return NULL;
+
+    pTop = TopLevelParent((WindowPtr) pDraw);
+    if (pTop == NULL)
+        return NULL;
+
+    winRec = WINREC(pTop);
+    if (winRec == NULL)
+        return NULL;
+
+    return winRec;
+}
+
+static inline RootlessWindowRec *
+canAccelFill(DrawablePtr pDraw, GCPtr pGC)
+{
+    if (pGC->fillStyle != FillSolid)
+        return NULL;
+
+    return canAccelBlit(pDraw, pGC);
+}
+
+static unsigned int
+boxBytes(DrawablePtr pDraw, BoxRec *box)
+{
+    unsigned int pixels;
+
+    pixels = (box->x2 - box->x1) * (box->y2 - box->y1);
+
+    return pixels * (pDraw->bitsPerPixel >> 3);
+}
+
+
+/*
+ * Screen function to create a graphics context
+ */
 Bool
 RootlessCreateGC(GCPtr pGC)
 {
@@ -127,6 +282,14 @@ RootlessCreateGC(GCPtr pGC)
     s = (RootlessScreenRec *) pGC->pScreen->
             devPrivates[rootlessScreenPrivateIndex].ptr;
     result = s->CreateGC(pGC);
+
+#if ROOTLESS_ACCEL
+    pGC->ops->FillSpans = rlFillSpans;
+    pGC->ops->CopyArea = rlCopyArea;
+    pGC->ops->PolyFillRect = rlPolyFillRect;
+    pGC->ops->ImageGlyphBlt = rlImageGlyphBlt;
+#endif
+
     gcrec = (RootlessGCRec *) pGC->devPrivates[rootlessGCPrivateIndex].ptr;
     gcrec->originalOps = NULL; // don't wrap ops yet
     gcrec->originalFuncs = pGC->funcs;
@@ -137,11 +300,15 @@ RootlessCreateGC(GCPtr pGC)
 }
 
 
-// GC func wrapping
-// ValidateGC wraps gcOps iff dest is viewable.
-// All others just unwrap and call.
+/*
+ * GC funcs
+ *
+ * These wrap lower level GC funcs.
+ * ValidateGC wraps the GC ops iff dest is viewable.
+ * All the others just unwrap and call.
+ */
 
-// GCFUN_UNRAP assumes funcs have been wrapped and 
+// GCFUNC_UNRAP assumes funcs have been wrapped and 
 // does not assume ops have been wrapped
 #define GCFUNC_UNWRAP(pGC) \
     RootlessGCRec *gcrec = (RootlessGCRec *) \
@@ -158,16 +325,6 @@ RootlessCreateGC(GCPtr pGC)
         gcrec->originalOps = (pGC)->ops; \
         (pGC)->ops = &rootlessGCOps; \
 }
-
-/* Turn drawing on the root into a no-op */
-#define GC_IS_ROOT(pDst) ((pDst)->type == DRAWABLE_WINDOW \
-			  && IsRoot ((WindowPtr) (pDst)))
-
-#define GC_SKIP_ROOT(pDst)			\
-    do {					\
-	if (GC_IS_ROOT (pDst))			\
-	    return;				\
-    } while (0)
 
 
 static void
@@ -186,15 +343,11 @@ RootlessValidateGC(GCPtr pGC, unsigned long changes, DrawablePtr pDrawable)
         // Left to its own devices, fb will optimize away the planemask.
         pDrawable->depth = pDrawable->bitsPerPixel;
         pGC->planemask &= ~RootlessAlphaMask(pDrawable->bitsPerPixel);
-        pGC->funcs->ValidateGC(pGC, changes | GCPlaneMask, pDrawable);
+        VALIDATE_GC(pGC, changes | GCPlaneMask, pDrawable);
         pDrawable->depth = depth;
 #else
-        pGC->funcs->ValidateGC(pGC, changes, pDrawable);
+        VALIDATE_GC(pGC, changes, pDrawable);
 #endif
-
-        if (((WindowPtr) pDrawable)->viewable) {
-            gcrec->originalOps = pGC->ops;
-        }
     } else {
         pGC->funcs->ValidateGC(pGC, changes, pDrawable);
     }
@@ -245,10 +398,13 @@ static void RootlessCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
 }
 
 
-// GC ops
-// We can't use shadowfb because shadowfb assumes one pixmap
-// and our root window is a special case.
-// So much of this code is copied from shadowfb.
+/*
+ * GC ops
+ *
+ * We can't use shadowfb because shadowfb assumes one pixmap
+ * and our root window is a special case.
+ * However, much of this code is copied from shadowfb.
+ */
 
 // assumes both funcs and ops are wrapped
 #define GCOP_UNWRAP(pGC) \
@@ -263,11 +419,22 @@ static void RootlessCopyClip(GCPtr pgcDst, GCPtr pgcSrc)
     (pGC)->funcs = saveFuncs; \
     (pGC)->ops = &rootlessGCOps;
 
+/* Turn drawing on the root into a no-op */
+#define GC_IS_ROOT(pDst) ((pDst)->type == DRAWABLE_WINDOW \
+                            && IsRoot ((WindowPtr) (pDst)))
+
+#define GC_SKIP_ROOT(pDst)			\
+    do {					\
+        if (GC_IS_ROOT (pDst))			\
+            return;				\
+    } while (0)
+
 
 static void
 RootlessFillSpans(DrawablePtr dst, GCPtr pGC, int nInit,
                   DDXPointPtr pptInit, int *pwidthInit, int sorted)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("fill spans start ");
@@ -286,7 +453,7 @@ RootlessFillSpans(DrawablePtr dst, GCPtr pGC, int nInit,
 
         while (--i) {
             ppt++;
-            pwidthInit++;
+            pwidth++;
             if (box.x1 > ppt->x)
                 box.x1 = ppt->x;
             if (box.x2 < (ppt->x + *pwidth))
@@ -300,6 +467,13 @@ RootlessFillSpans(DrawablePtr dst, GCPtr pGC, int nInit,
         box.y2++;
 
         RootlessStartDrawing((WindowPtr) dst);
+
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
         pGC->ops->FillSpans(dst, pGC, nInit, pptInit, pwidthInit, sorted);
 
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
@@ -307,6 +481,7 @@ RootlessFillSpans(DrawablePtr dst, GCPtr pGC, int nInit,
             RootlessDamageBox ((WindowPtr) dst, &box);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("fill spans end\n");
 }
@@ -396,14 +571,28 @@ RootlessCopyArea(DrawablePtr pSrc, DrawablePtr dst, GCPtr pGC,
     RegionPtr result;
     BoxRec box;
 
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
 
     if (GC_IS_ROOT(dst) || GC_IS_ROOT(pSrc))
-	return NULL;			/* nothing exposed */
+        return NULL;			/* nothing exposed */
 
     RL_DEBUG_MSG("copy area start (src 0x%x, dst 0x%x)", pSrc, dst);
 
     if (pSrc->type == DRAWABLE_WINDOW && IsFramedWindow((WindowPtr)pSrc)) {
+        unsigned int bytes;
+
+        /* If both source and dest are windows, and we're doing
+           a simple copy operation, we can remove the alpha-protecting
+           planemask (since source has opaque alpha as well) */
+
+        bytes = w * h * (pSrc->depth >> 3);
+
+        if (bytes >= rootless_CopyBytes_threshold && canAccelBlit(pSrc, pGC))
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
         RootlessStartDrawing((WindowPtr) pSrc);
     }
     RootlessStartDrawing((WindowPtr) dst);
@@ -418,6 +607,7 @@ RootlessCopyArea(DrawablePtr pSrc, DrawablePtr dst, GCPtr pGC,
     if (BOX_NOT_EMPTY(box))
         RootlessDamageBox ((WindowPtr) dst, &box);
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("copy area end\n");
     return result;
@@ -435,7 +625,7 @@ static RegionPtr RootlessCopyPlane(DrawablePtr pSrc, DrawablePtr dst,
     GCOP_UNWRAP(pGC);
 
     if (GC_IS_ROOT(dst) || GC_IS_ROOT(pSrc))
-	return NULL;			/* nothing exposed */
+        return NULL;			/* nothing exposed */
 
     RL_DEBUG_MSG("copy plane start ");
 
@@ -709,7 +899,7 @@ static void RootlessPolySegment(DrawablePtr dst, GCPtr pGC,
 
 /* changed area is box around each line (not entire rects) */
 static void RootlessPolyRectangle(DrawablePtr dst, GCPtr pGC,
-				  int nRects, xRectangle *pRects)
+                                  int nRects, xRectangle *pRects)
 {
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
@@ -731,7 +921,7 @@ static void RootlessPolyRectangle(DrawablePtr dst, GCPtr pGC,
             box.x1 = pRects->x - offset1;
             box.y1 = pRects->y - offset1;
             box.x2 = box.x1 + pRects->width + offset2;
-            box.y2 = box.y1 + offset2;		
+            box.y2 = box.y1 + offset2;
             TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
             if (BOX_NOT_EMPTY(box))
                 RootlessDamageBox ((WindowPtr) dst, &box);
@@ -739,7 +929,7 @@ static void RootlessPolyRectangle(DrawablePtr dst, GCPtr pGC,
             box.x1 = pRects->x - offset1;
             box.y1 = pRects->y + offset3;
             box.x2 = box.x1 + offset2;
-            box.y2 = box.y1 + pRects->height - offset2;		
+            box.y2 = box.y1 + pRects->height - offset2;
             TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
             if (BOX_NOT_EMPTY(box))
                 RootlessDamageBox ((WindowPtr) dst, &box);
@@ -747,7 +937,7 @@ static void RootlessPolyRectangle(DrawablePtr dst, GCPtr pGC,
             box.x1 = pRects->x + pRects->width - offset1;
             box.y1 = pRects->y + offset3;
             box.x2 = box.x1 + offset2;
-            box.y2 = box.y1 + pRects->height - offset2;		
+            box.y2 = box.y1 + pRects->height - offset2;
             TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
             if (BOX_NOT_EMPTY(box))
                 RootlessDamageBox ((WindowPtr) dst, &box);
@@ -755,7 +945,7 @@ static void RootlessPolyRectangle(DrawablePtr dst, GCPtr pGC,
             box.x1 = pRects->x - offset1;
             box.y1 = pRects->y + pRects->height - offset1;
             box.x2 = box.x1 + pRects->width + offset2;
-            box.y2 = box.y1 + offset2;		
+            box.y2 = box.y1 + offset2;
             TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
             if (BOX_NOT_EMPTY(box))
                 RootlessDamageBox ((WindowPtr) dst, &box);
@@ -824,9 +1014,10 @@ static void RootlessPolyArc(DrawablePtr dst, GCPtr pGC, int narcs, xArc *parcs)
 
 /* changed area is box around each poly */
 static void RootlessFillPolygon(DrawablePtr dst, GCPtr pGC,
-				int shape, int mode, int count,
-				DDXPointPtr pptInit)
+                                int shape, int mode, int count,
+                                DDXPointPtr pptInit)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("fill poly start (win 0x%x, fillStyle 0x%x)", dst,
@@ -877,6 +1068,13 @@ static void RootlessFillPolygon(DrawablePtr dst, GCPtr pGC,
         box.y2++;
 
         RootlessStartDrawing((WindowPtr) dst);
+
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
         pGC->ops->FillPolygon(dst, pGC, shape, mode, count, pptInit);
 
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
@@ -884,14 +1082,16 @@ static void RootlessFillPolygon(DrawablePtr dst, GCPtr pGC,
             RootlessDamageBox ((WindowPtr) dst, &box);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("fill poly end\n");
 }
 
 /* changed area is the rects */
 static void RootlessPolyFillRect(DrawablePtr dst, GCPtr pGC,
-				 int nRectsInit, xRectangle *pRectsInit)
+                                 int nRectsInit, xRectangle *pRectsInit)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("fill rect start (win 0x%x, fillStyle 0x%x)", dst,
@@ -922,13 +1122,21 @@ static void RootlessPolyFillRect(DrawablePtr dst, GCPtr pGC,
         }
 
         RootlessStartDrawing((WindowPtr) dst);
-        pGC->ops->PolyFillRect(dst, pGC, nRectsInit, pRectsInit);
+ 
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
+       pGC->ops->PolyFillRect(dst, pGC, nRectsInit, pRectsInit);
 
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
         if (BOX_NOT_EMPTY(box))
             RootlessDamageBox ((WindowPtr) dst, &box);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("fill rect end\n");
 }
@@ -936,17 +1144,17 @@ static void RootlessPolyFillRect(DrawablePtr dst, GCPtr pGC,
 
 /* changed area is box around each arc (assuming arcs are all 360 degrees) */
 static void RootlessPolyFillArc(DrawablePtr dst, GCPtr pGC,
-				int narcs, xArc *parcs)
+                                int narcsInit, xArc *parcsInit)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("fill arc start ");
 
-    RootlessStartDrawing((WindowPtr) dst);
-    pGC->ops->PolyFillArc(dst, pGC, narcs, parcs);
-
-    if (narcs > 0) {
+    if (narcsInit > 0) {
         BoxRec box;
+        int narcs = narcsInit;
+        xArc *parcs = parcsInit;
 
         box.x1 = parcs->x;
         box.x2 = box.x1 + parcs->width;
@@ -967,25 +1175,36 @@ static void RootlessPolyFillArc(DrawablePtr dst, GCPtr pGC,
                 box.y2 = parcs->y + parcs->height;
         }
 
+        RootlessStartDrawing((WindowPtr) dst);
+
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
+        pGC->ops->PolyFillArc(dst, pGC, narcsInit, parcsInit);
+
         TRIM_AND_TRANSLATE_BOX(box, dst, pGC);
         if (BOX_NOT_EMPTY(box))
             RootlessDamageBox ((WindowPtr) dst, &box);
+    } else {
+        pGC->ops->PolyFillArc(dst, pGC, narcsInit, parcsInit);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("fill arc end\n");
 }
 
 
 static void RootlessImageText8(DrawablePtr dst, GCPtr pGC,
-			       int x, int y, int count, char *chars)
+                               int x, int y, int count, char *chars)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("imagetext8 start ");
-
-    RootlessStartDrawing((WindowPtr) dst);
-    pGC->ops->ImageText8(dst, pGC, x, y, count, chars);
 
     if (count > 0) {
         int top, bot, Min, Max;
@@ -996,7 +1215,7 @@ static void RootlessImageText8(DrawablePtr dst, GCPtr pGC,
 
         Min = count * FONTMINBOUNDS(pGC->font, characterWidth);
         if (Min > 0) Min = 0;
-        Max = count * FONTMAXBOUNDS(pGC->font, characterWidth);	
+        Max = count * FONTMAXBOUNDS(pGC->font, characterWidth);
         if (Max < 0) Max = 0;
 
         /* ugh */
@@ -1008,11 +1227,24 @@ static void RootlessImageText8(DrawablePtr dst, GCPtr pGC,
         box.y1 = dst->y + y - top;
         box.y2 = dst->y + y + bot;
 
+        RootlessStartDrawing((WindowPtr) dst);
+
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
+        pGC->ops->ImageText8(dst, pGC, x, y, count, chars);
+
         TRIM_BOX(box, pGC);
         if (BOX_NOT_EMPTY(box))
             RootlessDamageBox ((WindowPtr) dst, &box);
+    } else {
+        pGC->ops->ImageText8(dst, pGC, x, y, count, chars);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("imagetext8 end\n");
 }
@@ -1025,7 +1257,7 @@ static int RootlessPolyText8(DrawablePtr dst, GCPtr pGC,
     GCOP_UNWRAP(pGC);
 
     if (GC_IS_ROOT(dst))
-	return 0;
+        return 0;
 
     RL_DEBUG_MSG("polytext8 start ");
 
@@ -1061,12 +1293,10 @@ static int RootlessPolyText8(DrawablePtr dst, GCPtr pGC,
 static void RootlessImageText16(DrawablePtr dst, GCPtr pGC,
                                 int x, int y, int count, unsigned short *chars)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("imagetext16 start ");
-
-    RootlessStartDrawing((WindowPtr) dst);
-    pGC->ops->ImageText16(dst, pGC, x, y, count, chars);
 
     if (count > 0) {
         int top, bot, Min, Max;
@@ -1089,11 +1319,24 @@ static void RootlessImageText16(DrawablePtr dst, GCPtr pGC,
         box.y1 = dst->y + y - top;
         box.y2 = dst->y + y + bot;
 
+        RootlessStartDrawing((WindowPtr) dst);
+
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
+        pGC->ops->ImageText16(dst, pGC, x, y, count, chars);
+
         TRIM_BOX(box, pGC);
         if (BOX_NOT_EMPTY(box))
             RootlessDamageBox ((WindowPtr) dst, &box);
+    } else {
+        pGC->ops->ImageText16(dst, pGC, x, y, count, chars);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("imagetext16 end\n");
 }
@@ -1106,7 +1349,7 @@ static int RootlessPolyText16(DrawablePtr dst, GCPtr pGC,
     GCOP_UNWRAP(pGC);
 
     if (GC_IS_ROOT(dst))
-	return 0;
+        return 0;
 
     RL_DEBUG_MSG("polytext16 start ");
 
@@ -1140,19 +1383,19 @@ static int RootlessPolyText16(DrawablePtr dst, GCPtr pGC,
 }
 
 static void RootlessImageGlyphBlt(DrawablePtr dst, GCPtr pGC,
-                                  int x, int y, unsigned int nglyph,
-                                  CharInfoPtr *ppci, pointer unused)
+                                  int x, int y, unsigned int nglyphInit,
+                                  CharInfoPtr *ppciInit, pointer unused)
 {
+    GC_SAVE(pGC);
     GCOP_UNWRAP(pGC);
     GC_SKIP_ROOT(dst);
     RL_DEBUG_MSG("imageglyph start ");
 
-    RootlessStartDrawing((WindowPtr) dst);
-    pGC->ops->ImageGlyphBlt(dst, pGC, x, y, nglyph, ppci, unused);
-
-    if (nglyph > 0) {
+    if (nglyphInit > 0) {
         int top, bot, width = 0;
         BoxRec box;
+        unsigned int nglyph = nglyphInit;
+        CharInfoPtr *ppci = ppciInit;
 
         top = max(FONTMAXBOUNDS(pGC->font, ascent), FONTASCENT(pGC->font));
         bot = max(FONTMAXBOUNDS(pGC->font, descent), FONTDESCENT(pGC->font));
@@ -1179,11 +1422,24 @@ static void RootlessImageGlyphBlt(DrawablePtr dst, GCPtr pGC,
         box.y1 = dst->y + y - top;
         box.y2 = dst->y + y + bot;
 
+        RootlessStartDrawing((WindowPtr) dst);
+
+        if (canAccelFill(dst, pGC) &&
+            boxBytes(dst, &box) >= rootless_FillBytes_threshold)
+        {
+            GC_UNSET_PM(pGC, dst);
+        }
+
+        pGC->ops->ImageGlyphBlt(dst, pGC, x, y, nglyphInit, ppciInit, unused);
+
         TRIM_BOX(box, pGC);
         if (BOX_NOT_EMPTY(box))
             RootlessDamageBox ((WindowPtr) dst, &box);
+    } else {
+        pGC->ops->ImageGlyphBlt(dst, pGC, x, y, nglyphInit, ppciInit, unused);
     }
 
+    GC_RESTORE(pGC, dst);
     GCOP_WRAP(pGC);
     RL_DEBUG_MSG("imageglyph end\n");
 }

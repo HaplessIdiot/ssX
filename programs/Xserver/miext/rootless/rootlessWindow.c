@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.5 2003/06/30 01:45:13 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/miext/rootless/rootlessWindow.c,v 1.6 2003/07/23 00:48:58 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
@@ -681,8 +681,8 @@ RootlessCopyWindow(WindowPtr pWin, DDXPointRec ptOldOrg, RegionPtr prgnSrc)
 
     /* If the area exceeds threshold, use the implementation's
        accelerated version. */
-    if (rootless_CopyWindow_threshold &&
-        area > rootless_CopyWindow_threshold)
+    if (area > rootless_CopyWindow_threshold &&
+        SCREENREC(pScreen)->imp->CopyWindow)
     {
         RootlessWindowRec *winRec;
         WindowPtr top;
@@ -889,9 +889,9 @@ StartFrameResize(WindowPtr pWin, Bool gravity,
             gResizeDeathBits = xalloc(copy_rowbytes
                                       * copy_rect_height);
 
-            if (rootless_CopyWindow_threshold &&
-                copy_rect_width * copy_rect_height >
-                        rootless_CopyWindow_threshold)
+            if (copy_rect_width * copy_rect_height >
+                        rootless_CopyWindow_threshold &&
+                SCREENREC(pScreen)->imp->CopyWindow)
             {
                 SCREENREC(pScreen)->imp->CopyBytes(
                     copy_rect_width * Bpp, copy_rect_height,
