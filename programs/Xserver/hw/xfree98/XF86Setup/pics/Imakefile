@@ -1,0 +1,8 @@
+#include <Server.tmpl>
+
+DependTarget()
+
+LinkSourceFile(XFree86.msk,$(XF86SRC)/XF86Setup/pics)
+LinkSourceFile(XFree86.xbm,$(XF86SRC)/XF86Setup/pics)
+LinkSourceFile(vidcard.msk,$(XF86SRC)/XF86Setup/pics)
+LinkSourceFile(vidcard.xbm,$(XF86SRC)/XF86Setup/pics)
