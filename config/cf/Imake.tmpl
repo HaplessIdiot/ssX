@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.71 2000/03/21 19:56:56 dawes Exp $
+XCOMM $XFree86: xc/config/cf/Imake.tmpl,v 3.72 2000/03/21 21:08:07 dawes Exp $
 XCOMM ----------------------------------------------------------------------
 
 /*
@@ -172,6 +172,24 @@ XCOMM the platform-specific parameters - edit site.def to change
 
 #ifndef HasSymLinks
 #define HasSymLinks YES
+#endif
+
+#ifndef BuildRman
+#define BuildRman YES
+#endif
+
+#ifndef RmanCmd
+#if BuildRman
+#define RmanCmd $(RMAN) -f HTML
+#endif
+#endif
+
+#ifndef BuildHtmlManPages
+#ifdef RmanCmd
+#define BuildHtmlManPages YES
+#else
+#define BuildHtmlManPages NO
+#endif
 #endif
 
 #include <Imake.rules>
@@ -630,24 +648,6 @@ TCLIBDIR = TclLibDir
 #endif
 #ifndef ExtraManDefs
 #define ExtraManDefs -D__projectroot__=$(PROJECTROOT)
-#endif
-
-#ifndef BuildRman
-#define BuildRman YES
-#endif
-
-#ifndef RmanCmd
-#if BuildRman
-#define RmanCmd $(RMAN) -f HTML
-#endif
-#endif
-
-#ifndef BuildHtmlManPages
-#ifdef RmanCmd
-#define BuildHtmlManPages YES
-#else
-#define BuildHtmlManPages NO
-#endif
 #endif
 
 #ifndef HtmlIndexCmd
