@@ -1,4 +1,5 @@
 XFree86 4.1.99.1 (xx August 2001)
+ 218. Support for OpenBSD/powerpc (Matthieu Herrb).
  217. Experimental change to default behaviour of ATI panel support to override
       the horizontal and vertical porches of all modes to that found in the
       mode on entry (Marc La France).
@@ -13702,4 +13703,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1911 2001/08/13 21:46:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1912 2001/08/15 11:54:22 tsi Exp $
