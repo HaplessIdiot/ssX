@@ -99,7 +99,7 @@ SiS_SISDetectCRT1(ScrnInfoPtr pScrn)
     SISPtr  pSiS = SISPTR(pScrn);
     unsigned short temp = 0xffff;
     unsigned char SR1F, CR63=0, CR17;
-    int i = 3, ret = 0;
+    int i, ret = 0;
     Bool mustwait = FALSE;
 
     inSISIDXREG(SISSR,0x1F,SR1F);
@@ -126,6 +126,7 @@ SiS_SISDetectCRT1(ScrnInfoPtr pScrn)
        for(i=0; i < 10; i++) SISWaitRetraceCRT1(pScrn);
     }
 
+    i = 3;
     do {
        temp = SiS_HandleDDC(pSiS->SiS_Pr, pSiS->VBFlags, pSiS->VGAEngine, 0, 0, NULL);
     } while(((temp == 0) || (temp == 0xffff)) && i--);
