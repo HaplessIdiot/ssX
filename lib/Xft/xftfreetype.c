@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.5 2000/12/15 17:12:53 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftfreetype.c,v 1.6 2000/12/20 00:20:48 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -206,7 +206,7 @@ _XftFreeTypeOpenFile (char *file, int id)
 }
 
 Bool
-_XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap)
+XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap)
 {
     XftFtFile	*f, **prev;
     
@@ -504,7 +504,7 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern)
     
     font->size = size;
 
-    if (!_XftFreeTypeSetFace (face, size, charmap))
+    if (!XftFreeTypeSetFace (face, size, charmap))
 	goto bail2;
 
     descent = -(face->size->metrics.descender >> 6);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.8 2000/12/20 00:20:48 keithp Exp $
+ * $XFree86: xc/lib/Xft/XftFreetype.h,v 1.9 2000/12/20 00:28:43 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -61,6 +61,9 @@ XftFreeTypeOpen (Display *dpy, XftPattern *pattern);
 void
 XftFreeTypeClose (Display *dpy, XftFontStruct *font);
 
+Bool
+XftFreeTypeSetFace (FT_Face face, FT_F26Dot6 size, int charmap);
+    
 /* xftglyphs.c */
 void
 XftGlyphLoad (Display		*dpy,
