@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.9 1994/09/07 15:46:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.10 1994/09/11 07:41:43 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -175,6 +175,22 @@ SetUIDServerTarget(XF86_VGA16,$(XF86VGA16SUBDIRS),$(XF86VGA16OBJS),$(XF86VGA16LI
 #endif	/* XF86VGA16Server */
 
 
+#if XF86W32Server
+XCOMM
+XCOMM XFree86 W32 Server
+XCOMM
+XF86W32OBJS = XF86_W32.o w32Conf.o
+XF86W32LIBS = $(DRIVERSRC)/libw32.a $(DRIVERSRC)/libw32cfb.a $(DRIVERSRC)/libw32.a $(DRIVERSRC)/libw32asm.a $(XF86LIBS) CFB8Libs
+XF86W32SYSLIBS = $(SYSLIBS)
+W32DRIVERS = XF86W32Drivers
+ConfigTargetNoDepend(w32Conf,$(ICONFIGFILES),confw32.sh,$(W32DRIVERS))
+XF86_W32.o: XF86_W32.c $(ICONFIGFILES)
+SetUIDServerTarget(XF86_W32,$(XF86W32SUBDIRS),$(XF86W32OBJS),$(XF86W32LIBS),$(XF86W32SYSLIBS))
+#ifndef ServerToInstall
+#define ServerToInstall XF86_W32
+#endif
+#endif
+
 #if XF86MonoServer
 XCOMM
 XCOMM XFree86 Monochrome VGA Server
@@ -262,7 +278,7 @@ XCOMM
 XCOMM XFree86 Mach32 Server
 XCOMM
 XF86MACH32OBJS = XF86_Mach32.o
-XF86MACH32LIBS = $(DRIVERSRC)/libmach32.a $(XF86LIBS) CFB16Libs
+XF86MACH32LIBS = $(DRIVERSRC)/libmach32.a $(XF86LIBS) CFB16Libs lib/libxf86cache.a
 XF86MACH32SYSLIBS = $(SYSLIBS)
 XF86_Mach32.o: XF86_Mach32.c $(ICONFIGFILES)
 SetUIDServerTarget(XF86_Mach32,$(XF86MACH32SUBDIRS),$(XF86MACH32OBJS),$(XF86MACH32LIBS),$(XF86MACH32SYSLIBS))

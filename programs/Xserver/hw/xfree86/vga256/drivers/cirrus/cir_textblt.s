@@ -1,5 +1,5 @@
 /* $XConsortium: cir_textblt.s,v 1.2 94/03/29 11:07:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.0 1994/06/05 06:00:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_textblt.s,v 3.1 1994/08/20 07:36:42 dawes Exp $ */
 /*
  *
  * Copyright 1993 by H. Hanemaayer, Utrecht, The Netherlands
@@ -330,7 +330,7 @@ GLNAME(CirrusTransferText32bit):
  * 
  */
 
-#ifdef 0	/* Unused. */
+#if 0	/* Unused. */
 
 	ALIGNTEXT4
 

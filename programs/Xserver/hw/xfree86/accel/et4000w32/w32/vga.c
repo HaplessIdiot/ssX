@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.0 1994/09/11 00:42:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -172,7 +172,7 @@ vgaPrintIdent()
   int            i, j, n, c;
   char		 *id;
 
-  ErrorF("  %s: server for 8-bit color displays (Patchlevel %s):\n      ",
+  ErrorF("  %s: accelerated server for ET4000W32 graphics adaptors (Patchlevel %s):\n      ",
          vga256InfoRec.name, vga256InfoRec.patchLevel);
 
   n = 0;

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/Imakefile,v 3.0 1994/09/11 00:42:12 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	vgaHW.c vga.c vgaCmap.c vgaBank.s et4_bank.s w32vars.c \
@@ -29,5 +29,7 @@ LinkSourceFile(vgaHW.c,../../../vga256/vga)
 LinkSourceFile(vgaBank.s,../../../vga256/vga)
 ObjectFromSpecialSource(et4000,$(VGADRIVERSRC)/et4000/et4_driver,NullParameter)
 ObjectFromSpecialAsmSource(et4_bank,$(VGADRIVERSRC)/et4000/bank,NullParameter)
+
+InstallLinkKitLibrary(w32,$(LINKKITDIR)/drivers)
 
 DependTarget()

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_cursor.c,v 3.0 1994/09/11 11:15:27 dawes Exp $
  *
  * Copyright 1993-94 by Simon P. Cooper, New Brunswick, New Jersey, USA.
  *
@@ -26,17 +26,20 @@
  * cir_cursor.c,v 1.3 1994/09/11 06:18:55 scooper Exp
  */
 
-#include <X.h>
+#include "X.h"
 #include "Xproto.h"
-#include <misc.h>
-#include <input.h>
-#include <cursorstr.h>
-#include <regionstr.h>
-#include <scrnintstr.h>
-#include <servermd.h>
-#include <windowstr.h>
+#include "misc.h"
+#include "input.h"
+#include "cursorstr.h"
+#include "regionstr.h"
+#include "scrnintstr.h"
+#include "servermd.h"
+#include "windowstr.h"
 #include "xf86.h"
-#include <mipointer.h>
+#include "mi.h"
+#include "gcstruct.h"
+#include "mipointer.h"
+#include "mispritest.h"
 #include "xf86Priv.h"
 #include "xf86_Option.h"
 #include "xf86_OSlib.h"
@@ -216,9 +219,8 @@ cirrusLoadCursor(pScr, pCurs, x, y)
    /* Onboard address to write the cursor to */
    dAddr = cirrusCur.cur_addr;
 
-   setwritebank(dAddr >> 14);
-   pDst = (unsigned long *)(((unsigned char *)vgaBase) +
-			    0x8000 + (dAddr & 0x3fff));
+   CIRRUSSETSINGLE(dAddr);
+   pDst = (unsigned long *)(CIRRUSSINGLEBASE() + dAddr);
    
    pSrc = (unsigned long *)pCurs->bits->devPriv[index];
 
@@ -282,6 +284,18 @@ cirrusMoveCursor(pScr, x, y)
   /* Your eyes do not deceive you - the low order bits form part of the
    * the INDEX
    */
+
+  /*
+   * Experimental handling of top/left edges.
+   * The Cirrus hardware cursor does not seem to allow for a partial
+   * cursor at the top or left ege of the screen.
+   * This code simply keeps the cursor at offset 0 (rather than having
+   * it disappear).
+   */
+  if (x < 0)
+      x = 0;
+  if (y < 0)
+      y = 0;
       
   outw (0x3C4, (x << 5) | 0x10);
   outw (0x3C4, (y << 5) | 0x11);
@@ -293,8 +307,50 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
      CursorPtr pCurs;
      Bool displayed;
 {
-   unsigned short red, green, blue;
+   unsigned short fred, fgreen, fblue;	/* foreground of cursor */
+   unsigned short mred, mgreen, mblue;  /* mask of cursor */
    unsigned char sr12;
+#if 0
+   miSpriteScreenPtr pScreenPriv = (miSpriteScreenPtr)
+			    pScr->devPrivates[pScr->miSpriteScreenIndex].ptr;
+
+   /*
+    * Handle cursor that has the same foreground/background color as
+    * the background window like mi does, so that the cursor always
+    * looks the same as cfb.
+    */
+
+   /* Default: same colors as background window. */
+   fred = pScreenPriv->colors[SOURCE_COLOR].red;
+   fgreen = pScreenPriv->colors[SOURCE_COLOR].green;
+   fblue = pScreenPriv->colors[SOURCE_COLOR].blue;
+   mred = pScreenPriv->colors[MASK_COLOR].red;
+   mgreen = pScreenPriv->colors[MASK_COLOR].green;
+   mblue = pScreenPriv->colors[MASK_COLOR].blue;
+
+   if (pScreenPriv->pColormap != pScreenPriv->pInstalledMap ||
+	!(pCurs->foreRed == fred &&
+	  pCurs->foreGreen == fgreen &&
+          pCurs->foreBlue == fblue &&
+	  pCurs->backRed == mred &&
+	  pCurs->backGreen == mgreen &&
+	  pCurs->backBlue == mblue))
+     {
+       mred   = pCurs->backRed;
+       mgreen = pCurs->backGreen;
+       mblue  = pCurs->backBlue;
+       fred   = pCurs->foreRed;
+       fgreen = pCurs->foreGreen;
+       fblue  = pCurs->foreBlue;
+     }
+#else
+   mred   = pCurs->backRed;
+   mgreen = pCurs->backGreen;
+   mblue  = pCurs->backBlue;
+   fred   = pCurs->foreRed;
+   fgreen = pCurs->foreGreen;
+   fblue  = pCurs->foreBlue;
+#endif
    
    outb (0x3c4, 0x12);  	/* SR12 allows access to DAC extended colors */
    sr12 = inb (0x3c5);
@@ -302,27 +358,19 @@ cirrusRecolorCursor(pScr, pCurs, displayed)
 				   the hidden DAC registers */
    outb (0x3c5, (sr12 & 0xfe) | 0x02);
    
-   red   = pCurs->backRed;
-   green = pCurs->backGreen;
-   blue  = pCurs->backBlue;
-   
-   pScr->ResolveColor (&red, &green, &blue, pScr->visuals);
+   pScr->ResolveColor (&mred, &mgreen, &mblue, pScr->visuals);
 
    outb (0x3c8, 0x00);		/* DAC color 256 */
-   outb (0x3c9, red);
-   outb (0x3c9, green);
-   outb (0x3c9, blue);
+   outb (0x3c9, mred);
+   outb (0x3c9, mgreen);
+   outb (0x3c9, mblue);
 
-   red   = pCurs->foreRed;
-   green = pCurs->foreGreen;
-   blue  = pCurs->foreBlue;
-   
-   pScr->ResolveColor (&red, &green, &blue, pScr->visuals);
+   pScr->ResolveColor (&fred, &fgreen, &fblue, pScr->visuals);
 
    outb (0x3c8, 0x0f);		/* DAC color 257 */
-   outb (0x3c9, red);
-   outb (0x3c9, green);
-   outb (0x3c9, blue);
+   outb (0x3c9, fred);
+   outb (0x3c9, fgreen);
+   outb (0x3c9, fblue);
 
                                /* Restore the state of SR12 */
    outw (0x3c4, (sr12 <<8) | 0x12);

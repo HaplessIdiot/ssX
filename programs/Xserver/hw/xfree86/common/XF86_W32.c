@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/XF86_W32.c,v 3.0 1994/09/08 14:27:17 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -19,7 +19,7 @@ int  xf86MaxScreens = sizeof(xf86Screens) / sizeof(ScrnInfoPtr);
 
 int xf86ScreenNames[] =
 {
-  SVGA,
+  ACCEL,
   -1
 };
 

@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.1 94/03/28 21:15:52 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.19 1994/09/08 14:26:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.20 1994/09/11 00:50:44 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -64,6 +64,7 @@ int   vgaCRIndex = 0x3d4;
 int   vgaCRReg = 0x3d5;
 int   s3InitCursorFlag = TRUE;
 extern xf86InfoRec xf86Info;
+extern int s3Madjust, s3Nadjust;  /*  from ../../common/xf86Config.c  */
 
 static vgaS3Ptr oldS3 = NULL;
 
@@ -1479,10 +1480,28 @@ s3Init(mode)
 
       outb(vgaCRIndex, 0x54);
       if (S3_x64_SERIES(s3ChipId)) {
-	 int i = (232-s3InfoRec.clock[mode->Clock]*s3Bpp/900);
-	 if (i < 0) i = 0;
-	 else if (i > 255) i = 255;
-	 s3Port54 = i & 0xf8;
+#if 0
+	 int m = (232-s3InfoRec.clock[mode->Clock]*s3Bpp/900)/8;
+#else
+	 int m,clock;
+	 double pow();
+	 clock = s3InfoRec.clock[mode->Clock] * s3Bpp;
+	 if (s3InfoRec.videoRam < 2048) clock *= 2;
+	 if (clock > 230*1000) m = 0;
+	 else m = (int)(1.5+pow(230.0-clock/1000.0,2.5)/12000.0);
+	 if (s3InfoRec.videoRam < 2048) m /= 2;
+#endif
+	 if (m < 0) m = 0;
+	 else if (m > 31) m = 31;
+	 if (s3Madjust != 0) {
+	    int old_m = m;
+	    m -= s3Madjust;
+	    if (m < 0) m = 0;
+	    else if (m > 31) m = 31;
+	    ErrorF("%s %s: adjusting M from %d to %d\n", "(**)",
+		   s3InfoRec.name, old_m, m);
+	 }
+	 s3Port54 = m << 3;
       }
       else if (s3InfoRec.videoRam == 512 || mode->HDisplay > 1200) /* XXXX */
 	 s3Port54 = 0x00;
@@ -1559,8 +1578,17 @@ s3Init(mode)
       tmp = inb(vgaCRReg);
       outb(vgaCRReg, (tmp & ~0x57) | i);
 
+      i = 255;
+      if (s3Nadjust != 0) {
+	 int old_n = i;
+	 i -= s3Nadjust;
+	 if (i < 0) i = 0;
+	 else if (i > 255) i = 255;
+	 ErrorF("%s %s: adjusting N from %d to %d\n", "(**)",
+		s3InfoRec.name, old_n, i);
+      }
       outb(vgaCRIndex, 0x60);
-      outb(vgaCRReg, 0xff);
+      outb(vgaCRReg, i);
 
       if (s3InfoRec.videoRam > 1024 && S3_x64_SERIES(s3ChipId)) 
 	 i = mode->HDisplay * s3Bpp / 8 + 1;

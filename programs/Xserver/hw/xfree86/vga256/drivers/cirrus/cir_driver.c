@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.1 94/03/28 21:48:45 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.11 1994/09/11 00:52:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.12 1994/09/11 11:15:29 dawes Exp $ */
 /*
  * cir_driver.c,v 1.8 1994/09/11 05:51:04 scooper Exp
  *
@@ -115,6 +115,8 @@ Bool cirrusMMIOFlag = FALSE;
 unsigned char *cirrusMMIOBase = NULL;
 Bool cirrusUseLinear = FALSE;
 Bool cirrusFavourBLT = FALSE;
+int cirrusDRAMBandwidth;
+int cirrusDRAMBandwidthLimit;
 
 #define CLGD5420_ID 0x22
 #define CLGD5422_ID 0x23
@@ -136,9 +138,11 @@ Bool cirrusFavourBLT = FALSE;
  * The following will need updating for other chips in the cirrus
  * family that support a hardware cursor.  I only have data for the 542x
  * series.
+ * The 543x should be compatible. -HH
  */
 
-#define Has_HWCursor(x) ((x) >= CLGD5420 && (x) <= CLGD5429)
+#define Has_HWCursor(x) (((x) >= CLGD5420 && (x) <= CLGD5429) || \
+    (x) == CLGD5430 || (x) == CLGD5434)
 
 /* Define a structure for the HIDDEN DAC cursor colours */
 typedef struct {
@@ -874,6 +878,9 @@ cirrusProbe()
 		  	if (SRF & 0x10)
 		  		/* 32-bit DRAM bus. */
 		  		vga256InfoRec.videoRam *= 2;
+		  	if ((SRF & 0x18) == 0x18)
+		  		/* 2MB memory on the 5426/8/9 (not sure). */
+		  		vga256InfoRec.videoRam *= 2;
 		  	}
 	       }
 	  }
@@ -901,23 +908,88 @@ cirrusProbe()
 
 #ifndef MONOVGA
      /*
+      * Calculate the available DRAM bandwidth from the MCLK setting.
+      * Take dram options into account (MCLK is set in FbInit).
+      */
+     {
+         unsigned char MCLK, SRF;
+         outb(0x3c4, 0x0f);
+         SRF = inb(0x3c5);
+         if ((cirrusChip >= CLGD5424 && cirrusChip <= CLGD5429) ||
+         cirrusChip == CLGD5430 || cirrusChip == CLGD5434) {
+             outb(0x3c4, 0x1f);
+             MCLK = inb(0x3c5) & 0x3f;
+             if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
+                 MCLK = 0x1c;
+             if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
+                 MCLK = 0x1f;
+             if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
+                 MCLK = 0x22;
+         }
+         else
+             /* 5420/22/62x5 have fixed MCLK settings. */
+             switch (SRF & 0x03) {
+             case 0 : MCLK = 0x1c; break;
+             case 1 : MCLK = 0x19; break;
+             case 2 : MCLK = 0x17; break;
+             case 3 : MCLK = 0x15; break;
+             }
+         /* Approximate DRAM bandwidth in K/s (8-bit page mode accesses),
+          * corresponds with MCLK frequency / 2 (2 cycles per access). */
+/*          cirrusDRAMBandwidth = 14.31818 * MCLK * 1000 / 16); */
+         cirrusDRAMBandwidth = 14318 * MCLK / 16;
+         if (vga256InfoRec.videoRam >= 512)
+             /* At least 16-bit access. */
+             cirrusDRAMBandwidth *= 2;
+         if (cirrusChip != CLGD5420 &&
+         (cirrusChip < CLGD6205 || cirrusChip > CLGD6235) &&
+         vga256InfoRec.videoRam >= 1024)
+             /* At least 32-bit access. */
+             cirrusDRAMBandwidth *= 2;
+         if (cirrusChip == CLGD5434 && vga256InfoRec.videoRam >= 2048)
+             /* 64-bit access. */
+             cirrusDRAMBandwidth *= 2;
+         /*
+          * Calculate highest acceptable DRAM bandwidth to be taken up
+          * by screen refresh. Satisfies
+          *	total bandwidth >= refresh bandwidth * 1.1
+          */
+         cirrusDRAMBandwidthLimit = (cirrusDRAMBandwidth * 10) / 11;
+     }
+
+     /*
       * Adjust the clock limits for inadequate amounts of memory
       * and for 16bpp/32bpp modes.
+      * In cases where DRAM bandwidth is the limiting factor, we
+      * require the total bandwidth to be at least 10% higher than the
+      * bandwidth required for screen refresh (which is what the Cirrus
+      * databook recommends for 'acceptable' performance).
       */
 
-     if (vgaBitsPerPixel == 8 &&
-     cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429)
-         if (vga256InfoRec.videoRam <= 512)
-             cirrusClockLimit[cirrusChip] = 45100;
+     if (vgaBitsPerPixel == 8) {
+         if (cirrusChip >= CLGD5420 && cirrusChip <= CLGD5429 &&
+         vga256InfoRec.videoRam <= 512)
+             cirrusClockLimit[cirrusChip] = cirrusDRAMBandwidthLimit;
+#ifdef ALLOW_8BPP_MULTIPLEXING
+         if (cirrusChip == CLGD5434 && vga256InfoRec.videoRam <= 1024)
+             /* DRAM bandwidth limited. This translates to allowing
+              * 90 MHz with MCLK = 0x1c, 95 MHz with MCLK = 0x1f,
+              * 100 MHz with 0x22. */
+             cirrusClockLimit[cirrusChip] = cirrusDRAMBandwidthLimit;
+#endif
+     }
 
      if (vgaBitsPerPixel == 16) {
          memcpy(cirrusClockLimit, cirrusClockLimit16bpp,
              LASTCLGD * sizeof(int));
-         if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429 &&
-         vga256InfoRec.videoRam <= 512)
-             cirrusClockLimit[cirrusChip] = 0;
-         if (cirrusChip == CLGD5434 && vga256InfoRec.videoRam <= 1024)
-             cirrusClockLimit[cirrusChip] = 45100;
+         if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429
+         && vga256InfoRec.videoRam <= 512)
+                 cirrusClockLimit[cirrusChip] = 0;
+         if ((cirrusChip >= CLGD5426 && cirrusChip <= CLGD5429)
+         || cirrusChip == CLGD5430 || (cirrusChip == CLGD5434 &&
+         vga256InfoRec.videoRam <= 1024))
+                 /* Allow 45 MHz with MCLK = 0x1c, 50 MHz with 0x1f+. */
+                 cirrusClockLimit[cirrusChip] = cirrusDRAMBandwidthLimit / 2;
      }
 
      if (vgaBitsPerPixel == 32) {
@@ -925,6 +997,9 @@ cirrusProbe()
              LASTCLGD * sizeof(int));
          if (vga256InfoRec.videoRam <= 1024)
              cirrusClockLimit[cirrusChip] = 0;
+         else
+             /* Allow 45 MHz with MCLK = 0x1c, 50 MHz with MCLK = 0x1f+. */
+             cirrusClockLimit[cirrusChip] = cirrusDRAMBandwidthLimit / 4;
      }
 #endif
 
@@ -1050,10 +1125,11 @@ cirrusFbInit()
       outb(0x3c4, 0x0f);
       SRF = inb(0x3c5);
       outb(0x3c4, 0x1f);
-      ErrorF(
-	"%s %s: %s: Internal memory clock register is 0x%02x (%s RAS)\n",
-        XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset, inb(0x3c5),
-        (SRF & 4) ? "Standard" : "Extended");
+      if (xf86Verbose)
+          ErrorF(
+              "%s %s: %s: Internal memory clock register is 0x%02x (%s RAS)\n",
+              XCONFIG_PROBED, vga256InfoRec.name, vga256InfoRec.chipset,
+              inb(0x3c5), (SRF & 4) ? "Standard" : "Extended");
       
       if (OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
           {
@@ -1067,26 +1143,36 @@ cirrusFbInit()
       	   * On one card tested, with 80ns DRAM, 0x26 seems stable.
       	   */
 	  outw(0x3c4, 0x221f);		/* Set to 0x22 (about 62 MHz). */
-          ErrorF("%s %s: %s: Internal memory clock register set to 0x22\n",
-            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+	  if (xf86Verbose)
+              ErrorF("%s %s: %s: Internal memory clock register set to 0x22\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
 	  }
 
       if (OFLG_ISSET(OPTION_SLOW_DRAM, &vga256InfoRec.options))
           {
           outw(0x3c4, 0x1c1f);		/* Set to 0x1c (50.1 MHz). */
-          ErrorF("%s %s: %s: Internal memory clock register set to 0x1c\n",
-            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+          if (xf86Verbose)
+              ErrorF("%s %s: %s: Internal memory clock register set to 0x1c\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
           }
 
       if (OFLG_ISSET(OPTION_MED_DRAM, &vga256InfoRec.options))
           {
           outw(0x3c4, 0x1f1f);		/* Set to 0x1f. */
-          ErrorF("%s %s: %s: Internal memory clock register set to 0x1f\n",
-            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
+          if (xf86Verbose)
+              ErrorF("%s %s: %s: Internal memory clock register set to 0x1f\n",
+                XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
           }
       }
 
 #ifndef MONOVGA
+
+    if (xf86Verbose)
+        ErrorF("%s %s: %s: Approximate DRAM bandwidth for drawing: %d of %d MB/s\n",
+            XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+            (cirrusDRAMBandwidth - vga256InfoRec.clock[
+            vga256InfoRec.modes->Clock] * vgaBitsPerPixel / 8) / 1000,
+            cirrusDRAMBandwidth / 1000);
 
 #ifdef CIRRUS_SUPPORT_LINEAR
     if (xf86LinearVidMem() &&
@@ -1126,13 +1212,14 @@ cirrusFbInit()
                 goto nolinear;
             }
         CIRRUS.ChipLinearSize = vga256InfoRec.videoRam * 1024;
-        ErrorF("%s %s: %s: Using linear framebuffer at 0x%08x (%dMB)\n",
-	    XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
-	    CIRRUS.ChipLinearBase, (unsigned int)CIRRUS.ChipLinearBase
-	    / (1024 * 1024));
-	if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5429 &&
+        if (xf86Verbose)
+            ErrorF("%s %s: %s: Using linear framebuffer at 0x%08x (%dMB)\n",
+	        XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset,
+	        CIRRUS.ChipLinearBase, (unsigned int)CIRRUS.ChipLinearBase
+	        / (1024 * 1024));
+	if (cirrusChip >= CLGD5422 && cirrusChip <= CLGD5428 &&
 	OFLG_ISSET(OPTION_FAST_DRAM, &vga256InfoRec.options))
-            ErrorF("%s %s: %s: Warning: fast_dram option not recommended"
+            ErrorF("%s %s: %s: Warning: fast_dram option not recommended "
                 "with linear addressing\n",
                 XCONFIG_GIVEN, vga256InfoRec.name, vga256InfoRec.chipset);
     }
@@ -1226,12 +1313,14 @@ nolinear:
 
 	    if (xf86Verbose)
 	      {
-	        ErrorF( "%s %s: %s: Using HW cursor\n",
+	        ErrorF( "%s %s: %s: Using hardware cursor\n",
 		       XCONFIG_PROBED, vga256InfoRec.name,
 		       vga256InfoRec.chipset);
+#if 0
 	        ErrorF( "\tcirrusFbInit: size=0x%01x sel=0x%02x addr=0x%08x\n",
 		       cirrusCur.cur_size, cirrusCur.cur_select,
 		       cirrusCur.cur_addr);
+#endif
 	      }
 	  }
 	else

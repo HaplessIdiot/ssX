@@ -1,3 +1,18 @@
+XFree86 3.0Dl (13 September 1994)
+279. XF86Config(4/5) manual page.
+278. LinkKit support for the W32 server.
+277. Change HW cursor code to position cursor next to the top/left edges
+     instead of disappearing (Harm Hanemaayer).
+276. Add code to the Cirrus driver to determine clock limits based on the
+     available DRAM bandwidth (Harm Hanemaayer).
+275. Add an "S3MNAdjust" entry to the Device section of the XF86Config
+     to allow tuning of the M and N parameters in the S3 server (Harald
+     Koenig).
+274. Add a Gamma entry to the Monitor section in the XF86Config (Harald
+     Koenig).
+273. Don't strip server binaries when installing.
+272. Set PLL limits in S3 server for S3 GENDAC and SDAC.
+
 XFree86 3.0Dk (11 September 1994)
 271. Add check for incorrect Modes line in XF86Config.
 270. Add some sanity checks to S3 server for supported depths.

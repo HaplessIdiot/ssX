@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Imakefile,v 3.4 1994/09/07 15:47:04 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Imakefile,v 3.5 1994/09/11 00:36:35 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = 	agx.c agxCmap.c agxCursor.c  agxInit.c vgaHW.c agxIm.c \
@@ -31,6 +31,8 @@ NormalLibraryTarget(agx,$(OBJS))
 NormalLibraryObjectRule()
 
 NormalAsmObjectRule()
+
+LinkSourceFile(vgaHW.c,../../vga256/vga)
 
 InstallLinkKitLibrary(agx,$(LINKKITDIR)/drivers)
 

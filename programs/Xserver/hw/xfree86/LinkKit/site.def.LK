@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.2 1994/06/28 12:27:38 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.3 1994/09/07 15:46:40 dawes Exp $
 
 /* Configuration file for Server Link Kit */
 
@@ -46,6 +46,8 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.2 1994/06
 
 #define XF86MonoDrivers        hgc1280 sigma apollo hercules
 
+#define XF86W32Drivers         et4000w32
+
 
 /* The SVGA colour server */
 #define XF86SVGAServer		YES
@@ -78,7 +80,10 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/site.def.LK,v 3.2 1994/06
 #define XF86P9000Server		YES
 
 /* The AGX server */
-#define XF86AGXServer			YES
+#define XF86AGXServer		YES
+
+/* The W32 server */
+#define XF86W32Server		YES
 
 /*
  * Set the default server (ie the one that gets the sym-link to "X")

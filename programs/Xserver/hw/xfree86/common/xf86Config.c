@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.13 1994/09/11 00:51:03 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.14 1994/09/11 11:14:05 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -61,6 +61,7 @@ extern char *rgbPath;
 extern Bool xf86fpFlag, xf86coFlag;
 
 extern int defaultColorVisualClass;
+int s3Madjust=0, s3Nadjust=0;
 
 static void configFilesSection(
 #if NeedFunctionPrototypes
@@ -1571,6 +1572,19 @@ configDeviceSection()
       OFLG_SET(XCONFIG_INSTANCE, &(devp->xconfigFlag));
       break;
 
+    case S3MNADJUST:
+      if (getToken(NULL) != NUMBER || val.num<-31 || val.num>31) 
+	 configError("M adjust (max. 31) expected");
+      s3Madjust = val.num;
+      if ((token = getToken(NULL)) == NUMBER) {
+	 if (val.num<-255 || val.num>255) 
+	    configError("N adjust (max. 255) expected");
+	 else
+	    s3Nadjust = val.num;
+      }
+      else pushToken = token;
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -1803,6 +1817,30 @@ configMonitorSection()
          monp->vrefresh[i].lo *= multiplier;
       }
       break;
+    case GAMMA: {
+       char *msg = "gamma correction value(s) expected\n either one value or three r/g/b values with 0.1 <= gamma <= 10";
+       if ((token = getToken(NULL)) != NUMBER || val.realnum<0.1 || val.realnum>10)
+	  configError(msg);
+       else {
+	  int i;
+	  extern double xf86rGamma, xf86gGamma, xf86bGamma;
+	  extern unsigned char xf86rGammaMap[], xf86gGammaMap[], xf86bGammaMap[];
+	  xf86rGamma = xf86gGamma = xf86bGamma = 1.0 / val.realnum;
+	  if ((token = getToken(NULL)) == NUMBER) {
+	     if (val.realnum<0.1 || val.realnum>10) configError(msg);
+	     else {
+		xf86gGamma = 1.0 / val.realnum;
+		if ((token = getToken(NULL)) != NUMBER || val.realnum<0.1 || val.realnum>10)
+		   configError(msg);
+		else {
+		   xf86bGamma = 1.0 / val.realnum;
+		}
+	     }
+	  }
+	  else pushToken = token;
+       }
+       break;
+    }
     case EOF:
       FatalError("Unexpected EOF. Missing EndSection?");
       break; /* :-) */

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.1 94/03/28 21:13:36 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.25 1994/09/11 00:50:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.26 1994/09/11 11:13:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -1077,9 +1077,9 @@ s3Probe()
 	    break;
 	 }
       } else if (OFLG_ISSET(CLOCK_OPTION_S3GENDAC, &s3InfoRec.clockOptions)) {
-	 maxRawClock = s3InfoRec.dacSpeed;
+	 maxRawClock = 110000;
       } else if (OFLG_ISSET(CLOCK_OPTION_TI3025, &s3InfoRec.clockOptions)) {
-	 maxRawClock = s3InfoRec.dacSpeed;
+	 maxRawClock = s3InfoRec.dacSpeed; /* Is this right?? */
       } else {
 	 /* Shouldn't get here */
 	 maxRawClock = 0;

@@ -1,5 +1,5 @@
 /*
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.0 1994/09/11 00:42:14 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -96,6 +96,25 @@ static int Num_ET4000W32_ExtPorts =
 	(sizeof(ET4000W32_ExtPorts)/sizeof(ET4000W32_ExtPorts[0]));
 
 
+static char * w32ChipNames[] = {
+	"et4000w32",
+	"et4000w32i",
+	"et4000w32p_rev_a",
+	"et4000w32i_rev_b",
+	"et4000w32i_rev_c",
+	"et4000w32p_rev_b",
+	"et4000w32p_rev_c",
+	"et4000w32p_rev_d",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved",
+	"reserved"
+};
+
 /*
  * ET4000W32Ident
  */
@@ -114,14 +133,6 @@ ET4000W32Ident(n)
 	"et4000w32p_rev_b",
 	"et4000w32p_rev_c",
 	"et4000w32p_rev_d",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved",
-	"reserved"
     };
 
     if (n + 1 > sizeof(w32_ids) / sizeof(char *))
@@ -140,19 +151,27 @@ static Bool
 ET4000W32Probe()
 {
     static char *et4000_id = NULL;
+    char *saveChipset = vga256InfoRec.chipset;
+    int saveVideoRam = vga256InfoRec.videoRam;
 
+#if 0
     /* Coax the et4000 driver into cooperation */
     if (vga256InfoRec.chipset)
 	vga256InfoRec.chipset = et4000_id;
+#endif
 
-    if (!ET4000.ChipProbe())
+    if (!ET4000.ChipProbe() || strcmp(vga256InfoRec.chipset, "et4000") == 0) {
+	vga256InfoRec.chipset = saveChipset;
 	return FALSE;
+    }
 
     /*
      *  So we don't get messed up if the ET4000 code is changed in unexpected
      *  ways
      */ 
     et4000_id = vga256InfoRec.chipset;
+    vga256InfoRec.chipset = saveChipset;
+    vga256InfoRec.videoRam = saveVideoRam;
 
     /*
      *  Set up those I/O ports not in the ET4000 
@@ -181,7 +200,7 @@ ET4000W32Probe()
 	    outb(0x3cb, i);
 	    if (i != inb(0x3cb))
 	    {
-		FatalError("w32:  failed the segment test");
+		ErrorF("w32:  failed the segment test\n");
 		ET4000W32EnterLeave(LEAVE);
 		return FALSE;
 	    }
@@ -191,15 +210,30 @@ ET4000W32Probe()
 	    outb(0x3cb, i);
 	    if (i != inb(0x3cb))
 	    {
-		FatalError("w32:  failed the segment test");
+		ErrorF("w32:  failed the segment test\n");
 		ET4000W32EnterLeave(LEAVE);
 		return FALSE;
 	    }
 	}
 
-	outb(0x217a, 0xec);
-	vga256InfoRec.chipset = et4000w32_id
-			      = ET4000W32Ident(inb(0x217b) >> 4);
+	if (vga256InfoRec.chipset)
+	{
+	    i = 0;
+	    while (et4000w32_id = ET4000W32Ident(i++))
+		if (StrCaseCmp(et4000w32_id, vga256InfoRec.chipset) == 0)
+		    break;
+	    if (!et4000w32_id)
+	    {
+		ET4000W32EnterLeave(LEAVE);
+		return FALSE;
+	    }
+	}
+	else
+	{
+	    outb(0x217a, 0xec);
+	    vga256InfoRec.chipset = et4000w32_id
+				  = w32ChipNames[inb(0x217b) >> 4];
+	}
 	if (strcmp(et4000w32_id, "reserved") == 0)
 	{
 	    et4000w32_id = NULL;
@@ -213,13 +247,16 @@ ET4000W32Probe()
 	W32OrW32i = W32 || W32i;
 	W32p = !W32OrW32i;
 
-	outb(vgaIOBase+0x04, 0x37); config = inb(vgaIOBase+0x05);
-	switch(config & 0x09)
+	if (!vga256InfoRec.videoRam)
 	{
-	    case 0x00: vga256InfoRec.videoRam = 2048; break;
-	    case 0x01: vga256InfoRec.videoRam = 4096; break;
-	    case 0x08: vga256InfoRec.videoRam = 512; break;
-	    case 0x09: vga256InfoRec.videoRam = 1024; break;
+	    outb(vgaIOBase+0x04, 0x37); config = inb(vgaIOBase+0x05);
+	    switch(config & 0x09)
+	    {
+		case 0x00: vga256InfoRec.videoRam = 2048; break;
+		case 0x01: vga256InfoRec.videoRam = 4096; break;
+		case 0x08: vga256InfoRec.videoRam = 512; break;
+		case 0x09: vga256InfoRec.videoRam = 1024; break;
+	    }
 	}
 
 	outb(vgaIOBase+0x04, 0x32);

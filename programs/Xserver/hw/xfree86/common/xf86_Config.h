@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.1 94/03/28 21:23:53 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.7 1994/09/04 10:52:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.8 1994/09/07 15:51:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -225,6 +225,7 @@ static SymTabRec ServerFlagsTab[] = {
 #define HORIZSYNC	1064
 #define VERTREFRESH	1065
 #define MODE		1066
+#define GAMMA		1067
 
 #ifdef INIT_CONFIG
 static SymTabRec MonitorTab[] = {
@@ -238,6 +239,7 @@ static SymTabRec MonitorTab[] = {
   { HORIZSYNC,	"horizsync" },
   { VERTREFRESH,"vertrefresh" },
   { MODE,	"mode" },
+  { GAMMA,	"gamma" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -340,6 +342,7 @@ static SymTabRec KeyMapTab[] = {
 #define BIOSBASE	25
 #define MEMBASE		26
 #define CLOCKCHIP	27
+#define S3MNADJUST	28
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
@@ -364,6 +367,7 @@ static SymTabRec DeviceTab[] = {
   { POSBASE,	"posbase" },
   { INSTANCE,	"instance" },
   { CLOCKCHIP,	"clockchip" },
+  { S3MNADJUST,	"s3mnadjust" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
