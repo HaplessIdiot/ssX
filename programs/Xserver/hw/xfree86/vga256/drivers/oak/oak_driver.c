@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.1 94/03/28 21:52:02 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.8 1994/12/11 10:57:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.9 1994/12/25 12:35:45 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -36,7 +36,9 @@
  * 24/11/94 At last I managed to fix the linear mode that did not
  *          work in the previous release, also fixed a typo which
  *          made impossible to hardcode "oti077" as chipset.
- *
+ * 23/12/94 Okay, now linear addressing is cleaner, and more
+ *          efficient, Membase has been set at 0xE00000 (14Mb) and
+ *          aperture is selected matching video memory.
  *
  * This one file can be used for both the color and monochrome servers.
  * Remember that the monochrome server is actually using a 16-color mode,
@@ -71,7 +73,6 @@
  * If the driver makes use of XF86Config 'Option' flags, the following will be
  * required
  */
-#define XCONFIG_FLAGS_ONLY
 #include "xf86_Config.h"
 
 /*
@@ -158,6 +159,7 @@ static char *   OAKIdent();
 static Bool     OAKClockSelect();
 static void     OAKEnterLeave();
 static Bool     OAKInit();
+static Bool     OAKValidMode();
 static void *   OAKSave();
 static void     OAKRestore();
 static void     OAKAdjust();
@@ -193,6 +195,7 @@ vgaVideoChipRec OAK = {
   OAKIdent,
   OAKEnterLeave,
   OAKInit,
+  OAKValidMode,
   OAKSave,
   OAKRestore,
   OAKAdjust,
@@ -549,7 +552,7 @@ OAKClockSelect(no)
 static Bool
 OAKProbe()
 {
-  unsigned char save, temp1, temp;
+  unsigned char save, temp1, temp, temp2;
   
   xf86ClearIOPortList(vga256InfoRec.scrnIndex);
   xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
@@ -725,6 +728,51 @@ OAKProbe()
    * THE STRUCTURE, ALLOWING FOR LINEAR FRAMEBUFFER
    */
 
+  /* Now we perform other detections, such as RAMDAC and
+   * the like.
+   */
+
+  outb(OTI_INDEX,OTI87_CONFIG_1);
+  temp2 = ( inb(OTI_R_W) & 0x06);
+  switch ( temp2 )
+  {
+  case 0x00 :
+    ErrorF("%s %s: oti087: VLB card integrated in MotherBoard. \n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  case 0x02 :
+    ErrorF("%s %s: oti087: VLB card in a 32-bit VESA slot. \n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  case 0x04 :
+    ErrorF("%s %s: oti087: ISA card integrated in MotherBoard. \n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  case 0x06 :
+    ErrorF("%s %s: oti087: ISA card in a 16-bit AT-BUS slot.  \n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  }
+
+  outb(OTI_INDEX,OTI87_CONFIG_2);
+  temp2 = ( inb(OTI_R_W) & 0x0C);
+  switch (temp2 )
+  {
+  case 0x00 :
+    ErrorF("%s %s: oti087: BT476, SC11487, IMSG174 or equivalent RAMDAC.\n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  case 0x04 :
+    ErrorF("%s %s: oti087: MU9C1715 or equivalent RAMDAC.\n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  case 0x08 :
+    ErrorF("%s %s: oti087: BT484 or equivalent RAMDAC.\n",
+           XCONFIG_PROBED, vga256InfoRec.name);
+    break;
+  }
+
+
   if (OTI_chipset == OTI87)
     {
       OAK.ChipSetRead = OTI87SetRead ;
@@ -735,15 +783,14 @@ OAKProbe()
       if (OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))     
 	{
 	  OAK.ChipUseLinearAddressing = TRUE ;
-	  OAK.ChipLinearBase = 0xF00000 ; 
-	  OAK.ChipLinearSize = 0x100000 ;
+	  OAK.ChipLinearBase = 0xE00000 ; /* This is a default, just in case */
+	  OAK.ChipLinearSize = vga256InfoRec.videoRam * 1024 ;
 
-	  /*     OAK.ChipHas16bpp = TRUE ;              
-		 OAK.ChipHas32bpp = TRUE ;   */
-
-	  OTI_linear = TRUE;
-
-	  /*    ErrorF("OTI87 driver: HiColor and TrueColor Enabled \n"); */
+#if 0
+	  OAK.ChipHas16bpp = TRUE ;
+	  OAK.ChipHas32bpp = TRUE ;
+	  ErrorF("OTI87 driver: HiColor and TrueColor Enabled \n");
+#endif
 	}
     }
 
@@ -799,6 +846,11 @@ OAKProbe()
    * after the things describe their use.
    */
   
+  OFLG_SET(OPTION_LINEAR, &OAK.ChipOptionFlags);
+  OFLG_SET(OPTION_FAVOUR_BITBLT, &OAK.ChipOptionFlags);
+  OFLG_SET(OPTION_FIFO_CONSERV, &OAK.ChipOptionFlags);
+  OFLG_SET(OPTION_FIFO_AGGRESSIVE, &OAK.ChipOptionFlags);
+
   return(TRUE);
   
 }
@@ -1275,10 +1327,16 @@ OAKInit(mode)
       
       if (OFLG_ISSET(OPTION_FIFO_CONSERV, &vga256InfoRec.options)) {
 	new->oti87FIFODepth = 0xE ;
+	ErrorF ("%s %s: oti087: FIFO set to 15. \n", XCONFIG_GIVEN,
+		vga256InfoRec.name);
       } else if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &vga256InfoRec.options)) {
-        new->oti87FIFODepth = 0x1 ;
+	new->oti87FIFODepth = 0x2 ;
+	ErrorF ("%s %s: oti087: FIFO set to 2. \n", XCONFIG_GIVEN,
+		vga256InfoRec.name);
       } else {
 	new->oti87FIFODepth = 0x6 ;
+	ErrorF ("%s %s: oti087: FIFO set to 6. \n", XCONFIG_PROBED,
+		vga256InfoRec.name);
       }
       new->oti87ModeSelect = 0x04 ;
       if ( new->std.NoClock >= 0 ) {
@@ -1343,18 +1401,43 @@ OAKInit(mode)
   
   /* Explain what it to be done to the stderr messages, just to be sure */
 
-  if (OTI_linear) 
-    {
-      new-> oti87Mapping = 0xF9;
-      ErrorF ("%s %s: oti087: linear framebuffer enabled. \n", XCONFIG_PROBED,
-	      vga256InfoRec.name);
-    }
   if (OTI_2mb_bank)
     {
       ErrorF ("%s %s: oti087: Using 2 MB banking routines. \n", XCONFIG_PROBED,
 	      vga256InfoRec.name);
     }
-  
+
+  if (OTI_linear) 
+    {
+      switch(vga256InfoRec.videoRam)
+      {
+      case 256:
+        new -> oti87Mapping = 0xE1;
+        break;
+      case 512:
+        new -> oti87Mapping = 0xE5;
+          break;
+      case 1024:
+        new -> oti87Mapping = 0xE9; 
+          break;
+      case 2048:
+        new -> oti87Mapping = 0xED;
+          break;
+      } 
+
+      ErrorF ("%s %s: oti087: linear framebuffer enabled. \n", XCONFIG_GIVEN,
+	      vga256InfoRec.name);
+      ErrorF ("%s %s: oti087: base address is set at 0x%X.\n", XCONFIG_GIVEN,
+              vga256InfoRec.name, OAK.ChipLinearBase);
+      ErrorF ("%s %s: oti087: aperture size is %d Kbytes. \n", XCONFIG_PROBED,
+              vga256InfoRec.name,(OAK.ChipLinearSize/1024));
+    }
+  if (OFLG_ISSET(OPTION_FAVOUR_BITBLT, &vga256InfoRec.options))
+    {
+      new -> oti87Feature = 0x0C;
+      ErrorF ("%s %s: oti087: BitBlt engine enabled. \n", XCONFIG_GIVEN,
+	      vga256InfoRec.name);
+    }
   return(TRUE);
 }
 
@@ -1434,3 +1517,13 @@ OAKAdjust(x, y)
     }
 }
 
+/*
+ * OAKValidMode --
+ *
+ */
+static Bool
+OAKValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
