@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.16 1996/02/18 03:42:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.17 1996/02/20 14:34:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -351,6 +351,7 @@ xf86KbdProc (pKeyboard, what)
      * Discard any pending input after a VT switch to prevent the server
      * passing on parts of the VT switch sequence.
      */
+    sleep(1);
     if (kbdFd != -1) {
 	char buf[16];
 	read(kbdFd, buf, 16);

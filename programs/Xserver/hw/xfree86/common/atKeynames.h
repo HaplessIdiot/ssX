@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.6 1995/12/21 11:44:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/atKeynames.h,v 3.7 1996/02/04 09:05:59 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -191,6 +191,12 @@
 #define KEY_LMeta        /* Left Meta             0x6b  */  107
 #define KEY_RMeta        /* Right Meta            0x6c  */  108
 #define KEY_Menu         /* Menu                  0x6d  */  109
+#define KEY_F13          /* F13                   0x6e  */  110
+#define KEY_F14          /* F14                   0x6f  */  111
+#define KEY_F15          /* F15                   0x70  */  112
+#define KEY_F16          /* F16                   0x71  */  113
+#define KEY_F17          /* F17                   0x72  */  114
+#define KEY_KP_DEC       /* KP_DEC                0x73  */  115
 #define KEY_SN_KP_7      /* ServerNumLock 7       0x80  */  128
 #define KEY_SN_KP_8      /* ServerNumLock 8       0x81  */  129
 #define KEY_SN_KP_9      /* ServerNumLock 9       0x82  */  130

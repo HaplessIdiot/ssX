@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.80 1996/02/20 14:34:25 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.81 1996/02/22 05:11:42 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1137,7 +1137,7 @@ configServerFlagsSection()
 #endif
 #ifdef XF86MISC
   extern Bool	 xf86MiscModInDevEnabled;
-  extern Bool	 xf86VMiscModInDevAllowNonLocal;
+  extern Bool	 xf86MiscModInDevAllowNonLocal;
 #endif
       
   xf86Info.dontZap       = FALSE;
@@ -1168,6 +1168,9 @@ configServerFlagsSection()
       break;
     case MODINDEVALLOWNONLOCAL:
       xf86MiscModInDevAllowNonLocal = TRUE;
+      break;
+    case ALLOWMOUSEOPENFAIL:
+      xf86AllowMouseOpenFail = TRUE;
       break;
 #endif
     case EOF:

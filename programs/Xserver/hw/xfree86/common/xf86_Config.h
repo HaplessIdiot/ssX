@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.45 1996/02/18 03:42:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.46 1996/02/22 05:11:45 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -210,6 +210,7 @@ static SymTabRec FilesTab[] = {
 #define ALLOWNONLOCAL		1055
 #define DISABLEMODINDEV		1056
 #define MODINDEVALLOWNONLOCAL	1057
+#define ALLOWMOUSEOPENFAIL	1058
 
 #ifdef INIT_CONFIG
 static SymTabRec ServerFlagsTab[] = {
@@ -221,6 +222,7 @@ static SymTabRec ServerFlagsTab[] = {
   { ALLOWNONLOCAL, "allownonlocalxvidtune" },
   { DISABLEMODINDEV, "disablemodindev" },
   { MODINDEVALLOWNONLOCAL, "allownonlocalmodindev" },
+  { ALLOWMOUSEOPENFAIL, "allowmouseopenfail" },
   { -1,         "" },
 };
 #endif /* INIT_CONFIG */

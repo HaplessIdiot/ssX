@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.25 1996/02/20 14:35:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/xf86config.c,v 3.26 1996/02/22 05:13:37 dawes Exp $ */
 
 /*
  * This is a configuration program that will create a base XF86Config
@@ -968,10 +968,10 @@ static char *cardunsupported_text =
 "this card definition was based on, there's a chance that it is now\n"
 "supported.\n";
 
-#define NU_ACCELSERVER_IDS 8
+#define NU_ACCELSERVER_IDS 9
 
 static char *accelserver_id[NU_ACCELSERVER_IDS] = {
-	"S3", "Mach32", "Mach8", "8514", "P9000", "AGX", "W32", "Mach64"
+	"S3", "Mach32", "Mach8", "8514", "P9000", "AGX", "W32", "Mach64", "I128"
 };
 
 void carddb_configuration() {
@@ -1084,7 +1084,7 @@ static char *screenintro_text =
 "    chipsets; it supports 16/32-bit color on certain Cirrus configurations.\n"
 " 4  The accelerated servers. These include XF86_S3, XF86_Mach32, XF86_Mach8,\n"
 #if XFREE86_VERSION >= 311
-"    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32 and XF86_Mach64.\n"
+"    XF86_8514, XF86_P9000, XF86_AGX, XF86_W32, XF86_Mach64 and XF86_I128.\n"
 #else
 "    XF86_8514, XF86_P9000, XF86_AGX, and XF86_W32.\n"
 #endif
@@ -1277,7 +1277,7 @@ static char *modeslist_text =
 "\n";
 
 #if XFREE86_VERSION >= 311
-#define NU_ACCEL_SERVERS 8
+#define NU_ACCEL_SERVERS 9
 #else
 #define NU_ACCEL_SERVERS 7
 #endif
@@ -1286,7 +1286,7 @@ static char *accelserver_name[NU_ACCEL_SERVERS] = {
 	"XF86_S3", "XF86_Mach32", "XF86_Mach8", "XF86_8514", "XF86_P9000",
 	"XF86_AGX", "XF86_W32"
 #if XFREE86_VERSION >= 311
-	,"XF86_Mach64"
+	,"XF86_Mach64", "XF86_I128"
 #endif
 };
 

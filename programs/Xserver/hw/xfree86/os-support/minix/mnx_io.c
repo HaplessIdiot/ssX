@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.4 1995/07/08 10:29:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/minix/mnx_io.c,v 3.5 1996/02/04 09:10:11 dawes Exp $ */
 /*
  * Copyright 1993 by Vrije Universiteit, The Netherlands
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -181,6 +181,11 @@ void xf86MouseInit()
 		if ((mseFd = xf86Info.mseFd =
 			open(xf86Info.mseDevice, O_RDWR)) < 0)
 		{
+			if (xf86AllowMouseOpenFail) {
+				ErrorF("Cannot open mouse (%s) - Continuing...\n",
+					strerror(errno));
+				return;
+			}
 			FatalError("Cannot open mouse (%s)\n",
 				strerror(errno));
 		}
@@ -216,7 +221,7 @@ int xf86MouseOn()
 		r = nbio_read(xf86Info.mseFd, waste, sizeof(waste));
 		if (r > 0)
 			continue;
-		if (r == -1 && errno == EAGAIN)
+		if ((r == -1 && errno == EAGAIN) || xf86AllowMouseOpenFail)
 		{
 			break;
 		}

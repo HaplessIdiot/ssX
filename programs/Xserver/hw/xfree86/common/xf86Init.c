@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.43 1996/02/18 03:42:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.44 1996/02/22 05:11:44 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -72,6 +72,7 @@ Bool xf86VidModeAllowNonLocal = FALSE;
 #ifdef XF86MISC
 Bool xf86MiscModInDevEnabled = TRUE;
 Bool xf86MiscModInDevAllowNonLocal = FALSE;
+Bool xf86AllowMouseOpenFail = FALSE;
 #endif
 Bool xf86ScreensOpen = FALSE;
 int xf86Verbose = 1;
@@ -526,6 +527,11 @@ ddxProcessArgument (argc, argv, i)
     xf86MiscModInDevAllowNonLocal = TRUE;
     return 1;
   }
+  if (!strcmp(argv[i],"-allowMouseOpenFail"))
+  {
+    xf86AllowMouseOpenFail = TRUE;
+    return 1;
+  }
 #endif
   if (!strcmp(argv[i],"-verbose"))
   {
@@ -651,9 +657,10 @@ ddxUseMsg()
   ErrorF("-allowNonLocalXvidtune allow xvidtune to be run as a non-local client\n");
 #endif
 #ifdef XF86MISC
-  ErrorF("-disableModInDev        disable dynamic modification of input device settings\n");
-  ErrorF("-allowNonLocalModInDev  allow changes to keyboard and mouse settings\n");
-  ErrorF("                        from non-local clients\n");
+  ErrorF("-disableModInDev       disable dynamic modification of input device settings\n");
+  ErrorF("-allowNonLocalModInDev allow changes to keyboard and mouse settings\n");
+  ErrorF("                       from non-local clients\n");
+  ErrorF("-allowMouseOpenFail    start server even if the mouse can't be initialized\n");
 #endif
   ErrorF(
    "-showconfig            show which drivers are included in the server\n");

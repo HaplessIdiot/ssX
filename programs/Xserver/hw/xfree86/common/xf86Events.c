@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.26 1996/02/04 09:06:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.27 1996/02/18 03:42:47 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -531,6 +531,12 @@ xf86PostKbdEvent(key)
     case 0x5b:            scanCode = KEY_LMeta;     break;
     case 0x5c:            scanCode = KEY_RMeta;     break;
     case 0x5d:            scanCode = KEY_Menu;      break;
+    case KEY_F3:          scanCode = KEY_F13;       break;
+    case KEY_F4:          scanCode = KEY_F14;       break;
+    case KEY_F5:          scanCode = KEY_F15;       break;
+    case KEY_F6:          scanCode = KEY_F16;       break;
+    case KEY_F7:          scanCode = KEY_F17;       break;
+    case KEY_KP_Plus:     scanCode = KEY_KP_DEC;    break;
       /*
        * Ignore virtual shifts (E0 2A, E0 AA, E0 36, E0 B6)
        */

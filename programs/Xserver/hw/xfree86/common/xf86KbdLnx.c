@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.7 1995/06/08 06:27:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86KbdLnx.c,v 3.8 1996/02/04 09:06:18 dawes Exp $ */
 /*
  * Linux version of keymapping setup. The kernel (since 0.99.14) has support
  * for fully remapping the keyboard, but there are some differences between
@@ -492,6 +492,9 @@ readKernelMapping(KeySymsPtr pKeySyms, CARD8 *pModMap)
 	  break;
 	case K_PDOT:
 	  *k = XK_KP_Decimal;
+	  break;
+	case K_PPLUSMINUS:
+	  *k = XK_KP_Subtract;
 	  break;
 	default:
 	  if (kval <= 9)

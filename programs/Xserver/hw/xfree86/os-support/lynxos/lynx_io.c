@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/lynxos/lynx_io.c,v 3.0 1995/06/02 10:18:04 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -153,6 +153,11 @@ int xf86MouseOn()
 {
 	if ((xf86Info.mseFd = open(xf86Info.mseDevice, O_RDWR | O_NDELAY)) < 0)
 	{
+		if (xf86AllowMouseOpenFail) {
+			ErrorF("Cannot open mouse (%s) - Continuing...\n",
+				strerror(errno));
+			return(-1);
+		}
 		FatalError("Cannot open mouse (%s)\n", strerror(errno));
 	}
 

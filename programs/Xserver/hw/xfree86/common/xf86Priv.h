@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.15 1996/02/04 09:06:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.16 1996/02/18 03:42:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -177,6 +177,7 @@ extern Bool xf86SupportedMouseTypes[];
 extern int xf86NumMouseTypes;
 extern int xf86bpp;
 extern xrgb xf86weight;
+extern Bool xf86AllowMouseOpenFail;
 
 extern Bool xf86FlipPixels;
 #define XF86FLIP_PIXELS() \

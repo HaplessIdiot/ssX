@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.9 1996/02/18 03:42:53 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.10 1996/02/25 01:24:39 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -235,11 +235,6 @@ xf86WcmConfig(LocalDevicePtr    *array,
   
   DBG(1, ErrorF("xf86WcmConfig\n"));
       
-  /* Set defaults */
-  priv->wcmOldX = -1;
-  priv->wcmOldY = -1;
-  priv->wcmOldButtons = -1;
-
   while ((token = xf86GetToken(WcmTab)) != ENDSUBSECTION) {
     switch(token) {
     case DEVICENAME:
@@ -1109,7 +1104,7 @@ xf86WcmSwitchMode(ClientPtr	client,
 {
   LocalDevicePtr        local = (LocalDevicePtr)dev->public.devicePrivate;
 
-  DBG(3, ErrorF("xf86WcmSwitchMode dev=0x%x mode=%s\n", dev, mode));
+  DBG(3, ErrorF("xf86WcmSwitchMode dev=0x%x mode=%d\n", dev, mode));
   
   if (mode == Absolute) {
     local->private_flags = local->private_flags | ABSOLUTE_FLAG;
@@ -1119,7 +1114,7 @@ xf86WcmSwitchMode(ClientPtr	client,
       local->private_flags = local->private_flags & ~ABSOLUTE_FLAG; 
     }
     else {
-      DBG(1, ErrorF("xf86WcmSwitchMode dev=0x%x invalid mode=%s\n", dev, mode));
+      DBG(1, ErrorF("xf86WcmSwitchMode dev=0x%x invalid mode=%d\n", dev, mode));
       return BadMatch;
     }
   }

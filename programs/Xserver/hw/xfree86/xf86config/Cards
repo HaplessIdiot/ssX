@@ -2,7 +2,7 @@
 # This is the database of card definitions used by xf86config.
 # Each definition should have a NAME entry, CHIPSET (descriptive) and
 # SERVER (one of Mono, VGA16, SVGA, S3, 8514, Mach8, Mach32, Mach64, AGX,
-# P9000, W32).
+# P9000, W32, I128).
 # A reference to another definition is made with SEE (already defined
 # entries are not overridden).
 # Optional entries are RAMDAC (identifier), CLOCKCHIP (identifier),
@@ -18,7 +18,7 @@
 # The majority of entries are just a binding of a model name to a
 # chipset/server and untested.
 # 
-# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.29 1996/02/19 09:51:30 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/xf86config/Cards,v 3.30 1996/02/24 06:00:48 dawes Exp $
 
 # Cirrus Logic
 
@@ -1024,5 +1024,11 @@ SERVER VGA16
 NAME Generic VGA compatible
 CHIPSET Generic VGA
 SERVER VGA16
+
+# Number 9 I128
+
+NAME Number Nine Imagine I-128 (2-4MB)
+CHIPSET I128
+SERVER I128
 
 END
