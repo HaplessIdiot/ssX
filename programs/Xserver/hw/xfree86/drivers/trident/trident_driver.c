@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.141 2001/09/12 13:39:20 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.142 2001/09/15 18:31:18 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -307,8 +307,8 @@ static int ClockLimit16bpp[] = {
 	40000,
 	45000,
 	45000,
-	135000,
-	135000,
+	90000,
+	90000,
 	135000,
 	170000,
 	135000,
@@ -1273,7 +1273,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "Cyber Stretch enabled\n");
     }
 
-    pTrident->MUXThreshold = 160000; /* 160MHz */
+    pTrident->MUXThreshold = 90000; /* 90MHz */
     if (xf86GetOptValInteger(pTrident->Options, OPTION_MUX_THRESHOLD, 
 						&pTrident->MUXThreshold)) {
 	xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, "MUX Threshold set to %d\n",

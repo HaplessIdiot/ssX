@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.48 2001/09/15 18:31:18 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.49 2001/09/21 15:22:55 alanh Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -446,7 +446,7 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	    /* Fall Through */
 	case TGUI9660:
 	case TGUI9680:
-	    if (pTrident->MUX && pScrn->bitsPerPixel == 8 && mode->CrtcHAdjusted) {
+	    if (pTrident->MUX && pScrn->bitsPerPixel == 8) {
 	    	pReg->tridentRegs3x4[PixelBusReg] |= 0x01; /* 16bit bus */
 	    	pReg->tridentRegs3C4[NewMode2] |= 0x02; /* half clock */
     		pReg->tridentRegsDAC[0x00] |= 0x20;	/* mux mode */
