@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001 Torrey T. Lyons and Greg Parker.
+ * Copyright (c) 2001-2002 Torrey T. Lyons and Greg Parker.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCursor.c,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCursor.c,v 1.2 2002/10/12 00:32:45 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartzCursor.h"
@@ -85,9 +85,10 @@ static QD_Cursor gQDArrow; // QuickDraw arrow cursor
  */
 
 // Add a color entry to a ctab
-#define CTAB_ENTER(ctab, index, r, g, b) \
-    ctab->ctTable[index].rgb.red = r; \
-    ctab->ctTable[index].rgb.green = g; \
+#define CTAB_ENTER(ctab, index, r, g, b)                                \
+    ctab->ctTable[index].value = index;                                 \
+    ctab->ctTable[index].rgb.red = r;                                   \
+    ctab->ctTable[index].rgb.green = g;                                 \
     ctab->ctTable[index].rgb.blue = b
 
 // Make an unsigned short by interleaving the bits of bytes c1 and c2.
