@@ -1,4 +1,5 @@
-XFree86 3.0B (5 June 1994)
+XFree86 3.0B (6 June 1994)
+ 80. Remove separate cfb libs for Mach32 (only compile-tested so far).
  79. Restore hw/xfree86/etc directory.
  78. Update bsdinst.sh for SVR4 (use /usr/ucb/install, and run 'mcs -d'
      as well as strip).
