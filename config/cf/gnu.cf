@@ -1,8 +1,9 @@
-XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.6 2000/02/29 15:24:13 tsi Exp $
+XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.7 2000/07/07 20:06:56 tsi Exp $
 
 #ifndef OSName
-#define OSName			GNU
+#define OSName			DefaultOSName
 #endif
+
 #ifndef OSVendor
 #define OSVendor		/**/
 #endif
@@ -17,108 +18,168 @@ XCOMM platform:  $XFree86: xc/config/cf/gnu.cf,v 1.6 2000/02/29 15:24:13 tsi Exp
 #endif
 XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
 
+#define GNUSourceDefines      -D_POSIX_C_SOURCE=199309L \
+                              -D_POSIX_SOURCE -D_XOPEN_SOURCE \
+                              -D_BSD_SOURCE -D_SVID_SOURCE
+
+XCOMM XXXMB: What about _GNU_SOURCE, see Linux/UseInstalled?
+
+#define XawI18nDefines        -DHAS_WCHAR_H -DHAS_WCTYPE_H -DNO_WIDEC_H
+
+XCOMM Enable this when we have pthreads.
+XCOMM #define HasPosixThreads         YES
+XCOMM #define ThreadedX               YES
+XCOMM #define HasThreadSafeAPI        YES
+XCOMM #define ThreadsLibraries        -lpthread
+XCOMM #define SystemMTDefines         -D_REENTRANT
+
+#ifndef HasLibCrypt
+#define HasLibCrypt             YES
+#endif
+
+#define BuildLibPathVar		LD_LIBRARY_PATH
+#define HasGcc			YES
+#define HasGcc2			YES
+#ifndef HasGcc2ForCplusplus
+# define HasGcc2ForCplusplus	YES
+#endif
 #define GccUsesGas		YES
 #define UseGas			YES
 #define GnuCpp			YES
-#define UseGccMakeDepend	YES
-#define HasGnuMake		YES
-#ifndef HasGcc2ForCplusplus
-#define HasGcc2ForCplusplus	YES
+#define HasDlopen		YES
+#ifndef HasShadowPasswd
+#  define HasShadowPasswd	YES
 #endif
+#define HasPutenv		YES
 
-#define XserverNeedsSetUID	YES
+XCOMM Not implemented and will always fail.
+#define HasShm			YES
 
-#define ProjectRoot 		/usr/X11R6
-#define YaccCmd                 bison -y
-#define LexCmd			flex
-#ifndef LexLib
-#define LexLib			-lfl
-#endif
-#define ArCmd			ar clq
-#define AsCmd			as
-#define CcCmd			gcc
-#define CppCmd			/lib/gcc-lib/i586--gnu/egcs-2.91.60/cpp
-#define PreProcessCmd		CcCmd -EP -x c
-#define RanlibCmd		ranlib
-#define LdCmd			ld
-#if defined(UseInstalled)
-#define DefaultCCOptions	/**/
-#else
-#define DefaultCCOptions	-ansi -pedantic GccWarningOptions
-#endif
-#define GccGasOption 		-DGCCUSESGAS
-#define DefaultGcc2i386Opt 	-O2
-#if defined(HasGcc2) && defined(i386Architecture)
-#define OptimizedCDebugFlags	DefaultGcc2i386Opt
-#else
-#define OptimizedCDebugFlags	
-#endif
-
-
-#define AsmDefines		-DUSE_GAS
-#define BootstrapCFlags		
-#define ExtensionOSDefines	
-
-#ifdef i386Architecture
-#define ServerExtraDefines	GccGasOption XFree86ServerDefines -DNO_ALLOCA
-#else
-#define ServerExtraDefines	GccGasOption
-#endif
-#define StandardCppOptions	-traditional
-#define StandardCppDefines	StandardDefines 
-#define StandardDefines		-D_XOPEN_SOURCE -D_POSIX_SOURCE -D_BSD_SOURCE  -D__ELF__
-#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME
-#define ConnectionFlags		-DTCPCONN
 #define HasBSD44Sockets		YES
 #define HasSockets		YES
+#define HasSnprintf		YES
+#define HasMkstemp		YES
+#define HasUsableFileMmap	YES
+#ifndef HasNCurses
+#define HasNCurses		YES
+#endif
 
-#define UseElfFormat		YES
-#define	HasSharedLibraries	YES
-#define HasDlopen		YES
-#define DlLibrary		-ldl
-#define HasPlugin		YES
-#define VendorHasX11R6_3libXext	YES	/* XC or XFree86 >= 3.3.1 */
-#define DoLoadableServer	YES
-
-
-#include <gnuLib.rules>
-
-#define BuildXCSecurity		YES
 #define AvoidNullMakeCommand	YES
+#ifndef DebuggableLibraries
+#define DebuggableLibraries	NO
+#endif
 #define CompressAllFonts	YES
-#define DirFailPrefix -
-#define HasNdbm         	YES
-#define HasPutenv       	YES
-#define Malloc0ReturnsNull	NO
+#define Malloc0ReturnsNull	YES
 #define NeedConstPrototypes	YES
 #define NeedFunctionPrototypes	YES
 #define NeedNestedPrototypes	YES
 #define NeedVarargsPrototypes	YES
+#ifndef NeedWidePrototypes
 #define NeedWidePrototypes	NO
-#ifndef HasLibCrypt
-# define HasLibCrypt		YES
 #endif
-#define HasPoll			YES
+#define SetTtyGroup		YES
 
+#ifndef UseStaticTermcapLib
+#define UseStaticTermcapLib	NO
+#endif
+
+#define MkdirHierCmd		mkdir -p
+#ifndef CcCmd
+#define CcCmd			gcc
+#endif
+#ifndef AsCmd
+#define AsCmd			as
+#endif
+#ifndef LdCmd
+#define LdCmd			ld
+#endif
+
+#define AsmDefines		-D__ELF__
+#define CplusplusCmd		c++
+#ifndef TermcapLibrary
+#if UseStaticTermcapLib
+#define TermcapLibrary		StaticLibrary(/usr/lib,ncurses)
+#else
 #define TermcapLibrary		-lncurses
+#endif
+#endif
+#ifndef DoLoadableServer
+#define DoLoadableServer	YES
+#endif
+#ifndef
+#define CppCmd			/lib/cpp
+#endif
+#define YaccCmd			bison -y
+#define LexCmd			flex -l
+#define LexLib			-lfl
+#define PreProcessCmd		CcCmd -E
+#define PostIncDir		DefaultGccIncludeDir
+#define LdCombineFlags		-r
+#ifndef LdPostLib
+#define LdPostLib		/* Never needed */
+#endif
+#define HasWChar32		YES
+#define StandardCppOptions	-traditional
+#define StandardCppDefines	StandardDefines
 
-#ifndef GnuMallocLibrary
-#define GnuMallocLibrary	/* -lgnumalloc */
+#define HasVarRun		YES
+#define VarDbDirectory		/var/state
+
+XCOMM i386Architecture
+#define OptimizedCDebugFlags	DefaultGcc2i386Opt
+#define GNUMachineDefines	-D__i386__
+#define ServerOSDefines		XFree86ServerOSDefines -DDDXTIME -DPART_NET
+#define ServerExtraDefines	-DGCCUSESGAS XFree86ServerDefines
+#define HasPlugin		YES
+#define VendorHasX11R6_3libXext	YES
+
+#ifndef StandardDefines
+#define StandardDefines		-D__GNU__ GNUMachineDefines GNUSourceDefines
 #endif
 
-#ifdef InstallCmd
-#undef  InstallCmd
+#define DlLibrary		-rdynamic -ldl
+
+#define ServerExtraSysLibs	/**/
+
+#define ConnectionFlags		-DUNIXCONN -DTCPCONN
+
+/* Some of these man page defaults are overriden in the above OS sections */
+#ifndef ManSuffix
+# define ManSuffix	1x
 #endif
-#define InstallCmd		/bin/install
-
-#define TroffCmd        groff -Tps
-
-#ifndef ExtraFilesToClean
-# define ExtraFilesToClean *.core
+#ifndef ManDir
+# define ManDir		$(MANSOURCEPATH)1
+#endif
+#ifndef LibManSuffix
+# define LibManSuffix	3x
+#endif
+#ifndef LibmanDir
+# define LibmanDir	$(MANSOURCEPATH)3
+#endif
+#ifndef FileManSuffix
+# define FileManSuffix	5x
+#endif
+#ifndef FileManDir
+# define FileManDir	$(MANSOURCEPATH)5
 #endif
 
-#define BuildXTrueType		NO
-
-#ifdef i386Architecture
-# include <xfree86.cf>
+#ifndef StaticLibrary
+#define StaticLibrary(libpath,libname) -Wl,-Bstatic Concat(-L,libpath) Concat(-l,libname) -Wl,-Bdynamic
 #endif
+
+#define HasGnuMake	YES
+
+#define MakeNamedTargetSubdir(dir,flags,subname)\
+        $(MAKE) -C dir $(MFLAGS) $(PARALLELMFLAGS) flags subname
+
+#define ArchitectureDefines	-DGNU_ARCHITECTURE
+
+#define XserverNeedsSetUID	YES
+
+#include <gnuLib.rules>
+
+XCOMM XXX Might need this if they are not careful with slashes.
+XCOMM #define DirFailPrefix -
+
+#include <xfree86.cf>
+

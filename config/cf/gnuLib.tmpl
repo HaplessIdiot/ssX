@@ -1,7 +1,7 @@
-XCOMM $XFree86: xc/config/cf/gnuLib.tmpl,v 1.1 1998/08/16 10:24:03 dawes Exp $
-
 /*
  * GNU Hurd shared library template
+ *
+ * $XFree86: xc/config/cf/gnuLib.tmpl,v 1.1.2.2 1998/12/22 12:27:32 hohndel Exp $
  */
 
 #ifndef FixupLibReferences
@@ -15,7 +15,6 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #endif
 
 #define CplusplusLibC
-#define FrescoSysLibs	CplusplusLibC MathLibrary
 
 #define SharedX11Reqs
 #define SharedOldXReqs	$(LDPRELIB) $(XLIBONLY)
@@ -29,6 +28,3 @@ XMULIB = $(XMULIBONLY) $(XTOOLLIB) $(XLIB)
 #define SharedXtstReqs	$(LDPRELIB) $(XLIB)
 #define SharedXieReqs	$(LDPRELIB) $(XLIBONLY)
 #define SharedSMReqs	$(LDPRELIB) $(ICELIB)
-#define SharedFrescoReqs	$(LDPRELIB) $(XLIBONLY) FrescoSysLibs
-#define SharedXtfReqs	$(LDPRELIB) $(FRESCOLIB) $(XTOOLLIB) $(XLIB) FrescoSysLibs
-

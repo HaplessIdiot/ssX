@@ -20,7 +20,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  *
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.5 1999/05/22 08:40:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/hurd/hurd_io.c,v 1.6 1999/09/04 13:04:43 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -116,4 +116,12 @@ xf86KbdOff()
     int data = 2;
     if( ioctl( xf86Info.consoleFd, _IOW('k', 1, int),&data) < 0)
 	FatalError("can't reset keyboard mode (%s)\n",strerror(errno));
+}
+
+void
+xf86KbdEvents()
+{
+    kd_event ke;
+    while( read(xf86Info.consoleFd, &ke, sizeof(ke)) == sizeof(ke) )
+	xf86PostKbdEvent(ke.value.sc);
 }

@@ -42,11 +42,11 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.8 1999/01/31 12:22:28 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.9 1999/03/07 11:41:08 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
-#ifdef linux
+#ifndef X_NOT_STDC_ENV
 #include	<stdlib.h>
 #endif
 #include	"misc.h"

@@ -1,5 +1,5 @@
 /* $XConsortium: get_load.c /main/37 1996/03/09 09:38:04 kaleb $ */
-/* $XFree86: xc/programs/xload/get_load.c,v 1.2 2000/02/21 18:05:49 dawes Exp $ */
+/* $XFree86: xc/programs/xload/get_load.c,v 1.4 2000/09/19 12:46:28 eich Exp $ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -52,7 +52,7 @@ from the X Consortium.
 #ifndef macII
 #ifndef apollo
 #ifndef LOADSTUB
-#if !defined(linux) && !defined(AMOEBA) && !defined(__EMX__)
+#if !defined(linux) && !defined(AMOEBA) && !defined(__EMX__) && !defined(__GNU__)
 #include <nlist.h>
 #endif /* linux || AMOEBA */
 #endif /* LOADSTUB */
@@ -460,6 +460,44 @@ void GetLoadPoint( w, closure, call_data )
 }
 
 #else /* linux */
+
+#ifdef __GNU__
+
+#include <mach.h>
+
+static processor_set_t default_set;
+
+void InitLoadPoint()
+{
+  if (processor_set_default (mach_host_self (), &default_set) != KERN_SUCCESS)
+    xload_error("cannot get processor_set_default", "");
+}
+
+/* ARGSUSED */
+void GetLoadPoint( w, closure, call_data )
+     Widget	w;		/* unused */
+     caddr_t	closure;	/* unused */
+     caddr_t	call_data;	/* pointer to (double) return value */
+{
+  host_t host;
+  struct processor_set_basic_info info;
+  unsigned info_count;
+
+  info_count = PROCESSOR_SET_BASIC_INFO_COUNT;
+  if (processor_set_info (default_set, PROCESSOR_SET_BASIC_INFO, &host,
+			  (processor_set_info_t) &info, &info_count)
+      != KERN_SUCCESS)
+    {
+      InitLoadPoint();
+      info.load_average = 0;
+    }
+
+  *(double *)call_data = info.load_average * 1000 / LOAD_SCALE;
+
+  return;
+}
+
+#else /* __GNU__ */
 
 #ifdef LOADSTUB
 
@@ -1032,6 +1070,7 @@ void GetLoadPoint( w, closure, call_data )
 #endif /* __bsdi__ else */
 #endif /* __osf__ else */
 #endif /* LOADSTUB else */
+#endif /* __GNU__ else */
 #endif /* linux else */
 #endif /* AMOEBA else */
 #endif /* KVM_ROUTINES else */

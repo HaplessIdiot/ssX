@@ -23,7 +23,7 @@ in this Software without prior written authorization from The Open Group.
  * Author:  Keith Packard, MIT X Consortium
  */
 
-/* $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.3 1998/10/10 15:25:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xdmcp/GenKey.c,v 3.4 1998/10/21 06:12:00 dawes Exp $ */
 
 #include <X11/Xos.h>
 #include <X11/X.h>
@@ -47,7 +47,7 @@ extern Time_t time ();
 #define Time_t time_t
 #endif
 
-#if defined(linux) || defined(CSRG_BASED) || (defined(sun) && defined(SVR4))
+#ifndef X_NOT_STDC_ENV
 #include <stdlib.h>
 #else
 long random();
