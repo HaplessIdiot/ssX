@@ -23,7 +23,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
-/* $XFree86$ */
+/* $XFree86: xc/extras/freetype2/src/pcf/pcfread.c,v 1.2 2003/05/27 22:26:21 tsi Exp $ */
 
 #include <ft2build.h>
 
@@ -33,6 +33,7 @@ THE SOFTWARE.
 
 #include "pcf.h"
 #include "pcfdriver.h"
+#include "pcfread.h"
 
 #include "pcferror.h"
 
@@ -316,7 +317,7 @@ THE SOFTWARE.
   };
 
 
-  static PCF_Property
+  FT_LOCAL_DEF( PCF_Property )
   pcf_find_property( PCF_Face          face,
                      const FT_String*  prop )
   {
@@ -716,7 +717,6 @@ THE SOFTWARE.
     }
     FT_Stream_ExitFrame( stream );
 
-    j--;
     if ( FT_NEW_ARRAY( encoding, j ) )
       goto Bail;
 
