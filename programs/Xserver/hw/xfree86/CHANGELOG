@@ -1,4 +1,6 @@
 XFree86 4.2.99.3 (xx October 2002)
+ 474. On XDarwin startup, do not send events to the X server thread until it
+      is ready to receive them (Torrey T. Lyons).
  473. Add a utility (called gtf) for calculating VESA GTF mode lines
       (Andy Ritger).
  472. Add an input driver for KB-Gear's Jamstudio pentablet (A.1328, 
@@ -15485,4 +15487,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2385 2002/11/11 01:18:04 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2386 2002/11/12 01:31:18 dawes Exp $

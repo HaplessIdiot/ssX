@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001 Greg Parker and Torrey T. Lyons.
+ * Copyright (c) 2001-2002 Greg Parker and Torrey T. Lyons.
  *                 All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.1 2002/03/28 02:21:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartz.c,v 1.2 2002/10/12 00:32:45 torrey Exp $ */
 
 #include "quartzCommon.h"
 #include "quartz.h"
@@ -182,6 +182,18 @@ void QuartzInitOutput(
     if (!noPseudoramiXExtension) {
         PseudoramiXExtensionInit(argc, argv);
     }
+}
+
+
+/*
+ * QuartzInitInput
+ *  Inform the main thread the X server is ready to handle events.
+ */
+void QuartzInitInput(
+    int argc,
+    char **argv )
+{
+    QuartzMessageMainThread(kQuartzServerStarted, NULL, 0);
 }
 
 

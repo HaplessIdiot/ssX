@@ -29,7 +29,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.45 2002/03/28 02:21:08 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.46 2002/10/12 00:32:43 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -536,6 +536,10 @@ void InitInput( int argc, char **argv )
     RegisterKeyboardDevice( darwinKeyboard );
 
     DarwinEQInit( (DevicePtr)darwinKeyboard, (DevicePtr)darwinPointer );
+
+    if (quartz) {
+        QuartzInitInput(argc, argv);
+    }
 }
 
 

@@ -29,7 +29,7 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.3 2002/07/15 18:57:44 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.4 2002/10/12 00:32:45 torrey Exp $ */
 
 #define BOOL xBOOL
 #include "Xproto.h"
@@ -39,9 +39,11 @@
 
 @interface XServer : NSObject {
     // server state
+    int serverState;
     NSRecursiveLock *serverLock;
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
+    BOOL queueShowServer;
     BOOL appQuitting;
     UInt32 mouseState;
     Class windowClass;
@@ -68,14 +70,15 @@
 + (void)append:(NSString *)value toEnv:(NSString *)name;
 
 - (void)startX;
+- (void)finishStartX;
 - (BOOL)startXClients;
 - (void)run;
 - (void)toggle;
-- (void)show;
-- (void)hide;
-- (void)killServer;
+- (void)showServer:(BOOL)show;
+- (void)forceShowServer:(BOOL)show;
 - (void)readPasteboard;
 - (void)writePasteboard;
+- (void)quitServer;
 - (void)sendXEvent:(xEvent *)xe;
 - (void)sendShowHide:(BOOL)show;
 - (void)clientProcessDone:(int)clientStatus;
@@ -97,4 +100,13 @@
 - (void)handlePortMessage:(NSPortMessage *)portMessage;
 
 @end
+
+// X server states
+enum {
+    server_NotStarted,
+    server_Starting,
+    server_Running,
+    server_Quitting,
+    server_Done
+};
 
