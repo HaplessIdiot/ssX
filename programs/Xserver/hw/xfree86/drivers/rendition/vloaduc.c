@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.4 1999/11/19 13:54:46 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vloaduc.c,v 1.5 1999/11/26 03:19:17 dawes Exp $ */
 /*
  * includes
  */
@@ -64,16 +64,16 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
 #endif
 
   /* open file and read ELF-header */
-  if (-1 == (fd=xf86open(file_name, O_RDONLY))) {
+  if (-1 == (fd=open(file_name, O_RDONLY))) {
     ErrorF("RENDITION: Cannot open microcode %s\n", file_name); 
     return -1;
   }
 
-  if (xf86read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
+  if (read(fd, &ehdr, sizeof(ehdr)) != sizeof(ehdr)) {
     ErrorF("RENDITION: Cannot read microcode header %s\n", file_name); 
     return -1;
   }
-  if (0 != xf86strncmp((char *)&ehdr.e_ident[1], "ELF", 3)) {
+  if (0 != strncmp((char *)&ehdr.e_ident[1], "ELF", 3)) {
     ErrorF("RENDITION: Microcode header in %s is corrupt\n", file_name); 
     return -1;
   }
@@ -82,16 +82,16 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
   sz=SW16(ehdr.e_phentsize);
   num=SW16(ehdr.e_phnum);
   if (0!=sz && 0!=num) {
-	orig_pphdr=pphdr=(Elf32_Phdr *)xf86malloc(sz*num);
+	orig_pphdr=pphdr=(Elf32_Phdr *)xalloc(sz*num);
 	if (!pphdr) {
 	  ErrorF("RENDITION: Cannot allocate global memory (1)\n"); 
-	  xf86close(fd);
+	  close(fd);
 	  return -1;
 	}
 
 	if (seek_and_read_hdr(fd, pphdr, SW32(ehdr.e_phoff), sz, num)) {
 	  ErrorF("RENDITION: Error reading microcode (1)\n");
-	  xf86close(fd);
+	  close(fd);
 	  return -1;
 	}
 
@@ -104,16 +104,16 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
     sz=SW16(ehdr.e_shentsize);
     num=SW16(ehdr.e_shnum);
     if (0!=sz && 0!=num) {
-      orig_pshdr=pshdr=(Elf32_Shdr *)xf86malloc(sz*num);
+      orig_pshdr=pshdr=(Elf32_Shdr *)xalloc(sz*num);
       if (!pshdr) {
         ErrorF("RENDITION: Cannot allocate global memory (2)\n"); 
-        xf86close(fd);
+        close(fd);
         return -1;
       }
 
       if (seek_and_read_hdr(fd, pshdr, SW32(ehdr.e_shoff), sz, num)) {
         ErrorF("RENDITION: Error reading microcode (2)\n");
-        xf86close(fd);
+        close(fd);
         return -1;
       }
     }
@@ -127,7 +127,7 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
         loadSegment2board(pScreenInfo, fd, pphdr);
         pphdr=(Elf32_Phdr *)(((char *)pphdr)+sz);
       } while (--num);
-      xf86free(orig_pphdr);
+      xfree(orig_pphdr);
   }
   else {
     do {
@@ -137,9 +137,9 @@ int v_load_ucfile(ScrnInfoPtr pScreenInfo, char *file_name)
         loadSection2board(pScreenInfo, fd, pshdr);
 	  pshdr=(Elf32_Shdr *)(((char *)pshdr)+sz);
 	} while (--num) ;
-	xf86free(orig_pshdr);
+	xfree(orig_pshdr);
   }
-  xf86close(fd);
+  close(fd);
 
   return SW32(ehdr.e_entry);
 }
@@ -166,25 +166,25 @@ void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
   vu32 size=SW32(phdr->p_filesz);
   vu32 physAddr=SW32(phdr->p_paddr);
 
-  if (xf86lseek(fd, offset, SEEK_SET) != offset) {
+  if (lseek(fd, offset, SEEK_SET) != offset) {
 	ErrorF("RENDITION: Failure in loadSegmentToBoard, offset %lx\n", offset);
     return;
   }
 
-  data=(vu8 *)xf86malloc(size);
+  data=(vu8 *)xalloc(size);
   if (NULL == data){
 	ErrorF("RENDITION: GlobalAllocPtr couldn't allocate %x bytes", size);
 	return;
   }
 
-  if (xf86read(fd, data, size) != size){
+  if (read(fd, data, size) != size){
 	ErrorF("RENDITION: v_readfile Failure, couldn't read %x bytes ", size);
 	return;
   }
 
   mmve(pScreenInfo, size, data, physAddr);
 
-  xf86free(data);
+  xfree(data);
 }
 
 
@@ -192,10 +192,10 @@ void loadSegment2board(ScrnInfoPtr pScreenInfo, int fd, Elf32_Phdr *phdr)
 static int seek_and_read_hdr(int fd, void *ptr, long int offset, int size, 
                              int cnt)
 {
-  if (xf86lseek(fd, offset, SEEK_SET) != offset)
+  if (lseek(fd, offset, SEEK_SET) != offset)
     return 1 ;
 
-  if (size*cnt != xf86read(fd, ptr, size*cnt))
+  if (size*cnt != read(fd, ptr, size*cnt))
     return 2 ;
 
   return 0 ;
