@@ -36,7 +36,7 @@
 |*     those rights set forth herein.                                        *|
 |*                                                                           *|
  \***************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.10 2001/02/06 19:25:58 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/riva_hw.c,v 1.11 2001/02/18 23:47:29 mvojkovi Exp $ */
 
 #include "nv_local.h"
 #include "riva_hw.h"
@@ -1215,6 +1215,7 @@ static void CalcStateExt
             state->repaint1 = hDisplaySize < 1280 ? 0x04 : 0x00;
             break;
         case NV_ARCH_10:
+        case NV_ARCH_20:
             nv10UpdateArbitrationSettings(VClk, 
                                           pixelDepth * 8, 
                                          &(state->arbitration0),
@@ -1286,6 +1287,7 @@ static void UpdateFifoState
             chip->Tri05 = (RivaTexturedTriangle05 *)&(chip->FIFO[0x0000E000/4]);
             break;
         case NV_ARCH_10:
+        case NV_ARCH_20:
             /*
              * Initialize state for the RivaTriangle3D05 routines.
              */
@@ -1394,6 +1396,7 @@ static void LoadStateExt
             chip->PGRAPH[0x0000067C/4] = state->pitch3;
             break;
         case NV_ARCH_10:
+        case NV_ARCH_20:
             LOAD_FIXED_STATE(nv10,PFIFO);
             LOAD_FIXED_STATE(nv10,PRAMIN);
             LOAD_FIXED_STATE(nv10,PGRAPH);
@@ -1422,15 +1425,32 @@ static void LoadStateExt
                     chip->Tri03 = 0L;
                     break;
             }
-            chip->PGRAPH[0x00000640/4] = state->offset0;
-            chip->PGRAPH[0x00000644/4] = state->offset1;
-            chip->PGRAPH[0x00000648/4] = state->offset2;
-            chip->PGRAPH[0x0000064C/4] = state->offset3;
-            chip->PGRAPH[0x00000670/4] = state->pitch0;
-            chip->PGRAPH[0x00000674/4] = state->pitch1;
-            chip->PGRAPH[0x00000678/4] = state->pitch2;
-            chip->PGRAPH[0x0000067C/4] = state->pitch3;
-            chip->PGRAPH[0x00000680/4] = state->pitch3;
+
+	    if(chip->Architecture == NV_ARCH_10) {
+                chip->PGRAPH[0x00000640/4] = state->offset0;
+                chip->PGRAPH[0x00000644/4] = state->offset1;
+                chip->PGRAPH[0x00000648/4] = state->offset2;
+                chip->PGRAPH[0x0000064C/4] = state->offset3;
+                chip->PGRAPH[0x00000670/4] = state->pitch0;
+                chip->PGRAPH[0x00000674/4] = state->pitch1;
+                chip->PGRAPH[0x00000678/4] = state->pitch2;
+                chip->PGRAPH[0x0000067C/4] = state->pitch3;
+                chip->PGRAPH[0x00000680/4] = state->pitch3;
+	    } else {
+                chip->PGRAPH[0x00000820/4] = state->offset0;
+                chip->PGRAPH[0x00000824/4] = state->offset1;
+                chip->PGRAPH[0x00000828/4] = state->offset2;
+                chip->PGRAPH[0x0000082C/4] = state->offset3;
+                chip->PGRAPH[0x00000850/4] = state->pitch0;
+                chip->PGRAPH[0x00000854/4] = state->pitch1;
+                chip->PGRAPH[0x00000858/4] = state->pitch2;
+                chip->PGRAPH[0x0000085C/4] = state->pitch3;
+                chip->PGRAPH[0x00000860/4] = state->pitch3;
+                chip->PGRAPH[0x00000864/4] = state->pitch3;
+                chip->PGRAPH[0x000009A4/4] = chip->PFB[0x00000200/4]; 
+                chip->PGRAPH[0x000009A8/4] = chip->PFB[0x00000204/4];
+	    }
+
             chip->PGRAPH[0x00000B00/4] = chip->PFB[0x00000240/4];
             chip->PGRAPH[0x00000B04/4] = chip->PFB[0x00000244/4];
             chip->PGRAPH[0x00000B08/4] = chip->PFB[0x00000248/4];
@@ -1608,6 +1628,7 @@ static void UnloadStateExt
             state->pitch3   = chip->PGRAPH[0x0000067C/4];
             break;
         case NV_ARCH_10:
+        case NV_ARCH_20:
             state->offset0  = chip->PGRAPH[0x00000640/4];
             state->offset1  = chip->PGRAPH[0x00000644/4];
             state->offset2  = chip->PGRAPH[0x00000648/4];
@@ -1971,6 +1992,7 @@ int RivaGetConfig
             nv4GetConfig(chip);
             break;
         case NV_ARCH_10:
+        case NV_ARCH_20:
             nv10GetConfig(chip);
             break;
         default:

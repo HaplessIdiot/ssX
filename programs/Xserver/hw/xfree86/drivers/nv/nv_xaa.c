@@ -41,7 +41,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by
    Jarno Paananen <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.18 2000/11/03 18:46:12 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_xaa.c,v 1.19 2001/02/15 11:03:58 alanh Exp $ */
 
 #include "nv_include.h"
 #include "xaalocal.h"
@@ -52,12 +52,6 @@
 
 #include "miline.h"
 
-#define DOLINES
-
-/*
- * Macro to define valid rectangle.
- */
-#define NV_RECT_VALID(rr)  (((rr).x1 < (rr).x2) && ((rr).y1 < (rr).y2))
 
 static void
 NVSetClippingRectangle(ScrnInfoPtr pScrn, int x1, int y1, int x2, int y2)
@@ -466,7 +460,6 @@ NVSubsequentImageWriteScanline(ScrnInfoPtr pScrn, int bufno)
 }
 
 
-#ifdef DOLINES
 
 static void
 NVSetupForSolidLine(ScrnInfoPtr pScrn, int color, int rop, unsigned planemask)
@@ -512,114 +505,6 @@ NVSubsequentSolidTwoPointLine(ScrnInfoPtr pScrn, int x1, int y1,
     }
     write_mem_barrier();
 }
-
-#else
-
-static void 
-NVPolylinesThinSolidWrapper(
-   DrawablePtr     pDraw,
-   GCPtr           pGC,
-   int             mode,
-   int             npt,
-   DDXPointPtr     pPts
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    NVPtr pNv = NVPTR(infoRec->pScrn);
-    pNv->CurrentGC = pGC;
-#ifdef NV_USE_FB    
-    pNv->CurrentDrawable = pDraw;
-#endif    
-    if(infoRec->NeedToSync) 
-        RIVA_BUSY(pNv->riva);
-    XAAPolyLines(pDraw, pGC, mode, npt, pPts);
-}
-
-static void 
-NVPolySegmentThinSolidWrapper(
-   DrawablePtr     pDraw,
-   GCPtr           pGC,
-   int             nseg,
-   xSegment        *pSeg
-){
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_GC(pGC);
-    NVPtr pNv = NVPTR(infoRec->pScrn);
-    pNv->CurrentGC = pGC;
-#ifdef NV_USE_FB    
-    pNv->CurrentDrawable = pDraw;
-#endif    
-    if(infoRec->NeedToSync) 
-        RIVA_BUSY(pNv->riva);
-    XAAPolySegment(pDraw, pGC, nseg, pSeg);
-}
-
-
-#define NVSetupForSolidLine NVSetupForSolidFill
-
-static void
-NVSubsequentSolidHorVertLine(
-    ScrnInfoPtr pScrn,
-    int x, int y, 
-    int len, int dir
-){
-    NVPtr pNv = NVPTR(pScrn);
-    int w, h;
-
-    if(dir == DEGREES_0) {
-	w = len; h = 1;
-    } else {
-	w = 1; h = len;
-    }
-
-    RIVA_FIFO_FREE(pNv->riva, Bitmap, 2);
-    pNv->riva.Bitmap->UnclippedRectangle[0].TopLeft     = (x << 16) | y; 
-    pNv->riva.Bitmap->UnclippedRectangle[0].WidthHeight = (w << 16) | h;
-    write_mem_barrier();
-}
-
-#ifndef NV_USE_FB
-static void (*LineFuncs[4])() = {
-  cfbBresS,
-  cfb16BresS,
-  NULL,
-  cfb32BresS
-};
-#endif
-
-static void 
-NVSubsequentSolidBresenhamLine( 
-   ScrnInfoPtr pScrn,
-   int x, int y, 
-   int dmaj, int dmin, 
-   int e, int len, int octant
-){
-    NVPtr pNv = NVPTR(pScrn);
-#ifndef NV_USE_FB
-    cfbPrivGCPtr devPriv;
-    int Bpp = pScrn->bitsPerPixel >> 3;
-
-    devPriv = cfbGetGCPrivate(pNv->CurrentGC);
-
-    /* you could trap for lines you could do here and accelerate them */
-
-    (*LineFuncs[Bpp - 1])
-	(devPriv->rop, devPriv->and, devPriv->xor, 
-        (unsigned long*)pNv->FbStart,
-	(pNv->CurrentLayout.displayWidth * Bpp) >> LOG2_BYTES_PER_SCANLINE_PAD,
-	(octant & XDECREASING) ? -1 : 1, 
-	(octant & YDECREASING) ? -1 : 1, 
-	(octant & YMAJOR) ? Y_AXIS : X_AXIS,
-	x, y, dmin + e, dmin, dmin - dmaj, len);
-#else
-    fbBres(pNv->CurrentDrawable, pNv->CurrentGC, 0,
-           (octant & XDECREASING) ? -1 : 1,
-           (octant & YDECREASING) ? -1 : 1,
-           (octant & YMAJOR) ? Y_AXIS : X_AXIS,
-           x, y, dmin + e, dmin, -dmaj, len);
-#endif
-}
-
-
-#endif
 
 static void
 NVValidatePolyArc(
@@ -746,7 +631,6 @@ NVAccelInit(ScreenPtr pScreen)
         infoPtr->ScanlineImageWriteBuffers = &pNv->expandBuffer;
     }
 
-#ifdef DOLINES
     infoPtr->SolidLineFlags = NO_PLANEMASK;
     infoPtr->SetupForSolidLine = NVSetupForSolidLine;
     infoPtr->SubsequentSolidHorVertLine =
@@ -757,20 +641,6 @@ NVAccelInit(ScreenPtr pScreen)
     infoPtr->DisableClipping = NVDisableClipping;
     infoPtr->ClippingFlags = HARDWARE_CLIP_SOLID_LINE;
     miSetZeroLineBias(pScreen, OCTANT1 | OCTANT3 | OCTANT4 | OCTANT6);
-#else
-    infoPtr->SolidLineFlags = NO_PLANEMASK;
-    infoPtr->SetupForSolidLine = NVSetupForSolidLine;
-    infoPtr->PolySegmentThinSolidFlags = NO_PLANEMASK;
-    infoPtr->PolylinesThinSolidFlags = NO_PLANEMASK;
-    infoPtr->SubsequentSolidHorVertLine =
-		NVSubsequentSolidHorVertLine;
-    infoPtr->SubsequentSolidBresenhamLine = 
-		NVSubsequentSolidBresenhamLine;
-    infoPtr->PolySegmentThinSolid =
-		NVPolySegmentThinSolidWrapper;
-    infoPtr->PolylinesThinSolid = 
-		NVPolylinesThinSolidWrapper;
-#endif    
 
     infoPtr->ValidatePolyArc = NVValidatePolyArc;
     infoPtr->PolyArcMask = GCFunction | GCLineWidth | GCPlaneMask;
