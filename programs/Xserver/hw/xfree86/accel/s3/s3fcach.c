@@ -1,5 +1,5 @@
 /* $XConsortium: s3fcach.c,v 1.1 94/03/28 21:17:12 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.11 1995/01/21 12:39:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3fcach.c,v 3.12 1995/01/21 12:54:09 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -79,9 +79,13 @@ s3FontCache8Init()
     * If a full-size pixmap expansion area will fit to the right, put it
     * there.
     */
-   if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH) {
+   if (s3DisplayWidth - s3InfoRec.virtualX >= MAX_PIXMAP_WIDTH ||
+       s3DisplayWidth - s3InfoRec.virtualX >= h) {
       /* use area at right of screen */
-      pmwidth = MAX_PIXMAP_WIDTH;
+      if (s3DisplayWidth - s3InfoRec.virtualX > MAX_PIXMAP_WIDTH)
+	 pmwidth = MAX_PIXMAP_WIDTH;
+      else
+	 pmwidth = s3DisplayWidth - s3InfoRec.virtualX;
       pmx = s3InfoRec.virtualX;
       pmy = 0;
       /* Decide if font cache goes to the right or at the bottom */
