@@ -232,27 +232,9 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 
 /*
- * For Motorola 68k platforms, the default is to build all modules which
- * are supported on this platform.
+ * For Motorola 68k and PPC (currently Linux & LynxOS)
  */
-#ifdef Mc68020Architecture
-#ifndef XF68LoaderServer
-#define XF68LoaderServer	DoLoadableServer
-#endif
-#ifndef XF68FBDevModule
-#define XF68FBDevModule         XF68LoaderServer
-#endif
-#ifndef XF68LoaderServer
-#ifndef XF68FBDevServer
-#define XF68FBDevServer		YES
-#endif
-#endif
-#endif
-
-/*
- * PPC (currently Linux and LynxOS)
- */
-#if defined(PpcArchitecture)
+#if defined(PpcArchitecture) || defined(Mc68020Architecture)
 #ifndef XF86Server
 #define XF86Server		YES
 #endif
