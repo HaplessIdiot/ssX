@@ -2028,9 +2028,21 @@
     <layout>
       <configItem>
         <name>th</name>
-        <description>Thai</description>
-        <description xml:lang="bg">тайландска</description>
-        <description xml:lang="ru">Таиландская</description>
+        <description>Thai (Kedmanee)</description>
+      </configItem>
+      <variantList/>
+    </layout>
+    <layout>
+      <configItem>
+        <name>th_tis</name>
+        <description>Thai (TIS-820.2538)</description>
+      </configItem>
+      <variantList/>
+    </layout>
+    <layout>
+      <configItem>
+        <name>th_pat</name>
+        <description>Thai (Pattachote)</description>
       </configItem>
       <variantList/>
     </layout>
