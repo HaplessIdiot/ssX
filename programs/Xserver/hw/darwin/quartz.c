@@ -122,8 +122,9 @@ static Bool QuartzInitCursor(ScreenPtr pScreen)
 
 /*
  * QuartzPMThread
- * Handle power state notifications
+ * Handle power state notifications, FIXME
  */
+#if 0
 static void *QuartzPMThread(void *arg)
 {
     for (;;) {
@@ -148,6 +149,7 @@ static void *QuartzPMThread(void *arg)
     }
     return NULL;
 }
+#endif
 
 
 /* 
@@ -186,6 +188,7 @@ static void QuartzCapture(void)
     if (! CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayCapture(kCGDirectMainDisplay);
         CGDisplayHideCursor(kCGDirectMainDisplay);
+        HideMenuBar();
     }
 }
 
@@ -199,6 +202,7 @@ static void QuartzRelease(void)
     if (CGDisplayIsCaptured(kCGDirectMainDisplay)) {
         CGDisplayShowCursor(kCGDirectMainDisplay);
         CGDisplayRelease(kCGDirectMainDisplay);
+        ShowMenuBar();
     }
 }
 
@@ -290,6 +294,7 @@ void QuartzOsVendorInit(void)
     QuartzDisplayInit();
     QuartzFifoInit();
 
+#if 0
     // Register for power management events from the Root Power Domain
     kr = IOCreateReceivePort(kOSNotificationMessageID, &pmNotificationPort);
     kern_assert(kr);
@@ -300,6 +305,7 @@ void QuartzOsVendorInit(void)
     } else {
         ErrorF("Power management registration failed.\n");
     }
+#endif
 }
 
 

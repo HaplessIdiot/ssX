@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.6 2001/01/23 21:14:26 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/Imakefile,v 1.7 2001/01/24 00:06:10 dawes Exp $
 
 #include <Server.tmpl>
 #define IHaveSubdirs
@@ -33,6 +33,7 @@ QUARTZDEF = -DDARWIN_WITH_QUARTZ
 #endif
 
 DEFINES = $(CUSTOMVERDEF) $(QUARTZDEF)
+EXTRAMANDEFS = $(QUARTZDEF)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(darwin,$(OBJS))

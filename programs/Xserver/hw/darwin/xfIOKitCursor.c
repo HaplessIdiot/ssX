@@ -32,7 +32,7 @@
  * 1.0 by Torrey T. Lyons, October 30, 2000
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinCursor.c,v 1.2 2000/11/28 17:25:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitCursor.c,v 1.1 2001/01/14 16:44:55 herrb Exp $ */
 
 #include "scrnintstr.h"
 #include "cursorstr.h"
@@ -508,8 +508,8 @@ XFIOKitSetCursor(
 
     // otherwise we use a software cursor
     if (ScreenPriv->cursorMode) {
-	/* remove the kernel or hardware cursor */
-	XFIOKitSetCursor(pScreen, 0, x, y);
+        /* remove the kernel or hardware cursor */
+        XFIOKitSetCursor(pScreen, 0, x, y);
     }
 
     ScreenPriv->cursorMode = 0;
@@ -532,7 +532,7 @@ XFIOKitMoveCursor(
 
     // only the X cursor needs to be explicitly moved
     if (!ScreenPriv->cursorMode)
-	(*ScreenPriv->spriteFuncs->MoveCursor)(pScreen, x, y);
+        (*ScreenPriv->spriteFuncs->MoveCursor)(pScreen, x, y);
 }
 
 static miPointerSpriteFuncRec darwinSpriteFuncsRec = {

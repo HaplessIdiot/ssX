@@ -1,8 +1,8 @@
 //
 //  Xserver.m
-//  Xmaster-Cocoa
+//  Xmaster project
 //
-//  Created by am on Sat Jan 06 2001.
+//  Created by Andreas Monitzer on January 6, 2001.
 //
 
 #import "Xserver.h"
@@ -21,16 +21,16 @@
     mEventWriteFD = -1;
     mOutputReadFile = NULL;
     mouseState = 0;
-    
+
     return self;
 }
 
 - (BOOL)applicationShouldTerminate:(NSApplication *)sender {
     int but;
-    
-    if(!killed) {
+
+    if(!killed && mRunning) {
         but=NSRunAlertPanel(@"Quit X-server?", @"If you leave it running, you can switch back to it by restarting Xmaster.", @"Quit", @"Cancel", @"Leave running");
-    
+
         switch(but) {
         case NSAlertDefaultReturn:
             [self kill];
@@ -68,6 +68,7 @@
     
     [self getNXMouse:&ev];
     ev.type=[anEvent type];
+    ev.flags=[anEvent modifierFlags];
     switch(ev.type) {
     case NSLeftMouseDown:
     case NSLeftMouseUp:
@@ -93,11 +94,9 @@
     case NSKeyUp:
         ev.data.key.keyCode = [anEvent keyCode];
         ev.data.key.repeat = [anEvent isARepeat];
-        ev.flags=[anEvent modifierFlags];
         break;
     case NSFlagsChanged:
         ev.data.key.keyCode = [anEvent keyCode];
-        ev.flags=[anEvent modifierFlags];
         break;
     default:
         return YES;
@@ -235,7 +234,6 @@
 
     if (show) {
         ev.data.compound.subType = kShow;
-        HideMenuBar();
         [self sendEvent:&ev];
 
         // inform the X server of the current modifier state
@@ -245,7 +243,6 @@
 
     } else {
         ev.data.compound.subType = kHide;
-        ShowMenuBar();
         [self sendEvent:&ev];
     }
 
