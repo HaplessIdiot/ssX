@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx June 2001)
+ 132. Update XDarwin Japanese localization to include rootless UI changes
+      (Toshimitsu Tanaka).
  131. Fix potential XDarwin bug in translating Darwin keymappings to X11
       keymaps with unrecognized modifier keys (Gregory Parker).
  130. Make XDarwin ignore Caps Lock when checking for VT switch, except when
@@ -13549,4 +13551,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1874 2001/07/15 02:23:27 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1875 2001/07/15 03:12:21 torrey Exp $
