@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.106 1999/07/10 12:17:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.107 1999/07/11 10:27:07 dawes Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -2481,7 +2481,7 @@ MGACloseScreen(int scrnIndex, ScreenPtr pScreen)
 	xfree(pMga->DGAModes);
     pScrn->vtSema = FALSE;
 
-    if (xf86Pc98())
+    if (xf86IsPc98())
 	outb(0xfac, 0x00);
 
     pScreen->CloseScreen = pMga->CloseScreen;
