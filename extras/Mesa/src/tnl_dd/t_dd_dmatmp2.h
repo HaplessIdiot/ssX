@@ -25,7 +25,6 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
-/* $XFree86: xc/extras/Mesa/src/tnl_dd/t_dd_dmatmp2.h,v 1.2 2002/11/05 17:46:07 tsi Exp $ */
 
 
 /* Template for render stages which build and emit vertices directly

@@ -1,4 +1,3 @@
-/* $XFree86$ */
 #ifndef DO_DEBUG_VERTS
 #define DO_DEBUG_VERTS 0
 #endif 
