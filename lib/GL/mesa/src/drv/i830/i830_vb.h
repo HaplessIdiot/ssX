@@ -25,13 +25,39 @@
  */
 /* $XFree86$ */
 
-#ifndef I830TRIS_INC
-#define I830TRIS_INC
+#ifndef I830VB_INC
+#define I830VB_INC
 
 #include "mtypes.h"
+#include "swrast/swrast.h"
 
-extern void i830PrintRenderState( const char *msg, GLuint state );
-extern void i830InitTriFuncs( GLcontext *ctx );
-extern void i830RasterPrimitive( GLcontext *ctx, GLenum rprim, GLuint hwprim );
+#define _I830_NEW_VERTEX (_NEW_TEXTURE |			\
+			  _DD_NEW_SEPARATE_SPECULAR |		\
+			  _DD_NEW_TRI_UNFILLED |		\
+			  _DD_NEW_TRI_LIGHT_TWOSIDE |		\
+			  _NEW_FOG)
+
+
+extern void i830ChooseVertexState( GLcontext *ctx );
+extern void i830CheckTexSizes( GLcontext *ctx );
+extern void i830BuildVertices( GLcontext *ctx,
+			       GLuint start,
+			       GLuint count,
+			       GLuint newinputs );
+
+
+extern void i830_emit_contiguous_verts( GLcontext *ctx,
+					GLuint start,
+					GLuint count );
+
+extern void i830_translate_vertex( GLcontext *ctx,
+				   const i830Vertex *src,
+				   SWvertex *dst );
+
+extern void i830InitVB( GLcontext *ctx );
+extern void i830FreeVB( GLcontext *ctx );
+
+extern void i830_print_vertex( GLcontext *ctx, const i830Vertex *v );
+extern void i830PrintSetupFlags(char *msg, GLuint flags );
 
 #endif

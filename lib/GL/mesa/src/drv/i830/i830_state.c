@@ -1,6 +1,6 @@
 /**************************************************************************
 
-Copyright 2001 VA Linux Systems Inc., Fremont, California.
+Copyright 2001 2d3d Inc., Delray Beach, FL
 
 All Rights Reserved.
 
@@ -29,26 +29,38 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /*
  * Author:
- *   Jeff Hartmann <jhartmann@valinux.com>
+ *   Jeff Hartmann <jhartmann@2d3d.com>
  *
  * Heavily based on the I810 driver, which was written by:
- *   Keith Whitwell <keithw@valinux.com>
+ *   Keith Whitwell <keith@tungstengraphics.com>
  */
-
 #include <stdio.h>
 
-#include "types.h"
+#include "glheader.h"
+#include "context.h"
+#include "macros.h"
 #include "enums.h"
-#include "pb.h"
 #include "dd.h"
 
 #include "mm.h"
 
-#include "i830_drv.h"
+#include "i830_screen.h"
+#include "i830_dri.h"
+
+#include "i830_context.h"
+#include "i830_state.h"
+#include "i830_tex.h"
+#include "i830_vb.h"
 #include "i830_tris.h"
 #include "i830_ioctl.h"
 
-/* Need to add other formats */
+#include "swrast/swrast.h"
+#include "array_cache/acache.h"
+#include "tnl/tnl.h"
+#include "swrast_setup/swrast_setup.h"
+
+#include "tnl/t_pipeline.h"
+
 static __inline__ GLuint i830PackColor(GLuint format, 
 				       GLubyte r, GLubyte g, 
 				       GLubyte b, GLubyte a)
@@ -70,109 +82,72 @@ static __inline__ GLuint i830PackColor(GLuint format,
    }
 }
 
-static void i830DDPointSize(GLcontext *ctx, GLfloat size)
+static void i830StencilFunc(GLcontext *ctx, GLenum func, GLint ref,
+			    GLuint mask)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
-   GLint point_size = FloatToInt(size);
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-     fprintf(stderr, "%s\n", __FUNCTION__);
-
-   FLUSH_BATCH(imesa);
-   CLAMP_SELF(point_size, 1, 256);
-   imesa->dirty |= I830_UPLOAD_CTX;
-   imesa->Setup[I830_CTXREG_STATE5] &= ~FIXED_POINT_WIDTH_MASK;
-   imesa->Setup[I830_CTXREG_STATE5] |= (ENABLE_FIXED_POINT_WIDTH |
-				       FIXED_POINT_WIDTH(point_size));
-}
-
-static void i830DDStencilFunc(GLcontext *ctx, GLenum func, GLint ref,
-				 GLuint mask)
-{
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-   GLuint v_mask, w_mask;
    int test = 0;
 
+   mask = mask & 0xff;
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s : func: %s, ref : 0x%x, mask: 0x%x\n", __FUNCTION__,
-	      gl_lookup_enum_by_nr(func), ref, mask);
-
-   FLUSH_BATCH(imesa);
-
-   v_mask = ctx->Stencil.ValueMask & 0xff;
-   w_mask = ctx->Stencil.WriteMask & 0xff;
+	      _mesa_lookup_enum_by_nr(func), ref, mask);
 
    switch(func) {
    case GL_NEVER: test = COMPAREFUNC_NEVER; break;
    case GL_LESS: test = COMPAREFUNC_LESS; break;
-   case GL_EQUAL: test = COMPAREFUNC_EQUAL; break;
    case GL_LEQUAL: test = COMPAREFUNC_LEQUAL; break;
    case GL_GREATER: test = COMPAREFUNC_GREATER; break;
-   case GL_NOTEQUAL: test = COMPAREFUNC_NOTEQUAL; break;
    case GL_GEQUAL: test = COMPAREFUNC_GEQUAL; break;
+   case GL_NOTEQUAL: test = COMPAREFUNC_NOTEQUAL; break;
+   case GL_EQUAL: test = COMPAREFUNC_EQUAL; break;
    case GL_ALWAYS: test = COMPAREFUNC_ALWAYS; break;
-   default: break;
+   default: return;
    }
 
-   imesa->dirty |= I830_UPLOAD_CTX;
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE4] &= ~MODE4_ENABLE_STENCIL_MASK;
    imesa->Setup[I830_CTXREG_STATE4] |= (ENABLE_STENCIL_TEST_MASK |
-				    ENABLE_STENCIL_WRITE_MASK |
-				    STENCIL_TEST_MASK(v_mask) |
-				    STENCIL_WRITE_MASK(w_mask));
+					ENABLE_STENCIL_WRITE_MASK |
+					STENCIL_TEST_MASK(mask) |
+					STENCIL_WRITE_MASK(mask));
    imesa->Setup[I830_CTXREG_STENCILTST] &= ~(STENCIL_REF_VALUE_MASK |
-					 ENABLE_STENCIL_TEST_FUNC_MASK);
+					     ENABLE_STENCIL_TEST_FUNC_MASK);
    imesa->Setup[I830_CTXREG_STENCILTST] |= (ENABLE_STENCIL_REF_VALUE |
-					ENABLE_STENCIL_TEST_FUNC |
-					STENCIL_REF_VALUE(ref) |
-					STENCIL_TEST_FUNC(test));
-
-   if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-      fprintf(stderr, "%s : state4 : 0x%x, stentst : 0x%x\n", __FUNCTION__,
-	      imesa->Setup[I830_CTXREG_STATE4],
-	      imesa->Setup[I830_CTXREG_STENCILTST]);
+					    ENABLE_STENCIL_TEST_FUNC |
+					    STENCIL_REF_VALUE(ref) |
+					    STENCIL_TEST_FUNC(test));
 }
 
-static void i830DDStencilMask(GLcontext *ctx, GLuint mask)
+static void i830StencilMask(GLcontext *ctx, GLuint mask)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
-   GLuint v_mask, w_mask;
-
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s : mask 0x%x\n", __FUNCTION__, mask);
 
-   FLUSH_BATCH(imesa);
+   mask = mask & 0xff;
 
-   v_mask = ctx->Stencil.ValueMask & 0xff;
-   w_mask = ctx->Stencil.WriteMask & 0xff;
-
-   imesa->dirty |= I830_UPLOAD_CTX;
-
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE4] &= ~MODE4_ENABLE_STENCIL_MASK;
    imesa->Setup[I830_CTXREG_STATE4] |= (ENABLE_STENCIL_TEST_MASK |
-				    ENABLE_STENCIL_WRITE_MASK |
-				    STENCIL_TEST_MASK(v_mask) |
-				    STENCIL_WRITE_MASK(w_mask));
-   if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-      fprintf(stderr, "%s : state4 : 0x%x\n", __FUNCTION__,
-	      imesa->Setup[I830_CTXREG_STATE4]);
+					ENABLE_STENCIL_WRITE_MASK |
+					STENCIL_TEST_MASK(mask) |
+					STENCIL_WRITE_MASK(mask));
 }
 
-static void i830DDStencilOp(GLcontext *ctx, GLenum fail, GLenum zfail,
-			       GLenum zpass)
+static void i830StencilOp(GLcontext *ctx, GLenum fail, GLenum zfail,
+			  GLenum zpass)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int fop, dfop, dpop;
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s: fail : %s, zfail: %s, zpass : %s\n", __FUNCTION__,
-	      gl_lookup_enum_by_nr(fail),
-	      gl_lookup_enum_by_nr(zfail),
-	      gl_lookup_enum_by_nr(zpass));
-
-   FLUSH_BATCH(imesa);
+	      _mesa_lookup_enum_by_nr(fail),
+	      _mesa_lookup_enum_by_nr(zfail),
+	      _mesa_lookup_enum_by_nr(zpass));
 
    fop = 0; dfop = 0; dpop = 0;
 
@@ -204,59 +179,39 @@ static void i830DDStencilOp(GLcontext *ctx, GLenum fail, GLenum zfail,
    default: break;
    }
 
-   imesa->dirty |= I830_UPLOAD_CTX;
+
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STENCILTST] &= ~(STENCIL_OPS_MASK);
    imesa->Setup[I830_CTXREG_STENCILTST] |= (ENABLE_STENCIL_PARMS |
-					   STENCIL_FAIL_OP(fop) |
-					   STENCIL_PASS_DEPTH_FAIL_OP(dfop) |
-					   STENCIL_PASS_DEPTH_PASS_OP(dpop));
+					    STENCIL_FAIL_OP(fop) |
+					    STENCIL_PASS_DEPTH_FAIL_OP(dfop) |
+					    STENCIL_PASS_DEPTH_PASS_OP(dpop));
    if(I830_DEBUG&DEBUG_VERBOSE_STATE)
       fprintf(stderr, "%s : stentst : 0x%x\n", __FUNCTION__,
 	      imesa->Setup[I830_CTXREG_STENCILTST]);
-
 }
 
-static void i830DDAlphaFunc(GLcontext *ctx, GLenum func, GLclampf ref)
+static void i830AlphaFunc(GLcontext *ctx, GLenum func, GLchan ref)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int test = 0;
    GLubyte tmp_ref;
    
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s %s\n", __FUNCTION__, gl_lookup_enum_by_nr(func));
-
    FLOAT_COLOR_TO_UBYTE_COLOR(tmp_ref, ref);
 
-   FLUSH_BATCH(imesa);
-
    switch(func) {
-   case GL_NEVER:
-      test = COMPAREFUNC_NEVER;
-      break;
-   case GL_LESS:
-      test = COMPAREFUNC_LESS;
-      break;
-   case GL_LEQUAL:
-      test = COMPAREFUNC_LEQUAL;
-      break;
-   case GL_GREATER:
-      test = COMPAREFUNC_GREATER;
-      break;
-   case GL_GEQUAL:
-      test = COMPAREFUNC_GEQUAL;
-      break;
-   case GL_NOTEQUAL:
-      test = COMPAREFUNC_NOTEQUAL;
-      break;
-   case GL_EQUAL:
-      test = COMPAREFUNC_EQUAL;
-      break;
-   case GL_ALWAYS:
-      test = COMPAREFUNC_ALWAYS;
-      break;
+   case GL_NEVER: test = COMPAREFUNC_NEVER; break;
+   case GL_LESS: test = COMPAREFUNC_LESS; break;
+   case GL_LEQUAL: test = COMPAREFUNC_LEQUAL; break;
+   case GL_GREATER: test = COMPAREFUNC_GREATER; break;
+   case GL_GEQUAL: test = COMPAREFUNC_GEQUAL; break;
+   case GL_NOTEQUAL: test = COMPAREFUNC_NOTEQUAL; break;
+   case GL_EQUAL: test = COMPAREFUNC_EQUAL; break;
+   case GL_ALWAYS: test = COMPAREFUNC_ALWAYS; break;
    default: return;
    }
-   imesa->dirty |= I830_UPLOAD_CTX;
+
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE2] &= ~ALPHA_TEST_REF_MASK;
    imesa->Setup[I830_CTXREG_STATE2] |= (ENABLE_ALPHA_TEST_FUNC |
 				    ENABLE_ALPHA_REF_VALUE |
@@ -274,10 +229,9 @@ static void i830EvalLogicOpBlendState(GLcontext *ctx)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
-   FLUSH_BATCH(imesa);
-   imesa->dirty |= I830_UPLOAD_CTX;
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
 
-   if(ctx->Color.ColorLogicOpEnabled || ctx->Color.IndexLogicOpEnabled) {
+   if(ctx->Color.ColorLogicOpEnabled) {
      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~(ENABLE_COLOR_BLEND |
 					      ENABLE_LOGIC_OP_MASK);
      imesa->Setup[I830_CTXREG_ENABLES_1] |= (DISABLE_COLOR_BLEND |
@@ -305,18 +259,37 @@ static void i830EvalLogicOpBlendState(GLcontext *ctx)
    }
 }
 
-static void i830DDBlendEquation(GLcontext *ctx, GLenum mode) 
+static void i830BlendColor(GLcontext *ctx, const GLfloat color[4])
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   GLubyte r, g, b, a;
+
+   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+      fprintf(stderr, "%s\n", __FUNCTION__);
+
+   FLOAT_COLOR_TO_UBYTE_COLOR(r, color[RCOMP]);
+   FLOAT_COLOR_TO_UBYTE_COLOR(g, color[GCOMP]);
+   FLOAT_COLOR_TO_UBYTE_COLOR(b, color[BCOMP]);
+   FLOAT_COLOR_TO_UBYTE_COLOR(a, color[ACOMP]);
+
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+   imesa->Setup[I830_CTXREG_BLENDCOLR] = ((a << 24) |
+					 (r << 16) |
+					 (g << 8) |
+					 b);
+}
+
+static void i830BlendEquation(GLcontext *ctx, GLenum mode) 
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int func = ENABLE_ALPHA_BLENDFUNC;
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
      fprintf(stderr, "%s %s\n", __FUNCTION__,
-	     gl_lookup_enum_by_nr(mode));
+	     _mesa_lookup_enum_by_nr(mode));
 
+   /* This will catch a logicop blend equation */
    i830EvalLogicOpBlendState(ctx);
-
-   FLUSH_BATCH(imesa);
 
    switch(mode) {
    case GL_FUNC_ADD_EXT: func |= BLENDFUNC_ADD; break;
@@ -326,37 +299,89 @@ static void i830DDBlendEquation(GLcontext *ctx, GLenum mode)
    case GL_FUNC_REVERSE_SUBTRACT_EXT: func |= BLENDFUNC_RVRSE_SUB; break;
    default: return;
    }
-   
-   imesa->dirty |= I830_UPLOAD_CTX;
+
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE1] &= ~BLENDFUNC_MASK;
    imesa->Setup[I830_CTXREG_STATE1] |= func;
+   if (0) fprintf(stderr, "%s : STATE1 : 0x%08x\n",
+		  __FUNCTION__,
+		  imesa->Setup[I830_CTXREG_STATE1]);
 }
 
-static void i830DDBlendConstColor(GLcontext *ctx, GLfloat red,
-				     GLfloat green, GLfloat blue,
-				     GLfloat alpha)
+static void i830BlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
-   GLubyte r, g, b, a;
+   int func = (ENABLE_SRC_BLND_FACTOR|ENABLE_DST_BLND_FACTOR);
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
+      fprintf(stderr, "%s %s %s\n", __FUNCTION__,
+	      _mesa_lookup_enum_by_nr(sfactor),
+	      _mesa_lookup_enum_by_nr(dfactor));
 
-   FLOAT_COLOR_TO_UBYTE_COLOR(r, red);
-   FLOAT_COLOR_TO_UBYTE_COLOR(g, green);
-   FLOAT_COLOR_TO_UBYTE_COLOR(b, blue);
-   FLOAT_COLOR_TO_UBYTE_COLOR(a, alpha);
+   switch(sfactor) {
+   case GL_ZERO: func |= SRC_BLND_FACT(BLENDFACT_ZERO); break;
+   case GL_SRC_ALPHA: func |= SRC_BLND_FACT(BLENDFACT_SRC_ALPHA); break;
+   case GL_ONE: func |= SRC_BLND_FACT(BLENDFACT_ONE); break;
+   case GL_DST_COLOR: func |= SRC_BLND_FACT(BLENDFACT_DST_COLR); break;
+   case GL_ONE_MINUS_DST_COLOR: 
+      		      func |= SRC_BLND_FACT(BLENDFACT_INV_DST_COLR); break;
+   case GL_ONE_MINUS_SRC_ALPHA:
+		      func |= SRC_BLND_FACT(BLENDFACT_INV_SRC_ALPHA); break;
+   case GL_DST_ALPHA: func |= SRC_BLND_FACT(BLENDFACT_DST_ALPHA); break;
+   case GL_ONE_MINUS_DST_ALPHA:
+		      func |= SRC_BLND_FACT(BLENDFACT_INV_DST_ALPHA); break;
+   case GL_SRC_ALPHA_SATURATE: 
+		      func |= SRC_BLND_FACT(BLENDFACT_SRC_ALPHA_SATURATE);
+		      break;
+   case GL_CONSTANT_COLOR_EXT:
+		      func |= SRC_BLND_FACT(BLENDFACT_CONST_COLOR); break;
+   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
+		      func |= SRC_BLND_FACT(BLENDFACT_INV_CONST_COLOR);
+		      break;
+   case GL_CONSTANT_ALPHA_EXT:
+		      func |= SRC_BLND_FACT(BLENDFACT_CONST_ALPHA); break;
+   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
+		      func |= SRC_BLND_FACT(BLENDFACT_INV_CONST_ALPHA);
+		      break;
+   default: return;
+   }
 
-   imesa->dirty |= I830_UPLOAD_CTX;
-   imesa->Setup[I830_CTXREG_BLENDCOLR] = ((a << 24) |
-					 (r << 16) |
-					 (g << 8) |
-					 b);
+   switch(dfactor) {
+   case GL_SRC_ALPHA: func |= DST_BLND_FACT(BLENDFACT_SRC_ALPHA); break;
+   case GL_ONE_MINUS_SRC_ALPHA: 
+		      func |= DST_BLND_FACT(BLENDFACT_INV_SRC_ALPHA); break;
+   case GL_ZERO: func |= DST_BLND_FACT(BLENDFACT_ZERO); break;
+   case GL_ONE: func |= DST_BLND_FACT(BLENDFACT_ONE); break;
+   case GL_SRC_COLOR: func |= DST_BLND_FACT(BLENDFACT_SRC_COLR); break;
+   case GL_ONE_MINUS_SRC_COLOR: 
+		      func |= DST_BLND_FACT(BLENDFACT_INV_SRC_COLR); break;
+   case GL_DST_ALPHA: func |= DST_BLND_FACT(BLENDFACT_DST_ALPHA); break;
+   case GL_ONE_MINUS_DST_ALPHA: 
+		      func |= DST_BLND_FACT(BLENDFACT_INV_DST_ALPHA); break;
+   case GL_CONSTANT_COLOR_EXT:
+		      func |= DST_BLND_FACT(BLENDFACT_CONST_COLOR); break;
+   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
+		      func |= DST_BLND_FACT(BLENDFACT_INV_CONST_COLOR);
+		      break;
+   case GL_CONSTANT_ALPHA_EXT:
+		      func |= DST_BLND_FACT(BLENDFACT_CONST_ALPHA); break;
+   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
+		      func |= DST_BLND_FACT(BLENDFACT_INV_CONST_ALPHA); 
+		      break;
+   default: return;
+   }
+
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+   imesa->Setup[I830_CTXREG_IALPHAB] &= ~SRC_DST_ABLEND_MASK;
+   imesa->Setup[I830_CTXREG_STATE1] &= ~SRC_DST_BLND_MASK;
+   imesa->Setup[I830_CTXREG_STATE1] |= func;
+   /* Insure Independant Alpha Blend is really disabled. */
+   i830EvalLogicOpBlendState(ctx);
 }
 
-static void i830DDBlendFuncSeparate(GLcontext *ctx, GLenum sfactorRGB, 
-				       GLenum dfactorRGB, GLenum sfactorA,
-				       GLenum dfactorA )
+static void i830BlendFuncSeparate(GLcontext *ctx, GLenum sfactorRGB, 
+				  GLenum dfactorRGB, GLenum sfactorA,
+				  GLenum dfactorA )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int funcA = (ENABLE_SRC_ABLEND_FACTOR|ENABLE_DST_ABLEND_FACTOR);
@@ -364,8 +389,6 @@ static void i830DDBlendFuncSeparate(GLcontext *ctx, GLenum sfactorRGB,
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s\n", __FUNCTION__);
-
-   FLUSH_BATCH(imesa);
 
    switch(sfactorA) {
    case GL_ZERO: funcA |= SRC_ABLEND_FACT(BLENDFACT_ZERO); break;
@@ -472,91 +495,19 @@ static void i830DDBlendFuncSeparate(GLcontext *ctx, GLenum sfactorRGB,
    default: return;
    }
 
-   imesa->dirty |= I830_UPLOAD_CTX;
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_IALPHAB] &= ~SRC_DST_ABLEND_MASK;
    imesa->Setup[I830_CTXREG_IALPHAB] |= funcA;
    imesa->Setup[I830_CTXREG_STATE1] &= ~SRC_DST_BLND_MASK;
    imesa->Setup[I830_CTXREG_STATE1] |= funcRGB;
-   /* Insure Independant Alpha Blend is really enabled if need be */
+
+   /* Insure Independant Alpha Blend is really enabled if
+    * Blending is already enabled. 
+    */
    i830EvalLogicOpBlendState(ctx);
 }
 
-static void i830DDBlendFunc(GLcontext *ctx, GLenum sfactor, GLenum dfactor)
-{
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-   int func = (ENABLE_SRC_BLND_FACTOR|ENABLE_DST_BLND_FACTOR);
-
-   FLUSH_BATCH(imesa);
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s %s %s\n", __FUNCTION__,
-	      gl_lookup_enum_by_nr(sfactor),
-	      gl_lookup_enum_by_nr(dfactor));
-
-   switch(sfactor) {
-   case GL_ZERO: func |= SRC_BLND_FACT(BLENDFACT_ZERO); break;
-   case GL_SRC_ALPHA: func |= SRC_BLND_FACT(BLENDFACT_SRC_ALPHA); break;
-   case GL_ONE: func |= SRC_BLND_FACT(BLENDFACT_ONE); break;
-   case GL_DST_COLOR: func |= SRC_BLND_FACT(BLENDFACT_DST_COLR); break;
-   case GL_ONE_MINUS_DST_COLOR: 
-      		      func |= SRC_BLND_FACT(BLENDFACT_INV_DST_COLR); break;
-   case GL_ONE_MINUS_SRC_ALPHA:
-		      func |= SRC_BLND_FACT(BLENDFACT_INV_SRC_ALPHA); break;
-   case GL_DST_ALPHA: func |= SRC_BLND_FACT(BLENDFACT_DST_ALPHA); break;
-   case GL_ONE_MINUS_DST_ALPHA:
-		      func |= SRC_BLND_FACT(BLENDFACT_INV_DST_ALPHA); break;
-   case GL_SRC_ALPHA_SATURATE: 
-		      func |= SRC_BLND_FACT(BLENDFACT_SRC_ALPHA_SATURATE);
-		      break;
-   case GL_CONSTANT_COLOR_EXT:
-		      func |= SRC_BLND_FACT(BLENDFACT_CONST_COLOR); break;
-   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
-		      func |= SRC_BLND_FACT(BLENDFACT_INV_CONST_COLOR);
-		      break;
-   case GL_CONSTANT_ALPHA_EXT:
-		      func |= SRC_BLND_FACT(BLENDFACT_CONST_ALPHA); break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
-		      func |= SRC_BLND_FACT(BLENDFACT_INV_CONST_ALPHA);
-		      break;
-   default: return;
-   }
-
-   switch(dfactor) {
-   case GL_SRC_ALPHA: func |= DST_BLND_FACT(BLENDFACT_SRC_ALPHA); break;
-   case GL_ONE_MINUS_SRC_ALPHA: 
-		      func |= DST_BLND_FACT(BLENDFACT_INV_SRC_ALPHA); break;
-   case GL_ZERO: func |= DST_BLND_FACT(BLENDFACT_ZERO); break;
-   case GL_ONE: func |= DST_BLND_FACT(BLENDFACT_ONE); break;
-   case GL_SRC_COLOR: func |= DST_BLND_FACT(BLENDFACT_SRC_COLR); break;
-   case GL_ONE_MINUS_SRC_COLOR: 
-		      func |= DST_BLND_FACT(BLENDFACT_INV_SRC_COLR); break;
-   case GL_DST_ALPHA: func |= DST_BLND_FACT(BLENDFACT_DST_ALPHA); break;
-   case GL_ONE_MINUS_DST_ALPHA: 
-		      func |= DST_BLND_FACT(BLENDFACT_INV_DST_ALPHA); break;
-   case GL_CONSTANT_COLOR_EXT:
-		      func |= DST_BLND_FACT(BLENDFACT_CONST_COLOR); break;
-   case GL_ONE_MINUS_CONSTANT_COLOR_EXT:
-		      func |= DST_BLND_FACT(BLENDFACT_INV_CONST_COLOR);
-		      break;
-   case GL_CONSTANT_ALPHA_EXT:
-		      func |= DST_BLND_FACT(BLENDFACT_CONST_ALPHA); break;
-   case GL_ONE_MINUS_CONSTANT_ALPHA_EXT:
-		      func |= DST_BLND_FACT(BLENDFACT_INV_CONST_ALPHA); 
-		      break;
-   default: return;
-   }
-
-   imesa->dirty |= I830_UPLOAD_CTX;
-   imesa->Setup[I830_CTXREG_IALPHAB] &= ~SRC_DST_ABLEND_MASK;
-   imesa->Setup[I830_CTXREG_STATE1] &= ~SRC_DST_BLND_MASK;
-   imesa->Setup[I830_CTXREG_STATE1] |= func;
-   /* Insure Independant Alpha Blend is really disabled if need be */
-   i830EvalLogicOpBlendState(ctx);
-
-   if(0) fprintf(stderr, "STATE1 : 0x%x\n", imesa->Setup[I830_CTXREG_STATE1]);
-}
-
-static void i830DDDepthFunc(GLcontext *ctx, GLenum func)
+static void i830DepthFunc(GLcontext *ctx, GLenum func)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int test = 0;
@@ -564,52 +515,33 @@ static void i830DDDepthFunc(GLcontext *ctx, GLenum func)
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-   FLUSH_BATCH(imesa);
-
    switch(func) {
-   case GL_NEVER:
-      test = COMPAREFUNC_NEVER;
-      break;
-   case GL_LESS:
-      test = COMPAREFUNC_LESS;
-      break;
-   case GL_LEQUAL:
-      test = COMPAREFUNC_LEQUAL;
-      break;
-   case GL_GREATER:
-      test = COMPAREFUNC_GREATER;
-      break;
-   case GL_GEQUAL:
-      test = COMPAREFUNC_GEQUAL;
-      break;
-   case GL_NOTEQUAL:
-      test = COMPAREFUNC_NOTEQUAL;
-      break;
-   case GL_EQUAL:
-      test = COMPAREFUNC_EQUAL;
-      break;
-   case GL_ALWAYS:
-      test = COMPAREFUNC_ALWAYS;
-      break;
+   case GL_NEVER: test = COMPAREFUNC_NEVER; break;
+   case GL_LESS: test = COMPAREFUNC_LESS; break;
+   case GL_LEQUAL: test = COMPAREFUNC_LEQUAL; break;
+   case GL_GREATER: test = COMPAREFUNC_GREATER; break;
+   case GL_GEQUAL: test = COMPAREFUNC_GEQUAL; break;
+   case GL_NOTEQUAL: test = COMPAREFUNC_NOTEQUAL; break;
+   case GL_EQUAL: test = COMPAREFUNC_EQUAL; break;
+   case GL_ALWAYS: test = COMPAREFUNC_ALWAYS; break;
    default: return;
    }
 
-   imesa->dirty |= I830_UPLOAD_CTX;
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE3] &= ~DEPTH_TEST_FUNC_MASK;
    imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_DEPTH_TEST_FUNC |
 				       DEPTH_TEST_FUNC(test));
 }
 
-static void i830DDDepthMask(GLcontext *ctx, GLboolean flag)
+static void i830DepthMask(GLcontext *ctx, GLboolean flag)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s flag (%d)\n", __FUNCTION__, flag);
 
-   FLUSH_BATCH(imesa);
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
 
-   imesa->dirty |= I830_UPLOAD_CTX;
    imesa->Setup[I830_CTXREG_ENABLES_2] &= ~ENABLE_DIS_DEPTH_WRITE_MASK;
 
    if (flag)
@@ -618,13 +550,20 @@ static void i830DDDepthMask(GLcontext *ctx, GLboolean flag)
      imesa->Setup[I830_CTXREG_ENABLES_2] |= DISABLE_DEPTH_WRITE;
 }
 
+/* The i830 has no stipple hardware */
+static void i830PolygonStipple(GLcontext *ctx, const GLubyte *mask)
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+
+   FALLBACK(imesa, I830_FALLBACK_STIPPLE, ctx->Polygon.StippleFlag);
+}
+
 /* =============================================================
  * Hardware clipping
  */
-
-static void i830DDScissor( GLcontext *ctx, GLint x, GLint y,
-			   GLsizei w, GLsizei h )
-{ 
+static void i830Scissor(GLcontext *ctx, GLint x, GLint y, 
+			GLsizei w, GLsizei h)
+{
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int x1 = x;
    int y1 = imesa->driDrawable->h - (y + h);
@@ -640,22 +579,18 @@ static void i830DDScissor( GLcontext *ctx, GLint x, GLint y,
    if(x2 < 0) x2 = 0;
    if(y2 < 0) y2 = 0;
 
-   FLUSH_BATCH(imesa);
-   imesa->dirty |= I830_UPLOAD_BUFFERS;
+   I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
    imesa->BufferSetup[I830_DESTREG_SR1] = (y1 << 16) | (x1 & 0xffff);
    imesa->BufferSetup[I830_DESTREG_SR2] = (y2 << 16) | (x2 & 0xffff);
 }
 
-static void i830DDLogicOp( GLcontext *ctx, GLenum opcode )
+static void i830LogicOp(GLcontext *ctx, GLenum opcode)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    int tmp = 0;
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s\n", __FUNCTION__);
-
-
-   FLUSH_BATCH( imesa );
 
    switch(opcode) {
    case GL_CLEAR: tmp = LOGICOP_CLEAR; break;
@@ -677,106 +612,72 @@ static void i830DDLogicOp( GLcontext *ctx, GLenum opcode )
    default: return;
    }
 
-   imesa->dirty |= I830_UPLOAD_CTX;
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE4] &= ~LOGICOP_MASK;
    imesa->Setup[I830_CTXREG_STATE4] |= LOGIC_OP_FUNC(tmp);
-   if(0) fprintf(stderr, "Logicop : 0x%x, state4 : 0x%x\n", tmp, imesa->Setup[I830_CTXREG_STATE4]);
-   /* Insure all the enables are correct */
+
+   /* Make sure all the enables are correct */
    i830EvalLogicOpBlendState(ctx);
 }
 
-static GLboolean i830DDSetDrawBuffer(GLcontext *ctx, GLenum mode )
+/* Fallback to swrast for select and feedback.
+ */
+static void i830RenderMode( GLcontext *ctx, GLenum mode )
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   FALLBACK( imesa, I830_FALLBACK_RENDERMODE, (mode != GL_RENDER) );
+}
+
+static GLboolean i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
-
-   FLUSH_BATCH(imesa);
-
-   imesa->Fallback &= ~I830_FALLBACK_DRAW_BUFFER;
-   
    if(mode == GL_FRONT_LEFT) {
-      imesa->readMap = (char *)imesa->driScreen->pFB;
+      I830_FIREVERTICES(imesa);
+      I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
+
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = imesa->i830Screen->fbOffset;
+
       imesa->drawMap = (char *)imesa->driScreen->pFB;
-      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = 
-		imesa->i830Screen->fbOffset;
-      imesa->dirty |= I830_UPLOAD_BUFFERS;
-      i830XMesaSetFrontClipRects( imesa );
-      return GL_TRUE;
-   } else if(mode == GL_BACK_LEFT) {
-      imesa->readMap = imesa->i830Screen->back.map;
-      imesa->drawMap = (char *)imesa->i830Screen->back.map;
-      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = 
-		imesa->i830Screen->backOffset;
-      imesa->dirty |= I830_UPLOAD_BUFFERS;
-      i830XMesaSetBackClipRects( imesa );
-      return GL_TRUE;
-   }
-
-   imesa->Fallback |= I830_FALLBACK_DRAW_BUFFER;
-   return GL_FALSE;
-}
-
-static void i830DDSetReadBuffer(GLcontext *ctx, GLframebuffer *colorBuffer,
-				GLenum mode )
-{
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
-
-   if(mode == GL_FRONT_LEFT) {
       imesa->readMap = (char *)imesa->driScreen->pFB;
-      imesa->Fallback &= ~I830_FALLBACK_READ_BUFFER;
+      i830XMesaSetFrontClipRects( imesa );
+      FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
+      return GL_TRUE;
    } else if(mode == GL_BACK_LEFT) {
+      I830_FIREVERTICES(imesa);
+      I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
+
+      imesa->BufferSetup[I830_DESTREG_CBUFADDR] = 
+					imesa->i830Screen->backOffset;
+
+      imesa->drawMap = imesa->i830Screen->back.map;
       imesa->readMap = imesa->i830Screen->back.map;
-      imesa->Fallback &= ~I830_FALLBACK_READ_BUFFER;
+      i830XMesaSetBackClipRects( imesa );
+      FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
+      return GL_TRUE;
    } else {
-      imesa->Fallback |= I830_FALLBACK_READ_BUFFER;
+      FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_TRUE );
+      return GL_FALSE;
    }
 }
 
-static void i830DDSetColor(GLcontext *ctx, 
-			   GLubyte r, GLubyte g,
-			   GLubyte b, GLubyte a )
+static void i830ClearColor(GLcontext *ctx, const GLchan color[4])
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s r(%d) g(%d) b(%d) a(%d)\n", __FUNCTION__,
-	      r, g, b, a);
+   imesa->clear_red = color[RCOMP];
+   imesa->clear_green = color[GCOMP];
+   imesa->clear_blue = color[BCOMP];
+   imesa->clear_alpha = color[ACOMP];
 
-   imesa->MonoColor = i830PackColor( imesa->i830Screen->fbFormat, r, g, b, a );
-   if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-     fprintf(stderr, "[%s] MonoColor = 0x%08x\n", __FUNCTION__,
-	     imesa->MonoColor);
+   imesa->ClearColor = i830PackColor(imesa->i830Screen->fbFormat,
+				     color[RCOMP], 
+				     color[GCOMP], 
+				     color[BCOMP], 
+				     color[ACOMP] );
 }
 
-
-static void i830DDClearColor(GLcontext *ctx, 
-			     GLubyte r, GLubyte g,
-			     GLubyte b, GLubyte a )
-{
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s r(%d) g(%d) b(%d) a(%d)\n", __FUNCTION__,
-	      r, g, b, a);
-
-   imesa->clear_red = r;
-   imesa->clear_green = g;
-   imesa->clear_blue = b;
-   imesa->clear_alpha = a;
-
-   imesa->ClearColor = i830PackColor( imesa->i830Screen->fbFormat, r, g, b, a );
-   if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-     fprintf(stderr, "[%s] ClearColor = 0x%08x\n", __FUNCTION__,
-	     imesa->ClearColor);
-
-}
-
-static void i830DDCullFaceFrontFace(GLcontext *ctx, GLenum unused)
+static void i830CullFaceFrontFace(GLcontext *ctx, GLenum unused)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    GLuint mode = CULLMODE_BOTH;
@@ -784,9 +685,7 @@ static void i830DDCullFaceFrontFace(GLcontext *ctx, GLenum unused)
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-   FLUSH_BATCH(imesa);
-
-   if(ctx->Polygon.CullFaceMode != GL_FRONT_AND_BACK) {
+   if (ctx->Polygon.CullFaceMode != GL_FRONT_AND_BACK) {
       mode = CULLMODE_CW;
 
       if (ctx->Polygon.CullFaceMode == GL_FRONT)
@@ -797,64 +696,14 @@ static void i830DDCullFaceFrontFace(GLcontext *ctx, GLenum unused)
 
    imesa->LcsCullMode = mode;
 
-   if(ctx->Polygon.CullFlag && ctx->PB->primitive == GL_POLYGON) {
-      imesa->dirty |= I830_UPLOAD_CTX;
-      imesa->Setup[I830_CTXREG_STATE3] &= ~CULLMODE_MASK;
-      imesa->Setup[I830_CTXREG_STATE3] |= ENABLE_CULL_MODE | mode;
+   if (ctx->Polygon.CullFlag) {
+     I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+     imesa->Setup[I830_CTXREG_STATE3] &= ~CULLMODE_MASK;
+     imesa->Setup[I830_CTXREG_STATE3] |= ENABLE_CULL_MODE | mode;
    }
 }
 
-static void i830DDReducedPrimitiveChange( GLcontext *ctx, GLenum prim )
-{
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s %s\n", __FUNCTION__, gl_lookup_enum_by_nr(prim));
-
-   FLUSH_BATCH(imesa);
-   imesa->dirty |= I830_UPLOAD_CTX;
-   imesa->Setup[I830_CTXREG_STATE3] &= ~CULLMODE_MASK;
-   imesa->Setup[I830_CTXREG_AA] &= ~AA_LINE_ENABLE;
-   imesa->vertex_prim = PRIM3D_TRILIST;
-
-   switch(ctx->PB->primitive) {
-   case GL_POLYGON:
-      if (ctx->Polygon.CullFlag) 
-	 imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_CULL_MODE |
-					      imesa->LcsCullMode);
-      else 
-	 imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_CULL_MODE |
-					      CULLMODE_NONE);
-      break;
-
-   case GL_LINE:
-   case GL_LINES:
-      imesa->vertex_prim = PRIM3D_LINELIST;
-
-      if(ctx->Line.SmoothFlag)
-	imesa->Setup[I830_CTXREG_AA] |= AA_LINE_ENABLE;
-      imesa->Setup[I830_CTXREG_STATE3] |= CULLMODE_NONE;
-      break;
-
-   case GL_POINT:
-   case GL_POINTS:
-      imesa->vertex_prim = PRIM3D_POINTLIST;
-      imesa->Setup[I830_CTXREG_STATE3] |= CULLMODE_NONE;
-   default:
-      imesa->Setup[I830_CTXREG_STATE3] |= CULLMODE_NONE;
-      break;
-   }
-
-   if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-     fprintf(stderr, "[%s] AA(0x%08x) STATE3(0x%08x) vertex_prim 0x%x\n",
-	     __FUNCTION__,
-	     imesa->Setup[I830_CTXREG_AA],
-	     imesa->Setup[I830_CTXREG_STATE3],
-	     imesa->vertex_prim);
-
-}
-
-static void i830DDLineWidth( GLcontext *ctx, GLfloat widthf )
+static void i830LineWidth( GLcontext *ctx, GLfloat widthf )
 {
    i830ContextPtr imesa = I830_CONTEXT( ctx );
    int width;
@@ -864,24 +713,36 @@ static void i830DDLineWidth( GLcontext *ctx, GLfloat widthf )
 
    width = FloatToInt(widthf * 2);
    CLAMP_SELF(width, 1, 15);
+
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
    imesa->Setup[I830_CTXREG_STATE5] &= ~FIXED_LINE_WIDTH_MASK;
    imesa->Setup[I830_CTXREG_STATE5] |= (ENABLE_FIXED_LINE_WIDTH |
 				       FIXED_LINE_WIDTH(width));
-
-   imesa->dirty |= I830_UPLOAD_CTX;
 }
+
+static void i830PointSize(GLcontext *ctx, GLfloat size)
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   GLint point_size = FloatToInt(size);
+
+   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+     fprintf(stderr, "%s\n", __FUNCTION__);
+
+   CLAMP_SELF(point_size, 1, 256);
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+   imesa->Setup[I830_CTXREG_STATE5] &= ~FIXED_POINT_WIDTH_MASK;
+   imesa->Setup[I830_CTXREG_STATE5] |= (ENABLE_FIXED_POINT_WIDTH |
+				       FIXED_POINT_WIDTH(point_size));
+}
+
 
 /* =============================================================
  * Color masks
  */
 
-/* This only deals with ColorMask for rendering, clears need to update 
- * a planemask for the clearing blit.  This is to be done.
- */
-
-static GLboolean i830DDColorMask(GLcontext *ctx,
-				    GLboolean r, GLboolean g,
-				    GLboolean b, GLboolean a )
+static void i830ColorMask(GLcontext *ctx,
+			  GLboolean r, GLboolean g,
+			  GLboolean b, GLboolean a)
 {
    i830ContextPtr imesa = I830_CONTEXT( ctx );
    GLuint tmp = 0;
@@ -903,31 +764,29 @@ static GLboolean i830DDColorMask(GLcontext *ctx,
 	((!a) << WRITEMASK_ALPHA_SHIFT);
 
    if(tmp != imesa->Setup[I830_CTXREG_ENABLES_2]) {
-      FLUSH_BATCH(imesa);
+      I830_FIREVERTICES(imesa);
       imesa->dirty |= I830_UPLOAD_CTX;
       imesa->Setup[I830_CTXREG_ENABLES_2] = tmp;
 
       if(I830_DEBUG&DEBUG_VERBOSE_STATE)
 	fprintf(stderr, "[%s] enables 2 = 0x%08x\n", __FUNCTION__, tmp);
    }
-
-   /* Always return false so s/w fallbacks are correct */
-   return GL_FALSE;
 }
 
-static void i830DDLightModelfv(GLcontext *ctx, GLenum pname, 
-			      const GLfloat *param)
+
+static void i830LightModelfv(GLcontext *ctx, GLenum pname, 
+			     const GLfloat *param)
 {
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
    if(pname == GL_LIGHT_MODEL_COLOR_CONTROL) {
       i830ContextPtr imesa = I830_CONTEXT( ctx );
-      FLUSH_BATCH(imesa);
-      imesa->dirty |= I830_UPLOAD_CTX;
+
+      I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
       imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_SPEC_ADD_MASK;
 
-      if(ctx->Texture.ReallyEnabled &&
+      if(ctx->Texture._ReallyEnabled &&
 	 ctx->Light.Enabled &&
 	 ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
 	 imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_SPEC_ADD;
@@ -937,192 +796,167 @@ static void i830DDLightModelfv(GLcontext *ctx, GLenum pname,
       if(I830_DEBUG&DEBUG_VERBOSE_STATE)
 	fprintf(stderr, "[%s] Enables_1 = 0x%08x\n", __FUNCTION__, 
 		imesa->Setup[I830_CTXREG_ENABLES_1]);
+   }
+}
 
+/* In Mesa 3.5 we can reliably do native flatshading.
+ */
+static void i830ShadeModel(GLcontext *ctx, GLenum mode)
+{
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+
+
+#define SHADE_MODE_MASK ((1<<10)|(1<<8)|(1<<6)|(1<<4))
+
+   imesa->Setup[I830_CTXREG_STATE3] &= ~SHADE_MODE_MASK;
+
+   if (mode == GL_FLAT) {
+     imesa->Setup[I830_CTXREG_STATE3] |= (ALPHA_SHADE_MODE(SHADE_MODE_FLAT) |
+					  FOG_SHADE_MODE(SHADE_MODE_FLAT) |
+					  SPEC_SHADE_MODE(SHADE_MODE_FLAT) |
+					  COLOR_SHADE_MODE(SHADE_MODE_FLAT));
+   } else {
+     imesa->Setup[I830_CTXREG_STATE3] |= (ALPHA_SHADE_MODE(SHADE_MODE_LINEAR) |
+					  FOG_SHADE_MODE(SHADE_MODE_LINEAR) |
+					  SPEC_SHADE_MODE(SHADE_MODE_LINEAR) |
+					  COLOR_SHADE_MODE(SHADE_MODE_LINEAR));
    }
 }
 
 /* =============================================================
  * Fog
  */
-static void i830DDFogfv(GLcontext *ctx, GLenum pname, const GLfloat *param)
+static void i830Fogfv(GLcontext *ctx, GLenum pname, const GLfloat *param)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
    if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-   if(pname == GL_FOG_COLOR) {
+   if (pname == GL_FOG_COLOR) {      
       GLuint color = (((GLubyte)(ctx->Fog.Color[0]*255.0F) << 16) |
 		      ((GLubyte)(ctx->Fog.Color[1]*255.0F) << 8) |
 		      ((GLubyte)(ctx->Fog.Color[2]*255.0F) << 0));
 
-      imesa->dirty |= I830_UPLOAD_CTX;
+      I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
       imesa->Setup[I830_CTXREG_FOGCOLOR] = (STATE3D_FOG_COLOR_CMD | color);
-
-      if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-	fprintf(stderr, "[%s] FogColor = 0x%08x\n", __FUNCTION__, 
-		imesa->Setup[I830_CTXREG_FOGCOLOR]);
-
    }
 }
-
 
 /* =============================================================
  */
 
-static void i830DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
+static void i830Enable(GLcontext *ctx, GLenum cap, GLboolean state)
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s cap(%s) state(%d)\n", __FUNCTION__,
-	      gl_lookup_enum_by_nr(cap), state);
-
    switch(cap) {
    case GL_LIGHTING:
-      FLUSH_BATCH(imesa);
-      imesa->dirty |= I830_UPLOAD_CTX;
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_SPEC_ADD_MASK;
+     I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+     imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_SPEC_ADD_MASK;
 
-      if (ctx->Texture.ReallyEnabled &&
-	  ctx->Light.Enabled &&
-	  ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
-	 imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_SPEC_ADD;
-      else
-	 imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_SPEC_ADD;
+     if (ctx->Texture._ReallyEnabled &&
+	 ctx->Light.Enabled &&
+	 ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
+        imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_SPEC_ADD;
+     else
+        imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_SPEC_ADD;
 
-      break;
+     break;
+
    case GL_ALPHA_TEST:
-      FLUSH_BATCH(imesa);
-      imesa->dirty |= I830_UPLOAD_CTX;
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_DIS_ALPHA_TEST_MASK;
-      if(state)
-	imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_ALPHA_TEST;
-      else
-	imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_ALPHA_TEST;
-      break;
+     I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+     imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_DIS_ALPHA_TEST_MASK;
+     if(state)
+        imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_ALPHA_TEST;
+     else
+        imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_ALPHA_TEST;
+
+     break;
 
    case GL_BLEND:
    case GL_COLOR_LOGIC_OP:
    case GL_INDEX_LOGIC_OP:
-      i830EvalLogicOpBlendState(ctx);
-      break;
+     i830EvalLogicOpBlendState(ctx);
+     break;
+
    case GL_DITHER:
-      {
-	 unsigned int temp;
+     I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+     imesa->Setup[I830_CTXREG_ENABLES_2] &= ~ENABLE_DITHER;
 
-	 FLUSH_BATCH(imesa);
-	 temp = imesa->Setup[I830_CTXREG_ENABLES_2];
-
-	 temp &= ~ENABLE_DITHER;
-
-	 if(state) temp |= ENABLE_DITHER;
-	 else temp |= DISABLE_DITHER;
-
-	 if(temp != imesa->Setup[I830_CTXREG_ENABLES_2]) {
-	    imesa->dirty |= I830_UPLOAD_CTX;
-	    imesa->Setup[I830_CTXREG_ENABLES_2] = temp;
-	 }
-      }
-      break;
+     if(state)
+       imesa->Setup[I830_CTXREG_ENABLES_2] |= ENABLE_DITHER;
+     else
+       imesa->Setup[I830_CTXREG_ENABLES_2] |= DISABLE_DITHER;
+     break;
 
    case GL_DEPTH_TEST:
-      FLUSH_BATCH(imesa);
-      imesa->dirty |= I830_UPLOAD_CTX;
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_DIS_DEPTH_TEST_MASK;
-      
-      if(state)
-	imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_DEPTH_TEST;
-      else
-	imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_DEPTH_TEST;
-      break;
+     I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+     imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_DIS_DEPTH_TEST_MASK;
+
+     if(state)
+       imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_DEPTH_TEST;
+     else
+       imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_DEPTH_TEST;
+     break;
 
    case GL_SCISSOR_TEST:
-      FLUSH_BATCH(imesa);
-
-      if(state)
-	imesa->BufferSetup[I830_DESTREG_SENABLE] = (STATE3D_SCISSOR_ENABLE_CMD |
-						  ENABLE_SCISSOR_RECT);
+      I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
+      
+      if (state)
+	imesa->BufferSetup[I830_DESTREG_SENABLE] = 
+			(STATE3D_SCISSOR_ENABLE_CMD |
+			 ENABLE_SCISSOR_RECT);
       else
-	imesa->BufferSetup[I830_DESTREG_SENABLE] = (STATE3D_SCISSOR_ENABLE_CMD |
-						  DISABLE_SCISSOR_RECT);
-      imesa->dirty |= I830_UPLOAD_BUFFERS;
-      break;
+	imesa->BufferSetup[I830_DESTREG_SENABLE] = 
+			(STATE3D_SCISSOR_ENABLE_CMD |
+			 DISABLE_SCISSOR_RECT);
 
-   case GL_POLYGON_STIPPLE:
-      if(ctx->PB->primitive == GL_POLYGON) {
-	 FLUSH_BATCH(imesa);
-	 /* Need a fallback here */
-      }
+      imesa->upload_cliprects = GL_TRUE;
       break;
 
    case GL_LINE_SMOOTH:
-      if (ctx->PB->primitive == GL_LINE) {
-	 FLUSH_BATCH(imesa);
-	 if(0) fprintf(stderr, "Line smooth hit\n");
-	 imesa->dirty |= I830_UPLOAD_CTX;
-	 imesa->Setup[I830_CTXREG_AA] &= ~AA_LINE_ENABLE;
-	 /* imesa->Setup[I830_CTXREG_LCS] &= ~LCS_LINEWIDTH_0_5; */
-	 if (state) {
-	    imesa->Setup[I830_CTXREG_AA] |= AA_LINE_ENABLE;
-	    /* imesa->Setup[I830_CTXREG_LCS] |= LCS_LINEWIDTH_0_5; */
-	 } else {
-	    imesa->Setup[I830_CTXREG_AA] |= AA_LINE_DISABLE;
-	    /* imesa->Setup[I830_CTXREG_LCS] |= LCS_LINEWIDTH_0_5; */
-	 }
-      }
-      break;
+      if (imesa->reduced_primitive == GL_LINES) {
+	I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
 
-   case GL_POINT_SMOOTH:
-      if (ctx->PB->primitive == GL_POINT) {
-	 FLUSH_BATCH(imesa);
-	 if(0) fprintf(stderr, "Point smooth hit\n");
-      }
-      break;
-
-   case GL_POLYGON_SMOOTH:
-      if (ctx->PB->primitive == GL_POLYGON) {
-	 FLUSH_BATCH(imesa);
-	 if(0) fprintf(stderr, "Polygon Smooth hit\n");
+	imesa->Setup[I830_CTXREG_AA] &= ~AA_LINE_ENABLE;
+	if(state)
+	  imesa->Setup[I830_CTXREG_AA] |= AA_LINE_ENABLE;
+	else
+	  imesa->Setup[I830_CTXREG_AA] |= AA_LINE_DISABLE;
       }
       break;
 
    case GL_FOG:
-      FLUSH_BATCH(imesa);
-      imesa->dirty |= I830_UPLOAD_CTX;
-      imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_DIS_FOG_MASK;
-      if(state)
-	imesa->Setup[I830_CTXREG_ENABLES_1] |= I830_ENABLE_FOG;
-      else
-	imesa->Setup[I830_CTXREG_ENABLES_1] |= I830_DISABLE_FOG;
-      break;
+     I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+     imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_DIS_FOG_MASK;
+     if(state)
+       imesa->Setup[I830_CTXREG_ENABLES_1] |= I830_ENABLE_FOG;
+     else
+       imesa->Setup[I830_CTXREG_ENABLES_1] |= I830_DISABLE_FOG;
+     break;
 
    case GL_CULL_FACE:
-      if (ctx->PB->primitive == GL_POLYGON) {
-	 FLUSH_BATCH(imesa);
-	 imesa->dirty |= I830_UPLOAD_CTX;
-	 imesa->Setup[I830_CTXREG_STATE3] &= ~CULLMODE_MASK;
-	 if (state)
-	    imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_CULL_MODE |
-						imesa->LcsCullMode);
-	 else
-	    imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_CULL_MODE |
-						CULLMODE_NONE);
-      }
+      I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+      imesa->Setup[I830_CTXREG_STATE3] &= ~CULLMODE_MASK;
+      if(state)
+	imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_CULL_MODE |
+					     imesa->LcsCullMode);
+      else
+	imesa->Setup[I830_CTXREG_STATE3] |= (ENABLE_CULL_MODE |
+					     CULLMODE_NONE);
       break;
-   case GL_TEXTURE_1D:      
-   case GL_TEXTURE_3D:      
-      FLUSH_BATCH(imesa);
-      imesa->new_state |= I830_NEW_TEXTURE;
-      break;
-   case GL_TEXTURE_2D:
-      FLUSH_BATCH(imesa);
-      imesa->new_state |= I830_NEW_TEXTURE;
 
-      imesa->dirty |= I830_UPLOAD_CTX;
+   case GL_TEXTURE_2D:
+      if(0) {
+	 if(state) fprintf(stderr, "\n\nTexturing Enabled\n\n");
+	 else fprintf(stderr, "\n\nTexturing Disabled\n\n");
+      }
+      I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
       imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_SPEC_ADD_MASK;
 
-      if (ctx->Texture.ReallyEnabled &&
+      if (ctx->Texture._ReallyEnabled &&
 	  ctx->Light.Enabled &&
 	  ctx->Light.Model.ColorControl == GL_SEPARATE_SPECULAR_COLOR)
 	 imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_SPEC_ADD;
@@ -1131,56 +965,29 @@ static void i830DDEnable(GLcontext *ctx, GLenum cap, GLboolean state)
       break;
 
    case GL_STENCIL_TEST:
-      FLUSH_BATCH(imesa);
       if(imesa->hw_stencil) {
-	 imesa->dirty |= I830_UPLOAD_CTX;
-	 imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_STENCIL_TEST;
+	I830_STATECHANGE(imesa, I830_UPLOAD_CTX);
+	imesa->Setup[I830_CTXREG_ENABLES_1] &= ~ENABLE_STENCIL_TEST;
 
-	 if(state) {
-	    if(0) fprintf(stderr, "Enabling stencil test\n");
-	    imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_STENCIL_TEST;
-	 } else {
-	    if(0) fprintf(stderr, "Disabling stencil test\n");
-	    imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_STENCIL_TEST;
-	 }
+	if(state) {
+	  imesa->Setup[I830_CTXREG_ENABLES_1] |= ENABLE_STENCIL_TEST;
+	} else {
+	  imesa->Setup[I830_CTXREG_ENABLES_1] |= DISABLE_STENCIL_TEST;
+	}
 
-	 if(I830_DEBUG&DEBUG_VERBOSE_STATE)
-	   fprintf(stderr, "%s : state4 : 0x%x, stentst : 0x%x,"
-		   " enables_1 : 0x%x\n", __FUNCTION__,
-		   imesa->Setup[I830_CTXREG_STATE4],
-		   imesa->Setup[I830_CTXREG_STENCILTST],
-		   imesa->Setup[I830_CTXREG_ENABLES_1]);
-
-      } else if (state) {
-	 imesa->Fallback |= I830_FALLBACK_STENCIL;
+	if(I830_DEBUG&DEBUG_VERBOSE_STATE)
+	  fprintf(stderr, "%s : state4 : 0x%x, stentst : 0x%x,"
+		  " enables_1 : 0x%x\n", __FUNCTION__,
+		  imesa->Setup[I830_CTXREG_STATE4],
+		  imesa->Setup[I830_CTXREG_STENCILTST],
+		  imesa->Setup[I830_CTXREG_ENABLES_1]);
       } else {
-	 imesa->Fallback &= ~I830_FALLBACK_STENCIL;
+	FALLBACK( imesa, I830_FALLBACK_STENCIL, state );
       }
-	
+      break;
    default:
-      ; 
-   }    
-}
-
-
-
-/* =============================================================
- */
-
-
-void i830DDUpdateHwState( GLcontext *ctx )
-{
-   i830ContextPtr imesa = I830_CONTEXT(ctx);
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
-
-   if(imesa->new_state & I830_NEW_TEXTURE) {
-      FLUSH_BATCH(imesa);
-      i830UpdateTextureState( ctx );
+     ;
    }
-
-   imesa->new_state = 0;
 }
 
 
@@ -1194,7 +1001,7 @@ void i830EmitDrawingRectangle( i830ContextPtr imesa )
    int y1 = y0 + dPriv->h;
 
    /* Don't set drawing rectangle */
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if(DEBUGGING)
       fprintf(stderr, "%s x0(%d) x1(%d) y0(%d) y1(%d)\n", __FUNCTION__,
 	      x0, x1, y0, y1);
 
@@ -1215,9 +1022,18 @@ void i830EmitDrawingRectangle( i830ContextPtr imesa )
     */
    imesa->BufferSetup[I830_DESTREG_DR2] = ((y0<<16) | x0);
    imesa->BufferSetup[I830_DESTREG_DR3] = (((y1+1)<<16) | (x1+1));
+
+   
+   /* Just add in our dirty flag, since we might be called when locked */
+   /* Might want to modify how this is done. */
+#if 0
+   if (imesa->vertex_low != imesa->vertex_last_prim)
+      i830FlushPrimsLocked(imesa);
+#endif
+
    imesa->dirty |= I830_UPLOAD_BUFFERS;
 
-   if(I830_DEBUG&DEBUG_VERBOSE_STATE)
+   if(0)
       fprintf(stderr, "[%s] DR2(0x%08x) DR3(0x%08x) DR4(0x%08x)\n",
 	      __FUNCTION__,
 	      imesa->BufferSetup[I830_DESTREG_DR2],
@@ -1225,102 +1041,130 @@ void i830EmitDrawingRectangle( i830ContextPtr imesa )
 	      imesa->BufferSetup[I830_DESTREG_DR4]);
 }
 
-
-
-static void i830DDPrintDirty( const char *msg, GLuint state )
+/* This could be done in hardware, will do once I have the driver
+ * up and running.
+ */
+static void i830CalcViewport( GLcontext *ctx )
 {
-   fprintf(stderr, "%s (0x%x): %s%s%s%s%s\n",	   
-	   msg,
-	   (unsigned int) state,
-	   (state & I830_UPLOAD_TEX0_IMAGE)  ? "upload-tex0, " : "",
-	   (state & I830_UPLOAD_TEX1_IMAGE)  ? "upload-tex1, " : "",
-	   (state & I830_UPLOAD_CTX)        ? "upload-ctx, " : "",
-	   (state & I830_UPLOAD_BUFFERS)    ? "upload-bufs, " : "",
-	   (state & I830_UPLOAD_CLIPRECTS)  ? "upload-cliprects, " : ""
-	   );
+   i830ContextPtr imesa = I830_CONTEXT(ctx);
+   const GLfloat *v = ctx->Viewport._WindowMap.m;
+   GLfloat *m = imesa->ViewportMatrix.m;
+
+   /* See also i830_translate_vertex.  SUBPIXEL adjustments can be done
+    * via state vars, too.
+    */
+   m[MAT_SX] =   v[MAT_SX];
+   m[MAT_TX] =   v[MAT_TX] + SUBPIXEL_X;
+   m[MAT_SY] = - v[MAT_SY];
+   m[MAT_TY] = - v[MAT_TY] + imesa->driDrawable->h + SUBPIXEL_Y;
+   m[MAT_SZ] =   v[MAT_SZ] * imesa->depth_scale;
+   m[MAT_TZ] =   v[MAT_TZ] * imesa->depth_scale;
 }
 
+static void i830Viewport( GLcontext *ctx,
+			  GLint x, GLint y,
+			  GLsizei width, GLsizei height )
+{
+   i830CalcViewport( ctx );
+}
+
+static void i830DepthRange( GLcontext *ctx,
+			    GLclampd nearval, GLclampd farval )
+{
+   i830CalcViewport( ctx );
+}
+
+void i830PrintDirty( const char *msg, GLuint state )
+{
+   fprintf(stderr, "%s (0x%x): %s%s%s%s%s%s\n",
+	   msg,
+	   (unsigned int) state,
+	   (state & I830_UPLOAD_TEX0)  ? "upload-tex0, " : "",
+	   (state & I830_UPLOAD_TEX1)  ? "upload-tex1, " : "",
+	   (state & I830_UPLOAD_CTX)        ? "upload-ctx, " : "",
+	   (state & I830_UPLOAD_BUFFERS)    ? "upload-bufs, " : "",
+	   (state & I830_UPLOAD_TEXBLEND0)  ? "upload-blend0, " : "",
+	   (state & I830_UPLOAD_TEXBLEND1)  ? "upload-blend1, " : ""
+	   );
+}
 
 /* Push the state into the sarea and/or texture memory.
  */
 void i830EmitHwStateLocked( i830ContextPtr imesa )
 {
    int i;
-   if (I830_DEBUG & DEBUG_VERBOSE_API)
-      i830DDPrintDirty( "\n\n\ni830EmitHwStateLocked", imesa->dirty );
+   if (DEBUGGING)
+      i830PrintDirty( "\n\n\ni830EmitHwStateLocked", imesa->dirty );
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
+   if (DEBUGGING)
       fprintf(stderr, "%s\n", __FUNCTION__);
 
-   if (imesa->dirty & ~I830_UPLOAD_CLIPRECTS) {
-      if ((imesa->dirty & I830_UPLOAD_TEX0_IMAGE) && imesa->CurrentTexObj[0])
-	 i830UploadTexImages(imesa, imesa->CurrentTexObj[0]);
-   
-      if ((imesa->dirty & I830_UPLOAD_TEX1_IMAGE) && imesa->CurrentTexObj[1])
-	 i830UploadTexImages(imesa, imesa->CurrentTexObj[1]);
-  
-      if (imesa->dirty & I830_UPLOAD_CTX)
-	 memcpy( imesa->sarea->ContextState, 
-		 imesa->Setup, 
-		 sizeof(imesa->Setup) );
-
-      for(i = 0; i < I830_TEXTURE_COUNT; i++) {
-	 if ((imesa->dirty & I830_UPLOAD_TEX_N(i)) && imesa->CurrentTexObj[i]) {
-	    imesa->sarea->dirty |= I830_UPLOAD_TEX_N(i);
-	    memcpy(imesa->sarea->TexState[i],
-	       imesa->CurrentTexObj[i]->Setup,
-	       sizeof(imesa->sarea->TexState[i]));
-	 }
-      }
-
-      /* Need to figure out if texturing state, or enable changed. */
-
-      for(i = 0; i < I830_TEXBLEND_COUNT; i++) {
-	 if (imesa->dirty & I830_UPLOAD_TEXBLEND_N(i)) {
-	    imesa->sarea->dirty |= I830_UPLOAD_TEXBLEND_N(i);
-	    memcpy(imesa->sarea->TexBlendState[i],
-	       imesa->TexBlend[i],
-	       imesa->TexBlendWordsUsed[i] * 4);
-	    imesa->sarea->TexBlendStateWordsUsed[i] =
-	       imesa->TexBlendWordsUsed[i];
-	 }
-      }
-
-      if (imesa->dirty & I830_UPLOAD_BUFFERS) 
-	 memcpy( imesa->sarea->BufferState, 
-		 imesa->BufferSetup, 
-		 sizeof(imesa->BufferSetup) );
-
-      if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_SHARED) {
-	 memcpy( imesa->sarea->Palette[0],
-		 imesa->palette,
-		 sizeof(imesa->sarea->Palette[0]));
-      } else {
-	 i830TextureObjectPtr p;
-
-	 if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_N(0)) {
-	    p = imesa->CurrentTexObj[0];
-	    memcpy( imesa->sarea->Palette[0],
-		    p->palette,
-		    sizeof(imesa->sarea->Palette[0]));
-	 }
-	 if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_N(1)) {
-	    p = imesa->CurrentTexObj[1];
-	    memcpy( imesa->sarea->Palette[1],
-		    p->palette,
-		    sizeof(imesa->sarea->Palette[1]));
-	 }
-      }
-
-      imesa->sarea->dirty |= (imesa->dirty & 
-			      ~(I830_UPLOAD_TEX_MASK | 
-				I830_UPLOAD_TEXBLEND_MASK));
-      imesa->dirty &= I830_UPLOAD_CLIPRECTS;
+   if ((imesa->dirty & I830_UPLOAD_TEX0_IMAGE) && imesa->CurrentTexObj[0])
+      i830UploadTexImages(imesa, imesa->CurrentTexObj[0]);
+   if ((imesa->dirty & I830_UPLOAD_TEX1_IMAGE) && imesa->CurrentTexObj[1])
+      i830UploadTexImages(imesa, imesa->CurrentTexObj[1]);
+   if (imesa->dirty & I830_UPLOAD_CTX) {
+      memcpy( imesa->sarea->ContextState,
+	     imesa->Setup, sizeof(imesa->Setup) );
    }
+
+   for(i = 0; i < I830_TEXTURE_COUNT; i++) {
+      if ((imesa->dirty & I830_UPLOAD_TEX_N(i)) && imesa->CurrentTexObj[i]) {
+	 imesa->sarea->dirty |= I830_UPLOAD_TEX_N(i);
+	 memcpy(imesa->sarea->TexState[i],
+		imesa->CurrentTexObj[i]->Setup,
+		sizeof(imesa->sarea->TexState[i]));
+	 /* Update the LRU usage */
+	 i830UpdateTexLRU(imesa, imesa->CurrentTexObj[i]);
+      }
+   }
+   /* Need to figure out if texturing state, or enable changed. */
+
+   for(i = 0; i < I830_TEXBLEND_COUNT; i++) {
+      if (imesa->dirty & I830_UPLOAD_TEXBLEND_N(i)) {
+	 imesa->sarea->dirty |= I830_UPLOAD_TEXBLEND_N(i);
+	 memcpy(imesa->sarea->TexBlendState[i],imesa->TexBlend[i],
+		imesa->TexBlendWordsUsed[i] * 4);
+	 imesa->sarea->TexBlendStateWordsUsed[i] =
+	   imesa->TexBlendWordsUsed[i];
+      }
+   }
+
+   if (imesa->dirty & I830_UPLOAD_BUFFERS) {
+      if (DEBUGGING)
+	 fprintf(stderr,"\nCopying BufferState to shared area\n");
+      memcpy( imesa->sarea->BufferState,imesa->BufferSetup, 
+	      sizeof(imesa->BufferSetup) );
+   }
+
+   if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_SHARED) {
+      memcpy( imesa->sarea->Palette[0],imesa->palette,
+	      sizeof(imesa->sarea->Palette[0]));
+   } else {
+      i830TextureObjectPtr p;
+      if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_N(0)) {
+	 p = imesa->CurrentTexObj[0];
+	 memcpy( imesa->sarea->Palette[0],p->palette,
+		sizeof(imesa->sarea->Palette[0]));
+      }
+      if (imesa->dirty & I830_UPLOAD_TEX_PALETTE_N(1)) {
+	 p = imesa->CurrentTexObj[1];
+	 memcpy( imesa->sarea->Palette[1],
+		 p->palette,
+		 sizeof(imesa->sarea->Palette[1]));
+      }
+   }
+   imesa->sarea->dirty |= (imesa->dirty & ~(I830_UPLOAD_TEX_MASK | 
+					    I830_UPLOAD_TEXBLEND_MASK));
+
+   imesa->upload_cliprects = GL_TRUE;
+   imesa->dirty = 0;
 }
 
-void i830DDInitState( i830ContextPtr imesa )
+
+void i830DDInitState( GLcontext *ctx )
 {
+   i830ContextPtr imesa = I830_CONTEXT(ctx);   
    i830ScreenPrivate *i830Screen = imesa->i830Screen;
    int i, j;
 
@@ -1411,11 +1255,15 @@ void i830DDInitState( i830ContextPtr imesa )
 
    memset(imesa->Setup, 0, sizeof(imesa->Setup));
 
-   imesa->Setup[I830_CTXREG_VF] = VRTX_FORMAT_NTEX(1);
-
+   imesa->Setup[I830_CTXREG_VF] =  (STATE3D_VERTEX_FORMAT_CMD |
+				    VRTX_TEX_COORD_COUNT(1) |
+				    VRTX_HAS_DIFFUSE |
+				    VRTX_HAS_SPEC |
+				    VRTX_HAS_XYZW);
+   imesa->vertex_format = 0;
    imesa->Setup[I830_CTXREG_VF2] = (STATE3D_VERTEX_FORMAT_2_CMD |
 				    VRTX_TEX_SET_0_FMT(TEXCOORDFMT_2D) |
-				    VRTX_TEX_SET_1_FMT(TEXCOORDFMT_2D) |
+				    VRTX_TEX_SET_1_FMT(TEXCOORDFMT_2D) | 
 				    VRTX_TEX_SET_2_FMT(TEXCOORDFMT_2D) |
 				    VRTX_TEX_SET_3_FMT(TEXCOORDFMT_2D));
 
@@ -1457,41 +1305,41 @@ void i830DDInitState( i830ContextPtr imesa )
    }
 
    imesa->Setup[I830_CTXREG_STATE1] = (STATE3D_MODES_1_CMD |
-				       ENABLE_COLR_BLND_FUNC |
-				       BLENDFUNC_ADD |
-				       ENABLE_SRC_BLND_FACTOR |
-				       SRC_BLND_FACT(BLENDFACT_ONE) | 
-				       ENABLE_DST_BLND_FACTOR |
-				       DST_BLND_FACT(BLENDFACT_ZERO) );
+   				      ENABLE_COLR_BLND_FUNC |
+				      BLENDFUNC_ADD |
+				      ENABLE_SRC_BLND_FACTOR |
+				      SRC_BLND_FACT(BLENDFACT_ONE) | 
+				      ENABLE_DST_BLND_FACTOR |
+				      DST_BLND_FACT(BLENDFACT_ZERO) );
 
    imesa->Setup[I830_CTXREG_STATE2] = (STATE3D_MODES_2_CMD |
-				       ENABLE_GLOBAL_DEPTH_BIAS | 
-				       GLOBAL_DEPTH_BIAS(0) |
-				       ENABLE_ALPHA_TEST_FUNC | 
-				       ALPHA_TEST_FUNC(COMPAREFUNC_ALWAYS) |
-				       ALPHA_REF_VALUE(0) );
+   				      ENABLE_GLOBAL_DEPTH_BIAS | 
+				      GLOBAL_DEPTH_BIAS(0) |
+				      ENABLE_ALPHA_TEST_FUNC | 
+				      ALPHA_TEST_FUNC(COMPAREFUNC_ALWAYS) |
+				      ALPHA_REF_VALUE(0) );
 
    imesa->Setup[I830_CTXREG_STATE3] = (STATE3D_MODES_3_CMD |
-				       ENABLE_DEPTH_TEST_FUNC |
-				       DEPTH_TEST_FUNC(COMPAREFUNC_LESS) |
-				       ENABLE_ALPHA_SHADE_MODE |
-				       ALPHA_SHADE_MODE(SHADE_MODE_LINEAR) |
-				       ENABLE_FOG_SHADE_MODE |
-				       FOG_SHADE_MODE(SHADE_MODE_LINEAR) |
-				       ENABLE_SPEC_SHADE_MODE |
-				       SPEC_SHADE_MODE(SHADE_MODE_LINEAR) |
-				       ENABLE_COLOR_SHADE_MODE |
-				       COLOR_SHADE_MODE(SHADE_MODE_LINEAR) |
-				       ENABLE_CULL_MODE |
-				       CULLMODE_NONE);
+   				      ENABLE_DEPTH_TEST_FUNC |
+				      DEPTH_TEST_FUNC(COMPAREFUNC_LESS) |
+				      ENABLE_ALPHA_SHADE_MODE |
+				      ALPHA_SHADE_MODE(SHADE_MODE_LINEAR) |
+				      ENABLE_FOG_SHADE_MODE |
+				      FOG_SHADE_MODE(SHADE_MODE_LINEAR) |
+				      ENABLE_SPEC_SHADE_MODE |
+				      SPEC_SHADE_MODE(SHADE_MODE_LINEAR) |
+				      ENABLE_COLOR_SHADE_MODE |
+				      COLOR_SHADE_MODE(SHADE_MODE_LINEAR) |
+				      ENABLE_CULL_MODE |
+				      CULLMODE_NONE);
 
    imesa->Setup[I830_CTXREG_STATE4] = (STATE3D_MODES_4_CMD |
-				       ENABLE_LOGIC_OP_FUNC |
-				       LOGIC_OP_FUNC(LOGICOP_COPY) |
-				       ENABLE_STENCIL_TEST_MASK |
-				       STENCIL_TEST_MASK(0xff) |
-				       ENABLE_STENCIL_WRITE_MASK |
-				       STENCIL_WRITE_MASK(0xff));
+				      ENABLE_LOGIC_OP_FUNC |
+				      LOGIC_OP_FUNC(LOGICOP_COPY) |
+				      ENABLE_STENCIL_TEST_MASK |
+				      STENCIL_TEST_MASK(0xff) |
+				      ENABLE_STENCIL_WRITE_MASK |
+				      STENCIL_WRITE_MASK(0xff));
 
    imesa->Setup[I830_CTXREG_STENCILTST] = (STATE3D_STENCIL_TEST_CMD |
 				  ENABLE_STENCIL_PARMS |
@@ -1513,14 +1361,14 @@ void i830DDInitState( i830ContextPtr imesa )
 				       FIXED_POINT_WIDTH(1) );
 
    imesa->Setup[I830_CTXREG_IALPHAB] = (STATE3D_INDPT_ALPHA_BLEND_CMD |
-					DISABLE_INDPT_ALPHA_BLEND |
-					ENABLE_ALPHA_BLENDFUNC |
-					ABLENDFUNC_ADD);
+   				       DISABLE_INDPT_ALPHA_BLEND |
+				       ENABLE_ALPHA_BLENDFUNC |
+				       ABLENDFUNC_ADD);
 
    imesa->Setup[I830_CTXREG_FOGCOLOR] = (STATE3D_FOG_COLOR_CMD |
-					 FOG_COLOR_RED(0) |
-					 FOG_COLOR_GREEN(0) |
-					 FOG_COLOR_BLUE(0));
+   					FOG_COLOR_RED(0) |
+   					FOG_COLOR_GREEN(0) |
+   					FOG_COLOR_BLUE(0));
 
    imesa->Setup[I830_CTXREG_BLENDCOLR0] = (STATE3D_CONST_BLEND_COLOR_CMD);
 
@@ -1528,9 +1376,9 @@ void i830DDInitState( i830ContextPtr imesa )
 
    imesa->Setup[I830_CTXREG_MCSB0] = STATE3D_MAP_COORD_SETBIND_CMD;
    imesa->Setup[I830_CTXREG_MCSB1] = (TEXBIND_SET3(TEXCOORDSRC_VTXSET_3) |
-				      TEXBIND_SET2(TEXCOORDSRC_VTXSET_2) |
-				      TEXBIND_SET1(TEXCOORDSRC_VTXSET_1) |
-				      TEXBIND_SET0(TEXCOORDSRC_VTXSET_0));
+				     TEXBIND_SET2(TEXCOORDSRC_VTXSET_2) |
+				     TEXBIND_SET1(TEXCOORDSRC_VTXSET_1) |
+				     TEXBIND_SET0(TEXCOORDSRC_VTXSET_0));
 
    imesa->LcsCullMode = CULLMODE_CW; /* GL default */
 
@@ -1555,21 +1403,21 @@ void i830DDInitState( i830ContextPtr imesa )
    case DV_PF_555:
    case DV_PF_565:
       imesa->BufferSetup[I830_DESTREG_DV1] = (DSTORG_HORT_BIAS(0x8) | /* .5 */
-					      DSTORG_VERT_BIAS(0x8) | /* .5 */
-					      i830Screen->fbFormat |
-					      DEPTH_IS_Z |
-					      DEPTH_FRMT_16_FIXED);
+					     DSTORG_VERT_BIAS(0x8) | /* .5 */
+					     i830Screen->fbFormat |
+					     DEPTH_IS_Z |
+					     DEPTH_FRMT_16_FIXED);
       break;
    case DV_PF_8888:
       imesa->BufferSetup[I830_DESTREG_DV1] = (DSTORG_HORT_BIAS(0x8) | /* .5 */
-					      DSTORG_VERT_BIAS(0x8) | /* .5 */
-					      i830Screen->fbFormat |
-					      DEPTH_IS_Z |
-					      DEPTH_FRMT_24_FIXED_8_OTHER);
+					     DSTORG_VERT_BIAS(0x8) | /* .5 */
+					     i830Screen->fbFormat |
+					     DEPTH_IS_Z |
+					     DEPTH_FRMT_24_FIXED_8_OTHER);
       break;
    }
    imesa->BufferSetup[I830_DESTREG_SENABLE] = (STATE3D_SCISSOR_ENABLE_CMD |
-					       DISABLE_SCISSOR_RECT);
+					      DISABLE_SCISSOR_RECT);
    imesa->BufferSetup[I830_DESTREG_SR0] = STATE3D_SCISSOR_RECT_0_CMD;
    imesa->BufferSetup[I830_DESTREG_SR1] = 0;
    imesa->BufferSetup[I830_DESTREG_SR2] = 0;
@@ -1590,86 +1438,65 @@ void i830DDInitState( i830ContextPtr imesa )
 
 }
 
-#define INTERESTED (~(NEW_MODELVIEW|NEW_PROJECTION|\
-                      NEW_TEXTURE_MATRIX|\
-                      NEW_USER_CLIP|NEW_CLIENT_STATE))
-
-void i830DDUpdateState( GLcontext *ctx )
+static void i830InvalidateState( GLcontext *ctx, GLuint new_state )
 {
-   i830ContextPtr imesa = I830_CONTEXT( ctx );
-
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
-
-   /* Have to do this here to detect texture fallbacks in time */
-   if (imesa->new_state & I830_NEW_TEXTURE)
-      i830DDUpdateHwState( ctx );
-
-
-   if (ctx->NewState & INTERESTED) {
-      i830DDChooseRenderState(ctx);  
-      i830ChooseRasterSetupFunc(ctx);
-   }
-
-   if (0) 
-      fprintf(stderr, "IndirectTriangles %x Fallback %x\n", 
-	      imesa->IndirectTriangles, imesa->Fallback);
-   
-   if (!imesa->Fallback) {
-      ctx->IndirectTriangles &= ~DD_SW_RASTERIZE;
-      ctx->IndirectTriangles |= imesa->IndirectTriangles;
-
-      ctx->Driver.PointsFunc=imesa->PointsFunc;
-      ctx->Driver.LineFunc=imesa->LineFunc;
-      ctx->Driver.TriangleFunc=imesa->TriangleFunc;
-      ctx->Driver.QuadFunc=imesa->QuadFunc;
-   }
+   _swrast_InvalidateState( ctx, new_state );
+   _swsetup_InvalidateState( ctx, new_state );
+   _ac_InvalidateState( ctx, new_state );
+   _tnl_InvalidateState( ctx, new_state );
+   I830_CONTEXT(ctx)->new_state |= new_state;
 }
-
 
 void i830DDInitStateFuncs(GLcontext *ctx)
 {
-   i830ContextPtr imesa = I830_CONTEXT( ctx );
+   /* Callbacks for internal Mesa events.
+    */
+   ctx->Driver.UpdateState = i830InvalidateState;
 
-   if(I830_DEBUG&DEBUG_VERBOSE_TRACE)
-      fprintf(stderr, "%s\n", __FUNCTION__);
+   /* API callbacks
+    */
+   ctx->Driver.AlphaFunc = i830AlphaFunc;
+   ctx->Driver.BlendEquation = i830BlendEquation;
+   ctx->Driver.BlendFunc = i830BlendFunc;
+   ctx->Driver.BlendFuncSeparate = i830BlendFuncSeparate;
+   ctx->Driver.BlendColor = i830BlendColor;
+   ctx->Driver.ClearColor = i830ClearColor;
+   ctx->Driver.ColorMask = i830ColorMask;
+   ctx->Driver.CullFace = i830CullFaceFrontFace;
+   ctx->Driver.DepthFunc = i830DepthFunc;
+   ctx->Driver.DepthMask = i830DepthMask;
+   ctx->Driver.Enable = i830Enable;
+   ctx->Driver.Fogfv = i830Fogfv;
+   ctx->Driver.FrontFace = i830CullFaceFrontFace;
+   ctx->Driver.LineWidth = i830LineWidth;
+   ctx->Driver.PointSize = i830PointSize;
+   ctx->Driver.LogicOpcode = i830LogicOp;
+   ctx->Driver.PolygonStipple = i830PolygonStipple;
+   ctx->Driver.RenderMode = i830RenderMode;
+   ctx->Driver.Scissor = i830Scissor;
+   ctx->Driver.SetDrawBuffer = i830SetDrawBuffer;
+   ctx->Driver.ShadeModel = i830ShadeModel;
+   ctx->Driver.DepthRange = i830DepthRange;
+   ctx->Driver.Viewport = i830Viewport;
+   ctx->Driver.LightModelfv = i830LightModelfv;
 
-   ctx->Driver.UpdateState = i830DDUpdateState;
-   ctx->Driver.Enable = i830DDEnable;
-   ctx->Driver.AlphaFunc = i830DDAlphaFunc;
-   ctx->Driver.BlendEquation = i830DDBlendEquation;
-   ctx->Driver.BlendFunc = i830DDBlendFunc;
-   ctx->Driver.BlendFuncSeparate = i830DDBlendFuncSeparate;
-   ctx->Driver.BlendConstColor = i830DDBlendConstColor;
-   ctx->Driver.DepthFunc = i830DDDepthFunc;
-   ctx->Driver.DepthMask = i830DDDepthMask;
-   ctx->Driver.Fogfv = i830DDFogfv;
-   ctx->Driver.Scissor = i830DDScissor;
-   ctx->Driver.CullFace = i830DDCullFaceFrontFace;
-   ctx->Driver.FrontFace = i830DDCullFaceFrontFace;
-   ctx->Driver.ColorMask = i830DDColorMask;
-   ctx->Driver.ReducedPrimitiveChange = i830DDReducedPrimitiveChange;
-   ctx->Driver.RenderStart = i830DDUpdateHwState; 
-   ctx->Driver.RenderFinish = 0;
+   ctx->Driver.StencilFunc = i830StencilFunc;
+   ctx->Driver.StencilMask = i830StencilMask;
+   ctx->Driver.StencilOp = i830StencilOp;
 
-   ctx->Driver.LineStipple = 0;
-   ctx->Driver.LineWidth = i830DDLineWidth;
-   ctx->Driver.LogicOpcode = i830DDLogicOp;
-   ctx->Driver.SetReadBuffer = i830DDSetReadBuffer;
-   ctx->Driver.SetDrawBuffer = i830DDSetDrawBuffer;
-   ctx->Driver.Color = i830DDSetColor;
-   ctx->Driver.ClearColor = i830DDClearColor;
-   ctx->Driver.Dither = NULL;
-   ctx->Driver.Index = 0;
-   ctx->Driver.ClearIndex = 0;
-   ctx->Driver.IndexMask = 0;
+   /* Pixel path fallbacks.
+    */
+   ctx->Driver.Accum = _swrast_Accum;
+   ctx->Driver.Bitmap = _swrast_Bitmap;
+   ctx->Driver.CopyPixels = _swrast_CopyPixels;
+   ctx->Driver.DrawPixels = _swrast_DrawPixels;
+   ctx->Driver.ReadPixels = _swrast_ReadPixels;
+   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
 
-   if(imesa->hw_stencil) {
-      ctx->Driver.StencilFunc = i830DDStencilFunc;
-      ctx->Driver.StencilMask = i830DDStencilMask;
-      ctx->Driver.StencilOp = i830DDStencilOp;
-   }
-
-   ctx->Driver.LightModelfv = i830DDLightModelfv;
-   ctx->Driver.PointSize = i830DDPointSize;
+   /* Swrast hooks for imaging extensions:
+    */
+   ctx->Driver.CopyColorTable = _swrast_CopyColorTable;
+   ctx->Driver.CopyColorSubTable = _swrast_CopyColorSubTable;
+   ctx->Driver.CopyConvolutionFilter1D = _swrast_CopyConvolutionFilter1D;
+   ctx->Driver.CopyConvolutionFilter2D = _swrast_CopyConvolutionFilter2D;
 }

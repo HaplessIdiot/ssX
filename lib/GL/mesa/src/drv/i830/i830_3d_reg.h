@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_3d_reg.h,v 1.2 2001/10/04 18:31:38 alanh Exp $ */
 #define I830_SET_FIELD( var, mask, value ) (var &= ~(mask), var |= value)
 
 #define CMD_3D (0x3<<29)
@@ -682,6 +682,11 @@
 #define TEXCOORDFMT_3D			1
 #define TEXCOORDFMT_4D			2
 #define TEXCOORDFMT_1D			3
+
+/*New stuff picked up along the way */
+
+#define MLC_LOD_BIAS_MASK ((1<<7)-1)
+
 
 /* STATE3D_VERTEX_TRANSFORM, p207 */
 #define STATE3D_VERTEX_TRANS_CMD	(CMD_3D|(0x1d<<24)|(0x8b<<16)|0)

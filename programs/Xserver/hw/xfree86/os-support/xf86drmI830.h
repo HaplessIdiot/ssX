@@ -26,7 +26,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86drmI830.h,v 1.2 2001/10/04 18:32:29 alanh Exp $ */
 
 /* Author: Jeff Hartmann <jhartmann@valinux.com> 
  */
@@ -179,6 +179,39 @@ typedef struct _drmI830Init {
    unsigned int pitch_bits;
    unsigned int cpp;
 } drmI830Init;
+
+typedef struct _drmI830Clear {
+	int clear_color;
+	int clear_depth;
+	int flags;
+	unsigned int clear_colormask;
+	unsigned int clear_depthmask;
+} drmI830Clear;
+
+/* These may be placeholders if we have more cliprects than
+ * I830_NR_SAREA_CLIPRECTS.  In that case, the client sets discard to
+ * false, indicating that the buffer will be dispatched again with a
+ * new set of cliprects.
+ */
+typedef struct _drmI830Vertex {
+   	int idx;		/* buffer index */
+	int used;		/* nr bytes in use */
+	int discard;		/* client is finished with the buffer? */
+} drmI830Vertex;
+
+typedef struct _drmI830Copy {
+   	int idx;		/* buffer index */
+	int used;		/* nr bytes in use */
+	void *address;		/* Address to copy from */
+} drmI830Copy;
+
+typedef struct _drmI830Dma {
+	void *virtual;
+	int request_idx;
+	int request_size;
+	int granted;
+} drmI830DMA;
+
 
 Bool drmI830CleanupDma(int driSubFD);
 Bool drmI830InitDma(int driSubFD, drmI830Init *info );
