@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.3 2003/01/14 09:34:32 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_video.c,v 1.4 2003/02/06 17:46:01 alanh Exp $ */
 /*
  * $Workfile: nsc_gx1_video.c $
  * $Revision$
@@ -901,31 +901,28 @@ SetVideoPosition(int x, int y, int width, int height,
 		 short src_w, short src_h, short drw_w, short drw_h,
 		 int id, int offset, ScrnInfoPtr pScrn)
 {
-   long xstart, ystart;
+   GeodePtr pGeode = GEODEPTR(pScrn);
+   long xstart, ystart, xend, yend;
    unsigned long lines = 0;
    unsigned long y_extra;
-   unsigned short xcrop = 0;
+   unsigned short crop = 0;
+
+   xend = x + drw_w;
+   yend = y + drw_h;
 
    if (x < 0) {
-      if (TVOverScanX) {
-	 xcrop = TVOverScanX - x;
+      if (TVOverScanX)
 	 xstart = TVOverScanX;
-	 drw_w -= (TVOverScanX - x);
-      } else {
-	 xcrop = (-x);
+      else
 	 xstart = 0;
-	 drw_w -= (-x);
-      }
    } else {
-      if (TVOverScanX) {
-	 xcrop = TVOverScanX - x;
+      if (TVOverScanX)
 	 xstart = TVOverScanX;
-	 drw_w -= (TVOverScanX - x);
-      } else {
-	 xcrop = 0;
+      else
 	 xstart = (unsigned long)x;
-      }
    }
+   drw_w -= (xstart - x);
+
    if (y < 0) {
       lines = (-y) * src_h / drw_h;
       ystart = 0;
@@ -937,9 +934,19 @@ SetVideoPosition(int x, int y, int width, int height,
       y_extra = 0;
    }
 
-   GFX(set_video_window(xstart, ystart, drw_w, drw_h));
+   if (pGeode->TV_Overscan_On) {
+      crop = (pGeode->TVOw + pGeode->TVOx);
+      if ((xstart + drw_w) > crop)
+	 xend = crop;
+      crop = (pGeode->TVOh + pGeode->TVOy);
+      if ((ystart + drw_h) > crop)
+	 yend = crop;
+      GFX(set_video_window(xstart, ystart, xend - xstart, yend - ystart));
+   } else {
+      GFX(set_video_window(xstart, ystart, drw_w, drw_h));
+   }
    GFX(set_video_offset(offset + y_extra));
-   GFX(set_video_left_crop(xcrop));
+   GFX(set_video_left_crop(xstart - x));
 
 }
 
