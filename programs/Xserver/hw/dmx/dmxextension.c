@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.3tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/dmxextension.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2003-2004 Red Hat Inc., Durham, North Carolina.
  *
@@ -501,7 +501,7 @@ int dmxConfigureScreenWindows(int nscreens,
 
 	/* The "screen" and "root" windows must have valid sizes */
 	if (attr->screenWindowWidth <= 0 || attr->screenWindowHeight <= 0 ||
-	    attr->rootWindowWidth   <  0 || attr->rootWindowHeight   <  0)
+	    attr->rootWindowWidth   <= 0 || attr->rootWindowHeight   <= 0)
 	    return DMX_BAD_VALUE;
 
 	/* The "screen" window must fit entirely within the BE display */

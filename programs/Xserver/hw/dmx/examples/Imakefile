@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/programs/Xserver/hw/dmx/examples/Imakefile,v 1.1tsi Exp $
 
 #include <Server.tmpl>
 
@@ -19,10 +19,10 @@ AllTarget(ProgramTargetName(xtest))
 NormalProgramTarget(evi,evi.o,NullParameter,$(XLIB),NullParameter)
 AllTarget(ProgramTargetName(evi))
 
-NormalProgramTarget(xled,xled.o,NullParameter,$(XLIB),NullParameter)
+NormalProgramTarget(xled,xled.o,NullParameter,$(XONLYLIB),NullParameter)
 AllTarget(ProgramTargetName(xled))
 
-NormalProgramTarget(xbell,xbell.o,NullParameter,$(XLIB),NullParameter)
+NormalProgramTarget(xbell,xbell.o,NullParameter,$(XONLYLIB),NullParameter)
 AllTarget(ProgramTargetName(xbell))
 
 #if BuildXResLibrary

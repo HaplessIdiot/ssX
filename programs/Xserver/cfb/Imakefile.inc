@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.5 2004/03/18 07:06:39 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/cfb/Imakefile.inc,v 1.6tsi Exp $
 /*
  * Copyright (c) 1994-2004 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -64,14 +64,12 @@ SUBDIRS = module
 #if PixelSize == 8
 PSZSRCS = cfb8bit.c cfbteblt8.c cfbglrop8.c cfbpush8.c cfbrctstp8.c
 PSZOBJS = cfb8bit.o cfbteblt8.o cfbglrop8.o cfbpush8.o cfbrctstp8.o
-#ifdef MipsArchitecture
-#ifndef ArcArchitecture
-#ifndef Mips64Architecture
+#if defined(MipsArchitecture) && \
+    !defined(ArcArchitecture) && \
+    !defined(Mips64Architecture)
 STIPPLESRC = stipmips.s stipmipste.s
 STIPPLEOBJ = stipmips.o stipmipste.o
 STIPPLEDEF = -DHAS_STIPPLE_CODE
-#endif
-#endif
 #endif
 #ifdef SparcArchitecture
 STIPPLESRC = stipsparc.s stipsparcte.s
@@ -207,7 +205,9 @@ LinkSourceFile(cfb8bit.c,LinkDirectory)
 LinkSourceFile(cfbpush8.c,LinkDirectory)
 LinkSourceFile(cfbrctstp8.c,LinkDirectory)
 LinkSourceFile(cfbteblt8.c,LinkDirectory)
-#ifdef MipsArchitecture
+#if defined(MipsArchitecture) && \
+    !defined(ArcArchitecture) && \
+    !defined(Mips64Architecture)
 LinkSourceFile(stipmips.s,LinkDirectory)
 #endif
 #ifdef SparcArchitecture
@@ -269,7 +269,9 @@ SpecialCObjectRule(cfbcmap,$(ICONFIGFILES),$(EXT_DEFINES) $(GLX_DEFINES))
 #if PixelSize == 8
 ObjectFromSpecialSource(cfbglrop8,cfbglblt8,-DGLYPHROP)
 
-#ifdef MipsArchitecture
+#if defined(MipsArchitecture) && \
+    !defined(ArcArchitecture) && \
+    !defined(Mips64Architecture)
 stipmipste.s: stipmips.s
 	$(RM) $@
 	$(LN) stipmips.s stipmipste.s

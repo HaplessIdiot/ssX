@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/xdmxconfig.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002 Red Hat Inc., Durham, North Carolina.
  *
@@ -65,7 +65,7 @@ extern FILE                *yyin;
 #define DMX_CANVAS_WIDTH  400
 #define DMX_CANVAS_HEIGHT 500
 
-DMXConfigEntryPtr          dmxConfigEntry;
+extern DMXConfigEntryPtr   dmxConfigEntry;
 static DMXConfigVirtualPtr dmxConfigCurrent, dmxConfigNewVirtual;
 static DMXConfigDisplayPtr dmxConfigCurrentDisplay, dmxConfigNewDisplay;
 static int                 dmxConfigGrabbed, dmxConfigGrabbedFine;
@@ -874,8 +874,8 @@ int main(int argc, char **argv)
     Widget         parent, menubox, bottombox, databox, canvasbox;
     Widget         filebutton, helpbutton;
     Widget         filemenu, openbutton, savebutton, quitbutton;
-    Widget         helpmenu, aboutbutton, aboutbox, abouttext, aboutok;
-    Widget         quitbox, quittext, quitok, quitcan;
+    Widget         helpmenu, aboutbutton, aboutbox, aboutok;
+    Widget         quitbox, quitok, quitcan;
     Widget         ncbutton;
     Widget         canbutton;
     Widget         ecbox, ecokbutton, eccanbutton;
@@ -1093,7 +1093,7 @@ int main(int argc, char **argv)
                                         toplevel, NULL);
     aboutbox     = XtVaCreateManagedWidget("aboutbox", boxWidgetClass,
                                            aboutpopup, NULL);
-    abouttext    = XtVaCreateManagedWidget("abouttext", labelWidgetClass,
+    (void)         XtVaCreateManagedWidget("abouttext", labelWidgetClass,
                                            aboutbox,
                                            XtNlabel, DMX_INFO,
                                            NULL);
@@ -1105,7 +1105,7 @@ int main(int argc, char **argv)
                                         toplevel, NULL);
     quitbox      = XtVaCreateManagedWidget("quitbox", boxWidgetClass,
                                            quitpopup, NULL);
-    quittext     = XtVaCreateManagedWidget("quittext", labelWidgetClass,
+    (void)         XtVaCreateManagedWidget("quittext", labelWidgetClass,
                                            quitbox,
                                            XtNlabel,
                                            "Changes to the configuration\n"

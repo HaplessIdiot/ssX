@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.29 2004/06/02 22:43:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.30tsi Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -589,7 +589,6 @@ vfbInstallColormap(ColormapPtr pmap)
     {
 	int entries;
 	XWDFileHeader *pXWDHeader;
-	XWDColor *pXWDCmap;
 	VisualPtr pVisual;
 	Pixel *     ppix;
 	xrgb *      prgb;
@@ -604,7 +603,6 @@ vfbInstallColormap(ColormapPtr pmap)
 
 	entries = pmap->pVisual->ColormapEntries;
 	pXWDHeader = vfbScreens[pmap->pScreen->myNum].pXWDHeader;
-	pXWDCmap = vfbScreens[pmap->pScreen->myNum].pXWDCmap;
 	pVisual = pmap->pVisual;
 
 	swapcopy32(pXWDHeader->visual_class, pVisual->class);

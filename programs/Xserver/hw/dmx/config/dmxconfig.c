@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/dmx/config/dmxconfig.c,v 1.1tsi Exp $ */
 /*
  * Copyright 2002-2003 Red Hat Inc., Durham, North Carolina.
  *
@@ -70,7 +70,7 @@ typedef struct DMXConfigCmdStruct {
     DMXConfigList *xinputs;
 } DMXConfigCmd, *DMXConfigCmdPtr;
 
-DMXConfigEntryPtr    dmxConfigEntry;
+extern DMXConfigEntryPtr    dmxConfigEntry;
 static DMXConfigCmd  dmxConfigCmd;
 
 static int dmxDisplaysFromCommandLine;
