@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.44 1999/11/19 13:54:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.45 1999/11/19 14:46:53 hohndel Exp $ */
 /*
  * PCI Probe
  *
@@ -196,6 +196,7 @@
 #define PCI_CHIP_RAGE128RF	0x5246
 #define PCI_CHIP_RAGE128RK	0x524B
 #define PCI_CHIP_RAGE128RL	0x524C
+#define PCI_CHIP_RAGE128PF      0x5046
 #define PCI_CHIP_MACH64VT	0x5654
 #define PCI_CHIP_MACH64VU	0x5655
 #define PCI_CHIP_MACH64VV	0x5656
@@ -697,6 +698,7 @@ pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_RAGE128RF,	"Rage 128 RF"},
 				{PCI_CHIP_RAGE128RK,	"Rage 128 RK"},
 				{PCI_CHIP_RAGE128RL,	"Rage 128 RL"},
+				{PCI_CHIP_RAGE128PF,    "Rage 128 Pro PF"},
 				{PCI_CHIP_MACH64VT,	"Mach64 VT"},
 				{PCI_CHIP_MACH64VU,	"Mach64 VU"},
 				{PCI_CHIP_MACH64VV,	"Mach64 VV"},
