@@ -28,7 +28,7 @@
  * Authors:	Keith Packard, MIT X Consortium
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.10 2002/07/05 09:19:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winallpriv.c,v 1.11 2002/10/17 08:18:21 alanh Exp $ */
 
 #include "win.h"
 
@@ -60,6 +60,7 @@ winAllocatePrivates (ScreenPtr pScreen)
       g_iScreenPrivateIndex = AllocateScreenPrivateIndex ();
       g_iGCPrivateIndex = AllocateGCPrivateIndex ();
       g_iPixmapPrivateIndex = AllocatePixmapPrivateIndex ();
+      g_iWindowPrivateIndex = AllocateWindowPrivateIndex ();
 
       g_ulServerGeneration = serverGeneration;
     }
@@ -96,6 +97,14 @@ winAllocatePrivates (ScreenPtr pScreen)
       ErrorF ("winAllocatePrivates - AllocatePixmapPrivates () failed\n");
       return FALSE;
     }
+
+  /* Reserve Window memory for our privates */
+  if (!AllocateWindowPrivate (pScreen, g_iWindowPrivateIndex,
+			      sizeof (winPrivWinRec)))
+    {
+      ErrorF ("winAllocatePrivates () - AllocateWindowPrivates () failed\n");
+       return FALSE;
+     }
 
   return TRUE;
 }

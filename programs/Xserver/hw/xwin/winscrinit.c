@@ -31,7 +31,7 @@
  *		Harold L Hunt II
  *		MATSUZAKI Kensuke
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.23 2002/07/05 09:19:26 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.24 2002/10/17 08:18:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -390,6 +390,9 @@ winFinishScreenInitFB (int index,
       WRAP(UnrealizeWindow);
       WRAP(PositionWindow);
       WRAP(ChangeWindowAttributes);
+#ifdef SHAPE
+      WRAP(SetShape);
+#endif
 
       /* Assign pseudo-rootless window procedures to be top level procedures */
       pScreen->CreateWindow = winCreateWindowPRootless;
@@ -398,6 +401,9 @@ winFinishScreenInitFB (int index,
       pScreen->ChangeWindowAttributes = winChangeWindowAttributesPRootless;
       pScreen->RealizeWindow = winMapWindowPRootless;
       pScreen->UnrealizeWindow = winUnmapWindowPRootless;
+#ifdef SHAPE
+      pScreen->SetShape = winSetShapePRootless;
+#endif
 
       /* Undefine the WRAP macro, as it is not needed elsewhere */
 #undef WRAP
