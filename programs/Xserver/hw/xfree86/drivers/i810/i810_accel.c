@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.5 2000/06/17 18:23:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_accel.c,v 1.6 2000/09/01 21:25:23 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -123,7 +123,8 @@ I810AccelInit( ScreenPtr pScreen )
 
    pI810->bufferOffset = 0;
    infoPtr->Flags = LINEAR_FRAMEBUFFER;
-   infoPtr->Flags |= (PIXMAP_CACHE | OFFSCREEN_PIXMAPS);
+   if(pScrn->depth != 24)
+      infoPtr->Flags |= (PIXMAP_CACHE | OFFSCREEN_PIXMAPS);
 
    /* Sync
     */
