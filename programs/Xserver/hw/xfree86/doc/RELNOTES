@@ -73,6 +73,9 @@
         white = 1 for all servers.  This may be swapped with the
         `-flipPixels' command-line option.
 
+     o  The RepeatMiddle keyword that was added in 3.1.2A has been
+        removed because it didn't work properly.
+
   2.2.  PC98 support
 
 
@@ -109,6 +112,11 @@
      o  Check README.trident distributed with this release for full
         details.
 
+     o  Known problems:
+
+        +  There is a problem with interlaced modes with the SVGA
+           driver.
+
   2.5.  ARK driver (SVGA server)
 
 
@@ -120,12 +128,15 @@
   2.6.  S3 server
 
 
+
+
      o  Workaround for the hardware bug in some new Trio32 chips that
         causes font corruption.  To enable this workaround, add the
         following line to the Device section of your XF86Config:
 
 
                   Option "trio32_fc_bug"
+
 
 
 
@@ -207,9 +218,9 @@
   2.8.  ET4000/W32 server
 
 
-     o  Support for the STG1703 RAMDAC/clock has been added.  To use the
-        programmable clock add the following line to the Device section
-        of the XF86Config:
+     o  Support for the STG1703 RAMDAC/clock has been added.  Clocks up
+        to 135MHz should be OK.  To use the programmable clock add the
+        following line to the Device section of the XF86Config:
 
 
                   ClockChip "stg1703"
@@ -219,11 +230,13 @@
 
 
      o  Options have been added to allow PCI burst mode and W32
-        interleaving to be turned off.  The XF86Config Device section
-        entries for these are:
+        interleaving to be turned on or off.  The XF86Config Device
+        section entries for these are:
 
 
+                  Option "pci_burst_on"
                   Option "pci_burst_off"
+                  Option "w32_interleave_on"
                   Option "w32_interleave_off"
 
 
@@ -247,6 +260,8 @@
         +  xsetmode, xsetpointer -- programs for use with the XInput
            extension.
 
+
+
   3.  New Features in 3.1.2A
 
   3.1.  General X server changes
@@ -259,8 +274,6 @@
 
      o  Fix a problem that can cause the X server to crash when running
         xvidtune.
-
-
 
      o  A new pointer keyword RepeatMiddle has been added to support
         dual-protocol 3-button mice which repeat the previous button
@@ -312,6 +325,9 @@
 
      o  A problem with snow at high clocks has been fixed.
 
+
+
+
   3.6.  S3 server
 
 
@@ -325,8 +341,6 @@
      o  Preliminary support has been added for the AT&T 20C409 and AT&T
         20C499 RAMDACs with 868 cards.  8bpp pixel multiplexing
         currently does not work.
-
-
 
      o  The IBM RGB526 RAMDAC used on the newer Diamond Stealth64 Video
         3240/3400 cards isn't yet auto-detected, but it will work if the
@@ -378,6 +392,8 @@
 
      o  Fix for clock probing with AGX-010 chips.
 
+
+
   3.11.  VGA16 server
 
 
@@ -390,8 +406,6 @@
      o  Incorrect handling of IBM RGB Ramdacs has been fixed.
 
   3.13.  SuperProbe
-
-
 
 
      o  Added detection for C&T 65548, Cirrus CL-GD7543/1, AT&T 20C409,
@@ -445,6 +459,7 @@
 
   (*)Note: The PC98 servers are for use only on PC98 machines (if you
   don't know what a PC98 machine is, you don't need these).  Binaries
+
   for these are available only for FreeBSD and NetBSD.
 
   If you don't already have XFree86 3.1.2 installed, first install that.
@@ -460,12 +475,12 @@
 
 
 
-          mkdir /usr/XFree86-3.1.2B
-          cd /usr/XFree86-3.1.2B
-          gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
-          gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
-          gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
-          sh /var/tmp/postinst.sh
+               mkdir /usr/XFree86-3.1.2B
+               cd /usr/XFree86-3.1.2B
+               gzip -d < /var/tmp/X312BS3.tgz | tar vxf -
+               gzip -d < /var/tmp/X312BMono.tgz | tar vxf -
+               gzip -d < /var/tmp/X312Bupd.tgz | tar vxf -
+               sh /var/tmp/postinst.sh
 
 
 
@@ -478,22 +493,7 @@
   /usr/XFree86-3.1.2A directory.
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.14 1995/12/28 03:49:33 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTE.sgml,v 3.15 1995/12/31 12:02:13 dawes Exp $
 
 
 

@@ -1013,9 +1013,13 @@
         +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.2 <ftp://fvkma.tu-
            graz.ac.at/pub/XFree86/3.1.2> (source and binaries)
 
+        +  sunsite.mff.cuni.cz:/X11/XFree86/3.1.2
+           <ftp://sunsite.mff.cuni.cz/X11/XFree86/3.1.2> (source patches
+           and binaries)
+
         +  ftp.fee.vutbr.cz:/pub/XFree86/3.1.2
-           <ftp://ftp.fee.vutbr.cz/pub/XFree86> (source patches and
-           binaries)
+           <ftp://ftp.fee.vutbr.cz/pub/XFree86/3.1.2> (source patches
+           and binaries)
 
         +  ftp.gwdg.de:/pub/xfree86/XFree86/3.1.2
            <ftp://ftp.gwdg.de/pub/xfree86/XFree86/3.1.2> (source and
@@ -1050,9 +1054,7 @@
 
 
 
-
      o  Asia/Australia:
-
 
         +  x.physics.usyd.edu.au:/pub/XFree86/3.1.2
            <ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.2> (source and
@@ -1081,7 +1083,7 @@
 
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.40 1995/12/23 09:39:08 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.41 1996/01/06 05:23:21 dawes Exp $
 
 
 
@@ -1119,5 +1121,4 @@
 
 
 
-
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/README,v 3.40 1995/12/23 11:19:29 dawes Exp $
+$XFree86$

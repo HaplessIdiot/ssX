@@ -1,7 +1,7 @@
  GNU indent options:
 
 -bad -bap -c40 -cd40 -ncdb -ci4 -cli0 -cp0 -ncs -d0
--di4 -i4 -ip4 -l78 -lp -npcs -psl -sob -ss -br -ce
+-di4 -i4 -ip4 -l78 -lp -npcs -psl -sob -ss -br -ce -sc
 
 -bad  forces a blank line after every block of declarations.
 -bap  forces a blank line after every procedure body.
@@ -24,6 +24,7 @@
 -ss   on one-line `for' and `while' statments, force a blank before the semicolo
 n
 -ce   cuddle else and preceeding `}'
+-sc   put the `*' character at the left of comments
 -br   formats braces like this:
 
                  if (x > 0) {
