@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.7 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.8 2001/10/22 15:21:11 alanh Exp $ */
 
 #include "win.h"
 
@@ -89,7 +89,7 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
   /* Create a DIB for the pixmap */
   pPixmapPriv->hBitmap = winCreateDIBNativeGDI (iWidth, iHeight, iDepth,
 						&pPixmapPriv->pbBits,
-						&pPixmapPriv->pbmih);
+						(BITMAPINFO **) &pPixmapPriv->pbmih);
 
 #if CYGDEBUG
   ErrorF ("winCreatePixmap () - Created a pixmap %08x, %dx%dx%d, for " \

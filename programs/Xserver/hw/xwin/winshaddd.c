@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.15 2001/09/07 08:41:54 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshaddd.c,v 1.16 2001/10/22 15:21:12 alanh Exp $ */
 
 #include "win.h"
 
@@ -890,7 +890,6 @@ winInstallColormapShadowDD (ColormapPtr pColormap)
 {
   ScreenPtr		pScreen = pColormap->pScreen;
   winScreenPriv(pScreen);
-  winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
   winCmapPriv(pColormap);
   HRESULT		ddrval = DD_OK;
 

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.19 2001/09/20 12:16:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.20 2001/10/22 15:21:11 alanh Exp $ */
 
 #include "win.h"
 
@@ -888,9 +888,11 @@ winFinishScreenInitNativeGDI (int index,
   DepthPtr		pDepths = NULL;
   VisualID		rootVisual = 0;
   int			nVisuals = 0, nDepths = 0, nRootDepth = 0;
+#if 0
   DEBUG_FN_NAME("winFinishScreenInitNativeGDI");
   DEBUGVARS;
   DEBUGPROC_MSG;
+#endif
 
   /* Get device contexts for the screen and shadow bitmap */
   pScreenPriv->hdcScreen = GetDC (pScreenPriv->hwndScreen);
