@@ -9,7 +9,7 @@
 <date>15 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.49 2000/12/15 19:32:39 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.50 2000/12/15 19:38:39 keithp Exp $
 </ident>
 
 <abstract>
@@ -132,7 +132,8 @@ don't have enough space to cover them all here.
 
   <item>Big endian problems in Xinerama have been fixed.
 
-  <item>The new "render" extension has been added.  The design has been
+  <item>The new "render" extension has been added (see <ref id="render"
+	name="below">).  The design has been
 	extended in the following ways:<p>
 
 	<itemize>
@@ -295,8 +296,7 @@ don't have enough space to cover them all here.
 
 </itemize>
 
-<sect1>Fonts and Internationalisation
-<label id="i18n">
+<sect1>Fonts and Internationalisation <label id="i18n">
 <p>
 <itemize>
   <item>Many of the "misc" bdf fonts have been updated and extended, and
@@ -363,33 +363,48 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>ark</tt><colsep>Ark Logic<colsep>&nbsp;</tabrow>
    <tabrow><tt>ati</tt><colsep>ATI<colsep><htmlurl
 		name="README.ati" url="ati.html">, <htmlurl
-		name="README.r128" url="r128.html">, r128(4)</tabrow>
+		name="README.r128" url="r128.html">, <htmlurl
+		name="r128(4)" url="r128.4.html"></tabrow>
    <tabrow><tt>chips</tt><colsep>Chips &amp; Technologies<colsep><htmlurl
-		name="README.chips" url="chips.html">, chips(4)</tabrow>
+		name="README.chips" url="chips.html">, <htmlurl
+		name="chips(4)" url="chips.4.html"></tabrow>
    <tabrow><tt>cirrus</tt><colsep>Cirrus Logic<colsep>&nbsp;</tabrow>
    <tabrow><tt>cyrix</tt> (*)<colsep>Cyrix MediaGX<colsep><htmlurl
 		name="README.cyrix" url="cyrix.html"></tabrow>
-   <tabrow><tt>fbdev</tt><colsep>Linux fbdev<colsep>fbdev(4)</tabrow>
-   <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)<colsep>glide(4)</tabrow>
-   <tabrow><tt>glint</tt><colsep>3Dlabs, TI<colsep>glint(4)</tabrow>
+   <tabrow><tt>fbdev</tt><colsep>Linux fbdev<colsep><htmlurl
+		name="fbdev(4)" url="fbdev.4.html"></tabrow>
+   <tabrow><tt>glide</tt><colsep>Glide2x (3Dfx)<colsep><htmlurl
+		name="glide(4)" url="glide.4.html"></tabrow>
+   <tabrow><tt>glint</tt><colsep>3Dlabs, TI<colsep><htmlurl
+		name="glint(4)" url="glint.4.html"></tabrow>
    <tabrow><tt>i128</tt><colsep>Number Nine<colsep><htmlurl
-		name="README.I128" url="I128.html">, i128(4)</tabrow>
+		name="README.I128" url="I128.html">, <htmlurl
+		name="i128(4)" url="i128.4.html"></tabrow>
    <tabrow><tt>i740</tt><colsep>Intel i740<colsep><htmlurl
 		name="README.i740" url="i740.html"></tabrow>
    <tabrow><tt>i810</tt><colsep>Intel i810<colsep><htmlurl
-		name="README.i810" url="i810.html">, i810(4)</tabrow>
+		name="README.i810" url="i810.html">, <htmlurl
+		name="i810(4)" url="i810.4.html"></tabrow>
    <tabrow><tt>imstt</tt><colsep>Integrated Micro Solns<colsep>&nbsp;</tabrow>
-   <tabrow><tt>mga</tt><colsep>Matrox<colsep>mga(4)</tabrow>
-   <tabrow><tt>neomagic</tt><colsep>NeoMagic<colsep>neomagic(4)</tabrow>
+   <tabrow><tt>mga</tt><colsep>Matrox<colsep><htmlurl
+		name="mga(4)" url="mga.4.html"></tabrow>
+   <tabrow><tt>neomagic</tt><colsep>NeoMagic<colsep><htmlurl
+		name="neomagic(4)" url="neomagic.4.html"></tabrow>
    <tabrow><tt>newport</tt> (-)<colsep>SGI Newport<colsep><htmlurl
-		name="README.newport" url="newport.html">, newport(4)</tabrow>
-   <tabrow><tt>nv</tt><colsep>NVIDIA<colsep>nv(4)</tabrow>
+		name="README.newport" url="newport.html">, <htmlurl
+		name="newport(4)" url="newport.4.html"></tabrow>
+   <tabrow><tt>nv</tt><colsep>NVIDIA<colsep><htmlurl
+		name="nv(4)" url="nv.4.html"></tabrow>
    <tabrow><tt>rendition</tt><colsep>Rendition<colsep><htmlurl
-		name="README.rendition" url="rendition.html">, rendition(4)</tabrow>
+		name="README.rendition" url="rendition.html">, <htmlurl
+		name="rendition(4)" url="rendition.4.html"></tabrow>
    <tabrow><tt>s3virge</tt><colsep>S3 ViRGE<colsep><htmlurl
-		name="README.s3virge" url="s3virge.html">, s3virge(4)</tabrow>
-   <tabrow><tt>savage</tt><colsep>S3 Savage<colsep>savage(4)</tabrow>
-   <tabrow><tt>siliconmotion</tt><colsep>Silicon Motion<colsep>siliconmotion(4)</tabrow>
+		name="README.s3virge" url="s3virge.html">, <htmlurl
+		name="s3virge(4)" url="s3virge.4.html"></tabrow>
+   <tabrow><tt>savage</tt><colsep>S3 Savage<colsep><htmlurl
+		name="savage(4)" url="savage.4.html"></tabrow>
+   <tabrow><tt>siliconmotion</tt><colsep>Silicon Motion<colsep><htmlurl
+		name="siliconmotion(4)" url="siliconmotion.4.html"></tabrow>
    <tabrow><tt>sis</tt><colsep>SiS<colsep><htmlurl
 		name="README.SiS" url="SiS.html"></tabrow>
    <tabrow><tt>sunbw2</tt> (+)<colsep>Sun bw2<colsep>&nbsp;</tabrow>
@@ -402,10 +417,13 @@ XFree86 &relvers; includes the following drivers:
    <tabrow><tt>tdfx</tt><colsep>3Dfx<colsep>&nbsp;</tabrow>
    <tabrow><tt>tga</tt><colsep>DEC TGA<colsep><htmlurl
 		name="README.TGA" url="TGA.html"></tabrow>
-   <tabrow><tt>trident</tt><colsep>Trident<colsep>trident(4)</tabrow>
+   <tabrow><tt>trident</tt><colsep>Trident<colsep><htmlurl
+		name="trident(4)" url="trident.4.html"></tabrow>
    <tabrow><tt>tseng</tt><colsep>Tseng Labs<colsep>&nbsp;</tabrow>
-   <tabrow><tt>vesa</tt><colsep>VESA<colsep>vesa(4)</tabrow>
-   <tabrow><tt>vga</tt><colsep>Generic VGA<colsep>vga(4)</tabrow>
+   <tabrow><tt>vesa</tt><colsep>VESA<colsep><htmlurl
+		name="vesa(4)" url="vesa.4.html"></tabrow>
+   <tabrow><tt>vga</tt><colsep>Generic VGA<colsep><htmlurl
+		name="vga(4)" url="vga.4.html"></tabrow>
 </tabular>
 </table>
 
@@ -423,7 +441,7 @@ Darwin/Mac OS X uses IOKit drivers and does not use the module loader drivers
 listed above. Further information can be found in
 <htmlurl name="README.Darwin" url="Darwin.html">.
 
-<sect>Notes for people migrating from XFree86 3.3.x.
+<sect>Summary of XFree86 4.
 <p>
 Unlike XFree86 3.3.x where there are multiple X server binaries, each
 of which drive different hardware, XFree86 &relvers; has a single X
@@ -934,7 +952,7 @@ such as YUV and can be passed to the server through shared memory
 segments.  This allows clients to display YUV data with high quality
 hardware scaling and filtering.
 
-<sect1>X Rendering Extension (Render)
+<sect1>X Rendering Extension (Render) <label id="render">
 <p>
 
 The X Rendering extension provides a new 2D rendering model that more

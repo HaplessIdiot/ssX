@@ -9,7 +9,7 @@
 <date>14 December 2000</date>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.9 2000/12/14 22:33:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/fonts.sgml,v 1.10 2000/12/14 23:10:53 dawes Exp $
 </ident>
 
 <toc>
@@ -32,8 +32,7 @@ clear to you, please consult Appendix <ref id="sec:background"
 name="Background"> at the end of this document for background
 information.
 
-<sect>Installing fonts
-<label id="sec:installing">
+<sect>Installing fonts <label id="sec:installing">
 
 <p>Installing fonts in XFree86 is a two step process.  First, you need
 to create a <it/font directory/ that contains all the relevant font
@@ -138,8 +137,7 @@ For more information, please see the <tt/mkfontdir/(1) manual page and
 Section <ref id="sec:internationalisation" name="Fonts and
 internationalisation"> later in this document.
 
-<sect1>Installing CID-keyed fonts
-<label id="sec:cid-fonts">
+<sect1>Installing CID-keyed fonts <label id="sec:cid-fonts">
 
 <p>The CID-keyed font format was designed by Adobe Systems for fonts
 with large character sets.  A CID-keyed font, or CIDFont for short,
@@ -207,8 +205,7 @@ the CID fonts but querying them will take a long time.  You should run
 fonts, or when the CID-keyed fonts are copied to a machine with a
 different architecture.
 
-<sect1>Setting the server's font path
-<label id="sec:set-font-path">
+<sect1>Setting the server's font path <label id="sec:set-font-path">
 
 <p>The list of directories where the server looks for fonts is known
 as the <it/font path/.  Informing the server of the existence of a new
@@ -506,8 +503,7 @@ please contact <email>design@bigelowandholmes.com</email> or
 <email>sales@yandy.com</email>, or consult 
 <url name="Y&amp;Y's web site" url="http://www.yandy.com">.
 
-<sect>Fonts and internationalisation
-<label id="sec:internationalisation">
+<sect>Fonts and internationalisation <label id="sec:internationalisation">
 
 <p>The scalable font backends (Type&nbsp;1, Speedo and TrueType) can
 now automatically re-encode fonts to the encoding specified in the
@@ -520,7 +516,7 @@ cour.pfa -adobe-courier-medium-r-normal--0-0-0-0-m-0-iso8859-2
 which will lead to the font being recoded to ISO&nbsp;8859-1 and
 ISO&nbsp;8859-2 respectively.
 
-<sect1>The <it/fontenc/ layer<label id="sec:fontenc">
+<sect1>The <it/fontenc/ layer <label id="sec:fontenc">
 
 <p>Three of the scalable backends (Type&nbsp;1, Speedo, and the
 <it/FreeType/ TrueType backend) use a common <it/fontenc/ layer for
@@ -618,8 +614,7 @@ ISO&nbsp;8859-1.
 
 The Speedo backend limits all encodings to 8-bit codes.
 
-<sect2>The <it/FreeType/ TrueType backend
-<label id="sec:fontenc-freetype"
+<sect2>The <it/FreeType/ TrueType backend <label id="sec:fontenc-freetype"
 
 <p>The TrueType backend scans the mappings in order.  Mappings with a
 target of PostScript are ignored; mappings with a TrueType or Unicode
@@ -630,8 +625,7 @@ If you are writing an encoding file to be used with the TrueType
 backend, you should ensure that mappings are mentioned in decreasing
 order of preference.
 
-<sect1>Format of encoding directory files
-<label id="sec:format-encoding-directory-files">
+<sect1>Format of encoding directory files <label id="sec:format-encoding-directory-files">
 
 <p>In order to use a font in an encoding that the font backend does
 not know about, you need to have an `<tt/encodings.dir/' file in the
@@ -661,7 +655,7 @@ The `<tt/encoding.dir/' files are best maintained by the
 `<tt/mkfontdir/' utility.  Please see the <tt/mkfontdir/(1) manual
 page for more information.
 
-<sect1>Format of encoding files<label id="sec:format-encoding-files">
+<sect1>Format of encoding files <label id="sec:format-encoding-files">
 
 <p>The encoding files are ``free form,'' <it/i.e./ any string of
 whitespace is equivalent to a single space.  Keywords are parsed in a
@@ -806,7 +800,7 @@ In order to make future extensions to the format possible, lines
 starting with an unknown keyword are silently ignored, as are mapping
 sections with an unknown target.
 
-<sect1>Using symbol fonts<label id="sec:symbol-fonts">
+<sect1>Using symbol fonts <label id="sec:symbol-fonts">
 
 <p>Type&nbsp;1 symbol fonts should be installed using the
 <tt/adobe-fontspecific/ encoding.
@@ -823,8 +817,7 @@ define a special encoding for a given font. This has already been done
 for the <tt/ZapfDingbats/ font; see the file
 <tt>encodings/adobe-dingbats.enc</tt>.
 
-<sect1>Hints about using badly encoded fonts 
-<label id="sec:incorrect-encoding">
+<sect1>Hints about using badly encoded fonts <label id="sec:incorrect-encoding">
 
 <p>A number of text fonts are incorrectly encoded. Incorrect encoding
 is sometimes done by design, in order to make a font for an exotic
@@ -939,7 +932,7 @@ id="sec:fontenc" name="The fontenc layer"> and especially Section <ref
 id="sec:fontenc-freetype" name="FreeType-specific notes about
 fontenc"> earlier in this document.
 
-<sect1>The <it/X-TrueType/ TrueType backend<label id="sec:X-TT">
+<sect1>The <it/X-TrueType/ TrueType backend <label id="sec:X-TT">
 
 <p>The `X-TrueType' backend is another backend based on the FreeType
 library.  X-TrueType doesn't use the `fontenc' layer for managing font
@@ -964,8 +957,7 @@ More information on the TTCap syntax, and on X-TrueType in general,
 may be found on <url url="http://x-tt.dsl.gr.jp/" name="the X-TrueType
 home page">.
 
-<sect>Appendix: background and terminology
-<label id="sec:background">
+<sect>Appendix: background and terminology <label id="sec:background">
 <sect1>Characters and glyphs
 
 <p>A computer text-processing system inputs keystrokes and outputs
@@ -995,8 +987,7 @@ characters. Many early mainframes used 6 bit character sets, while
 16 bit (or more) character sets are necessary for ideographic writing
 systems.
 
-<sect1>Font files, fonts, and XLFD
-<label id="sec:xlfd">
+<sect1>Font files, fonts, and XLFD <label id="sec:xlfd">
 
 <p>Traditionally, typographers speak about <it/typefaces/ and
 <it/founts/.  A typeface is a particular style or design, such as
