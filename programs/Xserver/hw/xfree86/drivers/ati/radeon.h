@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.34 2002/12/17 03:16:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/radeon.h,v 1.35 2003/01/17 19:54:03 martin Exp $ */
 /*
  * Copyright 2000 ATI Technologies Inc., Markham, Ontario, and
  *                VA Linux Systems Inc., Fremont, California.
@@ -590,12 +590,15 @@ do {									\
 
 #define RADEONCP_STOP(pScrn, info)					\
 do {									\
-    int _ret = RADEONCPStop(pScrn, info);				\
-    if (_ret) {								\
-	xf86DrvMsg(pScrn->scrnIndex, X_ERROR,				\
+    int _ret;								\
+     if (info->CPStarted) {						\
+        _ret = RADEONCPStop(pScrn, info);				\
+        if (_ret) {							\
+	    xf86DrvMsg(pScrn->scrnIndex, X_ERROR,			\
 		   "%s: CP stop %d\n", __FUNCTION__, _ret);		\
-    }									\
-    info->CPStarted = FALSE;                                            \
+        }								\
+        info->CPStarted = FALSE;                                        \
+   }									\
     RADEONEngineRestore(pScrn);						\
     info->CPRuns = FALSE;						\
 } while (0)
