@@ -916,7 +916,8 @@ SiS_GetModeID_LCD(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay,
 	case 1280:
 	     if(VDisplay == 1024) ModeIndex = ModeIndex_1280x1024[Depth];
 	     else if(VDisplay == 768) {
-	        if((LCDheight != 1050) && (LCDheight != 960)) {
+		if((LCDheight == 768) ||
+		   ((LCDheight == 1024) && (VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)))) {
 		   if(VGAEngine == SIS_300_VGA) {
 		      ModeIndex = ModeIndex_300_1280x768[Depth];
 		   } else {
@@ -924,7 +925,8 @@ SiS_GetModeID_LCD(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay,
 		   }
 		}
 	     } else if(VDisplay == 960) {
-		if((LCDheight != 1050) && (LCDheight != 768)) {
+	        if((LCDheight == 960) ||
+		   ((LCDheight == 1024) && (VBFlags & (VB_301|VB_301B|VB_301C|VB_302B)))) {
 		   ModeIndex = ModeIndex_1280x960[Depth];
 		}
 	     }
@@ -932,7 +934,9 @@ SiS_GetModeID_LCD(int VGAEngine, ULONG VBFlags, int HDisplay, int VDisplay,
 	case 1400:
 	     if(VGAEngine == SIS_315_VGA) {
 	        if(VBFlags & (VB_301B | VB_301C | VB_302B | VB_302LV | VB_302ELV)) {
-	           if(VDisplay == 1050) ModeIndex = ModeIndex_1400x1050[Depth];
+		   if(LCDheight != 1200) {
+	              if(VDisplay == 1050) ModeIndex = ModeIndex_1400x1050[Depth];
+		   }
 		}
 	     }
 	     break;
