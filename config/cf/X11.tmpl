@@ -1,6 +1,6 @@
 XCOMM ----------------------------------------------------------------------
 XCOMM X Window System Build Parameters and Rules
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.272 2005/01/31 22:54:46 tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.273 2005/02/11 03:02:53 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -133,7 +133,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildDmx		YES
 #endif
 #ifndef XdmxServer
-#define XdmxServer		BuildDmx
+#define XdmxServer		BuildDmx && BuildServer
 #endif
 #ifndef BuildLibrariesForDmx
 #define BuildLibrariesForDmx	XdmxServer
@@ -348,6 +348,7 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #ifndef BuildXInputLib
 #define BuildXInputLib		(BuildXInputExt && \
+				 BuildLibraries && \
 				 (!BuildServersOnly || BuildLibrariesForDmx))
 #endif
 #ifndef BuildEVI
@@ -380,7 +381,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildFontCache		YES
 #endif
 #ifndef BuildFontCacheLib
-#define BuildFontCacheLib	(BuildFontCache && !BuildServersOnly)
+#define BuildFontCacheLib	(BuildFontCache && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildFontEncLib
 #define BuildFontEncLib		BuildLibraries
@@ -447,19 +449,23 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXKB		YES
 #endif
 #ifndef BuildXKBlib
-#define BuildXKBlib		(BuildXKB && !BuildServersOnly)
+#define BuildXKBlib		(BuildXKB && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXKBuilib
-#define BuildXKBuilib		(BuildXKB && !BuildServersOnly)
+#define BuildXKBuilib		(BuildXKB && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXKBfilelib
-#define BuildXKBfilelib		(BuildXKB && !BuildServersOnly)
+#define BuildXKBfilelib		(BuildXKB && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXTrap
 #define BuildXTrap		YES
 #endif
 #ifndef BuildXTrapLibrary
-#define BuildXTrapLibrary	(BuildXTrap && !BuildServersOnly)
+#define BuildXTrapLibrary	(BuildXTrap && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 
 	/*
@@ -483,7 +489,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXinerama		NO
 #endif
 #ifndef BuildXineramaLibrary
-#define BuildXineramaLibrary	(BuildXinerama && !BuildServersOnly)
+#define BuildXineramaLibrary	(BuildXinerama && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildDmxDevelTools
 #define BuildDmxDevelTools	YES
@@ -532,25 +539,29 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #endif
 #ifndef BuildXprintLib
-#define BuildXprintLib		(BuildXprint && !BuildServersOnly)
+#define BuildXprintLib		(BuildXprint && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildScreenSaverExt
 #define BuildScreenSaverExt	NO
 #endif
 #ifndef BuildScreenSaverLibrary
-#define BuildScreenSaverLibrary	(BuildScreenSaverExt && !BuildServersOnly)
+#define BuildScreenSaverLibrary	(BuildScreenSaverExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXF86VidModeExt
 #define BuildXF86VidModeExt	NO
 #endif
 #ifndef BuildXF86VidModeLibrary
-#define BuildXF86VidModeLibrary (BuildXF86VidModeExt && !BuildServersOnly)
+#define BuildXF86VidModeLibrary (BuildXF86VidModeExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXF86MiscExt
 #define BuildXF86MiscExt	NO
 #endif
 #ifndef BuildXF86MiscLibrary
-#define BuildXF86MiscLibrary	(BuildXF86MiscExt && !BuildServersOnly)
+#define BuildXF86MiscLibrary	(BuildXF86MiscExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXF86BigfontExt
 #define BuildXF86BigfontExt	NO
@@ -559,26 +570,30 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86DGA		NO
 #endif
 #ifndef BuildXF86DGALibrary
-#define BuildXF86DGALibrary	(BuildXF86DGA && !BuildServersOnly)
+#define BuildXF86DGALibrary	(BuildXF86DGA && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXResExt
 #define BuildXResExt            NO
 #endif
 #ifndef BuildXResLibrary
 #define BuildXResLibrary        (BuildXResExt && \
-				 (!BuildServersOnly || BuildDmxDevelTools))
+				 (BuildDmxDevelTools ||
+				  (!BuildServersOnly && BuildLibraries)))
 #endif
 #ifndef BuildXvExt
 #define BuildXvExt		NO
 #endif
 #ifndef BuildXvLibrary
-#define BuildXvLibrary		(BuildXvExt && !BuildServersOnly)
+#define BuildXvLibrary		(BuildXvExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildXvMCExt
 #define BuildXvMCExt		NO
 #endif
 #ifndef BuildXvMCLibrary
-#define BuildXvMCLibrary	(BuildXvMCExt && !BuildServersOnly)
+#define BuildXvMCLibrary	(BuildXvMCExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildGlxExt
 #define BuildGlxExt		NO
@@ -591,7 +606,8 @@ VENDORMANVERSION = XVendorManVersionString
 #endif
 #endif
 #ifndef BuildGLXLibrary
-#define BuildGLXLibrary		(BuildGlxExt && !BuildServersOnly)
+#define BuildGLXLibrary		(BuildGlxExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildGlxInDmx
 #define BuildGlxInDmx		(XdmxServer && BuildGlxExt)
@@ -610,10 +626,11 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildXF86RushExt	NO
 #endif
 #ifndef BuildXF86RushLibrary
-#define BuildXF86RushLibrary	(BuildXF86RushExt && !BuildServersOnly)
+#define BuildXF86RushLibrary	(BuildXF86RushExt && !BuildServersOnly && \
+				 BuildLibraries)
 #endif
 #ifndef BuildDPSLibraries
-#define BuildDPSLibraries	!BuildServersOnly
+#define BuildDPSLibraries	(!BuildServersOnly && BuildLibraries)
 #endif
 #ifndef BuildDPSLibrary
 #define BuildDPSLibrary		BuildDPSLibraries
@@ -631,7 +648,8 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRender		YES
 #endif
 #ifndef BuildRenderLibrary
-#define BuildRenderLibrary	(XdmxServer || !BuildServersOnly)
+#define BuildRenderLibrary	(XdmxServer || \
+				 (!BuildServersOnly && BuildLibraries))
 #endif
 #ifndef BuildXftLibrary
 #define BuildXftLibrary		BuildRenderLibrary
@@ -672,7 +690,7 @@ VENDORMANVERSION = XVendorManVersionString
 #define BuildRandR		YES
 #endif
 #ifndef BuildRandRLibrary
-#define BuildRandRLibrary	!BuildServersOnly
+#define BuildRandRLibrary	(!BuildServersOnly && BuildLibraries)
 #endif
 
 #ifndef BuildXcursorLibrary

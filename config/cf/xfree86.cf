@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.489 2005/02/02 21:53:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.490 2005/02/28 04:14:32 dawes Exp $
 /*
  * Copyright (c) 1994-2005 by The XFree86 Project, Inc.
  * All rights reserved.
@@ -1632,7 +1632,13 @@ IPLAN2P8_DEFS = -DUSE_IPLAN2P8
 #endif
 
 #ifndef BuildFreeType
-# define BuildFreeType		YES
+# if !defined(BuildLibraries) || BuildLibraries || \
+     !defined(BuildServer) || BuildServer || \
+     !defined(BuildClients) || BuildClients
+#  define BuildFreeType		YES
+# else
+#  define BuildFreeType		NO
+# endif
 #endif
 
 /*
