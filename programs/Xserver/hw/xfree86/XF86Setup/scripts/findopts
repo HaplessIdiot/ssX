@@ -1,4 +1,7 @@
 #! /bin/sh
+#
+# $XFree86: $
+#
 # This script should be run by XF86Setup \
 exec XF86Setup -notk `basename $0` -- ${1+"$@"}
 
