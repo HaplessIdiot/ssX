@@ -12,7 +12,7 @@ the suitability of this software for any purpose.  It is provided "as
 is" without express or implied warranty.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.12 1997/03/22 09:36:26 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xnest/Init.c,v 3.13 1997/11/22 06:50:31 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -131,23 +131,6 @@ void OsVendorFatalError()
 {
     return;
 }
-
-#ifdef DPMSExtension
-#if NeedFunctionPrototypes
-void DPMSSet(CARD16 level)
-#else
-void DPMSSet(level)
-     CARD16 level;
-#endif
-{
-    return;
-}
-
-Bool DPMSSupported()
-{
-    return FALSE;
-}
-#endif
 
 /* this is just to get the server to link on AIX */
 #ifdef AIXV3

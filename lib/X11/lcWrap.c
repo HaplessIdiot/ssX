@@ -265,7 +265,7 @@ _XlcAddLoader(proc, position)
 
 XLCd
 _XOpenLC(name)
-    char *name;
+    _Xconst char *name;
 {
     XLCd lcd;
     XlcLoaderList loader;
