@@ -196,6 +196,21 @@ xc/programs/Xserver/hw/xfree86).
 
 <H1><A NAME="xterm_149">Patch #149 - 2000/12/6 - XFree86 4.0.1h</A></H1>
 <ul>
+	<li>restructured includes for <code>termios.h</code>,
+	  <code>termio.h</code> and related definitions for main.c, os2main.c,
+	  screen.c and resize.c so they will share equivalent definitions in a
+	  new header <code>xterm_io.h</code>.  This is intended to solve some
+	  problems mainly for HPUX which appear to arise from inconsistent
+	  definitions for SIGWINCH- and HAS_LTCHARS-related symbols (reports
+	  by Bruno Betro, Jeremie Petit and Clint Olsen).
+
+	<li>improve usability of double-width fonts by allowing normal fonts
+	  to be given as double-width (from a patch by Fabrice Bellard
+	  &lt;bellard@email.enst.fr&gt;).
+
+	<li>correct a few compiler warnings in TRACE() macros for
+	  signed/unsigned variable differences (reported by Clint Olsen).
+
 	<li>expanded description of environment variables in manual-page.
 
 	<li>modify OPT_TCAP_QUERY feature to always return the termcap or

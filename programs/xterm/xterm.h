@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.64 2000/11/01 01:12:43 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.65 2000/12/07 10:12:34 dickey Exp $ */
 
 /************************************************************
 
@@ -86,6 +86,10 @@ authorization.
 #ifdef USE_POSIX_TERMIOS
 #define HAVE_TERMIOS_H 1
 #define HAVE_TCGETATTR 1
+#endif
+
+#if defined(__EMX__) || defined(__CYGWIN__) || defined(SCO) || defined(sco)
+#define USE_TERMCAP 1
 #endif
 
 #if defined(UTMP)

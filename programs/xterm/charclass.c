@@ -20,14 +20,12 @@
  * but merging in new intervals is significantly more hassle and
  * not worth the effort here.
  */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xterm/charclass.c,v 1.1 2000/08/26 04:33:53 dawes Exp $ */
 
 #include <xterm.h>
 #include <charclass.h>
 
 #if OPT_WIDE_CHARS
-
-#include <stdlib.h>
 
 struct classentry {
   int class;

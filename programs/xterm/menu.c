@@ -1,5 +1,5 @@
 /* $XConsortium: menu.c /main/66 1996/12/01 23:46:59 swick $ */
-/* $XFree86: xc/programs/xterm/menu.c,v 3.37 2000/09/22 10:42:07 alanh Exp $ */
+/* $XFree86: xc/programs/xterm/menu.c,v 3.38 2000/11/01 01:12:40 dawes Exp $ */
 /*
 
 Copyright 1999-2000 by Thomas E. Dickey
@@ -49,7 +49,7 @@ in this Software without prior written authorization from the X Consortium.
 
 */
 
-#include <ptyx.h>
+#include <xterm.h>
 #include <data.h>
 #include <menu.h>
 #include <fontutils.h>
@@ -70,12 +70,6 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <stdio.h>
 #include <signal.h>
-
-#ifdef MINIX
-#include <X11/Xos.h>
-#endif
-
-#include <xterm.h>
 
 static void do_8bit_control    PROTO_XT_CALLBACK_ARGS;
 static void do_allow132        PROTO_XT_CALLBACK_ARGS;
