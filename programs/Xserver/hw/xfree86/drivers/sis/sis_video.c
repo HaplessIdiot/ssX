@@ -160,137 +160,6 @@ extern BOOLEAN  SiSBridgeIsInSlaveMode(ScrnInfoPtr pScrn);
  * refresh rate.
  */
 
-/****************************************************************************
- * Raw register access : These routines directly interact with the sis's
- *                       control aperature.  Must not be called until after
- *                       the board's pci memory has been mapped.
- ****************************************************************************/
-
-#if 0
-static CARD32 _sisread(SISPtr pSiS, CARD32 reg)
-{
-    return *(pSiS->IOBase + reg);
-}
-
-static void _siswrite(SISPtr pSiS, CARD32 reg, CARD32 data)
-{
-    *(pSiS->IOBase + reg) = data;
-}
-#endif
-
-static CARD8 getsrreg(SISPtr pSiS, CARD8 reg)
-{
-    CARD8 ret;
-    inSISIDXREG(SISSR, reg, ret);
-    return(ret);
-}
-
-static CARD8 getvideoreg(SISPtr pSiS, CARD8 reg)
-{
-    CARD8 ret;
-    inSISIDXREG(SISVID, reg, ret);
-    return(ret);
-}
-
-static __inline void setvideoreg(SISPtr pSiS, CARD8 reg, CARD8 data)
-{
-    outSISIDXREG(SISVID, reg, data);
-}
-
-static __inline void setvideoregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
-{
-    CARD8   old;
-    inSISIDXREG(SISVID, reg, old);
-    data = (data & mask) | (old & (~mask));
-    outSISIDXREG(SISVID, reg, data);
-}
-
-static void setsrregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
-{
-    CARD8   old;
-
-    inSISIDXREG(SISSR, reg, old);
-    data = (data & mask) | (old & (~mask));
-    outSISIDXREG(SISSR, reg, data);
-}
-
-/* VBlank */
-static CARD8 vblank_active_CRT1(SISPtr pSiS)
-{
-    return (inSISREG(SISINPSTAT) & 0x08);
-}
-
-static CARD8 vblank_active_CRT2(SISPtr pSiS)
-{
-    CARD8 ret;
-    if(pSiS->VGAEngine == SIS_315_VGA) {
-       inSISIDXREG(SISPART1, Index_310_CRT2_FC_VR, ret);
-    } else {
-       inSISIDXREG(SISPART1, Index_CRT2_FC_VR, ret);
-    }
-    return((ret & 0x02) ^ 0x02);
-}
-
-/* Scanline - unused */
-#if 0
-static CARD32 get_scanline_CRT1(SISPtr pSiS)
-{
-    CARD32 line;
-
-    _siswrite (pSiS, REG_PRIM_CRT_COUNTER, 0x00000001);
-    line = _sisread (pSiS, REG_PRIM_CRT_COUNTER);
-
-    return ((line >> 16) & 0x07FF);
-}
-
-static CARD32 get_scanline_CRT2(SISPtr pSiS)
-{
-    CARD32 line;
-
-    line = (CARD32)(getsisreg(pSiS, SISPART1, Index_CRT2_FC_VCount1) & 0x70) * 16
-                + getsisreg(pSiS, SISPART1, Index_CRT2_FC_VCount);
-
-    return line;
-}
-#endif
-
-void SISInitVideo(ScreenPtr pScreen)
-{
-    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
-    XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
-    XF86VideoAdaptorPtr newAdaptor = NULL;
-    int num_adaptors;
-
-    newAdaptor = SISSetupImageVideo(pScreen);
-    if(newAdaptor)
-	SISInitOffscreenImages(pScreen);
-
-    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
-
-    if(newAdaptor) {
-    	if(!num_adaptors) {
-        	num_adaptors = 1;
-        	adaptors = &newAdaptor;
-    	} else {
-        	/* need to free this someplace */
-        	newAdaptors = xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
-        	if(newAdaptors) {
-        		memcpy(newAdaptors, adaptors, num_adaptors *
-                    		sizeof(XF86VideoAdaptorPtr));
-        		newAdaptors[num_adaptors] = newAdaptor;
-        		adaptors = newAdaptors;
-        		num_adaptors++;
-        	}
-    	}
-    }
-
-    if(num_adaptors)
-        xf86XVScreenInit(pScreen, adaptors, num_adaptors);
-
-    if(newAdaptors)
-    	xfree(newAdaptors);
-}
-
 /* client libraries expect an encoding */
 static XF86VideoEncodingRec DummyEncoding =
 {
@@ -610,6 +479,74 @@ static XF86ImageRec SISImages[NUM_IMAGES_330] =
 };
 
 typedef struct {
+    FBLinearPtr  linear;
+    CARD32       bufAddr[2];
+
+    unsigned char currentBuf;
+
+    short drw_x, drw_y, drw_w, drw_h;
+    short src_x, src_y, src_w, src_h;
+    int id;
+    short srcPitch, height;
+
+    char          brightness;
+    unsigned char contrast;
+    char 	  hue;
+    char          saturation;
+
+    RegionRec    clip;
+    CARD32       colorKey;
+    Bool 	 autopaintColorKey;
+
+    Bool 	 disablegfx;
+    Bool	 disablegfxlr;
+
+    Bool         usechromakey;
+    Bool	 insidechromakey, yuvchromakey;
+    CARD32	 chromamin, chromamax;
+
+    CARD32       videoStatus;
+    BOOLEAN	 overlayStatus;
+    Time         offTime;
+    Time         freeTime;
+
+    CARD32       displayMode;
+    Bool	 bridgeIsSlave;
+
+    Bool         hasTwoOverlays;   /* Chipset has two overlays */
+    Bool         dualHeadMode;     /* We're running in DHM */
+
+    Bool  	 NoOverlay;
+    Bool	 PrevOverlay;
+
+    Bool	 AllowSwitchCRT;
+    int 	 crtnum;	   /* 0=CRT1, 1=CRT2 */
+
+    Bool         needToScale;      /* Need to scale video */
+
+    int          shiftValue;       /* 315/330 series need word addr/pitch, 300 series double word */
+
+    short  	 linebufMergeLimit;
+    CARD8        linebufmask;
+
+    short        oldx1, oldx2, oldy1, oldy2;
+#ifdef SISMERGED
+    short        oldx1_2, oldx2_2, oldy1_2, oldy2_2;
+#endif
+    int          mustwait;
+
+    Bool         grabbedByV4L;	   /* V4L stuff */
+    int          pitch;
+    int          offset;
+
+    int 	 modeflags;	   /* Flags field of current display mode */
+
+    int 	 tvxpos, tvypos;
+    Bool 	 updatetvxpos, updatetvypos;
+
+} SISPortPrivRec, *SISPortPrivPtr;
+
+typedef struct {
     int pixelFormat;
 
     CARD16  pitch;
@@ -662,7 +599,7 @@ typedef struct {
     CARD8   contrastCtrl;
     CARD8   contrastFactor;
 
-    CARD8   (*VBlankActiveFunc)(SISPtr);
+    CARD8   (*VBlankActiveFunc)(SISPtr, SISPortPrivPtr);
 #if 0
     CARD32  (*GetScanLineFunc)(SISPtr pSiS);
 #endif
@@ -684,76 +621,145 @@ typedef struct {
     CARD32  MPEG_Y;	       /* MPEG Y Buffer Addr */
     CARD32  MPEG_UV;	       /* MPEG UV Buffer Addr */
 #endif
-    
+
 } SISOverlayRec, *SISOverlayPtr;
 
-typedef struct {
-    FBLinearPtr  linear;
-    CARD32       bufAddr[2];
 
-    unsigned char currentBuf;
 
-    short drw_x, drw_y, drw_w, drw_h;
-    short src_x, src_y, src_w, src_h;   
-    int id;
-    short srcPitch, height;
-    
-    char          brightness;
-    unsigned char contrast;
-    char 	  hue;
-    char          saturation;
+/****************************************************************************
+ * Raw register access : These routines directly interact with the sis's
+ *                       control aperature.  Must not be called until after
+ *                       the board's pci memory has been mapped.
+ ****************************************************************************/
 
-    RegionRec    clip;
-    CARD32       colorKey;
-    Bool 	 autopaintColorKey;
+#if 0
+static CARD32 _sisread(SISPtr pSiS, CARD32 reg)
+{
+    return *(pSiS->IOBase + reg);
+}
 
-    Bool 	 disablegfx;
-    Bool	 disablegfxlr;
-
-    Bool         usechromakey;
-    Bool	 insidechromakey, yuvchromakey;
-    CARD32	 chromamin, chromamax;
-
-    CARD32       videoStatus;
-    BOOLEAN	 overlayStatus; 
-    Time         offTime;
-    Time         freeTime;
-
-    CARD32       displayMode;
-    Bool	 bridgeIsSlave;
-
-    Bool         hasTwoOverlays;   /* Chipset has two overlays */
-    Bool         dualHeadMode;     /* We're running in DHM */
-    
-    Bool  	 NoOverlay;	
-    Bool	 PrevOverlay;
-    
-    Bool	 AllowSwitchCRT;
-    int 	 crtnum;	   /* 0=CRT1, 1=CRT2 */
-
-    Bool         needToScale;      /* Need to scale video */
-
-    int          shiftValue;       /* 315/330 series need word addr/pitch, 300 series double word */
-
-    short  	 linebufMergeLimit;
-    CARD8        linebufmask;
-
-    short        oldx1, oldx2, oldy1, oldy2;
-#ifdef SISMERGED
-    short        oldx1_2, oldx2_2, oldy1_2, oldy2_2;
+static void _siswrite(SISPtr pSiS, CARD32 reg, CARD32 data)
+{
+    *(pSiS->IOBase + reg) = data;
+}
 #endif
-    int          mustwait;
 
-    Bool         grabbedByV4L;	   /* V4L stuff */
-    int          pitch;
-    int          offset;
+static CARD8 getsrreg(SISPtr pSiS, CARD8 reg)
+{
+    CARD8 ret;
+    inSISIDXREG(SISSR, reg, ret);
+    return(ret);
+}
 
-    int 	 modeflags;	   /* Flags field of current display mode */
+static CARD8 getvideoreg(SISPtr pSiS, CARD8 reg)
+{
+    CARD8 ret;
+    inSISIDXREG(SISVID, reg, ret);
+    return(ret);
+}
 
-    int 	 tvxpos, tvypos;
-    Bool 	 updatetvxpos, updatetvypos;
+static __inline void setvideoreg(SISPtr pSiS, CARD8 reg, CARD8 data)
+{
+    outSISIDXREG(SISVID, reg, data);
+}
 
-} SISPortPrivRec, *SISPortPrivPtr;
+static __inline void setvideoregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
+{
+    CARD8   old;
+    inSISIDXREG(SISVID, reg, old);
+    data = (data & mask) | (old & (~mask));
+    outSISIDXREG(SISVID, reg, data);
+}
+
+static void setsrregmask(SISPtr pSiS, CARD8 reg, CARD8 data, CARD8 mask)
+{
+    CARD8   old;
+
+    inSISIDXREG(SISSR, reg, old);
+    data = (data & mask) | (old & (~mask));
+    outSISIDXREG(SISSR, reg, data);
+}
+
+/* VBlank */
+static CARD8 vblank_active_CRT1(SISPtr pSiS, SISPortPrivPtr pPriv)
+{
+    return(inSISREG(SISINPSTAT) & 0x08);
+}
+
+static CARD8 vblank_active_CRT2(SISPtr pSiS, SISPortPrivPtr pPriv)
+{
+    CARD8 ret;
+
+    if(pPriv->bridgeIsSlave) return(vblank_active_CRT1(pSiS, pPriv));
+
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       inSISIDXREG(SISPART1, 0x30, ret);
+    } else {
+       inSISIDXREG(SISPART1, 0x25, ret);
+    }
+    return((ret & 0x02) ^ 0x02);
+}
+
+/* Scanline - unused */
+#if 0
+static CARD32 get_scanline_CRT1(SISPtr pSiS)
+{
+    CARD32 line;
+
+    _siswrite (pSiS, REG_PRIM_CRT_COUNTER, 0x00000001);
+    line = _sisread (pSiS, REG_PRIM_CRT_COUNTER);
+
+    return ((line >> 16) & 0x07FF);
+}
+
+static CARD32 get_scanline_CRT2(SISPtr pSiS)
+{
+    CARD32 line;
+
+    line = (CARD32)(getsisreg(pSiS, SISPART1, Index_CRT2_FC_VCount1) & 0x70) * 16
+                + getsisreg(pSiS, SISPART1, Index_CRT2_FC_VCount);
+
+    return line;
+}
+#endif
+
+void SISInitVideo(ScreenPtr pScreen)
+{
+    ScrnInfoPtr pScrn = xf86Screens[pScreen->myNum];
+    XF86VideoAdaptorPtr *adaptors, *newAdaptors = NULL;
+    XF86VideoAdaptorPtr newAdaptor = NULL;
+    int num_adaptors;
+
+    newAdaptor = SISSetupImageVideo(pScreen);
+    if(newAdaptor)
+	SISInitOffscreenImages(pScreen);
+
+    num_adaptors = xf86XVListGenericAdaptors(pScrn, &adaptors);
+
+    if(newAdaptor) {
+    	if(!num_adaptors) {
+        	num_adaptors = 1;
+        	adaptors = &newAdaptor;
+    	} else {
+        	/* need to free this someplace */
+        	newAdaptors = xalloc((num_adaptors + 1) * sizeof(XF86VideoAdaptorPtr*));
+        	if(newAdaptors) {
+        		memcpy(newAdaptors, adaptors, num_adaptors *
+                    		sizeof(XF86VideoAdaptorPtr));
+        		newAdaptors[num_adaptors] = newAdaptor;
+        		adaptors = newAdaptors;
+        		num_adaptors++;
+        	}
+    	}
+    }
+
+    if(num_adaptors)
+        xf86XVScreenInit(pScreen, adaptors, num_adaptors);
+
+    if(newAdaptors)
+    	xfree(newAdaptors);
+}
+
 
 #define GET_PORT_PRIVATE(pScrn) \
    (SISPortPrivPtr)((SISPTR(pScrn))->adaptor->pPortPrivates[0].ptr)
@@ -2504,9 +2510,8 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     CARD8  h_over=0, v_over=0;
     CARD16 top, bottom, left, right;
     CARD16 screenX, screenY;
-    int    modeflags;
+    int    modeflags, watchdog;
     CARD8  data;
-    CARD32 watchdog;
     CARD32 PSY;
 
 #ifdef SISMERGED
@@ -2567,10 +2572,14 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
 
     /* We don't have to wait for vertical retrace in all cases */
     if(pPriv->mustwait) {
+        if((pSiS->VGAEngine == SIS_315_VGA) && (index)) {
+	   /* overlay 2 needs special treatment */
+	   setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
+	}
 	watchdog = WATCHDOG_DELAY;
-    	while (pOverlay->VBlankActiveFunc(pSiS) && --watchdog);
+    	while(pOverlay->VBlankActiveFunc(pSiS, pPriv) && --watchdog);
 	watchdog = WATCHDOG_DELAY;
-	while ((!pOverlay->VBlankActiveFunc(pSiS)) && --watchdog);
+	while((!pOverlay->VBlankActiveFunc(pSiS, pPriv)) && --watchdog);
 	if(!watchdog) xf86DrvMsg(pScrn->scrnIndex, X_WARNING,
 			"Xv: Waiting for vertical retrace timed-out\n");
     }
@@ -2580,10 +2589,6 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     setvideoreg(pSiS, Index_VI_Control_Misc1, data | 0x20);
     /* Is this required? */
     setvideoreg(pSiS, Index_VI_Control_Misc1, data | 0x20);
-
-    /* Is this required? (seems so) */
-    if(pSiS->Chipset == SIS_315_VGA)
-    	setvideoregmask(pSiS, Index_VI_Control_Misc3, 0x00, (1 << index));
 
     /* Set Y buf pitch */
     setvideoreg(pSiS, Index_VI_Disp_Y_Buf_Pitch_Low, (CARD8)(pitch));
@@ -2672,6 +2677,12 @@ set_overlay(SISPtr pSiS, SISOverlayPtr pOverlay, SISPortPrivPtr pPriv, int index
     }
 #endif
 
+    if(pSiS->VGAEngine == SIS_315_VGA) {
+       /* Trigger register copy for 315/330 series */
+       setvideoreg(pSiS, Index_VI_Control_Misc3, (1 << index));
+       /* setvideoregmask(pSiS, Index_VI_Control_Misc3, (1 << index), (1 << index)); */
+    }
+
     /* set destination window position */
     setvideoreg(pSiS, Index_VI_Win_Hor_Disp_Start_Low, (CARD8)left);
     setvideoreg(pSiS, Index_VI_Win_Hor_Disp_End_Low,   (CARD8)right);
@@ -2726,14 +2737,14 @@ close_overlay(SISPtr pSiS, SISPortPrivPtr pPriv)
 
      setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
      watchdog = WATCHDOG_DELAY;
-     while(vblank_active_CRT2(pSiS) && --watchdog);
+     while(vblank_active_CRT2(pSiS, pPriv) && --watchdog);
      watchdog = WATCHDOG_DELAY;
-     while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     while((!vblank_active_CRT2(pSiS, pPriv)) && --watchdog);
      setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
      watchdog = WATCHDOG_DELAY;
-     while(vblank_active_CRT2(pSiS) && --watchdog);
+     while(vblank_active_CRT2(pSiS, pPriv) && --watchdog);
      watchdog = WATCHDOG_DELAY;
-     while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     while((!vblank_active_CRT2(pSiS, pPriv)) && --watchdog);
 
 #ifdef SIS_CP
      SIS_CP_RESET_CP
@@ -2757,14 +2768,14 @@ close_overlay(SISPtr pSiS, SISPortPrivPtr pPriv)
      setvideoregmask(pSiS, Index_VI_Control_Misc2, 0x00, 0x05);
      setvideoregmask(pSiS, Index_VI_Control_Misc1, 0x00, 0x01);
      watchdog = WATCHDOG_DELAY;
-     while(vblank_active_CRT1(pSiS) && --watchdog);
+     while(vblank_active_CRT1(pSiS, pPriv) && --watchdog);
      watchdog = WATCHDOG_DELAY;
-     while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     while((!vblank_active_CRT1(pSiS, pPriv)) && --watchdog);
      setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
      watchdog = WATCHDOG_DELAY;
-     while(vblank_active_CRT1(pSiS) && --watchdog);
+     while(vblank_active_CRT1(pSiS, pPriv) && --watchdog);
      watchdog = WATCHDOG_DELAY;
-     while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     while((!vblank_active_CRT1(pSiS, pPriv)) && --watchdog);
 
   }
 }
@@ -2781,11 +2792,10 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
    unsigned short screenwidth;
    SISOverlayRec overlay; 
    int srcOffsetX=0, srcOffsetY=0;
-   int sx=0, sy=0;
+   int sx=0, sy=0, watchdog;
    int index = 0, iscrt2 = 0;
 #ifdef SISMERGED
    unsigned char temp;
-   CARD32 watchdog;
    unsigned short screen2width=0;
    int srcOffsetX2=0, srcOffsetY2=0;
    int sx2=0, sy2=0;
@@ -2940,19 +2950,19 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 	 if(temp & 0x02) {
 	    watchdog = WATCHDOG_DELAY;
 	    if(pPriv->hasTwoOverlays) {
-     	       while(vblank_active_CRT1(pSiS) && --watchdog);
+     	       while(vblank_active_CRT1(pSiS, pPriv) && --watchdog);
      	       watchdog = WATCHDOG_DELAY;
-     	       while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     	       while((!vblank_active_CRT1(pSiS, pPriv)) && --watchdog);
 	    } else {
 	       temp = getsrreg(pSiS, 0x06);
 	       if(!(temp & 0x40)) {
-     	          while(vblank_active_CRT1(pSiS) && --watchdog);
+     	          while(vblank_active_CRT1(pSiS, pPriv) && --watchdog);
      	          watchdog = WATCHDOG_DELAY;
-     	          while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     	          while((!vblank_active_CRT1(pSiS, pPriv)) && --watchdog);
 	       } else {
-	          while(vblank_active_CRT2(pSiS) && --watchdog);
+	          while(vblank_active_CRT2(pSiS, pPriv) && --watchdog);
      	          watchdog = WATCHDOG_DELAY;
-     	          while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     	          while((!vblank_active_CRT2(pSiS, pPriv)) && --watchdog);
 	       }
 	    }
      	    setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
@@ -2963,9 +2973,9 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 	    temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
 	    if(temp & 0x02) {
 	       watchdog = WATCHDOG_DELAY;
-     	       while(vblank_active_CRT2(pSiS) && --watchdog);
+     	       while(vblank_active_CRT2(pSiS, pPriv) && --watchdog);
      	       watchdog = WATCHDOG_DELAY;
-     	       while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     	       while((!vblank_active_CRT2(pSiS, pPriv)) && --watchdog);
      	       setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
 	    }
          }
@@ -2974,10 +2984,6 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
       }
    }
 #endif
-
-   /* xf86DrvMsg(0, X_INFO, "DV(2): %d %d %d %d  | %d %d %d %d\n",
-         overlay.dstBox.x1,overlay.dstBox.x2,overlay.dstBox.y1,overlay.dstBox.y2,
-         overlay.dstBox2.x1,overlay.dstBox2.x2,overlay.dstBox2.y1,overlay.dstBox2.y2);  */
 
    switch(pPriv->id) {
 
@@ -3142,9 +3148,9 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 	 temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
 	 if(temp & 0x02) {
 	    watchdog = WATCHDOG_DELAY;
-     	    while(vblank_active_CRT1(pSiS) && --watchdog);
+     	    while(vblank_active_CRT1(pSiS, pPriv) && --watchdog);
      	    watchdog = WATCHDOG_DELAY;
-     	    while((!vblank_active_CRT1(pSiS)) && --watchdog);
+     	    while((!vblank_active_CRT1(pSiS, pPriv)) && --watchdog);
      	    setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
 	 }
       } else if(!overlay.DoSecond) {
@@ -3153,9 +3159,9 @@ SISDisplayVideo(ScrnInfoPtr pScrn, SISPortPrivPtr pPriv)
 	 temp = getvideoreg(pSiS,Index_VI_Control_Misc0);
 	 if(temp & 0x02) {
 	    watchdog = WATCHDOG_DELAY;
-     	    while(vblank_active_CRT2(pSiS) && --watchdog);
+     	    while(vblank_active_CRT2(pSiS, pPriv) && --watchdog);
      	    watchdog = WATCHDOG_DELAY;
-     	    while((!vblank_active_CRT2(pSiS)) && --watchdog);
+     	    while((!vblank_active_CRT2(pSiS, pPriv)) && --watchdog);
      	    setvideoregmask(pSiS, Index_VI_Control_Misc0, 0x00, 0x02);
 	 }
       }
@@ -3244,7 +3250,7 @@ MIRROR:
 #endif
       calc_scale_factor(&overlay, pScrn, pPriv, index, iscrt2);
 
-   /* Select video1 (used for CRT1/or CRT2) or video2 (used for CRT2) */
+   /* Select overlay 1 (used for CRT1/or CRT2) or overlay 2 (used for CRT2) */
    setvideoregmask(pSiS, Index_VI_Control_Misc2, index, 0x01);
 
    /* set format */
@@ -3311,11 +3317,6 @@ MIRROR:
 
    /* set overlay parameters */
    set_overlay(pSiS, &overlay, pPriv, index, iscrt2);
-
-   if(pSiS->VGAEngine == SIS_315_VGA) {
-      /* Trigger register copy for 315 series */
-      setvideoregmask(pSiS, Index_VI_Control_Misc3, (1 << index), (1 << index));
-   }
 
    /* enable overlay */
    setvideoregmask (pSiS, Index_VI_Control_Misc0, 0x02, 0x02);
