@@ -1,10 +1,10 @@
 /*
- * $XFree86: xc/programs/xterm/trace.h,v 3.7 2000/01/24 22:21:58 dawes Exp $
+ * $XFree86: xc/programs/xterm/trace.h,v 3.8 2000/02/08 17:19:43 dawes Exp $
  */
 
 /************************************************************
 
-Copyright 1997-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1997-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 

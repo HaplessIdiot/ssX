@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.57 2000/03/31 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.58 2000/05/18 00:33:21 dawes Exp $ */
 
 /************************************************************
 
-Copyright 1999-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1999-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -55,6 +55,10 @@ authorization.
 
 #ifndef HAVE_X11_DECKEYSYM_H
 #define HAVE_X11_DECKEYSYM_H 1
+#endif
+
+#ifndef HAVE_X11_SUNKEYSYM_H
+#define HAVE_X11_SUNKEYSYM_H 1
 #endif
 
 #ifndef DFT_TERMTYPE
@@ -113,6 +117,10 @@ authorization.
 #define HAVE_LASTLOG_H
 #elif defined(BSD) && (BSD >= 199103)
 #define USE_LASTLOG
+#endif
+
+#if defined(AMOEBA) || defined(SCO) || defined(SVR4) || defined(_POSIX_SOURCE) || defined(__QNX__) || defined(__hpux) || (defined(BSD) && (BSD >= 199103))
+#define USE_POSIX_WAIT
 #endif
 
 #if defined(AIXV3) || defined(CRAY) || defined(SCO) || defined(SVR4) || (defined(SYSV) && defined(i386)) || defined(__MVS__) || defined(__hpux) || defined(__osf__) || defined(linux) || defined(macII)
@@ -208,6 +216,7 @@ extern int errno;
 
 #define XtNallowSendEvents	"allowSendEvents"
 #define XtNalwaysHighlight	"alwaysHighlight"
+#define XtNalwaysUseMods	"alwaysUseMods"
 #define XtNanswerbackString	"answerbackString"
 #define XtNappcursorDefault	"appcursorDefault"
 #define XtNappkeypadDefault	"appkeypadDefault"
@@ -243,6 +252,8 @@ extern int errno;
 #define XtNcolorBL		"colorBL"
 #define XtNcolorBLMode		"colorBLMode"
 #define XtNcolorMode		"colorMode"
+#define XtNcolorRV		"colorRV"
+#define XtNcolorRVMode		"colorRVMode"
 #define XtNcolorUL		"colorUL"
 #define XtNcolorULMode		"colorULMode"
 #define XtNctrlFKeys		"ctrlFKeys"
@@ -266,6 +277,7 @@ extern int errno;
 #define XtNinternalBorder	"internalBorder"
 #define XtNjumpScroll		"jumpScroll"
 #define XtNkeyboardDialect	"keyboardDialect"
+#define XtNlimitResize		"limitResize"
 #define XtNlogFile		"logFile"
 #define XtNlogInhibit		"logInhibit"
 #define XtNlogging		"logging"
@@ -316,6 +328,7 @@ extern int errno;
 
 #define XtCAllowSendEvents	"AllowSendEvents"
 #define XtCAlwaysHighlight	"AlwaysHighlight"
+#define XtCAlwaysUseMods	"AlwaysUseMods"
 #define XtCAnswerbackString	"AnswerbackString"
 #define XtCAppcursorDefault	"AppcursorDefault"
 #define XtCAppkeypadDefault	"AppkeypadDefault"
@@ -348,6 +361,7 @@ extern int errno;
 #define XtCHpLowerleftBugCompat	"HpLowerleftBugCompat"
 #define XtCJumpScroll		"JumpScroll"
 #define XtCKeyboardDialect	"KeyboardDialect"
+#define XtCLimitResize		"LimitResize"
 #define XtCLogInhibit		"LogInhibit"
 #define XtCLogfile		"Logfile"
 #define XtCLogging		"Logging"
@@ -704,10 +718,11 @@ extern void xtermScroll (TScreen *screen, int amount);
 extern Pixel getXtermBackground (int flags, int color);
 extern Pixel getXtermForeground (int flags, int color);
 extern int extract_fg (unsigned color, unsigned flags);
+extern int extract_bg (unsigned color, unsigned flags);
 extern unsigned makeColorPair (int fg, int bg);
 extern void ClearCurBackground (TScreen *screen, int top, int left, unsigned height, unsigned width);
 
-#define xtermColorPair() makeColorPair(term->sgr_foreground, term->cur_background)
+#define xtermColorPair() makeColorPair(term->sgr_foreground, term->sgr_background)
 
 #define getXtermForeground(flags, color) \
 	(((flags) & FG_COLOR) && ((color) >= 0) \
@@ -729,9 +744,11 @@ extern Pixel xtermGetColorRes(ColorRes *res);
 #endif
 
 #if OPT_EXT_COLORS
-#define extract_bg(color) ((int)((color) & 0xff))
+#define ExtractForeground(color) ((color >> 8) & 0xff)
+#define ExtractBackground(color) (color & 0xff)
 #else
-#define extract_bg(color) ((int)((color) & 0xf))
+#define ExtractForeground(color) ((color >> 4) & 0xf)
+#define ExtractBackground(color) (color & 0xf)
 #endif
 
 #else /* !OPT_ISO_COLORS */
@@ -741,7 +758,7 @@ extern Pixel xtermGetColorRes(ColorRes *res);
 		left, top, width, height, FALSE)
 
 #define extract_fg(color, flags) term->cur_foreground
-#define extract_bg(color) term->cur_background
+#define extract_bg(color, flags) term->cur_background
 
 		/* FIXME: Reverse-Video? */
 #define getXtermBackground(flags, color) term->core.background_pixel

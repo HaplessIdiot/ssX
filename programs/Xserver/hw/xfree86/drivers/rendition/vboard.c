@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.9 2000/02/25 21:03:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/vboard.c,v 1.10 2000/03/31 20:13:26 dawes Exp $ */
 /*
  * includes
  */
@@ -17,11 +17,8 @@
 
 #include "cscode.h"
 
-#if 0
 /* Global imported during compile-time */
 char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
-#endif
-
 
 /*
  * local function prototypes
@@ -89,7 +86,6 @@ verite_initboard(ScrnInfoPtr pScreenInfo)
   /* reset memory endian */
   verite_out8(iob+MEMENDIAN, memendian);
 
-#if 0
   if (V1000_DEVICE == pRendition->board.chip){
     c=verite_load_ucfile(pScreenInfo, xf86strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
   }
@@ -100,7 +96,7 @@ verite_initboard(ScrnInfoPtr pScreenInfo)
 
   if (c == -1) {
     xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-	       ("Microcode loading failed !!!\n");
+	       ("Microcode loading failed !!!\n"));
     return 1;
   }
 
@@ -109,7 +105,7 @@ verite_initboard(ScrnInfoPtr pScreenInfo)
 #ifdef DEBUG
   ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry); */
 #endif
-#endif
+
   /* Everything's OK */
   return 0;
 }

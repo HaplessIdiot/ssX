@@ -1,10 +1,10 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.h,v 1.5 1999/02/07 06:18:57 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.h,v 1.6 1999/09/25 14:38:30 dawes Exp $
  */
 
 /************************************************************
 
-Copyright 1998 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1998,1999 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -47,7 +47,6 @@ extern void xtermComputeFontInfo (TScreen *screen, struct _vtwin *win, XFontStru
 extern void xtermSaveFontInfo (TScreen *screen, XFontStruct *font);
 extern void xtermSetCursorBox (TScreen *screen);
 extern void xtermUpdateFontInfo (TScreen *screen, Bool doresize);
-
 
 #if OPT_DEC_CHRSET
 extern char *xtermSpecialFont(unsigned atts, unsigned chrset);

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.18 1999/10/24 18:01:46 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.23 2000/06/06 18:07:36 eich Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -67,6 +67,7 @@ typedef struct {
     Bool		NoAccel;
     Bool		HWCursor;
     Bool		UsePCIRetry;
+    Bool		UsePCIBurst;
     Bool		UseGERetry;
     Bool		NewClockCode;
     Bool		Clipping;

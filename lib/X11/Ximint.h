@@ -30,7 +30,7 @@ PERFORMANCE OF THIS SOFTWARE.
 			       makoto@sm.sony.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/Ximint.h,v 3.3 1998/06/28 08:41:34 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Ximint.h,v 3.4 1998/10/03 08:41:27 dawes Exp $ */
 
 #ifndef _XIMINT_H
 #define _XIMINT_H
@@ -40,6 +40,12 @@ PERFORMANCE OF THIS SOFTWARE.
 
 #define Public /**/
 #define Private static
+
+#ifdef __STDC__
+#define Const const
+#else
+#define Const /**/
+#endif
 
 typedef struct _Xim	*Xim;
 typedef struct _Xic	*Xic;
@@ -53,7 +59,18 @@ typedef struct _Xic	*Xic;
 /*
  * XIM dependent data
  */
+
+typedef struct _XimCommonPrivateRec {
+    XlcConv		ctom_conv;
+    XlcConv		ctow_conv;
+    XlcConv		cstomb_conv;
+    XlcConv		cstowc_conv;
+    XlcCharSet		keyboard_charset;
+    unsigned long	locale_code;
+} XimCommonPrivateRec;
+
 typedef union _XIMPrivateRec {
+    XimCommonPrivateRec  common;
     XimLocalPrivateRec   local;
     XimProtoPrivateRec   proto;
 } XIMPrivateRec;
@@ -169,6 +186,13 @@ typedef struct _XimDefICValues {
 /*
  * Global symbols
  */
+
+unsigned long Const * _XimGetLocaleCode (
+#if NeedFunctionPrototypes
+    _Xconst char*	encoding_name,
+    XlcCharSet*		cset_ret
+#endif
+);
 
 extern Bool _XimSetIMResourceList(
 #if NeedFunctionPrototypes

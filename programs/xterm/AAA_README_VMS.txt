@@ -1,4 +1,4 @@
-http://www.clark.net/pub/dickey/xterm/xterm.html
+http://dickey.his.com/xterm/xterm.html
 
 Downloaded 1.22 variant (current Linux version) on 18-JAN-2000.
 
@@ -45,4 +45,4 @@ mathog@seqaxp.bio.caltech.edu
 Manager, sequence analysis facility, biology division, Caltech 
 
 
-$XFree86$
+$XFree86: xc/programs/xterm/AAA_README_VMS.txt,v 1.1 2000/02/08 17:19:26 dawes Exp $

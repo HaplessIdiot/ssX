@@ -3,7 +3,7 @@
  *
  * accelerator functions for X
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.6 2000/02/25 21:02:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/rendition/accelX.c,v 1.7 2000/03/31 20:13:24 dawes Exp $ */
 
 
 
@@ -29,11 +29,6 @@
 /*
  * defines
  */
-#if 1
-/* Global imported during compile-time */
-char MICROCODE_DIR [PATH_MAX] = MODULEDIR;
-#endif
-
 
 #define waitfifo(size)  do { int c=0; \
                           while ((c++<0xfffff)&&((verite_in8(iob+FIFOINFREE)&0x1f)<size)) /* if(!(c%0xffff))ErrorF("#1# !0x%x! -- ",verite_in8(iob+FIFOINFREE)) */; \
@@ -124,38 +119,9 @@ RENDITIONAccelPreInit(ScrnInfoPtr pScreenInfo)
     sleep(1);
 #endif
 
-#ifdef DEBUG
-    v1k_stop(pScreenInfo);
-    memset (pRendition->board.vmem_base,0,MC_SIZE);
-#endif
-
-#if 0
     if (RENDITIONLoadUcode(pScreenInfo)){
       ErrorF ("RENDITION: AccelPreInit - Warning. Loading of microcode failed!!\n");
     }
-#endif
-
-#if 1 /* Test */
-    if (V1000_DEVICE == pRendition->board.chip){
-      c=verite_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v10002d.uc"));
-    }
-    else {
-      /* V2x00 chip */
-      c=verite_load_ucfile(pScreenInfo, strcat ((char *)MICROCODE_DIR,"v20002d.uc"));
-    }
-
-    if (c == -1) {
-      xf86DrvMsg(pScreenInfo->scrnIndex,X_ERROR, 
-		 "Microcode loading failed !!!\n");
-      return;
-    }
-
-    pRendition->board.ucode_entry=c;
-
-#ifdef DEBUG
-    ErrorF("UCode_Entry == 0x%x\n",pRendition->board.ucode_entry);
-#endif
-#endif
 
     pRendition->board.fbOffset += MC_SIZE;
 
@@ -221,28 +187,13 @@ RENDITIONAccelXAAInit(ScreenPtr pScreen)
         RENDITIONSubsequentTwoPointLine;
 #endif /* #if 0 */
 
+    verite_check_csucode(pScreenInfo);
+
     if (RENDITIONLoadUcode(pScreenInfo)) return;
-
-#if 1 /* Testingcode */
-    if (V1000_DEVICE == pRendition->board.chip){
-      c=verite_load_ucfile(pScreenInfo, MICROCODE_DIR);
-    }
-    else {
-      /* V2x00 chip */
-      c=verite_load_ucfile(pScreenInfo, MICROCODE_DIR);
-    }
-
-    if (c == -1) {
-      xf86DrvMsg(pScreenInfo->scrnIndex, X_ERROR,
-		 "Microcode loading failed !!!\n");
-      return;
-    }
-
-    pRendition->board.ucode_entry=c;
-#endif
     if (RENDITIONInitUcode(pScreenInfo)) return;
 
     verite_check_csucode(pScreenInfo);
+
     /* the remaining code was copied from s3verite_accel.c.
      * we need to check it if it is suitable <ml> */
 

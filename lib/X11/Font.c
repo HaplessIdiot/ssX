@@ -28,12 +28,12 @@ sale, use or other dealings in this Software without prior written
 authorization from the X Consortium and the XFree86 Project.
 
 */
-/* $XFree86: xc/lib/X11/Font.c,v 1.5 2000/02/08 17:18:42 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Font.c,v 1.7 2000/05/25 22:08:45 mvojkovi Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
 
-#ifndef MUSTCOPY
+#if defined(XF86BIGFONT) && !defined(MUSTCOPY)
 #define USE_XF86BIGFONT
 #endif
 #ifdef USE_XF86BIGFONT

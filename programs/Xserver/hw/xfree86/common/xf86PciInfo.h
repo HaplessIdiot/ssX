@@ -1,11 +1,38 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.54 2000/05/23 04:47:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.55 2000/05/23 23:48:42 dawes Exp $ */
 /*
  * PCI Probe
  *
- * Copyright 1995-1999 by The XFree86 Project, Inc.
+ * Copyright 1995-2000 by The XFree86 Project, Inc.
  *
  * A lot of this comes from Robin Cutshaw's scanpci
  *
+ * Notes -- Jun 6, 2000 -- Kevin Brosius
+ * Tips on adding Entries:
+ *   scanpci output can contain up to 4 numeric entries, 2 for chip and 2 for card
+ *   some generic cards don't have any valid info in the card field,
+ *   here's what you do;
+ *   - Add a vendor entry for your device if it doesn't already exist.  The
+ *     first number of the pair is generally vendor id.  Search for it below
+ *     and add a #define for it if it doesn't exist.
+ *       ie. 5333 is the vendor id for S3
+ *   - Go to xf86PCIVendorNameInfoData[] and add a text name for your vendor id.
+ *       ie. PCI_VENDOR_S3 is "S3"
+ *   - Add an entry to xf86PCIVendorInfoData[], using the PCI_VENDOR define
+ *     you added, and a text description of the chipset.
+ *   - If your device has 0000 in the card field,
+ *     you've probably got a non-video or generic device.  Stop here.
+ *   
+ *   - If you have info in the card field, and it's just a duplicate of the chip
+ *     info, then either stop, or add a 'generic' entry to xf86PCICardInfoData[].
+ *   - If you have different info in the card field, check the first entry,
+ *     does the vendor match and/or already exist?  If not, add it.  Then
+ *     add an entry describing the card to xf86PCICardInfoData[]
+ *   - If you are adding a video card, add a PCI_CHIP #define matching the second
+ *     entry in your chip field.  This gets used in your card driver as the PCI id.
+ *       ie. under the S3 comment, one entry is: PCI_CHIP_VIRGE 0x5631
+ *       
+ * Several people recommended http://www.yourvote.com/pci for pci device/vendor info.
+ * 
  */
 
 #ifndef _XF86_PCIINFO_H
@@ -47,6 +74,7 @@
 #define PCI_VENDOR_SGS		0x104A
 #define PCI_VENDOR_BUSLOGIC	0x104B
 #define PCI_VENDOR_TI		0x104C
+#define PCI_VENDOR_SONY		0x104D
 #define PCI_VENDOR_OAK		0x104E
 #define PCI_VENDOR_WINBOND	0x1050
 #define PCI_VENDOR_MOTOROLA	0x1057
@@ -93,6 +121,7 @@
 #define PCI_VENDOR_TRUEVISION	0x10FA
 #define PCI_VENDOR_INITIO	0x1101
 #define PCI_VENDOR_CREATIVE_2	0x1102
+#define PCI_VENDOR_SIGMADESIGNS_2	0x1105
 #define PCI_VENDOR_VIA		0x1106
 #define PCI_VENDOR_VORTEX	0x1119
 #define PCI_VENDOR_EF		0x111A
@@ -105,6 +134,7 @@
 #define PCI_VENDOR_MUTECH	0x1159
 #define PCI_VENDOR_RENDITION	0x1163
 #define PCI_VENDOR_TOSHIBA	0x1179
+#define PCI_VENDOR_RICOH	0x1180
 #define PCI_VENDOR_ZEINET	0x1193
 #define PCI_VENDOR_SPECIALIX	0x11CB
 #define PCI_VENDOR_CONTROL	0x11FE
@@ -112,6 +142,7 @@
 #define PCI_VENDOR_3DFX		0x121A
 #define PCI_VENDOR_SIGMADESIGNS	0x1236
 #define PCI_VENDOR_ENSONIQ	0x1274
+#define PCI_VENDOR_ROCKWELL	0x127A
 #define PCI_VENDOR_YOKOGAWA	0x1281
 #define PCI_VENDOR_TRITECH	0x1292
 #define PCI_VENDOR_NVIDIA_SGS	0x12d2
@@ -547,6 +578,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_SGS,	"SGS-Thomson"},
     {PCI_VENDOR_BUSLOGIC, "BusLogic"},
     {PCI_VENDOR_TI,	"Texas Instruments"},
+    {PCI_VENDOR_SONY, "Sony"},
     {PCI_VENDOR_OAK,	"Oak"},
     {PCI_VENDOR_WINBOND,"Winbond"},
     {PCI_VENDOR_MOTOROLA, "Motorola"},
@@ -565,6 +597,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_FOREX, "FOREX"},
     {PCI_VENDOR_OLICOM, "Olicom"},
     {PCI_VENDOR_SUN, "Sun"},
+    {PCI_VENDOR_DIAMOND, "Diamond"},
     {PCI_VENDOR_CMD, "CMD"},
     {PCI_VENDOR_VISION, "Vision"},
     {PCI_VENDOR_BROOKTREE,	"BrookTree"},
@@ -590,6 +623,7 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_TRUEVISION, "Truevision"},
     {PCI_VENDOR_INITIO, "Initio Corp"},
     {PCI_VENDOR_CREATIVE_2, "Creative Labs"},
+    {PCI_VENDOR_SIGMADESIGNS_2, "Sigma Designs"},
     {PCI_VENDOR_VIA, "VIA"},
     {PCI_VENDOR_VORTEX, "Vortex"},
     {PCI_VENDOR_EF, "EF"},
@@ -602,12 +636,14 @@ static SymTabRec xf86PCIVendorNameInfoData[] = {
     {PCI_VENDOR_DIGI, "DIGI*"},
     {PCI_VENDOR_MUTECH, "Mutech"},
     {PCI_VENDOR_RENDITION, "Rendition"},
+    {PCI_VENDOR_TOSHIBA, "Toshiba"},
+    {PCI_VENDOR_RICOH,	"Ricoh"},
     {PCI_VENDOR_3DFX,	"3Dfx Interactive"},
     {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs"},
     {PCI_VENDOR_ENSONIQ, "Ensoniq"},
+    {PCI_VENDOR_ROCKWELL, "Rockwell"},
     {PCI_VENDOR_YOKOGAWA, "YOKOGAWA"},
     {PCI_VENDOR_TRITECH,	"Tritech Microelectronics"},
-    {PCI_VENDOR_NVIDIA_SGS, "NVidia/SGS-Thomson"},
     {PCI_VENDOR_SYMPHONY, "Symphony"},
     {PCI_VENDOR_TEKRAM_2, "Tekram"},
     {PCI_VENDOR_3DLABS, "3Dlabs"},
@@ -900,6 +936,11 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_PCI_1130,	"PCI 1130",0},
 				{PCI_CHIP_PCI_1131,	"PCI 1131",0},
 				{0x0000,		NULL,0}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+	{PCI_VENDOR_SONY, {
+				{0x8009,		"CXD1947A IEEE1394/Firewire",0},
+				{0x0000,		NULL,0}}},
+#endif
     {PCI_VENDOR_OAK, {
 				{PCI_CHIP_OTI107,	"OTI107",0},
 				{0x0000,		NULL,0}}},
@@ -1068,6 +1109,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 				{PCI_CHIP_NM2093,	"NM2093",0},
 				{PCI_CHIP_NM2160,	"NM2160",0},
 				{PCI_CHIP_NM2200,	"NM2200",0},
+#ifdef VENDOR_INCLUDE_NONVIDEO
+				{0x8005,			"NM2360 MagicMedia 256ZX Audio",0},
+#endif
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_ASP, {
@@ -1116,7 +1160,7 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_REALTEC, {
                                 {0x8029, "8029",0 },
                                 {0x8129, "8129",0 },
-                                {0x8139, "RTL8139 Ethernet Controller",0 },
+                                {0x8139, "RTL8139 10/100 Ethernet",0 },
 				{0x0000,		NULL,0}}},
     {PCI_VENDOR_TRUEVISION, {
                                 {0x000C, "Targa 1000",0 },
@@ -1124,6 +1168,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_INITIO, {
                                 {0x9100, "320 P",0 },
 				{0x0000,		NULL,0}}},
+	{PCI_VENDOR_SIGMADESIGNS_2, {
+	            {0x8300, "EM8300 MPEG2 decoder", 0 },
+	            {0x0000, NULL,0}}},
     {PCI_VENDOR_VIA, {
 				{0x0501, "VT 8501 MVP4 Host Bridge",0 },
                                 {0x0505, "VT 82C505",0 },
@@ -1182,6 +1229,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
 #ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_TOSHIBA, {
 				{0x0000,		NULL,0}}},
+	{ PCI_VENDOR_RICOH, {
+				{ 0x0475, 	"RL5C475 PCI-CardBus bridge/PCMCIA",0 },
+                { 0x0000,		NULL,0}}},						
     {PCI_VENDOR_ZEINET, {
                                 {0x0001, "1221",0 },
 				{0x0000,		NULL,0}}},
@@ -1208,6 +1258,9 @@ static pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
                                 {0x1371, "es1371",0 },
 				{0x0000,		NULL,0}}},
 #ifdef VENDOR_INCLUDE_NONVIDEO
+	{PCI_VENDOR_ROCKWELL, {
+				{0x2005,	"RS56/SP-PCI11P1 56K V90 modem/spkrphone",0 },
+				{0x0000,		NULL,0}}},
 #ifdef INCLUDE_EMPTY_LISTS
     {PCI_VENDOR_YOKOGAWA, {
 				{0x0000,		NULL,0}}},
@@ -1405,11 +1458,21 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 			{ 0x500A, "EtherWORKS 10/100",0, NF},
                         { 0x0000, (char *)NULL,0, NF } } },
 #endif
+	{ PCI_VENDOR_SONY, {
+						{ 0x8051, "Vaio Video",0,NF },
+#ifdef VENDOR_INCLUDE_NONVIDEO
+						{ 0x8052, "Vaio Audio",0,NF },
+						{ 0x8054, "Vaio Firewire",0,NF },
+						{ 0x8056, "Vaio Modem",0,NF },
+						{ 0x8057, "Vaio Ethernet",0,NF },
+#endif
+						{ 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_DIAMOND, {
                         { 0x8000, "C&T 69000",0, NF },
                         { 0x1103, "Fire GL 1000",0, NF },
                         { 0x0154, "Fire GL 1000 PRO",0, NF },
                         { 0x0003, "Monster Fusion",0, NF },
+                        { 0x4803, "Monster Fusion",0, NF },
                         { 0x8a10, "Stealth 3D 4000",0, NF },
                         { 0x0100, "Stealth II G460",0, NF },
                         { 0x2000, "Stealth II S220",0, NF },
@@ -1519,7 +1582,7 @@ static pciVendorCardInfo xf86PCICardInfoData[] = {
 #endif
 	{ PCI_VENDOR_S3, {
                         { 0x8904, "Trio3D",0, NF },
-                        { 0x8a10, "ViRGE/GX2",0, NF },
+                        { 0x8a10, "Generic",0, NF },
                         { 0x0000, (char *)NULL,0, NF } } },
 	{ PCI_VENDOR_NUMNINE, {
                         { 0x8a10, "Reality 334",0, NF },

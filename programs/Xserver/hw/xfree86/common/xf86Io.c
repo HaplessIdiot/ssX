@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.37 1999/09/04 13:04:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.38 1999/12/27 00:39:43 robin Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -396,7 +396,7 @@ xf86KbdProc (pKeyboard, what)
   return (Success);
 }
 
-#if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4)) && !defined(MINIX) && !defined(__mips__) && !defined(QNX4)
+#if !defined(AMOEBA) && !(defined (sun) && defined(i386) && defined (SVR4)) && !defined(MINIX) && !(defined(__mips__) && !defined(linux)) && !defined(QNX4)
 /*
  * These are getting tossed in here until I can think of where
  * they really belong

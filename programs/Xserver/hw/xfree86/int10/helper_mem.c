@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.4 2000/04/17 16:30:11 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/int10/helper_mem.c,v 1.5 2000/05/03 00:44:20 tsi Exp $ */
 /*
  *                   XFree86 int10 module
  *   execute BIOS int 10h calls in x86 real mode environment
@@ -168,6 +168,10 @@ Bool
 int10_read_bios(int scrnIndex, int codeSeg, unsigned char* vbiosMem)
 {
     int size;
+
+    if (xf86IsPc98())
+        return FALSE;
+
     if (xf86ReadBIOS(codeSeg << 4,0,(unsigned char *)vbiosMem, 0x10) < 0) {
 	xf86DrvMsg(scrnIndex,X_WARNING,"Cannot read V_BIOS (1)\n");
 	return FALSE;

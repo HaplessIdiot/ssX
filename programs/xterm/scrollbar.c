@@ -1,10 +1,10 @@
 /*
  *	$XConsortium: scrollbar.c /main/47 1996/12/01 23:47:08 swick $
- *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.26 2000/03/03 20:02:34 dawes Exp $
+ *	$XFree86: xc/programs/xterm/scrollbar.c,v 3.27 2000/05/18 00:33:21 dawes Exp $
  */
 
 /*
- * Copyright 2000 by Thomas E. Dickey <dickey@clark.net>
+ * Copyright 2000 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *

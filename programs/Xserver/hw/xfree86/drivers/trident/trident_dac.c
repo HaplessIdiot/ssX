@@ -21,7 +21,7 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.11 1999/07/04 06:39:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dac.c,v 1.21 2000/06/06 18:07:37 eich Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -443,8 +443,12 @@ TridentInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     else
     	pReg->tridentRegs3x4[PCIReg] = INB(vgaIOBase + 5) & 0xF8; 
     /* Enable PCI Bursting on capable chips */
-    if (pTrident->Chipset >= TGUI9660) pReg->tridentRegs3x4[PCIReg] |= 0x06;
-
+    if (pTrident->Chipset >= TGUI9660)
+	if(pTrident->UsePCIBurst) {
+	    pReg->tridentRegs3x4[PCIReg] |= 0x06;
+	} else {
+	    pReg->tridentRegs3x4[PCIReg] &= 0xF9;
+	}
     return(TRUE);
 }
 

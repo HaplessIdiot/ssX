@@ -1,6 +1,6 @@
 /* $TOG: button.c /main/76 1997/07/30 16:56:19 kaleb $ */
 /*
- * Copyright 1999-2000 by Thomas E. Dickey <dickey@clark.net>
+ * Copyright 1999-2000 by Thomas E. Dickey
  *
  *                         All Rights Reserved
  *
@@ -50,7 +50,7 @@
  * ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
  * SOFTWARE.
  */
-/* $XFree86: xc/programs/xterm/button.c,v 3.46 2000/02/08 17:19:28 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/button.c,v 3.47 2000/02/10 18:57:36 dawes Exp $ */
 
 /*
 button.c	Handles button events in the terminal emulator.

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/config/imake/imakemdep.h,v 3.36 1999/12/30 02:09:25 robin Exp $ */
+/* $XFree86: xc/config/imake/imakemdep.h,v 3.37 2000/05/18 00:33:17 dawes Exp $ */
 
 
 /* 
@@ -277,10 +277,10 @@ in this Software without prior written authorization from The Open Group.
 #ifdef _CRAY
 #define DEFAULT_CPP "/lib/pcpp"
 #endif
-#if defined(__386BSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
+#if defined(__386BSD__)
 #define DEFAULT_CPP "/usr/libexec/cpp"
 #endif
-#if defined(__FreeBSD__)
+#if defined(__FreeBSD__)  || defined(__NetBSD__) || defined(__OpenBSD__)
 #define USE_CC_E
 #endif
 #if defined(__sgi) && defined(__ANSI_CPP__)

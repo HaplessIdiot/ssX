@@ -3,12 +3,12 @@
 ]>
 
 <article>
-<title>Information for Rendition Users
+<title>Information for Rendition (Micron) Verité Users
 <author>The XFree86 Project Inc.
-<date>31 March 2000
+<date>9 June 2000, last update by Dejan Ilic <dejan.ilic@home.se>
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.8 2000/03/01 23:54:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.9 2000/03/31 20:13:23 dawes Exp $
 </ident>
 
 <toc>
@@ -77,19 +77,20 @@ Notice that this option requires "ShadowFB" and automatically enable it. It also
 The option is not activated by default.
 </descrip>
 
-<sect>News in this release <p>
+<sect>News in this release (XFree86 4.1)<p>
 <itemize>
-<item>Acceleration! Disabled for the moment.
+<item>DirectColor support
+<item>Silkenmouse support
 </itemize>
 
 <sect>Major changes in this release <p>
 <itemize>
-<item>ShadowFB support added
+<item>Gamma works now for >8bpp
 </itemize>
 
 <sect>Bugfixes<p>
 <itemize>
-<item>This is the first release of driver for XFree86 4.0.
+<item>Only some code cleanup done. No real bugfixes.
 </itemize>
 
 <sect>Known problems in current driver<p>
@@ -98,6 +99,7 @@ The option is not activated by default.
 <item>DDC-probing does not work correctly yet. No DDC information is found.
 <item>Switching from display to VC and back to display can lock up V2x00 cards.
 <item>When scrolling the virtual display on a V1000 card parts of the screen will become distorted. Problem disappears when you continue moving around. V2x00 does not exhibit this problem. Probably a bug in the driver rather than a limitation of the chip.
+<item>Depth 15 & 16 has problems with colors when DirectColor is used.
 </itemize>
 
 <sect>Work in progress (not finished in time for release) <p>

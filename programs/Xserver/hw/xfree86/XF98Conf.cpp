@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF98Conf.cpp,v 3.41 1999/07/05 12:01:49 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/XF98Conf.cpp,v 1.1 1999/07/19 13:36:11 dawes Exp $
 XCOMM
 XCOMM Copyright (c) 1994-1998 by The XFree86 Project, Inc.
 XCOMM
@@ -473,6 +473,20 @@ Section "Device"
     Driver	"mga"
 XCOMM    BusID	"PCI:0:10:0"
 EndSection
+
+Section "Device"
+    Identifier "NECTrident"
+    VendorName "NEC"
+    BoardName  "NEC Trident"
+    Driver     "trident"
+XCOMM    BusID	"PCI:0:8:0"
+XCOMM    Option	"NoPciBurst"
+XCOMM    Option	"XaaNoScreenToScreenCopy"
+XCOMM    Option	"XaaNoCPUToScreenColorExpandFill"
+XCOMM    Option	"XaaNoScanlineCPUToScreenColorExpandFill"
+XCOMM    Option	"XaaNoScreenToScreenColorExpandFill"
+XCOMM    VideoRam	2048
+Endsection
 
 XCOMM **********************************************************************
 XCOMM Screen sections.

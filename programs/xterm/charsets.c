@@ -1,10 +1,10 @@
 /*
- * $XFree86: xc/programs/xterm/charsets.c,v 1.7 1999/09/25 14:38:27 dawes Exp $
+ * $XFree86: xc/programs/xterm/charsets.c,v 1.8 2000/02/08 17:19:30 dawes Exp $
  */
 
 /************************************************************
 
-Copyright 1998-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1998-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 

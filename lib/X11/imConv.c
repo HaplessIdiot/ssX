@@ -31,7 +31,7 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
                                 fujiwara@a80.tech.yk.fujitsu.co.jp
 
 ******************************************************************/
-/* $XFree86: xc/lib/X11/imConv.c,v 1.22 2000/02/18 12:18:51 tsi Exp $ */
+/* $XFree86: xc/lib/X11/imConv.c,v 1.23 2000/04/06 13:05:01 dawes Exp $ */
 
 #define NEED_EVENTS
 #include <stdio.h>
@@ -409,7 +409,7 @@ static int keysym_to_ucs4(keysym)
 struct CodesetRec {
     unsigned long locale_code;
     char* locale_name;
-    char* escape_seq;
+    char* charset_name;
 };
 
 #define sLatin1	0L
@@ -438,38 +438,38 @@ struct CodesetRec {
 #define sUTF8	0x02000000L
 
 static struct CodesetRec CodesetTable[] = {
-    {sLatin1,	"ISO8859-1",	"\033-A"},
-    {sLatin2,	"ISO8859-2",	"\033-B"},
-    {sLatin3,	"ISO8859-3",	"\033-C"},
-    {sLatin4,	"ISO8859-4",	"\033-D"},
-    {sCyrillic,	"ISO8859-5",	"\033-L"},
-    {sArabic,	"ISO8859-6",	"\033-G"},
-    {sGreek,	"ISO8859-7",	"\033-F"},
-    {sHebrew,	"ISO8859-8",	"\033-H"},
-    {sLatin5,	"ISO8859-9",	"\033-M"},
-    {sLatin6,	"ISO8859-10",	"\033-V"},
-    {sThai,	"TACTIS",	"\033-T"},
-    {sKorean,	"ko.euc",	"\033$(C"},
-    {sThai,	"ISO8859-11",	"\033-T"},
-    {sThai,	"TIS620.2533-1", "\033-T"},
+    {sLatin1,	"ISO8859-1", NULL },
+    {sLatin2,	"ISO8859-2", NULL },
+    {sLatin3,	"ISO8859-3", NULL },
+    {sLatin4,	"ISO8859-4", NULL },
+    {sCyrillic,	"ISO8859-5", NULL },
+    {sArabic,	"ISO8859-6", NULL },
+    {sGreek,	"ISO8859-7", NULL },
+    {sHebrew,	"ISO8859-8", NULL },
+    {sLatin5,	"ISO8859-9", NULL },
+    {sLatin6,	"ISO8859-10",NULL },
+    {sKorean,	"ko.euc",	"KSC5601.1987-0:GL"},
+    {sThai,	"TACTIS",	"TIS620.2533-1:GR" },
+    {sThai,	"ISO8859-11",	"TIS620.2533-1:GR" },
+    {sThai,	"TIS620.2533-1", NULL },
 #if 0
-    {sLatin8,	"ISO8859-12",	"\033-?"},/* Celtic, superceded by -14 */
-    {sLatin7,	"ISO8859-13",	"\033-?"},/* Baltic Rim */
-    {sLatin8	"ISO8859-14",	"\033-?"},/* Celtic */
+    {sLatin8,	"ISO8859-12",	""},/* Celtic, superceded by -14 */
+    {sLatin7,	"ISO8859-13",	""},/* Baltic Rim */
+    {sLatin8	"ISO8859-14",	""},/* Celtic */
 #endif
-    {sUTF8,	"UTF-8",	"\033%G"},
+    {sUTF8,	"UTF-8",  "ISO10646-1"},
     /* Non-standard */
-    {sKoi8_r,	"KOI8-R", "\033%/1\200\210koi8-r\002"},
-    {sKoi8_u,	"KOI8-U", "\033%/1\200\211koi8-u\002"},
-    {sLatin9,	"ISO8859-15",	"\033%/1\200\213iso8859-15\002"},/* a.k.a. Latin-0 */
-    {sArmenian,	"ARMSCII-8", "\033%/1\200\210armscii-8\002"},
-    {sGeorgian,	"GEORGIAN-ACADEMY", "\033%/1\200\210georgian-academy\002"},
-    {sGeorgian,	"GEORGIAN-PS", "\033%/1\200\210georgian-ps\002"},
+    {sKoi8_r,	"KOI8-R",      NULL },
+    {sKoi8_u,	"KOI8-U",      NULL },
+    {sLatin9,	"ISO8859-15",  NULL },/* a.k.a. Latin-0 */
+    {sArmenian,	"ARMSCII-8",   NULL },
+    {sGeorgian,	"GEORGIAN-ACADEMY", NULL },
+    {sGeorgian,	"GEORGIAN-PS", NULL },
 	/* TODO find better values for the sLatin1 below */
-    {sLatin1,	"IBM-CP1133", "\033%/1\200\210ibm-cp1133\002"},
-    {sLatin1,	"MULELAO-1", "\033%/1\200\210mulelao-1\002"},
-    {sLatin1,	"VISCII1.1-1", "\033%/1\200\210viscii1.1-1\002"},
-    {sLatin1,	"TCVN-5712", "\033%/1\200\210tcvn-5712\002"},
+    {sLatin1,	"IBM-CP1133",  NULL },
+    {sLatin1,	"MULELAO-1",   NULL },
+    {sLatin1,	"VISCII1.1-1", NULL },
+    {sLatin1,	"TCVN-5712",   NULL },
 
 };
 
@@ -488,11 +488,11 @@ unsigned long Const *
 #if NeedFunctionPrototypes
 _XimGetLocaleCode (
     _Xconst char*	encoding_name,
-    XPointer*		cset_ret)
+    XlcCharSet*		charset_ret)
 #else
-_XimGetLocaleCode (name, cset_ret)
+_XimGetLocaleCode (encoding_name, charset_ret)
     _Xconst char*	encoding_name;
-    XPointer*		cset_ret;
+    XlcCharSet*		charset_ret;
 #endif
 {
     int i;
@@ -507,8 +507,21 @@ _XimGetLocaleCode (name, cset_ret)
         }
     }
   
-    if (cset_ret)
-        *cset_ret = (XPointer) cset;
+    if (charset_ret) {
+    	*charset_ret = NULL;
+    	if (cset->charset_name == NULL) {
+            char *name = Xmalloc(strlen(cset->locale_name) + 4);
+            if (name != NULL) {
+                strcpy(name, cset->locale_name);
+                strcat(name, ":GR");
+                *charset_ret = _XlcGetCharSet(name);
+            }
+        } else {
+            *charset_ret = _XlcGetCharSet(cset->charset_name);
+        }
+        if (*charset_ret == NULL)
+            *charset_ret = _XlcGetCharSet("ISO8859-1:GR");
+    }
     return &(cset->locale_code);
 }
 
@@ -549,7 +562,9 @@ _XimGetCharCode (locale_code, keysym, buf, nbytes)
 
     if (locale_code == sUTF8) {
         unsigned int ucs4 = keysym_to_ucs4 (keysym);
-        int count;
+
+        if (!ucs4)
+            return 0;
         if (ucs4 < 0x80)
             count = 1;
         else if (ucs4 < 0x800)
@@ -613,6 +628,8 @@ _XimGetCharCode (locale_code, keysym, buf, nbytes)
 		*buf = _Xkoi8_u[keysym & 0x7f];
 	    else
 		*buf = _Xcyrillic[keysym & 0x7f];
+	    if (!buf[0])
+		count = 0;
 	    break;
 	case sGreek:
 	    *buf = _Xgreek[keysym & 0x7f];
@@ -772,13 +789,11 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     KeySym*		keysym;
     XComposeStatus*	status;
 {
-    int count, local_count;
+    int count;
     KeySym symbol;
-    struct CodesetRec *cset;
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
-    XLCd lcd = im->core.lcd;
-    unsigned char local_buf[BUF_SIZE];
+    XimCommonPrivateRec* private = &im->private.common;
     unsigned char look[BUF_SIZE];
 
     /* force a latin-1 lookup for compatibility */
@@ -786,31 +801,35 @@ _XimLookupMBText(ic, event, buffer, nbytes, keysym, status)
     if (keysym != NULL) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) return count;
 
-    _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
-    
-    if ((count == 0 && cset != NULL) || 
-	(count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
-	 cset->locale_code != 0)) {
-	if ((count = _XimGetCharCode(cset->locale_code, symbol,
-                                     look, sizeof look))) {
-	    strcpy((char*) local_buf, cset->escape_seq);
-	    local_count = strlen(cset->escape_seq);
-	    strncpy((char *)(&local_buf[local_count]), (char *)look, count);
-	    local_count += count;
-	    local_buf[local_count] = '\0';
-	    if ((count = im->methods->ctstombs(ic->core.im,
-				(char*) local_buf, local_count,
-				(char *)buffer, nbytes, &dummy)) < 0) {
-		count = 0;
-	    }
-	}
-    } else if (count > 1) { /* not ASCII Encoding */
+    if (count > 1) {
 	memcpy(look, (char *)buffer,count);
 	look[count] = '\0';
 	if ((count = im->methods->ctstombs(ic->core.im,
 				(char*) look, count, 
 				buffer, nbytes, &dummy)) < 0) {
 	    count = 0;
+	}
+    } else if ((count == 0) || 
+	       (count == 1 && (symbol > 0x7f && symbol < 0xff00) && 
+	       private->locale_code != 0)) {
+	if ((count = _XimGetCharCode(private->locale_code, symbol,
+                                     look, sizeof look))) {
+
+            XPointer args[1];
+            unsigned char *from = look;
+            unsigned char *to = (unsigned char*) buffer; 
+            int from_len = count;
+            int to_len = nbytes;
+            args[0] = (XPointer) private->keyboard_charset;
+            
+	    if ((count = _XlcConvert(private->cstomb_conv,
+                                (XPointer*) &from, &from_len,
+                                (XPointer*) &to, &to_len,
+				args, 1 )) != 0) {
+		count = 0;
+	    } else {
+                count = nbytes - to_len;
+	    }
 	}
     }
     /* 
@@ -830,13 +849,11 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     KeySym*		keysym;
     XComposeStatus*	status;
 {
-    int count, local_count;
+    int count;
     KeySym symbol;
-    struct CodesetRec *cset;
     Status	dummy;
     Xim	im = (Xim)ic->core.im;
-    XLCd lcd = im->core.lcd;
-    unsigned char local_buf[BUF_SIZE];
+    XimCommonPrivateRec* private = &im->private.common;
     unsigned char look[BUF_SIZE];
 
     /* force a latin-1 lookup for compatibility */
@@ -844,29 +861,32 @@ _XimLookupWCText(ic, event, buffer, nbytes, keysym, status)
     if (keysym != NULL) *keysym = symbol;
     if ((nbytes == 0) || (symbol == NoSymbol)) return count;
 
-    _XimGetLocaleCode(XLC_PUBLIC(lcd,encoding_name), (XPointer *) &cset);
-    
-    if ((count == 0 && cset != NULL) ||
-	(count == 1 && (symbol > 0x7f && symbol < 0xff00) &&
-	 cset->locale_code != 0)) {
-	if ((count = _XimGetCharCode(cset->locale_code, symbol,
-                                     look, sizeof look))) {
-	    strcpy((char*) local_buf, cset->escape_seq);
-	    local_count = strlen(cset->escape_seq);
-	    strncpy((char *)(&local_buf[local_count]), (char *)look, count);
-	    local_count += count;
-	    local_buf[local_count] = '\0';
-	    if ((count = im->methods->ctstowcs(ic->core.im,
-				(char*) local_buf, local_count,
-				buffer, nbytes, &dummy)) < 0) {
-		count = 0;
-	    }
-	}
-    } else if (count > 1) {
+    if (count > 1) {
 	if ((count = im->methods->ctstowcs(ic->core.im,
 				(char*) look, count, 
 				buffer, nbytes, &dummy)) < 0) {
 	    count = 0;
+	}
+    } else if ((count == 0) ||
+	       (count == 1 && (symbol > 0x7f && symbol < 0xff00) &&
+	       private->locale_code != 0)) {
+	if ((count = _XimGetCharCode(private->locale_code, symbol,
+                                     look, sizeof look))) {
+            XPointer args[1];
+            unsigned char *from = look;
+            wchar_t *to = buffer; 
+            int from_len = count;
+            int to_len = nbytes;
+            args[0] = (XPointer) private->keyboard_charset;
+            
+	    if ((count = _XlcConvert(private->cstowc_conv,
+                                (XPointer*) &from, &from_len,
+                                (XPointer*) &to, &to_len,
+				args, 1 )) != 0) {
+		count = 0;
+	    } else {
+                count = nbytes - to_len;
+	    }
 	}
     } else
 	/* 

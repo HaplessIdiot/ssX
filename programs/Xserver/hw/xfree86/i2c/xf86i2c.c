@@ -6,7 +6,7 @@
  *      (c) 1998 Gerd Knorr <kraxel@cs.tu-berlin.de>
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.5 1999/04/11 13:11:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.c,v 1.6 1999/06/12 15:37:08 dawes Exp $ */
 
 #if 1
 #include "misc.h"
@@ -38,17 +38,25 @@ typedef void *Pointer;
 #define I2C_TIMEOUT(x)	/* (x) */ /* Report timeouts */
 #define I2C_TRACE(x)	/* (x) */ /* Report progress */
 
+/* Set which OSs have bad gettimeofday resolution. */
+#if defined(SVR4) && !defined(sun)
+#define BAD_GETTIMEOFDAY_RESOLUTION
+#endif
+
+
 /* This is the default I2CUDelay function if not supplied by the driver.
  * High level I2C interfaces implementing the bus protocol in hardware
  * should supply this function too.
  *
  * Delay execution at least usec microseconds.
  * All values 0 to 1e6 inclusive must be expected.
- *
+ */
+
+#ifdef BAD_GETTIMEOFDAY_RESOLUTION
+/*
  * This is temporary until a better, portable
  * way is found. Adjust bogo_usec to match CPU speed.
  */
-
 static int bogo_usec = 500;
 
 static void
@@ -60,6 +68,29 @@ I2CUDelay(I2CBusPtr b, int usec)
 	for (i = usec * bogo_usec; i > 0; i--)
 	    /* (perhaps hw delay action) */;
 }
+#else
+static void
+I2CUDelay(I2CBusPtr b, int usec)
+{
+  long b_secs, b_usecs;
+  long a_secs, a_usecs;
+  long d_secs, d_usecs;
+  long diff;
+
+  if (usec > 0) {
+    xf86getsecs(&b_secs, &b_usecs);
+    do {
+      /* It would be nice to use {xf86}usleep, 
+       * but usleep (1) takes >10000 usec !
+       */
+      xf86getsecs(&a_secs, &a_usecs);
+      d_secs  = (a_secs - b_secs);
+      d_usecs = (a_usecs - b_usecs);
+      diff = d_secs*1000000 + d_usecs;
+    } while (diff>0 && diff<usec);
+  }
+}
+#endif
 
 /* Most drivers will register just with GetBits/PutBits functions.
  * The following functions implement a software I2C protocol

@@ -1,10 +1,10 @@
 /*
- * $XFree86: xc/programs/xterm/doublechr.c,v 3.8 1999/09/25 14:38:29 dawes Exp $
+ * $XFree86: xc/programs/xterm/doublechr.c,v 3.9 2000/02/08 17:19:34 dawes Exp $
  */
 
 /************************************************************
 
-Copyright 1997-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1997-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 

@@ -2,7 +2,7 @@
  *  video4linux Xv Driver 
  *  based on Michael Schimek's permedia 2 driver.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.16 2000/02/22 02:00:54 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/v4l/v4l.c,v 1.18 2000/04/01 19:05:38 mvojkovi Exp $ */
 
 #include "videodev.h"
 #include "xf86.h"
@@ -168,18 +168,19 @@ InputVideoFormats[] = {
     { 32, TrueColor },
 };
 
-#define V4L_ATTR 8
+#define V4L_ATTR (sizeof(Attributes) / sizeof(XF86AttributeRec))
 
-static XF86AttributeRec Attributes[V4L_ATTR] = {
+static XF86AttributeRec Attributes[] = {
    {XvSettable | XvGettable, -1000,    1000, XV_ENCODING},
    {XvSettable | XvGettable, -1000,    1000, XV_BRIGHTNESS},
    {XvSettable | XvGettable, -1000,    1000, XV_CONTRAST},
    {XvSettable | XvGettable, -1000,    1000, XV_SATURATION},
    {XvSettable | XvGettable, -1000,    1000, XV_HUE},
-   {XvSettable | XvGettable, -1000,    1000, XV_VOLUME},
    {XvSettable | XvGettable,     0,       1, XV_MUTE},
    {XvSettable | XvGettable,     0, 16*1000, XV_FREQ},
 };
+static XF86AttributeRec VolumeAttr = 
+   {XvSettable | XvGettable, -1000,    1000, XV_VOLUME};
 
 
 /* ---------------------------------------------------------------------- */
@@ -356,7 +357,7 @@ V4lPutVideo(ScrnInfoPtr pScrn,
 	    REGION_SUBTRACT(pScrn->pScreen, &newReg, &newReg, clipBoxes);
 	    clipBoxes = &newReg;
 	}
-
+	
 	/* start overlay */
 	DEBUG(xf86DrvMsgVerb(pScrn->scrnIndex, X_INFO, 2,
 			     "over: - %d,%d -> %d,%d  (%dx%d) (yuv=%dx%d)\n",
@@ -555,8 +556,9 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
 		pPPriv->audio.flags |= VIDEO_AUDIO_MUTE;
 	    else
 		pPPriv->audio.flags &= ~VIDEO_AUDIO_MUTE;
-	} else if (attribute == xvVolume && (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)) {
-	    pPPriv->audio.volume = xv_to_v4l(value);
+	} else if (attribute == xvVolume) {
+	    if (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)
+		pPPriv->audio.volume = xv_to_v4l(value);
 	} else {
 	    ret = BadValue;
 	}
@@ -566,12 +568,10 @@ V4lSetPortAttribute(ScrnInfoPtr pScrn,
     } else if (attribute == xvFreq) {
 	if (-1 == ioctl(pPPriv->fd,VIDIOCSFREQ,&value))
 	    perror("ioctl VIDIOCSFREQ");
-#if 0
     } else if (pPPriv->have_yuv &&
 	       pPPriv->myfmt->setAttribute) {
 	/* not mine -> pass to yuv scaler driver */
 	ret = pPPriv->myfmt->setAttribute(pScrn, attribute, value);
-#endif
     } else {
 	ret = BadValue;
     }
@@ -608,19 +608,18 @@ V4lGetPortAttribute(ScrnInfoPtr pScrn,
 	ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio);
 	if (attribute == xvMute) {
 	    *value = (pPPriv->audio.flags & VIDEO_AUDIO_MUTE) ? 1 : 0;
-	} else if (attribute == xvVolume && (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)) {
-	    *value = v4l_to_xv(pPPriv->audio.volume);
+	} else if (attribute == xvVolume) {
+	    if (pPPriv->audio.flags & VIDEO_AUDIO_VOLUME)
+		*value = v4l_to_xv(pPPriv->audio.volume);
 	} else {
 	    ret = BadValue;
 	}
     } else if (attribute == xvFreq) {
 	ioctl(pPPriv->fd,VIDIOCGFREQ,value);
-#if 0
     } else if (pPPriv->have_yuv &&
 	       pPPriv->myfmt->getAttribute) {
 	/* not mine -> pass to yuv scaler driver */
 	ret = pPPriv->myfmt->getAttribute(pScrn, attribute, value);
-#endif
     } else {
 	ret = BadValue;
     }
@@ -811,7 +810,6 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 
 	/* add attribute lists */
 	if (pPPriv->have_yuv) {
-#if 0
 	    VAR[i]->nAttributes = V4L_ATTR + pPPriv->myfmt->num_attributes;
 	    VAR[i]->pAttributes = xalloc(VAR[i]->nAttributes *
 					 sizeof(XF86AttributeRec));
@@ -819,10 +817,6 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 		   sizeof(XF86AttributeRec) * V4L_ATTR);
 	    memcpy(VAR[i]->pAttributes+V4L_ATTR, pPPriv->myfmt->attributes,
 		   sizeof(XF86AttributeRec) * pPPriv->myfmt->num_attributes);
-#else
-	    VAR[i]->nAttributes = V4L_ATTR;
-	    VAR[i]->pAttributes = Attributes;
-#endif
 	} else {
 	    VAR[i]->nAttributes = V4L_ATTR;
 	    VAR[i]->pAttributes = Attributes;
@@ -854,6 +848,27 @@ V4LInit(ScrnInfoPtr pScrn, XF86VideoAdaptorPtr **adaptors)
 	VAR[i]->nFormats =
 		sizeof(InputVideoFormats) / sizeof(InputVideoFormats[0]);
 	VAR[i]->pFormats = InputVideoFormats;
+
+	/* Check whether we have VIDEO_AUDIO_VOLUME */
+	if (!ioctl(pPPriv->fd,VIDIOCGAUDIO,&pPPriv->audio) && 
+	    pPPriv->audio.flags & VIDEO_AUDIO_VOLUME) {
+	  XF86AttributeRec *oldattrs = VAR[i]->pAttributes;
+	  int nattrs = VAR[i]->nAttributes;
+
+	  DEBUG(xf86Msg(X_INFO, "v4l: Volume supported, adding XV_VOLUME to attribute list\n"));
+
+	  VAR[i]->pAttributes = xalloc((nattrs + 1) *
+					 sizeof(XF86AttributeRec));
+	  memcpy(VAR[i]->pAttributes, oldattrs,
+		sizeof(XF86AttributeRec) * nattrs);
+	  memcpy(VAR[i]->pAttributes+nattrs, &VolumeAttr, 
+		 sizeof(XF86AttributeRec));
+	  VAR[i]->nAttributes++;
+	} else {
+	  DEBUG(xf86Msg(X_INFO, "v4l: Volume not supported\n"));
+	}
+	  
+
 	if (fd != -1)
 	    close(fd);
     }

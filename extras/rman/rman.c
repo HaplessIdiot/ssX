@@ -16,7 +16,7 @@ static char rcsid[] = "Header: /home/cs/phelps/spine/rman/RCS/rman.c,v 1.144 199
      source interpretation added September 24, 1996
 	renamed PolyglotMan due to lawsuit by Rosetta, Inc. August 8, 1997
 */
-/* $XFree86: xc/extras/rman/rman.c,v 1.6 2000/03/21 23:17:21 dawes Exp $ */
+/* $XFree86: xc/extras/rman/rman.c,v 1.7 2000/05/23 04:47:35 dawes Exp $ */
 
 
 /* TO DO ****
@@ -291,7 +291,8 @@ int fIP=0;
 /* case insensitive versions of strcmp and strncmp */
 
 static int
-stricmp(const char *s1, const char *s2) {
+stricmp(const char *s1, const char *s2)
+{
 	assert(s1!=NULL && s2!=NULL);
 	/*strincmp(s1, s2, strlen(s1)+1);*/
 
@@ -305,12 +306,14 @@ stricmp(const char *s1, const char *s2) {
 }
 
 static int
-lcexceptionscmp(const void *a, const void *b) {
+lcexceptionscmp(const void *a, const void *b)
+{
 	return stricmp(*(char **)a, *(char **)b);
 }
 
 static int
-strincmp(const char *s1, const char *s2, size_t n) {
+strincmp(const char *s1, const char *s2, size_t n)
+{
 	assert(s1!=NULL && s2!=NULL && n>0);
 
 	while (n>0 && tolower(*s1)==tolower(*s2)) {
@@ -323,7 +326,8 @@ strincmp(const char *s1, const char *s2, size_t n) {
 
 /* compare string and a colon-separated list of strings */
 static int
-strcoloncmp2(char *candidate, int end, const char *list, int sen) {
+strcoloncmp2(char *candidate, int end, const char *list, int sen)
+{
 	const char *l = list;
 	char *c,c2;
 
@@ -358,7 +362,8 @@ strcoloncmp2(char *candidate, int end, const char *list, int sen) {
 }
 
 static int
-strcoloncmp(char *candidate, int end, const char *list) {
+strcoloncmp(char *candidate, int end, const char *list)
+{
 	int sen=1;
 	const char *l = list;
 
@@ -373,7 +378,8 @@ strcoloncmp(char *candidate, int end, const char *list) {
 
 /* strdup not universally available */
 static char *
-mystrdup(const char *p) {
+mystrdup(const char *p)
+{
   char *q;
 
   if (p==NULL) return NULL;
@@ -389,7 +395,8 @@ mystrdup(const char *p) {
    else uc first letter, lc rest
 */
 static void
-casify(char *p) {
+casify(char *p)
+{
 	char tmpch, *q, **exp;
 	int fuc;
 
@@ -415,7 +422,8 @@ casify(char *p) {
 /* add an attribute tag to a range of characters */
 
 static void
-tagadd(int /*enum tagtype--abused in source parsing*/ type, int first, int last) {
+tagadd(int /*enum tagtype--abused in source parsing*/ type, int first, int last)
+{
 	assert(type!=NOTAG);
 
 	if (tagc<MAXTAGS) {
@@ -434,7 +442,8 @@ tagadd(int /*enum tagtype--abused in source parsing*/ type, int first, int last)
 */
 
 static void
-tocadd(char *text, enum command type, int line) {
+tocadd(char *text, enum command type, int line)
+{
 	char *r;
 
 	assert(text!=NULL && strlen(text)>0);
@@ -458,7 +467,8 @@ char *href;
 int fmanRef=1;	/* make 'em links or just show 'em? */
 
 static void
-manrefextract(char *p) {
+manrefextract(char *p)
+{
   char *p0;
   static char *nonhref = "\">'";
 
@@ -486,7 +496,7 @@ manrefextract(char *p) {
 
 
 
-
+
 /*
  * OUTPUT FORMATS
  *    *** break these out so can selectively include them in the binary ***
@@ -494,7 +504,8 @@ manrefextract(char *p) {
  */
 
 static void
-formattedonly(void) {
+formattedonly(void)
+{
 	fprintf(stderr, "The output formats for Tk and TkMan require nroff-formatted input\n");
 	exit(1);
 }
@@ -504,7 +515,8 @@ formattedonly(void) {
  * DefaultFormat -- in weak OO inheritance, top of hierarchy for everybody
  */
 static void
-DefaultFormat(enum command cmd) {
+DefaultFormat(enum command cmd)
+{
   int i;
   
   switch (cmd) {
@@ -537,7 +549,8 @@ DefaultLine(enum command cmd) {
  */
 
 static void
-DefaultPara(enum command cmd) {
+DefaultPara(enum command cmd)
+{
 	switch (cmd) {
 	default:
 	  DefaultFormat(cmd);
@@ -551,7 +564,8 @@ DefaultPara(enum command cmd) {
  */
 
 static void
-Tk(enum command cmd) {
+Tk(enum command cmd)
+{
 	static int skip=0;	/* skip==1 when line has no text */
 	int i;
 
@@ -719,8 +733,6 @@ Tk(enum command cmd) {
 }
 
 
-
-
 /*
  * TkMan -- Tk format wrapped with commands
  */
@@ -733,7 +745,8 @@ int rebuspatcnt=0, rebuspatlen[25];
 char *rebuspat[25];
 
 static void
-TkMan(enum command cmd) {
+TkMan(enum command cmd)
+{
 	static int lastscnt=-1;
 	static int lastlinelen=-1;
 	static int lastsect=0;
@@ -851,13 +864,14 @@ TkMan(enum command cmd) {
 
 
 
-
+
 /*
  * ASCII
  */
 
 static void
-ASCII(enum command cmd) {
+ASCII(enum command cmd)
+{
 	int i;
 
 	switch (cmd) {
@@ -948,13 +962,14 @@ ASCII(enum command cmd) {
 }
 
 
-
+
 /*
  * Perl 5 pod ("plain old documentation")
  */
 
 static void
-pod(enum command cmd) {
+pod(enum command cmd)
+{
 	static int curindent=0;
 	int i;
 
@@ -1104,9 +1119,10 @@ pod(enum command cmd) {
 }
 
 
-
+
 static void
-Sections(enum command cmd) {
+Sections(enum command cmd)
+{
 
 	switch (cmd) {
 	   case ENDSECTHEAD:
@@ -1177,9 +1193,10 @@ Sections(enum command cmd) {
 }
 
 
-
+
 static void
-Roff(enum command cmd) {
+Roff(enum command cmd)
+{
 	switch (cmd) {
 	   case BEGINDOC:
 		I=1;
@@ -1285,19 +1302,21 @@ Roff(enum command cmd) {
 
 /* can't test Ensemble, probably not used, so why take up space? */
 #if 0
-
+
 /*
  * Ensemble
  */
 
 static void
-EnsembleDumpTags(void) {
+EnsembleDumpTags(void)
+{
 	int i,tag;
 	int fI=0, fB=0;
 
 	if (!tagc) return;
 
-	printf("}{}{");		/* header */
+	/* { */
+	printf("}{}{");		/* } header */
 
 	/* italics */
 	for (i=0; i<tagc; i++) {
@@ -1331,13 +1350,15 @@ EnsembleDumpTags(void) {
 	if (fH) printf(")");
 */
 
+	/* { */
 	/* don't put  printf("}");  here as trailer -- controlling function expects to close it */
 
 	tagc=0;
 }
 
 static void
-Ensemble(enum command cmd) {
+Ensemble(enum command cmd)
+{
 
 	switch (cmd) {
 	   case BEGINDOC:
@@ -1407,7 +1428,7 @@ Ensemble(enum command cmd) {
 	   case CHARDAGGER:
 	   case CHARPLUSMINUS:
 	   case CHARNBSP:
-+ 	   case CHARCENT:
+ 	   case CHARCENT:
  	   case CHARSECT:
  	   case CHARCOPYR:
  	   case CHARNOT:
@@ -1451,13 +1472,14 @@ Ensemble(enum command cmd) {
 #endif
 
 
-
+
 /*
  * HTML
  */
 
 static void
-HTML(enum command cmd) {
+HTML(enum command cmd)
+{
 	static int pre=0;
 	int i;
 	int lasttoc;
@@ -1465,7 +1487,7 @@ HTML(enum command cmd) {
 	/* always respond to these signals */
 	switch (cmd) {
 	   case CHARNBSP:		printf("&nbsp;"); I++; break;
-	   case CHARTAB:		printf("<tt> </tt>&nbsp;<tt> </tt>&nbsp;");		break;
+	   case CHARTAB:		printf("<tt>&#32;</tt>&nbsp;<tt>&#32;</tt>&nbsp;");		break;
 	  /* old browsers--who uses these?--don't understand symbolic codes */
 	  /*
  	   case CHARNBSP:		printf("&#160;"); I++; break;
@@ -1749,7 +1771,7 @@ HTML(enum command cmd) {
 }
 
 
-
+
 /*
  * SGML
  */
@@ -1760,7 +1782,8 @@ HTML(enum command cmd) {
 /*char *docbookpath = "docbook.dtd";*/
 
 static void
-SGML(enum command cmd) {
+SGML(enum command cmd)
+{
 	static int pre=0;
 	int i;
 	char *p;
@@ -1988,14 +2011,15 @@ SGML(enum command cmd) {
 		DefaultPara(cmd);
 	}
 }
-
+
 #if 0
 /*
  * GNU Texinfo -- somebody should finish this up
  */
 
 static void
-Texinfo(enum command cmd) {
+Texinfo(enum command cmd)
+{
 	static int pre=0;
 	int i;
 
@@ -2229,12 +2253,12 @@ Texinfo(enum command cmd) {
 		if ((fontdelta+=intArg)!=0) printf("<FONT SIZE=%c1>", (intArg>0)?'+':'-'); else printf("</FONT>\n");
 		break;
 
-	   case BEGINBOLD:		printf("@b{"); break;
+	   case BEGINBOLD:		printf("@b{"); break; /* } */
 	   case BEGINITALICS:	printf("@i{"); break;
-	   case BEGINSC:		printf("@sc{"); break;
+	   case BEGINSC:		printf("@sc{"); break; /* } */
 	   case ENDITALICS:
 	   case ENDBOLD:
-	   case ENDSC:
+	   case ENDSC: /* { */
 		printf("}");
 		break;
 	   case BEGINBOLDITALICS:
@@ -2265,11 +2289,12 @@ Texinfo(enum command cmd) {
 #endif
 
 
-
+
 /* generates MIME compliant to RFC 1563 */
 
 static void
-MIME(enum command cmd) {
+MIME(enum command cmd)
+{
 	static int pre=0;
 	int i;
 
@@ -2463,13 +2488,14 @@ MIME(enum command cmd) {
 }
 
 
-
+
 /*
  * LaTeX
  */
 
 static void
-LaTeX(enum command cmd) {
+LaTeX(enum command cmd)
+{
 
 	switch (cmd) {
 	   case BEGINDOC:
@@ -2571,17 +2597,17 @@ LaTeX(enum command cmd) {
  	   case CHARDIV:		printf("\\div "); break;
 
 	   case BEGINCODE:
-	   case BEGINBOLD:		printf("{\\bf "); break;
-	   case BEGINSC:		printf("{\\sc "); break;
-	   case BEGINITALICS:	printf("{\\it "); break;
-	   case BEGINBOLDITALICS:printf("{\\bf\\it "); break;
-	   case BEGINMANREF:	printf("{\\sf "); break;
+	   case BEGINBOLD:		printf("{\\bf "); break; /* } */
+	   case BEGINSC:		printf("{\\sc "); break; /* } */
+	   case BEGINITALICS:	printf("{\\it "); break; /* } */
+	   case BEGINBOLDITALICS:printf("{\\bf\\it "); break; /* } */
+	   case BEGINMANREF:	printf("{\\sf "); break; /* } */
 	   case ENDCODE:
 	   case ENDBOLD:
 	   case ENDSC:
 	   case ENDITALICS:
 	   case ENDBOLDITALICS:
-	   case ENDMANREF:
+	   case ENDMANREF: /* { */
 		putchar('}');
 		break;
 	   case HR:		/*printf("\n%s\n", horizontalrule);*/ break;
@@ -2599,8 +2625,8 @@ LaTeX(enum command cmd) {
 
 
 static void
-LaTeX2e(enum command cmd) {
-
+LaTeX2e(enum command cmd)
+{
 	switch (cmd) {
 		/* replace selected commands ... */
 	   case BEGINDOC:
@@ -2618,11 +2644,11 @@ LaTeX2e(enum command cmd) {
 		I=0;
 		break;
 	   case BEGINCODE:
-	   case BEGINBOLD:		printf("\\textbf{"); break;
-	   case BEGINSC:		printf("\\textsc{"); break;
-	   case BEGINITALICS:	printf("\\textit{"); break;
-	   case BEGINBOLDITALICS:printf("\\textbf{\\textit{"); break;
-	   case BEGINMANREF:	printf("\\textsf{"); break;
+	   case BEGINBOLD:		printf("\\textbf{"); break; /* } */
+	   case BEGINSC:		printf("\\textsc{"); break; /* } */
+	   case BEGINITALICS:	printf("\\textit{"); break; /* } */
+	   case BEGINBOLDITALICS:printf("\\textbf{\\textit{"); break; /* }} */
+	   case BEGINMANREF:	printf("\\textsf{"); break; /* } {{ */
 	   case ENDBOLDITALICS:	printf("}}"); break;
 
 		/* ... rest same as old LaTeX */
@@ -2632,7 +2658,7 @@ LaTeX2e(enum command cmd) {
 }
 
 
-
+
 /*
  * Rich Text Format (RTF)
  */
@@ -2640,7 +2666,8 @@ LaTeX2e(enum command cmd) {
 /* RTF could use more work */
 
 static void
-RTF(enum command cmd) {
+RTF(enum command cmd)
+{
 
 	switch (cmd) {
 	   case BEGINDOC:
@@ -2741,17 +2768,17 @@ RTF(enum command cmd) {
 	   case CHARPLUSMINUS:	printf("\\pm "); break;
 
 	   case BEGINCODE:
-	   case BEGINBOLD:		printf("{\\b "); break;
-	   case BEGINSC:		printf("{\\fs20 "); break;
-	   case BEGINITALICS:	printf("{\\i "); break;
-	   case BEGINBOLDITALICS:printf("{\\b \\i "); break;
-	   case BEGINMANREF:	printf("{\\f22 "); break;
+	   case BEGINBOLD:		printf("{\\b "); break; /* } */
+	   case BEGINSC:		printf("{\\fs20 "); break; /* } */
+	   case BEGINITALICS:	printf("{\\i "); break; /* } */
+	   case BEGINBOLDITALICS:printf("{\\b \\i "); break; /* } */
+	   case BEGINMANREF:	printf("{\\f22 "); break; /* } */
 	   case ENDBOLD:
 	   case ENDCODE:
 	   case ENDSC:
 	   case ENDITALICS:
 	   case ENDBOLDITALICS:
-	   case ENDMANREF:
+	   case ENDMANREF: /* { */
 		putchar('}');
 		break;
 	   case HR:		printf("\n%s\n", horizontalrule); break;
@@ -2772,27 +2799,29 @@ RTF(enum command cmd) {
 }
 
 
-
+
 /*
  * pointers to existing tools
  */
 
 static void
-PostScript(enum command cmd) {
+PostScript(enum command cmd)
+{
 	fprintf(stderr, "Use groff or psroff to generate PostScript.\n");
 	exit(1);
 }
 
 
 static void
-FrameMaker(enum command cmd) {
+FrameMaker(enum command cmd)
+{
 	fprintf(stderr, "FrameMaker comes with filters that convert from roff to MIF.\n");
 	exit(1);
 }
 
 
 
-
+
 /*
  * Utilities common to both parses
  */
@@ -2811,7 +2840,8 @@ FrameMaker(enum command cmd) {
 int Psect=0, Psub=0, Pbp=0, Pbt=0, Pb=0, Pbul=0;
 
 static void
-pop(enum command cmd) {
+pop(enum command cmd)
+{
 	assert(cmd==ENDINDENT || cmd==BEGINBULLET || cmd==BEGINBULTXT || cmd==BEGINBULPAIR || cmd==BEGINBODY || cmd==BEGINSECTION || cmd==BEGINSUBSECTION || cmd==ENDDOC);
 /*
 	int i;
@@ -2850,7 +2880,8 @@ pop(enum command cmd) {
 
 
 static void
-poppush(enum command cmd) {
+poppush(enum command cmd)
+{
 	assert(cmd==ENDINDENT || cmd==BEGINBULLET || cmd==BEGINBULTXT || cmd==BEGINBULPAIR || cmd==BEGINBODY || cmd==BEGINSECTION || cmd==BEGINSUBSECTION);
 
 	pop(cmd);
@@ -2871,7 +2902,7 @@ poppush(enum command cmd) {
 }
 
 
-
+
 /*
  * PREFORMATTED PAGES PARSING
  */
@@ -2879,7 +2910,8 @@ poppush(enum command cmd) {
 /* wrapper for getchar() that expands tabs, and sends maximum of n=40 consecutive spaces */
 
 static int
-getchartab(void) {
+getchartab(void)
+{
 	static int tabexp = 0;
 	static int charinline = 0;
 	static int cspccnt = 0;
@@ -2910,7 +2942,8 @@ getchartab(void) {
 
 /* replace gets.  handles hyphenation too */
 static char *
-la_gets(char *buf) {
+la_gets(char *buf)
+{
 	static char la_buf[MAXBUF];	/* can lookahead a full line, but nobody does now */
 	static int fla=0, hy=0;
 	char *ret,*p;
@@ -2980,7 +3013,8 @@ char phrase[MAXBUF];	/* first "phrase" (space of >=3 spaces) */
 int phraselen;
 
 static void
-filterline(char *buf, char *plain) {
+filterline(char *buf, char *plain)
+{
 	char *p,*q,*r;
 	char *ph;
 	int iq;
@@ -3069,7 +3103,7 @@ filterline(char *buf, char *plain) {
 
 		/** backspace-related filtering **/
 
-		/* else */ if (*p=='\b' && p[1]=='_' && q>plain && q[-1]=='+') {
+		if (*p=='\b' && p[1]=='_' && q>plain && q[-1]=='+') {
 			/* bold plus/minus(!) */
 			q[-1]=c_plusminus;
 			while (*p=='\b' && p[1]=='_') p+=2;
@@ -3247,7 +3281,8 @@ int fHead=0;
 int fFoot=0;
 
 static void
-preformatted_filter(void) {
+preformatted_filter(void)
+{
 	const int MINRM=50;		/* minimum column for right margin */
 	const int MINMID=20;
 	const int HEADFOOTSKIP=20;
@@ -3623,7 +3658,7 @@ preformatted_filter(void) {
 }
 
 
-
+
 /*
  * SOURCE CODE PARSING
  *    for better transcription short of full nroff interpreter
@@ -3743,10 +3778,12 @@ int finlist=0;
 int sublevel=0;
 
 static char *
-source_gets(void) {
+source_gets(void)
+{
   char *p,*q;
   char *ret = (*in)?buf:NULL;
   int i;
+  char *begin;
   char tmpbuf[MAXBUF];
   char name[3];
 
@@ -3776,8 +3813,10 @@ source_gets(void) {
 
     /* if comment at start of line, OK */
     /* dynamically determine iff Tcl/Tk page by scanning comments */
+    begin = p;
     if (*p=='\\' && *(p+1)=='"') {
-	    if (!fTclTk && strstr(p+1,"supplemental macros used in Tcl/Tk")!=NULL) fTclTk=1;
+	if (!fTclTk && strstr(p+1,"supplemental macros used in Tcl/Tk")!=NULL) fTclTk=1;
+	if (fTclTk)
 	    p+=2;
     }
 
@@ -3800,7 +3839,7 @@ source_gets(void) {
 		  }
 		}
 		q+=strlen(q);
-	   } else if (*p=='"') {	/* comment in Digital UNIX, OK elsewhere? */
+	   } else if (*p=='"' && (p != begin+1)) {	/* comment in Digital UNIX, OK elsewhere? */
 		*p='\0';
 		q--; while (q>buf && isspace(*q)) q--;	/* trim tailing whitespace */
 		q++; *q='\0';
@@ -3813,13 +3852,13 @@ source_gets(void) {
     }
 
     /* dumb Digital--later */
-    /*if (q-3>plain && q[-1]=='{' && q[-2]=='\\' && q[-3]==' ') q[-3]='\n';*/
+    /*if (q-3>plain && q[-1]=='{' && q[-2]=='\\' && q[-3]==' ') q[-3]='\n'; }*/
 
     /* close off buf */
     *q='\0';
 
 #if 0
-    if (q>buf && q[-1]=='\\' && *in=='.') { /* append next line * /} else break;*/
+    if (q>buf && q[-1]=='\\' && *in=='.') /* append next line * / else break;*/
 #endif
     break;
   }
@@ -3838,7 +3877,8 @@ int sI=0;
 int fFlush=1;
 
 static void
-source_flush(void) {
+source_flush(void)
+{
   int i,j;
   char *p,*q,*r;
   int c;
@@ -3912,7 +3952,8 @@ source_flush(void) {
 
 /* source_out stuffs characters in a buffer */
 static char *
-source_out0(const char *pin, char end) {
+source_out0(const char *pin, char end)
+{
   /* stack of character formattings */
   static enum tagtype styles[20];
   static int style=-1;
@@ -3988,7 +4029,7 @@ source_out0(const char *pin, char end) {
 	   break;
 	 case '(':	/* multicharacter macros */
 	   p++;
-	   for (i=0; i<speccnt; i++) {
+	   for (i=0; (unsigned)i<speccnt; i++) {
 		if (p[0]==spec[i].key[0] && p[1]==spec[i].key[1]) {
 		  p+=2;
 		  for (j=0; spec[i].subst[j]; j++) sputchar(spec[i].subst[j]);
@@ -4019,7 +4060,7 @@ source_out0(const char *pin, char end) {
 	   }
 	   break;
 #if 0
-	 } else if (*p=='|') {
+	 case '|':
 	   stagadd(CHARNBSP);	/* nonbreaking space */
 #if 0
 	   sputchar(' ');
@@ -4041,7 +4082,7 @@ source_out0(const char *pin, char end) {
 	   p++;
 	   break;
 #if 0
-	 } else if (*p=='^') {
+	 case '^':
 	   /* end stylings? (found in Solaris) */
 	   p++;
 #endif
@@ -4084,7 +4125,7 @@ source_out0(const char *pin, char end) {
     /* check for man page reference and flush buffer if safe */
     /* postpone check until after following character so catch closing tags */
     if ((sI>=4+1 && plain[sI-1-1]==')') ||
-	   /*  (plain[sI-1]==' ' && (q=strchr(plain,' '))!=NULL && q<&plain[sI-1])) {*/
+	   /*  (plain[sI-1]==' ' && (q=strchr(plain,' '))!=NULL && q<&plain[sI-1])) */
 	 (plain[sI-1]==' ' && !isalnum(plain[sI-1-1]))) {
 	 /* regardless, flush buffer */
 	 source_flush();
@@ -4099,13 +4140,15 @@ source_out0(const char *pin, char end) {
 
 /* oh, for function overloading.  inlined by compiler, probably */
 static char *
-source_out(const char *p) {
+source_out(const char *p)
+{
   return source_out0(p,'\0');
 }
 
 
 static char *
-source_out_word(const char *p) {
+source_out_word(const char *p)
+{
   char end = ' ';
 
   while (*p && isspace(*p)) p++;
@@ -4120,7 +4163,8 @@ source_out_word(const char *p) {
 
 
 static void
-source_struct(enum command cmd) {
+source_struct(enum command cmd)
+{
   source_out("\\fR\\s0");	/* don't let run-on stylings run past structural units */
   source_flush();
   if (cmd==SHORTLINE) linelen=0;
@@ -4134,7 +4178,8 @@ int finnf=0;
 static void source_line(char *p);
 
 static void
-source_subfile(char *newin) {
+source_subfile(char *newin)
+{
   char *p;
   char *oldin = in;
 
@@ -4151,7 +4196,8 @@ source_subfile(char *newin) {
 
 /* have to delay acquisition of list tag */
 static void
-source_list(void) {
+source_list(void)
+{
   static int oldlisttype;	/* OK to have just one because nested lists done with RS/RE */
   char *q;
   int i;
@@ -4196,7 +4242,8 @@ static int inComment=0;
 static int isComment=0;
 
 static void
-source_command(char *p) {
+source_command(char *p)
+{
   static int lastif=1;
   int mylastif;
   char *cmd=p;
@@ -4226,6 +4273,9 @@ source_command(char *p) {
   while (*p && !isspace(*p)) p++;
   if (*p) { *p='\0'; p++; }
   /* should set up argv, argc for command arguments--it's regular enough that everyone doesn't have to do it itself */
+
+  isComment = (/*checkcmd("") ||*/ !strncmp(cmd, "\\\"", 2) || /*DEC triple dot*/checkcmd(".."));
+  if (inComment && !isComment) { source_struct(ENDCOMMENT); inComment=0; }	/* special case to handle transition */
 
   if (isComment) {
     /* maybe have BEGINCOMMENT, ENDCOMMENT, COMMENTLINE */
@@ -4399,7 +4449,7 @@ source_command(char *p) {
 
     lastif = cond;
     if (strncmp(p,"\\{",2)==0) {	/* rather than handle groups here, have turn on/off output flag? */
-	    p+=2; while (isspace(*p)) p++;
+	    p+=2; while (isspace(*p)) p++; /* {{ */
 	    while (strncmp(p,".\\}",3)!=0 || strncmp(p,"\\}",2)!=0 /*Solaris*/) {
 		    if (cond) source_line(p);
 		    if ((p=source_gets())==NULL) break;
@@ -4505,6 +4555,7 @@ source_command(char *p) {
 				if (read(fid, sobuf, fileinfo.st_size) == fileinfo.st_size) {
 				  sobuf[fileinfo.st_size]='\0';
 				  /* dumb Digital puts \\} closers on same line */
+				  /* {{ */
 				  for (q=sobuf; (q=strstr(q," \\}"))!=NULL; q+=3) *q='\n';
 				  source_subfile(sobuf);
 				  err = 0;
@@ -4656,7 +4707,7 @@ source_command(char *p) {
 
 	 /* count number of entries on line.  if >1, can use to set tableSep */
 	 insertat=0; for (j=0; *tbl[tbli][j]; j++) if (*tbl[tbli][j]!='s') insertat++;
-	 if (!tableSep && insertat>1) if (fsourceTab) tableSep='\t'; else tableSep='@';
+	 if (!tableSep && insertat>1) { if (fsourceTab) tableSep='\t'; else tableSep='@'; }
 	 source_struct(BEGINTABLELINE);
 	 if (strcmp(p,"_")==0 || /* double line */ strcmp(p,"=")==0) {
 	   source_out(" ");
@@ -4862,13 +4913,11 @@ source_command(char *p) {
 
 
 static void
-source_line(char *p) {
+source_line(char *p)
+{
   /*stagadd(BEGINLINE);*/
   char *cmd=p;
   if (p==NULL) return;	/* bug somewhere else, but where? */
-
-  isComment = (/*checkcmd("") ||*/ checkcmd("\\\"") || /*DEC triple dot*/checkcmd(".."));
-  if (inComment && !isComment) { source_struct(ENDCOMMENT); inComment=0; }	/* special case to handle transition */
 
 #if 0
   if (*p!='.' && *p!='\'' && !finlist) {
@@ -4921,7 +4970,8 @@ source_line(char *p) {
 
 
 static void
-source_filter(void) {
+source_filter(void)
+{
   char *p = in, *q;
   char *oldv,*newv,*shiftp,*shiftq,*endq;
   int lenp,lenq;
@@ -4936,7 +4986,7 @@ source_filter(void) {
   for (i=0; macro[i].key!=NULL; i++) /*empty*/;
   macrocnt = i;
 
-  /* dumb Digital puts \\} closers on same line */
+  /* {{ dumb Digital puts \\} closers on same line */
   for (p=in; (p=strstr(p," \\}"))!=NULL; p+=3) *p='\n';
 
   sI=0;
@@ -5081,13 +5131,14 @@ source_filter(void) {
 }
 
 
-
+
 /*
  * STARTUP
  */
 
 static int
-setFilterDefaults(char *outputformat) {
+setFilterDefaults(char *outputformat)
+{
 	static struct {
 		void (*fn)(enum command);
 		int fPara; int fQS; int fIQS; int fNOHY; int fChangeleft; int fURL; char *names;
@@ -5136,7 +5187,8 @@ setFilterDefaults(char *outputformat) {
 
 /* read in whole file.  caller responsible for freeing memory */
 static char *
-filesuck(FILE *in) {
+filesuck(FILE *in)
+{
   const int inc=1024*100;	/* what's 100K these days? */
   int len=0,cnt;
   char *file = malloc(1);  /*NULL -- relloc on NULL not reducing to malloc on some machines? */
@@ -5152,7 +5204,8 @@ filesuck(FILE *in) {
 }
 
 int
-main(int argc, char *argv[]) {
+main(int argc, char *argv[])
+{
 	int c;
 	int i,j;
 	char *p,*oldp;
@@ -5190,7 +5243,7 @@ main(int argc, char *argv[]) {
 		{ 'K', 0, "nobreak", " (declare that page has no breaks)" },	/* autodetected */
 		{ 'd', 1, "diff", "(iff) <file> (diff of old page source to incorporate)" },
 		{ 'M', 1, "message", "(essage) <text> (included verbatim at end of Name section)" },
-		/*{ 'l', 0, "number lines", "... can number lines in a pipe" */
+		/*{ 'l', 0, "number lines", "... can number lines in a pipe" } */
 		/*{ 'T', 0, "tables", "(able agressive parsing ON)" },*/
 /*		{ 'c', 0, "changeleft:changebar", "(hangebarstoleft toggle)" }, -- default is perfect */
 		/*{ 'R', 0, "reflow", "(eflow text lines)" },*/
@@ -5337,7 +5390,7 @@ main(int argc, char *argv[]) {
 			exit(0);
 
 		   case 'v': /*case '?':*/
-			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/05/23 04:47:35 $\n");
+			printf("PolyglotMan v" POLYGLOTMANVERSION " of $Date: 2000/06/13 02:28:27 $\n");
 			exit(0);
 
 		   default:

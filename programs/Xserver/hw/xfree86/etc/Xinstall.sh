@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.9 2000/03/18 19:58:56 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.10 2000/04/04 19:25:17 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Portions Copyright © 1996-2000 by The XFree86 Project, Inc.
@@ -426,6 +426,16 @@ FindDistName()
 				;;
 			*)
 				Message="No Linux/alpha binaries for this libc version"
+				;;
+			esac
+			;;
+		mips)
+			case "$OsLibcMajor.$OsLibcMinor" in
+			6.0)
+				DistName="Linux-mips-glibc20"
+				;;
+			*)	
+				Message="No Linux/Mips binaries for this libc version"
 				;;
 			esac
 			;;

@@ -1,10 +1,10 @@
 /*
- * $XFree86: xc/programs/xterm/fontutils.c,v 1.15 2000/02/08 17:19:34 dawes Exp $
+ * $XFree86: xc/programs/xterm/fontutils.c,v 1.16 2000/03/03 20:02:31 dawes Exp $
  */
 
 /************************************************************
 
-Copyright 1998-2000 by Thomas E. Dickey <dickey@clark.net>
+Copyright 1998-2000 by Thomas E. Dickey
 
                         All Rights Reserved
 
@@ -757,7 +757,7 @@ xtermMissingChar(unsigned ch, XFontStruct *font)
 				return True;
 			}
 #endif
-			CI_GET_CHAR_INFO_1D (font, ch, tmp, pc);
+			CI_GET_CHAR_INFO_1D (font, E2A(ch), tmp, pc);
 		}
 #if OPT_WIDE_CHARS
 		else {
