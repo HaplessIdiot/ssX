@@ -1,4 +1,4 @@
-/* $TOG: SimpleMenu.c /main/47 1998/06/24 11:53:33 kaleb $ */
+/* $Xorg: SimpleMenu.c,v 1.3 2000/08/17 19:45:37 cpqbld Exp $ */
 
 /*
 Copyright 1989, 1994, 1998  The Open Group
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.18 1999/06/20 08:41:06 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.19 1999/07/11 08:49:14 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.

@@ -840,5 +840,5 @@ EXPORTS
  XkbUpdateKeyTypeVirtualMods
  XkbUpdateMapFromCore
  XkbXlibControlsImplemented
-/* $TOG: X11-def.cpp /main/19 1998/06/16 16:04:58 kaleb $ */
-/* $XFree86$ */
+/* $Xorg: X11-def.cpp,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
+/* $XFree86: xc/lib/X11/X11-def.cpp,v 1.6 2000/08/09 23:40:12 dawes Exp $ */

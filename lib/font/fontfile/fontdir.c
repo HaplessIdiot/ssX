@@ -1,4 +1,4 @@
-/* $TOG: fontdir.c /main/29 1998/06/25 16:53:52 kaleb $ */
+/* $Xorg: fontdir.c,v 1.3 2000/08/17 19:46:37 cpqbld Exp $ */
 
 /*
 
@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.11 1998/10/03 09:07:27 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontdir.c,v 3.12 1999/07/17 05:30:41 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium

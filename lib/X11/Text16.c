@@ -1,4 +1,4 @@
-/* $TOG: Text16.c /main/13 1998/02/06 17:55:02 kaleb $ */
+/* $Xorg: Text16.c,v 1.3 2000/08/17 19:44:57 cpqbld Exp $ */
 /*
 
 Copyright 1986, 1998  The Open Group
@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/Text16.c,v 1.2 1999/05/09 10:50:16 dawes Exp $ */
 
 #include "Xlibint.h"
 

@@ -62,5 +62,5 @@ EXPORTS
  _IceWrite
  IceListenForWellKnownConnections
  _IceTransGetHostname
-/* $TOG: ICE-def.cpp /main/7 1998/01/04 12:31:53 kaleb $ */
-/* $XFree86$ */
+/* $Xorg: ICE-def.cpp,v 1.3 2000/08/21 16:42:31 coskrey Exp $ */
+/* $XFree86: xc/lib/ICE/ICE-def.cpp,v 1.3 2000/08/09 23:40:12 dawes Exp $ */

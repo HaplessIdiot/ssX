@@ -1,4 +1,4 @@
-/* $TOG: NextEvent.c /main/138 1998/04/30 11:52:29 barstow $ */
+/* $Xorg: NextEvent.c,v 1.6 2000/08/17 19:46:14 cpqbld Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -54,7 +54,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.14tsi Exp $ */
+/* $XFree86: xc/lib/Xt/NextEvent.c,v 3.15 1999/03/14 03:21:15 dawes Exp $ */
 
 #include "IntrinsicI.h"
 #include <stdio.h>
@@ -1597,6 +1597,8 @@ Boolean XtPeekEvent(event)
 	return XtAppPeekEvent(_XtDefaultAppContext(), event);
 }
 
+Boolean XtAppPeekEvent_SkipTimer;
+
 Boolean XtAppPeekEvent(app, event)
 	XtAppContext app;
 	XEvent *event;
@@ -1624,25 +1626,62 @@ Boolean XtAppPeekEvent(app, event)
 	    UNLOCK_APP(app);
 	    return FALSE;
 	}
-	
-	d = _XtWaitForSomething (app,
-				 FALSE, FALSE, FALSE, FALSE,
-				 TRUE, 
+
+	while (1) {
+		d = _XtWaitForSomething (app,
+			FALSE, FALSE, FALSE, FALSE,
+			TRUE, 
 #ifdef XTHREADS
-				 TRUE, 
+			TRUE, 
 #endif
-				 (unsigned long *) NULL);
-	
-	if (d != -1) {
-	  GotEvent:
-	    XPeekEvent(app->list[d], event);
-	    app->last = (d == 0 ? app->count : d) - 1;
-	    UNLOCK_APP(app);
-	    return TRUE;
-	}
-	event->xany.type = 0;	/* Something else must be ready */
-	event->xany.display = NULL;
-	event->xany.window = 0;
-	UNLOCK_APP(app);
-	return FALSE;
+			(unsigned long *) NULL);
+               
+		if (d != -1) {  /* event */
+			GotEvent:
+			XPeekEvent(app->list[d], event);
+			app->last = (d == 0 ? app->count : d) - 1;
+			UNLOCK_APP(app);
+			return TRUE;
+		}
+		else {  /* input or timer or signal */
+			if ((app->timerQueue != NULL) && ! XtAppPeekEvent_SkipTimer) {  /* timer */
+				struct timeval cur_time;
+
+				X_GETTIMEOFDAY (&cur_time);
+				FIXUP_TIMEVAL(cur_time);
+				if (IS_AT_OR_AFTER(app->timerQueue->te_timer_value, cur_time)) {
+					TimerEventRec *te_ptr = app->timerQueue;
+					app->timerQueue = app->timerQueue->te_next;
+					te_ptr->te_next = NULL;
+					if (te_ptr->te_proc != NULL)
+					TeCallProc(te_ptr);
+					LOCK_PROCESS;
+					te_ptr->te_next = freeTimerRecs;
+					freeTimerRecs = te_ptr;
+					UNLOCK_PROCESS;
+				}
+				for (d = 0; d < app->count; d++)
+				/* the timer's procedure may have caused an event */
+					if (XEventsQueued(app->list[d], QueuedAfterFlush)) {
+						goto GotEvent;
+					}
+				continue;  /* keep blocking */
+			}
+			else if (app->signalQueue != NULL) {  /* signal */
+			/* spec is vague here; we'll assume signals also return FALSE */
+				event->xany.type = 0;
+				event->xany.display = NULL;
+				event->xany.window = 0;
+				UNLOCK_APP(app);
+				return FALSE;
+			}
+			else {  /* input */
+				event->xany.type = 0;   
+				event->xany.display = NULL;
+				event->xany.window = 0;
+				UNLOCK_APP(app);
+				return FALSE;
+			}
+		}
+	} /* end while */
 }	

@@ -1,4 +1,4 @@
-/* $TOG: Form.c /main/54 1998/05/14 14:55:45 kaleb $ */
+/* $Xorg: Form.c,v 1.3 2000/08/17 19:45:32 cpqbld Exp $ */
 
 /***********************************************************
 
@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.17 2000/08/25 21:51:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.18 2000/10/26 17:57:49 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>

@@ -1,4 +1,4 @@
-/* $TOG: XpPrinter.c /main/4 1997/05/28 11:41:47 kaleb $ */
+/* $Xorg: XpPrinter.c,v 1.4 2000/08/17 19:46:07 cpqbld Exp $ */
 /******************************************************************************
  ******************************************************************************
  **
@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.5 2000/01/25 18:37:34 dawes Exp $ */
+/* $XFree86: xc/lib/Xp/XpPrinter.c,v 1.6 2000/09/26 15:56:58 tsi Exp $ */
 
 #define NEED_REPLIES
 
@@ -66,8 +66,7 @@ XpGetPrinterList (
     XExtDisplayInfo *info = (XExtDisplayInfo *) xp_find_display (dpy);
 
     /* For converting root winID to corresponding ScreenPtr */
-    Screen *checkScr;
-    int    i,j;
+    int    i;
 
 
     if (XpCheckExtInit(dpy, XP_DONT_CHECK) == -1)

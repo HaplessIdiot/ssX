@@ -1,5 +1,9 @@
-XCOMM $XConsortium: Imakefile /main/9 1996/11/03 19:31:58 kaleb $
-XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.6 1999/01/11 09:39:26 dawes Exp $
+XCOMM $Xorg: Imakefile,v 1.3 2000/08/17 19:46:34 cpqbld Exp $
+
+
+
+
+XCOMM $XFree86: xc/lib/font/bitmap/Imakefile,v 1.9 2000/09/19 12:46:07 eich Exp $
 
 #if BuildServer && DoLoadableServer
 #define IHaveSubdirs

@@ -1,4 +1,4 @@
-/* $TOG: TextAction.c /main/55 1998/02/06 12:51:01 kaleb $ */
+/* $Xorg: TextAction.c,v 1.3 2000/08/17 19:45:40 cpqbld Exp $ */
 
 /*
 
@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.34 1999/09/27 06:29:10 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.35 2000/12/07 20:26:12 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -1,4 +1,4 @@
-/* $TOG: XlibInt.c /main/186 1998/02/06 18:02:22 kaleb $ */
+/* $Xorg: XlibInt.c,v 1.7 2000/08/17 19:45:07 cpqbld Exp $ */
 /*
 
 Copyright 1985, 1986, 1987, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XlibInt.c,v 3.22 2000/06/17 00:27:30 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlibInt.c,v 3.23 2000/11/30 23:29:59 dawes Exp $ */
 
 /*
  *	XlibInt.c - Internal support routines for the C subroutine
@@ -588,10 +588,18 @@ static void _XFlushInt (dpy, cv)
 	register char *bufindex;
 	_XExtension *ext;
 
-	if (dpy->flags & XlibDisplayIOError) {
-	    dpy->bufptr = dpy->buffer;  /* reset to avoid buffer overflows */
+	/* This fix resets the bufptr to the front of the buffer so
+	 * additional appends to the bufptr will not corrupt memory. Since
+	 * the server is down, these appends are no-op's anyway but 
+	 * callers of _XFlush() are not verifying this before they call it.
+	 */
+	if (dpy->flags & XlibDisplayIOError)
+	{
+	    dpy->bufptr = dpy->buffer;
+	    dpy->last_req = (char *)&_dummy_request;
 	    return;
 	}
+
 #ifdef XTHREADS
 	while (dpy->flags & XlibDisplayWriting) {
 	    if (dpy->lock) {
@@ -758,7 +766,7 @@ _XEventsQueued (dpy, mode)
 #else
 	    FD_ZERO(&r_mask);
 	    FD_SET(dpy->fd, &r_mask);
-	    if (pend = Select(dpy->fd + 1, &r_mask, NULL, NULL, &zero_time))
+	    if ((pend = Select(dpy->fd + 1, &r_mask, NULL, NULL, &zero_time)))
 #endif
 	    {
 		if (pend > 0)

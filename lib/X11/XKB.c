@@ -1,4 +1,4 @@
-/* $TOG: XKB.c /main/23 1997/11/10 15:13:33 kaleb $ */
+/* $Xorg: XKB.c,v 1.3 2000/08/17 19:44:59 cpqbld Exp $ */
 /************************************************************
 Copyright (c) 1993 by Silicon Graphics Computer Systems, Inc.
 
@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/XKB.c,v 1.3 1999/05/09 10:50:23 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_REPLIES

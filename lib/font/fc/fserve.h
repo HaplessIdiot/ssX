@@ -1,4 +1,4 @@
-/* $XConsortium: fserve.h,v 1.7 93/08/24 18:49:12 gildea Exp $ */
+/* $Xorg: fserve.h,v 1.3 2000/08/17 19:46:36 cpqbld Exp $ */
 /*
  * Copyright 1990 Network Computing Devices
  *
@@ -24,7 +24,7 @@
  * Author:  	Dave Lemke, Network Computing Devices, Inc
  *
  */
-/* $XFree86: xc/lib/font/fc/fserve.h,v 1.2 1999/07/17 05:30:36 dawes Exp $ */
+/* $XFree86: xc/lib/font/fc/fserve.h,v 1.3 1999/12/13 02:52:52 robin Exp $ */
 
 #ifndef _FSERVE_H_
 #define _FSERVE_H_

@@ -1,4 +1,4 @@
-/* $TOG: Xtranslcl.c /main/37 1998/04/29 07:18:40 barstow $ */
+/* $Xorg: Xtranslcl.c,v 1.3 2000/08/17 19:46:46 cpqbld Exp $ */
 /*
 
 Copyright 1993, 1994, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.32 1999/03/28 15:32:07 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranslcl.c,v 3.33 1999/06/20 08:41:22 dawes Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *

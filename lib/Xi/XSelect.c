@@ -1,4 +1,4 @@
-/* $TOG: XSelect.c /main/6 1998/02/06 15:04:33 kaleb $ */
+/* $Xorg: XSelect.c,v 1.3 2000/08/17 19:45:57 cpqbld Exp $ */
 
 /************************************************************
 
@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/lib/Xi/XSelect.c,v 3.0 1996/08/25 13:53:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xi/XSelect.c,v 3.1 1998/10/03 09:06:12 dawes Exp $ */
 
 /***********************************************************************
  *

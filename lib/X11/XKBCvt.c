@@ -1,4 +1,4 @@
-/* $TOG: XKBCvt.c /main/35 1998/05/30 20:29:41 kaleb $ */
+/* $Xorg: XKBCvt.c,v 1.4 2000/08/17 19:45:00 cpqbld Exp $ */
 /*
 
 Copyright 1988, 1989, 1998  The Open Group
@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.27 2000/10/27 18:30:48 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XKBCvt.c,v 3.28 2000/11/28 17:25:07 dawes Exp $ */
 
 #include <stdio.h>
 #include <sys/types.h>
