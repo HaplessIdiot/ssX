@@ -23,7 +23,7 @@
  * Author: Katsuhisa Yano	TOSHIBA Corp.
  *			   	mopi@osa.ilab.toshiba.co.jp
  */
-/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.11 2003/04/13 19:22:19 dawes Exp $ */
+/* $XFree86: xc/lib/X11/XlcPubI.h,v 3.12 2003/04/17 02:06:31 dawes Exp $ */
 
 #ifndef _XLCPUBLICI_H_
 #define _XLCPUBLICI_H_
@@ -242,7 +242,7 @@ extern void _XlcGetLocaleDataBase(
 extern char *
 _Xsetlocale(
     int           category,
-    char          *name);
+    _Xconst char  *name);
 #else
 extern char *_XlcMapOSLocaleName(
     char *osname,
