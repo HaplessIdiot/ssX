@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514line.c,v 1.2 94/04/17 20:30:35 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -360,7 +361,7 @@ ibm8514Line(pDrawable, pGC, mode, npt, pptInit)
 		    	continue;
 		    }
 		    if (axis == X_AXIS)
-			len = abs(new_x1 - new_x1);
+			len = abs(new_x2 - new_x1);
 		    else
 			len = abs(new_y2 - new_y1);
     

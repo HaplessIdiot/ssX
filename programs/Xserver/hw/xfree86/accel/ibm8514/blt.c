@@ -1,4 +1,5 @@
 /* $XConsortium: ibm8514blt.c,v 1.2 94/04/17 20:30:29 dpw Exp $ */
+/* $XFree86$ */
 /*
 
 Copyright (c) 1989  X Consortium
@@ -518,7 +519,8 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
 	GCPtr pGC1;
 
 	pBitmap=(*pSrcDrawable->pScreen->CreatePixmap)(pSrcDrawable->pScreen, 
-						       width, height, 1);
+                                                       pSrcDrawable->width,
+                                                       pSrcDrawable->height, 1);
 	if (!pBitmap)
 	    return(NULL);
 	pGC1 = GetScratchGC(1, pSrcDrawable->pScreen);
@@ -528,7 +530,8 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
 	}
 	ValidateGC((DrawablePtr)pBitmap, pGC1);
 	(void) cfbBitBlt(pSrcDrawable, (DrawablePtr)pBitmap, pGC1, srcx, srcy,
-			 width, height, 0, 0, cfbCopyPlane8to1, bitPlane);
+			 width, height, srcx, srcy, cfbCopyPlane8to1, bitPlane);
+        FreeScratchGC(pGC1);
 	pSrcDrawable = (DrawablePtr)pBitmap;
     } else if ((pSrcDrawable->type == DRAWABLE_WINDOW) &&
  	       (pDstDrawable->type != DRAWABLE_WINDOW)) {
@@ -550,10 +553,11 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
  	    return(NULL);
  	}
  	ValidateGC((DrawablePtr)pPixmap, pGC1);
- 	ibm8514CopyArea(pSrcDrawable, pPixmap, pGC1, srcx, srcy, width, height,
- 		        0, 0);
+ 	ibm8514CopyArea(pSrcDrawable, (DrawablePtr)pPixmap, pGC1, srcx, srcy,
+ 		        width, height, 0, 0);
  	retval = cfbCopyPlane((DrawablePtr)pPixmap, pDstDrawable, pGC,
                               0, 0, width, height, dstx, dsty, bitPlane);
+        FreeScratchGC(pGC1);
  	(*pSrcDrawable->pScreen->DestroyPixmap)(pPixmap);
  	return(retval);
     } else if (((pSrcDrawable->type == DRAWABLE_WINDOW) && 
@@ -659,6 +663,8 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
             (*pGC->pScreen->RegionUninit) (&rgnDst);
          if (freeSrcClip)
             (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+         if (pBitmap)
+            (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
          return NULL;
       }
    }
@@ -860,6 +866,8 @@ ibm8514CopyPlane(pSrcDrawable, pDstDrawable,
    (*pGC->pScreen->RegionUninit) (&rgnDst);
    if (freeSrcClip)
       (*pGC->pScreen->RegionDestroy) (prgnSrcClip);
+   if (pBitmap)
+      (*pSrcDrawable->pScreen->DestroyPixmap)(pBitmap);
    return prgnExposed;
 }
 
