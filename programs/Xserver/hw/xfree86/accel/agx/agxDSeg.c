@@ -1,5 +1,5 @@
 /* $XConsortium: agxDSeg.c,v 1.2 95/01/06 20:56:49 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.1 1994/12/25 12:19:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDSeg.c,v 3.2 1995/01/28 15:48:42 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -145,7 +145,17 @@ agxDSegment(pDrawable, pGC, nseg, pSeg)
 
    if (!xf86VTSema)
    {
-      cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+      switch (agxInfoRec.bitsPerPixel) {
+        case 8:
+           cfbSegmentSD(pDrawable, pGC, nseg, pSeg);
+           break;
+        case 16:
+           cfb16SegmentSD(pDrawable, pGC, nseg, pSeg);
+           break;
+        case 32:
+           cfb32SegmentSD(pDrawable, pGC, nseg, pSeg);
+           break;
+      }
       return;
    }
 

@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_SVGA.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.16 1995/01/21 07:14:25 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.17 1995/01/28 15:46:25 dawes Exp $
 .TH XF86_SVGA 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
@@ -32,7 +32,7 @@ on certain configurations.  Generic VGA cards are also supported at 8bpp
 .TP 4
 ATI:
 18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
-68800LX, 88800
+68800LX, 88800CX, 88800GX
 .TP 4
 Tseng:
 ET3000, ET4000, ET4000/W32
@@ -80,9 +80,9 @@ HT216-32
 Accelerated support is included for most of the Cirrus chipsets, and for
 the Western Digital WD90C31 and WD90C33 chipsets.  Accelerated support for the
 ET4000/W32 is implemented in a separate server (see \fIXF86_W32(1)\fP).
-Users of boards based on ATI's
-Mach8 and Mach32 chipsets should refer to the \fIXF86_Mach8(1)\fP and
-\fIXF86_Mach32(1)\fP manual pages, respectively.
+Users of boards based on ATI's Mach8, Mach32 and Mach64 chipsets should refer
+to the \fIXF86_Mach8(1)\fP, \fIXF86_Mach32(1)\fP and \fIXF86_Mach64(1)\fP
+manual pages, respectively.
 .SH OPTIONS
 In addition to the normal server options described in the \fIXserver(1)\fP
 manual page, \fIXF86_SVGA\fP accepts some more command line switches,

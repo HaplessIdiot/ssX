@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.8 1994/12/11 10:57:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3_svga/s3_driver.c,v 3.9 1995/03/04 06:20:07 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -89,7 +89,7 @@ vgaVideoChipRec S3_SVGA =
    S3Save,
    S3Restore,
    S3Adjust,
-   (void (*)())NoopDDA,
+   vgaHWSaveScreen,
    (void (*)())NoopDDA,
    (void (*)())NoopDDA,
    S3SetRead,

@@ -1,5 +1,5 @@
 /* $XConsortium: xf861502x.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.h,v 3.0 1994/06/15 15:35:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.h,v 3.1 1995/01/28 15:49:22 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
  *
@@ -75,20 +75,18 @@ extern Bool SC1502X_IPF_ACCESS;
 #define SC1502X_CMD_EPRF		0x10
 #define SC15025_CMD_GAMMA_CORRECT	0x08
 #define SC1502X_CMD_8BPP_PSUEDO		0x00
-#define SC1502X_CMD_15BPP_ET		0x80
+#define SC15021_CMD_4BPP_PSUEDO		0x01
+#define SC1502X_CMD_15BPP_EDGE_TRGR	0x80
 #define SC1502X_CMD_15BPP		0xA0
-#define SC15025_CMD_EXT_15BPP_ET	0x81
-#define SC15025_CMD_EXT_15BPP		0xA1
-#define SC15025_CMD_EXT_SELECT_MASK     	0x06
-#define SC1502X_CMD_16BPP_ET		0xC0
+#define SC15021_CMD_8BPP_15BPP_MIX      0x01
+#define SC1502X_CMD_16BPP_EDGE_TRGR	0xC0
 #define SC1502X_CMD_16BPP		0xE0
-#define SC1502X_CMD_24BPP_RGB		0x60
-#define SC1502X_CMD_24BPP_BGR		0x61
-#define SC15025_CMD_32BPP_RGBX_ET	0x40
-#define SC15025_CMD_32BPP_BGRX_ET	0x41
-#define SC15025_CMD_32BPP_RGBX		0x60
-#define SC15025_CMD_32BPP_BGRX		0x61
-
+#define SC15025_CMD_24BPP_RGB_EDGE_TRGR 0x41
+#define SC15025_CMD_24BPP_BGR_EDGE_TRGR 0x40
+#define SC15025_CMD_24BPP_RGB		0x60
+#define SC15025_CMD_24BPP_BGR		0x61
+#define SC15021_CMD_24BPP_RGB		0x40
+#define SC15021_CMD_24BPP_BGR		0x41
 
 
 /* registers accessed by setting EPRF bit */
@@ -123,11 +121,10 @@ extern Bool SC1502X_IPF_ACCESS;
 #define SC1502X_PIXEL_MASK_HI	0x0F
 
 #define SC1502X_PIXEL_REPACK	0x10
-#define SC1502X_RP_8X4_T0_24X1		0x01
 #define SC1502X_RP_8X1_TO_8X1		0x00
 #define SC1502X_RP_8X2_TO_16X1		0x00
 #define SC1502X_RP_8X3_TO_24X1		0x00
-#define SC1502X_RP_8X4_TO_24X1		0x00
+#define SC1502X_RP_8X4_TO_24X1		0x01
 #define SC15021_RP_16X1_TO_16X1		0x00
 #define SC15021_RP_16X1_TO_16X1_ALT	0x08
 #define SC15021_RP_8X1_TO_4X2		0x02

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/23 15:33:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.11 1995/01/28 15:51:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.12 1995/03/19 10:11:54 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -142,7 +142,7 @@ void (* vgaAdjustFunc)(
     int
 #endif
 ) = (void (*)())NoopDDA;
-void (* vgaSaveScreenFunc)() = (void (*)())NoopDDA;
+void (* vgaSaveScreenFunc)() = vgaHWSaveScreen;
 int vgaMapSize;
 void *vgaWriteBottom;
 void *vgaWriteTop; 
@@ -256,7 +256,8 @@ vgaProbe()
     }
 
   for (i=0; Drivers[i]; i++)
-
+  {
+    vgaSaveScreenFunc = Drivers[i]->ChipSaveScreen;
     if ((Drivers[i]->ChipProbe)())
       {
         xf86ProbeFailed = FALSE;
@@ -301,7 +302,6 @@ vgaProbe()
 
 	vga256InfoRec.AdjustFrame = vgaAdjustFunc = Drivers[i]->ChipAdjust;
 
-	vgaSaveScreenFunc = Drivers[i]->ChipSaveScreen;
 	vgaMapSize = Drivers[i]->ChipMapSize;
 	vgaInterlaceType = Drivers[i]->ChipInterlaceType;
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
@@ -409,6 +409,9 @@ vgaProbe()
         vgaHWCursor.Initialized = FALSE;
 	return TRUE;
       }
+  }
+
+  vgaSaveScreenFunc = vgaHWSaveScreen;
   
   if (vga256InfoRec.chipset)
     ErrorF("%s: '%s' is an invalid chipset", vga256InfoRec.name,

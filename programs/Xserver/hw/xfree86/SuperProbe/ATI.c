@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: ATI.c,v 1.4 95/01/06 20:56:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.3 1994/12/10 02:05:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/ATI.c,v 3.4 1995/01/28 15:46:48 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -47,7 +47,61 @@ Chip_Descriptor ATI_Descriptor = {
 	MemProbe_ATI,
 };
 
+Bool Crippled_Mach32 = FALSE,
+     Crippled_Mach64 = FALSE;
+
 extern Chip_Descriptor ATIMach_Descriptor;
+
+#ifdef __STDC__
+static void Probe_ATI_ChipID(int chip, int *Chipset)
+#else
+static void Probe_ATI_ChipID(chip, Chipset)
+int chip, *Chipset;
+#endif
+{
+	if (chip == CHIP_MACH64)
+	{
+		chip = inpl(CONFIG_CHIP_ID) & 0xFFFF;
+		switch (chip)
+		{
+		case 0x0057:
+			*Chipset = CHIP_ATI88800CX;
+			break;
+		case 0x00D7:
+			*Chipset = CHIP_ATI88800GX;
+			break;
+		default:
+			Chip_data = ((chip >> 5) & 0x1F) + 0x41;
+			*Chipset = CHIP_ATI_UNK;
+			break;
+		}
+	}
+	else
+	{
+		chip = inpw(CHIP_ID);
+		if (chip == 0xFFFF)
+			chip = 0;
+		switch (chip & 0x03FF)
+		{
+		case 0x0000:
+			*Chipset = CHIP_ATI68800_3;
+			break;
+		case 0x02F7:
+			*Chipset = CHIP_ATI68800_6;
+			break;
+		case 0x0177:
+			*Chipset = CHIP_ATI68800LX;
+			break;
+		case 0x0017:
+			*Chipset = CHIP_ATI68800AX;
+			break;
+		default:
+			Chip_data = ((chip >> 5) & 0x1F) + 0x41;
+			*Chipset = CHIP_ATI_UNK;
+			break;
+		}
+	}
+}
 
 #ifdef __STDC__
 Bool Probe_ATI(int *Chipset)
@@ -69,31 +123,7 @@ int *Chipset;
 	{
 		EnableIOPorts(NUMPORTS, Ports);
 
-		if (chip == CHIP_MACH64)
-			*Chipset = CHIP_ATI88800;
-		else
-		{
-			chip = inpw(CHIP_ID);
-			switch (chip & 0x03FF)
-			{
-			case 0x0000:
-				*Chipset = CHIP_ATI68800_3;
-				break;
-			case 0x02F7:
-				*Chipset = CHIP_ATI68800_6;
-				break;
-			case 0x0177:
-				*Chipset = CHIP_ATI68800LX;
-				break;
-			case 0x0017:
-				*Chipset = CHIP_ATI68800AX;
-				break;
-			default:
-				Chip_data = ((chip >> 5) & 0x1F) + 0x41;
-				*Chipset = CHIP_ATI_UNK;
-				break;
-			}
-		}
+		Probe_ATI_ChipID(chip, Chipset);
 
 		DisableIOPorts(NUMPORTS, Ports);
 		return (TRUE);
@@ -115,6 +145,19 @@ int *Chipset;
 		if ((bios[0] == '3') && (bios[1] == '1'))
 		{
 			result = TRUE;
+
+			/* Set up Ports array */
+			if (ReadBIOS(0x10, bios, sizeof(Word)) != sizeof(Word))
+			{
+				fprintf(stderr,
+					"%s: Failed to read ATI BIOS data\n",
+					MyName);
+				return (FALSE);
+			}
+			Ports[0] = *((Word *)bios);
+			Ports[1] = Ports[0] + 1;
+			EnableIOPorts(NUMPORTS, Ports);
+
 			switch (bios[3])
 			{
 			case '1':
@@ -135,23 +178,21 @@ int *Chipset;
 			case '6':
 				*Chipset = CHIP_ATI28800_6;
 				break;
+			case 'a':
+			case 'b':
+			case 'c':
+				Crippled_Mach32 = TRUE;
+				Probe_ATI_ChipID(CHIP_MACH32, Chipset);
+				break;
+			case ' ':
+				Crippled_Mach64 = TRUE;
+				Probe_ATI_ChipID(CHIP_MACH64, Chipset);
+				break;
 			default:
 				Chip_data = bios[3];
 				*Chipset = CHIP_ATI_UNK;
 				break;
 			}
-
-			/* Set up Ports array */
-			if (ReadBIOS(0x10, bios, sizeof(Word)) != sizeof(Word))
-			{
-				fprintf(stderr,
-					"%s: Failed to read ATI BIOS data\n",
-					MyName);
-				return (FALSE);
-			}
-			Ports[0] = *((Word *)bios);
-			Ports[1] = Ports[0] + 1;
-			EnableIOPorts(NUMPORTS, Ports);
 
 			/*
 			 * Sometimes, the BIOS lies about the chip.
@@ -178,13 +219,18 @@ int Chipset;
 {
 	int Mem = 0;
 
-	if (Chipset >= CHIP_ATI88800)
+	if ((Chipset >= CHIP_ATI88800CX) && !Crippled_Mach64)
 		return (ATIMach_Descriptor.memcheck(CHIP_MACH64));
-	if (Chipset >= CHIP_ATI68800_3)
+	if ((Chipset >= CHIP_ATI68800_3) && !Crippled_Mach32)
 		return (ATIMach_Descriptor.memcheck(CHIP_MACH32));
 
 	/* Ports array should already be set up */
 	EnableIOPorts(NUMPORTS, Ports);
+
+	if (Crippled_Mach32)
+		Chipset = CHIP_MACH32;
+	else if (Crippled_Mach64)
+		Chipset = CHIP_MACH64;
 
 	switch (Chipset)
 	{
@@ -199,6 +245,8 @@ int Chipset;
 	case CHIP_ATI28800_4:
 	case CHIP_ATI28800_5:
 	case CHIP_ATI28800_6:
+	case CHIP_MACH32:
+	case CHIP_MACH64:
 		switch (rdinx(Ports[0], 0xB0) & 0x18)
 		{
 		case 0x00:

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.20 1995/03/12 11:05:26 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.21 1995/03/18 10:58:38 dawes Exp $
 /*
  * Server Makefile for LinkKit
  */
@@ -82,7 +82,6 @@ XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/LinkKit/Imakefile.LK,v 3.20 1995/
         SYSLIBS = MathLibrary Krb5Libraries $(EXTRASYSLIBS) $(GCCLIB)
            CBRT = lib/libcbrt.a
 
-       IRULESRC = $(CONFIGDIR)
        INCLUDES = -Iinclude -Idrivers
 
   SCREENDEFINES = $(VGA2BUILD) $(VGA2MONOBUILD) $(VGA16BUILD) $(VGA16MONOBUILD)

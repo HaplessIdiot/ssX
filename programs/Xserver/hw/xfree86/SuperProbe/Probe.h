@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.10 1995/04/09 13:44:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.11 1995/05/07 11:48:53 dawes Exp $ */
 
 /*
  * Includes
@@ -386,9 +386,10 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_ATI28800_6	SVGA_TYPE(V_ATI,6)	/* ATI 28800-6		*/
 #define CHIP_ATI68800_3	SVGA_TYPE(V_ATI,7)	/* ATI 68800-3		*/
 #define CHIP_ATI68800_6	SVGA_TYPE(V_ATI,8)	/* ATI 68800-6 		*/
-#define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,9)	/* ATI 68800-LX		*/
-#define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,10)	/* ATI 68800-AX		*/
-#define CHIP_ATI88800	SVGA_TYPE(V_ATI,11)	/* ATI 88800		*/
+#define CHIP_ATI68800LX	SVGA_TYPE(V_ATI,9)	/* ATI 68800LX		*/
+#define CHIP_ATI68800AX	SVGA_TYPE(V_ATI,10)	/* ATI 68800AX		*/
+#define CHIP_ATI88800CX	SVGA_TYPE(V_ATI,11)	/* ATI 88800CX		*/
+#define CHIP_ATI88800GX	SVGA_TYPE(V_ATI,12)	/* ATI 88800GX		*/
 #define CHIP_AL_UNKNOWN	SVGA_TYPE(V_AL,0)	/* Avance Logic unknown	*/
 #define CHIP_AL2101	SVGA_TYPE(V_AL,1)	/* Avance Logic 2101	*/
 #define CHIP_AL2228	SVGA_TYPE(V_AL,2)	/* Avance Logic 2228	*/

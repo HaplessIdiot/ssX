@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Mono.man,v 1.6 95/01/23 15:33:29 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.7 1995/01/21 07:14:23 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Mono.man,v 3.8 1995/01/28 15:46:23 dawes Exp $
 .TH XF86_Mono 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Mono - 1 bit non-accelerated X Window System servers for UNIX on
@@ -20,7 +20,7 @@ server supports the following popular SuperVGA chipsets in monochrome mode:
 .TP 4
 ATI:
 18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3, 68800-6, 68800AX,
-68800LX, 88800
+68800LX, 88800CX, 88800GX
 .TP 4
 Tseng:
 ET3000, ET4000, ET4000/W32

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Events.c,v 1.11 95/01/16 13:16:59 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.12 1995/03/11 14:13:41 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.13 1995/03/18 10:59:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -254,6 +254,12 @@ ProcessInputEvents ()
     int			dx, dy, nevents;
 #endif
 
+    /*
+     * With INHERIT_LOCK_STATE defined, the initial state of CapsLock, NumLock
+     * and ScrollLock will be set to match that of the VT the server is
+     * running on.
+     */
+#ifdef INHERIT_LOCK_STATE
     if (generation != serverGeneration) {
       xEvent kevent;
       DevicePtr pKeyboard = xf86Info.pKeyboard;
@@ -282,6 +288,7 @@ ProcessInputEvents ()
         xf86InitialScroll = 0;
       }
     }
+#endif
 
 #ifdef AMOEBA
     /*

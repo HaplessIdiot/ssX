@@ -1,185 +1,191 @@
-このファイルは xc/programs/Xserver/hw/xfree86/doc/README.Linux,v 3.1 
-1994/09/26 15:33:07を、
-岡本  一幸  <KFR01166@niftyserve.or.jp>,<ikko-@pacific.rim.or.jp> が日本で 
-XFree86 3.1 を Linux にインストールする人向けに翻訳したものです。ここがおか
-しいとか、ここはこうしたほうがいいといったご意見がありましたら、電子メールで
-お知らせ下さい。原文の著作権は XFree86 プロジェクト社にあります。この和訳の
-著作権は XFree86 プロジェクト社、岡本　一幸にありますが、和訳の不具合は私に、
-電子メールで送って下さい。
-----------------------------------------------------------------------------
+  Linux を使用している人のための情報
+  Orest Zborowski
+  1994 年 11 月 13 日
 
-                     Linux を使用している人の為の情報
-                     --------------------------------
+  目次
 
-目次
-----
-        1 - XFree86 がテストされた Linux のバージョン
-        2 - 前のバージョンとの互換性
-        3 - XFree86 を導入するには
-        4 - XFree86 を動作させるには
-        5 - XFree86 をコンパイルするには
-        6 - バグの告示について
+        1.  XFree86 がテストされた Linux のバージョン
+        2.  前のバージョンとの互換性
+        3.  XFree86 を導入するには
+        4.  XFree86 を動作させるには
+        5.  XFree86 をコンパイルするには
+        6.  バグの告示について
 
-1 - XFree86 がテストされた Linux のバージョン
----------------------------------------------
-XFree86 は Linux のバージョン 1.1.49 でテスト済みです。 1.0 以降のバージョン
-では、XFree86 に変更がなければ動くでしょう。バイナリとライブラリは 4.5.26 の
-DLL C ライブラリと 1.4.4 のダイナミック・リンカー ld.so を基にしています。
-DLL X ライブラリと 2.16 DLL-tools は、Eric Youngdale 氏によって一緒に作成さ
-れました。
+  1.  XFree86 がテストされた Linux のバージョン
 
-2 - 前のバージョンとの互換性
-----------------------------
-X11R6 は X11R5 から大きな更新したものとなっていますので、XFree86-3.1 とそれ
-以降の共有ライブラリは、XFree86-2.1.1 以前の古いライブラリとは互換性がありま
-せん。X11R5 のアプリケーションを実行するには、あなたのマシンの何処かに古い
-ライブラリを保存しておかなければいけません。古いライブラリは/usr/X386/lib か
-ら何処かへ移動すればいいのですが、/etc/ld.so.conf は更新しなければいけません。
-全ての X11R5 のアプリケーションは問題無く X11R6 のサーバーと一緒に動作するで
-しょう。
+  XFree86 は Linux のバージョン 1.1.49 でテスト済みです。 1.0 以降のバージョ
+  ンでは、XFree86 に変更がなければ動くでしょう。バイナリとライブラリは 
+  4.5.26 のDLL C ライブラリと 1.4.4 のダイナミック・リンカー ld.so を基にし
+  ています(libc-4.5.26 かそれ以降の新しいものが*必須*です)。DLL X ライブラリ
+  は Eric Youngdale 氏によって 2.16 DLL-tools を使用して作成されました。
 
-XFree86-1.2、XFree86-1.3 または XFree86-2.0 ライブラリと関連のある古いバイ
-ナリは引き続き動作しますが、/lib/libX{11,t,aw}.so.3 から
-/usr/X386/lib/libX{11,t,aw}.so.3 へ明確ににシンボリックリンクを張る必要があ
-ります。XView3L5 配付物に対して ld.so をリンクする時は、XView ライブラリに
-ld.so が動作しないように共有イメージへの絶対パスを含ませないと、1.3 以前のバ
-ージョンの ld.so とは、問題を生じるでしょう。暫定的対策は、/（ルートディレク
-トリ）を /etc/ld.so.config に入れることですが、より良くするなら、XView を
-相対ライブラリ名とリンクするか、より新しい ld.so を手に入れることです。
+  2.  前のバージョンとの互換性
 
-3 - XFree86 を導入するには
---------------------------
-バージョン 3.0 から始めるなら、XFree86 を /usr/X11R6 に導入します。X11R5 と 
-X11R6 の両方を導入する十分なディスク容量が無い場合は、X11R5 の必要の無い部分
-を捨てる事でディスク容量を確保しましょう。特に、フォントと古い X11R5 のバイ
-ナリは、消去出来ます。ダイナミックリンクを使う X11R5 のバイナリを動作させる
-には共有ライブラリを取っておいて下さい。
+  X11R6 は X11R5 から大きく更新したものとなっていますので、XFree86-3.1 以降
+  の共有ライブラリは、XFree86-2.1.1 以前の古いライブラリとは互換性がありませ
+  ん。X11R5 のアプリケーションを実行するには、マシンの何処かに古いライブラリ
+  を保存しておかなければいけません。古いライブラリは/usr/X386/lib から何処か
+  へ移動すればいいのですが、/etc/ld.so.conf は更新しなければいけません。全て
+  の X11R5 のアプリケーションは問題無く X11R6 のサーバーと一緒に動作するでし
+  ょう。
 
-XFree86 3.X のそれぞれのバイナリ配付物には、対応する版の詳細な導入に関する文
-書が付属しています。殆どの最新の情報がその文書にありますが、この文書に 
-Linux で動く XFree86 3.X の基本的な機能とソースをどうやってコンパイルするか
-を記述しています。
+  XFree86-1.2、XFree86-1.3 または XFree86-2.0 ライブラリと関連のある古いバイ
+  ナリは引き続き動作しますが、/lib/libX{11,t,aw}.so.3 から
+  /usr/X386/lib/libX{11,t,aw}.so.3 へ明確にシンボリックリンクを張る必要があ
+  ります。XView3L5 配付物に対して ld.so をリンクする時は、XView ライブラリに
+  ld.so が動作しないように共有イメージへの絶対パスを含ませないと、1.3 以前の
+  バージョンの ld.so とは問題を生じるでしょう。暫定的対策は、/（ルートディレ
+  クトリ）を /etc/ld.so.config に入れることですが、より良くするなら、XView 
+  を相対ライブラリ名とリンクするか、より新しい ld.so を手に入れることです。
 
-4 - XFree86 を動作させるには
-----------------------------
-XFree86 を動作させるためには 4MB の仮想メモリが必要ですが、快適に動作させる
-最小の環境としては、多分 8MB の実記憶があったほうがいいでしょう。386 プロセ
-ッサにとって 387 コプロセッサは、有効ですが、物理的なメモリを増設したほうが
-対話処理の速度は格段に向上します。また、高速なグラフィックカード、バスまたは
-メモリがサーバーの性能を向上させるでしょう。
+  3.  XFree86 を導入するには
 
-tar ファイルを展開したら、/etc/ld.so.conf の中か（初期値によって既にそう定義
-されているはずです）、LD_LIBRARY_PATH 環境変数の中に /usr/X11R6/lib を定義す
-る必要があります。また、構成定義ファイルである /usr/X11R6/lib/X11/XF86Config
-を README.Config を指針とし、XF86Config.eg を出発点としてホストの構成を正確
-に記入し＊なければ＊なりません。間違った XF86Config を使うとハードウェアを痛
-める場合があるので、良く文章を読んで下さい。特にオンラインマニュアルと 
-/usr/X11R6/lib/X11/doc にあるその他の README ファイルを良く読んで下さい。
+  バージョン 3.0 から始めるなら、XFree86 を /usr/X11R6 に導入します。X11R5 
+  と X11R6 の両方を導入する十分なディスク容量が無い場合は、X11R5 の必要の無
+  い部分を捨てる事でディスク容量を確保しましょう。特に、フォントと古い 
+  X11R5 のバイナリは、消去出来ます。ダイナミックリンクを使う X11R5 のバイナ
+  リを動作させるには共有ライブラリを取っておいて下さい。
+
+  XFree86 3.X のそれぞれのバイナリ配付物には、対応する版の詳細な導入に関する
+  文書が付属しています。殆どの最新の情報がその文書にありますが、この文書に 
+  Linux で動く XFree86 3.X の基本的な機能とソースをどうやってコンパイルする
+  かを記述しています。
+
+  4.  XFree86 を動作させるには
+
+  XFree86 を動作させるためには 4MB の仮想メモリが必要ですが、快適に動作させ
+  る最小の環境としては、多分 8MB の実記憶があったほうがいいでしょう。386 プ
+  ロセッサにとって 387 コプロセッサは、有効ですが、物理的なメモリを増設した
+  ほうが対話処理の速度は格段に向上します。また、高速なグラフィックカード、バ
+  スまたはメモリがサーバーの性能を向上させるでしょう。
+
+  tar ファイルを展開したら、/etc/ld.so.conf の中か（初期値によって既にそう定
+  義されているはずです）、LD_LIBRARY_PATH 環境変数の中に /usr/X11R6/lib を定
+  義する必要があります。また、構成定義ファイルである 
+  /usr/X11R6/lib/X11/XF86Configを README.Config を指針とし、XF86Config.eg を
+  出発点としてホストの構成を正確に記入し＊なければ＊なりません。間違った 
+  XF86Config を使うとハードウェアを痛める場があるので、良く文章を読んで下さ
+  い。特にオンラインマニュアルと /usr/X11R6/lib/X11/doc にあるその他の 
+  README ファイルを良く読んで下さい。
  
-XFree86 は、X サーバーとの間で双方向に仮想端末 (VT) 切り替え（サーバーから仮
-想端末へ、仮想端末からサーバーへ切り替える）をする機能があります。初めて起動
-するときは、XFree86 が、先ず仮想端末（使用可能な他のプロセスに開かれていない
-もの）を自動的に探して、その仮想端末で起動します。その仮想端末が使用不可の場
-合、エラーメッセージを出して XFree86 は終了するでしょう。"vt<nn>" というオプ
-ションを付けることによって、サーバーを指定する仮想端末で実行させることができ
-ます。ここで <nn> は使用可能な仮想端末番号（1 から始まります）です。空いてい
-る仮想端末がないときは、XFree86 は起動不可能です。include/linux/tty.h の中の
-NR_CONSOLES の数を増やしてカーネルをコンパイルすれば、使用可能な仮想端末の数
-を増やすことができます。
+  XFree86 は、X サーバーとの間で双方向に仮想端末 (VT) 切り替え（サーバーから
+  仮想端末へ、仮想端末からサーバーへ切り替える）をする機能があります。初めて
+  起動するときは、XFree86 が、先ず仮想端末（使用可能な他のプロセスに開かれて
+  いないもの）を自動的に探して、その仮想端末で起動します。その仮想端末が使用
+  不可の場合、エラーメッセージを出して XFree86 は終了するでしょう。
+  ``vt<nn>'' というオプションを付けることによって、サーバーを指定する仮想端
+  末で実行させることができます。ここで <nn> は使用可能な仮想端末番号（1 から
+  始まります）です。空いている仮想端末がないときは、XFree86 は起動不能です。
+  include/linux/tty.h の中の NR_CONSOLES の数を増やしてカーネルをコンパイル
+  すれば、使用可能な仮想端末の数を増やすことができます。
 
-一旦、XFree86 が動作してしまえば、コントロールキー (Ctrl) とオルタネイトキー
-(Alt) とファンクションキー (Fnn) を同時に押すことで、他の仮想端末に切り替え
-られます。ここの nn は切り替えたい仮想端末番号です。XFree86 サーバーに戻すと
-きは、サーバーが標準で使っている仮想端末番号を表わす正しいキーの組み合わせを
-押しましょう。正しいキーの組み合わせとは、オルタネイトキー (Alt) とファンク
-ションキー (Fmm) です。ここで、mm はサーバーが動いている仮想端末の番号です。
-（この番号はサーバーが起動するときに表示されます。）既に起動しているサーバー
-から起動した仮想端末ではないことに注意して下さい。
+  一旦、XFree86 が動作してしまえば、コントロールキー (Ctrl) とオルタネイトキ
+  ー (Alt) とファンクションキー (Fnn) を同時に押すことで、他の仮想端末に切り
+  替えられます。ここの nn は切り替えたい仮想端末番号です。XFree86 サーバーに
+  戻すときは、サーバーが標準で使っている仮想端末番号を表わす正しいキーの組み
+  合わせを押しましょう。正しいキーの組み合わせとは、オルタネイトキー (Alt) 
+  とファンクションキー (Fmm) です。ここで、mm はサーバーが動いている仮想端末
+  の番号です。（この番号はサーバーが起動するときに表示されます。）既に起動し
+  ているサーバーから起動した仮想端末ではないことに注意して下さい。
  
-注意: kbd-0.81.tar.gz 以降のバージョンの中にある 'loadkeys' コマンドで、テ
-      キストモードのキー割当を再定義できます。これを使えば、例えば、コントロ
-      ールキー (Ctrl) とオルタネイトキー (Alt) とファンクションキー (Fmm) を
-      同時に使用して X サーバー下から移動するのと同じようなキー操作で、仮想
-      端末のテキストモードから、移動する事が出来ます。
+  注意: kbd-0.81.tar.gz 以降のバージョンの中にある 'loadkeys' コマンドで、テ
+  キストモードのキー割当を再定義できます。これを使えば、例えば、コントロール
+  キー (Ctrl) とオルタネイトキー (Alt) とファンクションキー (Fmm) を同時に使
+  用して X サーバー下から移動するのと同じようなキー操作で、仮想端末のテキス
+  トモードから、移動する事が出来ます。
   
-サーバーを終了させるとサーバーを起動した仮想端末に戻りますが、もしサーバーを
-起動した仮想端末が死んでしまったときは、手動で戻さなければなりません。
-XFree86 からテキストモードに戻る時に、未だ画面の回復に問題があるのは、グラフ
-ィックカードとマザーボードの相性が悪いのだと思われます。こんな時は、svgalib 
-という配付物に入っている runx というスクリプトを実行すれば、解消できるでしょ
-う。
+  サーバーを終了させるとサーバーを起動した仮想端末に戻りますが、もしサーバー
+  を起動した仮想端末が死んでしまったときは、手動で戻さなければなりません。
+  XFree86 からテキストモードに戻る時に、未だ画面の回復に問題があるのは、グラ
+  フィックカードとマザーボードの相性が悪いのだと思われます。こんな時は、
+  svgalib という配付物に入っている runx というスクリプトを実行すれば、解消で
+  きるでしょう。
  
-起動時に、XFree86 サーバーはカーネルに対してキー割り付けを獲得することを要求
-します。この割り付けはカーネルをコンパイルしたとき設定される初期値かまたは、
-'loadkeys' ユーティリティによって書き替えた値になります。サーバーでは、カー
-ネルに依存したもの、複数のキー組み合わせや無効なキーは割り付け出来ません。そ
-の他のキーは X 共通に変換されます。X サーバーはシフトしてない状態、シフト状
-態、モードスイッチを押していない状態と、モードスイッチを押している状態の４種
-類しか変換テーブルを持っていないことに注意して下さい。モードスイッチがどんな
-キーかによります（これは XF86Config で設定可能です。初期値はオルタネイトキー
-(Alt) です。）が、XFree86 はキーマップの中に変換テーブルを読み込みます。この
-事は、Linux のモードスイッチに左コントロールキーの様な特定のキーを割り当てら
-れない事を意味します。
+  起動時に、XFree86 サーバーはカーネルに対してキー割り付けを獲得することを要
+  求します。この割り付けはカーネルをコンパイルしたとき設定される初期値かまた
+  は、'loadkeys' ユーティリティによって書き替えた値になります。サーバーでは、
+  カーネルに依存したもの、複数のキー組み合わせや無効なキーは割り付け出来ませ
+  ん。その他のキーは X 共通に変換されます。X サーバーはシフトしてない状態、
+  シフト状態、モードスイッチを押していない状態と、モードスイッチを押している
+  状態の４種類しか変換テーブルを持っていないことに注意して下さい。モードスイ
+  ッチがどんなキーかによります（これは XF86Config で設定可能です。初期値はオ
+  ルタネイトキー (Alt) です。）が、XFree86 はキーマップの中に変換テーブルを
+  読み込みます。この事は、Linux のモードスイッチに左コントロールキーの様な特
+  定のキーを割り当てられない事を意味します。
 
-構成によっては、調子が悪くなって修正しなければならないことがあるでしょう。過
-去に、Linux の xload コマンドが、動作中のカーネルから、負荷平均を取り出すの
-に BSD の方法を使った事があります。XFree86-1.3 版では、カーネルの将来の版で
-の互換性を考慮して、動作中のカーネルから負荷平均を取り出す代わりに、情報を 
-/proc/loadavg から取り出す方法に変えました。Xman も BSD の nroff ファミリー
-の代わりに GNU groff ファミリーをサポートするように変更されました。ちょっと
-編集して再コンパイルすれば従来の BDS の nroff の方をサポートするように戻せま
-す。クライアントに、仮想端末で動作していたのと同等なより良いコンソール切り
-替えを提供するために、 /dev/console と /dev/tty0 の所有権と共にサーバーが変
-更されましたが、そのために root の setuid 属性を付けなければならなくなりまし
-た。同様に、xterm と xconsole にも root の setuid 属性を付ける必要がありま
-す。xconsole は root の setuid 属性を付けて動作するようには設計されてないの
-で、これは安全上、大きな問題が生じると思われます。
+  構成によっては、調子が悪くなって修正しなければならないことがあるでしょう。
+  過去に、Linux の xload コマンドが、動作中のカーネルから、負荷平均を取り出
+  すのに BSD の方法を使った事があります。XFree86-1.3 版では、カーネルの将来
+  の版での互換性を考慮して、動作中のカーネルから負荷平均を取り出す代わりに、
+  /proc/loadavg から取り出す方法に変えました。Xman も BSD の nroff ファミリ
+  ーの代わりに GNU groff ファミリーをサポートするように変更されました。ちょ
+  っと編集して再コンパイルすれば従来の BDS の nroff の方をサポートするように
+  戻せます。クライアントに、仮想端末で動作していたのと同等なより良いコンソー
+  ル切り替えを提供するために、 /dev/console と /dev/tty0 の所有権と共にサー
+  バーが変更されましたが、そのために root の setuid 属性を付けなければならな
+  くなりました。同様に、xterm と xconsole にも root の setuid 属性を付ける必
+  要があります。xconsole は root の setuid 属性を付けて動作するようには設計
+  されてないので、これは安全上、大きな問題が生じると思われます。
 
-5 - XFree86 をコンパイルするには
---------------------------------
-XFree86 をコンパイルするためには特別な手順書は必要ありません。
-このバージョンの XFree86 は gcc-2.5.8 、DLL ライブラリの 4.4.26 と共用ライブ
-ラリの1.4.4 、ダイナミック・リンカ ld.so とでコンパイルしています。DLL 
-tools-2.16 パッケージは共有ライブラリで作成し、新しい場所 (/usr/bin) にある
-ツールを使うようにサーバーのソースを更新しました。サーバーは 486 プロセッサ
-用に最適化する為に、-m486 オプションを付けてコンパイルされていますが、バイナ
-リは 386 プロセッサで動作するでしょう。（ -m486 を付けてコンパイルしたもの
-は、-m386 を付けてコンパイルしたものより少々ファイルサイズが大きくなっていま
-すが、性能の損失はありません。）
 
-全ての機能拡張とクライアントは移植とテストが終わっています。標準では、サーバ
-ーは外部機能拡張 (PEX, XIE 等) 無しでコンパイルしていますが、これらの外部機
-能拡張のライブラリは既に生成済みです。site.def を変更すれば、外部機能拡張を
-コンパイルしてサーバーに組み込めます。若しくは、リンクキットがサーバーを変更
-できます。
+  5.  XFree86 をコンパイルするには
 
-配付物は大変大きいものですが、オンラインマニュアル、PEX や大きなクライアント
-を消去する等してソースを注意深く整理すれば、XFree86 は 64MB のパーティション
-１つで、コンパイル出来ます。 Makefile を作成するには、単に "make Makefiles" 
-を実行してください。ファイルが自動的に作成され、実行は終了します。ディスクを
-節約するならば、"make depend" は実行する必要はないでしょう。100MB の空きディ
-スクがあれば、もっと容易に XFree86 をコンパイルできます。全てのサーバーをコ
-ンパイルするには、約 10MB の仮想メモリが必要でしょう。
+  XFree86 をコンパイルするためには特別な手順書は必要ありません。
+  このバージョンの XFree86 は gcc-2.5.8 、DLL ライブラリの 4.5.26 と共用ライ
+  ブラリの1.4.4 、ダイナミック・リンカ ld.so とでコンパイルしています。共有
+  ライブラリは DLL tools-2.16 パッケージで作成し、新しい場所 (/usr/bin) にあ
+  るツールを使うようにサーバーのソースを更新しました。サーバーは 486 プロセ
+  ッサ用に最適化する為に、-m486 オプションを付けてコンパイルされていますが、
+  バイナリは 386 プロセッサで動作するでしょう。（ -m486 を付けてコンパイルし
+  たものは、-m386 を付けてコンパイルしたものより少々ファイルサイズが大きくな
+  っていますが、性能の損失はありません。）
 
-パッチがライブラリに重要な変更を行なう場合は、更新した jump_xxx が必要でしょ
-う。DLL tools パッケージに付属する手順でパッチが生成でき、XFree86 のパッチを
-当てるのに必要でしょう。
+  全ての機能拡張とクライアントは移植とテストが終わっています。標準では、サー
+  バーは外部機能拡張 (PEX, XIE 等) 無しでコンパイルしていますが、これらの外
+  部機能拡張のライブラリは既に生成済みです。site.def を変更すれば、外部機能
+  拡張をコンパイルしてサーバーに組み込めます。若しくは、リンクキットがサーバ
+  ーを変更できます。
 
-例えば、Xaw3d のような外部 X 共有ライブラリもコンパイルするように、 X ライブ
-ラリを定義する JUMP_xxx で定義してコンパイル出来ます。詳細な手順については、
-X ライブラリの定義例を、/usr/X11R6/lib/X11/config/lnxLib.rules に提供してい
-ます。
+  配付物は大変大きいものですが、オンラインマニュアル、PEX や大きなクライアン
+  トを消去する等してソースを注意深く整理すれば、XFree86 は 64MB のパーティシ
+  ョン１つで、コンパイル出来ます。 Makefile を作成するには、単に ``make 
+  Makefiles'' を実行してください。ファイルが自動的に作成され、実行は終了しま
+  す。ディスクを節約するならば、``make depend'' は実行する必要はないでしょう。
+  100MB の空きディスクがあれば、もっと容易に XFree86 をコンパイルできます。
+  サーバー全てをコンパイルするには、約 10MB の仮想メモリが必要でしょう。
 
-Orest Zborowski (orestz@eskimo.com) 氏が開発した最新の方法で、全ての詳細説明
-ファイルを書き、初めて XFree86 DLL ライブラリを作成してくれた Dirk Hohndel
-(hohndel@aib.com) 氏に感謝します。
+  パッチがライブラリに重要な変更を行なう場合は、更新した jump_xxx が必要でし
+  ょう。DLL tools パッケージに付属する手順でパッチが生成でき、XFree86 のパッ
+  チを当てるのに必要でしょう。
 
-6 - バグの告知について
-----------------------
-バグ報告は XFree86@XFree86.org に送るか comp.windows.x.i386unix のニュースグ
-ループに投稿して下さい。Linux のサポートや Linux の配付物に関する質問やコメ
-ントは orestz@eskimo.com で行なわれています。
+  例えば、Xaw3d のような外部 X 共有ライブラリも X ライブラリをコンパイルする
+  ように、 X ライブラリを定義する JUMP_xxx で定義してコンパイル出来ます。詳
+  細な手順については、X ライブラリの定義例を、
+  /usr/X11R6/lib/X11/config/lnxLib.rules に提供しています。
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/README.Linux,v 3.0 1995/01/12 12:03:55 dawes Exp $
-$XConsortium: README.Linux,v 1.1 95/01/16 12:30:46 kaleb Exp $
+　Orest Zborowski (orestz@eskimo.com) 氏が開発した最新の方法で、全ての詳細
+  説明ファイルを書き、初めて XFree86 DLL ライブラリを作成してくれた Dirk 
+　Hohndel (hohndel@aib.com) 氏に感謝します。
+
+  6.  バグの告知について
+
+  バグ報告は XFree86@XFree86.org に送るか comp.windows.x.i386unix のニュース
+  グループに投稿して下さい。Linux のサポートや Linux の配付物に関する質問や
+  コメントは orestz@eskimo.com で行なわれています。
+
+  $XConsortium: Linux.sgml,v 1.2 95/01/23 15:34:44 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 dawes Exp $
+[EOF]
+----------------------------------------------------------------------------
+このファイルは Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc
+/sgml/Linux.sgml,v 3.5 1995/01/28 16:01:43 を、岡本  一幸 
+( Kazuyuki Okamoto <ikko-@pacific.rim.or.jp> ) が XFree86 3.1.1 を
+日本でインストールする人向けに和訳したものです。ここがおかしいとか、
+ここはこうしたほうがいいといったご意見がありましたら、電子メールで
+お知らせ下さい。
+原文の著作権は XFree86 プロジェクト社にあります。この和訳の著作権は 
+XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
+電子メールで送って下さい。
+$XFree86$
+----------------------------------------------------------------------------
 

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86RamDac.c,v 1.3 95/01/26 15:34:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.3 1995/01/26 02:16:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.c,v 3.4 1995/01/28 15:49:24 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  * 
@@ -47,18 +47,17 @@
 #include "Bt485.h"
 #include "Bt481.h"
 #include "xf861502x.h"
+#include "Att490.h"
 
 /* RamDac related globals */
 Bool xf86DacSyncOnGreen = FALSE;
 Bool xf86Dac8Bit = FALSE;
 int  xf86RamDacType = -1;
+int  xf86RamDacBPP  = 8;
 int  xf86MaxCurs = 0;
 int  xf86FrameX0 = 0;
 int  xf86FrameY0 = 0;
 int  xf86MaxClock;
-int  xf86MaxClockDirect;
-int  xf86MinClockDoubled = -1;
-int  xf86MaxClockDoubled = -1;
 
 unsigned char xf86SwapBits[256] = {
 0x00,0x80,0x40,0xC0,0x20,0xA0,0x60,0xE0,0x10,0x90,0x50,0xD0,0x30,0xB0,0x70,0xF0,
@@ -219,60 +218,23 @@ xf86SetUpRamDac(
 {
    switch ( xf86RamDacType ) { 
  
-      case BT485_DAC:
-         xf86MaxClock = 135000;
-         xf86MaxClockDirect = 90000;
-         xf86MinClockDoubled = 33750;
-         xf86MaxClockDoubled = 67500;
-         xf86MaxCurs = 64;
-         xf86RamDacHWSave = xf86Bt485HWSave;
-         xf86RamDacHWRestore = xf86Bt485HWRestore;
-         xf86RamDacInit = xf86Bt485Init;
-         break;
-
-      case ATT20C505_DAC:
-         xf86MaxClock = 135000;
-         xf86MaxClockDirect = 110000;
-         xf86MinClockDoubled = 45000;
-         xf86MaxClockDoubled = 67500;
-         xf86MaxCurs = 64;
-         xf86RamDacHWSave = xf86Bt485HWSave;
-         xf86RamDacHWRestore = xf86Bt485HWRestore;
-         xf86RamDacInit = xf86Bt485Init;
-         break;
-
-      case ATT20C504_DAC:
-         xf86MaxClock = 110000;
-         xf86MaxClockDirect = 90000;
-         xf86MinClockDoubled = 45000;
-         xf86MaxClockDoubled = 55000;
-         xf86MaxCurs = 32;
-         xf86RamDacHWSave = xf86Bt485HWSave;
-         xf86RamDacHWRestore = xf86Bt485HWRestore;
-         xf86RamDacInit = xf86Bt485Init;
-         break;
-
-      case BT484_DAC:
-         xf86MaxClock = 85000;
-         xf86MaxClockDirect = 85000;
-         xf86MaxCurs = 32;
-         xf86RamDacHWSave = xf86Bt485HWSave;
-         xf86RamDacHWRestore = xf86Bt485HWRestore;
-         xf86RamDacInit = xf86Bt485Init;
-         break;
-
       case BT482_DAC:
-         xf86MaxClock = 86500;
-         xf86MaxClockDirect = 86500;
-         xf86MaxCurs = 32;
-         xf86RamDacHWSave = xf86Bt481HWSave;
-         xf86RamDacHWRestore = xf86Bt481HWRestore;
-         xf86RamDacInit = xf86Bt481Init;
-         break;
-
       case BT481_DAC:
-         xf86MaxClock = 86500;
-         xf86MaxClockDirect = 86500;
+         switch( xf86RamDacBPP ) {
+            case 8:
+               xf86MaxClock =  86500;
+               break;
+            case 15:
+            case 16:
+               xf86MaxClock =  50000;
+               break;
+            case 24:
+            case 32:
+               xf86MaxClock =  25000;
+               break;
+            default:
+               xf86MaxClock =  0;
+         }
          xf86MaxCurs = 0;
          xf86RamDacHWSave = xf86Bt481HWSave;
          xf86RamDacHWRestore = xf86Bt481HWRestore;
@@ -281,8 +243,6 @@ xf86SetUpRamDac(
 
       case SC15025_DAC:
       case SC15021_DAC:
-         xf86MaxClock = 110000;  
-         xf86MaxClockDirect = 110000;
          xf86MaxCurs = 0;
          xf86RamDacHWSave = xf86Sc1502xHWSave;
          xf86RamDacHWRestore = xf86Sc1502xHWRestore;
@@ -313,8 +273,10 @@ registers, assuming normal RAMDAC.\n",
                     XCONFIG_PROBED );
           
                xf86RamDacType = NORMAL_DAC; 
-               xf86MaxClock = 85000;
-               xf86MaxClockDirect = 85000;
+               if( xf86RamDacBPP != 8 )
+                  xf86MaxClock = 0;
+               else
+                  xf86MaxClock = 85000;
                xf86MaxCurs = 0;
                xf86RamDacHWSave = xf86RamDacHWNoop;
                xf86RamDacHWRestore = xf86RamDacHWNoop;
@@ -325,8 +287,39 @@ registers, assuming normal RAMDAC.\n",
 
          if ( xf86InSc1502xIndReg( SC1502X_ID3 ) == SC1502X_ID3_15021 ) {
             xf86RamDacType = SC15021_DAC; 
-            xf86MaxClock = 135000;
-            xf86MaxClockDirect = 135000;
+            switch( xf86RamDacBPP ) {
+               case 8:
+                  xf86MaxClock = 135000;
+                  break;
+               case 15:
+               case 16:
+                  xf86MaxClock =  80000;
+                  break;
+               case 24:
+               case 32:
+                  xf86MaxClock =  67500;
+                  break;
+               default:
+                  xf86MaxClock = 0;
+            }
+         }
+         else {
+            xf86RamDacType = SC15025_DAC; 
+            switch( xf86RamDacBPP ) {
+               case 8:
+                  xf86MaxClock = 110000;
+                  break;
+               case 15:
+               case 16:
+                  xf86MaxClock =  65000;
+                  break;
+               case 24:
+               case 32:
+                  xf86MaxClock =  55000;
+                  break;
+               default:
+                  xf86MaxClock =  0;
+            }
          }
 
          if (xf86Verbose)
@@ -334,9 +327,37 @@ registers, assuming normal RAMDAC.\n",
          
          break;
 
+      case ATT490_DAC:
+         switch( xf86RamDacBPP ) {
+            case 8:
+               xf86MaxClock = 110000;
+               break;
+            case 15:
+               xf86MaxClock =  67500;
+               break;
+            case 16:
+               xf86MaxClock =  55000;
+               break;
+            default:
+               xf86MaxClock =  0;
+         }
+         xf86MaxCurs = 0;
+         xf86RamDacHWSave = xf86Att490HWSave;
+         xf86RamDacHWRestore = xf86Att490HWRestore;
+         xf86RamDacInit = xf86Att490Init;
+         break;
+
+      case XGA_DAC:
+         xf86MaxClock =  90000;
+         break;
+
       case UNKNOWN_DAC:
       case NORMAL_DAC:
       default:
+         if( xf86RamDacBPP != 8 )
+            xf86MaxClock = 0;
+         else
+            xf86MaxClock =  85000;
          xf86MaxCurs = 0;
          xf86RamDacHWSave = xf86RamDacHWNoop;
          xf86RamDacHWRestore = xf86RamDacHWNoop;

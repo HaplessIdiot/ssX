@@ -1,5 +1,5 @@
 /* $XConsortium: cir_driver.c,v 1.6 95/01/23 15:35:11 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.34 1995/04/09 14:14:26 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/cirrus/cir_driver.c,v 3.35 1995/04/24 05:24:08 dawes Exp $ */
 /*
  * cir_driver.c,v 1.10 1994/09/14 13:59:50 scooper Exp
  *
@@ -229,7 +229,7 @@ vgaVideoChipRec CIRRUS = {
   cirrusSave,			/* ChipSave() */
   cirrusRestore,		/* ChipRestore() */
   cirrusAdjust,			/* ChipAdjust() */
-  (void (*)())NoopDDA,		/* ChipSaveScreen() */
+  vgaHWSaveScreen,		/* ChipSaveScreen() */
   (void (*)())NoopDDA,		/* ChipGetMode() */
   cirrusFbInit,			/* ChipFbInit() */
   cirrusSetRead,		/* ChipSetRead() */

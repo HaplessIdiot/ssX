@@ -4,7 +4,7 @@
 
 <title> Readme for the XFree86 3.1.1 LinkKit
 <author> The XFree86 Project, Inc.
-<date> 7 January 1995
+<date> 15 February 1995
 
 <sect> Readme for the XFree86 3.1.1 LinkKit <p>
 <enum>
@@ -16,8 +16,8 @@
    included in the `lib' and `inc' packages.  For others they are included
    in the `prog' or `dev' package.  Older versions are not compatible.
 
-<item> Edit the site.def file to define which servers you want to build, and
-   the drivers and extensions you want included.
+<item> Edit the xf86site.def file to define which servers you want to build,
+   and the drivers and extensions you want included.
 
     <itemize>
     <item> Set <tt>HasGcc</tt> and <tt>HasGcc2</tt> to match the compiler
@@ -99,10 +99,10 @@
 <item> Run `<tt>make clean</tt>' to remove the files that were created by this
    procedure.
 
-<item> If you edit the site.def file and change the selection of servers
+<item> If you edit the xf86site.def file and change the selection of servers
    being built or the drivers included in them, repeat the above procedure.
    If changing the selection of Xserver extensions being included it is
-   sufficient to run `<tt>make Makefile</tt>' instead of `<tt>./xmkmf</tt>'.
+   sufficient to run `<tt>make Makefile</tt>' instead of `<tt>./mkmf</tt>'.
 
 <item> It is possible to see which drivers are included in the Xserver by
    running it with the `<tt>-showconfig</tt>' flag.  To check which extensions
@@ -111,7 +111,7 @@
 
 <verb>
 $XConsortium: LinkKit.sgml,v 1.2 95/01/16 13:17:43 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.2 1995/01/14 10:47:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/LinkKit.sgml,v 3.3 1995/01/28 16:01:36 dawes Exp $
 </verb>
 
 </article>

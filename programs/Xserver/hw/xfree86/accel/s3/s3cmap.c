@@ -1,5 +1,5 @@
 /* $XConsortium: s3cmap.c,v 1.2 94/10/12 20:07:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.1 1994/08/20 07:33:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3cmap.c,v 3.3 1995/01/28 17:01:51 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -127,11 +127,11 @@ s3StoreColors(pmap, ndef, pdefs)
 	    xf86bGammaMap[pdefs[i].blue  >> 8];
       } else {
          r = currents3dac[pdefs[i].pixel].r =
-	    xf86rGammaMap[pdefs[i].red   >> 10];
+	    xf86rGammaMap[pdefs[i].red   >> 8] >> 2;
          g = currents3dac[pdefs[i].pixel].g =
-	    xf86gGammaMap[pdefs[i].green >> 10];
+	    xf86gGammaMap[pdefs[i].green >> 8] >> 2;
          b = currents3dac[pdefs[i].pixel].b =
-	    xf86bGammaMap[pdefs[i].blue  >> 10];
+	    xf86bGammaMap[pdefs[i].blue  >> 8] >> 2;
       }
       if (xf86VTSema) {
 	 outb(DAC_W_INDEX, pdefs[i].pixel);
@@ -234,9 +234,9 @@ s3RestoreColor0(pScreen)
       outb(DAC_DATA, xf86gGammaMap[rgb.green >> 8]);
       outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 8]);
    } else {
-      outb(DAC_DATA, xf86rGammaMap[rgb.red   >> 10]);
-      outb(DAC_DATA, xf86gGammaMap[rgb.green >> 10]);
-      outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 10]);
+      outb(DAC_DATA, xf86rGammaMap[rgb.red   >> 8] >> 2);
+      outb(DAC_DATA, xf86gGammaMap[rgb.green >> 8] >> 2);
+      outb(DAC_DATA, xf86bGammaMap[rgb.blue  >> 8] >> 2);
    }
    UNBLOCK_CURSOR;
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.4 1994/11/19 07:50:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFRect.c,v 3.5 1995/01/28 15:48:48 dawes Exp $ */
 /*
  * Fill rectangles.
  */
@@ -74,7 +74,17 @@ agxPolyFillRect(pDrawable, pGC, nrectFill, prectInit)
 
    if (!xf86VTSema)
    {
-      cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+      switch (agxInfoRec.bitsPerPixel) {
+      case 8:
+         cfbPolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+         break;
+      case 16:
+         cfb16PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+         break;
+      case 32:
+         cfb32PolyFillRect(pDrawable, pGC, nrectFill, prectInit);
+         break;
+      }
       return;
    }
 

@@ -4,7 +4,7 @@
  * Copyright (c) 1995 Jeffrey Hsu
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/util/memleak/getreti386.c,v 3.0 1995/05/07 12:33:15 dawes Exp $ */
 
 #define get_current_fp(first_local)	((unsigned)&(first_local) + 4)
 #define prev_fp_from_fp(fp)		*((unsigned *) fp)
@@ -12,6 +12,9 @@
 
 #ifdef __FreeBSD__
 #define CRT0_ADDRESS		0x10d3
+#endif
+#ifdef __NetBSD__
+#define CRT0_ADDRESS            0x109a
 #endif
 
 void

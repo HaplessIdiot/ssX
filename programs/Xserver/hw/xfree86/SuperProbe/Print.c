@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Print.c,v 1.5 95/01/16 13:16:19 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.10 1995/04/09 13:44:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Print.c,v 3.11 1995/05/07 11:48:51 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -38,9 +38,8 @@ static CONST char *SVGA_Names[NUM_VENDORS+1][CHPS_PER_VENDOR] =
 /* ATI */	{ "ATI (chipset unknown)", 
 		  "ATI 18800", "ATI 18800-1",
 		  "ATI 28800-2", "ATI 28800-4", "ATI 28800-5", "ATI 28800-6",
-		  "ATI 68800-3", "ATI 68800-6", 
-		  "ATI 68800-LX", "ATI 68800-AX",
-		  "ATI 88800" },
+		  "ATI 68800-3", "ATI 68800-6", "ATI 68800LX", "ATI 68800AX",
+		  "ATI 88800CX", "ATI 88800GX" },
 /* AL */	{ "Avance Logic (chipset unknown)",
 		  "Avance Logic 2101", "Avance Logic 2228" },
 /* CT */	{ "Chips & Tech (chipset unknown)",

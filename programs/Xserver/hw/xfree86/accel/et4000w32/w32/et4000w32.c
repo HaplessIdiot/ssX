@@ -1,6 +1,6 @@
 /* $XConsortium: et4000w32.c,v 1.4 95/01/16 13:16:26 kaleb Exp $ */
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.6 1995/01/10 10:20:43 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/et4000w32.c,v 3.7 1995/01/28 15:50:58 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -436,7 +436,7 @@ ET4000W32Adjust(x, y)
 
 static void 
 ET4000W32SaveScreen(start_finish)
-    int start_finish; 
+    Bool start_finish; 
 {
     unsigned char tmp;
 
@@ -452,6 +452,8 @@ ET4000W32SaveScreen(start_finish)
 	outb(vgaIOBase + 0x5, tmp | 0x28);
 	RESET_ACL
     }
+
+    vgaHWSaveScreen(start_finish);
 }
 
 /*

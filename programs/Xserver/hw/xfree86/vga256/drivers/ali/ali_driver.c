@@ -1,6 +1,6 @@
 /*
  * $XConsortium: ali_driver.c,v 1.4 95/01/16 13:18:01 kaleb Exp $ 
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.3 1995/01/10 10:30:21 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ali/ali_driver.c,v 3.4 1995/01/28 16:11:03 dawes Exp $
  */
 
 #include "X.h"
@@ -89,7 +89,7 @@ vgaVideoChipRec ALI = {
 	ALISave,
 	ALIRestore,
 	ALIAdjust,
-	(void (*)())NoopDDA,
+	vgaHWSaveScreen,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA, /* ALIFbInit, */
 	ALISetRead,

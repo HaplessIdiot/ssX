@@ -1,5 +1,5 @@
 /* $XConsortium: stub_driver.c,v 1.4 95/01/16 13:16:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.11 1995/01/10 11:33:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/VGADriverDoc/stub_driver.c,v 3.12 1995/01/28 15:48:10 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@XFree86.org>
  *
@@ -705,8 +705,7 @@ int x, y;
  * save and restore the registers.
  *
  * Most chipsets do not require this function, and instead put
- * '(void (*)())NoopDDA' in the vgaVideoChipRec structure (NoopDDA is an
- * empty function for generic use).
+ * 'vgaHWSaveScreen' in the vgaVideoChipRec structure.
  */
 static void
 STUBSaveScreen(mode)
@@ -718,9 +717,19 @@ int mode;
 		 * Save an registers that will be destroyed by the reset
 		 * into static variables.
 		 */
+
+		/*
+		 * Start sequencer reset.
+		 */
+		outw(0x3C4, 0x0100);
 	}
 	else
 	{
+		/*
+		 * End sequencer reset.
+		 */
+		outw(0x3C4, 0x0300);
+
 		/*
 		 * Now restore those registers.
 		 */

@@ -1,5 +1,5 @@
 /* $XConsortium: agxBlt.c,v 1.4 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.9 1994/11/26 12:39:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBlt.c,v 3.10 1995/01/28 15:48:34 dawes Exp $ */
 /*
 Copyright 1989 by the Massachusetts Institute of Technology
 Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -45,6 +45,8 @@ Modified for the AGX    by Henry A. Worth  (haw30@eng.amdahl.com)
 #include	"regionstr.h"
 #include	"mi.h"
 #include	"cfb.h"
+#include	"cfb16.h"
+#include	"cfb32.h"
 #include	"fastblt.h"
 
 #include	"regagx.h"
@@ -83,10 +85,21 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
 
     if ( !xf86VTSema 
          || (pSrcDrawable->type != DRAWABLE_WINDOW 
-             && pDstDrawable->type != DRAWABLE_WINDOW) ) {
-	return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
-			   srcx, srcy, width, height, dstx, dsty);
-    }
+             && pDstDrawable->type != DRAWABLE_WINDOW) ) 
+        switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+           case 8:
+               return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+                                  srcx, srcy, width, height, dstx, dsty);
+           case 16:
+               return cfb16CopyArea(pSrcDrawable, pDstDrawable, pGC,
+                                    srcx, srcy, width, height, dstx, dsty);
+           case 32:
+               return cfb32CopyArea(pSrcDrawable, pDstDrawable, pGC,
+                                    srcx, srcy, width, height, dstx, dsty);
+           default:
+               return cfbCopyArea(pSrcDrawable, pDstDrawable, pGC,
+                                  srcx, srcy, width, height, dstx, dsty);
+        }
 
     origSource.x = srcx;
     origSource.y = srcy;
@@ -437,7 +450,8 @@ agxCopyArea(pSrcDrawable, pDstDrawable,
 	    for (i = numRects; --i >= 0; pbox++)
 		(agxImageReadFunc)( pbox->x1 + dx, pbox->y1 + dy,
 				    pbox->x2 - pbox->x1, pbox->y2 - pbox->y1,
-				    pdst, pixWidth, pbox->x1, pbox->y1,
+				    pdst, pixWidth, 
+                                    pbox->x1, pbox->y1, 
 				    pGC->planemask );
 	}
         else if ( pSrcDrawable->type != DRAWABLE_WINDOW 
@@ -595,8 +609,20 @@ agxCopyPlane(pSrcDrawable, pDstDrawable,
     if ( !xf86VTSema 
          || ( (pSrcDrawable->type != DRAWABLE_WINDOW)
               && (pDstDrawable->type != DRAWABLE_WINDOW) ) ) {
-	return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
-			    srcx, srcy, width, height, dstx, dsty, bitPlane);
+        switch (max(pSrcDrawable->bitsPerPixel, pDstDrawable->bitsPerPixel)) {
+           case 8:
+             return cfbCopyPlane(pSrcDrawable, pDstDrawable, pGC,
+                                 srcx, srcy, width, height, 
+                                 dstx, dsty, bitPlane);
+           case 16:
+             return cfb16CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+                                   srcx, srcy, width, height, 
+                                   dstx, dsty, bitPlane);
+           case 32:
+              return cfb32CopyPlane(pSrcDrawable, pDstDrawable, pGC,
+                                    srcx, srcy, width, height, 
+                                    dstx, dsty, bitPlane);
+        }
     }
 
 #if 1

@@ -1,5 +1,5 @@
 /* $XConsortium: Bt485.h,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.h,v 3.1 1994/09/07 15:47:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt485.h,v 3.2 1995/01/28 15:48:23 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -52,6 +52,50 @@
 /* Indirectly Accessable RamDac Registers */
 
 #define BT485_COMMAND_REG_3		0x01
+
+/* Command Register 0 */
+#define BT485_CR0_EXTENDED_REG_ACCESS   0x80
+#define BT485_CR0_SCLK_SLEEP_DISABLE    0x40
+#define BT485_CR0_BLANK_PEDESTAL        0x20
+#define BT485_CR0_SYNC_ON_BLUE          0x10
+#define BT485_CR0_SYNC_ON_GREEN         0x08
+#define BT485_CR0_SYNC_ON_RED           0x04
+#define BT485_CR0_8_BIT_DAC             0x02
+#define BT485_CR0_SLEEP_ENABLE          0x01
+
+
+/* Command Register 1 */
+#define BT485_CR1_24BPP                 0x00
+#define BT485_CR1_16BPP			0x20
+#define BT485_CR1_8BPP			0x40
+#define BT485_CR1_4BPP			0x60
+#define BT485_CR1_1BPP			0x80
+#define BT485_CR1_BYPASS_CLUT		0x10
+#define BT485_CR1_565_16BPP		0x08
+#define BT485_CR1_555_16BPP		0x00
+#define BT485_CR1_1_TO_1_16BPP		0x04
+#define BT485_CR1_2_TO_1_16BPP		0x00
+#define BT485_CR1_PD7_PIXEL_SWITCH	0x02
+#define BT485_CR1_PIXEL_PORT_CD		0x01
+#define BT485_CR1_PIXEL_PORT_AB 	0x00
+
+/* Command Register 2 */
+#define BT485_CR2_SCLK_DISABLE		0x80
+#define BT485_TEST_PATH_SELECT		0x40
+#define BT485_PIXEL_INPUT_GATE		0x20
+#define BT485_PIXEL_CLK_SELECT		0x10
+#define BT485_INTERLACE_SELECT		0x08
+#define BT485_16BPP_CLUT_PACKED         0x04
+#define BT485_X_WINDOW_CURSOR		0x03
+#define BT485_2_COLOR_CURSOR		0x02
+#define BT485_3_COLOR_CURSOR		0x01
+#define BT485_DISABLE_CURSOR		0x00
+
+/* Command Register 3 */
+#define BT485_4BPP_NIBBLE_SWAP		0x10
+#define BT485_CLOCK_DOUBLER		0x08
+#define BT485_64_BY_64_CURSOR		0x04
+#define BT485_32_BY_32_CURSOR		0x00
 
 _XFUNCPROTOBEGIN
 

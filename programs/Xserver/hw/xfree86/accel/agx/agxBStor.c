@@ -1,5 +1,5 @@
 /* $XConsortium: agxBStor.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBStor.c,v 3.0 1994/08/01 12:08:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBStor.c,v 3.1 1995/01/28 15:48:32 dawes Exp $ */
 /*-
  * agxbstore.c --
  *	Functions required by the backing-store implementation in MI.
@@ -57,8 +57,17 @@ agxSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin)
 
    if (!xf86VTSema)
    {
-      cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
-      return;
+      switch (pPixmap->drawable.bitsPerPixel) {
+        case 8:
+            cfbSaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+            return;
+        case 16:
+            cfb16SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+            return;
+        case 32:
+            cfb32SaveAreas(pPixmap, prgnSave, xorg, yorg, pWin);
+            return;
+      }
    }
 
    i = REGION_NUM_RECTS(prgnSave);
@@ -89,8 +98,17 @@ agxRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin)
 
    if (!xf86VTSema)
    {
-      cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
-      return;
+      switch (pPixmap->drawable.bitsPerPixel) {
+        case 8:
+            cfbRestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+            return;
+        case 16:
+            cfb16RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+            return;
+         case 32:
+            cfb32RestoreAreas(pPixmap, prgnRestore, xorg, yorg, pWin);
+            return;
+      }
    }
 
    i = REGION_NUM_RECTS(prgnRestore);

@@ -1,5 +1,5 @@
 /* $XConsortium: t89_driver.c,v 1.4 95/01/16 13:18:25 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.6 1995/01/10 10:33:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/t89_driver.c,v 3.8 1995/01/28 17:09:27 dawes Exp $ */
 /*
  * Copyright 1992 by Alan Hourihane, Wigan, England.
  *
@@ -95,7 +95,7 @@ vgaVideoChipRec TVGA8900 = {
   TVGA8900Save,
   TVGA8900Restore,
   TVGA8900Adjust,
-  (void (*)())NoopDDA,
+  vgaHWSaveScreen,
   (void (*)())NoopDDA,
   (void (*)())NoopDDA,
   TVGA8900SetRead,

@@ -1,5 +1,5 @@
 /* $XConsortium: agxDLine.c,v 1.2 95/01/06 20:56:48 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDLine.c,v 3.1 1994/12/25 12:19:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxDLine.c,v 3.2 1995/01/28 15:48:40 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -149,7 +149,17 @@ agxDLine(pDrawable, pGC, mode, npt, pptInit)
 
    if (!xf86VTSema)
    {
-      cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
+      switch (agxInfoRec.bitsPerPixel) {
+         case 8:
+            cfbLineSD(pDrawable, pGC, mode, npt, pptInit);
+            break;
+         case 16:
+            cfb16LineSD(pDrawable, pGC, mode, npt, pptInit);
+            break;
+         case 32:
+            cfb32LineSD(pDrawable, pGC, mode, npt, pptInit);
+            break;
+      }
       return;
    }
 
@@ -172,7 +182,7 @@ agxDLine(pDrawable, pGC, mode, npt, pptInit)
    y2 = ppt->y + yorg;
 
    MAP_INIT( GE_MS_MAP_B, 
-             GE_MF_1BPP | GE_MF_MOTO_FORMAT,
+             GE_MF_1BPP | GE_MF_INTEL_FORMAT,
              agxMemBase + agxScratchOffset, 
              0xFFFF, 
              1,

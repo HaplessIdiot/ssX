@@ -30,7 +30,7 @@
  */
 
 /* $XConsortium: RamDac.c,v 1.4 95/01/12 19:19:44 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.7 1995/01/28 15:47:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/RamDac.c,v 3.8 1995/04/09 13:44:41 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -574,7 +574,7 @@ int *RamDac;
 {
 	Word Port = CONFIG_STATUS_1;
 
-	if (ChipSet >= CHIP_ATI88800)
+	if (ChipSet >= CHIP_ATI88800CX)
 		Port = CONFIG_STATUS_0;
 
 	EnableIOPorts(1, &Port);
@@ -655,7 +655,9 @@ int *RamDac;
 	}
 	else if (SVGA_VENDOR(Chipset) == V_ATI)
 	{
-	    if (Chipset < CHIP_ATI68800_3)
+	    extern Bool Crippled_Mach32, Crippled_Mach64;
+
+	    if ((Chipset < CHIP_ATI68800_3) || Crippled_Mach32)
 	    {
 		if (ReadBIOS(0x44, &x, 1) != 1)
 		{
@@ -675,7 +677,7 @@ int *RamDac;
 		    return;
 		}
 	    }
-	    else
+	    else if (!Crippled_Mach64)
 	    {
 		CheckMach32_64(Chipset, RamDac);
 		DisableIOPorts(NUMPORTS, Ports);

@@ -1,5 +1,5 @@
 /* $XConsortium: s3.c,v 1.8 95/01/25 00:44:45 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.76 1995/04/10 12:00:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.77 1995/04/24 05:20:12 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -56,7 +56,7 @@ extern char *xf86VisualNames[];
 extern s3VideoChipPtr s3Drivers[];
 
 int vgaInterlaceType = VGA_DIVIDE_VERT;
-void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA;
+void (*vgaSaveScreenFunc)() = vgaHWSaveScreen;
 
 extern int defaultColorVisualClass;
 
@@ -680,6 +680,9 @@ s3Probe()
       free(card);
       free(serno);
 
+      if (s3InfoRec.dacSpeed <= 0)
+	 s3InfoRec.dacSpeed = max_pix_clock;
+
       do {
 	 switch (card_id) {
 	 case ELSA_WINNER_1000AVI:
@@ -699,8 +702,18 @@ s3Probe()
 	 case ELSA_WINNER_2000:
 	 case ELSA_WINNER_2000VL:
 	 case ELSA_WINNER_2000PCI:
-	    break;
-	 default: continue; /* unknown card_id, don't set ICD2061A flags */
+	    break;  /* set ICD2061A clock chip */
+	 case ELSA_WINNER_2000PRO_X:
+	 case ELSA_WINNER_2000AVI:
+	    if (OFLG_ISSET(OPTION_ELSA_W2000PRO,&s3InfoRec.options)) {
+	       ErrorF("%s %s: for TVP3026 RAMDACs you must not specify Option \"elsa_w2000pro\"\n",
+		      XCONFIG_PROBED, s3InfoRec.name);
+	       OFLG_CLR(OPTION_ELSA_W2000PRO, &s3InfoRec.options);
+	    }
+	 case ELSA_WINNER_1000PRO_TRIO32:
+	 case ELSA_WINNER_1000PRO_TRIO64:
+	 default: 
+	    continue; /* unknown card_id, don't set ICD2061A flags */
 	 }
 
 	 /* a known ELSA card_id was returned, set ICD 2061A clock support 
@@ -735,14 +748,6 @@ s3Probe()
 	 }
 	 ErrorF("%s %s: chipset:   %s rev. %x\n",
                 XCONFIG_PROBED, s3InfoRec.name, chipname, s3ChipRev);
-#if 0
-	 if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId) ||
-	     S3_968_SERIES(s3ChipId)) {
-	    ErrorF("%s %s: Support for this chipset is untested.\n%s\n",
-		   XCONFIG_PROBED, s3InfoRec.name,
-		   "\tPlease report success or failure to XFree86@XFree86.org");
-	 }
-#endif
       } else if (S3_801_928_SERIES(s3ChipId)) {
 	 if (S3_801_SERIES(s3ChipId)) {
             if (S3_805_I_SERIES(s3ChipId)) {
@@ -1565,6 +1570,10 @@ s3Probe()
 	    nonMuxMaxClock = 90000;  /* XXXX just a guess, who has 805i docs? */
 	    pixMuxMinClock = 67500;
 	 }
+	 else if (S3_866_SERIES(s3ChipId) || S3_868_SERIES(s3ChipId)) {
+	    nonMuxMaxClock = 100000;
+	    pixMuxMinClock =  67500;
+	 }
 	 else {
 	    nonMuxMaxClock = 67500;
 	    pixMuxMinClock = 67500;
@@ -2360,41 +2369,44 @@ s3Probe()
 	    /* only suports 8bpp -- nothing to do */
 	    break;
 	 case BT485_DAC:
-	    if (pMode->SynthClock >
-		(OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options)
-		 ? 85000 : 67500)) {
-	      pMode->SynthClock /= 2;
-	      pMode->Flags |= V_DBLCLK;
+	    {
+	       int c;
+
+	       if (OFLG_ISSET(OPTION_STB_PEGASUS, &s3InfoRec.options))
+		  c = 85000;
+	       else if (S3_964_SERIES(s3ChipId) && s3Bpp == 4)
+		  c = 90000;
+	       else
+		  c = 67500;
+	       if (pMode->SynthClock > c) {
+		  pMode->SynthClock /= 2;
+		  pMode->Flags |= V_DBLCLK;
+	       }
 	    }
-	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case ATT20C505_DAC:
 	    if (pMode->SynthClock > 90000) {
 	       pMode->SynthClock /= 2;
 	       pMode->Flags |= V_DBLCLK;
 	    }
-	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case TI3020_DAC:
 	    if (pMode->SynthClock > 100000) {
 	       pMode->SynthClock /= 2;
 	       pMode->Flags |= V_DBLCLK;
 	    }
-	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case TI3025_DAC:
 	    if (pMode->SynthClock > 80000) {
                /* the SynthClock will be divided and clock doubled by the PLL */
 	       pMode->Flags |= V_DBLCLK;
 	    }
-	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case TI3026_DAC:
 	    if (pMode->SynthClock > 80000) {
                /* the SynthClock will be divided and clock doubled by the PLL */
 	       pMode->Flags |= V_DBLCLK;
 	    }
-	    /* XXXX What happens here for 16bpp/32bpp ? */
 	    break;
 	 case ATT20C498_DAC:
 	 case ATT22C498_DAC:

@@ -1,6 +1,6 @@
 
 /* $XConsortium: s3misc.c,v 1.6 95/01/23 15:34:03 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.22 1995/01/23 01:29:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3misc.c,v 3.23 1995/01/28 15:56:25 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -623,7 +623,7 @@ s3AdjustFrame(int x, int y)
 	 Base = (Base & ~0x1f) | 0x19;
    }
 
-   if (S3_964_SERIES(s3ChipId) && DAC_IS_TI3025) {
+   if (S3_964_SERIES(s3ChipId) && (DAC_IS_TI3025 || DAC_IS_TI3026)) {
       int px, py, a;
       miPointerPosition(&px, &py);
       if (s3Bpp==1)

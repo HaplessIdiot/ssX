@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.14 1995/01/23 01:28:40 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.15 1995/01/28 15:49:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -100,9 +100,11 @@ agxSaveReg agxSaveDA[MAX_AGX_DA_REGS] = {
 
 
 agxSaveReg  agxSaveIdx[MAX_AGX_IDX_REGS] = {
+#if 0
  { AGX_ALL|XGA_ALL, 	IR_MC0_MEM_CONF_0,		IR_MC0_MASK,	0 },
  { AGX_ALL|XGA_ALL, 	IR_MC1_MEM_CONF_1,		IR_MC1_MASK,	0 },
  { AGX_ALL|XGA_ALL, 	IR_MC2_MEM_CONF_2,		IR_MC2_MASK,	0 },
+#endif
 
  { AGX_ALL|XGA_ALL, 	IR_CRTC_HTOTAL_LO,		0xFF,		0 },
  { AGX_ALL|XGA_ALL, 	IR_CRTC_HTOTAL_HI,		0xFF,		0 },
@@ -154,7 +156,6 @@ agxSaveReg  agxSaveIdx[MAX_AGX_IDX_REGS] = {
  { AGX_NEW,	 	IR_M1_MODE_REG_1,		IR_M1_MASK,	0 },
  { AGX_10,	 	IR_M1_AGX10_MODE_REG_1,		IR_M1_MASK,	0 },
  { AGX_NEW,	 	IR_M2_MODE_REG_2,		IR_M2_MASK,	0 },
- { AGX_10,	 	IR_M2_AGX10_MODE_REG_2,		IR_M2_AGX10_MASK,0 },
  { AGX_NEW,	 	IR_M3_MODE_REG_3,		IR_M3_MASK,	0 },
  { AGX_NEW,	 	IR_M4_MODE_REG_4,		IR_M4_MASK,	0 },
  { AGX_NEW,	 	IR_M5_MODE_REG_5,		IR_M5_MASK,	0 },
@@ -317,8 +318,6 @@ agxInitDisplay(screen_idx, crtcRegs)
    if (agxInited)
       return;
 
-   agxImageInit();
-
    xf86EnableIOPorts(agxInfoRec.scrnIndex);
    xf86MapDisplay(screen_idx, VGA_REGION);
 
@@ -357,7 +356,18 @@ agxCalcCRTCRegs(crtcRegs, mode)
      DisplayModePtr mode;
 {
     unsigned int temp;
-    Bool usingHercBigDAC = hercBigDAC && mode->Clock > 15;
+    Bool hercDoubledClocks = hercBigDAC && mode->Clock > 15;
+    Bool usingHercBigDac = hercBigDAC
+                           && ( mode->Clock > 15
+                                || agxInfoRec.depth > 8 ) ;
+
+    if (!mode->CrtcVAdjusted && (mode->Flags & V_DBLSCAN)) {
+       mode->CrtcVDisplay <<= 1;
+       mode->CrtcVSyncStart <<= 1;
+       mode->CrtcVSyncEnd <<= 1;
+       mode->CrtcVTotal <<= 1;
+       mode->CrtcVAdjusted = TRUE;
+    }
 
     crtcRegs->clock_sel = mode->Clock;
     crtcRegs->disp_cntl_1 = 0;
@@ -371,6 +381,7 @@ agxCalcCRTCRegs(crtcRegs, mode)
     crtcRegs->hsync_end_lo     = (mode->CrtcHSyncEnd >> 3) - 1;
 
     temp = (mode->CrtcHSyncEnd - mode->CrtcHSyncStart) >> 3;
+
     if (temp > 0x1f) {
         ErrorF("%s %s: Horizontal Sync width (%d) in mode \"%s\"\n",
                XCONFIG_PROBED, agxInfoRec.name, temp<<3,
@@ -378,11 +389,32 @@ agxCalcCRTCRegs(crtcRegs, mode)
         ErrorF("\tshortened to 248 pixels\n");
         crtcRegs->hsync_end_lo = crtcRegs->hsync_strt_lo + 0x1f;
     }
+
+#if 0
+    ErrorF("DEBUG: hercBigDAC:%x, crtcRegs->clock_sel:%d, crtcRegs->bpp:%d, \
+agxInfoRec.depth:%d, hercDoubledClocks:%x, usingHercBigDac:%x\n",
+                hercBigDAC, crtcRegs->clock_sel, 
+                crtcRegs->bpp, agxInfoRec.depth,
+                hercDoubledClocks, usingHercBigDac );
+#endif
+
+    agxOriginAdjust = 0;
     switch( agxInfoRec.depth ) {
        case 8:
             crtcRegs->bpp = 8;
-            if (usingHercBigDAC)
+            if (hercDoubledClocks) {
                crtcRegs->hblnk_strt_lo -= 2;
+               crtcRegs->hblnk_end_lo  += 1;
+            }
+            else if (usingHercBigDac) {
+#if 0           /* XGA CRTC DELAY */
+               crtcRegs->hblnk_strt_lo -= 3;
+               crtcRegs->hblnk_end_lo  -= 2;
+#else
+               crtcRegs->hblnk_strt_lo -= 2;
+               crtcRegs->hblnk_end_lo  += 3;
+#endif
+            }
             crtcRegs->hsync_pos_1 = IR_CHP1_NO_DELAY;
             crtcRegs->hsync_pos_2 = IR_CHP2_NO_DELAY;
             crtcRegs->disp_cntl_2 |= IR_DC2_8_BPP;
@@ -390,8 +422,15 @@ agxCalcCRTCRegs(crtcRegs, mode)
        case 15:
        case 16:
             crtcRegs->bpp = 16;
-            if (usingHercBigDAC)
+            if (hercDoubledClocks) {
                crtcRegs->hblnk_strt_lo -= 1;
+               crtcRegs->hblnk_end_lo  += 1;
+            }
+            else if (usingHercBigDac) {
+               crtcRegs->hblnk_strt_lo -= 1;
+               crtcRegs->hblnk_end_lo  -= 0;
+            }
+
             crtcRegs->hsync_pos_1 = IR_CHP1_NO_DELAY;
             crtcRegs->hsync_pos_2 = IR_CHP2_NO_DELAY;
             crtcRegs->disp_cntl_2 |= IR_DC2_16_BPP;
@@ -399,8 +438,10 @@ agxCalcCRTCRegs(crtcRegs, mode)
        case 24:
        case 32:
             crtcRegs->bpp = 32;
-            if (usingHercBigDAC)
-                crtcRegs->hblnk_strt_lo -= 2;
+            if (hercDoubledClocks) {
+               crtcRegs->hblnk_strt_lo -= 0;
+               crtcRegs->hblnk_end_lo  += 1;
+            }
             crtcRegs->hsync_pos_1 = IR_CHP1_NO_DELAY;
             crtcRegs->hsync_pos_2 = IR_CHP2_NO_DELAY;
             crtcRegs->disp_cntl_2 |= IR_DC2_24_BPP;
@@ -409,6 +450,9 @@ agxCalcCRTCRegs(crtcRegs, mode)
 
     if (mode->Flags & V_NHSYNC) 
        crtcRegs->disp_cntl_1 |= IR_DC1_SYNC_HNEG;
+
+    if (mode->Flags & V_NVSYNC) 
+       crtcRegs->disp_cntl_1 |= IR_DC1_SYNC_VNEG;
 
     if (mode->Flags & V_INTERLACE) {
        crtcRegs->disp_cntl_1 |= IR_DC1_INTERLACED;
@@ -443,11 +487,6 @@ agxCalcCRTCRegs(crtcRegs, mode)
         ErrorF("\tshortened to 31 lines\n");
         crtcRegs->vsync_end = (crtcRegs->vsync_strt_lo + 0x1F) & 0xFF;
     }
-
-    if (mode->Flags & V_NVSYNC) 
-       crtcRegs->disp_cntl_1 |= IR_DC1_SYNC_VNEG;
-    if (mode->Flags & V_INTERLACE) 
-       crtcRegs->disp_cntl_1 |= IR_DC1_INTERLACED;
 
     crtcRegs->mem_acc_mode = agxVideoMapFormat;
 
@@ -515,7 +554,10 @@ agxSetCRTCRegs(crtcRegs)
      agxCRTCRegPtr crtcRegs;
 {
    unsigned char byteData;
-   Bool usingHercBigDAC = hercBigDAC && crtcRegs->clock_sel > 15;
+   Bool hercDoubledClocks = hercBigDAC && crtcRegs->clock_sel > 15;
+   Bool usingHercBigDac = hercBigDAC 
+                          && ( crtcRegs->clock_sel > 15 
+                               ||  crtcRegs->bpp > 8 ) ;
 
    /*
     * Now initialize the display controller.
@@ -524,17 +566,16 @@ agxSetCRTCRegs(crtcRegs)
 
    if (AGX_SERIES(agxChipId)) {
       if( hercBigDAC ) {
-         if( !usingHercBigDAC && inb(hercBrdIO+4) & 0x01 ) {
+         if( !hercDoubledClocks && inb(hercBrdIO+4) & 0x01 ) {
             /* needed to reliably get AGX-015 out of clock-doubling mode */ 
             outb(agxDAReg+DA_OP_MODE, DA_OM_DISP_VGA_XGA_EN);
             outb(agxIdxReg,IR_M2_MODE_REG_2); 
             byteData = inb(agxByteData) & IR_M2_PRESERVE_MASK;
             outb(agxByteData,byteData);
          }
-         usingHercBigDAC = hercBigDAC && crtcRegs->clock_sel > 15;
-         if( usingHercBigDAC )
-            hercSwitchToBigDac();
-         else 
+         if( usingHercBigDac ) 
+            hercSwitchToBigDac( hercDoubledClocks );
+         else
             hercSwitchToLittleDac();
          agxClearColor0();
          outb(agxIdxReg, 0);
@@ -547,12 +588,16 @@ agxSetCRTCRegs(crtcRegs)
     * switch to XGA graphics mode 
     */
    outb(agxDAReg+DA_OP_MODE, DA_OM_DISP_XGA_MODE);
+   GE_RESET();
    agxResetCRTC(CRTC_PRERESET);
    (*agxClockSelectFunc)(0,0);
    agxResetCRTC(CRTC_RESET);
 
    if(AGX_SERIES(agxChipId)) {
-      outb(agxIdxReg,IR_M1_MODE_REG_1); 
+      if(AGX_10_ONLY(agxChipId))
+         outb(agxIdxReg,IR_M1_AGX10_MODE_REG_1); 
+      else
+         outb(agxIdxReg,IR_M1_MODE_REG_1); 
       byteData = inb(agxByteData) & IR_M1_PRESERVE_MASK;
       if (OFLG_ISSET(OPTION_8_BIT_BUS, &agxInfoRec.options)) 
           byteData &= ~IR_M1_AGX_BUS_SIZE;
@@ -571,9 +616,9 @@ agxSetCRTCRegs(crtcRegs)
       else
           byteData &= ~IR_M1_INTERLACED;
 
-      if (!usingHercBigDAC && xf86RamDacType != SC15021_DAC) {
+      if (!usingHercBigDac /* && xf86RamDacType != SC15021_DAC */ ) {
           /* for edge triggered RAMDAC modes */
-          if( agxInfoRec.depth != 8 )
+          if( crtcRegs->bpp != 8 )
               byteData |= IR_M1_XGA_CRTC_DELAY;
       }
 
@@ -585,11 +630,10 @@ agxSetCRTCRegs(crtcRegs)
           byteData &= ~IR_M2_VRAM_256;
       if (OFLG_ISSET(OPTION_VRAM_256, &agxInfoRec.options)) 
           byteData |= IR_M2_VRAM_256;
-      if (usingHercBigDAC) {
-          /* for AGX-015/016 clock doubled pix-mux mode */
+      if (usingHercBigDac) {
+          /* for AGX-015/016 pix-mux mode */
           byteData |= IR_M2_84DAC_SELECT 
-                      | IR_M2_CCLK_DOUBLED
-                      | IR_M2_DELAY_DISPLAY; 
+                      | IR_M2_CCLK_DOUBLED;
       }
       outb(agxByteData,byteData);
 
@@ -603,12 +647,13 @@ agxSetCRTCRegs(crtcRegs)
       switch( crtcRegs->bpp ) {
          case 15:
          case 16:
-            if (!usingHercBigDAC)
+            if (!usingHercBigDac
+                 && !(agxInfoRec.depth == 16 && DAC_IS_ATT490) )
                byteData |= IR_M3_PCLK_EDGE_TRIGGERED;
             break;
          case 24:
          case 32:
-            if (!usingHercBigDAC && xf86RamDacType != SC15021_DAC)
+            if (!usingHercBigDac && xf86RamDacType != SC15021_DAC)
                byteData |= IR_M3_PCLK_EDGE_TRIGGERED; 
             byteData |= IR_M3_RGBX_UNPACKED | IR_M3_24BPP_ENGINE;
             break;
@@ -640,56 +685,59 @@ agxSetCRTCRegs(crtcRegs)
 #endif
       outb(agxByteData,byteData);
 
-      outb(agxIdxReg,IR_M7_MODE_REG_7); 
-      byteData = inb(agxByteData) & IR_M7_PRESERVE_MASK;
-      byteData &= ~IR_M7_BUFFER_ENABLE;
-      if (OFLG_ISSET(OPTION_FIFO_MODERATE, &agxInfoRec.options))
-          byteData |= IR_M7_BUFFER_ENABLE;
-      if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
-          byteData &= ~IR_M7_BUFFER_ENABLE;  /* actually the default */
-      if (OFLG_ISSET(OPTION_VLB_A, &agxInfoRec.options)) 
-          byteData &= ~IR_M7_VLB_B;
-      if (OFLG_ISSET(OPTION_VLB_B, &agxInfoRec.options)) 
-          byteData |= IR_M7_VLB_B;
-      if (OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options))
-          byteData &= ~(IR_M7_VRAM_RAS_DELAY | IR_M7_VRAM_LATCH_DELAY);
-      if (OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)) {
-          byteData |= IR_M7_VRAM_LATCH_DELAY;
-          byteData &= ~IR_M7_VRAM_RAS_DELAY;
+      if (AGX_15_16_ONLY(agxChipId)) {
+         outb(agxIdxReg,IR_M7_MODE_REG_7); 
+         byteData = inb(agxByteData) & IR_M7_PRESERVE_MASK;
+         byteData &= ~IR_M7_BUFFER_ENABLE;
+         if (OFLG_ISSET(OPTION_FIFO_MODERATE, &agxInfoRec.options))
+             byteData |= IR_M7_BUFFER_ENABLE;
+         if (OFLG_ISSET(OPTION_FIFO_CONSERV, &agxInfoRec.options))
+             byteData &= ~IR_M7_BUFFER_ENABLE;  /* actually the default */
+         if (OFLG_ISSET(OPTION_VLB_A, &agxInfoRec.options)) 
+             byteData &= ~IR_M7_VLB_B;
+         if (OFLG_ISSET(OPTION_VLB_B, &agxInfoRec.options)) 
+             byteData |= IR_M7_VLB_B;
+         if (OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options))
+             byteData &= ~(IR_M7_VRAM_RAS_DELAY | IR_M7_VRAM_LATCH_DELAY);
+         if (OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)) {
+             byteData |= IR_M7_VRAM_LATCH_DELAY;
+             byteData &= ~IR_M7_VRAM_RAS_DELAY;
+         }
+         if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options)) {
+             byteData |= IR_M7_VRAM_RAS_DELAY;
+             byteData |= IR_M7_VRAM_LATCH_DELAY;
+         }
+         if (OFLG_ISSET(OPTION_VRAM_DELAY_LATCH, &agxInfoRec.options))
+             byteData |= IR_M7_VRAM_LATCH_DELAY;
+         if (OFLG_ISSET(OPTION_VRAM_DELAY_RAS, &agxInfoRec.options))
+             byteData |= IR_M7_VRAM_RAS_DELAY;
+         outb(agxByteData,byteData);
       }
-      if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options)) {
-          byteData |= IR_M7_VRAM_RAS_DELAY;
-          byteData |= IR_M7_VRAM_LATCH_DELAY;
-      }
-      if (OFLG_ISSET(OPTION_VRAM_DELAY_LATCH, &agxInfoRec.options))
-          byteData |= IR_M7_VRAM_LATCH_DELAY;
-      if (OFLG_ISSET(OPTION_VRAM_DELAY_RAS, &agxInfoRec.options))
-          byteData |= IR_M7_VRAM_RAS_DELAY;
-      outb(agxByteData,byteData);
 
-      outb(agxIdxReg,IR_M8_MODE_REG_8); 
-      byteData = inb(agxByteData) & IR_M8_PRESERVE_MASK;
-      if (OFLG_ISSET(OPTION_SPRITE_REFRESH, &agxInfoRec.options)) 
-          byteData &= ~IR_M8_SPRITE_REFRESH;
-      else
-          byteData |= IR_M8_SPRITE_REFRESH;
-      if (OFLG_ISSET(OPTION_SCREEN_REFRESH, &agxInfoRec.options)) 
-          byteData |= IR_M8_SCREEN_REFRESH;
-      else
-          byteData &= ~IR_M8_SCREEN_REFRESH;
-      if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &agxInfoRec.options))
-          byteData |= IR_M8_BIG_BUFFER_ENABLE;
-      else
-          byteData &= ~IR_M8_BIG_BUFFER_ENABLE;
-      if ( OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)
-           | OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options) )
-          byteData &= ~IR_M8_VRAM_RAS_EXTEND;
-      if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options))
-          byteData |= IR_M8_VRAM_RAS_EXTEND;
-      if (OFLG_ISSET(OPTION_VRAM_EXTEND_RAS, &agxInfoRec.options))
-          byteData |= IR_M8_VRAM_RAS_EXTEND;
-
-      outb(agxByteData,byteData);
+      if (AGX_16_ONLY(agxChipId)) {
+         outb(agxIdxReg,IR_M8_MODE_REG_8); 
+         byteData = inb(agxByteData) & IR_M8_PRESERVE_MASK;
+         if (OFLG_ISSET(OPTION_SPRITE_REFRESH, &agxInfoRec.options)) 
+             byteData &= ~IR_M8_SPRITE_REFRESH;
+         else
+             byteData |= IR_M8_SPRITE_REFRESH;
+         if (OFLG_ISSET(OPTION_SCREEN_REFRESH, &agxInfoRec.options)) 
+             byteData |= IR_M8_SCREEN_REFRESH;
+         else
+             byteData &= ~IR_M8_SCREEN_REFRESH;
+         if (OFLG_ISSET(OPTION_FIFO_AGGRESSIVE, &agxInfoRec.options))
+             byteData |= IR_M8_BIG_BUFFER_ENABLE;
+         else
+             byteData &= ~IR_M8_BIG_BUFFER_ENABLE;
+         if ( OFLG_ISSET(OPTION_MED_DRAM, &agxInfoRec.options)
+              | OFLG_ISSET(OPTION_FAST_DRAM, &agxInfoRec.options) )
+             byteData &= ~IR_M8_VRAM_RAS_EXTEND;
+         if (OFLG_ISSET(OPTION_SLOW_DRAM, &agxInfoRec.options))
+             byteData |= IR_M8_VRAM_RAS_EXTEND;
+         if (OFLG_ISSET(OPTION_VRAM_EXTEND_RAS, &agxInfoRec.options))
+             byteData |= IR_M8_VRAM_RAS_EXTEND;
+         outb(agxByteData,byteData);
+      } 
 
       if (AGX_16_ONLY(agxChipId)) {
          outb(agxIdxReg,IR_M10_MODE_REG_10);
@@ -700,26 +748,29 @@ agxSetCRTCRegs(crtcRegs)
              byteData &= ~IR_M10_BUS_WAIT_STATE;
          outb(agxByteData,byteData);
       }
-   }
-   outb(agxDAReg+DA_INTR_CNTL, DA_IC_INTR_DISABLE);
-   outb(agxDAReg+DA_INTR_STAT, DA_IS_CLEAR_ALL);
-   outb(agxDAReg+DA_VIRT_MEM_CNTL, 0x00);
-   outb(agxDAReg+DA_MEM_ACCESS, crtcRegs->mem_acc_mode );
+   } /* AGX_SERIES */
 
-   outb(agxIdxReg, IR_DISP_CNTL_2);
-   outb(agxByteData, crtcRegs->disp_cntl_2);
-
-   outb(agxIdxReg, IR_DISP_CNTL_1);
-   byteData = inb(agxByteData) & IR_DC1_PRESERVE_MASK;
-   byteData |= crtcRegs->disp_cntl_1 | IR_DC1_CRTC_PREP;
-   outb(agxByteData, byteData);
-
+   /* Direct Access Registers */
    if (vgaPhysBase == (pointer)0xB0000) {
       outb(agxDAReg+DA_APERATURE_CNTL, DA_AC_64K_AT_B0000);
    }
    else {
       outb(agxDAReg+DA_APERATURE_CNTL, DA_AC_64K_AT_A0000);
    }
+   outb(agxDAReg+DA_INTR_CNTL, DA_IC_INTR_DISABLE);
+   outb(agxDAReg+DA_INTR_STAT, DA_IS_CLEAR_ALL);
+   outb(agxDAReg+DA_VIRT_MEM_CNTL, DA_VM_DISABLE);
+   outb(agxDAReg+DA_VIRT_MEM_STAT, DA_VS_CLEAR_ALL);
+   outb(agxDAReg+DA_APERATURE_INDEX, 0);
+   outb(agxDAReg+DA_MEM_ACCESS, crtcRegs->mem_acc_mode);
+
+   /* Display Control */
+   outb(agxIdxReg, IR_DISP_CNTL_1);
+   byteData = inb(agxByteData) & IR_DC1_PRESERVE_MASK;
+   byteData |= crtcRegs->disp_cntl_1 | IR_DC1_CRTC_PREP;
+   outb(agxByteData, byteData);
+   outb(agxIdxReg, IR_DISP_CNTL_2);
+   outb(agxByteData, crtcRegs->disp_cntl_2);
 
     /* Horizontal CRTC registers */
    outb(agxIdxReg, IR_CRTC_HTOTAL_LO);
@@ -735,10 +786,7 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxIdxReg, IR_CRTC_HBLANK_START_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HBLANK_END_LO);
-   if (usingHercBigDAC)
-      outb(agxByteData, crtcRegs->hblnk_end_lo + 1);
-   else
-      outb(agxByteData, crtcRegs->hblnk_end_lo);
+   outb(agxByteData, crtcRegs->hblnk_end_lo);
    outb(agxIdxReg, IR_CRTC_HBLANK_END_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_CRTC_HSYNC_START_LO); 
@@ -782,9 +830,9 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxIdxReg, IR_CRTC_VLINE_COMP_HI);
    outb(agxByteData, 0xFF);
    outb(agxIdxReg, IR_DISP_MAP_LO);
-   outb(agxByteData, 0x00);
+   outb(agxByteData, agxOriginAdjust);
    outb(agxIdxReg, IR_DISP_MAP_MID);
-   outb(agxByteData, 0x00);
+   outb(agxByteData, agxOriginAdjust >> 8);
    outb(agxIdxReg, IR_DISP_MAP_HI);
    outb(agxByteData, 0x00);
    outb(agxIdxReg, IR_DISP_MAP_WIDTH_LO);
@@ -797,6 +845,16 @@ agxSetCRTCRegs(crtcRegs)
    outb(agxByteData, crtcRegs->overscan);
    outb(agxIdxReg, IR_PAL_SEQUENCE);
    outb(agxByteData, IR_PS_FRMT_RGB);
+
+   if(XGA_2_ONLY(agxChipId)) {
+      outb(agxIdxReg, IR_NI_DIR_CNTL);
+      outb(agxByteData, IR_NI_DC_LINEARIZED_COLOR);
+      outb(agxIdxReg, IR_NI_MISC_CNTL);
+      outb(agxByteData, IR_NI_MC_ENABLE_REDBLUE);
+      outb(agxIdxReg, IR_NI_MFI_CNTL);
+      outb(agxByteData, IR_NI_MFI_DISABLE);
+   }
+   outb(agxIdxReg, 0);
 
    /* Clock select register */
    (*agxClockSelectFunc)(crtcRegs->clock_sel,0);
@@ -835,17 +893,22 @@ agxSwitchMode(mode)
 
    agxClearColor0();
    outb(agxIdxReg, 0);
-   if(XGA_PALETTE_CONTROL(agxChipId)) {
-      outb(agxIdxReg, IR_PAL_MASK);
-      outb(agxByteData, 0x00);
-   }
-   else {
-      outb(VGA_PAL_MASK, 0x00);
+   if( agxInfoRec.bitsPerPixel == 8 ) {
+      if(XGA_PALETTE_CONTROL(agxChipId)) {
+         outb(agxIdxReg, IR_PAL_MASK);
+         outb(agxByteData, 0x00);
+      }
+      else {
+         outb(VGA_PAL_MASK, 0x00);
+      }
    }
 
    agxCalcCRTCRegs(&agxCRTCRegs, mode);
    agxInited = FALSE;
    agxInitDisplay(agxInfoRec.scrnIndex,&agxCRTCRegs);
+
+   agxRestoreCursor(savepScreen);
+   agxAdjustFrame(agxInfoRec.frameX0, agxInfoRec.frameY0);
 
    if( hercBigDAC )
       agxRestoreLUT(agxsavedLUT);
@@ -853,7 +916,7 @@ agxSwitchMode(mode)
       agxRestoreColor0(savepScreen);
 
    outb(agxIdxReg, 0);
-   if( agxInfoRec.bitsPerPixel < 24 ) {
+   if( agxInfoRec.bitsPerPixel == 8 ) {
       if(XGA_PALETTE_CONTROL(agxChipId)) {
          outb(agxIdxReg, IR_PAL_MASK);
         outb(agxByteData, 0xFF);
@@ -867,48 +930,6 @@ agxSwitchMode(mode)
 
    return(TRUE);
 }
-
-/*
- *  agxAddDoubledCLocks() - 
- *     add usable doubled clocks and 
- *     zero out clocks > greater than max direct clock rate    
- *     or that conflict with the doubled clock.
- */
-
-static void
-agxAddDoubledClocks(InfoRec)
-   ScrnInfoRec *InfoRec;
-{
-   int num = InfoRec->clocks;
-   int i;
-
-   /* second group are the usable doubled clocks */
-   for( i=0; i < num; i++ ) {
-      int try = InfoRec->clock[i]; 
-      if( try >= xf86MinClockDoubled && try <= xf86MaxClockDoubled )
-         InfoRec->clock[i + num] = try << 1;
-      else
-         InfoRec->clock[i + num] = 0;
-   }
-
-   /* clear out low order clocks that are too large */
-   for( i=0; i < num; i++ ) {
-      if( InfoRec->clock[i] > xf86MaxClockDirect )
-         InfoRec->clock[i] = 0;
-   }
-
-   /* clear out low order clocks that conflict with the doubled clocks */
-   for( i=0; i < num; i++ ) {
-      int j;
-      for( j=0; j < num; j++ ) {
-         if( InfoRec->clock[i] == InfoRec->clock[num+j] )
-            InfoRec->clock[i] = 0;
-      }
-   }
-
-   InfoRec->clocks = num << 1;
-}
-
 
 /*
  *  agxGetClocks() - derived from xf86GetClocks(). The XGA has  
@@ -1083,10 +1104,11 @@ agxResetCRTC( reset )
  *
  *          XGA Internal Clocks   REG       BIT(s)  Description
  *
- *          ------------- 0x70 ClkSel2    7    XGA&VGA CLock Select
- *          |  ---------- 0x54 ClkSel1   3-2   XGA&VGA CLock Select
- *          |  |
- *  0-7     n n n
+ *              --------------- 0x54 ClkSel1    0    Clock Scale
+ *              | ------------- 0x70 ClkSel2    7    XGA&VGA CLock Select
+ *              | |  ---------- 0x54 ClkSel1   3-2   XGA&VGA CLock Select
+ *              | |  |
+ *  0-7         n n n n
  *
  *          Notable XGA clock conventions (hopefully useful for probing)
  *
@@ -1146,17 +1168,18 @@ agxClockSelect(no,scale)
        break;
      default:
 
-        if (XGA_SERIES(agxChipId)) {
+        if ( XGA_SERIES(agxChipId)) {
 	   if (no < 16) {  /* Internal XGA/VGA clocks */
-
    	      outb(agxIdxReg, IR_CLOCK_SEL_1);
    	      byteData = inb(agxByteData) & IR_CS1_WRITE_MASK;
               byteData &= ~IR_CS1_CLOCK_MASK & ~IR_CS1_SCALE_MASK;
-              byteData |= no & 0x07;
+              byteData = 0;
+              byteData |= ((no << IR_CS1_CLOCK_SHIFT) & IR_CS1_CLOCK_MASK);
+              byteData |= no >> 3;
    	      outb(agxByteData, byteData);
     
    	      outb(agxIdxReg, IR_CLOCK_SEL_2);
-              byteData = (no << 4) & 0x80;
+              byteData = (no << (IR_CS2_CLOCK_SHIFT - 2)) & IR_CS2_CLOCK_MASK;
    	      outb(agxByteData, byteData);
            }
            else if (AGX_10_ONLY(agxChipId) && no < 16) { 
@@ -1167,7 +1190,7 @@ agxClockSelect(no,scale)
                             & ~IR_M5_CS4_MASK & ~IR_M5_EXT_CLOCK;
    	      outb(agxByteData, byteData);
 
-	      outb(agxIdxReg, IR_M1_MODE_REG_1);
+	      outb(agxIdxReg, IR_M1_AGX10_MODE_REG_1);
 	      byteData = inb(agxByteData)
                             & IR_M1_WRITE_MASK & ~IR_M1_CS3_MASK;
               byteData |= ((no << (IR_M1_CS3_SHIFT)) & IR_M1_CS3_MASK);
@@ -1409,7 +1432,7 @@ agxProbeClocks(scale)
                     &agxInfoRec );
    }
    else { /* XGA */ 
-      agxGetClocks( 16,   		     /* num of clocks */ 
+      agxGetClocks( 8,   		     /* num of clocks */ 
                     scale-1,	             /* clock scaling factor */
                     0, 25175/scale,          /* known clock num & KHz value */ 
                     &agxInfoRec );
@@ -1422,26 +1445,17 @@ agxProbeClocks(scale)
    
    agxValidateClocks(5);
 
-   if( AGX_SERIES(agxChipId) && xf86MinClockDoubled > -1 ) {
-      /* massage clocks for RAMDAC clock doubling */
-      agxAddDoubledClocks( &agxInfoRec );
-   }
-
    if (xf86Verbose) {
       int i;
 
-      ErrorF("%s ",OFLG_ISSET(XCONFIG_CLOCKS,&agxInfoRec.xconfigFlag)
-		      ? XCONFIG_GIVEN : XCONFIG_PROBED);
+      ErrorF("%s ", XCONFIG_PROBED );
       ErrorF("%s: ", agxInfoRec.name);
-      ErrorF("Number of Clocks: %d, Scaling Factor %d", 
-             agxInfoRec.clocks, scale);
+      ErrorF("Number of Input Clocks: %d (use in XF86Config Clocks Statement)",
+              agxInfoRec.clocks);
 
       for (i = 0; i < agxInfoRec.clocks; i++) {
          if (i % 8 == 0) 
-            ErrorF("\n%s %s: clocks:", 
-                   OFLG_ISSET(XCONFIG_CLOCKS,&agxInfoRec.xconfigFlag)
-                   ? XCONFIG_GIVEN : XCONFIG_PROBED,
-                   agxInfoRec.name);
+            ErrorF("\n%s %s: clocks:", XCONFIG_PROBED, agxInfoRec.name);
 	    ErrorF(" %6.2f", agxInfoRec.clock[i]/1000.0);
       }
       ErrorF("\n");
@@ -1462,31 +1476,31 @@ agxSaveLUT(lut)
 {
    short i;
    unsigned char oldIndex;
-   unsigned int  palDataReg;
 
    oldIndex = inb(agxIdxReg);
    if(XGA_PALETTE_CONTROL(agxChipId)) {
-      outb(agxIdxReg, IR_CUR_PAL_INDEX_LO);
-      outb(agxByteData, 0x00);
-      outb(agxIdxReg, IR_PAL_DATA);
-      palDataReg = agxByteData;
+      for (i = 0; i < 256; i++) {
+         outb(agxIdxReg, IR_CUR_PAL_INDEX_PREF_LO);
+         outb(agxByteData, i);
+         outb(agxIdxReg,IR_PAL_RED_PRE);
+         lut[i].r = inb(agxByteData);
+         outb(agxIdxReg,IR_PAL_GREEN_PRE);
+         lut[i].g = inb(agxByteData);
+         outb(agxIdxReg,IR_PAL_BLUE_PRE);
+         lut[i].b = inb(agxByteData);
+      }
    }
    else {
       outb(agxIdxReg, 0);   /* make sure index is not 0x51 */
       outb(VGA_PAL_READ_INDEX, 0x00);
-      palDataReg = VGA_PAL_DATA;
+      for (i = 0; i < 256; i++) {
+         inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
+         lut[i].r = inb(VGA_PAL_DATA);
+         lut[i].g = inb(VGA_PAL_DATA);
+         lut[i].b = inb(VGA_PAL_DATA);
+      }
    }
-
-   for (i = 0; i < 256; i++) {
-      inb(agxIdxReg);   /* Some RAMDAC's (SC15021) can't take full speed */
-      inb(agxIdxReg);   
-      lut[i].r = inb(palDataReg);
-      inb(agxIdxReg);
-      lut[i].g = inb(palDataReg);
-      inb(agxIdxReg);
-      lut[i].b = inb(palDataReg);
-   }
-
+   
    outb(agxIdxReg, oldIndex);
 }
 

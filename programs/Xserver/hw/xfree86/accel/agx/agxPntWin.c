@@ -1,5 +1,5 @@
 /* $XConsortium: agxPntWin.c,v 1.5 95/01/27 14:51:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.6 1995/01/20 05:48:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxPntWin.c,v 3.7 1995/01/28 15:49:07 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -55,6 +55,7 @@ OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 */
 
+
 #include "X.h"
 
 #include "windowstr.h"
@@ -79,7 +80,6 @@ agxPaintWindow(pWin, pRegion, what)
 {
     register cfbPrivWin	*pPrivWin;
     void (*pcfbFillBoxTile32)(), (*pcfbFillBoxTileOdd)();
-    WindowPtr pBgWin;
 
     if (!xf86VTSema)
     {
@@ -150,16 +150,12 @@ agxPaintWindow(pWin, pRegion, what)
 	    return;
 	}
 	else {
-	    for (pBgWin = pWin;
-		 pBgWin->backgroundState == ParentRelative;
-		 pBgWin = pBgWin->parent);
-
 	    agxFillBoxTile( (DrawablePtr)pWin,
 			    (int)REGION_NUM_RECTS(pRegion),
 			    REGION_RECTS(pRegion),
 			    pWin->border.pixmap,
-			    (int) pBgWin->drawable.x, 
-                            (int) pBgWin->drawable.y,
+			    (int) pWin->drawable.x, 
+                            (int) pWin->drawable.y,
                             MIX_SRC, ~0 );
 	    return;
 	}

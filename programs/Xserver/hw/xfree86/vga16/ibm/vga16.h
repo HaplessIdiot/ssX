@@ -1,5 +1,5 @@
 /* $XConsortium: vga16.h,v 1.2 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.3 1995/01/28 17:06:18 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/vga16.h,v 3.4 1995/05/07 11:53:10 dawes Exp $ */
 
 /*
  * some header files need to be included here to make
@@ -9,7 +9,9 @@
 #include <gcstruct.h>
 #include <colormapst.h>
 #include <fontstruct.h>
+#ifndef MFB_OPEQ_WHITE
 #include <mfb.h>	/* GJA -- for PixelType */
+#endif
 
 /* ppcArea.c */
 void ppcAreaFill(

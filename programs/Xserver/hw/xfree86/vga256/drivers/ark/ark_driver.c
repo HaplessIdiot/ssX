@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/ark/ark_driver.c,v 3.0 1995/03/11 14:17:02 dawes Exp $ */
 /*
  * Copyright 1994  The XFree86 Project
  *
@@ -195,8 +195,6 @@ static Bool	ArkValidMode();
 static void *   ArkSave();
 static void     ArkRestore();
 static void     ArkAdjust();
-static void     ArkSaveScreen();
-static void     ArkGetMode();
 static void	ArkFbInit();
 /*
  * These are the bank select functions.  There are defined in stub_bank.s
@@ -222,7 +220,7 @@ vgaVideoChipRec ARK = {
 	ArkSave,
 	ArkRestore,
 	ArkAdjust,
-	(void (*)())NoopDDA,
+	vgaHWSaveScreen,
 	(void (*)())NoopDDA,
 	ArkFbInit,
 	ArkSetRead,

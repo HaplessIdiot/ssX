@@ -1,5 +1,5 @@
 /* $XConsortium: agxBCach.c,v 1.3 95/01/05 20:29:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.6 1994/11/19 07:49:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxBCach.c,v 3.7 1995/01/28 15:48:30 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Tombs. Oxford University
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -255,9 +255,9 @@ agxCReturnBlock(block)
       if( xf86VTSema ) {
          geBlockMove = TRUE;      
          MAP_INIT( GE_MS_MAP_B,
-                   GE_MF_8BPP,
+                   agxVideoMapFormat & ~GE_MF_MOTO_FORMAT,
                    block->daddy->offset + agxMemBase,
-                   CACHE_LINE_WIDTH_BYTES-1,
+                   AGX_PIXEL_ADJUST(CACHE_LINE_WIDTH_BYTES)-1,
                    ROW_NUM_LINES-1,
                    FALSE, FALSE, FALSE );
 
@@ -276,7 +276,8 @@ agxCReturnBlock(block)
             unsigned int srcCoOrd, dstCoOrd, opDim;
             srcCoOrd = tmpb->line << 16;
             dstCoOrd = newLine << 16; 
-            opDim    = (tmpb->sizel-1 << 16) | (CACHE_LINE_WIDTH_BYTES-1);
+            opDim    = (tmpb->sizel-1 << 16) 
+                       | AGX_PIXEL_ADJUST(CACHE_LINE_WIDTH_BYTES)-1;
 
             GE_WAIT_IDLE();
             GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );

@@ -1,5 +1,5 @@
 /* $XConsortium: s3ELSA.c,v 1.2 94/11/21 22:50:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.6 1995/01/28 15:55:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3ELSA.c,v 3.7 1995/04/24 05:20:20 dawes Exp $ */
 /* 
  * s3ELSA.c 
  * 
@@ -32,16 +32,20 @@
 
 
 elsa_board_types_t elsa_board_types[] = {
-   ELSA_WINNER_1000,	"ELSA Winner 1000",	0,
-   ELSA_WINNER_1000VL,	"ELSA Winner 1000VL",	0,
-   ELSA_WINNER_1000PCI,	"ELSA Winner 1000PCI",	0,
-   ELSA_WINNER_1000ISA,	"ELSA Winner 1000ISA",	0,
-   ELSA_WINNER_2000,	"ELSA Winner 2000",	0,
-   ELSA_WINNER_2000VL,	"ELSA Winner 2000VL",	0,
-   ELSA_WINNER_2000PCI,	"ELSA Winner 2000PCI",	0,
-   ELSA_WINNER_1000PRO,	"ELSA Winner 1000PRO",	0,
-   ELSA_WINNER_1000AVI,	"ELSA Winner 1000AVI",	0,
-   ELSA_WINNER_2000PRO,	"ELSA Winner 2000PRO",	0,
+   ELSA_WINNER_1000,		"ELSA Winner 1000",		0,
+   ELSA_WINNER_1000VL,		"ELSA Winner 1000VL",		0,
+   ELSA_WINNER_1000PCI,		"ELSA Winner 1000PCI",		0,
+   ELSA_WINNER_1000ISA,		"ELSA Winner 1000ISA",		0,
+   ELSA_WINNER_2000,		"ELSA Winner 2000",		0,
+   ELSA_WINNER_2000VL,		"ELSA Winner 2000VL",		0,
+   ELSA_WINNER_2000PCI,		"ELSA Winner 2000PCI",		0,
+   ELSA_WINNER_1000PRO,		"ELSA Winner 1000PRO",		0,
+   ELSA_WINNER_1000PRO_TRIO32,	"ELSA Winner 1000PRO Trio32",	0,
+   ELSA_WINNER_1000PRO_TRIO64,	"ELSA Winner 1000PRO Trio64",	0,
+   ELSA_WINNER_1000AVI,		"ELSA Winner 1000AVI",		0,
+   ELSA_WINNER_2000PRO,		"ELSA Winner 2000PRO",		0,
+   ELSA_WINNER_2000PRO_X,	"ELSA Winner 2000PRO/X",	0,
+   ELSA_WINNER_2000AVI,		"ELSA Winner 2000AVI",		0,
    0, 0, 0
 };
 

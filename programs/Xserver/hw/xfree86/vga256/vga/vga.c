@@ -1,5 +1,5 @@
 /* $XConsortium: vga.c,v 1.6 95/01/16 13:18:27 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.30 1995/01/28 17:09:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.c,v 3.31 1995/03/19 10:20:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -193,7 +193,7 @@ void (* vgaAdjustFunc)(
     int
 #endif
 ) = (void (*)())NoopDDA;
-void (* vgaSaveScreenFunc)() = (void (*)())NoopDDA;
+void (* vgaSaveScreenFunc)() = vgaHWSaveScreen;
 void (* vgaFbInitFunc)() = (void (*)())NoopDDA;
 void (* vgaSetReadFunc)() = (void (*)())NoopDDA;
 void (* vgaSetWriteFunc)() = (void (*)())NoopDDA;
@@ -399,7 +399,8 @@ vgaProbe()
 #endif
 
   for (i=0; Drivers[i]; i++)
-
+  {
+    vgaSaveScreenFunc = Drivers[i]->ChipSaveScreen;
     if ((Drivers[i]->ChipProbe)())
       {
         xf86ProbeFailed = FALSE;
@@ -516,7 +517,6 @@ vgaProbe()
 	vgaSaveFunc = Drivers[i]->ChipSave;
 	vgaRestoreFunc = Drivers[i]->ChipRestore;
 	vgaAdjustFunc = Drivers[i]->ChipAdjust;
-	vgaSaveScreenFunc = Drivers[i]->ChipSaveScreen;
 	vgaFbInitFunc = Drivers[i]->ChipFbInit;
 	vgaSetReadFunc = Drivers[i]->ChipSetRead;
 	vgaSetWriteFunc = Drivers[i]->ChipSetWrite;
@@ -827,6 +827,9 @@ vgaProbe()
 
 	return TRUE;
       }
+  }
+
+  vgaSaveScreenFunc = vgaHWSaveScreen;
   
   if (vga256InfoRec.chipset)
     ErrorF("%s: '%s' is an invalid chipset", vga256InfoRec.name,
@@ -981,10 +984,9 @@ vgaScreenInit (scr_index, pScreen, argc, argv)
 
   pScreen->CloseScreen = vgaCloseScreen;
   pScreen->SaveScreen = vgaSaveScreen;
-#ifdef MONOVGA
   pScreen->whitePixel = 1;
   pScreen->blackPixel = 0;
-#else
+#ifndef MONOVGA
   /* For 16/32bpp, the cfb defaults are OK. */
   if (vgaBitsPerPixel <= 8) { /* For 8bpp SVGA and VGA16 */
       pScreen->InstallColormap = vgaInstallColormap;

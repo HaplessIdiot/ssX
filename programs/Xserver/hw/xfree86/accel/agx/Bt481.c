@@ -1,5 +1,5 @@
 /* $XConsortium: Bt481.c,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.c,v 3.2 1995/01/26 02:16:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.c,v 3.3 1995/01/28 15:48:19 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -130,18 +130,38 @@ void
 xf86Bt481Init()
 #endif
 {
-   xf86OutRamDacData( BT481_COMMAND_REG_A, 0x00 );
-   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7E, 0x00 ); /* powerup */
+   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x00, 0x00 ); /* powerup */
+
+   GlennsIODelay();
+   switch( xf86RamDacBPP ) {
    
+      case 8:
+         xf86OutRamDacData( BT481_COMMAND_REG_A, BT481_8BPP_PSUEDO_COLOR );
+         break;
+
+      case 15:
+         xf86OutRamDacData( BT481_COMMAND_REG_A, BT481_15BPP_EDGE_TRIGGR );
+         break;
+   
+      case 16:
+         xf86OutRamDacData( BT481_COMMAND_REG_A, BT481_16BPP_EDGE_TRIGGR );
+         break;
+   
+      case 24:
+      case 32:
+         xf86OutRamDacData( BT481_COMMAND_REG_A, BT481_24BPP_EDGE_TRIGGR );
+   }
+
+   GlennsIODelay();
+   xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x00, 0x00 ); /* powerup */
+
+   GlennsIODelay();
    if (xf86Dac8Bit)
       xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7C, 0x2 );
-   else
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x7C, 0x0 );
 
+   GlennsIODelay();
    if (xf86DacSyncOnGreen)
       xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x73, 0x4 );
-   else
-      xf86OutBt481IndReg( BT481_COMMAND_REG_B, 0x73, 0x0 );
 
 }
 

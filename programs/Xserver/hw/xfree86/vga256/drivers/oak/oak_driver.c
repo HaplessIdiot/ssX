@@ -1,5 +1,5 @@
 /* $XConsortium: oak_driver.c,v 1.6 95/01/23 15:35:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.14 1995/01/28 16:13:16 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/oak/oak_driver.c,v 3.15 1995/01/28 17:09:05 dawes Exp $ */
 /*
  * Copyright 1994 by Jorge Delgado <ernar@dit.upm.es>
  *
@@ -206,9 +206,9 @@ vgaVideoChipRec OAK = {
   OAKSave,
   OAKRestore,
   OAKAdjust,
-  (void (*)())NoopDDA, /*  OAKSaveScreen,  */
-  (void (*)())NoopDDA, /* OAKGetMode, */
-  (void (*)())NoopDDA, /* OAKFbInit, */
+  vgaHWSaveScreen,     /* OAKSaveScreen */
+  (void (*)())NoopDDA, /* OAKGetMode */
+  (void (*)())NoopDDA, /* OAKFbInit */
   OAKSetRead,
   OAKSetWrite,
   OAKSetReadWrite,

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000text.c,v 3.1 1995/05/24 12:22:02 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  *
@@ -456,3 +456,5 @@ p9000ImageText16(pDraw, pGC, x, y, count, chars)
      unsigned short *chars;
 {
     return p9000NoCImageText(pDraw, pGC, x, y, count, chars, 0) ;
+}
+

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86RamDac.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.h,v 3.2 1994/09/07 15:47:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf86RamDac.h,v 3.3 1995/01/28 15:49:25 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth,  Sunnyvale, California.
@@ -49,6 +49,8 @@
 #define SC15021_DAC	   9
 #define HERC_SMALL_DAC	  10
 #define HERC_DUAL_DAC	  11
+#define XGA_DAC           12
+#define ATT490_DAC        13
 
 #define DAC_IS_BT485_SERIES    (xf86RamDacType == BT485_DAC \
 			        || xf86RamDacType == BT484_DAC \
@@ -61,17 +63,16 @@
 			        || xf86RamDacType == HERC_DUAL_DAC)
 #define DAC_IS_SC1502X         (xf86RamDacType == SC15025_DAC \
                                 || xf86RamDacType == SC15021_DAC)
+#define DAC_IS_ATT490	       (xf86RamDacType == ATT490_DAC)
 
 extern Bool xf86DacSyncOnGreen;
 extern Bool xf86Dac8Bit;
 extern int  xf86RamDacType;
+extern int  xf86RamDacBPP;
 extern int  xf86MaxCurs;
 extern int  xf86FrameX0;
 extern int  xf86FrameY0;
 extern int  xf86MaxClock;
-extern int  xf86MaxClockDirect;
-extern int  xf86MinClockDoubled;
-extern int  xf86MaxClockDoubled;
 
 extern unsigned char xf86SwapBits[256];
 
@@ -99,6 +100,12 @@ union xf86RamDacSave {
    struct {
        unsigned char Dummy;
    } Ti;
+
+   struct {
+       unsigned char ComA;
+   } Att490;
+
+
 
 };
 

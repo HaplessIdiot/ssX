@@ -1,5 +1,5 @@
 /* $XConsortium: agxGtImg.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.0 1994/09/07 15:47:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxGtImg.c,v 3.1 1995/01/28 15:48:54 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
@@ -56,21 +56,20 @@ agxGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine)
 
    if (!xf86VTSema || pDrawable->type != DRAWABLE_WINDOW)
    {
-#if 0
       switch (pDrawable->bitsPerPixel) {
-      case 8:
-#endif
-         cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-#if 0
-	 break;
-      case 16:
-         cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	 break;
-      case 32:
-         cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
-	 break;
+         case 1:
+            mfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	    break;
+         case 8:
+            cfbGetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	    break;
+         case 16:
+            cfb16GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	    break;
+         case 32:
+            cfb32GetImage(pDrawable, sx, sy, w, h, format, planeMask, pdstLine);
+	    break;
       }
-#endif
       return;
    }
 

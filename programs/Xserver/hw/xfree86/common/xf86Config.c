@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.43 1995/03/19 12:18:33 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.44 1995/03/19 13:48:57 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1351,6 +1351,7 @@ configDeviceSection()
   OFLG_ZERO(&(devp->xconfigFlag));
   devp->videoRam = 0;
   devp->speedup = SPEEDUP_DEFAULT;
+  OFLG_ZERO(&(devp->clockOptions));
   devp->clocks = 0;
   devp->clockprog = NULL;
   devp->textClockValue = -1;

@@ -1,6 +1,6 @@
 /*
  * $XConsortium: et4_driver.c,v 1.6 95/01/16 13:18:14 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.8 1995/01/10 10:31:24 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_driver.c,v 3.10 1995/01/28 17:08:45 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -102,7 +102,7 @@ vgaVideoChipRec ET4000 = {
   ET4000Save,
   ET4000Restore,
   ET4000Adjust,
-  (void (*)())NoopDDA,
+  vgaHWSaveScreen,
   (void (*)())NoopDDA,
   ET4000FbInit,
   ET4000SetRead,

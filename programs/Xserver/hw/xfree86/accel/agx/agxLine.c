@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.3 1994/11/19 07:50:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxLine.c,v 3.4 1995/01/28 15:49:04 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -126,12 +126,20 @@ agxLine(pDrawable, pGC, mode, npt, pptInit)
     RegionPtr cclip;
     cfbPrivGCPtr    devPriv;
 
-
-/* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
     {
-        cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
-	return;
+      switch (agxInfoRec.bitsPerPixel) {
+      case 8:
+         cfbLineSS(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 16:
+         cfb16LineSS(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      case 32:
+         cfb32LineSS(pDrawable, pGC, mode, npt, pptInit);
+         break;
+      }
+      return;
     }
 
     devPriv = (cfbPrivGC *)(pGC->devPrivates[cfbGCPrivateIndex].ptr); 

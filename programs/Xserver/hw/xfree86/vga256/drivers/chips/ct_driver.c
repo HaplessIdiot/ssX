@@ -1,5 +1,5 @@
 /* $XConsortium: ct_driver.c,v 1.4 95/01/23 15:35:08 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.7 1995/01/20 04:22:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/chips/ct_driver.c,v 3.8 1995/01/28 16:11:13 dawes Exp $ */
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
  * Modified by Mike Hollick <hollick@graphics.cis.upenn.edu>
@@ -143,9 +143,9 @@ vgaVideoChipRec CHIPS = {
     CHIPSSave,
     CHIPSRestore,
     CHIPSAdjust,
-    (void (*)())NoopDDA, /* CHIPSSaveScreen, */
+    vgaHWSaveScreen,     /* CHIPSSaveScreen */
     (void (*)())NoopDDA, /* CHIPSGetMode */
-    (void (*)())NoopDDA, /* ChipsFbInit */
+    (void (*)())NoopDDA, /* CHIPSFbInit */
     CHIPSSetRead,
     CHIPSSetWrite,
     CHIPSSetReadWrite,
@@ -968,8 +968,7 @@ return TRUE;
  * save and restore the registers.
  *
  * Most chipsets do not require this function, and instead put
- * '(void (*)())NoopDDA' in the vgaVideoChipRec structure (NoopDDA is an
- * empty function for generic use).
+ * 'vgaHWSaveScreen' in the vgaVideoChipRec structure.
  */
 #if 0
 static void
@@ -982,9 +981,19 @@ int mode;
 		 * Save an registers that will be destroyed by the reset
 		 * into static variables.
 		 */
+
+		/*
+		 * Start sequencer reset.
+		 */
+		outw(0x3c4, 0x0100);
 	}
 	else
 	{
+		/*
+		 * End sequencer reset.
+		 */
+		outw(0x3c4, 0x0300);
+
 		/*
 		 * Now restore those registers.
 		 */

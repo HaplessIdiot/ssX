@@ -13,9 +13,6 @@
 #	lkm.c
 #	version.c
 #	version.h
-#	xf86-2.1.1.patch
-#
-# $XFree86$
 #
 echo x - README
 sed 's/^X//' >README << 'END-of-README'
@@ -24,10 +21,11 @@ X	XFree86 Framebuffer aperture driver for NetBSD.
 X	-----------------------------------------------
 X
 XThis module was written to help work around the security feature of
-XNetBSD 0.9C that prevents read/write access to /dev/mem. 
+XNetBSD 0.9C and later that prevents read/write access to /dev/mem. 
 X
-XSince XFree86 can take advantage of having direct access to video
-Xmemory (especially with VLB and PCI cards).
+XXFree86 can take advantage of having direct access to video
+Xmemory (especially with VLB and PCI cards) and even requires it for
+Xthe P9000 server.
 X
 XThis driver works like the standard /dev/mem driver. It just allows
 Xmapping of the VGA framebuffer even if kernel security level is > 0.
@@ -40,23 +38,30 @@ X
 XThis work is heavily inspired from the Solaris x86 aperture driver by 
 XDoug Anson (danson@lgc.com) and David Holland (davidh@use.com).
 X
+X
 XInstallation:
 X-------------
 X
-X1. run make depend && make
+X1. Edit the Makefile if you want to modify the default installation 
+X   directory.
 X
+X2. run make depend && make; then as root, run make install.
 X
-X2. add the line  somehere at the end of /etc/rc.local (before the sysctl that 
-X   raises the security level):
+X3. add these lines  somehere at the end of /etc/rc.local (before the 
+X   sysctl that raises the security level):
 X
-X	modload -v -o ap -e ap /usr/kernel/modules/ap.o
+X   KERNDIR=/usr/X11R6/lib/X11/kernel
+X   if [ -f ${KERNDIR}/ap.o ]; then
+X     modload -o ${KERNDIR}/ap -e ap -p ${KERNDIR}/apinstall ${KERNDIR}/ap.o
+X   fi
 X
 X   to load the driver at bootime.
 X
-X3. Reboot your system.
+X4. Reboot your system.
 X
-X4. Since NetBSD modload does not execute post-install scripts, create
-X   the device manually:
+X5. If you're running a version prior to NetBSD 1.0, modload does not
+X   execute post-install scripts. So you have to create the device manually.
+X   If you're running NetBSD 1.0 or later, skip this.
 X  
 X   WARNING: be sure to understand what you'll do before proceeding
 X
@@ -67,16 +72,12 @@ X      number 29. If it's the third, it will be 31...
 X
 X   b) goto the /dev directory and type ``mknod xf86 c 29 0'' (replace
 X      29 by the appropriate value if you load more than one device
-X      friver module.
+X      driver module.
 X
 X      Make sure that rc.local loads the module every time at the same
-X      position that you did now.
+X      position as it did now.
 X
-X   c) I hope that LKM support will be enhanced soon so this major
-X      number allocation stuff can be automated. Another possibility is 
-X      that this drivers gets turned into a static driver.
-X
-X5. Test it by running 'aptest' as root. The outpout will look like:
+X6. Test the module by running 'aptest' as root. The outpout will look like:
 X
 X# ./aptest
 XNOTICE: VGA mapped [0xa0000 ,size=4096) to addr=0x10073000...
@@ -85,12 +86,10 @@ XDONE displaying memory contents (80 bytes)
 XUNMAPPING [0xa0000 ,size=4096) to addr=0x10073000... and closing...DONE.
 XExiting successful...
 X
-X6. If you're running XFree86 2.1.1, apply the xf86-2.1.1.patch,
-X   rebuild and install the server.
-X
-X   If you're running XFree86 3.0Ca or higher, just make sure that
+X7. If you're running XFree86 3.1 or higher, just make sure that
 X   HasNetBSDApertureDriver is set to YES in xf86site.def before building 
-X   your server.
+X   your server. The netBSD binary distribution has the aperture driver 
+X   code enabled.
 X
 XBug reports, comments, suggestions can be sent to matthieu@laas.fr
 X
@@ -98,37 +97,22 @@ X--Matthieu Herrb
 X
 X----------------------------------------------------------------------
 X
-X Copyright 1994 Matthieu Herrb (matthieu@laas.fr)
+X Copyright (c) 1994 The XFree86 Project Inc.
 X
-X Permission to use, copy, modify, distribute, and sell this software
-X and its documentation for any purpose is hereby granted without
-X fee, provided that the above copyright notice appear in all copies
-X and that both that copyright notice and this permission notice
-X appear in supporting documentation, and that the name of Matthieu
-X Herrb not be used in advertising or publicity pertaining to
-X distribution of the software without specific, written prior
-X permission.  Matthieu Herrb makes no representations about the
-X suitability of this software for any purpose.  It is provided "as
-X is" without express or implied warranty.
-X
-X MATTHIEU HERRB DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-X SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-X FITNESS, IN NO EVENT SHALL MATTHIEU HERRB BE LIABLE FOR ANY
-X SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-X WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
-X AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
-X OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-X SOFTWARE.  
 END-of-README
 echo x - Makefile
 sed 's/^X//' >Makefile << 'END-of-Makefile'
 X#
-X# Loadable Kernel Module for Sound Blaster Mixer Chip
+X# Loadable Kernel Module for NetBSD Aperture Driver
 X#
-X# Copyright (c) 1994 Matthieu Herrb
+X# Copyright (c) 1994 The XFree86 Project Inc.
 X#
 X
-XCFLAGS = -O -DKERNEL -I/sys -I/sys/arch
+X# Change KERNDIR to the directory into which you want to install kernel modules
+XKERNDIR = /usr/X11R6/lib/X11/kernel
+X
+X# You can add -DAP_DEBUG to CFLAGS to add debugging prints
+XCFLAGS = -O -D_KERNEL -I/sys
 X
 XMODULE = ap
 XPOSTINSTALL = apinstall
@@ -153,6 +137,15 @@ X
 Xunload:
 X	modunload -n $(MODULE)
 X
+Xinstall: $(MODULE).o
+X	install -d -o root -g wheel -m 755 $(KERNDIR)
+X	install -c -o root -g wheel -m 644 $(MODULE).o $(KERNDIR)
+X	install -c -o root -g wheel -m 755 $(POSTINSTALL) $(KERNDIR)
+X
+Xshar:
+X	shar  README Makefile aperture.c apinstall aptest.c lkm.c \
+X	version.c version.h > apNetBSD.shar
+X
 X.c.o:
 X	$(CC) -c $(CPPFLAGS) $(CFLAGS) $<
 X
@@ -161,27 +154,7 @@ END-of-Makefile
 echo x - aperture.c
 sed 's/^X//' >aperture.c << 'END-of-aperture.c'
 X/*
-X * Copyright 1994 Matthieu Herrb (matthieu@laas.fr)
-X *
-X * Permission to use, copy, modify, distribute, and sell this software
-X * and its documentation for any purpose is hereby granted without
-X * fee, provided that the above copyright notice appear in all copies
-X * and that both that copyright notice and this permission notice
-X * appear in supporting documentation, and that the name of Matthieu
-X * Herrb not be used in advertising or publicity pertaining to
-X * distribution of the software without specific, written prior
-X * permission.  Matthieu Herrb makes no representations about the
-X * suitability of this software for any purpose.  It is provided "as
-X * is" without express or implied warranty.
-X *
-X * MATTHIEU HERRB DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS
-X * SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
-X * FITNESS, IN NO EVENT SHALL MATTHIEU HERRB BE LIABLE FOR ANY
-X * SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
-X * WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN
-X * AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING
-X * OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
-X * SOFTWARE.  
+X * Copyright 1994 the XFree86 Project Inc. 
 X */
 X
 X/* 
@@ -190,8 +163,8 @@ X */
 X
 X#include <sys/param.h>
 X#include <sys/systm.h>
-X#include <sys/errno.h>
 X#include <sys/proc.h>
+X#include <sys/errno.h>
 X
 X#define VGA_START 0xA0000
 X#define VGA_END   0xBFFFF
@@ -256,12 +229,20 @@ END-of-aperture.c
 echo x - apinstall
 sed 's/^X//' >apinstall << 'END-of-apinstall'
 X#! /bin/sh
-Xecho "Module Id: $1"
-Xecho "Module type: $2"
-Xecho "Device numbers: $3 $4"
+X# 
+X# Postinstall script for NetBSD Aperture Driver
+X# 
+X# Copyright (C) 1994 The XFree86 Project Inc.
+X#
+Xif [ $# -ne 3 ]; then
+X    echo "$0: should be called by modload(8) with 3 arguments"
+X    exit 1
+Xfi
 X
-X# cd /dev
-X# mknod xf86 c $3 0
+Xecho "Major device number: $3"
+Xrm -f /dev/xf86
+Xmknod /dev/xf86 c $3 0
+Xexit 0
 END-of-apinstall
 echo x - aptest.c
 sed 's/^X//' >aptest.c << 'END-of-aptest.c'
@@ -390,24 +371,7 @@ END-of-aptest.c
 echo x - lkm.c
 sed 's/^X//' >lkm.c << 'END-of-lkm.c'
 X/*
-X * Copyright 1994 Matthieu Herrb (matthieu@laas.fr)
-X *
-X * Permission to use, copy, modify, distribute, and sell this software
-X * and its documentation for any purpose is hereby granted without
-X * fee, provided that the above copyright notice appear in all copies
-X * and that both that copyright notice and this permission notice
-X * appear in supporting documentation, and that the name of Matthieu
-X * Herrb be used in advertising or publicity pertaining to
-X * distribution of the software Matthieu Herrb make no 
-X * representations about the suitability of this software for any
-X * purpose.  It is provided "as is" without express or implied
-X * warranty.
-X *
-X * DISCLAIMER: MATTHIEU HERRB DISCLAIMS ALL WARRIENTS WITH REGARD TO
-X * THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY,
-X * AND FITNESS, IN NO EVENT SHALL DOUG ANSON, OR DAVID HOLLAND BE
-X * LIABLE FOR ANY SPECIAL, INDIRECT, OR CONSEQUENTIAL DAMAGES, OR ANY
-X * DAMAGES WHATSOEVER RESULTING FROM USAGE OF THIS SOFTWARE.
+X * Copyright (c) 1994 The XFree86 Project Inc.
 X */
 X
 X#include <sys/param.h>
@@ -419,6 +383,7 @@ X#include <sys/lkm.h>
 X#include <errno.h>
 X#include "version.h"
 X
+X#if NetBSD <= 1994100
 X/* cdevsw-specific types */
 X#define dev_type_read(n)        int n __P((dev_t, struct uio *, int))
 X#define dev_type_write(n)       int n __P((dev_t, struct uio *, int))
@@ -428,6 +393,7 @@ X#define dev_type_stop(n)        int n __P((struct tty *, int))
 X#define dev_type_reset(n)       int n __P((int))
 X#define dev_type_select(n)      int n __P((dev_t, int, struct proc *))
 X#define dev_type_mmap(n)        int n __P(())
+X#endif
 X
 Xextern int apopen(dev_t dev, int oflags, int devtype, struct proc *p);
 Xextern int apclose(dev_t dev, int fflags, int devtype, struct proc *p);
@@ -438,7 +404,11 @@ X    apopen, apclose,
 X    (dev_type_read((*))) enodev, (dev_type_write((*))) enodev,
 X    (dev_type_ioctl((*))) enodev, 
 X    (dev_type_stop((*))) enodev,
+X#if NetBSD <= 1994100
 X    (dev_type_reset((*))) nullop, (struct tty **) 0,
+X#else
+X    0,
+X#endif
 X    seltrue, (dev_type_mmap((*))) apmmap, 0};
 X
 XMOD_DEV("ap", LM_DT_CHAR, -1, &newdev)
@@ -453,12 +423,19 @@ X    }
 X    return(0);
 X}
 X
+X#if NetBSD <= 1994100
 Xint
 Xap(struct lkm_table *lkmtp, int cmd, int ver)
 X{
 X    DISPATCH(lkmtp, cmd, ver, ap_load, nosys, nosys)
 X}
-X
+X#else
+Xint
+Xap(struct lkm_table *lkmtp, int cmd, int ver)
+X{
+X    DISPATCH(lkmtp, cmd, ver, ap_load, lkm_nofunc, lkm_nofunc)
+X}
+X#endif
 X
 X    
 END-of-lkm.c
@@ -467,10 +444,10 @@ sed 's/^X//' >version.c << 'END-of-version.c'
 X/*
 X * Loadable Kernel Module for XFree86 Aperture driver
 X *
-X * Copyright (c) 1994 Matthieu Herrb
+X * Copyright (c) 1994 The XFree86 Project Inc.
 X */
 Xchar *ap_major_version = "1";
-Xchar *ap_minor_version = "1";
+Xchar *ap_minor_version = "4";
 END-of-version.c
 echo x - version.h
 sed 's/^X//' >version.h << 'END-of-version.h'
@@ -482,138 +459,5 @@ X */
 Xextern char *ap_major_version;
 Xextern char *ap_minor_version;
 END-of-version.h
-echo x - xf86-2.1.1.patch
-sed 's/^X//' >xf86-2.1.1.patch << 'END-of-xf86-2.1.1.patch'
-X*** mit/config/x386.cf.ORIG	Mon Jun 20 08:20:07 1994
-X--- mit/config/x386.cf	Mon Jun 20 08:19:38 1994
-X***************
-X*** 868,873 ****
-X--- 868,882 ----
-X  # define SOLX86apertureFlags	/**/
-X  #endif
-X  
-X+ #ifndef HasNetBSDApertureDrv
-X+ # define HasNetBSDApertureDrv	NO
-X+ #endif
-X+ #if HasNetBSDApertureDrv
-X+ # define NetBSDApertureFlags	-DHAS_SOLX86_APERTUREDRV
-X+ #else
-X+ # define NetBSDApertureFlags	/**/
-X+ #endif
-X+ 
-X  #define CppCmd                  /usr/ccs/lib/cpp
-X  #define PreProcessCmd           /usr/ccs/lib/cpp
-X  
-X***************
-X*** 925,931 ****
-X  #endif
-X  
-X  #define ServerExtraDefines      GccGasOption -DXDMCP MallocFlags LinkKitFlags \
-X!                                 -DAVOID_GLYPHBLT SOLX86apertureFlags
-X  
-X  #if SCOLocalConnSysv4
-X  # define Acp                    -DSVR4_ACP
-X--- 934,941 ----
-X  #endif
-X  
-X  #define ServerExtraDefines      GccGasOption -DXDMCP MallocFlags LinkKitFlags \
-X!                                 -DAVOID_GLYPHBLT SOLX86apertureFlags \
-X! 				NetBSDApertureFlags
-X  
-X  #if SCOLocalConnSysv4
-X  # define Acp                    -DSVR4_ACP
-X*** mit/config/site.def.ORIG	Mon Jun 20 08:19:52 1994
-X--- mit/config/site.def	Mon Jun 20 08:17:57 1994
-X***************
-X*** 345,350 ****
-X--- 345,353 ----
-X  /* Uncomment this to include support for Solaris aperture driver */
-X  /* #define HasSolx86apertureDrv	YES */
-X  
-X+ /* Uncomment this to include support for NetBSD aperture driver */
-X+ #define HasNetBSDApertureDrv	YES 
-X+ 
-X  /* Uncomment this if you want to build a debuggable server */
-X  /* #define DebuggableServer	YES */
-X  
-X*** mit/server/ddx/x386/os-support/bsd/bsd_video.c.ORIG1	Mon Jun 20 08:08:42 1994
-X--- mit/server/ddx/x386/os-support/bsd/bsd_video.c	Mon Jun 20 08:11:36 1994
-X***************
-X*** 63,68 ****
-X--- 63,74 ----
-X  static Bool useDevMem = FALSE;
-X  static int  devMemFd = -1;
-X  
-X+ #ifdef HAS_NETBSD_APERTUREDRV
-X+ #define DEV_MEM "/dev/xf86"
-X+ #else
-X+ #define DEV_MEM "/dev/mem"
-X+ #endif
-X+ 
-X  /*
-X   * Check if /dev/mem can be mmap'd.  If it can't print a warning when
-X   * "warn" is TRUE.
-X***************
-X*** 74,85 ****
-X  	pointer base;
-X  
-X  	devMemChecked = TRUE;
-X! 	if ((fd = open("/dev/mem", O_RDWR)) < 0)
-X  	{
-X  	    if (warn)
-X  	    {
-X! 	        ErrorF("checkDevMem: warning: failed to open /dev/mem (%s)\n",
-X! 		       strerror(errno));
-X  	        ErrorF("\tlinear fb access unavailable\n");
-X  	    }
-X  	    useDevMem = FALSE;
-X--- 80,91 ----
-X  	pointer base;
-X  
-X  	devMemChecked = TRUE;
-X! 	if ((fd = open(DEV_MEM, O_RDWR)) < 0)
-X  	{
-X  	    if (warn)
-X  	    {
-X! 	        ErrorF("checkDevMem: warning: failed to open %s (%s)\n",
-X! 		       DEV_MEM, strerror(errno));
-X  	        ErrorF("\tlinear fb access unavailable\n");
-X  	    }
-X  	    useDevMem = FALSE;
-X***************
-X*** 122,136 ****
-X  	    int memFd;
-X  	    if ((memFd = devMemFd) < 0) 
-X  	    {
-X! 		FatalError("xf86MapVidMem: failed to open /dev/mem (%s)\n",
-X! 			   strerror(errno));
-X  	    }
-X  	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-X  				 MAP_FILE, memFd, (off_t)Base);
-X  	    if (base == (pointer)-1)
-X  	    {
-X! 		FatalError("%s: could not mmap /dev/mem [s=%x,a=%x] (%s)\n",
-X! 			   "xf86MapVidMem", Size, Base, strerror(errno));
-X  	    }
-X  	    return(base);
-X  	}
-X--- 128,143 ----
-X  	    int memFd;
-X  	    if ((memFd = devMemFd) < 0) 
-X  	    {
-X! 		FatalError("xf86MapVidMem: failed to open %s (%s)\n",
-X! 			   DEV_MEM, strerror(errno));
-X  	    }
-X  	    base = (pointer)mmap((caddr_t)0, Size, PROT_READ|PROT_WRITE,
-X  				 MAP_FILE, memFd, (off_t)Base);
-X  	    if (base == (pointer)-1)
-X  	    {
-X! 		FatalError("%s: could not mmap %s [s=%x,a=%x] (%s)\n",
-X! 			   "xf86MapVidMem", DEV_MEM, Size, Base, 
-X! 			   strerror(errno));
-X  	    }
-X  	    return(base);
-X  	}
-END-of-xf86-2.1.1.patch
 exit
 

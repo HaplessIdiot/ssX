@@ -1,5 +1,5 @@
 /* $XConsortium: xf861502x.c,v 1.3 95/01/05 20:30:52 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.2 1994/11/30 20:37:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.c,v 3.3 1995/01/28 15:49:21 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -242,10 +242,54 @@ void
 xf86Sc1502xInit()
 #endif
 {
-   xf86OutSc1502xCmd( 0x00, SC1502X_CMD_8BPP_PSUEDO ); 
-   xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, SC1502X_RP_8X1_TO_8X1);
-   if( xf86RamDacType == SC15021_DAC ) {
-      xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, SC15021_SC_8BPP_PSUEDO );
+   switch( xf86RamDacBPP ) {
+      case 8:
+         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_8BPP_PSUEDO ); 
+         xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
+                               SC1502X_RP_8X1_TO_8X1);
+         if( xf86RamDacType == SC15021_DAC ) {
+            xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, 
+                                  SC15021_SC_8BPP_PSUEDO );
+         }
+         break;
+
+      case 15:
+         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_15BPP_EDGE_TRGR );
+         xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
+                               SC1502X_RP_8X2_TO_16X1 );
+         if( xf86RamDacType == SC15021_DAC ) {
+            xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, 
+                                  SC15021_SC_15BPP_DIRECT );
+         }
+         break;
+
+      case 16:
+         xf86OutSc1502xCmd( 0x00, SC1502X_CMD_16BPP_EDGE_TRGR );
+         xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
+                               SC1502X_RP_8X2_TO_16X1 );
+         if( xf86RamDacType == SC15021_DAC ) {
+            xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, 
+                                  SC15021_SC_16BPP_DIRECT );
+         }
+         break;
+
+      case 24:
+      case 32:
+         if( xf86RamDacType == SC15021_DAC ) {
+            xf86OutSc1502xCmd( 0x00, SC15021_CMD_24BPP_BGR );
+            xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
+                                  SC1502X_RP_8X4_TO_24X1 );
+            xf86OutSc1502xIndReg( SC15021_SEC_CNTL, 0x00, 
+                                  SC15021_SC_24BPP_BGR );
+         }
+         else {
+            xf86OutSc1502xCmd( 0x00, SC15025_CMD_24BPP_BGR_EDGE_TRGR );
+            xf86OutSc1502xIndReg( SC1502X_PIXEL_REPACK, 0x00, 
+                                  SC1502X_RP_8X4_TO_24X1 );
+
+         }
+         break;
+
    }
 
    if (xf86Dac8Bit)

@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.9 1995/01/23 01:28:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.10 1995/01/28 15:48:45 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -350,16 +350,28 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    unsigned int mapDim, mapCoOrd;
    char  toload[BLOCKS_PER_FONT];
    xRectangle backrect;
-   Bool noLeftBearing = TRUE;
+   Bool overlap = TRUE;
+   Bool noLeftBearing = FALSE;
    Bool first = TRUE;
-   Bool overlap = !( fentry->font->info.constantMetrics 
-                     && fentry->font->info.noOverlap );
  
-   {
+   ret_x = x;
+
+   /*
+    * If miPolyText8() is to be believed, the returned new X value is
+    * completely independent of what happens during rendering.
+    */
+
+   if (fentry->font->info.constantMetrics && fentry->font->info.noOverlap) {
+      overlap = FALSE;
+      width = fentry->font->info.maxbounds.characterWidth;
+      width *= count;
+   } 
+   else {
       register int i = 0;
       register unsigned char *ch = chars;
       for (; i < count; i++, ch++) {
          register CharInfoPtr info = fentry->pci[*ch];
+         noLeftBearing = TRUE; 
          if (info) {
             width += info->metrics.characterWidth; 
             if ( info->metrics.leftSideBearing != 0 )
@@ -367,13 +379,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
          }
       }
    }
-
-   /*
-    * If miPolyText8() is to be believed, the returned new X value is
-    * completely independent of what happens during rendering.
-    */
-   ret_x = x + width;
-
+   ret_x += width;
    x += pDraw->x;
    y += pDraw->y;
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
@@ -435,7 +441,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
             GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
             GE_OUT_D( GE_PIXEL_MAP_WIDTH, ROW_NUM_LINES-1 << 16
                                           | CACHE_LINE_WIDTH_PIXELS-1 );
-            GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP );
+            GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP | GE_MF_INTEL_FORMAT );
             GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
             GE_OUT_D( GE_MASK_MAP_X, mapDim );
             GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapCoOrd ); 
@@ -456,9 +462,9 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
             GE_OUT_W( GE_FRGD_MIX, mixes );
          }
          if (opaque) {
-           if (!overlap)  {
+           if (!overlap) {
                /* we can do just an opaque stipple */
-              DoagxConstMetrics( x, y, count, chars, fentry, pGC, maxAscent );
+               DoagxConstMetrics( x, y, count, chars, fentry, pGC, maxAscent );
            }
            else {
               /* have to seperate the opaque from the character draw */
@@ -609,8 +615,7 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
              | GE_OP_INC_Y         );
 
    for (;count > 0; count--, chars++) {
-      if ( (pci = fentry->pci[(int)*chars]) != NULL 
-            && GLYPHWIDTHPIXELS(pci) ) {
+      if ( (pci = fentry->pci[(int)*chars]) != NULL ) {
 	    if ((int)(*chars >> BLOCK_NUM_SHIFT) != blocki) {
 	       blocki = (int)(*chars >> BLOCK_NUM_SHIFT);
 	       block = fentry->fblock[blocki];

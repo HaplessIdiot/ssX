@@ -1,5 +1,5 @@
 /* $XConsortium: agxFS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.5 1994/09/23 10:07:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFS.c,v 3.6 1995/01/28 15:48:50 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -126,9 +126,21 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     if (!xf86VTSema)
     {
-       cfbSolidSpansGeneral(pDrawable, pGC,
-                             nInit, pptInit, pwidthInit, fSorted);
-       return;
+      switch (agxInfoRec.bitsPerPixel) {
+      case 8:
+         cfbSolidSpansGeneral(pDrawable, pGC,
+                              nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 16:
+         cfb16SolidSpansGeneral(pDrawable, pGC,
+                                nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+         cfb32SolidSpansGeneral(pDrawable, pGC,
+                                nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
+      return;
     }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
@@ -138,6 +150,7 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		break;
 	    case 8:
 	    case 16:
+	    case 32:
 		ErrorF("should call cfbSolidFillSpans\n");
 		break;
 	    default:
@@ -181,20 +194,16 @@ agxSolidFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
               | GE_OP_INC_Y         );
 
     while (n--) {
-       GE_WAIT_IDLE();
-#ifndef NO_MULTI_IO
-       GE_OUT_D( GE_DEST_MAP_X, (ppt->y) << 16 | (ppt->x) );
-       GE_OUT_D( GE_OP_DIM_WIDTH, *pwidth-1 );
-#else
-       GE_OUT_W( GE_DEST_MAP_X, (short)(ppt->x) );
-       GE_OUT_W( GE_DEST_MAP_Y, (short)(ppt->y) );
-       GE_OUT_W( GE_OP_DIM_WIDTH, (short)*pwidth-1 );
-       GE_OUT_W( GE_OP_DIM_HEIGHT, 0 );
-#endif
-       GE_START_CMDW( GE_OPW_BITBLT
-                      | GE_OPW_FRGD_SRC_CLR
-                      | GE_OPW_SRC_MAP_A
-                      | GE_OPW_DEST_MAP_A   );
+       if (*pwidth) {
+          unsigned int mapX = (ppt->y) << 16 | (ppt->x);  
+          GE_WAIT_IDLE();
+          GE_OUT_D( GE_DEST_MAP_X, mapX );
+          GE_OUT_D( GE_OP_DIM_WIDTH, *pwidth-1 );
+          GE_START_CMDW( GE_OPW_BITBLT
+                         | GE_OPW_FRGD_SRC_CLR
+                         | GE_OPW_SRC_MAP_A
+                         | GE_OPW_DEST_MAP_A   );
+        }
         ppt++;
         pwidth++;
     }
@@ -224,26 +233,39 @@ agxTiledFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     if (!xf86VTSema)
     {
-       cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted);
-       return;
+      switch (agxInfoRec.bitsPerPixel) {
+      case 8:
+         cfbUnnaturalTileFS(pDrawable, pGC, nInit, pptInit, 
+                            pwidthInit, fSorted);
+         break;
+      case 16:
+         cfb16UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, 
+                              pwidthInit, fSorted);
+         break;
+      case 32:
+         cfb32UnnaturalTileFS(pDrawable, pGC, nInit, pptInit, 
+                              pwidthInit, fSorted);
+         break;
+      }
+      return;
     }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
-	switch (pDrawable->bitsPerPixel) {
-	    case 1:
-		ErrorF("should call mfbTiledFillSpans\n");
-		break;
-	    case 8:
-	    case 16:
-		ErrorF("should call cfbTiledFillSpans\n");
-		break;
-	    default:
-		ErrorF("Unsupported pixmap depth\n");
-		break;
-	}
-	return;
+      switch (pDrawable->bitsPerPixel) {
+        case 1:
+           ErrorF("should call mfbTiledFillSpans\n");
+           break;
+        case 8:
+        case 16:
+        case 32:
+           ErrorF("should call cfbTiledFillSpans\n");
+           break;
+        default:
+           ErrorF("Unsupported pixmap depth\n");
+           break;
+      }
+      return;
     }
-
     if (!(pGC->planemask))
         return;
 
@@ -298,9 +320,21 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     if (!xf86VTSema)
     {
-        cfbUnnaturalStippleFS( pDrawable, pGC,
+      switch (agxInfoRec.bitsPerPixel) {
+      case 8:
+         cfbUnnaturalStippleFS(pDrawable, pGC,
                                nInit, pptInit, pwidthInit, fSorted);
-        return;
+         break;
+      case 16:
+         cfb16UnnaturalStippleFS(pDrawable, pGC,
+                                 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      case 32:
+         cfb32UnnaturalStippleFS(pDrawable, pGC,
+                                 nInit, pptInit, pwidthInit, fSorted);
+         break;
+      }
+      return;
     }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
@@ -310,6 +344,7 @@ agxStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		break;
 	    case 8:
 	    case 16:
+	    case 32:
 		ErrorF("should call cfbStippleFillSpans\n");
 		break;
 	    default:
@@ -375,9 +410,21 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 
     if (!xf86VTSema)
     {
-        cfbUnnaturalStippleFS( pDrawable, pGC,
-                               nInit, pptInit, pwidthInit, fSorted);
-        return;
+       switch (agxInfoRec.bitsPerPixel) {
+       case 8:
+          cfbUnnaturalStippleFS(pDrawable, pGC,
+                                nInit, pptInit, pwidthInit, fSorted);
+          break;
+       case 16:
+          cfb16UnnaturalStippleFS(pDrawable, pGC,
+                                  nInit, pptInit, pwidthInit, fSorted);
+          break;
+       case 32:
+          cfb32UnnaturalStippleFS(pDrawable, pGC,
+                                  nInit, pptInit, pwidthInit, fSorted);
+          break;
+       }
+       return;
     }
 
     if (pDrawable->type != DRAWABLE_WINDOW) {
@@ -387,6 +434,7 @@ agxOStipFSpans (pDrawable, pGC, nInit, pptInit, pwidthInit, fSorted)
 		break;
 	    case 8:
 	    case 16:
+	    case 32:
 		ErrorF("should call cfbOpStippleFillSpans\n");
 		break;
 	    default:

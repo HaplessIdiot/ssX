@@ -1,5 +1,5 @@
 /* $XConsortium: agxIm.c,v 1.7 95/01/27 14:50:05 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.12 1995/01/27 03:32:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxIm.c,v 3.13 1995/01/28 15:48:57 dawes Exp $ */
 /*
  * Copyright 1992,1993 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -62,7 +62,7 @@ static	void	agxImageFillBank(
     int, int, int, int, char *, int, int, int, int, int, short, unsigned long
 #endif
 );
-static	void	agxImageFillNoMem(
+static  void    agxImageFillNoMem(
 #if NeedFunctionPrototypes
     int, int, int, int, char *, int, int, int, int, int, 
     short, unsigned long
@@ -174,7 +174,7 @@ agxBytePadScratchMapPow2( w, n )
  * agxMemToVid()
  * 
  */
-static void
+void
 #if NeedFunctionPrototypes
 agxMemToVid(
    int  dst,
@@ -265,7 +265,7 @@ agxMemToVid(dst, dstWidth, src, srcWidth, h)
  * agxPartMemToVid()
  * 
  */
-static void
+void
 #if NeedFunctionPrototypes
 agxPartMemToVid(
    int  dst,
@@ -385,12 +385,14 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
     unsigned long	planemask;
 #endif
 {
-    volatile unsigned char *curvm;
+#if 1
     int offset;
+    volatile unsigned char *curvm;
     int bank;
     int bankMask = agxBankSize-1;
     int left;
     int count;
+#endif
 
     if ((w == 0) || (h == 0))
 	return;
@@ -403,6 +405,13 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
 	return;
     }
 
+#if 0
+    agxPartMemToVid( AGX_PIXEL_ADJUST( x + y * agxDisplayWidth ),
+                     agxDisplayWidth,
+                     psrc + AGX_PIXEL_ADJUST( px + py * pwidth ), 
+                     pwidth,
+                     AGX_PIXEL_ADJUST( w ), h );
+#else
     w = AGX_PIXEL_ADJUST( w );
     psrc += pwidth * py + AGX_PIXEL_ADJUST( px );
     offset = AGX_PIXEL_ADJUST( x ) + y * screenStride;
@@ -443,6 +452,7 @@ agxImageWriteBank(x, y, w, h, psrc, pwidth, px, py, alu, planemask)
             }
         }
     }
+#endif
 }
 
 
@@ -1037,6 +1047,93 @@ agxImageFillNoMem(x, y, w, h, psrc, pwidth, pw, ph, pox, poy, alu, planemask)
     GE_WAIT_IDLE_EXIT();
 }
 
+void
+#if NeedFunctionPrototypes
+agxImageTileScrPad(
+    int                 x,
+    int                 y,
+    int                 w,
+    int                 h,
+    int                 pwidth,
+    int                 pw,
+    int                 ph,
+    int                 xrot,
+    int                 yrot )
+#else
+agxImageTileScrPad( x, y, w, h, pwidth, pw, ph, xrot, yrot )
+    int                 x;
+    int                 y;
+    int                 w;
+    int                 h;
+    int                 pwidth;
+    int                 pw;
+    int                 ph;
+    int                 xrot;
+    int                 yrot;,
+#endif
+{
+    register unsigned int numHorizTiles;
+    unsigned int          firstHTileWidth = pw - xrot;
+    unsigned int          lastHTileWidth = 0;
+
+    if( w <= firstHTileWidth ||  pw == pwidth ) {
+       firstHTileWidth = w;
+       lastHTileWidth = 0;
+       numHorizTiles = 1;
+    }
+    else {
+       unsigned int rem;
+       rem = w - firstHTileWidth;
+       numHorizTiles  = rem / pw + 1;
+       lastHTileWidth = rem % pw;
+       if( lastHTileWidth )
+          numHorizTiles++;
+       else
+          lastHTileWidth = pw;
+    }
+
+    {
+       unsigned int hTile;
+       unsigned int dstX = x;
+       unsigned int srcCoOrd = yrot << 16;
+       unsigned int dstCoOrd = y << 16;
+       unsigned int opDim = (h - 1) << 16;
+
+       for( hTile = 1; hTile <= numHorizTiles; hTile++ ) {
+          register unsigned int dstWidth;
+          register unsigned int srcX;
+
+          if( hTile == 1 ) {
+             srcX = xrot;
+             dstWidth = firstHTileWidth - 1;
+          }
+          else if( hTile == numHorizTiles ) {
+             srcX = 0;
+             dstWidth = lastHTileWidth - 1;
+          }
+          else {
+             srcX = 0;
+             dstWidth = pw - 1;
+          }
+
+          srcCoOrd = (srcCoOrd & 0xFFFF0000) | srcX;
+          dstCoOrd = (dstCoOrd & 0xFFFF0000) | dstX;
+          opDim    = (opDim & 0xFFFF0000) | dstWidth;
+
+          GE_WAIT_IDLE();
+          GE_OUT_D( GE_SRC_MAP_X,  srcCoOrd );
+          GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+          GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+          GE_START_CMDW( GE_OPW_BITBLT
+                         | GE_OPW_FRGD_SRC_MAP
+                         | GE_OPW_SRC_MAP_B
+                         | GE_OPW_DEST_MAP_A   );
+          dstX += dstWidth + 1;
+       }
+    }
+    GE_WAIT_IDLE_EXIT();
+}
+
 
 void
 #if NeedFunctionPrototypes
@@ -1222,6 +1319,33 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
        ErrorF( "%s:%s - lastBWidth is too wide: %x,%x,%x,%x\n",
                 __FILE__, __LINE__,
                 lastBWidth, srcBWidth,
+                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+    }
+    if( firstBWidth > srcBWidth
+        || firstBWidth > (w+7>>3)
+        || firstBWidth > (pw+7>>3) ) {
+       ErrorF( "%s:%s - firstBWidth is too wide: %x,%x,%x,%x\n",
+                __FILE__, __LINE__,
+                firstBWidth, srcBWidth,
+                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+    }
+    if( firstBWidth+lastBWidth > srcBWidth
+        || firstBWidth+lastBWidth > (w+7>>3)
+        || firstBWidth+lastBWidth > (pw+7>>3) ) {
+       ErrorF( "%s:%s - firstBWidth+lastBWidth is too wide: %x,%x,%x,%x,%x\n",
+                __FILE__, __LINE__,
+                firstBWidth, lastBWidth, srcBWidth,
+                w<<BytesPerPixelShift, pw<<BytesPerPixelShift );
+    }
+#endif
+
+#if 0
+    if( lastBWidth > srcBWidth
+        || lastBWidth > (w+7>>3)
+        || lastBWidth > (pw+7>>3) ) {
+       ErrorF( "%s:%s - lastBWidth is too wide: %x,%x,%x,%x\n",
+                __FILE__, __LINE__,
+                lastBWidth, srcBWidth,
                 AGX_PIXEL_ADJUST( w ), AGX_PIXEL_ADJUST( pw ));
     }
     if( firstBWidth > srcBWidth
@@ -1251,8 +1375,7 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
    
     GE_WAIT_IDLE();
 
-    MAP_SET_DST( GE_MS_MAP_A );
-    MAP_SET_SRC( GE_MS_MAP_B );
+    MAP_SET_SRC_AND_DST( GE_MS_MAP_A );
     GE_SET_MAP( GE_MS_MAP_B );   
 
     GE_OUT_W(GE_FRGD_MIX, bgAlu << 8 | fgAlu );  /* both fg & bg */
@@ -1277,7 +1400,6 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
           GE_OUT_W( GE_PIXEL_MAP_HEIGHT, srcStripHeight-1 );
        }
 
-          
        /*
         * Load map B with the current strip. 
         */
@@ -1402,6 +1524,93 @@ agxImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
     GE_WAIT_IDLE_EXIT();
 }
 
+void
+#if NeedFunctionPrototypes
+agxImageStipScrPad(
+    int                 x,
+    int                 y,
+    int                 w,
+    int                 h,
+    int                 pwidth,
+    int                 pw,
+    int                 ph,
+    int                 xrot,
+    int                 yrot )
+#else
+agxImageStipScrPad( x, y, w, h, pwidth, pw, ph, xrot, yrot )
+    int                 x;
+    int                 y;
+    int                 w;
+    int                 h;
+    int                 pwidth;
+    int                 pw;
+    int                 ph;
+    int                 xrot;
+    int                 yrot;,
+#endif
+{
+    register unsigned int numHorizTiles;
+    unsigned int          firstHTileWidth = pw - xrot;
+    unsigned int          lastHTileWidth = 0;
+
+    if( w <= firstHTileWidth ||  pw == pwidth ) {
+       firstHTileWidth = w;
+       lastHTileWidth = 0;
+       numHorizTiles = 1;
+    }
+    else {
+       unsigned int rem;
+       rem = w - firstHTileWidth;
+       numHorizTiles  = rem / pw + 1;
+       lastHTileWidth = rem % pw;
+       if( lastHTileWidth )
+          numHorizTiles++;
+       else
+          lastHTileWidth = pw;
+    }
+
+    {
+       unsigned int hTile;
+       unsigned int dstX = x;
+       unsigned int srcCoOrd = yrot << 16;
+       unsigned int dstCoOrd = y << 16;
+       unsigned int opDim = (h - 1) << 16;
+
+       for( hTile = 1; hTile <= numHorizTiles; hTile++ ) {
+          unsigned int dstWidth;
+          unsigned int srcX;
+
+          if( hTile == 1 ) {
+             srcX = xrot;
+             dstWidth = firstHTileWidth - 1;
+          }
+          else if( hTile == numHorizTiles ) {
+             srcX = 0;
+             dstWidth = lastHTileWidth - 1;
+          }
+          else {
+             srcX = 0;
+             dstWidth = pw - 1;
+          }
+
+          srcCoOrd = (srcCoOrd & 0xFFFF0000) | srcX;
+          dstCoOrd = (dstCoOrd & 0xFFFF0000) | dstX;
+          opDim    = (opDim & 0xFFFF0000) | dstWidth;
+
+          GE_WAIT_IDLE();
+          GE_OUT_D( GE_PAT_MAP_X,  srcCoOrd );
+          GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+          GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+          GE_START_CMDW( GE_OPW_BITBLT
+                         | GE_OPW_FRGD_SRC_CLR
+                         | GE_OPW_BKGD_SRC_CLR
+                         | GE_OPW_DEST_MAP_A   );
+          dstX += dstWidth + 1;
+       }
+    }
+    GE_WAIT_IDLE_EXIT();
+}
+
 
 void
 #if NeedFunctionPrototypes
@@ -1445,14 +1654,34 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
     srcMaxLines = agxScratchSize >> srcBWidthShift;
     pixBWidth = BitmapBytePad( width );
 
-    if( (width != srcPWidth && width != 2 && width !=4)
-        || width * height > 256 * 256 
-        || srcMaxLines < height ) { 
+    if( nBox == 1 ) {
+       int            xrot, yrot;
+       modulus( pBox->x1-pox, width, xrot );
+       modulus( pBox->y1-poy, height, yrot );
+       w = pBox->x2 - pBox->x1;
+       h = pBox->y2 - pBox->y1;
+       if( (w == 0) || (h == 0) )
+          return;
+       if( w < width || h < height ) {
+          /* box is smaller than pattern -- don't load entire pattern  */
+          agxImageStipple( pBox->x1, pBox->y1,
+                           w, h,
+                           stipple->devPrivate.ptr, pixBWidth,
+                           width, height,
+                           pox, poy,
+                           fgpixel, bgpixel,
+                           fgAlu, bgAlu,
+                           planemask );
+          return;
+       }
+    }
 
+    if ( srcMaxLines < height ) { 
+       /* pattern doesn't fit in scratchpad */
        for (; nBox; nBox--, pBox++) {
           h = pBox->y2 - pBox->y1 - 1;
           w = pBox->x2 - pBox->x1 - 1;
-
+   
           if ((w >= 0) && (h >= 0)) {
              agxImageStipple( pBox->x1, pBox->y1,
                               pBox->x2 - pBox->x1,
@@ -1467,65 +1696,81 @@ agxFillBoxStipple( pDrawable, nBox, pBox,
        }
     }
     else {
-       unsigned int widthMask = width - 1;
-       unsigned int bwidth;
-
-       bwidth = width >> 3;
-       if( bwidth == 0 )
-          bwidth = 1;
-
+       /* pattern fits in scratchpad */
        MAP_INIT( GE_MS_MAP_B,
-                 agxVideoMapFormat,
+                 GE_MF_1BPP | GE_MF_INTEL_FORMAT,
                  agxMemBase + agxScratchOffset,
                  srcPWidth-1,
                  height-1,
                  FALSE, FALSE, FALSE );
-
+   
        GE_WAIT_IDLE();
-
-       agxMemToVid( agxScratchOffset, srcBWidth,
-                    stipple->devPrivate.ptr, 
-                    pixBWidth, height );
- 
        MAP_SET_DST( GE_MS_MAP_A );
-       MAP_SET_SRC( GE_MS_MAP_B );
        GE_SET_MAP( GE_MS_MAP_B );
-
-       GE_OUT_W(GE_FRGD_MIX, bgAlu << 8 | fgAlu );  /* both fg & bg */
+       GE_OUT_W(GE_FRGD_MIX, bgAlu << 8 | fgAlu );
        GE_OUT_D(GE_FRGD_CLR, fgpixel );
        GE_OUT_D(GE_BKGD_CLR, bgpixel );
        GE_OUT_D(GE_PIXEL_BIT_MASK, planemask);
-
- 
        GE_OUT_W( GE_PIXEL_OP,
                  GE_OP_PAT_MAP_B
                  | GE_OP_MASK_DISABLED
                  | GE_OP_INC_X
                  | GE_OP_INC_Y         );
- 
-       for (; nBox; nBox--, pBox++) {
-          h = pBox->y2 - pBox->y1 - 1;
-          w = pBox->x2 - pBox->x1 - 1;
- 
-          if ((w >= 0) && (h >= 0)) {
-             register unsigned int patCoOrd = 
-                    ((pBox->y1 - poy) % height) << 16
-                    | (pBox->x1 - pox) & widthMask;
-             register unsigned int dstCoOrd = pBox->y1 << 16 | pBox->x1;
-             register unsigned int opDim = h << 16 | w;
+   
+       agxMemToVid( agxScratchOffset, srcBWidth,
+                    stipple->devPrivate.ptr, pixBWidth, height );
 
-             GE_WAIT_IDLE();
-             GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
-             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-             GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-             GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_CLR
-                            | GE_OPW_BKGD_SRC_CLR
-                            | GE_OPW_DEST_MAP_A   );
+       if( srcPWidth == width ) {
+          /* pow2 -- bitblt'r can do tiling */
+          unsigned int widthMask = width - 1;
+          unsigned int bwidth;
+   
+          bwidth = width >> 3;
+          if( bwidth == 0 )
+             bwidth = 1;
+  
+          for (; nBox; nBox--, pBox++) {
+             h = pBox->y2 - pBox->y1 - 1;
+             w = pBox->x2 - pBox->x1 - 1;
+   
+             if ((w >= 0) && (h >= 0)) {
+                register unsigned int patCoOrd =
+                       ((pBox->y1 - poy) % height) << 16
+                       | (pBox->x1 - pox) & widthMask;
+                register unsigned int dstCoOrd = pBox->y1 << 16 | pBox->x1;
+                register unsigned int opDim = h << 16 | w;
+   
+                GE_WAIT_IDLE();
+                GE_OUT_D( GE_PAT_MAP_X, patCoOrd );
+                GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+                GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+                GE_START_CMDW( GE_OPW_BITBLT
+                               | GE_OPW_FRGD_SRC_CLR
+                               | GE_OPW_BKGD_SRC_CLR
+                               | GE_OPW_DEST_MAP_A   );
+             }
           }
-      }
-      GE_WAIT_IDLE_EXIT();
-   }
+          GE_WAIT_IDLE_EXIT();
+       } 
+       else {
+          /* tiling can't be done directly */
+          for (; nBox; nBox--, pBox++) {
+             int            xrot, yrot;
+             modulus( pBox->x1-pox, width, xrot );
+             modulus( pBox->y1-poy, height, yrot );
+
+             h = pBox->y2 - pBox->y1;
+             w = pBox->x2 - pBox->x1;
+             if ((w > 0) && (h > 0)) {
+                 agxImageStipScrPad( pBox->x1, pBox->y1,
+                                     w, h,
+                                     srcPWidth,
+                                     width, height,
+                                     xrot, yrot );
+             }
+          }
+       }
+    }
 }
  
 
@@ -1545,17 +1790,13 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     unsigned long   planemask;
 #endif
 {
-    int            w, h;
+    register int   w, h;
     unsigned int   width, height;
     unsigned int   pixBWidth;
     unsigned int   srcPWidth;
     unsigned int   srcBWidth;
     int            srcBWidthShift;
     unsigned int   srcMaxLines;
-#if 0
-    int            xrot, yrot;
-    Bool           oneBox = FALSE;
-#endif
 
     width = tile->drawable.width;
     height = tile->drawable.height;
@@ -1566,50 +1807,55 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
     srcMaxLines = agxScratchSize >> srcBWidthShift;
     pixBWidth = PixmapBytePad( width, tile->drawable.depth );
 
-#if 0
-    if( nBox == 1 && alu == GXcopy ) {
+    if( FALSE && nBox == 1 ) {
+       int            xrot, yrot;
        modulus( pBox->x1-pox, width, xrot );
        modulus( pBox->y1-poy, height, yrot );
-       if( (width - xrot) > (pBox->x2 - pBox->x1)
-           &&  (height - yrot) > (pBox->y2 - pBox->y2) )
-          oneBox = TRUE;
-    }
-
-    if( oneBox ) { 
-        /* copy direct */
-        GE_WAIT_IDLE();
-        agxPartMemToVid( AGX_PIXEL_ADJUST(pBox->x1 + pBox->y1*agxDisplayWidth),
-                         agxVirtX,
-                         tile->devPrivate.ptr 
-                           + AGX_PIXEL_ADJUST( xrot + yrot * srcPWidth ),
-                         srcBWidth,
-                         AGX_PIXEL_ADJUST( pBox->x2 - pBox->x1 );
-                         pBox->y2 - pBox->y1 );
-
+       w = pBox->x2 - pBox->x1;
+       h = pBox->y2 - pBox->y1;
+       if( (w == 0) || (h == 0) ) 
+          return; 
+       if( alu == GXcopy && (width - xrot) >= w && (height - yrot) >= h ) {
+          /* copy direct */
+          GE_WAIT_IDLE();
+          agxPartMemToVid( AGX_PIXEL_ADJUST( pBox->x1 
+                                                + pBox->y1*agxDisplayWidth),
+                           agxDisplayWidth,
+                           (char *) tile->devPrivate.ptr 
+                             + AGX_PIXEL_ADJUST( xrot + yrot * pixBWidth ),
+                           pixBWidth,
+                           AGX_PIXEL_ADJUST( w ), h );
+          return;
+       }
+       if( w < width || h < height ) {
+          /* box is smaller than pattern -- don't load entire pattern  */
+          agxImageFillNoMem( pBox->x1, pBox->y1,
+                             w, h,
+                             tile->devPrivate.ptr, pixBWidth,
+                             width, height,
+                             pox, poy,
+                             alu, planemask );
+          return;
+       }
     } 
-    else 
-#endif
-    if( srcPWidth != width
-        || width * height > 128 * 128 
-        || srcMaxLines < height ) { 
 
+    if( srcMaxLines < height ) {
+       /* tile doesn't fit in scratchpad */
        for (; nBox; nBox--, pBox++) {
           h = pBox->y2 - pBox->y1;
           w = pBox->x2 - pBox->x1;
-
           if ((w > 0) && (h > 0)) {
-              (*agxImageFillFunc)( pBox->x1, pBox->y1,
-                                   w, h,
-                                   tile->devPrivate.ptr, pixBWidth,
-                                   width, height, 
-                                   pox, poy,
-                                   alu, planemask );
+             agxImageFillNoMem( pBox->x1, pBox->y1,
+                                w, h,
+                                tile->devPrivate.ptr, pixBWidth,
+                                width, height,
+                                pox, poy,
+                                alu, planemask );
           }
        }
     }
     else {
-       unsigned int widthMask = width - 1;
-
+       /* tile fits in scratchpad */
        MAP_INIT( GE_MS_MAP_B,
                  agxVideoMapFormat,
                  agxMemBase + agxScratchOffset,
@@ -1619,62 +1865,70 @@ agxFillBoxTile( pDrawable, nBox, pBox, tile, pox, poy, alu, planemask )
 
        GE_WAIT_IDLE();
 
-       agxMemToVid( agxScratchOffset, srcBWidth,
-                    tile->devPrivate.ptr, pixBWidth, height );
- 
        MAP_SET_DST( GE_MS_MAP_A );
        MAP_SET_SRC( GE_MS_MAP_B );
        GE_SET_MAP( GE_MS_MAP_B );
- 
        GE_OUT_B( GE_FRGD_MIX, alu );
        GE_OUT_D( GE_PIXEL_BIT_MASK, planemask );
- 
        GE_OUT_W( GE_PIXEL_OP,
                  GE_OP_PAT_FRGD
                  | GE_OP_MASK_DISABLED
                  | GE_OP_INC_X
                  | GE_OP_INC_Y         );
+ 
+       agxMemToVid( agxScratchOffset, srcBWidth,
+                    tile->devPrivate.ptr, pixBWidth, height );
 
- 
-       for (; nBox; nBox--, pBox++) {
-          h = pBox->y2 - pBox->y1 - 1;
-          w = pBox->x2 - pBox->x1 - 1;
- 
-          if ((w >= 0) && (h >= 0)) {
-             register unsigned int srcCoOrd = 
-                    ((pBox->y1 - poy) % height) << 16
-                    | (pBox->x1 - pox) & widthMask;
-             register unsigned int dstCoOrd = pBox->y1 << 16 | pBox->x1;
-             register unsigned int opDim = h << 16 | w;
- 
-             GE_WAIT_IDLE();
-             GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
-             GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-             GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-             GE_START_CMDW( GE_OPW_BITBLT
-                            | GE_OPW_FRGD_SRC_MAP
-                            | GE_OPW_SRC_MAP_B
-                            | GE_OPW_DEST_MAP_A   );
+       if( srcPWidth == width ) {
+          /* pow2 -- bitblt'r can do tiling */
+          unsigned int widthMask = width - 1;
+          for (; nBox; nBox--, pBox++) {
+             h = pBox->y2 - pBox->y1 - 1;
+             w = pBox->x2 - pBox->x1 - 1;
+   
+             if ((w >= 0) && (h >= 0)) {
+                register unsigned int srcCoOrd =
+                       ((pBox->y1 - poy) % height) << 16
+                       | (pBox->x1 - pox) & widthMask;
+                register unsigned int dstCoOrd = pBox->y1 << 16 | pBox->x1;
+                register unsigned int opDim = h << 16 | w;
+   
+                GE_WAIT_IDLE();
+                GE_OUT_D( GE_SRC_MAP_X, srcCoOrd );
+                GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
+                GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
+                GE_START_CMDW( GE_OPW_BITBLT
+                               | GE_OPW_FRGD_SRC_MAP
+                               | GE_OPW_SRC_MAP_B
+                               | GE_OPW_DEST_MAP_A   );
+             }
           }
-      }
-      GE_WAIT_IDLE_EXIT();
-   }
+          GE_WAIT_IDLE_EXIT();
+       }
+       else { 
+          /* tiling can't be done directly */
+      
+          for (; nBox; nBox--, pBox++) {
+             int            xrot, yrot;
+             modulus( pBox->x1-pox, width, xrot );
+             modulus( pBox->y1-poy, height, yrot );
+      
+             h = pBox->y2 - pBox->y1;
+             w = pBox->x2 - pBox->x1;
+             if ((w > 0) && (h > 0)) {
+                agxImageTileScrPad( pBox->x1, pBox->y1,
+                                    w, h,
+                                    srcPWidth,
+                                    width, height,
+                                    xrot, yrot );
+             }
+          }
+       }
+    }
 }
 
  
 void
-#if NeedFunctionPrototypes
-agxFSpansTile(
-    DrawablePtr     pDrawable,
-    int             nSpans,
-    DDXPointPtr     ppts,
-    int            *pwidth,
-    PixmapPtr       tile,
-    int             pox,
-    int             poy,
-    short	    alu,
-    unsigned long   planemask)
-#else
 agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
                tile, pox, poy,
                alu, planemask )
@@ -1685,9 +1939,8 @@ agxFSpansTile( pDrawable, nSpans, ppts, pwidth,
     PixmapPtr       tile;
     int             pox;
     int             poy;
-    short	    alu;
-    unsigned long   planemask;
-#endif
+    unsigned int    alu;
+    unsigned int    planemask;
 {
     unsigned int   width  = tile->drawable.width;
     unsigned int   height = tile->drawable.height;

@@ -1,5 +1,5 @@
 /* $XConsortium: vga.h,v 1.4 95/01/16 13:18:28 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.6 1995/01/10 10:35:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vga.h,v 3.8 1995/01/28 17:09:58 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -254,6 +254,12 @@ Bool vgaSaveScreen(
 #if NeedFunctionPrototypes
     ScreenPtr pScreen,
     Bool on
+#endif
+);
+
+void vgaHWSaveScreen(
+#if NeedFunctionPrototypes
+    Bool start
 #endif
 );
 

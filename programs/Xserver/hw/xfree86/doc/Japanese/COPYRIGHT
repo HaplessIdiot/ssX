@@ -1,54 +1,41 @@
-------------------------------------------------------------------------------
-$B$3$N%U%!%$%k$O(B xc/programs/Xserver/hw/xfree86/doc/COPYRIGHT,v 3.0 
-1994/09/23
-10:18:01 $B$r!"2,K\(B $B0l9,(B <KFR01166@niftyserve.or.jp>
-,<ikko-@pacific.rim.or.jp>
-$B$,(B XFree86 3.1 $B$rF|K\$G%$%s%9%H!<%k$9$k?M8~$1$KK]Lu$7$?$b$N$G$9!#$3$3$
-,$*$+(B
-$B$7$$$H$+!"$3$3$O$3$&$7$?$[$&$,$$$$$H$$$C$?$40U8+$,$"$j$^$7$?$i!"EE;R%a!<%k$G
-(B
-$B$*CN$i$;2<$5$$!#(B
-$B86J8$NCx:n8"$O(B XFree86 $B%W%m%8%'%/%H<R$K$"$j$^$9!#$3$NOBLu$NCx:n8"$O(B
- XFree86 $B%W%m%8%'%/%H<R$H2,K\!!0l9,$K$"$j$^$9$,!"OBLu$NIT6q9g$O;d$K!"(B
-$BEE;R%a!<%k$GAw$C$F2<$5$$!#(B
-Copyright (C) 1995, Kazuyuki (ikko-) Okamoto. All Rights Reserved.
-------------------------------------------------------------------------------
+$BCx:n8"I=<((J
 
-XFree86 $B%W%m%8%'%/%H<R(B $BCx:n8"I=<((B
+XFree86 $B%W%m%8%'%/%H<R(J
 Copyright (C) 1994, 1995, The XFree86 Project, Inc. All Rights Reserved.
 
-$BL5NA$G!"C/$b$,$3$N%=%U%H%&%'%"$H4XO"$9$kJ8=q%U%!%$%k!J0J9_$^$H$a$F(B 
-"$B$=$U$H$&(B
-$B$'$"(B" $B$H8F$V!K$N<L$7$rF~<j$9$k;v!";HMQ8"!"J#<L8"!"JQ998"!"J;9g8"!"=PHG
-8"!"G[(B
-$BIU8"!":F<B;\5vBz8"(B $B$+$D(B/$B$^$?$O(B "$B$=$U$H$&$'$"(B" 
-$B$N<L$7$NHNGd8"$r4^$s$G@)LsL5$7(B
-$B$G<h$j07$&;v!"(B"$B$=$U$H$&$'$"(B" $B$r@)8BL5$7$G6!5k$9$k?M$r5v2D$9$k;v!
-"$r0J2<$N>r(B
-$B7oIU$-$G!"$3$3$K>5G'$9$k!#(B
 
-$B>e5-$NCx:n8"9p<($H$3$NG'2D9p<($r(B "$B$=$U$H$&$'$"(B" 
-$B$NA4$F$N<L$7$^$?$O!"=EMW$JIt(B
-$BJ,$H6&$KCV$/;v!#(B
+$BL5NA$G!"C/$b$,$3$N%=%U%H%&%'%"$H4XO"$9$kJ8=q%U%!%$%k!J0J9_$^$H$a$F(J "$B$=$U$H$&(J
+$B$'$"(J" $B$H8F$V!K$N<L$7$rF~<j$9$k;v!";HMQ8"!"J#<L8"!"JQ998"!"J;9g8"!"=PHG8"!"G[(J
+$BIU8"!":F<B;\5vBz8"(J $B$+$D(J/$B$^$?$O(J "$B$=$U$H$&$'$"(J" $B$N<L$7$NHNGd8"$r4^$s$G@)LsL5$7(J
+$B$G<h$j07$&;v!"(J"$B$=$U$H$&$'$"(J" $B$r@)8BL5$7$G6!5k$9$k?M$r5v2D$9$k;v!"$r0J2<$N>r(J
+$B7oIU$-$G!"$3$3$K>5G'$9$k!#(J
 
-$BG!2?$J$k<oN`!"7AMF!"0UL#$G$b!">&IJ2=$N2DG=@-5Z$S!"FCDj$NL\E*$+$I$&$+!"Hs?/32
-(B
-$B$+H]$+$NJ]>ZL5$7$K!"(B"$B$=$U$H$&$'$"(B" $B$r(B "$B$"$k$,$^$^(B" 
-$B$N7A$G6!5k$7$^$9!#(B
-$BMW5a!"B;32$d$=$NB>$N@UG$5Z$SG!2?$J$k7@Ls$N<B9T$dIT@59T0Y!"(B"$B$=$U$H$&$'$
-"(B" 
-$B$K4XO"$,M-$C$F$bL5$/$F$b@8$8$?8=>]!"Kt$O(B "$B$=$U$H$&$'$"(B" 
-$B$N;HMQ7k2L$dB>$N<h$j(B
-$B07$$7k2L$K$D$$$F!"$I$s$J:3:Y$J$3$H$G$b(B XFree86 
-$B%W%m%8%'%/%H$K$O@UG$$,$"$j$^(B
-$B$;$s!#(B
+$B>e5-$NCx:n8"9p<($H$3$NG'2D9p<($r(J "$B$=$U$H$&$'$"(J" $B$NA4$F$N<L$7$^$?$O!"=EMW$JIt(J
+$BJ,$H6&$KCV$/;v!#(J
 
-$B$3$N9p<($K4^$^$l$F$$$k;v$r=|$$$F!"(B "$B$=$U$H$&$'$"(B" $B$r(B XFree86 
-$B%W%m%8%'%/%H$N(B
-$BL>$N2<$K9-9p$7$?$j!"(B XFree86 $B%W%m%8%'%/%H$+$i0JA0$KH/9T$7$?5v2D=qL5$7$
-KB><T(B
-$B$,(B "$B$=$U$H$&$'$"(B" $B$rHNGd!";HMQ!"<h$j07$$$r4+M6$9$k$3$H$O$"$j$^$;
-$s!#(B
+$BG!2?$J$k<oN`!"7AMF!"0UL#$G$b!">&IJ2=$N2DG=@-5Z$S!"FCDj$NL\E*$+$I$&$+!"Hs?/32(J
+$B$+H]$+$NJ]>ZL5$7$K!"(J"$B$=$U$H$&$'$"(J" $B$r(J "$B$"$k$,$^$^(J" $B$N7A$G6!5k$7$^$9!#MW5a!"(J
+$BB;32$d$=$NB>$N@UG$5Z$SG!2?$J$k7@Ls$N<B9T$dIT@59T0Y!"(J"$B$=$U$H$&$'$"(J" $B$K4XO"$,(J
+$BM-$C$F$bL5$/$F$b@8$8$?8=>]!"Kt$O(J "$B$=$U$H$&$'$"(J" $B$N;HMQ7k2L$dB>$N<h$j07$$7k2L(J
+$B$K$D$$$F!"$I$s$J:3:Y$J$3$H$G$b(J XFree86 $B%W%m%8%'%/%H$K$O@UG$$,$"$j$^$;$s!#(J
+
+$B$3$N9p<($K4^$^$l$F$$$k;v$r=|$$$F!"(J "$B$=$U$H$&$'$"(J" $B$r(J XFree86 $B%W%m%8%'%/%H$N(J
+$BL>$N2<$K9-9p$7$?$j!"(J XFree86 $B%W%m%8%'%/%H$+$i0JA0$KH/9T$7$?5v2D=qL5$7$KB><T(J
+$B$,(J "$B$=$U$H$&$'$"(J" $B$rHNGd!";HMQ!"<h$j07$$$r4+M6$9$k$3$H$O$"$j$^$;$s!#(J
 
 
+
+  $XConsortium: CPYRIGHT.sgml,v 1.2 95/01/16 13:17:39 kaleb Exp $<br>
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/CPYRIGHT.sgml,v 3.3 1995/01/28 16:01:20 dawes Exp $
+----------------------------------------------------------------------------
+$B$3$N%U%!%$%k$O(J Generated from XFree86: xc/programs/Xserver/hw/xfree86
+/doc/sgml/CPYRIGHT.sgml,v 3.3 1995/01/28 16:01:20 $B$r!"(J $B2,K\!!0l9,(J
+<ikko-@pacific.rim.or.jp>$B$,(J XFree86 3.1.1 $B$rF|K\$G%$%s%9%H!<%k$9$k?M8~$1$K(J
+$BK]Lu$7$?$b$N$G$9!#(J $B$3$3$,$*$+$7$$$H$+!"(J $B$3$3$O$3$&$7$?$[$&$,$$$$$H$$$C$?(J
+$B$40U8+$,$"$j$^$7$?$i!"(J $BEE;R%a!<%k$G$*CN$i$;2<$5$$!#(J 
+$B86J8$NCx:n8"$O(J XFree86 $B%W%m%8%'%/%H<R$K$"$j$^$9!#(J 
+$B$3$NOBLu$NCx:n8"$O(J XFree86 $B%W%m%8%'%/%H<R!"(J $B5Z$S(J $B2,K\!!0l9,(J $B$K$"$j$^$9$,!"(J
+$B$3$NOBLu$NIT6q9g$O;d$K!"(J $BEE;R%a!<%k$GAw$C$F2<$5$$!#(J
+Copyright (C) 1995, Kazuyuki (ikko-) Okamoto. All Rights Reserved.
 $XFree86$
+----------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 /* $XConsortium: agx.h,v 1.6 95/01/23 15:33:38 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.10 1995/01/23 01:28:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.h,v 3.12 1995/01/28 15:48:28 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
  *
@@ -67,6 +67,52 @@ extern void (*agxImageFillFunc)(
     short, unsigned long
 #endif
 );
+extern void agxMemToVid(
+#if NeedFunctionPrototypes
+   int  dst,
+   int  dstWidth,
+   char *src,
+   int  srcWidth,
+   int  h
+#endif
+);
+extern void agxPartMemToVid(
+#if NeedFunctionPrototypes
+   int  dst,
+   int  dstWidth,
+   char *src,
+   int  srcWidth,
+   int  w,
+   int  h
+#endif
+);
+extern void agxImageTileScrPad(
+#if NeedFunctionPrototypes
+    int                 x,
+    int                 y,
+    int                 w,
+    int                 h,
+    int                 pwidth,
+    int                 pw,
+    int                 ph,
+    int                 xrot,
+    int                 yrot
+#endif
+);
+extern void agxImageStipScrPad(
+#if NeedFunctionPrototypes
+    int                 x,
+    int                 y,
+    int                 w,
+    int                 h,
+    int                 pwidth,
+    int                 pw,
+    int                 ph,
+    int                 xrot,
+    int                 yrot
+#endif
+);
+
 extern ScreenPtr savepScreen;
 
 /* agx.c */
@@ -377,6 +423,74 @@ Bool agxCreateGC(
     register GCPtr 
 #endif
 );
+/* agxGC.c */
+void agxChangeGC(
+#if NeedFunctionPrototypes
+    GC * ,
+    BITS32
+#endif
+);
+/* agxGC.c */
+void agxDestroyGC(
+#if NeedFunctionPrototypes
+    GC *
+#endif
+);
+/* agxGC.c */
+GCOps * 
+agxCreateOps(
+#if NeedFunctionPrototypes
+    GCOps *
+#endif
+);
+/* agxGC.c */
+void agxDestroyOps(
+#if NeedFunctionPrototypes
+    GCOps *
+#endif
+);
+/* agxGC.c */
+void agxDestroyClip(
+#if NeedFunctionPrototypes
+    GCPtr
+#endif
+);
+/* agxGC.c */
+void agxChangeClip(
+#if NeedFunctionPrototypes
+    GCPtr,
+    int ,
+    pointer ,
+    int
+#endif
+);
+/* agxGC.c */
+void agxCopyClip(
+#if NeedFunctionPrototypes
+    GCPtr,
+    GCPtr
+#endif
+);
+/* agxGC.c */
+void agxCopyGC(
+#if NeedFunctionPrototypes
+    GC * ,
+    Mask ,
+    GC *
+#endif
+);
+/* agxGC16.c */
+Bool agxCreateGC16(
+#if NeedFunctionPrototypes
+    register GCPtr
+#endif
+);
+/* agxGC32.c */
+Bool agxCreateGC32(
+#if NeedFunctionPrototypes
+    register GCPtr
+#endif
+);
 /* agxBlt.c */
 RegionPtr agxCopyArea(
 #if NeedFunctionPrototypes
@@ -580,8 +694,8 @@ void agxFSpansTile(
     PixmapPtr,
     int,
     int,
-    short,
-    unsigned long
+    unsigned int,
+    unsigned int
 #endif
 );
 void agxFSpansStipple(
@@ -911,6 +1025,7 @@ extern unsigned int  agxScratchOffset;
 extern unsigned int  agxScratchSize;
 extern unsigned int  agxHWCursorOffset;
 extern Bool     agxHWCursor;
+extern unsigned int  agxOriginAdjust;
 
 
 extern pointer vgaBase;
@@ -948,11 +1063,11 @@ extern unsigned int xf86RamDacBase;
 extern unsigned int vgaBankSize;
 extern unsigned int agxBankSize;
 
-extern int agxDac8Bit;
-extern int agxPixMux;
-extern int agxBusType;
-
+extern int agxBpp;
+extern int agxWeight;
+extern int defaultColorVisualClass;
 extern unsigned char agxVideoMapFormat;
+extern int BytesPerPixelShift;
 
 extern agxCRTCRegRec agxCRTCRegs;
 extern agxSaveBlock  *agxSavedState;

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.47 94/11/21 18:27:00 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.2 1994/12/25 12:15:56 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/dix/Imakefile,v 3.3 1995/01/28 15:45:46 dawes Exp $
 #include <Server.tmpl>
 
 SRCS = atom.c colormap.c cursor.c devices.c dispatch.c dixutils.c events.c \
@@ -58,6 +58,8 @@ VENDORRELEASE = XVendorRelease
 SITE_DEFINES = $(SITE_FONT_PATH) $(SITE_RGB_DB) $(SITE_DISPLAY_CLASS)
 
 VENDOR_DEFINES = $(VENDOR_STRING) $(VENDOR_RELEASE)
+
+DEFINES = $(LBXCOMPAT_DEFINES)
 
 NormalLibraryObjectRule()
 NormalLibraryTarget(dix,$(OBJS))

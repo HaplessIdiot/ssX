@@ -2,13 +2,46 @@
  
 <article>
  
-<title> XFree86 3.1.1 P9000 Server Release Notes
+<title> XFree86 3.1.2 P9000 Server Release Notes
 <author> Erik Nygren (<it>nygren@mit.edu</it>)
-<date> 1995 January 29
+<date> 1995 May 24
 <toc>
  
 <sect> Change Log <p>
 <descrip>
+<tag/1995.05.24:/
+	<itemize>
+	<item>
+	  Added p9000frect.c:  Accelerated solid rectangle fills at 8/16bpp
+	  (Henrik Harmsen)
+	<item>
+	 Added stipple fills to p9000frect.c, and a stub for tile fills when
+	 p9000ImageFill is fixed (Chris Mason)
+	<item>
+	 Added p9000pntwin.c:  Accelerated paint window at 8/16/32bpp
+	 (Henrik Harmsen)
+	<item>
+	 Added p9000gc16.c and p9000gc32.c for the higher bpp drawing functions
+	 (Henrik Harmsen)
+	<item>
+	 Additions to p9000im.c: p9000Image[Op]Stipple. And p9000ImageFill.
+	 Currently, there are small problems with ImageFill, and it is not
+	 being used. (Chris Mason)
+	<item>
+	 Added p9000PixAlu and p9000PixOpAlu.  miniterm->alu translation for
+	 pixel1 opaque and transparent operations. (Chris Mason) 
+	<item>
+	 Added p9000text.c: Non-cached poly text and image text functions.
+	 Image text functions are not used because they are too slow :(
+	 (Chris Mason)
+	</itemize>
+<tag/1995.05.21:/
+	<itemize>
+	<item>
+	  Fixed p9000init.c to properly deal with the <tt>vram_128</tt>
+	  option.  This should allow the driver to work properly with all
+	  Viper's with 1 MB of memory. (Erik Nygren)
+	</itemize>
 <tag/1995.01.29:/
 	<itemize>
 	<item>
@@ -153,28 +186,6 @@
 	</itemize>
 </descrip>
 
-I've started adding in support for other cards and for acceleration.
-Due to its untested nature, it is disabled.  A define at the top of
-<tt>p9000.h</tt> controls all of these features.  The Viper PCI code is
-untested and probably won't work the first time!  The Orchid P9000
-code is incomplete and is waiting for a few mods by Harry to change the
-way it deals with the clock.  The acceleration code has been started
-on but probably won't work.  It's provided more to give our developers
-a common base to start from.  Notice the new global variable
-<tt>p9000BytesPerPixel</tt>, BTW.  Before working on any acceleration, please
-contact <it>nygren@mit.edu</it> so we don't duplicate efforts.  The code
-in <tt>p9000blt.c</tt> should work, but the stuff in <tt>p9000im.c</tt>
-probably won't.
-
-For Diamond Viper PCI owners, you'll need to use <tt>scanpci</tt>
-to find the values to fill in for <tt>MemBase</tt> and <tt>IOBase</tt> in the
-<tt>Device</tt> section of <tt>XF86Config</tt>.  These values will change
-whenever you move cards around or add cards.
-
-I've started adding in support for other cards and for acceleration.
-Due to its untested nature, much of it is disabled.  A define at the top of
-<tt>p9000.h</tt> controls all of these features.  
-
 <sect> Supported Cards <p> 
 
 <sect1> Diamond Viper VLB <p>
@@ -185,9 +196,13 @@ have a Viper VLB.  If this happens, put <tt>chipset "vipervlb"</tt>
 into your <tt>XF86Config</tt> file.
 
 <sect1> Diamond Viper PCI <p>
+For Diamond Viper PCI owners, you'll need to use <tt>scanpci</tt>
+to find the values to fill in for <tt>MemBase</tt> and <tt>IOBase</tt> in the
+<tt>Device</tt> section of <tt>XF86Config</tt>.  These values will change
+whenever you move cards around or add cards.
 This should now work, thanks to help from Bob Hollinger and Matt Thomas.
-You may to specify the chipset <tt>"viperpci"</tt> in your <tt>XF86Config</tt>
-file.
+You may need to specify the chipset <tt>"viperpci"</tt> in your 
+<tt>XF86Config</tt> file.
 You'll also need to specify an <tt>IOBase</tt> and a <tt>memBase</tt>.
 These values may be obtained by running the <tt>scanpci</tt>
 program available
@@ -394,27 +409,25 @@ If the cursor changes while you're in a VT, the cursor won't look
 right when you return from the VT until it is moved between windows
 (and changes color and shape).
 
-Autoprobing doesn't always properly detect cards with 1024K of VRAM.
-If you have a problem with this, try putting <tt>VideoRAM 1024</tt>
-into the <tt>Device</tt> section of your <tt>XF86Config</tt> file.  If
-this still doesn't help, try adding <tt>Option "vram_128"</tt>.
+Memory probing does not work.  You will need to explicitly specify the
+amount of memory you have.  If you have a 1 MB card, try put
+<tt>VideoRAM 1024</tt> into the <tt>Device</tt> section of your
+<tt>XF86Config</tt> file.  If this doesn't work, try adding
+<tt>Option "vram_128"</tt> to the <tt>Device</tt> section.
 
 <sect> Credits <p>
 Major contributors to P9000 code:
 <itemize>
 <item> Erik Nygren (<it>nygren@mit.edu</it>)
 <item> Harry Langenbacher (<it>harry@brain.jpl.nasa.gov</it>)
-<item> Chris Mason (<it>mason@mail.csh.rit.edu</it>) 
+<item> Chris Mason (<it>clmtch@osfmail.isc.rit.edu</it>) 
+<item> Henrik Harmsen (<it>harmsen@eritel.se</it>)
 </itemize>
 Thanks to Matt Thomas (<it>thomas@lkg.dec.com</it>) and Bob Hollinger
 (<it>bob@interaccess.com</it>) for helping to get the Viper PCI server working.
 
 Special thanks to David Moews (<it>dmoews@xraysgi.ims.uconn.edu</it>)
 whose banking patch could unfortunately not be included.
-
-Special thanks to Henrik Harmsen (<it>d9hh@dtek.chalmers.se</it>)
-whose 16bpp and 32bpp accelerated blit code won't be included until 
-the next XFree86 release.
 
 Thanks to Andy, David, Dave, Michael, Bob, all the XFree86 core team
 people, and everyone else!
@@ -424,7 +437,7 @@ acceleration, etc.  Please send any patches to me (<it>nygren@mit.edu</it>).
 
 <verb>
 $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.9 1995/01/29 10:45:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.10 1995/02/04 04:50:44 dawes Exp $
 </verb>
 
 </article>

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/video7/v7_driver.c,v 3.6 1995/01/10 10:33:44 dawes Exp $ */
 /*
  * Copyright 1994 by Craig Struble   <cstruble@acm.vt.edu>
  * Stubs Driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -122,6 +122,7 @@ static char *   VIDEO7Ident();
 static Bool     VIDEO7ClockSelect();
 static void     VIDEO7EnterLeave();
 static Bool     VIDEO7Init();
+static Bool     VIDEO7ValidMode();
 static void *   VIDEO7Save();
 static void     VIDEO7Restore();
 static void     VIDEO7Adjust();
@@ -145,10 +146,11 @@ vgaVideoChipRec VIDEO7 = {
 	VIDEO7Ident,
 	VIDEO7EnterLeave,
 	VIDEO7Init,
+	VIDEO7ValidMode,
 	VIDEO7Save,
 	VIDEO7Restore,
 	VIDEO7Adjust,
-	(void (*)())NoopDDA,
+	vgaHWSaveScreen,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
 	VIDEO7SetRead,
@@ -206,6 +208,13 @@ vgaVideoChipRec VIDEO7 = {
 	 * will normally be 8, but may be 4 or 16 for some servers.
 	 */
 	8,
+	FALSE,
+	0,
+	0,
+	FALSE,
+	FALSE,
+	NULL,
+	1,
 };
 
 #define VIDEO7_MAX_CLOCK_IN_KHZ 90000
@@ -236,7 +245,7 @@ static int Num_VIDEO7_ExtPorts =
  * server will call this function when listing supported chipsets, with 'n' 
  * incrementing from 0, until the function returns NULL.  The 'Probe'
  * function should call this function to get the string name for a chipset
- * and when comparing against an Xconfig-supplied chipset value.  This
+ * and when comparing against an XF86Config-supplied chipset value.  This
  * cuts down on the number of places errors can creep in.
  */
 static char *
@@ -333,7 +342,7 @@ int no;
  * GVGA drivers for the special code that is needed.  Note that the BIOS 
  * base should not be assumed to be at 0xC0000 (although most are).  Use
  * 'vga256InfoRec.BIOSbase', which will pick up any changes the user may
- * have specified in the Xconfig file.
+ * have specified in the XF86Config file.
  *
  * The preferred mechanism for doing this is via register identification.
  * It is important not only the chipset is detected, but also to
@@ -370,7 +379,7 @@ VIDEO7Probe()
 	{
 		/*
 		 * This is the easy case.  The user has specified the
-		 * chipset in the Xconfig file.  All we need to do here
+		 * chipset in the XF86Config file.  All we need to do here
 		 * is a string comparison against each of the supported
 		 * names available from the Ident() function.  If this
 		 * driver supports more than one chipset, there would be
@@ -425,7 +434,7 @@ VIDEO7Probe()
     	}
 
 	/*
-	 * If the user has specified the amount of memory in the Xconfig
+	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
 	 */
   	if (!vga256InfoRec.videoRam)
@@ -439,7 +448,7 @@ VIDEO7Probe()
     	}
 
 	/*
-	 * Again, if the user has specified the clock values in the Xconfig
+	 * Again, if the user has specified the clock values in the XF86Config
 	 * file, we respect those choices.
 	 */
   	if (!vga256InfoRec.clocks)
@@ -788,7 +797,7 @@ int x, y;
 	 * must also be set.
 	 */
 	unsigned char temp;
-	int Base = (y * vga256InfoRec.virtualX + x + 1) >> 2;
+	int Base = (y * vga256InfoRec.displayWidth + x + 1) >> 2;
 
 	/*
 	 * These are the generic starting address registers.
@@ -805,3 +814,15 @@ int x, y;
 	temp &= 0xCF;
 	outb(0x3C5, temp | ((Base & 0x030000) >> 12));
 }
+
+/*
+ * VIDEO7ValidMode --
+ *
+ */
+static Bool
+VIDEO7ValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

@@ -389,6 +389,9 @@ There are two ways to allow XFree86 to access linear memory:
    kernel. For more informations, see the comments in
    <tt>/usr/include/sys/systm.h</tt>.
 
+   NetBSD-current users can also disable kernel security by adding
+   'option INSECURE' in their kernel configuration file.
+
 <item> Install the NetBSD aperture driver:
    <enum>	
    <item> add the following lines to the end of <tt>/etc/rc.local</tt>:
@@ -625,7 +628,7 @@ and many others.
 
 <verb>
 $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.11 1995/02/04 04:50:43 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.12 1995/04/24 05:21:02 dawes Exp $
 </verb>
 
 </article>

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Io.c,v 1.6 95/01/16 20:07:54 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.7 1995/03/11 14:13:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.8 1995/03/12 13:00:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -179,7 +179,7 @@ Bool init;
        * we must deal here with the fact, that on some cases the numlock or
        * capslock key are enabled BEFORE the server is started up. So look
        * here at the state on the according LEDS to determine whether a
-       * lock-key is allready set.
+       * lock-key is already set.
        */
 
       xf86Info.capsLock        = FALSE;

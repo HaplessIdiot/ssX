@@ -1,6 +1,6 @@
 /*
  * $XConsortium: vgaHW.c,v 1.6 95/01/06 20:59:04 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.15 1994/12/29 10:21:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgaHW.c,v 3.17 1995/01/28 17:10:06 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -249,7 +249,7 @@ vgaProtect(on)
       outb(0x3C4, 0x01);
       tmp = inb(0x3C5);
 
-      outw(0x3C4, 0x0100);			/* start synchronous reset */
+      (*vgaSaveScreenFunc)(SS_START);		/* start synchronous reset */
       outw(0x3C4, ((tmp | 0x20) << 8) | 0x01);	/* disable the display */
 
       tmp = inb(vgaIOBase + 0x0A);
@@ -263,7 +263,7 @@ vgaProtect(on)
       tmp = inb(0x3C5);
 
       outw(0x3C4, ((tmp & 0xDF) << 8) | 0x01);	/* reenable display */
-      outw(0x3C4, 0x0300);			/* clear synchronousreset */
+      (*vgaSaveScreenFunc)(SS_FINISH);		/* clear synchronousreset */
 
       tmp = inb(vgaIOBase + 0x0A);
       outb(0x3C0, 0x20);			/* disable pallete access */
@@ -303,13 +303,11 @@ vgaSaveScreen (pScreen, on)
      * turn off screen if necessary
      */
     (*vgaSaveScreenFunc)(SS_START);
-    outw(0x3C4, 0x0100);              /* syncronous reset */
     outw(0x3C4, (state << 8) | 0x01); /* change mode */
     if (vgaPowerSaver) {
       outb(vgaIOBase + 4, 0x17);
       outb(vgaIOBase + 5, state2);
     }
-    outw(0x3C4, 0x0300);              /* syncronous reset */
     (*vgaSaveScreenFunc)(SS_FINISH);
 
   } else {
@@ -322,6 +320,30 @@ vgaSaveScreen (pScreen, on)
   return(TRUE);
 }
 
+/*
+ * vgaHWSaveScreen
+ *      perform a sequencer reset.
+ */
+
+void
+vgaHWSaveScreen(start)
+    Bool start;
+{
+  static Bool started = SS_FINISH;
+
+  if (start == started)
+    return;
+  started = start;
+
+  if (start == SS_START)
+  {
+    outw(0x3C4, 0x0100);        /* synchronous reset */
+  }
+  else
+  {
+    outw(0x3C4, 0x0300);        /* end reset */
+  }
+}
 
 /*
  * setExternClock
@@ -584,7 +606,12 @@ vgaHWSave(save, size)
   Bool	        first_time = FALSE;
 
   if (save == NULL) {
-    save = (vgaHWPtr)Xcalloc(size);
+    tmp = size;
+    if (tmp < 0)
+      tmp = -size;
+    if (tmp < sizeof(vgaHWRec))
+      tmp = sizeof(vgaHWRec);
+    save = (vgaHWPtr)Xcalloc(tmp);
     /*
      * Here we are, when we first save the videostate. This means we came here
      * to save the original Text mode. Because some drivers may depend
@@ -690,7 +717,7 @@ vgaHWSave(save, size)
   /*
    * get the character sets, and text screen if required
    */
-  if (((save->Attribute[0x10] & 0x01) == 0)) {
+  if (((save->Attribute[0x10] & 0x01) == 0) && (size >= 0)) {
 #ifdef SAVE_FONT1
     if (save->FontInfo1 == NULL) {
       save->FontInfo1 = (pointer)xalloc(FONT_AMOUNT);
@@ -788,6 +815,8 @@ vgaHWInit(mode, size)
   }
 
   if (vgaNewVideoState == NULL) {
+    if (size < sizeof(vgaHWRec))
+      size = sizeof(vgaHWRec);
     vgaNewVideoState = (void *)Xcalloc(size);
 
     /*

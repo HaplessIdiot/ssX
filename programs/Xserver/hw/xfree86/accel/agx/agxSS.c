@@ -1,5 +1,5 @@
 /* $XConsortium: agxSS.c,v 1.1 94/10/05 13:27:14 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.0 1994/06/15 15:35:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSS.c,v 3.1 1995/01/28 15:49:08 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -109,11 +109,13 @@ agxSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted)
 	    case 8:
 		cfbSetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 		break;
-#if 0
 	    case 16:
-		cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+	 	cfb16SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
+                break;
+            case 32:
+                cfb32SetSpans(pDrawable, pGC, psrc, ppt, pwidth, nspans, fSorted);
 		break;
-#endif
+
 	    default:
 		ErrorF("agxSetSpans: Unsupported pixmap depth\n");
 		break;

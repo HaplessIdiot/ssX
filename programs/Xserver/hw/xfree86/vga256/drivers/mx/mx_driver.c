@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/mx/mx_driver.c,v 3.7 1995/01/10 10:31:45 dawes Exp $ */
 /*
  *
  * Driver Stubs Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -33,6 +33,7 @@
  * 
  * Specific card settings are taken from Finn Thoegersen's VGADOC package.
  *
+ * 04/12/94 bug with VC switching fixed
  */
 
 /*************************************************************************/
@@ -82,6 +83,7 @@ typedef struct {
 	unsigned char mxd;             /* register C5h */
 	unsigned char mxe;             /* register F0h */
 	unsigned char mxf;             /* register F1h */
+	unsigned char mxg;             /* register F3h */
 } vgaMXRec, *vgaMXPtr;
 
 /*
@@ -93,6 +95,7 @@ static char *   MXIdent();
 static Bool     MXClockSelect();
 static void     MXEnterLeave();
 static Bool     MXInit();
+static Bool     MXValidMode();
 static void *   MXSave();
 static void     MXRestore();
 static void     MXAdjust();
@@ -116,10 +119,11 @@ vgaVideoChipRec MX = {
 	MXIdent,
 	MXEnterLeave,
 	MXInit,
+	MXValidMode,
 	MXSave,
 	MXRestore,
 	MXAdjust,
-	(void (*)())NoopDDA,
+	vgaHWSaveScreen,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
 	MXSetRead,
@@ -177,6 +181,13 @@ vgaVideoChipRec MX = {
 	 * will normally be 8, but may be 4 or 16 for some servers.
 	 */
 	8,	
+	FALSE,
+	0,
+	0,
+	FALSE,
+	FALSE,
+	NULL,
+	1,
 };
 
 /*
@@ -205,7 +216,7 @@ static int Num_MX_ExtPorts =
  * server will call this function when listing supported chipsets, with 'n' 
  * incrementing from 0, until the function returns NULL.  The 'Probe'
  * function should call this function to get the string name for a chipset
- * and when comparing against an Xconfig-supplied chipset value.  This
+ * and when comparing against an XF86Config-supplied chipset value.  This
  * cuts down on the number of places errors can creep in.
  */
 static char *
@@ -297,7 +308,7 @@ int no;
  * GVGA drivers for the special code that is needed.  Note that the BIOS 
  * base should not be assumed to be at 0xC0000 (although most are).  Use
  * 'vga256InfoRec.BIOSbase', which will pick up any changes the user may
- * have specified in the Xconfig file.
+ * have specified in the XF86Config file.
  *
  * The preferred mechanism for doing this is via register identification.
  * It is important not only the chipset is detected, but also to
@@ -336,7 +347,7 @@ MXProbe()
 	{
 		/*
 		 * This is the easy case.  The user has specified the
-		 * chipset in the Xconfig file.  All we need to do here
+		 * chipset in the XF86Config file.  All we need to do here
 		 * is a string comparison against each of the supported
 		 * names available from the Ident() function.  If this
 		 * driver supports more than one chipset, there would be
@@ -368,7 +379,6 @@ MXProbe()
 		 * and the Ferraro book.
 		 */
 		failed = FALSE;
-		save = rdinx(0x3C4,0xA7);
 		wrinx(0x3C4,0xA7,0);
 		if (testinx(0x3C4,0xC5)) {failed = TRUE;}
 		if (!failed) 
@@ -383,14 +393,13 @@ MXProbe()
 			 * Returning FALSE implies failure, and the server
 			 * will go on to the next driver.
 			 */
-			wrinx(0x3C4,0xA7,save);
 	  		MXEnterLeave(LEAVE);
 	  		return(FALSE);
 		}
     	}
 
 	/*
-	 * If the user has specified the amount of memory in the Xconfig
+	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.
 	 */
   	if (!vga256InfoRec.videoRam)
@@ -414,7 +423,7 @@ MXProbe()
     	}
 
 	/*
-	 * Again, if the user has specified the clock values in the Xconfig
+	 * Again, if the user has specified the clock values in the XF86Config
 	 * file, we respect those choices.
 	 */
   	if (!vga256InfoRec.clocks)
@@ -462,7 +471,7 @@ static void
 MXEnterLeave(enter)
 Bool enter;
 {
-	unsigned char temp;
+	unsigned char temp, temp2;
 
   	if (enter)
     	{
@@ -485,13 +494,23 @@ Bool enter;
       		/* Unprotect CRTC[0-7] */
       		outb(vgaIOBase + 4, 0x11); temp = inb(vgaIOBase + 5);
       		outb(vgaIOBase + 5, temp & 0x7F);
+
+	        /* enable access to extended registers */
+
+		outb(0x3C4,0xA7); temp2 = inb(0x3C5);
+		outb(0x3C5,0x87);
     	}
   	else
-    	{
+    	{	
+		outb(0x3C4,0xA7);
+		outb(0x3C5,temp2);
+
 		/*
 		 * Here undo what was done above.
 		 */
 		xf86DisableIOPorts(vga256InfoRec.scrnIndex);
+
+
     	}
 }
 
@@ -535,21 +554,21 @@ vgaMXPtr restore;
 	 *		restore clock-select bits.
 	 */
 	outb(0x3C4,0x65);
-	temp = inb(0x3C5) | restore->mxa;
-	outb(0x3C5,temp);
-	outb(0x3C4,0xA7);
-	outb(0x3C5,restore->mxb);
+	temp = (inb(0x3C5) & 0xBF) | restore->mxa;
+	outb(0x3C5,temp); 
 	outb(0x3C4,0xC3);
-	temp = (inb(0x3C5) & 0xB3) | restore->mxc;
+	temp = (inb(0x3C5) & 0x73) | restore->mxc;
 	outb(0x3C5,temp);
+	outb(0x3C4,0xC5);
+	outb(0x3C5,restore->mxd);
 	outb(0x3C4,0xF0);
 	temp = (inb(0x3C5) & 0xF4) | restore->mxe;
 	outb(0x3C5,temp);
 	outb(0x3C4,0xF1);
-	temp = inb(0x3C5) | restore->mxf;
+	temp = (inb(0x3C5) & 0xFC) | restore->mxf;
 	outb(0x3C5,temp);
-	outb(0x3C4,0xC5);
-	outb(0x3C5,restore->mxd);
+	outb(0x3C4,0xF3);
+	outb(0x3C5,restore->mxg);
 }
 
 /*
@@ -579,8 +598,6 @@ vgaMXPtr save;
 	 */
 	outb(0x3C4,0x65);
 	save->mxa = inb(0x3C5);
-	outb(0x3C4,0xA7);
-	save->mxb = inb(0x3C5);
 	outb(0x3C4,0xC3);
 	save->mxc = inb(0x3C5);
 	outb(0x3C4,0xC5);
@@ -589,8 +606,8 @@ vgaMXPtr save;
 	save->mxe = inb(0x3C5);
 	outb(0x3C4,0xF1);
 	save->mxf = inb(0x3C5);
-  	return ((void *) save);
-	
+	outb(0x3C4,0xF3);
+	save->mxg = inb(0x3C5);
 }
 
 /*
@@ -630,12 +647,11 @@ DisplayModePtr mode;
 	 *		initialize clock-select bits.
 	 */
 	new->std.CRTC[19] = vga256InfoRec.virtualX >> 3;
-	new->std.CRTC[20] = 0x40;
+	new->std.CRTC[20] = 0x40; 
 	new->mxa = 0x40;
-	new->mxb = 0x87;
 	new->mxc = 0xCC;
 	new->mxf = 0x0;
-	new->mxd = 0x00;
+	new->mxd = 0x0;
  	if (mode->Flags & V_INTERLACE) new->mxe = 0xB; else new->mxe=0x8; 
 
 	return(TRUE);
@@ -681,7 +697,7 @@ unsigned char temp;
 	 * will have additional bits in their extended registers, which
 	 * must also be set.
 	 */
-	int Base = (y * vga256InfoRec.virtualX + x) >> 2;
+	int Base = (y * vga256InfoRec.displayWidth + x) >> 2;
 
 	/*
 	 * These are the generic starting address registers.
@@ -698,5 +714,16 @@ unsigned char temp;
 	temp &= 0xFC;
 	temp |= ((Base & 0x30000) >> 16);
 	outb(0x3C5,temp);
+}
+
+/*
+ * MXValidMode --
+ *
+ */
+static Bool
+MXValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
 }
 

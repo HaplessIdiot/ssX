@@ -1,5 +1,5 @@
 /* $XConsortium: ppcCpArea.c,v 1.3 94/10/12 21:06:18 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.3 1995/01/28 17:06:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga16/ibm/ppcCpArea.c,v 3.4 1995/05/07 11:52:59 dawes Exp $ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
@@ -56,138 +56,204 @@ SOFTWARE.
 #include "gcstruct.h"
 #include "windowstr.h"
 #include "pixmapstr.h"
+#define PSZ 8
+#include "cfb.h"
+#include "cfbmskbits.h"
+#include "mergerop.h"
 #include "scrnintstr.h"
+#include "ppc.h"
 
 #include "mi.h"
 
 #include "OScompiler.h"
 
-#include "ppc.h"
 extern int mfbGCPrivateIndex;
 
-static RegionPtr
-ppcCopyAreaFromPixmap( pSrcDrawable, pDstDrawable, pGC, srcx, srcy,
-		       width, height, dstx, dsty )
-register PixmapPtr pSrcDrawable ;
-register DrawablePtr pDstDrawable ;
-GC *pGC ;
-int srcx, srcy ;
-int width, height ;
-register int dstx, dsty ;
+/*
+ * Graft in the DoBitblt from cfb. It does everything correctly.
+ */
+
+vga16DoBitblt(pSrc, pDst, alu, prgnDst, pptSrc, planemask)
+    DrawablePtr	    pSrc, pDst;
+    int		    alu;
+    RegionPtr	    prgnDst;
+    DDXPointPtr	    pptSrc;
+    unsigned long   planemask;
 {
-	register RegionPtr prgnDst ;
-	ScreenPtr pScreen ;
-	RegionPtr prgnExposed ;
-	int nbox ;
-	/* temporaries for shuffling rectangles */
-	xRectangle *origSource ;
-	DDXPointRec *origDest ;
-	ppcPrivGC * pPriv = (ppcPrivGC *) ( pGC->devPrivates[mfbGCPrivateIndex].ptr ) ;
+    unsigned long *psrcBase, *pdstBase;	
+				/* start of src and dst bitmaps */
+    int widthSrc, widthDst;	/* add to get to same position in next line */
 
-	/* BY HERE, You know you are going Pixmap to window */
-	if ( pPriv->fExpose ) {
-		if ( !( origSource = (xRectangle *)
-		    ALLOCATE_LOCAL( sizeof( xRectangle ) ) ) )
-			return NULL ;
-		origSource->x = srcx ;
-		origSource->y = srcy ;
-		origSource->width = width ;
-		origSource->height = height ;
-		if ( !( origDest = (DDXPointRec *)
-		    ALLOCATE_LOCAL( sizeof( DDXPointRec ) ) ) ) {
-			DEALLOCATE_LOCAL( origSource ) ;
-			return NULL ;
-		}
-		origDest->x = dstx ;
-		origDest->y = dsty ;
-	}
-	else {
-		origSource = (xRectangle *) 0 ;
-		origDest = (DDXPointRec *) 0 ;
-	}
+    BoxPtr pbox;
+    int nbox;
 
-	/* clip the left and top edges of the source */
-	if ( srcx < 0 ) {
-		width += srcx ;
-		dstx += srcx ;
-		srcx = 0 ;
-	}
-	if ( srcy < 0 ) {
-		height += srcy ;
-		dsty += srcy ;
-		srcy = 0 ;
-	}
+    BoxPtr pboxTmp, pboxNext, pboxBase, pboxNew1, pboxNew2;
+				/* temporaries for shuffling rectangles */
+    DDXPointPtr pptTmp, pptNew1, pptNew2;
+				/* shuffling boxes entails shuffling the
+				   source points too */
+    int w, h;
+    int xdir;			/* 1 = left right, -1 = right left/ */
+    int ydir;			/* 1 = top down, -1 = bottom up */
 
-	dstx += pDstDrawable->x ;
-	dsty += pDstDrawable->y ;
+    MROP_DECLARE_REG()
 
-	pScreen = pDstDrawable->pScreen ;
-	/* clip the source */
+    int careful;
+
+    MROP_INITIALIZE(alu,planemask);
+
+    cfbGetLongWidthAndPointer (pSrc, widthSrc, psrcBase)
+
+    cfbGetLongWidthAndPointer (pDst, widthDst, pdstBase)
+
+    /* XXX we have to err on the side of safety when both are windows,
+     * because we don't know if IncludeInferiors is being used.
+     */
+    careful = ((pSrc == pDst) ||
+	       ((pSrc->type == DRAWABLE_WINDOW) &&
+		(pDst->type == DRAWABLE_WINDOW)));
+
+    pbox = REGION_RECTS(prgnDst);
+    nbox = REGION_NUM_RECTS(prgnDst);
+
+    pboxNew1 = NULL;
+    pptNew1 = NULL;
+    pboxNew2 = NULL;
+    pptNew2 = NULL;
+    if (careful && (pptSrc->y < pbox->y1))
+    {
+        /* walk source botttom to top */
+	ydir = -1;
+	widthSrc = -widthSrc;
+	widthDst = -widthDst;
+
+	if (nbox > 1)
 	{
-		BoxRec dstBox ;
+	    /* keep ordering in each band, reverse order of bands */
+	    pboxNew1 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    if(!pboxNew1)
+		return;
+	    pptNew1 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pptNew1)
+	    {
+	        DEALLOCATE_LOCAL(pboxNew1);
+	        return;
+	    }
+	    pboxBase = pboxNext = pbox+nbox-1;
+	    while (pboxBase >= pbox)
+	    {
+	        while ((pboxNext >= pbox) &&
+		       (pboxBase->y1 == pboxNext->y1))
+		    pboxNext--;
+	        pboxTmp = pboxNext+1;
+	        pptTmp = pptSrc + (pboxTmp - pbox);
+	        while (pboxTmp <= pboxBase)
+	        {
+		    *pboxNew1++ = *pboxTmp++;
+		    *pptNew1++ = *pptTmp++;
+	        }
+	        pboxBase = pboxNext;
+	    }
+	    pboxNew1 -= nbox;
+	    pbox = pboxNew1;
+	    pptNew1 -= nbox;
+	    pptSrc = pptNew1;
+        }
+    }
+    else
+    {
+	/* walk source top to bottom */
+	ydir = 1;
+    }
 
-		dstBox.x1 = dstx ;
-		dstBox.x2 = dstx + MIN( width, pSrcDrawable->drawable.width - srcx ) ;
-		dstBox.y1 = dsty ;
-		dstBox.y2 = dsty + MIN( height, pSrcDrawable->drawable.height - srcy ) ;
+    if (careful && (pptSrc->x < pbox->x1))
+    {
+	/* walk source right to left */
+        xdir = -1;
 
-		prgnDst = (* pScreen->RegionCreate)( &dstBox, 1 ) ;
-
-if ( ! pPriv->pCompositeClip )
-	printf( "Fatal Error! no Composite Clip Region\n" ) ;
-
-		/* clip the shape of to the destination composite clip */
-		(* pScreen->Intersect)( prgnDst, prgnDst,
-					pPriv->pCompositeClip ) ;
-	}
-
-	/* nbox != 0 destination region is visable */
-	if ( nbox = REGION_NUM_RECTS(prgnDst) ) {
+	if (nbox > 1)
+	{
+	    /* reverse order of rects in each band */
+	    pboxNew2 = (BoxPtr)ALLOCATE_LOCAL(sizeof(BoxRec) * nbox);
+	    pptNew2 = (DDXPointPtr)ALLOCATE_LOCAL(sizeof(DDXPointRec) * nbox);
+	    if(!pboxNew2 || !pptNew2)
+	    {
+		if (pptNew2) DEALLOCATE_LOCAL(pptNew2);
+		if (pboxNew2) DEALLOCATE_LOCAL(pboxNew2);
+		if (pboxNew1)
 		{
-		register BoxPtr pbox = REGION_RECTS(prgnDst);
-		register char *data = pSrcDrawable->devPrivate.ptr ;
-		register int stride = pSrcDrawable->devKind ;
-		register int dx ;
-		register int dy ;
-
-		dx = srcx - dstx ;
-		dy = srcy - dsty ;
-
-		for ( ; nbox-- ; pbox++ )
-			vgaDrawColorImage( (WindowPtr)pDstDrawable,
-				 pbox->x1, pbox->y1,
-				 pbox->x2 - pbox->x1,
-				 pbox->y2 - pbox->y1,
-				 (unsigned char *)data + pbox->x1 + dx
-				  + ( ( pbox->y1 + dy ) * stride ),
-				 stride,
-				 pGC->alu, pGC->planemask ) ;
-
+		    DEALLOCATE_LOCAL(pptNew1);
+		    DEALLOCATE_LOCAL(pboxNew1);
 		}
-		if ( origSource ) {
-			prgnExposed = miHandleExposures(
-					(DrawablePtr) pSrcDrawable,
-					pDstDrawable, pGC,
-			    		origSource->x, origSource->y,
-			    		origSource->width, origSource->height,
-			    		origDest->x, origDest->y,
-					pGC->planemask ) ;
-			DEALLOCATE_LOCAL( origSource ) ;
-			DEALLOCATE_LOCAL( origDest ) ;
-		}
-		else
-			prgnExposed = (RegionPtr) 0 ;
+	        return;
+	    }
+	    pboxBase = pboxNext = pbox;
+	    while (pboxBase < pbox+nbox)
+	    {
+	        while ((pboxNext < pbox+nbox) &&
+		       (pboxNext->y1 == pboxBase->y1))
+		    pboxNext++;
+	        pboxTmp = pboxNext;
+	        pptTmp = pptSrc + (pboxTmp - pbox);
+	        while (pboxTmp != pboxBase)
+	        {
+		    *pboxNew2++ = *--pboxTmp;
+		    *pptNew2++ = *--pptTmp;
+	        }
+	        pboxBase = pboxNext;
+	    }
+	    pboxNew2 -= nbox;
+	    pbox = pboxNew2;
+	    pptNew2 -= nbox;
+	    pptSrc = pptNew2;
 	}
-	else /* nbox == 0 no visable destination region */
-		prgnExposed = (RegionPtr) 0 ;
+    }
+    else
+    {
+	/* walk source left to right */
+        xdir = 1;
+    }
 
-	(* pScreen->RegionDestroy)( prgnDst ) ;
-
-	return prgnExposed ;
+    while(nbox--)
+    {
+	w = pbox->x2 - pbox->x1;
+	h = pbox->y2 - pbox->y1;
+	
+	if( pSrc->type == DRAWABLE_WINDOW )
+		vgaBitBlt( (WindowPtr)pDst,
+			alu, planemask, planemask,
+			pptSrc->x,		/* x0 */
+			pptSrc->y,		/* y0 */
+			pbox->x1,		/* x1 */
+			pbox->y1,		/* y1 */
+			w, h );			/* w, h */
+	    else /* DRAWABLE_PIXMAP */
+		vgaDrawColorImage( (WindowPtr)pDst,
+			pbox->x1, pbox->y1,
+			w,
+			h,
+			((unsigned char *)((PixmapPtr)pSrc)->devPrivate.ptr
+			 + pptSrc->x + (pptSrc->y*((PixmapPtr)pSrc)->devKind)),
+			((PixmapPtr)pSrc)->devKind,
+			alu, planemask ) ;
+	pbox++;
+	pptSrc++;
+    }
+    if (pboxNew2)
+    {
+	DEALLOCATE_LOCAL(pptNew2);
+	DEALLOCATE_LOCAL(pboxNew2);
+    }
+    if (pboxNew1)
+    {
+	DEALLOCATE_LOCAL(pptNew1);
+	DEALLOCATE_LOCAL(pboxNew1);
+    }
 }
 
+
 /*
- * This now uses the same algorithm a mfb and cfb.
+ * Graft in the CopyArea from mfb/cfb. It does everything correctly.
  */
 
 RegionPtr
@@ -218,21 +284,9 @@ int dstx, dsty;
     int fastClip = 0;		/* for fast clipping with pixmap source */
     int fastExpose = 0;		/* for fast exposures with pixmap source */
 
-    /*
-     * Check for a few special cases.
-     */
     if ( pDstDrawable->type != DRAWABLE_WINDOW )
 	return miCopyArea( pSrcDrawable, pDstDrawable, pGC,
 			   srcx, srcy, width, height, dstx, dsty ) ;
-    /* BY HERE, You know you are going to a Window */
-    if ( !( (WindowPtr) pDstDrawable )->realized )
-	return NULL ;
-
-    if ( pSrcDrawable->type != DRAWABLE_WINDOW )
-	return ppcCopyAreaFromPixmap( (PixmapPtr) pSrcDrawable,
-				      pDstDrawable,
-				      pGC, srcx, srcy, width,
-				      height, dstx, dsty ) ;
 
     /* Begin code from mfb/cfbCopyArea */
 
@@ -408,22 +462,25 @@ int dstx, dsty;
     numRects = REGION_NUM_RECTS(&rgnDst);
     if (numRects && width && height)
     {
-	/*
-	 * Don't both allocating some boxes, just call the blit routine
-	 * directly.
-	 */
+	if(!(pptSrc = (DDXPointPtr)ALLOCATE_LOCAL(numRects *
+						  sizeof(DDXPointRec))))
+	{
+	    (*pGC->pScreen->RegionUninit)(&rgnDst);
+	    if (freeSrcClip)
+		(*pGC->pScreen->RegionDestroy)(prgnSrcClip);
+	    return NULL;
+	}
 	pbox = REGION_RECTS(&rgnDst);
+	ppt = pptSrc;
 	for (i = numRects; --i >= 0; pbox++, ppt++)
 	{
-	    vgaBitBlt( (WindowPtr)pDstDrawable, pGC->alu,
-			pGC->planemask, pGC->planemask,
-			pbox->x1 + dx,		/* x0 */
-			pbox->y1 + dy,		/* y0 */
-			pbox->x1,		/* x1 */
-			pbox->y1,		/* y1 */
-			pbox->x2 - pbox->x1,	/* w */
-			pbox->y2 - pbox->y1 );	/* h */
+	    ppt->x = pbox->x1 + dx;
+	    ppt->y = pbox->y1 + dy;
 	}
+
+	vga16DoBitblt(pSrcDrawable, pDstDrawable, pGC->alu,
+			&rgnDst, pptSrc, pGC->planemask );
+	DEALLOCATE_LOCAL(pptSrc);
     }
 
     prgnExposed = NULL;

@@ -1,5 +1,5 @@
 /* $XConsortium: agxWin.c,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.1 1994/09/07 15:47:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxWin.c,v 3.2 1995/01/28 15:49:14 dawes Exp $ */
 /*
 
 Copyright (c) 1987  X Consortium
@@ -93,10 +93,19 @@ agxCopyWindow(pWin, ptOldOrg, prgnSrc)
    Bool         incX = FALSE;
    Bool         incY = FALSE;
 
-
    if (!xf86VTSema)
    {
-      cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+      switch (pWin->drawable.bitsPerPixel) {
+        case 8:
+          cfbCopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+        case 16:
+          cfb16CopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+       case 32:
+          cfb32CopyWindow(pWin, ptOldOrg, prgnSrc);
+          break;
+      }
       return;
    }
 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3Ti3026Cu.c,v 3.1 1995/04/10 12:00:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/Ti3026Curs.c,v 3.0 1995/04/24 05:20:06 dawes Exp $ */
 /*
  * Copyright 1994 by Robin Cutshaw <robin@XFree86.org>
  *
@@ -215,7 +215,7 @@ s3Ti3026CursorOn()
    outb(vgaCRReg, tmp & ~0x20);
    
    /* Enable cursor - X11 mode */
-   s3OutTi3026IndReg(TI_CURS_CONTROL, 0x7c, 0x03);
+   s3OutTi3026IndReg(TI_CURS_CONTROL, 0x6c, 0x13);
 
    LOCK_SYS_REGS;
    return;
@@ -335,7 +335,7 @@ s3Ti3026LoadCursor(pScr, pCurs, x, y)
       return;
 
    /* turn the cursor off */
-   if ((tmpcurs = s3InTiIndReg(TI_CURS_CONTROL)) & 0x03)
+   if ((tmpcurs = s3InTi3026IndReg(TI_CURS_CONTROL)) & 0x03)
       s3Ti3026CursorOff();
 
    /* load colormap */

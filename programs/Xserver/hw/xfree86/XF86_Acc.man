@@ -1,5 +1,5 @@
 .\" $XConsortium: XF86_Acc.man,v 1.8 95/01/23 15:33:27 kaleb Exp $
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.25 1995/01/28 15:46:22 dawes Exp $
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_Acc.man,v 3.26 1995/03/06 14:39:31 dawes Exp $
 .TH XF86_Accel 1 "Version 3.1.1"  "XFree86"
 .SH NAME
 XF86_Accel - accelerated X Window System servers for
@@ -134,8 +134,8 @@ as described in the
 .I XFree86(1) 
 manpage.
 .sp
-The Mach32, S3 and P9000 servers now support more than 8 bit color.
-The Mach32 supports 16 bit TrueColor and the S3 and P9000 servers support
+The Mach32, S3, P9000 and AGX servers now support more than 8 bit color.
+The Mach32 supports 16 bit TrueColor and the S3, P9000, and AGX servers support
 16 and 32 bit TrueColor.  The 32 bit TrueColor mode only uses
 24 bits per pixel for color information (giving you 16 million
 colors).  These modes may be used by specifying the \fB\-bpp\fP
@@ -229,8 +229,8 @@ agx-010
 xga-2
 .TP 12
 xga-1
-(note: only the agx-016, agx-015, and agx-014 have been tested.
-Refer to the XGA section of \fIREADME.agx\fP before attempting
+(note: only the agx-016, agx-015, agx-014 and XGA-2 have been tested.
+Refer to the XGA and AGX-010 section of \fIREADME.agx\fP before attempting
 to use the other chipsets.
 )
 .RE
@@ -274,14 +274,12 @@ Modes).  Note, clocks over 110\ Mhz are not recommended or supported
 by the P9000 server.
 .TP 8
 .B ClockChip \fI"clockchip-type"\fP
-For boards with programmable clock chips (except with the P9000 server),
-the name of the clock chip is given.  Possible values for the S3 server
+For boards with programmable clock chips (except with the 
+P9000 and AGX servers), the name of the clock chip is given.  
+Possible values for the S3 server
 include \fB"icd2061a"\fP, \fB"ics9161a"\fP, \fB"dcs2834"\fP, \fB"sc11412"\fP,
 \fB"s3gendac"\fP, \fB"s3_sdac"\fP, \fB"ti3025"\fP, \fB"ics2595"\fP,
 \fB"ics5300"\fP, \fB"ics5342"\fP and \fB"ch8391"\fP.
-When using the AGX server with an XGA-2
-board, specify any one of these \fBClockChip\fP values to enable its
-programmable clock code.
 .TP 8
 .B Ramdac \fI"ramdac-type"\fP
 This specifies the type of RAMDAC used on the board.  Only the S3 and
@@ -293,7 +291,7 @@ incorrectly detects one of those other RAMDACs.
 The AGX server does not yet auto-detect RAMDACs, this 
 is the default if no RAMDAC is specified.
 .sp
-\fBatt20c490\fP - (S3) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
+\fBatt20c490\fP - (S3, AGX) Card has an AT&T 20C490 or AT&T 20C491 RAMDAC.
 When the \fBdac_8_bit\fP option is specified, these
 RAMDACs may be operated in 8 bit per RGB mode.  It also allows 16bpp
 operation with 801/805 boards.  There is currently no
@@ -613,7 +611,8 @@ Development of the Mach64 specific code.
 .nf
 Erik Nygren,        \fInygren@mit.edu\fP
 Harry Langenbacher, \fIharry@brain.jpl.nasa.gov\fP
-Chris Mason,        \fImason@mail.csh.rit.edu\fP
+Chris Mason,        \fIclmtch@osfmail.isc.rit.edu\fP
+Henrik Harmsen,     \fIharmsen@eritel.se\fP
 .fi
 .RS 8
 Development and improvement of the P9000 specific code.

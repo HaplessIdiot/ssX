@@ -1,5 +1,5 @@
 /* $XConsortium: p9000init.c,v 1.6 95/01/16 13:16:42 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.9 1995/01/28 15:54:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000init.c,v 3.10 1995/05/24 12:21:58 dawes Exp $ */
 /*
  * Copyright 1994 Erik Nygren (nygren@mit.edu)
  *
@@ -118,14 +118,14 @@ void p9000CalcMiscRegs()
 {
   /* figure out how much memory the board has */
   p9000ProbeMemConfig();
-  if (p9000MiscReg.memconfig == 2)	      /* If 2 Meg. Byte */
+  if (p9000MiscReg.memconfig == 0x2L)	      /* If 2 Meg. Byte */
     p9000MiscReg.srtctl = 0x000001E5L;
   else
     p9000MiscReg.srtctl = 0x000001E4L;   /* else is 1 meg */
-#ifdef DEBUG
-	ErrorF("Memsize: 0x%lx Memconfig: 0x%lx\n",
-	       p9000MiscReg.memsize, p9000MiscReg.memconfig);
-#endif
+  if (xf86Verbose)
+    ErrorF("%s %s: MemSize: 0x%x MemConfig: 0x%x\n",
+	   XCONFIG_GIVEN, p9000InfoRec.name,
+	   p9000MiscReg.memsize, p9000MiscReg.memconfig);
 }
 
 
@@ -370,6 +370,8 @@ void  p9000ClearScreen(void)
  * and haven't found any people with 1 meg cards... */
 void p9000ProbeMemConfig()
 {
+
+#ifdef DO_BROKEN_P9000_MEM_PROBE  /* This doesn't work, apparently */
   unsigned long memctr;
 
   /* Assume that we have 2 megs.  If this is false, errors
@@ -426,4 +428,23 @@ void p9000ProbeMemConfig()
       p9000MiscReg.memsize = 0x200000L;
       p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);
     }
+#else /* not DO_BROKEN_P9000_MEM_PROBE */
+
+  /* Set the memory parameters as explicitly requested */
+  if (p9000InfoRec.videoRam == 1024) /* Allow user to override */
+    {
+      if (OFLG_ISSET(OPTION_VRAM_128, &p9000InfoRec.options))
+	p9000MiscReg.memconfig = 0x1L;  /* 128Kx8 VRAM */
+      else  
+	p9000MiscReg.memconfig = 0x0L;  /* 256Kx4 VRAM */
+      p9000MiscReg.memsize = 0x100000L;
+    }
+  else  /* Go with the probed result */
+    {
+      p9000MiscReg.memconfig = 0x2L;
+      p9000MiscReg.memsize = 0x200000L;
+    }
+  p9000Store(MEM_CONFIG, CtlBase, p9000MiscReg.memconfig);      
+#endif
+
 }

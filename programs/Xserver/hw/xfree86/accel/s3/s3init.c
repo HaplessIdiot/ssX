@@ -1,5 +1,5 @@
 /* $XConsortium: s3init.c,v 1.6 95/01/23 15:34:00 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.61 1995/04/24 05:20:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3init.c,v 3.62 1995/05/07 11:49:53 dawes Exp $ */
 /*
  * Written by Jake Richter Copyright (c) 1989, 1990 Panacea Inc.,
  * Londonderry, NH - All Rights Reserved
@@ -1941,27 +1941,29 @@ s3Init(mode)
          } else {
 	    s3OutTi3026IndReg(TI_MISC_CONTROL , 0xF0, TI_MC_INT_6_8_CONTROL);
          }
-#if 0
-	 outb(vgaCRIndex, 0x67);
-	 outb(vgaCRReg, 0x00);
-	 outb(vgaCRIndex, 0x6D);
-	 if (s3Bpp == 1)
-	    outb(vgaCRReg, 0x75);  /* 0x50, 0x60, 0x70 */
-	 else if (s3Bpp == 2)
-	    outb(vgaCRReg, 0x75);  /*  0x74, 0x75, 0x76  ...  0x20, 0x30, 0x40, 0x50 */
-	 else /* (s3Bpp == 4) */
-	    outb(vgaCRReg, 0x75);  /* 0x75, 0x76  ...  0x10, 0x20 */
-#else
-	 outb(vgaCRIndex, 0x67);
-	 outb(vgaCRReg, 0x01);
-	 outb(vgaCRIndex, 0x6D);
-	 if (s3Bpp == 1)
-	    outb(vgaCRReg, 0x72);
-	 else if (s3Bpp == 2)
-	    outb(vgaCRReg, 0x73);
-	 else /* (s3Bpp == 4) */
-	    outb(vgaCRReg, 0x75);
-#endif
+	 if (OFLG_ISSET(OPTION_DIAMOND, &s3InfoRec.options)) {
+	    outb(vgaCRIndex, 0x67);
+	    outb(vgaCRReg, 0x01);
+	    outb(vgaCRIndex, 0x6D);
+	    if (s3Bpp == 1)
+	       outb(vgaCRReg, 0x72);
+	    else if (s3Bpp == 2)
+	       outb(vgaCRReg, 0x73);
+	    else /* if (s3Bpp == 4) */
+	       outb(vgaCRReg, 0x75);
+	 }
+	 else {
+	    outb(vgaCRIndex, 0x6D);
+	    outb(vgaCRReg, 0x00);
+	    outb(vgaCRIndex, 0x67);
+	    if (s3Bpp == 1)
+	       outb(vgaCRReg, 0x00);
+	    else if (s3Bpp == 2)
+	       outb(vgaCRReg, 0x01);
+	    else /* if (s3Bpp == 4) */
+	       outb(vgaCRReg, 0x00);
+	 }
+
       } else {
          /* set s3 reg53 to non-parallel addressing by and'ing 0xDF     */
          outb(vgaCRIndex, 0x53);

@@ -26,8 +26,8 @@
  */
 
 /* $XConsortium: PatchLevel.h,v 1.4 95/01/12 19:16:57 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.3 1995/01/28 15:47:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/PatchLevel.h,v 3.4 1995/04/09 13:44:34 dawes Exp $ */
 
 #define VERSION 	2
-#define PATCHLEV 	4
+#define PATCHLEV 	5
 #define PRINT_VERSION	printf("\n%s Version %d.%d\n",MyName,VERSION,PATCHLEV)

@@ -1,5 +1,5 @@
 /* $XConsortium: hercRamDac.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.h,v 3.0 1994/06/15 15:35:44 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/hercRamDac.h,v 3.1 1995/01/28 15:49:17 dawes Exp $ */
 /*
  * Copyright 1994 by Henry Worth <haw30@eng.amdahl.com>
  *
@@ -29,6 +29,9 @@
 extern unsigned int  hercBrdIO;
 extern Bool hercSmallDAC;
 extern Bool hercBigDAC;
+extern unsigned int  hercMaxClockSmallDac;
+extern unsigned int  hercMinClockBigDac;
+extern unsigned int  hercMaxClockBigDac;
 
 _XFUNCPROTOBEGIN
 
@@ -63,7 +66,7 @@ hercProbeRamDac(
 void
 hercSwitchToBigDac(
 #if NeedFunctionPrototypes
-      void
+      Bool
 #endif
 );
 
@@ -80,6 +83,19 @@ hercSwitchToLittleDac(
       void
 #endif
 );
+
+void hercAddDoubledClocks(
+#if NeedFunctionPrototypes
+    ScrnInfoRec *
+#endif
+);
+
+void hercValidateClocks(
+#if NeedFunctionPrototypes
+    ScrnInfoRec *
+#endif
+);
+
 
 
 _XFUNCPROTOEND

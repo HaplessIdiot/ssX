@@ -1,5 +1,5 @@
 /* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.8 1995/01/23 01:28:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.9 1995/01/28 15:49:19 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -120,7 +120,7 @@ typedef struct {
 #define AGX_14			0x0200
 #define AGX_10			0x0100
 #define AGX_NEW			0x0E00
-#define AGX_15_16	0x0C00
+#define AGX_15_16		0x0C00
 #define AGX_ALL			0x0F00
 #define XGA_2			0x0002
 #define XGA_1                   0x0001
@@ -128,19 +128,20 @@ typedef struct {
 #define XGA_ALL			0x0103 
 #define XGA_AGX_ALL		0x0F03
 
-#define AGX_SERIES(chip)	(((chip)&(AGX_14|AGX_15|AGX_16))!=0)   
+#define AGX_SERIES(chip)	(((chip)&(AGX_10|AGX_14|AGX_15|AGX_16))!=0)   
+#define AGX_14_15_16_ONLY(chip)	(((chip)&(AGX_14|AGX_15|AGX_16))!=0)   
 #define AGX_15_16_ONLY(chip)	(((chip)&(AGX_15|AGX_16))!=0)   
 #define AGX_14_15_ONLY(chip)	(((chip)&(AGX_14|AGX_15))!=0)   
 #define AGX_14_ONLY(chip)	((chip)==AGX_14)   
 #define AGX_15_ONLY(chip)	((chip)==AGX_15)   
 #define AGX_16_ONLY(chip)	((chip)==AGX_16)   
-#define XGA_SERIES(chip)	(((chip)&(AGX_10|XGA_1|XGA_2))!=0)   
 #define AGX_10_ONLY(chip)	((chip)==AGX_10)   
+#define XGA_SERIES(chip)	(((chip)&(XGA_1|XGA_2))!=0)   
 #define XGA_2_ONLY(chip)	((chip)==XGA_2)   
 #define XGA_1_ONLY(chip)	((chip)==XGA_1)   
 #define XGA_DEFAULT(chip)	((chip)==XGA_UNKNOWN)   
 
-#define XGA_PALETTE_CONTROL(chip)	XGA_SERIES((chip))
+#define XGA_PALETTE_CONTROL(notused)	(xf86RamDacType == XGA_DAC)
 #define XGA_SPRITE(chip)		XGA_SERIES((chip))	
 #define AGX_LIMITED_DISPLAY_WIDTH(chip)	AGX_14_15_ONLY((chip))	
 #define EXTENDED_XGA_CLOCKS(chip)	AGX_SERIES((chip))	
@@ -202,13 +203,9 @@ extern agxPixMap *agxCurPixMap[2];
       agxCurPixMap[1] = NULL; \
 } 
 
-#if 0
+
 #define AGX_PIXEL_ADJUST( pix )  ( (pix) << BytesPerPixelShift )
 #define AGX_TO_PIXEL( byt )  ( (byt) >> BytesPerPixelShift )
-#else
-#define AGX_PIXEL_ADJUST( pix )  (pix)
-#define AGX_TO_PIXEL( byt )  (byt)
-#endif
 
 
 #define RGB8_PSEUDO      (-1)
@@ -264,7 +261,7 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define POS_CONF_EXT_MEM_MASK    	0xF0      
 #define POS_CONF_EXT_MEM_MULT    	0x200      
-#define POS_CONF_EXT_MEM_BASE    	0xC0000      
+#define POS_CONF_EXT_MEM_BASE    	0xC1C00      
 #define POS_CONF_INSTANCE_MASK	 	0x0C
 #define POS_CONF_INSTANCE_SHIFT 	0x01
 #define POS_CONF_XGA_ENABLE_MASK	0x01
@@ -386,6 +383,7 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define DA_VIRT_MEM_CNTL	0x6
 #define DA_VM_MASK			0xC7
+#define DA_VM_DISABLE			0x00
 
 #define DA_VIRT_MEM_STAT	0x7
 #define DA_VS_MASK			0xC0
@@ -505,9 +503,9 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_CUR_COLOR1_RED		0x3B
 #define IR_CUR_COLOR1_GREEN		0x3C
 #define IR_CUR_COLOR1_BLUE		0x3D
-#define IR_CUR_PAL_INDEX_LO       		0x60
+#define IR_CUR_PAL_INDEX_LO		0x60
 #define IR_CUR_INDEX_HI       		0x61
-#define IR_CUR_PAL_INDEX_PREF_LO  		0x62
+#define IR_CUR_PAL_INDEX_PREF_LO	0x62
 #define IR_CUR_INDEX_PREF_HI  		0x63
 #define IR_CUR_DATA        		0x6A
 #define IR_CUR_PIX_CLR_0			0x00
@@ -563,7 +561,7 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define IR_M1_MODE_REG_1		0x77
 #define IR_M1_AGX10_MODE_REG_1		0x7F
-#define IR_M1_PRESERVE_MASK			0x0F
+#define IR_M1_PRESERVE_MASK			0x03
 #define IR_M1_MASK				0xFF
 #define IR_M1_WRITE_MASK			0xFF
 #define IR_M1_EXT_ENG_REQ			0x80
@@ -641,25 +639,35 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_M10_BANK_SELECT_MASK			0x60
 #define IR_M10_16_BIT_PIXEL			0x80
 
-#define IR_M2_AGX10_MODE_REG_2		0x74
-#define IR_M2_AGX10_MASK			0x0F
-#define IR_M2_AGX10_DMA_CHAN			0x0E
-#define IR_M2_AGX10_DMA_ENABLE			0x01
+#define IR_VESA_DMA_READBACK		0x74
+#define IR_VDR_MASK				0x0F
+#define IR_VDR_DMA_CHAN				0x0E
+#define IR_VDR_DMA_ENABLE			0x01
 
-#define IR_VENDOR_ID			0x75
+#define IR_VESA_VENDOR_ID			0x75
 
 
 /* XGA-NI Extensions */
-
+    /* Programable Clock */
 #define IR_NI_PLL_PRG_REG		0x58
 #define IR_NI_PLL_SCALE_4			0x00
 #define IR_NI_PLL_SCALE_2			0x40
 #define IR_NI_PLL_SCALE_1			0x80
 #define IR_NI_PLL_SCALE_MASK			0x3F
-
+   /* Handling of missing lsb color bit for Red & Blue in 5:6:5 16bpp mode */
 #define IR_NI_DIR_CNTL   		0x59
+#define IR_NI_DC_ZERO_INTENSITY_BLACK		0x00  /* lsb == 0 */
+#define IR_NI_DC_NONZERO_COLOR_MODE		0x01  /* lsb = color != 0 */
+#define IR_NI_DC_FULL_INTENSITY_WHITE		0x03  /* lsb == 1   */
+#define IR_NI_DC_LINEARIZED_COLOR		0x04  /* msb => lsb */
+  /* For monochrome displays */
 #define IR_NI_MISC_CNTL   		0x6C
+#define IR_NI_MC_BLANK_REDBLUE			0x01
+#define IR_NI_MC_ENABLE_REDBLUE			0x00
+  /* Text-mode cursor attributes */
 #define IR_NI_MFI_CNTL			0x6D
+#define IR_NI_MFI_DISABLE			0x00
+ 
 
 /* Palette Control */
 
@@ -672,8 +680,8 @@ extern agxPixMap *agxCurPixMap[2];
 #define IR_PS_FRMT_RGB				0x00
 #define IR_PS_FRMT_RBGx				0x04
 #define IR_PAL_RED_PRE			0x67
-#define IR_PAL_BLUE_PRE			0x68
-#define IR_PAL_GREEN_PRE		0x69
+#define IR_PAL_GREEN_PRE		0x68
+#define IR_PAL_BLUE_PRE			0x69
 
 #define VGA_PAL_MASK			0x3C6
 #define VGA_PAL_READ_INDEX		0x3C7
@@ -714,10 +722,10 @@ typedef struct {
 
 #define GE_XGA2_BUSY()         ((*(volatile char*)((char *)agxGEBase+0x09))&0x80)
 
-#define GE_WAIT_IDLE()         { int i = 500000, j; \
+#define GE_WAIT_IDLE()         { int i = 5000000, j; \
                                  if(GE_BUSY()) { \
                                     if (XGA_2_ONLY(agxChipId))  \
-                                       while(GE_XGA2_BUSY()); \
+                                       while(GE_XGA2_BUSY()&&i--); \
                                     while(GE_BUSY()&&i--);\
                                  } \
                                  if(GE_BUSY()) { \
@@ -729,7 +737,7 @@ typedef struct {
 #define GE_WAIT_IDLE_SHORT()   { int i = 500000, j; \
                                  if(GE_BUSY()) { \
                                     if (XGA_2_ONLY(agxChipId))  \
-                                       while(GE_XGA2_BUSY());  \
+                                       while(GE_XGA2_BUSY()&&i--);  \
                                     while(GE_BUSY()&&i--); \
                                  } \
                                  if(GE_BUSY()) { \
@@ -746,6 +754,8 @@ typedef struct {
 
 #define GE_RESET()             { int i = 5000000; \
                                  GE_OUT_B(0x11,0x20); \
+                                 if (XGA_2_ONLY(agxChipId))  \
+                                    while(GE_XGA2_BUSY()&&i--);  \
                                  while(GE_BUSY()&&i--) ; \
                                  if(GE_BUSY()) {\
                                     ErrorF("GE_RESET Timed Out - %s:%d\n",\

@@ -1,552 +1,1013 @@
-このファイルは xc/programs/Xserver/hw/xfree86/doc/README,v 3.7 1994/10/04
- 03:29:50を、岡本  一幸 <KFR01166@niftyserve.or.jp>, 
-<ikko-@pacific.rim.or.jp> が 
-XFree86 3.1を日本でインストールする人向けに翻訳したものです。ここがおかしい
-とか、ここはこうしたほうがいいといったご意見がありましたら、電子メールでお知
-らせ下さい。
-原文の著作権は XFree86 プロジェクト社にあります。この和訳の著作権は XFree86 
-プロジェクト社、岡本　一幸にありますが、この和訳の不具合は私に、電子メー
-ルで送って下さい。
------------------------------------------------------------------------
+  XFree86[TM] 3.1.1 のためのREADME
+  The XFree86 Project, Inc
 
-                         XFree86[TM] 3.1 のためのREADME
-                         ------------------------------
-目次
-----
-    1 - XFree86 とは何か?
-    2 - XFree86 3.1 で何が新しくなったか?
-    3 - XFree86 のテストを行ったシステム
-    4 - サポートしているビデオカードのチップセット
-    5 - 重要な変更
-    6 - 更に多くの情報はどこにあるか
-    7 - 協力者、提供者について
-    8 - XFree86 プロジェクト社
-    9 - 連絡情報
-   10 - ソースとバイナリファイルのあるサイト
+  1995 年 1 月 15 日
 
-1 - XFree86 とは何か?
----------------------
-XFree86 とはインテル上で動くいくつかのバージョンの Unix と Unix に似ているオ
-ペレーティングシステムをサポートしている X11R6 に付加価値を付けて一まとめに
-した物です。XFree86 3.0 は X11R6 のコア配付版を移植したものでした。今回の
-XFree86-3.1 版では、多くのバグの修正と同時に多くの新しい特徴の追加や性能の向
-上が図られました。XFree86 は多くのアーキテクチャ用のバイナリ配付物と同様に 
-X コンソーシアム の X11R6 のソースコードに対してのパッチデータとして入手可能
-です。
+  目次
+
+    1. XFree86 3.1.1 で何が新しくなったか?
+    2. XFree86 3.1 で何が新しくなったか?
+    3. XFree86 のテストを行ったシステム
+    4. サポートしているビデオカードのチップセット
+    5. 重要な変更
+    6. 更に多くの情報はどこにあるか
+    7. 協力者、提供者について
+    8. XFree86 プロジェクト社
+    9. 連絡情報
+   10. ソースとバイナリファイルのあるサイト
 
 
-2 - XFree86 3.1 で何が新しくなったか?
--------------------------------------
-次の項目を 1994 年 5 月にリリースした XFree86 2.1.1 に追加しました。:
 
-    1) 現在、XFree86 は SVR4、Linux、FreeBSD と NetBSD 対応の共有ライブラリ
-       を含んだ X11R6 を基にしています。
-    2) 構成定義ファイルの書式が新しくなりました。新しくなった XFree86 で注意
-       して欲しい最も大きな変更は、古い Xconfig ファイルは XF86Config ファイ
-       ルに置き換えられた事です。さらなる詳細は、後述の`重要な変更'の節を見
-       て下さい。
-    3) X イメージ拡張機能(XIE) をサポートしました。
-    4) Weitek P9000 チップセットを積んだボード対応の新しいアクセラレータサー
-       バーをサポートしました。
-    5) AGX チップセットを積んだボード対応の新しいアクセラレータサーバーをサ
-       ポートしました。
-    6) Tseng ET4000/W32 シリーズのチップセットを積んだボード対応の新しいアク
-       セラレータサーバーをサポートしました。
-    7) S3 Vision 864 と 964 チップセットを（ ELSA Winner 1000Pro と 2000Pro、
-      ナンバーナイン GXE64 と GXE64Pro、Miro Crystal 20SV のようなボードを含
-      んで）サポートしました。
-    8) いくつかの Mach32 ボード対応に16bpp をサポートしました。
-    9) いくつかの P9000 ボード対応に16bpp と 32bpp をサポートしました。
-   10) いくつかの S3 ボード対応に16bpp と 32bpp をサポートしました。
-   11) 改良された Cirrus のアクセラレータ（5434を含んで）と、いくつかの 
-       Cirrus ボード対応に 16bpp と 32bpp をサポートしました。
-   12) Western Digital の WD90C33 ボード対応にアクセラレータをサポートしまし
-       た。
-   13) S3 サーバーでは S3 GENDAC、S3 SDAC、AT&T 20C498、STG1700 と TI3025
-       RAMDACS をサポートしました。
-   14) S3 サーバーでは S3 GENDAC、S3 SDAC、ICS2595 と TI3025 のプログラム可
-       能クロック機能をサポートしました。
-   15) AL2101、MX68000/MX68010、Video7、CirrusCL6420 チップセット対応に新し
-       い SVGA ドライバーをサポートしました。
-   16) Mach64 対応の非アクセラレータを含んだかなり著しく改良された ATI 
-       vgawonder ドライバーをサポートしました。
-   17) SVGA サーバー対応の汎用 VGA ドライバーを（8bppの320x200固定で）サポー
-       トしました。
-   18) 双頭の vga2/mono と vga16/mono サーバーをサポートしました。
-   19) VGA16 プログラムをバンクの範囲をより広く取るようにかなり著しく改良し
-       ました。
-   20) 基本となるサーバーにスクリーンセーバー拡張機能を統合しました。
-   21) S3 と SVGA サーバーに"グリーン"モニタースクリーンセーバーをサポートし
-       ました。
-   22) X11R6 に含まれている"実験的な" LBX プログラムをサポートしました。
+  XFree86 とはインテル上で動くいくつかのバージョンの Unix と Unix に似ている
+  オペレーティングシステムをサポートしている X11R6 に移植したものです。今回
+  の版では、多くのバグの修正と同時に多くの新しい機能の追加や性能の向上を図り
+  ました。XFree86 は多くのアーキテクチャ用のバイナリ配付物と同様に X コンソ
+  ーシアムの X11R6 のソースコードに対してのパッチデータとして入手可能です。
+
+
+  1. XFree86 3.1.1 で何が新しくなったか?
+
+  次の項目を 1994 年 10 月にリリースした XFree86 3.1 に追加しました。:
+
+     1.  現在、XFree86 は  X コンソーシアムの最新の公式パッチデータ（fix-11 
+         まであります）を含んでいます。 X コンソーシアムの fix-11 を理解すべ
+         く XFree86 プロジェクト社は X コンソーシアム と作業をしています。
+
+     2. Mach64 ビデオボードに対応した新しいアクセラレータサーバー
+
+     3. S3 Trio32 と Trio64 チップセットをサポートしました。
+
+     4. S3 サーバーで Chrontel 8391 クロックチップをサポートしました。
+
+     5. SPEA Mercury P64 と MIRO Crystal 40SV をサポートしました。
+
+     6. 殆どのアクセラレータサーバーでのバグ修正と性能向上を図りました。
+
+     7. 二重スキャン(`double scan') ビデオモードを殆どのサーバーでサポートし
+        ました。
+
+     8. SVGA サーバー対応の新しいチップセットをサポートしました。新しいチッ
+       プセットは Avance Logic 2228/2301, Chips & Technology 655xx, Cirrus 
+       Logic 6440, と Oak OTI-087です。  アクセラレータサーバーは OTI-087 を
+       含みました。
+
+     9. FreeBSD 2.0 に対応しました。
+
+     10.
+        OS/2 に限定対応しました（現状ではクライアントだけですが、開発中です）。
+
+     11.
+        BSD/386 で実行するときは長さによる窓でアクセス(Linear aperture 
+        access)します。
+
+     12.
+        より多くの S3 ビデオボードに 16bpp と 32bpp 対応しました。詳しくは
+        README.S3(S3.html) を参照して下さい。
+
+     13.
+        ISC の SVR3 をサポートしました(3.x と 4.x でしかテストしてません)。
+
+     14.
+        XF86Config を作成するユーティリティ `xf86config' が賢くなって、ビデ
+        オカードのデータベースを使うようになりました。
+
+     15.
+        X サーバーの LinkKit が LBX をサポートするように更新しました。
+
+     16.
+        浮動小数点演算装置が無いマシンで遅かった X サーバーの起動時間を短縮
+        しました。
+
+  更に、全ての詳細については、ソース配付物にある CHANGELOG ファイルを参照し
+  て下さい。
+
+
+  2. XFree86 3.1 で何が新しくなったか?
+
+  次の項目を 1994 年 5 月にリリースした XFree86 2.1.1 に追加しました。:
+
+     1. 現在、XFree86 は SVR4、Linux、FreeBSD と NetBSD 対応の共有ライブラリ
+        を含んだ X11R6 を基にしています。
+
+     2. 構成定義ファイルの書式が新しくなりました。新しくなった XFree86 で注
+        意して欲しい最も大きな変更は、古い Xconfig ファイルは XF86Config フ
+        ァイルに置き換えられた事です。さらなる詳細は、後述の`重要な変更'の節
+        を見て下さい。
+
+     3. X イメージ拡張機能 (XIE) をサポートしました。
+
+     4. Weitek P9000 チップセットを積んだボード対応の新しいアクセラレータサ
+        ーバーをサポートしました。
+
+     5. AGX チップセットを積んだボード対応の新しいアクセラレータサーバーをサ
+        ポートしました。
+
+     6. Tseng ET4000/W32 シリーズのチップセットを積んだボード対応の新しいア
+        クセラレータサーバーをサポートしました。
+
+     7. S3 Vision 864 と 964 チップセットを（ ELSA Winner 1000Pro と 2000Pro、
+       ナンバーナイン GXE64 と GXE64Pro、Miro Crystal 20SV のようなボードを
+        含んで）サポートしました。
+
+     8. いくつかの Mach32 ボード対応に16bpp をサポートしました。
+
+     9. いくつかの P9000 ボード対応に16bpp と 32bpp をサポートしました。
+
+     10.
+        いくつかの S3 ボード対応に16bpp と 32bpp をサポートしました。
+
+     11.
+        改良された Cirrus のアクセラレータ（5434を含んで）と、いくつかの 
+        Cirrus ボード対応に 16bpp と 32bpp をサポートしました。
+
+     12.
+        Western Digital の WD90C33 ボード対応にアクセラレータをサポートしま
+        した。
+
+     13.
+        S3 サーバーでは S3 GENDAC、S3 SDAC、AT&T 20C498、STG1700 と TI3025
+        RAMDACS をサポートしました。
+
+     14.
+        S3 サーバーでは S3 GENDAC、S3 SDAC、ICS2595 と TI3025 のプログラム可
+        能クロック機能をサポートしました。
+
+     15.
+        AL2101、MX68000/MX68010、Video7、CirrusCL6420 チップセット対応に新し
+        い SVGA ドライバーをサポートしました。
+
+     16.
+        Mach64 対応の非アクセラレータを含んだかなり著しく改良された ATI 
+        vgawonder ドライバーをサポートしました。
+
+     17.
+        SVGA サーバー対応の汎用 VGA ドライバーを（8bppの320x200固定で）サポ
+        ートしました。
+
+     18.
+        双頭の vga2/mono と vga16/mono サーバーをサポートしました。
+
+     19.
+        VGA16 プログラムをバンクの範囲をより広く取るようにかなり著しく改良し
+        ました。
+
+     20.
+        基本となるサーバーにスクリーンセーバー拡張機能を統合しました。
+
+     21.
+        S3 と SVGA サーバーに"グリーン"モニタースクリーンセーバーをサポート
+        しました。
+
+     22.
+        X11R6 に含まれている"実験的な" LBX プログラムをサポートしました。
     
-更に、全ての詳細については、ソース配付物にある CHANGELOG ファイルを参照して
-下さい。
+  更に、全ての詳細については、ソース配付物にある CHANGELOG ファイルを参照し
+  て下さい。
 
 
-3 - XFree86 のテストを行ったシステム
-------------------------------------
-    SVR4.0:
-    Esix: 4.0.3A, 4.0.4, 4.0.4.1
-    Microport: 2.2, 3.1, 4.1, 4.2
-    Dell: 2.1, 2.2, 2.2.1
-    UHC: 2.0, 3.6
-    Consensys: 1.2
-    MST: 4.0.3 (Load 2.07 and Load 3.02)
-    ISC: 4.0.3
-    AT&T: 2.1, 4.0
-    NCR: MP-RAS
-    SunSoft: Solaris x86 2.1, 2.4
+  3. XFree86 のテストを行ったシステム
 
-    SVR4.2:
-    Consensys
-    Novell UnixWare
 
-    SVR3:
-    SCO: 3.2.2, 3.2.4
 
-    Others:
-    NetBSD 1.0BETA, FreeBSD 1.1.5
-    BSD/386 1.1
-    Mach 386
-    Linux
-    Amoeba
-    Minix-386
+     SVR4.0:
 
-4 - サポートしているビデオカードのチップセット
-----------------------------------------------
-現在、XFree86 3.1 は次のアクセラレータチップをサポートしています:
+        o  Esix: 4.0.3A, 4.0.4, 4.0.4.1
 
-    8514/A （と、そのそっくりさん）
-    ATI Mach8, Mach32
-    Cirrus CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
-           CLGD5430, CLGD5434, CLGD6205, CLGD6215, CLGD6225, CLGD6235
-    S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964
-    Western Digital WD90C31, WD90C33
-    Weitek P9000
-    IIT AGX-014, AGX-015, AGX-016
-    Tseng ET4000/W32, ET4000/W32i, ET4000/W32p
+        o  Microport: 2.2, 3.1, 4.1, 4.2
 
-Cirrus と Western Digital アクセラレータは SVGA サーバーでサポートされていま
-す。その他のチップセットについては、それら自身のサーバーでサポートされていま
-す。テスト済みのアクセラレータサーバーが動くカードの一覧は AccelCards、
-Devices ファイルといくつかのチップセット固有の README ファイルにあります。ア
-クセラレータサーバーはその他のカードでも正常に動くと思われますが、我々はそれ
-を保証することは出来ません。
+        o  Dell: 2.1, 2.2, 2.2.1
 
-加えて、次の SVGA チップセットがサポートされました。:
+        o  UHC: 2.0, 3.6
 
-    Tseng ET3000, ET4000AX, ET4000/W32
-    Western Digital/Paradise PVGA1
-    Western Digital WD90C00, WD90C10, WD90C11, WD90C24, WD90C30, WD90C31,
-                    WD90C33
-    Genoa GVGA
-    Trident TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
+        o  Consensys: 1.2
+
+        o  MST: 4.0.3 (Load 2.07 と Load 3.02)
+
+        o  ISC: 4.0.3
+
+        o  AT&T: 2.1, 4.0
+
+        o  NCR: MP-RAS
+
+        o  SunSoft: Solaris x86 2.1, 2.4
+
+
+
+     SVR4.2:
+
+        o  Consensys
+
+        o  Novell UnixWare
+
+
+
+     SVR3:
+
+        o  SCO: 3.2.2, 3.2.4
+
+        o  ISC: 3.0, 4.0, 4.1
+
+
+
+     Others:
+
+        o  NetBSD 1.0,
+
+        o  FreeBSD 1.1.5.1, 2.0
+
+        o  BSD/386 1.1
+
+        o  Mach 386
+
+        o  Linux
+
+        o  Amoeba
+
+        o  Minix-386
+
+
+
+
+  4. サポートしているビデオカードのチップセット
+
+  現在、XFree86 3.1.1 は次のアクセラレータチップをサポートしています:
+
+
+     8514/A
+        （と、そのそっくりさん）
+
+     ATI
+        Mach8, Mach32, Mach64
+
+     Cirrus
+        CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
+        CLGD5430, CLGD5434
+
+     S3 86C911, 86C924, 86C801, 86C805, 86C805i, 86C928, 86C864, 86C964,
+        86C732, 86C764
+
+     Western Digital
+        WD90C31, WD90C33
+
+     Weitek
+        P9000
+
+     IIT
+        AGX-014, AGX-015, AGX-016
+
+     Tseng
+        ET4000/W32, ET4000/W32i, ET4000/W32p
+
+  Cirrus、 Western Digital と Oak アクセラレータは SVGA サーバーでサポートし
+  ています。その他のチップセットについては、それら自身のサーバーでサポート
+  しています。テスト済みのアクセラレータサーバーが動くカードの一覧は 
+  AccelCards ファイル、Devices ファイルといくつかのチップセット固有の 
+  README ファイルにあります。アクセラレータサーバーはその他のカードでも正常
+  に動くと思われますが、我々はそれを保証することは出来ません。
+
+  加えて、次の SVGA チップセットがサポートしました。:
+
+     Tseng
+        ET3000, ET4000AX, ET4000/W32
+
+     Western Digital/Paradise
+        PVGA1
+
+     Western Digital
+        WD90C00, WD90C10, WD90C11, WD90C24, WD90C30, WD90C31,WD90C33
+
+     Genoa
+        GVGA
+
+     Trident
+        TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL, TVGA9000,
         TVGA9000i, TVGA9100B, TVGA9200CX, TVGA9320, TVGA9400CX, TVGA9420
-    ATI 18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
+
+     ATI
+        18800, 18800-1, 28800-2, 28800-4, 28800-5, 28800-6, 68800-3,
         68800-6, 68800AX, 68800LX, 88800
-    NCR 77C22, 77C22E, 77C22E+
-    Cirrus Logic CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428,
-         CLGD5429, CLGD5430, CLGD5434, CLGD6205, CLGD6215,
-         CLGD6225, CLGD6235, CLGD6420
-    Compaq AVGA
-    OAK OTI067, OTI077
-    Advance Logic AL2101
-    MX MX68000, MX680010
-    Video 7/Headland Technologies HT216-32
-    
-上記の全てのチップセットは、256 色しかサポートしない Advance Logic、MX と 
-Video 7 のチップセットを除いて、256 色と白黒モードの両方をサポートしています。
 
-これらのチップセットを使う為の、より多くの情報は、チップセット固有の README 
-ファイル（現在は Tseng、Western、Digital、ATI、 Trident と Video 7が該当しま
-す）を参照して下さい。
+     NCR
+        77C22, 77C22E, 77C22E+
 
-64k のシングルバンクのビデオメモリを使用している一般的な VGA カード（
-Hercules 白黒カード、現代（ Hyundai ）HGC1280、Sigma LaserView Visa 白黒
-カードと Apollo 白黒カード）を、白黒サーバーはサポートしています。64k バイト
-のビデオメモリだけを持っている Compaq AVGA も白黒サーバーでサポートしていま
-すが、64k バイト以上のビデオメモリでは、GVGA は未だテストしてません。
+     Cirrus Logic
+        CLGD5420, CLGD5422, CLGD5424, CLGD5426, CLGD5428, CLGD5429,
+        CLGD5430, CLGD5434, CLGD6205, CLGD6215, CLGD6225, CLGD6235,
+        CLGD6410, CLGD6412, CLGD6420, CLGD6440
 
-VGA16 サーバーは 1MB のビデオメモリを搭載した時、約 1600x1200 以上の仮想画面
-表示が可能な ET4000、Trident、ATI、NCR、OAK と Cirrus 6420 を積んだメモリバ
-ンクをサポートします。他のチップセットの場合は、画面の大きさは約 800X600 に
-制限されます。
+     Compaq
+        AVGA
 
-  注意 : Diamond 社が ET4000 を使っているとしても、Diamond SpeedStar 24 と新
-         しいSpeedStar+ ボードのほとんどはサポートしません。 ET4000/W32p を
-         使っている Stealth 32 もサポートしません。歴史的にこのチップセット
-         をサポートする為の情報は非公開でしか利用できませんでした。
-         1994 年 9月27日に、Diamond 社は口頭で Diamond 社の製品についての詳
-         細な情報を XFree86 プロジェクト社に提供することを承認しました。この
-         事は XFree86 の将来のバージョンにこれらをより良くサポートすることを
-         我々に許容するでしょう。
+     OAK
+        OTI067, OTI077, OTI087
+
+     Avance Logic
+        ALG2101, ALG2228, ALG2301, ALG2302, ALG2308, ALG2401
+
+     Chips & Technology
+        65520, 65530, 65540, 65545
+
+     MX MX68000, MX680010
+
+      Video 7/Headland Technologies
+        HT216-32
 
 
-5 - 重要な変更
---------------
-XFree86 2.1.1 と XFree86 3.1 の間には重要な明かな変更が有ります。最初は標準
-の導入場所です。XFree86 配付物を /usr/X386 のかわりに /usr/X11R6 の下に導入
-します。これは昔の "X386" という名称を取り除くので、両方のバージョンを共存可
-能にします。
-次の主な変更はサーバーの構成ファイルに関連したものです。前の Xconfig ファイ
-ルは XFree86 3.1 では XF86Config ファイルに置き換えました。これは単に名称が
-変更された以上の変更があります。新しい XF86Config ファイルは前の Xconfig フ
-ァイルとはかなり異なった書式を使用します。新しい書式は前の書式に比べてより構
-造化、論理化と拡張可能化がはかられました。我々は困難無くこの新しい書式に変換
-することを達成しました。この変換を助ける為に、前の Xconfig ファイルから新し
-い XF86Config ファイルの書式へ変換するプログラム (`reconfig') を提供します。
-これは古い書式以上の情報を新しい書式に含めるような完璧な変換を提供するもので
-はありません。通常、手で編集することが必要です。XF86Config が含んでいる新し
-い情報の１つはあなたの使用しているディスプレイに関する記述です。この追加はサ
-ーバーがディスプレイの仕様内のビデオモードに成っているか確認するのに使用しま
-す。
+  上記の全てのチップセットは、256 色しかサポートしない Advance Logic、MX と 
+  Video 7 のチップセットを除いて、256 色と白黒モードの両方をサポートしていま
+  す。
 
-新しい構成定義ファイルの書式と如何に使うかの情報は XF86Config (4章/5章) と 
-reconfig (1章) のオンラインマニュアルと /usr/X11R6/lib/X11/doc に有る 
-README.Config ファイルを参照して下さい。
+  これらのチップセットを使う為の、より多くの情報は、チップセット固有の 
+  README ファイル（現在は Cirrus, Tseng, Western Digital, ATI, Trident, Oak 
+  と Video 7 が該当します）を参照して下さい。
 
-構成定義ファイルに関連したその他の変更はサーバーが構成定義ファイルを見ること
-にあります。使用者が指定した場所を前の版のサーバーが見ていました。これは、安
-全性を高めました。さらなる詳細については、XFree86(1章) のオンラインマニュア
-ルを参照して下さい。
+  64k のシングルバンクのビデオメモリを使用している一般的な VGA カード（
+  Hercules 白黒カード、現代（ Hyundai ）HGC1280、Sigma LaserView Visa 白黒
+  カードと Apollo 白黒カード）を、白黒サーバーはサポートしています。64k バイ
+  トのビデオメモリだけを持っている Compaq AVGA も白黒サーバーでサポートして
+  いますが、64k バイト以上のビデオメモリでは、GVGA は未だテストしてません。
 
+  VGA16 サーバーは 1MB のビデオメモリを搭載した時、約 1600x1200 以上の仮想画
+  面表示が可能な ET4000、Trident、ATI、NCR、OAK と Cirrus 6420 を積んだメモ
+  リバンクをサポートします。他のチップセットの場合は、画面の大きさは約 
+  800X600 に制限されます。
 
-6 - 更に多くの情報はどこにあるか
---------------------------------
-XFree86(1)、Xconfig(4/5)、XF86_SVGA(1)、XF86_Mono(1)、XF86_VGA16(1) そして
-XF86_Accel(1) のオンラインマニュアルが追加されています。
-さらに、いくつかの README ファイルと解説が供給されています。これらは、バイナ
-リ配付物では、/usr/X11R6/lib/X11/doc の、またソース配付物では 
-xc/programs/Xserver/hw/xfree86/doc のディレクトリにあります。、
-
-README.Config と VideoModes.doc のファイルは XFree86 サーバーをどうやって設
-定するかについて参考情報になるでしょう。XFree86 チーム に支援の連絡を取る前
-に、提供した全ての文章とオンラインマニュアルを、読んで下さい。
-
-SVGA ドライバの開発についての文書は、
-バイナリ配付物では、/usr/X11R6/lib/Server/VGADriverDoc に、
-ソース配付物では、xc/programs/Xserver/hw/xfree86/VGADriverDoc にあります。
-
-全く分からない場合は、後で示す電子メールアドレスの XFree86 コアチームに連絡
-して下さい。
-
-Usenet ニュースグループである comp.windows.x.i386unix では、たいていの 
-XFree86 と、XFree86 に関係する話題について議論されています。殆どの質問はそこ
-で回答されています。基本的な質問の回答は、内容に相当する FAQ で見つかるでし
-ょう。
+  注意 : Diamond 社が ET4000 を使っているとしても、Diamond SpeedStar 24 ボー
+  ドは（多分最近の SpeedStar+ も）サポートしません。 ET4000/W32p を使ってい
+  る Stealth 32 もサポートしません。その他の Diamond 社のボードもこのバージ
+  ョンの XFree86 ではサポートしません。歴史的に、このチップセットをサポート
+  する為の情報は非公開でしか利用できませんでした。1994 年 9 月 27 日に、
+  Diamond 社は口頭で Diamond 社の製品についての詳細な情報を XFree86 プロジェ
+  クト社に提供することを承認しました。この事は XFree86 の将来のバージョンが
+  これらをより良くサポートする機会を与えるでしょう。
 
 
-7 - 協力者、提供者について
---------------------------
-XFree86の開発は次のメンバーで始めました。:
-       David Dawes <dawes@XFree86.org>
-       Glenn Lai <glenn@cs.utexas.edu>
-       Jim Tsillas <jtsilla@ccs.neu.edu>
-       David Wexelblat <dwex@XFree86.org>
+  5. 重要な変更
 
-X11R6 パッケージに XFree86 を統合する作業は次のメンバーで行なっています。:
-       Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM>
-       Doug Anson <danson@lgc.com>
-       Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
-       Mike Bernson <mike@mbsun.mlb.org>
-       Robin Cutshaw <robin@XFree86.org>
-       David Dawes <dawes@XFree86.org>
-       Marc Evans <marc@XFree86.org>
-       Pascal Haible <haible@izfm.uni-stuttgart.de>
-       Matthieu Herrb <Matthieu.Herrb@laas.fr>
-       Dirk Hohndel <hohndel@XFree86.org>
-       David Holland <davidh@use.com>
-       Alan Hourihane <alanh@fairlite.demon.co.uk>
-       Jeffrey Hsu <hsu@soda.berkeley.edu>
-       Glenn Lai <glenn@cs.utexas.edu>
-       Ted Lemon <mellon@ncd.com>
-       Rich Murphey <rich@XFree86.org>
-       Hans Nasten <nasten@everyware.se>
-       Mark Snitily <mark@sgcs.com>
-       Randy Terbush <randyt@cse.unl.edu>
-       Jon Tombs <tombs@XFree86.org>
-       Kees Verstoep <versto@cs.vu.nl>
-       Paul Vixie <paul@vix.com>
-       Mark Weaver <Mark_Weaver@brown.edu>
-       David Wexelblat <dwex@XFree86.org>
-       Philip Wheatley <Philip.Wheatley@ColumbiaSC.NCR.COM>
-       Thomas Wolfram <wolf@prz.tu-berlin.de>
+
+  XFree86 2.1.1 と XFree86 3.1 の間には重要で明かな変更があります。最初は標
+  準の導入場所です。XFree86 配付物を /usr/X386 のかわりに /usr/X11R6 の下に
+  導入します。これは昔の "X386" という名称を取り除くので、両方のバージョンを
+  共存可能にします。
+  次の主な変更はサーバーの構成ファイルに関連したものです。前の Xconfig ファ
+  イルは XFree86 3.1 では XF86Config ファイルに置き換えました。これは単に名
+  称が変更された以上の変更があります。新しい XF86Config ファイルは前の 
+  Xconfig ファイルとはかなり異なった書式を使用します。前の書式に比べて新しい
+  書式はより構造化、論理化と拡張可能化を図っています。我々は困難無くこの新し
+  い書式に変換することを達成しました。この変換を助ける為に、前の Xconfig フ
+  ァイルから新しい XF86Config ファイルの書式へ変換するプログラム 
+  (`reconfig') を提供します。これは古い書式以上の情報を新しい書式に含めるよ
+  うな完璧な変換を提供するものではありません。通常、手で編集することが必要で
+  す。XF86Config が含んでいる新しい情報の１つはお手元の使用しているディスプ
+  レイに関する記述です。この追加はサーバーがディスプレイの仕様内のビデオモー
+  ドになっているか確認するのに使用します。
+
+  新しい構成定義ファイルの書式と如何に使うかの情報は XF86Config (4章/5章) と
+  reconfig (1章) のオンラインマニュアルと /usr/X11R6/lib/X11/doc にある 
+  README.Config ファイルを参照して下さい。
+
+  構成定義ファイルに関連したその他の変更はサーバーが構成定義ファイルを見るこ
+  とにあります。使用者が指定した場所を前の版のサーバーが見ていました。これは、
+  安全性を高めました。さらなる詳細については、XFree86(1章) のオンラインマニ
+  ュアルを参照して下さい。
+
+
+
+
+  6. 更に多くの情報はどこにあるか
+
+  XFree86(1章)、Xconfig(4章/5章)、XF86_SVGA(1章)、XF86_Mono(1章)、
+  XXF86_VGA16(1章) と XF86_Accel(1章) のオンラインマニュアルを追加しています。
+  さらに、いくつかの README ファイルと解説を供給しています。これらは、バイナ
+  リ配付物では、/usr/X11R6/lib/X11/doc の、またソース配付物では 
+  xc/programs/Xserver/hw/xfree86/doc のディレクトリにあります。、
+
+  README.Config と VideoModes.doc のファイルは XFree86 サーバーをどうやって
+  設定するかについて参考情報になるでしょう。XFree86 チーム に支援の連絡を取
+  る前に、提供した全ての文章とオンラインマニュアルを、読んで下さい。
+
+  SVGA ドライバの開発についての文書は、
+  バイナリ配付物では、/usr/X11R6/lib/Server/VGADriverDoc に、
+  ソース配付物では、xc/programs/Xserver/hw/xfree86/VGADriverDoc にあります。
+
+  全く分からない場合は、後で示す電子メールアドレスの XFree86 コアチームに連
+  絡して下さい。
+
+  Usenet ニュースグループである comp.windows.x.i386unix では、たいていの 
+  XFree86 と、XFree86 に関係する話題について議論されています。殆どの質問はそ
+  こで回答されています。基本的な質問の回答は、内容に相当する FAQ で見つかる
+  でしょう。
+
+
+
+  7. 協力者、提供者について
+
+
+  XFree86の開発は次のメンバーで始めました。:
+
+     o  David Dawes <dawes@XFree86.org>
+
+     o  Glenn Lai <glenn@cs.utexas.edu>
+
+     o  Jim Tsillas <jtsilla@ccs.neu.edu>
+
+     o  David Wexelblat <dwex@XFree86.org>
+
+  X11R6 パッケージに XFree86 を統合する作業は次のメンバーで行なっています。:
+
+     o  Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM>
+
+     o  Doug Anson <danson@lgc.com>
+
+     o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
+
+     o  Mike Bernson <mike@mbsun.mlb.org>
+
+     o  Robin Cutshaw <robin@XFree86.org>
+
+     o  David Dawes <dawes@XFree86.org>
+
+     o  Marc Evans <marc@XFree86.org>
+
+     o  Pascal Haible <haible@izfm.uni-stuttgart.de>
+
+     o  Matthieu Herrb <Matthieu.Herrb@laas.fr>
+
+     o  Dirk Hohndel <hohndel@XFree86.org>
+
+     o  David Holland <davidh@use.com>
+
+     o  Alan Hourihane <alanh@fairlite.demon.co.uk>
+
+     o  Jeffrey Hsu <hsu@soda.berkeley.edu>
+
+     o  Glenn Lai <glenn@cs.utexas.edu>
+
+     o  Ted Lemon <mellon@ncd.com>
+
+     o  Rich Murphey <rich@XFree86.org>
+
+     o  Hans Nasten <nasten@everyware.se>
+
+     o  Mark Snitily <mark@sgcs.com>
+
+     o  Randy Terbush <randyt@cse.unl.edu>
+
+     o  Jon Tombs <tombs@XFree86.org>
+
+     o  Kees Verstoep <versto@cs.vu.nl>
+
+     o  Paul Vixie <paul@vix.com>
+
+     o  Mark Weaver <Mark_Weaver@brown.edu>
+
+     o  David Wexelblat <dwex@XFree86.org>
+
+     o  Philip Wheatley <Philip.Wheatley@ColumbiaSC.NCR.COM>
+
+     o  Thomas Wolfram <wolf@prz.tu-berlin.de>
+
+     o  Orest Zborowski <orestz@eskimo.com>
+
+
+     386BSD, FreeBSD, NetBSD 用は次のメンバーがサポートしています。:
+
+        o  Rich Murphey <Rich@XFree86.org>
+
+     次のメンバーが最初に 386BSD に移植しました。:
+
+        o  Pace Willison,
+
+        o  Amancio Hasty Jr <hasty@netcom.com>
+
+     Mach 386 用は次のメンバーがサポートしています。:
+
+        o  Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
+
+     Linux 用は次のメンバーがサポートしています。:
+
+        o  Orest Zborowski <orestz@eskimo.com>
+
+     SCO Unix 用は次のメンバーがサポートしています。:
+
+        o  David McCullough <davidm@stallion.oz.au>
+
+     Amoeba 用は次のメンバーがサポートしています。:
+
+        o  Kees Verstoep <versto@cs.vu.nl>
+
+     Minix-386 用は次のメンバーがサポートしています。:
+
+        o  Philip Homburg <philip@cs.vu.nl>
+
+     OSF/1 用は次のメンバーがサポートしています。:
+
+        o  Marc Evans <Marc@Synergytics.Com>
+
+     BSD/386 用は次のメンバーがサポートしています。:
+
+        o  Hans Nasten <nasten@everyware.se>,
+
+        o  Paul Vixie <paul@vix.com>
+
+     Solaris 用は次のメンバーがサポートしています。:
+
+        o  Doug Anson <danson@lgc.com>,
+
+        o  David Holland <davidh@use.com>
+
+     ISC SVR3 用は次のメンバーがサポートしています。:
+
+        o  Michael Rohleder
+           <michael.rohleder%iktffm.uucp@germany.eu.net>
+
+     Linux 用共有ライブラリは次のメンバーがサポートしています。:
        Orest Zborowski <orestz@eskimo.com>
-
-386BSD, FreeBSD, NetBSD 用は次のメンバーがサポートしています。:
-       Rich Murphey <Rich@XFree86.org>
-次のメンバーが最初に 386BSD に移植しました。:
-       Pace Willison
-       Amancio Hasty Jr <hasty@netcom.com>
-Mach 386 用は次のメンバーがサポートしています。:
-       Robert Baron <Robert.Baron@ernst.mach.cs.cmu.edu>
-Linux 用は次のメンバーがサポートしています。:
-       Orest Zborowski <orestz@eskimo.com>
-       Dirk Hohndel <hohndel@XFree86.org>
-SCO Unix 用は次のメンバーがサポートしています。:
-       David McCullough <davidm@stallion.oz.au>
-Amoeba 用は次のメンバーがサポートしています。:
-       Kees Verstoep <versto@cs.vu.nl>
-Minix-386 用は次のメンバーがサポートしています。:
-       Philip Homburg <philip@cs.vu.nl>
-OSF/1 用は次のメンバーがサポートしています。:
-       Marc Evans <Marc@Synergytics.Com>
-BSD/386 用は次のメンバーがサポートしています。:
-       Hans Nasten <nasten@everyware.se>
-       Paul Vixie <paul@vix.com>
-Solaris 用は次のメンバーがサポートしています。:
-       Doug Anson <danson@lgc.com>
-       David Holland <davidh@use.com>
-Linux 用共有ライブラリは次のメンバーがサポートしています。:
-       Orest Zborowski <orestz@eskimo.com>
        Dirk Hohndel <hohndel@XFree86.org>
 
-最初にアクセラレータプログラムは、次のメンバーが始めました。:
-       Kevin Martin <martin@cs.unc.edu>
-       Rik Faith <faith@cs.unc.edu>
-       Jon Tombs <tombs@XFree86.org>
-S3 アクセラレータプログラムは、次のメンバーが作成しました。:
-       Jon Tombs <tombs@XFree86.org>
-       David Wexelblat <dwex@XFree86.org
-       David Dawes <dawes@XFree86.org>
-       Robin Cutshaw <robin@XFree86.org>
-       Amancio Hasty <hasty@netcom.com>
-       Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>
-       Leonard N. Zubkoff <lnz@dandelion.com>
-       Harald Koenig <koenig@tat.physik.uni-tuebingen.de>
-       Bernhard Bender <br@elsa.mhs.compuserve.com>
-       Dirk Hohndel <hohndel@XFree86.org>
-       Eddy Olk <eddy@dutecae.et.tudelft.nl>
-       Steven Parker <sparker@taz.cs.utah.edu>
-Mach32 アクセラレータプログラムは、次のメンバーが作成しました。:
-       Kevin Martin <martin@cs.unc.edu>
-       Rik Faith <faith@cs.unc.edu>
-       Mike Bernson <mike@mbsun.mlb.org>
-       Mark Weaver <Mark_Weaver@brown.edu>
-       Craig Groeschel <craig@adikia.sccsi.com>
-Mach8、8514 アクセラレータプログラムは、次のメンバーが作成しました。:
-       Kevin Martin <martin@cs.unc.edu>
-       Rik Faith <faith@cs.unc.edu>
-       Tiago Gons <tiago@comosjn.hobby.nl>
-       Hans Nasten <nasten@everyware.se>
-       Scott Laird <lair@midway.uchicago.edu>
-Cirrus アクセラレータプログラムは、次のメンバーが作成しました。:
-       Simon Cooper <scooper@vizlab.rutgers.edu>
-       Harm Hanemaayer <hhanemaa@cs.ruu.nl>
-       Bill Reynolds <bill@goshawk.lanl.gov>
-Western Digital アクセラレータプログラムは、次のメンバーが作成しました。:
-       Mike Tierney <floyd@pepsi.eng.umd.edu>
-       Bill Conn <conn@bnr.ca>
-P9000 アクセラレータプログラムは、次のメンバーが作成しました。:
-       Erik Nygren <nygren@mit.edu>
-       Harry Langenbacher <harry@brain.jpl.nasa.gov>
-       Chris Mason <mason@mail.csh.rit.edu>
-AGX アクセラレータプログラムは、次のメンバーが作成しました。:
-       Henry Worth <henry.worth@amail.amdahl.com>
-ET4000/W32 アクセラレータプログラムは、次のメンバーが作成しました。:
-       Glenn Lai <glenn@cs.utexas.edu>
 
-16 色の VGA サーバーは、次のメンバーが作成しました。:
+     最初にアクセラレータプログラムは、次のメンバーが始めました。:
 
-       Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
-2 色 VGA と 非 VGA 白黒 サーバーは、次のメンバーが作成しました。:
-       Pascal Haible <haible@izfm.uni-stuttgart.de>
-      
-ATI SVGA ドライバは、次のメンバーが作成しました。:
-       Per Lindqvist <pgd@compuram.bbt.se> と Doug Evans <dje@cygnus.com>
-       Rik Faith <faith@cs.unc.edu> によって X11R5 に移植されました。
-       Marc La France <tsi@gpu.srv.ualberta.ca> が書き換えました。
-Trident SVGA ドライバは、次のメンバーが作成しました。:
-       Alan Hourihane <alanh@fairlite.demon.co.uk>
-NCR SVGA ドライバは、次のメンバーが作成しました。:
-       Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM>
-        NCR 社の承諾を得ています。
-Cirrus SVGA ドライバは、次のメンバーが作成しました。:
-       Bill Reynolds <bill@goshawk.lanl.gov>
-       Hank Dietz <hankd@ecn.purdue.edu>
-       Simon Cooper <scooper@vizlab.rutgers.edu>
-       Harm Hanemaayer <hhanemaa@cs.ruu.nl>
-       CL6420 は Manfred Brands <mb@oceonics.nl> がサポートしています。
-Compaq SVGA ドライバは、次のメンバーが作成しました。:
-       Hans Oey <hans@mo.hobby.nl>
-Oak SVGA ドライバは、次のメンバーが作成しました。:
-       Steve Goldman <sgoldman@encore.com>
-AL2101 SVGA ドライバは、次のメンバーが作成しました。:
-       Paolo Severini <lendl@dist.dist.unige.it>
-MX SVGA ドライバは、次のメンバーが作成しました。:
-       Frank Dikker <dikker@cs.utwente.nl>
-Video7 SVGA ドライバは、次のメンバーが作成しました。:
-       Craig Struble <cstruble@acm.vt.edu>
+        o  Kevin Martin <martin@cs.unc.edu>,
 
-Apollo 白黒 ドライバは、次のメンバーが作成しました。:
-       Hamish Coleman <hamish@zot.apana.org.au>
+        o  Rik Faith <faith@cs.unc.edu>,
+
+        o  Jon Tombs <tombs@XFree86.org>
+
+     S3 アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Jon Tombs <tombs@XFree86.org>,
+
+        o  David Wexelblat <dwex@XFree86.org>,
+
+        o  David Dawes <dawes@XFree86.org>,
+
+        o  Robin Cutshaw <robin@XFree86.org>,
+
+        o  Amancio Hasty <hasty@netcom.com>,
+
+        o  Norbert Distler <Norbert.Distler@physik.tu-muenchen.de>,
+
+        o  Leonard N. Zubkoff <lnz@dandelion.com>,
+
+        o  Harald Koenig <koenig@tat.physik.uni-tuebingen.de>,
+
+        o  Bernhard Bender <br@elsa.mhs.compuserve.com>
+
+     Mach32 アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Kevin Martin <martin@cs.unc.edu>,
+
+        o  Rik Faith <faith@cs.unc.edu>,
+
+        o  Mike Bernson <mike@mbsun.mlb.org>,
+
+        o  Mark Weaver <Mark_Weaver@brown.edu>,
+
+        o  Craig Groeschel <craig@metrolink.com>
+
+     Mach64 accelerated code by:
+
+        o  Kevin Martin <martin@cs.unc.edu>,
+
+     Mach8、8514 アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Kevin Martin <martin@cs.unc.edu>,
+
+        o  Rik Faith <faith@cs.unc.edu>,
+
+        o  Tiago Gons <tiago@comosjn.hobby.nl>,
+
+        o  Hans Nasten <nasten@everyware.se>,
+
+        o  Scott Laird <lair@midway.uchicago.edu>
+
+     Cirrus アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Simon Cooper <scooper@vizlab.rutgers.edu>,
+
+        o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
+
+        o  Bill Reynolds <bill@goshawk.lanl.gov>
+
+     Western Digital アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Mike Tierney <floyd@pepsi.eng.umd.edu>,
+
+        o  Bill Conn <conn@bnr.ca>
+
+     P9000 アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Erik Nygren <nygren@mit.edu>,
+
+        o  Harry Langenbacher <harry@brain.jpl.nasa.gov>
+
+        o  Chris Mason <mason@mail.csh.rit.edu>
+
+     AGX アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Henry Worth <henry.worth@amail.amdahl.com>,
+
+     ET4000/W32 アクセラレータプログラムは、次のメンバーが作成しました。:
+
+        o  Glenn Lai <glenn@cs.utexas.edu>,
+
+     Oak Technologies Inc. アクセラレータプログラムは、次のメンバーが作成し
+     ました。:
+
+        o  Jorge Delgado <ernar@dit.upm.es>,
 
 
-その他の貢献者:
-       Joerg Wunsch <joerg_wunsch@uriah.sax.de> （ ET3000 のバンクメモリの
-                                                     白黒サーバー担当）
-       Eric Raymond <esr@snark.thyrsus.com> （新しいビデオモードの文章担当）
+     16 色の VGA サーバーは、次のメンバーが作成しました。:
 
-       そして、世界中の全てのベータテストを行なってくれた多くの人々！
+        o  Gertjan Akkerman <akkerman@dutiba.twi.tudelft.nl>
 
-8 - 連絡情報
-------------
-開発計画とサポートは XFree86 コアチームによって推進しています。現在、コアチ
-ームは、次のメンバーで構成されています。（順不同）:
 
-       Robin Cutshaw <robin@XFree86.org>
-       David Dawes <dawes@XFree86.org>
-       Marc Evans <marc@XFree86.org>
-       Dirk Hohndel <hohndel@XFree86.org>
-       Rich Murphey <rich@XFree86.org>
-       Jon Tombs <tombs@XFree86.org>
-       David Wexelblat <dwex@XFree86.org>
+     2 色 VGA と 非 VGA 白黒 サーバーは、次のメンバーが作成しました。:
 
-コアチームへの連絡は <Core@XFree86.org> 宛てに電子メールを送信してください。
+        o  Pascal Haible <haible@izfm.uni-stuttgart.de>
 
-9 - XFree86 プロジェクト社
---------------------------
-XFree86 プロジェクト社は２つの大きな目標を成し遂げる為に、結成されました。:
 
-    1) XFree86 を X ウィンドウシステムの設計、開発と提供に責任を持つ X コン
-       ソーシアムの中で、代表できるようなソフトにする手段を供給すること
-    2) XFree86 の開発を推進する人材と、主として新しい表示装置と基礎的な電算
-       処理設備を入手するための、いくつかの基本となる基金を集め、提供するこ
-       と
+     ATI SVGA ドライバは、次のメンバーが作成しました。:
 
-一つ目の目標が第一の動機でした。私たちは、X コンソーシアムの中で発言権を持つ
-緩やかに組織化されたフリーソフトプロジェクトによって、XFree86 の提供経路を形
-作ろうと試み、X コンソーシアムと、断続的に何ヵ月もの間議論しました。コンソー
-シアムの内規では、緩やかに組織化されたフリーソフトプロジェクトのような組織は
-認められませんでした。私たちは基金募集に関してコンソーシアムの内規の要求を満
-たし、必要な基金を獲得するために、法人の形態を取ることに決定しました。
+        o  Per Lindqvist <pgd@compuram.bbt.se> と Doug Evans
+           <dje@cygnus.com>.
 
-組織化を行なっている間に、X11R6 のためのベータテストが可能になりました、そし
-て、X11R6 のコアリリースの為の XFree86 はバージョン 3.0 です。
-近い将来、全ての X コンソーシアムメンバーの X ウインドウシステムの開発環境の
-殆どが XFree86 になるでしょう。XFree86 の発展性については、既に認められてい
-るのです。
+        o  Rik Faith <faith@cs.unc.edu> によって X11R5 に移植されました。
 
-法人組織としたことによるもう一つの利点は、XFree86 プロジェクト社が、私たちの
-仕事の為に、外部からの資金援助を獲得した事にあります。この資金援助によって希
-望的に考えれば、より良い製品をより速く提供出来るように、私たちに新しい表示装
-置を入手し、仕事の効率が増し、必要な物を入手できる自由を与えるでしょう。最終
-的には、XFree86 が（仕事が出来る）皆さんの手に届くでしょう。
+        o  Marc La France <tsi@ualberta.ca> が書き換えました。
 
-XFree86 プロジェクト社の取締役会と幹事会は、以下の通り:
+     Trident SVGA ドライバは、次のメンバーが作成しました。:
 
-       David Dawes, 秘書
-       Dirk Hohndel, 副社長
-       Glenn Lai, 取締役
-       Rich Murphey, 会計係
-       Jim Tsillas, 取締役
-       Jon Tombs, 取締役
-       David Wexelblat, 社長
+        o  Alan Hourihane <alanh@fairlite.demon.co.uk>
 
-       取締役会への連絡は <BOD@XFree86.org> まで電子メールを送って下さい。
+     NCR SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Stuart Anderson <Stuart.Anderson@ColumbiaSC.NCR.COM> 
+           NCR 社の承諾を得ています。
+
+     Cirrus SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Bill Reynolds <bill@goshawk.lanl.gov>,
+
+        o  Hank Dietz <hankd@ecn.purdue.edu>,
+
+        o  Simon Cooper <scooper@vizlab.rutgers.edu>,
+
+        o  Harm Hanemaayer <hhanemaa@cs.ruu.nl>,
+
+     Cirrus CL64xx ドライバは、次のメンバーが作成しました。:
+
+        o  Manfred Brands <mb@oceonics.nl>
+
+        o  Randy Hendry <randy@sgi.com>
+
+        o  Jeff Kirk <jeff@bambam.dsd.ES.COM>
+
+     Compaq SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Hans Oey <hans@mo.hobby.nl>
+
+     Oak SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Steve Goldman <sgoldman@encore.com>
+
+        o  Jorge Delgado <ernar@dit.upm.es>
+
+     AL2101 SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Paolo Severini <lendl@dist.dist.unige.it>
+
+     Avance Logic ``ali'' SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Ching-Tai Chiu <cchiu@netcom.com>
+
+     MX SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Frank Dikker <dikker@cs.utwente.nl>
+
+     Video7 SVGA ドライバは、次のメンバーが作成しました。:
+
+        o  Craig Struble <cstruble@acm.vt.edu>
+
+
+     Apollo 白黒 ドライバは、次のメンバーが作成しました。:
+
+        o  Hamish Coleman <hamish@zot.apana.org.au>
+
+
+     その他の貢献者:
+
+        o  Joerg Wunsch <joerg_wunsch@uriah.sax.de> （ ET3000 のバンクメモリ
+           の白黒サーバー担当）,
+
+        o  Eric Raymond <esr@snark.thyrsus.com> （新しいビデオモードの文章担
+           当）,
+
+        o  そして、世界中の全てのベータテストを行なってくれた多くの人々！
+
+
+  8. 連絡情報
+
+  開発計画とサポートは XFree86 コアチームによって推進しています。現在、コア
+  チームは、次のメンバーで構成しています。（順不同）:
+
+     o  Robin Cutshaw <robin@XFree86.org>
+
+     o  David Dawes <dawes@XFree86.org>
+
+     o  Marc Evans <marc@XFree86.org>
+
+     o  Dirk Hohndel <hohndel@XFree86.org>
+
+     o  Rich Murphey <rich@XFree86.org>
+
+     o  Jon Tombs <tombs@XFree86.org>
+
+     o  David Wexelblat <dwex@XFree86.org>
+
+  コアチームへの連絡は <Core@XFree86.org> 宛てに電子メールを送信してください。
+  サポートに関する質問は <XFree86@XFree86.org> 宛てに電子メールを送信してく
+  ださい。
+
+
+  9. XFree86 プロジェクト社
+
+  XFree86 プロジェクト社は２つの大きな目標を成し遂げる為に、結成しました。:
+
+    1. XFree86 を X ウィンドウシステムの設計、開発と提供に責任を持つ X コン
+       ソーシアムの中で、代表できるようなソフトにする手段を供給すること
+
+    2. XFree86 の開発を推進する人材と、主として新しい表示装置と基礎的な電算
+       処理設備を入手するための、いくらかの基本となる基金を集め、提供するこ
+       と
+
+  一つ目の目標が第一の動機でした。私たちは、緩やかに組織化されたフリーソフト
+  プロジェクトが X コンソーシアムの中で発言権を持てるような抜け道はないもの
+  かと、何カ月も 断続的に協議を重ねてきました。コンソーシアムの内規では、緩
+  やかに組織化されたフリーソフトプロジェクトのような組織は認められませんでし
+  た。私たちは基金募集に関してコンソーシアムの内規の要求を満たし、必要な基金
+  を獲得するために、法人の形態を取ることに決定しました。
+
+  法人化したことで、X11R6 のベータテストに参加が可能となり、XFree86 のコアの
+  相当部分を X11R6 に提供できました。初めての X11R6 のコアリリース対応の 
+  XFree86 はバージョン 3.0 です。現在の X11R6 のパッチ版の XFree86 はバージ
+  ョン 3.1.1 です。いずれ、XFree86 はコンソーシアムの正式メンバーとして、X 
+  ウィンドウズシステムの開発に ますます深く関わってゆくことになるでしょう。
+  その関わりがどのような 形で発展してゆくかは、目下みきわめ中です。
+
+  法人組織としたことによるもう一つの利点は、XFree86 プロジェクト社が、私たち
+  の仕事の為に、外部からの資金援助を獲得した事にあります。これによって、願わ
+  くばもっと積極的に新しいビデオ関連の機材を導入できるようになり、よりよい製
+  品をよりはやくリリースできるようになるかと思います。自分から動いて必要なも
+  のを手に入れ、そしてそれを実際の開発作業にたずさわる人々に提供することが可
+  能となるからです。 
+
+  現在のXFree86 プロジェクト社の取締役会と幹事会は、以下の通り:
+
+     o  David Dawes, 社長 と 書記
+
+     o  Dirk Hohndel, 副社長
+
+
+     o  Glenn Lai, 取締役
+
+     o  Rich Murphey, 会計係
+
+     o  Jim Tsillas, 取締役
+
+     o  Jon Tombs, 取締役
+
+     o  David Wexelblat, 取締役
+
+  取締役会への連絡は <BOD@XFree86.org> まで電子メールを送って下さい。
        
-私たちは XFree86 の在り方を確認するのと同様に、常にフリーソフトウェアプロジ
-ェクトになるように、内規を定めました。コアチームのメンバー又は、その他の 
-XFree86 関係者の誰にとっても、個人的な金銭的利益が無いように配慮しました。
-全ての会社の資産は会社の為に残し、会社の解散の時には、全ての資産を X コンソ
-ーシアムに委譲する予定です。資産委譲をする事により、確かに全く新しい事をなし
-て来たという事実だけを残し、私たちの会社が、私たちがそれまでやって来たことに
-対し単なる形式になる事を希望しています。
+  弊社の内規は、XFree86 が現在も、そして将来もずっと、フリーソフトウェアプロ
+  ジェクトであり続けることを保証するような形で起草されています。コアチームの
+  メンバー又は、その他の XFree86 関係者の誰にとっても、個人的な金銭的利益が
+  無いように配慮しました。
+  全ての会社の資産は会社の為に残し、会社の解散の時には、全ての資産を X コン
+  ソーシアムに委譲する予定です。このような形式をとることで、弊社がこれまでの
+  活動を単に形式化したものとなることを希望しています。従来の活動とまったくち
+  がったものになるつもりはありません。
 
-ここに、XFree86 プロジェクト社のスポンサーとなり、金銭の提供又は機材と資源の
-提供をしてくださった組織と個人の方を一覧に致します。XFree86 プロジェクト社は
-彼らに大変感謝し、インターネット社会全体の改善の為に高品質なフリーソフトウェ
-アを継続して提供する事で、彼らの期待に沿える事を願っております。
+  ここに、XFree86 プロジェクト社のスポンサーとなり、金銭の提供又は機材と資源
+  の提供をしてくださった組織と個人の方を一覧に致します。XFree86 プロジェクト
+  社は彼らに大変感謝し、インターネット社会全体の改善の為に高品質なフリーソフ
+  トウェアを継続して提供することで、彼らの期待に沿えることを願っております。
 
-    UUNET Communications Services, Inc.
+     o  UUNET Communications Services, Inc. (http://www.uu.net/)
 
-UUNET Communications Services, Inc は、特別に名前を挙げたいと思います。
-この会社は積極的に、いち早く1994 年の X コンソーシアムの年会費全てを寄付して
-くれました。この一回の資金提供により、X11R6 を XFree86 に巻き込む事が確実に
-なったのです。
+  UUNET Communications Services, Inc は、特別に名前を挙げたいと思います。
+  この会社は積極的に、いち早く1994 年の X コンソーシアムの年会費全てを寄付し
+  てくれました。この一回の資金提供により、X11R6 を XFree86 に巻き込む事が確
+  実になったのです。
 
-        AIB Software Corporation, Dulles, VA
-        American Micro Group
-        AT&T Global Information Services (以前の NCR です)
-        Andrew Burgess
-        BSDI, Falls Church, VA
-        The Destek Group, Inc., Pelham, NH (以前の Synergytics です)
-        Digital Equipment Corp
-        Elsa GmbH, Aachen, Germany
-        Frank & Paige McCormick
-        InfoMagic, Rocky Hill, NJ
-        LunetIX Softfair, Berlin, Germany
-        Number Nine, Lexington, MA
-        Prime Time Freeware, San Bruno, CA
-        Red Hat Software, Chapel Hill, NC
-        Clifford M Stein
-        Joel Storm 
-        S.u.S.E, GmbH, Fuerth, Germany
-        Tekelec Airtronic GmbH, Muenchen, Germany
-        Unifix Software GmbH, Braunschweig, Germany
-        Vixie Enterprises, La Honda, CA
-        Walnut Creek CDROM, Concord, CA
-        Xtreme s.a.s., Livorno, Italy
+     o  AIB Software Corporation (ftp://ftp.uu.net/vendor/AIB/), Dulles,
+        VA
 
-XFree86 プロジェクト社は基金と機材、又はどちらかの追加寄贈を歓迎致します。こ
-のような寄贈に関しては税金免除となります。寄贈されたものは、弁護士が書面で受
-領後、私たちが確かに確認致します。更に詳しい情報は、XFree86 プロジェクト社、
-<BOD@XFree86.org> 宛てに連絡を取って下さい。
+     o  Roland Alder, Armin Fessler, Patrick Seemann, Martin Wunderli
 
-10 - ソースとバイナリファイルのあるサイト
------------------------------------------
-X コンソーシアム からの X11R6 PL5 から XFree86 3.1 へのバージョンアップ用パ
-ッチが利用可能です。ソースへのパッチと様々な OS 用のバイナリは以下の匿名 
-FTP サイト経由で手に入ります:
+     o  American Micro Group
 
-    ftp.XFree86.org (/pub/XFree86/current の下にあります)
+     o  AT&T Global Information Services (http://www.ncr.com/) (以前の
+        NCR)
 
-また、次のミラーサイトが利用可能です。:
+     o  Andrew Burgess
 
-    北米:
-    xfree86.cdrom.com:/pub/XFree86           (ソース と バイナリ)
-    ftp.bsdi.com:/contrib/X11/XFree86        (ソース と BSD/386 用バイナリ)
-    ref.tfs.com:/pub/mirrors/XFree86         (ソース と FreeBSD 用バイナリ)
-    ftp.iastate.edu:/pub/netbsd/XFree86/XFree86-3.1 (ソース と NetBSD 用バイ
-                                                     ナリ)
-    tsx-11.mit.edu:/pub/linux/packages/X11   (Linux binaries and ソース差分)
-    ftp.eecs.umich.edu:/BSD/XFree86          (ソース と バイナリ)
-    sunsite.unc.edu:/pub/X11/XFree86         (ソース と バイナリ)
-    abode.ccd.bnl.gov:/pub/XFree86           (Solaris, SVR4, SCO 用バイナリ)
+     o  Berkeley Software Design, Inc (http://www.bsdi.com/), Falls
+        Church, VA
 
-    ヨーロッパ:
-    ftp.fee.vutbr.cz:/pub/XFree86            (ソース と バイナリ)
-    ftp.gwdg.de:/pub/xfree86                 (ソース と バイナリ)
-    ftp.uni-stuttgart.de:/pub/X11/Xfree86    (ソース と バイナリ)
-    ftp.funet.fi:/pub/X11/XFree86            (ソース と バイナリ)
-    ftp.laas.fr:/pub/NetBSD/XFree86-3.1      (NetBSD 用バイナリ のみ)
-    ftp.unipi.it:/pub/mirrors/XFree86-3.1    (ソース と バイナリ)
-    nova.pvv.unit.no:/pub/XFree86/current    (ソース と バイナリ)
-    ftp.demon.co.uk:/pub/xwindows/XFree86    (ソース と バイナリ)
+     o  The Destek Group, Inc. (http://www.destek.net/Destek/), Pelham,
+        NH (formerly Synergytics)
 
-    中東:
-    orgchem.weizmann.ac.il:/pub/XFree86      (ソース と FreeBSD 用バイナリ)
+     o  Digital Equipment Corporation (http://www.digital.com/)
 
-    アジア/オーストラリア:
-    x.physics.su.oz.au:/pub/XFree86          (ソース と バイナリ)
-    ftp.iij.ad.jp:/pub/X/XFree86             (ソース と バイナリ)
-    ftp.nectec.or.th:/pub/mirrors/XFree86    (ソース と バイナリ)
-    ftp.edu.tw:/X/XFree86/3.1                (ソース と バイナリ)
+     o  Elsa GmbH, Aachen, Germany
 
-最も近い利用可能なサイトをご利用下さい。
+     o  Dirk Hohndel
 
-配付物から XFree86 を作成するのに必要な情報は、特定のディレクトリの下にある
-README ファイルを参照して下さい。
+     o  Frank & Paige McCormick
 
-入手した XFree86 3.1 をよく確認してください。いくつかのサイトは、古い版の 
-XFree86 を格納していることがよくあります。各々のバイナリ配付物には、README 
-ファイルに格納場所からダウンする必要のあるファイルについて記載されています。
-README ファイルのコンパイル時間オプションの選択をみると、配付物が作成されて
-いる状態が分かります。
+     o  InfoMagic (http://www.infomagic.com/), Flagstaff, AZ
 
-1994年 10月 2日
 
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/Japanese/README,v 3.0 1995/01/12 12:03:53 dawes Exp $
-$XConsortium: README,v 1.1 95/01/16 12:30:46 kaleb Exp $
+     o  LunetIX Softfair, Berlin, Germany
 
+     o  Morse Telecommunications (http://www.morse.net), Long Beach, NY
+
+     o  MIRO Computer Products AG, Braunschweig, Germany
+
+     o  Rich & Amy Murphey
+
+     o  Brett Neumeier
+
+     o  Number Nine, Lexington, MA
+
+     o  Kazuyuki Okamoto, Japan
+
+     o  Prime Time Freeware, San Bruno, CA
+
+     o  Red Hat Software, Chapel Hill, NC
+
+     o  SPEA Software AG, Starnberg, Germany
+
+     o  Clifford M Stein
+
+     o  Joel Storm
+
+     o  S.u.S.E, GmbH, Fuerth, Germany
+
+     o  Tekelec Airtronic GmbH, Muenchen, Germany
+
+     o  Jim Tsillas
+
+     o  Trans-Ameritech Enterprises, Inc., Santa Clara, CA
+
+     o  Unifix Software GmbH, Braunschweig, Germany
+
+     o  Vixie Enterprises (http://www.vix.com/), La Honda, CA
+
+     o  Walnut Creek CDROM (http://www.cdrom.com/), Concord, CA
+
+     o  Xtreme s.a.s., Livorno, Italy
+
+  XFree86 プロジェクト社は基金と機材、又はどちらかの追加寄贈を歓迎致します。
+  このような寄贈は、所得税の控除対象となる*はず*です（がまだ確定はしていませ
+  ん）。私たちの弁護士が書類作業を終え次第、この点ははっきりするでしょう。
+  詳細は XFree86 プロジェクト社、<BOD@XFree86.org>まで。
+
+
+  10. ソースとバイナリファイルのあるサイト
+
+
+  X コンソーシアム の X11R6 PL11 から XFree86 3.1.1 へのソースのバージョンア
+  ップ用パッチが利用可能です。ソースへのパッチと様々な OS 用のバイナリは以下
+  の匿名 FTP サイト経由で手に入ります:
+
+
+     o  ftp.XFree86.org:/pub/XFree86/current
+        (ftp://ftp.XFree86.org/pub/XFree86/current)
+
+  また、次のミラーサイトが利用可能です。:
+
+
+     o  北米:
+
+        +  ftp.bsdi.com:/contrib/X11/XFree86
+           (ftp://ftp.bsdi.com/contrib/X11/XFree86) (ソース と BSD/386 用
+           バイナリ)
+
+        +  XFree86.cdrom.com:/pub/XFree86
+           (ftp://XFree86.cdrom.com/pub/XFree86) (ソース と バイナリ)
+
+        +  ftp.iastate.edu:/pub/XFree86/XFree86-3.1.1
+           (ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.1) (ソース
+           パッチ と NetBSD 用バイナリ)
+
+           (Also via AFS:
+           /afs/iastate.edu/public/ftp/pub/XFree86/XFree86-3.1.1)
+
+        +  tsx-11.mit.edu:/pub/linux/packages/X11/XFree86-3.1.1
+           (ftp://tsx-11.mit.edu/pub/linux/packages/X11/XFree86-3.1.1)
+           (Linux 用バイナリ と ソース)
+
+        +  ref.tfs.com:/pub/mirrors/XFree86
+           (ftp://ref.tfs.com/pub/mirrors/XFree86) (ソース パッチ と
+           FreeBSD 用バイナリ)
+
+        +  ftp.eecs.umich.edu:/BSD/XFree86
+           (ftp://ftp.eecs.umich.edu/BSD/XFree86) (ソース と バイナリ)
+
+        +  sunsite.unc.edu:/pub/X11/XFree86
+           (ftp://sunsite.unc.edu/pub/X11/XFree86) ソース パッチ と
+           バイナリ)
+
+        +  abode.ccd.bnl.gov:/pub/XFree86
+           (ftp://abode.ccd.bnl.gov/pub/XFree86) (Solaris, SVR4, SCO
+           用バイナリ)
+
+
+     o  ヨーロッパ:
+
+        +  fvkma.tu-graz.ac.at:/pub/X11/XFree86/3.1.1 (ftp://fvkma.tu-
+           graz.ac.at/pub/XFree86/3.1.1) (ソース と バイナリ)
+
+        +  ftp.switch.ch:/mirror/XFree86
+           (ftp://ftp.switch.ch/mirror/XFree86) (ソース と バイナリ)
+
+        +  ftp.fee.vutbr.cz:/pub/XFree86
+           (ftp://ftp.fee.vutbr.cz/pub/XFree86) (ソース と バイナリ)
+
+        +  ftp.gwdg.de:/pub/xfree86 (ftp://ftp.gwdg.de/pub/xfree86)
+           (ソース と バイナリ)
+
+        +  ftp.uni-erlangen.de:/pub/Linux/MIRROR.xfree86/3.1.1
+           (ftp://ftp.uni-erlangen.de/pub/Linux/MIRROR.xfree86/3.1.1)
+           (ソース パッチ と Linux 用バイナリ)
+
+        +  ftp.uni-stuttgart.de:/pub/X11/Xfree86/3.1.1 (ftp://ftp.uni-
+           stuttgart.de/pub/X11/Xfree86/3.1.1) (ソース と バイナリ)
+
+        +  ftp.funet.fi:/pub/X11/XFree86/3.1.1
+           (ftp://ftp.funet.fi/pub/X11/XFree86/3.1.1) (ソース と
+           バイナリ)
+
+        +  anasgard.calvacom.fr:/pub/unix/X/XFree86
+           (ftp://anasgard.calvacom.fr/pub/unix/X/XFree86) (ソース と
+           バイナリ)
+
+        +  ftp.laas.fr:/pub/netbsd/XFree86-3.1.1
+           (ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.1) (NetBSD 用バイナリ
+           のみ)
+
+        +  ftp.unipi.it:/pub/mirrors/XFree86-3.1.1
+           (ftp://ftp.unipi.it/pub/mirrors/XFree86-3.1.1) (ソース と
+           バイナリ)
+
+
+     o  アジア/オーストラリア::
+
+        +  x.physics.su.oz.au:/pub/XFree86/3.1.1
+           (ftp://x.physics.su.oz.au/pub/XFree86/3.1.1) (ソース と
+           バイナリ)
+
+        +  ftp.hk.super.net:/mirror/XFree86
+           (ftp://ftp.hk.super.net/mirror/XFree86) (ソース と バイナリ)
+
+        +  ftp.nectec.or.th:/pub/mirrors/XFree86
+           (ftp://ftp.nectec.or.th/pub/mirrors/XFree86) (ソース パッチ と
+           バイナリ)
+
+        +  ftp.edu.tw:/X/XFree86/3.1.1
+           (ftp://ftp.edu.tw/X/XFree86/3.1.1) (ソース と バイナリ)
+
+
+
+
+  配付物から XFree86 を作成するのに必要な情報は、特定のディレクトリの下にあ
+  る README ファイルを参照して下さい。
+
+  入手した XFree86 3.1.1 をよく確認してください。いくつかのサイトは、古い版
+  の XFree86 を格納していることがよくあります。各々のバイナリ配付物には、
+  README ファイルに格納場所からダウンする必要のあるファイルについて記載され
+  ています。README ファイルのコンパイル時間オプションの選択をみると、配付物
+  が作成されている状態が分かります。
+
+
+  $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.20 1995/02/12 02:39:51 dawes Exp $
+-----------------------------------------------------------------------
+このファイルは  Generated from XFree86: xc/programs/Xserver/hw/xfree86/
+doc/sgml/README.sgml,v 3.20 1995/02/12 02:39:51 を、岡本  一幸 
+( Kazuyuki Okamoto <ikko-@pacific.rim.or.jp> ) が XFree86 3.1.1 を
+日本でインストールする人向けに和訳したものです。ここがおかしいとか、
+ここはこうしたほうがいいといったご意見がありましたら、電子メールで
+お知らせ下さい。
+原文の著作権は XFree86 プロジェクト社にあります。この和訳の著作権は 
+XFree86 プロジェクト社と岡本　一幸にありますが、この和訳の不具合は私に、
+電子メールで送って下さい。
+$XFree86$
+-----------------------------------------------------------------------
+[ EOF ]
+/POST

@@ -1,5 +1,5 @@
 /* $XConsortium: cpq_driver.c,v 1.4 95/01/16 13:18:12 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.5 1995/01/10 10:31:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/compaq/cpq_driver.c,v 3.7 1995/01/28 17:08:32 dawes Exp $ */
 /*
  * Copyright 1993 Hans Oey <hans@mo.hobby.nl>
  *
@@ -420,9 +420,11 @@ int mode;
 		outb(0x3ce, 0x40);
 		regsave[nest_depth].CR0 = inb(0x3cf);  /* Control Register 0 */
 		nest_depth++;
+		outb(0x3c4, 0x0100);		       /* Start reset */
 	}
 	else
 	{
+		outb(0x3c4, 0x0300);		       /* End reset */
 		nest_depth--;
 		if (nest_depth > MAX_NEST_DEPTH)
 			return;

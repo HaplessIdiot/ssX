@@ -1,6 +1,6 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/generic/gen_driver.c,v 3.6 1995/01/10 10:31:33 dawes Exp $ */
 /*
- * Copyright 1993 by David Wexelblat <dwex@goblin.org>
+ * Stubs driver Copyright 1993 by David Wexelblat <dwex@goblin.org>
  *
  * Permission to use, copy, modify, distribute, and sell this software and its
  * documentation for any purpose is hereby granted without fee, provided that
@@ -71,9 +71,38 @@ static char *   GenericIdent();
 static Bool     GenericClockSelect();
 static void     GenericEnterLeave();
 static Bool     GenericInit();
+static Bool     GenericValidMode();
 static void *   GenericSave();
 static void     GenericRestore();
 static void     GenericAdjust();
+
+static DisplayModeRec Mode320x200 = {
+	&Mode320x200,
+	&Mode320x200,
+	"320x200",
+	0,	/* Clock index */
+	320,
+	344,
+	376,
+	400,
+	200,
+	204,
+	206,
+	225,
+	0,
+	0,
+	320,
+	344,
+	376,
+	400,
+	200,
+	204,
+	206,
+	225,
+	FALSE,
+	FALSE,
+};
+	
 
 vgaVideoChipRec GENERIC = {
 	/* 
@@ -83,10 +112,11 @@ vgaVideoChipRec GENERIC = {
 	GenericIdent,
 	GenericEnterLeave,
 	GenericInit,
+	GenericValidMode,
 	GenericSave,
 	GenericRestore,
 	GenericAdjust,
-	(void (*)())NoopDDA,
+	vgaHWSaveScreen,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,
 	(void (*)())NoopDDA,	/* No banking. */
@@ -103,6 +133,13 @@ vgaVideoChipRec GENERIC = {
 	VGA_NO_DIVIDE_VERT,
 	{0,},
 	8,
+	FALSE,
+	0,
+	0,
+	FALSE,
+	FALSE,
+	&Mode320x200,
+	1,
 };
 
 /* These are the fixed 100% VGA compatible CRTC register values used. */
@@ -298,12 +335,24 @@ GenericAdjust(x, y)
 int x, y;
 {
 	/* This isn't used. The best you would get is about 320x204 */
-	/* (if it works at all). */
+	/* (which doesn't work). */
 
 	/* In standard VGA 320x200x256 (chain-4), the start address */
 	/* is in pixel units. */
-	int Base = (y * vga256InfoRec.virtualX + x);
+	int Base = (y * vga256InfoRec.displayWidth + x);
 
 	outw(vgaIOBase + 4, (Base & 0x00FF00) | 0x0C);
   	outw(vgaIOBase + 4, ((Base & 0x00FF) << 8) | 0x0D);
 }
+
+/*
+ * GenericValidMode --
+ *
+ */
+static Bool
+GenericValidMode(mode)
+DisplayModePtr mode;
+{
+return TRUE;
+}
+

@@ -1,5 +1,5 @@
 XCOMM $XConsortium: Imakefile,v 1.4 94/11/21 18:30:38 kaleb Exp $
-XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.2 1995/01/28 15:45:18 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/XIE/mixie/Imakefile,v 3.3 1995/03/11 14:11:40 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -12,6 +12,10 @@ DONES = control/DONE fax/DONE import/DONE process/DONE export/DONE
 SUBDIRS = control fax import jpeg process export
 OBJS = control/?*.o fax/?*.o import/?*.o jpeg/?*.o process/?*.o export/?*.o 
 DONES = control/DONE fax/DONE import/DONE jpeg/DONE process/DONE export/DONE 
+#endif
+
+#if HasParallelMake
+MakeMutex($(SUBDIRS) $(OBJS) $(DONES))
 #endif
 
 #ifdef OS2Architecture

@@ -1,5 +1,5 @@
 /* $XConsortium: vgagc.c,v 1.3 95/01/13 20:17:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.1 1994/12/25 12:36:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/vga/vgagc.c,v 3.2 1995/01/28 16:14:31 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -579,8 +579,12 @@ vga256ValidateGC(pGC, changes, pDrawable)
 	    }
             else
 	    {
-		/* The cfb code does something slightly different here. */
-		pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+		if (devPriv->rop == GXcopy &&
+		    pGC->fillStyle == FillSolid &&
+		    (pGC->planemask & PMSK) == PMSK)
+		    pGC->ops->ImageGlyphBlt = cfbImageGlyphBlt8;
+		else
+		    pGC->ops->ImageGlyphBlt = miImageGlyphBlt;
 	    }
         }
     }    

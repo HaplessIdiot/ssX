@@ -1,5 +1,5 @@
 /* $XConsortium: Bt481.h,v 1.1 95/01/26 15:31:41 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.h,v 3.0 1994/06/15 15:35:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/Bt481.h,v 3.1 1995/01/28 15:48:21 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
@@ -54,6 +54,15 @@
 #define BT482_CURS_X_HIGH	0x05
 #define BT482_CURS_Y_LOW	0x06
 #define BT482_CURS_Y_HIGH	0x07
+
+#define BT481_8BPP_PSUEDO_COLOR 0x00
+#define BT481_15BPP_EDGE_TRIGGR 0x80
+#define BT481_16BPP_EDGE_TRIGGR 0xC0
+#define BT481_15BPP_LEVL_TRIGGR 0xA0
+#define BT481_16BPP_LEVL_TRIGGR 0xE0
+#define BT481_24BPP_EDGE_TRIGGR 0x90    /* RGBP unpacked 32BPP/8BPP-Psuedo */
+#define BT481_24BPP_LEVL_TRIGGR 0xF0	/* RGB packed 24BPP */
+
 
 _XFUNCPROTOBEGIN
 

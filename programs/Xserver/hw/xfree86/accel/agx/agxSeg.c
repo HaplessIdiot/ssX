@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.4 1994/11/19 07:50:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxSeg.c,v 3.5 1995/01/28 15:49:11 dawes Exp $ */
 /***********************************************************
 Copyright 1987 by Digital Equipment Corporation, Maynard, Massachusetts,
 and the Massachusetts Institute of Technology, Cambridge, Massachusetts.
@@ -44,6 +44,8 @@ $XConsortium: agxSeg.c,v 1.2 95/01/05 20:29:54 kaleb Exp $
 #include "miline.h"
 
 #include "cfb.h"
+#include "cfb16.h"
+#include "cfb32.h"
 #include "cfbmskbits.h"
 #include "regagx.h"
 #include "agx.h"
@@ -116,7 +118,17 @@ agxSegment(pDrawable, pGC, nseg, pSeg)
 /* 4-5-93 TCG : is VT visible */
     if (!xf86VTSema)
     {
-        cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+         switch (agxInfoRec.bitsPerPixel) {
+           case 8:
+              cfbSegmentSS(pDrawable, pGC, nseg, pSeg);
+              break;
+           case 16:
+              cfb16SegmentSS(pDrawable, pGC, nseg, pSeg);
+              break;
+           case 32:
+              cfb32SegmentSS(pDrawable, pGC, nseg, pSeg);
+              break;
+        }
 	return;
     }
 
