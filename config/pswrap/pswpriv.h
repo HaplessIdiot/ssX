@@ -136,7 +136,7 @@ extern char *ofile;
 extern char *prog;
 extern char *string_temp;	/* buffer of that size for scanning strings */
 extern char headid[];
-#ifndef Lynx
+#if 0
 extern char yytext[];
 #else
 extern char *yytext;
