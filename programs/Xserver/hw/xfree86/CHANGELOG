@@ -1,4 +1,8 @@
 XFree86 4.3.99.2 (xx March 2003)
+  61. Fix xprop to get all windows (not only the first) in a property holding
+      a window list printed (#A.1676, Kim Woelders).
+  60. Fix for spontaneous repeated keyboard events during sync grab (#A.1713,
+      Michal Maruska).
   59. Fixed DPMS problem on C&T 69000 due to incorrect LCD flag (Bugz: 101,
       Egbert Eich).
   58. Added xkb symbols layout for BTC 5090 internet keyboard  
@@ -16654,4 +16658,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2614 2003/04/04 00:48:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2615 2003/04/04 17:06:04 eich Exp $
