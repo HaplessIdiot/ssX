@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.4 1997/06/03 14:12:09 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dac1064.c,v 1.5 1997/06/15 07:12:32 dawes Exp $ */
 
 
 /*
@@ -525,7 +525,7 @@ DisplayModePtr mode;
 	int i, index_1d;
 	unsigned char* initDAC;
 	int weight555 = FALSE;
-
+	
 #ifdef DEBUG
 	ErrorF("MGA1064Init: depth %x bits\n",vgaBitsPerPixel);
 #endif
@@ -870,5 +870,8 @@ MGA1064RamdacInit()
 {
     MGAdac.isHwCursor = FALSE;
     
-    MGAdac.maxPixelClock = 170000;
+    if (MGArev < 3)
+	MGAdac.maxPixelClock = 170000;
+    else
+	MGAdac.maxPixelClock = 220000;
 }

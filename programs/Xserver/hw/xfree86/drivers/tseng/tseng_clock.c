@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.2 1997/04/14 07:05:27 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_clock.c,v 1.3 1997/06/11 12:24:44 dawes Exp $ */
 
 /*
  *
@@ -167,7 +167,7 @@ Tseng_ET6000ClockSelect(freq)
  */
 
 Bool
-Tseng_ICS5341ClockSelect(freq)
+Tseng_GenDACClockSelect(freq)
      int freq;
 {
    Bool result = TRUE;

@@ -17,7 +17,7 @@
  * Contributors:
  *		Andrew Vanderstock, Melbourne, Australia
  *			vanderaj@mail2.svhm.org.au
- *		additions, corrections, cleanups
+ *		additions, corrections, cleanups, Mill II early support
  *
  *		Dirk Hohndel
  *			hohndel@XFree86.Org
@@ -35,12 +35,9 @@
  *		Leonard N. Zubkoff
  *			lnz@dandelion.com
  *		Support for 8MB boards, RGB Sync-on-Green, and DPMS.
- *		Guy DESBIEF
- *			g.desbief@aix.pacwan.net
- *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.12 1997/07/29 12:08:00 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.13 1997/07/31 07:16:13 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -74,6 +71,8 @@
 
 extern vgaPCIInformation *vgaPCIInfo;
 
+#define DEFAULT_SW_CURSOR
+
 /*
  * Driver data structures.
  */
@@ -83,6 +82,7 @@ pointer mmioBase = NULL;
 MGABiosInfo MGABios;
 pciTagRec MGAPciTag;
 int MGAchipset;
+int MGArev;
 int MGAinterleave;
 int MGABppShft;
 int MGAusefbitblt;
@@ -408,7 +408,7 @@ static char *
 MGAIdent(n)
 int n;
 {
-	static char *chipsets[] = {"mga2064w", "mga1064sg"};
+	static char *chipsets[] = {"mga2064w", "mga1064sg", "mga2164w" };
 
 	if (n + 1 > sizeof(chipsets) / sizeof(char *))
 		return(NULL);
@@ -449,15 +449,27 @@ MGAProbe()
 	if (vgaPCIInfo && vgaPCIInfo->AllCards) {
 	  while (pcr = vgaPCIInfo->AllCards[i++]) {
 		if (pcr->_vendor == PCI_VENDOR_MATROX) {
-			switch(pcr->_device) {
+			int id = pcr->_device;
+
+			if (vga256InfoRec.chipID) {
+			    ErrorF("%s %s: MGA chipset override, using ChipID "
+				   "0x%04x instead of 0x%04x\n", XCONFIG_GIVEN,
+				   vga256InfoRec.name, vga256InfoRec.chipID,
+				   pcr->_device);
+			    id = vga256InfoRec.chipID;
+			}
+			switch(id) {
 				case PCI_CHIP_MGA2064:
-					MGAchipset = pcr->_device;
+					MGAchipset = id;
 					vga256InfoRec.chipset = MGAIdent(0);
 				break;
 				case PCI_CHIP_MGA1064:
-					MGAchipset = pcr->_device;
+					MGAchipset = id;
 					vga256InfoRec.chipset = MGAIdent(1);
 				break;
+				case PCI_CHIP_MGA2164:
+					MGAchipset = id;
+					vga256InfoRec.chipset = MGAIdent(2);
 			}
 			if (MGAchipset)
 				break;
@@ -472,6 +484,28 @@ MGAProbe()
 		return(FALSE);
 	}
 
+	if (vga256InfoRec.chipRev) {
+		ErrorF("%s %s: MGA chipset override, using ChipRev "
+		       "0x%02x instead of 0x%02x\n", XCONFIG_GIVEN,
+		       vga256InfoRec.name, vga256InfoRec.chipRev, pcr->_rev_id);
+		MGArev = vga256InfoRec.chipRev;
+	} else {
+		MGArev = pcr->_rev_id;
+	}
+	/*
+	 * make it obvious that Millennium II support is experimental
+	 */
+	if (MGAchipset == PCI_CHIP_MGA2164) 
+	{
+		ErrorF("(!!) %s: Support for the Millennium II in this release\n",
+			vga256InfoRec.name);
+	
+		ErrorF("(!!) %s: is HIGHLY EXPERIMENTAL and largely untested\n",
+			vga256InfoRec.name);
+		ErrorF("(!!) %s:    ===================     ================\n",
+			vga256InfoRec.name);
+	}
+	   
 	/*
 	 *	OK. It's MGA
 	 */
@@ -483,16 +517,37 @@ MGAProbe()
 	/* XXX - ajv I'm assuming that pcr->_base0 is pci config space + 0x10 */
 	/*				and _base1 is another four bytes on */
 	/* XXX - these values are Intel byte order I believe. */
+	/* rev 3 (at least Mystique 220) has these swapped */
+	/* so does the Mill II */
 	
-	if ( pcr->_base0 )	/* details: mgabase1 sdk pp 4-11 */
-		MGAMMIOAddr = pcr->_base0 & 0xffffc000;
-	else
-		MGAMMIOAddr = 0;
+	if ( pcr->_base0 ) {	/* details: mgabase1 sdk pp 4-11 */
+		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
+			MGAchipset == PCI_CHIP_MGA2164 )
+			MGA.ChipLinearBase = pcr->_base0 & 0xff800000;
+		else
+			MGAMMIOAddr = pcr->_base0 & 0xffffc000;
+	} else {
+		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
+			MGAchipset == PCI_CHIP_MGA2164 )
+			MGA.ChipLinearBase = 0;
+		else
+			MGAMMIOAddr = 0;
+	}
 	
-	if ( pcr->_base1 )	/* details: mgabase2 sdk pp 4-12 */
-		MGA.ChipLinearBase = pcr->_base1 & 0xff800000;
-	else
-		MGA.ChipLinearBase = 0;
+	if ( pcr->_base1 ) {	/* details: mgabase2 sdk pp 4-12 */
+		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
+			MGAchipset == PCI_CHIP_MGA2164 )
+	
+			MGAMMIOAddr = pcr->_base1 & 0xffffc000;
+		else
+			MGA.ChipLinearBase = pcr->_base1 & 0xff800000;
+	} else {
+		if ( (MGAchipset == PCI_CHIP_MGA1064 && MGArev >= 3) ||
+			MGAchipset == PCI_CHIP_MGA2164 )
+			MGAMMIOAddr = 0;
+		else
+			MGA.ChipLinearBase = 0;
+	}
 
 	/* Allow this to be overriden in the XF86Config file */
 	if (vga256InfoRec.BIOSbase == 0) {
@@ -634,6 +689,7 @@ MGAProbe()
 	switch (MGAchipset)
 	{
 	case PCI_CHIP_MGA2064:
+	case PCI_CHIP_MGA2164:
 		MGA3026RamdacInit();
 		break;
 	case PCI_CHIP_MGA1064:
@@ -663,6 +719,7 @@ MGAProbe()
 	OFLG_SET(OPTION_SYNC_ON_GREEN, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_DAC_8_BIT, &MGA.ChipOptionFlags);
 	OFLG_SET(OPTION_SW_CURSOR, &MGA.ChipOptionFlags);
+	OFLG_SET(OPTION_HW_CURSOR, &MGA.ChipOptionFlags);
 
 	OFLG_SET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions);
 	OFLG_SET(OPTION_DAC_8_BIT, &vga256InfoRec.options);
@@ -895,7 +952,7 @@ MGAFbInit()
 	if (MGAdac.MemoryClock && xf86Verbose)
 	{
 	    ErrorF("%s %s: MCLK set to %1.3f MHz\n",
-	        vga256InfoRec.MemClk? XCONFIG_GIVEN : XCONFIG_PROBED,
+	        /*vga256InfoRec.MemClk? XCONFIG_GIVEN :*/ XCONFIG_PROBED,
 	        vga256InfoRec.name, MGAdac.MemoryClock / 1000.0);
 	}
 	
@@ -904,7 +961,17 @@ MGAFbInit()
 	        /*
 		 * Hardware cursor
 		 */
-	        if ( !OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
+#ifdef DEFAULT_SW_CURSOR
+	        if (OFLG_ISSET(OPTION_HW_CURSOR, &vga256InfoRec.options)) {
+		    if (MGAHwCursorInit())
+		        ErrorF("%s %s: Using hardware cursor\n",
+			   XCONFIG_GIVEN, vga256InfoRec.name);
+		}	
+		else
+		    ErrorF("%s %s: Using software cursor\n",
+			   XCONFIG_PROBED, vga256InfoRec.name);
+#else
+	        if (!OFLG_ISSET(OPTION_SW_CURSOR, &vga256InfoRec.options)) {
 		    if (MGAHwCursorInit())
 		        ErrorF("%s %s: Using hardware cursor\n",
 			   XCONFIG_PROBED, vga256InfoRec.name);
@@ -912,6 +979,7 @@ MGAFbInit()
 		else
 		    ErrorF("%s %s: Disabling hardware cursor\n",
 			   XCONFIG_GIVEN, vga256InfoRec.name);
+#endif
 
 		/*
 		 * now call the new acc interface
@@ -940,6 +1008,7 @@ DisplayModePtr mode;
 	switch (MGAchipset)
 	{
 	case PCI_CHIP_MGA2064:
+	case PCI_CHIP_MGA2164:
 		return MGA3026Init(mode);
 	case PCI_CHIP_MGA1064:                               
 		return MGA1064Init(mode);
@@ -964,6 +1033,7 @@ vgaHWPtr restore;
 	switch (MGAchipset)
 	{
 	case PCI_CHIP_MGA2064:
+	case PCI_CHIP_MGA2164:
 		MGA3026Restore(restore);
 		break;
 	case PCI_CHIP_MGA1064:
@@ -990,6 +1060,7 @@ vgaHWPtr save;
 	switch (MGAchipset)
 	{
 	case PCI_CHIP_MGA2064:
+	case PCI_CHIP_MGA2164:
 		return (void *)MGA3026Save(save);
 	case PCI_CHIP_MGA1064:
 		return (void *)MGA1064Save(save);

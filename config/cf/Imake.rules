@@ -1,7 +1,7 @@
 XCOMM ---------------------------------------------------------------------
 XCOMM Imake rules for building libraries, programs, scripts, and data files
-XCOMM rules:  $TOG: Imake.rules /main/222 1997/07/17 20:04:40 kaleb $
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.43 1997/07/10 06:36:06 dawes Exp $
+XCOMM rules:  $TOG: Imake.rules /main/224 1997/08/05 09:22:53 kaleb $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.44 1997/07/19 05:42:58 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -82,6 +82,7 @@ XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.43 1997/07/10 06:36:06 dawe
  * MakeFlagsToShellFlags	(makeflags,shellcmd)
  * MakeNamedTargetSubdir	(dir,flags,subname)
  * LinkFileList			(step,list,dir,sub)
+ * LinkVarDirectory		(mdir,cdir,rdir,ldir)
  * InstallMultipleDestFlags	(step,list,dest,flags)
  * InstallMultipleDest		(step,list,dest)
  * InstallMultiple		(list,dest)
@@ -1330,6 +1331,27 @@ step:: list								@@\
 	@MakeFlagsToShellFlags(i,set +e); \				@@\
 	echo "	cd" dir; cd dir && \					@@\
 	for i in list; do (set -x; RemoveFile($$i); $(LN) sub/$$i .); done
+#endif
+
+/*
+ * LinkVarDirectory
+ *
+ * Make links from $LIBDIR (<ProjectRoot>/lib/X11) to /var/X11/
+ * For example /usr/X11R6/lib/X11/xdm ==> /var/X11/xdm so that X can be
+ * run from a read-only volume like a CD-ROM.
+ */
+#ifndef LinkVarDirectory
+#if HasVarDirectory
+#define LinkVarDirectory(mdir,cdir,rdir,ldir)				@@\
+install::								@@\
+	MakeDir(Concat($(VARDIR)/,mdir))				@@\
+	@MakeFlagsToShellFlags(i,set +e); \				@@\
+	cd Concat($(DESTDIR)$(LIBDIR)/,cdir) && \			@@\
+	$(RM) -r rdir && \						@@\
+	$(LN) Concat($(VARDIR)/,mdir) ldir
+#else
+#define LinkVarDirectory(mdir,cdir,rdir,ldir)
+#endif
 #endif
 
 

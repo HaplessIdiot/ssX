@@ -1,5 +1,5 @@
-/* $XConsortium: Xtranstli.c /main/26 1995/12/13 18:07:13 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.4 1996/08/27 03:51:12 dawes Exp $ */
+/* $TOG: Xtranstli.c /main/27 1997/08/06 18:48:20 kaleb $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.5 1996/09/01 04:14:14 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -383,10 +383,15 @@ struct netbuf	*netbufp;
     struct nd_hostserv	nd_hostserv;
     struct nd_addrlist *nd_addrlistp = NULL;
     void *handlep;
+    long lport;
     
     PRMSG(3,"TLIAddrToNetbuf(%d,%s,%s)\n", tlifamily, host, port );
     
     if( (handlep=setnetconfig()) == NULL )
+	return -1;
+
+    lport = strtol (port, (char**)NULL, 10);
+    if (lport < 1024 || lport > USHRT_MAX)
 	return -1;
     
     nd_hostserv.h_host = host;
@@ -793,6 +798,7 @@ char		*port;
     char    portbuf[PORTBUFSIZE];
     struct t_bind	*req;
     struct sockaddr_in	*sinaddr;
+    long		tmpport;
     
     PRMSG(2,"TLIINETCreateListener(%x->%d,%s)\n", ciptr,
 	ciptr->fd, port ? port : "NULL" );
@@ -809,13 +815,10 @@ char		*port;
     
     if (is_numeric (port))
     {
-	short tmpport = (short) atoi (port);
-	
-	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
+	tmpport = X_TCP_PORT + strtol (port, (char**)NULL, 10);
+	sprintf(portbuf,"%u", tmpport);
+	port = portbuf;
     }
-    else
-	strncpy(portbuf,port,PORTBUFSIZE);
-    port=portbuf;
 #endif
     
     if( (req=(struct t_bind *)t_alloc(ciptr->fd,T_BIND,T_ALL)) == NULL )
@@ -836,9 +839,9 @@ char		*port;
 	    return TRANS_CREATE_LISTENER_FAILED;
 	}
     } else {
-	sinaddr=(struct sockaddr_in *)req->addr.buf;
+	sinaddr=(struct sockaddr_in *) req->addr.buf;
 	sinaddr->sin_family=AF_INET;
-	sinaddr->sin_port=0;
+	sinaddr->sin_port=htons(0);
 	sinaddr->sin_addr.s_addr=0;
     }
 
@@ -1109,6 +1112,7 @@ char		*port;
 #define PORTBUFSIZE	64	/* what is a real size for this? */
     char	portbuf[PORTBUFSIZE];	
     struct	t_call	*sndcall;
+    long	tmpport;
     
     PRMSG(2, "TLIINETConnect(%s,%s)\n", host, port, 0);
     
@@ -1124,13 +1128,11 @@ char		*port;
     
     if (is_numeric (port))
     {
-	short tmpport = (short) atoi (port);
-	
-	sprintf(portbuf,"%d", X_TCP_PORT+tmpport );
+	tmpport = X_TCP_PORT + strtol (port, (char**)NULL, 10);
+	sprintf(portbuf,"%u", tmpport );
+	port = portbuf;
     }
-    else
 #endif
-	strncpy(portbuf,port,PORTBUFSIZE);
     
     if( (sndcall=(struct t_call *)t_alloc(ciptr->fd,T_CALL,T_ALL)) == NULL )
     {
@@ -1138,10 +1140,10 @@ char		*port;
 	return TRANS_CONNECT_FAILED;
     }
     
-    if( TRANS(TLIAddrToNetbuf)(ciptr->index, host, portbuf, &(sndcall->addr) ) < 0 )
+    if( TRANS(TLIAddrToNetbuf)(ciptr->index, host, port, &(sndcall->addr) ) < 0 )
     {
 	PRMSG(1, "TLIINETConnect() unable to resolve name:%s.%s\n",
-	      host, portbuf, 0 );
+	      host, port, 0 );
 	t_free((char *)sndcall,T_CALL);
 	return TRANS_CONNECT_FAILED;
     }

@@ -1,6 +1,11 @@
-XCOMM $XConsortium: Imakefile /main/12 1996/09/04 09:36:17 kaleb $
-XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.2 1996/11/18 13:43:10 dawes Exp $
+XCOMM $TOG: Imakefile /main/14 1997/08/11 12:02:08 sekhar $
+XCOMM
+XCOMM
+XCOMM
+XCOMM $XFree86: xc/programs/xkbcomp/Imakefile,v 3.3 1996/12/23 07:11:35 dawes Exp $
 #define IHaveSubdirs
+
+#define PassCDebugFlags CDEBUGFLAGS="$(CDEBUGFLAGS)" LDSTRIPFLAGS="$(LDSTRIPFLAGS)"
 
           SRCS = xkbcomp.c xkbscan.c expr.c vmod.c indicators.c misc.c \
 		 keymap.c keycodes.c keytypes.c compat.c action.c alias.c \
@@ -19,16 +24,20 @@ ROOT_DEFINES = -DDFLT_XKB_CONFIG_ROOT=\"$(LIBDIR)/xkb\"
 
 INCLUDES = -I$(EXTINCSRC)
 
+MakeSubdirs($(SUBDIRS))
+
 all::
 
 SpecialCObjectRule(xkbpath,$(ICONFIGFILES),$(ROOT_DEFINES))
 
 YaccFile(xkbparse,$(YFLAGS))
 
+
 install::
-	@echo "Creating $(LIBDIR)/xkb and $(LIBDIR)/xkb/compiled"
+	@echo "Creating $(LIBDIR)/xkb
 	MakeDir($(DESTDIR)$(LIBDIR)/xkb)
-	MakeDir($(DESTDIR)$(LIBDIR)/xkb/compiled)
+
+LinkVarDirectory(xkb,xkb,compiled,compiled)
 
 InstallProgram(xkbcomp,$(LIBDIR)/xkb)
 

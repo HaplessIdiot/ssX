@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.11 1997/07/10 06:36:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng.h,v 1.12 1997/07/29 12:08:03 hohndel Exp $ */
 
 #ifndef _TSENG_H
 #define _TSENG_H
@@ -19,6 +19,7 @@ typedef struct {
   unsigned char PLL_ctrl;
   unsigned char PLL_w_idx;
   unsigned char PLL_r_idx;
+  unsigned char timingctrl; /* for STG170x */
   } GenDACstate;
 
 
@@ -73,6 +74,8 @@ typedef enum {
 #define Is_W32i     ( (et4000_type >= TYPE_ET4000W32I) && (et4000_type < TYPE_ET4000W32P) )
 #define Is_W32_W32i ( (et4000_type >= TYPE_ET4000W32) && (et4000_type < TYPE_ET4000W32P) )
 #define Is_W32p     ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type < TYPE_ET6000) )
+#define Is_W32p_ab  ( (et4000_type >= TYPE_ET4000W32P) && (et4000_type <= TYPE_ET4000W32Pb) )
+#define Is_W32p_cd  ( (et4000_type >= TYPE_ET4000W32Pc) && (et4000_type <= TYPE_ET4000W32Pd) )
 #define Is_W32p_up  ( et4000_type >= TYPE_ET4000W32P )
 
 
@@ -94,7 +97,7 @@ typedef enum {
     ATT20C491_DAC,
     ATT20C492_DAC,
     ICS5341_DAC,
-    GENDAC_DAC,
+    ICS5301_DAC,
     STG1700_DAC,
     STG1702_DAC,
     STG1703_DAC,
@@ -111,8 +114,39 @@ void Check_Tseng_Ramdac();
                      || (TsengRamdacType == ATT20C492_DAC) \
                      || (TsengRamdacType == ATT20C493_DAC) )
 
+#define DAC_is_GenDAC ( (TsengRamdacType == ICS5341_DAC) \
+                     || (TsengRamdacType == ICS5301_DAC) )
+
+#define DAC_is_STG170x ( (TsengRamdacType == STG1700_DAC) \
+                      || (TsengRamdacType == STG1702_DAC) \
+                      || (TsengRamdacType == STG1703_DAC) )
+
 #define CHIP_SUPPORTS_LINEAR (et4000_type >= TYPE_ET4000W32I)
 
+#define Gendac_programmable_clock \
+        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
+          (   (OFLG_ISSET(CLOCK_OPTION_ICS5341, &vga256InfoRec.clockOptions)) \
+           || (OFLG_ISSET(CLOCK_OPTION_ICS5301, &vga256InfoRec.clockOptions)) \
+          ) \
+        )
+
+#define STG170x_programmable_clock \
+        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
+          (OFLG_ISSET(CLOCK_OPTION_STG1703, &vga256InfoRec.clockOptions)) \
+        )
+
+#define ICD2061a_programmable_clock \
+        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
+          (OFLG_ISSET(CLOCK_OPTION_ICD2061A, &vga256InfoRec.clockOptions)) \
+        )
+
+#define ET6000_programmable_clock \
+        ( (OFLG_ISSET(CLOCK_OPTION_PROGRAMABLE, &vga256InfoRec.clockOptions)) && \
+          (OFLG_ISSET(CLOCK_OPTION_ET6000, &vga256InfoRec.clockOptions)) \
+        )
+
+
+extern int Tseng_bus;
 #define BUS_ISA 0
 #define BUS_MCA 1
 #define BUS_VLB 2
@@ -126,13 +160,12 @@ void Check_Tseng_Ramdac();
 /* pixel multiplexing variables */
 extern Bool Tseng_pixMuxPossible;
 extern int Tseng_nonMuxMaxClock;
-extern int Tseng_pixMuxMinClock;
 extern int Tseng_pixMuxMinWidth;
 
 Bool Tseng_ET4000ClockSelect(int no);
 Bool Tseng_LegendClockSelect(int no);
 Bool Tseng_ET6000ClockSelect(int freq);
-Bool Tseng_ICS5341ClockSelect(int freq);
+Bool Tseng_GenDACClockSelect(int freq);
 Bool Tseng_STG1703ClockSelect(int freq);
 Bool Tseng_ICD2061AClockSelect(int freq);
 void tseng_set_dacspeed(int bytesperpixel);

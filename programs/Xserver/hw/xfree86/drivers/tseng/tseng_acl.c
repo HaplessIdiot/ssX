@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.6 1997/06/29 11:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_acl.c,v 1.7 1997/07/10 06:36:15 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -66,6 +66,7 @@ ByteP ACL_SECONDARY_EDGE;
 WordP ACL_SECONDARY_ERROR_TERM,
       ACL_SECONDARY_DELTA_MINOR,
       ACL_SECONDARY_DELTA_MAJOR;
+ByteP ACL_TRANSFER_DISABLE;
 
 ByteP W32BytePtr;
 WordP W32WordPtr;
@@ -92,6 +93,25 @@ int W32OpTable[] = {
     0xbb, /* XorInverted	NOT src OR dst */
     0x77, /* Xnand		NOT src OR NOT dst */
     0xff  /* Xset		1 */
+};
+
+int W32OpTable_planemask[] = {
+    0x0a, /* Xclear		0 */
+    0x8a, /* Xand		src AND dst */
+    0x4a, /* XandReverse	src AND NOT dst */
+    0xca, /* Xcopy		src */
+    0x2a, /* XandInverted	NOT src AND dst */
+    0xaa, /* Xnoop		dst */
+    0x6a, /* Xxor		src XOR dst */
+    0xea, /* Xor		src OR dst */
+    0x1a, /* Xnor		NOT src AND NOT dst */
+    0x9a, /* Xequiv		NOT src XOR dst */
+    0x5a, /* Xinvert		NOT dst */
+    0xda, /* XorReverse		src OR NOT dst */
+    0x3a, /* XcopyInverted	NOT src */
+    0xba, /* XorInverted	NOT src OR dst */
+    0x7a, /* Xnand		NOT src OR NOT dst */
+    0xfa  /* Xset		1 */
 };
 
 int W32PatternOpTable[] = {
@@ -243,6 +263,7 @@ void tseng_init_acl()
 
 
     ACL_PATTERN_WRAP		= (ByteP) (MMioBase + 0x90);
+    ACL_TRANSFER_DISABLE	= (ByteP) (MMioBase + 0x91); /* ET6000 only */
     ACL_SOURCE_WRAP		= (ByteP) (MMioBase + 0x92);
 
     ACL_X_COUNT			= (WordP) (MMioBase + 0x98);
@@ -309,10 +330,11 @@ void tseng_init_acl()
 
     if (Is_ET6K)
     {
-      *ACL_STEPPING_INHIBIT = 0x0; /* let all maps (Src, Dst, Mix, Pat) step */
-      *ACL_6K_CONFIG = 0x00;        /* maximum performance -- what did you think? */
+      *ACL_STEPPING_INHIBIT = 0x0; /* Undefined at power-on, let all maps (Src, Dst, Mix, Pat) step */
+      *ACL_6K_CONFIG = 0x00;       /* maximum performance -- what did you think? */
       *ACL_POWER_CONTROL = 0x01;   /* conserve power when ACL is idle */
       *ACL_MIX_CONTROL = 0x33;
+      *ACL_TRANSFER_DISABLE = 0x00;  /* Undefined at power-on, enable all transfers */
     }
     else /* W32i/W32p */
     {
@@ -353,17 +375,31 @@ void tseng_init_acl()
        * Since the w32p revs C and D don't have any memory mapped when the
        * accelerator registers are used it is necessary to use the MMUs to
        * provide a semblance of linear memory. Fortunately on these chips
-       * the MMU appertures are 1 megabyte each. So as long as we are willing
-       * to only use 3 megs of video memory we can have some acceleration.
-       * If we ever get the CPU-to-screen-color-expansion stuff working then
-       * we will only be able to use 2 megs since MMU 2 will be used for
-       * that.
+       * the MMU appertures are 1 megabyte each. So as long as we are
+       * willing to only use 3 megs of video memory we can have some
+       * acceleration. If we ever get the CPU-to-screen-color-expansion
+       * stuff working then we will NOT need to sacrifice the extra 1MB
+       * provided by MBP2, because we could do dynamic switching of the APT
+       * bit in the MMU control register.
        *
-       * MBP2 is hardwired to 0x200000 on when linear memory mode is enabled,
-       * except on rev a (where it is programmable).
+       * On W32p rev c and d MBP2 is hardwired to 0x200000 when linear
+       * memory mode is enabled. (On rev a it is programmable).
+       *
+       * W32p rev a and b have their first 2M mapped in the normal (non-MMU)
+       * way, and MMU0 and MMU1, each 512 kb wide, can be used to access
+       * another 1MB of memory. This totals to 3MB of mem. available in
+       * linear memory when the accelerator is enabled.
        */
-      *((LongP) (MMioBase + 0x00)) = 0x0L;
-      *((LongP) (MMioBase + 0x04)) = 0x100000;
+      if (Is_W32p_ab)
+      {
+        *((LongP) (MMioBase + 0x00)) = 0x200000L;
+        *((LongP) (MMioBase + 0x04)) = 0x280000L;
+      }
+      else /* rev C & D */
+      {
+        *((LongP) (MMioBase + 0x00)) = 0x0L;
+        *((LongP) (MMioBase + 0x04)) = 0x100000L;
+      }
     }
     
     /*

@@ -1,3 +1,30 @@
+XFree86 3.9m (12 August 1997)
+1184. Preliminary experimental support for the Millennium II (#852-857,
+      Andrew Vanderstock).
+1183. Recognise the rev 3 Mystique, and hopefully set everything up
+      correctly for it, change MMIO/fb mapping for Mystique rev >=3.
+      (David Dawes)
+1182. Patches to both XAA and the Glint sources that enable the
+      ScanlineScreenToScreen colour expansion (#873, Alan Hourihane).
+1181. Fix problem of xkbcomp not generating .dir files during install
+      (#872, Kaleb Keithley).
+1180. Fix problem with possible denial of service attack using the X server
+      (#867, Kaleb Keithley).
+1179. Update VidModes.sgml to latest version (#871, Eric Raymond).
+1178. Fix I128 support for AXP (#868, Robin Cutshaw).
+1177. Add planemask support to most XAA functions for all tseng chips
+      (#869, Koen Gadeyne).
+1176. Fix text rendering for W32 at 16bpp, always determine bus type, fix
+      bug in XAA color expansion (#865, Koen Gadeyne).
+1175. Fix ET6000 dram speed code, disable 32bpp on ics5301 ramdacs (#864,
+      Koen Gadeyne).
+1174. Clean up RAMDAC handling in tseng driver, extend stg1702 support, and
+      fix problems caused by treating unknown RAMDACs as AT&T compatible
+      (#862, Koen Gadeyne).
+1173. Fix support for linear memory mode on W32p rev a&b (#861, Koen Gadeyne).
+1172. Fix ET6000 black screen problem (#861, Koen Gadeyne).
+1171. Changes to Amiga XKB code (#860, Bernd Ernesti).
+
 XFree86 3.9l (31 July 1997)
 1170. Fix parsing of DPMS parameters in config file.
 1169. Catch a NULL dereference in lib/X11/lcFile.c (#843, Dirk Hohndel).
@@ -5215,4 +5242,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.517 1997/07/31 11:50:44 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.518 1997/07/31 13:02:15 dawes Exp $
