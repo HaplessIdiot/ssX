@@ -1,4 +1,6 @@
 XFree86 3.9.17Z (17 February 2000)
+3804. Fix some typos in the mouse driver that affect some of the extended
+      PS/2 protocols (Kazutaka Yokota).
 3803. Xterm patch #128 (#3713, Thomas Dickey).
 3802. Fix a crash in the XKB library code (#3712,
       Paulo Cesar Pereira de Andrade).
@@ -9722,4 +9724,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1012 2000/02/16 19:10:34 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1013 2000/02/17 14:16:24 dawes Exp $
