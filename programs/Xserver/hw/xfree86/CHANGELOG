@@ -1,4 +1,5 @@
 XFree86 4.3.99.902 (xx December 2003)
+ 651. Update XKB registry file rules/xfree86.xml (Sergey Oudaltsov).
  650. Fix '-nolisten tcp' when building with IPv6 disabled (Bugzilla #651,
       Andrew Bevitt).
  649. Add some missing dead-key compose sequences for Vietnamese (#5981,
@@ -18337,7 +18338,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3018 2003/12/05 04:10:31 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3019 2003/12/05 05:13:02 dawes Exp $
 
 
 
