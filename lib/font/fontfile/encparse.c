@@ -20,7 +20,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.16 2001/08/16 14:33:46 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/encparse.c,v 1.17 2001/10/28 03:32:45 tsi Exp $ */
 
 /* Parser for encoding files */
 
@@ -32,7 +32,7 @@ THE SOFTWARE.
 #include <string.h>
 #include <stdio.h>
 
-#ifndef FONTENC_NO_FONTFILE
+#ifndef FONTENC_NO_LIBFONT
 
 #include "fntfilio.h"
 #include "fntfilst.h"
@@ -53,11 +53,6 @@ typedef gzFile FontFilePtr;
 #define MAXFONTFILENAMELEN 1024
 #define MAXFONTNAMELEN 1024
 
-#endif
-
-#ifndef FONTENC_ENCODINGS_DIRECTORY
-#define FONTENC_ENCODINGS_DIRECTORY \
-  "/usr/X11R6/lib/X11/fonts/encodings/encodings.dir"
 #endif
 
 #include "fontenc.h"

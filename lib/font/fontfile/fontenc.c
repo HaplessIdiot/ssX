@@ -20,13 +20,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.12 2001/08/13 21:46:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/fontfile/fontenc.c,v 1.13 2001/08/20 21:02:04 dawes Exp $ */
 
 /* Backend-independent encoding code */
 
 #include <string.h>
 
-#ifndef FONTENC_NO_FONTFILE
+#ifndef FONTENC_NO_LIBFONT
 
 #include "fontmisc.h"           /* defines xalloc and friends */
 #include "fntfilst.h"
