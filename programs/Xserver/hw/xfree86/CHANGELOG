@@ -1,4 +1,5 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 368. Fix bug in PCI code for Solaris/SPARC (Marc La France).
  367. When enabling PCI adapters, also enable their bus mastering capability;
       Consequently, deprecate xf86EnablePciBusMaster() (Marc La France).
  366. Fix lndir's handling of relative symbolic links, and update the man page
@@ -15257,4 +15258,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2327 2002/10/07 15:28:53 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2328 2002/10/08 22:13:59 tsi Exp $

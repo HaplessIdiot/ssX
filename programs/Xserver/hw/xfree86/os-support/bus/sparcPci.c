@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.9tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/sparcPci.c,v 1.10tsi Exp $ */
 /*
  * Copyright (C) 2001 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -45,10 +45,14 @@ sparcMapAperture(int iScreen, int Flags,
 		 unsigned long long Base, unsigned long Size)
 {
     pointer result;
+    static int lastFlags = 0;
 
     /* Assume both Base & Size are multiples of the page size */
 
-    if (apertureFd < 0) {
+    if ((apertureFd < 0) || (Flags != lastFlags)) {
+	if (apertureFd >= 0)
+	    close(apertureFd);
+	lastFlags = Flags;
 	apertureFd = open(apertureDevName,
 	    (Flags & VIDMEM_READONLY) ? O_RDONLY : O_RDWR);
 	if (apertureFd < 0)
