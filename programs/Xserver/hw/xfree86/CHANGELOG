@@ -1,3 +1,7 @@
+XFree86 3.1.1Ac (2 June 1995)
+113. Fix(?) W32 problem introduced with modified SaveScreen code.
+112. Update "M" parameter calculation for Trio boards (Harald Koenig).
+
 XFree86 3.1.1Ab (2 June 1995)
 111. Preliminary support for the Cirrus 5436 (Harm Hanemaayer).
 110. PCI base address detection for the Cirrus driver (Harm Hanemaayer).
