@@ -1,5 +1,5 @@
 /*
- * $Id: fbscreen.c,v 1.3 1999/12/30 02:33:59 robin Exp $
+ * $Id: fbscreen.c,v 1.4 2000/01/09 17:54:34 alanh Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -196,7 +196,9 @@ fbScreenInit(ScreenPtr	pScreen,
     if (!fbFinishScreenInit(pScreen, pbits, xsize, ysize, dpix, dpiy, 
 			    width, bpp))
 	return FALSE;
+#ifndef XFree86Server
     fbInitializeBackingStore (pScreen);
+#endif
     return TRUE;
 }
 

@@ -1,5 +1,5 @@
 /*
- * $Id: fbimage.c,v 1.1 1999/11/19 13:53:44 hohndel Exp $
+ * $Id: fbimage.c,v 1.2 2000/01/09 17:54:34 alanh Exp $
  *
  * Copyright © 1998 Keith Packard
  *
@@ -24,6 +24,10 @@
 /* $XFree86: $ */
 
 #include "fb.h"
+#ifdef XFree86LOADER
+#include "xf86.h"
+#include "xf86_ansic.h"
+#endif
 
 
 void
