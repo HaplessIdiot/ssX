@@ -1,4 +1,5 @@
 XFree86 4.4.99.13 (xx August 2004)
+ 168. Fix glint driver build warning (Bugzilla #1462, Nicolas Joly).
  167. Fix some errors in the Dzongka/Tibetan XKB map (Bugzilla #1450,
       Christopher Fynn).
  166. Update the vmware driver to save register state before changing it
@@ -19072,7 +19073,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3305 2004/08/27 15:39:32 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3306 2004/08/27 16:30:14 dawes Exp $
 
 
 
