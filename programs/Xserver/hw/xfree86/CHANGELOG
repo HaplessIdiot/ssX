@@ -1,4 +1,10 @@
 XFree86 3.0Fb (23 September 1994)
+357. Enable ICS2595 clockchip support.
+356. Enable 32bpp for Ti3025+964.
+355. Change font cache and pixmap expansion allocation policy for S3
+     server.  This allows better performance when there isn't much
+     offscreen memory available (Hans Nasten). 
+354. Fix for banked ImageFill for bpp>8 (Hans Nasten).
 353. Updates to XF86_Accel man page.
 352. Remove references to 'Xconfig' in source code.
 351. Updates for ICS2595 code (Norbert Distler).
