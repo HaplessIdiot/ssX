@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/io.c,v 3.14 2001/07/23 13:15:53 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/io.c,v 3.15 2001/07/25 15:05:22 dawes Exp $ */
 
 #include	<X11/Xtrans.h>
 #include	<stdio.h>
@@ -136,7 +136,7 @@ ReadRequest(ClientPtr client)
 	return -1;
     oci = oc->input;
     fd = oc->fd;
-    if (oci == NULL || fd < 0)
+    if (oc != NULL && fd < 0)
 	return -1;
 		
     if (AvailableInput) {

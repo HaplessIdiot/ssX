@@ -42,7 +42,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.9 2001/04/01 14:00:20 tsi Exp $ */
+/* $XFree86: xc/programs/xfs/difs/dispatch.c,v 3.10 2001/06/25 20:40:17 paulo Exp $ */
 
 #include	<stdlib.h>
 #include	"dispatch.h"
@@ -253,7 +253,7 @@ ProcEstablishConnection(ClientPtr client)
 
     /* build up a list of the stuff */
     for (i = 0, ad = auth_data; i < (int)prefix->num_auths; i++) {
-	if (ad - (char *)auth_data > stuff->length - 4) {
+	if (ad - (char *)auth_data > (stuff->length << 2) - 4) {
 	    int lengthword = stuff->length;
 
 	    SendErrToClient(client, FSBadLength, (pointer)&lengthword);
@@ -273,7 +273,7 @@ ProcEstablishConnection(ClientPtr client)
     }
     if (!(int)prefix->num_auths)
 	ad += 4;
-    if (ad - (char *)auth_data != stuff->length) {
+    if (ad - (char *)auth_data > (stuff->length << 2)) {
 	int lengthword = stuff->length;
 
 	SendErrToClient(client, FSBadLength, (pointer)&lengthword);
@@ -391,7 +391,7 @@ ProcEstablishConnection(ClientPtr client)
  */
 
 void
-SendErrToClient(
+DoSendErrToClient(
     ClientPtr   client,
     int         error,
     pointer     data)		/* resource id, format, resolution, etc */
@@ -594,8 +594,10 @@ ProcCreateAC(ClientPtr client)
     	}
     }
     /* build up a list of the stuff */
-    for (i = 0, ad = (char *)stuff + SIZEOF(fsCreateACReq); i < (int)stuff->num_auths; i++) {
-	if (ad - (char *)stuff + SIZEOF(fsCreateACReq) > stuff->length - 4) {
+    for (i = 0, ad = (char *)stuff + SIZEOF(fsCreateACReq);
+         i < (int)stuff->num_auths; i++) {
+	if (ad - (char *)stuff + SIZEOF(fsCreateACReq) >
+	    (stuff->length << 2) - 4) {
 	    int lengthword = stuff->length;
 
 	    SendErrToClient(client, FSBadLength, (pointer)&lengthword);
@@ -615,7 +617,7 @@ ProcCreateAC(ClientPtr client)
     }
     if (!(int)stuff->num_auths)
 	ad += 4;
-    if (ad - (char *)stuff + SIZEOF(fsCreateACReq) != stuff->length) {
+    if (ad - (char *)stuff > (stuff->length << 2)) {
 	int lengthword = stuff->length;
 
 	SendErrToClient(client, FSBadLength, (pointer)&lengthword);
@@ -737,8 +739,8 @@ ProcSetResolution(ClientPtr client)
     REQUEST(fsSetResolutionReq);
     REQUEST_AT_LEAST_SIZE(fsSetResolutionReq);
 
-    if (stuff->length - SIZEOF(fsResolution) != stuff->num_resolutions *
-	sizeof(fsResolution)) {
+    if ((stuff->length << 2) - SIZEOF(fsSetResolutionReq) <
+        stuff->num_resolutions * SIZEOF(fsResolution)) {
 	int lengthword = stuff->length;
 
 	SendErrToClient(client, FSBadLength, &lengthword);
@@ -767,7 +769,7 @@ ProcGetResolution(ClientPtr client)
     REQUEST(fsReq);
     REQUEST_AT_LEAST_SIZE(fsReq);
 
-    if (stuff->length - SIZEOF(fsResolution) != client->num_resolutions *
+    if ((stuff->length << 2) - SIZEOF(fsResolution) < client->num_resolutions *
 	sizeof(fsResolution)) {
 	int lengthword = stuff->length;
 
@@ -993,7 +995,7 @@ ProcCloseFont(ClientPtr client)
 }
 
 void
-CloseDownClient(ClientPtr client)
+DoCloseDownClient(ClientPtr client)
 {
     if (client->clientGone != CLIENT_GONE) {
 	DeleteClientFontStuff(client);
