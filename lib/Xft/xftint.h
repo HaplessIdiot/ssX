@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftint.h,v 1.29 2002/02/15 07:36:11 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftint.h,v 1.30 2002/05/24 05:54:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -75,7 +75,7 @@ typedef struct _XftUcsHash {
 
 typedef struct _XftFtFile {
     struct _XftFtFile	*next;
-    int			ref;	    /* number of fonts using this file */
+    int			ref;	    /* number of font infos using this file */
     
     char		*file;	    /* file name */
     int			id;	    /* font index within that file */
@@ -88,13 +88,43 @@ typedef struct _XftFtFile {
 } XftFtFile;
 
 /*
+ * This structure holds the data extracted from a pattern
+ * needed to create a unique font object.
+ */
+
+struct _XftFontInfo {
+    /*
+     * Hash value (not include in hash value computation)
+     */
+    FcChar32		hash;
+    XftFtFile		*file;		/* face source */
+    /*
+     * Rendering options
+     */
+    FT_F26Dot6		size;
+    FcBool		antialias;	/* doing antialiasing */
+    int			rgba;		/* subpixel order */
+    FT_Matrix		matrix;		/* glyph transformation matrix */
+    FcBool		transform;	/* non-identify matrix? */
+    FT_Int		load_flags;	/* glyph load flags */
+    FcBool		render;		/* whether to use the Render extension */
+    /*
+     * Internal fields
+     */
+    int			spacing;
+    FcBool		minspace;
+    int			char_width;
+};
+
+/*
  * Internal version of the font with private data
  */
 
 typedef struct _XftFontInt {
     XftFont		public;		/* public fields */
-    XftFont		*next;		/* list of fonts for this display */
-    XftFtFile		*file;		/* Associated free type file */
+    XftFont		*next;		/* all fonts on display */
+    XftFont		*hash_next;	/* fonts in this hash chain */
+    XftFontInfo		info;		/* Data from pattern */
     int			ref;		/* reference count */
     /*
      * Per-glyph information, indexed by glyph ID
@@ -115,20 +145,8 @@ typedef struct _XftFontInt {
     GlyphSet		glyphset;	/* Render glyphset */
     XRenderPictFormat	*format;	/* Render format for glyphs */
     /*
-     * Rendering options
+     * Glyph memory management fields
      */
-    FT_F26Dot6		size;
-    FcBool		antialias;	/* doing antialiasing */
-    int			rgba;		/* subpixel order */
-    FcBool		transform;	/* non-identity matrix */
-    FT_Matrix		matrix;		/* glyph transformation matrix */
-    FT_Int		load_flags;	/* glyph load flags */
-    /*
-     * Internal fields
-     */
-    FcBool		minspace;
-    int			char_width;
-    int			spacing;
     unsigned long	glyph_memory;
     unsigned long	max_glyph_memory;
     FcBool		use_free_glyphs;   /* Use XRenderFreeGlyphs */
@@ -169,6 +187,8 @@ typedef struct _XftSolidColor {
 
 #define XFT_NUM_SOLID_COLOR	16
 
+#define XFT_NUM_FONT_HASH	127
+
 typedef struct _XftDisplayInfo {
     struct _XftDisplayInfo  *next;
     Display		    *display;
@@ -177,10 +197,13 @@ typedef struct _XftDisplayInfo {
     FcBool		    hasRender;
     XftFont		    *fonts;
     XRenderPictFormat	    *solidFormat;
-    XftSolidColor	    colors[XFT_NUM_SOLID_COLOR];
     unsigned long	    glyph_memory;
     unsigned long	    max_glyph_memory;
     FcBool		    use_free_glyphs;
+    int			    num_unref_fonts;
+    int			    max_unref_fonts;
+    XftSolidColor	    colors[XFT_NUM_SOLID_COLOR];
+    XftFont		    *fontHash[XFT_NUM_FONT_HASH];
 } XftDisplayInfo;
 
 /*
@@ -189,6 +212,13 @@ typedef struct _XftDisplayInfo {
  */
 #define XFT_DPY_MAX_GLYPH_MEMORY    (4 * 1024 * 1024)
 #define XFT_FONT_MAX_GLYPH_MEMORY   (1024 * 1024)
+
+/*
+ * By default, keep the last 16 unreferenced fonts around to
+ * speed reopening them.  Note that the glyph caching code
+ * will keep the global memory usage reasonably limited
+ */
+#define XFT_DPY_MAX_UNREF_FONTS	    16
 
 extern XftDisplayInfo	*_XftDisplayInfo;
 
@@ -318,6 +348,9 @@ XftDrawRenderPrepare (XftDraw	*draw);
 /* xftfreetype.c */
 FcBool
 _XftSetFace (XftFtFile *f, FT_F26Dot6 size, FT_Matrix *matrix);
+
+void
+XftFontManageMemory (Display *dpy);
 
 /* xftglyph.c */
 void

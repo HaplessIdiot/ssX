@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/Xft.h,v 1.24 2002/05/23 23:01:56 keithp Exp $
+ * $XFree86: xc/lib/Xft/Xft.h,v 1.25 2002/05/24 05:54:02 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -47,8 +47,11 @@
 #define XFT_RENDER		"render"
 #define XFT_XLFD		"xlfd"
 #define XFT_MAX_GLYPH_MEMORY	"maxglyphmemory"
+#define XFT_MAX_UNREF_FONTS	"maxunreffonts"
 
 extern FT_Library	_XftFTlibrary;
+
+typedef struct _XftFontInfo XftFontInfo;
 
 typedef struct _XftFont {
     int		ascent;
@@ -323,6 +326,21 @@ XftLockFace (XftFont *font);
 
 void
 XftUnlockFace (XftFont *font);
+
+XftFontInfo *
+XftFontInfoCreate (Display *dpy, FcPattern *pattern);
+
+void
+XftFontInfoDestroy (Display *dpy, XftFontInfo *fi);
+
+FcChar32
+XftFontInfoHash (XftFontInfo *fi);
+
+FcBool
+XftFontInfoEqual (XftFontInfo *a, XftFontInfo *b);
+
+XftFont *
+XftFontOpenInfo (Display *dpy, FcPattern *pattern, XftFontInfo *fi);
 
 XftFont *
 XftFontOpenPattern (Display *dpy, FcPattern *pattern);

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftcore.c,v 1.6 2002/02/15 07:36:10 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftcore.c,v 1.7 2002/02/19 07:51:20 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -241,9 +241,9 @@ _XftSharpGlyphFind (XftDraw *draw, XftFont *public)
 {
     XftFontInt *font = (XftFontInt *) public;
 
-    if (!font->antialias)
+    if (!font->info.antialias)
 	return _XftSharpGlyphMono;
-    else if (font->rgba == FC_RGBA_NONE)
+    else if (font->info.rgba == FC_RGBA_NONE)
 	return _XftSharpGlyphGray;
     else
 	return _XftSharpGlyphRgba;
@@ -859,9 +859,9 @@ _XftSmoothGlyphFind (XftDraw *draw, XftFont *public)
 {
     XftFontInt *font = (XftFontInt *) public;
 
-    if (!font->antialias)
+    if (!font->info.antialias)
 	return _XftSmoothGlyphMono;
-    else if (font->rgba == FC_RGBA_NONE)
+    else if (font->info.rgba == FC_RGBA_NONE)
     {
 	switch (XftDrawBitsPerPixel (draw)) {
 	case 32:
@@ -958,7 +958,7 @@ XftGlyphCore (XftDraw	*draw,
     
     g = glyphs;
     n = nglyphs;
-    if ((font->antialias || color->color.alpha != 0xffff) &&
+    if ((font->info.antialias || color->color.alpha != 0xffff) &&
 	_XftSmoothGlyphPossible (draw))
     {
 	XGlyphInfo	gi;
@@ -1034,6 +1034,7 @@ XftGlyphCore (XftDraw	*draw,
 	    XftSwapImage (image);
 	XPutImage (dpy, draw->drawable, draw->core.gc, image, 0, 0, ox, oy,
 		   gi.width, gi.height);
+	XDestroyImage (image);
     }
     else
     {
@@ -1118,7 +1119,7 @@ XftGlyphSpecCore (XftDraw	*draw,
     if (x1 == x2 || y1 == y2)
 	goto bail1;
 
-    if ((font->antialias || color->color.alpha != 0xffff) &&
+    if ((font->info.antialias || color->color.alpha != 0xffff) &&
 	_XftSmoothGlyphPossible (draw))
     {
 	XImage		*image;
@@ -1263,7 +1264,7 @@ XftGlyphFontSpecCore (XftDraw		*draw,
     }
     
     for (i = 0; i < nglyphs; i++)
-	if (((XftFontInt *) glyphs[i].font)->antialias)
+	if (((XftFontInt *) glyphs[i].font)->info.antialias)
 	    break;
     
     if ((i != nglyphs || color->color.alpha != 0xffff) &&
