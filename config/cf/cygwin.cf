@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.36 2002/02/02 11:39:59 alanh Exp $
+XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.37 2002/04/06 20:11:21 alanh Exp $
 
 #ifndef OSName
 #define OSName                  Cygwin
@@ -24,6 +24,7 @@ XCOMM platform:  $XFree86: xc/config/cf/cygwin.cf,v 3.36 2002/02/02 11:39:59 ala
 #define UnixCpp
 #endif
 
+#define HasGcc2			YES
 #define HasGcc2ForCplusplus     YES
 #define GccUsesGas              YES
 #define UseGas                  YES
