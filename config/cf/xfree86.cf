@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.288 2000/05/23 04:47:34 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.289 2000/06/14 00:16:04 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -1077,8 +1077,19 @@ XFREE86JAPANESEDOCDIR = $(DOCDIR)/Japanese
 # define OtherIConfigFiles $(IRULESRC)/xfree86.cf $(IRULESRC)/xf86.rules
 #endif
 
+/*
+ * As of 3.9.15, XFree86 release versions are X.Y.Z, and XFree86Version is:
+ *
+ *    X * 1000 + Y * 100 + Z
+ *
+ * For the 3.3.x branch, the versions are X.Y.Z.W, with XFree86Version
+ * calculated as:
+ *
+ *    X * 1000 + Y * 100 + Z * 10 + W
+ *
+ */
 #ifndef XFree86Version
-# define XFree86Version	4000
+# define XFree86Version	4001
 #endif
 
 #ifndef XVendorString
