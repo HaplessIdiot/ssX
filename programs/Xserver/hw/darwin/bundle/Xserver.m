@@ -6,7 +6,7 @@
 //
 //  Created by Andreas Monitzer on January 6, 2001.
 //
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.25 2001/09/20 19:35:11 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/Xserver.m,v 1.26 2001/09/23 04:04:49 torrey Exp $ */
 
 #import "Xserver.h"
 #import "Preferences.h"
@@ -314,7 +314,7 @@ static NSRect aquaMenuBarBox;
     // Calculate the height of the menu bar so rootless mode can avoid it
     if (quartzRootless) {
         aquaMenuBarHeight = NSHeight([[NSScreen mainScreen] frame]) -
-                            NSMaxY([[NSScreen mainScreen] visibleFrame]);
+                            NSMaxY([[NSScreen mainScreen] visibleFrame]) - 1;
         aquaMenuBarBox =
             NSMakeRect(0, NSMaxY([[NSScreen mainScreen] visibleFrame]) + 1,
                        NSWidth([[NSScreen mainScreen] frame]),

@@ -1,9 +1,9 @@
 XFree86 4.1.99.2 (xx September 2001)
- 281. XDarwin fixes:
-       - Turn Xinerama on by default in Quartz modes.
-       - Fix warping the cursor in Quartz modes with Xinerama.
-       - Load keymapping from file by default in IOKit mode as well.
-      (Torrey T. Lyons)
+ 281. XDarwin fixes for Xinerama in Quartz modes:
+       - Turn Xinerama on by default.
+       - Fix warping the cursor.
+      Also load keymapping from file in IOKit mode for Mac OS X 10.1
+      compatibility. (Torrey T. Lyons and Gregory Parker)
  280. Fix Trident 96xx high clock setting, acceleration fixes (Alan Hourihane).
  279. Fix XDarwin rootless crashing bug when window resizing with the Mac menu
       bar not on X11 main screen (Gregory Parker).
@@ -13822,4 +13822,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1949 2001/09/23 18:03:24 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1950 2001/09/23 23:02:34 torrey Exp $

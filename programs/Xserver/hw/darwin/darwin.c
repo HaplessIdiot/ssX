@@ -4,7 +4,7 @@
  * running with Quartz or the IOKit
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.35 2001/09/23 04:04:49 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.c,v 1.36 2001/09/23 23:02:37 torrey Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -887,8 +887,8 @@ void ProcessInputEvents(void)
         }
 
         miPointerAbsoluteCursor( xe.u.keyButtonPointer.rootX,
-                                 xe.u.keyButtonPointer.rootX,
-                                 tv.tv_sec * 1000 + tv.tv_usec / 1000 );
+                                 xe.u.keyButtonPointer.rootY,
+                                 xe.u.keyButtonPointer.time );
     }
 
     miPointerUpdate();
