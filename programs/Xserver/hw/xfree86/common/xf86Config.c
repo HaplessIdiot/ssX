@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.87 1996/04/15 11:30:23 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.88 1996/05/06 05:57:34 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -195,7 +195,7 @@ static char * xf86ValidateFontPath(
 #endif
 );
 #ifdef XINPUT
-extern CONFIG_RETURN_TYPE configExtendedInputSection(
+extern CONFIG_RETURN_TYPE xf86ConfigExtendedInputSection(
 #if NeedFunctionPrototypes
     LexPtr      pval
 #endif
@@ -976,7 +976,7 @@ xf86Config (vtopen)
 	      HANDLE_RETURN(configScreenSection());
 #ifdef XINPUT
 	  } else if ( StrCaseCmp(val.str, "xinput") == 0 ) {
-	      HANDLE_RETURN(configExtendedInputSection(&val));
+	      HANDLE_RETURN(xf86ConfigExtendedInputSection(&val));
 #endif
 	  } else if ( StrCaseCmp(val.str, "module") == 0 ) {
 	      HANDLE_RETURN(configDynamicModuleSection());

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.31 1996/03/29 22:16:15 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Events.c,v 3.32 1996/05/06 05:57:36 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1001,7 +1001,7 @@ xf86PostMseEvent(device, buttons, dx, dy)
 #endif
 
 #ifdef XINPUT
-  is_pointer = IsCorePointer(device);
+  is_pointer = xf86IsCorePointer(device);
 
   if (!is_pointer) {
     xev->time = xf86Info.lastEventTime = GetTimeInMillis();

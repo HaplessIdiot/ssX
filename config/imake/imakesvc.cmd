@@ -2,13 +2,14 @@
  * This script serves as a helper cmd file for imake. Install this in
  * the path just like imake itself.
  *
- * $XFree86: xc/config/imake/imakesvc.cmd,v 3.6 1996/03/10 11:50:00 dawes Exp $
+ * $XFree86: xc/config/imake/imakesvc.cmd,v 3.7 1996/04/15 11:14:15 dawes Exp $
  */
 '@echo off'
 ADDRESS CMD
 CALL RxFuncAdd 'SysFileDelete', 'RexxUtil', 'SysFileDelete'
 CALL RxFuncAdd 'SysFileTree', 'RexxUtil', 'SysFileTree'
 CALL RxFuncAdd 'SysRmDir', 'RexxUtil', 'SysRmDir'
+CALL RxFuncAdd 'SysMkDir', 'RexxUtil', 'SysMkDir'
 
 PARSE ARG all
 code = WORD(all,1)
@@ -153,6 +154,15 @@ SELECT
       /* imakesvc 11 dirtomake */
       dirtomake = TRANSLATE(WORD(all,2),'\','/')
       rc = SysMkDir(dirtomake)
+   END
+   WHEN code=12 THEN DO
+      /* imakesvc 12 srcfile destdir destfile */
+      src = stripsuffix(WORD(all,2))
+      destdir = TRANSLATE(WORD(all,3),'\','/')
+      dest = stripsuffix(WORD(all,4))
+      tgt = destdir'\'dest'.gz'
+      /* if you have no col.exe get one from 4.4BSD */
+      'groff -e -t -man -Tascii 'src'.man | col -b | gzip -n >'tgt
    END
    OTHERWISE NOP
 END

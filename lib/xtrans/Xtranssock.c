@@ -1,5 +1,5 @@
 /* $XConsortium: Xtranssock.c /main/52 1996/01/12 15:08:49 kaleb $ */
-/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.17 1996/01/13 12:21:13 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranssock.c,v 3.18 1996/01/24 21:59:12 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -260,7 +260,7 @@ char *family;
 {
     int     i;
 
-    PRMSG (3,"TRANS(SocketSelectFamily) (%s)\n", family, 0, 0);
+    PRMSG (3,"SocketSelectFamily(%s)\n", family, 0, 0);
 
     for (i = 0; i < NUMSOCKETFAMILIES;i++)
     {
@@ -286,11 +286,11 @@ XtransConnInfo ciptr;
     struct sockaddr_in 	sockname;
     int			namelen = sizeof sockname;
 
-    PRMSG (3,"TRANS(SocketINETGetAddr) (%x)\n", ciptr, 0, 0);
+    PRMSG (3,"SocketINETGetAddr(%x)\n", ciptr, 0, 0);
 
     if (getsockname (ciptr->fd,(struct sockaddr *) &sockname, &namelen) < 0)
     {
-	PRMSG (1,"TRANS(SocketINETGetAddr): getsockname() failed: %d\n",
+	PRMSG (1,"SocketINETGetAddr: getsockname() failed: %d\n",
 	    EGET(),0, 0);
 	return -1;
     }
@@ -302,7 +302,7 @@ XtransConnInfo ciptr;
     if ((ciptr->addr = (char *) xalloc (namelen)) == NULL)
     {
         PRMSG (1,
-	    "TRANS(SocketINETGetAddr): Can't allocate space for the addr\n",
+	    "SocketINETGetAddr: Can't allocate space for the addr\n",
 	    0, 0, 0);
         return -1;
     }
@@ -329,11 +329,11 @@ XtransConnInfo ciptr;
     struct sockaddr_in 	sockname;
     int			namelen = sizeof(sockname);
 
-    PRMSG (3,"TRANS(SocketINETGetPeerAddr) (%x)\n", ciptr, 0, 0);
+    PRMSG (3,"SocketINETGetPeerAddr(%x)\n", ciptr, 0, 0);
 
     if (getpeername (ciptr->fd, (struct sockaddr *) &sockname, &namelen) < 0)
     {
-	PRMSG (1,"TRANS(SocketINETGetPeerAddr): getpeername() failed: %d\n",
+	PRMSG (1,"SocketINETGetPeerAddr: getpeername() failed: %d\n",
 	    EGET(), 0, 0);
 	return -1;
     }
@@ -345,7 +345,7 @@ XtransConnInfo ciptr;
     if ((ciptr->peeraddr = (char *) xalloc (namelen)) == NULL)
     {
         PRMSG (1,
-	   "TRANS(SocketINETGetPeerAddr): Can't allocate space for the addr\n",
+	   "SocketINETGetPeerAddr: Can't allocate space for the addr\n",
 	   0, 0, 0);
         return -1;
     }
@@ -366,12 +366,12 @@ int type;
 {
     XtransConnInfo	ciptr;
 
-    PRMSG (3,"TRANS(SocketOpen) (%d,%d)\n", i, type, 0);
+    PRMSG (3,"SocketOpen(%d,%d)\n", i, type, 0);
 
     if ((ciptr = (XtransConnInfo) xcalloc (
 	1, sizeof(struct _XtransConnInfo))) == NULL)
     {
-	PRMSG (1, "TRANS(SocketOpen): malloc failed\n", 0, 0, 0);
+	PRMSG (1, "SocketOpen: malloc failed\n", 0, 0, 0);
 	return NULL;
     }
 
@@ -383,7 +383,7 @@ int type;
 #endif
 #endif
       ) {
-	PRMSG (1, "TRANS(SocketOpen): socket() failed for %s\n",
+	PRMSG (1, "SocketOpen: socket() failed for %s\n",
 	    Sockettrans2devtab[i].transname, 0, 0);
 
 	xfree ((char *) ciptr);
@@ -420,12 +420,12 @@ char *port;
 {
     XtransConnInfo	ciptr;
 
-    PRMSG (3,"TRANS(SocketReopen) (%d,%d,%s)\n", type, fd, port);
+    PRMSG (3,"SocketReopen(%d,%d,%s)\n", type, fd, port);
 
     if ((ciptr = (XtransConnInfo) xcalloc (
 	1, sizeof(struct _XtransConnInfo))) == NULL)
     {
-	PRMSG (1, "TRANS(SocketReopen): malloc failed\n", 0, 0, 0);
+	PRMSG (1, "SocketReopen: malloc failed\n", 0, 0, 0);
 	return NULL;
     }
 
@@ -455,7 +455,7 @@ char       *port;
     XtransConnInfo	ciptr;
     int			i;
 
-    PRMSG (2, "TRANS(SocketOpenCOTSClient) (%s,%s,%s)\n",
+    PRMSG (2, "SocketOpenCOTSClient(%s,%s,%s)\n",
 	protocol, host, port);
 
     SocketInitOnce();
@@ -463,7 +463,7 @@ char       *port;
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketOpenCOTSClient): Unable to determine socket type for %s\n",
+       "SocketOpenCOTSClient: Unable to determine socket type for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -471,7 +471,7 @@ char       *port;
     if ((ciptr = TRANS(SocketOpen) (
 	i, Sockettrans2devtab[i].devcotsname)) == NULL)
     {
-	PRMSG (1,"TRANS(SocketOpenCOTSClient): Unable to open socket for %s\n",
+	PRMSG (1,"SocketOpenCOTSClient: Unable to open socket for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -500,14 +500,14 @@ char 	   *port;
     XtransConnInfo	ciptr;
     int	i;
 
-    PRMSG (2,"TRANS(SocketOpenCOTSServer) (%s,%s,%s)\n", protocol, host, port);
+    PRMSG (2,"SocketOpenCOTSServer(%s,%s,%s)\n", protocol, host, port);
 
     SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketOpenCOTSServer): Unable to determine socket type for %s\n",
+       "SocketOpenCOTSServer: Unable to determine socket type for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -515,7 +515,7 @@ char 	   *port;
     if ((ciptr = TRANS(SocketOpen) (
 	i, Sockettrans2devtab[i].devcotsname)) == NULL)
     {
-	PRMSG (1,"TRANS(SocketOpenCOTSServer): Unable to open socket for %s\n",
+	PRMSG (1,"SocketOpenCOTSServer: Unable to open socket for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -562,14 +562,14 @@ char 	   *port;
     XtransConnInfo	ciptr;
     int			i;
 
-    PRMSG (2,"TRANS(SocketOpenCLTSClient) (%s,%s,%s)\n", protocol, host, port);
+    PRMSG (2,"SocketOpenCLTSClient(%s,%s,%s)\n", protocol, host, port);
 
     SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketOpenCLTSClient): Unable to determine socket type for %s\n",
+       "SocketOpenCLTSClient: Unable to determine socket type for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -577,7 +577,7 @@ char 	   *port;
     if ((ciptr = TRANS(SocketOpen) (
 	i, Sockettrans2devtab[i].devcotsname)) == NULL)
     {
-	PRMSG (1,"TRANS(SocketOpenCLTSClient): Unable to open socket for %s\n",
+	PRMSG (1,"SocketOpenCLTSClient: Unable to open socket for %s\n",
 	      thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -606,14 +606,14 @@ char 	   *port;
     XtransConnInfo	ciptr;
     int	i;
 
-    PRMSG (2,"TRANS(SocketOpenCLTSServer) (%s,%s,%s)\n", protocol, host, port);
+    PRMSG (2,"SocketOpenCLTSServer(%s,%s,%s)\n", protocol, host, port);
 
     SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketOpenCLTSServer): Unable to determine socket type for %s\n",
+       "SocketOpenCLTSServer: Unable to determine socket type for %s\n",
 	      thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -621,7 +621,7 @@ char 	   *port;
     if ((ciptr = TRANS(SocketOpen) (
 	i, Sockettrans2devtab[i].devcotsname)) == NULL)
     {
-	PRMSG (1,"TRANS(SocketOpenCLTSServer): Unable to open socket for %s\n",
+	PRMSG (1,"SocketOpenCLTSServer: Unable to open socket for %s\n",
 	      thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -650,14 +650,14 @@ char	   *port;
     int			i;
 
     PRMSG (2,
-	"TRANS(SocketReopenCOTSServer) (%d, %s)\n", fd, port, 0);
+	"SocketReopenCOTSServer(%d, %s)\n", fd, port, 0);
 
     SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketReopenCOTSServer): Unable to determine socket type for %s\n",
+       "SocketReopenCOTSServer: Unable to determine socket type for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -666,7 +666,7 @@ char	   *port;
 	i, Sockettrans2devtab[i].devcotsname, fd, port)) == NULL)
     {
 	PRMSG (1,
-	    "TRANS(SocketReopenCOTSServer): Unable to reopen socket for %s\n",
+	    "SocketReopenCOTSServer: Unable to reopen socket for %s\n",
 	    thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -690,14 +690,14 @@ char	   *port;
     int			i;
 
     PRMSG (2,
-	"TRANS(SocketReopenCLTSServer) (%d, %s)\n", fd, port, 0);
+	"SocketReopenCLTSServer(%d, %s)\n", fd, port, 0);
 
     SocketInitOnce();
 
     if ((i = TRANS(SocketSelectFamily) (thistrans->TransName)) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketReopenCLTSServer): Unable to determine socket type for %s\n",
+       "SocketReopenCLTSServer: Unable to determine socket type for %s\n",
 	      thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -706,7 +706,7 @@ char	   *port;
 	i, Sockettrans2devtab[i].devcotsname, fd, port)) == NULL)
     {
 	PRMSG (1,
-	     "TRANS(SocketReopenCLTSServer): Unable to reopen socket for %s\n",
+	     "SocketReopenCLTSServer: Unable to reopen socket for %s\n",
 	     thistrans->TransName, 0, 0);
 	return NULL;
     }
@@ -729,7 +729,7 @@ int 		option;
 int 		arg;
 
 {
-    PRMSG (2,"TRANS(SocketSetOption) (%d,%d,%d)\n", ciptr->fd, option, arg);
+    PRMSG (2,"SocketSetOption(%d,%d,%d)\n", ciptr->fd, option, arg);
 
     return -1;
 }
@@ -749,7 +749,7 @@ int		socknamelen;
     int	fd = ciptr->fd;
     int	retry;
 
-    PRMSG (3, "TRANS(SocketCreateListener) (%x,%d)\n", ciptr, fd, 0);
+    PRMSG (3, "SocketCreateListener(%x,%d)\n", ciptr, fd, 0);
 
     if (Sockettrans2devtab[ciptr->index].family == AF_INET)
 	retry = 20;
@@ -762,7 +762,7 @@ int		socknamelen;
 	    return TRANS_ADDR_IN_USE;
 
 	if (retry-- == 0) {
-	    PRMSG (1, "TRANS(SocketCreateListener): failed to bind listener\n",
+	    PRMSG (1, "SocketCreateListener: failed to bind listener\n",
 		0, 0, 0);
 	    close (fd);
 	    return TRANS_CREATE_LISTENER_FAILED;
@@ -790,7 +790,7 @@ int		socknamelen;
 
     if (listen (fd, 5) < 0)
     {
-	PRMSG (1, "TRANS(SocketCreateListener): listen() failed\n", 0, 0, 0);
+	PRMSG (1, "SocketCreateListener: listen() failed\n", 0, 0, 0);
 	close (fd);
 	return TRANS_CREATE_LISTENER_FAILED;
     }
@@ -853,7 +853,7 @@ char 		*port;
 
     char	portbuf[PORTBUFSIZE];
     
-    PRMSG (2, "TRANS(SocketINETCreateListener) (%s)\n", port, 0, 0);
+    PRMSG (2, "SocketINETCreateListener(%s)\n", port, 0, 0);
 
 #ifdef X11_t
     /*
@@ -889,7 +889,7 @@ char 		*port;
 	    if ((servp = Getservbyname (port, "tcp")) == CallFailed)
 	    {
 		PRMSG (1,
-	     "TRANS(SocketINETCreateListener): Unable to get service for %s\n",
+	     "SocketINETCreateListener: Unable to get service for %s\n",
 		      port, 0, 0);
 		return TRANS_CREATE_LISTENER_FAILED;
 	    }
@@ -914,7 +914,7 @@ char 		*port;
 	(struct sockaddr *) &sockname, namelen)) < 0)
     {
 	PRMSG (1,
-    "TRANS(SocketINETCreateListener): TRANS(SocketCreateListener) () failed\n",
+    "SocketINETCreateListener: ...SocketCreateListener() failed\n",
 	    0, 0, 0);
 	return status;
     }
@@ -922,7 +922,7 @@ char 		*port;
     if (TRANS(SocketINETGetAddr) (ciptr) < 0)
     {
 	PRMSG (1,
-       "TRANS(SocketINETCreateListener): TRANS(SocketINETGetAddr) () failed\n",
+       "SocketINETCreateListener: ...SocketINETGetAddr() failed\n",
 	    0, 0, 0);
 	return TRANS_CREATE_LISTENER_FAILED;
     }
@@ -947,7 +947,7 @@ char *port;
     int			oldUmask;
     int			status;
 
-    PRMSG (2, "TRANS(SocketUNIXCreateListener) (%s)\n",
+    PRMSG (2, "SocketUNIXCreateListener(%s)\n",
 	port ? port : "NULL", 0, 0);
 
     /* Make sure the directory is created */
@@ -984,7 +984,7 @@ char *port;
 	(struct sockaddr *) &sockname, namelen)) < 0)
     {
 	PRMSG (1,
-    "TRANS(SocketUNIXCreateListener): TRANS(SocketCreateListener) () failed\n",
+    "SocketUNIXCreateListener: ...SocketCreateListener() failed\n",
 	    0, 0, 0);
 	return status;
     }
@@ -1001,7 +1001,7 @@ char *port;
     if ((ciptr->addr = (char *) xalloc (namelen)) == NULL)
     {
         PRMSG (1,
-        "TRANS(SocketUNIXCreateListener): Can't allocate space for the addr\n",
+        "SocketUNIXCreateListener: Can't allocate space for the addr\n",
 	    0, 0, 0);
         return TRANS_CREATE_LISTENER_FAILED;
     }
@@ -1031,7 +1031,7 @@ XtransConnInfo ciptr;
     int 		status = TRANS_RESET_NOOP;
     void 		TRANS(FreeConnInfo) ();
 
-    PRMSG (3, "TRANS(SocketUNIXResetListener) (%x,%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG (3, "SocketUNIXResetListener(%x,%d)\n", ciptr, ciptr->fd, 0);
 
     if (stat (unsock->sun_path, &statb) == -1 ||
         ((statb.st_mode & S_IFMT) !=
@@ -1095,12 +1095,12 @@ int	       *status;
     struct sockaddr_in	sockname;
     int			namelen = sizeof(sockname);
 
-    PRMSG (2, "TRANS(SocketINETAccept) (%x,%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG (2, "SocketINETAccept(%x,%d)\n", ciptr, ciptr->fd, 0);
 
     if ((newciptr = (XtransConnInfo) xcalloc (
 	1, sizeof(struct _XtransConnInfo))) == NULL)
     {
-	PRMSG (1, "TRANS(SocketINETAccept): malloc failed\n", 0, 0, 0);
+	PRMSG (1, "SocketINETAccept: malloc failed\n", 0, 0, 0);
 	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
@@ -1108,7 +1108,7 @@ int	       *status;
     if ((newciptr->fd = accept (ciptr->fd,
 	(struct sockaddr *) &sockname, &namelen)) < 0)
     {
-	PRMSG (1, "TRANS(SocketINETAccept): accept() failed\n", 0, 0, 0);
+	PRMSG (1, "SocketINETAccept: accept() failed\n", 0, 0, 0);
 	xfree (newciptr);
 	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
@@ -1134,7 +1134,7 @@ int	       *status;
     if (TRANS(SocketINETGetAddr) (newciptr) < 0)
     {
 	PRMSG (1,
-	    "TRANS(SocketINETAccept): TRANS(SocketINETGetAddr) () failed:\n",
+	    "SocketINETAccept: ...SocketINETGetAddr() failed:\n",
 	    0, 0, 0);
 	close (newciptr->fd);
 	xfree (newciptr);
@@ -1145,7 +1145,7 @@ int	       *status;
     if (TRANS(SocketINETGetPeerAddr) (newciptr) < 0)
     {
 	PRMSG (1,
-	  "TRANS(SocketINETAccept): TRANS(SocketINETGetPeerAddr) () failed:\n",
+	  "SocketINETAccept: ...SocketINETGetPeerAddr() failed:\n",
 		0, 0, 0);
 	close (newciptr->fd);
 	if (newciptr->addr) xfree (newciptr->addr);
@@ -1174,12 +1174,12 @@ int	       *status;
     struct sockaddr_un	sockname;
     int			namelen = sizeof(sockname);
 
-    PRMSG (2, "TRANS(SocketUNIXAccept) (%x,%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG (2, "SocketUNIXAccept(%x,%d)\n", ciptr, ciptr->fd, 0);
 
     if ((newciptr = (XtransConnInfo) xcalloc (
 	1, sizeof(struct _XtransConnInfo))) == NULL)
     {
-	PRMSG (1, "TRANS(SocketUNIXAccept): malloc failed\n", 0, 0, 0);
+	PRMSG (1, "SocketUNIXAccept: malloc() failed\n", 0, 0, 0);
 	*status = TRANS_ACCEPT_BAD_MALLOC;
 	return NULL;
     }
@@ -1187,7 +1187,7 @@ int	       *status;
     if ((newciptr->fd = accept (ciptr->fd,
 	(struct sockaddr *) &sockname, &namelen)) < 0)
     {
-	PRMSG (1, "TRANS(SocketUNIXAccept): accept() failed\n", 0, 0, 0);
+	PRMSG (1, "SocketUNIXAccept: accept() failed\n", 0, 0, 0);
 	xfree (newciptr);
 	*status = TRANS_ACCEPT_FAILED;
 	return NULL;
@@ -1201,7 +1201,7 @@ int	       *status;
     if ((newciptr->addr = (char *) xalloc (ciptr->addrlen)) == NULL)
     {
         PRMSG (1,
-        "TRANS(SocketUNIXAccept): Can't allocate space for the addr\n",
+        "SocketUNIXAccept: Can't allocate space for the addr\n",
 	      0, 0, 0);
 	close (newciptr->fd);
 	xfree (newciptr);
@@ -1216,7 +1216,7 @@ int	       *status;
     if ((newciptr->peeraddr = (char *) xalloc (ciptr->addrlen)) == NULL)
     {
         PRMSG (1,
-	      "TRANS(SocketUNIXAccept): Can't allocate space for the addr\n",
+	      "SocketUNIXAccept: Can't allocate space for the addr\n",
 	      0, 0, 0);
 	close (newciptr->fd);
 	if (newciptr->addr) xfree (newciptr->addr);
@@ -1311,7 +1311,7 @@ char 		*port;
     unsigned long 	tmpaddr;
     char 		hostnamebuf[256];		/* tmp space */
 
-    PRMSG (2,"TRANS(SocketINETConnect) (%d,%s,%s)\n", ciptr->fd, host, port);
+    PRMSG (2,"SocketINETConnect(%d,%s,%s)\n", ciptr->fd, host, port);
 
     if (!host)
     {
@@ -1361,7 +1361,7 @@ char 		*port;
 	tmpaddr = -1;
     }
 
-    PRMSG (4,"TRANS(SocketINETConnect) inet_addr(%s) = %x\n",
+    PRMSG (4,"SocketINETConnect: inet_addr(%s) = %x\n",
 	host, tmpaddr, 0);
 
     if (tmpaddr == -1)
@@ -1371,14 +1371,14 @@ char 		*port;
 #endif
 	if ((hostp = Gethostbyname(host)) == CallFailed)
 	{
-	    PRMSG (1,"TRANS(SocketINETConnect) () can't get address for %s\n",
+	    PRMSG (1,"SocketINETConnect: Can't get address for %s\n",
 		  host, 0, 0);
 	    ESET(EINVAL);
 	    return TRANS_CONNECT_FAILED;
 	}
 	if (HostAddrType != AF_INET)  /* is IP host? */
 	{
-	    PRMSG (1,"TRANS(SocketINETConnect) () not INET host%s\n",
+	    PRMSG (1,"SocketINETConnect: not INET host%s\n",
 		  host, 0, 0);
 	    ESET(EPROTOTYPE);
 	    return TRANS_CONNECT_FAILED;
@@ -1420,7 +1420,7 @@ else
 #endif
 	if ((servp = Getservbyname (portbuf,"tcp")) == CallFailed)
 	{
-	    PRMSG (1,"TRANS(SocketINETConnect) () can't get service for %s\n",
+	    PRMSG (1,"SocketINETConnect: Can't get service for %s\n",
 		  portbuf, 0, 0);
 	    return TRANS_CONNECT_FAILED;
 	}
@@ -1432,7 +1432,7 @@ else
 	sockname.sin_port = htons (tmpport);
     }
     
-    PRMSG (4,"TRANS(SocketINETConnect) sockname.sin_port = %d\n",
+    PRMSG (4,"SocketINETConnect: sockname.sin_port = %d\n",
 	  ntohs(sockname.sin_port), 0, 0);
 
     /*
@@ -1447,7 +1447,7 @@ else
 	int olderrno = errno;
 #endif
 
-	PRMSG (1,"TRANS(SocketINETConnect) () can't connect: errno = %d\n",
+	PRMSG (1,"SocketINETConnect: Can't connect: errno = %d\n",
 	  EGET(),0, 0);
 
 	/*
@@ -1472,7 +1472,7 @@ else
     if (TRANS(SocketINETGetAddr) (ciptr) < 0)
     {
 	PRMSG (1,
-	   "TRANS(SocketINETConnect): TRANS(SocketINETGetAddr) () failed:\n",
+	   "SocketINETConnect: ...SocketINETGetAddr() failed:\n",
 	   0, 0, 0);
 	return TRANS_CONNECT_FAILED;
     }
@@ -1480,7 +1480,7 @@ else
     if (TRANS(SocketINETGetPeerAddr) (ciptr) < 0)
     {
 	PRMSG (1,
-	 "TRANS(SocketINETConnect): TRANS(SocketINETGetPeerAddr) () failed:\n",
+	 "SocketINETConnect: ...SocketINETGetPeerAddr() failed:\n",
 	      0, 0, 0);
 	return TRANS_CONNECT_FAILED;
     }
@@ -1631,7 +1631,7 @@ char *port;
 #endif
 
 
-    PRMSG (2,"TRANS(SocketUNIXConnect) (%d,%s,%s)\n", ciptr->fd, host, port);
+    PRMSG (2,"SocketUNIXConnect(%d,%s,%s)\n", ciptr->fd, host, port);
     
     /*
      * Make sure 'host' is really local.  If not, we return failure.
@@ -1644,7 +1644,7 @@ char *port;
     if (strcmp (host, "unix") != 0 && !UnixHostReallyLocal (host))
     {
 	PRMSG (1,
-	   "TRANS(SocketUNIXConnect): Cannot connect to non-local host %s\n",
+	   "SocketUNIXConnect: Cannot connect to non-local host %s\n",
 	       host, 0, 0);
 	return TRANS_CONNECT_FAILED;
     }
@@ -1656,7 +1656,7 @@ char *port;
 
     if (!port || !*port)
     {
-	PRMSG (1,"TRANS(SocketUNIXConnect): Missing port specification\n",
+	PRMSG (1,"SocketUNIXConnect: Missing port specification\n",
 	      0, 0, 0);
 	return TRANS_CONNECT_FAILED;
     }
@@ -1721,7 +1721,7 @@ char *port;
 	{
 	    errno = olderrno;
 	    
-	    PRMSG (1,"TRANS(SocketUNIXConnect) () can't connect: errno = %d\n",
+	    PRMSG (1,"SocketUNIXConnect: Can't connect: errno = %d\n",
 		  EGET(),0, 0);
 
 	    if (olderrno == ENOENT || olderrno == EINTR)
@@ -1740,7 +1740,7 @@ char *port;
        (ciptr->peeraddr = (char *) xalloc(namelen)) == NULL)
     {
         PRMSG (1,
-	"TRANS(SocketUNIXCreateListener): Can't allocate space for the addr\n",
+	"SocketUNIXCreateListener: Can't allocate space for the addr\n",
 	      0, 0, 0);
         return TRANS_CONNECT_FAILED;
     }
@@ -1768,7 +1768,7 @@ BytesReadable_t *pend;
 {
 int ret;
 char dummybuf[1500];
-    PRMSG (2,"TRANS(SocketBytesReadable) (%x,%d,%x)\n",
+    PRMSG (2,"SocketBytesReadable(%x,%d,%x)\n",
 	ciptr, ciptr->fd, pend);
 
 #ifdef WIN32
@@ -1797,7 +1797,7 @@ int		size;
 {
 int ret;
 
-    PRMSG (2,"TRANS(SocketRead) (%d,%x,%d)\n", ciptr->fd, buf, size);
+    PRMSG (2,"SocketRead(%d,%x,%d)\n", ciptr->fd, buf, size);
 
 #if defined(WIN32) || defined(__EMX__)
     return recv ((SOCKET)ciptr->fd, buf, size, 0);
@@ -1815,7 +1815,7 @@ char 	       *buf;
 int 	       size;
 
 {
-    PRMSG (2,"TRANS(SocketWrite) (%d,%x,%d)\n", ciptr->fd, buf, size);
+    PRMSG (2,"SocketWrite(%d,%x,%d)\n", ciptr->fd, buf, size);
 
 #if defined(WIN32) || defined(__EMX__)
     return send ((SOCKET)ciptr->fd, buf, size, 0);
@@ -1833,7 +1833,7 @@ struct iovec 	*buf;
 int 		size;
 
 {
-    PRMSG (2,"TRANS(SocketReadv) (%d,%x,%d)\n", ciptr->fd, buf, size);
+    PRMSG (2,"SocketReadv(%d,%x,%d)\n", ciptr->fd, buf, size);
 
     return READV (ciptr, buf, size);
 }
@@ -1847,7 +1847,7 @@ struct iovec 	*buf;
 int 		size;
 
 {
-    PRMSG (2,"TRANS(SocketWritev) (%d,%x,%d)\n", ciptr->fd, buf, size);
+    PRMSG (2,"SocketWritev(%d,%x,%d)\n", ciptr->fd, buf, size);
 
     return WRITEV (ciptr, buf, size);
 }
@@ -1859,7 +1859,7 @@ TRANS(SocketDisconnect) (ciptr)
 XtransConnInfo ciptr;
 
 {
-    PRMSG (2,"TRANS(SocketDisconnect) (%x,%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG (2,"SocketDisconnect(%x,%d)\n", ciptr, ciptr->fd, 0);
 
     return shutdown (ciptr->fd, 2); /* disallow further sends and receives */
 }
@@ -1872,7 +1872,7 @@ TRANS(SocketINETClose) (ciptr)
 XtransConnInfo ciptr;
 
 {
-    PRMSG (2,"TRANS(SocketINETClose) (%x,%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG (2,"SocketINETClose(%x,%d)\n", ciptr, ciptr->fd, 0);
 
     return close (ciptr->fd);
 }
@@ -1896,7 +1896,7 @@ XtransConnInfo ciptr;
     char	path[200]; /* > sizeof sun_path +1 */
     int ret;
 
-    PRMSG (2,"TRANS(SocketUNIXClose) (%x,%d)\n", ciptr, ciptr->fd, 0);
+    PRMSG (2,"SocketUNIXClose(%x,%d)\n", ciptr, ciptr->fd, 0);
 
     ret = close(ciptr->fd);
 
@@ -1925,7 +1925,7 @@ XtransConnInfo ciptr;
 
     int ret;
 
-    PRMSG (2,"TRANS(SocketUNIXCloseForCloning) (%x,%d)\n",
+    PRMSG (2,"SocketUNIXCloseForCloning(%x,%d)\n",
 	ciptr, ciptr->fd, 0);
 
     ret = close(ciptr->fd);

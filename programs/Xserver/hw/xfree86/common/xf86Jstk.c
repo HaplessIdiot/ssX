@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.8 1996/02/12 11:12:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Jstk.c,v 3.9 1996/02/18 12:01:36 dawes Exp $ */
 
 #define NEED_EVENTS
 #include "X.h"
@@ -323,7 +323,7 @@ xf86JstkEvents(OsTimerPtr        timer,
     if ((abs(v0) > (priv->jstkDelta / 20)) ||
         (abs(v1) > (priv->jstkDelta / 20)))
       {
-	PostMotionEvent(device, 0, 0, 2, v0, v1);
+	xf86PostMotionEvent(device, 0, 0, 2, v0, v1);
 	
         priv->jstkOldX = x;
         priv->jstkOldY = y;          
@@ -332,7 +332,7 @@ xf86JstkEvents(OsTimerPtr        timer,
       {
         if ((priv->jstkOldButtons & loop) != (buttons & loop))
           {
-	    PostButtonEvent(device, loop, ((buttons & loop) == loop), 0, 0);
+	    xf86PostButtonEvent(device, 0, loop, ((buttons & loop) == loop), 0, 0);
           }
       }
     priv->jstkOldButtons = buttons;
@@ -528,7 +528,7 @@ DeviceAssocRec joystick_assoc =
 int
 init_module(unsigned long	server_version)
 {
-    AddDeviceAssoc(&joystick_assoc);
+    xf86AddDeviceAssoc(&joystick_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
 	ErrorF("Warning : Joystick module compiled for version%s\n", XF86_VERSION);

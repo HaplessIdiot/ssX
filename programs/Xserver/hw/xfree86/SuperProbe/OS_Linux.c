@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.3 1996/02/04 08:56:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/OS_Linux.c,v 3.4 1996/05/06 05:56:46 dawes Exp $ */
 /*
  * (c) Copyright 1993,1994 by Orest Zborowski <orestz@eskimo.com>
  *
@@ -184,7 +184,7 @@ Byte *MapVGA()
 void UnMapVGA(base)
 Byte *base;
 {
-	munmap((off_t)base | BUS_BASE, 0x10000);
+	munmap((caddr_t)((off_t)base | BUS_BASE), 0x10000);
 	return;
 }
 

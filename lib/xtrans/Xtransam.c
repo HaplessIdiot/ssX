@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransam.c,v 1.4 94/04/17 20:23:01 mor Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/lib/xtrans/Xtransam.c,v 3.0 1995/07/07 15:33:00 dawes Exp $ */
 /*
 
 Copyright (c) 1994  X Consortium
@@ -679,8 +679,8 @@ static int
 TRANS(AMGetAddr)(ciptr)
 XtransConnInfo	ciptr;
 {
-    PRMSG(1,"TRANS(AMGetAddr)(%x)\n", ciptr, 0,0 );
-    PRMSG(1,"TODO\n", 0, 0, 0);
+    PRMSG(1,"AMGetAddr(%x)\n", ciptr, 0,0 );
+    PRMSG(1,"AMGetAddr: TODO\n", 0, 0, 0);
 
     return -1;
 }
@@ -699,7 +699,7 @@ XtransConnInfo	ciptr;
     errstat err;
     XAmChanDesc *chandesc;
 
-    PRMSG(2,"TRANS(AMGetPeerAddr)(%x)\n", ciptr, 0,0 );
+    PRMSG(2,"AMGetPeerAddr(%x)\n", ciptr, 0,0 );
 
     chandesc = XAmFdToChanDesc(ciptr->fd);
     if (chandesc == NULL || chandesc->state != ACDS_USED) {
@@ -711,7 +711,7 @@ XtransConnInfo	ciptr;
     case ACDT_TCPIP:
 	/* get the remote adress from the TCP/IP server */
 	if ((err = tcp_ioc_getconf(&chandesc->chancap, &tcpconf)) != STD_OK) {
-	    PRMSG (1, "TRANS(AMGetPeerAddr): Cannot get remote address (%d)\n",
+	    PRMSG (1, "AMGetPeerAddr: Cannot get remote address (%d)\n",
 		   (int) err, 0, 0);
 	    return -1;
 	}
@@ -728,7 +728,7 @@ XtransConnInfo	ciptr;
 	    } else {
 		hostname = remote->h_name;
 	    }
-	    PRMSG (1, "TRANS(AMGetPeerAddr): remote addr `%s'\n",
+	    PRMSG (1, "AMGetPeerAddr: remote addr `%s'\n",
 		   hostname, 0, 0);
 	}
 #endif
@@ -736,7 +736,7 @@ XtransConnInfo	ciptr;
 	ciptr->peeraddrlen = sizeof(tcpconf.nwtc_remaddr);
 	ciptr->peeraddr = (char *) xalloc (ciptr->peeraddrlen);
 	if (ciptr->peeraddr == NULL) {
-	    PRMSG (1, "TRANS(AMGetPeerAddr): Can't allocate peeraddr\n",
+	    PRMSG (1, "AMGetPeerAddr: Can't allocate peeraddr\n",
 		   0, 0, 0);
 	    return -1;
 	}
@@ -747,7 +747,7 @@ XtransConnInfo	ciptr;
     case ACDT_VIRTCIRC:
 	/* for Amoeba virtual circuits just copy the client address */
 	if ((ciptr->peeraddr = (char *) xalloc (ciptr->addrlen)) == NULL) {
-	    PRMSG (1, "TRANS(AMGetPeerAddr): Can't allocate peeraddr\n",
+	    PRMSG (1, "AMGetPeerAddr: Can't allocate peeraddr\n",
 		   0, 0, 0);
 	    return -1;
 	}
@@ -765,8 +765,8 @@ static XtransConnInfo
 TRANS(AMOpen)(device)
 char	*device;
 {
-    PRMSG(1,"TRANS(AMOpen)(%s)\n", device, 0,0 );
-    PRMSG(1,"TODO\n", 0, 0, 0);
+    PRMSG(1,"AMOpen(%s)\n", device, 0,0 );
+    PRMSG(1,"AMOpen: TODO\n", 0, 0, 0);
 
     return NULL;
 }
@@ -779,8 +779,8 @@ char		*host;
 char		*port;
 struct netbuf	*netbufp;
 {
-    PRMSG(1,"TRANS(AMAddrToNetbuf)(%d,%s,%s)\n", tlifamily, host, port );
-    PRMSG(1,"TODO\n", 0, 0, 0);
+    PRMSG(1,"AMAddrToNetbuf(%d,%s,%s)\n", tlifamily, host, port );
+    PRMSG(1,"AMAddrToNetbuf: TODO\n", 0, 0, 0);
 
     return -1;
 }
@@ -801,18 +801,18 @@ char		*port;
     XtransConnInfo  ciptr;
     XAmChanDesc    *chandesc;
 
-    PRMSG(2,"TRANS(AMOpenCOTSClient)(%s,%s,%s)\n", protocol, host, port );
+    PRMSG(2,"AMOpenCOTSClient(%s,%s,%s)\n", protocol, host, port );
     
     ciptr = (XtransConnInfo) xcalloc (1, sizeof(struct _XtransConnInfo));
     if (ciptr == NULL) {
-        PRMSG (1, "TRANS(AMOpenCotsClient): malloc failed\n", 0, 0, 0);
+        PRMSG (1, "AMOpenCotsClient: malloc failed\n", 0, 0, 0);
         return NULL;
     }
 
     ciptr->fd = MakeAmConnection (host, 0 /* TODO */, &ciptr->family,
 				  &ciptr->addrlen, &ciptr->addr);
     if (ciptr->fd < 0) {
-	PRMSG(1,"TRANS(AMOpenCOTSClient): Unable to make connection to %s\n",
+	PRMSG(1,"AMOpenCOTSClient: Unable to make connection to %s\n",
 	      host, 0,0 );
 	xfree(ciptr);
 	return NULL;
@@ -1532,11 +1532,11 @@ char		*port;
     XAmChanDesc    *chandesc;
     XtransConnInfo  ciptr;
 
-    PRMSG(2,"TRANS(AMOpenCOTSServer)(%s,%s,%s)\n", protocol, given_host, port);
+    PRMSG(2,"AMOpenCOTSServer(%s,%s,%s)\n", protocol, given_host, port);
 
     ciptr = (XtransConnInfo) xcalloc (1, sizeof(struct _XtransConnInfo));
     if (ciptr == NULL) {
-        PRMSG (1, "TRANS(AMOpenCotsClient): malloc failed\n", 0, 0, 0);
+        PRMSG (1, "AMOpenCotsClient: malloc failed\n", 0, 0, 0);
         return NULL;
     }
 
@@ -1573,7 +1573,7 @@ char		*port;
     XtransConnInfo	ciptr;
     int 		i;
     
-    PRMSG(1,"TRANS(AMOpenCLTSClient)(%d,%s,%s)\n", protocol, host, port );
+    PRMSG(1,"AMOpenCLTSClient(%d,%s,%s)\n", protocol, host, port );
     /* TODO */
     return NULL;
 }			
@@ -1593,7 +1593,7 @@ char		*port;
     XtransConnInfo	ciptr;
     int 		i;
     
-    PRMSG(1,"TRANS(AMOpenCLTSServer)(%d,%s,%s)\n", protocol, host, port );
+    PRMSG(1,"AMOpenCLTSServer(%d,%s,%s)\n", protocol, host, port );
     /* TODO */
     return NULL;
 }			
@@ -1602,7 +1602,7 @@ static int
 TRANS(AMResetListener)(ciptr)
 XtransConnInfo	ciptr;
 {
-    PRMSG(2,"TRANS(AMResetListener)()\n", 0, 0, 0 );
+    PRMSG(2,"AMResetListener()\n", 0, 0, 0 );
 
     /* nothing to do? */
     return 0;
@@ -1616,7 +1616,7 @@ XtransConnInfo	ciptr;
 int		option;
 int		arg;
 {
-    PRMSG(1,"TRANS(AMSetOption)(%d,%d,%d)\n", ciptr->fd, option, arg );
+    PRMSG(1,"AMSetOption(%d,%d,%d)\n", ciptr->fd, option, arg );
     /* TODO */
     return -1;
 }
@@ -1629,7 +1629,7 @@ TRANS(AMCreateListener)(ciptr, req)
 XtransConnInfo	ciptr;
 char	       *req;
 {
-    PRMSG(2,"TRANS(AMCreateListener)(%x->%d,%x)\n", ciptr, ciptr->fd, req );
+    PRMSG(2,"AMCreateListener(%x->%d,%x)\n", ciptr, ciptr->fd, req );
 
     /* Listener threads are already created at this point */
     return 0;
@@ -1643,12 +1643,12 @@ XtransConnInfo	ciptr;
     XAmChanDesc    *chandesc;
     XtransConnInfo  newciptr;
 
-    PRMSG(2,"TRANS(AMAccept)(%x->%d)\n", ciptr, ciptr->fd, 0 );
+    PRMSG(2,"AMAccept(%x->%d)\n", ciptr, ciptr->fd, 0 );
 
 #if defined(XSERV_t) || defined(FS_t)
     chandesc = XAmFetchConnectingClient();
     if (chandesc == NULL) {
-        PRMSG (1, "TRANS(AMAccept): no client waiting?\n", 0, 0, 0);
+        PRMSG (1, "AMAccept: no client waiting?\n", 0, 0, 0);
         return NULL;
     }
     nNewConns--;
@@ -1656,7 +1656,7 @@ XtransConnInfo	ciptr;
     newciptr = (XtransConnInfo) xcalloc (1, sizeof(struct _XtransConnInfo));
     if (newciptr == NULL)
     {
-        PRMSG (1, "TRANS(AMAccept): malloc failed\n", 0, 0, 0);
+        PRMSG (1, "AMAccept: malloc failed\n", 0, 0, 0);
         return NULL;
     }
 
@@ -1664,7 +1664,7 @@ XtransConnInfo	ciptr;
     chandesc->conninfo = newciptr;
     chandesc->status |= CONN_ALIVE;
 
-    PRMSG(2,"TRANS(AMAccept) OK: (%x->%d)\n", newciptr, newciptr->fd, 0 );
+    PRMSG(2,"AMAccept: OK: (%x->%d)\n", newciptr, newciptr->fd, 0 );
 
     TRANS(AmSetAddr)(newciptr, chandesc);
     TRANS(AMGetPeerAddr)(newciptr);
@@ -1687,7 +1687,7 @@ char		*host;
 char		*port;
 {
     /* If this function is called, we are already connected */
-    PRMSG(2, "TRANS(AMConnect)(%d,%s)\n", ciptr->fd, host, 0);
+    PRMSG(2, "AMConnect(%d,%s)\n", ciptr->fd, host, 0);
     return 0;
 }
 
@@ -1731,7 +1731,7 @@ BytesReadable_t	*count;
 	return -1;
     }
 
-    PRMSG(2, "%d\n", *count, 0, 0 );
+    PRMSG(2, "AMFdBytesReadable: %d\n", *count, 0, 0 );
 
     return 0;
 }
@@ -1757,7 +1757,7 @@ int		count;
     BytesReadable_t avail;
 
     fdi = ciptr->fd;
-    PRMSG(2, "TRANS(AMRead)(%d,%x,%d)\n", ciptr->fd, buf, count );
+    PRMSG(2, "AMRead(%d,%x,%d)\n", ciptr->fd, buf, count );
 
     errno = 0;
     chandesc = XAmFdToChanDesc(fdi);
@@ -1778,7 +1778,7 @@ int		count;
 	    count = avail; /* just read amount available */
 	}
     } else {
-	PRMSG(1, "BytesReadable failed\n", 0, 0, 0);
+	PRMSG(1, "AMRead: ...BytesReadable failed\n", 0, 0, 0);
 	return -1;
     }
 
@@ -1812,7 +1812,7 @@ int		count;
     if (chandesc->sema && rv > 0)
 	sema_mdown(chandesc->sema, rv);
 
-    PRMSG(2, "TRANS(AMRead): %d bytes\n", rv, 0, 0);
+    PRMSG(2, "AMRead: %d bytes\n", rv, 0, 0);
 
     return rv;
 }
@@ -1827,7 +1827,7 @@ int		count;
     register XAmChanDesc *chandesc;
     register int written;
     
-    PRMSG(2, "TRANS(AMWrite)(%d,%x,%d)\n", ciptr->fd, buf, count );
+    PRMSG(2, "AMWrite(%d,%x,%d)\n", ciptr->fd, buf, count );
 
     errno = 0;
     written = 0;
@@ -1887,7 +1887,7 @@ int		n;
     int i;
     int count = 0, thiscount;
 
-    PRMSG(2, "TRANS(AMReadv)(%d,%x,%d)\n", ciptr->fd, ciptr, n );
+    PRMSG(2, "AMReadv(%d,%x,%d)\n", ciptr->fd, ciptr, n );
 
     for (i = 0; i < n; i++, iov++) {
 	if (iov->iov_len) {
@@ -1911,7 +1911,7 @@ int		n;
     int i;
     int count = 0, thiscount;
 
-    PRMSG(2, "TRANS(AMWritev)(%d,%x,%d)\n", ciptr->fd, iov, n );
+    PRMSG(2, "AMWritev(%d,%x,%d)\n", ciptr->fd, iov, n );
 
     for (i = 0; i < n; i++, iov++) {
 	if (iov->iov_len) {
@@ -1933,7 +1933,7 @@ XtransConnInfo	ciptr;
 {
     register XAmChanDesc *chandesc;
 
-    PRMSG(2, "TRANS(AMDisconnect)(%x->%d)\n", ciptr, ciptr->fd, 0 );
+    PRMSG(2, "AMDisconnect(%x->%d)\n", ciptr, ciptr->fd, 0 );
 
     chandesc = XAmFdToChanDesc(ciptr->fd);
     if (chandesc != NULL) {
@@ -1967,7 +1967,7 @@ static
 TRANS(AMClose)(ciptr)
 XtransConnInfo	ciptr;
 {
-    PRMSG(2, "TRANS(AMClose)(%x->%d)\n", ciptr, ciptr->fd, 0 );
+    PRMSG(2, "AMClose(%x->%d)\n", ciptr, ciptr->fd, 0 );
 
     return TRANS(AMDisconnect)(ciptr);
 }

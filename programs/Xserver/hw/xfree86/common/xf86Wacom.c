@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.12 1996/03/17 11:37:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Wacom.c,v 3.13 1996/03/29 22:16:21 dawes Exp $ */
 
 /*
  * This driver is only able to handle the Wacom IV protocol.
@@ -138,6 +138,7 @@ typedef struct
 #define SUPPRESS	4
 #define DEBUG_LEVEL     5
 #define TILT_MODE	6
+#define HISTORY_SIZE	7
 
 #if !defined(sun) || defined(i386)
 static SymTabRec WcmTab[] = {
@@ -148,6 +149,7 @@ static SymTabRec WcmTab[] = {
   { SUPPRESS,		"suppress" },
   { DEBUG_LEVEL,	"debuglevel" },
   { TILT_MODE,		"tiltmode" },
+  { HISTORY_SIZE,	"historysize" },
   { -1,			"" }
 };
 
@@ -352,6 +354,15 @@ xf86WcmConfig(LocalDevicePtr    *array,
 
 	case TILT_MODE:
 	    priv->flags |= TILT_FLAG;
+	    break;
+	    
+	case HISTORY_SIZE:
+	    if (xf86GetToken(NULL) != NUMBER)
+		xf86ConfigError("Option number expected");
+	    dev->history_size = val->num;
+	    if (xf86Verbose)
+		ErrorF("%s Wacom Motion history size is %d\n", XCONFIG_GIVEN,
+		       dev->history_size);      
 	    break;
 	    
 	case EOF:
@@ -669,7 +680,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	return;
 
       is_absolute = (local->private_flags & ABSOLUTE_FLAG);
-      is_core_pointer = IsCorePointer(device);
+      is_core_pointer = xf86IsCorePointer(device);
 
       if (is_core_pointer) {
 	x = x * screenInfo.screens[0]->width / priv->wcmMaxX;
@@ -690,7 +701,7 @@ xf86WcmReadInput(LocalDevicePtr         local)
 
 	if (!*pprox) {
 	  if (!is_core_pointer) {
-	    PostProximityEvent(device, 1, 0, 6, rx, ry, z, tx, ty, 0);
+	    xf86PostProximityEvent(device, 1, 0, 6, rx, ry, z, tx, ty, 0);
 	  }
 	  local->private_flags |= FIRST_TOUCH_FLAG;
 	  DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG set\n"));
@@ -708,8 +719,8 @@ xf86WcmReadInput(LocalDevicePtr         local)
 		local->private_flags -= FIRST_TOUCH_FLAG;
 		DBG(4, ErrorF("xf86WcmReadInput FIRST_TOUCH_FLAG unset\n"));
 	    } else {
-		PostMotionEvent(device, is_absolute, 0, 6, rx, ry, z,
-				tx, ty, 0); 
+		xf86PostMotionEvent(device, is_absolute, 0, 6, rx, ry, z,
+				    tx, ty, 0); 
 	    }
 	}
 	if (*pbuttons != buttons) {
@@ -734,13 +745,13 @@ xf86WcmReadInput(LocalDevicePtr         local)
 			      delta));
 	    
 		if (is_stylus && (delta == 3)) {
-		    PostButtonEvent(device, 1, (delta > 0), 0, 6, rx, ry, z,
-				    tx, ty, 0);
-		    PostButtonEvent(device, 2, (delta > 0), 0, 6, rx, ry, z,
-				    tx, ty, 0);
+		    xf86PostButtonEvent(device, is_absolute, 1, (delta > 0), 0, 6,
+					rx, ry, z, tx, ty, 0);
+		    xf86PostButtonEvent(device, is_absolute, 2, (delta > 0), 0, 6,
+					rx, ry, z, tx, ty, 0);
 		} else {
-		    PostButtonEvent(device, button, (delta > 0), 0, 6, rx, ry, z,
-				    tx, ty, 0); 
+		    xf86PostButtonEvent(device, is_absolute, button, (delta > 0),
+					0, 6, rx, ry, z, tx, ty, 0); 
 		}
 	    }
 	}
@@ -760,30 +771,30 @@ xf86WcmReadInput(LocalDevicePtr         local)
 	       * and button 2 together.
 	       */
 	      if (is_stylus && (*pbuttons == 3) && (!priv->wcmEraser)) {
-		  PostButtonEvent(device, 1, 0, 0, 6, rx, ry, z,
-				  tx, ty, 0);
-		  PostButtonEvent(device, 2, 0, 0, 6, rx, ry, z,
-				  tx, ty, 0);
+		  xf86PostButtonEvent(device, is_absolute, 1, 0, 0, 6, rx, ry, z,
+				      tx, ty, 0);
+		  xf86PostButtonEvent(device, is_absolute, 2, 0, 0, 6, rx, ry, z,
+				      tx, ty, 0);
 	      }
 	      else {
-		  PostButtonEvent(device, *pbuttons, 0, 0, 6, rx, ry, z,
-				  tx, ty, 0);
+		  xf86PostButtonEvent(device, is_absolute, *pbuttons, 0, 0, 6,
+				      rx, ry, z, tx, ty, 0);
 	      }
 	      *pbuttons = 0;
 	  }
 	  if (!is_core_pointer) {
 	      if (*pprox) {
-		  PostProximityEvent(device, 0, 0, 6, rx, ry, z,
-				     tx, ty, 0);
+		  xf86PostProximityEvent(device, 0, 0, 6, rx, ry, z,
+					 tx, ty, 0);
 	      }
 	      /* macro button management button number is in pressure */
 	      if (buttons) {
 		  int	macro = z / 2;
 		  
-		  PostButtonEvent(device, buttons, 1, 0, 6, 0, 0, 0,
-				  tx, ty, macro);
-		  PostButtonEvent(device, buttons, 0, 0, 6, 0, 0, 0,
-				  tx, ty, macro);
+		  xf86PostButtonEvent(device, is_absolute, buttons, 1, 0, 6,
+				      0, 0, 0, tx, ty, macro);
+		  xf86PostButtonEvent(device, is_absolute, buttons, 0, 0, 6,
+				      0, 0, 0, tx, ty, macro);
 	      }
 	  }
 	  *pprox = 0;
@@ -796,23 +807,6 @@ xf86WcmReadInput(LocalDevicePtr         local)
       priv->wcmIndex = 0;
     }
   }
-}
-
-/*
- ***************************************************************************
- *
- * xf86WcmGetMotionEvents --
- *
- ***************************************************************************
- */
-static int
-xf86WcmGetMotionEvents(DeviceIntPtr	dev,
-		       xTimecoord	*buff,
-		       unsigned long	start,
-		       unsigned long	stop,
-		       ScreenPtr	pScreen)
-{
-  return 0;
 }
 
 /*
@@ -1205,8 +1199,8 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 
       if (InitValuatorClassDeviceStruct(pWcm, 
 					nbaxes,
-					xf86WcmGetMotionEvents, 
-					0, /* numMotionEvents */
+					xf86GetMotionEvents, 
+					local->history_size,
 					(local->private_flags & ABSOLUTE_FLAG) 
 					? Absolute : Relative)
 	  == FALSE) {
@@ -1214,6 +1208,9 @@ xf86WcmProc(DeviceIntPtr       pWcm,
 	return !Success;
       }
       else {
+	  /* allocate the motion history buffer if needed */
+	  xf86MotionHistoryAllocate(local);
+
 	  AssignTypeAndName(pWcm, local->atom, local->name);
 	  /* open the device to gather informations */
 	  xf86WcmOpenDevice(pWcm);
@@ -1375,7 +1372,8 @@ xf86WcmAllocate(char *  name,
   local->dev = NULL;
   local->private = priv;
   local->private_flags = flag;
-
+  local->history_size  = 0;
+  
   priv->wcmDevice = "";         /* device file name */
   priv->wcmSuppress = 20;       /* transmit position if increment is superior */
   priv->wcmOldX = -1;           /* previous X position */
@@ -1505,9 +1503,9 @@ DeviceAssocRec wacom_eraser_assoc =
 int
 init_module(unsigned long	server_version)
 {
-    AddDeviceAssoc(&wacom_stylus_assoc);
-    AddDeviceAssoc(&wacom_cursor_assoc);
-    AddDeviceAssoc(&wacom_eraser_assoc);
+    xf86AddDeviceAssoc(&wacom_stylus_assoc);
+    xf86AddDeviceAssoc(&wacom_cursor_assoc);
+    xf86AddDeviceAssoc(&wacom_eraser_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
 	ErrorF("Warning : Wacom module compiled for version%s\n", XF86_VERSION);

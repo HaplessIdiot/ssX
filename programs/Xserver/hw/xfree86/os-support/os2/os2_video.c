@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.3 1996/02/19 09:51:01 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_video.c,v 3.4 1996/04/15 11:31:15 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -107,6 +107,7 @@ unsigned long Size;
 	DIODtaPkt	dta;
 	ULONG		dlen;
 	static BOOL	ErrRedir = FALSE;
+	APIRET		rc;
 
 	par.addr	= (ULONG)Base;
 	par.size	= (ULONG)Size;
@@ -132,8 +133,8 @@ unsigned long Size;
 	}
 
 	/* fail */
-	ErrorF("xf86-OS/2: xf86MapVidMem FAILED!!: (ScreenNum= %d, Base= %p, Size= 0x%x return len %d\n",
-		ScreenNum, Base, Size,dlen);
+	FatalError("xf86-OS/2: xf86MapVidMem FAILED!!: rc = %d (ScreenNum= %d, Base= %p, Size= 0x%x return len %d\n",
+		rc, ScreenNum, Base, Size,dlen);
 	return (pointer)0;
 }
 

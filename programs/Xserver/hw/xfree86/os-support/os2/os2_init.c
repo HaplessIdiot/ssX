@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.5 1996/02/22 05:12:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_init.c,v 3.6 1996/04/15 11:31:10 dawes Exp $ */
 /*
  * (c) Copyright 1994 by Holger Veit
  *			<Holger.Veit@gmd.de>
@@ -43,6 +43,7 @@
 #define INCL_DOSPROCESS
 #define INCL_DOSSEMAPHORES
 #define INCL_DOSMODULEMGR
+#define INCL_DOSFILEMGR
 #include "xf86.h"
 #include "xf86Procs.h"
 #include "xf86_OSlib.h"
@@ -91,12 +92,23 @@ void xf86OpenConsole()
 	KBDHWID hwid;
 	APIRET rc;
 	int VioTid;
+        ULONG actual_handles;
+        LONG new_handles;
 
 	ErrorF("xf86-OS/2: Console opened\n");
 	OriginalVideoMode.cb=sizeof(VIOMODEINFO);
 	rc=VioGetMode(&OriginalVideoMode,(HVIO)0);
 	if(rc!=0) ErrorF("xf86-OS/2: Could not get original video mode. RC=%d\n",rc);
 	xf86Info.consoleFd = -1;
+        
+        /* Set the number of handles to higher than the default 20. Set to 80 which should be plenty */
+        new_handles = 0;
+        rc = DosSetRelMaxFH(&new_handles,&actual_handles);
+        if(actual_handles < 80){
+            new_handles = 80 - actual_handles;
+            rc = DosSetRelMaxFH(&new_handles,&actual_handles);
+            ErrorF("xf86-OS/2: Increased number of available handles to %d\n",actual_handles);
+            }
 
 	/* grab the keyboard */
 	rc = KbdGetFocus(0,0);
@@ -120,7 +132,7 @@ void xf86OpenConsole()
 /* Create popup semaphore */
 
 	rc=DosCreateEventSem("\\SEM32\\XF86PUP",&hevPopupPending,DC_SEM_SHARED,1);
-	if(rc) FatalError("xf86-OS/2: Could not create popup semaphore! RC=%d\n",rc);
+	if(rc) ErrorF("xf86-OS/2: Could not create popup semaphore! RC=%d\n",rc);
 	/* rc=VioRegister("xf86vio","XF86POPUP_SUBCLASS",0x20002004L,0L);
 	if(rc){ 
 		FatalError("xf86-OS2: Could not register XF86VIO.DLL module. Please install in LIBPATH! RC=%d\n",rc);

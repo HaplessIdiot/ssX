@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.6 1996/03/10 12:04:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.h,v 3.7 1996/03/29 22:16:23 dawes Exp $ */
 
 #ifndef _xf86Xinput_h
 #define _xf86Xinput_h
@@ -42,6 +42,11 @@
 #undef PRIVATE
 #endif
 #define PRIVATE(dev) (((LocalDevicePtr)((dev)->public.devicePrivate))->private)
+
+#ifdef HAS_MOTION_HISTORY
+#undef HAS_MOTION_HISTORY
+#endif
+#define HAS_MOTION_HISTORY(local) ((local)->dev->valuator && (local)->dev->valuator->numMotionEvents)
 
 typedef struct _LocalDeviceRec {  
   char		*name;
@@ -83,11 +88,15 @@ typedef struct _LocalDeviceRec {
     int /*mode*/
 #endif
     );
-  int		fd;
-  Atom		atom;
-  DeviceIntPtr	dev;
-  pointer	private;
-  int		private_flags;
+    int			fd;
+    Atom		atom;
+    DeviceIntPtr	dev;
+    pointer		private;
+    int			private_flags;
+    pointer		motion_history;
+    unsigned int	history_size;	/* only for configuration purpose */
+    unsigned int	first;
+    unsigned int	last;
 } LocalDeviceRec, *LocalDevicePtr;
 
 typedef struct _DeviceAssocRec 
@@ -108,28 +117,28 @@ extern	int		ProximityIn;
 extern	int		ProximityOut;
 
 extern int
-IsCorePointer(
+xf86IsCorePointer(
 #if NeedFunctionPrototypes
 	      DeviceIntPtr /*dev*/
 #endif
 );
 
 extern int
-IsCoreKeyboard(
+xf86IsCoreKeyboard(
 #if NeedFunctionPrototypes
 	       DeviceIntPtr /*dev*/
 #endif
 );
 
 void
-configExtendedInputSection(
+xf86configExtendedInputSection(
 #ifdef NeedFunctionPrototypes
 		LexPtr          /* val */
 #endif
 );
 
 void
-AddDeviceAssoc(
+xf86AddDeviceAssoc(
 #ifdef NeedFunctionPrototypes
 		DeviceAssocPtr	/* assoc */
 #endif
@@ -165,7 +174,7 @@ xf86eqProcessInputEvents (
 );
 
 void
-PostMotionEvent(
+xf86PostMotionEvent(
 #if NeedVarargsPrototypes
 		DeviceIntPtr	/*device*/,
 		int		/*is_absolute*/,
@@ -176,7 +185,7 @@ PostMotionEvent(
 );
 
 void
-PostProximityEvent(
+xf86PostProximityEvent(
 #if NeedVarargsPrototypes
 		   DeviceIntPtr	/*device*/,
 		   int		/*is_in*/,
@@ -187,9 +196,10 @@ PostProximityEvent(
 );
 
 void
-PostButtonEvent(
+xf86PostButtonEvent(
 #if NeedVarargsPrototypes
 		DeviceIntPtr	/*device*/,
+		int		/*is_absolute*/,
 		int		/*button*/,
 		int		/*is_down*/,
 		int		/*first_valuator*/,
@@ -199,9 +209,27 @@ PostButtonEvent(
 );
 
 void
-AddDeviceAssoc(
+xf86AddDeviceAssoc(
 #if NeedFunctionPrototypes
 		DeviceAssocPtr	/*assoc*/
+#endif
+);
+
+void
+xf86MotionHistoryAllocate(
+#if NeedFunctionPrototypes
+		      LocalDevicePtr	local
+#endif
+);
+
+int
+xf86GetMotionEvents(
+#if NeedFunctionPrototypes
+		    DeviceIntPtr	dev,
+		    xTimecoord		*buff,
+		    unsigned long	start,
+		    unsigned long	stop,
+		    ScreenPtr		pScreen
 #endif
 );
 

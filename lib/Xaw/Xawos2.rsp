@@ -6,4 +6,4 @@ Text.obj TextAction.obj TextPop.obj TextSink.obj TextSrc.obj TextTr.obj+
 Toggle.obj Tree.obj Vendor.obj Viewport.obj XawI18n.obj XawIm.obj+
 XawInit.obj /NOI /NOL /NOD /BAT
 Xaw.dll
-
+Xaw.map

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.43 1995/12/26 06:03:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.44 1996/02/04 08:57:46 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -393,6 +393,7 @@ agxProbe()
    vgaPhysBase = NULL;
 
    OFLG_ZERO(&validOptions);
+   OFLG_SET(OPTION_CLKDIV2, &validOptions);
    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
    OFLG_SET(OPTION_BT485_CURS, &validOptions);
    OFLG_SET(OPTION_BT482_CURS, &validOptions);

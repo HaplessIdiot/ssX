@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.28tsi Exp $
-.TH XF86_SVGA 1 "Version 3.1.2D"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_SVGA.man,v 3.29 1996/03/31 11:43:18 dawes Exp $
+.TH XF86_SVGA 1 "Version 3.1.2E"  "XFree86"
 .SH NAME
 XF86_SVGA - non-accelerated SVGA X Window System servers for UNIX on 
 x86 platforms
@@ -212,6 +212,15 @@ the extra 8 clocks.
 set of clocks that are normally used.  Specifying this option will force
 the driver to probe for clocks instead of reporting the built-in defaults.
 This option is for debugging purposes only.
+.sp
+\fBclkdiv2\fP - for all chipsets using a set of discrete clocks (i.e. not
+using a programmable ClockChip or a ClockProg). With this option enabled,
+the SVGA driver can also use all the clocks mentionned in the clocks line
+divided by 2, presenting the server with twice as many clocks to choose
+from, especially in the low- and mid-range. This is useful for creating very
+low resolution modes like 320x200, because the lowest available clock on
+many cards (25.175 MHz) is too high to create a standard 320x200 mode. A few
+SVGA chips don't support this option, causing a distorted screen.
 .sp
 \fBpower_saver\fP - This option enables the server
 to use the power saving features of VESA DPMS compatible monitors.

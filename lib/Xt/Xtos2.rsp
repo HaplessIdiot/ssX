@@ -8,4 +8,4 @@ Selection.obj SetSens.obj SetValues.obj SetWMCW.obj Shell.obj StringDefs.obj+
 TMaction.obj TMgrab.obj TMkey.obj TMparse.obj TMprint.obj TMstate.obj+
 Threads.obj VarCreate.obj VarGet.obj Varargs.obj Vendor.obj /NOI /NOL /NOD /BAT
 Xt.dll
-
+Xt.map

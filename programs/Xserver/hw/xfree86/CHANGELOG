@@ -1,3 +1,19 @@
+XFree86 3.1.2Dh (10 May 1996)
+510. Fix for some image problems on VGAWonder V3, V4 and V5 adapters
+     (Marc Aurele La France).
+509. Enable TERMIOS for xterm on Linux/Alpha (Kazushige Goto).
+508. Make the "clkdiv2" option a valid option for most accelerated
+     servers (Koen Gadeyne).
+507. Unified the global function names to use the xf86 prefix in the XInput
+     code (Frederic Lepied).
+506. Add support for motion history for extended input devices (implemented
+     for the Wacom driver) (Frederic Lepied).
+505. Oak documentation udpates (Jorge Delgado).
+504. Fix compiler warnings introduced in 3.1.2Dg (Thomas E. Dickey).
+503. OS/2 updates (Sebastien Marineau and Holger Veit).
+502. Fix formatting of xtrans error messages (Holger Veit).
+501. S3 image fixes for Alpha (Harald Koenig).
+
 XFree86 3.1.2Dg (6 May 1996)
 500. X98 updates for PANIX(98) support (X98 core team).
 499. Allow halved clocks to be used with the VGA servers (Koen Gadeyne).

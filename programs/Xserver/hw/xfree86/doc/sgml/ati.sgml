@@ -208,6 +208,15 @@ Support for more than 8bpp colour depth is pending proper RAMDAC handling and
 banked framebuffer code for >8bpp.<p>
 Video memory banking does not work in the 16-colour and monochrome servers on
 V3, V4 and V5 adapters.<p>
+Video memory corruption can still occur during mode switches on V3, V4 and V5
+adapters.
+Symptoms of this problem include garbled fonts on return to text mode, and
+various effects (snow, dashed lines, etc) on initial entry into a graphics
+mode.
+In the first case, the workaround is to use some other means of restoring the
+text font.
+On Linux, this can be done with the kbd or svgalib packages.
+In the second case, xrefresh will usually cleanup the image.<p>
 Interlaced modes do not work in the monochrome server on 28800-x adapters when
 using a virtual resolution wider than 1024 pixels.<p>
 Some (particularly low resolution) interlaced modes do not work on 264xT
@@ -227,7 +236,7 @@ accelerated functionality.<p>
 Please e-mail any bug reports, comments, etc. to <bf>Marc Aurele La
 France</bf>, <it>tsi@ualberta.ca</it><p>
 <verb>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.10tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/ati.sgml,v 3.11tsi Exp $
 $XConsortium: ati.sgml /main/3 1995/11/12 20:00:33 kaleb $
 </verb>
 </article>

@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.9 1996/03/10 11:46:59 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.rules,v 3.10 1996/04/15 11:13:54 dawes Exp $
 
 .SUFFIXES: .Osuf .c .CCsuf
 
@@ -384,6 +384,38 @@ step:: srcname								@@\
 
 #endif /* InstallNamedTargetNoClobber */
 
+#if CompressManPages
+
+#ifndef InstallManPageLong
+#define InstallManPageLong(file,destdir,dest)                           @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	ImakeHelper 12 file $(DESTDIR)destdir dest
+#endif
+
+#ifndef InstallManPageAliases
+#define InstallManPageAliases(file,destdir,aliases)                     @@\
+install.man::                                                           @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	for %i in (aliases) do $(INSTALL) $(DESTDIR)destdir/file.gz $(DESTDIR)destdir/%i.gz
+#endif
+
+#ifndef InstallGenManPageLong
+#define InstallGenManPageLong(file,destdir,dest,suffix)                 @@\
+install.man:: file.man                                                  @@\
+	MakeDir($(DESTDIR)destdir)					@@\
+	ImakeHelper 12 file $(DESTDIR)destdir dest
+#endif
+
+#ifndef InstallMultipleMan
+#define InstallMultipleMan(list,dest)                                   @@\
+install.man:: list                                                      @@\
+	MakeDir($(DESTDIR)dest)						@@\
+	for %i in (list) do ImakeHelper 12 %i $(DESTDIR)dest %i
+#endif
+
+#else /* CompressManPages */
+
 #ifndef InstallManPageLong
 #define InstallManPageLong(file,destdir,dest)                           @@\
 install.man:: file.man                                                  @@\
@@ -410,6 +442,8 @@ install.man:: file.man                                                  @@\
 install.man:: list                                                      @@\
 	MakeDir($(DESTDIR)dest)						@@\
 	for %i in (list) do ImakeHelper 10 %i $(DESTDIR)dest %i $(MANSUFFIX)
+#endif
+
 #endif
 
 #ifndef NormalLintTarget

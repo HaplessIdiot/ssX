@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.8 1996/03/29 22:16:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.9 1996/05/06 05:57:38 dawes Exp $ */
 
 #include "Xmd.h"
 #include "XI.h"
@@ -77,13 +77,13 @@ static SymTabRec XinputTab[] = {
 };
 
 int
-IsCorePointer(DeviceIntPtr	device)
+xf86IsCorePointer(DeviceIntPtr	device)
 {
   return(device == inputInfo.pointer);
 }
 
 int
-IsCoreKeyboard(DeviceIntPtr	device)
+xf86IsCoreKeyboard(DeviceIntPtr	device)
 {
   return(device == inputInfo.keyboard);
 }
@@ -132,26 +132,26 @@ ReadInput(pointer	block_data,
  */
 
 void
-configExtendedInputSection(LexPtr       val)
+xf86ConfigExtendedInputSection(LexPtr       val)
 {
   int           i;
   int           token;
 
 #ifndef DYNAMIC_MODULE
 # ifdef JOYSTICK_SUPPORT
-  AddDeviceAssoc(&joystick_assoc);
+  xf86AddDeviceAssoc(&joystick_assoc);
 # endif
 # ifdef WACOM_SUPPORT
-  AddDeviceAssoc(&wacom_stylus_assoc);
-  AddDeviceAssoc(&wacom_cursor_assoc);
-  AddDeviceAssoc(&wacom_eraser_assoc);
+  xf86AddDeviceAssoc(&wacom_stylus_assoc);
+  xf86AddDeviceAssoc(&wacom_cursor_assoc);
+  xf86AddDeviceAssoc(&wacom_eraser_assoc);
 # endif
 # ifdef ELOGRAPHICS_SUPPORT
-  AddDeviceAssoc(&elographics_assoc);
+  xf86AddDeviceAssoc(&elographics_assoc);
 # endif
 #endif
 
-  AddDeviceAssoc(&mouse_assoc);
+  xf86AddDeviceAssoc(&mouse_assoc);
   
   num_devices = 0;
   max_devices = 3;
@@ -199,7 +199,7 @@ configExtendedInputSection(LexPtr       val)
 
 /***********************************************************************
  *
- * AddDeviceAssoc --
+ * xf86AddDeviceAssoc --
  * 
  *	Add an association to the array deviceAssoc. This is needed to
  * allow dynamic loading of devices to register themself.
@@ -207,7 +207,7 @@ configExtendedInputSection(LexPtr       val)
  ***********************************************************************
  */
 void
-AddDeviceAssoc(DeviceAssocPtr	assoc)
+xf86AddDeviceAssoc(DeviceAssocPtr	assoc)
 {
     if (!deviceAssoc) {
 	maxAssoc = 10;
@@ -748,18 +748,26 @@ xf86eqProcessInputEvents ()
  */
 
 void
-PostMotionEvent(DeviceIntPtr	device,
-		int		is_absolute,
-		int		first_valuator,
-		int		num_valuators,
-		...)
+xf86PostMotionEvent(DeviceIntPtr	device,
+		    int			is_absolute,
+		    int			first_valuator,
+		    int			num_valuators,
+		    ...)
 {
     va_list			var;
     int				loop;
     xEvent			xE[2];
-    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
-    deviceValuator		*xv = (deviceValuator*) xev+1;
-
+    deviceKeyButtonPointer	*xev  = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv   = (deviceValuator*) xev+1;
+    LocalDevicePtr		local = (LocalDevicePtr)device->public.devicePrivate;
+    char			*buff;
+    Time			current = GetTimeInMillis();
+    
+    if (HAS_MOTION_HISTORY(local)) {
+	buff = ((char *)local->motion_history +
+		(sizeof(INT32) * local->dev->valuator->numAxes + sizeof(Time)) * local->last);
+    }
+    
     va_start(var, num_valuators);
 
     for(loop=0; loop<num_valuators; loop++) {
@@ -784,10 +792,10 @@ PostMotionEvent(DeviceIntPtr	device,
 	    break;
 	}
 	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
-	    if (!IsCorePointer(device)) {
+	    if (!xf86IsCorePointer(device)) {
 		xev->type = DeviceMotionNotify;
 		xev->detail = 0;
-		xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+		xf86Info.lastEventTime = xev->time = current;
 		xev->deviceid = device->id | MORE_EVENTS;
             
 		xv->type = DeviceValuator;
@@ -796,10 +804,16 @@ PostMotionEvent(DeviceIntPtr	device,
 		xv->num_valuators = loop % 6;
 		xv->first_valuator = first_valuator + (loop / 6) * 6;
 		xv->device_state = 0;
-	    
+		
+		if (HAS_MOTION_HISTORY(local)) {
+		    *(Time*)buff = current;
+		    memcpy(buff+sizeof(Time)+sizeof(INT32)*xv->first_valuator, &xv->valuator0,
+			   sizeof(INT32)*xv->num_valuators);
+		}
+		
 		xf86eqEnqueue(xE);
 	    } else {
-		xf86Info.lastEventTime = GetTimeInMillis();
+		xf86Info.lastEventTime = current;
 	    
 		if (num_valuators >= 2) {
 		    if (is_absolute) {
@@ -813,14 +827,19 @@ PostMotionEvent(DeviceIntPtr	device,
 	}
 	va_end(var);
     }
+    if (HAS_MOTION_HISTORY(local)) {
+	local->last = (local->last + 1) % device->valuator->numMotionEvents;
+	if (local->last == local->first)
+	    local->first = (local->first + 1) % device->valuator->numMotionEvents;
+    }
 }
 
 void
-PostProximityEvent(DeviceIntPtr	device,
-		   int		is_in,
-		   int		first_valuator,
-		   int		num_valuators,
-		   ...)
+xf86PostProximityEvent(DeviceIntPtr	device,
+		       int		is_in,
+		       int		first_valuator,
+		       int		num_valuators,
+		       ...)
 {
     va_list			var;
     int				loop;
@@ -871,20 +890,23 @@ PostProximityEvent(DeviceIntPtr	device,
 }
 
 void
-PostButtonEvent(DeviceIntPtr	device,
-		int		button,
-		int		is_down,
-		int		first_valuator,
-		int		num_valuators,
-		...)
+xf86PostButtonEvent(DeviceIntPtr	device,
+		    int			is_absolute,
+		    int			button,
+		    int			is_down,
+		    int			first_valuator,
+		    int			num_valuators,
+		    ...)
 {
     va_list			var;
     int				loop;
     xEvent			xE[2];
-    deviceKeyButtonPointer	*xev = (deviceKeyButtonPointer*) xE;
-    deviceValuator		*xv = (deviceValuator*) xev+1;
-
+    deviceKeyButtonPointer	*xev	        = (deviceKeyButtonPointer*) xE;
+    deviceValuator		*xv	        = (deviceValuator*) xev+1;
+    int				is_core_pointer = xf86IsCorePointer(device);
+    
     va_start(var, num_valuators);
+
 
     for(loop=0; loop<num_valuators; loop++) {
 	switch (loop % 6) {
@@ -907,36 +929,88 @@ PostButtonEvent(DeviceIntPtr	device,
 	    xv->valuator5 = va_arg(var, int);
 	    break;
 	}
-	if ((loop % 6 == 5) || (loop == num_valuators - 1)) {
-	    if (!IsCorePointer(device)) {
-		xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
-		xev->detail = button;
+	if (((loop % 6 == 5) || (loop == num_valuators - 1)) &&
+	    !is_core_pointer) {
+	    xev->type = is_down ? DeviceButtonPress : DeviceButtonRelease;
+	    xev->detail = button;
 	    
-		xf86Info.lastEventTime = xev->time = GetTimeInMillis();
-		xev->deviceid = device->id | MORE_EVENTS;
+	    xf86Info.lastEventTime = xev->time = GetTimeInMillis();
+	    xev->deviceid = device->id | MORE_EVENTS;
 	    
-		xv->type = DeviceValuator;
-		xv->deviceid = device->id;
-		xv->device_state = 0;
-		xv->num_valuators = loop % 6;
-		xv->first_valuator = first_valuator + (loop / 6) * 6;
-		xf86eqEnqueue(xE);
-	    } else {
-		int       cx, cy;
+	    xv->type = DeviceValuator;
+	    xv->deviceid = device->id;
+	    xv->device_state = 0;
+	    xv->num_valuators = is_absolute ? (loop % 6) : 0;
+	    xv->first_valuator = first_valuator + (loop / 6) * 6;
+	    xf86eqEnqueue(xE);
+	    if (is_absolute) break;
+	}
+	if (is_core_pointer && loop == 1) {
+	    int       cx, cy;
 	    
-		GetSpritePosition(&cx, &cy);
+	    GetSpritePosition(&cx, &cy);
 	    
-		xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
-		xE->u.u.detail =  button;
-		xE->u.keyButtonPointer.rootY = cx;
-		xE->u.keyButtonPointer.rootX = cy;
-		xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
-		xf86eqEnqueue(xE);
-		break;
-	    }
+	    xE->u.u.type = is_down ? ButtonPress : ButtonRelease;
+	    xE->u.u.detail =  button;
+	    xE->u.keyButtonPointer.rootY = cx;
+	    xE->u.keyButtonPointer.rootX = cy;
+	    xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
+	    xf86eqEnqueue(xE);
+	    break;
 	}
     }
     va_end(var);
+}
+
+/* 
+ * Motion history management.
+ */
+
+void
+xf86MotionHistoryAllocate(LocalDevicePtr	local)
+{
+    ValuatorClassPtr	valuator = local->dev->valuator;
+    
+    if (!HAS_MOTION_HISTORY(local))
+	return;
+    
+    local->motion_history = xalloc((sizeof(INT32) * valuator->numAxes + sizeof(Time))
+				   * valuator->numMotionEvents);
+    local->first = 0;
+    local->last	 = 0;
+}
+
+int
+xf86GetMotionEvents(DeviceIntPtr	dev,
+		    xTimecoord		*buff,
+		    unsigned long	start,
+		    unsigned long	stop,
+		    ScreenPtr		pScreen)
+{
+    LocalDevicePtr	local	 = (LocalDevicePtr)dev->public.devicePrivate;
+    ValuatorClassPtr	valuator = dev->valuator;
+    int			num  	 = 0;
+    int			loop	 = local->first;
+    int			size;
+    Time		current;
+    
+    if (!HAS_MOTION_HISTORY(local))
+	return 0;
+
+    size = (sizeof(INT32) * valuator->numAxes + sizeof(Time));
+
+    while (loop != local->last) {
+	current = *(Time*)(((char *)local->motion_history)+loop*size);
+	if (current > stop)
+	    return num;
+	if (current >= start) {
+	    memcpy(((char *)buff)+size*num,
+		   ((char *)local->motion_history)+loop*size, size);
+	    num++;
+	}
+	loop = (loop + 1) % valuator->numMotionEvents;
+    }
+    return num;
 }
 
 /* end of xf86Xinput.c */

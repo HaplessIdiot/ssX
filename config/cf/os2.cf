@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.10 1996/04/15 11:13:53 dawes Exp $
 
 #define OSName           OS/2
 #define OSVendor	 IBM
@@ -35,16 +35,23 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes E
 
 /* for the man pages */
 #define BookFormatManPages	YES
+#define ManDirectoryRoot /XFree86/man/man
 #define ManSuffix	1
 #define LibManSuffix	3
 #define FileManSuffix	4
-#define XmanSearchPath	$(LIBDIR)/man/man
+#define XmanSearchPath	/XFree86/man/man
+#define ManSourcePath	$(MANPATH)
+
 /* you must have installed groff! */
 #define TblCmd		tbl
-#define EqnCmd		eqn
 #define ColCmd		cat
-#define NeqnCmd		eqn
+#define NeqnCmd		eqn 
 #define NroffCmd	groff -Tascii
+#define	EqnCmd 		eqn -Tascii
+#define TroffCmd        groff -Tps
+          COL = /usr/bin/col
+         NEQN = NeqnCmd
+        NROFF = NroffCmd
 
 /* A set of standard defines: */
 #define OSDefines		-D__EMX__ -D__i386__ -Demxos2 -D_POSIX_SOURCE \
@@ -73,7 +80,7 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes E
 #ifndef HasShm
 # define HasShm          	NO
 #endif
-#define ConnectionFlags		-DTCPCONN
+#define ConnectionFlags		-DTCPCONN -DOS2PIPECONN
 #define StdIncDir $(C_INCLUDE_PATH)
 
 /*
@@ -98,9 +105,11 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes E
 #define PreProcessCmd	CppCmd
 
 #define CcCmd	gcc
-#define DefaultCCOptions	-Zmtd -Zsysv-signals
-#define LibraryCCOptions	-Zmtd -Zsysv-signals
-#define ServerCCOptions		-Zmtd -Zsysv-signals
+#define DefaultCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
+#define LibraryCCOptions	-D__ST_MT_ERRNO -Zmtd -Zsysv-signals
+#define ServerCCOptions		-D__ST_MT_ERRNO  -Zmtd -Zsysv-signals
+
+#define CplusplusCmd	g++
 #define CplusplusOptions	-Zmtd -Zsysv-signals
 
 #define MakeCmd x11make 
@@ -118,7 +127,6 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes E
 /* quite a number of programs you need, most of them the same as
  * with Unix, but listed here for completeness
  */
-#define CplusplusCmd	g++
 #define ArCmd	ar cq
 #define RanlibCmd	ar s
 #define BourneShell	/**/
@@ -170,16 +178,22 @@ XCOMM platform:  $XFree86: xc/config/cf/os2.cf,v 3.9 1996/03/10 11:46:58 dawes E
  * Make & install Features
  */
 
-#define AvoidNullMakeCommand 	NO
+#define AvoidNullMakeCommand 	YES
 _NULLCMD_ = @ rem
-/* _NULLCMD_ = @ echo ÿ*/		/*WARNING: ALT-255 IN LINE!*/
+#define NullMakeCommand	@ rem
 #define StripInstalledPrograms	NO
 #define CompressAllFonts	YES
+#define CompressManPages	YES
 #define DefaultUserPath		.;/os2;/emx/bin;/tcpip/bin;$(BINDIR)
 #define DefaultSystemPath	/os2;/emx/bin;$(BINDIR)
 
 #ifndef ExtraFilesToClean
-# define ExtraFilesToClean 	*.~* *.exe *.dll *.obj *.lib
+# define ExtraFilesToClean 	*.~* *.exe *.dll *.obj *.lib *.map
+#endif
+
+#if CompressManPages
+#define CompressManCmd	gzip -n
+   COMPRESSMANCMD = CompressManCmd
 #endif
 
 #define ProgramTargetName(target)target.exe
@@ -204,25 +218,6 @@ Concat3(DEP,varname,LIB) = SharedLibDependencies(libname,libsource,revname) @@\
 Concat(varname,LIB) = LoaderLibPrefix Concat(-l,libname)		@@\
 LintLibReferences(varname,libname,libsource)
 #endif
-
-/*
- * Documentation formatting
- */
-#undef	TblCmd
-#define	TblCmd 			/emx/bin/tbl
-#undef	EqnCmd
-#define	EqnCmd 			/emx/bin/eqn -Tascii
-          COL = /usr/bin/col
-         NEQN = /usr/bin/neqn
-        NROFF = /usr/bin/nroff
-#define TroffCmd        	groff -Tps
-
-
-XCOMM Man pages need to be formatted when installed, so override the default
-XCOMM imake rules.
-
-#define ManSuffix		1
-#define ManSourcePath		$(MANPATH)
 
 #include <os2.rules>
 #include <os2Lib.rules>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.4 1996/03/10 12:06:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/os2/os2_VTsw.c,v 3.5 1996/04/15 11:31:09 dawes Exp $ */
 /*
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
  * Modified 1996 by Sebastien Marineau <marineau@genie.uottawa.ca>
@@ -64,10 +64,13 @@ Bool xf86VTSwitchPending()
 Bool xf86VTSwitchAway()
 {
         APIRET rc;
+	ULONG  drive;
 
         xf86Info.vtRequestsPending=FALSE;
         SwitchedToWPS=TRUE;
-	rc = DosSuppressPopUps(0x0000L,'c');	/* Disable popups */
+
+	rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
+	rc = DosSuppressPopUps(0x0000L,drive+96);	/* Disable popups */
 	DosPostEventSem(hevSwitchRequested);
 	usleep(30000);
 	return(TRUE);
@@ -76,11 +79,13 @@ Bool xf86VTSwitchAway()
 Bool xf86VTSwitchTo()
 {
 	APIRET rc;
+	ULONG drive;
 
         xf86Info.vtRequestsPending=FALSE;
         SwitchedToWPS=FALSE;
 	DosPostEventSem(hevSwitchRequested);
-	rc = DosSuppressPopUps(0x0001L,'c');     /* Disable popups */
+	rc = DosQuerySysInfo(5,5,&drive,sizeof(drive));
+	rc = DosSuppressPopUps(0x0001L,drive+96);     /* Disable popups */
 	/* We reset the state of the control key */
 	os2PostKbdEvent(KEY_LCtrl,1);
 	os2PostKbdEvent(KEY_LCtrl,0);

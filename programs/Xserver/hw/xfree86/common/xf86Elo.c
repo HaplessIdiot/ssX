@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.7 1996/02/18 03:42:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Elo.c,v 3.8 1996/03/29 22:16:13 dawes Exp $ */
 
 /*
  *******************************************************************************
@@ -578,15 +578,15 @@ xf86EloReadInput(LocalDevicePtr	local)
     /*
      * Emit a motion.
      */
-    if (!IsCorePointer(local->dev) ||
+    if (!xf86IsCorePointer(local->dev) ||
 	xf86EloCalibrate(priv, &cur_x, &cur_y) == Success)
-      PostMotionEvent(local->dev, TRUE, 0, 2, cur_x, cur_y);
+      xf86PostMotionEvent(local->dev, TRUE, 0, 2, cur_x, cur_y);
     
     /*
      * Emit a button press or release.
      */
     if (state == ELO_PRESS || state == ELO_RELEASE)
-      PostButtonEvent(local->dev, 1, state == ELO_PRESS, 0, 2, cur_x, cur_y);
+      xf86PostButtonEvent(local->dev, 1, 1, state == ELO_PRESS, 0, 2, cur_x, cur_y);
 
     DBG(3, ErrorF("TouchScreen: x(%d), y(%d), %s\n",
 		  priv->cur_x, priv->cur_y,
@@ -1214,7 +1214,7 @@ DeviceAssocRec elographics_assoc =
 int
 init_module(unsigned long	server_version)
 {
-    AddDeviceAssoc(&elographics_assoc);
+    xf86AddDeviceAssoc(&elographics_assoc);
 
     if (server_version != XF86_VERSION_CURRENT) {
 	ErrorF("Warning : Elographics module compiled for version%s\n", XF86_VERSION);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.19 1996/03/10 12:04:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Io.c,v 3.20 1996/03/29 22:16:17 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -396,8 +396,6 @@ xf86MseCtrl(pPointer, ctrl)
 {
     MouseDevPtr	mouse = (MouseDevPtr) ((DeviceIntPtr) pPointer)->public.devicePrivate;
 
-    ErrorF("xf86MseCtrl mouse=0x%x\n", mouse);
-    
     mouse->num       = ctrl->num;
     mouse->den       = ctrl->den;
     mouse->threshold = ctrl->threshold;
@@ -448,8 +446,6 @@ xf86MseProcAux(pPointer, what, mouse, fd, ctrl)
   unsigned char                map[5];
   int                          nbuttons;
   int                          mousefd;
-
-  ErrorF("xf86MseProcAux mouse=0x%x\n", mouse);
 
   switch (what)
     {

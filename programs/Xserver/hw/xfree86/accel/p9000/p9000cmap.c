@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.4 1996/02/04 09:04:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000cmap.c,v 3.5 1996/05/06 05:57:11 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -34,6 +34,7 @@
  * everything in here is in the 03c[6789] range. *TO*DO*
  */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xproto.h"
 #include "scrnintstr.h"

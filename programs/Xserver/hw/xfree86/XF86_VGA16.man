@@ -1,5 +1,5 @@
-.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.16tsi Exp $
-.TH XF86_VGA16 1 "Version 3.1.2D"  "XFree86"
+.\" $XFree86: xc/programs/Xserver/hw/xfree86/XF86_VGA16.man,v 3.17 1996/03/31 11:43:19 dawes Exp $
+.TH XF86_VGA16 1 "Version 3.1.2E"  "XFree86"
 .SH NAME
 XF86_VGA16 - 4 bit non-accelerated X Window System server for UNIX on
 x86 platforms
@@ -116,6 +116,15 @@ specified.  To find out what the correct initial state is, start the server
 from an 80x25 text mode.  This option is only needed if the clocks reported
 by the server when started from a high-resolution text mode differ from
 those reported when it is started from an 80x25 text mode.
+.sp
+\fBclkdiv2\fP - for all chipsets using a set of discrete clocks (i.e. not
+using a programmable ClockChip or a ClockProg). With this option enabled,
+the VGA driver can also use all the clocks mentionned in the clocks line
+divided by 2, presenting the server with twice as many clocks to choose
+from, especially in the low- and mid-range. This is useful for creating very
+low resolution modes like 320x200, because the lowest available clock on
+many cards (25.175 MHz) is too high to create a standard 320x200 mode. A few
+VGA chips don't support this option, causing a distorted screen.
 .ig
 .sp
 \fB8clocks\fP - for the PVGA1 chipset the default is 4 clocks.  Some

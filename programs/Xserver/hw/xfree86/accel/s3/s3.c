@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.126 1996/04/15 11:30:00 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.127 1996/05/06 05:57:18 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -828,6 +828,7 @@ s3Probe()
 
    OFLG_ZERO(&validOptions);
    OFLG_SET(OPTION_LEGEND, &validOptions);
+   OFLG_SET(OPTION_CLKDIV2, &validOptions);
    OFLG_SET(OPTION_NOLINEAR_MODE, &validOptions);
    if (!S3_x64_SERIES(s3ChipId))
       OFLG_SET(OPTION_NO_MEM_ACCESS, &validOptions);

@@ -1,5 +1,5 @@
 /* $XConsortium: Xtrans.h,v 1.29 95/06/08 23:20:39 gildea Exp $ */
-/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.4 1995/03/11 14:10:20 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtrans.h,v 3.5 1995/06/14 07:20:04 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -70,6 +70,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _X11Trans/**/func
 #endif
+static char* __xtransname = "_X11Trans";
 #endif /* X11_t */
 
 #ifdef XSERV_t
@@ -78,6 +79,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _XSERVTrans/**/func
 #endif
+static char* __xtransname = "_XSERVTrans";
 #define X11_t
 #endif /* X11_t */
 
@@ -87,6 +89,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _XimXTrans/**/func
 #endif
+static char* __xtransname = "_XimTrans";
 #endif /* XIM_t */
 
 #ifdef FS_t
@@ -95,6 +98,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _FSTrans/**/func
 #endif
+static char* __xtransname = "_FSTrans";
 #endif /* FS_t */
 
 #ifdef FONT_t
@@ -103,6 +107,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _FontTrans/**/func
 #endif
+static char* __xtransname = "_FontTrans";
 #endif /* FONT_t */
 
 #ifdef ICE_t
@@ -111,6 +116,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _IceTrans/**/func
 #endif
+static char* __xtransname = "_IceTrans";
 #endif /* ICE_t */
 
 #ifdef TEST_t
@@ -119,6 +125,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _TESTTrans/**/func
 #endif
+static char* __xtransname = "_TESTTrans";
 #endif /* TEST_t */
 
 #if !defined(TRANS)
@@ -127,6 +134,7 @@ from the X Consortium.
 #else
 #define TRANS(func) _XTrans/**/func
 #endif
+static char* __xtransname = "_XTrans";
 #endif /* !TRANS */
 
 

@@ -8,4 +8,4 @@ StrToGrav.obj StrToJust.obj StrToLong.obj StrToOrnt.obj StrToShap.obj+
 StrToWidg.obj UpdMapHint.obj VisCmap.obj WidgetNode.obj+
 Xct.obj /NOI /NOL /NOD /BAT
 Xmu.dll
-
+Xmu.map

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.3 1996/02/04 09:03:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64blt.c,v 3.4 1996/05/06 05:56:59 dawes Exp $ */
 /*
  * Copyright 1989 by the Massachusetts Institute of Technology
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -945,8 +945,8 @@ cfbCopyPlane1to32 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     /* must explicitly ask for "int" widths, as code below expects it */
     /* on some machines (Alpha), "long" and "int" are not the same size */
-    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, long *)
-    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, long *)
+    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
+    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
 
     nbox = REGION_NUM_RECTS(prgnDst);
     pbox = REGION_RECTS(prgnDst);
@@ -1118,8 +1118,8 @@ cfbCopyPlane32to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     /* must explicitly ask for "int" widths, as code below expects it */
     /* on some machines (Alpha), "long" and "int" are not the same size */
-    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, long *)
-    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, long *)
+    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
+    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
 
     bitPos = ffs (bitPlane) - 1;
 
@@ -1281,8 +1281,8 @@ cfbCopyPlane1to16 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     /* must explicitly ask for "int" widths, as code below expects it */
     /* on some machines (Alpha), "long" and "int" are not the same size */
-    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, long *)
-    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, long *)
+    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
+    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
 
     widthDst = widthDst << 1;
 
@@ -1455,8 +1455,8 @@ cfbCopyPlane16to1 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 
     /* must explicitly ask for "int" widths, as code below expects it */
     /* on some machines (Alpha), "long" and "int" are not the same size */
-    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, long *)
-    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, long *)
+    cfbGetTypedWidthAndPointer (pSrcDrawable, widthSrc, psrcBase, int, unsigned long)
+    cfbGetTypedWidthAndPointer (pDstDrawable, widthDst, pdstBase, int, unsigned long)
 
     widthSrc = widthSrc << 1;
 

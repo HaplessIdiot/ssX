@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.42 1996/03/29 22:15:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach64/mach64.c,v 3.43 1996/03/31 11:48:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993,1994 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -947,6 +947,7 @@ mach64Probe()
     }
 
     OFLG_ZERO(&validOptions);
+    OFLG_SET(OPTION_CLKDIV2, &validOptions);
     OFLG_SET(OPTION_HW_CURSOR, &validOptions);
     OFLG_SET(OPTION_SW_CURSOR, &validOptions);
     OFLG_SET(OPTION_CSYNC, &validOptions);

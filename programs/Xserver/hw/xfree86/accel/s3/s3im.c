@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.18 1996/02/04 09:05:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3im.c,v 3.19 1996/05/06 05:57:23 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * 
@@ -882,7 +882,7 @@ s3ImageWriteNoMem (x, y, w, h, psrc, pwidth, px, py, alu, planemask)
       short *psrcs = (short *)&psrc[px*s3Bpp];
       for (i = 0; i < w; ) {
 	 if (s3InfoRec.bitsPerPixel == 32) {
-	    outl (PIX_TRANS, *((long*)(psrcs)));
+	    outl (PIX_TRANS, *((int*)(psrcs)));
 	    psrcs+=2;
 	    i += 4;
 	 }
@@ -1165,24 +1165,46 @@ s3RealImageStipple(x, y, w, h, psrc, pwidth, pw, ph, pox, poy,
 		    x2 = srcx & 7;		/* Offset within byte. */
 		    if( np >= 16 ) {
 #ifdef __alpha__ /* alignment check */
-		      if (x2==0)
-			pix = *pnt;
-		      else
-			pix = (unsigned short)((*pnt | (*(pnt+1)<<16)) >> x2);
-#else
+		      switch ((long)pnt & 3) {
+		      case 0:
 			pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
+			break;
+		      case 2:
+			pix = (unsigned short)((*pnt | (*(pnt+1)<<16)) >> x2);
+			break;			  
+		      default:
+			pix = (unsigned short)(( ((unsigned char *)(pnt))[0]<<0  |
+						 ((unsigned char *)(pnt))[1]<<8  |
+						 ((unsigned char *)(pnt))[2]<<16 |
+						 ((unsigned char *)(pnt))[3]<<24 ) >> x2);
+			break;
+		      }
+#else
+		      pix = (unsigned short)(*((unsigned int *)(pnt)) >> x2);
 #endif
 		    }
 		    else if( pw >= 16 ) {
 #ifdef __alpha__ /* alignment check */
-                      if (x2==0)
-			pix = (unsigned short)(*pnt & MSKBIT(np)) | (*ptmp << np);
-		      else
-			pix = (unsigned short)(((*pnt | (*(pnt+1)<<16)) >> x2)
-						 & MSKBIT(np)) | (*ptmp << np);
-#else
+		      switch ((long)pnt & 3) {
+		      case 0:
 			pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
-						 & MSKBIT(np)) | (*ptmp << np);
+					       & MSKBIT(np)) | (*ptmp << np);
+			break;
+		      case 2:
+			pix = (unsigned short)(((*pnt | (*(pnt+1)<<16)) >> x2)
+					       & MSKBIT(np)) | (*ptmp << np);
+			break;			  
+		      default:
+			pix = (unsigned short)(((((unsigned char *)(pnt))[0]<<0  |
+						 ((unsigned char *)(pnt))[1]<<8  |
+						 ((unsigned char *)(pnt))[2]<<16 |
+						 ((unsigned char *)(pnt))[3]<<24 ) >> x2)
+					       & MSKBIT(np)) | (*ptmp << np);
+			break;
+		      }
+#else
+		      pix = (unsigned short)((*((unsigned int *)(pnt)) >> x2)
+					     & MSKBIT(np)) | (*ptmp << np);
 #endif
 		    }
 		    else if( pw >= 8 ) {

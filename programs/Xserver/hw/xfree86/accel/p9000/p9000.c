@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.35 1996/02/04 09:04:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/p9000/p9000.c,v 3.36 1996/05/06 05:57:09 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1994 by Erik Nygren <nygren@mit.edu>
@@ -35,6 +35,7 @@
  */
 /* $XConsortium: p9000.c /main/12 1995/12/17 08:20:39 kaleb $ */
 
+#define NEED_EVENTS
 #include "X.h"
 #include "Xmd.h"
 #include "input.h"

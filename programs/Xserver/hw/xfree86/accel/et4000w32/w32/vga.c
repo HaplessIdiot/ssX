@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.26 1996/02/18 03:42:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/et4000w32/w32/vga.c,v 3.27 1996/03/29 22:15:39 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -384,6 +384,7 @@ vgaProbe()
 	vgaInterlaceType = Drivers[i]->ChipInterlaceType;
 	vgaOptionFlags = Drivers[i]->ChipOptionFlags;
 	OFLG_SET(OPTION_POWER_SAVER, &vgaOptionFlags);
+	OFLG_SET(OPTION_CLKDIV2, &vgaOptionFlags);
 
 	xf86VerifyOptions(&vgaOptionFlags, &vga256InfoRec);
 

@@ -1,5 +1,5 @@
 /* $XConsortium: Intrinsic.c /main/146 1995/10/30 15:56:56 converse $ */
-/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.4 1995/06/14 07:12:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xt/Intrinsic.c,v 3.5 1995/11/02 00:27:15 dawes Exp $ */
 
 /***********************************************************
 Copyright 1987, 1988 by Digital Equipment Corporation, Maynard, Massachusetts,
@@ -1007,16 +1007,24 @@ String XtFindFile(path, substitutions, num_substitutions, predicate)
 		continue;
 	    }
 	    if (*colon == ':')
+#ifdef __EMX__
+	      if (colon > (path+1))
+#endif
 		break;
 	}
 	len = colon - path;
 	if (Resolve(path, len, substitutions, num_substitutions,
 		    buf, '/')) {
 	    if (firstTime || strcmp(buf1,buf2) != 0) {
+#ifdef __EMX__
+		{
+			char *bufx = (char*)__XOS2RedirRoot(buf);
+			strcpy(buf,bufx);
+		}
+#endif
 #ifdef XNL_DEBUG
 		printf("Testing file %s\n", buf);
 #endif /* XNL_DEBUG */
-
 		/* Check out the file */
 		if ((*predicate) (buf)) {
 		    /* We've found it, return it */

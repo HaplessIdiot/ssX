@@ -1,5 +1,5 @@
 /* $XConsortium: Xtransint.h /main/25 1995/12/05 16:51:28 mor $ */
-/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.10 1996/01/24 21:59:10 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransint.h,v 3.11 1996/02/09 08:19:41 dawes Exp $ */
 /*
 
 Copyright (c) 1993, 1994  X Consortium
@@ -71,7 +71,11 @@ from the X Consortium.
 #define XTRANSDEBUG 2
  */
 
+#ifndef __EMX__
 #define XTRANSDEBUG 1
+#else
+#define XTRANSDEBUG 1
+#endif
 
 #ifdef WIN32
 #define _WILLWINSOCK_
@@ -443,13 +447,22 @@ static int is_numeric (
 /* Use ErrorF() for the X server */
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
+                        struct timeval tp;\
+                        gettimeofday(&tp,0); \
+			ErrorF(__xtransname,a,b,c); \
 			ErrorF(x+hack,a,b,c); \
+                        ErrorF("timestamp (ms): %d\n",tp.tv_sec*1000+tp.tv_usec/1000); \
 			errno=saveerrno; \
 			} else ((void)0)
 #else
 #define PRMSG(lvl,x,a,b,c)	if (lvl <= XTRANSDEBUG){ \
 			int hack= 0, saveerrno=errno; \
+                        struct timeval tp;\
+                        gettimeofday(&tp,0); \
+			fprintf(stderr, __xtransname,a,b,c); fflush(stderr); \
 			fprintf(stderr, x+hack,a,b,c); fflush(stderr); \
+                        fprintf(stderr, "timestamp (ms): %d\n",tp.tv_sec*1000+tp.tv_usec/1000); \
+                        fflush(stderr); \
 			errno=saveerrno; \
 			} else ((void)0)
 #endif /* XSERV_t && TRANS_SERVER */

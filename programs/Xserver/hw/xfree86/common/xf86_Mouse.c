@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.12 1996/03/29 22:16:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Mouse.c,v 3.13 1996/04/15 11:30:29 dawes Exp $ */
 /*
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
@@ -531,8 +531,6 @@ xf86MouseProc(device, what)
     int			fd;
     int			ret;
 
-    ErrorF("xf86MouseProc mouse=0x%x\n", mouse);
-    
     mouse->device = device;
     
     ret = xf86MseProcAux(device, what, mouse, &fd, xf86MouseCtrl);

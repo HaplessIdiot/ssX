@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.5 1996/02/09 08:20:50 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/linux/lnx_video.c,v 3.6 1996/05/06 05:58:17 dawes Exp $ */
 /*
  * Copyright 1992 by Orest Zborowski <obz@Kodak.com>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -128,7 +128,7 @@ int Region;
 pointer Base;
 unsigned long Size;
 {
-    munmap((off_t)Base | BUS_BASE, Size);
+    munmap((caddr_t)((off_t)Base | BUS_BASE), Size);
 #ifdef ONLY_MMAP_FIXED_WORKS
     xfree(AllocAddress[ScreenNum][Region]);
 #endif    
