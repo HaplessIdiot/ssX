@@ -21,7 +21,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xv/Xv.c,v 1.5 1998/11/15 06:20:56 dawes Exp $ */
+/* $XFree86: xc/lib/Xv/Xv.c,v 1.6 1999/01/31 12:21:23 dawes Exp $ */
 /*
 ** File: 
 **
@@ -199,6 +199,7 @@ XvQueryAdaptors(dpy, window, p_nAdaptors, p_pAdaptors)
 	  return(XvBadAlloc);
 	}
       (void)strncpy(name, u.string, size);
+      name[size] = '\0';
       pa->name = name;
 
       u.buffer += (size + 3) & ~3;
@@ -359,6 +360,7 @@ XvQueryEncodings(dpy, port, p_nEncodings, p_pEncodings)
 	  return(XvBadAlloc);
 	}
       strncpy(name, u.string, size);
+      name[size] = '\0';
       pe->name = name;
       pe++;
 

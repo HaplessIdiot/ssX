@@ -24,7 +24,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.41 1999/04/04 05:47:04 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Xinput.c,v 3.42 1999/04/04 07:03:21 dawes Exp $ */
 
 #include "Xfuncproto.h"
 #include "Xmd.h"
@@ -671,52 +671,46 @@ xf86eqInit (DevicePtr pKbd, DevicePtr pPtr)
 void
 xf86eqEnqueue (xEvent *e)
 {
-    int	oldtail, newtail;
-    Bool    isMotion;
+    int		oldtail, newtail;
+    Bool	isMotion;
 #ifdef XINPUT
-    int     count;
-
-    switch (e->u.u.type)
-      {
-      case KeyPress:
-      case KeyRelease:
+    int		count;
+    
+    switch (e->u.u.type) {
+    case KeyPress:
+    case KeyRelease:
 #ifdef XFreeXDGA
 	/* we do this here, because nobody seems to be calling
-	 * xf86PostKeyEvent().  We can't steal MotionNotify events here
-	 * because the motion-relative information has been lost already.
-	 */
+	   xf86PostKeyEvent().  We can't steal MotionNotify events here
+	   because the motion-relative information has been lost already. */
 	if(DGAStealKeyEvent(xf86EventQueue.pEnqueueScreen->myNum, e))
 	    return;
-	/* fall through */
 #endif
-      case ButtonPress:
-      case ButtonRelease:
-      case MotionNotify:
+	/* fall through */
+    case ButtonPress:
+    case ButtonRelease:
+    case MotionNotify:
         count = 1;
         break;
-      default:
-        if (!((deviceKeyButtonPointer *) e)->deviceid & MORE_EVENTS)
-          {
+    default:
+	if (!((deviceKeyButtonPointer *) e)->deviceid & MORE_EVENTS) {
             count = 1;
-          }
-        else
-          {
-          count = 2;
-          }
+	}
+        else {
+	    count = 2;
+	}
         break;
-      }
+    }
 #endif
 
     oldtail = xf86EventQueue.tail;
     isMotion = e->u.u.type == MotionNotify;
-    if (isMotion && xf86EventQueue.lastMotion && oldtail != xf86EventQueue.head)
-    {
+    if (isMotion && xf86EventQueue.lastMotion && oldtail != xf86EventQueue.head) {
 	if (oldtail == 0)
 	    oldtail = QUEUE_SIZE;
 	oldtail = oldtail - 1;
     }
-    else
-    {
+    else {
     	newtail = oldtail + 1;
     	if (newtail == QUEUE_SIZE)
 	    newtail = 0;
@@ -729,9 +723,8 @@ xf86eqEnqueue (xEvent *e)
     xf86EventQueue.lastMotion = isMotion;
     xf86EventQueue.events[oldtail].event = *e;
 #ifdef XINPUT
-    if (count == 2)
-    {
-      xf86EventQueue.events[oldtail].val = *((deviceValuator *) (((deviceKeyButtonPointer *) e)+1));
+    if (count == 2) {
+	xf86EventQueue.events[oldtail].val = *((deviceValuator *) (((deviceKeyButtonPointer *) e)+1));
     }
 #endif
     /*
@@ -739,8 +732,8 @@ xf86eqEnqueue (xEvent *e)
      * is "unnecessary", but very useful
      */
     if (e->u.keyButtonPointer.time < xf86EventQueue.lastEventTime &&
-	xf86EventQueue.lastEventTime - e->u.keyButtonPointer.time < 10000)
-    {
+	xf86EventQueue.lastEventTime - e->u.keyButtonPointer.time < 10000) {
+	
 	xf86EventQueue.events[oldtail].event.u.keyButtonPointer.time =
 	    xf86EventQueue.lastEventTime;
     }
@@ -762,8 +755,7 @@ xf86eqProcessInputEvents ()
     deviceKeyButtonPointer      *dev_xe;
 #endif
 
-    while (xf86EventQueue.head != xf86EventQueue.tail)
-    {
+    while (xf86EventQueue.head != xf86EventQueue.tail) {
 	if (screenIsSaved == SCREEN_SAVER_ON)
 	    SaveScreens (SCREEN_SAVER_OFF, ScreenSaverReset);
 #ifdef DPMSExtension
@@ -775,8 +767,7 @@ xf86eqProcessInputEvents ()
 	/*
 	 * Assumption - screen switching can only occur on motion events
 	 */
-	if (e->pScreen != xf86EventQueue.pDequeueScreen)
-	{
+	if (e->pScreen != xf86EventQueue.pDequeueScreen) {
 	    xf86EventQueue.pDequeueScreen = e->pScreen;
 	    x = e->event.u.keyButtonPointer.rootX;
 	    y = e->event.u.keyButtonPointer.rootY;
@@ -786,54 +777,51 @@ xf86eqProcessInputEvents ()
 	    	++xf86EventQueue.head;
 	    NewCurrentScreen (xf86EventQueue.pDequeueScreen, x, y);
 	}
-	else
-	{
+	else {
 	    xe = e->event;
 	    if (xf86EventQueue.head == QUEUE_SIZE - 1)
 	    	xf86EventQueue.head = 0;
 	    else
 	    	++xf86EventQueue.head;
-	    switch (xe.u.u.type) 
-	    {
+	    switch (xe.u.u.type) {
 	    case KeyPress:
 	    case KeyRelease:
 	    	(*xf86EventQueue.pKbd->processInputProc)
-				(&xe, (DeviceIntPtr)xf86EventQueue.pKbd, 1);
+		    (&xe, (DeviceIntPtr)xf86EventQueue.pKbd, 1);
 	    	break;
 #ifdef XINPUT
             case ButtonPress:
             case ButtonRelease:
             case MotionNotify:
 	    	(*(inputInfo.pointer->public.processInputProc))
-				(&xe, (DeviceIntPtr)inputInfo.pointer, 1);
-                  break;
+		    (&xe, (DeviceIntPtr)inputInfo.pointer, 1);
+		break;
 
 	    default:
-              dev_xe = (deviceKeyButtonPointer *) e;
-              id = dev_xe->deviceid & DEVICE_BITS;
-              if (!(dev_xe->deviceid & MORE_EVENTS)) {
-                count = 1;
-              } else {
-                count = 2;
-              }
-              dev = LookupDeviceIntRec(id);
-              if (dev == NULL)
-                {
-                  ErrorF("LookupDeviceIntRec id=0x%x not found\n", id);
+		dev_xe = (deviceKeyButtonPointer *) e;
+		id = dev_xe->deviceid & DEVICE_BITS;
+		if (!(dev_xe->deviceid & MORE_EVENTS)) {
+		    count = 1;
+		}
+		else {
+		    count = 2;
+		}
+		dev = LookupDeviceIntRec(id);
+		if (dev == NULL) {
+		    ErrorF("LookupDeviceIntRec id=0x%x not found\n", id);
 /*                   FatalError("xf86eqProcessInputEvents : device not found.\n");
  */
-                  break;
-                }
-              if (!dev->public.processInputProc)
-                {
-                  FatalError("xf86eqProcessInputEvents : device has no input proc.\n");
-                  break;
-                }
-              (*dev->public.processInputProc)(&e->event, dev, count);
+		    break;
+		}
+		if (!dev->public.processInputProc) {
+		    FatalError("xf86eqProcessInputEvents : device has no input proc.\n");
+		    break;
+		}
+		(*dev->public.processInputProc)(&e->event, dev, count);
 #else
 	    default:
 	    	(*xf86EventQueue.pPtr->processInputProc)
-				(&xe, (DeviceIntPtr)xf86EventQueue.pPtr, 1);
+		    (&xe, (DeviceIntPtr)xf86EventQueue.pPtr, 1);
 #endif
 	    	break;
 	    }
@@ -843,28 +831,25 @@ xf86eqProcessInputEvents ()
 
 void
 xf86eqSwitchScreen(ScreenPtr	pScreen,
-		   Bool		fromDIX )
+		   Bool		fromDIX)
 {
-  xf86EventQueue.pEnqueueScreen = pScreen;
+    xf86EventQueue.pEnqueueScreen = pScreen;
   
-  if (fromDIX)
-    xf86EventQueue.pDequeueScreen = pScreen;
+    if (fromDIX)
+	xf86EventQueue.pDequeueScreen = pScreen;
 }
 
 /* 
  * convenient functions to post events
  */
 
+/*
+ * Relative devices send accumulated valuators.
+ */
 #define RELATIVE_CHECK(VALUATOR,IDX)				\
        {							\
 	    if (!is_absolute) {					\
 		(VALUATOR) += axisvals[(IDX)];			\
-                if ((VALUATOR) < axes[(IDX)].min_value-1) {     \
-                    (VALUATOR) = axes[(IDX)].min_value-1;       \
-		}						\
-		else if ((VALUATOR) > axes[(IDX)].max_value) {	\
-		    (VALUATOR) = axes[(IDX)].max_value;		\
-		}						\
 		axisvals[(IDX)] = (VALUATOR);			\
 	    }							\
     }
@@ -951,18 +936,20 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 	     * the core pointer.
              */
             if ((loop == 1) && !is_absolute && (is_core || is_shared)) {
-               int x1,y1;
-               miPointerPosition(&x1,&y1);
-               if (x1!=local->old_x || y1!=local->old_y ) {
-		 if (!local->reverse_conversion_proc) {
-		   axisvals[loop+first_valuator-1] = x1;
-		   axisvals[loop+first_valuator] = y1;
-		 }
-		 else {
-		   (*local->reverse_conversion_proc)(local, x1, y1, axisvals);
-		 }
-		 DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
-	       }
+		int x1, y1;
+
+		miPointerPosition(&x1,&y1);
+		
+		if (x1!=local->old_x || y1!=local->old_y ) {
+		    if (!local->reverse_conversion_proc) {
+			axisvals[loop+first_valuator-1] = x1;
+			axisvals[loop+first_valuator] = y1;
+		    }
+		    else {
+			(*local->reverse_conversion_proc)(local, x1, y1, axisvals);
+		    }
+		    DBG(5, ErrorF("xf86PostMotionEvent(mr) x1=%d y1=%d\n", x1,y1));
+		}
             }
 	    RELATIVE_CHECK(xv->valuator0, loop+first_valuator-1);
 	    RELATIVE_CHECK(xv->valuator1, loop+first_valuator);
@@ -1034,9 +1021,6 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		    continue;
 		}
 		
-		local->old_x = x;
-		local->old_y = y;
-		
 		xf86Info.lastEventTime = current;
 
 		/* FL [Sat Jun 14 14:32:01 1997]
@@ -1044,11 +1028,51 @@ xf86PostMotionEvent(DeviceIntPtr	device,
 		 */
 
 #ifdef XFreeXDGA
-		if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x, y))
+		if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, x, y)) {
 #endif
 		    miPointerAbsoluteCursor(x, y, xf86Info.lastEventTime); 
+
+		    /* Fix valuators for relative devices when the mi layer
+		     * has bounded the x and y coordinates. This is needed
+		     * to be sure to have an exact mapping between x,y coordinates
+		     * and valuators space.
+		     */
+		    if (!is_absolute) {
+			int x1, y1;
+			
+			miPointerPosition(&x1, &y1);
+			
+			/* The mi layer has bounded the coordinates.
+			 */
+			if (x != x1 || y != y1) {
+			    /* When there is no reverse conversion proc, we
+			     * asume that x,y are mapped to the first valuators.
+			     */
+			    if (!local->reverse_conversion_proc) {
+				axisvals[0] = x1;
+				axisvals[1] = y1;
+			    }
+			    else {
+				(*local->reverse_conversion_proc)(local, x1, y1, axisvals);
+			    }
+			    x = x1;
+			    y = y1;
+			}
+		    }
+#ifdef XFreeXDGA
+		}
+#endif
+		/* Save the core pointer coordinates to be able to work
+		 * with multiple relative devices and to detect XWarpCursor
+		 * requests.
+		 */
+		local->old_x = x;
+		local->old_y = y;
+
+		/* If the device don't send extended events, stop the loop.
+		 */
 		if (!is_shared)
-		  break;
+		    break;
 	    }
 	}
     }
@@ -1264,10 +1288,11 @@ xf86PostButtonEvent(DeviceIntPtr	device,
 	xE->u.keyButtonPointer.rootY = cx;
 	xE->u.keyButtonPointer.rootX = cy;
 	xf86Info.lastEventTime = xE->u.keyButtonPointer.time = GetTimeInMillis();
+	
 #ifdef XFreeXDGA
-	if(!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, 0, 0))
+	if (!DGAStealMouseEvent(xf86EventQueue.pEnqueueScreen->myNum, xE, 0, 0))
 #endif
-	    xf86eqEnqueue(xE);
+	    xf86eqEnqueue (xE);
     }
     DBG(5, ErrorF("xf86PostButtonEvent END\n"));
 }

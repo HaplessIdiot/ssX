@@ -17,8 +17,9 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 ** Header: /p0/cvs/X39-3D/xc/programs/Xserver/GL/glx/glxext.c,v 1.2 1999/02/23 07:49:27 martin Exp $
-** $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.0tsi Exp $
+** $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.2 1999/03/14 03:21:24 dawes Exp $
 */
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #include "glxserver.h"
@@ -29,6 +30,7 @@
 #include "unpack.h"
 #include "glxutil.h"
 #include "glxext.h"
+#include "micmap.h"
 
 
 extern __GLXextensionInfo __glDDXExtensionInfo;
@@ -278,10 +280,11 @@ Bool __glXCoreType(void)
 
 /************************************************************************/
 
+static miInitVisualsProcPtr saveInitVisualsProc;
+
 Bool
 GlxInitVisuals
 (
-#if NeedFunctionPrototypes
     VisualPtr *       visualp,
     DepthPtr *        depthp,
     int *             nvisualp,
@@ -289,15 +292,31 @@ GlxInitVisuals
     int *             rootDepthp,
     VisualID *        defaultVisp,
     unsigned long     sizes,
-    int               bitsPerRGB
-#endif
+    int               bitsPerRGB,
+    int               preferredVis
 )
 {
+    Bool ret;
+
+    if (saveInitVisualsProc) {
+	ret = saveInitVisualsProc(visualp, depthp, nvisualp, ndepthp,
+				  rootDepthp, defaultVisp, sizes, bitsPerRGB,
+				  preferredVis);
+	if (!ret)
+	    return False;
+    }
     (*__glXExt->initVisuals)(visualp, depthp, nvisualp, ndepthp, rootDepthp,
 			     defaultVisp, sizes, bitsPerRGB);
     return True;
 }
 
+void
+GlxWrapInitVisuals(miInitVisualsProcPtr *initVisProc)
+{
+    saveInitVisualsProc = *initVisProc;
+    *initVisProc = GlxInitVisuals;
+}
+    
 /************************************************************************/
 
 void __glXFlushContextCache(void)

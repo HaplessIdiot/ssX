@@ -43,7 +43,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/lib/Xaw/Form.c,v 1.9 1999/04/04 08:46:01 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Form.c,v 1.10 1999/04/04 10:05:24 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -278,18 +278,20 @@ WidgetClass formWidgetClass = (WidgetClass)&formClassRec;
 static void
 XawFormRealize(Widget w, Mask *mask, XSetWindowAttributes *attr)
 {
+#ifdef USE_XPM
     XawPixmap *pixmap;
+#endif
 
     (*formWidgetClass->core_class.superclass->core_class.realize)(w, mask, attr);
 
+#ifdef USE_XPM
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
-#ifdef USE_XPM
 	if (pixmap && pixmap->mask)
 	    XawReshapeWidget(w, pixmap);
-#endif
     }
+#endif
 }
 
 static void
@@ -878,6 +880,7 @@ static Boolean
 XawFormSetValues(Widget current, Widget request, Widget cnew,
 		 ArgList args, Cardinal *num_args)
 {
+#ifdef USE_XPM
     FormWidget f_old = (FormWidget)current;
     FormWidget f_new = (FormWidget)cnew;
 
@@ -888,11 +891,10 @@ XawFormSetValues(Widget current, Widget request, Widget cnew,
 				    f_old->core.colormap, f_old->core.depth);
 	npix = XawPixmapFromXPixmap(f_new->core.background_pixmap, XtScreen(f_new),
 				    f_new->core.colormap, f_new->core.depth);
-#ifdef USE_XPM
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
-#endif
     }
+#endif
 
     return (False);
 }

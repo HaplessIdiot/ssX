@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.20 1999/04/04 00:20:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.21 1999/04/04 10:59:47 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -1379,9 +1379,6 @@ xf86EnableAccess(xf86ScrnAccessPtr pScAcc)
 static void 
 xf86DisableAccess(void)
 {
-#if 0 /* kraxel */
-    return;
-#endif
     DisablePciAccess();
 }
 
@@ -1629,6 +1626,15 @@ RemoveOverlaps(resPtr target, resPtr list, Bool pciAlignment)
 	     */
 	    if (pRes->begin <= target->begin && pRes->end >= target->end)
 		continue;
+	    /*
+	     * cases where the target and pRes have the same starting address
+             * cannot be resolved, so skip them (with a warning).
+	     */
+	    if (pRes->begin == target->begin) {
+		xf86MsgVerb(X_WARNING, 3, "Unresolvable overlap at 0x%08x\n",
+			    pRes->begin);
+		continue;
+	    }
 	    /* Otherwise, trim target to remove the overlap */
 	    if (pRes->begin <= target->end) {
 		target->end = pRes->begin - 1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.29 1998/11/28 10:43:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_accel.c,v 1.30 1998/12/20 11:57:41 dawes Exp $ */
 /*
  * Copyright 1996, 1997, 1998 by David Bateman <dbateman@ee.uts.edu.au>
  *   Modified 1997, 1998 by Nozomi Ytow
@@ -82,6 +82,9 @@
 #endif
 
 
+#ifdef CHIPS_HIQV
+static void CTNAME(DepthChange)(ScrnInfoPtr pScrn, int depth);
+#endif
 static void CTNAME(8SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
 				int rop, unsigned int planemask);
 static void CTNAME(16SetupForSolidFill)(ScrnInfoPtr pScrn, int color,
@@ -165,11 +168,13 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      * Setup some global variables
      */
     cAcl->BytesPerPixel = pScrn->bitsPerPixel >> 3;
+    cAcl->BitsPerPixel = pScrn->bitsPerPixel;
     cAcl->PitchInBytes = pScrn->displayWidth * cAcl->BytesPerPixel;
     cAcl->planemask = -1;
     cAcl->bgColor = -1;
-    cAcl->fgColor = -1;    
-
+    cAcl->fgColor = -1;
+    cAcl->FbOffset = 0;
+    
     /*
      * Set up the main acceleration flags.
      */
@@ -191,11 +196,11 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      */  
 #ifndef CHIPS_HIQV
     infoPtr->ScreenToScreenCopyFlags = NO_TRANSPARENCY;
-    if (pScrn->bitsPerPixel == 24)
+    if (cAcl->BitsPerPixel == 24)
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 #else
     infoPtr->ScreenToScreenCopyFlags = 0;
-    if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
+    if ((cAcl->BitsPerPixel == 24) || (cAcl->BitsPerPixel == 32))
 	infoPtr->ScreenToScreenCopyFlags |= NO_PLANEMASK;
 
     /* A Chips and Technologies application notes says that some
@@ -215,7 +220,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
      * Install the low-level functions for drawing solid filled rectangles.
      */
     infoPtr->SolidFillFlags |= NO_PLANEMASK;
-    switch (pScrn->bitsPerPixel) {
+    switch (cAcl->BitsPerPixel) {
     case 8 :
 	infoPtr->SetupForSolidFill = CTNAME(8SetupForSolidFill);
 	infoPtr->SubsequentSolidFillRect = CTNAME(SubsequentSolidFillRect);
@@ -257,7 +262,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 
 #ifdef CHIPS_HIQV
     /* At 32bpp we can't use the other acceleration */
-    if (pScrn->bitsPerPixel == 32) goto chips_imagewrite;
+    if (cAcl->BitsPerPixel == 32) goto chips_imagewrite;
 #endif
 
     /*
@@ -273,7 +278,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST |
 	LEFT_EDGE_CLIPPING;
 #endif        
-    if (pScrn->bitsPerPixel == 24) {
+    if (cAcl->BitsPerPixel == 24) {
 	infoPtr->CPUToScreenColorExpandFillFlags |= NO_PLANEMASK;
 #ifdef UNDOCUMENTED_FEATURE
 	infoPtr->ScreenToScreenColorExpandFillFlags |= NO_PLANEMASK;
@@ -286,7 +291,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
     infoPtr->ScreenToScreenColorExpandFillFlags = BIT_ORDER_IN_BYTE_MSBFIRST;
     infoPtr->CacheColorExpandDensity = 8;
 
-    if (pScrn->bitsPerPixel == 24)
+    if (cAcl->BitsPerPixel == 24)
 	infoPtr->CPUToScreenColorExpandFillFlags |= TRIPLE_BITS_24BPP |
 	    RGB_EQUAL | NO_PLANEMASK;
 #endif
@@ -297,7 +302,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 		CTNAME(SubsequentCPUToScreenColorExpandFill);
 
 #ifndef CHIPS_HIQV 
-    if (pScrn->bitsPerPixel != 24) {
+    if (cAcl->BitsPerPixel != 24) {
 #endif
 #if !defined(CHIPS_HIQV) || defined(UNDOCUMENTED_FEATURE)
 	infoPtr->SetupForScreenToScreenColorExpandFill = 
@@ -322,10 +327,10 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	CTNAME(SetupForMono8x8PatternFill);
     infoPtr->SubsequentMono8x8PatternFillRect =
 	CTNAME(SubsequentMono8x8PatternFillRect);
-    if (pScrn->bitsPerPixel == 24)
+    if (cAcl->BitsPerPixel == 24)
       infoPtr->MonoPatternPitch = 8;		/* Need 8 byte alignment */
 #else
-    if (pScrn->bitsPerPixel != 24) {
+    if (cAcl->BitsPerPixel != 24) {
 	infoPtr->SetupForMono8x8PatternFill =
 	    CTNAME(SetupForMono8x8PatternFill);
 	infoPtr->SubsequentMono8x8PatternFillRect =
@@ -345,7 +350,7 @@ CTNAME(AccelInit)(ScreenPtr pScreen)
 	    HARDWARE_PATTERN_SCREEN_ORIGIN | NO_TRANSPARENCY;
 #endif
 
-	if (pScrn->bitsPerPixel != 24) {
+	if (cAcl->BitsPerPixel != 24) {
 	    infoPtr->SetupForColor8x8PatternFill =
 		CTNAME(SetupForColor8x8PatternFill);
 	    infoPtr->SubsequentColor8x8PatternFillRect =
@@ -364,7 +369,7 @@ chips_imagewrite:
 
     if (!(cPtr->Flags & ChipsColorTransparency))
         infoPtr->WritePixmapFlags |= NO_TRANSPARENCY;
-    if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
+    if ((cAcl->BitsPerPixel == 24) || (cAcl->BitsPerPixel == 32))
 	infoPtr->WritePixmapFlags |= NO_PLANEMASK;
 
     infoPtr->WritePixmap = CTNAME(WritePixmap);
@@ -383,7 +388,7 @@ chips_imagewrite:
     infoPtr->ImageWriteRange = 64 * 1024;
     infoPtr->ImageWriteFlags = NO_TRANSPARENCY | CPU_TRANSFER_PAD_DWORD
 	| ROP_NEEDS_SOURCE;
-    if ((pScrn->bitsPerPixel == 24) || (pScrn->bitsPerPixel == 32))
+    if ((cAcl->BitsPerPixel == 24) || (cAcl->BitsPerPixel == 32))
         infoPtr->ImageWriteFlags |= NO_PLANEMASK;
 #endif
 
@@ -393,10 +398,55 @@ chips_imagewrite:
     AvailFBArea.y2 = cAcl->CacheEnd /
       (pScrn->displayWidth * cAcl->BytesPerPixel);
 
-    xf86InitFBManager(pScreen, &AvailFBArea); 
+#ifdef CHIPS_HIQV
+    if (!(cPtr->Flags & ChipsOverlay8plus16))      
+#endif
+	xf86InitFBManager(pScreen, &AvailFBArea); 
 
+#ifdef CHIPS_HIQV
+    if (XAAInit(pScreen, infoPtr)) {
+	if (cPtr->Flags & ChipsOverlay8plus16)      
+	    return(XAAInitDualFramebufferOverlay(pScreen,
+						 CTNAME(DepthChange)));
+	else
+	    return TRUE;
+    } else
+	return FALSE;
+#else
     return(XAAInit(pScreen, infoPtr));
+#endif
 }
+
+#ifdef CHIPS_HIQV
+void
+CTNAME(DepthChange)(ScrnInfoPtr pScrn, int depth)
+{
+    CHIPSPtr cPtr = CHIPSPTR(pScrn);
+    CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
+    unsigned char mode;
+
+    DEBUG_P("DepthChange");
+    switch (depth) {
+    case 8 :
+	cPtr->AccelInfoRec->SetupForSolidFill = CTNAME(8SetupForSolidFill);
+	mode = 0x00;       			/* BitBLT engine to 8bpp  */
+	cAcl->BytesPerPixel = 1;
+	cAcl->FbOffset = 0;
+	cAcl->BitsPerPixel = 8;
+        break;
+    default :
+	cPtr->AccelInfoRec->SetupForSolidFill = CTNAME(16SetupForSolidFill);
+	mode = 0x10;       			/* BitBLT engine to 16bpp */
+	cAcl->BytesPerPixel = 2;
+	cAcl->FbOffset = cPtr->FbOffset16;
+	cAcl->BitsPerPixel = 16;
+        break;
+    }
+    cAcl->PitchInBytes = pScrn->displayWidth * cAcl->BytesPerPixel;
+    ctBLTWAIT;
+    cPtr->writeXR(cPtr, 0x20, mode);       	/* Change BitBLT engine mode */
+}
+#endif
 
 void
 CTNAME(Sync)(ScrnInfoPtr pScrn)
@@ -698,6 +748,9 @@ CTNAME(SubsequentSolidFillRect)(ScrnInfoPtr pScrn, int x, int y, int w,
 
     DEBUG_P("SubsequentSolidFillRect");
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+#ifdef CHIPS_HIQV
+    destaddr += cAcl->FbOffset;
+#endif
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
@@ -733,7 +786,7 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
 	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
 	ctBLTWAIT;
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(trans);
 	    break;
@@ -747,7 +800,7 @@ CTNAME(SetupForScreenToScreenCopy)(ScrnInfoPtr pScrn, int xdir, int ydir,
     } else
 #endif
     ctBLTWAIT;
-    switch (pScrn->bitsPerPixel) {
+    switch (cAcl->BitsPerPixel) {
     case 8:
         if ((planemask & 0xFF) == 0xFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
@@ -797,6 +850,8 @@ CTNAME(SubsequentScreenToScreenCopy)(ScrnInfoPtr pScrn, int srcX, int srcY,
 	srcaddr = (srcaddr + srcX) * cAcl->BytesPerPixel;
 	destaddr = (destaddr + dstX) * cAcl->BytesPerPixel;
     }
+    srcaddr += cAcl->FbOffset;
+    destaddr += cAcl->FbOffset;
 #else
     if (cAcl->CommandFlags & ctTOP2BOTTOM) {
         srcaddr = srcY * pScrn->displayWidth;
@@ -833,7 +888,7 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
     cAcl->CommandFlags = 0;
     if (bg == -1) {
 	cAcl->CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETFGCOLOR8(fg);
 	    break;
@@ -850,7 +905,7 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
         }
     }
     else {
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(bg);
 	    ctSETFGCOLOR8(fg);
@@ -877,7 +932,7 @@ CTNAME(SetupForCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn, int fg,
 
     ctSETSRCADDR(0);
 
-    switch (pScrn->bitsPerPixel) {
+    switch (cAcl->BitsPerPixel) {
     case 8:
         if ((planemask & 0xFF) == 0xFF) {
 	    ctSETROP(ctSRCSYSTEM | ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT |
@@ -919,6 +974,9 @@ CTNAME(SubsequentCPUToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     DEBUG_P("SubsequentCPUToScreenColorExpandFill");
     destaddr = (y * pScrn->displayWidth + x + skipleft) * 
                cAcl->BytesPerPixel;
+#ifdef CHIPS_HIQV
+    destaddr += cAcl->FbOffset;
+#endif
     w = (w - skipleft) * cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
@@ -942,7 +1000,7 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
     ctBLTWAIT;
     if (bg == -1) {
 	cAcl->CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETFGCOLOR8(fg);
 	    break;
@@ -959,7 +1017,7 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
         }
     }
     else {
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(bg);
 	    ctSETFGCOLOR8(fg);
@@ -980,7 +1038,7 @@ CTNAME(SetupForScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
         }
     }
 
-    switch (pScrn->bitsPerPixel) {
+    switch (cAcl->BitsPerPixel) {
     case 8:
         if ((planemask & 0xFF) == 0xFF) {
 	    ctSETROP(ctSRCMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
@@ -1030,7 +1088,7 @@ CTNAME(CacheMonoStipple)(ScrnInfoPtr pScrn, PixmapPtr pPix)
 	(XAAPixmapCachePrivatePtr)infoRec->PixmapCachePrivate;
     XAACacheInfoPtr pCache, cacheRoot = NULL;
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
-    int i, j, max = 0, funcNo, pad, dwords, bpp = pScrn->bitsPerPixel;
+    int i, j, max = 0, funcNo, pad, dwords, bpp = cAcl->BitsPerPixel;
     int *current;
     StippleScanlineProcPtr StippleFunc;
     unsigned char *data, *srcPtr, *dstPtr;
@@ -1132,14 +1190,26 @@ CTNAME(SubsequentScreenToScreenColorExpandFill)(ScrnInfoPtr pScrn,
 #ifdef CHIPS_HIQV
     srcaddr = (srcy * pScrn->displayWidth + srcx) * cAcl->BytesPerPixel
 		+ ((skipleft & ~0x3F) >> 3);
+    if ( y < pScrn->virtualY)
+	srcaddr += cAcl->FbOffset;
+    else
+	srcaddr += cPtr->FbOffset16;
 #else
     srcaddr = (srcy * pScrn->displayWidth + srcx) * cAcl->BytesPerPixel
 		+ ((skipleft &  0x07) * cAcl->SlotWidth) 
 		+ ((skipleft & ~0x07) >> 3);
 #endif
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+#ifdef CHIPS_HIQV
+    destaddr += cAcl->FbOffset;
+#endif
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
+#ifdef CHIPS_HIQV
+    if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16) &&
+	    (pScrn->depth == 8))
+	ctSETPITCH(cAcl->PitchInBytes << 1, cAcl->PitchInBytes);
+#endif
     ctSETSRCADDR(srcaddr);
     ctSETDSTADDR(destaddr);
 #ifdef CHIPS_HIQV
@@ -1163,6 +1233,10 @@ CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     patternaddr = (paty * pScrn->displayWidth + 
 		   (patx & ~0x3F)) * cAcl->BytesPerPixel;
     cAcl->patternyrot = (patx & 0x3F) >> 3;
+#ifdef CHIPS_HIQV
+    if (cPtr->Flags & ChipsOverlay8plus16)
+	patternaddr += cPtr->FbOffset16;
+#endif
 
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
@@ -1170,7 +1244,7 @@ CTNAME(SetupForColor8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     if (trans != -1) {
 	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(trans);
 	    break;
@@ -1196,6 +1270,9 @@ CTNAME(SubsequentColor8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx, int paty,
 
     DEBUG_P("SubsequentColor8x8PatternFillRect");
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+#ifdef CHIPS_HIQV
+    destaddr += cAcl->FbOffset;
+#endif
     w *= cAcl->BytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
@@ -1220,12 +1297,20 @@ CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
     cAcl->CommandFlags = ctPATMONO | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 	ChipsAluConv2[rop & 0xF];
 
+#ifdef CHIPS_HIQV
+    patternaddr = paty * pScrn->displayWidth + patx;
+    if (cPtr->Flags & ChipsOverlay8plus16)
+	patternaddr = patternaddr * 2 + cPtr->FbOffset16;
+    else
+	patternaddr *= cAcl->BytesPerPixel;
+#else
     patternaddr = (paty * pScrn->displayWidth + patx) * cAcl->BytesPerPixel;
+#endif
     ctBLTWAIT;
     ctSETPATSRCADDR(patternaddr);
     if (bg == -1) {
 	cAcl->CommandFlags |= ctBGTRANSPARENT;	/* Background = Destination */
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETFGCOLOR8(fg);
 	    break;
@@ -1238,7 +1323,7 @@ CTNAME(SetupForMono8x8PatternFill)(ScrnInfoPtr pScrn, int patx, int paty,
         }
     }
     else {
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(bg);
 	    ctSETFGCOLOR8(fg);
@@ -1268,6 +1353,9 @@ CTNAME(SubsequentMono8x8PatternFillRect)(ScrnInfoPtr pScrn, int patx,
     int destaddr;
     DEBUG_P("SubsequentMono8x8PatternFillRect");
     destaddr = (y * pScrn->displayWidth + x) * cAcl->BytesPerPixel;
+#ifdef CHIPS_HIQV
+    destaddr += cAcl->FbOffset;
+#endif
     w *= cAcl->BytesPerPixel;
 
     ctBLTWAIT;
@@ -1292,7 +1380,7 @@ CTNAME(SetupForImageWrite)(ScrnInfoPtr pScrn, int rop, unsigned int planemask,
     cAcl->CommandFlags = ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT;
     ctBLTWAIT;
 
-    switch (pScrn->bitsPerPixel) {
+    switch (cAcl->BitsPerPixel) {
     case 8:
         if ((planemask & 0xFF) == 0xFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
@@ -1453,25 +1541,34 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int bytesPerLine;
     unsigned int byteWidthSrc;
+    unsigned int destpitch;
     int dwords; 
     int skipleft;
     int destaddr;
-
+    int olddepth = -1;
+    
     DEBUG_P("WritePixmap");
-    bytesPerLine = w * cAcl->BytesPerPixel;
-    byteWidthSrc = ((srcwidth * cAcl->BytesPerPixel + 3L) & ~0x3L);
+    ErrorF("WritePixmap x %d, y %d, w %d, h %d, src 0x%X, srcwidth %d, rop 0x%X, planemask 0x%X, trans 0x%X, bpp %d, depth %d\n", x, y, w, h, src, srcwidth, rop, planemask, trans, bpp, depth);
+    
+    bytesPerLine = w * (bpp >> 3);
+    byteWidthSrc = ((srcwidth * (bpp >> 3) + 3L) & ~0x3L);
     cAcl->CommandFlags = ctSRCSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM;
     skipleft = (unsigned int)src & 0x7;
     src = (unsigned char *)((unsigned int)src & ~0x7L);
     dwords = (((skipleft  + bytesPerLine + 0x7) & ~0x7)) >> 2;
-    destaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
+    destaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
+    destpitch = pScrn->displayWidth * (bpp >> 3);
+    if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
+	destaddr += cPtr->FbOffset16;
+    else
+	destaddr += cAcl->FbOffset;
 
     ctBLTWAIT;
 
     if (trans != -1) {
 	cAcl->CommandFlags |= ctCOLORTRANSENABLE | ctCOLORTRANSROP |
 	    ctCOLORTRANSNEQUAL;
-        switch (pScrn->bitsPerPixel) {
+        switch (cAcl->BitsPerPixel) {
         case 8:
 	    ctSETBGCOLOR8(trans);
 	    break;
@@ -1484,7 +1581,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
         }
     }
     
-    switch (pScrn->bitsPerPixel) {
+    switch (cAcl->BitsPerPixel) {
     case 8:
         if ((planemask & 0xFF) == 0xFF) {
 	    ctSETROP(cAcl->CommandFlags | ChipsAluConv[rop & 0xF]);
@@ -1524,7 +1621,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
     if ((byteWidthSrc & 0x7) == 0) {  /* quad-word aligned */
 
-	ctSETPITCH(byteWidthSrc, cAcl->PitchInBytes);
+	ctSETPITCH(byteWidthSrc, destpitch);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
 	MoveDataFromCPU((unsigned char *)src,
@@ -1536,7 +1633,7 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
 	h = (vert + 1) >> 1;
 
-	ctSETPITCH(byteWidthSrc << 1, cAcl->PitchInBytes << 1);
+	ctSETPITCH(byteWidthSrc << 1, destpitch << 1);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
 	MoveDataFromCPU((unsigned char *)src,
@@ -1546,7 +1643,12 @@ CTNAME(WritePixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	h = vert  >> 1;
 	src += srcwidth;
 	y++;
-	destaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
+
+	destaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
+	if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
+	    destaddr += cPtr->FbOffset16;
+	else
+	    destaddr += cAcl->FbOffset;
 
 	ctBLTWAIT;
 	ctSETDSTADDR(destaddr);
@@ -1568,14 +1670,20 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
     CHIPSACLPtr cAcl = CHIPSACLPTR(pScrn);
     unsigned int bytesPerLine;
     unsigned int byteWidthDst;
+    unsigned int srcpitch;
     int dwords; 
     int srcaddr;
 
     DEBUG_P("ReadPixmap");
-    bytesPerLine = w * cAcl->BytesPerPixel;
-    byteWidthDst = ((dstwidth * cAcl->BytesPerPixel + 3L) & ~0x3L);
+    bytesPerLine = w * (bpp >> 3);
+    byteWidthDst = ((dstwidth * (bpp >> 3) + 3L) & ~0x3L);
     dwords = (((bytesPerLine + 0x7) & ~0x7)) >> 2;
-    srcaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
+    srcaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
+    srcpitch = pScrn->displayWidth * (bpp >> 3);
+    if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
+	srcaddr += cPtr->FbOffset16;
+    else
+	srcaddr += cAcl->FbOffset;
 
     ctBLTWAIT;
     ctSETROP( ctDSTSYSTEM | ctLEFT2RIGHT | ctTOP2BOTTOM | 
@@ -1585,7 +1693,7 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
     if ((byteWidthDst & 0x7) == 0) {  /* quad-word aligned */
 
-	ctSETPITCH(cAcl->PitchInBytes, byteWidthDst);
+	ctSETPITCH(srcpitch, byteWidthDst);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
 	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
@@ -1596,7 +1704,7 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 
 	h = (vert + 1) >> 1;
 
-	ctSETPITCH( cAcl->PitchInBytes << 1, byteWidthDst << 1);
+	ctSETPITCH(srcpitch << 1, byteWidthDst << 1);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);
 
 	MoveDataToCPU((unsigned char *)cAcl->BltDataWindow,
@@ -1605,7 +1713,11 @@ CTNAME(ReadPixmap)(ScrnInfoPtr pScrn, int x, int y, int w, int h,
 	h = vert  >> 1;
 	dst += dstwidth;
 	y++;
-	srcaddr = y * cAcl->PitchInBytes + x * cAcl->BytesPerPixel;
+	srcaddr = (y * pScrn->displayWidth + x) * (bpp >> 3);
+	if ((y >= pScrn->virtualY) && (cPtr->Flags & ChipsOverlay8plus16))
+	    srcaddr += cPtr->FbOffset16;
+	else
+	    srcaddr += cAcl->FbOffset;
 	ctBLTWAIT;
 	ctSETSRCADDR(srcaddr);
 	ctSETHEIGHTWIDTHGO(h, bytesPerLine);

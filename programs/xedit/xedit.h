@@ -26,7 +26,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/xedit.h,v 1.4 1999/02/28 11:20:16 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/xedit.h,v 1.5 1999/03/14 03:22:29 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -75,6 +75,8 @@ extern struct _xedit_flist {
     xedit_flist_item **itens;
     Cardinal num_itens;
 } flist;
+
+extern Widget options_popup;
 
 extern struct _app_resources {
     Boolean enableBackups;
@@ -128,3 +130,8 @@ void FileCompletion(Widget, XEvent*, String*, Cardinal*);
 void KillFile(Widget, XEvent*, String*, Cardinal*);
 void DirWindowCB(Widget, XtPointer, XtPointer);
 Bool IsDir(char*, Bool);
+
+/*	externs in ispell.c	*/
+
+void IspellAction(Widget, XEvent*, String*, Cardinal*);
+void IspellCallback(Widget, XtPointer, XtPointer);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.23 1998/08/16 12:28:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_video.c,v 3.24 1999/02/14 03:20:40 dawes Exp $ */
 /*
  * Copyright 1992 by Rich Murphey <Rich@Rice.edu>
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
@@ -346,7 +346,8 @@ checkMapInfo(Bool warn, int Region)
 	{
 	    if(warn)
 	    {
-		ErrorF("checkMapInfo: warning: failed to get map info for region %d\n\t(%s)\n",
+		xf86Msg(X_WARNING,
+		 "checkMapInfo: failed to get map info for region %d\n\t(%s)\n",
 		       Region, strerror(errno));
 	    }
 	}
@@ -596,7 +597,9 @@ xf86SetTVOut(int mode)
 
 	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_TV_ON, &mode) < 0)
 	    {
-		ErrorF("xf86SetTVOut: Could not set console to TV output, %s\n", strerror(errno));
+		xf86Msg(X_WARNING,
+		    "xf86SetTVOut: Could not set console to TV output, %s\n",
+		    strerror(errno));
 	    }
 	}
 	break;
@@ -619,7 +622,9 @@ xf86SetRGBOut()
 	    
 	    if (ioctl (xf86Info.consoleFd, CONSOLE_X_TV_OFF, 0) < 0)
 	    {
-		ErrorF("xf86SetTVOut: Could not set console to RGB output, %s\n", strerror(errno));
+		xf86Msg(X_WARNING,
+		    "xf86SetTVOut: Could not set console to RGB output, %s\n",
+		    strerror(errno));
 	    }
 	}
 	break;
@@ -677,12 +682,13 @@ int ScreenNum;
 			IOPortBase = base;
 		}
 		else {
-			ErrorF("EnableIOPorts: failed to mmap %s (%s)\n",
+			xf86Msg(X_ERROR,
+				"EnableIOPorts: failed to mmap %s (%s)\n",
 				"/dev/ttyC0", strerror(errno));
 		}
 	}
 	else {
-		ErrorF("EnableIOPorts: failed to open %s (%s)\n",
+		xf86Msg(X_ERROR, "EnableIOPorts: failed to open %s (%s)\n",
 			"/dev/ttyC0", strerror(errno));
 	}
 #endif

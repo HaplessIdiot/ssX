@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.16 1999/03/20 08:59:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaPCache.c,v 1.17 1999/03/28 15:33:04 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -24,6 +24,9 @@
 #define MAX_256		32
 #define MAX_512		16
 
+static CacheInitIndex = -1;
+#define CACHEINIT(p) ((p)->privates[CacheInitIndex].val)
+	
 
 typedef struct _CacheLink {
    int x;
@@ -650,6 +653,10 @@ XAAInitPixmapCache(
    if(!nBox || !pBox || !(infoRec->Flags & PIXMAP_CACHE))
 	return;
 
+   /* Allocate a persistent per-screen init flag to control messages */
+   if (CacheInitIndex < 0)
+	CacheInitIndex = xf86AllocateScrnInfoPrivateIndex();
+
    /* free the old private data if it exists */
    if(infoRec->PixmapCachePrivate) {
 	FreePixmapCachePrivate(
@@ -1040,8 +1047,7 @@ XAAInitPixmapCache(
 	infoRec->CanDoColor8x8 = TRUE;
     }
 
-    /* This doesn't prevent the messages coming out for each new generation */
-    if(!infoRec->pixmapCacheInit) {
+    if(!CACHEINIT(pScrn)) {
 	xf86ErrorF("\tSetting up tile and stipple cache:\n");
 	if(NumPartial) 
 	   xf86ErrorF("\t\t%i %ix%i slots\n", 
@@ -1054,11 +1060,11 @@ XAAInitPixmapCache(
     } 
 
     if(!(NumPartial | Num128 | Num256 | Num512 | NumColor | NumMono)) {
-	if(!infoRec->pixmapCacheInit)
+	if(!CACHEINIT(pScrn))
 	   xf86ErrorF("\t\tNot enough video memory for pixmap cache\n");
     } else infoRec->UsingPixmapCache = TRUE;
 
-    infoRec->pixmapCacheInit = TRUE;
+    CACHEINIT(pScrn) = 1;
 }
 
 static CARD32 StippleMasks[4] = {

@@ -3,13 +3,14 @@
 
    Written by Mark Vojkovich
 */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.11 1999/03/21 07:34:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DGA.c,v 1.12 1999/03/28 15:32:26 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86str.h"
 #include "xf86Priv.h"
 #include "dgaproc.h"
 #include "colormapst.h"
+#include "pixmapstr.h"
 #include "inputstr.h"
 #include "XIproto.h"
 
@@ -26,9 +27,9 @@ DGASetDGAMode(
 );
 
 static void
-DGACopyDeviceInfo(
+DGACopyModeInfo(
    DGAModePtr mode,
-   XDGADevicePtr dev
+   XDGAModePtr xmode
 );
 
 
@@ -58,7 +59,7 @@ DGAInit(
     int i;
 
     if(!funcs->Flush || !funcs->SetMode || !funcs->SetViewport ||
-	!funcs->GetViewport)
+	!funcs->GetViewport || !funcs->OpenFramebuffer)
 	return FALSE;
 
     if(!modes || !num)
@@ -126,8 +127,13 @@ DGASetDGAMode(
 
    if(!num) {
 	if(pScreenPriv->current) {
-	    if(pScreenPriv->current->pPix)
-		(*pScreen->DestroyPixmap)(pScreenPriv->current->pPix);
+	    PixmapPtr oldPix = pScreenPriv->current->pPix;
+	    if(oldPix) {
+		if(oldPix->drawable.id)
+		    FreeResource(oldPix->drawable.id, RT_NONE);
+		else
+		    (*pScreen->DestroyPixmap)(oldPix);
+	    }
 	    xfree(pScreenPriv->current);
 	    pScreenPriv->current = NULL;
 	    pScrn->vtSema = TRUE;
@@ -180,7 +186,7 @@ DGASetDGAMode(
 			pMode->pixmapWidth, pMode->pixmapHeight,
 			pMode->depth, pMode->bitsPerPixel, 
 			pMode->bytesPerScanline,
- 			(pointer)(pMode->mapBase + pMode->offset));
+ 			(pointer)(pMode->address));
         }
    }
 
@@ -275,7 +281,8 @@ int
 DGASetMode(
    int index,
    int num,
-   XDGADevicePtr devRet
+   XDGAModePtr mode,
+   PixmapPtr *pPix
 ){
     ScrnInfoPtr pScrn = xf86Screens[index];
     DGADeviceRec device;
@@ -285,8 +292,8 @@ DGASetMode(
 
     ret = (*pScrn->SetDGAMode)(index, num, &device);
     if((ret == Success) && num) {
-	DGACopyDeviceInfo(device.mode, devRet);
-	devRet->pPix = device.pPix;
+	DGACopyModeInfo(device.mode, mode);
+	*pPix = device.pPix;
     }
 
     return ret;
@@ -429,61 +436,59 @@ DGAGetModes(int index)
 
 
 int
-DGAGetDeviceInfo(
+DGAGetModeInfo(
   int index,
-  XDGADevicePtr dev,
-  int mode
+  XDGAModePtr mode,
+  int num
 ){
    DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
    /* We rely on the extension to check that DGA is available */
 
-   if((mode <= 0) || (mode > pScreenPriv->numModes))
+   if((num <= 0) || (num > pScreenPriv->numModes))
 	return BadValue;
 
-   DGACopyDeviceInfo(&(pScreenPriv->modes[mode - 1]), dev);
+   DGACopyModeInfo(&(pScreenPriv->modes[num - 1]), mode);
 
    return Success;
 }
 
 
 static void
-DGACopyDeviceInfo(
+DGACopyModeInfo(
    DGAModePtr mode,
-   XDGADevicePtr dev
+   XDGAModePtr xmode
 ){
    DisplayModePtr dmode = mode->mode;
 
-   dev->mode.num = mode->num;
-   dev->mode.name = dmode->name;
-   dev->mode.verticalRefresh = ((float)dmode->Clock * 1000.0) / 
-		(float)dmode->HTotal / (float)dmode->VTotal;
-   dev->mode.flags = mode->flags;
-   dev->mode.imageWidth = mode->imageWidth;
-   dev->mode.imageHeight = mode->imageHeight;
-   dev->mode.pixmapWidth = mode->pixmapWidth;
-   dev->mode.pixmapHeight = mode->pixmapHeight;
-   dev->mode.bytesPerScanline = mode->bytesPerScanline;
-   dev->mode.byteOrder = mode->byteOrder;
-   dev->mode.depth = mode->depth;
-   dev->mode.bitsPerPixel = mode->bitsPerPixel;
-   dev->mode.red_mask = mode->red_mask;
-   dev->mode.green_mask = mode->green_mask;
-   dev->mode.blue_mask = mode->blue_mask;
-   dev->mode.viewportWidth = mode->viewportWidth;
-   dev->mode.viewportHeight = mode->viewportHeight;
-   dev->mode.xViewportStep = mode->xViewportStep;
-   dev->mode.yViewportStep = mode->yViewportStep;
-   dev->mode.maxViewportX = mode->maxViewportX;
-   dev->mode.maxViewportY = mode->maxViewportY;
-   dev->mode.viewportFlags = mode->viewportFlags;
-   dev->mode.reserved1 = mode->reserved1;
-   dev->mode.reserved2 = mode->reserved2;
-   dev->data = mode->memBase;
-   dev->offset = mode->offset;
-   dev->pPix = NULL;
+   xmode->num = mode->num;
+   xmode->name = dmode->name;
+   xmode->VSync_num = dmode->Clock * 1000.0; 
+   xmode->VSync_den = dmode->HTotal * dmode->VTotal;
+   xmode->flags = mode->flags;
+   xmode->imageWidth = mode->imageWidth;
+   xmode->imageHeight = mode->imageHeight;
+   xmode->pixmapWidth = mode->pixmapWidth;
+   xmode->pixmapHeight = mode->pixmapHeight;
+   xmode->bytesPerScanline = mode->bytesPerScanline;
+   xmode->byteOrder = mode->byteOrder;
+   xmode->depth = mode->depth;
+   xmode->bitsPerPixel = mode->bitsPerPixel;
+   xmode->red_mask = mode->red_mask;
+   xmode->green_mask = mode->green_mask;
+   xmode->blue_mask = mode->blue_mask;
+   xmode->viewportWidth = mode->viewportWidth;
+   xmode->viewportHeight = mode->viewportHeight;
+   xmode->xViewportStep = mode->xViewportStep;
+   xmode->yViewportStep = mode->yViewportStep;
+   xmode->maxViewportX = mode->maxViewportX;
+   xmode->maxViewportY = mode->maxViewportY;
+   xmode->viewportFlags = mode->viewportFlags;
+   xmode->reserved1 = mode->reserved1;
+   xmode->reserved2 = mode->reserved2;
+   xmode->offset = mode->offset;
 
-   if(dmode->Flags & V_INTERLACE) dev->mode.flags |= DGA_INTERLACED;
-   if(dmode->Flags & V_DBLSCAN) dev->mode.flags |= DGA_DOUBLESCAN;
+   if(dmode->Flags & V_INTERLACE) xmode->flags |= DGA_INTERLACED;
+   if(dmode->Flags & V_DBLSCAN) xmode->flags |= DGA_DOUBLESCAN;
 }
 
 
@@ -615,6 +620,34 @@ DGAStealMouseEvent(int index, xEvent *e, int dx, int dy)
     */
 
    return TRUE;
+}
+
+
+Bool 
+DGAOpenFramebuffer(
+   int index,
+   char **name,
+   unsigned char **mem,
+   int *size,
+   int *offset,
+   int *flags
+){
+   DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
+
+   /* We rely on the extension to check that DGA is available */
+
+   return (*pScreenPriv->funcs->OpenFramebuffer)(pScreenPriv->pScrn, 
+				name, mem, size, offset, flags);
+}
+
+void
+DGACloseFramebuffer(int index)
+{
+   DGAScreenPtr pScreenPriv = DGA_GET_SCREEN_PRIV(screenInfo.screens[index]);
+
+   /* We rely on the extension to check that DGA is available */
+   if(pScreenPriv->funcs->CloseFramebuffer)
+	(*pScreenPriv->funcs->CloseFramebuffer)(pScreenPriv->pScrn);
 }
 
 /*  For DGA 1.0 backwards compatibility only */

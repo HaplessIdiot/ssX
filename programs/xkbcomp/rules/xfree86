@@ -4,7 +4,7 @@
 //  Rules for resolving XKB components for use with XFree86
 //  Copyright 1996 by Joseph Moss
 //
-//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.10 1998/10/04 09:41:35 dawes Exp $
+//  $XFree86: xc/programs/xkbcomp/rules/xfree86,v 3.11 1998/11/15 04:30:46 dawes Exp $
 //
 
 ! model 	=	keycodes	geometry
@@ -77,6 +77,7 @@
   grp:toggle		=	+group(toggle)
   grp:shift_toggle	=	+group(shift_toggle)
   grp:ctrl_shift_toggle	=	+group(ctrl_shift_toggle)
+  grp:caps_toggle	=	+group(caps_toggle)
   grp:ctrl_alt_toggle	=	+group(ctrl_alt_toggle)
   ctrl:nocaps		=	+ctrl(nocaps)
   ctrl:swapcaps		=	+ctrl(swapcaps)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.26 1999/04/04 00:20:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86str.h,v 1.27 1999/04/05 07:13:09 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -450,9 +450,8 @@ typedef struct {
    int maxViewportX;	/* max viewport origin */
    int maxViewportY;
    int viewportFlags;	/* types of page flipping possible */
-   unsigned char* memBase;
-   unsigned char* mapBase;
-   int offset;
+   int offset;		/* offset into physical memory */
+   unsigned char *address;	/* server's mapped framebuffer */
    int reserved1;
    int reserved2;
 } DGAModeRec, *DGAModePtr;
@@ -608,9 +607,18 @@ typedef struct _ScrnInfoRec {
 
 
 typedef struct {
-   Bool (*SetMode)(ScrnInfoPtr, DGAModePtr);
-   void (*SetViewport)(ScrnInfoPtr, int, int, int);
-   int  (*GetViewport)(ScrnInfoPtr, int);
+   Bool (*OpenFramebuffer)(
+	ScrnInfoPtr pScrn, 
+	char **name,
+	unsigned char **mem, 
+	int *size,
+	int *offset,
+        int *extra
+   );
+   void	(*CloseFramebuffer)(ScrnInfoPtr pScrn);
+   Bool (*SetMode)(ScrnInfoPtr pScrn, DGAModePtr pMode);
+   void (*SetViewport)(ScrnInfoPtr pScrn, int x, int y, int flags);
+   int  (*GetViewport)(ScrnInfoPtr pScrn, int flags);
    void (*Flush)(ScrnInfoPtr);
    void (*FillRect)(
 	ScrnInfoPtr pScrn, 

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.3 1999/01/13 08:31:11 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/miexpose.c,v 3.4 1999/01/26 10:40:48 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -878,6 +878,7 @@ int what;
 /* MICLEARDRAWABLE -- sets the entire drawable to the background color of
  * the GC.  Useful when we have a scratch drawable and need to initialize 
  * it. */
+void
 miClearDrawable(pDraw, pGC)
     DrawablePtr	pDraw;
     GCPtr	pGC;

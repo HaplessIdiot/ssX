@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.22 1999/03/21 07:35:29 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaa.h,v 1.23 1999/03/28 15:33:03 dawes Exp $ */
 
 #ifndef _XAA_H
 #define _XAA_H
@@ -1218,8 +1218,6 @@ typedef struct _XAAInfoRec {
    CopyWindowProcPtr CopyWindow;
    BackingStoreSaveAreasProcPtr SaveAreas;
    BackingStoreRestoreAreasProcPtr RestoreAreas;
-
-   Bool pixmapCacheInit;  /* private flag */
 
 } XAAInfoRec, *XAAInfoRecPtr;
 

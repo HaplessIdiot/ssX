@@ -31,6 +31,7 @@ xie
 i2c
 rac
 ddc
+glide
 
 2. External Module Object Symbols.
 
@@ -51,6 +52,7 @@ xf1bpp
 xf4bpp
 XAA
 neo
+glide
 
 3. Chipset Names.
 
@@ -92,6 +94,7 @@ neo2093
 neo2097
 neo2160
 neo2200
+Voodoo
 
 4. Option Names.
 
@@ -196,6 +199,7 @@ NoAccel                   B     V    Disable/enable acceleration
 NoClockChip               B     V    ??
 NoStretch                 B     V    Disable/enable stretching for LCD displays
 NoTurboQueue              B     V    Disable/enable turbo queue
+OnAtExit                  B     V    Leave video signal on when exiting server
 Overlay                   B     V    Enable/disable multi-depth/overlay
 PciBurst                  B     V    Enable/disable PCI burst mode
 PciRetry                  B     V    Enable/disable PCI retries
@@ -216,7 +220,10 @@ UseModeLine               B     V    Use Modeline (??)
 UseVclk1                  B     V    ??
 W32Interleave             B     V    ??
 
+Buffers			  I	Xv   Number of buffers
+Device			  S	Xv   Device file name
 Expose                    B     Xv   Disable occlusion clipping (see DESIGN)
+FramesPerSec		  I	Xv   Max. refresh frequency
 
 XAA options.  All are of type "O" and scope "X", and are self-explanatory
 
@@ -290,4 +297,4 @@ and underscores removed.
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.5 1999/03/21 07:34:47 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/Registry,v 1.6 1999/03/28 15:32:18 dawes Exp $

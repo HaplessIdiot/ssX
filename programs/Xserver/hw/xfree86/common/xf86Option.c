@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.6 1999/03/20 08:59:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Option.c,v 1.7 1999/03/28 15:32:28 dawes Exp $ */
 
 /*
  * Copyright (c) 1998 by The XFree86 Project, Inc.
@@ -309,7 +309,7 @@ ParseOptionValue(int scrnIndex, pointer options, OptionInfoPtr p)
 			   p->name);
 		p->found = FALSE;
 	    } else {
-		p->value.num = strtod(s, &end);
+		p->value.realnum = strtod(s, &end);
 		if (*end == '\0') {
 		    p->found = TRUE;
 		} else {

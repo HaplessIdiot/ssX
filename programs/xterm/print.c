@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/xterm/print.c,v 1.6 1998/06/04 16:44:00 hohndel Exp $
+ * $XFree86: xc/programs/xterm/print.c,v 1.7 1998/10/25 07:12:46 dawes Exp $
  */
 
 /************************************************************
@@ -39,6 +39,9 @@ authorization.
 #include <xterm.h>
 #include <data.h>
 #include <error.h>
+
+#undef  CTRL
+#define	CTRL(c)	((c) & 0x1f)
 
 #define SHIFT_IN  '\017'
 #define SHIFT_OUT '\016'
@@ -411,8 +414,8 @@ int xtermPrinterControl(int chr)
 
 	switch (chr) {
 	case 0:
-	case 'Q' & 0x1f:
-	case 'S' & 0x1f:
+	case CTRL('Q'):
+	case CTRL('S'):
 		return 0;	/* ignored by application */
 
 	case CSI:

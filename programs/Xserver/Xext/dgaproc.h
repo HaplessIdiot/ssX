@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.8 1999/03/21 12:46:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/dgaproc.h,v 1.9 1999/03/28 15:32:10 dawes Exp $ */
 
 #ifndef __DGAPROC_H
 #define __DGAPROC_H
@@ -19,10 +19,13 @@
 #define DGA_COMPLETED		0x00000000
 #define DGA_PENDING		0x00000001
 
+#define DGA_NEED_ROOT		0x00000001
+
 typedef struct {
    int num;		/* A unique identifier for the mode (num > 0) */
    char *name;		/* name of mode given in the XF86Config */
-   float verticalRefresh;
+   int VSync_num;
+   int VSync_den;
    int flags;		/* DGA_CONCURRENT_ACCESS, etc... */
    int imageWidth;	/* linear accessible portion (pixels) */
    int imageHeight;
@@ -42,17 +45,10 @@ typedef struct {
    int maxViewportX;	/* max viewport origin */
    int maxViewportY;
    int viewportFlags;	/* types of page flipping possible */
+   int offset;
    int reserved1;
    int reserved2;
 } XDGAModeRec, *XDGAModePtr;
-
-
-typedef struct {
-   XDGAModeRec mode;
-   unsigned char *data;
-   int offset;
-   PixmapPtr pPix;
-} XDGADeviceRec, *XDGADevicePtr;
 
 
 void XFree86DGAExtensionInit(void);
@@ -63,7 +59,8 @@ int
 DGASetMode(
    int index,
    int num,
-   XDGADevicePtr device
+   XDGAModePtr mode,
+   PixmapPtr *pPix
 );
 
 void 
@@ -114,13 +111,15 @@ DGASetViewport(
 int DGAGetModes(int index);
 int DGAGetOldDGAMode(int index);
 
-int DGAGetDeviceInfo(int index, XDGADevicePtr dev, int mode);
+int DGAGetModeInfo(int index, XDGAModePtr mode, int num);
 
 Bool DGAVTSwitch(void);
 Bool DGAStealMouseEvent(int index, xEvent *e, int dx, int dy);
 Bool DGAStealKeyEvent(int index, xEvent *e);
 
-
+Bool DGAOpenFramebuffer(int index, char **name, unsigned char **mem, 
+			int *size, int *offset, int *flags);
+void DGACloseFramebuffer(int index);
 
 extern unsigned char DGAReqCode;
 extern int DGAErrorBase;

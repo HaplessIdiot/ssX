@@ -5,7 +5,7 @@
  *
  * Author: David Dawes <dawes@xfree86.org>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.2 1999/04/04 10:05:27 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/etc/pcitweak.c,v 1.3 1999/04/04 10:59:48 dawes Exp $ */
 
 #include "X.h"
 #include "os.h"
@@ -17,10 +17,15 @@
 #include <stdarg.h>
 #include <stdlib.h>
 #ifdef __linux__
+/* to get getopt on Linux */
 #ifndef __USE_POSIX2
 #define __USE_POSIX2
 #endif
-#include <unistd.h>	/* for getopt on Linux */
+#endif
+#include <unistd.h>
+#ifdef ISC
+extern char *optarg;
+extern int optind, opterr;
 #endif
 
 int xf86Verbose = 1;

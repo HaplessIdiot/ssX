@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbline.c,v 1.2 1998/03/20 21:08:14 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbline.c,v 1.3 1998/10/04 09:39:12 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -112,7 +112,9 @@ mfbLineSS (pDrawable, pGC, mode, npt, pptInit)
     unsigned int oc2;		/* outcode of point 2 */
 
     PixelType *addrlBase;	/* pointer to start of drawable */
+#ifndef POLYSEGMENT
     PixelType *addrl;		/* address of destination pixmap */
+#endif
     int nlwidth;		/* width in longwords of destination pixmap */
     int xorg, yorg;		/* origin of window */
 
@@ -502,7 +504,7 @@ mfbLineSD( pDrawable, pGC, mode, npt, pptInit)
     unsigned int bias = miGetZeroLineBias(pDrawable->pScreen);
     int x1, x2, y1, y2;
     RegionPtr cclip;
-    int		    fgrop, bgrop;
+    int		    fgrop = 0, bgrop = 0;
     unsigned char   *pDash;
     int		    dashOffset;
     int		    numInDashList;

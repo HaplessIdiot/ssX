@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.137 1999/03/01 02:13:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.138 1999/03/14 05:50:51 dawes Exp $
 /******************************************************************************/
 /*
  * This file is to provide a quick method for most people to change the
@@ -587,3 +587,16 @@ XCOMM $XFree86: xc/config/cf/xf86site.def,v 3.137 1999/03/01 02:13:58 dawes Exp 
 #define DontDefineXF86Contrib
  */
 
+/* 
+ * To enable building the glide driver, you need to define 
+ * HasGlide to YES and set the GlideIncDir variable. 
+ * HasGlide is per default NO.
+ *
+#define HasGlide YES
+ */
+
+/*
+ * Set the path to your Glide include files.
+ *
+#define GlideIncDir /usr/include/glide
+ */

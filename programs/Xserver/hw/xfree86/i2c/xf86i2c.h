@@ -2,7 +2,7 @@
  *  Copyright (C) 1998 Itai Nahshon, Michael Schimek
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.2 1998/10/05 13:23:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/i2c/xf86i2c.h,v 1.3 1998/11/28 10:43:16 dawes Exp $ */
 #ifndef _XF86I2C_H
 #define _XF86I2C_H
 
@@ -68,15 +68,9 @@ void      	xf86DestroyI2CDevRec(I2CDevPtr pI2CDev, Bool unalloc);
 Bool      	xf86I2CDevInit(I2CDevPtr pI2CDev);
 I2CDevPtr 	xf86I2CFindDev(I2CBusPtr, I2CSlaveAddr);
 
-/* Function for probing. Just send the address and return
-   true if the device returns and ack. */
+/* See descriptions of these functions in xf86i2c.c */
+
 Bool	  	xf86I2CProbeAddress(I2CBusPtr pI2CBus, I2CSlaveAddr);
-
-/* Input/Output helper functions. They take the 
- * slave address and timeouts from I2CDev,
- * return False if the transmission failed.
- */
-
 Bool 		xf86I2CWriteRead(I2CDevPtr d, I2CByte *WriteBuffer, int nWrite,
 		                   I2CByte *ReadBuffer,  int nRead);
 #define 	xf86I2CRead(d, rb, nr) xf86I2CWriteRead(d, NULL, 0, rb, nr)

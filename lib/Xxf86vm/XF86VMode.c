@@ -1,5 +1,5 @@
 /* $XConsortium: XF86VMode.c /main/2 1995/11/14 18:17:58 kaleb $ */
-/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.24 1999/03/07 08:29:29 dawes Exp $ */
+/* $XFree86: xc/lib/Xxf86vm/XF86VMode.c,v 3.25 1999/03/14 11:17:41 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -219,7 +219,9 @@ XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeGetModeLineReply rep;
+    xXF86OldVidModeGetModeLineReply oldrep;
     xXF86VidModeGetModeLineReq *req;
+    int majorVersion, minorVersion;
 
     XF86VidModeCheckExtension (dpy, info, False);
 
@@ -228,24 +230,47 @@ XF86VidModeGetModeLine(dpy, screen, dotclock, modeline)
     req->reqType = info->codes->major_opcode;
     req->xf86vidmodeReqType = X_XF86VidModeGetModeLine;
     req->screen = screen;
-    if (!_XReply(dpy, (xReply *)&rep, 
-        (SIZEOF(xXF86VidModeGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
-	UnlockDisplay(dpy);
-	SyncHandle();
-	return False;
+    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
+    if (majorVersion < 2) {
+	if (!_XReply(dpy, (xReply *)&oldrep, 
+            (SIZEOF(xXF86OldVidModeGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return False;
+	}
+	*dotclock = rep.dotclock;
+	modeline->hdisplay   = rep.hdisplay;
+	modeline->hsyncstart = rep.hsyncstart;
+	modeline->hsyncend   = rep.hsyncend;
+	modeline->htotal     = rep.htotal;
+	modeline->hskew      = 0;
+	modeline->vdisplay   = rep.vdisplay;
+	modeline->vsyncstart = rep.vsyncstart;
+	modeline->vsyncend   = rep.vsyncend;
+	modeline->vtotal     = rep.vtotal;
+	modeline->flags      = rep.flags;
+	modeline->privsize   = rep.privsize;
+    } else {
+	if (!_XReply(dpy, (xReply *)&rep, 
+            (SIZEOF(xXF86VidModeGetModeLineReply) - SIZEOF(xReply)) >> 2, xFalse)) {
+	    UnlockDisplay(dpy);
+	    SyncHandle();
+	    return False;
+	}
+	*dotclock = rep.dotclock;
+	modeline->hdisplay   = rep.hdisplay;
+	modeline->hsyncstart = rep.hsyncstart;
+	modeline->hsyncend   = rep.hsyncend;
+	modeline->htotal     = rep.htotal;
+	modeline->hskew      = rep.hskew;
+	modeline->vdisplay   = rep.vdisplay;
+	modeline->vsyncstart = rep.vsyncstart;
+	modeline->vsyncend   = rep.vsyncend;
+	modeline->vtotal     = rep.vtotal;
+	modeline->flags      = rep.flags;
+	modeline->privsize   = rep.privsize;
     }
-    *dotclock = rep.dotclock;
-    modeline->hdisplay   = rep.hdisplay;
-    modeline->hsyncstart = rep.hsyncstart;
-    modeline->hsyncend   = rep.hsyncend;
-    modeline->htotal     = rep.htotal;
-    modeline->hskew      = rep.hskew;
-    modeline->vdisplay   = rep.vdisplay;
-    modeline->vsyncstart = rep.vsyncstart;
-    modeline->vsyncend   = rep.vsyncend;
-    modeline->vtotal     = rep.vtotal;
-    modeline->flags      = rep.flags;
-    modeline->privsize   = rep.privsize;
+    
     if (rep.privsize > 0) {
 	if (!(modeline->private = Xcalloc(rep.privsize, sizeof(INT32)))) {
 	    _XEatData(dpy, (rep.privsize) * sizeof(INT32));
@@ -273,6 +298,7 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     xXF86VidModeGetAllModeLinesReq *req;
     XF86VidModeModeInfo *mdinfptr, **modelines;
     xXF86VidModeModeInfo xmdline;
+    xXF86OldVidModeModeInfo oldxmdline;
     int i;
     int majorVersion, minorVersion;
     Bool protocolBug = False;
@@ -303,15 +329,19 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     if (!_XReply(dpy, (xReply *)&rep, 
         (SIZEOF(xXF86VidModeGetAllModeLinesReply) - SIZEOF(xReply)) >> 2, xFalse)) {
         UnlockDisplay(dpy);
-        SyncHandle();
-        return False;
+	SyncHandle();
+	return False;
     }
+
     *modecount = rep.modecount;
 
     if (!(modelines = (XF86VidModeModeInfo **) Xcalloc(rep.modecount,
                                           sizeof(XF86VidModeModeInfo *)
                                           +sizeof(XF86VidModeModeInfo)))) {
-        _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
+	if (majorVersion < 2)
+            _XEatData(dpy, (rep.modecount) * sizeof(xXF86OldVidModeModeInfo));
+	else
+            _XEatData(dpy, (rep.modecount) * sizeof(xXF86VidModeModeInfo));
         Xfree(modelines);
         return False;
     }
@@ -322,34 +352,67 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
 
     for (i = 0; i < rep.modecount; i++) {
         modelines[i] = mdinfptr++;
-        _XRead32(dpy, &xmdline, sizeof(xXF86VidModeModeInfo));
-        modelines[i]->dotclock   = xmdline.dotclock;
-        modelines[i]->hdisplay   = xmdline.hdisplay;
-        modelines[i]->hsyncstart = xmdline.hsyncstart;
-        modelines[i]->hsyncend   = xmdline.hsyncend;
-        modelines[i]->htotal     = xmdline.htotal;
-        modelines[i]->hskew      = xmdline.hskew;
-        modelines[i]->vdisplay   = xmdline.vdisplay;
-        modelines[i]->vsyncstart = xmdline.vsyncstart;
-        modelines[i]->vsyncend   = xmdline.vsyncend;
-        modelines[i]->vtotal     = xmdline.vtotal;
-        modelines[i]->flags      = xmdline.flags;
-	if (protocolBug) {
-	    modelines[i]->privsize = 0;
-	    modelines[i]->private = NULL;
-	} else {
-            modelines[i]->privsize   = xmdline.privsize;
-	    if (xmdline.privsize > 0) {
-	        if (!(modelines[i]->private =
-			    Xcalloc(xmdline.privsize, sizeof(INT32)))) {
-		    _XEatData(dpy, (xmdline.privsize) * sizeof(INT32));
-		    Xfree(modelines[i]->private);
-	        } else {
-		    _XRead32(dpy, modelines[i]->private,
-			     xmdline.privsize * sizeof(INT32));
-	        }
+	if (majorVersion < 2) {
+            _XRead32(dpy, &oldxmdline, sizeof(xXF86OldVidModeModeInfo));
+	    modelines[i]->dotclock   = oldxmdline.dotclock;
+	    modelines[i]->hdisplay   = oldxmdline.hdisplay;
+	    modelines[i]->hsyncstart = oldxmdline.hsyncstart;
+	    modelines[i]->hsyncend   = oldxmdline.hsyncend;
+	    modelines[i]->htotal     = oldxmdline.htotal;
+	    modelines[i]->hskew      = 0;
+	    modelines[i]->vdisplay   = oldxmdline.vdisplay;
+	    modelines[i]->vsyncstart = oldxmdline.vsyncstart;
+	    modelines[i]->vsyncend   = oldxmdline.vsyncend;
+	    modelines[i]->vtotal     = oldxmdline.vtotal;
+	    modelines[i]->flags      = oldxmdline.flags;
+	    if (protocolBug) {
+		modelines[i]->privsize = 0;
+		modelines[i]->private = NULL;
 	    } else {
-                modelines[i]->private = NULL;
+		modelines[i]->privsize   = oldxmdline.privsize;
+		if (oldxmdline.privsize > 0) {
+	            if (!(modelines[i]->private =
+			    Xcalloc(oldxmdline.privsize, sizeof(INT32)))) {
+			_XEatData(dpy, (oldxmdline.privsize) * sizeof(INT32));
+			Xfree(modelines[i]->private);
+		    } else {
+			_XRead32(dpy, modelines[i]->private,
+			     oldxmdline.privsize * sizeof(INT32));
+		    }
+		} else {
+		  modelines[i]->private = NULL;
+		}
+	    }
+	} else {
+            _XRead32(dpy, &xmdline, sizeof(xXF86VidModeModeInfo));
+	    modelines[i]->dotclock   = xmdline.dotclock;
+	    modelines[i]->hdisplay   = xmdline.hdisplay;
+	    modelines[i]->hsyncstart = xmdline.hsyncstart;
+	    modelines[i]->hsyncend   = xmdline.hsyncend;
+	    modelines[i]->htotal     = xmdline.htotal;
+	    modelines[i]->hskew      = xmdline.hskew;
+	    modelines[i]->vdisplay   = xmdline.vdisplay;
+	    modelines[i]->vsyncstart = xmdline.vsyncstart;
+	    modelines[i]->vsyncend   = xmdline.vsyncend;
+	    modelines[i]->vtotal     = xmdline.vtotal;
+	    modelines[i]->flags      = xmdline.flags;
+	    if (protocolBug) {
+		modelines[i]->privsize = 0;
+		modelines[i]->private = NULL;
+	    } else {
+		modelines[i]->privsize   = xmdline.privsize;
+		if (xmdline.privsize > 0) {
+		    if (!(modelines[i]->private =
+			    Xcalloc(xmdline.privsize, sizeof(INT32)))) {
+			_XEatData(dpy, (xmdline.privsize) * sizeof(INT32));
+			Xfree(modelines[i]->private);
+		    } else {
+			_XRead32(dpy, modelines[i]->private,
+			     xmdline.privsize * sizeof(INT32));
+		    }
+		} else {
+		    modelines[i]->private = NULL;
+		}
 	    }
 	}
     }
@@ -358,6 +421,32 @@ XF86VidModeGetAllModeLines(dpy, screen, modecount, modelinesPtr)
     SyncHandle();
     return True;
 }
+
+/*
+ * GetReq replacement for use with VidMode protocols earlier than 2.0
+ */
+#if (defined(__STDC__) && !defined(UNIXCPP)) || defined(ANSICPP)
+#define GetOldReq(name, oldname, req) \
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(x##oldname##Req)) > dpy->bufmax)\
+		_XFlush(dpy);\
+	req = (x##oldname##Req *)(dpy->last_req = dpy->bufptr);\
+	req->reqType = X_##name;\
+	req->length = (SIZEOF(x##oldname##Req))>>2;\
+	dpy->bufptr += SIZEOF(x##oldname##Req);\
+	dpy->request++
+
+#else  /* non-ANSI C uses empty comment instead of "##" for token concatenation */
+#define GetOldReq(name, oldname, req) \
+        WORD64ALIGN\
+	if ((dpy->bufptr + SIZEOF(x/**/oldname/**/Req)) > dpy->bufmax)\
+		_XFlush(dpy);\
+	req = (x/**/oldname/**/Req *)(dpy->last_req = dpy->bufptr);\
+	req->reqType = X_/**/name;\
+	req->length = (SIZEOF(x/**/oldname/**/Req))>>2;\
+	dpy->bufptr += SIZEOF(x/**/oldname/**/Req);\
+	dpy->request++
+#endif
 
 Bool
 XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
@@ -368,55 +457,104 @@ XF86VidModeAddModeLine (dpy, screen, newmodeline, aftermodeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeAddModeLineReq *req;
+    xXF86OldVidModeAddModeLineReq *oldreq;
+    int majorVersion, minorVersion;
 
     XF86VidModeCheckExtension (dpy, info, False);
+    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
 
     LockDisplay(dpy);
-    GetReq(XF86VidModeAddModeLine, req);
-    req->reqType = info->codes->major_opcode;
-    req->xf86vidmodeReqType = X_XF86VidModeAddModeLine;
-    req->screen = screen;
-    req->dotclock =	newmodeline->dotclock;
-    req->hdisplay =	newmodeline->hdisplay;
-    req->hsyncstart =	newmodeline->hsyncstart;
-    req->hsyncend =	newmodeline->hsyncend;
-    req->htotal =	newmodeline->htotal;
-    req->hskew =	newmodeline->hskew;
-    req->vdisplay =	newmodeline->vdisplay;
-    req->vsyncstart =	newmodeline->vsyncstart;
-    req->vsyncend =	newmodeline->vsyncend;
-    req->vtotal =	newmodeline->vtotal;
-    req->flags =	newmodeline->flags;
-    req->privsize =	newmodeline->privsize;
-    if (aftermodeline != NULL) {
-	req->after_dotclock =	aftermodeline->dotclock;
-	req->after_hdisplay =	aftermodeline->hdisplay;
-	req->after_hsyncstart =	aftermodeline->hsyncstart;
-	req->after_hsyncend =	aftermodeline->hsyncend;
-	req->after_htotal =	aftermodeline->htotal;
-	req->after_hskew =	aftermodeline->hskew;
-	req->after_vdisplay =	aftermodeline->vdisplay;
-	req->after_vsyncstart =	aftermodeline->vsyncstart;
-	req->after_vsyncend =	aftermodeline->vsyncend;
-	req->after_vtotal =	aftermodeline->vtotal;
-	req->after_flags =	aftermodeline->flags;
-    } else {
-	req->after_dotclock =	0;
-	req->after_hdisplay =	0;
-	req->after_hsyncstart =	0;
-	req->after_hsyncend =	0;
-	req->after_htotal =	0;
-	req->after_hskew =	0;
-	req->after_vdisplay =	0;
-	req->after_vsyncstart =	0;
-	req->after_vsyncend =	0;
-	req->after_vtotal =	0;
-	req->after_flags =	0;
-    }
-    if (newmodeline->privsize) {
-	req->length += newmodeline->privsize;
-	Data32(dpy, (long *) newmodeline->private,
+    if (majorVersion < 2) {
+	GetOldReq(XF86VidModeAddModeLine, XF86OldVidModeAddModeLine, oldreq);
+	oldreq->reqType = info->codes->major_opcode;
+	oldreq->xf86vidmodeReqType = X_XF86VidModeAddModeLine;
+	oldreq->screen = screen;
+	oldreq->dotclock =	newmodeline->dotclock;
+	oldreq->hdisplay =	newmodeline->hdisplay;
+	oldreq->hsyncstart =	newmodeline->hsyncstart;
+	oldreq->hsyncend =	newmodeline->hsyncend;
+	oldreq->htotal =	newmodeline->htotal;
+	oldreq->vdisplay =	newmodeline->vdisplay;
+	oldreq->vsyncstart =	newmodeline->vsyncstart;
+	oldreq->vsyncend =	newmodeline->vsyncend;
+	oldreq->vtotal =	newmodeline->vtotal;
+	oldreq->flags =		newmodeline->flags;
+	oldreq->privsize =	newmodeline->privsize;
+	if (aftermodeline != NULL) {
+	    oldreq->after_dotclock =	aftermodeline->dotclock;
+	    oldreq->after_hdisplay =	aftermodeline->hdisplay;
+	    oldreq->after_hsyncstart =	aftermodeline->hsyncstart;
+	    oldreq->after_hsyncend =	aftermodeline->hsyncend;
+	    oldreq->after_htotal =	aftermodeline->htotal;
+	    oldreq->after_vdisplay =	aftermodeline->vdisplay;
+	    oldreq->after_vsyncstart =	aftermodeline->vsyncstart;
+	    oldreq->after_vsyncend =	aftermodeline->vsyncend;
+	    oldreq->after_vtotal =	aftermodeline->vtotal;
+	    oldreq->after_flags =	aftermodeline->flags;
+	} else {
+	    oldreq->after_dotclock =	0;
+	    oldreq->after_hdisplay =	0;
+	    oldreq->after_hsyncstart =	0;
+	    oldreq->after_hsyncend =	0;
+	    oldreq->after_htotal =	0;
+	    oldreq->after_vdisplay =	0;
+	    oldreq->after_vsyncstart =	0;
+	    oldreq->after_vsyncend =	0;
+	    oldreq->after_vtotal =	0;
+	    oldreq->after_flags =	0;
+	}
+	if (newmodeline->privsize) {
+	    oldreq->length += newmodeline->privsize;
+	    Data32(dpy, (long *) newmodeline->private,
 	       newmodeline->privsize * sizeof(INT32));
+	}
+    } else {
+	GetReq(XF86VidModeAddModeLine, req);
+	req->reqType = info->codes->major_opcode;
+	req->xf86vidmodeReqType = X_XF86VidModeAddModeLine;
+	req->screen = screen;
+	req->dotclock =		newmodeline->dotclock;
+	req->hdisplay =		newmodeline->hdisplay;
+	req->hsyncstart =	newmodeline->hsyncstart;
+	req->hsyncend =		newmodeline->hsyncend;
+	req->htotal =		newmodeline->htotal;
+	req->hskew =		newmodeline->hskew;
+	req->vdisplay =		newmodeline->vdisplay;
+	req->vsyncstart =	newmodeline->vsyncstart;
+	req->vsyncend =		newmodeline->vsyncend;
+	req->vtotal =		newmodeline->vtotal;
+	req->flags =		newmodeline->flags;
+	req->privsize =		newmodeline->privsize;
+	if (aftermodeline != NULL) {
+	    req->after_dotclock =	aftermodeline->dotclock;
+	    req->after_hdisplay =	aftermodeline->hdisplay;
+	    req->after_hsyncstart =	aftermodeline->hsyncstart;
+	    req->after_hsyncend =	aftermodeline->hsyncend;
+	    req->after_htotal =		aftermodeline->htotal;
+	    req->after_hskew =		aftermodeline->hskew;
+	    req->after_vdisplay =	aftermodeline->vdisplay;
+	    req->after_vsyncstart =	aftermodeline->vsyncstart;
+	    req->after_vsyncend =	aftermodeline->vsyncend;
+	    req->after_vtotal =		aftermodeline->vtotal;
+	    req->after_flags =		aftermodeline->flags;
+	} else {
+	    req->after_dotclock =	0;
+	    req->after_hdisplay =	0;
+	    req->after_hsyncstart =	0;
+	    req->after_hsyncend =	0;
+	    req->after_htotal =		0;
+	    req->after_hskew =		0;
+	    req->after_vdisplay =	0;
+	    req->after_vsyncstart =	0;
+	    req->after_vsyncend =	0;
+	    req->after_vtotal =		0;
+	    req->after_flags =		0;
+	}
+	if (newmodeline->privsize) {
+	    req->length += newmodeline->privsize;
+	    Data32(dpy, (long *) newmodeline->private,
+	       newmodeline->privsize * sizeof(INT32));
+	}
     }
     UnlockDisplay(dpy);
     SyncHandle();
@@ -431,30 +569,56 @@ XF86VidModeDeleteModeLine (dpy, screen, modeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeDeleteModeLineReq *req;
+    xXF86OldVidModeDeleteModeLineReq *oldreq;
+    int majorVersion, minorVersion;
 
     XF86VidModeCheckExtension (dpy, info, 0);
+    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
 
     LockDisplay(dpy);
-    GetReq(XF86VidModeDeleteModeLine, req);
-    req->reqType = info->codes->major_opcode;
-    req->xf86vidmodeReqType = X_XF86VidModeDeleteModeLine;
-    req->screen = screen;
-    req->dotclock =	modeline->dotclock;
-    req->hdisplay =	modeline->hdisplay;
-    req->hsyncstart =	modeline->hsyncstart;
-    req->hsyncend =	modeline->hsyncend;
-    req->htotal =	modeline->htotal;
-    req->hskew =	modeline->hskew;
-    req->vdisplay =	modeline->vdisplay;
-    req->vsyncstart =	modeline->vsyncstart;
-    req->vsyncend =	modeline->vsyncend;
-    req->vtotal =	modeline->vtotal;
-    req->flags =	modeline->flags;
-    req->privsize =	modeline->privsize;
-    if (modeline->privsize) {
-	req->length += modeline->privsize;
-	Data32(dpy, (long *) modeline->private,
+    if (majorVersion < 2) {
+	GetOldReq(XF86VidModeDeleteModeLine, XF86OldVidModeDeleteModeLine, oldreq);
+	oldreq->reqType = info->codes->major_opcode;
+	oldreq->xf86vidmodeReqType = X_XF86VidModeDeleteModeLine;
+	oldreq->screen = screen;
+	oldreq->dotclock =	modeline->dotclock;
+	oldreq->hdisplay =	modeline->hdisplay;
+	oldreq->hsyncstart =	modeline->hsyncstart;
+	oldreq->hsyncend =	modeline->hsyncend;
+	oldreq->htotal =	modeline->htotal;
+	oldreq->vdisplay =	modeline->vdisplay;
+	oldreq->vsyncstart =	modeline->vsyncstart;
+	oldreq->vsyncend =	modeline->vsyncend;
+	oldreq->vtotal =	modeline->vtotal;
+	oldreq->flags =		modeline->flags;
+	oldreq->privsize =	modeline->privsize;
+	if (modeline->privsize) {
+	    oldreq->length += modeline->privsize;
+	    Data32(dpy, (long *) modeline->private,
 	       modeline->privsize * sizeof(INT32));
+	}
+    } else {
+	GetReq(XF86VidModeDeleteModeLine, req);
+	req->reqType = info->codes->major_opcode;
+	req->xf86vidmodeReqType = X_XF86VidModeDeleteModeLine;
+	req->screen = screen;
+	req->dotclock =		modeline->dotclock;
+	req->hdisplay =		modeline->hdisplay;
+	req->hsyncstart =	modeline->hsyncstart;
+	req->hsyncend =		modeline->hsyncend;
+	req->htotal =		modeline->htotal;
+	req->hskew =		modeline->hskew;
+	req->vdisplay =		modeline->vdisplay;
+	req->vsyncstart =	modeline->vsyncstart;
+	req->vsyncend =		modeline->vsyncend;
+	req->vtotal =		modeline->vtotal;
+	req->flags =		modeline->flags;
+	req->privsize =		modeline->privsize;
+	if (modeline->privsize) {
+	    req->length += modeline->privsize;
+	    Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(INT32));
+	}
     }
     UnlockDisplay(dpy);
     SyncHandle();
@@ -469,29 +633,54 @@ XF86VidModeModModeLine (dpy, screen, modeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeModModeLineReq *req;
+    xXF86OldVidModeModModeLineReq *oldreq;
+    int majorVersion, minorVersion;
 
     XF86VidModeCheckExtension (dpy, info, 0);
+    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
 
     LockDisplay(dpy);
-    GetReq(XF86VidModeModModeLine, req);
-    req->reqType = info->codes->major_opcode;
-    req->xf86vidmodeReqType = X_XF86VidModeModModeLine;
-    req->screen = screen;
-    req->hdisplay =	modeline->hdisplay;
-    req->hsyncstart =	modeline->hsyncstart;
-    req->hsyncend =	modeline->hsyncend;
-    req->htotal =	modeline->htotal;
-    req->hskew =	modeline->hskew;
-    req->vdisplay =	modeline->vdisplay;
-    req->vsyncstart =	modeline->vsyncstart;
-    req->vsyncend =	modeline->vsyncend;
-    req->vtotal =	modeline->vtotal;
-    req->flags =	modeline->flags;
-    req->privsize =	modeline->privsize;
-    if (modeline->privsize) {
-	req->length += modeline->privsize;
-	Data32(dpy, (long *) modeline->private,
+    if (majorVersion < 2) {
+	GetOldReq(XF86VidModeModModeLine, XF86OldVidModeModModeLine, oldreq);
+	oldreq->reqType = info->codes->major_opcode;
+	oldreq->xf86vidmodeReqType = X_XF86VidModeModModeLine;
+	oldreq->screen = screen;
+	oldreq->hdisplay =	modeline->hdisplay;
+	oldreq->hsyncstart =	modeline->hsyncstart;
+	oldreq->hsyncend =	modeline->hsyncend;
+	oldreq->htotal =	modeline->htotal;
+	oldreq->vdisplay =	modeline->vdisplay;
+	oldreq->vsyncstart =	modeline->vsyncstart;
+	oldreq->vsyncend =	modeline->vsyncend;
+	oldreq->vtotal =	modeline->vtotal;
+	oldreq->flags =		modeline->flags;
+	oldreq->privsize =	modeline->privsize;
+	if (modeline->privsize) {
+	    oldreq->length += modeline->privsize;
+	    Data32(dpy, (long *) modeline->private,
 	       modeline->privsize * sizeof(INT32));
+	}
+    } else {
+	GetReq(XF86VidModeModModeLine, req);
+	req->reqType = info->codes->major_opcode;
+	req->xf86vidmodeReqType = X_XF86VidModeModModeLine;
+	req->screen = screen;
+	req->hdisplay =		modeline->hdisplay;
+	req->hsyncstart =	modeline->hsyncstart;
+	req->hsyncend =		modeline->hsyncend;
+	req->htotal =		modeline->htotal;
+	req->hskew =		modeline->hskew;
+	req->vdisplay =		modeline->vdisplay;
+	req->vsyncstart =	modeline->vsyncstart;
+	req->vsyncend =		modeline->vsyncend;
+	req->vtotal =		modeline->vtotal;
+	req->flags =		modeline->flags;
+	req->privsize =		modeline->privsize;
+	if (modeline->privsize) {
+	    req->length += modeline->privsize;
+	    Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(INT32));
+	}
     }
     UnlockDisplay(dpy);
     SyncHandle();
@@ -506,31 +695,58 @@ XF86VidModeValidateModeLine (dpy, screen, modeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeValidateModeLineReq *req;
+    xXF86OldVidModeValidateModeLineReq *oldreq;
     xXF86VidModeValidateModeLineReply rep;
+    int majorVersion, minorVersion;
 
     XF86VidModeCheckExtension (dpy, info, 0);
+    XF86VidModeQueryVersion(dpy, &majorVersion, &minorVersion);
 
     LockDisplay(dpy);
-    GetReq(XF86VidModeValidateModeLine, req);
-    req->reqType = info->codes->major_opcode;
-    req->xf86vidmodeReqType = X_XF86VidModeValidateModeLine;
-    req->screen = screen;
-    req->dotclock =	modeline->dotclock;
-    req->hdisplay =	modeline->hdisplay;
-    req->hsyncstart =	modeline->hsyncstart;
-    req->hsyncend =	modeline->hsyncend;
-    req->htotal =	modeline->htotal;
-    req->hskew =	modeline->hskew;
-    req->vdisplay =	modeline->vdisplay;
-    req->vsyncstart =	modeline->vsyncstart;
-    req->vsyncend =	modeline->vsyncend;
-    req->vtotal =	modeline->vtotal;
-    req->flags =	modeline->flags;
-    req->privsize =	modeline->privsize;
-    if (modeline->privsize) {
-	req->length += modeline->privsize;
-	Data32(dpy, (long *) modeline->private,
+
+    if (majorVersion < 2) {
+	GetOldReq(XF86VidModeValidateModeLine, XF86OldVidModeValidateModeLine, oldreq);
+	oldreq->reqType = info->codes->major_opcode;
+	oldreq->xf86vidmodeReqType = X_XF86VidModeValidateModeLine;
+	oldreq->screen = screen;
+	oldreq->dotclock =	modeline->dotclock;
+	oldreq->hdisplay =	modeline->hdisplay;
+	oldreq->hsyncstart =	modeline->hsyncstart;
+	oldreq->hsyncend =	modeline->hsyncend;
+	oldreq->htotal =	modeline->htotal;
+	oldreq->vdisplay =	modeline->vdisplay;
+	oldreq->vsyncstart =	modeline->vsyncstart;
+	oldreq->vsyncend =	modeline->vsyncend;
+	oldreq->vtotal =	modeline->vtotal;
+	oldreq->flags =		modeline->flags;
+	oldreq->privsize =	modeline->privsize;
+	if (modeline->privsize) {
+	    oldreq->length += modeline->privsize;
+	    Data32(dpy, (long *) modeline->private,
 	       modeline->privsize * sizeof(INT32));
+	}
+    } else {
+	GetReq(XF86VidModeValidateModeLine, req);
+	req->reqType = info->codes->major_opcode;
+	req->xf86vidmodeReqType = X_XF86VidModeValidateModeLine;
+	req->screen = screen;
+	req->dotclock =		modeline->dotclock;
+	req->hdisplay =		modeline->hdisplay;
+	req->hsyncstart =	modeline->hsyncstart;
+	req->hsyncend =		modeline->hsyncend;
+	req->htotal =		modeline->htotal;
+	req->hskew =		modeline->hskew;
+	req->vdisplay =		modeline->vdisplay;
+	req->vsyncstart =	modeline->vsyncstart;
+	req->vsyncend =		modeline->vsyncend;
+	req->vtotal =		modeline->vtotal;
+	req->flags =		modeline->flags;
+	req->privsize =		modeline->privsize;
+	if (modeline->privsize) {
+	    req->length += modeline->privsize;
+	    Data32(dpy, (long *) modeline->private,
+	       modeline->privsize * sizeof(INT32));
+	}
     }
     if (!_XReply(dpy, (xReply *)&rep, 0, xFalse)) {
 	UnlockDisplay(dpy);
@@ -572,6 +788,7 @@ XF86VidModeSwitchToMode(dpy, screen, modeline)
 {
     XExtDisplayInfo *info = find_display (dpy);
     xXF86VidModeSwitchToModeReq *req;
+    xXF86OldVidModeSwitchToModeReq *oldreq;
     int majorVersion, minorVersion;
     Bool protocolBug = False;
 
@@ -595,29 +812,56 @@ XF86VidModeSwitchToMode(dpy, screen, modeline)
     }
     
     LockDisplay(dpy);
-    GetReq(XF86VidModeSwitchToMode, req);
-    req->reqType = info->codes->major_opcode;
-    req->xf86vidmodeReqType = X_XF86VidModeSwitchToMode;
-    req->screen = screen;
-    req->dotclock =	modeline->dotclock;
-    req->hdisplay =	modeline->hdisplay;
-    req->hsyncstart =	modeline->hsyncstart;
-    req->hsyncend =	modeline->hsyncend;
-    req->htotal =	modeline->htotal;
-    req->hskew =	modeline->hskew;
-    req->vdisplay =	modeline->vdisplay;
-    req->vsyncstart =	modeline->vsyncstart;
-    req->vsyncend =	modeline->vsyncend;
-    req->vtotal =	modeline->vtotal;
-    req->flags =	modeline->flags;
-    if (protocolBug) {
-	req->privsize = 0;
-    } else {
-	req->privsize =	modeline->privsize;
-	if (modeline->privsize) {
-	    req->length += modeline->privsize;
-	    Data32(dpy, (long *) modeline->private,
+    if (majorVersion < 2) {
+	GetOldReq(XF86VidModeSwitchToMode, XF86OldVidModeSwitchToMode, oldreq);
+	oldreq->reqType = info->codes->major_opcode;
+	oldreq->xf86vidmodeReqType = X_XF86VidModeSwitchToMode;
+	oldreq->screen = screen;
+	oldreq->dotclock =	modeline->dotclock;
+	oldreq->hdisplay =	modeline->hdisplay;
+	oldreq->hsyncstart =	modeline->hsyncstart;
+	oldreq->hsyncend =	modeline->hsyncend;
+	oldreq->htotal =	modeline->htotal;
+	oldreq->vdisplay =	modeline->vdisplay;
+	oldreq->vsyncstart =	modeline->vsyncstart;
+	oldreq->vsyncend =	modeline->vsyncend;
+	oldreq->vtotal =	modeline->vtotal;
+	oldreq->flags =	modeline->flags;
+	if (protocolBug) {
+	    oldreq->privsize = 0;
+	} else {
+	    oldreq->privsize =	modeline->privsize;
+	    if (modeline->privsize) {
+		oldreq->length += modeline->privsize;
+		Data32(dpy, (long *) modeline->private,
 	           modeline->privsize * sizeof(INT32));
+	    }
+	}
+    } else {
+	GetReq(XF86VidModeSwitchToMode, req);
+	req->reqType = info->codes->major_opcode;
+	req->xf86vidmodeReqType = X_XF86VidModeSwitchToMode;
+	req->screen = screen;
+	req->dotclock =	modeline->dotclock;
+	req->hdisplay =	modeline->hdisplay;
+	req->hsyncstart =	modeline->hsyncstart;
+	req->hsyncend =	modeline->hsyncend;
+	req->htotal =	modeline->htotal;
+	req->hskew =	modeline->hskew;
+	req->vdisplay =	modeline->vdisplay;
+	req->vsyncstart =	modeline->vsyncstart;
+	req->vsyncend =	modeline->vsyncend;
+	req->vtotal =	modeline->vtotal;
+	req->flags =	modeline->flags;
+	if (protocolBug) {
+	    req->privsize = 0;
+	} else {
+	    req->privsize =	modeline->privsize;
+	    if (modeline->privsize) {
+		req->length += modeline->privsize;
+		Data32(dpy, (long *) modeline->private,
+	           modeline->privsize * sizeof(INT32));
+	    }
 	}
     }
     UnlockDisplay(dpy);

@@ -41,7 +41,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.3 1998/10/04 09:39:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mi.h,v 3.4 1999/01/03 08:06:40 dawes Exp $ */
 
 #ifndef MI_H
 #define MI_H
@@ -274,7 +274,7 @@ extern void miPaintWindow(
 #endif
 );
 
-extern int miClearDrawable(
+extern void miClearDrawable(
 #if NeedFunctionPrototypes
     DrawablePtr /*pDraw*/,
     GCPtr /*pGC*/

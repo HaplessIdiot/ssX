@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.9 1998/11/22 10:37:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbcmap.c,v 3.10 1999/03/01 02:15:09 dawes Exp $ */
 
 
 #include "X.h"
@@ -36,27 +36,6 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "colormapst.h"
 #include "resource.h"
 #include "micmap.h"
-
-#ifdef GLXEXT
-#ifdef XFree86LOADER
-extern Bool (*GlxInitVisualsPtr)(
-#else
-extern Bool GlxInitVisuals(
-#endif
-    VisualPtr *         visualp,
-    DepthPtr *          depthp,
-    int *               nvisualp,
-    int *               ndepthp,
-    int *               rootDepthp,
-    VisualID *          defaultVisp,
-    unsigned long       sizes,
-    int                 bitsPerRGB
-#ifdef XFree86LOADER
-);
-#else
-);
-#endif
-#endif
 
 int
 cfbListInstalledColormaps(pScreen, pmaps)
@@ -142,29 +121,6 @@ cfbInitVisuals (visualp, depthp, nvisualp, ndepthp, rootDepthp, defaultVisp, siz
     unsigned long   sizes;
     int		bitsPerRGB;
 {
-    Bool ret;
-    ret = miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
-			defaultVisp, sizes, bitsPerRGB, -1);
-    if (!ret)
-	return FALSE;
-
-#ifdef GLXEXT
-#ifdef XFree86LOADER
-    if (GlxInitVisualsPtr)
-	return (*GlxInitVisualsPtr)
-#else
-    return GlxInitVisuals
-#endif
-	   (
-               visualp, 
-               depthp,
-               nvisualp,
-               ndepthp,
-               rootDepthp,
-               defaultVisp,
-               sizes,
-               bitsPerRGB
-           );
-#endif
-    return TRUE;
+    return miInitVisuals(visualp, depthp, nvisualp, ndepthp, rootDepthp,
+			 defaultVisp, sizes, bitsPerRGB, -1);
 }

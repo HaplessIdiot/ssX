@@ -1,4 +1,4 @@
-! $XFree86: xc/programs/xedit/Xedit.ad,v 1.5 1999/03/14 03:22:27 dawes Exp $
+! $XFree86: xc/programs/xedit/Xedit.ad,v 1.6 1999/04/04 08:46:25 dawes Exp $
 
 *geometry:				590x440
 *input:					TRUE
@@ -80,20 +80,22 @@ xedit.textSource*enableUndo:		True
 *search*replaceText.width:		157
 *search*case.horizDistance:		25
 
-*fileMenu.BackingStore:			NotUseful
-*fileMenu.menuLabel.vertSpace:		80
-*fileMenu.?.HorizontalMargins:		16
-*fileMenu.label:			File Menu
-*fileMenu.justify:			center
-*fileMenu.menuLabel.height:		250
-*fileMenu.cursor:			left_ptr
+*SimpleMenu.BackingStore:		NotUseful
+*SimpleMenu.menuLabel.vertSpace:	80
+*SimpleMenu.?.HorizontalMargins:	16
+*SimpleMenu.justify:			center
+*SimpleMenu.menuLabel.height:		250
+*SimpleMenu.cursor:			left_ptr
 
-*TransientShell*Text.translations: #override \
+*fileMenu.label:			File Menu
+*optionsMenu.label:			Option Menu
+
+*search*Text.translations: #override \
 c<Key>S:	no-op(r)\n\
 c<Key>R:	no-op(r)\n\
 m<Key>I:	no-op(r)
 
-*TransientShell.translations: #override \
+*search.translations: #override \
 <Create>:get-values(my, $w, width, $h, height)\
 	set-values(1, minWidth, $w, minHeight, $h, maxHeight, $h)
 
@@ -118,7 +120,12 @@ m<Key>I:	no-op(r)
 !<Key>o:	insert-char()\n\
 !<Key>u:	insert-char()\n\
 c<Btn1Down>:	xedit-focus() popup-menu(fileMenu)\n\
+c<Btn3Down>:	xedit-focus() popup-menu(optionsMenu)\n\
 <Btn1Down>:	xedit-focus() select-start()
+
+! These translations may be useful for the editWindow
+! <Ctrl>X,!<Key>i:ispell(start)\n\
+! !<Key>i:	insert-char()\n\
 
 *filename.translations: #override \
 c<Key>S:	no-op(r)\n\
@@ -128,3 +135,87 @@ c<Key>G:	cancel-find-file()\n\
 <Key>Return:	load-file()\n\
 <Key>Tab:	file-completion(h)\n\
 <Key>Escape:	cancel-find-file()
+
+*ispell.translations:	#override \
+<Message>WM_PROTOCOLS:	ispell(end)
+
+*ispell.geometry:			0x0
+*ispell.minWidth:			320
+*ispell.minHeight:			224
+!*ispell.wordChars:			·ÈÌÛ˙Á¡…Õ”⁄«‡¿‚ÍÙ¬ ‘¸‹„ı√’
+!*ispell.ispellCommand:			/usr/local/bin/ispell -d br
+!*ispell.skipLines:			.#
+*ispell*Label.borderWidth:		0
+*ispell*Label.internalHeight:		4
+*ispell*Label.justify:			right
+*ispell*Label.width:			106
+*ispell*Label.left:			chainLeft
+*ispell*Label.right:			chainLeft
+*ispell*Label.top:			chainTop
+*ispell*Label.bottom:			chainTop
+*ispell*mispelled.label:		Mispelled word:
+*ispell*mispelled.internalWidth:	0
+*ispell*replacement.label:		Replace with:
+*ispell*word.fromHoriz:			mispelled
+*ispell*word.justify:			left
+*ispell*word.borderWidth:		1
+*ispell*word.internalHeight:		3
+*ispell*word.width:			200
+*ispell*word.left:			chainLeft
+*ispell*word.right:			chainRight
+*ispell*word.label:
+*ispell*text.fromHoriz:			replacement
+*ispell*replacement.fromVert:		mispelled
+*ispell*replacement.internalWidth:	0
+*ispell*text.fromVert:			word
+*ispell*text.width:			200
+*ispell*text.top:			chainTop
+*ispell*text.bottom:			chainTop
+*ispell*text.left:			chainLeft
+*ispell*text.right:			chainRight
+*ispell*suggestions.label:		Suggestions:
+*ispell*suggestions.fromVert:		replacement
+*ispell*suggestions.internalWidth:	0
+*ispell*viewport.fromHoriz:		suggestions
+*ispell*viewport.fromVert:		text
+*ispell*viewport.width:			200
+*ispell*viewport.height:		169
+*ispell*viewport.top:			chainTop
+*ispell*viewport.bottom:		chainBottom
+*ispell*viewport.left:			chainLeft
+*ispell*viewport.right:			chainRight
+*ispell*viewport.forceBars:		1
+*ispell*viewport.allowVert:		1
+*ispell*list.defaultColumns:		1
+*ispell*list.longest:			16384
+*ispell*commands.fromVert:		suggestions
+*ispell*commands.top:			chainBottom
+*ispell*commands.bottom:		chainBottom
+*ispell*commands.right:			chainLeft
+*ispell*commands.left:			chainLeft
+*ispell*replace.label:			Replace
+*ispell*replaceAll.fromHoriz:		replace
+*ispell*replaceAll.label:		All
+*ispell*undo.fromVert:			replace
+*ispell*undo.label:			Undo
+*ispell*undo.width:			92
+*ispell*ignore.fromVert:		undo
+*ispell*ignore.label:			Ignore
+*ispell*ignoreAll.fromVert:		undo
+*ispell*ignoreAll.fromHoriz:		ignore
+*ispell*ignoreAll.label:		All
+*ispell*add.fromVert:			ignore
+*ispell*add.label:			Add
+*ispell*suspend.fromVert:		add
+*ispell*suspend.label:			Suspend
+*ispell*cancel.fromVert:		suspend
+*ispell*cancel.label:			Close
+*ispell*replace.width:			60
+*ispell*ignore.width:			60
+*ispell*replaceAll.width:		30
+*ispell*replaceAll.horizDistance:	0
+*ispell*ignoreAll.width:		30
+*ispell*ignoreAll.horizDistance:	0
+*ispell*add.width:			92
+*ispell*suspend.width:			92
+*ispell*cancel.width:			92

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.3 1998/10/04 09:39:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mfb/mfbgc.c,v 1.4 1998/10/04 13:12:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -978,7 +978,7 @@ mfbValidateGC(pGC, changes, pDrawable)
     {
 	GCOps	*newops;
 
-	if (newops = matchCommon (pGC))
+	if ((newops = matchCommon (pGC)))
  	{
 	    if (pGC->ops->devPrivate.val)
 		miDestroyGCOps (pGC->ops);
@@ -1411,7 +1411,7 @@ mfbReduceRop(alu, src)
     register int alu;
     register Pixel src;
 {
-    int rop;
+    int rop = 0;
     if ((src & 1) == 0)	/* src is black */
     {
 	switch(alu)

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.4 1999/03/14 11:18:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_dga.c,v 1.5 1999/03/28 15:32:40 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -14,6 +14,8 @@
 #include "dgaproc.h"
 
 
+static Bool MGA_OpenFramebuffer(ScrnInfoPtr, char **, unsigned char **, 
+					int *, int *, int *);
 static Bool MGA_SetMode(ScrnInfoPtr, DGAModePtr);
 static int  MGA_GetViewport(ScrnInfoPtr, int);
 static void MGA_SetViewport(ScrnInfoPtr, int, int, int);
@@ -24,6 +26,8 @@ static void MGA_BlitTransRect(ScrnInfoPtr, int, int, int, int, int, int,
 
 static
 DGAFunctionRec MGA_DGAFuncs = {
+   MGA_OpenFramebuffer,
+   NULL,
    MGA_SetMode,
    MGA_SetViewport,
    MGA_GetViewport,
@@ -48,7 +52,11 @@ MGADGAInit(ScreenPtr pScreen)
    pMode = firstMode = pScrn->modes;
 
    while(pMode) {
-	if(pScrn->displayWidth != pMode->HDisplay) {
+	/* The MGA driver wasn't designed with switching depths in
+	   mind.  Subsequently, large chunks of it will probably need
+	   to be rewritten to accommodate depth changes in DGA mode */
+
+	if(0 /*pScrn->displayWidth != pMode->HDisplay*/) {
 	    newmodes = xrealloc(modes, (num + 2) * sizeof(DGAModeRec));
 	    oneMore = TRUE;
 	} else {
@@ -86,9 +94,8 @@ SECOND_PASS:
 	currentMode->xViewportStep = 1;
 	currentMode->yViewportStep = 1;
 	currentMode->viewportFlags = DGA_FLIP_RETRACE;
-	currentMode->memBase = (unsigned char*)(pMga->FbAddress);
-	currentMode->mapBase = (unsigned char*)(pMga->FbBase);
 	currentMode->offset = pMga->YDstOrg * (pScrn->bitsPerPixel / 8);
+	currentMode->address = pMga->FbStart;
 
 	if(oneMore) { /* first one is narrow width */
 	    currentMode->bytesPerScanline = ((pMode->HDisplay * Bpp) + 3) & ~3L;
@@ -233,3 +240,22 @@ MGA_BlitTransRect(
 }
 
 
+static Bool 
+MGA_OpenFramebuffer(
+   ScrnInfoPtr pScrn, 
+   char **name,
+   unsigned char **mem,
+   int *size,
+   int *offset,
+   int *flags
+){
+    MGAPtr pMga = MGAPTR(pScrn);
+
+    *name = NULL; 		/* no special device */
+    *mem = (unsigned char*)pMga->FbAddress;
+    *size = pMga->FbMapSize;
+    *offset = 0;
+    *flags = DGA_NEED_ROOT;
+
+    return TRUE;
+}

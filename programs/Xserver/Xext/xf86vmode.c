@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.44 1999/03/14 03:21:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.45 1999/03/14 11:17:51 dawes Exp $ */
 
 /*
 
@@ -536,7 +536,7 @@ ProcXF86VidModeGetAllModeLines(ClientPtr client)
     if (modecount < 1)
       return (VidModeErrorBase + XF86VidModeExtensionDisabled);
 
-    if (!VidModeGetCurrentModeline(stuff->screen, &mode, &dotClock))
+    if (!VidModeGetFirstModeline(stuff->screen, &mode, &dotClock))
 	return BadValue;
     
     REQUEST_SIZE_MATCH(xXF86VidModeGetAllModeLinesReq);
@@ -1315,7 +1315,7 @@ ProcXF86VidModeGetMonitor(ClientPtr client)
     if (rep.vendorLength)
 	WriteToClient(client, rep.vendorLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_VENDOR, 0)));
     if (rep.modelLength)
-	WriteToClient(client, rep.vendorLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_MODEL, 0)));
+	WriteToClient(client, rep.modelLength, (char *)(VidModeGetMonitorValue(monitor, VIDMODE_MON_MODEL, 0)));
 
     DEALLOCATE_LOCAL(hsyncdata);
     DEALLOCATE_LOCAL(vsyncdata);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.54 1999/03/21 07:35:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.c,v 1.55 1999/03/28 15:32:34 dawes Exp $ */
 
 /*
  * Copyright 1993 by Jon Block <block@frc.com>
@@ -1489,17 +1489,16 @@ chipsPreInitHiQV(ScrnInfoPtr pScrn, int flags)
 		cPtr->Flags |= ChipsOverlay8plus16;
 		pScrn->colorKey = TRANSPARENCY_KEY;
 		pScrn->overlayFlags = OVERLAY_8_16_DUALFB;
-		cPtr->Flags &= ~ChipsAccelSupport;  /* Acceleration disabled */
 		xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
-			   "PseudoColor overlay enabled - acceleration disabled.\n");
+			   "PseudoColor overlay enabled.\n");
 		if (!xf86IsOptionSet(cPtr->Options, OPTION_LCD_STRETCH))
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                            - Forcing option \"NoStretch\".\n");
+			   "                             - Forcing option \"NoStretch\".\n");
 		if (cPtr->Flags & ChipsShadowFB) {
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                            - Disabling \"Shadow Framebuffer\".\n");
+			   "                             - Disabling \"Shadow Framebuffer\".\n");
 		    xf86DrvMsg(pScrn->scrnIndex, X_WARNING, 
-			   "                              Not support with option \"8Plus16\".\n");
+			   "                               Not support with option \"8Plus16\".\n");
 		    cPtr->Flags &= ~ChipsShadowFB;
 		}
 	    } else {
@@ -3139,7 +3138,7 @@ CHIPSScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
     /* Setup a pointer to the overlay if needed */
     if (cPtr->Flags & ChipsOverlay8plus16) {
-	cPtr->FbOffset16 = (pScrn->displayWidth * pScrn->virtualY + 0xF) & ~0xF;
+	cPtr->FbOffset16 = pScrn->displayWidth * pScrn->virtualY;
 	cPtr->FbSize16 =  (pScrn->displayWidth << 1) * pScrn->virtualY;
 	if (cPtr->FbSize16 > (cPtr->FbMapSize - cPtr->FrameBufferSize)) {
 	    xf86DrvMsg(pScrn->scrnIndex, X_CONFIG,
@@ -3598,7 +3597,7 @@ static void
 CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
 {
     ScrnInfoPtr pScrn;
-    int Base, Base2;
+    int Base;
     CHIPSPtr cPtr;
     vgaHWPtr hwp;
     unsigned char tmp;
@@ -3616,7 +3615,6 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
     
     Base = y * pScrn->displayWidth + x;
-    Base2 =  Base << 1;
 
     /* calculate base bpp dep. */
     switch (pScrn->bitsPerPixel) {
@@ -3661,9 +3659,17 @@ CHIPSAdjustFrame(int scrnIndex, int x, int y, int flags)
     }
 
     if (cPtr->Flags & ChipsOverlay8plus16) {
-	cPtr->writeMR(cPtr, 0x22, (cPtr->FbOffset16 + Base2) & 0xF8);
-	cPtr->writeMR(cPtr, 0x23, ((cPtr->FbOffset16 + Base2) >> 8) & 0xFF);
-	cPtr->writeMR(cPtr, 0x24, ((cPtr->FbOffset16 + Base2) >> 16) & 0xFF);
+	/*
+	 * FIXME:
+	 * This Calculation of Base is Wrong!!! The result is that the
+	 * 16bpp is misaligned in X with the 8bpp mask for 8plus16 overlays
+	 */
+	Base -= (pScrn->displayWidth - pScrn->currentMode->HDisplay) >> 3;
+	Base <<= 3;
+
+	cPtr->writeMR(cPtr, 0x22, (cPtr->FbOffset16 + Base) & 0xF8);
+	cPtr->writeMR(cPtr, 0x23, ((cPtr->FbOffset16 + Base) >> 8) & 0xFF);
+	cPtr->writeMR(cPtr, 0x24, ((cPtr->FbOffset16 + Base) >> 16) & 0xFF);
     }
     
 #if 0

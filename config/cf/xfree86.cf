@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.213 1999/04/04 07:03:16 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.214 1999/04/04 08:45:59 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -35,12 +35,20 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 
 /* XInput drivers */
 #ifndef XInputDrivers
-#define XInputDrivers elographics elo2300 magellan microtouch spaceorb wacom
+#define XInputDrivers		elo2300 elographics magellan microtouch \
+				mutouch spaceorb wacom
 #endif
 
 /* OS.cf files may set this for OS-specific drivers */
 #ifndef XF86ExtraCardDrivers
 #define XF86ExtraCardDrivers /**/
+#endif
+
+/* The glide driver only works for the loadable server at the moment */
+#if HasGlide && DoLoadableServer
+#define GlideDriver glide
+#else
+#define GlideDriver /**/
 #endif
 
 /*
@@ -107,7 +115,7 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* Pure PCI drivers should go first */
 #ifndef XF86CardDrivers
 #define XF86CardDrivers		mga glint tga s3virge sis cirrus tseng \
-				trident chips apm fbdev \
+				trident chips apm GlideDriver fbdev \
 				vga XF86ExtraCardDrivers
 #endif
 #endif

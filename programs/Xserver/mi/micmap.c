@@ -27,7 +27,7 @@ OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.6 1998/11/22 10:37:42 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.c,v 1.7 1999/01/13 08:31:10 dawes Exp $ */
 
 /*
  * This is based on cfbcmap.c.  The functions here are useful independently
@@ -45,6 +45,12 @@ THE USE OR PERFORMANCE OF THIS SOFTWARE.
 #include "micmap.h"
 
 ColormapPtr miInstalledMaps[MAXSCREENS];
+
+static Bool miDoInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
+		int *ndepthp, int *rootDepthp, VisualID *defaultVisp,
+		unsigned long sizes, int bitsPerRGB, int preferredVis);
+
+miInitVisualsProcPtr miInitVisualsProc = miDoInitVisuals;
 
 int
 miListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps)
@@ -385,7 +391,7 @@ typedef struct _miVisuals {
 } miVisualsRec, *miVisualsPtr;
 
 static int  miVisualPriority[] = {
-    PseudoColor, DirectColor, GrayScale, StaticColor, TrueColor, StaticGray
+    PseudoColor, GrayScale, StaticColor, TrueColor, DirectColor, StaticGray
 };
 
 #define NUM_PRIORITY	6
@@ -441,14 +447,29 @@ miGetDefaultVisualMask(int depth)
 }
 
 
+Bool
+miInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
+		int *ndepthp, int *rootDepthp, VisualID *defaultVisp,
+		unsigned long sizes, int bitsPerRGB, int preferredVis)
+
+{
+    if (miInitVisualsProc)
+	return miInitVisualsProc(visualp, depthp, nvisualp, ndepthp,
+				 rootDepthp, defaultVisp, sizes, bitsPerRGB,
+				 preferredVis);
+    else
+	return FALSE;
+}
+
+
 /*
  * Given a list of formats for a screen, create a list
  * of visuals and depths for the screen which corespond to
  * the set which can be used with this version of cfb.
  */
 
-Bool
-miInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
+static Bool
+miDoInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
 		int *ndepthp, int *rootDepthp, VisualID *defaultVisp,
 		unsigned long sizes, int bitsPerRGB, int preferredVis)
 {
@@ -598,3 +619,10 @@ miInitVisuals(VisualPtr *visualp, DepthPtr *depthp, int *nvisualp,
 
     return TRUE;
 }
+
+void
+miResetInitVisuals()
+{
+    miInitVisualsProc = miDoInitVisuals;
+}
+

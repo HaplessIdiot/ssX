@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.2 1995/01/28 16:15:52 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mifillarc.c,v 3.3 1998/10/04 09:39:27 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -269,7 +269,7 @@ miGetPieEdge(arc, angle, edge, top, left)
     register miSliceEdgePtr edge;
     Bool top, left;
 {
-    register int k, signdx, signdy;
+    register int k;
     int	dx, dy;
 
     miEllipseAngleToSlope (angle, arc->width, arc->height, &dx, &dy, 0, 0);

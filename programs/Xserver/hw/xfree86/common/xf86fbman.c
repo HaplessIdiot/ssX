@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.8 1998/12/06 06:08:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86fbman.c,v 1.9 1999/01/14 13:04:09 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -275,7 +275,75 @@ xf86AllocateOffscreenArea(
    return area;
 }
 
-			
+FBAreaPtr
+xf86AllocateLinearOffscreenArea(
+    ScreenPtr pScreen, 
+    int length,
+    int gran,
+    MoveAreaCallbackProcPtr moveCB,
+    RemoveAreaCallbackProcPtr removeCB,
+    pointer privData
+){
+    FBManagerPtr offman;
+    FBLinkPtr link = NULL;
+    FBAreaPtr area = NULL;
+    RegionRec NewReg;
+    BoxPtr boxp, box1p = NULL;
+    int i, num, w, h;
+
+    if (!xf86FBManagerRunning(pScreen)) return NULL;
+
+    offman = pScreen->devPrivates[xf86FBScreenIndex].ptr;
+
+    if (offman->InitialBoxes->extents.x1 != 0 ||
+	length <= 0) return NULL;
+
+    w = offman->InitialBoxes->extents.x2 -
+	offman->InitialBoxes->extents.x1;
+    h = (length + w - 1) / w;
+
+    /* look through the free boxes,
+       bottom up to reduce fragmentation troubles */
+
+    boxp = REGION_RECTS(offman->FreeBoxes);
+    num = REGION_NUM_RECTS(offman->FreeBoxes);
+
+    for (i = 0; i < num; i++, boxp++) {
+	if (((boxp->y2 - boxp->y1) < h) ||
+	    ((boxp->x2 - boxp->x1) < w) ||
+	    (box1p && box1p->y1 > boxp->y1))
+	    continue;
+
+        box1p = boxp;
+    }
+
+    if (!box1p) return NULL;
+    link = xalloc(sizeof(FBLink));
+    if (!link) return NULL;
+    area = &(link->area);
+
+    area->pScreen = pScreen;
+    area->granularity = gran;
+    area->box.x1 = box1p->x1; /* Presumed zero */
+    area->box.x2 = box1p->x1 + w;
+    area->box.y1 = box1p->y2 - h;
+    area->box.y2 = box1p->y2;
+    area->MoveAreaCallback = moveCB;
+    area->RemoveAreaCallback = removeCB;
+    area->devPrivate.ptr = privData;
+
+    REGION_INIT(pScreen, &NewReg, &(area->box), 1);
+    REGION_SUBTRACT(pScreen, offman->FreeBoxes, offman->FreeBoxes, &NewReg);
+    REGION_UNINIT(pScreen, &NewReg);
+
+    link->next = offman->UsedAreas;
+    offman->UsedAreas = link;
+    offman->NumUsedAreas++;
+
+    SendCallFreeBoxCallbacks(offman);
+
+    return area;
+}
 
 void
 xf86FreeOffscreenArea(FBAreaPtr area)

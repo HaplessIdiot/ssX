@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.13 1999/01/31 12:21:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Module.h,v 1.14 1999/03/06 13:12:32 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -34,6 +34,9 @@ typedef enum {
 } LoaderResolveOptions;
 
 #define DEFAULT_LIST ((char *)-1)
+
+/* This indicates a special module that doesn't have the usual entry point */
+#define EXTERN_MODULE ((pointer)-1)
 
 /* Built-in ABI classes.  These definitions must not be changed. */
 #define ABI_CLASS_NONE		NULL

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.40 1999/03/29 06:23:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.41 1999/03/29 07:06:38 dawes Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1580,6 +1580,8 @@ xf86GetErrno ()
 		mapnum (ETXTBSY);
 		mapnum (ENOTTY);
 		mapnum (EBUSY);
+		mapnum (ENODEV);
+		mapnum (EIO);
 
 		default:
 			return (xf86_UNKNOWN);

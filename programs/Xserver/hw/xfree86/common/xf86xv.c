@@ -6,7 +6,7 @@
 
 */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.9 1999/03/21 12:59:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86xv.c,v 1.10 1999/03/28 15:32:30 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -566,17 +566,19 @@ xf86XVRegetVideo(XvPortRecPrivatePtr portPriv)
   if(portPriv->AdaptorRec->flags & VIDEO_EXPOSE) {
      ScreenBox.x1 = 0;
      ScreenBox.y1 = 0;
-     ScreenBox.x2 = pScreen->width;
-     ScreenBox.y2 = pScreen->height;
+     ScreenBox.x2 = portPriv->pScrn->virtualX;
+     ScreenBox.y2 = portPriv->pScrn->virtualY;
      REGION_INIT(pScreen, &ScreenRegion, &ScreenBox, 1);
      REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, &ScreenRegion);
   } else
      /* clip to the window composite clip */
      REGION_INTERSECT(Screen, &ClipRegion, &WinRegion, portPriv->pCompositeClip);
 
+#if 0
   /* that's all if it's totally obscured and video already off */
   if(!REGION_NOTEMPTY(pScreen, &ClipRegion) && !portPriv->isOn)
 	goto CLIP_VIDEO_BAILOUT;
+#endif
 
   /* turn off the video if it's on */  
   if(portPriv->isOn) { 

@@ -801,7 +801,7 @@ xedit.c:
  + Added the code for creation the dirwindow to this file.
 
 
-# 2 Apr 1999
+#2638 2 Apr 1999
 -- Xaw --
  + Added xpm pixmaps support to the library. This time, it is required to
    compile Xaw with -DUSE_XPM.
@@ -819,5 +819,36 @@ xedit.c:
    directories, due to deferencing a null pointer.
 
 
+#2662 10 Apr 1999
+-- Xaw --
+ + Corrected the problems gererated in my last patch. I was compiling with
+   -DUSE_XPM defined, and did'nt realize that the patch would not compile
+   without it. Just ifdef'ed again the code to avoid warnings or dead code.
 
-$XFree86: xc/lib/Xaw/Changelog,v 3.15 1999/03/14 03:21:10 dawes Exp $
+-- xedit --
+ + Added a ispell interface to xedit. Sorry for not documenting enough about it 
+   the man page, but here is a small explanation of the new funcionality:
+    Replace:	Replace's the selected word.
+    All (right side of Replace button): Replaces all occurrences of the selected
+				        word.
+    Undo:	When this button is sensitive, allow undoing the last replace,
+		this is useful when doing a incorrect "Replace All" action.
+    Ignore:	Ignore this word, and continues spell checking.
+    All (right side of Ignore button): Ignore any further ocurrences of the
+				       selected word.
+    Add:	Add's the selected word to the user's private dictionary.
+    Suspend:	Go back to text edition, but does not kill the ispell process,
+		This is useful if you have a really big dictionary or slow
+		machine. I believe it is mostly useful to keep in memory
+		the words selected to be ignored, but that you don't want to
+		add to your private dictionary.
+    Close:	Kill the ispell process, and go back to text edition.
+		Automatically saves the user's private dictionary.
+   When pressing the Add button, the word in the "Mispelled word:" field is
+   added to the user private dictionary (normally ~/.ispell_*). When pressing
+   the Replace button, the text in the "Replace with:" field is used.
+   If no word is selected in the "Suggestions:" field, this mean that the
+   selected word was not found in the ispell dictionary.
+  
+
+$XFree86: xc/lib/Xaw/Changelog,v 3.16 1999/04/04 08:46:01 dawes Exp $

@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.10 1999/04/04 08:46:02 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.11 1999/04/04 10:05:25 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -474,7 +474,9 @@ static void
 XawSimpleMenuRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attrs)
 {
   SimpleMenuWidget smw = (SimpleMenuWidget)w;
+#ifdef USE_XPM
     XawPixmap *pixmap;
+#endif
 
     attrs->cursor = smw->simple_menu.cursor;
     *mask |= CWCursor;
@@ -490,14 +492,14 @@ XawSimpleMenuRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attrs)
 
   (*Superclass->core_class.realize)(w, mask, attrs);
 
+#ifdef USE_XPM
     if (w->core.background_pixmap > XtUnspecifiedPixmap) {
 	pixmap = XawPixmapFromXPixmap(w->core.background_pixmap, XtScreen(w),
 				      w->core.colormap, w->core.depth);
-#ifdef USE_XPM
 	if (pixmap && pixmap->mask)
 	    XawReshapeWidget(w, pixmap);
-#endif
     }
+#endif
 }
 
 /*
@@ -588,6 +590,7 @@ XawSimpleMenuSetValues(Widget current, Widget request, Widget cnew,
       ret_val = True;
     }
 
+#ifdef USE_XPM
     if (smw_old->core.background_pixmap != smw_new->core.background_pixmap) {
 	XawPixmap *opix, *npix;
 
@@ -595,11 +598,10 @@ XawSimpleMenuSetValues(Widget current, Widget request, Widget cnew,
 				    smw_old->core.colormap, smw_old->core.depth);
 	npix = XawPixmapFromXPixmap(smw_new->core.background_pixmap, XtScreen(smw_new),
 				    smw_new->core.colormap, smw_new->core.depth);
-#ifdef USE_XPM
 	if ((npix && npix->mask) || (opix && opix->mask))
 	    XawReshapeWidget(cnew, npix);
-#endif
     }
+#endif
 
     if (layout)
     Layout(cnew, NULL, NULL);

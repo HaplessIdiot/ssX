@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.1 1999/03/06 13:12:39 dawes Exp $ */
 
 Bool  fbdevHWGetRec(ScrnInfoPtr pScrn);
 void  fbdevHWFreeRec(ScrnInfoPtr pScrn);
@@ -12,6 +12,7 @@ int   fbdevHWGetType(ScrnInfoPtr pScrn);
 int   fbdevHWGetVidmem(ScrnInfoPtr pScrn);
 
 void* fbdevHWMapVidmem(ScrnInfoPtr pScrn);
+int   fbdevHWLinearOffset(ScrnInfoPtr pScrn);
 Bool  fbdevHWUnmapVidmem(ScrnInfoPtr pScrn);
 void* fbdevHWMapMMIO(ScrnInfoPtr pScrn);
 Bool  fbdevHWUnmapMMIO(ScrnInfoPtr pScrn);

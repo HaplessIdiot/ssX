@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.91 1999/04/04 08:45:58 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.92 1999/04/05 08:28:21 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -278,7 +278,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #define AsmDefines		-DUSE_GAS
 #endif
 #endif
-#if UseElfFormat && !defined(PpcArchitecture)
+#if UseElfFormat
 #ifndef DoLoadableServer
 #define DoLoadableServer	YES
 #endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.15 1998/09/20 14:41:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/loader.h,v 1.16 1999/01/03 03:58:45 dawes Exp $ */
 
 /*
  *
@@ -136,7 +136,7 @@ extern int		   nCommons;
  * are mapped to either to the regular Xserver functions, or in a couple
  * of special cases, mapped to the C library functions.
  */
-#if !defined(PowerMAX_OS) && !(defined(linux) && defined(__alpha__))
+#if !defined(PowerMAX_OS) && !(defined(linux) && (defined(__alpha__) || defined(__powerpc__)))
 #define xf86loadermalloc(size) xalloc(size)
 #define xf86loaderrealloc(ptr,size) xrealloc(ptr,size)
 #define xf86loadercalloc(num,size) xcalloc(num,size)

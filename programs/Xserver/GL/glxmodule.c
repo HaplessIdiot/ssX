@@ -35,6 +35,7 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 #include "xf86Module.h"
 #include "colormap.h"
+#include "micmap.h"
 
 static MODULESETUPPROTO(glxSetup);
 
@@ -53,26 +54,7 @@ ExtensionModule XF86DRIExt =
 #endif
 
 extern void GlxExtensionInit(INITARGS);
-extern Bool GlxInitVisuals(
-    VisualPtr *         visualp,
-    DepthPtr *          depthp,
-    int *               nvisualp,
-    int *               ndepthp,
-    int *               rootDepthp,
-    VisualID *          defaultVisp,
-    unsigned long       sizes,
-    int                 bitsPerRGB
-);
-extern Bool (*GlxInitVisualsPtr)(
-    VisualPtr *         visualp,
-    DepthPtr *          depthp,
-    int *               nvisualp,
-    int *               ndepthp,
-    int *               rootDepthp,
-    VisualID *          defaultVisp,
-    unsigned long       sizes,
-    int                 bitsPerRGB
-);
+extern void GlxWrapInitVisuals(miInitVisualsProcPtr *);
 
 ExtensionModule GLXExt =
 {
@@ -114,8 +96,8 @@ glxSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 #endif
     LoadExtension(&GLXExt);
 
-    /* Hook into the init visuals routine in cfbcmap.c */
-    GlxInitVisualsPtr = GlxInitVisuals;
+    /* Wrap the init visuals routine in micmap.c */
+    GlxWrapInitVisuals(&miInitVisualsProc);
 
     GLcore = LoadSubModule(module, GLcoreName, NULL, NULL, NULL, NULL, 
 			   errmaj, errmin);

@@ -69,7 +69,7 @@ in this Software without prior written authorization from The Open Group.
 *                                                               *
 *****************************************************************/
 
-/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.2 1999/01/13 08:31:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/mivaltree.c,v 1.3 1999/01/26 10:40:49 dawes Exp $ */
 
  /* 
   * Aug '86: Susan Angebranndt -- original code
@@ -98,6 +98,7 @@ in this Software without prior written authorization from The Open Group.
 /*
  * Compute the visibility of a shaped window
  */
+int
 miShapedWindowIn (pScreen, universe, bounding, rect, x, y)
     ScreenPtr	pScreen;
     RegionPtr	universe, bounding;
@@ -519,12 +520,9 @@ PanoramiXComputeClips (pParent, pScreen, universe, panoramiXuniverse, kind, expo
     RegionPtr		borderVisible;
     Bool		resized;
     RegionRec		PanoramiXchildUniverse;
-    int			j, this_dx, this_dy;
+    int			j;
     PanoramiXWindow 	*pPanoramiXWin = PanoramiXWinRoot;
     RegionRec           PanoramiXborderSize;
-    register WindowPtr	pWin;
-    RegionRec           totalClip;
-    RegionRec		childClip;
 
     /*
      * Figure out the new visibility of this window.
@@ -986,7 +984,6 @@ miValidateTree (pParent, pChild, kind)
     int			viewvals;
     Bool		forward;
 #ifdef PANORAMIX
-    Bool		OnScreen;
     RegionRec	  	PanoramiXtotalClip;  /* Total PanoramiX clipping region 
 					      * available to the marked children. */
     RegionRec           PanoramiXborderSize;

@@ -1,10 +1,18 @@
-/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.2 1998/07/26 02:33:07 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/mi/micmap.h,v 1.3 1998/11/22 10:37:43 dawes Exp $ */
+
+#include "colormapst.h"
 
 #ifndef _MICMAP_H_
 #define _MICMAP_H_
 
 extern ColormapPtr miInstalledMaps[MAXSCREENS];
 
+typedef Bool (* miInitVisualsProcPtr)(VisualPtr *, DepthPtr *, int *, int *,
+					int *, VisualID *, unsigned long, int,
+					int);
+
+extern miInitVisualsProcPtr miInitVisualsProc;
+					
 int miListInstalledColormaps(ScreenPtr pScreen, Colormap *pmaps);
 void miInstallColormap(ColormapPtr pmap);
 void miUninstallColormap(ColormapPtr pmap);
@@ -19,6 +27,7 @@ Bool miSetVisualTypes(int, int, int, int);
 int miGetDefaultVisualMask(int);
 Bool miInitVisuals(VisualPtr *, DepthPtr *, int *, int *, int *, VisualID *,
 			unsigned long, int, int);
+void miResetInitVisuals(void);
 
 #define MAX_PSEUDO_DEPTH	10
 #define MIN_TRUE_DEPTH		6

@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.18 1999/03/14 03:22:46 dawes Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.19 1999/03/28 15:33:24 dawes Exp $
   -->
 <HTML>
 <HEAD>
@@ -41,6 +41,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_95">Patch #95 - 1999/4/5 - XFree86 3.9Ph</A>
 <LI><A HREF="#xterm_94">Patch #94 - 1999/3/27 - XFree86 3.9Pf</A>
 <LI><A HREF="#xterm_93">Patch #93 - 1999/3/14 - XFree86 3.9Pd</A>
 <LI><A HREF="#xterm_92">Patch #92 - 1999/2/5 - XFree86 3.9Nz</A>
@@ -138,6 +139,53 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_95">Patch #95 - 1999/4/5 - XFree86 3.9Ph</A></H1>
+<ul>
+	<li>modify primary DA response to allow a '1' parameter.
+
+	<li>add printer and national replacment character sets to VT220
+	  primary DA response.
+
+	<li>document primary and secondary DA responses in ctlseqs.ms
+
+	<li>use the patch number (e.g., 95) in the secondary DA response,
+	  providing user applications a means of determining the version
+	  of xterm for feature comparison (request by Bram Moolenaar).
+
+	<li>make xterm respond to secondary DA when the decTerminalId
+	  is set for VT100.
+
+	<li>limit user-defined keys (DECUDK) to VT220-style keyboard
+	  when sunKeyBoard resource is true.
+
+	<li>modify ifdef's for Linux-2.2.x with GLibc-2.1 to work with
+	  Glibc-2.1 and no Unix98 PTY support (patch from From Andreas Jaeger
+	  &lt;aj@arthur.rhein-neckar.de&gt;)
+
+	<li>add optional feature (resource and command-line options) to make
+	  xterm use the pty's sense of erase character on startup, rather than
+	  requiring it to be \177, or set the pty's erase character to match
+	  xterm's configuration.  Note that while $TERMCAP is modified to
+	  reflect the actual configuration, the terminfo kdch1 string is not
+	  (request by Dirk H Hohndel &lt;hohndel@suse.de&gt;)
+
+	<li>improve scripts in vttest to work with newer shells that do not
+	  use 'echo -n'.
+
+	<li>add fonts.sh example script
+
+	<li>correct inequality in handling of "#1" font specification.
+
+	<li>correct call to XGetWMNormalHints() used for computing maximum
+	  screen size; the size hints may not have been set.
+
+	<li>begin implementation of support for wide-characters (configure
+	  option --enable-wide-chars defines OPT_WIDE_CHARS, invoke xterm with
+	  -wc option to activate this feature).  This patch optionally widens
+	  internal data structures, invokes the 16-bit text output rather than
+	  the 8-bit version and adds some tables.
+
+</ul>
 <H1><A NAME="xterm_94">Patch #94 - 1999/3/27 - XFree86 3.9Pf</A></H1>
 <ul>
 	<li>further fixes for terminfo: ka1, ka3, etc., differ between the
@@ -187,7 +235,7 @@ xc/programs/Xserver/hw/xfree86).
 	  program control.
 
 	<li>corrected ifdef's for menus, which did not allow tek4014 to
-	  be suppressed properly (reported by Clark Morgan).
+	  be suppressed properly (reported by Clint Olsen).
 
 	<li>integrated patch from Pavel Roskin
 	  &lt;pavel_roskin@geocities.com&gt; 
