@@ -102,36 +102,48 @@ int (*XvScreenInitProc)(ScreenPtr) = XvScreenInit;
 #endif
 
 
-static XF86VideoAdaptorPtr *GenAdaptors = NULL;
-static int NumGenAdaptors = 0;
+static xf86XVInitGenericAdaptorPtr *GenDrivers = NULL;
+static int NumGenDrivers = 0;
 
 int
-xf86XVRegisterGenericAdaptor(
-   XF86VideoAdaptorPtr *adaptors,
-   int num
+xf86XVRegisterGenericAdaptorDriver(
+    xf86XVInitGenericAdaptorPtr InitFunc
 ){
-  int i;
-  XF86VideoAdaptorPtr *newadaptors;
+  xf86XVInitGenericAdaptorPtr *newdrivers;
 
-  newadaptors = xrealloc(GenAdaptors, sizeof(XF86VideoAdaptorPtr) * 
-			 (num + NumGenAdaptors));
-  if (!newadaptors)
+  newdrivers = xrealloc(GenDrivers, sizeof(xf86XVInitGenericAdaptorPtr) * 
+			(1 + NumGenDrivers));
+  if (!newdrivers)
     return 0;
-  GenAdaptors = newadaptors;
+  GenDrivers = newdrivers;
   
-  for (i=0; i<num && NumGenAdaptors <= 4; i++, NumGenAdaptors++) {
-    GenAdaptors[NumGenAdaptors] = adaptors[i];
-  }
+  GenDrivers[NumGenDrivers++] = InitFunc;
 
-  return i;
+  return 1;
 }
 
 int
 xf86XVListGenericAdaptors(
-   XF86VideoAdaptorPtr **adaptors
+    ScrnInfoPtr          pScrn,
+    XF86VideoAdaptorPtr **adaptors
 ){
-   *adaptors = GenAdaptors;
-   return NumGenAdaptors;
+    int i,j,n,num;
+    XF86VideoAdaptorPtr *DrivAdap,*new;
+
+    num = 0;
+    *adaptors = NULL;
+    for (i = 0; i < NumGenDrivers; i++) {
+	n = GenDrivers[i](pScrn,&DrivAdap);
+	if (0 == n)
+	    continue;
+	new = xrealloc(*adaptors, sizeof(XF86VideoAdaptorPtr) * (num+n));
+	if (NULL == new)
+	    continue;
+	*adaptors = new;
+	for (j = 0; j < n; j++, num++)
+	    (*adaptors)[num] = DrivAdap[j];
+    }
+    return num;
 }
 
 Bool
@@ -1672,3 +1684,43 @@ xf86XVQueryImageAttributes(
 }
 
 
+/****************  Offscreen surface stuff *******************/
+
+typedef struct {
+   XF86OffscreenImagePtr images;
+   int num;
+} OffscreenImageRec;
+
+static OffscreenImageRec OffscreenImages[MAXSCREENS];
+static Bool offscreenInited = FALSE;
+
+Bool 
+xf86XVRegisterOffscreenImages(
+    ScreenPtr pScreen,
+    XF86OffscreenImagePtr images,
+    int num
+){
+    if(!offscreenInited) {
+	bzero(OffscreenImages, sizeof(OffscreenImages[MAXSCREENS]));
+	offscreenInited = TRUE;
+    }
+  
+    OffscreenImages[pScreen->myNum].num = num;
+    OffscreenImages[pScreen->myNum].images = images;
+
+    return TRUE;
+}
+
+XF86OffscreenImagePtr
+xf86XVQueryOffscreenImages(
+   ScreenPtr pScreen,
+   int *num
+){
+   if(!offscreenInited) {
+	*num = 0;
+	return NULL;
+   }
+
+   *num = OffscreenImages[pScreen->myNum].num;
+   return OffscreenImages[pScreen->myNum].images;
+}

@@ -42,6 +42,16 @@ typedef struct {
 } XF86ImageRec, *XF86ImagePtr; 
 
 
+typedef struct {
+  ScrnInfoPtr pScrn;
+  int id;
+  unsigned short width, height;
+  int *pitches; /* bytes */
+  int *offsets; /* in bytes from start of framebuffer */
+  DevUnion devPrivate;  
+} XF86SurfaceRec, *XF86SurfacePtr;
+
+
 typedef int (* PutVideoFuncPtr)( ScrnInfoPtr pScrn, 
 	short vid_x, short vid_y, short drw_x, short drw_y,
 	short vid_w, short vid_h, short drw_w, short drw_h,
@@ -125,6 +135,28 @@ typedef struct {
   QueryImageAttributesFuncPtr QueryImageAttributes;
 } XF86VideoAdaptorRec, *XF86VideoAdaptorPtr;
 
+typedef struct {
+  XF86ImagePtr image;
+  int (*allocate)(ScrnInfoPtr pScrn,
+		  int id,
+		  unsigned short width, 	
+		  unsigned short height,
+		  XF86SurfacePtr surface);
+  int (*free)    (XF86SurfacePtr surface);
+  int (*display) (XF86SurfacePtr surface,
+		  short vid_x, short vid_y, 
+		  short drw_x, short drw_y,
+		  short vid_w, short vid_h, 
+		  short drw_w, short drw_h,
+		  RegionPtr clipBoxes);
+  int (*stop)    (XF86SurfacePtr surface);
+  int (*getAttribute) (XF86SurfacePtr surface, Atom attr, INT32 *value);
+  int (*setAttribute) (XF86SurfacePtr surface, Atom attr, INT32 value);
+  int max_width;
+  int max_height;
+  int num_attributes;
+  XF86AttributePtr attributes;
+} XF86OffscreenImageRec, *XF86OffscreenImagePtr;
 
 Bool
 xf86XVScreenInit(
@@ -133,17 +165,33 @@ xf86XVScreenInit(
    int num
 );
 
+typedef int (* xf86XVInitGenericAdaptorPtr)(ScrnInfoPtr pScrn,
+	XF86VideoAdaptorPtr **Adaptors);
+
 int
-xf86XVRegisterGenericAdaptor(
-   XF86VideoAdaptorPtr 	*Adaptors,
-   int num
+xf86XVRegisterGenericAdaptorDriver(
+    xf86XVInitGenericAdaptorPtr InitFunc
 );
 
 int
 xf86XVListGenericAdaptors(
-   XF86VideoAdaptorPtr 	**Adaptors
+    ScrnInfoPtr          pScrn,
+    XF86VideoAdaptorPtr  **Adaptors
 );
 
+Bool 
+xf86XVRegisterOffscreenImages(
+   ScreenPtr pScreen,
+   XF86OffscreenImagePtr images,
+   int num
+);
+
+XF86OffscreenImagePtr
+xf86XVQueryOffscreenImages(
+   ScreenPtr pScreen,
+   int *num
+);
+   
 
 /*** These are DDX layer privates ***/
 
