@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/Xss/Imakefile,v 3.4 2003/01/16 16:09:06 eich Exp $
+XCOMM $XFree86: xc/lib/Xss/Imakefile,v 3.5 2003/10/26 18:59:49 herrb Exp $
 #define DoNormalLib NormalLibXss
 #define DoSharedLib SharedLibXss
 #define DoExtraLib SharedLibXss
@@ -31,7 +31,7 @@ ALLOC_DEFINES = -DMALLOC_0_RETURNS_NULL
 MANSUFFIX=$(LIBMANSUFFIX)
 InstallManPage(LibName,$(LIBMANDIR))
 #if ExpandManNames
-InstallManPageAliases(LibName,$(MANDIR), XScreenSaverQueryExtension \	@@\
+InstallManPageAliases(LibName,$(LIBMANDIR), XScreenSaverQueryExtension \ @@\
 	XScreenSaverQueryVersion \ 					@@\
 	XScreenSaverAllocInfo \						@@\
 	XScreenSaverQueryInfo \						@@\
