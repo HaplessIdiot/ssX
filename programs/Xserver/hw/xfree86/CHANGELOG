@@ -1,4 +1,6 @@
 XFree86 3.9.16f (xx December 1999)
+3367. Allow MAXCLIENT to be any of 64, 128, 256, or 512 and adjust the
+      resource allocation code as appropriate (#3445, Keith Packard).
 3366. Fix compile problems with Solaris 7 (#3437, Nicholas Brealey).
 3365. Add Riva TNT2 M64 to nv_driver (#3436, Jarno Paananen).
 3364. Add prototypes for Xserver/Xprint and fix various problems with
@@ -9139,4 +9141,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.862 1999/12/13 02:26:17 robin Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.863 1999/12/13 02:32:14 robin Exp $

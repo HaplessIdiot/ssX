@@ -1,14 +1,9 @@
-/* $XConsortium: resource.h,v 1.21 94/04/17 20:26:02 dpw Exp $ */
+/* $TOG: resource.h /main/24 1998/02/09 14:29:47 kaleb $ */
 /***********************************************************
 
-Copyright (c) 1987, 1989  X Consortium
+Copyright 1987, 1989, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included in
 all copies or substantial portions of the Software.
@@ -16,13 +11,13 @@ all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
-X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
 AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall not be
+Except as contained in this notice, the name of The Open Group shall not be
 used in advertising or otherwise to promote the sale, use or other dealings
-in this Software without prior written authorization from the X Consortium.
+in this Software without prior written authorization from The Open Group.
 
 
 Copyright 1987, 1989 by Digital Equipment Corporation, Maynard, Massachusetts.
@@ -85,9 +80,28 @@ typedef unsigned long RESTYPE;
 #define RT_NONE		((RESTYPE)0)
 
 /* bits and fields within a resource id */
-#define CLIENTOFFSET 22					/* client field */
-#define RESOURCE_ID_MASK	0x3FFFFF		/* low 22 bits */
-#define CLIENT_BITS(id) ((id) & 0x1fc00000)		/* hi 7 bits */
+#define RESOURCE_AND_CLIENT_COUNT   29			/* 29 bits for XIDs */
+#if MAXCLIENTS == 64
+#define RESOURCE_CLIENT_BITS	6
+#endif
+#if MAXCLIENTS == 128
+#define RESOURCE_CLIENT_BITS	7
+#endif
+#if MAXCLIENTS == 256
+#define RESOURCE_CLIENT_BITS	8
+#endif
+#if MAXCLIENTS == 512
+#define RESOURCE_CLIENT_BITS	9
+#endif
+/* client field offset */
+#define CLIENTOFFSET	    (RESOURCE_AND_CLIENT_COUNT - RESOURCE_CLIENT_BITS)
+/* resource field */
+#define RESOURCE_ID_MASK	((1 << CLIENTOFFSET) - 1)
+/* client field */
+#define RESOURCE_CLIENT_MASK	(((1 << RESOURCE_CLIENT_BITS) - 1) << CLIENTOFFSET)
+/* extract the client mask from an XID */
+#define CLIENT_BITS(id) ((id) & RESOURCE_CLIENT_MASK)
+/* extract the client id from an XID */
 #define CLIENT_ID(id) ((int)(CLIENT_BITS(id) >> CLIENTOFFSET))
 #define SERVER_BIT		0x20000000		/* use illegal bit */
 
@@ -104,6 +118,14 @@ typedef int (*DeleteType)(
 #if NeedNestedPrototypes
     pointer /*value*/,
     XID /*id*/
+#endif
+);
+
+typedef void (*FindResType)(
+#if NeedNestedPrototypes
+    pointer /*value*/,
+    XID /*id*/,
+    pointer /*cdata*/
 #endif
 );
 
@@ -162,6 +184,15 @@ extern Bool ChangeResourceValue(
 #endif
 );
 
+extern void FindClientResourcesByType(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    RESTYPE /*type*/,
+    FindResType /*func*/,
+    pointer /*cdata*/
+#endif
+);
+
 extern void FreeClientNeverRetainResources(
 #if NeedFunctionPrototypes
     ClientPtr /*client*/
@@ -201,6 +232,49 @@ extern pointer LookupIDByClass(
 #endif
 );
 
+/* These are the access modes that can be passed in the last parameter
+ * to SecurityLookupIDByType/Class.  The Security extension doesn't
+ * currently make much use of these; they're mainly provided as an
+ * example of what you might need for discretionary access control.
+ * You can or these values together to indicate multiple modes
+ * simultaneously.
+ */
+
+#define SecurityUnknownAccess	0	/* don't know intentions */
+#define SecurityReadAccess	(1<<0)	/* inspecting the object */
+#define SecurityWriteAccess	(1<<1)	/* changing the object */
+#define SecurityDestroyAccess	(1<<2)	/* destroying the object */
+
+#ifdef XCSECURITY
+
+extern pointer SecurityLookupIDByType(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    XID /*id*/,
+    RESTYPE /*rtype*/,
+    Mask /*access_mode*/
+#endif
+);
+
+extern pointer SecurityLookupIDByClass(
+#if NeedFunctionPrototypes
+    ClientPtr /*client*/,
+    XID /*id*/,
+    RESTYPE /*classes*/,
+    Mask /*access_mode*/
+#endif
+);
+
+#else /* not XCSECURITY */
+
+#define SecurityLookupIDByType(client, id, rtype, access_mode) \
+        LookupIDByType(id, rtype)
+
+#define SecurityLookupIDByClass(client, id, classes, access_mode) \
+        LookupIDByClass(id, classes)
+
+#endif /* XCSECURITY */
+
 extern void GetXIDRange(
 #if NeedFunctionPrototypes
     int /*client*/,
@@ -212,7 +286,7 @@ extern void GetXIDRange(
 
 extern unsigned int GetXIDList(
 #if NeedFunctionPrototypes
-    ClientPtr /*pClient*/,
+    ClientPtr /*client*/,
     unsigned int /*count*/,
     XID * /*pids*/
 #endif
