@@ -1,5 +1,5 @@
 /* dri_dispatch.h -- built automatically, DO NOT EDIT
-   $Id: dri_dispatch.h,v 1.1 2003/06/30 01:45:10 torrey Exp $ */
+   $Id: dri_dispatch.h,v 1.2 2003/10/09 23:42:32 torrey Exp $ */
 
 DEFUN_LOCAL_VOID (NewList,
     (void *rend, GLuint list, GLenum mode),
@@ -1653,10 +1653,6 @@ DEFUN_LOCAL_VOID (SampleCoverageARB,
     (void *rend, GLclampf value, GLboolean invert),
     (value, invert))
 
-DEFUN_LOCAL_VOID (SamplePassARB,
-    (void *rend, GLenum pass),
-    (pass))
-
 DEFUN_ALIAS_VOID (PolygonOffsetEXT, PolygonOffset,
     (GLfloat factor, GLfloat bias),
     (factor, bias))
@@ -2836,7 +2832,6 @@ do { \
     (d)[452] = (void *) &p ## GetFinalCombinerInputParameterfvNV; \
     (d)[453] = (void *) &p ## GetFinalCombinerInputParameterivNV; \
     (d)[459] = (void *) &p ## SampleCoverageARB; \
-    (d)[460] = (void *) &p ## SamplePassARB; \
     (d)[540] = (void *) &p ## PointParameterfEXT; \
     (d)[541] = (void *) &p ## PointParameterfvEXT; \
     (d)[544] = (void *) &p ## FogCoordfEXT; \
