@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.161 1997/02/25 14:20:32 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/s3.c,v 3.162 1997/03/22 09:34:53 hohndel Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * 
@@ -211,6 +211,7 @@ ScrnInfoRec s3InfoRec =
 #endif
 };
 
+#if defined(XFree86LOADER)
 XF86ModuleVersionInfo s3VersRec =
 {
 	"libs3.a", 
@@ -277,6 +278,8 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif  /* XFree86LOADER */
+
 
 typedef struct S3PCIInformation {
    int DevID;
@@ -354,6 +357,7 @@ static SymTabRec s3DacTable[] = {
    { S3_TRIO64_DAC,	"s3_trio" },
    { ATT20C409_DAC,	"att20c409" },
    { SS2410_DAC,	"ss2410" },
+   { S3_TRIO64V2_DAC,	"s3_trio64v2" },
    { -1,		"" },
 };
 

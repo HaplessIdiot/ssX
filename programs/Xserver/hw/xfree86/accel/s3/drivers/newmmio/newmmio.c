@@ -3,7 +3,7 @@
 
 
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.6 1997/02/18 22:26:20 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/newmmio/newmmio.c,v 3.7 1997/03/22 09:35:09 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -31,6 +31,8 @@
 
 #include "s3.h"
 #include "regs3.h"
+
+#if defined(XFree86LOADER)
 #include "xf86Version.h"
 
 extern char *xf86ModulePath;
@@ -68,6 +70,7 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif  /* XFree86LOADER */
 
 
 static Bool NEWMMIO_Probe();
@@ -140,7 +143,9 @@ NEWMMIO_Probe()
        && !OFLG_ISSET(OPTION_NOLINEAR_MODE, &s3InfoRec.options)) {
       s3InfoRec.chipset = NEWMMIO_Ident(0);
       s3NewMmio = TRUE;
+#if defined(XFree86LOADER)
       LoadModule("libs3newmmio.a", xf86ModulePath);
+#endif
       return(TRUE);
    } else {
       return(FALSE);

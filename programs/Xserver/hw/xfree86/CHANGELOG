@@ -1,3 +1,8 @@
+XFree86 3.2Aq (23 March 1997)
+ 595. Fix building static XF86_S3 (#185, Harald Koenig).
+ 594. Enable loader on OpenBSD (#184, Matthieu Herrb).
+ 593. Add missing files for NV1 (change 591).
+
 XFree86 3.2Ap (22 March 1997)
  592. Fix screen problems with C&T at 24bpp (#182, Nozomi Ytow).
  591. Add NV1 acceleration (#181, David McKay).
@@ -4206,4 +4211,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.434 1997/03/18 11:36:34 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.435 1997/03/22 09:34:33 hohndel Exp $

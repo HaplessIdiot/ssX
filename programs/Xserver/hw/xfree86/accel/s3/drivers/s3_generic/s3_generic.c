@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.6 1996/12/23 06:42:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/s3_generic/s3_generic.c,v 3.7 1997/03/22 09:35:11 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -25,6 +25,8 @@
 /* $XConsortium: s3_generic.c /main/5 1996/02/21 17:34:05 kaleb $ */
 
 #include "s3.h"
+
+#if defined(XFree86LOADER)
 #include "xf86Version.h"
 
 extern char *xf86ModulePath;
@@ -62,6 +64,7 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif  /* XFree86LOADER */
 
 
 static Bool S3_GENERICProbe();
@@ -110,6 +113,8 @@ S3_GENERICProbe()
    }
 
    s3InfoRec.chipset = S3_GENERICIdent(0);
+#if defined(XFree86LOADER)
    LoadModule("libs3pio.a", xf86ModulePath);
+#endif
    return(TRUE);
 }

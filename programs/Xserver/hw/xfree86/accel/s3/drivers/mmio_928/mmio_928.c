@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.9 1996/12/23 06:42:28 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/s3/drivers/mmio_928/mmio_928.c,v 3.10 1997/03/22 09:35:08 hohndel Exp $ */
 /*
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
  *
@@ -26,6 +26,8 @@
 
 #include "s3.h"
 #include "regs3.h"
+
+#if defined(XFree86LOADER)
 #include "xf86Version.h"
 
 extern char *xf86ModulePath;
@@ -63,6 +65,7 @@ ModuleInit(data,magic)
     }
     return;
 }
+#endif  /* XFree86LOADER */
 
 
 static Bool MMIO_928Probe();
@@ -130,7 +133,9 @@ MMIO_928Probe()
    }
 
    s3Mmio928 = TRUE;
+#if defined(XFree86LOADER)
    LoadModule("libs3mmio.a", xf86ModulePath);
+#endif
    return(TRUE);
 
 #else

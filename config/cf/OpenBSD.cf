@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.1 1997/01/05 11:49:33 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/OpenBSD.cf,v 3.2 1997/03/10 10:09:33 hohndel Exp $
 
 #ifndef OSName
 #define OSName			DefaultOSName OSBinaryType
@@ -105,16 +105,26 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #define StandardDefines	-DCSRG_BASED
 #define XawI18nDefines	-DUSE_XWCHAR_STRING -DUSE_XMBTOWC
 
-/* Dynamic loading supported starting in 1.0, but not yet on the Alpha. */
-#if (!defined(AlphaArchitecture) && (OSMajorVersion > 0)) || \
-    (defined(AlphaArchitecture) && 0) /* NOT YET */
-# ifndef BuildDynamicLoading
-#  ifdef ArcArchitecture
-#   define BuildDynamicLoading        NO
-#  else
-#   define BuildDynamicLoading        YES
-#  endif
-# endif
+/*
+ * Dynamic loading supported starting in 1.0 on a.out platforms,
+ * and on all ELF platforms.
+ *
+ * XXX May not be correct on pmax (ELF, but might not have
+ * working shared libs).
+ */
+#if ((OSMajorVersion > 0) && \
+     !defined(AlphaArchitecture) && !defined(MipsArchitecture)) || \
+    UseElfFormat
+#ifndef DoLoadableServer
+#define DoLoadableServer	YES
+#endif
+#ifndef BuildDynamicLoading
+#if DoLoadableServer
+#define BuildDynamicLoading	NO
+#else
+#define BuildDynamicLoading	YES
+#endif
+#endif
 #endif
 
 #ifndef ExtraLibraries
