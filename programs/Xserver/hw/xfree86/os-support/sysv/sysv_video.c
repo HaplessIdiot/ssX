@@ -1,4 +1,5 @@
 /* $XConsortium: sysv_video.c,v 1.1 94/03/28 21:33:15 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Wexelblat <dwex@goblin.org>
