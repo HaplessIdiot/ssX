@@ -3,12 +3,28 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.2 2001/07/01 03:24:57 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessWindow.c,v 1.3 2001/07/03 02:59:56 torrey Exp $ */
 
 #include "rootlessCommon.h"
 #include "rootlessWindow.h"
 
 #include "fb.h"
+
+// PanoramiX/Xinerama creates a copy of every window, one per screen.
+// Windows in rootless mode really can cross screens, so we only want to
+// work with one copy of each.
+#ifdef PANORAMIX
+#include "../Xext/panoramiX.h"
+#include "../Xext/panoramiXsrv.h"
+// LookupIDByType doesn't find root window, but root windows are "real" here.
+// LookupIDByType doesn't find anything when panoramix is off
+#define IS_FAKE_WINDOW(w) \
+    (!noPanoramiXExtension &&  \
+     pWin->parent &&  \
+     !LookupIDByType(w->drawable.id, XRT_WINDOW))
+#else
+#define IS_FAKE_WINDOW(w) (0)
+#endif
 
 
 // RootlessCreateWindow
@@ -183,6 +199,16 @@ RootlessRealizeWindow(WindowPtr pWin)
     Bool result = FALSE;
     RegionRec saveRoot;
     ScreenPtr pScreen = pWin->drawable.pScreen;
+
+    if (IS_FAKE_WINDOW(pWin)) {
+        // Don't map fake windows
+        // They won't get a frame or take time to draw (fixme true?)
+        RL_DEBUG_MSG("realize window: skipping fake window\n");
+        pWin->mapped = FALSE;
+        pWin->realized = FALSE;
+        pWin->viewable = FALSE;
+        return Success;
+    }
 
     RL_DEBUG_MSG("realizewindow start ");
 

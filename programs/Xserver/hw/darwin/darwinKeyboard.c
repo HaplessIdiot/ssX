@@ -36,7 +36,7 @@
 //
 //=============================================================================
 
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.5 2001/04/25 02:23:47 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwinKeyboard.c,v 1.6 2001/07/15 03:12:23 torrey Exp $ */
 
 /*
 ===========================================================================
@@ -315,7 +315,7 @@ static void parse_next_char_code(
  *      Read the appropriate keymapping from a keymapping file.
  */
 Bool DarwinReadKeymapFile(
-    NXKeyMapping        *keyMap )
+    NXKeyMapping        *keyMap)
 {
     struct stat         st;
     NXEventSystemDevice info[20];
@@ -346,7 +346,7 @@ Bool DarwinReadKeymapFile(
 
     // find the keyboard interface and handler id
     size = sizeof( info ) / sizeof( int );
-    if (!NXEventSystemInfo( dfb.hidParam, NX_EVS_DEVICE_INFO,
+    if (!NXEventSystemInfo( hid.paramConnect, NX_EVS_DEVICE_INFO,
                             (NXEventSystemInfoType) info, &size )) {
         ErrorF("Error reading event status driver info.\n");
         return FALSE;
@@ -434,7 +434,7 @@ void DarwinKeyboardInit(
     // Open a shared connection to the HID System.
     // Note that the Event Status Driver is really just a wrapper
     // for a kIOHIDParamConnectType connection.
-    assert( dfb.hidParam = NXOpenEventStatus() );
+    assert( hid.paramConnect = NXOpenEventStatus() );
 
     if (darwinKeymapFile) {
         haveKeymap = DarwinReadKeymapFile(&keyMap);
@@ -449,9 +449,9 @@ void DarwinKeyboardInit(
 
     if (!haveKeymap) {
         // get the Darwin keyboard map
-        keyMap.size = NXKeyMappingLength( dfb.hidParam );
+        keyMap.size = NXKeyMappingLength( hid.paramConnect );
         keyMap.mapping = (char*) xalloc( keyMap.size );
-        assert( NXGetKeyMapping( dfb.hidParam, &keyMap ));
+        assert( NXGetKeyMapping( hid.paramConnect, &keyMap ));
     }
 
     keyMapStream = new_data_stream( (unsigned char const*)keyMap.mapping,

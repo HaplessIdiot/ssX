@@ -5,7 +5,7 @@
  * By Gregory Robert Parker
  *
  **************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.10 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartz.c,v 1.11 2001/07/01 02:13:41 torrey Exp $ */
 
 // X headers
 #include "scrnintstr.h"
@@ -28,10 +28,10 @@
 #include "quartzCursor.h"
 #include "rootlessAqua.h"
 
-#define kDarwinMaxScreens 100
-static ScreenPtr darwinScreens[kDarwinMaxScreens];
-static int darwinNumScreens = 0;
 static BOOL xhidden = FALSE;
+
+static CGDisplayCount       quartzDisplayCount = 0;
+static CGDirectDisplayID   *quartzDisplayList = NULL;
 
 
 /*
@@ -73,9 +73,9 @@ static void *QuartzPMThread(void *arg)
             if (!xhidden) {
                 int i;
 
-                for (i = 0; i < darwinNumScreens; i++) {
-                    if (darwinScreens[i]) 
-                        xf86SetRootClip(darwinScreens[i], true);
+                for (i = 0; i < screenInfo.numScreens; i++) {
+                    if (screenInfo.screens[i]) 
+                        xf86SetRootClip(screenInfo.screens[i], true);
                 }
             }
         }
@@ -86,46 +86,106 @@ static void *QuartzPMThread(void *arg)
 
 
 /* 
- * QuartzAddScreen
- *  Quartz keeps a list of all screens for QuartzShow and QuartzHide.
- *  FIXME: So does ddx, use that instead.
+ * QuartzFSAddScreen
+ *  Do initialization of each screen for Quartz in full screen mode.
  */
-Bool QuartzAddScreen(ScreenPtr pScreen) 
+Bool QuartzFSAddScreen(
+    int index,
+    ScreenPtr pScreen)
 {
-    if (darwinNumScreens == kDarwinMaxScreens) {
-        return FALSE;
-    }
+    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+    CGDirectDisplayID cgID = quartzDisplayList[index];
+    CGRect bounds;
 
-    darwinScreens[darwinNumScreens++] = pScreen;
+    dfb->pixelInfo.pixelType = kIORGBDirectPixels;	// FIXME
+    dfb->pixelInfo.bitsPerComponent = CGDisplayBitsPerSample(cgID);
+    dfb->pixelInfo.componentCount = CGDisplaySamplesPerPixel(cgID);
+#if FALSE
+    // FIXME: endian and 24 bit color specific
+    dfb->pixelInfo.componentMasks[0] = 0x00ff0000;
+    dfb->pixelInfo.componentMasks[1] = 0x0000ff00;
+    dfb->pixelInfo.componentMasks[2] = 0x000000ff;
+#endif
 
-    // setup cursor support
-    if (! QuartzInitCursor(pScreen)) {
-        return FALSE;
-    }
+    bounds = CGDisplayBounds(cgID);
+    dfb->x = bounds.origin.x;
+    // flip so (0, 0) is top left of main screen
+    dfb->y = CGDisplayBounds(kCGDirectMainDisplay).size.height - 
+                bounds.size.height - bounds.origin.y;
+    dfb->width  = bounds.size.width;
+    dfb->height = bounds.size.height;
+    dfb->pitch = CGDisplayBytesPerRow(cgID);
+    dfb->bitsPerPixel = CGDisplayBitsPerPixel(cgID);
+    dfb->colorBitsPerPixel = (dfb->pixelInfo.componentCount * 
+                              dfb->pixelInfo.bitsPerComponent);
+
+    dfb->framebuffer = CGDisplayBaseAddress(cgID);
 
     // initialize colormap handling as needed
-    if (dfb.pixelInfo.pixelType == kIOCLUTPixels) {
+    if (dfb->pixelInfo.pixelType == kIOCLUTPixels) {
         pScreen->StoreColors = QuartzStoreColors;
-    }
-
-    // do special rootless initialization if needed
-    if (quartzRootless) {
-        if (! AquaAddScreen(pScreen))
-            return FALSE;
     }
 
     return TRUE;
 }
 
 
-/* 
+/*
+ * QuartzAddScreen
+ *  Do mode dependent initialization of each screen for Quartz.
+ */
+Bool QuartzAddScreen(
+    int index,
+    ScreenPtr pScreen)
+{
+    // do full screen or rootless specific initialization
+    if (quartzRootless) {
+        return AquaAddScreen(index, pScreen);
+    } else {
+        return QuartzFSAddScreen(index, pScreen); 
+    }
+}
+
+
+/*
+ * QuartzSetupScreen
+ *  Finalize mode specific setup of each screen.
+ */
+Bool QuartzSetupScreen(
+    int index,
+    ScreenPtr pScreen)
+{
+    // setup cursor support
+    if (! QuartzInitCursor(pScreen))
+        return FALSE;
+
+    // do full screen or rootless specific setup
+    if (quartzRootless) {
+        if (! AquaSetupScreen(index, pScreen))
+            return FALSE;
+    } else {
+        // capture full screen because X doesn't like read-only framebuffer
+        CGDisplayCapture(quartzDisplayList[index]); 
+    }
+
+    return TRUE;
+}
+
+
+/*
  * QuartzCapture
  *  Capture the screen so we can draw.
  */
 void QuartzCapture(void)
 {
-    if (!CGDisplayIsCaptured(kCGDirectMainDisplay) && !quartzRootless) {
-        CGDisplayCapture(kCGDirectMainDisplay);
+    int i;
+
+    for (i = 0; i < quartzDisplayCount; i++) {
+        CGDirectDisplayID cgID = quartzDisplayList[i];
+
+        if (!CGDisplayIsCaptured(cgID) && !quartzRootless) {
+            CGDisplayCapture(cgID);
+        }
     }
 }
 
@@ -136,58 +196,49 @@ void QuartzCapture(void)
  */
 static void QuartzRelease(void)
 {
-    if (CGDisplayIsCaptured(kCGDirectMainDisplay) && !quartzRootless) {
-        CGDisplayRelease(kCGDirectMainDisplay);
+    int i;
+
+    for (i = 0; i < quartzDisplayCount; i++) {
+        CGDirectDisplayID cgID = quartzDisplayList[i];
+
+        if (CGDisplayIsCaptured(cgID) && !quartzRootless) {
+            CGDisplayRelease(cgID);
+        }
+        QuartzMessageMainThread(kQuartzServerHidden);
     }
-    QuartzMessageMainThread(kQuartzServerHidden);
 }
 
 
 /*
- * QuartzDisplayInit
- *  Init the framebuffer and claim the display from CoreGraphics.
+ * QuartzFSDisplayInit
+ *  Find all the CoreGraphics displays.
  */
-static void QuartzDisplayInit(void) 
+static void QuartzFSDisplayInit(void) 
 {
-    dfb.pixelInfo.pixelType = kIORGBDirectPixels;
-    dfb.pixelInfo.bitsPerComponent=CGDisplayBitsPerSample(kCGDirectMainDisplay);
-    dfb.pixelInfo.componentCount=CGDisplaySamplesPerPixel(kCGDirectMainDisplay);
-#if FALSE
-    // FIXME: endian and 24 bit color specific
-    dfb.pixelInfo.componentMasks[0] = 0x00ff0000;
-    dfb.pixelInfo.componentMasks[1] = 0x0000ff00;
-    dfb.pixelInfo.componentMasks[2] = 0x000000ff;
-#endif
+    CGGetActiveDisplayList(0, NULL, &quartzDisplayCount);
+    quartzDisplayList = xalloc(quartzDisplayCount * sizeof(CGDirectDisplayID));
+    CGGetActiveDisplayList(quartzDisplayCount, quartzDisplayList, 
+                           &quartzDisplayCount);
 
-    dfb.width  = CGDisplayPixelsWide(kCGDirectMainDisplay);
-    dfb.height = CGDisplayPixelsHigh(kCGDirectMainDisplay);
-    dfb.pitch = CGDisplayBytesPerRow(kCGDirectMainDisplay);
-    dfb.bitsPerPixel = CGDisplayBitsPerPixel(kCGDirectMainDisplay);
-    dfb.colorBitsPerPixel = (dfb.pixelInfo.componentCount * 
-                            dfb.pixelInfo.bitsPerComponent);
-
-    dfb.framebuffer = CGDisplayBaseAddress(kCGDirectMainDisplay);
-
-    // need to capture because X doesn't like read-only framebuffer...
-    QuartzCapture(); 
+    darwinScreensFound = quartzDisplayCount;
     atexit(QuartzRelease);
 }
 
 
 /*
- * QuartzOsVendorInit
+ * QuartzInitOutput
  *  Quartz display initialization.
  */
-void QuartzOsVendorInit(void)
+void QuartzInitOutput(void)
 {
     QuartzAudioInit();
 
     if (quartzRootless) {
         ErrorF("Display mode: Rootless Quartz\n");
-        AquaGlueDisplayInit();
+        AquaDisplayInit();
     } else {
         ErrorF("Display mode: Full screen Quartz\n");
-        QuartzDisplayInit();
+        QuartzFSDisplayInit();
     }
 }
 
@@ -204,11 +255,11 @@ void QuartzShow(
     int i;
 
     if (xhidden) {
-        for (i = 0; i < darwinNumScreens; i++) {
-            if (darwinScreens[i]) {
+        for (i = 0; i < screenInfo.numScreens; i++) {
+            if (screenInfo.screens[i]) {
 	        if (!quartzRootless)
-                    xf86SetRootClip(darwinScreens[i], true);
-                QuartzResumeXCursor(darwinScreens[i], x, y);
+                    xf86SetRootClip(screenInfo.screens[i], TRUE);
+                QuartzResumeXCursor(screenInfo.screens[i], x, y);
             }
         }
     }
@@ -227,11 +278,11 @@ void QuartzHide(void)
     int i;
 
     if (!xhidden) {
-        for (i = 0; i < darwinNumScreens; i++) {
-            if (darwinScreens[i]) {
-                QuartzSuspendXCursor(darwinScreens[i]);
+        for (i = 0; i < screenInfo.numScreens; i++) {
+            if (screenInfo.screens[i]) {
+                QuartzSuspendXCursor(screenInfo.screens[i]);
                 if (!quartzRootless)
-                    xf86SetRootClip(darwinScreens[i], false);
+                    xf86SetRootClip(screenInfo.screens[i], FALSE);
             }
         }
     } 
@@ -249,9 +300,9 @@ void QuartzGiveUp(void)
 {
     int i;
 
-    for (i = 0; i < darwinNumScreens; i++) {
-        if (darwinScreens[i]) {
-            QuartzSuspendXCursor(darwinScreens[i]);
+    for (i = 0; i < screenInfo.numScreens; i++) {
+        if (screenInfo.screens[i]) {
+            QuartzSuspendXCursor(screenInfo.screens[i]);
         }
     }
     QuartzRelease();

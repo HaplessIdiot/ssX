@@ -4,10 +4,10 @@
  * This code acts as a glue between the generic rootless X server code
  * and the Aqua specific implementation, which includes definitions that
  * conflict with stardard X types.
- * 
+ *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.1 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaGlue.c,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
 
 #include "regionstr.h"
 #include "scrnintstr.h"
@@ -17,85 +17,100 @@
 #include "rootlessAqua.h"
 #include "rootlessAquaImp.h"
 #include "rootless.h"
+#include "globals.h" // dixScreenOrigins[]
 
 
 /////////////////////////////////////////
 // Rootless mode callback glue
 
-static void 
-AquaGlueCreateFrame(ScreenPtr pScreen, RootlessFramePtr pFrame, 
-		    RootlessFramePtr pUpper)
+static void
+AquaGlueCreateFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
+                    RootlessFramePtr pUpper)
 {
-    // fixme won't work for multi-screen
-    // fixme hardcoded monitor stuff
+    int sx = dixScreenOrigins[pScreen->myNum].x;
+    int sy = dixScreenOrigins[pScreen->myNum].y;
 
     pFrame->devPrivate = AquaNewWindow(pUpper ? pUpper->devPrivate : NULL,
-				       pFrame->x,pFrame->y,pFrame->w,pFrame->h,
-				       pFrame->isRoot);
+                                       pFrame->x+sx, pFrame->y+sy,
+                                       pFrame->w, pFrame->h,
+                                       pFrame->isRoot);
     AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData,
                   &pFrame->bytesPerRow, &pFrame->depth,
                   &pFrame->bitsPerPixel);
 }
 
 
-static void 
+static void
 AquaGlueDestroyFrame(ScreenPtr pScreen, RootlessFramePtr pFrame)
 {
     AquaDestroyWindow(pFrame->devPrivate);
 }
 
-static void 
-AquaGlueMoveFrame(ScreenPtr pScreen, RootlessFramePtr pFrame, 
-		  int oldX, int oldY)
+static void
+AquaGlueMoveFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
+                  int oldX, int oldY)
 {
-    AquaMoveWindow(pFrame->devPrivate, pFrame->x, pFrame->y);
+    int sx = dixScreenOrigins[pScreen->myNum].x;
+    int sy = dixScreenOrigins[pScreen->myNum].y;
+
+    AquaMoveWindow(pFrame->devPrivate, pFrame->x+sx, pFrame->y+sy);
 }
 
 
-static void 
-AquaGlueStartResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame, 
-			 int oldX, int oldY, 
-			 unsigned int oldW, unsigned int oldH)
+static void
+AquaGlueStartResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
+                         int oldX, int oldY,
+                         unsigned int oldW, unsigned int oldH)
 {
-    AquaStartResizeWindow(pFrame->devPrivate, 
-			  pFrame->x, pFrame->y, pFrame->w, pFrame->h);
-    AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData, 
-                  &pFrame->bytesPerRow, &pFrame->depth, 
+    int sx = dixScreenOrigins[pScreen->myNum].x;
+    int sy = dixScreenOrigins[pScreen->myNum].y;
+
+    AquaStartResizeWindow(pFrame->devPrivate,
+                          pFrame->x+sx, pFrame->y+sy, pFrame->w, pFrame->h);
+    AquaGetPixmap(pFrame->devPrivate, &pFrame->pixelData,
+                  &pFrame->bytesPerRow, &pFrame->depth,
                   &pFrame->bitsPerPixel);
 }
 
-static void 
-AquaGlueFinishResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame, 
-			  int oldX, int oldY, 
-			  unsigned int oldW, unsigned int oldH)
+static void
+AquaGlueFinishResizeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
+                          int oldX, int oldY,
+                          unsigned int oldW, unsigned int oldH)
 {
-    AquaFinishResizeWindow(pFrame->devPrivate, 
-			   pFrame->x, pFrame->y, pFrame->w, pFrame->h);
+    int sx = dixScreenOrigins[pScreen->myNum].x;
+    int sy = dixScreenOrigins[pScreen->myNum].y;
+
+    AquaFinishResizeWindow(pFrame->devPrivate,
+                           pFrame->x+sx, pFrame->y+sy, pFrame->w, pFrame->h);
 }
 
 
-static void 
-AquaGlueRestackFrame(ScreenPtr pScreen, RootlessFramePtr pFrame, 
-                     RootlessFramePtr pOldPrev, 
+static void
+AquaGlueRestackFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
+                     RootlessFramePtr pOldPrev,
                      RootlessFramePtr pNewPrev)
 {
-    AquaRestackWindow(pFrame->devPrivate, 
-		      pNewPrev ? pNewPrev->devPrivate : NULL);
+    AquaRestackWindow(pFrame->devPrivate,
+                      pNewPrev ? pNewPrev->devPrivate : NULL);
 }
 
 static void
 AquaGlueReshapeFrame(ScreenPtr pScreen, RootlessFramePtr pFrame,
-		     RegionPtr pNewShape)
+                     RegionPtr pNewShape)
 {
+    int sx = dixScreenOrigins[pScreen->myNum].x;
+    int sy = dixScreenOrigins[pScreen->myNum].y;
+
     if (pFrame->isRoot) return; // shouldn't happen; mi or dix covers this
+    REGION_TRANSLATE(pScreen, pNewShape, sx, sy);
     AquaReshapeWindow(pFrame->devPrivate,
                       (fakeBoxRec *) REGION_RECTS(pNewShape),
                       REGION_NUM_RECTS(pNewShape));
 }
 
-static void 
+static void
 AquaGlueUpdateRegion(ScreenPtr pScreen, RootlessFramePtr pFrame,
-		     RegionPtr pDamage)
+                     RegionPtr pDamage)
 {
     AquaUpdateRects(pFrame->devPrivate,
                     (fakeBoxRec *) REGION_RECTS(pDamage),
@@ -106,8 +121,8 @@ AquaGlueUpdateRegion(ScreenPtr pScreen, RootlessFramePtr pFrame,
 static void
 AquaGlueStartDrawing(ScreenPtr pScreen, RootlessFramePtr pFrame)
 {
-    AquaStartDrawing(pFrame->devPrivate, &pFrame->pixelData, 
-                     &pFrame->bytesPerRow, &pFrame->depth, 
+    AquaStartDrawing(pFrame->devPrivate, &pFrame->pixelData,
+                     &pFrame->bytesPerRow, &pFrame->depth,
                      &pFrame->bitsPerPixel);
 }
 
@@ -119,12 +134,12 @@ AquaGlueStopDrawing(ScreenPtr pScreen, RootlessFramePtr pFrame)
 #endif
 
 static RootlessFrameProcs aquaRootlessProcs = {
-    AquaGlueCreateFrame, 
-    AquaGlueDestroyFrame, 
+    AquaGlueCreateFrame,
+    AquaGlueDestroyFrame,
     AquaGlueMoveFrame,
-    AquaGlueStartResizeFrame, 
-    AquaGlueFinishResizeFrame, 
-    AquaGlueRestackFrame, 
+    AquaGlueStartResizeFrame,
+    AquaGlueFinishResizeFrame,
+    AquaGlueRestackFrame,
     AquaGlueReshapeFrame,
     AquaGlueUpdateRegion
 };
@@ -135,28 +150,44 @@ static RootlessFrameProcs aquaRootlessProcs = {
 // Exported by rootlessAqua.h
 
 /*
- * AquaGlueDisplayInit
- *  Init the framebuffer and record pixmap parameters for the screen.
+ * AquaDisplayInit
+ *  Find all Aqua screens.
  */
-void 
-AquaGlueDisplayInit(void) 
+void
+AquaDisplayInit(void)
 {
-    dfb.pixelInfo.pixelType = kIORGBDirectPixels;
-    AquaDisplayInit(&dfb.width, &dfb.height, &dfb.pitch,
-                    &dfb.pixelInfo.bitsPerComponent,
-                    &dfb.pixelInfo.componentCount, &dfb.bitsPerPixel);
-    dfb.colorBitsPerPixel = 
-        dfb.pixelInfo.bitsPerComponent * dfb.pixelInfo.componentCount;
-
-    // No frame buffer - it's all in window pixmaps.
-    dfb.framebuffer = NULL; // malloc(dfb.pitch * dfb.height); 
+    darwinScreensFound = AquaDisplayCount();
 }
 
 
+/*
+ * AquaAddScreen
+ *  Init the framebuffer and record pixmap parameters for the screen.
+ */
 Bool
-AquaAddScreen(ScreenPtr pScreen)
+AquaAddScreen(int index, ScreenPtr pScreen)
 {
-    if (! RootlessInit(pScreen, &aquaRootlessProcs)) return FALSE;
+    DarwinFramebufferPtr dfb = SCREEN_PRIV(pScreen);
+
+    dfb->pixelInfo.pixelType = kIORGBDirectPixels;
+    AquaScreenInit(index, &dfb->x, &dfb->y, &dfb->width, &dfb->height,
+                    &dfb->pitch, &dfb->pixelInfo.bitsPerComponent,
+                    &dfb->pixelInfo.componentCount, &dfb->bitsPerPixel);
+    dfb->colorBitsPerPixel = dfb->pixelInfo.bitsPerComponent *
+                             dfb->pixelInfo.componentCount;
+
+    // No frame buffer - it's all in window pixmaps.
+    dfb->framebuffer = NULL; // malloc(dfb.pitch * dfb.height);
 
     return TRUE;
+}
+
+/*
+ * AquaSetupScreen
+ *  Setup the screen for rootless access.
+ */
+Bool
+AquaSetupScreen(int index, ScreenPtr pScreen)
+{
+    return RootlessInit(pScreen, &aquaRootlessProcs);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.4 2001/03/24 23:08:53 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.5 2001/04/02 05:39:36 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -10,11 +10,10 @@
 #include "extensions/XKB.h"
 
 typedef struct {
-    pthread_t           hidThread;
     io_connect_t        fbService;
-    io_connect_t        hidService;
-    io_connect_t        hidParam;
     void                *framebuffer;
+    int                 x;
+    int                 y;
     int                 width;
     int                 height;
     int                 pitch;
@@ -22,7 +21,14 @@ typedef struct {
     int                 colorBitsPerPixel;
     IOPixelInformation  pixelInfo;
     StdFBShmem_t        *cursorShmem;
-} DarwinFramebufferRec;
+} DarwinFramebufferRec, *DarwinFramebufferPtr;
+
+typedef struct {
+    pthread_t           thread;
+    io_connect_t        connect;
+    io_connect_t        paramConnect;  
+} DarwinInputRec;
+
 
 void DarwinKeyboardInit(DeviceIntPtr pDev);
 int DarwinModifierKeycode(int modifier, int side);
@@ -34,16 +40,21 @@ void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
 #define kern_assert(x) { if ((x) != KERN_SUCCESS) \
     FatalError("assert failed on line %d of %s with kernel return 0x%x!\n", \
                 __LINE__, __FILE__, x); }
+#define SCREEN_PRIV(pScreen) \
+    ((DarwinFramebufferPtr)pScreen->devPrivates[darwinScreenIndex].ptr)
 
-#define MIN_KEYCODE     XkbMinLegalKeyCode     // unfortunately, this isn't 0...
+
+#define MIN_KEYCODE XkbMinLegalKeyCode     // unfortunately, this isn't 0...
 
 // Global variables from darwin.c
-extern DarwinFramebufferRec dfb;
-extern int                  darwinEventFD;
-extern Bool                 quartz;
-extern UInt32               darwinDesiredWidth, darwinDesiredHeight;
-extern IOIndex              darwinDesiredDepth;
-extern SInt32               darwinDesiredRefresh;
-extern UInt32               darwinScreenNumber;
+extern int              darwinScreenIndex; // index into pScreen.devPrivates
+extern int              darwinScreensFound;
+extern DarwinInputRec   hid;
+extern int              darwinEventFD;
+extern Bool             quartz;
+extern UInt32           darwinDesiredWidth, darwinDesiredHeight;
+extern IOIndex          darwinDesiredDepth;
+extern SInt32           darwinDesiredRefresh;
+extern UInt32           darwinScreenNumber;
 
 #endif	/* _DARWIN_H */

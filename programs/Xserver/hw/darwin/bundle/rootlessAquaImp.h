@@ -3,15 +3,18 @@
  *
  * Greg Parker     gparker@cs.stanford.edu
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.h,v 1.1 2001/06/26 23:29:12 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/rootlessAquaImp.h,v 1.2 2001/07/01 02:13:41 torrey Exp $ */
 
 #ifndef _ROOTLESSAQUAIMP_H
 #define _ROOTLESSAQUAIMP_H
 
 #include "fakeBoxRec.h"
 
-void AquaDisplayInit(int *width, int *height, int *rowBytes, 
-                     unsigned long *bps, unsigned long *spp, int *bpp);
+int AquaDisplayCount();
+
+void AquaScreenInit(int index, int *x, int *y, int *width, int *height,
+                    int *rowBytes, unsigned long *bps, unsigned long *spp,
+                    int *bpp);
 
 void *AquaNewWindow(void *upperw, int x, int y, int w, int h, int isRoot);
 

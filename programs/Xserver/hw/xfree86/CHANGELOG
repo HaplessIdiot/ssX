@@ -1,4 +1,6 @@
 XFree86 4.1.99.1 (xx July 2001)
+ 169. Add multi-monitor support to XDarwin for all display modes using
+      Xinerama (Gregory Parker and Torrey T. Lyons).
  168. Fix 16bpp colour maps on Mach64's (Marc La France).
  167. Fix Mach64 DPMS bug (Marc La France).
  166. Fix bug that prevented hardware cursors on Mach64 CT's (Marc La France).
@@ -13602,4 +13604,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1892 2001/07/31 19:59:49 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1893 2001/08/01 00:44:49 tsi Exp $

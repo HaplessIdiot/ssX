@@ -1,7 +1,7 @@
 /*
  * NSWindow subclass for Mac OS X rootless X server
  */
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/XWindow.m,v 1.1 2001/07/01 02:13:41 torrey Exp $ */
 
 #import "XWindow.h"
 #import "Xserver.h"
@@ -99,7 +99,8 @@
 
 -(BOOL) canBecomeKeyWindow
 {
-    return NO;        }
+    return NO;
+}
 
 // XWindow has no overlapping subviews
 -(BOOL) useOptimizedDrawing
