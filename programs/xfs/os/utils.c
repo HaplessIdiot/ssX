@@ -46,7 +46,7 @@ in this Software without prior written authorization from The Open Group.
  * ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
  * THIS SOFTWARE.
  */
-/* $XFree86: xc/programs/xfs/os/utils.c,v 3.17 2001/12/14 20:01:41 dawes Exp $ */
+/* $XFree86: xc/programs/xfs/os/utils.c,v 3.18 2002/01/07 20:38:30 dawes Exp $ */
 
 #include	<stdio.h>
 #include	<X11/Xos.h>
@@ -212,7 +212,7 @@ GetTimeInMillis(void)
 static void
 usage(void)
 {
-    fprintf(stderr, "usage: %s [-config config_file] [-port tcp_port] [-droppriv] [-daemon] [-nodaemon] [-user user_name]\n",
+    fprintf(stderr, "usage: %s [-config config_file] [-port tcp_port] [-droppriv] [-daemon] [-nodaemon] [-user user_name] [-ls listen_socket]\n",
 	    progname);
     exit(1);
 }
@@ -235,9 +235,7 @@ OsInitAllocator (void)
  *
  * [] denotes optional and ... denotes repitition.
  *
- * The string must be _exactly_ in the above format.  Since this is
- * an internal option used by the font server, it's ok to be strict
- * about the format of the string.
+ * The string must be _exactly_ in the above format. 
  */
 
 void
@@ -259,12 +257,18 @@ ProcessLSoption (char *str)
     OldListenCount = count + 1;
     OldListen = (OldListenRec *) malloc (
 	OldListenCount * sizeof (OldListenRec));
-
+    if (OldListen == NULL) {
+	fprintf(stderr, "ProcessLSoption: malloc error\n");
+	exit(1);
+    }
     ptr = str;
 
     for (i = 0; i < OldListenCount; i++)
     {
 	slash = (char *) strchr (ptr, '/');
+	if (slash == NULL) {
+	    usage();
+	}
 	len = slash - ptr;
 	strncpy (number, ptr, len);
 	number[len] = '\0';
@@ -273,6 +277,9 @@ ProcessLSoption (char *str)
 	ptr = slash + 1;
 
 	slash = (char *) strchr (ptr, '/');
+	if (slash == NULL) {
+	    usage();
+	}
 	len = slash - ptr;
 	strncpy (number, ptr, len);
 	number[len] = '\0';
@@ -285,7 +292,9 @@ ProcessLSoption (char *str)
 	else
 	{
 	    char *comma = (char *) strchr (ptr, ',');
-
+	    if (comma == NULL) {
+		usage();
+	    }
 	    len = comma - ptr;
 	    strncpy (number, ptr, len);
 	    number[len] = '\0';
