@@ -9,7 +9,7 @@
 <date>4 December 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.20 2000/12/04 18:49:56 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.21 2000/12/04 19:31:05 dawes Exp $
 </ident>
 
 <abstract>
@@ -69,12 +69,13 @@ dependencies/limitations, other architectures known to work on
 
 
 <tag>&relvers;:</tag>
-	Support (including acceleration) for Permedia, Permedia 2, 2v
-	(and 2a??) GLINT 500TX, GLINT MX, GLINT Gamma, and Glint Delta
+	Support (including acceleration) for Permedia, Permedia 2, 2v,
+	(and 2a??), 3, GLINT 500TX, GLINT MX, GLINT Gamma, and Glint Delta
 	coproc.  Support is provided by the "glint" driver.
 
 <tag>Summary:</tag>
 	All hardware supported in &legacyvers; is also supported in &relvers;.
+	The Permedia 3 is only supported in &relvers;.
 
 </descrip>
 
