@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.19 2001/11/11 22:45:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winshadddnl.c,v 1.20 2001/11/21 08:51:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -51,6 +51,7 @@
 DEFINE_GUID( IID_IDirectDraw4, 0x9c59509a,0x39bd,0x11d1,0x8c,0x4a,0x00,0xc0,0x4f,0xd9,0x30,0xc5 );
 #endif /* IID_IDirectDraw4 */
 
+
 /*
  * Create a DirectDraw surface for the shadow framebuffer; also create
  * a primary surface object so we can blit to the display.
@@ -58,6 +59,7 @@ DEFINE_GUID( IID_IDirectDraw4, 0x9c59509a,0x39bd,0x11d1,0x8c,0x4a,0x00,0xc0,0x4f
  * Install a DirectDraw clipper on our primary surface object
  * that clips our blits to the unobscured client area of our display window.
  */
+
 Bool
 winAllocateFBShadowDDNL (ScreenPtr pScreen)
 {
@@ -68,11 +70,19 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   DDSURFACEDESC2	ddsdShadow;
   char			*lpSurface = NULL;
   DDPIXELFORMAT		ddpfPrimary;
+  FARPROC		fpDirectDrawCreate = NULL;
+  FARPROC		fpDirectDrawCreateClipper = NULL;
 
 #if CYGDEBUG
   ErrorF ("winAllocateFBShadowDDNL () - w %d h %d d %d\n",
 	  pScreenInfo->dwWidth, pScreenInfo->dwHeight, pScreenInfo->dwDepth);
 #endif
+
+  /* Get proc addresses for DirectDraw */
+  if (!winGetDDProcAddresses (pScreen))
+    return FALSE;
+  fpDirectDrawCreate = pScreenPriv->fpDirectDrawCreate;
+  fpDirectDrawCreateClipper = pScreenPriv->fpDirectDrawCreateClipper;
 
   /* Allocate memory for our shadow surface */
   lpSurface = xalloc (pScreenInfo->dwPaddedWidth * pScreenInfo->dwHeight);
@@ -89,9 +99,9 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
   ZeroMemory (lpSurface, pScreenInfo->dwPaddedWidth * pScreenInfo->dwHeight);
   
   /* Create a clipper */
-  ddrval = DirectDrawCreateClipper (0,
-				    &pScreenPriv->pddcPrimary,
-				    NULL);
+  ddrval = (*fpDirectDrawCreateClipper) (0,
+					 &pScreenPriv->pddcPrimary,
+					 NULL);
   if (FAILED (ddrval))
     {
       ErrorF ("winAllocateFBShadowDDNL () - Could not attach clipper: %08x\n",
@@ -120,9 +130,9 @@ winAllocateFBShadowDDNL (ScreenPtr pScreen)
 #endif
 
   /* Create a DirectDraw object, store the address at lpdd */
-  ddrval = DirectDrawCreate (NULL,
-			     (LPDIRECTDRAW*) &pScreenPriv->pdd,
-			     NULL);
+  ddrval = (*fpDirectDrawCreate) (NULL,
+				  (LPDIRECTDRAW*) &pScreenPriv->pdd,
+				  NULL);
   if (FAILED (ddrval))
     {
       ErrorF ("winAllocateFBShadowDDNL () - Could not start "
@@ -491,6 +501,15 @@ winCloseScreenShadowDDNL (int nIndex, ScreenPtr pScreen)
     {
       IDirectDraw_Release (pScreenPriv->pdd);
       pScreenPriv->pdd = NULL;
+    }
+
+  /* Unload the DirectDraw library */
+  if (pScreenPriv->hmodDirectDraw != NULL)
+    {
+      FreeLibrary (pScreenPriv->hmodDirectDraw);
+      pScreenPriv->hmodDirectDraw = NULL;
+      pScreenPriv->fpDirectDrawCreate = NULL;
+      pScreenPriv->fpDirectDrawCreateClipper = NULL;
     }
 
   /* Kill our window */

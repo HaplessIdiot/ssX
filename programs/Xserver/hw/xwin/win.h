@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.26 2001/11/12 08:47:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/win.h,v 1.27 2001/11/21 08:51:24 alanh Exp $ */
 
 #ifndef _WIN_H_
 #define _WIN_H_
@@ -389,6 +389,11 @@ typedef struct
 
   /* Privates used by both shadow fb DirectDraw servers */
   LPDIRECTDRAWCLIPPER	pddcPrimary;
+  HMODULE		hmodDirectDraw;
+
+  /* DirectDraw procedure pointers */
+  FARPROC				fpDirectDrawCreate;
+  FARPROC				fpDirectDrawCreateClipper;
 
   /* Engine specific functions */
   winAllocateFBProcPtr			pwinAllocateFB;
@@ -610,6 +615,9 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen);
  * wincursor.c
  */
 
+void
+winPointerWarpCursor (ScreenPtr pScreen, int x, int y);
+
 Bool
 winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y);
 
@@ -626,6 +634,9 @@ winDetectSupportedEngines (ScreenPtr pScreen);
 
 Bool
 winSetEngine (ScreenPtr pScreen);
+
+Bool
+winGetDDProcAddresses (ScreenPtr pScreen);
 
 
 /*

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.18 2001/11/12 08:47:53 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.19 2001/11/21 08:51:24 alanh Exp $ */
 
 #include "win.h"
 
@@ -163,10 +163,13 @@ winWindowProc (HWND hwnd, UINT message,
       /* We can't do anything without privates */
       if (pScreenPriv == NULL || pScreenInfo->fIgnoreInput)
 	break;
-      
+
       /* Has the mouse pointer crossed screens? */
       if (pScreen != miPointerCurrentScreen ())
-	miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
+	miPointerSetNewScreen (pScreenInfo->dwScreen,
+			       GET_X_LPARAM(lParam),
+			       GET_Y_LPARAM(lParam));
+
 
       /* Sometimes we hide, sometimes we show */
       if (hwndLastMouse != NULL && hwndLastMouse != hwnd)
@@ -433,10 +436,22 @@ winWindowProc (HWND hwnd, UINT message,
       /* Clear any lingering wheel delta */
       pScreenPriv->iDeltaZ = 0;
 
+      /*
+       * Calling miPointerSetNewScreen doesn't work now that
+       * winCursorWarpPointer actually does something.  This call
+       * now causes the Windows mouse cursor to jump to the upper
+       * left hand corner of any Cygwin/XFree86 window that you
+       * activate in the TaskBar.  That's not good.  Leaving
+       * this call out produces the desired behavior.
+       *       
+       * Harold - 2002/04/10
+       */
+#if 0
       /* Have we changed X screens? */
       if ((LOWORD (wParam) == WA_ACTIVE || LOWORD (wParam) == WA_CLICKACTIVE)
 	  && pScreenPriv->fEnabled && pScreen != miPointerCurrentScreen ())
 	miPointerSetNewScreen (pScreenInfo->dwScreen, 0, 0);
+#endif
 
       /* Handle showing or hiding the mouse */
       if (hwndLastMouse != NULL && hwndLastMouse != hwnd)

@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wincursor.c,v 1.1 2001/04/05 20:13:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wincursor.c,v 1.2 2001/05/14 16:52:33 alanh Exp $ */
 
 #include "win.h"
 
@@ -38,13 +38,38 @@ miPointerScreenFuncRec g_winPointerCursorFuncs =
 {
   winCursorOffScreen,
   winCrossScreen,
-  miPointerWarpCursor
+  winPointerWarpCursor
 };
+
+
+void
+winPointerWarpCursor (ScreenPtr pScreen, int x, int y)
+{
+  winScreenPriv(pScreen);
+  RECT			rcClient;
+
+  /* Get the client area coordinates */
+  GetClientRect (pScreenPriv->hwndScreen, &rcClient);
+  
+  /* Translate the client area coords to screen coords */
+  MapWindowPoints (pScreenPriv->hwndScreen,
+		   HWND_DESKTOP,
+		   (LPPOINT)&rcClient,
+		   2);
+
+  /* 
+   * Update the Windows cursor position so that we don't
+   * immediately warp back to the current position.
+   */
+  SetCursorPos (rcClient.left + x, rcClient.top + y);
+  
+  /* Call the mi warp procedure to do the actual warping in X. */
+  miPointerWarpCursor (pScreen, x, y);
+}
 
 Bool
 winCursorOffScreen (ScreenPtr *ppScreen, int *x, int *y)
 {
-  ErrorF ("winCursorOffScreen () - hmm...\n");
   return FALSE;
 }
 
