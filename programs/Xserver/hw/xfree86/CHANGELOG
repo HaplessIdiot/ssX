@@ -1,4 +1,29 @@
 XFree86 4.2.99.2 (xx October 2002)
+ 404. Enable imake.c to perform correct C library version detection on hppa
+      machines (#5372, Ben Collins).
+ 403. Add new Imake rules to handle C++ programs that don't have man pages
+      (#5371, Branden Robinson).
+ 402. Add a -color app-defaults file for xmessage that exercises some
+      features of Xaw7, and fix the base app-defaults to not use the no
+      longer supported "whenNeeded" value for the "Scroll" resource (#5370,
+      Branden Robinson).
+ 401. Stop the drm module from creating a world-writable directory in /dev.
+      Since dev nodes can only be created by root, there's no need for
+      anyone else to be able to write to /dev/dri (#5367, Brendan O'Dea).
+ 400. Fix a SEGV in lbxproxy because it's ResizeReverseMap() makes assumptions
+      about the atom numbers that can lead to unallocated memory being
+      accessed (#5366, Branden Robinson and Anthony DeRobertis).
+ 399. Increase the wacom driver's timeout for reading data after a request.
+      This is needed for PalmWac (Wacom emulation for PalmOS) (#5364,
+      Mathieu Clabaut).
+ 398. Add Big5-HKSCS to locale.dir, and fix a missing portion in X-TT's
+      Big5HKSCS-Unicode table (#5362, Branden Robinson and ThizLinux
+      Laboratory Ltd).
+ 397. Handle vetoed APM suspend events properly on Linux (#5362,
+      Branden Robinson).
+ 396. Handle ARM and HP-PA separately from m68k and PowerPC in xfree86.cf,
+      and some cleanups (#5360, Branden Robinson).
+ 395. xfs updates and cleanups (#5359, Branden Robinson).
  394. Fix for random crashes when a screen fails to initialise (Marc La France).
  393. Update RandR to include refresh rates (v1.1) (Keith Packard)
  392. Numerous man pages fixes, add some missing manpages (#5365, #5373,
@@ -15326,4 +15351,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2340 2002/10/14 18:01:28 keithp Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2341 2002/10/14 23:07:51 tsi Exp $
