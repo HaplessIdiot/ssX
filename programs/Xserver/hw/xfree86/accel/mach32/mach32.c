@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.5 95/01/16 13:16:29 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.34 1995/03/19 10:12:38 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.35 1995/04/24 05:10:16 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -125,6 +125,7 @@ ScrnInfoRec mach32InfoRec = {
     0,			/* int s3Madjust */
     0,			/* int s3Nadjust */
     0,			/* int s3MClk */
+    0,			/* unsigned long VGAbase */
 };
 
 short mach32alu[16] = {

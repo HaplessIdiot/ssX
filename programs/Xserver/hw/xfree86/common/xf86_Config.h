@@ -1,5 +1,5 @@
 /* $XConsortium: xf86_Config.h,v 1.5 95/01/16 13:17:02 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.23 1995/03/18 10:59:43 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86_Config.h,v 3.24 1995/03/19 10:18:33 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany
  * Copyright 1993 by David Dawes <dawes@physics.su.oz.au>
@@ -66,15 +66,16 @@ typedef struct {
    char *clockprog;
    int textClockValue;
    int BIOSbase;                 /* Base address of video BIOS */
-   unsigned long MemBase;                  /* Frame buffer base address */
-   int IObase;
-   int DACbase;
-   int COPbase;
-   int POSbase;
+   unsigned long MemBase;        /* Frame buffer base address */
+   unsigned int  IObase;
+   unsigned int  DACbase;
+   unsigned long COPbase;
+   unsigned int  POSbase;
    int instance;
    int s3Madjust;
    int s3Nadjust;
    int s3MClk;
+   unsigned long VGAbase;      /* VGA ot XGA 64K aperature base address */
 } GDevRec, *GDevPtr;
 
 typedef struct {
@@ -341,6 +342,7 @@ static SymTabRec KeyMapTab[] = {
 #define CLOCKCHIP	27
 #define S3MNADJUST	28
 #define S3MCLK		29
+#define VGABASE        100
 
 #ifdef INIT_CONFIG
 static SymTabRec DeviceTab[] = {
@@ -367,6 +369,7 @@ static SymTabRec DeviceTab[] = {
   { CLOCKCHIP,	"clockchip" },
   { S3MNADJUST,	"s3mnadjust" },
   { S3MCLK,	"s3mclk" },
+  { VGABASE,    "vgabase" },
   { -1,		"" },
 };
 #endif /* INIT_CONFIG */
@@ -509,6 +512,7 @@ static SymTabRec VisualTab[] = {
 #define XCONFIG_DACBASE         17      /* XF86Config or default */
 #define XCONFIG_COPBASE         18      /* XF86Config or default */
 #define XCONFIG_POSBASE         19      /* XF86Config or default */
+#define XCONFIG_VGABASE         20      /* XF86Config or default */
 
 #define XCONFIG_GIVEN		"(**)"
 #define XCONFIG_PROBED		"(--)"

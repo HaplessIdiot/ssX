@@ -1,5 +1,5 @@
 /* $XConsortium: agx.c,v 1.7 95/01/23 15:33:37 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.27 1995/03/19 10:11:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agx.c,v 3.28 1995/05/27 03:02:27 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -103,7 +103,7 @@ ScrnInfoRec agxInfoRec = {
     0,			/* int maxClock */
     2048,		/* int videoRam */
     0xC0000,            /* int BIOSbase */   
-    0xA0000,		/* unsigned long MemBase */
+    0,	        	/* unsigned long MemBase */
     240, 180,		/* int width, height */
     0,                  /* unsigned long  speedup */
     NULL,	       	/* DisplayModePtr modes */
@@ -116,18 +116,20 @@ ScrnInfoRec agxInfoRec = {
     {0, },		/* xrgb whiteColour */
     agxValidTokens,	/* int *validTokens */
     AGX_PATCHLEVEL,	/* char *patchlevel */
-    0,		 	/* int IObase       */
-    0, 			/* int PALbase      */
-    0,			/* int COPbase      */
-    POS_DEF_IO_BASE,    /* int POSbase      */
+    0,		 	/* unsigned int IObase */
+    0, 			/* unsigned int PALbase */
+    0,			/* unsigned long COPbase */
+    POS_DEF_IO_BASE,    /* unsigned int POSbase      */
     -1,                 /* int instance     */
     0,                  /* int s3Madjust    */
     0,                  /* int s3Nadjust    */
     0,                  /* int s3MClk    */
+    0,			/* unsigned long VGABase */
 };
 
 int vgaInterlaceType = VGA_NO_DIVIDE_VERT;
-void (*vgaSaveScreenFunc)() = vgaHWSaveScreen;
+/* void (*vgaSaveScreenFunc)() = (void (*)())NoopDDA; */
+void (*vgaSaveScreenFunc)() = vgaHWSaveScreen; 
 pointer vgaNewVideoState = NULL;
 
 static Bool LUTissaved = FALSE;
@@ -208,7 +210,7 @@ extern miPointerScreenFuncRec xf86PointerScreenFuncs;
 
 LUTENTRY agxsavedLUT[256];
 
-typedef struct AGXInformationBlock {
+typedef struct XGAInfoBlock {
    unsigned char  instance;
    unsigned char  pos0;
    unsigned char  pos1;
@@ -219,86 +221,119 @@ typedef struct AGXInformationBlock {
    unsigned long  xgaBiosAddress; 
    unsigned long  xgaCoProcAddress;
    unsigned long  xgaIOAddress;
-} AGXInformationBlock;  
+   unsigned long  xgaMemBase;
+} XGAInformationBlock;  
 
-#if 1  /* the graphites don't init the POS data struct */
-static AGXInformationBlock *GetAGXInformationBlock(instance)
+static 
+GetXGAInfoBlock(instance,info)
    int instance;
+   XGAInformationBlock *info;
 {
-   int i, inst, tmp;
+   int i, tmp;
+   int  inst = instance;
    int posBase = agxInfoRec.POSbase;
-   static AGXInformationBlock info = { 0xFF, };
 
-   if( instance < 0 ) {
-      unsigned char in; 
-      for( i=0; i<8; i++) {
-         in = inb(posBase+POS_CONTROL+i);
-         if ((in & 0xF7) == i) 
-            inst = i; 
-         if (xf86Verbose) 
-            ErrorF( "%s %s:POS instance %d - control register value: %02x\n",
-                    XCONFIG_PROBED, agxInfoRec.name,
-                    i, in );
-      }
+   if (xf86Verbose) {
+      ErrorF( "%s %s: XGA POS Register Probe:\n", 
+              XCONFIG_PROBED, agxInfoRec.name );
+  
+      ErrorF( "%s %s: POS Probe Register Base Address: 0x0%x (POSBASE)\n", 
+              OFLG_ISSET(XCONFIG_POSBASE, &agxInfoRec.xconfigFlag) 
+                 ? XCONFIG_GIVEN : XCONFIG_PROBED,
+              agxInfoRec.name, posBase );
    }
 
+   if( inst < 0 || inst > 7 ) {
+      unsigned char in; 
+      inst = -1;
+      for( i=0; i<8; i++) {
+         in = inb(posBase+POS_CONTROL+i);
+         if (in != 0xFF) 
+            inst = i; 
+         if (xf86Verbose) 
+            ErrorF( "%s %s: POS instance %d - control register: 0x%x, \
+value: 0x%02x\n",
+                    XCONFIG_PROBED, agxInfoRec.name,
+                    i, POS_CONTROL+i, in );
+      }
+   }
+   else {
+      if( inb(posBase+POS_CONTROL+inst) == 0xFF )
+         inst = -1;
+   }
+
+   if( inst < 0 ) {
+      return inst;
+   }
    inst &= POS_INSTANCE_MASK;
+   info->instance = inst;
+
    /* enable pos regs for video board instance */
-
-   info.instance = inst;
-
    outb(posBase+POS_CONTROL+inst, 0x08 | inst);
 
-   info.pos0 = inb(posBase);
-   info.pos1 = inb(posBase+1);
-   info.pos2 = inb(posBase+2);
-   info.pos3 = inb(posBase+3);
-   info.pos4 = inb(posBase+4);
-   info.pos5 = inb(posBase+5);
+   info->pos0 = inb(posBase);
+   info->pos1 = inb(posBase+1);
+   info->pos2 = inb(posBase+2);
+   info->pos3 = inb(posBase+3);
+   info->pos4 = inb(posBase+4);
+   info->pos5 = inb(posBase+5);
 
-   info.xgaBiosAddress = ((info.pos2 & POS_CONF_EXT_MEM_MASK) 
+   info->xgaBiosAddress = ((info->pos2 & POS_CONF_EXT_MEM_MASK) 
                              * POS_CONF_EXT_MEM_MULT) + POS_CONF_EXT_MEM_BASE;
 
-   info.xgaCoProcAddress = info.xgaBiosAddress + inst * 0x80;
+   info->xgaCoProcAddress = info->xgaBiosAddress 
+                            + POS_CONF_COPROC_REG_OFF
+                            + inst * 0x80;
 
-   info.xgaIOAddress =  0x2100 | inst<<4;
+   info->xgaIOAddress =  0x2100 | inst<<4;
+
+   info->xgaMemBase  = (info->pos4 & 0xFE)<<24 | (inst&0x07)<<22 ;
 
    /* disable the POS registers */
    outb(posBase+POS_CONTROL+inst, inst);
 
    if (xf86Verbose) {
-      ErrorF( "%s %s: POS base address: %x\n", XCONFIG_GIVEN,
+      ErrorF( "%s %s: POS Probe Register Base Address: 0x0%x (POSBASE)\n", 
+              OFLG_ISSET(XCONFIG_POSBASE, &agxInfoRec.xconfigFlag) 
+                 ? XCONFIG_GIVEN : XCONFIG_PROBED,
               agxInfoRec.name, posBase );
 
-      ErrorF( "%s %s: Instance: %d\n", 
+      ErrorF( "%s %s: POS XGA Instance: %d (INSTANCE)\n", 
               instance < 0 ? XCONFIG_PROBED: XCONFIG_GIVEN,
-              agxInfoRec.name, info.instance);
+              agxInfoRec.name, info->instance);
 
-      ErrorF( "%s %s: POS0 - ID hi:   0x%02x\n", XCONFIG_PROBED,
-              agxInfoRec.name, info.pos0 );
-      ErrorF( "%s %s: POS1 - ID low:  0x%02x\n", XCONFIG_PROBED,
-              agxInfoRec.name, info.pos1 );
-      ErrorF( "%s %s: POS2 - Ext Mem: 0x%02x  (POSbase)\n",
-               XCONFIG_PROBED, agxInfoRec.name, info.pos2 );
-      ErrorF( "%s %s: POS3 - Bus Arb: 0x%02x\n", XCONFIG_PROBED,
-              agxInfoRec.name, info.pos3 );
-      ErrorF( "%s %s: POS4 - Dis Adr: 0x%02x\n", XCONFIG_PROBED,
-              agxInfoRec.name, info.pos4 );
-      ErrorF( "%s %s: POS5 - 1MB Adr: 0x%02x\n", XCONFIG_PROBED,
-              agxInfoRec.name, info.pos5 );
+      ErrorF( "%s %s: POS Register 0 - ID hi:   0x%02x\n", XCONFIG_PROBED,
+              agxInfoRec.name, info->pos0 );
+      ErrorF( "%s %s: POS Register 1 - ID low:  0x%02x\n", XCONFIG_PROBED,
+              agxInfoRec.name, info->pos1 );
+      ErrorF( "%s %s: POS Register 2 - Ext Mem: 0x%02x\n",
+               XCONFIG_PROBED, agxInfoRec.name, info->pos2 );
+      ErrorF( "%s %s: POS Register 3 - Bus Arb: 0x%02x\n", XCONFIG_PROBED,
+              agxInfoRec.name, info->pos3 );
+      ErrorF( "%s %s: POS Register 4 - Dis Adr: 0x%02x\n", XCONFIG_PROBED,
+              agxInfoRec.name, info->pos4 );
+      ErrorF( "%s %s: POS Register 5 - 1MB Adr: 0x%02x\n", XCONFIG_PROBED,
+              agxInfoRec.name, info->pos5 );
 
-      ErrorF( "%s %s: XGA External Memory (BIOS) Address: 0x%06x\n", 
-               XCONFIG_PROBED, agxInfoRec.name, info.xgaBiosAddress );
+      ErrorF( "%s %s: POS XGA External Memory (XGA BIOS) Address: \
+0x%06x (BIOSBASE)\n", 
+               XCONFIG_PROBED, agxInfoRec.name, info->xgaBiosAddress );
 
-      ErrorF( "%s %s: XGA External Memory Register Base Address \
-(COPbase): 0x%06x\n", 
-              XCONFIG_PROBED, agxInfoRec.name, info.xgaCoProcAddress );
+      ErrorF( "%s %s: POS XGA Coproc Mem-Mapped Reg \
+Base Address: 0x%06x (COPBASE)\n", 
+              XCONFIG_PROBED, agxInfoRec.name, info->xgaCoProcAddress );
 
-      ErrorF( "%s %s: XGA I/O Register Base I/O Address: 0x%04x\n", 
-              XCONFIG_PROBED, agxInfoRec.name, info.xgaIOAddress );
+      ErrorF( "%s %s: POS XGA I/O Register Base Address: \
+0x%04x (IOBASE)\n", 
+              XCONFIG_PROBED, agxInfoRec.name, info->xgaIOAddress );
+
+      ErrorF( "%s %s: POS XGA Coproc's Video Memory Base \
+Address: 0x%06x (MEMBASE)\n", 
+              XCONFIG_PROBED, agxInfoRec.name, info->xgaMemBase );
    }
+
+   return inst;
 }
-#endif
    
 /*
  * agxProbe --
@@ -318,137 +353,6 @@ agxProbe()
    vgaBase = NULL;
    vgaVirtBase = NULL;
    vgaPhysBase = NULL;
-
-   if( !StrCaseCmp( agxInfoRec.chipset, "XGA-1" ) )
-      agxChipId = XGA_1;
-   else if( !StrCaseCmp( agxInfoRec.chipset, "XGA-2" ) )
-      agxChipId = XGA_2;
-   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-010" ) )
-      agxChipId = AGX_10;
-   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-014" ) )
-      agxChipId = AGX_14;
-   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-015" ) )
-      agxChipId = AGX_15;
-   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-016" ) )
-      agxChipId = AGX_16;
-   else {
-      agxChipId = 0;
-      agxInfoRec.chipset = "UNKNOWN";
-      ErrorF("%s :Valid AGX/XGA Chip type must be specified.\n",
-             agxInfoRec.name);
-      return FALSE;
-   }
-   ErrorF( "%s %s: Graphics chip type \"%s\"\n", 
-           XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.chipset );
-
-   xf86ClearIOPortList(agxInfoRec.scrnIndex); 
-   
-   if( !OFLG_ISSET(XCONFIG_INSTANCE, &agxInfoRec.xconfigFlag) )
-       agxInfoRec.instance = 6;
-
-   if( XGA_SERIES( agxChipId )
-       && agxInfoRec.instance < 0 ) {
-
-      for( i= 0; i <= POS_LAST_IO_REG; i++ )
-         agxPOSIOPorts[ i ] = agxInfoRec.POSbase + i;
-      xf86AddIOPorts(agxInfoRec.scrnIndex, POS_NUM_IO_REG, agxPOSIOPorts);
-
-      xf86EnableIOPorts(agxInfoRec.scrnIndex);
-
-      GetAGXInformationBlock(-1);
-
-      xf86DisableIOPorts(agxInfoRec.scrnIndex);
-      xf86ClearIOPortList(agxInfoRec.scrnIndex); 
-
-      ErrorF( "%s %s: Specify the instance number in the XGA device \
-section of the XF86Config file.\n", 
-              XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.chipset );
-      return FALSE;
-   }
-
-   if(agxInfoRec.IObase == 0)
-      if(AGX_SERIES(agxChipId))
-          agxInfoRec.IObase = DA_AGX_IO_BASE;
-      else
-          agxInfoRec.IObase = DA_XGA_IO_BASE + (agxInfoRec.instance << 4);
-
-   ErrorF( "%s %s: XGA Instance = %d, I/O Register Base = 0x%04x.\n",
-            XCONFIG_GIVEN, agxInfoRec.name, 
-            agxInfoRec.instance, agxInfoRec.IObase );
-
-   for( i= 0; i <= DA_LAST_IO_REG; i++ )
-      agxDAIOPorts[ i ] = agxInfoRec.IObase + i;
-
-   xf86AddIOPorts(agxInfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-   xf86AddIOPorts(agxInfoRec.scrnIndex, DA_NUM_IO_REG, agxDAIOPorts);
-   xf86EnableIOPorts(agxInfoRec.scrnIndex);
-
-   agxIdxReg   = agxInfoRec.IObase + DA_INDEX_REGISTER;
-   agxApIdxReg = agxInfoRec.IObase + DA_APERATURE_INDEX;
-   agxDAReg    = agxInfoRec.IObase;
-   agxByteData = agxInfoRec.IObase + DA_DATA_BYTE_REG;
-   vgaIOBase   = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
-   vgaPhysBase    = (pointer)agxInfoRec.MemBase;
-   agxPhysVidMem  = vgaPhysBase;
-   xf86RamDacBase = 0x3C0;
-
-   if(AGX_SERIES(agxChipId)) 
-     if (OFLG_ISSET(OPTION_DAC_8_BIT, &agxInfoRec.options)) {
-        xf86Dac8Bit = TRUE; 
-     }
-     else {
-        xf86Dac8Bit = FALSE;
-     }
-   else
-     xf86Dac8Bit = TRUE;
-
-   if (vgaPhysBase) {
-      vgaBase = xf86MapVidMem(agxInfoRec.scrnIndex, VGA_REGION,
-                              (pointer)vgaPhysBase, vgaBankSize);
-      xf86MapDisplay(agxInfoRec.scrnIndex, VGA_REGION); 
-   }
-   if (agxPhysVidMem != vgaPhysBase)  {
-      agxVideoMem = xf86MapVidMem(agxInfoRec.scrnIndex, LINEAR_REGION, 
-                                  agxPhysVidMem, agxBankSize);
-      xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION);
-   }
-   else {
-      agxVideoMem = vgaBase;
-   }
-
-   if(agxInfoRec.COPbase == 0) {
-      if(AGX_SERIES(agxChipId)) {
-         outb(agxIdxReg, IR_M3_MODE_REG_3);
-         if(inb(agxByteData)&IR_M3_B1F00_GE_ADDRESS)
-             agxInfoRec.COPbase = 0xB1F00;
-         else
-             agxInfoRec.COPbase = 0xD1F00;
-      }
-      else {
-         agxInfoRec.COPbase = GE_DEF_MEM_BASE;
-         agxInfoRec.COPbase += agxInfoRec.instance << 7;
-      }
-   }
-   agxGEPhysBase = (pointer) agxInfoRec.COPbase;
-
-   ErrorF( "%s %s: Coprocessor register memory base address = 0x%05x\n",
-            XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.COPbase );
-
-   agxGEBase = xf86MapVidMem( agxInfoRec.scrnIndex, LINEAR_REGION,
-                              (pointer)((unsigned int)agxGEPhysBase & 0xFFF000),
-                               0x1000 );
-   agxGEBase = (void *)((unsigned int)agxGEBase +
-			((unsigned int)agxGEPhysBase & 0x0FFF));
-   xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION); 
-
-   if( !AGX_SERIES(agxChipId)) {
-      /* until POS register probing is complete -- would still need override */
-      agxMemBase = agxInfoRec.POSbase;
-   }
-   agxMemBase = ( (agxMemBase&0xFE)<<24 | (agxInfoRec.instance&0x07)<<22 );
-
-   ErrorF( "%s %s: Coprocessor video memory base address = 0x%08x\n",
-            XCONFIG_GIVEN, agxInfoRec.name, agxMemBase );
 
    OFLG_ZERO(&validOptions);
    OFLG_SET(OPTION_SW_CURSOR, &validOptions);
@@ -482,7 +386,225 @@ section of the XF86Config file.\n",
 
    xf86VerifyOptions(&validOptions, &agxInfoRec);
 
-   
+   if( !StrCaseCmp( agxInfoRec.chipset, "XGA-1" ) )
+      agxChipId = XGA_1;
+   else if( !StrCaseCmp( agxInfoRec.chipset, "XGA-2" ) )
+      agxChipId = XGA_2;
+   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-010" ) )
+      agxChipId = AGX_10;
+   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-014" ) )
+      agxChipId = AGX_14;
+   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-015" ) )
+      agxChipId = AGX_15;
+   else if( !StrCaseCmp( agxInfoRec.chipset, "AGX-016" ) )
+      agxChipId = AGX_16;
+   else {
+      agxChipId = 0;
+      agxInfoRec.chipset = "UNKNOWN";
+      ErrorF("%s %s:Valid AGX/XGA Chip type must be specified.\n",
+             XCONFIG_GIVEN, agxInfoRec.name);
+      return FALSE;
+   }
+   ErrorF( "%s %s: Graphics chip type \"%s\" (CHIPSET)\n", 
+           XCONFIG_GIVEN, agxInfoRec.name, agxInfoRec.chipset );
+
+   xf86ClearIOPortList(agxInfoRec.scrnIndex); 
+
+   /* probe and auto-config XGA chips */ 
+   if( XGA_SERIES(agxChipId) ) {
+      int inst;
+      XGAInformationBlock info = { 0xFF, };
+
+      if( agxInfoRec.instance < 0 || agxInfoRec.instance > 7 )
+         agxInfoRec.instance = -1;
+
+      for( i= 0; i <= POS_LAST_IO_REG; i++ )
+         agxPOSIOPorts[ i ] = agxInfoRec.POSbase + i;
+
+      xf86AddIOPorts(agxInfoRec.scrnIndex, POS_NUM_IO_REG, agxPOSIOPorts);
+
+      xf86EnableIOPorts(agxInfoRec.scrnIndex);
+
+      inst = GetXGAInfoBlock(agxInfoRec.instance,&info);
+
+      xf86DisableIOPorts(agxInfoRec.scrnIndex);
+      xf86ClearIOPortList(agxInfoRec.scrnIndex); 
+
+      if( inst < 0 || inst > 7 ) {
+         ErrorF( "%s %s: Unable to probe the XGA POS registers, see README.agx \
+for information on how to manually configure.\n", 
+                 XCONFIG_GIVEN, agxInfoRec.name );
+         if( !OFLG_ISSET(XCONFIG_INSTANCE, &agxInfoRec.xconfigFlag) )
+            return FALSE;
+      }
+      else {
+         if( !OFLG_ISSET(XCONFIG_INSTANCE, &agxInfoRec.xconfigFlag) ) {
+            agxInfoRec.instance = info.instance;
+         }
+         if( !OFLG_ISSET(XCONFIG_MEMBASE, &agxInfoRec.xconfigFlag) ) {
+            agxInfoRec.MemBase  = (info.pos4 & 0xFE)<<24
+                                  |  (agxInfoRec.instance&0x07)<<22 ;
+         }
+         if( !OFLG_ISSET(XCONFIG_COPBASE, &agxInfoRec.xconfigFlag) ) {
+            agxInfoRec.COPbase  = info.xgaCoProcAddress;
+         }
+         if( !OFLG_ISSET(XCONFIG_IOBASE, &agxInfoRec.xconfigFlag) ) {
+            agxInfoRec.IObase   = info.xgaIOAddress;
+         }
+         if( !OFLG_ISSET(XCONFIG_BIOSBASE, &agxInfoRec.xconfigFlag) ) {
+            agxInfoRec.BIOSbase   = info.xgaBiosAddress;
+         }
+      }
+   }
+   else {  /* AGX */
+      if( !OFLG_ISSET(XCONFIG_INSTANCE, &agxInfoRec.xconfigFlag) ) {
+         agxInfoRec.instance = 6;
+      }
+   }
+
+   /* configure I/O address */
+   if(agxInfoRec.IObase == 0)
+      if(AGX_SERIES(agxChipId))
+          agxInfoRec.IObase = DA_AGX_IO_BASE;
+      else
+          agxInfoRec.IObase = DA_XGA_IO_BASE + (agxInfoRec.instance << 4);
+
+   ErrorF( "%s %s: Instance = %d (INSTANCE).\n",
+            OFLG_ISSET(XCONFIG_INSTANCE, &agxInfoRec.xconfigFlag) 
+               ? XCONFIG_GIVEN : XCONFIG_PROBED,
+            agxInfoRec.name, agxInfoRec.instance, agxInfoRec.IObase );
+
+   ErrorF( "%s %s: I/O Mapped Register Base Address = 0x%04x (IOBASE).\n",
+            OFLG_ISSET(XCONFIG_IOBASE, &agxInfoRec.xconfigFlag) 
+               ? XCONFIG_GIVEN : XCONFIG_PROBED,
+            agxInfoRec.name, agxInfoRec.IObase );
+
+   /* XGA direct access I/O regs */
+   for( i= 0; i <= DA_LAST_IO_REG; i++ )
+      agxDAIOPorts[ i ] = agxInfoRec.IObase + i;
+
+   xf86AddIOPorts(agxInfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
+   xf86AddIOPorts(agxInfoRec.scrnIndex, DA_NUM_IO_REG, agxDAIOPorts);
+   xf86EnableIOPorts(agxInfoRec.scrnIndex);
+
+
+   /* various address globals */
+   agxIdxReg   = agxInfoRec.IObase + DA_INDEX_REGISTER;
+   agxApIdxReg = agxInfoRec.IObase + DA_APERATURE_INDEX;
+   agxDAReg    = agxInfoRec.IObase;
+   agxByteData = agxInfoRec.IObase + DA_DATA_BYTE_REG;
+   vgaIOBase   = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+   vgaPhysBase    = (pointer)agxInfoRec.VGAbase;
+   agxPhysVidMem  = vgaPhysBase;
+   xf86RamDacBase = 0x3C0;
+
+   /* determine the video memory aperature base address */
+   switch( agxInfoRec.VGAbase ) {
+      unsigned char oldmode;
+
+      case 0xA0000:
+      case 0xB0000:
+         break;
+      default:
+         oldmode = inb(agxDAReg+DA_OP_MODE) & DA_OM_MASK;
+         outb(agxDAReg+DA_OP_MODE,oldmode|DA_OM_DISP_VGA_XGA_EN);
+
+         switch( inb(agxDAReg+DA_APERATURE_CNTL) & DA_AC_MASK ) {
+            case DA_AC_64K_AT_B0000:
+               agxInfoRec.VGAbase = 0xB0000;
+               break;
+            case DA_AC_64K_AT_A0000:
+            default:
+               agxInfoRec.VGAbase = 0xA0000;
+               break;
+
+         }
+         outb(agxDAReg+DA_OP_MODE,oldmode);
+   }
+   ErrorF( "%s %s: Video Memory 64K Aperature Base Address = 0x%05x \
+(VGABASE)\n",
+            OFLG_ISSET(XCONFIG_VGABASE, &agxInfoRec.xconfigFlag) 
+               ? XCONFIG_GIVEN : XCONFIG_PROBED,
+            agxInfoRec.name, agxInfoRec.VGAbase );
+
+   /* various address globals */
+   agxIdxReg   = agxInfoRec.IObase + DA_INDEX_REGISTER;
+   agxApIdxReg = agxInfoRec.IObase + DA_APERATURE_INDEX;
+   agxDAReg    = agxInfoRec.IObase;
+   agxByteData = agxInfoRec.IObase + DA_DATA_BYTE_REG;
+   vgaIOBase   = (inb(0x3CC) & 0x01) ? 0x3D0 : 0x3B0;
+   vgaPhysBase    = (pointer)agxInfoRec.VGAbase;
+   agxPhysVidMem  = vgaPhysBase;
+   xf86RamDacBase = 0x3C0;
+
+   /* map the video memory aperature */
+   vgaBase = xf86MapVidMem(agxInfoRec.scrnIndex, VGA_REGION,
+                           (pointer)vgaPhysBase, vgaBankSize);
+   xf86MapDisplay(agxInfoRec.scrnIndex, VGA_REGION); 
+   agxVideoMem = vgaBase;
+
+   /* determine the coprocessor memory mapped register base */
+   if(AGX_SERIES(agxChipId)) {
+      switch( agxInfoRec.COPbase ) {
+         unsigned char oldmode;
+
+         case 0xB1F00:
+         case 0xD1F00:
+            break;
+         default:
+            /* enable XGA registers */
+            oldmode = inb(agxDAReg+DA_OP_MODE) & DA_OM_MASK;
+            outb(agxDAReg+DA_OP_MODE,oldmode|DA_OM_DISP_VGA_XGA_EN);
+
+            outb(agxIdxReg, IR_M3_MODE_REG_3);
+            if(inb(agxByteData)&IR_M3_B1F00_GE_ADDRESS)
+               if( agxInfoRec.VGAbase != 0xB0000 )
+                  agxInfoRec.COPbase = 0xB1F00;
+               else
+                  agxInfoRec.COPbase = 0xD1F00;
+            else
+                agxInfoRec.COPbase = 0xD1F00;
+
+            /* disable XGA registers */
+            outb(agxDAReg+DA_OP_MODE,oldmode);
+      }
+   }
+   else if( !OFLG_ISSET(XCONFIG_COPBASE, &agxInfoRec.xconfigFlag) ) {
+      if( OFLG_ISSET(XCONFIG_BIOSBASE, &agxInfoRec.xconfigFlag) ) {
+            agxInfoRec.COPbase = agxInfoRec.BIOSbase
+                                 + POS_CONF_COPROC_REG_OFF
+                                 + agxInfoRec.instance * 0x80;
+      }
+      else if( agxInfoRec.COPbase == 0 ) {
+            agxInfoRec.COPbase = GE_DEF_MEM_BASE;
+            agxInfoRec.COPbase += agxInfoRec.instance << 7;
+      }
+   }
+   ErrorF( "%s %s: Coprocessor Memory-Mapped Register Base Address = 0x%05x \
+(COPBASE)\n",
+            OFLG_ISSET(XCONFIG_COPBASE, &agxInfoRec.xconfigFlag) 
+            || OFLG_ISSET(XCONFIG_BIOSBASE, &agxInfoRec.xconfigFlag)
+               ? XCONFIG_GIVEN : XCONFIG_PROBED,
+            agxInfoRec.name, agxInfoRec.COPbase );
+
+   /* map the coprocessor memory-mapped registers */
+   agxGEPhysBase = (pointer) agxInfoRec.COPbase;
+   agxGEBase = xf86MapVidMem( agxInfoRec.scrnIndex, LINEAR_REGION,
+                              (pointer)((unsigned int)agxGEPhysBase & 0xFFF000),
+                               0x1000 );
+   agxGEBase = (void *)((unsigned int)agxGEBase +
+			((unsigned int)agxGEPhysBase & 0x0FFF));
+   xf86MapDisplay(agxInfoRec.scrnIndex, LINEAR_REGION); 
+
+   /* determine coprocessor's video memory address base */
+   if( !AGX_SERIES(agxChipId)) {
+      agxMemBase = agxInfoRec.MemBase;
+   }
+   ErrorF( "%s %s: Coprocessor's Video Memory Base Address = 0x%06x \
+(MEMBASE)\n",
+            OFLG_ISSET(XCONFIG_MEMBASE, &agxInfoRec.xconfigFlag) 
+               ? XCONFIG_GIVEN : XCONFIG_PROBED,
+            agxInfoRec.name, agxMemBase );
 
    /*
     * Set Max Clock Frequency, for the chipset
@@ -518,7 +640,8 @@ section of the XF86Config file.\n",
       xf86weight = agxInfoRec.weight;
    }
    if (xf86Verbose)
-      ErrorF("%s %s: pixel depth = %d\n", XCONFIG_GIVEN, agxInfoRec.name, xf86bpp);
+      ErrorF("%s %s: Pixel Depth = %d\n", 
+             XCONFIG_GIVEN, agxInfoRec.name, xf86bpp);
    switch (xf86bpp) {
    case 8:
       BytesPerPixelShift = 0;
@@ -539,28 +662,10 @@ section of the XF86Config file.\n",
       break;
    case 16:
       BytesPerPixelShift = 1;
-#if 0
-      if (xf86weight.red==5 && xf86weight.green==5 && xf86weight.blue==5) {
-         agxWeight = RGB16_555;
-         agxInfoRec.depth = 15;
-      }
-      else if (xf86weight.red==5 && xf86weight.green==6 && xf86weight.blue==5) {
-         agxWeight = RGB16_565;
-         agxInfoRec.depth = 16;
-      }
-      else {
-         ErrorF(
-           "Invalid color weighting %1d%1d%1d (only 555 and 565 are valid)\n",
-           xf86weight.red,xf86weight.green,xf86weight.blue);
-         xf86DisableIOPorts(agxInfoRec.scrnIndex);
-         return(FALSE);
-      }
-#else 
       xf86weight.red = xf86weight.blue = 5;
       xf86weight.green = 6;
       agxWeight = RGB16_565;
       agxInfoRec.depth = 16;
-#endif
       xf86RamDacBPP = 16;
       agxInfoRec.bitsPerPixel = 16;
       if (agxInfoRec.defaultVisual < 0)
@@ -623,6 +728,18 @@ section of the XF86Config file.\n",
    /*
     * Handle RAMDAC Option flags.
     */
+
+   if(AGX_SERIES(agxChipId))
+     if (OFLG_ISSET(OPTION_DAC_8_BIT, &agxInfoRec.options)) {
+        xf86Dac8Bit = TRUE;
+     }
+     else {
+        xf86Dac8Bit = FALSE;
+     }
+   else
+     xf86Dac8Bit = TRUE;
+
+
    if(AGX_SERIES(agxChipId)) {
 
       if (agxInfoRec.ramdac) {
@@ -694,8 +811,10 @@ section of the XF86Config file.\n",
             agxProbeClocks(1);
          }
          else if( hercBigDAC && agxInfoRec.clocks > 16 ) {
-            ErrorF("%s %s: WARNING!!! Clocks have changed since 3.1.1(see README.agx)\n",
+            ErrorF("%s %s: WARNING!!! Clocks have changed since 3.1.1 \
+(see README.agx)\n",
                    XCONFIG_GIVEN, agxInfoRec.name);
+            return FALSE;
          }
          else if (agxInfoRec.clocks > 16) {
             agxInfoRec.clocks = 16;
@@ -732,11 +851,7 @@ section of the XF86Config file.\n",
       }
       hercValidateClocks(&agxInfoRec) ; 
    } 
-#if 1
    else {
-#else
-   {
-#endif
       switch( agxInfoRec.depth ) {
          int clk, max;
          case 8:
@@ -843,60 +958,66 @@ section of the XF86Config file.\n",
    agxVirtY = agxInfoRec.virtualY;
 
    /*
-    * AGX 014,015,016 display map width must be power of
-    * 2, if the coprocessor is to be used, except that the 015
+    * AGX -014,-015,-016 and XGA display map width must be power of
+    * 2, if the coprocessor is to be used, except that the -015
     * and later have a +256 adjust. The -016 has some additional
-    * adjusts for 640 and 800.
+    * adjusts for 640 and 800. The XGA's (AGX-10) also appear to 
+    * have the similiar limits as the -016
     */
-   if (AGX_14_15_16_ONLY(agxChipId)) {
-      agx128WidthAdjust = FALSE;
-      agx256WidthAdjust = FALSE;
-      agx288WidthAdjust = FALSE;
-      if (agxVirtX <= 512) {
-         agxAdjustedVirtX = 512;
-         agxDisplayWidth = 512;
-      }
-      else
-      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 640) {
-         agx128WidthAdjust = TRUE;
-         agxAdjustedVirtX = 512;
-         agxDisplayWidth = 640;
-      }
-      else
-      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 768) {
-         agx256WidthAdjust = TRUE;
-         agxAdjustedVirtX = 512;
-         agxDisplayWidth = 768;
-      }
-      else
-      if (AGX_16_ONLY(agxChipId) && agxVirtX <= 800) {
-         agx288WidthAdjust = TRUE;
-         agxAdjustedVirtX = 512;
-         agxDisplayWidth = 800;
-      }
-      else
-      if (agxVirtX <= 1024) {
-         agxAdjustedVirtX = 1024;
-         agxDisplayWidth = 1024;
-      }
-      else
-      if (AGX_15_16_ONLY(agxChipId) && agxVirtX <= 1280) {
-         agx256WidthAdjust = TRUE;
-         agxAdjustedVirtX = 1024;
-         agxDisplayWidth = 1280;
-      }
-      else
-      if (agxVirtX <= 2048) {
-         agxAdjustedVirtX = 2048;
-         agxDisplayWidth = 2048;
-      }
-   }        
-   else {    /* XGA */
-      agx128WidthAdjust = FALSE;
-      agx256WidthAdjust = FALSE;
-      agx288WidthAdjust = FALSE;
-      agxAdjustedVirtX = (agxVirtX+7) & 0xFFFFFFF8;
-      agxDisplayWidth = (agxVirtX+7) & 0XFFFFFFF8;
+   agx128WidthAdjust = FALSE;
+   agx256WidthAdjust = FALSE;
+   agx288WidthAdjust = FALSE;
+   if (XGA_SERIES(agxChipId) && agxVirtX <= 320 ) {
+      agxAdjustedVirtX = 320;
+      agxDisplayWidth = 320;
+   }
+   else
+   if (agxVirtX <= 512) {
+      agxAdjustedVirtX = 512;
+      agxDisplayWidth = 512;
+   }
+   else
+   if (AGX_16_ONLY(agxChipId) && agxVirtX <= 640) {
+      agx128WidthAdjust = TRUE;
+      agxAdjustedVirtX = 512;
+      agxDisplayWidth = 640;
+   }
+   else
+   if (AGX_10_XGA_ONLY(agxChipId) && agxVirtX <= 640) {
+      agxAdjustedVirtX = 640;
+      agxDisplayWidth = 640;
+   }
+   else
+   if (AGX_16_ONLY(agxChipId) && agxVirtX <= 800) {
+      agx288WidthAdjust = TRUE;
+      agxAdjustedVirtX = 512;
+      agxDisplayWidth = 800;
+   }
+   else
+   if (AGX_10_XGA_ONLY(agxChipId) && agxVirtX <= 800) {
+      agxAdjustedVirtX = 800;
+      agxDisplayWidth = 800;
+   }
+   else
+   if (agxVirtX <= 1024) {
+      agxAdjustedVirtX = 1024;
+      agxDisplayWidth = 1024;
+   }
+   else
+   if (AGX_15_16_ONLY(agxChipId) && agxVirtX <= 1280) {
+      agx256WidthAdjust = TRUE;
+      agxAdjustedVirtX = 1024;
+      agxDisplayWidth = 1280;
+   }
+   else
+   if (AGX_10_XGA_ONLY(agxChipId) && agxVirtX <= 1280) {
+      agxAdjustedVirtX = 1280;
+      agxDisplayWidth = 1280;
+   }
+   else
+   if (agxVirtX <= 2048) {
+      agxAdjustedVirtX = 2048;
+      agxDisplayWidth = 2048;
    }
 
    agxMaxX = agxVirtX - 1;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.3 1995/06/04 14:39:27 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmode.h,v 3.4 1995/06/08 06:19:47 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -40,8 +40,19 @@ from the Kaleb S. KEITHLEY
 #define X_VGAHelpModModeLine		2
 #define X_VGAHelpSwitchMode		3
 #define X_VGAHelpGetMonitor		4
+#define X_XF86VidModeLockModeSwitch	5
 
+#ifdef XF86VIDMODE_EVENTS
+#define XF86VidModeNotify		0
+#define XF86VidModeNumberEvents		(XF86VidModeNotify + 1)
+
+#define XF86VidModeNotifyMask		0x00000001
+
+#define XF86VidModeNonEvent		0
+#define XF86VidModeModeChange		1
+#else
 #define XF86VidModeNumberEvents		0
+#endif
 
 #define XF86VidModeBadClock		0
 #define XF86VidModeBadHTimings		1
@@ -78,6 +89,18 @@ typedef struct {
     XF86VidModeSyncRange*	vsync;
 } XF86VidModeMonitor;
     
+typedef struct {
+    int type;			/* of event */
+    unsigned long serial;	/* # of last request processed by server */
+    Bool send_event;		/* true if this came from a SendEvent req */
+    Display *display;		/* Display the event was read from */
+    Window root;		/* root window of event screen */
+    int state;			/* What happened */
+    int kind;			/* What happened */
+    Bool forced;		/* extents of new region */
+    Time time;			/* event timestamp */
+} XF86VidModeNotifyEvent;
+
 #define XF86VidModeSelectNextMode(disp, scr) \
 	XF86VidModeSwitchMode(disp, scr, 1)
 #define XF86VidModeSelectPrevMode(disp, scr) \
@@ -123,6 +146,14 @@ Status XF86VidModeSwitchMode(
     Display*		/* dpy */,
     int			/* screen */,
     int			/* zoom */
+#endif
+);
+
+Status XF86VidModeLockModeSwitch(
+#if NeedFunctionPrototypes
+    Display*		/* dpy */,
+    int			/* screen */,
+    int			/* lock */
 #endif
 );
 

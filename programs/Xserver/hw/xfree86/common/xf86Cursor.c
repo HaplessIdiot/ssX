@@ -1,5 +1,5 @@
 /* $XConsortium: xf86Cursor.c,v 1.3 95/01/06 20:57:31 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.3 1994/12/11 10:54:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Cursor.c,v 3.5 1995/01/28 17:03:22 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -132,6 +132,25 @@ xf86SetViewport(pScreen, x, y)
 }
 
 
+static Bool xf86ZoomLocked = FALSE;
+
+/*
+ * xf86LockZoom --
+ *	Enable/disable ZoomViewport
+ */
+
+void
+xf86LockZoom (pScreen, lock)
+     ScreenPtr	pScreen;
+     Bool	lock;
+{
+  /*
+   * pScreen is currently ignored, but may be used later to enable locking
+   * of individual screens.
+   */
+
+  xf86ZoomLocked = lock;
+}
 
 /*
  * xf86ZoomViewport --
@@ -144,6 +163,9 @@ xf86ZoomViewport (pScreen, zoom)
      int        zoom;
 {
   ScrnInfoPtr   pScr = XF86SCRNINFO(pScreen);
+
+  if (xf86ZoomLocked)
+    return;
 
   if (pScr->modes != pScr->modes->next)
   {

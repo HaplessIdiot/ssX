@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.8 1995/06/08 12:56:31 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.9 1995/06/10 13:33:21 dawes Exp $ */
 
 /*
 
@@ -41,10 +41,15 @@ from Kaleb S. KEITHLEY.
 #include <X11/Xaw/Box.h>
 #include <X11/extensions/xf86vmode.h>
 #include <stdio.h>
+#include <signal.h>
 
 int MajorVersion, MinorVersion;
 int EventBase, ErrorBase;
 int dot_clock, mode_flags;
+
+/* Minimum extension version required */
+#define MINMAJOR 0
+#define MINMINOR 2
 
 /* Mode flags -- ignore flags not in V_FLAG_MASK */
 #define V_FLAG_MASK	0x1FF;
@@ -121,8 +126,24 @@ static XtResource Resources[] = {
 static Atom wm_delete_window;
 static Widget invalid_mode_popup;
 static Widget testing_popup;
+static Widget Top;
 
 static void UpdateSyncRates();
+
+static void CleanUp(dpy)
+    Display *dpy;
+{
+    /* Make sure mode switching is not locked out at exit */
+    XF86VidModeLockModeSwitch(dpy, DefaultScreen(dpy), FALSE);
+    XFlush(dpy);
+}
+
+static void CatchSig(signal)
+    int signal;
+{
+    CleanUp(XtDisplay(Top));
+    exit(2);
+}
 
 static Bool GetModeLine (dpy, scrn)
     Display* dpy;
@@ -186,6 +207,7 @@ XErrorEvent *err;
       err->error_code < ErrorBase + XF86VidModeNumberErrors) {
      hitError=1;
   } else {
+     CleanUp(dis);
      if (xtErrorfunc) 
 	(*xtErrorfunc)(dis, err);
   }
@@ -215,6 +237,7 @@ static void QuitCB (w, client, call)
     Widget w;
     XtPointer client, call;
 {
+    CleanUp(XtDisplay(w));
 #if XtSpecificationRelease < 6
     exit (0);
 #else
@@ -659,7 +682,18 @@ static void ScrollCB (w, client, call)
     }
 }
 
-
+static void SwitchCB (w, client, call)
+    Widget w;
+    XtPointer client, call;
+{
+    XF86VidModeLockModeSwitch(XtDisplay(w), DefaultScreen (XtDisplay (w)),
+			      FALSE);
+    XF86VidModeSwitchMode(XtDisplay(w), DefaultScreen (XtDisplay (w)),
+			  (int)client);
+    XF86VidModeLockModeSwitch(XtDisplay(w), DefaultScreen (XtDisplay (w)),
+			      TRUE);
+    FetchCB(w, NULL, NULL);
+}
 
 static void AddCallback (w, callback_name, callback, client_data)
     Widget w;
@@ -761,8 +795,8 @@ static void CreateHierarchy(top)
     Widget top;
 {
     char buf[5];
-    Widget form, forms[13];
-    Widget wids[6];
+    Widget form, forms[14];
+    Widget wids[8];
     Widget boxW,messageW, popdownW, w;   
     XawTextBlock text;
     XtTranslations trans;
@@ -782,11 +816,12 @@ static void CreateHierarchy(top)
 	"PixelClock-form",
 	"HSyncRate-form",
 	"VSyncRate-form",
+	"Buttons2-form"
 	};
 
     form = XtCreateWidget ("form", formWidgetClass, top, NULL, 0);
 
-    for (i = 0; i < 13; i++)
+    for (i = 0; i < 14; i++)
 	forms[i] = XtCreateWidget (form_names[i], formWidgetClass, 
 		form, NULL, 0);
 
@@ -883,25 +918,20 @@ static void CreateHierarchy(top)
     wids[0] = XtCreateWidget ("Quit-button", commandWidgetClass, 
 		forms[9], NULL, 0);
     XtAddCallback (wids[0], XtNcallback, QuitCB, NULL);
-    wids[1] = XtCreateWidget ("Fetch-button", commandWidgetClass, 
-		forms[9], NULL, 0);
-    XtAddCallback (wids[1], XtNcallback, FetchCB, NULL);
-    wids[2] = XtCreateWidget ("Apply-button", commandWidgetClass, 
-		forms[9], NULL, 0);
-    XtAddCallback (wids[2], XtNcallback, ApplyCB, NULL);
-    wids[3] = XtCreateWidget ("Test-button", commandWidgetClass, 
-		forms[9], NULL, 0);
-    XtAddCallback (wids[3], XtNcallback, TestCB, NULL);
 
-    wids[4] = XtCreateWidget ("Restore-button", commandWidgetClass, 
+    wids[1] = XtCreateWidget ("Apply-button", commandWidgetClass, 
 		forms[9], NULL, 0);
-    XtAddCallback (wids[4], XtNcallback, RestoreCB, NULL);
+    XtAddCallback (wids[1], XtNcallback, ApplyCB, NULL);
 
-    wids[5] = XtCreateWidget ("Show-button", commandWidgetClass, 
+    wids[2] = XtCreateWidget ("Test-button", commandWidgetClass, 
 		forms[9], NULL, 0);
-    XtAddCallback (wids[5], XtNcallback, ShowCB, NULL);
+    XtAddCallback (wids[2], XtNcallback, TestCB, NULL);
 
-    XtManageChildren (wids, 6);
+    wids[3] = XtCreateWidget ("Restore-button", commandWidgetClass, 
+		forms[9], NULL, 0);
+    XtAddCallback (wids[3], XtNcallback, RestoreCB, NULL);
+
+    XtManageChildren (wids, 4);
 
     CreateTyp (forms[10], PixelClock, "PixelClock-label", "PixelClock-text",
 	       NULL);
@@ -910,7 +940,25 @@ static void CreateHierarchy(top)
     CreateTyp (forms[12], VSyncRate, "VSyncRate-label", "VSyncRate-text",
 	       NULL);
 
-    XtManageChildren (forms, 13);
+    wids[0] = XtCreateWidget ("Fetch-button", commandWidgetClass, 
+		forms[13], NULL, 0);
+    XtAddCallback (wids[0], XtNcallback, FetchCB, NULL);
+
+    wids[1] = XtCreateWidget ("Show-button", commandWidgetClass, 
+		forms[13], NULL, 0);
+    XtAddCallback (wids[1], XtNcallback, ShowCB, NULL);
+
+    wids[2] = XtCreateWidget ("Next-button", commandWidgetClass, 
+		forms[13], NULL, 0);
+    XtAddCallback (wids[2], XtNcallback, SwitchCB, (XtPointer)1);
+
+    wids[3] = XtCreateWidget ("Prev-button", commandWidgetClass, 
+		forms[13], NULL, 0);
+    XtAddCallback (wids[3], XtNcallback, SwitchCB, (XtPointer)-1);
+
+    XtManageChildren (wids, 4);
+
+    XtManageChildren (forms, 14);
     XtManageChild (form);
 
     SetScrollbars ();
@@ -992,7 +1040,7 @@ int main (argc, argv)
     Display* dpy;
     static XtActionsRec actions[] = { { "xvidtune-quit", QuitAction } };
 
-    top = XtVaOpenApplication (&app, "Xvidtune", NULL, 0, &argc, argv,
+    Top = top = XtVaOpenApplication (&app, "Xvidtune", NULL, 0, &argc, argv,
 		NULL, applicationShellWidgetClass, 
 		XtNmappedWhenManaged, False, NULL);
 
@@ -1011,30 +1059,51 @@ int main (argc, argv)
     if (!XF86VidModeQueryExtension(XtDisplay (top), &EventBase, &ErrorBase))
 	return 0;
 
-    if (MinorVersion > 0 || MajorVersion > 0) {
-	/* This should probably be done differently */
-	if (argc > 1) {
-	    int i = 0;
-	    if (!strcmp(argv[1], "-next"))
-		i = 1;
-	    else if (!strcmp(argv[1], "-prev"))
-		i = -1;
-	    if (i != 0) {
-		XF86VidModeSwitchMode(XtDisplay (top),
-				   DefaultScreen (XtDisplay (top)), i);
-		XSync(XtDisplay (top), True);
-		return 0;
-	    }
-	}
-	if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top))))
-	    return 0;
-    } else {
-	fprintf(stderr, "Warning, Xserver is running old VGAHelp (%d.%d)\n",
+    /* Fail if the extension version in the server is too old */
+    if (MajorVersion < MINMAJOR || MinorVersion < MINMINOR) {
+	fprintf(stderr,
+		"Xserver is running old XFree86-VidModeExtension (%d.%d)\n",
 		MajorVersion, MinorVersion);
+	fprintf(stderr, "Minimum required version is %d.%d\n",
+		MINMAJOR, MINMINOR);
+	exit(1);
     }
-
-    if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top))))
+ 
+    /* This should probably be done differently */
+    if (argc > 1) {
+	int i = 0;
+	if (!strcmp(argv[1], "-next"))
+	    i = 1;
+	else if (!strcmp(argv[1], "-prev"))
+	    i = -1;
+	else if (!strcmp(argv[1], "-unlock")) {
+	    CleanUp(XtDisplay (top));
+	    XSync(XtDisplay (top), True);
+	    return 0;
+	}
+	if (i != 0) {
+	    XF86VidModeSwitchMode(XtDisplay (top),
+				  DefaultScreen (XtDisplay (top)), i);
+	    XSync(XtDisplay (top), True);
+	    return 0;
+	}
+    }
+    if (!GetMonitor(XtDisplay (top), DefaultScreen (XtDisplay (top))))
 	return 0;
+
+    if (!XF86VidModeLockModeSwitch(XtDisplay (top),
+				   DefaultScreen (XtDisplay (top)), TRUE))
+	return 0;
+
+    signal(SIGINT, CatchSig);
+    signal(SIGQUIT, CatchSig);
+    signal(SIGTERM, CatchSig);
+    signal(SIGHUP, CatchSig);
+
+    if (!GetModeLine(XtDisplay (top), DefaultScreen (XtDisplay (top)))) {
+	CleanUp(XtDisplay (top));
+	return 0;
+    }
 
     xtErrorfunc = XSetErrorHandler(vidmodeError); 
 

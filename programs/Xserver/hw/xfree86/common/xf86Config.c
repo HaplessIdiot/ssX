@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.6 95/01/16 13:16:57 kaleb Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.47 1995/06/08 06:27:06 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.48 1995/06/14 07:46:59 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1622,6 +1622,13 @@ configDeviceSection()
       devp->s3MClk = (int)(val.realnum * 1000.0 + 0.5);
       break;
 
+    case VGABASE:
+      if (getToken(NULL) != NUMBER) 
+         configError("VGA aperature base address expected");
+      devp->VGAbase = val.num;
+      OFLG_SET(XCONFIG_VGABASE, &(devp->xconfigFlag));
+      break;
+
     case EOF:
       FatalError("Unexpected EOF (missing EndSection?)");
       break; /* :-) */
@@ -2148,6 +2155,8 @@ configScreenSection()
           screen->s3Madjust = device_list[i].s3Madjust;
           screen->s3Nadjust = device_list[i].s3Nadjust;
 	  screen->s3MClk = device_list[i].s3MClk;
+	  if (OFLG_ISSET(XCONFIG_VGABASE, &screen->xconfigFlag))
+	    screen->VGAbase = device_list[i].VGAbase;
           break;
         }
       }
@@ -2361,6 +2370,10 @@ configScreenSection()
        if (OFLG_ISSET(XCONFIG_MEMBASE, &driver->xconfigFlag)) 
           ErrorF("%s %s: Memory Base Address: %x\n", XCONFIG_GIVEN,
                  driver->name, driver->MemBase);
+
+       if (OFLG_ISSET(XCONFIG_VGABASE, &driver->xconfigFlag)) 
+          ErrorF("%s %s: VGA Aperture Base Address: %x\n", XCONFIG_GIVEN,
+                 driver->name, driver->VGAbase);
 
       /* Print clock program */
       if ( driver->clockprog ) {

@@ -1,5 +1,5 @@
 /* $XConsortium: agxFCach.c,v 1.4 95/01/23 15:33:39 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.10 1995/01/28 15:48:45 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxFCach.c,v 3.11 1995/05/27 03:02:44 dawes Exp $ */
 /*
  * Copyright 1992 by Kevin E. Martin, Chapel Hill, North Carolina.
  * Copyright 1994 by Henry A. Worth, Sunnyvale, California.
@@ -350,8 +350,9 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    unsigned int mapDim, mapCoOrd;
    char  toload[BLOCKS_PER_FONT];
    xRectangle backrect;
-   Bool overlap = TRUE;
-   Bool noLeftBearing = FALSE;
+   Bool terminalFont = fentry->font->info.terminalFont;
+   Bool constantMetrics = fentry->font->info.constantMetrics;
+   Bool noVertOverlap = FALSE;
    Bool first = TRUE;
  
    ret_x = x;
@@ -361,8 +362,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
     * completely independent of what happens during rendering.
     */
 
-   if (fentry->font->info.constantMetrics && fentry->font->info.noOverlap) {
-      overlap = FALSE;
+   if (fentry->font->info.constantWidth) {
       width = fentry->font->info.maxbounds.characterWidth;
       width *= count;
    } 
@@ -371,11 +371,8 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
       register unsigned char *ch = chars;
       for (; i < count; i++, ch++) {
          register CharInfoPtr info = fentry->pci[*ch];
-         noLeftBearing = TRUE; 
          if (info) {
             width += info->metrics.characterWidth; 
-            if ( info->metrics.leftSideBearing != 0 )
-               noLeftBearing = FALSE;
          }
       }
    }
@@ -383,26 +380,40 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    x += pDraw->x;
    y += pDraw->y;
    maxAscent = FONTMAXBOUNDS(pfont, ascent);
-   maxDescent = FONTMAXBOUNDS(pfont, descent);
+   maxDescent = FONTMINBOUNDS(pfont, descent);
    minY = y - maxAscent;
    maxY = y + maxDescent;
-   if (width >= 0) {
-      backrect.x =  x;
-      backrect.width = width - 1;
-   } 
-   else {
-      backrect.x = x + width;
-      -width;
-      backrect.width = width - 1;
+
+   if( opaque ) {
+      if (width >= 0) {
+         backrect.x =  x;
+         backrect.width = width;
+      } 
+      else {
+         backrect.x = x + width;
+         -width;
+         backrect.width = width;
+      }
    }
-   backrect.y = minY;
-   backrect.height = maxAscent + maxDescent - 1; 
+   else {
+      if (width < 0) {
+         -width;
+      }
+   }
+
    maxX = x + width;
-   minX = x - FONTMINBOUNDS(pfont, leftSideBearing);
+   minX = x + FONTMINBOUNDS(pfont, leftSideBearing);
+
+   if( opaque ) {
+      backrect.y = y - FONTASCENT(pfont);
+      backrect.height = FONTASCENT(pfont) + FONTDESCENT(pfont); 
+      noVertOverlap = backrect.y == minY
+                      && backrect.height == (maxY - minY);
+   }
 
    /* since GE may be busy, preload first block if needed */
    block = *chars >> BLOCK_NUM_SHIFT;
-   if (fentry->fblock[block] == NULL) 
+   if (fentry->fblock[block] == NULL)
       agxloadFontBlock(fentry, block);
 
    pRegion = ((cfbPrivGC *) 
@@ -416,7 +427,7 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
    }
    if (!numRects || pBox->y1 >= maxY )
       return ret_x;
-   while (numRects && pBox->y1 < maxY && pBox->x2 <= minX ) {
+   while (numRects && pBox->y1 < maxY  && pBox->x2 <= minX ) {
       ++pBox;
       --numRects;
    }
@@ -429,29 +440,23 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
 
       if (pBox->x1 < maxX && pBox->x2 > minX) {
          /* mask off clipped areas of the destination */
-         register unsigned int mapDim = (pBox->y1 << 16) | pBox->x1;
-         register unsigned int mapCoOrd = ((pBox->y2 - pBox->y1)-1) << 16 
+         register unsigned int mapCoOrd = (pBox->y1 << 16) | pBox->x1;
+         register unsigned int mapDim   = ((pBox->y2 - pBox->y1)-1) << 16 
                                           | ((pBox->x2 - pBox->x1)-1);
-         GE_WAIT_IDLE_SHORT();
-         GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
-         GE_OUT_D( GE_MASK_MAP_X, mapDim );
-         GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapCoOrd ); 
          if (first) {
             first = FALSE;
+            GE_WAIT_IDLE_SHORT();
             GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MAP_C );
             GE_OUT_D( GE_PIXEL_MAP_WIDTH, ROW_NUM_LINES-1 << 16
                                           | CACHE_LINE_WIDTH_PIXELS-1 );
             GE_OUT_B( GE_PIXEL_MAP_FORMAT, GE_MF_1BPP | GE_MF_INTEL_FORMAT );
-            GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
-            GE_OUT_D( GE_MASK_MAP_X, mapDim );
-            GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapCoOrd ); 
             MAP_SET_DST( GE_MS_MAP_A );
             GE_OUT_D( GE_PIXEL_BIT_MASK, pGC->planemask );
             GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
             GE_OUT_D( GE_BKGD_CLR, pGC->bgPixel );
-            if (opaque ) {
-               /* opaque stipples are faster, so if noLeftBearing: opaque it */ 
-               if (noLeftBearing || !overlap) 
+            if (opaque) {
+               /* opaque stipples are faster, so if terminalFont: opaque it */ 
+               if (terminalFont && noVertOverlap) 
                   mixes = MIX_SRC << 8 | MIX_SRC; 
                else
                   mixes = MIX_DST << 8 | MIX_SRC; 
@@ -460,34 +465,60 @@ agxCPolyText8(pDraw, pGC, x, y, count, chars, fentry, opaque)
                mixes = MIX_DST << 8 | pGC->alu; 
             }
             GE_OUT_W( GE_FRGD_MIX, mixes );
+            GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
+            GE_OUT_D( GE_MASK_MAP_X, mapCoOrd );
+            GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapDim ); 
+         }
+         else {
+            GE_WAIT_IDLE_SHORT();
+            GE_OUT_B( GE_PIXEL_MAP_SEL, GE_MS_MASK_MAP );
+            GE_OUT_D( GE_MASK_MAP_X, mapCoOrd );
+            GE_OUT_D( GE_PIXEL_MAP_WIDTH, mapDim ); 
          }
          if (opaque) {
-           if (!overlap) {
+           if (terminalFont && noVertOverlap) {
                /* we can do just an opaque stipple */
                DoagxConstMetrics( x, y, count, chars, fentry, pGC, maxAscent );
            }
            else {
               /* have to seperate the opaque from the character draw */
-              register unsigned int opDim = backrect.height<< 16 
-                                            | backrect.width; 
-              register unsigned int dstCoOrd = backrect.y << 16 | backrect.x;
-   
-              GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
-              GE_OUT_D( GE_DEST_MAP_X, dstCoOrd );
-              GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
-              GE_START_CMD( GE_OP_BITBLT
-                            | GE_OP_PAT_FRGD
-                            | GE_OP_MASK_BOUNDARY
-                            | GE_OP_INC_X
-                            | GE_OP_INC_Y
-                            | GE_OP_FRGD_SRC_CLR
-                            | GE_OP_DEST_MAP_A   );
-              DoagxCPolyText8( x, y, count, chars, fentry, 
-                               pGC, TRUE, mixes );
+              {
+                 register unsigned int backDim = (backrect.height-1)<< 16 
+                                                 | backrect.width-1; 
+                 register unsigned int backCoOrd = backrect.y << 16 
+                                                   | backrect.x;
+                 GE_OUT_D( GE_FRGD_CLR, pGC->bgPixel );
+                 GE_OUT_D( GE_DEST_MAP_X, backCoOrd );
+                 GE_OUT_D( GE_OP_DIM_WIDTH, backDim );
+                 GE_START_CMD( GE_OP_BITBLT
+                               | GE_OP_PAT_FRGD
+                               | GE_OP_MASK_BOUNDARY
+                               | GE_OP_INC_X
+                               | GE_OP_INC_Y
+                               | GE_OP_FRGD_SRC_CLR
+                               | GE_OP_DEST_MAP_A   );
+              }
+              if (constantMetrics) {
+                  GE_WAIT_IDLE_SHORT(); 
+                  GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
+                  DoagxConstMetrics( x, y, count, chars, 
+                                     fentry, pGC, maxAscent );
+              }
+              else {
+                 DoagxCPolyText8( x, y, count, chars, fentry, 
+                                  pGC, TRUE, mixes );
+              }
            }
          }
          else {
-            DoagxCPolyText8( x, y, count, chars, fentry, pGC, FALSE, mixes );
+            if (constantMetrics) {
+               DoagxConstMetrics( x, y, count, chars, 
+                                  fentry, pGC, maxAscent );
+            }
+            else {
+               DoagxCPolyText8( x, y, count, chars, fentry,
+                                pGC, FALSE, mixes );
+            }
          }
       }
    }
@@ -515,8 +546,8 @@ DoagxCPolyText8(x, y, count, chars, fentry, pGC, opaque, mixes)
    unsigned int blockBase;
    unsigned int oldBlockBase = 0;
 
-   GE_WAIT_IDLE_SHORT(); 
    if (opaque) {
+      GE_WAIT_IDLE_SHORT(); 
       GE_OUT_D( GE_FRGD_CLR, pGC->fgPixel );
    }
       
@@ -593,11 +624,11 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
      int maxAscent;
 {
    register unsigned int dstCoOrd, patCoOrd;
-   register CharInfoPtr pci;
+   register CharInfoPtr pci = fentry->pci[(int)*chars];
    register unsigned int idx;
-   unsigned int h = fentry->hPix;
+   unsigned int h = GLYPHHEIGHTPIXELS(pci);
    unsigned int opDim = (h-1) << 16 
-                        | fentry->font->info.maxbounds.characterWidth - 1;
+                        | (GLYPHWIDTHPIXELS(pci)-1);
    unsigned int w = fentry->wBytes<<3;
    unsigned int blocki = 0xFFFFFFFF;
    bitMapBlockPtr block;
@@ -605,8 +636,8 @@ DoagxConstMetrics(x, y, count, chars, fentry, pGC, maxAscent)
    unsigned int oldBlockBase = 0;
 
    y = (y - maxAscent) << 16;
-     
-   GE_WAIT_IDLE_SHORT(); 
+
+   /* no GE command is running so no need to wait */     
    GE_OUT_D( GE_OP_DIM_WIDTH, opDim );
    GE_OUT_W( GE_PIXEL_OP,
              GE_OP_PAT_MAP_C

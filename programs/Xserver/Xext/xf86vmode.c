@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.4 1995/06/08 06:21:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/xf86vmode.c,v 3.5 1995/06/08 12:54:03 dawes Exp $ */
 
 /*
 
@@ -52,23 +52,81 @@ static int VGAHelpErrorBase;
 static int ProcVGAHelpDispatch(), SProcVGAHelpDispatch();
 static void VGAHelpResetProc();
 
-static unsigned char VGAHelpReqCode;
+static unsigned char VGAHelpReqCode = 0;
+
+/* The XF86VIDMODE_EVENTS code is far from complete */
+
+#ifdef XF86VIDMODE_EVENTS
+static int XF86VidModeEventBase = 0;
+
+static void SXF86VidModeNotifyEvent();
+
+
+extern WindowPtr *WindowTable;
+
+static RESTYPE EventType;	/* resource type for event masks */
+
+typedef struct _XF86VidModeEvent *XF86VidModeEventPtr;
+
+typedef struct _XF86VidModeEvent {
+    XF86VidModeEventPtr	next;
+    ClientPtr		client;
+    ScreenPtr		screen;
+    XID			resource;
+    CARD32		mask;
+} XF86VidModeEventRec;
+
+static int XF86VidModeFreeEvents();
+
+typedef struct _XF86VidModeScreenPrivate {
+    XF86VidModeEventPtr	events;
+    Bool		hasWindow;
+} XF86VidModeScreenPrivateRec, *XF86VidModeScreenPrivatePtr;
+   
+static int ScreenPrivateIndex;
+
+#define GetScreenPrivate(s) ((ScreenSaverScreenPrivatePtr)(s)->devPrivates[ScreenPrivateIndex].ptr)
+#define SetScreenPrivate(s,v) ((s)->devPrivates[ScreenPrivateIndex].ptr = (pointer) v);
+#define SetupScreen(s)  ScreenSaverScreenPrivatePtr pPriv = GetScreenPrivate(s)
+
+#define New(t)  ((t *) xalloc (sizeof (t)))
+#endif
 
 void
 XFree86VidModeExtensionInit()
 {
     ExtensionEntry* extEntry;
+    int		    i;
+    ScreenPtr	    pScreen;
 
-    if (extEntry = AddExtension(XF86VIDMODENAME,
+#ifdef XF86VIDMODE_EVENTS
+    EventType = CreateNewResourceType(XF86VidModeFreeEvents);
+    ScreenPrivateIndex = AllocateScreenPrivateIndex ();
+    for (i = 0; i < screenInfo.numScreens; i++)
+    {
+	pScreen = screenInfo.screens[i];
+	SetScreenPrivate (pScreen, NULL);
+    }
+#endif
+
+    if (
+#ifdef XF86VIDMODE_EVENTS
+        EventType && ScreenPrivateIndex != -1 &&
+#endif
+	(extEntry = AddExtension(XF86VIDMODENAME,
 				XF86VidModeNumberEvents,
 				XF86VidModeNumberErrors,
 				ProcVGAHelpDispatch,
 				SProcVGAHelpDispatch,
 				VGAHelpResetProc,
-				StandardMinorOpcode)) {
+				StandardMinorOpcode))) {
 	VGAHelpReqCode = (unsigned char)extEntry->base;
+	VGAHelpErrorBase = extEntry->errorBase;
+#ifdef XF86VIDMODE_EVENTS
+	XF86VidModeEventBase = extEntry->eventBase;
+	EventSwapVector[XF86VidModeEventBase] = SXF86VidModeNotifyEvent;
+#endif
     }
-    VGAHelpErrorBase = extEntry->errorBase;
 }
 
 /*ARGSUSED*/
@@ -78,6 +136,170 @@ VGAHelpResetProc (extEntry)
 {
 }
 
+#ifdef XF86VIDMODE_EVENTS
+static void
+CheckScreenPrivate (pScreen)
+    ScreenPtr	pScreen;
+{
+    SetupScreen (pScreen);
+
+    if (!pPriv)
+	return;
+    if (!pPriv->events && !pPriv->hasWindow) {
+	xfree (pPriv);
+	SetScreenPrivate (pScreen, NULL);
+    }
+}
+    
+static XF86VidModeScreenPrivatePtr
+MakeScreenPrivate (pScreen)
+    ScreenPtr	pScreen;
+{
+    SetupScreen (pScreen);
+
+    if (pPriv)
+	return pPriv;
+    pPriv = New (XF86VidModeScreenPrivateRec);
+    if (!pPriv)
+	return 0;
+    pPriv->events = 0;
+    pPriv->hasWindow = FALSE;
+    SetScreenPrivate (pScreen, pPriv);
+    return pPriv;
+}
+
+static unsigned long
+getEventMask (pScreen, client)
+    ScreenPtr	pScreen;
+    ClientPtr	client;
+{
+    SetupScreen(pScreen);
+    XF86VidModeEventPtr pEv;
+
+    if (!pPriv)
+	return 0;
+    for (pEv = pPriv->events; pEv; pEv = pEv->next)
+	if (pEv->client == client)
+	    return pEv->mask;
+    return 0;
+}
+
+static Bool
+setEventMask (pScreen, client, mask)
+    ScreenPtr	pScreen;
+    ClientPtr	client;
+    unsigned long mask;
+{
+    SetupScreen(pScreen);
+    XF86VidModeEventPtr pEv, *pPrev;
+
+    if (getEventMask (pScreen, client) == mask)
+	return TRUE;
+    if (!pPriv) {
+	pPriv = MakeScreenPrivate (pScreen);
+	if (!pPriv)
+	    return FALSE;
+    }
+    for (pPrev = &pPriv->events; pEv = *pPrev; pPrev = &pEv->next)
+	if (pEv->client == client)
+	    break;
+    if (mask == 0) {
+	*pPrev = pEv->next;
+	xfree (pEv);
+	CheckScreenPrivate (pScreen);
+    } else {
+	if (!pEv) {
+	    pEv = New (ScreenSaverEventRec);
+	    if (!pEv) {
+		CheckScreenPrivate (pScreen);
+		return FALSE;
+	    }
+	    *pPrev = pEv;
+	    pEv->next = NULL;
+	    pEv->client = client;
+	    pEv->screen = pScreen;
+	    pEv->resource = FakeClientID (client->index);
+	}
+	pEv->mask = mask;
+    }
+    return TRUE;
+}
+
+static int
+XF86VidModeFreeEvents (value, id)
+    pointer value;
+    XID id;
+{
+    XF86VidModeEventPtr	pOld = (XF86VidModeEventPtr)value;
+    ScreenPtr pScreen = pOld->screen;
+    SetupScreen (pScreen);
+    XF86VidModeEventPtr	pEv, *pPrev;
+
+    if (!pPriv)
+	return TRUE;
+    for (pPrev = &pPriv->events; pEv = *pPrev; pPrev = &pEv->next)
+	if (pEv == pOld)
+	    break;
+    if (!pEv)
+	return TRUE;
+    *pPrev = pEv->next;
+    xfree (pEv);
+    CheckScreenPrivate (pScreen);
+    return TRUE;
+}
+
+static void
+SendXF86VidModeNotify (pScreen, state, forced)
+    ScreenPtr	pScreen;
+    int	    state;
+    Bool    forced;
+{
+    XF86VidModeScreenPrivatePtr	pPriv;
+    XF86VidModeEventPtr		pEv;
+    unsigned long		mask;
+    xXF86VidModeNotifyEvent	ev;
+    ClientPtr			client;
+    int				kind;
+
+    UpdateCurrentTimeIf ();
+    mask = XF86VidModeNotifyMask;
+    pScreen = screenInfo.screens[pScreen->myNum];
+    pPriv = GetScreenPrivate(pScreen);
+    if (!pPriv)
+	return;
+    kind = XF86VidModeModeChange;
+    for (pEv = pPriv->events; pEv; pEv = pEv->next)
+    {
+	client = pEv->client;
+	if (client->clientGone)
+	    continue;
+	if (!(pEv->mask & mask))
+	    continue;
+	ev.type = XF86VidModeNotify + XF86VidModeEventBase;
+	ev.state = state;
+	ev.sequenceNumber = client->sequence;
+	ev.timestamp = currentTime.milliseconds;
+	ev.root = WindowTable[pScreen->myNum]->drawable.id;
+	ev.kind = kind;
+	ev.forced = forced;
+	WriteEventsToClient (client, 1, (xEvent *) &ev);
+    }
+}
+
+static void
+SXF86VidModeNotifyEvent (from, to)
+    xXF86VidModeNotifyEvent *from, *to;
+{
+    to->type = from->type;
+    to->state = from->state;
+    cpswaps (from->sequenceNumber, to->sequenceNumber);
+    cpswapl (from->timestamp, to->timestamp);    
+    cpswapl (from->root, to->root);    
+    to->kind = from->kind;
+    to->forced = from->forced;
+}
+#endif
+	
 static int
 ProcVGAHelpQueryVersion(client)
     register ClientPtr client;
@@ -250,6 +472,24 @@ ProcVGAHelpSwitchMode(client)
 }
 
 static int
+ProcXF86VidModeLockModeSwitch(client)
+    register ClientPtr client;
+{
+    REQUEST(xXF86VidModeLockModeSwitchReq);
+    ScreenPtr vptr;
+
+    if (stuff->screen > screenInfo.numScreens)
+	return BadValue;
+
+    vptr = screenInfo.screens[stuff->screen];
+
+    REQUEST_SIZE_MATCH(xXF86VidModeLockModeSwitchReq);
+
+    xf86LockZoom(vptr, (short)stuff->lock);
+    return (client->noClientException);
+}
+
+static int
 ProcVGAHelpGetMonitor(client)
     register ClientPtr client;
 {
@@ -331,6 +571,8 @@ ProcVGAHelpDispatch (client)
 	return ProcVGAHelpSwitchMode(client);
     case X_VGAHelpGetMonitor:
 	return ProcVGAHelpGetMonitor(client);
+    case X_XF86VidModeLockModeSwitch:
+	return ProcXF86VidModeLockModeSwitch(client);
     default:
 	return BadRequest;
     }
@@ -393,6 +635,19 @@ SProcVGAHelpSwitchMode(client)
 }
 
 static int
+SProcXF86VidModeLockModeSwitch(client)
+    ClientPtr client;
+{
+    register int n;
+    REQUEST(xXF86VidModeLockModeSwitchReq);
+    swaps(&stuff->length, n);
+    REQUEST_SIZE_MATCH(xXF86VidModeLockModeSwitchReq);
+    swapl(&stuff->screen, n);
+    swaps(&stuff->lock, n);
+    return ProcXF86VidModeLockModeSwitch(client);
+}
+
+static int
 SProcVGAHelpGetMonitor(client)
     ClientPtr client;
 {
@@ -421,6 +676,8 @@ SProcVGAHelpDispatch (client)
 	return SProcVGAHelpSwitchMode(client);
     case X_VGAHelpGetMonitor:
 	return SProcVGAHelpGetMonitor(client);
+    case X_XF86VidModeLockModeSwitch:
+	return SProcXF86VidModeLockModeSwitch(client);
     default:
 	return BadRequest;
     }

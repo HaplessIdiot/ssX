@@ -1,5 +1,5 @@
 /* $XConsortium: xf861502x.h,v 1.2 94/11/21 22:06:17 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.h,v 3.1 1995/01/28 15:49:22 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/xf861502x.h,v 3.2 1995/05/27 03:03:23 dawes Exp $ */
 /*
  * Copyright 1994 by Henry A. Worth  <haw30@eng.amdahl.com>
  *
@@ -83,10 +83,8 @@ extern Bool SC1502X_IPF_ACCESS;
 #define SC1502X_CMD_16BPP		0xE0
 #define SC15025_CMD_24BPP_RGB_EDGE_TRGR 0x41
 #define SC15025_CMD_24BPP_BGR_EDGE_TRGR 0x40
-#define SC15025_CMD_24BPP_RGB		0x60
-#define SC15025_CMD_24BPP_BGR		0x61
-#define SC15021_CMD_24BPP_RGB		0x40
-#define SC15021_CMD_24BPP_BGR		0x41
+#define SC1502X_CMD_24BPP_RGB		0x60
+#define SC1502X_CMD_24BPP_BGR		0x61
 
 
 /* registers accessed by setting EPRF bit */

@@ -1,5 +1,5 @@
 /* $XConsortium: xf86.h,v 1.5 95/01/16 13:16:56 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.16 1995/03/19 10:18:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.17 1995/03/19 12:18:28 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -159,14 +159,15 @@ typedef struct {
   xrgb           whiteColour;
   int            *validTokens;
   char           *patchLevel;
-  unsigned int   IObase;          /* AGX - video card I/O reg base    */
-  unsigned int   DACbase;         /* AGX - dac I/O reg base           */
-  unsigned int   COPbase;         /* AGX - coprocessor memory base    */
-  unsigned int   POSbase;         /* AGX - I/O address of POS regs    */
-  unsigned int   instance;        /* AGX - video card instance number */
+  unsigned int   IObase;          /* AGX - video card I/O reg base        */
+  unsigned int   DACbase;         /* AGX - dac I/O reg base               */
+  unsigned long  COPbase;         /* AGX - coprocessor memory base        */
+  unsigned int   POSbase;         /* AGX - I/O address of POS regs        */
+  int            instance;        /* AGX - XGA video card instance number */
   int s3Madjust;
   int s3Nadjust;
   int s3MClk;
+  unsigned long  VGAbase;         /* AGX - 64K aperture memory addreee    */
 } ScrnInfoRec, *ScrnInfoPtr;
 
 typedef struct {
@@ -336,6 +337,13 @@ void xf86SetViewport(
     ScreenPtr pScreen,
     int x,
     int y
+#endif
+);
+
+void xf86LockZoom(
+#if NeedFunctionPrototypes
+    ScreenPtr pScreen,
+    int lock
 #endif
 );
 

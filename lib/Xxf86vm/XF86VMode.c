@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.2 1995/06/04 14:39:57 dawes Exp $ */
+/* $XFree86: xc/lib/XExExt/XF86VMode.c,v 3.3 1995/06/08 06:20:47 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -203,6 +203,27 @@ Bool XF86VidModeSwitchMode(dpy, screen, zoom)
     req->vgahelpReqType = X_VGAHelpSwitchMode;
     req->screen = screen;
     req->zoom = zoom;
+    UnlockDisplay(dpy);
+    SyncHandle();
+    return True;
+}
+    
+Bool XF86VidModeLockModeSwitch(dpy, screen, lock)
+    Display* dpy;
+    int screen;
+    int lock;
+{
+    XExtDisplayInfo *info = find_display (dpy);
+    xXF86VidModeLockModeSwitchReq *req;
+
+    XF86VidModeCheckExtension (dpy, info, False);
+
+    LockDisplay(dpy);
+    GetReq(XF86VidModeLockModeSwitch, req);
+    req->reqType = info->codes->major_opcode;
+    req->vgahelpReqType = X_XF86VidModeLockModeSwitch;
+    req->screen = screen;
+    req->lock = lock;
     UnlockDisplay(dpy);
     SyncHandle();
     return True;

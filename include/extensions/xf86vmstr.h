@@ -1,4 +1,4 @@
-/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.1 1995/03/19 10:08:14 dawes Exp $ */
+/* $XFree86: xc/include/extensions/xf86vmstr.h,v 3.2 1995/06/08 06:19:48 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Kaleb S. KEITHLEY
@@ -38,7 +38,7 @@ from the Kaleb S. KEITHLEY
 #define XF86VIDMODENAME "XFree86-VidModeExtension"
 
 #define XF86VIDMODE_MAJOR_VERSION	0	/* current version numbers */
-#define XF86VIDMODE_MINOR_VERSION	1
+#define XF86VIDMODE_MINOR_VERSION	2
 
 typedef struct _VGAHelpQueryVersion {
     CARD8	reqType;		/* always VgaHelpReqCode */
@@ -116,6 +116,15 @@ typedef struct _VGAHelpSwitchMode {
     CARD16	zoom B16;
 } xVGAHelpSwitchModeReq;
 #define sz_xVGAHelpSwitchModeReq	8
+
+typedef struct _XF86VidModeLockModeSwitch {
+    CARD8	reqType;		/* always VgaHelpReqCode */
+    CARD8	vgahelpReqType;		/* always X_XF86VidModeLockModeSwitch */
+    CARD16	length B16;
+    CARD16	screen B16;
+    CARD16	lock B16;
+} xXF86VidModeLockModeSwitchReq;
+#define sz_xXF86VidModeLockModeSwitchReq	8
 
 typedef struct {
     BYTE	type;			/* X_Reply */

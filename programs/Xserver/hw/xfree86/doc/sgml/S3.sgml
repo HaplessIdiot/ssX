@@ -9,15 +9,18 @@
 <sect> Supported hardware
 <p>
 The current S3 Server supports the following S3 chipsets: 911, 924,
-801/805, 928, 732 (Trio32), 764 (Trio64), 864, and 964.  The S3 server
-will also recognise the 866, 868 and 968, but it has not been tested
-these chipsets.  If you have any problems or success with these, please
+801/805, 928, 732 (Trio32), 764 (Trio64), 864, 868, 964 and 968.  The 
+S3 server will also recognise the 866, but it has not been tested with
+this chipset.  If you have any problems or success with these, please
 report it to us.
 
 Nevertheless, this is not enough to support every board using one of these
 chipsets. The following list contains some data points on boards that are
 known to work.  If your card is similar to one of the described ones,
 chances are good it might work for you, too.
+
+Note that 968-based cards which use the IBM 64bit RAMDACs are not yet
+supported.
 
 <descrip>
 <tag>S3 801/805, AT&amp;T 20C490 (or similar) RAMDAC</tag>
@@ -229,10 +232,12 @@ chances are good it might work for you, too.
 
  	ClockChip <TT/"ICS2595"/
 
- 	Clockchip support is only preliminary and on some machines
+ 	Clockchip support is still sometimes flakey and on some machines
  	problems with the first mode after startup of XF86_S3 or after
  	switching back from VT have been seen; switching to next mode
- 	with CTRL+ALT+``KP+'' and back seems to solve this problem
+ 	with CTRL+ALT+``KP+'' and back seems to solve this problem.
+
+	Interlaced modes don't work correctly.
 
         Mirage P64 with BIOS 4.xx uses the S3 SDAC.  
 
@@ -338,6 +343,21 @@ chances are good it might work for you, too.
 
 	Note: there are some display wrapping problems with the Trio64 at
 	8bpp which have not yet been fixed.
+
+<tag>S3 868, ? RAMDAC, ? Clockchip</tag>
+	<itemize>
+	<item> ELSA Winner 1000AVI
+	</itemize>
+
+	8/15/16/24 bpp
+
+<tag>S3 968, Ti3026 RAMDAC, Ti3026 Clockchip</tag>
+	<itemize>
+	<item> Elsa Winner 2000PRO/X
+	<item> Diamond Stealth 64 VIDEO VRAM
+	</itemize>
+
+	8/15/16/24 bpp
 
 </descrip>
 
@@ -500,7 +520,7 @@ exit
 
 <verb>
 $XConsortium: S3.sgml,v 1.6 95/01/27 16:14:30 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.16 1995/06/10 13:31:24 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/S3.sgml,v 3.17 1995/06/10 14:00:05 dawes Exp $
 </verb>
 
 </article>

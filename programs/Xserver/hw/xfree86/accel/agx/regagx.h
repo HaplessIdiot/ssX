@@ -1,5 +1,5 @@
 /* $XConsortium: regagx.h,v 1.4 95/01/23 15:33:47 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.9 1995/01/28 15:49:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/regagx.h,v 3.10 1995/05/27 03:03:19 dawes Exp $ */
 /*
  * AGXregs.h
  *
@@ -136,6 +136,7 @@ typedef struct {
 #define AGX_15_ONLY(chip)	((chip)==AGX_15)   
 #define AGX_16_ONLY(chip)	((chip)==AGX_16)   
 #define AGX_10_ONLY(chip)	((chip)==AGX_10)   
+#define AGX_10_XGA_ONLY(chip)   (((chip)&(AGX_10|XGA_1|XGA_2))!=0)
 #define XGA_SERIES(chip)	(((chip)&(XGA_1|XGA_2))!=0)   
 #define XGA_2_ONLY(chip)	((chip)==XGA_2)   
 #define XGA_1_ONLY(chip)	((chip)==XGA_1)   
@@ -261,7 +262,8 @@ extern agxPixMap *agxCurPixMap[2];
 
 #define POS_CONF_EXT_MEM_MASK    	0xF0      
 #define POS_CONF_EXT_MEM_MULT    	0x200      
-#define POS_CONF_EXT_MEM_BASE    	0xC1C00      
+#define POS_CONF_EXT_MEM_BASE    	0xC0000      
+#define POS_CONF_COPROC_REG_OFF		0x01C00      
 #define POS_CONF_INSTANCE_MASK	 	0x0C
 #define POS_CONF_INSTANCE_SHIFT 	0x01
 #define POS_CONF_XGA_ENABLE_MASK	0x01

@@ -1,5 +1,5 @@
 /* $XConsortium: agxInit.c,v 1.7 95/01/23 15:33:43 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.15 1995/01/28 15:49:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/agx/agxInit.c,v 3.16 1995/05/27 03:03:02 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -438,9 +438,9 @@ agxInfoRec.depth:%d, hercDoubledClocks:%x, usingHercBigDac:%x\n",
        case 24:
        case 32:
             crtcRegs->bpp = 32;
-            if (hercDoubledClocks) {
+            if (usingHercBigDac) {
                crtcRegs->hblnk_strt_lo -= 0;
-               crtcRegs->hblnk_end_lo  += 1;
+               crtcRegs->hblnk_end_lo  += 0;
             }
             crtcRegs->hsync_pos_1 = IR_CHP1_NO_DELAY;
             crtcRegs->hsync_pos_2 = IR_CHP2_NO_DELAY;
@@ -465,6 +465,8 @@ agxInfoRec.depth:%d, hercDoubledClocks:%x, usingHercBigDac:%x\n",
     temp = mode->CrtcVTotal - 1;
     crtcRegs->vblnk_end_lo =
        crtcRegs->vtotal_lo = temp & 0xFF;
+    if (mode->Flags & V_INTERLACE) 
+       crtcRegs->vtotal_lo |= 1;    /* must be odd */ 
     crtcRegs->vblnk_end_hi =
        crtcRegs->vtotal_hi = (temp>>8) & 0xFF;
 
@@ -554,7 +556,8 @@ agxSetCRTCRegs(crtcRegs)
      agxCRTCRegPtr crtcRegs;
 {
    unsigned char byteData;
-   Bool hercDoubledClocks = hercBigDAC && crtcRegs->clock_sel > 15;
+   Bool hercDoubledClocks = hercBigDAC 
+                            && crtcRegs->clock_sel > 15;
    Bool usingHercBigDac = hercBigDAC 
                           && ( crtcRegs->clock_sel > 15 
                                ||  crtcRegs->bpp > 8 ) ;
@@ -616,7 +619,8 @@ agxSetCRTCRegs(crtcRegs)
       else
           byteData &= ~IR_M1_INTERLACED;
 
-      if (!usingHercBigDac /* && xf86RamDacType != SC15021_DAC */ ) {
+      if( !usingHercBigDac 
+          && !(xf86RamDacType == SC15021_DAC && crtcRegs->bpp > 16)  ) {
           /* for edge triggered RAMDAC modes */
           if( crtcRegs->bpp != 8 )
               byteData |= IR_M1_XGA_CRTC_DELAY;
@@ -655,7 +659,10 @@ agxSetCRTCRegs(crtcRegs)
          case 32:
             if (!usingHercBigDac && xf86RamDacType != SC15021_DAC)
                byteData |= IR_M3_PCLK_EDGE_TRIGGERED; 
-            byteData |= IR_M3_RGBX_UNPACKED | IR_M3_24BPP_ENGINE;
+            if( xf86RamDacType == SC15021_DAC )
+               byteData |= IR_M3_RGB_PACKED | IR_M3_24BPP_ENGINE;
+            else
+               byteData |= IR_M3_RGBX_UNPACKED | IR_M3_24BPP_ENGINE;
             break;
       }
 
