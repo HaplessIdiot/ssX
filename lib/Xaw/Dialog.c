@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Dialog.c,v 1.4 1998/10/03 08:42:03 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Dialog.c,v 1.5 1999/06/06 08:47:55 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -362,7 +362,12 @@ XawDialogGetValuesHook(Widget w, ArgList args, Cardinal *num_args)
 	    XtSetArg(a[0], XtNstring, &s);
 	    XtGetValues(src->dialog.valueW, a, 1);
 	    *((char **)args[i].value) = s;
-    }
+	}
+	else if (streq(args[i].name, XtNlabel)) {
+	    XtSetArg(a[0], XtNlabel, &s);
+	    XtGetValues(src->dialog.labelW, a, 1);
+	    *((char **)args[i].value) = s;
+	}
 }
 
 /*

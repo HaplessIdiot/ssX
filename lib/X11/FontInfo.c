@@ -20,10 +20,21 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86$ */
+/* $XFree86: xc/lib/X11/FontInfo.c,v 1.2 1999/05/09 10:49:21 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
+
+#if defined(XF86BIGFONT) && !defined(MUSTCOPY)
+#define USE_XF86BIGFONT
+#endif
+#ifdef USE_XF86BIGFONT
+extern void _XF86BigfontFreeFontMetrics(
+#if NeedFunctionPrototypes
+    XFontStruct*	/* fs */
+#endif
+);
+#endif
 
 #if NeedFunctionPrototypes
 char **XListFontsWithInfo(
@@ -235,7 +246,11 @@ int actualCount;
 	if (info) {
 		for (i = 0; i < actualCount; i++) {
 			if (info[i].per_char)
+#ifdef USE_XF86BIGFONT
+				_XF86BigfontFreeFontMetrics(&info[i]);
+#else
 				Xfree ((char *) info[i].per_char);
+#endif
 			if (info[i].properties)
 				Xfree ((char *) info[i].properties);
 			}

@@ -1,4 +1,24 @@
 XFree86 4.0c (13 June 2000)
+ 266. Recent versions of FreeBSD have the xpg4 library folded into libc.
+ 265. xf86cfg updates (#3973, Paulo Cesar Pereira de Andrade).
+ 264. Xaw bug fixes (#3973, Paulo Cesar Pereira de Andrade).
+ 263. Fix M-d and M-h key bindings in the Xaw Text widget (#A.87,
+      Jonathan Kamens).
+ 262. Fix some Xaw memory errors (#A.79, Jonathan Kamens).
+ 261. Xman fixes/updates, including:
+       - Fix a core dump in fclose()
+       - Append the default search path when MANPATH ends in a ':'
+       - Understand man pages that have a single line with a .so directive
+      (#3969, 3973, Paulo Cesar Pereira de Andrade).
+ 260. Resync nls Compose file with 3.3.6 (#3964, 3973,
+      Paulo Cesar Pereira de Andrade).
+ 259. Fix moving the pointer between screens when using MouseKeys, and fix
+      some bugs in the xkbfile code (#3963, 3973,
+      Paulo Cesar Pereira de Andrade).
+ 258. Fix XC-SECURITY security bug (#3954, 3973,
+      Paulo Cesar Pereira de Andrade).
+ 257. Bigfont bug fix, which stops cvsup crashing (#3954, 3973,
+      Paulo Cesar Pereira de Andrade).
  256. Replace some bitswapping assembler code in XAA with faster C code
       (Mark Vojkovich).
  255. Rendition driver updates, including:
@@ -10501,4 +10521,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1178 2000/06/13 02:28:29 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1179 2000/06/13 02:52:43 mvojkovi Exp $

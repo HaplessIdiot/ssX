@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.1 2000/04/04 22:37:02 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/screen.c,v 1.2 2000/05/18 16:30:00 dawes Exp $
  */
 
 #include <X11/IntrinsicP.h>
@@ -908,7 +908,7 @@ UpdateScreenUI(void)
 {
     XF86ConfLayoutPtr lay = computer.layout;
     XF86ConfAdjacencyPtr adj, prev, left, base;
-    int i, p, cols;
+    int i, p, cols, scrno;
 
     if (lay == NULL)
 	return;
@@ -919,14 +919,14 @@ UpdateScreenUI(void)
 	  qcmp_screen);
 
     adj = prev, base = NULL;
-    for (i = p = 0; i < computer.num_screens; i++) {
+    for (i = p = scrno = 0; i < computer.num_screens; i++) {
 	XF86ConfScreenPtr scr = computer.screens[i]->screen;
 
 	if (computer.screens[i]->state == UNUSED)
 	    continue;
 
 	adj = (XF86ConfAdjacencyPtr)XtCalloc(1, sizeof(XF86ConfAdjacencyRec));
-	adj->adj_scrnum = i;
+	adj->adj_scrnum = scrno++;
 	adj->adj_screen = scr;
 	adj->adj_screen_str = XtNewString(scr->scrn_identifier);
 	if (base == NULL) {

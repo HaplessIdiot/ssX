@@ -28,7 +28,7 @@ other dealings in this Software without prior written authorization
 from the X Consortium.
 
 */
-/* $XFree86: xc/programs/xman/handler.c,v 1.3 2000/03/03 23:16:26 dawes Exp $ */
+/* $XFree86: xc/programs/xman/handler.c,v 1.4 2000/03/06 22:59:34 dawes Exp $ */
 
 /*
  * xman - X window system manual page display program.
@@ -186,7 +186,6 @@ PutUpManpage(ManpageGlobals * man_globals, FILE * file)
     return;
 
   OpenFile(man_globals, file);
-  fclose(file);
 
   if (!man_globals->both_shown) {
     Arg arglist[1];

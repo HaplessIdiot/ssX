@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.33 1999/08/15 13:00:32 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.34 1999/08/21 13:47:35 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -830,8 +830,10 @@ DestroyVScrollBar(TextWidget ctx)
 
     XtDestroyWidget(vbar);
     ctx->text.vbar = NULL;
-    PositionHScrollBar(ctx);
-    TextSinkResize(ctx->text.sink);
+    if (!ctx->core.being_destroyed) {
+	PositionHScrollBar(ctx);
+	TextSinkResize(ctx->text.sink);
+    }
 }
 
 static void
@@ -886,7 +888,8 @@ DestroyHScrollBar(TextWidget ctx)
 
     XtDestroyWidget(hbar);
     ctx->text.hbar = NULL;
-    TextSinkResize(ctx->text.sink);
+    if (!ctx->core.being_destroyed)
+	TextSinkResize(ctx->text.sink);
 }
 
 /*ARGSUSED*/
@@ -1791,7 +1794,9 @@ UpdateTextInLine(TextWidget ctx, int line, int x1, int x2)
     XawTextSinkFindPosition(ctx->text.sink, lt->position,
 			    from_x, x1 - from_x,
 			    False, &left, &width, &height);
-    if (x2 >= lt->textWidth - from_x)
+    if (line == ctx->text.lt.lines)
+	right = -1;
+    else if (x2 >= lt->textWidth - from_x)
 	right = lt[1].position - 1;
     else {
 	from_x += width;
@@ -1800,7 +1805,7 @@ UpdateTextInLine(TextWidget ctx, int line, int x1, int x2)
 				False, &right, &width, &height);
     }
 
-    if (right + 1 <= lt[1].position)
+    if ((right < 0) || (right + 1 <= lt[1].position))
 	++right;
 
     /* Mark text interval to be repainted */

@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.22 1999/08/28 09:00:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSrc.c,v 1.23 1999/09/27 06:29:10 dawes Exp $ */
 
 /*
  * AsciiSrc.c - AsciiSrc object. (For use with the text widget).
@@ -355,10 +355,7 @@ ReadText(Widget w, XawTextPosition pos, XawTextBlock *text, int length)
     AsciiSrcObject src = (AsciiSrcObject)w;
     XawTextPosition count, start;
     Piece *piece;
-#if 0	/* #ifndef OLDXAW 
-	 * this code is correct, but adds an unnecessary overhead to the
-	 * current implementation
-	 */
+#ifndef OLDXAW 
     XawTextAnchor *anchor;
     XawTextEntity *entity;
     XawTextPosition offset, end = pos + length;

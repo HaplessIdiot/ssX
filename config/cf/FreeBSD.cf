@@ -2,7 +2,7 @@ XCOMM platform:  $TOG: FreeBSD.cf /main/21 1997/10/05 20:42:34 kaleb $
 XCOMM
 XCOMM
 XCOMM
-XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.92 2000/03/21 19:56:54 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.93 2000/06/07 02:13:00 dawes Exp $
 
 #ifndef UseElfFormat
 #define UseElfFormat		DefaultToElfFormat
@@ -29,7 +29,15 @@ XCOMM platform:  $XFree86: xc/config/cf/FreeBSD.cf,v 3.92 2000/03/21 19:56:54 da
 #ifndef OSTeenyVersion
 #define OSTeenyVersion		DefaultOSTeenyVersion
 #endif
-XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion)
+
+#ifndef OSRelVersion
+/* Include this to get finer-grained information about the OS version */
+#include "/usr/include/osreldate.h"
+#define OSRelVersion __FreeBSD_version
+#endif
+
+XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVersion) (OsRelVersion)
+
 
 #define HasGcc			YES
 #define HasGcc2			YES
@@ -86,7 +94,9 @@ XCOMM operating system:  OSName (OSMajorVersion./**/OSMinorVersion./**/OSTeenyVe
 #endif
 #ifndef ExtraLibraries
 /* support for multi-byte locales is in libxpg4 rather than libc */
-#if OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)
+#if (OSMajorVersion > 2 || (OSMajorVersion == 2 && OSMinorVersion >= 2)) && \
+    !(OSMajorVersion == 4 && OSRelVersion >= 400020) && \
+    !(OSRelVersion >= 500005)
 #define ExtraLibraries		-lxpg4
 #else
 #define ExtraLibraries		/**/

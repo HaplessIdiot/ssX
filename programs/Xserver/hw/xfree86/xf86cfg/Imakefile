@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.4 2000/04/07 03:57:55 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/Imakefile,v 1.5 2000/05/18 16:29:59 dawes Exp $
 
 XCOMM CDEBUGFLAGS=-g -Wall -ansi -pedantic
 
@@ -7,6 +7,7 @@ SRCS	=\
 	card-cfg.c\
 	cards.c\
 	config.c\
+	help.c\
 	interface.c\
 	keyboard-cfg.c\
 	monitor-cfg.c\
@@ -23,6 +24,7 @@ OBJS	=\
 	cards.o\
 	config.o\
 	card-cfg.o\
+	help.o\
 	interface.o\
 	keyboard-cfg.o\
 	monitor-cfg.o\
@@ -68,6 +70,7 @@ InstallProgramWithFlags($(PROG),$(BINDIR),NullParameter)
 InstallMultipleFlags($(XBMPICS),$(INCDIR)/X11/bitmaps,$(INSTINCFLAGS))
 InstallMultipleFlags($(XPMPICS),$(INCDIR)/X11/pixmaps,$(INSTINCFLAGS))
 InstallAppDefaults(XF86Cfg)
+InstallManPage(xf86cfg,$(MANDIR))
 
 NormalLibraryObjectRule()
 DependTarget()

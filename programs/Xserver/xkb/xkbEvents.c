@@ -24,7 +24,7 @@ OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION  WITH
 THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ********************************************************/
-/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.3 1996/12/23 07:10:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/xkb/xkbEvents.c,v 3.4 1997/12/14 02:55:42 dawes Exp $ */
 
 #include <stdio.h>
 #define NEED_EVENTS 1
@@ -895,7 +895,7 @@ XkbFilterEvents(pClient,nEvents,xE)
     xEvent	*xE;
 #endif
 {
-int	i;
+int	i, button_mask;
 DeviceIntPtr pXDev = (DeviceIntPtr)LookupKeyboardDevice();
 XkbSrvInfoPtr	xkbi;
 
@@ -946,6 +946,19 @@ XkbSrvInfoPtr	xkbi;
 		state= xkbi->state.compat_lookup_mods;
 	    xE[0].u.keyButtonPointer.state= state;
 	}
+	button_mask = 1 << xE[0].u.u.detail;
+	if (xE[0].u.u.type == ButtonPress &&
+	    ((xE[0].u.keyButtonPointer.state >> 7) & button_mask) == button_mask &&
+	    (xkbi->lockedPtrButtons & button_mask) == button_mask) {
+#ifdef DEBUG
+	    /* If the MouseKeys is pressed, and the "real" mouse is also pressed
+	     * when the mouse is released, the server does not behave properly.
+	     * Faking a release of the button here solves the problem.
+	     */
+	    ErrorF("Faking release of button %d\n", xE[0].u.u.detail);
+#endif
+	    XkbDDXFakePointerButton(ButtonRelease, xE[0].u.u.detail);
+        }
     }
     else {
 	register CARD8 	type;
@@ -979,6 +992,15 @@ XkbSrvInfoPtr	xkbi;
 	    else if ((type==EnterNotify)||(type==LeaveNotify)) {
 		xE->u.enterLeave.state&= 0x1F00;
 		xE->u.enterLeave.state|= xkbi->state.compat_grab_mods;
+	    }
+	    button_mask = 1 << xE[i].u.u.detail;
+	    if (type == ButtonPress &&
+		((xE[i].u.keyButtonPointer.state >> 7) & button_mask) == button_mask &&
+		(xkbi->lockedPtrButtons & button_mask) == button_mask) {
+#ifdef DEBUG
+		ErrorF("Faking release of button %d\n", xE[i].u.u.detail);
+#endif
+		XkbDDXFakePointerButton(ButtonRelease, xE[i].u.u.detail);
 	    }
 	}
     }
