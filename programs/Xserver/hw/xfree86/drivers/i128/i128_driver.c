@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.19 2001/04/01 14:00:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i128/i128_driver.c,v 1.20 2001/05/04 19:05:39 dawes Exp $ */
 
 
 /* All drivers should typically include these */
@@ -1266,6 +1266,7 @@ I128CountRam(ScrnInfoPtr pScrn)
          default: /* Unknown board... */
             break;
       }
+      break;
     case PCI_CHIP_I128_T2R:
       switch ((pI128->PciInfo->subsysCard) & 0xFFF7) {
 	 case 0x00:	/* 4MB card, no daughtercard */
