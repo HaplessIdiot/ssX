@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.10 2001/12/14 19:57:07 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtranstli.c,v 3.12tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -751,7 +751,7 @@ TRANS(TLICreateListener)(XtransConnInfo ciptr, struct t_bind *req)
 
 
 static int
-TRANS(TLIINETCreateListener)(XtransConnInfo ciptr, char *port)
+TRANS(TLIINETCreateListener)(XtransConnInfo ciptr, char *port, unsigned int flags)
 
 {
     char    portbuf[PORTBUFSIZE];
@@ -813,7 +813,7 @@ TRANS(TLIINETCreateListener)(XtransConnInfo ciptr, char *port)
 
 
 static int
-TRANS(TLITLICreateListener)(XtransConnInfo ciptr, char *port)
+TRANS(TLITLICreateListener)(XtransConnInfo ciptr, char *port, unsigned int flags)
 
 {
     struct t_bind	*req;

@@ -26,7 +26,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/xtrans/Xtransdnet.c,v 3.6 2001/12/14 19:57:05 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransdnet.c,v 3.7tsi Exp $ */
 
 /* Copyright 1993, 1994 NCR Corporation - Dayton, Ohio, USA
  *
@@ -340,7 +340,7 @@ TRANS(DNETSetOption) (XtransConnInfo ciptr, int option, int arg)
 #ifdef TRANS_SERVER
 
 static int
-TRANS(DNETCreateListener) (XtransConnInfo ciptr, char *port)
+TRANS(DNETCreateListener) (XtransConnInfo ciptr, char *port, unsigned int flags)
 
 {
     struct sockaddr_dn  dnsock;

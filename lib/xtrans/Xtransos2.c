@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/xtrans/Xtransos2.c,v 3.6 1999/06/20 08:41:22 dawes Exp $ */
+/* $XFree86: xc/lib/xtrans/Xtransos2.c,v 3.9tsi Exp $ */
 
 /*
  * (c) Copyright 1996 by Sebastien Marineau and Holger Veit
@@ -488,7 +488,7 @@ TRANS(Os2SetOption)(XtransConnInfo ciptr, int option, int arg)
 #ifdef TRANS_SERVER
 
 static
-TRANS(Os2CreateListener)(XtransConnInfo ciptr, char *port)
+TRANS(Os2CreateListener)(XtransConnInfo ciptr, char *port, unsigned int flags)
 {
 	PRMSG(2,"Os2CreateListener(%x->%d,%s)\n",ciptr,ciptr->fd,port);
 	return 0;
