@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.88 2005/01/04 15:26:38 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.89tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -713,13 +713,16 @@ pciGenFindNext(void)
 		    speculativeProbe = FALSE;
 		}
 
-		if (++pciBusNum >= pciMaxBusNum) {
+		do {
+		    if (++pciBusNum >= pciMaxBusNum) {
 #ifdef DEBUGPCI
-		    ErrorF("pciGenFindNext: out of buses\n");
+			ErrorF("pciGenFindNext: out of buses\n");
 #endif
-		    /* No more buses.  All done for now */
-		    return(PCI_NOT_FOUND);
-		}
+			/* No more buses.  All done for now */
+			return(PCI_NOT_FOUND);
+		    }
+		} while (pciBusInfo[pciBusNum] &&
+			 (pciBusInfo[pciBusNum]->numDevices == 0));
 
 		pciDevNum = 0;
 	    }
@@ -825,8 +828,50 @@ pciGenFindNext(void)
 		pciBusInfo[sec_bus]->secondary = TRUE;
 		pciBusInfo[sec_bus]->numDevices = 32;
 
-		if (pciNumBuses <= sec_bus)
-		    pciNumBuses = sec_bus + 1;
+		/*
+		 * If bridge is in power-save, disable secondary (and all
+		 * subordinate) buses.
+		 */
+		if (pciReadLong(pciDeviceTag, PCI_CMD_STAT_REG) &
+		    PCI_STAT_CAPABILITY) {
+		    CARD8 capptr = pciReadByte(pciDeviceTag, PCI_CAP_PTR);
+
+		    while (capptr &= ~0x03) {
+			if (pciReadByte(pciDeviceTag, capptr + PCI_CAP_ID) !=
+			    PCI_CAP_PM_ID) {
+			    capptr = pciReadByte(pciDeviceTag,
+						 capptr + PCI_CAP_NEXT);
+			    continue;
+			}
+
+			if (pciReadWord(pciDeviceTag, capptr + PCI_CAP_PM_CSR) &
+			    PCI_CAP_PM_MODE_MASK)
+			    pciBusInfo[sec_bus]->numDevices = 0;
+
+			break;
+		    }
+		}
+
+		if (pciBusInfo[sec_bus]->numDevices == 0) {
+		    int sub_bus;
+
+		    sub_bus = PCI_SUBORDINATE_BUS_EXTRACT(tmp, pciDeviceTag);
+		    if (sub_bus >= pciMaxBusNum)
+			sub_bus = pciMaxBusNum - 1;
+		    if (pciNumBuses <= sub_bus)
+			pciNumBuses = sub_bus + 1;
+
+		    for (;  sub_bus > sec_bus;  sub_bus--) {
+			if (!pciBusInfo[sub_bus])
+			    pciBusInfo[sub_bus] =
+				xnfalloc(sizeof(pciBusInfo_t));
+
+			*pciBusInfo[sub_bus] = *pciBusInfo[sec_bus];
+		    }
+		} else {
+		    if (pciNumBuses <= sec_bus)
+			pciNumBuses = sec_bus + 1;
+		}
 	    }
 	}
 #endif
@@ -1095,6 +1140,19 @@ xf86scanpci(int flags)
 		     * change.
 		     */
 		    devp->businfo = pciBusInfo[i];
+
+		    /*
+		     * If the secondary bus scan has been disabled, also set
+		     * the bridge pointer on all subordinate buses.
+		     */
+		    if (pciBusInfo[i]->numDevices == 0) {
+			int j;
+
+			j = PCI_SUBORDINATE_BUS_EXTRACT(devp->pci_pp_bus_register,
+							devp->tag);
+			for (;  j > i;  j--)
+			    pciBusInfo[j]->bridge = devp;
+		    }
 		}
 #ifdef ARCH_PCI_PCI_BRIDGE
 		ARCH_PCI_PCI_BRIDGE(devp);
@@ -1120,7 +1178,9 @@ xf86scanpci(int flags)
      * had a chance to modify these assignments.
      */
     for (idx = 0;  idx < pciNumBuses;  idx++) {
-	if (!(busp = pciBusInfo[idx]) || !(devp = busp->bridge))
+	if (!(busp = pciBusInfo[idx]) ||
+	    (busp->numDevices == 0) ||
+	    !(devp = busp->bridge))
 	    continue;
 	devp->businfo = busp;
     }

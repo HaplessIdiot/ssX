@@ -1,4 +1,10 @@
 XFree86 4.4.99.21 (xx December 2004)
+ 260. Add MAX_DOMAINS and MAX_PCI_BUSES limit checks in the OpenPROM scan on
+      UltraSPARC's running SunOS/Solaris (Marc La France).
+ 259. Change PCI scan to not probe bus segments that lie behind PCI-to-PCI
+      bridges that are found to be in an inoperative power-saving mode.  This
+      fixes system crashes that have been reported on Sun Blades
+      (Marc La France).
  258. Add tentative support for newer iterations of HP's zx1 chipsets
       (Marc La France).
  257. Automatic configuration updates, including:
@@ -19253,7 +19259,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3377 2005/01/07 23:03:10 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3378 2005/01/08 21:57:54 tsi Exp $
 
 
 
