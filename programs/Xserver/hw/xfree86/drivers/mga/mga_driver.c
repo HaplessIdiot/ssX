@@ -40,7 +40,7 @@
  *		RAMDAC MGA1064 timing,
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.6 1997/06/10 12:30:28 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.7 1997/06/15 07:12:33 dawes Exp $ */
 
 #include "X.h"
 #include "input.h"
@@ -510,6 +510,47 @@ MGAProbe()
 	}
 	
 	/*
+	 * Set up I/O ports to be used by this card.
+	 */
+	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
+	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
+	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_mgaExtPorts,
+				mgaExtPorts);
+
+	/* enable IO ports, etc. */
+	MGAEnterLeave(ENTER);
+
+#ifdef MGA_DISABLE_MMIO
+	ErrorF("Disabling MMIO before mapping\n");
+	{
+		CARD32 save;
+
+		save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
+		pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
+			     save & ~(PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+		ErrorF("Changed PCI_CMD_STAT_REG: before = 0x%08x, "
+			"after = 0x%08x\n", save,
+			pciReadLong(MGAPciTag, PCI_CMD_STAT_REG));
+	}
+	xf86usleep(1000000);
+#endif
+
+#ifdef MGA_MOVE_MMIO
+	ErrorF("Moving MMIO before mapping\n");
+	{
+		CARD32 save;
+
+		save = pciReadLong(MGAPciTag, PCI_MAP_REG_START);
+		pciWriteLong(MGAPciTag, PCI_MAP_REG_START, pcr->_base1);
+		ErrorF("Changed PCI_MAP_REG_START: before = 0x%08x, "
+			"after = 0x%08x\n", save,
+			pciReadLong(MGAPciTag, PCI_MAP_REG_START));
+	}
+	xf86usleep (1000000);
+#endif
+
+	
+	/*
 	 * Map IO registers to virtual address space
 	 */ 
 	MGAMMIOBase =
@@ -522,6 +563,18 @@ MGAProbe()
 #endif /* __alpha__ */
 			    vga256InfoRec.scrnIndex, MMIO_REGION,
 			    (pointer)(MGAMMIOAddr), 0x4000);
+#ifndef SVR4
+	/* Simulate the SVR4.0 mmap behaviour by reading the first long */
+	{
+		CARD32 val;
+
+		ErrorF("About to read the first dword\n");
+		xf86usleep(1000000);
+		val = ((volatile CARD32 *)MGAMMIOBase)[0];
+		ErrorF("Just read the first dword\n");
+	}
+#endif
+
 #ifdef __alpha__
 	MGAMMIOBaseDENSE =
 	  /* for Alpha, we need to map DENSE memory
@@ -544,17 +597,35 @@ MGAProbe()
 	ErrorF("MGABios.RamdacType = 0x%x\n",MGABios.RamdacType);
 #endif
 	
-	/*
-	 * Set up I/O ports to be used by this card.
-	 */
-	xf86ClearIOPortList(vga256InfoRec.scrnIndex);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_VGA_IOPorts, VGA_IOPorts);
-	xf86AddIOPorts(vga256InfoRec.scrnIndex, Num_mgaExtPorts,
-				mgaExtPorts);
+#ifdef MGA_MOVE_MMIO
+	ErrorF("Moving MMIO back after mapping\n");
+	{
+		CARD32 save;
 
-	/* enable IO ports, etc. */
-	MGAEnterLeave(ENTER);
+		save = pciReadLong(MGAPciTag, PCI_MAP_REG_START);
+		pciWriteLong(MGAPciTag, PCI_MAP_REG_START, pcr->_base0);
+		ErrorF("Changed PCI_MAP_REG_START: before = 0x%08x, "
+			"after = 0x%08x\n", save,
+			pciReadLong(MGAPciTag, PCI_MAP_REG_START));
+	}
+	xf86usleep (1000000);
+#endif
 	
+#ifdef MGA_DISABLE_MMIO
+	ErrorF("Enabling MMIO after mapping\n");
+	{
+		CARD32 save;
+
+		save = pciReadLong(MGAPciTag, PCI_CMD_STAT_REG);
+		pciWriteLong(MGAPciTag, PCI_CMD_STAT_REG,
+			     save | (PCI_CMD_IO_ENABLE | PCI_CMD_MEM_ENABLE));
+		ErrorF("Changed PCI_CMD_STAT_REG: before = 0x%08x, "
+			"after = 0x%08x\n", save,
+			pciReadLong(MGAPciTag, PCI_CMD_STAT_REG));
+	}
+	xf86usleep(1000000);
+#endif
+
 	/*
 	 * If the user has specified the amount of memory in the XF86Config
 	 * file, we respect that setting.

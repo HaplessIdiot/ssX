@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.21 1997/06/17 12:33:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.22 1997/06/25 08:25:05 hohndel Exp $ */
 
 
 
@@ -161,8 +161,11 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86EnableInterrupts)
    SYMFUNC(xf86GetNearestClock)
 
+   SYMFUNC(pciWriteByte)
    SYMFUNC(pciWriteWord)
    SYMFUNC(pcibusWrite)
+   SYMFUNC(pciReadByte)
+   SYMFUNC(pciReadWord)
    SYMFUNC(pcibusRead)
    SYMFUNC(pcibusTag)
    SYMFUNC(AllocatePixmapPrivateIndex)
