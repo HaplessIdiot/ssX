@@ -21,7 +21,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.8 1999/11/19 13:54:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/input/mutouch/xf86MuTouch.c,v 1.9 1999/12/13 23:38:14 robin Exp $ */
 
 /*
  *******************************************************************************
@@ -1843,7 +1843,7 @@ xf86MuTInit(InputDriverPtr	drv,
 #ifdef XFree86LOADER
 static
 #endif
-InputDriverRec MUT = {
+InputDriverRec MUTOUCH = {
     1,				/* driver version */
     "mutouch",			/* driver name */
     NULL,			/* identify */
@@ -1859,7 +1859,7 @@ Plug(pointer	module,
      int	*errmaj,
      int	*errmin)
 {
-  xf86AddInputDriver(&MUT, module, 0);
+  xf86AddInputDriver(&MUTOUCH, module, 0);
 
   return module;
 }
