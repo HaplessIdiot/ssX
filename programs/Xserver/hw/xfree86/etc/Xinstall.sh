@@ -1,7 +1,7 @@
 #!/bin/sh
 
 #
-# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.59 2003/12/03 04:40:49 dawes Exp $
+# $XFree86: xc/programs/Xserver/hw/xfree86/etc/Xinstall.sh,v 1.60 2003/12/05 18:48:34 dawes Exp $
 #
 # Copyright © 2000 by Precision Insight, Inc.
 # Copyright © 2000, 2001 by VA Linux Systems, Inc.
@@ -1746,6 +1746,68 @@ if [ -d $RUNDIR/lib/modules ]; then
 			echo "move or delete them if you use the xtt font module."
 		fi
 	fi
+fi
+
+case "$OsName" in
+FreeBSD|NetBSD)
+	DRMBUILDDIR="$RUNDIR/src/bsd/drm/kernel"
+	;;
+Linux)
+	DRMBUILDDIR="$RUNDIR/src/linux/drm/kernel"
+	;;
+esac
+
+DoDrmBuild=
+
+if [ -f $DRMBUILDDIR/Makefile ]; then
+	echo ""
+	echo "If you have source for your current kernel installed, you can"
+	echo "have new DRM kernel modules built and installed.  Note: this will"
+	echo "overwrite any existing DRM kernel modules you may have installed."
+	echo "If you'd prefer to save them before installing new ones, answer 'n'"
+	echo "here and follow the build/install instructions manually later."
+	echo ""
+	Echo "Do you want to build and install new DRM kernel modules? (y/n) [n] "
+	read response
+	case "$response" in
+	[yY]*)
+		DoDrmBuild=1
+		;;
+	*)
+		echo ""
+		echo "To build the DRM modules manually, run 'make' from the"
+		echo "$DRMBUILDDIR directory.  Once built, install"
+		echo "them by running 'make install' from the same directory."
+		;;
+	esac
+fi
+
+if [ X"$DoDrmBuild" != X ]; then
+	cd $DRMBUILDDIR && \
+		echo "" && \
+		echo "Building DRM modules" && \
+		make clean > build.log 2>&1 && \
+		make >> build.log 2>&1
+	if [ $? != 0 ]; then
+		echo ""
+		echo "DRM module build failed."
+		echo "See $DRMBUILDDIR/build.log for details."
+	else
+		echo ""
+		echo "Installing DRM modules"
+		make install > install.log 2>&1
+		if [ $? != 0 ]; then
+			echo ""
+			echo "DRM module install failed."
+			echo "See $DRMBUILDDIR/install.log for details."
+		else
+			echo ""
+			echo "DRM module build and install was successful."
+			echo "You may need to manually unload the old module and reload"
+			echo "the new ones, or reboot to have this done automatically."
+		fi
+	fi
+	cd $WDIR
 fi
 
 echo ""
