@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.11 1998/10/05 13:23:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/vga/generic.c,v 1.12 1998/10/06 04:39:37 dawes Exp $ */
 /*
  * Copyright (C) 1998 The XFree86 Project, Inc.  All Rights Reserved.
  *
@@ -393,7 +393,7 @@ static DisplayModeRec GenericDefaultMode =
     200, 206, 207, 224,                 /* VTiming */
     2,                                  /* VScan */
     V_CLKDIV2 | V_NHSYNC | V_PVSYNC,    /* Flags */
-    0, 0,                               /* ClockIndex & SynthClock */
+    0, 25176,                           /* ClockIndex & SynthClock */
     0, 0, 0, 0, 0, 0,                   /* Crtc timings set by ... */
     0,                                  /* ... xf86SetCrtcForModes() */
     0, 0, 0, 0, 0, 0,
@@ -790,7 +790,7 @@ GenericScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
             break;
 
         case 8:
-            cfbClearVisualTypes();
+            miClearVisualTypes();
 
             Inited = cfbScreenInit(pScreen, pvgaHW->Base,
                 pScreenInfo->virtualX, pScreenInfo->virtualY,
