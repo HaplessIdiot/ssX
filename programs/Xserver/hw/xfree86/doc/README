@@ -92,12 +92,13 @@ server.  Information about obtaining and installing binary distributions of
 this release can be found in the Installation Document.  Information about
 obtaining the release in source form is given below.
 
-The source for version 4.3.0 is split into three tarballs: X430src-1.tgz,
-X430src-2.tgz, X430src-3.tgz.  The first contains everything except the fonts
-and general X11 documentation.  It is sufficient for building XFree86 if you
-already have a set of fonts.  The second contains the fonts and the source
-for the general X11 documentation.  The third contains the general X11 docu-
-mentation in hardcopy format.
+The source for version 4.3.0 is split into seven tarballs: X430src-1.tgz,
+X430src-2.tgz, X430src-3.tgz, X430src-4.tgz, X430src-5.tgz, X430src-6.tgz and
+X430src-7.tgz.  The first three contain everything except the fonts and gen-
+eral X11 documentation.  Those three are sufficient for building XFree86 if
+you already have a set of fonts.  The fourth and fifth contain the fonts.
+The sixth contains the source for the general X11 documentation.  The seventh
+contains the general X11 documentation in hardcopy format.
 
 A source patch relative to version 4.2.0 is also available.  Because of its
 size, it is split into four parts.  The patch files are 4.2.0-4.3.0.diff1.gz,
@@ -112,20 +113,20 @@ tory.  The patches should be applied by running:
      gzip -d < 4.2.0-4.3.0.diff3.gz | patch -p0 -E
      gzip -d < 4.2.0-4.3.0.diff4.gz | patch -p0 -E
 
-     rm -f xc/extras/freetype2/builds/mac/ftlib.prj
-     rm -fr xc/extras/freetype2/docs/design
-     rm -fr xc/extras/freetype2/docs/glyphs
-     rm -fr xc/extras/freetype2/docs/image
-     rm -fr xc/extras/freetype2/docs/tutorial
-     rm -f xc/programs/Xserver/hw/darwin/bundle/English.lproj/MainMenu.nib/objects.nib
-     rm -f xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/Localizable.strings
-     rm -f xc/programs/Xserver/hw/darwin/bundle/Japanese.lproj/MainMenu.nib/objects.nib
+     rm -f xc/doc/hardcopy/Xext/mit-shm.PS.gz
+     rm -f xc/doc/hardcopy/saver/saver.PS.gz
+     rm -fr xc/fonts/scaled/Ethiopic
+     rm -fr xc/fonts/scaled/Meltho
+     rm -fr xc/programs/Xserver/hw/darwin/bundle
+     rm -f xc/programs/Xserver/hw/hp/input/drivers/XHPKeymaps
+     rm -f xc/programs/Xserver/hw/hp/ngle/ngledoblt.o.8.07
+     rm -f xc/programs/Xserver/hw/xwin/X.ico
+     rm -fr xc/programs/xcursorgen/redglass
+     rm -fr xc/programs/xcursorgen/whiteglass
+     touch xc/extras/Mesa/src/Trace/tr_attrib.c
+     touch xc/lib/fontconfig/NEWS
 
      gzip -d < 4.3.0.tgz | tar vxf -
-
-Patches might also be available relative to 4.2.1.  If so, the instructions
-for applying them are the same, except that you should start with a clean
-4.2.1 source tree.
 
 To format the XFree86 documentation use the latest version of our doctools
 package available from the XFree86 CVS repository's "doctools" module, and
@@ -151,7 +152,7 @@ yourself, send the entire log file with your bug report but not the operating
 system core dump.  Do not edit  the log file as our developers use it to
 reproduce and debug your problem.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.132 2003/02/26 16:41:14 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.134 2003/02/27 01:19:32 dawes Exp $
 
 
 $XFree86: $

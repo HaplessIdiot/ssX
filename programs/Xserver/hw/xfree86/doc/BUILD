@@ -29,13 +29,16 @@ Another method of getting the XFree86 4.3.0 source is to either download the
 4.3.0 source tarballs from the XFree86 ftp site.  The procedure for this is
 as follows:
 
-   o The XFree86 4.3.0 source is contained in files X430src-1.tgz,
-     X430src-2.tgz and X430src-3.tgz.  These can be found at
+   o The XFree86 4.3.0 source is contained in the files X430src-1.tgz,
+     X430src-2.tgz, X430src-3.tgz, X430src-4.tgz, X430src-5.tgz,
+     X430src-6.tgz and X430src-7.tgz.  These can be found at
      ftp://ftp.xfree86.org/pub/XFree86/4.3.0/source/ and similar locations on
-     XFree86 mirror sites.  X430src-2.tgz contains the fonts and documenta-
-     tion source.  X430src-3.tgz contains the hardcopy documentation.
-     X430src-1.tgz contains everything else.  If you don't need the docs or
-     fonts you can get by with only X430src-1.tgz.
+     XFree86 mirror sites.  X430src-4.tgz and X430src-5.tgz contains the
+     fonts.  X430src-6.tgz contains the documentation source.  X430src-7.tgz
+     contains the hardcopy documentation.  X430src-1.tgz, X430src-2.tgz and
+     X430src-3.tgz contains everything else.  If you don't need the docs or
+     fonts you can get by with only X430src-1.tgz, X430src-2.tgz and
+     X430src-3.tgz.
 
    o Extract each of these files by running the following from a directory on
      a filesystem containing enough space (the full source requires around
@@ -47,6 +50,14 @@ as follows:
           gzip -d < X430src-2.tgz | tar vxf -
 
           gzip -d < X430src-3.tgz | tar vxf -
+
+          gzip -d < X430src-4.tgz | tar vxf -
+
+          gzip -d < X430src-5.tgz | tar vxf -
+
+          gzip -d < X430src-6.tgz | tar vxf -
+
+          gzip -d < X430src-7.tgz | tar vxf -
 
 Alternatively, if you already have a pristine copy of the XFree86 4.2.0
 source, you can download patches from
@@ -74,8 +85,8 @@ have a good reason to change.  It is easy to create build problems by chang-
 ing the default configuration.  Many of the configuration parameters are doc-
 umented in xc/config/cf/README.
 
-If you are using just the X430src-1.tgz part of the source dist, you will
-need to define BuildFonts to NO.
+If you are using just the X430src-1.tgz, X430src-2.tgz and X430src-3.tgz
+parts of the source dist, you will need to define BuildFonts to NO.
 
 3.  Using a shadow directory of symbolic links for the build
 
@@ -237,7 +248,7 @@ XFree86:
      shown do not match your system, you probably need to set them manually
      in host.def and report the problem to <XFree86@XFree86.org>.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.10 2003/02/26 21:59:44 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/BUILD.sgml,v 3.11 2003/02/27 01:17:36 dawes Exp $
 
 
 $XFree86: $
