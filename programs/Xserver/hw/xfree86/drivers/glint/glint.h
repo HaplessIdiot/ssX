@@ -134,6 +134,7 @@ typedef struct {
     XAAInfoRecPtr	AccelInfoRec;
     CloseScreenProcPtr	CloseScreen;
     GCPtr		CurrentGC;
+    DrawablePtr		CurrentDrawable;
     I2CBusPtr		DDCBus, VSBus;
     CARD8*		XAAScanlineColorExpandBuffers[2];
 #ifdef XF86DRI
