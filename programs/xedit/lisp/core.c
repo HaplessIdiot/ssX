@@ -1432,7 +1432,7 @@ Lisp_Return(LispMac *mac, LispObj *list, char *fname)
     unsigned blevel = mac->block.block_level;
 
     while (blevel) {
-	LispBlock *block = &(mac->block.block[--blevel]);
+	LispBlock *block = mac->block.block[--blevel];
 
 	if (block->tag.type == LispNil_t) {
 	    mac->block.block_ret = list == NIL ? NIL : EVAL(CAR(list));
@@ -1458,7 +1458,7 @@ Lisp_ReturnFrom(LispMac *mac, LispObj *list, char *fname)
     list = CDR(list);
     while (blevel) {
 	int jmp = 1;
-	LispBlock *block = &(mac->block.block[--blevel]);
+	LispBlock *block = mac->block.block[--blevel];
 
 	if (tag->type == block->tag.type) {
 	    switch (tag->type) {
@@ -1686,7 +1686,7 @@ Lisp_Throw(LispMac *mac, LispObj *list, char *fname)
 
     while (blevel) {
 	int jmp = 1;
-	LispBlock *block = &(mac->block.block[--blevel]);
+	LispBlock *block = mac->block.block[--blevel];
 
 	if (tag->type == block->tag.type) {
 	    switch(tag->type) {

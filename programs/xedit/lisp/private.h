@@ -62,6 +62,7 @@
 #define RUN	mac->runlist
 #define RES	mac->reslist
 #define DBG	mac->dbglist
+#define BRK	mac->brklist
 
 /*
  * Types
@@ -136,7 +137,7 @@ struct _LispMac {
 	unsigned block_level;
 	unsigned block_size;
 	LispObj *block_ret;
-	LispBlock *block;
+	LispBlock **block;
     } block;
     struct {
 	unsigned mem_level;
@@ -160,7 +161,8 @@ struct _LispMac {
     LispObj *strlist;		/* structure definitions */
     LispObj *runlist[3];	/* +, ++, and +++ */
     LispObj *reslist[3];	/* *, **, and *** */
-    LispObj *dbglist;		/* debug extra information */
+    LispObj *dbglist;		/* debug information */
+    LispObj *brklist;		/* breakpoints information */
 
 #ifdef SIGNALRETURNSINT
     int (*sigint)(int);

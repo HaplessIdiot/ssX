@@ -1,4 +1,5 @@
 #!/bin/sh
+
 # $XFree86$
 # This file is mean't to be used when building xedit on a operating system
 # that does not have gperf.
@@ -7,8 +8,14 @@
 #	#define HasGperf	YES
 #	#define GperfCmd	gperf
 #
-# to xc/programs/cf/host.def file or patch
+# to xc/config/cf/host.def file or patch
 # xc/config/cf/<your-operating-system>.cf
+
+GPERF=`which gperf`
+if [ X$GPERF != X ]; then
+    # gperf is available, use it.
+    exec $GPERF $@
+fi
 
 FUNCTION=
 FILE=

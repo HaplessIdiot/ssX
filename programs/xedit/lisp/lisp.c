@@ -142,12 +142,13 @@ LispTopLevel(LispMac *mac)
     }
     gcpro = 0;
     mac->block.block_level = 0;
-    if (mac->block.block_size > 16) {
-	/* may have gone out of memory due to recursive calls */
+    if (mac->block.block_size) {
+	while (mac->block.block_size)
+	    free(mac->block.block[--mac->block.block_size]);
 	free(mac->block.block);
-	mac->block.block_size = 0;
-	mac->block.block_ret = NIL;
+	mac->block.block = NULL;
     }
+
     mac->setf = NULL;
     mac->cdr = mac->princ = mac->justsize = 0;
     if (mac->stream.stream_level) {
@@ -212,6 +213,7 @@ LispGC(LispMac *mac, LispObj *car, LispObj *cdr)
     LispMark(RES[1]);
     LispMark(RES[2]);
     LispMark(DBG);
+    LispMark(BRK);
     LispMark(car);
     LispMark(cdr);
 
@@ -1095,20 +1097,26 @@ LispBeginBlock(LispMac *mac, LispObj *tag, int eval)
     LispBlock *block;
 
     if (blevel >= mac->block.block_size) {
-	if ((block = (LispBlock*)realloc(mac->block.block,
-					 sizeof(LispBlock) * blevel)) == NULL)
+	LispBlock **blk = realloc(mac->block.block,
+				  sizeof(LispBlock*) * (blevel + 1));
+
+	if (blk == NULL)
 	    LispDestroy(mac, "out of memory");
-	mac->block.block = block;
+	else if ((block = malloc(sizeof(LispBlock))) == NULL)
+	    LispDestroy(mac, "out of memory");
+	mac->block.block = blk;
+	mac->block.block[mac->block.block_size] = block;
 	mac->block.block_size = blevel;
     }
-    block = &(mac->block.block[mac->block.block_level]);
+    block = mac->block.block[mac->block.block_level];
     if (eval)
 	tag = EVAL(tag);
     memcpy(&(block->tag), tag, sizeof(LispObj));
-    mac->block.block_level = blevel;
 
     block->level = mac->level;
-    block->block_level = blevel - 1;
+    block->block_level = mac->block.block_level;
+
+    mac->block.block_level = blevel;
 
     if (mac->debugging) {
 	block->debug_level = mac->debug_level;
@@ -1320,28 +1328,35 @@ LispEval(LispMac *mac, LispObj *obj)
 	LispDestroy(mac, "internal error, at INTERNAL:EVAL");
 
     switch (obj->type) {
+	case LispAtom_t:
+	    strname = obj->data.atom;
+	    if (mac->debugging)
+		LispDebugger(mac, LispDebugCallBegini, NIL, obj);
+	    if (obj->data.atom[0] != ':' &&
+		(obj = LispGetVar(mac, obj->data.atom, 0)) == NULL)
+		LispDestroy(mac, "the variable %s is unbound", strname);
+	    if (mac->debugging)
+		LispDebugger(mac, LispDebugCallEndi, NIL, obj);
+	    return (obj);
+	case LispQuote_t:
+	    if (mac->debugging) {
+		LispDebugger(mac, LispDebugCallBegini, NIL, obj);
+		LispDebugger(mac, LispDebugCallEndi, NIL, obj->data.quote);
+	    }
+	    return (obj->data.quote);
+	case LispSymbol_t:
+	    /* don't call debugger here, let LispEval be called again. */
+	    return (EVAL(obj->data.symbol.obj));
+	case LispCons_t:
+	    cons = obj;
+	    break;
 	case LispNil_t:
 	case LispTrue_t:
 	case LispReal_t:
 	case LispString_t:
 	case LispOpaque_t:
-	    return (obj);
-	case LispAtom_t:
-	    strname = obj->data.atom;
-	    if (obj->data.atom[0] == ':')
-		return (obj);
-	    else if ((obj = LispGetVar(mac, obj->data.atom, 0)) != NULL)
-		return (obj);
-	    LispDestroy(mac, "the variable %s is unbound", strname);
-	    /*NOTREACHED*/
-	case LispQuote_t:
-	    return (obj->data.quote);
-	case LispSymbol_t:
-	    return (EVAL(obj->data.symbol.obj));
-	case LispCons_t:
-	    cons = obj;
-	    break;
 	default:
+	    /* don't {step,next}i on literals */
 	    return (obj);
     }
     car = CAR(cons);
@@ -2322,8 +2337,10 @@ LispMachine(LispMac *mac)
 	    global_mac = mac;
 	    mac->sigint = signal(SIGINT, LispAbortSignal);
 	    mac->sigfpe = signal(SIGFPE, LispFPESignal);
-	    if (mac->interactive && mac->prompt)
+	    if (mac->interactive && mac->prompt) {
 		fprintf(lisp_stdout, "%s", mac->prompt);
+		fflush(lisp_stdout);
+	    }
 	    mac->level = 0;
 	    if ((cod = LispRun(mac)) != NULL) {
 		obj = EVAL(cod);
@@ -2428,7 +2445,7 @@ LispBegin(int argc, char *argv[])
     pagesize = getpagesize();
     segsize = pagesize / sizeof(LispObj);
     bzero(mac, sizeof(LispMac));
-    MOD = ENV = GLB = SYM = LEX = COD = FUN = FRM = STR = DBG = NIL;
+    MOD = ENV = GLB = SYM = LEX = COD = FUN = FRM = STR = DBG = BRK = NIL;
     LispAllocSeg(mac);
 
     /* initialize stream management */
@@ -2437,7 +2454,7 @@ LispBegin(int argc, char *argv[])
 	i = 1;
 
 	if (strcmp(argv[1], "-d") == 0) {
-	    mac->debugging = mac->interactive = 1;
+	    mac->debugging = 1;
 	    mac->debug_level = -1;
 	    ++i;
 	}
@@ -2457,7 +2474,7 @@ LispBegin(int argc, char *argv[])
     mac->mem.mem = (void**)calloc(mac->mem.mem_size = 16, sizeof(void*));
     mac->mem.mem_level = 0;
 
-    mac->prompt = ">";
+    mac->prompt = "> ";
     mac->newline = 1;
     mac->column = 0;
 
@@ -2514,10 +2531,8 @@ LispDebug(LispMac *mac, int enable)
 {
     mac->debugging = !!enable;
 
-    if (mac->debugging) {
-	/* assumes we are at the toplevel */
-	DBG = NIL;
-	mac->debug_level = -1;
-	mac->debug_step = 0;
-    }
+    /* assumes we are at the toplevel */
+    DBG = BRK = NIL;
+    mac->debug_level = -1;
+    mac->debug_step = 0;
 }

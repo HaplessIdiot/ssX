@@ -46,11 +46,15 @@ typedef enum _LispDebugState {
     LispDebugFinish,	/* evaluates until selected form is finished */
     LispDebugNext,	/* evaluate form */
     LispDebugStep,	/* evaluate form, and step on subforms */
+    LispDebugNexti,	/* Like next, but includes variables evaluation */
+    LispDebugStepi,	/* Like step, but includes variables evaluation */
 } LispDebugState;
 
 typedef enum _LispDebugCall {
     LispDebugCallBegin,
     LispDebugCallEnd,
+    LispDebugCallBegini,
+    LispDebugCallEndi,
     LispDebugCallFatal,
 } LispDebugCall;
 
