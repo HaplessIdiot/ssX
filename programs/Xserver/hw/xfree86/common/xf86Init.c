@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.97 1999/02/12 22:51:57 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Init.c,v 3.98 1999/02/13 07:59:57 hohndel Exp $ */
 
 /*
  * Copyright 1991-1998 by The XFree86 Project, Inc.
@@ -46,6 +46,10 @@ extern int atoi();
 #endif
 
 #include "globals.h"
+#include "xf86Pci.h"
+#define DECLARE_CARD_DATASTRUCTURES TRUE
+#include "xf86PciInfo.h"
+
 
 #ifdef XTESTEXT1
 #include "atKeynames.h"
@@ -63,10 +67,6 @@ static int extraDays = 0;
 static char *expKey = NULL;
 #endif
 
-#ifdef XFree86LOADER
-static Bool xf86LoadModules(char **list, pointer *);
-#endif
-
 #ifdef __EMX__
 extern void os2ServerVideoAccess();
 #endif
@@ -76,6 +76,7 @@ char xf86ConfigFile[PATH_MAX + 1] = {0,};
 #ifdef XFree86LOADER
 static char *baseModules[] = {
 	"bitmap",
+	"pcidata",
 	NULL
 };
 #endif
@@ -157,9 +158,6 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /* Enable full I/O access */
     xf86EnableIO();
 
-    /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
-    xf86BusProbe();
-
 #ifdef XFree86LOADER
     /* Initialise the loader */
     LoaderInit();
@@ -203,6 +201,25 @@ InitOutput(ScreenInfo *pScreenInfo, int argc, char **argv)
     /* Force load mandatory base modules */
     xf86LoadModules(baseModules, NULL);
     
+#endif
+
+#ifdef XFree86LOADER
+    /*
+     * we need to get the pointer to the pci data structures initialized
+     */
+    xf86PCIVendorInfo = 
+      (pciVendorDeviceInfo*)LoaderSymbol("xf86PCIVendorInfoData");
+    xf86PCICardInfo = 
+      (pciVendorCardInfo*)LoaderSymbol("xf86PCICardInfoData");
+#else
+    xf86PCIVendorInfo = xf86PCIVendorInfoData;
+    xf86PCICardInfo = xf86PCICardInfoData;
+#endif
+
+    /* Do a general bus probe.  This will be a PCI probe for x86 platforms */
+    xf86BusProbe();
+
+#ifdef XFree86LOADER
     /* Load all modules specified explicitly in the config file */
     if ((modulelist = xf86ModulelistFromConfig(&optionlist)))
       xf86LoadModules(modulelist, optionlist);
@@ -1034,6 +1051,7 @@ ddxUseMsg()
   {
     ErrorF("-xf86config file       specify a configuration file\n");
     ErrorF("-modulepath paths      specify the module search path\n");
+    ErrorF("-scanpci               execute the scanpci module and exit\n");
   }
   ErrorF("-probeonly             probe for devices, then exit\n");
   ErrorF("-verbose               verbose startup messages\n");
@@ -1133,7 +1151,7 @@ xf86RunVtInit(void)
 /*
  * xf86LoadModules iterates over a list that is being passed in.
  */             
-static Bool
+Bool
 xf86LoadModules(char **list, pointer *optlist)
 {
     int errmaj, errmin;

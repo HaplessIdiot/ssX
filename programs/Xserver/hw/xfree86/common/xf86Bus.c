@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.9 1998/11/01 12:35:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.10 1999/01/14 13:04:04 dawes Exp $ */
 
 /*
  * Copyright (c) 1997-1999 by The XFree86 Project, Inc.
@@ -19,7 +19,7 @@
 
 #include "xf86Pci.h"
 #include "xf86Bus.h"
-#define INIT_PCI_VENDOR_INFO
+#define DECLARE_CARD_DATASTRUCTURES TRUE
 #include "xf86PciInfo.h"
 
 /* Bus-specific globals */
@@ -80,6 +80,9 @@ struct {
  * from this list.
  */
 #define PCINONSYSTEMCLASSES(b,s) PCIALWAYSPRINTCLASSES(b,s)
+
+pciVendorCardInfo *xf86PCICardInfo;
+pciVendorDeviceInfo * xf86PCIVendorInfo;
 
 static void
 xf86FindPCIVideoInfo(void)
@@ -960,6 +963,8 @@ FindPciPrimaryDevice(void)
     pciAccPtr paccp;
   
     if (!xf86PciInfo) return;
+
+    if (!xf86PciAccInfo) return;
 
     while ((pcp = xf86PciInfo[i]) != NULL) { 
 	if (pcp->_command & PCI_CMD_IO_ENABLE) {

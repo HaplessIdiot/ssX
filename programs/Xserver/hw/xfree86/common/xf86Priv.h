@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.33 1999/01/24 03:13:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Priv.h,v 3.34 1999/01/26 10:40:18 dawes Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -108,6 +108,9 @@ void xf86PostMseEvent(DeviceIntPtr device, int buttons, int dx, int dy);
 void xf86Block(pointer blockData, OSTimePtr pTimeout, pointer pReadmask);
 void xf86Wakeup(pointer blockData, int err, pointer pReadmask);
 void xf86SigHandler(int signo);
+
+/* xf86Init.c */
+Bool xf86LoadModules(char **list, pointer *optlist);
 
 /* xf86Io.c */
 

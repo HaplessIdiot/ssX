@@ -1,4 +1,4 @@
-/* $XFree86: $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/xf86ScanPci.c,v 1.1 1999/02/12 22:52:12 hohndel Exp $ */
 /*
  * Display the Subsystem Vendor Id and Subsystem Id in order to identify
  * the cards installed in this computer
@@ -18,9 +18,9 @@
 #include "xf86Pci.h"
 
 #define INIT_PCI_CARD_INFO TRUE
-#ifdef XFree86LOADER
+#define DECLARE_CARD_DATASTRUCTURES TRUE
 #define INIT_PCI_VENDOR_INFO TRUE
-#endif
+#define VENDOR_INCLUDE_NONVIDEO TRUE
 #include "xf86PciInfo.h"
 
 /*
@@ -34,7 +34,7 @@
 
 
 MODULESETUPPROTO(scanPciSetup);
-void xf86DisplayPCICardInfo(void);
+void xf86DisplayPCICardInfo(int);
 
 
 #ifdef XFree86LOADER
@@ -54,37 +54,43 @@ static XF86ModuleVersionInfo scanPciVersRec = {
 	{0, 0, 0, 0}
 };
 
-XF86ModuleData scanpciModuleData = { &scanPciVersRec, scanPciSetup, NULL };
+XF86ModuleData scanpciModuleData = { &scanPciVersRec, NULL, NULL };
 
-pointer
-scanPciSetup(pointer module, pointer opts, int *errmaj, int *errmin)
+#else
+
+/*
+ * setup the pci data structures for the static server
+ */
+void
+xf86InitPciData(void)
 {
-    xf86ScanPciRegister(xf86DisplayPCICardInfo);
-
-    return (pointer)1;
+    xf86PCIVendorInfo = xf86PCIVendorInfoData;
+    xf86PCICardInfo = xf86PCICardInfoData;
 }
 
 #endif /* XFree86LOADER */
 
 
 void
-xf86DisplayPCICardInfo(void)
+xf86DisplayPCICardInfo(int verbosity)
 {
     pciConfigPtr pcrp, *pcrpp;
     int i = 0, j,k;
-    int verbosity = 2;
     pciVendorCardInfo *info;
-    Bool mem64 = FALSE;
+    Bool noCard = FALSE;
 
     xf86EnableIO();
     pcrpp = xf86scanpci(0);
    
     if (pcrpp == NULL) {
+        xf86MsgVerb(X_NONE,0,"No PCI info available\n");
 	return;
     }
+    xf86MsgVerb(X_NONE,0,"Probing for PCI devices (Bus:Device:Function)\n\n");
     while ((pcrp = pcrpp[i])) {
 	char *vendorname = NULL, *cardname = NULL;
 	char *chipvendorname = NULL, *chipname = NULL;
+	Bool noCard = FALSE;
 
 	/* first let's look for the card itself */
 	k = 0;
@@ -113,18 +119,20 @@ xf86DisplayPCICardInfo(void)
 	    continue;
 	}
 #endif /* DONT_PRINT_ALL_DEVICES */
-	if (!vendorname || !cardname)
-	  verbosity = 0;
-	xf86Msg(X_PROBED, "PCI: (%d:%d:%d) ", pcrp->busnum, pcrp->devnum,
+	xf86MsgVerb(X_NONE,-verbosity,
+		    "(%d:%d:%d) ", pcrp->busnum, pcrp->devnum,
 		pcrp->funcnum);
 	if (vendorname)
-	  xf86Msg( X_NONE,"%s ", vendorname);
+	  xf86MsgVerb(X_NONE,-verbosity,"%s ", vendorname);
 	if (cardname)
-	  xf86Msg( X_NONE,"%s ", cardname);
-	else
-	  xf86Msg( X_NONE,"unknown card (0x%04x/0x%04x) ", pcrp->_subsys_vendor,
-			  pcrp->_subsys_card);
-
+	  xf86MsgVerb(X_NONE,-verbosity,"%s ", cardname);
+	if (!(cardname || vendorname)) {
+	  noCard = TRUE;
+	  if (verbosity > 1)
+	    xf86MsgVerb(X_NONE,-verbosity,
+			"unknown card (0x%04x/0x%04x) \n\t", pcrp->_subsys_vendor,
+			pcrp->_subsys_card);
+	}
 	/* now check for the chipset used */
 	k = 0;
 	while(xf86PCIVendorInfo[k].VendorName) {
@@ -144,18 +152,35 @@ xf86DisplayPCICardInfo(void)
 	    }
 	    k++;
 	}
-	if (chipvendorname && chipname)
-	  xf86MsgVerb(X_NONE,verbosity,"using a %s %s",
-		      chipvendorname,chipname);
-	else if (chipvendorname)
-	  xf86MsgVerb(X_NONE,verbosity,
-		      "\n\tusing an unknown chip (DeviceId 0x%04x) from %s",
-		      pcrp->_device,chipvendorname);
+	if (noCard) {
+	  if (chipvendorname && chipname)
+	    xf86MsgVerb(X_NONE,-verbosity,"%s %s",
+			chipvendorname,chipname);
+	  else if (chipvendorname)
+	    xf86MsgVerb(X_NONE,-verbosity,
+			"unknown chip (DeviceId 0x%04x) from %s",
+			pcrp->_device,chipvendorname);
+	  else
+	    xf86MsgVerb(X_NONE,-verbosity,
+			"unknown chipset(0x%04x/0x%04x)",
+			pcrp->_vendor,pcrp->_device);
+	  xf86MsgVerb(X_NONE,-verbosity,"\n");
+	}
 	else
-	  xf86MsgVerb(X_NONE,verbosity,
-		      "\n\tusing an unknown chipset(0x%04x/0x%04x)",
-		      pcrp->_vendor,pcrp->_device);
-	xf86Msg(X_NONE,"\n");
+	{
+	  if (chipvendorname && chipname)
+	    xf86MsgVerb(X_NONE,-verbosity,"using a %s %s",
+			chipvendorname,chipname);
+	  else if (chipvendorname)
+	    xf86MsgVerb(X_NONE,-verbosity,
+			"\n\tusing an unknown chip (DeviceId 0x%04x) from %s",
+			pcrp->_device,chipvendorname);
+	  else
+	    xf86MsgVerb(X_NONE,-verbosity,
+			"\n\tusing an unknown chipset(0x%04x/0x%04x)",
+			pcrp->_vendor,pcrp->_device);
+	  xf86MsgVerb(X_NONE,-verbosity,"\n");
+	}
 	i++;
     }
 }

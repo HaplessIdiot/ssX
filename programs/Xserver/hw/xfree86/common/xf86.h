@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.89 1999/02/07 06:18:33 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86.h,v 3.90 1999/02/12 22:51:55 hohndel Exp $ */
 
 /*
  * Copyright (c) 1997 by The XFree86 Project, Inc.
@@ -172,7 +172,7 @@ int xf86NewSerialNumber(WindowPtr p, pointer unused);
 
 PixmapFormatPtr xf86GetPixFormat(ScrnInfoPtr pScrn, int depth);
 int xf86GetBppFromDepth(ScrnInfoPtr pScrn, int depth);
-void xf86ScanPciRegister(void(*func)(void));
+void xf86ScanPciRegister(void(*func)(int));
 
 /* xf86Mode.c */
 

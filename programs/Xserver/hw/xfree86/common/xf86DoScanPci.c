@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.1 1999/02/12 22:51:56 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86DoScanPci.c,v 1.2 1999/02/13 07:59:57 hohndel Exp $ */
 /*
  * finish setting up the server
  * call the functions from the scanpci module
@@ -15,19 +15,16 @@
 #include "xf86.h"
 #include "xf86Priv.h"
 #include "xf86Pci.h"
+#define DECLARE_CARD_DATASTRUCTURES TRUE
+#include "xf86PciInfo.h"
 
-static void (*xf86ScanPciFunc)(void);
-void xf86DisplayPCICardInfo(void);
+static void (*xf86ScanPciFunc)(int);
 
-void
-xf86ScanPciRegister(void(*func)(void))
-{
-  xf86ScanPciFunc = func;
-}
+void xf86DisplayPCICardInfo(int);
 
 void DoScanPci(int argc, char **argv, int i)
 {
-  int j,skip;
+  int j,skip,globalVerbose,scanpciVerbose;
   int errmaj, errmin;
   char *name;
 
@@ -38,6 +35,12 @@ void DoScanPci(int argc, char **argv, int i)
   OsInit();
 
   /*
+   * now we decrese verbosity and remember the value, in case a later
+   * -verbose on the command line increases it, because that is a 
+   * verbose flag for scanpci...
+   */
+  globalVerbose = --xf86Verbose;
+  /*
    * next we process the arguments that are remaining on the command line,
    * so that things like the module path can be set there
    */
@@ -45,7 +48,14 @@ void DoScanPci(int argc, char **argv, int i)
     if ((skip = ddxProcessArgument(argc, argv, j)))
 	j += (skip - 1);
   } 
-
+  /*
+   * was the verbosity level increased?
+   */
+  if( (globalVerbose == 0) && (xf86Verbose > 0) )
+    scanpciVerbose = xf86Verbose - globalVerbose -1;
+  else
+    scanpciVerbose = xf86Verbose - globalVerbose;
+  xf86Verbose = globalVerbose;
   /*
    * now get the loader set up and load the scanpci module
    */
@@ -68,10 +78,21 @@ void DoScanPci(int argc, char **argv, int i)
       /* For now, just a warning */
       xf86Msg(X_WARNING, "Some symbols could not be resolved!\n");
   }
+  xf86ScanPciFunc = (void (*)(int))LoaderSymbol("xf86DisplayPCICardInfo");
+  /*
+   * we need to get the pointer to the pci data structures initialized
+   */
+  xf86PCIVendorInfo = 
+    (pciVendorDeviceInfo*)LoaderSymbol("xf86PCIVendorInfoData");
+  xf86PCICardInfo = 
+    (pciVendorCardInfo*)LoaderSymbol("xf86PCICardInfoData");
 #else
   xf86ScanPciFunc = xf86DisplayPCICardInfo;
+  xf86PCIVendorInfo = xf86PCIVendorInfoData;
+  xf86PCICardInfo = xf86PCICardInfoData;
 #endif
-  (*xf86ScanPciFunc)();
+
+  (*xf86ScanPciFunc)(scanpciVerbose);
 
   /*
    * that's it; we really should clean things up, but a simple

@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.15 1999/02/12 22:51:58 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.16 1999/02/13 07:59:58 hohndel Exp $ */
 /*
  * PCI Probe
  *
- * Copyright 1995-1998 by The XFree86 Project, Inc.
+ * Copyright 1995-1999 by The XFree86 Project, Inc.
  *
  * A lot of this comes from Robin Cutshaw's scanpci
  *
@@ -448,10 +448,11 @@ typedef struct {
     } Device[MAX_DEV_PER_VENDOR];
 } pciVendorDeviceInfo;
 
-extern pciVendorDeviceInfo xf86PCIVendorInfo[];
+extern pciVendorDeviceInfo* xf86PCIVendorInfo;
+extern pciVendorDeviceInfo xf86PCIVendorInfoData[];
 
 #ifdef INIT_PCI_VENDOR_INFO
-pciVendorDeviceInfo xf86PCIVendorInfo[] = {
+pciVendorDeviceInfo xf86PCIVendorInfoData[] = {
     {PCI_VENDOR_NCR_1,	"NCR",	{
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ATI,	"ATI",	{
@@ -555,11 +556,13 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_STG2000,	"STG2000"},
 				{PCI_CHIP_STG1764,	"STG1764"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_BUSLOGIC, "BusLogic", {
 				{PCI_CHIP_946C_01,	"946C 01"},
 				{PCI_CHIP_946C_10,	"946C 10"},
 				{PCI_CHIP_FLASH_POINT,	"FlashPoint"},
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_TI,	"Texas Instruments",	{
 				{PCI_CHIP_TI_PERMEDIA,	"Permedia"},
 				{PCI_CHIP_TI_PERMEDIA2,	"Permedia 2"},
@@ -569,6 +572,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_OAK,	"Oak", {
 				{PCI_CHIP_OTI107,	"OTI107"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_WINBOND,"Winbond", {
 				{PCI_CHIP_89C940,	"89C940 NE2000-PCI"},
 				{0x0000,		NULL}}},
@@ -577,6 +581,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_MPC105_GRACKLE,"MPC105 Grackle"},
 				{PCI_CHIP_RAVEN,	"Raven"},
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_OAK,	"Promise", {
 				{PCI_CHIP_ULTRA_DMA,	"IDE UltraDMA/33"},
 				{PCI_CHIP_DC5030,	"DC5030"},
@@ -586,6 +591,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_I128_2,	"Imagine 128 II"},
 				{PCI_CHIP_I128_T2R,	"Imagine 128 T2R"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_UMC,	"UMC",	{
                                 {0x0101,		"UM8673F"},
                                 {0x673A,		"UM8886BF"},
@@ -614,6 +620,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
                                 {0x1020,		"ISP1020" },
 				{0x1022,		"ISP1022" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_CYRIX, "Cyrix", {
                                 {0x0000,		"5510" },
 				{0x0001,		"PCI Master" },
@@ -624,6 +631,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0103,		"5530 Kahlua Audio" },
 				{0x0104,		"5530 Kahlua Video" },
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_LEADTEK, "Leadtek", {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_CONTAQ, "Contaq", {
@@ -654,10 +662,12 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
                                 {0x0001,		"QD 8500" },
 				{0x0002,		"QD 8580" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_BROOKTREE,	"BrookTree",	{
 				{PCI_CHIP_BT848,	"848"},
 				{PCI_CHIP_BT849,	"849"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_SIERRA, "Sierra", {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_ACC, "ACC", {
@@ -703,6 +713,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_SURECOM, "Surecom", {
                                 { 0x0E34, "NE-34PCI Lan" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_NEOMAGIC,	"Neomagic",	{
 				{PCI_CHIP_NM2070,	"NM2070"},
 				{PCI_CHIP_NM2090,	"NM2090"},
@@ -710,6 +721,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_NM2160,	"NM2160"},
 				{PCI_CHIP_NM2200,	"NM2200"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_ASP, "Advanced System Products", {
                                 { 0x1200, "ABP940" },
                                 { 0x1300, "ABP940U" },
@@ -718,10 +730,12 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
                                 { 0x0001, "STAR/RD24 SCI-PCI (PMC)" },
                                 { 0x0002, "STAR/RD24 SCI-PCI (PMC)" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_NVIDIA,	"NVidia",	{
 				{PCI_CHIP_NV1,		"NV1"},
 				{0x009,			"DAC64"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_IMS, "IMS", {
                                 {0x8849, "8849" },
 				{0x0000,		NULL}}},
@@ -736,10 +750,12 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
                                 {0x807D, "S5933 PCI44" },
                                 {0x809C, "S5933 Traquair HEPC3" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_INTEGRAPHICS, "Intergraphics", {
                                 {0x1680, "IGA-1680" },
                                 {0x1682, "IGA-1682" },
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_REALTEC, "Realtek", {
                                 {0x8029, "8029" },
                                 {0x8129, "8129" },
@@ -766,6 +782,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_PLX, "PLX", {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_NVIDIA_SGS,	"NVidia/SGS-Thomson",	{
 				{PCI_CHIP_RIVA128,	"Riva128"},
 				{0x0000,		NULL}}},
@@ -774,6 +791,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{PCI_CHIP_AP6422,	"ProMotion 6422"},
 				{PCI_CHIP_AT24,		"ProMotion AT24"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_VMIC, "VMIC", {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_DIGI, "DIGI*", {
@@ -781,10 +799,12 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_MUTECH, "Mutech", {
                                 {0x0001,		 "MV1000" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_RENDITION, "Rendition",	{
 				{PCI_CHIP_V1000,	"Verite 1000"},
 				{PCI_CHIP_V2x00,	"Verite 2x00"},
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     { 0x1179, "Toshiba", {
 				{0x0000,		NULL}}},
     { 0x1193, "Zeinet", {
@@ -796,6 +816,7 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     { 0x120E, "Cyclades", {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_3DFX,	"3Dfx Interactive", {
 				{PCI_CHIP_VOODOO_GRAPHICS, "Voodoo Graphics"},
 				{PCI_CHIP_VOODOO2, "Voodoo2"},
@@ -803,20 +824,24 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
     {PCI_VENDOR_SIGMADESIGNS, "Sigma Designs", {
                                 {0x6401, "REALmagic64/GX (SD 6425)" },
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_YOKOGAWA, "YOKOGAWA", {
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_TRITECH,	"Tritech Microelectronics",	{
 				{PCI_CHIP_TR25202,	"Pyramid3D TR25202"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NVIDIA_SGS, "NVidia/SGS-Thomson", {
                                 {0x0018, "Riva128" },
 				{0x0000,		NULL}}},
+#ifdef VENDOR_INCLUDE_NONVIDEO
     {PCI_VENDOR_SYMPHONY, "Symphony", {
                                 {0x0001, "82C101" },
 				{0x0000,		NULL}}},
     {PCI_VENDOR_TEKRAM_2, "Tekram", {
                                 {0xDC29, "DC290" },
 				{0x0000,		NULL}}},
+#endif
     {PCI_VENDOR_3DLABS, "3Dlabs", {
 				{PCI_CHIP_300SX,	"GLINT 300SX"},
 				{PCI_CHIP_500TX,	"GLINT 500TX"},
@@ -887,10 +912,10 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 };
 #endif
 
-#ifdef INIT_PCI_CARD_INFO
+#ifdef DECLARE_CARD_DATASTRUCTURES
 
 /* Increase this as required */
-#define MAX_CARD_PER_VENDOR 80
+#define MAX_CARD_PER_VENDOR 64
 
 typedef struct {
     unsigned short VendorID;
@@ -902,11 +927,13 @@ typedef struct {
     } Device[MAX_CARD_PER_VENDOR];
 } pciVendorCardInfo;
 
-extern pciVendorCardInfo xf86PCICardInfo[];
+extern pciVendorCardInfo *xf86PCICardInfo;
+extern pciVendorCardInfo xf86PCICardInfoData[];
+#ifdef INIT_PCI_CARD_INFO
 
 #define NF ((void (*)())NULL)
 
-pciVendorCardInfo xf86PCICardInfo[] = {
+pciVendorCardInfo xf86PCICardInfoData[] = {
         { PCI_VENDOR_ATI, "ATI", {
                         { 0x4755, "Mach64-GT-B+DVD", NF },
                         { 0x0084, "Xpert'98", NF },
@@ -926,68 +953,68 @@ pciVendorCardInfo xf86PCICardInfo[] = {
                         { 0x0550, "Viper 550", NF },
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_ELSA, "Elsa", {
-                        { 0x0914, "Elsa Winner 1000", NF },
-                        { 0x0930, "Elsa Winner 1000PRO 864", NF },
-                        { 0x0931, "Elsa Winner 1000PRO Trio32", NF },
-                        { 0x0932, "Elsa Winner 1000Trio Trio64", NF },
-                        { 0x0933, "Elsa Winner 1000TrioV Trio64V+", NF },
-                        { 0x0934, "Elsa Victory 3D", NF },
-                        { 0x0935, "Elsa Winner 1000 T2D", NF },
-                        { 0x0936, "Elsa Winner 1000PRO 868", NF },
-                        { 0x0937, "Elsa Winner 1000PRO/X 868", NF },
-                        { 0x0938, "Elsa Winner 1000ViRGE", NF },
-                        { 0x0939, "Elsa Winner 1000ViRGE/DX", NF },
-                        { 0x093a, "Elsa Winner 1000/T2DX", NF },
-                        { 0x093b, "Elsa Winner DUO M5", NF },
-                        { 0x093c, "Elsa Victory 1000", NF },
-                        { 0x0940, "Elsa Winner 2000PRO 964/TVP3020", NF },
-                        { 0x0941, "Elsa Winner 2000PRO/X 968/TVP3020", NF },
-                        { 0x0942, "Elsa Winner 2000PRO/X 968/TVP3026", NF },
-                        { 0x0943, "Elsa Winner 2000AVI 968/TVP3026", NF },
-                        { 0x0948, "Elsa Winner 2000PRO-8 964/RGB528", NF },
-                        { 0x094a, "Elsa Winner 2000PRO-8 968/RGB528", NF },
-                        { 0x094b, "Elsa Winner 2000PRO-8 968/TVP3030", NF },
-                        { 0x0950, "Elsa ViRGE/VX", NF },
-                        { 0x0951, "Elsa Winner 2000AVI 3D", NF },
-                        { 0x0952, "Elsa Winner 2000AVI 220", NF },
-                        { 0x0960, "Elsa Winner 3000M", NF },
-                        { 0x0962, "Elsa Winner 3000L", NF },
-                        { 0x0964, "Elsa Winner 3000XL", NF },
-                        { 0x096a, "Elsa Winner 3000Twin", NF },
-                        { 0x096c, "Elsa Winner 3000LT", NF },
-                        { 0x0980, "Elsa GLoria 4 TVP3026", NF },
-                        { 0x0982, "Elsa GLoria 4 TVP3030", NF },
-                        { 0x0981, "Elsa GLoria 8", NF },
-                        { 0x0a10, "Elsa GLoria M", NF },
-                        { 0x0a14, "Elsa GLoria S", NF },
-                        { 0x0a31, "Elsa Winner 2000 Office", NF },
-                        { 0x0a32, "Elsa GLoria Synergy P2C", NF },
-                        { 0x0a33, "Elsa GLoria Synergy P2C", NF },
-                        { 0x0a34, "Elsa GLoria Synergy P2V", NF },
-                        { 0x0a35, "Elsa GLoria Synergy P2A", NF },
-                        { 0x0a36, "Elsa Quad GLoria Synergy P2A", NF },
-                        { 0x0a40, "Elsa GLoria MX", NF },
-                        { 0x0a41, "Elsa GLoria XL", NF },
-                        { 0x0a42, "Elsa GLoria XXL", NF },
-                        { 0x0a43, "Elsa Winner 2000 Office P2V", NF },
-                        { 0x0a44, "Elsa Winner 2000 Office P2A", NF },
-                        { 0x0a80, "Elsa GLoria S MAC", NF },
-                        { 0x0c10, "Elsa Victory Erazor 4", NF },
-                        { 0x0c11, "Elsa Victory Erazor 8", NF },
-                        { 0x0c12, "Elsa Winner 1000 R3D", NF },
-                        { 0x0c13, "Elsa Winner 1000 ZX4", NF },
-                        { 0x0c14, "Elsa Victory Erazor/LT SGRAM", NF },
-                        { 0x0c15, "Elsa Victory Erazor/LT SDRAM", NF },
-                        { 0x0c18, "Elsa Erazor II SGRAM", NF },
-                        { 0x0c19, "Elsa Erazor II SDRAM video", NF },
-                        { 0x0c1a, "Elsa Synergy Pro", NF },
-                        { 0x0c1c, "Elsa Erazor II SDRAM", NF },
-                        { 0x0c20, "Elsa Synergy II 32", NF },
-                        { 0x0c21, "Elsa Synergy II 16", NF },
-                        { 0x0c22, "Elsa Erazor III", NF },
-                        { 0x0c23, "Elsa Erazor III video", NF },
-                        { 0x0d10, "Elsa Victory II SGRAM", NF },
-                        { 0x0d11, "Elsa Victory II SDRAM", NF },
+                        { 0x0914, "Winner 1000", NF },
+                        { 0x0930, "Winner 1000PRO 864", NF },
+                        { 0x0931, "Winner 1000PRO Trio32", NF },
+                        { 0x0932, "Winner 1000Trio Trio64", NF },
+                        { 0x0933, "Winner 1000TrioV Trio64V+", NF },
+                        { 0x0934, "Victory 3D", NF },
+                        { 0x0935, "Winner 1000 T2D", NF },
+                        { 0x0936, "Winner 1000PRO 868", NF },
+                        { 0x0937, "Winner 1000PRO/X 868", NF },
+                        { 0x0938, "Winner 1000ViRGE", NF },
+                        { 0x0939, "Winner 1000ViRGE/DX", NF },
+                        { 0x093a, "Winner 1000/T2DX", NF },
+                        { 0x093b, "Winner DUO M5", NF },
+                        { 0x093c, "Victory 1000", NF },
+                        { 0x0940, "Winner 2000PRO 964/TVP3020", NF },
+                        { 0x0941, "Winner 2000PRO/X 968/TVP3020", NF },
+                        { 0x0942, "Winner 2000PRO/X 968/TVP3026", NF },
+                        { 0x0943, "Winner 2000AVI 968/TVP3026", NF },
+                        { 0x0948, "Winner 2000PRO-8 964/RGB528", NF },
+                        { 0x094a, "Winner 2000PRO-8 968/RGB528", NF },
+                        { 0x094b, "Winner 2000PRO-8 968/TVP3030", NF },
+                        { 0x0950, "ViRGE/VX", NF },
+                        { 0x0951, "Winner 2000AVI 3D", NF },
+                        { 0x0952, "Winner 2000AVI 220", NF },
+                        { 0x0960, "Winner 3000M", NF },
+                        { 0x0962, "Winner 3000L", NF },
+                        { 0x0964, "Winner 3000XL", NF },
+                        { 0x096a, "Winner 3000Twin", NF },
+                        { 0x096c, "Winner 3000LT", NF },
+                        { 0x0980, "GLoria 4 TVP3026", NF },
+                        { 0x0982, "GLoria 4 TVP3030", NF },
+                        { 0x0981, "GLoria 8", NF },
+                        { 0x0a10, "GLoria M", NF },
+                        { 0x0a14, "GLoria S", NF },
+                        { 0x0a31, "Winner 2000 Office", NF },
+                        { 0x0a32, "GLoria Synergy P2C", NF },
+                        { 0x0a33, "GLoria Synergy P2C", NF },
+                        { 0x0a34, "GLoria Synergy P2V", NF },
+                        { 0x0a35, "GLoria Synergy P2A", NF },
+                        { 0x0a36, "Quad GLoria Synergy P2A", NF },
+                        { 0x0a40, "GLoria MX", NF },
+                        { 0x0a41, "GLoria XL", NF },
+                        { 0x0a42, "GLoria XXL", NF },
+                        { 0x0a43, "Winner 2000 Office P2V", NF },
+                        { 0x0a44, "Winner 2000 Office P2A", NF },
+                        { 0x0a80, "GLoria S MAC", NF },
+                        { 0x0c10, "Victory Erazor 4", NF },
+                        { 0x0c11, "Victory Erazor 8", NF },
+                        { 0x0c12, "Winner 1000 R3D", NF },
+                        { 0x0c13, "Winner 1000 ZX4", NF },
+                        { 0x0c14, "Victory Erazor/LT SGRAM", NF },
+                        { 0x0c15, "Victory Erazor/LT SDRAM", NF },
+                        { 0x0c18, "Erazor II SGRAM", NF },
+                        { 0x0c19, "Erazor II SDRAM video", NF },
+                        { 0x0c1a, "Synergy Pro", NF },
+                        { 0x0c1c, "Erazor II SDRAM", NF },
+                        { 0x0c20, "Synergy II 32", NF },
+                        { 0x0c21, "Synergy II 16", NF },
+                        { 0x0c22, "Erazor III", NF },
+                        { 0x0c23, "Erazor III video", NF },
+                        { 0x0d10, "Victory II SGRAM", NF },
+                        { 0x0d11, "Victory II SDRAM", NF },
                         { 0x0000, (char *)NULL, NF } } },
 	{ PCI_VENDOR_HERCULES, "Hercules", {
                         { 0x0001, "Thriller3D", NF },
@@ -1021,5 +1048,5 @@ pciVendorCardInfo xf86PCICardInfo[] = {
 	  		{0x0000,  NULL, NF } } },
 };
 #endif
-
+#endif
 #endif /* _XF86_PCIINFO_H */
