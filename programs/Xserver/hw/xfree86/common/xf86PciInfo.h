@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.135 2002/09/16 18:05:47 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.136 2002/10/12 01:38:06 martin Exp $ */
 /*
  * Copyright 1995-2002 by The XFree86 Project, Inc.
  *
@@ -32,6 +32,7 @@
 #define PCI_VENDOR_ATI			0x1002
 #define PCI_VENDOR_AVANCE		0x1005
 #define PCI_VENDOR_TSENG		0x100C
+#define PCI_VENDOR_NS			0x100B
 #define PCI_VENDOR_WEITEK		0x100E
 #define PCI_VENDOR_VIDEOLOGIC		0x1010
 #define PCI_VENDOR_DIGITAL		0x1011
@@ -51,6 +52,7 @@
 #define PCI_VENDOR_OAK			0x104E
 #define PCI_VENDOR_MOTOROLA		0x1057
 #define PCI_VENDOR_NUMNINE		0x105D
+#define PCI_VENDOR_CYRIX		0x1078
 #define PCI_VENDOR_SUN			0x108E
 #define PCI_VENDOR_DIAMOND		0x1092
 #define PCI_VENDOR_BROOKTREE		0x109E
