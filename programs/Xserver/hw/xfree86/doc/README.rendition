@@ -71,9 +71,9 @@ revert back to software cursor.
       Option "FramebufferWC"
             If writecombine is disabled in BIOS, and you add this option in
             in configuration file, then the driver will try to request write-
-            combined access to the framebuffer. This can drasticly increase
-            the preformance on unaccelerated server. Requres that "MTRR"-sup-
-            port is compiled into the OS-kernel.
+            combined access to the framebuffer. This can drastically increase
+            the performance on unaccelerated server. Requires that
+            "MTRR"-support is compiled into the OS-kernel.
 
       Option "NoDDC"
             Disable probing of DDC-information from your monitor. This infor-
@@ -93,7 +93,7 @@ revert back to software cursor.
 
    o The acceleration code hangs the computer during X-server startup.
 
-   o DDC-probing does not work correclty yet. No DDC information is found.
+   o DDC-probing does not work correctly yet. No DDC information is found.
 
    o Switching from display to VC and back to display can lock up V2x00
      cards.
@@ -109,7 +109,7 @@ revert back to software cursor.
      enable the "USE_ACCEL" define in rendition.c file! Beware as it has sev-
      eral bugs left to clear out before if is stable for general use.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.5 2000/01/21 18:11:30 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/rendition.sgml,v 1.6 2000/01/24 19:38:30 dawes Exp $
 
 
 $XFree86$

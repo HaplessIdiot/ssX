@@ -668,9 +668,9 @@ multihead mode.
 
 16 and 24 bpp modes are supported (24 bit in 32-bit sparse-packed mode).
 
-Further information about this driver can be found in the 'glide' driver man-
+Further information about this driver can be found in the 'glide' driver man
 page for XFree86. You will not get this driver running before reading this
-manpage.
+man page.
 
 For Voodoo Banshee and Voodoo 3 boards or later: Please use the tdfx driver
 which talks directly to the hardware and is much faster.
@@ -1035,7 +1035,7 @@ been implemented is a modified search path for the X server's XF86Config
 file.  The details of this can be found above in the Configuration File (sec-
 tion 3.2, page 1) section.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.22 2000/01/20 21:46:24 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.23 2000/01/24 19:38:28 dawes Exp $
 
 
 $XFree86$

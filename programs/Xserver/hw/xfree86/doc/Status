@@ -2,7 +2,7 @@
 
                           The XFree86 Project, Inc
 
-                               23 January 2000
+                               24 January 2000
 
                                   Abstract
 
@@ -125,7 +125,8 @@ architectures known to work on (e.g., Alpha, PPC), etc.
             ALI2401 chipsets.  Support is provided by the XF86_SVGA server,
             using the al2101 driver for the AL2101, and the ali driver for
             the others.  The status of this support is unknown because we
-            don't have any recent test reports.
+            don't have any recent test reports, and these drivers have no
+            maintainer.
 
       3.9.17:
             No native support for these chipsets, because the old drivers
@@ -138,204 +139,449 @@ architectures known to work on (e.g., Alpha, PPC), etc.
 8.  Chips and Technologies
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the 65520, 65525, 65530, 65535, 65540,
+            65545, 65546, 65548, 65550, 65554, 65555, 68554, 69000, 64200 and
+            64300.  This support is provided by the XF86_SVGA server with the
+            chips driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the 65520, 65525, 65530, 65535, 65540,
+            65545, 65546, 65548, 65550, 65554, 65555, 68554, 69000, 64200 and
+            64300.  This support is provided by the "chips" driver.
+
+      Summary:
+            All chips supported in 3.3.6 are also supported in 3.9.17.
 
 9.  Cirrus Logic
 
       3.3.6:
-            Support for ...
+            Support (unaccelerated) for the 6410, 6412, 6420 and 6440 is pro-
+            vided by the XF86_SVGA server with the cl64xx driver.  Support
+            (accelerated) for the 5420, 5422, 5424, 5426, 5428, 5429, 5430,
+            5434, 5436, 5446, 5480, 5462, 5464, 5465, 6205, 6215, 6225, 6235,
+            7541, 7542, 7543, 7548, 7555 and 7556 is provided by the
+            XF86_SVGA server with the cirrus driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the Alpine (5430, 5434, 5436, 5446,
+            5480), and Laguna (5462, 5464, 5465) chips is provided by the
+            "cirrus" driver.  NEED TO CHECK IF THE OTHERS WILL WORK WITH
+            fbdev.
+
+      Summary:
+            The following chips are supported in 3.3.6 but not in 3.9.17:
+            6410, 6412, 6420, 6440, 5420, 5422, 5424, 5426, 5428, 5429, 6205,
+            6215, 6225, 6235, 7541, 7542, 7543, 7548, 7555 and 7556.
 
 10.  Compaq/Digital
 
       3.3.6:
-            Support for ...
+            The old Compaq AVGA chipset is supported by the XF86_SVGA server
+            with the compaq driver.  The status of this support is unknown
+            because we don't have any recent test reports, and this driver
+            has no maintainer.
+
+            Support (accelerated) for the DEC 21030 TGA 8 plane, 24 plane and
+            24 plane 3D chips (on Alpha platforms) is provided by the
+            XF86_TGA server.
 
       3.9.17:
-            Support for ....
+            No support for the Compaq AVGA (driver hasn't been ported).
+
+            Support (accelerated) for the DEC 21030 TGA 8 plane, 24 plane and
+            24 plane 3D chips (only tested on Alpha platforms) is provided by
+            the "tga" driver.
+
+      Summary:
+            No Compaq AVGA support in 3.9.17.  DEC TGA support is equivalent
+            in both versions.
 
 11.  Cyrix
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the Cyrix MediaGX is provided by the
+            XF86_SVGA server with the cyrix driver.
 
       3.9.17:
-            Support for ....
+            No native support for the Cyrix MediaGX, because the old driver
+            has not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
+
+      Summary:
+            No Cyrix chips are supported in 3.9.17.
 
 12.  Epson
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the Epson SPC8110 is provided by the
+            XF86_SVGA server with the spc8100 driver.
 
       3.9.17:
-            Support for ....
+            No native support for this chipset, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
+
+      Summary:
+            No Epson chips are supported in 3.9.17.
 
 13.  Genoa
 
       3.3.6:
-            Support for ...
+            The old Genoa GVGA chipset is supported by the XF86_SVGA server
+            with the gvga driver.  The status of this support is unknown
+            because we don't have any recent test reports, and this driver
+            has no maintainer.
 
       3.9.17:
-            Support for ....
+            No native support for this chipset, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
+
+      Summary:
+            No Genoa chips are supported in 3.9.17.
 
 14.  IBM
 
       3.3.6:
-            Support for ...
+            Support for the standard IBM VGA chip (and compatibles) is pro-
+            vided by the XF86_Mono, XF86_VGA16 and XF86_SVGA servers with the
+            generic driver.
+
+            Support for the IBM 8514/A chip (and compatibles) is provided by
+            the XF86_8514 server.
+
+            Support for the IBM XGA-2 chip is provided by the XF86_AGX
+            server.
 
       3.9.17:
-            Support for ....
+            Support for the standard IBM VGA chip (and compatibles) is pro-
+            vided by the "vga" driver.
 
-15.  Intel
+            There is no support for the IBM 8514/A or XGA-2 because the
+            drivers have not been ported.
+
+      Summary:
+            The standard VGA core is supported in both versions, but there is
+            no support for the 8514/A or XGA-2 in 3.9.17.
+
+15.  IIT
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the AGX-016, AGX-015 and AGX-014 is
+            provided by the XF86_AGX server..
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-16.  Matrox
+      Summary:
+            No IIT chips are supported in 3.9.17.
+
+16.  Intel
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the Intel i740 is provided by the
+            XF86_SVGA server with the i740 driver, and for the Intel i810
+            with the i810 driver.  The i810 is currently only supported on
+            Linux, and requires the agpgart.o kernel module.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the Intel i740 is provided by the
+            "i740" driver.  The i810 driver has not yet been ported and/or
+            contributed.
 
-17.  MX (???)
+      Summary:
+            The i740 is supported in both version, but the i810 is not sup-
+            ported in 3.9.17 or on non-Linux/x86 platforms.
+
+17.  Matrox
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the MGA2064W (Millennium I), MGA1064SG
+            (Mystique), MGA2164W (Millennium II) (PCI and AGP), G100, G200
+            and G400 is provided by the XF86_SVGA server with the mga driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the MGA2064W (Millennium I), MGA1064SG
+            (Mystique), MGA2164W (Millennium II) (PCI and AGP), G100, G200
+            and G400 is provided by the "mga" driver.
 
-18.  NCR
+      Summary:
+            All chips supported in 3.3.6 are also supported in 3.9.17.
+
+18.  MX (???)
 
       3.3.6:
-            Support for ...
+            Support for the MX68000 and MX68010 chips is provided by the
+            XF86_SVGA server with the mx driver.  The status of this support
+            is unknown because we don't have any recent test reports, and
+            this driver has no maintainer.
 
       3.9.17:
-            Support for ....
+            No native support for this chipset, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-19.  Neomagic
+      Summary:
+            No MX (???) chips are supported in 3.9.17.
+
+19.  NCR
 
       3.3.6:
-            Support for ...
+            Support for the old NCR 77C22 and 77C22E chips is provided by the
+            XF86_SVGA server and the ncr77c22 driver.  The status of this
+            support is unknown because we don't have any recent test reports.
 
       3.9.17:
-            Support for ....
+            No native support for this chipset, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-20.  NVIDIA
+      Summary:
+            No NCR chips are supported in 3.9.17.
+
+20.  NeoMagic
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
+            NM2097, NM2160 and NM2200 chipsets is provided by the XF86_SVGA
+            server with the neo driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the NeoMagic NM2070, NM2090, NM2093,
+            NM2097, NM2160 and NM2200 chipsets is provided by the "neomagic"
+            driver.
 
-21.  Number Nine
+      Summary:
+            All chips supported in 3.3.6 are also supported in 3.9.17.
+
+21.  NVIDIA
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the NV1, Riva 128, 128ZX, TNT, TNT2
+            (Ultra, Vanta, M64), GeForce (DDR) and Quadro is provided by the
+            XF86_SVGA server and the nv driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the Riva 128, 128ZX, TNT, TNT2 (Ultra,
+            Vanta, M64), GeForce (DDR) and Quadro is provided by the
+            XF86_SVGA server and the nv driver.
 
-22.  Oak
+      Summary:
+            All chipsets supported in 3.3.6 except the NV1 are also supported
+            in 3.9.17.
+
+22.  Number Nine
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the Imagine 128, Ticket 2 Ride, Revolu-
+            tion 3D and Revolution IV is provided by the XF86_I128 server.
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-23.  Paradise/Western Digital
+      Summary:
+            No Number Nine chips are supported in 3.9.17.
+
+23.  Oak Technologies Inc
 
       3.3.6:
-            Support for ...
+            Support for the OTI067, OTI077, and OTI087 (the latter with some
+            acceleration) is provided by the XF86_SVGA server and the oak
+            driver.
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-24.  RealTek
+      Summary:
+            No Oak chips are supported in 3.9.17.
+
+24.  Paradise/Western Digital
 
       3.3.6:
-            Support for ...
+            Support for the Paradise PVGA1 and the Western Digital WD90C00,
+            90C10, 90C30, 90C24, 90C31 and 90C33 chipsets is provided by the
+            XF86_SVGA server with the pvga1 driver.  The status of the sup-
+            port for some of these chipsets is uncertain because we don't
+            have any recent test reports, and this driver has no maintainer.
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-25.  Rendition/Micron
+      Summary:
+            No Paradise/Western Digital chips are supported in 3.9.17.
+
+25.  RealTek
 
       3.3.6:
-            Support for ...
+            Support for the RealTek RTG3106 is provided by the XF86_SVGA
+            server and the realtek driver.  The status of this support is
+            unknown because we don't have any recent test reports, and this
+            driver has no maintainer.
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-26.  S3
+      Summary:
+            No RealTek chips are supported in 3.9.17.
+
+26.  Rendition/Micron
 
       3.3.6:
-            Support for ...
+            Support for the Verite 1000, 2100 and 2200 is provided by the
+            XF86_SVGA server with the rendition driver.
 
       3.9.17:
-            Support for ....
+            Support for the Verite 1000, 2100 and 2200 is provided by the
+            "rendition" driver.
 
-27.  Silicon Integrated Systems (SiS)
+      Summary:
+            All chips supported in 3.3.6 are also supported in 3.9.17.
+
+27.  S3
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the S3 911, 924, 801, 805, 928, 864,
+            868, 964, 968, Trio32, Trio64, Trio64V+, Trio64UV+, Aurora64V+,
+            Trio64V2, PLATO/PX is provided by the XF86_S3 server and the
+            XF86_SVGA server with the s3_svga driver.  Support (accelerated)
+            for the ViRGE, ViRGE/VX, ViRGE/DX, ViRGE/GX, ViRGE/GX2, ViRGE/MX,
+            ViRGE/MX+ is provided by the XF86_S3V server.  Support (acceler-
+            ated) for those ViRGE chips, as well as the Trio3D and Trio3D/2X
+            is provided by the XF86_SVGA server with the s3v driver.  Support
+            (accelerated) for the Savage3D, Savage3D/MV, Savage4, Savage2000,
+            Savage/MX-MV, Savage/MX, Savage/IX-MV and Savage/IX is provided
+            by the XF86_SVGA server with the s3_savage driver (CHECK: is this
+            support Linux-only?).
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the ViRGE, ViRGE/VX, ViRGE/DX,
+            ViRGE/GX, ViRGE/GX2, ViRGE/MX and ViRGE/MX+ is provided by the
+            "s3virge" driver.  Support for the other S3 chipsets has not yet
+            been ported.
 
-28.  Silicon Motion, Inc
+      Summary:
+            Only the ViRGE chipsets are supported in 3.9.17.  All of the
+            other chipsets are only supported in 3.3.6.
+
+28.  Silicon Integrated Systems (SiS)
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the SiS 86C201, 86C202, 86C205, 86C215,
+            86C225, 5597, 5598, 6326, 530, 620, 300, 630 and 540 is provided
+            by the XF86_SVGA server with the sis driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated) for the SiS 86C205, 86C215, 86C225, 5597,
+            5598, 530 and 6326 is provided by the "sis" driver.
 
-29.  Trident Microsystems
+      Summary:
+            Support for the older (CHECK: are they all older than the sup-
+            ported chips?) chips: 86C201, 86C202, 620, 300, 630 and 540 is
+            only available in 3.3.6.
+
+29.  Silicon Motion, Inc
 
       3.3.6:
-            Support for ...
+            Support (accelerated) for the Lynx, LynxE, Lynx3D, LynxEM,
+            LynxEM+ and Lynx3DM chips is provided by the XF86_SVGA server
+            with the smi driver.
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the driver has not
+            been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH fbdev.
 
-30.  Tseng Labs
+      Summary:
+            No SMI chips are supported in 3.9.17.
+
+30.  Trident Microsystems
 
       3.3.6:
-            Support for ...
+            Support (accelerated where the chip supports it) for the
+            TVGA8200LX, TVGA8800CS, TVGA8900B, TVGA8900C, TVGA8900CL,
+            TVGA8900D, TVGA9000, TVGA9000i, TVGA9100B, TVGA9200CXr,
+            TGUI9400CXi, TGUI9420, TGUI9420DGi, TGUI9430DGi, TGUI9440AGi,
+            TGUI9660, TGUI9680, ProVidia 9682, ProVidia 9685, Cyber9320,
+            Cyber9382, Cyber9385, Cyber9388, Cyber9397, Cyber9520, Cyber9525,
+            3DImage975, 3DImage985, Cyber9397/DVD, Blade3D, CyberBlade/i7,
+            CyberBlade/DSTN/i7 and CyberBlade/i1 is provided by the XF86_SVGA
+            server with the tvga8900 driver.
 
       3.9.17:
-            Support for ....
+            Support (accelerated where the chip supports it) for the
+            TVGA8900D, TGUI9420DGi, TGUI9440AGi, TGUI9660, TGUI9680, ProVidia
+            9682, ProVidia 9685, Cyber9320, Cyber9382, Cyber9385, Cyber9388,
+            Cyber9397, Cyber9520, Cyber9397/DVD, Cyber9525/DVD, 3DImage975,
+            3DImage875, Blade3D, CyberBlade/i7, CyberBlade/DSTN/i7 and
+            CyberBlade/i1 is provided by the "trident" driver.  NEED TO CHECK
+            IF THE OTHERS WILL WORK WITH fbdev.
 
-31.  Video 7
+      Summary:
+            The following (older) chipsets that are supported in 3.3.6 are
+            not supported in 3.9.17: TVGA8200LX, TVGA8800CS, TVGA8900B,
+            TVGA8900C, TVGA8900CL, TVGA9000, TVGA9000i, TVGA9100B,
+            TVGA9200CXr, TGUI9400CXi, TGUI9420, TGUI9430DGi.
+
+31.  Tseng Labs
 
       3.3.6:
-            Support for ...
+            Support for the ET3000 is provided by the XF86_SVGA server with
+            the et3000 driver.  Support for the ET4000AX, and accelerated
+            support for the ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000 and
+            ET6100 is provided by the XF86_SVGA server with the et4000
+            driver.  Support (accelerated) for the ET4000/W32 series and the
+            ET6000 is also provided by the deprecated XF86_W32 server.
 
       3.9.17:
-            Support for ....
+            Support for the ET4000AX, and accelerated support for the
+            ET4000/W32, ET4000/W32i, ET4000/W32p, ET6000 and ET6100 is pro-
+            vided by the "tseng" driver.
 
-32.  Weitek
+      Summary:
+            All cards supported by 3.3.6 are also supported by 3.9.17 except
+            for the old ET3000.
+
+32.  Video 7
 
       3.3.6:
-            Support for ...
+            Support for the Video 7 chipset is provided by the XF86_SVGA
+            server with the video7 driver.  The status of this support is
+            unknown because we don't have any recent test reports, and this
+            driver has no maintainer.
 
       3.9.17:
-            Support for ....
+            No native support for these chipsets, because the old driver has
+            not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK WITH
+            fbdev.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.2 2000/01/23 21:34:37 dawes Exp $
+      Summary:
+            No Video 7 chips are supported in 3.9.17.
+
+33.  Weitek
+
+      3.3.6:
+            Support (accelerated) for the P9000 is provided by the XF86_P9000
+            server and accelerated support for the P9100 is provided by the
+            XF86_SVGA server with the p9x00 driver.
+
+      3.9.17:
+            No native support for these chipsets, because the old drivers
+            have not been ported.  NEED TO CHECK IF THESE CARDS WILL WORK
+            WITH fbdev.
+
+      Summary:
+            No Weitek chips are supported in 3.9.17.
+
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Status.sgml,v 1.5 2000/01/24 19:38:29 dawes Exp $
 
 
 $XFree86$

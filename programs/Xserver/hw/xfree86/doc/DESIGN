@@ -3222,7 +3222,7 @@ The XF86VideoAdaptorRec:
           many elements in them as there are planes in the image
           format.  The driver should specify the pitch (in bytes)
           of each scanline in the particular plane as well as the
-          offset to that plane (in bytes) from the begining of the
+          offset to that plane (in bytes) from the beginning of the
           image.
 
 The XF86VideoEncodingRec:
@@ -6231,7 +6231,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.19 2000/01/21 17:46:10 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.20 2000/01/24 19:38:26 dawes Exp $
 
 
 $XFree86$

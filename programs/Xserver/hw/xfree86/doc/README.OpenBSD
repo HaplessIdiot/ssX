@@ -1,4 +1,4 @@
-                    README for XFree86 3.9.16 on OpenBSD
+                    README for XFree86 3.9.17 on OpenBSD
 
                                Matthieu Herrb
 
@@ -35,7 +35,7 @@ have comments or suggestions about this file and we'll revise it.
    o Silken mouse is supported for serial mices, and, under post 2.6 OpenBSD-
      current for PS/2 mices.
 
-   o MTRR Write Combining is enabled uner post 2.6 OpenBSD-current.
+   o MTRR Write Combining is enabled under post 2.6 OpenBSD-current.
 
 See the Release Notes for non-OS dependent new features in XFree86 3.9.17
 
@@ -180,9 +180,9 @@ to your kernel config file.
 
 7.  Rebuilding the XFree86 Distribution
 
-The server developper's kit allow you to rebuild just the X server with a
-minimum amount of disk space.  Just unpack it, make the appropriate changes
-to the xf86site.def, type ``./mkmf'' and ``make'' to link the server.  See
+The server developer's kit allow you to rebuild just the X server with a min-
+imum amount of disk space.  Just unpack it, make the appropriate changes to
+the xf86site.def, type ``./mkmf'' and ``make'' to link the server.  See
 /usr/X11R6/lib/Server/README for more info.
 
 See INSTALL for instructions on unbundling and building the source distribu-
@@ -235,7 +235,7 @@ Many thanks to all people who contributed to make XFree86 work on *BSD, in
 particular, David Dawes, Pace Willison, Amancio Hasty, Christoph Robitschko,
 Nate Williams, Rod Grimes, Jack Velte and Michael Smith.
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.5 1999/11/26 00:51:51 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/OpenBSD.sgml,v 1.6 2000/01/24 19:38:28 dawes Exp $
 
      $XConsortium$
 
