@@ -2264,18 +2264,12 @@ All modules must NOT include any system include files, or the following:
 
      "xf86Privstr.h"
 
-     "xf86OSpriv.h"
-
      "xf86_OSlib.h"
 
      "Xos.h"
 
-or any other include files with ``priv'' in their name.
-
-     "xf86_libc.h"
-
-or any other include files with ``priv'' in their name. "xf86_libc.h
-will be included by xf86_ansic.h.
+In addition, "xf86_libc.h" must not be included explicitly.  It is included
+implicitly by "xf86_ansic.h".
 
 12.  Offscreen Memory Manager
 
@@ -6236,7 +6230,7 @@ eScreen() function.
          ZZZFreeRec(xf86Screens[scrnIndex]);
      }
 
-     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.20 2000/01/24 19:38:26 dawes Exp $
+     Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/DESIGN.sgml,v 1.21 2000/02/08 19:43:16 dawes Exp $
 
 
 $XFree86$
