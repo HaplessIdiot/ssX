@@ -27,7 +27,7 @@
  *
  * Authors: David Dawes <dawes@xfree86.org>
  *
- * $XFree86$
+ * $XFree86: xc/programs/Xserver/hw/xfree86/os-support/vbe/vbeModes.c,v 1.1 2002/08/06 13:46:28 dawes Exp $
  */
 
 #include "xf86.h"
@@ -122,9 +122,10 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 {
     CARD16 major, minor;
     VbeModeInfoBlock *mode;
-    DisplayModePtr pMode;
+    DisplayModePtr pMode, p;
     VbeModeInfoData *data;
     Bool modeOK = FALSE;
+    ModeStatus status = MODE_OK;
 
     major = (unsigned)(vbe->VESAVersion >> 8);
     minor = vbe->VESAVersion & 0xff;
@@ -141,6 +142,34 @@ CheckMode(ScrnInfoPtr pScrn, vbeInfoPtr pVbe, VbeInfoBlock *vbe, int id,
 	  (mode->BitsPerPixel == pScrn->bitsPerPixel))) {
 	modeOK = TRUE;
 	xf86ErrorFVerb(DEBUG_VERB, "*");
+    }
+
+    /*
+     * Check if there's a valid monitor mode that this one can be matched
+     * up with.  The actual matching is done later.
+     */
+    if (modeOK) {
+	Bool sizeMatch = FALSE;
+	modeOK = FALSE;
+	for (p = pScrn->monitor->Modes; p != NULL; p = p->next) {
+	    if ((p->HDisplay != mode->XResolution) ||
+		(p->VDisplay != mode->YResolution) ||
+		(p->Flags & (V_INTERLACE | V_DBLSCAN | V_CLKDIV2)))
+		continue;
+	    sizeMatch = TRUE;
+	    /* XXX could support the various V_ flags */
+	    status = xf86CheckModeForMonitor(p, pScrn->monitor);
+	    if (status == MODE_OK) {
+		modeOK = TRUE;
+		break;
+	    }
+	}
+	if (sizeMatch && !modeOK) {
+	    xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		       "Not using built-in mode \"%dx%d\" (%s)\n",
+		        mode->XResolution, mode->YResolution,
+		        xf86ModeStatusToString(status));
+	}
     }
 
     xf86ErrorFVerb(DEBUG_VERB,
