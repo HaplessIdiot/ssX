@@ -1,4 +1,5 @@
 XFree86 4.2.99.1 (XX February 2002)
+  41. Resync with the final Mesa-3.4.x-based DRI trunk.
   40. Add support for wscons bell (Jason Wright). 
   39. Fix IBM-reported bug that could cause PCI bus lockouts with second
       generation integrated Mach64 controllers (Marc La France).
@@ -14636,4 +14637,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2171 2002/02/14 22:07:57 tsi Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2172 2002/02/14 22:26:14 herrb Exp $

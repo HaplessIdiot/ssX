@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.11 2001/03/21 16:14:21 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mga_xmesa.c,v 1.12 2001/04/10 16:07:50 dawes Exp $ */
 /*
  * Copyright 2000-2001 VA Linux Systems, Inc.
  * All Rights Reserved.
@@ -221,6 +221,17 @@ GLboolean XMesaInitDriver(__DRIscreenPrivate *sPriv)
 
    mgaScreen->texVirtual[MGA_CARD_HEAP] = (char *)(mgaScreen->sPriv->pFB +
 					   serverInfo->textureOffset);
+   if (drmMap(sPriv->fd,
+              serverInfo->agpTextureOffset,
+              serverInfo->agpTextureSize,
+              (drmAddress *)&mgaScreen->texVirtual[MGA_AGP_HEAP]) != 0)
+   {
+      Xfree(mgaScreen);
+      sPriv->private = NULL;
+      __driMesaMessage("Couldn't map agptexture region");
+      return GL_FALSE;
+   }
+
 #if 0
    mgaScreen->texVirtual[MGA_AGP_HEAP] = (mgaScreen->agp.map +
 					  serverInfo->agpTextureOffset);

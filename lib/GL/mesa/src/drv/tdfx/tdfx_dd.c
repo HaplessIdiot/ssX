@@ -23,7 +23,7 @@
  * OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.4 2001/05/02 15:06:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/tdfx/tdfx_dd.c,v 1.5 2001/08/18 02:51:06 dawes Exp $ */
 
 /*
  * Original rewrite:
@@ -160,6 +160,7 @@ static GLboolean get_occlusion_result( GLcontext *ctx )
    GLboolean result;
 
    LOCK_HARDWARE( fxMesa );
+   fxMesa->Glide.grFinish(); /* required to flush the FIFO - FB 21-01-2002 */ 
 
    if (ctx->Depth.OcclusionTest) {
       if (ctx->OcclusionResult) {
@@ -168,13 +169,12 @@ static GLboolean get_occlusion_result( GLcontext *ctx )
       else {
 	 FxI32 zfail, in;
          fxMesa->Glide.grGet(GR_STATS_PIXELS_DEPTHFUNC_FAIL, 4, &zfail);
-	 /*zfail = FX_grGetInteger_NoLock(GR_STATS_PIXELS_DEPTHFUNC_FAIL);*/
          fxMesa->Glide.grGet(GR_STATS_PIXELS_IN, 4, &in);
-	 /*in = FX_grGetInteger_NoLock(GR_STATS_PIXELS_IN);*/
-	 if (in == zfail)
-	    result = GL_FALSE; /* geom was completely occluded */
-	 else
-	    result = GL_TRUE;  /* all or part of geom was visible */
+         /* Geometry is occluded if there is no input (in == 0) */
+         /* or if all pixels failed the depth test (zfail == in) */
+         /* The < 1 is there because I have empirically seen cases where */
+         /* zfail > in.... go figure.  FB - 21-01-2002. */
+         result = ((in - zfail) < 1 || in == 0) ? GL_FALSE : GL_TRUE;
       }
    }
    else {
