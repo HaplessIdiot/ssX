@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/TI.h,v 1.1 1999/06/14 07:32:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/TI.h,v 1.4 2000/05/02 21:04:46 alanh Exp $ */
 
 #include <xf86RamDac.h>
 
@@ -16,6 +16,9 @@ unsigned long TIramdac3030CalculateMNPForClock(unsigned long RefClock,
     unsigned long MaxClock, unsigned long *rM, unsigned long *rN,
     unsigned long *rP);
 void TIramdacHWCursorInit(xf86CursorInfoPtr infoPtr);
+void TIramdacLoadPalette( ScrnInfoPtr pScrn, int numColors, int *indices,
+    LOCO *colors, VisualPtr pVisual);
+
 
 #define TI3030_RAMDAC		(VENDOR_TI << 16) | 0x00
 #define TI3026_RAMDAC		(VENDOR_TI << 16) | 0x01
