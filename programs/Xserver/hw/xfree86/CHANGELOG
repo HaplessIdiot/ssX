@@ -1,10 +1,11 @@
 XFree86 4.0a (xx March 2000)
-  23. Support for the Trident CyberBlade/DSTN/i1 (Alan Hourihane).
-  22. Fix Xinerama problems that occured when screen zero was not at (0,0)
+  23. Fix an 8+24 bug that occured when shared memory pixmaps were used as
+      tiles (Mark Vojkovich). 
+  22. Support for the Trident CyberBlade/DSTN/i1 (Alan Hourihane).
+  21. Fix Xinerama problems that occured when screen zero was not at (0,0)
       (Mark Vojkovich).
-  21. Add untested support for Matrox SDRAM G400s (Mark Vojkovich).
-  20. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
-  19. Change loader search order to look in more specific subdirectories first,
+  20. Add untested support for Matrox SDRAM G400s (Mark Vojkovich).
+  19. Improve memory probing reliability in the Matrox driver (Mark Vojkovich).
   18. Fix DESIGN doc and XF86Config man page information about the Screen
       entry format in the ServerLayout sections (David Dawes).
   17. Attempt to add support for Matrox SDRAM G400s (Mark Vojkovich).
