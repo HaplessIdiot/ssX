@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.10 2001/07/19 02:22:50 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64io.h,v 1.11 2001/07/21 13:50:22 tsi Exp $ */
 /*
  * Copyright 2000 through 2001 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -85,11 +85,11 @@
  *                                    accessed (nor by what).
  */
 
-#define inm(_Register)                                        \
-    MMIO_IN32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
+#define inm(_Register)                                                   \
+    MMIO_IN32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)],            \
               (_Register) & MM_IO_SELECT)
-#define outm(_Register, _Value)                                \
-    MMIO_OUT32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)], \
+#define outm(_Register, _Value)                                          \
+    MMIO_OUT32(pATI->pBlock[GetBits(_Register, BLOCK_SELECT)],           \
                (_Register) & MM_IO_SELECT, _Value)
 
 #ifdef AVOID_CPIO
@@ -99,11 +99,11 @@
 #   define outr(_Register, _Value) \
         MMIO_OUT32(pATI->pBlock[0], (_Register) & MM_IO_SELECT, _Value)
 
-#   define in8(_Register)                                        \
-        MMIO_IN8(pATI->pBlock[0], \
+#   define in8(_Register)                                                \
+        MMIO_IN8(pATI->pBlock[0],                                        \
                  (_Register) & (MM_IO_SELECT | IO_BYTE_SELECT))
-#   define out8(_Register, _Value)                                \
-        MMIO_OUT8(pATI->pBlock[0], \
+#   define out8(_Register, _Value)                                       \
+        MMIO_OUT8(pATI->pBlock[0],                                       \
                   (_Register) & (MM_IO_SELECT | IO_BYTE_SELECT), _Value)
 
 /* Cause a cpp syntax error if any of these are used */
