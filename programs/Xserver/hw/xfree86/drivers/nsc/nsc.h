@@ -1,8 +1,8 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.3 2003/01/14 09:34:30 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc.h,v 1.4 2003/02/08 23:14:29 tsi Exp $ */
 /*
  * $Workfile: nsc.h $
- * $Revision: 1.4 $
- * $Author: tsi $
+ * $Revision: 1.5 $
+ * $Author: alanh $
  *
  * File Contents: This file contains the data structures Geode driver.
  *
@@ -386,6 +386,19 @@ typedef struct
    int numDGAModes;
    Bool DGAactive;
    int DGAViewportStatus;
+/*****************************************/
+   int video_x;
+   int video_y;
+   short video_w;
+   short video_h;
+   short video_srcw;
+   short video_srch;
+   short video_dstw;
+   short video_dsth;
+   int video_id;
+   int video_offset;
+   ScrnInfoPtr video_scrnptr;
+   BOOL OverlayON;
 
    int videoKey;
    XF86VideoAdaptorPtr adaptor;

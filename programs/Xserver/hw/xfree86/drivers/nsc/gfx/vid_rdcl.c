@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/vid_rdcl.c,v 1.1 2002/12/10 15:12:27 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/gfx/vid_rdcl.c,v 1.2 2003/02/05 18:38:44 alanh Exp $ */
 /*
  * $Workfile: vid_rdcl.c $
  *
@@ -1088,15 +1088,8 @@ gfx_set_video_window(short x, short y, unsigned short w, unsigned short h)
    hadjust = gfx_get_htotal() - gfx_get_hsync_end() - 14l;
    vadjust = gfx_get_vtotal() - gfx_get_vsync_end() + 1l;
 
-   /* LEFT CLIPPING */
-
-   if (x < 0) {
-      gfx_set_video_left_crop((unsigned short)(-x));
-      xstart = hadjust;
-   } else {
-      gfx_set_video_left_crop(0);
-      xstart = (unsigned long)x + hadjust;
-   }
+   /* HORIZONTAL START */
+   xstart = (unsigned long)x + hadjust;
 
    /* HORIZONTAL END */
    /* End positions in register are non-inclusive (one more than the actual end) */
@@ -1160,6 +1153,7 @@ gfx_set_video_left_crop(unsigned short x)
 
    if (gfx_vid_dstw) {
       initread = (unsigned long)x *gfx_vid_srcw / gfx_vid_dstw;
+
       if (vcfg & RCDF_VCFG_4_2_0_MODE)
 	 initread &= 0xFFF8;
    } else
