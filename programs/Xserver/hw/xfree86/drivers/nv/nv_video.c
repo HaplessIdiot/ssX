@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.3 2001/05/21 00:23:20 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.4 2001/05/23 21:59:13 mvojkovi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -251,10 +251,8 @@ void NVInitVideo (ScreenPtr pScreen)
     NVPtr         	pNv   = NVPTR(pScrn);
     int 		num_adaptors;
 
-    if (pNv->AccelInfoRec && pNv->AccelInfoRec->FillSolidRects &&
-        (pScrn->bitsPerPixel != 8) && (pNv->riva.Architecture >= NV_ARCH_10))
+    if((pScrn->bitsPerPixel != 8) && (pNv->riva.Architecture >= NV_ARCH_10))
     {
-  
 	overlayAdaptor = NVSetupImageVideo(pScreen);
   
 	if(overlayAdaptor)
@@ -387,95 +385,6 @@ static Bool RegionsEqual
     }
     return TRUE;
 }
-/* NVClipVideo -  
-
-   Takes the dst box in standard X BoxRec form (top and left
-   edges inclusive, bottom and right exclusive).  The new dst
-   box is returned.  The source boundaries are given (x1, y1 
-   inclusive, x2, y2 exclusive) and returned are the new source 
-   boundaries in 16.16 fixed point. 
-*/
-
-#define DummyScreen screenInfo.screens[0]
-
-static Bool
-NVClipVideo(
-    BoxPtr dst,
-    INT32 *xa,
-    INT32 *xb,
-    INT32 *ya,
-    INT32 *yb,
-    RegionPtr reg,
-    INT32 width,
-    INT32 height
-){
-    INT32 vscale, hscale, delta;
-    BoxPtr extents = REGION_EXTENTS(DummyScreen, reg);
-    int diff;
-
-    hscale = ((*xb - *xa) << 16) / (dst->x2 - dst->x1);
-    vscale = ((*yb - *ya) << 16) / (dst->y2 - dst->y1);
-
-    *xa <<= 16; *xb <<= 16;
-    *ya <<= 16; *yb <<= 16;
-
-    diff = extents->x1 - dst->x1;
-    if(diff > 0) {
-        dst->x1 = extents->x1;
-        *xa += diff * hscale;
-    }
-    diff = dst->x2 - extents->x2;
-    if(diff > 0) {
-        dst->x2 = extents->x2;
-        *xb -= diff * hscale;
-    }
-    diff = extents->y1 - dst->y1;
-    if(diff > 0) {
-        dst->y1 = extents->y1;
-        *ya += diff * vscale;
-    }
-    diff = dst->y2 - extents->y2;
-    if(diff > 0) {
-        dst->y2 = extents->y2;
-        *yb -= diff * vscale;
-    }
-
-    if(*xa < 0) {
-        diff =  (- *xa + hscale - 1)/ hscale;
-        dst->x1 += diff;
-        *xa += diff * hscale;
-    }
-    delta = *xb - (width << 16);
-    if(delta > 0) {
-        diff = (delta + hscale - 1)/ hscale;
-        dst->x2 -= diff;
-        *xb -= diff * hscale;
-    }
-    if(*xa >= *xb) return FALSE;
-
-    if(*ya < 0) {
-        diff =  (- *ya + vscale - 1)/ vscale;
-        dst->y1 += diff;
-        *ya += diff * vscale;
-    }
-    delta = *yb - (height << 16);
-    if(delta > 0) {
-        diff = (delta + vscale - 1)/ vscale;
-        dst->y2 -= diff;
-        *yb -= diff * vscale;
-    }
-    if(*ya >= *yb) return FALSE;
-
-    if((dst->x1 != extents->x1) || (dst->x2 != extents->x2) ||
-       (dst->y1 != extents->y1) || (dst->y2 != extents->y2))
-    {
-        RegionRec clipReg;
-        REGION_INIT(DummyScreen, &clipReg, dst, 1);
-        REGION_INTERSECT(DummyScreen, reg, reg, &clipReg);
-        REGION_UNINIT(DummyScreen, &clipReg);
-    }
-    return TRUE;
-}
 
 static void
 NVPutOverlayImage (
@@ -509,10 +418,7 @@ NVPutOverlayImage (
 	/* we always paint V4L's color key */
 	if(!pPriv->grabbedByV4L)
            REGION_COPY(pScrnInfo->pScreen, &pPriv->clip, clipBoxes);
-        (*pNv->AccelInfoRec->FillSolidRects)(pScrnInfo, pPriv->colorKey,
-                                             GXcopy, ~0,
-                                             REGION_NUM_RECTS(clipBoxes),
-                                             REGION_RECTS(clipBoxes));
+        xf86XVFillKeyHelper(pScrnInfo->pScreen, pPriv->colorKey, clipBoxes);
     }
 
     pRiva->PMC[(0x8900/4) + buffer] = offset;
@@ -832,7 +738,8 @@ static int NVPutImage
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
     
-    if(!NVClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, width, height))
+    if(!xf86XVClipVideoHelper(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, 
+                              width, height))
     	return Success;
     
     dstBox.x1 -= pScrnInfo->frameX0;
@@ -1159,7 +1066,7 @@ NVDisplaySurface (
     dstBox.y1 = drw_y;
     dstBox.y2 = drw_y + drw_h;
     
-    if(!NVClipVideo(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, 
+    if(!xf86XVClipVideoHelper(&dstBox, &xa, &xb, &ya, &yb, clipBoxes, 
 		    surface->width, surface->height))
     {
         return Success;
