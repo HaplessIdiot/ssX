@@ -87,6 +87,7 @@
 Bool ctLinearSupport = FALSE;	 /*linear addressing enable */
 Bool ctAccelSupport = FALSE;	 /*acceleration enable */
 Bool ctHDepth = FALSE;		 /*Chip has 16/24bpp */
+Bool ctDPMSSupport = FALSE;	 /*VESA Display Power Management Signaling */
 
 /* Frame Buffer related */
 unsigned long ctFrameBufferSize = 0;
@@ -282,7 +283,7 @@ static void CHIPSFbInit();
 #if 0			/*it is not used but left for the future */
 static void CHIPSGetMode();
 #endif
-
+static void CHIPSDisplayPowerManagementSet();
 
 /* Bank select functions. */
 extern void CHIPSSetRead();
@@ -898,24 +899,28 @@ CHIPSProbe()
 	    CHIPSchipset = CT_540;
 	    ctLinearSupport = TRUE;
 	    ctHDepth = TRUE;
+	    ctDPMSSupport = TRUE;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_545))) {
 	    CHIPSchipset = CT_545;
 	    ctLinearSupport = TRUE;
 	    ctAccelSupport = TRUE;
 	    ctSupportMMIO = TRUE;
 	    ctHDepth = TRUE;
+	    ctDPMSSupport = TRUE;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_546))) {
 	    CHIPSchipset = CT_546;
 	    ctLinearSupport = TRUE;
 	    ctAccelSupport = TRUE;
 	    ctSupportMMIO = TRUE;
 	    ctHDepth = TRUE;
+	    ctDPMSSupport = TRUE;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_548))) {
 	    CHIPSchipset = CT_548;
 	    ctLinearSupport = TRUE;
 	    ctAccelSupport = TRUE;
 	    ctSupportMMIO = TRUE;
 	    ctHDepth = TRUE;
+	    ctDPMSSupport = TRUE;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_550))) {
 	    CHIPSchipset = CT_550;
 	    ctLinearSupport = TRUE;
@@ -926,6 +931,7 @@ CHIPSProbe()
 				      * be done with MMIO */
 	    ctHDepth = TRUE;
 	    ctisHiQV32 = TRUE;	     /* Use the new HiQV32 architecture */
+	    ctDPMSSupport = TRUE;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_554))) {
 	    CHIPSchipset = CT_554;
 	    ctLinearSupport = TRUE;
@@ -936,6 +942,7 @@ CHIPSProbe()
 				      * be done with MMIO */
 	    ctHDepth = TRUE;
 	    ctisHiQV32 = TRUE;	       /* Use the new HiQV32 architecture */
+	    ctDPMSSupport = TRUE;
 	} else if (!StrCaseCmp(vga256InfoRec.chipset, CHIPSIdent(CT_4200))) {
 	  CHIPSchipset = CT_4200;
 	  ctisWINGINE = TRUE;
@@ -945,6 +952,7 @@ CHIPSProbe()
 	  ctAccelSupport = TRUE;
 	  ctHDepth = TRUE;
 	  ctisWINGINE = TRUE;
+	  ctDPMSSupport = TRUE;
 	}
 
 #ifdef CT45x_SUPPORT
@@ -992,6 +1000,7 @@ CHIPSProbe()
 	ctAccelSupport = TRUE;
 	ctSupportMMIO = TRUE;
 	ctHDepth = TRUE;
+	ctDPMSSupport = TRUE;
 	ErrorF("%s %s: Chipset: %s \n", XCONFIG_PROBED,
 	       vga256InfoRec.name, CHIPSIdent(CHIPSchipset));
 	xf86EnableIOPorts(vga256InfoRec.scrnIndex);
@@ -1024,6 +1033,7 @@ CHIPSProbe()
 		ctAccelSupport = TRUE;
 		ctHDepth = TRUE;
 	        ctisWINGINE = TRUE;
+		ctDPMSSupport = TRUE;
 	    }
 	    if ((temp & 0xF0) == 0xC0) {
 		ctLinearSupport = TRUE;
@@ -1032,6 +1042,7 @@ CHIPSProbe()
 	    if ((temp & 0xF8) == 0xD0) {
 		ctLinearSupport = TRUE;
 		ctHDepth = TRUE;
+		ctDPMSSupport = TRUE;
 		CHIPSchipset = CT_540;
 	    }
 	    if ((temp & 0xF8) == 0xD8) {	/*CT65545+ */
@@ -1039,6 +1050,7 @@ CHIPSProbe()
 		ctAccelSupport = TRUE;
 		ctSupportMMIO = TRUE;
 		ctHDepth = TRUE;
+		ctDPMSSupport = TRUE;
 		switch (temp & 0x07) {
 		case 3:
 		    CHIPSchipset = CT_546;
@@ -1072,6 +1084,7 @@ CHIPSProbe()
 				      * be done with MMIO */
 		ctHDepth = TRUE;
 		ctisHiQV32 = TRUE;
+		ctDPMSSupport = TRUE;
 	    }
 	    if (temp == 0xE4) {
 		CHIPSchipset = CT_554;
@@ -1083,6 +1096,7 @@ CHIPSProbe()
 				      * be done with MMIO */
 		ctHDepth = TRUE;
 		ctisHiQV32 = TRUE;
+		ctDPMSSupport = TRUE;
 	    }
 	    if (CHIPSchipset != 99) {
 		outb(0x3D6, 0x04);
@@ -1131,13 +1145,20 @@ CHIPSProbe()
 	ctAccelSupport = FALSE;
     }
 
-
     if(ctisHiQV32)
       return ctProbeHiQV();
     else if (ctisWINGINE)
       return ctProbeWINGINE();
     else
       return ctProbe();
+
+#ifdef DPMSExtension
+    /* Only use DPMS modes if a monitor is detected */
+    if ((ctDPMSSupport) && ( !(ctMonitor & 0x2)))
+	vga256InfoRec.DPMSSet = CHIPSDisplayPowerManagementSet;
+#endif
+
+
 }
 
 Bool ctProbeHiQV()
@@ -4584,3 +4605,54 @@ int ctSetMonitor()
     return(tmp);
 }
 
+#ifdef DPMSExtension
+/*
+ * DPMS Control registers
+ *
+ * XR73 6554x and 64300 (what about 65535?)
+ * XR61 6555x
+ *    0   HSync Powerdown data
+ *    1   HSync Select 1=Powerdown
+ *    2   VSync Powerdown data
+ *    3   VSync Select 1=Powerdown
+ */
+
+static void CHIPSDisplayPowerManagementSet(PowerManagementMode)
+int PowerManagementMode;
+{
+    unsigned char dpmsreg, seqreg, tmp;
+    
+    if (!xf86VTSema) return;
+    switch (PowerManagementMode) {
+      case DPMSModeOn:
+	/* Screen: On; HSync: On, VSync: On */
+	dpmsreg = 0x00;
+	seqreg = 0x00;
+	break;
+      case DPMSModeStandby:
+	/* Screen: Off; HSync: Off, VSync: On */
+	dpmsreg = 0x02;
+	seqreg = 0x20;
+	break;
+      case DPMSModeSuspend:
+	/* Screen: Off; HSync: On, VSync: Off */
+	dpmsreg = 0x08;
+	seqreg = 0x20;
+	break;
+      case DPMSModeOff:
+	/* Screen: Off; HSync: Off, VSync: Off */
+	dpmsreg = 0x0A;
+	seqreg = 0x20;
+	break;
+    }
+    outb(0x3C4, 0x01);
+    seqreg |= inb(0x3C5) & ~0x20;
+    outb(0x3C5, seqreg);
+    if (ctisHiQV32)
+	outb(0x3D6,0x61);
+    else
+	outb(0x3D6,0x73);
+    tmp = inb(0x3D7);
+    outb(0x3D7,((tmp & 0xF0) | dpmsreg));
+}
+#endif

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_mmio.h,v 3.0 1996/12/28 07:42:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_mmio.h,v 3.1 1996/12/30 14:00:21 dawes Exp $ */
 /*
  * Copyright 1996 by Alan Hourihane, Wigan, England.
  *
@@ -37,24 +37,50 @@
 #ifdef TRIDENT_MMIO
 #define BLTBUSY(b) \
 		b = (*(unsigned char *)(tguiMMIOBase + GER_STATUS)) & GE_BUSY;
+#define OLDBLTBUSY(b) \
+		b = (*(unsigned char *)(tguiMMIOBase + OLDGER_STATUS))&GE_BUSY;
 #define TGUI_STATUS(c) \
 		*(unsigned char *)(tguiMMIOBase + GER_STATUS) = c;
+#define OLDTGUI_STATUS(c) \
+		*(unsigned char *)(tguiMMIOBase + OLDGER_STATUS) = c;
 #define TGUI_OPERMODE(c) \
 		*(unsigned short *)(tguiMMIOBase + GER_OPERMODE) = c;
+#define OLDTGUI_OPERMODE(c) \
+		{ \
+			*(unsigned short *)(tguiMMIOBase + OLDGER_MWIDTH) = \
+				            vga256InfoRec.displayWidth - 1; \
+			*(unsigned char *)(tguiMMIOBase + OLDGER_MFORMAT) = c; \
+		}
 #define TGUI_FCOLOUR(c) \
 		*(unsigned long *)(tguiMMIOBase + GER_FCOLOUR) = c;
+#define OLDTGUI_FCOLOUR(c) \
+		*(unsigned long *)(tguiMMIOBase + OLDGER_FCOLOUR) = c;
 #define TGUI_BCOLOUR(c) \
 		*(unsigned long *)(tguiMMIOBase + GER_BCOLOUR) = c;
+#define OLDTGUI_BCOLOUR(c) \
+		*(unsigned long *)(tguiMMIOBase + OLDGER_BCOLOUR) = c;
 #define TGUI_DRAWFLAG(c) \
 		*(unsigned long *)(tguiMMIOBase + GER_DRAWFLAG) = c;
+#define OLDTGUI_STYLE(c) \
+		*(unsigned short *)(tguiMMIOBase + OLDGER_STYLE) = c;
 #define TGUI_FMIX(c) \
 		*(unsigned char *)(tguiMMIOBase + GER_FMIX) = c;
+#define OLDTGUI_FMIX(c) \
+		*(unsigned char *)(tguiMMIOBase + OLDGER_FMIX) = c;
+#define OLDTGUI_BMIX(c) \
+		*(unsigned char *)(tguiMMIOBase + OLDGER_BMIX) = c;
 #define TGUI_DIM_XY(w,h) \
 		*(unsigned long *)(tguiMMIOBase + GER_DIM_XY) = XY_MERGE(w-1,h-1);
+#define OLDTGUI_DIMXY(w,h) \
+		*(unsigned long *)(tguiMMIOBase + OLDGER_DIMXY) = XY_MERGE(w-1,h-1);
 #define TGUI_SRC_XY(x,y) \
 		*(unsigned long *)(tguiMMIOBase + GER_SRC_XY) = XY_MERGE(x,y);
 #define TGUI_DEST_XY(x,y) \
 		*(unsigned long *)(tguiMMIOBase + GER_DEST_XY) = XY_MERGE(x,y);
+#define OLDTGUI_DESTXY(x,y) \
+		*(unsigned long *)(tguiMMIOBase + OLDGER_DESTXY) = XY_MERGE(x,y);
+#define OLDTGUI_DESTLINEAR(c) \
+		*(unsigned long *)(tguiMMIOBase + OLDGER_DESTLINEAR) = c;
 #define TGUI_SRCCLIP_XY(x,y) \
 		*(unsigned long *)(tguiMMIOBase + GER_SRCCLIP_XY) = XY_MERGE(x,y);
 #define TGUI_DSTCLIP_XY(x,y) \
@@ -69,27 +95,90 @@
 		TGUISync(); \
 		*(unsigned char *)(tguiMMIOBase + GER_COMMAND) = c; \
 		}
+#define OLDTGUI_COMMAND(c) \
+		{ \
+		OLDTGUI_OPERMODE(GE_OP); \
+		OLDTGUISync(); \
+		*(unsigned long *)(tguiMMIOBase + OLDGER_COMMAND) = c; \
+		}
 #else
 #define BLTBUSY(b) \
 		b = inb(GER_BASE+GER_STATUS) & GE_BUSY;
+#define OLDBLTBUSY(b) \
+		{	\
+			outb(GER_INDEX, OLDGER_STATUS); \
+			b = inb(GER_BYTE0) & GE_BUSY; \
+		}
 #define TGUI_STATUS(c) \
 		outb(GER_BASE+GER_STATUS, c);
+#define OLDTGUI_STATUS(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_STATUS); \
+			outb(GER_BYTE0, 0x00); \
+		}
 #define TGUI_OPERMODE(c) \
 		outw(GER_BASE+GER_OPERMODE, c);
+#define OLDTGUI_OPERMODE(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_MWIDTH); \
+			outw(GER_BYTE0, vga256InfoRec.displayWidth - 1); \
+			outb(GER_INDEX, OLDGER_MFORMAT); \
+			outb(GER_BYTE0, c); \
+		}
 #define TGUI_FCOLOUR(c) \
 		outl(GER_BASE+GER_FCOLOUR, c);
+#define OLDTGUI_FCOLOUR(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_FCOLOUR); \
+			outl(GER_BYTE0, c); \
+		}
 #define TGUI_BCOLOUR(c) \
 		outl(GER_BASE+GER_BCOLOUR, c);
+#define OLDTGUI_BCOLOUR(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_BCOLOUR); \
+			outl(GER_BYTE0, c); \
+		}
 #define TGUI_DRAWFLAG(c) \
 		outl(GER_BASE+GER_DRAWFLAG, c);
+#define OLDTGUI_STYLE(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_STYLE); \
+			outw(GER_BYTE0, c); \
+		}
 #define TGUI_FMIX(c) \
 		outb(GER_BASE+GER_FMIX, c);
+#define OLDTGUI_FMIX(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_FMIX); \
+			outb(GER_BYTE0, c); \
+		}
+#define OLDTGUI_BMIX(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_BMIX); \
+			outb(GER_BYTE1, c); \
+		}
 #define TGUI_DIM_XY(w,h) \
 		outl(GER_BASE+GER_DIM_XY, XY_MERGE(w-1,h-1));
+#define OLDTGUI_DIMXY(w,h) \
+		{	\
+			outb(GER_INDEX, OLDGER_DIMXY); \
+			outl(GER_BYTE0, XY_MERGE(w-1,h-1)); \
+		}
 #define TGUI_SRC_XY(x,y) \
 		outl(GER_BASE+GER_SRC_XY, XY_MERGE(x,y));
 #define TGUI_DEST_XY(x,y) \
 		outl(GER_BASE+GER_DEST_XY, XY_MERGE(x,y));
+#define OLDTGUI_DESTXY(x,y) \
+		{	\
+			outb(GER_INDEX, OLDGER_DESTXY); \
+			outl(GER_BYTE0, XY_MERGE(x,y)); \
+		}
+#define OLDTGUI_DESTLINEAR(c) \
+		{	\
+			outb(GER_INDEX, OLDGER_DESTLINEAR); \
+			outl(GER_BYTE0, c); \
+		}
 #define TGUI_SRCCLIP_XY(x,y) \
 		outl(GER_BASE+GER_SRCCLIP_XY, XY_MERGE(x,y));
 #define TGUI_DSTCLIP_XY(x,y) \
@@ -103,5 +192,12 @@
 		TGUI_OPERMODE(GE_OP); \
 		TGUISync(); \
 		outb(GER_BASE+GER_COMMAND, c); \
+		}
+#define OLDTGUI_COMMAND(c) \
+		{ \
+		OLDTGUI_OPERMODE(GE_OP); \
+		OLDTGUISync(); \
+		outb(GER_INDEX, OLDGER_COMMAND); \
+		outl(GER_BYTE0, c); \
 		}
 #endif

@@ -26,7 +26,7 @@
  * accel/s3/s3Cursor.c, and ark/ark_cursor.c
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.14 1996/12/30 14:00:19 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_curs.c,v 3.15 1997/01/20 12:38:05 dawes Exp $ */
 
 #include "X.h"
 #include "Xproto.h"
@@ -51,6 +51,7 @@ extern int tridentHWCursorType;
 
 extern Bool vgaUseLinearAddressing;
 extern Bool tridentUseLinear;
+extern Bool IsCyber;
 
 static int tridentFlipCursor = 0;
 static Bool TridentRealizeCursor();
@@ -119,7 +120,8 @@ Bool TridentCursorInit(pm, pScr)
 		TridentCursorControlMode |= 0x01;
 
 	/* Pop the cursor in the last 1KB aligned segment */
-	TridentCursorAddress = vga256InfoRec.videoRam * 1024 - 1024;
+	TridentCursorAddress = vga256InfoRec.videoRam * 1024 - 
+				(IsCyber ? 4096 : 1024);
 
 	return TRUE;
 }
@@ -186,7 +188,7 @@ static Bool TridentRealizeCursor(pScr, pCurs)
    if (pCurs->bits->refcnt > 1)
       return TRUE;
 
-   ram = (unsigned long *)xalloc(1024);
+   ram = (unsigned long *)xalloc((IsCyber ? 4096 : 1024));
 
    *pPriv = (pointer) ram;
 
@@ -268,12 +270,12 @@ static void TridentLoadCursorToCard(pScr, pCurs, x, y)
 
 	if (vgaUseLinearAddressing)
 		memcpy((unsigned char *)vgaLinearBase + TridentCursorAddress,
-			cursor_image, 1024);
+			cursor_image, (IsCyber ? 4096 : 1024));
 	else {
 		vgaSaveBank();
 		TGUISetWrite(TridentCursorAddress >> 16);
 		memcpy((unsigned char *)vgaBase + (TridentCursorAddress & 0xFFFF),
-			cursor_image, 1024);
+			cursor_image, (IsCyber ? 4096 : 1024));
 		vgaRestoreBank();
 	}
 }

@@ -1,0 +1,52 @@
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/s3/Imakefile,v 3.5 1996/12/23 06:58:21 dawes Exp $
+/*
+ *
+ * Copyright 1995-1997 The XFree86 Project, Inc.
+ *
+ */
+
+#include <Server.tmpl>
+
+SRCS = s3driver.c s3probe.c s3BtCursor.c s3ELSA.c s3ramdacs.c s3init.c s3fbinit.c s3save.c s3TiCursor.c Ti3026Curs.c s3misc.c s3accel.c s3cursor.c IBMRGBCurs.c s3bank.s s3line.c s3seg.c
+
+OBJS = s3driver.o s3probe.o s3BtCursor.o s3ELSA.o s3ramdacs.o s3init.o s3fbinit.o s3save.o s3TiCursor.o Ti3026Curs.o s3misc.o s3accel.o s3cursor.o IBMRGBCurs.o s3bank.o s3line.o s3seg.o
+
+#if XF86LinkKit
+INCLUDES = -I. -I../../../include -I../../../include/X11 -I../..
+#else
+INCLUDES = -I. -I$(XF86COMSRC) -I$(XF86HWSRC) -I$(XF86OSSRC) \
+           -I../../vga -I$(SERVERSRC)/include \
+           -I$(XINCLUDESRC) -I../../../../../mi \
+	   -I../../../../../../../include/fonts \
+	   -I../../../../../cfb	-I../../../../../mfb 
+#endif
+
+#if MakeHasPosixVariableSubstitutions
+SubdirLibraryRule($(OBJS))
+#endif
+NormalLibraryObjectRule()
+NormalAsmObjectRule()
+
+NormalRelocatableTarget(s3_drv, $(OBJS))
+
+InstallLinkKitNonExecFile(s3driver.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3probe.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3BtCursor.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3ELSA.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3ramdacs.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(Ti3026Curs.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3TiCursor.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3init.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3fbinit.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3save.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3TiCursor.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3misc.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3accel.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3cursor.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(IBMRGBCurs.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3line.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3seg.c,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(s3bank.s,$(LINKKITDIR)/drivers/vga256/s3)
+InstallLinkKitNonExecFile(Imakefile,$(LINKKITDIR)/drivers/vga256/s3)
+
+DependTarget()

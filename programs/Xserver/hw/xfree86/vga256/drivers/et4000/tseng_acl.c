@@ -1,5 +1,5 @@
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.5 1997/01/19 12:51:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/tseng_acl.c,v 3.6 1997/01/20 12:37:51 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -335,21 +335,25 @@ void tseng_init_acl()
 
     *MMU_CONTROL = 0x74;
 
-#if 0
+#if 1
     if ((et4000_type < TYPE_ET6000) && (et4000_type > TYPE_ET4000W32I)
          && OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options)) /* W32p */
     {
       /*
        * Another kludge...
        *
-       * Each ET4000W32p aperture is 1 MB large, and we set them up so that
-       * they form a contiguous block of 2MB.
-       * This seems to be necessary to enable access to 2 MB in a linear fashion.
-       * Otherwise, only the first 1 MB is accessible in the linear memory map.
+       * Since the w32p revs C and D don't have any memory mapped when the
+       * accelerator registers are used it is necessary to use the MMUs to
+       * provide a semblance of linear memory. Fortunately on these chips
+       * the MMU appetures are 1 megabyte each. So as long as we are willing
+       * to only use 3 megs of video memory we can have some acceleration.
+       * If we ever get the CPU-to-screen-color-expansion stuff working then
+       * we will only be able to use 2 megs since MMU 2 will be used for
+       * that.
        */
-      ErrorF("--- linear base kludge ---\n");
+      /* ErrorF("--- linear base kludge ---\n"); */
       *((LongP) (MMioBase + 0x00)) = 0x0L;
-      *((LongP) (MMioBase + 0x04)) = 0x100000L/2;
+      *((LongP) (MMioBase + 0x04)) = 0x100000;
     }
 #endif
     

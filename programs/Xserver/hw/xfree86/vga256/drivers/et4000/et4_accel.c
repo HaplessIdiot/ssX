@@ -11,7 +11,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.10 1997/01/26 04:41:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/et4000/et4_accel.c,v 3.11 1997/01/27 06:58:29 dawes Exp $ */
 
 
 /*
@@ -166,13 +166,15 @@ void TsengAccelInit() {
     xf86AccelInfoRec.ErrorTermBits = 11;
 #endif
 
-#if 0
+#if 1
     xf86AccelInfoRec.SubsequentTwoPointLine =
         TsengSubsequentTwoPointLine;
 #endif
 
-    xf86GCInfoRec.PolyLineSolidZeroWidthFlags = NO_TRANSPARENCY | NO_PLANEMASK;
-    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags = NO_TRANSPARENCY | NO_PLANEMASK;
+    xf86GCInfoRec.PolyLineSolidZeroWidthFlags =
+         NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
+    xf86GCInfoRec.PolySegmentSolidZeroWidthFlags =
+         NO_TRANSPARENCY | NO_PLANEMASK | TWO_POINT_LINE_ERROR_TERM;
 
     /*
      * Color expansion primitives.
@@ -190,45 +192,48 @@ void TsengAccelInit() {
      *
      */
 
-    xf86AccelInfoRec.ColorExpandFlags =
-        BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
+    if ( (et4000_type >= TYPE_ET6000) || (vga256InfoRec.bitsPerPixel == 8) )
+    {
+      xf86AccelInfoRec.ColorExpandFlags =
+          BIT_ORDER_IN_BYTE_LSBFIRST | VIDEO_SOURCE_GRANULARITY_PIXEL | NO_PLANEMASK;
 
 #if 1
-    /* new and untested */
+      /* new and untested */
 
-    xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
-        TsengSetupForScreenToScreenColorExpand;
-    xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
-        TsengSubsequentScreenToScreenColorExpand;
+      xf86AccelInfoRec.SetupForScreenToScreenColorExpand =
+          TsengSetupForScreenToScreenColorExpand;
+      xf86AccelInfoRec.SubsequentScreenToScreenColorExpand =
+          TsengSubsequentScreenToScreenColorExpand;
 #endif
 
-    xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
-        TsengSetupForScanlineScreenToScreenColorExpand;
-    xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
-        TsengSubsequentScanlineScreenToScreenColorExpand;
-        
-    /* triple-buffering is needed to account for double-buffering of Tseng
-     * acceleration registers. Increasing this number doesn't help solve the
-     * problems with both ET4000 and ET6000 with text rendering.
-     */
-    xf86AccelInfoRec.PingPongBuffers = 3;
+      xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
+          TsengSetupForScanlineScreenToScreenColorExpand;
+      xf86AccelInfoRec.SubsequentScanlineScreenToScreenColorExpand =
+          TsengSubsequentScanlineScreenToScreenColorExpand;
+          
+      /* triple-buffering is needed to account for double-buffering of Tseng
+       * acceleration registers. Increasing this number doesn't help solve the
+       * problems with both ET4000 and ET6000 with text rendering.
+       */
+      xf86AccelInfoRec.PingPongBuffers = 3;
 
-    xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
-    xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
+      xf86AccelInfoRec.ScratchBufferSize = vga256InfoRec.videoRam * 1024 - (long) W32Mix;
+      xf86AccelInfoRec.ScratchBufferAddr = W32Mix;
 
-    if (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
-    {
-      /* in banked mode, use aperture #0 */
-      xf86AccelInfoRec.ScratchBufferBase =
-         (unsigned char *)
-           ( ((int)vgaBase) + 0x18000L + 1024 - xf86AccelInfoRec.ScratchBufferSize );
-    }
+      if (!OFLG_ISSET(OPTION_LINEAR, &vga256InfoRec.options))
+      {
+        /* in banked mode, use aperture #0 */
+        xf86AccelInfoRec.ScratchBufferBase =
+           (unsigned char *)
+             ( ((int)vgaBase) + 0x18000L + 1024 - xf86AccelInfoRec.ScratchBufferSize );
+      }
 #if 0
-    ErrorF("ColorExpand ScratchBuf: Addr = %d (0x%x); Size = %d (0x%x); Base = %d (0x%x)\n",
-           xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferAddr,
-           xf86AccelInfoRec.ScratchBufferSize, xf86AccelInfoRec.ScratchBufferSize,
-           xf86AccelInfoRec.ScratchBufferBase, xf86AccelInfoRec.ScratchBufferBase);
+      ErrorF("ColorExpand ScratchBuf: Addr = %d (0x%x); Size = %d (0x%x); Base = %d (0x%x)\n",
+             xf86AccelInfoRec.ScratchBufferAddr, xf86AccelInfoRec.ScratchBufferAddr,
+             xf86AccelInfoRec.ScratchBufferSize, xf86AccelInfoRec.ScratchBufferSize,
+             xf86AccelInfoRec.ScratchBufferBase, xf86AccelInfoRec.ScratchBufferBase);
 #endif
+    }
 
 #if 0
     /*
@@ -439,7 +444,7 @@ static __inline__ void SET_FG_BG_COLOR(int fgcolor, int bgcolor)
 #ifdef NO_OPTIMIZE
 #define MULBPP(x) ((x) * bytesperpixel)
 #else
-static __inline__ MULBPP(int x)
+static __inline__ int MULBPP(int x)
 {
     int result = x << powerPerPixel;
     if (bytesperpixel != 3)
@@ -474,11 +479,12 @@ static int old_x = 0, old_y = 0;
 /* generic SET_XY */
 static __inline__ void SET_XY(int x, int y)
 {
+  int new_x;
   if (et4000_type >= TYPE_ET6000)
-    x = MULBPP(x)-1;
+    new_x = MULBPP(x)-1;
   else
-    x = MULBPP(x-1);
-  *((LongP) ACL_X_COUNT) = ((y - 1) << 16) + x;
+    new_x = MULBPP(x-1);
+  *((LongP) ACL_X_COUNT) = ((y - 1) << 16) + new_x;
   old_x = x; old_y = y;
 }
 
@@ -516,11 +522,15 @@ static __inline__ void SET_XY_6(int x, int y)
 }
 
 
-#define SET_XY_RAW(X, Y) \
-    {*((LongP) ACL_X_COUNT) = ((Y) << 16) + (X);}
+/* generic SET_XY_RAW */
+static __inline__ void SET_XY_RAW(int x, int y)
+{
+  *((LongP) ACL_X_COUNT) = (y << 16) + x;
+  old_x = x; old_y = y;
+}
 
 #define SET_DELTA(Min, Maj) \
-    {*((LongP) ACL_DELTA_MINOR) = ((Maj) << 16) + (Min);}
+    *((LongP) ACL_DELTA_MINOR) = ((Maj) << 16) + (Min)
 
 
 /* Must do 0x09 (in one operation) for the W32 */
@@ -1029,7 +1039,26 @@ void TsengSubsequentBresenhamLine(x1, y1, octant, err, e1, e2, length)
 }
 
 /*
- * Two-point lines
+ * Two-point lines.
+ *
+ * Three major problems that needed to be solved here:
+ *
+ * 1. The "bias" value must be translated into the "line draw algorithm"
+ *    parameter in the Tseng accelerators. This parameter, although not
+ *    documented as such, needs to be set to the _inverse_ of the
+ *    appropriate bias bit (i.e. for the appropriate octant).
+ *
+ * 2. In >8bpp modes, the accelerator will render BYTES in the same order as
+ *    it is drawing the line. This means it will render the colors in the
+ *    same order as well, reversing the byte-order in pixels that are drawn
+ *    right-to-left. This causes wrong colors to be rendered.
+ *
+ * 3. The Tseng data book says that the ACL Y count register needs to be
+ *    programmed with "dy-1". A similar thing is said about ACL X count. But
+ *    this assumes (x2,y2) is NOT drawn (although that is not mentionned in
+ *    the data book). X assumes the endpoint _is_ drawn. If "dy-1" is used,
+ *    this sometimes results in a negative value (if dx==dy==0),
+ *    causing a complete accelerator hang.
  */
 
 void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
@@ -1037,57 +1066,70 @@ void TsengSubsequentTwoPointLine(x1, y1, x2, y2, bias)
    int x2, y2; /* excl. */
    int bias;
 {
-   int dx, dy, xdir, ydir, adir, destaddr;
+   int dx, dy, temp, destaddr, algrthm;
+   int dir_reg = 0x80;
+   int octant=0;
+ 
+/*   ErrorF("L"); */
 
-/*   ErrorF("L");*/
-   dx = x2-x1;
-   if (dx==0) ErrorF("%d,%d-%d ", x1, y1, y2);
+   /* fix drawing "bug" when drawing right-to-left (dx<0) */
+   if (bytesperpixel > 1)
+   {
+     if (x2 < x1)
+     {
+       temp = x1; x1 = x2; x2 = temp; 
+       temp = y1; y1 = y2; y2 = temp; 
+     }
+   }
+
+   destaddr = FBADDR(x1, y1);
+   
+   /* modified from CalcLineDeltas() macro */
+
+   /* compute X direction, and take abs(delta-X) */
+   dx = x2 - x1;
    if (dx<0)
      {
-       xdir = 1;
+       dir_reg |= 1;
+       octant |= XDECREASING;
        dx = -dx;
-     }
-   else
-     {
-       xdir = 0;
+       /* destaddr must point to highest addressed byte in the pixel when drawing
+        * right-to-left
+        */
+       destaddr += bytesperpixel-1;
      }
 
+   /* compute delta-Y */
    dy = y2-y1;
+
+   /* compute Y direction, and take abs(delta-Y) */
    if (dy<0)
      {
-       ydir = 1;
+       dir_reg |= 2;
+       octant |= YDECREASING;
        dy = -dy;
      }
-   else
-     {
-       ydir = 0;
-     }
 
+   /* compute axial direction and load registers */
    if (dx >= dy)  /* X is major axis */
    {
-     adir = 1;
-     SET_XY_RAW(dx * bytesperpixel - 1, 0xFFF);
+     dir_reg |= 4;
+     SET_XY_RAW(MULBPP(dx), 0xFFF);
      SET_DELTA(dy, dx);
    }
    else           /* Y is major axis */
    {
-     adir = 0;
-     SET_XY_RAW(0xFFF, dy - 1);
+     SetYMajorOctant(octant);
+     SET_XY_RAW(0xFFF, dy);
      SET_DELTA(dx, dy);
    }
 
+   /* select "linedraw algorithm" (=bias) and load direction register */
+   algrthm = ((bias >> octant) & 1) ^ 1;
 
-   SET_XYDIR(0x80 | (((!ydir) & 1) << 4) | (adir << 2) | (ydir << 1) | xdir);
+   dir_reg |= algrthm << 4;
+   SET_XYDIR(dir_reg);
 
-   destaddr = FBADDR(x1, y1);
-   if (xdir == 1)
-   {
-     /* destaddr must point to highest addressed byte in the pixel when drawing
-      * right-to-left
-      */
-     destaddr += bytesperpixel-1;
-   }
-   
    START_ACL(destaddr);
 }
 

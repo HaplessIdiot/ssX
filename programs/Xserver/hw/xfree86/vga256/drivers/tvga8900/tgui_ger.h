@@ -22,15 +22,29 @@
  *
  * Author:  Alan Hourihane, alanh@fairlite.demon.co.uk
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.8 1997/01/14 22:21:51 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vga256/drivers/tvga8900/tgui_ger.h,v 3.9 1997/01/19 12:51:24 dawes Exp $ */
 
-/* Graphics Engine for 9400/9420/9430 */
+/* Graphics Engine for 9420/9430 */
 
 #define GER_INDEX	0x210A
 #define GER_BYTE0	0x210C
 #define GER_BYTE1	0x210D
 #define GER_BYTE2	0x210E
 #define GER_BYTE3	0x210F
+#define MMIOBASE	0x7C
+#define OLDGER_STATUS	0x90
+#define OLDGER_MWIDTH	0xB8
+#define OLDGER_MFORMAT	0xBC
+#define OLDGER_STYLE	0xC4
+#define OLDGER_FMIX	0xC8
+#define OLDGER_BMIX	0xC8
+#define OLDGER_FCOLOUR	0xD8
+#define OLDGER_BCOLOUR	0xDC
+#define OLDGER_DIMXY	0xE0
+#define OLDGER_DESTLINEAR	0xE4
+#define OLDGER_DESTXY	0xF8
+#define OLDGER_COMMAND	0xFC
+#define		OLDGE_FILL	0x000A0000	/* Area Fill */
 
 /* Graphics Engine for 9440/9660/9680 */
 

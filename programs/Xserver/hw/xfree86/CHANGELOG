@@ -1,3 +1,23 @@
+ 410. Add XAA S3 driver to the SVGA server (Markk Vojkovich).
+ 409. Implemented (but disabled) left edge cliping for color expansion for
+      HiQV chips (David Bateman).
+ 408. 8x8 mono pattern fills for HiQV chips (David Bateman).
+ 407. DPMS support for C&T driver (David Bateman).
+ 406. Scanpci for Alpha (Robin Cutshaw).
+ 405. Fix clock clock limits for trident driver (Alan Hourihane).
+ 404. 9420/9430 acceleration - not tested, only partial, too (Alan Hourihane).
+ 403. DPMS support for the Trident driver (Alan Hourihane).
+ 402. 24/32bpp support for Trident chipsets (Alan Hourihane).
+ 401. Trident support for the Alpha platform (Alan Hourihane).
+ 400. Add DPMS to W32/ET6000 driver of the SVGA server (Harald Nordgerd Hansen).
+ 399. Fixes and addition to the acceleration for W32 and ET6000 (Koen Gadeyne).
+ 398. Chrontel RAMDAC support for W32 in SVGA server (Kurt Olsen).
+ 397. Improved 24bpp support for ET6000 (Koen Gadeyne).
+ 396. Add memory bandwidth as a concept to the W32 RAMDAC code (Koen Gadeyne).
+ 395. Move W32/ET6k clock setting functions into tseng_clock.c. This together
+      with change 394 breaks the W32 server. (Koen Gadeyne).
+ 394. Move RAMDAC support from W32 server in SVGA server (Koen Gadeyne).
+
 XFree86 3.2Aa (10 February 1997)
  393. Much additional acceleration for the HiQV chips (David Bateman).
  392. Print the PCI retry setting in MGA server (Radoslav Kapitan).

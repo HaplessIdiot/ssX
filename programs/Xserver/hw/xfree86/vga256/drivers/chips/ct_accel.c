@@ -72,7 +72,7 @@ void _ctAccelInit() {
 #ifdef CHIPS_HIQV
 #if 0
     /* I believe this is possible for the HiQV architecture. Anyone want
-     * to test it? */
+     * to test it? If your machine locks up it didn't work */
     xf86AccelInfoRec.Flags |= COP_FRAMEBUFFER_CONCURRENCY;
 #endif
     if (ctColorTransparency)
@@ -151,7 +151,12 @@ void _ctAccelInit() {
 #ifdef CHIPS_HIQV
     xf86AccelInfoRec.ColorExpandFlags = NO_PLANEMASK |
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
-	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD;
+	SCANLINE_PAD_DWORD | CPU_TRANSFER_PAD_QWORD 
+#if 0
+        | LEFT_EDGE_CLIPPING;
+#else
+        ;
+#endif
 #else
     xf86AccelInfoRec.ColorExpandFlags = NO_PLANEMASK |
 	VIDEO_SOURCE_GRANULARITY_DWORD | BIT_ORDER_IN_BYTE_MSBFIRST |
@@ -162,7 +167,7 @@ void _ctAccelInit() {
 #endif
 
 #if 0 /* I have trouble with these, on both a 65545 and 65550. So Disable
-       * for now. Fixup scratch buffer if re-enabled
+       * for now. Fixup scratch buffer in FbInit if re-enabled
        */
     xf86AccelInfoRec.SetupForScanlineScreenToScreenColorExpand =
 	CTNAME(SetupForScanlineScreenToScreenColorExpand);
@@ -194,12 +199,10 @@ void _ctAccelInit() {
 	    CTNAME(SetupForFill8x8Pattern);
         xf86AccelInfoRec.SubsequentFill8x8Pattern =
             CTNAME(SubsequentFill8x8Pattern);
-#ifndef CHIPS_HIQV /* Didn't get a chance to test these */
         xf86AccelInfoRec.SetupFor8x8PatternColorExpand =
 	    CTNAME(SetupFor8x8PatternColorExpand);
         xf86AccelInfoRec.Subsequent8x8PatternColorExpand =
             CTNAME(Subsequent8x8PatternColorExpand);
-#endif
     }
 
     xf86InitPixmapCache(&vga256InfoRec, vga256InfoRec.virtualY *
@@ -688,9 +691,6 @@ void CTNAME(SetupForCPUToScreenColorExpand)(bg, fg, rop, planemask)
 	    break;
         }
     }
-#ifdef CHIPS_HIQV
-    ctSETMONOCTL(ctDWORDALIGN);
-#endif
     ctSETSRCADDR(0);
     ctSETROP(ctSRCMONO | ctSRCSYSTEM | ctTOP2BOTTOM | ctLEFT2RIGHT | 
 	ctAluConv[rop & 0xF] | CommandFlags);
@@ -704,6 +704,9 @@ void CTNAME(SubsequentCPUToScreenColorExpand)(x, y, w, h, skipleft)
     destaddr = (y * vga256InfoRec.displayWidth + x) * vgaBytesPerPixel;
     ctBLTWAIT;
     ctSETDSTADDR(destaddr);
+#ifdef CHIPS_HIQV
+    ctSETMONOCTL(ctDWORDALIGN | ctCLIPLEFT(skipleft));
+#endif
     ctSETHEIGHTWIDTHGO(h, w * vgaBytesPerPixel);
 }
 
