@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.10 1998/09/27 04:43:46 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaalocal.h,v 1.11 1998/10/25 07:12:13 dawes Exp $ */
 
 #ifndef _XAALOCAL_H
 #define _XAALOCAL_H
@@ -1440,7 +1440,8 @@ CARD32 XAAReverseBitOrder(CARD32 data);
 	(pGC->alu != GXset)))
 
 #define CHECK_PLANEMASK(pGC, flags) \
-	(!(flags & NO_PLANEMASK) || (pGC->planemask == ~0))
+	(!(flags & NO_PLANEMASK) || \
+	((pGC->planemask & infoRec->FullPlanemask) == infoRec->FullPlanemask))
 
 #define CHECK_COLORS(pGC, flags) \
 	(!(flags & RGB_EQUAL) || \

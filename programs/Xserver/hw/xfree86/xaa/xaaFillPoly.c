@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.4 1998/08/02 05:17:05 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillPoly.c,v 1.5 1998/08/19 07:49:26 dawes Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -452,6 +452,38 @@ XAAFillPolygonHelper(
     }
 }
 
+        /*****************\
+	|  Solid Helpers  |
+	\*****************/
+
+static void
+SolidTrapHelper(
+   ScrnInfoPtr pScrn,
+   int y, int h,
+   int x1, int dx1, int dy1, int e1,
+   int x2, int dx2, int dy2, int e2,
+   int xorg, int yorg,
+   XAACacheInfoPtr pCache
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+
+    (*infoRec->SubsequentSolidFillTrap) (pScrn, 
+		y, h, x1, dx1, dy1, e1, x2, dx2, dy2, e2);
+}
+
+static void
+SolidRectHelper (
+   ScrnInfoPtr pScrn,
+   int x, int y, int w, int h,
+   int xorg, int yorg,   
+   XAACacheInfoPtr pCache
+){
+    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+
+    (*infoRec->SubsequentSolidFillRect) (pScrn, x, y, w, h);
+}
+
+
 	/*********************\
 	|  Mono 8x8 Patterns  |
 	\*********************/
@@ -585,7 +617,16 @@ XAAFillPolygonMono8x8Pattern(
     yorg = (pDrawable->y + pGC->patOrg.y);
     patx = pPriv->pattern0; paty = pPriv->pattern1;
 
-    if(infoRec->Mono8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
+    if((bg != -1) && (bg == fg) &&
+	infoRec->SubsequentSolidFillRect && infoRec->SetupForSolidFill) {
+
+	(*infoRec->SetupForSolidFill)(infoRec->pScrn, fg,
+				pGC->alu, pGC->planemask);
+
+	RectFunc = SolidRectHelper;
+        TrapFunc = infoRec->SubsequentSolidFillTrap ? SolidTrapHelper : NULL;
+    } else {
+      if(infoRec->Mono8x8PatternFillFlags & HARDWARE_PATTERN_SCREEN_ORIGIN) {
 	xorg = (-xorg) & 0x07; yorg = (-yorg) & 0x07;
 	if(infoRec->Mono8x8PatternFillFlags & 
 					HARDWARE_PATTERN_PROGRAMMED_BITS) {
@@ -611,17 +652,19 @@ XAAFillPolygonMono8x8Pattern(
 	RectFunc = Mono8x8PatternRectHelper_ScreenOrigin;
 	if(infoRec->SubsequentMono8x8PatternFillTrap)
 	    TrapFunc = Mono8x8PatternTrapHelper_ScreenOrigin;
-    } else {
+      } else {
     	if(!(infoRec->Mono8x8PatternFillFlags & 
 				HARDWARE_PATTERN_PROGRAMMED_BITS)){
 	   pCache = (*infoRec->CacheMono8x8Pattern)(infoRec->pScrn, patx, paty);
 	   patx = pCache->x;  paty = pCache->y;
 	}
 	RectFunc = Mono8x8PatternRectHelper;
-    }
+      }
 
-    (*infoRec->SetupForMono8x8PatternFill)(infoRec->pScrn, patx, paty,
+      (*infoRec->SetupForMono8x8PatternFill)(infoRec->pScrn, patx, paty,
 					fg, bg, pGC->alu, pGC->planemask);
+
+    }
 
     XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
 		y, maxy, origin, RectFunc, TrapFunc, xorg, yorg, pCache);
@@ -721,16 +764,29 @@ XAAFillPolygonCacheExpand(
     xorg = (pDrawable->x + pGC->patOrg.x);
     yorg = (pDrawable->y + pGC->patOrg.y);
 
-    pCache = (*infoRec->CacheMonoStipple)(infoRec->pScrn, pGC->stipple);
+    if((pGC->fillStyle == FillOpaqueStippled) && 
+	(pGC->fgPixel == pGC->bgPixel) &&
+	infoRec->SubsequentSolidFillRect && infoRec->SetupForSolidFill) {
 
-    (*infoRec->SetupForScreenToScreenColorExpandFill)(
+	(*infoRec->SetupForSolidFill)(infoRec->pScrn, pGC->fgPixel,
+				pGC->alu, pGC->planemask);
+	
+	XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
+		y, maxy, origin, SolidRectHelper, 
+		infoRec->SubsequentSolidFillRect ? SolidTrapHelper : NULL, 
+		xorg, yorg, NULL);
+    } else {
+	pCache = (*infoRec->CacheMonoStipple)(infoRec->pScrn, pGC->stipple);
+
+	(*infoRec->SetupForScreenToScreenColorExpandFill)(
 			infoRec->pScrn, pGC->fgPixel,
 			(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
 			pGC->alu, pGC->planemask);
 
-    XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
+	XAAFillPolygonHelper(infoRec->pScrn, ptsIn, count, topPoint, 
 		y, maxy, origin, CacheExpandRectHelper, NULL, 
 		xorg, yorg, pCache);
+    }
 
     SET_SYNC_FLAG(infoRec);
 	

@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.40 1998/09/26 08:34:19 dawes Exp $ 
+ * $XFree86: xc/programs/Xserver/hw/xfree86/drivers/tseng/tseng_driver.c,v 1.41 1998/10/11 10:20:36 dawes Exp $ 
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -213,7 +213,7 @@ static MODULESETUPPROTO(tsengSetup);
 
 static XF86ModuleVersionInfo tsengVersRec =
 {
-    "tseng_drv.o",
+    "tseng",
     MODULEVENDORSTRING,
     MODINFOSTRING1,
     MODINFOSTRING2,

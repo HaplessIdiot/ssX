@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.7 1998/09/19 12:14:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Bus.c,v 1.8 1998/10/05 13:22:59 dawes Exp $ */
 
 /*
  * Copyright (c) 1997,1998 by The XFree86 Project, Inc.
@@ -39,7 +39,6 @@ static xf86CurrentAccessRec xf86CurrentAccess8514 = {&AccessNULL,&AccessNULL};
 static xf86CurrentAccessRec xf86CurrentAccessMono = {&AccessNULL,&AccessNULL};
 
 static BusType primaryBus = BUS_NONE;
-static xf86AccessPtr primaryPciAccess = NULL;
 static struct {
     int bus;
     int dev;
@@ -113,6 +112,8 @@ xf86FindPCIVideoInfo(void)
 	    for (j = 0; j < 6; j++) {
 		info->memBase[j] = 0;
 		info->ioBase[j] = 0;
+		info->size[j] = 0;
+		info->type[j] = 0;
 	    }
 
 	    /*
@@ -121,67 +122,85 @@ xf86FindPCIVideoInfo(void)
 	     */
 
 	    if (pcrp->_base0) {
-		if (pcrp->_base0 & PCI_MAP_IO)
+		if (pcrp->_base0 & PCI_MAP_IO) {
 		    info->ioBase[0] = PCIGETIO(pcrp->_base0);
-		else
+		    info->type[0] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->_base0))
 			mem64 = TRUE;
-		    else
+		    else {
 			info->memBase[0] = PCIGETMEMORY(pcrp->_base0);
+			info->type[0] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+		    }
 	    }
 
 	    if (pcrp->_base1 && !mem64) {
-		if (pcrp->_base1 & PCI_MAP_IO)
+		if (pcrp->_base1 & PCI_MAP_IO) {
 		    info->ioBase[1] = PCIGETIO(pcrp->_base1);
-		else
+		    info->type[1] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->_base1))
 			mem64 = TRUE;
-		    else
+		    else {
 			info->memBase[1] = PCIGETMEMORY(pcrp->_base1);
+			info->type[1] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->_base2 && !mem64) {
-		if (pcrp->_base2 & PCI_MAP_IO)
+		if (pcrp->_base2 & PCI_MAP_IO) {
 		    info->ioBase[2] = PCIGETIO(pcrp->_base2);
-		else
+		    info->type[2] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->_base2))
 			mem64 = TRUE;
-		    else
+		    else {
 			info->memBase[2] = PCIGETMEMORY(pcrp->_base2);
+			info->type[2] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->_base3 && !mem64) {
-		if (pcrp->_base3 & PCI_MAP_IO)
+		if (pcrp->_base3 & PCI_MAP_IO) {
 		    info->ioBase[3] = PCIGETIO(pcrp->_base3);
-		else
+		    info->type[3] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->_base3))
 			mem64 = TRUE;
-		    else
+		    else {
 			info->memBase[3] = PCIGETMEMORY(pcrp->_base3);
+			info->type[3] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->_base4 && !mem64) {
-		if (pcrp->_base4 & PCI_MAP_IO)
+		if (pcrp->_base4 & PCI_MAP_IO) {
 		    info->ioBase[4] = PCIGETIO(pcrp->_base4);
-		else
+		    info->type[4] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->_base4))
 			mem64 = TRUE;
-		    else
+		    else {
 			info->memBase[4] = PCIGETMEMORY(pcrp->_base4);
+			info->type[4] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+		    }
 	    } else if (mem64)
 		mem64 = FALSE;
 
 	    if (pcrp->_base5 && !mem64) {
-		if (pcrp->_base5 & PCI_MAP_IO)
+		if (pcrp->_base5 & PCI_MAP_IO) {
 		    info->ioBase[5] = PCIGETIO(pcrp->_base5);
-		else
+		    info->type[5] = pcrp->_base0 & PCI_MAP_IO_ATTR_MASK;
+		} else
 		    if (PCI_MAP_IS64BITMEM(pcrp->_base5))
 			mem64 = TRUE;
-		    else
+		    else {
 			info->memBase[5] = PCIGETMEMORY(pcrp->_base5);
+			info->type[5] = pcrp->_base0 & PCI_MAP_MEMORY_ATTR_MASK;
+		    }
 	    }
 	}
 	i++;
@@ -926,7 +945,7 @@ DisablePciAccess(void)
     }
 }
 
-void
+static void
 FindPciPrimaryDevice(void)
 {  
     int i = 0;
@@ -945,7 +964,6 @@ FindPciPrimaryDevice(void)
 		    && paccp->funcnum == pcp->funcnum) {
 		    if (PCISHAREDIOCLASSES(pcp->_base_class,pcp->_sub_class))
 			if (pcp->_prog_if == 0) {
-			    primaryPciAccess = &paccp->io_memAccess;
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
 			    primaryPciDev.func = pcp->funcnum;
@@ -953,7 +971,6 @@ FindPciPrimaryDevice(void)
 			    /* prefer VGA */
 			    return;
 			} else if (pcp->_prog_if == 1){
-			    primaryPciAccess = &paccp->ioAccess;
 			    primaryPciDev.bus = pcp->busnum;
 			    primaryPciDev.dev = pcp->devnum;
 			    primaryPciDev.func = pcp->funcnum;
@@ -989,7 +1006,7 @@ xf86IsPrimaryPci(pciVideoPtr pPci)
 Bool
 xf86IsPrimaryIsa(void)
 {
-    if ( primaryBus != BUS_ISA ) return FALSE;
+    return ( primaryBus == BUS_ISA );
 }
 
 /*
@@ -1278,7 +1295,7 @@ xf86DisableAccess(void)
     DisablePciAccess();
 }
 
-static void CheckGenericGA();
+static void CheckGenericGA(void);
 
 /*
  * xf86FindPrimaryDevice() - Find the display device which
@@ -1289,8 +1306,6 @@ static void CheckGenericGA();
 void
 xf86FindPrimaryDevice()
 {
-    Bool found = FALSE;
-
     xf86DisableAccess();
 
     /* if no VGA device is found check for primary PCI device */
@@ -1358,4 +1373,5 @@ xf86CheckPciGAType(pciVideoPtr pPci)
 	}
     i++;
     }
+    return -1;
 }

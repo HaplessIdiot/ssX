@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.6 1998/09/20 14:41:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.h,v 1.8 1998/09/27 04:43:42 dawes Exp $ */
 
 
 /*
@@ -66,6 +66,10 @@ extern int vgaHWGetIndex(void);
 #define VGA_SR_CMAP		0x04
 #define VGA_SR_ALL		(VGA_SR_MODE | VGA_SR_FONTS | VGA_SR_CMAP)
 
+/* Defaults for the VGA memory window */
+#define VGA_DEFAULT_PHYS_ADDR	0xA0000
+#define VGA_DEFAULT_MEM_SIZE	(64 * 1024)
+
 /*
  * vgaRegRec contains settings of standard VGA registers.
  */
@@ -93,6 +97,7 @@ typedef void (*vgaHWMiscProcPtr)(vgaHWPtr hwp);
 typedef struct _vgaHWRec {
     pointer			Base;		/* Address of "VGA" memory */
     int				MapSize;	/* Size of "VGA" memory */
+    unsigned long		MapPhys;	/* phys location of VGA mem */
     int				IOBase;		/* I/O Base address */
     CARD8 * 			MMIOBase;	/* Pointer to MMIO start */
     int				MMIOOffset;	/* base + offset + vgareg

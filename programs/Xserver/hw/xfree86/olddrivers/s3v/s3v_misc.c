@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.9 1997/10/25 13:50:37 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_misc.c,v 1.10 1998/01/24 16:58:20 hohndel Exp $ */
 
 /*
  *

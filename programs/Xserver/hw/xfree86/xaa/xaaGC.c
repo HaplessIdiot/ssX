@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.5 1998/10/05 13:23:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaGC.c,v 1.6 1998/10/25 07:12:12 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -69,8 +69,8 @@ XAAValidateGC(
 
     (*pGC->funcs->ValidateGC)(pGC, changes, pDraw);
 
-    if(pGC->bgPixel == -1)
-	pGC->bgPixel &= infoRec->FullPlanemask;
+    if(pGC->bgPixel == -1) /* -1 is reserved for transparency */
+	pGC->bgPixel = 0x7fffffff; 
 
     if(pDraw->type != DRAWABLE_WINDOW) {
 	pGCPriv->flags = OPS_ARE_PIXMAP;
@@ -120,6 +120,8 @@ XAAValidateGC(
 	pGC->ops = pGCPriv->XAAOps;
 	changes = ~0;
     }
+
+    if(!changes) return;
 
     if((changes & GCDashList) && infoRec->ComputeDash)
 	infoRec->ComputeDash(pGC);

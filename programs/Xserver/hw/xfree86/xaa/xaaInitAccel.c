@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.10 1998/09/13 05:23:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaInitAccel.c,v 1.11 1998/09/27 04:43:44 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -114,7 +114,8 @@ XAAInitAccel(ScreenPtr pScreen, XAAInfoRecPtr infoRec)
     /* must have a Sync function */
     if(!infoRec->Sync) return FALSE;
 
-    infoRec->FullPlanemask =  (1 << pScrn->depth) - 1;
+    if(!infoRec->FullPlanemask)
+	infoRec->FullPlanemask =  (1 << pScrn->depth) - 1;
 
     xf86DrvMsg(index, X_INFO, 
 	"Using XFree86 Acceleration Architecture (XAA)\n");

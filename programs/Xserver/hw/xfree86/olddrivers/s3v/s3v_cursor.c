@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_cursor.c,v 1.2 1997/05/31 13:51:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/s3v_cursor.c,v 1.3 1998/01/24 16:58:19 hohndel Exp $ */
 
 /*
  *

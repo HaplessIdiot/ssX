@@ -2,7 +2,7 @@
 
                                   DRAFT
 
-Last modified: 1 October 1998.
+Last modified: 30 October 1998.
 
 
 
@@ -2833,15 +2833,23 @@ B.2  General vgahw Functions:
     Bool vgaHWMapMem(ScrnInfoPtr pScrn)
 
       This function maps the VGA memory window.  It requires that the
-      vgaHWRec be initialised, and that the vgaHWRec's MapSize field be
-      initialised.  This function must be called before attempting to
-      save or restore the VGA state.
+      vgaHWRec be allocated.  If a driver requires non-default MapPhys or
+      MapSize settings (the physical location and size of the VGA memory
+      window) then those fields of the vgaHWRec must be initialised before
+      calling this function.  Otherwise, this function initialiases the
+      default values of 0xA0000 for MapPhys and (64 * 1024) for MapSize.
+      This function must be called before attempting to save or restore
+      the VGA state.  If the driver doesn't call it explicitly, the
+      vgaHWSave() and vgaHWRestore() functions may call it if they need to
+      access the VGA memory (in which case they will also call
+      vgaHWUnmapMem() to unmap the VGA memory before exiting).
 
 
     void vgaHWUnmapMem(ScrnInfoPtr pScrn)
 
       This function unmaps the VGA memory window.  It must only be called
-      after the memory has been mapped.
+      after the memory has been mapped.  The Base field of the vgaHWRec
+      field is set to NULL to indicate that the memory is no longer mapped.
 
 
     void vgaHWGetIOBase(vgaHWPtr hwp)
@@ -2887,11 +2895,13 @@ B.2  General vgahw Functions:
 
       The vgaHWRec and its IOBase fields must be initialised before
       this function is called.  If VGA_SR_FONTS is set in flags, the
-      VGA memory window must be mapped too.  vgaHWSave() uses the three
-      functions below in the order vgaHWSaveColormap, vgaHWSaveMode,
-      vgaHWSaveFonts to carry out the different save phases.  It is
-      undecided at this stage whether they will be part of the vgahw
-      module's public interface or not.
+      VGA memory window must be mapped.  If it isn't then vgaHWMapMem()
+      will be called to map it, and vgaHWUnmapMem() will be called to
+      unmap it afterwards.  vgaHWSave() uses the three functions below
+      in the order vgaHWSaveColormap, vgaHWSaveMode, vgaHWSaveFonts to
+      carry out the different save phases.  It is undecided at this
+      stage whether they will be part of the vgahw module's public
+      interface or not.
 
 
     void vgaHWSaveMode(ScrnInfoPtr pScrn, vgaRegPtr save)
@@ -2933,11 +2943,13 @@ B.2  General vgahw Functions:
 
       The vgaHWRec and its IOBase fields must be initialised before this
       function is called.  If VGA_SR_FONTS is set in flags, the VGA
-      memory window must be mapped too.  vgaHWRestore() uses the three
-      functions below in the order vgaHWRestoreFonts, vgaHWRestoreMode,
-      vgaHWRestoreColormap to carry out the different restore phases.
-      It is undecided at this stage whether they will be part of the
-      vgahw module's public interface or not.
+      memory window must be mapped.  If it isn't then vgaHWMapMem() will
+      be called to map it, and vgaHWUnmapMem() will be called to unmap
+      it afterwards.  vgaHWRestore() uses the three functions below in
+      the order vgaHWRestoreFonts, vgaHWRestoreMode, vgaHWRestoreColormap
+      to carry out the different restore phases.  It is undecided at
+      this stage whether they will be part of the vgahw module's public
+      interface or not.
 
 
     void vgaHWRestoreMode(ScrnInfoPtr pScrn, vgaRegPtr restore)
@@ -4126,4 +4138,4 @@ C.3  Functions
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.14 1998/09/26 08:34:02 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/DESIGN,v 1.15 1998/10/05 13:22:53 dawes Exp $

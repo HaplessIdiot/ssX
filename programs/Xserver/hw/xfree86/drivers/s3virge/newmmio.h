@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3v/newmmio.h,v 1.5 1997/05/03 09:18:33 dawes Exp $ */
+/* $XFree86$ */
 
 /* Copied over from accel/s3_virge */
 
@@ -16,11 +16,13 @@
  *	who	when	vers
  *	BL	0300296	0.1
  *      SM      200497  0.2   Added Caching version of register macros.
+ *	KJB	9/98	0.3   Added S3V_MMIO_REGSIZE
  ***************************************************************************/
 
 /* base for S3_OUTW macro  */
 #define S3_NEWMMIO_REGBASE	0x1000000  /* 16MB */
 #define S3_NEWMMIO_REGSIZE	  0x10000  /* 64KB */
+#define S3V_MMIO_REGSIZE	   0x8000  /* 32KB */
 
 
 #include <Xmd.h>

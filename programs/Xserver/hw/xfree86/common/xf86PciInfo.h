@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.6 1998/10/05 13:23:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86PciInfo.h,v 1.7 1998/10/21 06:12:05 dawes Exp $ */
 /*
  * PCI Probe
  *
@@ -212,9 +212,11 @@
 
 /* Neomagic */
 #define PCI_CHIP_NM2070		0x0001
-#define PCI_CHIP_128V		0x0002
-#define PCI_CHIP_128ZV		0x0003
+#define PCI_CHIP_NM2090		0x0002
+#define PCI_CHIP_NM2093	        0x0003
+#define PCI_CHIP_NM2097	        0x0083
 #define PCI_CHIP_NM2160		0x0004
+#define PCI_CHIP_NM2200		0x0005
 
 /* Intel */
 #define PCI_CHIP_I740		0x7800
@@ -404,9 +406,10 @@ pciVendorDeviceInfo xf86PCIVendorInfo[] = {
 				{0x0000,		NULL}}},
     {PCI_VENDOR_NEOMAGIC,	"Neomagic",	{
 				{PCI_CHIP_NM2070,	"NM2070"},
-				{PCI_CHIP_128V,		"128V"},
-				{PCI_CHIP_128ZV,	"128ZV"},
+				{PCI_CHIP_NM2090,	"NM2090"},
+				{PCI_CHIP_NM2093,	"NM2093"},
 				{PCI_CHIP_NM2160,	"NM2160"},
+				{PCI_CHIP_NM2200,	"NM2200"},
 				{0x0000,		NULL}}},
     {PCI_VENDOR_INTEL,	"Intel Corp.",	{
 				{PCI_CHIP_I740,		"i740"},

@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.21 1998/09/26 08:34:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.22 1998/10/06 04:39:35 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -72,24 +72,35 @@ static void CirProbeI2C(int scrnIndex);
  */
 
 /* Mandatory functions */
+
 static void	CIRIdentify(int flags);
 static Bool	CIRProbe(DriverPtr drv, int flags);
+extern Bool	LgPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	CIRPreInit(ScrnInfoPtr pScrn, int flags);
 static Bool	CIRScreenInit(int Index, ScreenPtr pScreen, int argc,
 			      char **argv);
+extern Bool	LgScreenInit(int Index, ScreenPtr pScreen, int argc,
+			      char **argv);
 static Bool	CIREnterVT(int scrnIndex, int flags);
 static void	CIRLeaveVT(int scrnIndex, int flags);
+extern Bool	LgEnterVT(int scrnIndex, int flags);
+extern void	LgLeaveVT(int scrnIndex, int flags);
 static Bool	CIRCloseScreen(int scrnIndex, ScreenPtr pScreen);
 static Bool	CIRSaveScreen(ScreenPtr pScreen, Bool unblank);
 
 /* Required if the driver supports mode switching */
 static Bool	CIRSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
+extern Bool	LgSwitchMode(int scrnIndex, DisplayModePtr mode, int flags);
 /* Required if the driver supports moving the viewport */
 static void	CIRAdjustFrame(int scrnIndex, int x, int y, int flags);
+extern void	LgAdjustFrame(int scrnIndex, int x, int y, int flags);
 
 /* Optional functions */
 static void	CIRFreeScreen(int scrnIndex, int flags);
+extern void	LgFreeScreen(int scrnIndex, int flags);
 static int	CIRValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
+			     int flags);
+int	LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose,
 			     int flags);
 #ifdef DPMSExtension
 static void	CIRDisplayPowerManagementSet(ScrnInfoPtr pScrn,
@@ -98,8 +109,8 @@ static void	CIRDisplayPowerManagementSet(ScrnInfoPtr pScrn,
 #endif
 
 /* Internally used functions */
-static Bool	CIRMapMem(ScrnInfoPtr pScrn);
-static Bool	CIRUnmapMem(ScrnInfoPtr pScrn);
+Bool	CIRMapMem(ScrnInfoPtr pScrn);
+Bool	CIRUnmapMem(ScrnInfoPtr pScrn);
 static void	CIRSave(ScrnInfoPtr pScrn);
 static void	CIRRestore(ScrnInfoPtr pScrn);
 static Bool	CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
@@ -122,7 +133,7 @@ static Bool	CIRModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode);
 
 DriverRec CIRRUS = {
     VERSION,
-    "Driver for Cirrus Logic GD5446 and GD5480 cards",
+    "Driver for Cirrus Logic GD5446, GD5480, and GD5462/4/5 cards",
     CIRIdentify,
     CIRProbe,
     NULL,
@@ -130,9 +141,13 @@ DriverRec CIRRUS = {
 };
 
 /* Supported chipsets */
-static SymTabRec CIRChipsets[] = {
+SymTabRec CIRChipsets[] = {
     { PCI_CHIP_GD5446,		"CLGD5446" },
     { PCI_CHIP_GD5480,		"CLGD5480" },
+    { PCI_CHIP_GD5462,          "CL-GD5462" },
+    { PCI_CHIP_GD5464,          "CL-GD5464" },
+    { PCI_CHIP_GD5464BD,        "CL-GD5464BD" },
+    { PCI_CHIP_GD5465,          "CL-GD5465" },
     {-1,			NULL }
 };
 
@@ -140,6 +155,10 @@ static SymTabRec CIRChipsets[] = {
 static PciChipsets CIRPciChipsets[] = {
     { PCI_CHIP_GD5446,	PCI_CHIP_GD5446,	RES_SHARED_VGA },
     { PCI_CHIP_GD5480,	PCI_CHIP_GD5480,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5462,	PCI_CHIP_GD5462,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5464,	PCI_CHIP_GD5464,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5464BD,PCI_CHIP_GD5464BD,	RES_SHARED_VGA },
+    { PCI_CHIP_GD5465,	PCI_CHIP_GD5465,	RES_SHARED_VGA },
     { -1,		-1,			RES_UNDEFINED}
 };
 
@@ -366,20 +385,42 @@ CIRProbe(DriverPtr drv, int flags)
 	    pScrn->driverName	 = CIR_DRIVER_NAME;
 	    pScrn->name		 = CIR_NAME;
 	    pScrn->Probe	 = CIRProbe;
-	    pScrn->PreInit	 = CIRPreInit;
-	    pScrn->ScreenInit	 = CIRScreenInit;
-	    pScrn->SwitchMode	 = CIRSwitchMode;
-	    pScrn->AdjustFrame	 = CIRAdjustFrame;
-	    pScrn->EnterVT	 = CIREnterVT;
-	    pScrn->LeaveVT	 = CIRLeaveVT;
-	    pScrn->FreeScreen	 = CIRFreeScreen;
-	    pScrn->ValidMode	 = CIRValidMode;
+	    /* The Laguna family of chips is so different from the Alpine
+	       family that we won't share even the highest-level of 
+	       functions.  But, the Laguna chips /are/ Cirrus chips, so
+	       they should be handled in this driver (as opposed to their
+	       own driver). */
+	    if (pPci->chipType == PCI_CHIP_GD5462 ||
+		pPci->chipType == PCI_CHIP_GD5464 ||
+		pPci->chipType == PCI_CHIP_GD5464BD ||
+		pPci->chipType == PCI_CHIP_GD5465) {
+	      pScrn->PreInit	 = LgPreInit;
+#if 1
+	      pScrn->ScreenInit	 = LgScreenInit;
+	      pScrn->SwitchMode	 = LgSwitchMode;
+	      pScrn->AdjustFrame = LgAdjustFrame;
+	      pScrn->EnterVT	 = LgEnterVT;
+	      pScrn->LeaveVT	 = LgLeaveVT;
+	      pScrn->FreeScreen	 = LgFreeScreen;
+	      pScrn->ValidMode	 = LgValidMode;
+#endif
+	    } else {
+	      pScrn->PreInit	 = CIRPreInit;
+	      pScrn->ScreenInit	 = CIRScreenInit;
+	      pScrn->SwitchMode	 = CIRSwitchMode;
+	      pScrn->AdjustFrame = CIRAdjustFrame;
+	      pScrn->EnterVT	 = CIREnterVT;
+	      pScrn->LeaveVT	 = CIRLeaveVT;
+	      pScrn->FreeScreen	 = CIRFreeScreen;
+	      pScrn->ValidMode	 = CIRValidMode;
+	    }
 	    pScrn->device	 = usedDevs[i];
 	    foundScreen = TRUE;
 	}
     }
     xfree(usedDevs);
     xfree(usedPci);
+
     return foundScreen;
 }
 
@@ -394,7 +435,7 @@ static int
 CIRCountRam(ScrnInfoPtr pScrn)
 {
 	CIRPtr pCir = CIRPTR(pScrn);
-	int videoram;
+	int videoram = 0;
 	int SR0F, SR17;
 
 
@@ -748,7 +789,7 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
         return FALSE;
     } else {
 	int speed;
-        int *p;
+        int *p = NULL;
         switch (pCir->Chipset) {
 	case PCI_CHIP_GD5446:
 	   p = gd5446_MaxClocks;
@@ -757,6 +798,8 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
 	   p = gd5480_MaxClocks;
 	   break;
 	}
+	if (!p)
+	  return FALSE;
 	switch(pScrn->bitsPerPixel) {
         case 1:
 	case 4:
@@ -913,7 +956,7 @@ CIRPreInit(ScrnInfoPtr pScrn, int flags)
  * Map the framebuffer and MMIO memory.
  */
 
-static Bool
+Bool
 CIRMapMem(ScrnInfoPtr pScrn)
 {
     CARD32 save;
@@ -1024,7 +1067,7 @@ CIRMapMem(ScrnInfoPtr pScrn)
  * Unmap the framebuffer and MMIO memory.
  */
 
-static Bool
+Bool
 CIRUnmapMem(ScrnInfoPtr pScrn)
 {
     CIRPtr pCir;

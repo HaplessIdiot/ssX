@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.3 1998/09/13 00:51:32 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/xf86Pci.h,v 1.4 1998/09/19 12:14:59 dawes Exp $ */
 /*
  * Copyright 1998 by Concurrent Computer Corporation
  *
@@ -237,7 +237,10 @@
 #define PCI_MAP_MEMORY_TYPE_64BIT       0x00000004
 #define PCI_MAP_MEMORY_TYPE_MASK        0x00000006
 #define PCI_MAP_MEMORY_CACHABLE         0x00000008
+#define PCI_MAP_MEMORY_ATTR_MASK	0x0000000e
 #define PCI_MAP_MEMORY_ADDRESS_MASK     0xfffffff0
+
+#define PCI_MAP_IO_ATTR_MASK		0x00000000
 
 #define PCI_MAP_IS64BITMEM(b) \
 	(((b) & PCI_MAP_MEMORY_TYPE_MASK) == PCI_MAP_MEMORY_TYPE_64BIT)

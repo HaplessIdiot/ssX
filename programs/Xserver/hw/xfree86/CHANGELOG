@@ -1,3 +1,20 @@
+XFree86 3.9Nl (1 November 1998)
+1938. Fix some build problems that show up on SunOS 4.1.4.
+1937. Allow the driver to give XAA the definition of a full planemask,
+      with a reasonable default set when it doesn't (#2150, Mark Vojkovich).
+1936. XAA optimisation: when fgPixel == bgPixel draw opaque stipples as
+      solid rects (#2150, Mark Vojkovich).
+1935. Preliminary S3 ViRGE driver conversion (#2148, Kevin Brosius).
+1934. Fix a bug in the LBX extension's colourmap code (#2143, Mark Vojkovich).
+1933. Add base address size and type fields to PciVideoRec (#2141,
+      Egbert Eich).
+1932. Change the PCIInfo entries for NeoMagic chips (#2141, Egbert Eich).
+1931. Some C&T driver updates (#2141, Egbert Eich).
+1930. Add support for the Cirrus 5465 (and 5464, 5462 -- untested)
+      (#2140, Corin Anderson).
+1929. Make the vgahw module a little easier to use by setting its own
+      defaults where appropriate.
+
 XFree86 3.9Nk (25 October 1998)
 1928. Some XAA GC validation bug fixes and optimisations.  This includes
       wrapping pixmap rendering to determine when pixmap cache invalidation
@@ -23,7 +40,7 @@ XFree86 3.9Nk (25 October 1998)
       video memory size (#2052, Radislaw Kapitan).
 1915. sigset_t isn't an integer type on NetBSD (and some other OSs) so
       don't try to print it in xdm (#2048, Matthieu Herrb).
-1914. NetBSD's preprocessor and emits a warning when it sees '#ifdef unix',
+1914. NetBSD's preprocessor emits a warning when it sees '#ifdef unix',
       which makes imake noisy (#2048, Matthieu Herrb).
 1913. xterm patches 85, 86, 87 (see xterm.log.html for details) (#2043, 2056,
       2097, Thomas Dickey).
@@ -6677,4 +6694,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.638 1998/10/21 06:12:03 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.639 1998/10/25 07:12:03 dawes Exp $

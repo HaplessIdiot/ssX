@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.4 1998/08/02 05:17:06 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xaaFillRect.c,v 1.5 1998/08/19 07:49:26 dawes Exp $ */
 
 #include "misc.h"
 #include "xf86.h"
@@ -150,10 +150,15 @@ XAAPolyFillRectMono8x8Pattern(
 		return;
 	}
  
-	(*infoRec->FillMono8x8PatternRects) (infoRec->pScrn, 
+	if((bg != -1) && (bg == fg) && infoRec->FillSolidRects){
+	    (*infoRec->FillSolidRects) (infoRec->pScrn, 
+		fg, pGC->alu, pGC->planemask, nboxes, pClipBoxes);
+	} else {
+	    (*infoRec->FillMono8x8PatternRects) (infoRec->pScrn, 
 		fg, bg, pGC->alu, pGC->planemask, 
 		nboxes, pClipBoxes, pPriv->pattern0, pPriv->pattern1, 
 		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y));
+	}
     }
    
     if(pClipBoxes != infoRec->PreAllocBoxes)
@@ -642,11 +647,17 @@ XAAPolyFillRectColorExpand(
 					nrectFill, prectInit);
 
     if(nboxes) {
-	(*infoRec->FillColorExpandRects) (infoRec->pScrn, pGC->fgPixel,
+	if((pGC->fillStyle == FillOpaqueStippled) && 
+		(pGC->bgPixel == pGC->fgPixel) && infoRec->FillSolidRects){
+	    (*infoRec->FillSolidRects) (infoRec->pScrn, 
+		pGC->fgPixel, pGC->alu, pGC->planemask, nboxes, pClipBoxes);
+	} else {
+	    (*infoRec->FillColorExpandRects) (infoRec->pScrn, pGC->fgPixel,
 		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
 		pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
 		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
 		pGC->stipple);
+	}
     }
    
     if(pClipBoxes != infoRec->PreAllocBoxes)
@@ -695,11 +706,17 @@ XAAPolyFillRectCacheExpand(
 					nrectFill, prectInit);
 
     if(nboxes) {
-	(*infoRec->FillCacheExpandRects) (infoRec->pScrn, pGC->fgPixel,
+	if((pGC->fillStyle != FillStippled) && infoRec->FillSolidRects &&
+	   			(pGC->bgPixel == pGC->fgPixel)){
+	    (*infoRec->FillSolidRects) (infoRec->pScrn, 
+		pGC->fgPixel, pGC->alu, pGC->planemask, nboxes, pClipBoxes);
+	} else {
+	    (*infoRec->FillCacheExpandRects) (infoRec->pScrn, pGC->fgPixel,
 		(pGC->fillStyle == FillStippled) ? -1 : pGC->bgPixel, 
 		pGC->alu, pGC->planemask, nboxes, pClipBoxes, 
 		(xorg + pGC->patOrg.x), (yorg + pGC->patOrg.y), 
 		pGC->stipple);
+	}
     }
    
     if(pClipBoxes != infoRec->PreAllocBoxes)

@@ -1,5 +1,5 @@
 XCOMM platform:  $TOG: linux.cf /main/47 1998/04/17 11:32:51 mgreess
-XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.81 1998/10/10 15:25:05 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/linux.cf,v 3.82 1998/10/25 07:11:09 dawes Exp $
 
 #ifndef LinuxElfDefault
 #define LinuxElfDefault		YES
@@ -112,7 +112,7 @@ XCOMM binutils:	(LinuxBinUtilsMajorVersion)
 #ifndef HasLibCrypt
 #define HasLibCrypt		YES
 #endif
-define HasPoll			YES
+#define HasPoll			YES
 #else
 #define LinuxSourceDefines	-D_POSIX_SOURCE \
 				-D_BSD_SOURCE -D_SVID_SOURCE LinuxLocaleDefines

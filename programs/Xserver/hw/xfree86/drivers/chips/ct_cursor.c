@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.14 1998/08/29 14:34:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_cursor.c,v 1.15 1998/10/05 13:23:06 dawes Exp $ */
 
 /*
  * Copyright 1994  The XFree86 Project
@@ -318,3 +318,4 @@ CHIPSCursorInit(ScreenPtr pScreen)
 
     return(xf86InitCursor(pScreen, infoPtr));
 }
+

@@ -22,7 +22,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.12 1998/08/29 05:43:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/chips/ct_driver.h,v 1.13 1998/08/29 14:34:32 dawes Exp $ */
 
 
 #ifndef _CT_DRIVER_H_
@@ -227,7 +227,7 @@ typedef struct {
     unsigned int	HWCursorContents;
     Bool		HWCursorShown;
     CloseScreenProcPtr	CloseScreen;
-#ifdef __arm32
+#ifdef __arm32__
 #ifdef __NetBSD__
     int			TVMode;
 #endif

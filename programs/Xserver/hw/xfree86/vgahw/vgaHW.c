@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.8 1998/09/20 14:41:08 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/vgahw/vgaHW.c,v 1.9 1998/09/26 08:34:22 dawes Exp $ */
 
 /*
  *
@@ -672,12 +672,22 @@ vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore)
     vgaHWPtr hwp = VGAHWPTR(scrninfp);
     int savedIOBase;
     unsigned char miscOut, attr10, gr1, gr3, gr4, gr5, gr6, gr8, seq2, seq4;
+    Bool doMap = FALSE;
 
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
 
     /* If nothing to do, return now */
     if (!hwp->FontInfo1 && !hwp->FontInfo2 && !hwp->TextInfo)
 	return;
+
+    if (hwp->Base == NULL) {
+	doMap = TRUE;
+	if (!vgaHWMapMem(scrninfp)) {
+	    xf86DrvMsg(scrninfp->scrnIndex, X_ERROR,
+		       "vgaHWRestoreFonts: vgaHWMapMem() failed\n");
+	    return;
+	}
+    }
 
     /* save the registers that are needed here */
     miscOut = hwp->readMiscOut(hwp);
@@ -770,6 +780,9 @@ vgaHWRestoreFonts(ScrnInfoPtr scrninfp, vgaRegPtr restore)
     hwp->writeSeq(hwp, 0x04, seq4);
     hwp->IOBase = savedIOBase;
 
+    if (doMap)
+	vgaHWUnmapMem(scrninfp);
+
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
 }
 
@@ -850,8 +863,18 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
     vgaHWPtr hwp = VGAHWPTR(scrninfp);
     int savedIOBase;
     unsigned char miscOut, attr10, gr4, gr5, gr6, seq2, seq4;
+    Bool doMap = FALSE;
 
 #if defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2)
+
+    if (hwp->Base == NULL) {
+	doMap = TRUE;
+	if (!vgaHWMapMem(scrninfp)) {
+	    xf86DrvMsg(scrninfp->scrnIndex, X_ERROR,
+		       "vgaHWSaveFonts: vgaHWMapMem() failed\n");
+	    return;
+	}
+    }
 
     /* If in graphics mode, don't save anything */
     attr10 = hwp->readAttr(hwp, 0x10);
@@ -936,6 +959,9 @@ vgaHWSaveFonts(ScrnInfoPtr scrninfp, vgaRegPtr save)
     hwp->IOBase = savedIOBase;
 
     vgaHWBlankScreen(scrninfp, TRUE);
+
+    if (doMap)
+	vgaHWUnmapMem(scrninfp);
 
 #endif /* defined(SAVE_TEXT) || defined(SAVE_FONT1) || defined(SAVE_FONT2) */
 }
@@ -1356,6 +1382,7 @@ vgaHWGetHWRec(ScrnInfoPtr scrp)
 
     hwp->paletteEnabled = FALSE;
     hwp->cmapSaved = FALSE;
+    hwp->MapSize = 0;
     hwp->pScrn = scrp;
 
     /* Initialise the function pointers with the standard VGA versions */
@@ -1388,8 +1415,14 @@ vgaHWMapMem(ScrnInfoPtr scrp)
     vgaHWPtr hwp = VGAHWPTR(scrp);
     int scr_index = scrp->scrnIndex;
     
-    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER, (pointer)0xA0000,
-			    hwp->MapSize);
+    /* If not set, initialise with the defaults */
+    if (hwp->MapSize == 0)
+	hwp->MapSize = VGA_DEFAULT_MEM_SIZE;
+    if (hwp->MapPhys == 0)
+	hwp->MapPhys = VGA_DEFAULT_PHYS_ADDR;
+
+    hwp->Base = xf86MapVidMem(scr_index, VIDMEM_FRAMEBUFFER,
+			      (pointer)hwp->MapPhys, hwp->MapSize);
     return hwp->Base != NULL;
 }
 
@@ -1400,7 +1433,11 @@ vgaHWUnmapMem(ScrnInfoPtr scrp)
     vgaHWPtr hwp = VGAHWPTR(scrp);
     int scr_index = scrp->scrnIndex;
 
-    xf86UnMapVidMem(scr_index, (pointer)hwp->Base, hwp->MapSize);
+    if (hwp->Base == NULL)
+	return;
+
+    xf86UnMapVidMem(scr_index, hwp->Base, hwp->MapSize);
+    hwp->Base = NULL;
 }
 
 int
