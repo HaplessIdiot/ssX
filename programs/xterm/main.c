@@ -89,7 +89,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.175 2004/03/04 02:21:55 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.176 2004/04/03 22:26:26 dawes Exp $ */
 
 /* main.c */
 
@@ -701,6 +701,9 @@ static XtResource application_resources[] =
 #if OPT_HP_FUNC_KEYS
     Bres("hpFunctionKeys", "HpFunctionKeys", hpFunctionKeys, FALSE),
 #endif
+#if OPT_SCO_FUNC_KEYS
+    Bres("scoFunctionKeys", "ScoFunctionKeys", scoFunctionKeys, FALSE),
+#endif
 #if OPT_INITIAL_ERASE
     Bres("ptyInitialErase", "PtyInitialErase", ptyInitialErase, FALSE),
     Bres("backarrowKeyIsErase", "BackarrowKeyIsErase", backarrow_is_erase, FALSE),
@@ -1205,21 +1208,18 @@ Help(void)
     OptionHelp *list = sortedOpts(xtermOptions, optionDescList, XtNumber(optionDescList));
     char **cpp;
 
-    fprintf(stderr,
-	    "%s(%d) usage:\n    %s [-options ...] [-e command args]\n\n",
-	    XFREE86_VERSION, XTERM_PATCH, ProgramName);
-    fprintf(stderr, "where options include:\n");
+    printf("%s(%d) usage:\n    %s [-options ...] [-e command args]\n\n",
+	   XFREE86_VERSION, XTERM_PATCH, ProgramName);
+    printf("where options include:\n");
     for (opt = list; opt->opt; opt++) {
-	fprintf(stderr, "    %-28s %s\n", opt->opt, opt->desc);
+	printf("    %-28s %s\n", opt->opt, opt->desc);
     }
 
-    putc('\n', stderr);
-    for (cpp = message; *cpp; cpp++) {
-	fputs(*cpp, stderr);
-	putc('\n', stderr);
-    }
-    putc('\n', stderr);
-    fflush(stderr);
+    putchar('\n');
+    for (cpp = message; *cpp; cpp++)
+	puts(*cpp);
+    putchar('\n');
+    fflush(stdout);
 }
 
 #if defined(TIOCCONS) || defined(SRIOCSREDIR)
@@ -2697,6 +2697,9 @@ spawn(void)
 #endif
 #ifdef USE_LASTLOG
     struct lastlog lastlog;
+#endif
+#ifdef USE_LASTLOGX
+    struct lastlogx lastlog;
 #endif /* USE_LASTLOG */
 #endif /* HAVE_UTMP */
 
@@ -3836,6 +3839,20 @@ spawn(void)
 	    }
 #endif /* OPT_PTY_HANDSHAKE */
 #endif /* USE_SYSV_UTMP */
+
+#ifdef USE_LASTLOGX
+	    if (term->misc.login_shell) {
+		bzero((char *) &lastlog, sizeof(lastlog));
+		(void) strncpy(lastlog.ll_line,
+			       my_pty_name(ttydev),
+			       sizeof(lastlog.ll_line));
+		X_GETTIMEOFDAY(&lastlog.ll_tv);
+		(void) strncpy(lastlog.ll_host,
+			       XDisplayString(screen->display),
+			       sizeof(lastlog.ll_host));
+		updlastlogx(_PATH_LASTLOGX, screen->uid, &lastlog);
+	    }
+#endif
 
 #ifdef USE_LASTLOG
 	    if (term->misc.login_shell &&

@@ -2,7 +2,7 @@
  *	$Xorg: ptyx.h,v 1.3 2000/08/17 19:55:09 cpqbld Exp $
  */
 
-/* $XFree86: xc/programs/xterm/ptyx.h,v 3.111 2003/12/31 17:12:28 dickey Exp $ */
+/* $XFree86: xc/programs/xterm/ptyx.h,v 3.112 2004/03/04 02:21:56 dickey Exp $ */
 
 /*
  * Copyright 1999-2003,2004 by Thomas E. Dickey
@@ -369,7 +369,7 @@ typedef struct {
 #define	HIGHLIGHT_BG	7
 #define	NCOLORS		8
 
-#define EXCHANGE(a,b,tmp) tmp = a; a = b; b = tmp;
+#define EXCHANGE(a,b,tmp) tmp = a; a = b; b = tmp
 
 #define	COLOR_DEFINED(s,w)	((s)->which&(1<<(w)))
 #define	COLOR_VALUE(s,w)	((s)->colors[w])
@@ -1527,6 +1527,7 @@ typedef struct _Misc {
     char* input_method;
     char* preedit_type;
     Boolean open_im;
+    Boolean cannot_im;		/* true if we cannot use input-method */
 #endif
     Boolean dynamicColors;
     Boolean shared_ic;
