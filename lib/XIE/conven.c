@@ -1,16 +1,10 @@
-/* $XConsortium: conven.c,v 1.8 94/04/17 20:18:20 mor Exp $ */
+/* $TOG: conven.c /main/10 1998/02/06 15:11:41 kaleb $ */
 
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,15 +12,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -37,14 +31,12 @@ from the X Consortium.
  */
 
 void
-XieFloImportClientLUT (element, data_class, band_order, length, levels)
-
-XiePhotoElement	*element;
-XieDataClass 	data_class;
-XieOrientation	band_order;
-XieLTriplet	length;
-XieLevels	levels;
-
+XieFloImportClientLUT (
+	XiePhotoElement	*element,
+	XieDataClass 	data_class,
+	XieOrientation	band_order,
+	XieLTriplet	length,
+	XieLevels	levels)
 {
     element->elemType 			     = xieElemImportClientLUT;
     element->data.ImportClientLUT.data_class = data_class;
@@ -59,18 +51,15 @@ XieLevels	levels;
 
 
 void
-XieFloImportClientPhoto (element, data_class, width, height,
-    levels, notify, decode_tech, decode_param)
-
-XiePhotoElement		*element;
-XieDataClass 		data_class;
-XieLTriplet		width;
-XieLTriplet		height;
-XieLevels		levels;
-Bool			notify;
-XieDecodeTechnique	decode_tech;
-XiePointer		decode_param;
-
+XieFloImportClientPhoto (
+	XiePhotoElement		*element,
+	XieDataClass 		data_class,
+	XieLTriplet		width,
+	XieLTriplet		height,
+	XieLevels		levels,
+	Bool			notify,
+	XieDecodeTechnique	decode_tech,
+	XiePointer		decode_param)
 {
     element->elemType				 = xieElemImportClientPhoto;
     element->data.ImportClientPhoto.data_class   = data_class;
@@ -90,11 +79,7 @@ XiePointer		decode_param;
 
 
 void
-XieFloImportClientROI (element, rectangles)
-	
-XiePhotoElement	*element;
-unsigned int	rectangles;
-
+XieFloImportClientROI (XiePhotoElement *element, unsigned int rectangles)
 {
     element->elemType			     = xieElemImportClientROI;
     element->data.ImportClientROI.rectangles = rectangles;
@@ -102,18 +87,15 @@ unsigned int	rectangles;
 
 
 void
-XieFloImportDrawable (element, drawable, src_x, src_y,
-    width, height, fill, notify)
-
-XiePhotoElement	*element;
-Drawable	drawable;
-int		src_x;
-int		src_y;
-unsigned int	width;
-unsigned int	height;
-unsigned long	fill;
-Bool		notify;
-
+XieFloImportDrawable (
+	XiePhotoElement	*element,
+	Drawable	drawable,
+	int		src_x,
+	int		src_y,
+	unsigned int	width,
+	unsigned int	height,
+	unsigned long	fill,
+	Bool		notify)
 {
     element->elemType			  = xieElemImportDrawable;
     element->data.ImportDrawable.drawable = drawable;
@@ -127,19 +109,16 @@ Bool		notify;
 
 
 void
-XieFloImportDrawablePlane (element, drawable, src_x, src_y,
-    width, height, fill, bit_plane, notify)
-
-XiePhotoElement	*element;
-Drawable	drawable;
-int		src_x;
-int		src_y;
-unsigned int	width;
-unsigned int	height;
-unsigned long	fill;
-unsigned long	bit_plane;
-Bool		notify;
-
+XieFloImportDrawablePlane (
+	XiePhotoElement	*element,
+	Drawable	drawable,
+	int		src_x,
+	int		src_y,
+	unsigned int	width,
+	unsigned int	height,
+	unsigned long	fill,
+	unsigned long	bit_plane,
+	Bool		notify)
 {
     element->elemType				= xieElemImportDrawablePlane;
     element->data.ImportDrawablePlane.drawable  = drawable;
@@ -154,11 +133,7 @@ Bool		notify;
 
 
 void
-XieFloImportLUT (element, lut)
-
-XiePhotoElement	*element;
-XieLut		lut;
-
+XieFloImportLUT (XiePhotoElement *element, XieLut lut)
 {
     element->elemType		= xieElemImportLUT;
     element->data.ImportLUT.lut = lut;
@@ -166,12 +141,10 @@ XieLut		lut;
 
 
 void
-XieFloImportPhotomap (element, photomap, notify)
-
-XiePhotoElement	*element;
-XiePhotomap	photomap;
-Bool		notify;
-
+XieFloImportPhotomap (
+	XiePhotoElement	*element,
+	XiePhotomap	photomap,
+	Bool		notify)
 {
     element->elemType			  = xieElemImportPhotomap;
     element->data.ImportPhotomap.photomap = photomap;
@@ -180,11 +153,7 @@ Bool		notify;
 
 
 void
-XieFloImportROI (element, roi)
-
-XiePhotoElement	*element;
-XieRoi		roi;
-
+XieFloImportROI ( XiePhotoElement *element, XieRoi roi)
 {
     element->elemType		= xieElemImportROI;
     element->data.ImportROI.roi = roi;
@@ -192,16 +161,14 @@ XieRoi		roi;
 
 
 void
-XieFloArithmetic (element, src1, src2, domain, constant, operator, band_mask)
-
-XiePhotoElement		*element;
-XiePhototag		src1;
-XiePhototag		src2;
-XieProcessDomain	*domain;
-XieConstant		constant;
-XieArithmeticOp		operator;
-unsigned int		band_mask;
-
+XieFloArithmetic (
+	XiePhotoElement		*element,
+	XiePhototag		src1,
+	XiePhototag		src2,
+	XieProcessDomain	*domain,
+	XieConstant		constant,
+	XieArithmeticOp		operator,
+	unsigned int		band_mask)
 {
     element->elemType			     = xieElemArithmetic;
     element->data.Arithmetic.src1            = src1;
@@ -218,13 +185,11 @@ unsigned int		band_mask;
 
 
 void
-XieFloBandCombine (element, src1, src2, src3)
-
-XiePhotoElement	*element;
-XiePhototag	src1;
-XiePhototag	src2;
-XiePhototag	src3;
-
+XieFloBandCombine (
+	XiePhotoElement	*element,
+	XiePhototag	src1,
+	XiePhototag	src2,
+	XiePhototag	src3)
 {
     element->elemType		   = xieElemBandCombine;
     element->data.BandCombine.src1 = src1;
@@ -234,14 +199,12 @@ XiePhototag	src3;
 
 
 void
-XieFloBandExtract (element, src, levels, bias, coefficients)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-unsigned int	levels;
-double		bias;
-XieConstant	coefficients;
-
+XieFloBandExtract (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	unsigned int	levels,
+	double		bias,
+	XieConstant	coefficients)
 {
     element->elemType			      = xieElemBandExtract;
     element->data.BandExtract.src             = src;
@@ -254,12 +217,10 @@ XieConstant	coefficients;
 
 
 void
-XieFloBandSelect (element, src, band_number)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-unsigned int 	band_number;
-
+XieFloBandSelect (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	unsigned int 	band_number)
 {
     element->elemType			     = xieElemBandSelect;
     element->data.BandSelect.src             = src;
@@ -268,18 +229,15 @@ unsigned int 	band_number;
 
 
 void
-XieFloBlend (element, src1, src2, src_constant,
-    alpha, alpha_constant, domain, band_mask)
-
-XiePhotoElement		*element;
-XiePhototag		src1;
-XiePhototag		src2;
-XieConstant		src_constant;
-XiePhototag		alpha;
-double                  alpha_constant;
-XieProcessDomain	*domain;
-unsigned int		band_mask;
-
+XieFloBlend (
+	XiePhotoElement		*element,
+	XiePhototag		src1,
+	XiePhototag		src2,
+	XieConstant		src_constant,
+	XiePhototag		alpha,
+	double                  alpha_constant,
+	XieProcessDomain	*domain,
+	unsigned int		band_mask)
 {
     element->elemType			= xieElemBlend;
     element->data.Blend.src1            = src1;
@@ -297,18 +255,15 @@ unsigned int		band_mask;
 
 
 void
-XieFloCompare (element, src1, src2, domain, constant,
-    operator, combine, band_mask)
-
-XiePhotoElement		*element;
-XiePhototag		src1;
-XiePhototag		src2;
-XieProcessDomain	*domain;
-XieConstant		constant;
-XieCompareOp		operator;
-Bool			combine;
-unsigned int		band_mask;
-
+XieFloCompare (
+	XiePhotoElement		*element,
+	XiePhototag		src1,
+	XiePhototag		src2,
+	XieProcessDomain	*domain,
+	XieConstant		constant,
+	XieCompareOp		operator,
+	Bool			combine,
+	unsigned int		band_mask)
 {
     element->elemType			  = xieElemCompare;
     element->data.Compare.src1            = src1;
@@ -326,14 +281,12 @@ unsigned int		band_mask;
 
 
 void
-XieFloConstrain (element, src, levels, constrain_tech, constrain_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieLevels		levels;
-XieConstrainTechnique	constrain_tech;
-XiePointer		constrain_param;
-
+XieFloConstrain (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieLevels		levels,
+	XieConstrainTechnique	constrain_tech,
+	XiePointer		constrain_param)
 {
     element->elemType			    = xieElemConstrain;
     element->data.Constrain.src             = src;
@@ -346,14 +299,12 @@ XiePointer		constrain_param;
 
 
 void
-XieFloConvertFromIndex (element, src, colormap, data_class, precision)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-Colormap	colormap;
-XieDataClass	data_class;
-unsigned int	precision;
-
+XieFloConvertFromIndex (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	Colormap	colormap,
+	XieDataClass	data_class,
+	unsigned int	precision)
 {
     element->elemType			      = xieElemConvertFromIndex;
     element->data.ConvertFromIndex.src        = src;
@@ -364,13 +315,11 @@ unsigned int	precision;
 
 
 void
-XieFloConvertFromRGB (element, src, color_space, color_param)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-XieColorspace	color_space;
-XiePointer     	color_param;
-
+XieFloConvertFromRGB (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	XieColorspace	color_space,
+	XiePointer     	color_param)
 {
     element->elemType			     = xieElemConvertFromRGB;
     element->data.ConvertFromRGB.src         = src;
@@ -380,17 +329,14 @@ XiePointer     	color_param;
 
 
 void
-XieFloConvertToIndex (element, src, colormap, color_list, notify,
-    color_alloc_tech, color_alloc_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-Colormap		colormap;
-XieColorList		color_list;
-Bool	    		notify;
-XieColorAllocTechnique	color_alloc_tech;
-XiePointer		color_alloc_param;
-
+XieFloConvertToIndex (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	Colormap		colormap,
+	XieColorList		color_list,
+	Bool	    		notify,
+	XieColorAllocTechnique	color_alloc_tech,
+	XiePointer		color_alloc_param)
 {
     element->elemType				   = xieElemConvertToIndex;
     element->data.ConvertToIndex.src               = src;
@@ -403,13 +349,11 @@ XiePointer		color_alloc_param;
 
 
 void
-XieFloConvertToRGB (element, src, color_space, color_param)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-XieColorspace	color_space;
-XiePointer	color_param;
-
+XieFloConvertToRGB (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	XieColorspace	color_space,
+	XiePointer	color_param)
 {
     element->elemType			   = xieElemConvertToRGB;
     element->data.ConvertToRGB.src         = src;
@@ -419,18 +363,15 @@ XiePointer	color_param;
 
 
 void
-XieFloConvolve (element, src, domain, kernel, kernel_size, band_mask,
-    convolve_tech, convolve_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieProcessDomain	*domain;
-float			*kernel;
-int			kernel_size;
-unsigned int		band_mask;
-XieConvolveTechnique	convolve_tech;
-XiePointer		convolve_param;
-
+XieFloConvolve (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieProcessDomain	*domain,
+	float			*kernel,
+	int			kernel_size,
+	unsigned int		band_mask,
+	XieConvolveTechnique	convolve_tech,
+	XiePointer		convolve_param)
 {
     unsigned size;
 
@@ -451,15 +392,13 @@ XiePointer		convolve_param;
 
 
 void
-XieFloDither (element, src, band_mask, levels, dither_tech, dither_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-unsigned int		band_mask;
-XieLevels		levels;
-XieDitherTechnique	dither_tech;
-XiePointer		dither_param;
-
+XieFloDither (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	unsigned int		band_mask,
+	XieLevels		levels,
+	XieDitherTechnique	dither_tech,
+	XiePointer		dither_param)
 {
     element->elemType		      = xieElemDither;
     element->data.Dither.src          = src;
@@ -473,19 +412,16 @@ XiePointer		dither_param;
 
 
 void
-XieFloGeometry (element, src, width, height, coefficients, constant,
-    band_mask, sample_tech, sample_param)
-
-XiePhotoElement		*element;
-XiePhototag 		src;
-unsigned int		width;
-unsigned int		height;
-float			coefficients[6];
-XieConstant		constant;
-unsigned int		band_mask;
-XieGeometryTechnique	sample_tech;
-XiePointer		sample_param;
-
+XieFloGeometry (
+	XiePhotoElement		*element,
+	XiePhototag 		src,
+	unsigned int		width,
+	unsigned int		height,
+	float			coefficients[6],
+	XieConstant		constant,
+	unsigned int		band_mask,
+	XieGeometryTechnique	sample_tech,
+	XiePointer		sample_param)
 {
     element->elemType			   = xieElemGeometry;
     element->data.Geometry.src             = src;
@@ -507,16 +443,14 @@ XiePointer		sample_param;
 
 
 void
-XieFloLogical (element, src1, src2, domain, constant, operator, band_mask)
-
-XiePhotoElement		*element;
-XiePhototag		src1;
-XiePhototag		src2;
-XieProcessDomain	*domain;
-XieConstant		constant;
-unsigned long		operator;
-unsigned int		band_mask;
-
+XieFloLogical (
+	XiePhotoElement		*element,
+	XiePhototag		src1,
+	XiePhototag		src2,
+	XieProcessDomain	*domain,
+	XieConstant		constant,
+	unsigned long		operator,
+	unsigned int		band_mask)
 {
     element->elemType			  = xieElemLogical;
     element->data.Logical.src1            = src1;
@@ -533,14 +467,12 @@ unsigned int		band_mask;
 
 
 void
-XieFloMatchHistogram (element, src, domain, shape, shape_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieProcessDomain	*domain;
-XieHistogramShape	shape;
-XiePointer		shape_param;
-
+XieFloMatchHistogram (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieProcessDomain	*domain,
+	XieHistogramShape	shape,
+	XiePointer		shape_param)
 {
     element->elemType				 = xieElemMatchHistogram;
     element->data.MatchHistogram.src             = src;
@@ -553,14 +485,12 @@ XiePointer		shape_param;
 
 
 void
-XieFloMath (element, src, domain, operator, band_mask)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieProcessDomain	*domain;
-XieMathOp		operator;
-unsigned int		band_mask;
-
+XieFloMath (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieProcessDomain	*domain,
+	XieMathOp		operator,
+	unsigned int		band_mask)
 {
     element->elemType		       = xieElemMath;
     element->data.Math.src             = src;
@@ -573,15 +503,13 @@ unsigned int		band_mask;
 
 
 void
-XieFloPasteUp (element, width, height, constant, tiles, tile_count)
-
-XiePhotoElement	*element;
-unsigned int	width;
-unsigned int	height;
-XieConstant	constant;
-XieTile		*tiles;
-unsigned int	tile_count;
-
+XieFloPasteUp (
+	XiePhotoElement	*element,
+	unsigned int	width,
+	unsigned int	height,
+	XieConstant	constant,
+	XieTile		*tiles,
+	unsigned int	tile_count)
 {
     unsigned size;
 
@@ -600,14 +528,12 @@ unsigned int	tile_count;
 
 
 void
-XieFloPoint (element, src, domain, lut, band_mask)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieProcessDomain	*domain;
-XieLut			lut;
-unsigned int		band_mask;
-
+XieFloPoint (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieProcessDomain	*domain,
+	XiePhototag		lut,
+	unsigned int		band_mask)
 {
     element->elemType                   = xieElemPoint;
     element->data.Point.src             = src;
@@ -619,24 +545,20 @@ unsigned int		band_mask;
 }
 
 void
-XieFloUnconstrain (element, src)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-
+XieFloUnconstrain (
+	XiePhotoElement		*element,
+	XiePhototag		src)
 {
     element->elemType			    = xieElemUnconstrain;
     element->data.Constrain.src             = src;
 }
 
 void
-XieFloExportClientHistogram (element, src, domain, notify)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieProcessDomain	*domain;
-XieExportNotify		notify;
-
+XieFloExportClientHistogram (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieProcessDomain	*domain,
+	XieExportNotify		notify)
 {
     element->elemType = xieElemExportClientHistogram;
     element->data.ExportClientHistogram.src             = src;
@@ -648,15 +570,13 @@ XieExportNotify		notify;
 
 
 void
-XieFloExportClientLUT (element, src, band_order, notify, start, length)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-XieOrientation	band_order;
-XieExportNotify	notify;
-XieLTriplet 	start;
-XieLTriplet     length;
-
+XieFloExportClientLUT (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	XieOrientation	band_order,
+	XieExportNotify	notify,
+	XieLTriplet 	start,
+	XieLTriplet     length)
 {
     int i;
 
@@ -675,14 +595,12 @@ XieLTriplet     length;
 
 
 void
-XieFloExportClientPhoto (element, src, notify, encode_tech, encode_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XieExportNotify		notify;
-XieEncodeTechnique	encode_tech;
-XiePointer		encode_param;
-
+XieFloExportClientPhoto (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XieExportNotify		notify,
+	XieEncodeTechnique	encode_tech,
+	XiePointer		encode_param)
 {
     element->elemType                            = xieElemExportClientPhoto;
     element->data.ExportClientPhoto.src          = src;
@@ -693,12 +611,10 @@ XiePointer		encode_param;
 
 
 void
-XieFloExportClientROI (element, src, notify)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-XieExportNotify	notify;
-
+XieFloExportClientROI (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	XieExportNotify	notify)
 {
     element->elemType			 = xieElemExportClientROI;
     element->data.ExportClientROI.src    = src;
@@ -707,15 +623,13 @@ XieExportNotify	notify;
 
 
 void
-XieFloExportDrawable (element, src, drawable, gc, dst_x, dst_y)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-Drawable	drawable;
-GC		gc;
-int		dst_x;
-int		dst_y;
-
+XieFloExportDrawable (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	Drawable	drawable,
+	GC		gc,
+	int		dst_x,
+	int		dst_y)
 {
     element->elemType                     = xieElemExportDrawable;
     element->data.ExportDrawable.src      = src;
@@ -727,15 +641,13 @@ int		dst_y;
 
 
 void
-XieFloExportDrawablePlane (element, src, drawable, gc, dst_x, dst_y)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-Drawable	drawable;
-GC		gc;
-int		dst_x;
-int		dst_y;
-
+XieFloExportDrawablePlane (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	Drawable	drawable,
+	GC		gc,
+	int		dst_x,
+	int		dst_y)
 {
     element->elemType                          = xieElemExportDrawablePlane;
     element->data.ExportDrawablePlane.src      = src;
@@ -747,14 +659,12 @@ int		dst_y;
 
 
 void
-XieFloExportLUT (element, src, lut, merge, start)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-XieLut		lut;
-Bool 		merge;
-XieLTriplet 	start;
-
+XieFloExportLUT (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	XieLut		lut,
+	Bool 		merge,
+	XieLTriplet 	start)
 {
     int i;
 
@@ -769,14 +679,12 @@ XieLTriplet 	start;
 
 
 void
-XieFloExportPhotomap (element, src, photomap, encode_tech, encode_param)
-
-XiePhotoElement		*element;
-XiePhototag		src;
-XiePhotomap		photomap;
-XieEncodeTechnique	encode_tech;
-XiePointer		encode_param;
-
+XieFloExportPhotomap (
+	XiePhotoElement		*element,
+	XiePhototag		src,
+	XiePhotomap		photomap,
+	XieEncodeTechnique	encode_tech,
+	XiePointer		encode_param)
 {
     element->elemType                         = xieElemExportPhotomap;
     element->data.ExportPhotomap.src          = src;
@@ -787,12 +695,10 @@ XiePointer		encode_param;
 
 
 void
-XieFloExportROI (element, src, roi)
-
-XiePhotoElement	*element;
-XiePhototag	src;
-XieRoi		roi;
-
+XieFloExportROI (
+	XiePhotoElement	*element,
+	XiePhototag	src,
+	XieRoi		roi)
 {
     element->elemType           = xieElemExportROI;
     element->data.ExportROI.src = src;
@@ -800,16 +706,13 @@ XieRoi		roi;
 }
 
 
-
+
 /*
  * Technique Convenience Functions
  */
 
 XieColorAllocAllParam *
-XieTecColorAllocAll (fill)
-
-unsigned long	fill;
-
+XieTecColorAllocAll (unsigned long fill)
 {
     XieColorAllocAllParam *param = (XieColorAllocAllParam *)
 	Xmalloc (sizeof (XieColorAllocAllParam));
@@ -821,11 +724,7 @@ unsigned long	fill;
 
 
 XieColorAllocMatchParam *
-XieTecColorAllocMatch (match_limit, gray_limit)
-
-double	match_limit;
-double	gray_limit;
-
+XieTecColorAllocMatch ( double match_limit, double gray_limit)
 {
     XieColorAllocMatchParam *param = (XieColorAllocMatchParam *)
 	Xmalloc (sizeof (XieColorAllocMatchParam));
@@ -838,10 +737,7 @@ double	gray_limit;
 
 
 XieColorAllocRequantizeParam *
-XieTecColorAllocRequantize (max_cells)
-
-unsigned long	max_cells;
-
+XieTecColorAllocRequantize (unsigned long max_cells)
 {
     XieColorAllocRequantizeParam *param = (XieColorAllocRequantizeParam *)
 	Xmalloc (sizeof (XieColorAllocRequantizeParam));
@@ -853,12 +749,10 @@ unsigned long	max_cells;
 
 
 XieRGBToCIELabParam *
-XieTecRGBToCIELab (matrix, white_adjust_tech, white_adjust_param)
-
-XieMatrix		matrix;
-XieWhiteAdjustTechnique	white_adjust_tech;
-XiePointer		white_adjust_param;
-
+XieTecRGBToCIELab (
+	XieMatrix		matrix,
+	XieWhiteAdjustTechnique	white_adjust_tech,
+	XiePointer		white_adjust_param)
 {
     XieRGBToCIELabParam *param = (XieRGBToCIELabParam *)
 	Xmalloc (sizeof (XieRGBToCIELabParam));
@@ -872,12 +766,10 @@ XiePointer		white_adjust_param;
 
 
 XieRGBToCIEXYZParam *
-XieTecRGBToCIEXYZ (matrix, white_adjust_tech, white_adjust_param)
-
-XieMatrix		matrix;
-XieWhiteAdjustTechnique	white_adjust_tech;
-XiePointer		white_adjust_param;
-
+XieTecRGBToCIEXYZ (
+	XieMatrix		matrix,
+	XieWhiteAdjustTechnique	white_adjust_tech,
+	XiePointer		white_adjust_param)
 {
     XieRGBToCIEXYZParam *param = (XieRGBToCIEXYZParam *)
 	Xmalloc (sizeof (XieRGBToCIEXYZParam));
@@ -891,14 +783,12 @@ XiePointer		white_adjust_param;
 
 
 XieRGBToYCbCrParam *
-XieTecRGBToYCbCr (levels, luma_red, luma_green, luma_blue, bias)
-
-XieLevels	levels;
-double		luma_red;
-double		luma_green;
-double		luma_blue;
-XieConstant	bias;
-
+XieTecRGBToYCbCr (
+	XieLevels	levels,
+	double		luma_red,
+	double		luma_green,
+	double		luma_blue,
+	XieConstant	bias)
 {
     XieRGBToYCbCrParam *param = (XieRGBToYCbCrParam *)
 	Xmalloc (sizeof (XieRGBToYCbCrParam));
@@ -918,14 +808,12 @@ XieConstant	bias;
 
 
 XieRGBToYCCParam *
-XieTecRGBToYCC (levels, luma_red, luma_green, luma_blue, scale)
-
-XieLevels	levels;
-double		luma_red;
-double		luma_green;
-double		luma_blue;
-double		scale;
-
+XieTecRGBToYCC (
+	XieLevels	levels,
+	double		luma_red,
+	double		luma_green,
+	double		luma_blue,
+	double		scale)
 {
     XieRGBToYCCParam *param = (XieRGBToYCCParam *)
 	Xmalloc (sizeof (XieRGBToYCCParam));
@@ -943,15 +831,12 @@ double		scale;
 
 
 XieCIELabToRGBParam *
-XieTecCIELabToRGB (matrix, white_adjust_tech, white_adjust_param,
-    gamut_tech, gamut_param)
-
-XieMatrix		matrix;
-XieWhiteAdjustTechnique	white_adjust_tech;
-XiePointer		white_adjust_param;
-XieGamutTechnique	gamut_tech;
-XiePointer		gamut_param;
-
+XieTecCIELabToRGB (
+	XieMatrix		matrix,
+	XieWhiteAdjustTechnique	white_adjust_tech,
+	XiePointer		white_adjust_param,
+	XieGamutTechnique	gamut_tech,
+	XiePointer		gamut_param)
 {
     XieCIELabToRGBParam *param = (XieCIELabToRGBParam *)
 	Xmalloc (sizeof (XieCIELabToRGBParam));
@@ -967,15 +852,12 @@ XiePointer		gamut_param;
 
 
 XieCIEXYZToRGBParam *
-XieTecCIEXYZToRGB (matrix, white_adjust_tech, white_adjust_param,
-    gamut_tech, gamut_param)
-
-XieMatrix		matrix;
-XieWhiteAdjustTechnique	white_adjust_tech;
-XiePointer		white_adjust_param;
-XieGamutTechnique	gamut_tech;
-XiePointer		gamut_param;
-
+XieTecCIEXYZToRGB (
+	XieMatrix		matrix,
+	XieWhiteAdjustTechnique	white_adjust_tech,
+	XiePointer		white_adjust_param,
+	XieGamutTechnique	gamut_tech,
+	XiePointer		gamut_param)
 {
     XieCIEXYZToRGBParam *param = (XieCIEXYZToRGBParam *)
 	Xmalloc (sizeof (XieCIEXYZToRGBParam));
@@ -991,17 +873,14 @@ XiePointer		gamut_param;
 
 
 XieYCbCrToRGBParam *
-XieTecYCbCrToRGB (levels, luma_red, luma_green, luma_blue, bias,
-    gamut_tech, gamut_param)
-
-XieLevels		levels;
-double			luma_red;
-double			luma_green;
-double			luma_blue;
-XieConstant		bias;
-XieGamutTechnique	gamut_tech;
-XiePointer		gamut_param;
-
+XieTecYCbCrToRGB (
+	XieLevels		levels,
+	double			luma_red,
+	double			luma_green,
+	double			luma_blue,
+	XieConstant		bias,
+	XieGamutTechnique	gamut_tech,
+	XiePointer		gamut_param)
 {
     XieYCbCrToRGBParam *param = (XieYCbCrToRGBParam *)
 	Xmalloc (sizeof (XieYCbCrToRGBParam));
@@ -1023,17 +902,14 @@ XiePointer		gamut_param;
 
 
 XieYCCToRGBParam *
-XieTecYCCToRGB (levels, luma_red, luma_green, luma_blue, scale,
-    gamut_tech, gamut_param)
-
-XieLevels		levels;
-double			luma_red;
-double			luma_green;
-double			luma_blue;
-double			scale;
-XieGamutTechnique	gamut_tech;
-XiePointer		gamut_param;
-
+XieTecYCCToRGB (
+	XieLevels		levels,
+	double			luma_red,
+	double			luma_green,
+	double			luma_blue,
+	double			scale,
+	XieGamutTechnique	gamut_tech,
+	XiePointer		gamut_param)
 {
     XieYCCToRGBParam *param = (XieYCCToRGBParam *)
 	Xmalloc (sizeof (XieYCCToRGBParam));
@@ -1053,13 +929,11 @@ XiePointer		gamut_param;
 
 
 XieClipScaleParam *
-XieTecClipScale (in_low, in_high, out_low, out_high)
-
-XieConstant in_low;
-XieConstant in_high;
-XieLTriplet out_low;
-XieLTriplet out_high;
-
+XieTecClipScale (
+	XieConstant in_low,
+	XieConstant in_high,
+	XieLTriplet out_low,
+	XieLTriplet out_high)
 {
     int i;
 
@@ -1079,10 +953,7 @@ XieLTriplet out_high;
 
 
 XieConvolveConstantParam *
-XieTecConvolveConstant (constant)
-
-XieConstant	constant;
-
+XieTecConvolveConstant (XieConstant constant)
 {
     XieConvolveConstantParam *param = (XieConvolveConstantParam *)
 	Xmalloc (sizeof (XieConvolveConstantParam));
@@ -1096,15 +967,12 @@ XieConstant	constant;
 
 
 XieDecodeUncompressedSingleParam *
-XieTecDecodeUncompressedSingle (fill_order, pixel_order, pixel_stride,
-    left_pad, scanline_pad)
-
-XieOrientation	fill_order;
-XieOrientation	pixel_order;
-unsigned int	pixel_stride;
-unsigned int	left_pad;
-unsigned int	scanline_pad;
-
+XieTecDecodeUncompressedSingle (
+	XieOrientation	fill_order,
+	XieOrientation	pixel_order,
+	unsigned int	pixel_stride,
+	unsigned int	left_pad,
+	unsigned int	scanline_pad)
 {
     XieDecodeUncompressedSingleParam *param =
 	(XieDecodeUncompressedSingleParam *) Xmalloc (
@@ -1121,17 +989,14 @@ unsigned int	scanline_pad;
 
 
 XieDecodeUncompressedTripleParam *
-XieTecDecodeUncompressedTriple (fill_order, pixel_order, band_order,
-    interleave, pixel_stride, left_pad, scanline_pad)
-
-XieOrientation	fill_order;
-XieOrientation	pixel_order;
-XieOrientation 	band_order;
-XieInterleave	interleave;
-unsigned char	pixel_stride[3];
-unsigned char	left_pad[3];
-unsigned char	scanline_pad[3];
-
+XieTecDecodeUncompressedTriple (
+	XieOrientation	fill_order,
+	XieOrientation	pixel_order,
+	XieOrientation 	band_order,
+	XieInterleave	interleave,
+	unsigned char	pixel_stride[3],
+	unsigned char	left_pad[3],
+	unsigned char	scanline_pad[3])
 {
     XieDecodeUncompressedTripleParam *param =
 	(XieDecodeUncompressedTripleParam *) Xmalloc (
@@ -1156,12 +1021,10 @@ unsigned char	scanline_pad[3];
 
 
 XieDecodeG31DParam *
-XieTecDecodeG31D (encoded_order, normal, radiometric)
-
-XieOrientation	encoded_order;
-Bool		normal;
-Bool		radiometric;
-
+XieTecDecodeG31D (
+	XieOrientation	encoded_order,
+	Bool		normal,
+	Bool		radiometric)
 {
     XieDecodeG31DParam *param = (XieDecodeG31DParam *)
 	Xmalloc (sizeof (XieDecodeG31DParam));
@@ -1175,12 +1038,10 @@ Bool		radiometric;
 
 
 XieDecodeG32DParam *
-XieTecDecodeG32D (encoded_order, normal, radiometric)
-
-XieOrientation	encoded_order;
-Bool		normal;
-Bool		radiometric;
-
+XieTecDecodeG32D (
+	XieOrientation	encoded_order,
+	Bool		normal,
+	Bool		radiometric)
 {
     XieDecodeG32DParam *param = (XieDecodeG32DParam *)
 	Xmalloc (sizeof (XieDecodeG32DParam));
@@ -1194,12 +1055,10 @@ Bool		radiometric;
 
 
 XieDecodeG42DParam *
-XieTecDecodeG42D (encoded_order, normal, radiometric)
-
-XieOrientation	encoded_order;
-Bool		normal;
-Bool		radiometric;
-
+XieTecDecodeG42D (
+	XieOrientation	encoded_order,
+	Bool		normal,
+	Bool		radiometric)
 {
     XieDecodeG42DParam *param = (XieDecodeG42DParam *)
 	Xmalloc (sizeof (XieDecodeG42DParam));
@@ -1213,12 +1072,10 @@ Bool		radiometric;
 
 
 XieDecodeTIFF2Param *
-XieTecDecodeTIFF2 (encoded_order, normal, radiometric)
-
-XieOrientation	encoded_order;
-Bool		normal;
-Bool		radiometric;
-
+XieTecDecodeTIFF2 (
+	XieOrientation	encoded_order,
+	Bool		normal,
+	Bool		radiometric)
 {
     XieDecodeTIFF2Param *param = (XieDecodeTIFF2Param *)
 	Xmalloc (sizeof (XieDecodeTIFF2Param));
@@ -1232,11 +1089,9 @@ Bool		radiometric;
 
 
 XieDecodeTIFFPackBitsParam *
-XieTecDecodeTIFFPackBits (encoded_order, normal)
-
-XieOrientation	encoded_order;
-Bool		normal;
-
+XieTecDecodeTIFFPackBits (
+	XieOrientation	encoded_order,
+	Bool		normal)
 {
     XieDecodeTIFFPackBitsParam *param = (XieDecodeTIFFPackBitsParam *)
 	Xmalloc (sizeof (XieDecodeTIFFPackBitsParam));
@@ -1249,12 +1104,10 @@ Bool		normal;
 
 
 XieDecodeJPEGBaselineParam *
-XieTecDecodeJPEGBaseline (interleave, band_order, up_sample)
-
-XieInterleave	interleave;
-XieOrientation  band_order;
-Bool		up_sample;
-
+XieTecDecodeJPEGBaseline (
+	XieInterleave	interleave,
+	XieOrientation  band_order,
+	Bool		up_sample)
 {
     XieDecodeJPEGBaselineParam *param = (XieDecodeJPEGBaselineParam *)
 	Xmalloc (sizeof (XieDecodeJPEGBaselineParam));
@@ -1268,11 +1121,7 @@ Bool		up_sample;
 
 
 XieDecodeJPEGLosslessParam *
-XieTecDecodeJPEGLossless (interleave, band_order)
-
-XieInterleave	interleave;
-XieOrientation  band_order;
-
+XieTecDecodeJPEGLossless (XieInterleave interleave, XieOrientation band_order)
 {
     XieDecodeJPEGLosslessParam *param = (XieDecodeJPEGLosslessParam *)
 	Xmalloc (sizeof (XieDecodeJPEGLosslessParam));
@@ -1285,10 +1134,7 @@ XieOrientation  band_order;
 
 
 XieDitherOrderedParam *
-XieTecDitherOrderedParam (threshold_order)
-
-unsigned int	threshold_order;
-
+XieTecDitherOrderedParam (unsigned int threshold_order)
 {
     XieDitherOrderedParam *param = (XieDitherOrderedParam *)
 	Xmalloc (sizeof (XieDitherOrderedParam));
@@ -1300,14 +1146,11 @@ unsigned int	threshold_order;
 
 
 XieEncodeUncompressedSingleParam *
-XieTecEncodeUncompressedSingle (fill_order, pixel_order,
-    pixel_stride, scanline_pad)
-
-XieOrientation	fill_order;
-XieOrientation	pixel_order;
-unsigned int	pixel_stride;
-unsigned int	scanline_pad;
-
+XieTecEncodeUncompressedSingle (
+	XieOrientation	fill_order,
+	XieOrientation	pixel_order,
+	unsigned int	pixel_stride,
+	unsigned int	scanline_pad)
 {
     XieEncodeUncompressedSingleParam *param =
 	(XieEncodeUncompressedSingleParam *) Xmalloc (
@@ -1323,16 +1166,13 @@ unsigned int	scanline_pad;
 
 
 XieEncodeUncompressedTripleParam *
-XieTecEncodeUncompressedTriple (fill_order, pixel_order, band_order,
-    interleave, pixel_stride, scanline_pad)
-
-XieOrientation	fill_order;
-XieOrientation	pixel_order;
-XieOrientation 	band_order;
-XieInterleave	interleave;
-unsigned char	pixel_stride[3];
-unsigned char	scanline_pad[3];
-
+XieTecEncodeUncompressedTriple (
+	XieOrientation	fill_order,
+	XieOrientation	pixel_order,
+	XieOrientation 	band_order,
+	XieInterleave	interleave,
+	unsigned char	pixel_stride[3],
+	unsigned char	scanline_pad[3])
 {
     XieEncodeUncompressedTripleParam *param =
 	(XieEncodeUncompressedTripleParam *) Xmalloc (
@@ -1354,12 +1194,10 @@ unsigned char	scanline_pad[3];
 
 
 XieEncodeG31DParam *
-XieTecEncodeG31D (align_eol, radiometric, encoded_order)
-
-Bool		align_eol;
-Bool		radiometric;
-XieOrientation	encoded_order;
-
+XieTecEncodeG31D (
+	Bool		align_eol,
+	Bool		radiometric,
+	XieOrientation	encoded_order)
 {
     XieEncodeG31DParam *param = (XieEncodeG31DParam *)
 	Xmalloc (sizeof (XieEncodeG31DParam));
@@ -1373,15 +1211,12 @@ XieOrientation	encoded_order;
 
 
 XieEncodeG32DParam *
-XieTecEncodeG32D (uncompressed, align_eol, radiometric,
-    encoded_order, k_factor)
-
-Bool		uncompressed;
-Bool		align_eol;
-Bool		radiometric;
-XieOrientation	encoded_order;
-unsigned long	k_factor;
-
+XieTecEncodeG32D (
+	Bool		uncompressed,
+	Bool		align_eol,
+	Bool		radiometric,
+	XieOrientation	encoded_order,
+	unsigned long	k_factor)
 {
     XieEncodeG32DParam *param = (XieEncodeG32DParam *)
 	Xmalloc (sizeof (XieEncodeG32DParam));
@@ -1397,12 +1232,10 @@ unsigned long	k_factor;
 
 
 XieEncodeG42DParam *
-XieTecEncodeG42D (uncompressed, radiometric, encoded_order)
-
-Bool		uncompressed;
-Bool		radiometric;
-XieOrientation	encoded_order;
-
+XieTecEncodeG42D (
+	Bool		uncompressed,
+	Bool		radiometric,
+	XieOrientation	encoded_order)
 {
     XieEncodeG42DParam *param = (XieEncodeG42DParam *)
 	Xmalloc (sizeof (XieEncodeG42DParam));
@@ -1416,27 +1249,21 @@ XieOrientation	encoded_order;
 
 
 XieEncodeJPEGBaselineParam *
-XieTecEncodeJPEGBaseline (interleave, band_order,
-			  horizontal_samples, vertical_samples,
-			  q_table, q_size,
-			  ac_table, ac_size,
-			  dc_table, dc_size)
-
-XieInterleave	interleave;
-XieOrientation  band_order;
-unsigned char	horizontal_samples[3];
-unsigned char	vertical_samples[3];
-char		*q_table;
-unsigned int	q_size;
-char		*ac_table;
-unsigned int	ac_size;
-char		*dc_table;
-unsigned int	dc_size;
-
+XieTecEncodeJPEGBaseline (
+	XieInterleave	interleave,
+	XieOrientation  band_order,
+	unsigned char	horizontal_samples[3],
+	unsigned char	vertical_samples[3],
+	char		*q_table,
+	unsigned int	q_size,
+	char		*ac_table,
+	unsigned int	ac_size,
+	char		*dc_table,
+	unsigned int	dc_size)
 {
     XieEncodeJPEGBaselineParam *param = (XieEncodeJPEGBaselineParam *)
 	Xmalloc (sizeof (XieEncodeJPEGBaselineParam));
-    
+
     param->interleave            = interleave;
     param->band_order            = band_order;
 
@@ -1465,14 +1292,12 @@ unsigned int	dc_size;
 
 
 XieEncodeJPEGLosslessParam *
-XieTecEncodeJPEGLossless (interleave, band_order, predictor, table, table_size)
-
-XieInterleave	interleave;
-XieOrientation  band_order;
-unsigned char	predictor[3];
-char		*table;
-unsigned int	table_size;
-
+XieTecEncodeJPEGLossless (
+	XieInterleave	interleave,
+	XieOrientation  band_order,
+	unsigned char	predictor[3],
+	char		*table,
+	unsigned int	table_size)
 {
     XieEncodeJPEGLosslessParam *param = (XieEncodeJPEGLosslessParam *)
 	Xmalloc (sizeof (XieEncodeJPEGLosslessParam));
@@ -1492,11 +1317,7 @@ unsigned int	table_size;
 
 
 XieEncodeTIFF2Param *
-XieTecEncodeTIFF2 (encoded_order, radiometric)
-
-XieOrientation	encoded_order;
-Bool		radiometric;
-
+XieTecEncodeTIFF2 (XieOrientation encoded_order, Bool radiometric)
 {
     XieEncodeTIFF2Param *param = (XieEncodeTIFF2Param *)
 	Xmalloc (sizeof (XieEncodeTIFF2Param));
@@ -1509,10 +1330,7 @@ Bool		radiometric;
 
 
 XieEncodeTIFFPackBitsParam *
-XieTecEncodeTIFFPackBits (encoded_order)
-
-XieOrientation	encoded_order;
-
+XieTecEncodeTIFFPackBits (XieOrientation encoded_order)
 {
     XieEncodeTIFFPackBitsParam *param = (XieEncodeTIFFPackBitsParam *)
 	Xmalloc (sizeof (XieEncodeTIFFPackBitsParam));
@@ -1523,10 +1341,7 @@ XieOrientation	encoded_order;
 }
 
 XieEncodeServerChoiceParam *
-XieTecEncodeServerChoice (preference)
-
-unsigned int	preference;
-
+XieTecEncodeServerChoice (unsigned int preference)
 {
     XieEncodeServerChoiceParam *param = (XieEncodeServerChoiceParam *)
 	Xmalloc (sizeof (XieEncodeServerChoiceParam));
@@ -1538,10 +1353,7 @@ unsigned int	preference;
 
 
 XieGeomAntialiasByAreaParam *
-XieTecGeomAntialiasByArea (simple)
-
-int simple;
-
+XieTecGeomAntialiasByArea (int simple)
 {
     XieGeomAntialiasByAreaParam *param = (XieGeomAntialiasByAreaParam *)
 	Xmalloc (sizeof (XieGeomAntialiasByAreaParam));
@@ -1553,10 +1365,7 @@ int simple;
 
 
 XieGeomAntialiasByLowpassParam *
-XieTecGeomAntialiasByLowpass (kernel_size)
-
-int	kernel_size;
-
+XieTecGeomAntialiasByLowpass ( int kernel_size)
 {
     XieGeomAntialiasByLowpassParam *param = (XieGeomAntialiasByLowpassParam *)
 	Xmalloc (sizeof (XieGeomAntialiasByLowpassParam));
@@ -1568,13 +1377,11 @@ int	kernel_size;
 
 
 XieGeomGaussianParam *
-XieTecGeomGaussian (sigma, normalize, radius, simple)
-
-double		sigma;
-double		normalize;
-unsigned int	radius;
-Bool		simple;
-
+XieTecGeomGaussian (
+	double		sigma,
+	double		normalize,
+	unsigned int	radius,
+	Bool		simple)
 {
     XieGeomGaussianParam *param = (XieGeomGaussianParam *)
 	Xmalloc (sizeof (XieGeomGaussianParam));
@@ -1589,10 +1396,7 @@ Bool		simple;
 
 
 XieGeomNearestNeighborParam *
-XieTecGeomNearestNeighbor (modify)
-
-unsigned int	modify;
-
+XieTecGeomNearestNeighbor (unsigned int modify)
 {
     XieGeomNearestNeighborParam *param = (XieGeomNearestNeighborParam *)
 	Xmalloc (sizeof (XieGeomNearestNeighborParam));
@@ -1603,11 +1407,7 @@ unsigned int	modify;
 }
 
 XieHistogramGaussianParam *
-XieTecHistogramGaussian (mean, sigma)
-
-double	mean;
-double	sigma;
-
+XieTecHistogramGaussian (double mean, double sigma)
 {
     XieHistogramGaussianParam *param = (XieHistogramGaussianParam *)
 	Xmalloc (sizeof (XieHistogramGaussianParam));
@@ -1620,11 +1420,7 @@ double	sigma;
 
 
 XieHistogramHyperbolicParam *
-XieTecHistogramHyperbolic (constant, shape_factor)
-
-double	constant;
-Bool	shape_factor;
-
+XieTecHistogramHyperbolic (double constant, Bool shape_factor)
 {
     XieHistogramHyperbolicParam *param = (XieHistogramHyperbolicParam *)
 	Xmalloc (sizeof (XieHistogramHyperbolicParam));
@@ -1637,10 +1433,7 @@ Bool	shape_factor;
 
 
 XieWhiteAdjustCIELabShiftParam *
-XieTecWhiteAdjustCIELabShift (white_point)
-
-XieConstant	white_point;
-
+XieTecWhiteAdjustCIELabShift (XieConstant white_point)
 {
     XieWhiteAdjustCIELabShiftParam *param = (XieWhiteAdjustCIELabShiftParam *)
 	Xmalloc (sizeof (XieWhiteAdjustCIELabShiftParam));

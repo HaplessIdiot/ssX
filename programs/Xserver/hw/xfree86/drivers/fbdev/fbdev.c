@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.5 1999/04/05 07:13:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/fbdev/fbdev.c,v 1.6 1999/04/11 13:10:56 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -69,6 +69,9 @@ DriverRec FBDEV = {
 /* Supported "chipsets" */
 static SymTabRec FBDevChipsets[] = {
     { 0, "fbdev" },
+#ifdef USE_AFB
+    { 0, "afb" },
+#endif
 #if 0
     { 0, "cfb8" },
     { 0, "cfb16" },
@@ -92,11 +95,18 @@ static OptionInfoRec FBDevOptions[] = {
 
 /* -------------------------------------------------------------------- */
 
+static const char *afbSymbols[] = {
+	"afbScreenInit",
+    "afbCreateDefColormap",
+	NULL
+};
+
 static const char *cfbSymbols[] = {
 	"cfbScreenInit",
 	"cfb16ScreenInit",
 	"cfb24ScreenInit",
 	"cfb32ScreenInit",
+    "cfbCreateDefColormap",
 	NULL
 };
 
@@ -155,7 +165,7 @@ FBDevSetup(pointer module, pointer opts, int *errmaj, int *errmin)
 	if (!setupDone) {
 		setupDone = TRUE;
 		xf86AddDriver(&FBDEV, module, 0);
-		LoaderRefSymLists(cfbSymbols, shadowSymbols, NULL);
+		LoaderRefSymLists(afbSymbols, cfbSymbols, shadowSymbols, NULL);
 		return (pointer)1;
 	} else {
 		if (errmaj) *errmaj = LDR_ONCEONLY;
@@ -347,23 +357,39 @@ FBDevPreInit(ScrnInfoPtr pScrn, int flags)
 	xf86SetDpi(pScrn, 0, 0);
 
 	/* Load bpp-specific modules */
-	switch (pScrn->bitsPerPixel)
+	switch (fbdevHWGetType(pScrn))
 	{
-	case 8:
-		mod = "cfb";
-		reqSym = "cfbScreenInit";
+	case FBDEVHW_PLANES:
+		mod = "afb";
+		reqSym = "afbScreenInit";
 		break;
-	case 16:
-		mod = "cfb16";
-		reqSym = "cfb16ScreenInit";
+	case FBDEVHW_PACKED_PIXELS:
+		switch (pScrn->bitsPerPixel)
+		{
+		case 8:
+			mod = "cfb";
+			reqSym = "cfbScreenInit";
+			break;
+		case 16:
+			mod = "cfb16";
+			reqSym = "cfb16ScreenInit";
+			break;
+		case 24:
+			mod = "cfb24";
+			reqSym = "cfb24ScreenInit";
+			break;
+		case 32:
+			mod = "cfb32";
+			reqSym = "cfb32ScreenInit";
+			break;
+		}
 		break;
-	case 24:
-		mod = "cfb24";
-		reqSym = "cfb24ScreenInit";
+	case FBDEVHW_INTERLEAVED_PLANES:
+		/* Not supported yet, don't know what to do with this */
 		break;
-	case 32:
-		mod = "cfb32";
-		reqSym = "cfb32ScreenInit";
+	case FBDEVHW_TEXT:
+		/* This should never happen ... 
+		 * we should check for this much much earlier ... */
 		break;
 	}
 	if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
@@ -491,31 +517,61 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		fPtr->fbstart   = fPtr->fbmem + fPtr->fboff;
 	}
 
-	switch (pScrn->bitsPerPixel) {
-	case 8:
-		ret = cfbScreenInit
+	switch (fbdevHWGetType(pScrn))
+	{
+#ifdef USE_AFB
+	case FBDEVHW_PLANES:
+		ret = afbScreenInit
 			(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
 			 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
 		break;
-	case 16:
-		ret = cfb16ScreenInit
-			(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+#endif
+	case FBDEVHW_PACKED_PIXELS:
+		switch (pScrn->bitsPerPixel) {
+		case 8:
+			ret = cfbScreenInit
+				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
+				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+			break;
+		case 16:
+			ret = cfb16ScreenInit
+				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
+				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+			break;
+		case 24:
+			ret = cfb24ScreenInit
+				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
+				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+			break;
+		case 32:
+			ret = cfb32ScreenInit
+				(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
+				 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+			break;
+	 	default:
+			xf86DrvMsg(scrnIndex, X_ERROR,
+				   "Internal error: invalid bpp (%d) in FBDevScreenInit\n",
+				   pScrn->bitsPerPixel);
+			ret = FALSE;
+			break;
+		}
 		break;
-	case 24:
-		ret = cfb24ScreenInit
-			(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+	case FBDEVHW_INTERLEAVED_PLANES:
+		/* Not supported yet, don't know what to do with this */
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "Internal error: interleaved planes fbdev type unsupported in FBDevScreenInit\n");
+		ret = FALSE;
 		break;
-	case 32:
-		ret = cfb32ScreenInit
-			(pScreen, fPtr->fbstart, pScrn->virtualX, pScrn->virtualY,
-			 pScrn->xDpi, pScrn->yDpi, pScrn->displayWidth);
+	case FBDEVHW_TEXT:
+		/* This should never happen ... 
+		 * we should check for this much much earlier ... */
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "Internal error: text fbdev type unsupported in FBDevScreenInit\n");
+		ret = FALSE;
 		break;
 	default:
 		xf86DrvMsg(scrnIndex, X_ERROR,
-			   "Internal error: invalid bpp (%d) in FBDevScreenInit\n",
-			   pScrn->bitsPerPixel);
+			   "Internal error: fbdev type (%d) unsupported in FBDevScreenInit\n");
 		ret = FALSE;
 		break;
 	}
@@ -548,8 +604,32 @@ FBDevScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 		ShadowFBInit(pScreen, FBDevRefreshArea);
 
 	/* colormap */
-	if (!cfbCreateDefColormap(pScreen))
+	switch (fbdevHWGetType(pScrn))
+	{
+	/* XXX It would be simpler to use miCreateDefColormap() in all cases. */
+#ifdef USE_AFB
+	case FBDEVHW_PLANES:
+		if (!afbCreateDefColormap(pScreen))
+			return FALSE;
+		break;
+#endif
+	case FBDEVHW_PACKED_PIXELS:
+		if (!cfbCreateDefColormap(pScreen))
+			return FALSE;
+		break;
+	case FBDEVHW_INTERLEAVED_PLANES:
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "Internal error: invalid fbdev type (interleaved planes) in FBDevScreenInit\n");
 		return FALSE;
+	case FBDEVHW_TEXT:
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "Internal error: invalid fbdev type (text) in FBDevScreenInit\n");
+		return FALSE;
+	default:
+		xf86DrvMsg(scrnIndex, X_ERROR,
+			   "Internal error: invalid fbdev type (%d) in FBDevScreenInit\n");
+		return FALSE;
+	}
 	flags = CMAP_PALETTED_TRUECOLOR;
 	if(!xf86HandleColormaps(pScreen, 256, 8, fbdevHWLoadPalette, NULL, flags))
 		return FALSE;

@@ -1,4 +1,18 @@
 XFree86 3.9Pr (12 June 1999)
+2748. Xterm patch #107 (#2879, Thomas Dickey).
+2747. Cirrus driver updates, including support for generic (V4L) video
+      adapters, fix depth 15 mode for the laguna chips and turn of the DAC
+      when blanking the screen (#2878, Itai Nahshon).
+2746. Fix problems with the build of the 6.1-compatible Xaw shared library,
+      and some optimizations and bug fixes for the Xaw and xedit (#2877,
+      Paulo Cesar Pereira de Andrade).
+2745. Add functions (CreateFontRec and DestroyFontRec) for allocating and
+      freeing FontRecs rather than having the size encoded in all of the
+      renderer modules.  Also, change the font private index handling to
+      make all indices show up in all FontRecs (#2873, Mark Vojkovich).
+2744. Add ANSI prototypes for lib/XIE (#2870, Thomas Dickey).
+2743. Some preliminary work on adding afb support to the fbdev driver (#2869,
+      Sven Luther).
 2742. Change the semantics of xf86ReadPciBIOS() to allow it to temporarily
       map an unmapped BIOS at the address assigned to another of the card's
       base address registers, and modify the MGA driver to make use of this
@@ -8166,4 +8180,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.773 1999/06/13 05:18:38 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.774 1999/06/13 07:11:01 dawes Exp $

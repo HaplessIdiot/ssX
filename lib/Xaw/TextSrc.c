@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.15 1999/05/30 03:03:22 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.16 1999/06/06 08:48:17 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -594,6 +594,7 @@ _XawSourceRemoveText(Widget source, Widget text, Bool destroy)
 		    sizeof(Widget) * (src->textSrc.num_text - i));
     }
 }
+#endif /* OLDXAW */
 
 /*
  * Function:
@@ -620,6 +621,7 @@ XawTextSourceRead(Widget w, XawTextPosition pos, XawTextBlock *text,
   return ((*cclass->textSrc_class.Read)(w, pos, text, length));
 }
 
+#ifndef OLDXAW
 static void
 TellSourceChanged(TextSrcObject src, XawTextPosition left,
 		  XawTextPosition right, XawTextBlock *block, int lines)

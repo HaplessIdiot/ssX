@@ -1524,14 +1524,14 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     }
 
     /* allocate font struct */
-    if ((pFont = (FontPtr)xalloc(sizeof(*pFont))) == NULL) {
+    if (!(pFont = CreateFontRec())) {
         result = AllocError;
         goto quit;
     }
 
     /* allocate private font data */
     if ((ft = (FreeTypeFont *)xalloc(sizeof(*ft))) == NULL) {
-        xfree(pFont);
+        DestroyFontRec(pFont);
         result = AllocError;
         goto quit;
     }
@@ -1556,7 +1556,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     if ((ret = FreeType_OpenFont(ft, vals, glyph, &hints))
         != Successful) {
         xfree(ft);
-        xfree(pFont);
+        DestroyFontRec(pFont);
         result = BadFontName;
         goto quit;
     }
@@ -1604,7 +1604,7 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
                 }
             if (err) {
                 xfree(ft);
-                xfree(pFont);
+                DestroyFontRec(pFont);
                 result = BadFontName;
                 goto quit;
             }
@@ -1629,8 +1629,6 @@ FreeTypeOpenScalable (fpe, ppFont, flags, entry, fileName, vals,
     pFont->unload_font   = FreeTypeUnloadFont;
     pFont->unload_glyphs = NULL;
     pFont->refcnt = 0;
-    pFont->maxPrivate = -1;
-    pFont->devPrivates = 0;
     pFont->fontPrivate = (unsigned char *)ft;
 
     /* set ColInfo */

@@ -44,13 +44,14 @@ in this Software without prior written authorization from The Open Group.
  * additional blank space to make the structure of the graph easier to see
  * as well as to support vertical trees.
  */
-/* $XFree86: xc/lib/Xaw/Tree.c,v 1.5 1999/03/21 07:34:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Tree.c,v 1.6 1999/06/06 08:48:19 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/Xaw/XawInit.h>
 #include <X11/Xaw/Cardinals.h>
 #include <X11/Xaw/TreeP.h>
+#include "Private.h"
 
 #define IsHorizontal(tw) ((tw)->tree.gravity == WestGravity || \
 			  (tw)->tree.gravity == EastGravity)

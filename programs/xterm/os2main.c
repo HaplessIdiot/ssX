@@ -5,7 +5,7 @@
 #ifndef lint
 static char *rid="$XConsortium: main.c,v 1.227.1.2 95/06/29 18:13:15 kaleb Exp $";
 #endif /* lint */
-/* $XFree86: xc/programs/xterm/os2main.c,v 3.25 1999/04/11 13:11:34 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/os2main.c,v 3.26 1999/04/29 09:14:05 dawes Exp $ */
 
 /***********************************************************
 
@@ -334,6 +334,10 @@ static XrmOptionDescRec optionDescList[] = {
 {"+ai",		"*activeIcon",	XrmoptionNoArg,		(caddr_t) "on"},
 #endif /* NO_ACTIVE_ICON */
 {"-b",		"*internalBorder",XrmoptionSepArg,	(caddr_t) NULL},
+{"-bc",		"*cursorBlink",	XrmoptionNoArg,		(caddr_t) "on"},
+{"+bc",		"*cursorBlink",	XrmoptionNoArg,		(caddr_t) "off"},
+{"-bcf",	"*cursorOffTime",XrmoptionSepArg,	(caddr_t) NULL},
+{"-bcn",	"*cursorOnTime",XrmoptionSepArg,	(caddr_t) NULL},
 {"-bdc",	"*colorBDMode",	XrmoptionNoArg,		(caddr_t) "off"},
 {"+bdc",	"*colorBDMode",	XrmoptionNoArg,		(caddr_t) "on"},
 {"-cb",		"*cutToBeginningOfLine", XrmoptionNoArg, (caddr_t) "off"},
@@ -466,6 +470,9 @@ static struct _options {
 { "-fi fontname",	   "icon font for active icon" },
 #endif /* NO_ACTIVE_ICON */
 { "-b number",             "internal border in pixels" },
+{ "-/+bc",		   "turn on/off text cursor blinking" },
+{ "-bcf milliseconds",	   "time text cursor is off when blinking"},
+{ "-bcn milliseconds",	   "time text cursor is on when blinking"}.
 { "-/+bdc",                "turn off/on display of bold as color"},
 { "-/+cb",                 "turn on/off cut-to-beginning-of-line inhibit" },
 { "-cc classrange",        "specify additional character classes" },

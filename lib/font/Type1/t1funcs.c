@@ -71,7 +71,7 @@
  * The Original Software is CID font code that was developed by Silicon
  * Graphics, Inc.
  */
-/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.15 1999/05/09 10:51:47 dawes Exp $ */
+/* $XFree86: xc/lib/font/Type1/t1funcs.c,v 3.16 1999/05/15 12:10:06 dawes Exp $ */
 
 /*
 
@@ -352,14 +352,12 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 
 #define  PAD(bits, pad)  (((bits)+(pad)-1)&-(pad))
 
-    pFont = (FontPtr) xalloc(sizeof(FontRec));
-    if (pFont == NULL)
+    if (!(pFont = CreateFontRec()))
         return AllocError;
-    bzero(pFont, sizeof(FontRec));
 
     cid = (cidglyphs *)xalloc(sizeof(cidglyphs));
     if (cid == NULL) {
-        xfree(pFont);
+        DestroyFontRec(pFont);
         return AllocError;
     }
     bzero(cid, sizeof(cidglyphs));
@@ -370,7 +368,7 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
               * sizeof(short);
     if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
             xfree(cid);
-            xfree(pFont);
+            DestroyFontRec(pFont);
             return AllocError;
     }
 
@@ -382,7 +380,7 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
       delmemory();
       xfree(pool);
       xfree(cid);
-      xfree(pFont);
+      DestroyFontRec(pFont);
       return Type1ReturnCodeToXReturnCode(rc);
     }
 
@@ -413,14 +411,14 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
     if (pFont->info.firstCol > pFont->info.lastCol)
     {
       xfree(cid);
-      xfree(pFont);
+      DestroyFontRec(pFont);
       return BadFontName;
     }
 
     cid->glyphs = (CharInfoRec **)xalloc(nchars*sizeof(CharInfoRec *));
     if (cid->glyphs == NULL) {
       xfree(cid);
-      xfree(pFont);
+      DestroyFontRec(pFont);
       return AllocError;
     }
     bzero(cid->glyphs, nchars*sizeof(CharInfoRec *));
@@ -438,15 +436,13 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
     pFont->unload_font = CIDCloseFont;
     pFont->unload_glyphs = NULL;
     pFont->refcnt = 0;
-    pFont->maxPrivate = -1;
-    pFont->devPrivates = 0;
 
     len = strlen(cidfontname);
     cid->CIDFontName = (char *)xalloc(len + 1);
     if (cid->CIDFontName == NULL) {
       xfree(cid->glyphs);
       xfree(cid);
-      xfree(pFont);
+      DestroyFontRec(pFont);
       return AllocError;
     }
     strcpy(cid->CIDFontName, cidfontname);
@@ -457,7 +453,7 @@ int CIDOpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
       xfree(cid->CIDFontName);
       xfree(cid->glyphs);
       xfree(cid);
-      xfree(pFont);
+      DestroyFontRec(pFont);
       return AllocError;
     }
     strcpy(cid->CMapName, cmapname);
@@ -571,17 +567,13 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
  
 #define  PAD(bits, pad)  (((bits)+(pad)-1)&-(pad))
  
-       pFont = (FontPtr) xalloc(sizeof(FontRec));
+       pFont = CreateFontRec();
        if (pFont == NULL)
            return AllocError;
 
-#ifdef BUILDCID
-       bzero(pFont, sizeof(FontRec));
-#endif
- 
        type1 = (struct type1font *)xalloc(sizeof(struct type1font));
        if (type1 == NULL) {
-               xfree(pFont);
+               DestroyFontRec(pFont);
                return AllocError;
        }
        bzero(type1, sizeof(struct type1font));
@@ -596,7 +588,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
 	      * sizeof(short);
        if (size < 0 || NULL == (pool = (unsigned long *) xalloc(size))) {
                xfree(type1);
-               xfree(pFont);
+               DestroyFontRec(pFont);
                return AllocError;
        }
  
@@ -609,7 +601,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        if (!fontfcnA(fileName, &rc)) {
          delmemory();
 	 xfree(type1);
-	 xfree(pFont);
+	 DestroyFontRec(pFont);
          xfree(pool);
          return Type1ReturnCodeToXReturnCode(rc);
        }
@@ -809,7 +801,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        if (pFont->info.firstCol > pFont->info.lastCol)
        {
                xfree(type1);
-               xfree(pFont);
+               DestroyFontRec(pFont);
                return BadFontName;
        }
  
@@ -818,7 +810,7 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
                        if (glyphs[i].bits != NULL)
                                xfree(glyphs[i].bits);
                xfree(type1);
-               xfree(pFont);
+               DestroyFontRec(pFont);
                return rc;
        }
        type1->pDefault    = NULL;
@@ -838,8 +830,6 @@ int Type1OpenScalable (fpe, ppFont, flags, entry, fileName, vals, format,
        pFont->unload_font = Type1CloseFont;
        pFont->unload_glyphs = NULL;
        pFont->refcnt = 0;
-       pFont->maxPrivate = -1;
-       pFont->devPrivates = 0;
  
        pFont->fontPrivate = (unsigned char *) type1;
 
@@ -1345,10 +1335,7 @@ void CIDCloseFont(pFont)
         if (pFont->info.isStringProp)
             xfree(pFont->info.isStringProp);
 
-        if (pFont->devPrivates)
-            xfree(pFont->devPrivates);
-
-        xfree(pFont);
+        DestroyFontRec(pFont);
     }
 }
 #endif
@@ -1371,10 +1358,7 @@ void Type1CloseFont(pFont)
        if (pFont->info.isStringProp)
 	   xfree(pFont->info.isStringProp);
 
-       if (pFont->devPrivates)
-	   xfree(pFont->devPrivates);
-
-       xfree(pFont);
+       DestroyFontRec(pFont);
 }
 
 static void fill(dest, h, w, area, byte, bit, wordsize)

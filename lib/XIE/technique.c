@@ -1,16 +1,10 @@
-/* $XConsortium: technique.c,v 1.7 94/04/17 20:18:28 mor Exp $ */
+/* $TOG: technique.c /main/8 1998/02/06 15:13:02 kaleb $ */
 
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,31 +12,61 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
 #include "XIElibint.h"
 #include "technique.h"
 
-extern XieTechFuncPtr _XieLookupTechFunc();
+/* these really should have been static, but they're listed in XIEos2.def */
 
-
+extern int _XieColorAllocAllParam		(char **, XiePointer, int);
+extern int _XieColorAllocMatchParam		(char **, XiePointer, int);
+extern int _XieColorAllocRequantizeParam	(char **, XiePointer, int);
+extern int _XieRGBToCIELabParam			(char **, XiePointer, int);
+extern int _XieRGBToYCbCrParam			(char **, XiePointer, int);
+extern int _XieRGBToYCCParam			(char **, XiePointer, int);
+extern int _XieYCbCrToRGBParam			(char **, XiePointer, int);
+extern int _XieYCCToRGBParam			(char **, XiePointer, int);
+extern int _XieCIELabToRGBParam			(char **, XiePointer, int);
+extern int _XieConvolveConstantParam		(char **, XiePointer, int);
+extern int _XieClipScaleParam			(char **, XiePointer, int);
+extern int _XieDecodeUncompressedSingleParam	(char **, XiePointer, int);
+extern int _XieDecodeUncompressedTripleParam	(char **, XiePointer, int);
+extern int _XieDecodeG31DParam			(char **, XiePointer, int);
+extern int _XieDecodeTIFFPackBitsParam		(char **, XiePointer, int);
+extern int _XieDecodeJPEGBaselineParam		(char **, XiePointer, int);
+extern int _XieDitherOrderedParam		(char **, XiePointer, int);
+extern int _XieEncodeUncompressedSingleParam	(char **, XiePointer, int);
+extern int _XieEncodeUncompressedTripleParam	(char **, XiePointer, int);
+extern int _XieEncodeG31DParam			(char **, XiePointer, int);
+extern int _XieEncodeTIFFPackBitsParam		(char **, XiePointer, int);
+extern int _XieEncodeServerChoiceParam		(char **, XiePointer, int);
+extern int _XieEncodeG32DParam			(char **, XiePointer, int);
+extern int _XieEncodeG42DParam			(char **, XiePointer, int);
+extern int _XieEncodeJPEGBaselineParam		(char **, XiePointer, int);
+extern int _XieEncodeJPEGLosslessParam		(char **, XiePointer, int);
+extern int _XieEncodeTIFF2Param			(char **, XiePointer, int);
+extern int _XieGeomAntialiasByAreaParam		(char **, XiePointer, int);
+extern int _XieGeomAntialiasByLowpassParam	(char **, XiePointer, int);
+extern int _XieGeomGaussianParam		(char **, XiePointer, int);
+extern int _XieGeomNearestNeighborParam		(char **, XiePointer, int);
+extern int _XieHistogramGaussianParam		(char **, XiePointer, int);
+extern int _XieHistogramHyperbolicParam		(char **, XiePointer, int);
+extern int _XieWhiteAdjustCIELabShiftParam	(char **, XiePointer, int);
+
+
 int
-_XieTechniqueLength (group, technique, param)
-
-int group;
-int technique;
-XiePointer param;
-
+_XieTechniqueLength (int group, int technique, XiePointer param)
 {
     XieTechFuncPtr techfunc = _XieLookupTechFunc (group, technique);
     int length;
@@ -55,15 +79,13 @@ XiePointer param;
     return (length);
 }
 
-
+
 void
-_XieEncodeTechnique (bufDest, group, technique, param)
-
-char **bufDest;
-int  group;
-int  technique;
-XiePointer param;
-
+_XieEncodeTechnique (
+	char **bufDest,
+	int  group,
+	int  technique,
+	XiePointer param)
 {
     XieTechFuncPtr techfunc = _XieLookupTechFunc (group, technique);
 
@@ -72,18 +94,17 @@ XiePointer param;
 }
 
 
-
+
+#define srcParam ((XieColorAllocAllParam *)srcPtr)
 int
-_XieColorAllocAllParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieColorAllocAllParam	*srcParam;
-int			encode;
-
+_XieColorAllocAllParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (CARD32);
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -91,20 +112,20 @@ int			encode;
 
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieColorAllocMatchParam *)srcPtr)
 int
-_XieColorAllocMatchParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieColorAllocMatchParam	*srcParam;
-int			encode;
-
+_XieColorAllocMatchParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecColorAllocMatch);
     xieTecColorAllocMatch *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -116,43 +137,43 @@ int			encode;
 
 	END_TECHNIQUE (xieTecColorAllocMatch, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieColorAllocRequantizeParam	*)srcPtr)
 int
-_XieColorAllocRequantizeParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieColorAllocRequantizeParam	*srcParam;
-int				encode;
-
+_XieColorAllocRequantizeParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (CARD32);
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
 	STORE_CARD32 (srcParam->max_cells, *bufDest);
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieRGBToCIELabParam *)srcPtr)
 int
-_XieRGBToCIELabParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieRGBToCIELabParam	*srcParam;
-int			encode;
-
+_XieRGBToCIELabParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length, techLen;
     xieTecRGBToCIELab *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     techLen = _XieTechniqueLength (xieValWhiteAdjust,
@@ -183,23 +204,23 @@ int			encode;
 	_XieEncodeTechnique (bufDest, xieValWhiteAdjust,
 	    srcParam->white_adjust_tech, srcParam->white_adjust_param);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieRGBToYCbCrParam *)srcPtr)
 int
-_XieRGBToYCbCrParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieRGBToYCbCrParam	*srcParam;
-int			encode;
-
+_XieRGBToYCbCrParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecRGBToYCbCr);
     xieTecRGBToYCbCr *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -218,23 +239,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecRGBToYCbCr, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieRGBToYCCParam *)srcPtr)
 int
-_XieRGBToYCCParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieRGBToYCCParam	*srcParam;
-int			encode;
-
+_XieRGBToYCCParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecRGBToYCC);
     xieTecRGBToYCC *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -251,23 +272,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecRGBToYCC, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieYCbCrToRGBParam	*)srcPtr)
 int
-_XieYCbCrToRGBParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieYCbCrToRGBParam	*srcParam;
-int			encode;
-
+_XieYCbCrToRGBParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length, gamutLen;
     xieTecYCbCrToRGB *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     gamutLen = _XieTechniqueLength (xieValGamut,
@@ -296,23 +317,23 @@ int			encode;
 	_XieEncodeTechnique (bufDest, xieValGamut,
 	    srcParam->gamut_tech, srcParam->gamut_param);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieYCCToRGBParam *)srcPtr)
 int
-_XieYCCToRGBParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieYCCToRGBParam	*srcParam;
-int			encode;
-
+_XieYCCToRGBParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length, gamutLen;
     xieTecYCCToRGB *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     gamutLen = _XieTechniqueLength (xieValGamut,
@@ -339,23 +360,23 @@ int			encode;
 	_XieEncodeTechnique (bufDest, xieValGamut,
 	    srcParam->gamut_tech, srcParam->gamut_param);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieCIELabToRGBParam	*)srcPtr)
 int
-_XieCIELabToRGBParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieCIELabToRGBParam	*srcParam;
-int			encode;
-
+_XieCIELabToRGBParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     xieTecCIELabToRGB *dstParam;
     int length, whiteLen, gamutLen;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     whiteLen = _XieTechniqueLength (xieValWhiteAdjust,
@@ -394,23 +415,23 @@ int			encode;
 	_XieEncodeTechnique (bufDest, xieValGamut,
 	    srcParam->gamut_tech, srcParam->gamut_param);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieConvolveConstantParam *)srcPtr)
 int
-_XieConvolveConstantParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieConvolveConstantParam	*srcParam;
-int				encode;
-
+_XieConvolveConstantParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     xieTecConvolveConstant 	*dstParam;
     int 			length = LENOF (xieTecConvolveConstant);
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -423,23 +444,23 @@ int				encode;
 
 	END_TECHNIQUE (xieTecConvolveConstant, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieClipScaleParam	*)srcPtr)
 int
-_XieClipScaleParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieClipScaleParam	*srcParam;
-int			encode;
-
+_XieClipScaleParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     xieTecClipScale 	*dstParam;
     int 		length = LENOF (xieTecClipScale);
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -461,23 +482,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecClipScale, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieDecodeUncompressedSingleParam *)srcPtr)
 int
-_XieDecodeUncompressedSingleParam (bufDest, srcParam, encode)
-
-char				 **bufDest;
-XieDecodeUncompressedSingleParam *srcParam;
-int				 encode;
-
+_XieDecodeUncompressedSingleParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecDecodeUncompressedSingle);
     xieTecDecodeUncompressedSingle *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -492,23 +513,23 @@ int				 encode;
 
 	END_TECHNIQUE (xieTecDecodeUncompressedSingle, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieDecodeUncompressedTripleParam *)srcPtr)
 int
-_XieDecodeUncompressedTripleParam (bufDest, srcParam, encode)
-
-char			         **bufDest;
-XieDecodeUncompressedTripleParam *srcParam;
-int			         encode;
-
+_XieDecodeUncompressedTripleParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecDecodeUncompressedTriple);
     xieTecDecodeUncompressedTriple *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -531,23 +552,23 @@ int			         encode;
 
 	END_TECHNIQUE (xieTecDecodeUncompressedTriple, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieDecodeG31DParam *)srcPtr)
 int
-_XieDecodeG31DParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieDecodeG31DParam	*srcParam;
-int			encode;
-
+_XieDecodeG31DParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecDecodeG31D);
     xieTecDecodeG31D *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -563,20 +584,20 @@ int			encode;
 
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieDecodeTIFFPackBitsParam *)srcPtr)
 int
-_XieDecodeTIFFPackBitsParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieDecodeTIFFPackBitsParam	*srcParam;
-int				encode;
-
+_XieDecodeTIFFPackBitsParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecDecodeTIFFPackBits);
     xieTecDecodeTIFFPackBits *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -591,20 +612,20 @@ int				encode;
 
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieDecodeJPEGBaselineParam *)srcPtr)
 int
-_XieDecodeJPEGBaselineParam (bufDest, srcParam, encode)
-
-char			   **bufDest;
-XieDecodeJPEGBaselineParam *srcParam;
-int			   encode;
-
+_XieDecodeJPEGBaselineParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     xieTecDecodeJPEGBaseline *dstParam;
     int length = LENOF (xieTecDecodeJPEGBaseline);
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -617,23 +638,23 @@ int			   encode;
 
 	END_TECHNIQUE (xieTecDecodeJPEGBaseline, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieDitherOrderedParam *)srcPtr)
 int
-_XieDitherOrderedParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieDitherOrderedParam	*srcParam;
-int			encode;
-
+_XieDitherOrderedParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecDitherOrdered);
     xieTecDitherOrdered *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -644,23 +665,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecDitherOrdered, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeUncompressedSingleParam *)srcPtr)
 int
-_XieEncodeUncompressedSingleParam (bufDest, srcParam, encode)
-
-char			         **bufDest;
-XieEncodeUncompressedSingleParam *srcParam;
-int			         encode;
-
+_XieEncodeUncompressedSingleParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeUncompressedSingle);
     xieTecEncodeUncompressedSingle *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -674,23 +695,23 @@ int			         encode;
 
 	END_TECHNIQUE (xieTecEncodeUncompressedSingle, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeUncompressedTripleParam *)srcPtr)
 int
-_XieEncodeUncompressedTripleParam (bufDest, srcParam, encode)
-
-char			         **bufDest;
-XieEncodeUncompressedTripleParam *srcParam;
-int			         encode;
-
+_XieEncodeUncompressedTripleParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeUncompressedTriple);
     xieTecEncodeUncompressedTriple *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -710,23 +731,23 @@ int			         encode;
 
 	END_TECHNIQUE (xieTecEncodeUncompressedTriple, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeG31DParam *)srcPtr)
 int
-_XieEncodeG31DParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieEncodeG31DParam	*srcParam;
-int			encode;
-
+_XieEncodeG31DParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeG31D);
     xieTecEncodeG31D *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -742,20 +763,20 @@ int			encode;
 
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeTIFFPackBitsParam *)srcPtr)
 int
-_XieEncodeTIFFPackBitsParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieEncodeTIFFPackBitsParam	*srcParam;
-int				encode;
-
+_XieEncodeTIFFPackBitsParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeTIFFPackBits);
     xieTecEncodeTIFFPackBits *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -769,20 +790,20 @@ int				encode;
 
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeServerChoiceParam *)srcPtr)
 int
-_XieEncodeServerChoiceParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieEncodeServerChoiceParam	*srcParam;
-int				encode;
-
+_XieEncodeServerChoiceParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeServerChoice);
     xieTecEncodeServerChoice *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -796,20 +817,20 @@ int				encode;
 
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeG32DParam *)srcPtr)
 int
-_XieEncodeG32DParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieEncodeG32DParam	*srcParam;
-int			encode;
-
+_XieEncodeG32DParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeG32D);
     xieTecEncodeG32D *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -824,23 +845,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecEncodeG32D, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeG42DParam *)srcPtr)
 int
-_XieEncodeG42DParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieEncodeG42DParam	*srcParam;
-int			encode;
-
+_XieEncodeG42DParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeG42D);
     xieTecEncodeG42D *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -853,24 +874,24 @@ int			encode;
 
 	END_TECHNIQUE (xieTecEncodeG42D, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeJPEGBaselineParam *)srcPtr)
 int
-_XieEncodeJPEGBaselineParam (bufDest, srcParam, encode)
-
-char			   **bufDest;
-XieEncodeJPEGBaselineParam *srcParam;
-int			   encode;
-
+_XieEncodeJPEGBaselineParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeJPEGBaseline) +
 	((srcParam->q_size + srcParam->ac_size + srcParam->dc_size) >> 2);
     xieTecEncodeJPEGBaseline *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -903,24 +924,24 @@ int			   encode;
 	memcpy (*bufDest, srcParam->dc_table, srcParam->dc_size);
 	*bufDest += srcParam->dc_size;
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeJPEGLosslessParam *)srcPtr)
 int
-_XieEncodeJPEGLosslessParam (bufDest, srcParam, encode)
-
-char			   **bufDest;
-XieEncodeJPEGLosslessParam *srcParam;
-int			   encode;
-
+_XieEncodeJPEGLosslessParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeJPEGLossless) +
 	(srcParam->table_size >> 2);
     xieTecEncodeJPEGLossless *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -940,23 +961,23 @@ int			   encode;
 
 	memcpy (*bufDest, srcParam->table, srcParam->table_size);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieEncodeTIFF2Param *)srcPtr)
 int
-_XieEncodeTIFF2Param (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieEncodeTIFF2Param	*srcParam;
-int			encode;
-
+_XieEncodeTIFF2Param (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecEncodeTIFF2);
     xieTecEncodeTIFF2 *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -968,23 +989,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecEncodeTIFF2, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieGeomAntialiasByAreaParam *)srcPtr)
 int
-_XieGeomAntialiasByAreaParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieGeomAntialiasByAreaParam	*srcParam;
-int				encode;
-
+_XieGeomAntialiasByAreaParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecGeomAntialiasByArea);
     xieTecGeomAntialiasByArea *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -995,23 +1016,23 @@ int				encode;
 
 	END_TECHNIQUE (xieTecGeomAntialiasByArea, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieGeomAntialiasByLowpassParam *)srcPtr)
 int
-_XieGeomAntialiasByLowpassParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieGeomAntialiasByLowpassParam	*srcParam;
-int				encode;
-
+_XieGeomAntialiasByLowpassParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecGeomAntialiasByLowpass);
     xieTecGeomAntialiasByLowpass *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -1022,23 +1043,23 @@ int				encode;
 
 	END_TECHNIQUE (xieTecGeomAntialiasByLowpass, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieGeomGaussianParam *)srcPtr)
 int
-_XieGeomGaussianParam (bufDest, srcParam, encode)
-
-char			**bufDest;
-XieGeomGaussianParam	*srcParam;
-int			encode;
-
+_XieGeomGaussianParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecGeomGaussian);
     xieTecGeomGaussian *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -1052,23 +1073,23 @@ int			encode;
 
 	END_TECHNIQUE (xieTecGeomGaussian, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieGeomNearestNeighborParam *)srcPtr)
 int
-_XieGeomNearestNeighborParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieGeomNearestNeighborParam	*srcParam;
-int				encode;
-
+_XieGeomNearestNeighborParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     xieTecGeomNearestNeighbor 	*dstParam;
     int				length = LENOF (xieTecGeomNearestNeighbor);
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -1079,23 +1100,23 @@ int				encode;
 
 	END_TECHNIQUE (xieTecGeomNearestNeighbor, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieHistogramGaussianParam	*)srcPtr)
 int
-_XieHistogramGaussianParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieHistogramGaussianParam	*srcParam;
-int				encode;
-
+_XieHistogramGaussianParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecHistogramGaussian);
     xieTecHistogramGaussian *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -1107,23 +1128,23 @@ int				encode;
 
 	END_TECHNIQUE (xieTecHistogramGaussian, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieHistogramHyperbolicParam *)srcPtr)
 int
-_XieHistogramHyperbolicParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieHistogramHyperbolicParam	*srcParam;
-int				encode;
-
+_XieHistogramHyperbolicParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecHistogramHyperbolic);
     xieTecHistogramHyperbolic *dstParam;
 
-    if (srcParam == NULL) 
+    if (srcParam == NULL)
 	return(0);
 
     if (encode)
@@ -1135,18 +1156,18 @@ int				encode;
 
 	END_TECHNIQUE (xieTecHistogramHyperbolic, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
+#define srcParam ((XieWhiteAdjustCIELabShiftParam *)srcPtr)
 int
-_XieWhiteAdjustCIELabShiftParam (bufDest, srcParam, encode)
-
-char				**bufDest;
-XieWhiteAdjustCIELabShiftParam	*srcParam;
-int				encode;
-
+_XieWhiteAdjustCIELabShiftParam (
+	char **		bufDest,
+	XiePointer	srcPtr,
+	int		encode)
 {
     int length = LENOF (xieTecWhiteAdjustCIELabShift);
     xieTecWhiteAdjustCIELabShift *dstParam;
@@ -1164,14 +1185,14 @@ int				encode;
 
 	END_TECHNIQUE (xieTecWhiteAdjustCIELabShift, *bufDest, dstParam);
     }
-	
+
     return (length);
 }
+#undef srcParam
 
 
-
-_XieInitTechFuncTable ()
 
+void _XieInitTechFuncTable (void)
 {
     int i;
 
@@ -1205,7 +1226,7 @@ _XieInitTechFuncTable ()
 	xieValYCbCrToRGB, _XieYCbCrToRGBParam);
     _XieRegisterTechFunc (xieValConvertToRGB,
 	xieValYCCToRGB, _XieYCCToRGBParam);
-	
+
     _XieRegisterTechFunc (xieValConstrain,
 	xieValConstrainClipScale, _XieClipScaleParam);
     _XieRegisterTechFunc (xieValConstrain,

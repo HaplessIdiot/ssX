@@ -1,16 +1,10 @@
-/* $XConsortium: events.c,v 1.5 94/04/18 00:09:24 rws Exp $ */
+/* $TOG: events.c /main/7 1998/02/06 15:12:05 kaleb $ */
 
 /*
 
-Copyright (c) 1993, 1994  X Consortium
+Copyright 1993, 1994, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,15 +12,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -35,12 +29,10 @@ from the X Consortium.
 
 
 Status
-_XieColorAllocEvent (display, host, wire)
-
-Display		*display;
-XEvent		*host;
-xEvent		*wire;
-
+_XieColorAllocEvent (
+	Display		*display,
+	XEvent		*host,
+	xEvent		*wire)
 {
     XieColorAllocEvent	     *host_event = (XieColorAllocEvent *) host;
     xieColorAllocEvn	     *wire_event = (xieColorAllocEvn *) wire;
@@ -63,12 +55,10 @@ xEvent		*wire;
 
 
 Status
-_XieDecodeNotifyEvent (display, host, wire)
-
-Display		*display;
-XEvent		*host;
-xEvent		*wire;
-
+_XieDecodeNotifyEvent (
+	Display		*display,
+	XEvent		*host,
+	xEvent		*wire)
 {
     XieDecodeNotifyEvent     *host_event = (XieDecodeNotifyEvent *) host;
     xieDecodeNotifyEvn	     *wire_event = (xieDecodeNotifyEvn *) wire;
@@ -93,12 +83,10 @@ xEvent		*wire;
 
 
 Status
-_XieExportAvailableEvent (display, host, wire)
-
-Display		*display;
-XEvent		*host;
-xEvent		*wire;
-
+_XieExportAvailableEvent (
+	Display		*display,
+	XEvent		*host,
+	xEvent		*wire)
 {
     XieExportAvailableEvent  *host_event = (XieExportAvailableEvent *) host;
     xieExportAvailableEvn    *wire_event = (xieExportAvailableEvn *) wire;
@@ -122,12 +110,10 @@ xEvent		*wire;
 
 
 Status
-_XieImportObscuredEvent (display, host, wire)
-
-Display		*display;
-XEvent		*host;
-xEvent		*wire;
-
+_XieImportObscuredEvent (
+	Display		*display,
+	XEvent		*host,
+	xEvent		*wire)
 {
     XieImportObscuredEvent   *host_event = (XieImportObscuredEvent *) host;
     xieImportObscuredEvn     *wire_event = (xieImportObscuredEvn *) wire;
@@ -152,12 +138,10 @@ xEvent		*wire;
 
 
 Status
-_XiePhotofloDoneEvent (display, host, wire)
-
-Display		*display;
-XEvent		*host;
-xEvent		*wire;
-
+_XiePhotofloDoneEvent (
+	Display		*display,
+	XEvent		*host,
+	xEvent		*wire)
 {
     XiePhotofloDoneEvent     *host_event = (XiePhotofloDoneEvent *) host;
     xiePhotofloDoneEvn	     *wire_event = (xiePhotofloDoneEvn *) wire;
@@ -169,6 +153,7 @@ xEvent		*wire;
     host_event->name_space = wire_event->instanceNameSpace;
     host_event->time       = wire_event->time;
     host_event->flo_id     = wire_event->instanceFloID;
+    host_event->outcome    = wire_event->outcome;
 
     return (True);
 }

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Command.c,v 1.9 1999/05/30 03:03:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Command.c,v 1.10 1999/06/06 08:47:54 dawes Exp $ */
 
 /*
  * Command.c - Command button widget
@@ -53,6 +53,7 @@ SOFTWARE.
 #include <X11/StringDefs.h>
 #include <X11/extensions/shape.h>
 #include <X11/Xmu/Converters.h>
+#include <X11/Xmu/Drawing.h>
 #include <X11/Xmu/Misc.h>
 #include <X11/Xaw/CommandP.h>
 #include <X11/Xaw/XawInit.h>

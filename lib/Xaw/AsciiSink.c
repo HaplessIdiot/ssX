@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.16 1999/05/09 10:51:35 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.17 1999/06/06 08:47:50 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -66,9 +66,7 @@ SOFTWARE.
  */
 static void XawAsciiSinkInitialize(Widget, Widget, ArgList, Cardinal*);
 static void XawAsciiSinkDestroy(Widget);
-#ifndef OLDXAW
 static void XawAsciiSinkResize(Widget);
-#endif
 static Boolean XawAsciiSinkSetValues(Widget, Widget, Widget,
 				     ArgList, Cardinal*);
 static int MaxLines(Widget, unsigned int);
@@ -156,11 +154,7 @@ AsciiSinkClassRec asciiSinkClassRec = {
     False,			/* obj6 */
     False,			/* obj7 */
     XawAsciiSinkDestroy,	/* destroy */
-#ifndef OLDXAW
     (XtProc)XawAsciiSinkResize,	/* obj8 */
-#else
-    NULL,			/* obj8 */
-#endif
     NULL,			/* obj9 */
     XawAsciiSinkSetValues,	/* set_values */
     NULL,			/* set_values_hook */
@@ -624,7 +618,8 @@ Resolve(Widget w, XawTextPosition pos, int fromx, int width,
 static void
 GetGC(AsciiSinkObject sink)
 {
-    XtGCMask valuemask = (GCFont | GCClipXOrigin | GCForeground | GCBackground);
+    XtGCMask valuemask = (GCFont | GCGraphicsExposures | GCClipXOrigin |
+			  GCForeground | GCBackground);
     XGCValues values;
 
     /* XXX We dont want do share a gc that will change the clip-mask */
@@ -642,7 +637,7 @@ GetGC(AsciiSinkObject sink)
 #ifndef OLDXAW
     values.background = sink->text_sink.cursor_color;
 #else
-    values.background = XtParent((Widget)sink)->core.background_pixel;
+    values.background = sink->text_sink.foreground;
 #endif
     sink->ascii_sink.invgc = XtAllocateGC((Widget)sink, 0, valuemask, &values,
 					  GCClipMask, 0);
@@ -655,11 +650,10 @@ GetGC(AsciiSinkObject sink)
 					      &values, GCClipMask, 0);
     }
     else
-#endif
+#endif /* OLDXAW */
 	sink->ascii_sink.xorgc = NULL;
-#ifndef OLDXAW
+
     XawAsciiSinkResize((Widget)sink);
-#endif
 }
 
 /* Function:
@@ -711,7 +705,6 @@ XawAsciiSinkDestroy(Widget w)
       sink->ascii_sink.xorgc = NULL;
 }
 
-#ifndef OLDXAW
 static void
 XawAsciiSinkResize(Widget w)
 {
@@ -752,7 +745,6 @@ XawAsciiSinkResize(Widget w)
 	    XSetClipMask(XtDisplay((Widget)ctx), sink->ascii_sink.xorgc, None);
     }
 }
-#endif
 
 /*
  * Function:

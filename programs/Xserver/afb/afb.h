@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.1 1998/03/20 21:04:53 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/afb/afb.h,v 3.2 1998/04/05 16:42:03 robin Exp $ */
 /* Combined Purdue/PurduePlus patches, level 2.0, 1/17/89 */
 /***********************************************************
 
@@ -295,6 +295,10 @@ extern Bool afbSetVisualTypes(
 	int /*bitsPerRGB*/
 #endif
 );
+
+extern int afbListInstalledColormaps(ScreenPtr, Colormap *);
+extern void afbInstallColormap(ColormapPtr);
+extern void afbUninstallColormap(ColormapPtr);
 
 /* afbfillarc.c */
 
@@ -1249,3 +1253,8 @@ typedef struct _afbpos{
 #define MFB_EQWHOLEWORD_INVERT	^=~0
 #define MFB_OP_WHITE					/* nothing */
 #define MFB_OP_BLACK					~
+
+#ifdef XFree86LOADER
+#include "xf86_ansic.h"
+#endif
+

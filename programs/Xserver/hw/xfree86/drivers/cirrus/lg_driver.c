@@ -13,7 +13,7 @@
  *	David Dawes, Andrew E. Mileski, Leonard N. Zubkoff,
  *	Guy DESBIEF, Itai Nahshon.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.9 1999/03/20 08:59:17 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/lg_driver.c,v 1.10 1999/05/03 04:35:35 dawes Exp $ */
  
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -47,8 +47,10 @@
  * If using cfb, cfb.h is required.  Select the others for the bpp values
  * the driver supports.
  */
-#include "xf4bpp.h"
+#if 0
 #include "xf1bpp.h"
+#include "xf4bpp.h"
+#endif
 #define PSZ 8	/* needed for cfb.h */
 #include "cfb.h"
 #undef PSZ
@@ -64,6 +66,11 @@
 */
 
 #include "lg.h"
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#include "Xv.h"
+#endif
 
 /*
  * Forward definitions for the functions that make up the driver.
@@ -617,10 +624,12 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 	    return FALSE;
 	}
 	switch(pScrn->bitsPerPixel) {
-        case 1:
+#if 0
+	case 1:
 	case 4:
 	    speed = p[0];
 	    break;
+#endif
 	case 8:
 	    speed = p[1];
 	    break;
@@ -721,8 +730,10 @@ LgPreInit(ScrnInfoPtr pScrn, int flags)
 
     /* Load bpp-specific modules */
     switch (pScrn->bitsPerPixel) {
+#if 0
     case 1:  mod = "xf1bpp";  break;
     case 4:  mod = "xf4bpp";  break;
+#endif
     case 8:  mod = "cfb";     break;
     case 16: mod = "cfb16";   break;
     case 24: if (pix24bpp == 24)
@@ -981,6 +992,9 @@ LgModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 
       /* !!! Assume 5-6-5 RGB mode (for now...) */
       pLg->ModeReg.FORMAT = 0x1400;
+
+      if(pScrn->depth == 15)
+        pLg->ModeReg.FORMAT = 0x1600;
       
       pLg->ModeReg.DTTC = (pLg->ModeReg.TILE << 8) | 0x0080 | 
 	(lineData->width << 6);
@@ -1307,6 +1321,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
      */
 
     switch (pScrn->bitsPerPixel) {
+#if 0
     case 1:
         ret = xf1bppScreenInit(pScreen, pLg->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
@@ -1319,6 +1334,7 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 			pScrn->xDpi, pScrn->yDpi,
 			pScrn->displayWidth);
         break;
+#endif
     case 8:
 	ret = cfbScreenInit(pScreen, pLg->FbBase,
 			pScrn->virtualX, pScrn->virtualY,
@@ -1417,6 +1433,21 @@ LgScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, LgDisplayPowerManagementSet, 0);
+#endif
+
+    pScrn->memPhysBase = pLg->FbAddress;
+    pScrn->fbOffset = 0;
+
+#ifdef XvExtension
+    {
+	XF86VideoAdaptorPtr *ptr;
+	int n;
+	
+	n = xf86XVListGenericAdaptors(&ptr);
+	if (n) { 
+	    xf86XVScreenInit(pScreen, ptr, n);
+	}
+    }
 #endif
 
     /*
@@ -1681,9 +1712,17 @@ LgValidMode(int scrnIndex, DisplayModePtr mode, Bool verbose, int flags)
 static Bool
 LgSaveScreen(ScreenPtr pScreen, Bool unblank)
 {
-  /* !!! More work here! */
+	volatile unsigned char *p;
 
-    return vgaHWSaveScreen(pScreen, unblank);
+	p = LGPTR(xf86Screens[pScreen->myNum])->IOBase+0xB0;
+	if(unblank)
+		/* Power up the palette DAC */
+		*p &= 0x7F;
+	else
+		/* Power down the palette DAC */
+		*p |= 0x80;
+
+	return vgaHWSaveScreen(pScreen, unblank);
 }
 
 /*

@@ -1,5 +1,5 @@
 XCOMM $TOG: Imakefile /main/14 1998/06/16 15:23:15 msr $
-XCOMM $XFree86: xc/lib/font/Imakefile,v 3.24 1999/06/06 11:38:02 dawes Exp $
+XCOMM $XFree86: xc/lib/font/Imakefile,v 3.25 1999/06/08 11:31:04 dawes Exp $
 #include <Server.tmpl>
 
 #define	IHaveSubdirs
@@ -87,9 +87,11 @@ FREETYPEPROFILEOBJS = FreeType/profiled/?*.o
 
 #if DoLoadableServer
       BASEDIRS = fontfile fc util
-      BASEOBJS = fontfile/$(STATIC_OBJSDIR)?*.o fc/$(STATIC_OBJSDIR)?*.o \
+   BASELIBOBJS = fontfile/$(STATIC_OBJSDIR)?*.o fc/$(STATIC_OBJSDIR)?*.o \
 		 util/$(STATIC_OBJSDIR)?*.o
-     BASEDONES = fontfile/DONE fc/DONE util/DONE
+      BASEOBJS = fontfile/module/ffcheck.o fontfile/module/register.o \
+		 util/private.o
+     BASEDONES = fontfile/DONE fontfile/module/DONE fc/DONE util/DONE
 #endif
 
 #if HasParallelMake
@@ -123,7 +125,8 @@ InstallLibrary($(LIBNAME)_p,$(USRLIBDIR))
 #endif /* ProfileLibFont */
 
 #if DoLoadableServer
-NormalDepLibraryTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASEOBJS))
+NormalDepLibraryTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASELIBOBJS))
+NormalDepRelocatableTarget(fontbase,$(BASEDIRS) $(BASEDONES),$(BASEOBJS))
 #endif
 
 

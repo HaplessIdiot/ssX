@@ -21,7 +21,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.26 1999/05/23 06:33:28 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextAction.c,v 3.27 1999/06/06 08:48:15 dawes Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -215,13 +215,13 @@ void _XawTextPrepareToUpdate(TextWidget);
 int _XawTextReplace(TextWidget, XawTextPosition, XawTextPosition,
 			   XawTextBlock*);
 Atom *_XawTextSelectionList(TextWidget, String*, Cardinal);
-void _XawTextSetScrollBars(TextWidget);
 void _XawTextSetSelection(TextWidget, XawTextPosition, XawTextPosition,
 				 String*, Cardinal);
 void _XawTextVScroll(TextWidget, int);
 void XawTextScroll(TextWidget, int, int);
 void _XawTextSetLineAndColumnNumber(TextWidget, Bool);
 
+#ifndef OLDXAW
 /*
  * Defined in TextSrc.c
  */
@@ -229,6 +229,7 @@ Bool _XawTextSrcUndo(TextSrcObject, XawTextPosition*);
 Bool _XawTextSrcToggleUndo(TextSrcObject);
 void _XawSourceSetUndoErase(TextSrcObject, int);
 void _XawSourceSetUndoMerge(TextSrcObject, Bool);
+#endif /* OLDXAW */
 
 /*
  * Initialization
@@ -340,8 +341,9 @@ EndAction(TextWidget ctx)
 	}
     }
 #else
+    ctx->text.mult = 1;
     _XawTextExecuteUpdate(ctx);
-#endif
+#endif /* OLDXAW */
 }
 
 struct _SelectionList {
@@ -1356,8 +1358,10 @@ DeleteOrKill(TextWidget ctx, XEvent *event, XawTextScanDirection dir,
     }
 
     StartAction(ctx, event);
+#ifndef OLDXAW
     if (mult == 1)
 	_XawSourceSetUndoMerge((TextSrcObject)ctx->text.source, True);
+#endif
     to = SrcScan(ctx->text.source, ctx->text.insertPos,
 		 type, dir, mult, include);
 
@@ -1403,9 +1407,11 @@ DeleteChar(Widget w, XEvent *event, XawTextScanDirection dir)
 	dir = dir == XawsdLeft ? XawsdRight : XawsdLeft;
     }
     DeleteOrKill(ctx, event, dir, XawstPositions, True, False);
+#ifndef OLDXAW
     if (mul == 1)
 	_XawSourceSetUndoErase((TextSrcObject)ctx->text.source,
 			       dir == XawsdLeft ? -1 : 1);
+#endif
 }
 
 /*ARGSUSED*/
@@ -3550,8 +3556,8 @@ InsertNewCRs(TextWidget ctx, XawTextPosition from, XawTextPosition to,
 
     /* CONSTCOND */
     while (TRUE) {
-	XawTextSinkFindPosition(ctx->text.sink, startPos, 
-				(int)ctx->text.left_margin, wwidth,
+	XawTextSinkFindPosition(ctx->text.sink, startPos,
+				(int)ctx->text.r_margin.left, wwidth,
 				True, &eol, &width, &height);
 	if (eol == startPos)
 	    ++eol;
@@ -3833,6 +3839,11 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
     if (FormRegion(ctx, from, to, pos, src->textSrc.num_text) == XawReplaceError) {
 #else
+    from =  SrcScan(ctx->text.source, ctx->text.insertPos,
+		    XawstParagraph, XawsdLeft, 1, False);
+    to  =   SrcScan(ctx->text.source, from,
+		    XawstParagraph, XawsdRight, 1, False);
+
     if (FormRegion(ctx, from, to, pos, 1) == XawReplaceError) {
 #endif
 	XawStackFree(pos, buf);
@@ -3880,13 +3891,13 @@ FormParagraph(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
 	tw->text.old_insert = tw->text.insertPos = pos[i];
 	_XawTextBuildLineTable(tw, SrcScan((Widget)src, tw->text.lt.top, XawstEOL,
-			       XawsdLeft, 1, False), True);
+			       XawsdLeft, 1, False), False);
 	tw->text.clear_to_eol = True;
     }
 #else
     ctx->text.old_insert = ctx->text.insertPos = *pos;
     _XawTextBuildLineTable(ctx, SrcScan(ctx->text.source, ctx->text.lt.top,
-			   XawstEOL, XawsdLeft, 1, False), True);
+			   XawstEOL, XawsdLeft, 1, False), False);
     ctx->text.clear_to_eol = True;
 #endif
     XawStackFree(pos, buf);
@@ -4063,19 +4074,40 @@ ToUpper(int ch)
 }
 
 static int
+IsAlnum(int ch)
+{
+    return ((ch >= '0' && ch <= '9') || ToUpper(ch) != ch || ToLower(ch) != ch);
+}
+
+static int
 IsLower(int ch)
 {
-    return (ch == ToLower(ch));
+    char upbuf[2];
+    char lobuf[2];
+
+    *upbuf = *lobuf = ch;
+    XmuNCopyISOLatin1Lowered(lobuf, lobuf, sizeof(lobuf));
+    XmuNCopyISOLatin1Uppered(upbuf, upbuf, sizeof(upbuf));
+
+    return (*lobuf != *upbuf && ch == *lobuf);
 }
 
 static int
 IsUpper(int ch)
 {
-    return (ch == ToUpper(ch));
+    char upbuf[2];
+    char lobuf[2];
+
+    *upbuf = *lobuf = ch;
+    XmuNCopyISOLatin1Lowered(lobuf, lobuf, sizeof(lobuf));
+    XmuNCopyISOLatin1Uppered(upbuf, upbuf, sizeof(upbuf));
+
+    return (*lobuf != *upbuf && ch == *upbuf);
 }
 #else
 #define	ToLower	tolower
 #define ToUpper	toupper
+#define IsAlnum isalnum
 #define IsLower islower
 #define IsUpper isupper
 #endif
@@ -4105,7 +4137,7 @@ CaseProc(Widget w, XEvent *event, int cmd)
     count = 0;
     if (block.format == XawFmt8Bit)
 	for (i = 0; i < block.length; i++) {
-	    if (!isalnum(*mb = (unsigned char)block.ptr[i]))
+	    if (!IsAlnum(*mb = (unsigned char)block.ptr[i]))
 		count = 0;
 	    else if (++count == 1 || cmd != CAPITALIZE) {
 		ch = cmd == DOWNCASE ? ToLower(*mb) : ToUpper(*mb);

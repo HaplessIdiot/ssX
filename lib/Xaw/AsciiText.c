@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 */
-/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.6 1999/05/09 10:51:36 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiText.c,v 3.7 1999/06/06 08:47:52 dawes Exp $ */
 
 /*
  * AsciiText.c - Source code for AsciiText Widget
@@ -103,7 +103,8 @@ AsciiTextClassRec asciiTextClassRec = {
     0,					/* num_resource */
     NULLQUARK,				/* xrm_class */
     True,				/* compress_motion */
-    True,				/* compress_exposure */
+    XtExposeGraphicsExpose |		/* compress_exposure */
+	XtExposeNoExpose,
     True,				/* compress_enterleave */
     False,				/* visible_interest */
     XawAsciiDestroy,			/* destroy */
@@ -154,7 +155,8 @@ AsciiStringClassRec asciiStringClassRec = {
     0,					/* num_resource */
     NULLQUARK,				/* xrm_class */
     True,				/* compress_motion */
-    True,				/* compress_exposure */
+    XtExposeGraphicsExpose |		/* compress_exposure */
+	XtExposeNoExpose,
     True,				/* compress_enterleave */
     False,				/* visible_interest */
     NULL,				/* destroy */
@@ -211,7 +213,8 @@ AsciiDiskClassRec asciiDiskClassRec = {
     NULLQUARK,				/* xrm_class */
     True,				/* compress_motion */
     True,				/* compress_exposure */
-    True,				/* compress_enterleave */
+    XtExposeGraphicsExpose |		/* compress_enterleave */
+	XtExposeNoExpose,
     False,				/* visible_interest */
     NULL,				/* destroy */
     XtInheritResize,			/* resize */

@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/programs/xedit/options.c,v 1.2 1999/05/09 10:52:02 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/options.c,v 1.3 1999/05/16 10:13:08 dawes Exp $ */
 
 #include <stdio.h>
 #ifndef X_NOT_STDC_ENV
@@ -285,12 +285,14 @@ EditCallback(Widget sme, XtPointer client_data, XtPointer call_data)
 	case SCROLL_VERT:
 	    XtSetArg(args[0], XtNscrollVertical, &scroll);
 	    XtGetValues(textwindow, args, 1);
-	    XtSetArg(args[0], XtNscrollVertical, !scroll);
+	    XtSetArg(args[0], XtNscrollVertical, scroll == XawtextScrollNever ?
+		     XawtextScrollAlways : XawtextScrollNever);
 	    break;
 	case SCROLL_HORIZ:
 	    XtSetArg(args[0], XtNscrollHorizontal, &scroll);
 	    XtGetValues(textwindow, args, 1);
-	    XtSetArg(args[0], XtNscrollHorizontal, !scroll);
+	    XtSetArg(args[0], XtNscrollHorizontal, scroll == XawtextScrollNever ?
+		     XawtextScrollAlways : XawtextScrollNever);
 	    break;
     }
 
@@ -301,7 +303,7 @@ static void
 CreateColumnsShell(void)
 {
     Atom delete_window;
-    Widget form, ok, disable, cancel;
+    Widget form, ok, cancel;
 
     if (columns_shell)
 	return;

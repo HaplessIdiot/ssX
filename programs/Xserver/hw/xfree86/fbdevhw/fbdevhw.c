@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.6 1999/04/05 07:13:14 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.7 1999/04/11 13:11:00 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -393,6 +393,13 @@ fbdevHWGetDepth(ScrnInfoPtr pScrn)
 {
 	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
 	return fPtr->var.bits_per_pixel;
+}
+
+int
+fbdevHWGetType(ScrnInfoPtr pScrn)
+{
+	fbdevHWPtr fPtr = FBDEVHWPTR(pScrn);
+	return fPtr->fix.type;
 }
 
 int

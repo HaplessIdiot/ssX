@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 */
 
-/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.9 1999/03/14 11:17:42 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftfuncs.c,v 1.10 1999/04/25 10:01:36 dawes Exp $ */
 
 #include "fontmisc.h"
 #include "fntfilst.h"
@@ -57,10 +57,6 @@ static char *xlfd_props[] = {
 
 static int ftypeInitP = 0;      /* is the engine initialised? */
 static TT_Engine ftypeEngine;   /* the engine */
-
-#ifdef ANTI_ALIASING
-int antiAliasingPrivateIndex=-1;
-#endif
 
 static TTFFace *faceTable[NUMFACEBUCKETS];
 
@@ -790,7 +786,7 @@ FreeTypeFreeXFont(FontPtr pFont, int freeProps)
       xfree(pFont->info.isStringProp);
       xfree(pFont->info.props);
     }
-    xfree(pFont);
+    DestroyFontRec(pFont);
   }
 }
 
@@ -1626,11 +1622,6 @@ FreeTypeSetUpFont(FontPathElementPtr fpe, FontPtr xf, FontInfoPtr info,
   int xrc;
   int image;
 
-#ifdef ANTI_ALIASING
-  if(antiAliasingPrivateIndex<0)
-    antiAliasingPrivateIndex=AllocateFontPrivateIndex();
-#endif
-
   /* Get the default bitmap format information for this X installation.
    * Also update it for the client if running in the font server. */
   FontDefaultFormat(&bmfmt->bit, &bmfmt->byte, &bmfmt->glyph, &bmfmt->scan);
@@ -1656,11 +1647,6 @@ FreeTypeSetUpFont(FontPathElementPtr fpe, FontPtr xf, FontInfoPtr info,
     xf->svrPrivate = 0;
     xf->fontPrivate = 0;        /* we'll set it later */
     xf->fpePrivate = 0;
-    xf->maxPrivate = -1;
-    xf->devPrivates = 0;
-#ifdef ANTI_ALIASING
-    _FontSetNewPrivate(xf, antiAliasingPrivateIndex, FreeTypeGetGlyphsAnti);
-#endif
   }
 
   info->defaultCh = 0;
@@ -1704,12 +1690,12 @@ FreeTypeOpenScalable(FontPathElementPtr fpe, FontPtr *ppFont, int flags,
     return BadFontName;
 
   /* Create an X11 server-side font. */
-  if ((xf = (FontPtr)xalloc(sizeof(FontRec))) == 0)
+  if (!(xf = CreateFontRec()))
     return AllocError;
 
   if((xrc=FreeTypeSetUpFont(fpe, xf, &xf->info, format, fmask, &bmfmt))
      != Successful) {
-    xfree(xf);
+    DestroyFontRec(xf);
     return xrc;
   }
   /* Load the font and fill its info structure. */
@@ -1717,7 +1703,7 @@ FreeTypeOpenScalable(FontPathElementPtr fpe, FontPtr *ppFont, int flags,
       != Successful) {
     /* Free everything up at this level and return the error code. */
     MUMBLE1("Error during load: %d\n",xrc);
-    xfree(xf);
+    DestroyFontRec(xf);
     return xrc;
   }
 

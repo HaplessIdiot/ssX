@@ -1,16 +1,10 @@
-/* $XConsortium: free.c,v 1.3 94/04/17 20:18:23 mor Exp $ */
+/* $TOG: free.c /main/4 1998/02/06 15:12:10 kaleb $ */
 
 /*
 
-Copyright (c) 1993  X Consortium
+Copyright 1993, 1998  The Open Group
 
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
+All Rights Reserved.
 
 The above copyright notice and this permission notice shall be included
 in all copies or substantial portions of the Software.
@@ -18,15 +12,15 @@ in all copies or substantial portions of the Software.
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
 OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE X CONSORTIUM BE LIABLE FOR ANY CLAIM, DAMAGES OR
+IN NO EVENT SHALL THE OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR
 OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE,
 ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
-Except as contained in this notice, the name of the X Consortium shall
+Except as contained in this notice, the name of The Open Group shall
 not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
-from the X Consortium.
+from The Open Group.
 
 */
 
@@ -34,15 +28,11 @@ from the X Consortium.
 
 #define CHECK_AND_FREE(_ptr) if (_ptr) Xfree (_ptr)
 
-
+
 void
-XieFreeTechniques (techs, count)
-
-XieTechnique 	*techs;
-unsigned int	count;
-
+XieFreeTechniques (XieTechnique *techs, unsigned int count)
 {
-    int i;
+    unsigned i;
 
     if (techs)
     {
@@ -53,13 +43,9 @@ unsigned int	count;
     }
 }
 
-
+
 void
-XieFreePhotofloGraph (elements, count)
-
-XiePhotoElement *elements;
-unsigned int    count;
-
+XieFreePhotofloGraph (XiePhotoElement *elements, unsigned int count)
 {
     /*
      * NOTE: We do not free the technique parameters here.
@@ -69,7 +55,7 @@ unsigned int    count;
      * the client can reuse technique parameters between photoflos.
      */
 
-    int i;
+    unsigned i;
 
     if (!elements)
 	return;
@@ -92,12 +78,9 @@ unsigned int    count;
     Xfree ((char *) elements);
 }
 
-
+
 void
-XieFreeEncodeJPEGBaseline (param)
-
-XieEncodeJPEGBaselineParam *param;
-
+XieFreeEncodeJPEGBaseline (XieEncodeJPEGBaselineParam *param)
 {
     if (param)
     {
@@ -108,12 +91,9 @@ XieEncodeJPEGBaselineParam *param;
     }
 }
 
-
+
 void
-XieFreeEncodeJPEGLossless (param)
-
-XieEncodeJPEGLosslessParam *param;
-
+XieFreeEncodeJPEGLossless (XieEncodeJPEGLosslessParam *param)
 {
     if (param)
     {
@@ -122,12 +102,9 @@ XieEncodeJPEGLosslessParam *param;
     }
 }
 
-
-void 
-XieFreePasteUpTiles (element)
 
-XiePhotoElement	*element;
-
+void
+XieFreePasteUpTiles (XiePhotoElement *element)
 {
     XieTile *tiles= element->data.PasteUp.tiles;
 

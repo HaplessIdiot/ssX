@@ -70,7 +70,7 @@ SOFTWARE.
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Text.c,v 3.28 1999/05/30 03:03:21 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Text.c,v 3.29 1999/06/06 08:48:13 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -195,9 +195,7 @@ static int ResolveLineNumber(TextWidget);
 #endif
 static void _SetSelection(TextWidget, XawTextPosition, XawTextPosition,
 			  Atom*, Cardinal);
-#ifndef OLDXAW
 static void TextSinkResize(Widget);
-#endif
 static void UpdateTextInRectangle(TextWidget, XRectangle*);
 static void UpdateTextInLine(TextWidget, int, int, int);
 static void VScroll(Widget, XtPointer, XtPointer);
@@ -514,9 +512,9 @@ CvtScrollModeToString(Display *dpy, XrmValue *args, Cardinal *num_args,
 
     switch (*(XawTextScrollMode *)fromVal->addr) {
 	case XawtextScrollNever:
+	case XawtextScrollWhenNeeded:
 	    buffer = XtEtextScrollNever;
 	    break;
-	case XawtextScrollWhenNeeded:
 	case XawtextScrollAlways:
 	    buffer = XtEtextScrollAlways;
 	    break;
@@ -799,9 +797,7 @@ CreateVScrollBar(TextWidget ctx)
 
     PositionVScrollBar(ctx);
     PositionHScrollBar(ctx);
-#ifndef OLDXAW
     TextSinkResize(ctx->text.sink);
-#endif
 
     if (XtIsRealized((Widget)ctx)) {
 	XtRealizeWidget(vbar);
@@ -833,9 +829,7 @@ DestroyVScrollBar(TextWidget ctx)
     XtDestroyWidget(vbar);
     ctx->text.vbar = NULL;
     PositionHScrollBar(ctx);
-#ifndef OLDXAW
     TextSinkResize(ctx->text.sink);
-#endif
 }
 
 static void
@@ -859,9 +853,7 @@ CreateHScrollBar(TextWidget ctx)
     ctx->text.margin.bottom = ctx->text.r_margin.bottom = bottom;
 
     PositionHScrollBar(ctx);
-#ifndef OLDXAW
     TextSinkResize(ctx->text.sink);
-#endif
 
     if (XtIsRealized((Widget)ctx)) {
 	XtRealizeWidget(hbar);
@@ -892,9 +884,7 @@ DestroyHScrollBar(TextWidget ctx)
 
     XtDestroyWidget(hbar);
     ctx->text.hbar = NULL;
-#ifndef OLDXAW
     TextSinkResize(ctx->text.sink);
-#endif
 }
 
 /*ARGSUSED*/
@@ -953,9 +943,9 @@ XawTextInitialize(Widget request, Widget cnew,
 	    XtHeight(ctx) += XawTextSinkMaxHeight(ctx->text.sink, 1);
     }
 
-    if (ctx->text.scroll_vert)
+    if (ctx->text.scroll_vert == XawtextScrollAlways)
 	CreateVScrollBar(ctx);
-    if (ctx->text.scroll_horiz)
+    if (ctx->text.scroll_horiz == XawtextScrollAlways)
 	CreateHScrollBar(ctx);
 
 #ifndef OLDXAW
@@ -984,7 +974,6 @@ XawTextRealize(Widget w, XtValueMask *mask, XSetWindowAttributes *attr)
     }
 
     _XawTextBuildLineTable(ctx, ctx->text.lt.top, True);
-    _XawTextSetScrollBars(ctx);
 
 #ifndef OLDXAW
     _XawTextSetLineAndColumnNumber(ctx, True);
@@ -1270,11 +1259,13 @@ _XawTextBuildLineTable(TextWidget ctx, XawTextPosition position,
 	force_rebuild = True;
     }
 
-    if (force_rebuild || position != ctx->text.lt.top) {
+    if (force_rebuild) {
 	(void)bzero((char *)ctx->text.lt.info, size);
-	(void)_BuildLineTable(ctx, position, 0);
-	ClearWindow(ctx);
+	/* force a text update in the first text line if it is visible */
+	ctx->text.lt.info[0].position = ctx->text.lt.top = (XawTextPosition)-1;
     }
+    if (position != ctx->text.lt.top)
+	(void)_BuildLineTable(ctx, position, 0);
 }
 
 /*
@@ -1362,9 +1353,11 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 				wwidth, ctx->text.wrap == XawtextWrapWord,
 				&end, &width, &height);
 
-	if (lt->position != position)
+	if (lt->position != position) {
 	    _XawTextNeedsUpdating(ctx, position,
 				  end <= position ? position + 1 : end);
+	    ctx->text.clear_to_eol = True;
+	}
 
 	lt->y = y;
 	lt->position = position;
@@ -1373,6 +1366,7 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 
 	if (end > ctx->text.lastPos) {
 	    position = end;
+	    ctx->text.clear_to_eol = True;
 	    _XawTextNeedsUpdating(ctx, end, end + ctx->text.lt.lines - line);
 	    while (line++ < ctx->text.lt.lines) {
 		++lt;
@@ -1381,6 +1375,8 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 		lt->textWidth = 0;
 		y += height;
 	    }
+	    _XawTextSetScrollBars(ctx);
+
 	    return (ctx->text.lastPos);
 	}
 
@@ -1391,8 +1387,11 @@ _BuildLineTable(TextWidget ctx, XawTextPosition position, int line)
 	else
 	    position = end;
 
-	if (line > ctx->text.lt.lines)
+	if (line > ctx->text.lt.lines) {
+	    _XawTextSetScrollBars(ctx);
+
 	    return (position);
+	}
     }
     /*NOTREACHED*/
 }
@@ -1435,7 +1434,7 @@ _XawTextSetScrollBars(TextWidget ctx)
 {
     float first, last, denom, widest;
 
-    if (ctx->text.scroll_vert) {
+    if (ctx->text.scroll_vert == XawtextScrollAlways) {
 	if (ctx->text.lastPos == 0)
 	    first = 0.0;
 	else
@@ -1450,7 +1449,7 @@ _XawTextSetScrollBars(TextWidget ctx)
 	XawScrollbarSetThumb(ctx->text.vbar, first, last - first);
     }
 
-    if (ctx->text.scroll_horiz) {
+    if (ctx->text.scroll_horiz == XawtextScrollAlways) {
 	denom = GetWidestLine(ctx);
 	if (denom <= 0)
 	    denom = (int)XtWidth(ctx) - RHMargins(ctx);
@@ -1505,13 +1504,12 @@ DoCopyArea(TextWidget ctx, int src_x, int src_y,
 void
 XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 {
-    XawTextPosition top, tmp;
+    XawTextPosition top, tmp, update_from, update_to;
     XawTextLineTable *lt;
     Arg arglist[1];
     int y0, y1, y2, count, dim, wwidth;
     int vwidth, vheight;	/* visible width and height */
     Bool scroll;
-    XRectangle rect;
 
     vwidth = (int)XtWidth(ctx) - RHMargins(ctx);
     vheight = (int)XtHeight(ctx) - RVMargins(ctx);
@@ -1598,11 +1596,9 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 	    scroll = False;
     }
 
-    if (hpixels)
-	_XawTextNeedsUpdating(ctx, 0, vlines > 0 ?
-			      lt->info[lt->lines].position : ctx->text.lastPos);
-
     if (!vlines) {
+	if (hpixels)
+	    ClearWindow(ctx);
 	_XawTextSetScrollBars(ctx);
 	return;
     }
@@ -1614,33 +1610,36 @@ XawTextScroll(TextWidget ctx, int vlines, int hpixels)
 
     XtSetArg(arglist[0], XtNinsertPosition, lt->top + lt->lines);
     _XawImSetValues((Widget)ctx, arglist, 1);
-    _XawTextSetScrollBars(ctx);
 
-    if (hpixels)
+    if (hpixels || !scroll)
 	return;
-    else if (!scroll) {
-	_XawTextNeedsUpdating(ctx, 0, vlines > 0 ?
-			      lt->info[lt->lines].position : ctx->text.lastPos);
-	return;
-    }
 
-    rect.x = ctx->text.r_margin.left;
-    rect.width = vwidth;
+    /* _BuildLineTable updates everything if the top position changes.
+     * It is not required here.
+     */
+    (void)XmuScanlineXor(ctx->text.update, ctx->text.update);
+
+    y0 = ctx->text.r_margin.top;
     if (vlines < 0) {
-	y0 = lt->info[-vlines].y;
-	rect.y = y1 = ctx->text.r_margin.top;
-	y2 = lt->info[lt->lines].y;
-	rect.height = y1 - y0;
-	DoCopyArea(ctx, rect.x, y1, rect.width, y2 - y0, rect.x, y0);
+	update_from = lt->top;
+	update_to = lt->info[-vlines + 1].position - 1;
+	y1 = lt->info[lt->lines + vlines].y;
+	y2 = lt->info[-vlines].y;
+	DoCopyArea(ctx, ctx->text.r_margin.left, y0, vwidth,
+		   y1 - y0,
+		   ctx->text.r_margin.left, y2);
     }
     else {
-	y0 = ctx->text.r_margin.top;
-	rect.y = y1 = lt->info[vlines].y;
-	y2 = lt->info[lt->lines].y;
-	rect.height = y2 - y0;
-	DoCopyArea(ctx, rect.x, y1, rect.width, y2 - y1, rect.x, y0);
+	update_from = lt->info[lt->lines - vlines].position;
+	update_to = lt->info[lt->lines].position;
+	y1 = lt->info[lt->lines - vlines].y;
+	y2 = lt->info[vlines].y;
+	DoCopyArea(ctx, ctx->text.r_margin.left, y2,
+		   vwidth, lt->info[lt->lines].y - y2,
+		   ctx->text.r_margin.left, y0);
     }
-    UpdateTextInRectangle(ctx, &rect);
+    _XawTextNeedsUpdating(ctx, update_from, update_to);
+    ctx->text.clear_to_eol = True;
 }
 
 /*
@@ -1673,7 +1672,6 @@ HScroll(Widget w, XtPointer closure, XtPointer callData)
     if (pixels) {
 	_XawTextPrepareToUpdate(ctx);
 	XawTextScroll(ctx, 0, pixels);
-	_XawTextSetScrollBars(ctx);
 	_XawTextExecuteUpdate(ctx);
     }
 }
@@ -2209,6 +2207,11 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
 	if (update)
 	    _XawTextPrepareToUpdate(tw);
+#else
+	TextWidget tw = ctx;
+	XawTextPosition pos;
+#endif /* OLDXAW */
+
 	if (left < tw->text.s.left) {
 	    pos = Min(right, tw->text.s.left);
 	    _XawTextNeedsUpdating(tw, left, pos);
@@ -2228,6 +2231,7 @@ _SetSelection(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 
 	tw->text.s.left = left;
 	tw->text.s.right = right;
+#ifndef OLDXAW
 	if (update)
 	    _XawTextExecuteUpdate(tw);
     }
@@ -2378,7 +2382,7 @@ ResolveColumnNumber(TextWidget ctx)
 
     return (column_number);
 }
-#endif
+#endif /* OLDXAW */
 
 void
 _XawTextSourceChanged(Widget w, XawTextPosition left, XawTextPosition right,
@@ -2412,16 +2416,17 @@ _XawTextSourceChanged(Widget w, XawTextPosition left, XawTextPosition right,
 #endif
 
     update_from = left;
-    update_to = XawMax(right, left + block->length);
+    update_to = left + block->length;
     update_to = SrcScan(src, update_to, XawstEOL, XawsdRight, 1, False);
-    if (update_from == update_to)
-	++update_to;		/* Force clear to eol */
+    delta = block->length - (right - left);
+    if (delta > 0)
+	ctx->text.clear_to_eol = True;
+    if (update_to == update_from)
+	++update_to;
     update_disabled = ctx->text.update_disabled;
     ctx->text.update_disabled = True;
     ctx->text.lastPos = XawTextGetLastPosition(ctx);
     top = ctx->text.lt.info[0].position;
-    delta = block->length - (right - left);
-    ctx->text.clear_to_eol = block->length != 1 || right - left != 0;
 
     XawTextUnsetSelection((Widget)ctx);
 
@@ -2476,6 +2481,10 @@ _XawTextSourceChanged(Widget w, XawTextPosition left, XawTextPosition right,
 	    update_from = SrcScan(src, update_from,
 				  XawstWhiteSpace, XawsdLeft, 1, True);
 	    if (update_to >= ctx->text.lastPos)
+	    /* this is not an error, it just tells _BuildLineTable to
+	     * clear to the bottom of the window. The value of update_to
+	     * should not be > ctx->text.lastPos.
+	     */
 		++update_to;
 	}
     }
@@ -2487,8 +2496,6 @@ _XawTextSourceChanged(Widget w, XawTextPosition left, XawTextPosition right,
 
     _XawTextNeedsUpdating(ctx, update_from, update_to);
     ctx->text.update_disabled = update_disabled;
-
-    _XawTextSetScrollBars(ctx);
 }
 
 /*
@@ -2532,7 +2539,17 @@ _XawTextReplace(TextWidget ctx, XawTextPosition left, XawTextPosition right,
 	ctx->text.insertPos = ctx->text.lastPos;
     }
 
+#ifndef OLDXAW
     return (SrcReplace(src, left, right, block));
+#else
+    if (SrcReplace(src, left, right, block) == XawEditDone) {
+	_XawTextSourceChanged((Widget)ctx, left, right, block, 0);
+
+	return (XawEditDone);
+    }
+
+    return (XawEditError);
+#endif
 }
 
 /*
@@ -2862,7 +2879,6 @@ _XawTextClearAndCenterDisplay(TextWidget ctx)
 	clear_to_eol = ctx->text.clear_to_eol;
 	ctx->text.clear_to_eol = False;
 	FlushUpdate(ctx);
-	_XawTextSetScrollBars(ctx);
 	ctx->text.clear_to_eol = clear_to_eol;
     }
 }
@@ -2878,17 +2894,14 @@ DisplayTextWindow(Widget w)
 
     _XawTextBuildLineTable(ctx, ctx->text.lt.top, False);
     ClearWindow(ctx);
-    _XawTextSetScrollBars(ctx);
 }
 
-#ifndef OLDXAW
 static void
 TextSinkResize(Widget w)
 {
     if (w && XtClass(w)->core_class.resize)
 	XtClass(w)->core_class.resize(w);
 }
-#endif
 
 /* ARGSUSED */
 void
@@ -3052,10 +3065,20 @@ XawTextExpose(Widget w, XEvent *event, Region region)
     Boolean clear_to_eol;
     XRectangle expose;
 
-    expose.x = event->xexpose.x;
-    expose.y = event->xexpose.y;
-    expose.width = event->xexpose.width;
-    expose.height = event->xexpose.height;
+    if (event->type == Expose) {
+	expose.x = event->xexpose.x;
+	expose.y = event->xexpose.y;
+	expose.width = event->xexpose.width;
+	expose.height = event->xexpose.height;
+    }
+    else if (event->type == GraphicsExpose) {
+	expose.x = event->xgraphicsexpose.x;
+	expose.y = event->xgraphicsexpose.y;
+	expose.width = event->xgraphicsexpose.width;
+	expose.height = event->xgraphicsexpose.height;
+    }
+    else
+	return;
 
     if (Superclass->core_class.expose)
 	(*Superclass->core_class.expose)(w, event, region);
@@ -3309,7 +3332,6 @@ _XawTextShowPosition(TextWidget ctx)
 	}
 	else
 	    ClearWindow(ctx);
-	_XawTextSetScrollBars(ctx);
     }
     ctx->text.clear_to_eol = True;
 }
@@ -3399,13 +3421,10 @@ XawTextResize(Widget w)
 
     PositionVScrollBar(ctx);
     PositionHScrollBar(ctx);
-#ifndef OLDXAW
     TextSinkResize(ctx->text.sink);
-#endif
 
     ctx->text.showposition = True;
     _XawTextBuildLineTable(ctx, ctx->text.lt.top, True);
-    _XawTextSetScrollBars(ctx);
 }
 
 /*
@@ -3439,7 +3458,7 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
     }
 
     if (oldtw->text.scroll_vert != newtw->text.scroll_vert) {
-	if (newtw->text.scroll_vert)
+	if (newtw->text.scroll_vert == XawtextScrollAlways)
 	    CreateVScrollBar(newtw);
 	else
 	    DestroyVScrollBar(newtw);
@@ -3456,7 +3475,7 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
     }
 
     if (oldtw->text.scroll_horiz != newtw->text.scroll_horiz) {
-	if (newtw->text.scroll_horiz)
+	if (newtw->text.scroll_horiz == XawtextScrollAlways)
 	    CreateHScrollBar(newtw);
 	else
 	    DestroyHScrollBar(newtw);
@@ -3511,13 +3530,14 @@ XawTextSetValues(Widget current, Widget request, Widget cnew,
 #endif
 
     _XawTextExecuteUpdate(newtw);
-    if (redisplay)
-	_XawTextSetScrollBars(newtw);
 
 #ifndef OLDXAW
     if (show_lc)
 	_XawTextSetLineAndColumnNumber(newtw, True);
 #endif
+
+    if (redisplay)
+	_XawTextSetScrollBars(newtw);
 
     return (redisplay);
 }
@@ -3808,9 +3828,6 @@ XawTextEnableRedisplay(Widget w)
     if (ctx->text.s.left > lastPos || ctx->text.s.right > lastPos)
 	ctx->text.s.left = ctx->text.s.right = 0;
 
-    if (XtIsRealized(w))
-	DisplayTextWindow(w);
-    ctx->text.clear_to_eol = True;
     _XawTextExecuteUpdate(ctx);
 }
 
@@ -3893,7 +3910,8 @@ TextClassRec textClassRec = {
     XtNumber(resources),		/* num_resource */
     NULLQUARK,				/* xrm_class */
     True,				/* compress_motion */
-    True,				/* compress_exposure */
+    XtExposeGraphicsExpose |		/* compress_exposure */
+	XtExposeNoExpose,
     True,				/* compress_enterleave */
     False,				/* visible_interest */
     XawTextDestroy,			/* destroy */

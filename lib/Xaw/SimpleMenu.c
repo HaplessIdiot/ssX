@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
  */
 
-/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.15 1999/05/16 10:12:48 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.c,v 3.16 1999/06/06 08:48:10 dawes Exp $ */
 
 /*
  * SimpleMenu.c - Source code file for SimpleMenu widget.
@@ -158,6 +158,7 @@ static XtResource resources[] = {
     XtRImmediate,
     (XtPointer)0
   },
+#ifndef OLDXAW
   {
     XtNleftMargin,
     XtCHorizontalMargins,
@@ -176,6 +177,7 @@ static XtResource resources[] = {
     XtRImmediate,
     (XtPointer)0
   },
+#endif
 
   /* misc */
   {
@@ -898,8 +900,8 @@ Highlight(Widget w, XEvent *event, String *params, Cardinal *num_params)
 
 #ifndef OLDXAW
     if (!smw->simple_menu.sub_menu)
-	Unhighlight(w, event, params, num_params);
 #endif
+	Unhighlight(w, event, params, num_params);
 
     if (entry == NULL)
 	return;
@@ -1150,7 +1152,11 @@ Layout(Widget w, Dimension *width_ret, Dimension *height_ret)
 	MakeResizeRequest((Widget)smw);
 
     widths = (Dimension *)XtMalloc(sizeof(Dimension));
+#ifndef OLDXAW
     hadd = smw->simple_menu.left_margin;
+#else
+    hadd = 0;
+#endif
     vadd = smw->simple_menu.top_margin;
     if (smw->simple_menu.label)
 	vadd += XtHeight(smw->simple_menu.label);
@@ -1199,7 +1205,9 @@ Layout(Widget w, Dimension *width_ret, Dimension *height_ret)
 	    widths[n] += inc;
     }
 
+#ifndef OLDXAW
     width += hadd + smw->simple_menu.right_margin;
+#endif
 
     x_ins = n = count = 0;
     tmp_w = widths[0];
@@ -1241,8 +1249,11 @@ Layout(Widget w, Dimension *width_ret, Dimension *height_ret)
     if (smw->simple_menu.label) {
 	XtX(smw->simple_menu.label) = 0;
 	XtY(smw->simple_menu.label) = smw->simple_menu.top_margin;
-	XtWidth(smw->simple_menu.label) = XtWidth(smw) -
-	    (smw->simple_menu.left_margin + smw->simple_menu.right_margin);
+	XtWidth(smw->simple_menu.label) = XtWidth(smw)
+#ifndef OLDXAW
+	    - (smw->simple_menu.left_margin + smw->simple_menu.right_margin)
+#endif
+	    ;
     }
     if (current_entry) {
 	if (width_ret)
@@ -1597,7 +1608,11 @@ CalculateNewSize(Widget w, Dimension *width_return, Dimension *height_return)
     int n, columns, test_h;
     Boolean try_layout = False;
 
+#ifndef OLDXAW
     hadd = xaw->simple_menu.left_margin + xaw->simple_menu.right_margin;
+#else
+    hadd = 0;
+#endif
     vadd = xaw->simple_menu.top_margin + xaw->simple_menu.bottom_margin;
     if (xaw->simple_menu.label)
 	vadd += XtHeight(xaw->simple_menu.label);

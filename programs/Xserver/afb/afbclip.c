@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/afb/afbclip.c,v 3.0 1996/08/18 01:45:29 dawes Exp $ */
 /***********************************************************
 
 Copyright (c) 1987  X Consortium
@@ -56,6 +56,7 @@ SOFTWARE.
 #include "gc.h"
 #include "maskbits.h"
 #include "mi.h"
+#include "afb.h"
 
 #define ADDRECT(reg,r,fr,rx1,ry1,rx2,ry2)						\
 if (((rx1) < (rx2)) && ((ry1) < (ry2)) &&						\

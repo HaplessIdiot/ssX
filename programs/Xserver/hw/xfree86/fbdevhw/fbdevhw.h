@@ -1,4 +1,9 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.1 1999/03/06 13:12:39 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.h,v 1.2 1999/04/11 13:11:00 dawes Exp $ */
+
+#define FBDEVHW_PACKED_PIXELS		0	/* Packed Pixels	*/
+#define FBDEVHW_PLANES			1	/* Non interleaved planes */
+#define FBDEVHW_INTERLEAVED_PLANES	2	/* Interleaved planes	*/
+#define FBDEVHW_TEXT			3	/* Text/attributes	*/
 
 Bool  fbdevHWGetRec(ScrnInfoPtr pScrn);
 void  fbdevHWFreeRec(ScrnInfoPtr pScrn);

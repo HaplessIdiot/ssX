@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xterm/xterm.h,v 3.40 1999/05/15 06:25:07 dawes Exp $ */
+/* $XFree86: xc/programs/xterm/xterm.h,v 3.41 1999/05/30 14:41:09 dawes Exp $ */
 
 /************************************************************
 
@@ -197,6 +197,10 @@ extern void unparseputc (int c, int fd);
 extern void unparseputc1 (int c, int fd);
 extern void unparseputs (char *s, int fd);
 extern void unparseseq (ANSI *ap, int fd);
+
+#if OPT_BLINK_CURS
+extern void ToggleCursorBlink(TScreen *screen);
+#endif
 
 #if OPT_ISO_COLORS
 extern void SGR_Background (int color);

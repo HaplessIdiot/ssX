@@ -22,7 +22,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.5 1998/08/29 05:42:55 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitmapfunc.c,v 3.6 1998/10/03 09:07:21 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -148,12 +148,10 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask,
     file = FontFileOpen (fileName);
     if (!file)
 	return BadFontName;
-    pFont = (FontPtr) xalloc(sizeof(FontRec));
-    if (!pFont) {
+    if (!(pFont = CreateFontRec())) {
 	FontFileClose (file);
 	return AllocError;
     }
-    bzero((char *)pFont, sizeof(FontRec));
     /* set up default values */
     FontDefaultFormat(&bit, &byte, &glyph, &scan);
     /* get any changes made from above */
@@ -161,8 +159,6 @@ BitmapOpenBitmap (fpe, ppFont, flags, entry, fileName, format, fmask,
 
     /* Fill in font record. Data format filled in by reader. */
     pFont->refcnt = 0;
-    pFont->maxPrivate = -1;
-    pFont->devPrivates = (pointer *) 0;
 
     ret = (*readers[i].ReadFont) (pFont, file, bit, byte, glyph, scan);
 

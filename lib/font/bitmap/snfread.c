@@ -45,7 +45,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.3 1998/10/03 09:07:22 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/snfread.c,v 1.4 1999/01/31 12:21:25 dawes Exp $ */
 
 #ifndef FONTMODULE
 #include <ctype.h>
@@ -486,7 +486,6 @@ snfUnloadFont(pFont)
     bitmapFont = (BitmapFontPtr) pFont->fontPrivate;
     xfree (bitmapFont->bitmaps);
     xfree (bitmapFont);
-    xfree (pFont->devPrivates);
-    xfree (pFont);
+    DestroyFontRec (pFont);
 }
 

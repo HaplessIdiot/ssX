@@ -9,7 +9,7 @@
  *	Guy DESBIEF
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.36 1999/05/03 04:35:35 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/cirrus/cir_driver.c,v 1.37 1999/05/09 10:51:56 dawes Exp $ */
 
 /* Everything using inb/outb, etc needs "compiler.h" */
 #include "compiler.h"
@@ -64,6 +64,11 @@
 #include "xf86DDC.h"
 
 #include "cir.h"
+
+#ifdef XvExtension
+#include "xf86xv.h"
+#include "Xv.h"
+#endif 
 
 #ifdef CIRPROBEI2C
 /* For debugging... should go away. */
@@ -1902,6 +1907,21 @@ CIRScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 
 #ifdef DPMSExtension
     xf86DPMSInit(pScreen, CIRDisplayPowerManagementSet, 0);
+#endif
+
+    pScrn->memPhysBase = pCir->FbAddress;
+    pScrn->fbOffset = 0;
+
+#ifdef XvExtension
+    {
+	XF86VideoAdaptorPtr *ptr;
+	int n;
+	
+	n = xf86XVListGenericAdaptors(&ptr);
+	if (n) { 
+	    xf86XVScreenInit(pScreen, ptr, n);
+	}
+    }
 #endif
 
     /*

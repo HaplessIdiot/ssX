@@ -23,7 +23,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.10 1998/10/03 09:07:21 dawes Exp $ */
+/* $XFree86: xc/lib/font/bitmap/bitscale.c,v 3.11 1999/03/14 11:17:46 dawes Exp $ */
 
 /*
  * Author:  Keith Packard, MIT X Consortium
@@ -900,12 +900,9 @@ ScaleFont(opf, widthMult, heightMult, sWidthMult, sHeightMult, vals,
     obitmapFont = (BitmapFontPtr) opf->fontPrivate;
 
     bitmapFont = 0;
-    pf = (FontPtr) xalloc(sizeof(FontRec));
-    if (!pf)
+    if (!(pf = CreateFontRec()))
 	goto bail;
     pf->refcnt = 0;
-    pf->maxPrivate = -1;
-    pf->devPrivates = (pointer *) 0;
     pf->bit = opf->bit;
     pf->byte = opf->byte;
     pf->glyph = opf->glyph;
@@ -1907,6 +1904,5 @@ bitmapUnloadScalable (pFont)
     xfree (bitmapFont->ink_metrics);
     xfree (bitmapFont->metrics);
     xfree (pFont->fontPrivate);
-    xfree (pFont->devPrivates);
-    xfree (pFont);
+    DestroyFontRec (pFont);
 }

@@ -45,7 +45,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.6 1999/03/21 07:34:31 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrcP.h,v 1.7 1999/06/06 08:48:18 dawes Exp $ */
 
 #ifndef _XawTextSrcP_h
 #define _XawTextSrcP_h
@@ -103,7 +103,9 @@ typedef struct _TextSrcClassRec {
 
 extern TextSrcClassRec textSrcClassRec;
 
+#ifndef OLDXAW
 typedef struct _XawTextUndo XawTextUndo;
+#endif
 
 /* New fields for the TextSrc object */
 typedef struct {

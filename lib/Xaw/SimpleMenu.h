@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
  *
  * Author:  Chris D. Peterson, MIT X Consortium
  */
-/* $XFree86: xc/lib/Xaw/SimpleMenu.h,v 1.4 1998/08/20 13:59:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/SimpleMenu.h,v 1.5 1998/10/03 08:42:19 dawes Exp $ */
 
 /*
  * SimpleMenu.h - Public Header file for SimpleMenu widget.
@@ -94,18 +94,21 @@ extern WidgetClass simpleMenuWidgetClass;
 #define XtNtopMargin "topMargin"
 #define XtNleftMargin "leftMargin"
 #define XtNrightMargin "rightMargin"
-#define XawNdisplayList "displayList"
 
 #define XtCColumnWidth "ColumnWidth"
 #define XtCLabelClass "LabelClass"
 #define XtCMenuOnScreen "MenuOnScreen"
 #define XtCPopupOnEntry "PopupOnEntry"
 #define XtCRowHeight "RowHeight"
-#define XtCVerticalMargins "VerticalMargins"
-#define XtCHorizontalMargins "HorizontalMargins"
-#define XawCDisplayList "DisplayList"
 
+#define XtCVerticalMargins "VerticalMargins"
+
+#ifndef OLDXAW
+#define XtCHorizontalMargins "HorizontalMargins"
+#define XawNdisplayList "displayList"
+#define XawCDisplayList "DisplayList"
 #define XawRDisplayList "XawDisplayList"
+#endif
 
 /*
  * Public Functions

@@ -21,7 +21,7 @@
  *
  * Author: Dave Lemke, Network Computing Devices Inc
  */
-/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.7 1999/02/07 06:18:20 dawes Exp $ */
+/* $XFree86: xc/lib/font/Speedo/spfont.c,v 3.8 1999/03/14 11:17:43 dawes Exp $ */
 
 /*
 
@@ -377,8 +377,6 @@ sp_load_font(
     pfont->unload_font = SpeedoCloseFont;
     pfont->unload_glyphs = NULL;
     pfont->refcnt = 0;
-    pfont->maxPrivate = -1;
-    pfont->devPrivates = (pointer *) 0;
 
     /* have to hold on to master for min/max id */
     sp_close_master_file(spmf);
@@ -405,17 +403,16 @@ SpeedoFontLoad(
 	hypot(vals->pixel_matrix[2], vals->pixel_matrix[3]) < 1.0)
 	return BadFontName;
 
-    pfont = (FontPtr) xalloc(sizeof(FontRec));
-    if (!pfont) {
+    if (!(pfont = CreateFontRec()))
 	return AllocError;
-    }
+
     ret = sp_load_font(fontname, filename, entry, vals, format, fmask,
 		       pfont, flags);
 
     if (ret == Successful)
 	*ppfont = pfont;
     else
-	xfree (pfont);
+	DestroyFontRec (pfont);
     
     return ret;
 }
@@ -443,7 +440,6 @@ SpeedoCloseFont(FontPtr pfont)
     sp_close_font(spf);
     xfree(pfont->info.isStringProp);
     xfree(pfont->info.props);
-    xfree(pfont->devPrivates);
-    xfree(pfont);
+    DestroyFontRec(pfont);
 
 }

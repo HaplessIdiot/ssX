@@ -2,7 +2,7 @@ XCOMM $TOG: Imakefile /main/249 1997/12/11 11:18:14 kaleb $
 /*
  * Server Master Makefile
  */
-XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.162 1999/05/23 15:05:48 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Imakefile,v 3.163 1999/06/12 07:18:30 dawes Exp $
 
 #ifndef InstallXserverSetUID
 #define InstallXserverSetUID NO
@@ -227,7 +227,7 @@ XPFBLIBS = dix/LibraryTargetName(xpstubs)
              MI = mi/LibraryTargetName(mi)
    MIINITEXTOBJ = mi/miinitext.o
             DIX = dix/LibraryTargetName(dix)
-       FONTBASE = $(FONTLIBSRC)/fontfile/module/fontbase.o \
+       FONTBASE = $(FONTLIBSRC)/fontbase.o \
 		  $(FONTLIBSRC)/LibraryTargetName(fontbase)
            FONT = $(XFONTLIB) $(XPFBLIBS)
        FONTLIBS = $(LDPRELIB) $(FONT)
@@ -541,8 +541,11 @@ CFB8DIR = cfb
 CFB16DIR = cfb16
 CFB24DIR = cfb24
 CFB32DIR = cfb32
+#if XF86AFB
+AFBDIR = afb
+#endif
 DDXDIR1  = hw/xfree86
-XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(DDXDIR1) $(DEPDIRS)
+XF86SERVERSUBDIRS = $(STDDIRS) $(MFBDIR) $(CFB8DIR) $(CFB16DIR) $(CFB24DIR) $(CFB32DIR) $(AFBDIR) $(DDXDIR1) $(DEPDIRS)
 XF86INIT   = $(XF86COMSRC)/xf86Init.o $(XF86COMSRC)/xf86IniExt.o
 XF86COMLIB = $(XF86COMSRC)/LibraryTargetName(xf86)
 XF86PARSLIB= $(XF86PARSERSRC)/LibraryTargetName(xf86config)
@@ -575,6 +578,9 @@ XF24_32BPPLIB = $(XF86SRC)/xf24_32bpp/LibraryTargetName(xf24_32bpp)
 #if XFShadowFB
 XFSHADOWFBLIB = $(XF86SRC)/shadowfb/LibraryTargetName(shadowfb)
 #endif
+#if XF86AFB
+AFBLIB = afb/LibraryTargetName(afb)
+#endif
 XF86DRIVERLIB = $(XF86SRC)/drivers/LibraryTargetName(driver)
 #if XF86Ramdac
 XF86RAMDACLIB = $(XF86SRC)/ramdac/LibraryTargetName(ramdac)
@@ -594,7 +600,7 @@ XF86DRVOBJS = $(XF86SRC)/drivers/drvConf.o
 XF86DRVLIBS = $(XF86DRIVERLIB) $(XF86RAMDACLIB) $(XF86DDCLIB) $(XF86I2CLIB) \
               $(XF86XAALIB) $(XF86VGAHWLIB) $(XF86FBDEVHWLIB) \
               $(XF8_32BPPLIB) $(XF8_16BPPLIB) $(XF24_32BPPLIB) \
-	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB)
+	      $(XF4BPPLIB) $(XF1BPPLIB) $(XFSHADOWFBLIB) $(AFBLIB)
 XF86IDRVOBJS = $(XF86SRC)/input/drvConf.o
 XF86IDRVLIBS = $(XF86IDRIVERLIB)
 XF86SCANLIB = $(XF86SRC)/scanpci/LibraryTargetName(scanpci)

@@ -1,7 +1,27 @@
-/* $XConsortium: lbxdix.c /main/26 1996/12/15 21:25:31 rws $ */
+/* $TOG: lbxdix.c /main/30 1998/05/15 10:29:37 msr $ */
+/*
+
+Copyright 1998  The Open Group
+
+All Rights Reserved.
+
+The above copyright notice and this permission notice shall be included in
+all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE
+OPEN GROUP BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
+AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the name of The Open Group shall not be
+used in advertising or otherwise to promote the sale, use or other dealings
+in this Software without prior written authorization from The Open Group.
+
+*/
 /*
  * Copyright 1993 Network Computing Devices, Inc.
- * Copyright 1996 X Consortium, Inc.
  *
  * Permission to use, copy, modify, distribute, and sell this software and
  * its documentation for any purpose is hereby granted without fee, provided
@@ -56,7 +76,7 @@ extern void (*ReplySwapVector[256]) ();
 
 extern void LbxWriteSConnSetupPrefix();
 
-int         lbx_font_private;
+int         lbx_font_private = -1;
 
 void
 LbxDixInit()
@@ -92,8 +112,11 @@ LbxSendConnSetup(client, reason)
     NewClientInfoRec nci;
     LbxProxyPtr proxy = LbxProxy(client);
 
-    if (reason)
-	return SendConnSetup(client, reason);
+    if (reason) {
+	SendConnSetup(client, reason);
+	LbxForceOutput(proxy); /* expedient to avoid another state variable */
+	return (client->noClientException);
+    }
 
     IncrementClientCount();
 
@@ -626,7 +649,7 @@ LbxSendSendTagData(pid, tag, tagtype)
     LbxClientPtr lbxcp;
 
     proxy = LbxPidToProxy(pid);
-    lbxcp = proxy->lbxClients[0];
+    lbxcp = (proxy != NULL) ? proxy->lbxClients[0] : NULL;
     if (lbxcp && (client = lbxcp->client)) {
 	ev.type = LbxEventCode;
 	ev.lbxType = LbxSendTagDataEvent;

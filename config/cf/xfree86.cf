@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.228 1999/06/12 15:36:58 dawes Exp $
+XCOMM $XFree86: xc/config/cf/xfree86.cf,v 3.229 1999/06/13 07:10:59 dawes Exp $
 /*
  * This configuration file contains all of the configuration
  * information for the XFree86 based X Servers.
@@ -107,6 +107,13 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 /* RAC (Resource Access Control) module */
 #ifndef XF86RAC
 #define XF86RAC			YES
+#endif
+/*
+ * Amiga framebuffer module.
+ * This is for build testing only.  It isn't actually used on this platform.
+ */
+#ifndef XF86AFB
+#define XF86AFB			YES
 #endif
 
 /* Pure PCI drivers should go first */
@@ -244,6 +251,10 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #ifndef XF86Server
 #define XF86Server		YES
 #endif
+/* Amiga framebuffer module */
+#ifndef XF86AFB
+#define XF86AFB			YES
+#endif
 /* 1bpp module */
 #ifndef XF1Bpp
 #define XF1Bpp			YES
@@ -315,6 +326,45 @@ XCOMM $TOG: xfree86.cf /main/38 1997/10/22 13:01:59 kaleb $
 #endif
 #endif
 
+
+/*
+ * Fbdev module defines.  They are set to indicate the fb types supported
+ * on different architectures.
+ */
+#ifndef XF86AFB
+#define XF86AFB NO
+#endif
+#ifndef XF86ILBM
+#define XF86ILBM NO
+#endif
+#ifndef XF86IPLAN2P2
+#define XF86IPLAN2P2 NO
+#endif
+#ifndef XF86IPLAN2P4
+#define XF86IPLAN2P4 NO
+#endif
+#ifndef XF86IPLAN2P8
+#define XF86IPLAN2P8 NO
+#endif
+#if XF86AFB
+AFB_DEFS = -DUSE_AFB
+#endif
+#if XF86ILBM
+ILBM_DEFS = -DUSE_ILBM
+#endif
+#if XF86IPLAN2P2
+IPLAN2P2_DEFS = -DUSE_IPLAN2P2
+#endif
+#if XF86IPLAN2P4
+IPLAN2P4_DEFS = -DUSE_IPLAN2P4
+#endif
+#if XF86IPLAN2P8
+IPLAN2P8_DEFS = -DUSE_IPLAN2P8
+#endif
+#ifndef FbdevDefines
+#define FbdevDefines $(AFB_DEFS) $(ILBM_DEFS) $(IPLAN2P2_DEFS) \
+		     $(IPLAN2P4_DEFS) $(IPLAN2P8_DEFS)
+#endif
 
 /*
  * The default is to install the X servers setuid-root on most OSs.
