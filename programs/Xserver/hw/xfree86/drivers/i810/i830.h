@@ -27,7 +27,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.16 2004/12/10 16:07:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830.h,v 1.17 2005/01/09 20:47:19 alanh Exp $ */
 
 /*
  * Authors:
@@ -428,6 +428,7 @@ extern DisplayModePtr i830GetModePool(ScrnInfoPtr pScrn, vbeInfoPtr pVbe,
 					VbeInfoBlock *vbe, int modeTypes);
 extern void i830SetModeParameters(ScrnInfoPtr pScrn, vbeInfoPtr pVbe);
 extern void i830PrintModes(ScrnInfoPtr pScrn);
+extern int I830GetBestRefresh(ScrnInfoPtr pScrn, int refresh);
 
 /*
  * 12288 is set as the maximum, chosen because it is enough for
