@@ -1,3 +1,4 @@
+/* $XFree86$ */
 /*
 ** License Applicability. Except to the extent portions of this file are
 ** made subject to an alternative license as permitted in the SGI Free
@@ -42,7 +43,7 @@
 #ifndef __memalloc_simple_h_
 #define __memalloc_simple_h_
 
-#include <malloc.h>
+#include <stdlib.h>
 
 #define memRealloc	realloc
 #define memFree		free
