@@ -4,7 +4,7 @@ XCOMM $XConsortium: Imakefile /main/12 1996/10/27 11:06:35 kaleb $
 
 
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.54 2002/10/29 23:19:13 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/Imakefile,v 3.55 2002/11/09 11:20:30 herrb Exp $
 
 #include <Server.tmpl>
 
@@ -73,6 +73,10 @@ MTRRDEFINES = -DHAS_MTRR_SUPPORT
 
 #if defined(NetBSDArchitecture) && defined(HasMTRRBuiltin)
 MTRRDEFINES = -DHAS_MTRR_BUILTIN
+#endif
+
+#if defined(FreeBSDArchitecture)
+SYSVIPCDEFINES = -DHAVE_SYSV_IPC
 #endif
 
 #if UsbMouseSupport
@@ -172,7 +176,7 @@ APDEFINES = -DHAS_APERTURE_DRV
 #endif
 
 DEFINES = $(CONSDEFINES) $(APDEFINES) $(IOPERMDEFINES) $(RESDEFINES) \
-	  $(MTRRDEFINES) $(USBMOUSEDEFINES)
+	  $(MTRRDEFINES) $(USBMOUSEDEFINES) $(SYSVIPCDEFINES)
 
 #if defined(AlphaArchitecture)
 SpecialObjectRule(bsd_ev56.o, bsd_ev56.c, -mcpu=ev56)
