@@ -1,5 +1,5 @@
 /*
- * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.20 2002/08/02 18:48:56 keithp Exp $
+ * $XFree86: xc/lib/Xft/xftglyphs.c,v 1.21 2002/08/12 22:16:08 keithp Exp $
  *
  * Copyright © 2000 Keith Packard, member of The XFree86 Project, Inc.
  *
@@ -109,11 +109,8 @@ XftFontLoadGlyphs (Display	*dpy,
 
     face = XftLockFace (&font->public);
     
-    if (!_XftSetFace (font->info.file, font->info.xsize, font->info.ysize, &font->info.matrix))
-    {
-	XftUnlockFace (&font->public);
+    if (!face)
 	return;
-    }
 
     matrix.xx = matrix.yy = 0x10000L;
     matrix.xy = matrix.yx = 0;
