@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.49 2004/01/25 16:57:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i830_driver.c,v 1.50 2004/02/20 00:06:00 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2001 VA Linux Systems Inc., Fremont, California.
@@ -790,9 +790,14 @@ I830DetectDisplayDevice(ScrnInfoPtr pScrn)
    I830Ptr pI830 = I830PTR(pScrn);
    int pipe, n;
    DisplayType i;
-
+   
    /* This seems to lockup some Dell BIOS'. So it's on option to turn on */
    if (pI830->displayInfo) {
+       xf86DrvMsg(pScrn->scrnIndex, X_INFO,
+		  "Broken BIOSes cause the system to hang here.\n"
+		  "\t      If you encounter this problem please add \n"
+		  "\t\t Option \"DisplayInfo\" \"FALSE\"\n"
+		  "\t      to the Device section of your XF86Config file.\n");
       for (i = 0; i < NumKnownDisplayTypes; i++) {
          if (GetDisplayInfo(pScrn, 1 << i, &pI830->displayAttached[i],
 			 &pI830->displayPresent[i],
@@ -1819,11 +1824,11 @@ I830BIOSPreInit(ScrnInfoPtr pScrn, int flags)
    xf86DrvMsg(pScrn->scrnIndex, X_INFO, "%d display pipe%s available.\n",
 	      pI830->availablePipes, pI830->availablePipes > 1 ? "s" : "");
 
-   pI830->displayInfo = FALSE;
+   pI830->displayInfo = TRUE;
    from = X_DEFAULT;
-   if (xf86ReturnOptValBool(pI830->Options, OPTION_DISPLAY_INFO, FALSE)) {
-      pI830->displayInfo = TRUE;
+   if (!xf86ReturnOptValBool(pI830->Options, OPTION_DISPLAY_INFO, TRUE)) {
       from = X_CONFIG;
+      pI830->displayInfo = FALSE;
    }
    xf86DrvMsg(pScrn->scrnIndex, from, "Display Info: %s.\n",
 	      pI830->displayInfo ? "enabled" : "disabled");
