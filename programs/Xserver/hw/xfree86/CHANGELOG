@@ -1,4 +1,5 @@
 XFree86 4.3.99.16 (xx November 2003)
+ 549. Get backlight working on Apple's GeForce4 powerbooks (Guido Guenther).
 
 XFree86 4.3.99.15 ( 1 November 2003)
  548. Update libfreetype-xtt2 to version 1.1:
@@ -18095,7 +18096,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2927 2003/11/02 04:30:57 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2928 2003/11/02 04:47:02 dawes Exp $
 
 
 
