@@ -1,5 +1,5 @@
 /* $XConsortium: mach32.c,v 1.1 94/03/28 21:06:42 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.17 1994/09/11 11:13:20 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/accel/mach32/mach32.c,v 3.18 1994/09/17 13:45:52 dawes Exp $ */
 /*
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  * Copyright 1993 by Kevin E. Martin, Chapel Hill, North Carolina.
@@ -748,7 +748,8 @@ mach32Probe()
 		XCONFIG_GIVEN : XCONFIG_PROBED, mach32InfoRec.name,
 		mach32DAC8Bit ?  8 : 6);
 	else if (mach32InfoRec.bitsPerPixel == 16)
-	    ErrorF("Color weight: %1d%1d%1d\n", xf86weight.red,
+	    ErrorF("%s %s: Color weight: %1d%1d%1d\n", XCONFIG_GIVEN,
+		mach32InfoRec.name, xf86weight.red,
 		xf86weight.green, xf86weight.blue);
     }
 

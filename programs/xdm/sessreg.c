@@ -1,6 +1,6 @@
 /*
  * $XConsortium: sessreg.c,v 1.11 94/04/17 20:03:46 rws Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xdm/sessreg.c,v 3.0 1994/04/28 12:44:57 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -47,6 +47,10 @@ in this Software without prior written authorization from the X Consortium.
 # include	<X11/Xfuncs.h>
 # include	<stdio.h>
 # include	<utmp.h>
+
+#ifdef linux
+#define SYSV
+#endif
 
 #ifdef SVR4
 #define SYSV			/* nice System V utmp interface still the same */
