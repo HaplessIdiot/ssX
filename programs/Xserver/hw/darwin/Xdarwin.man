@@ -1,4 +1,4 @@
-.\" $XFree86$
+.\" $XFree86: xc/programs/Xserver/hw/darwin/Xdarwin.man,v 1.1 2000/11/15 01:36:13 dawes Exp $
 .\"
 .TH XDARWIN 1 "Release 6.4" "X Version 11"
 .SH NAME
@@ -36,6 +36,12 @@ per pixel are supported.
 .TP 8
 .B "\-refresh \fIrate\fP"
 Gives the refresh rate to use in Hz. For LCD displays this should be 0.
+.TP 8
+.B \-showconfig
+Print out the server version and patchlevel.
+.TP 8
+.B \-version
+Same as \fB\-showconfig\fP.
 .SH "SEE ALSO"
 .PP
 X(1), Xserver(1), xdm(1), xinit(1)

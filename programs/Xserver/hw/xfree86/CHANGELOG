@@ -1,4 +1,14 @@
 XFree86 4.0.1h (1 December 2000)
+1056. Fix neomagic driver mangled acceleration test (#4309, 4310,
+      Chip Salzenberg).
+1055. Add a rudimentary driver for the SGI Indy's newport cards (only
+      8-bit and non-accelerated so far) (#4308, Guido Guenther).
+1054. Fix a bug in rman that is provoked by the new dumpkeymap man page
+      (David Dawes).
+1053. Updates to the dumpkeymap utility, and add documentation (including
+      a man page) (#4307, Eric Sunshine).
+1052. Add -version and -showconfig options to the Darwin Xserver, and print
+      the usual "XFree86" banner message (#4306, Torrey T. Lyons).
 1051. Fix i810 crash when running XFree86 -configure (#4305, Ryan Drake).
 1050. Linux APM fix, which fixes a problem that shows up with the neomagic
       driver after an APM suspend (#4304, 4311, Chip Salzenberg).
@@ -11763,4 +11773,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1429 2000/12/01 15:28:05 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1430 2000/12/01 17:43:04 dawes Exp $
