@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.72 2000/08/01 20:28:37 dawes Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.74 2000/08/26 16:15:51 keithp Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -1422,6 +1422,21 @@ ProjectUnsharedLibReferences(XTHRSTUB,XThrStub,$(XTHRSTUBSRC),XBuildLibDir)
 #endif
 #endif
 
+#if BuildRenderLibrary
+#ifndef SharedLibXrender
+#define SharedLibXrender	HasSharedLibraries
+#endif
+#ifndef NormalLibXrender
+#define NormalLibXrender	YES
+#endif
+#ifndef DebugLibXrender
+#define DebugLibXrender		NO
+#endif
+#ifndef ProfileLibXrender
+#define ProfileLibXrender	NO
+#endif
+#endif
+
 #if BuildGLXLibrary
 #ifndef SharedLibGlx
 #define SharedLibGlx		HasSharedLibraries
@@ -1620,6 +1635,18 @@ ProjectUnsharedLibReferences(PSRES,psres,$(PSRESLIBSRC),XBuildLibDir)
 SharedLibReferences(GLX,GL,$(GLXLIBSRC),SOGLREV,SharedGlxRev)
 #else
 ProjectUnsharedLibReferences(GLX,GL,$(GLXLIBSRC),XBuildLibDir)
+#endif
+#endif
+
+#if BuildRenderLibrary
+    XRENDERLIBSRC = $(LIBSRC)/Xrender
+#if SharedLibXrender
+#ifndef SharedXrenderRev
+#define SharedXrenderRev 1.0
+#endif
+SharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),SOXRENDERREV,SharedXrenderRev)
+#else
+ProjectUnsharedLibReferences(XRENDER,Xrender,$(XRENDERLIBSRC),XBuildLibDir)
 #endif
 #endif
 
