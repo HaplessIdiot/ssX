@@ -1,5 +1,6 @@
 XFree86 3.9.17e (11 February 2000)
-3697. Modify XAA to allow image rendering into DMA buffers (Mark Vojkovich)
+3698. 8+24 support upgraded to a non-destructive overlay (Mark Vojkovich).
+3697. Modify XAA to allow image rendering into DMA buffers (Mark Vojkovich).
 3696. Fix some SVR4.0 build problems (#3642, Satoshi Kimura).
 3695. Add XErrorDB entries for the DPS extension (#3639, Juliusz Chroboczek).
 3694. Fix a bigfont extension build problem on Linux/libc5 (#3637,
