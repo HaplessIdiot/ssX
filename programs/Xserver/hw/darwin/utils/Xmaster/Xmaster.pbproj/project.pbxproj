@@ -1,4 +1,3 @@
-// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -426,7 +425,7 @@
 	<key>CFBundleIconFile</key>
 	<string>Xmaster.icns</string>
 	<key>CFBundleIdentifier</key>
-	<string>org.xfree86.utils.Xmaster</string>
+	<string>org.xfree86.Darwin.Xmaster</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>

@@ -7,20 +7,15 @@
             SUPERCLASS = NSObject; 
         }, 
         {
-            ACTIONS = {
-                close = id; 
-                setDisplay = id; 
-                setFakeButtons = id; 
-                setKey = id; 
-                setStartupHelp = id; 
-            }; 
+            ACTIONS = {close = id; saveChanges = id; setKey = id; }; 
             CLASS = Preferences; 
             LANGUAGE = ObjC; 
             OUTLETS = {
                 displayNumber = id; 
-                fakeButtons = id; 
+                fakeButton = id; 
                 keyField = id; 
-                startupHelp = id; 
+                splashStartupHelpButton = id; 
+                startupHelpButton = id; 
                 window = id; 
             }; 
             SUPERCLASS = NSObject; 
@@ -35,7 +30,7 @@
             ACTIONS = {closeHelpAndShow = id; }; 
             CLASS = Xserver; 
             LANGUAGE = ObjC; 
-            OUTLETS = {helpWindow = id; }; 
+            OUTLETS = {helpWindow = id; startupHelpButton = id; }; 
             SUPERCLASS = NSObject; 
         }
     ); 
