@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.9 2001/06/04 13:04:41 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.10 2001/06/05 10:10:28 alanh Exp $ */
 
 #include "win.h"
 
@@ -216,7 +216,6 @@ winScreenInit (int index,
 {
   winScreenInfoPtr      pScreenInfo = &g_ScreenInfo[index];
   winPrivScreenPtr	pScreenPriv;
-  unsigned int		i;
 
   /* Allocate privates for this screen */
   winAllocatePrivates (pScreen);

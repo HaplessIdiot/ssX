@@ -30,7 +30,7 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.4 2001/05/08 08:14:09 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winwndproc.c,v 1.5 2001/06/06 18:02:16 alanh Exp $ */
 
 #include "win.h"
 
@@ -42,20 +42,28 @@ LRESULT CALLBACK
 winWindowProc (HWND hWnd, UINT message, 
 	       WPARAM wParam, LPARAM lParam)
 {
-  winPrivScreenPtr      pScreenPriv = NULL;
-  winScreenInfo		*pScreenInfo = NULL;
-  ScreenPtr		pScreen = NULL;
-  static HWND		hwndLast = NULL;
-  winPrivScreenPtr	pScreenPrivLast;
-  xEvent		xCurrentEvent;
-  LPCREATESTRUCT	pcs;
-  HRESULT		ddrval;
-  RECT			rcClient, rcSrc;
-  int			iScanCode;
+  winPrivScreenPtr		pScreenPriv = NULL;
+  winScreenInfo			*pScreenInfo = NULL;
+  ScreenPtr			pScreen = NULL;
+  static HWND			hwndLastMouse = NULL;
+  static unsigned long		ulServerGeneration = 0;
+  winPrivScreenPtr		pScreenPrivLast;
+  xEvent			xCurrentEvent;
+  LPCREATESTRUCT		pcs;
+  HRESULT			ddrval;
+  RECT				rcClient, rcSrc;
+  int				iScanCode;
 
-  /* Initialize our event structure */
-  ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
-
+  /* Watch for server regeneration */
+  if (g_ulServerGeneration != ulServerGeneration)
+    {
+      /* Might as well declare that we received the last mouse message */
+      hwndLastMouse = hWnd;
+      
+      /* Store new server generation */
+      ulServerGeneration = g_ulServerGeneration;
+    }
+  
   /* Retrieve screen privates pointers for this window */
   pScreenPriv = GetProp (hWnd, WIN_SCR_PROP);
   if (pScreenPriv != NULL)
@@ -119,10 +127,10 @@ winWindowProc (HWND hWnd, UINT message,
 	}
 
       /* Sometimes we hide, sometimes we show */
-      if (hwndLast != NULL && hwndLast != hWnd)
+      if (hwndLastMouse != NULL && hwndLastMouse != hWnd)
 	{
 	  /* Cursor is now over NC area of another screen */
-	  pScreenPrivLast = GetProp (hwndLast, WIN_SCR_PROP);
+	  pScreenPrivLast = GetProp (hwndLastMouse, WIN_SCR_PROP);
 	  if (pScreenPrivLast == NULL)
 	    {
 	      ErrorF ("winWindowProc () - WM_NCMOUSEMOVE - Couldn't obtain "
@@ -165,15 +173,15 @@ winWindowProc (HWND hWnd, UINT message,
 			       g_c32LastInputEventTime = GetTickCount ());
 
       /* Store pointer to last window handle */
-      hwndLast = hWnd;
+      hwndLastMouse = hWnd;
       return 0;
 
     case WM_NCMOUSEMOVE:
       /* Non-client mouse movement, show Windows cursor */
-      if (hwndLast != NULL && hwndLast != hWnd)
+      if (hwndLastMouse != NULL && hwndLastMouse != hWnd)
 	{
 	  /* Cursor is now over NC area of another screen */
-	  pScreenPrivLast = GetProp (hwndLast, WIN_SCR_PROP);
+	  pScreenPrivLast = GetProp (hwndLastMouse, WIN_SCR_PROP);
 	  if (pScreenPrivLast == NULL)
 	    {
 	      ErrorF ("winWindowProc () - WM_NCMOUSEMOVE - Couldn't obtain "
@@ -202,7 +210,7 @@ winWindowProc (HWND hWnd, UINT message,
 	}
 
       /* Store pointer to last window handle */
-      hwndLast = hWnd;
+      hwndLastMouse = hWnd;
       return 0;
 
     case WM_LBUTTONDBLCLK:
@@ -256,6 +264,7 @@ winWindowProc (HWND hWnd, UINT message,
     case WM_KEYDOWN:
       if (winIsFakeCtrl_L (message, wParam, lParam))
 	return 0;
+      ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
       winTranslateKey (wParam, lParam, &iScanCode);
       xCurrentEvent.u.u.type = KeyPress;
       xCurrentEvent.u.u.detail = iScanCode;
@@ -268,6 +277,7 @@ winWindowProc (HWND hWnd, UINT message,
     case WM_KEYUP:
       if (winIsFakeCtrl_L (message, wParam, lParam))
 	return 0;
+      ZeroMemory (&xCurrentEvent, sizeof (xCurrentEvent));
       winTranslateKey (wParam, lParam, &iScanCode);
       xCurrentEvent.u.u.type = KeyRelease;
       xCurrentEvent.u.u.detail = iScanCode;
@@ -412,7 +422,7 @@ winWindowProc (HWND hWnd, UINT message,
 	}
 
       /* Are we activating or deactivating? */
-      if (hwndLast != NULL && hwndLast != hWnd)
+      if (hwndLastMouse != NULL && hwndLastMouse != hWnd)
 	{
 	  /*
 	   * Activation has transferred between screens.
@@ -420,7 +430,7 @@ winWindowProc (HWND hWnd, UINT message,
 	   * focus, as it is the only one that notices the difference
 	   * between pScreen and pScreenLast.
 	   */
-	  pScreenPrivLast = GetProp (hwndLast, WIN_SCR_PROP);
+	  pScreenPrivLast = GetProp (hwndLastMouse, WIN_SCR_PROP);
 	  if (pScreenPrivLast == NULL)
 	    {
 	      ErrorF ("winWindowProc () - WM_ACTIVATE - Couldn't obtain last "
@@ -459,7 +469,7 @@ winWindowProc (HWND hWnd, UINT message,
 	}
 
       /* Store last active window handle */
-      hwndLast = hWnd;
+      hwndLastMouse = hWnd;
 
       return 0;
 
