@@ -152,11 +152,11 @@ static Bool
 cfb8_32CloseScreen (int i, ScreenPtr pScreen)
 {
     cfb8_32ScreenPtr pScreenPriv = CFB8_32_GET_SCREEN_PRIVATE(pScreen);
-
     if(pScreenPriv->visualData)
 	xfree(pScreenPriv->visualData);
 
     xfree((pointer) pScreenPriv);
+    pScreen->devPrivates[cfb8_32ScreenPrivateIndex].ptr = NULL;
 
     return(cfb32CloseScreen(i, pScreen));
 }
@@ -266,10 +266,8 @@ cfb8_32SetupVisuals (ScreenPtr pScreen)
     }    
 
     overlayVisualsAtom = MakeAtom(atomString, sizeof(atomString) - 1, TRUE);
-
     xf86RegisterRootWindowProperty(pScreen->myNum, overlayVisualsAtom,
 			overlayVisualsAtom, 32, numVisuals * 4, overlayVisuals);
-
     pScreenPriv->visualData = (pointer)overlayVisuals;
 }
 
