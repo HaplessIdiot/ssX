@@ -1,4 +1,4 @@
-/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.2 2004/04/22 13:58:37 tsi Exp $ */
+/* $XFree86: xc/extras/Mesa/src/mesa/drivers/x11/xm_api.c,v 1.3 2004/06/10 14:43:40 alanh Exp $ */
 /*
  * Mesa 3-D graphics library
  * Version:  6.1
@@ -795,8 +795,6 @@ noFaultXAllocColor( int client,
 static GLboolean setup_grayscale( int client, XMesaVisual v,
                                   XMesaBuffer buffer, XMesaColormap cmap )
 {
-   (void) DitherValues;		/* Muffle compiler */
-
    if (GET_VISUAL_DEPTH(v)<4 || GET_VISUAL_DEPTH(v)>16) {
       return GL_FALSE;
    }
