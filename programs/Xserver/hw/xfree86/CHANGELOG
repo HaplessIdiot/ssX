@@ -1,4 +1,5 @@
 XFree86 4.2.99.3 (xx November 2002)
+ 575. Use shadowfb in XDarwin fullscreen Quartz mode (Torrey T. Lyons).
  574. Make RENDER optional for Xvfb. When RENDER is enabled add depth 32 
       pixmap format  to list of supported pixmaps (Egbert Eich).
  573. Fix va_args glitches for xterm/libfontconfig: 0 == (void*)0 isn't true   
@@ -15676,4 +15677,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2422 2002/12/04 04:40:16 torrey Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.2423 2002/12/04 10:28:05 eich Exp $

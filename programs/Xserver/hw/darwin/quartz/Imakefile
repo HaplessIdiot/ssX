@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.3 2002/07/22 00:27:25 torrey Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/darwin/quartz/Imakefile,v 1.4 2002/07/24 05:58:33 torrey Exp $
 
 #include <Server.tmpl>
 
@@ -46,7 +46,7 @@ OBJS =  Preferences.o \
 
 INCLUDES = -I. -I$(SERVERSRC)/fb -I$(SERVERSRC)/mi -I$(SERVERSRC)/include \
            -I$(XINCLUDESRC) -I$(FONTINCSRC) -I$(SERVERSRC)/render \
-           -I$(EXTINCSRC) -I.. -I$(SERVERSRC)/Xext
+           -I$(SERVERSRC)/miext/shadow -I$(EXTINCSRC) -I.. -I$(SERVERSRC)/Xext
 
 #if defined(XFree86CustomVersion)
 CUSTOMVERSION = XFree86CustomVersion
