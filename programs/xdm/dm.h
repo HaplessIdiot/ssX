@@ -1,5 +1,5 @@
 /* $XConsortium: dm.h,v 1.63 94/04/17 20:03:37 gildea Exp $ */
-/* $XFree86: xc/programs/xdm/dm.h,v 3.0 1994/04/28 12:44:52 dawes Exp $ */
+/* $XFree86: xc/programs/xdm/dm.h,v 3.1 1994/05/06 08:26:57 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -38,12 +38,6 @@ from the X Consortium.
  *
  * public interfaces for greet/verify functionality
  */
-
-/* Hack for SVR4 -- there are problems with STEAMSCONN */
-#ifdef STREAMSCONN
-#undef STREAMSCONN
-#define TCPCONN
-#endif
 
 #include <X11/Xos.h>
 #include <X11/Xfuncs.h>

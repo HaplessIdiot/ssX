@@ -1,5 +1,5 @@
 /* $XConsortium: auth.c,v 1.54 94/04/17 20:03:33 gildea Exp $ */
-/* $XFree86$ */
+/* $XFree86: xc/programs/xdm/auth.c,v 3.0 1994/05/04 15:06:18 dawes Exp $ */
 /*
 
 Copyright (c) 1988  X Consortium
@@ -786,8 +786,7 @@ DefineSelf (fd, file, auth)
     struct in_ifaddr ifaddr;
     struct strioctl str;
     unsigned char *addr;
-    register HOST *host;
-    int	family, len;
+    int	family, len, ipfd;
 
     if ((ipfd = open ("/dev/ip", O_RDWR, 0 )) < 0)
         Error ("Getting interface configuration");
@@ -821,7 +820,7 @@ DefineSelf (fd, file, auth)
 	}
 
 	len = sizeof(struct sockaddr_in);
-	if (ConvertAddr (IA_SIN(&ifaddr), &len, (pointer *)&addr) < 0
+	if (ConvertAddr (IA_SIN(&ifaddr), &len, &addr) < 0)
 	    continue;
 	if (len == 0)
 	{

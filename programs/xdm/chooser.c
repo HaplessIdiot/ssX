@@ -1,6 +1,6 @@
 /*
  * $XConsortium: chooser.c,v 1.19 94/04/17 20:03:34 rws Exp $
- * $XFree86$
+ * $XFree86: xc/programs/xdm/chooser.c,v 3.0 1994/05/04 15:06:20 dawes Exp $
  *
 Copyright (c) 1990  X Consortium
 
@@ -72,18 +72,23 @@ in this Software without prior written authorization from the X Consortium.
 
 #ifdef SVR4
 #include    <sys/sockio.h>
-#include    <stropts.h>
 #endif
 #if defined(SYSV) && defined(i386)
 #include    <sys/stream.h>
 #ifdef ISC
-#include    <sys/stropts.h>
 #include    <sys/sioctl.h>
 #endif
 #endif
 #include    <sys/socket.h>
 #include    <netinet/in.h>
 #include    <sys/ioctl.h>
+#if defined(STREAMSCONN)
+#if defined(NCR)
+#include    <netinet/ip.h>
+#endif
+#include    <stropts.h>
+#include    <tiuser.h>
+#endif
 
 #define BROADCAST_HOSTNAME  "BROADCAST"
 
@@ -525,112 +530,6 @@ RegisterHostaddr (addr, len, type)
  *  addresses on the local host.
  */
 
-#ifdef NCR
-
-#include <sys/un.h>    
-#include <stropts.h> 
-#include <tiuser.h> 
-
-#include <sys/stream.h>
-#include <net/if.h>
-#include <netinet/ip.h>
-#include <netinet/ip_var.h>
-#include <netinet/in.h> 
-#include <netinet/in_var.h>
-
-RegisterHostname (name)
-    char    *name;
-{
-    /*
-     * The Wolongong drivers used by NCR SVR4/MP-RAS don't understand the
-     * socket IO calls that most other drivers seem to like. Because of
-     * this, this routine must be special cased for NCR. Eventually,
-     * this will be cleared up.
-     */ 
-
-    struct ipb ifnet;
-    struct in_ifaddr ifaddr;
-    struct strioctl str;
-    unsigned char *addr;
-    register HOST *host;
-    int family, len;
-
-    if (!strcmp (name, BROADCAST_HOSTNAME))
-    {
-	if ((fd = open ("/dev/ip", O_RDWR, 0 )) < 0)
-	    return;
-
-	/* Indicate that we want to start at the begining */
-	ifnet.ib_next = (struct ipb *) 1;
-
-	while (ifnet.ib_next)
-	{
-	    str.ic_cmd = IPIOC_GETIPB;
-	    str.ic_timout = 0;
-	    str.ic_len = sizeof (struct ipb);
-	    str.ic_dp = (char *) &ifnet;
-
-	    if (ioctl (fd, (int) I_STR, (char *) &str) < 0)
-	    {
-		close (fd);
-		return;
-	    }
-
-	    ifaddr.ia_next = (struct in_ifaddr *) ifnet.if_addrlist;
-	    str.ic_cmd = IPIOC_GETINADDR;
-	    str.ic_timout = 0;
-	    str.ic_len = sizeof (struct in_ifaddr);
-	    str.ic_dp = (char *) &ifaddr;
-
-	    if (ioctl (fd, (int) I_STR, (char *) &str) < 0)
-	    {
-		close (fd);
-		return;
-	    }
-
-#define IA_BROADADDR(ia) \
-	((struct sockaddr_in *)(&((struct in_ifaddr *)ia)->ia_broadaddr))
-
-	    RegisterHostaddr ((struct sockaddr *)IA_BROADADDR(&ifaddr),
-			      sizeof (struct sockaddr_in),
-			      BROADCAST_QUERY);
-#undef IA_BROADADDR
-	}
-	close(fd);
-    }
-    else
-    {
-
-	/* address as hex string, e.g., "12180022" (depreciated) */
-	if (strlen(name) == 8 &&
-	    FromHex(name, (char *)&in_addr.sin_addr, strlen(name)) == 0)
-	{
-	    in_addr.sin_family = AF_INET;
-	}
-	/* Per RFC 1123, check first for IP address in dotted-decimal form */
-	else if ((in_addr.sin_addr.s_addr = inet_addr(name)) != -1)
-	    in_addr.sin_family = AF_INET;
-	else
-	{
-	    hostent = gethostbyname (name);
-	    if (!hostent)
-		return;
-	    if (hostent->h_addrtype != AF_INET || hostent->h_length != 4)
-	    	return;
-	    in_addr.sin_family = hostent->h_addrtype;
-	    memmove( &in_addr.sin_addr, hostent->h_addr, 4);
-	}
-	in_addr.sin_port = htons (XDM_UDP_PORT);
-#ifdef BSD44SOCKETS
-	in_addr.sin_len = sizeof(in_addr);
-#endif
-	RegisterHostaddr ((struct sockaddr *)&in_addr, sizeof (in_addr),
-			  QUERY);
-    }
-}
-
-#else /* NCR */
-
 /* Handle variable length ifreq in BNR2 and later */
 #ifdef AF_LINK
 #define ifr_size(p) (sizeof (struct ifreq) + \
@@ -653,6 +552,36 @@ RegisterHostname (name)
 
     if (!strcmp (name, BROADCAST_HOSTNAME))
     {
+#if defined(STREAMSCONN) && defined(NCR)
+    int                 ipfd;
+    struct ifconf       *ifcp;
+    struct strioctl     ioc;
+
+	ifcp = (struct ifconf *)buf;
+	ifcp->ifc_buf = buf+4;
+	ifcp->ifc_len = sizeof (buf) - 4;
+
+	if ((ipfd=open( "/dev/ip", O_RDONLY )) < 0 )
+	    {
+	    t_error( "RegisterHostname() t_open(/dev/ip) failed" );
+	    return;
+	    }
+
+	ioc.ic_cmd = IPIOC_GETIFCONF;
+	ioc.ic_timout = 60;
+	ioc.ic_len = sizeof( buf );
+	ioc.ic_dp = (char *)ifcp;
+
+	if (ioctl (ipfd, (int) I_STR, (char *) &ioc) < 0)
+	    {
+	    perror( "RegisterHostname() ioctl(I_STR(IPIOC_GETIFCONF)) failed" );
+	    close( ipfd );
+	    return;
+	    }
+
+	for (ifr = ifcp->ifc_req, n = ifcp->ifc_len / sizeof (struct ifreq);
+	     --n >= 0; ifr++)
+#else
 	ifc.ifc_len = sizeof (buf);
 	ifc.ifc_buf = buf;
 	if (ifioctl (socketFD, (int) SIOCGIFCONF, (char *) &ifc) < 0)
@@ -667,8 +596,11 @@ RegisterHostname (name)
 	cplim = (char *) IFC_IFC_REQ + ifc.ifc_len;
 
 	for (cp = (char *) IFC_IFC_REQ; cp < cplim; cp += ifr_size (ifr))
+#endif /* STREAMSCONN && NCR */
 	{
+#ifndef NCR
 	    ifr = (struct ifreq *) cp;
+#endif
 	    if (ifr->ifr_addr.sa_family != AF_INET)
 		continue;
 
@@ -680,13 +612,31 @@ RegisterHostname (name)
 		struct ifreq    broad_req;
     
 		broad_req = *ifr;
+#if defined(STREAMSCONN) && defined(NCR)
+		ioc.ic_cmd = IPIOC_GETIFFLAGS;
+		ioc.ic_timout = 0;
+		ioc.ic_len = sizeof( broad_req );
+		ioc.ic_dp = (char *)&broad_req;
+
+		if (ioctl (ipfd, I_STR, (char *) &ioc) != -1 &&
+#else
 		if (ifioctl (socketFD, SIOCGIFFLAGS, (char *) &broad_req) != -1 &&
+#endif
 		    (broad_req.ifr_flags & IFF_BROADCAST) &&
 		    (broad_req.ifr_flags & IFF_UP)
 		    )
 		{
 		    broad_req = *ifr;
+#if defined(STREAMSCONN) && defined(NCR)
+		    ioc.ic_cmd = IPIOC_GETIFBRDADDR;
+		    ioc.ic_timout = 0;
+		    ioc.ic_len = sizeof( broad_req );
+		    ioc.ic_dp = (char *)&broad_req;
+
+		    if (ioctl (ipfd, I_STR, (char *) &ioc) != -1)
+#else
 		    if (ifioctl (socketFD, SIOCGIFBRDADDR, &broad_req) != -1)
+#endif
 			broad_addr = broad_req.ifr_addr;
 		    else
 			continue;
@@ -734,7 +684,6 @@ RegisterHostname (name)
 			  QUERY);
     }
 }
-#endif /* NCR */
 
 static ARRAYofARRAY8	AuthenticationNames;
 
@@ -775,12 +724,20 @@ InitXDMCP (argv)
 	header.length += 2 + AuthenticationNames.data[i].length;
     XdmcpWriteHeader (&directBuffer, &header);
     XdmcpWriteARRAYofARRAY8 (&directBuffer, &AuthenticationNames);
+#if defined(STREAMSCONN)
+    if ((socketFD = t_open ("/dev/udp", O_RDWR, 0)) < 0)
+	return 0;
+    t_bind( socketFD, NULL, NULL );
+#else
     if ((socketFD = socket (AF_INET, SOCK_DGRAM, 0)) < 0)
 	return 0;
+#endif
+#ifndef STREAMSCONN
 #ifdef SO_BROADCAST
     soopts = 1;
     if (setsockopt (socketFD, SOL_SOCKET, SO_BROADCAST, (char *)&soopts, sizeof (soopts)) < 0)
 	perror ("setsockopt");
+#endif
 #endif
     
     XtAddInput (socketFD, (XtPointer) XtInputReadMask, ReceivePacket,
@@ -809,6 +766,9 @@ Choose (h)
 	char		buf[1024];
 	XdmcpBuffer	buffer;
 	char		*xdm;
+#if defined(STREAMSCONN)
+        struct  t_call  call, rcv;
+#endif
 
 	xdm = (char *) app_resources.xdmAddress->data;
 	family = (xdm[0] << 8) + xdm[1];
@@ -824,6 +784,36 @@ Choose (h)
 	    len = sizeof (in_addr);
 	    break;
 	}
+#if defined(STREAMSCONN)
+	if ((fd = t_open ("/dev/tcp", O_RDWR, NULL)) == -1)
+	{
+	    fprintf (stderr, "Cannot create response endpoint\n");
+	    fflush(stderr);
+	    exit (REMANAGE_DISPLAY);
+	}
+	if (t_bind (fd, NULL, NULL) == -1)
+	{
+	    fprintf (stderr, "Cannot bind response endpoint\n");
+	    fflush(stderr);
+	    t_close (fd);
+	    exit (REMANAGE_DISPLAY);
+	}
+	call.addr.buf=(char *)addr;
+	call.addr.len=len;
+	call.addr.maxlen=len;
+	call.opt.len=0;
+	call.opt.maxlen=0;
+	call.udata.len=0;
+	call.udata.maxlen=0;
+	if (t_connect (fd, &call, NULL) == -1)
+	{
+	    t_error ("Cannot connect to xdm\n");
+	    fflush(stderr);
+	    t_unbind (fd);
+	    t_close (fd);
+	    exit (REMANAGE_DISPLAY);
+	}
+#else
 	if ((fd = socket (family, SOCK_STREAM, 0)) == -1)
 	{
 	    fprintf (stderr, "Cannot create response socket\n");
@@ -834,6 +824,7 @@ Choose (h)
 	    fprintf (stderr, "Cannot connect to xdm\n");
 	    exit (REMANAGE_DISPLAY);
 	}
+#endif
 	buffer.data = (BYTE *) buf;
 	buffer.size = sizeof (buf);
 	buffer.pointer = 0;
@@ -841,8 +832,24 @@ Choose (h)
 	XdmcpWriteARRAY8 (&buffer, app_resources.clientAddress);
 	XdmcpWriteCARD16 (&buffer, (CARD16) app_resources.connectionType);
 	XdmcpWriteARRAY8 (&buffer, &h->hostaddr);
+#if defined(STREAMSCONN)
+	if( t_snd (fd, (char *)buffer.data, buffer.pointer, 0) < 0 )
+	{
+	    fprintf (stderr, "Cannot send to xdm\n");
+	    fflush(stderr);
+	    t_unbind (fd);
+	    t_close (fd);
+	    exit (REMANAGE_DISPLAY);
+	}
+	sleep(5);	/* Hack because sometimes the connection gets
+			   closed before the data arrives on the other end. */
+	t_snddis (fd,NULL);
+	t_unbind (fd);
+	t_close (fd);
+#else
 	write (fd, (char *)buffer.data, buffer.pointer);
 	close (fd);
+#endif
     }
     else
     {
