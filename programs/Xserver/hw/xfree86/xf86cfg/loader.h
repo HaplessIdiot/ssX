@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.7 2001/07/09 23:45:24 paulo Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/loader.h,v 1.8 2004/03/05 16:04:59 tsi Exp $
  */
 
 #ifdef USE_MODULES
@@ -51,6 +51,8 @@
 #include "loaderProcs.h"
 
 #include <sym.h>
+#define NEED_XF86_PROTOTYPES
+#define NEED_XF86_TYPES
 #include <xf86_ansic.h>
 
 void LoaderDefaultFunc(void);

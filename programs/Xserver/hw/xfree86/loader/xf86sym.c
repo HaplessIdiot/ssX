@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.242 2003/10/27 20:51:16 herrb Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.243 2004/02/13 23:58:45 dawes Exp $ */
 
 /*
  *
@@ -23,7 +23,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 /*
- * Copyright (c) 1997-2003 by The XFree86 Project, Inc.
+ * Copyright (c) 1997-2004 by The XFree86 Project, Inc.
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -100,6 +100,8 @@
 #include "xf86miscproc.h"
 #include "loader.h"
 #define DONT_DEFINE_WRAPPERS
+#define NEED_XF86_PROTOTYPES
+#define NEED_XF86_TYPES
 #include "xf86_ansic.h"
 #include "xisb.h"
 #include "vbe.h"

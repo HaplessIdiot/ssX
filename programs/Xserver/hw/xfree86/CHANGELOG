@@ -1,4 +1,17 @@
 XFree86 4.4.99.7 (xx May 2004)
+ 115. Integrate the TinyX servers into the standard XFree86 build:
+       - Numerous build and warning fixes.
+       - Eliminate unnecessary requirement differences at the DIX level
+         for the XFree86 and TinyX servers.
+       - Eliminate unnecessary wrapper-related hacks for non-XFree86 servers.
+       - Fix libglx module build.
+       - Support for building "tiny" sets of some device-independent modules,
+         allowing control over which pervasive extensions are included in
+         the TinyX servers.
+       - Support for omitting extensions and font backends from TinyX.
+       - Add per-server usage message support.
+       - Numerous build/config cleanups.
+      (X-Oz Technologies).
  114. Add serial PNP entry for the Genius NetScroll+ mouse (Bugzilla #1017,
       N Marci).
  113. Automatic configuration updates:
@@ -18940,7 +18953,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3262 2004/06/01 01:23:48 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3263 2004/06/01 01:30:22 dawes Exp $
 
 
 

@@ -81,7 +81,7 @@ from The Open Group.
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.27 2004/03/05 03:20:48 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.28 2004/06/01 00:16:59 dawes Exp $ */
 
 #if defined(WIN32)
 #include <X11/Xwinsock.h>
@@ -297,6 +297,11 @@ DarwinGlxWrapInitVisuals(
     GlxWrapInitVisuals(procPtr);
 }
 #endif
+
+void
+OsVendorPreInit()
+{
+}
 
 void
 OsVendorInit()
