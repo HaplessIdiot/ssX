@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML 2.0//EN">
 <!--
  *****************************************************************************
- * Copyright 1996,1997,1998,1999,2000,2001,2002 by Thomas E. Dickey          *
+ * Copyright 1996-2001,2002 by Thomas E. Dickey                              *
  * All Rights Reserved.                                                      *
  *                                                                           *
  * Permission to use, copy, modify, and distribute this software and its     *
@@ -20,7 +20,7 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.77 2001/11/14 01:52:47 dickey Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.79 2002/01/05 22:05:03 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -29,7 +29,7 @@
 </HEAD>
 <BODY>
 <HR>
-Copyright 1997,1998,1999,2000,2001 by <A
+Copyright 1997-2001,2002 by <A
 HREF="mailto:dickey@invisible-island.net">Thomas E. Dickey</A>
 <HR>
 <H1>Contents</H1>
@@ -42,6 +42,7 @@ in the XFree86 CHANGELOG (found in the unbundled tree,
 xc/programs/Xserver/hw/xfree86).
 
 <UL>
+<LI><A HREF="#xterm_166">Patch #166 - 2002/3/25 - XFree86 4.2.0</A>
 <LI><A HREF="#xterm_165">Patch #165 - 2002/1/5 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_164">Patch #164 - 2001/11/13 - XFree86 4.1.0</A>
 <LI><A HREF="#xterm_163">Patch #163 - 2001/11/04 - XFree86 4.1.0</A>
@@ -209,6 +210,65 @@ xc/programs/Xserver/hw/xfree86).
 <LI><A HREF="#xterm_02">Patch #2 - 1996/1/7</A>
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
+
+<H1><A NAME="xterm_166">Patch #166 - 2002/03/25 - XFree86 4.2.0</A></H1>
+<ul>
+	<li>correct a bug in selection: double clicking on a word which
+	  was partly scrolled off the screen may select that text (report
+	  by Vincent Lefevre &lt;vincent@vinc17.org&gt;).
+
+	<li>implement <code>veryBoldColors</code> resource to control whether
+	  the corresponding video attribute such as <code>bold</code> is
+	  displayed when using <code>colorBDMode</code>, etc.  (request by Josh
+	  Howard &lt;jrh@vicor-nb.com&gt;).
+
+	<li>define escape sequences for function keys F21-F35 (patch by Steve Wall).
+
+	<li>change the colors for the 256-color model, making them less skewed
+	  toward black (patch by Steve Wall).
+
+	<li>add <code>vt100Graphics</code> resource (see patch #115, based on
+	  discussion with Glenn Maynard).
+
+	<li>ifdef'd Xaw/Xaw3d/neXtaw includes separately to avoid potential
+	  incompatibilities between these flavors of Athena widgets.
+
+	<li>add configure check for XFree86 4.x Xaw library, whose geometry
+	  management is broken, to avoid trying to use it for toolbar
+	  configuration.
+
+	<li>updates to configure script from vile and lynx to allow
+	  configure.in to be compiled with autoconf 2.5x
+
+	<li>add a check for null pointer return by <code>ptsname()</code>
+	  (newsgroup posting from Mike Silva &lt;mikesilva@lucent.com&gt;).
+
+	<li>fill in a few details needed to allow UTF-8 mode to switch on/off
+	  after startup.  This requires that <code>wideChars</code> resource be
+	  set.  (based on comments in 4 Aug 2001 by Alexey Marinichev
+	  &lt;lyosha@lyosha.2y.net&gt;).
+
+	<li>remove duplicate install rules that make directories, e.g., so installing
+	  manpage will not create app-defaults directory.
+
+	<li>add comment in in <code>do_osc()</code>, reserving cases 30 and 31
+	  for for Konsole (request by Stephan Binner
+	  &lt;Stephan.Binner@gmx.de&gt;).
+
+	<li>fixes for ctlseqs.ms and xterm.man
+	  (patch by Werner LEMBERG &lt;wl@gnu.org&gt;).
+
+	<li>add check for monochrome display, disabling colorMode in that
+	  case (fixes Debian #134130).
+
+	<li>resync with XFree86 CVS:
+	<ul>
+	   <li>Fix some xterm build warnings on *BSD (David Dawes).
+	   <li>Only use SA_RESTART in xterm when it's available (Frank Liu).
+	   <li>Fix incorrect code in signal handlers in most of the clients,
+	     xterm and xdm not done yet (Matthieu Herrb).
+	</ul>
+</ul>
 
 <H1><A NAME="xterm_165">Patch #165 - 2002/01/05 - XFree86 4.1.0</A></H1>
 <ul>
