@@ -421,9 +421,9 @@ FcConfigSetFonts (FcConfig	*config,
 		  FcSetName	set);
 
 FcBool
-FcConfigCompareValue (const FcValue m,
-		      FcOp	    op,
-		      const FcValue v);
+FcConfigCompareValue (FcValue m,
+		      FcOp    op,
+		      FcValue v);
 
 /* fccharset.c */
 FcCharSet *
