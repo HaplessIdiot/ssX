@@ -3,7 +3,7 @@
  * AGP GART support.
  */
 
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/agp_noop.c,v 1.1 2000/08/15 16:05:39 dawes Exp $ */
 
 #include "X.h"
 #include "xf86.h"
@@ -57,7 +57,7 @@ xf86UnbindGARTMemory(int screenNum, int key)
 }
 
 Bool
-xf86EnableAGP(int screenNum)
+xf86EnableAGP(int screenNum, CARD32 mode)
 {
 	return FALSE;
 }
