@@ -1080,7 +1080,7 @@ CreateCursor
 	else opaque, and areas darker than 50% gray will be black else white.
 
 	The source picture can be freed immediately if no further explicit
-	references to them are to be made.
+	references to it are to be made.
 
 	Subsequent drawing in the source has an undefined effect on the
 	cursor.  The server might or might not make a copy of the picture.
