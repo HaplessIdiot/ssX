@@ -1757,13 +1757,14 @@ GLINTPreInit(ScrnInfoPtr pScrn, int flags)
 	    mod = "xf24_32bpp";
 	break;
     case 32:
-	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR)
+	if (pScrn->overlayFlags & OVERLAY_8_32_PLANAR) {
 	    if (xf86LoadSubModule(pScrn, "xf8_32bpp") == NULL) {
 		GLINTFreeRec(pScrn);
 		return FALSE;
 	    } else
 		xf86LoaderReqSymLists(xf8_32bppSymbols,NULL);
-	mod = "cfb32";
+	} else
+	    mod = "fb";
 	break;
     }
     if (mod && xf86LoadSubModule(pScrn, mod) == NULL) {
