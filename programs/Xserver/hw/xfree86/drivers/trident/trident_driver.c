@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.170 2002/05/25 18:39:16 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.171 2002/05/25 18:42:40 alanh Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -2027,7 +2027,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
  	    break;
  	case 0x0E: /* XP */
  	    OUTB(vgaIOBase + 4, 0xC1);
- 	    switch (INB(vgaIOBase + 5)) {
+ 	    switch (INB(vgaIOBase + 5) & 0x11) {
  		case 0x00:
  		    pScrn->videoRam = 20480;
  		    break;
@@ -3164,7 +3164,7 @@ TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
 {
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
     IOADDRESS vgaIOBase = pTrident->PIOBase + VGAHWPTR(pScrn)->IOBase;
-    CARD8 temp = 0;
+    CARD8 temp = 0, protect = 0;
 
     /*
      * Skip MMIO Enable in PC-9821 PCI Trident Card!!
@@ -3178,6 +3178,11 @@ TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
     inb(pTrident->PIOBase + 0x3C5);
 
     /* Unprotect registers */
+    if (pTrident->Chipset > PROVIDIA9685) {
+    	outb(pTrident->PIOBase + 0x3C4, Protection);
+    	protect = inb(pTrident->PIOBase + 0x3C5);
+    	outb(pTrident->PIOBase + 0x3C5, 0x92);
+    }
     outb(pTrident->PIOBase + 0x3C4, NewMode1);
     temp = inb(pTrident->PIOBase + 0x3C5);
     outb(pTrident->PIOBase + 0x3C5, 0x80);
@@ -3188,6 +3193,10 @@ TRIDENTEnableMMIO(ScrnInfoPtr pScrn)
     outb(vgaIOBase + 5, pTrident->REGPCIReg | 0x01); /* Enable it */
 
     /* Protect registers */
+    if (pTrident->Chipset > PROVIDIA9685) {
+    	OUTB(0x3C4, Protection);
+    	OUTB(0x3C5, protect);
+    }
     OUTB(0x3C4, NewMode1);
     OUTB(0x3C5, temp);
 }
@@ -3196,7 +3205,7 @@ static void
 TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
 {
     int vgaIOBase = VGAHWPTR(pScrn)->IOBase;
-    CARD8 temp = 0;
+    CARD8 temp = 0, protect = 0;
     TRIDENTPtr pTrident = TRIDENTPTR(pScrn);
 
     /*
@@ -3212,6 +3221,11 @@ TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
     /* Unprotect registers */
     OUTB(0x3C4, NewMode1); temp = INB(0x3C5);
     OUTB(0x3C5, 0x80);
+    if (pTrident->Chipset > PROVIDIA9685) {
+    	OUTB(0x3C4, Protection);
+    	protect = INB(0x3C5);
+    	OUTB(0x3C5, 0x92);
+    }
 
     /* Disable MMIO access */
     OUTB(vgaIOBase + 4, PCIReg); 
@@ -3219,6 +3233,10 @@ TRIDENTDisableMMIO(ScrnInfoPtr pScrn)
     OUTB(vgaIOBase + 5, pTrident->REGPCIReg & 0xFE);
 
     /* Protect registers */
+    if (pTrident->Chipset > PROVIDIA9685) {
+    	outb(pTrident->PIOBase + 0x3C4, Protection);
+    	outb(pTrident->PIOBase + 0x3C5, protect);
+    }
     outb(pTrident->PIOBase + 0x3C4, NewMode1);
     outb(pTrident->PIOBase + 0x3C5, temp);
 }
