@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.14 1999/03/21 12:46:34 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/Xext/extmod/Imakefile,v 1.15 1999/08/14 10:49:25 dawes Exp $
 XCOMM This directory is only entered if DoLoadableServer is set
 
 #define IHaveModules
@@ -97,6 +97,15 @@ LinkSourceFile(sync.c,..)
 LinkSourceFile(xcmisc.c,..)
 
 ModuleObjectRule()
+
+/*
+ * A hack to work around an optimisation problem with the compiler on
+ * FreeBSD 4.0-current in late 1999/early 2000.
+ */
+#if BuildXF86VidModeExt && defined(FreeBSDGccOptBug)
+SpecialCObjectRule(xf86vmode,NullParameter,-O0)
+#endif
+
 SpecialCObjectRule(modinit,$(ICONFIGFILES),$(EXT_DEFINES))
 LibraryModuleTarget(extmod,$(MOBJS))
 NormalLintTarget($(SRCS))
