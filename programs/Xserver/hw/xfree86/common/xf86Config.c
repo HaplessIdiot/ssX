@@ -1,6 +1,6 @@
 /*
  * $XConsortium: xf86Config.c,v 1.2 94/03/28 21:22:51 dpw Exp $
- * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.10 1994/09/07 15:51:49 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86Config.c,v 3.11 1994/09/08 14:27:21 dawes Exp $
  *
  * Copyright 1990,91 by Thomas Roell, Dinkelscherben, Germany.
  *
@@ -1035,7 +1035,7 @@ configKeyboardSection()
         xf86Info.kbdEvents = xf86XqueEvents;
         xf86Info.xqueSema  = 0;
         if (xf86Verbose)
-          ErrorF("%s Xqueue selected for mouse and keyboard input\n",
+          ErrorF("%s Xqueue selected for keyboard input\n",
   	         XCONFIG_GIVEN);
 #endif
       } else {
@@ -1151,7 +1151,7 @@ configPointerSection()
         xf86Info.mseEvents = xf86XqueEvents;
         xf86Info.xqueSema  = 0;
         if (xf86Verbose)
-          ErrorF("%s Xqueue selected for mouse and keyboard input\n",
+          ErrorF("%s Xqueue selected for mouse input\n",
 	         XCONFIG_GIVEN);
         break;
       }
