@@ -34,7 +34,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/bundle/quartzShared.h,v 1.11 2001/10/14 03:02:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzShared.h,v 1.1 2002/03/28 02:21:19 torrey Exp $ */
 
 #ifndef _QUARTZSHARED_H
 #define _QUARTZSHARED_H
@@ -52,18 +52,6 @@ extern int                  darwinDesiredRefresh;
 // location of X11's (0,0) point in global screen coordinates
 extern int                  darwinMainScreenX;
 extern int                  darwinMainScreenY;
-
-// NX_APPDEFINED event subtypes for special commands to the X server
-enum {
-  kXDarwinUpdateModifiers,  // update all modifier keys
-  kXDarwinShow,             // vt switch to X server;
-                            // recapture screen and restore X drawing
-  kXDarwinHide,             // vt switch away from X server;
-                            // release screen and clip X drawing
-  kXDarwinQuit,             // kill the X server and release the display
-  kXDarwinReadPasteboard,   // copy Mac OS X pasteboard into X cut buffer
-  kXDarwinWritePasteboard   // copy X cut buffer onto Mac OS X pasteboard
-};
 
 #endif	/* _QUARTZSHARED_H */
 

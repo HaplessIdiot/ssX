@@ -31,7 +31,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.2 2002/06/12 01:09:36 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/quartzCommon.h,v 1.3 2002/07/22 00:27:25 torrey Exp $ */
 
 #ifndef _QUARTZCOMMON_H
 #define _QUARTZCOMMON_H
@@ -77,7 +77,7 @@ extern int              quartzScreenIndex;
 extern int              aquaMenuBarHeight;
 
 void QuartzReadPreferences(void);
-void QuartzMessageMainThread(unsigned msg);
+void QuartzMessageMainThread(unsigned msg, void *data, unsigned length);
 void QuartzFSCapture(void);
 void QuartzFSRelease(void);
 int QuartzFSUseQDCursor(int depth);
@@ -85,7 +85,8 @@ int QuartzFSUseQDCursor(int depth);
 // Messages that can be sent to the main thread.
 enum {
     kQuartzServerHidden,
-    kQuartzServerDied
+    kQuartzServerDied,
+    kQuartzPostEvent
 };
 
 #endif	/* _QUARTZCOMMON_H */

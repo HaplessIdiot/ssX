@@ -29,16 +29,17 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.2 2002/06/19 18:12:00 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.h,v 1.3 2002/07/15 18:57:44 torrey Exp $ */
+
+#define BOOL xBOOL
+#include "Xproto.h"
+#undef BOOL
 
 #import <Cocoa/Cocoa.h>
-
-#include <drivers/event_status_driver.h>	// for NXEvent
 
 @interface XServer : NSObject {
     // server state
     NSRecursiveLock *serverLock;
-    NSPort *signalPort;
     BOOL serverVisible;
     BOOL rootlessMenuBarVisible;
     BOOL appQuitting;
@@ -62,9 +63,9 @@
 - (id)init;
 
 - (BOOL)translateEvent:(NSEvent *)anEvent;
-- (BOOL)getNXMouse:(NXEvent*)ev;
+- (BOOL)getMousePosition:(xEvent *)xe;
 
-+ (void)append:(NSString*)value toEnv:(NSString*)name;
++ (void)append:(NSString *)value toEnv:(NSString *)name;
 
 - (void)startX;
 - (BOOL)startXClients;
@@ -75,8 +76,9 @@
 - (void)killServer;
 - (void)readPasteboard;
 - (void)writePasteboard;
-- (void)sendNXEvent:(NXEvent*)ev;
+- (void)sendXEvent:(xEvent *)xe;
 - (void)sendShowHide:(BOOL)show;
+- (void)clientProcessDone:(int)clientStatus;
 
 // Aqua interface actions
 - (IBAction)startFullScreen:(id)sender;

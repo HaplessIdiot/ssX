@@ -23,7 +23,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.10 2001/10/14 03:02:18 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/darwin.h,v 1.11 2002/03/28 02:21:08 torrey Exp $ */
 
 #ifndef _DARWIN_H
 #define _DARWIN_H
@@ -58,6 +58,11 @@ typedef struct {
 
 void xf86SetRootClip (ScreenPtr pScreen, BOOL enable);
 
+// From darwinEvents.c
+Bool DarwinEQInit(DevicePtr pKbd, DevicePtr pPtr);
+void DarwinEQEnqueue(const xEvent *e);
+void DarwinEQSwitchScreen(ScreenPtr pScreen, Bool fromDIX);
+
 // From darwinKeyboard.c
 int DarwinModifierNXKeyToNXKeycode(int key, int side);
 void DarwinKeyboardInit(DeviceIntPtr pDev);
@@ -86,5 +91,22 @@ extern int              darwinScreensFound;
 extern DarwinInputRec   hid;
 extern int              darwinEventFD;
 extern Bool             quartz;
+
+/*
+ * Special ddx events understood by the X server
+ */
+enum {
+  kXDarwinUpdateModifiers   // update all modifier keys
+            = LASTEvent+1,  // (from X.h list of event names)
+  kXDarwinUpdateButtons,    // update state of mouse buttons 2 and up
+  kXDarwinScrollWheel,      // scroll wheel event
+  kXDarwinShow,             // vt switch to X server;
+                            // recapture screen and restore X drawing
+  kXDarwinHide,             // vt switch away from X server;
+                            // release screen and clip X drawing
+  kXDarwinQuit,             // kill the X server and release the display
+  kXDarwinReadPasteboard,   // copy Mac OS X pasteboard into X cut buffer
+  kXDarwinWritePasteboard   // copy X cut buffer onto Mac OS X pasteboard
+};
 
 #endif	/* _DARWIN_H */

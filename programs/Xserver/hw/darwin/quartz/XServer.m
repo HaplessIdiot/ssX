@@ -34,11 +34,19 @@
  * sale, use or other dealings in this Software without prior written
  * authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.2 2002/06/19 18:12:01 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/quartz/XServer.m,v 1.3 2002/07/15 18:57:44 torrey Exp $ */
+
+#include "quartzCommon.h"
+
+#define BOOL xBOOL
+#include "X.h"
+#include "Xproto.h"
+#include "os.h"
+#include "darwin.h"
+#undef BOOL
 
 #import "XServer.h"
 #import "Preferences.h"
-#include "quartzCommon.h"
 
 #include <unistd.h>
 #include <stdio.h>
@@ -48,6 +56,14 @@
 #include <pwd.h>
 #include <signal.h>
 #include <fcntl.h>
+
+#define ENQUEUE(xe)                                                         \
+{                                                                           \
+    char byte = 0;                                                          \
+    DarwinEQEnqueue(xe);                                                    \
+    /* signal there is an event ready to handle */                          \
+    write(eventWriteFD, &byte, 1);                                          \
+}
 
 // Types of shells
 enum {
@@ -78,6 +94,8 @@ extern void HideMenuBar(void);
 extern void ShowMenuBar(void);
 static void childDone(int sig);
 
+static NSPort *signalPort;
+static NSPort *returnPort;
 static NSPortMessage *signalMessage;
 static pid_t clientPID;
 static XServer *oneXServer;
@@ -103,8 +121,9 @@ static NSRect aquaMenuBarBox;
 
     // set up a port to safely send messages to main thread from server thread
     signalPort = [[NSPort port] retain];
+    returnPort = [[NSPort port] retain];
     signalMessage = [[NSPortMessage alloc] initWithSendPort:signalPort
-                    receivePort:signalPort components:nil];
+                    receivePort:returnPort components:nil];
 
     // set up receiving end
     [signalPort setDelegate:self];
@@ -180,28 +199,30 @@ static NSRect aquaMenuBarBox;
 // returns YES when event was handled
 - (BOOL)translateEvent:(NSEvent *)anEvent
 {
-    NXEvent ev;
+    xEvent xe;
     static BOOL mouse1Pressed = NO;
     BOOL onScreen;
+    NSEventType type;
+    unsigned int flags;
 
     if (!sendServerEvents) {
         return NO;
     }
 
-    ev.type  = [anEvent type];
-    ev.flags = [anEvent modifierFlags];
+    type  = [anEvent type];
+    flags = [anEvent modifierFlags];
 
     if (!quartzRootless) {
         // Check for switch keypress
-        if ((ev.type == NSKeyDown) && (![anEvent isARepeat]) &&
+        if ((type == NSKeyDown) && (![anEvent isARepeat]) &&
             ([anEvent keyCode] == [Preferences keyCode]))
         {
             unsigned int switchFlags = [Preferences modifiers];
 
             // Switch if all the switch modifiers are pressed, while none are
             // pressed that should not be, except for caps lock.
-            if (((ev.flags & switchFlags) == switchFlags) &&
-                ((ev.flags & ~(switchFlags | NSAlphaShiftKeyMask)) == 0))
+            if (((flags & switchFlags) == switchFlags) &&
+                ((flags & ~(switchFlags | NSAlphaShiftKeyMask)) == 0))
             {
                 [self toggle];
                 return YES;
@@ -212,17 +233,21 @@ static NSRect aquaMenuBarBox;
             return NO;
     }
 
+    memset(&xe, 0, sizeof(xe));
+
     // If the mouse is not on the valid X display area,
     // we don't send the X server key events.
-    onScreen = [self getNXMouse:&ev];
+    onScreen = [self getMousePosition:&xe];
 
-    switch (ev.type) {
+    switch (type) {
         case NSLeftMouseUp:
             if (quartzRootless && !mouse1Pressed) {
                 // MouseUp after MouseDown in menu - ignore
                 return NO;
             }
             mouse1Pressed = NO;
+            xe.u.u.type = ButtonRelease;
+            xe.u.u.detail = 1;
             break;
         case NSLeftMouseDown:
             if (quartzRootless &&
@@ -232,53 +257,64 @@ static NSRect aquaMenuBarBox;
                 return NO;
             }
             mouse1Pressed = YES;
-        case NSMouseMoved:
+            xe.u.u.type = ButtonPress;
+            xe.u.u.detail = 1;
             break;
+        case NSMouseMoved:
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
-        case 27:        // undocumented high button MouseDragged event
-            ev.type=NSMouseMoved;
+        case NSOtherMouseDragged:
+            xe.u.u.type = MotionNotify;
             break;
         case NSSystemDefined:
+        {
+            long hwButtons = [anEvent data2];
+
             if (![anEvent subtype]==7)
                 return NO; // we only use multibutton mouse events
-            if ([anEvent data1] & 1)
-                return NO; // skip mouse button 1 events
-            if (mouseState==[anEvent data2])
+            if (mouseState == hwButtons)
                 return NO; // ignore double events
-            ev.data.compound.subType=[anEvent subtype];
-            ev.data.compound.misc.L[0]=[anEvent data1];
-            ev.data.compound.misc.L[1]=mouseState=[anEvent data2];
+            mouseState = hwButtons;
+
+            xe.u.u.type = kXDarwinUpdateButtons;
+            xe.u.clientMessage.u.l.longs0 = [anEvent data1];
+            xe.u.clientMessage.u.l.longs1 =[anEvent data2];
             break;
+        }
         case NSScrollWheel:
-            ev.data.scrollWheel.deltaAxis1=[anEvent deltaY];
+            xe.u.u.type = kXDarwinScrollWheel;
+            xe.u.clientMessage.u.s.shorts0 = [anEvent deltaY];
             break;
         case NSKeyDown:
         case NSKeyUp:
             if (!onScreen)
                 return NO;
-            ev.data.key.keyCode = [anEvent keyCode];
-            ev.data.key.repeat = [anEvent isARepeat];
+            if (type == NSKeyDown)
+                xe.u.u.type = KeyPress;
+            else
+                xe.u.u.type = KeyRelease;
+            xe.u.u.detail = [anEvent keyCode];
             break;
         case NSFlagsChanged:
-            ev.data.key.keyCode = [anEvent keyCode];
+            xe.u.u.type = kXDarwinUpdateModifiers;
+            xe.u.clientMessage.u.l.longs0 = flags;
             break;
-        case 25:        // undocumented MouseDown
-        case 26:        // undocumented MouseUp
+        case NSOtherMouseDown:          // undocumented MouseDown
+        case NSOtherMouseUp:            // undocumented MouseUp
             // Hide these from AppKit to avoid its log messages
             return YES;
         default:
             return NO;
     }
 
-    [self sendNXEvent:&ev];
+    [self sendXEvent:&xe];
 
     // Rootless: Send first NSLeftMouseDown to windows and views so window
     // ordering can be suppressed.
     // Don't pass further events - they (incorrectly?) bring the window
     // forward no matter what.
     if (quartzRootless  &&
-        (ev.type == NSLeftMouseDown || ev.type == NSLeftMouseUp) &&
+        (type == NSLeftMouseDown || type == NSLeftMouseUp) &&
         [anEvent clickCount] == 1 &&
         [[anEvent window] isKindOfClass:windowClass])
     {
@@ -288,22 +324,23 @@ static NSRect aquaMenuBarBox;
     return YES;
 }
 
-// Fill in NXEvent with mouse coordinates, inverting y coordinate.
+// Return mouse coordinates, inverting y coordinate.
 // For rootless mode, the menu bar is treated as not part of the usable
 // X display area and the cursor position is adjusted accordingly.
 // Returns YES if the cursor is not in the menu bar.
-- (BOOL)getNXMouse:(NXEvent*)ev
+- (BOOL)getMousePosition:(xEvent *)xe
 {
     NSPoint pt = [NSEvent mouseLocation];
 
-    ev->location.x = (int)(pt.x);
+    xe->u.keyButtonPointer.rootX = (int)(pt.x);
 
     if (quartzRootless && NSMouseInRect(pt, aquaMenuBarBox, NO)) {
         // mouse in menu bar - tell X11 that it's just below instead
-        ev->location.y = aquaMenuBarHeight;
+        xe->u.keyButtonPointer.rootY = aquaMenuBarHeight;
         return NO;
     } else {
-        ev->location.y = NSHeight([[NSScreen mainScreen] frame]) - (int)(pt.y);
+        xe->u.keyButtonPointer.rootY =
+            NSHeight([[NSScreen mainScreen] frame]) - (int)(pt.y);
         return YES;
     }
 }
@@ -504,7 +541,7 @@ static NSRect aquaMenuBarBox;
         if (chdir(passwdUser->pw_dir))	// Change to user's home dir
             NSLog(@"Could not change to user's home directory.");
 
-        execv(shellPathStr, newargv);	// Start user's shell
+        execv(shellPathStr, (char * const *)newargv);	// Start user's shell
 
         NSLog(@"Could not start X client process with errno = %i.", errno);
         _exit(127);
@@ -568,7 +605,7 @@ static NSRect aquaMenuBarBox;
     serverVisible = NO;
     [pool release];
     [serverLock unlock];
-    QuartzMessageMainThread(kQuartzServerDied);
+    QuartzMessageMainThread(kQuartzServerDied, nil, 0);
 }
 
 // Full screen mode was picked in the mode pick panel
@@ -651,14 +688,13 @@ static NSRect aquaMenuBarBox;
 // Kill the X server thread
 - (void)killServer
 {
-    NXEvent ev;
+    xEvent xe;
 
     if (serverVisible)
         [self hide];
 
-    ev.type = NX_APPDEFINED;
-    ev.data.compound.subType = kXDarwinQuit;
-    [self sendNXEvent:&ev];
+    xe.u.u.type = kXDarwinQuit;
+    [self sendXEvent:&xe];
 }
 
 // Tell the X server to show or hide itself.
@@ -686,23 +722,26 @@ static NSRect aquaMenuBarBox;
 //
 - (void)sendShowHide:(BOOL)show
 {
-    NXEvent ev;
+    xEvent xe;
 
-    [self getNXMouse:&ev];
-    ev.type = NX_APPDEFINED;
+    [self getMousePosition:&xe];
 
     if (show) {
         if (!quartzRootless) {
             QuartzFSCapture();
             HideMenuBar();
         }
-        ev.data.compound.subType = kXDarwinShow;
-        [self sendNXEvent:&ev];
+        xe.u.u.type = kXDarwinShow;
+        [self sendXEvent:&xe];
+
+        // the mouse location will have moved; track it
+        xe.u.u.type = MotionNotify;
+        [self sendXEvent:&xe];
 
         // inform the X server of the current modifier state
-        ev.flags = [[NSApp currentEvent] modifierFlags];
-        ev.data.compound.subType = kXDarwinUpdateModifiers;
-        [self sendNXEvent:&ev];
+        xe.u.u.type = kXDarwinUpdateModifiers;
+        xe.u.clientMessage.u.l.longs0 = [[NSApp currentEvent] modifierFlags];
+        [self sendXEvent:&xe];
 
         // put the pasteboard into the X cut buffer
         [self readPasteboard];
@@ -710,8 +749,8 @@ static NSRect aquaMenuBarBox;
         // put the X cut buffer on the pasteboard
         [self writePasteboard];
 
-        ev.data.compound.subType = kXDarwinHide;
-        [self sendNXEvent:&ev];
+        xe.u.u.type = kXDarwinHide;
+        [self sendXEvent:&xe];
     }
 
     serverVisible = show;
@@ -720,27 +759,28 @@ static NSRect aquaMenuBarBox;
 // Tell the X server to read from the pasteboard into the X cut buffer
 - (void)readPasteboard
 {
-    NXEvent ev;
+    xEvent xe;
 
-    ev.type = NX_APPDEFINED;
-    ev.data.compound.subType = kXDarwinReadPasteboard;
-    [self sendNXEvent:&ev];
+    xe.u.u.type = kXDarwinReadPasteboard;
+    [self sendXEvent:&xe];
 }
 
 // Tell the X server to write the X cut buffer into the pasteboard
 - (void)writePasteboard
 {
-    NXEvent ev;
+    xEvent xe;
 
-    ev.type = NX_APPDEFINED;
-    ev.data.compound.subType = kXDarwinWritePasteboard;
-    [self sendNXEvent:&ev];
+    xe.u.u.type = kXDarwinWritePasteboard;
+    [self sendXEvent:&xe];
 }
 
-- (void)sendNXEvent:(NXEvent*)ev
+- (void)sendXEvent:(xEvent *)xe
 {
-    int bytesWritten;
+    // This field should be filled in for every event
+    xe->u.keyButtonPointer.time = GetTimeInMillis();
 
+#if 0
+    // FIXME: Really?
     if (quartzRootless  &&
         (ev->type == NSLeftMouseDown  ||  ev->type == NSLeftMouseUp  ||
         (ev->type == NSSystemDefined && ev->data.compound.subType == 7)))
@@ -748,16 +788,13 @@ static NSRect aquaMenuBarBox;
         // mouse button event - send mouseMoved to this position too
         // X gets confused if it gets a click that isn't at the last
         // reported mouse position.
-        NXEvent moveEvent = *ev;
-        moveEvent.type = NSMouseMoved;
-        [self sendNXEvent:&moveEvent];
+        xEvent moveEvent = *ev;
+        xe.u.u.type = NSMouseMoved;
+        [self sendXEvent:&moveEvent];
     }
+#endif
 
-    bytesWritten = write(eventWriteFD, ev, sizeof(*ev));
-    if (bytesWritten == sizeof(*ev))
-        return;
-    NSLog(@"Bad write to event pipe.");
-    // FIXME: handle bad writes better?
+    ENQUEUE(xe);
 }
 
 // Handle messages from the X server thread
@@ -785,6 +822,13 @@ static NSRect aquaMenuBarBox;
                 [NSApp terminate:nil];	// quit if we aren't already
             }
             break;
+
+        case kQuartzPostEvent:
+        {
+            const xEvent *xe = [[[portMessage components] lastObject] bytes];
+            ENQUEUE(xe);
+            break;
+        }
 
         default:
             NSLog(@"Unknown message from server thread.");
@@ -832,13 +876,26 @@ static NSRect aquaMenuBarBox;
 
 @end
 
+
 // Send a message to the main thread, which calls handlePortMessage in
 // response. Must only be called from the X server thread because
 // NSPort is not thread safe.
-void QuartzMessageMainThread(unsigned msg)
+void QuartzMessageMainThread(unsigned msg, void *data, unsigned length)
 {
-    [signalMessage setMsgid:msg];
-    [signalMessage sendBeforeDate:[NSDate distantPast]];
+    if (msg == kQuartzPostEvent) {
+        NSData *eventData = [NSData dataWithBytes:data length:length];
+        NSArray *eventArray = [NSArray arrayWithObject:eventData];
+        NSPortMessage *newMessage =
+                [[NSPortMessage alloc]
+                        initWithSendPort:signalPort
+                        receivePort:returnPort components:eventArray];
+        [newMessage setMsgid:msg];
+        [newMessage sendBeforeDate:[NSDate distantPast]];
+        [newMessage release];
+    } else {
+        [signalMessage setMsgid:msg];
+        [signalMessage sendBeforeDate:[NSDate distantPast]];
+    }
 }
 
 // Handle SIGCHLD signals

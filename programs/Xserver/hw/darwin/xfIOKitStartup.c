@@ -4,7 +4,7 @@
  *
  **************************************************************/
 /*
- * Copyright (c) 2001 Torrey T. Lyons. All Rights Reserved.
+ * Copyright (c) 2001-2002 Torrey T. Lyons. All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -28,7 +28,7 @@
  * holders shall not be used in advertising or otherwise to promote the sale,
  * use or other dealings in this Software without prior written authorization.
  */
-/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.7 2001/12/22 05:28:34 torrey Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/darwin/xfIOKitStartup.c,v 1.8 2002/03/28 02:21:08 torrey Exp $ */
 
 #include "quartz/quartz.h"
 
@@ -44,6 +44,7 @@ void DarwinHandleGUI(
 {
 }
 
+
 // The IOKit X server does not accept any Quartz command line options.
 int QuartzProcessArgument( int argc, char *argv[], int i )
 {
@@ -58,6 +59,7 @@ int QuartzProcessArgument( int argc, char *argv[], int i )
 
     return 0;
 }
+
 
 // No Quartz support. All Quartz functions are no-ops.
 
@@ -85,12 +87,8 @@ void QuartzShow(int x, int y) {
     FatalError("QuartzShow called without Quartz support.\n");
 }
 
-void QuartzReadPasteboard(void) {
-    FatalError("QuartzReadPasteboard called without Quartz support.\n");
-}
-
-void QuartzWritePasteboard(void) {
-    FatalError("QuartzWritePasteboard called without Quartz support.\n");
+void QuartzProcessEvent(xEvent *xe) {
+    FatalError("QuartzProcessEvent called without Quartz support.\n");
 }
 
 void QuartzBell(void) {
