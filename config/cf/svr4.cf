@@ -1,5 +1,5 @@
 XCOMM $XConsortium: svr4.cf,v 1.13 95/06/09 20:57:00 gildea Exp $
-XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.11 1995/06/14 05:16:44 dawes Exp $
+XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.12 1995/06/17 12:06:49 dawes Exp $
 /*
  * A default OS name
  */
@@ -80,9 +80,11 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.11 1995/06/14 05:16:44 dawes Exp $
 #define	YaccCmd	/usr/ccs/bin/yacc
 #endif
 
+#ifndef SunArchitecture
 #if (OSMinorVersion == 0)
 #ifndef XawI18nDefines
 #define XawI18nDefines		-DUSE_XWCHAR_STRING
+#endif
 #endif
 #endif
 
@@ -94,6 +96,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.11 1995/06/14 05:16:44 dawes Exp $
 #endif
 
 #ifdef i386Architecture
+#ifndef SunArchitecture
 #if (OSMinorVersion > 2) || ((OSMinorVersion == 2) && (OSTeenyVersion >= 2))
 #ifndef StandardDefines
 #define StandardDefines		-DSVR4 -DSVR42MP -Di386
@@ -108,6 +111,7 @@ XCOMM $XFree86: xc/config/cf/svr4.cf,v 3.11 1995/06/14 05:16:44 dawes Exp $
 #else /* SVR4 < 4.2.2 */
 #ifndef StandardDefines
 #define StandardDefines		-DSVR4 -Di386
+#endif
 #endif
 #endif
 #ifndef ToolkitStringsABIOptions
