@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.84tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bus/Pci.c,v 1.85tsi Exp $ */
 /*
  * Pci.c - New server PCI access functions
  *
@@ -763,9 +763,11 @@ pciGenFindNext(void)
 	    for (;;) {
 	        if (++pciDevNum >= pciBusInfo[pciBusNum]->numDevices)
 		    goto NextSpeculativeBus;
-		if (devid !=
-		    pciReadLong(PCI_MAKE_TAG(pciBusNum, pciDevNum, 0),
-			        PCI_ID_REG))
+		inProbe = TRUE;
+		tmp = pciReadLong(PCI_MAKE_TAG(pciBusNum, pciDevNum, 0),
+				  PCI_ID_REG);
+		inProbe = FALSE;
+		if (devid != tmp)
 		    break;
 	    }
 
