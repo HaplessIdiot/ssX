@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.15 2001/01/17 22:36:54 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.16 2001/03/04 17:40:10 herrb Exp $ */
 
 #if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>
@@ -55,11 +55,7 @@ from The Open Group.
 #endif
 #include <X11/XWDFile.h>
 #ifdef HAS_SHM
-#ifndef __CYGWIN__
 #include <sys/ipc.h>
-#else
-#include <sys/cygipc.h>
-#endif
 #include <sys/shm.h>
 #endif /* HAS_SHM */
 #include "dix.h"

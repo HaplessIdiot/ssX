@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.27 2000/08/10 17:40:30 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/Xext/shm.c,v 3.28 2001/01/17 22:13:18 dawes Exp $ */
 /************************************************************
 
 Copyright 1989, 1998  The Open Group
@@ -27,11 +27,7 @@ in this Software without prior written authorization from The Open Group.
 
 #include <sys/types.h>
 #ifndef Lynx
-#ifndef __CYGWIN__
 #include <sys/ipc.h>
-#else
-#include <sys/cygipc.h>
-#endif
 #include <sys/shm.h>
 #else
 #include <ipc.h>
