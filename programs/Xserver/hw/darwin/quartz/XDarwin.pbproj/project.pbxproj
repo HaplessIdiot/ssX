@@ -302,7 +302,7 @@
 	<key>CFBundleExecutable</key>
 	<string>XDarwin</string>
 	<key>CFBundleGetInfoString</key>
-	<string>XDarwin 1.3a3, ©2001-2003 XFree86 Project, Inc.</string>
+	<string>XDarwin 1.3b4, ©2001-2003 XFree86 Project, Inc.</string>
 	<key>CFBundleIconFile</key>
 	<string>XDarwin.icns</string>
 	<key>CFBundleIdentifier</key>
@@ -314,7 +314,7 @@
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
-	<string>XDarwin 1.3a3</string>
+	<string>XDarwin 1.3b4</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
 	<key>CFBundleVersion</key>
@@ -479,7 +479,7 @@
 			};
 		};
 		1220774600712D75416877C2 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = Japanese;
 			path = Japanese.lproj/Localizable.strings;
@@ -1731,7 +1731,7 @@
 			refType = 4;
 		};
 		F51BF62D02026E1C01000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = Portuguese;
 			path = Portuguese.lproj/Localizable.strings;
@@ -1790,7 +1790,7 @@
 			refType = 4;
 		};
 		F533213C0193CBC901000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = German;
 			path = German.lproj/Localizable.strings;
@@ -1849,7 +1849,7 @@
 			refType = 4;
 		};
 		F533214501A4B42501000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = Dutch;
 			path = Dutch.lproj/Localizable.strings;
@@ -1935,7 +1935,7 @@
 			refType = 4;
 		};
 		F587E16301924C5E01000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = Swedish;
 			path = Swedish.lproj/Localizable.strings;
@@ -1982,7 +1982,7 @@
 			refType = 4;
 		};
 		F58D65DE018F79A001000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = French;
 			path = French.lproj/Localizable.strings;
@@ -2034,7 +2034,7 @@
 			refType = 4;
 		};
 		F5ACD25FC5B5E9AA01000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = Spanish;
 			path = Spanish.lproj/Localizable.strings;
@@ -2081,7 +2081,7 @@
 			refType = 4;
 		};
 		F5ACD266C5BE03C501000001 = {
-			fileEncoding = 30;
+			fileEncoding = 10;
 			isa = PBXFileReference;
 			name = ko;
 			path = ko.lproj/Localizable.strings;
