@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.2 1997/02/20 10:01:21 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/aoutloader.c,v 1.3 1997/02/23 09:25:14 dawes Exp $ */
 
 
 
@@ -512,7 +512,7 @@ AOUT_RelocateEntry(AOUTModulePtr aoutfile, int type,
 #endif
 	    AOUT_Relocate(destl, (unsigned long)aoutfile->bss
 			  + *destl - header->a_text - header->a_data, 
-			  rel->r_pcrel, aoutfile->aout_flavor);
+			  rel->r_pcrel, aoutfile->aout_flavor, rel->r_extern);
 	    return;
 	  default:
 	    ErrorF("AOUT_RelocateEntry():"
