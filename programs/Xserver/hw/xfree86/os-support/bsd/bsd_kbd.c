@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.1 2002/10/11 01:40:34 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/bsd_kbd.c,v 1.2 2002/10/13 16:10:41 herrb Exp $ */
 
 /*
  * Copyright (c) 2002 by The XFree86 Project, Inc.
@@ -187,8 +187,15 @@ KbdOn(InputInfoPtr pInfo)
 #ifdef WSCONS_SUPPORT
             case WSCONS:
                  option = WSKBD_RAW;
-                 ioctl(pInfo->fd, WSKBDIO_SETMODE, &option);
- 	         break;
+                 if (ioctl(pInfo->fd, WSKBDIO_SETMODE, &option) == -1) {
+			 FatalError("can't switch keyboard to raw mode. "
+				    "Enable support for it in the kernel\n"
+				    "or use for example:\n\n"
+				    "Option \"Protocol\" \"wskbd\"\n"
+				    "Option \"Device\" \"/dev/wskbd0\"\n"
+				    "\nin your XF86Config(5) file\n");
+		 }
+		 break;
 #endif
         }
     }
