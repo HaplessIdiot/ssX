@@ -24,7 +24,7 @@
 /* Hacked together from mga driver and 3.3.4 NVIDIA driver by Jarno Paananen
    <jpaana@s2.org> */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.31 2003/05/04 01:46:30 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_setup.c,v 1.32 2003/05/05 20:19:04 mvojkovi Exp $ */
 
 #include "nv_include.h"
 
@@ -538,8 +538,8 @@ NVCommonSetup(ScrnInfoPtr pScrn)
        }
 
        if(monitorB) {
-           if((monitorA->features.input_type && !pNv->FlatPanel) ||
-              (!monitorA->features.input_type && pNv->FlatPanel)) 
+           if((monitorB->features.input_type && !pNv->FlatPanel) ||
+              (!monitorB->features.input_type && pNv->FlatPanel)) 
            {
               xfree(monitorB);
            } else {
@@ -570,7 +570,6 @@ NVCommonSetup(ScrnInfoPtr pScrn)
     pNv->riva.flatPanel = pNv->FlatPanel ? FP_ENABLE : 0;
     if(pNv->riva.flatPanel && pNv->FPDither && (pScrn->depth == 24))
        pNv->riva.flatPanel |= FP_DITHER;
-
 }
 
 void
