@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/psw.c,v 1.2 2000/05/11 18:14:08 tsi Exp $ */
+/* $XFree86: xc/config/pswrap/psw.c,v 1.3 2000/05/18 23:46:08 dawes Exp $ */
 
 /***********/
 /* Imports */
@@ -1928,6 +1928,7 @@ char *psw_calloc(n,s) int n,s; {
     return(temp);
 }
 
+void
 FreeBody(body) Body body; {
   register Token t, nexttoken;
 

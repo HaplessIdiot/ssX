@@ -131,7 +131,6 @@ extern FILE *header;
 extern boolean noUserNames;  	/* -n flag */
 extern char *currentPSWName;
 extern char *hfile;
-extern char *ifile;
 extern char *ifile;		/* input file name for error messages */
 extern char *ofile;
 extern char *prog;
@@ -140,7 +139,6 @@ extern char headid[];
 extern char yytext[];
 extern int bigFile;
 extern int doANSI;		/* -a flag */
-extern int errorCount;
 extern int maxstring;		/* max PS string length to scan (-s) */
 extern int lexdebug;		/* debug flag for lexer */
 extern int errorCount;		/* non-fatal errs */

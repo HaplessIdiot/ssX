@@ -39,8 +39,6 @@
 #ifndef	PSW_H
 #define	PSW_H
 
-extern char *currentPSWName; /* valid between DEFINEPS and ENDPS */
-
 /* C types */
 
 #define T_BOOLEAN	   101
