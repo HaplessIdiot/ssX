@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/src/base/ftsynth.c,v 1.2 2001/10/28 03:32:20 tsi Exp $ */
+
 
 #include <ft2build.h>
 #include FT_INTERNAL_OBJECTS_H
@@ -73,12 +73,10 @@
 
   /* Compute the norm of a vector */
 
-#include <freetype/internal/ftcalc.h>
-
 #ifdef FT_CONFIG_OPTION_OLD_CALCS
 
-  static
-  FT_Pos  ft_norm( FT_Vector*  vec )
+  static FT_Pos
+  ft_norm( FT_Vector*  vec )
   {
     FT_Int64  t1, t2;
 

@@ -14,7 +14,7 @@
 /*  understand and accept it fully.                                        */
 /*                                                                         */
 /***************************************************************************/
-/* $XFree86: xc/extras/freetype2/include/freetype/internal/ftdebug.h,v 1.3 2001/09/14 01:05:15 torrey Exp $ */
+/* $XFree86: xc/extras/freetype2/include/freetype/internal/ftdebug.h,v 1.4 2001/12/16 18:01:53 keithp Exp $ */
 
 #ifndef __FTDEBUG_H__
 #define __FTDEBUG_H__
@@ -80,6 +80,11 @@ FT_BEGIN_HEADER
     /* PostScript helper module `psaux' */
     trace_t1decode,
     trace_psobjs,
+
+    /* PostScript hinting module `pshinter' */
+    trace_pshrec,
+    trace_pshalgo1,
+    trace_pshalgo2,
 
     /* Type 2 driver components */
     trace_cffdriver,
