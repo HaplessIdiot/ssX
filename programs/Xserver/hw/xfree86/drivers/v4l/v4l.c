@@ -526,26 +526,15 @@ V4LBuildEncodings(int fd, int *count)
 }
 
 
-static char *AttributeNames[8] = {
-   XV_ENCODING,
-   XV_BRIGHTNESS,
-   XV_CONTRAST,
-   XV_SATURATION, 
-   XV_HUE,   
-   XV_FREQ,    
-   XV_MUTE,  
-   XV_VOLUME
-};
-
-static int AttributeFlags[8] = {
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
-   XvGettable | XvSettable,
+static XF86AttributeRec Attributes[8] = {
+   {XvSettable | XvGettable, 0, 255, XV_ENCODING},
+   {XvSettable | XvGettable, 0, 255, XV_BRIGHTNESS},
+   {XvSettable | XvGettable, 0, 255, XV_CONTRAST},
+   {XvSettable | XvGettable, 0, 255, XV_SATURATION},
+   {XvSettable | XvGettable, 0, 255, XV_HUE},
+   {XvSettable | XvGettable, 0, 255, XV_FREQ},
+   {XvSettable | XvGettable, 0, 255, XV_MUTE},
+   {XvSettable | XvGettable, 0, 255, XV_VOLUME}
 };
 
 
@@ -589,12 +578,8 @@ V4LProbe(DriverPtr drv, int flags)
 	memset(VAR[i],0,sizeof(XF86VideoAdaptorRec));
 
 	/* add attribute lists */
-	VAR[i]->pAttributes = xalloc(sizeof(XF86AttributeListRec));
-	if (!VAR[i]->pAttributes)
-	    return FALSE;
-	VAR[i]->pAttributes[0].number = 8;
-	VAR[i]->pAttributes[0].flags = AttributeFlags;
-	VAR[i]->pAttributes[0].names = AttributeNames;
+	VAR[i]->nAttributes = 8;
+	VAR[i]->pAttributes = Attributes;
 
 	/* hook in private data */
 	Private = xalloc(sizeof(DevUnion));
