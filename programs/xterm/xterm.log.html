@@ -20,8 +20,8 @@
  * ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF   *
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.            *
  *****************************************************************************
-  $XTermId: xterm.log.html,v 1.210 2005/01/13 23:34:37 tom Exp $
-  $XFree86: xc/programs/xterm/xterm.log.html,v 1.133 2005/01/17 20:40:01 dickey Exp $
+  $XTermId: xterm.log.html,v 1.214 2005/01/29 22:04:06 tom Exp $
+  $XFree86: xc/programs/xterm/xterm.log.html,v 1.134 2005/01/18 00:02:26 dickey Exp $
   -->
 <HTML>
 <HEAD>
@@ -46,6 +46,7 @@ Most of these are summarized in the XFree86 CHANGELOG
 is the latest version of this file.
 
 <UL>
+<LI><A HREF="#xterm_dev">Development - 2005/1/29 - XFree86 4.4.99.22</A>
 <LI><A HREF="#xterm_199">Patch #199 - 2005/1/17 - XFree86 4.4.99.22</A>
 <LI><A HREF="#xterm_198">Patch #198 - 2005/1/13 - XFree86 4.4.99.21</A>
 <LI><A HREF="#xterm_197">Patch #197 - 2004/11/30 - XFree86 4.4.99.19</A>
@@ -248,6 +249,13 @@ is the latest version of this file.
 <LI><A HREF="#xterm_01">Patch #1 - 1996/1/6</A>
 </UL>
 
+<H1><A NAME="xterm_dev">Development - 2005/1/29 - XFree86 4.4.99.22</A></H1>
+<ul>
+	<li>move the warning/exit for missing $DISPLAY into the error handler
+	    in case <code>-display</code> is given, and the connect fails for
+	    some other reason.
+</ul>
+
 <H1><A NAME="xterm_199">Patch #199 - 2005/1/17 - XFree86 4.4.99.22</A></H1>
 <ul>
 	<li>instead of setting <code>$DISPLAY</code>, check for the unset
@@ -286,7 +294,7 @@ is the latest version of this file.
 	<li>improve some limit checks (Gentoo Bugzilla #75604).
 
 	<li>add --disable-setuid option to configure script (Gentoo Bugzilla
-	    #76453).
+	    #76543).
 
 	<li>add --disable-full-tgetent option to configure script, allowing one
 	    to ignore a termcap library in favor of ncurses/curses (Gentoo
@@ -823,8 +831,8 @@ is the latest version of this file.
 	    the same write, some were not handled properly (report by
 	    Nicolas George).
 
-	<li>modify to allow turning UTF-8 mode via escape sequence even if
-	    <code>-wc</code> option was not given at startup (patch by Peter
+	<li>modify to allow turning UTF-8 mode on/off via escape sequence even
+	    if <code>-wc</code> option was not given at startup (patch by Peter
 	    Berg Larsen).
 
 	<li>amend fix for XFree86 Bugzilla #981, adjusting for savedlines value

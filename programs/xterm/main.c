@@ -1,4 +1,4 @@
-/* $XTermId: main.c,v 1.420 2005/01/14 01:04:08 tom Exp $ */
+/* $XTermId: main.c,v 1.424 2005/01/29 22:04:21 tom Exp $ */
 
 #if !defined(lint) && 0
 static char *rid = "$Xorg: main.c,v 1.7 2001/02/09 02:06:02 xorgcvs Exp $";
@@ -91,7 +91,7 @@ SOFTWARE.
 
 ******************************************************************/
 
-/* $XFree86: xc/programs/xterm/main.c,v 3.188tsi Exp $ */
+/* $XFree86: xc/programs/xterm/main.c,v 3.189 2005/01/24 17:00:02 tsi Exp $ */
 
 /* main.c */
 
@@ -1507,7 +1507,6 @@ main(int argc, char *argv[]ENVP_ARG)
     Widget form_top, menu_top;
     TScreen *screen;
     int mode;
-    char *ptr;
     char *my_class = DEFCLASS;
     Window winToEmbedInto = None;
 
@@ -1837,14 +1836,6 @@ main(int argc, char *argv[]ENVP_ARG)
 			       (int) ruid, strerror(errno));
 	}
 #endif
-
-	/*
-	 * Check for the obvious - Xt does a poor job of reporting this.
-	 */
-	if ((ptr = getenv("DISPLAY")) == 0 || *x_strtrim(ptr) == '\0') {
-	    fprintf(stderr, "%s:  DISPLAY is not set\n", ProgramName);
-	    exit(1);
-	}
 
 	XtSetErrorHandler(xt_error);
 #if OPT_SESSION_MGT
@@ -2689,7 +2680,7 @@ set_owner(char *device, uid_t uid, gid_t gid, mode_t mode)
 	if (errno != ENOENT
 	    && getuid() == 0) {
 	    fprintf(stderr, "Cannot chown %s to %ld,%ld: %s\n",
-		    device, (long)uid, (long)gid, strerror(errno));
+		    device, (long) uid, (long) gid, strerror(errno));
 	}
     }
     chmod(device, mode);
