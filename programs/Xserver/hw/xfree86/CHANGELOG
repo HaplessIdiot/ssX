@@ -1,4 +1,15 @@
 XFree86 3.1.2Da (3 March 1996)
+411. Add a preinst.sh script.
+410. Documentation updates.
+409. Fix for Linux/ELF rules (H.J. Lu).
+408. Always used extended I/O for SYSV/SVR4.  This is required now for
+     ISC (Michael Rohleder).
+407. Fix BootstrapCFlags in sun.cf for Solaris x86.
+406. Solaris fixes for SuperProbe and the Mach64 server (Robin Cutshaw
+     and James Hawtin).
+405. Wacom bug fix (Frederic Lepied).
+404. Add support for writing to stdout for gccmakedep, which is required
+     for NetBSD and FreeBSD (Matthieu Herrb).
 
 XFree86 3.1.2D (24 February 1996)
 403. Fix xterm SEGV if it cannot open an input method (Manabe Takashi).
