@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.28 1998/08/16 10:25:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/include/servermd.h,v 3.29 1998/10/04 09:39:01 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -479,6 +479,9 @@ typedef struct _PaddingInfo {
 	int	bitsPerPixel;	/* bits per pixel */
 } PaddingInfo;
 extern PaddingInfo PixmapWidthPaddingInfo[];
+
+/* The only portable way to get the bpp from the depth is to look it up */
+#define BitsPerPixel(d) (PixmapWidthPaddingInfo[d].bitsPerPixel)
 
 #define PixmapWidthInPadUnits(w, d) \
     (PixmapWidthPaddingInfo[d].notPower2 ? \

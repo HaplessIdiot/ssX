@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.3 1998/11/28 10:43:02 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/common/xf86cmap.c,v 1.4 1998/11/29 10:50:21 dawes Exp $ */
 
 #ifndef XFree86LOADER
 #ifdef _XOPEN_SOURCE
@@ -597,7 +597,7 @@ CMapRefreshColors(ColormapPtr pmap, int defs, int* indices)
 static Bool
 CMapCompareColors(LOCO *color1, LOCO *color2)
 {
-    /* return TRUE if the color1 is closer to black than color1 */
+    /* return TRUE if the color1 is "closer" to black than color2 */
 #ifdef DEBUGOVERSCAN
     ErrorF("#%02x%02x%02x vs #%02x%02x%02x (%d vs %d)\n",
 	color1->red, color1->green, color1->blue,
