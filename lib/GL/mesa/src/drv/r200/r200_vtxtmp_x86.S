@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_vtxtmp_x86.S,v 1.1 2002/10/30 12:51:53 alanh Exp $ */
 /**************************************************************************
 
 Copyright 2002 Tungsten Graphics Inc., Cedar Park, Texas.
@@ -112,7 +112,8 @@ GLOBL ( _x86_Vertex3f )
 	movl	%ecx, 8(%edi)
 	addl	$12, %edi
 	movl	$0, %ecx
-	repz	movsl %ds:(%esi), %es:(%edi)
+	repz
+	movsl %ds:(%esi), %es:(%edi)
 	movl	(0), %eax
 	movl	%edi, (0)
 	dec 	%eax
@@ -204,7 +205,8 @@ GLOBL ( _x86_Vertex3fv )
 	addl	$12, %edi
 	movl	$6, %ecx
 	movl	$0x58, %esi
-	repz	movsl %ds:(%esi), %es:(%edi)
+	repz
+	movsl %ds:(%esi), %es:(%edi)
 	movl	%edi, (0x1010101)
 	movl	(0x2020202), %eax
 	pop	%esi
