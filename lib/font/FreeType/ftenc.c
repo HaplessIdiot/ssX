@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.8 1998/09/06 12:35:39 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ftenc.c,v 1.9 1998/10/05 13:22:01 dawes Exp $ */
 
 /* 
 Copyright (c) 1998 by Juliusz Chroboczek
@@ -540,8 +540,8 @@ static struct ttf_encoding_info ttf_initial_encoding_info[]=
 
 static struct ttf_encoding_info *ttf_encoding_info=NULL;
 
-static int
-mystrcasecmp(const char *s1, const char *s2)
+int
+ftstrcasecmp(const char *s1, const char *s2)
 {
   char c1, c2;
 
@@ -599,7 +599,7 @@ ttf_find_cmap_from_charset(char *charset, char *fileName, TT_Face face,
     define_initial_encoding_info();
 
   for(info=ttf_encoding_info; info; info=info->next)
-    if(!mystrcasecmp(info->charset, charset)) {
+    if(!ftstrcasecmp(info->charset, charset)) {
       for(alt=info->alternatives; alt; alt=alt->next) {
         if(!ttf_find_cmap(alt->pid, alt->eid, face, &cmap)) {
           cinfo->cmap=cmap;
@@ -738,7 +738,7 @@ ttf_pick_cmap(char *name, int length, char *filename, TT_Face face,
       *q=0;
   }
 
-  if(!p || mystrcasecmp(charset,"truetype-raw")) {
+  if(!p || ftstrcasecmp(charset,"truetype-raw")) {
     /* Search for a suitable cmap */
     if(p && !ttf_find_cmap_from_charset(charset, filename, face, cinfo)) {
       return 0;

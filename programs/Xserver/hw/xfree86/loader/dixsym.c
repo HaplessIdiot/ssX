@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.11 1998/07/25 16:56:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/dixsym.c,v 1.12 1998/08/14 13:35:50 dawes Exp $ */
 
 
 /*
@@ -41,6 +41,7 @@
 #include "extension.h"
 #include "extnsionst.h"
 #include "swaprep.h"
+#include "swapreq.h"
 #include "inputstr.h"
 #include "XIproto.h"
 #include "exevents.h"
@@ -197,6 +198,8 @@ LOOKUP dixLookupTab[] = {
   SYMFUNC(SwapConnSetupPrefix)
   SYMFUNC(SwapShorts)
   SYMFUNC(SwapLongs)
+  /* swapreq.c */
+  SYMFUNC(SwapColorItem)
   /* tables.c */
   SYMVAR(EventSwapVector)
   /* window.c */

@@ -22,7 +22,7 @@
  *
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.10 1998/08/02 05:17:03 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/xf86_ansic.h,v 3.11 1998/10/04 12:25:25 dawes Exp $ */
 
 #ifndef _XF86_ANSIC_H
 #define _XF86_ANSIC_H
@@ -43,6 +43,9 @@
 
 #ifndef NULL
 #define NULL 0
+#endif
+#ifndef EOF
+#define EOF (-1)
 #endif
 
 /*

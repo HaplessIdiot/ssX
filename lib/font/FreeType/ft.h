@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.6 1998/10/05 14:15:24 dawes Exp $ */
+/* $XFree86: xc/lib/font/FreeType/ft.h,v 1.7 1998/10/05 14:22:58 dawes Exp $ */
 
 #undef DEBUG
 
@@ -55,6 +55,7 @@ void FreeTypeRegisterFontFileFunctions(void);
 
 int ttf_pick_cmap(char*, int, char*, TT_Face, struct ttf_encoding *);
 unsigned ttf_recode(unsigned, struct ttf_encoding*);
+int ftstrcasecmp(const char *s1, const char *s2);
 
 /* ftutil.c */
 

@@ -1,4 +1,4 @@
-XCOMM $XFree86$
+XCOMM $XFree86: xc/lib/font/FreeType/module/Imakefile,v 1.1 1998/09/06 07:31:59 dawes Exp $
 
 XCOMM Imakefile created for the Freetype TrueType renderer.
 XCOMM Mark Leisher <mleisher@crl.nmsu.edu>
@@ -23,14 +23,15 @@ INCLUDES = -I.. -I$(FONTINCSRC) -I../../include -I$(XTOP)/include \
            -I$(SERVERSRC)/include -I$(FTSOURCEDIR)/lib \
            -I$(FTSOURCEDIR)/lib/extend -I$(FTSOURCEDIR)/lib/arch/unix
 
-SRCS = ftfuncs.c ftenc.c ftutil.c freetype.c ftxcmap.c ftmodule.c
+SRCS = ftfuncs.c ftenc.c ftencparse.c ftutil.c freetype.c ftxcmap.c ftmodule.c
 
-OBJS = ftfuncs.o ftenc.o ftutil.o freetype.o ftxcmap.o ftmodule.o
+OBJS = ftfuncs.o ftenc.o ftencparse.o ftutil.o freetype.o ftxcmap.o ftmodule.o
 
 LinkSourceFile(freetype.c,$(FTSOURCEDIR)/lib/arch/unix)
 LinkSourceFile(ftxcmap.c,$(FTSOURCEDIR)/lib/extend)
-LinkSourceFile(ftfuncs.c,..)
 LinkSourceFile(ftenc.c,..)
+LinkSourceFile(ftencparse.c,..)
+LinkSourceFile(ftfuncs.c,..)
 LinkSourceFile(ftutil.c,..)
 
 ModuleObjectRule()
