@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.31 2003/02/04 02:20:49 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/s3virge/s3v.h,v 1.32tsi Exp $ */
 
 /*
  * Copyright (C) 1994-1999 The XFree86 Project, Inc.
@@ -97,7 +97,6 @@
 
 /* Drivers using the XAA interface ... */
 #include "xaa.h"
-#include "xaalocal.h"
 #include "xf86cmap.h"
 #include "xf86i2c.h"
 

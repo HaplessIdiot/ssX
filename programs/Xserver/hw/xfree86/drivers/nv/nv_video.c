@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.22 2004/03/13 22:07:06 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nv/nv_video.c,v 1.23tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -13,7 +13,6 @@
 #include "xf86xv.h"
 #include "Xv.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "dixstruct.h"
 #include "fourcc.h"
 

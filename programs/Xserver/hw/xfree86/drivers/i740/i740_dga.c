@@ -21,7 +21,7 @@
  *
  * Authors:  Patrick LERDA
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_dga.c,v 1.1tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i740/i740_dga.c,v 1.2tsi Exp $ */
 
 
 #include "xf86.h"
@@ -30,7 +30,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "vgaHW.h"
 #include "xf86xv.h"
 #include "i740.h"

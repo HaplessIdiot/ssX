@@ -34,7 +34,7 @@
  * with <TAB> characters expanded at 8-column intervals.
  */
 
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dga.c,v 1.5 2002/09/11 00:29:31 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810_dga.c,v 1.6tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -42,7 +42,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "i810.h"
 #include "i810_reg.h"
 #include "dgaproc.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_dga.c,v 1.1 2002/12/10 15:12:23 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/nsc/nsc_gx1_dga.c,v 1.2tsi Exp $ */
 /*
  * $Workfile: nsc_gx1_dga.c $
  * $Revision$
@@ -149,7 +149,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "nsc.h"
 #include "dgaproc.h"
 

@@ -23,7 +23,7 @@
  * 
  * BladeXP accelerated options.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.6 2003/10/30 13:38:02 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/xp_accel.c,v 1.8tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -37,7 +37,6 @@
 #include "trident.h"
 #include "trident_regs.h"
 
-#include "xaalocal.h"
 #include "xaarop.h"
 
 static void XPSync(ScrnInfoPtr pScrn);

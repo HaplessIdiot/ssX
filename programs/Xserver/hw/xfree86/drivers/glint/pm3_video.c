@@ -22,7 +22,7 @@
  * Authors: Alan Hourihane, alanh@fairlite.demon.co.uk
  *          Sven Luther <luther@dpt-info.u-strasbg.fr>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.14tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/glint/pm3_video.c,v 1.15tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -39,7 +39,6 @@
 #include "pm3_regs.h"
 #include "Xv.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "dixstruct.h"
 #include "fourcc.h"
 

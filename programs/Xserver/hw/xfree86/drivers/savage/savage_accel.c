@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.23 2003/12/22 17:48:10 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/savage/savage_accel.c,v 1.24tsi Exp $ */
 
 /*
  *
@@ -16,7 +16,6 @@
  */
 
 #include "Xarch.h"
-#include "xaalocal.h"
 #include "xaarop.h"
 #include "miline.h"
 
@@ -596,7 +595,8 @@ SavageAccelSync(ScrnInfoPtr pScrn)
 static int
 SavageHelpPatternROP(ScrnInfoPtr pScrn, int *fg, int *bg, int pm, int *rop)
 {
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    SavagePtr psav = SAVPTR(pScrn);
+    XAAInfoRecPtr infoRec = psav->AccelInfoRec;
     int ret = 0;
     
     pm &= infoRec->FullPlanemask;
@@ -631,7 +631,8 @@ SavageHelpPatternROP(ScrnInfoPtr pScrn, int *fg, int *bg, int pm, int *rop)
 static int
 SavageHelpSolidROP(ScrnInfoPtr pScrn, int *fg, int pm, int *rop)
 {
-    XAAInfoRecPtr infoRec = GET_XAAINFORECPTR_FROM_SCRNINFOPTR(pScrn);
+    SavagePtr psav = SAVPTR(pScrn);
+    XAAInfoRecPtr infoRec = psav->AccelInfoRec;
     int ret = 0;
     
     pm &= infoRec->FullPlanemask;
@@ -742,7 +743,7 @@ SavageSetupForSolidFill(
     unsigned planemask)
 {
     SavagePtr psav = SAVPTR(pScrn);
-    XAAInfoRecPtr xaaptr = GET_XAAINFORECPTR_FROM_SCRNINFOPTR( pScrn );
+    XAAInfoRecPtr xaaptr = psav->AccelInfoRec;
     int cmd;
     int mix;
 

@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dga.c,v 1.4 2002/10/08 22:14:11 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_dga.c,v 1.5tsi Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -29,7 +29,6 @@
 #include "xf86Pci.h"
 #include "xf86PciInfo.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "trident.h"
 #include "trident_regs.h"
 #include "dgaproc.h"

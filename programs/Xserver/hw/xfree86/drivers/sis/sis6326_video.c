@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis6326_video.c,v 1.19tsi Exp $ */
 /*
  * Xv driver for SiS 5597/5598, 6236 and 530/620.
  *
@@ -45,7 +45,6 @@
 #include "xf86xv.h"
 #include "Xv.h"
 #include "xaa.h"
-#include "xaalocal.h"
 #include "dixstruct.h"
 #include "fourcc.h"
 
@@ -528,6 +527,13 @@ SIS6326SetupImageVideo(ScreenPtr pScreen)
     XF86VideoAdaptorPtr adapt;
     SISPortPrivPtr pPriv;
 
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,1,99,1,0)
+    XAAInfoRecPtr pXAA = pSiS->AccelInfoPtr;
+
+    if (!pXAA || !pXAA->FillSolidRects)
+	return NULL;
+#endif
+
     if(!(adapt = xcalloc(1, sizeof(XF86VideoAdaptorRec) +
                             sizeof(SISPortPrivRec) +
                             sizeof(DevUnion))))
@@ -599,7 +605,7 @@ SIS6326SetupImageVideo(ScreenPtr pScreen)
     return adapt;
 }
 
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,3,0)
 static Bool
 RegionsEqual(RegionPtr A, RegionPtr B)
 {
@@ -1392,7 +1398,7 @@ SIS6326PutImage(
    /* update cliplist */
    if(  pPriv->autopaintColorKey &&
         (pPriv->grabbedByV4L ||
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,0,0)
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,3,99,3,0)
 	 !RegionsEqual(&pPriv->clip, clipBoxes)) ) {
 #else
          !REGION_EQUAL(pScrn->pScreen, &pPriv->clip, clipBoxes)) ) {
@@ -1401,8 +1407,8 @@ SIS6326PutImage(
      if(!pPriv->grabbedByV4L)
      	REGION_COPY(pScrn->pScreen, &pPriv->clip, clipBoxes);
      /* draw these */
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
-     XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,1,99,1,0)
+     (*pSiS->AccelInfoPtr->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy, ~0,
                     REGION_NUM_RECTS(clipBoxes),
                     REGION_RECTS(clipBoxes));
 #else
@@ -1661,8 +1667,8 @@ SIS6326DisplaySurface (
    SIS6326DisplayVideo(pScrn, pPriv);
 
    if(pPriv->autopaintColorKey) {
-#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,2,99,0,0)
-   	XAAFillSolidRects(pScrn, pPriv->colorKey, GXcopy, ~0,
+#if XF86_VERSION_CURRENT < XF86_VERSION_NUMERIC(4,1,99,1,0)
+   	(*XAAPTR(pScrn)->FillSolidRects)(pScrn, pPriv->colorKey, GXcopy, ~0,
                     REGION_NUM_RECTS(clipBoxes),
                     REGION_RECTS(clipBoxes));
 #else

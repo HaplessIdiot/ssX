@@ -1,4 +1,6 @@
 XFree86 4.4.99.2 (xx March 2004)
+  40. Address Xv segfaults with Option "XaaNoSolidFillRect" by reducing output
+      driver dependence on xaalocal.h (Marc La France).
   39. Fix a crash that can happen with apps using the zh_CN.UTF-8 locale
       (Bugzilla #991, Yu Shao).
   38. Remove dependencies from install targets so that from-tree installations
@@ -18759,7 +18761,7 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3193 2004/03/25 03:36:22 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.3194 2004/03/26 02:06:45 dawes Exp $
 
 
 
