@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/startx.c,v 1.7 2002/01/07 20:38:29 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/startx.c,v 1.8 2002/10/19 20:04:21 herrb Exp $
  */
 
 #include "config.h"
@@ -57,6 +57,9 @@ startx(void)
 	char commandline[PATH_MAX * 4];
 	int c_pos;
 	int len;
+#ifdef __UNIXOS2__
+	int i;
+#endif
 	/* 
 	 * The name of the 4.0 binary is XFree86. X might also
 	 * be the name of the 3.3 binary. Therefore don't change
@@ -68,6 +71,13 @@ startx(void)
 	else
 	    c_pos = XmuSnprintf(commandline, sizeof(commandline), 
 				"%s/bin/XFree86 :8 -configure ", XFree86Dir);
+#ifdef __UNIXOS2__
+	for (i=0;commandline[i] != '\0';i++)
+		if (commandline[i]=='/') commandline[i]='\\';
+
+	/* catch22: server will not start if DISPLAY is not set */
+	putenv("DISPLAY=:8");
+#endif
 	if (XF86Module_path && ((len = sizeof(commandline) - c_pos) > 0))
 	    c_pos += XmuSnprintf(commandline + c_pos,len,
 				 " -modulepath %s",XF86Module_path);
