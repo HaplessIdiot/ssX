@@ -7,6 +7,7 @@
  * Used here with the explicit permission of the original author, Alan Cox.
  *				<alan@lxorguk.ukuu.org.uk>
  */
+/* $XFree86: $ */
 
 #include <linux/types.h>
 

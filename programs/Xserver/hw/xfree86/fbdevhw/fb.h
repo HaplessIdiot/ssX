@@ -2,6 +2,8 @@
  * copyed from from linux kernel 2.2.4
  * removed internal stuff (#ifdef __KERNEL__)
  */
+/* $XFree86: $ */
+
 #ifndef _LINUX_FB_H
 #define _LINUX_FB_H
 
