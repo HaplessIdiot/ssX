@@ -1,4 +1,5 @@
 /* $XConsortium: OScompiler.h,v 1.1 94/03/28 21:34:23 dpw Exp $ */
+/* $XFree86$ */
 /*
  * Copyright IBM Corporation 1987,1988,1989
  *
