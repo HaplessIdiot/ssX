@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.12 1997/04/08 13:17:03 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86xaa.h,v 3.13 1997/04/10 11:35:00 hohndel Exp $ */
 
 
 /* AccelInfoRec flags */
@@ -959,6 +959,17 @@ typedef struct {
 	int offset
 #endif
     );
+    void (*SubsequentDashedTwoPointLine)(
+#if NeedNestedPrototypes
+        int x1,
+        int y1,
+        int x2,		
+        int y2,
+        int bias,
+	int offset
+#endif
+    );
+
     void (*Sync)();
     int Flags;
     int ColorExpandFlags;

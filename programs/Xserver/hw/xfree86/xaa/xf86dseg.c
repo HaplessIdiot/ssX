@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.1 1997/01/18 06:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.1 1997/04/08 10:14:16 hohndel Exp $ */
 
 /***********************************************************
 
@@ -48,7 +48,7 @@ SOFTWARE.
 
 ******************************************************************/
 /* $XConsortium: cfbline.c,v 1.24 94/07/28 14:33:33 dpw Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86line.c,v 3.1 1997/01/18 06:57:23 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86dseg.c,v 3.1 1997/04/08 10:14:16 hohndel Exp $ */
 
 /*
  * Accelerated dashed lines.
@@ -83,7 +83,6 @@ SOFTWARE.
 #include "xf86local.h"
 
 #define POLYSEGMENT
-
 
 void
 #ifdef POLYSEGMENT
@@ -130,6 +129,7 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
     cfbPrivGCPtr    devPriv;
     int PatternOffset;
     int PatternLength;
+    Bool UseTwoPointLine = (xf86AccelInfoRec.Flags & USE_TWO_POINT_LINE);
 
     if(!(PatternLength = xf86PackDashPattern(pGC))) {
 	SYNC_CHECK;	
@@ -193,21 +193,23 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 
 	if(!(adx | ady)) continue;
 
-	if (adx > ady)
-	{
+	if(!UseTwoPointLine) {
+ 	    if (adx > ady)
+	    {
 		e1 = ady << 1;
 		e2 = e1 - (adx << 1);
 		e = e1 - adx;
- 	}
-	else
-	{
+ 	    }
+	    else
+	    {
 		e1 = adx << 1;
 		e2 = e1 - (ady << 1);
 		e = e1 - ady;
 		SetYMajorOctant(octant);
-	}
+	    }
 
-	FIXUP_ERROR(e, octant, bias);
+	    FIXUP_ERROR(e, octant, bias);
+	}
 
 	    /* we have bresenham parameters and two points.
 	       all we have to do now is clip and draw.
@@ -221,6 +223,18 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 		OUTCODES(oc2, x2, y2, pbox);
 		if ((oc1 | oc2) == 0)
 		{
+		    if (UseTwoPointLine) {
+#ifdef POLYSEGMENT
+		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
+		            x1, y1, x2, y2, 
+			    bias | pGC->capStyle == CapNotLast ? 0x100 : 0,
+			    PatternOffset);
+#else
+		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
+		            x1, y1, x2, y2, bias, PatternOffset);
+#endif
+		        break;
+		    }
 		    if (!(octant & YMAJOR))
 			len = adx;
 		    else
@@ -241,17 +255,34 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 		else if (xf86AccelInfoRec.Flags & HARDWARE_CLIP_LINE) {
 		    xf86AccelInfoRec.SetClippingRectangle(
 		        pbox->x1, pbox->y1, pbox->x2 - 1, pbox->y2 - 1);
-		    if (!(octant & YMAJOR))
+		    if (UseTwoPointLine) {
+#ifdef POLYSEGMENT
+		        /*
+		         * Note: Two-point lines may not support
+		         * CapNotLast, in which case I don't think
+		         * PolySegment can use TwoPointLine with
+		         * CapNotLast set.
+		         */
+		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
+		            x1, y1, x2, y2, bias |
+		            pGC->capStyle == CapNotLast ? 0x100 : 0,
+			    PatternOffset);
+#else
+		        xf86AccelInfoRec.SubsequentDashedTwoPointLine(
+		            x1, y1, x2, y2, bias, PatternOffset);
+#endif
+		    } else {
+		        if (!(octant & YMAJOR))
 			    len = adx;
-		    else
+		        else
 			    len = ady;
 #ifdef POLYSEGMENT
-		    if (pGC->capStyle != CapNotLast)
+		    	if (pGC->capStyle != CapNotLast)
 			   len++;
 #endif
-		    xf86AccelInfoRec.SubsequentDashedBresenhamLine(x1, y1,
+		    	xf86AccelInfoRec.SubsequentDashedBresenhamLine(x1, y1,
 		            octant, e, e1, e2, len, PatternOffset);
-
+		    }
 		    pbox++;
 		}
 		else
@@ -372,8 +403,12 @@ xf86PolyDashedLine(pDrawable, pGC, mode, npt, pptInit)
 		(x2 <  pbox->x2) &&
 		(y2 <  pbox->y2))
 	    {
-		xf86AccelInfoRec.SubsequentDashedBresenhamLine(
-		     x2, y2, YMAJOR, -1, 0, -2, 1, PatternOffset);
+		if(UseTwoPointLine)
+  		    xf86AccelInfoRec.SubsequentDashedTwoPointLine(
+			x2, y2, x2, y2, 0, PatternOffset);
+		else
+		    xf86AccelInfoRec.SubsequentDashedBresenhamLine(
+		     	x2, y2, YMAJOR, -1, 0, -2, 1, PatternOffset);
 		break;
 	    }
 	    else

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.6 1997/03/27 08:31:22 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86defs.c,v 3.8 1997/04/10 11:34:54 hohndel Exp $ */
 
 
 #include "windowstr.h"
@@ -101,6 +101,7 @@ xf86AccelInfoRecType xf86AccelInfoRec = {
     NULL,	/* xf86GetLongWidthAndPointer() */
     NULL,	/* SetupForDashedLine() */
     NULL,	/* SubsequentDashedBresenhamLine() */
+    NULL,	/* SubsequentDashedTwoPointLine() */
     NULL,	/* Sync() */
     0,		/* Flags */
     0,		/* ColorExpandFlags */

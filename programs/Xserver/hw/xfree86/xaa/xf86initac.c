@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.14 1997/04/08 13:16:49 hohndel Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xaa/xf86initac.c,v 3.15 1997/04/12 13:46:45 hohndel Exp $ */
 
 /*
  * Copyright 1996  The XFree86 Project
@@ -580,21 +580,34 @@ xf86InitializeAcceleration(pScreen)
         }
 
 
-        if (xf86AccelInfoRec.SubsequentDashedBresenhamLine &&
+        if ((xf86AccelInfoRec.SubsequentDashedBresenhamLine
+        && ((xf86AccelInfoRec.Flags & HARDWARE_CLIP_LINE) ||
+        xf86AccelInfoRec.ErrorTermBits))
+        || (xf86AccelInfoRec.SubsequentDashedTwoPointLine
+        && (xf86AccelInfoRec.Flags & HARDWARE_CLIP_LINE)) &&
 	     xf86AccelInfoRec.SetupForDashedLine && 
 	     xf86AccelInfoRec.LinePatternBuffer &&
-	    (xf86AccelInfoRec.LinePatternMaxLength > 0) &&
-           ((xf86AccelInfoRec.Flags & HARDWARE_CLIP_LINE) ||
-        xf86AccelInfoRec.ErrorTermBits)) {
+	    (xf86AccelInfoRec.LinePatternMaxLength > 0)) {
             if (!xf86GCInfoRec.PolyLineDashedZeroWidth)
                 xf86GCInfoRec.PolyLineDashedZeroWidth = xf86PolyDashedLine;
             if (!xf86GCInfoRec.PolySegmentDashedZeroWidth)
                 xf86GCInfoRec.PolySegmentDashedZeroWidth = 
 						xf86PolyDashedSegment;
+
+            if (!xf86AccelInfoRec.SubsequentDashedBresenhamLine &&
+            !(xf86AccelInfoRec.Flags & TWO_POINT_LINE_NOT_LAST))
+                /*
+                 * If there's only TwoPointLine, and it doesn't support
+                 * skipping of the last pixel, then PolySegment cannot
+                 * be supported with the CapNotLast line style.
+                 */
+                xf86GCInfoRec.PolySegmentDashedZeroWidthFlags |=
+                    NO_CAP_NOT_LAST;
             if (xf86Verbose)
                 ErrorF("%s %s: XAA: Dashed lines and segments\n",
 	            XCONFIG_PROBED, xf86AccelInfoRec.ServerInfoRec->name);
         }
+
 
 do_not_touch_xf86AccelInfoRec:
 

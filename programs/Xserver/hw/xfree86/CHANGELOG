@@ -1,4 +1,5 @@
 XFree86 3.9a (17 April 1997)
+ 705. Add SubsequentDashedTwoPointLine to XAA (#296, Mark Vojkovich).
  704. Add a Hungarian XKB symbols file (Peter Soos).
  703. Add support for Microsoft Intellimouse (#304, Thomas Vogler).
  702. Add ViRGE/VX support to SVGA/S3V server; this isn't really working, yet
@@ -4397,4 +4398,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.449 1997/04/14 07:55:44 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.451 1997/04/17 08:16:46 hohndel Exp $
