@@ -28,7 +28,7 @@
  *	    Massimiliano Ghilardi, max@Linuz.sns.it, some fixes to the
  *				   clockchip programming code.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.108 2000/11/03 18:46:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident_driver.c,v 1.109 2000/11/16 19:45:00 eich Exp $ */
 
 #include "xf1bpp.h"
 #include "xf4bpp.h"
@@ -1586,14 +1586,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case CYBER9540:
     	    pTrident->ddc1Read = Tridentddc1Read;
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x04)
-		ramtype = "EDO Ram";
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+	    ramtype = "SDRAM";
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "Cyber 9540";
@@ -1642,12 +1635,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case CYBERBLADEI7:
     	    pTrident->ddc1Read = Tridentddc1Read;
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+	    ramtype = "SDRAM";
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "CyberBlade/i7";
@@ -1656,12 +1644,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case CYBERBLADEI7D:
     	    pTrident->ddc1Read = Tridentddc1Read;
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+	    ramtype = "SDRAM";
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "CyberBlade/DSTN/i7";
@@ -1670,12 +1653,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case CYBERBLADEI1:
     	    pTrident->ddc1Read = Tridentddc1Read;
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+	    ramtype = "SDRAM";
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "CyberBlade/i1";
@@ -1684,12 +1662,7 @@ TRIDENTPreInit(ScrnInfoPtr pScrn, int flags)
 	    break;
 	case CYBERBLADEI1D:
     	    pTrident->ddc1Read = Tridentddc1Read;
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x08)
-		ramtype = "SDRAM";
-    	    if ((INB(vgaIOBase + 5) & 0x0C) == 0x0C) {
-		pTrident->HasSGRAM = TRUE;
-		ramtype = "SGRAM";
-	    }
+	    ramtype = "SDRAM";
 	    pTrident->IsCyber = TRUE;
 	    Support24bpp = TRUE;
 	    chipset = "CyberBlade/DSTN/i1";
