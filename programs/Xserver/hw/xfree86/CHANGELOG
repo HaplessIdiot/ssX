@@ -45,9 +45,7 @@ XFree86 4.1.99.1 (xx July 2001)
       explicit error message for users trying to run in Quartz modes without
       Quartz support. Remove unneeded info.nib files (Torrey T. Lyons).
  128. Added XDarwin menu bar hiding/showing in rootless mode (Gregory Parker).
- 127. Stops xf86cfg complaining about non-video chips from Intel.
-      Adds a few PCI card ids for Intel and one for Matrox.
-      (#4804 Andrew C Aitchison)
+ 127. -
  126. Patch to make VBE DDC honour the NoDDC option.
       Before this, NoDDC disabled only 2 of the 3 ways the server might
       ask the monitor for DDC infomation.
@@ -13587,4 +13585,4 @@ XFree86 3.0a (28 April 1994)
 XFree86 3.0 (26 April 1994)
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1885 2001/07/25 14:30:04 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1886 2001/07/25 15:05:02 dawes Exp $
