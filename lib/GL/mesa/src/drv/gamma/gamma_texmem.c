@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texmem.c,v 1.3 2002/09/18 17:11:40 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texmem.c,v 1.4tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -76,7 +76,9 @@ static void gammaUploadTexLevel( gammaContextPtr gmesa, gammaTextureObjectPtr t,
    const struct gl_texture_image *image = t->image[level].image;
    int i,j;
    int l2d;
+#if 0
    int offset = 0;
+#endif
    int words, depthLog2;
 
    /* fprintf(stderr, "%s\n", __FUNCTION__);  */
@@ -96,7 +98,8 @@ static void gammaUploadTexLevel( gammaContextPtr gmesa, gammaTextureObjectPtr t,
       t->TextureFormat &= ~(TF_CompnentsMask | TF_OneCompFmt_Mask);
    }
 
-   t->TextureBaseAddr[level] = (t->image[level].offset + t->BufAddr) << 5;
+   t->TextureBaseAddr[level] = /* ??? */
+	(unsigned long)(t->image[level].offset + t->BufAddr) << 5;
 
    CALC_LOG2(depthLog2, 1<<l2d);
    words = (image->Width * image->Height) >> (5-depthLog2);
@@ -500,7 +503,7 @@ void gammaUploadTexImages( gammaContextPtr gmesa, gammaTextureObjectPtr t )
       }
 
       ofs = t->MemBlock->ofs;
-      t->BufAddr = gmesa->LBWindowBase + ofs;
+      t->BufAddr = (char *)(unsigned long)(gmesa->LBWindowBase + ofs); /* ??? */
 
       if (t == gmesa->CurrentTexObj[0])
 	 gmesa->dirty |= GAMMA_UPLOAD_TEX0;

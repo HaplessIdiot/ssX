@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texstate.c,v 1.3 2002/09/18 17:11:40 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_texstate.c,v 1.4tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -15,7 +15,7 @@
 static void gammaSetTexImages( gammaContextPtr gmesa, 
 			      struct gl_texture_object *tObj )
 {
-   GLuint height, width, pitch, i, textureFormat, log_pitch;
+   GLuint height, width, pitch, i, log_pitch;
    gammaTextureObjectPtr t = (gammaTextureObjectPtr) tObj->DriverData;
    const struct gl_texture_image *baseImage = tObj->Image[tObj->BaseLevel];
    GLint firstLevel, lastLevel, numLevels;
@@ -69,7 +69,8 @@ static void gammaSetTexImages( gammaContextPtr gmesa,
       t->image[i].offset = height * pitch;
       t->image[i].internalFormat = baseImage->Format;
       height += t->image[i].image->Height;
-      t->TextureBaseAddr[i] = (t->image[i].offset + t->BufAddr) << 5;
+      t->TextureBaseAddr[i] = /* ??? */
+	(unsigned long)(t->image[i].offset + t->BufAddr) << 5;
 
    }
 
@@ -83,7 +84,6 @@ static void gammaSetTexImages( gammaContextPtr gmesa,
 
 static void gammaUpdateTexEnv( GLcontext *ctx, GLuint unit )
 {
-   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
    const struct gl_texture_unit *texUnit = &ctx->Texture.Unit[unit];
    const struct gl_texture_object *tObj = texUnit->_Current;
    const GLuint format = tObj->Image[tObj->BaseLevel]->Format;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_state.c,v 1.3 2002/09/10 00:39:37 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_state.c,v 1.4tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -848,6 +848,7 @@ static void gammaDDColorMask( GLcontext *ctx, GLboolean r, GLboolean g,
  * sense to break them out of the core texture state update routines.
  */
 
+#if ENABLELIGHTING
 static void gammaDDLightfv(GLcontext *ctx, GLenum light, GLenum pname, 
 				const GLfloat *params, GLint nParams)
 {
@@ -972,6 +973,7 @@ static void gammaDDLightModelfv( GLcontext *ctx, GLenum pname,
 	break;
     }
 }
+#endif
 
 static void gammaDDShadeModel( GLcontext *ctx, GLenum mode )
 {
@@ -1040,7 +1042,7 @@ static void gammaDDLogicalOpcode( GLcontext *ctx, GLenum opcode )
    gmesa->dirty |= GAMMA_UPLOAD_LOGICOP;
 }
 
-static GLboolean gammaDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
+static void gammaDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
 {
    gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
 
@@ -1054,8 +1056,6 @@ static GLboolean gammaDDSetDrawBuffer( GLcontext *ctx, GLenum mode )
       gmesa->drawOffset = gmesa->readOffset = gmesa->driScreen->fbHeight * gmesa->driScreen->fbWidth * gmesa->gammaScreen->cpp; 
       break;
    }
-
-   return GL_TRUE;
 }
 
 /* =============================================================
@@ -1124,6 +1124,7 @@ void gammaUpdateViewportOffset( GLcontext *ctx )
    gmesa->new_state |= GAMMA_NEW_CLIP;
 }
 
+#if 0
 /* 
  * Matrix 
  */
@@ -1218,6 +1219,7 @@ static void gammaLoadHWMatrix(GLcontext *ctx)
 
     gmesa->dirty |= GAMMA_UPLOAD_TRANSFORM;
 }
+#endif
 
 /* =============================================================
  * State enable/disable

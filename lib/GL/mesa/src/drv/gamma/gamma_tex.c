@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_tex.c,v 1.2 2002/02/26 23:37:33 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_tex.c,v 1.3tsi Exp $ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -202,10 +202,13 @@ static void gammaTexEnv( GLcontext *ctx, GLenum target,
       break;
 
    case GL_TEXTURE_LOD_BIAS_EXT:
+#if 0  /* ?!?!?! */
       {
          struct gl_texture_object *tObj = ctx->Texture.Unit[unit]._Current;
          gammaTextureObjectPtr t = (gammaTextureObjectPtr) tObj->DriverData;
+	 /* XXX Looks like there's something missing here */
       }
+#endif
       break;
 
    default:
@@ -323,7 +326,7 @@ static void gammaBindTexture( GLcontext *ctx, GLenum target,
 
          t->TextureFilterMode = TextureFilterModeEnable;
 
-#if X_BYTE_ORDER == X_LITTLE_ENDIAN
+#ifdef MESA_LITTLE_ENDIAN
          t->TextureFormat = (TF_LittleEndian |
 #else
          t->TextureFormat = (TF_BigEndian |
@@ -367,7 +370,6 @@ static GLboolean gammaIsTextureResident( GLcontext *ctx,
 
 static void gammaInitTextureObjects( GLcontext *ctx )
 {
-   gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
    struct gl_texture_object *texObj;
    GLuint tmp = ctx->Texture.CurrentUnit;
 

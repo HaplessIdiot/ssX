@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.c,v 1.1tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -1613,7 +1613,7 @@ static void r200Enable( GLcontext *ctx, GLenum cap, GLboolean state )
    GLuint p, flag;
 
    if ( R200_DEBUG & DEBUG_STATE )
-      fprintf( stderr, __FUNCTION__"( %s = %s )\n",
+      fprintf( stderr, "%s( %s = %s )\n", __FUNCTION__,
 	       _mesa_lookup_enum_by_nr( cap ),
 	       state ? "GL_TRUE" : "GL_FALSE" );
 

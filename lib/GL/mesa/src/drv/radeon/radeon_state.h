@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.h,v 1.3 2002/09/16 18:05:20 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.h,v 1.4tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -59,8 +59,8 @@ extern void radeonPrintDirty( radeonContextPtr rmesa,
 
 extern void radeonFallback( GLcontext *ctx, GLuint bit, GLboolean mode );
 #define FALLBACK( rmesa, bit, mode ) do {				\
-   if ( 0 ) fprintf( stderr, "FALLBACK in "__FUNCTION__": #%d=%d\n",	\
-		     bit, mode );					\
+   if ( 0 ) fprintf( stderr, "FALLBACK in %s: #%d=%d\n",		\
+		     __FUNCTION__, bit, mode );				\
    radeonFallback( rmesa->glCtx, bit, mode );				\
 } while (0)
 

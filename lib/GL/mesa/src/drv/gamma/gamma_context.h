@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.3 2002/09/18 17:11:40 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/gamma/gamma_context.h,v 1.4tsi Exp $ */
 /*
  * Copyright 2001 by Alan Hourihane.
  *
@@ -144,7 +144,7 @@ struct gamma_texture_object_t {
    int bound;
 
    PMemBlock MemBlock;   
-   GLuint BufAddr;
+   char * BufAddr;
    
    GLuint min_level;
    GLuint max_level;
@@ -175,10 +175,12 @@ struct gamma_texture_object_t {
 
 void gammaUpdateTextureState( GLcontext *ctx );
 
-void gammaDestroyTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t);
+void gammaDestroyTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t );
+void gammaSwapOutTexObj( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 void gammaUploadTexImages( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 
 void gammaResetGlobalLRU( gammaContextPtr gmesa );
+void gammaUpdateTexLRU( gammaContextPtr gmesa, gammaTextureObjectPtr t );
 void gammaTexturesGone( gammaContextPtr gmesa, 
 		       GLuint start, GLuint end, 
 		       GLuint in_use ); 

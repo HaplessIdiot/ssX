@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.22 2002/09/10 00:39:37 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.23tsi Exp $
 
 #include <Threads.tmpl>
 
@@ -32,8 +32,7 @@ XCOMM $XFree86: xc/lib/GL/mesa/src/drv/i810/Imakefile,v 1.22 2002/09/10 00:39:37
 #include "../../SPARC/Imakefile.inc"
 #endif
 
-      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES) \
-		$(DRMCOMMAND_DEFINES)
+      DEFINES = $(ALLOC_DEFINES) $(DRI_DEFINES) $(MESA_ASM_DEFINES)
 
      INCLUDES = $(X_INCLUDES) $(MESA_INCLUDES) $(DRI_INCLUDES)
 

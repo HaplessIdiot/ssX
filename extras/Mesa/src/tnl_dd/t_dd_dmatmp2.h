@@ -1,4 +1,3 @@
-/* $Id$ */
 
 /*
  * Mesa 3-D graphics library
@@ -26,6 +25,7 @@
  * Authors:
  *    Keith Whitwell <keith@tungstengraphics.com>
  */
+/* $XFree86$ */
 
 
 /* Template for render stages which build and emit vertices directly
@@ -113,9 +113,11 @@ static void TAG(render_points_verts)( GLcontext *ctx,
 				      GLuint count,
 				      GLuint flags )
 {
-   LOCAL_VARS;
-   if (0) fprintf(stderr, "%s\n", __FUNCTION__);
-   EMIT_PRIM( ctx, GL_POINTS, HW_POINTS, start, count );
+   if (start < count) {
+      LOCAL_VARS;
+      if (0) fprintf(stderr, "%s\n", __FUNCTION__);
+      EMIT_PRIM( ctx, GL_POINTS, HW_POINTS, start, count );
+   }
 }
 
 static void TAG(render_lines_verts)( GLcontext *ctx,
@@ -157,7 +159,7 @@ static void TAG(render_line_strip_verts)( GLcontext *ctx,
       RESET_STIPPLE();
 
 
-   if (PREFER_DISCREET_ELT_PRIM( count-start, HW_LINES ))
+   if (PREFER_DISCRETE_ELT_PRIM( count-start, HW_LINES ))
    {   
       int dmasz = GET_SUBSEQUENT_VB_MAX_ELTS();
       int currentsz;
@@ -221,7 +223,7 @@ static void TAG(render_line_loop_verts)( GLcontext *ctx,
       if (start+1 >= count)
 	 return;
 
-      if (PREFER_DISCREET_ELT_PRIM( count-start, HW_LINES )) {
+      if (PREFER_DISCRETE_ELT_PRIM( count-start, HW_LINES )) {
 	 int dmasz = GET_SUBSEQUENT_VB_MAX_ELTS();
 	 int currentsz;
 
@@ -335,7 +337,7 @@ static void TAG(render_triangles_verts)( GLcontext *ctx,
       return;
    }
 
-   /* need a PREFER_DISCREET_ELT_PRIM here too..
+   /* need a PREFER_DISCRETE_ELT_PRIM here too..
     */
    EMIT_PRIM( ctx, GL_TRIANGLES, HW_TRIANGLES, start, count );
 }
@@ -353,7 +355,7 @@ static void TAG(render_tri_strip_verts)( GLcontext *ctx,
    if (start + 2 >= count)
       return;
 
-   if (PREFER_DISCREET_ELT_PRIM( count-start, HW_TRIANGLES ))
+   if (PREFER_DISCRETE_ELT_PRIM( count-start, HW_TRIANGLES ))
    {   
       int dmasz = GET_SUBSEQUENT_VB_MAX_ELTS();
       int currentsz;
@@ -435,7 +437,7 @@ static void TAG(render_tri_fan_verts)( GLcontext *ctx,
    if (start+2 >= count) 
       return;
 
-   if (PREFER_DISCREET_ELT_PRIM( count-start, HW_TRIANGLES ))
+   if (PREFER_DISCRETE_ELT_PRIM( count-start, HW_TRIANGLES ))
    {   
       int dmasz = GET_SUBSEQUENT_VB_MAX_ELTS();
       int currentsz;
@@ -509,7 +511,6 @@ static void TAG(render_quad_strip_verts)( GLcontext *ctx,
       EMIT_PRIM( ctx, GL_QUAD_STRIP, HW_QUAD_STRIP, start, count );
    } 
    else if (ctx->_TriangleCaps & DD_FLATSHADE) {
-      LOCAL_VARS;
       int dmasz = GET_SUBSEQUENT_VB_MAX_ELTS();
       int currentsz;
       GLuint j, nr;
@@ -575,7 +576,6 @@ static void TAG(render_quads_verts)( GLcontext *ctx,
       /* Hardware doesn't have a quad primitive type -- simulate it
        * using indexed vertices and the triangle primitive: 
        */
-      LOCAL_VARS;
       int dmasz = GET_SUBSEQUENT_VB_MAX_ELTS();
       int currentsz;
       GLuint j, nr;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.c,v 1.5 2002/09/16 18:05:20 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_state.c,v 1.6tsi Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -1603,7 +1603,7 @@ static void radeonEnable( GLcontext *ctx, GLenum cap, GLboolean state )
    GLuint p, flag;
 
    if ( RADEON_DEBUG & DEBUG_STATE )
-      fprintf( stderr, __FUNCTION__"( %s = %s )\n",
+      fprintf( stderr, "%s( %s = %s )\n", __FUNCTION__,
 	       _mesa_lookup_enum_by_nr( cap ),
 	       state ? "GL_TRUE" : "GL_FALSE" );
 

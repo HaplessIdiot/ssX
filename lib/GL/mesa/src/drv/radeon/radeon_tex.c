@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.6 2002/09/16 18:05:20 eich Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_tex.c,v 1.7tsi Exp $ */
 /*
  * Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
  *                      VA Linux Systems Inc., Fremont, California.
@@ -192,7 +192,7 @@ static radeonTexObjPtr radeonAllocTexObj( struct gl_texture_object *texObj )
       return NULL;
 
    if ( RADEON_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", texObj, t );
+      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, texObj, t );
    }
 
    t->tObj = texObj;
@@ -511,7 +511,7 @@ static void radeonTexParameter( GLcontext *ctx, GLenum target,
    radeonTexObjPtr t = (radeonTexObjPtr) texObj->DriverData;
 
    if ( RADEON_DEBUG & (DEBUG_STATE|DEBUG_TEXTURE) ) {
-      fprintf( stderr, __FUNCTION__"( %s )\n",
+      fprintf( stderr, "%s( %s )\n", __FUNCTION__,
 	       _mesa_lookup_enum_by_nr( pname ) );
    }
 
@@ -566,7 +566,7 @@ static void radeonBindTexture( GLcontext *ctx, GLenum target,
    GLuint unit = ctx->Texture.CurrentUnit;
 
    if ( RADEON_DEBUG & (DEBUG_STATE|DEBUG_TEXTURE) ) {
-      fprintf( stderr, __FUNCTION__"( %p ) unit=%d\n", texObj, unit );
+      fprintf( stderr, "%s( %p ) unit=%d\n", __FUNCTION__, texObj, unit );
    }
 
    if ( target == GL_TEXTURE_2D || target == GL_TEXTURE_1D ) {
@@ -584,7 +584,7 @@ static void radeonDeleteTexture( GLcontext *ctx,
    radeonTexObjPtr t = (radeonTexObjPtr) texObj->DriverData;
 
    if ( RADEON_DEBUG & (DEBUG_STATE|DEBUG_TEXTURE) ) {
-      fprintf( stderr, __FUNCTION__"( %p )\n", texObj );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, texObj );
    }
 
    if ( t ) {

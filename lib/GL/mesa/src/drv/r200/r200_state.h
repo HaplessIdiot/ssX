@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_state.h,v 1.1tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -57,8 +57,8 @@ extern void r200PrintDirty( r200ContextPtr rmesa,
 
 extern void r200Fallback( GLcontext *ctx, GLuint bit, GLboolean mode );
 #define FALLBACK( rmesa, bit, mode ) do {				\
-   if ( 0 ) fprintf( stderr, "FALLBACK in "__FUNCTION__": #%d=%d\n",	\
-		     bit, mode );					\
+   if ( 0 ) fprintf( stderr, "FALLBACK in %s: #%d=%d\n",		\
+		     __FUNCTION__, bit, mode );				\
    r200Fallback( rmesa->glCtx, bit, mode );				\
 } while (0)
 

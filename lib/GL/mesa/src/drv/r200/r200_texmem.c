@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_texmem.c,v 1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright (C) Tungsten Graphics 2002.  All Rights Reserved.  
@@ -60,7 +60,7 @@ void r200DestroyTexObj( r200ContextPtr rmesa, r200TexObjPtr t )
       return;
 
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
+      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, t, t->tObj );
    }
 
    if ( t->memBlock ) {
@@ -95,7 +95,7 @@ void r200DestroyTexObj( r200ContextPtr rmesa, r200TexObjPtr t )
 void r200SwapOutTexObj( r200ContextPtr rmesa, r200TexObjPtr t )
 {
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", t, t->tObj );
+      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, t, t->tObj );
    }
 
    if ( t->memBlock ) {
@@ -639,7 +639,7 @@ int r200UploadTexImages( r200ContextPtr rmesa, r200TexObjPtr t )
    r200TexObjPtr t1 = rmesa->state.texture.unit[1].texobj;
 
    if ( R200_DEBUG & (DEBUG_TEXTURE|DEBUG_IOCTL) ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p ) sz=%d lvls=%d-%d\n",
+      fprintf( stderr, "%s( %p, %p ) sz=%d lvls=%d-%d\n", __FUNCTION__,
 	       rmesa->glCtx, t->tObj, t->totalSize,
 	       t->firstLevel, t->lastLevel );
    }

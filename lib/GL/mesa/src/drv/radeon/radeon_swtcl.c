@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_swtcl.c,v 1.1tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -794,6 +794,7 @@ static void radeonResetLineStipple( GLcontext *ctx );
 #define CTX_ARG2 rmesa
 #define GET_VERTEX_DWORDS() rmesa->swtcl.vertex_size
 #define ALLOC_VERTS( n, size ) radeonAllocDmaLowVerts( rmesa, n, size * 4 )
+#undef LOCAL_VARS
 #define LOCAL_VARS						\
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);		\
    const GLuint shift = rmesa->swtcl.vertex_stride_shift;	\
@@ -875,6 +876,7 @@ static struct {
 #define VERT_SAVE_SPEC( idx )    if (havespec) spec[idx] = CPU_TO_LE32(v[idx]->ui[5])
 #define VERT_RESTORE_SPEC( idx ) if (havespec) v[idx]->ui[5] = LE32_TO_CPU(spec[idx])
 
+#undef LOCAL_VARS
 #define LOCAL_VARS(n)							\
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx);			\
    GLuint color[n], spec[n];						\
@@ -888,6 +890,7 @@ static struct {
 
 #define RASTERIZE(x) radeonRasterPrimitive( ctx, reduced_hw_prim[x] )
 #define RENDER_PRIMITIVE rmesa->swtcl.render_primitive
+#undef TAG
 #define TAG(x) x
 #include "tnl_dd/t_dd_unfilled.h"
 #undef IND
@@ -957,6 +960,7 @@ static void init_rast_tab( void )
    radeon_triangle( rmesa, VERT(v0), VERT(v1), VERT(v2) )
 #define RENDER_QUAD( v0, v1, v2, v3 ) \
    radeon_quad( rmesa, VERT(v0), VERT(v1), VERT(v2), VERT(v3) )
+#undef INIT
 #define INIT(x) do {					\
    radeonRenderPrimitive( ctx, x );			\
 } while (0)

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r200/r200_tex.c,v 1.1tsi Exp $ */
 /*
 Copyright (C) The Weather Channel, Inc.  2002.  All Rights Reserved.
 
@@ -171,7 +171,7 @@ static r200TexObjPtr r200AllocTexObj( struct gl_texture_object *texObj )
       return NULL;
 
    if ( R200_DEBUG & DEBUG_TEXTURE ) {
-      fprintf( stderr, __FUNCTION__"( %p, %p )\n", texObj, t );
+      fprintf( stderr, "%s( %p, %p )\n", __FUNCTION__, texObj, t );
    }
 
    t->tObj = texObj;
@@ -611,7 +611,7 @@ static void r200TexParameter( GLcontext *ctx, GLenum target,
    r200TexObjPtr t = (r200TexObjPtr) texObj->DriverData;
 
    if ( R200_DEBUG & (DEBUG_STATE|DEBUG_TEXTURE) ) {
-      fprintf( stderr, __FUNCTION__"( %s )\n",
+      fprintf( stderr, "%s( %s )\n", __FUNCTION__,
 	       _mesa_lookup_enum_by_nr( pname ) );
    }
 
@@ -665,7 +665,7 @@ static void r200BindTexture( GLcontext *ctx, GLenum target,
    GLuint unit = ctx->Texture.CurrentUnit;
 
    if ( R200_DEBUG & (DEBUG_STATE|DEBUG_TEXTURE) ) {
-      fprintf( stderr, __FUNCTION__"( %p ) unit=%d\n", texObj, unit );
+      fprintf( stderr, "%s( %p ) unit=%d\n", __FUNCTION__, texObj, unit );
    }
 
    if ( target == GL_TEXTURE_2D || target == GL_TEXTURE_1D ) {
@@ -683,7 +683,7 @@ static void r200DeleteTexture( GLcontext *ctx,
    r200TexObjPtr t = (r200TexObjPtr) texObj->DriverData;
 
    if ( R200_DEBUG & (DEBUG_STATE|DEBUG_TEXTURE) ) {
-      fprintf( stderr, __FUNCTION__"( %p )\n", texObj );
+      fprintf( stderr, "%s( %p )\n", __FUNCTION__, texObj );
    }
 
    if ( t ) {
