@@ -1,5 +1,5 @@
 
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/module/Imakefile,v 1.1 2000/04/06 15:35:05 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/scanpci/module/Imakefile,v 1.2 2002/07/15 20:46:04 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -21,11 +21,11 @@ ModuleObjectRule()
 
 SpecialCObjectRule(xf86PciData,NullParameter,-DPCIDATA)
 
-LibraryModuleTarget(scanpci,xf86ScanPci.o)
+LibraryModuleTarget(scanpci,xf86ScanPci.o,.)
 
 InstallLibraryModule(scanpci,$(MODULEDIR),.)
 
-LibraryModuleTarget(pcidata,xf86PciData.o)
+LibraryModuleTarget(pcidata,xf86PciData.o,.)
 
 InstallLibraryModule(pcidata,$(MODULEDIR),.)
 

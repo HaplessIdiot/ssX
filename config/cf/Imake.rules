@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.128 2003/11/15 03:25:17 dawes Exp $
+XCOMM rules:  $XFree86: xc/config/cf/Imake.rules,v 3.129 2004/02/16 18:14:33 dawes Exp $
 
 /*
  *		   MACHINE-INDEPENDENT RULES; DO NOT MODIFY
@@ -3399,14 +3399,15 @@ MutexDirective:	targets
 #endif /* MakeMutex */
 
 /*
- * Rules for dynamic modules.  These are primarily used by XFree86
+ * Rules for dynamic modules.  These are primarily used by XFree86.
  */
 
 #ifndef LinkBuildModule
 #ifdef UseInstalled
-#define LinkBuildModule(module,subdir) $(_NULLCMD_)
+#define LinkBuildModule(module,subdir)					@@\
+	$(_NULLCMD_)
 #else
-#define LinkBuildModule(module,subdir)\
+#define LinkBuildModule(module,subdir)					@@\
 	MakeDir($(BUILDMODULEDIR)/subdir)				@@\
 	RemoveFile($(BUILDMODULEDIR)/subdir/module)			@@\
 	@(UP="`$(REVPATH) subdir`"; set -x; \				@@\
@@ -3440,11 +3441,28 @@ MutexDirective:	targets
  */
 #ifndef ObjectModuleTarget
 #if MakeDllModules && DoLoadableServer
-#define ObjectModuleTarget(module,objects)				@@\
-DynamicModuleTarget(Concat(module,_drv.so), objects)
+#define ObjectModuleTarget(module,objects,subdir)			@@\
+DynamicModuleTarget(Concat(module,_drv.so), objects)			@@\
+LinkBuildModule($@,subdir)
 #else
-#define ObjectModuleTarget(module,objects)				@@\
-NormalRelocatableTarget(Concat(module,_drv), objects)
+#define ObjectModuleTarget(module,objects,subdir)			@@\
+NormalRelocatableTarget(Concat(module,_drv), objects)			@@\
+LinkBuildModule($@,subdir)
+#endif
+#endif
+
+/*
+ * NamedObjectModuleTarget - build a module as a single object file
+ */
+#ifndef PlainObjectModuleTarget
+#if MakeDllModules && DoLoadableServer
+#define PlainObjectModuleTarget(module,objects,subdir)			@@\
+DynamicModuleTarget(name.so, objects)					@@\
+LinkBuildModule($@,subdir)
+#else
+#define PlainObjectModuleTarget(module,objects,subdir)			@@\
+NormalRelocatableTarget(name, objects)					@@\
+LinkBuildModule($@,subdir)
 #endif
 #endif
 
@@ -3453,12 +3471,14 @@ NormalRelocatableTarget(Concat(module,_drv), objects)
  */
 #ifndef LibraryModuleTarget
 #if MakeDllModules && DoLoadableServer
-#define LibraryModuleTarget(module,objects)				@@\
+#define LibraryModuleTarget(module,objects,subdir)			@@\
 NormalLibraryTarget(module, objects)					@@\
-DynamicModuleTarget(Concat3(lib,module,.so), objects)
+DynamicModuleTarget(Concat3(lib,module,.so), objects)			@@\
+LinkBuildModule($@,subdir)
 #else
-#define LibraryModuleTarget(module, objects)				@@\
-NormalLibraryTarget(module, objects)
+#define LibraryModuleTarget(module, objects,subdir)			@@\
+NormalLibraryTarget(module, objects)					@@\
+LinkBuildModule($@,subdir)
 #endif
 #endif
 
@@ -3467,12 +3487,14 @@ NormalLibraryTarget(module, objects)
  */
 #ifndef DepLibraryModuleTarget
 #if MakeDllModules && DoLoadableServer
-#define DepLibraryModuleTarget(module,deplist,objects)			@@\
+#define DepLibraryModuleTarget(module,deplist,objects,subdir)		@@\
 NormalDepLibraryTarget(module, deplist, objects)			@@\
-DepDynamicModuleTarget(Concat3(lib,module,.so), deplist, objects)
+DepDynamicModuleTarget(Concat3(lib,module,.so), deplist, objects)	@@\
+LinkBuildModule($@,subdir)
 #else
-#define DepLibraryModuleTarget(module,deplist,objects)			@@\
-NormalDepLibraryTarget(module, deplist, objects)
+#define DepLibraryModuleTarget(module,deplist,objects,subdir)		@@\
+NormalDepLibraryTarget(module, deplist, objects)			@@\
+LinkBuildModule($@,subdir)
 #endif
 #endif
 
@@ -3511,9 +3533,6 @@ clean::									@@\
  */
 #ifndef InstallDynamicModule
 #define InstallDynamicModule(module,dest,subdir)			@@\
-AllTarget(module)							@@\
-	LinkBuildModule(module,subdir)					@@\
-									@@\
 install:: module							@@\
 	MakeDir($(DESTDIR)dest/subdir)					@@\
 	$(INSTALL) -c $(INSTDATFLAGS) module $(DESTDIR)dest/subdir
@@ -3521,9 +3540,6 @@ install:: module							@@\
 
 #ifndef InstallDynamicNamedModule
 #define InstallDynamicNamedModule(module,instname,dest,subdir)		@@\
-AllTarget(module)							@@\
-	LinkBuildNamedModule(module,instname,subdir)			@@\
-									@@\
 install:: module							@@\
 	MakeDir($(DESTDIR)dest/subdir)					@@\
 	$(INSTALL) -c $(INSTDATFLAGS) module $(DESTDIR)dest/subdir/instname
@@ -3539,6 +3555,20 @@ InstallDynamicModule(Concat(module,_drv.so),dest,subdir)
 #else
 #define InstallObjectModule(module,dest,subdir)				@@\
 InstallDynamicModule(Concat(module,_drv.o),dest,subdir)
+#endif
+#endif
+#endif
+
+#ifndef InstallPlainObjectModule
+#if !DoLoadableServer
+#define InstallPlainObjectModule(module,dest,subdir)	/**/
+#else
+#if MakeDllModules
+#define InstallPlainObjectModule(module,dest,subdir)			@@\
+InstallDynamicModule(module.so,dest,subdir)
+#else
+#define InstallPlainObjectModule(module,dest,subdir)			@@\
+InstallDynamicModule(module.o,dest,subdir)
 #endif
 #endif
 #endif

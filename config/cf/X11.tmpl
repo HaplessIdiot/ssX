@@ -5,7 +5,7 @@ XCOMM
 XCOMM
 XCOMM
 XCOMM
-XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.249tsi Exp $
+XCOMM $XFree86: xc/config/cf/X11.tmpl,v 1.250 2004/03/11 15:21:31 tsi Exp $
 
 /***************************************************************************
  *                                                                         *
@@ -3643,9 +3643,9 @@ InstallNamedTargetNoClobber(install,file.ad,$(INSTAPPFLAGS),$(XAPPLOADDIR),class
 
 # ifndef MakeFcCache
 #  define MakeFcCache(deplist)						@@\
-all:: fonts.cache							@@\
+all:: fonts.cache-1							@@\
 									@@\
-fonts.cache: deplist							@@\
+fonts.cache-1: deplist							@@\
 	RunProgram(FCCACHE, $(FCCACHEOPTS) .)				@@\
 									@@\
 clean::									@@\

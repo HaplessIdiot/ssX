@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.26 2003/03/06 22:24:50 herrb Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/X86/Imakefile,v 1.27 2003/09/28 20:15:06 alanh Exp $
 
 /*
  * Need both shared and unshared Mesa objects in the following cases:
@@ -47,7 +47,7 @@ LibraryObjectRule()
 
 STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
 ObjectFromAsmSource(common_x86_asm, NullParameter)

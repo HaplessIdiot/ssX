@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/Imakefile,v 1.10 2001/04/23 16:17:11 tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/Imakefile,v 1.11 2002/05/31 18:46:03 dawes Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -24,7 +24,7 @@ DEPEND_DEFINES = -DRAMDAC_MODULE DependDefines
 
 ModuleObjectRule()
 
-LibraryModuleTarget(ramdac,$(OBJS))
+LibraryModuleTarget(ramdac,$(OBJS),.)
 
 NormalLintTarget($(SRCS))
 

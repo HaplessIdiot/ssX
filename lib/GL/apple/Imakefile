@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.2 2003/10/09 23:42:32 torrey Exp $
+XCOMM $XFree86: xc/lib/GL/apple/Imakefile,v 1.3 2004/01/17 00:38:12 torrey Exp $
 
 #include <Threads.tmpl>
 
@@ -47,7 +47,7 @@ dri_dispatch.h :
 
 LibraryObjectRule()
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
 DependTarget()

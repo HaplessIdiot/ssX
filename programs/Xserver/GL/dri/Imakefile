@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.6 2001/04/28 13:55:36 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/GL/dri/Imakefile,v 1.7 2003/02/11 21:34:04 tsi Exp $
 
 #define IHaveModules
 #include <Server.tmpl>
@@ -22,7 +22,7 @@ LinkSourceFile(xf86dri.h,$(LIBSRC)/GL/dri)
 LinkSourceFile(xf86dristr.h,$(LIBSRC)/GL/dri)
 
 ModuleObjectRule()
-LibraryModuleTarget(dri,$(OBJS))
+LibraryModuleTarget(dri,$(OBJS),extensions)
 InstallLibraryModule(dri,$(MODULEDIR),extensions)
 
 DependTarget()

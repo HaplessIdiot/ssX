@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.14 2003/05/08 21:49:01 herrb Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/os-support/bsd/drm/Imakefile,v 1.15 2003/08/16 19:26:37 dawes Exp $
 XCOMM $PI: xc/programs/Xserver/hw/xfree86/os-support/linux/drm/Imakefile,v 1.7 1999/09/14 19:55:15 faith Exp $
 
 #define IHaveModules
@@ -46,7 +46,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 DEFINES = $(MTRR_DEFINES) $(GLX_DEFINES)
 
 ModuleObjectRule()
-LibraryModuleTarget(drm,$(OBJS))
+LibraryModuleTarget(drm,$(OBJS),$(OS_SUBDIR))
 NormalLintTarget($(SRCS))
 
 InstallLibraryModule(drm,$(MODULEDIR),$(OS_SUBDIR))

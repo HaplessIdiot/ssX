@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.1 2001/05/29 04:54:13 keithp Exp $
+XCOMM $XFree86: xc/programs/Xserver/miext/layer/Imakefile,v 1.4 2003/08/22 19:27:31 eich Exp $
 XCOMM
 XCOMM
 
@@ -36,7 +36,7 @@ OBJS = layergc.o \
 	     ../../mi/llib-lmi.ln
 
 NormalLibraryObjectRule()
-LibraryModuleTarget(layer,$(OBJS))
+LibraryModuleTarget(layer,$(OBJS),.)
 LintLibraryTarget(layer,$(SRCS))
 
 NormalLintTarget($(SRCS))

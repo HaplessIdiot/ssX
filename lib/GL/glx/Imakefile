@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.23 2003/11/17 03:10:42 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/glx/Imakefile,v 1.24 2004/03/05 04:02:09 dawes Exp $
 XCOMM The contents of this file are subject to the GLX Public License Version 1.0
 XCOMM (the "License"). You may not use this file except in compliance with the
 XCOMM License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -155,7 +155,7 @@ STD_CPP_DEFINES = StandardDefines $(PROJECT_DEFINES)
 ObjectFromAsmSource(glapi_sparc, NullParameter)
 #endif
 
-SubdirLibraryRule($(OBJS))
+AllTarget($(OBJS))
 NormalLintTarget($(SRCS))
 
 DependTarget()

@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.17tsi Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/int10/Imakefile,v 1.18 2003/11/03 05:11:50 tsi Exp $
 
 /* An OS-independent INT10 module/library */
 
@@ -62,7 +62,7 @@ INCLUDES = -I$(XF86COMSRC) -I$(XF86OSSRC) -I. -I$(SERVERSRC)/include \
 DEFINES = $(X86EMUDEFINES) $(INT10DEFINES)
 
 ModuleObjectRule()
-LibraryModuleTarget(int10,$(OBJS))
+LibraryModuleTarget(int10,$(OBJS),.)
 
 InstallLibraryModule(int10,$(MODULEDIR),.)
 

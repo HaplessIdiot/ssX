@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/Imakefile,v 1.4 2001/01/24 00:06:20 dawes Exp $
+XCOMM $XFree86: xc/programs/Xserver/hw/xfree86/drivers/imstt/Imakefile,v 1.5 2001/05/16 06:48:09 keithp Exp $
 /*
  *
  * Copyright 2000 Ani Joshi <ajoshi@unixbox.com>
@@ -34,7 +34,7 @@ SubdirLibraryRule($(OBJS))
 NormalAsmObjectRule()
 
 ModuleObjectRule()
-ObjectModuleTarget(imstt, $(OBJS))
+ObjectModuleTarget(imstt, $(OBJS),drivers)
 
 InstallObjectModule(imstt,$(MODULEDIR),drivers)
 
