@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.28 2001/08/13 19:35:01 dawes Exp $ */
+/* $XFree86: xc/programs/xvidtune/xvidtune.c,v 3.30 2001/12/08 18:51:30 herrb Exp $ */
 
 /*
 
@@ -164,7 +164,7 @@ CatchSig(int signal)
 }
 
 static void
-CatchXtSig(XtPointer closure, XtSignalId id)
+CatchXtSig(XtPointer closure, XtSignalId *id)
 {
     CleanUp(XtDisplay(Top));
     exit(3);
