@@ -96,21 +96,23 @@ startaccessx(void)
 {
     InitializeKeyboard();
 
-    XkbGetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
-    if (xkb_info->xkb->ctrls == NULL)
-	xkb_info->xkb->ctrls = (XkbControlsPtr)
-	    XtCalloc(1, sizeof(XkbControlsRec));
+    if (xkb_info->xkb) {
+	XkbGetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
+	if (xkb_info->xkb->ctrls == NULL)
+	    xkb_info->xkb->ctrls = (XkbControlsPtr)
+		XtCalloc(1, sizeof(XkbControlsRec));
 
-    xkb_info->xkb->ctrls->enabled_ctrls |= XkbMouseKeysMask |
-					   XkbMouseKeysAccelMask;
-    xkb_info->xkb->ctrls->mk_delay = 40;
-    xkb_info->xkb->ctrls->mk_interval = 10;
-    xkb_info->xkb->ctrls->mk_time_to_max = 1000;
-    xkb_info->xkb->ctrls->mk_max_speed = 500;
-    xkb_info->xkb->ctrls->mk_curve = 0;
-    XkbSetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
-    (void)UpdateKeyboard(True);
-    CreateAccessXHelpDialog();
+	xkb_info->xkb->ctrls->enabled_ctrls |= XkbMouseKeysMask |
+					       XkbMouseKeysAccelMask;
+	xkb_info->xkb->ctrls->mk_delay = 40;
+	xkb_info->xkb->ctrls->mk_interval = 10;
+	xkb_info->xkb->ctrls->mk_time_to_max = 1000;
+	xkb_info->xkb->ctrls->mk_max_speed = 500;
+	xkb_info->xkb->ctrls->mk_curve = 0;
+	XkbSetControls(DPY, XkbAllControlsMask, xkb_info->xkb);
+	(void)UpdateKeyboard(True);
+	CreateAccessXHelpDialog();
+    }
 }
 
 void
