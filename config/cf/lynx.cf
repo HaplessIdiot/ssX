@@ -1,4 +1,4 @@
-XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.0 1995/06/02 09:59:52 dawes Exp $
+XCOMM platform:  $XFree86: xc/config/cf/lynx.cf,v 3.1 1995/07/15 14:53:06 dawes Exp $
 
 #define OSName			LynxOS AT
 #define OSVendor		(LYNX Real-Time Systems, Inc)
@@ -178,7 +178,12 @@ install.man:: file.man                                                  @@\
 	$(RM) $(DESTDIR)destdir/dest.suffix*				@@\
 	groff -e -t -man -Tascii file.man >/tmp/file.man		@@\
 	$(INSTALL) -c $(INSTMANFLAGS) /tmp/file.man $(DESTDIR)destdir/dest.suffix @@\
-	$(RM) /tmp/file.man
+	echo dest dest suffix >> $(DESTDIR)destdir/Concat(LIST,suffix)	 @@\
+	gawk '					\			@@\
+	/^\.SH[ 	]*NAME/ 	{ 	\			@@\
+		getline; sub("\\\\", "(" p ") "); print; exit	\	@@\
+	}' p=suffix file.man  >> $(DESTDIR)destdir/../whatis	@@\
+	$(RM) /tmp/file.man)
 #endif
 
 #ifndef InstallMultipleMan
@@ -192,7 +197,12 @@ install.man:: list                                                      @@\
 		$(RM) $(DESTDIR)dest/$${MNAME}*; \			@@\
 		groff -e -t -man -Tascii $$i >/tmp/$$i; \		@@\
 		$(INSTALL) -c $(INSTMANFLAGS) /tmp/$$i $(DESTDIR)dest/$${MNAME}.$(MANSUFFIX); \      @@\
-		$(RM) /tmp/$$i); \					@@\
+		echo $${MNAME} $${MNAME} $(MANSUFFIX) >> $(DESTDIR)dest/LIST$(MANSUFFIX)\  @@\
+		gawk '							\  @@\
+		/^\.SH[ 	]*NAME/ 	{ 			\  @@\
+			getline; sub("\\\\", "(" p ") "); print; exit	\  @@\
+		}' p=$(MANSUFFIX) $$i  >> $(DESTDIR)dest/../whatis	\  @@\
+		$(RM) /tmp/$$i); \					   @@\
 	done
 #endif
 

@@ -1,5 +1,6 @@
 /*
-* $XConsortium: Xtos.h,v 1.15 94/04/17 20:15:05 rws Exp $
+* $XConsortium: Xtos.h,v 1.17 94/09/16 19:00:07 kaleb Exp $
+* $XFree86$
 */
 
 /***********************************************************
@@ -74,18 +75,18 @@ SOFTWARE.
  */
 #if defined(__HIGHC__)
 
+#ifndef NCR
 extern char *alloca();
 
 #if HCVERSION < 21003
 #define ALLOCATE_LOCAL(size)	alloca((int)(size))
-#if defined(NCR)
-#pragma on(alloca);
-#else
 pragma on(alloca);
-#endif
 #else /* HCVERSION >= 21003 */
 #define	ALLOCATE_LOCAL(size)	_Alloca((int)(size))
 #endif /* HCVERSION < 21003 */
+#else
+#define ALLOCATE_LOCAL(size)	alloca(size)
+#endif
 
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 
@@ -99,20 +100,27 @@ pragma on(alloca);
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #else /* ! __GNUC__ */
+
 /*
- * warning: mips alloca is unsuitable, do not use.
+ * warning: old mips alloca (pre 2.10) is unusable, new one is built in
+ * Test is easy, the new is is named __builtin_alloca and comes
+ * from alloca.h which #defines alloca.
  */
-#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar)
+#ifndef NCR
+#if defined(vax) || defined(sun) || defined(apollo) || defined(stellar) || defined(alloca)
 /*
  * Some System V boxes extract alloca.o from /lib/libPW.a; if you
  * decide that you don't want to use alloca, you might want to fix it here.
  */
 /* alloca might be a macro taking one arg (hi, Sun!), so give it one. */
+#if !(defined(sun) && defined(SVR4))
 #define __Xnullarg		/* as nothing */
 char *alloca(__Xnullarg);
+#endif
 #define ALLOCATE_LOCAL(size) alloca((int)(size))
 #define DEALLOCATE_LOCAL(ptr)  /* as nothing */
 #endif /* who does alloca */
+#endif /* NCR */
 #endif /* __GNUC__ */
 
 #endif /* NO_ALLOCA */

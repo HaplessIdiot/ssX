@@ -742,7 +742,8 @@ XFree86 Project has been provided from its proceeds.
   <item>  Kazuyuki Okamoto, Japan
   <item>  <url url="http://www.ptf.com/"
 	name="Prime Time Freeware">, San Bruno, CA
-  <item>  Red Hat Software, Chapel Hill, NC
+  <item>  <url url="http://www.redhat.com/"
+	name="Red Hat Software">, Chapel Hill, NC
   <item>  Norbert Reithinger
   <item>  SPEA Software AG, Starnberg, Germany
   <item>  STB Systems
@@ -774,8 +775,8 @@ to XFree86 3.1.2.  They and binaries for many OSs are available via anonymous
 FTP from:
 
 <itemize>
-<item>       <url url="ftp://ftp.XFree86.org/pub/XFree86/current"
-	     name="ftp.XFree86.org:/pub/XFree86/current">
+<item>       <url url="ftp://ftp.XFree86.org/pub/XFree86/3.1.2"
+	     name="ftp.XFree86.org:/pub/XFree86/3.1.2">
 </itemize>
 
 and the following mirror sites:
@@ -790,8 +791,8 @@ and the following mirror sites:
 <item>   <url url="ftp://XFree86.cdrom.com/pub/XFree86" 
 	name="XFree86.cdrom.com:/pub/XFree86">
 	(source and binaries)
-<item>   <url url="ftp://ftp.rge.com/pub/XFree86" 
-	name="ftp.rge.com:/pub/XFree86">
+<item>   <url url="ftp://ftp.rge.com/pub/XFree86/XFree86/3.1.2" 
+	name="ftp.rge.com:/pub/XFree86/XFree86/3.1.2">
 	(source and binaries)
 <item>   <url url="ftp://ftp.iastate.edu/pub/XFree86/XFree86-3.1.2" 
 	name="ftp.iastate.edu:/pub/XFree86/XFree86-3.1.2">
@@ -803,8 +804,8 @@ and the following mirror sites:
 <item>   <url url="ftp://ref.tfs.com/pub/mirrors/XFree86" 
 	name="ref.tfs.com:/pub/mirrors/XFree86">
 	(source patches and FreeBSD binaries)
-<item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86/current" 
-	name="ftp.eecs.umich.edu:/BSD/XFree86/current">
+<item>   <url url="ftp://ftp.eecs.umich.edu/BSD/XFree86/3.1.2" 
+	name="ftp.eecs.umich.edu:/BSD/XFree86/3.1.2">
 	(source and binaries)
 <!--
 <item>   <url url="ftp://sunsite.unc.edu/pub/X11/XFree86" 
@@ -838,14 +839,14 @@ and the following mirror sites:
 <item>   <url url="ftp://ftp.uni-stuttgart.de/pub/X11/Xfree86/3.1.2" 
 	name="ftp.uni-stuttgart.de:/pub/X11/Xfree86/3.1.2">
 	(source and binaries)
-<item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86" 
-	name="ftp.funet.fi:/pub/X11/XFree86">
+<item>   <url url="ftp://ftp.funet.fi/pub/X11/XFree86/3.1.2" 
+	name="ftp.funet.fi:/pub/X11/XFree86/3.1.2">
 	(source and binaries)
 <item>   <url url="ftp://ftp.calvacom.fr/pub/unix/X/XFree86" 
 	name="ftp.calvacom.fr:/pub/unix/X/XFree86">
 	(source and binaries)
-<item>   <url url="ftp://ftp.ibp.fr/pub/X11/XFree86" 
-	name="ftp.ibp.fr:/pub/X11/XFree86">
+<item>   <url url="ftp://ftp.ibp.fr/pub/X11/XFree86/XFree86-3.1.2" 
+	name="ftp.ibp.fr:/pub/X11/XFree86/XFree86-3.1.2">
 	(source and binaries)
 <item>   <url url="ftp://ftp.laas.fr/pub/NetBSD/XFree86-3.1.2" 
 	name="ftp.laas.fr:/pub/netbsd/XFree86-3.1.2">
@@ -855,8 +856,8 @@ and the following mirror sites:
 	name="ftp.unipi.it:/pub/mirrors/XFree86-3.1.2">
 	(source and binaries)
 -->
-<item>   <url url="ftp://ftp.pvv.unit.no/pub/XFree86/current" 
-	name="ftp.pvv.unit.no:/pub/XFree86/current">
+<item>   <url url="ftp://ftp.pvv.unit.no/pub/XFree86/3.1.2" 
+	name="ftp.pvv.unit.no:/pub/XFree86/3.1.2">
 	(source and binaries)
 <!--
 <item>   <url url="ftp://ftp.demon.co.uk/pub/Xwindows/XFree86" 
@@ -880,8 +881,8 @@ and the following mirror sites:
 <item>   <url url="ftp://x.physics.usyd.edu.au/pub/XFree86/3.1.2" 
 	name="x.physics.usyd.edu.au:/pub/XFree86/3.1.2">
 	(source and binaries)
-<item>   <url url="ftp://ftp.iij.ad.jp/pub/X/XFree86" 
-	name="ftp.iij.ad.jp:/pub/X/XFree86">
+<item>   <url url="ftp://ftp.iij.ad.jp/pub/X/XFree86/XFree86/3.1.2" 
+	name="ftp.iij.ad.jp:/pub/X/XFree86/XFree86/3.1.2">
 	(source and binaries)
 <item>   <url url="ftp://ftp.sf.co.kr/pub/XFree86/3.1.2" 
 	name="ftp.sf.co.kr:/pub/XFree86/3.1.2">
@@ -891,8 +892,8 @@ and the following mirror sites:
 	name="ftp.hk.super.net:/mirror/XFree86">
 	(source and binaries)
 -->
-<item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86" 
-	name="ftp.nectec.or.th:/pub/mirrors/XFree86">
+<item>   <url url="ftp://ftp.nectec.or.th/pub/mirrors/XFree86/3.1.2" 
+	name="ftp.nectec.or.th:/pub/mirrors/XFree86/3.1.2">
 	(source patches and binaries)
 <!--
 <item>   <url url="ftp://ftp.edu.tw/X/XFree86/3.1.2" 
@@ -915,7 +916,7 @@ compile-time option selections were made when building the distribution.
 
 <verb>
 $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.29 1995/08/01 12:08:00 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.30 1995/08/04 00:59:27 dawes Exp $
 </verb>
 
 </article>

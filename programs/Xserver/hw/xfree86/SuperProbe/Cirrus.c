@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Cirrus.c,v 1.4 95/01/12 19:11:23 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.4 1995/01/28 15:46:58 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Cirrus.c,v 3.5 1995/07/22 04:17:27 dawes Exp $ */
 
 #include "Probe.h"
 
@@ -208,6 +208,7 @@ int Class;
 					case 0x2B:
 						*Chipset = CHIP_CL5436;
 						break;
+					/* 0x30 is a 754X */
 					default:
 						Chip_data = Ver;
 						*Chipset = CHIP_CL_UNKNOWN;

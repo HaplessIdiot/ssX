@@ -1,3 +1,14 @@
+XFree86 3.1.2a (5 August 1995)
+  6. Change index and rindex macros in Xos.h when X_NOT_STDC_ENV is not
+     defined.
+  5. Fix(?) alloca declaration in Xtos.h for Solaris 2.5.
+  4. Fix dependencies for 'make includes' to ensure that auto-generated
+     headers exist before linking them to xc/X11 (David McCullough).
+  3. Change default InvertVCLK setting for the Hercules Terminator 64 Pro
+     (Harald Koenig).
+  2. Update for lynx.cf (Thomas Mueller).
+  1. README updates.
+
 XFree86 3.1.2 (24 July 1995)
 235. Fix(?) scanpci compile problem with gcc on Solaris.
 234. Documentation updates.

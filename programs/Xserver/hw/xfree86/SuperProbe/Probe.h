@@ -26,7 +26,7 @@
  */
 
 /* $XConsortium: Probe.h,v 1.5 95/01/16 13:16:20 kaleb Exp $ */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.16 1995/07/07 16:03:10 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/SuperProbe/Probe.h,v 3.17 1995/07/22 04:17:30 dawes Exp $ */
 
 /*
  * Includes
@@ -410,6 +410,7 @@ extern struct RamDac_Name RamDac_Names[];
 #define CHIP_CTF65530	SVGA_TYPE(V_CT,10)	/* C&T F65530		*/
 #define CHIP_CTF65540	SVGA_TYPE(V_CT,11)	/* C&T F65540		*/
 #define CHIP_CTF65545	SVGA_TYPE(V_CT,12)	/* C&T F65545		*/
+#define CHIP_CTF65546	SVGA_TYPE(V_CT,13)	/* C&T F65546		*/
 #define CHIP_CL_UNKNOWN	SVGA_TYPE(V_CIRRUS,0)	/* Cirrus unknown	*/
 #define CHIP_CL510	SVGA_TYPE(V_CIRRUS,1)	/* Cirrus CL-GD 510/520	*/
 #define CHIP_CL610	SVGA_TYPE(V_CIRRUS,2)	/* Cirrus CL-GD 610/620	*/

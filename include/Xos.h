@@ -1,6 +1,6 @@
 /*
  * $XConsortium: Xos.h,v 1.68 95/06/02 16:51:21 gildea Exp $
- * $XFree86: xc/include/Xos.h,v 3.11 1995/03/11 14:46:09 dawes Exp $
+ * $XFree86: xc/include/Xos.h,v 3.12 1995/06/14 07:01:22 dawes Exp $
  * 
  * 
 Copyright (c) 1987  X Consortium
@@ -79,10 +79,10 @@ in this Software without prior written authorization from the X Consortium.
 
 #include <string.h>
 #ifndef index
-#define index strchr
+#define index(s,c) (strchr((s),(c)))
 #endif
 #ifndef rindex
-#define rindex strrchr
+#define rindex(s,c) (strrchr((s),(c)))
 #endif
 
 #else
