@@ -44,7 +44,8 @@
    section of your XF86Config file are:
 
        Section "Device"
-           Identifier "r128"
+           Identifier "Rage 128"
+           Driver     "r128"
        EndSection
 
    or let xf86config or XF86Setup do this for you.
@@ -68,7 +69,7 @@
 
 7. Known Limitations
 
-    * None
+    * DGA is not supported yet
 
 
 8. Authors
@@ -110,4 +111,4 @@
         http://www.suse.com
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/README,v 1.1 1999/11/19 13:54:42 hohndel Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/README,v 1.2 2000/02/23 04:47:17 martin Exp $

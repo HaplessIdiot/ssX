@@ -9,7 +9,7 @@
 <date>7 March 2000
 
 <ident>
-$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.34 2000/03/07 01:37:46 dawes Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/RELNOTES.sgml,v 1.35 2000/03/08 05:38:42 dawes Exp $
 </ident>
 
 <abstract>
@@ -1320,15 +1320,34 @@ have access to, is now placed in shared memory, so as to reduce redundant
 memory consumption.  For non-local clients, the glyph metrics array is
 transmitted in a compressed format.
 
-<sect1>Unicode support
+<sect1>Unicode/ISO 10646 support
 <p>
 What is included:
 
 <itemize>
-  <item>ISO 10646-1 extension of ``fixed'' BDF fonts added that cover
-	over 2000 characters including all Latin, Greek, Cyrillic,
-	Armenian, and Gregorian characters, plus numerous scientific
-	and technical symbols (further fonts are under preparation).
+  <item>All ``-misc-fixed-*'' BDF fonts are now available in the
+        ISO10646-1 encoding and cover at least the 614 characters
+        found in ISO 8859-{1-5,7-10,14,15}, CP1252, and MES-1. The
+        non-bold fonts also cover all Windows Glyph List 4 (WGL4)
+        characters, including those found in all 8-bit MS-DOS/Windows
+        code pages. The 8-bit variants of the ``-misc-fixed-*'' BDF
+        fonts (ISO8859-1, ISO8859-2, KOI8-R, etc.) have all been
+        automatically generated from the new ISO10646-1 master fonts.
+
+  <item>Some ``-misc-fixed-*'' BDF ISO10646-1 fonts now cover a
+        comprehensive Unicode repertoire of over 3000 characters
+        including all Latin, Greek, Cyrillic, Armenian, Gregorian,
+        Hebrew, IPA, and APL characters, plus numerous scientific,
+	typographic, technical, and backwards-compatibility
+        symbols. Some of these fonts also cover Arabic, Ethiopian,
+        Thai, Han/Kanji, Hangul, full ISO 8859, and more. For the 6x13
+        font there is now a 12x13ja Kanji extension and for the 9x18
+        font there is a 18x18ja Kanji/Han/Hangul extension, which
+        covers all ISO-2022-JP-2 (RFC 1554) characters. The 9x18 font
+        can also be used to implement simple combining characters by
+        accent overstriking. For more information, read Markus Kuhn's
+        <url name="UTF-8 and Unicode FAQ"
+        url="http://www.cl.cam.ac.uk/~mgk25/unicode.html">.
 
   <item>Mark Leisher's ClearlyU proportional font (similar to Computer
 	Modern).
@@ -1345,16 +1364,21 @@ What is included:
 Known problems:
 
 <itemize>
-   <item>Xlib does not yet support UTF-8 as a locale, which means that
+  <item>Xlib does not yet fully support UTF-8 as a locale, which means that
 	xterm UTF-8 keyboard support is at the moment a temporary hack.
 
-   <item>ISO 10646-1 cell-spaced fonts such as ``fixed'' work nicely, but
-	mono-spaced and proportional fonts are handled inefficiently
-	by the X protocol, resulting in metrics for 64k glyphs even if
-	only 2000 glyphs are used.
+  <item>Most ISO10646-1 fonts encode no characters above U+31FF. This
+        avoids the inefficient allocation and transmission of a
+        >700 kB large XFontStruct structure, which would happen if the
+        (not very important) ligatures and symbols above U+f000 were
+        present.
 
-   <item>ISO 10646 Level 2 combining characters not yet supported by
-	xterm (will be needed for instance for the Thai script).
+  <item>ISO 10646 Level 2 combining characters are not yet supported by
+	xterm (will be needed for instance for Thai and IPA).
+
+  <item>Switching between a half-width and full-width font pair (such
+        as 9x18 and 18x18ja) is not yet supported by xterm (will be
+        needed for CJK scripts).
 
 </itemize>
 
