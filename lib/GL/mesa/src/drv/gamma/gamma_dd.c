@@ -31,15 +31,17 @@
 #endif
 
 #include "swrast/swrast.h"
+#include "context.h"
 
 #define GAMMA_DATE	"20010624"
 
 
 /* Return the width and height of the current color buffer.
  */
-static void gammaDDGetBufferSize( GLcontext *ctx,
+static void gammaDDGetBufferSize(GLframebuffer *buffer,
 				 GLuint *width, GLuint *height )
 {
+   GET_CURRENT_CONTEXT(ctx);
    gammaContextPtr gmesa = GAMMA_CONTEXT(ctx);
 
    GAMMAHW_LOCK( gmesa );
@@ -114,7 +116,7 @@ void gammaDDInitDriverFuncs( GLcontext *ctx )
    ctx->Driver.CopyPixels               = _swrast_CopyPixels;
    ctx->Driver.DrawPixels               = _swrast_DrawPixels;
    ctx->Driver.ReadPixels               = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA        = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers            = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

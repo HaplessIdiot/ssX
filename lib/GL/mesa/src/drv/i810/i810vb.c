@@ -22,7 +22,7 @@
  *
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.9 2002/02/22 21:33:04 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810vb.c,v 1.10 2002/02/26 23:37:34 tsi Exp $ */
 
 #include "glheader.h"
 #include "mtypes.h"
@@ -99,6 +99,7 @@ static struct {
 #define DO_PTEX (IND & I810_PTEX_BIT)
 
 #define VERTEX i810Vertex
+#define VERTEX_COLOR i810_color_t
 #define GET_VIEWPORT_MAT() I810_CONTEXT(ctx)->ViewportMatrix.m
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() I810_CONTEXT(ctx)->Setup[I810_CTXREG_VF]

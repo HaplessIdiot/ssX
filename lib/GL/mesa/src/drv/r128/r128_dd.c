@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.9 2001/01/11 03:36:54 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/r128/r128_dd.c,v 1.13 2002/02/22 21:44:57 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -39,6 +39,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #include "r128_vb.h"
 #include "r128_dd.h"
 
+#include "context.h"
 #include "extensions.h"
 #if defined(USE_X86_ASM)
 #include "X86/common_x86_asm.h"
@@ -49,9 +50,10 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 /* Return the width and height of the current color buffer.
  */
-static void r128DDGetBufferSize( GLcontext *ctx,
+static void r128DDGetBufferSize( GLframebuffer *buffer,
 				 GLuint *width, GLuint *height )
 {
+   GET_CURRENT_CONTEXT(ctx);
    r128ContextPtr rmesa = R128_CONTEXT(ctx);
 
    LOCK_HARDWARE( rmesa );

@@ -25,7 +25,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
 
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_state.c,v 1.2 2002/09/09 19:18:48 dawes Exp $ */
 
 /*
  * Author:
@@ -628,7 +628,7 @@ static void i830RenderMode( GLcontext *ctx, GLenum mode )
    FALLBACK( imesa, I830_FALLBACK_RENDERMODE, (mode != GL_RENDER) );
 }
 
-static GLboolean i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
+static void i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
 {
    i830ContextPtr imesa = I830_CONTEXT(ctx);
 
@@ -642,7 +642,6 @@ static GLboolean i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
       imesa->readMap = (char *)imesa->driScreen->pFB;
       i830XMesaSetFrontClipRects( imesa );
       FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return GL_TRUE;
    } else if(mode == GL_BACK_LEFT) {
       I830_FIREVERTICES(imesa);
       I830_STATECHANGE(imesa, I830_UPLOAD_BUFFERS);
@@ -654,10 +653,8 @@ static GLboolean i830SetDrawBuffer(GLcontext *ctx, GLenum mode )
       imesa->readMap = imesa->i830Screen->back.map;
       i830XMesaSetBackClipRects( imesa );
       FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return GL_TRUE;
    } else {
       FALLBACK( imesa, I830_FALLBACK_DRAW_BUFFER, GL_TRUE );
-      return GL_FALSE;
    }
 }
 
@@ -1491,7 +1488,7 @@ void i830DDInitStateFuncs(GLcontext *ctx)
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

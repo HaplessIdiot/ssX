@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vtxfmt.c,v 1.1 2002/02/22 21:45:01 dawes Exp $ */
 /*
  * Copyright 2000, 2001 VA Linux Systems Inc., Fremont, California.
  *
@@ -47,34 +47,6 @@
 #include "radeon_ioctl.h"
 #include "radeon_vb.h"
 #include "radeon_vtxfmt.h"
-
-
-struct radeon_imm_vertex {
-   /* The immediate mode vertex cache.
-    */
-   radeonTnlVertex vertices[8];
-
-   /* Current vertices out of the cache.  This makes the state machine
-    * a lot simpler, and avoids the need to swap lots of function
-    * pointers around.
-    */
-   radeonTnlVertex *v0;
-   radeonTnlVertex *v1;
-   radeonTnlVertex *v2;
-   radeonTnlVertex *v3;
-
-   radeon_flush_func *flush_tab;
-
-   void (*save_vertex)( GLcontext *ctx, radeonTnlVertex *v );
-   void (*flush_vertex)( GLcontext *ctx, radeonTnlVertex *v );
-
-   radeon_interp_func interp;
-
-   GLuint prim;
-   GLuint format;
-
-   GLvertexformat vtxfmt;
-};
 
 
 #define VERTEX				radeonVertex
@@ -343,9 +315,6 @@ static void radeon_init_vert_funcs( void )
 
 #define LOCAL_VARS							\
    radeonContextPtr rmesa = RADEON_CONTEXT(ctx)
-
-#define GET_INTERP_FUNC							\
-   radeon_interp_func interp = rmesa->imm.interp
 
 #define FLUSH_VERTEX			rmesa->imm.flush_vertex
 

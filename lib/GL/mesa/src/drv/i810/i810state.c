@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810state.c,v 1.6 2001/03/21 16:14:21 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i810/i810state.c,v 1.7 2002/02/22 21:33:04 dawes Exp $ */
 
 #include <stdio.h>
 
@@ -272,7 +272,7 @@ static void i810RenderMode( GLcontext *ctx, GLenum mode )
 }
 
 
-static GLboolean i810SetDrawBuffer(GLcontext *ctx, GLenum mode )
+static void i810SetDrawBuffer(GLcontext *ctx, GLenum mode )
 {
    i810ContextPtr imesa = I810_CONTEXT(ctx);
 
@@ -286,7 +286,6 @@ static GLboolean i810SetDrawBuffer(GLcontext *ctx, GLenum mode )
       imesa->readMap = (char *)imesa->driScreen->pFB;
       i810XMesaSetFrontClipRects( imesa );
       FALLBACK( imesa, I810_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return GL_TRUE;
    }
    else if (mode == GL_BACK_LEFT)
    {
@@ -298,11 +297,9 @@ static GLboolean i810SetDrawBuffer(GLcontext *ctx, GLenum mode )
       imesa->readMap = imesa->i810Screen->back.map;
       i810XMesaSetBackClipRects( imesa );
       FALLBACK( imesa, I810_FALLBACK_DRAW_BUFFER, GL_FALSE );
-      return GL_TRUE;
    }
    else {
       FALLBACK( imesa, I810_FALLBACK_DRAW_BUFFER, GL_TRUE );
-      return GL_FALSE;
    }
 }
 
@@ -972,7 +969,7 @@ void i810InitStateFuncs(GLcontext *ctx)
    ctx->Driver.CopyPixels = _swrast_CopyPixels;
    ctx->Driver.DrawPixels = _swrast_DrawPixels;
    ctx->Driver.ReadPixels = _swrast_ReadPixels;
-   ctx->Driver.ResizeBuffersMESA = _swrast_alloc_buffers;
+   ctx->Driver.ResizeBuffers = _swrast_alloc_buffers;
 
    /* Swrast hooks for imaging extensions:
     */

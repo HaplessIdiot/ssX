@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.5 2002/02/22 21:45:01 dawes Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_vb.c,v 1.6 2002/02/26 23:37:36 tsi Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -125,6 +125,7 @@ static struct {
 #define DO_PTEX (IND & RADEON_PTEX_BIT)
 
 #define VERTEX radeonVertex
+#define VERTEX_COLOR radeon_color_t
 #define GET_VIEWPORT_MAT() 0
 #define GET_TEXSOURCE(n)  n
 #define GET_VERTEX_FORMAT() RADEON_CONTEXT(ctx)->vertex_format

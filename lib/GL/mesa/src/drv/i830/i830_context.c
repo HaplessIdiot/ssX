@@ -24,7 +24,7 @@
  * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  * 
  * **************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/i830/i830_context.c,v 1.1 2002/09/09 19:18:47 dawes Exp $ */
 
 /*
  * Authors:
@@ -79,8 +79,10 @@ static const GLubyte *i830DDGetString( GLcontext *ctx, GLenum name )
    }
 }
 
-static void i830BufferSize(GLcontext *ctx, GLuint *width, GLuint *height)
+static void i830BufferSize(GLframebuffer *buffer,
+			   GLuint *width, GLuint *height)
 {
+   GET_CURRENT_CONTEXT(ctx);
    i830ContextPtr imesa = I830_CONTEXT(ctx);
    /* Need to lock to make sure the driDrawable is uptodate.  This
     * information is used to resize Mesa's software buffers, so it has

@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/radeon/radeon_context.h,v 1.3 2002/02/22 21:45:00 dawes Exp $ */
 /**************************************************************************
 
 Copyright 2000, 2001 ATI Technologies Inc., Ontario, Canada, and
@@ -87,13 +87,7 @@ typedef void (*radeon_line_func)( radeonContextPtr,
 typedef void (*radeon_point_func)( radeonContextPtr,
 				   radeonVertex * );
 
-typedef void (*radeon_interp_func)( GLfloat t,
-				    radeonTnlVertex *O,
-				    const radeonTnlVertex *I,
-				    const radeonTnlVertex *J );
-
 typedef void (*radeon_prim_func)( GLcontext *ctx );
-typedef void (*radeon_flush_func)( GLcontext *ctx, radeonTnlVertex *v );
 
 
 struct radeon_colorbuffer_state {
