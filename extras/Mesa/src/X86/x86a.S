@@ -1,3 +1,5 @@
+/* $XFree86$ */
+
 #include "assyntax.h"
 
 	SEG_TEXT

@@ -20,6 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
+/* $XFree86$ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -55,7 +56,7 @@ Status XQueryTree (dpy, w, root, parent, children, nchildren)
 	    SyncHandle();
 	    return (0);
 	}
-	_XRead32 (dpy, (char *) *children, nbytes);
+	_XRead32 (dpy, (long *) *children, nbytes);
     }
     *parent = rep.parent;
     *root = rep.root;

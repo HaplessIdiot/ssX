@@ -1,4 +1,4 @@
-/*  #include "mgapipeline.h" */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include "mgavb.h"

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.2 1998/10/04 09:37:37 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbresd.c,v 3.3 2000/02/12 03:39:23 dawes Exp $ */
 /***********************************************************
 
 Copyright 1987, 1998  The Open Group
@@ -179,8 +179,8 @@ cfbBresD(rrops,
     {
 #if PSZ == 24
 #define body_copy(pix) { \
-	addrp = (PixelType *)((CfbBits)addrb & ~0x03); \
-	switch((CfbBits)addrb & 3){ \
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
+	switch((unsigned long)addrb & 3){ \
 	case 0: \
 	  *addrp = (*addrp & 0xFF000000)|((pix)[0] & 0xFFFFFF); \
 	  break; \
@@ -228,8 +228,8 @@ cfbBresD(rrops,
     else
     {
 #define body_set(and, xor) { \
-	addrp = (PixelType *)((CfbBits)addrb & ~0x03); \
-	switch((CfbBits)addrb & 3){ \
+	addrp = (PixelType *)((unsigned long)addrb & ~0x03); \
+	switch((unsigned long)addrb & 3){ \
 	case 0: \
 	  *addrp = (*addrp & ((and)[0]|0xFF000000)) ^ ((xor)[0] & 0xFFFFFF); \
 	  break; \

@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.20 1999/08/28 09:00:25 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/AsciiSink.c,v 1.21 1999/09/27 06:29:09 dawes Exp $ */
 
 #include <stdio.h>
 #include <X11/IntrinsicP.h>
@@ -1614,7 +1614,7 @@ GetGC(AsciiSinkObject sink)
     XGCValues values;
 
     /* XXX We dont want do share a gc that will change the clip-mask */
-    values.clip_x_origin = (int)sink;
+    values.clip_x_origin = (long)sink;
     values.clip_mask = None;
     values.font = sink->ascii_sink.font->fid;
     values.graphics_exposures = False;

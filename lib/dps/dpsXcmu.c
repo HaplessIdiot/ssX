@@ -54,6 +54,7 @@
  *
  * Author: Adobe Systems Incorporated and Donna Converse, MIT X Consortium
  */
+/* $XFree86$ */
 
 #include <X11/X.h>
 #include <X11/Xlib.h>

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.3 1999/04/11 13:10:36 dawes Exp $
+/* $XFree86: xc/programs/Xserver/GL/glx/glxext.c,v 1.4 1999/06/14 07:31:26 dawes Exp $
 ** The contents of this file are subject to the GLX Public License Version 1.0
 ** (the "License"). You may not use this file except in compliance with the
 ** License. You may obtain a copy of the License at Silicon Graphics, Inc.,
@@ -402,7 +402,7 @@ static int __glXDispatch(ClientPtr client)
 	** with the client so we will be notified when the client dies.
 	*/
 	XID xid = FakeClientID(client->index);
-	if (!AddResource( xid, __glXClientRes, (pointer)client->index))  {
+	if (!AddResource( xid, __glXClientRes, (pointer)(long)client->index)) {
 	    return BadAlloc;
 	}
 	ResetClientState(client->index);
@@ -457,7 +457,7 @@ static int __glXSwapDispatch(ClientPtr client)
 	** with the client so we will be notified when the client dies.
 	*/
 	XID xid = FakeClientID(client->index);
-	if (!AddResource( xid, __glXClientRes, (pointer)client->index))  {
+	if (!AddResource( xid, __glXClientRes, (pointer)(long)client->index)) {
 	    return BadAlloc;
 	}
 	ResetClientState(client->index);

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/sarea.h,v 1.4 2000/02/23 04:46:52 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/sarea.h,v 1.5 2000/09/24 13:51:22 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -37,8 +37,10 @@ SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 #define _SAREA_H_
 
 /* SAREA area needs to be at least a page */
-#ifdef __alpha__
+#if defined(__alpha__)
 #define SAREA_MAX 			0x2000
+#elif defined(__ia64__)
+#define SAREA_MAX			0x10000		/* 64kB */
 #else
 #define SAREA_MAX			0x1000
 #endif

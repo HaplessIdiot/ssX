@@ -25,7 +25,7 @@
  *           Mitani Hiroshi <hmitani@drl.mei.co.jp> 
  *           David Thomas <davtom@dream.org.uk>. 
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.16 2000/08/01 20:52:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/sis/sis.h,v 1.17 2000/09/22 11:35:46 alanh Exp $ */
 
 #ifndef _SIS_H
 #define _SIS_H_
@@ -120,7 +120,7 @@ typedef struct {
     EntityInfoPtr       pEnt;
     int                 Chipset;
     int                 ChipRev;
-    CARD32              FbAddress;              /* VRAM physical address */
+    unsigned long       FbAddress;              /* VRAM physical address */
     unsigned char *     FbBase;                 /* VRAM linear address */
     CARD32              IOAddress;              /* MMIO physical address */
     unsigned char *     IOBase;                 /* MMIO linear address */

@@ -25,7 +25,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.15 2000/09/01 19:26:40 mvojkovi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/i810/i810.h,v 1.16 2000/09/17 01:36:27 mvojkovi Exp $ */
 
 /*
  * Authors:
@@ -166,8 +166,8 @@ typedef struct _I810Rec {
    int DGAViewportStatus;
 
    int Chipset;
-   int LinearAddr;
-   int MMIOAddr;
+   unsigned long LinearAddr;
+   unsigned long MMIOAddr;
    EntityInfoPtr pEnt;
    pciVideoPtr PciInfo;
    PCITAG PciTag;

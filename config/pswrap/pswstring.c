@@ -35,9 +35,11 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "pswpriv.h"
 #include "psw.h"

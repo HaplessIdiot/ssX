@@ -25,12 +25,13 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Actions.c,v 3.13 1999/03/14 03:21:09 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Actions.c,v 3.14 1999/06/06 08:47:50 dawes Exp $ */
 
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <X11/Xmd.h>
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 #include <X11/CoreP.h>
@@ -403,7 +404,7 @@ XawSetValuesAction(Widget w, XEvent *event,
   char  c_1;
   short c_2;
   int   c_4;
-#ifdef LONG_64
+#ifdef LONG64
   long  c_8;
 #endif
 
@@ -443,7 +444,7 @@ XawSetValuesAction(Widget w, XEvent *event,
 	case 1: to.addr = (XPointer)&c_1; break;
 	case 2: to.addr = (XPointer)&c_2; break;
 	case 4: to.addr = (XPointer)&c_4; break;
-#ifdef LONG_64
+#ifdef LONG64
 	case 8: to.addr = (XPointer)&c_8; break;
 #endif
 	default:
@@ -458,8 +459,8 @@ XawSetValuesAction(Widget w, XEvent *event,
 	}
 
       if (strcmp(XtRString, XrmQuarkToString(resource->qtype)) == 0)
-#ifdef LONG_64
-	c_8 = (int)from.addr;
+#ifdef LONG64
+	c_8 = (long)from.addr;
 #else
 	c_4 = (int)from.addr;
 #endif
@@ -478,7 +479,7 @@ XawSetValuesAction(Widget w, XEvent *event,
 	case 4:
 	  XtSetArg(arglist[num_args], XrmQuarkToString(resource->qname), c_4);
 	  break;
-#ifdef LONG_64
+#ifdef LONG64
 	case 8:
 	  XtSetArg(arglist[num_args], XrmQuarkToString(resource->qname), c_8);
 	  break;
@@ -579,7 +580,7 @@ XawConvertActionRes(XawActionResList *list, Widget w, String name)
   char  c_1;
   short c_2;
   int   c_4;   
-#ifdef LONG_64
+#ifdef LONG64
   long  c_8;
 #endif
 
@@ -608,7 +609,7 @@ XawConvertActionRes(XawActionResList *list, Widget w, String name)
       XtSetArg(arg, XrmQuarkToString(resource->qname),
                from.addr = (XPointer)&c_4);
       break;
-#ifdef LONG_64
+#ifdef LONG64
     case 8:
       XtSetArg(arg, XrmQuarkToString(resource->qname),
 	       from.addr = (XPointer)&c_8);
@@ -675,8 +676,8 @@ static int
 qcmp_action_resource_list(register _Xconst void *left,
 			  register _Xconst void *right)
 {   
-  return ((int)((*(XawActionResList **)left)->widget_class) -
-          (int)((*(XawActionResList **)right)->widget_class));
+  return ((char *)((*(XawActionResList **)left)->widget_class) -
+          (char *)((*(XawActionResList **)right)->widget_class));
 }
 
 static XawActionResList *
@@ -715,7 +716,7 @@ static int
 bcmp_action_resource_list(register _Xconst void *wc,
 			  register _Xconst void *list)
 {
-  return ((int)wc - (int)((*(XawActionResList **)list)->widget_class));
+  return ((char *)wc - (char *)((*(XawActionResList **)list)->widget_class));
 }
 
 static XawActionResList *
@@ -966,8 +967,8 @@ static int
 qcmp_action_variable_list(register _Xconst void *left,
 			  register _Xconst void *right)
 {
-  return ((int)((*(XawActionVarList **)left)->widget) -
-	  (int)((*(XawActionVarList **)right)->widget));
+  return ((char *)((*(XawActionVarList **)left)->widget) -
+	  (char *)((*(XawActionVarList **)right)->widget));
 }
 
 static XawActionVarList *
@@ -1012,7 +1013,7 @@ static int
 bcmp_action_variable_list(register _Xconst void *widget,
 			  register _Xconst void *list)
 {
-  return ((int)widget - (int)((*(XawActionVarList **)list)->widget));
+  return ((char *)widget - (char *)((*(XawActionVarList **)list)->widget));
 }
 
 static XawActionVarList *

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.31 2000/08/25 16:00:19 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atipreinit.c,v 1.32 2000/08/28 14:20:44 tsi Exp $ */
 /*
  * Copyright 1999 through 2000 by Marc Aurele La France (TSI @ UQV), tsi@ualberta.ca
  *
@@ -1707,13 +1707,13 @@ ATIPreInit
                 if (!pATI->PCIInfo)
                 {
                     if (pATI->Chip == ATI_CHIP_88800CX)
-                        IOValue2 = ~((unsigned long)((1 << 23) - 1));
+                        IOValue2 = ~((CARD32)((1 << 23) - 1));
                     else if (pATI->Chip >= ATI_CHIP_88800GXE)
-                        IOValue2 = ~((unsigned long)((1 << 24) - 1));
+                        IOValue2 = ~((CARD32)((1 << 24) - 1));
                     else if (pATI->VideoRAM >= 4096)
-                        IOValue2 = ~((unsigned long)((1 << 23) - 1));
+                        IOValue2 = ~((CARD32)((1 << 23) - 1));
                     else
-                        IOValue2 = ~((unsigned long)((1 << 22) - 1));
+                        IOValue2 = ~((CARD32)((1 << 22) - 1));
 
                     if ((IOValue2 &= pGDev->MemBase) &&
                         (IOValue2 <= (MaxBits(CFG_MEM_AP_LOC) << 22)))

@@ -36,7 +36,7 @@
 *
 ****************************************************************************/
 
-/* $XFree86: xc/extras/x86emu/include/x86emu/types.h,v 1.2 2000/01/23 04:32:41 dawes Exp $ */
+/* $XFree86: xc/extras/x86emu/include/x86emu/types.h,v 1.3 2000/01/26 22:05:46 tsi Exp $ */
 
 #ifndef __X86EMU_TYPES_H
 #define __X86EMU_TYPES_H
@@ -76,7 +76,7 @@ typedef unsigned long long 	u64;
 
 typedef char 				s8;
 typedef short 				s16;
-typedef long 				s32;
+typedef int 				s32;
 #ifdef __HAS_LONG_LONG__
 typedef long long 			s64;
 #endif

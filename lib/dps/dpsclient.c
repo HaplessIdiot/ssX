@@ -35,10 +35,12 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
+/* $XFree86$ */
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
+#include <string.h>
 
 #include "dpsXpriv.h"
 #include "DPS/dpsclient.h"

@@ -34,13 +34,13 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xp/XpScreens.c,v 1.2 2000/01/25 18:37:34 dawes Exp $ */
 
 #define NEED_REPLIES
 
 #include "Printstr.h"
 #include "Xlibint.h"
-#include "extutil.h"
+#include "XpExtUtil.h"
 
 
 Screen **
@@ -94,7 +94,7 @@ XpQueryScreens (
 	    /*
 	     * Pull printer length and then name.
 	     */
-	    _XRead32 (dpy, (char *) &rootWindow, (long) sizeof(rootWindow) );
+	    _XRead32 (dpy, (long *) &rootWindow, (long) sizeof(rootWindow) );
 
 	    for ( j = 0; j < XScreenCount(dpy); j++ ) {
 		checkScr = XScreenOfDisplay(dpy, j);

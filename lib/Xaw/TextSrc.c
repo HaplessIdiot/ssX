@@ -21,7 +21,7 @@ in this Software without prior written authorization from The Open Group.
 
 */
 
-/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.23 1999/09/27 06:29:11 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/TextSrc.c,v 1.24 2000/03/31 22:55:18 dawes Exp $ */
 
 /*
  * Author:  Chris Peterson, MIT X Consortium.
@@ -1153,7 +1153,7 @@ exit_anchor_loop:
 	TellSourceChanged(src, left, right, block, lines);
 	/* Call callbacks, we have changed the buffer */
 	XtCallCallbacks(w, XtNcallback,
-			(XtPointer)((int)src->textSrc.changed));
+			(XtPointer)((long)src->textSrc.changed));
     }
 
 #endif /* OLDXAW */

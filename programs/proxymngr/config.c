@@ -21,11 +21,12 @@ not be used in advertising or otherwise to promote the sale, use or
 other dealings in this Software without prior written authorization
 from The Open Group.
 */
-/* $XFree86$ */
+/* $XFree86: xc/programs/proxymngr/config.c,v 1.4tsi Exp $ */
+
+#include <stdlib.h>
 
 #include "pmint.h"
 #include "config.h"
-
 
 static Bool
 getnextline (

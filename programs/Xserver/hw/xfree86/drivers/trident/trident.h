@@ -21,7 +21,7 @@
  *
  * Authors:  Alan Hourihane, <alanh@fairlite.demon.co.uk>
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.23 2000/06/06 18:07:36 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/trident/trident.h,v 1.25 2000/08/04 16:13:34 eich Exp $ */
 
 #ifndef _TRIDENT_H_
 #define _TRIDENT_H_
@@ -57,7 +57,7 @@ typedef struct {
     int			HwBpp;
     int			BppShift;
     CARD32		IOAddress;
-    CARD32		FbAddress;
+    unsigned long	FbAddress;
     unsigned char *     IOBase;
 #ifdef __alpha__
     unsigned char *     IOBaseDense;

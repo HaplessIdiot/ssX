@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/pswparser.y,v 1.3 2000/05/18 17:20:18 dawes Exp $ */
+/* $XFree86: xc/config/pswrap/pswparser.y,v 1.4 2000/05/18 23:46:08 dawes Exp $ */
 
 /* 
  * Not all yaccs understand this.
@@ -54,7 +54,7 @@
 
 %union {
     char *object;
-    int	intobj;
+    long intobj;
     Token token;
     Item item;
     Header header;

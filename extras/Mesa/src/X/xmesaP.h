@@ -22,7 +22,7 @@
  * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
  * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-
+/* $XFree86$ */
 
 #ifndef XMESAP_H
 #define XMESAP_H
@@ -226,7 +226,7 @@ struct xmesa_buffer {
 
    /* Used to do XAllocColor/XFreeColors accounting: */
    int num_alloced;
-   unsigned long alloced_colors[256];
+   Pixel alloced_colors[256];
 
 #if defined(GLX_DIRECT_RENDERING) && !defined(XFree86Server)
   __DRIdrawablePrivate *driDrawPriv;	/* back pointer to DRI drawable

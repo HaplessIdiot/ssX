@@ -28,7 +28,7 @@ sale, use or other dealings in this Software without prior written
 authorization from the X Consortium and the XFree86 Project.
 
 */
-/* $XFree86: xc/lib/X11/Font.c,v 1.9 2000/06/13 23:15:47 dawes Exp $ */
+/* $XFree86: xc/lib/X11/Font.c,v 1.10 2000/08/09 23:40:12 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -284,7 +284,7 @@ _XQueryFont (dpy, fid, seq)
 			  (nbytes + reply.nCharInfos * SIZEOF(xCharInfo)));
 		return (XFontStruct *)NULL;
 	    }
-	    _XRead32 (dpy, (char *)fs->properties, nbytes);
+	    _XRead32 (dpy, (long *)fs->properties, nbytes);
     }
     /*
      * If no characters in font, then it is a bad font, but
@@ -546,7 +546,7 @@ _XF86BigfontQueryFont (dpy, extcodes, fid, seq)
 		         : 0));
 	    return (XFontStruct *)NULL;
 	}
-	_XRead32 (dpy, (char *)fs->properties, nbytes);
+	_XRead32 (dpy, (long *)fs->properties, nbytes);
     }
 
     fs->per_char = NULL;

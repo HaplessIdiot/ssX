@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.17 2000/08/11 23:15:59 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.18 2000/08/11 23:33:50 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -532,7 +532,7 @@ fbdevHWMapVidmem(ScrnInfoPtr pScrn)
 		fPtr->fboff = fPtr->fix.smem_len & (PAGE_SIZE-1);
 		fPtr->fbmem = mmap(NULL, fPtr->fix.smem_len, PROT_READ | PROT_WRITE,
 				   MAP_SHARED, fPtr->fd, 0);
-		if (-1 == (int)fPtr->fbmem) {
+		if (-1 == (long)fPtr->fbmem) {
 			perror("mmap fbmem");
 			fPtr->fbmem = NULL;
 		}
@@ -580,7 +580,7 @@ fbdevHWMapMMIO(ScrnInfoPtr pScrn)
 		}
 		fPtr->mmio = mmap(NULL, fPtr->fix.mmio_len, PROT_READ | PROT_WRITE,
 				  MAP_SHARED, fPtr->fd, fPtr->fix.smem_len);
-		if (-1 == (int)fPtr->mmio) {
+		if (-1 == (long)fPtr->mmio) {
 			perror("mmap mmio");
 			fPtr->mmio = NULL;
 		}

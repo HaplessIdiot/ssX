@@ -2,7 +2,7 @@
  * cfb copy area
  */
 
-/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.9 2000/01/29 18:58:25 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/cfb/cfbbitblt.c,v 1.10 2000/02/12 03:39:21 dawes Exp $ */
 
 /*
 
@@ -858,7 +858,7 @@ cfbCopyPlane1to32 (pSrcDrawable, pDstDrawable, rop, prgnDst, pptSrc,
 		     * I've thrown in some optimization to at least write
 		     * some aligned 32-bit words instead of 16-bit shorts.
 		     */
-		    if ((unsigned int)psrc & 2) {
+		    if ((unsigned long)psrc & 2) {
 		        /* Write unaligned 16-bit word at left edge. */
 		        if (tmp & 0x01)
 		            *pdst = fgpixel;

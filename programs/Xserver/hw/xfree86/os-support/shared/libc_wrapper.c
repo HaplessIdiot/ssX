@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.67 2000/08/10 17:40:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/os-support/shared/libc_wrapper.c,v 1.69 2000/09/19 12:46:22 eich Exp $ */
 /*
  * Copyright 1997 by The XFree86 Project, Inc.
  *
@@ -1888,12 +1888,12 @@ xf86shmdt(char *addr)
 int
 xf86setjmp(xf86jmp_buf xf86env)
 {
-    return setjmp(xf86env);
+    return setjmp((void *)xf86env);
 }
 
 void
 xf86longjmp(xf86jmp_buf xf86env, int val)
 {
-    longjmp(xf86env,val);
+    longjmp((void *)xf86env, val);
 }
 

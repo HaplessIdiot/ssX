@@ -1,4 +1,5 @@
     // $XConsortium: cs /main/3 1996/08/31 12:19:14 kaleb $
+    // $XFree86$
 partial default alphanumeric_keys 
 xkb_symbols "basic" {
 

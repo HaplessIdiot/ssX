@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.46 2000/09/20 00:09:26 keithp Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.47 2000/09/24 16:29:40 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -1181,7 +1181,7 @@ static Bool R128PreInitDDC(ScrnInfoPtr pScrn)
     xf86LoaderReqSymLists(ddcSymbols, NULL);
     if (xf86LoadSubModule(pScrn, "vbe")) {
  	pVbe = VBEInit(NULL,info->pEnt->index);
- 	if (!pVbe) return NULL;
+ 	if (!pVbe) return FALSE;
   	
  	xf86SetDDCproperties(pScrn,xf86PrintEDID(vbeDoEDID(pVbe,NULL)));
   	return TRUE;

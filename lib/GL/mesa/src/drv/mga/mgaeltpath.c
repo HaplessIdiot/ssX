@@ -21,7 +21,7 @@
  * OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaeltpath.c,v 1.3 2000/08/28 02:43:12 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaeltpath.c,v 1.4 2000/09/24 13:51:06 alanh Exp $ */
 
 #include <stdio.h>
 
@@ -58,10 +58,10 @@ static void fire_elts( mgaContextPtr mmesa )
 
       if (mmesa->first_elt != mmesa->next_elt) {
 	 mgaFireEltsLocked( mmesa, 
-			    ((GLuint)mmesa->first_elt - 
-			     (GLuint)mmesa->elt_buf->address),
-			    ((GLuint)mmesa->next_elt - 
-			     (GLuint)mmesa->elt_buf->address),
+			    ((char *)mmesa->first_elt - 
+			     (char *)mmesa->elt_buf->address),
+			    ((char *)mmesa->next_elt - 
+			     (char *)mmesa->elt_buf->address),
 			    !retain );
       } else if (!retain) 
 	 mgaReleaseBufLocked( mmesa, mmesa->elt_buf );
@@ -77,7 +77,7 @@ static void fire_elts( mgaContextPtr mmesa )
       
    UNLOCK_HARDWARE( mmesa );
 
-   mmesa->next_vert = (GLfloat *)((GLuint)mmesa->elt_buf->address + 
+   mmesa->next_vert = (GLfloat *)((char *)mmesa->elt_buf->address + 
 				  mmesa->elt_buf->total - 
 				  BUFFER_STRIDE * sizeof(GLfloat));
 
@@ -99,10 +99,10 @@ static void release_bufs( mgaContextPtr mmesa )
       LOCK_HARDWARE( mmesa );
       if (mmesa->first_elt != mmesa->next_elt) {
 	 mgaFireEltsLocked( mmesa, 
-			    ((GLuint)mmesa->first_elt - 
-			     (GLuint)mmesa->elt_buf->address),
-			    ((GLuint)mmesa->next_elt - 
-			     (GLuint)mmesa->elt_buf->address),
+			    ((char *)mmesa->first_elt - 
+			     (char *)mmesa->elt_buf->address),
+			    ((char *)mmesa->next_elt - 
+			     (char *)mmesa->elt_buf->address),
 			    0 );
 
 	 mmesa->first_elt = mmesa->next_elt;
@@ -205,7 +205,7 @@ static void mga_tri_clip( mgaContextPtr mmesa,
 
    {
       GLuint *out = inlist[in];
-      GLuint space = (GLuint)mmesa->next_vert -	(GLuint)mmesa->next_elt;
+      GLuint space = (char *)mmesa->next_vert - (char *)mmesa->next_elt;
 
       if (space < n * (BUFFER_STRIDE + 3) * sizeof(GLuint))
          fire_elts(mmesa); 
@@ -242,15 +242,15 @@ static void mga_tri_clip( mgaContextPtr mmesa,
 
 #define UNCLIPPED_VERT(x) (mmesa->first_vert_phys - x * BUFFER_STRIDE * 4)
 
-#define TRIANGLE( e2, e1, e0 )			\
-do {						\
-   if ((GLuint)mmesa->next_vert - 		\
-       (GLuint)mmesa->next_elt < TRI_THRESHOLD)	\
-      fire_elts(mmesa);			\
-   mmesa->next_elt[0] = UNCLIPPED_VERT(e2);	\
-   mmesa->next_elt[1] = UNCLIPPED_VERT(e1);	\
-   mmesa->next_elt[2] = UNCLIPPED_VERT(e0);	\
-   mmesa->next_elt+=3;				\
+#define TRIANGLE( e2, e1, e0 )				\
+do {							\
+   if (((char *)mmesa->next_vert -			\
+        (char *)mmesa->next_elt) < TRI_THRESHOLD)	\
+      fire_elts(mmesa);					\
+   mmesa->next_elt[0] = UNCLIPPED_VERT(e2);		\
+   mmesa->next_elt[1] = UNCLIPPED_VERT(e1);		\
+   mmesa->next_elt[2] = UNCLIPPED_VERT(e0);		\
+   mmesa->next_elt+=3;					\
 } while (0)
 
 #define CLIP_TRIANGLE( e2, e1, e0 )				\
@@ -428,7 +428,7 @@ void mgaDDEltPath( struct vertex_buffer *VB )
    /* Allocate a single buffer to hold unclipped vertices.  All
     * unclipped vertices must be contiguous.  
     */
-   if ((GLuint)mmesa->next_vert - (GLuint)mmesa->next_elt <  
+   if ((char *)mmesa->next_vert - (char *)mmesa->next_elt <  
        VB->Count * BUFFER_STRIDE * sizeof(GLuint))	
       fire_elts( mmesa );
 

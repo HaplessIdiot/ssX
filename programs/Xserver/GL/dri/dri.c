@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.19 2000/06/25 16:03:43 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/GL/dri/dri.c,v 1.20 2000/09/24 13:51:21 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1998-1999 Precision Insight, Inc., Cedar Park, Texas.
@@ -650,11 +650,9 @@ DRICreateContext(ScreenPtr pScreen, VisualPtr visual,
 
     contextStore=DRIGetContextStore(pDRIContextPriv);
     if (pDRIPriv->pDriverInfo->CreateContext) {
-	if (!((*pDRIPriv->pDriverInfo->CreateContext)(pScreen, 
-				                      visual, 
-				                      *pHWContext, 
-				                      *pVisualConfigPriv,
-						      (int)contextStore))) {
+	if (!((*pDRIPriv->pDriverInfo->CreateContext)(pScreen, visual, 
+		*pHWContext, *pVisualConfigPriv,
+		(DRIContextType)(long)contextStore))) {
 	    DRIDestroyContextPriv(pDRIContextPriv);
 	    return FALSE;
 	}
@@ -686,8 +684,7 @@ DRIContextPrivDelete(pointer pResource, XID id)
     if (pDRIPriv->pDriverInfo->DestroyContext) {
       contextStore=DRIGetContextStore(pDRIContextPriv);
       (pDRIPriv->pDriverInfo->DestroyContext)(pDRIContextPriv->pScreen,
-					      pDRIContextPriv->hwContext,
-					      (int)contextStore);
+		pDRIContextPriv->hwContext, (DRIContextType)(long)contextStore);
     }
     return DRIDestroyContextPriv(pDRIContextPriv);
 }

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.h,v 1.1.2.1 1998/06/27 14:48:56 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/wm3.h,v 1.2 1998/07/25 16:59:46 dawes Exp $ */
 
 
 
@@ -63,7 +63,7 @@
 #else
 #define UPDRW(destp,src) \
 	{ volatile char *_dtmp = (volatile char *)(destp); \
-	  int _stmp = (src); \
+	  unsigned int _stmp = (src); \
 	  volatile int dummy; /* Bit bucket. */ \
 	  _stmp = ldl_u(&_stmp); \
 	  dummy = *_dtmp; *_dtmp = _stmp; _dtmp++; _stmp >>= 8; \

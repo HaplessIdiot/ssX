@@ -1,4 +1,14 @@
 XFree86 4.0.1d (xx September 2000)
+ 721. PCI chip ID updates to ATI driver (Marc La France).
+ 720. Fix i810 driver for -probe and -configure (Marc La France).
+ 719. Change message when default modes are deleted (Marc La France).
+ 718. Fix Xinerama byte swapping bug (Marc La France).
+ 717. IA-64 and Alpha fixes for pswrap, Mesa, DRI, Xpm, libX11, Xt, Xaw, Xmu,
+      dps, Type1 fonts, cfb24, most output drivers, ELF loader, ramdac module,
+      xf4bpp and xf86cfg (Marc La France).
+ 716. Improve IA-64 support by removing a plethora of 32-bit'isms
+      (Marc La France).
+ 715. Default HasLinuxDoc to NO (Marc La France).
  714. Lots of Neomagic driver fixes/enhancements (Mark Vojkovich).
       - Fix logic bug that kept HW cursor from being used.
       - Added support for gamma correction and DirectColor visuals.
@@ -11172,4 +11182,4 @@ XFree86 3.0 (26 April 1994)
 
 
 
-$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1321 2000/09/24 16:29:37 alanh Exp $
+$XFree86: xc/programs/Xserver/hw/xfree86/CHANGELOG,v 3.1322 2000/09/26 00:04:56 mvojkovi Exp $

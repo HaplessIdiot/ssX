@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.13 1999/11/30 18:06:19 mvojkovi Exp $ */
+/* $XFree86: xc/lib/Xxf86dga/XF86DGA2.c,v 1.14 2000/05/23 04:47:35 dawes Exp $ */
 /*
 
 Copyright (c) 1995  Jon Tombs
@@ -228,7 +228,8 @@ Bool XDGAOpenFramebuffer(
 	_XRead(dpy, deviceName, rep.length << 2);
     }
 
-    ret = XDGAMapFramebuffer(screen, deviceName, (unsigned char*)rep.mem1, 
+    ret = XDGAMapFramebuffer(screen, deviceName,
+				(unsigned char*)(long)rep.mem1, 
 				rep.size, rep.offset, rep.extra);
 
     if(deviceName)

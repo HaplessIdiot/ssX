@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.6 1999/05/03 12:15:46 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Viewport.c,v 1.7 1999/06/06 08:48:21 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -803,7 +803,7 @@ ScrollUpDownProc(Widget widget, XtPointer closure, XtPointer call_data)
 {
     ViewportWidget w = (ViewportWidget)closure;
     Widget child = w->viewport.child;
-    int pix = (int)call_data;
+    int pix = (long)call_data;
     int x, y;
 
     if (child == NULL)

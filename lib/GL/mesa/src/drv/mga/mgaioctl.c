@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.5 2000/08/28 02:43:12 tsi Exp $ */
+/* $XFree86: xc/lib/GL/mesa/src/drv/mga/mgaioctl.c,v 1.6 2000/09/24 13:51:06 alanh Exp $ */
 
 #include <stdio.h>
 
@@ -520,10 +520,10 @@ void mgaFlushEltsLocked( mgaContextPtr mmesa )
 {
    if (mmesa->first_elt != mmesa->next_elt) {
       mgaFireEltsLocked( mmesa, 
-			 ((GLuint)mmesa->first_elt - 
-			  (GLuint)mmesa->elt_buf->address),
-			 ((GLuint)mmesa->next_elt - 
-			  (GLuint)mmesa->elt_buf->address),
+			 ((char *)mmesa->first_elt - 
+			  (char *)mmesa->elt_buf->address),
+			 ((char *)mmesa->next_elt - 
+			  (char *)mmesa->elt_buf->address),
 			 0 );
       mmesa->first_elt = mmesa->next_elt;
    }

@@ -24,6 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -1044,8 +1045,8 @@ void sis_set_render_pos(GLcontext * ctx, GLubyte *base, GLuint pitch)
   assert (base != NULL);
 
   if (SIS_VERBOSE&VERBOSE_SIS_BUFFER){
-    fprintf(stderr, "set drawing position: base=%x, pitch=%u\n", 
-            (unsigned int)base, pitch);
+    fprintf(stderr, "set drawing position: base=%x, pitch=%lu\n", 
+            (unsigned long)base, pitch);
   }
 
   /* software render */

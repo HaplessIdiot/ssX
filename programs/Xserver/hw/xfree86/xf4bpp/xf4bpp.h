@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.3 1998/09/26 08:34:24 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/xf4bpp/xf4bpp.h,v 1.4 1999/06/06 08:49:08 dawes Exp $ */
 
 
 #ifndef __XF4BPP_H__
@@ -195,7 +195,7 @@ void xf4bppDestroyGC(
 void xf4bppValidateGC(
 #if NeedFunctionPrototypes
     GCPtr,
-    Mask,
+    unsigned long,
     DrawablePtr
 #endif
 );

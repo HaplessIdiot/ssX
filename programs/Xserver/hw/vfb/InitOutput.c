@@ -22,7 +22,7 @@ other dealings in this Software without prior written authorization
 from The Open Group.
 
 */
-/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.11 1999/05/14 14:11:09 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/vfb/InitOutput.c,v 3.12 2000/08/10 17:40:31 dawes Exp $ */
 
 #if defined(WIN32) && !defined(__CYGWIN__)
 #include <X11/Xwinsock.h>
@@ -675,7 +675,7 @@ vfbAllocateMmappedFramebuffer(pvfb)
 				    PROT_READ|PROT_WRITE,
 				    MAP_FILE|MAP_SHARED,
 				    pvfb->mmap_fd, 0);
-    if (-1 == (int)pvfb->pXWDHeader)
+    if (-1 == (long)pvfb->pXWDHeader)
     {
 	perror("mmap");
 	ErrorF("mmap %s failed, errno %d", pvfb->mmap_file, errno);
@@ -710,7 +710,7 @@ vfbAllocateSharedMemoryFramebuffer(pvfb)
     /* try to attach it */
 
     pvfb->pXWDHeader = (XWDFileHeader *)shmat(pvfb->shmid, 0, 0);
-    if (-1 == (int)pvfb->pXWDHeader)
+    if (-1 == (long)pvfb->pXWDHeader)
     {
 	perror("shmat");
 	ErrorF("shmat failed, errno %d", errno);

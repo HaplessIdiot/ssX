@@ -25,7 +25,7 @@
  * XFree86 Project.
  */
 
-/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.13 1999/07/11 08:49:14 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Pixmap.c,v 3.14 2000/05/18 16:29:52 dawes Exp $ */
 
 #include <string.h>
 #include <stdio.h>
@@ -390,7 +390,7 @@ qcmp_x_cache(register _Xconst void *left, register _Xconst void *right)
 static int
 bcmp_x_cache(register _Xconst void *pixmap, register _Xconst void *xaw)
 {
-  return ((int)pixmap - (int)((*(XawPixmap **)xaw)->pixmap));
+  return (int)((long)pixmap - (long)((*(XawPixmap **)xaw)->pixmap));
 }
 
 static int
@@ -452,7 +452,7 @@ _XawFindCache(XawCache *xaw,
     return (*cache);
 
   /* Depth */
-  cache = (XawCache **)bsearch((void *)depth, (*cache)->elems,
+  cache = (XawCache **)bsearch((void *)(long)depth, (*cache)->elems,
 			       (*cache)->num_elems, sizeof(XtPointer),
 			       bcmp_long);
 

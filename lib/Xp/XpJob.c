@@ -34,7 +34,7 @@
  **
  ******************************************************************************
  *****************************************************************************/
-/* $XFree86$ */
+/* $XFree86: xc/lib/Xp/XpJob.c,v 1.2 1997/01/12 10:39:56 dawes Exp $ */
 
 #if defined(sun) && defined(i386) && defined(SVR4)
 #define __EXTENSIONS__
@@ -43,7 +43,7 @@
 #include "Printstr.h"
 #include "Xlibint.h"
 #include "X11/Xos.h"
-#include "extutil.h"
+#include "XpExtUtil.h"
 #include <limits.h>
 #ifndef WIN32
 #define X_INCLUDE_PWD_H

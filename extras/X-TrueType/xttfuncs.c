@@ -31,7 +31,7 @@
 
 Notice===
 */
-/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.6 2000/02/14 19:20:20 dawes Exp $ */
+/* $XFree86: xc/extras/X-TrueType/xttfuncs.c,v 1.7 2000/05/18 23:46:10 dawes Exp $ */
 
 #include "xttversion.h"
 
@@ -463,7 +463,7 @@ FreeType_OpenFont(FreeTypeFont *ft,
     } else {
         linesize = 16;
     }
-    if ((ft->cache = FontCacheOpenCache((void *) linesize)) == NULL) {
+    if ((ft->cache = FontCacheOpenCache((void *)(long) linesize)) == NULL) {
         result = AllocError;
         goto doneInstQuit;
     }

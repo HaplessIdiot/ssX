@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/config/pswrap/psw.c,v 1.4 2000/05/19 00:25:42 dawes Exp $ */
+/* $XFree86: xc/config/pswrap/psw.c,v 1.5 2000/06/07 21:36:56 tsi Exp $ */
 
 /***********/
 /* Imports */
@@ -99,9 +99,9 @@ static int stringBytes;
 	dst = psw_malloc(strlen(src)+1) , \
 	strcpy(dst, src)
 
-static int NumArgs(Args args)
+static long NumArgs(Args args)
 {
-  register int n = 0;
+  register long n = 0;
   register Arg arg;
   register Item item;
   for (arg = args; arg; arg = arg->next)
@@ -308,7 +308,7 @@ static void SetNameTag(Token t)
    	0 doneTag printobject flush
    where doneTag = (last result parameter tag + 1).
 */
-static Body AppendResultFlush(Body body, int n)
+static Body AppendResultFlush(Body body, long n)
 {
   Token t, token;
   char *ss;
@@ -317,7 +317,7 @@ static Body AppendResultFlush(Body body, int n)
   for (t = body; t->next; t = t->next) ;
 
   token = PSWToken(T_INT, 0L);
-  token->next = PSWToken(T_INT, (char *) n);
+  token->next = PSWToken(T_INT, (char *)(long)n);
 
   SafeStrCpy(ss, "printobject");
   token->next->next = PSWToken(T_NAME, ss);
@@ -851,10 +851,10 @@ static void EmitFieldConstructor(Token t)
 
     switch (t->type) {
       case T_BOOLEAN:
-        fprintf(datafil, "DPS_LITERAL%cDPS_BOOL, 0, 0, %d", ATT_SEP, (int) t->val);
+        fprintf(datafil, "DPS_LITERAL%cDPS_BOOL, 0, 0, %d", ATT_SEP, (int)(long)t->val);
         break;
       case T_INT:
-        fprintf(datafil, "DPS_LITERAL%cDPS_INT, 0, 0, %d", ATT_SEP, (int) t->val);
+        fprintf(datafil, "DPS_LITERAL%cDPS_INT, 0, 0, %d", ATT_SEP, (int)(long)t->val);
         break;
       case T_FLOAT:
         fprintf(datafil, "DPS_LITERAL%cDPS_REAL, 0, 0, %s", ATT_SEP, (char *)t->val);
@@ -1167,7 +1167,7 @@ static void EmitResultTagTableDecls(Args outArgs)
 
 static void EmitResultTagTableAssignments(Args outArgs)
 {
-  printf("  DPSSetResultTable(%s, _dpsR, %d);\n",ctxName,NumArgs(outArgs));
+  printf("  DPSSetResultTable(%s, _dpsR, %ld);\n", ctxName, NumArgs(outArgs));
   outlineno++;
 }
 

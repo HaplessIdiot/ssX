@@ -20,7 +20,7 @@ used in advertising or otherwise to promote the sale, use or other dealings
 in this Software without prior written authorization from The Open Group.
 
 */
-/* $XFree86: xc/lib/X11/FontInfo.c,v 1.2 1999/05/09 10:49:21 dawes Exp $ */
+/* $XFree86: xc/lib/X11/FontInfo.c,v 1.3 2000/06/13 23:15:47 dawes Exp $ */
 
 #define NEED_REPLIES
 #include "Xlibint.h"
@@ -171,7 +171,7 @@ XFontStruct **info;	/* RETURN */
 	    if (! (fs->properties = (XFontProp *) Xmalloc((unsigned) nbytes)))
 		goto badmem;
 	    nbytes = reply.nFontProps * SIZEOF(xFontProp);
-	    _XRead32 (dpy, (char *)fs->properties, nbytes);
+	    _XRead32 (dpy, (long *)fs->properties, nbytes);
 
 	} else
 	    fs->properties = NULL;

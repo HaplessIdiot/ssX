@@ -24,6 +24,7 @@ TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 **************************************************************************/
+/* $XFree86$ */
 
 /*
  * Authors:
@@ -147,7 +148,7 @@ sis_free_fb (int hHWContext, void *free)
   }
   
   fb.context = hHWContext;
-  fb.free = (unsigned int)free;
+  fb.free = (unsigned long)free;
   ioctl(gDRMSubFD, SIS_IOCTL_FB_FREE, &fb);
 }
 
@@ -217,7 +218,7 @@ sis_free_agp (int hHWContext, void *free)
   }
   
   agp.context = hHWContext;
-  agp.free = (unsigned int)free;
+  agp.free = (unsigned long)free;
   ioctl(gDRMSubFD, SIS_IOCTL_AGP_FREE, &agp);
 }
 
@@ -263,7 +264,7 @@ sis_alloc_z_stencil_buffer (GLcontext * ctx)
     fprintf(stderr, "sis_alloc_z_stencil_buffer: addr=%lu\n", (DWORD)addr);
   }
 
-  addr = (GLubyte *) ALIGNMENT ((GLuint) addr, Z_BUFFER_HW_ALIGNMENT);
+  addr = (GLubyte *) ALIGNMENT ((unsigned long) addr, Z_BUFFER_HW_ALIGNMENT);
 
   xm_buffer->depthbuffer = (void *) addr;
 
@@ -342,9 +343,9 @@ sis_alloc_back_image (GLcontext * ctx, XMesaImage *image, void **free,
       sis_fatal_error ();
     }
 
-  addr = (GLbyte *) ALIGNMENT ((GLuint) addr, DRAW_BUFFER_HW_ALIGNMENT);
+  addr = (GLbyte *) ALIGNMENT ((unsigned long) addr, DRAW_BUFFER_HW_ALIGNMENT);
 
-  image->data = addr;
+  image->data = (char *)addr;
 
   image->bytes_per_line = width2 * depth;
   image->bits_per_pixel = depth * 8;
@@ -499,7 +500,8 @@ sis_alloc_texture_image (GLcontext * ctx, GLtextureImage * image)
     return;
   }
 
-  area->Data = (GLbyte *) ALIGNMENT ((GLuint) addr, TEXTURE_HW_ALIGNMENT);
+  area->Data =
+    (GLbyte *) ALIGNMENT ((unsigned long) addr, TEXTURE_HW_ALIGNMENT);
   area->Pitch = image->Width * texel_size;
   area->Format = driver_format;
   area->Size = image->Width * image->Height * texel_size;

@@ -24,7 +24,7 @@
  * used in advertising or publicity pertaining to distribution of the software
  * without specific, written prior permission.
  */
-/* $XFree86: xc/programs/xedit/commands.c,v 1.20 1999/08/28 09:01:20 dawes Exp $ */
+/* $XFree86: xc/programs/xedit/commands.c,v 1.21 1999/09/27 06:30:08 dawes Exp $ */
 
 #include <X11/Xfuncs.h>
 #include <X11/Xos.h>
@@ -506,7 +506,7 @@ void
 SourceChanged(Widget w, XtPointer client_data, XtPointer call_data)
 {
     xedit_flist_item *item = (xedit_flist_item*)client_data;
-    Bool changed = (Bool)call_data;
+    Bool changed = (Bool)(long)call_data;
 
     if (changed) {
 	if (item->flags & CHANGED_BIT)

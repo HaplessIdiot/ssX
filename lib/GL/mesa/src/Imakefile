@@ -1,4 +1,4 @@
-XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.16 2000/08/01 20:28:38 dawes Exp $
+XCOMM $XFree86: xc/lib/GL/mesa/src/Imakefile,v 1.17 2000/09/24 13:51:01 alanh Exp $
 
 #include <Threads.tmpl>
 
@@ -370,10 +370,6 @@ LinkSourceFile(zoom.h, $(MESASRCDIR)/src)
 #endif
 
 #if GlxBuiltInMesa || GlxDriverUsesMesa || !GlxUseBuiltInDRIDriver
-  MESASUBDIRS =
-#ifdef i386Architecture
-  ASMSUBDIRS = X86
-#endif
 
 #include <Library.tmpl>
 
@@ -382,17 +378,22 @@ LibraryObjectRule()
 SubdirLibraryRule($(OBJS))
 NormalLintTarget($(SRCS))
 
+#ifdef i386Architecture
+
+#define IHaveSubdirs
+#define PassCDebugFlags
+
+SUBDIRS = X86
+
+MakeSubdirs($(SUBDIRS))
+DependSubdirs($(SUBDIRS))
+
+#endif
+
 #else
 
 AllTarget($(OBJS))
 
 #endif
 
-#define IHaveSubdirs
-#define PassCDebugFlags
-
-SUBDIRS = $(MESASUBDIRS) $(ASMSUBDIRS)
-
-MakeSubdirs($(SUBDIRS))
-DependSubdirs($(SUBDIRS))
 DependTarget()

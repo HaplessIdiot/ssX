@@ -66,7 +66,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.16 1999/06/06 08:48:00 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/MultiSink.c,v 1.17 1999/06/13 13:47:19 dawes Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -655,7 +655,7 @@ GetGC(MultiSinkObject sink)
     XGCValues values;
 
     /* XXX We dont want do share a gc that will change the clip-mask */
-    values.clip_x_origin = (int)sink;
+    values.clip_x_origin = (long)sink;
     values.clip_mask = None;
     values.graphics_exposures = False;
     

@@ -31,7 +31,7 @@ Author:	Ralph R. Swick, DEC/MIT Project Athena
 	one weekend in November, 1989
 Modified: Mark Leisher <mleisher@crl.nmsu.edu> to deal with UCS sample text.
 */
-/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.1 2000/02/13 03:26:24 dawes Exp $ */
+/* $XFree86: xc/programs/xfontsel/xfontsel.c,v 1.2 2000/05/11 18:14:43 tsi Exp $ */
 
 #include <stdio.h>
 #include <X11/Intrinsic.h>
@@ -311,8 +311,10 @@ see 'xfontsel' manual page."
 		FieldMenuRec *makeRec = XtNew(FieldMenuRec);
 		sprintf( name, "field%d", f );
 		XtCreateManagedWidget("dash",labelWidgetClass,fieldBox,NZ);
-		field = XtCreateManagedWidget(name,menuButtonWidgetClass,fieldBox,NZ);
-		XtAddCallback(field, XtNcallback, SelectField, (XtPointer)f);
+		field = XtCreateManagedWidget(name, menuButtonWidgetClass,
+			fieldBox, NZ);
+		XtAddCallback(field, XtNcallback, SelectField,
+			(XtPointer)(long)f);
 		makeRec->field = f;
 		makeRec->button = field;
 		ScheduleWork(MakeFieldMenu, (XtPointer)makeRec, 2);
@@ -849,12 +851,12 @@ void MakeFieldMenu(closure)
     XtGetSubresources(menu, (XtPointer) values, "options", "Options",
 		      menuResources, XtNumber(menuResources), NZ);
     XtAddCallback(menu, XtNpopupCallback, EnableOtherValues,
-		  (XtPointer)makeRec->field );
+		  (XtPointer)(long)makeRec->field );
 
     if (!patternFieldSpecified[val->field]) {
 	XtSetArg( args[0], XtNlabel, "*" );
 	item = XtCreateManagedWidget("any",smeBSBObjectClass,menu,args,ONE);
-	XtAddCallback(item, XtNcallback, AnyValue, (XtPointer)val->field);
+	XtAddCallback(item, XtNcallback, AnyValue, (XtPointer)(long)val->field);
     }
 
     for (i = values->count; i; i--, val++) {
@@ -971,7 +973,7 @@ void AnyValue(w, closure, callData)
     Widget w;
     XtPointer closure, callData;
 {
-    int field = (int)closure;
+    int field = (long)closure;
     currentFont.value_index[field] = -1;
     SetCurrentFont(NULL);
     EnableAllItems(field);
@@ -1195,7 +1197,7 @@ EnableRemainingItems(current_field_action)
     {
 	int f;
 	for (f = 0; f < FIELD_COUNT; f++)
-	    ScheduleWork(EnableMenu, (XtPointer)f, BACKGROUND);
+	    ScheduleWork(EnableMenu, (XtPointer)(long)f, BACKGROUND);
     }
 }
 
@@ -1215,7 +1217,7 @@ void SelectField(w, closure, callData)
     Widget w;
     XtPointer closure, callData;
 {
-    int field = (int)closure;
+    int field = (long)closure;
     FieldValue *values = fieldValues[field]->value;
     int count = fieldValues[field]->count;
     printf( "field %d:\n", field );
@@ -1262,7 +1264,7 @@ void EnableOtherValues(w, closure, callData)
     Widget w;
     XtPointer closure, callData;
 {
-    int field = (int)closure;
+    int field = (long)closure;
     Boolean *font_in_set = (Boolean*)XtMalloc(numFonts*sizeof(Boolean));
     Boolean *b;
     int f, count;
@@ -1319,14 +1321,14 @@ void EnableOtherValues(w, closure, callData)
     }
     XtFree((char *)font_in_set);
     if (enabledMenuIndex < field)
-	EnableMenu((XtPointer)field);
+	EnableMenu((XtPointer)(long)field);
 }
 
 
 void EnableMenu(closure)
     XtPointer closure;
 {
-    int field = (int)closure;
+    int field = (long)closure;
     FieldValue *val = fieldValues[field]->value;
     int f;
     Widget *managed = NULL, *pManaged = NULL;
@@ -1450,8 +1452,8 @@ void OwnSelection(w, closure, callData)
     XtPointer closure, callData;
 {
     Time time = XtLastTimestampProcessed(XtDisplay(w));
-    Boolean primary = (Boolean) (int) closure;
-    Boolean own = (Boolean) (int) callData;
+    Boolean primary = (Boolean) (long) closure;
+    Boolean own = (Boolean) (long) callData;
 
     if (_XA_PRIMARY_FONT == NULL)
 	_XA_PRIMARY_FONT = XmuMakeAtom("PRIMARY_FONT");

@@ -1,5 +1,3 @@
-#ifndef _GLX_client_h_
-#define _GLX_client_h_
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -20,6 +18,7 @@
 ** are Copyright (c) 1991-9 Silicon Graphics, Inc. All Rights Reserved.
 **
 */
+/* $XFree86$ */
 
 /*
  * Direct rendering support added by Precision Insight, Inc.
@@ -29,6 +28,8 @@
  *
  */
 
+#ifndef _GLX_client_h_
+#define _GLX_client_h_
 #define NEED_REPLIES
 #define NEED_EVENTS
 #include <string.h>

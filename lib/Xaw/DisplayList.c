@@ -27,7 +27,7 @@
  * Author: Paulo César Pereira de Andrade
  */
 
-/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.14 1999/06/20 08:40:59 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/DisplayList.c,v 3.15 1999/08/28 09:00:26 dawes Exp $ */
 
 #include <ctype.h>
 #include <string.h>
@@ -910,7 +910,7 @@ DlLineWidth(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  unsigned line_width = (unsigned)args;
+  unsigned line_width = (unsigned long)args;
 
   if (xdata->values.line_width != line_width)
     {
@@ -986,7 +986,7 @@ DlArcMode(Widget w, XtPointer args, XtPointer data,
 	  XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int arc_mode  = (int)args;
+  int arc_mode  = (long)args;
 
   if (xdata->values.arc_mode != arc_mode)
     {
@@ -1002,7 +1002,7 @@ DlCoordMode(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int mode  = (int)args;
+  int mode  = (long)args;
 
   xdata->mode = mode;
 }
@@ -1013,7 +1013,7 @@ DlShapeMode(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int shape  = (int)args;
+  int shape  = (long)args;
 
   xdata->shape = shape;
 }
@@ -1024,7 +1024,7 @@ DlLineStyle(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int line_style = (int)args;
+  int line_style = (long)args;
 
   if (xdata->values.line_style != line_style)
     {
@@ -1040,7 +1040,7 @@ DlCapStyle(Widget w, XtPointer args, XtPointer data,
 	   XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int cap_style = (int)args;
+  int cap_style = (long)args;
 
   if (xdata->values.cap_style != cap_style)
     {
@@ -1056,7 +1056,7 @@ DlJoinStyle(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int join_style = (int)args;
+  int join_style = (long)args;
 
   if (xdata->values.join_style != join_style)
     {
@@ -1072,7 +1072,7 @@ DlFillStyle(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int fill_style = (int)args;
+  int fill_style = (long)args;
 
   if (xdata->values.fill_style != fill_style)
     {
@@ -1088,7 +1088,7 @@ DlFillRule(Widget w, XtPointer args, XtPointer data,
 	   XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int fill_rule = (int)args;
+  int fill_rule = (long)args;
 
   if (xdata->values.fill_rule != fill_rule)
     {
@@ -1143,7 +1143,7 @@ DlFunction(Widget w, XtPointer args, XtPointer data,
 	   XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int function = (int)args;
+  int function = (long)args;
 
   if (function != xdata->values.function)
     {
@@ -1258,7 +1258,7 @@ DlSubwindowMode(Widget w, XtPointer args, XtPointer data,
 		XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  int subwindow_mode = (int)args;
+  int subwindow_mode = (long)args;
 
   if (xdata->values.subwindow_mode != subwindow_mode)
     {
@@ -1274,7 +1274,7 @@ DlExposures(Widget w, XtPointer args, XtPointer data,
 	    XEvent *event, Region region)
 {
   XawXlibData *xdata = (XawXlibData *)data;
-  Bool graphics_exposures = (Bool)args;
+  Bool graphics_exposures = (Bool)(long)args;
 
   if (xdata->values.graphics_exposures != graphics_exposures)
     {
@@ -1594,10 +1594,10 @@ bcmp_cvt_proc(register _Xconst void *string,
   return (strcmp((String)string, ((Dl_init*)dlinfo)->name));
 }
 
-static int
+static long
 read_int(char *cp, char **cpp)
 {
-  int value = 0, sign = 1;
+  long value = 0, sign = 1;
 
   if (*cp == '-')
     {

@@ -1,4 +1,4 @@
-/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.6 2000/02/15 19:19:18 dawes Exp $ */
+/* $XFree86: xc/lib/GL/glx/glxext.c,v 1.7 2000/09/24 13:51:01 alanh Exp $ */
 
 /*
 ** The contents of this file are subject to the GLX Public License Version 1.0
@@ -184,8 +184,7 @@ static /* const */ XExtensionHooks __glXExtensionHooks = {
     __glXErrorString,			/* error_string */
 };
 
-XExtDisplayInfo *__glXFindDisplay(Display *);
-
+static
 XEXT_GENERATE_FIND_DISPLAY(__glXFindDisplay, __glXExtensionInfo,
 			   __glXExtensionName, &__glXExtensionHooks,
 			   __GLX_NUMBER_EVENTS, NULL)

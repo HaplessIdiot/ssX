@@ -1,4 +1,4 @@
-/* $XFree86$ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_warp.c,v 1.3 2000/06/17 18:23:23 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -108,7 +108,7 @@ static unsigned int mgaG400InstallMicrocode(MGAPtr pMGA, int agp_offset)
    
    MGADRIServerPrivatePtr pMGADRIServer = pMGA->DRIServerInfo;
    CARD8 *vcbase = pMGADRIServer->agp_map + agp_offset;
-   CARD32 pcbase = (CARD32)pMGADRIServer->agpBase + agp_offset;   
+   unsigned long pcbase = (unsigned long)pMGADRIServer->agpBase + agp_offset;   
    unsigned int microcode_size = 0;
 
    memset(pMGADRIServer->WarpIndex, 0, 
@@ -150,7 +150,7 @@ static unsigned int mgaG200InstallMicrocode(MGAPtr pMGA, int agp_offset)
 
    MGADRIServerPrivatePtr pMGADRIServer = pMGA->DRIServerInfo;
    CARD8 *vcbase = pMGADRIServer->agp_map + agp_offset;
-   CARD32 pcbase = (CARD32)pMGADRIServer->agpBase + agp_offset;   
+   unsigned long pcbase = (unsigned long)pMGADRIServer->agpBase + agp_offset;   
    unsigned int microcode_size = 0;
 
    memset(pMGADRIServer->WarpIndex, 0, 

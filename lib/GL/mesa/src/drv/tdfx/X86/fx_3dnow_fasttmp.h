@@ -1,3 +1,4 @@
+/* $XFree86$ */
 
 #if !defined(NASM_ASSEMBLER) && !defined(MASM_ASSEMBLER)
 #define TAGLLBL(a) TAG(.L##a)

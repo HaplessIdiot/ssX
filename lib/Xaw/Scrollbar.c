@@ -42,7 +42,7 @@ ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS
 SOFTWARE.
 
 ******************************************************************/
-/* $XFree86: xc/lib/Xaw/Scrollbar.c,v 1.9 1999/06/06 08:48:08 dawes Exp $ */
+/* $XFree86: xc/lib/Xaw/Scrollbar.c,v 1.10 2000/08/23 22:10:02 tsi Exp $ */
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
@@ -752,7 +752,7 @@ static void
 NotifyScroll(Widget gw, XEvent *event, String *params, Cardinal *num_params)
 {
     ScrollbarWidget w = (ScrollbarWidget)gw;
-    int call_data = 0;
+    long call_data = 0;
     char style;
     Position x, y;
 

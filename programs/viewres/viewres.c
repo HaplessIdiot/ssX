@@ -27,7 +27,7 @@ in this Software without prior written authorization from the X Consortium.
  * *
  * Author:  Jim Fulton, MIT X Consortium
  */
-/* $XFree86: xc/programs/viewres/viewres.c,v 1.3 2000/02/17 14:00:33 dawes Exp $ */
+/* $XFree86: xc/programs/viewres/viewres.c,v 1.4 2000/02/18 12:20:17 tsi Exp $ */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -447,7 +447,7 @@ static void variable_labeltype_callback (gw, closure, data)
     XtPointer closure;			/* TRUE or FALSE */
     XtPointer data;
 {
-    set_labeltype_menu ((Boolean) (int) closure, True);
+    set_labeltype_menu ((Boolean) (long) closure, True);
 }
 
 /* ARGSUSED */
@@ -456,7 +456,7 @@ static void gravity_callback (gw, closure, data)
     XtPointer closure;			/* TRUE or FALSE */
     XtPointer data;
 {
-    set_orientation_menu ((XtGravity) closure, True);
+    set_orientation_menu ((XtGravity) (long) closure, True);
 }
 
 
@@ -562,7 +562,7 @@ static void show_resources_callback (gw, closure, data)
     XtPointer closure;			/* BOOL_OFF, BOOL_ON, BOOL_TOGGLE */
     XtPointer data;			/* undefined */
 {
-    int op = (int) closure;
+    int op = (long) closure;
     XmuWidgetNode *node = widget_to_node (gw);
 
     if (node) {
@@ -594,7 +594,7 @@ static void select_callback (gw, closure, data)
     int nselected = selected_list.n_elements;
     XmuWidgetNode *node;
 
-    switch ((int) closure) {
+    switch ((long) closure) {
       case SELECT_NOTHING:		/* clear selection_list */
 	remove_nodes_from_selected_list (0, nselected, True);
 	break;
@@ -708,7 +708,7 @@ static void toggle_callback (gw, closure, data)
     XtPointer data;		/* on or off */
 {
     XmuWidgetNode *node = (XmuWidgetNode *) closure;
-    Boolean selected = (Boolean) (int) data;
+    Boolean selected = (Boolean) (long) data;
 
     if (selected) {
 	add_to_selected_list (node, FALSE);
@@ -1193,7 +1193,7 @@ static void do_single_arg (w, params, nparams, table, nentries, proc)
     /*
      * use any old widget
      */
-    (*proc) (w, (XtPointer) obj, (XtPointer) NULL);
+    (*proc) (w, (XtPointer) (long) obj, (XtPointer) NULL);
 }
 
 

@@ -23,7 +23,7 @@
  *
  * Generic RAMDAC access routines.
  */
-/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.4 1998/12/06 06:08:36 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/ramdac/xf86RamDac.c,v 1.5 1999/01/14 13:05:21 dawes Exp $ */
 
 #include "xf86.h"
 #include "xf86_OSproc.h"
@@ -57,46 +57,12 @@ RamDacHelperCreateInfoRec()
 void 
 RamDacDestroyInfoRec(RamDacRecPtr infoRec)
 {
-    if(!infoRec) return;
-
-    if(infoRec->ReadDAC)
-	xfree(infoRec->ReadDAC);
-
-    if(infoRec->WriteDAC)
-	xfree(infoRec->WriteDAC);
-
-    if(infoRec->WriteAddress)
-	xfree(infoRec->WriteAddress);
-
-    if(infoRec->WriteData)
-	xfree(infoRec->WriteData);
-
-    if(infoRec->ReadAddress)
-	xfree(infoRec->ReadAddress);
-
-    if(infoRec->ReadData)
-	xfree(infoRec->ReadData);
-
     xfree(infoRec);
 }
 
 void 
 RamDacHelperDestroyInfoRec(RamDacHelperRecPtr infoRec)
 {
-    if(!infoRec) return;
-
-    if(infoRec->RamDacType)
-	xfree(infoRec->RamDacType);
-
-    if(infoRec->Save)
-	xfree(infoRec->Save);
-
-    if(infoRec->Restore)
-	xfree(infoRec->Restore);
-
-    if(infoRec->SetBpp)
-	xfree(infoRec->SetBpp);
-
     xfree(infoRec);
 }
 

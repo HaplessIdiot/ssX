@@ -35,7 +35,7 @@
  * 
  * Author:  Adobe Systems Incorporated
  */
-/* $XFree86: xc/lib/dps/csfindNX.c,v 1.3 2000/02/18 12:18:53 tsi Exp $ */
+/* $XFree86: xc/lib/dps/csfindNX.c,v 1.4 2000/05/18 23:46:12 dawes Exp $ */
 
 #include <sys/param.h>				/* for MAXHOSTNAMELEN */
 #include <stdlib.h>
@@ -578,11 +578,11 @@ XDPSNXSetClientArg(int arg, void *value)
       *cpp = strcpy(*cpp, *execInfo);
     }
   } else if (arg == XDPSNX_AUTO_LAUNCH) {
-    gXDPSNXAutoLaunch = (Bool) value;
+    gXDPSNXAutoLaunch = (Bool)(long) value;
   } else if (arg == XDPSNX_LAUNCHED_AGENT_TRANS) {
-    gXDPSNXLaunchedAgentTrans = (int) value;
+    gXDPSNXLaunchedAgentTrans = (long) value;
   } else if (arg == XDPSNX_LAUNCHED_AGENT_PORT) {
-    gXDPSNXLaunchedAgentPort = (int) value;
+    gXDPSNXLaunchedAgentPort = (long) value;
   } else if (arg == XDPSNX_REQUEST_XSYNC) {
     dpy = (Display *) value;
     if (dpy == (Display *)NULL)
@@ -609,7 +609,7 @@ XDPSNXSetClientArg(int arg, void *value)
         return(Success);
     XDPSLSetGCFlushMode(dpy, XDPSNX_GC_UPDATES_FAST);
   } else if (arg == XDPSNX_SEND_BUF_SIZE) {
-    int i = (int) value;
+    int i = (long)value;
     if (i >= 4096 && i <= 65536) gNXSndBufSize = i;
   }
   return(Success);
@@ -648,10 +648,10 @@ XDPSGetNXArg(int arg, void **value)
   } else if (arg == XDPSNX_EXEC_ARGS) {
     *value = (void *) gXDPSNXExecArgs;
   } else if (arg == XDPSNX_AUTO_LAUNCH) {
-    *value = (void *) gXDPSNXAutoLaunch;
+    *value = (void *) (long)gXDPSNXAutoLaunch;
   } else if (arg == XDPSNX_LAUNCHED_AGENT_TRANS) {
-    *value = (void *) gXDPSNXLaunchedAgentTrans;
+    *value = (void *) (long)gXDPSNXLaunchedAgentTrans;
   } else if (arg == XDPSNX_LAUNCHED_AGENT_PORT) {
-    *value = (void *) gXDPSNXLaunchedAgentPort;
+    *value = (void *) (long)gXDPSNXLaunchedAgentPort;
   }
 }

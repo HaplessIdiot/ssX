@@ -26,7 +26,7 @@
  *
  * Author: Paulo César Pereira de Andrade <pcpa@conectiva.com.br>
  *
- * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.2 2000/05/18 16:29:59 dawes Exp $
+ * $XFree86: xc/programs/Xserver/hw/xfree86/xf86cfg/mouse-cfg.c,v 1.3 2000/08/01 20:05:43 dawes Exp $
  */
 
 #include "xf86config.h"
@@ -40,7 +40,7 @@
 #include <X11/extensions/xf86misc.h>
 
 /*
- * Prootypes
+ * Prototypes
  */
 static void MouseDeviceCallback(Widget, XtPointer, XtPointer);
 static void MouseProtocolCallback(Widget, XtPointer, XtPointer);
@@ -244,7 +244,7 @@ MouseProtocolCallback(Widget w, XtPointer user_data, XtPointer call_data)
 static void
 MouseEmulateCallback(Widget w, XtPointer user_data, XtPointer call_data)
 {
-    emulate = (Bool)call_data;
+    emulate = (Bool)(long)call_data;
 }
 
 static void
