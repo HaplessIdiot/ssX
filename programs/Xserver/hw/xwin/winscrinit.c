@@ -30,9 +30,60 @@
  *		Peter Busch
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.18 2001/09/13 08:25:45 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winscrinit.c,v 1.19 2001/09/20 12:16:17 alanh Exp $ */
 
 #include "win.h"
+
+
+/*
+ * Paint the window background with the specified color
+ */
+
+BOOL
+winPaintBackground (HWND hwnd, COLORREF colorref)
+{
+  HDC			hdc;
+  HBRUSH		hbrush;
+  RECT			rect;
+
+  /* Create an hdc */
+  hdc = GetDC (hwnd);
+  if (hdc == NULL)
+    {
+      printf ("gdiWindowProc - GetDC failed\n");
+      exit (1);
+    }
+
+  /* Create and select blue brush */
+  hbrush = CreateSolidBrush (colorref);
+  if (hbrush == NULL)
+    {
+      printf ("gdiWindowProc - CreateSolidBrush failed\n");
+      exit (1);
+    }
+
+  /* Get window extents */
+  if (GetClientRect (hwnd, &rect) == FALSE)
+    {
+      printf ("gdiWindowProc - GetClientRect failed\n");
+      exit (1);
+    }
+
+  /* Fill window with blue brush */
+  if (FillRect (hdc, &rect, hbrush) == 0)
+    {
+      printf ("gdiWindowProc - FillRect failed\n");
+      exit (1);
+    }
+
+  /* Delete blue brush */
+  DeleteObject (hbrush);
+
+  /* Release the hdc */
+  ReleaseDC (hwnd, hdc);
+
+  return TRUE;
+}
 
 
 /*
@@ -244,6 +295,10 @@ winCreateBoundingWindowWindowed (ScreenPtr pScreen)
 	      "failed\n");
       return FALSE;
     }
+
+  /* Paint window background blue */
+  if (pScreenInfo->dwEngine == WIN_SERVER_NATIVE_GDI)
+    winPaintBackground (*phwnd, RGB (0x00, 0x00, 0xFF));
 
   ErrorF ("winCreateBoundingWindowWindowed () -  Returning\n");
 
@@ -696,6 +751,38 @@ winSetEngine (ScreenPtr pScreen)
 {
   winScreenPriv(pScreen);
   winScreenInfo		*pScreenInfo = pScreenPriv->pScreenInfo;
+  HDC			hdc;
+  DWORD			dwDepth;
+
+  /* Get a DC */
+  hdc = GetDC (NULL);
+  if (hdc == NULL)
+    {
+      ErrorF ("winSetEngine () - Couldn't get an HDC\n");
+      return FALSE;
+    }
+
+  /*
+   * pScreenInfo->dwDepth may be 0 to indicate that the current screen
+   * depth is to be used.  Thus, we must query for the current display
+   * depth here.
+   */
+  dwDepth = GetDeviceCaps (hdc, BITSPIXEL);
+
+  /* Release the DC */
+  ReleaseDC (NULL, hdc);
+  hdc = NULL;
+
+  /* ShadowGDI is the only engine that supports windowed PseudoColor */
+  if (dwDepth == 8 && !pScreenInfo->fFullScreen)
+    {
+      ErrorF ("winSetEngine () - Windowed && PseudoColor => ShadowGDI\n");
+      pScreenInfo->dwEngine = WIN_SERVER_SHADOW_GDI;
+
+      /* Set engine function pointers */
+      winSetEngineFunctionsShadowGDI (pScreen);
+      return TRUE;
+    }
 
   /* If the user's choice is supported, we'll use that */
   if (pScreenInfo->dwEnginesSupported & pScreenInfo->dwEnginePreferred)
@@ -772,6 +859,7 @@ winSaveScreen (ScreenPtr pScreen, int on)
 {
   return TRUE;
 }
+
 
 /*
  *

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.4 2001/07/31 18:45:25 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winnativegdi.c,v 1.5 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -282,13 +282,11 @@ winActivateAppNativeGDI (ScreenPtr pScreen)
 
 HBITMAP
 winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
-		       void **ppvBits, BITMAPINFO **ppbmi)
+		       BYTE **ppbBits, BITMAPINFO **ppbmi)
 {
   BITMAPINFOHEADER	*pbmih = NULL;
-  HDC			hdcMem = NULL;
   HBITMAP		hBitmap = NULL;
-
-  ErrorF ("winCreateDIBNativeGDI () - Hello\n");
+  BITMAPINFO		*pbmi = NULL;
 
   /* Don't create an invalid bitmap */
   if (iWidth == 0
@@ -297,14 +295,6 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
     {
       ErrorF ("\nwinCreateDIBNativeGDI () - Invalid specs w %d h %d d %d\n\n",
 	      iWidth, iHeight, iDepth);
-      return NULL;
-    }
-
-  /* Create a scratch DC */
-  hdcMem = CreateCompatibleDC (NULL);
-  if (hdcMem == NULL)
-    {
-      ErrorF ("winCreateDIBNativeGDI () - CreateCompatibleDC () failed\n");
       return NULL;
     }
 
@@ -331,11 +321,20 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
   pbmih->biClrUsed = 0;
   pbmih->biClrImportant = 0;
 
+  /* Setup color table for mono DIBs */
+  if (iDepth == 1)
+    {
+      pbmi = (BITMAPINFO*) pbmih;
+      pbmi->bmiColors[1].rgbBlue = 255;
+      pbmi->bmiColors[1].rgbGreen = 255;
+      pbmi->bmiColors[1].rgbRed = 255;
+    }
+
   /* Create a DIB with a bit pointer */
-  hBitmap = CreateDIBSection (hdcMem,
+  hBitmap = CreateDIBSection (NULL,
 			      (BITMAPINFO *) pbmih,
 			      DIB_RGB_COLORS,
-			      ppvBits,
+			      ppbBits,
 			      NULL,
 			      0);
   if (hBitmap == NULL)
@@ -355,16 +354,6 @@ winCreateDIBNativeGDI (int iWidth, int iHeight, int iDepth,
       xfree (pbmih);
       pbmih = NULL;
     }
-
-#if CYGDEBUG
-  ErrorF ("winCreateDIBNativeGDI () - CreateDIBSection () returned\n");
-#endif
-
-  /* Free the scratch DC */
-  DeleteDC (hdcMem);
-  hdcMem = NULL;
-  
-  ErrorF ("winCreateDIBNativeGDI () - Returning\n");
 
   return hBitmap;
 }
@@ -447,7 +436,7 @@ winSetEngineFunctionsNativeGDI (ScreenPtr pScreen)
     pScreenPriv->pwinCreateBoundingWindow = winCreateBoundingWindowWindowed;
   pScreenPriv->pwinFinishScreenInit = winFinishScreenInitNativeGDI;
   /*
-   * WARNING: Do not set the following procedure pointer to anything
+   * WARNING: Do not set the BltExposedRegions procedure pointer to anything
    * other than NULL until a working painting procedure is in place.
    * Else, winWindowProc will get stuck in an infinite loop because
    * Windows expects the BeginPaint and EndPaint functions to be called

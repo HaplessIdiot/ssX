@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.4 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winfillsp.c,v 1.5 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -54,7 +54,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
   winPrivPixmapPtr	pTilePriv = NULL;
   HBRUSH		hbrushStipple = NULL;
   HDC			hdcStipple = NULL;
-  void			*pvbitsFilledStipple = NULL;
+  BYTE			*pbbitsFilledStipple = NULL;
   int			iX;
   DEBUG_FN_NAME("winFillSpans");
   DEBUGVARS;
@@ -64,10 +64,10 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
   switch (pDrawable->type)
     {
     case DRAWABLE_PIXMAP:
+#if 0
       /* Branch on the raster operation type */
       switch (pGC->alu)
 	{
-#if 0
 	case GXclear:
 	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXclear\n");
 	  break;
@@ -77,11 +77,9 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	case GXandReverse:
 	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXandReverse\n");
 	  break;
-#endif
 	case GXcopy:
 	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXcopy\n");
 	  break;
-#if 0
 	case GXandInverted:
 	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXandInverted\n");
 	  break;
@@ -118,23 +116,29 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	case GXset:
 	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - GXset\n");
 	  break;
-#endif
 	default:
 	  FatalError ("winFillSpans () - DRAWABLE_PIXMAP - Unknown ROP\n");
 	  break;
 	}
+#endif
 
       /* Get a pixmap pointer from the drawable pointer, and fetch privates  */
       pPixmap = (PixmapPtr) pDrawable;
       pPixmapPriv = winGetPixmapPriv (pPixmap);
 
-      /* Select the drawable pixmap into a DC */
+      /* Select the drawable pixmap into memory hdc */
       hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
-
+      if (hbmpOrig == NULL)
+	FatalError ("winFillSpans () - DRAWABLE_PIXMAP - "
+		    "SelectObject () failed on pPixmapPriv->hBitmap\n");
+      
       /* Branch on the fill type */
       switch (pGC->fillStyle)
 	{
 	case FillSolid:
+	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - FillSolid %08x\n",
+		  pDrawable);
+	  
 	  /*
 	   * REMOVE - Visual verification only.
 	   */
@@ -153,12 +157,16 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	      pPoint = pPoints + iSpan;
 	      piWidth = piWidths + iSpan;
 
+	      /* Display some useful information */
+	      ErrorF ("(%dx%dx%d) (%d,%d) fg: %d bg: %d w: %d\n",
+		      pDrawable->width, pDrawable->height, pDrawable->depth,
+		      pPoint->x, pPoint->y,
+		      pGC->fgPixel, pGC->bgPixel,
+		      *piWidth);
+
 	      /* Draw the requested line */
-	      if (MoveToEx (pGCPriv->hdcMem, pPoint->x, pPoint->y, NULL) == 0)
-		FatalError ("winValidateGC - FillSolid MoveToEx failed\n");
-	      if (LineTo (pGCPriv->hdcMem, 
-			  pPoint->x + *piWidth, pPoint->y) == 0)
-		FatalError ("winValidateGC - FillSolid LineTo failed\n");
+	      MoveToEx (pGCPriv->hdcMem, pPoint->x, pPoint->y, NULL);
+	      LineTo (pGCPriv->hdcMem, pPoint->x + *piWidth, pPoint->y);
 	    }
 
 	  /*
@@ -171,9 +179,20 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 		  0, 0, 
 		  SRCCOPY);
 	  DEBUG_MSG ("FillSolid - Filled bitmap");
+
+	  
+	  /* Push the drawable pixmap out of the GC HDC */
+	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
 	  break;
 
 	case FillStippled:
+	  ErrorF ("winFillSpans () - DRAWABLE_PIXMAP - FillStippled %08x\n",
+		  pDrawable);
+
+	  /*
+	   * FIXME: Assuming that pGC->patOrg.x = pGC->patOrg.y = 0
+	   */
+
 	  pStipple = pGC->stipple;
 	  pStipplePriv = winGetPixmapPriv (pStipple);
 
@@ -184,15 +203,14 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  hbmpFilledStipple = winCreateDIBNativeGDI (pDrawable->width,
 						     pDrawable->height,
 						     pDrawable->depth,
-						     &pvbitsFilledStipple,
+						     &pbbitsFilledStipple,
 						     NULL);
 
 	  /* Select the stipple bitmap into the stipple DC */
 	  hbmpOrigStipple = SelectObject (hdcStipple, hbmpFilledStipple);
-
-	  /* Set foreground and background to white and black */
-	  SetTextColor (hdcStipple, RGB(0xFF, 0xFF, 0xFF));
-	  SetBkColor (hdcStipple, RGB(0x00, 0x00, 0x00));
+	  if (hbmpOrigStipple == NULL)
+	    FatalError ("winFillSpans () - DRAWABLE_PIXMAP - FillStippled - "
+			"SelectObject () failed on hbmpFilledStipple\n");
 
 	  /* Create a pattern brush from the original stipple */
 	  hbrushStipple = CreatePatternBrush (pStipplePriv->hBitmap);
@@ -238,7 +256,6 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 		  0, 0,
 		  SRCCOPY);
 	  DEBUG_MSG("Preserved original bits");
-	  
 
 	  /*
 	   * Create a destination sized compatible bitmap to hold
@@ -254,12 +271,14 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	   * Select the masked foreground bitmap into the default memory DC;
 	   * this should pop the drawable bitmap out of the default DC.
 	   */
-	  SelectObject (pGCPriv->hdcMem, hbmpMaskedForeground);
+	  if (SelectObject (pGCPriv->hdcMem, hbmpMaskedForeground) == NULL)
+	    FatalError ("winFillSpans () - DRAWABLE_PIXMAP - FillStippled - "
+			"SelectObject () failed on hbmpMaskedForeground\n");
 
 	  /* Free the original drawable */
 	  DeleteObject (pPixmapPriv->hBitmap);
 	  pPixmapPriv->hBitmap = NULL;
-	  pPixmapPriv->pvBits = NULL;
+	  pPixmapPriv->pbBits = NULL;
 
 	  /* Select the stipple brush into the default memory DC */
 	  SelectObject (pGCPriv->hdcMem, hbrushStipple);
@@ -281,7 +300,6 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 		  SRCCOPY);
 	  DEBUG_MSG("Masked foreground bitmap");
       
-
 	  /*
 	   * Combine the masked foreground with the masked drawable;
 	   * hbmpFilledStipple will contain the drawable stipple filled
@@ -306,6 +324,7 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  DEBUG_MSG("Completed stipple");
 	  
 	  /* Release the stipple DC */
+	  SelectObject (hdcStipple, hbmpOrig);
 	  DeleteDC (hdcStipple);
       
 	  /* Pop the stipple pattern brush out of the default mem DC */
@@ -314,15 +333,15 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  /* Destroy the original stipple pattern brush */
 	  DeleteObject (hbrushStipple);
 
-	  /* Select the result into the default memory DC */
-	  SelectObject (pGCPriv->hdcMem, hbmpFilledStipple);
+	  /* Clear the memory DC */
+	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
 
 	  /* Free the masked foreground bitmap */
 	  DeleteObject (hbmpMaskedForeground);
 
 	  /* Point the drawable to the new bitmap */
 	  pPixmapPriv->hBitmap = hbmpFilledStipple;
-	  pPixmapPriv->pvBits = pvbitsFilledStipple;
+	  pPixmapPriv->pbBits = pbbitsFilledStipple;
 	  break;
 
 	case FillTiled:
@@ -339,8 +358,6 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 	}
 
-      /* Push the drawable pixmap out of the GC HDC */
-      SelectObject (pGCPriv->hdcMem, hbmpOrig);
       break;
   
     case DRAWABLE_WINDOW:
@@ -365,6 +382,9 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
 
 	  /* Select the tile into a DC */
 	  hbmpOrig = SelectObject (pGCPriv->hdcMem, pTilePriv->hBitmap);
+	  if (hbmpOrig == NULL)
+	    FatalError ("winFillSpans - DRAWABLE_WINDOW - FillTiled - "
+			"SelectObject () failed on pTilePric->hBitmap\n");
 
 	  /* Enumerate spans */
 	  for (iSpan = 0; iSpan < iSpans; ++iSpan)
@@ -387,7 +407,6 @@ winFillSpansNativeGDI (DrawablePtr	pDrawable,
       
 	  /* Push the drawable pixmap out of the GC HDC */
 	  SelectObject (pGCPriv->hdcMem, hbmpOrig);
-
 	  break;
 
 	case FillOpaqueStippled:

@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.3 2001/07/02 09:37:17 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/wingetsp.c,v 1.4 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -46,35 +46,30 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
   DDXPointPtr		pPoint = NULL;
   int			*piWidth = NULL;
   char			*pDst = pDsts;
-  HBITMAP		hbmpOrig = NULL;
-  HDC			hdcMem;
+  int			iBytesToCopy;
 
   /* Branch on the drawable type */
   switch (pDrawable->type)
     {
     case DRAWABLE_PIXMAP:
+      ErrorF ("winGetSpans () - DRAWABLE_PIXMAP %08x\n",
+	      pDrawable);
+
       pPixmap = (PixmapPtr) pDrawable;
       pPixmapPriv = winGetPixmapPriv (pPixmap);
-
-      /* Create a temporary DC */
-      hdcMem = CreateCompatibleDC (NULL);
-
-      /* Select the drawable pixmap into a DC */
-      hbmpOrig = SelectObject (hdcMem, pPixmapPriv->hBitmap);
 
       /* Loop through spans */
       for (iSpan = 0; iSpan < iSpans; ++iSpan)
 	{
 	  pPoint = pPoints + iSpan;
 	  piWidth = piWidths + iSpan;
+	  
+	  iBytesToCopy = PixmapBytePad (*piWidth, pDrawable->depth);
 
-	  /* Grab the bits from the DIB */
-	  GetDIBits (hdcMem, 
-		     pPixmapPriv->hBitmap,
-		     pPoint->y, 1, 
-		     pDst, 
-		     pPixmapPriv->pbmih, 
-		     0);
+	  memcpy (pDst,
+		  pPixmapPriv->pbBits
+		  + pPixmapPriv->dwScanlineBytes * pPoint->y,
+		  iBytesToCopy);
 
 	  ErrorF ("(%dx%dx%d) (%d,%d) w: %d\n",
 		  pDrawable->width, pDrawable->height, pDrawable->depth,
@@ -83,12 +78,6 @@ winGetSpansNativeGDI (DrawablePtr	pDrawable,
 	  /* Calculate offset of next bit destination */
 	  pDst += 4 * ((*piWidth + 31) / 32);
 	}
-      
-      /* Push the drawable pixmap out of the GC HDC */
-      SelectObject (hdcMem, hbmpOrig);
-
-      /* Delete the temporary DC */
-      DeleteDC (hdcMem);
       break;
 
     case DRAWABLE_WINDOW:

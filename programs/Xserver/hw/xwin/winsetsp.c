@@ -27,7 +27,7 @@
  *
  * Authors:	Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.4 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winsetsp.c,v 1.5 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -49,9 +49,12 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
   DDXPointPtr		pPoint = NULL;
   char			*pSrc = pSrcs;
   HDC			hdcMem;
-  BITMAPINFOHEADER	bmihNew;
+  BITMAPINFOHEADER	*pbmih;
   HBITMAP		hBitmap = NULL;
-  HBITMAP		hOrigObj = NULL;
+  HBITMAP		hbmpOrig = NULL;
+  DEBUG_FN_NAME("winSetSpans");
+  DEBUGVARS;
+  DEBUGPROC_MSG;
 
   /* Branch on the drawable type */
   switch (pDrawable->type)
@@ -61,7 +64,10 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
       pPixmapPriv = winGetPixmapPriv (pPixmap);
       
       /* Select the drawable pixmap into a DC */
-      hOrigObj = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
+      hbmpOrig = SelectObject (pGCPriv->hdcMem, pPixmapPriv->hBitmap);
+      if (hbmpOrig == NULL)
+	FatalError ("winSetSpans () - DRAWABLE_PIXMAP - SelectObject () "
+		    "failed on pPixmapPriv->hBitmap\n");
 
       /* Branch on the raster operation type */
       switch (pGC->alu)
@@ -79,7 +85,8 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case GXcopy:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXcopy\n");
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXcopy %08x\n",
+		  pDrawable);
 
 	  /* Loop through spans */
 	  for (iSpan = 0; iSpan < iSpans; ++iSpan)
@@ -92,7 +99,8 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 			 pPixmapPriv->hBitmap,
 			 pPoint->y, 1, 
 			 pSrc,
-			 pPixmapPriv->pbmih, 0);
+			 (BITMAPINFO *) pPixmapPriv->pbmih,
+			 0);
 	  
 	      /* Display some useful information */
 	      ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
@@ -102,6 +110,17 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	      /* Calculate offset of next bit source */
 	      pSrc += 4 * ((*piWidth  + 31) / 32);
 	    }
+
+	  /*
+	   * REMOVE - Visual verification only.
+	   */
+	  BitBlt (pGCPriv->hdc, 
+		  pDrawable->width * 2, pDrawable->height,
+		  pDrawable->width, pDrawable->height,
+		  pGCPriv->hdcMem,
+		  0, 0, 
+		  SRCCOPY);
+	  DEBUG_MSG ("DRAWABLE_PIXMAP - GXcopy");
 	  break;
 
 	case GXandInverted:
@@ -129,10 +148,11 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	  break;
 
 	case GXinvert:
-	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXinvert\n");
+	  ErrorF ("winSetSpans () - DRAWABLE_PIXMAP - GXinvert %08x\n",
+		  pDrawable);
 
 	  /* Create a temporary DC */
-	  hdcMem = CreateCompatibleDC (pGCPriv->hdc);
+	  hdcMem = CreateCompatibleDC (NULL);
  
 	  /* Loop through spans */
 	  for (iSpan = 0; iSpan < iSpans; ++iSpan)
@@ -140,40 +160,37 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	      piWidth = piWidths + iSpan;
 	      pPoint = pPoints + iSpan;
 
-	      /* Setup the bitmap header info */
-	      bmihNew.biSize = sizeof (BITMAPINFOHEADER);
-	      bmihNew.biWidth = *piWidth;
-	      bmihNew.biHeight = 1;
-	      bmihNew.biPlanes = 1;
-	      bmihNew.biBitCount = pDrawable->depth;
-	      bmihNew.biCompression = BI_RGB;
-	      bmihNew.biSizeImage = 0;
-	      bmihNew.biXPelsPerMeter = 0;
-	      bmihNew.biYPelsPerMeter = 0;
-	      bmihNew.biClrUsed = 0;
-	      bmihNew.biClrImportant = 0;
+	      /* Create a one-line DIB for the bit data */
+	      hBitmap = winCreateDIBNativeGDI (*piWidth, 1, pDrawable->depth,
+					       (BITMAPINFO *) &pbmih, NULL);
 
-	      /* Create a DIB from span line */
-	      if (pDrawable->depth == 1)
-		{
-		  hBitmap = CreateDIBitmap (NULL, &bmihNew, 0, pSrc, NULL, 0);
-		}
-	      else
-		{
-		  hBitmap = CreateDIBitmap (hdcMem,
-					    &bmihNew, 0, pSrc, NULL, 0);
-		}
-	      
 	      /* Select the span line line bitmap into the temporary DC */
-	      hOrigObj = SelectObject (hdcMem, hBitmap);
+	      hbmpOrig = SelectObject (hdcMem, hBitmap);
+	      
+	      /* Blast bit data to the one-line DIB */
+	      SetDIBits (hdcMem, hBitmap,
+			 0, 1,
+			 pSrc,
+			 (BITMAPINFO *) pbmih,
+			 DIB_RGB_COLORS);
 
 	      /* Blit the span line to the drawable */
 	      BitBlt (pGCPriv->hdcMem,
 		      pPoint->x, pPoint->y,
-		      *piWidth / pDrawable->depth, 1,
+		      *piWidth, 1,
 		      hdcMem,
 		      0, 0, 
 		      NOTSRCCOPY);
+
+	      /*
+	       * REMOVE - Visual verification only.
+	       */
+	      BitBlt (pGCPriv->hdc,
+		      pDrawable->width, pDrawable->height + pPoint->y,
+		      *piWidth, 1,
+		      hdcMem,
+		      0, 0, 
+		      SRCCOPY);
 
 	      /* Display some useful information */
 	      ErrorF ("(%dx%dx%d) (%d,%d) w: %d ps: %08x\n",
@@ -184,12 +201,26 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	      pSrc += 4 * ((*piWidth + 31) / 32);
 
 	      /* Pop the span line bitmap out of the memory DC */
-	      SelectObject (hdcMem, hOrigObj);
+	      SelectObject (hdcMem, hbmpOrig);
 
 	      /* Free the temporary bitmap */
 	      DeleteObject (hBitmap);
 	      hBitmap = NULL;
 	    }
+
+	 
+
+	  /*
+	   * REMOVE - Visual verification only.
+	   */
+	  DEBUG_MSG ("DRAWABLE_PIXMAP - GXinvert - Prior to invert");
+	  BitBlt (pGCPriv->hdc, 
+		  pDrawable->width * 2, pDrawable->height,
+		  pDrawable->width, pDrawable->height,
+		  pGCPriv->hdcMem,
+		  0, 0, 
+		  SRCCOPY);
+	  DEBUG_MSG ("DRAWABLE_PIXMAP - GXinvert - Finished invert");
 
 	  /* Release the scratch DC */
 	  DeleteDC (hdcMem);
@@ -221,7 +252,7 @@ winSetSpansNativeGDI (DrawablePtr	pDrawable,
 	}
 
       /* Push the drawable pixmap out of the GC HDC */
-      SelectObject (pGCPriv->hdcMem, hOrigObj);
+      SelectObject (pGCPriv->hdcMem, hbmpOrig);
       break;
 
     case DRAWABLE_WINDOW:

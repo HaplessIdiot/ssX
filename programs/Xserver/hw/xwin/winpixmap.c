@@ -28,7 +28,7 @@
  * Authors:	drewry, september 1986
  *		Harold L Hunt II
  */
-/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.6 2001/07/31 09:46:57 alanh Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xwin/winpixmap.c,v 1.7 2001/09/13 08:25:45 alanh Exp $ */
 
 #include "win.h"
 
@@ -36,13 +36,11 @@
 /* See mfb/mfbpixmap.c - mfbCreatePixmap() */
 PixmapPtr
 winCreatePixmapNativeGDI (ScreenPtr pScreen,
-			  int nWidth, int nHeight,
-			  int nDepth)
+			  int iWidth, int iHeight,
+			  int iDepth)
 {
   winPrivPixmapPtr	pPixmapPriv = NULL;
   PixmapPtr		pPixmap = NULL;
-  BITMAPINFOHEADER	*pbmih = NULL;
-  HDC			hdcMem = NULL;
 
   /* Allocate pixmap memory */
   pPixmap = AllocatePixmap (pScreen, 0);
@@ -53,21 +51,21 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
     }
 
   ErrorF ("winCreatePixmap () - w %d h %d d %d bw %d\n",
-	  nWidth, nHeight, nDepth,
-	  PixmapBytePad (nWidth, nDepth));
+	  iWidth, iHeight, iDepth,
+	  PixmapBytePad (iWidth, iDepth));
 
   /* Setup pixmap values */
   pPixmap->drawable.type = DRAWABLE_PIXMAP;
   pPixmap->drawable.class = 0;
   pPixmap->drawable.pScreen = pScreen;
-  pPixmap->drawable.depth = nDepth;
-  pPixmap->drawable.bitsPerPixel = BitsPerPixel (nDepth);
+  pPixmap->drawable.depth = iDepth;
+  pPixmap->drawable.bitsPerPixel = BitsPerPixel (iDepth);
   pPixmap->drawable.id = 0;
   pPixmap->drawable.serialNumber = NEXT_SERIAL_NUMBER;
   pPixmap->drawable.x = 0;
   pPixmap->drawable.y = 0;
-  pPixmap->drawable.width = nWidth;
-  pPixmap->drawable.height = nHeight;
+  pPixmap->drawable.width = iWidth;
+  pPixmap->drawable.height = iHeight;
   pPixmap->devKind = 0;
   pPixmap->refcnt = 1;
   pPixmap->devPrivate.ptr = NULL;
@@ -78,79 +76,25 @@ winCreatePixmapNativeGDI (ScreenPtr pScreen,
   /* Initialize pixmap privates */
   pPixmapPriv->hBitmap = NULL;
   pPixmapPriv->hdcSelected = NULL;
-  pPixmapPriv->pvBits = NULL;
-  pPixmapPriv->dwScanlineBytes = PixmapBytePad (nWidth, nDepth);
+  pPixmapPriv->pbBits = NULL;
+  pPixmapPriv->dwScanlineBytes = PixmapBytePad (iWidth, iDepth);
 
   /* Check for zero width or height pixmaps */
-  if (nWidth == 0 || nHeight == 0)
+  if (iWidth == 0 || iHeight == 0)
     {
       /* Don't allocate a real pixmap, just set fields and return */
       return pPixmap;
     }
 
-  /* Create a scratch DC */
-  hdcMem = CreateCompatibleDC (NULL);
-  if (hdcMem == NULL)
-    {
-      ErrorF ("winCreatePixmapNativeGDI () - CreateCompatibleDC () failed\n");
-      return NULL;
-    }
-
-  /* Allocate bitmap info header */
-  pbmih = (BITMAPINFOHEADER*) xalloc (sizeof (BITMAPINFOHEADER)
-				      + 256 * sizeof (RGBQUAD));
-  if (pbmih == NULL)
-    {
-      ErrorF ("winCreatePixmapNativeGDI () - xalloc () failed\n");
-      return FALSE;
-    }
-  ZeroMemory (pbmih, sizeof(BITMAPINFOHEADER) + 256 * sizeof (RGBQUAD));
-
-  /* Save a pointer to the bitmap info header */
-  pPixmapPriv->pbmih = pbmih;
-
-  /* Describe bitmap to be created */
-  pbmih->biSize = sizeof (BITMAPINFOHEADER);
-  pbmih->biWidth = nWidth;
-  pbmih->biHeight = -nHeight;
-  pbmih->biPlanes = 1;
-  pbmih->biBitCount = nDepth;
-  pbmih->biCompression = BI_RGB;
-  pbmih->biSizeImage = 0;
-  pbmih->biXPelsPerMeter = 0;
-  pbmih->biYPelsPerMeter = 0;
-  pbmih->biClrUsed = 0;
-  pbmih->biClrImportant = 0;
-
-#if CYGDEBUG 
-  ErrorF ("winCreatePixmapNativeGDI () - Calling CreateDIBSection ()\n");
-#endif
-
-  /* Create a DIB with a bit pointer */
-  pPixmapPriv->hBitmap = CreateDIBSection (hdcMem,
-					   (BITMAPINFO *) pbmih,
-					   DIB_RGB_COLORS,
-					   &pPixmapPriv->pvBits,
-					   NULL,
-					   0);
-  if (pPixmapPriv->hBitmap == NULL)
-    {
-      ErrorF ("winCreatePixmapNativeGDI () - CreateDIBSection () failed\n");
-      return NullPixmap;
-    }
-
-#if CYGDEBUG
-  ErrorF ("winCreatePixmapNativeGDI () - CreateDIBSection () returned\n");
-#endif
-
-  /* Free the scratch DC */
-  DeleteDC (hdcMem);
-  hdcMem = NULL;
+  /* Create a DIB for the pixmap */
+  pPixmapPriv->hBitmap = winCreateDIBNativeGDI (iWidth, iHeight, iDepth,
+						&pPixmapPriv->pbBits,
+						&pPixmapPriv->pbmih);
 
 #if CYGDEBUG
   ErrorF ("winCreatePixmap () - Created a pixmap %08x, %dx%dx%d, for " \
 	  "screen: %08x\n",
-	  pPixmapPriv->hBitmap, nWidth, nHeight, nDepth, pScreen);
+	  pPixmapPriv->hBitmap, iWidth, iHeight, iDepth, pScreen);
 #endif
 
   return pPixmap;
