@@ -849,12 +849,16 @@
 
      o  Elsa GmbH, Aachen, Germany
 
+     o  Genoa Systems Corporation
+
+     o  Hercules Computer Technology, Inc.
+
      o  Dirk Hohndel
+
 
      o  Frank & Paige McCormick
 
      o  InfoMagic <http://www.infomagic.com/>, Flagstaff, AZ
-
 
      o  LunetIX Softfair, Berlin, Germany
 
@@ -875,6 +879,8 @@
      o  Red Hat Software, Chapel Hill, NC
 
      o  SPEA Software AG, Starnberg, Germany
+
+     o  STB Systems
 
      o  Clifford M Stein
 
@@ -1022,13 +1028,7 @@
   building the distribution.
 
   $XConsortium: README.sgml,v 1.4 95/01/27 16:14:29 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.23 1995/05/27 03:11:47 dawes Exp $
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/README.sgml,v 3.24 1995/07/21 14:40:51 dawes Exp $
 
 
 

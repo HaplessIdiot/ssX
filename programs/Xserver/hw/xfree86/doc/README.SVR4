@@ -55,8 +55,8 @@
         "Microport Mode", and the 3-key mode is called "Compatible
         Mode".  You enter Microport Mode by pressing Alt-SysReq-m.  You
         enter Compatible Mode by pressing Alt-SysReq-c.  So all you need
-        to do is press Alt-SysReq-c after to allow X clients access to
-        the Alt-Fn sequences.
+        to do is press Alt-SysReq-c after starting the X server to allow
+        X clients access to the Alt-Fn sequences.
 
      Esix
         Esix has no keyboard-driven way to switch modes.  There are two
@@ -181,7 +181,7 @@
            driver directly, but the mouse operation is "jerky".
 
 
-        Microport SVR4 34.1
+        Microport SVR4 [34].1
            Xqueue works fine, and the asy driver can also be used
            directly giving smooth mouse operation.
 
@@ -429,7 +429,7 @@
 
 
   $XConsortium: SVR4.sgml,v 1.2 95/01/16 13:17:49 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.5 1995/07/07 15:40:19 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SVR4.sgml,v 3.6 1995/07/21 14:40:56 dawes Exp $
 
 
 

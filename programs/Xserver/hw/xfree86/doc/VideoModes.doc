@@ -321,13 +321,15 @@
         frequencies are better, as they reduce flicker.  60Hz is good,
         VESA-standard 72Hz is better.  Compute it as
 
-         RR = DCF / (HFL * VFL)
+                  RR = DCF / (HFL * VFL)
 
-        Note that the product in the denominator is *not* the same as
-        the monitor's visible resolution, but typically somewhat larger.
-        We'll get to the details of this below.
 
+
+     Note that the product in the denominator is *not* the same as the
+     monitor's visible resolution, but typically somewhat larger.  We'll
+     get to the details of this below.
   About Bandwidth:
+
   Monitor makers like to advertise high bandwidth because it constrains
   the sharpness of intensity and color changes on the screen.  A high
   bandwidth means smaller visible details.
@@ -394,16 +396,20 @@
   You need to understand this concept to design a configuration which
   trades off resolution against flicker in whatever way suits your
   needs.
+
+
   5.  Tradeoffs in Configuring your System
 
 
   Another way to look at the formula we derived above is
 
-  DCF = RR * HFL * VFL
+               DCF = RR * HFL * VFL
+
+
 
   That is, your dot clock is fixed.  You can use those dots per second
-  to buy either refresh rate, horizontal resolution, or vertical
-  resolution.  If one of those increases, one or both of the others must
+  to buy either refresh rate, horizontal resolution, or vertical resolu-
+  tion.  If one of those increases, one or both of the others must
   decrease.
 
   Note, though, that your refresh rate cannot be greater than the
@@ -586,7 +592,6 @@
                                 HGT1         HGT2
 
 
-
   Now, we would like to place a sync pulse of length HSP as shown above,
   ie, between the end of clock ticks for display data and the end of
   clock ticks for the entire frame.  Why so?  because if we can achieve
@@ -619,8 +624,8 @@
   btw, is not a bad value to start with when experimenting).
 
   Now, using the 65Mhz clock timing above, we know HSP is equivalent to
-  247 clock ticks (= 65x10**6 * 3.8 *10**(-6)) recall M=10**6,
-  micro=10**(-6)
+  247 clock ticks (= 65x10**6 * 3.8 *10**(-6)) [recall M=10**6,
+  micro=10**(-6)]
 
   Vertical Sync:
 
@@ -785,7 +790,7 @@
   Xconfig as follows:
 
 
-       < name >   DCF     HR  SH1 SH2   HFL   VR  SV1 SV2 VFL
+  < name >   DCF     HR  SH1 SH2   HFL   VR  SV1 SV2 VFL
 
 
 
@@ -851,9 +856,7 @@
   present speeds, interlaced monitors are a bad idea for X.
 
   Q. Can you summarize what we have discussed so far?
-
   A. In a nutshell:
-
 
 
      1. for any fixed driving frequency, raising max resolution incurs
@@ -922,6 +925,7 @@
   have to calculate how much time it takes to display a single line.
   That's easy, because we know each line is 1088 dots and each dot is
   .025 microsecond.  Each line is, therefore,
+
   (1088 dots/line) x (.025 microseconds/dot) = 27.2 microseconds/line
 
   Since we chose 800 visible dots per line, let's choose the number of
@@ -1054,6 +1058,7 @@
   64 microseconds long.  In terms of lines, 64 microseconds is
 
   (64 microseconds/pulse) / (28.4 microseconds/line) = 2.25 lines/pulse
+
   We round 2.25 up to 3 lines for the vertical sync pulse.
 
   The manual says the time between the last displayed line and the start
@@ -1097,11 +1102,6 @@
   the resolution I wanted.
 
   Example: Timings I have tried:
-
-
-
-
-
 
 
 
@@ -1230,7 +1230,7 @@
   your refresh rate, and vice-versa.
 
   $XConsortium: VidModes.sgml,v 1.3 95/01/27 16:14:33 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.5 1995/01/28 16:02:40 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/VidModes.sgml,v 3.6 1995/07/21 14:40:58 dawes Exp $
 
 
 

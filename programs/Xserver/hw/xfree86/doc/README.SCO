@@ -506,7 +506,7 @@
                 -al /dev/ttyp0 /dev/ptyp0" to get the major numbers
                 for the slave and master drivers.  Use mknod to
                 create the extra devices using the naming schemes
-                ttyp0-9a-f and ptyp0-9a-f.
+                ttyp[0-9a-f] and ptyp[0-9a-f].
 
              3.2.4
                 Run "mkdev ptty" and increase the number of ptty's.
@@ -680,7 +680,7 @@
 
 
   $XConsortium: SCO.sgml,v 1.4 95/01/27 16:14:31 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.6 1995/01/28 16:02:21 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/SCO.sgml,v 3.7 1995/07/21 14:40:54 dawes Exp $
 
 
 

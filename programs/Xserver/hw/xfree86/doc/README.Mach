@@ -35,10 +35,10 @@
 
   Lastly, only the ATI Mach32 Accelerator server (XF86_Mach32) has been
   extensively tested under Mach 3.0.  It works reasonably and the OS
-  intensive features, like linear memory non-bank switched, seem to work
-  fine.  An S3 (801) board on an ISA bus has been tested and also seems
-  to work.  We have not checked the non-banked memory feature on S3 or
-  other cards.
+  intensive features, like linear memory (non-bank switched), seem to
+  work fine.  An S3 (801) board on an ISA bus has been tested and also
+  seems to work.  We have not checked the non-banked memory feature on
+  S3 or other cards.
 
 
 
@@ -129,8 +129,8 @@
   different between the Mach 2.5 kernel and Mach 3.0 kernel, but the
   Mach 3.0 kernel was designed to be upwardly compatible with Mach 2.5
   kernel.  This means that if you build XFree86 with Mach 2.5 includes
-  and libraries the default in the Tahoe Environment the binaries will
-  run on either Mach 3.0 or Mach 2.5.
+  and libraries (the default in the Tahoe Environment), the binaries
+  will run on either Mach 3.0 or Mach 2.5.
 
 
   If you choose to build with the Mach 3.0 headers and libraries, the
@@ -158,7 +158,6 @@
   XFree86 using any application environment and with either Mach 2.5 or
   Mach 3.0.  Please let us know of any difficulties.
 
-       >
        ++Some changes are necessary to the Original Tahoe environment to build++
        ++X11R6.  A few "new" functions are called and were thus added to      ++
        ++/lib/libc.a(mbtowc.c, putenv.c, strdup.c, and strtol.c) and a few old++
@@ -191,7 +190,8 @@
   read/write.  There are many ways to achieve this effect.
 
   $XConsortium: Mach.sgml,v 1.3 95/01/27 16:14:25 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.4 1995/01/28 16:01:49 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach.sgml,v 3.5 1995/07/21 14:40:44 dawes Exp $
+
 
 
 

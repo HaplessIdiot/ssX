@@ -57,9 +57,9 @@
 
   2.  Optimizing the speed of the Mach64 X server
 
-  To maximize the speed of the Mach64 X server, I suggest that use the
-  following maximum resolutions.  This will allow room for the font and
-  pixmap caches and a hardware cursor.
+  To maximize the speed of the Mach64 X server, I suggest that you use
+  the following maximum resolutions.  This will allow room for the font
+  and pixmap caches and a hardware cursor.
 
 
 
@@ -122,14 +122,16 @@
         This option allows you to turn off block write mode.  Block
         write mode only works on certain types of VRAM cards, and this
         option has no effect on DRAM based cards.  If you see noise on
-        the screen that captured via xmag, then it is probably a problem
-        with block write mode.
+        the screen that can be captured via xmag, then it is probably a
+        problem with block write mode.  This ``noise'' usually looks
+        like bits of windows/menus repeated on the screen.
 
      Option "block_write"
         This option allows you to turn on block write mode.  Block write
         mode only works on certain types of VRAM cards, and this option
         has no effect on DRAM based cards.  If you want to override the
         probed default, you can use this option.
+
      Option "power_saver"
         This option allows the server to use the power saving features
         of certain "green" monitors instead of blanking when the screen
@@ -150,9 +152,7 @@
 
 
 
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.4 1995/07/07 15:40:16 dawes Exp $
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/Mach64.sgml,v 3.5 1995/07/21 14:40:46 dawes Exp $
 
 
 

@@ -1,7 +1,7 @@
   README for XFree86 3.1.2 on NetBSD
   Rich  Murphey, David Dawes, Marc  Wandschneider, Mark  Weaver,
   Matthieu Herrb
-  17 July 1995
+  Last modified on: 19 July 1995
 
   1.  What and Where is XFree86?
 
@@ -19,7 +19,7 @@
   ftp.XFree86.org:/pub/XFree86/current
   <ftp://ftp.XFree86.org/pub/XFree86/current>
 
-  Binaries for NetBSD 1.0 are available from:
+  Binaries for NetBSD 1.0 and NetBSD-current are available from:
 
   ftp.XFree86.org:/pub/XFree86/current/binaries/NetBSD
   <ftp://ftp.XFree86.org/pub/XFree86/current/binaries/NetBSD>
@@ -32,14 +32,14 @@
 
   ftp.eecs.umich.edu:/BSD/XFree86 <ftp://ftp.eecs.umich.edu/BSD/XFree86>
 
-  If you're still running NetBSD 0.9, you'll have to build it from the
-  source.  If you've done it and want to share your binaries, please let
-  us know.
+  If you're still running NetBSD 0.9, you should think about upgrading
+  to a newer version of NetBSD first.  If you don't you'll have to build
+  XFree86 from the sources (which has not been tested on NetBSD 0.9)
 
-  This release has also been tested on NetBSD-current of January, 19th
-  1995 with option "COMPAT_10" in the kernel config file.
+  This release has also been tested on NetBSD-current of July, 17th 1995
+  with option "COMPAT_10" in the kernel config file.
 
-  XFree86 now also builds on NetBSD/sparc. See section ``Building on
+  XFree86 3.1.2 also builds on NetBSD/sparc. See section ``Building on
   NetBSD/sparc'' for details.
 
 
@@ -159,7 +159,7 @@
      directory by using the -p option to pkg_add. See pkg_add(8) for
      details. Then make a symbolic link /usr/X11R6 to this directory.
 
-  Continue with item ``Setting XWINHOME'' below.
+  Continue with item ``Additional Setup'' below.
 
 
   3.2.  Installing the packages without pkg_add
@@ -219,7 +219,10 @@
 
 
 
-     3. Set the XWINHOME environment variable to the path where you
+  3.3.  Additional setup
+
+
+     1. Set the XWINHOME environment variable to the path where you
         installed XFree86. Under csh  type:
 
            setenv XWINHOME /usr/X11R6
@@ -240,7 +243,7 @@
      Also, don't forget to include these lines in your .login or .pro-
      file for permanent use.
 
-     4. Create a symbolic link in ${XWINHOME}/bin named ``X'' that
+     2. Create a symbolic link in ${XWINHOME}/bin named ``X'' that
         points to the server that matches your video card: See the
         XF86_* man pages for hardware details. For example, if you have
         an ET4000 based SVGA card:
@@ -253,16 +256,21 @@
 
 
 
-     5. Install support for the shared libraries: add the following
+     3. Install support for the shared libraries: add the following
         lines at the end of /etc/rc.local:
 
 
-           if [ -d /usr/X11R6/lib ]; then
-              echo 'Adding X shared libraries'
-              ldconfig /usr/X11R6/lib
-           fi
 
-     6. Reboot your machine to take all previous modifications into
+
+      if [ -d /usr/X11R6/lib ]; then
+         echo 'Adding X shared libraries'
+         ldconfig /usr/X11R6/lib
+      fi
+
+
+
+
+     4. Reboot your machine to take all previous modifications into
         account.
 
   If X was already installed on your machine and you have customized
@@ -312,16 +320,43 @@
   card and mouse you have.  You must create it to tell the server what
   specific hardware you have.
 
-  If you plan to fine tune the screen size or position on your monitor
-  you'll also need the specs for sync frequencies from your monitor's
-  manual.
+  You'll need info on your hardware:
+
+     o  Your mouse type, baud rate and it's /dev entry.
+
+     o  The video card's chipset (e.g. ET4000, S3, etc).
+
+     o  Your monitor's sync frequencies.
+
+  XFree86 3.1 and later releases uses a new configuration file format.
+
+  The recommended way to generate an XF86Config file is to use the
+  xf86config utility.  Also, there is a sample file installed as
+  /usr/X11R6/lib/X11/XF86Config.eg, which can be used as a starting
+  point.
+
+  For details about the XF86Config file format, refer to the
+  XF86Config(4/5) manual page.
+
+  In order to protect your hardware from damage, the server will no
+  longer read XF86Config files from a user's home directory, but
+  requires that it be in /etc/XF86Config,
+  /usr/X11R6/lib/X11/XF86Config.hostname or
+  /usr/X11R6/lib/X11/XF86Config.
+
+  Once you've set up a XF86Config file, you can fine tune the video
+  modes with the xvidtune utility.
+
+  If you have a Xconfig file for XFree86 2.x, use reconfig to translate
+  part of it into the new format:
+     # reconfig <Xconfig >XF86Config
+
+  and complete the rest according to the XF86Config man page and the
+  XF86Config.sample file as a template.
+
 
   If your mouse does not work try using kermit or tip to connect to the
   mouse serial port and verify that it does indeed generate characters.
-
-  If you've been running a previous version of XFree86, you can get the
-  video card and monitor information from your previous Xconfig file.
-  Don't forget to update the font and RGB paths.
 
 
   5.1.  Configuring a PS/2 mouse for XFree86 on NetBSD
@@ -388,24 +423,18 @@
   If using pccons you get the message:
 
 
-
-
-
-
-
-
-  > XFree86 Version 3.1.2 / X Window System
-  > (protocol Version 11, revision 0, vendor release 6000)
-  > Operating System: NetBSD
-  > Configured drivers:
-  >   Mach8: accelerated server for ATI Mach-8 graphics adaptors
-  > (Patchlevel 0)
-  >
-  > Fatal server error:
-  > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
-  > Was expecting pccons driver with X support
-  > Check your kernel's console driver configuration and /dev entries
-  >
+       > XFree86 Version 3.1.2 / X Window System
+       > (protocol Version 11, revision 0, vendor release 6000)
+       > Operating System: NetBSD
+       > Configured drivers:
+       >   Mach8: accelerated server for ATI Mach-8 graphics adaptors
+       > (Patchlevel 0)
+       >
+       > Fatal server error:
+       > xf86OpenConsole: CONSOLE_X_MODE_OFF failed (Inappropriate ioctl for device)
+       > Was expecting pccons driver with X support
+       > Check your kernel's console driver configuration and /dev entries
+       >
 
 
 
@@ -416,10 +445,10 @@
 
   7.1.  Aperture Driver
 
-  By default NetBSD 0.9C and higher include a kernel security feature
-  that disable access to the /dev/mem device when in multi-users mode.
-  But XFree86 servers can take advantage (or require) linear access to
-  the display memory.
+  By default NetBSD 0.9C and higher include the BSD 4.4 kernel security
+  feature that disable access to the /dev/mem device when in multi-users
+  mode. But XFree86 servers can take advantage (or require) linear
+  access to the display memory.
 
   The P9000 and AGX servers require linear memory access, other
   accelerated servers can take advantage of it, but do not require it.
@@ -432,6 +461,7 @@
         comments in /usr/include/sys/systm.h.
 
         NetBSD-current users can also disable kernel security by adding
+        `option INSECURE' in their kernel configuration file.
 
      2. Install the NetBSD aperture driver:
 
@@ -445,26 +475,10 @@
 
 
 
-        b. On pre 1.0 versions of NetBSD modload does not execute post-
-           install scripts. If you're running NetBSD 1.0 or later skip
-           this. Else create the device manually:
+        If you use NetBSD-current, replace ``ap.o'' with ``ap-
+        current.o'' in the above lines.
 
-           WARNING: be sure to understand what you'll do before
-           proceeding
-
-           i. find out what major device number will be allocated to you
-              by modload. Modload allocates major numbers beginning at
-              29. So if ``ap'' is your only device driver module, it
-              will have major number 29. If it's the third, it will be
-              31...
-
-           ii.
-              goto the /dev directory and type: ``mknod xf86 c 29 0''
-              (replace 29 by the appropriate value if you load more than
-              one device driver module.
-
-
-        c. Reboot your system. XFree86 will auto-detect the aperture
+        b. Reboot your system. XFree86 will auto-detect the aperture
            driver if available.
 
 
@@ -509,9 +523,12 @@
   Then install your new kernel and re-boot:
 
 
-        # cp /netbsd /onetbsd
-        # cp netbsd /
-        # reboot
+
+
+
+   # cp /netbsd /onetbsd
+   # cp netbsd /
+   # reboot
 
 
 
@@ -521,11 +538,12 @@
 
   The server link kit allow you to rebuild just the X server with a
   minimum amount of disk space.  Just unpack it, make the appropriate
-  changes to the site.def, type ``./mkmf'' and ``make'' to link the
+  changes to the xf86site.def, type ``./mkmf'' and ``make'' to link the
   server.  See /usr/X11R6/lib/Server/README for more info.
 
   See INSTALL <INSTALL.html> for instructions on unbundling and building
   the source distribution.
+
   You should configure the distribution by editing
   xc/config/cf/xf86site.def  before compiling.  To compile the sources,
   invoke ``make World'' in the xc directory.
@@ -533,8 +551,8 @@
 
   8.1.  Console drivers
 
-  XFree86 3.1.0C has now a configuration option to select the console
-  drivers to use in xf86site.def:
+  XFree86 3.1.2 has a configuration option to select the console drivers
+  to use in xf86site.def:
 
      o  if you're using pccons put:
 
@@ -592,6 +610,8 @@
   support. If you're building on 0.9 or don't want shared libraries add
   the following line to xf86site.def:
 
+
+
        #define BuildBsdSharedLibs      NO
 
 
@@ -638,8 +658,6 @@
   of the symbol can be used to distinguish different BSD releases.  For
   example, code specific to the Net-2 and later releases can use:
 
-
-
        #if (BSD >= 199103)
 
 
@@ -657,6 +675,7 @@
 
 
        ld.so: undefined symbol _XtCvtStringToFont
+
 
   at run-time, you've stumbled on a semantic weakness of NetBSD 1.0
   dynamic linker. Applications that use libXmu also need libXt. If the
@@ -683,26 +702,7 @@
         machines in preparing the FreeBSD binary release.
 
   $XConsortium: NetBSD.sgml,v 1.4 95/01/27 16:14:26 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.14 1995/07/17 13:52:33 dawes Exp $
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/NetBSD.sgml,v 3.15 1995/07/21 14:40:47 dawes Exp $
 
 
 

@@ -19,7 +19,7 @@
         o  Added p9000gc16.c and p9000gc32.c for the higher bpp drawing
            functions (Henrik Harmsen)
 
-        o  Additions to p9000im.c: p9000ImageOpStipple. And
+        o  Additions to p9000im.c: p9000Image[Op]Stipple.  And
            p9000ImageFill.  Currently, there are small problems with
            ImageFill, and it is not being used. (Chris Mason)
 
@@ -47,7 +47,7 @@
         o  Fixed problem with line capping in accelerated line drawing.
            (Chris Mason)
 
-        o  Fixed p9000QuadAluGXset to be  0 rather than 1.  (Erik
+        o  Fixed p9000QuadAlu[GXset] to be  0 rather than 1.  (Erik
            Nygren)
 
      1995.01.14:
@@ -67,7 +67,7 @@
            clipping regions by using software clipping. There is still a
            bug which causes xtest to report Cap style incorrect for thin
            line and CapNotLast for the XDrawLines tests but not for the
-           XDrawLine or XDrawSegments tests fixed in 1995.01.15 patch.
+           XDrawLine or XDrawSegments tests [fixed in 1995.01.15 patch].
            (Chris Mason)
 
         o  Changed p9000blt.c, and p9000win.c to wait for the quad/blit
@@ -473,7 +473,7 @@
   acceleration, etc.  Please send any patches to me (nygren@mit.edu).
 
   $XConsortium: P9000.sgml,v 1.4 95/01/27 16:14:28 kaleb Exp $
-  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.11 1995/05/27 03:11:45 dawes Exp $
+  Generated from XFree86: xc/programs/Xserver/hw/xfree86/doc/sgml/P9000.sgml,v 3.12 1995/07/21 14:40:49 dawes Exp $
 
 
 
