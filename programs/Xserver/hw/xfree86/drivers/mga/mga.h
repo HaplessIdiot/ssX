@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.68 2000/12/01 14:28:57 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga.h,v 1.70 2000/12/06 15:35:19 eich Exp $ */
 /*
  * MGA Millennium (MGA2064W) functions
  *
@@ -414,4 +414,5 @@ void MGAPointerMoved(int index, int x, int y);
 void MGAInitVideo(ScreenPtr pScreen);
 void MGAResetVideo(ScrnInfoPtr pScrn); 
 
+double G450SetPLLFreq(ScrnInfoPtr pScrn, long f_out);
 #endif

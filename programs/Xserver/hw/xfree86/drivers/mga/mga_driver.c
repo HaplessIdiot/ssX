@@ -43,7 +43,7 @@
  *		Fixed 32bpp hires 8MB horizontal line glitch at middle right
  */
  
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.186 2000/12/27 04:57:12 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/mga/mga_driver.c,v 1.187 2001/01/21 21:19:28 tsi Exp $ */
 
 /*
  * This is a first cut at a non-accelerated version to work with the
@@ -203,6 +203,7 @@ typedef enum {
     OPTION_TEXTURED_VIDEO,
     OPTION_XAALINES,
     OPTION_CRTC2HALF,
+    OPTION_CRTC2RAM,
     OPTION_INT10,
     OPTION_AGP_MODE_2X,
     OPTION_AGP_MODE_4X,
@@ -233,6 +234,7 @@ static OptionInfoRec MGAOptions[] = {
     { OPTION_TEXTURED_VIDEO,	"TexturedVideo",OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_XAALINES,		"XAALines",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_CRTC2HALF,		"Crtc2Half",	OPTV_BOOLEAN,	{0}, FALSE },
+    { OPTION_CRTC2RAM,		"Crtc2Ram",	OPTV_INTEGER,	{0}, FALSE },
     { OPTION_INT10,		"Int10",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_AGP_MODE_2X,	"AGPMode2x",	OPTV_BOOLEAN,	{0}, FALSE },
     { OPTION_AGP_MODE_4X,	"AGPMode4x",	OPTV_BOOLEAN,	{0}, FALSE },
@@ -1368,9 +1370,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     xf86ProcessOptions(pScrn->scrnIndex, pScrn->options, MGAOptions);
 
     pMga->softbooted = FALSE;
-   if (xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
-      xf86LoadSubModule(pScrn, "int10"))
-   {
+    if (xf86ReturnOptValBool(MGAOptions, OPTION_INT10, FALSE) &&
+        xf86LoadSubModule(pScrn, "int10")) {
         xf86Int10InfoPtr pInt;
 
         xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Initializing int10\n");
@@ -1382,7 +1383,6 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     /* Set the bits per RGB for 8bpp mode */
     if (pScrn->depth == 8) 
 	pScrn->rgbBits = 8;
-
 
     /*
      * Set the Chipset and ChipRev, allowing config file entries to
@@ -1412,13 +1412,15 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
 
 #ifdef USEMGAHAL
-   if (HAL_CHIPSETS && !xf86ReturnOptValBool(MGAOptions, OPTION_NOHAL, FALSE)
-     && xf86LoadSubModule(pScrn, "mga_hal")) {
+    if (HAL_CHIPSETS && !xf86ReturnOptValBool(MGAOptions, OPTION_NOHAL, FALSE)
+        && xf86LoadSubModule(pScrn, "mga_hal")) {
 	 xf86LoaderReqSymLists(halSymbols, NULL);
 	 xf86DrvMsg(pScrn->scrnIndex, X_INFO,"Matrox HAL module used\n");
 	 pMga->HALLoaded = TRUE;
-       } else 
+       } else {
+	 xf86DrvMsg(pScrn->scrnIndex, X_INFO, "Matrox HAL module not found - using builtin mode setup instead\n");
 	 pMga->HALLoaded = FALSE;
+       }
 #endif
 
     /*
@@ -1792,7 +1794,7 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
 	    xf86GetOptValBool(MGAOptions, OPTION_CRTC2HALF, &UseHalf);
 	    adjust = pScrn->videoRam / 2;
 
-	    if (UseHalf == TRUE) {
+	    if (UseHalf == TRUE || xf86GetOptValInteger(MGAOptions, OPTION_CRTC2RAM, &adjust)) {
 	        xf86DrvMsg(pScrn->scrnIndex, X_CONFIG, 
 			   "Crtc2 will use %dK of VideoRam\n",
 			   adjust);
@@ -1933,11 +1935,16 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
     }
     if(pMga->SecondCrtc == TRUE) {
         /* Override on 2nd crtc */
-        pMga->MaxClock = 112000;
+
+	if (pMga->ChipRev >= 0x80) {	/* G450 */
+	    pMga->MaxClock = 234000;
+	} else {
+	    pMga->MaxClock = 135000;
+	}
     }
     xf86DrvMsg(pScrn->scrnIndex, from, "Max pixel clock is %d MHz\n",
 	       pMga->MaxClock / 1000);
-        /*
+    /*
      * Setup the ClockRanges, which describe what clock ranges are available,
      * and what sort of modes they can be used for.
      */
@@ -2117,8 +2124,8 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      */
     else if ((pMga->softbooted || pMga->Primary /*|| pMga->HALLoaded*/ ) && 
 	     (pMga->Chipset != PCI_CHIP_MGA2064) && 
-		(pMga->Chipset != PCI_CHIP_MGA2164) &&
-		(pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
+	     (pMga->Chipset != PCI_CHIP_MGA2164) &&
+	     (pMga->Chipset != PCI_CHIP_MGA2164_AGP)) {	
         CARD32 option_reg = pciReadLong(pMga->PciTag, PCI_OPTION_REG);
 	if(!(option_reg & (1 << 14))) {
 	    pMga->HasSDRAM = TRUE;
@@ -2135,11 +2142,9 @@ MGAPreInit(ScrnInfoPtr pScrn, int flags)
      * are not pre-initialised at all.
      */
 #ifdef USEMGAHAL
-        MGA_HAL(xf86SetCrtcForModes(pScrn, 0));
-	MGA_NOT_HAL(xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V));
-#else
-    xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V);
+    MGA_HAL(xf86SetCrtcForModes(pScrn, 0));
 #endif
+    MGA_NOT_HAL(xf86SetCrtcForModes(pScrn, INTERLACE_HALVE_V));
 
     /* Set the current mode to the first in the list */
     pScrn->currentMode = pScrn->modes;
@@ -2486,8 +2491,7 @@ MGASave(ScrnInfoPtr pScrn)
 
     if(pMga->SecondCrtc == TRUE) return;
 #ifdef USEMGAHAL
-    if (pMga->HALLoaded)
-        MGA_HAL(if (pMga->pBoard != NULL) MGASaveVgaState(pMga->pBoard));
+    MGA_HAL(if (pMga->pBoard != NULL) MGASaveVgaState(pMga->pBoard));
 #endif
 
     /* Only save text mode fonts/text for the primary card */
@@ -2577,12 +2581,10 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     Bool tv = FALSE;
     ULONG status;
 
-    if (pMga->HALLoaded) {
-        /* Verify if user wants digital screen output */
-        xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
-	/* Verify if user wants TV output */
-	xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
-    }
+    /* Verify if user wants digital screen output */
+    xf86GetOptValBool(MGAOptions, OPTION_DIGITAL, &digital);
+    /* Verify if user wants TV output */
+    xf86GetOptValBool(MGAOptions, OPTION_TV, &tv);
 #endif
 
     vgaHWUnlock(hwp);
@@ -2601,7 +2603,7 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
     mgaReg = &pMga->ModeReg;
 
 #ifdef USEMGAHAL
-      MGA_HAL(
+    MGA_HAL(
     FillModeInfoStruct(pScrn,mode);
 
     if(pMga->SecondCrtc == TRUE) {
@@ -2666,10 +2668,8 @@ MGAModeInit(ScrnInfoPtr pScrn, DisplayModePtr mode)
 	outMGAdac(MGA1064_CURSOR_BASE_ADR_HI, pMga->FbCursorOffset >> 18);
     }
     );	/* MGA_HAL */
-    MGA_NOT_HAL((*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE));
-#else
-    (*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE);
 #endif
+    MGA_NOT_HAL((*pMga->Restore)(pScrn, vgaReg, mgaReg, FALSE));
 
     MGAStormSync(pScrn);
     MGAStormEngineInit(pScrn);
@@ -2712,12 +2712,12 @@ MGARestore(ScrnInfoPtr pScrn)
     vgaHWProtect(pScrn, TRUE);
     if (pMga->Primary) {
 #ifdef USEMGAHAL
-      MGA_HAL(
-	      if(pMga->pBoard != NULL) {
-		  MGASetVgaMode(pMga->pBoard);
-		  MGARestoreVgaState(pMga->pBoard);
-	      }
-	      );	/* MGA_HAL */
+    MGA_HAL(
+	if(pMga->pBoard != NULL) {
+	    MGASetVgaMode(pMga->pBoard);
+	    MGARestoreVgaState(pMga->pBoard);
+	}
+    );	/* MGA_HAL */
 #endif
         (*pMga->Restore)(pScrn, vgaReg, mgaReg, TRUE);
     } else {
@@ -2818,7 +2818,7 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
 	  pMga->pBoard = pMgaEnt->pBoard;
 	  pMga->pMgaHwInfo = pMgaEnt->pMgaHwInfo;
        }
-       );
+       );	/* MGA_HAL */
 #endif
     } else {
 #ifdef USEMGAHAL
@@ -2835,14 +2835,14 @@ MGAScreenInit(int scrnIndex, ScreenPtr pScreen, int argc, char **argv)
     }
 #ifdef USEMGAHAL
     MGA_HAL(
-	    /* There is a problem in the HALlib: set soft reset bit */
-	    if ( !pMga->Primary && !pMga->FBDev && 
-		 (pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SG) ) {
-	      OUTREG(MGAREG_Reset, 1);
-	      usleep(200);
-	      OUTREG(MGAREG_Reset, 0);
-	    }
-	    )
+	/* There is a problem in the HALlib: set soft reset bit */
+	if (!pMga->Primary && !pMga->FBDev && 
+	    (pMga->PciInfo->subsysCard == PCI_CARD_MILL_G200_SG) ) {
+	    OUTREG(MGAREG_Reset, 1);
+	    usleep(200);
+	    OUTREG(MGAREG_Reset, 0);
+	}
+    );	/* MGA_HAL */
 #endif
 
     /* Initialise the MMIO vgahw functions */
