@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.36 2000/06/21 17:28:13 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_driver.c,v 1.37 2000/06/22 10:40:49 alanh Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -995,6 +995,7 @@ static Bool R128PreInitConfig(ScrnInfoPtr pScrn)
 	case PCI_CHIP_RAGE128RL:
 	default:                 offset = 1; break; /*  64-bit SDR SGRAM 1:1 */
 	}
+	break;
     case 1:                      offset = 2; break; /*  64-bit SDR SGRAM 2:1 */
     case 2:                      offset = 3; break; /*  64-bit DDR SGRAM     */
     default:                     offset = 1; break; /*  64-bit SDR SGRAM 1:1 */
@@ -1507,11 +1508,14 @@ static Bool R128PreInit(ScrnInfoPtr pScrn, int flags)
 static void R128LoadPalette(ScrnInfoPtr pScrn, int numColors,
 			    int *indices, LOCO *colors, VisualPtr pVisual)
 {
-    R128InfoPtr info = R128PTR(pScrn);
+    R128InfoPtr   info = R128PTR(pScrn);
     int           i;
     int           idx;
     unsigned char r, g, b;
     R128MMIO_VARS();
+
+    /* Select palette 0 (main CRTC) if using FP-enabled chip */
+    if (info->HasPanelRegs) PAL_SELECT(0);
 
     if (info->CurrentLayout.depth == 15) {
 	/* 15bpp mode.  This sends 32 values. */
@@ -2035,10 +2039,14 @@ static void R128RestoreDDARegisters(ScrnInfoPtr pScrn, R128SavePtr restore)
 /* Write palette data. */
 static void R128RestorePalette(ScrnInfoPtr pScrn, R128SavePtr restore)
 {
-    int i;
+    R128InfoPtr info = R128PTR(pScrn);
+    int         i;
     R128MMIO_VARS();
 
     if (!restore->palette_valid) return;
+
+    /* Select palette 0 (main CRTC) if using FP-enabled chip */
+    if (info->HasPanelRegs) PAL_SELECT(0);
 
     OUTPAL_START(0);
     for (i = 0; i < 256; i++) OUTPAL_NEXT_CARD32(restore->palette[i]);
@@ -2141,9 +2149,13 @@ static void R128SaveDDARegisters(ScrnInfoPtr pScrn, R128SavePtr save)
 /* Read palette data. */
 static void R128SavePalette(ScrnInfoPtr pScrn, R128SavePtr save)
 {
-    int i;
+    R128InfoPtr info = R128PTR(pScrn);
+    int         i;
     R128MMIO_VARS();
     
+    /* Select palette 0 (main CRTC) if using FP-enabled chip */
+    if (info->HasPanelRegs) PAL_SELECT(0);
+
     INPAL_START(0);
     for (i = 0; i < 256; i++) save->palette[i] = INPAL_NEXT();
     save->palette_valid = TRUE;

@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.13 2000/05/23 04:47:47 dawes Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/fbdevhw/fbdevhw.c,v 1.14 2000/05/23 23:48:42 dawes Exp $ */
 
 /* all driver need this */
 #include "xf86.h"
@@ -266,6 +266,8 @@ static struct fb2pci_entry {
 	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RK    },
 	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128RL    },
 	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128PF    },
+	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128LE    },
+	{ FB_ACCEL_ATI_RAGE128,         PCI_VENDOR_ATI,    PCI_CHIP_RAGE128LF    },
 	{ FB_ACCEL_3DFX_BANSHEE,        PCI_VENDOR_3DFX,   PCI_CHIP_VOODOO3      },
 };
 #define FB2PCICOUNT (sizeof(fb2pci_map)/sizeof(struct fb2pci_entry))

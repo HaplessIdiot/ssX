@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.9 2000/06/26 05:41:33 martin Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/r128/r128_reg.h,v 1.10 2000/06/30 18:27:03 dawes Exp $ */
 /**************************************************************************
 
 Copyright 1999, 2000 ATI Technologies Inc. and Precision Insight, Inc.,
@@ -109,6 +109,17 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
     } while (0)
 
 #define INPAL_NEXT() INREG(R128_PALETTE_DATA)
+
+#define PAL_SELECT(idx)                                                   \
+    do {                                                                  \
+        if (idx) {                                                        \
+            OUTREG(R128_DAC_CNTL, INREG(R128_DAC_CNTL) |                  \
+                   R128_DAC_PALETTE_ACC_CTL);                             \
+        } else {                                                          \
+            OUTREG(R128_DAC_CNTL, INREG(R128_DAC_CNTL) &                  \
+                   ~R128_DAC_PALETTE_ACC_CTL);                            \
+        }                                                                 \
+    } while (0)
 
 #define R128_ADAPTER_ID                   0x0f2c /* PCI */
 #define R128_AGP_APER_OFFSET              0x0178
@@ -364,6 +375,7 @@ USE OR OTHER DEALINGS IN THE SOFTWARE.
 #       define R128_DAC_RANGE_CNTL        (3 <<  0)
 #       define R128_DAC_BLANKING          (1 <<  2)
 #       define R128_DAC_CRT_SEL_CRTC2     (1 <<  4)
+#       define R128_DAC_PALETTE_ACC_CTL   (1 <<  5)
 #       define R128_DAC_8BIT_EN           (1 <<  8)
 #       define R128_DAC_VGA_ADR_EN        (1 << 13)
 #       define R128_DAC_MASK_ALL          (0xff << 24)
