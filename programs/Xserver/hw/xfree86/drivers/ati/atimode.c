@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.11 2002/02/14 22:08:02 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimode.c,v 1.12 2002/02/26 05:10:56 tsi Exp $ */
 /*
  * Copyright 2000 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -306,14 +306,14 @@ ATIModePreInit
                     pATIHW->config_panel =
                         ATIGetMach64LCDReg(LCD_CONFIG_PANEL) |
                         DONT_SHADOW_HEND;
-                    pATIHW->lcd_gen_ctrl = ATIGetMach64LCDReg(LCD_GEN_CNTL);
+                    pATIHW->lcd_gen_ctrl =
+                        ATIGetMach64LCDReg(LCD_GEN_CNTL) & ~CRTC_RW_SELECT;
                     outr(LCD_INDEX, lcd_index);
                 }
 
                 pATIHW->lcd_gen_ctrl &=
-                    ~(HORZ_DIVBY2_EN | DISABLE_PCLK_RESET |
-                      DIS_HOR_CRT_DIVBY2 | VCLK_DAC_PM_EN | XTALIN_PM_EN |
-                      CRTC_RW_SELECT | USE_SHADOWED_VEND |
+                    ~(HORZ_DIVBY2_EN | DIS_HOR_CRT_DIVBY2 | MCLK_PM_EN |
+                      VCLK_DAC_PM_EN | USE_SHADOWED_VEND |
                       USE_SHADOWED_ROWCUR | SHADOW_EN | SHADOW_RW_EN);
                 pATIHW->lcd_gen_ctrl |= DONT_SHADOW_VPAR | LOCK_8DOT;
 
@@ -394,8 +394,8 @@ ATIModeSave
                 pATIHW->lcd_gen_ctrl = inr(LCD_GEN_CTRL);
 
                 /* Set up to save non-shadow registers */
-                outr(LCD_GEN_CTRL, pATIHW->lcd_gen_ctrl &
-                    ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL,
+                    pATIHW->lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
             }
             else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                         (pATI->Chip == ATI_CHIP_264XL) ||
@@ -448,8 +448,7 @@ ATIModeSave
                 /* Switch to shadow registers */
                 if (pATI->Chip == ATI_CHIP_264LT)
                     outr(LCD_GEN_CTRL,
-                        (pATIHW->lcd_gen_ctrl & ~CRTC_RW_SELECT) |
-                        (SHADOW_EN | SHADOW_RW_EN));
+                        pATIHW->lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
                 else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                             (pATI->Chip == ATI_CHIP_264XL) ||
                             (pATI->Chip == ATI_CHIP_MOBILITY)) */
@@ -912,9 +911,8 @@ ATIModeSet
             if (pATI->Chip == ATI_CHIP_264LT)
             {
                 /* Update non-shadow registers first */
-                outr(LCD_GEN_CTRL, pATIHW->lcd_gen_ctrl &
-                    ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT |
-                      SHADOW_EN | SHADOW_RW_EN));
+                outr(LCD_GEN_CTRL,
+                    pATIHW->lcd_gen_ctrl & ~(SHADOW_EN | SHADOW_RW_EN));
 
                 /* Temporarily disable stretching */
                 outr(HORZ_STRETCHING, pATIHW->horz_stretching &
@@ -930,8 +928,7 @@ ATIModeSet
                 /* Update non-shadow registers first */
                 ATIPutMach64LCDReg(LCD_CONFIG_PANEL, pATIHW->config_panel);
                 ATIPutMach64LCDReg(LCD_GEN_CNTL, pATIHW->lcd_gen_ctrl &
-                    ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT |
-                      SHADOW_EN | SHADOW_RW_EN));
+                    ~(CRTC_RW_SELECT | SHADOW_EN | SHADOW_RW_EN));
 
                 /* Temporarily disable stretching */
                 ATIPutMach64LCDReg(LCD_HORZ_STRETCHING,
@@ -1040,15 +1037,13 @@ ATIModeSet
     {
         /* Switch to shadow registers */
         if (pATI->Chip == ATI_CHIP_264LT)
-            outr(LCD_GEN_CTRL, (pATIHW->lcd_gen_ctrl &
-                 ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT)) |
-                (SHADOW_EN | SHADOW_RW_EN));
+            outr(LCD_GEN_CTRL,
+                pATIHW->lcd_gen_ctrl | (SHADOW_EN | SHADOW_RW_EN));
         else /* if ((pATI->Chip == ATI_CHIP_264LTPRO) ||
                     (pATI->Chip == ATI_CHIP_264XL) ||
                     (pATI->Chip == ATI_CHIP_MOBILITY)) */
             ATIPutMach64LCDReg(LCD_GEN_CNTL,
-                (pATIHW->lcd_gen_ctrl &
-                 ~(DISABLE_PCLK_RESET | CRTC_RW_SELECT)) |
+                (pATIHW->lcd_gen_ctrl & ~CRTC_RW_SELECT) |
                 (SHADOW_EN | SHADOW_RW_EN));
 
         /* Restore shadow registers */

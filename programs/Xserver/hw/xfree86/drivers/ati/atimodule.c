@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.12 2001/01/06 20:58:06 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimodule.c,v 1.13 2002/01/16 16:22:27 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -105,7 +105,7 @@ ATISetup
         Inited = TRUE;
         xf86AddDriver(&ATI, Module, 0);
 
-        LoaderRefSymLists(
+        xf86LoaderRefSymLists(
             ATISymbols,
             R128Symbols,
             RADEONSymbols,

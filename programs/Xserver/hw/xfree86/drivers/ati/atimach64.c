@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.46 2002/01/29 03:42:27 tsi Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/drivers/ati/atimach64.c,v 1.47 2002/02/14 22:08:02 tsi Exp $ */
 /*
  * Copyright 1997 through 2002 by Marc Aurele La France (TSI @ UQV), tsi@xfree86.org
  *
@@ -574,7 +574,7 @@ ATIMach64Calculate
         ~(CRTC_DBL_SCAN_EN | CRTC_INTERLACE_EN |
           CRTC_HSYNC_DIS | CRTC_VSYNC_DIS | CRTC_CSYNC_EN |
           CRTC_PIX_BY_2_EN | CRTC_DISPLAY_DIS | CRTC_VGA_XOVERSCAN |
-          CRTC_PIX_WIDTH | CRTC_BYTE_PIX_ORDER | CRTC_FIFO_LWM |
+          CRTC_PIX_WIDTH | CRTC_BYTE_PIX_ORDER |
           CRTC_VGA_128KAP_PAGING | CRTC_VFC_SYNC_TRISTATE |
           CRTC_LOCK_REGS |              /* Already off, but ... */
           CRTC_SYNC_TRISTATE | CRTC_DISP_REQ_EN |
