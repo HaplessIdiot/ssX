@@ -1,4 +1,4 @@
-/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.187 2001/03/08 17:12:14 eich Exp $ */
+/* $XFree86: xc/programs/Xserver/hw/xfree86/loader/xf86sym.c,v 1.188 2001/03/13 16:03:36 dawes Exp $ */
 
 /*
  *
@@ -267,6 +267,7 @@ LOOKUP xfree86LookupTab[] = {
    SYMFUNC(xf86FindScreenForEntity)
    SYMFUNC(xf86FindPciDeviceVendor)
    SYMFUNC(xf86FindPciClass)
+   SYMFUNC(xf86EnablePciBusMaster)
    SYMFUNC(xf86RegisterStateChangeNotificationCallback)
    SYMFUNC(xf86DeregisterStateChangeNotificationCallback)
    SYMFUNC(xf86NoSharedResources)
