@@ -44,8 +44,6 @@ static const int    filters[3][3] = {
 {    65538*1/13,65538*3/13,65538*9/13 },
 };
 
-#define _UntestedGlyph	((XGlyphInfo *) 1)
-
 void
 XftGlyphLoad (Display		*dpy,
 	      XftFontStruct	*font,
@@ -457,12 +455,12 @@ XftGlyphCheck (Display		*dpy,
 	if (!realized)
 	    return;
 	for (n = font->nrealized; n < nrealized; n++)
-	    realized[n] = _UntestedGlyph;
+	    realized[n] = XftUntestedGlyph;
 	
 	font->realized = realized;
 	font->nrealized = nrealized;
     }
-    if (font->realized[glyph] == _UntestedGlyph)
+    if (font->realized[glyph] == XftUntestedGlyph)
     {
 	if (XftGlyphDrawable (dpy, font, glyph))
 	{
