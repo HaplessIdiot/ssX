@@ -36,13 +36,13 @@ HEADERS = Xft.h XftFreetype.h
 
    SRCS = xftcfg.c xftcore.c xftdbg.c xftdir.c xftdpy.c xftdraw.c \
 	  xftextent.c xftfont.c xftfreetype.c xftfs.c xftglyphs.c \
-	  xftgram.c xftinit.c xftlex.c xftmatch.c xftname.c xftpat.c \
-	  xftrender.c xftstr.c xftxlfd.c
+	  xftgram.c xftinit.c xftlex.c xftlist.c xftmatch.c xftname.c \
+	  xftpat.c xftrender.c xftstr.c xftxlfd.c
 	  
    OBJS = xftcfg.o xftcore.o xftdbg.o xftdir.o xftdpy.o xftdraw.o \
 	  xftextent.o xftfont.o xftfreetype.o xftfs.o xftglyphs.o \
-	  xftgram.o xftinit.o xftlex.o xftmatch.o xftname.o xftpat.o \
-	  xftrender.o xftstr.o xftxlfd.o
+	  xftgram.o xftinit.o xftlex.o xftlist.o xftmatch.o xftname.o \
+	  xftpat.o xftrender.o xftstr.o xftxlfd.o
 
 #include <Library.tmpl>
 

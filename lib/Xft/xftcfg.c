@@ -125,7 +125,7 @@ _XftConfigPromote (XftValue v)
     return v;
 }
 
-static Bool
+Bool
 _XftConfigCompareValue (XftValue    m,
 			XftOp	    op,
 			XftValue    v)
